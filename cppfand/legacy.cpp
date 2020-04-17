@@ -59,19 +59,19 @@ WORD Swap(WORD cislo)
     return ((cislo & 0x00FF) << 4) + (cislo >> 4);
 }
 
-PascString::PascString(): initLen(256)
+string::string(): initLen(256)
 {
 	len = 255;
 	arr = new BYTE[initLen]{'\0'};
 }
 
-PascString::PascString(BYTE length): initLen(length + 1)
+string::string(BYTE length): initLen(length + 1)
 {
 	len = length;
 	arr = new BYTE[initLen]{'\0'};
 }
 
-PascString::PascString(const char* text): initLen(256)
+string::string(const char* text): initLen(256)
 {
 	size_t input_len = strlen(text);
 	if (input_len > 255) input_len = 255;
@@ -80,25 +80,25 @@ PascString::PascString(const char* text): initLen(256)
 	memcpy((void*)arr, (void*)text, len);
 }
 
-PascString::PascString(const PascString& ps): initLen(ps.initLen)
+string::string(const string& ps): initLen(ps.initLen)
 {
 	this->len = ps.len;
 	arr = new BYTE[len]{ '\0' };
 	memcpy((void*)arr, (void*)ps.arr, len);
 }
 
-PascString::~PascString()
+string::~string()
 {
 	delete[] arr;
 }
 
-const char* PascString::c_str()
+const char* string::c_str()
 {
 	arr[len] = '\0'; // 'arr' je o 1 větší než 'len'
 	return (const char*)arr;
 }
 
-BYTE& PascString::operator[](size_t i)
+BYTE& string::operator[](size_t i)
 {
 	if (i == 0) return len;
 	if (i > len) { throw std::exception("Index out of range."); }
@@ -106,7 +106,7 @@ BYTE& PascString::operator[](size_t i)
 	return arr[i];
 }
 
-void PascString::operator=(const char* newvalue)
+void string::operator=(const char* newvalue)
 {
 	size_t newLen = strlen(newvalue);
 	if (newLen > initLen - 1) { throw std::exception("Index out of range."); }
@@ -115,14 +115,14 @@ void PascString::operator=(const char* newvalue)
 	arr[len - 1] = '\0';
 }
 
-void PascString::operator=(const PascString& newvalue)
+void string::operator=(const string& newvalue)
 {
 	if (newvalue.initLen >= this->initLen) { throw std::exception("Index out of range."); }
 	memcpy((void*)arr, (void*)newvalue.arr[0], newvalue.len);
 	arr[len - 1] = '\0';
 }
 
-PascString::operator std::basic_string<char>() const
+string::operator std::basic_string<char>() const
 {
 	arr[len] = '\0'; // 'arr' je o 1 větší než 'len'
 	const char* exp = (const char*)arr;

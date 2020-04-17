@@ -4,8 +4,6 @@
 
 //#include ""
 
-using namespace std;
-
 typedef void* PProcedure;
 
 void wait(); // ø. 95

@@ -29,7 +29,7 @@ label1:
 		ReadH(h, 1, reinterpret_cast<void*>(s[0])); // tady se má zøejmì jen vyèíst délka
 		ReadH(h, s.length(), reinterpret_cast<void*>(s[1]));
 	}
-	Drivers::ConvKamenToCurr(s[1], s.length());
+	ConvKamenToCurr(s[1], s.length());
 	MsgLine = "";
 	j = 1;
 	// TODO: k èemu je toto? s[length(s) + 1] = 0x00;

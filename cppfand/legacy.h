@@ -1,9 +1,7 @@
 #pragma once
-#include <string>
 #include "constants.h"
 
-using namespace std;
-
+class string;
 void val(string s, BYTE& b, WORD& err);
 string copy(string source, size_t index, size_t count);
 
@@ -26,7 +24,7 @@ string ParamStr(integer index);
 inline void Exit() { return;; }
 
 inline void RunError(WORD c) { exit(c); }
-inline void Halt(WORD c) { RunError(c); }
+inline void Halt(WORD c) { exit(c); }
 
 void FillChar(char* cil, WORD delka, char vypln);
 void Move(void* zdroj, void* cil, WORD delka);
@@ -37,12 +35,13 @@ WORD Swap(WORD cislo);
 void UnPack(void* PackArr, WORD& NumArr, WORD& NoDigits);
 void Pack(void* NumArr, WORD& PackArr, WORD& NoDigits);
 
-class PascString
+/// Class of standard Borland Pascal string
+class string
 {
 public:
-    PascString() : initLen(255) { arr = new BYTE[len]{ '\0' }; }
-    PascString(BYTE length) : initLen(length) { len = length; arr = new BYTE[len] { '\0' }; }
-    ~PascString() { delete[] arr; }
+    string() : initLen(255) { arr = new BYTE[len]{ '\0' }; }
+    string(BYTE length) : initLen(length) { len = length; arr = new BYTE[len] { '\0' }; }
+    ~string() { delete[] arr; }
 
 private:
     const BYTE initLen;
@@ -55,21 +54,21 @@ private:
     BYTE* operator[] (size_t i)
     {
         if (i == 0) return &len;
-        if (i > len) { throw exception("Index out of range."); }
+        if (i > len) { throw std::exception("Index out of range."); }
         i--;
         return &arr[i];
     }
 
     void operator = (const char* newvalue) {
         size_t newLen = strlen(newvalue);
-        if (newLen > len) { throw exception("Index out of range."); }
+        if (newLen > len) { throw std::exception("Index out of range."); }
         memcpy((void*)arr[0], (void*)newvalue, newLen);
         len = newLen;
     }
 
-    void operator = (PascString& newvalue)
+    void operator = (string& newvalue)
     {
-    	if (newvalue.initLen >= this->initLen) { throw exception("Index out of range."); }
+    	if (newvalue.initLen >= this->initLen) { throw std::exception("Index out of range."); }
         memcpy((void*)arr[0], (void*)newvalue.arr[0], newvalue.len);
     }
 

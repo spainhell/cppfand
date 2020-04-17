@@ -1,21 +1,21 @@
 #pragma once
-#include <string>
 #include <vector>
+#include "legacy.h"
 
 typedef unsigned short WORD;
 typedef unsigned char BYTE;
 typedef int longint;
 typedef short integer;
 typedef void* ExitRecord;
-typedef std::string ScreenStr;
-typedef std::string* StringPtr;
+typedef string ScreenStr;
+typedef string* StringPtr;
 //typedef std::string* LongStrPtr;
 typedef LongStr* LongStrPtr;
-typedef std::string DirStr;
-typedef std::string PathStr;
-typedef std::string NameStr;
-typedef std::string ExtStr;
-typedef std::string VolStr; // base.pas, ø.22, string[11]
+typedef string DirStr;
+typedef string PathStr;
+typedef string NameStr;
+typedef string ExtStr;
+typedef string VolStr; // base.pas, ø.22, string[11]
 
 
 const WORD _F1 = 59;
