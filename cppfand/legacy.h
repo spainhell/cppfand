@@ -20,7 +20,7 @@ void Erase(string soubor);
 float Random();
 WORD Random(WORD rozsah);
 
-WORD ParamCount(); // vrací poèet parametrù pøíkaz. øádky
+WORD ParamCount(); // vracÃ­ poÃ¨et parametrÃ¹ pÃ¸Ã­kaz. Ã¸Ã¡dky
 string ParamStr(integer index);
 
 inline void Exit() { return;; }
@@ -36,3 +36,42 @@ WORD Swap(WORD cislo);
 
 void UnPack(void* PackArr, WORD& NumArr, WORD& NoDigits);
 void Pack(void* NumArr, WORD& PackArr, WORD& NoDigits);
+
+class PascString
+{
+public:
+    PascString() : initLen(255) { arr = new BYTE[len]{ '\0' }; }
+    PascString(BYTE length) : initLen(length) { len = length; arr = new BYTE[len] { '\0' }; }
+    ~PascString() { delete[] arr; }
+
+private:
+    const BYTE initLen;
+    BYTE len = 0xFF;
+    BYTE* arr;
+
+    BYTE length() { return len; }
+    BYTE initLength() { return initLen; }
+	
+    BYTE* operator[] (size_t i)
+    {
+        if (i == 0) return &len;
+        if (i > len) { throw exception("Index out of range."); }
+        i--;
+        return &arr[i];
+    }
+
+    void operator = (const char* newvalue) {
+        size_t newLen = strlen(newvalue);
+        if (newLen > len) { throw exception("Index out of range."); }
+        memcpy((void*)arr[0], (void*)newvalue, newLen);
+        len = newLen;
+    }
+
+    void operator = (PascString& newvalue)
+    {
+    	if (newvalue.initLen >= this->initLen) { throw exception("Index out of range."); }
+        memcpy((void*)arr[0], (void*)newvalue.arr[0], newvalue.len);
+    }
+
+	
+};
