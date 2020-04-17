@@ -9,7 +9,7 @@ void val(string s, BYTE& b, WORD& err)
 {
     string::size_type sz;
 	auto a = stoul(s, &sz, 10);
-    // p�elo�il se cel� �et�zec?
+    // pøeložil se celý øetìzec?
 	if (sz == s.length() - 1)
 	{
 		err = 0;
@@ -61,4 +61,73 @@ WORD Swap(WORD cislo)
     return ((cislo & 0x00FF) << 4) + (cislo >> 4);
 }
 
+PascString::PascString(): initLen(256)
+{
+	len = 255;
+	arr = new BYTE[initLen]{'\0'};
+}
+
+PascString::PascString(BYTE length): initLen(length + 1)
+{
+	len = length;
+	arr = new BYTE[initLen]{'\0'};
+}
+
+PascString::PascString(const char* text): initLen(256)
+{
+	size_t input_len = strlen(text);
+	if (input_len > 255) input_len = 255;
+	this->len = (BYTE)input_len - 1;
+	arr = new BYTE[initLen]{'\0'};	
+	memcpy((void*)arr, (void*)text, len);
+}
+
+PascString::PascString(const PascString& ps): initLen(ps.initLen)
+{
+	this->len = ps.len;
+	arr = new BYTE[len]{ '\0' };
+	memcpy((void*)arr, (void*)ps.arr, len);
+}
+
+PascString::~PascString()
+{
+	delete[] arr;
+}
+
+const char* PascString::c_str()
+{
+	arr[len] = '\0'; // 'arr' je o 1 větší než 'len'
+	return (const char*)arr;
+}
+
+BYTE& PascString::operator[](size_t i)
+{
+	if (i == 0) return len;
+	if (i > len) { throw std::exception("Index out of range."); }
+	i--;
+	return arr[i];
+}
+
+void PascString::operator=(const char* newvalue)
+{
+	size_t newLen = strlen(newvalue);
+	if (newLen > initLen - 1) { throw std::exception("Index out of range."); }
+	memcpy((void*)arr, (void*)newvalue, newLen);
+	len = newLen;
+	arr[len - 1] = '\0';
+}
+
+void PascString::operator=(const PascString& newvalue)
+{
+	if (newvalue.initLen >= this->initLen) { throw std::exception("Index out of range."); }
+	memcpy((void*)arr, (void*)newvalue.arr[0], newvalue.len);
+	arr[len - 1] = '\0';
+}
+
+PascString::operator std::basic_string<char>() const
+{
+	arr[len] = '\0'; // 'arr' je o 1 větší než 'len'
+	const char* exp = (const char*)arr;
+	return std::string(exp);
+}
 
