@@ -1,22 +1,12 @@
 #include "runfand.h"
-#include "access.h"
 #include "base.h"
 #include "common.h"
-#include "editor.h"
 #include "legacy.h"
-#include "runfrml.h"
-#include "handle.h"
-#include "kbdww.h"
-#include "keybd.h"
-#include "memory.h"
-#include "oaccess.h"
-#include "obaseww.h"
-#include "runedi.h"
-#include "wwmix.h"
+
 
 void runfand::InitRunFand()
 {
-	Drivers driver = Drivers(); // HLAVNI OVLADAC
+	//Drivers driver = Drivers(); // HLAVNI OVLADAC
 	
 	WORD n, h, l, err, hourmin;
 	string s;

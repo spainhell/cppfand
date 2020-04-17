@@ -1,5 +1,4 @@
 #include "common.h"
-
 #include <cmath>
 
 void StrLPCopy(string& Dest, string s, WORD MaxL)
