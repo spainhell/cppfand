@@ -14,6 +14,7 @@ class XWFile;
 class XKey;
 struct LinkD;
 class FileD;
+struct RdbD;
 struct FieldDescr;
 using namespace std;
 
@@ -65,18 +66,18 @@ struct FrmlElem // ø. 51
 	float R; // 2
 	string S; // 4
 	bool B; // 5
-	FrmlElem* PP1; ScreenStr Mask; // 6
+	FrmlElem* PP1; pstring Mask; // 6
 	FieldDescr* Field; // 7 {_field}
 	FrmlElem* P011; FileD* File2; LinkD* LD; // 7  {LD=nil for param} {_access} {LD=RecPtr} {_recvarfld}
 	FrmlElem* Frml; FileD* NewFile; void* NewRP; // 8 {_newfile}
 	FileD* FD; // 9 {_lastupdate, _generation}
 	WORD CatIRec; FileD* CatFld; // 10 {_catfield}
 	FrmlElem* PPP1; FrmlElem* PP2; FileD* FldD; // 11 {_prompt}
-	FrmlElem* PPPP1; FrmlElem* PPP2; FrmlElem* PP3; ScreenStr Options; // 12 {_pos,_replace}
+	FrmlElem* PPPP1; FrmlElem* PPP2; FrmlElem* PP3; pstring Options; // 12 {_pos,_replace}
 	FileD* FFD; KeyD* Key; FrmlElem* Arg[2]; // 13 {_recno/typ='R' or'S'/,_recnoabs,_recnolog}
 	FrmlElem* PPPPP1; FileD* RecFD; FileD* RecFldD; // 14 {_accrecno,_isdeleted}
 	LinkD* LinkLD; bool LinkFromRec; LocVar* LinkLV; FrmlElem* LinkRecFrml; // 15 {_link}
-	FrmlElem* PPPPPP1; FrmlElem* PPPP2; StringPtr TxtPath; WORD TxtCatIRec; // 16 {_gettxt,_filesize}
+	FrmlElem* PPPPPP1; FrmlElem* PPPP2; pstring* TxtPath; WORD TxtCatIRec; // 16 {_gettxt,_filesize}
 	WORD BPOfs; // 18 { _getlocvar }
 	FuncDPtr FC; FrmlList FrmlL; // 19 { _userfunc }
 	LocVar* LV; KeyD* PackKey; // 20 { _keyof,_lvdeleted }
@@ -109,7 +110,7 @@ typedef KeyFldD* KeyFldDPtr;
 
 struct RdbPos // ø. 113
 {
-	RdbDPtr R;
+	RdbD* R;
 	WORD IRec;
 };
 
@@ -117,7 +118,7 @@ struct ChkD // ø. 115
 {
 	ChkD* Chain;
 	FrmlPtr Bool;
-	StringPtr HelpName;
+	pstring* HelpName;
 	FrmlPtr TxtZ;
 	bool Warning;
 };
@@ -196,7 +197,7 @@ public:
 	KeyDPtr Keys;
 	AddD* Add;
 	WORD nLDs, LiOfs;
-	NameStr Name;
+	pstring Name;
 	longint UsedFileSize();
 	bool IsShared();
 	bool NotCached();
@@ -271,7 +272,7 @@ struct RdbD // ø. 243
 	FuncDPtr OldFCRoot;
 	void* Mark2; // { markstore2 at beginning }
 	bool Encrypted;
-	DirStr RdbDir, DataDir;
+	pstring RdbDir, DataDir;
 };
 typedef RdbD* RdbDPtr;
 
@@ -301,7 +302,7 @@ public:
 	WORD GetL(WORD O);
 	void PutL(WORD O, WORD L);
 	XItem* Next(WORD O);
-	WORD UpdStr(WORD O, StringPtr S);
+	WORD UpdStr(WORD O, pstring* S);
 
 };
 typedef XItem* XItemPtr;
@@ -335,7 +336,7 @@ public:
 	bool Intervaltest, Duplic, InWork;
 	WORD IndexRoot; BYTE IndexLen;
 	longint NR; // {used only by XWKey}
-	StringPtr Alias;
+	pstring* Alias;
 	XWFile* XF();
 	longint NRecs();
 	bool Search(XString& XX, bool AfterEqu, longint& RecNr);
@@ -406,8 +407,8 @@ FuncDPtr FuncDRoot;
 FileDPtr CFile;
 void* CRecPtr;
 KeyDPtr CViewKey;
-DirStr TopRdbDir, TopDataDir;
-NameStr CatFDName;
+pstring TopRdbDir, TopDataDir;
+pstring CatFDName;
 RdbDPtr CRdb, TopRdb;
 FileDPtr CatFD, HelpFD;
 
@@ -425,7 +426,7 @@ const BYTE FloppyDrives = 3;
 
 // ø. 517
 FieldDPtr CatRdbName, CatFileName, CatArchiv, CatPathName, CatVolume;
-VolStr MountedVol[FloppyDrives];
+pstring MountedVol[FloppyDrives];
 
 void* GetRecSpace(); // ø. 739
 

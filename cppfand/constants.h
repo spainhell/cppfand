@@ -1,22 +1,21 @@
 #pragma once
 #include <vector>
-#include "legacy.h"
+#include <string>
+
 
 typedef unsigned short WORD;
 typedef unsigned char BYTE;
 typedef int longint;
 typedef short integer;
 typedef void* ExitRecord;
-typedef string ScreenStr;
-typedef string* StringPtr;
-//typedef std::string* LongStrPtr;
-typedef LongStr* LongStrPtr;
-typedef string DirStr;
-typedef string PathStr;
-typedef string NameStr;
-typedef string ExtStr;
-typedef string VolStr; // base.pas, ø.22, string[11]
 
+//typedef pstring ScreenStr;
+//typedef pstring* StringPtr;
+//typedef pstring DirStr;
+//typedef pstring PathStr;
+//typedef pstring NameStr;
+//typedef pstring ExtStr;
+//typedef pstring VolStr; // base.pas, ø22, string[11]
 
 const WORD _F1 = 59;
 const WORD _F6 = 64;
@@ -142,7 +141,6 @@ const WORD _Z_ = 26;
 std::vector<std::string> paramstr(5);
 
 // ********** BASE.PAS ********** - ø. 40 - 47
-const std::string EmptyStr;
 const WORD MaxLStrLen = 65000;
 const BYTE WShadow = 0x01; // window flags
 const BYTE WNoClrScr = 0x02;
@@ -162,7 +160,6 @@ const WORD ResVersion = 0x0420;
 const char CfgVersion[] = { '4', '.', '2', '0', '\0' };
 const BYTE DMLVersion = 41;
 const WORD NoDayInMonth[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
-
 
 
 // ********** DRIVERS.PAS ********** - ø. 225 - 231

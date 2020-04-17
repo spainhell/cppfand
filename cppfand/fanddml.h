@@ -77,7 +77,7 @@ using namespace std;
 //};
 //typedef _FileD* FilePtr;
 //
-///// ukazatel: RdbDPtr
+///// ukazatel: RdbD*
 //struct _RdbD
 //{
 //	_RdbD* ChainBack;
@@ -88,4 +88,4 @@ using namespace std;
 //	bool B;
 //	string Dir; // TODO: pùvodnì DirStr - ø. 63
 //};
-//typedef _RdbD* RdbDPtr;
+//typedef _RdbD* RdbD*;

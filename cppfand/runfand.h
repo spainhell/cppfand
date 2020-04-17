@@ -1,13 +1,12 @@
 #pragma once
-#include <string>
-
+#include "pstring.h"
 #include "constants.h"
 #include "switches.h"
 
 
 using namespace std;
 
-typedef TMenuBoxS* PMenuBoxS;
+//typedef TMenuBoxS* PMenuBoxS;
 
 /*#include dos,graph,drivers, base, obase, obaseww, access, oaccess, rdrun,
 { $ifdef FandSQL } channel, { $endif }
@@ -34,12 +33,12 @@ private:
 	void RdWDaysTab();
 	void CompileHelpCatDcl();
 
-	bool SetTopDir(string path /*PathStr*/, string name /*NameStr*/);
-	void RunRdb(string path);
+	bool SetTopDir(pstring& path, pstring& name);
+	void RunRdb(pstring path);
 	void SelectRunRdb(bool OnFace);
 	void CallInstallRdb();
 	void CallEditTxt();
-	void SelectEditTxt(string ExtStr, bool OnFace);
+	void SelectEditTxt(pstring E, bool OnFace);
 	
 };
 

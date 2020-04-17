@@ -1,16 +1,19 @@
 #include "common.h"
 #include <cmath>
 
-void StrLPCopy(string& Dest, string s, WORD MaxL)
+
+void StrLPCopy(char* Dest, pstring s, WORD MaxL)
 {
-	Dest = string(s.substr(0, MaxL));
+	auto sLen = s.length();
+	int len = (sLen < MaxL) ? sLen : MaxL;
+	memcpy(Dest, s.c_str(), len);
 }
 
-void SplitDate(float R, WORD& d, WORD& m, WORD& y)
+void SplitDate(double R, WORD& d, WORD& m, WORD& y)
 {
 	WORD i, j;
 
-	longint l = std::trunc(R);
+	longint l = (longint)std::trunc(R);
 
 	if (l == 0) { y = 1; m = 1; d = 1; }
 	else {

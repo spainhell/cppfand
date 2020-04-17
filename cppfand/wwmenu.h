@@ -3,7 +3,6 @@
 
 struct RdbD;
 struct Instr;
-typedef RdbD* RdbDPtr;
 typedef Instr* InstrPtr;
 
 class TRect
@@ -42,7 +41,7 @@ public:
 
 	TMenu* parent;
 	WORD iTxt, nTxt, mx, my;
-	RdbDPtr HlpRdb;
+	RdbD* HlpRdb;
 	BYTE Palette[4]; // norm, curr, char, disabled
 	bool IsBoxS;
 	// destructor Done; virtual;

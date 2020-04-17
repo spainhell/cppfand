@@ -3,7 +3,7 @@
 
 using namespace std;
 
-static class runfrml
+class runfrml
 {
 public:
 	static string TrailChar(char C, string s);

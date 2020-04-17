@@ -1,11 +1,36 @@
 #include "base.h"
+
+#include "handle.h"
+#include "keybd.h"
 #include "legacy.h"
 
+
+void SetMsgPar(pstring s)
+{
+	MsgPar[0] = s;
+}
+
+void Set2MsgPar(pstring s1, pstring s2)
+{
+	MsgPar[0] = s1; MsgPar[1] = s2;
+}
+
+void Set3MsgPar(pstring s1, pstring s2, pstring s3)
+{
+	Set2MsgPar(s1, s2);
+	MsgPar[2] = s3;
+}
+
+void Set4MsgPar(pstring s1, pstring s2, pstring s3, pstring s4)
+{
+	Set3MsgPar(s1, s2, s3);
+	MsgPar[3] = s4;
+}
 
 void RdMsg(integer N)
 {
 	WORD j, h, o;
-	string s;
+	pstring s;
 	for (int i = 1; i < MsgIdxN; i++) {
 		auto Nr = MsgIdx[i].Nr;
 		auto Count = MsgIdx[i].Count;
@@ -18,7 +43,7 @@ void RdMsg(integer N)
 		}
 	}
 	o = 0; j = 1;
-	MsgPar[1] = to_string(N);
+	MsgPar[1] = std::to_string(N);
 
 label1:
 	h = ResFile.Handle;
@@ -29,7 +54,7 @@ label1:
 		ReadH(h, 1, reinterpret_cast<void*>(s[0])); // tady se má zøejmì jen vyèíst délka
 		ReadH(h, s.length(), reinterpret_cast<void*>(s[1]));
 	}
-	ConvKamenToCurr(s[1], s.length());
+	ConvKamenToCurr((char*)s.c_str(), s.length());
 	MsgLine = "";
 	j = 1;
 	// TODO: k èemu je toto? s[length(s) + 1] = 0x00;

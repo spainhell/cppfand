@@ -30,6 +30,9 @@
     <ClCompile Include="runfand.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="pstring.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base.h">
@@ -48,6 +51,57 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="runfand.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="drivers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="fanddml.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="fileacc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="handle.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="kbdww.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="keybd.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="memory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="oaccess.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="obaseww.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="rdrun.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="runedi.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="runfrml.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="runproc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="wwmenu.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="wwmix.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="recacc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pstring.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

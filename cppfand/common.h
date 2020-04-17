@@ -1,24 +1,25 @@
 #pragma once
 #include "constants.h"
+#include "pstring.h"
 
 using namespace std;
 
-void AddBackSlash(string s);
+void AddBackSlash(pstring s);
 
-// ø. 37
-bool SEquUpcase(string s1, string s2);
+// r37
+bool SEquUpcase(pstring s1, pstring s2);
 
-// ø. 362
-float Today();
+// r362
+double Today();
 
-// ø. 55
-void StrLPCopy(string& Dest, string s, WORD MaxL);
+// r55
+void StrLPCopy(pstring& Dest, pstring s, WORD MaxL);
 
-// ø. 235
-void SplitDate(float R, WORD& d, WORD& m, WORD& y);
+// r235
+void SplitDate(double R, WORD& d, WORD& m, WORD& y);
 
-//ø. 217
+// r217
 bool OlympYear(WORD year);
 
-//ø. 219
+// r219
 WORD OlympYears(WORD year);

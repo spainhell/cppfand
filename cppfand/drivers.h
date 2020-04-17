@@ -1,8 +1,6 @@
 #pragma once
-#include <string>
+#include "constants.h"
 
-
-using namespace std;
 
 typedef unsigned short WORD;
 typedef unsigned char BYTE;
@@ -29,7 +27,7 @@ struct TEvent
 
 // ******** Konstanty *********
 const bool DemoAutoRd = false; // ø. 82
-const string KbdBuffer = ""; // ø. 83
+pstring KbdBuffer = ""; // ø. 83
 const BYTE LLKeyFlags = 0; // ø. 84
 
 struct Wind { BYTE X, Y; } WindMin, WindMax; // ø. 137

@@ -1,12 +1,13 @@
 #pragma once
 #include "constants.h"
+#include "pstring.h"
 
 class wwmix
 {
 public:
 	static struct SS
 	{
-		StringPtr Pointto;
+		pstring* Pointto;
 		bool Abcd, AscDesc, Subset, ImplAll, Empty;
 		WORD Size;
 		char Tag;

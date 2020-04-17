@@ -1,8 +1,12 @@
 #pragma once
 #include <array>
 #include "constants.h"
+#include "pstring.h"
 
-//#include ""
+
+typedef char CharArr[50]; typedef CharArr* CharArrPtr; // ø23
+struct LongStr { WORD LL; CharArr A; }; // ø24
+typedef LongStr* LongStrPtr; // ø25
 
 typedef void* PProcedure;
 
@@ -12,10 +16,10 @@ void NewExit(PProcedure POvr, ExitRecord Buf);  // ø. 218
 
 WORD HandleError;
 
-DirStr OldDir, FandDir, WrkDir; // ø. 230
-PathStr FandOvrName, FandResName, FandWorkName, FandWorkXName, FandWorkTName;
-PathStr CPath; DirStr CDir; NameStr CName; ExtStr CExt;
-VolStr CVol;
+pstring OldDir, FandDir, WrkDir; // ø. 230
+pstring FandOvrName, FandResName, FandWorkName, FandWorkXName, FandWorkTName;
+pstring CPath; pstring CDir; pstring CName; pstring CExt;
+pstring CVol;
 bool WasLPTCancel;
 WORD WorkHandle;
 const longint MaxWSize = 0; // {currently occupied in FANDWORK.$$$}
@@ -26,12 +30,12 @@ const longint MaxWSize = 0; // {currently occupied in FANDWORK.$$$}
 WORD F10SpecKey; // ø. 293
 BYTE ProcAttr;
 bool SetStyleAttr(char c, BYTE a);
-string MsgLine;
-ScreenStr MsgPar[4];
-void SetMsgPar(string s);
-void Set2MsgPar(string s1, string s2);
-void Set3MsgPar(string s1, string s2, string s3);
-void Set4MsgPar(string s1, string s2, string s3, string s4);
+pstring MsgLine;
+pstring MsgPar[4];
+void SetMsgPar(pstring s);
+void Set2MsgPar(pstring s1, pstring s2);
+void Set3MsgPar(pstring s1, pstring s2, pstring s3);
+void Set4MsgPar(pstring s1, pstring s2, pstring s3, pstring s4);
 void RdMsg(integer N);
 void WriteMsg(WORD N);
 void ClearLL(BYTE attr);
@@ -72,7 +76,7 @@ char CharOrdTab[256]; // after Colors /FANDDML/ // ø. 370
 char UpcCharTab[256]; // TODO: v obou øádcích bylo 'array[char] of char;' - WTF?
 WORD TxtCols, TxtRows;
 
-typedef array<BYTE, 4> TPrTimeOut; // ø. 418
+typedef std::array<BYTE, 4> TPrTimeOut; // ø. 418
 TPrTimeOut OldPrTimeOut;
 TPrTimeOut PrTimeOut;
 
@@ -94,7 +98,7 @@ public:
 		WORD Size;
 	} A[FandFace];
 	WORD Get(WORD Kod, void* P);
-	string* GetStr(WORD Kod);
+	pstring* GetStr(WORD Kod);
 };
 struct TMsgIdxItem { WORD Nr, Ofs; BYTE Count; } ;
 //TMsgIdxItem TMsgIdx[100];

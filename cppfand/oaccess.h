@@ -35,7 +35,7 @@ void CloseFile();
 string RdCatField(WORD CatIRec, FieldDPtr CatF);
 
 // ø. 414
-bool SetContextDir(DirStr D, bool& IsRdb);
+bool SetContextDir(pstring D, bool& IsRdb);
 
 // ø. 429
 void GetCPathForCat(WORD I);

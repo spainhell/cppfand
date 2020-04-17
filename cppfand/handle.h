@@ -19,7 +19,7 @@ void CloseH(WORD handle);
 void CloseClearH(WORD &h);
 bool IsUpdHandle(WORD H);
 void RdWrCache(bool ReadOp, WORD Handle, bool NotCached, longint Pos, WORD N, void* Buf);
-void DeleteFile(PathStr path);
+void DeleteFile(pstring path);
 void TruncH(WORD handle, longint N);
 longint FileSizeH(WORD handle);
 void WriteH(WORD handle, WORD bytes, void* buffer);
