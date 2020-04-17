@@ -1,0 +1,42 @@
+#include "common.h"
+
+#include <cmath>
+
+void StrLPCopy(string& Dest, string s, WORD MaxL)
+{
+	Dest = string(s.substr(0, MaxL));
+}
+
+void SplitDate(float R, WORD& d, WORD& m, WORD& y)
+{
+	WORD i, j;
+
+	longint l = std::trunc(R);
+
+	if (l == 0) { y = 1; m = 1; d = 1; }
+	else {
+		y = l / 365; y++; l = l % 365;
+		while (l <= OlympYears(y)) { y--; l += 365; }
+		l = l - OlympYears(y);
+		for (j = 1; j <= 12; j++) {
+			i = NoDayInMonth[j];
+			if ((j == 2) && OlympYear(y)) i++;
+			if (i >= l) goto label1;
+			l -= i;
+		}
+	label1:
+		m = j; d = l;
+	}
+}
+
+bool OlympYear(WORD year)
+{
+	return year % 4 == 0 && (year % 100 != 0 || year % 400 == 0);
+}
+
+WORD OlympYears(WORD year)
+{
+	if (year < 3) return 0;
+	year--;
+	return year / 4 - year / 100 + year / 400;
+}
