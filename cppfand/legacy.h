@@ -3,8 +3,14 @@
 #include "pstring.h"
 
 
+longint ExitCode = 0; // exit kód -> OS
+void* ErrorAddr = nullptr; // adresa chyby
+//void* ExitProc = nullptr;
+void (*ExitProc)() { }; // ukončovací procedura
+
 void val(pstring s, BYTE& b, WORD& err);
 pstring copy(pstring source, size_t index, size_t count);
+void str(int input, pstring& output);
 
 void FSplit(pstring fullname, pstring& dir, pstring& name, pstring& ext);
 pstring FExpand(pstring path);
@@ -15,6 +21,8 @@ void MkDir(pstring cesta);
 void RmDir(pstring cesta);
 void Rename(pstring soubor, pstring novejmeno);
 void Erase(pstring soubor);
+
+void CloseGraph() { return; };
 
 double Random();
 WORD Random(WORD rozsah);

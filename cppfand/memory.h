@@ -5,3 +5,4 @@ bool OSshell(pstring Path, string CmdLine, bool NoCancel, bool FreeMm, bool LdFo
 void ClearCacheH(WORD h);
 void* GetZStore(WORD Size);
 bool SaveCache(WORD ErrH);
+

@@ -12,11 +12,16 @@ typedef void* PProcedure;
 
 void wait(); // ø. 95
 
+ExitRecord ExitBuf; // r210
+// tady je stack, snad nepotøebujeme
+WORD BPBound; // r212
+bool ExitP, BreakP;
+
 void NewExit(PProcedure POvr, ExitRecord Buf);  // ø. 218
 
-WORD HandleError;
 
-pstring OldDir, FandDir, WrkDir; // ø. 230
+WORD HandleError; // r229
+pstring OldDir, FandDir, WrkDir;
 pstring FandOvrName, FandResName, FandWorkName, FandWorkXName, FandWorkTName;
 pstring CPath; pstring CDir; pstring CName; pstring CExt;
 pstring CVol;
@@ -44,6 +49,35 @@ void ClearLL(BYTE attr);
 void* FandInt3f; // ø. 311
 WORD OvrHandle, Fand_ss, Fand_sp, Fand_bp, DML_ss, DML_sp, DML_bp;
 const longint _CallDMLAddr = 0; // {passed to FANDDML by setting "DMLADDR="in env.}
+enum TKbdConv { OrigKbd, CsKbd, CaKbd, SlKbd, DtKbd };
+
+struct Spec // r.319
+{
+	BYTE UpdCount;
+	BYTE AutoRprtWidth, AutoRprtLimit, CpLines;
+	bool AutoRprtPrint;
+	bool ChoosePrMsg;
+	bool TxtInsPg;
+	char TxtCharPg;
+	bool ESCverify;
+	bool Prompt158;
+	bool F10Enter;
+	bool RDBcomment;
+	char CPMdrive;
+	WORD RefreshDelay, NetDelay;
+	BYTE LockDelay, LockRetries;
+	bool Beep;
+	bool LockBeepAllowed;
+	WORD XMSMaxKb;
+	bool NoCheckBreak;
+	TKbdConv KbdTyp;
+	bool NoMouseSupport, MouseReverse;
+	BYTE DoubleDelay, RepeatDelay, CtrlDelay;
+	bool OverwrLabeledDisk;
+	WORD ScreenDelay;
+	BYTE OffDefaultYear;
+	bool WithDiskFree;
+};
 
 struct Video // ø. 345
 {
@@ -100,11 +134,26 @@ public:
 	WORD Get(WORD Kod, void* P);
 	pstring* GetStr(WORD Kod);
 };
-struct TMsgIdxItem { WORD Nr, Ofs; BYTE Count; } ;
+struct TMsgIdxItem { WORD Nr, Ofs; BYTE Count; };
 //TMsgIdxItem TMsgIdx[100];
 TResFile ResFile;
 TMsgIdxItem* MsgIdx;// = TMsgIdx;
 WORD MsgIdxN; longint FrstMsgPos;
+
+WORD StackOvr(); // r482
+void NoOvr();
+
+bool CacheLocked = false; // r510
+
+pstring PrTab(WORD N); // r517
+void SetCurrPrinter(integer NewPr); // r524
+void ExitSave(); //535
+void MyExit(); //536
+void WrTurboErr(); // 537
+
+
+
+
 
 // ø. 577
 void OpenWorkH();

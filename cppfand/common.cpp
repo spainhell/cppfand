@@ -9,6 +9,19 @@ void StrLPCopy(char* Dest, pstring s, WORD MaxL)
 	memcpy(Dest, s.c_str(), len);
 }
 
+void AddBackSlash(pstring s)
+{
+	if (s[s.length() - 1] == '\\') return;
+	s += '\\';
+}
+
+void DelBackSlash(pstring s)
+{
+	if (s[s.length() - 1] != '\\') return;
+	s[s.length() - 1] = '\0';
+	s[0] = s.length() - 1;
+}
+
 void SplitDate(double R, WORD& d, WORD& m, WORD& y)
 {
 	WORD i, j;

@@ -13,6 +13,12 @@ public:
 
     unsigned char length();
     unsigned short initLength();
+    void cut(unsigned char length);
+
+    pstring substr(unsigned char index);
+    pstring substr(unsigned char index, unsigned char count);
+
+    void replace(const char* value); // smaže obsah a nahradí jej novou hodnout
 
     const char* c_str();
     bool empty();
@@ -22,8 +28,8 @@ public:
     pstring& operator = (std::basic_string<char> newvalue);
     pstring& operator = (const pstring& pstring);
     operator std::string() const;
-    void operator += (const pstring& pstring);
-    pstring& operator + (const pstring& pstring);
+    pstring& operator += (const pstring& pstring);
+    pstring operator + (const pstring& pstring);
 	bool operator == (const pstring& pstring);
     
 

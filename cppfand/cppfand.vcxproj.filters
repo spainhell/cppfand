@@ -33,6 +33,12 @@
     <ClCompile Include="pstring.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="handle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="drivers.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base.h">

@@ -30,6 +30,12 @@ pstring copy(pstring source, size_t index, size_t count)
 	return result;
 }
 
+void str(int input, pstring& output)
+{
+	std::string a = std::to_string(input);
+	output.replace(a.c_str());
+}
+
 void FSplit(pstring fullname, pstring& dir, pstring& name, pstring& ext)
 {
 	std::string s = fullname;

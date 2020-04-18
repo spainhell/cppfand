@@ -5,6 +5,7 @@
 using namespace std;
 
 void AddBackSlash(pstring s);
+void DelBackSlash(pstring s);
 
 // r37
 bool SEquUpcase(pstring s1, pstring s2);

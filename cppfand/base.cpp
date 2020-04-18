@@ -1,6 +1,9 @@
 #include "base.h"
 
+
+#include "drivers.h"
 #include "handle.h"
+#include "kbdww.h"
 #include "keybd.h"
 #include "legacy.h"
 
@@ -71,6 +74,135 @@ label1:
 		}
 	}
 
+}
+
+WORD StackOvr()
+{
+	/*
+	 procedure StackOvr(NewBP:word);
+	type SF=record BP:word; case byte of 0:(Ret:pointer); 1:(RetOfs:word) end;
+	var p,q:^SF;   pofs:word absolute p; qofs:word absolute q;
+	r,t:^word; rofs:word absolute r; tofs:word absolute t;
+	label 1;
+	begin
+	asm mov p.word,bp; mov p[2].word,ss end; pofs:=p^.BP;
+	while pofs<NewBP do begin r:=p^.ret; pofs:=p^.BP;
+	if (rofs=0) and (r^=$3fcd) then begin
+	q:=ptr(SSeg,NewBP); inc(rofs,2);
+	while qofs<BPBound do begin t:=q^.ret;
+	if (seg(t^)=seg(r^)) and (tofs<>0) then begin
+	   r^:=tofs; q^.retofs:=0; goto 1 end;
+	qofs:=q^.BP end end;
+	1:end;
+	end;
+	 */
+	return 0;
+}
+
+void NoOvr()
+{
+	/*
+		procedure NoOvr; far; assembler;
+		asm   pop ax; pop ax; pop ax{bp}; push ax; push ax; call StackOvr;
+			  pop bp; pop ds; pop ax; pop dx; pop sp; push dx; push ax;
+		end;
+	 */
+}
+
+pstring PrTab(WORD N)
+{
+	/*
+	function PrTab(N:word):string;
+		var p:pointer;
+		begin p:=printer[prCurr].Strg;
+		asm  push ds; cld; lds si,p; les di,@result; mov cx,N; inc cx; xor ax,ax;
+		@1:  add si,ax; lodsb; loop @1;
+			 stosb; mov cx,ax; rep movsb; pop ds end;
+		end;
+		procedure SetCurrPrinter(NewPr:integer);
+		begin
+		  if NewPr>=prMax then exit;
+		  if prCurr>=0 then with printer[prCurr] do if TmOut<>0 then
+			PrTimeOut[Lpti]:=OldPrTimeOut[Lpti];
+		  prCurr:=NewPr;
+		  if prCurr>=0 then with printer[prCurr] do if TmOut<>0 then begin
+			PrTimeOut[Lpti]:=TmOut end;
+		end;
+	 */
+	return pstring();
+}
+
+void SetCurrPrinter(integer NewPr)
+{
+	/*
+	 * if NewPr>=prMax then exit;
+  if prCurr>=0 then with printer[prCurr] do if TmOut<>0 then
+    PrTimeOut[Lpti]:=OldPrTimeOut[Lpti];
+  prCurr:=NewPr;
+  if prCurr>=0 then with printer[prCurr] do if TmOut<>0 then begin
+    PrTimeOut[Lpti]:=TmOut end;
+	 */
+}
+
+void MyExit()
+{
+	pstring s = pstring(9);
+	str(ExitCode, s);
+	SetMsgPar(s);
+	WrLLF10Msg(626);
+	ErrorAddr = nullptr;
+	ExitCode = 0;
+}
+
+void WrTurboErr()
+{
+	// { asm mov ax, SEG @Data; mov ds, ax end; }
+	ExitProc = ExitSave;
+	if (!WasInitPgm) { UnExtendHandles(); goto label1; }
+
+	if (ErrorAddr != nullptr)
+		switch (ExitCode)
+		{
+		case 202: // {stack overflow}
+		{
+			// asm mov sp, ExitBuf.rSP
+			WrLLF10Msg(625);
+			break;
+		}
+		case 209: //{overlay read error}
+			WrLLF10Msg(648);
+			break;
+		default: WrTurboErr(); break;
+		}
+#ifdef FandSQL
+	SQLDisconnect();
+#endif
+
+	UnExtendHandles();
+	DeleteFile(FandWorkName);
+	DeleteFile(FandWorkXName);
+	DeleteFile(FandWorkTName);
+	// TODO? CloseXMS();
+label1: if (WasInitDrivers) {
+	// TODO? DoneMouseEvents();
+	Drivers::CrsIntrDone();
+	Drivers::BreakIntrDone();
+	if (IsGraphMode) {
+		CloseGraph();
+		IsGraphMode = false;
+		// TODO? ScrSeg = video.Address;
+		/*asm  push bp; mov ah,0fH; int 10H; cmp al,StartMode; je @1;
+			 mov ah,0; mov al,StartMode; int 10H;
+		@1:  pop bp end; */
+		Drivers::Window(1, 1, TxtCols, TxtRows);
+		TextAttr = StartAttr;
+		Drivers::ClrScr();
+		Drivers::CrsNorm();
+		ChDir(OldDir);
+		SetCurrPrinter(-1);
+	}
+	if (ExitCode == 202) Halt(202);
+}
 }
 
 void OpenWorkH()

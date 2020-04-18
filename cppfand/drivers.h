@@ -1,5 +1,6 @@
 #pragma once
 #include "constants.h"
+#include "pstring.h"
 
 
 typedef unsigned short WORD;
@@ -29,6 +30,15 @@ struct TEvent
 const bool DemoAutoRd = false; // ø. 82
 pstring KbdBuffer = ""; // ø. 83
 const BYTE LLKeyFlags = 0; // ø. 84
+
+enum VideoCard { viCga, viHercules, viEga, viVga };
+integer GraphDriver, GraphMode;
+WORD ScrSeg, ScrGrSeg;
+BYTE NrVFont, BytesPerChar;
+bool ChkSnow;
+bool IsGraphMode;
+BYTE GrBytesPerChar;
+WORD GrBytesPerLine;
 
 struct Wind { BYTE X, Y; } WindMin, WindMax; // ø. 137
 BYTE TextAttr, StartAttr, StartMode; // ø. 138
@@ -102,14 +112,14 @@ public:
 	bool KbdTimer(WORD Delta, BYTE Kind);
 	void AddToKbdBuf(WORD KeyCode);
 	void BreakIntrInit();
-	void BreakIntrDone();
+	static void BreakIntrDone();
 	void Delay(WORD N);
 	void Sound(WORD N);
 	void NoSound();
 	void LoadVideoFont();
 	static void ScrClr(WORD X, WORD Y, WORD SizeX, WORD SizeY, char C, BYTE Color);
 	static void ScrWrChar(WORD X, WORD Y, char C, BYTE Color);
-	static void ScrWrStr(WORD X, WORD Y, string S, BYTE Color);
+	static void ScrWrStr(WORD X, WORD Y, pstring S, BYTE Color);
 	static void ScrWrFrameLn(WORD X, WORD Y, BYTE Typ, BYTE Width, BYTE Color);
 	void ScrWrBuf(WORD X, WORD Y, WORD Buf, WORD L);
 	void ScrRdBuf(WORD X, WORD Y, WORD Buf, WORD L);
@@ -125,12 +135,12 @@ public:
 	void CrsBig();
 	static void CrsNorm();
 	void CrsIntrInit();
-	void CrsIntrDone();
+	static void CrsIntrDone();
 	static void GotoXY(WORD X, WORD Y);
 	BYTE WhereX();
 	BYTE WhereY();
 	static void Window(BYTE X1, BYTE Y1, BYTE X2, BYTE Y2);
-	void ClrScr();
+	static void ClrScr();
 	void ClrEol();
 	void TextBackGround(BYTE Color);
 	void TextColor(BYTE Color);
@@ -152,7 +162,7 @@ public:
 	void GetEvent();
 	void ClrEvent();
 	WORD AddCtrlAltShift(BYTE Flgs);
-	void AssignCrt(string filepath);
+	void AssignCrt(pstring filepath);
 
 private:
 	WORD AutoTicks, DownTicks, AutoDelay;
@@ -183,7 +193,7 @@ private:
 	void ScrollUp();
 	void LineFeed();
 
-	WORD WrOutput(string F);
-	WORD DummyCrt(string F);
-	WORD OpenCrt(string F);
+	WORD WrOutput(pstring F);
+	WORD DummyCrt(pstring F);
+	WORD OpenCrt(pstring F);
 };

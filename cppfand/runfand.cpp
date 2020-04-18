@@ -105,8 +105,8 @@ void runfand::InitRunFand()
 	}
 
 	// Access
-	// GetIntVec(0x3f, FandInt3f); // toto je vektor pøerušení INT 3fH Overlay a DLL
-	// FillChar(XWork, sizeof(XWork), 0); // celý objekt nulovat nemusíme
+	// GetIntVec(0x3f, FandInt3f); // toto je vektor pøerušení INT 3fH - Overlay a DLL
+	// FillChar(XWork, sizeof(XWork), 0); // celý objekt nulovat nemusíme, snad ...
 	// FillChar(TWork, sizeof(TWork), 0); //  -"-
 	CRdb = nullptr;
 	for (i = 0; i < FloppyDrives; i++) { MountedVol[i] = ""; }
@@ -139,7 +139,7 @@ void runfand::InitRunFand()
 #ifndef FandRunV
 			if (SEquUpcase(paramstr(2), 'D')) {
 				IsTestRun = true;
-				goto 0;
+				goto label0;
 			}
 			else
 #endif

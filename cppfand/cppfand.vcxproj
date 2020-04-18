@@ -150,6 +150,8 @@
     <ClCompile Include="base.cpp" />
     <ClCompile Include="common.cpp" />
     <ClCompile Include="cppfand.cpp" />
+    <ClCompile Include="drivers.cpp" />
+    <ClCompile Include="handle.cpp" />
     <ClCompile Include="legacy.cpp" />
     <ClCompile Include="pstring.cpp" />
     <ClCompile Include="runfand.cpp" />
