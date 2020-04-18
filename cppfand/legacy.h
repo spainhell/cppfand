@@ -13,6 +13,7 @@ pstring copy(pstring source, size_t index, size_t count);
 void str(int input, pstring& output);
 
 void FSplit(pstring fullname, pstring& dir, pstring& name, pstring& ext);
+pstring FSearch(pstring& path, pstring& dirlist);
 pstring FExpand(pstring path);
 
 void ChDir(pstring cesta);
@@ -32,8 +33,8 @@ pstring ParamStr(integer index);
 
 inline void Exit() { return;; }
 
-inline void RunError(WORD c) { exit(c); }
-inline void Halt(WORD c) { exit(c); }
+inline void RunError(WORD code) { exit(code); }
+inline void Halt(WORD code) { exit(code); }
 
 void FillChar(char* cil, WORD delka, char vypln);
 void Move(void* zdroj, void* cil, WORD delka);

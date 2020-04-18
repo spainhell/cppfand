@@ -148,9 +148,10 @@ const BYTE WPushPixel = 0x04;
 const BYTE WNoPop = 0x08;
 const BYTE WHasFrame = 0x10;
 const BYTE WDoubleFrame = 0x20;
-// ø. 226
-enum FileOpenMode { _isnewfile, _isoldfile, _isoverwritefile, _isoldnewfile };
-
+// r226
+enum FileOpenMode { _isnewfile, _isoldfile, _isoverwritefile, _isoldnewfile }; // poradi se nesmi zmenit!!!
+// r228
+enum FileUseMode { Closed, RdOnly, RdShared, Shared, Exclusive }; // poradi se nesmi zmenit!!!
 
 // ********** COMMON.PAS ********** - ø. 11 - 14
 const longint UserLicNr = 999001; // 160188

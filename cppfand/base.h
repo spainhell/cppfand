@@ -77,7 +77,7 @@ struct Spec // r.319
 	WORD ScreenDelay;
 	BYTE OffDefaultYear;
 	bool WithDiskFree;
-};
+} spec;
 
 struct Video // ø. 345
 {

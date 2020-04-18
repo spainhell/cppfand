@@ -23,7 +23,7 @@ const WORD XPageSize = 1024;
 const BYTE f_Stored = 1; const BYTE f_Encryp = 2; // {FieldD flags}
 const BYTE f_Mask = 4; const BYTE f_Comma = 8; // {FieldD flags}
 
-enum FileUseMode { Closed, RdOnly, RdShared, Shared, Exclusive };
+
 enum LockMode { NullMode, NoExclMode, NoDelMode, NoCrMode, RdMode, WrMode, CrMode, DelMode, ExclMode };
 
 typedef char PwCodeArr[20];

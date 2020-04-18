@@ -147,7 +147,7 @@ public:
 	void InsLine();
 	void DelLine();
 	void beep();
-	void LockBeep();
+	static void LockBeep();
 	void ScrBeep();
 	void InitMouseEvents();
 	void DoneMouseEvents();

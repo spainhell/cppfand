@@ -2,61 +2,72 @@
 
 #include "handle.h"
 
+
+#include <errhandlingapi.h>
+#include <fileapi.h>
+
+
 #include "common.h"
+#include "drivers.h"
+#include "kbdww.h"
+#include "keybd.h"
 #include "legacy.h"
 #include "memory.h"
 
 
-bool IsHandle(WORD H)
+bool IsHandle(filePtr H)
 {
-	return H != 0xFF && (Handles.count(H) > 0);
+	if (H == nullptr) return false;
+	return Handles.count(H) > 0;
 }
 
-bool IsUpdHandle(WORD H)
+bool IsUpdHandle(filePtr H)
 {
-	return H != 0xFF && UpdHandles.count(H) > 0;
+	if (H == nullptr) return false;
+	return UpdHandles.count(H) > 0;
 }
 
-bool IsFlshHandle(WORD H)
+bool IsFlshHandle(filePtr H)
 {
-	return H != 0xFF && FlshHandles.count(H) > 0;
+	if (H == nullptr) return false;
+	return FlshHandles.count(H) > 0;
 }
 
-void SetHandle(WORD H)
+void SetHandle(filePtr H)
 {
-	if (H == 0xFF) return;
+	if (H == nullptr) return;
 	Handles.insert(H);
 	CardHandles++;
 }
 
-void SetUpdHandle(WORD H)
+void SetUpdHandle(filePtr H)
 {
-	if (H == 0xFF) return;
+	if (H == nullptr) return;
 	UpdHandles.insert(H);
 }
 
-void SetFlshHandle(WORD H)
+void SetFlshHandle(filePtr H)
 {
-	if (H == 0xFF) return;
+	if (H == nullptr) return;
 	FlshHandles.insert(H);
 }
 
-void ResetHandle(WORD H)
+void ResetHandle(filePtr H)
 {
-	if (H == 0xFF) return;
+	if (H == nullptr) return;
 	Handles.erase(H);
 	CardHandles--;
 }
 
-void ResetUpdHandle(WORD H)
+void ResetUpdHandle(filePtr H)
 {
-	if (H == 0xFF) return;
+	if (H == nullptr) return;
 	UpdHandles.erase(H);
 }
 
-void ResetFlshHandle(WORD H)
+void ResetFlshHandle(filePtr H)
 {
-	if (H == 0xFF) return;
+	if (H == nullptr) return;
 	FlshHandles.erase(H);
 }
 
@@ -95,7 +106,7 @@ void UnExtendHandles()
 	// zavøe všechny otevøené soubory, pøesune zpìt NewHT do Old... promìnných
 }
 
-WORD OpenH(FileOpenMode Mode, FileUseMode UM)
+filePtr OpenH(FileOpenMode Mode, FileUseMode UM)
 {
 	// $3C vytvoøí nebo pøepíše soubor
 	// $3D otevírá exitující soubor
@@ -106,45 +117,130 @@ WORD OpenH(FileOpenMode Mode, FileUseMode UM)
 	//
 	// pøi 'IsNetCVol' se chová jinak
 	// RdOnly $20, RdShared $40, Shared $42, Exclusive $12
+
+	pstring s;
+
+	string txt[] = { "Clos", "OpRd", "OpRs", "OpSh", "OpEx" };
+
+	pstring path = CPath;
+	if (CardHandles == files) RunError(884);
+	longint w = 0;
+	pstring openFlags(5);
+label1:
+	switch (Mode) {
+	case _isoldfile:
+	case _isoldnewfile:
+	{
+		openFlags = UM == RdOnly ? "rb" : "r+b";
+		break;
+	}
+	case _isoverwritefile:
+	{
+		openFlags = "w+b";
+		break;
+	}
+	case _isnewfile:
+	{
+		openFlags = UM == RdOnly ? "rb" : "r+b";
+		break;
+	}
+	}
+
+	filePtr nFile = nullptr;
+	HandleError = fopen_s(&nFile, path.c_str(), openFlags.c_str());
+
+	// https://docs.microsoft.com/en-us/cpp/c-runtime-library/errno-doserrno-sys-errlist-and-sys-nerr?view=vs-2019
+	if (IsNetCVol() && (HandleError == EACCES || HandleError == ENOLCK))
+	{
+		if (w == 0)
+		{
+			Set2MsgPar(path, txt[UM]);
+			w = PushWrLLMsg(825, false);
+		}
+		Drivers::LockBeep();
+		KbdTimer(spec.NetDelay, 0);
+		goto label1;
+	}
+
+	if (HandleError == 0)
+	{
+		SetHandle(nFile);
+		if (Mode != _isoldfile) SetUpdHandle(nFile);
+	}
+
+	else if (HandleError == ENOENT) // No such file or directory
+	{
+		if (Mode == _isoldnewfile)
+		{
+			Mode = _isnewfile;
+			goto label1;
+		}
+	}
+	if (w != 0) PopW(w);
+
+	return nFile;
 }
 
-WORD ReadH(WORD handle, WORD bytes, void* buffer)
+WORD ReadH(filePtr handle, WORD bytes, void* buffer)
 {
-	if (handle == 0xff) RunError(706);
-
+	return ReadH(handle, bytes, buffer);
 	// read from file INT
 	// bytes - poèet byte k pøeètení
 	// vrací - poèet skuteènì pøeètených
-	
-	return 0;
 }
 
-WORD ReadLongH(WORD handle, longint bytes, void* buffer)
+WORD ReadLongH(filePtr handle, longint bytes, void* buffer)
 {
-	return ReadH(handle, bytes, buffer);
+	if (handle == nullptr) RunError(706);
+	if (bytes <= 0) return 0;
+	auto readed = fread_s(buffer, bytes, 1, bytes, handle);
+	if (readed != static_cast<unsigned int>(bytes))
+	{
+		// nebyl naèten požadovaný poèet B
+		auto eofReached = feof(handle);
+		HandleError = ferror(handle);
+	}
+	return WORD(readed);
 }
 
-
-longint MoveH(longint dist, WORD method, WORD handle)
+void WriteH(filePtr handle, WORD bytes, void* buffer)
 {
+	WriteLongH(handle, bytes, buffer);
+}
+
+void WriteLongH(filePtr handle, longint bytes, void* buffer)
+{
+	if (handle == nullptr) RunError(706);
+	if (bytes <= 0) return;
+	// uloží do souboru daný poèet Bytù z bufferu
+	fwrite(buffer, 1, bytes, handle);
+	HandleError = ferror(handle);
+}
+
+longint MoveH(longint dist, WORD method, filePtr handle)
+{
+	if (handle == nullptr) return -1;
 	// dist - hodnota offsetu
 	// method: 0 - od zacatku, 1 - od aktualni, 2 - od konce
 	// handle - file handle
-	return -1;
+	HandleError = fseek(handle, dist, method);
+	return ftell(handle);
 }
 
-longint PosH(WORD handle)
+longint PosH(filePtr handle)
 {
-	return MoveH(0, 1, handle);
+	const auto result = ftell(handle);
+	HandleError = ferror(handle);
+	return static_cast<longint>(result);
 }
 
-void SeekH(WORD handle, longint pos)
+void SeekH(filePtr handle, longint pos)
 {
-	if (handle == 0xff) RunError(705);
+	if (handle == nullptr) RunError(705);
 	MoveH(pos, 0, handle);
 }
 
-longint FileSizeH(WORD handle)
+longint FileSizeH(filePtr handle)
 {
 	longint pos = PosH(handle);
 	auto result = MoveH(0, 2, handle);
@@ -152,22 +248,22 @@ longint FileSizeH(WORD handle)
 	return result;
 }
 
-void TruncH(WORD handle, longint N)
+void TruncH(filePtr handle, longint N)
 {
 	// posune se na pozici N a nic na ni nezapíše? WTF?
-	if (handle == 0xff) return;
+	if (handle == nullptr) return;
 	if (FileSizeH(handle) > N) {
 		SeekH(handle, N);
-		WriteH(handle, 0, (void*)&"");
+		SetEndOfFile(handle);
 	}
 }
 
-void CloseClearH(WORD& h)
+void CloseClearH(filePtr h)
 {
-	if (h == 0xFF) return;
+	if (h == nullptr) return;
 	CloseH(h);
 	ClearCacheH(h);
-	h = 0xFF;
+	h = nullptr;
 }
 
 void SetFileAttr(WORD Attr)
@@ -175,38 +271,36 @@ void SetFileAttr(WORD Attr)
 	// nastaví atributy souboru/adresáøe
 	// 0 = read only, 1 = hidden file, 2 = system file, 3 = volume label, 4 = subdirectory,
 	// 5 = written since backup, 8 = shareable (Novell NetWare)
+	if (SetFileAttributesA(CPath.c_str(), Attr)== 0)
+	{
+		HandleError = GetLastError();
+	}
 }
 
 WORD GetFileAttr()
 {
 	// získá atributy souboru/adresáøe
-	return 0;
+	auto result = GetFileAttributesA(CPath.c_str());
+	if (result == INVALID_FILE_ATTRIBUTES) HandleError = GetLastError();
 }
 
-void RdWrCache(bool ReadOp, WORD Handle, bool NotCached, longint Pos, WORD N, void* Buf)
+void RdWrCache(bool ReadOp, filePtr Handle, bool NotCached, longint Pos, WORD N, void* Buf)
 {
+	if (Handle == nullptr) return;
 	// asi netøeba øešit
 	return;
 }
 
-void WriteH(WORD handle, WORD bytes, void* buffer)
+void CloseH(filePtr handle)
 {
-	if (handle == 0xff) RunError(706);
-	// uloží do souboru daný poèet Bytù z bufferu
-}
-
-void WriteLongH(WORD handle, longint bytes, void* buffer)
-{
-	WriteH(handle, bytes, buffer);
-}
-
-void CloseH(WORD handle)
-{
+	if (handle == nullptr) return;
 	// uzavøe soubor
+	HandleError = fclose(handle);
 }
 
-void FlushH(WORD handle)
+void FlushH(filePtr handle)
 {
+	if (handle == nullptr) return;
 	// k èemu to všechno?
 	// zažádá o nový handle N
 	// zavolá SetHandle(N); SetUpdHandle(H); CloseH(H);
@@ -214,31 +308,39 @@ void FlushH(WORD handle)
 
 void FlushHandles()
 {
-	if (CardHandles == files) return;
-	for (int i=0; i<files; i++)
-	{
-		if (IsUpdHandle(i) || IsFlshHandle(i)) FlushH(i);
-	}
-	ClearUpdHandles();
-	ClearFlshHandles();
+	//if (CardHandles == files) return;
+	//for (int i = 0; i < files; i++)
+	//{
+	//	if (IsUpdHandle(i) || IsFlshHandle(i)) FlushH(i);
+	//}
+	//ClearUpdHandles();
+	//ClearFlshHandles();
 }
 
-longint GetDateTimeH(WORD handle)
+longint GetDateTimeH(filePtr handle)
 {
+	if (handle == nullptr) return;
 	// vrátí èas posledního zápisu souboru + datum posledního zápisu souboru
 	// 2 + 2 Byte (datum vlevo, èas vpravo)
-	return 0;
+	FILETIME ft;
+	auto result = GetFileTime(handle, nullptr, nullptr, &ft);
+	if (result == 0) HandleError = GetLastError();
+	return (ft.dwHighDateTime << 16) + ft.dwLowDateTime;
 }
 
 void DeleteFile(pstring path)
 {
 	// smaže soubor - INT $41
+	auto result = remove(path.c_str());
+	if (result != 0) HandleError = result;
 }
 
 void RenameFile56(pstring OldPath, pstring NewPath, bool Msg)
 {
 	// pøesouvá nebo pøejmenovává soubor
 	// potom:
+	auto result = rename(OldPath.c_str(), NewPath.c_str());
+	if (result != 0) HandleError = result;
 	if (Msg && HandleError != 0)
 	{
 		Set2MsgPar(OldPath, NewPath);
@@ -257,8 +359,10 @@ pstring MyFExpand(pstring Nm, pstring EnvName)
 	AddBackSlash(p);
 	if (!p.empty()) p += Nm;
 	else {
-		p = FSearch(Nm, GetEnv("PATH"));
-		if (p.empty()) p = Nm; 
+		char* env = GetEnv("PATH");
+		pstring envps = pstring(env);
+		p = FSearch(Nm, envps);
+		if (p.empty()) p = Nm;
 	}
 	ChDir(d);
 	return p;
