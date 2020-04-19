@@ -3,7 +3,9 @@
 #include "fileacc.h"
 
 void ReadRec(longint N);
-string _ShortS(FieldDPtr F);
-string _LongS(FieldDPtr F);
+pstring _ShortS(FieldDPtr F);
+LongStr* _LongS(FieldDPtr F); // r191
 bool IsNullValue(void* pointer, WORD l);
 
+
+longint _T(FieldDescr* F); // r255

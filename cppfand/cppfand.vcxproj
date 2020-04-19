@@ -147,19 +147,25 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="access.cpp" />
     <ClCompile Include="base.cpp" />
     <ClCompile Include="common.cpp" />
     <ClCompile Include="cppfand.cpp" />
     <ClCompile Include="drivers.cpp" />
+    <ClCompile Include="fileacc.cpp" />
     <ClCompile Include="handle.cpp" />
     <ClCompile Include="kbdww.cpp" />
     <ClCompile Include="keybd.cpp" />
     <ClCompile Include="legacy.cpp" />
+    <ClCompile Include="oaccess.cpp" />
     <ClCompile Include="obaseww.cpp" />
     <ClCompile Include="pstring.cpp" />
+    <ClCompile Include="recacc.cpp" />
     <ClCompile Include="runfand.cpp" />
+    <ClCompile Include="runfrml.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="access.h" />
     <ClInclude Include="base.h" />
     <ClInclude Include="common.h" />
     <ClInclude Include="constants.h" />

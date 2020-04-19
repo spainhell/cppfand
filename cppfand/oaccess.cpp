@@ -63,7 +63,7 @@ void OpenFANDFiles(bool FromDML)
 bool OpenF(FileUseMode UM)
 {
 	bool result = true;
-	if (CFile->Handle != 0xFF) { exit(0); }
+	if (CFile->Handle != nullptr) { exit(0); }
 	if (OpenF1(UM))
 	{
 		if (
@@ -106,13 +106,13 @@ void TruncF()
 void CloseFile()
 {
 	//with CFile^ do {
-	if (CFile->Handle == 0xFF) exit(0);
+	if (CFile->Handle == nullptr) exit(0);
 	if (CFile->IsShared()) OldLMode(NullMode);
 	else WrPrefixes();
 	SaveCache(0);
 	TruncF();
 	if (CFile->Typ == 'X')  /*with XF^*/
-		if (CFile->XF->Handle != 0xFF) {
+		if (CFile->XF->Handle != nullptr) {
 			CloseClearH(CFile->Handle);
 			if (!CFile->IsShared())
 			{
@@ -126,26 +126,26 @@ void CloseFile()
 				}
 			}
 			if (CFile->TF != nullptr)  /*with TF^*/
-				if (CFile->TF->Handle != 0xFF) {
+				if (CFile->TF->Handle != nullptr) {
 					CloseClearH(CFile->TF->Handle);
-					if ((!CFile->IsShared) && (CFile->NRecs == 0) && (CFile->Typ != 'D')) {
+					if ((!CFile->IsShared()) && (CFile->NRecs == 0) && (CFile->Typ != 'D')) {
 						SetCPathVol();
 						CExtToT();
 						DeleteFile(CPath);
 					}
 				}
 			CloseClearH(CFile->Handle); CFile->LMode = NullMode;
-			if (!CFile->IsShared && (CFile->NRecs == 0) && (CFile->Typ != 'D')) {
+			if (!CFile->IsShared() && (CFile->NRecs == 0) && (CFile->Typ != 'D')) {
 				SetCPathVol();
 				DeleteFile(CPath);
 			}
 			if (CFile->WasRdOnly) {
 				CFile->WasRdOnly = false;
 				SetCPathVol();
-				SetFileAttr((GetFileAttr && 0x27) || 0x01); // {RdONly; }
+				SetFileAttr((GetFileAttr() & 0x27) | 0x01); // {RdONly; }
 				if (CFile->TF != nullptr) {
 					CExtToT();
-					SetFileAttr((GetFileAttr && 0x27) || 0x1); //  {RdONly; }
+					SetFileAttr((GetFileAttr() & 0x27) | 0x1); //  {RdONly; }
 				}
 			}
 
@@ -159,12 +159,12 @@ string RdCatField(WORD CatIRec, FieldDPtr CatF)
 	CF = CFile; CR = CRecPtr; CFile = CatFD;
 	CRecPtr = GetRecSpace();
 	ReadRec(CatIRec);
-	auto result = runfrml::TrailChar(' ', _shorts(CatF));
+	auto result = runfrml::TrailChar(' ', _ShortS(CatF));
 	ReleaseStore(CRecPtr); CFile = CF; CRecPtr = CR;
 	return result;
 }
 
-bool SetContextDir(DirStr D, bool& IsRdb)
+bool SetContextDir(pstring& D, bool& IsRdb)
 {
 	RdbDPtr R; FileDPtr F;
 
@@ -194,7 +194,7 @@ bool SetContextDir(DirStr D, bool& IsRdb)
 
 void GetCPathForCat(WORD I)
 {
-	DirStr d;
+	pstring d;
 	bool isRdb;
 
 	CVol = RdCatField(I, CatVolume);
@@ -222,7 +222,7 @@ void SetCPathVol()
 
 	CVol = "";
 	if (CFile->Typ == 'C') {
-		CDir = getenv("FANDCAT");
+		CDir = GetEnv("FANDCAT");
 		if (CDir == "") {
 			if (TopDataDir == "") CDir = TopRdbDir;
 			else CDir = TopDataDir;

@@ -2,12 +2,13 @@
 
 #include "legacy.h"
 #include "memory.h"
+#include "runfrml.h"
 
-string _ShortS(FieldDPtr F)
+pstring _ShortS(FieldDPtr F)
 {
 	// TODO:
-	void* P; WORD* POfs = (WORD*)P; /*absolute P;*/
-	string S; LongStrPtr ss; WORD l;
+	void* P = nullptr; WORD* POfs = (WORD*)P; /*absolute P;*/
+	pstring S; LongStrPtr ss; WORD l;
 	if (F->Flg && f_Stored != 0) {
 		l = F->L; S[0] = char(l);
 		P = CRecPtr;
@@ -17,17 +18,21 @@ string _ShortS(FieldDPtr F)
 		case 'N': {
 			if (F->Typ == 'A') {
 				Move(P, &S[1], l);
-				if (F->Flg && f_Encryp != 0) Code(S[1], l);
-				if (IsNullValue(&S[2], l)) FillChar(&S[0], l, ' ');
+				if (F->Flg && f_Encryp != 0) Code(&S[1], l);
+				if (IsNullValue(&S[2], l)) FillChar((char*)S[0], l, ' ');
 			}
-			else if (IsNullValue(P, F->NBytes)) FillChar(&S[0], l, ' ');
-			else UnPack(P, (WORD*)S[0], l);
+			else if (IsNullValue(P, F->NBytes)) FillChar((char*)S[0], l, ' ');
+			else
+			{
+				// nebudeme volat, zøejmìní není potøeba
+				// UnPack(P, (WORD*)S[0], l);
+			}
 			break;
 		}
 		case 'T': {
-			ss = &_LongS(F);
-			if (ss->length() > 255) S = S.substr(0, 255);
-			else S = S.substr(0, ss->length());
+			ss = _LongS(F);
+			if (ss->LL > 255) S = S.substr(0, 255);
+			else S = S.substr(0, ss->LL);
 			Move(&ss[0], &S[0], S.length());
 			ReleaseStore(ss);
 			break; };
@@ -35,22 +40,22 @@ string _ShortS(FieldDPtr F)
 		}
 		return S;
 	}
-	return RunShortStr(F->Frml);
+	return runfrml::RunShortStr(F->Frml);
 }
 
-string _LongS(FieldDPtr F)
+LongStr* _LongS(FieldDPtr F)
 {
-
-	void* P;
+	void* P = nullptr;
 	WORD* POfs = (WORD*)P;
 	//LP ^longint absolute P;
-	LongStrPtr S; longint Pos; integer err; LockMode md; WORD l;
+	LongStrPtr S = nullptr; longint Pos; integer err; LockMode md; WORD l;
 	{
 		if (F->Flg && f_Stored != 0) {
 			P = CRecPtr; POfs += F->Displ; l = F->L;
 			switch (F->Typ)
 			{
-			case 'A': case 'N': { S = GetStore(l + 2);
+			case 'A': case 'N': {
+				S = (LongStr*)GetStore(l + 2);
 				S->LL = l;
 				if (F->Typ == 'A') {
 					Move(P, &S[0], l);
@@ -61,27 +66,55 @@ string _LongS(FieldDPtr F)
 					S->LL = 0;
 					ReleaseAfterLongStr(S);
 				}
-				else Unpack(P^, S->A, l);
+				else
+				{
+					// nebudeme volat, zøejmìní není potøeba
+					// UnPack(P, S->A, l);
+				}
 				break;
 			}
 			case 'T': {
-				if (HasTWorkFlag) S = TWork.Read(1, _t(F));
+				if (HasTWorkFlag()) S = TWork.Read(1, _T(F));
 				else {
 					md = NewLMode(RdMode);
-					S = CFile->TF->Read(1, _t(F));
+					S = CFile->TF->Read(1, _T(F));
 					OldLMode(md);
 				}
 				if (F->Flg && f_Encryp != 0) Code(S->A, S->LL);
-				if (IsNullValue(@S->A, S->LL))
+				if (IsNullValue(&S->A, S->LL))
 				{
 					S->LL = 0;
 					ReleaseAfterLongStr(S);
 				}
 				break; }
 			}
-			return *S;
+			return S;
 		}
-		return RunLongStr(F->Frml);
+		return runfrml::RunLongStr(F->Frml);
 	};
 
+}
+
+/// nechápu, co to dìlá - oøeže úvodní znaky, pøevádí na èíslo, ...
+longint _T(FieldDescr* F)
+{
+	void* p; longint n; integer err;
+	WORD* O = (WORD*)&p;
+
+	p = CRecPtr;
+	O += F->Displ;
+	if (CFile->Typ == 'D')
+	{
+		n = 0;
+		// tváøíme se, že CRecPtr je pstring ...
+		pstring* s = (pstring*)CRecPtr;
+		auto result = stoi(runfrml::LeadChar(' ', *s));
+		return result;
+	}
+	else
+	{
+		if (IsNullValue(p, 4)) return 0;
+		longint* lip = (longint*)p;
+		return *lip;
+	}
 }

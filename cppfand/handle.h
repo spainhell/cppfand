@@ -1,9 +1,8 @@
 #pragma once
-#include <map>
 #include <set>
 
-#include "access.h"
 #include "base.h"
+#include "pstring.h"
 #include "constants.h"
 
 WORD OldNumH; // r1 
@@ -17,13 +16,13 @@ WORD CardHandles;
 
 typedef FILE* filePtr;
 
-set<FILE*> Handles;
-set<FILE*> UpdHandles;
-set<FILE*> FlshHandles;
+std::set<FILE*> Handles;
+std::set<FILE*> UpdHandles;
+std::set<FILE*> FlshHandles;
 
 //map<WORD, FILE*> fileMap;
 // náhrada za 'WORD OvrHandle = h - 1' - zjištìní pøedozího otevøeného souboru;
-vector<FILE*> vOverHandle = vector<FILE*>(files);
+std::vector<FILE*> vOverHandle = std::vector<FILE*>(files);
 FILE* GetOverHandle(FILE* fptr, int diff);
 
 void SetRes(WORD FLAGS, WORD AX); // r11 - toto je spec. MSDOS registers, flags

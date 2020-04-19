@@ -43,8 +43,8 @@ void WrPrefix()
 
 void WrDBaseHd()
 {
-	DBaseHd* P;
-	char* PA = (char*)P; // PA:CharArrPtr absolute P;
+	DBaseHd* P = nullptr;
+	
 	FieldDPtr F;
 	WORD n, y, m, d, w;
 	string s;
@@ -52,6 +52,7 @@ void WrDBaseHd()
 	const char CtrlZ = '\x1a';
 
 	P = (DBaseHd*)GetZStore(CFile->FrstDispl);
+	char* PA = (char*)&P; // PA:CharArrPtr absolute P;
 	F = CFile->FldD;
 	n = 0;
 	while (F != nullptr) {
@@ -71,7 +72,7 @@ void WrDBaseHd()
 				actual.Len = F->NBytes;
 				actual.Displ = F->Displ;
 				s = F->Name;
-				for (int i = 1; i < s.length(); i++) s[i] = toupper(s[i]);
+				for (size_t i = 1; i < s.length(); i++) s[i] = toupper(s[i]);
 				StrLPCopy(actual.Name, s, 11);
 			}
 		}
@@ -87,9 +88,9 @@ void WrDBaseHd()
 
 		P->RecLen = CFile->RecLen;
 		SplitDate(Today(), d, m, y);
-		P->Date[1] = y - 1900;
-		P->Date[2] = m;
-		P->Date[3] = d;
+		P->Date[1] = BYTE(y - 1900);
+		P->Date[2] = (BYTE)m;
+		P->Date[3] = (BYTE)d;
 		P->NRecs = CFile->NRecs;
 		P->HdLen = CFile->FrstDispl;
 		PA[(P->HdLen / 32) * 32 + 1] = m;
@@ -111,7 +112,7 @@ void WrPrefixes()
 	WrPrefix(); /*with CFile^ do begin*/
 	if (CFile->TF != nullptr && IsUpdHandle(CFile->TF->Handle))
 		CFile->TF->WrPrefix();
-	if (CFile->Typ == 'X' && (CFile->XF)->Handle != 0xff
+	if (CFile->Typ == 'X' && (CFile->XF)->Handle != nullptr
 		&& /*{ call from CopyDuplF }*/ (IsUpdHandle(CFile->XF->Handle) || IsUpdHandle(CFile->Handle)))
 		CFile->XF->WrPrefix();
 }

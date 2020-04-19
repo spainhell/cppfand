@@ -1,10 +1,11 @@
 #pragma once
 
-#include <string>
+//#include <string>
+#include "base.h"
 #include "constants.h"
-#include "fanddml.h"
 #include "runfand.h"
 
+struct FrmlListEl;
 class XFile;
 struct FrmlElem;
 struct LocVar;
@@ -19,12 +20,15 @@ struct FieldDescr;
 using namespace std;
 
 // ********** CONST **********
-const WORD XPageSize = 1024;
+const BYTE LeftJust = 1; // {RightJust=0  coded in M for Typ='N','A'}
+const BYTE Ascend = 0; const BYTE Descend = 6; // {used in SortKey}
+const WORD XPageSize = 1024; const BYTE XPageOverHead = 7; const BYTE MaxIndexLen = 123; //{ min.4 items };
+const BYTE oLeaf = 3; const BYTE oNotLeaf = 7;
 const BYTE f_Stored = 1; const BYTE f_Encryp = 2; // {FieldD flags}
 const BYTE f_Mask = 4; const BYTE f_Comma = 8; // {FieldD flags}
 
-
 enum LockMode { NullMode, NoExclMode, NoDelMode, NoCrMode, RdMode, WrMode, CrMode, DelMode, ExclMode };
+pstring LockModeTxt[9] = { "NULL", "NOEXCL","NODEL","NOCR","RD","WR","CR","DEL","EXCL" };
 
 typedef char PwCodeArr[20];
 
@@ -33,6 +37,13 @@ typedef XKey KeyD;
 typedef FuncD* FuncDPtr;
 typedef XWKey* WKeyDPtr;
 
+
+struct FieldListEl // r32
+{
+	FrmlListEl* Chain;
+	FieldDescr* FldD;
+};
+typedef FieldListEl* FieldList;
 
 struct FrmlListEl // ø. 34
 {
@@ -141,7 +152,7 @@ typedef AddD* AddDPtr;
 class TFile // ø. 147
 {
 public:
-	WORD Handle;
+	FILE* Handle;
 	longint FreePart;
 	bool Reserved, CompileProc, CompileAll;
 	WORD IRec;
@@ -164,7 +175,7 @@ public:
 	longint NewPage(bool NegL);
 	void ReleasePage(longint PosPg);
 	void Delete(longint Pos);
-	string* Read(WORD StackNr, longint Pos);
+	LongStr* Read(WORD StackNr, longint Pos);
 	longint Store(string& S);
 };
 typedef TFile* TFilePtr;
@@ -179,7 +190,7 @@ public:
 	longint NRecs;
 	bool WasWrRec, WasRdOnly, Eof;
 	char Typ;        // 8=Fand 8;6=Fand 16;X= .X; 0=RDB; C=CAT 
-	WORD Handle;
+	FILE* Handle;
 	longint IRec;
 	WORD FrstDispl;
 	TFile* TF;
@@ -207,7 +218,7 @@ typedef FileD* FileDPtr;
 
 struct DBaseFld // ø. 208
 {
-	string Name;
+	pstring Name;
 	char Typ;
 	longint Displ;
 	BYTE Len, Dec;
@@ -231,7 +242,7 @@ struct LinkD // ø. 220
 	KeyFldD* Args;
 	FileDPtr FromFD, ToFD;
 	KeyDPtr ToKey;
-	string RoleName;
+	pstring RoleName;
 };
 typedef LinkD* LinkDPtr;
 
@@ -247,7 +258,7 @@ struct FuncD // ø. 233
 	char FTyp;
 	LocVarBlkD LVB; // {1.LV is result}
 	void* Instr; // {InstrPtr}
-	string Name;
+	pstring Name;
 };
 
 struct LocVar // ø. 239
@@ -257,7 +268,7 @@ struct LocVar // ø. 239
 	char FTyp;
 	FileD* FD;
 	void* RecPtr;
-	string Name;
+	pstring Name;
 	char Op;
 	WORD BPOfs;
 	bool IsRetPar;
@@ -276,12 +287,17 @@ struct RdbD // ø. 243
 };
 typedef RdbD* RdbDPtr;
 
+struct WRectFrml // r251
+{
+	FrmlPtr C1, R1, C2, R2;
+};
+
 class XString // ø. 254
 {
-	string S; // S:string255;
+	pstring S; // S:string255;
 	void Clear();
 	void StoreReal(double R, KeyFldD* KF);
-	void StoreStr(string V, KeyFldD* KF);
+	void StoreStr(pstring V, KeyFldD* KF);
 	void StoreBool(bool B, KeyFldD* KF);
 	void StoreKF(KeyFldD* KF);
 	void PackKF(KeyFldD* KF);
@@ -318,7 +334,7 @@ class XPage // ø. 289
 	WORD EndOff();
 	bool Underflow();
 	bool Overflow();
-	string StrI(WORD I);
+	pstring StrI(WORD I);
 	longint SumN();
 	void Insert(WORD I, void* SS, XItem* XX);
 	void InsDownIndex(WORD I, longint Page, XPage* P);
@@ -346,7 +362,7 @@ public:
 	longint PathToRecNr();
 	bool RecNrToPath(XString& XX, longint RecNr);
 	longint NrToRecNr(longint I);
-	string NrToStr(longint I);
+	pstring NrToStr(longint I);
 	longint RecNrToNr(longint RecNr);
 	bool FindNr(XString& X, longint& IndexNr);
 	void InsertOnPath(XString& XX, longint RecNr);
@@ -373,7 +389,8 @@ class XWFile // ø. 345
 {
 public:
 	XWFile();
-	WORD UpdLockCnt, Handle;
+	WORD UpdLockCnt;
+	FILE* Handle;
 	longint FreeRoot, MaxPage;
 	void Err(WORD N);
 	void TestErr();
@@ -412,7 +429,7 @@ pstring CatFDName;
 RdbDPtr CRdb, TopRdb;
 FileDPtr CatFD, HelpFD;
 
-// ø. 483
+// r483
 struct { longint Page; WORD I; } XPath[10];
 WORD XPathN;
 XWFile XWork;
@@ -421,12 +438,14 @@ const longint ClpBdPos = 0;
 bool IsTestRun = false;
 bool IsInstallRun = false;
 
-// ø. 497
-const BYTE FloppyDrives = 3;
+const BYTE FloppyDrives = 3; // r497
 
-// ø. 517
-FieldDPtr CatRdbName, CatFileName, CatArchiv, CatPathName, CatVolume;
+FieldDPtr CatRdbName, CatFileName, CatArchiv, CatPathName, CatVolume; // r517
 pstring MountedVol[FloppyDrives];
 
-void* GetRecSpace(); // ø. 739
+void* GetRecSpace(); // r739
+bool HasTWorkFlag(); // r752 ASM
+
+void Code(void* A, WORD L); // r897
+void XDecode(LongStrPtr S); // r903
 

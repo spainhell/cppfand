@@ -1,12 +1,9 @@
 #include "base.h"
-
-
 #include "drivers.h"
 #include "handle.h"
 #include "kbdww.h"
 #include "keybd.h"
 #include "legacy.h"
-
 
 void SetMsgPar(pstring s)
 {

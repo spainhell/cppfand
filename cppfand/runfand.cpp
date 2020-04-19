@@ -109,7 +109,7 @@ void runfand::InitRunFand()
 	// FillChar(XWork, sizeof(XWork), 0); // celý objekt nulovat nemusíme, snad ...
 	// FillChar(TWork, sizeof(TWork), 0); //  -"-
 	CRdb = nullptr;
-	for (i = 0; i < FloppyDrives; i++) { MountedVol[i] = ""; }
+	for (int i = 0; i < FloppyDrives; i++) { MountedVol[i] = ""; }
 	// Ww
 	wwmix::ss.Empty = true;
 	wwmix::ss.Pointto = nullptr;
