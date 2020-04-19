@@ -16,15 +16,21 @@ struct TPoint
 	WORD Y;
 };
 
+enum Events { evMouse, evKeyDown};
+
 struct TEvent
 {
-	WORD What;
+	Events What;
 	WORD KeyCode;
 	WORD Buttons;
 	TPoint Where;
 	TPoint WhereG;
 	TPoint From;
 };
+
+TEvent Event; // r39
+WORD KbdChar;
+BYTE KbdFlgs; // TODO: absolute $417
 
 // ******** Konstanty *********
 const bool DemoAutoRd = false; // ø. 82
@@ -40,8 +46,18 @@ bool IsGraphMode;
 BYTE GrBytesPerChar;
 WORD GrBytesPerLine;
 
-struct Wind { BYTE X, Y; } WindMin, WindMax; // ø. 137
-BYTE TextAttr, StartAttr, StartMode; // ø. 138
+const BYTE MaxTxtCols = 132; // r132 {the best adapter}
+const BYTE EventQSize = 16;
+const bool BGIReload = true;
+TPoint LastWhere, LastWhereG, DownWhere;
+struct Wind { BYTE X, Y; } WindMin, WindMax; // r137
+BYTE TextAttr, StartAttr, StartMode; // r138
+WORD LastMode;
+void* FontArr; void* BGIDriver; void* BGILittFont; void* BGITripFont;
+BYTE ButtonCount, MouseButtons, LastButtons, DownButtons, LastDouble;
+WORD EventCount, EventQHead, EventQTail;
+struct stEventQueue { WORD Time, Buttons, X, Y, GX, GY; };
+stEventQueue EventQueue[EventQSize - 1];
 
 struct TCrs
 {
@@ -103,7 +119,7 @@ public:
 	char NoDiakr(char C);
 	void ConvToNoDiakr(WORD Buf, WORD L, TVideoFont FromFont);
 	void ClearKeyBuf(); // { Bios }
-	void ClearKbdBuf();
+	static void ClearKbdBuf();
 	bool KeyPressed(); // { Bios }
 	WORD ReadKey(); // { Bios }
 	bool KbdPressed(); // { buffer + Bios }
@@ -121,8 +137,8 @@ public:
 	static void ScrWrChar(WORD X, WORD Y, char C, BYTE Color);
 	static void ScrWrStr(WORD X, WORD Y, pstring S, BYTE Color);
 	static void ScrWrFrameLn(WORD X, WORD Y, BYTE Typ, BYTE Width, BYTE Color);
-	void ScrWrBuf(WORD X, WORD Y, WORD Buf, WORD L);
-	void ScrRdBuf(WORD X, WORD Y, WORD Buf, WORD L);
+	static void ScrWrBuf(WORD X, WORD Y, void* Buf, WORD L);
+	static void ScrRdBuf(WORD X, WORD Y, void* Buf, WORD L);
 	void* ScrPush(WORD X, WORD Y, WORD SizeX, WORD SizeY);
 	void ScrPop(WORD X, WORD Y, void* P);
 	void ScrPopToGraph(WORD X, WORD Y, WORD SizeX, WORD SizeY, void* P, WORD DOfs);
@@ -146,7 +162,7 @@ public:
 	void TextColor(BYTE Color);
 	void InsLine();
 	void DelLine();
-	void beep();
+	static void Beep();
 	static void LockBeep();
 	void ScrBeep();
 	void InitMouseEvents();
@@ -159,8 +175,8 @@ public:
 	void SetMouse(WORD X, WORD Y, bool Visible);
 	bool TestEvent();
 	WORD WaitEvent(WORD Delta);
-	void GetEvent();
-	void ClrEvent();
+	static void GetEvent();
+	static void ClrEvent();
 	WORD AddCtrlAltShift(BYTE Flgs);
 	void AssignCrt(pstring filepath);
 
@@ -184,7 +200,6 @@ private:
 	void CrsGotoXY(WORD aX, WORD aY);
 	void CrsGotoDX();
 	void CrsIntr08();
-	void Beep();
 
 	void ScrPush1(WORD X, WORD Y, WORD SizeX, WORD SizeY, void* P);
 	void Scroll(WORD X, WORD Y, WORD SizeX, WORD SizeY, bool Up);

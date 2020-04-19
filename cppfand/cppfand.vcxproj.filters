@@ -42,6 +42,12 @@
     <ClCompile Include="keybd.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="obaseww.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="kbdww.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base.h">

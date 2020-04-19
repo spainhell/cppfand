@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <vector>
+#include <SDKDDKVer.h>
 
 
 //#include "constants.h"

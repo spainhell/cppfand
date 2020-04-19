@@ -32,7 +32,8 @@ void Set4MsgPar(pstring s1, pstring s2, pstring s3, pstring s4)
 
 void RdMsg(integer N)
 {
-	WORD j, h, o;
+	WORD j, o;
+	FILE* h;
 	pstring s;
 	for (int i = 1; i < MsgIdxN; i++) {
 		auto Nr = MsgIdx[i].Nr;
@@ -137,10 +138,10 @@ void SetCurrPrinter(integer NewPr)
 	/*
 	 * if NewPr>=prMax then exit;
   if prCurr>=0 then with printer[prCurr] do if TmOut<>0 then
-    PrTimeOut[Lpti]:=OldPrTimeOut[Lpti];
+	PrTimeOut[Lpti]:=OldPrTimeOut[Lpti];
   prCurr:=NewPr;
   if prCurr>=0 then with printer[prCurr] do if TmOut<>0 then begin
-    PrTimeOut[Lpti]:=TmOut end;
+	PrTimeOut[Lpti]:=TmOut end;
 	 */
 }
 
@@ -214,5 +215,18 @@ void OpenWorkH()
 	{
 		printf("can't open %s", FandWorkName.c_str());
 		wait(); Halt(0);
+	}
+}
+
+void OpenOvrFile()
+{
+	FILE* h = nullptr;
+	CPath = FandOvrName;
+	CVol = "";
+	h = OpenH(_isoldfile, RdOnly);
+	if (h != GetOverHandle(h, -1)) {
+		printf("can't open FAND.OVR");
+		wait();
+		Halt(-1);
 	}
 }

@@ -10,6 +10,9 @@ void DelBackSlash(pstring s);
 // r37
 bool SEquUpcase(pstring s1, pstring s2);
 
+bool MouseInRect(WORD X, WORD Y, WORD XSize, WORD Size); // r175
+bool MouseInRectProc(WORD X, WORD Y, WORD XSize, WORD Size); // r182 - rozdìleno na txt a graph režim
+
 // r362
 double Today();
 

@@ -1,12 +1,10 @@
 #include "legacy.h"
-
-#include <ctime>
-
+#include <SDKDDKVer.h>
 #include "windows.h"
+#include <ctime>
 #include <iostream>
 #include <string>
 #include <direct.h>
-
 #include "base.h"
 
 
@@ -79,6 +77,15 @@ pstring FSearch(pstring& path, pstring& dirlist)
 		}
 	}
 	return pstring();
+}
+
+pstring FExpand(pstring path)
+{
+	pstring fullpath = pstring(255);
+	GetDir(0, path);
+	fullpath += "\\";
+	fullpath += path;
+	return fullpath;
 }
 
 void ChDir(pstring cesta)
@@ -207,12 +214,12 @@ void Pack(void* NumArr, WORD& PackArr, WORD& NoDigits)
 	return;
 }
 
-char* GetEnv(const char* name)
+pstring GetEnv(const char* name)
 {
 	size_t value = 0;
 	char buffer[256];
 	getenv_s(&value, buffer, 256, name);
-	return &buffer[0];
+	return pstring(buffer);
 }
 
 

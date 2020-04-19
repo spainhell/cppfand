@@ -26,7 +26,7 @@ pstring FandOvrName, FandResName, FandWorkName, FandWorkXName, FandWorkTName;
 pstring CPath; pstring CDir; pstring CName; pstring CExt;
 pstring CVol;
 bool WasLPTCancel;
-WORD WorkHandle;
+FILE* WorkHandle;
 const longint MaxWSize = 0; // {currently occupied in FANDWORK.$$$}
 
 //WORD ReadH(WORD handle, WORD bytes, void* buffer);
@@ -47,7 +47,8 @@ void ClearLL(BYTE attr);
 
 // ********** DML **********
 void* FandInt3f; // ø. 311
-WORD OvrHandle, Fand_ss, Fand_sp, Fand_bp, DML_ss, DML_sp, DML_bp;
+FILE* OvrHandle;
+WORD Fand_ss, Fand_sp, Fand_bp, DML_ss, DML_sp, DML_bp;
 const longint _CallDMLAddr = 0; // {passed to FANDDML by setting "DMLADDR="in env.}
 enum TKbdConv { OrigKbd, CsKbd, CaKbd, SlKbd, DtKbd };
 
@@ -125,7 +126,7 @@ const BYTE FandFace = 16;
 class TResFile // ø. 440
 {
 public:
-	WORD Handle;
+	FILE* Handle;
 	struct st
 	{
 		longint Pos;
@@ -157,3 +158,5 @@ void WrTurboErr(); // 537
 
 // ø. 577
 void OpenWorkH();
+
+void OpenOvrFile(); // r632

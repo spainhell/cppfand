@@ -6,7 +6,7 @@
 #include "kbdww.h"
 #include "oaccess.h"
 
-void WrHd(ScreenStr s, string Hd, WORD Row, WORD MaxCols)
+void WrHd(pstring s, string Hd, WORD Row, WORD MaxCols)
 {
 	if (Hd == "") exit(0);
 	s = " " + Hd + " ";
@@ -26,7 +26,7 @@ void CFileMsg(WORD n, char Typ)
 
 void WriteWFrame(BYTE WFlags, string top, string bottom)
 {
-	ScreenStr s;
+	pstring s;
 	WORD cols, rows, n;
 
 	if ((WFlags && WHasFrame) == 0) exit(0);

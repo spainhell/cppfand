@@ -7,3 +7,4 @@ void ClearCacheH(filePtr h);
 void* GetZStore(WORD Size);
 bool SaveCache(WORD ErrH);
 
+void GoExit();

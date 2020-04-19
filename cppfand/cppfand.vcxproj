@@ -152,8 +152,10 @@
     <ClCompile Include="cppfand.cpp" />
     <ClCompile Include="drivers.cpp" />
     <ClCompile Include="handle.cpp" />
+    <ClCompile Include="kbdww.cpp" />
     <ClCompile Include="keybd.cpp" />
     <ClCompile Include="legacy.cpp" />
+    <ClCompile Include="obaseww.cpp" />
     <ClCompile Include="pstring.cpp" />
     <ClCompile Include="runfand.cpp" />
   </ItemGroup>

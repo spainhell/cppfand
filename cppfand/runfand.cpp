@@ -17,18 +17,18 @@
 #include "wwmix.h"
 
 
-
 void runfand::InitRunFand()
 {
 	Drivers driver = Drivers(); // HLAVNI OVLADAC
 
-	WORD n = 0, h = 0, l = 0, err = 0, hourmin = 0;
+	WORD n = 0, l = 0, err = 0, hourmin = 0;
+	FILE* h = nullptr;
 	pstring s;
 	BYTE nb, sec = 0;
 	ExitRecord er = nullptr;
 	integer i, j, MsgNr;
 	// TODO: PMenuBoxS mb;
-	longint w;
+	longint w = 0;
 	void* p = nullptr;
 	pstring* x;
 	unsigned int xofs = 0; // x:StringPtr; xofs:word absolute x;
@@ -50,7 +50,7 @@ void runfand::InitRunFand()
 	video.CursOn = 0x0607; // {if exit before reading.CFG}
 	KbdBuffer[0] = 0x0;
 	F10SpecKey = 0;
-	if (GetEnv("DMLADDR") != "") {
+	if (!GetEnv("DMLADDR").empty()) {
 		printf("type 'exit' to return to FAND");
 		wait();
 		return; // pùvodnì wait;
@@ -82,7 +82,7 @@ void runfand::InitRunFand()
 			wait(); Halt(0);
 		}
 
-		OvrHandle = h - 1;
+		OvrHandle = GetOverHandle(h, - 1); // TODO: pùvodnì to byl WORD - 1, teï je to blbost;
 		ReadH(h, sizeof(ResFile.A), ResFile.A);
 		ReadH(h, 2, reinterpret_cast<void*>(MsgIdxN));
 		l = sizeof(TMsgIdxItem) * MsgIdxN;

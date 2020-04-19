@@ -164,8 +164,8 @@ public:
 	longint NewPage(bool NegL);
 	void ReleasePage(longint PosPg);
 	void Delete(longint Pos);
-	LongStrPtr Read(WORD StackNr, longint Pos);
-	longint Store(LongStrPtr S);
+	string* Read(WORD StackNr, longint Pos);
+	longint Store(string& S);
 };
 typedef TFile* TFilePtr;
 

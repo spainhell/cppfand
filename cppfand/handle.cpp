@@ -3,9 +3,9 @@
 #include "handle.h"
 
 
-#include <errhandlingapi.h>
+#include "windows.h"
 #include <fileapi.h>
-
+#include <errhandlingapi.h>
 
 #include "common.h"
 #include "drivers.h"
@@ -14,6 +14,14 @@
 #include "legacy.h"
 #include "memory.h"
 
+
+FILE* GetOverHandle(FILE* fptr, int diff)
+{
+	ptrdiff_t pos = find(vOverHandle.begin(), vOverHandle.end(), fptr) - vOverHandle.begin();
+	int newPos = pos + diff;
+	if (newPos >= 0 && newPos < vOverHandle.size() - 1) { return vOverHandle[pos - 1]; }
+	return nullptr;
+}
 
 bool IsHandle(filePtr H)
 {
@@ -178,6 +186,8 @@ label1:
 	}
 	if (w != 0) PopW(w);
 
+	// pøidání FILE* od vektoru kvùli 'WORD OvrHandle = h - 1;'
+	vOverHandle.push_back(nFile);
 	return nFile;
 }
 
@@ -336,7 +346,7 @@ void FlushHandles()
 
 longint GetDateTimeH(filePtr handle)
 {
-	if (handle == nullptr) return;
+	if (handle == nullptr) return -1;
 	// vrátí èas posledního zápisu souboru + datum posledního zápisu souboru
 	// 2 + 2 Byte (datum vlevo, èas vpravo)
 	FILETIME ft;
@@ -376,9 +386,8 @@ pstring MyFExpand(pstring Nm, pstring EnvName)
 	AddBackSlash(p);
 	if (!p.empty()) p += Nm;
 	else {
-		char* env = GetEnv("PATH");
-		pstring envps = pstring(env);
-		p = FSearch(Nm, envps);
+		pstring envp = GetEnv("PATH");
+		p = FSearch(Nm, envp);
 		if (p.empty()) p = Nm;
 	}
 	ChDir(d);

@@ -34,7 +34,7 @@ pstring ParamStr(integer index);
 
 inline void Exit() { return;; }
 
-inline void RunError(WORD code) { exit(code); }
+//inline void RunError(WORD code) { exit(code); }
 inline void Halt(WORD code) { exit(code); }
 
 void FillChar(char* cil, WORD delka, char vypln);
@@ -46,4 +46,4 @@ WORD Swap(WORD cislo);
 void UnPack(void* PackArr, WORD& NumArr, WORD& NoDigits);
 void Pack(void* NumArr, WORD& PackArr, WORD& NoDigits);
 
-char* GetEnv(const char* name);
+pstring GetEnv(const char* name);

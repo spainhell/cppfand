@@ -21,7 +21,10 @@ set<FILE*> Handles;
 set<FILE*> UpdHandles;
 set<FILE*> FlshHandles;
 
-map<WORD, FILE*> fileMap;
+//map<WORD, FILE*> fileMap;
+// náhrada za 'WORD OvrHandle = h - 1' - zjištìní pøedozího otevøeného souboru;
+vector<FILE*> vOverHandle = vector<FILE*>(files);
+FILE* GetOverHandle(FILE* fptr, int diff);
 
 void SetRes(WORD FLAGS, WORD AX); // r11 - toto je spec. MSDOS registers, flags
 bool IsHandle(filePtr H); // r13
