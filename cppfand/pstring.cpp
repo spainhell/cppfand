@@ -35,6 +35,7 @@ pstring::~pstring()
 
 unsigned char pstring::length()
 {
+	arr[len] = '\0'; // 'arr' je o 1 vìtší než 'len'
 	return len;
 }
 

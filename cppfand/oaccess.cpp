@@ -239,10 +239,10 @@ void SetCPathVol()
 		goto label4;
 	}
 	switch (CFile->Typ) {
-	case '0': CExt = '.RDB'; break;
-	case '8': CExt = '.DTA'; break;
-	case 'D': CExt = '.DBF'; break;
-	default: CExt = '.000';
+	case '0': CExt = ".RDB"; break;
+	case '8': CExt = ".DTA"; break;
+	case 'D': CExt = ".DBF"; break;
+	default: CExt = ".000";
 	}
 	if (SetContextDir(CDir, isRdb)) goto label2;
 	if (CFile == HelpFD) {

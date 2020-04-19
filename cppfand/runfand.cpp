@@ -162,8 +162,8 @@ void runfand::InitRunFand()
 		TextAttr = colors.DesktopColor;
 		Drivers::Window(1, 1, (BYTE)TxtCols, TxtRows - 1);
 		WriteWFrame(WHasFrame + WDoubleFrame, "", "");
-		Drivers::ScrClr(1, 1, TxtCols - 2, TxtRows - 13, 0xb1, TextAttr);
-		Drivers::ScrClr(1, TxtRows - 12, TxtCols - 2, 10, 0xb2, TextAttr);
+		Drivers::ScrClr(1, 1, TxtCols - 2, TxtRows - 13, (char)0xb1, TextAttr);
+		Drivers::ScrClr(1, TxtRows - 12, TxtCols - 2, 10, (char)0xb2, TextAttr);
 		ResFile.Get(FandFace, p);
 		x = (pstring*)p;
 		xofs++;

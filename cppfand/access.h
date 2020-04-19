@@ -4,6 +4,9 @@
 #include "base.h"
 #include "constants.h"
 #include "runfand.h"
+#ifdef FandSQL
+#include "channel.h"
+#endif
 
 struct FrmlListEl;
 class XFile;
@@ -29,6 +32,10 @@ const BYTE f_Mask = 4; const BYTE f_Comma = 8; // {FieldD flags}
 
 enum LockMode { NullMode, NoExclMode, NoDelMode, NoCrMode, RdMode, WrMode, CrMode, DelMode, ExclMode };
 pstring LockModeTxt[9] = { "NULL", "NOEXCL","NODEL","NOCR","RD","WR","CR","DEL","EXCL" };
+
+const WORD MPageSize = 512;
+const BYTE XPageShft = 10;
+const BYTE MPageShft = 9;
 
 typedef char PwCodeArr[20];
 
@@ -58,6 +65,12 @@ struct StringListEl // ø. 38
 	string S;
 };
 typedef StringListEl* StringList;
+
+struct FloatPtrListEl // r42
+{
+	FloatPtrListEl* Chain;
+	double* RPtr;
+};
 
 struct KeyListEl // ø. 49
 {
@@ -98,6 +111,23 @@ struct FrmlElem // ø. 51
 };
 typedef FrmlElem* FrmlPtr;
 
+struct KeyInD // r89
+{
+	KeyInD* Chain;
+	FrmlList FL1, FL2;
+	longint XNrBeg, N;
+	pstring* X1;
+	pstring* X2;
+};
+
+struct SumElem // r95
+{
+	SumElem* Chain;
+	char Op;
+	float R;
+	FrmlPtr Frml;
+};
+typedef SumElem* SumElPtr;
 
 struct FieldDescr // ø. 100
 {
@@ -135,13 +165,31 @@ struct ChkD // ø. 115
 };
 typedef ChkD* ChkDPtr;
 
+struct DepD // r122
+{
+	DepD* Chain; FrmlPtr Bool, Frml;
+};
+typedef DepD* DepDPtr;
+
+struct ImplD
+{
+	ImplD* Chain; FieldDPtr FldD; FrmlPtr Frml;
+};
+typedef ImplD* ImplDPtr;
+
+struct LiRoots
+{
+	ChkD* Chks; ImplD* Impls;
+};
+typedef LiRoots* LiRootsPtr;
+
 struct AddD // ø. 135
 {
 	AddD* Chain;
 	FieldDPtr Field;
 	FileD* File2;
 	LinkD* LD;
-	BYTE Create; // {0- no,1-!,2-!!}
+	BYTE Create; // { 0-no, 1-!, 2-!! }
 	FrmlPtr Frml;
 	bool Assign;
 	FrmlPtr Bool;
@@ -177,6 +225,8 @@ public:
 	void Delete(longint Pos);
 	LongStr* Read(WORD StackNr, longint Pos);
 	longint Store(string& S);
+private:
+	void RdWr(bool ReadOp, longint Pos, WORD N, void* X);
 };
 typedef TFile* TFilePtr;
 
@@ -302,6 +352,12 @@ class XString // ø. 254
 	void StoreKF(KeyFldD* KF);
 	void PackKF(KeyFldD* KF);
 	bool PackFrml(FrmlList FL, KeyFldD* KF);
+#ifdef FandSQL
+	void GetF(WORD Off, WORD Len, bool Descend, void* Buf);
+	void GetD(WORD Off, bool Descend, void* R);
+	void GetN(WORD Off, WORD Len, bool Descend, void* Buf);
+	WORD GetA(WORD Off, WORD Len, bool CompLex, bool Descend, void* Buf);
+#endif
 };
 
 class XItem // ø. 274
@@ -417,6 +473,123 @@ public:
 	void SetNotValid();
 };
 
+
+/// tøída má dìdit TObject z Pascalu
+/// DOC: https://www.freepascal.org/docs-html/rtl/system/tobject.html
+class XScan
+{
+public:
+	FileD* FD;
+	KeyD* Key;
+	FrmlPtr Bool;
+	BYTE Kind;
+	longint NRecs, IRec, RecNr;
+	bool hasSQLFilter, eof;
+	XScan(FileDPtr aFD, KeyDPtr aKey, KeyInD* aKIRoot, bool aWithT);
+	void Reset(FrmlPtr ABool, bool SQLFilter);
+	void ResetSort(KeyFldDPtr aSK, FrmlPtr& BoolZ, LockMode OldMd, bool SQLFilter);
+	void SubstWIndex(WKeyDPtr WK);
+	void ResetOwner(XString* XX, FrmlPtr aBool);
+	void ResetOwnerIndex(LinkDPtr LD, LocVar* LV, FrmlPtr aBool);
+#ifdef FandSQL
+	void ResetSQLTxt(FrmlPtr Z);
+#endif
+	void ResetLV(void* aRP);
+	void Close();
+	void SeekRec(longint I);
+	void GetRec();
+private:
+	KeyInD* KIRoot;
+	LocVar* OwnerLV;
+	KeyFldD* SK;
+	XItem* X;
+	XPage* P;
+	WORD NOnPg;
+	KeyInD* KI;
+	longint NKI, iOKey;
+	bool TempWX, NotFrst, withT;
+	void* Strm; // {SQLStreamPtr or LVRecPtr}
+	void SeekOnKI(longint I);
+	void SeekOnPage(longint Page, WORD I);
+	void NextIntvl();
+};
+
+struct CompInpD // r402
+{
+	CompInpD* ChainBack;
+	CharArrPtr InpArrPtr;
+	RdbPos InpRdbPos;
+	WORD InpArrLen, CurrPos, OldErrPos;
+};
+
+// ********** konstanty ********** // r409
+const BYTE _equ = 0x1; const BYTE _lt = 0x2; const BYTE _le = 0x3;
+const BYTE _gt = 0x4; const BYTE _ge = 0x5; const BYTE _ne = 0x6;
+const BYTE _subrange = 0x7; const BYTE _number = 0x8; const BYTE _assign = 0x9; const BYTE _identifier = 0xA;
+const BYTE _addass = 0xB; const BYTE _quotedstr = 0xC;
+const BYTE _const = 0x10; //{float/string/boolean};             {0-ary instructions}
+const BYTE _field = 0x11; const BYTE _getlocvar = 0x12; // {fieldD}; {BPOfs};
+const BYTE _access = 0x13; // {fieldD or nil for exist,newfileD,linkD or nil};
+const BYTE _recvarfld = 0x14; // {fieldD,fileD,recptr}
+const BYTE _today = 0x18; const BYTE _currtime = 0x19; const BYTE _pi = 0x1A; const BYTE _random = 0x1B;
+const BYTE _exitcode = 0x1d; const BYTE _edrecno = 0x1e; const BYTE _getWORDvar = 0x1f; // {n:0..}
+const BYTE _memavail = 0x22; const BYTE _maxcol = 0x23; const BYTE _maxrow = 0x24;
+const BYTE _getmaxx = 0x25; const BYTE _getmaxy = 0x26;
+const BYTE _lastupdate = 0x27; const BYTE _nrecs = 0x28; const BYTE _nrecsabs = 0x29; // {FD}
+const BYTE _generation = 0x2a; // {FD}
+const BYTE _recno = 0x2b; const BYTE _recnoabs = 0x2c; const BYTE _recnolog = 0x2d;  // {FD,K,Z1,Z2,...}
+const BYTE _filesize = 0x2e;  // {txtpath,txtcatirec}
+const BYTE _txtpos = 0x2f; const BYTE _cprinter = 0x30; const BYTE _mousex = 0x31; const BYTE _mousey = 0x32;
+const BYTE _txtxy = 0x33; const BYTE _indexnrecs = 0x34; const BYTE _owned = 0x35;  // {bool,sum,ld}           // {R}
+const BYTE _catfield = 0x36; // {CatIRec,CatFld}
+const BYTE _passWORD = 0x37; const BYTE _version = 0x38; const BYTE _username = 0x39; const BYTE _edfield = 0x3a;
+const BYTE _accright = 0x3b; const BYTE _readkey = 0x3c; const BYTE _edreckey = 0x3d; const BYTE _edbool = 0x3e;
+const BYTE _edfile = 0x3f; const BYTE _edkey = 0x40; const BYTE _clipbd = 0x41; const BYTE _keybuf = 0x42;
+const BYTE _key = 0x43;  // {LV,KeyD}                                             // {S}
+const BYTE _edupdated = 0x44; const BYTE _keypressed = 0x45; const BYTE _escprompt = 0x46;
+const BYTE _trust = 0x47; const BYTE _lvdeleted = 0x48;  // {bytestring}_lvdeleted=#$48;   // {LV}                      // {B}
+const BYTE _userfunc = 0x49;
+const BYTE _isnewrec = 0x4a; const BYTE _mouseevent = 0x4b; const BYTE _ismouse = 0x4c;
+const BYTE _testmode = 0x4d;
+const BYTE _newfile = 0x60;  // {newfile,newRP};                      // {1-ary instructions}
+const BYTE _lneg = 0x61;
+const BYTE _inreal = 0x62; const BYTE _instr = 0x63;  // {precision,constlst}; {tilda,constlst};
+const BYTE _isdeleted = 0x64; const BYTE _setmybp = 0x65;  // {RecFD}
+const BYTE _modulo = 0x66;  // {length,modulo,weight1,...};                          // {B}
+const BYTE _getpath = 0x68; const BYTE _upswitch = 0x69; const BYTE _lowswitch = 0x6A;
+const BYTE _leadchar = 0x6B; const BYTE _getenv = 0x6C;
+const BYTE _trailchar = 0x6D; const BYTE _strdate = 0x6E;  // {char}  // {maskstring};
+const BYTE _nodiakr = 0x6F;  // {S}
+const BYTE _char = 0x70; const BYTE _sqlfun = 0x71;  // {SR}
+const BYTE _unminus = 0x73; const BYTE _abs = 0x74; const BYTE _int = 0x75; const BYTE _frac = 0x76; const BYTE _sqr = 0x77;
+const BYTE _sqrt = 0x78; const BYTE _sin = 0x79; const BYTE _cos = 0x7A; const BYTE _arctan = 0x7b; const BYTE _ln = 0x7c;
+const BYTE _exp = 0x7d; const BYTE _typeday = 0x7e; const BYTE _color = 0x7f;
+const BYTE _link = 0x90; // {LD}; // {R}
+const BYTE _val = 0x91; const BYTE _valdate = 0x92; const BYTE _length = 0x93; const BYTE _linecnt = 0x94; // {maskstring}
+const BYTE _diskfree = 0x95; const BYTE _ord = 0x96; const BYTE _eval = 0x97;  // {Typ};  // {RS}
+const BYTE _accrecno = 0x98;  // {FD,FldD};    // {R,S,B}
+const BYTE _promptyn = 0x99;  // {BS}
+const BYTE _conv = 0xa0;   // { used in Prolog}
+const BYTE _and = 0xb1; const BYTE _or = 0xb2; const BYTE _limpl = 0xb3; const BYTE _lequ = 0xb4;  // {2-ary instructions}
+const BYTE _compreal = 0xb5; const BYTE _compstr = 0xb6;    // {compop,precision}  // {compop,tilda};     // {B}
+const BYTE _concat = 0xc0; // {S}
+const BYTE _repeatstr = 0xc2; // {SSR}
+const BYTE _gettxt = 0xc3; // {txtpath,txtcatirec}       // {SRR}
+const BYTE _plus = 0xc4; const BYTE _minus = 0xc5; const BYTE _times = 0xc6; const BYTE _divide = 0xc7;
+const BYTE _div = 0xc8; const BYTE _mod = 0xc9; const BYTE _round = 0xca;
+const BYTE _addwdays = 0xcb; const BYTE _difwdays = 0xcc; // {typday}
+const BYTE _addmonth = 0xcd; const BYTE _difmonth = 0xce; const BYTE _inttsr = 0xcf; // {ptr};
+const BYTE _min = 0xd0; const BYTE _max = 0xd1; // {used in Prolog}     // {R}
+const BYTE _equmask = 0xd2;   // {BSS}
+const BYTE _prompt = 0xd3; // {fieldD};   // {R,S,B}
+const BYTE _portin = 0xd4; // {RBR}
+const BYTE _cond = 0xf0; // {bool or nil,frml,continue or nil};    // {3-ary instructions}
+const BYTE _copy = 0xf1; const BYTE _str = 0xf2; // {S}
+const BYTE _selectstr = 0xf3; const BYTE _copyline = 0xf4;  // {SSRR}
+const BYTE _pos = 0xf5; const BYTE _replace = 0xf6; // {options}; // {options};   // {RSSR}
+const BYTE _mousein = 0xf7;  // {P4};
+
+
 // ø. 474
 FileDPtr FileDRoot; // { only current RDB }
 LinkDPtr LinkDRoot; // { for all RDBs     }
@@ -430,7 +603,7 @@ RdbDPtr CRdb, TopRdb;
 FileDPtr CatFD, HelpFD;
 
 // r483
-struct { longint Page; WORD I; } XPath[10];
+struct structXPath { longint Page; WORD I; } XPath[10];
 WORD XPathN;
 XWFile XWork;
 TFile TWork;
@@ -438,14 +611,108 @@ const longint ClpBdPos = 0;
 bool IsTestRun = false;
 bool IsInstallRun = false;
 
-const BYTE FloppyDrives = 3; // r497
+FileDPtr Chpt = FileDRoot; // absolute FileDRoot;
+TFilePtr ChptTF;
+FieldDPtr ChptTxtPos;
+FieldDPtr ChptVerif; // { updated record }
+FieldDPtr ChptOldTxt; // { ChptTyp = 'F' : -1 = new unchecked record, else = old declaration }
+FieldDPtr ChptTyp, ChptName, ChptTxt;
 
-FieldDPtr CatRdbName, CatFileName, CatArchiv, CatPathName, CatVolume; // r517
-pstring MountedVol[FloppyDrives];
 
+// ********** konstanty ********** // r496
+const BYTE FloppyDrives = 3;
+bool EscPrompt = false;
+pstring UserName = pstring(20);
+pstring UserPassWORD = pstring(20);
+pstring AccRight;
+bool EdUpdated = false;
+longint EdRecNo = 0;
+pstring EdRecKey = "";
+pstring EdKey = pstring(32);
+bool EdOk = false;
+pstring EdField = pstring(32);
+longint LastTxtPos = 0;
+longint TxtXY = 0;
+// { consecutive WORD - sized / for formula access / }
+WORD RprtLine = 0; WORD RprtPage = 0; WORD PgeLimit = 0; // {report}
+WORD EdBreak = 0; WORD EdIRec = 1; // {common - alphabetical order}
+WORD MenuX = 1; WORD MenuY = 1;
+WORD UserCode = 0;
+// **********
+
+WORD* WordVarArr = &RprtLine;
+FieldDPtr CatRdbName, CatFileName, CatArchiv, CatPathName, CatVolume;
+pstring MountedVol[FloppyDrives] = { pstring(11), pstring(11), pstring(11) };
+
+pstring SQLDateMask = "DD.MM.YYYY hh:mm:ss";
+
+// ********** COMPARE FUNCTIONS **********
+double Power10[21] = { 1E0, 1E1, 1E2, 1E3, 1E4, 1E5, 1E6, 1E7, 1E8, 1E9, 1E10,
+	1E11, 1E12, 1E13, 1E14, 1E15, 1E16, 1E17, 1E18, 1E19, 1E20 };
+
+//void RunErrorM(LockMode Md, WORD N); // r528
+
+integer CompLongStr(LongStrPtr S1, LongStrPtr S2); // r529 ASM
+//integer CompStr(pstring S1, pstring S2);
+integer CompLongShortStr(LongStrPtr S1, LongStrPtr S2); // r551 ASM
+integer CompArea(void* A, void* B, integer L); // r575 ASM
+
+//void ResetCompilePars(); // r686
+
+char CurrChar; // { Compile }
+char ForwChar, ExpChar, Lexem;
+pstring LexWORD;
+bool SpecFDNameAllowed, IdxLocVarAllowed, FDLocVarAllowed, IsCompileErr;
+CompInpD* PrevCompInp;						// { saved at "include" }
+CharArrPtr InpArrPtr; RdbPos InpRdbPos;		// { "  "  }
+WORD InpArrLen, CurrPos, OldErrPos;			// { "  "  }
+SumElPtr FrmlSumEl;				//{ set while reading sum / count argument }
+bool FrstSumVar, FileVarsAllowed;
+// FrmlPtr RdFldNameFrml() = FrmlPtr(char& FTyp);
+// FrmlPtr RdFunction() = FrmlPtr(char& FTyp);
+FrmlPtr(*RdFldNameFrml)(char&) = nullptr; // ukazatel na funkci
+FrmlPtr(*RdFunction)(char&) = nullptr; // ukazatel na funkci
+void(*ChainSumEl)(); // {set by user}
+BYTE LstCompileVar; // { boundary }
+
+pstring Switches = "";
+WORD SwitchLevel = 0;
+
+// ********** IMPLEMENTATION **********
+// od r. 705
+// 
+
+//void NoOvr(); // r722 ASM je v base.cpp
+void RunErrorM(LockMode Md, WORD N); // r729
+pstring* FieldDMask(FieldDPtr F); // r734 ASM
 void* GetRecSpace(); // r739
+void* GetRecSpace2(); // r742
+WORD CFileRecSize(); // r744
+void SetTWorkFlag();  // r746 ASM
+void ClearTWorkFlag(); // r749 ASM
 bool HasTWorkFlag(); // r752 ASM
+void SetUpdFlag(); // r755 ASM
+void ClearUpdFlag(); // r758 ASM
+bool HasUpdFlag(); // r761 ASM
+void* LocVarAd(LocVar* LV); // r766 ASM
+bool DeletedFlag(); // r771 ASM
+void ClearDeletedFlag(); // r779 ASM
+void SetDeletedFlag(); // r785 ASM
+integer CompStr(pstring& S1, pstring& S2); // r792 ASM
+void TranslateOrd(); // r804 ASM
+WORD TranslateOrdBack(); // r834 ASM
+void CmpLxStr(); // r846 ASM
+WORD CompLexLongStr(LongStrPtr S1, LongStrPtr S2); // r854 ASM
+WORD CompLexLongShortStr(LongStrPtr S1, pstring& S2); // r863 ASM
+WORD CompLexStr(const pstring& S1, const pstring& S2); // r871 ASM
+bool EquKFlds(KeyFldDPtr KF1, KeyFldDPtr KF2); // r881
+void Code(void* A, WORD L); // r897 ASM
+void XDecode(LongStrPtr S); // r903 ASM
 
-void Code(void* A, WORD L); // r897
-void XDecode(LongStrPtr S); // r903
-
+void CodingLongStr(LongStrPtr S);
+void DirMinusBackslash(pstring& D);
+longint StoreInTWork(LongStrPtr S);
+LongStrPtr ReadDelInTWork(longint Pos);
+void ForAllFDs(void(*procedure)()); // r935
+bool IsActiveRdb(FileDPtr FD);
+void ResetCompilePars(); // r953 - posledni fce
