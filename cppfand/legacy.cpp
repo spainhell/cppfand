@@ -1,9 +1,13 @@
 #include "legacy.h"
+
+#include <ctime>
+
 #include "windows.h"
 #include <iostream>
 #include <string>
+#include <direct.h>
 
-
+#include "base.h"
 
 
 void val(pstring s, BYTE& b, WORD& err)
@@ -77,17 +81,105 @@ pstring FSearch(pstring& path, pstring& dirlist)
 	return pstring();
 }
 
+void ChDir(pstring cesta)
+{
+	if (_chdir(cesta.c_str())) {
+		HandleError = errno;
+	}
+}
+
 void GetDir(BYTE disk, pstring& cesta)
 {
-	const unsigned long maxDir = 260;
-	char currentDir[maxDir];
-	GetCurrentDirectory(maxDir, currentDir);
-	cesta = currentDir;
+	char buf[MAX_PATH];
+	if (_getcwd(buf, MAX_PATH) == nullptr)
+	{
+		HandleError = errno;
+	}
+	cesta = buf;
+}
+
+void MkDir(pstring cesta)
+{
+	if (_mkdir(cesta.c_str()))
+	{
+		HandleError = errno;
+	}
+}
+
+void RmDir(pstring cesta)
+{
+	if (_rmdir(cesta.c_str()) == -1)
+	{
+		HandleError = errno;
+	}
+}
+
+void Rename(pstring soubor, pstring novejmeno)
+{
+	if (rename(soubor.c_str(), novejmeno.c_str()) != 0)
+	{
+		HandleError = errno;
+	}
+}
+
+void Erase(pstring soubor)
+{
+	if (remove(soubor.c_str()) == -1)
+	{
+		HandleError = errno;
+	}
+}
+
+void InitGraph(short GraphDriver, short GraphMode, pstring PathToDriver)
+{
+	return;
+}
+
+void CloseGraph()
+{
+	return;
+}
+
+double Random()
+{
+	srand(time(0));
+	double randnr = rand();
+	while (randnr >= 1)
+	{
+		randnr = randnr / 10;
+	}
+	return randnr;
+}
+
+WORD Random(WORD rozsah)
+{
+	srand(time(0));
+	double randnr = rand();
+	while (randnr >= rozsah)
+	{
+		randnr = randnr / 2;
+	}
+	return (WORD)randnr;
 }
 
 WORD ParamCount()
 {
 	return (WORD)paramstr.size();
+}
+
+pstring ParamStr(integer index)
+{
+	return paramstr[index];
+}
+
+void FillChar(char* cil, WORD delka, char vypln)
+{
+	memset((void*)cil, vypln, delka);
+}
+
+void Move(void* zdroj, void* cil, WORD delka)
+{
+	memmove(cil, zdroj, delka);
 }
 
 BYTE Hi(WORD cislo)
@@ -103,6 +195,16 @@ BYTE Lo(WORD cislo)
 WORD Swap(WORD cislo)
 {
 	return ((cislo & 0x00FF) << 4) + (cislo >> 4);
+}
+
+void UnPack(void* PackArr, WORD& NumArr, WORD& NoDigits)
+{
+	return;
+}
+
+void Pack(void* NumArr, WORD& PackArr, WORD& NoDigits)
+{
+	return;
 }
 
 char* GetEnv(const char* name)

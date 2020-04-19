@@ -23,7 +23,8 @@ void RmDir(pstring cesta);
 void Rename(pstring soubor, pstring novejmeno);
 void Erase(pstring soubor);
 
-void CloseGraph() { return; };
+void InitGraph(short GraphDriver, short GraphMode, pstring PathToDriver); // IGNORE
+void CloseGraph(); // IGNORE
 
 double Random();
 WORD Random(WORD rozsah);

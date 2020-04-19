@@ -53,7 +53,7 @@ WORD ReadLongH(filePtr handle, longint bytes, void* buffer); // øeší segmenatci 
 void WriteH(filePtr handle, WORD bytes, void* buffer); // zápis INT $40
 void WriteLongH(filePtr handle, longint bytes, void* buffer); // -''-
 void CloseH(filePtr handle); // uzavøení souboru INT $3E
-void FlushH(filePtr handle); // duplikát handleru INT $45
+void FlushH(filePtr& handle); // duplikát handleru INT $45
 void FlushHandles();
 void TruncH(filePtr handle, longint N);
 void CloseClearH(filePtr h);

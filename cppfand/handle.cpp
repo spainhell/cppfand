@@ -248,9 +248,19 @@ longint FileSizeH(filePtr handle)
 	return result;
 }
 
+bool TryLockH(filePtr Handle, longint Pos, WORD Len)
+{
+	return false;
+}
+
+bool UnLockH(filePtr Handle, longint Pos, WORD Len)
+{
+	return false;
+}
+
 void TruncH(filePtr handle, longint N)
 {
-	// posune se na pozici N a nic na ni nezapíše? WTF?
+	// cilem je zkratit delku souboru na N
 	if (handle == nullptr) return;
 	if (FileSizeH(handle) > N) {
 		SeekH(handle, N);
@@ -271,7 +281,7 @@ void SetFileAttr(WORD Attr)
 	// nastaví atributy souboru/adresáøe
 	// 0 = read only, 1 = hidden file, 2 = system file, 3 = volume label, 4 = subdirectory,
 	// 5 = written since backup, 8 = shareable (Novell NetWare)
-	if (SetFileAttributesA(CPath.c_str(), Attr)== 0)
+	if (SetFileAttributesA(CPath.c_str(), Attr) == 0)
 	{
 		HandleError = GetLastError();
 	}
@@ -282,6 +292,7 @@ WORD GetFileAttr()
 	// získá atributy souboru/adresáøe
 	auto result = GetFileAttributesA(CPath.c_str());
 	if (result == INVALID_FILE_ATTRIBUTES) HandleError = GetLastError();
+	return result;
 }
 
 void RdWrCache(bool ReadOp, filePtr Handle, bool NotCached, longint Pos, WORD N, void* Buf)
@@ -298,23 +309,29 @@ void CloseH(filePtr handle)
 	HandleError = fclose(handle);
 }
 
-void FlushH(filePtr handle)
+void FlushH(filePtr& handle)
 {
 	if (handle == nullptr) return;
-	// k èemu to všechno?
-	// zažádá o nový handle N
-	// zavolá SetHandle(N); SetUpdHandle(H); CloseH(H);
+
+	auto result = fflush(handle);
+	if (result == EOF) { HandleError = result; }
+	//SetHandle(handle);
+	SetUpdHandle(handle);
+	//CloseH(handle);
 }
 
 void FlushHandles()
 {
-	//if (CardHandles == files) return;
-	//for (int i = 0; i < files; i++)
-	//{
-	//	if (IsUpdHandle(i) || IsFlshHandle(i)) FlushH(i);
-	//}
-	//ClearUpdHandles();
-	//ClearFlshHandles();
+	for (auto handle : UpdHandles)
+	{
+		FlushH(handle);
+	}
+	for (auto handle : FlshHandles)
+	{
+		FlushH(handle);
+	}
+	ClearUpdHandles();
+	ClearFlshHandles();
 }
 
 longint GetDateTimeH(filePtr handle)
