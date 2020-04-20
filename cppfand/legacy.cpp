@@ -13,16 +13,17 @@ void val(pstring s, BYTE& b, WORD& err)
 	unsigned int sz;
 	auto a = std::stoul(s.c_str(), &sz, 10);
 	// přeložil se celý řetězec?
-	if (sz == s.length() - 1)
-	{
-		err = 0;
-		b = static_cast<BYTE>(a);
-	}
-	else
-	{
-		err = static_cast<WORD>(sz);
-		b = static_cast<BYTE>(a);
-	}
+	if (sz == s.length() - 1) {	err = 0; b = static_cast<BYTE>(a); }
+	else { err = static_cast<WORD>(sz);	b = static_cast<BYTE>(a); }
+}
+
+void val(pstring s, WORD& b, WORD& err)
+{
+	unsigned int sz;
+	auto a = std::stoul(s.c_str(), &sz, 10);
+	// přeložil se celý řetězec?
+	if (sz == s.length() - 1) { err = 0; b = static_cast<WORD>(a); }
+	else { err = static_cast<WORD>(sz);	b = static_cast<WORD>(a); }
 }
 
 pstring copy(pstring source, size_t index, size_t count)

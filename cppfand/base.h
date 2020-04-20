@@ -18,6 +18,9 @@ ExitRecord ExitBuf; // r210
 WORD BPBound; // r212
 bool ExitP, BreakP;
 
+
+longint LastExitCode = 0; // r215
+void StackOvr(WORD NewBP); // r216
 void NewExit(PProcedure POvr, ExitRecord Buf);  // ø. 218
 
 

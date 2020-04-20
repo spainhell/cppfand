@@ -63,6 +63,12 @@
     <ClCompile Include="fileacc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="rdfrml1.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lexanal.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base.h">
@@ -135,6 +141,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="access.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="rdfrml1.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lexanal.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

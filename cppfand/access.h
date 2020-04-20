@@ -224,7 +224,7 @@ public:
 	void ReleasePage(longint PosPg);
 	void Delete(longint Pos);
 	LongStr* Read(WORD StackNr, longint Pos);
-	longint Store(string& S);
+	longint Store(LongStrPtr S);
 private:
 	void RdWr(bool ReadOp, longint Pos, WORD N, void* X);
 };
@@ -328,7 +328,7 @@ struct LocVar // ø. 239
 struct RdbD // ø. 243
 {
 	RdbD* ChainBack;
-	FileDPtr FD, HelpFD; // { FD=FileDRoot and =Chpt for this RDB }
+	FileDPtr FD, HelpFD; // { FD=FileDRoot and = Chpt for this RDB }
 	LinkDPtr OldLDRoot;
 	FuncDPtr OldFCRoot;
 	void* Mark2; // { markstore2 at beginning }
@@ -661,7 +661,7 @@ integer CompArea(void* A, void* B, integer L); // r575 ASM
 
 char CurrChar; // { Compile }
 char ForwChar, ExpChar, Lexem;
-pstring LexWORD;
+pstring LexWord;
 bool SpecFDNameAllowed, IdxLocVarAllowed, FDLocVarAllowed, IsCompileErr;
 CompInpD* PrevCompInp;						// { saved at "include" }
 CharArrPtr InpArrPtr; RdbPos InpRdbPos;		// { "  "  }
@@ -670,8 +670,8 @@ SumElPtr FrmlSumEl;				//{ set while reading sum / count argument }
 bool FrstSumVar, FileVarsAllowed;
 // FrmlPtr RdFldNameFrml() = FrmlPtr(char& FTyp);
 // FrmlPtr RdFunction() = FrmlPtr(char& FTyp);
-FrmlPtr(*RdFldNameFrml)(char&) = nullptr; // ukazatel na funkci
-FrmlPtr(*RdFunction)(char&) = nullptr; // ukazatel na funkci
+FrmlElem*(*RdFldNameFrml)(char&) = nullptr; // ukazatel na funkci
+FrmlElem*(*RdFunction)(char&) = nullptr; // ukazatel na funkci
 void(*ChainSumEl)(); // {set by user}
 BYTE LstCompileVar; // { boundary }
 

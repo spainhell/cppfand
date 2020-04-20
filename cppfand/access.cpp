@@ -4,13 +4,14 @@
 #include "fileacc.h"
 #include "kbdww.h"
 #include "memory.h"
+#include "rdfrml1.h"
 
 
-void RunErrorM(LockMode Md, WORD N)
-{
-	OldLMode(Md);
-	RunError(N);
-}
+//void RunErrorM(LockMode Md, WORD N)
+//{
+//	OldLMode(Md);
+//	RunError(N);
+//}
 
 pstring* FieldDMask(FieldDPtr F)
 {
@@ -98,7 +99,8 @@ bool IsActiveRdb(FileDPtr FD)
 
 void ResetCompilePars()
 {
-	RdFldNameFrml = RdFldNameFrmlF();
+	char a;
+	RdFldNameFrml = RdFldNameFrmlF;
 	RdFunction = nullptr;
 	ChainSumEl = nullptr;
 	FileVarsAllowed = true;

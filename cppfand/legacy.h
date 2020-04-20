@@ -9,6 +9,7 @@ void* ErrorAddr = nullptr; // adresa chyby
 void (*ExitProc)() { }; // ukončovací procedura
 
 void val(pstring s, BYTE& b, WORD& err);
+void val(pstring s, WORD& b, WORD& err);
 pstring copy(pstring source, size_t index, size_t count);
 void str(int input, pstring& output);
 
