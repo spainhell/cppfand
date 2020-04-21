@@ -10,6 +10,8 @@ void (*ExitProc)() { }; // ukončovací procedura
 
 void val(pstring s, BYTE& b, WORD& err);
 void val(pstring s, WORD& b, WORD& err);
+void val(pstring s, integer& b, integer& err);
+void val(pstring s, double& b, integer& err);
 pstring copy(pstring source, size_t index, size_t count);
 void str(int input, pstring& output);
 
@@ -38,7 +40,7 @@ inline void Exit() { return;; }
 //inline void RunError(WORD code) { exit(code); }
 inline void Halt(WORD code) { exit(code); }
 
-void FillChar(char* cil, WORD delka, char vypln);
+void FillChar(void* cil, WORD delka, char vypln);
 void Move(void* zdroj, void* cil, WORD delka);
 BYTE Hi(WORD cislo);
 BYTE Lo(WORD cislo);

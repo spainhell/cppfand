@@ -58,6 +58,13 @@ void Error(integer N)
 	GoExit();
 }
 
+void SetInpStr(pstring& S)
+{
+	InpArrLen = S.length(); InpArrPtr = CharArrPtr(&S[1]);
+	if (InpArrLen == 0) ForwChar = 0x1A; else ForwChar = *InpArrPtr[1];
+	CurrPos = 1; FillChar(&InpRdbPos, sizeof(InpRdbPos), 0);
+}
+
 void SetInpLongStr(LongStrPtr S, bool ShowErr)
 {
 	InpArrLen = S->LL;
@@ -74,7 +81,7 @@ void SetInpTTPos(longint Pos, bool Decode)
 	s = CFile->TF->Read(2, Pos);
 	if (Decode) CodingLongStr(s);
 	InpArrLen = s->LL;
-	InpArrPtr = CharArrPtr(@s->A);
+	InpArrPtr = CharArrPtr(s->A);
 	if (InpArrLen == 0) ForwChar = 0x1A; else ForwChar = *InpArrPtr[1];
 	CurrPos = 1;
 }
@@ -97,6 +104,16 @@ void SetInpTT(RdbPos RP, bool FromTxt)
 	else Pos = _T(ChptOldTxt);
 	SetInpTTPos(Pos, RP.R->Encrypted);
 	ReleaseStore(CRecPtr); CFile = CF; CRecPtr = CR;
+}
+
+void SetInpTTxtPos(FileDPtr FD)
+{
+	WORD pos; RdbDPtr r;
+	SetInpTT(FD->ChptPos, true);
+	pos = FD->TxtPosUDLI;
+	r = FD->ChptPos.R;
+	if (pos > InpArrLen) ForwChar = 0x1A; else ForwChar = *InpArrPtr[pos];
+	CurrPos = pos;
 }
 
 void ReadChar()
@@ -377,3 +394,180 @@ bool IsForwPoint()
 {
 	return (ForwChar == '.') && (*InpArrPtr[CurrPos + 1] != '.');
 }
+
+void TestIdentif()
+{
+	if (Lexem != _identifier) Error(29);
+}
+
+void TestLex(char X)
+{
+	if (Lexem != X) { ExpChar = X; Error(1); };
+}
+
+void Accept(char X)
+{
+	/*asm  mov al, X; cmp al, Lexem; je @1;
+	mov ExpChar, al; mov ax, 1; push ax; call Error;
+	@1:  call RdLex;*/
+}
+
+integer RdInteger()
+{
+	integer I, J;
+	val(LexWord, I, J); if (J != 0) Lexem = 0 /* != _number*/;
+	Accept(_number);
+	return I;
+}
+
+double RdRealConst()
+{
+	pstring S;
+	if (Lexem == '-') { S = '-'; RdLex(); }
+	else S = "";
+	TestLex(_number); S = S + LexWord;
+label1:
+	if ((ForwChar == '.' || ForwChar == ':')) {
+		RdLex();
+		if ((Lexem != _subrange) && (ForwChar >= 0 && ForwChar <= 9)) {
+			S = S + Lexem; RdLex(); S = S + LexWord;
+			goto label1;
+		}
+		return ValofS(S);
+	}
+	if ((ForwChar == 'e' || ForwChar == 'E')
+		&& (*InpArrPtr[CurrPos + 1] == '-' || (ForwChar >= 0 && ForwChar <= 9))) {
+		S = S + "e"; ReadChar(); if (ForwChar == '-') { ReadChar(); S = S + "-"; }
+		RdLex(); TestLex(_number); S = S + LexWord;
+	}
+	RdLex();
+	return ValofS(S);
+}
+
+double ValofS(pstring& S)
+{
+	integer I; double R;
+
+	val(S, R, I); if (I != 0) {
+		R = ValDate(S, "DD.MM.YY"); if (R == 0) {
+			R = ValDate(S, "DD.MM.YYYY"); if (R == 0) {
+				R = ValDate(S, "mm hh:ss.tt"); if (R == 0) Error(7);
+			}
+		}
+	}
+	return R;
+}
+
+bool EquUpcase(const pstring& S)
+{
+	// TODO
+	/*asm  lea si, LexWord; les di, S; cld;xor ch, ch; mov cl, [si]; cmpsb; jnz @3;
+	jcxz @2;xor bh, bh;
+	@1:  mov bl, [si]; mov al, BYTE PTR UpcCharTab[bx]; mov bl, es: [di] ;
+	cmp al, BYTE PTR UpcCharTab[bx]; jnz @3; inc si; inc di; loop @1;
+	@2:  mov ax, 1; jmp @4;
+	@3: xor ax, ax;
+	@4:  end;*/
+	return false;
+}
+
+bool TestKeyWord(pstring& S)
+{
+	return (Lexem == _identifier) && EquUpcase(S);
+}
+
+bool IsKeyWord(pstring& S)
+{
+	//TODO
+	/*asm  cmp Lexem, _identifier; jne @3;
+	lea si, LexWord; les di, S; cld;xor ch, ch; mov cl, [si]; cmpsb; jnz @3;
+	jcxz @2;xor bh, bh;
+	@1:  mov bl, [si]; mov al, BYTE PTR UpcCharTab[bx]; cmp al, es: [di] ; jnz @3;
+	inc si; inc di; loop @1;
+	@2:  call RdLex; mov ax, 1; jmp @4;
+	@3: xor ax, ax;
+	@4:  end;*/
+	return false;
+}
+
+void AcceptKeyWord(pstring& S)
+{
+	if (TestKeyWord(S)) RdLex;
+	else { SetMsgPar(S); Error(33); }
+}
+
+bool IsOpt(pstring& S)
+{
+	//// TODO
+	//asm  cmp Lexem, _identifier; jne @3;
+	//lea si, LexWord; les di, S; cld;xor ch, ch; mov cl, [si]; cmpsb; jnz @3;
+	//jcxz @2;xor bh, bh;
+	//@1:  mov bl, [si]; mov al, BYTE PTR UpcCharTab[bx]; cmp al, es: [di] ; jnz @3;
+	//inc si; inc di; loop @1;
+	//@2:  call RdLex; mov ax, _equ; push ax; call Accept; mov ax, 1; jmp @4;
+	//@3: xor ax, ax;
+	//@4:;
+	return false;
+}
+
+bool IsDigitOpt(pstring& S, WORD& N)
+{
+	char LastLexWord = LexWord[LexWord.length()];
+	if ((Lexem == _identifier) && (LexWord.length() == S.length() + 1)
+		&& SEquUpcase(copy(LexWord, 1, S.length()), S)
+		&& (LastLexWord >= '0' && LastLexWord <= '9'))
+	{
+		N = LastLexWord - '0';
+		RdLex();
+		Accept(_equ);
+		return true;
+	}
+	return false;
+}
+
+pstring* RdStrConst()
+{
+	pstring* S = nullptr;
+	S = StoreStr(LexWord);
+	Accept(_quotedstr);
+	return S;
+}
+
+char Rd1Char()
+{
+	if ((Lexem != _identifier) || (LexWord.length() != 1)) Error(124);
+	char result = LexWord[1];
+	RdLex();
+	return result;
+}
+
+char RdQuotedChar()
+{
+	if ((Lexem != _quotedstr) || (LexWord.length() != 1)) Error(15);
+	char result = LexWord[1];
+	RdLex();
+	return result;
+}
+
+bool IsIdentifStr(pstring& S)
+{
+	WORD i;
+	if ((S.length() == 0) || !isalpha(S[1])) return false;
+	for (i = 2; i < S.length(); i++) {
+		if (!isalpha(S[i]) || isdigit(S[i])) return false;
+	}
+	return true;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+

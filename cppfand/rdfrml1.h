@@ -8,6 +8,3 @@ FrmlPtr TryRdFldFrml(FileDPtr FD, char& FTyp); // r71
 LinkDPtr FindOwnLD(FileDPtr FD, const pstring& RoleName); // 72
 
 FrmlElem* RdFldNameFrmlF(char& FTyp); // r111
-
-void TestIdentif(); // r235
-void TestLex(char X); // r237

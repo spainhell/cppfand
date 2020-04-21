@@ -118,12 +118,3 @@ FrmlElem* RdFldNameFrmlF(char& FTyp)
 	return z;
 }
 
-void TestIdentif()
-{
-	if (Lexem != _identifier) Error(29);
-}
-
-void TestLex(char X)
-{
-	if (Lexem != X) { ExpChar = X; Error(1); }
-}
