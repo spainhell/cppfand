@@ -5,7 +5,6 @@
 
 longint ExitCode = 0; // exit kód -> OS
 void* ErrorAddr = nullptr; // adresa chyby
-//void* ExitProc = nullptr;
 void (*ExitProc)() { }; // ukončovací procedura
 
 void val(pstring s, BYTE& b, WORD& err);
@@ -48,5 +47,15 @@ WORD Swap(WORD cislo);
 
 void UnPack(void* PackArr, WORD& NumArr, WORD& NoDigits);
 void Pack(void* NumArr, WORD& PackArr, WORD& NoDigits);
+void OvrInit(pstring FileName) {}
+void OvrInitEMS() {}
+longint OvrGetBuf() { return 1024 * 1024; }
+void OvrSetBuf(longint Size) {}
+void OvrSetRetry(longint Size) {};
+
+void GetMem(void* pointer, int Size) { pointer = new unsigned char[Size]; }
+
+
+BYTE OvrResult = 0; // vždy 0 OvrOK
 
 pstring GetEnv(const char* name);

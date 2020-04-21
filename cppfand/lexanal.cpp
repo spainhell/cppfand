@@ -302,6 +302,11 @@ label1:
 	CurrChar = CC;
 }
 
+void OldError(integer N)
+{
+	CurrPos = OldErrPos; Error(N);
+}
+
 void RdBackSlashCode()
 {
 	WORD i, n;

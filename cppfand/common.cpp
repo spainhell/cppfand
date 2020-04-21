@@ -1,13 +1,9 @@
 #include "common.h"
 #include <cmath>
 
+#include "base.h"
+#include "legacy.h"
 
-void StrLPCopy(char* Dest, pstring s, WORD MaxL)
-{
-	auto sLen = s.length();
-	int len = (sLen < MaxL) ? sLen : MaxL;
-	memcpy(Dest, s.c_str(), len);
-}
 
 void AddBackSlash(pstring s)
 {
@@ -20,6 +16,22 @@ void DelBackSlash(pstring s)
 	if (s[s.length() - 1] != '\\') return;
 	s[s.length() - 1] = '\0';
 	s[0] = s.length() - 1;
+}
+
+pstring StrPas(char* Src)
+{
+	WORD n; pstring s;
+	n = 0;
+	while ((n < 255) && (Src[n] != '\0')) { s[n + 1] = Src[n]; n++; }
+	s[0] = char(n);
+	return s;
+}
+
+void StrLPCopy(char* Dest, pstring s, WORD MaxL)
+{
+	auto sLen = s.length();
+	int len = (sLen < MaxL) ? sLen : MaxL;
+	memcpy(Dest, s.c_str(), len);
 }
 
 void SplitDate(double R, WORD& d, WORD& m, WORD& y)

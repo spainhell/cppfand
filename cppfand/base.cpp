@@ -4,6 +4,7 @@
 #include "kbdww.h"
 #include "keybd.h"
 #include "legacy.h"
+#include "memory.h"
 
 void SetMsgPar(pstring s)
 {
@@ -74,6 +75,25 @@ label1:
 
 }
 
+WORD TResFile::Get(WORD Kod, void* P)
+{
+	WORD l;
+	l = A[Kod].Size;
+	GetMem(P, l);
+	SeekH(Handle, A[Kod].Pos);
+	ReadH(Handle, l, P);
+	return l;
+}
+
+LongStrPtr TResFile::GetStr(WORD Kod)
+{
+	LongStrPtr s;
+	/* !!! with A[Kod] do!!! */
+	s = (LongStrPtr)GetStore(A[Kod].Size + 2); s->LL = A[Kod].Size;
+	SeekH(Handle, A[Kod].Pos); ReadH(Handle, A[Kod].Size, s->A);
+	return s;
+}
+
 WORD StackOvr()
 {
 	/*
@@ -132,27 +152,15 @@ pstring PrTab(WORD N)
 
 void SetCurrPrinter(integer NewPr)
 {
-	/*
-	 * if NewPr>=prMax then exit;
-  if prCurr>=0 then with printer[prCurr] do if TmOut<>0 then
-	PrTimeOut[Lpti]:=OldPrTimeOut[Lpti];
-  prCurr:=NewPr;
-  if prCurr>=0 then with printer[prCurr] do if TmOut<>0 then begin
-	PrTimeOut[Lpti]:=TmOut end;
-	 */
+	if (NewPr >= prMax) return;
+	if (prCurr >= 0) /* !!! with printer[prCurr] do!!! */
+		if (printer[prCurr].TmOut != 0)	PrTimeOut[printer[prCurr].Lpti] = OldPrTimeOut[printer[prCurr].Lpti];
+	prCurr = NewPr;
+	if (prCurr >= 0) /* !!! with printer[prCurr] do!!! */
+		if (printer[prCurr].TmOut != 0) PrTimeOut[printer[prCurr].Lpti] = printer[prCurr].TmOut;
 }
 
 void MyExit()
-{
-	pstring s = pstring(9);
-	str(ExitCode, s);
-	SetMsgPar(s);
-	WrLLF10Msg(626);
-	ErrorAddr = nullptr;
-	ExitCode = 0;
-}
-
-void WrTurboErr()
 {
 	// { asm mov ax, SEG @Data; mov ds, ax end; }
 	ExitProc = ExitSave;
@@ -203,27 +211,81 @@ label1: if (WasInitDrivers) {
 }
 }
 
-void OpenWorkH()
+void WrTurboErr()
 {
-	CPath = FandWorkName;
-	CVol = "";
-	WorkHandle = OpenH(_isoldnewfile, Exclusive);
+	pstring s = pstring(9);
+	str(ExitCode, s);
+	SetMsgPar(s);
+	WrLLF10Msg(626);
+	ErrorAddr = nullptr;
+	ExitCode = 0;
+}
+
+void OpenResFile()
+{
+	CPath = FandResName; CVol = "";
+	ResFile.Handle = OpenH(_isoldfile, RdOnly);
 	if (HandleError != 0)
 	{
-		printf("can't open %s", FandWorkName.c_str());
-		wait(); Halt(0);
+		printf("can't open %s", FandResName.c_str());
+		wait();
+		Halt(0);
 	}
+}
+
+void InitOverlays()
+{
+	pstring name; pstring ext; integer sz, err; longint l; pstring s;
+	const BYTE OvrlSz = 124;
+
+	GetDir(0, OldDir); FSplit(FExpand(ParamStr(0)), FandDir, name, ext);
+	FandOvrName = MyFExpand(name + ".OVR", "FANDOVR");
+	CPath = FandResName; CVol = ""; ResFile.Handle = OpenH(_isoldfile, RdOnly);
+	if (OvrResult != 0) {          /*reshandle-1*/
+		FandOvrName = ParamStr(0);
+		OvrInit(FandOvrName);
+		if (OvrResult != 0) {
+			printf("can't open FAND.OVR"); wait(); Halt(-1);
+		}
+	}
+	OvrInitEMS();
+	s = GetEnv("FANDOVRB");
+	while ((s.length() > 0) && (s[s.length()] == ' ')) s[0] = s.length() - 1;
+	val(s, sz, err);
+	if ((err != 0) || (sz < 80) || (sz > OvrlSz + 10)) sz = OvrlSz; l = longint(sz) * 1024;
+	OvrSetBuf(l);
+	OvrSetRetry(l / 2);
+	//TODO: FreeList = nullptr;
+}
+
+void OpenWorkH()
+{
+	integer UserLicNr;
+	double userToday;
+	// TODO:
+	// CurPSP = ptr(PrefixSeg, 0);
+	// MyHeapEnd = HeapEnd;
+	ExtendHandles();
+	prCurr = -1;
+	InitOverlays();
+	ExitSave = ExitProc;
+	ExitProc = MyExit;
+	MyBP = nullptr;
+	UserLicNr = WORD(UserLicNrShow) & 0x7FFF;
+	FandResName = MyFExpand("Fand.Res", "FANDRES");
+	OpenResFile();
 }
 
 void OpenOvrFile()
 {
-	FILE* h = nullptr;
+	FILE* h;
 	CPath = FandOvrName;
 	CVol = "";
 	h = OpenH(_isoldfile, RdOnly);
-	if (h != GetOverHandle(h, -1)) {
-		printf("can't open FAND.OVR");
-		wait();
-		Halt(-1);
-	}
+		if (h != OvrHandle)
+		{
+			printf("can't open FAND.OVR");
+			wait();
+			Halt(-1);
+		}
 }

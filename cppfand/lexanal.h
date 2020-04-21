@@ -17,6 +17,7 @@ WORD RdDirective(bool& b); // r81
 void RdForwName(pstring& s); // r82
 void SkipLevel(bool withElse); // r113
 void SkipBlank(bool toNextLine); // r134
+void OldError(integer N); // r167
 void RdBackSlashCode(); // r170
 void RdLex(); // r179
 bool IsForwPoint(); // r233

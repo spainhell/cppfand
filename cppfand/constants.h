@@ -7,7 +7,6 @@ typedef unsigned short WORD;
 typedef unsigned char BYTE;
 typedef int longint;
 typedef short integer;
-typedef void* ExitRecord;
 
 //typedef pstring ScreenStr;
 //typedef pstring* StringPtr;
@@ -139,29 +138,6 @@ const WORD _Y_ = 25;
 const WORD _Z_ = 26;
 
 std::vector<std::string> paramstr(5);
-
-// ********** BASE.PAS ********** - ø. 40 - 47
-const WORD MaxLStrLen = 65000;
-const BYTE WShadow = 0x01; // window flags
-const BYTE WNoClrScr = 0x02;
-const BYTE WPushPixel = 0x04;
-const BYTE WNoPop = 0x08;
-const BYTE WHasFrame = 0x10;
-const BYTE WDoubleFrame = 0x20;
-// r226
-enum FileOpenMode { _isnewfile, _isoldfile, _isoverwritefile, _isoldnewfile }; // poradi se nesmi zmenit!!!
-// r228
-enum FileUseMode { Closed, RdOnly, RdShared, Shared, Exclusive }; // poradi se nesmi zmenit!!!
-
-// ********** COMMON.PAS ********** - ø. 11 - 14
-const longint UserLicNr = 999001; // 160188
-const char Version[] = {'4', '.', '2', '0', '\0' };
-const WORD FDVersion = 0x0411;
-const WORD ResVersion = 0x0420;
-const char CfgVersion[] = { '4', '.', '2', '0', '\0' };
-const BYTE DMLVersion = 41;
-const WORD NoDayInMonth[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
-
 
 // ********** DRIVERS.PAS ********** - ø. 225 - 231
 const WORD Gr640x350 = 0x10;

@@ -4,6 +4,7 @@
 #include "common.h"
 #include "lexanal.h"
 #include "memory.h"
+#include "rdfrml.h"
 
 FrmlPtr GetOp(char Op, integer BytesAfter)
 {

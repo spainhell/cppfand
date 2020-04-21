@@ -73,7 +73,7 @@ void WrDBaseHd()
 				actual.Displ = F->Displ;
 				s = F->Name;
 				for (size_t i = 1; i < s.length(); i++) s[i] = toupper(s[i]);
-				StrLPCopy(actual.Name, s, 11);
+				StrLPCopy((char*)&actual.Name[1], s, 11);
 			}
 		}
 		F = F->Chain;
