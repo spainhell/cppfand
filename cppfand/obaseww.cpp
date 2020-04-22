@@ -24,6 +24,12 @@ void CFileMsg(WORD n, char Typ)
 	SetMsgPar(CPath); WrLLF10Msg(n);
 }
 
+void CFileError(WORD N)
+{
+	CFileMsg(N, '0');
+	CloseGoExit();
+}
+
 void WriteWFrame(BYTE WFlags, string top, string bottom)
 {
 	pstring s;

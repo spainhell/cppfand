@@ -4,6 +4,12 @@
 #include "memory.h"
 #include "runfrml.h"
 
+void WriteRec(longint N)
+{
+	RdWrCache(false, CFile->Handle, CFile->NotCached(), (N - 1) * CFile->RecLen + CFile->FrstDispl, CFile->RecLen, CRecPtr);
+	CFile->WasWrRec = true;
+}
+
 pstring _ShortS(FieldDPtr F)
 {
 	// TODO:
@@ -95,6 +101,55 @@ LongStr* _LongS(FieldDPtr F)
 
 }
 
+double _R(FieldDPtr F)
+{
+	double result;
+	void* p; double r;
+	WORD* O = (WORD*)p;
+	integer* IP = (integer*)p;
+
+	if (F->Flg && f_Stored != 0) {
+		p = CRecPtr; *O += F->Displ;
+		if (CFile->Typ == 'D') result = _RforD(F, p);
+		else switch (F->Typ) {
+		case 'F': {
+			r = RealFromFix(p, F->NBytes);
+			if (F->Flg && f_Comma == 0) result = r / Power10[F->M]; else result = r; break;
+		}
+		case 'D': {
+			if (CFile->Typ == '8') {
+				if (*IP == 0) result = 0.0;
+				else result = *IP + FirstDate;
+			}
+			else goto label1; break;
+		}
+		case 'R': {
+		label1:
+			if (IsNullValue(p, F->NBytes)) result = 0; else result = RealPtr(p)^;
+		}
+		}
+	}
+	else return RunReal(F->Frml);
+	return result;
+}
+
+bool _B(FieldDPtr F)
+{
+	bool result;
+	void* p;
+	WORD* O = (WORD*)p;
+	unsigned char* CP = (unsigned char*)p;
+
+	if (F->Flg && f_Stored != 0) {
+		p = CRecPtr; O += F->Displ;
+		if (CFile->Typ == 'D') result = *CP == 'Y' || *CP == 'y' || *CP == 'T' || *CP == 't';
+		else if ((*CP == '\0') || (*CP == 0xff)) result = false;
+		else result = true;
+	}
+	else result = RunBool(F->Frml);
+	return result;
+}
+
 /// nechápu, co to dìlá - oøee úvodní znaky, pøevádí na èíslo, ...
 longint _T(FieldDescr* F)
 {
@@ -116,5 +171,15 @@ longint _T(FieldDescr* F)
 		if (IsNullValue(p, 4)) return 0;
 		longint* lip = (longint*)p;
 		return *lip;
+	}
+}
+
+void DelAllDifTFlds(void* Rec, void* CompRec)
+{
+	FieldDPtr F = CFile->FldD;
+	while (F != nullptr)
+	{
+		if (F->Typ == 'T' && F->Flg && f_Stored != 0) DelDifTFld(Rec, CompRec, F);
+		F = F->Chain;
 	}
 }

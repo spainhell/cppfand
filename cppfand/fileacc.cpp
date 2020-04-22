@@ -2,6 +2,7 @@
 
 #include "common.h"
 #include "handle.h"
+#include "kbdww.h"
 #include "memory.h"
 
 void WrPrefix()
@@ -132,4 +133,13 @@ void CExtToT()
 			else CExt = ".DBT";
 		else CExt[2] = 'T';
 	CPath = CDir + CName + CExt;
+}
+
+void XFNotValid()
+{
+	XFile* XF;
+	XF = CFile->XF;
+	if (XF == nullptr) return;
+	if (XF->Handle == nullptr) RunError(903);
+	XF->SetNotValid();
 }

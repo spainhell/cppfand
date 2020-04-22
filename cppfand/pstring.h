@@ -14,6 +14,7 @@ public:
     unsigned char length();
     unsigned short initLength();
     void cut(unsigned char length);
+    void clean();
 
     pstring substr(unsigned char index);
     pstring substr(unsigned char index, unsigned char count);
@@ -31,9 +32,8 @@ public:
     pstring& operator += (const pstring& pstring);
     pstring operator + (const pstring& pstring);
 	bool operator == (const pstring& pstring);
+    bool operator != (const pstring& pstring);
     
-
-
 private:
     const unsigned short initLen;
     unsigned char len;

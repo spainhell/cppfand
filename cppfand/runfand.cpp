@@ -25,7 +25,7 @@ void runfand::InitRunFand()
 	FILE* h = nullptr;
 	pstring s;
 	BYTE nb, sec = 0;
-	ExitRecord er = nullptr;
+	ExitRecord* er = nullptr;
 	integer i, j, MsgNr;
 	// TODO: PMenuBoxS mb;
 	longint w = 0;
@@ -42,7 +42,7 @@ void runfand::InitRunFand()
 	InitDML();
 #endif
 
-	NewExit(Ovr(), er);
+	NewExit(Ovr(), *er);
 	// StackLimit += 256;
 	OldPrTimeOut = PrTimeOut;
 	//CallOpenFandFiles = OpenFandFiles;  // TODO: CallOpenFandFiles: procedure(FromDML:boolean);

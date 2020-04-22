@@ -481,7 +481,7 @@ bool TestKeyWord(pstring& S)
 	return (Lexem == _identifier) && EquUpcase(S);
 }
 
-bool IsKeyWord(pstring& S)
+bool IsKeyWord(pstring S)
 {
 	//TODO
 	/*asm  cmp Lexem, _identifier; jne @3;

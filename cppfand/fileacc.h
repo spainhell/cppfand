@@ -12,3 +12,6 @@ void OldLMode(LockMode Mode);
 void WrPrefixes();
 void CExtToX();
 void CExtToT();
+void CloseGoExit();
+void XFNotValid();
+

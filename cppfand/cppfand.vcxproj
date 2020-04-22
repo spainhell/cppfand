@@ -154,6 +154,7 @@
     <ClCompile Include="drivers.cpp" />
     <ClCompile Include="fileacc.cpp" />
     <ClCompile Include="handle.cpp" />
+    <ClCompile Include="index.cpp" />
     <ClCompile Include="kbdww.cpp" />
     <ClCompile Include="keybd.cpp" />
     <ClCompile Include="legacy.cpp" />
@@ -175,6 +176,7 @@
     <ClInclude Include="fanddml.h" />
     <ClInclude Include="fileacc.h" />
     <ClInclude Include="handle.h" />
+    <ClInclude Include="index.h" />
     <ClInclude Include="kbdww.h" />
     <ClInclude Include="keybd.h" />
     <ClInclude Include="legacy.h" />
@@ -191,7 +193,9 @@
     <ClInclude Include="runfand.h" />
     <ClInclude Include="runfrml.h" />
     <ClInclude Include="runproc.h" />
+    <ClInclude Include="sort.h" />
     <ClInclude Include="switches.h" />
+    <ClInclude Include="type.h" />
     <ClInclude Include="wwmenu.h" />
     <ClInclude Include="wwmix.h" />
   </ItemGroup>

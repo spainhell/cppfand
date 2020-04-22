@@ -344,8 +344,9 @@ struct WRectFrml // r251
 
 class XString // ø. 254
 {
+public:
 	pstring S; // S:string255;
-	void Clear();
+	void Clear(); // index.pas ASM
 	void StoreReal(double R, KeyFldD* KF);
 	void StoreStr(pstring V, KeyFldD* KF);
 	void StoreBool(bool B, KeyFldD* KF);
@@ -358,36 +359,41 @@ class XString // ø. 254
 	void GetN(WORD Off, WORD Len, bool Descend, void* Buf);
 	WORD GetA(WORD Off, WORD Len, bool CompLex, bool Descend, void* Buf);
 #endif
+private:
+	void StoreD(void* R, bool Descend); // index.pas r53 ASM
+	void StoreN(void* N, WORD Len, bool Descend); // index.pas r62 ASM
+	void StoreF(void* F, WORD Len, bool Descend); // index.pas r68 ASM
+	void StoreA(void* A, WORD Len, bool CompLex, bool Descend); // index.pas r76 ASM
 };
 
-class XItem // ø. 274
+class XItem // r274
 {
 public:
 	BYTE Nr[3]; // NN  RecNr /on leaf/ or NumberofRecordsBelow
 	longint DownPage; // not on leaf
 	// M byte  number of equal bytes /not stored bytes/ 
 	// Index string  /L=length, A area ptr/
-	longint GetN();
-	void PutN(longint N);
-	WORD GetM(WORD O);
-	void PutM(WORD O, WORD M);
-	WORD GetL(WORD O);
-	void PutL(WORD O, WORD L);
-	XItem* Next(WORD O);
-	WORD UpdStr(WORD O, pstring* S);
-
+	longint GetN(); // index.pas r129 ASM
+	void PutN(longint N); // index.pas r132 ASM
+	WORD GetM(WORD O); // index.pas r136 ASM
+	void PutM(WORD O, WORD M); // index.pas r139 ASM
+	WORD GetL(WORD O); // index.pas r142 ASM
+	void PutL(WORD O, WORD L); // index.pas r145 ASM
+	XItem* Next(WORD O); // index.pas r148 ASM
+	WORD UpdStr(WORD O, pstring* S); // index.pas r152 ASM
 };
 typedef XItem* XItemPtr;
 
-class XPage // ø. 289
+class XPage // r289
 {
+public:
 	bool IsLeaf;
 	longint GreaterPage;  // or free pages chaining
 	WORD NItems;
 	BYTE A[XPageSize - 4];  // item array
 	WORD Off();
 	XItem* XI(WORD I);
-	WORD EndOff();
+	uintptr_t EndOff();
 	bool Underflow();
 	bool Overflow();
 	pstring StrI(WORD I);
@@ -400,7 +406,7 @@ class XPage // ø. 289
 };
 typedef XPage* XPagePtr;
 
-class XKey // ø. 309
+class XKey // r309
 {
 public:
 	XKey* Chain;
@@ -417,17 +423,22 @@ public:
 	void NrToPath(longint I);
 	longint PathToRecNr();
 	bool RecNrToPath(XString& XX, longint RecNr);
+	bool IncPath(WORD J, longint& Pg);
 	longint NrToRecNr(longint I);
 	pstring NrToStr(longint I);
 	longint RecNrToNr(longint RecNr);
 	bool FindNr(XString& X, longint& IndexNr);
 	void InsertOnPath(XString& XX, longint RecNr);
+	void InsertItem(XString& XX, XPage* P, XPage* UpP, longint Page, WORD I, XItemPtr& X, longint& UpPage);
+	void ChainPrevLeaf(XPagePtr P, longint N);
 	bool Insert(longint RecNr, bool Try);
 	void DeleteOnPath();
+	void BalancePages(XPage* P1, XPage* P2, bool& Released);
+	void XIDown(XPage* P, XPage* P1, WORD I, longint& Page1);
 	bool Delete(longint RecNr);
 };
 
-class XWKey : public XKey // ø. 334
+class XWKey : public XKey // r334
 {
 public:
 	void Open(KeyFldD* KF, bool Dupl, bool Intvl);
@@ -441,10 +452,10 @@ public:
 	void AddToRecNr(longint RecNr, integer Dif);
 };
 
-class XWFile // ø. 345
+class XWFile // r345
 {
 public:
-	XWFile();
+	//XWFile();
 	WORD UpdLockCnt;
 	FILE* Handle;
 	longint FreeRoot, MaxPage;
@@ -459,10 +470,10 @@ public:
 };
 typedef XWFile* XWFilePtr;
 
-class XFile : public XWFile // ø. 357
+class XFile : public XWFile // r357
 {
 public:
-	XFile();
+	// XFile();
 	longint NRecs, NRecsAbs; // {FreeRoot..NrKeys read / written by 1 instr.}
 	bool NotValid;
 	BYTE NrKeys;
@@ -485,7 +496,7 @@ public:
 	BYTE Kind;
 	longint NRecs, IRec, RecNr;
 	bool hasSQLFilter, eof;
-	XScan(FileDPtr aFD, KeyDPtr aKey, KeyInD* aKIRoot, bool aWithT);
+	XScan(FileD* aFD, KeyD* aKey, KeyInD* aKIRoot, bool aWithT);
 	void Reset(FrmlPtr ABool, bool SQLFilter);
 	void ResetSort(KeyFldDPtr aSK, FrmlPtr& BoolZ, LockMode OldMd, bool SQLFilter);
 	void SubstWIndex(WKeyDPtr WK);
@@ -506,7 +517,7 @@ private:
 	XPage* P;
 	WORD NOnPg;
 	KeyInD* KI;
-	longint NKI, iOKey;
+	longint NOfKI, iOKey;
 	bool TempWX, NotFrst, withT;
 	void* Strm; // {SQLStreamPtr or LVRecPtr}
 	void SeekOnKI(longint I);
@@ -670,8 +681,8 @@ SumElPtr FrmlSumEl;				//{ set while reading sum / count argument }
 bool FrstSumVar, FileVarsAllowed;
 // FrmlPtr RdFldNameFrml() = FrmlPtr(char& FTyp);
 // FrmlPtr RdFunction() = FrmlPtr(char& FTyp);
-FrmlElem*(*RdFldNameFrml)(char&) = nullptr; // ukazatel na funkci
-FrmlElem*(*RdFunction)(char&) = nullptr; // ukazatel na funkci
+FrmlElem* (*RdFldNameFrml)(char&) = nullptr; // ukazatel na funkci
+FrmlElem* (*RdFunction)(char&) = nullptr; // ukazatel na funkci
 void(*ChainSumEl)(); // {set by user}
 BYTE LstCompileVar; // { boundary }
 

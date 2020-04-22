@@ -21,4 +21,3 @@ pstring runfrml::TrailChar(char C, pstring S)
 	return S;
 }
 
-

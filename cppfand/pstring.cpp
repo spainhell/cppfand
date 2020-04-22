@@ -53,6 +53,11 @@ void pstring::cut(unsigned char length)
 	}
 }
 
+void pstring::clean()
+{
+	this->cut(0);
+}
+
 pstring pstring::substr(unsigned char index)
 {
 	return substr(index, len - index);
@@ -159,5 +164,10 @@ bool pstring::operator==(const pstring& eqpstring)
 	eqpstring.arr[eqpstring.len] = '\0'; // 'arr' je o 1 vìtší než 'len'
 	if (len != eqpstring.len) return false;
 	return strcmp((char*)arr, (char*)eqpstring.arr) == 0;
+}
+
+bool pstring::operator!=(const pstring& eqpstring)
+{
+	return !pstring::operator==(eqpstring);
 }
 

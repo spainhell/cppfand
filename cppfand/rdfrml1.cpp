@@ -41,7 +41,7 @@ FrmlPtr TryRdFldFrml(FileDPtr FD, char& FTyp)
 {
 	FileDPtr cf; FieldDPtr f; LinkDPtr ld; FrmlPtr z; pstring roleNm;
 	FrmlElem*(*rff)(char&);
-	char typ;
+	char typ = '\0';
 
 	if (IsKeyWord("OWNED")) {
 		rff = RdFldNameFrml;

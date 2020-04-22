@@ -7,7 +7,7 @@ void* GetStore(WORD Size) { return nullptr; } // r224 ASM
 void* GetZStore(WORD Size) { return nullptr; } // r233 ASM
 void* GetStore2(WORD Size) { return nullptr; } // r224
 void* GetZStore2(WORD Size) { return nullptr; } // r255 ASM
-string* StoreStr(pstring S); { return nullptr; } // r261 ASM
+pstring* StoreStr(pstring S) { return nullptr; } // r261 ASM
 void MarkStore(void* p) {} // r268
 void MarkStore2(void* p) {} // r270
 void MarkBoth(void* p, void* p2) {} // r272
