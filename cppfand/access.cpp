@@ -313,6 +313,14 @@ bool XKey::Search(XString& XX, bool AfterEqu, longint& RecNr)
 			XPath[1].I = 1;
 			goto label2;
 		}
+
+		//__asm {
+		//	push ds;
+		//	cld;
+		//	les dx, x;
+		//	mov iItem, 1;
+		//}
+		
 		//asm
 		//	push ds; cld; les bx, x; mov iItem, 1; mov dx, 1;
 		//@@add 1 bx, o;xor ax, ax; mov al, es: [bx] ; cmp dx, ax; jna @@5; /*first different <= prefix length?*/
@@ -1069,7 +1077,7 @@ label1:
 			else if ((Kind == 2) && (NOfKI == 0)) NextIntvl();
 			else if (P->GreaterPage > 0) SeekOnPage(P->GreaterPage, 1);
 		label2:
-			ReadRec(RecNr); if (DeletedFlag) goto label1;
+			ReadRec(RecNr); if (DeletedFlag()) goto label1;
 		label3:
 			if (!runfrml::RunBool(Bool)) goto label1;
 		}

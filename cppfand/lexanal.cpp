@@ -497,7 +497,7 @@ bool IsKeyWord(pstring S)
 
 void AcceptKeyWord(pstring& S)
 {
-	if (TestKeyWord(S)) RdLex;
+	if (TestKeyWord(S)) RdLex();
 	else { SetMsgPar(S); Error(33); }
 }
 

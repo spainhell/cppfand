@@ -125,7 +125,8 @@ double _R(FieldDPtr F)
 		}
 		case 'R': {
 		label1:
-			if (IsNullValue(p, F->NBytes)) result = 0; else result = RealPtr(p)^;
+			if (IsNullValue(p, F->NBytes)) result = 0;
+			else result = *((double*)p);
 		}
 		}
 	}
