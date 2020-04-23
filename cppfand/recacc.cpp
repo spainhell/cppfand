@@ -103,7 +103,7 @@ LongStr* _LongS(FieldDPtr F)
 
 double _R(FieldDPtr F)
 {
-	double result;
+	double result = 0.0;
 	void* p; double r;
 	WORD* O = (WORD*)p;
 	integer* IP = (integer*)p;
@@ -126,7 +126,7 @@ double _R(FieldDPtr F)
 		case 'R': {
 		label1:
 			if (IsNullValue(p, F->NBytes)) result = 0;
-			else result = *((double*)p);
+			else result = *(double*)p;
 		}
 		}
 	}

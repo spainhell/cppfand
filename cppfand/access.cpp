@@ -593,7 +593,7 @@ void XKey::DeleteOnPath()
 	longint page, page1, page2;
 	longint uppage = 0;
 	void* pp;
-	XItemPtr x;
+	XItem* x = nullptr;
 	bool released;
 	longint n;
 
@@ -776,7 +776,7 @@ void XWFile::Err(WORD N)
 {
 	if (this == &XWork) { SetMsgPar(FandWorkXName); RunError(N); }
 	else {
-		CFile->XF->SetNotValid;
+		CFile->XF->SetNotValid();
 		CFileMsg(N, 'X');
 		CloseGoExit();
 	}
@@ -800,13 +800,13 @@ bool XWFile::NotCached()
 void XWFile::RdPage(XPagePtr P, longint N)
 {
 	if ((N == 0) || (N > MaxPage)) Err(831);
-	RdWrCache(true, Handle, NotCached, N << XPageShft, XPageSize, P);
+	RdWrCache(true, Handle, NotCached(), N << XPageShft, XPageSize, P);
 }
 
 void XWFile::WrPage(XPagePtr P, longint N)
 {
 	if (UpdLockCnt > 0) Err(645);
-	RdWrCache(false, Handle, NotCached, N << XPageShft, XPageSize, P);
+	RdWrCache(false, Handle, NotCached(), N << XPageShft, XPageSize, P);
 }
 
 longint XWFile::NewPage(XPagePtr P)
@@ -852,15 +852,15 @@ void XFile::SetEmpty()
 
 void XFile::RdPrefix()
 {
-	RdWrCache(true, Handle, NotCached, 2, 18, &FreeRoot);
+	RdWrCache(true, Handle, NotCached(), 2, 18, &FreeRoot);
 }
 
 void XFile::WrPrefix()
 {
 	WORD Signum = 0x04FF;
-	RdWrCache(false, Handle, NotCached, 0, 2, &Signum);
+	RdWrCache(false, Handle, NotCached(), 0, 2, &Signum);
 	NRecsAbs = CFile->NRecs; NrKeys = CFile->GetNrKeys();
-	RdWrCache(false, Handle, NotCached, 2, 18, &FreeRoot);
+	RdWrCache(false, Handle, NotCached(), 2, 18, &FreeRoot);
 }
 
 void XFile::SetNotValid()
@@ -1008,7 +1008,7 @@ void XScan::Close()
 #ifdef FandSQL
 	if (Kind = 4) /* !!! with SQLStreamPtr(Strm)^ do!!! */ { InpClose; Done; }
 #endif
-	if (TempWX) WKeyDPtr(Key)->Close;
+	if (TempWX) WKeyDPtr(Key)->Close();
 }
 
 void XScan::SeekRec(longint I)
@@ -1031,7 +1031,8 @@ void XScan::SeekRec(longint I)
 	if ((Kind == 2) && (OwnerLV != nullptr)) {
 		IRec = 0;
 		NRecs = 0x20000000;
-		iOKey = 0; NextIntvl;
+		iOKey = 0;
+		NextIntvl();
 		eof = I >= NRecs;
 		return;
 	}
