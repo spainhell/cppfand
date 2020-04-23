@@ -4,6 +4,7 @@
 longint PushWrLLMsg(WORD N, bool WithESC);
 longint PushW(WORD C1, WORD R1, WORD C2, WORD R2);
 void PopW(longint pos);
+void PopW2(longint pos, bool draw); // r128
 
 void WrLLF10MsgLine(); // r251
 void WrLLF10Msg(WORD N); // r283

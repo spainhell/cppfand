@@ -9,6 +9,7 @@ LongStr* _LongS(FieldDPtr F); // r191
 bool IsNullValue(void* pointer, WORD l);
 
 
+double _RforD(FieldDPtr F, void* P); //r214
 double _R(FieldDPtr F); // r226
 bool _B(FieldDPtr F); 
 longint _T(FieldDescr* F); // r255

@@ -1,8 +1,11 @@
 #include "recacc.h"
 
+
+#include "common.h"
 #include "legacy.h"
 #include "memory.h"
 #include "runfrml.h"
+#include "type.h"
 
 void WriteRec(longint N)
 {
@@ -99,6 +102,25 @@ LongStr* _LongS(FieldDPtr F)
 		return runfrml::RunLongStr(F->Frml);
 	};
 
+}
+
+double _RforD(FieldDPtr F, void* P)
+{
+	pstring s; integer err;
+	double r = 0; s[0] = F->NBytes;
+	Move(P, &s[1], s.length());
+	switch (F->Typ) {
+	case 'F': { ReplaceChar(s, ',', '.');
+		if (F->Flg && f_Comma != 0) {
+			integer i = Pos(".", s);
+			if (i > 0) Delete(s, i, 1);
+		}
+		val(LeadChar(" ", TrailChar(" ", s)), r, err);
+		break;
+	}
+	case 'D': r = ValDate(s, "YYYYMMDD"); break;
+	}
+	return r;
 }
 
 double _R(FieldDPtr F)

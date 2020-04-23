@@ -15,4 +15,6 @@ void ReleaseStore(void* pointer) {}; // r275
 void ReleaseAfterLongStr(void* pointer) {}; // r293
 longint StoreAvail() { return 512*1024*1024; } // r309
 void GoExit() { return; } // r350
-bool OSshell(pstring Path, pstring CmdLine, bool NoCancel, bool FreeMm, bool LdFont, bool TextMd) { return true; } // r366
+void RestoreExit(ExitRecord& Buf) {}; // r362
+bool OSshell(pstring Path, pstring CmdLine, bool NoCancel, 
+	bool FreeMm, bool LdFont, bool TextMd) { return true; } // r366

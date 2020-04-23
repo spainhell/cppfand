@@ -152,6 +152,7 @@
     <ClCompile Include="common.cpp" />
     <ClCompile Include="cppfand.cpp" />
     <ClCompile Include="drivers.cpp" />
+    <ClCompile Include="editor.cpp" />
     <ClCompile Include="fileacc.cpp" />
     <ClCompile Include="handle.cpp" />
     <ClCompile Include="index.cpp" />
@@ -171,8 +172,10 @@
     <ClInclude Include="access.h" />
     <ClInclude Include="base.h" />
     <ClInclude Include="common.h" />
+    <ClInclude Include="compile.h" />
     <ClInclude Include="constants.h" />
     <ClInclude Include="drivers.h" />
+    <ClInclude Include="editor.h" />
     <ClInclude Include="fanddml.h" />
     <ClInclude Include="fileacc.h" />
     <ClInclude Include="handle.h" />
@@ -184,11 +187,14 @@
     <ClInclude Include="memory.h" />
     <ClInclude Include="oaccess.h" />
     <ClInclude Include="obaseww.h" />
+    <ClInclude Include="printtxt.h" />
     <ClInclude Include="pstring.h" />
     <ClInclude Include="rdfrml.h" />
     <ClInclude Include="rdfrml1.h" />
+    <ClInclude Include="rdmix.h" />
     <ClInclude Include="rdrun.h" />
     <ClInclude Include="recacc.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="runedi.h" />
     <ClInclude Include="runfand.h" />
     <ClInclude Include="runfrml.h" />
@@ -198,6 +204,9 @@
     <ClInclude Include="type.h" />
     <ClInclude Include="wwmenu.h" />
     <ClInclude Include="wwmix.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="cppfand.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

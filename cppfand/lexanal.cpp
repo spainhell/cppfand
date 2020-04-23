@@ -2,10 +2,12 @@
 
 #include "access.h"
 #include "common.h"
+#include "compile.h"
 #include "drivers.h"
 #include "kbdww.h"
 #include "legacy.h"
 #include "memory.h"
+#include "rdmix.h"
 #include "recacc.h"
 #include "runfrml.h"
 
@@ -175,7 +177,7 @@ label1:
 		r = CRdb;
 		// TODO: co to je??? PtrRec ...
 		if (/*(PtrRec(InpRdbPos.R).Seg*/ InpRdbPos.R != nullptr) CRdb = InpRdbPos.R;
-		res = FindChpt("I", s, false, ChptIPos);
+		res = FindChpt('I', s, false, &ChptIPos);
 		CRdb = r;
 		if (!res) Error(37);
 	}
