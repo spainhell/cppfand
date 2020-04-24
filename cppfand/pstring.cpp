@@ -58,6 +58,25 @@ void pstring::clean()
 	this->cut(0);
 }
 
+int pstring::first(char c)
+{
+	for (int i = 0; i < this->len; i++)
+	{
+		if (arr[0] == c) return i + 1;
+	}
+	return 0;
+}
+
+void pstring::Delete(int index, int size)
+{
+	if (index < 1) return;
+	int i = index - 1;
+	int takeFrom = i + size;
+	if (takeFrom >= len) return;
+	memcpy(&arr[i], &arr[takeFrom], this->len - takeFrom);
+	len -= size;
+}
+
 pstring pstring::substr(unsigned char index)
 {
 	return substr(index, len - index);

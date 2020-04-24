@@ -15,6 +15,8 @@ public:
     unsigned short initLength();
     void cut(unsigned char length);
     void clean();
+    int first(char c);
+    void Delete(int index, int size);
 
     pstring substr(unsigned char index);
     pstring substr(unsigned char index, unsigned char count);
