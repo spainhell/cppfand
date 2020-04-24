@@ -9,6 +9,9 @@
 #include "recacc.h"
 #include <math.h>
 
+#include "oaccess.h"
+#include "wwmix.h"
+
 double Owned(FrmlPtr Bool, FrmlPtr Sum, LinkDPtr LD)
 {
 	XScan* Scan; KeyDPtr K; XString x; LockMode md; longint n, nBeg;
@@ -349,6 +352,227 @@ LongStr* CopyLine(LongStr* S, WORD N, WORD M)
 	return S;
 }
 
+bool RunBool(FrmlPtr X)
+{
+	longint RecNo; WORD* res = (WORD*)&RecNo;
+	LongStr* S; LongStr* S2; bool* b = (bool*)S;
+	WORD* w1 = (WORD*)&RecNo; WORD* w2 = (WORD*)S;
+	FileDPtr cf; void* cr; void* p = &RecNo;
+
+	auto result = false;
+	if (X == nullptr) { return true; }
+	switch (X->Op) {
+	case _and: if (RunBool(X->P1)) result = RunBool(X->P2); else result = false; break;
+	case _or: if (RunBool(X->P1)) result = true; else result = RunBool(X->P2); break;
+	case _lneg: result = !RunBool(X->P1); break;
+	case _limpl: if (RunBool(X->P1)) result = RunBool(X->P2);
+			   else result = true; break;
+	case _lequ: if (RunBool(X->P1) == RunBool(X->P2)) result = true;
+			  else result = false;
+	case _instr: {
+		S = RunLongStr(X->P1);
+		if (X->N11 == 1) result = LexInStr(LongTrailChar(' ', 0, S), &X->N12);
+		else result = InStr(S, &X->N12);
+		ReleaseStore(S);
+		break;
+	}
+	case _infloat: { result = InReal(RunReal(X->P1), &X->N12, X->N11); break; }
+	case _compfloat: {
+		result = (CompReal(RunReal(X->P1), RunReal(X->P2), X->N22) && X->N21) != 0;
+		break;
+	}
+	case _compstr: {
+		S = RunLongStr(X->P1); S2 = RunLongStr(X->P2);
+		if (X->N22 == 1)
+			*res = CompLexLongStr(LongTrailChar(' ', 0, S), LongTrailChar(' ', 0, S2));
+		else *res = CompLongStr(S, S2);
+		result = res && X->N21 != 0; ReleaseStore(S); break; }
+	case _const: result = X->B; break;
+	case _mouseevent: {
+	label2:
+		Event.What = 0;
+		GetMouseEvent();
+		if (Event.What == 0) result = false;
+		else { if ((Event.What && X->W01) == 0) goto label2; result = true; }
+		break;
+	}
+	case _ismouse: {
+		result = false;
+		if (((Event.What && X->W01) != 0) && ((Event.Buttons && X->W02) == X->W02))
+			result = true;
+		break;
+	}
+	case _mousein: {
+		*w1 = RunInt(X->P1); *w2 = RunInt(X->P2);
+		result = MouseInRectProc(*w1, *w2, RunInt(X->P3) - *w1 + 1, RunInt(X->P4) - *w2 + 1);
+		break;
+	}
+	case _getlocvar: result = BooleanPtr(Ptr(Seg(MyBP^), Ofs(MyBP^) + X->BPOfs))*; break;
+	case _modulo: result = RunModulo(X); break;
+	case _field: result = _B(X->Field); break;
+	case _access: { cf = CFile; cr = CRecPtr;
+		if (X->LD != nullptr) *b = LinkUpw(X->LD, RecNo, false);
+		else *b = LinkLastRec(X->File2, RecNo, false);
+		if ((X->P1 = nullptr)) result = b;
+		else result = RunBool(X->P1);
+		ReleaseStore(CRecPtr); CFile = cf; CRecPtr = cr;
+		break;
+	}
+	case _recvarfld: {
+		cf = CFile; cr = CRecPtr;
+		CFile = X->File2; CRecPtr = X->LD; result = RunBool(X->P1);
+		CFile = cf; CRecPtr = cr;
+		break;
+	}
+	case _eval: {
+		MarkStore(p); result = RunBool(GetEvalFrml(X));
+		ReleaseStore(p);
+		break;
+	}
+	case _newfile: {
+		cf = CFile; cr = CRecPtr;
+		CFile = X->NewFile; CRecPtr = X->NewRP;
+		result = RunBool(X->Frml);
+		CFile = cf; CRecPtr = cr;
+		break;
+	}
+	case _prompt: result = PromptB(RunShortStr(X->P1), X->P2, X->FldD); break;
+	case _promptyn: { SetMsgPar(RunShortStr(X->P1)); result = PromptYN(110); break; }
+	case _accrecno: { cf = CFile; cr = CRecPtr; AccRecNoProc(X, 640);
+		result = _B(*X->RecFldD); ReleaseStore(CRecPtr);
+		CFile = cf; CRecPtr = cr;
+		break;
+	}
+	case _edupdated: result = EdUpdated; break;
+	case _keypressed: result = keypressed; break;/*Kbdpressed?*/
+	case _escprompt: result = EscPrompt; break;
+	case _isdeleted: {
+		cr = CRecPtr; cf = CFile; AccRecNoProc(X, 642);
+		result = DeletedFlag; ReleaseStore(CRecPtr);
+		CRecPtr = cr; CFile = cf;
+		break;
+	}
+	case _lvdeleted: {
+		cr = CRecPtr; cf = CFile; CRecPtr = X->LV->RecPtr; CFile = X->LV->FD;
+		result = DeletedFlag(); CRecPtr = cr; CFile = cf;
+		break;
+	}
+	case _trust: result = (UserCode == 0) || OverlapByteStr(&X->N01, &AccRight); break;
+	case _isnewrec: result = TestIsNewRec(); break;
+	case _testmode: result = IsTestRun; break;
+	case _equmask: result = RunEquMask(X); break;
+	case _userfunc: {
+		result = *(bool*)(RunUserFunc(X));
+		cr = MyBP; PopProcStk; ReleaseStore(cr);
+		break;
+	}
+	case _setmybp: {
+		cr = MyBP; SetMyBP(ProcMyBP);
+		result = RunBool(X->P1); SetMyBP((ProcStkD*)cr);
+		break;
+	}
+	}
+	return result;
+}
+
+bool InReal(double R, BYTE* L, integer M)
+{
+	WORD* LOffs = (WORD*)L; double* Cr = (double*)L; integer I, N;
+	auto result = true;
+label1:
+	N = *L;
+	LOffs++;
+	if (N == 0) { result = false; exit; }
+	if (N == 0xFF)
+		if (CompReal(R, *Cr, M) == _lt) LOffs += 2 * sizeof(double);
+		else {
+			LOffs += sizeof(double);
+			if (CompReal(R, *Cr, M) != _gt) return result;
+			LOffs += sizeof(double);
+		}
+	else for (I = 1; I < N; I++)
+		if (CompReal(R, *Cr, M) == _equ) return result;
+		else LOffs += sizeof(double);
+	goto label1;
+}
+
+bool LexInStr(LongStr* S, BYTE* L)
+{
+	WORD* LOffs = (WORD*)L; pstring* Cs = (pstring*)L; integer I, N;
+	auto result = true;
+label1:
+	N = *L;
+	*LOffs += 1;
+	if (N == 0) { result = false; return result; }
+	if (N == 0xFF) {
+		if (CompLexLongShortStr(S, *Cs) == _lt) {
+			*LOffs += *L + 1; *LOffs += *L + 1;
+		}
+		else {
+			*LOffs += *L + 1;
+			if (CompLexLongShortStr(S, *Cs) != _gt) return result;
+			*LOffs += *L + 1;
+		}
+	}
+	else {
+		for (I = 1; I < N; I++) {
+			if (CompLexLongShortStr(S, *Cs) == _equ) return result;
+			else *LOffs += *L + 1;
+		}
+	}
+	goto label1;
+}
+
+bool InStr(LongStr* S, BYTE* L)
+{
+	WORD* LOffs = (WORD*)L; pstring* Cs = (pstring*)L; integer I, N;
+
+	auto result = true;
+label1:
+	N = *L;
+	*LOffs++;
+	if (N == 0) { result = false; return result; }
+	if (N == 0xFF) {
+		if (CompLongShortStr(S, *Cs) == _lt) {
+			*LOffs += *L + 1; *LOffs += *L + 1;
+		}
+		else {
+			*LOffs += *L + 1;
+			if (CompLongShortStr(S, *Cs) != _gt) return result; *LOffs += *L + 1;
+		}
+	}
+	else {
+		for (I = 1; I < N; I++)
+			if (CompLongShortStr(S, *Cs) == _equ) return result;
+			else *LOffs += *L + 1;
+	}
+	goto label1;
+}
+
+bool RunModulo(FrmlPtr X)
+{
+	pstring S; integer I, M, N; WORD* B1 = nullptr; WORD* B1Offs = B1;
+	N = X->W11; S = RunShortStr(X->P1);
+	if (S.length() != N) { return false; }
+	M = 0;
+	*B1 = X->W21;
+	for (I = 1; I < N - 1; I++) {
+		M = M + *B1 * (S[I] & 0x0F);
+		*B1Offs += 2;
+	}
+	I = (X->W12 - (M % X->W12)) % 10;
+	if (I == (S[N] & 0x0F)) return true;
+	return false;
+}
+
+bool RunEquMask(FrmlPtr X)
+{
+	LongStr* s;
+	s = RunLongStr(X->P1); auto result = EqualsMask(*s->A, s->LL, RunShortStr(X->P2));
+	ReleaseStore(s);
+	return result;
+}
+
 double RunReal(FrmlPtr X)
 {
 	double R; FileD* cf; LockMode md; bool b;
@@ -463,6 +687,7 @@ label1:
 		GetViewSettings(vp); result = vp.x2 - vp.x1;
 				 else result = 0;
 		break;
+	}
 	case _getmaxy: if (IsGraphMode) { GetViewSettings(vp); result = vp.y2 - vp.y1; }
 				 else result = 0;
 		break;
@@ -482,8 +707,11 @@ label1:
 		break;
 	}
 	case _inttsr: result = IntTSR(X);
-	case _userfunc: { result = FloatPtr(RunUserFunc(X));
-		cr = MyBP; PopProcStk; ReleaseStore(cr); break; }
+	case _userfunc: {
+		result = *(double*)RunUserFunc(X);
+		cr = MyBP; PopProcStk; ReleaseStore(cr);
+		break;
+	}
 	case _indexnrecs: result = X->WKey->NRecs(); break;
 	case _owned: result = Owned(X->ownBool, X->ownSum, X->ownLD);
 	case _color: result = AColors[minw(WORD(RunInt(X->P1)), 53)]; break;
@@ -493,110 +721,659 @@ label1:
 		result = RunReal(X->P1); SetMyBP((ProcStkD*)cr);
 		break;
 	}
-	default: result = resultStr(X); break;
+	default: { result = resultStr(X); break; }
 	}
-				 return result;
+	return result;
 }
 
+longint RunInt(FrmlPtr X)
+{
+	return trunc(RunReal(X));
+}
 
-	double RoundReal(double RR, integer M)
-	{
-		double R;
-		M = maxi(0, mini(M, 10));
-		R = RR * Power10[M]; if (R < 0) R = R - 0.50001; else R = R + 0.50001;
-		return int(R) / Power10[M];
+void TestTFrml(FieldDPtr F, FrmlPtr Z)
+{
+	FileDPtr cf; void* p; longint n; LockMode md; FieldDPtr f1;
+	switch (Z->Op) {
+	case _newfile: {
+		CFile = Z->NewFile; CRecPtr = Z->NewRP; TestTFrml(F, Z->Frml);
+		break;
 	}
+	case _field: { f1 = Z->Field;
+		if ((f1->Typ != 'T') || (f1->Flg && f_Stored == 0)) return;
+		if (F = nullptr) { if (f1->Flg && f_Encryp != 0) return; }
+		else if (F->Flg && f_Encryp != f1->Flg && f_Encryp) return;
+		TFD02 = CFile; TF02 = CFile->TF;
+		if (HasTWorkFlag()) TF02 = &TWork;
+		TF02Pos = _T(f1);
+		break;
+	}
+	case _getlocvar: {
+		if ((F != nullptr) && (F->Flg && f_Encryp != 0)) return;
+		TFD02 = CFile; TF02 = &TWork;
+		TF02Pos = LongintPtr(Ptr(Seg(MyBP^), Ofs(MyBP^) + Z->BPOfs))^;
+		break;
+	}
+	case _access: {
+		cf = CFile; MarkStore(p); CFile = Z->File2;
+		md = NewLMode(RdMode);
+		if (Z->LD != nullptr) { CFile = cf; LinkUpw(Z->LD, n, true); }
+		else LinkLastRec(Z->File2, n, true);
+		TestTFrml(F, Z->P1);
+		CFile = Z->File2; OldLMode(md); ReleaseStore(p);
+		break;
+	}
+	case _recvarfld: {
+		CFile = Z->File2; CRecPtr = Z->LD; TestTFrml(F, Z->P1);
+		break;
+	}
+	}
+}
 
-	LongStr* LongLeadChar(char C, char CNew, LongStr * S)
-	{
-		WORD i, l;
-		i = 1; l = S->LL;
-		while (i <= l) {
-			if (S->A[i] != C) goto label1;
-			if (CNew != 0) S->A[i] = CNew; i++;
+bool CanCopyT(FieldDPtr F, FrmlPtr Z)
+{
+	FileDPtr cf; void* cr;
+	auto result = false;
+	cf = CFile; cr = CRecPtr; TF02 = nullptr; result = false; TestTFrml(F, Z);
+	CFile = cf; CRecPtr = cr; result = TF02 != nullptr;
+	return result;
+}
+
+bool TryCopyT(FieldDPtr F, TFilePtr TF, longint& pos, FrmlPtr Z)
+{
+	LockMode md, md2;
+	bool result = false;
+	if (TF->Format == DbtFormat || TF->Format == FptFormat) return;
+	if ((BYTE)Z->Op == _gettxt) { pos = CopyTFFromGetTxt(TF, Z); result = true; }
+	else if (CanCopyT(F, Z) && (TF02->Format == TF->Format)) {
+		result = true; pos = CopyTFString(TF, TFD02, TF02, TF02Pos);
+	}
+}
+
+void AssgnFrml(FieldDPtr F, FrmlPtr X, bool Delete, bool Add)
+{
+	LongStr* s; longint pos; TFilePtr tf;
+	switch (F->FrmlTyp) {
+	case 'S': {
+		if (F->Typ == 'T') {
+			if (HasTWorkFlag) tf = &TWork;
+			else tf = CFile->TF;
+			if (TryCopyT(F, tf, pos, X)) {
+				if (Delete) DelTFld(F); T_(F, pos);
+			}
+			else {
+				s = RunLongStr(X); if (Delete) DelTFld(F); LongS_(F, s);
+				ReleaseStore(s);
+			}
 		}
-	label1: if (CNew == 0) {
-		l -= i - 1;
-		S->LL = l;
-		if ((i > 1) && (l > 0)) MyMove(&S->A[i], &S->A[1], l);
+		else S_(F, RunShortStr(X));
+		break;
+	}
+	case 'R': { if (Add) R_(F, _R(F) + RunReal(X)); else R_(F, RunReal(X)); break; }
+	case 'B': { B_(F, RunBool(X)); break;	}
+	}
+}
+
+void LVAssignFrml(LocVar* LV, void* OldBP, bool Add, FrmlPtr X)
+{
+	void* p; void* bp; LongStr* s; longint pos;
+	p = LocVarAd(LV); bp = MyBP; SetMyBP((ProcStkD*)OldBP);
+	switch (LV->FTyp) {
+	case 'S': {
+		if (not TryCopyT(nullptr, &TWork, pos, X)) {
+			s = RunLongStr(X); pos = TWork.Store(s); ReleaseStore(s);
+		}
+		TWork.Delete(LongIntPtr(p)^); LongIntPtr(p) ^ = pos;
+		break;
+	}
+	case 'R': if (Add) FloatPtr(p) ^ = FloatPtr(p) ^ +RunReal(X);
+			else FloatPtr(p) ^ = RunReal(X); break;
+	case 'B': BooleanPtr(p) ^ = RunBool(X); break;
+	}
+	SetMyBP((ProcStkD*)bp);
+}
+
+void DecodeFieldRSB(FieldDPtr F, WORD LWw, double R, pstring T, bool B, pstring& Txt)
+{
+	WORD L, M; char C;
+	L = F->L; M = F->M;
+	switch (F->Typ) {
+	case 'D':T = StrDate(R, FieldDMask(F)^); break;
+	case 'N': { C = '0'; goto label1; break; }
+	case 'A': { C = ' ';
+	label1:
+		if (M == LeftJust)
+			while (T.length() < L) T = T + C;
+		else while (T.length() < L) T = C + T;
+		break;
+	}
+	case 'B': if (B) T = AbbrYes; else T = AbbrNo; break;
+	case 'R': str(L R, T); break;
+	default: /*"F"*/
+		if (F->Flg && f_Comma != 0) R = R / Power10[M];
+		str(RoundReal(R, M) :M L, T);
+		break;
+	}
+	if (T.length() > L) { T[0] = char(L); T[L] = '>'; }
+	if (T.length() > LWw) {
+		if (M == LeftJust) { T[0] = (unsigned char)LWw; }
+		else { T = copy(T, T.length() - LWw + 1, LWw); }
+	}
+	Txt = T;
+}
+
+void DecodeField(FieldDPtr F, WORD LWw, pstring& Txt)
+{
+	double r; pstring s; bool b;
+	switch (F->FrmlTyp) {
+	case 'R': r = _R(F); break;
+	case 'S': {
+		if (F->Typ == 'T') {
+			if ((F->Flg && f_Stored != 0) && (_R(F) == 0)) Txt = ".";
+			else Txt = "*";
+			return;
+		}
+		else s = _ShortS(F);
+		break;
+	}
+	default: b = _B(F); break;
+	}
+	DecodeFieldRSB(F, LWw, r, s, b, Txt);
+}
+
+void RunWFrml(WRectFrml X, BYTE WFlags, WRect& W)
+{
+	WORD i;
+	FrmlPtr XA = (FrmlPtr)&X;
+	BYTE* WA = (BYTE*)&W;
+
+	for (i = 0; i < 3; i++) WA[i] = RunInt(&XA[i]);
+	CenterWw(W.C1, W.R1, W.C2, W.R2, WFlags);
+}
+
+WORD RunWordImpl(FrmlPtr Z, WORD Impl)
+{
+	WORD n;
+	n = RunInt(Z); if (n == 0) n = Impl; return n;
+}
+
+bool FieldInList(FieldDPtr F, FieldListEl* FL)
+{
+	auto result = false;
+	while (FL != nullptr) {
+		if (FL->FldD == F) result = true;
+		FL = FL->Chain;
+	}
+	return result;
+}
+
+KeyDPtr GetFromKey(LinkDPtr LD)
+{
+	KeyD* K;
+	K = LD->FromFD->Keys;
+	while (K->IndexRoot != LD->IndexRoot) K = K->Chain;
+	return K;
+}
+
+FrmlPtr RunEvalFrml(FrmlPtr Z)
+{
+	if ((Z != nullptr) && (Z->Op == _eval)) Z = GetEvalFrml(Z);
+	return Z;
+}
+
+LongStr* RunLongStr(FrmlPtr X)
+{
+	LongStr* S; bool b;
+	WORD I;
+	LockMode* md = (LockMode*)&I;
+	integer* J = (integer*)&I;
+	longint RecNo;
+	WORD* N = (WORD*)&RecNo; longint* L1 = (longint*)&RecNo;
+	FileDPtr cf; void* cr; longint* L2 = (longint*)cr;
+	void* p = &RecNo;
+
+	LongStr* result = nullptr;
+
+	if (X == nullptr) return (LongStr*)GetZStore(2);
+label1:
+	switch (X->Op) {
+	case _field: result = _LongS(X->Field); break;
+	case _getlocvar: result = TWork.Read(1, LongintPtr(Ptr(Seg(MyBP^), Ofs(MyBP^) + X->BPOfs))^);
+	case _access: {
+		cf = CFile; cr = CRecPtr;
+		CFile = X->File2; *md = NewLMode(RdMode);
+		if (X->LD != nullptr) { CFile = cf; LinkUpw(X->LD, RecNo, true); }
+		else LinkLastRec(X->File2, RecNo, true);
+		S = RunLongStr(X->P1);
+		OldLMode(*md);  /*possibly reading .T*/
+		ClearRecSpace(CRecPtr);
+		MyMove(S, CRecPtr, S->LL + 2);
+		ReleaseAfterLongStr(CRecPtr);
+		result = (LongStr*)CRecPtr;
+		CFile = cf; CRecPtr = cr;
+		break;
+	}
+	case _recvarfld: {
+		cf = CFile; cr = CRecPtr;
+		CFile = X->File2; CRecPtr = X->LD;
+		result = RunLongStr(X->P1);
+		CFile = cf; CRecPtr = cr;
+		break;
+	}
+	case _eval: {
+		MarkStore(p);
+		S = RunLongStr(GetEvalFrml(X)); MyMove(S, p, S->LL + 2);
+		ReleaseAfterLongStr(p); result = (LongStr*)p;
+		break;
+	}
+	case _newfile: {
+		cf = CFile; cr = CRecPtr;
+		CFile = X->NewFile; CRecPtr = X->NewRP;
+		result = RunLongStr(X->Frml);
+		CFile = cf; CRecPtr = cr;
+		break;
+	}
+	case _cond: {
+	label2:
+		if (X->P1 != nullptr)
+			if (!RunBool(X->P1))
+			{
+				if (X->P3 == nullptr)
+				{
+					S = (LongStr*)GetZStore(2);
+					result = S; return result;
+				}
+				X = X->P3; goto label2;
+			}
+		X = X->P2; goto label1;
+		break;
+	}
+	case _copy: {
+		S = RunLongStr(X->P1);
+		*L1 = RunInt(X->P2); *L2 = RunInt(X->P3);
+		if ((L1 < 0) || (L2 < 0)) S->LL = 0; else CopyLongStr(S, (WORD)*L1, (WORD)*L2);
 		ReleaseAfterLongStr(S);
+		result = S;
+		break;
+	}
+	case _concat: {
+		S = RunLongStr(X->P1);
+		ConcatLongStr(S, RunLongStr(X->P2));
+		ReleaseAfterLongStr(S); result = S;
+		break;
+	}
+	case _const: result = CopyToLongStr(X->S); break;
+	case _leadchar: result = LongLeadChar(char(X->N11), char(X->N12), RunLongStr(X->P1)); break;
+	case _trailchar: result = LongTrailChar(char(X->N11), char(X->N12), RunLongStr(X->P1)); break;
+	case _upcase: {
+		S = RunLongStr(X->P1);
+		for (WORD i = 1; i < S->LL; i++) S->A[i] = UpcCharTab[S->A[i]];
+		result = S;
+		break;
+	}
+	case _lowcase: {
+		S = RunLongStr(X->P1); LowCase(S); result = S;
+		break;
+	}
+	case _copyline: {
+		*J = 1; if (X->P3 != nullptr) *J = RunInt(X->P3);
+		result = CopyLine(RunLongStr(X->P1), RunInt(X->P2), *J);
+		break;
+	}
+	case _repeatstr: result = RepeatStr(RunLongStr(X->P1), RunInt(X->P2)); break;
+	case _accrecno: {
+		cf = CFile; cr = CRecPtr; AccRecNoProc(X, 640);
+		S = _LongS(X->RecFldD);
+		MyMove(S, CRecPtr, S->LL + 2);
+		ReleaseAfterLongStr(CRecPtr);
+		result = (LongStr*)CRecPtr;
+		CFile = cf; CRecPtr = cr;
+		break;
+	}
+	case _gettxt: result = GetTxt(X); break;
+	case _nodiakr: {
+		S = RunLongStr(X->P1); ConvToNoDiakr(S->A, S->LL, Fonts.VFont);
+		result = S;
+		break;
+	}
+	case _userfunc: {
+		cr = RunUserFunc(X);
+		*L1 = *(longint*)(cr);
+		*(longint*)cr = 0;
+		cr = MyBP; PopProcStk(); ReleaseStore(cr);
+		result = TWork.Read(1, *L1); TWork.Delete(*L1);
+		break;
+	}
+	case _setmybp: {
+		cr = MyBP; SetMyBP(ProcMyBP);
+		result = RunLongStr(X->P1);
+		SetMyBP((ProcStkD*)cr);
+		break;
+	}
+	case _selectstr: result = RunSelectStr(X); break;
+	case _clipbd: result = TWork.Read(1, ClpBdPos); break;
+	default: result = RunS(X);
+	}
+	return result;
+}
+
+pstring RunShortStr(FrmlPtr X)
+{
+	LongStr* s;
+	s = RunLongStr(X);
+	/* ASM */
+	ReleaseStore(s);
+}
+
+void ConcatLongStr(LongStr* S1, LongStr* S2)
+{
+}
+
+void AddToLongStr(LongStr* S, void* P, WORD L)
+{
+	void* p2;
+	L = minw(L, MaxLStrLen - S->LL);
+	p2 = GetStore(L);
+	Move(P, p2, L);
+	S->LL += L;
+}
+
+void StrMask(double R, pstring& Mask)
+{
+	pstring Num; WORD i, l, n, sw, pos, pos1; bool minus;
+
+	sw = 2; l = Mask.length(); n = 0; pos = l + 1; pos1 = pos;
+	for (i = l; i > 1; i--)
+		switch (Mask[i]) {
+		case ',': if (sw == 2) sw = 1; break;
+		case '0':
+		case '*': { pos = i; goto label1; break; }
+		case '_': {
+			if (sw == 1) pos1 = i;
+		label1:
+			if (sw == 1) sw = 0; else if (sw == 2) n++; break; }
+		}
+	if (sw == 2) n = 0; R = R * Power10[n];
+	R = RoundReal(R, 0);
+	minus = false;
+	if (R == 0) Num[0] = 0;
+	else {
+		if (R < 0) { minus = true; R = -R; } str(R, Num);
+		pos = minw(pos, pos1);
+	}
+	i = Num.length();
+	if ((Num == "INF") || (Num == "NAN")) {
+		Mask = Num;
+		while ((Mask.length() < l))
+		{
+			pstring tmp = " ";
+			Mask = tmp + Mask;
+		}
+		return;
+	}
+	while (l > 0) {
+		switch (Mask[l]) {
+		case '0':
+		case '*': if (i > 0) goto label3; break;
+		case '.':
+		case ',': if ((i == 0) && (l < pos)) goto label2; break;
+		case '-': if (minus) minus = false; else Mask[l] = ' '; break;
+		case '_': {
+			if (i == 0) {
+				if (l >= pos) Mask[l] = '0';
+				else {
+				label2:
+					if (minus) { minus = false; Mask[l] = '-'; }
+					else { Mask[l] = ' '; }
+				}
+
+			label3:
+				Mask[l] = Num[i]; i--;
+			}
+			break;
+		}
+		}
+		l--;
+	}
+	if (i > 0) Mask = copy(Num, 1, i) + Mask;
+	pstring tmp = "-";
+	if (minus) Mask = tmp + Mask;
+}
+
+LongStr* RunS(FrmlPtr Z)
+{
+	pstring s, snew; WORD w; FileDPtr cf; void* cr; XString* x = (XString*)&s;
+	LongStr* t; LongStr* tnew; WORD l, i, j; double r; BYTE m;
+
+	switch (Z->Op) {
+	case _char: { s[0] = 1; s[1] = char(trunc(RunReal(Z->P1))); break; }
+	case _strdate: s = StrDate(RunReal(Z->P1), Z->Mask);
+	case _str: {
+		if (Z->P3 != nullptr) {
+			r = RunReal(Z->P1);
+			l = RunInt(Z->P2);
+			m = RunInt(Z->P3);
+			if (m == 255) str(r, s); else str(m, s);
+		}
+		else { s = RunShortStr(Z->P2); StrMask(RunReal(Z->P1), s); }
+		break;
+	}
+	case _replace: {
+		t = RunLongStr(Z->P2); s = RunShortStr(Z->P1); j = 1;
+		snew = RunShortStr(Z->P3); tnew = (LongStr*)GetZStore(2);
+	label1:
+		l = t->LL - (j - 1);
+		if (l > 0) {
+			i = FindText(s, Z->Options, CharArrPtr(@t->A[j]), l);
+			if (i > 0) {
+				AddToLongStr(tnew, &t->A[j], i - s.length() - 1);
+				AddToLongStr(tnew, &snew[1], snew.length());
+				j += i - 1;
+				goto label1;
+			}
+		}
+		AddToLongStr(tnew, &t->A[j], l); MyMove(tnew, t, tnew->LL + 2);
+		ReleaseAfterLongStr(t);
+		return t;
+		break;
+	}
+	case _prompt:s = PromptS(RunShortStr(Z->P1), Z->P2, Z->FldD);
+	case _getpath: { s = ".*"; if (Z->P1 != nullptr) s = RunShortStr(Z->P1);
+		s = SelectDiskFile(s, 35, false); }
+	case _catfield: {
+		s = RdCatField(Z->CatIRec, Z->CatFld);
+		if (Z->CatFld == CatPathName) s = FExpand(s);
+		break;
+	}
+	case _passWORD: s = PassWord(false); break;
+	case _readkey: {
+		ReadKbd();
+		s[1] = char(lo(KbdChar));
+		s[0] = 1;
+		if (s[1] == 0) {
+			/*asm  mov al, KbdChar[1].BYTE; cmp al, 0; jne @1; mov al, 03H; jmp @2;
+			@cmp 1 al, 03H; jne @2; mov al, 84H;
+			@mov 2 s[2].BYTE, al; mov s.BYTE, 2*/
+		}
+		break;
+	}
+	case _username: s = UserName; break;
+	case _accright: s = AccRight; break;
+	case _version: s = Version; break;
+	case _edfield: s = EdField; break;
+	case _edfile: {
+		s[0] = 0;
+		if (EditDRoot != nullptr) s = EditDRoot->FD->Name;
+		break;
+	}
+	case _edkey: s = EdKey; break;
+	case _edreckey: s = EdRecKey;;
+	case _getenv: {
+		s = RunShortStr(Z->P1);
+		if (s == "") s = paramstr(0);
+		else s = getenv(s.c_str());
+		break;
+	}
+	case _keyof: {
+		cf = CFile;
+		cr = CRecPtr;
+		/* !!! with Z->LV^ do!!! */
+		CFile = Z->LV->FD; CRecPtr = Z->LV->RecPtr;
+		x->PackKF(Z->PackKey->KFlds); CFile = cf; CRecPtr = cr;
+		break;
+	}
+	case _keybuf: { while (KeyPressed) AddToKbdBuf(ReadKey); s = KbdBuffer; break; }
+	case _recno: GetRecNoXString(Z, *x); break;
+	case _edbool: { s[0] = 0; if ((EditDRoot != nullptr) && EditDRoot->Select
+		&& (EditDRoot->BoolTxt != nullptr)) s = *EditDRoot->BoolTxt;
+		break;
+	}
+	}
+	return CopyToLongStr(s);
+}
+
+LongStr* RunSelectStr(FrmlPtr Z)
+{
+	LongStr* s; LongStr* s2;
+	pstring x(80); pstring mode(5);
+	void* p2; void* pl;
+	WORD i, n;
+
+	s = RunLongStr(Z->P3); n = CountDLines(s->A, s->LL, Z->Delim);
+	for (i = 1; i < n; i++) {
+		x = GetDLine(s->A, s->LL, Z->Delim, i);
+		if (x != "") PutSelect(x);
+	}
+	mode = RunShortStr(Z->P6);
+	for (i = 1; i < mode.length(); i++)
+		switch (toupper(mode[i])) {
+		case 'A': ss.Abcd = true; break;
+		case 'S': ss.Subset = true; break;
+		case 'I': ss.ImplAll = true; break;
+		}
+	SetMsgPar(RunShortStr(Z->P4));
+	SelectStr(RunInt(Z->P1), RunInt(Z->P2), 110, RunShortStr(Z->P5));
+	MarkStore2(p2);
+	s2 = (LongStr*)GetStore2(s->LL + 2); n = 1; LastExitCode = 0;
+	if (KbdChar = _ESC_) LastExitCode = 1;
+	else
+		do {
+			x = GetSelect;
+			if (x != "") {
+				if (n > 1) { s2->A[n] = *m; n++; }
+				Move(&x[1], &s2->A[n], x.length());
+				n += x.length();
+			}
+		} while (!(!ss.Subset || (x == "")));
+		ReleaseStore(s);
+		s = (LongStr*)GetStore(n + 1); s->LL = n - 1; move(s2->A, s->A, n - 1);
+		ReleaseStore2(p2);
+		return s;
+}
+
+void LowCase(LongStr* S)
+{
+
+}
+
+double RoundReal(double RR, integer M)
+{
+	double R;
+	M = maxi(0, mini(M, 10));
+	R = RR * Power10[M]; if (R < 0) R = R - 0.50001; else R = R + 0.50001;
+	return int(R) / Power10[M];
+}
+
+LongStr* LongLeadChar(char C, char CNew, LongStr* S)
+{
+	WORD i, l;
+	i = 1; l = S->LL;
+	while (i <= l) {
+		if (S->A[i] != C) goto label1;
+		if (CNew != 0) S->A[i] = CNew; i++;
+	}
+label1: if (CNew == 0) {
+	l -= i - 1;
+	S->LL = l;
+	if ((i > 1) && (l > 0)) MyMove(&S->A[i], &S->A[1], l);
+	ReleaseAfterLongStr(S);
+}
+return S;
+}
+
+LongStr* LongTrailChar(char C, char CNew, LongStr* S)
+{
+	WORD l;
+	l = S->LL; while (l > 0) {
+		if (S->A[l] != C) goto label1;
+		if (CNew != 0) S->A[l] = CNew; l--;
+	}
+label1:
+	if (CNew == 0) { S->LL = l; ReleaseAfterLongStr(S); }
+	return S;
+}
+
+LongStr* RepeatStr(LongStr* S, integer N)
+{
+	WORD l; void* p;
+	l = S->LL;
+	if (l == 0) return S;
+	if (N <= 0) { S->LL = 0; ReleaseAfterLongStr(S); return S; }
+	while ((N > 1) && (longint(S->LL) + l <= MaxLStrLen))
+	{
+		p = GetStore(l);
+		MyMove(S->A, p, l);
+		S->LL += l; N--;
 	}
 	return S;
-	}
+}
 
-	LongStr* LongTrailChar(char C, char CNew, LongStr * S)
+void AccRecNoProc(FrmlPtr X, WORD Msg)
+{
+	longint N; LockMode md;
+	CFile = X->RecFD;
+	md = NewLMode(RdMode);
+	CRecPtr = GetRecSpace();
+	N = RunInt(X->P1);
+	if ((N <= 0) || (N > CFile->NRecs))
 	{
-		WORD l;
-		l = S->LL; while (l > 0) {
-			if (S->A[l] != C) goto label1;
-			if (CNew != 0) S->A[l] = CNew; l--;
-		}
-	label1:
-		if (CNew == 0) { S->LL = l; ReleaseAfterLongStr(S); }
-		return S;
+		Set2MsgPar(CFile->Name, X->RecFldD->Name); RunErrorM(md, Msg);
 	}
+	ReadRec(N);
+	OldLMode(md);
+}
 
-	LongStr* RepeatStr(LongStr * S, integer N)
-	{
-		WORD l; void* p;
-		l = S->LL;
-		if (l == 0) return S;
-		if (N <= 0) { S->LL = 0; ReleaseAfterLongStr(S); return S; }
-		while ((N > 1) && (longint(S->LL) + l <= MaxLStrLen))
-		{
-			p = GetStore(l);
-			MyMove(S->A, p, l);
-			S->LL += l; N--;
-		}
-		return S;
+void* RunUserFunc(FrmlPtr X)
+{
+	FrmlList fl; LocVar* lv; void* oldbp; void* oldprocbp;
+	oldbp = MyBP; oldprocbp = ProcMyBP; LVBD = X->FC->LVB; PushProcStk();
+	lv = LVBD.Root; fl = X->FrmlL;
+	while (fl != nullptr) {
+		LVAssignFrml(lv, oldbp, false, fl->Frml); lv = lv->Chain; fl = fl->Chain;
 	}
+	ProcMyBP = MyBP;
+	RunProcedure(X->FC->Instr);
+	auto result = LocVarAd(lv);
+	ProcMyBP = (ProcStkD*)oldprocbp;
+	return result;
+}
 
-	void AccRecNoProc(FrmlPtr X, WORD Msg)
-	{
-		longint N; LockMode md;
-		CFile = X->RecFD;
-		md = NewLMode(RdMode);
-		CRecPtr = GetRecSpace();
-		N = RunInt(X->P1);
-		if ((N <= 0) || (N > CFile->NRecs))
-		{
-			Set2MsgPar(CFile->Name, X->RecFldD->Name); RunErrorM(md, Msg);
+void GetRecNoXString(FrmlPtr Z, XString& X)
+{
+	WORD i = 0;
+	X.Clear();
+	KeyFldDPtr kf = Z->Key->KFlds;
+	while (kf != nullptr) {
+		i++;
+		FrmlPtr zz = Z->Arg[i];
+		switch (kf->FldD->FrmlTyp) {
+		case 'S': X.StoreStr(RunShortStr(zz), kf); break;
+		case 'R': X.StoreReal(RunReal(zz), kf); break;
+		case 'B': X.StoreBool(RunBool(zz), kf); break;
 		}
-		ReadRec(N);
-		OldLMode(md);
+		kf = kf->Chain;
 	}
-
-	void* RunUserFunc(FrmlPtr X)
-	{
-		FrmlList fl; LocVar* lv; void* oldbp; void* oldprocbp;
-		oldbp = MyBP; oldprocbp = ProcMyBP; LVBD = X->FC->LVB; PushProcStk();
-		lv = LVBD.Root; fl = X->FrmlL;
-		while (fl != nullptr) {
-			LVAssignFrml(lv, oldbp, false, fl->Frml); lv = lv->Chain; fl = fl->Chain;
-		}
-		ProcMyBP = MyBP;
-		RunProcedure(X->FC->Instr);
-		auto result = LocVarAd(lv);
-		ProcMyBP = (ProcStkD*)oldprocbp;
-		return result;
-	}
-
-	void GetRecNoXString(FrmlPtr Z, XString & X)
-	{
-		WORD i = 0;
-		X.Clear();
-		KeyFldDPtr kf = Z->Key->KFlds;
-		while (kf != nullptr) {
-			i++;
-			FrmlPtr zz = Z->Arg[i];
-			switch (kf->FldD->FrmlTyp) {
-			case 'S': X.StoreStr(RunShortStr(zz), kf); break;
-			case 'R': X.StoreReal(RunReal(zz), kf); break;
-			case 'B': X.StoreBool(RunBool(zz), kf); break;
-			}
-			kf = kf->Chain;
-		}
-	}
+}
 
 
 

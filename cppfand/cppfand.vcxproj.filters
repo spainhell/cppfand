@@ -78,6 +78,9 @@
     <ClCompile Include="rdrun.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="rdproc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base.h">
@@ -184,6 +187,9 @@
     </ClInclude>
     <ClInclude Include="printtxt.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="rdproc.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

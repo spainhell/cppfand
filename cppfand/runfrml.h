@@ -20,15 +20,23 @@ pstring LeadChar(char C, pstring S); // r69
 pstring TrailChar(char C, pstring s); // r73
 LongStr* CopyLine(LongStr* S, WORD N, WORD M);
 bool RunBool(FrmlPtr X);
+bool InReal(double R, BYTE* L, integer M);
+bool LexInStr(LongStr* S, BYTE* L);
+bool InStr(LongStr* S, BYTE* L);
+bool RunModulo(FrmlPtr X);
+bool RunEquMask(FrmlPtr X);
 double RunReal(FrmlPtr X);
 longint RunInt(FrmlPtr X);
+void TestTFrml(FieldDPtr F, FrmlPtr Z);
+bool CanCopyT(FieldDPtr F, FrmlPtr Z);
+bool TryCopyT(FieldDPtr F, TFilePtr TF, longint& pos, FrmlPtr Z);
 void AssgnFrml(FieldDPtr F, FrmlPtr X, bool Delete, bool Add);
 void LVAssignFrml(LocVar* LV, void* OldBP, bool Add, FrmlPtr X);
 void DecodeFieldRSB(FieldDPtr F, WORD LWw, double R, pstring T, bool B, pstring& Txt);
 void DecodeField(FieldDPtr F, WORD LWw, pstring& Txt);
 void RunWFrml(WRectFrml X, BYTE WFlags, WRect& W);
 WORD RunWordImpl(FrmlPtr Z, WORD Impl);
-bool FieldInList(FieldDPtr F, FieldListEl FL);
+bool FieldInList(FieldDPtr F, FieldListEl* FL);
 KeyDPtr GetFromKey(LinkDPtr LD);
 FrmlPtr RunEvalFrml(FrmlPtr Z);
 bool CanCopyT(FieldDPtr F, FrmlPtr Z);
@@ -61,3 +69,4 @@ longint AbsLogRecNoFun(FrmlPtr Z);
 double LinkProc(FrmlPtr X);
 WORD IntTSR(FrmlPtr X);
 WORD PortIn(bool IsWord, WORD Port); // ASM
+

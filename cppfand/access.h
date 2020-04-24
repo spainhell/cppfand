@@ -1,6 +1,5 @@
 #pragma once
 
-//#include <string>
 #include "base.h"
 #include "constants.h"
 #include "runfand.h"
@@ -47,7 +46,7 @@ typedef XWKey* WKeyDPtr;
 
 struct FieldListEl // r32
 {
-	FrmlListEl* Chain;
+	FieldListEl* Chain;
 	FieldDescr* FldD;
 };
 typedef FieldListEl* FieldList;
@@ -88,7 +87,7 @@ struct FrmlElem // ø. 51
 	BYTE N01, N02, N03, N04, N11, N12, N13, N14, N21, N22, N23, N24, N31; // 1
 	BYTE W01, W02, W11, W12, W21, W22; // 1
 	float R; // 2
-	string S; // 4
+	pstring S; // 4
 	bool B; // 5
 	FrmlElem* PP1; pstring Mask; // 6
 	FieldDescr* Field; // 7 {_field}
