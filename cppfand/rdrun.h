@@ -2,6 +2,381 @@
 #include "editor.h"
 #include "rdfrml1.h"
 
+enum MInstrCode { _zero, _move, _output, _locvar, _parfile, _ifthenelseM };
+struct AssignD
+{
+	MInstrCode Kind;
+	FieldDPtr FldD;
+	BYTE& ToPtr, FromPtr; WORD L;
+	bool Add; FrmlPtr Frml; FieldDPtr OFldD;
+	bool Add1; FrmlPtr Frml1; LocVar* LV;
+	bool Add2; FrmlPtr Frml2;
+	FileDPtr FD; FieldDPtr PFldD;
+	FrmlPtr Bool;
+	AssignD* Instr;
+	AssignD* ElseInstr;
+};
+
+struct OutpFD
+{
+	OutpFD* Chain;
+	FileDPtr FD;
+	LockMode Md;
+	void* RecPtr;
+	FileDPtr InplFD;
+	bool Append;
+#ifdef FandSQL
+	SQLStreamPtr Strm;
+#endif
+};
+
+struct OutpRD
+{
+	OutpRD* Chain;
+	OutpFD* OD; /*nullptr=dummy*/
+	FrmlPtr Bool;
+	AssignD* Ass;
+};
+
+struct InpD
+{
+	XScan* Scan;
+	bool AutoSort;
+	KeyFldDPtr SK;
+	LockMode Md;
+	longint IRec;
+	void* ForwRecPtr;
+	FrmlPtr Bool;
+	bool SQLFilter;
+	KeyFldDPtr MFld;
+	SumElPtr Sum;
+	bool Exist;
+	char Op;
+	double Count;
+	ChkDPtr Chk;
+	char OpErr;
+	bool Error;
+	char OpWarn;
+	bool Warning;
+	FrmlPtr ErrTxtFrml;
+	KeyFldDPtr SFld;                /* only Report */
+	ConstListEl* OldSFlds;
+	LvDescrPtr FrstLvS, LstLvS;		/* FrstLvS->Ft=DE */
+	bool IsInplace;              /* only Merge */
+	OutpRD* RD;
+};
+
+struct ConstListEl
+{
+	ConstListEl* Chain;
+	pstring S;
+	double R;
+	bool B;
+};
+
+
+/* Report */
+
+enum AutoRprtMode { _ALstg, _ARprt, _ATotal, _AErrRecs };
+struct RprtFDListEl
+{
+	RprtFDListEl* Chain; FileDPtr FD; KeyDPtr ViewKey;
+	FrmlPtr Cond; KeyInD* KeyIn; bool SQLFilter;
+	void* LVRecPtr;
+};
+
+struct RprtOpt
+{
+	RprtFDListEl FDL;
+	pstring* Path;
+	WORD CatIRec;
+	bool UserSelFlds, UserCondQuest, FromStr, SyntxChk;
+	FrmlPtr Times;
+	AutoRprtMode Mode;
+	RdbPos RprtPos;
+	FieldList Flds;		 /* != nullptr => autoreport*/
+	FieldList Ctrl;
+	FieldList Sum;
+	KeyFldDPtr SK;
+	FrmlPtr WidthFrml, Head;
+	WORD Width;
+	pstring* CondTxt;
+	LongStr* HeadTxt;
+	char Style;
+	bool Edit, PrintCtrl;
+};
+
+struct RFldD
+{
+	RFldD* Chain;
+	char FrmlTyp, Typ;    /*R,F,D,T*/
+	bool BlankOrWrap; /*long date "DD.MM.YYYY"*/
+	FrmlPtr Frml;
+	pstring Name[1]; /*curr. length*/
+};
+
+struct BlkD
+{
+	BlkD* Chain;
+	FrmlPtr Bool;
+	SumElPtr Sum;
+	char* Txt;          /*sequence of pstrings*/
+	bool AbsLine, SetPage, NotAtEnd, FF1, FF2;
+	FrmlPtr LineBound, LineNo, PageNo;
+	WORD NTxtLines, NBlksFrst, DHLevel;
+	RFldD* RFD;
+	AssignD* BeforeProc, AfterProc;
+};
+
+struct LvDescr {
+	LvDescr* Chain;
+	LvDescr* ChainBack;
+	FloatPtrList ZeroLst;
+	BlkD* Hd, Ft;
+	FieldDPtr Fld;
+};
+
+struct EdExKeyD
+{
+	EdExKeyD* Chain;
+	BYTE Break;
+	WORD KeyCode;
+};
+
+struct EdExitD
+{
+	EdExitD* Chain;
+	EdExKeyD* Keys;
+	bool AtWrRec, AtNewRec, NegFlds;
+	FieldList Flds;   /*in edittxt !used*/
+	char Typ;
+	void* RO;
+	InstrPtr Proc;                     /*in edittxt only "P","Q"*/
+	/*"Q" quit   #0 dummy*/
+};
+
+struct EditOpt
+{
+	RdbPos FormPos;
+	bool UserSelFlds, SetOnlyView, NegDupl, NegTab, NegNoEd, SyntxChk;
+	FieldList Flds, Dupl, Tab, NoEd;
+	FrmlPtr Cond;
+	FrmlPtr Head, Last, CtrlLast, AltLast, ShiftLast, Mode;
+	FrmlPtr StartRecNoZ, StartRecKeyZ, StartIRecZ, StartFieldZ;
+	FrmlPtr SaveAfterZ, WatchDelayZ, RefreshDelayZ;
+	WRectFrml W;
+	FrmlPtr ZAttr, ZdNorm, ZdHiLi, ZdSubset, ZdDel, ZdTab, ZdSelect;
+	FrmlPtr Top;
+	BYTE WFlags;
+	EdExitDPtr ExD;
+	FileDPtr Journal;
+	pstring* ViewName;
+	char OwnerTyp;
+	LinkDPtr DownLD;
+	LocVar* DownLV;
+	void* DownRecPtr; void* LVRecPtr;
+	KeyInD* KIRoot;
+	bool SQLFilter;
+	KeyDPtr SelKey, ViewKey;
+};
+
+struct EFldD
+{
+	EFldD* Chain;
+	EFldD* ChainBack;
+	FieldDPtr FldD;
+	ChkDPtr Chk;
+	FrmlPtr Impl;
+	DepDPtr Dep;
+	KeyList KL;
+	BYTE Page, Col, Ln, L;
+	WORD ScanNr;
+	bool Tab, Dupl, Used, EdU, EdN;
+	bool Ed(bool IsNewRec);
+};
+
+struct ERecTxtD
+{
+	ERecTxtD* Chain;
+	WORD N;
+	StringList SL;
+};
+
+struct EditD
+{
+	EditD* PrevE;
+	FileDPtr FD;
+	LockMode OldMd;
+	bool IsUserForm;
+	FieldList Flds;
+	void* OldRecPtr; void* NewRecPtr;
+	BYTE FrstCol, FrstRow, LastCol, LastRow, Rows;
+	WRect V; BYTE ShdwX, ShdwY;
+	BYTE Attr, dNorm, dHiLi, dSubSet, dDel, dTab, dSelect;
+	pstring* Top;
+	BYTE WFlags;                                 /* copied from EO */
+	EdExitDPtr ExD;                              /*      "         */
+	FileDPtr Journal;                            /*      "         */
+	pstring* ViewName;                          /*      "         */
+	char OwnerTyp; /* #0=CtrlF7 */                 /*      "         */
+	LinkDPtr DownLD;                             /*      "         */
+	LocVar* DownLV;                            /*      "         */
+	void* DownRecPtr; void* LVRecPtr;                 /*      "         */
+	KeyInD* KIRoot;                            /*      "         */
+	bool SQLFilter;                           /*      "         */
+	WKeyDPtr SelKey;                             /*      "         */
+	StringList HdTxt; BYTE NHdTxt;
+	WORD SaveAfter, WatchDelay, RefreshDelay;
+	BYTE RecNrPos, RecNrLen;
+	BYTE NPages;
+	ERecTxtD* RecTxt;
+	BYTE NRecs;     /*display*/
+	EFldD* FirstFld, LastFld, StartFld;
+	EFldD* CFld, FirstEmptyFld;                         /*copied*/
+	KeyDPtr VK; WKeyDPtr WK;                             /*  "   */
+	longint BaseRec; BYTE IRec;                          /*  "   */
+	bool IsNewRec, Append, Select, WasUpdated, EdRecVar,          /*  "   */
+		AddSwitch, ChkSwitch, WarnSwitch, SubSet;               /*  "   */
+	bool NoDelTFlds, WasWK;                            /*  "   */
+	bool NoDelete, VerifyDelete, NoCreate, F1Mode,               /*  "   */
+		OnlyAppend, OnlySearch, Only1Record, OnlyTabs,          /*  "   */
+		NoESCPrompt, MustESCPrompt, Prompt158, NoSrchMsg,       /*  "   */
+		WithBoolDispl, Mode24, NoCondCheck, F3LeadIn,           /*  "   */
+		LUpRDown, MouseEnter, TTExit,                          /*  "   */
+		MakeWorkX, NoShiftF7Msg, MustAdd;                      /*  "   */
+	bool MustCheck, SelMode;                          /*  "   */
+	bool DownSet, IsLocked, WwPart;
+	KeyDPtr DownKey;
+	longint LockedRec;
+	FrmlPtr Cond, Bool;
+	pstring* BoolTxt, Head, Last, CtrlLast, AltLast, ShiftLast;
+	WORD NFlds, NTabsSet, NDuplSet, NEdSet;
+	bool EdUpdated;
+	ImplDPtr Impl;
+	longint StartRecNo; pstring* StartRecKey; integer StartIRec;
+	longint OwnerRecNo;
+	LinkDPtr ShiftF7LD;
+	void* AfterE;
+};
+
+enum PInstrCode
+{
+	_menubox, _menubar, _ifthenelseP, _whiledo,
+	_repeatuntil, _break, _exit, _cancel, _save, _closefds,
+	_window, _clrscr, _clrww, _clreol, _gotoxy, _display,
+	_writeln, _comment, _setkeybuf, _clearkeybuf, _headline,
+	_call, _exec, _copyfile, _proc, _lproc, _merge, _sort, _edit, _report,
+	_edittxt, _printtxt, _puttxt, _sql,
+	_asgnloc, _asgnpar, _asgnfield, _asgnedok, _asgnrand, _asgnusertoday,
+	_randomize,
+	_asgnusercode, _asgnusername,
+	_asgnaccright, _asgnxnrecs,
+	_asgnnrecs, _asgncatfield, _asgnrecfld, _asgnrecvar, _asgnclipbd,
+	_turncat, _appendrec, _deleterec, _recallrec, _readrec, _writerec,
+	_linkrec,
+	_releasedrive, _mount, _indexfile, _getindex, _forall,
+	_withshared, _withlocked, _withgraphics,
+	_memdiag, _wait, _delay, _beep, _sound, _nosound, _help, _setprinter,
+	_graph, _putpixel, _line, _rectangle, _ellipse, _floodfill, _outtextxy,
+	_backup, _backupm, _resetcat,
+	_setedittxt, _setmouse, _checkfile, _login, _sqlrdwrtxt,
+	_portout
+};
+
+struct CopyD
+{
+	pstring* Path1; /*FrmlPtr if cpList*/
+	WORD CatIRec1;
+	FileDPtr FD1;
+	KeyDPtr ViewKey;
+	bool WithX1;
+	CpOption Opt1;
+	pstring* Path2; /*  "  */
+	WORD CatIRec2;
+	FileDPtr FD2;
+	bool WithX2;
+	CpOption Opt2;
+	FileDPtr HdFD;
+	FieldDPtr HdF;
+	bool Append, NoCancel;
+	BYTE Mode;
+};
+
+struct WrLnD
+{
+	WrLnD* Chain;
+	FrmlPtr Frml;
+	char Typ; /*S,B,F,D*/
+	BYTE N, M;
+	pstring* Mask;
+};
+
+struct LockD
+{
+	LockD* Chain;
+	FileD* FD;
+	FrmlPtr Frml;
+	LockMode Md, OldMd;
+	longint N;
+};
+
+struct GraphVD
+{
+	GraphVD* Chain;
+	FrmlPtr XZ, YZ, Velikost; /*float*/
+	FrmlPtr BarPis, Text; /*pstring*/
+};
+
+struct GraphWD
+{
+	GraphWD* Chain;
+	FrmlPtr XZ, YZ, XK, YK; /*float*/
+	FrmlPtr BarPoz, BarPis, Text; /*pstring*/
+};
+
+struct GraphRGBD
+{
+	GraphRGBD* Chain;
+	FrmlPtr Barva; /*pstring*/
+	FrmlPtr R, G, B; /*float*/
+};
+
+struct WinG
+{
+	WRectFrml W;
+	WRect WR;
+	FrmlPtr ColFrame, ColBack, ColFor;  /*pstring*/
+	FrmlPtr Top;
+	BYTE WFlags;
+};
+
+struct GraphD
+{
+	FileDPtr FD;
+	FrmlPtr GF;
+	FieldDPtr X, Y, Z;
+	FieldDPtr ZA[10];
+	FrmlPtr HZA[10];
+	FrmlPtr T, H, HX, HY, HZ, C, D, R, P, CO, Assign, Cond; /*pstring*/
+	FrmlPtr S, RS, RN, Max, Min, SP; /*float*/
+	bool Interact;
+	GraphVD* V;
+	GraphWD* W;
+	GraphRGBD* RGB;
+	KeyInD* KeyIn;
+	bool SQLFilter;
+	KeyDPtr ViewKey;
+	WinG* WW;
+};
+
+struct TypAndFrml
+{
+	char FTyp;
+	FrmlPtr Frml; bool FromProlog, IsRetPar;
+	FileDPtr FD; void* RecPtr;
+	FrmlPtr TxtFrml; pstring Name; // if RecPtr != nullptr
+};
+
 struct Instr
 {
 	Instr* Chain;
@@ -10,7 +385,7 @@ struct Instr
 	RdbDPtr HelpRdb;
 	bool WasESCBranch;
 	InstrPtr ESCInstr;
-	ChoiceDPtr Choices;
+	ChoiceD* Choices;
 	bool Loop, PullDown, Shdw;
 	FrmlPtr X, Y, XSz;
 	FrmlPtr mAttr[4];
@@ -30,7 +405,7 @@ struct Instr
 	WORD ProgCatIRec;
 	bool NoCancel, FreeMm, LdFont, TextMd;
 	FrmlPtr Param;
-	CopyDPtr CD;
+	CopyD* CD;
 	BYTE LF /*0-write,1-writeln,2-message,3-message+help*/;
 	WrLnD WD;
 	RdbDPtr mHlpRdb;
@@ -38,7 +413,7 @@ struct Instr
 	FrmlPtr GoX, GoY;
 	FrmlPtr Frml;
 	bool Add;
-	LocVarPtr AssLV;
+	LocVar* AssLV;
 	FrmlPtr Frml0;
 	RdbDPtr HelpRdb0;
 	FrmlPtr Frml1;
@@ -47,22 +422,22 @@ struct Instr
 	FieldDPtr FldD;
 	FrmlPtr RecFrml;
 	bool Indexarg;
-	FrmlPtr Frml2; bool Add2; LocVarPtr AssLV2; FieldDPtr RecFldD;
+	FrmlPtr Frml2; bool Add2; LocVar* AssLV2; FieldDPtr RecFldD;
 	FrmlPtr Frml3; FileDPtr FD3; WORD CatIRec; FieldDPtr CatFld;
-	LocVarPtr RecLV1, RecLV2;
-	AssignDPtr Ass;
+	LocVar* RecLV1, RecLV2;
+	AssignD* Ass;
 	LinkDPtr LinkLD;
 	WKeyDPtr xnrIdx;
 	FrmlPtr RecNr; bool AdUpd;
-	LocVarPtr LV; bool ByKey; KeyDPtr Key;
+	LocVar* LV; bool ByKey; KeyDPtr Key;
 	char CompOp;
 	FileDPtr RecFD;
 	FileDPtr NextGenFD;
 	WORD FrstCatIRec, NCatIRecs; FrmlPtr TCFrml;
 	FileDPtr SortFD; KeyFldDPtr SK;
-	FileDPtr EditFD; EditOptPtr EO;
-	RprtOptPtr RO;
-	pstring* TxtPath; WORD TxtCatIRec; LocVarPtr TxtLV;
+	FileDPtr EditFD; EditOpt* EO;
+	RprtOpt* RO;
+	pstring* TxtPath; WORD TxtCatIRec; LocVar* TxtLV;
 	char EdTxtMode; EdExitDPtr ExD;
 	BYTE WFlags; FrmlPtr TxtPos, TxtXY, ErrMsg;
 	WRectFrml Ww; FrmlPtr Atr; FrmlPtr Hd;
@@ -72,20 +447,20 @@ struct Instr
 	FrmlPtr Drive;
 	WORD MountCatIRec; bool MountNoCancel;
 	FileDPtr IndexFD; bool Compress;
-	LocVarPtr giLV; char giMode; /*+,-,blank*/
+	LocVar* giLV; char giMode; /*+,-,blank*/
 	FrmlPtr giCond; /* || RecNr-Frml */
 	KeyDPtr giKD; KeyFldDPtr giKFlds;
-	KeyInDPtr giKIRoot; bool giSQLFilter;
-	char giOwnerTyp; LinkDPtr giLD; LocVarPtr giLV2;
+	KeyInD* giKIRoot; bool giSQLFilter;
+	char giOwnerTyp; LinkDPtr giLD; LocVar* giLV2;
 	WRectFrml W; FrmlPtr Attr; InstrPtr WwInstr; FrmlPtr Top;
 	BYTE WithWFlags;
 	WRectFrml W2; FrmlPtr Attr2, FillC;
-	FileDPtr CFD; KeyDPtr CKey; LocVarPtr CVar, CRecVar;
-	KeyInDPtr CKIRoot; FrmlPtr CBool/*or SQLTxt*/; InstrPtr CInstr;
+	FileDPtr CFD; KeyDPtr CKey; LocVar* CVar, CRecVar;
+	KeyInD* CKIRoot; FrmlPtr CBool/*or SQLTxt*/; InstrPtr CInstr;
 	LinkDPtr CLD; bool CWIdx, inSQL, CSQLFilter, CProcent;
-	char COwnerTyp; LocVarPtr CLV;
+	char COwnerTyp; LocVar* CLV;
 	InstrPtr WDoInstr, WElseInstr; bool WasElse; LockD WLD;
-	GraphDPtr GD;
+	GraphD* GD;
 	FrmlPtr Par1, Par2, Par3, Par4, Par5, Par6, Par7, Par8, Par9, Par10, Par11;
 	WORD BrCatIRec; bool IsBackup, NoCompress, BrNoCancel;
 	BYTE bmX[5];
@@ -100,3 +475,45 @@ struct Instr
 	FileDPtr sqlFD; KeyDPtr sqlKey; FieldDPtr sqlFldD; FrmlPtr sqlXStr;
 	FrmlPtr IsWord, Port, PortWhat;
 };
+
+ConstList OldMFlds, NewMFlds;   /* Merge + Report*/
+InpD* IDA[9];
+integer MaxIi;
+XString OldMXStr;                  /* Merge */
+OutpFD* OutpFDRoot;
+OutpRD* OutpRDs;
+bool Join;
+bool PrintView;                  /* Report */
+std::string Rprt;		// pùvodnì text - souvisí s text. souborem
+BlkD* RprtHd; BlkD* PageHd; BlkD* PageFt;
+FloatPtrList PFZeroLst;
+LvDescr* FrstLvM; LvDescr* LstLvM; /* LstLvM->Ft=RF */
+bool SelQuest;
+FrmlPtr PgeSizeZ, PgeLimitZ;
+	/* Edit */
+EditD* EditDRoot;
+bool CompileFD, EditRdbMode;
+LocVarBlkD LVBD;
+
+pstring CalcTxt = "";
+struct { char Op; double Group; } MergOpGroup = { _const, 0.0 };
+
+// *** IMPLEMENTATION ***
+
+void ResetLVBD();
+void SetMyBP(ProcStkPtr Bp);
+void PushProcStk();
+void PopProcStk();
+bool RunAddUpdte1(char Kind/*+,-,d*/, void* CRold, bool Back/*tracking*/,
+	AddDPtr StopAD, LinkDPtr notLD);
+
+void CrIndRec();
+bool Link(AddD* AD, longint& N, char& Kind2);
+bool TransAdd(AddD* AD, FileD* FD, void* RP, void* CRnew, longint N, char Kind2, bool Back);
+bool Add(AddD* AD, void* RP, double R);
+void WrUpdRec(AddD* AD, FileD* FD, void* RP, void* CRnew, longint N);
+bool Assign(AddDPtr AD);
+bool LockForAdd(FileDPtr FD, WORD Kind, bool Ta, LockMode& md);
+bool RunAddUpdte(char Kind, void* CRold, LinkD* notLD);
+bool TestExitKey(WORD KeyCode, EdExitD* X);
+void SetCompileAll();

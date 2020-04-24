@@ -164,6 +164,7 @@
     <ClCompile Include="obaseww.cpp" />
     <ClCompile Include="pstring.cpp" />
     <ClCompile Include="rdfrml1.cpp" />
+    <ClCompile Include="rdrun.cpp" />
     <ClCompile Include="recacc.cpp" />
     <ClCompile Include="runfand.cpp" />
     <ClCompile Include="runfrml.cpp" />
