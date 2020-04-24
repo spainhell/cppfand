@@ -116,7 +116,7 @@ void AsgnParFldFrml(FileD* FD, FieldDPtr F, FrmlPtr Z, bool Ad)
 	{
 		md = NewLMode(WrMode);
 		if (!LinkLastRec(CFile, N, true)) { IncNRecs(1); WriteRec(N); }
-		runfrml::AssgnFrml(F, Z, true, Ad); WriteRec(N); OldLMode(md);
+		AssgnFrml(F, Z, true, Ad); WriteRec(N); OldLMode(md);
 	}
 	ReleaseStore(CRecPtr); CFile = cf; CRecPtr = cr;
 }
@@ -260,7 +260,7 @@ pstring _ShortS(FieldDPtr F)
 		}
 		return S;
 	}
-	return runfrml::RunShortStr(F->Frml);
+	return RunShortStr(F->Frml);
 }
 
 LongStr* _LongS(FieldDPtr F)
@@ -310,7 +310,7 @@ LongStr* _LongS(FieldDPtr F)
 			}
 			return S;
 		}
-		return runfrml::RunLongStr(F->Frml);
+		return RunLongStr(F->Frml);
 	};
 }
 
@@ -325,7 +325,7 @@ double _RforD(FieldDPtr F, void* P)
 			integer i = s.first('.');
 			if (i > 0) s.Delete(i, 1);
 		}
-		val(runfrml::LeadChar(' ', runfrml::TrailChar(' ', s)), r, err);
+		val(LeadChar(' ', TrailChar(' ', s)), r, err);
 		break;
 	}
 	case 'D': r = ValDate(s, "YYYYMMDD"); break;
@@ -362,7 +362,7 @@ double _R(FieldDPtr F)
 		}
 		}
 	}
-	else return runfrml::RunReal(F->Frml);
+	else return RunReal(F->Frml);
 	return result;
 }
 
@@ -379,7 +379,7 @@ bool _B(FieldDPtr F)
 		else if ((*CP == '\0') || (*CP == 0xff)) result = false;
 		else result = true;
 	}
-	else result = runfrml::RunBool(F->Frml);
+	else result = RunBool(F->Frml);
 	return result;
 }
 
@@ -396,7 +396,7 @@ longint _T(FieldDescr* F)
 		n = 0;
 		// tvברםme se, e CRecPtr je pstring ...
 		pstring* s = (pstring*)CRecPtr;
-		auto result = stoi(runfrml::LeadChar(' ', *s));
+		auto result = stoi(LeadChar(' ', *s));
 		return result;
 	}
 	else
@@ -448,7 +448,7 @@ void S_(FieldDPtr F, pstring S)
 			break;
 		}
 		case 'T': {
-			ss = runfrml::CopyToLongStr(S);
+			ss = CopyToLongStr(S);
 			LongS_(F, ss);
 			ReleaseStore(ss);
 			break;

@@ -33,13 +33,13 @@ void RestorePar(longint l)
 
 void SetEditTxt(Instr* PD)
 {
-	if (PD->Insert != nullptr) Insert = !runfrml::RunBool(PD->Insert);
-	if (PD->Indent != nullptr) Indent = runfrml::RunBool(PD->Indent);
-	if (PD->Wrap != nullptr) Wrap = runfrml::RunBool(PD->Wrap);
-	if (PD->Just != nullptr) Just = runfrml::RunBool(PD->Just);
-	if (PD->ColBlk != nullptr) TypeB = runfrml::RunBool(PD->ColBlk);
-	if (PD->Left != nullptr) LeftMarg = maxi(1, runfrml::RunInt(PD->Left));
-	if (PD->Right != nullptr) RightMarg = maxi(LeftMarg, mini(255, runfrml::RunInt(PD->Right)));
+	if (PD->Insert != nullptr) Insert = !RunBool(PD->Insert);
+	if (PD->Indent != nullptr) Indent = RunBool(PD->Indent);
+	if (PD->Wrap != nullptr) Wrap = RunBool(PD->Wrap);
+	if (PD->Just != nullptr) Just = RunBool(PD->Just);
+	if (PD->ColBlk != nullptr) TypeB = RunBool(PD->ColBlk);
+	if (PD->Left != nullptr) LeftMarg = maxi(1, RunInt(PD->Left));
+	if (PD->Right != nullptr) RightMarg = maxi(LeftMarg, mini(255, RunInt(PD->Right)));
 }
 
 void GetEditTxt(bool& pInsert, bool& pIndent, bool& pWrap, bool& pJust, bool& pColBlk, integer& pLeftMarg,

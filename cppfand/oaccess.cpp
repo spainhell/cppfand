@@ -159,7 +159,7 @@ string RdCatField(WORD CatIRec, FieldDPtr CatF)
 	CF = CFile; CR = CRecPtr; CFile = CatFD;
 	CRecPtr = GetRecSpace();
 	ReadRec(CatIRec);
-	auto result = runfrml::TrailChar(' ', _ShortS(CatF));
+	auto result = TrailChar(' ', _ShortS(CatF));
 	ReleaseStore(CRecPtr); CFile = CF; CRecPtr = CR;
 	return result;
 }

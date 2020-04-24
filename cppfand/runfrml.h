@@ -2,47 +2,62 @@
 #include "access.h"
 #include "pstring.h"
 
+#ifdef FandGraph
+#include "graph.h"
+#endif
+#ifdef FandSQL
+#include "channel.h"
+#endif
 
-class runfrml
-{
-public:
-	FileDPtr TFD02; TFilePtr TF02; longint TF02Pos; // r33
-	
-	static double Owned(FrmlPtr Bool, FrmlPtr Sum, LinkDPtr LD);
-	static integer CompBool(bool B1, bool B2);
-	static integer CompReal(double R1, double R2, integer M); // r42
-	static LongStrPtr CopyToLongStr(const pstring& SS);
-	static pstring LeadChar(char C, pstring S); // r69
-	static pstring TrailChar(char C, pstring s); // r73
 
-	static LongStrPtr CopyLine(LongStrPtr S, WORD N, WORD M);
-	static bool RunBool(FrmlPtr X);
-	static double RunReal(FrmlPtr X);
-	static longint RunInt(FrmlPtr X);
+FileDPtr TFD02; TFilePtr TF02; longint TF02Pos; // r33
 
-	static void AssgnFrml(FieldDPtr F, FrmlPtr X, bool Delete, bool Add);
-	static void LVAssignFrml(LocVar* LV, void* OldBP, bool Add, FrmlPtr X);
-	static void DecodeFieldRSB(FieldDPtr F, WORD LWw, double R, pstring T, bool B, pstring& Txt);
-	static void DecodeField(FieldDPtr F, WORD LWw, pstring& Txt);
-	static void RunWFrml(WRectFrml X, BYTE WFlags, WRect& W);
-	static WORD RunWordImpl(FrmlPtr Z, WORD Impl);
-	static bool FieldInList(FieldDPtr F, FieldListEl FL);
-	static KeyDPtr GetFromKey(LinkDPtr LD);
-	static FrmlPtr RunEvalFrml(FrmlPtr Z);
-	static bool CanCopyT(FieldDPtr F, FrmlPtr Z);
-	
-	static LongStr* RunLongStr(FrmlPtr X);  // r417 zaèíná od 555
-	static pstring RunShortStr(FrmlPtr X); // r629 ASM
+double Owned(FrmlPtr Bool, FrmlPtr Sum, LinkDPtr LD);
+integer CompBool(bool B1, bool B2);
+integer CompReal(double R1, double R2, integer M); // r42
+LongStr* CopyToLongStr(pstring& SS);
+pstring LeadChar(char C, pstring S); // r69
+pstring TrailChar(char C, pstring s); // r73
+LongStr* CopyLine(LongStr* S, WORD N, WORD M);
+bool RunBool(FrmlPtr X);
+double RunReal(FrmlPtr X);
+longint RunInt(FrmlPtr X);
+void AssgnFrml(FieldDPtr F, FrmlPtr X, bool Delete, bool Add);
+void LVAssignFrml(LocVar* LV, void* OldBP, bool Add, FrmlPtr X);
+void DecodeFieldRSB(FieldDPtr F, WORD LWw, double R, pstring T, bool B, pstring& Txt);
+void DecodeField(FieldDPtr F, WORD LWw, pstring& Txt);
+void RunWFrml(WRectFrml X, BYTE WFlags, WRect& W);
+WORD RunWordImpl(FrmlPtr Z, WORD Impl);
+bool FieldInList(FieldDPtr F, FieldListEl FL);
+KeyDPtr GetFromKey(LinkDPtr LD);
+FrmlPtr RunEvalFrml(FrmlPtr Z);
+bool CanCopyT(FieldDPtr F, FrmlPtr Z);
+LongStr* RunLongStr(FrmlPtr X);  // r417 zaèíná od 555
+pstring RunShortStr(FrmlPtr X); // r629 ASM
+void ConcatLongStr(LongStr* S1, LongStr* S2); // r418 ASM
+void CopyLongStr(LongStr* S, WORD From, WORD Number); // r425 ASM
+void AddToLongStr(LongStr* S, void* P, WORD L); // r433
+void StrMask(double R, pstring& Mask); // r438
+LongStr* RunS(FrmlPtr Z); // r469
+LongStr* RunSelectStr(FrmlPtr Z); // r522
+void LowCase(LongStr* S); //543 ASM
+double RoundReal(double RR, integer M);
+LongStr* LongLeadChar(char C, char CNew, LongStr* S);
+LongStr* LongTrailChar(char C, char CNew, LongStr* S);
+LongStr* RepeatStr(LongStr* S, integer N);
+void AccRecNoProc(FrmlPtr X, WORD Msg);
+void* RunUserFunc(FrmlPtr X);
+void GetRecNoXString(FrmlPtr Z, XString& X);
+double RunRealStr(FrmlPtr X);
+double RMod(FrmlPtr X);
+double LastUpdate(FILE* Handle);
+WORD TypeDay(double R);
+double AddWDays(double R, integer N, WORD d);
 
-private:
-	static void ConcatLongStr(LongStrPtr S1, LongStrPtr S2); // r418 ASM
-	static void CopyLongStr(LongStrPtr S, WORD From, WORD Number); // r425 ASM
-	static void AddToLongStr(LongStrPtr S, void* P, WORD L); // r433
-	static void StrMask(double R, pstring& Mask); // r438
-	static LongStr* RunS(FrmlPtr Z); // r469
-	static LongStr* RunSelectStr(FrmlPtr Z); // r522
-	static void LowCase(LongStr* S); //543 ASM
-	
-	
-};
-
+double DifWDays(double R1, double R2, WORD d);
+longint GetFileSize();
+longint RecNoFun(FrmlPtr Z);
+longint AbsLogRecNoFun(FrmlPtr Z);
+double LinkProc(FrmlPtr X);
+WORD IntTSR(FrmlPtr X);
+WORD PortIn(bool IsWord, WORD Port); // ASM

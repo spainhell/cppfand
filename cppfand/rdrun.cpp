@@ -76,10 +76,10 @@ bool RunAddUpdte1(char Kind, void* CRold, bool Back, AddDPtr StopAD, LinkDPtr no
 		if (AD == StopAD) { ReleaseStore(p); return result; }
 		if ((notLD != nullptr) && (AD->LD == notLD)) goto label1;
 		if (AD->Assign) if (Assign(AD)) goto label1; else goto fail;
-		R = runfrml::RunReal(AD->Frml); if (Kind == '-') R = -R; Rold = 0;
+		R = RunReal(AD->Frml); if (Kind == '-') R = -R; Rold = 0;
 		if (Kind == 'd')
 		{
-			CRecPtr = CRold; Rold = runfrml::RunReal(AD->Frml);
+			CRecPtr = CRold; Rold = RunReal(AD->Frml);
 		}
 		ADback = AD; CF2 = AD->File2; N2 = 0; N2old = 0;
 		if (R != 0)
@@ -199,9 +199,9 @@ bool Add(AddD* AD, void* RP, double R)
 	CRecPtr = RP;
 	if (Back) R = -R;
 	R_(AD->Field, _R(AD->Field) + R); if (AD->Chk == nullptr) return result;
-	if (!Back && !runfrml::RunBool(AD->Chk->Bool))
+	if (!Back && !RunBool(AD->Chk->Bool))
 	{
-		SetMsgPar(runfrml::RunShortStr(AD->Chk->TxtZ));
+		SetMsgPar(RunShortStr(AD->Chk->TxtZ));
 		WrLLF10Msg(110); result = false;
 	}
 	return result;
@@ -228,13 +228,13 @@ bool Assign(AddDPtr AD)
 {
 	double R; LongStr* S; pstring ss; bool B;
 	longint Pos, N2; char Kind2;
-	if (!runfrml::RunBool(AD->Bool)) return true;
+	if (!RunBool(AD->Bool)) return true;
 	FieldDPtr F = AD->Field; FrmlPtr Z = AD->Frml;
 	switch (F->FrmlTyp) {
-	case 'R': R = runfrml::RunReal(Z); break;
-	case 'S': if (F->Typ == 'T') S = runfrml::RunLongStr(Z);
-		else ss = runfrml::RunShortStr(Z); break;
-	default: B = runfrml::RunBool(Z); break;
+	case 'R': R = RunReal(Z); break;
+	case 'S': if (F->Typ == 'T') S = RunLongStr(Z);
+		else ss = RunShortStr(Z); break;
+	default: B = RunBool(Z); break;
 	}
 	if (!Link(AD, N2, Kind2)) { return false; }
 	switch (F->FrmlTyp) {

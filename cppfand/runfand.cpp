@@ -64,7 +64,7 @@ void runfand::InitRunFand()
 	FandWorkTName = s + ".T$$";
 	LANNode = 0;
 	s = GetEnv("LANNODE");
-	s = runfrml::TrailChar(' ', s);
+	s = TrailChar(' ', s);
 	if (!s.empty()) {
 		val(s, nb, err);
 #ifndef FandRunV

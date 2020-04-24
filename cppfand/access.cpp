@@ -95,9 +95,9 @@ bool XString::PackFrml(FrmlList FL, KeyFldD* KF)
 	while (FL != nullptr) {
 		Z = FL->Frml;
 		switch (KF->FldD->FrmlTyp) {
-		case 'S':StoreStr(runfrml::RunShortStr(Z), KF); break;
-		case 'R':StoreReal(runfrml::RunReal(Z), KF); break;
-		case 'B':StoreBool(runfrml::RunBool(Z), KF); break;
+		case 'S':StoreStr(RunShortStr(Z), KF); break;
+		case 'R':StoreReal(RunReal(Z), KF); break;
+		case 'B':StoreBool(RunBool(Z), KF); break;
 		}
 		KF = KF->Chain; FL = FL->Chain;
 	}
@@ -1080,7 +1080,7 @@ label1:
 		label2:
 			ReadRec(RecNr); if (DeletedFlag()) goto label1;
 		label3:
-			if (!runfrml::RunBool(Bool)) goto label1;
+			if (!RunBool(Bool)) goto label1;
 		}
 #ifdef FandSQL
 		case 3: {

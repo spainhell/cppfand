@@ -93,7 +93,7 @@ void SetInpTT(RdbPos RP, bool FromTxt)
 	longint Pos;  FileDPtr CF; void* CR; LongStrPtr s;
 
 	if (RP.IRec == 0) {
-		SetInpLongStr(runfrml::RunLongStr(FrmlPtr(RP.R)), true);
+		SetInpLongStr(RunLongStr(FrmlPtr(RP.R)), true);
 		return;
 	}
 	InpRdbPos = RP;
