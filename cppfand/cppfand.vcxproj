@@ -163,6 +163,7 @@
     <ClCompile Include="oaccess.cpp" />
     <ClCompile Include="obaseww.cpp" />
     <ClCompile Include="pstring.cpp" />
+    <ClCompile Include="rdfrml.cpp" />
     <ClCompile Include="rdfrml1.cpp" />
     <ClCompile Include="rdproc.cpp" />
     <ClCompile Include="rdrun.cpp" />
