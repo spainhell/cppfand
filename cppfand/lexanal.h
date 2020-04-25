@@ -29,10 +29,10 @@ double RdRealConst(); // r250
 double ValofS(pstring& S); // r251
 bool EquUpcase(const pstring& S); // r274 ASM
 
-bool TestKeyWord(pstring& S); // r282
+bool TestKeyWord(pstring S); // r282
 bool IsKeyWord(pstring S); // r284 ASM
-void AcceptKeyWord(pstring& S); // r293
-bool IsOpt(pstring& S); // r296 ASM
+void AcceptKeyWord(pstring S); // r293
+bool IsOpt(pstring S); // r296 ASM
 bool IsDigitOpt(pstring& S, WORD& N); // r305
 pstring* RdStrConst(); // r314
 char Rd1Char(); // r317

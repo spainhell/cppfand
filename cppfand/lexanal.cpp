@@ -478,7 +478,7 @@ bool EquUpcase(const pstring& S)
 	return false;
 }
 
-bool TestKeyWord(pstring& S)
+bool TestKeyWord(pstring S)
 {
 	return (Lexem == _identifier) && EquUpcase(S);
 }
@@ -497,13 +497,13 @@ bool IsKeyWord(pstring S)
 	return false;
 }
 
-void AcceptKeyWord(pstring& S)
+void AcceptKeyWord(pstring S)
 {
 	if (TestKeyWord(S)) RdLex();
 	else { SetMsgPar(S); Error(33); }
 }
 
-bool IsOpt(pstring& S)
+bool IsOpt(pstring S)
 {
 	//// TODO
 	//asm  cmp Lexem, _identifier; jne @3;

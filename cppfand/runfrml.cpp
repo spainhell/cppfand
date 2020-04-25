@@ -8,9 +8,8 @@
 #include "rdrun.h"
 #include "recacc.h"
 #include <math.h>
-
 #include "oaccess.h"
-#include "wwmix.h"
+
 
 double Owned(FrmlPtr Bool, FrmlPtr Sum, LinkDPtr LD)
 {
@@ -917,7 +916,7 @@ KeyDPtr GetFromKey(LinkDPtr LD)
 
 FrmlPtr RunEvalFrml(FrmlPtr Z)
 {
-	if ((Z != nullptr) && (Z->Op == _eval)) Z = GetEvalFrml(Z);
+	if ((Z != nullptr) && ((BYTE)Z->Op == _eval)) Z = GetEvalFrml(Z);
 	return Z;
 }
 

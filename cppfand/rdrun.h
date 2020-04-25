@@ -377,7 +377,7 @@ struct TypAndFrml
 	FrmlPtr TxtFrml; pstring Name; // if RecPtr != nullptr
 };
 
-struct Instr
+struct Instr // POZOR konflikt názvù viz níže
 {
 	Instr* Chain;
 	PInstrCode Kind;
