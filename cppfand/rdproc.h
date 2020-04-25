@@ -19,7 +19,7 @@ FrmlPtr RdFunctionP(char& FFTyp);
 KeyD* RdViewKeyImpl(FileD* FD);
 void RdSelectStr(FrmlPtr Z);
 Instr* GetPInstr(PInstrCode Kind, WORD Size);
-Instr* RdPInstr();
+// Instr* RdPInstr(); je níže
 void RdPInstrAndChain(Instr* PD);
 void RdChoices(Instr* PD);
 void RdMenuAttr(Instr* PD);
@@ -64,9 +64,9 @@ kNames KeyNames[NKeyNames] = {
 bool RdHeadLast(void* AA);
 bool RdViewOpt(EditOpt* EO);
 void RdKeyList(EdExitD* X);
-Instr* RdPInstr();
+Instr* RdPInstr; // toto bude ukazatel na pozdìji pøiøazenou funkci
 Instr* GetPD(PInstrCode Kind, WORD Size);
-void RdProcCall();
+void RdProcCall(); // hlavní funkce v souboru
 FieldList RdFlds();
 FieldList RdSubFldList(FieldList InFL, char Opt);
 void RdSortCall();
@@ -74,5 +74,42 @@ void RdEditCall();
 void RdEditOpt(EditOpt* EO);
 void RdReportCall();
 void RdRprtOpt(RprtOpt* RO, bool HasFrst);
-
-
+void RdRDBCall();
+void RdExec();
+void RdCopyFile();
+CpOption RdCOpt();
+bool RdX(FileD* FD);
+bool TestFixVar(CpOption Opt, FileD* FD1, FileD* FD2);
+bool RdList(pstring* S);
+void RdPrintTxt();
+void RdEditTxt();
+void RdPutTxt();
+void RdTurnCat();
+void RdWriteln(BYTE OpKind);
+void RdReleaseDrive();
+void RdIndexfile();
+void RdGetIndex();
+void RdGotoXY();
+void RdClrWw();
+void RdMount();
+void RdDisplay();
+void RdGraphP();
+void RdMixRecAcc(PInstrCode Op);
+void RdLinkRec();
+void RdBackup(char MTyp, bool IsBackup);
+void RdSetEditTxt();
+#ifndef FandSQL
+void RdSqlRdWrTxt(bool Rd);
+#endif
+#ifndef FandProlog
+void RdCallLProc();
+#endif
+FrmlPtr AdjustComma(FrmlPtr Z1, FieldDPtr F, char Op);
+AssignD* MakeImplAssign(FileD* FD1, FileD* FD2);
+void RdAssign();
+Instr* RdWith();
+Instr* RdUserFuncAssign();
+void ReadProcHead();
+Instr* ReadProcBody();
+void ReadDeclChpt();
+FrmlPtr GetEvalFrml(FrmlPtr X);

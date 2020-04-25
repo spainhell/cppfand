@@ -29,7 +29,8 @@ const BYTE oLeaf = 3; const BYTE oNotLeaf = 7;
 const BYTE f_Stored = 1; const BYTE f_Encryp = 2; // {FieldD flags}
 const BYTE f_Mask = 4; const BYTE f_Comma = 8; // {FieldD flags}
 
-enum LockMode { NullMode, NoExclMode, NoDelMode, NoCrMode, RdMode, WrMode, CrMode, DelMode, ExclMode };
+enum LockMode { NullMode = 0, NoExclMode = 1, NoDelMode = 2, NoCrMode = 3,
+	RdMode = 4, WrMode = 5, CrMode = 6, DelMode = 7, ExclMode = 8 };
 pstring LockModeTxt[9] = { "NULL", "NOEXCL","NODEL","NOCR","RD","WR","CR","DEL","EXCL" };
 
 const WORD MPageSize = 512;
@@ -601,16 +602,16 @@ const BYTE _mousein = 0xf7;  // {P4};
 
 
 // ø. 474
-FileDPtr FileDRoot; // { only current RDB }
-LinkDPtr LinkDRoot; // { for all RDBs     }
-FuncDPtr FuncDRoot;
-FileDPtr CFile;
+FileD* FileDRoot; // { only current RDB }
+LinkD* LinkDRoot; // { for all RDBs     }
+FuncD* FuncDRoot;
+FileD* CFile;
 void* CRecPtr;
-KeyDPtr CViewKey;
+KeyD* CViewKey;
 pstring TopRdbDir, TopDataDir;
 pstring CatFDName;
-RdbDPtr CRdb, TopRdb;
-FileDPtr CatFD, HelpFD;
+RdbD* CRdb, TopRdb;
+FileD* CatFD, HelpFD;
 
 // r483
 struct structXPath { longint Page; WORD I; } XPath[10];

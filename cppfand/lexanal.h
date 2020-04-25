@@ -8,7 +8,7 @@ struct RdbPos;
 
 void Error(integer N); // r1
 void SetInpStr(pstring& S); //r31
-void SetInpLongStr(LongStrPtr S, bool ShowErr); // r37
+void SetInpLongStr(LongStr* S, bool ShowErr); // r37
 void SetInpTTPos(longint Pos, bool Decode); // r46
 void SetInpTT(RdbPos RP, bool FromTxt); // r53
 void SetInpTTxtPos(FileDPtr FD);
@@ -33,7 +33,7 @@ bool TestKeyWord(pstring S); // r282
 bool IsKeyWord(pstring S); // r284 ASM
 void AcceptKeyWord(pstring S); // r293
 bool IsOpt(pstring S); // r296 ASM
-bool IsDigitOpt(pstring& S, WORD& N); // r305
+bool IsDigitOpt(pstring S, WORD& N); // r305
 pstring* RdStrConst(); // r314
 char Rd1Char(); // r317
 char RdQuotedChar(); // r320

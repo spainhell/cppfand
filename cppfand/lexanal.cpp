@@ -67,7 +67,7 @@ void SetInpStr(pstring& S)
 	CurrPos = 1; FillChar(&InpRdbPos, sizeof(InpRdbPos), 0);
 }
 
-void SetInpLongStr(LongStrPtr S, bool ShowErr)
+void SetInpLongStr(LongStr* S, bool ShowErr)
 {
 	InpArrLen = S->LL;
 	InpArrPtr = CharArrPtr(*S->A);
@@ -517,7 +517,7 @@ bool IsOpt(pstring S)
 	return false;
 }
 
-bool IsDigitOpt(pstring& S, WORD& N)
+bool IsDigitOpt(pstring S, WORD& N)
 {
 	char LastLexWord = LexWord[LexWord.length()];
 	if ((Lexem == _identifier) && (LexWord.length() == S.length() + 1)
