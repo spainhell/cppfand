@@ -13,32 +13,24 @@ using namespace std;
 {$ifdef FandDML} dml, { $endif }
 //wwmenu, wwmix, compile, rdfildcl, editor, runedi, runproj, runfrml;*/
 
-class runfand
-{
-public:
-	void ScrGraphMode(bool Redraw, WORD OldScrSeg);
-	WORD ScrTextMode(bool Redraw, bool Switch);
-	void InitRunFand(); // !!! spuštìní - vstupní procedura
+void ScrGraphMode(bool Redraw, WORD OldScrSeg);
+WORD ScrTextMode(bool Redraw, bool Switch);
+void InitRunFand(); // !!! spuštìní - vstupní procedura
+void* Ovr();
+bool IsAT();
+void OpenXMS();
+void OpenCache();
+void DetectVideoCard();
+void InitDrivers();
+void InitAccess();
+void RdCFG();
+void RdPrinter();
+void RdWDaysTab();
+void CompileHelpCatDcl();
 
-private:
-	void* Ovr();
-	bool IsAT();
-	void OpenXMS();
-	void OpenCache();
-	void DetectVideoCard();
-	void InitDrivers();
-	void InitAccess();
-	void RdCFG();
-	void RdPrinter();
-	void RdWDaysTab();
-	void CompileHelpCatDcl();
-
-	bool SetTopDir(pstring& path, pstring& name);
-	void RunRdb(pstring path);
-	void SelectRunRdb(bool OnFace);
-	void CallInstallRdb();
-	void CallEditTxt();
-	void SelectEditTxt(pstring E, bool OnFace);
-	
-};
-
+bool SetTopDir(pstring& path, pstring& name);
+void RunRdb(pstring path);
+void SelectRunRdb(bool OnFace);
+void CallInstallRdb();
+void CallEditTxt();
+void SelectEditTxt(pstring E, bool OnFace);

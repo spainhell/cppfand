@@ -165,7 +165,7 @@ label1:
 			Set2MsgPar(path, txt[UM]);
 			w = PushWrLLMsg(825, false);
 		}
-		Drivers::LockBeep();
+		LockBeep();
 		KbdTimer(spec.NetDelay, 0);
 		goto label1;
 	}

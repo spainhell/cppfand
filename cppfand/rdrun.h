@@ -2,6 +2,8 @@
 #include "editor.h"
 #include "rdfrml1.h"
 
+struct LvDescr;
+
 enum MInstrCode { _zero, _move, _output, _locvar, _parfile, _ifthenelseM };
 struct AssignD
 {
@@ -38,6 +40,14 @@ struct OutpRD
 	AssignD* Ass;
 };
 
+struct ConstListEl
+{
+	ConstListEl* Chain;
+	pstring S;
+	double R;
+	bool B;
+};
+
 struct InpD
 {
 	XScan* Scan;
@@ -61,19 +71,11 @@ struct InpD
 	FrmlPtr ErrTxtFrml;
 	KeyFldDPtr SFld;                /* only Report */
 	ConstListEl* OldSFlds;
-	LvDescrPtr FrstLvS, LstLvS;		/* FrstLvS->Ft=DE */
+	LvDescr* FrstLvS;
+	LvDescr* LstLvS;		/* FrstLvS->Ft=DE */
 	bool IsInplace;              /* only Merge */
 	OutpRD* RD;
 };
-
-struct ConstListEl
-{
-	ConstListEl* Chain;
-	pstring S;
-	double R;
-	bool B;
-};
-
 
 /* Report */
 
@@ -131,7 +133,7 @@ struct BlkD
 struct LvDescr {
 	LvDescr* Chain;
 	LvDescr* ChainBack;
-	FloatPtrList ZeroLst;
+	FloatPtrListEl* ZeroLst;
 	BlkD* Hd, Ft;
 	FieldDPtr Fld;
 };
@@ -262,7 +264,7 @@ struct EditD
 enum PInstrCode
 {
 	_menubox, _menubar, _ifthenelseP, _whiledo,
-	_repeatuntil, _break, _exit, _cancel, _save, _closefds,
+	_repeatuntil, _break, _exitP, _cancel, _save, _closefds,
 	_window, _clrscr, _clrww, _clreol, _gotoxy, _display,
 	_writeln, _comment, _setkeybuf, _clearkeybuf, _headline,
 	_call, _exec, _copyfile, _proc, _lproc, _merge, _sort, _edit, _report,
@@ -276,12 +278,14 @@ enum PInstrCode
 	_linkrec,
 	_releasedrive, _mount, _indexfile, _getindex, _forall,
 	_withshared, _withlocked, _withgraphics,
-	_memdiag, _wait, _delay, _beep, _sound, _nosound, _help, _setprinter,
+	_memdiag, _wait, _delay, _beepP, _sound, _nosound, _help, _setprinter,
 	_graph, _putpixel, _line, _rectangle, _ellipse, _floodfill, _outtextxy,
 	_backup, _backupm, _resetcat,
 	_setedittxt, _setmouse, _checkfile, _login, _sqlrdwrtxt,
 	_portout
 };
+
+enum CpOption {cpNo, cpFix, cpVar, cpTxt};
 
 struct CopyD
 {
@@ -300,6 +304,17 @@ struct CopyD
 	FieldDPtr HdF;
 	bool Append, NoCancel;
 	BYTE Mode;
+};
+
+struct ChoiceD
+{
+	ChoiceD* Chain;
+	pstring* HelpName;
+	bool Displ, DisplEver, Enabled, TxtConst;
+	FrmlPtr Bool;
+	Instr* Instr;
+	FrmlPtr TxtFrml;
+	pstring* Txt;
 };
 
 struct WrLnD
@@ -476,7 +491,7 @@ struct Instr // POZOR konflikt názvù viz níže
 	FrmlPtr IsWord, Port, PortWhat;
 };
 
-ConstList OldMFlds, NewMFlds;   /* Merge + Report*/
+ConstListEl* OldMFlds, NewMFlds;   /* Merge + Report*/
 InpD* IDA[9];
 integer MaxIi;
 XString OldMXStr;                  /* Merge */
@@ -486,7 +501,7 @@ bool Join;
 bool PrintView;                  /* Report */
 std::string Rprt;		// pùvodnì text - souvisí s text. souborem
 BlkD* RprtHd; BlkD* PageHd; BlkD* PageFt;
-FloatPtrList PFZeroLst;
+FloatPtrListEl* PFZeroLst;
 LvDescr* FrstLvM; LvDescr* LstLvM; /* LstLvM->Ft=RF */
 bool SelQuest;
 FrmlPtr PgeSizeZ, PgeLimitZ;

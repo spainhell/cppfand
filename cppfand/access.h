@@ -95,11 +95,11 @@ struct FrmlElem // ø. 51
 	FrmlElem* P011; FileD* File2; LinkD* LD; // 7  {LD=nil for param} {_access} {LD=RecPtr} {_recvarfld}
 	FrmlElem* Frml; FileD* NewFile; void* NewRP; // 8 {_newfile}
 	FileD* FD; // 9 {_lastupdate, _generation}
-	WORD CatIRec; FileD* CatFld; // 10 {_catfield}
-	FrmlElem* PPP1; FrmlElem* PP2; FileD* FldD; // 11 {_prompt}
+	WORD CatIRec; FieldDescr* CatFld; // 10 {_catfield}
+	FrmlElem* PPP1; FrmlElem* PP2; FieldDescr* FldD; // 11 {_prompt}
 	FrmlElem* PPPP1; FrmlElem* PPP2; FrmlElem* PP3; pstring Options; // 12 {_pos,_replace}
 	FileD* FFD; KeyD* Key; FrmlElem* Arg[2]; // 13 {_recno/typ='R' or'S'/,_recnoabs,_recnolog}
-	FrmlElem* PPPPP1; FileD* RecFD; FileD* RecFldD; // 14 {_accrecno,_isdeleted}
+	FrmlElem* PPPPP1; FileD* RecFD; FieldDescr* RecFldD; // 14 {_accrecno,_isdeleted}
 	LinkD* LinkLD; bool LinkFromRec; LocVar* LinkLV; FrmlElem* LinkRecFrml; // 15 {_link}
 	FrmlElem* PPPPPP1; FrmlElem* PPPP2; pstring* TxtPath; WORD TxtCatIRec; // 16 {_gettxt,_filesize}
 	WORD BPOfs; // 18 { _getlocvar }
@@ -556,7 +556,7 @@ const BYTE _catfield = 0x36; // {CatIRec,CatFld}
 const BYTE _passWORD = 0x37; const BYTE _version = 0x38; const BYTE _username = 0x39; const BYTE _edfield = 0x3a;
 const BYTE _accright = 0x3b; const BYTE _readkey = 0x3c; const BYTE _edreckey = 0x3d; const BYTE _edbool = 0x3e;
 const BYTE _edfile = 0x3f; const BYTE _edkey = 0x40; const BYTE _clipbd = 0x41; const BYTE _keybuf = 0x42;
-const BYTE _key = 0x43;  // {LV,KeyD}                                             // {S}
+const BYTE _keyof = 0x43;  // {LV,KeyD}                                             // {S}
 const BYTE _edupdated = 0x44; const BYTE _keypressed = 0x45; const BYTE _escprompt = 0x46;
 const BYTE _trust = 0x47; const BYTE _lvdeleted = 0x48;  // {bytestring}_lvdeleted=#$48;   // {LV}                      // {B}
 const BYTE _userfunc = 0x49;

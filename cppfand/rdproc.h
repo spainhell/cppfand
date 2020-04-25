@@ -4,7 +4,6 @@
 #include "pstring.h"
 #include "rdrun.h"
 
-void Ovr(); //ASM
 bool IsRdUserFunc;
 
 void TestCatError(WORD I, pstring Nm, bool Old);
@@ -40,12 +39,12 @@ const BYTE NKeyNames = 21;
 struct kNames { pstring Nm; BYTE Brk; WORD Code; };
 kNames KeyNames[NKeyNames] = {
 	{"HOME", 51, _Home_},
-	{"UP", 52, _Up_},
+	{"UP", 52, _up_},
 	{"PGUP", 53, _PgUp_},
-	{"LEFT", 55, _Left_},
-	{"RIGHT", 57, _Right_},
+	{"LEFT", 55, _left_},
+	{"RIGHT", 57, _right_},
 	{"END", 59, _End_},
-	{"DOWN", 60, _Down_},
+	{"DOWN", 60, _down_},
 	{"PGDN", 61, _PgDn_},
 	{"INS", 62, _Ins_},
 	{"CTRLLEFT", 71, _CtrlLeft_},

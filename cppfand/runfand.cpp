@@ -6,6 +6,7 @@
 #include "drivers.h"
 #include "kbdww.h"
 #include "access.h"
+#include "editor.h"
 #include "memory.h"
 #include "oaccess.h"
 #include "handle.h"
@@ -17,7 +18,7 @@
 #include "wwmix.h"
 
 
-void runfand::InitRunFand()
+void InitRunFand()
 {
 	Drivers driver = Drivers(); // HLAVNI OVLADAC
 
@@ -25,7 +26,7 @@ void runfand::InitRunFand()
 	FILE* h = nullptr;
 	pstring s;
 	BYTE nb, sec = 0;
-	ExitRecord* er = nullptr;
+	ExitRecord* er = new ExitRecord();
 	integer i, j, MsgNr;
 	// TODO: PMenuBoxS mb;
 	longint w = 0;
@@ -109,7 +110,7 @@ void runfand::InitRunFand()
 	// FillChar(XWork, sizeof(XWork), 0); // celý objekt nulovat nemusíme, snad ...
 	// FillChar(TWork, sizeof(TWork), 0); //  -"-
 	CRdb = nullptr;
-	for (int i = 0; i < FloppyDrives; i++) { MountedVol[i] = ""; }
+	for (i = 0; i < FloppyDrives; i++) { MountedVol[i] = ""; }
 	// Ww
 	wwmix::ss.Empty = true;
 	wwmix::ss.Pointto = nullptr;
@@ -117,7 +118,7 @@ void runfand::InitRunFand()
 	TxtEdCtrlF4Brk = false;
 	InitMouseEvents();
 	// Editor
-	// TODO: InitTxtEditor();
+	InitTxtEditor();
 	//
 	OpenCache();
 
@@ -160,20 +161,20 @@ void runfand::InitRunFand()
 		}
 
 		TextAttr = colors.DesktopColor;
-		Drivers::Window(1, 1, (BYTE)TxtCols, TxtRows - 1);
+		Window(1, 1, (BYTE)TxtCols, TxtRows - 1);
 		WriteWFrame(WHasFrame + WDoubleFrame, "", "");
-		Drivers::ScrClr(1, 1, TxtCols - 2, TxtRows - 13, (char)0xb1, TextAttr);
-		Drivers::ScrClr(1, TxtRows - 12, TxtCols - 2, 10, (char)0xb2, TextAttr);
+		ScrClr(1, 1, TxtCols - 2, TxtRows - 13, (char)0xb1, TextAttr);
+		ScrClr(1, TxtRows - 12, TxtCols - 2, 10, (char)0xb2, TextAttr);
 		ResFile.Get(FandFace, p);
 		x = (pstring*)p;
 		xofs++;
 		for (int i = -11; i < -6; i++) {
 			x[0] = char(TxtCols - 2);
-			Drivers::ScrWrStr(1, TxtRows + i, *x, TextAttr);
+			ScrWrStr(1, TxtRows + i, *x, TextAttr);
 			xofs += 82;
 		}
 		TextAttr = colors.mHili;
-		Drivers::ScrClr(3, TxtRows - 4, TxtCols - 6, 1, ' ', TextAttr);
+		ScrClr(3, TxtRows - 4, TxtCols - 6, 1, ' ', TextAttr);
 
 #ifdef Trial
 		RdMsg(70);
@@ -217,7 +218,7 @@ void runfand::InitRunFand()
 		}
 		else MsgLine += 'x';
 
-		Drivers::GotoXY(5, TxtRows - 3); printf(MsgLine.c_str());
+		GotoXY(5, TxtRows - 3); printf(MsgLine.c_str());
 
 
 #ifdef FandRunV 
@@ -229,7 +230,7 @@ void runfand::InitRunFand()
 #ifndef FandDemo
 		if (TxtCols >= 80) {
 			RdMsg(40);
-			Drivers::GotoXY(51, TxtRows - 3);
+			GotoXY(51, TxtRows - 3);
 			//printf(MsgLine, UserLicNrShow:7);
 		}
 #endif

@@ -1,15 +1,13 @@
 #include "drivers.h"
-
 #include <iostream>
-
 #include "base.h"
 
-void Drivers::Beep()
+void Beep()
 {
 	std::cout << '\a';
 }
 
-void Drivers::LockBeep()
+void LockBeep()
 {
 	if (spec.LockBeepAllowed) std::cout << '\a';
 }

@@ -31,6 +31,8 @@ void TruncF();
 // ø. 252
 void CloseFile();
 
+WORD GetCatIRec(pstring Name, bool MultiLevel); // r364
+
 // ø. 400
 string RdCatField(WORD CatIRec, FieldDPtr CatF);
 

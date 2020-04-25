@@ -194,6 +194,9 @@
     <ClInclude Include="rdproc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="rdfildcl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="cppfand.rc">

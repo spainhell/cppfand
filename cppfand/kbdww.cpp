@@ -11,11 +11,11 @@ void WrLLF10MsgLine()
 	WORD col, row, len;
 
 	row = TxtRows - 1;
-	Drivers::ScrRdBuf(0, row, &Buf[0], TxtCols);
-	Drivers::Beep();
-	Drivers::ScrClr(0, row, TxtCols, 1, ' ', colors.zNorm);
-	if (F10SpecKey == 0xffff) Drivers::ScrWrStr(0, row, "...!", colors.zNorm | 0x80);
-	else Drivers::ScrWrStr(0, row, "F10!", colors.zNorm | 0x80);
+	ScrRdBuf(0, row, &Buf[0], TxtCols);
+	Beep();
+	ScrClr(0, row, TxtCols, 1, ' ', colors.zNorm);
+	if (F10SpecKey == 0xffff) ScrWrStr(0, row, "...!", colors.zNorm | 0x80);
+	else ScrWrStr(0, row, "F10!", colors.zNorm | 0x80);
 	col = MsgLine.length() + 5;
 	len = 0;
 	if ((F10SpecKey == 0xfffe) || (F10SpecKey == _F1_)) {
@@ -29,9 +29,9 @@ void WrLLF10MsgLine()
 		MsgLine[0] = char(TxtCols - 5);
 		len = 0;
 	}
-	Drivers::ScrWrStr(5, row, MsgLine, colors.zNorm);
+	ScrWrStr(5, row, MsgLine, colors.zNorm);
 label1:
-	Drivers::GetEvent();
+	GetEvent();
 	/*with Event*/
 	switch (Event.What) {
 	case evMouse:
@@ -50,15 +50,15 @@ label1:
 		{
 			KbdChar = Event.KeyCode;
 		label2:
-			Drivers::ClrEvent();
+			ClrEvent();
 			goto label3;
 		}
 	}
-	Drivers::ClrEvent();
+	ClrEvent();
 	goto label1;
 label3:
 	F10SpecKey = 0;
-	Drivers::ScrWrBuf(0, row, &Buf[0], TxtCols);
+	ScrWrBuf(0, row, &Buf[0], TxtCols);
 
 }
 
@@ -71,7 +71,7 @@ void WrLLF10Msg(WORD N)
 void RunError(WORD N)
 {
 	RunErrNr = N;
-	Drivers::ClearKbdBuf();
+	ClearKbdBuf();
 	WrLLF10Msg(RunErrNr);
 	GoExit();
 }

@@ -37,7 +37,7 @@ void Error(integer N)
 		}
 	}
 	CurrPos--;
-	Drivers::ClearKbdBuf(); l = InpArrLen; i = CurrPos;
+	ClearKbdBuf(); l = InpArrLen; i = CurrPos;
 	if (IsTestRun && (PrevCompInp != nullptr && InpRdbPos.R != CRdb /* 0xinclude higher Rdb*/
 		|| InpRdbPos.R == nullptr) /* TODO: ptr(0, 1)*/ /*LongStr + ShowErr*/
 		&& StoreAvail() > l + TxtCols * TxtRows * 2 + 50)

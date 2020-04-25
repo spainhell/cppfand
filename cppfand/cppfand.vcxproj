@@ -192,6 +192,7 @@
     <ClInclude Include="obaseww.h" />
     <ClInclude Include="printtxt.h" />
     <ClInclude Include="pstring.h" />
+    <ClInclude Include="rdfildcl.h" />
     <ClInclude Include="rdfrml.h" />
     <ClInclude Include="rdfrml1.h" />
     <ClInclude Include="rdmix.h" />
