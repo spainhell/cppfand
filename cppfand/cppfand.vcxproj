@@ -171,6 +171,7 @@
     <ClCompile Include="recacc.cpp" />
     <ClCompile Include="runfand.cpp" />
     <ClCompile Include="runfrml.cpp" />
+    <ClCompile Include="wwmix.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="access.h" />

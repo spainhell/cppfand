@@ -5,6 +5,12 @@
 #include "drivers.h"
 #include "memory.h"
 
+void wRllmSG(WORD N)
+{
+	RdMsg(N);
+	WrLLMsgTxt();
+}
+
 void WrLLF10MsgLine()
 {
 	WORD Buf[MaxTxtCols];

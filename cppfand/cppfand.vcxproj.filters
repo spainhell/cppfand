@@ -87,6 +87,9 @@
     <ClCompile Include="rdmix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="wwmix.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base.h">

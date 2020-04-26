@@ -3,6 +3,7 @@
 #include "pstring.h"
 
 
+void* PushScr(WORD C1, WORD R1, WORD C2, WORD R2); // r72
 longint PushW1(WORD C1, WORD R1, WORD C2, WORD R2, bool PushPixel, bool WW); // r80
 
 // ø. 142

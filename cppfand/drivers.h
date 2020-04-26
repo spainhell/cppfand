@@ -16,11 +16,21 @@ struct TPoint
 	WORD Y;
 };
 
-enum Events { evMouse, evKeyDown };
+const WORD evMouseDown = 0x0001;
+const WORD evMouseUp = 0x0002;
+const WORD evMouseMove = 0x0004;
+const WORD evMouseAuto = 0x0008;
+const WORD evNothing = 0x0000;
+const WORD evMouse = 0x000F;
+const WORD evKeyDown = 0x0010;
+
+const WORD mbLeftButton = 0x0001;
+const WORD mbRightButton = 0x0002;
+const WORD mbDoubleClick = 0x0100;
 
 struct TEvent
 {
-	Events What;
+	WORD What;
 	WORD KeyCode;
 	WORD Buttons;
 	TPoint Where;

@@ -137,7 +137,7 @@ struct FieldDescr // ø. 100
 	// case boolean {Stored} of True:(Displ:integer); False:(Frml:FrmlPtr; Name:string[1]{ curr.length });
 	integer Displ;
 	FrmlPtr Frml;
-	string Name;
+	pstring Name;
 };
 typedef FieldDescr* FieldDPtr;
 
