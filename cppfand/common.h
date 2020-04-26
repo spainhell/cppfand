@@ -19,8 +19,8 @@ bool EquLongStr(LongStrPtr S1, LongStrPtr S2); // ASM
 bool EquArea(void* P1, void* P2, WORD L); // ASM
 integer MinI(integer X, integer Y);
 integer MaxI(integer X, integer Y);
-integer MinW(WORD X, WORD Y);
-integer MaxW(WORD X, WORD Y);
+WORD MinW(WORD X, WORD Y);
+WORD MaxW(WORD X, WORD Y);
 longint MinL(longint X, longint Y);
 longint MaxL(longint X, longint Y);
 longint SwapLong(longint N); // ASM
