@@ -84,6 +84,9 @@
     <ClCompile Include="rdfrml.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="rdmix.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base.h">

@@ -54,7 +54,7 @@ double CurrTime();
 // *** DISPLAY
 WORD LenStyleStr(pstring s);
 WORD LogToAbsLenStyleStr(pstring s, WORD l);
-bool SetStyleAttr(char c, BYTE& a);
+//bool SetStyleAttr(char c, BYTE& a);
 void WrStyleChar(char c);
 void WrStyleStr(pstring s, WORD Attr);
 void WrLongStyleStr(LongStrPtr S, WORD Attr);

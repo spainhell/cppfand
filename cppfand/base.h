@@ -77,7 +77,7 @@ const longint MaxWSize = 0; // {currently occupied in FANDWORK.$$$}
 // ********** MESSAGES **********
 WORD F10SpecKey; // ø. 293
 BYTE ProcAttr;
-bool SetStyleAttr(char c, BYTE a);
+bool SetStyleAttr(char c, BYTE& a);
 pstring MsgLine;
 pstring MsgPar[4];
 void SetMsgPar(pstring s);

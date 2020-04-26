@@ -165,6 +165,7 @@
     <ClCompile Include="pstring.cpp" />
     <ClCompile Include="rdfrml.cpp" />
     <ClCompile Include="rdfrml1.cpp" />
+    <ClCompile Include="rdmix.cpp" />
     <ClCompile Include="rdproc.cpp" />
     <ClCompile Include="rdrun.cpp" />
     <ClCompile Include="recacc.cpp" />

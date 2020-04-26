@@ -82,12 +82,12 @@ typedef KeyListEl* KeyList;
 
 struct FrmlElem // ø. 51
 {
-	char Op;
+	BYTE Op;
 	FrmlElem* P1; FrmlElem* P2; FrmlElem* P3; FrmlElem* P4; FrmlElem* P5; FrmlElem* P6; // 0
 	char Delim; // 0
 	BYTE N01, N02, N03, N04, N11, N12, N13, N14, N21, N22, N23, N24, N31; // 1
 	BYTE W01, W02, W11, W12, W21, W22; // 1
-	float R; // 2
+	double R; // 2
 	pstring S; // 4
 	bool B; // 5
 	FrmlElem* PP1; pstring Mask; // 6
