@@ -2,7 +2,6 @@
 // {$I edevent.pas}
 
 #pragma once
-#include <string>
 #include <set>
 
 using namespace std;
@@ -13,9 +12,9 @@ typedef unsigned short WORD;
 typedef unsigned char BYTE;
 typedef char ArrLine[COL];
 typedef char(*ArtPtr)[COL];
-typedef string ColorOrd;
+typedef pstring ColorOrd;
 typedef int longint;
-typedef string pathstr;
+typedef pstring pathstr;
 
 struct Character {
 	char ch;

@@ -31,6 +31,8 @@ void TruncF();
 // ø. 252
 void CloseFile();
 
+WORD TestMountVol(char DriveC); // r301
+
 WORD GetCatIRec(pstring Name, bool MultiLevel); // r364
 
 // ø. 400

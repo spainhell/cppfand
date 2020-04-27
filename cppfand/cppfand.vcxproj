@@ -153,6 +153,7 @@
     <ClCompile Include="cppfand.cpp" />
     <ClCompile Include="drivers.cpp" />
     <ClCompile Include="editor.cpp" />
+    <ClCompile Include="edtextf.cpp" />
     <ClCompile Include="fileacc.cpp" />
     <ClCompile Include="handle.cpp" />
     <ClCompile Include="index.cpp" />
@@ -181,7 +182,9 @@
     <ClInclude Include="compile.h" />
     <ClInclude Include="constants.h" />
     <ClInclude Include="drivers.h" />
+    <ClInclude Include="edglobal.h" />
     <ClInclude Include="editor.h" />
+    <ClInclude Include="edtextf.h" />
     <ClInclude Include="fanddml.h" />
     <ClInclude Include="fileacc.h" />
     <ClInclude Include="handle.h" />
@@ -215,6 +218,9 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="cppfand.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="type.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

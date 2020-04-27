@@ -93,6 +93,9 @@
     <ClCompile Include="wwmenu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="edtextf.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base.h">
@@ -206,10 +209,21 @@
     <ClInclude Include="rdfildcl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="edtextf.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="edglobal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="cppfand.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="type.cpp">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -86,7 +86,7 @@ struct PartDescr
 	bool UpdP;
 	ColorOrd ColorP;
 } Part;
-WORD TxtFH;
+FILE* TxtFH;
 pstring TxtPath;
 pstring TxtVol;
 bool AllRd;
