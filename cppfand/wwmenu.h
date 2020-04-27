@@ -53,12 +53,12 @@ public:
 	BYTE Palette[4]; // norm, curr, char, disabled
 	bool IsBoxS;
 	void ClearHlp();
-	virtual bool Enabled(WORD I);
-	virtual bool ExecItem(WORD I);
+	virtual bool Enabled(WORD I) = 0;
+	virtual bool ExecItem(WORD& I) = 0;
 	bool FindChar();
-	virtual pstring GetHlpName();
-	virtual void GetItemRect(WORD I, TRect R);
-	virtual pstring GetText(integer I);
+	virtual pstring GetHlpName() = 0;
+	virtual void GetItemRect(WORD I, TRect* R) = 0;
+	virtual pstring GetText(integer I) = 0;
 	void HandleEvent();
 	bool IsMenuBar();
 	void LeadIn(TPoint* T);
@@ -75,31 +75,32 @@ class TMenuBox : public TMenu
 public:
 	TMenuBox(WORD C1, WORD R1);
 	WORD Exec(WORD IStart);
-	void GetItemRect(WORD I, TRect R) override;
+	void GetItemRect(WORD I, TRect* R) override;
 };
 
-typedef TMenuBox* PMenuBox;
-typedef TMenu* PMenu;
+//typedef TMenuBox* PMenuBox;
+//typedef TMenu* PMenu;
 
 class TMenuBoxS : public TMenuBox
 {
 public:
 	TMenuBoxS(WORD C1, WORD R1, pstring* Msg);
-	virtual pstring GetHlpName();
-	virtual pstring GetText(integer I);
+	pstring* MsgTxt;
+	pstring GetHlpName() override;
+	pstring GetText(integer I) override;
 };
 
 class TMenuBoxP : public TMenuBox
 {
 public:
-	TMenuBoxP(WORD C1, WORD R1, PMenu aParent, Instr* aPD);
+	TMenuBoxP(WORD C1, WORD R1, TMenu* aParent, Instr* aPD);
 	Instr* PD;
 	ChoiceD* CRoot;
 	pstring* HdTxt;
-	virtual bool Enabled(WORD I);
-	virtual bool ExecItem(WORD& I);
-	virtual pstring GetHlpName();
-	virtual pstring GetText(integer I);
+	bool Enabled(WORD I) override;
+	bool ExecItem(WORD& I) override;
+	pstring GetHlpName() override;
+	pstring GetText(integer I) override;
 };
 
 class TMenuBar : public TMenu
@@ -109,8 +110,8 @@ public:
 	WORD nBlks;
 	BYTE DownI[30];
 	WORD Exec();
-	virtual bool GetDownMenu(PMenuBox* W);
-	virtual void GetItemRect(WORD I, TRect* R);
+	virtual bool GetDownMenu(TMenuBox* W);
+	void GetItemRect(WORD I, TRect* R) override;
 };
 
 class TMenuBarS : public TMenuBar
@@ -118,20 +119,29 @@ class TMenuBarS : public TMenuBar
 public:
 	TMenuBarS(WORD MsgNr);
 	pstring* MsgTxt;
-	virtual bool GetDownMenu(PMenuBox* W);
-	virtual pstring GetHlpName();
-	pstring GetText(integer I);
+	bool GetDownMenu(TMenuBox* W) override;
+	pstring GetHlpName() override;
+	pstring GetText(integer I) override;
 };
 
 class TMenuBarP : public TMenuBar
 {
-	TMenuBarP Init(Instr* aPD);
+public:
+	TMenuBarP(Instr* aPD);
 	Instr* PD;
 	ChoiceD* CRoot;
-	virtual bool Enabled(WORD I);
-	virtual bool ExecItem(WORD& I);
-	virtual bool GetDownMenu(PMenuBox* W);
-	virtual pstring GetHlpName();
-	virtual pstring GetText(integer I);
+	bool Enabled(WORD I) override;
+	bool ExecItem(WORD& I) override;
+	bool GetDownMenu(TMenuBox* W) override;
+	pstring GetHlpName() override;
+	pstring GetText(integer I) override;
 };
 
+WORD Menu(WORD MsgNr, WORD IStart);
+bool PrinterMenu(WORD Msg);
+ChoiceD* CI(ChoiceD* C, WORD I);
+WORD CountNTxt(ChoiceD* C, bool IsMenuBar);
+void MenuBoxProc(Instr* PD);
+void MenuBarProc(Instr* PD);
+LongStr* GetHlpText(RdbD* R, pstring S, bool ByName, WORD& IRec);
+void DisplLLHelp(RdbD* R, pstring Name, bool R24);

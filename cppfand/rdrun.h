@@ -3,6 +3,7 @@
 #include "rdfrml1.h"
 
 struct LvDescr;
+struct Instr;
 
 enum MInstrCode { _zero, _move, _output, _locvar, _parfile, _ifthenelseM };
 struct AssignD
@@ -42,10 +43,10 @@ struct OutpRD
 
 struct ConstListEl
 {
-	ConstListEl* Chain;
-	pstring S;
-	double R;
-	bool B;
+	ConstListEl* Chain = nullptr;
+	pstring S = "";
+	double R = 0;
+	bool B = false;
 };
 
 struct InpD
@@ -153,7 +154,7 @@ struct EdExitD
 	FieldList Flds;   /*in edittxt !used*/
 	char Typ;
 	void* RO;
-	InstrPtr Proc;                     /*in edittxt only "P","Q"*/
+	Instr* Proc;                     /*in edittxt only "P","Q"*/
 	/*"Q" quit   #0 dummy*/
 };
 
@@ -399,13 +400,14 @@ struct Instr // POZOR konflikt názvù viz níže
 	FrmlPtr HdLine;
 	RdbDPtr HelpRdb;
 	bool WasESCBranch;
-	InstrPtr ESCInstr;
+	Instr* ESCInstr;
 	ChoiceD* Choices;
 	bool Loop, PullDown, Shdw;
 	FrmlPtr X, Y, XSz;
 	FrmlPtr mAttr[4];
 	FrmlPtr Bool;
-	InstrPtr Instr1, ElseInstr1;  // pùvodnì Instr a ElseInstr -> konflikt názvù
+	Instr* Instr1;
+	Instr* ElseInstr1;  // pùvodnì Instr a ElseInstr -> konflikt názvù
 	RdbPos Pos;
 	RdbPos PPos;
 	BYTE N;
@@ -415,7 +417,7 @@ struct Instr // POZOR konflikt názvù viz níže
 	pstring* lpName;
 	pstring* RdbNm;
 	pstring* ProcNm;
-	InstrPtr ProcCall;
+	Instr* ProcCall;
 	pstring* ProgPath;
 	WORD ProgCatIRec;
 	bool NoCancel, FreeMm, LdFont, TextMd;
@@ -467,14 +469,14 @@ struct Instr // POZOR konflikt názvù viz níže
 	KeyDPtr giKD; KeyFldDPtr giKFlds;
 	KeyInD* giKIRoot; bool giSQLFilter;
 	char giOwnerTyp; LinkDPtr giLD; LocVar* giLV2;
-	WRectFrml W; FrmlPtr Attr; InstrPtr WwInstr; FrmlPtr Top;
+	WRectFrml W; FrmlPtr Attr; Instr* WwInstr; FrmlPtr Top;
 	BYTE WithWFlags;
 	WRectFrml W2; FrmlPtr Attr2, FillC;
 	FileDPtr CFD; KeyDPtr CKey; LocVar* CVar, CRecVar;
-	KeyInD* CKIRoot; FrmlPtr CBool/*or SQLTxt*/; InstrPtr CInstr;
+	KeyInD* CKIRoot; FrmlPtr CBool/*or SQLTxt*/; Instr* CInstr;
 	LinkDPtr CLD; bool CWIdx, inSQL, CSQLFilter, CProcent;
 	char COwnerTyp; LocVar* CLV;
-	InstrPtr WDoInstr, WElseInstr; bool WasElse; LockD WLD;
+	Instr* WDoInstr; Instr* WElseInstr; bool WasElse; LockD WLD;
 	GraphD* GD;
 	FrmlPtr Par1, Par2, Par3, Par4, Par5, Par6, Par7, Par8, Par9, Par10, Par11;
 	WORD BrCatIRec; bool IsBackup, NoCompress, BrNoCancel;

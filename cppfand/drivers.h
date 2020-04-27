@@ -97,11 +97,11 @@ void* OldIntr08;
 
 void Assign(WORD XX, WORD YY);
 char CurrToKamen(char C);
-void ConvKamenToCurr(WORD Buf, WORD L);
-void ConvKamenLatin(WORD Buf, WORD L, bool ToLatin);
+void ConvKamenToCurr(WORD* Buf, WORD L);
+void ConvKamenLatin(WORD* Buf, WORD L, bool ToLatin);
 char ToggleCS(char C);
 char NoDiakr(char C);
-void ConvToNoDiakr(WORD Buf, WORD L, TVideoFont FromFont);
+void ConvToNoDiakr(WORD* Buf, WORD L, TVideoFont FromFont);
 void ClearKeyBuf(); // { Bios }
 void ClearKbdBuf();
 bool KeyPressed(); // { Bios }

@@ -124,7 +124,7 @@ double RunRealStr(FrmlPtr X)
 	label1:
 		L = S->LL + 1 - J; I = 0;
 		if ((N > 0) && (L > 0)) {
-			I = FindText(Mask, X->Options, CharArrPtr(@S->A[J]), L);
+			I = FindText(Mask, X->Options, CharArrPtr(S->A[J]), L);
 			if (I > 0) {
 				J = J + I - Mask.length(); N--;
 				if (N > 0) goto label1; I = J - 1;
@@ -135,7 +135,7 @@ double RunRealStr(FrmlPtr X)
 	}
 	case _diskfree: {
 		S = RunLongStr(X->P1);
-		result = DiskFree(ord(upcase(S->A[1])) - ord("@"));
+		result = DiskFree(toupper(S->A[1]) - '@');
 		ReleaseStore(S);
 		break;
 	}
