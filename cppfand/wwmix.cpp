@@ -216,7 +216,7 @@ void WriteItem(WORD N)
 		printf("%s", p->S.c_str());
 		l = sv.MaxItemLen - p->S.length();
 	}
-	if (l > 0) printf(' ':l);
+	if (l > 0) printf(" ");
 }
 
 void SetAttr(WORD Attr)

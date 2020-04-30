@@ -8,6 +8,7 @@ struct Instr;
 enum MInstrCode { _zero, _move, _output, _locvar, _parfile, _ifthenelseM };
 struct AssignD
 {
+	AssignD* Chain;
 	MInstrCode Kind;
 	FieldDPtr FldD;
 	BYTE& ToPtr, FromPtr; WORD L;

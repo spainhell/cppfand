@@ -9,6 +9,11 @@
 #include "recacc.h"
 #include "runfrml.h"
 
+void ClosePassiveFD()
+{
+	if ((CFile->Typ != '0') && (CFile->LMode == NullMode)) CloseFile();
+}
+
 void CloseFANDFiles(bool FromDML)
 {
 	RdbDPtr RD;
@@ -22,7 +27,7 @@ void CloseFANDFiles(bool FromDML)
 		RD = RD->ChainBack;
 	}
 	if (CRdb != nullptr) { CFile = CatFD; CloseFile(); }
-	CFile = HelpFD;
+	CFile = &HelpFD;
 	CloseFile();
 	CloseH(TWork.Handle);
 	CloseH(XWork.Handle);
@@ -35,7 +40,7 @@ void OpenFANDFiles(bool FromDML)
 
 	OpenXWorkH();
 	OpenTWorkH();
-	CFile = HelpFD;
+	CFile = &HelpFD;
 	OpenF(RdOnly);
 	if (CRdb == nullptr) exit(0);
 	CFile = CatFD;
@@ -152,27 +157,27 @@ void CloseFile()
 		}
 }
 
-string RdCatField(WORD CatIRec, FieldDPtr CatF)
+pstring RdCatField(WORD CatIRec, FieldDPtr CatF)
 {
-	FileDPtr CF; void* CR;
-
-	CF = CFile; CR = CRecPtr; CFile = CatFD;
+	FileDPtr CF = CFile;
+	void* CR = CRecPtr;
+	CFile = CatFD;
 	CRecPtr = GetRecSpace();
 	ReadRec(CatIRec);
 	auto result = TrailChar(' ', _ShortS(CatF));
-	ReleaseStore(CRecPtr); CFile = CF; CRecPtr = CR;
+	ReleaseStore(CRecPtr);
+	CFile = CF;
+	CRecPtr = CR;
 	return result;
 }
 
 bool SetContextDir(pstring& D, bool& IsRdb)
 {
-	RdbDPtr R; FileDPtr F;
-
 	bool result = true;;
-	R = CRdb;
+	RdbDPtr R = CRdb;
 	IsRdb = false;
 	while (R != nullptr) {
-		F = R->FD;
+		FileDPtr F = R->FD;
 		if ((CFile == F) && (CFile->CatIRec != 0)) {
 			D = R->RdbDir;
 			IsRdb = true;
@@ -245,7 +250,7 @@ void SetCPathVol()
 	default: CExt = ".000";
 	}
 	if (SetContextDir(CDir, isRdb)) goto label2;
-	if (CFile == HelpFD) {
+	if (CFile == &HelpFD) {
 		CDir = FandDir;
 		CName =
 #ifdef FandRunV

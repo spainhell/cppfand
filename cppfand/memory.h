@@ -13,6 +13,7 @@ void MarkStore2(void* p) {} // r270
 void MarkBoth(void* p, void* p2) {} // r272
 void ReleaseStore(void* pointer) {}; // r275
 void ReleaseAfterLongStr(void* pointer) {}; // r293
+void ReleaseStore2(void* p); // r298
 longint StoreAvail() { return 512*1024*1024; } // r309
 void GoExit() { return; } // r350
 void RestoreExit(ExitRecord& Buf) {}; // r362

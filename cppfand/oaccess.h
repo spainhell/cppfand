@@ -4,45 +4,20 @@
 #include "access.h"
 #include "fileacc.h"
 
-// ø. 49
-void OpenXWorkH();
-
-// ø. 57
-void OpenTWorkH();
-
-// ø. 81
-void CloseFANDFiles(bool FromDML);
-
-// ø. 94
-void OpenFANDFiles(bool FromDML);
-
-// ø. 119
-bool OpenF1(FileUseMode UM);
-
-// ø. 159
-bool OpenF2();
-
-// ø. 196
-bool OpenF(FileUseMode UM);
-
-// ø. 239
-void TruncF();
-
-// ø. 252
-void CloseFile();
-
+void OpenXWorkH(); // ø. 49
+void OpenTWorkH(); // ø. 57
+void ClosePassiveFD(); // r76
+void CloseFANDFiles(bool FromDML);// ø. 81
+void OpenFANDFiles(bool FromDML);// ø. 94
+bool OpenF1(FileUseMode UM);// ø. 119
+bool OpenF2();// ø. 159
+bool OpenF(FileUseMode UM);// ø. 196
+void TruncF();// ø. 239
+void CloseFile();// ø. 252
 WORD TestMountVol(char DriveC); // r301
-
 WORD GetCatIRec(pstring Name, bool MultiLevel); // r364
-
-// ø. 400
-string RdCatField(WORD CatIRec, FieldDPtr CatF);
-
-// ø. 414
-bool SetContextDir(pstring& D, bool& IsRdb);
-
-// ø. 429
-void GetCPathForCat(WORD I);
-
-// ø. 441
-void SetCPathVol();
+pstring RdCatField(WORD CatIRec, FieldDPtr CatF);// ø. 400
+bool SetContextDir(pstring& D, bool& IsRdb);// ø. 414
+void GetCPathForCat(WORD I);// ø. 429
+void SetCPathVol(); // ø. 441
+void SetTxtPathVol(pstring Path, WORD CatIRec); // r463

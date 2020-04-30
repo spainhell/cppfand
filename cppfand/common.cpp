@@ -34,6 +34,18 @@ void StrLPCopy(char* Dest, pstring s, WORD MaxL)
 	memcpy(Dest, s.c_str(), len);
 }
 
+integer MinI(integer X, integer Y)
+{
+	if (X < Y) return X;
+	return Y;
+}
+
+integer MaxI(integer X, integer Y)
+{
+	if (X > Y) return X;
+	return X;
+}
+
 void SplitDate(double R, WORD& d, WORD& m, WORD& y)
 {
 	WORD i, j;

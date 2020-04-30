@@ -96,6 +96,12 @@
     <ClCompile Include="edtextf.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="projmgr1.cpp">
+      <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="runproc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base.h">
@@ -213,6 +219,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="edglobal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="projmgr1.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

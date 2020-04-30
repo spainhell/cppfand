@@ -70,13 +70,13 @@ void TWindow::Assign(BYTE C1, BYTE R1, BYTE C2, BYTE R2)
 	m = 0;
 	if (GetState(sfFramed)) m = 2;
 	cols = C2 + m; if (C1 != 0) cols = C2 - C1 + 1;
-	cols = maxi(m + 1, mini(cols, TxtCols));
+	cols = MaxI(m + 1, MinI(cols, TxtCols));
 	if (C1 == 0) Orig.X = (TxtCols - cols) / 2;
-	else Orig.X = mini(C1 - 1, TxtCols - cols);
+	else Orig.X = MinI(C1 - 1, TxtCols - cols);
 	rows = R2 + m; if (R1 != 0) rows = R2 - R1 + 1;
-	rows = maxi(m + 1, mini(rows, TxtRows));
+	rows = MaxI(m + 1, MinI(rows, TxtRows));
 	if (R1 == 0) Orig.Y = (TxtRows - rows) / 2;
-	else Orig.Y = mini(R1 - 1, TxtRows - rows);
+	else Orig.Y = MinI(R1 - 1, TxtRows - rows);
 	Size = { cols, rows };
 }
 
@@ -371,7 +371,7 @@ TMenuBoxP::TMenuBoxP(WORD C1, WORD R1, TMenu* aParent, Instr* aPD)
 	PD = aPD;
 	parent = aParent;
 	s = RunShortStr(aPD->HdLine);
-	s[0] = char(mini(s.length(), TxtCols - 6));
+	s[0] = char(MinI(s.length(), TxtCols - 6));
 	HdTxt = StoreStr(s);
 	HlpRdb = aPD->HelpRdb;
 	CRoot = aPD->Choices;
@@ -630,7 +630,7 @@ bool PrinterMenu(WORD Msg)
 		lpt += nr;
 		lpt += ")";
 		if (printer[prCurr].toMgr) lpt = "";
-		MsgLine = MsgLine + '/' + nm + copy("      ", 1, maxi(0, 9 - nm.length())) + lpt;
+		MsgLine = MsgLine + '/' + nm + copy("      ", 1, MaxI(0, 9 - nm.length())) + lpt;
 	}
 	prCurr = j;
 	New(w, Init(0, 0, (pstring*)&MsgLine));
@@ -660,7 +660,7 @@ WORD CountNTxt(ChoiceD* C, bool IsMenuBar)
 		if (b || C->DisplEver) {
 			C->Displ = true; n++; s = RunShortStr(C->TxtFrml);
 			if (s.length() != 0) {
-				s[0] = char(mini(s.length(), TxtCols - 6));
+				s[0] = char(MinI(s.length(), TxtCols - 6));
 				pstring ctrlW(1);
 				ctrlW = "\x17";
 				if (s.first(0x17) == 0) s = ctrlW + s[1] + ctrlW + copy(s, 2, 255);

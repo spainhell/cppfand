@@ -5,6 +5,7 @@
 #include "memory.h"
 #include "printtxt.h"
 #include "common.h"
+#include "edtextf.h"
 #include "obaseww.h"
 #include "rdrun.h"
 #include "runfrml.h"
@@ -38,8 +39,8 @@ void SetEditTxt(Instr* PD)
 	if (PD->Wrap != nullptr) Wrap = RunBool(PD->Wrap);
 	if (PD->Just != nullptr) Just = RunBool(PD->Just);
 	if (PD->ColBlk != nullptr) TypeB = RunBool(PD->ColBlk);
-	if (PD->Left != nullptr) LeftMarg = maxi(1, RunInt(PD->Left));
-	if (PD->Right != nullptr) RightMarg = maxi(LeftMarg, mini(255, RunInt(PD->Right)));
+	if (PD->Left != nullptr) LeftMarg = MaxI(1, RunInt(PD->Left));
+	if (PD->Right != nullptr) RightMarg = MaxI(LeftMarg, MinI(255, RunInt(PD->Right)));
 }
 
 void GetEditTxt(bool& pInsert, bool& pIndent, bool& pWrap, bool& pJust, bool& pColBlk, integer& pLeftMarg,
@@ -188,7 +189,7 @@ label1:
 		label2:
 			if (!Loc) RdPart; goto label1; }
 		}
-	if (!Loc) { Size = FileSizeH(TxtFh); CloseH(TxtFh); }
+	if (!Loc) { Size = FileSizeH(TxtFH); CloseH(TxtFH); }
 	if ((EdBreak == 0xFFFF) && (KbdChar = _F6_))
 		if (Loc) { PrintArray(*T, LenT, false); goto label1; }
 		else {
@@ -238,12 +239,12 @@ void Help(RdbDPtr R, pstring Name, bool InCWw)
 		if (iStk == 0) return; R = Stk[iStk].Rdb; backw = true;
 	}
 	else { if (Name == "") return; backw = false; }
-	if (R == RdbDPtr(HelpFD)) {
-		fd = HelpFD; if (HelpFD->Handle == nullptr) { WrLLF10Msg(57); return; }
+	if (R == (RdbD*)&HelpFD) {
+		fd = &HelpFD; if (HelpFD.Handle == nullptr) { WrLLF10Msg(57); return; }
 	}
 	else { fd = R->HelpFD; if (fd == nullptr) return; }
 	MarkStore(p); cf = CFile; w = 0; w2 = 0;
-	NewExit(Ovr, er);
+	NewExit(Ovr(), er);
 	goto label4;
 	if (InCWw) {
 		c1 = WindMin.X + 1; c2 = WindMax.X + 1; r1 = WindMin.Y + 1; r2 = WindMax.Y + 1;

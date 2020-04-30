@@ -2,9 +2,8 @@
 // {$I edevent.pas}
 
 #pragma once
+#include "pstring.h"
 #include <set>
-
-using namespace std;
 
 const int COL = 80;
 
