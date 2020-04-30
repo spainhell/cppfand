@@ -171,6 +171,8 @@
     <ClCompile Include="rdproc.cpp" />
     <ClCompile Include="rdrun.cpp" />
     <ClCompile Include="recacc.cpp" />
+    <ClCompile Include="runedi.cpp" />
+    <ClCompile Include="runedit1.cpp" />
     <ClCompile Include="runfand.cpp" />
     <ClCompile Include="runfrml.cpp" />
     <ClCompile Include="runproc.cpp" />
@@ -210,6 +212,7 @@
     <ClInclude Include="recacc.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="runedi.h" />
+    <ClInclude Include="runedit1.h" />
     <ClInclude Include="runfand.h" />
     <ClInclude Include="runfrml.h" />
     <ClInclude Include="runproc.h" />
