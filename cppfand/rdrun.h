@@ -209,7 +209,7 @@ struct ERecTxtD
 struct EditD
 {
 	EditD* PrevE;
-	FileDPtr FD;
+	FileD* FD;
 	LockMode OldMd;
 	bool IsUserForm;
 	FieldList Flds;
@@ -219,8 +219,8 @@ struct EditD
 	BYTE Attr, dNorm, dHiLi, dSubSet, dDel, dTab, dSelect;
 	pstring* Top;
 	BYTE WFlags;                                 /* copied from EO */
-	EdExitDPtr ExD;                              /*      "         */
-	FileDPtr Journal;                            /*      "         */
+	EdExitD* ExD;                              /*      "         */
+	FileD* Journal;                            /*      "         */
 	pstring* ViewName;                          /*      "         */
 	char OwnerTyp; /* #0=CtrlF7 */                 /*      "         */
 	LinkDPtr DownLD;                             /*      "         */
@@ -256,10 +256,10 @@ struct EditD
 	pstring* BoolTxt, Head, Last, CtrlLast, AltLast, ShiftLast;
 	WORD NFlds, NTabsSet, NDuplSet, NEdSet;
 	bool EdUpdated;
-	ImplDPtr Impl;
+	ImplD* Impl;
 	longint StartRecNo; pstring* StartRecKey; integer StartIRec;
 	longint OwnerRecNo;
-	LinkDPtr ShiftF7LD;
+	LinkD* ShiftF7LD;
 	void* AfterE;
 };
 

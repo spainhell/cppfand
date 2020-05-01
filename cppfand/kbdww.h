@@ -11,5 +11,6 @@ void WrLLMsg(WORD N); // r220
 void WrLLMsgTxt(); // r234
 void WrLLF10MsgLine(); // r251
 void WrLLF10Msg(WORD N); // r283
+bool PromptYN(WORD NMsg); // r286
 WORD RunErrNr;
 void RunError(WORD N);
