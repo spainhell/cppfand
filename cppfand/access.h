@@ -62,7 +62,7 @@ typedef FrmlListEl* FrmlList;
 struct StringListEl // ø. 38
 {
 	StringListEl* Chain;
-	string S;
+	pstring S;
 };
 typedef StringListEl* StringList;
 

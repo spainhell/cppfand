@@ -45,7 +45,7 @@ BYTE KbdFlgs; // TODO: absolute $417
 // ******** Konstanty *********
 const bool DemoAutoRd = false; // ø. 82
 pstring KbdBuffer = ""; // ø. 83
-const BYTE LLKeyFlags = 0; // ø. 84
+BYTE LLKeyFlags = 0; // ø. 84
 
 enum VideoCard { viCga, viHercules, viEga, viVga };
 integer GraphDriver, GraphMode;

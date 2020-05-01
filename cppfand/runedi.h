@@ -151,3 +151,42 @@ bool EditItemProc(bool del, bool ed, WORD& Brk);
 void SetSwitchProc();
 void PromptSelect();
 void SwitchRecs(integer Delta);
+
+// *** RUNEDIT3 ***
+bool SelFldsForEO(EditOpt* EO, LinkD* LD);
+bool FinArgs(LinkD* LD, FieldDPtr F);
+pstring GetFileViewName(FileD* FD, StringList SL);
+bool EquFileViewName(FileD* FD, pstring S, EditOpt* EO);
+bool EquRoleName(pstring S, LinkD* LD);
+void GetSel2S(pstring* s, pstring* s2, char C, WORD wh);
+void UpwEdit(LinkDPtr LkD);
+void SetPointTo(LinkDPtr LD, pstring* s1, pstring* s2);
+void ImbeddEdit();
+void DownEdit();
+void ShiftF7Proc();
+bool ShiftF7Duplicate();
+bool DuplToPrevEdit();
+void Calculate();
+void DelNewRec();
+EFldD* FrstFldOnPage(WORD Page);
+void F6Proc();
+longint GetEdRecNo();
+void SetEdRecNoEtc(longint RNr);
+bool StartExit(EdExitD* X, bool Displ);
+bool StartProc(Instr* ExitProc, bool Displ);
+void StartRprt(RprtOpt* RO);
+WORD ExitKeyProc();
+void FieldHelp();
+void DisplLASwitches();
+void DisplLL();
+void DisplCtrlAltLL(WORD Flags);
+void DisplLLHlp();
+void CtrlReadKbd();
+void MouseProc();
+void ToggleSelectRec();
+void ToggleSelectAll();
+void GoStartFld(EFldD* SFld);
+void RunEdit(XString* PX, WORD& Brk);
+/*called from Proc && Projmgr */
+void EditDataFile(FileDPtr FD, EditOpt* EO);
+
