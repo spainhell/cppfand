@@ -2,6 +2,7 @@
 
 #include "common.h"
 #include "fileacc.h"
+#include "genrprt.h"
 #include "index.h"
 #include "kbdww.h"
 #include "legacy.h"
@@ -10,6 +11,7 @@
 #include "oaccess.h"
 #include "obaseww.h"
 #include "projmgr1.h"
+#include "rdedit.h"
 #include "rdfildcl.h"
 #include "rdfrml.h"
 #include "rdmix.h"
@@ -566,7 +568,8 @@ WORD FieldEdit(FieldDPtr F, FrmlPtr Impl, WORD LWw, WORD iPos, pstring* Txt, dou
 	L = F->L; M = F->M; Mask = FieldDMask(F);
 	if ((F->Flg && f_Mask != 0) && (F->Typ == 'A')) Msk = Mask; else Msk = nullptr;      /*!!!!*/
 label2:
-	iPos = EditTxt(Txt, iPos, L, LWw, F->Typ, del, false, upd, (F->FrmlTyp = 'S') && ret, Delta);
+	iPos = EditTxt(Txt, iPos, L, LWw, F->Typ, del, false, upd, (F->FrmlTyp == 'S') 
+		&& ret, Delta);
 	result = iPos; if (iPos != 0) return result;
 	if ((KbdChar == _ESC_) || !upd) return result;
 	del = true; iPos = 1; r = 0;
@@ -593,13 +596,13 @@ label2:
 			else /*'R'*/ if (I != 0) { WrLLF10Msg(639); goto label4; };
 		}
 		if (F->Typ == 'F') {
-			str(L r : M, Txt);
+			str(r, L, M, *Txt);
 			if (F->Flg && f_Comma != 0) {
 				r = r * Power10[M];
 				if (r >= 0) r = r + 0.5; else r = r - 0.5; r = (int)r;
 			}
 		}
-		else /*'R'*/ str(L r, Txt);
+		else /*'R'*/ str(r, L, 0, *Txt);
 		RR = r;
 		break;
 	}
@@ -624,7 +627,7 @@ label2:
 				GotoXY(Col, Row); goto label2;
 			}
 		}
-		Txt = StrDate(r, Mask); RR = r;
+		*Txt = StrDate(r, *Mask); RR = r;
 		break;
 	}
 	}
@@ -696,7 +699,7 @@ void Wr1Line(FieldDPtr F)
 	}
 	WrStyleStr(Txt, E->dNorm);
 	ReleaseStore(s); TextAttr = E->dNorm;
-	if (l < max) printf(' ':max - l);
+	if (l < max) printf("%*c", max - l, ' ');
 }
 
 void DisplEmptyFld(EFldD* D, WORD I)
@@ -704,7 +707,7 @@ void DisplEmptyFld(EFldD* D, WORD I)
 	WORD j; char c;
 	GotoXY(D->Col, FldRow(D, I)); if (D->FldD->Flg && f_Stored != 0) c = '.'; else c = ' ';
 	for (j = 1; j < D->L; j++) printf("%c", c);
-	if (HasTTWw(D->FldD)) printf(' ':D->FldD->L - 1);
+	if (HasTTWw(D->FldD)) printf("%*c", D->FldD->L - 1, ' ');
 }
 
 void SetRecAttr(WORD I)
@@ -754,7 +757,8 @@ void DisplTabDupl()
 void DisplRecNr(longint N)
 {
 	if (E->RecNrLen > 0) {
-		GotoXY(E->RecNrPos, 1); TextAttr = colors.fNorm; printf(E->RecNrLen:N);
+		GotoXY(E->RecNrPos, 1); TextAttr = colors.fNorm;
+		printf("%*i", E->RecNrLen, N);
 	}
 }
 
@@ -966,7 +970,8 @@ void BuildWork()
 	MarkStore(p); ok = false; f = nullptr; NewExit(Ovr(), er);
 	goto label1;
 	if (E->DownSet) {
-		New(Scan, Init(CFile, E->DownKey, nullptr, false));
+		//New(Scan, Init(CFile, E->DownKey, nullptr, false));
+		Scan = new XScan(CFile, E->DownKey, nullptr, false);
 		if (E->OwnerTyp == 'i') Scan->ResetOwnerIndex(E->DownLD, E->DownLV, boolP);
 		else {
 			CFile = E->DownLD->ToFD; CRecPtr = E->DownRecPtr;
@@ -975,7 +980,9 @@ void BuildWork()
 		}
 		if (ki != nullptr) {
 			wk2 = (XWKey*)GetZStore(sizeof(*wk2)); wk2->Open(KF, true, false);
-			CreateWIndex(Scan, wk2, 'W'); New(Scan2, Init(CFile, wk2, ki, false));
+			CreateWIndex(Scan, wk2, 'W');
+			//New(Scan2, Init(CFile, wk2, ki, false));
+			Scan2 = new XScan(CFile, wk2, ki, false);
 			Scan2->Reset(nullptr, false); Scan = Scan2;
 		}
 	}
@@ -991,7 +998,9 @@ void BuildWork()
 #endif
 			(boolP != nullptr))
 			if ((K != nullptr) && !K->InWork && (ki == nullptr)) K = nullptr;
-		New(Scan, Init(CFile, K, ki, false)); Scan->Reset(boolP, E->SQLFilter);
+		//New(Scan, Init(CFile, K, ki, false));
+		Scan = new XScan(CFile, K, ki, false);
+		Scan->Reset(boolP, E->SQLFilter);
 	}
 	CreateWIndex(Scan, WK, 'W');
 	Scan->Close; if (wk2 != nullptr) wk2->Close; ok = true;
@@ -1126,7 +1135,7 @@ void GotoRecFld(longint NewRec, EFldD* NewFld)
 		IRec = NewIRec; RdRec(CRec()); goto label1;
 	}
 	NewBase = BaseRec + Delta;
-	if (NewBase + Max - 1 > CNRecs()) NewBase = CNRecs - pred(Max);
+	if (NewBase + Max - 1 > CNRecs()) NewBase = CNRecs() - pred(Max);
 	if (NewBase <= 0) NewBase = 1;
 	IRec = NewRec - NewBase + 1; D = NewBase - BaseRec; BaseRec = NewBase;
 	RdRec(CRec());
@@ -1164,7 +1173,9 @@ void UpdMemberRef(void* POld, void* PNew)
 			k = GetFromKey(LD); kf1 = k->KFlds;
 			p = GetRecSpace(); CRecPtr = p;
 			if (PNew != nullptr) p2 = GetRecSpace();
-			New(Scan, Init(CFile, k, nullptr, true)); Scan->ResetOwner(&xold, nullptr);
+			// New(Scan, Init(CFile, k, nullptr, true));
+			Scan = new XScan(CFile, k, nullptr, true);
+			Scan->ResetOwner(&xold, nullptr);
 #ifdef FandSQL
 			if (!sql)
 #endif
@@ -1215,11 +1226,11 @@ void WrJournal(char Upd, void* RP, double Time)
 	CFile = E->Journal; CRecPtr = GetRecSpace(); F = CFile->FldD;
 	S_(F, Upd); F = F->Chain; R_(F, int(n)); F = F->Chain;
 	R_(F, int(UserCode)); F = F->Chain; R_(F, Time); F = F->Chain;
-	Move(RP^, ptr(seg(CRecPtr^), ofs(CRecPtr^) + F->Displ)^, l);
+	Move(RP, &CRecPtr + F->Displ, l);
 	md = NewLMode(CrMode); IncNRecs(1); WriteRec(CFile->NRecs); OldLMode(md);
 	ReleaseStore(CRecPtr); CFile = E->FD; CRecPtr = E->NewRecPtr;
 label1:
-	UpdCount++; if (UpdCount == E->SaveAfter) { SaveFiles; UpdCount = 0; }
+	UpdCount++; if (UpdCount == E->SaveAfter) { SaveFiles(); UpdCount = 0; }
 }
 
 bool LockForMemb(FileDPtr FD, WORD Kind, LockMode NewMd, LockMode& md)
@@ -1519,21 +1530,20 @@ bool WriteCRec(bool MayDispl, bool& Displ)
 label2:
 	if (!IsNewRec && !NoDelTFlds) DelAllDifTFlds(E->OldRecPtr, E->NewRecPtr);
 	E->EdUpdated = true; NoDelTFlds = false;
-	IsNewRec = false; WasUpdated = false; result = true; UnlockRec(E);
+	IsNewRec = false; WasUpdated = false; result = true; UnLockRec(E);
 label1:
 	UnLockWithDep(OldMd);
 	return result;
 }
 
-bool ExitCheck()
+bool ExitCheck(bool MayDispl)
 {
 	EdExitD* X; bool ok;
 	auto result = false; X = E->ExD; while (X != nullptr) {
 		if (X->AtWrRec) {
 			EdBreak = 16; ok = EdOk; EdOk = true; LastTxtPos = -1;
-			if (StartExit(X, MayDispl) && EdOk) EdOk = ok; else {
-				EdOk = ok; return result;
-			};
+			if (StartExit(X, MayDispl) && EdOk) EdOk = ok;
+			else { EdOk = ok; return result; }
 		}
 		X = X->Chain;
 	}
@@ -1633,7 +1643,7 @@ void UndoRecord()
 		}
 		else DelAllDifTFlds(E->NewRecPtr, E->OldRecPtr);
 		Move(E->OldRecPtr, E->NewRecPtr, CFile->RecLen);
-		WasUpdated = false; NoDelTFlds = false; UnlockRec(E); DisplRec(IRec); IVon();
+		WasUpdated = false; NoDelTFlds = false; UnLockRec(E); DisplRec(IRec); IVon();
 	}
 }
 
@@ -1661,7 +1671,7 @@ bool ForNavigate(FileDPtr FD)
 	StringList S;
 	auto result = true; if (UserCode == 0) return result; S = FD->ViewNames;
 	while (S != nullptr) {
-		if (TestAccRight(S)) return; S = S->Chain;
+		if (TestAccRight(S)) return result; S = S->Chain;
 	}
 	result = false;
 	return result;
@@ -1850,7 +1860,7 @@ void DisplChkErr(ChkDPtr C)
 	if (C->HelpName != nullptr)
 		if (F10SpecKey == _ShiftF7_) F10SpecKey = 0xfffe; else F10SpecKey = _F1_;
 	SetMsgPar(RunShortStr(C->TxtZ)); WrLLF10Msg(110);
-	if (KbdChar == _F1_) Help(CFile->ChptPos.R, C->HelpName, false);
+	if (KbdChar == _F1_) Help(CFile->ChptPos.R, *C->HelpName, false);
 	else if (KbdChar == _ShiftF7_)
 		label1:
 	UpwEdit(LD);
@@ -2113,7 +2123,8 @@ bool CheckForExit(bool& Quit)
 bool GoPrevNextRec(integer Delta, bool Displ)
 {
 	longint i, D, OldBaseRec; LockMode md; WORD w, Max;
-	auto result = false; if (EdRecVar) return; md = NewLMode(RdMode); i = CRec();
+	auto result = false; if (EdRecVar) return result;
+	md = NewLMode(RdMode); i = CRec();
 	if (Displ) IVoff();
 label0:
 	i += Delta;
@@ -2207,14 +2218,15 @@ void UpdateTxtPos(WORD TxtPos)
 
 bool EditFreeTxt(FieldDPtr F, pstring ErrMsg, bool Ed, WORD& Brk)
 {
-	const WORD BreakKeys[6] = {
+	const pstring BreakKeys = 
 #ifndef FandRunV
-		_CtrlF1,
+		_CtrlF1 +
 #endif
-		_F1, _CtrlHome, _CtrlEnd, _F9, _AltF10 };
-	const WORD BreakKeys1[8] = { _CtrlF1, _F1, _CtrlHome, _CtrlEnd, _F9, _AltF10, _ShiftF1, _F10 };
-	const WORD BreakKeys2[14] = { _F1, _CtrlHome, _CtrlEnd, _F9, _F10, _AltF10,
-		_CtrlF1, _AltF1, _ShiftF1, _AltF2, _AltF3, _CtrlF8, _CtrlF9, _AltF9 };
+		_F1 + _CtrlHome + _CtrlEnd + _F9 + _AltF10;
+	//const BYTE BreakKeys1[8] = { _CtrlF1, _F1, _CtrlHome, _CtrlEnd, _F9, _AltF10, _ShiftF1, _F10 };
+	pstring BreakKeys1 = _CtrlF1 + _F1 + _CtrlHome + _CtrlEnd + _F9 + _AltF10 + _ShiftF1 + _F10;
+	pstring BreakKeys2 =  _F1 + _CtrlHome + _CtrlEnd + _F9 + _F10 + _AltF10 +
+		_CtrlF1 + _AltF1 + _ShiftF1 + _AltF2 + _AltF3 + _CtrlF8 + _CtrlF9 + _AltF9;
 	const BYTE maxStk = 10;
 
 	pstring Breaks(14);
@@ -2457,7 +2469,8 @@ bool SelFldsForEO(EditOpt* EO, LinkD* LD)
 		F = FL->FldD;
 		if ((LD == nullptr) || !FinArgs(LD, F)) {
 			s = F->Name;
-			if (F->Flg && f_Stored == 0) s = SelMark + s; PutSelect(s);
+			if (F->Flg && f_Stored == 0) { pstring olds = s; s = SelMark; s += olds; }
+			PutSelect(s);
 		}
 		FL = FL->Chain;
 	}
@@ -2470,7 +2483,7 @@ bool FinArgs(LinkD* LD, FieldDPtr F)
 {
 	KeyFldDPtr KF;
 	auto result = true; KF = LD->Args; while (KF != nullptr) {
-		if (KF->FldD == F) return; KF = KF->Chain;
+		if (KF->FldD == F) return result; KF = KF->Chain;
 	}
 	result = false;
 	return result;
@@ -2480,7 +2493,8 @@ pstring GetFileViewName(FileD* FD, StringList SL)
 {
 	if (SL == nullptr) { return FD->Name; }
 	while (!TestAccRight(SL)) SL = SL->Chain;
-	pstring result = 0x01 + SL->S; // ^A
+	pstring result = 0x01; // ^A
+	result += SL->S; 
 	do { SL = SL->Chain; } while (!(SL == nullptr) || TestAccRight(SL));
 	return result;
 }
@@ -2570,7 +2584,7 @@ void UpwEdit(LinkDPtr LkD)
 		NewEditD(CFile, EO);
 		E->ShiftF7LD = LkD;
 		if (OpenEditWw()) RunEdit(px, Brk);
-		SaveFiles;
+		SaveFiles();
 		PopEdit();
 	}
 label1:
@@ -2628,8 +2642,9 @@ void DownEdit()
 {
 	LinkDPtr LD; FileDPtr FD; StringList SL; KeyDPtr K;
 	EditOpt* EO; WORD Brk, i; void* p; pstring s, s1, s2; longint w;
-	MarkStore(p); w = PushW1(1, 1, TxtCols, TxtRows, true, true); CFile->IRec = AbsRecNr(CRec);
-	WrEStatus;
+	MarkStore(p); w = PushW1(1, 1, TxtCols, TxtRows, true, true);
+	CFile->IRec = AbsRecNr(CRec());
+	WrEStatus();
 	LD = LinkDRoot;
 	while (LD != nullptr) {
 		FD = LD->FromFD;
@@ -2697,7 +2712,9 @@ bool ShiftF7Duplicate()
 
 	CFile = E->FD; CRecPtr = E->NewRecPtr;
 	result = true;
-	KbdBuffer = 0x0D + KbdBuffer; // ^M
+	pstring oldKbdBuffer = KbdBuffer;
+	KbdBuffer = 0x0D; // ^M
+	KbdBuffer += oldKbdBuffer;
 	return result;
 }
 
@@ -2720,7 +2737,9 @@ bool DuplToPrevEdit()
 		}
 		DuplFld(E->FD, CFile, E->NewRecPtr, CRecPtr, ee->OldRecPtr, f1, f2); SetUpdFlag(); }
 	CFile = E->FD; CRecPtr = E->NewRecPtr; result = true;
-	KbdBuffer = 0x0D + KbdBuffer; // ^M
+	pstring oldKbdBuffer = KbdBuffer;
+	KbdBuffer = 0x0D; // ^M
+	KbdBuffer += oldKbdBuffer;
 	return result;
 }
 
@@ -2761,7 +2780,7 @@ label1:
 	}
 	switch (FTyp) {
 	case 'R': {
-		R = RunReal(Z); str(30 R:10, Txt);
+		R = RunReal(Z); str(R, 30, 10, Txt);
 		Txt = LeadChar(' ', TrailChar('0', Txt));
 		if (Txt[Txt.length()] == '.') Txt[0]--;
 		break; }
@@ -3055,7 +3074,7 @@ void ToggleSelectAll()
 void GoStartFld(EFldD* SFld)
 {
 	while ((CFld != SFld) && (CFld->Chain != nullptr)) {
-		if (IsFirstEmptyFld) {
+		if (IsFirstEmptyFld()) {
 			if ((CFld->Impl != nullptr) && LockRec(true)) AssignFld(CFld->FldD, CFld->Impl);
 			FirstEmptyFld = FirstEmptyFld->Chain; DisplFld(CFld, IRec);
 		}
@@ -3216,7 +3235,9 @@ label81:
 			{
 				if (CFld->Ed(IsNewRec) && ((CFld->FldD->Typ != 'T') || (_T(CFld->FldD) == 0))
 					&& LockRec(true)) {
-					KbdBuffer = char(KbdChar) + KbdBuffer;
+					pstring oldKbdBuffer = KbdBuffer;
+					KbdBuffer = char(KbdChar);
+					KbdBuffer += oldKbdBuffer;
 					if (!EditItemProc(true, true, Brk)) goto label7;
 					if (Brk != 0) goto fin;
 				}
@@ -3298,7 +3319,7 @@ label81:
 						{ if (!EdRecVar) RefreshSubset(); b = false; goto label14; break; }
 						case _AltF2_:
 						case _AltF3_:
-							if (IsCurrChpt)
+							if (IsCurrChpt())
 								if (w == _AltF3_) {
 									ForAllFDs(ClosePassiveFD); EditHelpOrCat(w, 0, "");
 								}

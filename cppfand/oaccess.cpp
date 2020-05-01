@@ -9,6 +9,15 @@
 #include "recacc.h"
 #include "runfrml.h"
 
+void SaveFiles()
+{
+	bool b = false; WORD i = 0; FileD* cf = nullptr;
+	if (!CacheExist) return;
+	cf = CFile; CFile = CatFD; WrPrefixes();
+	ForAllFDs(SaveFD); b = SaveCache(0); FlushHandles();
+	CFile = cf; if (!b) GoExit();
+}
+
 void ClosePassiveFD()
 {
 	if ((CFile->Typ != '0') && (CFile->LMode == NullMode)) CloseFile();

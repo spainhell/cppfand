@@ -13,3 +13,4 @@ void DeleteXRec(longint RecNr, bool DelT);
 void OverwrXRec(longint RecNr, void* P2, void* P);
 void AddFFs(KeyDPtr K, pstring& s);
 void CompKIFrml(KeyDPtr K, KeyInD* KI, bool AddFF);
+void OverWrXRec(longint RecNr, void* P2, void* P); // r720

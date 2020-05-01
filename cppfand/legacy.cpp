@@ -44,6 +44,24 @@ void val(pstring s, double& b, integer& err)
 	else { err = static_cast<integer>(idx);	b = static_cast<double>(sz); }
 }
 
+void val(pstring s, double& b, WORD& err)
+{
+	size_t idx = 0;
+	double sz = std::stod(s.c_str(), &idx);
+	// přeložil se celý řetězec?
+	if (sz == s.length() - 1) { err = 0; b = static_cast<double>(sz); }
+	else { err = static_cast<WORD>(idx); b = static_cast<double>(sz); }
+}
+
+void val(pstring s, longint& b, WORD& err)
+{
+	size_t idx = 0;
+	double sz = std::stod(s.c_str(), &idx);
+	// přeložil se celý řetězec?
+	if (sz == s.length() - 1) { err = 0; b = static_cast<longint>(sz); }
+	else { err = static_cast<WORD>(idx); b = static_cast<longint>(sz); }
+}
+
 pstring copy(pstring source, size_t index, size_t count)
 {
 	std::string temp = source;
@@ -55,6 +73,19 @@ void str(int input, pstring& output)
 {
 	std::string a = std::to_string(input);
 	output.replace(a.c_str());
+}
+
+void str(double input, int total, int right, pstring& output)
+{
+	char buffer[255];
+	snprintf(buffer, sizeof(buffer), "%*.*f", total, right, input);
+	output = buffer;
+}
+
+WORD pred(WORD input)
+{
+	if (input <= 0) return 0;
+	return input - 1;
 }
 
 void FSplit(pstring fullname, pstring& dir, pstring& name, pstring& ext)

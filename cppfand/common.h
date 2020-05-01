@@ -47,7 +47,7 @@ void EncodeMask(pstring& Mask, WORD& Min, WORD& Max);
 void AnalDateMask(const pstring& Mask, WORD& I, WORD& IDate, WORD& N);
 bool ExCode(WORD N, const pstring& Mask);
 double ValDate(const pstring& Txtpstring, pstring Mask); // r276
-pstring StrDate(double Rpstring, double Mask); // r302
+pstring StrDate(double R, pstring Mask); //r321
 double Today(); // r362
 double CurrTime();
 

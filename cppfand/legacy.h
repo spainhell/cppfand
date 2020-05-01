@@ -11,8 +11,13 @@ void val(pstring s, BYTE& b, WORD& err);
 void val(pstring s, WORD& b, WORD& err);
 void val(pstring s, integer& b, integer& err);
 void val(pstring s, double& b, integer& err);
+void val(pstring s, double& b, WORD& err);
+void val(pstring s, longint& b, WORD& err);
 pstring copy(pstring source, size_t index, size_t count);
 void str(int input, pstring& output);
+void str(double input, int total, int right, pstring& output);
+
+WORD pred(WORD input);
 
 void FSplit(pstring fullname, pstring& dir, pstring& name, pstring& ext);
 pstring FSearch(pstring& path, pstring& dirlist);

@@ -190,6 +190,7 @@
     <ClInclude Include="edtextf.h" />
     <ClInclude Include="fanddml.h" />
     <ClInclude Include="fileacc.h" />
+    <ClInclude Include="genrprt.h" />
     <ClInclude Include="handle.h" />
     <ClInclude Include="index.h" />
     <ClInclude Include="kbdww.h" />
@@ -202,6 +203,7 @@
     <ClInclude Include="printtxt.h" />
     <ClInclude Include="projmgr1.h" />
     <ClInclude Include="pstring.h" />
+    <ClInclude Include="rdedit.h" />
     <ClInclude Include="rdfildcl.h" />
     <ClInclude Include="rdfrml.h" />
     <ClInclude Include="rdfrml1.h" />

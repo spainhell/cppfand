@@ -227,6 +227,12 @@
     <ClInclude Include="printtxt.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="genrprt.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="rdedit.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="cppfand.rc">
