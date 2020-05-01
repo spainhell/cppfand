@@ -9,7 +9,9 @@
 #include "oaccess.h"
 #include "obaseww.h"
 #include "projmgr1.h"
+#include "rdmix.h"
 #include "recacc.h"
+#include "wwmix.h"
 
 void PopEdit()
 {
@@ -618,7 +620,7 @@ label2:
 				GotoXY(Col, Row); goto label2;
 			}
 		}
-		Txt = StrDate(r, *Mask); RR = r;
+		Txt = StrDate(r, Mask); RR = r;
 		break;
 	}
 	}
@@ -1594,7 +1596,7 @@ bool OldRecDiffers()
 				(CompArea(Pchar(CRecPtr) + Displ, Pchar(E->OldRecPtr) + Displ, NBytes) != ord(_equ)) then
 				goto label1;
 			f = f->Chain;
-}
+		}
 		goto label2;
 	}
 	else
@@ -1642,6 +1644,799 @@ void DuplFromPrevRec()
 		ClearRecSpace(CRecPtr); ReleaseStore(CRecPtr); CRecPtr = cr; OldLMode(md);
 	}
 }
+
+bool TestAccRight(StringList S)
+{
+	if (UserCode == 0) { return true; }
+	return OverlapByteStr(ptr(seg(S), ofs(S) + 5 + S->S.length()), &AccRight);
+}
+
+bool ForNavigate(FileDPtr FD)
+{
+	StringList S;
+	auto result = true; if (UserCode == 0) return result; S = FD->ViewNames;
+	while (S != nullptr) {
+		if (TestAccRight(S)) return; S = S->Chain;
+	}
+	result = false;
+	return result;
+}
+
+void InsertRecProc(void* RP)
+{
+	GotoRecFld(CRec(), E->FirstFld); IsNewRec = true; LockRec(false);
+	if (RP != nullptr) Move(RP, CRecPtr, CFile->RecLen);
+	else ZeroAllFlds();
+	DuplOwnerKey(); SetWasUpdated();
+	IVoff(); MoveDispl(E->NRecs - 1, E->NRecs, E->NRecs - IRec);
+	FirstEmptyFld = CFld; DisplRec(IRec); IVon(); NewDisplLL = true;
+	NewRecExit();
+}
+
+void AppendRecord(void* RP)
+{
+	WORD Max;
+	IVoff(); IsNewRec = true; Max = E->NRecs;
+	CFld = E->FirstFld; FirstEmptyFld = CFld;
+	if (IRec < Max)
+	{
+		IRec++; MoveDispl(Max - 1, Max, Max - IRec); DisplRec(IRec); IVon();
+	}
+	else if (Max == 1) { BaseRec++; DisplWwRecsOrPage(); }
+	else { BaseRec += Max - 1; IRec = 2; DisplAllWwRecs(); }
+	if (RP != nullptr) Move(RP, CRecPtr, CFile->RecLen); else ZeroAllFlds();
+	DuplOwnerKey(); DisplRecNr(CRec()); SetWasUpdated(); LockRec(false);
+	NewRecExit();
+}
+
+bool GotoXRec(XString* PX, longint& N)
+{
+	LockMode md; KeyDPtr k;
+	auto result = false;
+	md = NewLMode(RdMode); k = VK; if (Subset) k = WK;
+	if (Subset || HasIndex) {
+		result = k->SearchIntvl(*PX, false, N);
+		N = k->PathToNr();
+	}
+	else result = SearchKey(*PX, k, N);
+	RdRec(CRec()); GotoRecFld(N, CFld); OldLMode(md);
+	return result;
+}
+
+bool PromptAndSearch(bool Create)
+{
+	auto result = false;
+	if (VK == nullptr) { WrLLF10Msg(111); return result; }
+	result = PromptSearch(Create);
+	GotoRecFld(CRec(), E->FirstFld);
+	return result;
+}
+
+EFldD* FindEFld(FieldDPtr F)
+{
+
+	EFldD* D = E->FirstFld;
+	while (D != nullptr) {
+		if (D->FldD == F) goto label1;
+		D = D->Chain;
+	}
+label1:
+	return D;
+}
+
+void CreateOrErr(bool Create, void* RP, longint N)
+{
+	if (Create) if (N > CNRecs()) AppendRecord(RP); else InsertRecProc(RP);
+	else if (!NoSrchMsg) WrLLF10Msg(118);
+}
+
+bool PromptSearch(bool Create)
+{
+	auto result = false;
+	FieldDPtr F, F2; FileDPtr FD, FD2; void* RP; void* RP2; KeyFldDPtr KF, KF2;
+	longint n; pstring s; double r; bool b, li, found; LockMode md;
+	XString x, xOld; KeyDPtr K; longint w; WORD Col, LWw, pos; EFldD* D;
+	FD = CFile; K = VK; if (Subset) K = WK; KF = K->KFlds;
+	RP = GetRecSpace(); CRecPtr = RP; ZeroAllFlds(); x.Clear();
+	li = F3LeadIn && !IsNewRec;
+	w = PushW1(1, TxtRows, TxtCols, TxtRows, true, false);
+	if (KF == nullptr) goto label1;
+	if (HasIndex && E->DownSet && (VK == E->DownKey)) {
+		FD2 = E->DownLD->ToFD; RP2 = E->DownRecPtr; KF2 = E->DownLD->ToKey->KFlds;
+		CFile = FD2; CRecPtr = RP2;
+		while (KF2 != nullptr) {
+			CFile = FD2; CRecPtr = RP2; F = KF->FldD; F2 = KF2->FldD;
+			switch (F->FrmlTyp) {
+			case 'S': { s = _ShortS(F2); x.StoreStr(s, KF);
+				CFile = FD; CRecPtr = RP; S_(F, s); break; }
+			case 'R': { r = _R(F2); x.StoreReal(r, KF);
+				CFile = FD; CRecPtr = RP; R_(F, r); break; }
+			case 'B': { b = _B(F2); x.StoreBool(b, KF);
+				CFile = FD; CRecPtr = RP; B_(F, b); break; }
+			}
+			KF2 = KF2->Chain; KF = KF->Chain;
+		}
+	}
+	if (KF == nullptr) {
+	label1:
+		result = true; CRecPtr = E->NewRecPtr; goto label3;
+	}
+	while (KF != nullptr) {
+		F = KF->FldD; if (li) {
+			D = FindEFld(F); if (D != nullptr) GotoRecFld(CRec(), D);
+		}
+		GotoXY(1, TxtRows); TextAttr = colors.pTxt; ClrEol();
+		printf("%s:", F->Name.c_str());
+		s = ""; pos = 1; Col = WhereX();
+		if (Col + F->L > TxtCols) LWw = TxtCols - Col; else LWw = F->L;
+	label2:
+		TextAttr = colors.pNorm; GotoXY(Col, TxtRows);
+		pos = FieldEdit(F, nullptr, LWw, pos, &s, r, false, true, li, E->WatchDelay);
+		xOld = x;
+		if ((KbdChar == _ESC_) || (Event.What == evKeyDown)) {
+			CRecPtr = E->NewRecPtr; goto label3;
+		}
+		switch (F->FrmlTyp) {
+		case 'S': { x.StoreStr(s, KF); S_(F, s); break; }
+		case 'R': { x.StoreReal(r, KF); R_(F, r); break; }
+		case 'B': { b = s[1] = AbbrYes; x.StoreBool(b, KF); B_(F, b); break; }
+		}
+		if (li) {
+			CRecPtr = E->NewRecPtr; found = GotoXRec(&x, n);
+			if ((pos == 0) && (F->FrmlTyp == 'S')) {
+				x = xOld; x.StoreStr(_ShortS(F), KF);
+			}
+			CRecPtr = RP; if (pos != 0) { x = xOld; goto label2; };
+		}
+		KF = KF->Chain;
+	}
+	CRecPtr = E->NewRecPtr;
+	if (li) { if (!found) CreateOrErr(Create, RP, n); }
+	else if (IsNewRec) Move(RP, CRecPtr, CFile->RecLen);
+	else if (!GotoXRec(&x, n)) CreateOrErr(Create, RP, n);
+	result = true;
+label3:
+	PopW(w); ReleaseStore(RP);
+	return result;
+}
+
+void PromptGotoRecNr()
+{
+	WORD I; pstring Txt; longint N; bool Del;
+	I = 1; Txt = ""; Del = true;
+	do {
+		PromptLL(122, &Txt, I, Del);
+		if (KbdChar == _ESC_) return;
+		val(Txt, N, I);
+		Del = false;
+	} while (I != 0);
+	GotoRecFld(N, CFld);
+}
+
+ChkDPtr CompChk(EFldD* D, char Typ)
+{
+	ChkDPtr C; bool w, f;
+	w = WarnSwitch && (Typ == 'W' || Typ == '?');
+	f = (Typ == 'F' || Typ == '?');
+	C = D->Chk;
+	ChkD* result = nullptr;
+	while (C != nullptr) {
+		if ((w && C->Warning || f && !C->Warning) && !RunBool(C->Bool)) {
+			result = C; return result;
+		}
+		C = C->Chain;
+	}
+	return result;
+}
+
+void DisplChkErr(ChkDPtr C)
+{
+	LinkD* LD; FileDPtr cf; void* cr; bool b; longint n;
+
+	FindExistTest(C->Bool, LD);
+	if (!C->Warning && (LD != nullptr) && ForNavigate(LD->ToFD)
+		&& CFld->Ed(IsNewRec)) {
+		cf = CFile; cr = CRecPtr; b = LinkUpw(LD, n, false); ReleaseStore(CRecPtr);
+		CFile = cf; CRecPtr = cr;
+		if (!b)
+			if (NoShiftF7Msg) goto label1;
+			else F10SpecKey = _ShiftF7_;
+	}
+	if (C->HelpName != nullptr)
+		if (F10SpecKey == _ShiftF7_) F10SpecKey = 0xfffe; else F10SpecKey = _F1_;
+	SetMsgPar(RunShortStr(C->TxtZ)); WrLLF10Msg(110);
+	if (KbdChar == _F1_) Help(CFile->ChptPos.R, C->HelpName, false);
+	else if (KbdChar == _ShiftF7_)
+		label1:
+	UpwEdit(LD);
+}
+
+void FindExistTest(FrmlPtr Z, LinkD* LD)
+{
+	LD = nullptr; if (Z == nullptr) return;
+	switch (Z->Op) {
+	case _field: if (Z->Field->Flg && f_Stored == 0) FindExistTest(Z->Field->Frml, LD);
+	case _access: if (Z->P1 == nullptr) LD = Z->LD; /*file.exist*/
+	default: {
+		if (Z->Op >= 0x60 && Z->Op <= 0xAF) /*1-ary*/ { FindExistTest(Z->P1, LD); break; }
+		if (Z->Op >= 0xB0 && Z->Op <= 0xEF) /*2-ary*/ {
+			FindExistTest(Z->P1, LD);
+			if (LD == nullptr) FindExistTest(Z->P2, LD);
+			break;
+		}
+		if (Z->Op >= 0xF0 && Z->Op <= 0xFF) /*3-ary*/ {
+			FindExistTest(Z->P1, LD);
+			if (LD == nullptr) {
+				FindExistTest(Z->P2, LD);
+				if (LD == nullptr) FindExistTest(Z->P3, LD);
+			}
+		}
+	}
+	}
+}
+
+void CheckFromHere()
+{
+	longint N; EFldD* D; ChkD* C; LockMode md;
+	D = CFld; N = CRec(); md = NewLMode(RdMode);
+label1:
+	if (not DeletedFlag)
+		while (D != nullptr) {
+			C = CompChk(D, '?');
+			if (C != nullptr) {
+				if (BaseRec + E->NRecs - 1 < N) BaseRec = N;
+				IRec = N - BaseRec + 1; CFld = D; DisplWwRecsOrPage(); OldLMode(md);
+				DisplChkErr(C);
+				return;
+			}
+			D = D->Chain;
+		}
+	if (N < CNRecs()) {
+		N++; DisplRecNr(N); RdRec(N); D = E->FirstFld; goto label1;
+	}
+	RdRec(CRec()); DisplRecNr(CRec()); OldLMode(md); WrLLF10Msg(120);
+}
+
+void Sorting()
+{
+	KeyFldD* SKRoot = nullptr; void* p = nullptr; ExitRecord er; LockMode md;
+	SaveFiles; MarkStore(p);
+	if (!PromptSortKeys(E->Flds, SKRoot) || (SKRoot == nullptr)) goto label2;
+	if (!TryLMode(ExclMode, md, 1)) goto label2;
+	NewExit(Ovr(), er);
+	goto label1;
+	SortAndSubst(SKRoot);
+	E->EdUpdated = true;
+label1:
+	RestoreExit(er); CFile = E->FD; OldLMode(md);
+label2:
+	ReleaseStore(p); CRecPtr = E->NewRecPtr; DisplAllWwRecs();
+}
+
+void AutoReport()
+{
+	void* p = nullptr; RprtOpt* RO = nullptr; FileUseMode UM = Closed;
+	MarkStore(p); RO = GetRprtOpt(); RO->FDL.FD = CFile; RO->Flds = E->Flds;
+	if (Select) { RO->FDL.Cond = E->Bool; RO->CondTxt = E->BoolTxt; }
+	if (Subset) RO->FDL.ViewKey = WK; else if (HasIndex) RO->FDL.ViewKey = VK;
+	PrintView = false;
+	if (SelForAutoRprt(RO)) {
+		SpecFDNameAllowed = IsCurrChpt();
+		RunAutoReport(RO);
+		SpecFDNameAllowed = false;
+	}
+	ReleaseStore(p); ViewPrinterTxt(); CRecPtr = E->NewRecPtr;
+}
+
+void AutoGraph()
+{
+	FrmlPtr Bool; KeyD* K;
+#ifdef FandGraph
+	Bool = nullptr; if (Select) Bool = E->Bool;
+	K = nullptr; if (Subset) K = WK; else if (HasIndex) K = VK;
+	RunAutoGraph(E->Flds, K, Bool);
+#endif
+	CFile = E->FD; CRecPtr = E->NewRecPtr;
+}
+
+bool IsDependItem()
+{
+	if (!IsNewRec && (E->NEdSet == 0)) return false;
+	DepD* Dp = CFld->Dep;
+	while (Dp != nullptr)
+	{
+		if (RunBool(Dp->Bool)) { return true; }
+		Dp = Dp->Chain;
+	}
+	return false;
+}
+
+void SetDependItem()
+{
+	DepD* Dp = CFld->Dep;
+	while (Dp != nullptr)
+	{
+		if (RunBool(Dp->Bool)) { AssignFld(CFld->FldD, Dp->Frml); return; }
+		Dp = Dp->Chain;
+	}
+}
+
+void SwitchToAppend()
+{
+	GotoRecFld(CNRecs(), CFld);
+	Append = true;
+	AppendRecord(nullptr);
+	NewDisplLL = true;
+}
+
+bool CtrlMProc(WORD Mode)
+{
+	longint OldCRec, i; EFldD* OldCFld; bool b;
+	ChkDPtr C; EdExitDPtr X; WORD Brk, NR; KeyList KL;
+	bool displ, skip, Quit, WasNewRec; LockMode md; char Typ;
+
+	OldCRec = CRec(); OldCFld = CFld;
+	auto result = true; NR = 0;
+	if (Mode == 0 /*only bypass unrelevant fields*/) goto label2;
+label1:
+	if (IsFirstEmptyFld())FirstEmptyFld = FirstEmptyFld->Chain;
+	Quit = false; if (!CheckForExit(Quit)) return result;
+	TextAttr = E->dHiLi; DisplFld(CFld, IRec);
+	if (ChkSwitch) {
+		if (Mode == 1 || Mode == 3) Typ = '?'; else Typ = 'F';
+		C = CompChk(CFld, Typ);
+		if (C != nullptr) {
+			DisplChkErr(C);
+			if (!C->Warning) return result;
+		}
+	}
+	if (WasUpdated && !EdRecVar && HasIndex) {
+		KL = CFld->KL;
+		while (KL != nullptr) {
+			md = NewLMode(RdMode); b = TestDuplKey(KL->Key); OldLMode(md);
+			if (b) { DuplKeyMsg(KL->Key); return result; } KL = KL->Chain;
+		}
+	}
+	if (Quit && !IsNewRec && (Mode == 1 || Mode == 3)) {
+		EdBreak = 12; result = false; return result;
+	}
+	if (CFld->Chain != nullptr) {
+		GotoRecFld(CRec(), CFld->Chain);
+		if (Mode == 1 || Mode == 3) Mode = 0;
+	}
+	else {
+		WasNewRec = IsNewRec; Mode = 0; NR++;
+		if (!WriteCRec(true, displ)) return result;
+		if (displ) DisplAllWwRecs(); else SetRecAttr(IRec);
+		if (Only1Record)
+			if (NoESCPrompt) { EdBreak = 0; return false; }
+			else { Append = false; goto label3; }
+		if (OnlySearch) { Append = false; goto label3; }
+		if (Append) AppendRecord(nullptr);
+		else {
+			if (WasNewRec) NewDisplLL = true;
+			if (CRec < CNRecs)
+				if (Select) {
+					for (i = CRec() + 1; i < CNRecs(); i++) {
+						if (KeyPressed && (ReadKey() != _M_) && PromptYN(23)) goto label4;
+						RdRec(i); DisplRecNr(i); if (!DeletedFlag() && RunBool(E->Bool)) {
+							RdRec(CRec()); GotoRecFld(i, E->FirstFld); goto label2;
+						};
+					}
+				label4:
+					RdRec(CRec()); DisplRecNr(CRec());
+					GotoRecFld(OldCRec, OldCFld); beep; beep; return result;
+				}
+				else GotoRecFld(CRec() + 1, E->FirstFld);
+			else {
+			label3:
+				GotoRecFld(CRec(), OldCFld); beep; beep; return result;
+			}
+		}
+	}
+label2:
+	skip = false; displ = false;
+	if (IsFirstEmptyFld()) {
+		if ((CFld->Impl != nullptr) && LockRec(true)) {
+			AssignFld(CFld->FldD, CFld->Impl); displ = true;
+		}
+		if (CFld->Dupl && (CRec() > 1) && LockRec(true)) {
+			DuplFromPrevRec(); displ = true; skip = true;
+		}
+	}
+	if (IsDependItem() && LockRec(true)) {
+		SetDependItem(); displ = true; skip = true;
+	}
+	if (IsSkipFld(CFld)) skip = true; if (CFld->Tab) skip = false;
+	if (displ) { TextAttr = E->dHiLi; DisplFld(CFld, IRec); }
+	if (Mode == 2 /*bypass all remaining fields of the record */) goto label1;
+	if (skip && ExNotSkipFld() && (NR <= 1)) goto label1;
+	return result;
+}
+
+bool FldInModeF3Key(FieldDPtr F)
+{
+	KeyFldD* KF;
+	auto result = false;
+	if (F->Flg && f_Stored == 0) return result;
+	KF = VK->KFlds;
+	while (KF != nullptr) {
+		if (KF->FldD == F) { result = true; return result; }
+		KF = KF->Chain;
+	}
+	return result;
+}
+
+bool IsSkipFld(EFldD* D)
+{
+	/* !!! with D^ do!!! */
+	return (!D->Tab && ((E->NTabsSet > 0) || (D->FldD->Flg && f_Stored == 0)
+		|| OnlySearch && FldInModeF3Key(D->FldD)));
+}
+
+bool ExNotSkipFld()
+{
+	EFldD* D;
+	auto result = false;
+	if (E->NFlds == 1) return result;
+	D = E->FirstFld;
+	while (D != nullptr) {
+		if ((D != CFld) && !IsSkipFld(D)) { result = true; return result; }
+		D = D->Chain;
+	}
+	return result;
+}
+
+bool CheckForExit(bool& Quit)
+{
+	auto result = false;
+	EdExitD* X = E->ExD;
+	while (X != nullptr) {
+		bool b = FieldInList(CFld->FldD, X->Flds);
+		if (X->NegFlds) b = !b;
+		if (b) if (X->Typ == 'Q') Quit = true;
+		else {
+			EdBreak = 12; LastTxtPos = -1;
+			if (!StartExit(X, true)) return result;
+		}
+		X = X->Chain;
+	}
+	result = true;
+	return result;
+}
+
+bool GoPrevNextRec(integer Delta, bool Displ)
+{
+	longint i, D, OldBaseRec; LockMode md; WORD w, Max;
+	auto result = false; if (EdRecVar) return; md = NewLMode(RdMode); i = CRec();
+	if (Displ) IVoff();
+label0:
+	i += Delta;
+	if ((i > 0) && (i <= CNRecs())) {
+		RdRec(i);
+		if (Displ) DisplRecNr(i);
+		if (!Select || !DeletedFlag && RunBool(E->Bool)) goto label2;
+		if (KeyPressed) {
+			w = ReadKey();
+			if (((Delta > 0) && (w != _down_) && (w != _CtrlEnd_) && (w != _PgDn_)
+				|| (Delta < 0) && (w != _up_) && (w != _CtrlHome_) && (w != _PgUp_))
+				&& PromptYN(23)) goto label1;
+		}
+		goto label0;
+	}
+	if (Select) WrLLF10Msg(16);
+label1:
+	RdRec(CRec());
+	if (Displ) { DisplRecNr(CRec()); IVon(); } goto label4;
+label2:
+	result = true; OldBaseRec = BaseRec; SetNewCRec(i, false);
+	if (Displ) {
+		Max = E->NRecs; D = BaseRec - OldBaseRec;
+		if (abs(D) >= Max) { DisplWwRecsOrPage(); goto label3; }
+		if (D > 0) {
+			MoveDispl(D + 1, 1, Max - D);
+			for (i = Max - D + 1; i < Max; i++) DisplRec(i);
+		}
+		else if (D < 0) {
+			D = -D; MoveDispl(Max - D, Max, Max - D);
+			for (i = 1; i < D; i++) DisplRec(i);
+		}
+	}
+label3:
+	if (Displ)IVon();
+label4:
+	OldLMode(md);
+	return result;
+}
+
+bool GetChpt(pstring Heslo, longint& NN)
+{
+	longint j; pstring s(12); integer i;
+	auto result = true;
+	for (j = 1; j < CFile->NRecs; j++) {
+		ReadRec(j);
+		if (IsCurrChpt()) {
+			s = TrailChar(' ', _ShortS(ChptName)); i = s.first('.');
+			if (i > 0) s.Delete(i, 255);
+			if (SEquUpcase(Heslo, s)) goto label1;
+		}
+		else {
+			s = TrailChar(' ', _ShortS(CFile->FldD));
+			ConvToNoDiakr(s[1], s.length(), Fonts.VFont);
+			if (EqualsMask(&Heslo[1], Heslo.length(), s))
+				label1:
+			{ NN = j; return result; }
+		}
+	}
+	RdRec(CRec());
+	result = false;
+	return result;
+}
+
+void SetCRec(longint I)
+{
+	if (I > BaseRec + E->NRecs - 1) BaseRec = I - E->NRecs + 1;
+	else if (I < BaseRec) BaseRec = I;
+	IRec = I - BaseRec + 1; RdRec(CRec());
+}
+
+void UpdateEdTFld(LongStr* S)
+{
+	LockMode md;
+	CRecPtr = E->NewRecPtr;
+	if (!EdRecVar) md = NewLMode(WrMode);
+	SetWasUpdated();
+	DelDifTFld(E->NewRecPtr, E->OldRecPtr, CFld->FldD);
+	LongS_(CFld->FldD, S);
+	if (!EdRecVar) OldLMode(md);
+}
+
+void UpdateTxtPos(WORD TxtPos)
+{
+	LockMode md;
+	if (IsCurrChpt) {
+		md = NewLMode(WrMode); SetWasUpdated();
+		R_(ChptTxtPos, integer(TxtPos)); OldLMode(md);
+	}
+}
+
+bool EditFreeTxt(FieldDPtr F, pstring ErrMsg, bool Ed, WORD& Brk)
+{
+	const WORD BreakKeys[6] = {
+#ifndef FandRunV
+		_CtrlF1,
+#endif
+		_F1, _CtrlHome, _CtrlEnd, _F9, _AltF10 };
+	const WORD BreakKeys1[8] = { _CtrlF1, _F1, _CtrlHome, _CtrlEnd, _F9, _AltF10, _ShiftF1, _F10 };
+	const WORD BreakKeys2[14] = { _F1, _CtrlHome, _CtrlEnd, _F9, _F10, _AltF10,
+		_CtrlF1, _AltF1, _ShiftF1, _AltF2, _AltF3, _CtrlF8, _CtrlF9, _AltF9 };
+	const BYTE maxStk = 10;
+
+	pstring Breaks(14);
+	bool Srch, Upd, WasUpd, Displ, quit;
+	pstring HdTxt(22);
+	MsgStr TxtMsgS; MsgStr* PTxtMsgS;
+	longint TxtXY;
+	WORD R1, OldTxtPos, TxtPos, CtrlMsgNr, C, LastLen; LongStr* S;
+	char Kind; LockMode md; void* p; longint i, w;
+	EdExitD* X;
+	WORD iStk;
+	struct { longint N = 0; longint I = 0; } Stk[maxStk];
+	pstring heslo(80);
+
+	MarkStore(p); Srch = false; Brk = 0; TxtPos = 1; iStk = 0; TxtXY = 0;
+	auto result = true;
+	w = 0; if (E->Head == "") w = PushW(1, 1, TxtCols, 1);
+	if (E->TTExit)
+		/* !!! with TxtMsgS do!!! */ {
+		TxtMsgS.Head = nullptr; TxtMsgS.Last = E->Last; TxtMsgS.CtrlLast = E->CtrlLast;
+		TxtMsgS.AltLast = E->AltLast; TxtMsgS.ShiftLast = E->ShiftLast;
+		PTxtMsgS = &TxtMsgS;
+	}
+	else PTxtMsgS = nullptr;
+label1:
+	HdTxt = "    ";  WasUpd = false;
+	if (CRec() > 1) HdTxt[3] = 0x18; // ^X
+	if (CRec < CNRecs) HdTxt[4] = 0x19; // ^Y
+	if (IsCurrChpt()) {
+		HdTxt = _ShortS(ChptTyp) + ':' + _ShortS(ChptName) + HdTxt;
+		TxtPos = trunc(_R(ChptTxtPos)); Breaks = BreakKeys2; CtrlMsgNr = 131;
+	}
+	else {
+		CtrlMsgNr = 151;
+		if (CFile == CRdb->HelpFD) Breaks = BreakKeys1; else Breaks = BreakKeys;
+	}
+	R1 = E->FrstRow; if ((R1 = 3) && WithBoolDispl) R1 = 2;
+	Window(E->FrstCol, R1, E->LastCol, E->LastRow); TextAttr = colors.tNorm;
+	Kind = 'V'; OldTxtPos = TxtPos;
+	if (Ed) LockRec(false);
+	if (F->Flg && f_Stored != 0) { S = _LongS(F); if (Ed) Kind = 'T'; }
+	else S = RunLongStr(F->Frml);
+label2:
+	X = nullptr; if (TTExit) X = E->ExD; Upd = false;
+	result =
+		EditText(Kind, MemoT, HdTxt, ErrMsg, &S->A, MaxLStrLen, S->LL, TxtPos, TxtXY, Breaks, X,
+			Srch, Upd, 141, CtrlMsgNr, PTxtMsgS);
+	ErrMsg = ""; heslo = LexWord; LastLen = S->LL;
+	if (EdBreak == 0xffff) C = KbdChar; else C = 0;
+	if (C == _AltEqual_) C = _ESC_; else WasUpd = WasUpd || Upd;
+	switch (C) {
+	case _AltF3_: { EditHelpOrCat(C, 0, ""); goto label2; }
+	case _U_: { ReleaseStore(S); TxtXY = 0; goto label1; }
+	}
+	Window(1, 1, TxtCols, TxtRows);
+	if (WasUpd) UpdateEdTFld(S);
+	if ((OldTxtPos != TxtPos) && !Srch) UpdateTxtPos(TxtPos);
+	ReleaseStore(S);
+	if (Ed && !WasUpdated) UnLockRec(E);
+	if (Srch) if (WriteCRec(false, Displ)) goto label31;
+	switch (C) {
+	case _F9_: {
+		if (WriteCRec(false, Displ)) { SaveFiles; UpdCount = 0; }
+		goto label4;
+	}
+	case _F1_: { RdMsg(6); heslo = MsgLine; goto label3; }
+	case _CtrlF1_: goto label3;
+	case _ShiftF1_:
+		if (IsCurrChpt() || (CFile == CRdb->HelpFD)) {
+			if ((iStk < maxStk) && WriteCRec(false, Displ) && GetChpt(heslo, i)) {
+				Append = false; iStk++;
+				/* !!! with Stk[iStk] do!!! */ { Stk[iStk].N = CRec(); Stk[iStk].I = TxtPos; }
+				SetCRec(i);
+			}
+			TxtXY = 0; goto label4;
+		}
+	case _F10_: {
+		if ((iStk > 0) && WriteCRec(false, Displ)) {
+			Append = false;
+			/* !!! with Stk[iStk] do!!! */
+			{ SetCRec(Stk[iStk].N); TxtPos = Stk[iStk].I; }
+			iStk--;
+		}
+		TxtXY = 0;
+		goto label4;
+	}
+	case _AltF10_: { Help(nullptr, "", false); goto label4; }
+	case _AltF1_: { heslo = _ShortS(ChptTyp);
+	label3:
+		Help((RdbDPtr)&HelpFD, heslo, false);
+		goto label4;
+	}
+	}
+	if ((C > 0xFF) && WriteCRec(false, Displ)) {
+		Append = false;
+		if (C == _CtrlHome_) { GoPrevNextRec(-1, false); TxtXY = 0; goto label4; }
+		if (C == _CtrlEnd_) {
+		label31:
+			if (not GoPrevNextRec(+1, false) && Srch) {
+				UpdateTxtPos(LastLen); Srch = false;
+			}
+			TxtXY = 0;
+		label4:
+			if (!Ed || LockRec(false)) goto label1; else goto label5;
+		}
+		WrEStatus; Brk = 1; KbdChar = C; goto label6;
+	}
+label5:
+	ReleaseStore(p);
+	DisplEditWw();
+label6:
+	if (w != 0) PopW(w);
+	return result;
+}
+
+bool EditItemProc(bool del, bool ed, WORD& Brk)
+{
+	FieldDPtr F; pstring Txt; double R; bool b; ChkD* C; WORD wd;
+	F = CFld->FldD;
+	auto result = true;
+	if (F->Typ == 'T') {
+		if (!EditFreeTxt(F, "", ed, Brk)) {
+			return false;
+		}
+	}
+	else {
+		TextAttr = E->dHiLi;
+		DecodeField(F, CFld->FldD->L, Txt);
+		GotoXY(CFld->Col, FldRow(CFld, IRec));
+		wd = 0;
+		if (CFile->NotCached()) wd = E->WatchDelay;
+		FieldEdit(F, CFld->Impl, CFld->L, 1, &Txt, R, del, ed, false, wd);
+		if ((KbdChar == _ESC_) || !ed) {
+			DisplFld(CFld, IRec);
+			if (ed && !WasUpdated) UnLockRec(E);
+			return result;
+		}
+		SetWasUpdated();
+		switch (F->FrmlTyp) {
+		case 'B': B_(F, toupper(Txt[1]) == AbbrYes); break;
+		case 'S': S_(F, Txt); break;
+		case 'R': R_(F, R); break;
+		}
+	}
+	if (Brk == 0) result = CtrlMProc(1);
+	return result;
+}
+
+void SetSwitchProc()
+{
+	bool B; WORD N, iMsg;
+	iMsg = 104; if (EdRecVar) goto label1; iMsg = 101;
+	if (MustCheck) if (MustAdd) goto label1; else { iMsg = 102; goto label1; }
+	iMsg = 103; if (MustAdd) goto label1; iMsg = 100;
+label1:
+	N = Menu(iMsg, 1); if (N == 0) return;
+	switch (iMsg) {
+	case 101: if (N == 4) N = 6; break;
+	case 102: if (N == 5) N = 6; break;
+	case 103: if (N >= 4) N++; break;
+	case 104: N += 2; break;
+	}
+	switch (N) {
+	case 1: { if (Select) Select = false; else if (E->Bool != nullptr) Select = true;
+		DisplBool(); NewDisplLL = true; SetNewWwRecAttr(); break; }
+	case 2: if (CFld->FldD->Flg && f_Stored != 0) {
+		B = CFld->Dupl; CFld->Dupl = !B; DisplTabDupl();
+		if (B) E->NDuplSet--; else E->NDuplSet++;
+		break;
+	}
+	case 3: { B = CFld->Tab; CFld->Tab = !B; DisplTabDupl();
+		if (B) E->NTabsSet--; else E->NTabsSet++; break; }
+	case 4: { AddSwitch = !AddSwitch; NewDisplLL = true; break; }
+	case 5: if (!MustCheck) {
+		ChkSwitch = !ChkSwitch; NewDisplLL = true; break;
+	}
+	case 6: { WarnSwitch = !WarnSwitch; NewDisplLL = true;  break; }
+	}
+}
+
+void PromptSelect()
+{
+	pstring Txt;
+	if (Select) Txt = *E->BoolTxt; else Txt = "";
+	if (IsCurrChpt()) ReleaseFDLDAfterChpt();
+	ReleaseStore(E->AfterE);
+	PromptFilter(Txt, E->Bool, E->BoolTxt);
+	if (E->Bool == nullptr) Select = false; else Select = true;
+	DisplBool(); SetNewWwRecAttr(); NewDisplLL = true;
+}
+
+void SwitchRecs(integer Delta)
+{
+	LockMode md; longint n1, n2; void* p1; void* p2; XString x1, x2; KeyDPtr k;
+#ifdef FandSQL
+	if (CFile->IsSQLFile) return;
+#endif
+	if (NoCreate && NoDelete || WasWK) return;
+	if (!TryLMode(WrMode, md, 1)) return;
+	p1 = GetRecSpace(); p2 = GetRecSpace();
+	CRecPtr = p1; n1 = AbsRecNr(CRec()); ReadRec(n1);
+	if (HasIndex) x1.PackKF(VK->KFlds);
+	CRecPtr = p2; n2 = AbsRecNr(CRec() + Delta); ReadRec(n2);
+	if (HasIndex) { x2.PackKF(VK->KFlds); if (x1.S != x2.S) goto label1; }
+	WriteRec(n1); CRecPtr = p1; WriteRec(n2);
+	if (HasIndex) {
+		k = CFile->Keys; while (k != nullptr) {
+			if (k != VK) {
+				CRecPtr = p1; k->Delete(n1); CRecPtr = p2; k->Delete(n2);
+				CRecPtr = p1; k->Insert(n2, true); CRecPtr = p2; k->Insert(n1, true);
+			}
+			k = k->Chain;
+		}
+	}
+	SetNewCRec(CRec() + Delta, true); DisplAllWwRecs();
+	DisplRecNr(CRec()); E->EdUpdated = true;
+	if (IsCurrChpt()) SetCompileAll();
+label1:
+	OldLMode(md); ReleaseStore(p1); CRecPtr = E->NewRecPtr;
+}
+
+
+
+
+
+
+
 
 
 

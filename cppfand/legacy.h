@@ -55,6 +55,7 @@ void OvrSetRetry(longint Size) {};
 
 void GetMem(void* pointer, int Size) { pointer = new unsigned char[Size]; }
 
+void beep();
 
 BYTE OvrResult = 0; // vždy 0 OvrOK
 

@@ -49,8 +49,9 @@ struct ProcStkD { ProcStkD* ChainBack; void* LVRoot; }; // r199
 typedef ProcStkD* ProcStkPtr;
 
 struct ExitRecord {
-	void* OvrEx; void* mBP; WORD  rBP, rIP, rCS, rSP, rDS;
-	bool ExP, BrkP;
+	void* OvrEx = nullptr; void* mBP = nullptr;
+	WORD rBP = 0, rIP = 0, rCS = 0, rSP = 0, rDS = 0;
+	bool ExP = false, BrkP = false;
 } ExitBuf; // r202 - r210
 ProcStkD* MyBP; ProcStkD* ProcMyBP;
 WORD BPBound; // r212
