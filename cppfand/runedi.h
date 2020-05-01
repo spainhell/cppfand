@@ -36,3 +36,12 @@ bool PromptB(pstring* S, FrmlPtr Impl, FieldDPtr F);
 pstring PromptS(pstring* S, FrmlPtr Impl, FieldDPtr F);
 double PromptR(pstring* S, FrmlPtr Impl, FieldDPtr F);
 
+// *** RUNEDIT1 ***
+longint CRec();
+longint CNRecs();
+longint AbsRecNr(longint N);
+longint LogRecNo(longint N);
+bool IsSelectedRec(WORD I);
+bool EquOldNewRec();
+void RdRec(longint N);
+

@@ -99,9 +99,6 @@
     <ClCompile Include="runproc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="runedit1.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="projmgr1.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -225,9 +222,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="projmgr1.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="runedit1.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="printtxt.h">
