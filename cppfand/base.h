@@ -72,7 +72,7 @@ pstring CPath; pstring CDir; pstring CName; pstring CExt;
 pstring CVol;
 bool WasLPTCancel;
 FILE* WorkHandle;
-const longint MaxWSize = 0; // {currently occupied in FANDWORK.$$$}
+longint MaxWSize = 0; // {currently occupied in FANDWORK.$$$}
 /* konec */
 
 // ********** MESSAGES **********
