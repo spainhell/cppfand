@@ -1033,8 +1033,8 @@ label1:
 
 void RdSortCall()
 {
-	InstrPtr PD = GetPD(_sort, 8);
-	FileDPtr FD = RdFileName();
+	Instr* PD = GetPD(_sort, 8);
+	FileD* FD = RdFileName();
 	PD->SortFD = FD;
 #ifdef FandSQL
 	if (FD->typSQLFile) OldError(155);
@@ -1047,7 +1047,7 @@ void RdSortCall()
 
 void RdEditCall()
 {
-	InstrPtr PD; EditOpt* EO; void* p; bool b; KeyDPtr K;
+	Instr* PD; EditOpt* EO; void* p; bool b; KeyDPtr K;
 	LocVar* lv = nullptr;
 	PD = GetPD(_edit, 8);
 	EO = GetEditOpt();
@@ -1109,7 +1109,7 @@ void RdEditOpt(EditOpt* EO)
 
 void RdReportCall()
 {
-	InstrPtr PD; RprtOpt* RO; LocVar* lv; RprtFDListEl* FDL; bool b;
+	Instr* PD; RprtOpt* RO; LocVar* lv; RprtFDListEl* FDL; bool b;
 	bool hasfrst;
 	PD = GetPD(_report, 4); RO = GetRprtOpt(); PD->RO = RO;
 	hasfrst = false;
@@ -1215,7 +1215,7 @@ void RdRprtOpt(RprtOpt* RO, bool HasFrst)
 
 void RdRDBCall()
 {
-	InstrPtr PD; pstring s;
+	Instr* PD; pstring s;
 	PD = GetPD(_call, 12);
 	s[0] = 0;
 	if (Lexem == '\\') { s = Lexem; RdLex(); }
@@ -1235,7 +1235,7 @@ void RdRDBCall()
 
 void RdExec()
 {
-	InstrPtr PD; FileDPtr FD;
+	Instr* PD; FileDPtr FD;
 	PD = GetPD(_exec, 14); RdPath(true, PD->ProgPath, PD->ProgCatIRec);
 	Accept(','); PD->Param = RdStrFrml();
 	while (Lexem == ',') {
@@ -1348,7 +1348,7 @@ bool RdList(pstring* S)
 
 void RdPrintTxt()
 {
-	InstrPtr PD;
+	Instr* PD;
 	PD = GetPD(_printtxt, 10);
 	/* !!! with PD^ do!!! */
 	if (FindLocVar(LVBD.Root, PD->TxtLV)) { RdLex(); TestString(PD->TxtLV->FTyp); }
@@ -1357,7 +1357,7 @@ void RdPrintTxt()
 
 void RdEditTxt()
 {
-	InstrPtr PD; EdExitD* pX;
+	Instr* PD; EdExitD* pX;
 	PD = GetPD(_edittxt, 73);
 	/* !!! with PD^ do!!! */
 	if (FindLocVar(LVBD.Root, PD->TxtLV)) { RdLex(); TestString(PD->TxtLV->FTyp); }
@@ -1465,7 +1465,7 @@ label1:
 	}
 	WORD N = 1 + sizeof(d);
 	if (z != nullptr) { OpKind = 3; N += 8; }
-	InstrPtr pd = GetPInstr(_writeln, N);
+	Instr* pd = GetPInstr(_writeln, N);
 	/* !!! with pd^ do!!! */
 	pd->LF = OpKind;
 	pd->WD = *d;
@@ -1569,7 +1569,7 @@ void RdMount()
 
 void RdDisplay()
 {
-	InstrPtr PD; pstring* s;
+	Instr* PD; pstring* s;
 	PD = GetPD(_display, sizeof(RdbPos));
 	if ((Lexem == _identifier) && FindChpt('H', LexWord, false, &PD->Pos)) RdLex();
 	else {
@@ -1963,7 +1963,7 @@ Instr* RdWith()
 
 Instr* RdUserFuncAssign()
 {
-	InstrPtr pd; LocVar* lv;
+	Instr* pd; LocVar* lv;
 	if (!FindLocVar(LVBD.Root, lv)) Error(34);
 	RdLex; pd = GetPInstr(_asgnloc, 9); pd->AssLV = lv;
 	RdAssignFrml(lv->FTyp, pd->Add, pd->Frml);
@@ -2106,7 +2106,7 @@ label2:
 
 void RdBackup(char MTyp, bool IsBackup)
 {
-	InstrPtr PD;
+	Instr* PD;
 	if (MTyp == 'M') PD = GetPD(_backupm, 15); else PD = GetPD(_backup, 5);
 	PD->IsBackup = IsBackup;
 	TestIdentif();

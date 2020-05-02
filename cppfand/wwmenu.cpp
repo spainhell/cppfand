@@ -352,6 +352,16 @@ TMenuBoxS::TMenuBoxS(WORD C1, WORD R1, pstring* Msg) : TMenuBox(C1, R1)
 	SetState(sfShadow, true);
 }
 
+bool TMenuBoxS::Enabled(WORD I)
+{
+	return true;
+}
+
+bool TMenuBoxS::ExecItem(WORD& I)
+{
+	return true;
+}
+
 pstring TMenuBoxS::GetHlpName()
 {
 	pstring s;

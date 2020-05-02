@@ -457,7 +457,7 @@ void S_(FieldDPtr F, pstring S)
 	}
 }
 
-void LongS_(FieldDPtr F, LongStrPtr S)
+void LongS_(FieldDPtr F, LongStr* S)
 {
 	longint Pos; LockMode md;
 

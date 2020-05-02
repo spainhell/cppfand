@@ -3,6 +3,7 @@
 #include "common.h"
 #include "compile.h"
 #include "drivers.h"
+#include "genrprt.h"
 #include "index.h"
 #include "kbdww.h"
 #include "legacy.h"

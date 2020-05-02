@@ -9,6 +9,7 @@
 #include "recacc.h"
 #include <math.h>
 #include "oaccess.h"
+#include "runproc.h"
 
 
 double Owned(FrmlPtr Bool, FrmlPtr Sum, LinkDPtr LD)

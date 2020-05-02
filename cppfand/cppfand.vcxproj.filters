@@ -99,10 +99,10 @@
     <ClCompile Include="runproc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="projmgr1.cpp">
+    <ClCompile Include="runedi.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="runedi.cpp">
+    <ClCompile Include="runproj.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -221,9 +221,6 @@
     <ClInclude Include="edglobal.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="projmgr1.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="printtxt.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -231,6 +228,21 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="rdedit.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="runproj.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ededit.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="edevent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="edevinpt.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="edscreen.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

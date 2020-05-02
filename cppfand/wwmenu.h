@@ -3,6 +3,7 @@
 #include "drivers.h"
 #include "constants.h"
 #include "rdrun.h"
+#include "rdrun.h"
 
 const WORD sfCursorVis = 0x0002;
 const WORD sfCursorBig = 0x0004;
@@ -86,6 +87,8 @@ class TMenuBoxS : public TMenuBox
 public:
 	TMenuBoxS(WORD C1, WORD R1, pstring* Msg);
 	pstring* MsgTxt;
+	bool Enabled(WORD I) override;
+	bool ExecItem(WORD& I) override;
 	pstring GetHlpName() override;
 	pstring GetText(integer I) override;
 };

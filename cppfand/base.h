@@ -168,8 +168,6 @@ const BYTE prUs32 = 25; const BYTE prLine72 = 26; const BYTE prLine216 = 27;
 const BYTE prDen60 = 28; const BYTE  prDen120 = 29; const BYTE prDen240 = 30;
 const BYTE  prColor = 31; const BYTE prClose = 32;
 
-pstring PrTab(WORD N);
-
 integer prCurr, prMax;
 struct Printer {
 	void* Strg; char Typ, Kod; BYTE Lpti, TmOut;

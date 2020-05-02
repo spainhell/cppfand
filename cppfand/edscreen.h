@@ -1,8 +1,4 @@
 #pragma once
-#include <string>
-
-using namespace std;
-
 const int TXTCOLS = 80;
 
 // TYPY
@@ -10,7 +6,7 @@ typedef unsigned short WORD;
 typedef unsigned char BYTE;
 typedef int longint;
 typedef void* ArrPtr;
-typedef string ColorOrd;
+typedef pstring ColorOrd;
 
 // PROMENNE
 bool InsPage;
@@ -18,7 +14,7 @@ bool InsPage;
 // METODY
 void WrStatusLine();
 void WriteMargins();
-void WrLLMargMsg(string* s, WORD n);
+void WrLLMargMsg(pstring* s, WORD n);
 void InitScr();
 void UpdStatLine(int Row, int Col);
 void EditWrline(ArrPtr P, int Row);

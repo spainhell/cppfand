@@ -3,6 +3,7 @@
 #include "constants.h"
 #include "edevent.h"
 #include "pstring.h"
+#include "rdrun.h"
 #include "sort.h"
 #include "wwmenu.h"
 

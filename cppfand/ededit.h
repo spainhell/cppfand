@@ -3,17 +3,14 @@
 
 #pragma once
 #include "pstring.h"
+#include "constants.h"
 #include <set>
 
 const int COL = 80;
 
-typedef unsigned short WORD;
-typedef unsigned char BYTE;
 typedef char ArrLine[COL];
 typedef char(*ArtPtr)[COL];
 typedef pstring ColorOrd;
-typedef int longint;
-typedef pstring pathstr;
 
 struct Character {
 	char ch;
@@ -48,7 +45,7 @@ bool ModPage(longint RLine);
 void TestLenText(WORD F, longint LL);
 void SmallerPart(WORD Ind, WORD FreeSize); // tato je vnoøená v pøedchozí
 void DekodLine();
-pathstr ShortName(pathstr Name);
+pstring ShortName(pstring Name);
 WORD CountChar(char C, WORD First, WORD Last);
 WORD SetLine(WORD Ind);
 WORD SetCurrI(WORD Ind);

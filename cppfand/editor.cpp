@@ -81,7 +81,9 @@ bool EditText(char pMode, char pTxtType, pstring pName, pstring pErrMsg, CharArr
 	if (SrchT)
 	{
 		SrchT = false;
-		KbdBuffer = *l + KbdBuffer;
+		pstring OldKbdBuffer = KbdBuffer;
+		KbdBuffer = *l;
+		KbdBuffer += OldKbdBuffer;
 		KbdChar = _L_;
 		IndT = 0;
 	}
@@ -148,9 +150,9 @@ void EditTxtFile(longint* LP, char Mode, pstring& ErrMsg, EdExitDPtr ExD,
 	{
 		MaxLenT = 0xFFF0; LenT = 0; Part.UpdP = false;
 		TxtPath = CPath; TxtVol = CVol; OpenTxtFh(Mode);
-		RdFirstPart;
-		SimplePrintHead;
-		while ((TxtPos > Part.PosP + Part.LenP) && !AllRd) RdNextPart;
+		RdFirstPart();
+		SimplePrintHead();
+		while ((TxtPos > Part.PosP + Part.LenP) && !AllRd) RdNextPart();
 		Ind = TxtPos - Part.PosP;
 	}
 	else {
@@ -180,21 +182,21 @@ label1:
 		switch (KbdChar) {
 		case _F9_: {
 			if (Loc) { TWork.Delete(*LP); *LP = StoreInTWork(LS); }
-			else RdPart;
+			else RdPart();
 			goto label1;
 		}
 		case _AltF10_: { Help(nullptr, "", false); goto label2; }
 		case _F1_: {
-			RdMsg(6); Help(RdbDPtr(HelpFD), MsgLine, false);
+			RdMsg(6); Help((RdbDPtr)&HelpFD, MsgLine, false);
 		label2:
-			if (!Loc) RdPart; goto label1; }
+			if (!Loc) RdPart(); goto label1; }
 		}
 	if (!Loc) { Size = FileSizeH(TxtFH); CloseH(TxtFH); }
 	if ((EdBreak == 0xFFFF) && (KbdChar = _F6_))
 		if (Loc) { PrintArray(*T, LenT, false); goto label1; }
 		else {
 			CPath = TxtPath; CVol = TxtVol; PrintTxtFile(0);
-			OpenTxtFh(Mode); RdPart; goto label1;
+			OpenTxtFh(Mode); RdPart(); goto label1;
 		}
 	if (!Loc && (Size < 1)) DeleteFile(TxtPath);
 	if (Loc and (KbdChar == _ESC_)) LS->LL = LenT;
@@ -220,7 +222,7 @@ void ViewPrinterTxt()
 {
 	WRect V = { 1, 2, 80, 24 };
 	if (!PrintView) return;
-	SetPrintTxtPath;
+	SetPrintTxtPath();
 	V.C2 = TxtCols; V.R2 = TxtRows - 1;
 	pstring temp(1);
 	EditTxtFile(nullptr, 'T', temp, nullptr, 1, 0, &V, 0, "", WPushPixel, nullptr);

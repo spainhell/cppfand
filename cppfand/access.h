@@ -131,7 +131,7 @@ typedef SumElem* SumElPtr;
 
 struct FieldDescr // ø. 100
 {
-	FieldDescr* Chain;
+	FieldDescr* Chain = nullptr;
 	char Typ, FrmlTyp;
 	BYTE L, M, NBytes, Flg;
 	// case boolean {Stored} of True:(Displ:integer); False:(Frml:FrmlPtr; Name:string[1]{ curr.length });
@@ -143,25 +143,25 @@ typedef FieldDescr* FieldDPtr;
 
 struct KeyFldD // ø. 108
 {
-	KeyFldD* Chain;
-	FieldDPtr FldD;
-	bool CompLex, Descend;
+	KeyFldD* Chain = nullptr;
+	FieldDescr* FldD = nullptr;
+	bool CompLex = false, Descend = false;
 };
 typedef KeyFldD* KeyFldDPtr;
 
 struct RdbPos // ø. 113
 {
-	RdbD* R;
-	WORD IRec;
+	RdbD* R = nullptr;
+	WORD IRec = 0;
 };
 
 struct ChkD // ø. 115
 {
-	ChkD* Chain;
+	ChkD* Chain = nullptr;
 	FrmlPtr Bool;
-	pstring* HelpName;
+	pstring* HelpName = nullptr;
 	FrmlPtr TxtZ;
-	bool Warning;
+	bool Warning = false;
 };
 typedef ChkD* ChkDPtr;
 

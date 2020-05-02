@@ -29,7 +29,7 @@ bool _B(FieldDPtr F);
 longint _T(FieldDescr* F); // r255
 
 void S_(FieldDPtr F, pstring S);
-void LongS_(FieldDPtr F, LongStrPtr S);
+void LongS_(FieldDPtr F, LongStr* S);
 void R_(FieldDPtr F, double R);
 void B_(FieldDPtr F, bool B);
 void T_(FieldDPtr F, longint Pos);
