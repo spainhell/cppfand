@@ -71,6 +71,7 @@ struct FloatPtrListEl // r42
 	FloatPtrListEl* Chain;
 	double* RPtr;
 };
+typedef FloatPtrListEl* FloatPtrList;
 
 struct KeyListEl // ø. 49
 {

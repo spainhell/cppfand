@@ -502,7 +502,7 @@ OutpFD* OutpFDRoot;
 OutpRD* OutpRDs;
 bool Join;
 bool PrintView;                  /* Report */
-std::string Rprt;		// pùvodnì text - souvisí s text. souborem
+pstring Rprt;		// pùvodnì text - souvisí s text. souborem
 BlkD* RprtHd; BlkD* PageHd; BlkD* PageFt;
 FloatPtrListEl* PFZeroLst;
 LvDescr* FrstLvM; LvDescr* LstLvM; /* LstLvM->Ft=RF */

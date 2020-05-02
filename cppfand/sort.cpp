@@ -471,11 +471,15 @@ label1:
 
 void CreateIndexFile()
 {
-	ExitRecord er; void* cr; void* p; LockMode md; bool fail;
-	XWorkFile* XW; XScan* Scan; XFile* XF;
-	// NewExit(Ovr(), er); goto label1;
+	ExitRecord er;
+	void* cr = nullptr; void* p = nullptr;
+	LockMode md = NullMode; bool fail = false;
+	XWorkFile* XW;
+	XScan* Scan;
+	XFile* XF = nullptr;
+	NewExit(Ovr(), er); goto label1;
 	MarkStore(p); fail = true;
-	XF = CFile->XF; cr = CRecPtr; CRecPtr = GetRecSpace;
+	XF = CFile->XF; cr = CRecPtr; CRecPtr = GetRecSpace();
 	md = NewLMode(RdMode); TryLockN(0, 0); /*ClearCacheCFile;*/
 	if (XF->Handle == nullptr) RunError(903);
 	XF->RdPrefix();
