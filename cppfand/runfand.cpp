@@ -23,75 +23,79 @@
 
 void ScrGraphMode(bool Redraw, WORD OldScrSeg)
 {
-	void* p; void* p1;
-	WORD* pofs = (WORD*)p;
-	WORD sz, cr, i; integer err;
-	pstring s(4);
-	if ((VideoCard == viCga) || (TxtCols != 80) || (TxtRows != 25)) RunError(643);
-	DoneMouseEvents();
-	bool b = Crs.Enabled;
-	CrsHide();
-	integer n = 80 * 25 * 2;
-	if (OldScrSeg != 0) p = ptr(OldScrSeg, 0);
-	else { AlignParagraph(); p = GetStore(n); }
-	Move(ptr(ScrSeg, 0), p, n);
-	if (OldScrSeg != 0) SetGraphMode(GraphMode);
-	else {
-		if ((VideoCard == viVga) && (GraphDriver != EGAMono)) {
-			if (BGIReload) {
-				if (Fonts.VFont == foLatin2) ResFile.Get(Vga8x19L, FontArr);
-				else ResFile.Get(Vga8x19K, FontArr);
-			}
-			GrBytesPerChar = 19;
-		}
-		else {
-			if (BGIReload) {
-				if (Fonts.VFont == foLatin2) ResFile.Get(Ega8x14L, FontArr);
-				else ResFile.Get(Ega8x14K, FontArr);
-			}
-			GrBytesPerChar = 14;
-		}
-		GrBytesPerLine = 80 * GrBytesPerChar;
-		if (VideoCard == viHercules) n = BgiHerc;
-		else n = BgiEgaVga;
-		if (BGIReload) ResFile.Get(n, BGIDriver);
-		if (RegisterBGIDriver(BGIDriver) < 0) RunError(838);
-		GetMem(p1, 7000); FreeMem(p1, 7000); FreeList = HeapPtr;
-		InitGraph(GraphDriver, GraphMode, ""); FreeList = nullptr;
-		err = GraphResult;
-		if (err != grOK) { str(err,3,s); SetMsgPar(s); RunError(201); }
-	}
-	IsGraphMode = true; ScrSeg = seg(*p); CrsIntrInit();
-	if (Redraw) ScrPopToGraph(0, 0, TxtCols, TxtRows, p, TxtCols);
-	InitMouseEvents(); if (b) CrsShow();
-	if (BGIReload) {
-		if (Fonts.VFont == foLatin2) {
-			ResFile.Get(ChrLittLat, BGILittFont); ResFile.Get(ChrTripLat, BGITripFont);
-		}
-		else {
-			ResFile.Get(ChrLittKam, BGILittFont); ResFile.Get(ChrTripKam, BGITripFont);
-		}
-	}
-	if (RegisterBGIFont(BGILittFont) < 0) RunError(838);
-	if (RegisterBGIFont(BGITripFont) < 0) RunError(838);
+	// graf. mód není podporován
+	
+	//void* p; void* p1;
+	//WORD* pofs = (WORD*)p;
+	//WORD sz, cr, i; integer err;
+	//pstring s(4);
+	//if ((VideoCard == viCga) || (TxtCols != 80) || (TxtRows != 25)) RunError(643);
+	//DoneMouseEvents();
+	//bool b = Crs.Enabled;
+	//CrsHide();
+	//integer n = 80 * 25 * 2;
+	//if (OldScrSeg != 0) p = ptr(OldScrSeg, 0);
+	//else { AlignParagraph(); p = GetStore(n); }
+	//Move(ptr(ScrSeg, 0), p, n);
+	//if (OldScrSeg != 0) SetGraphMode(GraphMode);
+	//else {
+	//	if ((VideoCard == viVga) && (GraphDriver != EGAMono)) {
+	//		if (BGIReload) {
+	//			if (fonts.VFont == foLatin2) ResFile.Get(Vga8x19L, FontArr);
+	//			else ResFile.Get(Vga8x19K, FontArr);
+	//		}
+	//		GrBytesPerChar = 19;
+	//	}
+	//	else {
+	//		if (BGIReload) {
+	//			if (fonts.VFont == foLatin2) ResFile.Get(Ega8x14L, FontArr);
+	//			else ResFile.Get(Ega8x14K, FontArr);
+	//		}
+	//		GrBytesPerChar = 14;
+	//	}
+	//	GrBytesPerLine = 80 * GrBytesPerChar;
+	//	if (VideoCard == viHercules) n = BgiHerc;
+	//	else n = BgiEgaVga;
+	//	if (BGIReload) ResFile.Get(n, BGIDriver);
+	//	if (RegisterBGIDriver(BGIDriver) < 0) RunError(838);
+	//	GetMem(p1, 7000); FreeMem(p1, 7000); FreeList = HeapPtr;
+	//	InitGraph(GraphDriver, GraphMode, ""); FreeList = nullptr;
+	//	err = GraphResult;
+	//	if (err != grOK) { str(err,3,s); SetMsgPar(s); RunError(201); }
+	//}
+	//IsGraphMode = true; ScrSeg = seg(*p); CrsIntrInit();
+	//if (Redraw) ScrPopToGraph(0, 0, TxtCols, TxtRows, p, TxtCols);
+	//InitMouseEvents(); if (b) CrsShow();
+	//if (BGIReload) {
+	//	if (fonts.VFont == foLatin2) {
+	//		ResFile.Get(ChrLittLat, BGILittFont); ResFile.Get(ChrTripLat, BGITripFont);
+	//	}
+	//	else {
+	//		ResFile.Get(ChrLittKam, BGILittFont); ResFile.Get(ChrTripKam, BGITripFont);
+	//	}
+	//}
+	//if (RegisterBGIFont(BGILittFont) < 0) RunError(838);
+	//if (RegisterBGIFont(BGITripFont) < 0) RunError(838);
 }
 
 WORD ScrTextMode(bool Redraw, bool Switch)
 {
-	bool b;
-	if (!IsGraphMode) return;
-	DoneMouseEvents();
-	b = Crs.Enabled; CrsHide(); CrsIntrDone();
-	if (Switch) RestoreCrtMode; else CloseGraph();
-	IsGraphMode = false;
-	LoadVideoFont();
-	if (Redraw) Move(ptr(ScrSeg, 0), ptr(video.Address, 0), 80 * 25 * 2);
-	auto result = ScrSeg;
-	ScrSeg = video.Address;
-	InitMouseEvents();
-	CrsShow(); /*is visible*/
-	if (!b) CrsHide();
-	return result;
+	//bool b;
+	//if (!IsGraphMode) return;
+	//DoneMouseEvents();
+	//b = Crs.Enabled; CrsHide(); CrsIntrDone();
+	//if (Switch) RestoreCrtMode; else CloseGraph();
+	//IsGraphMode = false;
+	//LoadVideoFont();
+	//if (Redraw) Move(ptr(ScrSeg, 0), ptr(video.address, 0), 80 * 25 * 2);
+	//auto result = ScrSeg;
+	//ScrSeg = video.address;
+	//InitMouseEvents();
+	//CrsShow(); /*is visible*/
+	//if (!b) CrsHide();
+	//return result;
+	
+	return 0;
 }
 
 bool IsAT()
@@ -119,9 +123,9 @@ void InitDrivers()
 {
 	char kl;
 	BreakIntrInit();
-	DetectGraph(GraphDriver, GraphMode);
+	//DetectGraph(GraphDriver, GraphMode);
 	/* GraphDriver = EGAMono; Mark****/
-	DetectVideoCard();
+	//DetectVideoCard();
 	AssignCrt(Output); Rewrite(Output); ClrEvent();
 }
 
@@ -144,7 +148,7 @@ void RdCFG()
 	}
 	ReadH(CfgHandle, sizeof(spec), &spec);
 	RdColors(CfgHandle);
-	ReadH(CfgHandle, sizeof(Fonts), Fonts);
+	ReadH(CfgHandle, sizeof(fonts), &fonts);
 	ReadH(CfgHandle, sizeof(CharOrdTab), CharOrdTab);
 	ReadH(CfgHandle, sizeof(UpcCharTab), UpcCharTab);
 	RdPrinter(CfgHandle);
@@ -238,8 +242,8 @@ void RdColors(FILE* CfgHandle)
 	else if (VideoCard >= viEga) typ = 3;
 	else typ = 2;
 	SeekH(CfgHandle, PosH(CfgHandle) + (sizeof(video) + sizeof(colors)) * (typ - 1));
-	ReadH(CfgHandle, sizeof(video), video);
-	ReadH(CfgHandle, sizeof(colors), colors);
+	ReadH(CfgHandle, sizeof(video), &video);
+	ReadH(CfgHandle, sizeof(colors), &colors);
 	SeekH(CfgHandle, PosH(CfgHandle) + (sizeof(video) + sizeof(colors)) * (3 - typ));
 }
 

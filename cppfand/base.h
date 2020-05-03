@@ -1,6 +1,7 @@
 #pragma once
 #include <array>
 #include "constants.h"
+#include "drivers.h"
 #include "pstring.h"
 
 
@@ -45,6 +46,7 @@ void DispH(void* ad, integer NoBytes);
 
 
 /* MEMORY MANAGEMENT */
+void* AfterCatFD; // r108
 struct ProcStkD { ProcStkD* ChainBack; void* LVRoot; }; // r199
 typedef ProcStkD* ProcStkPtr;
 
@@ -131,6 +133,12 @@ struct Video // ø. 345
 	bool ChkSnow;	// {not used }
 	WORD CursOn, CursOff, CursBig;
 } video;
+
+struct Fonts // r350
+{
+	TVideoFont VFont = foLatin2;
+	bool LoadVideoAllowed = false, NoDiakrSupported = false;
+} fonts;
 
 struct Colors
 {

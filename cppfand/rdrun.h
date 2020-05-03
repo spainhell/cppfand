@@ -116,7 +116,7 @@ struct RFldD
 	char FrmlTyp, Typ;    /*R,F,D,T*/
 	bool BlankOrWrap; /*long date "DD.MM.YYYY"*/
 	FrmlPtr Frml;
-	pstring Name[1]; /*curr. length*/
+	pstring Name = pstring(1); /*curr. length*/
 };
 
 struct BlkD
@@ -494,7 +494,7 @@ struct Instr // POZOR konflikt názvù viz níže
 	FrmlPtr IsWord, Port, PortWhat;
 };
 
-ConstListEl* OldMFlds, NewMFlds;   /* Merge + Report*/
+ConstListEl* OldMFlds; ConstListEl* NewMFlds;   /* Merge + Report*/
 InpD* IDA[9];
 integer MaxIi;
 XString OldMXStr;                  /* Merge */

@@ -27,7 +27,7 @@ void Accept(char X); // r239 ASM
 integer RdInteger(); // r245
 double RdRealConst(); // r250
 double ValofS(pstring& S); // r251
-bool EquUpcase(const pstring& S); // r274 ASM
+bool EquUpcase(pstring& S); // r274 ASM
 
 bool TestKeyWord(pstring S); // r282
 bool IsKeyWord(pstring S); // r284 ASM

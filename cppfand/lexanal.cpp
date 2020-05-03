@@ -465,7 +465,7 @@ double ValofS(pstring& S)
 	return R;
 }
 
-bool EquUpcase(const pstring& S)
+bool EquUpcase(pstring& S)
 {
 	// TODO
 	/*asm  lea si, LexWord; les di, S; cld;xor ch, ch; mov cl, [si]; cmpsb; jnz @3;

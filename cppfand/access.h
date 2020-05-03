@@ -125,7 +125,7 @@ struct SumElem // r95
 {
 	SumElem* Chain;
 	char Op;
-	float R;
+	double R;
 	FrmlPtr Frml;
 };
 typedef SumElem* SumElPtr;
@@ -671,8 +671,8 @@ integer CompArea(void* A, void* B, integer L); // r575 ASM
 
 //void ResetCompilePars(); // r686
 
-char CurrChar; // { Compile }
-char ForwChar, ExpChar, Lexem;
+BYTE CurrChar; // { Compile }
+BYTE ForwChar, ExpChar, Lexem;
 pstring LexWord;
 bool SpecFDNameAllowed, IdxLocVarAllowed, FDLocVarAllowed, IsCompileErr;
 CompInpD* PrevCompInp;						// { saved at "include" }
