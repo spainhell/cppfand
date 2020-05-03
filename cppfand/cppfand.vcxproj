@@ -163,6 +163,7 @@
     <ClCompile Include="lexanal.cpp" />
     <ClCompile Include="oaccess.cpp" />
     <ClCompile Include="obaseww.cpp" />
+    <ClCompile Include="runmerg.cpp" />
     <ClCompile Include="runproj.cpp" />
     <ClCompile Include="pstring.cpp" />
     <ClCompile Include="rdfrml.cpp" />
@@ -207,6 +208,7 @@
     <ClInclude Include="oaccess.h" />
     <ClInclude Include="obaseww.h" />
     <ClInclude Include="printtxt.h" />
+    <ClInclude Include="runmerg.h" />
     <ClInclude Include="runproj.h" />
     <ClInclude Include="pstring.h" />
     <ClInclude Include="rdedit.h" />

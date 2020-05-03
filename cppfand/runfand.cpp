@@ -11,16 +11,282 @@
 #include "oaccess.h"
 #include "handle.h"
 #include "keybd.h"
+#include "lexanal.h"
 #include "obaseww.h"
+#include "rdfildcl.h"
 #include "runedi.h"
 #include "runfrml.h"
+#include "runproj.h"
 #include "wwmenu.h"
 #include "wwmix.h"
 
 
+void ScrGraphMode(bool Redraw, WORD OldScrSeg)
+{
+	void* p; void* p1;
+	WORD* pofs = (WORD*)p;
+	WORD sz, cr, i; integer err;
+	pstring s(4);
+	if ((VideoCard == viCga) || (TxtCols != 80) || (TxtRows != 25)) RunError(643);
+	DoneMouseEvents();
+	bool b = Crs.Enabled;
+	CrsHide();
+	integer n = 80 * 25 * 2;
+	if (OldScrSeg != 0) p = ptr(OldScrSeg, 0);
+	else { AlignParagraph(); p = GetStore(n); }
+	Move(ptr(ScrSeg, 0), p, n);
+	if (OldScrSeg != 0) SetGraphMode(GraphMode);
+	else {
+		if ((VideoCard == viVga) && (GraphDriver != EGAMono)) {
+			if (BGIReload) {
+				if (Fonts.VFont == foLatin2) ResFile.Get(Vga8x19L, FontArr);
+				else ResFile.Get(Vga8x19K, FontArr);
+			}
+			GrBytesPerChar = 19;
+		}
+		else {
+			if (BGIReload) {
+				if (Fonts.VFont == foLatin2) ResFile.Get(Ega8x14L, FontArr);
+				else ResFile.Get(Ega8x14K, FontArr);
+			}
+			GrBytesPerChar = 14;
+		}
+		GrBytesPerLine = 80 * GrBytesPerChar;
+		if (VideoCard == viHercules) n = BgiHerc;
+		else n = BgiEgaVga;
+		if (BGIReload) ResFile.Get(n, BGIDriver);
+		if (RegisterBGIDriver(BGIDriver) < 0) RunError(838);
+		GetMem(p1, 7000); FreeMem(p1, 7000); FreeList = HeapPtr;
+		InitGraph(GraphDriver, GraphMode, ""); FreeList = nullptr;
+		err = GraphResult;
+		if (err != grOK) { str(err,3,s); SetMsgPar(s); RunError(201); }
+	}
+	IsGraphMode = true; ScrSeg = seg(*p); CrsIntrInit();
+	if (Redraw) ScrPopToGraph(0, 0, TxtCols, TxtRows, p, TxtCols);
+	InitMouseEvents(); if (b) CrsShow();
+	if (BGIReload) {
+		if (Fonts.VFont == foLatin2) {
+			ResFile.Get(ChrLittLat, BGILittFont); ResFile.Get(ChrTripLat, BGITripFont);
+		}
+		else {
+			ResFile.Get(ChrLittKam, BGILittFont); ResFile.Get(ChrTripKam, BGITripFont);
+		}
+	}
+	if (RegisterBGIFont(BGILittFont) < 0) RunError(838);
+	if (RegisterBGIFont(BGITripFont) < 0) RunError(838);
+}
+
+WORD ScrTextMode(bool Redraw, bool Switch)
+{
+	bool b;
+	if (!IsGraphMode) return;
+	DoneMouseEvents();
+	b = Crs.Enabled; CrsHide(); CrsIntrDone();
+	if (Switch) RestoreCrtMode; else CloseGraph();
+	IsGraphMode = false;
+	LoadVideoFont();
+	if (Redraw) Move(ptr(ScrSeg, 0), ptr(video.Address, 0), 80 * 25 * 2);
+	auto result = ScrSeg;
+	ScrSeg = video.Address;
+	InitMouseEvents();
+	CrsShow(); /*is visible*/
+	if (!b) CrsHide();
+	return result;
+}
+
+bool IsAT()
+{
+	// snad to zjišuje, jestli je to PC-XT nebo PC-AT :-)
+	return true;
+}
+
+void OpenXMS()
+{
+	// nebudeme otevírat XMS pamì, nejsme v DOSu
+}
+
+void OpenCache()
+{
+	// pracuje s XMS -> ignorujeme
+}
+
+void DetectVideoCard()
+{
+	// ignorujeme
+}
+
+void InitDrivers()
+{
+	char kl;
+	BreakIntrInit();
+	DetectGraph(GraphDriver, GraphMode);
+	/* GraphDriver = EGAMono; Mark****/
+	DetectVideoCard();
+	AssignCrt(Output); Rewrite(Output); ClrEvent();
+}
+
+void InitAccess()
+{
+	ResetCompilePars(); SpecFDNameAllowed = false;
+	FillChar(&XWork, sizeof(XWork), 0);
+}
+
+void RdCFG()
+{
+	FILE* CfgHandle;
+	char ver[5] = { 0,0,0,0,0 };
+	CVol = ""; CPath = MyFExpand("FAND.CFG", "FANDCFG");
+	CfgHandle = OpenH(_isoldfile, RdOnly);
+	if (HandleError != 0) { printf("%s !found", CPath.c_str()); wait(); Halt(-1); }
+	ReadH(CfgHandle, 4, ver);
+	if (!strcmp(ver, CfgVersion)) {
+		printf("Invalid version of FAND.CFG"); wait(); Halt(-1);
+	}
+	ReadH(CfgHandle, sizeof(spec), &spec);
+	RdColors(CfgHandle);
+	ReadH(CfgHandle, sizeof(Fonts), Fonts);
+	ReadH(CfgHandle, sizeof(CharOrdTab), CharOrdTab);
+	ReadH(CfgHandle, sizeof(UpcCharTab), UpcCharTab);
+	RdPrinter(CfgHandle);
+	RdWDaysTab(CfgHandle);
+	CloseH(CfgHandle);
+}
+
+void CompileHelpCatDcl()
+{
+	pstring s; void* p2 = nullptr;
+	FileDRoot = nullptr; CRdb = nullptr; MarkStore2(p2);
+	RdMsg(56); s = MsgLine; SetInpStr(s);
+#ifdef FandRunV
+	RdFileD("UFANDHLP", '6', "");
+#else
+	RdFileD("FANDHLP", '6', "");
+#endif
+
+	HelpFD = *CFile;
+	RdMsg(52); s = MsgLine; SetInpStr(s); RdFileD("Catalog", 'C', "");
+	CatFD = CFile; FileDRoot = nullptr;
+	CatRdbName = CatFD->FldD; CatFileName = CatRdbName->Chain;
+	CatArchiv = CatFileName->Chain;
+	CatPathName = CatArchiv->Chain; CatVolume = CatPathName->Chain;
+	MarkStore(AfterCatFD); ReleaseStore2(p2);
+}
+
+bool SetTopDir(pstring& p, pstring& n)
+{
+	pstring e; ExitRecord er;
+	auto result = false; FSplit(FExpand(p), TopRdbDir, n, e);
+	if (!IsIdentifStr(n)) { WrLLF10Msg(881); return result; }
+	EditDRoot = nullptr; LinkDRoot = nullptr; FuncDRoot = nullptr;
+	TopDataDir = GetEnv("FANDDATA");
+	DelBackSlash(TopRdbDir); DelBackSlash(TopDataDir);
+	if (TopDataDir != "") TopDataDir = FExpand(TopDataDir);
+	ChDir(TopRdbDir);
+	if (IOResult != 0) { SetMsgPar(p); WrLLF10Msg(703); return result; }
+	CatFDName = n; NewExit(Ovr(), er); goto label1;
+	CFile = CatFD; OpenF(Exclusive); result = true;
+	label1:
+	RestoreExit(er);
+	return result;
+}
+
+void RunRdb(pstring p)
+{
+	pstring n;
+	if ((p != "") && SetTopDir(p, n))
+	{
+		pstring main = "main";
+		EditExecRdb(&n, &main, nullptr);
+		CFile = CatFD;
+		CloseFile();
+	}
+}
+
+void SelectRunRdb(bool OnFace)
+{
+	pstring p;
+	p = SelectDiskFile(".RDB", 34, OnFace); RunRdb(p);
+}
+
+void CallInstallRdb()
+{
+	pstring p; pstring n;
+	p = SelectDiskFile(".RDB", 35, true);
+	if ((p != "") && SetTopDir(p, n))
+	{
+		InstallRdb(n); CFile = CatFD; CloseFile();
+	}
+}
+
+void CallEditTxt()
+{
+	CPath = FExpand(CPath); CVol = "";
+	pstring errmsg = "";
+	EditTxtFile(nullptr, 'T', errmsg, nullptr, 1, 0, nullptr, 0, "", 0, nullptr);
+}
+
+void SelectEditTxt(pstring E, bool OnFace)
+{
+	CPath = SelectDiskFile(E, 35, OnFace); if (CPath == "") return;
+	CallEditTxt();
+}
+
+void RdColors(FILE* CfgHandle)
+{
+	WORD typ;
+	if (StartMode == 7) typ = 1;
+	else if (VideoCard >= viEga) typ = 3;
+	else typ = 2;
+	SeekH(CfgHandle, PosH(CfgHandle) + (sizeof(video) + sizeof(colors)) * (typ - 1));
+	ReadH(CfgHandle, sizeof(video), video);
+	ReadH(CfgHandle, sizeof(colors), colors);
+	SeekH(CfgHandle, PosH(CfgHandle) + (sizeof(video) + sizeof(colors)) * (3 - typ));
+}
+
+void RdPrinter(FILE* CfgHandle)
+{
+	const BYTE NPrintStrg = 32;
+	BYTE l;
+	WORD i, j, n;
+	BYTE* p;
+	WORD* off = (WORD*)p;
+	BYTE A[NPrintStrg * 256];
+	ReadH(CfgHandle, 1, &prMax);
+	for (j = 1; j < prMax; j++) {
+		p = (BYTE*)(&A); n = 0;
+		for (i = 0; i < NPrintStrg; i++) {
+			ReadH(CfgHandle, 1, &l); if (l == 0xFF) goto label1; *p = l; off++;
+			ReadH(CfgHandle, l, p); off += l; n += (l + 1);
+		}
+		ReadH(CfgHandle, 1, &l); if (l != 0xFF) {
+			label1:
+			printf("Invalid FAND.CFG\n"); wait(); Halt(-1);
+		}
+		/* !!! with printer[j-1] do!!! */ {
+			auto ap = printer[j - 1];
+			GetMem(ap.Strg, n); Move(A, ap.Strg, n);
+			ReadH(CfgHandle, 4, &ap.Typ);
+			ap.OpCls = false; ap.ToHandle = false; ap.ToMgr = false;
+			if (ap.TmOut == 255) { ap.OpCls = true; ap.TmOut = 0; }
+			else if (ap.TmOut == 254) { ap.ToHandle = true; ap.TmOut = 0; }
+			else if (ap.TmOut == 253) { ap.ToMgr = true; ap.TmOut = 0; }
+		}
+	}
+	SetCurrPrinter(0);
+}
+
+void RdWDaysTab(FILE* CfgHandle)
+{
+	ReadH(CfgHandle, sizeof(NWDaysTab), &NWDaysTab);
+	ReadH(CfgHandle, sizeof(WDaysFirst), &WDaysFirst);
+	ReadH(CfgHandle, sizeof(WDaysLast), &WDaysLast);
+	GetMem(WDaysTab, NWDaysTab * 3);
+	ReadH(CfgHandle, NWDaysTab * 3, WDaysTab);
+}
+
 void InitRunFand()
 {
-	Drivers driver = Drivers(); // HLAVNI OVLADAC
+	//Drivers driver = Drivers(); // HLAVNI OVLADAC
 
 	WORD n = 0, l = 0, err = 0, hourmin = 0;
 	FILE* h = nullptr;
@@ -28,12 +294,12 @@ void InitRunFand()
 	BYTE nb, sec = 0;
 	ExitRecord* er = new ExitRecord();
 	integer i, j, MsgNr;
-	// TODO: PMenuBoxS mb;
+	TMenuBoxS* mb;
 	longint w = 0;
 	void* p = nullptr;
 	pstring* x;
-	unsigned int xofs = 0; // x:StringPtr; xofs:word absolute x;
-	pstring txt;
+	WORD* xofs = (WORD*)x;
+	pstring txt(16);
 	double r;
 
 	InitDrivers();
@@ -83,7 +349,7 @@ void InitRunFand()
 			wait(); Halt(0);
 		}
 
-		OvrHandle = GetOverHandle(h, - 1); // TODO: pùvodnì to byl WORD - 1, teï je to blbost;
+		OvrHandle = GetOverHandle(h, -1); // TODO: pùvodnì to byl WORD - 1, teï je to blbost;
 		ReadH(h, sizeof(ResFile.A), ResFile.A);
 		ReadH(h, 2, reinterpret_cast<void*>(MsgIdxN));
 		l = sizeof(TMsgIdxItem) * MsgIdxN;
@@ -107,13 +373,13 @@ void InitRunFand()
 
 	// Access
 	// GetIntVec(0x3f, FandInt3f); // toto je vektor pøerušení INT 3fH - Overlay a DLL
-	// FillChar(XWork, sizeof(XWork), 0); // celý objekt nulovat nemusíme, snad ...
-	// FillChar(TWork, sizeof(TWork), 0); //  -"-
+	FillChar(&XWork, sizeof(XWork), 0); // celý objekt nulovat nemusíme, snad ...
+	FillChar(&TWork, sizeof(TWork), 0); //  -"-
 	CRdb = nullptr;
 	for (i = 0; i < FloppyDrives; i++) { MountedVol[i] = ""; }
 	// Ww
-	wwmix::ss.Empty = true;
-	wwmix::ss.Pointto = nullptr;
+	ss.Empty = true;
+	ss.Pointto = nullptr;
 	TxtEdCtrlUBrk = false;
 	TxtEdCtrlF4Brk = false;
 	InitMouseEvents();
@@ -158,7 +424,7 @@ void InitRunFand()
 					if (IsTestRun) IsTestRun = false;
 					else return;
 				}
-		}
+	}
 
 		TextAttr = colors.DesktopColor;
 		Window(1, 1, (BYTE)TxtCols, TxtRows - 1);
@@ -252,10 +518,10 @@ void InitRunFand()
 #endif
 
 		RdMsg(MsgNr);
-		// TODO: mb = new TMenuBoxS(4, 3, &MsgLine);
+		mb = new TMenuBoxS(4, 3, &MsgLine);
 		i = 1;
 	label1:
-		// TODO: i = mb->Exec(i);
+		i = mb->Exec(i);
 		j = i;
 #ifdef FandRunV
 		if (j != 0) j++;
@@ -272,7 +538,7 @@ void InitRunFand()
 		case 6: { CloseH(WorkHandle); CloseFANDFiles(false); return; break; }
 		default:;
 		}
-	}
+}
 	PopW(w);
 	goto label1;
 }

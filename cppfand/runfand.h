@@ -3,11 +3,6 @@
 #include "constants.h"
 #include "switches.h"
 
-
-using namespace std;
-
-//typedef TMenuBoxS* PMenuBoxS;
-
 /*#include dos,graph,drivers, base, obase, obaseww, access, oaccess, rdrun,
 { $ifdef FandSQL } channel, { $endif }
 {$ifdef FandDML} dml, { $endif }
@@ -15,8 +10,9 @@ using namespace std;
 
 void ScrGraphMode(bool Redraw, WORD OldScrSeg);
 WORD ScrTextMode(bool Redraw, bool Switch);
+
 void InitRunFand(); // !!! spuštìní - vstupní procedura
-void* Ovr();
+//void Ovr();
 bool IsAT();
 void OpenXMS();
 void OpenCache();
@@ -24,8 +20,9 @@ void DetectVideoCard();
 void InitDrivers();
 void InitAccess();
 void RdCFG();
-void RdPrinter();
-void RdWDaysTab();
+void RdColors(FILE* CfgHandle);
+void RdPrinter(FILE* CfgHandle);
+void RdWDaysTab(FILE* CfgHandle);
 void CompileHelpCatDcl();
 
 bool SetTopDir(pstring& path, pstring& name);

@@ -47,7 +47,8 @@ const bool DemoAutoRd = false; // ø. 82
 pstring KbdBuffer = ""; // ø. 83
 BYTE LLKeyFlags = 0; // ø. 84
 
-enum VideoCard { viCga, viHercules, viEga, viVga };
+enum enVideoCard { viCga, viHercules, viEga, viVga };
+enVideoCard VideoCard = viVga;
 integer GraphDriver, GraphMode;
 WORD ScrSeg, ScrGrSeg;
 BYTE NrVFont, BytesPerChar;

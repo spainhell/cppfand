@@ -13,4 +13,7 @@ longint PushWFramed(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr,
 	pstring top, pstring bottom, BYTE WFlags); // r176
 void CFileMsg(WORD n, char Typ); // ø. 279
 void CFileError(WORD N); // r284
-
+void RunMsgOn(char C, longint N); // r296
+void RunMsgN(longint N); // r305
+void RunMsgOff(); // r312
+void RunMsgClear(); // r317
