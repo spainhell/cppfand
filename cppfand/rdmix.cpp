@@ -8,6 +8,7 @@
 #include "legacy.h"
 #include "lexanal.h"
 #include "memory.h"
+#include "rdfildcl.h"
 #include "rdfrml.h"
 #include "recacc.h"
 #include "wwmix.h"
@@ -290,13 +291,13 @@ bool PromptSortKeys(FieldList FL, KeyFldD* SKRoot)
 		/* !!! with FL->FldD^ do!!! */
 		if (FL->FldD->Typ != 'T') PutSelect(FL->FldD->Name); FL = FL->Chain;
 	}
-	if (ss.empty) return result;
-	ss.ascdesc = true;
-	ss.subset = true;
+	if (ss.Empty) return result;
+	ss.AscDesc = true;
+	ss.Subset = true;
 	SelectStr(0, 0, 25, "");
 	if (KbdChar == _ESC_) { return false; }
 label1:
-	LexWord = GetSelect; if (LexWord != "") {
+	LexWord = GetSelect(); if (LexWord != "") {
 		SK = (KeyFldD*)GetZStore(sizeof(*SK)); ChainLast(SKRoot, SK);
 		SK->FldD = FindFldName(CFile);
 		if (ss.Tag == '>') SK->Descend = true;

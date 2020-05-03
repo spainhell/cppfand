@@ -5,8 +5,10 @@
 #include "lexanal.h"
 #include "memory.h"
 #include "rdfrml.h"
+#include "rdmix.h"
+#include "rdrun.h"
 
-FrmlPtr GetOp(char Op, integer BytesAfter)
+FrmlPtr GetOp(BYTE Op, integer BytesAfter)
 {
 	FrmlPtr Z; WORD l;
 	if (Op < 0x60) l = 1;
@@ -15,6 +17,85 @@ FrmlPtr GetOp(char Op, integer BytesAfter)
 	else l = 13;
 	Z = (FrmlPtr)GetZStore(l + BytesAfter); Z->Op = Op;
 	return Z;
+}
+
+FieldDPtr FindFldName(FileDPtr FD)
+{
+	FieldDPtr F = FD->FldD;
+	while (F != nullptr) {
+		{
+			if (EquUpcase(F->Name)) goto label1;
+			F = F->Chain;
+		}
+	}
+label1:
+	return F;
+}
+
+FieldDPtr RdFldName(FileDPtr FD)
+{
+	FieldDPtr F;
+	TestIdentif(); F = FindFldName(FD);
+	if (F == nullptr) { Set2MsgPar(LexWord, FD->Name); Error(87); }
+	RdLex(); return F;
+}
+
+FileDPtr FindFileD()
+{
+	FileDPtr FD; RdbDPtr R; LocVar* LV;
+	if (FDLocVarAllowed && FindLocVar(LVBD.Root, LV) && (LV->FTyp == 'f'))
+	{
+		return LV->FD;
+	}
+	R = CRdb;
+	while (R != nullptr) {
+		FD = R->FD;
+		while (FD != nullptr) {
+			if (EquUpcase(FD->Name)) { return FD; }
+			FD = FD->Chain;
+		}
+		R = R->ChainBack;
+	}
+	if (EquUpcase("CATALOG")) return CatFD; return nullptr;
+}
+
+FileD* RdFileName()
+{
+	FileDPtr FD;
+	if (SpecFDNameAllowed && (Lexem == '@'))
+	{
+		LexWord = '@'; Lexem = _identifier;
+	}
+	TestIdentif(); FD = FindFileD();
+	if ((FD == nullptr) || (FD == CRdb->FD) && !SpecFDNameAllowed) Error(9);
+	RdLex(); return FD;
+}
+
+LinkDPtr FindLD(pstring RoleName)
+{
+	LinkDPtr L;
+	L = LinkDRoot;
+	while (L != nullptr) {
+		if ((L->FromFD == CFile) && SEquUpcase(L->RoleName, RoleName)) {
+			return L;
+		}
+		L = L->Chain;
+	}
+	return nullptr;
+}
+
+bool IsRoleName(bool Both, FileDPtr& FD, LinkDPtr& LD)
+{
+	TestIdentif();
+	FD = FindFileD(); auto result = true;
+	if ((FD != nullptr) && FD->IsParFile) { RdLex(); LD = nullptr; return result; }
+	if (Both)
+	{
+		LD = FindLD(LexWord);
+		if (LD != nullptr) { RdLex(); FD = LD->ToFD; return result; }
+	}
+	result = false;
+	return result;
 }
 
 FrmlPtr RdFAccess(FileDPtr FD, LinkD* LD, char& FTyp)
@@ -37,10 +118,23 @@ FrmlPtr RdFAccess(FileDPtr FD, LinkD* LD, char& FTyp)
 	return Z;
 }
 
+FrmlPtr FrmlContxt(FrmlPtr Z, FileDPtr FD, void* RP)
+{
+	FrmlPtr Z1;
+	Z1 = GetOp(_newfile, 8); Z1->Frml = Z;
+	Z1->NewFile = FD; Z1->NewRP = RP; return Z1;
+}
+
+FrmlPtr MakeFldFrml(FieldDPtr F, char& FTyp)
+{
+	FrmlPtr Z;
+	Z = GetOp(_field, 4); Z->Field = F; FTyp = F->FrmlTyp; return Z;
+}
+
 FrmlPtr TryRdFldFrml(FileDPtr FD, char& FTyp)
 {
 	FileDPtr cf; FieldDPtr f; LinkDPtr ld; FrmlPtr z; pstring roleNm;
-	FrmlElem*(*rff)(char&);
+	FrmlElem* (*rff)(char&);
 	char typ = '\0';
 
 	if (IsKeyWord("OWNED")) {

@@ -117,6 +117,12 @@
     <ClCompile Include="rdrprt.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="rdmerg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="rdfildcl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base.h">
@@ -267,6 +273,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="obase.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="rdmerg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

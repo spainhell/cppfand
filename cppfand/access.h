@@ -258,7 +258,7 @@ public:
 	XFile* XF;
 	KeyDPtr Keys;
 	AddD* Add;
-	WORD nLDs, LiOfs;
+	uintptr_t nLDs, LiOfs;
 	pstring Name;
 	longint UsedFileSize();
 	bool IsShared();

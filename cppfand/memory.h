@@ -15,6 +15,7 @@ void ReleaseStore(void* pointer) {}; // r275
 void ReleaseAfterLongStr(void* pointer) {}; // r293
 void ReleaseStore2(void* p); // r298
 longint StoreAvail() { return 512*1024*1024; } // r309
+void AlignLongStr(); // r314
 void GoExit() { return; } // r350
 void RestoreExit(ExitRecord& Buf) {}; // r362
 bool OSshell(pstring Path, pstring CmdLine, bool NoCancel, 

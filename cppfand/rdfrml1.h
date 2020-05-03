@@ -1,7 +1,7 @@
 #pragma once
 #include "runfrml.h"
 
-FrmlPtr GetOp(char Op, integer BytesAfter); // r1
+FrmlPtr GetOp(BYTE Op, integer BytesAfter); // r1
 FieldDPtr FindFldName(FileDPtr FD); // r7
 FieldDPtr RdFldName(FileDPtr FD); // r17
 FileDPtr FindFileD(); // r22
@@ -13,5 +13,4 @@ FrmlPtr FrmlContxt(FrmlPtr Z, FileDPtr FD, void* RP); // r68
 FrmlPtr MakeFldFrml(FieldDPtr F, char& FTyp); // r72
 FrmlPtr TryRdFldFrml(FileDPtr FD, char& FTyp); // r76
 LinkDPtr FindOwnLD(FileDPtr FD, const pstring& RoleName); // 77
-
 FrmlElem* RdFldNameFrmlF(char& FTyp); // r111
