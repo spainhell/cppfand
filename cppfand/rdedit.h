@@ -26,6 +26,6 @@ void RdImpl();
 void RdUDLI();
 void RdAllUDLIs(FileD* FD);
 pstring* StandardHead();
-pstring* GetStr(FrmlPtr Z);
+pstring* GetStr_E(FrmlPtr Z); // existuje -> *_E
 void NewChkKey();
 

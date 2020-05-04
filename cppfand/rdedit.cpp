@@ -1,11 +1,13 @@
 #include "rdedit.h"
 
 #include "common.h"
+#include "kbdww.h"
 #include "legacy.h"
 #include "lexanal.h"
 #include "memory.h"
 #include "rdfildcl.h"
 #include "rdfrml.h"
+#include "rdmix.h"
 #include "runedi.h"
 
 void PushEdit()
@@ -194,6 +196,118 @@ void RdFormOrDesign(FileD* F, FieldList FL, RdbPos FormPos)
 	else {
 		E->FD = F; E->Flds = FL; AutoDesign(FL);
 	}
+}
+
+void NewEditD(FileD* ParFD, EditOpt* EO)
+{
+	EFldD* D; FieldList FL; void* p;
+	WORD i; pstring s; FieldDescr* F; bool b, b2, F2NoUpd;
+	PushEdit(); MarkStore2(p);
+	/* !!! with E^ do!!! */
+	Move(&EO->WFlags, &E->WFlags, (uintptr_t)(E->SelKey) - (uintptr_t)(E->WFlags) + 4);
+	E->Attr = RunWordImpl(EO->ZAttr, colors.dTxt);
+	E->dNorm = RunWordImpl(EO->ZdNorm, colors.dNorm);
+	E->dHiLi = RunWordImpl(EO->ZdHiLi, colors.dHili);
+	E->dSubSet = RunWordImpl(EO->ZdSubset, colors.dSubset);
+	E->dDel = RunWordImpl(EO->ZdDel, colors.dDeleted);
+	E->dTab = RunWordImpl(EO->ZdTab, E->Attr | 0x08);
+	E->dSelect = RunWordImpl(EO->ZdSelect, colors.dSelect);
+	E->Top = StoreStr(RunShortStr(EO->Top));
+	if (EO->Mode != nullptr)
+		EditModeToFlags(RunShortStr(EO->Mode), &E->NoDelete, false);
+	if (spec.Prompt158) E->Prompt158 = true;
+	if (EO->SetOnlyView /*UpwEdit*/) {
+		EO->Tab = nullptr; E->OnlyTabs = true; E->OnlySearch = false;
+	}
+	if (E->LVRecPtr != nullptr) { E->EdRecVar = true; E->Only1Record = true; }
+	if (E->Only1Record) E->OnlySearch = false;
+	if (EO->W.C1 != nullptr) {
+		RunWFrml(EO->W, E->WFlags, E->V); E->WwPart = true;
+		if ((E->WFlags & WShadow) != 0) {
+			E->ShdwX = MinW(2, TxtCols - E->V.C2);
+			E->ShdwY = MinW(1, TxtRows - E->V.R2);
+		}
+	}
+	else {
+		if (E->WithBoolDispl) E->V.R1 = 3; if (E->Mode24) E->V.R2--;
+	}
+	RdFormOrDesign(ParFD, EO->Flds, EO->FormPos);
+	if (E->NPages > 1) E->NRecs = 1;
+	else E->NRecs = (E->Rows - E->NHdTxt) / E->RecTxt->N;
+	E->BaseRec = 1; E->IRec = 1;
+	CFld = E->FirstFld; FirstEmptyFld = E->FirstFld;
+	E->ChkSwitch = true; E->WarnSwitch = true;
+	CFile = E->FD; CRecPtr = GetRecSpace(); E->OldRecPtr = CRecPtr;
+#ifdef FandSQL
+	if (CFile->IsSQLFile) SetTWorkFlag;
+#endif
+	if (EdRecVar) {
+		E->NewRecPtr = E->LVRecPtr; E->NoDelete = true; E->NoCreate = true;
+		E->Journal = nullptr; E->KIRoot = nullptr;
+	}
+	else {
+		CRecPtr = GetRecSpace(); E->NewRecPtr = CRecPtr;
+#ifdef FandSQL
+		if (CFile->IsSQLFile) SetTWorkFlag;
+#endif
+		E->AddSwitch = true; E->Cond = RunEvalFrml(EO->Cond);
+		E->RefreshDelay = RunWordImpl(EO->RefreshDelayZ, spec.RefreshDelay) * 18;
+		E->SaveAfter = RunWordImpl(EO->SaveAfterZ, spec.UpdCount);
+		if (EO->StartRecKeyZ != nullptr) E->StartRecKey = StoreStr(RunShortStr(EO->StartRecKeyZ));
+		E->StartRecNo = RunInt(EO->StartRecNoZ); E->StartIRec = RunInt(EO->StartIRecZ);
+		VK = EO->ViewKey;
+		if (E->DownLD != nullptr) {
+			E->DownSet = true; E->DownKey = GetFromKey(E->DownLD);
+			if (VK == nullptr) VK = E->DownKey;
+			switch (E->OwnerTyp) {
+			case 'r': E->DownRecPtr = E->DownLV->RecPtr; break;
+			case 'F': { E->OwnerRecNo = RunInt(FrmlPtr(EO->DownLV));
+				CFile = E->DownLD->ToFD; E->DownRecPtr = GetRecSpace; CFile = E->FD; break; }
+			}
+		}
+		else if (E->VK == nullptr) E->VK = E->FD->Keys;
+#ifdef FandSQL
+		if (CFile->IsSQLFile && (E->VK = nullptr)) { SetMsgPar(CFile->Name); RunError(652); }
+#endif
+		if (E->SelKey != nullptr)
+			if (E->SelKey->KFlds == nullptr) E->SelKey->KFlds = E->VK->KFlds;
+			else if (!EquKFlds(E->SelKey->KFlds, E->VK->KFlds)) RunError(663);
+	}
+	if (EO->StartFieldZ != nullptr) {
+		s = TrailChar(' ', RunShortStr(EO->StartFieldZ)); D = E->FirstFld;
+		while (D != nullptr) {
+			if (SEquUpcase(D->FldD->Name, s)) E->StartFld = *D; D = D->Chain;
+		};
+	}
+	E->WatchDelay = RunInt(EO->WatchDelayZ) * 18;
+	if (EO->Head == nullptr) E->Head = *StandardHead();
+	else E->Head = *(pstring*)GetStr_E(EO->Head);
+	E->Last = *(pstring*)GetStr_E(EO->Last); E->AltLast = *(pstring*)GetStr_E(EO->AltLast);
+	E->CtrlLast = *(pstring*)GetStr_E(EO->CtrlLast); E->ShiftLast = *(pstring*)GetStr_E(EO->ShiftLast);
+	F2NoUpd = E->OnlyTabs && (EO->Tab == nullptr) && !EO->NegTab && E->OnlyAppend;
+	/* END WITH */
+
+	D = E->FirstFld;
+	while (D != nullptr) {
+		E->NFlds++; F = D->FldD;
+		b = FieldInList(F, EO->Tab); if (EO->NegTab) b = !b;
+		if (b) { D->Tab = true; E->NTabsSet++; }
+		b2 = FieldInList(F, EO->NoEd); if (EO->NegNoEd) b2 = !b2;
+		D->EdU = !(b2 || E->OnlyTabs && !b);
+		D->EdN = F2NoUpd;
+		if ((F->Flg && f_Stored != 0) && D->EdU) E->NEdSet++;
+		b = FieldInList(F, EO->Dupl); if (EO->NegDupl) b = !b;
+		if (b && (F->Flg && f_Stored != 0)) D->Dupl = true;
+		if (b || (F->Flg && f_Stored != 0)) E->NDuplSet++;
+		D = D->Chain;
+	}
+	if (E->OnlyTabs && (E->NTabsSet == 0)) {
+		E->NoDelete = true; if (!E->OnlyAppend) E->NoCreate = true;
+	}
+	RdDepChkImpl();
+	NewChkKey();
+	MarkStore(E->AfterE);
+	ReleaseStore2(p);
 }
 
 EFldD* FindEFld_E(FieldDescr* F)
@@ -394,4 +508,35 @@ pstring* StandardHead()
 	}
 	if (s.length() > 16) s[0] = 16;
 	return StoreStr(copy(c, 17, 20 - s.length()) + s + c);
+}
+
+pstring* GetStr_E(FrmlPtr Z)
+{
+	pstring s;
+	if (Z == nullptr) return nullptr;
+	else {
+		s = RunShortStr(Z);
+		while (LenStyleStr(s) > TxtCols) s[0]--;
+		return StoreStr(s);
+	}
+}
+
+void NewChkKey()
+{
+	KeyD* K; KeyFldD* KF; EFldD* D; KeyList KL;
+	K = CFile->Keys; while (K != nullptr) {
+		if (!K->Duplic) {
+			ZeroUsed(); KF = K->KFlds;
+			while (KF != nullptr) {
+				D = FindEFld_E(KF->FldD);
+				if (D != nullptr) D->Used = true;
+				KF = KF->Chain;
+			}
+			D = LstUsedFld(); if (D != nullptr) {
+				KL = (KeyListEl*)GetStore(sizeof(*KL));
+				ChainLast(D->KL, KL); KL->Key = K;
+			}
+			K = K->Chain;
+		}
+	}
 }
