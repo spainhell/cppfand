@@ -14,6 +14,7 @@ void MarkBoth(void* p, void* p2) {} // r272
 void ReleaseStore(void* pointer) {}; // r275
 void ReleaseAfterLongStr(void* pointer) {}; // r293
 void ReleaseStore2(void* p); // r298
+void ReleaseBoth(void* p, void* p2) { ReleaseStore(p); ReleaseStore2(p2); } // r305
 longint StoreAvail() { return 512*1024*1024; } // r309
 void AlignLongStr(); // r314
 void GoExit() { return; } // r350

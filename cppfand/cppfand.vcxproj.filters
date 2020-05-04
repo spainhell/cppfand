@@ -123,6 +123,9 @@
     <ClCompile Include="rdfildcl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="rdedit.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base.h">

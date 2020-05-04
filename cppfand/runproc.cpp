@@ -14,7 +14,11 @@
 #include "printtxt.h"
 #include "rdfildcl.h"
 #include "rdproc.h"
+#include "rdrprt.h"
 #include "recacc.h"
+#include "runfrml.h"
+#include "runmerg.h"
+#include "runrprt.h"
 #include "wwmix.h"
 
 
@@ -100,8 +104,8 @@ void AssignField(Instr* PD)
 	CFile = PD->FD; md = NewLMode(WrMode); F = PD->FldD;
 	N = RunInt(PD->RecFrml);
 	if ((N <= 0) || (N > CFile->NRecs)) { msg = 640; goto label1; }
-	CRecPtr = GetRecSpace; ReadRec(N);
-	if (PD->Indexarg && !DeletedFlag) {
+	CRecPtr = GetRecSpace(); ReadRec(N);
+	if (PD->Indexarg && !DeletedFlag()) {
 		msg = 627;
 	label1:
 		Set2MsgPar(CFile->Name, F->Name); RunErrorM(md, msg);
@@ -162,7 +166,7 @@ void MergeProc(Instr* PD)
 {
 	void* p; void* p2;
 	MarkBoth(p, p2); SetInpTT(PD->Pos, true);
-	ReadMerge; RunMerge; SaveFiles; ReleaseBoth(p, p2);
+	ReadMerge; RunMerge(); SaveFiles(); ReleaseBoth(p, p2);
 }
 
 void WritelnProc(Instr* PD)
@@ -190,7 +194,7 @@ void WritelnProc(Instr* PD)
 			else str(r:W ^ .N : W ^ .M, x);
 			break;
 		}
-		case 'D': x = StrDate(RunReal(W->Frml), W->Mask); break;
+		case 'D': x = StrDate(RunReal(W->Frml), *W->Mask); break;
 		}
 		if (LF >= 2) t = t + x;
 		else printf("%s", x.c_str());
@@ -326,7 +330,7 @@ void EditTxtProc(Instr* PD)
 	MsgS.AltLast = *GetStr(PD->AltLast);
 
 	if (PD->TxtLV != nullptr) lp = Ptr(Seg(MyBP), Ofs(MyBP) + PD->TxtLV->BPOfs);
-	else { SetTxtPathVol(PD->TxtPath, PD->TxtCatIRec); lp = nullptr; }
+	else { SetTxtPathVol(*PD->TxtPath, PD->TxtCatIRec); lp = nullptr; }
 	msg = ""; if (PD->ErrMsg != nullptr) msg = RunShortStr(PD->ErrMsg);
 	EditTxtFile(lp, PD->EdTxtMode, msg, PD->ExD, i, RunInt(PD->TxtXY), pv, a, RunShortStr(PD->Hd), PD->WFlags, &MsgS);
 	ReleaseStore(p);
@@ -375,7 +379,7 @@ bool SrchXKey(KeyDPtr K, XString& X, longint& N)
 void DeleteRecProc(Instr* PD)
 {
 	LockMode md; longint n; XString x;
-	CFile = PD->RecFD; CRecPtr = GetRecSpace;
+	CFile = PD->RecFD; CRecPtr = GetRecSpace();
 	if (PD->ByKey) {
 		x.S = RunShortStr(PD->RecNr);
 #ifdef FandSQL
@@ -429,7 +433,7 @@ void ReadWriteRecProc(bool IsRead, Instr* PD)
 	KeyDPtr k; WORD msg;
 	/* !!! with PD->LV^ do!!! */
 	CFile = PD->LV->FD; CRecPtr = PD->LV->RecPtr; N = 1; k = PD->Key; ad = PD->AdUpd;
-	md = CFile->LMode; app = false; cr = GetRecSpace;
+	md = CFile->LMode; app = false; cr = GetRecSpace();
 	if (PD->ByKey) {
 		x.S = RunShortStr(PD->RecNr);
 #ifdef FandSQL
@@ -536,7 +540,8 @@ void ForAllProc(Instr* PD)
 #endif
 	md = NewLMode(RdMode);
 	cr = GetRecSpace(); CRecPtr = cr; lr = cr;
-	New(Scan, Init(CFile, Key, KI, true));
+	//New(Scan, Init(CFile, Key, KI, true));
+	Scan = new XScan(CFile, Key, KI, true);
 #ifdef FandSQL
 	if (PD->inSQL) Scan->ResetSQLTxt(Bool); else
 #endif
@@ -579,7 +584,7 @@ label1:
 #endif
 		{
 			OpenCreateF(Shared);
-			if ((LVr != nullptr) && (LVi == nullptr) && HasUpdFlag) {
+			if ((LVr != nullptr) && (LVi == nullptr) && HasUpdFlag()) {
 				md1 = NewLMode(WrMode); CopyRecWithT(lr, cr);
 				UpdRec(cr, Scan->RecNr, true); OldLMode(md1);
 			};
@@ -597,7 +602,7 @@ label1:
 	}
 	if (lk) CFile->XF->UpdLockCnt--;
 	ScanClose; OldLMode(md);
-	if (b) RunMsgOff;
+	if (b) RunMsgOff();
 	ReleaseStore(p);
 	BreakP = false;
 }
@@ -657,7 +662,7 @@ label1:
 		CFile = ld->FD;
 		if (CFile->Handle == nullptr)
 			if (OpenF1(Shared))
-				if (TryLMode(RdMode, md, 2)) { OpenF2; OldLMode(NullMode); }
+				if (TryLMode(RdMode, md, 2)) { OpenF2(); OldLMode(NullMode); }
 				else { CloseClearHCFile; goto label2; }
 			else OpenCreateF(Shared);
 		if (CFile->IsShared()) {
@@ -692,7 +697,7 @@ void HelpProc(Instr* PD)
 FILE* OpenHForPutTxt(Instr* PD)
 {
 	FileOpenMode m; FILE* h;
-	SetTxtPathVol(PD->TxtPath, PD->TxtCatIRec); TestMountVol(CPath[1]);
+	SetTxtPathVol(*PD->TxtPath, PD->TxtCatIRec); TestMountVol(CPath[1]);
 	m = _isoverwritefile; if (PD->App) m = _isoldnewfile;
 	h = OpenH(m, Exclusive); TestCPathError;
 	if (PD->App) SeekH(h, FileSizeH(h));
@@ -925,8 +930,8 @@ void RunInstr(Instr* PD)
 		case _backup: Backup(PD->IsBackup, PD->NoCompress, PD->BrCatIRec, PD->BrNoCancel); break;
 		case _backupm: BackupM(PD); break;
 		case _resetcat: ResetCatalog(); break;
-		case _setedittxt: SetEditTxt(PD); break;
-		case _getindex: GetIndex(PD); break;
+		case _setedittxt: { SetEditTxt(PD); break; }
+		case _getindex: { GetIndex(PD); break; }
 		case _setmouse: SetMouse(RunInt(PD->MouseX), RunInt(PD->MouseY), RunBool(PD->Show)); break;
 		case _checkfile: { SetTxtPathVol(*PD->cfPath, PD->cfCatIRec); CheckFile(PD->cfFD); break; }
 #ifdef FandSQL

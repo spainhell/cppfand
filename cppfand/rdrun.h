@@ -1,4 +1,5 @@
 #pragma once
+#include "access.h"
 #include "editor.h"
 
 
@@ -172,7 +173,7 @@ struct EditOpt
 	FrmlPtr ZAttr, ZdNorm, ZdHiLi, ZdSubset, ZdDel, ZdTab, ZdSelect;
 	FrmlPtr Top;
 	BYTE WFlags;
-	EdExitDPtr ExD;
+	EdExitD* ExD;
 	FileDPtr Journal;
 	pstring* ViewName;
 	char OwnerTyp;
@@ -456,7 +457,7 @@ struct Instr // POZOR konflikt názvù viz níže
 	FileDPtr EditFD; EditOpt* EO;
 	RprtOpt* RO;
 	pstring* TxtPath; WORD TxtCatIRec; LocVar* TxtLV;
-	char EdTxtMode; EdExitDPtr ExD;
+	char EdTxtMode; EdExitD* ExD;
 	BYTE WFlags; FrmlPtr TxtPos, TxtXY, ErrMsg;
 	WRectFrml Ww; FrmlPtr Atr; FrmlPtr Hd;
 	FrmlPtr Head, Last, CtrlLast, AltLast, ShiftLast;
