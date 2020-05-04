@@ -47,6 +47,7 @@ void DispH(void* ad, integer NoBytes);
 
 /* MEMORY MANAGEMENT */
 void* AfterCatFD; // r108
+const BYTE CachePageShft = 12;
 struct ProcStkD { ProcStkD* ChainBack; void* LVRoot; }; // r199
 typedef ProcStkD* ProcStkPtr;
 

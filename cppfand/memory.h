@@ -1,6 +1,8 @@
 #pragma once
 #include "handle.h"
 
+bool CacheExist(); // r42
+
 void ClearCacheH(filePtr h) { return; } // r159
 bool SaveCache(WORD ErrH) { return true; } // r142
 void* GetStore(WORD Size) { return nullptr; } // r224 ASM

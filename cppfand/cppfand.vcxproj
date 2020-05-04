@@ -201,6 +201,7 @@
     <ClInclude Include="editor.h" />
     <ClInclude Include="edscreen.h" />
     <ClInclude Include="edtextf.h" />
+    <ClInclude Include="expimp.h" />
     <ClInclude Include="fanddml.h" />
     <ClInclude Include="fileacc.h" />
     <ClInclude Include="genrprt.h" />

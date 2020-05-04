@@ -3,6 +3,10 @@
 
 using namespace std;
 
+void ResetCFileUpdH();
+void ClearCacheCFile();
+void CloseClearHCFile();
+
 void WrPrefix();
 void WrDBaseHd();
 void OldMode(LockMode Mode);
@@ -15,6 +19,10 @@ void OldLMode(LockMode Mode);
 void WrPrefixes();
 void CExtToX();
 void CExtToT();
+void TestCFileError();
+void TestCPathError();
 void CloseGoExit();
 void XFNotValid();
+WORD RdPrefix();
+void RdPrefixes();
 
