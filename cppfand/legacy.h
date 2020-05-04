@@ -65,3 +65,29 @@ void beep();
 BYTE OvrResult = 0; // vždy 0 OvrOK
 
 pstring GetEnv(const char* name);
+
+class TextFile
+{
+public:
+	FILE* Handle = nullptr;
+	std::string Mode = ""; // read, write, append ...
+	size_t bufsize = 0;
+	size_t _private = 0;
+	size_t bufpos = 0;
+	size_t bufend = 0;
+	void* openfunc = nullptr;
+	void* inoutfunc = nullptr;
+	void* flushfunc = nullptr;
+	void* closefunc = nullptr;
+	void* opentxt = nullptr;
+	BYTE UserData[32] = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
+	std::string name;
+	std::string LineEnd;
+	BYTE* buffer = nullptr;
+
+	void Close();
+	void Assign(const char *);
+	void Reset();
+	void Rewrite();
+	bool ResetTxt();
+};

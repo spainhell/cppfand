@@ -19,8 +19,8 @@ struct LongStr { WORD LL; CharArr A; }; // ø24
 typedef LongStr* LongStrPtr; // ø25
 
 struct WRect { BYTE C1, R1, C2, R2; }; // r34
-struct WordRec { BYTE Lo, Hi; };
-struct LongRec { WORD Lo, Hi; };
+struct WordRec { BYTE Lo = 0, Hi = 0; };
+struct LongRec { WORD Lo = 0, Hi = 0; };
 // struct PtrRec { WORD Ofs, Seg; }
 
 

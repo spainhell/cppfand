@@ -10,7 +10,7 @@ WORD ListLength(void* P); // r22 ASM
 void* ListAt(void* P, WORD I); // r26 ASM
 void ReplaceChar(pstring S, char C1, char C2); // r30 ASM
 bool SEquUpcase(pstring s1, pstring s2); // r37 ASM
-pstring StrPas(char* Src); // r49
+pstring StrPas(const char* Src); // r49
 void StrLPCopy(char* Dest, pstring s, WORD MaxL); // r55
 WORD SLeadEqu(pstring S1, pstring S2); // r61 ASM
 WORD EquMask1(); // r67 ASM

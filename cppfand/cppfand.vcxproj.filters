@@ -126,6 +126,12 @@
     <ClCompile Include="rdedit.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="printtxt.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="obase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base.h">

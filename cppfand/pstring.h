@@ -21,7 +21,8 @@ public:
     pstring substr(unsigned char index);
     pstring substr(unsigned char index, unsigned char count);
 
-    void replace(const char* value); // smaže obsah a nahradí jej novou hodnout
+    void replace(const char* value); // smaže obsah a nahradí jej novou hodnotou
+    void insert(const char* value, unsigned char position); // vloží na pozici novou hodnotu, pùvodní se posune
 
     const char* c_str();
     bool empty();

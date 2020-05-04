@@ -1,6 +1,7 @@
 #pragma once
 #include "access.h"
 #include "editor.h"
+#include "legacy.h"
 
 
 struct LvDescr;
@@ -503,7 +504,7 @@ OutpFD* OutpFDRoot;
 OutpRD* OutpRDs;
 bool Join;
 bool PrintView;                  /* Report */
-pstring Rprt;		// pùvodnì text - souvisí s text. souborem
+TextFile Rprt;		// pùvodnì text - souvisí s text. souborem
 BlkD* RprtHd; BlkD* PageHd; BlkD* PageFt;
 FloatPtrListEl* PFZeroLst;
 LvDescr* FrstLvM; LvDescr* LstLvM; /* LstLvM->Ft=RF */

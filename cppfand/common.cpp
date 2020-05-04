@@ -18,7 +18,7 @@ void DelBackSlash(pstring s)
 	s[0] = s.length() - 1;
 }
 
-pstring StrPas(char* Src)
+pstring StrPas(const char* Src)
 {
 	WORD n; pstring s;
 	n = 0;
