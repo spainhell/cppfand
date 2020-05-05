@@ -8,8 +8,8 @@
 
 const int COL = 80;
 
-typedef char ArrLine[COL];
-typedef char(*ArtPtr)[COL];
+typedef char* ArrLine;
+typedef ArrLine ArrPtr;
 typedef pstring ColorOrd;
 
 struct Character {
@@ -17,6 +17,25 @@ struct Character {
 	BYTE color;
 };
 
+ArrLine Arr;
+WORD NextI;
+integer LineL, ScrL;
+longint RScrL;
+bool UpdatedL, CtrlL, HardL;
+WORD BCol, Colu, Row;
+bool ChangeScr;
+ColorOrd ColScr;
+bool IsWrScreen;
+
+WORD FirstR, FirstC, LastR, LastC, MinC, MinR, MaxC, MaxR;
+WORD MargLL[4];
+WORD PageS, LineS;
+bool bScroll, FirstScroll, HelpScroll;
+longint PredScLn;
+WORD PredScPos;
+BYTE FrameDir;
+WORD WordL;
+bool Konec;
 
 void Edit(WORD SuccLineSize);
 void DekodLine(); // TODO: ;forward; ??? co to je?

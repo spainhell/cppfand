@@ -56,7 +56,7 @@ pstring NameT;
 string ErrMsg;
 WORD MaxLenT, LenT, IndT, ScrT;
 string Breaks;
-EdExitDPtr ExitD;
+EdExitD* ExitD;
 bool SrchT, UpdatT;
 WORD LastNr, CtrlLastNr;
 integer LeftMarg, RightMarg;
@@ -68,14 +68,14 @@ bool EditT;
 // od r101
 BYTE ColKey[CountC + 1];
 BYTE TxtColor, BlockColor, SysLColor;
-string InsMsg, nInsMsg, IndMsg, WrapMsg, JustMsg, BlockMsg;
-string ViewMsg;
+pstring InsMsg, nInsMsg, IndMsg, WrapMsg, JustMsg, BlockMsg;
+pstring ViewMsg;
 char CharPg;
 bool InsPg;
 longint BegBLn, EndBLn;
 WORD BegBPos, EndBPos;
 WORD ScrI, LineI, Posi, BPos; // {screen status}
-string FindStr, ReplaceStr;
+pstring FindStr, ReplaceStr;
 bool Replace;
 pstring OptionStr;
 bool FirstEvent;
@@ -102,12 +102,12 @@ void GetEditTxt(bool& pInsert, bool& pIndent, bool& pWrap, bool& pJust, bool& pC
 	integer& pLeftMarg, integer& pRightMarg); // r162
 bool EditText(char pMode, char pTxtType, pstring pName, pstring pErrMsg,
 	CharArr* pTxtPtr, WORD pMaxLen, WORD& pLen, WORD& pInd, longint pScr,
-	pstring pBreaks, EdExitDPtr pExD, bool& pSrch, bool& pUpdat,
+	pstring pBreaks, EdExitD* pExD, bool& pSrch, bool& pUpdat,
 	WORD pLastNr, WORD pCtrlLastNr, MsgStrPtr pMsgS); // r169
 void SimpleEditText(char pMode, pstring pErrMsg, pstring pName, CharArr* TxtPtr,
 	WORD MaxLen, WORD& Len, WORD& Ind, bool& Updat); // r202
 WORD FindText(const pstring& PstrScreenStr, pstring Popt, CharArr* PTxtPtr, WORD PLen); // r209
-void EditTxtFile(longint* LP, char Mode, pstring& ErrMsg, EdExitDPtr ExD, longint TxtPos, 
+void EditTxtFile(longint* LP, char Mode, pstring& ErrMsg, EdExitD* ExD, longint TxtPos, 
 	longint Txtxy, WRect* V, WORD Atr, const pstring Hd, BYTE WFlags, MsgStrPtr MsgS);
 void ViewPrinterTxt(); // r353
 

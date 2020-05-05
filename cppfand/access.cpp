@@ -19,6 +19,389 @@
 //	RunError(N);
 //}
 
+void TFile::Err(WORD n, bool ex)
+{
+	if (IsWork) {
+		SetMsgPar(FandWorkTName); WrLLF10Msg(n); if (ex) GoExit();
+	}
+	else { CFileMsg(n, 'T'); if (ex) CloseGoExit(); }
+}
+
+void TFile::TestErr()
+{
+	if (HandleError != 0) Err(700 + HandleError, true);
+}
+
+longint TFile::UsedFileSize()
+{
+	if (Format == FptFormat) return FreePart * BlockSize;
+	else return longint(MaxPage + 1) << MPageShft;
+}
+
+bool TFile::NotCached()
+{
+	return !IsWork && CFile->NotCached();
+}
+
+void TFile::RdPrefix(bool Chk)
+{
+	TT1Page T;
+	BYTE* TX = (BYTE*)&T;
+	longint* TNxtAvailPage = (longint*)&T; /* .DBT */
+	struct stFptHd { longint FreePart = 0; WORD X = 0, BlockSize = 0; }; /* .FPT */
+	stFptHd* FptHd = (stFptHd*)&T;
+	BYTE sum; longint FS, ML, RS; WORD i, n;
+	if (Chk) {
+		FS = FileSizeH(Handle);
+		if (FS <= 512) {
+			FillChar(PwCode, 40, '@');
+			Code(PwCode, 40);
+			SetEmpty();
+			return;
+		}
+	}
+	RdWrCache(true, Handle, NotCached, 0, 512, &T); srand(RS); LicenseNr = 0;
+	if (Format == DbtFormat) {
+		MaxPage = *TNxtAvailPage - 1; GetMLen(); return;
+	}
+	if (Format == FptFormat) {
+		FreePart = SwapLong((*FptHd).FreePart);
+		BlockSize = Swap((*FptHd).BlockSize); return;
+	}
+	Move(&T.FreePart, &FreePart, 23);
+	if (!IsWork && (CFile == Chpt) && ((T.HasCoproc != HasCoproc) ||
+		(CompArea((char*)Version[1], &T.Version, 4) != _equ))) CompileAll = true;
+	if (T.OldMaxPage == 0xffff) goto label1;
+	else {
+		FreeRoot = 0;
+		if (FreePart > 0) {
+			if (!Chk) FS = FileSizeH(Handle); ML = FS;
+			MaxPage = (FS - 1) >> MPageShft; GetMLen();
+		}
+		else {
+			FreePart = -FreePart; MaxPage = T.OldMaxPage;
+		label1:
+			GetMLen(); ML = MLen; if (!Chk) FS = ML;
+		}
+	}
+	if (IRec >= 0x6000) {
+		IRec = IRec - 0x2000;
+		if (!IsWork && (CFile->Typ == '0')) LicenseNr = T.LicNr;
+	}
+	if (IRec >= 0x4000) {
+		IRec = IRec - 0x4000;
+		srand(ML + T.Time);
+		for (i = 14; i < 511; i++) TX[i] = TX[i] xor Random(255);
+		Move(T.PwNew, PwCode, 40);
+	}
+	else {
+		srand(ML); for (i = 14; i < 53; i++) TX[i] = TX[i] xor Random(255);
+		Move(&T.FreeRoot/*Pw*/, PwCode, 40);
+	}
+	Code(PwCode, 40);
+	if ((FreePart < MPageSize) || (FreePart > ML) || (FS < ML) ||
+		(FreeRoot > MaxPage) || (MaxPage == 0)) {
+		Err(893, false); MaxPage = (FS - 1) >> MPageShft; FreeRoot = 0; GetMLen();
+		FreePart = NewPage(true); SetUpdHandle(Handle);
+	}
+	FillChar(&T, 512, 0); srand(RS);
+}
+
+void TFile::WrPrefix()
+{
+	TT1Page T;
+	BYTE* TX = (BYTE*)&T;
+	longint* TNxtAvailPage = (longint*)&T;                               /* .DBT */
+	struct stFptHd { longint FreePart; WORD X, BlockSize; }; /* .FPT */
+	stFptHd* FptHd = (stFptHd*)&T;
+	char Pw[40];
+	// BYTE absolute 0 Time:0x46C; TODO: TIMER
+	WORD i, n; BYTE sum; longint RS;
+	const PwCodeArr EmptyPw = { '@','@','@','@','@','@','@','@','@','@','@','@','@','@','@','@','@','@','@','@' };
+
+	if (Format == DbtFormat) {
+		FillChar(&T, 512, ' '); *TNxtAvailPage = MaxPage + 1; goto label1;
+	}
+	if (Format == FptFormat) {
+		FillChar(&T, 512, 0); (*FptHd).FreePart = SwapLong(FreePart);
+		(*FptHd).BlockSize = Swap(BlockSize); goto label1;
+	}
+	FillChar(&T, 512, '@');
+	Move(PwCode, Pw, 40); Code(Pw, 40); srand(RS);
+	if (LicenseNr != 0) for (i = 1; i < 20; i++) Pw[i] = char(Random(255));
+	n = 0x4000;
+	// TODO: T.Time = Time;
+	Move(Pw, T.PwNew, 40);
+	srand(MLen + T.Time);
+	for (i = 14; i < 511; i++) TX[i] = TX[i] xor Random(255);
+	T.LicNr = LicenseNr;
+	if (LicenseNr != 0) {
+		n = 0x6000; sum = T.LicNr;
+		for (i = 1; i < 105; i++) sum = sum + T.LicText[i];
+		T.Sum = sum;
+	}
+	Move(&FreePart, &T.FreePart, 23);
+	T.OldMaxPage = 0xffff; T.Signum = 1; T.IRec += n;
+	Move((char*)Version[1], T.Version, 4); T.HasCoproc = HasCoproc;
+	srand(RS);
+label1:
+	RdWrCache(false, Handle, NotCached(), 0, 512, &T);
+}
+
+void TFile::SetEmpty()
+{
+	BYTE X[MPageSize];
+	integer* XL = (integer*)&X;
+	if (Format == DbtFormat) { MaxPage = 0; WrPrefix(); return; }
+	if (Format == FptFormat) { FreePart = 8; BlockSize = 64; WrPrefix(); return; }
+	FreeRoot = 0; MaxPage = 1; FreePart = MPageSize; MLen = 2 * MPageSize;
+	WrPrefix();
+	FillChar(X, MPageSize, 0); *XL = -510;
+	RdWrCache(false, Handle, NotCached(), MPageSize, MPageSize, X);
+}
+
+void TFile::Create()
+{
+	Handle = OpenH(_isoverwritefile, Exclusive); TestErr();
+	IRec = 1; LicenseNr = 0; FillChar(PwCode, 40, '@'); Code(PwCode, 40);
+	SetEmpty();
+}
+
+longint TFile::NewPage(bool NegL)
+{
+	longint PosPg;
+	BYTE X[MPageSize];
+	longint* L = (longint*)&X;
+	if (FreeRoot != 0) {
+		PosPg = FreeRoot << MPageShft;
+		RdWrCache(true, Handle, NotCached(), PosPg, 4, &FreeRoot);
+		if (FreeRoot > MaxPage) {
+			Err(888, false);
+			FreeRoot = 0; goto label1;
+		}
+	}
+	else {
+	label1:
+		MaxPage++; MLen += MPageSize; PosPg = MaxPage << MPageShft;
+	}
+	FillChar(X, MPageSize, 0); if (NegL) *L = -510;
+	RdWrCache(false, Handle, NotCached(), PosPg, MPageSize, X);
+	return PosPg;
+}
+
+void TFile::ReleasePage(longint PosPg)
+{
+	BYTE X[MPageSize - 1];
+	longint* Next = (longint*)&X;
+	FillChar(X, MPageSize, 0); *Next = FreeRoot;
+	RdWrCache(false, Handle, NotCached(), PosPg, MPageSize, X);
+	FreeRoot = PosPg >> MPageShft;
+}
+
+void TFile::Delete(longint Pos)
+{
+	longint PosPg, NxtPg; WORD PosI; integer N; WORD l;
+	BYTE X[MPageSize]; integer* XL = (integer*)&X;
+	WORD* wp; WORD* wpofs = wp; bool IsLongTxt;
+	if (Pos <= 0) return;
+	if ((Format != T00Format) || NotCached()) return;
+	if ((Pos < MPageSize) || (Pos >= MLen)) { Err(889, false); return; }
+	PosPg = Pos & (0xFFFFFFFF << MPageShft); PosI = Pos & (MPageSize - 1);
+	RdWrCache(true, Handle, NotCached(), PosPg, MPageSize, X);
+	wp = (WORD*)(&X[PosI]); l = *wp;
+	if (l <= MPageSize - 2) {       /* small text on 1 page*/
+		*wp = -integer(l); N = 0; wp = (WORD*)(&X);
+		while (N < MPageSize - 2) {
+			if (*wp > 0) { FillChar(&X[PosI + 2], l, 0); goto label1; }
+			N += -(*wp) + 2; *wpofs += -(*wp) + 2;
+		}
+		if ((FreePart >= PosPg) && (FreePart < PosPg + MPageSize)) {
+			FillChar(X, MPageSize, 0); *XL = -510; FreePart = PosPg;
+		label1:
+			RdWrCache(false, Handle, NotCached(), PosPg, MPageSize, X);
+		}
+		else ReleasePage(PosPg);
+	}
+	else {                        /* long text on more than 1 page */
+		if (PosI != 0) goto label3;
+	label2:
+		l = WORD(XL); if (l > MaxLStrLen + 1) {
+		label3:
+			Err(889, false); return;
+		}
+		IsLongTxt = (l = MaxLStrLen + 1); l += 2;
+	label4:
+		ReleasePage(PosPg);
+		if ((l > MPageSize) || IsLongTxt) {
+			PosPg = *(longint*)(&X[MPageSize - 4]);
+			if ((PosPg < MPageSize) || (PosPg + MPageSize > MLen)) {
+				Err(888, false); return;
+			}
+			RdWrCache(true, Handle, NotCached(), PosPg, MPageSize, X);
+			if ((l <= MPageSize)) goto label2; l -= MPageSize - 4; goto label4;
+		}
+	}
+}
+
+LongStr* TFile::Read(WORD StackNr, longint Pos)
+{
+	LongStr* s; WORD i, l; CharArr* p;
+	WORD* pofs = (WORD*)p;
+	struct stFptD { longint Typ = 0, Len = 0; } FptD;
+	Pos -= LicenseNr;
+	if (Pos <= 0 /*OldTxt=-1 in RDB!*/) goto label11;
+	else switch (Format) {
+	case DbtFormat: {
+		s = (LongStr*)GetStore(32770); Pos = Pos << MPageShft; p = &s->A; l = 0;
+		while (l <= 32768 - MPageSize) {
+			RdWrCache(true, Handle, NotCached, Pos, MPageSize, p);
+			for (i = 1; i < MPageSize; i++) { if ((*p)[i] == 0x1A) goto label0; l++; }
+			pofs += MPageSize; Pos += MPageSize;
+		}
+		l--;
+	label0:
+		s->LL = l; ReleaseStore(&s->A[l + 1]);
+		break;
+	}
+	case FptFormat: {
+		Pos = Pos * BlockSize;
+		RdWrCache(true, Handle, NotCached, Pos, sizeof(FptD), &FptD);
+		if (SwapLong(FptD.Typ) != 1/*text*/) goto label11;
+		else {
+			l = SwapLong(FptD.Len) & 0x7FFF; s = (LongStr*)GetStore(l + 2); s->LL = l;
+			RdWrCache(true, Handle, NotCached, Pos + sizeof(FptD), l, s->A);
+		}
+		break;
+	}
+	default:
+		if ((Pos < MPageSize) || (Pos >= MLen)) goto label1;
+		RdWrCache(true, Handle, NotCached(), Pos, 2, &l);
+		if (l > MaxLStrLen + 1) {
+		label1:
+			Err(891, false);
+		label11:
+			if (StackNr == 1) s = (LongStr*)GetStore(2);
+			else s = (LongStr*)GetStore2(2); s->LL = 0;
+			goto label2;
+		}
+		if (l == MaxLStrLen + 1) l--;
+		if (StackNr == 1) s = (LongStr*)GetStore(l + 2);
+		else s = (LongStr*)GetStore2(l + 2); s->LL = l;
+		RdWr(true, Pos + 2, l, s->A);
+		break;
+	}
+label2:
+	return s;
+}
+
+longint TFile::Store(LongStrPtr S)
+{
+	integer rest; WORD l, M; longint N; void* p; longint pos;
+	char X[MPageSize + 1];
+	struct stFptD { longint Typ = 0, Len = 0; } FptD;
+	longint result = 0;
+	l = S->LL; if (l == 0) { return result; }
+	if (Format == DbtFormat) {
+		pos = MaxPage + 1; N = pos << MPageShft; if (l > 0x7fff) l = 0x7fff;
+		RdWrCache(false, Handle, NotCached(), N, l, S->A);
+		FillChar(X, MPageSize, ' '); X[0] = 0x1A; X[1] = 0x1A;
+		rest = MPageSize - (l + 2) % MPageSize;
+		RdWrCache(false, Handle, NotCached(), N + l, rest + 2, X);
+		MaxPage += (l + 2 + rest) / MPageSize;
+		goto label1;
+	}
+	if (Format == FptFormat) {
+		pos = FreePart; N = FreePart * BlockSize;
+		if (l > 0x7fff) l = 0x7fff;
+		FreePart = FreePart + (sizeof(FptD) + l - 1) / BlockSize + 1;
+		FptD.Typ = SwapLong(1); FptD.Len = SwapLong(l);
+		RdWrCache(false, Handle, NotCached(), N, sizeof(FptD), &FptD);
+		N += sizeof(FptD);
+		RdWrCache(false, Handle, NotCached(), N, l, S->A);
+		N += l;
+		l = FreePart * BlockSize - N;
+		if (l > 0) {
+			p = GetStore(l); FillChar(p, l, ' ');
+			RdWrCache(false, Handle, NotCached(), N, l, p); ReleaseStore(p);
+		}
+		goto label1;
+	}
+	if (l > MaxLStrLen) l = MaxLStrLen;
+	if (l > MPageSize - 2) pos = NewPage(false);  /* long text */
+	else {                                  /* short text */
+		rest = MPageSize - FreePart % MPageSize;
+		if (l + 2 <= rest) pos = FreePart;
+		else { pos = NewPage(false); FreePart = pos; rest = MPageSize; }
+		if (l + 4 >= rest) FreePart = NewPage(false);
+		else {
+			FreePart += l + 2; rest = l + 4 - rest;
+			RdWrCache(false, Handle, NotCached(), FreePart, 2, &rest);
+		}
+	}
+	RdWrCache(false, Handle, NotCached(), pos, 2, &l);
+	RdWr(false, pos + 2, l, S->A);
+label1:
+	return pos;
+}
+
+void TFile::RdWr(bool ReadOp, longint Pos, WORD N, void* X)
+{
+	WORD Rest, L; longint NxtPg;
+	void* P;
+	WORD* POfs = (WORD*)P;
+	Rest = MPageSize - (WORD(Pos) && (MPageSize - 1)); P = X;
+	while (N > Rest) {
+		L = Rest - 4;
+		RdWrCache(ReadOp, Handle, NotCached(), Pos, L, P);
+		*POfs += L; N -= L;
+		if (!ReadOp) NxtPg = NewPage(false);
+		RdWrCache(ReadOp, Handle, NotCached(), Pos + L, 4, &NxtPg);
+		Pos = NxtPg;
+		if (ReadOp && ((Pos < MPageSize) || (Pos + MPageSize > MLen))) {
+			Err(890, false); FillChar(P, N, ' '); return;
+		}
+		Rest = MPageSize;
+	}
+	RdWrCache(ReadOp, Handle, NotCached(), Pos, N, P);
+}
+
+void TFile::GetMLen()
+{
+	MLen = (MaxPage + 1) << MPageShft;
+}
+
+longint FileD::UsedFileSize()
+{
+	longint n;
+	n = longint(NRecs) * RecLen + FrstDispl;
+	if (Typ == 'D') n++;
+	return n;
+}
+
+bool FileD::IsShared()
+{
+	return (UMode = Shared) || (UMode = RdShared);
+}
+
+bool FileD::NotCached()
+{
+	/*asm  les di,Self; xor ax,ax; mov dl,es:[di].FileD.UMode;
+     cmp dl,Shared; je @1; cmp dl,RdShared; jne @2;
+@1:  cmp es:[di].FileD.LMode,ExclMode; je @2;
+     mov ax,1;
+@2:  end;*/
+	return false;
+}
+
+WORD FileD::GetNrKeys()
+{
+	KeyD* k; WORD n;
+	n = 0; k = Keys;
+	while (k != nullptr) { n++; k = k->Chain; }
+	return n;
+}
+
+
 void XString::Clear()
 {
 	this->S.clean();
@@ -100,6 +483,72 @@ bool XString::PackFrml(FrmlList FL, KeyFldD* KF)
 		KF = KF->Chain; FL = FL->Chain;
 	}
 	return KF != nullptr;
+}
+
+void XString::StoreD(void* R, bool Descend)
+{
+}
+
+void XString::StoreN(void* N, WORD Len, bool Descend)
+{
+}
+
+void XString::StoreF(void* F, WORD Len, bool Descend)
+{
+}
+
+void XString::StoreA(void* A, WORD Len, bool CompLex, bool Descend)
+{
+}
+
+longint XItem::GetN()
+{
+	// asm les bx,Self; mov ax,es:[bx]; mov dl,es:[bx+2]; xor dh,dh end;
+	return 0;
+}
+
+void XItem::PutN(longint N)
+{
+	// asm les bx,Self; mov ax,N.word; mov es:[bx],ax; mov al,N[2].byte;
+	// mov es : [bx + 2] , al
+}
+
+WORD XItem::GetM(WORD O)
+{
+	// asm les bx,Self; add bx,O; xor ah,ah; mov al,es:[bx]
+	return 0;
+}
+
+void XItem::PutM(WORD O, WORD M)
+{
+	// asm les bx,Self; add bx,O; mov ax,M; mov es:[bx],al
+}
+
+WORD XItem::GetL(WORD O)
+{
+	// asm les bx,Self; add bx,O; xor ah,ah; mov al,es:[bx+1]
+	return 0;
+}
+
+void XItem::PutL(WORD O, WORD L)
+{
+	// asm les bx,Self; add bx,O; mov ax,L; mov es:[bx+1],al
+}
+
+XItem* XItem::Next(WORD O)
+{
+	// asm les bx,Self; add bx,O; xor ah,ah; mov al,es:[bx+1]; add ax,bx; add ax,2;
+	// mov dx, es
+	return nullptr;
+}
+
+WORD XItem::UpdStr(WORD O, pstring* S)
+{
+	/*asm  push ds; lds bx,Self; les di,S; cld; add bx,O;
+     mov al,[bx];{M} add al,[bx+1];{L} stosb;
+     mov al,[bx]; xor ah,ah; add di,ax; lea si,[bx+2];
+     xor ch,ch; mov cl,[bx+1]; rep movsb; mov ax,si; pop ds;*/
+	return 0;
 }
 
 WORD XPage::Off()
@@ -318,7 +767,7 @@ bool XKey::Search(XString& XX, bool AfterEqu, longint& RecNr)
 		//	les dx, x;
 		//	mov iItem, 1;
 		//}
-		
+
 		//asm
 		//	push ds; cld; les bx, x; mov iItem, 1; mov dx, 1;
 		//@@add 1 bx, o;xor ax, ax; mov al, es: [bx] ; cmp dx, ax; jna @@5; /*first different <= prefix length?*/
@@ -881,7 +1330,7 @@ XScan::XScan(FileD* aFD, KeyD* aKey, KeyInD* aKIRoot, bool aWithT)
 		Kind = 1;
 		if (aKIRoot != nullptr) Kind = 2;
 	}
-}
+	}
 
 void XScan::Reset(FrmlPtr ABool, bool SQLFilter)
 {
@@ -911,7 +1360,8 @@ void XScan::Reset(FrmlPtr ABool, bool SQLFilter)
 			NRecs += k->N;
 			k = k->Chain;
 		}
-		break; }
+		break;
+	}
 #ifdef FandSQL
 	case 4: { CompKIFrml(Key, KIRoot, false); New(SQLStreamPtr(Strm), Init); IRec = 1; break; }
 #endif
@@ -927,7 +1377,7 @@ void XScan::ResetSort(KeyFldDPtr aSK, FrmlPtr& BoolZ, LockMode OldMd, bool SQLFi
 		if (SQLFilter) { Reset(BoolZ, true); BoolZ = nullptr; }
 		else Reset(nullptr, false);
 		return;
-	}
+}
 	if (aSK != nullptr) {
 		Reset(BoolZ, false);
 		ScanSubstWIndex(this, aSK, 'S');
@@ -1022,9 +1472,9 @@ void XScan::SeekRec(longint I)
 			if (hasSQLFilter) z = Bool else z = nullptr;
 			InpReset(Key, SK, KIRoot, z, withT);
 			EOF = AtEnd; IRec = 0; NRecs = 0x20000000;
-		}
-		return;
 	}
+		return;
+}
 #endif
 	if ((Kind == 2) && (OwnerLV != nullptr)) {
 		IRec = 0;
@@ -1050,8 +1500,8 @@ void XScan::SeekRec(longint I)
 			KI = k; SeekOnKI(I);
 			break;
 		}
-		}
-}
+	}
+	}
 
 void XScan::GetRec()
 {

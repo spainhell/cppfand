@@ -228,6 +228,7 @@ public:
 	longint Store(LongStrPtr S);
 private:
 	void RdWr(bool ReadOp, longint Pos, WORD N, void* X);
+	void GetMLen();
 };
 typedef TFile* TFilePtr;
 
@@ -270,18 +271,18 @@ typedef FileD* FileDPtr;
 struct DBaseFld // ø. 208
 {
 	pstring Name;
-	char Typ;
-	longint Displ;
-	BYTE Len, Dec;
+	char Typ = 0;
+	longint Displ = 0;
+	BYTE Len = 0, Dec = 0;
 	BYTE x2[14];
 };
 
 struct DBaseHd // ø. 213
 {
-	BYTE Ver;
-	BYTE Date[4];
-	longint NRecs;
-	WORD HdLen, RecLen;
+	BYTE Ver = 0;
+	BYTE Date[4] = { 0,0,0,0 };
+	longint NRecs = 0;
+	WORD HdLen = 0, RecLen = 0;
 	DBaseFld Flds[1];
 };
 
@@ -528,10 +529,10 @@ private:
 
 struct CompInpD // r402
 {
-	CompInpD* ChainBack;
-	CharArrPtr InpArrPtr;
+	CompInpD* ChainBack = nullptr;
+	CharArr* InpArrPtr = nullptr;
 	RdbPos InpRdbPos;
-	WORD InpArrLen, CurrPos, OldErrPos;
+	WORD InpArrLen = 0, CurrPos = 0, OldErrPos = 0;
 };
 
 // ********** konstanty ********** // r409

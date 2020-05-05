@@ -18,6 +18,7 @@ void str(int input, pstring& output);
 void str(double input, int total, int right, pstring& output);
 
 WORD pred(WORD input);
+WORD succ(WORD input);
 
 void FSplit(pstring fullname, pstring& dir, pstring& name, pstring& ext);
 pstring FSearch(pstring& path, pstring& dirlist);

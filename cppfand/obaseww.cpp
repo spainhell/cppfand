@@ -193,7 +193,7 @@ longint PushWFramed(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, pstring top, 
 	if (x > 0) for (i = R1; i < R2; i++) ScrColor(C2, i, x, colors.ShadowAttr);
 	Window(C1, R1, C2, R2);
 	TextAttr = Attr;
-	if ((WFlags && WHasFrame) != 0) {
+	if ((WFlags & WHasFrame) != 0) {
 		WriteWFrame(WFlags, top, bottom);
 		Window(C1 + 1, R1 + 1, C2 - 1, R2 - 1);
 	}

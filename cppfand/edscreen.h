@@ -1,12 +1,9 @@
 #pragma once
-const int TXTCOLS = 80;
+#include "pstring.h"
+#include "constants.h"
+#include "ededit.h"
 
-// TYPY
-typedef unsigned short WORD;
-typedef unsigned char BYTE;
-typedef int longint;
-typedef void* ArrPtr;
-typedef pstring ColorOrd;
+const int TXTCOLS = 80;
 
 // PROMENNE
 bool InsPage;
@@ -20,6 +17,7 @@ void UpdStatLine(int Row, int Col);
 void EditWrline(ArrPtr P, int Row);
 void ScrollWrline(ArrPtr P, int Row, ColorOrd CO);
 BYTE Color(ColorOrd CO); // vnoøená do pøedešlé
+WORD PColumn(WORD w, ArrPtr P);
 bool MyTestEvent();
 void UpdScreen();
 void WrEndL(bool Hard, int Row); // vnoøená do pøedešlé

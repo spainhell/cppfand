@@ -9,6 +9,11 @@
 #include "sort.h"
 
 
+void NegateESDI()
+{
+	// asm  jcxz @2; @1:not es:[di].byte; inc di; loop @1; @2:
+}
+
 void TestXFExist()
 {
 	XFile* xf = CFile->XF;

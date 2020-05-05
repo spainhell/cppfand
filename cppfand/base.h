@@ -46,8 +46,12 @@ void DispH(void* ad, integer NoBytes);
 
 
 /* MEMORY MANAGEMENT */
+WORD CachePageSize;
 void* AfterCatFD; // r108
 const BYTE CachePageShft = 12;
+const WORD NCachePages = 0;
+const WORD XMSCachePages = 0;
+struct CachePage { BYTE Pg3[3]; BYTE Handle; longint HPage; bool Upd; BYTE Arr[4096]; };
 struct ProcStkD { ProcStkD* ChainBack; void* LVRoot; }; // r199
 typedef ProcStkD* ProcStkPtr;
 
@@ -62,7 +66,6 @@ bool ExitP, BreakP;
 longint LastExitCode = 0; // r215
 void StackOvr(WORD NewBP); // r216
 void NewExit(PProcedure POvr, ExitRecord Buf);  // r218
-void GoExit();
 /* konec */
 
 /*  VIRTUAL HANDLES  */
@@ -81,7 +84,7 @@ longint MaxWSize = 0; // {currently occupied in FANDWORK.$$$}
 // ********** MESSAGES **********
 WORD F10SpecKey; // ø. 293
 BYTE ProcAttr;
-bool SetStyleAttr(char c, BYTE& a);
+// bool SetStyleAttr(char c, BYTE& a); // je v KBDWW
 pstring MsgLine;
 pstring MsgPar[4];
 void SetMsgPar(pstring s);

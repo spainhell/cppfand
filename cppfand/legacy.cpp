@@ -88,6 +88,12 @@ WORD pred(WORD input)
 	return input - 1;
 }
 
+WORD succ(WORD input)
+{
+	if (input == 0xFFFF) return 0xFFFF;
+	return input + 1;
+}
+
 void FSplit(pstring fullname, pstring& dir, pstring& name, pstring& ext)
 {
 	std::string s = fullname;

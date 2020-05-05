@@ -58,7 +58,7 @@ WORD LogToAbsLenStyleStr(pstring s, WORD l);
 void WrStyleChar(char c);
 void WrStyleStr(pstring s, WORD Attr);
 void WrLongStyleStr(LongStrPtr S, WORD Attr);
-void RectToPixel(WORD c1, WORD r1, WORD c2, WORD r2, WORD& x1, WORD& y1, WORD& x2, WORD& y2);
+//void RectToPixel(WORD c1, WORD r1, WORD c2, WORD r2, WORD& x1, WORD& y1, WORD& x2, WORD& y2);
 
 // *** DEBUGGING
 #ifndef FandRunV

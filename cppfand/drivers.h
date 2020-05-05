@@ -12,8 +12,9 @@ typedef short integer;
 // ******** Struktury *********
 struct TPoint
 {
-	WORD X;
-	WORD Y;
+	WORD X = 0;
+	WORD Y = 0;
+	void Assign(WORD XX, WORD YY);
 };
 
 const WORD evMouseDown = 0x0001;
@@ -104,17 +105,17 @@ void ConvKamenLatin(WORD* Buf, WORD L, bool ToLatin);
 char ToggleCS(char C);
 char NoDiakr(char C);
 void ConvToNoDiakr(WORD* Buf, WORD L, TVideoFont FromFont);
-void ClearKeyBuf(); // { Bios }
+//void ClearKeyBuf(); // { Bios }
 void ClearKbdBuf();
-bool KeyPressed(); // { Bios }
-WORD ReadKey(); // { Bios }
+//bool KeyPressed(); // { Bios }
+//WORD ReadKey(); // { Bios }
 bool KbdPressed(); // { buffer + Bios }
 bool ESCPressed(); // { other Bios input lost }
 WORD ReadKbd(); // { buffer + Bios / + mouse / }
-bool KbdTimer(WORD Delta, BYTE Kind);
-void AddToKbdBuf(WORD KeyCode);
-void BreakIntrInit();
-void BreakIntrDone();
+//bool KbdTimer(WORD Delta, BYTE Kind);
+//void AddToKbdBuf(WORD KeyCode);
+//void BreakIntrInit();
+//void BreakIntrDone();
 void Delay(WORD N);
 void Sound(WORD N);
 void NoSound();
@@ -151,19 +152,19 @@ void DelLine();
 void Beep();
 void LockBeep();
 void ScrBeep();
-void InitMouseEvents();
-void DoneMouseEvents();
-void ShowMouse();
-void HideMouse();
-void ShowMaus();
-void HideMaus();
-void GetMouseEvent();
-void SetMouse(WORD X, WORD Y, bool Visible);
-bool TestEvent();
+//void InitMouseEvents();
+//void DoneMouseEvents();
+//void ShowMouse();
+//void HideMouse();
+//void ShowMaus();
+//void HideMaus();
+//void GetMouseEvent();
+//void SetMouse(WORD X, WORD Y, bool Visible);
+//bool TestEvent();
 WORD WaitEvent(WORD Delta);
 void GetEvent();
 void ClrEvent();
-WORD AddCtrlAltShift(BYTE Flgs);
+//WORD AddCtrlAltShift(BYTE Flgs);
 void AssignCrt(pstring filepath);
 WORD AutoTicks, DownTicks, AutoDelay;
 void* OldBreakIntr;
