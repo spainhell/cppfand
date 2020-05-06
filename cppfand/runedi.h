@@ -166,7 +166,7 @@ void DownEdit();
 void ShiftF7Proc();
 bool ShiftF7Duplicate();
 bool DuplToPrevEdit();
-void Calculate();
+void Calculate(); // existuje i v EDEVPROC
 void DelNewRec();
 EFldD* FrstFldOnPage(WORD Page);
 void F6Proc();

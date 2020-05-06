@@ -152,6 +152,9 @@
     <ClCompile Include="common.cpp" />
     <ClCompile Include="cppfand.cpp" />
     <ClCompile Include="drivers.cpp" />
+    <ClCompile Include="edevent.cpp" />
+    <ClCompile Include="edevinpt.cpp" />
+    <ClCompile Include="edevproc.cpp" />
     <ClCompile Include="edglobal.cpp" />
     <ClCompile Include="editor.cpp" />
     <ClCompile Include="edscreen.cpp" />
@@ -201,6 +204,7 @@
     <ClInclude Include="ededit.h" />
     <ClInclude Include="edevent.h" />
     <ClInclude Include="edevinpt.h" />
+    <ClInclude Include="edevproc.h" />
     <ClInclude Include="edglobal.h" />
     <ClInclude Include="editor.h" />
     <ClInclude Include="edscreen.h" />

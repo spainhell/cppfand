@@ -4,6 +4,7 @@
 #include "edevent.h"
 #include "pstring.h"
 #include "rdrun.h"
+#include "rdrun.h"
 #include "sort.h"
 #include "wwmenu.h"
 
@@ -55,7 +56,7 @@ char TypeT;
 pstring NameT;
 string ErrMsg;
 WORD MaxLenT, LenT, IndT, ScrT;
-string Breaks;
+pstring Breaks;
 EdExitD* ExitD;
 bool SrchT, UpdatT;
 WORD LastNr, CtrlLastNr;

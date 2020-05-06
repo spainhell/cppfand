@@ -620,7 +620,7 @@ struct structXPath { longint Page; WORD I; } XPath[10];
 WORD XPathN;
 XWFile XWork;
 TFile TWork;
-const longint ClpBdPos = 0;
+longint ClpBdPos = 0;
 bool IsTestRun = false;
 bool IsInstallRun = false;
 

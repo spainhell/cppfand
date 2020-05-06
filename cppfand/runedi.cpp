@@ -2754,7 +2754,8 @@ label4:
 	I = 1; Del = true;
 label1:
 	TxtEdCtrlUBrk = true; TxtEdCtrlF4Brk = true;
-	PromptLL(114, &Txt, I, Del); if (KbdChar == _U_) goto label0;
+	PromptLL(114, &Txt, I, Del);
+	if (KbdChar == _U_) goto label0;
 	if ((KbdChar == _ESC_) || (Txt.length() == 0)) goto label3;
 	CalcTxt = Txt;
 	SetInpStr(Txt); RdLex();
