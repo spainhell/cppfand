@@ -4,6 +4,7 @@
 #include "common.h"
 #include "lexanal.h"
 #include "memory.h"
+#include "rdfildcl.h"
 
 void TestBool(char FTyp)
 {
@@ -56,7 +57,8 @@ FrmlPtr RdPrim(char& FTyp)
 	char S3Code[S3FunN] = { _copy,_str,_str };
 
 	char FunCode;
-	FrmlPtr Z, Z1, Z2, Z3; char Typ;
+	FrmlPtr Z = nullptr, Z1 = nullptr, Z2 = nullptr, Z3 = nullptr;
+	char Typ;
 	integer I, N; BYTE* B;
 	pstring Options(5);
 
@@ -409,7 +411,7 @@ FrmlPtr RdComp(char& FTyp)
 	if (Lexem >= _equ && Lexem <= _ne)
 		if (FTyp == 'R')
 		{
-			Z = GetOp(_compfloat, 2); Z->P1 = Z1;
+			Z = GetOp(_compreal, 2); Z->P1 = Z1;
 			Z->N21 = Lexem; RdLex(); Z->N22 = RdPrecision();
 			Z->P2 = RdAdd(FTyp); TestReal(FTyp); FTyp = 'B';
 		}
@@ -422,7 +424,7 @@ FrmlPtr RdComp(char& FTyp)
 	{
 		if (FTyp == 'R')
 		{
-			Z = GetOp(_infloat, 1); Z->N11 = RdPrecision();
+			Z = GetOp(_inreal, 1); Z->N11 = RdPrecision();
 		}
 		else { TestString(FTyp); Z = GetOp(_instr, 1); Z->N11 = RdTilde(); }
 		Z->P1 = Z1; Accept('['); N = 0;
@@ -561,6 +563,7 @@ FrmlPtr RdKeyInBool(KeyInD* KIRoot, bool NewMyBP, bool FromRdProc, bool& SQLFilt
 		result = MyBPContext(Z, NewMyBP && ((BYTE)Z->Op != _eval));
 	}
 	if (FromRdProc) FileVarsAllowed = FVA;
+	return result;
 }
 
 FrmlPtr MyBPContext(FrmlPtr Z, bool NewMyBP)

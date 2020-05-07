@@ -33,7 +33,7 @@ bool RdIiPrefix_M()
 
 FrmlPtr FindIiandFldFrml_M(FileD* FD, char& FTyp)
 {
-	integer i; FrmlPtr z;
+	integer i = 0; FrmlPtr z = nullptr;
 	if (!Join && (WhatToRd == 'i')) {   /* for Oi search first in Ii*/
 		FD = InpFD_M(Oi); z = TryRdFldFrml(FD, FTyp);
 		if (z != nullptr) { Ii = Oi; goto label1; };
@@ -49,10 +49,10 @@ label1:
 
 FrmlPtr RdFldNameFrmlM(char& FTyp)
 {
-	bool WasIiPrefix;
-	FieldDescr* F;                         /*RdFldNameFrml - body*/
-	FrmlPtr Z;
-	LocVar* LV; FileD* FD;
+	bool WasIiPrefix = false;
+	FieldDescr* F = nullptr;                         /*RdFldNameFrml - body*/
+	FrmlPtr Z = nullptr;
+	LocVar* LV = nullptr; FileD* FD = nullptr;
 	FrmlElem* result = nullptr;
 
 	WasIiPrefix = RdIiPrefix_M();
@@ -98,9 +98,9 @@ FrmlPtr RdFldNameFrmlM(char& FTyp)
 
 void RdDirFilVar_M(char& FTyp, FrmlElem* res)
 {
-	LinkD* LD; FileD* FD;
-	integer I;
-	FrmlPtr Z;
+	LinkD* LD = nullptr; FileD* FD = nullptr;
+	integer I = 0;
+	FrmlPtr Z = nullptr;
 	if (WasIiPrefix)
 	{
 		CFile = InpFD_M(Ii);
@@ -318,8 +318,11 @@ void RdAutoSortSK_M(InpD* ID)
 
 void ImplAssign(OutpRD* RD, FieldDescr* FNew)
 {
-	FileD* FDNew; FileD* FD; FieldDescr* F; AssignD* A; AssignD* A1;
-	void* RPNew; void* RP; FrmlPtr Z; char FTyp; pstring S;
+	FileD* FDNew = nullptr; FileD* FD = nullptr;
+	FieldDescr* F = nullptr; AssignD* A = nullptr;
+	AssignD* A1 = nullptr;
+	void* RPNew = nullptr; void* RP = nullptr;
+	FrmlPtr Z = nullptr; char FTyp = 0; pstring S;
 	
 	FDNew = RD->OD->FD; RPNew = RD->OD->RecPtr; S = LexWord;
 	A = (AssignD*)GetZStore(sizeof(*A)); A1 = RD->Ass;
@@ -333,13 +336,11 @@ void ImplAssign(OutpRD* RD, FieldDescr* FNew)
 		if ((FD->Typ == FDNew->Typ) && FldTypIdentity(F, FNew) &&
 			(F->Typ != 'T') && (F->Flg && f_Stored != 0) && (FNew->Flg == F->Flg)) {
 			A->Kind = _move; A->L = FNew->NBytes;
-			A->ToPtr = Ptr(seg(RPNew), ofs(RPNew) + FNew->Displ);
-			A->FromPtr = Ptr(seg(RP), ofs(RP) + F->Displ);
+			A->ToPtr = (uintptr_t(RPNew) + FNew->Displ);
+			A->FromPtr = (uintptr_t(RP) + F->Displ);
 			if ((A1 != nullptr) && (A1->Kind == _move) &&
-				(seg(A1->FromPtr) == seg(A->FromPtr)) &&
-				(ofs(A1->FromPtr) + A1->L == ofs(A->FromPtr)) &&
-				(seg(A1->ToPtr) == seg(A1->ToPtr)) &&
-				(ofs(A1->ToPtr) + A1->L == ofs(A->ToPtr))) {
+				(uintptr_t(A1->FromPtr) + A1->L == uintptr_t(A->FromPtr)) &&
+				(uintptr_t(A1->ToPtr) + A1->L == uintptr_t(A->ToPtr))) {
 				A1->L = A1->L + A->L;
 				ReleaseStore(A);
 				goto label1;
@@ -360,8 +361,8 @@ FrmlElem* AdjustComma_M(FrmlElem* Z1, FieldDescr* F, char Op)
 {
 	FrmlPtr Z, Z2;
 	FrmlElem* result = Z1;
-	if (F->Typ != 'F') return;
-	if (F->Flg && f_Comma == 0) return;
+	if (F->Typ != 'F') return result;
+	if (F->Flg && f_Comma == 0) return result;
 	Z2 = GetOp(_const, sizeof(double));
 	Z2->R = Power10[F->M];
 	Z = GetOp(Op, 0); Z->P1 = Z1; Z->P2 = Z2; result = Z;
@@ -410,7 +411,7 @@ void TestIsOutpFile(FileDPtr FD)
 
 AssignD* RdAssign_M()
 {
-	FieldDPtr F; FileDPtr FD; LocVar* LV; AssignD* AD;
+	FieldDescr* F = nullptr; FileD* FD = nullptr; LocVar* LV = nullptr; AssignD* AD = nullptr;
 	AssignD* result = nullptr;
 	if (IsKeyWord("BEGIN")) {
 		result = RdAssSequ(); AcceptKeyWord("END"); return result;

@@ -4,6 +4,9 @@
 #include "edglobal.h"
 #include "pstring.h"
 
+//TODO: fake Timer
+int Timer = 0;
+
 void MyInsLine();
 void MyDelLine();
 void PredLine();
@@ -22,22 +25,23 @@ void DeleteL();
 void NewLine(char Mode);
 WORD SetPredI();
 void WrChar_E(char Ch);
-void Format(longint First, longint Last, WORD Posit, bool Rep);
+void Format(WORD& i, longint First, longint Last, WORD Posit, bool Rep);
 void Calculate_E();
 bool BlockExist();
 void SetBlockBound(longint& BBPos, longint& EBPos);
-bool BlockHandle(char Oper);
-void ResetPrint(longint LenPrint, ColorOrd* co, WORD& I1, bool isPrintFile, CharArr* p);
+bool BlockHandle(longint& fs, FILE* F1, char Oper);
+void ResetPrint(char Oper, longint& fs, FILE* F1, longint LenPrint, ColorOrd* co, WORD& I1, bool isPrintFile, CharArr* p);
+void LowCase(unsigned char& c);
 void LowCase(char& c);
-void DelStorClpBd();
-void MarkRdClpBd();
-bool BlockGrasp(char Oper);
+void DelStorClpBd(void* P1, LongStr* sp);
+void MarkRdClpBd(void* P1, LongStr* sp);
+bool BlockGrasp(char Oper, void* P1, LongStr* sp);
 void MovePart(WORD Ind);
-void BlockDrop(char Oper);
-bool BlockCGrasp(char Oper);
-void BlockCDrop(char Oper);
-void InsertLine(WORD& i, WORD& I1, WORD& I3, WORD& ww);
-void BlockCopyMove(char Oper);
+void BlockDrop(char Oper, void* P1, LongStr* sp);
+bool BlockCGrasp(char Oper, void* P1, LongStr* sp);
+void BlockCDrop(char Oper, void* P1, LongStr* sp);
+void InsertLine(WORD& i, WORD& I1, WORD& I3, WORD& ww, LongStr* sp);
+void BlockCopyMove(char Oper, void* P1, LongStr* sp);
 bool ColBlockExist();
 void BlockLRShift(WORD I1);
 void NewBlock1(WORD& I1, longint& L2);

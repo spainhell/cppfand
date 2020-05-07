@@ -1,6 +1,6 @@
+#pragma once
+
 #include "edscreen.h"
-
-
 #include "common.h"
 #include "edglobal.h"
 #include "editor.h"
@@ -98,7 +98,7 @@ void InitScr()
 	Window(FirstC, FirstR, LastC, LastR);
 	FirstR--;
 	if ((Mode != HelpM) and (Mode != ViewM) and Wrap) LastC--;
-	PageS = LastR - FirstR; LineS = Succ(LastC - FirstC);
+	PageS = LastR - FirstR; LineS = succ(LastC - FirstC);
 }
 
 void UpdStatLine(int Row, int Col)
@@ -113,10 +113,10 @@ void UpdStatLine(int Row, int Col)
 		lRow = Row + Part.LineP;
 		StatLine = "     1:                             ";
 		str(lRow, 5, st);
-		move(st[1], StatLine[2], 5);
+		Move(&st[1], &StatLine[2], 5);
 		str(Col, st);
 		while (st.length() < 4) { st = st + ' '; }
-		move(st[1], StatLine[8], 4);
+		Move(&st[1], &StatLine[8], 4);
 		switch (Mode) {
 			case TextM:	{
 				if (Insert) Move(&InsMsg[1], &StatLine[11], 5);
@@ -284,7 +284,6 @@ void UpdScreen()
 	WORD oldSI;
 	pstring PgStr;
 
-label1:
 	oldSI = ScrI; InsPage = false;
 	if (ChangeScr)
 	{
@@ -334,27 +333,27 @@ label1:
 				InsPage = false;
 				goto label1;
 			}
-		if (!Scroll && (Ind == LineI)) {
+		if (!bScroll && (Ind == LineI)) {
 			Ind = NextI;
 			co2 = co1;
 			goto label1;
 		}
 		if (Ind < LenT) {
-			if (HelpScroll) ScrollWrline(T[Ind], r, co2);
-			else EditWrline(T[Ind], r);
+			if (HelpScroll) ScrollWrline((ArrPtr)T[Ind], r, co2);
+			else EditWrline((ArrPtr)T[Ind], r);
 			if (InsPage) Ind = FindChar(w, 0x0C, Ind, LenT) + 1;
 			else Ind = FindChar(w, _CR, Ind, LenT) + 1;
 			WrEndL((Ind < LenT) && (*T[Ind] == _LF), r);
 			if (*T[Ind] == _LF) Ind++;
 		}
 		else {
-			EditWrline(T[LenT], r);
+			EditWrline((ArrPtr)T[LenT], r);
 			WrEndL(false, r);
 		}
 
 	label1:
 		r++;
-		if (Scroll && (*T[Ind] == 0x0C)) { InsPage = InsPg; Ind++; }
+		if (bScroll && (*T[Ind] == 0x0C)) { InsPage = InsPg; Ind++; }
 	} while (r > PageS);
 }
 

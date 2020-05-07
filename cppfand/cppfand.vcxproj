@@ -152,6 +152,7 @@
     <ClCompile Include="common.cpp" />
     <ClCompile Include="cppfand.cpp" />
     <ClCompile Include="drivers.cpp" />
+    <ClCompile Include="ededit.cpp" />
     <ClCompile Include="edevent.cpp" />
     <ClCompile Include="edevinpt.cpp" />
     <ClCompile Include="edevproc.cpp" />
@@ -223,6 +224,7 @@
     <ClInclude Include="oaccess.h" />
     <ClInclude Include="obase.h" />
     <ClInclude Include="obaseww.h" />
+    <ClInclude Include="olongstr.h" />
     <ClInclude Include="printtxt.h" />
     <ClInclude Include="rdmerg.h" />
     <ClInclude Include="rdrprt.h" />

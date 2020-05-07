@@ -6,7 +6,11 @@
 #include "lexanal.h"
 #include "memory.h"
 #include "oaccess.h"
+#include "obase.h"
+#include "obaseww.h"
 #include "recacc.h"
+#include "runfrml.h"
+#include "runmerg.h"
 #include "wwmix.h"
 
 void RunReport(RprtOpt* RO)
@@ -28,7 +32,9 @@ void RunReport(RprtOpt* RO)
 	if ((PgeLimit > PgeSize) || (PgeLimit == 0)) PgeLimit = PgeSize - 1;
 	if (! RewriteRprt(RO, PgeSize, Times, isLPT1)) return;
 	MarkStore2(Store2Ptr); ex = true;
-	PushProcStk(); NewExit(Ovr(), er); //goto label3;
+	PushProcStk();
+	//NewExit(Ovr(), er);
+	goto label3;
 	OpenInp();
 	MergOpGroup.Group = 1.0; frst = true; NLinesOutp = 0; PrintDH = 2;
 label0:
@@ -52,7 +58,7 @@ label0:
 label1:
 	if (WasFF2) PrintPageHd(); Headings(L, nullptr);
 	MergeProc();
-	MoveMFlds(&NewMFlds, OldMFlds); GetMinKey();
+	MoveMFlds(NewMFlds, OldMFlds); GetMinKey();
 	if (NEof == MaxIi) {
 		if (FrstLvM != LstLvM) Footings(FrstLvM, LstLvM->ChainBack);
 	label2:
@@ -71,9 +77,9 @@ label1:
 			printf("%s\n", Rprt.c_str());
 			printf("%s%s", Rprt.c_str(), MsgLine.c_str());
 		}
-		Close(Rprt); if (isLPT1) ClosePrinter(0);
+		Rprt.Close(); if (isLPT1) ClosePrinter(0);
 		CloseInp(); PopProcStk();
-		if (ex) { RunMsgOff; if (!WasLPTCancel) GoExit(); }
+		if (ex) { RunMsgOff(); if (!WasLPTCancel) GoExit(); }
 		return;
 	}
 	L = GetDifLevel();
@@ -137,7 +143,7 @@ void WriteNBlks(integer N)
 void NewTxtCol(LongStrPtr S, WORD Col, WORD Width, bool Wrap)
 {
 	bool Absatz;
-	CharArrPtr TA; WORD i, LL, Ln; TTD* TD;
+	CharArrPtr TA = nullptr; WORD i, LL, Ln; TTD* TD = nullptr;
 	pstring ss; StringList SL;
 	LL = S->LL; TA = (CharArrPtr)(&S->A); Ln = 0; Absatz = true;
 	if (Wrap) for (i = 1; i < LL; i++)
@@ -470,7 +476,7 @@ void ReadInpFile(InpD* ID)
 	/* !!! with ID^ do!!! */
 	CRecPtr = ID->ForwRecPtr;
 label1:
-	ID->Scan->GetRec; if (ID->Scan->eof) return;
+	ID->Scan->GetRec(); if (ID->Scan->eof) return;
 	if (ESCPressed() && PromptYN(24)) {
 		WasLPTCancel = true; GoExit();
 	}
@@ -499,7 +505,7 @@ void CloseInp()
 	for (i = 1; i < MaxIi; i++) {
 		/* !!! with IDA[i]^ do!!! */
 		if (IDA[i]->Scan->Kind != 5) {
-			IDA[i]->Scan->Close; ClearRecSpace(IDA[i]->ForwRecPtr); OldLMode(IDA[i]->Md);
+			IDA[i]->Scan->Close(); ClearRecSpace(IDA[i]->ForwRecPtr); OldLMode(IDA[i]->Md);
 		}
 	}
 }
@@ -521,7 +527,7 @@ void GetMFlds(ConstListEl* C, KeyFldD* M)
 {
 	XString* x;
 	while (C != nullptr) {
-		x = (XString*)(&C->S); x->Clear; x->StoreKF(M); C = C->Chain; M = M->Chain;
+		x = (XString*)(&C->S); x->Clear(); x->StoreKF(M); C = C->Chain; M = M->Chain;
 	}
 }
 
@@ -562,12 +568,12 @@ void GetMinKey()
 			CRecPtr = IDA[i]->ForwRecPtr; IDA[i]->Exist = false;
 			if (!IDA[i]->Scan->eof) {
 				if (mini == 0) goto label1;
-				res = CompMFlds(&NewMFlds, IDA[i]->MFld, nlv);
+				res = CompMFlds(NewMFlds, IDA[i]->MFld, nlv);
 				if (res != _gt) {
 					if (res == _lt)
 					{
 					label1:
-						GetMFlds(&NewMFlds, IDA[i]->MFld); mini = i;
+						GetMFlds(NewMFlds, IDA[i]->MFld); mini = i;
 					}
 					IDA[i]->Exist = true;
 				}
@@ -590,7 +596,7 @@ void ZeroCount()
 LvDescr* GetDifLevel()
 {
 	ConstListEl* C1; ConstListEl* C2; KeyFldDPtr M; LvDescr* L;
-	C1 = &NewMFlds; C2 = OldMFlds; M = IDA[1]->MFld; L = LstLvM->ChainBack;
+	C1 = NewMFlds; C2 = OldMFlds; M = IDA[1]->MFld; L = LstLvM->ChainBack;
 	while (M != nullptr) {
 		if (C1->S != C2->S) { return L; }
 		C1 = C1->Chain; C2 = C2->Chain; M = M->Chain; L = L->ChainBack;
@@ -647,7 +653,7 @@ void MergeProc()
 			SumUp(ID->Sum);
 			ReadInpFile(ID);
 			if (ID->Scan->eof) goto label4;
-			res = CompMFlds(&NewMFlds, ID->MFld, nlv);
+			res = CompMFlds(NewMFlds, ID->MFld, nlv);
 			if ((res == _lt) && (MaxIi > 1)) {
 				SetMsgPar(ID->Scan->FD->Name); RunError(607);
 			}
@@ -682,13 +688,13 @@ bool RewriteRprt(RprtOpt* RO, WORD Pl, WORD& Times, bool& IsLPT1)
 		if (SEquUpcase(*RO->Path, "LPT1"))
 		{
 			CPath = "LPT1"; CVol = ""; IsLPT1 = true;
-			result = ResetPrinter(Pl, 0, true, true) && RewriteTxt(Rprt, false);
+			result = ResetPrinter(Pl, 0, true, true) && RewriteTxt(&Rprt, false);
 			return result;
 		}
 		SetTxtPathVol(*RO->Path, RO->CatIRec);
 	}
 	TestMountVol(CPath[1]);
-	if (!RewriteTxt(Rprt, PrintCtrl))
+	if (!RewriteTxt(&Rprt, PrintCtrl))
 	{
 		SetMsgPar(CPath); WrLLF10Msg(700 + HandleError);
 		PrintView = false; return result;

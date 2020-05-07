@@ -1,15 +1,18 @@
+#pragma once
+
 #include "ededit.h"
-
 #include <algorithm>
-
-
-
 #include "base.h"
+#include "common.h"
 #include "drivers.h"
 #include "edevent.h"
 #include "edevinpt.h"
+#include "edevproc.h"
 #include "editor.h"
+#include "edscreen.h"
+#include "edtextf.h"
 #include "kbdww.h"
+#include "keybd.h"
 #include "legacy.h"
 #include "memory.h"
 
@@ -27,7 +30,7 @@ void Edit(WORD SuccLineSize)
 	ColorOrd ColScr;
 	bool IsWrScreen;
 
-	WORD FirstR, FirstC, LastR, LastC, MinC, MinR, MaxC, MaxR;
+	WORD FirstR, FirstC, LastR, LastC, MinC = 0, MinR =0, MaxC=0, MaxR=0;
 	WORD MargLL[4];
 	WORD PageS, LineS;
 
@@ -41,7 +44,7 @@ void Edit(WORD SuccLineSize)
 
 	BYTE* LockPtr;
 	// registers Regs;
-	WORD i1, i2, i3;
+	WORD i1=0, i2=0, i3=0;
 
 	
 	// *** zaèátek metody ***
@@ -70,18 +73,18 @@ void Edit(WORD SuccLineSize)
 		NullChangePart(); 
 		SimplePrintHead();
 	}
-	LockPtr = ptr(0, 0x417); 
-	FirstScroll = ViewM;
+	LockPtr = nullptr; // ptr(0, 0x417);
+	FirstScroll = Mode == ViewM;
 	Mode = ViewM;
-	Scroll = (((*LockPtr && 0x10) != 0) || FirstScroll) && (Mode != HelpM);
-	if (Scroll) 
+	bScroll = (((*LockPtr & 0x10) != 0) || FirstScroll) && (Mode != HelpM);
+	if (bScroll) 
 	{
 		ScrL = NewL(RScrL); 
 		ChangeScr = true;
 	}
-	HelpScroll = Scroll || (Mode == HelpM); 
-	if (HelpScroll) { Drivers::CrsHide(); }
-	else { Drivers::CrsNorm(); }
+	HelpScroll = bScroll || (Mode == HelpM); 
+	if (HelpScroll) { CrsHide(); }
+	else { CrsNorm(); }
 	BCol = 0; 
 	BPos = 0;
 	SetScreen(IndT, ScrT, Posi); 
@@ -92,14 +95,14 @@ void Edit(WORD SuccLineSize)
 		WordL = 0;
 		ScrI = SetInd(LineI, Posi);
 		if (WordFind(WordNo2() + 1, i1, i2, i3)) { SetWord(i1, i2); }
-		if (!WordExist) { SetDekLnCurrI(IndT); ScrI = 1; }
+		if (!WordExist()) { SetDekLnCurrI(IndT); ScrI = 1; }
 	}
 	FillChar((char*)MargLL, sizeof(MargLL), 0);
 	ColScr = Part.ColorP;
-	WrStatusLine;
-	textattr = TxtColor; 
-	clrscr; 
-	Background; 
+	WrStatusLine();
+	TextAttr = TxtColor; 
+	ClrScr(); 
+	Background(); 
 	FirstEvent = false;
 
 	// {!!!!!!!!!!!!!!}
@@ -112,14 +115,14 @@ void Edit(WORD SuccLineSize)
 		AddToKbdBuf(KbdChar);
 	}
 	FillChar((char*)MargLL, sizeof(MargLL), 0);
-	WrLLMargMsg(LastS, LastNr);
+	WrLLMargMsg(&LastS, LastNr);
 
 	do {
 		if (TypeT == FileT) { NullChangePart(); HandleEvent(); }
-		if (!(Konec || IsWrScreen)) { Background; }
+		if (!(Konec || IsWrScreen)) { Background(); }
 	} while (Konec);
 	
-	if (Scroll && (Mode != HelpM)) {
+	if (bScroll && (Mode != HelpM)) {
 		Posi = BPos + 1; LineL = ScrL; LineI = ScrI;
 	}
 
@@ -127,11 +130,11 @@ void Edit(WORD SuccLineSize)
 	ScrT = ((LineL - ScrL + 1) << 8) + Posi - BPos;
 	if (Mode != HelpM) {
 		TxtXY = ScrT + longint(Posi) << 16;
-		CursorWord;
-		if (Mode == HelpM) { ClrWord; }
+		CursorWord();
+		if (Mode == HelpM) { ClrWord(); }
 	}
-	Drivers::CrsHide(); 
-	window(MinC, MinR, MaxC, MaxR);
+	CrsHide(); 
+	Window(MinC, MinR, MaxC, MaxR);
 	TestUpdFile();
 }
 
@@ -143,7 +146,7 @@ void DekodLine()
 	HardL = true;
 	FillChar(Arr, LineSize, 32);
 	NextI = LineI + LP + 1;
-	if ((NextI < LenT) && (T ^ [NextI] = _LF)) inc(NextI);
+	if ((NextI < LenT) && (*T[NextI] == _LF)) NextI++;
 	else HardL = false;
 	if (LP > LineSize) {
 		LP = LineSize;
@@ -153,27 +156,25 @@ void DekodLine()
 				LL = LineI + LineSize;
 				NullChangePart();
 				TestLenText(LL, longint(LL) + 1);
-				dec(LL, Part.MovI);
-				T^ [LL] = _CR;
+				LL -= Part.MovI;
+				*T[LL] = _CR;
 				NextI = LineI + LP + 1;
 			}
 		}
 		else Mode = ViewM;
 	}
-	if (LP > 0) move(*T[LineI], Arr, LP);
+	if (LP > 0) Move(T[LineI], Arr, LP);
 	UpdatedL = false;
 }
 
-pathstr ShortName(pathstr Name)
+pstring ShortName(pstring Name)
 {
 	WORD J;
-	pathstr s;
+	pstring s;
 	J = Name.length();
-	/* TODO:
-	while not(Name[J]in['\',':'])and(J>0) do dec(J);
-	*/
-    s = copy(Name,succ(J),length(Name)-J);
-	if (Name[2] == ':') { s = copy(Name, 1, 2) + s; }
+	while (!(Name[J] == '\\' || Name[J] == ':') && (J > 0)) J--;
+    s = Name.substr(succ(J),Name.length()-J);
+	if (Name[2] == ':') { s = Name.substr(1, 2) + s; }
 	return s;
 }
 
@@ -181,7 +182,7 @@ WORD CountChar(char C, WORD First, WORD Last)
 {
 	WORD I, j, n;
 	j = 1;
-	i = FindChar(j, C, Fist, LenT);
+	I = FindChar(j, C, First, LenT);
 	n = 0;
 	while (I < Last) {
 		n++;
@@ -197,23 +198,23 @@ WORD SetLine(WORD Ind)
 
 WORD SetCurrI(WORD Ind)
 {
-	_SetCurrI = 1; 
-	dec(Ind);
+	Ind--;
 	while (Ind > 0) {
-		if (T ^ [Ind] == _CR)
+		if (*T[Ind] == _CR)
 		{
-			inc(Ind);
-			if (T ^ [Ind] == _LF) inc(Ind);
-			_SetCurrI = Ind; exit;
+			Ind++;
+			if (*T[Ind] == _LF) Ind++;
+			return Ind;
 		}
-		dec(Ind);
+		Ind--;
 	}
+	return 1;
 }
 
 void SetDekCurrI(WORD Ind)
 {
 	LineI = SetCurrI(Ind); 
-	DekodLine;
+	DekodLine();
 }
 
 void SetDekLnCurrI(WORD Ind)
@@ -235,10 +236,10 @@ label1:
 		PredPart();
 		goto label1;
 	}
-	if (Num = 1) { result = 1; }
+	if (Num == 1) { result = 1; }
 	else {
 		J = pred(Num); I = FindChar(J, _CR, 1, LenT) + 1;
-		if (T ^ [I] == _LF) { inc(I); }
+		if (*T[I] == _LF) { I++; }
 		if (I > LenT)
 		{
 			if (AllRd) {
@@ -247,7 +248,7 @@ label1:
 			}
 			else {
 				NextPart();
-				if (Num != LineL) dec(Num, Part.MovL);
+				if (Num != LineL) Num -= Part.MovL;
 				goto label1;
 			}
 		}
@@ -277,7 +278,7 @@ WORD SetInd(WORD Ind, WORD Pos) // { line, pozice --> index}
 	P = pred(Ind);
 	if (Ind < LenT) 
 	{
-		while ((Ind - P < Pos) && (T ^ [Ind]<>_CR)) { inc(Ind); }
+		while ((Ind - P < Pos) && (*T[Ind] != _CR)) { Ind++; }
 	}
 	return Ind;
 }
@@ -288,8 +289,8 @@ WORD Position(WORD c) // {PosToCol}
 	cc = 1; p = 1;
 	while (cc <= c)
 	{
-		if (Arr[p] >= ' ') inc(cc); 
-		inc(p);
+		if (Arr[p] >= ' ') cc++;
+		p++;
 	}
 	return p - 1;
 }
@@ -300,35 +301,35 @@ WORD Column(WORD p)
 	if (p == 0) { return 0; }
 	pp = 1; c = 1;
 	while (pp <= p) {
-		if (Arr[pp] >= ' ') inc(c);
-		inc(pp);
+		if (Arr[pp] >= ' ') c++;
+		pp++;
 	}
-	if (Arr[p] >= ' ') dec(c); 
+	if (Arr[p] >= ' ') c--; 
 	return c;
 	
 }
 
 WORD LastPosLine()
 {
-	WORD LP;
+	WORD LP = 0;
 	LP = LineSize; 
-	while ((LP > 0) && (Arr[LP] = ' ')) { dec(LP); }
+	while ((LP > 0) && (Arr[LP] == ' ')) { LP--; }
 	return LP;
 }
 
 void KodLine()
 {
-	WORD LP;
+	WORD LP = 0;
 
-	LP = LastPosLine + 1;
-	if (HardL) inc(LP); 
+	LP = LastPosLine() + 1;
+	if (HardL) LP++; 
 	TestLenText(NextI, longint(LineI) + LP);
-	move(Arr, T ^ [LineI], LP); 
+	Move(Arr, T[LineI], LP); 
 	NextI = LineI + LP; 
 	LP = NextI - 1;
-	if (HardL) dec(LP); 
-	T^ [LP] = _CR; 
-	if (HardL) T^[LP + 1] = _LF;
+	if (HardL) LP--; 
+	*T[LP] = _CR; 
+	if (HardL) *T[LP + 1] = _LF;
 	UpdatedL = false;
 }
 
@@ -341,23 +342,23 @@ void NextLine(bool WrScr)
 {
 	bool b;
 	TestKod();
-	if ((NextI >= LenT) && !AllRd) NextPartDek;
+	if ((NextI >= LenT) && !AllRd) NextPartDek();
 	if (NextI <= LenT) {
-		LineI = NextI; DekodLine; inc(LineL);
-		if (Scroll) {
+		LineI = NextI; DekodLine(); LineL++;
+		if (bScroll) {
 			if (PageS > 1) MyWriteln();
-			inc(ScrL);
+			ScrL++;
 			ChangeScr = true;
-			inc(RScrL);
+			RScrL++;
 			if (ModPage(RScrL)) {
 				if (PageS > 1) MyWriteln();
-				inc(RScrL);
+				RScrL++;
 			}
 		}
 		else
-			if (WrScr && (LineL = ScrL + PageS)) {
+			if (WrScr && (LineL == ScrL + PageS)) {
 				if (PageS > 1) MyWriteln();
-				inc(ScrL);
+				ScrL++;
 				ChangeScr = true;
 			}
 	}
@@ -365,23 +366,23 @@ void NextLine(bool WrScr)
 
 void MyWriteln() 
 {
-	textattr = TxtColor;
-	cout << "\n";
+	TextAttr = TxtColor;
+	printf("\n");
 }
 
 bool WordExist()
 {
-	return (WordL >= ScrL) && (WordL < Scrl + PageS);
+	return (WordL >= ScrL) && (WordL < ScrL + PageS);
 }
 
 WORD WordNo(WORD I)
 {
-	return (CountChar(^s, 1, MinW(LenT, I - 1)) + 1) / 2;
+	return (CountChar(0x13, 1, MinW(LenT, I - 1)) + 1) / 2;
 }
 
 WORD WordNo2()
 {
-	if (WordExist) return WordNo(SetInd(LineI, Posi));
+	if (WordExist()) return WordNo(SetInd(LineI, Posi));
 	return WordNo(ScrI);
 }
 
@@ -390,11 +391,11 @@ void ClrWord()
 	WORD k, m;
 	m = 1;
 	k = 1;
-	k = FindChar(m, ^ q, k, LenT);
+	k = FindChar(m, 0x11, k, LenT);
 	while (k < LenT) {
-		T^ [k] = ^ s; 
+		*T[k] = 0x13; 
 		m = 1; 
-		k = FindChar(m, ^ q, k, LenT);
+		k = FindChar(m, 0x11, k, LenT);
 	}
 }
 
@@ -404,11 +405,11 @@ bool WordFind(WORD i, WORD WB, WORD WE, WORD LI)
 	bool result = false;
 	if (i == 0) return result;
 	i = i * 2 - 1;
-	k = FindChar(i, ^ s, 1, LenT);
+	k = FindChar(i, 0x13, 1, LenT);
 	if (k >= LenT) return result;
 	WB = k;
-	inc(k);
-	while (T ^ [k]<>^ s) { inc(k); } 
+	k++;
+	while (*T[k] != 0x13) { k++; } 
 	if (k >= LenT) return result;
 	WE = k; LI = SetLine(WB); 
 	result = true;
@@ -417,8 +418,8 @@ bool WordFind(WORD i, WORD WB, WORD WE, WORD LI)
 
 void SetWord(WORD WB, WORD WE)
 {
-	T^ [WB] = ^ q; 
-	T^ [WE] = ^ q; 
+	*T[WB] = 0x11; 
+	*T[WE] = 0x11; 
 	SetDekLnCurrI(WB);
 	WordL = LineL; 
 	Posi = WB - LineI + 1; 
@@ -427,16 +428,15 @@ void SetWord(WORD WB, WORD WE)
 
 void CursorWord()
 {
-	// var O:set of char;
 	set<char> O;
 	WORD pp;
 
-	LexWord = ''; 
+	LexWord = ""; 
 	pp = Posi;
-	if (Mode == HelpM) O = [^ q];
+	if (Mode == HelpM) O.insert(0x11);
 	else {
 		O = Oddel; 
-		if (Arr[pp] in O) pp--;
+		if (O.count(Arr[pp]) > 0) pp--;
 	}
 	while ((pp > 0) && !O.count(Arr[pp])) { pp--; }
 	pp++;
@@ -454,13 +454,13 @@ void SetScreen(WORD Ind, WORD ScrXY, WORD Pos)
 	SetDekLnCurrI(Ind); 
 	Posi = MinI(LineSize, MaxI(MaxW(1, Pos), Ind - LineI + 1));
 	if (ScrXY > 0) {
-		ScrL = LineL - (ScrXY shr 8) + 1;
-		Posi = MaxW(Posi, ScrXY and 0x00FF); 
-		BPos = Posi - (ScrXY and 0x00FF);
+		ScrL = LineL - (ScrXY >> 8) + 1;
+		Posi = MaxW(Posi, ScrXY & 0x00FF); 
+		BPos = Posi - (ScrXY & 0x00FF);
 		ChangeScr = true;
 	}
 	Colu = Column(Posi); BCol = Column(BPos);
-	if (Scroll) {
+	if (bScroll) {
 		RScrL = NewRL(ScrL);
 		LineL = MaxI(PHNum + 1, LineAbs(LineL)) - Part.LineP;
 		rl = NewRL(LineL);
@@ -473,7 +473,7 @@ void SetScreen(WORD Ind, WORD ScrXY, WORD Pos)
 	}
 	else {
 		if ((LineL >= ScrL + PageS) || (LineL < ScrL)) {
-			if (LineL > 10) then ScrL = LineL - 10;
+			if (LineL > 10) ScrL = LineL - 10;
 			else ScrL = 1;
 			ChangeScr = true;
 		}
@@ -483,8 +483,8 @@ void SetScreen(WORD Ind, WORD ScrXY, WORD Pos)
 void DelEndT()
 {
 	if (LenT > 0) {
-		ReleaseStore(@T^[LenT]);
-		dec(LenT);
+		ReleaseStore(T[LenT]);
+		LenT--;
 	}
 }
 
@@ -493,7 +493,7 @@ void WrEndT()
 	void* p; // var p:pointer;
 	p = GetStore(1);
 	LenT++;
-	T^[LenT] = _CR;
+	*T[LenT] = _CR;
 }
 
 void MoveIdx(int dir)
@@ -524,8 +524,8 @@ void SetUpdat()
 
 void PredPart()
 {
-	TestUpdFile; 
-	ChangePart = RdPredPart; 
+	TestUpdFile(); 
+	ChangePart = RdPredPart(); 
 	MoveIdx(-1); 
 	WrEndT();
 }
@@ -533,7 +533,7 @@ void PredPart()
 void NextPart()
 {
 	TestUpdFile(); 
-	ChangePart = RdNextPart; 
+	ChangePart = RdNextPart(); 
 	MoveIdx(1); 
 	WrEndT();
 }
@@ -544,17 +544,17 @@ void NextPartDek()
 	DekodLine();
 }
 
-void SetPart(longint Idex)
+void SetPart(longint Idx)
 {
 	if ((Idx > Part.PosP) && (Idx < Part.PosP + LenT) || (TypeT != FileT)) {
-		exit;
+		return;
 	}
 	TestUpdFile(); 
-	ReleaseStore(@T^); 
+	ReleaseStore(T); 
 	RdFirstPart();
 	while ((Idx > Part.PosP + Part.LenP) && !AllRd) 
 	{
-		ChangePart = RdNextPart;
+		ChangePart = RdNextPart();
 	}
 	WrEndT();
 }
@@ -604,21 +604,21 @@ bool ModPage(longint RLine)
 
 void TestLenText(WORD F, longint LL)
 {
-	WORD L, /*absolute*/ LL; longint _size;
+	WORD* L = (WORD*)&LL; longint _size;
 	_size = LL - F;
 	if (F < LL) {
 		if (TypeT == FileT)
 		{
 			SmallerPart(F, _size);
-			dec(F, Part.MovI);
-			dec(L, Part.MovI);
+			F -= Part.MovI;
+			L -= Part.MovI;
 		}
-		if ((StoreAvail <= _size) || (MaxLenT <= LenT + size)) { RunError(404); } // text prilis dlouhy, nestaci pamet
-		else { GetStore(_Size); }
+		if ((StoreAvail() <= _size) || (MaxLenT <= LenT + _size)) { RunError(404); } // text prilis dlouhy, nestaci pamet
+		else { GetStore(_size); }
 	}
-	if (LenT >= F) { move(T ^ [F], T ^ [L], succ(LenT - F) };
-	if (F >= LL) { ReleaseStore(@T ^ [LenT + size + 1]) };
-	inc(LenT, _size); 
+	if (LenT >= F) { Move(T[F], T[*L], succ(LenT - F)); }
+	if (F >= LL) { ReleaseStore(T[LenT + _size + 1]); };
+	LenT += _size; 
 	SetUpdat();
 }
 
@@ -627,49 +627,49 @@ void SmallerPart(WORD Ind, WORD FreeSize)
 	WORD i, il, l; 
 	longint lon;
 	NullChangePart();
-	if ((StoreAvail > FreeSize) && (MaxLenT - LenT > FreeSize)) { exit; }
+	if ((StoreAvail() > FreeSize) && (MaxLenT - LenT > FreeSize)) { exit; }
 	TestUpdFile(); 
 	WrEndT();
-	lon = MinL(LenT + StoreAvail, MaxLenT);
-	dec(lon, FreeSize); 
-	if (lon <= 0) { exit; }
-	dec(lon, lon shr 3);
+	lon = MinL(LenT + StoreAvail(), MaxLenT);
+	lon -= FreeSize; 
+	if (lon <= 0) { return; }
+	lon -= lon >> 3;
 	i = 1; il = 0; l = 0;
 	
 	while (i < Ind) {
-		if (T^ [i] == _CR) 
+		if (*T[i] == _CR) 
 		{ 
-			inc(l); il = i; 
-			if (T ^ [il + 1] == _LF) { inc(il); }
+			l++; il = i; 
+			if (*T[il + 1] == _LF) { il++; }
 		}
-		if (LenT - il < lon) { i = Ind; inc(i); }
+		if (LenT - il < lon) { i = Ind; i++; }
 	}
 	
 	if (il > 0) 
 	{
 		// with Part do:
-		inc(PosP, il); inc(LineP, l); 
-		MovI = il; MovL = l;
-		SetColorOrd(ColorP, 1, MovI + 1);
+		Part.PosP += il; Part.LineP += l;
+		Part.MovI = il; Part.MovL = l;
+		SetColorOrd(Part.ColorP, 1, Part.MovI + 1);
 		// end
 
-		dec(LenT, il); 
-		move(T ^ [il + 1], T^, LenT); 
-		T^ [LenT]: = _CR;
-		ReleaseStore(@T ^ [LenT + 1]); 
+		LenT -= il; 
+		Move(T[il + 1], T, LenT); 
+		*T[LenT] = _CR;
+		ReleaseStore(T[LenT + 1]); 
 		ChangePart = true;
 		MoveIdx(1);
 	}
 		 
-	dec(Ind, il); 
-	if (LenT < lon) { exit; }
+	Ind -= il; 
+	if (LenT < lon) { return; }
 	i = LenT; il = LenT;
 	while (i > Ind) {
-		if (T^ [i] == _CR) {
+		if (*T[i] == _CR) {
 			il = i;
-			if (T ^ [il + 1] == _LF) { inc(il); }
+			if (*T[il + 1] == _LF) { il++; }
 		}
-		dec(i);
+		i--;
 		if (il < lon) { i = Ind; }
 	}
 	if (il < LenT) 
@@ -677,10 +677,7 @@ void SmallerPart(WORD Ind, WORD FreeSize)
 		if (il < LenT - 1) { AllRd = false; }
 		Part.LenP = il; 
 		LenT = il + 1; 
-		T^ [LenT] = _CR; 
-		ReleaseStore(@T ^ [LenT + 1]);
+		*T[LenT] = _CR; 
+		ReleaseStore(T[LenT + 1]);
 	}
 }
-
-
-

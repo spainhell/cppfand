@@ -16,7 +16,9 @@
 void RdLocDcl(LocVarBlkD* LVB, bool IsParList, bool WithRecVar, char CTyp)
 {
 	LocVar* lv; FrmlPtr Z; pstring s; double r; char typ, lx, fc; WORD sz, n;
-	FileD* cf; FileD* fd; void* cr; void* p; XWKey* k; bool rp; KeyFldD* kf; KeyFldD* kf1;
+	FileD* cf = nullptr; FileD* fd = nullptr;
+	void* cr = nullptr; void* p = nullptr; XWKey* k = nullptr; bool rp = false;
+	KeyFldD* kf = nullptr; KeyFldD* kf1 = nullptr;
 	char FDTyp;
 label1:
 	rp = false;
@@ -79,7 +81,7 @@ label1:
 				if (fd != nullptr) OldError(26); FDTyp = '6';
 				if (Lexem == '.') {
 					RdLex(); TestIdentif();
-					if (EquUpcase('X')) FDTyp = 'X';
+					if (EquUpcase("X")) FDTyp = 'X';
 					else if (EquUpcase("DBF")) FDTyp = 'D';
 					else Error(185); RdLex();
 				}
@@ -104,7 +106,7 @@ label1:
 			}
 			while (lv != nullptr) {
 				lv->FTyp = typ; lv->FD = CFile;
-				if (typ == 'r') lv->RecPtr = ptr(0, 1); /* for RdProc nullptr-tests + no Run*/
+				if (typ == 'r') lv->RecPtr = nullptr; // ptr(0,1) ??? /* for RdProc nullptr-tests + no Run*/
 				   /* frueher bei IsParList K = nullptr; warum? */
 				else {
 					k = (XWKey*)GetZStore(sizeof(*k));
@@ -371,7 +373,7 @@ void EditModeToFlags(pstring Mode, void* Flgs, bool Err)
 
 KeyDPtr RdViewKey()
 {
-	KeyDPtr k; LocVar* lv; pstring s; integer i;
+	KeyDPtr k = nullptr; LocVar* lv = nullptr; pstring s; integer i = 0;
 	KeyDPtr result = nullptr;
 	if (Lexem != '/') return result;
 	RdLex();

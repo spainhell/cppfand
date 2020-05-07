@@ -1,12 +1,7 @@
-#pragma once
+Ôªø#pragma once
 #include "constants.h"
+#include "legacy.h"
 #include "pstring.h"
-
-
-typedef unsigned short WORD;
-typedef unsigned char BYTE;
-typedef int longint;
-typedef short integer;
 
 
 // ******** Struktury *********
@@ -31,9 +26,9 @@ const WORD mbDoubleClick = 0x0100;
 
 struct TEvent
 {
-	WORD What;
-	WORD KeyCode;
-	WORD Buttons;
+	WORD What = 0;
+	WORD KeyCode = 0;
+	WORD Buttons = 0;
 	TPoint Where;
 	TPoint WhereG;
 	TPoint From;
@@ -44,12 +39,12 @@ WORD KbdChar;
 BYTE KbdFlgs; // TODO: absolute $417
 
 // ******** Konstanty *********
-const bool DemoAutoRd = false; // ¯. 82
-pstring KbdBuffer = ""; // ¯. 83
-BYTE LLKeyFlags = 0; // ¯. 84
+const bool DemoAutoRd = false; // ≈ô. 82
+pstring KbdBuffer = ""; // ≈ô. 83
+BYTE LLKeyFlags = 0; // ≈ô. 84
 
-enum enVideoCard { viCga, viHercules, viEga, viVga };
-enVideoCard VideoCard = viVga;
+enum class enVideoCard { viCga = 0, viHercules = 1, viEga = 2, viVga = 3 };
+enVideoCard VideoCard = enVideoCard::viVga;
 integer GraphDriver, GraphMode;
 WORD ScrSeg, ScrGrSeg;
 BYTE NrVFont, BytesPerChar;
@@ -75,20 +70,20 @@ struct TCrs
 {
 	WORD X = 0; WORD Y = 0; bool Big = false; bool On = false; bool Enabled = false; WORD Ticks = 0;
 };
-const TCrs Crs;
+TCrs Crs;
 const bool MausExist = false;
-const WORD ofsTicks = 0x6C; // ¯. 199
-const char FrameChars[] = { '⁄','ƒ','ø','¿','ƒ','Ÿ','≥',' ','≥', '…','Õ','ª','»','Õ','º','∫',' ','∫','√','ƒ','¥' };
+const WORD ofsTicks = 0x6C; // ≈ô. 199
+const char FrameChars[] = { '‚îå', '‚îÄ', '‚îê', '‚îî', '‚îÄ', '‚îò', '‚îÇ', ' ', '‚îÇ', '‚ïî', '‚ïê', '‚ïó', '‚ïö', '‚ïê', '‚ïù', '‚ïë', ' ', '‚ïë', '‚îú', '‚îÄ', '‚î§' };
 const TPoint MouseWhere = { 0, 0 };
 const TPoint MouseWhereG = { 0, 0 };
 const bool MausVisible = true;
 const bool MausRefresh = false;
 
-enum TVideoFont { foAscii = 0, foLatin2 = 1, foKamen = 2 };
+enum class TVideoFont { foAscii = 0, foLatin2 = 1, foKamen = 2 };
 
 int trialInterval;
-	// p¯Ìznaky kl·vesnice - p˘vodnÏ 0:$417 (is used to make control to keys(Num, Caps, Scroll, Alt, ShR, ShL, CtrlL, CtrlR)
-void* OldIntr08;
+	// p≈ô√≠znaky kl√°vesnice - p≈Øvodnƒõ 0:$417 (is used to make control to keys(Num, Caps, Scroll, Alt, ShR, ShL, CtrlL, CtrlR)
+void* OldIntr08 = nullptr;
 
 /*EventQueue:array[0..EventQSize-1] of record
 	Time,Buttons,
@@ -165,7 +160,7 @@ WORD WaitEvent(WORD Delta);
 void GetEvent();
 void ClrEvent();
 //WORD AddCtrlAltShift(BYTE Flgs);
-void AssignCrt(pstring filepath);
+void AssignCrt(pstring* filepath);
 WORD AutoTicks, DownTicks, AutoDelay;
 void* OldBreakIntr;
 void* OldKbdIntr;
@@ -191,6 +186,6 @@ void WrDirect();
 void ScrollUp();
 void LineFeed();
 
-WORD WrOutput(pstring F);
-WORD DummyCrt(pstring F);
-WORD OpenCrt(pstring F);
+WORD WrOutput(TextFile* F);
+WORD DummyCrt(TextFile* F);
+WORD OpenCrt(TextFile* F);

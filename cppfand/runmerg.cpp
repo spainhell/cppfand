@@ -3,6 +3,7 @@
 #include "legacy.h"
 #include "lexanal.h"
 #include "memory.h"
+#include "oaccess.h"
 #include "obaseww.h"
 #include "recacc.h"
 #include "runedi.h"
@@ -97,7 +98,7 @@ void ReadInpFileM(InpD* ID)
 	/* !!! with ID^ do!!! */
 	CRecPtr = ID->ForwRecPtr;
 label1:
-	ID->Scan->GetRec; if (ID->Scan->eof) return;
+	ID->Scan->GetRec(); if (ID->Scan->eof) return;
 	NRecsAll++; RunMsgN(NRecsAll);
 	if (!RunBool(ID->Bool)) goto label1;
 }
@@ -216,7 +217,7 @@ void CloseInpOutp()
 		OD = OD->Chain;
 	}
 	for (i = 1; i < MaxIi; i++) /* !!! with IDA[i]^ do!!! */ {
-		IDA[i]->Scan->Close; ClearRecSpace(IDA[i]->ForwRecPtr); OldLMode(IDA[i]->Md);
+		IDA[i]->Scan->Close(); ClearRecSpace(IDA[i]->ForwRecPtr); OldLMode(IDA[i]->Md);
 	}
 }
 

@@ -126,7 +126,8 @@ void InitDrivers()
 	//DetectGraph(GraphDriver, GraphMode);
 	/* GraphDriver = EGAMono; Mark****/
 	//DetectVideoCard();
-	AssignCrt(Output); Rewrite(Output); ClrEvent();
+	//AssignCrt(Output); Rewrite(Output);
+	ClrEvent();
 }
 
 void InitAccess()
@@ -187,7 +188,8 @@ bool SetTopDir(pstring& p, pstring& n)
 	if (TopDataDir != "") TopDataDir = FExpand(TopDataDir);
 	ChDir(TopRdbDir);
 	if (IOResult != 0) { SetMsgPar(p); WrLLF10Msg(703); return result; }
-	CatFDName = n; NewExit(Ovr(), er); goto label1;
+	CatFDName = n; //NewExit(Ovr(), er);
+	goto label1;
 	CFile = CatFD; OpenF(Exclusive); result = true;
 	label1:
 	RestoreExit(er);
@@ -239,7 +241,7 @@ void RdColors(FILE* CfgHandle)
 {
 	WORD typ;
 	if (StartMode == 7) typ = 1;
-	else if (VideoCard >= viEga) typ = 3;
+	else if (VideoCard >= enVideoCard::viEga) typ = 3;
 	else typ = 2;
 	SeekH(CfgHandle, PosH(CfgHandle) + (sizeof(video) + sizeof(colors)) * (typ - 1));
 	ReadH(CfgHandle, sizeof(video), &video);
@@ -252,7 +254,7 @@ void RdPrinter(FILE* CfgHandle)
 	const BYTE NPrintStrg = 32;
 	BYTE l;
 	WORD i, j, n;
-	BYTE* p;
+	BYTE* p = nullptr;
 	WORD* off = (WORD*)p;
 	BYTE A[NPrintStrg * 256];
 	ReadH(CfgHandle, 1, &prMax);
@@ -298,10 +300,10 @@ void InitRunFand()
 	BYTE nb, sec = 0;
 	ExitRecord* er = new ExitRecord();
 	integer i, j, MsgNr;
-	TMenuBoxS* mb;
+	TMenuBoxS* mb = nullptr;
 	longint w = 0;
 	void* p = nullptr;
-	pstring* x;
+	pstring* x = nullptr;
 	WORD* xofs = (WORD*)x;
 	pstring txt(16);
 	double r;
@@ -313,7 +315,7 @@ void InitRunFand()
 	InitDML();
 #endif
 
-	NewExit(Ovr(), *er);
+	//NewExit(Ovr(), *er);
 	// StackLimit += 256;
 	OldPrTimeOut = PrTimeOut;
 	//CallOpenFandFiles = OpenFandFiles;  // TODO: CallOpenFandFiles: procedure(FromDML:boolean);

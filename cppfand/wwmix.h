@@ -4,16 +4,21 @@
 #include "pstring.h"
 
 
+class wwmix
+{
+	
+};
+
 struct SS
 {
-	pstring* Pointto; /*(nullptr)  at {ning point to this item*/
-	bool Abcd; /*(false) alphabetical order in window*/
-	bool AscDesc; /*(false) > ascending, < descending */
-	bool Subset; /*(false)*/
-	bool ImplAll; /*(false)  implic. the whole set */
-	bool Empty; /* returned, test before calling SelectStr*/
-	WORD Size; /* returned, subset size  after SelectStr */
-	char Tag;  /* returned for each GetSelect */
+	pstring* Pointto = nullptr; /*(nullptr)  at {ning point to this item*/
+	bool Abcd = false; /*(false) alphabetical order in window*/
+	bool AscDesc = false; /*(false) > ascending, < descending */
+	bool Subset = false; /*(false)*/
+	bool ImplAll = false; /*(false)  implic. the whole set */
+	bool Empty = false; /* returned, test before calling SelectStr*/
+	WORD Size = false; /* returned, subset size  after SelectStr */
+	char Tag = false;  /* returned for each GetSelect */
 } ss;
 
 const BYTE SelMark = 0xF0;

@@ -4,9 +4,7 @@
 #include "edevent.h"
 #include "pstring.h"
 #include "rdrun.h"
-#include "rdrun.h"
 #include "sort.h"
-#include "wwmenu.h"
 
 struct MsgStr
 {
@@ -48,16 +46,15 @@ pstring CtrlKey({ 19,23,17,4,2,5,1 });
 const bool ColBlock = true;
 const bool TextBlock = false;
 
-
-
+struct EdExitD;
 // {**********global param begin for SavePar}  // r85
 char Mode;
 char TypeT;
 pstring NameT;
-string ErrMsg;
+pstring ErrMsg;
 WORD MaxLenT, LenT, IndT, ScrT;
 pstring Breaks;
-EdExitD* ExitD;
+EdExitD* ExitD = nullptr;
 bool SrchT, UpdatT;
 WORD LastNr, CtrlLastNr;
 integer LeftMarg, RightMarg;
@@ -83,9 +80,9 @@ bool FirstEvent;
 WORD PHNum, PPageS; // {strankovani ve Scroll}
 struct PartDescr
 {
-	longint PosP; longint LineP;
-	WORD LenP, MovI, MovL;
-	bool UpdP;
+	longint PosP = 0; longint LineP = 0;
+	WORD LenP = 0, MovI = 0, MovL = 0;
+	bool UpdP = false;
 	ColorOrd ColorP;
 } Part;
 FILE* TxtFH;
@@ -95,6 +92,8 @@ bool AllRd;
 longint AbsLenT;
 bool ChangePart, UpdPHead;
 CharArr* T;
+
+struct Instr;
 
 longint SavePar(); // r133
 void RestorePar(longint l);

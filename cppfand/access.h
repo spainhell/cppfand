@@ -206,7 +206,7 @@ public:
 	bool Reserved, CompileProc, CompileAll;
 	WORD IRec;
 	longint FreeRoot, MaxPage;
-	float TimeStmp;
+	double TimeStmp;
 	integer LicenseNr;
 	longint MLen;
 	PwCodeArr PwCode, Pw2Code;
@@ -329,12 +329,12 @@ struct LocVar // ø. 239
 
 struct RdbD // ø. 243
 {
-	RdbD* ChainBack;
-	FileDPtr FD, HelpFD; // { FD=FileDRoot and = Chpt for this RDB }
-	LinkDPtr OldLDRoot;
-	FuncDPtr OldFCRoot;
-	void* Mark2; // { markstore2 at beginning }
-	bool Encrypted;
+	RdbD* ChainBack = nullptr;
+	FileD* FD = nullptr; FileD* HelpFD = nullptr; // { FD=FileDRoot and = Chpt for this RDB }
+	LinkD* OldLDRoot = nullptr;
+	FuncD* OldFCRoot = nullptr;
+	void* Mark2 = nullptr; // { markstore2 at beginning }
+	bool Encrypted = false;
 	pstring RdbDir, DataDir;
 };
 typedef RdbD* RdbDPtr;
@@ -569,7 +569,7 @@ const BYTE _lneg = 0x61;
 const BYTE _inreal = 0x62; const BYTE _instr = 0x63;  // {precision,constlst}; {tilda,constlst};
 const BYTE _isdeleted = 0x64; const BYTE _setmybp = 0x65;  // {RecFD}
 const BYTE _modulo = 0x66;  // {length,modulo,weight1,...};                          // {B}
-const BYTE _getpath = 0x68; const BYTE _upswitch = 0x69; const BYTE _lowswitch = 0x6A;
+const BYTE _getpath = 0x68; const BYTE _upcase = 0x69; const BYTE _lowcase = 0x6A;
 const BYTE _leadchar = 0x6B; const BYTE _getenv = 0x6C;
 const BYTE _trailchar = 0x6D; const BYTE _strdate = 0x6E;  // {char}  // {maskstring};
 const BYTE _nodiakr = 0x6F;  // {S}
@@ -667,7 +667,7 @@ double Power10[21] = { 1E0, 1E1, 1E2, 1E3, 1E4, 1E5, 1E6, 1E7, 1E8, 1E9, 1E10,
 
 integer CompLongStr(LongStrPtr S1, LongStrPtr S2); // r529 ASM
 //integer CompStr(pstring S1, pstring S2);
-integer CompLongShortStr(LongStrPtr S1, LongStrPtr S2); // r551 ASM
+integer CompLongShortStr(LongStrPtr S1, pstring S2); // r551 ASM
 integer CompArea(void* A, void* B, integer L); // r575 ASM
 
 //void ResetCompilePars(); // r686

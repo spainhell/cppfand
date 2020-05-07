@@ -225,7 +225,7 @@ void RdPrefixes()
 {
 	if (RdPrefix() != 0xffff) CFileError(883);
 	/* !!! with CFile^ do!!! */ {
-		if ((CFile->XF != nullptr) && (CFile->XF->Handle != nullptr)) CFile->XF->RdPrefix;
+		if ((CFile->XF != nullptr) && (CFile->XF->Handle != nullptr)) CFile->XF->RdPrefix();
 		if ((CFile->TF != nullptr)) CFile->TF->RdPrefix(false); }
 }
 

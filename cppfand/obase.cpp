@@ -5,6 +5,7 @@
 #include "editor.h"
 #include "handle.h"
 #include "kbdww.h"
+#include "memory.h"
 
 void ResetCtrlFlags()
 {
@@ -154,9 +155,9 @@ void TranslateCodePage(WORD& c)
 	if (c >= 0x80)
 		switch (printer[prCurr].Kod) {
 		case 'K': ConvKamenLatin(&c, 1, true);
-		case 'k': ConvToNoDiakr(&c, 1, foKamen);
+		case 'k': ConvToNoDiakr(&c, 1, TVideoFont::foKamen);
 		case 'L': ConvKamenLatin(&c, 1, false);
-		case 'l': ConvToNoDiakr(&c, 1, foLatin2);
+		case 'l': ConvToNoDiakr(&c, 1, TVideoFont::foLatin2);
 		}
 }
 

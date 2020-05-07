@@ -3,7 +3,6 @@
 #include "drivers.h"
 #include "constants.h"
 #include "rdrun.h"
-#include "rdrun.h"
 
 const WORD sfCursorVis = 0x0002;
 const WORD sfCursorBig = 0x0004;
@@ -74,6 +73,7 @@ public:
 class TMenuBox : public TMenu
 {
 public:
+	TMenuBox();
 	TMenuBox(WORD C1, WORD R1);
 	WORD Exec(WORD IStart);
 	void GetItemRect(WORD I, TRect* R) override;
@@ -85,6 +85,7 @@ public:
 class TMenuBoxS : public TMenuBox
 {
 public:
+	TMenuBoxS();
 	TMenuBoxS(WORD C1, WORD R1, pstring* Msg);
 	pstring* MsgTxt;
 	bool Enabled(WORD I) override;
@@ -96,6 +97,7 @@ public:
 class TMenuBoxP : public TMenuBox
 {
 public:
+	TMenuBoxP();
 	TMenuBoxP(WORD C1, WORD R1, TMenu* aParent, Instr* aPD);
 	Instr* PD;
 	ChoiceD* CRoot;
@@ -109,6 +111,7 @@ public:
 class TMenuBar : public TMenu
 {
 public:
+	TMenuBar();
 	TMenuBar(WORD C1, WORD R1, WORD Cols);
 	WORD nBlks;
 	BYTE DownI[30];
@@ -120,6 +123,7 @@ public:
 class TMenuBarS : public TMenuBar
 {
 public:
+	TMenuBarS();
 	TMenuBarS(WORD MsgNr);
 	pstring* MsgTxt;
 	bool GetDownMenu(TMenuBox* W) override;
@@ -130,6 +134,7 @@ public:
 class TMenuBarP : public TMenuBar
 {
 public:
+	TMenuBarP();
 	TMenuBarP(Instr* aPD);
 	Instr* PD;
 	ChoiceD* CRoot;

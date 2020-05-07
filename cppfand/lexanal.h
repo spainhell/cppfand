@@ -28,6 +28,7 @@ integer RdInteger(); // r245
 double RdRealConst(); // r250
 double ValofS(pstring& S); // r251
 bool EquUpcase(pstring& S); // r274 ASM
+bool EquUpcase(const char* S);
 
 bool TestKeyWord(pstring S); // r282
 bool IsKeyWord(pstring S); // r284 ASM

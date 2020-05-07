@@ -1,6 +1,7 @@
+#pragma once
+
 #include "common.h"
 #include <cmath>
-
 #include "base.h"
 #include "legacy.h"
 
@@ -31,7 +32,7 @@ void StrLPCopy(char* Dest, pstring s, WORD MaxL)
 {
 	auto sLen = s.length();
 	int len = (sLen < MaxL) ? sLen : MaxL;
-	memcpy(Dest, s.c_str(), len);
+	Move((void*)s.c_str(), Dest, len);
 }
 
 integer MinI(integer X, integer Y)

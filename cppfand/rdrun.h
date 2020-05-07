@@ -151,13 +151,13 @@ struct EdExKeyD
 
 struct EdExitD
 {
-	EdExitD* Chain;
-	EdExKeyD* Keys;
-	bool AtWrRec, AtNewRec, NegFlds;
-	FieldList Flds;   /*in edittxt !used*/
-	char Typ;
-	void* RO;
-	Instr* Proc;                     /*in edittxt only "P","Q"*/
+	EdExitD* Chain = nullptr;
+	EdExKeyD* Keys = nullptr;;
+	bool AtWrRec = false, AtNewRec = false, NegFlds = false;
+	FieldList Flds = nullptr;;   /*in edittxt !used*/
+	char Typ = 0;
+	void* RO = nullptr;;
+	Instr* Proc = nullptr;;                     /*in edittxt only "P","Q"*/
 	/*"Q" quit   #0 dummy*/
 };
 
@@ -171,10 +171,16 @@ struct EditOpt
 	FrmlPtr StartRecNoZ, StartRecKeyZ, StartIRecZ, StartFieldZ;
 	FrmlPtr SaveAfterZ, WatchDelayZ, RefreshDelayZ;
 	WRectFrml W;
-	FrmlPtr ZAttr, ZdNorm, ZdHiLi, ZdSubset, ZdDel, ZdTab, ZdSelect;
-	FrmlPtr Top;
-	BYTE WFlags;
-	EdExitD* ExD;
+	FrmlPtr ZAttr = nullptr;
+	FrmlElem* ZdNorm = nullptr;
+	FrmlElem* ZdHiLi = nullptr;
+	FrmlElem* ZdSubset = nullptr;
+	FrmlElem* ZdDel = nullptr;
+	FrmlElem* ZdTab = nullptr;
+	FrmlElem* ZdSelect = nullptr;
+	FrmlPtr Top = nullptr;
+	BYTE WFlags = 0;
+	EdExitD* ExD = nullptr;
 	FileDPtr Journal;
 	pstring* ViewName;
 	char OwnerTyp;
@@ -219,27 +225,27 @@ struct EditD
 	BYTE FrstCol, FrstRow, LastCol, LastRow, Rows;
 	WRect V; BYTE ShdwX, ShdwY;
 	BYTE Attr, dNorm, dHiLi, dSubSet, dDel, dTab, dSelect;
-	pstring* Top;
+	pstring* Top = nullptr;
 	BYTE WFlags;                                 /* copied from EO */
-	EdExitD* ExD;                              /*      "         */
-	FileD* Journal;                            /*      "         */
+	EdExitD* ExD = nullptr;                              /*      "         */
+	FileD* Journal = nullptr;                            /*      "         */
 	pstring* ViewName;                          /*      "         */
 	char OwnerTyp; /* #0=CtrlF7 */                 /*      "         */
-	LinkDPtr DownLD;                             /*      "         */
-	LocVar* DownLV;                            /*      "         */
+	LinkD* DownLD = nullptr;                             /*      "         */
+	LocVar* DownLV = nullptr;                            /*      "         */
 	void* DownRecPtr; void* LVRecPtr;                 /*      "         */
-	KeyInD* KIRoot;                            /*      "         */
+	KeyInD* KIRoot = nullptr;                            /*      "         */
 	bool SQLFilter;                           /*      "         */
-	WKeyDPtr SelKey;                             /*      "         */
+	XWKey* SelKey = nullptr;                             /*      "         */
 	StringList HdTxt; BYTE NHdTxt;
 	WORD SaveAfter, WatchDelay, RefreshDelay;
 	BYTE RecNrPos, RecNrLen;
 	BYTE NPages;
-	ERecTxtD* RecTxt;
+	ERecTxtD* RecTxt = nullptr;
 	BYTE NRecs;     /*display*/
 	EFldD* FirstFld, LastFld, StartFld;
 	EFldD* CFld, FirstEmptyFld;                         /*copied*/
-	KeyDPtr VK; WKeyDPtr WK;                             /*  "   */
+	KeyDPtr VK = nullptr; WKeyDPtr WK = nullptr;                             /*  "   */
 	longint BaseRec; BYTE IRec;                          /*  "   */
 	bool IsNewRec, Append, Select, WasUpdated, EdRecVar,          /*  "   */
 		AddSwitch, ChkSwitch, WarnSwitch, SubSet;               /*  "   */
@@ -312,13 +318,13 @@ struct CopyD
 
 struct ChoiceD
 {
-	ChoiceD* Chain;
-	pstring* HelpName;
-	bool Displ, DisplEver, Enabled, TxtConst;
-	FrmlPtr Bool;
-	Instr* Instr;
-	FrmlPtr TxtFrml;
-	pstring* Txt;
+	ChoiceD* Chain = nullptr;
+	pstring* HelpName = nullptr;
+	bool Displ = false, DisplEver = false, Enabled = false, TxtConst = false;
+	FrmlPtr Bool = nullptr;
+	Instr* Instr = nullptr;
+	FrmlPtr TxtFrml = nullptr;
+	pstring* Txt = nullptr;
 };
 
 struct WrLnD
@@ -398,55 +404,55 @@ struct TypAndFrml
 
 struct Instr // POZOR konflikt názvù viz níže
 {
-	Instr* Chain;
+	Instr* Chain = nullptr;
 	PInstrCode Kind;
 	FrmlPtr HdLine;
 	RdbDPtr HelpRdb;
 	bool WasESCBranch;
-	Instr* ESCInstr;
-	ChoiceD* Choices;
+	Instr* ESCInstr = nullptr;
+	ChoiceD* Choices = nullptr;
 	bool Loop, PullDown, Shdw;
 	FrmlPtr X, Y, XSz;
 	FrmlPtr mAttr[4];
 	FrmlPtr Bool;
-	Instr* Instr1;
-	Instr* ElseInstr1;  // pùvodnì Instr a ElseInstr -> konflikt názvù
+	Instr* Instr1 = nullptr;
+	Instr* ElseInstr1 = nullptr;  // pùvodnì Instr a ElseInstr -> konflikt názvù
 	RdbPos Pos;
 	RdbPos PPos;
 	BYTE N;
 	bool ExPar;
 	TypAndFrml TArg[2];
 	RdbPos lpPos;
-	pstring* lpName;
-	pstring* RdbNm;
-	pstring* ProcNm;
-	Instr* ProcCall;
-	pstring* ProgPath;
+	pstring* lpName = nullptr;
+	pstring* RdbNm = nullptr;
+	pstring* ProcNm = nullptr;
+	Instr* ProcCall = nullptr;
+	pstring* ProgPath = nullptr;
 	WORD ProgCatIRec;
 	bool NoCancel, FreeMm, LdFont, TextMd;
 	FrmlPtr Param;
-	CopyD* CD;
+	CopyD* CD = nullptr;
 	BYTE LF /*0-write,1-writeln,2-message,3-message+help*/;
 	WrLnD WD;
-	RdbDPtr mHlpRdb;
-	FrmlPtr mHlpFrml;
+	RdbDPtr mHlpRdb = nullptr;
+	FrmlPtr mHlpFrml = nullptr;
 	FrmlPtr GoX, GoY;
-	FrmlPtr Frml;
+	FrmlPtr Frml = nullptr;
 	bool Add;
 	LocVar* AssLV;
-	FrmlPtr Frml0;
-	RdbDPtr HelpRdb0;
-	FrmlPtr Frml1;
+	FrmlPtr Frml0 = nullptr;
+	RdbDPtr HelpRdb0 = nullptr;
+	FrmlPtr Frml1 = nullptr;
 	bool Add1;
-	FileDPtr FD;
-	FieldDPtr FldD;
-	FrmlPtr RecFrml;
+	FileDPtr FD = nullptr;
+	FieldDPtr FldD = nullptr;
+	FrmlPtr RecFrml = nullptr;
 	bool Indexarg;
-	FrmlPtr Frml2; bool Add2; LocVar* AssLV2; FieldDPtr RecFldD;
-	FrmlPtr Frml3; FileDPtr FD3; WORD CatIRec; FieldDPtr CatFld;
-	LocVar* RecLV1, RecLV2;
+	FrmlPtr Frml2 = nullptr; bool Add2; LocVar* AssLV2 = nullptr; FieldDPtr RecFldD = nullptr;
+	FrmlPtr Frml3 = nullptr; FileDPtr FD3 = nullptr; WORD CatIRec; FieldDPtr CatFld = nullptr;
+	LocVar* RecLV1 = nullptr; LocVar* RecLV2 = nullptr;
 	AssignD* Ass;
-	LinkDPtr LinkLD;
+	LinkDPtr LinkLD = nullptr;
 	WKeyDPtr xnrIdx;
 	FrmlPtr RecNr; bool AdUpd;
 	LocVar* LV; bool ByKey; KeyDPtr Key;
@@ -454,15 +460,16 @@ struct Instr // POZOR konflikt názvù viz níže
 	FileDPtr RecFD;
 	FileDPtr NextGenFD;
 	WORD FrstCatIRec, NCatIRecs; FrmlPtr TCFrml;
-	FileDPtr SortFD; KeyFldDPtr SK;
-	FileDPtr EditFD; EditOpt* EO;
-	RprtOpt* RO;
-	pstring* TxtPath; WORD TxtCatIRec; LocVar* TxtLV;
-	char EdTxtMode; EdExitD* ExD;
+	FileDPtr SortFD = nullptr; KeyFldDPtr SK = nullptr;
+	FileDPtr EditFD = nullptr; EditOpt* EO = nullptr;
+	RprtOpt* RO = nullptr;
+	pstring* TxtPath = nullptr; WORD TxtCatIRec; LocVar* TxtLV = nullptr;
+	char EdTxtMode;
+	EdExitD* ExD = nullptr;
 	BYTE WFlags; FrmlPtr TxtPos, TxtXY, ErrMsg;
 	WRectFrml Ww; FrmlPtr Atr; FrmlPtr Hd;
 	FrmlPtr Head, Last, CtrlLast, AltLast, ShiftLast;
-	pstring* TxtPath1; WORD TxtCatIRec1;
+	pstring* TxtPath1 = nullptr; WORD TxtCatIRec1;
 	FrmlPtr Txt; bool App;
 	FrmlPtr Drive;
 	WORD MountCatIRec; bool MountNoCancel;

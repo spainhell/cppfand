@@ -8,6 +8,7 @@
 #include "memory.h"
 #include "oaccess.h"
 #include "recacc.h"
+#include "runfrml.h"
 
 bool EFldD::Ed(bool IsNewRec)
 {
@@ -63,7 +64,8 @@ bool RunAddUpdte1(char Kind, void* CRold, bool Back, AddDPtr StopAD, LinkDPtr no
 	AddD* AD; AddD* ADback;
 	longint N2, N2old;
 	char Kind2, Kind2old;
-	void* CF; void* CF2; void* CR; void* CR2; void* CR2old; void* p;
+	void* CF; void* CF2; void* CR; void* CR2 = nullptr;
+	void* CR2old = nullptr; void* p = nullptr;
 	double R, Rold;
 	bool b;
 
@@ -191,7 +193,7 @@ bool TransAdd(AddD* AD, FileD* FD, void* RP, void* CRnew, longint N, char Kind2,
 	return result;
 }
 
-bool Add(AddD* AD, void* RP, double R)
+bool Add(AddD* AD, void* RP, double R, bool Back)
 {
 	auto result = true;
 	CRecPtr = RP;
@@ -224,7 +226,7 @@ void WrUpdRec(AddD* AD, FileD* FD, void* RP, void* CRnew, longint N)
 
 bool Assign(AddDPtr AD)
 {
-	double R; LongStr* S; pstring ss; bool B;
+	double R; LongStr* S = nullptr; pstring ss; bool B;
 	longint Pos, N2; char Kind2;
 	if (!RunBool(AD->Bool)) return true;
 	FieldDPtr F = AD->Field; FrmlPtr Z = AD->Frml;
@@ -236,9 +238,9 @@ bool Assign(AddDPtr AD)
 	}
 	if (!Link(AD, N2, Kind2)) { return false; }
 	switch (F->FrmlTyp) {
-	case 'R': { r_(F, R); break; }
-	case 'S': { if (F->Typ == 'T') longs_(F, S); else s_(F, ss); break; }
-	default: { b_(F, B); break; }
+	case 'R': { R_(F, R); break; }
+	case 'S': { if (F->Typ == 'T') LongS_(F, S); else S_(F, ss); break; }
+	default: { B_(F, B); break; }
 	}
 	WriteRec(N2);
 	return true;

@@ -212,7 +212,7 @@ bool OpenF2()
 	}
 label3:
 	if (CFile->TF != nullptr) {
-		if (FS < CFile->FrstDispl) { CFile->TF->SetEmpty; }
+		if (FS < CFile->FrstDispl) { CFile->TF->SetEmpty(); }
 		else {
 			CFile->TF->RdPrefix(true);
 			if ((CFile->Typ == '0') && !IsActiveRdb(CFile)
@@ -233,7 +233,7 @@ label3:
 				|| (CFile->XF->NrKeys != 0) && (CFile->XF->NrKeys != CFile->GetNrKeys()))
 			{
 				if (!SEquUpcase(GetEnv("FANDMSG830"), "NO")) CFileMsg(830, 'X');
-				if (CFile->IsShared && (CFile->LMode < ExclMode)) ChangeLMode(ExclMode, 0, false);
+				if (CFile->IsShared() && (CFile->LMode < ExclMode)) ChangeLMode(ExclMode, 0, false);
 				CFile->LMode = ExclMode;
 				CFile->XF->SetNotValid();
 			}
@@ -292,6 +292,7 @@ bool OpenCreateF(FileUseMode UM)
 			OpenF(UM);
 		}
 	}
+	return true;
 }
 
 LockMode RewriteF(bool Append)
@@ -310,7 +311,7 @@ LockMode RewriteF(bool Append)
 	SetUpdHandle(CFile->Handle);
 	XFNotValid();
 	if (CFile->Typ == 'X') CFile->XF->NoCreate = true;
-	if (CFile->TF != nullptr) CFile->TF->SetEmpty;
+	if (CFile->TF != nullptr) CFile->TF->SetEmpty();
 	return result;
 }
 
@@ -423,43 +424,45 @@ void CloseFilesOnDrive(WORD D)
 
 WORD TestMountVol(char DriveC)
 {
-	SearchRec S; WORD D, i; pstring Vol;
-	pstring Drive(1); Drive = "A";
-
-	WORD result = 0; if (IsNetCVol()) return result;
-	D = toupper(DriveC) - '@';
-	if (D >= FloppyDrives)
-		if (toupper(CDir[1]) == spec.CPMDrive) D = FloppyDrives;
-		else return result;
-	if ((CVol == "") || SEquUpcase(MountedVol[D], CVol)) goto label3;
-	Drive[1] = DriveC;
-	if (ActiveRdbOnDrive(D))
-	{
-		Set3MsgPar(Drive, CVol, MountedVol[D]); RunError(812);
-	}
-	Vol = CVol; CloseFilesOnDrive(D); CVol = Vol;
-label1:
-	F10SpecKey = _ESC_; Set2MsgPar(Drive, CVol); WrLLF10Msg(808);
-	if (KbdChar == _ESC_) if (PromptYN(21)) GoExit(); else goto label1;
-	if (D == FloppyDrives) FindFirst(Drive + ":\\*.VOL", 0, S);
-	else FindFirst(Drive + ":\\*.*", VolumeID, S);
-	switch (DosError) {
-	case 18/*label missing*/: { WrLLF10Msg(809); goto label1; break; }
-	case 0: break;
-	default: WrLLF10Msg(810); goto label1; break;
-	}
-	i = S.Name.First('.');
-	if (D = FloppyDrives) delete(S.Name, i, 255);
-	else if (i != 0) delete(S.Name, i, 1);
-	if (!SEquUpcase(S.Name, CVol))
-	{
-		SetMsgPar(S.Name); WrLLF10Msg(817); goto label1;
-	}
-label2:
-	MountedVol[D] = CVol;
-label3:
-	result = D;
-	return result;
+	// TODO:
+//	SearchRec S; WORD D, i; pstring Vol;
+//	pstring Drive(1); Drive = "A";
+//
+//	WORD result = 0; if (IsNetCVol()) return result;
+//	D = toupper(DriveC) - '@';
+//	if (D >= FloppyDrives)
+//		if (toupper(CDir[1]) == spec.CPMdrive) D = FloppyDrives;
+//		else return result;
+//	if ((CVol == "") || SEquUpcase(MountedVol[D], CVol)) goto label3;
+//	Drive[1] = DriveC;
+//	if (ActiveRdbOnDrive(D))
+//	{
+//		Set3MsgPar(Drive, CVol, MountedVol[D]); RunError(812);
+//	}
+//	Vol = CVol; CloseFilesOnDrive(D); CVol = Vol;
+//label1:
+//	F10SpecKey = _ESC_; Set2MsgPar(Drive, CVol); WrLLF10Msg(808);
+//	if (KbdChar == _ESC_) if (PromptYN(21)) GoExit(); else goto label1;
+//	if (D == FloppyDrives) FindFirst(Drive + ":\\*.VOL", 0, S);
+//	else FindFirst(Drive + ":\\*.*", VolumeID, S);
+//	switch (DosError()) {
+//	case 18/*label missing*/: { WrLLF10Msg(809); goto label1; break; }
+//	case 0: break;
+//	default: WrLLF10Msg(810); goto label1; break;
+//	}
+//	i = S.Name.First('.');
+//	if (D == FloppyDrives) S.Name.Delete(i, 255);
+//	else if (i != 0) S.Name.Delete(i, 1);
+//	if (!SEquUpcase(S.Name, CVol))
+//	{
+//		SetMsgPar(S.Name); WrLLF10Msg(817); goto label1;
+//	}
+//label2:
+//	MountedVol[D] = CVol;
+//label3:
+//	result = D;
+//	return result;
+	return 0;
 }
 
 void ReleaseDrive(WORD D)

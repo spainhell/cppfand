@@ -82,6 +82,13 @@ void str(double input, int total, int right, pstring& output)
 	output = buffer;
 }
 
+void str(double input, int right, pstring& output)
+{
+	char buffer[255];
+	snprintf(buffer, sizeof(buffer), "%.*f", right, input);
+	output = buffer;
+}
+
 WORD pred(WORD input)
 {
 	if (input <= 0) return 0;
@@ -276,6 +283,11 @@ pstring GetEnv(const char* name)
 	char buffer[256];
 	getenv_s(&value, buffer, 256, name);
 	return pstring(buffer);
+}
+
+WORD IOResult()
+{
+	return 0;
 }
 
 

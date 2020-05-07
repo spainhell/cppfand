@@ -6,6 +6,7 @@
 #include "kbdww.h"
 #include "legacy.h"
 #include "memory.h"
+#include "olongstr.h"
 #include "runfrml.h"
 #include "type.h"
 
@@ -209,10 +210,10 @@ void AssignNRecs(bool Add, longint N)
 	md = NewLMode(DelMode); OldNRecs = CFile->NRecs;
 	if (Add) N = N + OldNRecs;
 	if ((N < 0) || (N == OldNRecs)) goto label1;
-	if ((N == 0) && (CFile->TF != nullptr)) CFile->TF->SetEmpty;
+	if ((N == 0) && (CFile->TF != nullptr)) CFile->TF->SetEmpty();
 	if (CFile->Typ == 'X')
 		if (N == 0) {
-			CFile->NRecs = 0; SetUpdHandle(CFile->Handle); XFNotValid; goto label1;
+			CFile->NRecs = 0; SetUpdHandle(CFile->Handle); XFNotValid(); goto label1;
 		}
 		else { SetMsgPar(CFile->Name); RunErrorM(md, 821); }
 	if (N < OldNRecs) { DecNRecs(OldNRecs - N); goto label1; }
@@ -336,7 +337,7 @@ double _RforD(FieldDPtr F, void* P)
 double _R(FieldDPtr F)
 {
 	double result = 0.0;
-	void* p; double r;
+	void* p = nullptr; double r;
 	WORD* O = (WORD*)p;
 	integer* IP = (integer*)p;
 
@@ -369,7 +370,7 @@ double _R(FieldDPtr F)
 bool _B(FieldDPtr F)
 {
 	bool result;
-	void* p;
+	void* p = nullptr;
 	WORD* O = (WORD*)p;
 	unsigned char* CP = (unsigned char*)p;
 
@@ -409,7 +410,7 @@ longint _T(FieldDescr* F)
 
 void S_(FieldDPtr F, pstring S)
 {
-	void* p;
+	void* p = nullptr;
 	WORD* O = (WORD*)p; double* RP = (double*)p;
 	integer i, L, M; longint Pos; LongStrPtr ss;
 	const BYTE LeftJust = 1;
@@ -482,7 +483,7 @@ void LongS_(FieldDPtr F, LongStr* S)
 
 void R_(FieldDPtr F, double R)
 {
-	void* p; pstring s; WORD m; longint l;
+	void* p = nullptr; pstring s; WORD m; longint l;
 	WORD* O = (WORD*)p;
 	integer* IP = (integer*)p;
 
@@ -514,7 +515,7 @@ void R_(FieldDPtr F, double R)
 
 void B_(FieldDPtr F, bool B)
 {
-	void* p;
+	void* p = nullptr;
 	WORD* O = (WORD*)p; bool* BP = (bool*)p; char* CP = (char*)p;
 	if ((F->Typ == 'B') && (F->Flg && f_Stored != 0)) {
 		p = CRecPtr; *O += F->Displ;
@@ -528,7 +529,7 @@ void B_(FieldDPtr F, bool B)
 
 void T_(FieldDPtr F, longint Pos)
 {
-	void* p; pstring s;
+	void* p = nullptr; pstring s;
 	WORD* O = (WORD*)p; longint* LP = (longint*)p;
 	if ((F->Typ == 'T') && (F->Flg && f_Stored != 0)) {
 		p = CRecPtr; *O += F->Displ;

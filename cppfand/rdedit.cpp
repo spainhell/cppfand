@@ -200,8 +200,9 @@ void RdFormOrDesign(FileD* F, FieldList FL, RdbPos FormPos)
 
 void NewEditD(FileD* ParFD, EditOpt* EO)
 {
-	EFldD* D; FieldList FL; void* p;
-	WORD i; pstring s; FieldDescr* F; bool b, b2, F2NoUpd;
+	EFldD* D = nullptr; FieldList FL = nullptr; void* p = nullptr;
+	WORD i = 0; pstring s; FieldDescr* F = nullptr;
+	bool b = false, b2 = false, F2NoUpd = false;
 	PushEdit(); MarkStore2(p);
 	/* !!! with E^ do!!! */
 	Move(&EO->WFlags, &E->WFlags, (uintptr_t)(E->SelKey) - (uintptr_t)(E->WFlags) + 4);
@@ -344,9 +345,9 @@ void RdDepChkImpl()
 	case '0': { RdMsg(53); s = MsgLine; goto label1; break; }
 	case 'C': {
 		RdMsg(54); s = MsgLine;
-		if (spec.CPMDrive != " ") s = s + ',' + spec.CPMDrive + ':';
+		if (spec.CPMdrive != ' ') s = s + ',' + spec.CPMdrive + ':';
 		RdMsg(55); s = s + MsgLine;
-		if (spec.CPMDrive != ' ') s = s + ',' + spec.CPMDrive + ':';
+		if (spec.CPMdrive != ' ') s = s + ',' + spec.CPMdrive + ':';
 		s = s + "''";
 	label1:
 		ResetCompilePars();
@@ -428,7 +429,7 @@ label2:
 	}
 	if (Lexem == ';')
 	{
-		RdLex(); if (!(Lexem == '#' || Lexem == 0x1A]))
+		RdLex(); if (!(Lexem == '#' || Lexem == 0x1A))
 		{
 			if (Lexem == '(') goto label1; else goto label2;
 		}
@@ -447,7 +448,7 @@ label1:
 	if (Lexem == ';')
 	{
 		SkipBlank(false); Low = CurrPos; RdLex();
-		if (!(Lexem == '#' || Lexem == 0x1A])) goto label1;
+		if (!(Lexem == '#' || Lexem == 0x1A)) goto label1;
 	}
 }
 

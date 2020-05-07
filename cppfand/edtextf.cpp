@@ -1,3 +1,5 @@
+#pragma once
+
 #include "edtextf.h"
 #include "edglobal.h"
 #include "common.h"
@@ -68,7 +70,7 @@ bool RdNextPart()
 
 void LastLine(WORD from, WORD num, WORD& Ind, WORD& Count)
 {
-	char* C;
+	char* C = nullptr;
 	WORD* COfs = (WORD*)C;
 	WORD i;
 	Count = 0; Ind = from; C = &(*T[from]);
@@ -135,7 +137,7 @@ label1:
 
 void FirstLine(WORD from, WORD num, WORD& Ind, WORD& Count)
 {
-	char* C;
+	char* C = nullptr;
 	WORD* COfs = (WORD*)C;
 	WORD i;
 	Count = 0; Ind = from - 1; C = &*T[from];

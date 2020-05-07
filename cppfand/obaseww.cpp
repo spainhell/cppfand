@@ -8,14 +8,14 @@
 #include "memory.h"
 #include "oaccess.h"
 
-void WrHd(pstring s, string Hd, WORD Row, WORD MaxCols)
-{
-	if (Hd == "") exit(0);
-	s = " " + Hd + " ";
-	if (s.length() > MaxCols) { s = s.substr(0, MaxCols); }
-	GotoXY((MaxCols - s.length()) / 2 + 2, Row);
-	printf(s.c_str());
-}
+//void WrHd(pstring s, pstring Hd, WORD Row, WORD MaxCols)
+//{
+//	if (Hd == "") exit(0);
+//	s = " " + Hd + " ";
+//	if (s.length() > MaxCols) { s = s.substr(0, MaxCols); }
+//	GotoXY((MaxCols - s.length()) / 2 + 2, Row);
+//	printf(s.c_str());
+//}
 
 void* PushWParam(WORD C1, WORD R1, WORD C2, WORD R2, bool WW)
 {
@@ -52,7 +52,7 @@ void* PushScr(WORD C1, WORD R1, WORD C2, WORD R2)
 longint PushW1(WORD C1, WORD R1, WORD C2, WORD R2, bool PushPixel, bool WW)
 {
 	LongStr* s; WParam* w;
-	WORD x1, y1, x2, y2, i, n, sz; longint pos; WGrBuf* buf; ViewPortType vp;
+	WORD x1, y1, x2, y2, i, n, sz; longint pos; WGrBuf* buf; //ViewPortType vp;
 	pos = 0;
 #ifdef FandGraph
 	if (IsGraphMode && PushPixel) {
@@ -98,9 +98,9 @@ void PopScr(void* p)
 
 void PopW2(longint pos, bool draw)
 {
-	LongStrPtr s; WParam* w;
+	LongStrPtr s; WParam* w = nullptr;
 	WORD* wofs = (WORD*)w;
-	WGrBuf* buf; bool b; ViewPortType vp;
+	WGrBuf* buf; bool b; //ViewPortType vp;
 	s = ReadDelInTWork(pos);
 	w = (WParam*)(&s->A); PopWParam(w); pos = w->GrRoot;
 	if (draw) {

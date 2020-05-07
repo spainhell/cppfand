@@ -9,6 +9,7 @@
 #include "obase.h"
 #include "obaseww.h"
 #include "rdfrml.h"
+#include "wwmenu.h"
 
 pstring replaceNo(pstring s, pstring sNew)
 {
@@ -23,7 +24,7 @@ pstring replaceNo(pstring s, pstring sNew)
 
 void ExecMgrPgm()
 {
-	BYTE x, y;
+	BYTE x = 0, y = 0;
 	pstring pgmNm = PrTab(prMgrProg);
 	if (pgmNm == "") return;
 	pstring param = replaceNo(PrTab(prMgrParam), CPath);
@@ -86,7 +87,8 @@ void PrintTxtFBlk(longint BegPos, bool CtrlL)
 	WORD Ti = 0, Times = 0, Cp = 0, Pl = 0, MaxLine = 0;
 	bool FrstRun, AutoFF, FFOpt, NMOpt, He, Fo, adj;
 	pstring FoTxt, HeTxt; pstring s(3); ExitRecord er;
-	NewExit(Ovr(), er); // goto label3;
+	//NewExit(Ovr(), er);
+	goto label3;
 	RunMsgOn('P', 0);
 	FrstRun = true; outpsw = false; charrd = 0;
 	do {
@@ -237,7 +239,7 @@ void GetNum(WORD& NN)
 bool EofInp()
 {
 	if (printBlk) return iBlk > nBlk;
-	else return eof(Rprt);
+	else return Rprt.eof;
 }
 
 void RdLnInp()
@@ -258,12 +260,12 @@ void RdLnInp()
 		}
 	label1:
 		charrd += Ln.length();
-		if (charrd > BegPos) outpsw = true;
+		//if (charrd > BegPos) outpsw = true;
 	}
 	else {
-		readln(Rprt, Ln);
-		if (!outpsw) /* !!! with F do!!! */
-			if (PosH(F->Handle) - (F->BufEnd - F->BufPos) >= F->BegPos) outpsw = true;
+		//readln(Rprt, Ln);
+		//if (!outpsw) /* !!! with F do!!! */
+		//	if (PosH(F->Handle) - (F->BufEnd - F->BufPos) >= F->BegPos) outpsw = true;
 	}
 }
 

@@ -1,12 +1,11 @@
 #pragma once
-#include "fileacc.h"
 #include "rdrun.h"
 
 BlkD* CBlk;
 FloatPtrList CZeroLst;
 LvDescr* LvToRd;           /*all used while translating frml*/
-WORD Ii, Oi, SumIi;
-char WhatToRd; /*'i'=#XXi 'O'=#XX */
+//WORD Ii, Oi, SumIi;
+//char WhatToRd; /*'i'=#XXi 'O'=#XX */
 bool WasIiPrefix;
 BlkD* CBlkSave;
 
@@ -37,7 +36,7 @@ void EndString(integer LineLen, integer NBytesStored, BYTE* LnL, WORD* StrL);
 void TestSetRFTyp(char Typ, bool RepeatedGrp, RFldD* RF);
 void TestSetBlankOrWrap(bool RepeatedGrp, char UC, RFldD* RF);
 void RdBeginEnd(AssignD* ARoot);
-AssignD* RdAssign();
+AssignD* RdAssign2();
 void RdAssignBlk(AssignD* ARoot);
 void RdCond();
 LvDescr* RdKeyName();

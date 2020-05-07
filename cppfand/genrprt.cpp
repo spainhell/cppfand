@@ -7,6 +7,7 @@
 #include "rdmix.h"
 #include "rdrprt.h"
 #include "runrprt.h"
+#include "wwmenu.h"
 #include "wwmix.h"
 
 void SubstChar(pstring S, char C1, char C2)
@@ -21,7 +22,7 @@ void SubstChar(pstring S, char C1, char C2)
 void Design(RprtOpt* RO)
 {
 	integer L, L2, LTxt, LItem, Col;
-	PFldD* D; PFldD* D1;
+	PFldD* D = nullptr; PFldD* D1 = nullptr;
 	FieldDescr* F;
 	bool WasTT, LastTT, First, frstOnLine;
 	MaxCol = RO->Width; MaxColOld = MaxCol;

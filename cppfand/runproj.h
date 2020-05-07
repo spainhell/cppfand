@@ -5,7 +5,7 @@
 #include "pstring.h"
 #include "rdrun.h"
 
-EditD* E = (EditD*)&EditDRoot;
+//EditD* E = (EditD*)&EditDRoot;
 longint UserW = 0;
 
 // *** PROJMGR1.PAS ***

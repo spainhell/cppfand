@@ -8,13 +8,13 @@
 
 const int COL = 80;
 
-typedef char* ArrLine;
+typedef unsigned char* ArrLine;
 typedef ArrLine ArrPtr;
 typedef pstring ColorOrd;
 
 struct Character {
-	char ch;
-	BYTE color;
+	char ch = 0;
+	BYTE color = 0;
 };
 
 ArrLine Arr;

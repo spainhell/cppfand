@@ -8,8 +8,14 @@
 #include "rdrun.h"
 #include "recacc.h"
 #include <math.h>
+#include "kbdww.h"
+#include "keybd.h"
 #include "oaccess.h"
+#include "olongstr.h"
+#include "rdproc.h"
+#include "runedi.h"
 #include "runproc.h"
+#include "wwmix.h"
 
 
 double Owned(FrmlPtr Bool, FrmlPtr Sum, LinkDPtr LD)
@@ -24,16 +30,18 @@ double Owned(FrmlPtr Bool, FrmlPtr Sum, LinkDPtr LD)
 	}
 	else {
 		r = 0; CRecPtr = GetRecSpace();
-		New(Scan, Init(CFile, K, nullptr, true)); Scan->ResetOwner(&x, nullptr);
+		//New(Scan, Init(CFile, K, nullptr, true));
+		Scan = new XScan(CFile, K, nullptr, true);
+		Scan->ResetOwner(&x, nullptr);
 	label1:
-		Scan->GetRec; if (!Scan->eof) {
+		Scan->GetRec(); if (!Scan->eof) {
 			if (RunBool(Bool)) {
 				if (Sum == nullptr) r = r + 1;
 				else r = r + RunReal(Sum);
 			}
 			goto label1;
 		}
-		Scan->Close; ReleaseStore(CRecPtr);
+		Scan->Close(); ReleaseStore(CRecPtr);
 	}
 	OldLMode(md); CFile = cf; CRecPtr = cr;
 	return r;
@@ -95,7 +103,7 @@ double RunRealStr(FrmlPtr X)
 	WORD I, J, L, N; double R; LongStr* S; pstring Mask; BYTE b;
 	double result;
 	switch (X->Op) {
-	_RunRealStr: ValDate = ValDate(RunShortStr(X->P1), X->Mask);
+	case _valdate: result = ValDate(RunShortStr(X->P1), X->Mask); break;
 	case _val: {
 		val(LeadChar(' ', TrailChar(' ', RunShortStr(X->P1))), R, I);
 		result = R;
@@ -108,7 +116,7 @@ double RunRealStr(FrmlPtr X)
 	}
 	case _linecnt: {
 		S = RunLongStr(X->P1);
-		result = int(CountDLines(S->A, S->LL, m));
+		result = int(CountDLines(S->A, S->LL, 0x0D));
 		ReleaseStore(S);
 		break;
 	}
@@ -117,7 +125,7 @@ double RunRealStr(FrmlPtr X)
 		result = N; ReleaseStore(S);
 		break;
 	}
-			 _RunRealStr prompt = PromptR(RunShortStr(X->P1), X->P2, X->FldD);
+	case _prompt: result = PromptR(&RunShortStr(X->P1), X->P2, X->FldD); break;
 	case _pos: {
 		S = RunLongStr(X->P2); Mask = RunShortStr(X->P1);
 		N = 1;
@@ -161,9 +169,10 @@ double RMod(FrmlPtr X)
 
 double LastUpdate(FILE* Handle)
 {
-	DateTime dt;
-	UnpackTime(GetDateTimeH(Handle), dt);
-	return RDate(dt.year, dt.month, dt.day, dt.hour, dt.min, dt.sec, 0);
+	//DateTime dt;
+	//UnPackTime(GetDateTimeH(Handle), dt);
+	//return RDate(dt.year, dt.month, dt.day, dt.hour, dt.min, dt.sec, 0);
+	return 0.0;
 }
 
 WORD TypeDay(double R)
@@ -279,7 +288,7 @@ label1:
 
 double LinkProc(FrmlPtr X)
 {
-	void* p;
+	void* p = nullptr;
 	longint N;
 	FileDPtr cf = CFile; void* cr = CRecPtr; MarkStore(p);
 	LinkDPtr LD = X->LinkLD; CFile = LD->FromFD;
@@ -317,7 +326,7 @@ WORD IntTSR(FrmlPtr X)
 	@mov 2 @result, ax;*/
 
 	if (z->Op == _getlocvar) {
-		p = (void*)uintptr_t(MyBP) + z->BPOfs;
+		p = (void*)(MyBP + z->BPOfs);
 		switch (X->N31) {
 		case 'R': p = (void*)&r; break;
 		case 'S': {
@@ -346,7 +355,7 @@ LongStr* CopyLine(LongStr* S, WORD N, WORD M)
 {
 	WORD i, j, l;
 	i = 1; if (N > 1) { i = FindCtrlM(S, 1, N - 1); i = SkipCtrlMJ(S, i); }
-	j = FindCtrlM(S, i, M); l = j - i; if ((i > 1) && (l > 0)) move(S->A[i], S->A[1], l);
+	j = FindCtrlM(S, i, M); l = j - i; if ((i > 1) && (l > 0)) Move(&S->A[i], &S->A[1], l);
 	S->LL = l;
 	ReleaseAfterLongStr(S);
 	return S;
@@ -355,9 +364,9 @@ LongStr* CopyLine(LongStr* S, WORD N, WORD M)
 bool RunBool(FrmlPtr X)
 {
 	longint RecNo; WORD* res = (WORD*)&RecNo;
-	LongStr* S; LongStr* S2; bool* b = (bool*)S;
+	LongStr* S = nullptr; LongStr* S2 = nullptr; bool* b = (bool*)S;
 	WORD* w1 = (WORD*)&RecNo; WORD* w2 = (WORD*)S;
-	FileDPtr cf; void* cr; void* p = &RecNo;
+	FileDPtr cf = nullptr; void* cr = nullptr; void* p = &RecNo;
 
 	auto result = false;
 	if (X == nullptr) { return true; }
@@ -376,8 +385,8 @@ bool RunBool(FrmlPtr X)
 		ReleaseStore(S);
 		break;
 	}
-	case _infloat: { result = InReal(RunReal(X->P1), &X->N12, X->N11); break; }
-	case _compfloat: {
+	case _inreal: { result = InReal(RunReal(X->P1), &X->N12, X->N11); break; }
+	case _compreal: {
 		result = (CompReal(RunReal(X->P1), RunReal(X->P2), X->N22) && X->N21) != 0;
 		break;
 	}
@@ -407,7 +416,7 @@ bool RunBool(FrmlPtr X)
 		result = MouseInRectProc(*w1, *w2, RunInt(X->P3) - *w1 + 1, RunInt(X->P4) - *w2 + 1);
 		break;
 	}
-	case _getlocvar: result = BooleanPtr(Ptr(Seg(MyBP^), Ofs(MyBP^) + X->BPOfs))*; break;
+	case _getlocvar: result = (bool*)(&MyBP); break;
 	case _modulo: result = RunModulo(X); break;
 	case _field: result = _B(X->Field); break;
 	case _access: { cf = CFile; cr = CRecPtr;
@@ -436,19 +445,19 @@ bool RunBool(FrmlPtr X)
 		CFile = cf; CRecPtr = cr;
 		break;
 	}
-	case _prompt: result = PromptB(RunShortStr(X->P1), X->P2, X->FldD); break;
+	case _prompt: result = PromptB(&RunShortStr(X->P1), X->P2, X->FldD); break;
 	case _promptyn: { SetMsgPar(RunShortStr(X->P1)); result = PromptYN(110); break; }
 	case _accrecno: { cf = CFile; cr = CRecPtr; AccRecNoProc(X, 640);
-		result = _B(*X->RecFldD); ReleaseStore(CRecPtr);
+		result = _B(X->RecFldD); ReleaseStore(CRecPtr);
 		CFile = cf; CRecPtr = cr;
 		break;
 	}
 	case _edupdated: result = EdUpdated; break;
-	case _keypressed: result = keypressed; break;/*Kbdpressed?*/
+	case _keypressed: result = KeyPressed(); break;/*Kbdpressed?*/
 	case _escprompt: result = EscPrompt; break;
 	case _isdeleted: {
 		cr = CRecPtr; cf = CFile; AccRecNoProc(X, 642);
-		result = DeletedFlag; ReleaseStore(CRecPtr);
+		result = DeletedFlag(); ReleaseStore(CRecPtr);
 		CRecPtr = cr; CFile = cf;
 		break;
 	}
@@ -463,7 +472,7 @@ bool RunBool(FrmlPtr X)
 	case _equmask: result = RunEquMask(X); break;
 	case _userfunc: {
 		result = *(bool*)(RunUserFunc(X));
-		cr = MyBP; PopProcStk; ReleaseStore(cr);
+		cr = MyBP; PopProcStk(); ReleaseStore(cr);
 		break;
 	}
 	case _setmybp: {
@@ -568,14 +577,14 @@ bool RunModulo(FrmlPtr X)
 bool RunEquMask(FrmlPtr X)
 {
 	LongStr* s;
-	s = RunLongStr(X->P1); auto result = EqualsMask(*s->A, s->LL, RunShortStr(X->P2));
+	s = RunLongStr(X->P1); auto result = EqualsMask(s->A, s->LL, RunShortStr(X->P2));
 	ReleaseStore(s);
 	return result;
 }
 
 double RunReal(FrmlPtr X)
 {
-	double R; FileD* cf; LockMode md; bool b;
+	double R; FileD* cf = nullptr; LockMode md; bool b;
 	longint RecNo; void* p = &RecNo; void* cr;
 #ifdef FandGraph
 	ViewPortType vp/*9 BYTE*/ absolute R;
@@ -702,26 +711,26 @@ label1:
 	case _mousey: if (IsGraphMode) result = Event.WhereG.Y;
 				else result = Event.Where.Y + 1; break;
 	case _filesize: {
-		SetTxtPathVol(X->TxtPath, X->TxtCatIRec);
+		SetTxtPathVol(*X->TxtPath, X->TxtCatIRec);
 		result = GetFileSize();
 		break;
 	}
 	case _inttsr: result = IntTSR(X);
 	case _userfunc: {
 		result = *(double*)RunUserFunc(X);
-		cr = MyBP; PopProcStk; ReleaseStore(cr);
+		cr = MyBP; PopProcStk(); ReleaseStore(cr);
 		break;
 	}
 	case _indexnrecs: result = X->WKey->NRecs(); break;
 	case _owned: result = Owned(X->ownBool, X->ownSum, X->ownLD);
-	case _color: result = AColors[minw(WORD(RunInt(X->P1)), 53)]; break;
+	case _color: result = AColors[MinW(WORD(RunInt(X->P1)), 53)]; break;
 	case _portin: result = PortIn(RunBool(X->P1), WORD(RunInt(X->P2))); break;
 	case _setmybp: {
 		cr = MyBP; SetMyBP(ProcMyBP);
 		result = RunReal(X->P1); SetMyBP((ProcStkD*)cr);
 		break;
 	}
-	default: { result = resultStr(X); break; }
+	default: { result = RunRealStr(X); break; }
 	}
 	return result;
 }
@@ -733,7 +742,8 @@ longint RunInt(FrmlPtr X)
 
 void TestTFrml(FieldDPtr F, FrmlPtr Z)
 {
-	FileDPtr cf; void* p; longint n; LockMode md; FieldDPtr f1;
+	FileDPtr cf = nullptr; void* p = nullptr;
+	longint n; LockMode md; FieldDPtr f1 = nullptr;
 	switch (Z->Op) {
 	case _newfile: {
 		CFile = Z->NewFile; CRecPtr = Z->NewRP; TestTFrml(F, Z->Frml);
@@ -751,7 +761,7 @@ void TestTFrml(FieldDPtr F, FrmlPtr Z)
 	case _getlocvar: {
 		if ((F != nullptr) && (F->Flg && f_Encryp != 0)) return;
 		TFD02 = CFile; TF02 = &TWork;
-		TF02Pos = LongintPtr(Ptr(Seg(MyBP^), Ofs(MyBP^) + Z->BPOfs))^;
+		TF02Pos = *(longint*)(MyBP + Z->BPOfs);
 		break;
 	}
 	case _access: {
@@ -783,11 +793,12 @@ bool TryCopyT(FieldDPtr F, TFilePtr TF, longint& pos, FrmlPtr Z)
 {
 	LockMode md, md2;
 	bool result = false;
-	if (TF->Format == DbtFormat || TF->Format == FptFormat) return;
+	if (TF->Format == TFile::DbtFormat || TF->Format == TFile::FptFormat) return result;
 	if ((BYTE)Z->Op == _gettxt) { pos = CopyTFFromGetTxt(TF, Z); result = true; }
 	else if (CanCopyT(F, Z) && (TF02->Format == TF->Format)) {
 		result = true; pos = CopyTFString(TF, TFD02, TF02, TF02Pos);
 	}
+	return result;
 }
 
 void AssgnFrml(FieldDPtr F, FrmlPtr X, bool Delete, bool Add)
@@ -823,12 +834,12 @@ void LVAssignFrml(LocVar* LV, void* OldBP, bool Add, FrmlPtr X)
 		if (not TryCopyT(nullptr, &TWork, pos, X)) {
 			s = RunLongStr(X); pos = TWork.Store(s); ReleaseStore(s);
 		}
-		TWork.Delete(LongIntPtr(p)^); LongIntPtr(p) ^ = pos;
+		TWork.Delete(*(longint*)(p)); p = &pos;
 		break;
 	}
-	case 'R': if (Add) FloatPtr(p) ^ = FloatPtr(p) ^ +RunReal(X);
-			else FloatPtr(p) ^ = RunReal(X); break;
-	case 'B': BooleanPtr(p) ^ = RunBool(X); break;
+	case 'R': if (Add) *(double*)(p) = *(double*)(p) + RunReal(X);
+			else *(double*)(p) = RunReal(X); break;
+	case 'B': *(bool*)(p) = RunBool(X); break;
 	}
 	SetMyBP((ProcStkD*)bp);
 }
@@ -838,20 +849,20 @@ void DecodeFieldRSB(FieldDPtr F, WORD LWw, double R, pstring T, bool B, pstring&
 	WORD L, M; char C;
 	L = F->L; M = F->M;
 	switch (F->Typ) {
-	case 'D':T = StrDate(R, FieldDMask(F)^); break;
+	case 'D':T = StrDate(R, *FieldDMask(F)); break;
 	case 'N': { C = '0'; goto label1; break; }
 	case 'A': { C = ' ';
 	label1:
 		if (M == LeftJust)
 			while (T.length() < L) T = T + C;
-		else while (T.length() < L) T = C + T;
+		else while (T.length() < L) { pstring oldT = T; T = C; T += oldT; }
 		break;
 	}
 	case 'B': if (B) T = AbbrYes; else T = AbbrNo; break;
-	case 'R': str(L R, T); break;
+	case 'R': str(R, L, T); break;
 	default: /*"F"*/
 		if (F->Flg && f_Comma != 0) R = R / Power10[M];
-		str(RoundReal(R, M) :M L, T);
+		str(RoundReal(R, M),L, M, T);
 		break;
 	}
 	if (T.length() > L) { T[0] = char(L); T[L] = '>'; }
@@ -929,7 +940,7 @@ LongStr* RunLongStr(FrmlPtr X)
 	integer* J = (integer*)&I;
 	longint RecNo;
 	WORD* N = (WORD*)&RecNo; longint* L1 = (longint*)&RecNo;
-	FileDPtr cf; void* cr; longint* L2 = (longint*)cr;
+	FileDPtr cf = nullptr; void* cr = nullptr; longint* L2 = (longint*)cr;
 	void* p = &RecNo;
 
 	LongStr* result = nullptr;
@@ -938,7 +949,7 @@ LongStr* RunLongStr(FrmlPtr X)
 label1:
 	switch (X->Op) {
 	case _field: result = _LongS(X->Field); break;
-	case _getlocvar: result = TWork.Read(1, LongintPtr(Ptr(Seg(MyBP^), Ofs(MyBP^) + X->BPOfs))^);
+	case _getlocvar: result = TWork.Read(1, *(longint*)(MyBP + X->BPOfs));
 	case _access: {
 		cf = CFile; cr = CRecPtr;
 		CFile = X->File2; *md = NewLMode(RdMode);
@@ -1032,7 +1043,7 @@ label1:
 	}
 	case _gettxt: result = GetTxt(X); break;
 	case _nodiakr: {
-		S = RunLongStr(X->P1); ConvToNoDiakr(S->A, S->LL, Fonts.VFont);
+		S = RunLongStr(X->P1); ConvToNoDiakr((unsigned char*)S->A[0], S->LL, fonts.VFont);
 		result = S;
 		break;
 	}
@@ -1063,6 +1074,7 @@ pstring RunShortStr(FrmlPtr X)
 	s = RunLongStr(X);
 	/* ASM */
 	ReleaseStore(s);
+	return "";
 }
 
 void ConcatLongStr(LongStr* S1, LongStr* S2)
@@ -1072,7 +1084,7 @@ void ConcatLongStr(LongStr* S1, LongStr* S2)
 void AddToLongStr(LongStr* S, void* P, WORD L)
 {
 	void* p2;
-	L = minw(L, MaxLStrLen - S->LL);
+	L = MinW(L, MaxLStrLen - S->LL);
 	p2 = GetStore(L);
 	Move(P, p2, L);
 	S->LL += L;
@@ -1099,7 +1111,7 @@ void StrMask(double R, pstring& Mask)
 	if (R == 0) Num[0] = 0;
 	else {
 		if (R < 0) { minus = true; R = -R; } str(R, Num);
-		pos = minw(pos, pos1);
+		pos = MinW(pos, pos1);
 	}
 	i = Num.length();
 	if ((Num == "INF") || (Num == "NAN")) {
@@ -1164,7 +1176,7 @@ LongStr* RunS(FrmlPtr Z)
 	label1:
 		l = t->LL - (j - 1);
 		if (l > 0) {
-			i = FindText(s, Z->Options, CharArrPtr(@t->A[j]), l);
+			i = FindText(s, Z->Options, (CharArr*)(t->A[j]), l);
 			if (i > 0) {
 				AddToLongStr(tnew, &t->A[j], i - s.length() - 1);
 				AddToLongStr(tnew, &snew[1], snew.length());
@@ -1177,7 +1189,7 @@ LongStr* RunS(FrmlPtr Z)
 		return t;
 		break;
 	}
-	case _prompt:s = PromptS(RunShortStr(Z->P1), Z->P2, Z->FldD);
+	case _prompt:s = PromptS(&(RunShortStr(Z->P1)), Z->P2, Z->FldD);
 	case _getpath: { s = ".*"; if (Z->P1 != nullptr) s = RunShortStr(Z->P1);
 		s = SelectDiskFile(s, 35, false); }
 	case _catfield: {
@@ -1188,7 +1200,7 @@ LongStr* RunS(FrmlPtr Z)
 	case _passWORD: s = PassWord(false); break;
 	case _readkey: {
 		ReadKbd();
-		s[1] = char(lo(KbdChar));
+		s[1] = char(Lo(KbdChar));
 		s[0] = 1;
 		if (s[1] == 0) {
 			/*asm  mov al, KbdChar[1].BYTE; cmp al, 0; jne @1; mov al, 03H; jmp @2;
@@ -1210,8 +1222,8 @@ LongStr* RunS(FrmlPtr Z)
 	case _edreckey: s = EdRecKey;;
 	case _getenv: {
 		s = RunShortStr(Z->P1);
-		if (s == "") s = paramstr(0);
-		else s = getenv(s.c_str());
+		if (s == "") s = paramstr[0];
+		else s = GetEnv(s.c_str());
 		break;
 	}
 	case _keyof: {
@@ -1222,7 +1234,7 @@ LongStr* RunS(FrmlPtr Z)
 		x->PackKF(Z->PackKey->KFlds); CFile = cf; CRecPtr = cr;
 		break;
 	}
-	case _keybuf: { while (KeyPressed) AddToKbdBuf(ReadKey); s = KbdBuffer; break; }
+	case _keybuf: { while (KeyPressed()) AddToKbdBuf(ReadKey()); s = KbdBuffer; break; }
 	case _recno: GetRecNoXString(Z, *x); break;
 	case _edbool: { s[0] = 0; if ((EditDRoot != nullptr) && EditDRoot->Select
 		&& (EditDRoot->BoolTxt != nullptr)) s = *EditDRoot->BoolTxt;
@@ -1234,9 +1246,9 @@ LongStr* RunS(FrmlPtr Z)
 
 LongStr* RunSelectStr(FrmlPtr Z)
 {
-	LongStr* s; LongStr* s2;
+	LongStr* s = nullptr; LongStr* s2 = nullptr;
 	pstring x(80); pstring mode(5);
-	void* p2; void* pl;
+	void* p2 = nullptr; void* pl = nullptr;
 	WORD i, n;
 
 	s = RunLongStr(Z->P3); n = CountDLines(s->A, s->LL, Z->Delim);
@@ -1258,29 +1270,30 @@ LongStr* RunSelectStr(FrmlPtr Z)
 	if (KbdChar = _ESC_) LastExitCode = 1;
 	else
 		do {
-			x = GetSelect;
+			x = GetSelect();
 			if (x != "") {
-				if (n > 1) { s2->A[n] = *m; n++; }
+				if (n > 1) { s2->A[n] = 0x0D; n++; }
 				Move(&x[1], &s2->A[n], x.length());
 				n += x.length();
 			}
 		} while (!(!ss.Subset || (x == "")));
 		ReleaseStore(s);
-		s = (LongStr*)GetStore(n + 1); s->LL = n - 1; move(s2->A, s->A, n - 1);
+		s = (LongStr*)GetStore(n + 1); s->LL = n - 1; Move(s2->A, s->A, n - 1);
 		ReleaseStore2(p2);
 		return s;
 }
 
 void LowCase(LongStr* S)
 {
-
 }
 
 double RoundReal(double RR, integer M)
 {
 	double R;
-	M = maxi(0, mini(M, 10));
-	R = RR * Power10[M]; if (R < 0) R = R - 0.50001; else R = R + 0.50001;
+	M = MaxI(0, MinI(M, 10));
+	R = RR * Power10[M];
+	if (R < 0) R = R - 0.50001;
+	else R = R + 0.50001;
 	return int(R) / Power10[M];
 }
 

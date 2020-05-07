@@ -218,7 +218,7 @@ void RdByteListInStore()
 
 bool RdUserView(pstring ViewName, EditOpt* EO)
 {
-	bool found, Fin, FVA; void* p; void* p2; KeyD* K; EditOpt EOD; FileD* fd;
+	bool found, Fin, FVA; void* p = nullptr; void* p2 = nullptr; KeyD* K; EditOpt EOD; FileD* fd;
 	found = false; fd = CFile;
 	MarkStore(p); MarkStore2(p2); Move(EO, &EOD, sizeof(EOD));
 label1:
@@ -253,7 +253,8 @@ label3:
 
 void TestUserView()
 {
-	void* p; KeyD* K; EditOpt* EO; StringList S; FileD* FD;
+	void* p = nullptr; KeyD* K = nullptr; EditOpt* EO = nullptr;
+	StringList S; FileD* FD = nullptr;
 	RdLex();
 label1:
 	TestIdentif();
@@ -284,7 +285,7 @@ void TestDupl(FileD* FD)
 
 void RdFieldDList(bool Stored)
 {
-	pstring Name; FieldDescr* F; char FTyp; FrmlPtr Z;
+	pstring Name; FieldDescr* F = nullptr; char FTyp = 0; FrmlPtr Z = nullptr;
 label1:
 	TestIdentif(); Name = LexWord; F = FindFldName(CFile); if (F != nullptr) Error(26);
 	RdLex(); if (!Stored) { Accept(_assign); Z = RdFrml(FTyp); }
@@ -407,9 +408,13 @@ label1:
 
 void RdKeyD()
 {
-	FieldDPtr F, F2; KeyFldDPtr KF, Arg; FileDPtr FD; LinkDPtr L; KeyDPtr K, K1;
-	pstring Name; WORD N;
-	RdLex;
+	FieldDescr* F = nullptr; FieldDescr* F2 = nullptr;
+	KeyFldD* KF = nullptr; KeyFldD* Arg = nullptr;
+	FileD* FD = nullptr;
+	LinkD* L = nullptr;
+	KeyD* K = nullptr; KeyD* K1 = nullptr;
+	pstring Name; WORD N = 0;
+	RdLex();
 	if (Lexem == '@')
 	{
 		if ((CFile->Keys != nullptr) || CFile->IsParFile) Error(26); RdLex();
@@ -558,7 +563,7 @@ void SetLDIndexRoot(LinkD* L, LinkD* L2)
 
 void TestDepend()
 {
-	FrmlPtr ZBool, Z; FieldDPtr F; char FTyp; void* p;
+	FrmlPtr ZBool, Z; FieldDPtr F; char FTyp; void* p = nullptr;
 	RdLex; MarkStore(p);
 label1:
 	Accept('('); ZBool = RdBool(); Accept(')');
@@ -667,7 +672,7 @@ void SetHCatTyp(char FDTyp)
 #ifdef FandSQL
 	typSQLFile = issql; SetIsSQLFile();
 #endif
-	}
+}
 
 void GetTFileD(char FDTyp)
 {

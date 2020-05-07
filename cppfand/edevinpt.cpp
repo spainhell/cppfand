@@ -1,7 +1,6 @@
+#pragma once
+
 #include "edevinpt.h"
-
-
-
 #include "common.h"
 #include "edevproc.h"
 #include "editor.h"
@@ -46,13 +45,13 @@ label1:
 
 void ScrollPress()
 {
-	BYTE* BP;
-	bool old, fyz;
-	longint L1;
-	void* ptr;
+	BYTE* BP = nullptr;
+	bool old = false, fyz = false;
+	longint L1 = 0;
+	void* ptr = nullptr;
 
 	old = bScroll;
-	fyz = *(BP(ptr(0, 0x417)) && 0x10) != 0;
+	//fyz = *(BP(ptr(0, 0x417)) && 0x10) != 0;
 	if (fyz == old) FirstScroll = false;
 	bScroll = (fyz || FirstScroll) && (Mode != HelpM);
 	HelpScroll = bScroll || (Mode == HelpM);

@@ -10,9 +10,9 @@ bool FindFuncD(FrmlPtr* ZZ);
 const BYTE MaxLen = 9;
 bool IsFun(void* XFun, BYTE N, void* XCode, char& FunCode); // ASM
 
-const pstring QQdiv = "div";
-const pstring QQmod = "mod";
-const pstring QQround = "round";
+pstring QQdiv = "div";
+pstring QQmod = "mod";
+pstring QQround = "round";
 
 FrmlPtr RdMult(char& FTyp);
 FrmlPtr RdAdd(char& FTyp);

@@ -1,42 +1,11 @@
 ﻿// cppfand.cpp : Tento soubor obsahuje funkci main. Provádění programu se tam zahajuje a ukončuje.
 //
+#pragma once
 
 #include <iostream>
 #include <vector>
 #include <SDKDDKVer.h>
 
-
-//#include "constants.h"
-//#include "switches.h"
-//#include "drivers.h"
-
-//#include "base.h"
-//#include "obase.h"
-//#include "obaseww"
-//#include "access.h"
-//#include "oaccess.h"
-//#include "runfrml.h"
-//#include "olongstr"
-//#include "rdrun.h"
-//#include "wwmenu.h"
-//#include "wwmix.h"
-//#include "compile.h"
-//#include "rdfildcl.h"
-//#include "rdmerg.h"
-//#include "rdrprt.h"
-//#include "rdproc.h"
-//#include "rdedit.h"
-//#include "sort.h"
-//#include "runmerg.h"
-//#include "runrprt.h"
-//#include "printtxt.h"
-//#include "genrprt.h"
-//#include "editor.h"
-//#include "expimp.h"
-//#include "runproc"
-//#include "runedi.h"
-//#include "runproj.h"
-//#include "runfand.h"
 
 #ifdef FandSQL
 #include "channel.h"

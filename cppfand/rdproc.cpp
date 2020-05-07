@@ -37,7 +37,7 @@ LocVar* RdRecVar()
 
 LocVar* RdIdxVar()
 {
-	LocVar* lv;
+	LocVar* lv = nullptr;
 	if (!FindLocVar(LVBD.Root, lv) || (lv->FTyp != 'i')) Error(165);
 	auto result = lv;
 	RdLex();
@@ -118,7 +118,8 @@ char RdOwner(LinkD* LLD, LocVar* LLV)
 
 FrmlPtr RdFldNameFrmlP(char& FTyp)
 {
-	FileD* FD; FrmlPtr Z; LocVar* LV; char Op; LinkD* LD; FieldDPtr F;
+	FileD* FD = nullptr; FrmlPtr Z = nullptr; LocVar* LV = nullptr;
+	char Op = 0; LinkD* LD = nullptr; FieldDescr* F = nullptr;
 	KeyD* K;
 
 	FrmlPtr result = nullptr;
@@ -218,7 +219,7 @@ FrmlPtr RdFunctionP(char& FFTyp)
 	char Typ, FTyp; FileDPtr cf, FD;
 	bool b;
 	WORD N; FrmlPtr Arg[30]; char Op;
-	LocVar* LV; LinkDPtr LD;
+	LocVar* LV = nullptr; LinkD* LD = nullptr;
 	void* p; WORD* pofs = (WORD*)&p;
 
 	if (IsKeyWord("EVALB")) { FTyp = 'B'; goto label4; }
@@ -506,7 +507,7 @@ Instr* RdWhileDo()
 
 Instr* RdFor()
 {
-	LocVar* LV;
+	LocVar* LV = nullptr;
 	if (!FindLocVar(LVBD.Root, LV) || (LV->FTyp != 'R')) Error(146);
 	RdLex();
 	Instr* PD = GetPInstr(_asgnloc, 9);
@@ -537,7 +538,7 @@ Instr* RdFor()
 
 Instr* RdCase()
 {
-	Instr* PD;
+	Instr* PD = nullptr;
 	bool first = true;
 label1:
 	Instr* PD1 = GetPInstr(_ifthenelseP, 12);
@@ -582,7 +583,8 @@ label1: PD->Bool = RdBool();
 
 Instr* RdForAll()
 {
-	LocVar* LVi; LocVar* LVr; LinkD* LD; FrmlPtr Z;
+	LocVar* LVi = nullptr; LocVar* LVr = nullptr;
+	LinkD* LD = nullptr; FrmlPtr Z = nullptr;
 	if (!FindLocVar(LVBD.Root, LVi)) Error(122);
 	RdLex();
 	if (LVi->FTyp == 'r') { LVr = LVi; LVi = nullptr; CFile = LVr->FD; }
@@ -648,7 +650,7 @@ Instr* RdBeginEnd()
 Instr* RdProcArg(char Caller)
 {
 	RdbPos Pos; TypAndFrml TArg[31];
-	LocVar* LV;
+	LocVar* LV = nullptr;
 	if (Caller != 'C') RdChptName('P', &Pos, Caller == 'P' || Caller == 'E' || Caller == 'T');
 	WORD N = 0;
 	if (Caller != 'P') { if (Lexem == '(') { RdLex(); goto label1; } }
@@ -1109,7 +1111,8 @@ void RdEditOpt(EditOpt* EO)
 
 void RdReportCall()
 {
-	Instr* PD; RprtOpt* RO; LocVar* lv; RprtFDListEl* FDL; bool b;
+	Instr* PD = nullptr; RprtOpt* RO = nullptr; LocVar* lv = nullptr;
+	RprtFDListEl* FDL = nullptr; bool b = false;
 	bool hasfrst;
 	PD = GetPD(_report, 4); RO = GetRprtOpt(); PD->RO = RO;
 	hasfrst = false;
@@ -1338,7 +1341,7 @@ bool TestFixVar(CpOption Opt, FileD* FD1, FileD* FD2)
 bool RdList(pstring* S)
 {
 	auto result = false;
-	if (Lexem != '(') return;
+	if (Lexem != '(') return result;
 	RdLex();
 	S = (pstring*)(RdStrFrml);
 	Accept(')');
@@ -1608,10 +1611,10 @@ void RdGraphP()
 	while (Lexem == ',') {
 		RdLex();
 		for (i = 0; i < 11; i++) if (IsOpt(Nm1[i])) {
-			FrmlArr = (FrmlArr)(&PDGD->T); FrmlArr[i] = RdStrFrml(); goto label1;
+			FrmlArr[0] = (FrmlPtr)(&PDGD->T); FrmlArr[i] = RdStrFrml(); goto label1;
 		}
 		for (i = 0; i < 6; i++) if (IsOpt(Nm2[i])) {
-			FrmlArr = (FrmlArr)(&PDGD->S); FrmlArr[i] = RdRealFrml(); goto label1;
+			FrmlArr[0] = (FrmlPtr)(&PDGD->S); FrmlArr[i] = RdRealFrml(); goto label1;
 		}
 		if (IsDigitOpt("HEADZ", i)) PDGD->HZA[i] = RdStrFrml();
 		else if (IsKeyWord("INTERACT")) PDGD->Interact = true;
@@ -1751,7 +1754,7 @@ void RdLinkRec()
 		if (LD->ToFD != LV->FD) OldError(141);
 		Accept(')');
 	}
-	PD->RecLV2 = *LV;
+	PD->RecLV2 = LV;
 	PD->LinkLD = LD;
 }
 
@@ -1818,8 +1821,9 @@ AssignD* MakeImplAssign(FileD* FD1, FileD* FD2)
 
 void RdAssign()
 {
-	FileDPtr FD; FieldDPtr F; LocVar* LV, LV2; char PV;
-	Instr* PD = nullptr; pstring FName; char FTyp;
+	FileDPtr FD = nullptr; FieldDPtr F = nullptr;
+	LocVar* LV = nullptr; LocVar* LV2 = nullptr; char PV;
+	Instr* PD = nullptr; pstring FName; char FTyp = 0;
 	if (ForwChar == '.')
 		if (FindLocVar(LVBD.Root, LV) && (LV->FTyp == 'r' || LV->FTyp == 'i')) {
 			FTyp = LV->FTyp; RdLex(); RdLex();
@@ -1882,9 +1886,9 @@ void RdAssign()
 		switch (FTyp) {
 		case 'f':
 		case 'i': OldError(140); break;
-		case 'r': { Accept(_assign); if (!IsRecVar(&LV2)) Error(141);
+		case 'r': { Accept(_assign); if (!IsRecVar(LV2)) Error(141);
 			PD = GetPInstr(_asgnrecvar, 12); PD->RecLV1 = LV; PD->RecLV2 = LV2;
-			PD->Ass = MakeImplAssign(LV->FD, LV2.FD); }
+			PD->Ass = MakeImplAssign(LV->FD, LV2->FD); }
 		default: PD = GetPInstr(_asgnloc, 9); PD->AssLV = LV; goto label0;
 		}
 	}
@@ -1963,9 +1967,9 @@ Instr* RdWith()
 
 Instr* RdUserFuncAssign()
 {
-	Instr* pd; LocVar* lv;
+	Instr* pd = nullptr; LocVar* lv = nullptr;
 	if (!FindLocVar(LVBD.Root, lv)) Error(34);
-	RdLex; pd = GetPInstr(_asgnloc, 9); pd->AssLV = lv;
+	RdLex(); pd = GetPInstr(_asgnloc, 9); pd->AssLV = lv;
 	RdAssignFrml(lv->FTyp, pd->Add, pd->Frml);
 	auto result = pd;
 
@@ -2087,7 +2091,7 @@ FrmlPtr GetEvalFrml(FrmlPtr X)
 	if (X->EvalFD == nullptr) FileVarsAllowed = false; else {
 		CFile = X->EvalFD; FileVarsAllowed = true;
 	}
-	NewExit(Ovr, er);
+	//NewExit(Ovr, er);
 	goto label1;
 	SetInpLongStr(s, false); RdLex(); z = RdFrml(fTyp);
 	if ((fTyp != X->EvalTyp) || (Lexem != 0x1A)) z = nullptr; else LastExitCode = 0;

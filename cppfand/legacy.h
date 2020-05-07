@@ -1,7 +1,7 @@
 #pragma once
 #include "constants.h"
 #include "pstring.h"
-
+#include <string>
 
 longint ExitCode = 0; // exit kód -> OS
 void* ErrorAddr = nullptr; // adresa chyby
@@ -16,6 +16,7 @@ void val(pstring s, longint& b, WORD& err);
 pstring copy(pstring source, size_t index, size_t count);
 void str(int input, pstring& output);
 void str(double input, int total, int right, pstring& output);
+void str(double input, int right, pstring& output);
 
 WORD pred(WORD input);
 WORD succ(WORD input);
@@ -67,6 +68,10 @@ BYTE OvrResult = 0; // vždy 0 OvrOK
 
 pstring GetEnv(const char* name);
 
+WORD IOResult();
+WORD DosError();
+double DiskFree(char disk);
+
 class TextFile
 {
 public:
@@ -85,7 +90,9 @@ public:
 	std::string name;
 	std::string LineEnd;
 	BYTE* buffer = nullptr;
+	bool eof;
 
+	const char* c_str();
 	void Close();
 	void Assign(const char *);
 	void Reset();

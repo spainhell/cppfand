@@ -1,5 +1,6 @@
-#include "edevent.h"
+#pragma once
 
+#include "edevent.h"
 #include "access.h"
 #include "base.h"
 #include "common.h"
@@ -17,28 +18,30 @@
 #include "recacc.h"
 #include "runedi.h"
 #include "runproc.h"
+#include "wwmenu.h"
 #include "wwmix.h"
 
 void HandleEvent() {
 	WORD I, I1, I2, I3;
 	FILE* F1 = nullptr;
-	WORD W1, W2, ww;
+	WORD W1 = 0, W2 = 0, ww = 0;
 	longint L1, L2, fs;
 	pstring ss;
 	int j;
 	WORD LastL[161];
-	LongStr* sp;
-	void* P1;
+	LongStr* sp = nullptr;
+	void* P1 = nullptr;
 	bool bb;
 
 	ExitRecord er;
-	EdExitD* X;
+	EdExitD* X = nullptr;
 
 	IsWrScreen = false;
 
 	if (!MyGetEvent()) { ClrEvent(); IsWrScreen = false; return; }
 	if (!bScroll) CleanFrameM();
-	NewExit(Ovr(), er); //TODO: goto Opet;
+	//NewExit(Ovr(), er);
+	goto Opet;
 	// !!! with Event do:
 	if (Event.What == evKeyDown) {
 		EdOk = false; ww = Event.KeyCode; ClrEvent();
@@ -75,7 +78,7 @@ void HandleEvent() {
 				RestoreExit(er);
 				if (TypeT == MemoT) StartExit(X, false);
 				else CallProcedure(X->Proc);
-				NewExit(Ovr(), er);
+				//NewExit(Ovr(), er);
 				goto Opet;
 				if (!bScroll) CrsShow(); RestorePar(L2);
 				switch (TypeT) {
@@ -172,7 +175,7 @@ void HandleEvent() {
 						if (ModPage(RScrL)) RScrL++;
 						ScrL = NewL(RScrL); LineL = ScrL;
 						DekFindLine(LineAbs(LineL)); Posi = Position(Colu);
-						j = CountChar(l, LineI, ScrI);
+						j = CountChar(0x0C, LineI, ScrI);
 						if ((j > 0) && InsPg) {
 							DekFindLine(LineAbs(LineL + j));
 							ScrL = LineL; RScrL = NewRL(ScrL);
@@ -204,7 +207,7 @@ void HandleEvent() {
 					{
 						RScrL += PageS; if (ModPage(RScrL)) RScrL--;
 						DekFindLine(LineAbs(NewL(RScrL))); Posi = Position(Colu);
-						j = CountChar(l, ScrI, LineI);
+						j = CountChar(0x0C, ScrI, LineI);
 						if ((j > 0) && InsPg) DekFindLine(LineAbs(LineL - j));
 						ScrL = LineL; RScrL = NewRL(ScrL);
 					}
@@ -462,15 +465,16 @@ void HandleEvent() {
 					break;
 				}
 				case _KY_: {
-					if (BlockHandle('Y')) { EndBLn = BegBLn; EndBPos = BegBPos; };
+					if (BlockHandle(fs, F1, 'Y')) { EndBLn = BegBLn; EndBPos = BegBPos; };
 					break;
 				}
-				case _KC_: BlockCopyMove('C'); break;
-				case _KV_: BlockCopyMove('M'); break;
-				case _KU_: BlockHandle('U'); break;
-				case _KL_: BlockHandle('L'); break;
+				case _KC_: BlockCopyMove('C', P1, sp); break;
+				case _KV_: BlockCopyMove('M', P1, sp); break;
+				case _KU_: BlockHandle(fs, F1, 'U'); break;
+				case _KL_: BlockHandle(fs, F1, 'L'); break;
 				case _CtrlF7_: {
-					if (TypeB == TextBlock) BlockGrasp('G'); else BlockCGrasp('G');
+					if (TypeB == TextBlock) BlockGrasp('G', P1, sp);
+					else BlockCGrasp('G', P1, sp);
 					break;
 				}
 				case _KW_: {
@@ -491,7 +495,7 @@ void HandleEvent() {
 					}
 					if (HandleError != 0) { MyWrLLMsg(CPath); goto Nic; }
 					fs = 0; // {L1 =LineAbs(LineL);I =Posi;}
-					if (BlockHandle('W'))
+					if (BlockHandle(fs, F1, 'W'))
 					{
 						WriteH(F1, 0, *T); /*truncH*/ CloseH(F1); HMsgExit(CPath);
 					}
@@ -500,8 +504,8 @@ void HandleEvent() {
 					break;
 				}
 				case _ShiftF7_: {
-					if (TypeB == TextBlock) BlockDrop('D');
-					else BlockCDrop('D');
+					if (TypeB == TextBlock) BlockDrop('D', P1, sp);
+					else BlockCDrop('D', P1, sp);
 					break;
 				}
 				case _KR_: {
@@ -540,7 +544,7 @@ void HandleEvent() {
 						do {
 							if (fs - L2 < longint(I2)) I2 = fs - L2;
 							SeekH(F1, L2); ReadH(F1, I2, sp->A); HMsgExit("");
-							L2 += I2; sp->LL = I2; BlockCDrop('R');
+							L2 += I2; sp->LL = I2; BlockCDrop('R', P1, sp);
 						} while (L2 != fs);
 						EndBLn = Part.LineP + LineL - 1; ReleaseStore2(P1);
 					}
@@ -549,7 +553,7 @@ void HandleEvent() {
 					SetPartLine(BegBLn); SetDekLnCurrI(L1 - Part.PosP); UpdatedL = true;
 					break;
 				} // end case _KR_
-				case _KP_: { if (!BlockHandle('P'))
+				case _KP_: { if (!BlockHandle(fs, F1, 'P'))
 				{
 					I1 = BegBLn; I2 = BegBPos; I3 = EndBLn; I = EndBPos; bb = TypeB;
 					BegBLn = 1; EndBLn = 0x7FFF; BegBPos = 1; EndBPos = 0xFF;
@@ -564,7 +568,7 @@ void HandleEvent() {
 						SetPartLine(EndBLn); I2 = EndBLn - Part.LineP;
 						L1 = SetInd(FindLine(integer(I2)), EndBPos) + Part.PosP;
 						L2 = BegBLn; Posi = BegBPos; SetPartLine(L2); I2 = BegBLn - Part.LineP;
-						Format(FindLine(integer(I2)) + Part.PosP, L1, BegBPos, true);
+						Format(I, FindLine(integer(I2)) + Part.PosP, L1, BegBPos, true);
 						DekFindLine(L2);
 						if (!bScroll) CrsShow();
 					}
@@ -619,7 +623,7 @@ void HandleEvent() {
 				}
 				case _B_: {
 					TestKod(); L1 = Part.PosP + LineI;
-					Format(L1, AbsLenT + LenT - Part.LenP, MinI(LeftMarg, Posi), false);
+					Format(I, L1, AbsLenT + LenT - Part.LenP, MinI(LeftMarg, Posi), false);
 					SetPart(L1); I2 = L1 - Part.PosP; SetDekLnCurrI(I2); Posi = 1;
 					break;
 				}
@@ -641,7 +645,10 @@ void HandleEvent() {
 					RestorePar(L2);
 					break;
 				}
-				case _CtrlF6_: { if ((TypeT == FileT) || (TypeT == LocalT)) BlockHandle('p'); break; }
+				case _CtrlF6_: {
+					if ((TypeT == FileT) || (TypeT == LocalT)) BlockHandle(fs, F1, 'p');
+					break;
+				}
 
 				case 0x1000: {
 				Opet:
@@ -675,7 +682,7 @@ void HandleEvent() {
 							I1 = LeftMarg; while (Arr[I1] == ' ') I1++;
 							if (I1 > RightMarg) I1 = RightMarg;
 							L1 = Part.PosP + LineI;
-							Format(L1, AbsLenT + LenT - Part.LenP, I1, false);
+							Format(I, L1, AbsLenT + LenT - Part.LenP, I1, false);
 							SetPart(L1); I = 1;
 							I = FindChar(I, 0xFF, 1, LenT); *T[I] = W1;
 							SetDekLnCurrI(I); Posi = I - LineI + 1;
@@ -700,7 +707,7 @@ void HandleEvent() {
 	else if ((Event.What == evMouseDown) && ((Mode == HelpM) || (Mode == TextM)))
 	{
 		if (Mode == TextM) TestKod();
-		if (!((Event.Where.Y >= FirstR && Event.Where.Y <= LastR - 1) 
+		if (!((Event.Where.Y >= FirstR && Event.Where.Y <= LastR - 1)
 			&& (Event.Where.X >= FirstC - 1 && Event.Where.X <= LastC - 1)))
 		{
 			ClrEvent();

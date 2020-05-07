@@ -49,7 +49,7 @@ void Error(integer N)
 		Move(InpArrPtr, p, l);
 		if (PrevCompInp != nullptr) RdMsg(63); else RdMsg(61);
 		HdTxt = MsgLine;
-		SimpleEditText("T", ErrMsg, HdTxt, p, 0xfff, l, i, upd);
+		SimpleEditText('T', ErrMsg, HdTxt, (CharArr*)p, 0xfff, l, i, upd);
 		PopW(w);
 		ReleaseStore(p1);
 	}
@@ -247,7 +247,7 @@ label1:
 	{
 	case 0x1A: {
 		if (PrevCompInp != nullptr) {
-			ci = PrevCompInp; move(ci->ChainBack, PrevCompInp, sizeof(CompInpD));
+			ci = PrevCompInp; Move(ci->ChainBack, PrevCompInp, sizeof(CompInpD));
 			if (CurrPos <= InpArrLen) ForwChar = *InpArrPtr[CurrPos];
 			goto label1;
 		}
@@ -263,7 +263,7 @@ label1:
 			case 1: { SwitchLevel++; if (!b) SkipLevel(true); break; }
 			case 5: {
 				ci = (CompInpD*)GetStore2(sizeof(CompInpD));
-				move(PrevCompInp, ci, sizeof(CompInpD));
+				Move(PrevCompInp, ci, sizeof(CompInpD));
 				PrevCompInp = ci; SetInpTT(ChptIPos, true); break; }
 			default:
 			{
@@ -476,6 +476,12 @@ bool EquUpcase(pstring& S)
 	@3: xor ax, ax;
 	@4:  end;*/
 	return false;
+}
+
+bool EquUpcase(const char* S)
+{
+	pstring temp = S;
+	return EquUpcase(temp);
 }
 
 bool TestKeyWord(pstring S)

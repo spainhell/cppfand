@@ -153,6 +153,9 @@
     <ClCompile Include="edevent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ededit.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base.h">
@@ -312,6 +315,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="edevproc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="olongstr.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

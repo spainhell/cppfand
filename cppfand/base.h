@@ -140,8 +140,9 @@ struct Video // ø. 345
 
 struct Fonts // r350
 {
-	TVideoFont VFont = foLatin2;
-	bool LoadVideoAllowed = false, NoDiakrSupported = false;
+	TVideoFont VFont = TVideoFont::foLatin2;
+	bool LoadVideoAllowed = false;
+	bool NoDiakrSupported = false;
 } fonts;
 
 struct Colors

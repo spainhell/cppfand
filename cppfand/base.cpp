@@ -1,3 +1,5 @@
+#pragma once
+
 #include "base.h"
 #include "drivers.h"
 #include "handle.h"
@@ -56,7 +58,7 @@ label1:
 		ReadH(h, 1, reinterpret_cast<void*>(s[0])); // tady se má zøejmì jen vyèíst délka
 		ReadH(h, s.length(), reinterpret_cast<void*>(s[1]));
 	}
-	ConvKamenToCurr((char*)s.c_str(), s.length());
+	ConvKamenToCurr((unsigned char*)s.c_str(), s.length());
 	MsgLine = "";
 	j = 1;
 	// TODO: k èemu je toto? s[length(s) + 1] = 0x00;

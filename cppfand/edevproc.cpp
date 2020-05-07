@@ -1,10 +1,11 @@
+#pragma once
+
 #include "edevproc.h"
-
-
 #include "common.h"
 #include "edevinpt.h"
 #include "edglobal.h"
 #include "editor.h"
+#include "edscreen.h"
 #include "edtextf.h"
 #include "kbdww.h"
 #include "lexanal.h"
@@ -82,13 +83,13 @@ void RollPred()
 void Frame()
 {
 	pstring FrameString(15);
-	FrameString = "\x80\x72\x179\x77\x218\x192\x195\x75\x191\x217\x180\x196\x194\x193\x197";
+	FrameString = "\x50\x48\xB3\x4D\xDA\xC0\xC3\x4B\xBF\xD9\xB4\xC4\xC2\xC1\xC5";
 	pstring FS1(15);
-	FS1 = "\x80\x72\x186\x77\x214\x211\x199\x75\x183\x189\x182\x196\x210\x208\x215";
+	FS1 = "\x50\x48\xBA\x4D\xD6\xD3\xC7\x4B\xB7\xBD\xB6\xC4\xD2\xD0\xD7";
 	pstring FS2(15);
-	FS2 = "\x80\x72\x179\x77\x213\x212\x198\x75\x184\x190\x181\x205\x209\x207\x216";
+	FS2 = "\x50\x48\xB3\x4D\xD5\xD4\xC6\x4B\xB8\xBE\xB5\xCD\xD1\xCF\xD8";
 	pstring FS3(15);
-	FS3 = "\x80\x72\x186\x77\x201\x200\x204\x75\x187\x188\x185\x205\x203\x202\x206";
+	FS3 = "\x50\x48\xBA\x4D\xC9\xC8\xCC\x4B\xBB\xBC\xB9\xCD\xCB\xCA\xCE";
 	char oldzn; BYTE dir, odir, zn1, zn2, b;
 
 	UpdStatLine(LineL, Posi); CrsBig(); odir = 0;
@@ -170,13 +171,13 @@ void CleanFrameM()
 void FrameStep(BYTE& odir, WORD EvKeyC)
 {
 	pstring FrameString(15);
-	FrameString = "\x80\x72\x179\x77\x218\x192\x195\x75\x191\x217\x180\x196\x194\x193\x197";
+	FrameString = "\x50\x48\xB3\x4D\xDA\xC0\xC3\x4B\xBF\xD9\xB4\xC4\xC2\xC1\xC5";
 	pstring FS1(15);
-	FS1 = "\x80\x72\x186\x77\x214\x211\x199\x75\x183\x189\x182\x196\x210\x208\x215";
+	FS1 = "\x50\x48\xBA\x4D\xD6\xD3\xC7\x4B\xB7\xBD\xB6\xC4\xD2\xD0\xD7";
 	pstring FS2(15);
-	FS2 = "\x80\x72\x179\x77\x213\x212\x198\x75\x184\x190\x181\x205\x209\x207\x216";
+	FS2 = "\x50\x48\xB3\x4D\xD5\xD4\xC6\x4B\xB8\xBE\xB5\xCD\xD1\xCF\xD8";
 	pstring FS3(15);
-	FS3 = "\x80\x72\x186\x77\x201\x200\x204\x75\x187\x188\x185\x205\x203\x202\x206";
+	FS3 = "\x50\x48\xBA\x4D\xC9\xC8\xCC\x4B\xBB\xBC\xB9\xCD\xCB\xCA\xCE";
 	char oldzn; BYTE dir, zn1, zn2, b;
 
 	switch (EvKeyC) {
@@ -240,7 +241,7 @@ bool TestLastPos(WORD F, WORD T)
 	if (F > LP) F = LP + 1;
 	if (LP + T - F <= LineSize)
 	{
-		if (LP >= F) move(Arr[F], Arr[T], succ(LP - F));
+		if (LP >= F) Move(&Arr[F], &Arr[T], succ(LP - F));
 		if (TypeB == TextBlock)
 		{
 			if (LineAbs(LineL) == BegBLn) MoveB(BegBPos, F, T);
@@ -351,7 +352,7 @@ void WrChar_E(char Ch)
 	}
 }
 
-void Format(longint First, longint Last, WORD Posit, bool Rep)
+void Format(WORD& i, longint First, longint Last, WORD Posit, bool Rep)
 {
 	WORD fst, lst, ii1;
 	integer ii;
@@ -371,27 +372,27 @@ void Format(longint First, longint Last, WORD Posit, bool Rep)
 			fst -= Part.MovI; lst -= Part.MovI; llst -= Part.MovI;
 			if (llst > LenT) lst = LenT; else lst = llst;
 		}
-		I = fst; ii1 = I;
-		if ((I < 2) || (*T[I - 1] == _LF))
+		i = fst; ii1 = i;
+		if ((i < 2) || (*T[i - 1] == _LF))
 		{
-			while (*T[ii1] == ' ') ii1++; Posit = MaxW(Posit, ii1 - I + 1);
+			while (*T[ii1] == ' ') ii1++; Posit = MaxW(Posit, ii1 - i + 1);
 		}
-		ii1 = I; RelPos = 1;
+		ii1 = i; RelPos = 1;
 		if (Posit > 1)
 		{
-			Move(T[I], A, Posit);
+			Move(T[i], A, Posit);
 			for (ii = 1; ii < Posit - 1; i++)
 			{
-				if (CtrlKey.first(*T[I]) == 0) RelPos++;
-				if (*T[I] == _CR) A[ii] = ' ';
-				else I++;
+				if (CtrlKey.first(*T[i]) == 0) RelPos++;
+				if (*T[i] == _CR) A[ii] = ' ';
+				else i++;
 			}
-			if ((*T[I] == ' ') && (A[Posit - 1] != ' '))
+			if ((*T[i] == ' ') && (A[Posit - 1] != ' '))
 			{
 				Posit++; RelPos++;
 			}
 		}
-		while (I < lst)
+		while (i < lst)
 		{
 			bBool = true; nw = 0; nb = 0;
 			if (RelPos < LeftMarg)
@@ -403,29 +404,29 @@ void Format(longint First, longint Last, WORD Posit, bool Rep)
 				else while (RelPos < LeftMarg)
 				{
 					Posit++;
-					if (CtrlKey.first(*T[I]) == 0) RelPos++;
-					if (*T[I] != _CR) I++;
-					if (*T[I] == _CR) A[Posit] = ' ';
-					else A[Posit] = *T[I];
+					if (CtrlKey.first(*T[i]) == 0) RelPos++;
+					if (*T[i] != _CR) i++;
+					if (*T[i] == _CR) A[Posit] = ' ';
+					else A[Posit] = *T[i];
 				}
-			while ((RelPos <= RightMarg) && (I < lst))
+			while ((RelPos <= RightMarg) && (i < lst))
 			{
-				if ((*T[I] == _CR) || (*T[I] == ' '))
+				if ((*T[i] == _CR) || (*T[i] == ' '))
 				{
-					while (((*T[I] == _CR) || (*T[I] == ' ')) && (I < lst))
-						if (*T[I + 1] == _LF) lst = I;
-						else { *T[I] = ' '; I++; }
-					if (!bBool) { nw++; if (I < lst) I--; };
+					while (((*T[i] == _CR) || (*T[i] == ' ')) && (i < lst))
+						if (*T[i + 1] == _LF) lst = i;
+						else { *T[i] = ' '; i++; }
+					if (!bBool) { nw++; if (i < lst) i--; };
 				}
-				if (I < lst)
+				if (i < lst)
 				{
 					bBool = false;
-					A[Posit] = *T[I];
+					A[Posit] = *T[i];
 					if (CtrlKey.first(A[Posit]) == 0) RelPos++;
-					I++; Posit++;
+					i++; Posit++;
 				}
 			}
-			if ((I < lst) && (*T[I] != ' ') && (*T[I] != _CR))
+			if ((i < lst) && (*T[i] != ' ') && (*T[i] != _CR))
 			{
 				ii = Posit - 1;
 				if (CtrlKey.first(A[ii]) != 0) ii--;
@@ -436,17 +437,17 @@ void Format(longint First, longint Last, WORD Posit, bool Rep)
 				}
 				if (RelPos > LeftMarg)
 				{
-					nb = rp - RelPos; I -= (Posit - ii); Posit = ii;
+					nb = rp - RelPos; i -= (Posit - ii); Posit = ii;
 				}
 				else
 				{
-					while ((*T[I] != ' ') && (*T[I] != _CR) && (Posit < LineSize))
+					while ((*T[i] != ' ') && (*T[i] != _CR) && (Posit < LineSize))
 					{
-						A[Posit] = *T[I]; I++; Posit++;
+						A[Posit] = *T[i]; i++; Posit++;
 					}
-					while (((*T[I] == _CR) || (*T[I] == ' ')) && (I < lst))
-						if (*T[I + 1] == _LF) lst = I;
-						else { *T[I] = ' '; I++; }
+					while (((*T[i] == _CR) || (*T[i] == ' ')) && (i < lst))
+						if (*T[i + 1] == _LF) lst = i;
+						else { *T[i] = ' '; i++; }
 				}
 			}
 			if (Just)
@@ -466,15 +467,15 @@ void Format(longint First, longint Last, WORD Posit, bool Rep)
 			ii = 1;
 			while (A[ii] == ' ') ii++;
 			if (ii >= Posit) Posit = 1;
-			if (I < lst) A[Posit] = _CR; else Posit--;
-			TestLenText(I, longint(ii1) + Posit);
+			if (i < lst) A[Posit] = _CR; else Posit--;
+			TestLenText(i, longint(ii1) + Posit);
 			if (Posit > 0) Move(A, T[ii1], Posit);
-			ii = ii1 + Posit - I; I = ii1 + Posit; lst += ii; llst += ii;
-			Posit = 1; RelPos = 1; ii1 = I;
+			ii = ii1 + Posit - i; i = ii1 + Posit; lst += ii; llst += ii;
+			Posit = 1; RelPos = 1; ii1 = i;
 		}
 		if (Rep)
 		{
-			while ((*T[I] == _CR) || (*T[I] == _LF)) I++; fst = I; Rep = I < llst;
+			while ((*T[i] == _CR) || (*T[i] == _LF)) i++; fst = i; Rep = i < llst;
 			if (llst > LenT) lst = LenT; else lst = llst;
 		}
 	} while (Rep);
@@ -483,9 +484,10 @@ void Format(longint First, longint Last, WORD Posit, bool Rep)
 
 void Calculate_E()
 {
-	FrmlPtr Z; pstring Txt; ExitRecord er; WORD I; pstring Msg;
-	void* p; char FTyp; double R; bool Del;
-	MarkStore(p); NewExit(Ovr(), er); goto label2; ResetCompilePars();
+	FrmlPtr Z = nullptr; pstring Txt; ExitRecord er; WORD I; pstring Msg;
+	void* p = nullptr; char FTyp; double R; bool Del;
+	MarkStore(p); //NewExit(Ovr(), er);
+	goto label2; ResetCompilePars();
 	RdFldNameFrml = RdFldNameFrmlT;
 label0:
 	Txt = CalcTxt; Del = true; I = 1;
@@ -548,12 +550,12 @@ void SetBlockBound(longint& BBPos, longint& EBPos)
 	BBPos = SetInd(FindLine(i), BegBPos) + Part.PosP;
 }
 
-bool BlockHandle(char Oper)
+bool BlockHandle(longint& fs, FILE* W1, char Oper)
 {
 	WORD i, I1, I2, Ps;
 	longint LL1, LL2, Ln;
-	ArrLine a;
-	ColorOrd co; bool isPrintFile; CharArr* p = nullptr;
+	ArrLine a = nullptr;
+	ColorOrd co; bool isPrintFile = false; CharArr* p = nullptr;
 	bool tb; char c;
 
 	TestKod(); Ln = LineAbs(LineL); Ps = Posi;
@@ -570,7 +572,7 @@ bool BlockHandle(char Oper)
 			LL1 = Part.PosP + SetInd(LineI, Posi);
 		}
 		else SetBlockBound(LL1, LL2); I1 = LL1 - Part.PosP;
-		if (toupper(Oper) == 'P') ResetPrint(LL2 - LL1, &co, I1, isPrintFile, p);
+		if (toupper(Oper) == 'P') ResetPrint(Oper, fs, W1, LL2 - LL1, &co, I1, isPrintFile, p);
 		do {
 			if (LL2 > Part.PosP + LenT) I2 = LenT;
 			else I2 = LL2 - Part.PosP;
@@ -611,7 +613,7 @@ bool BlockHandle(char Oper)
 	{
 		PosDekFindLine(BegBLn, BegBPos, false);
 		I1 = EndBPos - BegBPos; LL1 = (EndBLn - BegBLn + 1) * (I1 + 2); LL2 = 0;
-		if (Oper == 'P') ResetPrint(LL1, &co, I1, isPrintFile, p);
+		if (Oper == 'P') ResetPrint(Oper, fs, W1, LL1, &co, I1, isPrintFile, p);
 		do {
 			switch (Oper) {
 			case 'Y': { TestLastPos(EndBPos, BegBPos); break; }
@@ -656,7 +658,7 @@ bool BlockHandle(char Oper)
 	return result;
 }
 
-void ResetPrint(longint LenPrint, ColorOrd* co, WORD& I1, bool isPrintFile, CharArr* p)
+void ResetPrint(char Oper, longint& fs, FILE* W1, longint LenPrint, ColorOrd* co, WORD& I1, bool isPrintFile, CharArr* p)
 {
 	*co = Part.ColorP; SetColorOrd(*co, 1, I1); isPrintFile = false;
 	fs = co->length(); LenPrint += fs;
@@ -672,6 +674,14 @@ void ResetPrint(longint LenPrint, ColorOrd* co, WORD& I1, bool isPrintFile, Char
 	}
 }
 
+void LowCase(unsigned char& c)
+{
+	BYTE i;
+	if ((c >= 'A') && (c <= 'Z')) { c = c + 0x20; return; }
+	for (i = 128; i <= 255; i++)
+		if ((UpcCharTab[i] == c) && (i != c)) { c = i; return; }
+}
+
 void LowCase(char& c)
 {
 	BYTE i;
@@ -680,31 +690,32 @@ void LowCase(char& c)
 		if ((UpcCharTab[i] == c) && (i != c)) { c = i; return; }
 }
 
-void DelStorClpBd()
+void DelStorClpBd(void* P1, LongStr* sp)
 {
 	TWork.Delete(ClpBdPos);
 	ClpBdPos = TWork.Store(sp);
 	ReleaseStore2(P1);
 }
 
-void MarkRdClpBd()
+void MarkRdClpBd(void* P1, LongStr* sp)
 {
 	MarkStore2(P1); sp = TWork.Read(2, ClpBdPos);
 }
 
-bool BlockGrasp(char Oper)
+bool BlockGrasp(char Oper, void* P1, LongStr* sp)
 {
 	longint L, L1, L2, ln;
 	WORD I1;
 	auto result = false;
-	if (!BlockExist) return result; L = Part.PosP + LineI + Posi - 1;
+	if (!BlockExist()) return result; L = Part.PosP + LineI + Posi - 1;
 	ln = LineAbs(LineL); if (Oper == 'G') TestKod();
 	SetBlockBound(L1, L2);
 	if ((L > L1) and (L < L2) and (Oper != 'G')) return result;
 	L = L2 - L1; if (L > 0x7FFF) { WrLLF10Msg(418); return result; }
 	if (L2 > Part.PosP + LenT) MovePart(L1 - Part.PosP);
 	I1 = L1 - Part.PosP;
-	MarkStore2(P1); sp = GetStore2(L + 2); sp->LL = L; Move(T[I1], sp->A, L);
+	MarkStore2(P1); sp = (LongStr*)GetStore2(L + 2); sp->LL = L;
+	Move(T[I1], sp->A, L);
 	if (Oper == 'M')
 	{
 		TestLenText(I1 + L, I1);
@@ -716,7 +727,7 @@ bool BlockGrasp(char Oper)
 			ln -= EndBLn - BegBLn;
 		}
 	}
-	if (Oper == 'G') DelStorClpBd();
+	if (Oper == 'G') DelStorClpBd(P1, sp);
 	PosDekFindLine(ln, Posi, false);
 	result = true;
 	return result;
@@ -734,10 +745,10 @@ void MovePart(WORD Ind)
 	}
 }
 
-void BlockDrop(char Oper)
+void BlockDrop(char Oper, void* P1, LongStr* sp)
 {
 	WORD I, I2;
-	if (Oper == 'D') MarkRdClpBd(); if (sp->LL == 0) return;
+	if (Oper == 'D') MarkRdClpBd(P1, sp); if (sp->LL == 0) return;
 	/* hlidani sp->LL a StoreAvail, MaxLenT, dela TestLenText, prip.SmallerPart */
 	if (Oper == 'D') FillBlank();
 	I = LineI + Posi - 1; I2 = sp->LL;
@@ -751,11 +762,11 @@ void BlockDrop(char Oper)
 	PosDekFindLine(BegBLn, BegBPos, true); /*ChangeScr = true;*/
 }
 
-bool BlockCGrasp(char Oper)
+bool BlockCGrasp(char Oper, void* P1, LongStr* sp)
 {
 	WORD i, I2;
 	longint l1, L;
-	ArrLine a;
+	ArrLine a = nullptr;
 
 	auto result = false;
 	if (!BlockExist()) return result;
@@ -766,26 +777,26 @@ bool BlockCGrasp(char Oper)
 		&& (Oper != 'G')) return result;
 	l1 = (EndBLn - BegBLn + 1) * (EndBPos - BegBPos + 2);
 	if (l1 > 0x7FFF) { WrLLF10Msg(418); return result; }
-	MarkStore2(P1); sp = GetStore2(l1 + 2); sp->LL = l1;
+	MarkStore2(P1); sp = (LongStr*)GetStore2(l1 + 2); sp->LL = l1;
 	PosDekFindLine(BegBLn, Posi, false); I2 = 0; i = EndBPos - BegBPos;
 	do {
 		Move(&Arr[BegBPos], a, i); a[i + 1] = _CR; a[i + 2] = _LF;
 		if (Oper == 'M') TestLastPos(EndBPos, BegBPos);
-		Move(a, sp->A[I2 + 1], i + 2); I2 += i + 2;
+		Move(a, &sp->A[I2 + 1], i + 2); I2 += i + 2;
 		TestKod();
 		NextLine(false);
 	} while (I2 != sp->LL);
 	if ((Oper == 'M') && (L >= BegBLn && L <= EndBLn) && (Posi > EndBPos))
 		Posi -= EndBPos - BegBPos;
-	if (Oper == 'G') DelStorClpBd(); PosDekFindLine(L, Posi, false);
+	if (Oper == 'G') DelStorClpBd(P1, sp); PosDekFindLine(L, Posi, false);
 	result = true;
 	return result;
 }
 
-void BlockCDrop(char Oper)
+void BlockCDrop(char Oper, void* P1, LongStr* sp)
 {
 	WORD i, I1, I3, ww;
-	if (Oper == 'D') MarkRdClpBd();
+	if (Oper == 'D') MarkRdClpBd(P1, sp);
 	if (sp->LL == 0) return;
 	/* hlidani sp->LL a StoreAvail, MaxLenT
 		dela NextLine - prechazi mezi segmenty */
@@ -797,7 +808,7 @@ void BlockCDrop(char Oper)
 	do {
 		if (sp->A[I1] == _CR)
 		{
-			InsertLine(i, I1, I3, ww);
+			InsertLine(i, I1, I3, ww, sp);
 			ww = BegBPos; EndBPos = MaxW(ww + i, EndBPos);
 			if ((NextI > LenT) && ((TypeT != FileT) || AllRd))
 			{
@@ -810,7 +821,7 @@ void BlockCDrop(char Oper)
 		if (sp->A[I1] == _CR || sp->A[I1] == _LF || sp->A[I1] == 0x1A) I3 = I1 + 1;
 		I1++;
 	} while (I1 <= sp->LL);
-	if (I3 < I1) InsertLine(i, I1, I3, ww);
+	if (I3 < I1) InsertLine(i, I1, I3, ww, sp);
 	if (Oper != 'R')
 	{
 		EndBLn = Part.LineP + LineL - 1; ReleaseStore2(P1);
@@ -818,23 +829,23 @@ void BlockCDrop(char Oper)
 	}
 }
 
-void InsertLine(WORD& i, WORD& I1, WORD& I3, WORD& ww)
+void InsertLine(WORD& i, WORD& I1, WORD& I3, WORD& ww, LongStr* sp)
 {
 	i = MinW(I1 - I3, LineSize - LastPosLine());
-	if (i > 0) { TestLastPos(ww, ww + i); Move(sp->A[I3], &Arr[ww], i); }
+	if (i > 0) { TestLastPos(ww, ww + i); Move(&sp->A[I3], &Arr[ww], i); }
 	TestKod();
 }
 
-void BlockCopyMove(char Oper)
+void BlockCopyMove(char Oper, void* P1, LongStr* sp)
 {
 	bool b;
 	if (!BlockExist()) return; FillBlank();
 	if (TypeB == TextBlock)
 	{
-		if (BlockGrasp(Oper)) BlockDrop(Oper);
+		if (BlockGrasp(Oper, P1, sp)) BlockDrop(Oper, P1, sp);
 	}
 	else
-		if (BlockCGrasp(Oper)) BlockCDrop(Oper);
+		if (BlockCGrasp(Oper, P1, sp)) BlockCDrop(Oper, P1, sp);
 }
 
 bool ColBlockExist()
@@ -947,7 +958,7 @@ void FindReplaceString(longint First, longint Last)
 	}
 	FirstEvent = false;
 	SetPart(First); fst = First - Part.PosP; NullChangePart();
-	label1:
+label1:
 	if (Last > Part.PosP + LenT) lst = LenT - 1; else lst = Last - Part.PosP;
 	ChangeP(fst);            /* Background muze volat NextPart */
 	if (FindString(fst, lst))
@@ -1031,7 +1042,7 @@ char MyVerifyLL(WORD n, pstring s)
 
 void HelpLU(char dir)
 {
-	WORD I, I1, I2, h1, h2;
+	WORD I = 0, I1 = 0, I2 = 0, h1 = 0, h2 = 0;
 	ClrWord();
 	h1 = WordNo2();
 	if (dir == 'U')
@@ -1056,7 +1067,7 @@ void HelpLU(char dir)
 
 void HelpRD(char dir)
 {
-	WORD I, I1, I2, h1, h2;
+	WORD I = 0, I1 = 0, I2 = 0, h1 = 0, h2 = 0;
 	ClrWord(); h1 = WordNo2(); if (WordExist()) h1++;
 	if (dir == 'D')
 	{

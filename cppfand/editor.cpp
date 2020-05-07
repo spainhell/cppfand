@@ -1,19 +1,22 @@
-#include "editor.h"
+#pragma once
 
+#include "editor.h"
 #include "kbdww.h"
 #include "legacy.h"
 #include "memory.h"
 #include "printtxt.h"
 #include "common.h"
+#include "edevproc.h"
 #include "edtextf.h"
-#include "obaseww.h"
+#include "obase.h"
 #include "rdrun.h"
 #include "runfrml.h"
+#include "wwmenu.h"
 
 longint SavePar()
 {
-	LongStr* sp; WORD len;
-	len = InterfL + ofs(T) - ofs(Mode) + 4;
+	LongStr* sp; WORD len = 0;
+	// len = InterfL + ofs(T) - ofs(Mode) + 4;
 	sp = (LongStr*)GetStore(len + 2);
 	sp->LL = len;
 	Move(&Insert, &sp->A, InterfL);
@@ -51,7 +54,7 @@ void GetEditTxt(bool& pInsert, bool& pIndent, bool& pWrap, bool& pJust, bool& pC
 }
 
 bool EditText(char pMode, char pTxtType, pstring pName, pstring pErrMsg, CharArr* pTxtPtr, WORD pMaxLen, WORD& pLen,
-	WORD& pInd, longint pScr, pstring pBreaks, EdExitDPtr pExD, bool& pSrch, bool& pUpdat, WORD pLastNr,
+	WORD& pInd, longint pScr, pstring pBreaks, EdExitD* pExD, bool& pSrch, bool& pUpdat, WORD pLastNr,
 	WORD pCtrlLastNr, MsgStrPtr pMsgS)
 {
 	bool oldEdOK;
@@ -82,7 +85,7 @@ bool EditText(char pMode, char pTxtType, pstring pName, pstring pErrMsg, CharArr
 	{
 		SrchT = false;
 		pstring OldKbdBuffer = KbdBuffer;
-		KbdBuffer = *l;
+		KbdBuffer = 0x0C;
 		KbdBuffer += OldKbdBuffer;
 		KbdChar = _L_;
 		IndT = 0;
@@ -118,17 +121,17 @@ WORD FindText(const pstring& Pstr, pstring Popt, CharArr* PTxtPtr, WORD PLen)
 	return result;
 }
 
-void EditTxtFile(longint* LP, char Mode, pstring& ErrMsg, EdExitDPtr ExD,
+void EditTxtFile(longint* LP, char Mode, pstring& ErrMsg, EdExitD* ExD,
 	longint TxtPos, longint Txtxy, WRect* V,
 	WORD Atr, const pstring Hd, BYTE WFlags, MsgStrPtr MsgS)
 {
-	bool Srch, Upd; longint Size, L;
+	bool Srch, Upd; longint Size = 0, L = 0;
 	longint w1;
 	ExitRecord er;
-	bool Loc;
-	WORD Ind, oldInd;
+	bool Loc = false;
+	WORD Ind = 0, oldInd = 0;
 	longint oldTxtxy;
-	LongStr* LS; pstring compErrTxt;
+	LongStr* LS = nullptr; pstring compErrTxt;
 
 	if (Atr == 0) Atr = colors.tNorm;
 	longint w2 = 0; longint w3 = 0;
@@ -142,7 +145,7 @@ void EditTxtFile(longint* LP, char Mode, pstring& ErrMsg, EdExitDPtr ExD,
 		w1 = PushW(1, 1, TxtCols, TxtRows);
 		TextAttr = Atr;
 	}
-	NewExit(Ovr, er);
+	//NewExit(Ovr(), er);
 	goto label4;
 	Loc = (LP != nullptr);
 	LocalPPtr = LP;
@@ -230,9 +233,9 @@ void ViewPrinterTxt()
 
 void Help(RdbDPtr R, pstring Name, bool InCWw)
 {
-	void* p; ExitRecord er; FileDPtr fd;
+	void* p = nullptr; ExitRecord er; FileDPtr fd = nullptr;
 	WORD c1, c2, r1, r2; longint w, w2; WORD i, l, l2; WORD iRec, oldIRec;
-	LongStr* s; LongStr* s2;
+	LongStr* s = nullptr; LongStr* s2 = nullptr;
 	WORD* os = (WORD*)s; WORD* os2 = (WORD*)s2;
 	integer delta; bool frst, byName, backw;
 	FileDPtr cf, cf2;
@@ -246,7 +249,7 @@ void Help(RdbDPtr R, pstring Name, bool InCWw)
 	}
 	else { fd = R->HelpFD; if (fd == nullptr) return; }
 	MarkStore(p); cf = CFile; w = 0; w2 = 0;
-	NewExit(Ovr(), er);
+	//NewExit(Ovr(), er);
 	goto label4;
 	if (InCWw) {
 		c1 = WindMin.X + 1; c2 = WindMax.X + 1; r1 = WindMin.Y + 1; r2 = WindMax.Y + 1;
@@ -262,7 +265,7 @@ label1:
 label2:
 	s = GetHlpText(R, Name, byName, iRec); cf2 = CFile;
 	if (s == nullptr)
-		if (frst && (R == RdbDPtr(HelpFD)) && (KbdChar == _CtrlF1_)) {
+		if (frst && (R == (RdbD*)(&HelpFD)) && (KbdChar == _CtrlF1_)) {
 			KbdChar = 0; Name = "Ctrl-F1 error"; goto label1;
 		}
 		else { Set2MsgPar(Name, fd->Name); WrLLF10Msg(146); }
@@ -327,7 +330,7 @@ void ClearHelpStkForCRdb()
 {
 	WORD i = 1;
 	while (i <= iStk)
-		if (Stk[i].Rdb == CRdb) { move(Stk[i + 1], Stk[i], (iStk - i) * 12); iStk--; }
+		if (Stk[i].Rdb == CRdb) { Move(&Stk[i + 1], &Stk[i], (iStk - i) * 12); iStk--; }
 		else i++;
 }
 
@@ -336,7 +339,7 @@ void InitTxtEditor()
 	FindStr[0] = 0; ReplaceStr[0] = 0; OptionStr[0] = 0; Replace = false;
 	TxtColor = colors.tNorm; BlockColor = colors.tBlock;
 	SysLColor = colors.fNorm;
-	ColKey[0] = colors.tCtrl; move(colors.tUnderline, ColKey[1], 7);
+	ColKey[0] = colors.tCtrl; Move(&colors.tUnderline, &ColKey[1], 7);
 	RdMsg(411); InsMsg = MsgLine; RdMsg(412); nInsMsg = MsgLine;
 	RdMsg(413); IndMsg = MsgLine; RdMsg(414); WrapMsg = MsgLine;
 	RdMsg(415); JustMsg = MsgLine; RdMsg(417); BlockMsg = MsgLine;

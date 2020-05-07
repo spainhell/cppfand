@@ -42,7 +42,7 @@ FieldDPtr RdFldName(FileDPtr FD)
 
 FileDPtr FindFileD()
 {
-	FileDPtr FD; RdbDPtr R; LocVar* LV;
+	FileD* FD = nullptr; RdbD* R = nullptr; LocVar* LV = nullptr;
 	if (FDLocVarAllowed && FindLocVar(LVBD.Root, LV) && (LV->FTyp == 'f'))
 	{
 		return LV->FD;

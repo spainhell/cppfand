@@ -1,6 +1,6 @@
 #include "type.h"
-
 #include "legacy.h"
+
 
 void UnPack(void* PackArr, void* NumArr, WORD NoDigits)
 {

@@ -1,7 +1,6 @@
+#pragma once
+
 #include "edglobal.h"
-
-
-
 #include "common.h"
 #include "editor.h"
 #include "kbdww.h"

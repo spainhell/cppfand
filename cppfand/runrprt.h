@@ -25,7 +25,8 @@ bool FrstBlk, NoFF, WasFF2, SetPage, WasOutput;
 integer LineLenLst, PageNo, PgeSize;
 void* Store2Ptr;
 
-longint NRecsAll, RecCount;
+//longint NRecsAll;
+longint RecCount;
 WORD NEof;
 InpD* MinID;
 bool FirstLines, WasDot;

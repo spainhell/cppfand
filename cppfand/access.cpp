@@ -1,5 +1,6 @@
-#include "access.h"
+#pragma once
 
+#include "access.h"
 #include "common.h"
 #include "fileacc.h"
 #include "index.h"
@@ -50,7 +51,7 @@ void TFile::RdPrefix(bool Chk)
 	longint* TNxtAvailPage = (longint*)&T; /* .DBT */
 	struct stFptHd { longint FreePart = 0; WORD X = 0, BlockSize = 0; }; /* .FPT */
 	stFptHd* FptHd = (stFptHd*)&T;
-	BYTE sum; longint FS, ML, RS; WORD i, n;
+	BYTE sum; longint FS, ML, RS = 0; WORD i, n;
 	if (Chk) {
 		FS = FileSizeH(Handle);
 		if (FS <= 512) {
@@ -60,7 +61,7 @@ void TFile::RdPrefix(bool Chk)
 			return;
 		}
 	}
-	RdWrCache(true, Handle, NotCached, 0, 512, &T); srand(RS); LicenseNr = 0;
+	RdWrCache(true, Handle, NotCached(), 0, 512, &T); srand(RS); LicenseNr = 0;
 	if (Format == DbtFormat) {
 		MaxPage = *TNxtAvailPage - 1; GetMLen(); return;
 	}
@@ -116,7 +117,7 @@ void TFile::WrPrefix()
 	stFptHd* FptHd = (stFptHd*)&T;
 	char Pw[40];
 	// BYTE absolute 0 Time:0x46C; TODO: TIMER
-	WORD i, n; BYTE sum; longint RS;
+	WORD i, n; BYTE sum; longint RS = 0;
 	const PwCodeArr EmptyPw = { '@','@','@','@','@','@','@','@','@','@','@','@','@','@','@','@','@','@','@','@' };
 
 	if (Format == DbtFormat) {
@@ -202,7 +203,7 @@ void TFile::Delete(longint Pos)
 {
 	longint PosPg, NxtPg; WORD PosI; integer N; WORD l;
 	BYTE X[MPageSize]; integer* XL = (integer*)&X;
-	WORD* wp; WORD* wpofs = wp; bool IsLongTxt;
+	WORD* wp = nullptr; WORD* wpofs = wp; bool IsLongTxt;
 	if (Pos <= 0) return;
 	if ((Format != T00Format) || NotCached()) return;
 	if ((Pos < MPageSize) || (Pos >= MLen)) { Err(889, false); return; }
@@ -245,7 +246,7 @@ void TFile::Delete(longint Pos)
 
 LongStr* TFile::Read(WORD StackNr, longint Pos)
 {
-	LongStr* s; WORD i, l; CharArr* p;
+	LongStr* s = nullptr; WORD i = 0, l = 0; CharArr* p = nullptr;
 	WORD* pofs = (WORD*)p;
 	struct stFptD { longint Typ = 0, Len = 0; } FptD;
 	Pos -= LicenseNr;
@@ -254,7 +255,7 @@ LongStr* TFile::Read(WORD StackNr, longint Pos)
 	case DbtFormat: {
 		s = (LongStr*)GetStore(32770); Pos = Pos << MPageShft; p = &s->A; l = 0;
 		while (l <= 32768 - MPageSize) {
-			RdWrCache(true, Handle, NotCached, Pos, MPageSize, p);
+			RdWrCache(true, Handle, NotCached(), Pos, MPageSize, p);
 			for (i = 1; i < MPageSize; i++) { if ((*p)[i] == 0x1A) goto label0; l++; }
 			pofs += MPageSize; Pos += MPageSize;
 		}
@@ -265,11 +266,11 @@ LongStr* TFile::Read(WORD StackNr, longint Pos)
 	}
 	case FptFormat: {
 		Pos = Pos * BlockSize;
-		RdWrCache(true, Handle, NotCached, Pos, sizeof(FptD), &FptD);
+		RdWrCache(true, Handle, NotCached(), Pos, sizeof(FptD), &FptD);
 		if (SwapLong(FptD.Typ) != 1/*text*/) goto label11;
 		else {
 			l = SwapLong(FptD.Len) & 0x7FFF; s = (LongStr*)GetStore(l + 2); s->LL = l;
-			RdWrCache(true, Handle, NotCached, Pos + sizeof(FptD), l, s->A);
+			RdWrCache(true, Handle, NotCached(), Pos + sizeof(FptD), l, s->A);
 		}
 		break;
 	}
@@ -347,7 +348,7 @@ label1:
 void TFile::RdWr(bool ReadOp, longint Pos, WORD N, void* X)
 {
 	WORD Rest, L; longint NxtPg;
-	void* P;
+	void* P = nullptr;
 	WORD* POfs = (WORD*)P;
 	Rest = MPageSize - (WORD(Pos) && (MPageSize - 1)); P = X;
 	while (N > Rest) {
@@ -568,7 +569,7 @@ XItem* XPage::XI(WORD I)
 
 uintptr_t XPage::EndOff()
 {
-	XItemPtr x;
+	XItemPtr x = nullptr;
 	WORD* xofs = (WORD*)x; // absolute x
 	x = XI(NItems + 1); return uintptr_t(xofs);
 }
@@ -585,10 +586,10 @@ bool XPage::Overflow()
 
 pstring XPage::StrI(WORD I)
 {
-	XItemPtr x;
+	XItemPtr x = nullptr;
 	WORD* xofs = (WORD*)x; // absolute x
-	WORD o;
-	pstring* s;
+	WORD o = 0;
+	pstring* s = nullptr;
 
 	x = XItemPtr(&A);
 	o = Off();
@@ -615,7 +616,7 @@ longint XPage::SumN()
 void XPage::Insert(WORD I, void* SS, XItem* XX)
 {
 	pstring* S = (pstring*)SS;
-	XItemPtr x, x2;
+	XItemPtr x = nullptr, x2 = nullptr;
 	WORD* xofs = (WORD*)x;
 	WORD* x2ofs = (WORD*)x2;
 	WORD m, m2, o, oE, l, l2, sz;
@@ -658,7 +659,7 @@ void XPage::InsDownIndex(WORD I, longint Page, XPage* P)
 
 void XPage::Delete(WORD I)
 {
-	XItemPtr x, x1, x2;
+	XItemPtr x = nullptr, x1 = nullptr, x2 = nullptr;
 	WORD* xofs = (WORD*)x;
 	WORD* x1ofs = (WORD*)x1;
 	WORD* x2ofs = (WORD*)x2;
@@ -682,7 +683,7 @@ void XPage::Delete(WORD I)
 
 void XPage::AddPage(XPage* P)
 {
-	XItemPtr x, x1;
+	XItemPtr x = nullptr, x1 = nullptr;
 	WORD* xofs = (WORD*)x;
 
 	GreaterPage = P->GreaterPage;
@@ -707,7 +708,7 @@ void XPage::SplitPage(XPage* P, longint ThisPage)
 {
 	// figuruje tady pstring* s, ale výsledek se nikam neukládá, je to zakomentované
 
-	XItemPtr x, x1, x2;
+	XItemPtr x = nullptr, x1 = nullptr, x2 = nullptr;
 	WORD* xofs = (WORD*)x;
 	WORD* x1ofs = (WORD*)x1;
 	WORD* x2ofs = (WORD*)x2;
@@ -1039,7 +1040,7 @@ void XKey::DeleteOnPath()
 {
 	longint page, page1, page2;
 	longint uppage = 0;
-	void* pp;
+	void* pp = nullptr;
 	XItem* x = nullptr;
 	bool released;
 	longint n;
@@ -1542,7 +1543,7 @@ label1:
 #endif
 		case 5:
 		{
-			move(Strm, CRecPtr, CFile->RecLen + 1);
+			Move(Strm, CRecPtr, CFile->RecLen + 1);
 			break;
 		}
 		}

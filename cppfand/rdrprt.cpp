@@ -6,7 +6,9 @@
 #include "lexanal.h"
 #include "memory.h"
 #include "obase.h"
+#include "rdfildcl.h"
 #include "rdfrml.h"
+#include "rdmerg.h"
 #include "rdmix.h"
 
 FileD* InpFD(WORD I)
@@ -117,7 +119,7 @@ void TestSetSumIi()
 
 FrmlPtr FindIiandFldFrml(FileD* FD, char& FTyp)
 {
-	integer i; FrmlPtr z;
+	integer i = 0; FrmlPtr z = nullptr;;
 	if (WhatToRd == 'i') {       /* search first in Ii*/
 		FD = InpFD(Oi); z = TryRdFldFrml(FD, FTyp);
 		if (z != nullptr) { Ii = Oi; goto label1; };
@@ -133,7 +135,7 @@ label1:
 
 void RdDirFilVar(char& FTyp, FrmlElem* res)
 {
-	LinkD* LD; FileD* FD; integer I; FrmlPtr Z;
+	LinkD* LD = nullptr; FileD* FD = nullptr; integer I = 0; FrmlPtr Z = nullptr;
 	if (WasIiPrefix) {
 		CFile = InpFD(Ii); if (!IsRoleName(true, FD, LD)) Error(9);
 	}
@@ -378,7 +380,8 @@ LvDescr* MakeOldMLvD()
 
 void RdAutoSortSK(InpD* ID)
 {
-	KeyFldD* M; KeyFldD* SK; LvDescr* L; WORD n; ConstListEl* C; bool as;
+	KeyFldD* M = nullptr; KeyFldD* SK = nullptr; LvDescr* L = nullptr;
+	WORD n = 0; ConstListEl* C = nullptr; bool as = false;
 	if (Lexem == ';') { RdLex(); RdKFList(ID->SFld, CFile); }
 	L = nullptr;
 	as = ID->AutoSort;
@@ -407,7 +410,7 @@ void RdAutoSortSK(InpD* ID)
 
 LvDescr* NewLvS(LvDescr* L, InpD* ID)
 {
-	LvDescr* L1;
+	LvDescr* L1 = nullptr;
 	L1 = (LvDescr*)GetZStore(sizeof(*L1));
 	L1->Chain = L;
 	if (L == nullptr) ID->LstLvS = L1;
@@ -417,15 +420,15 @@ LvDescr* NewLvS(LvDescr* L, InpD* ID)
 
 void RdBlock(BlkD* BB)
 {
-	integer LineLen;
-	integer NBytesStored;
-	BYTE* LnL; WORD* StrL;
-	integer I, N, L, M;
-	bool RepeatedGrp;        /*RdBlock - body*/
-	RFldD* RF, RF1;
-	BlkD* DummyB;
-	char UC;
-	LocVar* LV;
+	integer LineLen = 0;
+	integer NBytesStored = 0;
+	BYTE* LnL = nullptr; WORD* StrL = nullptr;
+	integer I = 0, N = 0, L = 0, M = 0;
+	bool RepeatedGrp = false;        /*RdBlock - body*/
+	RFldD* RF = nullptr; RFldD* RF1 = nullptr;
+	BlkD* DummyB = nullptr;
+	char UC = 0;
+	LocVar* LV = nullptr;
 	CBlk = (BlkD*)GetZStore(sizeof(BlkD)); ChainLast(BB, CBlk);
 	RdCond();
 	if (IsKeyWord("BEGIN")) { RdBeginEnd(CBlk->BeforeProc); goto label1; }
@@ -451,7 +454,7 @@ label0:
 		if (ForwChar == ':') {
 			TestIdentif(); GetStore(LexWord.length());
 			Move(&LexWord, &RF->Name, LexWord.length() + 1);
-			if (FindInLvBlk(LstLvM, DummyB, &RF1) || FindLocVar(LVBD.Root, LV)) Error(26);
+			if (FindInLvBlk(LstLvM, DummyB, RF1) || FindLocVar(LVBD.Root, LV)) Error(26);
 			RdLex(); Accept(_assign);
 		}
 		else RF->Name = "";
@@ -624,9 +627,10 @@ label1:
 	AcceptKeyWord("END");
 }
 
-AssignD* RdAssign()
+AssignD* RdAssign2()
 {
-	AssignD* A; LocVar* LV; char FTyp; FileD* FD; FieldDescr* F;
+	AssignD* A = nullptr; LocVar* LV = nullptr; char FTyp = 0;
+	FileD* FD = nullptr; FieldDescr* F = nullptr;
 	AssignD* result = nullptr;
 	A = (AssignD*)GetZStore(sizeof(*A)); result = A;
 	if (IsKeyWord("IF")) {
@@ -652,7 +656,7 @@ void RdAssignBlk(AssignD* ARoot)
 {
 	AssignD* A;
 	if (IsKeyWord("BEGIN")) RdBeginEnd(ARoot);
-	else { A = RdAssign(); ChainLast(ARoot, A); }
+	else { A = RdAssign2(); ChainLast(ARoot, A); }
 }
 
 void RdCond()

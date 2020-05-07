@@ -6,6 +6,7 @@
 /* the index is sorted by key value && input order(IR) !! */
 
 class XXPage; // forward declaration
+struct Instr;
 
 class WRec /* record on WPage */
 { 
