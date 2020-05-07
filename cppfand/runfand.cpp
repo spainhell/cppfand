@@ -210,14 +210,16 @@ void RunRdb(pstring p)
 
 void SelectRunRdb(bool OnFace)
 {
+	wwmix ww;
 	pstring p;
-	p = SelectDiskFile(".RDB", 34, OnFace); RunRdb(p);
+	p = ww.SelectDiskFile(".RDB", 34, OnFace); RunRdb(p);
 }
 
 void CallInstallRdb()
 {
+	wwmix ww;
 	pstring p; pstring n;
-	p = SelectDiskFile(".RDB", 35, true);
+	p = ww.SelectDiskFile(".RDB", 35, true);
 	if ((p != "") && SetTopDir(p, n))
 	{
 		InstallRdb(n); CFile = CatFD; CloseFile();
@@ -233,7 +235,8 @@ void CallEditTxt()
 
 void SelectEditTxt(pstring E, bool OnFace)
 {
-	CPath = SelectDiskFile(E, 35, OnFace); if (CPath == "") return;
+	wwmix ww;
+	CPath = ww.SelectDiskFile(E, 35, OnFace); if (CPath == "") return;
 	CallEditTxt();
 }
 

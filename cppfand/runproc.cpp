@@ -90,23 +90,25 @@ label2:
 
 void PromptAutoRprt(RprtOpt* RO)
 {
+	wwmix ww;
+	
 	FieldList FL; FieldDPtr F; RprtOpt* RO2;
 	RO2 = (RprtOpt*)GetStore(sizeof(*RO)); Move(RO, RO2, sizeof(*RO));
 	FL = RO->Flds;
 	while (FL != nullptr)
 	{
 		F = FL->FldD;
-		if (F->Flg && f_Stored != 0) PutSelect(F->Name);
+		if (F->Flg && f_Stored != 0) ww.PutSelect(F->Name);
 		else
 		{
 			pstring tmpStr = SelMark;
-			PutSelect(tmpStr + F->Name);
+			ww.PutSelect(tmpStr + F->Name);
 		}
 		FL = FL->Chain;
 	}
-	CFile = RO->FDL.FD; if (not SelFieldList(36, true, RO2->Flds)) return;
+	CFile = RO->FDL.FD; if (!ww.SelFieldList(36, true, RO2->Flds)) return;
 	if ((RO->FDL.Cond == nullptr) &&
-		!PromptFilter("", RO2->FDL.Cond, RO2->CondTxt)) return;
+		!ww.PromptFilter("", RO2->FDL.Cond, RO2->CondTxt)) return;
 	if (SelForAutoRprt(RO2)) RunAutoReport(RO2);
 }
 
@@ -947,7 +949,7 @@ void RunInstr(Instr* PD)
 		case _backupm: BackupM(PD); break;
 		case _resetcat: ResetCatalog(); break;
 		case _setedittxt: { SetEditTxt(PD); break; }
-		case _getindex: { GetIndex(PD); break; }
+		//case _getindex: { GetIndex(); break; }
 		case _setmouse: SetMouse(RunInt(PD->MouseX), RunInt(PD->MouseY), RunBool(PD->Show)); break;
 		case _checkfile: { SetTxtPathVol(*PD->cfPath, PD->cfCatIRec); CheckFile(PD->cfFD); break; }
 #ifdef FandSQL

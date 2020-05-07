@@ -1,16 +1,40 @@
 #include "wwmix.h"
 
 #include "common.h"
-#include "editor.h"
 #include "kbdww.h"
 #include "legacy.h"
 #include "lexanal.h"
 #include "memory.h"
-#include "obaseww.h"
 #include "rdfrml.h"
 #include "runedi.h"
 
-void PutSelect(pstring s)
+struct Item
+{
+	Item* Chain;
+	char Tag;
+	pstring S;
+};
+
+struct
+{
+	Item* ItemRoot;
+	void* markp;
+	integer NItems, MaxItemLen, Tabs, TabSize, WwSize, Base, iItem;
+} sv;
+
+Item* GetItem(WORD N)
+{
+	Item* p; WORD i;
+	p = sv.ItemRoot;
+	for (i = 2; i <= N; i++) p = p->Chain;
+	return p;
+}
+
+wwmix::wwmix()
+{
+}
+
+void wwmix::PutSelect(pstring s)
 {
 	Item* p; WORD l;
 	l = MinW(s.length(), 46);
@@ -28,15 +52,7 @@ void PutSelect(pstring s)
 	sv.MaxItemLen = MaxW(l, sv.MaxItemLen);
 }
 
-Item* GetItem(WORD N)
-{
-	Item* p; WORD i;
-	p = sv.ItemRoot;
-	for (i = 2; i <= N; i++) p = p->Chain;
-	return p;
-}
-
-void SelectStr(integer C1, integer R1, WORD NMsg, pstring LowTxt)
+void wwmix::SelectStr(integer C1, integer R1, WORD NMsg, pstring LowTxt)
 {
 	void* pw; WORD cols, rows, c2, r2, MaxBase; longint w2;
 	char schar; integer b; Item* p = nullptr; integer i, iOld;
@@ -203,7 +219,7 @@ label1:
 	}
 }
 
-void WriteItem(WORD N)
+void wwmix::WriteItem(WORD N)
 {
 	WORD i, l; Item* p;
 	/* !!! with sv do!!! */
@@ -219,22 +235,22 @@ void WriteItem(WORD N)
 	if (l > 0) printf(" ");
 }
 
-void SetAttr(WORD Attr)
+void wwmix::SetAttr(WORD Attr)
 {
 	TextAttr = Attr; WriteItem(sv.iItem);
 }
 
-void IVOn()
+void wwmix::IVOn()
 {
 	TextAttr = colors.sHili; WriteItem(sv.iItem);
 }
 
-void IVOff()
+void wwmix::IVOff()
 {
 	TextAttr = colors.sNorm; WriteItem(sv.iItem);
 }
 
-void DisplWw()
+void wwmix::DisplWw()
 {
 	char c;
 	/* !!! with sv do!!! */
@@ -248,7 +264,7 @@ void DisplWw()
 	SetAttr(colors.sHili);
 }
 
-void Right()
+void wwmix::Right()
 {
 	/* !!! with sv do!!! */
 	IVOff();
@@ -261,7 +277,7 @@ void Right()
 	else IVOn();
 }
 
-void Left()
+void wwmix::Left()
 {
 	if (sv.iItem > 1)
 	{
@@ -275,7 +291,7 @@ void Left()
 	};
 }
 
-void Down()
+void wwmix::Down()
 {
 	if (sv.iItem + sv.Tabs <= sv.NItems)
 	{
@@ -290,7 +306,7 @@ void Down()
 	}
 }
 
-void Up()
+void wwmix::Up()
 {
 	if (sv.iItem > sv.Tabs)
 	{
@@ -305,21 +321,21 @@ void Up()
 	}
 }
 
-void SetTag(char c)
+void wwmix::SetTag(char c)
 {
 	Item* p;
 	p = GetItem(sv.iItem); p->Tag = c; TextAttr = colors.sHili;
 	WriteItem(sv.iItem); Right();
 }
 
-void SetAllTags(char c)
+void wwmix::SetAllTags(char c)
 {
 	Item* p;
 	p = sv.ItemRoot; while (p != nullptr) { p->Tag = c; p = p->Chain; }
 	DisplWw();
 }
 
-void Switch(WORD I1, WORD I2)
+void wwmix::Switch(WORD I1, WORD I2)
 {
 	Item* p1; Item* p2; Item* q1; Item* q2; Item* h;
 	WORD i;
@@ -343,7 +359,7 @@ void Switch(WORD I1, WORD I2)
 	}
 }
 
-void GraspAndMove(char schar)
+void wwmix::GraspAndMove(char schar)
 {
 	WORD A; Item* p;
 	/* !!! with sv do!!! */
@@ -395,7 +411,7 @@ label1:
 	goto label1;
 }
 
-void AbcdSort()
+void wwmix::AbcdSort()
 {
 	Item* p; Item* q; Item* r;
 	bool sorted;
@@ -412,7 +428,7 @@ void AbcdSort()
 	} while (!sorted);
 }
 
-void SetFirstiItem()
+void wwmix::SetFirstiItem()
 {
 	sv.iItem = 1;
 	if (ss.Pointto == nullptr) return;
@@ -424,7 +440,7 @@ void SetFirstiItem()
 	}
 }
 
-bool MouseInItem(integer& I)
+bool wwmix::MouseInItem(integer& I)
 {
 	auto result = false;
 	integer x = Event.Where.X - WindMin.X - 1;
@@ -437,7 +453,7 @@ bool MouseInItem(integer& I)
 	return result;
 }
 
-pstring GetSelect()
+pstring wwmix::GetSelect()
 {
 	Item* p = (Item*)&sv;
 	pstring result;
@@ -451,7 +467,7 @@ pstring GetSelect()
 	return result;
 }
 
-bool SelFieldList(WORD Nmsg, bool ImplAll, FieldList FLRoot)
+bool wwmix::SelFieldList(WORD Nmsg, bool ImplAll, FieldList FLRoot)
 {
 	FieldDPtr F; FieldList FL; pstring s;
 	FLRoot = nullptr;
@@ -478,7 +494,7 @@ label1:
 	return result;
 }
 
-pstring SelectDiskFile(pstring Path, WORD HdMsg, bool OnFace)
+pstring wwmix::SelectDiskFile(pstring Path, WORD HdMsg, bool OnFace)
 {
 	// TODO:
 //	pstring mask, s; SearchRec SR; longint w;
@@ -550,7 +566,7 @@ pstring SelectDiskFile(pstring Path, WORD HdMsg, bool OnFace)
 	return "";
 }
 
-bool PromptFilter(pstring Txt, FrmlPtr Bool, pstring* BoolTxt)
+bool wwmix::PromptFilter(pstring Txt, FrmlPtr Bool, pstring* BoolTxt)
 {
 	void* p = nullptr;
 	ExitRecord er = {};
@@ -591,7 +607,7 @@ label3:
 	goto label1;
 }
 
-void PromptLL(WORD N, pstring* Txt, WORD I, bool Del)
+void wwmix::PromptLL(WORD N, pstring* Txt, WORD I, bool Del)
 {
 	longint w = PushW(1, TxtRows, TxtCols, TxtRows);
 	GotoXY(1, TxtRows);
@@ -604,7 +620,7 @@ void PromptLL(WORD N, pstring* Txt, WORD I, bool Del)
 	PopW(w);
 }
 
-pstring PassWord(bool TwoTimes)
+pstring wwmix::PassWord(bool TwoTimes)
 {
 	longint w; pstring Txt, Txt1;  WORD MsgNr, col;
 	col = (TxtCols - 21) >> 1;
@@ -629,7 +645,7 @@ label2:
 	return Txt;
 }
 
-void SetPassWord(FileDPtr FD, WORD Nr, pstring Pw)
+void wwmix::SetPassWord(FileDPtr FD, WORD Nr, pstring Pw)
 {
 	void* p;
 	if (Nr == 1) p = FD->TF->PwCode;
@@ -639,7 +655,7 @@ void SetPassWord(FileDPtr FD, WORD Nr, pstring Pw)
 	Code(p, 20);
 }
 
-bool HasPassWord(FileDPtr FD, WORD Nr, pstring Pw)
+bool wwmix::HasPassWord(FileDPtr FD, WORD Nr, pstring Pw)
 {
 	PwCodeArr* X;
 	/* !!! with FD->TF^ do!!! */

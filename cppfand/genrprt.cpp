@@ -291,6 +291,8 @@ void RunAutoReport(RprtOpt* RO)
 
 bool SelForAutoRprt(RprtOpt* RO)
 {
+	wwmix ww;
+	
 	FieldListEl* FL; WORD N;
 	auto result = false;
 	if ((RO->SK == nullptr) && !PromptSortKeys(RO->Flds, RO->SK)) return result;
@@ -299,16 +301,16 @@ bool SelForAutoRprt(RprtOpt* RO)
 	if (RO->Mode == _ARprt || RO->Mode == _ATotal) {
 		FL = RO->Flds;
 		while (FL != nullptr) {
-			if (FL->FldD->Typ != 'T') PutSelect(FL->FldD->Name);
+			if (FL->FldD->Typ != 'T') ww.PutSelect(FL->FldD->Name);
 			FL = FL->Chain;
 		}
-		if (!SelFieldList(37, false, RO->Ctrl)) return result;
+		if (!ww.SelFieldList(37, false, RO->Ctrl)) return result;
 		FL = RO->Flds;
 		while (FL != nullptr) {
-			if (FL->FldD->FrmlTyp == 'R') PutSelect(FL->FldD->Name);
+			if (FL->FldD->FrmlTyp == 'R') ww.PutSelect(FL->FldD->Name);
 			FL = FL->Chain;
 		}
-		if (!SelFieldList(38, true, RO->Sum)) return result;
+		if (!ww.SelFieldList(38, true, RO->Sum)) return result;
 	}
 	if (spec.AutoRprtPrint) { RO->Path = (pstring*)GetStore(5); *RO->Path = "LPT1"; }
 	result = true;
@@ -317,22 +319,24 @@ bool SelForAutoRprt(RprtOpt* RO)
 
 LongStr* SelGenRprt(pstring RprtName)
 {
+	wwmix ww;
+	
 	RdbD* r; FileD* fd; FieldDescr* f; RprtOpt* ro;
 	pstring s; integer i;
 	FieldListEl* fl;
 	LongStr* result = nullptr;
 	r = CRdb; while (r != nullptr) {
 		fd = r->FD->Chain; while (fd != nullptr) {
-			s = fd->Name; if (r != CRdb) s = r->FD->Name + '.' + s; PutSelect(s);
+			s = fd->Name; if (r != CRdb) s = r->FD->Name + '.' + s; ww.PutSelect(s);
 			fd = fd->Chain;
 		}
 		r = r->ChainBack;
 	}
 	ss.Abcd = true;
 	pstring tmpP = "\"";
-	SelectStr(0, 0, 19, tmpP + RprtName + '\"');
+	ww.SelectStr(0, 0, 19, tmpP + RprtName + '\"');
 	if (KbdChar == _ESC_) return result;
-	s = GetSelect();
+	s = ww.GetSelect();
 	i = s.first('.'); r = CRdb;
 	if (i != 0) {
 		do { r = r->ChainBack; } while (r->FD->Name != s.substr(1, i - 1));
@@ -348,23 +352,23 @@ LongStr* SelGenRprt(pstring RprtName)
 			pstring oldS = s;
 			s = SelMark; s += oldS;
 		}
-		PutSelect(s);
+		ww.PutSelect(s);
 		f = f->Chain;
 	}
-	CFile = fd; SelFieldList(36, true, ro->Flds);
+	CFile = fd; ww.SelFieldList(36, true, ro->Flds);
 	if (ro->Flds == nullptr) return result;
 	ro->Mode = _ARprt;
 	fl = ro->Flds;
 	while (fl != nullptr) {
-		PutSelect(fl->FldD->Name); fl = fl->Chain;
+		ww.PutSelect(fl->FldD->Name); fl = fl->Chain;
 	}
-	if (!SelFieldList(37, false, ro->Ctrl)) return result;
+	if (!ww.SelFieldList(37, false, ro->Ctrl)) return result;
 	fl = ro->Flds;
 	while (fl != nullptr) {
-		if (fl->FldD->FrmlTyp == 'R') PutSelect(fl->FldD->Name);
+		if (fl->FldD->FrmlTyp == 'R') ww.PutSelect(fl->FldD->Name);
 		fl = fl->Chain;
 	}
-	if (!SelFieldList(38, false, ro->Sum)) return result;
+	if (!ww.SelFieldList(38, false, ro->Sum)) return result;
 	result = GenAutoRprt(ro, false);
 	return result;
 }

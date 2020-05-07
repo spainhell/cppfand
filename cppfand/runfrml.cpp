@@ -1154,6 +1154,8 @@ void StrMask(double R, pstring& Mask)
 
 LongStr* RunS(FrmlPtr Z)
 {
+	wwmix ww;
+	
 	pstring s, snew; WORD w; FileDPtr cf; void* cr; XString* x = (XString*)&s;
 	LongStr* t; LongStr* tnew; WORD l, i, j; double r; BYTE m;
 
@@ -1191,13 +1193,13 @@ LongStr* RunS(FrmlPtr Z)
 	}
 	case _prompt:s = PromptS(&(RunShortStr(Z->P1)), Z->P2, Z->FldD);
 	case _getpath: { s = ".*"; if (Z->P1 != nullptr) s = RunShortStr(Z->P1);
-		s = SelectDiskFile(s, 35, false); }
+		s = ww.SelectDiskFile(s, 35, false); }
 	case _catfield: {
 		s = RdCatField(Z->CatIRec, Z->CatFld);
 		if (Z->CatFld == CatPathName) s = FExpand(s);
 		break;
 	}
-	case _passWORD: s = PassWord(false); break;
+	case _passWORD: s = ww.PassWord(false); break;
 	case _readkey: {
 		ReadKbd();
 		s[1] = char(Lo(KbdChar));
@@ -1246,6 +1248,8 @@ LongStr* RunS(FrmlPtr Z)
 
 LongStr* RunSelectStr(FrmlPtr Z)
 {
+	wwmix ww;
+	
 	LongStr* s = nullptr; LongStr* s2 = nullptr;
 	pstring x(80); pstring mode(5);
 	void* p2 = nullptr; void* pl = nullptr;
@@ -1254,7 +1258,7 @@ LongStr* RunSelectStr(FrmlPtr Z)
 	s = RunLongStr(Z->P3); n = CountDLines(s->A, s->LL, Z->Delim);
 	for (i = 1; i < n; i++) {
 		x = GetDLine(s->A, s->LL, Z->Delim, i);
-		if (x != "") PutSelect(x);
+		if (x != "") ww.PutSelect(x);
 	}
 	mode = RunShortStr(Z->P6);
 	for (i = 1; i < mode.length(); i++)
@@ -1264,13 +1268,13 @@ LongStr* RunSelectStr(FrmlPtr Z)
 		case 'I': ss.ImplAll = true; break;
 		}
 	SetMsgPar(RunShortStr(Z->P4));
-	SelectStr(RunInt(Z->P1), RunInt(Z->P2), 110, RunShortStr(Z->P5));
+	ww.SelectStr(RunInt(Z->P1), RunInt(Z->P2), 110, RunShortStr(Z->P5));
 	MarkStore2(p2);
 	s2 = (LongStr*)GetStore2(s->LL + 2); n = 1; LastExitCode = 0;
 	if (KbdChar = _ESC_) LastExitCode = 1;
 	else
 		do {
-			x = GetSelect();
+			x = ww.GetSelect();
 			if (x != "") {
 				if (n > 1) { s2->A[n] = 0x0D; n++; }
 				Move(&x[1], &s2->A[n], x.length());

@@ -26,7 +26,7 @@ void NewLine(char Mode);
 WORD SetPredI();
 void WrChar_E(char Ch);
 void Format(WORD& i, longint First, longint Last, WORD Posit, bool Rep);
-void Calculate_E();
+void Calculate();
 bool BlockExist();
 void SetBlockBound(longint& BBPos, longint& EBPos);
 bool BlockHandle(longint& fs, FILE* F1, char Oper);

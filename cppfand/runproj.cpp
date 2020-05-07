@@ -27,6 +27,23 @@
 #include "wwmenu.h"
 #include "wwmix.h"
 
+void* O(void* p); // ASM
+void* OCF(void* p); // ASM
+
+EditD* E = EditDRoot;
+longint UserW = 0;
+
+struct RdbRecVars
+{
+	char Typ = 0; pstring Name = pstring(12); pstring Ext;
+	longint Txt = 0; longint OldTxt = 0;
+	char FTyp = 0; WORD CatIRec = 0; bool isSQL = false;
+};
+
+
+FileD* CFileF;
+longint sz; WORD nTb; void* Tb;
+
 bool IsCurrChpt()
 {
 	return CRdb->FD == CFile;
@@ -165,6 +182,38 @@ bool ChptDel()
 	return ChptDelFor(&New);
 }
 
+bool IsDuplFileName(pstring name)
+{
+	WORD I; pstring n; pstring e; void* cr;
+	auto result = true;
+	if (SEquUpcase(name, Chpt->Name)) return result;
+	cr = CRecPtr;
+	CRecPtr = GetRecSpace();
+	for (I = 1; I < Chpt->NRecs; I++)
+		if (I != CRec()) {
+			ReadRec(I);
+			if (_ShortS(ChptTyp) == 'F') {
+				GetSplitChptName(&n, &e);
+				if (SEquUpcase(name, n)) goto label1;
+			}
+		}
+	result = false;
+label1:
+	ReleaseStore(CRecPtr);
+	CRecPtr = cr;
+	return result;
+}
+
+void RenameWithOldExt(RdbRecVars New, RdbRecVars Old)
+{
+	CExt = Old.Ext;
+	RenameFile56(Old.Name + CExt, New.Name + CExt, false);
+	CExtToT();
+	RenameFile56(Old.Name + CExt, New.Name + CExt, false);
+	CExtToX();
+	if (Old.FTyp == 'X') RenameFile56(Old.Name + CExt, New.Name + CExt, false);
+}
+
 WORD ChptWriteCRec()
 {
 	RdbRecVars New, Old;
@@ -201,11 +250,11 @@ WORD ChptWriteCRec()
 		}
 	}
 	if ((New.Typ == 'D' || New.Typ == 'I' || New.Typ == 'U')
-		|| !TestIsNewRec
+		|| !TestIsNewRec()
 		&& (Old.Typ == 'D' || Old.Typ == 'I' || Old.Typ == 'U')) {
 		ReleaseFDLDAfterChpt(); SetCompileAll();
 	}
-	if (TestIsNewRec) { ReleaseFDLDAfterChpt(); goto label2; }
+	if (TestIsNewRec()) { ReleaseFDLDAfterChpt(); goto label2; }
 	if (New.Typ != Old.Typ) {
 	label1:
 		if (!ChptDelFor(&Old)) return result; T_(ChptOldTxt, 0);
@@ -223,7 +272,7 @@ WORD ChptWriteCRec()
 	ReleaseFDLDAfterChpt(); SetCompileAll();
 	if ((New.OldTxt != 0) && (New.Name != Old.Name)) {
 		if (Old.CatIRec != 0) { WrCatField(Old.CatIRec, CatFileName, New.Name); }
-		else { if (!Old.isSQL) RenameWithOldExt(); }
+		else { if (!Old.isSQL) RenameWithOldExt(New, Old); }
 	}
 label2:
 	B_(ChptVerif, true); result = 0;
@@ -231,26 +280,84 @@ label2:
 	return result;
 }
 
-bool IsDuplFileName(pstring name)
+void OKF(KeyFldDPtr kf)
 {
-	WORD I; pstring n; pstring e; void* cr;
-	auto result = true;
-	if (SEquUpcase(name, Chpt->Name)) return result;
-	cr = CRecPtr;
-	CRecPtr = GetRecSpace();
-	for (I = 1; I < Chpt->NRecs; I++)
-		if (I != CRec()) {
-			ReadRec(I);
-			if (_ShortS(ChptTyp) == 'F') {
-				GetSplitChptName(&n, &e);
-				if (SEquUpcase(name, n)) goto label1;
-			}
-		}
-	result = false;
+	while (kf->Chain != nullptr) {
+		kf->Chain = (KeyFldD*)O(kf->Chain);
+		kf = kf->Chain;
+		kf->FldD = (FieldDescr*)O(kf->FldD);
+	}
+}
+
+void* OTb(pstring Nm)
+{
+	pstring* s = nullptr;
+	WORD* sofs = (WORD*)s;
+	WORD i;
+	s = (pstring*)Tb;
+	for (i = 1; i < nTb; i++) {
+		if (SEquUpcase(*s, Nm)) goto label1;
+		sofs += s->length() + 1;
+	}
+	nTb++; sz += Nm.length() + 1;
+	if (sz > MaxLStrLen) RunError(664);
+	s = StoreStr(Nm);
 label1:
-	ReleaseStore(CRecPtr);
-	CRecPtr = cr;
-	return result;
+	return O(s);
+}
+
+void* OLinkD(LinkD* Ld)
+{
+	// TODO: spoèítat, co se má vrátit:
+	// return ptr(WORD(OTb(Ld->FromFD->Name)), WORD(OTb(Ld->RoleName)));
+	return nullptr;
+}
+
+void OFrml(FrmlPtr Z)
+{
+	FileDPtr cf = nullptr; FileDPtr fd1 = nullptr;
+	FrmlList fl = nullptr; LinkDPtr ld = nullptr;
+	if (Z != nullptr) {
+		Z = (FrmlElem*)O(Z);
+		/* !!! with Z^ do!!! */
+		switch (Z->Op) {
+		case _field: { Z->Field = (FieldDescr*)OCF(Z->Field); break; }
+		case _access: {
+			Z->LD = (LinkD*)OCF(Z->LD);
+			cf = CFileF;
+			CFileF = Z->File2;
+			Z->File2 = (FileD*)OTb(CFileF->Name);
+			OFrml(Z->P1);
+			CFileF = cf;
+			break;
+		}
+		case _userfunc: {
+			Z->FC = (FuncD*)OTb(Z->FC->Name);
+			//fl = FrmlList(&FrmlL);
+			while (fl->Chain != nullptr) {
+				fl->Chain = (FrmlListEl*)O(fl->Chain);
+				fl = fl->Chain;
+				OFrml(fl->Frml);
+			}
+			break;
+		}
+		case _owned: {
+			ld = Z->ownLD;
+			fd1 = ld->FromFD;
+			Z->ownLD = (LinkD*)OLinkD(ld);
+			cf = CFileF;
+			CFileF = fd1;
+			OFrml(Z->ownBool);
+			OFrml(Z->ownSum);
+			CFileF = cf;
+		}
+		default: {
+			if (Z->Op >= 0x60 && Z->Op <= 0xaf) { OFrml(Z->P1); break; }
+			if (Z->Op >= 0xb0 && Z->Op <= 0xef) { OFrml(Z->P1); OFrml(Z->P2); break; }
+			if (Z->Op >= 0xf0 && Z->Op <= 0xff) { OFrml(Z->P1); OFrml(Z->P2); OFrml(Z->P3); break; }
+		}
+		}
+	}
 }
 
 void WrFDSegment(longint RecNr)
@@ -331,86 +438,6 @@ void WrFDSegment(longint RecNr)
 	StoreChptTxt(ChptOldTxt, ss, false); WriteRec(RecNr);
 	CFile = cf; Move(fdsaved, CFile, oldsz);
 	ReleaseStore2(p2);
-}
-
-void* OTb(pstring Nm)
-{
-	pstring* s = nullptr;
-	WORD* sofs = (WORD*)s;
-	WORD i;
-	s = (pstring*)Tb;
-	for (i = 1; i < nTb; i++) {
-		if (SEquUpcase(*s, Nm)) goto label1;
-		sofs += s->length() + 1;
-	}
-	nTb++; sz += Nm.length() + 1;
-	if (sz > MaxLStrLen) RunError(664);
-	s = StoreStr(Nm);
-label1:
-	return O(s);
-}
-
-void* OLinkD(LinkD* Ld)
-{
-	// TODO: spoèítat, co se má vrátit:
-	// return ptr(WORD(OTb(Ld->FromFD->Name)), WORD(OTb(Ld->RoleName)));
-	return nullptr;
-}
-
-void OFrml(FrmlPtr Z)
-{
-	FileDPtr cf = nullptr; FileDPtr fd1 = nullptr;
-	FrmlList fl = nullptr; LinkDPtr ld = nullptr;
-	if (Z != nullptr) {
-		Z = (FrmlElem*)O(Z);
-		/* !!! with Z^ do!!! */
-		switch (Z->Op) {
-		case _field: { Z->Field = (FieldDescr*)OCF(Z->Field); break; }
-		case _access: {
-			Z->LD = (LinkD*)OCF(Z->LD);
-			cf = CFileF;
-			CFileF = Z->File2;
-			Z->File2 = (FileD*)OTb(CFileF->Name);
-			OFrml(Z->P1);
-			CFileF = cf;
-			break;
-		}
-		case _userfunc: {
-			Z->FC = (FuncD*)OTb(Z->FC->Name);
-			//fl = FrmlList(&FrmlL);
-			while (fl->Chain != nullptr) {
-				fl->Chain = (FrmlListEl*)O(fl->Chain);
-				fl = fl->Chain;
-				OFrml(fl->Frml);
-			}
-			break;
-		}
-		case _owned: {
-			ld = Z->ownLD;
-			fd1 = ld->FromFD;
-			Z->ownLD = (LinkD*)OLinkD(ld);
-			cf = CFileF;
-			CFileF = fd1;
-			OFrml(Z->ownBool);
-			OFrml(Z->ownSum);
-			CFileF = cf;
-		}
-		default: {
-			if (Z->Op >= 0x60 && Z->Op <= 0xaf) { OFrml(Z->P1); break; }
-			if (Z->Op >= 0xb0 && Z->Op <= 0xef) { OFrml(Z->P1); OFrml(Z->P2); break; }
-			if (Z->Op >= 0xf0 && Z->Op <= 0xff) { OFrml(Z->P1); OFrml(Z->P2); OFrml(Z->P3); break; }
-		}
-		}
-	}
-}
-
-void OKF(KeyFldDPtr kf)
-{
-	while (kf->Chain != nullptr) {
-		kf->Chain = (KeyFldD*)O(kf->Chain);
-		kf = kf->Chain;
-		kf->FldD = (FieldDescr*)O(kf->FldD);
-	}
 }
 
 bool RdFDSegment(WORD FromI, longint Pos)
@@ -511,9 +538,10 @@ label2:
 
 bool PromptHelpName(WORD& N)
 {
+	wwmix ww;
 	pstring txt;
 	auto result = false; txt = "";
-	PromptLL(153, &txt, 1, true);
+	ww.PromptLL(153, &txt, 1, true);
 	if ((txt.length() == 0) || (KbdChar == _ESC_)) return result;
 	N = FindHelpRecNr(CFile, txt);
 	if (N != 0) result = true;
@@ -626,7 +654,7 @@ void SgFrml(FrmlPtr Z, WORD Sg, WORD SgF)
 			Z->File2 = GetFD(Z->File2, Z->LD != nullptr, Sg);
 			SgFold = SgF;
 			SgF = *(WORD*)Z->File2;
-			SgFrml(Z->P1);
+			SgFrml(Z->P1, Sg, SgF);
 			SgF = SgFold;
 			break; }
 		case _userfunc: {
@@ -635,7 +663,7 @@ void SgFrml(FrmlPtr Z, WORD Sg, WORD SgF)
 			while (fl->Chain != nullptr) {
 				fl->Chain = (FrmlListEl*)Sg;
 				fl = fl->Chain;
-				SgFrml(fl->Frml);
+				SgFrml(fl->Frml, Sg, SgF);
 			}
 			break;
 		}
@@ -643,27 +671,17 @@ void SgFrml(FrmlPtr Z, WORD Sg, WORD SgF)
 			Z->ownLD = GetLinkD(Z->ownLD, Sg);
 			SgFold = SgF;
 			//SgF = (Z->ownLD->FromFD);
-			SgFrml(Z->ownBool);
-			SgFrml(Z->ownSum);
+			SgFrml(Z->ownBool, Sg, SgF);
+			SgFrml(Z->ownSum, Sg, SgF);
 			SgF = SgFold;
 			break; }
 		default: {
-			if (Z->Op >= 0x60 && Z->Op <= 0xaf) { SgFrml(Z->P1); break; }
-			if (Z->Op >= 0xb0 && Z->Op <= 0xef) { SgFrml(Z->P1); SgFrml(Z->P2); break; }
-			if (Z->Op >= 0xf0 && Z->Op <= 0xff) { SgFrml(Z->P1); SgFrml(Z->P2); SgFrml(Z->P3); break; }
+			if (Z->Op >= 0x60 && Z->Op <= 0xaf) { SgFrml(Z->P1, Sg, SgF); break; }
+			if (Z->Op >= 0xb0 && Z->Op <= 0xef) { SgFrml(Z->P1, Sg, SgF); SgFrml(Z->P2, Sg, SgF); break; }
+			if (Z->Op >= 0xf0 && Z->Op <= 0xff) { SgFrml(Z->P1, Sg, SgF); SgFrml(Z->P2, Sg, SgF); SgFrml(Z->P3, Sg, SgF); break; }
 		}
 		}
 	}
-}
-
-void RenameWithOldExt(RdbRecVars New, RdbRecVars Old)
-{
-	CExt = Old.Ext;
-	RenameFile56(Old.Name + CExt, New.Name + CExt, false);
-	CExtToT();
-	RenameFile56(Old.Name + CExt, New.Name + CExt, false);
-	CExtToX();
-	if (Old.FTyp == 'X') RenameFile56(Old.Name + CExt, New.Name + CExt, false);
 }
 
 void SetChptFldDPtr()
@@ -672,54 +690,6 @@ void SetChptFldDPtr()
 	ChptTxtPos = Chpt->FldD; ChptVerif = ChptTxtPos->Chain;
 	ChptOldTxt = ChptVerif->Chain; ChptTyp = ChptOldTxt->Chain;
 	ChptName = ChptTyp->Chain; ChptTxt = ChptName->Chain;
-}
-
-void CreateOpenChpt(pstring* Nm, bool create)
-{
-	RdbDPtr R; bool top; pstring p; pstring s; TFilePtr oldChptTF;
-	integer i, n; pstring nr(10); pstring Nm1(8); FileUseMode um;
-
-	top = CRdb = nullptr; FileDRoot = nullptr;
-	R = (RdbD*)GetZStore(sizeof(*R));
-	oldChptTF = ChptTF;
-	R->ChainBack = CRdb; R->OldLDRoot = LinkDRoot; R->OldFCRoot = FuncDRoot;
-	MarkStore2(R->Mark2);
-	RdMsg(51); s = MsgLine; RdMsg(48); val(MsgLine, n, i);
-	str(TxtCols - n, nr); s = s + nr; SetInpStr(s);
-	if ((Nm[1] == '\\')) Nm1 = Nm->substr(2, 8);
-	else Nm1 = *Nm;
-	RdFileD(Nm1, '0', ""); /*old CRdb for GetCatIRec*/
-	R->FD = CFile; CRdb = R; CFile->RecPtr = GetRecSpace();
-	SetRdbDir((*Nm)[1], &Nm1);
-	p = CDir + Nm1 + ".RDB";
-	CFile->Drive = TestMountVol(CPath[1]);
-	SetChptFldDPtr(); if (!spec.RDBcomment) ChptTxt->L = 1;
-	SetMsgPar(p);
-	if (top) { UserName = ""; UserCode = 0; AccRight = 0; goto label2; }
-	CRdb->HelpFD = CRdb->ChainBack->HelpFD;
-label1:
-	ChDir(R->RdbDir);
-	if (IOResult() != 0)
-		if (create && (IsTestRun || !top)) {
-			MkDir(R->RdbDir);
-			if (IOResult() != 0) RunError(620);
-			goto label1;
-		}
-		else RunError(631);
-label2:
-	if (IsTestRun || !create) um = Exclusive; else um = RdOnly;
-	if (OpenF(um)) {
-		if (ChptTF->CompileAll) ResetRdOnly();
-		else if (!top && (ChptTF->TimeStmp < oldChptTF->TimeStmp)) {
-			ResetRdOnly(); SetCompileAll();
-		}
-		goto label3;
-	}
-	if (!create || (top && !IsTestRun)) RunError(631);
-	OpenCreateF(Exclusive); SetCompileAll();
-label3:
-	if (HasPassWord(Chpt, 1, "")) CRdb->Encrypted = false;
-	else CRdb->Encrypted = true;
 }
 
 void SetRdbDir(char Typ, pstring* Nm)
@@ -765,6 +735,56 @@ void ResetRdOnly()
 	}
 }
 
+void CreateOpenChpt(pstring* Nm, bool create)
+{
+	wwmix ww;
+
+	RdbDPtr R; bool top; pstring p; pstring s; TFilePtr oldChptTF;
+	integer i, n; pstring nr(10); pstring Nm1(8); FileUseMode um;
+
+	top = CRdb = nullptr; FileDRoot = nullptr;
+	R = (RdbD*)GetZStore(sizeof(*R));
+	oldChptTF = ChptTF;
+	R->ChainBack = CRdb; R->OldLDRoot = LinkDRoot; R->OldFCRoot = FuncDRoot;
+	MarkStore2(R->Mark2);
+	RdMsg(51); s = MsgLine; RdMsg(48); val(MsgLine, n, i);
+	str(TxtCols - n, nr); s = s + nr; SetInpStr(s);
+	if ((Nm[1] == '\\')) Nm1 = Nm->substr(2, 8);
+	else Nm1 = *Nm;
+	RdFileD(Nm1, '0', ""); /*old CRdb for GetCatIRec*/
+	R->FD = CFile; CRdb = R; CFile->RecPtr = GetRecSpace();
+	SetRdbDir((*Nm)[1], &Nm1);
+	p = CDir + Nm1 + ".RDB";
+	CFile->Drive = TestMountVol(CPath[1]);
+	SetChptFldDPtr(); if (!spec.RDBcomment) ChptTxt->L = 1;
+	SetMsgPar(p);
+	if (top) { UserName = ""; UserCode = 0; AccRight = 0; goto label2; }
+	CRdb->HelpFD = CRdb->ChainBack->HelpFD;
+label1:
+	ChDir(R->RdbDir);
+	if (IOResult() != 0)
+		if (create && (IsTestRun || !top)) {
+			MkDir(R->RdbDir);
+			if (IOResult() != 0) RunError(620);
+			goto label1;
+		}
+		else RunError(631);
+label2:
+	if (IsTestRun || !create) um = Exclusive; else um = RdOnly;
+	if (OpenF(um)) {
+		if (ChptTF->CompileAll) ResetRdOnly();
+		else if (!top && (ChptTF->TimeStmp < oldChptTF->TimeStmp)) {
+			ResetRdOnly(); SetCompileAll();
+		}
+		goto label3;
+	}
+	if (!create || (top && !IsTestRun)) RunError(631);
+	OpenCreateF(Exclusive); SetCompileAll();
+label3:
+	if (ww.HasPassWord(Chpt, 1, "")) CRdb->Encrypted = false;
+	else CRdb->Encrypted = true;
+}
+
 void CloseChpt()
 {
 	void* p; void* p2; bool del; pstring d; WORD i;
@@ -797,6 +817,35 @@ void GoCompileErr(WORD IRec, WORD N)
 void ClearXFUpdLock()
 {
 	if (CFile->XF != nullptr) CFile->XF->UpdLockCnt = 0;
+}
+
+FileD* FindFD()
+{
+	FileD* FD = nullptr; pstring FName(12); pstring d; pstring name; pstring ext;
+	FName = TrailChar(' ', _ShortS(ChptName));
+	FSplit(FName, d, name, ext);
+	FD = FileDRoot;
+	while (FD != nullptr) {
+		if (SEquUpcase(FD->Name, name)) break;
+		FD = FD->Chain;
+	}
+	return FD;
+}
+
+void Diagnostics(void* MaxHp, longint Free, FileD* FD)
+{
+	void* p; pstring s1(8); pstring s2(8);
+	pstring s3(8); pstring s4(8); RdbD* r;
+	r = CRdb;
+	while (r->ChainBack != nullptr) r = r->ChainBack;
+	str(AbsAdr(CRdb) - AbsAdr(r), s1);  /* BYTEs on top of this RDB */
+	str(AbsAdr(0/*HeapPtr*/) - AbsAdr(E->AfterE), s2); /* BYTEs for FileD's */
+	if (FD != nullptr) {
+		p = FD->Chain;
+		if (p == nullptr) p = 0 /*HeapPtr*/; str(AbsAdr(p) - AbsAdr(FD), s3);
+	}
+	else str(AbsAdr(MaxHp) - AbsAdr(0 /*HeapPtr*/), s3);  /* BYTEs of this chapter */
+	str(Free, s4); Set4MsgPar(s1, s2, s3, s4); WrLLF10Msg(136);
 }
 
 bool CompRunChptRec(WORD CC)
@@ -880,7 +929,7 @@ label2:
 		TextAttr = colors.uNorm;
 		if (IsGraphMode && !WasGraph) ScrTextMode(false, false);
 		else ClrScr();
-		}
+	}
 	if (uw) { UserW = 0;/*mem overflow*/UserW = PushW(1, 1, TxtCols, TxtRows); }
 	SaveFiles(); if (mv) ShowMouse();
 	if (WasError) ForAllFDs(ClearXFUpdLock);
@@ -903,38 +952,9 @@ label2:
 	return result;
 }
 
-
-void Diagnostics(void* MaxHp, longint Free, FileD* FD)
-{
-	void* p; pstring s1(8); pstring s2(8);
-	pstring s3(8); pstring s4(8); RdbD* r;
-	r = CRdb;
-	while (r->ChainBack != nullptr) r = r->ChainBack;
-	str(AbsAdr(CRdb) - AbsAdr(r), s1);  /* BYTEs on top of this RDB */
-	str(AbsAdr(0/*HeapPtr*/) - AbsAdr(E->AfterE), s2); /* BYTEs for FileD's */
-	if (FD != nullptr) {
-		p = FD->Chain;
-		if (p == nullptr) p = 0 /*HeapPtr*/; str(AbsAdr(p) - AbsAdr(FD), s3);
-	}
-	else str(AbsAdr(MaxHp) - AbsAdr(0 /*HeapPtr*/), s3);  /* BYTEs of this chapter */
-	str(Free, s4); Set4MsgPar(s1, s2, s3, s4); WrLLF10Msg(136);
-}
-
-FileD* FindFD()
-{
-	FileD* FD = nullptr; pstring FName(12); pstring d; pstring name; pstring ext;
-	FName = TrailChar(' ', _ShortS(ChptName));
-	FSplit(FName, d, name, ext);
-	FD = FileDRoot;
-	while (FD != nullptr) {
-		if (SEquUpcase(FD->Name, name)) break;
-		FD = FD->Chain;
-	}
-	return FD;
-}
-
 void RdUserId(bool Chk)
 {
+	wwmix ww;
 	FrmlPtr Z;
 	pstring pw(20); pstring pw2(20); pstring name(20);
 	WORD code; pstring acc;
@@ -942,7 +962,7 @@ void RdUserId(bool Chk)
 	RdFldNameFrml = nullptr;
 	RdLex();
 	if (Lexem == 0x1A) return;
-	if (Chk) pw = PassWord(false);
+	if (Chk) pw = ww.PassWord(false);
 label1:
 	TestLex(_quotedstr); name = LexWord; RdLex(); Accept(',');
 	code = RdInteger(); Accept(',');
@@ -959,6 +979,191 @@ label1:
 	}
 	if (Lexem != 0x1A) { Accept(';'); if (Lexem != 0x1A) goto label1; }
 	if (Chk) RunError(629);
+}
+
+WORD CompileMsgOn(WORD* Buf, longint& w)
+{
+	pstring s(12);
+	WORD result = 0;
+	RdMsg(15);
+	if (IsTestRun) {
+		w = PushWFramed(0, 0, 30, 4, colors.sNorm, MsgLine, "", WHasFrame + WDoubleFrame + WShadow);
+		RdMsg(117);
+		s = GetDLine(&MsgLine[1], MsgLine.length(), '/', 1);
+		GotoXY(3, 2);
+		printf("%s", s.c_str()); result = s.length();
+		GotoXY(3, 3);
+		printf("%s", GetDLine(&MsgLine[1], MsgLine.length(), '/', 2).c_str());
+	}
+	else {
+		ScrRdBuf(0, TxtRows - 1, Buf, 40); w = 0;
+		result = 0;
+		ScrClr(0, TxtRows - 1, MsgLine.length() + 2, 1, ' ', colors.zNorm);
+		ScrWrStr(1, TxtRows - 1, MsgLine, colors.zNorm);
+	}
+	return result;
+}
+
+longint MakeDbfDcl(pstring Nm)
+{
+	DBaseHd Hd; DBaseFld Fd; WORD i, n;
+	FILE* h; LongStr* t; char c;
+	pstring s(80); pstring s1(10); void* p;
+
+	CPath = FExpand(Nm + ".DBF"); CVol = "";
+	i = GetCatIRec(Nm, true); if (i != 0) RdCatPathVol(i);
+	h = OpenH(_isoldfile, RdOnly); TestCPathError();
+	ReadH(h, 32, &Hd); n = (Hd.HdLen - 1) / 32 - 1; t = (LongStr*)GetStore(2); t->LL = 0;
+	for (i = 1; i < n; i++) {
+		ReadH(h, 32, &Fd);
+		s = StrPas((char*)Fd.Name.c_str());
+		switch (Fd.Typ)
+		{
+		case 'C': c = 'A'; break;
+		case 'D': c = 'D'; break;
+		case 'L': c = 'B'; break;
+		case 'M': c = 'T'; break;
+		case 'N':
+		case 'F': c = 'F'; break;
+		}
+		s = s + ':' + c;
+		switch (c) {
+		case 'A': { str(Fd.Len, s1); s = s + ',' + s1; break; }
+		case 'F': {
+			Fd.Len -= Fd.Dec;
+			if (Fd.Dec != 0) Fd.Len--;
+			str(Fd.Len, s1); s = s + ',' + s1; str(Fd.Dec, s1); s = s + '.' + s1;
+			break;
+		}
+		}
+		s = s + ';' + 0x0D + 0x0A; // ^M + ^J
+		p = GetStore(s.length());
+		Move(&s[1], p, s.length());
+		t->LL += s.length();
+	}
+	LongS_(ChptTxt, t);
+	CloseH(h);
+	return 0;
+}
+
+void* RdF(pstring* FileName)
+{
+	pstring d; pstring name; pstring ext; char FDTyp; pstring s;
+	FieldDPtr IdF, TxtF;  integer i, n; pstring nr(10);
+	FSplit(*FileName, d, name, ext); FDTyp = ExtToTyp(ext);
+	if (FDTyp == '0') {
+		RdMsg(51); s = MsgLine; RdMsg(49); val(MsgLine, n, i);
+		str(TxtCols - n, nr); s = s + nr; SetInpStr(s);
+	}
+	else SetInpTTPos(_T(ChptTxt), CRdb->Encrypted);
+	return RdFileD(name, FDTyp, ext);
+}
+
+bool EquStoredF(FieldDPtr F1, FieldDPtr F2)
+{
+	auto result = false;
+label1:
+	while ((F1 != nullptr) && (F1->Flg && f_Stored == 0)) F1 = F1->Chain;
+	while ((F2 != nullptr) && (F2->Flg && f_Stored == 0)) F2 = F2->Chain;
+	if (F1 == nullptr)
+	{
+		if (F2 != nullptr) return result;
+		result = true;
+		return result;
+	}
+	if ((F2 == nullptr) || !FldTypIdentity(F1, F2) ||
+		(F1->Flg && !f_Mask != F2->Flg && !f_Mask)) return result;
+	F1 = F1->Chain; F2 = F2->Chain;
+	goto label1;
+}
+
+void DeleteF()
+{
+	CloseFile(); SetCPathVol(); DeleteFile(CPath);
+	CExtToX(); if (CFile->XF != nullptr) DeleteFile(CPath);
+	CExtToT(); if (CFile->TF != nullptr) DeleteFile(CPath);
+}
+
+bool MergAndReplace(FileD* FDOld, FileD* FDNew)
+{
+	pstring s; ExitRecord er; pstring p;
+	auto result = false;
+	//NewExit(Ovr(), er);
+	goto label1;
+	s = "#I1_";
+	s += FDOld->Name + " #O1_@";
+	SetInpStr(s);
+	SpecFDNameAllowed = true; ReadMerge(); SpecFDNameAllowed = false;
+	RunMerge(); SaveFiles(); RestoreExit(er);
+	CFile = FDOld; DeleteF(); CFile = FDNew; CloseFile(); FDOld->Typ = FDNew->Typ;
+	SetCPathVol(); p = CPath; CFile = FDOld; SetCPathVol();
+	RenameFile56(p, CPath, false);
+	CFile = FDNew;
+	/*TF->Format used*/
+	CExtToT(); p = CPath;
+	SetCPathVol(); CExtToT(); RenameFile56(CPath, p, false);
+	result = true;
+	return result;
+label1:
+	RestoreExit(er); CFile = FDOld; CloseFile(); CFile = FDNew; DeleteF();
+	SpecFDNameAllowed = false; result = false;
+	return result;
+}
+
+bool EquKeys(KeyD* K1, KeyD* K2)
+{
+	auto result = false; while (K1 != nullptr) {
+		if ((K2 == nullptr) || (K1->Duplic != K2->Duplic)) return result;
+		KeyFldD* KF1 = K1->KFlds;
+		KeyFldD* KF2 = K2->KFlds;
+		while (KF1 != nullptr) {
+			if ((KF2 == nullptr) || (KF1->CompLex != KF2->CompLex) || (KF1->Descend != KF2->Descend)
+				|| (KF1->FldD->Name != KF2->FldD->Name)) return result;
+			KF1 = KF1->Chain; KF2 = KF2->Chain;
+		}
+		if (KF2 != nullptr) return result;
+		K1 = K1->Chain; K2 = K2->Chain;
+	}
+	if (K2 != nullptr) return result;
+	result = true;
+	return result;
+}
+
+bool MergeOldNew(bool Veriflongint, bool Pos)
+{
+	pstring Name(20);
+	LinkD* ld = LinkDRoot;
+	auto result = false;
+	FileD* FDOld;
+	FileD* FDNew = CFile; SetCPathVol(); Name = FDNew->Name; FDNew->Name = '@';
+	CFile = Chpt; if (!RdFDSegment(0, Pos)) goto label1;
+	ChainLast(FileDRoot, CFile);
+	FDOld = CFile; FDOld->Name = Name;
+	if ((FDNew->Typ != FDOld->Typ) || !EquStoredF(FDNew->FldD, FDOld->FldD)
+#ifdef FandSQL
+		&& !FDNew->IsSQLFile && !FDOld->IsSQLFile
+#endif
+		) {
+		MergAndReplace(FDOld, FDNew);
+		result = true;
+	}
+	else if ((FDOld->Typ == 'X') && !EquKeys(FDOld->Keys, FDNew->Keys)) {
+		SetCPathVol();
+		CExtToX();
+		DeleteFile(CPath);
+	}
+label1:
+	FDNew->Chain = nullptr;
+	LinkDRoot = ld;
+	Move(&Name, &FDNew->Name, Name.length() + 1);
+	CFile = FDNew;
+	CRecPtr = Chpt->RecPtr;
+	return result;
+}
+
+void CompileMsgOff(WORD* Buf, longint& w)
+{
+	if (w != 0) PopW(w); else ScrWrBuf(0, TxtRows - 1, Buf, 40);
 }
 
 bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
@@ -1073,8 +1278,8 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 			case 'L': { SetInpTTPos(Txt, Encryp); ReadProlog(I); break; }
 #endif
 			}
-			}
 		}
+	}
 	ReleaseBoth(p1, p2); CFile = Chpt; CRecPtr = Chpt->RecPtr;
 	if (Verif) { ReadRec(I); B_(ChptVerif, false); WriteRec(I); }
 	/* !!! with ChptTF^ do!!! */
@@ -1095,191 +1300,6 @@ label1:
 	if (!Run) CRecPtr = E->NewRecPtr;
 	if (!IsCompileErr) { InpRdbPos.IRec = I; }
 	return result;
-	}
-
-void* RdF(pstring* FileName)
-{
-	pstring d; pstring name; pstring ext; char FDTyp; pstring s;
-	FieldDPtr IdF, TxtF;  integer i, n; pstring nr(10);
-	FSplit(*FileName, d, name, ext); FDTyp = ExtToTyp(ext);
-	if (FDTyp == '0') {
-		RdMsg(51); s = MsgLine; RdMsg(49); val(MsgLine, n, i);
-		str(TxtCols - n, nr); s = s + nr; SetInpStr(s);
-	}
-	else SetInpTTPos(_T(ChptTxt), CRdb->Encrypted);
-	return RdFileD(name, FDTyp, ext);
-}
-
-longint MakeDbfDcl(pstring Nm)
-{
-	DBaseHd Hd; DBaseFld Fd; WORD i, n;
-	FILE* h; LongStr* t; char c;
-	pstring s(80); pstring s1(10); void* p;
-
-	CPath = FExpand(Nm + ".DBF"); CVol = "";
-	i = GetCatIRec(Nm, true); if (i != 0) RdCatPathVol(i);
-	h = OpenH(_isoldfile, RdOnly); TestCPathError();
-	ReadH(h, 32, &Hd); n = (Hd.HdLen - 1) / 32 - 1; t = (LongStr*)GetStore(2); t->LL = 0;
-	for (i = 1; i < n; i++) {
-		ReadH(h, 32, &Fd);
-		s = StrPas((char*)Fd.Name.c_str());
-		switch (Fd.Typ)
-		{
-		case 'C': c = 'A'; break;
-		case 'D': c = 'D'; break;
-		case 'L': c = 'B'; break;
-		case 'M': c = 'T'; break;
-		case 'N':
-		case 'F': c = 'F'; break;
-		}
-		s = s + ':' + c;
-		switch (c) {
-		case 'A': { str(Fd.Len, s1); s = s + ',' + s1; break; }
-		case 'F': {
-			Fd.Len -= Fd.Dec;
-			if (Fd.Dec != 0) Fd.Len--;
-			str(Fd.Len, s1); s = s + ',' + s1; str(Fd.Dec, s1); s = s + '.' + s1;
-			break;
-		}
-		}
-		s = s + ';' + 0x0D + 0x0A; // ^M + ^J
-		p = GetStore(s.length());
-		Move(&s[1], p, s.length());
-		t->LL += s.length();
-	}
-	LongS_(ChptTxt, t);
-	CloseH(h);
-	return 0;
-}
-
-bool MergeOldNew(bool Veriflongint, bool Pos)
-{
-	pstring Name(20);
-	LinkD* ld = LinkDRoot;
-	auto result = false;
-	FileD* FDOld;
-	FileD* FDNew = CFile; SetCPathVol(); Name = FDNew->Name; FDNew->Name = '@';
-	CFile = Chpt; if (!RdFDSegment(0, Pos)) goto label1;
-	ChainLast(FileDRoot, CFile);
-	FDOld = CFile; FDOld->Name = Name;
-	if ((FDNew->Typ != FDOld->Typ) || !EquStoredF(FDNew->FldD, FDOld->FldD)
-#ifdef FandSQL
-		&& !FDNew->IsSQLFile && !FDOld->IsSQLFile
-#endif
-		) {
-		MergAndReplace(FDOld, FDNew);
-		result = true;
-	}
-	else if ((FDOld->Typ == 'X') && !EquKeys(FDOld->Keys, FDNew->Keys)) {
-		SetCPathVol();
-		CExtToX();
-		DeleteFile(CPath);
-	}
-label1:
-	FDNew->Chain = nullptr;
-	LinkDRoot = ld;
-	Move(&Name, &FDNew->Name, Name.length() + 1);
-	CFile = FDNew;
-	CRecPtr = Chpt->RecPtr;
-	return result;
-}
-
-bool EquStoredF(FieldDPtr F1, FieldDPtr F2)
-{
-	auto result = false;
-label1:
-	while ((F1 != nullptr) && (F1->Flg && f_Stored == 0)) F1 = F1->Chain;
-	while ((F2 != nullptr) && (F2->Flg && f_Stored == 0)) F2 = F2->Chain;
-	if (F1 == nullptr)
-	{
-		if (F2 != nullptr) return result;
-		result = true;
-		return result;
-	}
-	if ((F2 == nullptr) || !FldTypIdentity(F1, F2) ||
-		(F1->Flg && !f_Mask != F2->Flg && !f_Mask)) return result;
-	F1 = F1->Chain; F2 = F2->Chain;
-	goto label1;
-}
-
-bool EquKeys(KeyD* K1, KeyD* K2)
-{
-	auto result = false; while (K1 != nullptr) {
-		if ((K2 == nullptr) || (K1->Duplic != K2->Duplic)) return result;
-		KeyFldD* KF1 = K1->KFlds;
-		KeyFldD* KF2 = K2->KFlds;
-		while (KF1 != nullptr) {
-			if ((KF2 == nullptr) || (KF1->CompLex != KF2->CompLex) || (KF1->Descend != KF2->Descend)
-				|| (KF1->FldD->Name != KF2->FldD->Name)) return result;
-			KF1 = KF1->Chain; KF2 = KF2->Chain;
-		}
-		if (KF2 != nullptr) return result;
-		K1 = K1->Chain; K2 = K2->Chain;
-	}
-	if (K2 != nullptr) return result;
-	result = true;
-	return result;
-}
-
-void DeleteF()
-{
-	CloseFile(); SetCPathVol(); DeleteFile(CPath);
-	CExtToX(); if (CFile->XF != nullptr) DeleteFile(CPath);
-	CExtToT(); if (CFile->TF != nullptr) DeleteFile(CPath);
-}
-
-bool MergAndReplace(FileD* FDOld, FileD* FDNew)
-{
-	pstring s; ExitRecord er; pstring p;
-	auto result = false;
-	//NewExit(Ovr(), er);
-	goto label1;
-	s = "#I1_";
-	s += FDOld->Name + " #O1_@";
-	SetInpStr(s);
-	SpecFDNameAllowed = true; ReadMerge(); SpecFDNameAllowed = false;
-	RunMerge(); SaveFiles(); RestoreExit(er);
-	CFile = FDOld; DeleteF(); CFile = FDNew; CloseFile(); FDOld->Typ = FDNew->Typ;
-	SetCPathVol(); p = CPath; CFile = FDOld; SetCPathVol();
-	RenameFile56(p, CPath, false);
-	CFile = FDNew;
-	/*TF->Format used*/
-	CExtToT(); p = CPath;
-	SetCPathVol(); CExtToT(); RenameFile56(CPath, p, false);
-	result = true;
-	return result;
-label1:
-	RestoreExit(er); CFile = FDOld; CloseFile(); CFile = FDNew; DeleteF();
-	SpecFDNameAllowed = false; result = false;
-	return result;
-}
-
-WORD CompileMsgOn(WORD* Buf, longint& w)
-{
-	pstring s(12);
-	WORD result = 0;
-	RdMsg(15);
-	if (IsTestRun) {
-		w = PushWFramed(0, 0, 30, 4, colors.sNorm, MsgLine, "", WHasFrame + WDoubleFrame + WShadow);
-		RdMsg(117);
-		s = GetDLine(&MsgLine[1], MsgLine.length(), '/', 1);
-		GotoXY(3, 2);
-		printf("%s", s.c_str()); result = s.length();
-		GotoXY(3, 3);
-		printf("%s", GetDLine(&MsgLine[1], MsgLine.length(), '/', 2).c_str());
-	}
-	else {
-		ScrRdBuf(0, TxtRows - 1, Buf, 40); w = 0;
-		result = 0;
-		ScrClr(0, TxtRows - 1, MsgLine.length() + 2, 1, ' ', colors.zNorm);
-		ScrWrStr(1, TxtRows - 1, MsgLine, colors.zNorm);
-	}
-	return result;
-}
-
-void CompileMsgOff(WORD* Buf, longint& w)
-{
-	if (w != 0) PopW(w); else ScrWrBuf(0, TxtRows - 1, Buf, 40);
 }
 
 void GotoErrPos(WORD& Brk)
@@ -1298,6 +1318,12 @@ void GotoErrPos(WORD& Brk)
 	CFld = &E->LastFld; SetNewCRec(InpRdbPos.IRec, true);
 	R_(ChptTxtPos, integer(CurrPos)); WriteRec(CRec());
 	EditFreeTxt(ChptTxt, s, true, Brk);
+}
+
+void WrErrMsg630(pstring* Nm)
+{
+	IsCompileErr = false; SetMsgPar(MsgLine); WrLLF10Msg(110);
+	SetMsgPar(*Nm); WrLLF10Msg(630);
 }
 
 bool EditExecRdb(pstring* Nm, pstring* ProcNm, Instr* ProcCall)
@@ -1411,46 +1437,14 @@ label9:
 	if (top) SQLDisconnect;
 #endif
 	return result;
-	}
-
-void WrErrMsg630(pstring* Nm)
-{
-	IsCompileErr = false; SetMsgPar(MsgLine); WrLLF10Msg(110);
-	SetMsgPar(*Nm); WrLLF10Msg(630);
 }
 
-void InstallRdb(pstring n)
+void UpdateCat()
 {
-	ExitRecord er;
-	pstring passw(20);
-	TMenuBoxS* w = nullptr;
-	WORD i;
-
-	//NewExit(Ovr(), er);
-	goto label1;
-	CreateOpenChpt(&n, false);
-	if (!HasPassWord(Chpt, 1, "") && !HasPassWord(Chpt, 2, "")) {
-		passw = PassWord(false);
-		if (!HasPassWord(Chpt, 2, passw)) {
-			WrLLF10Msg(629); goto label1;
-		}
-	}
-	if (Chpt->UMode == RdOnly) { UpdateCat(); goto label1; }
-	RdMsg(8);
-	//New(w, Init(43, 6, StringPtr(@MsgLine)));
-	i = 1;
-	w = new TMenuBoxS(43, 6, &MsgLine);
-label0:
-	i = w->Exec(i);
-	switch (i) {
-	case 0: { delete w; ReleaseStore(w); goto label1; }
-	case 1: { UpdateCat(); goto label0; }
-	case 2: UpdateUTxt();
-	case 3: SetPassWord(Chpt, 2, PassWord(true));
-	}
-	SetUpdHandle(ChptTF->Handle); goto label0;
-label1:
-	RestoreExit(er); CloseChpt();
+	EditOpt* EO = nullptr;
+	CFile = CatFD; if (CatFD->Handle == nullptr) OpenCreateF(Exclusive);
+	EO = GetEditOpt(); EO->Flds = AllFldsList(CatFD, true);
+	EditDataFile(CatFD, EO); ChDir(OldDir); ReleaseStore(EO);
 }
 
 void UpdateUTxt()
@@ -1482,10 +1476,38 @@ label4:
 	WrLLF10Msg(9); goto label3;
 }
 
-void UpdateCat()
+void InstallRdb(pstring n)
 {
-	EditOpt* EO = nullptr;
-	CFile = CatFD; if (CatFD->Handle == nullptr) OpenCreateF(Exclusive);
-	EO = GetEditOpt(); EO->Flds = AllFldsList(CatFD, true);
-	EditDataFile(CatFD, EO); ChDir(OldDir); ReleaseStore(EO);
+	wwmix ww;
+
+	ExitRecord er;
+	pstring passw(20);
+	TMenuBoxS* w = nullptr;
+	WORD i;
+
+	//NewExit(Ovr(), er);
+	goto label1;
+	CreateOpenChpt(&n, false);
+	if (!ww.HasPassWord(Chpt, 1, "") && !ww.HasPassWord(Chpt, 2, "")) {
+		passw = ww.PassWord(false);
+		if (!ww.HasPassWord(Chpt, 2, passw)) {
+			WrLLF10Msg(629); goto label1;
+		}
+	}
+	if (Chpt->UMode == RdOnly) { UpdateCat(); goto label1; }
+	RdMsg(8);
+	//New(w, Init(43, 6, StringPtr(@MsgLine)));
+	i = 1;
+	w = new TMenuBoxS(43, 6, &MsgLine);
+label0:
+	i = w->Exec(i);
+	switch (i) {
+	case 0: { delete w; ReleaseStore(w); goto label1; }
+	case 1: { UpdateCat(); goto label0; }
+	case 2: UpdateUTxt(); break;
+	case 3: ww.SetPassWord(Chpt, 2, ww.PassWord(true)); break;
+	}
+	SetUpdHandle(ChptTF->Handle); goto label0;
+label1:
+	RestoreExit(er); CloseChpt();
 }

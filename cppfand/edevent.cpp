@@ -22,6 +22,8 @@
 #include "wwmix.h"
 
 void HandleEvent() {
+	wwmix wwmix1;
+	
 	WORD I, I1, I2, I3;
 	FILE* F1 = nullptr;
 	WORD W1 = 0, W2 = 0, ww = 0;
@@ -483,7 +485,7 @@ void HandleEvent() {
 					{
 						BegBLn = 1; EndBLn = 0x7FFF; BegBPos = 1; EndBPos = 0xFF; TypeB = TextBlock;
 					}
-					CPath = SelectDiskFile(".TXT", 401, false);
+					CPath = wwmix1.SelectDiskFile(".TXT", 401, false);
 					if (CPath == "")  goto Nic;
 					CVol = "";
 					F1 = OpenH(_isnewfile, Exclusive);
@@ -509,7 +511,7 @@ void HandleEvent() {
 					break;
 				}
 				case _KR_: {
-					CPath = SelectDiskFile(".TXT", 400, false);
+					CPath = wwmix1.SelectDiskFile(".TXT", 400, false);
 					if (CPath == "") goto Nic;
 					CVol = ""; F1 = OpenH(_isoldfile, RdOnly);
 					if (HandleError != 0) { MyWrLLMsg(CPath); goto Nic; }

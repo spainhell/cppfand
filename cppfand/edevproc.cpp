@@ -482,8 +482,9 @@ void Format(WORD& i, longint First, longint Last, WORD Posit, bool Rep)
 	BegBLn = 1; BegBPos = 1; EndBLn = 1; EndBPos = 1; TypeB = TextBlock;
 }
 
-void Calculate_E()
+void Calculate()
 {
+	wwmix ww;
 	FrmlPtr Z = nullptr; pstring Txt; ExitRecord er; WORD I; pstring Msg;
 	void* p = nullptr; char FTyp; double R; bool Del;
 	MarkStore(p); //NewExit(Ovr(), er);
@@ -493,7 +494,7 @@ label0:
 	Txt = CalcTxt; Del = true; I = 1;
 label1:
 	TxtEdCtrlUBrk = true; TxtEdCtrlF4Brk = true;
-	PromptLL(114, &Txt, I, Del);
+	ww.PromptLL(114, &Txt, I, Del);
 	if (KbdChar == _U_) goto label0;
 	if ((KbdChar == _ESC_) || (Txt.length() == 0)) goto label3;
 	CalcTxt = Txt;
@@ -940,7 +941,8 @@ void NewBlock2(longint& L1, longint& L2)
 
 bool MyPromptLL(WORD n, pstring* s)
 {
-	PromptLL(n, s, 1, true);
+	wwmix ww;
+	ww.PromptLL(n, s, 1, true);
 	return KbdChar == _ESC_;
 }
 

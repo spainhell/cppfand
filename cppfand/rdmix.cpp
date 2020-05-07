@@ -286,20 +286,22 @@ void RdFrame(FrmlPtr Z, BYTE& WFlags)
 
 bool PromptSortKeys(FieldList FL, KeyFldD* SKRoot)
 {
+	wwmix ww;
+	
 	KeyFldD* SK;
 	auto result = true;
 	SKRoot = nullptr;
 	while (FL != nullptr) {
 		/* !!! with FL->FldD^ do!!! */
-		if (FL->FldD->Typ != 'T') PutSelect(FL->FldD->Name); FL = FL->Chain;
+		if (FL->FldD->Typ != 'T') ww.PutSelect(FL->FldD->Name); FL = FL->Chain;
 	}
 	if (ss.Empty) return result;
 	ss.AscDesc = true;
 	ss.Subset = true;
-	SelectStr(0, 0, 25, "");
+	ww.SelectStr(0, 0, 25, "");
 	if (KbdChar == _ESC_) { return false; }
 label1:
-	LexWord = GetSelect(); if (LexWord != "") {
+	LexWord = ww.GetSelect(); if (LexWord != "") {
 		SK = (KeyFldD*)GetZStore(sizeof(*SK)); ChainLast(SKRoot, SK);
 		SK->FldD = FindFldName(CFile);
 		if (ss.Tag == '>') SK->Descend = true;

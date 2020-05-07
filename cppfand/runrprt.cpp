@@ -15,12 +15,14 @@
 
 void RunReport(RprtOpt* RO)
 {
+	wwmix ww;
+	
 	LvDescr* L; ExitRecord er;
 	pstring* s = nullptr;
 	WORD i; bool frst, isLPT1;
 	WORD Times; bool ex, b; BlkD* BD; BlkD* RFb; LockMode md;
 	if (SelQuest) /* !!! with IDA[1]^ do!!! */ {
-		CFile = IDA[1]->Scan->FD; if (!PromptFilter("", IDA[1]->Bool, s)) {
+		CFile = IDA[1]->Scan->FD; if (!ww.PromptFilter("", IDA[1]->Bool, s)) {
 			PrintView = false; return;
 		}
 	}

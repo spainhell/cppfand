@@ -13,6 +13,41 @@
 #include "runproc.h"
 #include "runproj.h"
 
+WORD CountNTxt(ChoiceD* C, bool IsMenuBar)
+{
+	WORD n, nValid; pstring s; bool b;
+	n = 0; nValid = 0;
+	while (C != nullptr) {
+		b = RunBool(C->Bool);
+		C->Displ = false;
+		if (b || C->DisplEver) {
+			C->Displ = true; n++; s = RunShortStr(C->TxtFrml);
+			if (s.length() != 0) {
+				s[0] = char(MinI(s.length(), TxtCols - 6));
+				pstring ctrlW(1);
+				ctrlW = "\x17";
+				if (s.first(0x17) == 0) s = ctrlW + s[1] + ctrlW + copy(s, 2, 255);
+			}
+			else if (IsMenuBar) s = ' ';
+			C->Txt = StoreStr(s);
+			if (s == "") b = false;
+			if (b) nValid++;
+		}
+		C->Enabled = b; C = C->Chain;
+	}
+	if (nValid == 0) n = 0;
+	return n;
+}
+
+ChoiceD* CI(ChoiceD* C, WORD I)
+{
+label1:
+	if (C->Displ) I--;
+	if (I == 0) { return C; }
+	C = C->Chain;
+	goto label1;
+}
+
 bool TRect::Contains(TPoint* P)
 {
 	return (P->X >= A.X) && (P->X < A.X + Size.X) && (P->Y >= A.Y) && (P->Y < A.Y + Size.Y);
@@ -681,41 +716,6 @@ bool PrinterMenu(WORD Msg)
 	delete w;
 	ReleaseStore(p);
 	return i > 0;
-}
-
-ChoiceD* CI(ChoiceD* C, WORD I)
-{
-label1:
-	if (C->Displ) I--;
-	if (I == 0) { return C; }
-	C = C->Chain;
-	goto label1;
-}
-
-WORD CountNTxt(ChoiceD* C, bool IsMenuBar)
-{
-	WORD n, nValid; pstring s; bool b;
-	n = 0; nValid = 0;
-	while (C != nullptr) {
-		b = RunBool(C->Bool);
-		C->Displ = false;
-		if (b || C->DisplEver) {
-			C->Displ = true; n++; s = RunShortStr(C->TxtFrml);
-			if (s.length() != 0) {
-				s[0] = char(MinI(s.length(), TxtCols - 6));
-				pstring ctrlW(1);
-				ctrlW = "\x17";
-				if (s.first(0x17) == 0) s = ctrlW + s[1] + ctrlW + copy(s, 2, 255);
-			}
-			else if (IsMenuBar) s = ' ';
-			C->Txt = StoreStr(s);
-			if (s == "") b = false;
-			if (b) nValid++;
-		}
-		C->Enabled = b; C = C->Chain;
-	}
-	if (nValid == 0) n = 0;
-	return n;
 }
 
 void MenuBoxProc(Instr* PD)

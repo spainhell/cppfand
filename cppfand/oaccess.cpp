@@ -180,6 +180,8 @@ label1:
 
 bool OpenF2()
 {
+	wwmix ww;
+	
 	longint FS, n, l; WORD Signum, rLen; LockMode md;
 	/* !!! with CFile^ do!!! */
 	FS = FileSizeH(CFile->Handle); CFile->NRecs = 0;
@@ -216,7 +218,7 @@ label3:
 		else {
 			CFile->TF->RdPrefix(true);
 			if ((CFile->Typ == '0') && !IsActiveRdb(CFile)
-				&& !HasPassWord(CFile, 1, "")) {
+				&& !ww.HasPassWord(CFile, 1, "")) {
 				CFileMsg(616, ' '); CloseGoExit();
 			}
 		}
@@ -717,7 +719,7 @@ FileD* OpenDuplF(bool CrTF)
 	/* !!! with FD^ do!!! */
 	{ SetTempCExt('0', net); CVol = "";
 	FD->Handle = OpenH(_isoverwritefile, Exclusive); TestCFileError();
-	FD->NRecs = 0; IRec = 0; FD->Eof = true; FD->UMode = Exclusive;
+	FD->NRecs = 0; FD->IRec = 0; FD->Eof = true; FD->UMode = Exclusive;
 	if (FD->Typ == 'X')
 	{
 		FD->XF = (XFile*)GetStore(sizeof(XFile)); FD->XF->Handle = nullptr;

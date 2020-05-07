@@ -147,8 +147,8 @@ public:
 
 WORD Menu(WORD MsgNr, WORD IStart);
 bool PrinterMenu(WORD Msg);
-ChoiceD* CI(ChoiceD* C, WORD I);
-WORD CountNTxt(ChoiceD* C, bool IsMenuBar);
+//ChoiceD* CI(ChoiceD* C, WORD I);
+//WORD CountNTxt(ChoiceD* C, bool IsMenuBar);
 void MenuBoxProc(Instr* PD);
 void MenuBarProc(Instr* PD);
 LongStr* GetHlpText(RdbD* R, pstring S, bool ByName, WORD& IRec);

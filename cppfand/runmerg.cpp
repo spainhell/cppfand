@@ -20,7 +20,7 @@ void RunMerge()
 label1:
 	MinIi = 0; NEof = 0;
 	for (I = 1; I < MaxIi; I++) /* !!! with IDA[I]^ do!!! */ {
-		CFile = IDA[I]->Scan->FD; IRec = IDA[I]->Scan->IRec; ZeroSumFlds(IDA[I]->Sum);
+		CFile = IDA[I]->Scan->FD; IDA[I]->IRec = IDA[I]->Scan->IRec; ZeroSumFlds(IDA[I]->Sum);
 		if (IDA[I]->Scan->eof) NEof++;
 		if (OldMFlds == nullptr) { IDA[I]->Exist = !IDA[I]->Scan->eof; MinIi = 1; }
 		else {
@@ -273,7 +273,7 @@ void JoinProc(WORD Ii, bool& EmptyGroup)
 	else {
 		ID = IDA[Ii]; /* !!! with ID^ do!!! */
 		if (ID->Exist) {
-			ID->Scan->SeekRec(IRec - 1); ID->Count = 0.0;
+			ID->Scan->SeekRec(ID->IRec - 1); ID->Count = 0.0;
 			CRecPtr = ID->ForwRecPtr; ID->Scan->GetRec();
 			do {
 				MoveForwToRecM(ID); JoinProc(Ii + 1, EmptyGroup);

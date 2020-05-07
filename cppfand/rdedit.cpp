@@ -10,6 +10,8 @@
 #include "rdmix.h"
 #include "runedi.h"
 
+EditD* E = (EditD*)EditDRoot;
+
 void PushEdit()
 {
 	EditD* E1 = (EditD*)GetZStore(sizeof(*E));
@@ -236,13 +238,13 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 	if (E->NPages > 1) E->NRecs = 1;
 	else E->NRecs = (E->Rows - E->NHdTxt) / E->RecTxt->N;
 	E->BaseRec = 1; E->IRec = 1;
-	CFld = E->FirstFld; FirstEmptyFld = E->FirstFld;
+	CFld = E->FirstFld; E->FirstEmptyFld = *E->FirstFld;
 	E->ChkSwitch = true; E->WarnSwitch = true;
 	CFile = E->FD; CRecPtr = GetRecSpace(); E->OldRecPtr = CRecPtr;
 #ifdef FandSQL
 	if (CFile->IsSQLFile) SetTWorkFlag;
 #endif
-	if (EdRecVar) {
+	if (E->EdRecVar) {
 		E->NewRecPtr = E->LVRecPtr; E->NoDelete = true; E->NoCreate = true;
 		E->Journal = nullptr; E->KIRoot = nullptr;
 	}
@@ -256,10 +258,10 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 		E->SaveAfter = RunWordImpl(EO->SaveAfterZ, spec.UpdCount);
 		if (EO->StartRecKeyZ != nullptr) E->StartRecKey = StoreStr(RunShortStr(EO->StartRecKeyZ));
 		E->StartRecNo = RunInt(EO->StartRecNoZ); E->StartIRec = RunInt(EO->StartIRecZ);
-		VK = EO->ViewKey;
+		E->VK = EO->ViewKey;
 		if (E->DownLD != nullptr) {
 			E->DownSet = true; E->DownKey = GetFromKey(E->DownLD);
-			if (VK == nullptr) VK = E->DownKey;
+			if (E->VK == nullptr) E->VK = E->DownKey;
 			switch (E->OwnerTyp) {
 			case 'r': E->DownRecPtr = E->DownLV->RecPtr; break;
 			case 'F': { E->OwnerRecNo = RunInt(FrmlPtr(EO->DownLV));
