@@ -1,8 +1,7 @@
 #include "rdedit.h"
 
-#include "kbdww.h"
 #include "legacy.h"
-#include "lexanal.h"
+#include "obaseww.h"
 #include "rdfildcl.h"
 #include "rdfrml.h"
 #include "rdmix.h"

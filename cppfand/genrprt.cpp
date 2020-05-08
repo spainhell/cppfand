@@ -1,7 +1,7 @@
 #include "genrprt.h"
 
-#include "lexanal.h"
 #include "memory.h"
+#include "rdedit.h"
 #include "rdfrml.h"
 #include "rdmix.h"
 #include "rdrprt.h"

@@ -1,12 +1,9 @@
 #pragma once
 
 #include "editor.h"
-#include "kbdww.h"
 #include "legacy.h"
 #include "printtxt.h"
 #include "genrprt.h"
-#include "keybd.h"
-#include "lexanal.h"
 #include "oaccess.h"
 #include "obase.h"
 #include "rdfrml.h"
@@ -16,6 +13,9 @@
 #include "wwmenu.h"
 #include "wwmix.h"
 #include <set>
+
+#include "compile.h"
+#include "obaseww.h"
 
 
 const int TXTCOLS = 80;

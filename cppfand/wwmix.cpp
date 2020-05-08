@@ -2,7 +2,8 @@
 
 #include "kbdww.h"
 #include "legacy.h"
-#include "lexanal.h"
+#include "obaseww.h"
+#include "rdedit.h"
 #include "rdfrml.h"
 #include "runedi.h"
 

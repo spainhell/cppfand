@@ -316,3 +316,8 @@ void* Normalize(longint L);
 longint AbsAdr(void* P);
 void ExChange(void* X, void* Y, WORD L);
 void ReplaceChar(pstring S, char C1, char C2); // r30 ASM
+bool SetStyleAttr(char C, BYTE& a);
+WORD LenStyleStr(pstring s);
+void WrStyleStr(pstring s, WORD Attr);
+void WrLongStyleStr(LongStr* S, WORD Attr);
+WORD LogToAbsLenStyleStr(pstring s, WORD l);

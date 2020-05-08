@@ -33,9 +33,6 @@
     <ClCompile Include="drivers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="keybd.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="obaseww.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -52,9 +49,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="rdfrml1.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="lexanal.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="editor.cpp">
@@ -117,6 +111,9 @@
     <ClCompile Include="genrprt.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="compile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base.h">
@@ -141,9 +138,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="kbdww.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="keybd.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="oaccess.h">
@@ -177,9 +171,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="rdfrml1.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="lexanal.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="rdfrml.h">

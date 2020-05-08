@@ -149,14 +149,13 @@
   <ItemGroup>
     <ClCompile Include="access.cpp" />
     <ClCompile Include="base.cpp" />
+    <ClCompile Include="compile.cpp" />
     <ClCompile Include="cppfand.cpp" />
     <ClCompile Include="drivers.cpp" />
     <ClCompile Include="editor.cpp" />
     <ClCompile Include="genrprt.cpp" />
     <ClCompile Include="kbdww.cpp" />
-    <ClCompile Include="keybd.cpp" />
     <ClCompile Include="legacy.cpp" />
-    <ClCompile Include="lexanal.cpp" />
     <ClCompile Include="oaccess.cpp" />
     <ClCompile Include="obase.cpp" />
     <ClCompile Include="obaseww.cpp" />
@@ -193,9 +192,7 @@
     <ClInclude Include="fanddml.h" />
     <ClInclude Include="genrprt.h" />
     <ClInclude Include="kbdww.h" />
-    <ClInclude Include="keybd.h" />
     <ClInclude Include="legacy.h" />
-    <ClInclude Include="lexanal.h" />
     <ClInclude Include="oaccess.h" />
     <ClInclude Include="obase.h" />
     <ClInclude Include="obaseww.h" />

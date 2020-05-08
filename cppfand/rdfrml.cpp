@@ -1,6 +1,7 @@
 #include "rdfrml.h"
 
-#include "lexanal.h"
+
+#include "compile.h"
 #include "rdfildcl.h"
 
 void TestBool(char FTyp)

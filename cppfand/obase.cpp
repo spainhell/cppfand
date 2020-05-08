@@ -3,6 +3,7 @@
 #include <set>
 #include "editor.h"
 #include "kbdww.h"
+#include "obaseww.h"
 
 
 void ResetCtrlFlags()

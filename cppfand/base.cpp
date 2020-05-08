@@ -6,10 +6,10 @@
 #include <fileapi.h>
 
 #include "drivers.h"
-#include "kbdww.h"
-#include "keybd.h"
 #include "legacy.h"
 #include <set>
+
+#include "obaseww.h"
 
 WORD OldNumH; // r1 
 void* OldHTPtr = nullptr;
@@ -111,7 +111,7 @@ label1:
 		ReadH(h, 1, reinterpret_cast<void*>(s[0])); // tady se má zøejmì jen vyèíst délka
 		ReadH(h, s.length(), reinterpret_cast<void*>(s[1]));
 	}
-	ConvKamenToCurr((unsigned char*)s.c_str(), s.length());
+	//ConvKamenToCurr((unsigned char*)s.c_str(), s.length());
 	MsgLine = "";
 	j = 1;
 	// TODO: k èemu je toto? s[length(s) + 1] = 0x00;
@@ -745,6 +745,89 @@ void ExChange(void* X, void* Y, WORD L)
 
 void ReplaceChar(pstring S, char C1, char C2)
 {
+}
+
+bool SetStyleAttr(char C, BYTE& a)
+{
+	auto result = true;
+	if (C == 0x13) a = colors.tUnderline;
+	else if (C == 0x17) a = colors.tItalic;
+	else if (C == 0x11) a = colors.tDWidth;
+	else if (C == 0x04) a = colors.tDStrike;
+	else if (C == 0x02) a = colors.tEmphasized;
+	else if (C == 0x05) a = colors.tCompressed;
+	else if (C == 0x01) a = colors.tElite;
+	else result = false;
+	return result;
+}
+
+WORD LenStyleStr(pstring s)
+{
+	WORD l, i;
+	l = s.length(); for (i = 1; i < s.length(); i++)
+	{
+		if (s[i] == 0x13 || s[i] == 0x17 || s[i] == 0x11 || s[i] == 0x04
+			|| s[i] == 0x02 || s[i] == 0x05 || s[i] == 0x01)
+			l--;
+	}
+	return l;
+}
+
+pstring CStyle(10);
+pstring CColor(11);
+
+void WrStyleChar(char C)
+{
+	BYTE a; bool b; WORD i;
+	if (SetStyleAttr(C, a))
+	{
+		i = CStyle.first(C);
+		if (i != 0)
+		{
+			CStyle.Delete(i, 1); CColor.Delete(i, 1);
+		}
+		else {
+			pstring oldCStyle = CStyle;
+			CStyle = C;
+			CStyle += oldCStyle;
+			pstring oldCColor = CColor;
+			CColor = a;
+			CColor += oldCColor;
+		}
+		TextAttr = CColor[1];
+	}
+	else if (C == 0x0D) printf("\r\n");
+	else if (C != 0x0A) printf("%c", C);
+}
+
+void WrStyleStr(pstring s, WORD Attr)
+{
+	WORD i;
+	TextAttr = Attr, CStyle = ""; CColor = char(Attr);
+	for (i=1; i < s.length(); i++)
+	{
+		WrStyleChar(s[i]);
+	}
+	TextAttr = Attr;
+}
+
+void WrLongStyleStr(LongStr* S, WORD Attr)
+{
+	WORD i;
+	TextAttr = Attr; CStyle = ""; CColor = char(Attr);
+	for (i = 1; i < S->LL; i++) WrStyleChar(S->A[i]); TextAttr = Attr;
+}
+
+WORD LogToAbsLenStyleStr(pstring s, WORD l)
+{
+	WORD i = 1;
+	while ((i <= s.length()) && (l > 0))
+	{
+		if (!(s[i] == 0x13 || s[i] == 0x17 || s[i] == 0x11 || s[i] == 0x04
+			|| s[i] == 0x02 || s[i] == 0x05 || s[i] == 0x01)) l--;
+		i++;
+	}
+	return i - 1;
 }
 
 void CloseXMS()

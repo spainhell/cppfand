@@ -1,6 +1,5 @@
 #include "runmerg.h"
 #include "legacy.h"
-#include "lexanal.h"
 #include "oaccess.h"
 #include "obaseww.h"
 #include "runedi.h"

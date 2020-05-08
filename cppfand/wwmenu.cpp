@@ -1,8 +1,7 @@
 #include "wwmenu.h"
 
-#include "kbdww.h"
-#include "keybd.h"
 #include "legacy.h"
+#include "obaseww.h"
 #include "runfrml.h"
 #include "runproc.h"
 #include "runproj.h"

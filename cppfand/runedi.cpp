@@ -2,9 +2,7 @@
 
 #include "genrprt.h"
 #include "kbdww.h"
-#include "keybd.h"
 #include "legacy.h"
-#include "lexanal.h"
 #include "oaccess.h"
 #include "obaseww.h"
 #include "rdedit.h"
@@ -2325,7 +2323,7 @@ bool GetChpt(pstring Heslo, longint& NN)
 		}
 		else {
 			s = TrailChar(' ', _ShortS(CFile->FldD));
-			ConvToNoDiakr(&s[1], s.length(), fonts.VFont);
+			ConvToNoDiakr((WORD*)s[1], s.length(), fonts.VFont);
 			if (EqualsMask(&Heslo[1], Heslo.length(), s))
 				label1:
 			{ NN = j; return result; }

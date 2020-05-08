@@ -1,7 +1,6 @@
 #include "rdproc.h"
 #include "compile.h"
 #include "legacy.h"
-#include "lexanal.h"
 #include "oaccess.h"
 #include "rdfildcl.h"
 #include "rdfrml.h"

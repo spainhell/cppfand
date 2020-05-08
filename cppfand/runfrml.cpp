@@ -3,9 +3,8 @@
 #include "legacy.h"
 #include "rdrun.h"
 #include <math.h>
-#include "kbdww.h"
-#include "keybd.h"
 #include "oaccess.h"
+#include "obaseww.h"
 #include "olongstr.h"
 #include "rdproc.h"
 #include "runedi.h"
@@ -1038,7 +1037,7 @@ label1:
 	}
 	case _gettxt: result = GetTxt(X); break;
 	case _nodiakr: {
-		S = RunLongStr(X->P1); ConvToNoDiakr((unsigned char*)S->A[0], S->LL, fonts.VFont);
+		S = RunLongStr(X->P1); ConvToNoDiakr((WORD*)S->A[0], S->LL, fonts.VFont);
 		result = S;
 		break;
 	}

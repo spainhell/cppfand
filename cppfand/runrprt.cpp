@@ -1,8 +1,6 @@
 #include "runrprt.h"
 
-#include "kbdww.h"
 #include "legacy.h"
-#include "lexanal.h"
 #include "oaccess.h"
 #include "obase.h"
 #include "obaseww.h"

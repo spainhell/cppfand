@@ -1,7 +1,8 @@
 #include "rdfildcl.h"
 
+
+#include "compile.h"
 #include "legacy.h"
-#include "lexanal.h"
 #include "oaccess.h"
 #include "rdfrml.h"
 #include "rdmix.h"

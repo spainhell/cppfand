@@ -1,12 +1,9 @@
-#include "lexanal.h"
-
-#include "access.h"
 #include "compile.h"
-#include "drivers.h"
-#include "kbdww.h"
-#include "legacy.h"
+#include "editor.h"
+//#include "kbdww.h"
+#include "obaseww.h"
 #include "rdmix.h"
-#include "runfrml.h"
+
 
 void Error(integer N)
 {
@@ -424,6 +421,20 @@ integer RdInteger()
 	return I;
 }
 
+double ValofS(pstring& S)
+{
+	integer I; double R;
+
+	val(S, R, I); if (I != 0) {
+		R = ValDate(S, "DD.MM.YY"); if (R == 0) {
+			R = ValDate(S, "DD.MM.YYYY"); if (R == 0) {
+				R = ValDate(S, "mm hh:ss.tt"); if (R == 0) Error(7);
+			}
+		}
+	}
+	return R;
+}
+
 double RdRealConst()
 {
 	pstring S;
@@ -446,20 +457,6 @@ label1:
 	}
 	RdLex();
 	return ValofS(S);
-}
-
-double ValofS(pstring& S)
-{
-	integer I; double R;
-
-	val(S, R, I); if (I != 0) {
-		R = ValDate(S, "DD.MM.YY"); if (R == 0) {
-			R = ValDate(S, "DD.MM.YYYY"); if (R == 0) {
-				R = ValDate(S, "mm hh:ss.tt"); if (R == 0) Error(7);
-			}
-		}
-	}
-	return R;
 }
 
 bool EquUpcase(pstring& S)
@@ -568,16 +565,3 @@ bool IsIdentifStr(pstring& S)
 	}
 	return true;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

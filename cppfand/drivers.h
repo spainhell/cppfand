@@ -189,3 +189,18 @@ void LineFeed();
 WORD WrOutput(TextFile* F);
 WORD DummyCrt(TextFile* F);
 WORD OpenCrt(TextFile* F);
+
+void BreakIntrDone();
+bool KbdTimer(WORD Delta, BYTE Kind);
+bool TestEvent();
+WORD AddCtrlAltShift(BYTE Flgs);
+void AddToKbdBuf(WORD KeyCode);
+void ShowMouse();
+void GetMouseEvent();
+bool KeyPressed();
+WORD ReadKey();
+void SetMouse(WORD X, WORD Y, bool Visible);
+void ClearKeyBuf();
+void BreakIntrInit();
+void InitMouseEvents();
+
