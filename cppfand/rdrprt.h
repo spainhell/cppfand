@@ -1,13 +1,13 @@
 #pragma once
 #include "rdrun.h"
 
-BlkD* CBlk;
-FloatPtrList CZeroLst;
-LvDescr* LvToRd;           /*all used while translating frml*/
+static BlkD* CBlk;
+static FloatPtrList CZeroLst;
+static LvDescr* LvToRd;           /*all used while translating frml*/
 //WORD Ii, Oi, SumIi;
 //char WhatToRd; /*'i'=#XXi 'O'=#XX */
-bool WasIiPrefix;
-BlkD* CBlkSave;
+static bool WasIiPrefix;
+static BlkD* CBlkSave;
 
 FileD* InpFD(WORD I);
 bool FindInLvBlk(LvDescr* L, BlkD* B, RFldD* RF);

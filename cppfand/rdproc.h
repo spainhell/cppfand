@@ -4,7 +4,7 @@
 #include "pstring.h"
 #include "rdrun.h"
 
-bool IsRdUserFunc;
+static bool IsRdUserFunc;
 
 void TestCatError(WORD I, pstring Nm, bool Old);
 bool IsRecVar(LocVar* LV);

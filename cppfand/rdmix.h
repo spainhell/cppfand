@@ -25,8 +25,8 @@ void RdNegFldList(bool& Neg, FieldList FLRoot); // r214
 void EditModeToFlags(pstring Mode, void* Flgs, bool Err); // r220
 KeyDPtr RdViewKey(); // r238
 
-bool KeyArgFound;
-FieldDPtr KeyArgFld;
+static bool KeyArgFound;
+static FieldDPtr KeyArgFld;
 
 void SrchF(FieldDPtr F);
 void SrchZ(FrmlPtr Z);

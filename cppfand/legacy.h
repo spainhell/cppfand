@@ -54,13 +54,13 @@ WORD Swap(WORD cislo);
 
 void UnPack(void* PackArr, WORD& NumArr, WORD& NoDigits);
 void Pack(void* NumArr, WORD& PackArr, WORD& NoDigits);
-void OvrInit(pstring FileName) {}
-void OvrInitEMS() {}
-longint OvrGetBuf() { return 1024 * 1024; }
-void OvrSetBuf(longint Size) {}
-void OvrSetRetry(longint Size) {};
+inline void OvrInit(pstring FileName) {}
+inline void OvrInitEMS() {}
+inline longint OvrGetBuf() { return 1024 * 1024; }
+inline void OvrSetBuf(longint Size) {}
+inline void OvrSetRetry(longint Size) {};
 
-void GetMem(void* pointer, int Size) { pointer = new unsigned char[Size]; }
+inline void GetMem(void* pointer, int Size) { pointer = new unsigned char[Size]; }
 
 void beep();
 

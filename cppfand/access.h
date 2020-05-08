@@ -604,58 +604,58 @@ const BYTE _mousein = 0xf7;  // {P4};
 
 
 // ø. 474
-FileD* FileDRoot; // { only current RDB }
-LinkD* LinkDRoot; // { for all RDBs     }
-FuncD* FuncDRoot;
-FileD* CFile;
-void* CRecPtr;
-KeyD* CViewKey;
-pstring TopRdbDir, TopDataDir;
-pstring CatFDName;
-RdbD* CRdb, TopRdb;
-FileD* CatFD, HelpFD;
+static FileD* FileDRoot; // { only current RDB }
+static LinkD* LinkDRoot; // { for all RDBs     }
+static FuncD* FuncDRoot;
+static FileD* CFile;
+static void* CRecPtr;
+static KeyD* CViewKey;
+static pstring TopRdbDir, TopDataDir;
+static pstring CatFDName;
+static RdbD* CRdb, TopRdb;
+static FileD* CatFD, HelpFD;
 
 // r483
 struct structXPath { longint Page; WORD I; } XPath[10];
-WORD XPathN;
-XWFile XWork;
-TFile TWork;
+static WORD XPathN;
+static XWFile XWork;
+static TFile TWork;
 longint ClpBdPos = 0;
 bool IsTestRun = false;
 bool IsInstallRun = false;
 
 FileDPtr Chpt = FileDRoot; // absolute FileDRoot;
-TFilePtr ChptTF;
-FieldDPtr ChptTxtPos;
-FieldDPtr ChptVerif; // { updated record }
-FieldDPtr ChptOldTxt; // { ChptTyp = 'F' : -1 = new unchecked record, else = old declaration }
-FieldDPtr ChptTyp, ChptName, ChptTxt;
+static TFilePtr ChptTF;
+static FieldDPtr ChptTxtPos;
+static FieldDPtr ChptVerif; // { updated record }
+static FieldDPtr ChptOldTxt; // { ChptTyp = 'F' : -1 = new unchecked record, else = old declaration }
+static FieldDPtr ChptTyp, ChptName, ChptTxt;
 
 
 // ********** konstanty ********** // r496
-const BYTE FloppyDrives = 3;
-bool EscPrompt = false;
-pstring UserName = pstring(20);
-pstring UserPassWORD = pstring(20);
-pstring AccRight;
-bool EdUpdated = false;
-longint EdRecNo = 0;
-pstring EdRecKey = "";
-pstring EdKey = pstring(32);
-bool EdOk = false;
-pstring EdField = pstring(32);
-longint LastTxtPos = 0;
-longint TxtXY = 0;
+static const BYTE FloppyDrives = 3;
+static bool EscPrompt = false;
+static pstring UserName = pstring(20);
+static pstring UserPassWORD = pstring(20);
+static pstring AccRight;
+static bool EdUpdated = false;
+static longint EdRecNo = 0;
+static pstring EdRecKey = "";
+static pstring EdKey = pstring(32);
+static bool EdOk = false;
+static pstring EdField = pstring(32);
+static longint LastTxtPos = 0;
+static longint TxtXY = 0;
 // { consecutive WORD - sized / for formula access / }
-WORD RprtLine = 0; WORD RprtPage = 0; WORD PgeLimit = 0; // {report}
-WORD EdBreak = 0; WORD EdIRec = 1; // {common - alphabetical order}
-WORD MenuX = 1; WORD MenuY = 1;
-WORD UserCode = 0;
+static WORD RprtLine = 0; static WORD RprtPage = 0; static WORD PgeLimit = 0; // {report}
+static WORD EdBreak = 0; static WORD EdIRec = 1; // {common - alphabetical order}
+static WORD MenuX = 1; static WORD MenuY = 1;
+static WORD UserCode = 0;
 // **********
 
-WORD* WordVarArr = &RprtLine;
-FieldDPtr CatRdbName, CatFileName, CatArchiv, CatPathName, CatVolume;
-pstring MountedVol[FloppyDrives] = { pstring(11), pstring(11), pstring(11) };
+static WORD* WordVarArr = &RprtLine;
+static FieldDPtr CatRdbName, CatFileName, CatArchiv, CatPathName, CatVolume;
+static pstring MountedVol[FloppyDrives] = { pstring(11), pstring(11), pstring(11) };
 
 pstring SQLDateMask = "DD.MM.YYYY hh:mm:ss";
 
@@ -672,21 +672,21 @@ integer CompArea(void* A, void* B, integer L); // r575 ASM
 
 //void ResetCompilePars(); // r686
 
-BYTE CurrChar; // { Compile }
-BYTE ForwChar, ExpChar, Lexem;
-pstring LexWord;
-bool SpecFDNameAllowed, IdxLocVarAllowed, FDLocVarAllowed, IsCompileErr;
-CompInpD* PrevCompInp;						// { saved at "include" }
-CharArrPtr InpArrPtr; RdbPos InpRdbPos;		// { "  "  }
-WORD InpArrLen, CurrPos, OldErrPos;			// { "  "  }
-SumElPtr FrmlSumEl;				//{ set while reading sum / count argument }
-bool FrstSumVar, FileVarsAllowed;
+static BYTE CurrChar; // { Compile }
+static BYTE ForwChar, ExpChar, Lexem;
+static pstring LexWord;
+static bool SpecFDNameAllowed, IdxLocVarAllowed, FDLocVarAllowed, IsCompileErr;
+static CompInpD* PrevCompInp;						// { saved at "include" }
+static CharArrPtr InpArrPtr; RdbPos InpRdbPos;		// { "  "  }
+static WORD InpArrLen, CurrPos, OldErrPos;			// { "  "  }
+static SumElPtr FrmlSumEl;				//{ set while reading sum / count argument }
+static bool FrstSumVar, FileVarsAllowed;
 // FrmlPtr RdFldNameFrml() = FrmlPtr(char& FTyp);
 // FrmlPtr RdFunction() = FrmlPtr(char& FTyp);
 FrmlElem* (*RdFldNameFrml)(char&) = nullptr; // ukazatel na funkci
 FrmlElem* (*RdFunction)(char&) = nullptr; // ukazatel na funkci
-void(*ChainSumEl)(); // {set by user}
-BYTE LstCompileVar; // { boundary }
+static void(*ChainSumEl)(); // {set by user}
+static BYTE LstCompileVar; // { boundary }
 
 pstring Switches = "";
 WORD SwitchLevel = 0;

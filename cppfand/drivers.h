@@ -44,27 +44,27 @@ pstring KbdBuffer = ""; // ř. 83
 BYTE LLKeyFlags = 0; // ř. 84
 
 enum class enVideoCard { viCga = 0, viHercules = 1, viEga = 2, viVga = 3 };
-enVideoCard VideoCard = enVideoCard::viVga;
-integer GraphDriver, GraphMode;
-WORD ScrSeg, ScrGrSeg;
-BYTE NrVFont, BytesPerChar;
-bool ChkSnow;
-bool IsGraphMode;
-BYTE GrBytesPerChar;
-WORD GrBytesPerLine;
+static enVideoCard VideoCard = enVideoCard::viVga;
+static integer GraphDriver, GraphMode;
+static WORD ScrSeg, ScrGrSeg;
+static BYTE NrVFont, BytesPerChar;
+static bool ChkSnow;
+static bool IsGraphMode;
+static BYTE GrBytesPerChar;
+static WORD GrBytesPerLine;
 
 const BYTE MaxTxtCols = 132; // r132 {the best adapter}
 const BYTE EventQSize = 16;
 const bool BGIReload = true;
-TPoint LastWhere, LastWhereG, DownWhere;
+static TPoint LastWhere, LastWhereG, DownWhere;
 struct Wind { BYTE X, Y; } WindMin, WindMax; // r137
-BYTE TextAttr, StartAttr, StartMode; // r138
-WORD LastMode;
-void* FontArr; void* BGIDriver; void* BGILittFont; void* BGITripFont;
-BYTE ButtonCount, MouseButtons, LastButtons, DownButtons, LastDouble;
-WORD EventCount, EventQHead, EventQTail;
+static BYTE TextAttr, StartAttr, StartMode; // r138
+static WORD LastMode;
+static void* FontArr; static void* BGIDriver; static void* BGILittFont; static void* BGITripFont;
+static BYTE ButtonCount, MouseButtons, LastButtons, DownButtons, LastDouble;
+static WORD EventCount, EventQHead, EventQTail;
 struct stEventQueue { WORD Time, Buttons, X, Y, GX, GY; };
-stEventQueue EventQueue[EventQSize - 1];
+static stEventQueue EventQueue[EventQSize - 1];
 
 struct TCrs
 {

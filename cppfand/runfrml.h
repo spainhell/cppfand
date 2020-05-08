@@ -10,7 +10,7 @@
 #endif
 
 
-FileDPtr TFD02; TFilePtr TF02; longint TF02Pos; // r33
+static FileDPtr TFD02; static TFilePtr TF02; static longint TF02Pos; // r33
 
 double Owned(FrmlPtr Bool, FrmlPtr Sum, LinkDPtr LD);
 integer CompBool(bool B1, bool B2);

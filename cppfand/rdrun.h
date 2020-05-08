@@ -504,24 +504,24 @@ struct Instr // POZOR konflikt názvù viz níže
 	FrmlPtr IsWord, Port, PortWhat;
 };
 
-ConstListEl* OldMFlds; ConstListEl* NewMFlds;   /* Merge + Report*/
-InpD* IDA[9];
-integer MaxIi;
-XString OldMXStr;                  /* Merge */
-OutpFD* OutpFDRoot;
-OutpRD* OutpRDs;
-bool Join;
-bool PrintView;                  /* Report */
-TextFile Rprt;		// pùvodnì text - souvisí s text. souborem
-BlkD* RprtHd; BlkD* PageHd; BlkD* PageFt;
-FloatPtrListEl* PFZeroLst;
-LvDescr* FrstLvM; LvDescr* LstLvM; /* LstLvM->Ft=RF */
-bool SelQuest;
-FrmlPtr PgeSizeZ, PgeLimitZ;
+static ConstListEl* OldMFlds; static ConstListEl* NewMFlds;   /* Merge + Report*/
+static InpD* IDA[9];
+static integer MaxIi;
+static XString OldMXStr;                  /* Merge */
+static OutpFD* OutpFDRoot;
+static OutpRD* OutpRDs;
+static bool Join;
+static bool PrintView;                  /* Report */
+static TextFile Rprt;		// pùvodnì text - souvisí s text. souborem
+static BlkD* RprtHd; static BlkD* PageHd; static BlkD* PageFt;
+static FloatPtrListEl* PFZeroLst;
+static LvDescr* FrstLvM; static LvDescr* LstLvM; /* LstLvM->Ft=RF */
+static bool SelQuest;
+static FrmlPtr PgeSizeZ, PgeLimitZ;
 	/* Edit */
-EditD* EditDRoot;
-bool CompileFD, EditRdbMode;
-LocVarBlkD LVBD;
+static EditD* EditDRoot;
+static bool CompileFD, EditRdbMode;
+static LocVarBlkD LVBD;
 
 pstring CalcTxt = "";
 struct { char Op; double Group; } MergOpGroup = { _const, 0.0 };

@@ -71,22 +71,22 @@ void NewExit(PProcedure POvr, ExitRecord Buf);  // r218
 /*  VIRTUAL HANDLES  */
 enum FileOpenMode { _isnewfile, _isoldfile, _isoverwritefile, _isoldnewfile }; // poradi se nesmi zmenit!!!
 enum FileUseMode { Closed, RdOnly, RdShared, Shared, Exclusive }; // poradi se nesmi zmenit!!!
-WORD HandleError; // r229
-pstring OldDir, FandDir, WrkDir;
-pstring FandOvrName, FandResName, FandWorkName, FandWorkXName, FandWorkTName;
-pstring CPath; pstring CDir; pstring CName; pstring CExt;
-pstring CVol;
-bool WasLPTCancel;
-FILE* WorkHandle;
+static WORD HandleError; // r229
+static pstring OldDir, FandDir, WrkDir;
+static pstring FandOvrName, FandResName, FandWorkName, FandWorkXName, FandWorkTName;
+static pstring CPath; pstring CDir; pstring CName; pstring CExt;
+static pstring CVol;
+static bool WasLPTCancel;
+static FILE* WorkHandle;
 longint MaxWSize = 0; // {currently occupied in FANDWORK.$$$}
 /* konec */
 
 // ********** MESSAGES **********
-WORD F10SpecKey; // ø. 293
-BYTE ProcAttr;
+static WORD F10SpecKey; // ø. 293
+static BYTE ProcAttr;
 // bool SetStyleAttr(char c, BYTE& a); // je v KBDWW
-pstring MsgLine;
-pstring MsgPar[4];
+static pstring MsgLine;
+static pstring MsgPar[4];
 void SetMsgPar(pstring s);
 void Set2MsgPar(pstring s1, pstring s2);
 void Set3MsgPar(pstring s1, pstring s2, pstring s3);
@@ -96,10 +96,10 @@ void WriteMsg(WORD N);
 void ClearLL(BYTE attr);
 
 // ********** DML **********
-void* FandInt3f; // ø. 311
-FILE* OvrHandle;
-WORD Fand_ss, Fand_sp, Fand_bp, DML_ss, DML_sp, DML_bp;
-const longint _CallDMLAddr = 0; // {passed to FANDDML by setting "DMLADDR="in env.}
+static void* FandInt3f; // ø. 311
+static FILE* OvrHandle;
+static WORD Fand_ss, Fand_sp, Fand_bp, DML_ss, DML_sp, DML_bp;
+static longint _CallDMLAddr = 0; // {passed to FANDDML by setting "DMLADDR="in env.}
 enum TKbdConv { OrigKbd, CsKbd, CaKbd, SlKbd, DtKbd };
 
 struct Spec // r.319
@@ -162,50 +162,50 @@ struct Colors
 	BYTE nNorm;
 	BYTE ShadowAttr;
 	BYTE DesktopColor;
-} colors;
+} static colors;
 
-char CharOrdTab[256]; // after Colors /FANDDML/ // ø. 370
-char UpcCharTab[256]; // TODO: v obou øádcích bylo 'array[char] of char;' - WTF?
-WORD TxtCols, TxtRows;
+static char CharOrdTab[256]; // after Colors /FANDDML/ // ø. 370
+static char UpcCharTab[256]; // TODO: v obou øádcích bylo 'array[char] of char;' - WTF?
+static WORD TxtCols, TxtRows;
 
 // konstanty
-const BYTE prName = 0; const BYTE prUl1 = 1; const BYTE prUl2 = 2; const BYTE prKv1 = 3;
-const BYTE prKv2 = 4; const BYTE prBr1 = 5; const BYTE prBr2 = 6; const BYTE prDb1 = 7;
-const BYTE prDb2 = 8; const BYTE prBd1 = 9; const BYTE prBd2 = 10; const BYTE prKp1 = 11;
-const BYTE prKp2 = 12; const BYTE prEl1 = 13; const BYTE prEl2 = 14; const BYTE prReset = 15;
-const BYTE prMgrFileNm = 15; const BYTE prMgrProg = 16; const BYTE prMgrParam = 17;
-const BYTE prPageSizeNN = 16; const BYTE prPageSizeTrail = 17; const BYTE prLMarg = 18;
-const BYTE prLMargTrail = 19; const BYTE prUs11 = 20; const BYTE prUs12 = 21;
-const BYTE prUs21 = 22; const BYTE prUs22 = 23; const BYTE prUs31 = 24;
-const BYTE prUs32 = 25; const BYTE prLine72 = 26; const BYTE prLine216 = 27;
-const BYTE prDen60 = 28; const BYTE  prDen120 = 29; const BYTE prDen240 = 30;
-const BYTE  prColor = 31; const BYTE prClose = 32;
+static const BYTE prName = 0; static const BYTE prUl1 = 1; static const BYTE prUl2 = 2; static const BYTE prKv1 = 3;
+static const BYTE prKv2 = 4; static const BYTE prBr1 = 5; static const BYTE prBr2 = 6; static const BYTE prDb1 = 7;
+static const BYTE prDb2 = 8; static const BYTE prBd1 = 9; static const BYTE prBd2 = 10; static const BYTE prKp1 = 11;
+static const BYTE prKp2 = 12; static const BYTE prEl1 = 13; static const BYTE prEl2 = 14; static const BYTE prReset = 15;
+static const BYTE prMgrFileNm = 15; static const BYTE prMgrProg = 16; static const BYTE prMgrParam = 17;
+static const BYTE prPageSizeNN = 16; static const BYTE prPageSizeTrail = 17; static const BYTE prLMarg = 18;
+static const BYTE prLMargTrail = 19; static const BYTE prUs11 = 20; static const BYTE prUs12 = 21;
+static const BYTE prUs21 = 22; static const BYTE prUs22 = 23; static const BYTE prUs31 = 24;
+static const BYTE prUs32 = 25; static const BYTE prLine72 = 26; static const BYTE prLine216 = 27;
+static const BYTE prDen60 = 28; static const BYTE  prDen120 = 29; static const BYTE prDen240 = 30;
+static const BYTE  prColor = 31; static const BYTE prClose = 32;
 
-integer prCurr, prMax;
+static integer prCurr, prMax;
 struct Printer {
 	void* Strg; char Typ, Kod; BYTE Lpti, TmOut;
 	bool OpCls, ToHandle, ToMgr; WORD Handle;
-} printer[10];
+} static printer[10];
 typedef std::array<BYTE, 4> TPrTimeOut; // ø. 418
 TPrTimeOut OldPrTimeOut;
 TPrTimeOut PrTimeOut;  // absolute 0:$478;
 
-struct wdaystt { BYTE Typ = 0; WORD Nr = 0; } WDaysTabType;
-WORD NWDaysTab; float WDaysFirst; float WDaysLast;
-wdaystt* WDaysTab;
+struct wdaystt { BYTE Typ = 0; WORD Nr = 0; } static WDaysTabType;
+static WORD NWDaysTab; static float WDaysFirst; static float WDaysLast;
+static wdaystt* WDaysTab;
 
-const char AbbrYes = 'Y'; const char AbbrNo = 'N';
-bool WasInitDrivers = false;
-bool WasInitPgm = false;
+static const char AbbrYes = 'Y'; static const char AbbrNo = 'N';
+static bool WasInitDrivers = false;
+static bool WasInitPgm = false;
 
-WORD LANNode; // ø. 431
+static WORD LANNode; // ø. 431
 
-const BYTE RMsgIdx = 0; const BYTE BgiEgaVga = 1; const BYTE BgiHerc = 2;
-const BYTE ChrLittKam = 3; const BYTE ChrTripKam = 4; const BYTE Ega8x14K = 5;
-const BYTE Vga8x16K = 6; const BYTE Vga8x19K = 7; const BYTE Ega8x14L = 8;
-const BYTE Vga8x16L = 9; const BYTE Vga8x19L = 10; const BYTE ChrLittLat = 11;
-const BYTE ChrTripLat = 12; const BYTE LatToWinCp = 13; const BYTE KamToWinCp = 14;
-const BYTE WinCpToLat = 15; const BYTE FandFace = 16;
+static const BYTE RMsgIdx = 0; static const BYTE BgiEgaVga = 1; static const BYTE BgiHerc = 2;
+static const BYTE ChrLittKam = 3; static const BYTE ChrTripKam = 4; static const BYTE Ega8x14K = 5;
+static const BYTE Vga8x16K = 6; static const BYTE Vga8x19K = 7; static const BYTE Ega8x14L = 8;
+static const BYTE Vga8x16L = 9; static const BYTE Vga8x19L = 10; static const BYTE ChrLittLat = 11;
+static const BYTE ChrTripLat = 12; static const BYTE LatToWinCp = 13; static const BYTE KamToWinCp = 14;
+static const BYTE WinCpToLat = 15; static const BYTE FandFace = 16;
 
 class TResFile // ø. 440
 {
@@ -221,14 +221,14 @@ public:
 };
 struct TMsgIdxItem { WORD Nr, Ofs; BYTE Count; };
 //TMsgIdxItem TMsgIdx[100];
-TResFile ResFile;
-TMsgIdxItem* MsgIdx;// = TMsgIdx;
-WORD MsgIdxN; longint FrstMsgPos;
+static TResFile ResFile;
+static TMsgIdxItem* MsgIdx;// = TMsgIdx;
+static WORD MsgIdxN; static longint FrstMsgPos;
 
 void (*CallOpenFandFiles)(); // r453
 void (*CallCloseFandFiles)(); // r454
 
-double userToday;
+static double userToday;
 
 WORD ReadH(FILE* handle, WORD bytes, void* buffer);
 pstring MyFExpand(pstring Nm, pstring EnvName);

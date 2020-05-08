@@ -1,8 +1,8 @@
 #pragma once
 #include "legacy.h"
 
-bool SFlag, QFlag, WFlag, BFlag, DFlag, EFlag, AFlag, XFlag, VFlag, TFlag;
-WORD CPState, CPCount;
+static bool SFlag, QFlag, WFlag, BFlag, DFlag, EFlag, AFlag, XFlag, VFlag, TFlag;
+static WORD CPState, CPCount;
 
 void ResetCtrlFlags();
 bool IsPrintCtrl(char C); // r43
