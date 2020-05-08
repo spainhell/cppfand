@@ -14,26 +14,11 @@
 #include "type.h"
 
 
-integer CompLongStr(LongStrPtr S1, LongStrPtr S2)
-{
-	return 0;
-}
-
-integer CompLongShortStr(LongStrPtr S1, pstring S2)
-{
-	return 0;
-}
-
-integer CompArea(void* A, void* B, integer L)
-{
-	return 0;
-}
-
-void RunErrorM(LockMode Md, WORD N)
-{
-	OldLMode(Md);
-	RunError(N);
-}
+//void RunErrorM(LockMode Md, WORD N)
+//{
+//	OldLMode(Md);
+//	RunError(N);
+//}
 
 void TFile::Err(WORD n, bool ex)
 {
@@ -57,12 +42,6 @@ longint TFile::UsedFileSize()
 bool TFile::NotCached()
 {
 	return !IsWork && CFile->NotCached();
-}
-
-/// nedìlá nic, pùvodnì dìlal XOR 0xAA;
-void Code(void* A, WORD L)
-{
-	return;
 }
 
 void TFile::RdPrefix(bool Chk)
@@ -1449,18 +1428,6 @@ void XScan::ResetOwner(XString* XX, FrmlPtr aBool)
 	SeekRec(0);
 }
 
-bool EquKFlds(KeyFldDPtr KF1, KeyFldDPtr KF2)
-{
-	bool result = false;
-	while (KF1 != nullptr) {
-		if ((KF2 == nullptr) || (KF1->CompLex != KF2->CompLex) || (KF1->Descend != KF2->Descend)
-			|| (KF1->FldD->Name != KF2->FldD->Name)) return result;
-		KF1 = KF1->Chain; KF2 = KF2->Chain;
-	}
-	if (KF2 != nullptr) return false;
-	return true;
-}
-
 void XScan::ResetOwnerIndex(LinkDPtr LD, LocVar* LV, FrmlPtr aBool)
 {
 	WKeyDPtr k;
@@ -1536,45 +1503,6 @@ void XScan::SeekRec(longint I)
 		}
 	}
 	}
-
-bool DeletedFlag()  // r771 ASM
-{
-	// TODO:
-	return false;
-}
-
-void ClearDeletedFlag()
-{
-}
-
-void SetDeletedFlag()
-{
-}
-
-integer CompStr(pstring& S1, pstring& S2)
-{
-	return 0;
-}
-
-void CmpLxStr()
-{
-}
-
-WORD CompLexLongStr(LongStrPtr S1, LongStrPtr S2)
-{
-	return 0;
-}
-
-WORD CompLexLongShortStr(LongStrPtr S1, pstring& S2)
-{
-	return 0;
-}
-
-WORD CompLexStr(const pstring& S1, const pstring& S2)
-{
-	return 0;
-}
-
 
 void XScan::GetRec()
 {
@@ -1683,36 +1611,22 @@ void* GetRecSpace2()
 	return GetZStore2(CFile->RecLen + 2);
 }
 
-WORD CFileRecSize()
+bool EquKFlds(KeyFldDPtr KF1, KeyFldDPtr KF2)
 {
-	return 0;
+	bool result = false;
+	while (KF1 != nullptr) {
+		if ((KF2 == nullptr) || (KF1->CompLex != KF2->CompLex) || (KF1->Descend != KF2->Descend)
+			|| (KF1->FldD->Name != KF2->FldD->Name)) return result;
+		KF1 = KF1->Chain; KF2 = KF2->Chain;
+	}
+	if (KF2 != nullptr) return false;
+	return true;
 }
 
-void SetTWorkFlag()
+/// nedìlá nic, pùvodnì dìlal XOR 0xAA;
+void Code(void* A, WORD L)
 {
-}
-
-bool HasTWorkFlag()
-{
-	return false;
-}
-
-void SetUpdFlag()
-{
-}
-
-void ClearUpdFlag()
-{
-}
-
-bool HasUpdFlag()
-{
-	return false;
-}
-
-void* LocVarAd(LocVar* LV)
-{
-	return nullptr;
+	return;
 }
 
 /// nedìlá nic

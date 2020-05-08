@@ -93,6 +93,9 @@
     <ClCompile Include="wwmenu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="edtextf.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="runproc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -133,6 +136,24 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="genrprt.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="edscreen.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="edglobal.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="edevproc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="edevinpt.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="edevent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ededit.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -245,6 +266,12 @@
     <ClInclude Include="rdfildcl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="edtextf.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="edglobal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="printtxt.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -255,6 +282,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="runproj.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ededit.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="edevent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="edevinpt.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="edscreen.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="runrprt.h">
@@ -273,6 +312,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="expimp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="edevproc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="olongstr.h">

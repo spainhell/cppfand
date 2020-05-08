@@ -691,12 +691,18 @@ BYTE LstCompileVar; // { boundary }
 pstring Switches = "";
 WORD SwitchLevel = 0;
 
+// ********** IMPLEMENTATION **********
+// od r. 705
+// 
+
+//void NoOvr(); // r722 ASM je v base.cpp
 void RunErrorM(LockMode Md, WORD N); // r729
 pstring* FieldDMask(FieldDPtr F); // r734 ASM
 void* GetRecSpace(); // r739
 void* GetRecSpace2(); // r742
 WORD CFileRecSize(); // r744
 void SetTWorkFlag();  // r746 ASM
+void ClearTWorkFlag(); // r749 ASM
 bool HasTWorkFlag(); // r752 ASM
 void SetUpdFlag(); // r755 ASM
 void ClearUpdFlag(); // r758 ASM
@@ -706,25 +712,20 @@ bool DeletedFlag(); // r771 ASM
 void ClearDeletedFlag(); // r779 ASM
 void SetDeletedFlag(); // r785 ASM
 integer CompStr(pstring& S1, pstring& S2); // r792 ASM
+void TranslateOrd(); // r804 ASM
+WORD TranslateOrdBack(); // r834 ASM
 void CmpLxStr(); // r846 ASM
 WORD CompLexLongStr(LongStrPtr S1, LongStrPtr S2); // r854 ASM
 WORD CompLexLongShortStr(LongStrPtr S1, pstring& S2); // r863 ASM
 WORD CompLexStr(const pstring& S1, const pstring& S2); // r871 ASM
 bool EquKFlds(KeyFldDPtr KF1, KeyFldDPtr KF2); // r881
 void Code(void* A, WORD L); // r897 ASM
+void XDecode(LongStrPtr S); // r903 ASM
+
 void CodingLongStr(LongStrPtr S);
+void DirMinusBackslash(pstring& D);
 longint StoreInTWork(LongStrPtr S);
 LongStrPtr ReadDelInTWork(longint Pos);
 void ForAllFDs(void(*procedure)()); // r935
 bool IsActiveRdb(FileDPtr FD);
 void ResetCompilePars(); // r953 - posledni fce
-
-// ********** IMPLEMENTATION **********
-// od r. 705
-// 
-
-//void ClearTWorkFlag(); // r749 ASM
-//void TranslateOrd(); // r804 ASM
-//WORD TranslateOrdBack(); // r834 ASM
-//void XDecode(LongStrPtr S); // r903 ASM
-//void DirMinusBackslash(pstring& D);
