@@ -1,15 +1,11 @@
 #include "oaccess.h"
 
 #include "base.h"
-#include "common.h"
 #include "expimp.h"
-#include "handle.h"
 #include "index.h"
 #include "legacy.h"
-#include "memory.h"
 #include "obaseww.h"
 #include "recacc.h"
-#include "runedi.h"
 #include "runfrml.h"
 #include "wwmix.h"
 

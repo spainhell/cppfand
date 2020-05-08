@@ -1176,8 +1176,8 @@ void RdRprtOpt(RprtOpt* RO, bool HasFrst)
 	if (IsOpt("ASSIGN")) RdPath(true, RO->Path, RO->CatIRec);
 	else if (IsOpt("TIMES")) RO->Times = RdRealFrml();
 	else if (IsOpt("MODE"))
-		if (IsKeyWord("ONLYSUM")) Mode = _ATotal;
-		else if (IsKeyWord("ERRCHECK")) Mode = _AErrRecs; else Error(49);
+		if (IsKeyWord("ONLYSUM")) RO->Mode = _ATotal;
+		else if (IsKeyWord("ERRCHECK")) RO->Mode = _AErrRecs; else Error(49);
 	else if (IsKeyWord("COND")) {
 		if (!HasFrst) goto label2;
 		WORD Low = CurrPos; Accept(_equ); bool br = false;
@@ -1291,10 +1291,10 @@ void RdCopyFile()
 		else if (IsOpt("MODE")) {
 			TestLex(_quotedstr);
 			for (i = 0; i < 7; i++)
-				if (SEquUpcase(LexWord, ModeTxt[i])) { Mode = i; goto label1; }
+				if (SEquUpcase(LexWord, ModeTxt[i])) { D->Mode = i; goto label1; }
 			Error(142);
 		label1:
-			RdLex;
+			RdLex();
 		}
 		else if (IsKeyWord("NOCANCEL")) D->NoCancel = true;
 		else if (IsKeyWord("APPEND")) {

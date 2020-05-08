@@ -1,7 +1,5 @@
 #include "fileacc.h"
 
-#include "common.h"
-#include "handle.h"
 #include "kbdww.h"
 #include "keybd.h"
 #include "memory.h"

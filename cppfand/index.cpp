@@ -1,9 +1,7 @@
 #include "index.h"
 
 #include "access.h"
-#include "common.h"
 #include "kbdww.h"
-#include "memory.h"
 #include "obaseww.h"
 #include "recacc.h"
 #include "sort.h"

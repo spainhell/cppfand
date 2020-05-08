@@ -75,7 +75,7 @@ void ReportProc(RprtOpt* RO, bool save)
 		if (RO->UserSelFlds) PromptAutoRprt(RO);
 		else RunAutoReport(RO);
 	}
-	if (Edit) md = 'T'; else md = 'V';
+	if (RO->Edit) md = 'T'; else md = 'V';
 	if (save) SaveFiles();
 	if (PrintView) {
 		w = PushW(1, 1, TxtCols, TxtRows);
@@ -369,7 +369,7 @@ void PrintTxtProc(Instr* PD)
 		ReleaseStore(s);
 	}
 	else {
-		SetTxtPathVol(TxtPath, PD->TxtCatIRec);
+		SetTxtPathVol(*PD->TxtPath, PD->TxtCatIRec);
 		PrintTxtFile(0);
 	}
 }

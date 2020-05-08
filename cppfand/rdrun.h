@@ -6,6 +6,7 @@
 
 struct LvDescr;
 struct Instr;
+struct EdExitD;
 
 enum MInstrCode { _zero, _move, _output, _locvar, _parfile, _ifthenelseM };
 struct AssignD

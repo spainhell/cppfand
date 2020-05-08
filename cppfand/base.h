@@ -190,7 +190,7 @@ typedef std::array<BYTE, 4> TPrTimeOut; // ø. 418
 TPrTimeOut OldPrTimeOut;
 TPrTimeOut PrTimeOut;  // absolute 0:$478;
 
-struct wdaystt { BYTE Typ; WORD Nr; } WDaysTabType;
+struct wdaystt { BYTE Typ = 0; WORD Nr = 0; } WDaysTabType;
 WORD NWDaysTab; float WDaysFirst; float WDaysLast;
 wdaystt* WDaysTab;
 
@@ -230,18 +230,16 @@ void (*CallCloseFandFiles)(); // r454
 
 double userToday;
 
-WORD StackOvr(); // r482 ASM
-void NoOvr(); // ASM
-
-bool CacheLocked = false; // r510
-
-pstring PrTab(WORD N); // r517 ASM
-void SetCurrPrinter(integer NewPr); // r524 
-void (*ExitSave)(); //535
-void MyExit(); //536
-void WrTurboErr(); // 537
-void OpenResFile(); // 571
-void OpenWorkH(); // ø. 577
-void InitOverlays(); // r614
-void OpenOvrFile(); //  r632
+//WORD StackOvr(); // r482 ASM
+//void NoOvr(); // ASM
+//
+//pstring PrTab(WORD N); // r517 ASM
+//void SetCurrPrinter(integer NewPr); // r524 
+//
+//void MyExit(); //536
+//void WrTurboErr(); // 537
+//void OpenResFile(); // 571
+//void OpenWorkH(); // ø. 577
+//void InitOverlays(); // r614
+//void OpenOvrFile(); //  r632
 

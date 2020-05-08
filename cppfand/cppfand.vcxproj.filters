@@ -21,9 +21,6 @@
     <ClCompile Include="base.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="common.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="legacy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -31,9 +28,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="pstring.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="handle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="drivers.cpp">
@@ -132,9 +126,6 @@
     <ClCompile Include="obase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="memory.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="genrprt.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -161,9 +152,6 @@
     <ClInclude Include="base.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="common.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="constants.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -185,16 +173,10 @@
     <ClInclude Include="fileacc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="handle.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="kbdww.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="keybd.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="memory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="oaccess.h">
@@ -240,9 +222,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="index.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="type.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="sort.h">
@@ -325,10 +304,5 @@
     <ResourceCompile Include="cppfand.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="type.cpp">
-      <Filter>Source Files</Filter>
-    </None>
   </ItemGroup>
 </Project>

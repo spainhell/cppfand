@@ -1,12 +1,10 @@
 #include "lexanal.h"
 
 #include "access.h"
-#include "common.h"
 #include "compile.h"
 #include "drivers.h"
 #include "kbdww.h"
 #include "legacy.h"
-#include "memory.h"
 #include "rdmix.h"
 #include "recacc.h"
 #include "runfrml.h"

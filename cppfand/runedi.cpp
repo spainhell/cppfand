@@ -1,7 +1,6 @@
 #include "runedi.h"
 
 #include "common.h"
-#include "edevproc.h"
 #include "fileacc.h"
 #include "genrprt.h"
 #include "index.h"
@@ -21,6 +20,8 @@
 #include "runproj.h"
 #include "wwmenu.h"
 #include "wwmix.h"
+
+int Timer = 0;
 
 EditD* E = EditDRoot;
 EFldD* FirstEmptyFld;
