@@ -1,16 +1,11 @@
 #include "rdfildcl.h"
 
-
-
-#include "common.h"
 #include "legacy.h"
 #include "lexanal.h"
-#include "memory.h"
 #include "oaccess.h"
 #include "rdfrml.h"
 #include "rdmix.h"
 #include "rdproc.h"
-#include "recacc.h"
 #include "runproj.h"
 
 

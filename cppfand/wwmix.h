@@ -1,6 +1,6 @@
 #pragma once
 #include "constants.h"
-#include "fileacc.h"
+#include "olongstr.h"
 #include "pstring.h"
 
 struct SS
@@ -50,15 +50,3 @@ private:
 	void SetFirstiItem();
 	bool MouseInItem(integer& I);
 };
-
-
-
-
-
-
-
-
-
-
-
-

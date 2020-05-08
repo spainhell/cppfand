@@ -1,10 +1,7 @@
 #include "printtxt.h"
 
-
-#include "common.h"
 #include "kbdww.h"
 #include "legacy.h"
-#include "memory.h"
 #include "oaccess.h"
 #include "obase.h"
 #include "obaseww.h"

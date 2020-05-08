@@ -1,12 +1,7 @@
 #include "runfrml.h"
-#include "common.h"
-#include "fileacc.h"
-#include "index.h"
 #include "pstring.h"
 #include "legacy.h"
-#include "memory.h"
 #include "rdrun.h"
-#include "recacc.h"
 #include <math.h>
 #include "kbdww.h"
 #include "keybd.h"

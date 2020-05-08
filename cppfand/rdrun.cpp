@@ -1,13 +1,9 @@
 #include "rdrun.h"
 
-#include "common.h"
-#include "index.h"
 #include "kbdww.h"
 #include "keybd.h"
 #include "legacy.h"
-#include "memory.h"
 #include "oaccess.h"
-#include "recacc.h"
 #include "runfrml.h"
 
 bool EFldD::Ed(bool IsNewRec)

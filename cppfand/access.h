@@ -691,18 +691,12 @@ BYTE LstCompileVar; // { boundary }
 pstring Switches = "";
 WORD SwitchLevel = 0;
 
-// ********** IMPLEMENTATION **********
-// od r. 705
-// 
-
-//void NoOvr(); // r722 ASM je v base.cpp
 void RunErrorM(LockMode Md, WORD N); // r729
 pstring* FieldDMask(FieldDPtr F); // r734 ASM
 void* GetRecSpace(); // r739
 void* GetRecSpace2(); // r742
 WORD CFileRecSize(); // r744
 void SetTWorkFlag();  // r746 ASM
-void ClearTWorkFlag(); // r749 ASM
 bool HasTWorkFlag(); // r752 ASM
 void SetUpdFlag(); // r755 ASM
 void ClearUpdFlag(); // r758 ASM
@@ -712,20 +706,83 @@ bool DeletedFlag(); // r771 ASM
 void ClearDeletedFlag(); // r779 ASM
 void SetDeletedFlag(); // r785 ASM
 integer CompStr(pstring& S1, pstring& S2); // r792 ASM
-void TranslateOrd(); // r804 ASM
-WORD TranslateOrdBack(); // r834 ASM
 void CmpLxStr(); // r846 ASM
 WORD CompLexLongStr(LongStrPtr S1, LongStrPtr S2); // r854 ASM
 WORD CompLexLongShortStr(LongStrPtr S1, pstring& S2); // r863 ASM
 WORD CompLexStr(const pstring& S1, const pstring& S2); // r871 ASM
 bool EquKFlds(KeyFldDPtr KF1, KeyFldDPtr KF2); // r881
 void Code(void* A, WORD L); // r897 ASM
-void XDecode(LongStrPtr S); // r903 ASM
-
 void CodingLongStr(LongStrPtr S);
-void DirMinusBackslash(pstring& D);
 longint StoreInTWork(LongStrPtr S);
 LongStrPtr ReadDelInTWork(longint Pos);
 void ForAllFDs(void(*procedure)()); // r935
 bool IsActiveRdb(FileDPtr FD);
 void ResetCompilePars(); // r953 - posledni fce
+
+// ********** IMPLEMENTATION **********
+// od r. 705
+// 
+
+//void ClearTWorkFlag(); // r749 ASM
+//void TranslateOrd(); // r804 ASM
+//WORD TranslateOrdBack(); // r834 ASM
+//void XDecode(LongStrPtr S); // r903 ASM
+//void DirMinusBackslash(pstring& D);
+
+
+void ReadRec(longint N);
+longint _T(FieldDescr* F);
+pstring _ShortS(FieldDPtr F);
+void CreateRec(longint N);
+void RecallRec(longint RecNr);
+bool LinkUpw(LinkDPtr LD, longint& N, bool WithT);
+bool LinkLastRec(FileDPtr FD, longint& N, bool WithT);
+void IncNRecs(longint N);
+void WriteRec(longint N);
+void R_(FieldDPtr F, double R);
+double _R(FieldDPtr F);
+void LongS_(FieldDPtr F, LongStr* S);
+void S_(FieldDPtr F, pstring S);
+void B_(FieldDPtr F, bool B);
+bool TryLMode(LockMode Mode, LockMode& OldMode, WORD Kind);
+void OldLMode(LockMode Mode);
+LockMode NewLMode(LockMode Mode);
+void TestXFExist();
+bool TryLockN(longint N, WORD Kind);
+void UnLockN(longint N);
+LongStr* _LongS(FieldDPtr F);
+void ClearRecSpace(void* p);
+void ZeroAllFlds();
+void DelTFld(FieldDPtr F);
+void DelDifTFld(void* Rec, void* CompRec, FieldDPtr F);
+bool _B(FieldDPtr F);
+void DeleteXRec(longint RecNr, bool DelT);
+void OverWrXRec(longint RecNr, void* P2, void* P);
+void DelAllDifTFlds(void* Rec, void* CompRec);
+void DecNRecs(longint N);
+void DeleteRec(longint N);
+bool SearchKey(XString& XX, KeyDPtr Key, longint& NN);
+longint XNRecs(KeyDPtr K);
+void T_(FieldDPtr F, longint Pos);
+void AsgnParFldFrml(FileD* FD, FieldDPtr F, FrmlPtr Z, bool Ad);
+void PutRec();
+void TryInsertAllIndexes(longint RecNr);
+void XFNotValid();
+void DelTFlds();
+void CopyRecWithT(void* p1, void* p2);
+void CloseClearHCFile();
+void TestCPathError();
+void AssignNRecs(bool Add, longint N);
+void CExtToT();
+void CExtToX();
+void CloseGoExit();
+void WrPrefixes();
+void TestCFileError();
+WORD RdPrefix();
+bool ChangeLMode(LockMode Mode, WORD Kind, bool RdPref);
+void SeekRec(longint N);
+void WrPrefix();
+void RdPrefixes();
+
+
+

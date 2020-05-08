@@ -1,16 +1,11 @@
 #include "rdmix.h"
 
-
-
-#include "common.h"
 #include "compile.h"
 #include "kbdww.h"
 #include "legacy.h"
 #include "lexanal.h"
-#include "memory.h"
 #include "rdfildcl.h"
 #include "rdfrml.h"
-#include "recacc.h"
 #include "wwmix.h"
 
 void RdLocDcl(LocVarBlkD* LVB, bool IsParList, bool WithRecVar, char CTyp)

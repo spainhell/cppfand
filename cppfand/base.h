@@ -230,16 +230,89 @@ void (*CallCloseFandFiles)(); // r454
 
 double userToday;
 
-//WORD StackOvr(); // r482 ASM
-//void NoOvr(); // ASM
-//
-//pstring PrTab(WORD N); // r517 ASM
-//void SetCurrPrinter(integer NewPr); // r524 
-//
-//void MyExit(); //536
-//void WrTurboErr(); // 537
-//void OpenResFile(); // 571
-//void OpenWorkH(); // ø. 577
-//void InitOverlays(); // r614
-//void OpenOvrFile(); //  r632
+WORD ReadH(FILE* handle, WORD bytes, void* buffer);
+pstring MyFExpand(pstring Nm, pstring EnvName);
+void CloseH(FILE* handle);
+FILE* OpenH(FileOpenMode Mode, FileUseMode UM);
+void MarkStore2(void* p);
+void ReleaseStore2(void* p);
+void MarkStore(void* p);
+void DelBackSlash(pstring s);
+void RestoreExit(ExitRecord& Buf);
+void SeekH(FILE* handle, longint pos);
+longint PosH(FILE* handle);
+void SetCurrPrinter(integer NewPr);
+void AddBackSlash(pstring s);
+FILE* GetOverHandle(FILE* fptr, int diff);
+void OpenWorkH();
+bool SEquUpcase(pstring S1, pstring S2);
+void ReleaseStore(void* pointer);
+bool OSshell(pstring Path, pstring CmdLine, bool NoCancel, bool FreeMm, bool LdFont, bool TextMd);
+void GoExit();
+longint FileSizeH(FILE* handle);
+void RdWrCache(bool ReadOp, FILE* Handle, bool NotCached, longint Pos, WORD N, void* Buf);
+longint SwapLong(longint N);
+void* GetStore(WORD Size);
+void* GetStore2(WORD Size);
+void SetUpdHandle(FILE* H);
+WORD SLeadEqu(pstring S1, pstring S2);
+void* GetZStore(WORD Size);
+bool SaveCache(WORD ErrH);
+void* GetZStore2(WORD Size);
 
+integer MinI(integer X, integer Y);
+integer MaxI(integer X, integer Y);
+WORD MinW(WORD X, WORD Y);
+WORD MaxW(WORD X, WORD Y);
+longint MinL(longint X, longint Y);
+longint MaxL(longint X, longint Y);
+longint StoreAvail();
+void WriteH(FILE* handle, WORD bytes, void* buffer);
+void TruncH(FILE* handle, longint N);
+void FlushH(FILE* handle);
+void DeleteFile(pstring path);
+
+WORD FindCtrlM(LongStrPtr s, WORD i, WORD n); // r152
+WORD SkipCtrlMJ(LongStrPtr s, WORD i); // r158
+
+pstring PrTab(WORD N);
+pstring StrPas(const char* Src);
+
+void ChainLast(void* Frst, void* New); // r13 ASM
+void* LastInChain(void* Frst); // r18 ASM
+pstring* StoreStr(pstring S);
+void CloseClearH(FILE* h);
+bool CacheExist();
+void FlushHandles();
+bool IsNetCVol();
+WORD GetFileAttr();
+void SetFileAttr(WORD Attr);
+void ClearCacheH(FILE* h);
+void RenameFile56(pstring OldPath, pstring NewPath, bool Msg);
+void ResetUpdHandle(FILE* H);
+//bool IsHandle(FILE* H);
+bool IsUpdHandle(FILE* H);
+void StrLPCopy(char* Dest, pstring s, WORD MaxL);
+void SplitDate(double R, WORD& d, WORD& m, WORD& y);
+double Today(); // r362
+double CurrTime();
+bool MouseInRect(WORD X, WORD Y, WORD XSize, WORD Size); // r175 ASM
+double ValDate(const pstring& Txtpstring, pstring Mask); // r276
+pstring StrDate(double R, pstring Mask); //r321
+double AddMonth(double R, double RM);
+double DifMonth(double R1, double R2);
+void MyMove(void* A1, void* A2, WORD N);
+void ReleaseAfterLongStr(void* p);
+WORD CountDLines(void* Buf, WORD L, char C); // r139 ASM
+pstring GetDLine(void* Buf, WORD L, char C, WORD I); // r144 ASM
+bool OverlapByteStr(void* p1, void* p2); // ASM
+bool MouseInRectProc(WORD X, WORD Y, WORD XSize, WORD Size); // r182 ASM - rozdìleno na txt a graph režim
+bool EqualsMask(void* p, WORD l, pstring Mask); // r86 ASM
+WORD ListLength(void* P); // r22 ASM
+void AlignLongStr();
+void MarkBoth(void* p, void* p2);
+void ReleaseBoth(void* p, void* p2);
+void* Normalize(longint L);
+longint AbsAdr(void* P);
+void ExChange(void* X, void* Y, WORD L);
+void ReplaceChar(pstring S, char C1, char C2); // r30 ASM

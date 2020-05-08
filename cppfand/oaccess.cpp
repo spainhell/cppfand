@@ -2,10 +2,8 @@
 
 #include "base.h"
 #include "expimp.h"
-#include "index.h"
 #include "legacy.h"
 #include "obaseww.h"
-#include "recacc.h"
 #include "runfrml.h"
 #include "wwmix.h"
 

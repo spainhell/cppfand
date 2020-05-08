@@ -1,24 +1,132 @@
 #pragma once
 
 #include "access.h"
-#include "common.h"
-#include "fileacc.h"
-#include "index.h"
 #include "kbdww.h"
 #include "legacy.h"
-#include "memory.h"
+#include "oaccess.h"
 #include "obaseww.h"
+#include "olongstr.h"
 #include "rdfrml1.h"
-#include "recacc.h"
 #include "sort.h"
-#include "type.h"
 
 
-//void RunErrorM(LockMode Md, WORD N)
-//{
-//	OldLMode(Md);
-//	RunError(N);
-//}
+integer CompLongStr(LongStrPtr S1, LongStrPtr S2)
+{
+	return 0;
+}
+
+integer CompLongShortStr(LongStrPtr S1, pstring S2)
+{
+	return 0;
+}
+
+integer CompArea(void* A, void* B, integer L)
+{
+	return 0;
+}
+
+#ifdef FandNetV
+void ModeLockBnds(LockMode Mode, longint& Pos, WORD& Len)
+{
+	longint n = 0;
+	switch (Mode) {       /* hi=how much BYTEs, low= first BYTE */
+	case NoExclMode: n = 0x00010000 + LANNode; break;
+	case NoDelMode: n = 0x00010100 + LANNode; break;
+	case NoCrMode: n = 0x00010200 + LANNode; break;
+	case RdMode: n = 0x00010300 + LANNode; break;
+	case WrMode: n = 0x00FF0300; break;
+	case CrMode: n = 0x01FF0200; break;
+	case DelMode: n = 0x02FF0100; break;
+	case ExclMode: n = 0x03FF0000; break;
+}
+	Pos = ModeLock + (n >> 16);
+	Len = n & 0xFFFF;
+}
+
+bool ChangeLMode(LockMode Mode, WORD Kind, bool RdPref)
+{
+	FILE* h;
+	longint pos, oldpos; WORD len, oldlen, count, d; longint w, w1; LockMode oldmode;
+	bool result = false;
+	if (!CFile->IsShared()) {         /*neu!!*/
+		result = true; CFile->LMode = Mode; return result;
+	}
+	result = false; oldmode = CFile->LMode; h = CFile->Handle;
+	if (oldmode >= WrMode) {
+		if (Mode < WrMode) WrPrefixes();
+		if (oldmode == ExclMode) { SaveCache(0); ClearCacheCFile(); }
+		if (Mode < WrMode) ResetCFileUpdH();
+	}
+	w = 0; count = 0;
+label1:
+	if (Mode != NullMode)
+		if (!TryLockH(h, TransLock, 1)) {
+		label2:
+			if (Kind == 2) return result; /*0 Kind-wait, 1-wait until ESC, 2-no wait*/
+			count++;
+			if (count <= spec.LockRetries) d = spec.LockDelay;
+			else {
+				d = spec.NetDelay; SetCPathVol();
+				Set2MsgPar(CPath, LockModeTxt[Mode]);
+				w1 = PushWrLLMsg(825, Kind = 1);
+				if (w == 0) w = w1; else TWork.Delete(w1); LockBeep();
+			}
+			if (KbdTimer(spec.NetDelay, Kind)) goto label1;
+			if (w != 0) PopW(w); return result;
+		}
+	if (oldmode != NullMode) {
+		ModeLockBnds(oldmode, oldpos, oldlen); UnLockH(h, oldpos, oldlen);
+	}
+	if (Mode != NullMode) {
+		ModeLockBnds(Mode, pos, len); if (not TryLockH(h, pos, len)) {
+			if (oldmode != NullMode) TryLockH(h, oldpos, oldlen);
+			UnLockH(h, TransLock, 1); goto label2;
+		}
+		UnLockH(h, TransLock, 1);
+	}
+	if (w != 0) PopW(w);
+	CFile->LMode = Mode;
+	if ((oldmode < RdMode) && (Mode >= RdMode) && RdPref) RdPrefixes();
+	result = true;
+	return result;
+}
+#else
+bool ChangeLMode(LockMode Mode, WORD Kind, bool RdPref)
+{
+	CFile->LMode = Mode;
+	return true;
+}
+#endif
+
+
+void OldLMode(LockMode Mode)
+{
+	/* !!! with CFile^ do!!! */
+#ifdef FandSQL
+	if (CFile->IsSQLFile) { CFile->LMode = Mode; return; }
+#endif
+	if (CFile->Handle == nullptr) return;
+	if (Mode != CFile->LMode) ChangeLMode(Mode, 0, true);
+}
+
+void RunErrorM(LockMode Md, WORD N)
+{
+	OldLMode(Md);
+	RunError(N);
+}
+
+void CloseClearHCFile()
+{
+	/* !!! with CFile^ do!!! */
+	CloseClearH(CFile->Handle);
+	if (CFile->Typ == 'X') CloseClearH(CFile->XF->Handle);
+	if (CFile->TF != nullptr) CloseClearH(CFile->TF->Handle);
+}
+
+void CloseGoExit()
+{
+	CloseClearHCFile(); GoExit();
+}
 
 void TFile::Err(WORD n, bool ex)
 {
@@ -42,6 +150,1184 @@ longint TFile::UsedFileSize()
 bool TFile::NotCached()
 {
 	return !IsWork && CFile->NotCached();
+}
+
+BYTE ByteMask[_MAX_INT_DIG];
+
+const BYTE DblS = 8;
+const BYTE FixS = 8;
+BYTE Fix[FixS];
+BYTE RealMask[DblS + 1];
+BYTE Dbl[DblS];
+
+void UnPack(void* PackArr, void* NumArr, WORD NoDigits)
+{
+}
+
+void Pack(void* NumArr, void* PackArr, WORD NoDigits)
+{
+	BYTE* source = (BYTE*)NumArr;
+	BYTE* target = (BYTE*)PackArr;
+	WORD i;
+	for (i = 1; i < (NoDigits >> 1); i++)
+		target[i] = ((source[(i << 1) - 1] & 0x0F) << 4) || (source[i << 1] & 0x0F);
+	if (NoDigits % 2 == 1)
+		target[(NoDigits >> 1) + 1] = (source[NoDigits] & 0x0F) << 4;
+}
+
+double RealFromFix(void* FixNo, WORD FLen)
+{
+	double r;
+	BYTE* rr = (BYTE*)&r;
+	BYTE ff[FixS];
+	integer i;
+
+	FillChar(rr, DblS, 0);
+	Move(FixNo, ff, FLen);
+	bool neg = (ff[1] & 0x80) != 0;
+	if (neg) {
+		if (ff[1] == 0x80) {
+			for (i = 2; i < FLen; i++) if (ff[i] != 0x00) goto label1;   /*NULL value*/
+			return 0.;
+		}
+	label1:
+		for (i = 1; i < FLen; i++) ff[i] = !(ff[i]);
+		ff[FLen]++;
+		i = FLen;
+		while (ff[i] == 0) { i--; if (i > 0) ff[i]++; }
+	}
+	integer first = 1;
+	while (ff[first] == 0) first++;
+	if (first > FLen) { return 0; }
+	integer lef = 0;
+	BYTE b = ff[first];
+	while ((b & 0x80) == 0) { b = b << 1; lef++; }
+	ff[first] = ff[first] && (0x7F >> lef);
+	integer exp = ((FLen - first) << 3) - lef + 1030;
+	if (lef == 7) first++;
+	lef = (lef + 5) & 0x07;
+	integer rig = 8 - lef;
+	i = DblS - 1;
+	if ((rig <= 4) && (first <= FLen)) { rr[i] = ff[first] >> rig; i--; }
+	while ((i > 0) && (first < FLen))
+	{
+		rr[i] = (ff[first] << lef) + (ff[first + 1] >> rig);
+		i--;
+		first++;
+	}
+	if ((first == FLen) && (i > 0)) rr[i] = ff[first] << lef;
+	rr[DblS - 1] = (rr[DblS - 1] & 0x0F) + ((exp & 0x0F) << 4);
+	rr[DblS] = exp >> 4;
+	if (neg) rr[DblS] = rr[DblS] | 0x80;
+	return r;
+}
+
+void FixFromReal(double r, void* FixNo, WORD& flen)
+{
+	BYTE* rr = (BYTE*)&r;
+	BYTE* ff = (BYTE*)FixNo;
+
+	FillChar(ff, flen, 0);
+	if (r > 0) r = r + 0.5;
+	else r = r - 0.5;
+	bool neg = bool(rr[DblS] & 0x80);
+	integer exp = (rr[DblS - 1] >> 4) + (WORD(rr[DblS] & 0x7F) << 4);
+	if (exp < 2047)
+	{
+		rr[DblS] = 0; rr[DblS - 1] = rr[DblS - 1] & 0x0F;
+		if (exp > 0) { rr[DblS - 1] = rr[DblS - 1] | 0x10; }
+		else { exp++; }
+		exp -= 1023;
+		if (exp > (flen << 3) - 1) /*overflow*/ return;
+		integer lef = (exp + 4) & 0x0007;
+		integer rig = 8 - lef;
+		if ((exp & 0x0007) > 3) exp += 4;
+		integer first = 7 - (exp >> 3);
+		integer i = flen;
+		while ((first < DblS) and (i > 0))
+		{
+			ff[i] = (rr[first] >> rig) + (rr[first + 1] << lef);
+			i--; first++;
+		}
+		if (i > 0) ff[i] = rr[first] >> rig;
+		if (neg)
+		{
+			for (i = 1; i < flen; i++) ff[i] = !ff[i]; ff[flen]++;
+			i = flen;
+			while (ff[i] == 0) {
+				i--;
+				if (i > 0) ff[i]++;
+			}
+		}
+	}
+}
+
+#ifdef FandNetV
+const longint TransLock = 0x0A000501;  /* locked while state transition */
+const longint ModeLock = 0x0A000000;  /* base for mode locking */
+const longint RecLock = 0x0B000000;  /* base for record locking */
+#endif
+
+struct TT1Page
+{
+	WORD Signum = 0, OldMaxPage = 0;
+	longint FreePart = 0;
+	bool Rsrvd1 = false, CompileProc = false, CompileAll = false;
+	WORD IRec = 0;
+	longint FreeRoot = 0, MaxPage = 0;   /*eldest version=>array Pw[1..40] of char;*/
+	double TimeStmp = 0.0;
+	bool HasCoproc = false;
+	char Rsrvd2[25];
+	char Version[4];
+	BYTE LicText[105];
+	BYTE Sum = 0;
+	char X1[295];
+	WORD LicNr = 0;
+	char X2[11];
+	char PwNew[40];
+	BYTE Time = 0;
+};
+
+void ResetCFileUpdH()
+{
+	/* !!! with CFile^ do!!! */
+	ResetUpdHandle(CFile->Handle);
+	if (CFile->Typ == 'X') ResetUpdHandle(CFile->XF->Handle);
+	if (CFile->TF != nullptr) ResetUpdHandle(CFile->TF->Handle);
+}
+
+void ClearCacheCFile()
+{
+	/* !!! with CFile^ do!!! */
+	ClearCacheH(CFile->Handle);
+	if (CFile->Typ == 'X') ClearCacheH(CFile->XF->Handle);
+	if (CFile->TF != nullptr) ClearCacheH(CFile->TF->Handle);
+}
+
+bool TryLMode(LockMode Mode, LockMode& OldMode, WORD Kind)
+{
+	/* !!! with CFile^ do!!! */
+	auto result = true;
+#ifdef FandSQL
+	if (CFile->IsSQLFile) {
+		OldMode = CFile->LMode; if (Mode > CFile->LMode) CFile->LMode = Mode;
+	}
+	else
+#endif
+	{
+		if (CFile->Handle == nullptr) OpenCreateF(Shared);
+		OldMode = CFile->LMode;
+		if (Mode > CFile->LMode) result = ChangeLMode(Mode, Kind, true);
+	}
+	return result;
+}
+
+LockMode NewLMode(LockMode Mode)
+{
+	LockMode md;
+	TryLMode(Mode, md, 0);
+	return md;
+}
+
+bool TryLockN(longint N, WORD Kind)
+{
+	longint w, w1; WORD m;
+	pstring XTxt(3); XTxt = "CrX";
+	auto result = true;
+#ifdef FandSQL
+	if (CFile->IsSQLFile) return result;
+#endif
+#ifdef FandNetV
+
+	if (!CFile->IsShared) return result; w = 0;
+label1:
+	if (!TryLockH(CFile->Handle, RecLock + N, 1)) {
+		if (Kind != 2) {   /*0 Kind-wait, 1-wait until ESC, 2-no wait*/
+			m = 826;
+			if (N == 0) { SetCPathVol(); Set2MsgPar(CPath, XTxt); m = 825; }
+			w1 = PushWrLLMsg(m, Kind = 1);
+			if (w == 0) w = w1;
+			else TWork.Delete(w1);
+			/*beep; don't disturb*/
+			if (KbdTimer(spec.NetDelay, Kind)) goto label1;
+		}
+		result = false;
+	}
+	if (w != 0) PopW(w);
+#endif
+	return result;
+}
+
+void UnLockN(longint N)
+{
+	/* !!! with CFile^ do!!! */
+#ifdef FandSQL
+	if (CFile->IsSQLFile) return;
+#endif
+#ifdef FandNetV
+
+	if ((CFile->Handle == nullptr) || !CFile->IsShared) return;
+	UnLockH(CFile->Handle, RecLock + N, 1);
+#endif
+}
+
+
+WORD RdPrefix()
+{
+	struct x6 { longint NRs = 0; WORD RLen = 0; } X6;
+	struct x8 { WORD NRs = 0, RLen = 0; } X8;
+	struct xD {
+		BYTE Ver = 0; BYTE Date[3] = { 0,0,0 };
+		longint NRecs = 0;
+		WORD HdLen = 0; WORD RecLen = 0;
+	} XD;
+	auto result = 0xffff;
+	/* !!! with CFile^ do!!! */
+	switch (CFile->Typ) {
+	case '8': {
+		RdWrCache(true, CFile->Handle, CFile->NotCached(), 0, 4, &X8);
+		CFile->NRecs = X8.NRs;
+		if (CFile->RecLen != X8.RLen) { return X8.RLen; }
+		break;
+	}
+	case 'D': {
+		RdWrCache(true, CFile->Handle, CFile->NotCached(), 0, 12, &XD);
+		CFile->NRecs = XD.NRecs;
+		if ((CFile->RecLen != XD.RecLen)) { return XD.RecLen; }
+		CFile->FrstDispl = XD.HdLen;
+		break;
+	}
+	default: {
+		RdWrCache(true, CFile->Handle, CFile->NotCached(), 0, 6, &X6);
+		CFile->NRecs = abs(X6.NRs);
+		if ((X6.NRs < 0) && (CFile->Typ != 'X') || (X6.NRs > 0) && (CFile->Typ == 'X')
+			|| (CFile->RecLen != X6.RLen)) {
+			return X6.RLen;
+		}
+		break;
+	}
+	}
+	return result;
+}
+
+void RdPrefixes()
+{
+	if (RdPrefix() != 0xffff) CFileError(883);
+	/* !!! with CFile^ do!!! */ {
+		if ((CFile->XF != nullptr) && (CFile->XF->Handle != nullptr)) CFile->XF->RdPrefix();
+		if ((CFile->TF != nullptr)) CFile->TF->RdPrefix(false); }
+}
+
+void WrDBaseHd()
+{
+	DBaseHd* P = nullptr;
+
+	FieldDPtr F;
+	WORD n, y, m, d, w;
+	string s;
+
+	const char CtrlZ = '\x1a';
+
+	P = (DBaseHd*)GetZStore(CFile->FrstDispl);
+	char* PA = (char*)&P; // PA:CharArrPtr absolute P;
+	F = CFile->FldD;
+	n = 0;
+	while (F != nullptr) {
+		if (F->Flg && f_Stored != 0) {
+			n++;
+			{ // with P^.Flds[n]
+				auto actual = P->Flds[n];
+				switch (F->Typ) {
+				case 'F': { actual.Typ = 'N'; actual.Dec = F->M; break; }
+				case 'N': {actual.Typ = 'N'; break; }
+				case 'A': {actual.Typ = 'C'; break; }
+				case 'D': {actual.Typ = 'D'; break; }
+				case 'B': {actual.Typ = 'L'; break; }
+				case 'T': {actual.Typ = 'M'; break; }
+				default:;
+				}
+				actual.Len = F->NBytes;
+				actual.Displ = F->Displ;
+				s = F->Name;
+				for (size_t i = 1; i < s.length(); i++) s[i] = toupper(s[i]);
+				StrLPCopy((char*)&actual.Name[1], s, 11);
+			}
+		}
+		F = F->Chain;
+	}
+
+	{ //with P^ do 
+		if (CFile->TF != nullptr) {
+			if (CFile->TF->Format == TFile::FptFormat) P->Ver = 0xf5;
+			else P->Ver = 0x83;
+		}
+		else P->Ver = 0x03;
+
+		P->RecLen = CFile->RecLen;
+		SplitDate(Today(), d, m, y);
+		P->Date[1] = BYTE(y - 1900);
+		P->Date[2] = (BYTE)m;
+		P->Date[3] = (BYTE)d;
+		P->NRecs = CFile->NRecs;
+		P->HdLen = CFile->FrstDispl;
+		PA[(P->HdLen / 32) * 32 + 1] = m;
+	}
+
+	// with CFile^
+	{
+		RdWrCache(false, CFile->Handle, CFile->NotCached(), 0, CFile->FrstDispl, (void*)&P);
+		RdWrCache(false, CFile->Handle, CFile->NotCached(),
+			longint(CFile->NRecs) * CFile->RecLen + CFile->FrstDispl, 1, (void*)&CtrlZ);
+	}
+
+	ReleaseStore(P);
+}
+
+void WrPrefix()
+{
+	struct
+	{
+		longint NRs;
+		WORD RLen;
+	} Pfx6 = { 0, 0 };
+
+	struct
+	{
+		WORD NRs;
+		WORD RLen;
+	} Pfx8 = { 0, 0 };
+
+	if (IsUpdHandle(CFile->Handle))
+	{
+		switch (CFile->Typ)
+		{
+		case '8': {
+			Pfx8.RLen = CFile->RecLen;
+			Pfx8.NRs = CFile->NRecs;
+			RdWrCache(false, CFile->Handle, CFile->NotCached(), 0, 4, (void*)&Pfx8);
+			break;
+		}
+		case 'D': {
+			WrDBaseHd(); break;
+		}
+		default: {
+			Pfx6.RLen = CFile->RecLen;
+			if (CFile->Typ == 'X') Pfx6.NRs = -CFile->NRecs;
+			else Pfx6.NRs = CFile->NRecs;
+			RdWrCache(false, CFile->Handle, CFile->NotCached(), 0, 6, (void*)&Pfx6);
+		}
+		}
+	}
+}
+
+void WrPrefixes()
+{
+	WrPrefix(); /*with CFile^ do begin*/
+	if (CFile->TF != nullptr && IsUpdHandle(CFile->TF->Handle))
+		CFile->TF->WrPrefix();
+	if (CFile->Typ == 'X' && (CFile->XF)->Handle != nullptr
+		&& /*{ call from CopyDuplF }*/ (IsUpdHandle(CFile->XF->Handle) || IsUpdHandle(CFile->Handle)))
+		CFile->XF->WrPrefix();
+}
+
+void CExtToX()
+{
+	CExt[2] = 'X'; CPath = CDir + CName + CExt;
+}
+
+void TestCFileError()
+{
+	if (HandleError != 0) CFileError(700 + HandleError);
+}
+
+void TestCPathError()
+{
+	WORD n;
+	if (HandleError != 0) {
+		n = 700 + HandleError;
+		if ((n == 705) && (CPath[CPath.length()] == '\\')) n = 840;
+		SetMsgPar(CPath); RunError(n);
+	}
+}
+
+void CExtToT()
+{
+	if (SEquUpcase(CExt, ".RDB"))
+		CExt = ".TTT";
+	else
+		if (SEquUpcase(CExt, ".DBF"))
+			if (CFile->TF->Format == TFile::FptFormat) CExt = ".FPT";
+			else CExt = ".DBT";
+		else CExt[2] = 'T';
+	CPath = CDir + CName + CExt;
+}
+
+void XFNotValid()
+{
+	XFile* XF;
+	XF = CFile->XF;
+	if (XF == nullptr) return;
+	if (XF->Handle == nullptr) RunError(903);
+	XF->SetNotValid();
+}
+
+void NegateESDI()
+{
+	// asm  jcxz @2; @1:not es:[di].byte; inc di; loop @1; @2:
+}
+
+void TestXFExist()
+{
+	XFile* xf = CFile->XF;
+	if ((xf != nullptr) && xf->NotValid)
+	{
+		if (xf->NoCreate) CFileError(819);
+		CreateIndexFile();
+	}
+}
+
+longint XNRecs(KeyDPtr K)
+{
+	if ((CFile->Typ == 'X') && (K != nullptr))
+	{
+		TestXFExist();
+		return CFile->XF->NRecs;
+	}
+	return CFile->NRecs;
+}
+
+void ReadRec(longint N) {}
+
+void WriteRec(longint N)
+{
+	RdWrCache(false, CFile->Handle, CFile->NotCached(),
+		(N - 1) * CFile->RecLen + CFile->FrstDispl, CFile->RecLen, CRecPtr);
+	CFile->WasWrRec = true;
+}
+
+void RecallRec(longint RecNr)
+{
+	TestXFExist();
+	CFile->XF->NRecs++;
+	KeyDPtr K = CFile->Keys;
+	while (K != nullptr) { K->Insert(RecNr, false); K = K->Chain; }
+	ClearDeletedFlag();
+	WriteRec(RecNr);
+}
+
+void TryInsertAllIndexes(longint RecNr)
+{
+	void* p = nullptr;
+	TestXFExist();
+	MarkStore(p);
+	KeyDPtr K = CFile->Keys;
+	while (K != nullptr) {
+		if (not K->Insert(RecNr, true)) goto label1; K = K->Chain;
+	}
+	CFile->XF->NRecs++;
+	return;
+label1:
+	ReleaseStore(p);
+	KeyDPtr K1 = CFile->Keys;
+	while ((K1 != nullptr) && (K1 != K)) {
+		K1->Delete(RecNr); K1 = K1->Chain;
+	}
+	SetDeletedFlag();
+	WriteRec(RecNr);
+	/* !!! with CFile->XF^ do!!! */
+	if (CFile->XF->FirstDupl) {
+		SetMsgPar(CFile->Name);
+		WrLLF10Msg(828);
+		CFile->XF->FirstDupl = false;
+	}
+}
+
+void DeleteAllIndexes(longint RecNr)
+{
+	KeyDPtr K;
+	K = CFile->Keys;
+	while (K != nullptr) {
+		K->Delete(RecNr);
+		K = K->Chain;
+	}
+}
+
+bool IsNullValue(void* p, WORD l)
+{
+	return false;
+}
+
+/// nechápu, co to dìlá - oøeže úvodní znaky, pøevádí na èíslo, ...
+longint _T(FieldDescr* F)
+{
+	void* p; longint n; integer err;
+	WORD* O = (WORD*)&p;
+
+	p = CRecPtr;
+	O += F->Displ;
+	if (CFile->Typ == 'D')
+	{
+		n = 0;
+		// tváøíme se, že CRecPtr je pstring ...
+		pstring* s = (pstring*)CRecPtr;
+		auto result = stoi(LeadChar(' ', *s));
+		return result;
+	}
+	else
+	{
+		if (IsNullValue(p, 4)) return 0;
+		longint* lip = (longint*)p;
+		return *lip;
+	}
+}
+
+void T_(FieldDPtr F, longint Pos)
+{
+	void* p = nullptr; pstring s;
+	WORD* O = (WORD*)p; longint* LP = (longint*)p;
+	if ((F->Typ == 'T') && (F->Flg && f_Stored != 0)) {
+		p = CRecPtr; *O += F->Displ;
+		if (CFile->Typ == 'D')
+			if (Pos == 0) FillChar(p, 10, ' ');
+			else { str(Pos, s); Move(&s[1], p, 10); }
+		else *LP = Pos;
+	}
+	else RunError(906);
+}
+
+void DelTFld(FieldDPtr F)
+{
+	longint n; LockMode md;
+	n = _T(F);
+	if (HasTWorkFlag()) TWork.Delete(n);
+	else {
+		md = NewLMode(WrMode); CFile->TF->Delete(n); OldLMode(md);
+	}
+	T_(F, 0);
+}
+
+void DelDifTFld(void* Rec, void* CompRec, FieldDPtr F)
+{
+	longint n; void* cr;
+	cr = CRecPtr; CRecPtr = CompRec; n = _T(F); CRecPtr = Rec;
+	if (n != _T(F)) DelTFld(F); CRecPtr = cr;
+}
+
+void DelAllDifTFlds(void* Rec, void* CompRec)
+{
+	FieldDPtr F = CFile->FldD;
+	while (F != nullptr)
+	{
+		if (F->Typ == 'T' && F->Flg && f_Stored != 0) DelDifTFld(Rec, CompRec, F);
+		F = F->Chain;
+	}
+}
+
+void DeleteXRec(longint RecNr, bool DelT)
+{
+	TestXFExist();
+	DeleteAllIndexes(RecNr);
+	if (DelT) DelAllDifTFlds(CRecPtr, nullptr);
+	SetDeletedFlag();
+	WriteRec(RecNr);
+	CFile->XF->NRecs--;
+}
+
+void OverWrXRec(longint RecNr, void* P2, void* P)
+{
+}
+
+void OverwrXRec(longint RecNr, void* P2, void* P)
+{
+	XString x, x2; KeyDPtr K;
+	CRecPtr = P2;
+	if (DeletedFlag()) { CRecPtr = P; RecallRec(RecNr); return; }
+	TestXFExist();
+	K = CFile->Keys;
+	while (K != nullptr) {
+		CRecPtr = P; x.PackKF(K->KFlds); CRecPtr = P2; x2.PackKF(K->KFlds);
+		if (x.S != x2.S) {
+			K->Delete(RecNr); CRecPtr = P; K->Insert(RecNr, false);
+		}
+		K = K->Chain;
+	}
+	CRecPtr = P;
+	WriteRec(RecNr);
+}
+
+void AddFFs(KeyDPtr K, pstring& s)
+{
+	WORD l = MinW(K->IndexLen + 1, 255);
+	for (WORD i = s.length() + 1; i < l; i++) s[i] = 0xff;
+	s[0] = char(l);
+}
+
+void CompKIFrml(KeyDPtr K, KeyInD* KI, bool AddFF)
+{
+	XString x; bool b; integer i;
+	while (KI != nullptr) {
+		b = x.PackFrml(KI->FL1, K->KFlds);
+		KI->X1 = &x.S;
+		if (KI->FL2 != nullptr) x.PackFrml(KI->FL2, K->KFlds);
+		if (AddFF) AddFFs(K, x.S);
+		KI->X2 = &x.S;
+		KI = KI->Chain;
+	}
+}
+
+const WORD Alloc = 2048;
+const double FirstDate = 6.97248E+5;
+
+void IncNRecs(longint N)
+{
+#ifdef FandDemo
+	if (NRecs > 100) RunError(884);
+#endif
+	CFile->NRecs += N;
+	SetUpdHandle(CFile->Handle);
+	if (CFile->Typ == 'X') SetUpdHandle(CFile->XF->Handle);
+}
+
+void DecNRecs(longint N)
+{
+	/* !!! with CFile^ do!!! */
+	CFile->NRecs -= N;
+	SetUpdHandle(CFile->Handle);
+	if (CFile->Typ == 'X') SetUpdHandle(CFile->XF->Handle);
+	CFile->WasWrRec = true;
+}
+
+void SeekRec(longint N)
+{
+	CFile->IRec = N;
+	if (CFile->XF == nullptr) CFile->Eof = N >= CFile->NRecs;
+	else CFile->Eof = N >= CFile->XF->NRecs;
+}
+
+void PutRec()
+{
+	/* !!! with CFile^ do!!! */
+	CFile->NRecs++;
+	RdWrCache(false, CFile->Handle, CFile->NotCached(),
+		longint(CFile->IRec) * CFile->RecLen + CFile->FrstDispl, CFile->RecLen, CRecPtr);
+	CFile->IRec++; CFile->Eof = true;
+}
+
+void CreateRec(longint N)
+{
+	IncNRecs(1);
+	void* cr = CRecPtr;
+	CRecPtr = GetRecSpace();
+	for (longint i = CFile->NRecs - 1; i > N; i--) {
+		ReadRec(i);
+		WriteRec(i + 1);
+	}
+	ReleaseStore(CRecPtr);
+	CRecPtr = cr;
+	WriteRec(N);
+}
+
+void DeleteRec(longint N)
+{
+	DelAllDifTFlds(CRecPtr, nullptr);
+	for (longint i = N; i < CFile->NRecs - 1; i++) {
+		ReadRec(i + 1); WriteRec(i);
+	}
+	DecNRecs(1);
+}
+
+void LongS_(FieldDPtr F, LongStr* S)
+{
+	longint Pos; LockMode md;
+
+	if (F->Flg && f_Stored != 0) {
+		if (S->LL == 0) T_(F, 0);
+		else {
+			if (F->Flg && f_Encryp != 0) Code(S->A, S->LL);
+#ifdef FandSQL
+			if (CFile->IsSQLFile) { SetTWorkFlag; goto label1; }
+			else
+#endif
+				if (HasTWorkFlag())
+					label1:
+			Pos = TWork.Store(S);
+				else {
+					md = NewLMode(WrMode);
+					Pos = CFile->TF->Store(S);
+					OldLMode(md);
+				}
+			if (F->Flg && f_Encryp != 0) Code(S->A, S->LL); T_(F, Pos);
+		}
+	}
+}
+
+void S_(FieldDPtr F, pstring S)
+{
+	void* p = nullptr;
+	WORD* O = (WORD*)p; double* RP = (double*)p;
+	integer i, L, M; longint Pos; LongStrPtr ss;
+	const BYTE LeftJust = 1;
+
+	if (F->Flg && f_Stored != 0)
+	{
+		p = CRecPtr; O += F->Displ; L = F->L; M = F->M;
+		switch (F->Typ) {
+		case 'A': {
+			while (S.length() < L)
+				if (M == LeftJust) S = S + " ";
+				else
+				{
+					pstring oldS = S;
+					S = " ";
+					S += oldS;
+				}
+			i = 1;
+			if ((S.length() > L) && (M != LeftJust)) i = S.length() + 1 - L;
+			Move(&S[i], p, L);
+			if (F->Flg && f_Encryp != 0) Code(p, L);
+			break;
+		}
+		case 'N': {
+			while (S.length() < L)
+				if (M == LeftJust) S = S + "0";
+				else
+				{
+					pstring oldS = S;
+					S = " ";
+					S += oldS;
+				}
+			i = 1;
+			if ((S.length() > L) && (M != LeftJust)) i = S.length() + 1 - L;
+			//Pack(&S[i], p, L);
+			break;
+		}
+		case 'T': {
+			ss = CopyToLongStr(S);
+			LongS_(F, ss);
+			ReleaseStore(ss);
+			break;
+		}
+		}
+	}
+}
+
+void ZeroAllFlds()
+{
+	FillChar(CRecPtr, CFile->RecLen, 0);
+	FieldDPtr F = CFile->FldD; while (F != nullptr) {
+		if ((F->Flg && f_Stored != 0) && (F->Typ == 'A')) S_(F, "");
+		F = F->Chain;
+	}
+}
+
+bool LinkLastRec(FileDPtr FD, longint& N, bool WithT)
+{
+	CFile = FD;
+	CRecPtr = GetRecSpace();
+	LockMode md = NewLMode(RdMode);
+	auto result = true;
+#ifdef FandSQL
+	if (FD->IsSQLFile)
+	{
+		if (Strm1->SelectXRec(nullptr, nullptr, _equ, WithT)) N = 1; else goto label1;
+	}
+	else
+#endif
+	{
+		N = CFile->NRecs;
+		if (N == 0) {
+		label1:
+			ZeroAllFlds();
+			result = false;
+			N = 1;
+		}
+		else ReadRec(N);
+	}
+	OldLMode(md);
+	return result;
+}
+
+void AsgnParFldFrml(FileD* FD, FieldDPtr F, FrmlPtr Z, bool Ad)
+{
+	void* p; longint N; LockMode md; bool b;
+	FileDPtr cf = CFile; void* cr = CRecPtr; CFile = FD;
+#ifdef FandSQL
+	if (CFile->IsSQLFile) {
+		CRecPtr = GetRecSpace; ZeroAllFlds; AssgnFrml(F, Z, true, Ad);
+		Strm1->UpdateXFld(nullptr, nullptr, F); ClearRecSpace(CRecPtr)
+	}
+	else
+#endif
+	{
+		md = NewLMode(WrMode);
+		if (!LinkLastRec(CFile, N, true)) { IncNRecs(1); WriteRec(N); }
+		AssgnFrml(F, Z, true, Ad); WriteRec(N); OldLMode(md);
+	}
+	ReleaseStore(CRecPtr); CFile = cf; CRecPtr = cr;
+}
+
+bool SearchKey(XString& XX, KeyDPtr Key, longint& NN)
+{
+	longint R = 0;
+	XString x;
+
+	auto bResult = false;
+	longint L = 1;
+	integer Result = _gt;
+	NN = CFile->NRecs;
+	longint N = NN;
+	if (N == 0) return bResult;
+	KeyFldDPtr KF = Key->KFlds;
+	do {
+		if (Result == _gt) R = N; else L = N + 1;
+		N = (L + R) / 2; ReadRec(N); x.PackKF(KF);
+		Result = CompStr(x.S, XX.S);
+	} while (!((L >= R) || (Result == _equ)));
+	if ((N == NN) && (Result == _lt)) NN++;
+	else {
+		if (Key->Duplic && (Result == _equ))
+			while (N > 1) {
+				N--; ReadRec(N); x.PackKF(KF);
+				if (CompStr(x.S, XX.S) != _equ) {
+					N++; ReadRec(N); goto label1;
+				};
+			}
+	label1:  NN = N;
+	}
+	if ((Result == _equ) || Key->Intervaltest && (Result == _gt))
+		bResult = true;
+	return bResult;
+}
+
+LongStr* _LongS(FieldDPtr F)
+{
+	void* P = nullptr;
+	WORD* POfs = (WORD*)P;
+	//LP ^longint absolute P;
+	LongStrPtr S = nullptr; longint Pos; integer err; LockMode md; WORD l;
+	{
+		if (F->Flg && f_Stored != 0) {
+			P = CRecPtr; POfs += F->Displ; l = F->L;
+			switch (F->Typ)
+			{
+			case 'A': case 'N': {
+				S = (LongStr*)GetStore(l + 2);
+				S->LL = l;
+				if (F->Typ == 'A') {
+					Move(P, &S[0], l);
+					if (F->Flg && f_Encryp != 0) Code(S->A, l);
+					if (IsNullValue(S, l)) { S->LL = 0; ReleaseAfterLongStr(S); }
+				}
+				else if (IsNullValue(P, F->NBytes)) {
+					S->LL = 0;
+					ReleaseAfterLongStr(S);
+				}
+				else
+				{
+					// nebudeme volat, zøejmìní není potøeba
+					// UnPack(P, S->A, l);
+				}
+				break;
+			}
+			case 'T': {
+				if (HasTWorkFlag()) S = TWork.Read(1, _T(F));
+				else {
+					md = NewLMode(RdMode);
+					S = CFile->TF->Read(1, _T(F));
+					OldLMode(md);
+				}
+				if (F->Flg && f_Encryp != 0) Code(S->A, S->LL);
+				if (IsNullValue(&S->A, S->LL))
+				{
+					S->LL = 0;
+					ReleaseAfterLongStr(S);
+				}
+				break; }
+			}
+			return S;
+		}
+		return RunLongStr(F->Frml);
+	}
+}
+
+pstring _ShortS(FieldDPtr F)
+{
+	void* P = nullptr; WORD* POfs = (WORD*)P; /*absolute P;*/
+	pstring S;
+	if (F->Flg && f_Stored != 0) {
+		WORD l = F->L;
+		S[0] = char(l);
+		P = CRecPtr;
+		POfs += F->Displ;
+		switch (F->Typ) {
+		case 'A':
+		case 'N': {
+			if (F->Typ == 'A') {
+				Move(P, &S[1], l);
+				if (F->Flg && f_Encryp != 0) Code(&S[1], l);
+				if (IsNullValue(&S[2], l)) FillChar(&S[0], l, ' ');
+			}
+			else if (IsNullValue(P, F->NBytes)) FillChar(&S[0], l, ' ');
+			else
+			{
+				// nebudeme volat, zøejmìní není potøeba
+				// UnPack(P, (WORD*)S[0], l);
+			}
+			break;
+		}
+		case 'T': {
+			LongStrPtr ss = _LongS(F);
+			if (ss->LL > 255) S = S.substr(0, 255);
+			else S = S.substr(0, ss->LL);
+			Move(&ss[0], &S[0], S.length());
+			ReleaseStore(ss);
+			break; };
+		default:;
+		}
+		return S;
+	}
+	return RunShortStr(F->Frml);
+}
+
+double _RforD(FieldDPtr F, void* P)
+{
+	pstring s; integer err;
+	double r = 0; s[0] = F->NBytes;
+	Move(P, &s[1], s.length());
+	switch (F->Typ) {
+	case 'F': { ReplaceChar(s, ',', '.');
+		if (F->Flg && f_Comma != 0) {
+			integer i = s.first('.');
+			if (i > 0) s.Delete(i, 1);
+		}
+		val(LeadChar(' ', TrailChar(' ', s)), r, err);
+		break;
+	}
+	case 'D': r = ValDate(s, "YYYYMMDD"); break;
+	}
+	return r;
+}
+
+double _R(FieldDPtr F)
+{
+	double result = 0.0;
+	void* p = nullptr; double r;
+	WORD* O = (WORD*)p;
+	integer* IP = (integer*)p;
+
+	if (F->Flg && f_Stored != 0) {
+		p = CRecPtr; *O += F->Displ;
+		if (CFile->Typ == 'D') result = _RforD(F, p);
+		else switch (F->Typ) {
+		case 'F': {
+			r = RealFromFix(p, F->NBytes);
+			if (F->Flg && f_Comma == 0) result = r / Power10[F->M]; else result = r; break;
+		}
+		case 'D': {
+			if (CFile->Typ == '8') {
+				if (*IP == 0) result = 0.0;
+				else result = *IP + FirstDate;
+			}
+			else goto label1; break;
+		}
+		case 'R': {
+		label1:
+			if (IsNullValue(p, F->NBytes)) result = 0;
+			else result = *(double*)p;
+		}
+		}
+	}
+	else return RunReal(F->Frml);
+	return result;
+}
+
+bool _B(FieldDPtr F)
+{
+	bool result;
+	void* p = nullptr;
+	WORD* O = (WORD*)p;
+	unsigned char* CP = (unsigned char*)p;
+
+	if (F->Flg && f_Stored != 0) {
+		p = CRecPtr; O += F->Displ;
+		if (CFile->Typ == 'D') result = *CP == 'Y' || *CP == 'y' || *CP == 'T' || *CP == 't';
+		else if ((*CP == '\0') || (*CP == 0xff)) result = false;
+		else result = true;
+	}
+	else result = RunBool(F->Frml);
+	return result;
+}
+
+void R_(FieldDPtr F, double R)
+{
+	void* p = nullptr; pstring s; WORD m; longint l;
+	WORD* O = (WORD*)p;
+	integer* IP = (integer*)p;
+
+	if (F->Flg && f_Stored != 0) {
+		p = CRecPtr; O += F->Displ; m = F->M;
+		switch (F->Typ) {
+		case 'F': {
+			if (CFile->Typ == 'D') {
+				if (F->Flg && f_Comma != 0) R = R / Power10[m];
+				str(F->NBytes, s); Move(&s[1], p, F->NBytes);
+			}
+			else {
+				if (F->Flg && f_Comma == 0) R = R * Power10[m];
+				WORD tmp = F->NBytes;
+				FixFromReal(R, p, tmp);
+				F->NBytes = (BYTE)tmp;
+			} }
+		case 'D': {
+			switch (CFile->Typ) {
+			case '8': { if (trunc(R) == 0) *IP = 0; else *IP = trunc(R - FirstDate); break; }
+			case 'D': { s = StrDate(R, "YYYYMMDD"); Move(&s[1], p, 8); break; }
+			default: p = &R; break;
+			}
+		}
+		case 'R': { p = &R; break; }
+		}
+	}
+}
+
+void B_(FieldDPtr F, bool B)
+{
+	void* p = nullptr;
+	WORD* O = (WORD*)p; bool* BP = (bool*)p; char* CP = (char*)p;
+	if ((F->Typ == 'B') && (F->Flg && f_Stored != 0)) {
+		p = CRecPtr; *O += F->Displ;
+		if (CFile->Typ == 'D')
+		{
+			if (B) *CP = 'T'; else *CP = 'F';
+		}
+		else *BP = B;
+	}
+}
+
+bool LinkUpw(LinkDPtr LD, longint& N, bool WithT)
+{
+	KeyFldDPtr KF;
+	FieldDPtr F, F2;
+	bool LU; LockMode md;
+	pstring s; double r; bool b;
+	XString* x = (XString*)&s;
+
+	FileDPtr ToFD = LD->ToFD; FileDPtr CF = CFile; void* CP = CRecPtr;
+	KeyDPtr K = LD->ToKey; KeyFldDPtr Arg = LD->Args; x->PackKF(Arg);
+	CFile = ToFD; void* RecPtr = GetRecSpace(); CRecPtr = RecPtr;
+#ifdef FandSQL
+	if (CFile->IsSQLFile) {
+		LU = Strm1->SelectXRec(K, @X, _equ, WithT); N = 1; if (LU) goto label2; else goto label1;
+	}
+#endif
+	md = NewLMode(RdMode);
+	if (ToFD->Typ == 'X') { TestXFExist(); LU = K->SearchIntvl(*x, false, N); }
+	else if (CFile->NRecs = 0) { LU = false; N = 1; }
+	else LU = SearchKey(*x, K, N);
+	if (LU) ReadRec(N);
+	else {
+	label1:
+		ZeroAllFlds; KF = K->KFlds; while (Arg != nullptr) {
+			F = Arg->FldD; F2 = KF->FldD; CFile = CF; CRecPtr = CP;
+			if (F2->Flg && f_Stored != 0)
+				switch (F->FrmlTyp) {
+				case 'S': { s = _ShortS(F); CFile = ToFD; CRecPtr = RecPtr; S_(F2, s); break; }
+				case 'R': { r = _R(F); CFile = ToFD; CRecPtr = RecPtr; R_(F2, r); break; }
+				case 'B': { b = _B(F); CFile = ToFD; CRecPtr = RecPtr; B_(F2, b); break; }
+				}
+			Arg = Arg->Chain; KF = KF->Chain;
+		}
+		CFile = ToFD; CRecPtr = RecPtr;
+	}
+label2:
+	auto result = LU;
+#ifdef FandSQL
+	if (!CFile->IsSQLFile)
+#endif
+		OldLMode(md);
+	return result;
+}
+
+void AssignNRecs(bool Add, longint N)
+{
+	longint OldNRecs; LockMode md;
+#ifdef FandSQL
+	if (CFile->IsSQLFile) {
+		if ((N = 0) && !Add) Strm1->DeleteXRec(nullptr, nullptr, false); return;
+	}
+#endif
+	md = NewLMode(DelMode); OldNRecs = CFile->NRecs;
+	if (Add) N = N + OldNRecs;
+	if ((N < 0) || (N == OldNRecs)) goto label1;
+	if ((N == 0) && (CFile->TF != nullptr)) CFile->TF->SetEmpty();
+	if (CFile->Typ == 'X')
+		if (N == 0) {
+			CFile->NRecs = 0; SetUpdHandle(CFile->Handle); XFNotValid(); goto label1;
+		}
+		else { SetMsgPar(CFile->Name); RunErrorM(md, 821); }
+	if (N < OldNRecs) { DecNRecs(OldNRecs - N); goto label1; }
+	CRecPtr = GetRecSpace(); ZeroAllFlds(); SetDeletedFlag();
+	IncNRecs(N - OldNRecs); for (longint i = OldNRecs + 1; i < N; i++) WriteRec(i);
+	ReleaseStore(CRecPtr);
+label1:
+	OldLMode(md);
+
+}
+
+void ClearRecSpace(void* p)
+{
+	FieldDPtr f; void* cr;
+	if (CFile->TF != nullptr) {
+		cr = CRecPtr; CRecPtr = p;
+		if (HasTWorkFlag) {
+			f = CFile->FldD; while (f != nullptr) {
+				if ((f->Flg && f_Stored != 0) && (f->Typ == 'T')) {
+					TWork.Delete(_T(f)); T_(f, 0);
+				}
+				f = f->Chain;
+			}
+		}
+		CRecPtr = cr;
+	}
+}
+
+void DelTFlds()
+{
+	FieldDPtr F = CFile->FldD;
+	while (F != nullptr) {
+		if ((F->Flg && f_Stored != 0) && (F->Typ == 'T')) DelTFld(F); F = F->Chain;
+	}
+}
+
+void CopyRecWithT(void* p1, void* p2)
+{
+	Move(p1, p2, CFile->RecLen);
+	FieldDPtr F = CFile->FldD;
+	while (F != nullptr) {
+		if ((F->Typ == 'T') && (F->Flg && f_Stored != 0)) {
+			TFilePtr tf1 = CFile->TF; TFilePtr tf2 = tf1; CRecPtr = p1;
+			if ((tf1->Format != TFile::T00Format)) {
+				LongStrPtr s = _LongS(F);
+				CRecPtr = p2; LongS_(F, s);
+				ReleaseStore(s);
+			}
+			else {
+				if (HasTWorkFlag()) tf1 = &TWork;
+				longint pos = _T(F);
+				CRecPtr = p2;
+				if (HasTWorkFlag()) tf2 = &TWork;
+				pos = CopyTFString(tf2, CFile, tf1, pos);
+				T_(F, pos);
+			}
+		}
+		F = F->Chain;
+	}
+}
+
+/// nedìlá nic, pùvodnì dìlal XOR 0xAA;
+void Code(void* A, WORD L)
+{
+	return;
 }
 
 void TFile::RdPrefix(bool Chk)
@@ -1428,6 +2714,18 @@ void XScan::ResetOwner(XString* XX, FrmlPtr aBool)
 	SeekRec(0);
 }
 
+bool EquKFlds(KeyFldDPtr KF1, KeyFldDPtr KF2)
+{
+	bool result = false;
+	while (KF1 != nullptr) {
+		if ((KF2 == nullptr) || (KF1->CompLex != KF2->CompLex) || (KF1->Descend != KF2->Descend)
+			|| (KF1->FldD->Name != KF2->FldD->Name)) return result;
+		KF1 = KF1->Chain; KF2 = KF2->Chain;
+	}
+	if (KF2 != nullptr) return false;
+	return true;
+}
+
 void XScan::ResetOwnerIndex(LinkDPtr LD, LocVar* LV, FrmlPtr aBool)
 {
 	WKeyDPtr k;
@@ -1503,6 +2801,45 @@ void XScan::SeekRec(longint I)
 		}
 	}
 	}
+
+bool DeletedFlag()  // r771 ASM
+{
+	// TODO:
+	return false;
+}
+
+void ClearDeletedFlag()
+{
+}
+
+void SetDeletedFlag()
+{
+}
+
+integer CompStr(pstring& S1, pstring& S2)
+{
+	return 0;
+}
+
+void CmpLxStr()
+{
+}
+
+WORD CompLexLongStr(LongStrPtr S1, LongStrPtr S2)
+{
+	return 0;
+}
+
+WORD CompLexLongShortStr(LongStrPtr S1, pstring& S2)
+{
+	return 0;
+}
+
+WORD CompLexStr(const pstring& S1, const pstring& S2)
+{
+	return 0;
+}
+
 
 void XScan::GetRec()
 {
@@ -1611,22 +2948,36 @@ void* GetRecSpace2()
 	return GetZStore2(CFile->RecLen + 2);
 }
 
-bool EquKFlds(KeyFldDPtr KF1, KeyFldDPtr KF2)
+WORD CFileRecSize()
 {
-	bool result = false;
-	while (KF1 != nullptr) {
-		if ((KF2 == nullptr) || (KF1->CompLex != KF2->CompLex) || (KF1->Descend != KF2->Descend)
-			|| (KF1->FldD->Name != KF2->FldD->Name)) return result;
-		KF1 = KF1->Chain; KF2 = KF2->Chain;
-	}
-	if (KF2 != nullptr) return false;
-	return true;
+	return 0;
 }
 
-/// nedìlá nic, pùvodnì dìlal XOR 0xAA;
-void Code(void* A, WORD L)
+void SetTWorkFlag()
 {
-	return;
+}
+
+bool HasTWorkFlag()
+{
+	return false;
+}
+
+void SetUpdFlag()
+{
+}
+
+void ClearUpdFlag()
+{
+}
+
+bool HasUpdFlag()
+{
+	return false;
+}
+
+void* LocVarAd(LocVar* LV)
+{
+	return nullptr;
 }
 
 /// nedìlá nic

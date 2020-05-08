@@ -6,7 +6,6 @@
 #include "kbdww.h"
 #include "legacy.h"
 #include "rdmix.h"
-#include "recacc.h"
 #include "runfrml.h"
 
 void Error(integer N)

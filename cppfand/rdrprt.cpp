@@ -1,10 +1,7 @@
 #include "rdrprt.h"
 
-
-#include "common.h"
 #include "legacy.h"
 #include "lexanal.h"
-#include "memory.h"
 #include "obase.h"
 #include "rdfildcl.h"
 #include "rdfrml.h"

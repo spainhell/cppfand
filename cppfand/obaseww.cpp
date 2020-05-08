@@ -1,11 +1,7 @@
 #include "obaseww.h"
 
-
 #include "base.h"
-#include "common.h"
 #include "drivers.h"
-#include "kbdww.h"
-#include "memory.h"
 #include "oaccess.h"
 
 //void WrHd(pstring s, pstring Hd, WORD Row, WORD MaxCols)

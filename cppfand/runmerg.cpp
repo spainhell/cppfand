@@ -1,11 +1,8 @@
 #include "runmerg.h"
-#include "index.h"
 #include "legacy.h"
 #include "lexanal.h"
-#include "memory.h"
 #include "oaccess.h"
 #include "obaseww.h"
-#include "recacc.h"
 #include "runedi.h"
 #include "runfrml.h"
 

@@ -45,25 +45,16 @@
     <ClCompile Include="oaccess.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="recacc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="access.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="runfrml.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="fileacc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="rdfrml1.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="lexanal.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="index.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="editor.cpp">
@@ -85,9 +76,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="wwmenu.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="edtextf.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="runproc.cpp">
@@ -129,24 +117,6 @@
     <ClCompile Include="genrprt.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="edscreen.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="edglobal.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="edevproc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="edevinpt.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="edevent.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ededit.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base.h">
@@ -168,9 +138,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="fanddml.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="fileacc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="kbdww.h">
@@ -203,9 +170,6 @@
     <ClInclude Include="wwmix.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="recacc.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="pstring.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -219,9 +183,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="rdfrml.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="index.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="sort.h">
@@ -245,12 +206,6 @@
     <ClInclude Include="rdfildcl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="edtextf.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="edglobal.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="printtxt.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -261,18 +216,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="runproj.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ededit.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="edevent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="edevinpt.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="edscreen.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="runrprt.h">
@@ -291,9 +234,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="expimp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="edevproc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="olongstr.h">

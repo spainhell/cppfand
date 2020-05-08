@@ -52,14 +52,14 @@ void Set4MsgPar(pstring s1, pstring s2, pstring s3, pstring s4)
 	MsgPar[3] = s4;
 }
 
-longint PosH(filePtr handle)
+longint PosH(FILE* handle)
 {
 	const auto result = ftell(handle);
 	HandleError = ferror(handle);
 	return static_cast<longint>(result);
 }
 
-longint MoveH(longint dist, WORD method, filePtr handle)
+longint MoveH(longint dist, WORD method, FILE* handle)
 {
 	if (handle == nullptr) return -1;
 	// dist - hodnota offsetu
@@ -69,13 +69,13 @@ longint MoveH(longint dist, WORD method, filePtr handle)
 	return ftell(handle);
 }
 
-void SeekH(filePtr handle, longint pos)
+void SeekH(FILE* handle, longint pos)
 {
 	if (handle == nullptr) RunError(705);
 	MoveH(pos, 0, handle);
 }
 
-WORD ReadH(filePtr handle, WORD bytes, void* buffer)
+WORD ReadH(FILE* handle, WORD bytes, void* buffer)
 {
 	return ReadH(handle, bytes, buffer);
 	// read from file INT
@@ -216,6 +216,15 @@ pstring StrPas(const char* Src)
 	return s;
 }
 
+void ChainLast(void* Frst, void* New)
+{
+}
+
+void* LastInChain(void* Frst)
+{
+	return nullptr;
+}
+
 void StrLPCopy(char* Dest, pstring s, WORD MaxL)
 {
 	auto sLen = s.length();
@@ -230,6 +239,30 @@ integer MinI(integer X, integer Y)
 }
 
 integer MaxI(integer X, integer Y)
+{
+	if (X > Y) return X;
+	return X;
+}
+
+WORD MinW(WORD X, WORD Y)
+{
+	if (X < Y) return X;
+	return Y;
+}
+
+WORD MaxW(WORD X, WORD Y)
+{
+	if (X > Y) return X;
+	return X;
+}
+
+longint MinL(longint X, longint Y)
+{
+	if (X < Y) return X;
+	return Y;
+}
+
+longint MaxL(longint X, longint Y)
 {
 	if (X > Y) return X;
 	return X;
@@ -269,6 +302,45 @@ void SplitDate(double R, WORD& d, WORD& m, WORD& y)
 	}
 }
 
+double Today()
+{
+	return 0.0;
+}
+
+double CurrTime()
+{
+	return 0.0;
+}
+
+bool MouseInRect(WORD X, WORD Y, WORD XSize, WORD Size)
+{
+	return false;
+}
+
+double ValDate(const pstring& Txtpstring, pstring Mask)
+{
+	return 0.0;
+}
+
+pstring StrDate(double R, pstring Mask)
+{
+	return "";
+}
+
+double AddMonth(double R, double RM)
+{
+	return 0.0;
+}
+
+double DifMonth(double R1, double R2)
+{
+	return 0.0;
+}
+
+void MyMove(void* A1, void* A2, WORD N)
+{
+}
+
 FILE* GetOverHandle(FILE* fptr, int diff)
 {
 	ptrdiff_t pos = find(vOverHandle.begin(), vOverHandle.end(), fptr) - vOverHandle.begin();
@@ -277,57 +349,62 @@ FILE* GetOverHandle(FILE* fptr, int diff)
 	return nullptr;
 }
 
-bool IsHandle(filePtr H)
+bool IsHandle(FILE* H)
 {
 	if (H == nullptr) return false;
 	return Handles.count(H) > 0;
 }
 
-bool IsUpdHandle(filePtr H)
+bool IsUpdHandle(FILE* H)
 {
 	if (H == nullptr) return false;
 	return UpdHandles.count(H) > 0;
 }
 
-bool IsFlshHandle(filePtr H)
+bool IsFlshHandle(FILE* H)
 {
 	if (H == nullptr) return false;
 	return FlshHandles.count(H) > 0;
 }
 
-void SetHandle(filePtr H)
+void SetHandle(FILE* H)
 {
 	if (H == nullptr) return;
 	Handles.insert(H);
 	CardHandles++;
 }
 
-void SetUpdHandle(filePtr H)
+void SetUpdHandle(FILE* H)
 {
 	if (H == nullptr) return;
 	UpdHandles.insert(H);
 }
 
-void SetFlshHandle(filePtr H)
+WORD SLeadEqu(pstring S1, pstring S2)
+{
+	return 0;
+}
+
+void SetFlshHandle(FILE* H)
 {
 	if (H == nullptr) return;
 	FlshHandles.insert(H);
 }
 
-void ResetHandle(filePtr H)
+void ResetHandle(FILE* H)
 {
 	if (H == nullptr) return;
 	Handles.erase(H);
 	CardHandles--;
 }
 
-void ResetUpdHandle(filePtr H)
+void ResetUpdHandle(FILE* H)
 {
 	if (H == nullptr) return;
 	UpdHandles.erase(H);
 }
 
-void ResetFlshHandle(filePtr H)
+void ResetFlshHandle(FILE* H)
 {
 	if (H == nullptr) return;
 	FlshHandles.erase(H);
@@ -468,17 +545,22 @@ void WriteLongH(filePtr handle, longint bytes, void* buffer)
 	HandleError = ferror(handle);
 }
 
-void WriteH(filePtr handle, WORD bytes, void* buffer)
+void WriteH(FILE* handle, WORD bytes, void* buffer)
 {
 	WriteLongH(handle, bytes, buffer);
 }
 
-longint FileSizeH(filePtr handle)
+longint FileSizeH(FILE* handle)
 {
 	longint pos = PosH(handle);
 	auto result = MoveH(0, 2, handle);
 	SeekH(handle, pos);
 	return result;
+}
+
+longint SwapLong(longint N)
+{
+	return 0;
 }
 
 bool TryLockH(filePtr Handle, longint Pos, WORD Len)
@@ -491,7 +573,7 @@ bool UnLockH(filePtr Handle, longint Pos, WORD Len)
 	return false;
 }
 
-void TruncH(filePtr handle, longint N)
+void TruncH(FILE* handle, longint N)
 {
 	// cilem je zkratit delku souboru na N
 	if (handle == nullptr) return;
@@ -501,7 +583,7 @@ void TruncH(filePtr handle, longint N)
 	}
 }
 
-void CloseH(filePtr handle)
+void CloseH(FILE* handle)
 {
 	if (handle == nullptr) return;
 	// uzavøe soubor
@@ -513,7 +595,7 @@ void ClearCacheH(FILE* h)
 {
 }
 
-void CloseClearH(filePtr h)
+void CloseClearH(FILE* h)
 {
 	if (h == nullptr) return;
 	CloseH(h);
@@ -540,14 +622,14 @@ WORD GetFileAttr()
 	return result;
 }
 
-void RdWrCache(bool ReadOp, filePtr Handle, bool NotCached, longint Pos, WORD N, void* Buf)
+void RdWrCache(bool ReadOp, FILE* Handle, bool NotCached, longint Pos, WORD N, void* Buf)
 {
 	if (Handle == nullptr) return;
 	// asi netøeba øešit
 	return;
 }
 
-void FlushH(filePtr& handle)
+void FlushH(FILE* handle)
 {
 	if (handle == nullptr) return;
 
@@ -556,6 +638,31 @@ void FlushH(filePtr& handle)
 	//SetHandle(handle);
 	SetUpdHandle(handle);
 	//CloseH(handle);
+}
+
+WORD FindCtrlM(LongStrPtr s, WORD i, WORD n)
+{
+	WORD l = s->LL;
+	while (i <= 1)
+	{
+		if (s->A[i] == '0x0D') {
+			if (n > 1) n--;
+			else return i;
+		}
+		i++;
+	}
+	return l + 1;
+}
+
+WORD SkipCtrlMJ(LongStrPtr s, WORD i)
+{
+	WORD l = s->LL;
+	if (i<=1)
+	{
+		i++;
+		if (i <= 1 && s->A[i] == 0x0A) i++;
+	}
+	return i;
 }
 
 void FlushHandles()
@@ -630,6 +737,14 @@ void* Normalize(longint L)
 longint AbsAdr(void* P)
 {
 	return 0;
+}
+
+void ExChange(void* X, void* Y, WORD L)
+{
+}
+
+void ReplaceChar(pstring S, char C1, char C2)
+{
 }
 
 void CloseXMS()
@@ -756,6 +871,36 @@ void ReleaseStore(void* pointer)
 
 void ReleaseAfterLongStr(void* pointer)
 {
+}
+
+WORD CountDLines(void* Buf, WORD L, char C)
+{
+	return 0;
+}
+
+pstring GetDLine(void* Buf, WORD L, char C, WORD I)
+{
+	return "";
+}
+
+bool OverlapByteStr(void* p1, void* p2)
+{
+	return false;
+}
+
+bool MouseInRectProc(WORD X, WORD Y, WORD XSize, WORD Size)
+{
+	return false;
+}
+
+bool EqualsMask(void* p, WORD l, pstring Mask)
+{
+	return false;
+}
+
+WORD ListLength(void* P)
+{
+	return 0;
 }
 
 void ReleaseStore2(void* p)
@@ -942,6 +1087,11 @@ void OpenWorkH()
 	UserLicNr = WORD(UserLicNrShow) & 0x7FFF;
 	FandResName = MyFExpand("Fand.Res", "FANDRES");
 	OpenResFile();
+}
+
+bool SEquUpcase(pstring S1, pstring S2)
+{
+	return true;
 }
 
 void OpenOvrFile()

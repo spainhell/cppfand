@@ -1,9 +1,8 @@
 #include "kbdww.h"
 
 #include "base.h"
-#include "common.h"
 #include "drivers.h"
-#include "memory.h"
+#include <set>
 
 WORD LenStyleStr(pstring s)
 {

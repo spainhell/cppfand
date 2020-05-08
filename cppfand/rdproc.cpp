@@ -1,15 +1,12 @@
 #include "rdproc.h"
-#include "common.h"
 #include "compile.h"
 #include "legacy.h"
 #include "lexanal.h"
-#include "memory.h"
 #include "oaccess.h"
 #include "rdfildcl.h"
 #include "rdfrml.h"
 #include "rdmix.h"
 #include "rdrun.h"
-#include "recacc.h"
 
 
 void TestCatError(WORD I, pstring Nm, bool Old)

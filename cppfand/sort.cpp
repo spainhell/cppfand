@@ -1,11 +1,8 @@
 #include "sort.h"
-#include "common.h"
 #include "kbdww.h"
-#include "memory.h"
 #include "oaccess.h"
 #include "obaseww.h"
 #include "rdfrml.h"
-#include "recacc.h"
 
 class XXPage; // forward declaration
 

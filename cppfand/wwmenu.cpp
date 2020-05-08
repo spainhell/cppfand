@@ -1,14 +1,8 @@
 #include "wwmenu.h"
 
-
-#include "common.h"
-#include "fileacc.h"
 #include "kbdww.h"
 #include "keybd.h"
 #include "legacy.h"
-#include "memory.h"
-#include "obaseww.h"
-#include "recacc.h"
 #include "runfrml.h"
 #include "runproc.h"
 #include "runproj.h"

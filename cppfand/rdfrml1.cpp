@@ -1,9 +1,6 @@
 #include "rdfrml1.h"
 
-
-#include "common.h"
 #include "lexanal.h"
-#include "memory.h"
 #include "rdfrml.h"
 #include "rdmix.h"
 #include "rdrun.h"
