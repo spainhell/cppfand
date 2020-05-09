@@ -19,7 +19,7 @@
 
 
 const int TXTCOLS = 80;
-longint Timer = 0;
+static longint Timer = 0;
 
 // PROMENNE
 bool InsPage;
@@ -77,7 +77,7 @@ const WORD _OR_ = 0x0F12; const WORD _OJ_ = 0x0F0A; const WORD _OC_ = 0x0F03;
 const WORD _KF_ = 0x0B06;
 
 const BYTE CountC = 7;
-pstring CtrlKey({ 19,23,17,4,2,5,1 });
+static pstring CtrlKey = "\x13\x17\x11\x04\x02\x05\x01";
 const bool ColBlock = true;
 const bool TextBlock = false;
 
@@ -3850,13 +3850,13 @@ label1:
 			if (!Loc) RdPart(); goto label1; }
 		}
 	if (!Loc) { Size = FileSizeH(TxtFH); CloseH(TxtFH); }
-	if ((EdBreak == 0xFFFF) && (KbdChar = _F6_))
+	if ((EdBreak == 0xFFFF) && (KbdChar == _F6_))
 		if (Loc) { PrintArray(*T, LenT, false); goto label1; }
 		else {
 			CPath = TxtPath; CVol = TxtVol; PrintTxtFile(0);
 			OpenTxtFh(Mode); RdPart(); goto label1;
 		}
-	if (!Loc && (Size < 1)) DeleteFile(TxtPath);
+	if (!Loc && (Size < 1)) MyDeleteFile(TxtPath);
 	if (Loc and (KbdChar == _ESC_)) LS->LL = LenT;
 label4:
 	if (IsCompileErr) {

@@ -352,7 +352,7 @@ void CloseFile()
 				label1:
 					SetCPathVol();
 					CExtToX();
-					DeleteFile(CPath);
+					MyDeleteFile(CPath);
 				}
 			}
 			if (CFile->TF != nullptr)  /*with TF^*/
@@ -361,13 +361,13 @@ void CloseFile()
 					if ((!CFile->IsShared()) && (CFile->NRecs == 0) && (CFile->Typ != 'D')) {
 						SetCPathVol();
 						CExtToT();
-						DeleteFile(CPath);
+						MyDeleteFile(CPath);
 					}
 				}
 			CloseClearH(CFile->Handle); CFile->LMode = NullMode;
 			if (!CFile->IsShared() && (CFile->NRecs == 0) && (CFile->Typ != 'D')) {
 				SetCPathVol();
-				DeleteFile(CPath);
+				MyDeleteFile(CPath);
 			}
 			if (CFile->WasRdOnly) {
 				CFile->WasRdOnly = false;
@@ -758,7 +758,7 @@ void CopyH(FILE* h1, FILE* h2)
 		ReadH(h1, BufSize, p); WriteH(h2, BufSize, p); sz -= BufSize;
 	}
 	ReadH(h1, sz, p); WriteH(h2, sz, p);
-	CloseH(h1); DeleteFile(CPath); ReleaseStore(p);
+	CloseH(h1); MyDeleteFile(CPath); ReleaseStore(p);
 }
 
 void SubstDuplF(FileD* TempFD, bool DelTF)
@@ -770,7 +770,7 @@ void SubstDuplF(FileD* TempFD, bool DelTF)
 	if (IsNetCVol()) { CopyDuplF(TempFD, DelTF); return; }
 	SaveCache(0); PrimFD = CFile; p = CPath; CExtToT(); pt = CPath;
 	/* !!! with PrimFD^ do!!! */ {
-		CloseClearH(PrimFD->Handle); DeleteFile(p); TestDelErr(&p);
+		CloseClearH(PrimFD->Handle); MyDeleteFile(p); TestDelErr(&p);
 		FD = PrimFD->Chain; MD = PrimFD->TF; xf2 = PrimFD->XF; um = PrimFD->UMode;
 		Move(TempFD, PrimFD, sizeof(FileD) - 2);
 		PrimFD->Chain = FD; PrimFD->XF = xf2; PrimFD->UMode = um;
@@ -780,7 +780,7 @@ void SubstDuplF(FileD* TempFD, bool DelTF)
 		CPath = p; PrimFD->Handle = OpenH(_isoldfile, PrimFD->UMode);
 		SetUpdHandle(PrimFD->Handle);
 		if ((MD != nullptr) && DelTF) {
-			CloseClearH(MD->Handle); DeleteFile(pt); TestDelErr(&pt);
+			CloseClearH(MD->Handle); MyDeleteFile(pt); TestDelErr(&pt);
 			Move(PrimFD->TF, MD, sizeof(TFile)); PrimFD->TF = MD;
 			CloseClearH(MD->Handle);
 			CPath = ptmp; SetTempCExt('T', false);
@@ -802,5 +802,5 @@ void DelDuplF(FileD* TempFD)
 	CloseClearH(TempFD->Handle);
 	SetCPathVol();
 	SetTempCExt('0', CFile->IsShared());
-	DeleteFile(CPath);
+	MyDeleteFile(CPath);
 }

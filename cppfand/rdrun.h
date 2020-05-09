@@ -523,8 +523,8 @@ static EditD* EditDRoot;
 static bool CompileFD, EditRdbMode;
 static LocVarBlkD LVBD;
 
-pstring CalcTxt = "";
-struct { char Op; double Group; } MergOpGroup = { _const, 0.0 };
+static pstring CalcTxt = "";
+struct { char Op; double Group; } static MergOpGroup = { _const, 0.0 };
 
 // *** IMPLEMENTATION ***
 

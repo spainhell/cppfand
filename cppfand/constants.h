@@ -137,7 +137,7 @@ static const WORD _X_ = 24;
 static const WORD _Y_ = 25;
 static const WORD _Z_ = 26;
 
-std::vector<std::string> paramstr(5);
+static std::vector<std::string> paramstr(5);
 
 // ********** DRIVERS.PAS ********** - ø. 225 - 231
 static const WORD Gr640x350 = 0x10;

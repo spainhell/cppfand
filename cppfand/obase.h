@@ -17,7 +17,7 @@ WORD OpenLPTHandle();
 bool ResetPrinter(WORD PgeLength, WORD LeftMargin, bool Adj, bool Frst); // r141
 void ClosePrinter(WORD LeftMargin); // r169
 
-bool PrintCtrlFlag;
+static bool PrintCtrlFlag;
 
 void TestTxtHError(TextFile* F);
 integer InputTxt(TextFile* F);

@@ -31,7 +31,7 @@ const BYTE f_Mask = 4; const BYTE f_Comma = 8; // {FieldD flags}
 
 enum LockMode { NullMode = 0, NoExclMode = 1, NoDelMode = 2, NoCrMode = 3,
 	RdMode = 4, WrMode = 5, CrMode = 6, DelMode = 7, ExclMode = 8 };
-pstring LockModeTxt[9] = { "NULL", "NOEXCL","NODEL","NOCR","RD","WR","CR","DEL","EXCL" };
+static pstring LockModeTxt[9] = { "NULL", "NOEXCL","NODEL","NOCR","RD","WR","CR","DEL","EXCL" };
 
 const WORD MPageSize = 512;
 const BYTE XPageShft = 10;
@@ -616,15 +616,15 @@ static RdbD* CRdb, TopRdb;
 static FileD* CatFD, HelpFD;
 
 // r483
-struct structXPath { longint Page; WORD I; } XPath[10];
+struct structXPath { longint Page; WORD I; } static XPath[10];
 static WORD XPathN;
 static XWFile XWork;
 static TFile TWork;
-longint ClpBdPos = 0;
-bool IsTestRun = false;
-bool IsInstallRun = false;
+static longint ClpBdPos = 0;
+static bool IsTestRun = false;
+static bool IsInstallRun = false;
 
-FileDPtr Chpt = FileDRoot; // absolute FileDRoot;
+static FileDPtr Chpt = FileDRoot; // absolute FileDRoot;
 static TFilePtr ChptTF;
 static FieldDPtr ChptTxtPos;
 static FieldDPtr ChptVerif; // { updated record }
@@ -657,10 +657,10 @@ static WORD* WordVarArr = &RprtLine;
 static FieldDPtr CatRdbName, CatFileName, CatArchiv, CatPathName, CatVolume;
 static pstring MountedVol[FloppyDrives] = { pstring(11), pstring(11), pstring(11) };
 
-pstring SQLDateMask = "DD.MM.YYYY hh:mm:ss";
+static pstring SQLDateMask = "DD.MM.YYYY hh:mm:ss";
 
 // ********** COMPARE FUNCTIONS **********
-double Power10[21] = { 1E0, 1E1, 1E2, 1E3, 1E4, 1E5, 1E6, 1E7, 1E8, 1E9, 1E10,
+static double Power10[21] = { 1E0, 1E1, 1E2, 1E3, 1E4, 1E5, 1E6, 1E7, 1E8, 1E9, 1E10,
 	1E11, 1E12, 1E13, 1E14, 1E15, 1E16, 1E17, 1E18, 1E19, 1E20 };
 
 //void RunErrorM(LockMode Md, WORD N); // r528
@@ -677,19 +677,19 @@ static BYTE ForwChar, ExpChar, Lexem;
 static pstring LexWord;
 static bool SpecFDNameAllowed, IdxLocVarAllowed, FDLocVarAllowed, IsCompileErr;
 static CompInpD* PrevCompInp;						// { saved at "include" }
-static CharArrPtr InpArrPtr; RdbPos InpRdbPos;		// { "  "  }
+static CharArrPtr InpArrPtr; static RdbPos InpRdbPos;		// { "  "  }
 static WORD InpArrLen, CurrPos, OldErrPos;			// { "  "  }
 static SumElPtr FrmlSumEl;				//{ set while reading sum / count argument }
 static bool FrstSumVar, FileVarsAllowed;
 // FrmlPtr RdFldNameFrml() = FrmlPtr(char& FTyp);
 // FrmlPtr RdFunction() = FrmlPtr(char& FTyp);
-FrmlElem* (*RdFldNameFrml)(char&) = nullptr; // ukazatel na funkci
-FrmlElem* (*RdFunction)(char&) = nullptr; // ukazatel na funkci
+static FrmlElem* (*RdFldNameFrml)(char&) = nullptr; // ukazatel na funkci
+static FrmlElem* (*RdFunction)(char&) = nullptr; // ukazatel na funkci
 static void(*ChainSumEl)(); // {set by user}
 static BYTE LstCompileVar; // { boundary }
 
-pstring Switches = "";
-WORD SwitchLevel = 0;
+static pstring Switches = "";
+static WORD SwitchLevel = 0;
 
 void RunErrorM(LockMode Md, WORD N); // r729
 pstring* FieldDMask(FieldDPtr F); // r734 ASM

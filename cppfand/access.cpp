@@ -424,7 +424,7 @@ void WrDBaseHd()
 
 	FieldDPtr F;
 	WORD n, y, m, d, w;
-	string s;
+	pstring s;
 
 	const char CtrlZ = '\x1a';
 
@@ -1655,6 +1655,10 @@ void TFile::RdWr(bool ReadOp, longint Pos, WORD N, void* X)
 void TFile::GetMLen()
 {
 	MLen = (MaxPage + 1) << MPageShft;
+}
+
+FileD::FileD()
+{
 }
 
 longint FileD::UsedFileSize()

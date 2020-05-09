@@ -130,6 +130,14 @@ label1:
 
 }
 
+void WriteMsg(WORD N)
+{
+}
+
+void ClearLL(BYTE attr)
+{
+}
+
 WORD TResFile::Get(WORD Kod, void* P)
 {
 	WORD l;
@@ -640,6 +648,10 @@ void FlushH(FILE* handle)
 	//CloseH(handle);
 }
 
+void DeleteFile(pstring path)
+{
+}
+
 WORD FindCtrlM(LongStrPtr s, WORD i, WORD n)
 {
 	WORD l = s->LL;
@@ -690,7 +702,7 @@ longint GetDateTimeH(filePtr handle)
 	return (ft.dwHighDateTime << 16) + ft.dwLowDateTime;
 }
 
-void DeleteFile(pstring path)
+void MyDeleteFile(pstring path)
 {
 	// smaže soubor - INT $41
 	auto result = remove(path.c_str());
@@ -1091,9 +1103,9 @@ void MyExit()
 #endif
 
 	UnExtendHandles();
-	DeleteFile(FandWorkName);
-	DeleteFile(FandWorkXName);
-	DeleteFile(FandWorkTName);
+	MyDeleteFile(FandWorkName);
+	MyDeleteFile(FandWorkXName);
+	MyDeleteFile(FandWorkTName);
 	// TODO? CloseXMS();
 label1: if (WasInitDrivers) {
 	// TODO? DoneMouseEvents();

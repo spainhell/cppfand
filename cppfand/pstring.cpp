@@ -28,6 +28,13 @@ pstring::pstring(const pstring& ps) : initLen(ps.initLen)
 	memcpy((void*)arr, (void*)ps.arr, len);
 }
 
+pstring::pstring(std::string cs) : initLen(cs.length())
+{
+	this->len = cs.length();
+	arr = new unsigned char[this->len]{ '\0' };
+	memcpy(arr, cs.c_str(), len);
+}
+
 pstring::~pstring()
 {
 	delete[] arr;
@@ -103,10 +110,13 @@ void pstring::replace(const char* value)
 	memcpy((void*)arr, (void*)value, len);
 }
 
+void pstring::insert(const char* value, unsigned char position)
+{
+}
+
 const char* pstring::c_str()
 {
-	arr[len] = '\0'; // 'arr' je o 1 vìtší než 'len'
-	return (const char*)arr;
+	return (const char*)(arr[1]);
 }
 
 bool pstring::empty()

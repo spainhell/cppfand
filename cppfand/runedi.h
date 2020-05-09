@@ -3,7 +3,7 @@
 #include "pstring.h"
 #include "rdrun.h"
 
-bool TxtEdCtrlUBrk, TxtEdCtrlF4Brk;
+static bool TxtEdCtrlUBrk, TxtEdCtrlF4Brk;
 WORD EditTxt(pstring* s, WORD pos, WORD maxlen, WORD maxcol, char typ, bool del,
     bool star, bool upd, bool ret, WORD Delta); // r86
 longint CRec();
@@ -18,7 +18,7 @@ bool EditFreeTxt(FieldDPtr F, pstring ErrMsg, bool Ed, WORD& Brk);
 void DisplEditWw();
 bool OpenEditWw();
 void RunEdit(XString* PX, WORD& Brk);
-EFldD* CFld;
+static EFldD* CFld;
 bool PromptB(pstring* S, FrmlPtr Impl, FieldDPtr F);
 pstring PromptS(pstring* S, FrmlPtr Impl, FieldDPtr F);
 double PromptR(pstring* S, FrmlPtr Impl, FieldDPtr F);

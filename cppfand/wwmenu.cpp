@@ -326,12 +326,14 @@ TMenuBox::TMenuBox()
 
 TMenuBox::TMenuBox(WORD C1, WORD R1)
 {
-	WORD cols, c2, r2, i, l; pstring hd(80);
-	hd = GetText(0); cols = hd.length();
-	for (i = 1; i <= nTxt; i++) {
-		l = LenStyleStr(GetText(i));
-		if (l > cols) cols = l;
-	}
+	WORD cols = 0, c2 = 0, r2 = 0, i = 0, l = 0;
+	pstring hd(80);
+	// TODO:
+	//hd = GetText(0); cols = hd.length();
+	//for (i = 1; i <= nTxt; i++) {
+	//	l = LenStyleStr(GetText(i));
+	//	if (l > cols) cols = l;
+	//}
 	cols += 4;
 	if ((cols + 2 > TxtCols) || (nTxt + 2 > TxtRows)) RunError(636);
 	c2 = cols; r2 = nTxt;
@@ -490,7 +492,7 @@ TMenuBar::TMenuBar(WORD C1, WORD R1, WORD Cols)
 {
 	WORD c2, r2, i, l;
 	l = 0;
-	for (i = 1; i <= nTxt; i++) l = l + LenStyleStr(GetText(i)) + 2;
+	// TODO: for (i = 1; i <= nTxt; i++) l = l + LenStyleStr(GetText(i)) + 2;
 	if (l > TxtCols) RunError(636);
 	Cols = MaxW(l, Cols);
 	if (nTxt == 0) nBlks = 0;

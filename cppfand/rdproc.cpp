@@ -2163,10 +2163,3 @@ void RdCallLProc()
 }
 #endif
 
-
-
-
-
-
-
-

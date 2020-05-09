@@ -3,7 +3,7 @@
 #include "rdrun.h"
 
 // TODO - už je deklarované jinde
-// EditD* E = (EditD*)EditDRoot;
+static EditD* E = EditDRoot;
 
 void PushEdit();
 void SToSL(void* SLRoot, pstring s);

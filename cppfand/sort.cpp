@@ -137,6 +137,10 @@ void WPage::Sort(WORD N, WORD RecLen)
 
 }
 
+void WPage::PushWord(WORD W)
+{
+}
+
 WORD WPage::PopWord(WORD N, WORD RecLen)
 {
 	WRec* X = nullptr; WRec* Y = nullptr; WRec* Z = nullptr; WRec* V = nullptr;

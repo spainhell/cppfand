@@ -1,6 +1,6 @@
 ﻿// cppfand.cpp : Tento soubor obsahuje funkci main. Provádění programu se tam zahajuje a ukončuje.
 //
-#pragma once
+#include "constants.h"
 
 #include <iostream>
 #include <vector>
@@ -31,13 +31,13 @@
 #include "runprolg.h"
 #endif
 
-std::vector<std::string> paramstr;
+std::vector<std::string> paramstr2;
 
 int main(int argc, char* argv[])
 {
 	for (int i=0; i< argc; i++)
 	{
-        paramstr.push_back(argv[i]);
+        paramstr2.push_back(argv[i]);
 	}
 }
 

@@ -37,7 +37,7 @@ bool NotCode(pstring Nm, WORD CodeBase, WORD BrkBase, EdExKeyD* E);
 
 const BYTE NKeyNames = 21;
 struct kNames { pstring Nm; BYTE Brk; WORD Code; };
-kNames KeyNames[NKeyNames] = {
+static kNames KeyNames[NKeyNames] = {
 	{"HOME", 51, _Home_},
 	{"UP", 52, _up_},
 	{"PGUP", 53, _PgUp_},
@@ -63,7 +63,7 @@ kNames KeyNames[NKeyNames] = {
 bool RdHeadLast(void* AA);
 bool RdViewOpt(EditOpt* EO);
 void RdKeyList(EdExitD* X);
-Instr* RdPInstr; // toto bude ukazatel na pozdìji pøiøazenou funkci
+static Instr* RdPInstr; // toto bude ukazatel na pozdìji pøiøazenou funkci
 Instr* GetPD(PInstrCode Kind, WORD Size);
 void RdProcCall(); // hlavní funkce v souboru
 FieldList RdFlds();

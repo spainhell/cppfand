@@ -3,10 +3,27 @@
 #include "rdrun.h"
 
 
-bool OldToNewCat(longint& FilSz);
-void XEncode(LongStr* S1, LongStr* S2);
-void CopyFile(CopyD* CD);
+inline bool OldToNewCat(longint& FilSz)
+{
+	return false;
+}
 
-void Backup(bool IsBackup, bool NoCompress, WORD Ir, bool NoCancel);
-void BackupM(Instr* PD);
-void CheckFile(FileD* FD);
+inline void XEncode(LongStr* S1, LongStr* S2)
+{
+}
+
+inline void CopyFile(CopyD* CD)
+{
+}
+
+inline void Backup(bool IsBackup, bool NoCompress, WORD Ir, bool NoCancel)
+{
+}
+
+inline void BackupM(Instr* PD)
+{
+}
+
+inline void CheckFile(FileD* FD)
+{
+}

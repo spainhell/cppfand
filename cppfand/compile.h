@@ -41,6 +41,6 @@ bool IsIdentifStr(pstring& S); //r323
 
 
 
-RdbPos ChptIPos;
+static RdbPos ChptIPos;
 void* SaveCompState(); // r104
 void RestoreCompState(void* p); // 109

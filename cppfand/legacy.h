@@ -1,11 +1,10 @@
 #pragma once
 #include "constants.h"
 #include "pstring.h"
-#include <string>
 
-longint ExitCode = 0; // exit kód -> OS
-void* ErrorAddr = nullptr; // adresa chyby
-void (*ExitProc)() { }; // ukončovací procedura
+static longint ExitCode = 0; // exit kód -> OS
+static void* ErrorAddr = nullptr; // adresa chyby
+static void (*ExitProc)() { }; // ukončovací procedura
 
 void val(pstring s, BYTE& b, WORD& err);
 void val(pstring s, WORD& b, WORD& err);
@@ -64,7 +63,7 @@ inline void GetMem(void* pointer, int Size) { pointer = new unsigned char[Size];
 
 void beep();
 
-BYTE OvrResult = 0; // vždy 0 OvrOK
+static BYTE OvrResult = 0; // vždy 0 OvrOK
 
 pstring GetEnv(const char* name);
 

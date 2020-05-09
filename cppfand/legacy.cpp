@@ -2,8 +2,6 @@
 #include <SDKDDKVer.h>
 #include "windows.h"
 #include <ctime>
-#include <iostream>
-#include <string>
 #include <direct.h>
 #include "base.h"
 
@@ -115,30 +113,30 @@ void FSplit(pstring fullname, pstring& dir, pstring& name, pstring& ext)
 
 pstring FSearch(pstring& path, pstring& dirlist)
 {
-	std::vector<std::string> vDirs;
-	int lastIndex = 0;
-	int actualIndex = 0;
+	//std::vector<std::string> vDirs;
+	//int lastIndex = 0;
+	//int actualIndex = 0;
 
-	std::string slist = dirlist;
-	for (actualIndex = 0; actualIndex < dirlist.length(); actualIndex++)
-	{
-		if (actualIndex > 0 && dirlist[actualIndex] == ';')
-		{
-			std::string dir = dirlist.substr(lastIndex, actualIndex - lastIndex);
-			if (dir[dir.length() - 1] != '\\') dir+= '\\';
-			vDirs.push_back(dir);
-			lastIndex = actualIndex + 1;
-		}
-	}
-	for (auto & dir : vDirs)
-	{
-		std::string fullname = dir + path.c_str();
-		FILE* file;
-		if (!fopen_s(&file, fullname.c_str(), "r")) {
-			fclose(file);
-			return fullname;
-		}
-	}
+	//std::string slist = dirlist;
+	//for (actualIndex = 0; actualIndex < dirlist.length(); actualIndex++)
+	//{
+	//	if (actualIndex > 0 && dirlist[actualIndex] == ';')
+	//	{
+	//		std::string dir = dirlist.substr(lastIndex, actualIndex - lastIndex).c_str();
+	//		if (dir[dir.length() - 1] != '\\') dir+= '\\';
+	//		vDirs.push_back(dir);
+	//		lastIndex = actualIndex + 1;
+	//	}
+	//}
+	//for (auto & dir : vDirs)
+	//{
+	//	std::string fullname = dir + path.c_str();
+	//	FILE* file;
+	//	if (!fopen_s(&file, fullname.c_str(), "r")) {
+	//		fclose(file);
+	//		return fullname;
+	//	}
+	//}
 	return pstring();
 }
 
@@ -239,7 +237,8 @@ WORD ParamCount()
 
 pstring ParamStr(integer index)
 {
-	return paramstr[index];
+	pstring ptmp = paramstr[index].c_str();
+	return ptmp;
 }
 
 void FillChar(void* cil, WORD delka, char vypln)
@@ -277,6 +276,10 @@ void Pack(void* NumArr, WORD& PackArr, WORD& NoDigits)
 	return;
 }
 
+void beep()
+{
+}
+
 pstring GetEnv(const char* name)
 {
 	size_t value = 0;
@@ -288,6 +291,42 @@ pstring GetEnv(const char* name)
 WORD IOResult()
 {
 	return 0;
+}
+
+WORD DosError()
+{
+	return 0;
+}
+
+double DiskFree(char disk)
+{
+	return 1000000000.0;
+}
+
+const char* TextFile::c_str()
+{
+	return nullptr;
+}
+
+void TextFile::Close()
+{
+}
+
+void TextFile::Assign(const char*)
+{
+}
+
+void TextFile::Reset()
+{
+}
+
+void TextFile::Rewrite()
+{
+}
+
+bool TextFile::ResetTxt()
+{
+	return false;
 }
 
 

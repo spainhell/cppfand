@@ -34,20 +34,38 @@ const BYTE WDoubleFrame = 0x20;
 
 typedef void* PProcedure;
 
-void wait(); // ø. 95
+inline void wait()
+{
+}
+
+// ø. 95
 
 #ifndef FandRunV
-pstring HexB(BYTE b);
-pstring HexW(WORD i);
-pstring HexD(longint i);
-pstring HexPtr(void* p);
-void DispH(void* ad, integer NoBytes);
+inline pstring HexB(BYTE b)
+{
+}
+
+inline pstring HexW(WORD i)
+{
+}
+
+inline pstring HexD(longint i)
+{
+}
+
+inline pstring HexPtr(void* p)
+{
+}
+
+inline void DispH(void* ad, integer NoBytes)
+{
+}
 #endif
 
 
 /* MEMORY MANAGEMENT */
-WORD CachePageSize;
-void* AfterCatFD; // r108
+static WORD CachePageSize;
+static void* AfterCatFD; // r108
 const BYTE CachePageShft = 12;
 const WORD NCachePages = 0;
 const WORD XMSCachePages = 0;
@@ -59,11 +77,11 @@ struct ExitRecord {
 	void* OvrEx = nullptr; void* mBP = nullptr;
 	WORD rBP = 0, rIP = 0, rCS = 0, rSP = 0, rDS = 0;
 	bool ExP = false, BrkP = false;
-} ExitBuf; // r202 - r210
-ProcStkD* MyBP; ProcStkD* ProcMyBP;
-WORD BPBound; // r212
-bool ExitP, BreakP;
-longint LastExitCode = 0; // r215
+} static ExitBuf; // r202 - r210
+static ProcStkD* MyBP; static ProcStkD* ProcMyBP;
+static WORD BPBound; // r212
+static bool ExitP, BreakP;
+static longint LastExitCode = 0; // r215
 void StackOvr(WORD NewBP); // r216
 void NewExit(PProcedure POvr, ExitRecord Buf);  // r218
 /* konec */
@@ -74,11 +92,11 @@ enum FileUseMode { Closed, RdOnly, RdShared, Shared, Exclusive }; // poradi se n
 static WORD HandleError; // r229
 static pstring OldDir, FandDir, WrkDir;
 static pstring FandOvrName, FandResName, FandWorkName, FandWorkXName, FandWorkTName;
-static pstring CPath; pstring CDir; pstring CName; pstring CExt;
+static pstring CPath; static pstring CDir; static pstring CName; static pstring CExt;
 static pstring CVol;
 static bool WasLPTCancel;
 static FILE* WorkHandle;
-longint MaxWSize = 0; // {currently occupied in FANDWORK.$$$}
+static longint MaxWSize = 0; // {currently occupied in FANDWORK.$$$}
 /* konec */
 
 // ********** MESSAGES **********
@@ -128,7 +146,7 @@ struct Spec // r.319
 	WORD ScreenDelay;
 	BYTE OffDefaultYear;
 	bool WithDiskFree;
-} spec;
+} static spec;
 
 struct Video // ø. 345
 {
@@ -136,14 +154,14 @@ struct Video // ø. 345
 	BYTE TxtRows;
 	bool ChkSnow;	// {not used }
 	WORD CursOn, CursOff, CursBig;
-} video;
+} static video;
 
 struct Fonts // r350
 {
 	TVideoFont VFont = TVideoFont::foLatin2;
 	bool LoadVideoAllowed = false;
 	bool NoDiakrSupported = false;
-} fonts;
+} static fonts;
 
 struct Colors
 {
@@ -187,8 +205,8 @@ struct Printer {
 	bool OpCls, ToHandle, ToMgr; WORD Handle;
 } static printer[10];
 typedef std::array<BYTE, 4> TPrTimeOut; // ø. 418
-TPrTimeOut OldPrTimeOut;
-TPrTimeOut PrTimeOut;  // absolute 0:$478;
+static TPrTimeOut OldPrTimeOut;
+static TPrTimeOut PrTimeOut;  // absolute 0:$478;
 
 struct wdaystt { BYTE Typ = 0; WORD Nr = 0; } static WDaysTabType;
 static WORD NWDaysTab; static float WDaysFirst; static float WDaysLast;
@@ -225,8 +243,8 @@ static TResFile ResFile;
 static TMsgIdxItem* MsgIdx;// = TMsgIdx;
 static WORD MsgIdxN; static longint FrstMsgPos;
 
-void (*CallOpenFandFiles)(); // r453
-void (*CallCloseFandFiles)(); // r454
+static void (*CallOpenFandFiles)(); // r453
+static void (*CallCloseFandFiles)(); // r454
 
 static double userToday;
 
@@ -270,7 +288,7 @@ longint StoreAvail();
 void WriteH(FILE* handle, WORD bytes, void* buffer);
 void TruncH(FILE* handle, longint N);
 void FlushH(FILE* handle);
-void DeleteFile(pstring path);
+void MyDeleteFile(pstring path);
 
 WORD FindCtrlM(LongStrPtr s, WORD i, WORD n); // r152
 WORD SkipCtrlMJ(LongStrPtr s, WORD i); // r158

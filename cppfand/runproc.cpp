@@ -680,7 +680,7 @@ label1:
 			if (op == _withlocked) { if (TryLockN(ld->N, 2)) goto label3; }
 			else { if (TryLMode(ld->Md, ld->OldMd, 2)) goto label3; }
 		label2:
-			UnLck(ld, op);
+			UnLck(PD, ld, op);
 			if (PD->WasElse) { RunInstr(PD->WElseInstr); return; }
 			CFile = ld->FD; SetCPathVol();
 			if (op == _withlocked) {
@@ -697,7 +697,7 @@ label1:
 	}
 	if (w != 0) PopW(w);
 	RunInstr(PD->WDoInstr);
-	UnLck(nullptr, op);
+	UnLck(PD, nullptr, op);
 }
 
 void HelpProc(Instr* PD)
@@ -786,6 +786,10 @@ void ResetCatalog()
 		CRdb = CRdb->ChainBack;
 	}
 	CFile = cf; CRdb = r;
+}
+
+void PortOut(bool IsWord, WORD Port, WORD What)
+{
 }
 
 void RecallRecProc(Instr* PD)

@@ -20,10 +20,17 @@
 #include "wwmenu.h"
 #include "wwmix.h"
 
-void* O(void* p); // ASM
-void* OCF(void* p); // ASM
+void* O(void* p) // ASM
+{
+	return nullptr;
+}
 
-EditD* E = EditDRoot;
+void* OCF(void* p) // ASM
+{
+	return nullptr;
+}
+
+//EditD* E = EditDRoot;
 longint UserW = 0;
 
 struct RdbRecVars
@@ -158,10 +165,10 @@ bool ChptDelFor(RdbRecVars* X)
 			TestMountVol(CPath[1]);
 		}
 		else { CDir = ""; CName = X->Name; CExt = X->Ext; }
-		DeleteFile(CDir + CName + CExt);
+		MyDeleteFile(CDir + CName + CExt);
 		CExtToT();
-		DeleteFile(CPath);
-		if (X->FTyp == 'X') { CExtToX(); DeleteFile(CPath); } }
+		MyDeleteFile(CPath);
+		if (X->FTyp == 'X') { CExtToX(); MyDeleteFile(CPath); } }
 	default: ChptTF->CompileProc = true; break;
 	}
 	return true;
@@ -1072,9 +1079,9 @@ label1:
 
 void DeleteF()
 {
-	CloseFile(); SetCPathVol(); DeleteFile(CPath);
-	CExtToX(); if (CFile->XF != nullptr) DeleteFile(CPath);
-	CExtToT(); if (CFile->TF != nullptr) DeleteFile(CPath);
+	CloseFile(); SetCPathVol(); MyDeleteFile(CPath);
+	CExtToX(); if (CFile->XF != nullptr) MyDeleteFile(CPath);
+	CExtToT(); if (CFile->TF != nullptr) MyDeleteFile(CPath);
 }
 
 bool MergAndReplace(FileD* FDOld, FileD* FDNew)
@@ -1143,7 +1150,7 @@ bool MergeOldNew(bool Veriflongint, bool Pos)
 	else if ((FDOld->Typ == 'X') && !EquKeys(FDOld->Keys, FDNew->Keys)) {
 		SetCPathVol();
 		CExtToX();
-		DeleteFile(CPath);
+		MyDeleteFile(CPath);
 	}
 label1:
 	FDNew->Chain = nullptr;

@@ -1075,6 +1075,10 @@ void ConcatLongStr(LongStr* S1, LongStr* S2)
 {
 }
 
+void CopyLongStr(LongStr* S, WORD From, WORD Number)
+{
+}
+
 void AddToLongStr(LongStr* S, void* P, WORD L)
 {
 	void* p2;

@@ -7,8 +7,6 @@
 #include "rdmix.h"
 #include "runedi.h"
 
-EditD* E = (EditD*)EditDRoot;
-
 void PushEdit()
 {
 	EditD* E1 = (EditD*)GetZStore(sizeof(*E));

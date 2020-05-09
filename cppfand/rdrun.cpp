@@ -126,7 +126,7 @@ void CrIndRec()
 	RecallRec(CFile->NRecs);
 }
 
-bool Link(AddDPtr AD, longint& N, char& Kind2)
+bool Link(AddD* AD, longint& N, char& Kind2)
 {
 	auto result = false;
 	void* CR; LinkDPtr LD;
@@ -187,6 +187,11 @@ bool TransAdd(AddD* AD, FileD* FD, void* RP, void* CRnew, longint N, char Kind2,
 	auto result = RunAddUpdte1('d', CRold, Back, nullptr, nullptr);
 	ReleaseStore(CRold);
 	return result;
+}
+
+bool Add(AddD* AD, void* RP, double R)
+{
+	return true;
 }
 
 bool Add(AddD* AD, void* RP, double R, bool Back)

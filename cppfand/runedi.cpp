@@ -16,7 +16,7 @@
 
 int Timer = 0;
 
-EditD* E = EditDRoot;
+//EditD* E = EditDRoot;
 EFldD* FirstEmptyFld;
 KeyDPtr VK;
 WKeyDPtr WK;
@@ -2785,7 +2785,7 @@ bool DuplToPrevEdit()
 	return result;
 }
 
-void Calculate()
+void Calculate2()
 {
 	wwmix ww;
 	
@@ -3278,7 +3278,7 @@ label81:
 			}
 		case _F5_: SetSwitchProc(); break;
 		case _F7_: UpwEdit(nullptr); break;
-		case _CtrlF5_: Calculate(); break;
+		case _CtrlF5_: Calculate2(); break;
 		default: {
 			if (KbdChar >= 0x20 && KbdChar <= 0xFE)
 			{

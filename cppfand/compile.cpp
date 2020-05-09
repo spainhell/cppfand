@@ -565,3 +565,12 @@ bool IsIdentifStr(pstring& S)
 	}
 	return true;
 }
+
+void* SaveCompState()
+{
+	return nullptr;
+}
+
+void RestoreCompState(void* p)
+{
+}

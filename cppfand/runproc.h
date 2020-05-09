@@ -37,7 +37,7 @@ void SetKeyBufProc(FrmlPtr Z);
 void SetWwViewPort();
 void WithWindowProc(Instr* PD);
 void WithLockedProc(Instr* PD);
-void UnLck(LockD* Ld1, PInstrCode Op);
+void UnLck(Instr* PD, LockD* Ld1, PInstrCode Op);
 
 void HelpProc(Instr* PD);
 FILE* OpenHForPutTxt(Instr* PD);
