@@ -2,6 +2,7 @@
 
 #include "base.h"
 #include "drivers.h"
+#include "globconf.h"
 #include "oaccess.h"
 
 //void WrHd(pstring s, pstring Hd, WORD Row, WORD MaxCols)
@@ -314,7 +315,7 @@ void RunError(WORD N)
 {
 	RunErrNr = N;
 	ClearKbdBuf();
-	WrLLF10Msg(RunErrNr);
+	//WrLLF10Msg(RunErrNr);
 	GoExit();
 }
 
@@ -330,9 +331,9 @@ bool PromptYN(WORD NMsg)
 	printf(" "); GotoXY(col, row); CrsShow();
 	label1:
 	cc = toupper((char)ReadKbd);
-	if ((KbdChar != F10SpecKey) && (cc != AbbrYes) && (cc != AbbrNo)) goto label1;
+	if ((KbdChar != F10SpecKey) && (cc != globconf::AbbrYes) && (cc != globconf::AbbrNo)) goto label1;
 	F10SpecKey = 0; PopW(w);
-	return cc == AbbrYes;
+	return cc == globconf::AbbrYes;
 }
 
 void CFileMsg(WORD n, char Typ)
@@ -341,7 +342,7 @@ void CFileMsg(WORD n, char Typ)
 	SetCPathVol();
 	if (Typ == 'T') CExtToT();
 	else if (Typ == 'X') CExtToX();
-	SetMsgPar(CPath); WrLLF10Msg(n);
+	SetMsgPar(globconf::CPath); WrLLF10Msg(n);
 }
 
 void CFileError(WORD N)

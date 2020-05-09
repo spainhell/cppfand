@@ -15,6 +15,7 @@
 #include <set>
 
 #include "compile.h"
+#include "globconf.h"
 #include "obaseww.h"
 
 
@@ -166,7 +167,7 @@ FrmlPtr RdFldNameFrmlT(char& FTyp)
 
 void MyWrLLMsg(pstring s)
 {
-	if (HandleError == 4) s = ""; SetMsgPar(s); WrLLF10Msg(700 + HandleError);
+	if (globconf::HandleError == 4) s = ""; SetMsgPar(s); WrLLF10Msg(700 + globconf::HandleError);
 }
 
 void MyRunError(pstring s, WORD n)
@@ -176,11 +177,11 @@ void MyRunError(pstring s, WORD n)
 
 void HMsgExit(pstring s)
 {
-	switch (HandleError) {
+	switch (globconf::HandleError) {
 	case 0: return;
-	case 1: { s = s[1]; SetMsgPar(s); RunError(700 + HandleError); break; }
+	case 1: { s = s[1]; SetMsgPar(s); RunError(700 + globconf::HandleError); break; }
 	case 2:
-	case 3: { SetMsgPar(s); RunError(700 + HandleError); break; }
+	case 3: { SetMsgPar(s); RunError(700 + globconf::HandleError); break; }
 	case 4: RunError(704); break;
 	}
 }
@@ -445,7 +446,7 @@ void UpdateFile()
 			if (pos - pos1 < n) n = pos - pos1; pos -= n;
 			SeekH(TxtFH, pos); ReadH(TxtFH, n, p);
 			SeekH(TxtFH, pos + d); WriteH(TxtFH, n, p);
-			if (HandleError != 0) HErr = HandleError;
+			if (globconf::HandleError != 0) HErr = globconf::HandleError;
 		}
 	}
 	else if (d < 0)
@@ -464,7 +465,7 @@ void UpdateFile()
 	ReleaseStore(p);
 	SeekH(TxtFH, Part.PosP);
 	if (LenT > 0) WriteH(TxtFH, LenT, T);
-	if (HandleError != 0) HErr = HandleError;
+	if (globconf::HandleError != 0) HErr = globconf::HandleError;
 	FlushH(TxtFH); AbsLenT = FileSizeH(TxtFH);
 	if (HErr != 0) { SetMsgPar(TxtPath); WrLLF10Msg(700 + HErr); }
 	Part.UpdP = false; Part.LenP = LenT;
@@ -495,14 +496,14 @@ void RdFirstPart()
 void OpenTxtFh(char Mode)
 {
 	FileUseMode UM;
-	CPath = TxtPath; CVol = TxtVol;
-	TestMountVol(CPath[1]);
+	globconf::CPath = TxtPath; globconf::CVol = TxtVol;
+	TestMountVol(globconf::CPath[1]);
 	if (Mode == ViewM) UM = RdOnly;
 	else UM = Exclusive;
 	TxtFH = OpenH(_isoldnewfile, UM);
-	if (HandleError != 0) {
-		SetMsgPar(CPath);
-		RunError(700 + HandleError);
+	if (globconf::HandleError != 0) {
+		SetMsgPar(globconf::CPath);
+		RunError(700 + globconf::HandleError);
 	}
 	AbsLenT = FileSizeH(TxtFH);
 }
@@ -2153,8 +2154,8 @@ label1:
 	}
 	case 'S': { Txt = RunShortStr(Z);   /* wie RdMode fuer T ??*/ break; }
 	case 'B': {
-		if (RunBool(Z)) Txt = AbbrYes;
-		else Txt = AbbrNo;
+		if (RunBool(Z)) Txt = globconf::AbbrYes;
+		else Txt = globconf::AbbrNo;
 		break;
 	}
 	}
@@ -2196,7 +2197,7 @@ void ResetPrint(char Oper, longint& fs, FILE* W1, longint LenPrint, ColorOrd* co
 	else
 	{
 		isPrintFile = true; W1 = WorkHandle; SeekH(W1, 0);
-		WriteH(W1, co->length(), &co[1]); HMsgExit(CPath);
+		WriteH(W1, co->length(), &co[1]); HMsgExit(globconf::CPath);
 	}
 }
 
@@ -2253,7 +2254,7 @@ bool BlockHandle(longint& fs, FILE* W1, char Oper)
 			case 'P': {
 				if (isPrintFile)
 				{
-					WriteH(W1, I2 - I1, T[I1]); HMsgExit(CPath);
+					WriteH(W1, I2 - I1, T[I1]); HMsgExit(globconf::CPath);
 				}
 				else {
 					Move(T[I1], p[fs + 1], I2 - I1);
@@ -2262,7 +2263,7 @@ bool BlockHandle(longint& fs, FILE* W1, char Oper)
 				break;
 			}
 			case 'W': {
-				SeekH(W1, fs); WriteH(W1, I2 - I1, T[I1]); HMsgExit(CPath);
+				SeekH(W1, fs); WriteH(W1, I2 - I1, T[I1]); HMsgExit(globconf::CPath);
 				fs += I2 - I1; LL1 += I2 - I1;
 				break;
 			}
@@ -2297,7 +2298,7 @@ bool BlockHandle(longint& fs, FILE* W1, char Oper)
 			case 'P': {
 				Move(&Arr[BegBPos], a, I1); a[I1 + 1] = _CR; a[I1 + 2] = _LF;
 				if ((Oper == 'P') && !isPrintFile) Move(a, p[fs + 1], I1 + 2);
-				else { WriteH(W1, I1 + 2, a); HMsgExit(CPath); }
+				else { WriteH(W1, I1 + 2, a); HMsgExit(globconf::CPath); }
 				fs += I1 + 2;
 				break;
 			}
@@ -2654,7 +2655,7 @@ char MyVerifyLL(WORD n, pstring s)
 				else { GotoXY(c1, r1); r = r1; }
 			}
 		cc = toupper(ReadKbd());
-	} while (!(cc == AbbrYes || cc == AbbrNo || cc == _ESC));
+	} while (!(cc == globconf::AbbrYes || cc == globconf::AbbrNo || cc == _ESC));
 	PopW(w);
 	return cc;
 }
@@ -2688,7 +2689,7 @@ label1:
 			else {
 				FirstEvent = true; Background(); FirstEvent = false;
 				c = MyVerifyLL(408, "");
-				if (c == AbbrYes) ReplaceString(fst, fst, lst, Last);
+				if (c == globconf::AbbrYes) ReplaceString(fst, fst, lst, Last);
 				else if (c == _ESC) return;
 				;
 			}
@@ -3281,21 +3282,21 @@ void HandleEvent() {
 					{
 						BegBLn = 1; EndBLn = 0x7FFF; BegBPos = 1; EndBPos = 0xFF; TypeB = TextBlock;
 					}
-					CPath = wwmix1.SelectDiskFile(".TXT", 401, false);
-					if (CPath == "")  goto Nic;
-					CVol = "";
+					globconf::CPath = wwmix1.SelectDiskFile(".TXT", 401, false);
+					if (globconf::CPath == "")  goto Nic;
+					globconf::CVol = "";
 					F1 = OpenH(_isnewfile, Exclusive);
-					if (HandleError == 80)
+					if (globconf::HandleError == 80)
 					{
-						SetMsgPar(CPath);
+						SetMsgPar(globconf::CPath);
 						if (PromptYN(780)) F1 = OpenH(_isoverwritefile, Exclusive);
 						else goto Nic;
 					}
-					if (HandleError != 0) { MyWrLLMsg(CPath); goto Nic; }
+					if (globconf::HandleError != 0) { MyWrLLMsg(globconf::CPath); goto Nic; }
 					fs = 0; // {L1 =LineAbs(LineL);I =Posi;}
 					if (BlockHandle(fs, F1, 'W'))
 					{
-						WriteH(F1, 0, *T); /*truncH*/ CloseH(F1); HMsgExit(CPath);
+						WriteH(F1, 0, *T); /*truncH*/ CloseH(F1); HMsgExit(globconf::CPath);
 					}
 					// { PosDekFindLine(L1,I,true); }
 					BegBLn = I1; BegBPos = I2; EndBLn = I3; EndBPos = I; TypeB = bb;
@@ -3307,10 +3308,10 @@ void HandleEvent() {
 					break;
 				}
 				case _KR_: {
-					CPath = wwmix1.SelectDiskFile(".TXT", 400, false);
-					if (CPath == "") goto Nic;
-					CVol = ""; F1 = OpenH(_isoldfile, RdOnly);
-					if (HandleError != 0) { MyWrLLMsg(CPath); goto Nic; }
+					globconf::CPath = wwmix1.SelectDiskFile(".TXT", 400, false);
+					if (globconf::CPath == "") goto Nic;
+					globconf::CVol = ""; F1 = OpenH(_isoldfile, RdOnly);
+					if (globconf::HandleError != 0) { MyWrLLMsg(globconf::CPath); goto Nic; }
 					BegBLn = Part.LineP + LineL; BegBPos = Posi;
 					L1 = Part.PosP + LineI + Posi - 1;
 					FillBlank();
@@ -3807,7 +3808,7 @@ void EditTxtFile(longint* LP, char Mode, pstring& ErrMsg, EdExitD* ExD,
 	if (!Loc)
 	{
 		MaxLenT = 0xFFF0; LenT = 0; Part.UpdP = false;
-		TxtPath = CPath; TxtVol = CVol; OpenTxtFh(Mode);
+		TxtPath = globconf::CPath; TxtVol = globconf::CVol; OpenTxtFh(Mode);
 		RdFirstPart();
 		SimplePrintHead();
 		while ((TxtPos > Part.PosP + Part.LenP) && !AllRd) RdNextPart();
@@ -3853,7 +3854,7 @@ label1:
 	if ((EdBreak == 0xFFFF) && (KbdChar == _F6_))
 		if (Loc) { PrintArray(*T, LenT, false); goto label1; }
 		else {
-			CPath = TxtPath; CVol = TxtVol; PrintTxtFile(0);
+			globconf::CPath = TxtPath; globconf::CVol = TxtVol; PrintTxtFile(0);
 			OpenTxtFh(Mode); RdPart(); goto label1;
 		}
 	if (!Loc && (Size < 1)) MyDeleteFile(TxtPath);

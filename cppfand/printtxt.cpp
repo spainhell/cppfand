@@ -1,5 +1,7 @@
 #include "printtxt.h"
 
+
+#include "globconf.h"
 #include "kbdww.h"
 #include "legacy.h"
 #include "oaccess.h"
@@ -24,7 +26,7 @@ void ExecMgrPgm()
 	BYTE x = 0, y = 0;
 	pstring pgmNm = PrTab(prMgrProg);
 	if (pgmNm == "") return;
-	pstring param = replaceNo(PrTab(prMgrParam), CPath);
+	pstring param = replaceNo(PrTab(prMgrParam), globconf::CPath);
 	Wind wmin = WindMin;
 	Wind wmax = WindMax;
 	longint crs = CrsGet();
@@ -41,12 +43,13 @@ FILE* OpenMgrOutput()
 {
 	pstring s; FILE* h;
 	prFileNr = (prFileNr + 1) % 100; str(prFileNr, s);
-	CPath = replaceNo(PrTab(prMgrFileNm), s); CVol = "";
-	if (CPath.length() == 0) h = nullptr;
+	globconf::CPath = replaceNo(PrTab(prMgrFileNm), s);
+	globconf::CVol = "";
+	if (globconf::CPath.length() == 0) h = nullptr;
 	else {
-		h = OpenH(_isoverwritefile, Exclusive); if (HandleError != 0)
+		h = OpenH(_isoverwritefile, Exclusive); if (globconf::HandleError != 0)
 		{
-			SetMsgPar(CPath); WrLLF10Msg(700 + HandleError); h = nullptr;
+			SetMsgPar(globconf::CPath); WrLLF10Msg(700 + globconf::HandleError); h = nullptr;
 		}
 	}
 	return h;
@@ -159,10 +162,10 @@ label3:
 
 void PrintTxtFile(longint BegPos)
 {
-	TestMountVol(CPath[1]); if (!Rprt.ResetTxt())
+	TestMountVol(globconf::CPath[1]); if (!Rprt.ResetTxt())
 	{
-		SetMsgPar(CPath);
-		WrLLF10Msg(700 + HandleError);
+		SetMsgPar(globconf::CPath);
+		WrLLF10Msg(700 + globconf::HandleError);
 		return;
 	}
 	printBlk = false;
@@ -180,7 +183,7 @@ void PrintArray(void* P, WORD N, bool CtrlL)
 void PrintFandWork()
 {
 	CloseH(WorkHandle);
-	Rprt.Assign(FandWorkName.c_str());
+	Rprt.Assign(globconf::FandWorkName.c_str());
 	/* !!! with TextRec(Rprt) do!!! */
 	{
 		Rprt.openfunc = &Rprt.opentxt;

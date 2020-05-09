@@ -2,6 +2,7 @@
 #include "access.h"
 #include "expimp.h"
 #include "genrprt.h"
+#include "globconf.h"
 #include "legacy.h"
 #include "oaccess.h"
 #include "obaseww.h"
@@ -162,13 +163,14 @@ bool ChptDelFor(RdbRecVars* X)
 			WrCatField(X->CatIRec, CatFileName, "");
 			if (!PromptYN(815)) return true;
 			RdCatPathVol(X->CatIRec);
-			TestMountVol(CPath[1]);
+			TestMountVol(globconf::CPath[1]);
 		}
-		else { CDir = ""; CName = X->Name; CExt = X->Ext; }
-		MyDeleteFile(CDir + CName + CExt);
+		else { globconf::CDir = "";
+			globconf::CName = X->Name; globconf::CExt = X->Ext; }
+		MyDeleteFile(globconf::CDir + globconf::CName + globconf::CExt);
 		CExtToT();
-		MyDeleteFile(CPath);
-		if (X->FTyp == 'X') { CExtToX(); MyDeleteFile(CPath); } }
+		MyDeleteFile(globconf::CPath);
+		if (X->FTyp == 'X') { CExtToX(); MyDeleteFile(globconf::CPath); } }
 	default: ChptTF->CompileProc = true; break;
 	}
 	return true;
@@ -206,12 +208,12 @@ label1:
 
 void RenameWithOldExt(RdbRecVars New, RdbRecVars Old)
 {
-	CExt = Old.Ext;
-	RenameFile56(Old.Name + CExt, New.Name + CExt, false);
+	globconf::CExt = Old.Ext;
+	RenameFile56(Old.Name + globconf::CExt, New.Name + globconf::CExt, false);
 	CExtToT();
-	RenameFile56(Old.Name + CExt, New.Name + CExt, false);
+	RenameFile56(Old.Name + globconf::CExt, New.Name + globconf::CExt, false);
 	CExtToX();
-	if (Old.FTyp == 'X') RenameFile56(Old.Name + CExt, New.Name + CExt, false);
+	if (Old.FTyp == 'X') RenameFile56(Old.Name + globconf::CExt, New.Name + globconf::CExt, false);
 }
 
 WORD ChptWriteCRec()
@@ -697,32 +699,32 @@ void SetRdbDir(char Typ, pstring* Nm)
 	RdbD* r; RdbD* rb; pstring d;
 
 	r = CRdb; rb = r->ChainBack;
-	if (rb == nullptr) TopRdb = *r; CVol = "";
+	if (rb == nullptr) TopRdb = *r; globconf::CVol = "";
 	if (Typ == '\\') {
 		rb = &TopRdb; CRdb = rb; CFile->CatIRec = GetCatIRec(*Nm, false);
 		CRdb = r;
 	}
 	if (CFile->CatIRec != 0) {
-		CPath = RdCatField(CFile->CatIRec, CatPathName);
-		if (CPath[2] != ':') {
-			d = rb->RdbDir; if (CPath[1] == '\\') CPath = copy(d, 1, 2) + CPath;
+		globconf::CPath = RdCatField(CFile->CatIRec, CatPathName);
+		if (globconf::CPath[2] != ':') {
+			d = rb->RdbDir; if (globconf::CPath[1] == '\\') globconf::CPath = copy(d, 1, 2) + globconf::CPath;
 			else {
-				AddBackSlash(d); CPath = d + CPath;
+				AddBackSlash(d); globconf::CPath = d + globconf::CPath;
 			}
 		}
-		FSplit(CPath, CDir, CName, CExt); DelBackSlash(CDir);
+		FSplit(globconf::CPath, globconf::CDir, globconf::CName, globconf::CExt); DelBackSlash(globconf::CDir);
 	}
-	else if (rb == nullptr) CDir = TopRdbDir; else {
-		CDir = rb->RdbDir; AddBackSlash(CDir); CDir = CDir + CFile->Name;
+	else if (rb == nullptr) globconf::CDir = TopRdbDir; else {
+		globconf::CDir = rb->RdbDir; AddBackSlash(globconf::CDir); globconf::CDir = globconf::CDir + CFile->Name;
 	}
 	/* !!! with r^ do!!! */ {
-		r->RdbDir = CDir; if (TopDataDir == "") r->DataDir = CDir;
+		r->RdbDir = globconf::CDir; if (TopDataDir == "") r->DataDir = globconf::CDir;
 		else if (rb == nullptr) r->DataDir = TopDataDir;
 		else {
 			d = rb->DataDir; AddBackSlash(d); r->DataDir = d + CFile->Name;
 		}
 	}
-	CDir = CDir + '\\';
+	globconf::CDir = globconf::CDir + '\\';
 }
 
 void ResetRdOnly()
@@ -754,8 +756,8 @@ void CreateOpenChpt(pstring* Nm, bool create)
 	RdFileD(Nm1, '0', ""); /*old CRdb for GetCatIRec*/
 	R->FD = CFile; CRdb = R; CFile->RecPtr = GetRecSpace();
 	SetRdbDir((*Nm)[1], &Nm1);
-	p = CDir + Nm1 + ".RDB";
-	CFile->Drive = TestMountVol(CPath[1]);
+	p = globconf::CDir + Nm1 + ".RDB";
+	CFile->Drive = TestMountVol(globconf::CPath[1]);
 	SetChptFldDPtr(); if (!spec.RDBcomment) ChptTxt->L = 1;
 	SetMsgPar(p);
 	if (top) { UserName = ""; UserCode = 0; AccRight = 0; goto label2; }
@@ -804,7 +806,7 @@ void CloseChpt()
 		}
 	}
 	else {
-		ChDir(OldDir); for (i = 1; i < FloppyDrives; i++) ReleaseDrive(i);
+		ChDir(globconf::OldDir); for (i = 1; i < FloppyDrives; i++) ReleaseDrive(i);
 	}
 }
 
@@ -1010,7 +1012,7 @@ longint MakeDbfDcl(pstring Nm)
 	FILE* h; LongStr* t; char c;
 	pstring s(80); pstring s1(10); void* p;
 
-	CPath = FExpand(Nm + ".DBF"); CVol = "";
+	globconf::CPath = FExpand(Nm + ".DBF"); globconf::CVol = "";
 	i = GetCatIRec(Nm, true); if (i != 0) RdCatPathVol(i);
 	h = OpenH(_isoldfile, RdOnly); TestCPathError();
 	ReadH(h, 32, &Hd); n = (Hd.HdLen - 1) / 32 - 1; t = (LongStr*)GetStore(2); t->LL = 0;
@@ -1079,9 +1081,9 @@ label1:
 
 void DeleteF()
 {
-	CloseFile(); SetCPathVol(); MyDeleteFile(CPath);
-	CExtToX(); if (CFile->XF != nullptr) MyDeleteFile(CPath);
-	CExtToT(); if (CFile->TF != nullptr) MyDeleteFile(CPath);
+	CloseFile(); SetCPathVol(); MyDeleteFile(globconf::CPath);
+	CExtToX(); if (CFile->XF != nullptr) MyDeleteFile(globconf::CPath);
+	CExtToT(); if (CFile->TF != nullptr) MyDeleteFile(globconf::CPath);
 }
 
 bool MergAndReplace(FileD* FDOld, FileD* FDNew)
@@ -1096,12 +1098,12 @@ bool MergAndReplace(FileD* FDOld, FileD* FDNew)
 	SpecFDNameAllowed = true; ReadMerge(); SpecFDNameAllowed = false;
 	RunMerge(); SaveFiles(); RestoreExit(er);
 	CFile = FDOld; DeleteF(); CFile = FDNew; CloseFile(); FDOld->Typ = FDNew->Typ;
-	SetCPathVol(); p = CPath; CFile = FDOld; SetCPathVol();
-	RenameFile56(p, CPath, false);
+	SetCPathVol(); p = globconf::CPath; CFile = FDOld; SetCPathVol();
+	RenameFile56(p, globconf::CPath, false);
 	CFile = FDNew;
 	/*TF->Format used*/
-	CExtToT(); p = CPath;
-	SetCPathVol(); CExtToT(); RenameFile56(CPath, p, false);
+	CExtToT(); p = globconf::CPath;
+	SetCPathVol(); CExtToT(); RenameFile56(globconf::CPath, p, false);
 	result = true;
 	return result;
 label1:
@@ -1150,7 +1152,7 @@ bool MergeOldNew(bool Veriflongint, bool Pos)
 	else if ((FDOld->Typ == 'X') && !EquKeys(FDOld->Keys, FDNew->Keys)) {
 		SetCPathVol();
 		CExtToX();
-		MyDeleteFile(CPath);
+		MyDeleteFile(globconf::CPath);
 	}
 label1:
 	FDNew->Chain = nullptr;
@@ -1444,7 +1446,7 @@ void UpdateCat()
 	EditOpt* EO = nullptr;
 	CFile = CatFD; if (CatFD->Handle == nullptr) OpenCreateF(Exclusive);
 	EO = GetEditOpt(); EO->Flds = AllFldsList(CatFD, true);
-	EditDataFile(CatFD, EO); ChDir(OldDir); ReleaseStore(EO);
+	EditDataFile(CatFD, EO); ChDir(globconf::OldDir); ReleaseStore(EO);
 }
 
 void UpdateUTxt()

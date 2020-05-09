@@ -2,6 +2,7 @@
 #include <array>
 #include "constants.h"
 #include "drivers.h"
+#include "globconf.h"
 #include "pstring.h"
 
 
@@ -13,10 +14,6 @@ const char CfgVersion[] = { '4', '.', '2', '0', '\0' };
 const BYTE DMLVersion = 41;
 const WORD NoDayInMonth[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 const bool HasCoproc = true;
-
-typedef char CharArr[50]; typedef CharArr* CharArrPtr; // ø23
-struct LongStr { WORD LL; CharArr A; }; // ø24
-typedef LongStr* LongStrPtr; // ø25
 
 struct WRect { BYTE C1, R1, C2, R2; }; // r34
 struct WordRec { BYTE Lo = 0, Hi = 0; };
@@ -89,11 +86,10 @@ void NewExit(PProcedure POvr, ExitRecord Buf);  // r218
 /*  VIRTUAL HANDLES  */
 enum FileOpenMode { _isnewfile, _isoldfile, _isoverwritefile, _isoldnewfile }; // poradi se nesmi zmenit!!!
 enum FileUseMode { Closed, RdOnly, RdShared, Shared, Exclusive }; // poradi se nesmi zmenit!!!
-static WORD HandleError; // r229
-static pstring OldDir, FandDir, WrkDir;
-static pstring FandOvrName, FandResName, FandWorkName, FandWorkXName, FandWorkTName;
-static pstring CPath; static pstring CDir; static pstring CName; static pstring CExt;
-static pstring CVol;
+//static pstring OldDir, FandDir, WrkDir;
+//static pstring FandOvrName, FandResName, FandWorkName, FandWorkXName, FandWorkTName;
+//static pstring CPath; static pstring CDir; static pstring CName; static pstring CExt;
+//static pstring CVol;
 static bool WasLPTCancel;
 static FILE* WorkHandle;
 static longint MaxWSize = 0; // {currently occupied in FANDWORK.$$$}
@@ -187,17 +183,17 @@ static char UpcCharTab[256]; // TODO: v obou øádcích bylo 'array[char] of char;'
 static WORD TxtCols, TxtRows;
 
 // konstanty
-static const BYTE prName = 0; static const BYTE prUl1 = 1; static const BYTE prUl2 = 2; static const BYTE prKv1 = 3;
-static const BYTE prKv2 = 4; static const BYTE prBr1 = 5; static const BYTE prBr2 = 6; static const BYTE prDb1 = 7;
-static const BYTE prDb2 = 8; static const BYTE prBd1 = 9; static const BYTE prBd2 = 10; static const BYTE prKp1 = 11;
-static const BYTE prKp2 = 12; static const BYTE prEl1 = 13; static const BYTE prEl2 = 14; static const BYTE prReset = 15;
-static const BYTE prMgrFileNm = 15; static const BYTE prMgrProg = 16; static const BYTE prMgrParam = 17;
-static const BYTE prPageSizeNN = 16; static const BYTE prPageSizeTrail = 17; static const BYTE prLMarg = 18;
-static const BYTE prLMargTrail = 19; static const BYTE prUs11 = 20; static const BYTE prUs12 = 21;
-static const BYTE prUs21 = 22; static const BYTE prUs22 = 23; static const BYTE prUs31 = 24;
-static const BYTE prUs32 = 25; static const BYTE prLine72 = 26; static const BYTE prLine216 = 27;
-static const BYTE prDen60 = 28; static const BYTE  prDen120 = 29; static const BYTE prDen240 = 30;
-static const BYTE  prColor = 31; static const BYTE prClose = 32;
+const BYTE prName = 0; const BYTE prUl1 = 1; const BYTE prUl2 = 2; const BYTE prKv1 = 3;
+const BYTE prKv2 = 4; const BYTE prBr1 = 5; const BYTE prBr2 = 6; const BYTE prDb1 = 7;
+const BYTE prDb2 = 8; const BYTE prBd1 = 9; const BYTE prBd2 = 10; const BYTE prKp1 = 11;
+const BYTE prKp2 = 12; const BYTE prEl1 = 13; const BYTE prEl2 = 14; const BYTE prReset = 15;
+const BYTE prMgrFileNm = 15; const BYTE prMgrProg = 16; const BYTE prMgrParam = 17;
+const BYTE prPageSizeNN = 16; const BYTE prPageSizeTrail = 17; const BYTE prLMarg = 18;
+const BYTE prLMargTrail = 19; const BYTE prUs11 = 20; const BYTE prUs12 = 21;
+const BYTE prUs21 = 22; const BYTE prUs22 = 23; const BYTE prUs31 = 24;
+const BYTE prUs32 = 25; const BYTE prLine72 = 26; const BYTE prLine216 = 27;
+const BYTE prDen60 = 28; const BYTE  prDen120 = 29; const BYTE prDen240 = 30;
+const BYTE prColor = 31; const BYTE prClose = 32;
 
 static integer prCurr, prMax;
 struct Printer {
@@ -212,36 +208,18 @@ struct wdaystt { BYTE Typ = 0; WORD Nr = 0; } static WDaysTabType;
 static WORD NWDaysTab; static float WDaysFirst; static float WDaysLast;
 static wdaystt* WDaysTab;
 
-static const char AbbrYes = 'Y'; static const char AbbrNo = 'N';
+
 static bool WasInitDrivers = false;
 static bool WasInitPgm = false;
 
 static WORD LANNode; // ø. 431
 
-static const BYTE RMsgIdx = 0; static const BYTE BgiEgaVga = 1; static const BYTE BgiHerc = 2;
-static const BYTE ChrLittKam = 3; static const BYTE ChrTripKam = 4; static const BYTE Ega8x14K = 5;
-static const BYTE Vga8x16K = 6; static const BYTE Vga8x19K = 7; static const BYTE Ega8x14L = 8;
-static const BYTE Vga8x16L = 9; static const BYTE Vga8x19L = 10; static const BYTE ChrLittLat = 11;
-static const BYTE ChrTripLat = 12; static const BYTE LatToWinCp = 13; static const BYTE KamToWinCp = 14;
-static const BYTE WinCpToLat = 15; static const BYTE FandFace = 16;
-
-class TResFile // ø. 440
-{
-public:
-	FILE* Handle;
-	struct st
-	{
-		longint Pos;
-		WORD Size;
-	} A[FandFace];
-	WORD Get(WORD Kod, void* P);
-	LongStrPtr GetStr(WORD Kod);
-};
-struct TMsgIdxItem { WORD Nr, Ofs; BYTE Count; };
-//TMsgIdxItem TMsgIdx[100];
-static TResFile ResFile;
-static TMsgIdxItem* MsgIdx;// = TMsgIdx;
-static WORD MsgIdxN; static longint FrstMsgPos;
+const BYTE RMsgIdx = 0; const BYTE BgiEgaVga = 1; const BYTE BgiHerc = 2;
+const BYTE ChrLittKam = 3; const BYTE ChrTripKam = 4; const BYTE Ega8x14K = 5;
+const BYTE Vga8x16K = 6; const BYTE Vga8x19K = 7; const BYTE Ega8x14L = 8;
+const BYTE Vga8x16L = 9; const BYTE Vga8x19L = 10; const BYTE ChrLittLat = 11;
+const BYTE ChrTripLat = 12; const BYTE LatToWinCp = 13; const BYTE KamToWinCp = 14;
+const BYTE WinCpToLat = 15; 
 
 static void (*CallOpenFandFiles)(); // r453
 static void (*CallCloseFandFiles)(); // r454
@@ -255,12 +233,12 @@ FILE* OpenH(FileOpenMode Mode, FileUseMode UM);
 void MarkStore2(void* p);
 void ReleaseStore2(void* p);
 void MarkStore(void* p);
-void DelBackSlash(pstring s);
+void DelBackSlash(pstring& s);
 void RestoreExit(ExitRecord& Buf);
 void SeekH(FILE* handle, longint pos);
 longint PosH(FILE* handle);
 void SetCurrPrinter(integer NewPr);
-void AddBackSlash(pstring s);
+void AddBackSlash(pstring& s);
 FILE* GetOverHandle(FILE* fptr, int diff);
 void OpenWorkH();
 bool SEquUpcase(pstring S1, pstring S2);
@@ -339,3 +317,5 @@ WORD LenStyleStr(pstring s);
 void WrStyleStr(pstring s, WORD Attr);
 void WrLongStyleStr(LongStr* S, WORD Attr);
 WORD LogToAbsLenStyleStr(pstring s, WORD l);
+
+void NonameStartFunction(); // r639 BASE.PAS - kam to patøí?

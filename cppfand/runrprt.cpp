@@ -1,5 +1,7 @@
 #include "runrprt.h"
 
+
+#include "globconf.h"
 #include "legacy.h"
 #include "oaccess.h"
 #include "obase.h"
@@ -314,8 +316,8 @@ label1:
 					NewTxtCol(S, M, L, RF->BlankOrWrap); ReleaseStore(S); break;
 				}
 				case 'B':
-					if (RunBool(RF->Frml)) printf("%s%c", Rprt.c_str(), AbbrYes);
-					else printf("%s%c", Rprt.c_str(), AbbrNo);
+					if (RunBool(RF->Frml)) printf("%s%c", Rprt.c_str(), globconf::AbbrYes);
+					else printf("%s%c", Rprt.c_str(), globconf::AbbrNo);
 				}
 			}
 		}
@@ -684,16 +686,17 @@ bool RewriteRprt(RprtOpt* RO, WORD Pl, WORD& Times, bool& IsLPT1)
 	else {
 		if (SEquUpcase(*RO->Path, "LPT1"))
 		{
-			CPath = "LPT1"; CVol = ""; IsLPT1 = true;
+			globconf::CPath = "LPT1";
+			globconf::CVol = ""; IsLPT1 = true;
 			result = ResetPrinter(Pl, 0, true, true) && RewriteTxt(&Rprt, false);
 			return result;
 		}
 		SetTxtPathVol(*RO->Path, RO->CatIRec);
 	}
-	TestMountVol(CPath[1]);
+	TestMountVol(globconf::CPath[1]);
 	if (!RewriteTxt(&Rprt, PrintCtrl))
 	{
-		SetMsgPar(CPath); WrLLF10Msg(700 + HandleError);
+		SetMsgPar(globconf::CPath); WrLLF10Msg(700 + globconf::HandleError);
 		PrintView = false; return result;
 	}
 	if (Times > 1) { printf("%s.ti %1i\n", Rprt.c_str(), Times); Times = 1; }

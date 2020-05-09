@@ -5,6 +5,7 @@
 #include "drivers.h"
 #include "access.h"
 #include "editor.h"
+#include "globconf.h"
 #include "oaccess.h"
 #include "obaseww.h"
 #include "rdedit.h"
@@ -19,7 +20,7 @@
 void ScrGraphMode(bool Redraw, WORD OldScrSeg)
 {
 	// graf. mód není podporován
-	
+
 	//void* p; void* p1;
 	//WORD* pofs = (WORD*)p;
 	//WORD sz, cr, i; integer err;
@@ -89,7 +90,7 @@ WORD ScrTextMode(bool Redraw, bool Switch)
 	//CrsShow(); /*is visible*/
 	//if (!b) CrsHide();
 	//return result;
-	
+
 	return 0;
 }
 
@@ -131,13 +132,66 @@ void InitAccess()
 	FillChar(&XWork, sizeof(XWork), 0);
 }
 
+void RdColors(FILE* CfgHandle)
+{
+	WORD typ;
+	if (StartMode == 7) typ = 1;
+	else if (VideoCard >= enVideoCard::viEga) typ = 3;
+	else typ = 2;
+	SeekH(CfgHandle, PosH(CfgHandle) + (sizeof(video) + sizeof(colors)) * (typ - 1));
+	ReadH(CfgHandle, sizeof(video), &video);
+	ReadH(CfgHandle, sizeof(colors), &colors);
+	SeekH(CfgHandle, PosH(CfgHandle) + (sizeof(video) + sizeof(colors)) * (3 - typ));
+}
+
+void RdPrinter(FILE* CfgHandle)
+{
+	const BYTE NPrintStrg = 32;
+	BYTE l;
+	WORD i, j, n;
+	BYTE* p = nullptr;
+	WORD* off = (WORD*)p;
+	BYTE A[NPrintStrg * 256];
+	ReadH(CfgHandle, 1, &prMax);
+	for (j = 1; j < prMax; j++) {
+		p = (BYTE*)(&A); n = 0;
+		for (i = 0; i < NPrintStrg; i++) {
+			ReadH(CfgHandle, 1, &l); if (l == 0xFF) goto label1; *p = l; off++;
+			ReadH(CfgHandle, l, p); off += l; n += (l + 1);
+		}
+		ReadH(CfgHandle, 1, &l); if (l != 0xFF) {
+		label1:
+			printf("Invalid FAND.CFG\n"); wait(); Halt(-1);
+		}
+		/* !!! with printer[j-1] do!!! */ {
+			auto ap = printer[j - 1];
+			GetMem(ap.Strg, n); Move(A, ap.Strg, n);
+			ReadH(CfgHandle, 4, &ap.Typ);
+			ap.OpCls = false; ap.ToHandle = false; ap.ToMgr = false;
+			if (ap.TmOut == 255) { ap.OpCls = true; ap.TmOut = 0; }
+			else if (ap.TmOut == 254) { ap.ToHandle = true; ap.TmOut = 0; }
+			else if (ap.TmOut == 253) { ap.ToMgr = true; ap.TmOut = 0; }
+		}
+	}
+	SetCurrPrinter(0);
+}
+
+void RdWDaysTab(FILE* CfgHandle)
+{
+	ReadH(CfgHandle, sizeof(NWDaysTab), &NWDaysTab);
+	ReadH(CfgHandle, sizeof(WDaysFirst), &WDaysFirst);
+	ReadH(CfgHandle, sizeof(WDaysLast), &WDaysLast);
+	GetMem(WDaysTab, NWDaysTab * 3);
+	ReadH(CfgHandle, NWDaysTab * 3, WDaysTab);
+}
+
 void RdCFG()
 {
 	FILE* CfgHandle;
 	char ver[5] = { 0,0,0,0,0 };
-	CVol = ""; CPath = MyFExpand("FAND.CFG", "FANDCFG");
+	globconf::CVol = ""; globconf::CPath = MyFExpand("FAND.CFG", "FANDCFG");
 	CfgHandle = OpenH(_isoldfile, RdOnly);
-	if (HandleError != 0) { printf("%s !found", CPath.c_str()); wait(); Halt(-1); }
+	if (globconf::HandleError != 0) { printf("%s !found", globconf::CPath.c_str()); wait(); Halt(-1); }
 	ReadH(CfgHandle, 4, ver);
 	if (!strcmp(ver, CfgVersion)) {
 		printf("Invalid version of FAND.CFG"); wait(); Halt(-1);
@@ -186,7 +240,7 @@ bool SetTopDir(pstring& p, pstring& n)
 	CatFDName = n; //NewExit(Ovr(), er);
 	goto label1;
 	CFile = CatFD; OpenF(Exclusive); result = true;
-	label1:
+label1:
 	RestoreExit(er);
 	return result;
 }
@@ -223,7 +277,7 @@ void CallInstallRdb()
 
 void CallEditTxt()
 {
-	CPath = FExpand(CPath); CVol = "";
+	globconf::CPath = FExpand(globconf::CPath); globconf::CVol = "";
 	pstring errmsg = "";
 	EditTxtFile(nullptr, 'T', errmsg, nullptr, 1, 0, nullptr, 0, "", 0, nullptr);
 }
@@ -231,67 +285,12 @@ void CallEditTxt()
 void SelectEditTxt(pstring E, bool OnFace)
 {
 	wwmix ww;
-	CPath = ww.SelectDiskFile(E, 35, OnFace); if (CPath == "") return;
+	globconf::CPath = ww.SelectDiskFile(E, 35, OnFace); if (globconf::CPath == "") return;
 	CallEditTxt();
-}
-
-void RdColors(FILE* CfgHandle)
-{
-	WORD typ;
-	if (StartMode == 7) typ = 1;
-	else if (VideoCard >= enVideoCard::viEga) typ = 3;
-	else typ = 2;
-	SeekH(CfgHandle, PosH(CfgHandle) + (sizeof(video) + sizeof(colors)) * (typ - 1));
-	ReadH(CfgHandle, sizeof(video), &video);
-	ReadH(CfgHandle, sizeof(colors), &colors);
-	SeekH(CfgHandle, PosH(CfgHandle) + (sizeof(video) + sizeof(colors)) * (3 - typ));
-}
-
-void RdPrinter(FILE* CfgHandle)
-{
-	const BYTE NPrintStrg = 32;
-	BYTE l;
-	WORD i, j, n;
-	BYTE* p = nullptr;
-	WORD* off = (WORD*)p;
-	BYTE A[NPrintStrg * 256];
-	ReadH(CfgHandle, 1, &prMax);
-	for (j = 1; j < prMax; j++) {
-		p = (BYTE*)(&A); n = 0;
-		for (i = 0; i < NPrintStrg; i++) {
-			ReadH(CfgHandle, 1, &l); if (l == 0xFF) goto label1; *p = l; off++;
-			ReadH(CfgHandle, l, p); off += l; n += (l + 1);
-		}
-		ReadH(CfgHandle, 1, &l); if (l != 0xFF) {
-			label1:
-			printf("Invalid FAND.CFG\n"); wait(); Halt(-1);
-		}
-		/* !!! with printer[j-1] do!!! */ {
-			auto ap = printer[j - 1];
-			GetMem(ap.Strg, n); Move(A, ap.Strg, n);
-			ReadH(CfgHandle, 4, &ap.Typ);
-			ap.OpCls = false; ap.ToHandle = false; ap.ToMgr = false;
-			if (ap.TmOut == 255) { ap.OpCls = true; ap.TmOut = 0; }
-			else if (ap.TmOut == 254) { ap.ToHandle = true; ap.TmOut = 0; }
-			else if (ap.TmOut == 253) { ap.ToMgr = true; ap.TmOut = 0; }
-		}
-	}
-	SetCurrPrinter(0);
-}
-
-void RdWDaysTab(FILE* CfgHandle)
-{
-	ReadH(CfgHandle, sizeof(NWDaysTab), &NWDaysTab);
-	ReadH(CfgHandle, sizeof(WDaysFirst), &WDaysFirst);
-	ReadH(CfgHandle, sizeof(WDaysLast), &WDaysLast);
-	GetMem(WDaysTab, NWDaysTab * 3);
-	ReadH(CfgHandle, NWDaysTab * 3, WDaysTab);
 }
 
 void InitRunFand()
 {
-	//Drivers driver = Drivers(); // HLAVNI OVLADAC
-
 	WORD n = 0, l = 0, err = 0, hourmin = 0;
 	FILE* h = nullptr;
 	pstring s;
@@ -309,6 +308,8 @@ void InitRunFand()
 	InitDrivers();
 	//WasInitDrivers = true;
 	InitAccess();
+
+	NonameStartFunction();
 #ifdef FandDML
 	InitDML();
 #endif
@@ -326,13 +327,13 @@ void InitRunFand()
 		wait();
 		return; // pùvodnì wait;
 	}
-	WrkDir = GetEnv("FANDWORK");
-	if (WrkDir == "") WrkDir = FandDir;
-	AddBackSlash(WrkDir);
-	s = WrkDir + "FANDWORK";
-	FandWorkName = s + ".$$$";
-	FandWorkXName = s + ".X$$";
-	FandWorkTName = s + ".T$$";
+	globconf::WrkDir = GetEnv("FANDWORK");
+	if (globconf::WrkDir == "") globconf::WrkDir = globconf::FandDir;
+	AddBackSlash(globconf::WrkDir);
+	s = globconf::WrkDir + "FANDWORK";
+	globconf::FandWorkName = s + ".$$$";
+	globconf::FandWorkXName = s + ".X$$";
+	globconf::FandWorkTName = s + ".T$$";
 	LANNode = 0;
 	s = GetEnv("LANNODE");
 	s = TrailChar(' ', s);
@@ -345,35 +346,37 @@ void InitRunFand()
 #ifndef FandRunV
 		}
 #endif 
-
-		h = ResFile.Handle;
-		ReadH(h, 2, reinterpret_cast<void*>(n));
-		if (n != ResVersion) {
-			printf("FAND.RES incorr. version");
-			wait(); Halt(0);
-		}
-
-		OvrHandle = GetOverHandle(h, -1); // TODO: pùvodnì to byl WORD - 1, teï je to blbost;
-		ReadH(h, sizeof(ResFile.A), ResFile.A);
-		ReadH(h, 2, reinterpret_cast<void*>(MsgIdxN));
-		l = sizeof(TMsgIdxItem) * MsgIdxN;
-		MsgIdx = new TMsgIdxItem[1]; // GetMem(MsgIdx, l);
-		ReadH(h, l, MsgIdx);
-		FrstMsgPos = PosH(h);
-		RdMsg(50);
-		Move((void*)MsgLine[1], (void*)&AbbrYes, 2);
-		RdCFG();
-		ProcAttr = colors.uNorm;
-		// ScrSeg = video.address; TODO: nepotøebujeme, nezapisujeme pøímo do GK
-		if (video.TxtRows != 0) TxtRows = video.TxtRows;
-
-		/* FONTY ASI NENÍ POTØEBA NIKDE NAHRÁVAT
-		 *if (Fonts.LoadVideoAllowed && (VideoCard >= viEga))
-			switch (BytesPerChar) {
-			case 14: {if (Fonts.VFont == foKamen) NrVFont = Ega8x14K; else NrVFont = Ega8x14L; break; }
-			case 16: {if (Fonts.VFont == foKamen) NrVFont = Vga8x16K; else NrVFont = Vga8x16L; break; }
-			}*/
 	}
+	h = globconf::ResFile.Handle;
+	ReadH(h, 2, &n);
+	if (n != ResVersion) {
+		printf("FAND.RES incorr. version");
+		wait(); Halt(0);
+	}
+
+	//OvrHandle = GetOverHandle(h, -1); // TODO: pùvodnì to byl WORD - 1, teï je to blbost;
+	//ReadH(h, sizeof(globconf::ResFile.A), globconf::ResFile.A);
+	ReadH(h, 4, &globconf::ResFile.A);
+	ReadH(h, 2, &globconf::MsgIdxN);
+
+	int tmiiSize = sizeof(TMsgIdxItem);
+	l = tmiiSize * globconf::MsgIdxN;
+	globconf::MsgIdx = new TMsgIdxItem[1]; // GetMem(MsgIdx, l);
+	ReadH(h, l, globconf::MsgIdx);
+	globconf::FrstMsgPos = PosH(h);
+	RdMsg(50);
+	Move((void*)&MsgLine[1], (void*)&globconf::AbbrYes, 2);
+	RdCFG();
+	ProcAttr = colors.uNorm;
+	// ScrSeg = video.address; TODO: nepotøebujeme, nezapisujeme pøímo do GK
+	if (video.TxtRows != 0) TxtRows = video.TxtRows;
+
+	/* FONTY ASI NENÍ POTØEBA NIKDE NAHRÁVAT
+	 *if (Fonts.LoadVideoAllowed && (VideoCard >= viEga))
+		switch (BytesPerChar) {
+		case 14: {if (Fonts.VFont == foKamen) NrVFont = Ega8x14K; else NrVFont = Ega8x14L; break; }
+		case 16: {if (Fonts.VFont == foKamen) NrVFont = Vga8x16K; else NrVFont = Vga8x16L; break; }
+		}*/
 
 	// Access
 	// GetIntVec(0x3f, FandInt3f); // toto je vektor pøerušení INT 3fH - Overlay a DLL
@@ -405,7 +408,7 @@ void InitRunFand()
 	OpenWorkH();
 	OpenFANDFiles(false);
 
-	if (!paramstr.at(1).empty() && paramstr.at(1) != "?") {
+	if (!globconf::paramstr.at(1).empty() && globconf::paramstr.at(1) != "?") {
 		{
 #ifndef FandRunV
 			if (SEquUpcase(paramstr(2), 'D')) {
@@ -414,28 +417,28 @@ void InitRunFand()
 			}
 			else
 #endif
-				if (SEquUpcase(paramstr.at(2), "T")) {
-					CPath = paramstr.at(1);
-					if (copy(CPath, 1, 2) == "*.")
-						SelectEditTxt(copy(CPath, 2, 4), false);
+				if (SEquUpcase(globconf::paramstr.at(2), "T")) {
+					globconf::CPath = globconf::paramstr.at(1);
+					if (copy(globconf::CPath, 1, 2) == "*.")
+						SelectEditTxt(copy(globconf::CPath, 2, 4), false);
 					else CallEditTxt();
 					return;
 				}
 				else {
 				label0:
-					if (copy(paramstr.at(1), 1, 2) == "*.") SelectRunRdb(false);
-					else RunRdb(paramstr.at(1));
+					if (copy(globconf::paramstr.at(1), 1, 2) == "*.") SelectRunRdb(false);
+					else RunRdb(globconf::paramstr.at(1));
 					if (IsTestRun) IsTestRun = false;
 					else return;
 				}
-	}
+		}
 
 		TextAttr = colors.DesktopColor;
 		Window(1, 1, (BYTE)TxtCols, TxtRows - 1);
 		WriteWFrame(WHasFrame + WDoubleFrame, "", "");
 		ScrClr(1, 1, TxtCols - 2, TxtRows - 13, (char)0xb1, TextAttr);
 		ScrClr(1, TxtRows - 12, TxtCols - 2, 10, (char)0xb2, TextAttr);
-		ResFile.Get(FandFace, p);
+		globconf::ResFile.Get(FandFace, p);
 		x = (pstring*)p;
 		xofs++;
 		for (int i = -11; i < -6; i++) {
@@ -542,7 +545,7 @@ void InitRunFand()
 		case 6: { CloseH(WorkHandle); CloseFANDFiles(false); return; break; }
 		default:;
 		}
-}
+	}
 	PopW(w);
 	goto label1;
 }

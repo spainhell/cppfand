@@ -4,6 +4,7 @@
 #include <ctime>
 #include <direct.h>
 #include "base.h"
+#include "globconf.h"
 
 
 void val(pstring s, BYTE& b, WORD& err)
@@ -26,6 +27,7 @@ void val(pstring s, WORD& b, WORD& err)
 
 void val(pstring s, integer& b, integer& err)
 {
+	if (s.empty()) return;
 	unsigned int sz;
 	auto a = std::stoul(s.c_str(), &sz, 10);
 	// přeložil se celý řetězec?
@@ -102,13 +104,16 @@ WORD succ(WORD input)
 void FSplit(pstring fullname, pstring& dir, pstring& name, pstring& ext)
 {
 	std::string s = fullname;
-	size_t found;
+	size_t found = 0;
 	found = s.find_last_of("/\\");
 	dir = s.substr(0, found);
 	std::string filename = s.substr(found + 1);
 	found = filename.find_last_of('.');
-	name = filename.substr(0, found - 1);
-	ext = filename.substr(found);
+	if (found > MAX_PATH) { name = ""; ext = ""; }
+	else {
+		name = filename.substr(0, found);
+		ext = filename.substr(found);
+	}
 }
 
 pstring FSearch(pstring& path, pstring& dirlist)
@@ -137,13 +142,13 @@ pstring FSearch(pstring& path, pstring& dirlist)
 	//		return fullname;
 	//	}
 	//}
-	return pstring();
+	return path;
 }
 
 pstring FExpand(pstring path)
 {
 	pstring fullpath = pstring(255);
-	GetDir(0, path);
+	GetDir(0, &fullpath);
 	fullpath += "\\";
 	fullpath += path;
 	return fullpath;
@@ -152,25 +157,36 @@ pstring FExpand(pstring path)
 void ChDir(pstring cesta)
 {
 	if (_chdir(cesta.c_str())) {
-		HandleError = errno;
+		globconf::HandleError = errno;
 	}
 }
 
-void GetDir(BYTE disk, pstring& cesta)
+void GetDir(BYTE disk, pstring* cesta)
 {
 	char buf[MAX_PATH];
 	if (_getcwd(buf, MAX_PATH) == nullptr)
 	{
-		HandleError = errno;
+		globconf::HandleError = errno;
 	}
-	cesta = buf;
+	*cesta = buf;
+}
+
+pstring GetDir(BYTE disk)
+{
+	char buf[MAX_PATH];
+	if (_getcwd(buf, MAX_PATH) == nullptr)
+	{
+		globconf::HandleError = errno;
+	}
+	pstring result = buf;
+	return result;
 }
 
 void MkDir(pstring cesta)
 {
 	if (_mkdir(cesta.c_str()))
 	{
-		HandleError = errno;
+		globconf::HandleError = errno;
 	}
 }
 
@@ -178,7 +194,7 @@ void RmDir(pstring cesta)
 {
 	if (_rmdir(cesta.c_str()) == -1)
 	{
-		HandleError = errno;
+		globconf::HandleError = errno;
 	}
 }
 
@@ -186,7 +202,7 @@ void Rename(pstring soubor, pstring novejmeno)
 {
 	if (rename(soubor.c_str(), novejmeno.c_str()) != 0)
 	{
-		HandleError = errno;
+		globconf::HandleError = errno;
 	}
 }
 
@@ -194,7 +210,7 @@ void Erase(pstring soubor)
 {
 	if (remove(soubor.c_str()) == -1)
 	{
-		HandleError = errno;
+		globconf::HandleError = errno;
 	}
 }
 
@@ -232,12 +248,13 @@ WORD Random(WORD rozsah)
 
 WORD ParamCount()
 {
-	return (WORD)paramstr.size();
+	return (WORD)globconf::paramstr.size();
 }
 
 pstring ParamStr(integer index)
 {
-	pstring ptmp = paramstr[index].c_str();
+	if (index >= globconf::paramstr.size()) return "";
+	pstring ptmp = globconf::paramstr[index].c_str();
 	return ptmp;
 }
 

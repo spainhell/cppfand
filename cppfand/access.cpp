@@ -1,6 +1,8 @@
 #pragma once
 
 #include "access.h"
+
+#include "globconf.h"
 #include "kbdww.h"
 #include "legacy.h"
 #include "oaccess.h"
@@ -131,14 +133,14 @@ void CloseGoExit()
 void TFile::Err(WORD n, bool ex)
 {
 	if (IsWork) {
-		SetMsgPar(FandWorkTName); WrLLF10Msg(n); if (ex) GoExit();
+		SetMsgPar(globconf::FandWorkTName); WrLLF10Msg(n); if (ex) GoExit();
 	}
 	else { CFileMsg(n, 'T'); if (ex) CloseGoExit(); }
 }
 
 void TFile::TestErr()
 {
-	if (HandleError != 0) Err(700 + HandleError, true);
+	if (globconf::HandleError != 0) Err(700 + globconf::HandleError, true);
 }
 
 longint TFile::UsedFileSize()
@@ -532,34 +534,34 @@ void WrPrefixes()
 
 void CExtToX()
 {
-	CExt[2] = 'X'; CPath = CDir + CName + CExt;
+	globconf::CExt[2] = 'X'; globconf::CPath = globconf::CDir + globconf::CName + globconf::CExt;
 }
 
 void TestCFileError()
 {
-	if (HandleError != 0) CFileError(700 + HandleError);
+	if (globconf::HandleError != 0) CFileError(700 + globconf::HandleError);
 }
 
 void TestCPathError()
 {
 	WORD n;
-	if (HandleError != 0) {
-		n = 700 + HandleError;
-		if ((n == 705) && (CPath[CPath.length()] == '\\')) n = 840;
-		SetMsgPar(CPath); RunError(n);
+	if (globconf::HandleError != 0) {
+		n = 700 + globconf::HandleError;
+		if ((n == 705) && (globconf::CPath[globconf::CPath.length()] == '\\')) n = 840;
+		SetMsgPar(globconf::CPath); RunError(n);
 	}
 }
 
 void CExtToT()
 {
-	if (SEquUpcase(CExt, ".RDB"))
-		CExt = ".TTT";
+	if (SEquUpcase(globconf::CExt, ".RDB"))
+		globconf::CExt = ".TTT";
 	else
-		if (SEquUpcase(CExt, ".DBF"))
-			if (CFile->TF->Format == TFile::FptFormat) CExt = ".FPT";
-			else CExt = ".DBT";
-		else CExt[2] = 'T';
-	CPath = CDir + CName + CExt;
+		if (SEquUpcase(globconf::CExt, ".DBF"))
+			if (CFile->TF->Format == TFile::FptFormat) globconf::CExt = ".FPT";
+			else globconf::CExt = ".DBT";
+		else globconf::CExt[2] = 'T';
+	globconf::CPath = globconf::CDir + globconf::CName + globconf::CExt;
 }
 
 void XFNotValid()
@@ -2512,7 +2514,7 @@ void XWKey::AddToRecNr(longint RecNr, integer Dif)
 
 void XWFile::Err(WORD N)
 {
-	if (this == &XWork) { SetMsgPar(FandWorkXName); RunError(N); }
+	if (this == &XWork) { SetMsgPar(globconf::FandWorkXName); RunError(N); }
 	else {
 		CFile->XF->SetNotValid();
 		CFileMsg(N, 'X');
@@ -2522,7 +2524,7 @@ void XWFile::Err(WORD N)
 
 void XWFile::TestErr()
 {
-	if (HandleError != 0) Err(700 + HandleError);
+	if (globconf::HandleError != 0) Err(700 + globconf::HandleError);
 }
 
 longint XWFile::UsedFileSize()

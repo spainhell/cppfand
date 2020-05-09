@@ -8,7 +8,7 @@ pstring::pstring() : initLen(256)
 
 pstring::pstring(unsigned char length) : initLen(length + 1)
 {
-	len = length;
+	len = 0;
 	arr = new unsigned char[initLen] { '\0' };
 }
 
@@ -116,7 +116,7 @@ void pstring::insert(const char* value, unsigned char position)
 
 const char* pstring::c_str()
 {
-	return (const char*)(arr[1]);
+	return (const char*)(&arr[0]);
 }
 
 bool pstring::empty()
@@ -127,16 +127,16 @@ bool pstring::empty()
 unsigned char& pstring::operator[](size_t i)
 {
 	if (i == 0) return len;
-	if (i > len) { throw std::exception("Index out of range."); }
+	//if (i > len) { throw std::exception("Index out of range."); }
 	i--;
 	return arr[i];
 }
 
-pstring& pstring::operator=(const char* newvalue)
+pstring& pstring::operator=(const char* a)
 {
-	int newLen = strlen(newvalue);
+	int newLen = strlen(a);
 	if (newLen > initLen - 1) { throw std::exception("Index out of range."); }
-	memcpy((void*)arr, (void*)newvalue, newLen);
+	memcpy((void*)arr, (void*)a, newLen);
 	len = (unsigned char)newLen;
 	arr[len] = '\0'; // 'arr' je o 1 vìtší než 'len'
 	return *this;
@@ -149,9 +149,12 @@ pstring& pstring::operator=(std::basic_string<char> newvalue)
 
 pstring& pstring::operator=(const pstring& newvalue)
 {
-	if (newvalue.initLen >= this->initLen) { throw std::exception("Index out of range."); }
+	if (this == &newvalue) return *this;
+	
+	if (newvalue.initLen > this->initLen) { throw std::exception("Index out of range."); }
 	memcpy((void*)arr, (void*)newvalue.arr, newvalue.len);
-	arr[len] = '\0'; // 'arr' je o 1 vìtší než 'len'
+	len = newvalue.len;
+	arr[newvalue.len] = '\0'; // 'arr' je o 1 vìtší než 'len'
 	return *this;
 }
 

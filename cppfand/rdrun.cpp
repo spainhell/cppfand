@@ -1,5 +1,7 @@
 #include "rdrun.h"
 
+
+#include "globconf.h"
 #include "kbdww.h"
 #include "legacy.h"
 #include "oaccess.h"
@@ -284,7 +286,7 @@ bool RunAddUpdte(char Kind, void* CRold, LinkD* notLD)
 	FileDPtr CF = CFile; LockForAdd(CF, 0, false, md);
 	while (not LockForAdd(CF, 1, false, md)) {
 		SetCPathVol();
-		Set2MsgPar(CPath, LockModeTxt[md]);
+		Set2MsgPar(globconf::CPath, LockModeTxt[md]);
 		LockForAdd(CF, 2, false, md); longint w = PushWrLLMsg(825, false);
 		KbdTimer(spec.NetDelay, 0); if (w != 0) PopW(w);
 	}

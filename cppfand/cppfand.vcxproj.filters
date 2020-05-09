@@ -114,6 +114,9 @@
     <ClCompile Include="compile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="globconf.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base.h">
@@ -228,6 +231,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="olongstr.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="globconf.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

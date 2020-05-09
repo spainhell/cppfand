@@ -3,6 +3,8 @@
 #include "legacy.h"
 #include "rdrun.h"
 #include <math.h>
+
+#include "globconf.h"
 #include "oaccess.h"
 #include "obaseww.h"
 #include "olongstr.h"
@@ -216,10 +218,10 @@ double DifWDays(double R1, double R2, WORD d)
 longint GetFileSize()
 {
 	FILE* h; FileUseMode um;
-	TestMountVol(CPath[1]); um = RdOnly;
+	TestMountVol(globconf::CPath[1]); um = RdOnly;
 	if (IsNetCVol()) um = Shared;
 	h = OpenH(_isoldfile, um);
-	if (HandleError != 0) {
+	if (globconf::HandleError != 0) {
 		return -1;
 	}
 	auto result = FileSizeH(h);
@@ -659,7 +661,7 @@ label1:
 		result = LastUpdate(CFile->Handle); OldLMode(md); CFile = cf; break; }
 	case _catfield: {
 		RdCatPathVol(X->CatIRec);
-		TestMountVol(CPath[1]);
+		TestMountVol(globconf::CPath[1]);
 		h = OpenH(_isoldfile, RdOnly);
 		result = LastUpdate(h);
 		CloseH(h);
@@ -852,7 +854,7 @@ void DecodeFieldRSB(FieldDPtr F, WORD LWw, double R, pstring T, bool B, pstring&
 		else while (T.length() < L) { pstring oldT = T; T = C; T += oldT; }
 		break;
 	}
-	case 'B': if (B) T = AbbrYes; else T = AbbrNo; break;
+	case 'B': if (B) T = globconf::AbbrYes; else T = globconf::AbbrNo; break;
 	case 'R': str(R, L, T); break;
 	default: /*"F"*/
 		if (F->Flg && f_Comma != 0) R = R / Power10[M];
@@ -1222,7 +1224,7 @@ LongStr* RunS(FrmlPtr Z)
 	case _edreckey: s = EdRecKey;;
 	case _getenv: {
 		s = RunShortStr(Z->P1);
-		if (s == "") s = paramstr[0];
+		if (s == "") s = globconf::paramstr[0];
 		else s = GetEnv(s.c_str());
 		break;
 	}

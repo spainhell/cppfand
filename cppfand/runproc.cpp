@@ -4,6 +4,7 @@
 #include "drivers.h"
 #include "expimp.h"
 #include "genrprt.h"
+#include "globconf.h"
 #include "legacy.h"
 #include "oaccess.h"
 #include "obase.h"
@@ -191,8 +192,8 @@ void WritelnProc(Instr* PD)
 			goto label1; break;
 		}
 		case 'B': {
-			if (RunBool(W->Frml)) x = AbbrYes;
-			else x = AbbrNo;
+			if (RunBool(W->Frml)) x = globconf::AbbrYes;
+			else x = globconf::AbbrNo;
 			break;
 		}
 		case 'F': {
@@ -262,7 +263,7 @@ void ExecPgm(Instr* PD)
 	WindMin = wmin;
 	WindMax = wmax;
 	CrsSet(crs);
-	s = RunShortStr(PD->Param); i = PD->ProgCatIRec; CVol = "";
+	s = RunShortStr(PD->Param); i = PD->ProgCatIRec; globconf::CVol = "";
 	if (i != 0) Prog = RdCatField(i, CatPathName); else Prog = *PD->ProgPath;
 	b = OSshell(Prog, s, PD->NoCancel, PD->FreeMm, PD->LdFont, PD->TextMd);
 	/*asm mov ah, 3; mov bh, 0; push bp; int 10H; pop bp; mov x, dl; mov y, dh;*/
@@ -305,7 +306,7 @@ void MountProc(WORD CatIRec, bool NoCancel)
 	//NewExit(Ovr, er);
 	goto label1;
 	SaveFiles();
-	RdCatPathVol(CatIRec); TestMountVol(CPath[1]);
+	RdCatPathVol(CatIRec); TestMountVol(globconf::CPath[1]);
 	LastExitCode = 0; RestoreExit(er); return;
 label1:
 	RestoreExit(er);
@@ -684,9 +685,9 @@ label1:
 			if (PD->WasElse) { RunInstr(PD->WElseInstr); return; }
 			CFile = ld->FD; SetCPathVol();
 			if (op == _withlocked) {
-				msg = 839; str(ld->N, ntxt); Set2MsgPar(ntxt, CPath);
+				msg = 839; str(ld->N, ntxt); Set2MsgPar(ntxt, globconf::CPath);
 			}
-			else { msg = 825; Set2MsgPar(CPath, LockModeTxt[ld->Md]); }
+			else { msg = 825; Set2MsgPar(globconf::CPath, LockModeTxt[ld->Md]); }
 			w1 = PushWrLLMsg(msg, false);
 			if (w == 0) w = w1;
 			else TWork.Delete(w1);
@@ -708,7 +709,7 @@ void HelpProc(Instr* PD)
 FILE* OpenHForPutTxt(Instr* PD)
 {
 	FileOpenMode m; FILE* h;
-	SetTxtPathVol(*PD->TxtPath, PD->TxtCatIRec); TestMountVol(CPath[1]);
+	SetTxtPathVol(*PD->TxtPath, PD->TxtCatIRec); TestMountVol(globconf::CPath[1]);
 	m = _isoverwritefile; if (PD->App) m = _isoldnewfile;
 	h = OpenH(m, Exclusive); TestCPathError();
 	if (PD->App) SeekH(h, FileSizeH(h));
@@ -719,13 +720,13 @@ void PutTxt(Instr* PD)
 {
 	FILE* h; LongStr* s; FrmlPtr z; pstring pth;
 	z = PD->Txt; if (CanCopyT(nullptr, z)) {
-		h = OpenHForPutTxt(PD); pth = CPath; CopyTFStringToH(h); CPath = pth;
+		h = OpenHForPutTxt(PD); pth = globconf::CPath; CopyTFStringToH(h); globconf::CPath = pth;
 	}
 	else {
 		s = RunLongStr(z); h = OpenHForPutTxt(PD);
 		WriteH(h, s->LL, s->A); ReleaseStore(s);
 	}
-	CPath = pth; TestCPathError(); WriteH(h, 0, h)/*trunc*/; CloseH(h);
+	globconf::CPath = pth; TestCPathError(); WriteH(h, 0, h)/*trunc*/; CloseH(h);
 }
 
 void AssgnCatFld(Instr* PD)

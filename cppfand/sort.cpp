@@ -1,4 +1,6 @@
 #include "sort.h"
+
+#include "globconf.h"
 #include "kbdww.h"
 #include "oaccess.h"
 #include "obaseww.h"
@@ -268,9 +270,9 @@ void WorkFile::Output(WRec* R)
 
 void WorkFile::TestErr()
 {
-	if (HandleError != 0) {
-		SetMsgPar(FandWorkName);
-		RunError(700 + HandleError);
+	if (globconf::HandleError != 0) {
+		SetMsgPar(globconf::FandWorkName);
+		RunError(700 + globconf::HandleError);
 	}
 }
 

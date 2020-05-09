@@ -2,6 +2,7 @@
 
 #include "base.h"
 #include "constants.h"
+#include "globconf.h"
 #include "runfand.h"
 #ifdef FandSQL
 #include "channel.h"
@@ -633,7 +634,7 @@ static FieldDPtr ChptTyp, ChptName, ChptTxt;
 
 
 // ********** konstanty ********** // r496
-static const BYTE FloppyDrives = 3;
+const BYTE FloppyDrives = 3;
 static bool EscPrompt = false;
 static pstring UserName = pstring(20);
 static pstring UserPassWORD = pstring(20);

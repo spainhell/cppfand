@@ -1,6 +1,7 @@
 #include "runedi.h"
 
 #include "genrprt.h"
+#include "globconf.h"
 #include "kbdww.h"
 #include "legacy.h"
 #include "oaccess.h"
@@ -287,11 +288,11 @@ WORD FieldEdit(FieldDPtr F, FrmlPtr Impl, WORD LWw, WORD iPos, pstring* Txt, dou
 			if (KbdChar == _ESC_) { CrsHide(); return result; }
 			if (KbdChar == _M_) {
 			label11:
-				if ((Txt->length() > 0) && ((*Txt)[1] == AbbrYes)) cc = AbbrYes; else cc = AbbrNo;
+				if ((Txt->length() > 0) && ((*Txt)[1] == globconf::AbbrYes)) cc = globconf::AbbrYes; else cc = globconf::AbbrNo;
 				goto label1;
 			}
 			cc = toupper((char)KbdChar);
-			if ((cc == AbbrYes) || (cc == AbbrNo)) goto label1;
+			if ((cc == globconf::AbbrYes) || (cc == globconf::AbbrNo)) goto label1;
 			break;
 		}
 		case evMouseDown: {
@@ -402,7 +403,7 @@ bool PromptB(pstring* S, FrmlPtr Impl, FieldDPtr F)
 {
 	pstring Txt; double R;
 	WrPromptTxt(S, Impl, F, &Txt, R);
-	bool result = Txt[1] == AbbrYes;
+	bool result = Txt[1] == globconf::AbbrYes;
 	if (KbdChar == _ESC_) {
 		if (Impl != nullptr) result = RunBool(Impl);
 		else result = false;
@@ -1300,7 +1301,7 @@ label1:
 		LockForAdd(cf, 2, true, md);
 		CFile = cf; OldLMode(OldMd); CFile = cf2;
 	label3:
-		SetCPathVol(); Set2MsgPar(CPath, LockModeTxt[md]);
+		SetCPathVol(); Set2MsgPar(globconf::CPath, LockModeTxt[md]);
 		w1 = PushWrLLMsg(825, true);
 		if (w == 0) w = w1;
 		else TWork.Delete(w1);
@@ -1990,7 +1991,7 @@ bool PromptSearch(bool Create)
 		switch (F->FrmlTyp) {
 		case 'S': { x.StoreStr(s, KF); S_(F, s); break; }
 		case 'R': { x.StoreReal(r, KF); R_(F, r); break; }
-		case 'B': { b = s[1] = AbbrYes; x.StoreBool(b, KF); B_(F, b); break; }
+		case 'B': { b = s[1] = globconf::AbbrYes; x.StoreBool(b, KF); B_(F, b); break; }
 		}
 		if (li) {
 			CRecPtr = E->NewRecPtr; found = GotoXRec(&x, n);
@@ -2511,7 +2512,7 @@ bool EditItemProc(bool del, bool ed, WORD& Brk)
 		}
 		SetWasUpdated();
 		switch (F->FrmlTyp) {
-		case 'B': B_(F, toupper(Txt[1]) == AbbrYes); break;
+		case 'B': B_(F, toupper(Txt[1]) == globconf::AbbrYes); break;
 		case 'S': S_(F, Txt); break;
 		case 'R': R_(F, R); break;
 		}
@@ -2832,7 +2833,7 @@ label1:
 		if (Txt[Txt.length()] == '.') Txt[0]--;
 		break; }
 	case 'S': Txt = RunShortStr(Z); break;  /* wie RdMode fuer T ??*/
-	case 'B': if (RunBool(Z)) Txt = AbbrYes; else Txt = AbbrNo; break;
+	case 'B': if (RunBool(Z)) Txt = globconf::AbbrYes; else Txt = globconf::AbbrNo; break;
 	}
 	goto label4;
 label2:

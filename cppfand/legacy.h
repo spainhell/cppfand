@@ -25,7 +25,8 @@ pstring FSearch(pstring& path, pstring& dirlist);
 pstring FExpand(pstring path);
 
 void ChDir(pstring cesta);
-void GetDir(BYTE disk, pstring& cesta);
+void GetDir(BYTE disk, pstring* cesta);
+pstring GetDir(BYTE disk);
 void MkDir(pstring cesta);
 void RmDir(pstring cesta);
 void Rename(pstring soubor, pstring novejmeno);
