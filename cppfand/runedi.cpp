@@ -8,8 +8,6 @@
 #include "obaseww.h"
 #include "rdedit.h"
 #include "rdfildcl.h"
-#include "rdfrml.h"
-#include "rdmix.h"
 #include "runproc.h"
 #include "runproj.h"
 #include "wwmenu.h"

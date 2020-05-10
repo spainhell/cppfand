@@ -6,7 +6,6 @@
 #include "genrprt.h"
 #include "oaccess.h"
 #include "obase.h"
-#include "rdfrml.h"
 #include "rdrun.h"
 #include "runedi.h"
 #include "runproc.h"
@@ -16,6 +15,7 @@
 #include "compile.h"
 #include "globconf.h"
 #include "obaseww.h"
+#include "runfrml.h"
 
 globconf* gcfg4 = globconf::GetInstance();
 

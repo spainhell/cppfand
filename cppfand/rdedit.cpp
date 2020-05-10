@@ -3,9 +3,8 @@
 #include "legacy.h"
 #include "obaseww.h"
 #include "rdfildcl.h"
-#include "rdfrml.h"
-#include "rdmix.h"
 #include "runedi.h"
+#include "runfrml.h"
 
 globconf* gcfg11 = globconf::GetInstance();
 

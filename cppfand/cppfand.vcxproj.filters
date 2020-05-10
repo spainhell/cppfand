@@ -48,9 +48,6 @@
     <ClCompile Include="runfrml.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="rdfrml1.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="editor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -58,12 +55,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="rdproc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="rdfrml.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="rdmix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="wwmix.cpp">
@@ -115,6 +106,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="globconf.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="olongstr.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -173,16 +167,7 @@
     <ClInclude Include="access.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="rdfrml1.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="rdfrml.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="sort.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="rdmix.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="compile.h">

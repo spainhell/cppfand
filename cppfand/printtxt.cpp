@@ -6,7 +6,7 @@
 #include "oaccess.h"
 #include "obase.h"
 #include "obaseww.h"
-#include "rdfrml.h"
+#include "runfrml.h"
 #include "wwmenu.h"
 
 globconf* gcfg10 = globconf::GetInstance();

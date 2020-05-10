@@ -4,7 +4,6 @@
 #include "legacy.h"
 #include "obaseww.h"
 #include "rdedit.h"
-#include "rdfrml.h"
 #include "runedi.h"
 
 globconf* gcfg21 = globconf::GetInstance();

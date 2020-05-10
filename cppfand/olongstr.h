@@ -1,22 +1,8 @@
 #pragma once
-#include "base.h"
-#include "rdfrml.h"
+#include "globconf.h"
+#include "runfrml.h"
 
-inline LongStr* GetTxt(FrmlPtr Z)
-{
-	return nullptr;
-}
-
-inline longint CopyTFFromGetTxt(TFile* TF, FrmlElem* Z)
-{
-	return 0;
-}
-
-inline longint CopyTFString(TFilePtr TF, FileDPtr FD2, TFilePtr TF2, longint Pos2)
-{
-	return 0;
-}
-
-inline void CopyTFStringToH(FILE* h)
-{
-}
+LongStr* GetTxt(FrmlPtr Z);
+longint CopyTFFromGetTxt(TFile* TF, FrmlElem* Z);
+longint CopyTFString(TFilePtr TF, FileDPtr FD2, TFilePtr TF2, longint Pos2);
+void CopyTFStringToH(FILE* h);

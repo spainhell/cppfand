@@ -2,6 +2,7 @@
 #include "constants.h"
 #include "olongstr.h"
 #include "pstring.h"
+#include "runfrml.h"
 
 struct SS
 {

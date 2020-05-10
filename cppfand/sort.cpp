@@ -4,7 +4,7 @@
 #include "kbdww.h"
 #include "oaccess.h"
 #include "obaseww.h"
-#include "rdfrml.h"
+#include "runfrml.h"
 
 globconf* gcfg19 = globconf::GetInstance();
 

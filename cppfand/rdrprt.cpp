@@ -5,9 +5,8 @@
 #include "legacy.h"
 #include "obase.h"
 #include "rdfildcl.h"
-#include "rdfrml.h"
 #include "rdmerg.h"
-#include "rdmix.h"
+#include "runfrml.h"
 
 FileD* InpFD(WORD I)
 {

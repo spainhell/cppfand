@@ -238,7 +238,7 @@ bool SetTopDir(pstring& p, pstring& n)
 	DelBackSlash(TopRdbDir); DelBackSlash(TopDataDir);
 	if (TopDataDir != "") TopDataDir = FExpand(TopDataDir);
 	ChDir(TopRdbDir);
-	if (IOResult != 0) { SetMsgPar(p); WrLLF10Msg(703); return result; }
+	if (IOResult() != 0) { SetMsgPar(p); WrLLF10Msg(703); return result; }
 	CatFDName = n; //NewExit(Ovr(), er);
 	goto label1;
 	CFile = CatFD; OpenF(Exclusive); result = true;

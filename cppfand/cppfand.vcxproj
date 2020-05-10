@@ -161,6 +161,7 @@
     <ClCompile Include="oaccess.cpp" />
     <ClCompile Include="obase.cpp" />
     <ClCompile Include="obaseww.cpp" />
+    <ClCompile Include="olongstr.cpp" />
     <ClCompile Include="printtxt.cpp" />
     <ClCompile Include="rdedit.cpp" />
     <ClCompile Include="rdfildcl.cpp" />
@@ -169,9 +170,6 @@
     <ClCompile Include="runmerg.cpp" />
     <ClCompile Include="runproj.cpp" />
     <ClCompile Include="pstring.cpp" />
-    <ClCompile Include="rdfrml.cpp" />
-    <ClCompile Include="rdfrml1.cpp" />
-    <ClCompile Include="rdmix.cpp" />
     <ClCompile Include="rdproc.cpp" />
     <ClCompile Include="rdrun.cpp" />
     <ClCompile Include="runedi.cpp" />
@@ -208,9 +206,6 @@
     <ClInclude Include="pstring.h" />
     <ClInclude Include="rdedit.h" />
     <ClInclude Include="rdfildcl.h" />
-    <ClInclude Include="rdfrml.h" />
-    <ClInclude Include="rdfrml1.h" />
-    <ClInclude Include="rdmix.h" />
     <ClInclude Include="rdproc.h" />
     <ClInclude Include="rdrun.h" />
     <ClInclude Include="resource.h" />

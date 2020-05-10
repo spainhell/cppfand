@@ -2,13 +2,15 @@
 
 #include "access.h"
 
+
+#include "compile.h"
 #include "globconf.h"
 #include "kbdww.h"
 #include "legacy.h"
 #include "oaccess.h"
 #include "obaseww.h"
 #include "olongstr.h"
-#include "rdfrml1.h"
+#include "runfrml.h"
 #include "sort.h"
 
 globconf* gcfg1 = globconf::GetInstance();

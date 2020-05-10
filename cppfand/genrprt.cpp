@@ -2,8 +2,6 @@
 
 #include "memory.h"
 #include "rdedit.h"
-#include "rdfrml.h"
-#include "rdmix.h"
 #include "rdrprt.h"
 #include "runrprt.h"
 #include "wwmenu.h"

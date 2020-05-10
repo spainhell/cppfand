@@ -3,9 +3,8 @@
 #include "legacy.h"
 #include "oaccess.h"
 #include "rdfildcl.h"
-#include "rdfrml.h"
-#include "rdmix.h"
 #include "rdrun.h"
+#include "runfrml.h"
 
 
 void TestCatError(WORD I, pstring Nm, bool Old)
