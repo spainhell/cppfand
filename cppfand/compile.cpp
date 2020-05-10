@@ -4,6 +4,7 @@
 #include "obaseww.h"
 #include "rdmix.h"
 
+globconf* gcfg3 = globconf::GetInstance();
 
 void Error(integer N)
 {
@@ -15,19 +16,19 @@ void Error(integer N)
 	longint w;
 
 	RdMsg(1000 + N);
-	ErrMsg = MsgLine;
+	ErrMsg = gcfg3->MsgLine;
 	if (N == 1) {
 		if (ExpChar >= ' ') ErrMsg = ErrMsg + " " + ExpChar;
 		else {
 			switch (ExpChar) {
-			case _assign: MsgLine = ":="; break;
-			case _addass: MsgLine = "+="; break;
-			case _equ: MsgLine = "="; break;
+			case _assign: gcfg3->MsgLine = ":="; break;
+			case _addass: gcfg3->MsgLine = "+="; break;
+			case _equ: gcfg3->MsgLine = "="; break;
 			case _number: RdMsg(1004); break;
 			case _identifier: RdMsg(1005); break;
 			case _quotedstr: RdMsg(1013); break;
 			}
-			ErrMsg = ErrMsg + " " + MsgLine;
+			ErrMsg = ErrMsg + " " + gcfg3->MsgLine;
 		}
 	}
 	CurrPos--;
@@ -42,7 +43,7 @@ void Error(integer N)
 		p = GetStore(l);
 		Move(InpArrPtr, p, l);
 		if (PrevCompInp != nullptr) RdMsg(63); else RdMsg(61);
-		HdTxt = MsgLine;
+		HdTxt = gcfg3->MsgLine;
 		SimpleEditText('T', ErrMsg, HdTxt, (CharArr*)p, 0xfff, l, i, upd);
 		PopW(w);
 		ReleaseStore(p1);
@@ -50,7 +51,7 @@ void Error(integer N)
 	EdRecKey = ErrMsg;
 	LastExitCode = i + 1;
 	IsCompileErr = true;
-	MsgLine = ErrMsg;
+	gcfg3->MsgLine = ErrMsg;
 	GoExit();
 }
 

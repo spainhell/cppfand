@@ -11,6 +11,7 @@
 #include "rdfrml1.h"
 #include "sort.h"
 
+globconf* gcfg1 = globconf::GetInstance();
 
 integer CompLongStr(LongStrPtr S1, LongStrPtr S2)
 {
@@ -133,14 +134,14 @@ void CloseGoExit()
 void TFile::Err(WORD n, bool ex)
 {
 	if (IsWork) {
-		SetMsgPar(globconf::FandWorkTName); WrLLF10Msg(n); if (ex) GoExit();
+		SetMsgPar(gcfg1->FandWorkTName); WrLLF10Msg(n); if (ex) GoExit();
 	}
 	else { CFileMsg(n, 'T'); if (ex) CloseGoExit(); }
 }
 
 void TFile::TestErr()
 {
-	if (globconf::HandleError != 0) Err(700 + globconf::HandleError, true);
+	if (gcfg1->HandleError != 0) Err(700 + gcfg1->HandleError, true);
 }
 
 longint TFile::UsedFileSize()
@@ -534,34 +535,34 @@ void WrPrefixes()
 
 void CExtToX()
 {
-	globconf::CExt[2] = 'X'; globconf::CPath = globconf::CDir + globconf::CName + globconf::CExt;
+	gcfg1->CExt[2] = 'X'; gcfg1->CPath = gcfg1->CDir + gcfg1->CName + gcfg1->CExt;
 }
 
 void TestCFileError()
 {
-	if (globconf::HandleError != 0) CFileError(700 + globconf::HandleError);
+	if (gcfg1->HandleError != 0) CFileError(700 + gcfg1->HandleError);
 }
 
 void TestCPathError()
 {
 	WORD n;
-	if (globconf::HandleError != 0) {
-		n = 700 + globconf::HandleError;
-		if ((n == 705) && (globconf::CPath[globconf::CPath.length()] == '\\')) n = 840;
-		SetMsgPar(globconf::CPath); RunError(n);
+	if (gcfg1->HandleError != 0) {
+		n = 700 + gcfg1->HandleError;
+		if ((n == 705) && (gcfg1->CPath[gcfg1->CPath.length()] == '\\')) n = 840;
+		SetMsgPar(gcfg1->CPath); RunError(n);
 	}
 }
 
 void CExtToT()
 {
-	if (SEquUpcase(globconf::CExt, ".RDB"))
-		globconf::CExt = ".TTT";
+	if (SEquUpcase(gcfg1->CExt, ".RDB"))
+		gcfg1->CExt = ".TTT";
 	else
-		if (SEquUpcase(globconf::CExt, ".DBF"))
-			if (CFile->TF->Format == TFile::FptFormat) globconf::CExt = ".FPT";
-			else globconf::CExt = ".DBT";
-		else globconf::CExt[2] = 'T';
-	globconf::CPath = globconf::CDir + globconf::CName + globconf::CExt;
+		if (SEquUpcase(gcfg1->CExt, ".DBF"))
+			if (CFile->TF->Format == TFile::FptFormat) gcfg1->CExt = ".FPT";
+			else gcfg1->CExt = ".DBT";
+		else gcfg1->CExt[2] = 'T';
+	gcfg1->CPath = gcfg1->CDir + gcfg1->CName + gcfg1->CExt;
 }
 
 void XFNotValid()
@@ -2514,7 +2515,7 @@ void XWKey::AddToRecNr(longint RecNr, integer Dif)
 
 void XWFile::Err(WORD N)
 {
-	if (this == &XWork) { SetMsgPar(globconf::FandWorkXName); RunError(N); }
+	if (this == &XWork) { SetMsgPar(gcfg1->FandWorkXName); RunError(N); }
 	else {
 		CFile->XF->SetNotValid();
 		CFileMsg(N, 'X');
@@ -2524,7 +2525,7 @@ void XWFile::Err(WORD N)
 
 void XWFile::TestErr()
 {
-	if (globconf::HandleError != 0) Err(700 + globconf::HandleError);
+	if (gcfg1->HandleError != 0) Err(700 + gcfg1->HandleError);
 }
 
 longint XWFile::UsedFileSize()

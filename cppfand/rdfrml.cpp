@@ -1,6 +1,5 @@
 #include "rdfrml.h"
 
-
 #include "compile.h"
 #include "rdfildcl.h"
 

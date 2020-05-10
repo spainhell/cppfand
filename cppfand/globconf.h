@@ -28,44 +28,47 @@ public:
 class globconf
 {
 public:
-	globconf* GetInstance();
-	static std::vector<std::string> paramstr;
-	static pstring OldDir;
-	static pstring FandDir;
-	static pstring WrkDir;
-	static pstring FandOvrName;
-	static pstring FandResName;
-	static pstring FandWorkName;
-	static pstring FandWorkXName;
-	static pstring FandWorkTName;
-	static pstring CPath;
-	static pstring CDir;
-	static pstring CName;
-	static pstring CExt;
-	static pstring CVol;
+	static globconf* GetInstance()
+	{
+		static globconf INSTANCE;
+		return &INSTANCE;
+	}
+	std::vector<std::string> paramstr;
+	pstring OldDir;
+	pstring FandDir;
+	pstring WrkDir;
+	pstring FandOvrName;
+	pstring FandResName;
+	pstring FandWorkName;
+	pstring FandWorkXName;
+	pstring FandWorkTName;
+	pstring CPath;
+	pstring CDir;
+	pstring CName;
+	pstring CExt;
+	pstring CVol;
 	//TMsgIdxItem TMsgIdx[100];
-	static TResFile ResFile;
-	static TMsgIdxItem* MsgIdx;// = TMsgIdx;
-	static WORD HandleError; // r229
+	TResFile ResFile;
+	TMsgIdxItem* MsgIdx;// = TMsgIdx;
+	WORD HandleError; // r229
 
-	static WORD MsgIdxN;
-	static longint FrstMsgPos;
-	static char AbbrYes;
-	static char AbbrNo;
+	WORD MsgIdxN;
+	longint FrstMsgPos;
+	char AbbrYes = 'Y';
+	char AbbrNo = 'N';
 
 	// ********** MESSAGES **********
-	static WORD F10SpecKey; // ø. 293
-	static BYTE ProcAttr;
+	WORD F10SpecKey; // ø. 293
+	BYTE ProcAttr;
 	// bool SetStyleAttr(char c, BYTE& a); // je v KBDWW
-	static pstring MsgLine;
-	static pstring MsgPar[4];
+	pstring MsgLine;
+	pstring MsgPar[4];
 
-	static wdaystt WDaysTabType;
-	static WORD NWDaysTab;
-	static float WDaysFirst;
-	static float WDaysLast;
-	static wdaystt* WDaysTab;
+	wdaystt WDaysTabType;
+	WORD NWDaysTab;
+	float WDaysFirst;
+	float WDaysLast;
+	wdaystt* WDaysTab;
 private:
-	globconf();
-	static globconf* _instance;
+	globconf() {}
 };

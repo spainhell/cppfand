@@ -7,6 +7,8 @@
 #include "rdmix.h"
 #include "runedi.h"
 
+globconf* gcfg11 = globconf::GetInstance();
+
 void PushEdit()
 {
 	EditD* E1 = (EditD*)GetZStore(sizeof(*E));
@@ -339,11 +341,11 @@ void RdDepChkImpl()
 	pstring s;
 	CFile = E->FD;
 	switch (CFile->Typ) {
-	case '0': { RdMsg(53); s = globconf::MsgLine; goto label1; break; }
+	case '0': { RdMsg(53); s = gcfg11->MsgLine; goto label1; break; }
 	case 'C': {
-		RdMsg(54); s = globconf::MsgLine;
+		RdMsg(54); s = gcfg11->MsgLine;
 		if (spec.CPMdrive != ' ') s = s + ',' + spec.CPMdrive + ':';
-		RdMsg(55); s = s + globconf::MsgLine;
+		RdMsg(55); s = s + gcfg11->MsgLine;
 		if (spec.CPMdrive != ' ') s = s + ',' + spec.CPMdrive + ':';
 		s = s + "''";
 	label1:

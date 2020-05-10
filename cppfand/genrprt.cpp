@@ -9,6 +9,8 @@
 #include "wwmenu.h"
 #include "wwmix.h"
 
+globconf* gcfg5 = globconf::GetInstance();
+
 void SubstChar(pstring S, char C1, char C2)
 {
 	/*asm  les di,S; xor ch,ch; mov cl,es:[di]; jcxz @3; inc di;
@@ -204,8 +206,8 @@ LongStr* GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 		WrStr(s); WrChar(0x11);
 		WrBlks(14); WrStr("__.__.____");
 		RdMsg(17);
-		WrBlks(12 - globconf::MsgLine.length());
-		WrStr(globconf::MsgLine); WrStr("___");
+		WrBlks(12 - gcfg5->MsgLine.length());
+		WrStr(gcfg5->MsgLine); WrStr("___");
 	}
 	else {
 		l = RO->HeadTxt->LL; p = (char*)(&RO->HeadTxt->A);
@@ -227,8 +229,8 @@ LongStr* GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 	}
 
 	if (ARMode == _AErrRecs) {
-		RdMsg(18); WrStr("\r\n\x17"); WrBlks((38 - globconf::MsgLine.length()) / 2);
-		WrStr(globconf::MsgLine); WrChar(0x17);
+		RdMsg(18); WrStr("\r\n\x17"); WrBlks((38 - gcfg5->MsgLine.length()) / 2);
+		WrStr(gcfg5->MsgLine); WrChar(0x17);
 	}
 	if (RO->CondTxt != nullptr) {
 		WrStr("\r\n\x17"); s = *RO->CondTxt;
@@ -266,9 +268,9 @@ LongStr* GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 		WrStr("\r\n#RF "); if (ARMode == _AErrRecs) WrStr("noErrRecs,");
 		WrStr("sum(1);\r\n\r\n");
 		if (ARMode == _AErrRecs) {
-			RdMsg(18); WrStr(globconf::MsgLine); WrStr(":_____\r\n");
+			RdMsg(18); WrStr(gcfg5->MsgLine); WrStr(":_____\r\n");
 		}
-		RdMsg(20); WrStr(globconf::MsgLine); WrStr("_______");
+		RdMsg(20); WrStr(gcfg5->MsgLine); WrStr("_______");
 	}
 	return Txt;
 	/* for i = 1 to Txt->LL do write(Txt->A[i]); writeln; wait; */

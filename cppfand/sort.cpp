@@ -6,6 +6,8 @@
 #include "obaseww.h"
 #include "rdfrml.h"
 
+globconf* gcfg19 = globconf::GetInstance();
+
 class XXPage; // forward declaration
 
 class WRec /* record on WPage */
@@ -270,9 +272,9 @@ void WorkFile::Output(WRec* R)
 
 void WorkFile::TestErr()
 {
-	if (globconf::HandleError != 0) {
-		SetMsgPar(globconf::FandWorkName);
-		RunError(700 + globconf::HandleError);
+	if (gcfg19->HandleError != 0) {
+		SetMsgPar(gcfg19->FandWorkName);
+		RunError(700 + gcfg19->HandleError);
 	}
 }
 

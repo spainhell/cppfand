@@ -15,6 +15,7 @@
 #include "wwmenu.h"
 #include "wwmix.h"
 
+globconf* gcfg13 = globconf::GetInstance();
 int Timer = 0;
 
 //EditD* E = EditDRoot;
@@ -288,11 +289,11 @@ WORD FieldEdit(FieldDPtr F, FrmlPtr Impl, WORD LWw, WORD iPos, pstring* Txt, dou
 			if (KbdChar == _ESC_) { CrsHide(); return result; }
 			if (KbdChar == _M_) {
 			label11:
-				if ((Txt->length() > 0) && ((*Txt)[1] == globconf::AbbrYes)) cc = globconf::AbbrYes; else cc = globconf::AbbrNo;
+				if ((Txt->length() > 0) && ((*Txt)[1] == gcfg13->AbbrYes)) cc = gcfg13->AbbrYes; else cc = gcfg13->AbbrNo;
 				goto label1;
 			}
 			cc = toupper((char)KbdChar);
-			if ((cc == globconf::AbbrYes) || (cc == globconf::AbbrNo)) goto label1;
+			if ((cc == gcfg13->AbbrYes) || (cc == gcfg13->AbbrNo)) goto label1;
 			break;
 		}
 		case evMouseDown: {
@@ -378,7 +379,7 @@ label2:
 void WrPromptTxt(pstring* S, FrmlPtr Impl, FieldDPtr F, pstring* Txt, double& R)
 {
 	WORD x, y, d, LWw; pstring SS, T; double RR; bool BB;
-	WrStyleStr(*S, globconf::ProcAttr); T = ""; x = WhereX(); y = WhereY(); d = WindMax.X - WindMin.X + 1;
+	WrStyleStr(*S, gcfg13->ProcAttr); T = ""; x = WhereX(); y = WhereY(); d = WindMax.X - WindMin.X + 1;
 	if (x + F->L - 1 > d) LWw = d - x; else LWw = F->L;  TextAttr = colors.dHili;
 	if (Impl != nullptr) {
 		switch (F->FrmlTyp) {
@@ -389,7 +390,7 @@ void WrPromptTxt(pstring* S, FrmlPtr Impl, FieldDPtr F, pstring* Txt, double& R)
 		DecodeFieldRSB(F, F->L, RR, SS, BB, T);
 	}
 	GotoXY(x, y); FieldEdit(F, nullptr, LWw, 1, &T, R, true, true, false, 0);
-	TextAttr = globconf::ProcAttr;
+	TextAttr = gcfg13->ProcAttr;
 	if (KbdChar == _ESC_) { EscPrompt = true; printf("\n"); }
 	else {
 		EscPrompt = false; Txt = &T;
@@ -403,7 +404,7 @@ bool PromptB(pstring* S, FrmlPtr Impl, FieldDPtr F)
 {
 	pstring Txt; double R;
 	WrPromptTxt(S, Impl, F, &Txt, R);
-	bool result = Txt[1] == globconf::AbbrYes;
+	bool result = Txt[1] == gcfg13->AbbrYes;
 	if (KbdChar == _ESC_) {
 		if (Impl != nullptr) result = RunBool(Impl);
 		else result = false;
@@ -1301,7 +1302,7 @@ label1:
 		LockForAdd(cf, 2, true, md);
 		CFile = cf; OldLMode(OldMd); CFile = cf2;
 	label3:
-		SetCPathVol(); Set2MsgPar(globconf::CPath, LockModeTxt[md]);
+		SetCPathVol(); Set2MsgPar(gcfg13->CPath, LockModeTxt[md]);
 		w1 = PushWrLLMsg(825, true);
 		if (w == 0) w = w1;
 		else TWork.Delete(w1);
@@ -1395,7 +1396,7 @@ bool DeleteRecProc()
 	bool b;
 	auto result = false; Group = false;
 	if (Select) {
-		globconf::F10SpecKey = _ESC_; Group = PromptYN(116);
+		gcfg13->F10SpecKey = _ESC_; Group = PromptYN(116);
 		if (KbdChar == _ESC_) return result;
 	}
 	if (!Group) if (VerifyDelete && !PromptYN(109)) return result;
@@ -1649,10 +1650,10 @@ void DisplChkErr(ChkDPtr C)
 		CFile = cf; CRecPtr = cr;
 		if (!b)
 			if (NoShiftF7Msg) goto label1;
-			else globconf::F10SpecKey = _ShiftF7_;
+			else gcfg13->F10SpecKey = _ShiftF7_;
 	}
 	if (C->HelpName != nullptr)
-		if (globconf::F10SpecKey == _ShiftF7_) globconf::F10SpecKey = 0xfffe; else globconf::F10SpecKey = _F1_;
+		if (gcfg13->F10SpecKey == _ShiftF7_) gcfg13->F10SpecKey = 0xfffe; else gcfg13->F10SpecKey = _F1_;
 	SetMsgPar(RunShortStr(C->TxtZ)); WrLLF10Msg(110);
 	if (KbdChar == _F1_) Help(CFile->ChptPos.R, *C->HelpName, false);
 	else if (KbdChar == _ShiftF7_)
@@ -1991,7 +1992,7 @@ bool PromptSearch(bool Create)
 		switch (F->FrmlTyp) {
 		case 'S': { x.StoreStr(s, KF); S_(F, s); break; }
 		case 'R': { x.StoreReal(r, KF); R_(F, r); break; }
-		case 'B': { b = s[1] = globconf::AbbrYes; x.StoreBool(b, KF); B_(F, b); break; }
+		case 'B': { b = s[1] = gcfg13->AbbrYes; x.StoreBool(b, KF); B_(F, b); break; }
 		}
 		if (li) {
 			CRecPtr = E->NewRecPtr; found = GotoXRec(&x, n);
@@ -2438,7 +2439,7 @@ label2:
 		if (WriteCRec(false, Displ)) { SaveFiles; UpdCount = 0; }
 		goto label4;
 	}
-	case _F1_: { RdMsg(6); heslo = globconf::MsgLine; goto label3; }
+	case _F1_: { RdMsg(6); heslo = gcfg13->MsgLine; goto label3; }
 	case _CtrlF1_: goto label3;
 	case _ShiftF1_:
 		if (IsCurrChpt() || (CFile == CRdb->HelpFD)) {
@@ -2512,7 +2513,7 @@ bool EditItemProc(bool del, bool ed, WORD& Brk)
 		}
 		SetWasUpdated();
 		switch (F->FrmlTyp) {
-		case 'B': B_(F, toupper(Txt[1]) == globconf::AbbrYes); break;
+		case 'B': B_(F, toupper(Txt[1]) == gcfg13->AbbrYes); break;
 		case 'S': S_(F, Txt); break;
 		case 'R': R_(F, R); break;
 		}
@@ -2833,11 +2834,11 @@ label1:
 		if (Txt[Txt.length()] == '.') Txt[0]--;
 		break; }
 	case 'S': Txt = RunShortStr(Z); break;  /* wie RdMode fuer T ??*/
-	case 'B': if (RunBool(Z)) Txt = globconf::AbbrYes; else Txt = globconf::AbbrNo; break;
+	case 'B': if (RunBool(Z)) Txt = gcfg13->AbbrYes; else Txt = gcfg13->AbbrNo; break;
 	}
 	goto label4;
 label2:
-	Msg = globconf::MsgLine; I = CurrPos; SetMsgPar(Msg); WrLLF10Msg(110);
+	Msg = gcfg13->MsgLine; I = CurrPos; SetMsgPar(Msg); WrLLF10Msg(110);
 	IsCompileErr = false; Del = false; CFile = E->FD; ReleaseStore(p); goto label1;
 label3:
 	ReleaseStore(p); RestoreExit(er);
@@ -3007,7 +3008,7 @@ void DisplLL()
 {
 	WORD n;
 	if (E->Last != nullptr) {
-		globconf::MsgLine = E->Last; if (globconf::MsgLine.length() > 0) {
+		gcfg13->MsgLine = E->Last; if (gcfg13->MsgLine.length() > 0) {
 			WrLLMsgTxt(); DisplLASwitches();
 		} return;
 	}
@@ -3025,15 +3026,15 @@ void DisplLL()
 void DisplCtrlAltLL(WORD Flags)
 {
 	if (Flags && 0x04 != 0) {        /* Ctrl */
-		if (E->CtrlLast != nullptr) { globconf::MsgLine = E->CtrlLast; WrLLMsgTxt(); }
+		if (E->CtrlLast != nullptr) { gcfg13->MsgLine = E->CtrlLast; WrLLMsgTxt(); }
 		else if (IsCurrChpt) WrLLMsg(125);
 		else if (EdRecVar) WrLLMsg(154); else WrLLMsg(127);
 	}
 	else if (Flags && 0x03 != 0)         /* Shift */
-		if (E->ShiftLast != nullptr) { globconf::MsgLine = E->ShiftLast; WrLLMsgTxt(); }
+		if (E->ShiftLast != nullptr) { gcfg13->MsgLine = E->ShiftLast; WrLLMsgTxt(); }
 		else DisplLL();
 	else if (Flags && 0x08 != 0)          /* Alt */
-		if (E->AltLast != nullptr) { globconf::MsgLine = E->AltLast; WrLLMsgTxt(); }
+		if (E->AltLast != nullptr) { gcfg13->MsgLine = E->AltLast; WrLLMsgTxt(); }
 		else DisplLL();
 }
 
@@ -3182,7 +3183,7 @@ label81:
 		case 2:/*exit*/ goto label1; break;
 		}
 		switch (KbdChar) {
-		case _F1_: { RdMsg(7); Help((RdbDPtr)(&HelpFD), globconf::MsgLine, false); break; }
+		case _F1_: { RdMsg(7); Help((RdbDPtr)(&HelpFD), gcfg13->MsgLine, false); break; }
 		case _CtrlF1_: FieldHelp(); break;
 		case _AltF10_: Help(nullptr, "", false); break;
 		case _ESC_: {
@@ -3421,7 +3422,7 @@ void EditDataFile(FileDPtr FD, EditOpt* EO)
 	label1:
 		RestoreExit(er);
 		if (IsCompileErr) {
-			EdRecKey = globconf::MsgLine; LastExitCode = CurrPos + 1; IsCompileErr = false;
+			EdRecKey = gcfg13->MsgLine; LastExitCode = CurrPos + 1; IsCompileErr = false;
 		}
 		else LastExitCode = 0;
 		goto label2;

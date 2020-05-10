@@ -1,6 +1,5 @@
 #include "printtxt.h"
 
-
 #include "globconf.h"
 #include "kbdww.h"
 #include "legacy.h"
@@ -9,6 +8,8 @@
 #include "obaseww.h"
 #include "rdfrml.h"
 #include "wwmenu.h"
+
+globconf* gcfg10 = globconf::GetInstance();
 
 pstring replaceNo(pstring s, pstring sNew)
 {
@@ -26,7 +27,7 @@ void ExecMgrPgm()
 	BYTE x = 0, y = 0;
 	pstring pgmNm = PrTab(prMgrProg);
 	if (pgmNm == "") return;
-	pstring param = replaceNo(PrTab(prMgrParam), globconf::CPath);
+	pstring param = replaceNo(PrTab(prMgrParam), gcfg10->CPath);
 	Wind wmin = WindMin;
 	Wind wmax = WindMax;
 	longint crs = CrsGet();
@@ -43,13 +44,13 @@ FILE* OpenMgrOutput()
 {
 	pstring s; FILE* h;
 	prFileNr = (prFileNr + 1) % 100; str(prFileNr, s);
-	globconf::CPath = replaceNo(PrTab(prMgrFileNm), s);
-	globconf::CVol = "";
-	if (globconf::CPath.length() == 0) h = nullptr;
+	gcfg10->CPath = replaceNo(PrTab(prMgrFileNm), s);
+	gcfg10->CVol = "";
+	if (gcfg10->CPath.length() == 0) h = nullptr;
 	else {
-		h = OpenH(_isoverwritefile, Exclusive); if (globconf::HandleError != 0)
+		h = OpenH(_isoverwritefile, Exclusive); if (gcfg10->HandleError != 0)
 		{
-			SetMsgPar(globconf::CPath); WrLLF10Msg(700 + globconf::HandleError); h = nullptr;
+			SetMsgPar(gcfg10->CPath); WrLLF10Msg(700 + gcfg10->HandleError); h = nullptr;
 		}
 	}
 	return h;
@@ -162,10 +163,10 @@ label3:
 
 void PrintTxtFile(longint BegPos)
 {
-	TestMountVol(globconf::CPath[1]); if (!Rprt.ResetTxt())
+	TestMountVol(gcfg10->CPath[1]); if (!Rprt.ResetTxt())
 	{
-		SetMsgPar(globconf::CPath);
-		WrLLF10Msg(700 + globconf::HandleError);
+		SetMsgPar(gcfg10->CPath);
+		WrLLF10Msg(700 + gcfg10->HandleError);
 		return;
 	}
 	printBlk = false;
@@ -183,7 +184,7 @@ void PrintArray(void* P, WORD N, bool CtrlL)
 void PrintFandWork()
 {
 	CloseH(WorkHandle);
-	Rprt.Assign(globconf::FandWorkName.c_str());
+	Rprt.Assign(gcfg10->FandWorkName.c_str());
 	/* !!! with TextRec(Rprt) do!!! */
 	{
 		Rprt.openfunc = &Rprt.opentxt;

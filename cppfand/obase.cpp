@@ -6,6 +6,7 @@
 #include "kbdww.h"
 #include "obaseww.h"
 
+globconf* gcfg8 = gcfg8->GetInstance();
 
 void ResetCtrlFlags()
 {
@@ -189,8 +190,8 @@ void ClosePrinter(WORD LeftMargin)
 void TestTxtHError(TextFile* F)
 {
 	pstring s;
-	if (globconf::HandleError != 0) {
-		SetMsgPar(StrPas(F->name.c_str())); WrLLF10Msg(700 + globconf::HandleError); GoExit();
+	if (gcfg8->HandleError != 0) {
+		SetMsgPar(StrPas(F->name.c_str())); WrLLF10Msg(700 + gcfg8->HandleError); GoExit();
 	}
 }
 
@@ -278,25 +279,25 @@ void Seek0Txt(TextFile* F)
 
 bool ResetTxt(TextFile* F)
 {
-	F->Assign(globconf::CPath.c_str());
+	F->Assign(gcfg8->CPath.c_str());
 	/* !!! with TextRec(F) do!!! */
 	{
 		F->openfunc = &OpenTxt; F->Handle = nullptr; /* for error detection in OpenH */
 		F->Handle = OpenH(_isoldfile, RdOnly);
 	}
-	if (globconf::HandleError != 0) { return false; }
+	if (gcfg8->HandleError != 0) { return false; }
 	F->Reset();
 	return true;
 }
 
 bool RewriteTxt(TextFile* F, bool PrintCtrl)
 {
-	F->Assign(globconf::CPath.c_str());
-	if (globconf::CPath == "LPT1") F->openfunc = &OpenLPT1;
+	F->Assign(gcfg8->CPath.c_str());
+	if (gcfg8->CPath == "LPT1") F->openfunc = &OpenLPT1;
 	else {
 		PrintCtrlFlag = PrintCtrl; F->openfunc = &OpenTxt;
 		F->Handle = OpenH(_isoverwritefile, Exclusive);
-		if (globconf::HandleError != 0) { return false; };
+		if (gcfg8->HandleError != 0) { return false; };
 	}
 	F->Rewrite();
 	return true;
@@ -304,8 +305,8 @@ bool RewriteTxt(TextFile* F, bool PrintCtrl)
 
 void SetPrintTxtPath()
 {
-	globconf::CPath = globconf::WrkDir + "PRINTER.TXT";
-	globconf::CVol = "";
+	gcfg8->CPath = gcfg8->WrkDir + "PRINTER.TXT";
+	gcfg8->CVol = "";
 }
 
 

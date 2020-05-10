@@ -1,6 +1,5 @@
 #include "rdfildcl.h"
 
-
 #include "compile.h"
 #include "legacy.h"
 #include "oaccess.h"
@@ -8,7 +7,6 @@
 #include "rdmix.h"
 #include "rdproc.h"
 #include "runproj.h"
-
 
 FieldDPtr RdFldDescr(pstring Name, bool Stored)
 {

@@ -13,6 +13,7 @@
 #include "runproc.h"
 #include "wwmix.h"
 
+globconf* gcfg15 = globconf::GetInstance();
 
 double Owned(FrmlPtr Bool, FrmlPtr Sum, LinkDPtr LD)
 {
@@ -174,11 +175,11 @@ double LastUpdate(FILE* Handle)
 WORD TypeDay(double R)
 {
 	WORD i, d;
-	if ((R >= globconf::WDaysFirst) && (R <= globconf::WDaysLast))
+	if ((R >= gcfg15->WDaysFirst) && (R <= gcfg15->WDaysLast))
 	{
-		d = trunc(R - globconf::WDaysFirst);
-		for (i = 1; i < globconf::NWDaysTab; i++)
-			if (globconf::WDaysTab[i].Nr == d) { return globconf::WDaysTab[i].Typ; }
+		d = trunc(R - gcfg15->WDaysFirst);
+		for (i = 1; i < gcfg15->NWDaysTab; i++)
+			if (gcfg15->WDaysTab[i].Nr == d) { return gcfg15->WDaysTab[i].Typ; }
 	}
 	d = longint(trunc(R)) % 7;
 	switch (d) {
@@ -218,10 +219,10 @@ double DifWDays(double R1, double R2, WORD d)
 longint GetFileSize()
 {
 	FILE* h; FileUseMode um;
-	TestMountVol(globconf::CPath[1]); um = RdOnly;
+	TestMountVol(gcfg15->CPath[1]); um = RdOnly;
 	if (IsNetCVol()) um = Shared;
 	h = OpenH(_isoldfile, um);
-	if (globconf::HandleError != 0) {
+	if (gcfg15->HandleError != 0) {
 		return -1;
 	}
 	auto result = FileSizeH(h);
@@ -661,7 +662,7 @@ label1:
 		result = LastUpdate(CFile->Handle); OldLMode(md); CFile = cf; break; }
 	case _catfield: {
 		RdCatPathVol(X->CatIRec);
-		TestMountVol(globconf::CPath[1]);
+		TestMountVol(gcfg15->CPath[1]);
 		h = OpenH(_isoldfile, RdOnly);
 		result = LastUpdate(h);
 		CloseH(h);
@@ -854,7 +855,7 @@ void DecodeFieldRSB(FieldDPtr F, WORD LWw, double R, pstring T, bool B, pstring&
 		else while (T.length() < L) { pstring oldT = T; T = C; T += oldT; }
 		break;
 	}
-	case 'B': if (B) T = globconf::AbbrYes; else T = globconf::AbbrNo; break;
+	case 'B': if (B) T = gcfg15->AbbrYes; else T = gcfg15->AbbrNo; break;
 	case 'R': str(R, L, T); break;
 	default: /*"F"*/
 		if (F->Flg && f_Comma != 0) R = R / Power10[M];
@@ -1224,7 +1225,7 @@ LongStr* RunS(FrmlPtr Z)
 	case _edreckey: s = EdRecKey;;
 	case _getenv: {
 		s = RunShortStr(Z->P1);
-		if (s == "") s = globconf::paramstr[0];
+		if (s == "") s = gcfg15->paramstr[0];
 		else s = GetEnv(s.c_str());
 		break;
 	}

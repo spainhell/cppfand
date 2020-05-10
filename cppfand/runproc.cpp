@@ -23,6 +23,7 @@
 #include "wwmenu.h"
 #include "wwmix.h"
 
+globconf* gcfg16 = globconf::GetInstance();
 
 void UserHeadLine(pstring UserHeader)
 {
@@ -181,19 +182,19 @@ void WritelnProc(Instr* PD)
 {
 	LongStr* S; WORD i; char c; BYTE LF; WrLnD* W; pstring t, x; double r;
 	W = &PD->WD; LF = PD->LF; t[0] = 0;
-	TextAttr = globconf::ProcAttr;
+	TextAttr = gcfg16->ProcAttr;
 	while (W != nullptr) {
 		switch (W->Typ) {
 		case 'S': {
 			if (LF >= 2) t = t + RunShortStr(W->Frml);
 			else {
-				S = RunLongStr(W->Frml); WrLongStyleStr(S, globconf::ProcAttr); ReleaseStore(S);
+				S = RunLongStr(W->Frml); WrLongStyleStr(S, gcfg16->ProcAttr); ReleaseStore(S);
 			}
 			goto label1; break;
 		}
 		case 'B': {
-			if (RunBool(W->Frml)) x = globconf::AbbrYes;
-			else x = globconf::AbbrNo;
+			if (RunBool(W->Frml)) x = gcfg16->AbbrYes;
+			else x = gcfg16->AbbrNo;
 			break;
 		}
 		case 'F': {
@@ -212,7 +213,7 @@ void WritelnProc(Instr* PD)
 label2:
 	switch (LF) {
 	case 1: printf("\n"); break;
-	case 3: { globconf::F10SpecKey = _F1_; goto label3; break; }
+	case 3: { gcfg16->F10SpecKey = _F1_; goto label3; break; }
 	case 2: {
 	label3:
 		SetMsgPar(t); WrLLF10Msg(110);
@@ -237,7 +238,7 @@ void DisplayProc(RdbDPtr R, WORD IRec)
 		S = CFile->TF->Read(1, _T(ChptTxt));
 		if (R->Encrypted) CodingLongStr(S);
 	}
-	WrLongStyleStr(S, globconf::ProcAttr);
+	WrLongStyleStr(S, gcfg16->ProcAttr);
 label1:
 	ReleaseStore(p);
 }
@@ -263,7 +264,7 @@ void ExecPgm(Instr* PD)
 	WindMin = wmin;
 	WindMax = wmax;
 	CrsSet(crs);
-	s = RunShortStr(PD->Param); i = PD->ProgCatIRec; globconf::CVol = "";
+	s = RunShortStr(PD->Param); i = PD->ProgCatIRec; gcfg16->CVol = "";
 	if (i != 0) Prog = RdCatField(i, CatPathName); else Prog = *PD->ProgPath;
 	b = OSshell(Prog, s, PD->NoCancel, PD->FreeMm, PD->LdFont, PD->TextMd);
 	/*asm mov ah, 3; mov bh, 0; push bp; int 10H; pop bp; mov x, dl; mov y, dh;*/
@@ -306,7 +307,7 @@ void MountProc(WORD CatIRec, bool NoCancel)
 	//NewExit(Ovr, er);
 	goto label1;
 	SaveFiles();
-	RdCatPathVol(CatIRec); TestMountVol(globconf::CPath[1]);
+	RdCatPathVol(CatIRec); TestMountVol(gcfg16->CPath[1]);
 	LastExitCode = 0; RestoreExit(er); return;
 label1:
 	RestoreExit(er);
@@ -643,17 +644,17 @@ void SetWwViewPort()
 void WithWindowProc(Instr* PD)
 {
 	BYTE PAttr; longint w1; WRect v;
-	PAttr = globconf::ProcAttr;
+	PAttr = gcfg16->ProcAttr;
 	/* !!! with PD^ do!!! */
-	globconf::ProcAttr = RunWordImpl(PD->Attr, colors.uNorm);
+	gcfg16->ProcAttr = RunWordImpl(PD->Attr, colors.uNorm);
 	RunWFrml(PD->W, PD->WithWFlags, v);
-	w1 = PushWFramed(v.C1, v.R1, v.C2, v.R2, globconf::ProcAttr, RunShortStr(PD->Top), "", PD->WithWFlags);
+	w1 = PushWFramed(v.C1, v.R1, v.C2, v.R2, gcfg16->ProcAttr, RunShortStr(PD->Top), "", PD->WithWFlags);
 	if ((PD->WithWFlags & WNoClrScr) == 0) ClrScr();
 	SetWwViewPort();
 	RunInstr(PD->WwInstr);
 	PopW2(w1, (PD->WithWFlags & WNoPop) == 0);
 	SetWwViewPort();
-	globconf::ProcAttr = PAttr;
+	gcfg16->ProcAttr = PAttr;
 }
 
 void WithLockedProc(Instr* PD)
@@ -685,9 +686,9 @@ label1:
 			if (PD->WasElse) { RunInstr(PD->WElseInstr); return; }
 			CFile = ld->FD; SetCPathVol();
 			if (op == _withlocked) {
-				msg = 839; str(ld->N, ntxt); Set2MsgPar(ntxt, globconf::CPath);
+				msg = 839; str(ld->N, ntxt); Set2MsgPar(ntxt, gcfg16->CPath);
 			}
-			else { msg = 825; Set2MsgPar(globconf::CPath, LockModeTxt[ld->Md]); }
+			else { msg = 825; Set2MsgPar(gcfg16->CPath, LockModeTxt[ld->Md]); }
 			w1 = PushWrLLMsg(msg, false);
 			if (w == 0) w = w1;
 			else TWork.Delete(w1);
@@ -709,7 +710,7 @@ void HelpProc(Instr* PD)
 FILE* OpenHForPutTxt(Instr* PD)
 {
 	FileOpenMode m; FILE* h;
-	SetTxtPathVol(*PD->TxtPath, PD->TxtCatIRec); TestMountVol(globconf::CPath[1]);
+	SetTxtPathVol(*PD->TxtPath, PD->TxtCatIRec); TestMountVol(gcfg16->CPath[1]);
 	m = _isoverwritefile; if (PD->App) m = _isoldnewfile;
 	h = OpenH(m, Exclusive); TestCPathError();
 	if (PD->App) SeekH(h, FileSizeH(h));
@@ -720,13 +721,13 @@ void PutTxt(Instr* PD)
 {
 	FILE* h; LongStr* s; FrmlPtr z; pstring pth;
 	z = PD->Txt; if (CanCopyT(nullptr, z)) {
-		h = OpenHForPutTxt(PD); pth = globconf::CPath; CopyTFStringToH(h); globconf::CPath = pth;
+		h = OpenHForPutTxt(PD); pth = gcfg16->CPath; CopyTFStringToH(h); gcfg16->CPath = pth;
 	}
 	else {
 		s = RunLongStr(z); h = OpenHForPutTxt(PD);
 		WriteH(h, s->LL, s->A); ReleaseStore(s);
 	}
-	globconf::CPath = pth; TestCPathError(); WriteH(h, 0, h)/*trunc*/; CloseH(h);
+	gcfg16->CPath = pth; TestCPathError(); WriteH(h, 0, h)/*trunc*/; CloseH(h);
 }
 
 void AssgnCatFld(Instr* PD)
@@ -864,9 +865,9 @@ void RunInstr(Instr* PD)
 		case _exitP: ExitP = true; break;
 		case _cancel: GoExit(); break;
 		case _save: SaveFiles(); break;
-		case _clrscr: { TextAttr = globconf::ProcAttr; ClrScr(); break; }
+		case _clrscr: { TextAttr = gcfg16->ProcAttr; ClrScr(); break; }
 		case _clrww: ClrWwProc(PD); break;
-		case _clreol: { TextAttr = globconf::ProcAttr; ClrEol(); break; }
+		case _clreol: { TextAttr = gcfg16->ProcAttr; ClrEol(); break; }
 		case _exec: ExecPgm(PD); break;
 		case _proc: CallProcedure(PD); break;
 		case _call: CallRdbProc(PD); break;
@@ -1080,8 +1081,8 @@ void RunMainProc(RdbPos RP, bool NewWw)
 {
 	Instr* PD; void* p1; void* p2; LocVar* lv;
 	if (NewWw) {
-		globconf::ProcAttr = colors.uNorm; Window(1, 2, TxtCols, TxtRows);
-		TextAttr = globconf::ProcAttr; ClrScr(); UserHeadLine(""); MenuX = 1; MenuY = 2;
+		gcfg16->ProcAttr = colors.uNorm; Window(1, 2, TxtCols, TxtRows);
+		TextAttr = gcfg16->ProcAttr; ClrScr(); UserHeadLine(""); MenuX = 1; MenuY = 2;
 	}
 	PD = GetPInstr(_proc, sizeof(RdbPos) + 2); PD->Pos = RP;
 	CallProcedure(PD);

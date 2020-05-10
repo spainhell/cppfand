@@ -4,14 +4,13 @@
 #include <windows.h>
 #include <errhandlingapi.h>
 #include <fileapi.h>
-
 #include "drivers.h"
 #include "legacy.h"
 #include <set>
-
-
 #include "globconf.h"
 #include "obaseww.h"
+
+globconf* gcfg2 = globconf::GetInstance();
 
 WORD OldNumH; // r1 
 void* OldHTPtr = nullptr;
@@ -34,31 +33,31 @@ std::vector<FILE*> vOverHandle;
 
 void SetMsgPar(pstring s)
 {
-	globconf::MsgPar[0] = s;
+	gcfg2->MsgPar[0] = s;
 }
 
 void Set2MsgPar(pstring s1, pstring s2)
 {
-	globconf::MsgPar[0] = s1;
-	globconf::MsgPar[1] = s2;
+	gcfg2->MsgPar[0] = s1;
+	gcfg2->MsgPar[1] = s2;
 }
 
 void Set3MsgPar(pstring s1, pstring s2, pstring s3)
 {
 	Set2MsgPar(s1, s2);
-	globconf::MsgPar[2] = s3;
+	gcfg2->MsgPar[2] = s3;
 }
 
 void Set4MsgPar(pstring s1, pstring s2, pstring s3, pstring s4)
 {
 	Set3MsgPar(s1, s2, s3);
-	globconf::MsgPar[3] = s4;
+	gcfg2->MsgPar[3] = s4;
 }
 
 longint PosH(FILE* handle)
 {
 	const auto result = ftell(handle);
-	globconf::HandleError = ferror(handle);
+	gcfg2->HandleError = ferror(handle);
 	return static_cast<longint>(result);
 }
 
@@ -68,7 +67,7 @@ longint MoveH(longint dist, WORD method, FILE* handle)
 	// dist - hodnota offsetu
 	// method: 0 - od zacatku, 1 - od aktualni, 2 - od konce
 	// handle - file handle
-	globconf::HandleError = fseek(handle, dist, method);
+	gcfg2->HandleError = fseek(handle, dist, method);
 	return ftell(handle);
 }
 
@@ -93,10 +92,10 @@ void RdMsg(integer N)
 	WORD j, o;
 	FILE* h;
 	pstring s;
-	for (int i = 1; i < globconf::MsgIdxN; i++) {
-		auto Nr = globconf::MsgIdx[i].Nr;
-		auto Count = globconf::MsgIdx[i].Count;
-		auto Ofs = globconf::MsgIdx[i].Ofs;
+	for (int i = 1; i < gcfg2->MsgIdxN; i++) {
+		auto Nr = gcfg2->MsgIdx[i].Nr;
+		auto Count = gcfg2->MsgIdx[i].Count;
+		auto Ofs = gcfg2->MsgIdx[i].Ofs;
 		if (N >= Nr && N < Nr + Count)
 		{
 			j = N - Nr + 1;
@@ -105,11 +104,11 @@ void RdMsg(integer N)
 		}
 	}
 	o = 0; j = 1;
-	globconf::MsgPar[1] = std::to_string(N).c_str();
+	gcfg2->MsgPar[1] = std::to_string(N).c_str();
 
 label1:
-	h = globconf::ResFile.Handle;
-	SeekH(h, globconf::FrstMsgPos + o);
+	h = gcfg2->ResFile.Handle;
+	SeekH(h, gcfg2->FrstMsgPos + o);
 
 	for (int i = 1; i <= j; i++)
 	{
@@ -117,18 +116,18 @@ label1:
 		ReadH(h, s.length(), &s[1]);
 	}
 	//ConvKamenToCurr((unsigned char*)s.c_str(), s.length());
-	globconf::MsgLine = "";
+	gcfg2->MsgLine = "";
 	j = 1;
 	// TODO: k èemu je toto? s[length(s) + 1] = 0x00;
 	for (int i = 1; i < s.length(); i++) {
 		if (s[i] == '$' && s[i + 1] != '$')
 		{
-			globconf::MsgLine += globconf::MsgPar[j];
+			gcfg2->MsgLine += gcfg2->MsgPar[j];
 			j++;
 		}
 		else
 		{
-			globconf::MsgLine.Append(s[i]);
+			gcfg2->MsgLine.Append(s[i]);
 			if (s[i] == '$') i++;
 		}
 	}
@@ -476,7 +475,7 @@ filePtr OpenH(FileOpenMode Mode, FileUseMode UM)
 
 	pstring txt[] = { "Clos", "OpRd", "OpRs", "OpSh", "OpEx" };
 
-	pstring path = globconf::CPath;
+	pstring path = gcfg2->CPath;
 	if (CardHandles == files) RunError(884);
 	longint w = 0;
 	pstring openFlags(5);
@@ -501,10 +500,10 @@ label1:
 	}
 
 	FILE* nFile = nullptr;
-	globconf::HandleError = fopen_s(&nFile, path.c_str(), openFlags.c_str());
+	gcfg2->HandleError = fopen_s(&nFile, path.c_str(), openFlags.c_str());
 
 	// https://docs.microsoft.com/en-us/cpp/c-runtime-library/errno-doserrno-sys-errlist-and-sys-nerr?view=vs-2019
-	if (IsNetCVol() && (globconf::HandleError == EACCES || globconf::HandleError == ENOLCK))
+	if (IsNetCVol() && (gcfg2->HandleError == EACCES || gcfg2->HandleError == ENOLCK))
 	{
 		if (w == 0)
 		{
@@ -516,13 +515,13 @@ label1:
 		goto label1;
 	}
 
-	if (globconf::HandleError == 0)
+	if (gcfg2->HandleError == 0)
 	{
 		SetHandle(nFile);
 		if (Mode != _isoldfile) SetUpdHandle(nFile);
 	}
 
-	else if (globconf::HandleError == ENOENT) // No such file or directory
+	else if (gcfg2->HandleError == ENOENT) // No such file or directory
 	{
 		if (Mode == _isoldnewfile)
 		{
@@ -546,7 +545,7 @@ WORD ReadLongH(filePtr handle, longint bytes, void* buffer)
 	{
 		// nebyl naèten požadovaný poèet B
 		auto eofReached = feof(handle);
-		globconf::HandleError = ferror(handle);
+		gcfg2->HandleError = ferror(handle);
 	}
 	return WORD(readed);
 }
@@ -557,7 +556,7 @@ void WriteLongH(filePtr handle, longint bytes, void* buffer)
 	if (bytes <= 0) return;
 	// uloží do souboru daný poèet Bytù z bufferu
 	fwrite(buffer, 1, bytes, handle);
-	globconf::HandleError = ferror(handle);
+	gcfg2->HandleError = ferror(handle);
 }
 
 void WriteH(FILE* handle, WORD bytes, void* buffer)
@@ -602,7 +601,7 @@ void CloseH(FILE* handle)
 {
 	if (handle == nullptr) return;
 	// uzavøe soubor
-	globconf::HandleError = fclose(handle);
+	gcfg2->HandleError = fclose(handle);
 }
 
 
@@ -623,17 +622,17 @@ void SetFileAttr(WORD Attr)
 	// nastaví atributy souboru/adresáøe
 	// 0 = read only, 1 = hidden file, 2 = system file, 3 = volume label, 4 = subdirectory,
 	// 5 = written since backup, 8 = shareable (Novell NetWare)
-	if (SetFileAttributesA(globconf::CPath.c_str(), Attr) == 0)
+	if (SetFileAttributesA(gcfg2->CPath.c_str(), Attr) == 0)
 	{
-		globconf::HandleError = GetLastError();
+		gcfg2->HandleError = GetLastError();
 	}
 }
 
 WORD GetFileAttr()
 {
 	// získá atributy souboru/adresáøe
-	auto result = GetFileAttributesA(globconf::CPath.c_str());
-	if (result == INVALID_FILE_ATTRIBUTES) globconf::HandleError = GetLastError();
+	auto result = GetFileAttributesA(gcfg2->CPath.c_str());
+	if (result == INVALID_FILE_ATTRIBUTES) gcfg2->HandleError = GetLastError();
 	return result;
 }
 
@@ -649,7 +648,7 @@ void FlushH(FILE* handle)
 	if (handle == nullptr) return;
 
 	auto result = fflush(handle);
-	if (result == EOF) { globconf::HandleError = result; }
+	if (result == EOF) { gcfg2->HandleError = result; }
 	//SetHandle(handle);
 	SetUpdHandle(handle);
 	//CloseH(handle);
@@ -705,7 +704,7 @@ longint GetDateTimeH(filePtr handle)
 	// 2 + 2 Byte (datum vlevo, èas vpravo)
 	FILETIME ft;
 	auto result = GetFileTime(handle, nullptr, nullptr, &ft);
-	if (result == 0) globconf::HandleError = GetLastError();
+	if (result == 0) gcfg2->HandleError = GetLastError();
 	return (ft.dwHighDateTime << 16) + ft.dwLowDateTime;
 }
 
@@ -713,7 +712,7 @@ void MyDeleteFile(pstring path)
 {
 	// smaže soubor - INT $41
 	auto result = remove(path.c_str());
-	if (result != 0) globconf::HandleError = result;
+	if (result != 0) gcfg2->HandleError = result;
 }
 
 void RenameFile56(pstring OldPath, pstring NewPath, bool Msg)
@@ -721,8 +720,8 @@ void RenameFile56(pstring OldPath, pstring NewPath, bool Msg)
 	// pøesouvá nebo pøejmenovává soubor
 	// potom:
 	auto result = rename(OldPath.c_str(), NewPath.c_str());
-	if (result != 0) globconf::HandleError = result;
-	if (Msg && globconf::HandleError != 0)
+	if (result != 0) gcfg2->HandleError = result;
+	if (Msg && gcfg2->HandleError != 0)
 	{
 		Set2MsgPar(OldPath, NewPath);
 		RunError(829);
@@ -733,7 +732,7 @@ pstring MyFExpand(pstring Nm, pstring EnvName)
 {
 	pstring d;
 	GetDir(0, &d);
-	pstring f = globconf::FandDir;
+	pstring f = gcfg2->FandDir;
 	DelBackSlash(f);
 	ChDir(f);
 	pstring p = GetEnv(EnvName.c_str());
@@ -1110,9 +1109,9 @@ void MyExit()
 #endif
 
 	UnExtendHandles();
-	MyDeleteFile(globconf::FandWorkName);
-	MyDeleteFile(globconf::FandWorkXName);
-	MyDeleteFile(globconf::FandWorkTName);
+	MyDeleteFile(gcfg2->FandWorkName);
+	MyDeleteFile(gcfg2->FandWorkXName);
+	MyDeleteFile(gcfg2->FandWorkTName);
 	// TODO? CloseXMS();
 label1: if (WasInitDrivers) {
 	// TODO? DoneMouseEvents();
@@ -1129,7 +1128,7 @@ label1: if (WasInitDrivers) {
 		TextAttr = StartAttr;
 		ClrScr();
 		CrsNorm();
-		ChDir(globconf::OldDir);
+		ChDir(gcfg2->OldDir);
 		SetCurrPrinter(-1);
 	}
 	if (ExitCode == 202) Halt(202);
@@ -1138,11 +1137,11 @@ label1: if (WasInitDrivers) {
 
 void OpenResFile()
 {
-	globconf::CPath = globconf::FandResName; globconf::CVol = "";
-	globconf::ResFile.Handle = OpenH(_isoldfile, RdOnly);
-	if (globconf::HandleError != 0)
+	gcfg2->CPath = gcfg2->FandResName; gcfg2->CVol = "";
+	gcfg2->ResFile.Handle = OpenH(_isoldfile, RdOnly);
+	if (gcfg2->HandleError != 0)
 	{
-		printf("can't open %s", globconf::FandResName.c_str());
+		printf("can't open %s", gcfg2->FandResName.c_str());
 		wait();
 		Halt(0);
 	}
@@ -1153,14 +1152,14 @@ void InitOverlays()
 	pstring name; pstring ext; integer sz, err; longint l; pstring s;
 	const BYTE OvrlSz = 124;
 
-	GetDir(0, &globconf::OldDir);
-	//globconf::OldDir = GetDir(0);
-	FSplit(FExpand(ParamStr(1)), globconf::FandDir, name, ext);
-	globconf::FandOvrName = MyFExpand(name + ".OVR", "FANDOVR");
-	//OvrInit(globconf::FandOvrName);
+	GetDir(0, &gcfg2->OldDir);
+	//gcfg2->OldDir = GetDir(0);
+	FSplit(FExpand(ParamStr(1)), gcfg2->FandDir, name, ext);
+	gcfg2->FandOvrName = MyFExpand(name + ".OVR", "FANDOVR");
+	//OvrInit(gcfg2->FandOvrName);
 	//if (OvrResult != 0) {          /*reshandle-1*/
-	//	globconf::FandOvrName = ParamStr(0);
-	//	OvrInit(globconf::FandOvrName);
+	//	gcfg2->FandOvrName = ParamStr(0);
+	//	OvrInit(gcfg2->FandOvrName);
 	//	if (OvrResult != 0) {
 	//		printf("can't open FAND.OVR"); wait(); Halt(-1);
 	//	}
@@ -1177,23 +1176,35 @@ void InitOverlays()
 
 void OpenWorkH()
 {
-	globconf::CPath = globconf::FandWorkName; globconf::CVol = "";
-	globconf::ResFile.Handle = OpenH(_isoldnewfile, Exclusive);
-	if (globconf::HandleError != 0) printf("cant't open %s", globconf::FandWorkName.c_str());
+	gcfg2->CPath = gcfg2->FandWorkName; gcfg2->CVol = "";
+	gcfg2->ResFile.Handle = OpenH(_isoldnewfile, Exclusive);
+	if (gcfg2->HandleError != 0) printf("cant't open %s", gcfg2->FandWorkName.c_str());
 	wait();
 	Halt(-1);
 }
 
 bool SEquUpcase(pstring S1, pstring S2)
 {
+	size_t s1_len = S1.length();
+	size_t s2_len = S2.length();
+	if (s1_len != s2_len) return false;
+	if (s1_len == 0) return true;
+
+	const char* s1_c = S1.c_str();
+	const char* s2_c = S2.c_str();
+
+	for (size_t i = 0; i < s1_len; i++)
+	{
+		if (toupper(s1_c[i]) != toupper(s2_c[i])) return false;
+	}
 	return true;
 }
 
 void OpenOvrFile()
 {
 	FILE* h;
-	globconf::CPath = globconf::FandOvrName;
-	globconf::CVol = "";
+	gcfg2->CPath = gcfg2->FandOvrName;
+	gcfg2->CVol = "";
 	h = OpenH(_isoldfile, RdOnly);
 		if (h != OvrHandle)
 		{
@@ -1217,6 +1228,6 @@ void NonameStartFunction()
 	ExitProc = MyExit;
 	MyBP = nullptr;
 	UserLicNr = WORD(UserLicNrShow) & 0x7FFF;
-	globconf::FandResName = MyFExpand("Fand.Res", "FANDRES");
+	gcfg2->FandResName = MyFExpand("Fand.Res", "FANDRES");
 	OpenResFile();
 }

@@ -1,12 +1,12 @@
 #include "rdmerg.h"
 
-
 #include "compile.h"
 #include "legacy.h"
 #include "rdfildcl.h"
 #include "rdfrml.h"
 #include "rdmix.h"
 #include "rdrprt.h"
+
 
 FileD* InpFD_M(WORD I)
 {
