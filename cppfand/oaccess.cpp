@@ -506,7 +506,7 @@ WORD GetCatIRec(pstring Name, bool MultiLevel)
 {
 	longint i; FileDPtr CF; RdbDPtr R; void* CR;
 	WORD result = 0;
-	if (CatFD->Handle == nullptr) return result;
+	if (CatFD == nullptr || CatFD->Handle == nullptr) return result;
 	if (CRdb == nullptr) return result;
 	CF = CFile; CR = CRecPtr; CFile = CatFD; CRecPtr = GetRecSpace();
 	R = CRdb;

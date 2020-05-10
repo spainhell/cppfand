@@ -7,6 +7,7 @@
 #include "runfrml.h"
 #include "runproj.h"
 
+
 FieldDPtr RdFldDescr(pstring Name, bool Stored)
 {
 	const BYTE TabF[19] = { 0, 1, 1, 2, 2, 3, 3, 4, 4, 4, 5, 5, 6, 6, 6, 7, 7, 8, 8 };
@@ -16,9 +17,10 @@ FieldDPtr RdFldDescr(pstring Name, bool Stored)
 	char Typ = 0, FrmlTyp = 0, c = 0;
 	WORD i = 0, n = 0, n1 = 0; pstring ss;
 
-	F = (FieldDescr*)GetZStore(pred(sizeof(*F)) + Name.length());
+	//F = (FieldDescr*)GetZStore(pred(sizeof(*F)) + Name.length());
+	F = new FieldDescr();
 	FieldDPtr result = F;
-	Move(&Name, &F->Name, Name.length() + 1);
+	Move(&Name, &F->Name[0], Name.length() + 1);
 	if (Stored) Flg = f_Stored; else Flg = 0; Accept(':');
 	if ((Lexem != _identifier) || (LexWord.length() > 1)) Error(10);
 	Typ = (char)LexWord[1]; RdLex(); FrmlTyp = 'S'; M = 0;
@@ -353,37 +355,58 @@ void* RdFileD(pstring FileName, char FDTyp, pstring Ext)
 		}
 	}
 	else {
-		AlignLongStr(); GetStore(2);
-		CFile = (FileD*)GetZStore(sizeof(FileD));
+		//AlignLongStr();
+		//GetStore(2);
+		CFile = new FileD();
 	}
-	CFile->Name = FileName; SetHCatTyp(FDTyp); HasTT = false;
-	if ((CFile->OrigFD == nullptr) || !(Lexem == 0x1A || Lexem == '#' || Lexem == ']'))
-		RdFieldDList(true);
-	GetTFileD(FDTyp); LDOld = LinkDRoot;
+	CFile->Name = FileName;
+	SetHCatTyp(FDTyp);
+	HasTT = false;
+	if ((CFile->OrigFD == nullptr) || !(Lexem == 0x1A || Lexem == '#' || Lexem == ']'))	RdFieldDList(true);
+	GetTFileD(FDTyp);
+	LDOld = LinkDRoot;
 	CFile->ChptPos = OrigInp()->InpRdbPos;
 	if (isHlp) {
-		F = CFile->FldD; F2 = F->Chain;
-		if ((F->Typ != 'A') || (F2 == nullptr) || (F2->Typ != 'T')
-			|| (F2->Chain != nullptr)) OldError(128);
+		F = CFile->FldD;
+		F2 = F->Chain;
+		if ((F->Typ != 'A') || (F2 == nullptr) || (F2->Typ != 'T') || (F2->Chain != nullptr)) OldError(128);
 		CFile->IsHlpFile = true;
 	}
 label2:
 	if ((Lexem == '#') && (ForwChar == 'C')) {
-		RdLex(); RdLex(); RdFieldDList(false); goto label2;
+		RdLex();
+		RdLex();
+		RdFieldDList(false);
+		goto label2;
 	}
 	if ((Lexem == '#') && (ForwChar == 'K')) {
-		RdLex(); RdKeyD(); goto label2;
+		RdLex();
+		RdKeyD();
+		goto label2;
 	}
 	if (issql && (CFile->Keys != nullptr)) CFile->Typ = 'X';
-	GetXFileD(); CompileRecLen(); SetLDIndexRoot(LinkDRoot, LDOld);
+	GetXFileD();
+	CompileRecLen();
+	SetLDIndexRoot(LinkDRoot, LDOld);
 	if ((CFile->Typ == 'X') && (CFile->Keys == nullptr)) Error(107);
-	if ((Lexem == '#') && (ForwChar == 'A')) { RdLex(); RdKumul(); }
+	if ((Lexem == '#') && (ForwChar == 'A'))
+	{
+		RdLex();
+		RdKumul();
+	}
 	ChainLast(FileDRoot, CFile);
 	if (Ext == '$'/*compile from text at run time*/) {
-		CFile->IsDynFile = true; CFile->ChptPos.R = CRdb; MarkStore(p); goto label1;
+		CFile->IsDynFile = true;
+		CFile->ChptPos.R = CRdb;
+		MarkStore(p);
+		goto label1;
 	}
 	if (Lexem != 0x1A) CFile->TxtPosUDLI = OrigInp()->CurrPos - 1;
-	if ((Lexem == '#') && (ForwChar == 'U')) { RdLex(); TestUserView(); }
+	if ((Lexem == '#') && (ForwChar == 'U'))
+	{
+		RdLex();
+		TestUserView();
+	}
 	MarkStore(p);
 	li = (LiRoots*)GetZStore(sizeof(LiRoots));
 	CFile->LiOfs = uintptr_t(li) - uintptr_t(CFile);

@@ -14,6 +14,7 @@
 #include "sort.h"
 
 globconf* gcfg1 = globconf::GetInstance();
+FileD* CFile;
 
 integer CompLongStr(LongStrPtr S1, LongStrPtr S2)
 {

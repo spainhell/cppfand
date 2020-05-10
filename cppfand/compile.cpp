@@ -16,6 +16,10 @@ pstring QQdiv = "div";
 pstring QQmod = "mod";
 pstring QQround = "round";
 
+BYTE CurrChar; // { Compile }
+BYTE ForwChar, ExpChar, Lexem;
+pstring LexWord;
+
 void Error(integer N)
 {
 	pstring ErrMsg;
@@ -334,7 +338,10 @@ void RdBackSlashCode()
 void RdLex()
 {
 	WORD i;
-	OldErrPos = CurrPos; SkipBlank(false); ReadChar(); Lexem = CurrChar;
+	OldErrPos = CurrPos;
+	SkipBlank(false);
+	ReadChar();
+	Lexem = CurrChar;
 	if (std::isalpha(CurrChar))
 	{
 		Lexem = _identifier; LexWord[1] = CurrChar; i = 1;
@@ -496,15 +503,20 @@ bool TestKeyWord(pstring S)
 
 bool IsKeyWord(pstring S)
 {
-	//TODO
-	/*asm  cmp Lexem, _identifier; jne @3;
-	lea si, LexWord; les di, S; cld;xor ch, ch; mov cl, [si]; cmpsb; jnz @3;
-	jcxz @2;xor bh, bh;
-	@1:  mov bl, [si]; mov al, BYTE PTR UpcCharTab[bx]; cmp al, es: [di] ; jnz @3;
-	inc si; inc di; loop @1;
-	@2:  call RdLex; mov ax, 1; jmp @4;
-	@3: xor ax, ax;
-	@4:  end;*/
+	if (Lexem == _identifier)
+	{
+		size_t count = LexWord.length();
+		if (S.length() == count)
+		{
+		label1:
+			size_t index = 1;
+			if (UpcCharTab[index] != S[1]) return false;
+			index++;
+			if (count - index > 0) goto label1;
+			RdLex();
+			return true;
+		}
+	}
 	return false;
 }
 

@@ -1045,25 +1045,11 @@ bool OSshell(pstring Path, pstring CmdLine, bool NoCancel, bool FreeMm, bool LdF
 
 pstring PrTab(WORD N)
 {
-	/*
-	function PrTab(N:word):string;
-		var p:pointer;
-		begin p:=printer[prCurr].Strg;
-		asm  push ds; cld; lds si,p; les di,@result; mov cx,N; inc cx; xor ax,ax;
-		@1:  add si,ax; lodsb; loop @1;
-			 stosb; mov cx,ax; rep movsb; pop ds end;
-		end;
-		procedure SetCurrPrinter(NewPr:integer);
-		begin
-		  if NewPr>=prMax then exit;
-		  if prCurr>=0 then with printer[prCurr] do if TmOut<>0 then
-			PrTimeOut[Lpti]:=OldPrTimeOut[Lpti];
-		  prCurr:=NewPr;
-		  if prCurr>=0 then with printer[prCurr] do if TmOut<>0 then begin
-			PrTimeOut[Lpti]:=TmOut end;
-		end;
-	 */
-	return pstring();
+	void* p;
+	p = printer[prCurr].Strg;
+
+	// ASM
+	return "";
 }
 
 void SetCurrPrinter(integer NewPr)
@@ -1180,7 +1166,8 @@ void InitOverlays()
 
 void OpenWorkH()
 {
-	gcfg2->CPath = gcfg2->FandWorkName; gcfg2->CVol = "";
+	gcfg2->CPath = gcfg2->FandWorkName;
+	gcfg2->CVol = "";
 	gcfg2->ResFile.Handle = OpenH(_isoldnewfile, Exclusive);
 	if (gcfg2->HandleError != 0) printf("cant't open %s", gcfg2->FandWorkName.c_str());
 	wait();

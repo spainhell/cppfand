@@ -134,11 +134,11 @@ typedef SumElem* SumElPtr;
 struct FieldDescr // ø. 100
 {
 	FieldDescr* Chain = nullptr;
-	char Typ, FrmlTyp;
-	BYTE L, M, NBytes, Flg;
+	char Typ = 0, FrmlTyp = 0;
+	BYTE L = 0, M = 0, NBytes = 0, Flg = 0;
 	// case boolean {Stored} of True:(Displ:integer); False:(Frml:FrmlPtr; Name:string[1]{ curr.length });
-	integer Displ;
-	FrmlPtr Frml;
+	integer Displ = 0;
+	FrmlElem* Frml = nullptr;
 	pstring Name;
 };
 typedef FieldDescr* FieldDPtr;
@@ -608,7 +608,7 @@ const BYTE _mousein = 0xf7;  // {P4};
 static FileD* FileDRoot; // { only current RDB }
 static LinkD* LinkDRoot; // { for all RDBs     }
 static FuncD* FuncDRoot;
-static FileD* CFile;
+extern FileD* CFile;
 static void* CRecPtr;
 static KeyD* CViewKey;
 static pstring TopRdbDir, TopDataDir;
@@ -672,10 +672,10 @@ integer CompLongShortStr(LongStrPtr S1, pstring S2); // r551 ASM
 integer CompArea(void* A, void* B, integer L); // r575 ASM
 
 //void ResetCompilePars(); // r686
+extern BYTE CurrChar; // { Compile }
+extern BYTE ForwChar, ExpChar, Lexem;
+extern pstring LexWord;
 
-static BYTE CurrChar; // { Compile }
-static BYTE ForwChar, ExpChar, Lexem;
-static pstring LexWord;
 static bool SpecFDNameAllowed, IdxLocVarAllowed, FDLocVarAllowed, IsCompileErr;
 static CompInpD* PrevCompInp;						// { saved at "include" }
 static CharArrPtr InpArrPtr; static RdbPos InpRdbPos;		// { "  "  }

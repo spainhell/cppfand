@@ -3,6 +3,7 @@
 #include "constants.h"
 #include "pstring.h"
 
+class FileD;
 struct EFldD;
 const BYTE FandFace = 17;
 
