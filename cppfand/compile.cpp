@@ -426,9 +426,25 @@ void TestLex(char X)
 
 void Accept(char X)
 {
-	/*asm  mov al, X; cmp al, Lexem; je @1;
-	mov ExpChar, al; mov ax, 1; push ax; call Error;
+	/*asm
+	mov al, X;
+	cmp al, Lexem;
+	je @1;
+	mov ExpChar, al;
+	mov ax, 1;
+	push ax;
+	call Error;
 	@1:  call RdLex;*/
+
+	if (X == Lexem)
+	{
+		RdLex();
+	}
+	else
+	{
+		ExpChar = X;
+		Error(X);
+	}
 }
 
 integer RdInteger()

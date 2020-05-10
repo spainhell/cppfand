@@ -219,7 +219,9 @@ void CompileHelpCatDcl()
 #endif
 
 	HelpFD = *CFile;
-	RdMsg(52); s = gcfg14->MsgLine; SetInpStr(s); RdFileD("Catalog", 'C', "");
+	RdMsg(52); s = gcfg14->MsgLine;
+	SetInpStr(s);
+	RdFileD("Catalog", 'C', "");
 	CatFD = CFile; FileDRoot = nullptr;
 	CatRdbName = CatFD->FldD; CatFileName = CatRdbName->Chain;
 	CatArchiv = CatFileName->Chain;

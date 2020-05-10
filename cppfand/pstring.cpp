@@ -2,13 +2,11 @@
 
 pstring::pstring() : initLen(256)
 {
-	len = 0;
 	arr = new unsigned char[initLen] { '\0' };
 }
 
 pstring::pstring(unsigned char length) : initLen(length + 1)
 {
-	len = 0;
 	arr = new unsigned char[initLen] { '\0' };
 }
 
@@ -16,23 +14,23 @@ pstring::pstring(const char* text) : initLen(256)
 {
 	size_t input_len = strlen(text);
 	if (input_len > 255) input_len = 255;
-	this->len = (unsigned char)input_len;
 	arr = new unsigned char[initLen] { '\0' };
-	memcpy((void*)arr, (void*)text, len);
+	arr[0] = (unsigned char)input_len;
+	memcpy((void*)&arr[1], (void*)text, arr[0]);
 }
 
 pstring::pstring(const pstring& ps) : initLen(ps.initLen)
 {
-	this->len = ps.len;
 	arr = new unsigned char[ps.initLen] { '\0' };
-	memcpy((void*)arr, (void*)ps.arr, len);
+	memcpy((void*)arr, (void*)ps.arr, ps.arr[0] + 1);
 }
 
 pstring::pstring(std::string cs) : initLen(cs.length())
 {
-	this->len = cs.length();
-	arr = new unsigned char[this->len]{ '\0' };
-	memcpy(arr, cs.c_str(), len);
+	size_t origLen = cs.length();
+	arr = new unsigned char[origLen + 1]{ '\0' };
+	arr[0] = origLen;
+	memcpy(&arr[1], cs.c_str(), origLen);
 }
 
 pstring::~pstring()
@@ -42,8 +40,7 @@ pstring::~pstring()
 
 unsigned char pstring::length()
 {
-	arr[len] = '\0'; // 'arr' je o 1 vìtší než 'len'
-	return len;
+	return arr[0];
 }
 
 unsigned short pstring::initLength()
@@ -53,10 +50,9 @@ unsigned short pstring::initLength()
 
 void pstring::cut(unsigned char length)
 {
-	if (length < this->len)
+	if (length < arr[0])
 	{
-		this->len = length;
-		arr[this->len] = '\0';
+		arr[0] = length;
 	}
 }
 
@@ -67,47 +63,44 @@ void pstring::clean()
 
 int pstring::first(char c)
 {
-	for (int i = 0; i < this->len; i++)
+	for (int i = 1; i <= arr[0]; i++)
 	{
-		if (arr[0] == c) return i + 1;
+		if (arr[i] == c) return i;
 	}
 	return 0;
 }
 
 void pstring::Delete(int index, int size)
 {
-	if (index < 1) return;
-	int i = index - 1;
-	int takeFrom = i + size;
-	if (takeFrom >= len) return;
-	memcpy(&arr[i], &arr[takeFrom], this->len - takeFrom);
-	len -= size;
+	if (index < 1 || index > arr[0]) return;
+	int end = index + size;
+	if (end > arr[0]) end = arr[0];
+	memcpy(&arr[index], &arr[index + size], arr[0] - size + 1);
 }
 
 pstring pstring::substr(unsigned char index)
 {
-	return substr(index, len - index);
+	return substr(index, arr[0] - index);
 }
 
 pstring pstring::substr(unsigned char index, unsigned char count)
 {
-	arr[len] = '\0'; // 'arr' je o 1 vìtší než 'len'
 	pstring psbst = pstring();
-	if (index < len)
+	if (index < arr[0])
 	{
-		if (count > len - index) count = len - index;
+		if (count > arr[0] - index) count = arr[0] - index;
 		memcpy((void*)psbst.arr, &arr[index], count);
-		psbst.len = count;
 	}
 	return psbst;
 }
 
 void pstring::replace(const char* value)
 {
-	for (int i = 0; i <= initLen; i++) { arr[i] = '\0'; }
+	for (int i = 1; i <= initLen; i++) { arr[i] = '\0'; }
 	int len = strlen(value);
 	if (len > initLen) len = initLen;
-	memcpy((void*)arr, (void*)value, len);
+	arr[0] = len;
+	memcpy((void*)&arr[1], (void*)value, len);
 }
 
 void pstring::insert(const char* value, unsigned char position)
@@ -116,19 +109,18 @@ void pstring::insert(const char* value, unsigned char position)
 
 const char* pstring::c_str()
 {
-	return (const char*)(&arr[0]);
+	int len = arr[0];
+	arr[len + 1] = '\0';
+	return (const char*)(&arr[1]);
 }
 
 bool pstring::empty()
 {
-	return (len == 0);
+	return (arr[0] == 0);
 }
 
 unsigned char& pstring::operator[](size_t i)
 {
-	if (i == 0) return len;
-	//if (i > len) { throw std::exception("Index out of range."); }
-	i--;
 	return arr[i];
 }
 
@@ -136,9 +128,8 @@ pstring& pstring::operator=(const char* a)
 {
 	int newLen = strlen(a);
 	if (newLen > initLen - 1) { throw std::exception("Index out of range."); }
-	memcpy((void*)arr, (void*)a, newLen);
-	len = (unsigned char)newLen;
-	arr[len] = '\0'; // 'arr' je o 1 vìtší než 'len'
+	arr[0] = newLen;
+	memcpy((void*)&arr[1], (void*)a, newLen);
 	return *this;
 }
 
@@ -152,50 +143,45 @@ pstring& pstring::operator=(const pstring& newvalue)
 	if (this == &newvalue) return *this;
 	
 	if (newvalue.initLen > this->initLen) { throw std::exception("Index out of range."); }
-	memcpy((void*)arr, (void*)newvalue.arr, newvalue.len);
-	len = newvalue.len;
-	arr[newvalue.len] = '\0'; // 'arr' je o 1 vìtší než 'len'
+	memcpy((void*)arr, (void*)newvalue.arr, initLen);
 	return *this;
 }
 
 pstring::operator std::string() const
 {
-	arr[len] = '\0'; // 'arr' je o 1 vìtší než 'len'
-	const char* exp = (const char*)arr;
+	int len = arr[0];
+	arr[len + 1] = '\0';
+	const char* exp = (const char*)&arr[1];
 	return std::string(exp);
 }
 
 pstring& pstring::operator+=(const pstring& second)
 {
-	unsigned char secLen = second.len;
-	unsigned char firLen = len;
+	unsigned char secLen = second.arr[0];
+	unsigned char firLen = arr[0];
 	unsigned short newLen = firLen + secLen;
 	if (newLen > 255) newLen = 255;
-	this->len = newLen;
-	memcpy((void*)&arr[firLen], (void*)second.arr, newLen - firLen);
-	arr[len] = '\0'; // 'arr' je o 1 vìtší než 'len'
+	arr[0] = newLen;
+	memcpy((void*)&arr[firLen + 1], (void*)&second.arr[1] , newLen - firLen);
 	return *this;
 }
 
 pstring pstring::operator+(const pstring& second)
 {
-	unsigned char secLen = second.len;
-	unsigned char firLen = len;
+	unsigned char secLen = second.arr[0];
+	unsigned char firLen = arr[0];
 	unsigned short newLen = firLen + secLen;
 	if (newLen > 255) newLen = 255;
 	pstring nps(*this);
-	nps.len = newLen;
-	memcpy((void*)&nps.arr[firLen], (void*)second.arr, newLen - firLen);
-	arr[len] = '\0'; // 'arr' je o 1 vìtší než 'len'
+	nps.arr[0] = newLen;
+	memcpy((void*)&nps.arr[firLen + 1], (void*)&second.arr[1], newLen - firLen);
 	return nps;
 }
 
 bool pstring::operator==(const pstring& eqpstring)
 {
-	arr[len] = '\0'; // 'arr' je o 1 vìtší než 'len'
-	eqpstring.arr[eqpstring.len] = '\0'; // 'arr' je o 1 vìtší než 'len'
-	if (len != eqpstring.len) return false;
-	return strcmp((char*)arr, (char*)eqpstring.arr) == 0;
+	if (arr[0] != eqpstring.arr[0]) return false;
+	return strcmp((char*)&arr[1], (char*)&eqpstring.arr[1]) == 0;
 }
 
 bool pstring::operator!=(const pstring& eqpstring)
@@ -205,11 +191,10 @@ bool pstring::operator!=(const pstring& eqpstring)
 
 void pstring::Append(unsigned char c)
 {
-	unsigned char firLen = len;
+	unsigned char firLen = arr[0];
 	unsigned short newLen = firLen + 1;
 	if (newLen > initLen - 1) return;
-	this->len = newLen;
-	arr[len - 1] = c;
-	arr[len] = '\0'; // 'arr' je o 1 vìtší než 'len'
+	arr[newLen] = c;
+	arr[0] = newLen;
 }
 

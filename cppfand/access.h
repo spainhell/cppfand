@@ -237,30 +237,30 @@ class FileD // ø. 177
 {
 public:
 	FileD();
-	FileD* Chain;
-	WORD RecLen;
-	void* RecPtr;
-	longint NRecs;
-	bool WasWrRec, WasRdOnly, Eof;
-	char Typ;        // 8=Fand 8;6=Fand 16;X= .X; 0=RDB; C=CAT 
-	FILE* Handle;
-	longint IRec;
-	WORD FrstDispl;
-	TFile* TF;
+	FileD* Chain = nullptr;
+	WORD RecLen = 0;
+	void* RecPtr = nullptr;
+	longint NRecs = 0;
+	bool WasWrRec = false, WasRdOnly = false, Eof = false;
+	char Typ = 0;        // 8=Fand 8;6=Fand 16;X= .X; 0=RDB; C=CAT 
+	FILE* Handle = nullptr;
+	longint IRec = 0;
+	WORD FrstDispl = 0;
+	TFile* TF = nullptr;
 	RdbPos ChptPos;     // zero for Rdb and FD translated from string 
-	WORD TxtPosUDLI;    // =0 if not present
-	FileD* OrigFD;    // like orig. or nil
-	BYTE Drive;         // 1=A ,2=B ,else 0
-	WORD CatIRec;
-	FieldDPtr FldD;
-	bool IsParFile, IsJournal, IsHlpFile, typSQLFile, IsSQLFile, IsDynFile;
-	FileUseMode UMode;
-	LockMode LMode, ExLMode, TaLMode;
-	StringList ViewNames;  //after each string BYTE string with user codes 
-	XFile* XF;
-	KeyDPtr Keys;
-	AddD* Add;
-	uintptr_t nLDs, LiOfs;
+	WORD TxtPosUDLI = 0;    // =0 if not present
+	FileD* OrigFD = nullptr;    // like orig. or nil
+	BYTE Drive = 0;         // 1=A ,2=B ,else 0
+	WORD CatIRec = 0;
+	FieldDPtr FldD = nullptr;
+	bool IsParFile = false, IsJournal = false, IsHlpFile = false, typSQLFile = false, IsSQLFile = false, IsDynFile = false;
+	FileUseMode UMode = Closed;
+	LockMode LMode = NullMode, ExLMode = NullMode, TaLMode = NullMode;
+	StringList ViewNames = nullptr;  //after each string BYTE string with user codes 
+	XFile* XF = nullptr;
+	KeyDPtr Keys = nullptr;
+	AddD* Add = nullptr;
+	uintptr_t nLDs = 0, LiOfs = 0;
 	pstring Name;
 	longint UsedFileSize();
 	bool IsShared();
@@ -605,16 +605,16 @@ const BYTE _mousein = 0xf7;  // {P4};
 
 
 // ø. 474
-static FileD* FileDRoot; // { only current RDB }
-static LinkD* LinkDRoot; // { for all RDBs     }
-static FuncD* FuncDRoot;
+extern FileD* FileDRoot; // { only current RDB }
+extern LinkD* LinkDRoot; // { for all RDBs     }
+extern FuncD* FuncDRoot;
 extern FileD* CFile;
-static void* CRecPtr;
-static KeyD* CViewKey;
-static pstring TopRdbDir, TopDataDir;
-static pstring CatFDName;
-static RdbD* CRdb, TopRdb;
-static FileD* CatFD, HelpFD;
+extern void* CRecPtr;
+extern KeyD* CViewKey;
+extern pstring TopRdbDir, TopDataDir;
+extern pstring CatFDName;
+extern RdbD* CRdb, TopRdb;
+extern FileD* CatFD, HelpFD;
 
 // r483
 struct structXPath { longint Page; WORD I; } static XPath[10];
@@ -655,7 +655,7 @@ static WORD UserCode = 0;
 // **********
 
 static WORD* WordVarArr = &RprtLine;
-static FieldDPtr CatRdbName, CatFileName, CatArchiv, CatPathName, CatVolume;
+extern FieldDPtr CatRdbName, CatFileName, CatArchiv, CatPathName, CatVolume;
 static pstring MountedVol[FloppyDrives] = { pstring(11), pstring(11), pstring(11) };
 
 static pstring SQLDateMask = "DD.MM.YYYY hh:mm:ss";

@@ -40,7 +40,6 @@ public:
 
 private:
     const unsigned short initLen;
-    unsigned char len;
     unsigned char* arr;
 };
 

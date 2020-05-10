@@ -232,6 +232,36 @@ pstring StrPas(const char* Src)
 
 void ChainLast(void* Frst, void* New)
 {
+	/* asm
+	push ds;
+	lds si, Frst;
+@1: cmp[si + 2].word, 0;
+	je @2;
+	lds si, [si];
+	jmp @1;
+@2: les di, New;
+	mov[si], di;
+	mov ax, es;
+	mov[si + 2], ax;
+	mov es : [di] .word, 0;
+	mov es : [di + 2] .word, 0;
+	pop ds;
+	*/
+
+	// zøejmì hledá poslední Chain a ten vrací
+	if (Frst == nullptr) { New = nullptr; return; }
+	void* last = nullptr;
+	uintptr_t mask = 0;
+	while (true)
+	{
+		int result = memcmp(Frst, &mask, 4);
+		if (result == 0) last = (void*)uintptr_t(last);
+		else
+		{
+			New = last;
+			return;
+		}
+	}
 }
 
 void* LastInChain(void* Frst)
