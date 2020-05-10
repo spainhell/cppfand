@@ -34,4 +34,3 @@ const char TextM = 'T'; const char ViewM = 'V'; const char HelpM = 'H';
 const char SinFM = 'S'; const char DouFM = 'D'; const char DelFM = 'F';
 const char NotFM = 'N'; const char FileT = 'F'; const char LocalT = 'V';
 const char MemoT = 'M';
-static bool Insert, Indent, Wrap, Just;

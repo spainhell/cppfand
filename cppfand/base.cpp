@@ -326,6 +326,10 @@ double CurrTime()
 	return 0.0;
 }
 
+void wait()
+{
+}
+
 bool MouseInRect(WORD X, WORD Y, WORD XSize, WORD Size)
 {
 	return false;
@@ -1200,19 +1204,19 @@ bool SEquUpcase(pstring S1, pstring S2)
 	return true;
 }
 
-void OpenOvrFile()
-{
-	FILE* h;
-	gcfg2->CPath = gcfg2->FandOvrName;
-	gcfg2->CVol = "";
-	h = OpenH(_isoldfile, RdOnly);
-		if (h != OvrHandle)
-		{
-			printf("can't open FAND.OVR");
-			wait();
-			Halt(-1);
-		}
-}
+//void OpenOvrFile()
+//{
+//	FILE* h;
+//	gcfg2->CPath = gcfg2->FandOvrName;
+//	gcfg2->CVol = "";
+//	h = OpenH(_isoldfile, RdOnly);
+//		if (h != OvrHandle)
+//		{
+//			printf("can't open FAND.OVR");
+//			wait();
+//			Halt(-1);
+//		}
+//}
 
 void NonameStartFunction()
 {

@@ -6,66 +6,61 @@
 #include "pstring.h"
 
 
-longint const UserLicNrShow = 999001; // 160188
-const char Version[] = { '4', '.', '2', '0', '\0' };
-const WORD FDVersion = 0x0411;
-const WORD ResVersion = 0x0420;
-const char CfgVersion[] = { '4', '.', '2', '0', '\0' };
-const BYTE DMLVersion = 41;
-const WORD NoDayInMonth[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
-const bool HasCoproc = true;
-
 struct WRect { BYTE C1, R1, C2, R2; }; // r34
 struct WordRec { BYTE Lo = 0, Hi = 0; };
 struct LongRec { WORD Lo = 0, Hi = 0; };
-// struct PtrRec { WORD Ofs, Seg; }
-
-
-const WORD MaxLStrLen = 65000;
-const BYTE WShadow = 0x01; // window flags
-const BYTE WNoClrScr = 0x02;
-const BYTE WPushPixel = 0x04;
-const BYTE WNoPop = 0x08;
-const BYTE WHasFrame = 0x10;
-const BYTE WDoubleFrame = 0x20;
-
 typedef void* PProcedure;
 
-inline void wait()
-{
-}
+void MyMove(void* A1, void* A2, WORD N);
+void ChainLast(void* Frst, void* New); // r13 ASM
+void* LastInChain(void* Frst); // r18 ASM
+WORD ListLength(void* P); // r22 ASM
+void ReplaceChar(pstring S, char C1, char C2); // r30 ASM
+bool SEquUpcase(pstring S1, pstring S2);
+pstring StrPas(const char* Src);
+void StrLPCopy(char* Dest, pstring s, WORD MaxL);
+WORD SLeadEqu(pstring S1, pstring S2);
+bool EqualsMask(void* p, WORD l, pstring Mask); // r86 ASM
+integer MinI(integer X, integer Y);
+integer MaxI(integer X, integer Y);
+WORD MinW(WORD X, WORD Y);
+WORD MaxW(WORD X, WORD Y);
+longint MinL(longint X, longint Y);
+longint MaxL(longint X, longint Y);
+longint SwapLong(longint N);
+void ExChange(void* X, void* Y, WORD L);
+bool OverlapByteStr(void* p1, void* p2); // ASM
+WORD CountDLines(void* Buf, WORD L, char C); // r139 ASM
+pstring GetDLine(void* Buf, WORD L, char C, WORD I); // r144 ASM
+WORD FindCtrlM(LongStrPtr s, WORD i, WORD n); // r152
+WORD SkipCtrlMJ(LongStrPtr s, WORD i); // r158
+void AddBackSlash(pstring& s);
+void DelBackSlash(pstring& s);
+bool MouseInRect(WORD X, WORD Y, WORD XSize, WORD Size); // r175 ASM
+bool MouseInRectProc(WORD X, WORD Y, WORD XSize, WORD Size); // r182 ASM - rozdìleno na txt a graph režim
 
-// ø. 95
+// *** TIME, DATE ***
+void SplitDate(double R, WORD& d, WORD& m, WORD& y);
+double AddMonth(double R, double RM);
+double DifMonth(double R1, double R2);
+double ValDate(const pstring& Txtpstring, pstring Mask); // r276
+pstring StrDate(double R, pstring Mask); //r321
+double Today(); // r362
+double CurrTime();
 
+// *** DEBUGGING ***
+void wait();
 #ifndef FandRunV
-inline pstring HexB(BYTE b)
-{
-}
-
-inline pstring HexW(WORD i)
-{
-}
-
-inline pstring HexD(longint i)
-{
-}
-
-inline pstring HexPtr(void* p)
-{
-}
-
-inline void DispH(void* ad, integer NoBytes)
-{
-}
+pstring HexB(BYTE b);
+pstring HexW(WORD i);
+pstring HexD(longint i);
+pstring HexPtr(void* p);
+void DispH(void* ad, integer NoBytes);
 #endif
 
-
-/* MEMORY MANAGEMENT */
+// *** MEMORY MANAGEMENT ***
 static WORD CachePageSize;
 static void* AfterCatFD; // r108
-const BYTE CachePageShft = 12;
-const WORD NCachePages = 0;
-const WORD XMSCachePages = 0;
 struct CachePage { BYTE Pg3[3]; BYTE Handle; longint HPage; bool Upd; BYTE Arr[4096]; };
 struct ProcStkD { ProcStkD* ChainBack; void* LVRoot; }; // r199
 typedef ProcStkD* ProcStkPtr;
@@ -75,27 +70,77 @@ struct ExitRecord {
 	WORD rBP = 0, rIP = 0, rCS = 0, rSP = 0, rDS = 0;
 	bool ExP = false, BrkP = false;
 } static ExitBuf; // r202 - r210
-static ProcStkD* MyBP; static ProcStkD* ProcMyBP;
+static ProcStkD* MyBP;
+static ProcStkD* ProcMyBP;
 static WORD BPBound; // r212
 static bool ExitP, BreakP;
 static longint LastExitCode = 0; // r215
+
+void* Normalize(longint L);
+longint AbsAdr(void* P);
+void* GetStore(WORD Size);
+void* GetZStore(WORD Size);
+void MarkStore(void* p);
+void ReleaseStore(void* pointer);
+void ReleaseAfterLongStr(void* p);
+longint StoreAvail();
+void* GetStore2(WORD Size);
+void* GetZStore2(WORD Size);
+pstring* StoreStr(pstring S);
+void MarkStore2(void* p);
+void ReleaseStore2(void* p);
+void MarkBoth(void* p, void* p2);
+void ReleaseBoth(void* p, void* p2);
+void AlignLongStr();
+
 void StackOvr(WORD NewBP); // r216
 void NewExit(PProcedure POvr, ExitRecord Buf);  // r218
-/* konec */
+void GoExit();
+void RestoreExit(ExitRecord& Buf);
+bool OSshell(pstring Path, pstring CmdLine, bool NoCancel, bool FreeMm, bool LdFont, bool TextMd);
 
-/*  VIRTUAL HANDLES  */
+
+// ***  VIRTUAL HANDLES  ***
 enum FileOpenMode { _isnewfile, _isoldfile, _isoverwritefile, _isoldnewfile }; // poradi se nesmi zmenit!!!
 enum FileUseMode { Closed, RdOnly, RdShared, Shared, Exclusive }; // poradi se nesmi zmenit!!!
-//static pstring OldDir, FandDir, WrkDir;
-//static pstring FandOvrName, FandResName, FandWorkName, FandWorkXName, FandWorkTName;
-//static pstring CPath; static pstring CDir; static pstring CName; static pstring CExt;
-//static pstring CVol;
 static bool WasLPTCancel;
 static FILE* WorkHandle;
 static longint MaxWSize = 0; // {currently occupied in FANDWORK.$$$}
-/* konec */
 
+bool IsNetCVol();
+bool CacheExist();
+bool SaveCache(WORD ErrH);
+void ClearCacheH(FILE* h);
+void SetUpdHandle(FILE* H);
+void ResetUpdHandle(FILE* H);
+bool IsUpdHandle(FILE* H);
+longint PosH(FILE* handle);
+void SeekH(FILE* handle, longint pos);
+longint FileSizeH(FILE* handle);
+FILE* OpenH(FileOpenMode Mode, FileUseMode UM);
+WORD ReadH(FILE* handle, WORD bytes, void* buffer);
+void WriteH(FILE* handle, WORD bytes, void* buffer);
+void TruncH(FILE* handle, longint N);
+void FlushH(FILE* handle);
+void FlushHandles();
+void CloseH(FILE* handle);
+void CloseClearH(FILE* h);
+void SetFileAttr(WORD Attr);
+WORD GetFileAttr();
+void RdWrCache(bool ReadOp, FILE* Handle, bool NotCached, longint Pos, WORD N, void* Buf);
+void MyDeleteFile(pstring path);
+void RenameFile56(pstring OldPath, pstring NewPath, bool Msg);
+pstring MyFExpand(pstring Nm, pstring EnvName);
 
+// *** DISPLAY ***
+
+WORD LenStyleStr(pstring s);
+WORD LogToAbsLenStyleStr(pstring s, WORD l);
+void WrStyleStr(pstring s, WORD Attr);
+void WrLongStyleStr(LongStr* S, WORD Attr);
+
+// *** MESSAGES ***
+bool SetStyleAttr(char C, BYTE& a);
 void SetMsgPar(pstring s);
 void Set2MsgPar(pstring s1, pstring s2);
 void Set3MsgPar(pstring s1, pstring s2, pstring s3);
@@ -177,18 +222,8 @@ static char CharOrdTab[256]; // after Colors /FANDDML/ // ø. 370
 static char UpcCharTab[256]; // TODO: v obou øádcích bylo 'array[char] of char;' - WTF?
 static WORD TxtCols, TxtRows;
 
-// konstanty
-const BYTE prName = 0; const BYTE prUl1 = 1; const BYTE prUl2 = 2; const BYTE prKv1 = 3;
-const BYTE prKv2 = 4; const BYTE prBr1 = 5; const BYTE prBr2 = 6; const BYTE prDb1 = 7;
-const BYTE prDb2 = 8; const BYTE prBd1 = 9; const BYTE prBd2 = 10; const BYTE prKp1 = 11;
-const BYTE prKp2 = 12; const BYTE prEl1 = 13; const BYTE prEl2 = 14; const BYTE prReset = 15;
-const BYTE prMgrFileNm = 15; const BYTE prMgrProg = 16; const BYTE prMgrParam = 17;
-const BYTE prPageSizeNN = 16; const BYTE prPageSizeTrail = 17; const BYTE prLMarg = 18;
-const BYTE prLMargTrail = 19; const BYTE prUs11 = 20; const BYTE prUs12 = 21;
-const BYTE prUs21 = 22; const BYTE prUs22 = 23; const BYTE prUs31 = 24;
-const BYTE prUs32 = 25; const BYTE prLine72 = 26; const BYTE prLine216 = 27;
-const BYTE prDen60 = 28; const BYTE  prDen120 = 29; const BYTE prDen240 = 30;
-const BYTE prColor = 31; const BYTE prClose = 32;
+pstring PrTab(WORD N);
+void SetCurrPrinter(integer NewPr);
 
 static integer prCurr, prMax;
 struct Printer {
@@ -198,114 +233,15 @@ struct Printer {
 typedef std::array<BYTE, 4> TPrTimeOut; // ø. 418
 static TPrTimeOut OldPrTimeOut;
 static TPrTimeOut PrTimeOut;  // absolute 0:$478;
-
 static bool WasInitDrivers = false;
 static bool WasInitPgm = false;
-
 static WORD LANNode; // ø. 431
-
-const BYTE RMsgIdx = 0; const BYTE BgiEgaVga = 1; const BYTE BgiHerc = 2;
-const BYTE ChrLittKam = 3; const BYTE ChrTripKam = 4; const BYTE Ega8x14K = 5;
-const BYTE Vga8x16K = 6; const BYTE Vga8x19K = 7; const BYTE Ega8x14L = 8;
-const BYTE Vga8x16L = 9; const BYTE Vga8x19L = 10; const BYTE ChrLittLat = 11;
-const BYTE ChrTripLat = 12; const BYTE LatToWinCp = 13; const BYTE KamToWinCp = 14;
-const BYTE WinCpToLat = 15; 
-
 static void (*CallOpenFandFiles)(); // r453
 static void (*CallCloseFandFiles)(); // r454
 
 static double userToday;
 
-WORD ReadH(FILE* handle, WORD bytes, void* buffer);
-pstring MyFExpand(pstring Nm, pstring EnvName);
-void CloseH(FILE* handle);
-FILE* OpenH(FileOpenMode Mode, FileUseMode UM);
-void MarkStore2(void* p);
-void ReleaseStore2(void* p);
-void MarkStore(void* p);
-void DelBackSlash(pstring& s);
-void RestoreExit(ExitRecord& Buf);
-void SeekH(FILE* handle, longint pos);
-longint PosH(FILE* handle);
-void SetCurrPrinter(integer NewPr);
-void AddBackSlash(pstring& s);
-FILE* GetOverHandle(FILE* fptr, int diff);
 void OpenWorkH();
-bool SEquUpcase(pstring S1, pstring S2);
-void ReleaseStore(void* pointer);
-bool OSshell(pstring Path, pstring CmdLine, bool NoCancel, bool FreeMm, bool LdFont, bool TextMd);
-void GoExit();
-longint FileSizeH(FILE* handle);
-void RdWrCache(bool ReadOp, FILE* Handle, bool NotCached, longint Pos, WORD N, void* Buf);
-longint SwapLong(longint N);
-void* GetStore(WORD Size);
-void* GetStore2(WORD Size);
-void SetUpdHandle(FILE* H);
-WORD SLeadEqu(pstring S1, pstring S2);
-void* GetZStore(WORD Size);
-bool SaveCache(WORD ErrH);
-void* GetZStore2(WORD Size);
 
-integer MinI(integer X, integer Y);
-integer MaxI(integer X, integer Y);
-WORD MinW(WORD X, WORD Y);
-WORD MaxW(WORD X, WORD Y);
-longint MinL(longint X, longint Y);
-longint MaxL(longint X, longint Y);
-longint StoreAvail();
-void WriteH(FILE* handle, WORD bytes, void* buffer);
-void TruncH(FILE* handle, longint N);
-void FlushH(FILE* handle);
-void MyDeleteFile(pstring path);
-
-WORD FindCtrlM(LongStrPtr s, WORD i, WORD n); // r152
-WORD SkipCtrlMJ(LongStrPtr s, WORD i); // r158
-
-pstring PrTab(WORD N);
-pstring StrPas(const char* Src);
-
-void ChainLast(void* Frst, void* New); // r13 ASM
-void* LastInChain(void* Frst); // r18 ASM
-pstring* StoreStr(pstring S);
-void CloseClearH(FILE* h);
-bool CacheExist();
-void FlushHandles();
-bool IsNetCVol();
-WORD GetFileAttr();
-void SetFileAttr(WORD Attr);
-void ClearCacheH(FILE* h);
-void RenameFile56(pstring OldPath, pstring NewPath, bool Msg);
-void ResetUpdHandle(FILE* H);
-//bool IsHandle(FILE* H);
-bool IsUpdHandle(FILE* H);
-void StrLPCopy(char* Dest, pstring s, WORD MaxL);
-void SplitDate(double R, WORD& d, WORD& m, WORD& y);
-double Today(); // r362
-double CurrTime();
-bool MouseInRect(WORD X, WORD Y, WORD XSize, WORD Size); // r175 ASM
-double ValDate(const pstring& Txtpstring, pstring Mask); // r276
-pstring StrDate(double R, pstring Mask); //r321
-double AddMonth(double R, double RM);
-double DifMonth(double R1, double R2);
-void MyMove(void* A1, void* A2, WORD N);
-void ReleaseAfterLongStr(void* p);
-WORD CountDLines(void* Buf, WORD L, char C); // r139 ASM
-pstring GetDLine(void* Buf, WORD L, char C, WORD I); // r144 ASM
-bool OverlapByteStr(void* p1, void* p2); // ASM
-bool MouseInRectProc(WORD X, WORD Y, WORD XSize, WORD Size); // r182 ASM - rozdìleno na txt a graph režim
-bool EqualsMask(void* p, WORD l, pstring Mask); // r86 ASM
-WORD ListLength(void* P); // r22 ASM
-void AlignLongStr();
-void MarkBoth(void* p, void* p2);
-void ReleaseBoth(void* p, void* p2);
-void* Normalize(longint L);
-longint AbsAdr(void* P);
-void ExChange(void* X, void* Y, WORD L);
-void ReplaceChar(pstring S, char C1, char C2); // r30 ASM
-bool SetStyleAttr(char C, BYTE& a);
-WORD LenStyleStr(pstring s);
-void WrStyleStr(pstring s, WORD Attr);
-void WrLongStyleStr(LongStr* S, WORD Attr);
-WORD LogToAbsLenStyleStr(pstring s, WORD l);
-
+//FILE* GetOverHandle(FILE* fptr, int diff);
 void NonameStartFunction(); // r639 BASE.PAS - kam to patøí?

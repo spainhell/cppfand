@@ -10,7 +10,6 @@
 #include "obaseww.h"
 #include "rdedit.h"
 #include "rdfildcl.h"
-#include "runedi.h"
 #include "runfrml.h"
 #include "runproj.h"
 #include "wwmenu.h"
@@ -403,8 +402,8 @@ void InitRunFand()
 	// Ww
 	ss.Empty = true;
 	ss.Pointto = nullptr;
-	TxtEdCtrlUBrk = false;
-	TxtEdCtrlF4Brk = false;
+	gcfg14->TxtEdCtrlUBrk = false;
+	gcfg14->TxtEdCtrlF4Brk = false;
 	InitMouseEvents();
 	// Editor
 	InitTxtEditor();

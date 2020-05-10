@@ -234,7 +234,7 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 	if (E->NPages > 1) E->NRecs = 1;
 	else E->NRecs = (E->Rows - E->NHdTxt) / E->RecTxt->N;
 	E->BaseRec = 1; E->IRec = 1;
-	CFld = E->FirstFld; E->FirstEmptyFld = *E->FirstFld;
+	gcfg11->CFld = E->FirstFld; E->FirstEmptyFld = *E->FirstFld;
 	E->ChkSwitch = true; E->WarnSwitch = true;
 	CFile = E->FD; CRecPtr = GetRecSpace(); E->OldRecPtr = CRecPtr;
 #ifdef FandSQL

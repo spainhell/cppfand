@@ -3,9 +3,11 @@
 #include "constants.h"
 #include "pstring.h"
 
+struct EFldD;
 const BYTE FandFace = 17;
 
-typedef char CharArr[50]; typedef CharArr* CharArrPtr; // ø23
+typedef char CharArr[50];
+typedef CharArr* CharArrPtr; // ø23
 struct LongStr { WORD LL; CharArr A; }; // ø24
 typedef LongStr* LongStrPtr; // ø25
 
@@ -69,6 +71,9 @@ public:
 	float WDaysFirst;
 	float WDaysLast;
 	wdaystt* WDaysTab;
+
+	bool TxtEdCtrlUBrk, TxtEdCtrlF4Brk;
+	EFldD* CFld;
 private:
 	globconf() {}
 };

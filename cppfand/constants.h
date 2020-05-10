@@ -8,14 +8,6 @@ typedef unsigned char BYTE;
 typedef int longint;
 typedef short integer;
 
-//typedef pstring ScreenStr;
-//typedef pstring* StringPtr;
-//typedef pstring DirStr;
-//typedef pstring PathStr;
-//typedef pstring NameStr;
-//typedef pstring ExtStr;
-//typedef pstring VolStr; // base.pas, ø22, string[11]
-
 const WORD _F1 = 59;
 const WORD _F6 = 64;
 const WORD _F9 = 67;
@@ -154,3 +146,80 @@ const WORD Seq2_reg = 2;
 const WORD Seq4_reg = 4;
 const WORD CrsTimeOn = 0x0003;
 const WORD CrsTimeOff = 0x0005;
+
+// *** BASE.H ***
+longint const UserLicNrShow = 999001; // 160188
+const char Version[] = { '4', '.', '2', '0', '\0' };
+const WORD FDVersion = 0x0411;
+const WORD ResVersion = 0x0420;
+const char CfgVersion[] = { '4', '.', '2', '0', '\0' };
+const BYTE DMLVersion = 41;
+const WORD NoDayInMonth[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+const bool HasCoproc = true;
+
+const WORD MaxLStrLen = 65000;
+const BYTE WShadow = 0x01; // window flags
+const BYTE WNoClrScr = 0x02;
+const BYTE WPushPixel = 0x04;
+const BYTE WNoPop = 0x08;
+const BYTE WHasFrame = 0x10;
+const BYTE WDoubleFrame = 0x20;
+
+const BYTE CachePageShft = 12;
+const WORD NCachePages = 0;
+const WORD XMSCachePages = 0;
+
+// konstanty
+const BYTE prName = 0;
+const BYTE prUl1 = 1;
+const BYTE prUl2 = 2;
+const BYTE prKv1 = 3;
+const BYTE prKv2 = 4;
+const BYTE prBr1 = 5;
+const BYTE prBr2 = 6;
+const BYTE prDb1 = 7;
+const BYTE prDb2 = 8;
+const BYTE prBd1 = 9;
+const BYTE prBd2 = 10;
+const BYTE prKp1 = 11;
+const BYTE prKp2 = 12;
+const BYTE prEl1 = 13;
+const BYTE prEl2 = 14;
+const BYTE prReset = 15;
+const BYTE prMgrFileNm = 15;
+const BYTE prMgrProg = 16;
+const BYTE prMgrParam = 17;
+const BYTE prPageSizeNN = 16;
+const BYTE prPageSizeTrail = 17;
+const BYTE prLMarg = 18;
+const BYTE prLMargTrail = 19;
+const BYTE prUs11 = 20;
+const BYTE prUs12 = 21;
+const BYTE prUs21 = 22;
+const BYTE prUs22 = 23;
+const BYTE prUs31 = 24;
+const BYTE prUs32 = 25;
+const BYTE prLine72 = 26;
+const BYTE prLine216 = 27;
+const BYTE prDen60 = 28;
+const BYTE  prDen120 = 29;
+const BYTE prDen240 = 30;
+const BYTE prColor = 31;
+const BYTE prClose = 32;
+
+const BYTE RMsgIdx = 0;
+const BYTE BgiEgaVga = 1;
+const BYTE BgiHerc = 2;
+const BYTE ChrLittKam = 3;
+const BYTE ChrTripKam = 4;
+const BYTE Ega8x14K = 5;
+const BYTE Vga8x16K = 6;
+const BYTE Vga8x19K = 7;
+const BYTE Ega8x14L = 8;
+const BYTE Vga8x16L = 9;
+const BYTE Vga8x19L = 10;
+const BYTE ChrLittLat = 11;
+const BYTE ChrTripLat = 12;
+const BYTE LatToWinCp = 13;
+const BYTE KamToWinCp = 14;
+const BYTE WinCpToLat = 15;

@@ -20,11 +20,11 @@
 globconf* gcfg4 = globconf::GetInstance();
 
 const int TXTCOLS = 80;
-static longint Timer = 0;
+longint Timer = 0;
+bool Insert, Indent, Wrap, Just;
 
 // PROMENNE
 bool InsPage;
-
 typedef unsigned char* ArrLine;
 typedef ArrLine ArrPtr;
 typedef pstring ColorOrd;
@@ -2127,7 +2127,7 @@ void Calculate()
 label0:
 	Txt = CalcTxt; Del = true; I = 1;
 label1:
-	TxtEdCtrlUBrk = true; TxtEdCtrlF4Brk = true;
+	gcfg4->TxtEdCtrlUBrk = true; gcfg4->TxtEdCtrlF4Brk = true;
 	ww.PromptLL(114, &Txt, I, Del);
 	if (KbdChar == _U_) goto label0;
 	if ((KbdChar == _ESC_) || (Txt.length() == 0)) goto label3;
@@ -2894,7 +2894,7 @@ void HandleEvent() {
 					if (TypeT == LocalT) sp = TWork.Read(1, *LocalPPtr);
 					else {
 						CRecPtr = EditDRoot->NewRecPtr;
-						sp = _LongS(CFld->FldD);
+						sp = _LongS(gcfg4->CFld->FldD);
 					}
 					LenT = sp->LL; T = (CharArr*)(sp); Move(T[3], T[1], LenT);
 					break;
