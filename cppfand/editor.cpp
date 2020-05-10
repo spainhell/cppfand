@@ -580,14 +580,14 @@ void WriteMargins()
 void WrLLMargMsg(pstring* s, WORD n)
 {
 	if (s != nullptr) {
-		MsgLine = *s;
+		globconf::MsgLine = *s;
 		WrLLMsgTxt();
 	}
 	else {
 		if (n != 0) WrLLMsg(n);
 		else {
 			if (LastS != nullptr) {
-				MsgLine = LastS;
+				globconf::MsgLine = LastS;
 				WrLLMsgTxt();
 			}
 			else {
@@ -2161,7 +2161,7 @@ label1:
 	}
 	I = 1; goto label1;
 label2:
-	Msg = MsgLine; I = CurrPos; SetMsgPar(Msg); WrLLF10Msg(110);
+	Msg = globconf::MsgLine; I = CurrPos; SetMsgPar(Msg); WrLLF10Msg(110);
 	IsCompileErr = false; ReleaseStore(p); Del = false; goto label1;
 label3:
 	ReleaseStore(p); RestoreExit(er);
@@ -3662,7 +3662,7 @@ void Edit(WORD SuccLineSize)
 	if (ErrMsg != "")
 	{
 		SetMsgPar(ErrMsg);
-		F10SpecKey = 0xffff;
+		globconf::F10SpecKey = 0xffff;
 		WrLLF10Msg(110);
 		ClearKbdBuf();
 		AddToKbdBuf(KbdChar);
@@ -3846,7 +3846,7 @@ label1:
 		}
 		case _AltF10_: { Help(nullptr, "", false); goto label2; }
 		case _F1_: {
-			RdMsg(6); Help((RdbDPtr)&HelpFD, MsgLine, false);
+			RdMsg(6); Help((RdbDPtr)&HelpFD, globconf::MsgLine, false);
 		label2:
 			if (!Loc) RdPart(); goto label1; }
 		}
@@ -3862,7 +3862,7 @@ label1:
 label4:
 	if (IsCompileErr) {
 		IsCompileErr = false;
-		compErrTxt = MsgLine;
+		compErrTxt = globconf::MsgLine;
 		SetMsgPar(compErrTxt); WrLLF10Msg(110);
 	}
 	if (Loc)
@@ -3993,13 +3993,16 @@ void ClearHelpStkForCRdb()
 void InitTxtEditor()
 {
 	FindStr[0] = 0; ReplaceStr[0] = 0; OptionStr[0] = 0; Replace = false;
-	TxtColor = colors.tNorm; BlockColor = colors.tBlock;
-	SysLColor = colors.fNorm;
-	ColKey[0] = colors.tCtrl; Move(&colors.tUnderline, &ColKey[1], 7);
-	RdMsg(411); InsMsg = MsgLine; RdMsg(412); nInsMsg = MsgLine;
-	RdMsg(413); IndMsg = MsgLine; RdMsg(414); WrapMsg = MsgLine;
-	RdMsg(415); JustMsg = MsgLine; RdMsg(417); BlockMsg = MsgLine;
-	RdMsg(416); ViewMsg = MsgLine;
+	TxtColor = colors.tNorm; BlockColor = colors.tBlock; SysLColor = colors.fNorm;
+	ColKey[0] = colors.tCtrl;
+	Move(&colors.tUnderline, &ColKey[1], 7);
+	RdMsg(411); InsMsg = globconf::MsgLine;
+	RdMsg(412); nInsMsg = globconf::MsgLine;
+	RdMsg(413); IndMsg = globconf::MsgLine;
+	RdMsg(414); WrapMsg = globconf::MsgLine;
+	RdMsg(415); JustMsg = globconf::MsgLine;
+	RdMsg(417); BlockMsg = globconf::MsgLine;
+	RdMsg(416); ViewMsg = globconf::MsgLine;
 	Insert = true; Indent = true; Wrap = false; Just = false; TypeB = false;
 	LeftMarg = 1; RightMarg = 78;
 	CharPg = /*char(250)*/ spec.TxtCharPg; InsPg = /*true*/ spec.TxtInsPg;

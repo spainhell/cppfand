@@ -178,11 +178,12 @@ void RdPrinter(FILE* CfgHandle)
 
 void RdWDaysTab(FILE* CfgHandle)
 {
-	ReadH(CfgHandle, sizeof(NWDaysTab), &NWDaysTab);
-	ReadH(CfgHandle, sizeof(WDaysFirst), &WDaysFirst);
-	ReadH(CfgHandle, sizeof(WDaysLast), &WDaysLast);
-	GetMem(WDaysTab, NWDaysTab * 3);
-	ReadH(CfgHandle, NWDaysTab * 3, WDaysTab);
+	ReadH(CfgHandle, sizeof(globconf::NWDaysTab), &globconf::NWDaysTab);
+	ReadH(CfgHandle, sizeof(globconf::WDaysFirst), &globconf::WDaysFirst);
+	ReadH(CfgHandle, sizeof(globconf::WDaysLast), &globconf::WDaysLast);
+	//GetMem(WDaysTab, NWDaysTab * 3);
+	globconf::WDaysTab = new wdaystt[3];
+	ReadH(CfgHandle, globconf::NWDaysTab * 3, globconf::WDaysTab);
 }
 
 void RdCFG()
@@ -193,7 +194,7 @@ void RdCFG()
 	CfgHandle = OpenH(_isoldfile, RdOnly);
 	if (globconf::HandleError != 0) { printf("%s !found", globconf::CPath.c_str()); wait(); Halt(-1); }
 	ReadH(CfgHandle, 4, ver);
-	if (!strcmp(ver, CfgVersion)) {
+	if (strcmp(ver, CfgVersion) != 0) {
 		printf("Invalid version of FAND.CFG"); wait(); Halt(-1);
 	}
 	ReadH(CfgHandle, sizeof(spec), &spec);
@@ -210,7 +211,7 @@ void CompileHelpCatDcl()
 {
 	pstring s; void* p2 = nullptr;
 	FileDRoot = nullptr; CRdb = nullptr; MarkStore2(p2);
-	RdMsg(56); s = MsgLine; SetInpStr(s);
+	RdMsg(56); s = globconf::MsgLine; SetInpStr(s);
 #ifdef FandRunV
 	RdFileD("UFANDHLP", '6', "");
 #else
@@ -218,7 +219,7 @@ void CompileHelpCatDcl()
 #endif
 
 	HelpFD = *CFile;
-	RdMsg(52); s = MsgLine; SetInpStr(s); RdFileD("Catalog", 'C', "");
+	RdMsg(52); s = globconf::MsgLine; SetInpStr(s); RdFileD("Catalog", 'C', "");
 	CatFD = CFile; FileDRoot = nullptr;
 	CatRdbName = CatFD->FldD; CatFileName = CatRdbName->Chain;
 	CatArchiv = CatFileName->Chain;
@@ -321,7 +322,7 @@ void InitRunFand()
 	//CallCloseFandFiles = CloseFandFiles;  // TODO: CallCloseFandFiles: procedure(FromDML:boolean);
 	video.CursOn = 0x0607; // {if exit before reading.CFG}
 	KbdBuffer[0] = 0x0;
-	F10SpecKey = 0;
+	globconf::F10SpecKey = 0;
 	if (!GetEnv("DMLADDR").empty()) {
 		printf("type 'exit' to return to FAND");
 		wait();
@@ -356,18 +357,32 @@ void InitRunFand()
 
 	//OvrHandle = GetOverHandle(h, -1); // TODO: pùvodnì to byl WORD - 1, teï je to blbost;
 	//ReadH(h, sizeof(globconf::ResFile.A), globconf::ResFile.A);
-	ReadH(h, 4, &globconf::ResFile.A);
+
+	for(int readindexes = 0; readindexes < FandFace; readindexes++)
+	{
+		ReadH(h, sizeof(globconf::ResFile.A->Pos), &globconf::ResFile.A[readindexes].Pos);
+		ReadH(h, sizeof(globconf::ResFile.A->Size), &globconf::ResFile.A[readindexes].Size);
+	}
+	
+	//ReadH(h, 4, &globconf::ResFile.A);
 	ReadH(h, 2, &globconf::MsgIdxN);
 
-	int tmiiSize = sizeof(TMsgIdxItem);
-	l = tmiiSize * globconf::MsgIdxN;
-	globconf::MsgIdx = new TMsgIdxItem[1]; // GetMem(MsgIdx, l);
+	l = /*sizeof(TMsgIdxItem)*/ 5 * globconf::MsgIdxN;
+	globconf::MsgIdx = new TMsgIdxItem[l]; // GetMem(MsgIdx, l);
+
+	for (int readindexes = 0; readindexes < l; readindexes++)
+	{
+		ReadH(h, sizeof(globconf::MsgIdx->Nr), &globconf::MsgIdx[readindexes].Nr);
+		ReadH(h, sizeof(globconf::MsgIdx->Ofs), &globconf::MsgIdx[readindexes].Ofs);
+		ReadH(h, sizeof(globconf::MsgIdx->Count), &globconf::MsgIdx[readindexes].Count);
+	}
+	
 	ReadH(h, l, globconf::MsgIdx);
 	globconf::FrstMsgPos = PosH(h);
 	RdMsg(50);
-	Move((void*)&MsgLine[1], (void*)&globconf::AbbrYes, 2);
+	Move((void*)&globconf::MsgLine[1], (void*)&globconf::AbbrYes, 2);
 	RdCFG();
-	ProcAttr = colors.uNorm;
+	globconf::ProcAttr = colors.uNorm;
 	// ScrSeg = video.address; TODO: nepotøebujeme, nezapisujeme pøímo do GK
 	if (video.TxtRows != 0) TxtRows = video.TxtRows;
 
@@ -487,11 +502,11 @@ void InitRunFand()
 
 		if (!txt.empty()) {
 			txt += ")";
-			MsgLine = MsgLine + "x (" + txt;
+			globconf::MsgLine = globconf::MsgLine + "x (" + txt;
 		}
-		else MsgLine += 'x';
+		else globconf::MsgLine += 'x';
 
-		GotoXY(5, TxtRows - 3); printf(MsgLine.c_str());
+		GotoXY(5, TxtRows - 3); printf(globconf::MsgLine.c_str());
 
 
 #ifdef FandRunV 
@@ -525,7 +540,7 @@ void InitRunFand()
 #endif
 
 		RdMsg(MsgNr);
-		mb = new TMenuBoxS(4, 3, &MsgLine);
+		mb = new TMenuBoxS(4, 3, &globconf::MsgLine);
 		i = 1;
 	label1:
 		i = mb->Exec(i);

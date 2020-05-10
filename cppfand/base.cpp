@@ -34,24 +34,25 @@ std::vector<FILE*> vOverHandle;
 
 void SetMsgPar(pstring s)
 {
-	MsgPar[0] = s;
+	globconf::MsgPar[0] = s;
 }
 
 void Set2MsgPar(pstring s1, pstring s2)
 {
-	MsgPar[0] = s1; MsgPar[1] = s2;
+	globconf::MsgPar[0] = s1;
+	globconf::MsgPar[1] = s2;
 }
 
 void Set3MsgPar(pstring s1, pstring s2, pstring s3)
 {
 	Set2MsgPar(s1, s2);
-	MsgPar[2] = s3;
+	globconf::MsgPar[2] = s3;
 }
 
 void Set4MsgPar(pstring s1, pstring s2, pstring s3, pstring s4)
 {
 	Set3MsgPar(s1, s2, s3);
-	MsgPar[3] = s4;
+	globconf::MsgPar[3] = s4;
 }
 
 longint PosH(FILE* handle)
@@ -104,30 +105,30 @@ void RdMsg(integer N)
 		}
 	}
 	o = 0; j = 1;
-	MsgPar[1] = std::to_string(N).c_str();
+	globconf::MsgPar[1] = std::to_string(N).c_str();
 
 label1:
 	h = globconf::ResFile.Handle;
 	SeekH(h, globconf::FrstMsgPos + o);
 
-	for (int i = 1; i < j; i++)
+	for (int i = 1; i <= j; i++)
 	{
-		ReadH(h, 1, reinterpret_cast<void*>(s[0])); // tady se má zøejmì jen vyèíst délka
-		ReadH(h, s.length(), reinterpret_cast<void*>(s[1]));
+		ReadH(h, 1, &s[0]); // tady se má zøejmì jen vyèíst délka
+		ReadH(h, s.length(), &s[1]);
 	}
 	//ConvKamenToCurr((unsigned char*)s.c_str(), s.length());
-	MsgLine = "";
+	globconf::MsgLine = "";
 	j = 1;
 	// TODO: k èemu je toto? s[length(s) + 1] = 0x00;
 	for (int i = 1; i < s.length(); i++) {
 		if (s[i] == '$' && s[i + 1] != '$')
 		{
-			MsgLine += MsgPar[j];
+			globconf::MsgLine += globconf::MsgPar[j];
 			j++;
 		}
 		else
 		{
-			MsgLine += s[i];
+			globconf::MsgLine.Append(s[i]);
 			if (s[i] == '$') i++;
 		}
 	}

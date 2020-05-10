@@ -378,7 +378,7 @@ label2:
 void WrPromptTxt(pstring* S, FrmlPtr Impl, FieldDPtr F, pstring* Txt, double& R)
 {
 	WORD x, y, d, LWw; pstring SS, T; double RR; bool BB;
-	WrStyleStr(*S, ProcAttr); T = ""; x = WhereX(); y = WhereY(); d = WindMax.X - WindMin.X + 1;
+	WrStyleStr(*S, globconf::ProcAttr); T = ""; x = WhereX(); y = WhereY(); d = WindMax.X - WindMin.X + 1;
 	if (x + F->L - 1 > d) LWw = d - x; else LWw = F->L;  TextAttr = colors.dHili;
 	if (Impl != nullptr) {
 		switch (F->FrmlTyp) {
@@ -389,7 +389,7 @@ void WrPromptTxt(pstring* S, FrmlPtr Impl, FieldDPtr F, pstring* Txt, double& R)
 		DecodeFieldRSB(F, F->L, RR, SS, BB, T);
 	}
 	GotoXY(x, y); FieldEdit(F, nullptr, LWw, 1, &T, R, true, true, false, 0);
-	TextAttr = ProcAttr;
+	TextAttr = globconf::ProcAttr;
 	if (KbdChar == _ESC_) { EscPrompt = true; printf("\n"); }
 	else {
 		EscPrompt = false; Txt = &T;
@@ -1395,7 +1395,7 @@ bool DeleteRecProc()
 	bool b;
 	auto result = false; Group = false;
 	if (Select) {
-		F10SpecKey = _ESC_; Group = PromptYN(116);
+		globconf::F10SpecKey = _ESC_; Group = PromptYN(116);
 		if (KbdChar == _ESC_) return result;
 	}
 	if (!Group) if (VerifyDelete && !PromptYN(109)) return result;
@@ -1649,10 +1649,10 @@ void DisplChkErr(ChkDPtr C)
 		CFile = cf; CRecPtr = cr;
 		if (!b)
 			if (NoShiftF7Msg) goto label1;
-			else F10SpecKey = _ShiftF7_;
+			else globconf::F10SpecKey = _ShiftF7_;
 	}
 	if (C->HelpName != nullptr)
-		if (F10SpecKey == _ShiftF7_) F10SpecKey = 0xfffe; else F10SpecKey = _F1_;
+		if (globconf::F10SpecKey == _ShiftF7_) globconf::F10SpecKey = 0xfffe; else globconf::F10SpecKey = _F1_;
 	SetMsgPar(RunShortStr(C->TxtZ)); WrLLF10Msg(110);
 	if (KbdChar == _F1_) Help(CFile->ChptPos.R, *C->HelpName, false);
 	else if (KbdChar == _ShiftF7_)
@@ -2438,7 +2438,7 @@ label2:
 		if (WriteCRec(false, Displ)) { SaveFiles; UpdCount = 0; }
 		goto label4;
 	}
-	case _F1_: { RdMsg(6); heslo = MsgLine; goto label3; }
+	case _F1_: { RdMsg(6); heslo = globconf::MsgLine; goto label3; }
 	case _CtrlF1_: goto label3;
 	case _ShiftF1_:
 		if (IsCurrChpt() || (CFile == CRdb->HelpFD)) {
@@ -2837,7 +2837,7 @@ label1:
 	}
 	goto label4;
 label2:
-	Msg = MsgLine; I = CurrPos; SetMsgPar(Msg); WrLLF10Msg(110);
+	Msg = globconf::MsgLine; I = CurrPos; SetMsgPar(Msg); WrLLF10Msg(110);
 	IsCompileErr = false; Del = false; CFile = E->FD; ReleaseStore(p); goto label1;
 label3:
 	ReleaseStore(p); RestoreExit(er);
@@ -3007,7 +3007,7 @@ void DisplLL()
 {
 	WORD n;
 	if (E->Last != nullptr) {
-		MsgLine = E->Last; if (MsgLine.length() > 0) {
+		globconf::MsgLine = E->Last; if (globconf::MsgLine.length() > 0) {
 			WrLLMsgTxt(); DisplLASwitches();
 		} return;
 	}
@@ -3025,15 +3025,15 @@ void DisplLL()
 void DisplCtrlAltLL(WORD Flags)
 {
 	if (Flags && 0x04 != 0) {        /* Ctrl */
-		if (E->CtrlLast != nullptr) { MsgLine = E->CtrlLast; WrLLMsgTxt(); }
+		if (E->CtrlLast != nullptr) { globconf::MsgLine = E->CtrlLast; WrLLMsgTxt(); }
 		else if (IsCurrChpt) WrLLMsg(125);
 		else if (EdRecVar) WrLLMsg(154); else WrLLMsg(127);
 	}
 	else if (Flags && 0x03 != 0)         /* Shift */
-		if (E->ShiftLast != nullptr) { MsgLine = E->ShiftLast; WrLLMsgTxt(); }
+		if (E->ShiftLast != nullptr) { globconf::MsgLine = E->ShiftLast; WrLLMsgTxt(); }
 		else DisplLL();
 	else if (Flags && 0x08 != 0)          /* Alt */
-		if (E->AltLast != nullptr) { MsgLine = E->AltLast; WrLLMsgTxt(); }
+		if (E->AltLast != nullptr) { globconf::MsgLine = E->AltLast; WrLLMsgTxt(); }
 		else DisplLL();
 }
 
@@ -3182,7 +3182,7 @@ label81:
 		case 2:/*exit*/ goto label1; break;
 		}
 		switch (KbdChar) {
-		case _F1_: { RdMsg(7); Help((RdbDPtr)(&HelpFD), MsgLine, false); break; }
+		case _F1_: { RdMsg(7); Help((RdbDPtr)(&HelpFD), globconf::MsgLine, false); break; }
 		case _CtrlF1_: FieldHelp(); break;
 		case _AltF10_: Help(nullptr, "", false); break;
 		case _ESC_: {
@@ -3421,7 +3421,7 @@ void EditDataFile(FileDPtr FD, EditOpt* EO)
 	label1:
 		RestoreExit(er);
 		if (IsCompileErr) {
-			EdRecKey = MsgLine; LastExitCode = CurrPos + 1; IsCompileErr = false;
+			EdRecKey = globconf::MsgLine; LastExitCode = CurrPos + 1; IsCompileErr = false;
 		}
 		else LastExitCode = 0;
 		goto label2;

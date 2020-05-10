@@ -95,12 +95,7 @@ static FILE* WorkHandle;
 static longint MaxWSize = 0; // {currently occupied in FANDWORK.$$$}
 /* konec */
 
-// ********** MESSAGES **********
-static WORD F10SpecKey; // ø. 293
-static BYTE ProcAttr;
-// bool SetStyleAttr(char c, BYTE& a); // je v KBDWW
-static pstring MsgLine;
-static pstring MsgPar[4];
+
 void SetMsgPar(pstring s);
 void Set2MsgPar(pstring s1, pstring s2);
 void Set3MsgPar(pstring s1, pstring s2, pstring s3);
@@ -203,11 +198,6 @@ struct Printer {
 typedef std::array<BYTE, 4> TPrTimeOut; // ø. 418
 static TPrTimeOut OldPrTimeOut;
 static TPrTimeOut PrTimeOut;  // absolute 0:$478;
-
-struct wdaystt { BYTE Typ = 0; WORD Nr = 0; } static WDaysTabType;
-static WORD NWDaysTab; static float WDaysFirst; static float WDaysLast;
-static wdaystt* WDaysTab;
-
 
 static bool WasInitDrivers = false;
 static bool WasInitPgm = false;

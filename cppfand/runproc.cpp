@@ -181,13 +181,13 @@ void WritelnProc(Instr* PD)
 {
 	LongStr* S; WORD i; char c; BYTE LF; WrLnD* W; pstring t, x; double r;
 	W = &PD->WD; LF = PD->LF; t[0] = 0;
-	TextAttr = ProcAttr;
+	TextAttr = globconf::ProcAttr;
 	while (W != nullptr) {
 		switch (W->Typ) {
 		case 'S': {
 			if (LF >= 2) t = t + RunShortStr(W->Frml);
 			else {
-				S = RunLongStr(W->Frml); WrLongStyleStr(S, ProcAttr); ReleaseStore(S);
+				S = RunLongStr(W->Frml); WrLongStyleStr(S, globconf::ProcAttr); ReleaseStore(S);
 			}
 			goto label1; break;
 		}
@@ -212,7 +212,7 @@ void WritelnProc(Instr* PD)
 label2:
 	switch (LF) {
 	case 1: printf("\n"); break;
-	case 3: { F10SpecKey = _F1_; goto label3; break; }
+	case 3: { globconf::F10SpecKey = _F1_; goto label3; break; }
 	case 2: {
 	label3:
 		SetMsgPar(t); WrLLF10Msg(110);
@@ -237,7 +237,7 @@ void DisplayProc(RdbDPtr R, WORD IRec)
 		S = CFile->TF->Read(1, _T(ChptTxt));
 		if (R->Encrypted) CodingLongStr(S);
 	}
-	WrLongStyleStr(S, ProcAttr);
+	WrLongStyleStr(S, globconf::ProcAttr);
 label1:
 	ReleaseStore(p);
 }
@@ -643,17 +643,17 @@ void SetWwViewPort()
 void WithWindowProc(Instr* PD)
 {
 	BYTE PAttr; longint w1; WRect v;
-	PAttr = ProcAttr;
+	PAttr = globconf::ProcAttr;
 	/* !!! with PD^ do!!! */
-	ProcAttr = RunWordImpl(PD->Attr, colors.uNorm);
+	globconf::ProcAttr = RunWordImpl(PD->Attr, colors.uNorm);
 	RunWFrml(PD->W, PD->WithWFlags, v);
-	w1 = PushWFramed(v.C1, v.R1, v.C2, v.R2, ProcAttr, RunShortStr(PD->Top), "", PD->WithWFlags);
+	w1 = PushWFramed(v.C1, v.R1, v.C2, v.R2, globconf::ProcAttr, RunShortStr(PD->Top), "", PD->WithWFlags);
 	if ((PD->WithWFlags & WNoClrScr) == 0) ClrScr();
 	SetWwViewPort();
 	RunInstr(PD->WwInstr);
 	PopW2(w1, (PD->WithWFlags & WNoPop) == 0);
 	SetWwViewPort();
-	ProcAttr = PAttr;
+	globconf::ProcAttr = PAttr;
 }
 
 void WithLockedProc(Instr* PD)
@@ -864,9 +864,9 @@ void RunInstr(Instr* PD)
 		case _exitP: ExitP = true; break;
 		case _cancel: GoExit(); break;
 		case _save: SaveFiles(); break;
-		case _clrscr: { TextAttr = ProcAttr; ClrScr(); break; }
+		case _clrscr: { TextAttr = globconf::ProcAttr; ClrScr(); break; }
 		case _clrww: ClrWwProc(PD); break;
-		case _clreol: { TextAttr = ProcAttr; ClrEol(); break; }
+		case _clreol: { TextAttr = globconf::ProcAttr; ClrEol(); break; }
 		case _exec: ExecPgm(PD); break;
 		case _proc: CallProcedure(PD); break;
 		case _call: CallRdbProc(PD); break;
@@ -1080,8 +1080,8 @@ void RunMainProc(RdbPos RP, bool NewWw)
 {
 	Instr* PD; void* p1; void* p2; LocVar* lv;
 	if (NewWw) {
-		ProcAttr = colors.uNorm; Window(1, 2, TxtCols, TxtRows);
-		TextAttr = ProcAttr; ClrScr(); UserHeadLine(""); MenuX = 1; MenuY = 2;
+		globconf::ProcAttr = colors.uNorm; Window(1, 2, TxtCols, TxtRows);
+		TextAttr = globconf::ProcAttr; ClrScr(); UserHeadLine(""); MenuX = 1; MenuY = 2;
 	}
 	PD = GetPInstr(_proc, sizeof(RdbPos) + 2); PD->Pos = RP;
 	CallProcedure(PD);

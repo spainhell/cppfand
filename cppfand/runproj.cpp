@@ -749,7 +749,7 @@ void CreateOpenChpt(pstring* Nm, bool create)
 	oldChptTF = ChptTF;
 	R->ChainBack = CRdb; R->OldLDRoot = LinkDRoot; R->OldFCRoot = FuncDRoot;
 	MarkStore2(R->Mark2);
-	RdMsg(51); s = MsgLine; RdMsg(48); val(MsgLine, n, i);
+	RdMsg(51); s = globconf::MsgLine; RdMsg(48); val(globconf::MsgLine, n, i);
 	str(TxtCols - n, nr); s = s + nr; SetInpStr(s);
 	if ((Nm[1] == '\\')) Nm1 = Nm->substr(2, 8);
 	else Nm1 = *Nm;
@@ -989,19 +989,19 @@ WORD CompileMsgOn(WORD* Buf, longint& w)
 	WORD result = 0;
 	RdMsg(15);
 	if (IsTestRun) {
-		w = PushWFramed(0, 0, 30, 4, colors.sNorm, MsgLine, "", WHasFrame + WDoubleFrame + WShadow);
+		w = PushWFramed(0, 0, 30, 4, colors.sNorm, globconf::MsgLine, "", WHasFrame + WDoubleFrame + WShadow);
 		RdMsg(117);
-		s = GetDLine(&MsgLine[1], MsgLine.length(), '/', 1);
+		s = GetDLine(&globconf::MsgLine[1], globconf::MsgLine.length(), '/', 1);
 		GotoXY(3, 2);
 		printf("%s", s.c_str()); result = s.length();
 		GotoXY(3, 3);
-		printf("%s", GetDLine(&MsgLine[1], MsgLine.length(), '/', 2).c_str());
+		printf("%s", GetDLine(&globconf::MsgLine[1], globconf::MsgLine.length(), '/', 2).c_str());
 	}
 	else {
 		ScrRdBuf(0, TxtRows - 1, Buf, 40); w = 0;
 		result = 0;
-		ScrClr(0, TxtRows - 1, MsgLine.length() + 2, 1, ' ', colors.zNorm);
-		ScrWrStr(1, TxtRows - 1, MsgLine, colors.zNorm);
+		ScrClr(0, TxtRows - 1, globconf::MsgLine.length() + 2, 1, ' ', colors.zNorm);
+		ScrWrStr(1, TxtRows - 1, globconf::MsgLine, colors.zNorm);
 	}
 	return result;
 }
@@ -1054,7 +1054,7 @@ void* RdF(pstring* FileName)
 	FieldDPtr IdF, TxtF;  integer i, n; pstring nr(10);
 	FSplit(*FileName, d, name, ext); FDTyp = ExtToTyp(ext);
 	if (FDTyp == '0') {
-		RdMsg(51); s = MsgLine; RdMsg(49); val(MsgLine, n, i);
+		RdMsg(51); s = globconf::MsgLine; RdMsg(49); val(globconf::MsgLine, n, i);
 		str(TxtCols - n, nr); s = s + nr; SetInpStr(s);
 	}
 	else SetInpTTPos(_T(ChptTxt), CRdb->Encrypted);
@@ -1307,7 +1307,7 @@ label1:
 void GotoErrPos(WORD& Brk)
 {
 	pstring s;
-	IsCompileErr = false; s = MsgLine; if (InpRdbPos.R != CRdb) {
+	IsCompileErr = false; s = globconf::MsgLine; if (InpRdbPos.R != CRdb) {
 		DisplEditWw(); SetMsgPar(s); WrLLF10Msg(110);
 		if (InpRdbPos.IRec == 0) SetMsgPar(""); else SetMsgPar(InpRdbPos.R->FD->Name);
 		WrLLF10Msg(622); Brk = 0; return;
@@ -1324,7 +1324,7 @@ void GotoErrPos(WORD& Brk)
 
 void WrErrMsg630(pstring* Nm)
 {
-	IsCompileErr = false; SetMsgPar(MsgLine); WrLLF10Msg(110);
+	IsCompileErr = false; SetMsgPar(globconf::MsgLine); WrLLF10Msg(110);
 	SetMsgPar(*Nm); WrLLF10Msg(630);
 }
 
@@ -1500,7 +1500,7 @@ void InstallRdb(pstring n)
 	RdMsg(8);
 	//New(w, Init(43, 6, StringPtr(@MsgLine)));
 	i = 1;
-	w = new TMenuBoxS(43, 6, &MsgLine);
+	w = new TMenuBoxS(43, 6, &globconf::MsgLine);
 label0:
 	i = w->Exec(i);
 	switch (i) {

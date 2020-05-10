@@ -204,8 +204,8 @@ LongStr* GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 		WrStr(s); WrChar(0x11);
 		WrBlks(14); WrStr("__.__.____");
 		RdMsg(17);
-		WrBlks(12 - MsgLine.length());
-		WrStr(MsgLine); WrStr("___");
+		WrBlks(12 - globconf::MsgLine.length());
+		WrStr(globconf::MsgLine); WrStr("___");
 	}
 	else {
 		l = RO->HeadTxt->LL; p = (char*)(&RO->HeadTxt->A);
@@ -227,8 +227,8 @@ LongStr* GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 	}
 
 	if (ARMode == _AErrRecs) {
-		RdMsg(18); WrStr("\r\n\x17"); WrBlks((38 - MsgLine.length()) / 2);
-		WrStr(MsgLine); WrChar(0x17);
+		RdMsg(18); WrStr("\r\n\x17"); WrBlks((38 - globconf::MsgLine.length()) / 2);
+		WrStr(globconf::MsgLine); WrChar(0x17);
 	}
 	if (RO->CondTxt != nullptr) {
 		WrStr("\r\n\x17"); s = *RO->CondTxt;
@@ -266,9 +266,9 @@ LongStr* GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 		WrStr("\r\n#RF "); if (ARMode == _AErrRecs) WrStr("noErrRecs,");
 		WrStr("sum(1);\r\n\r\n");
 		if (ARMode == _AErrRecs) {
-			RdMsg(18); WrStr(MsgLine); WrStr(":_____\r\n");
+			RdMsg(18); WrStr(globconf::MsgLine); WrStr(":_____\r\n");
 		}
-		RdMsg(20); WrStr(MsgLine); WrStr("_______");
+		RdMsg(20); WrStr(globconf::MsgLine); WrStr("_______");
 	}
 	return Txt;
 	/* for i = 1 to Txt->LL do write(Txt->A[i]); writeln; wait; */

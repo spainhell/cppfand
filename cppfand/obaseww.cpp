@@ -207,8 +207,8 @@ longint PushWrLLMsg(WORD N, bool WithESC)
 	if (WithESC) printf("(ESC) ");
 	RdMsg(N);
 	l = TxtCols - WhereX();
-	if (MsgLine.length() > l) MsgLine[0] = char(l);
-	printf("%s", MsgLine.c_str());
+	if (globconf::MsgLine.length() > l) globconf::MsgLine[0] = char(l);
+	printf("%s", globconf::MsgLine.c_str());
 	return result;
 }
 
@@ -226,14 +226,14 @@ void WrLLMsgTxt()
 	On = false;
 	WORD i = 1;
 	WORD j = 0;
-	while ((i <= MsgLine.length()) && (j < TxtCols)) {
-		if (MsgLine[i] == 0x17) 
+	while ((i <= globconf::MsgLine.length()) && (j < TxtCols)) {
+		if (globconf::MsgLine[i] == 0x17)
 		{
 			if (On) { w.Hi = colors.lNorm; On = false; }
 			else { w.Hi = colors.lFirst; On = true; }
 		}
 		else {
-			w.Lo = MsgLine[i];
+			w.Lo = globconf::MsgLine[i];
 			Buf[j] = (w.Hi << 8) + w.Lo;
 			j++;
 		}
@@ -258,22 +258,22 @@ void WrLLF10MsgLine()
 	ScrRdBuf(0, row, &Buf[0], TxtCols);
 	Beep();
 	ScrClr(0, row, TxtCols, 1, ' ', colors.zNorm);
-	if (F10SpecKey == 0xffff) ScrWrStr(0, row, "...!", colors.zNorm | 0x80);
+	if (globconf::F10SpecKey == 0xffff) ScrWrStr(0, row, "...!", colors.zNorm | 0x80);
 	else ScrWrStr(0, row, "F10!", colors.zNorm | 0x80);
-	col = MsgLine.length() + 5;
+	col = globconf::MsgLine.length() + 5;
 	len = 0;
-	if ((F10SpecKey == 0xfffe) || (F10SpecKey == _F1_)) {
-		MsgLine = MsgLine + ' ' + "F1";
+	if ((globconf::F10SpecKey == 0xfffe) || (globconf::F10SpecKey == _F1_)) {
+		globconf::MsgLine = globconf::MsgLine + ' ' + "F1";
 		len = 2;
 	}
-	if ((F10SpecKey == 0xfffe) || (F10SpecKey == _ShiftF7_)) {
-		MsgLine = MsgLine + ' ' + "ShiftF7"; len += 7;
+	if ((globconf::F10SpecKey == 0xfffe) || (globconf::F10SpecKey == _ShiftF7_)) {
+		globconf::MsgLine = globconf::MsgLine + ' ' + "ShiftF7"; len += 7;
 	}
-	if (MsgLine.length() > TxtCols - 5) {
-		MsgLine[0] = char(TxtCols - 5);
+	if (globconf::MsgLine.length() > TxtCols - 5) {
+		globconf::MsgLine[0] = char(TxtCols - 5);
 		len = 0;
 	}
-	ScrWrStr(5, row, MsgLine, colors.zNorm);
+	ScrWrStr(5, row, globconf::MsgLine, colors.zNorm);
 label1:
 	GetEvent();
 	/*with Event*/
@@ -285,12 +285,12 @@ label1:
 			goto label2;
 		}
 		if (len > 0 && MouseInRect(col, row, len, 1)) {
-			KbdChar = F10SpecKey;
+			KbdChar = globconf::F10SpecKey;
 			goto label2;
 		}
 	case evKeyDown:
-		if (Event.KeyCode == _F10_ || Event.KeyCode == F10SpecKey || F10SpecKey == 0xffff
-			|| F10SpecKey == 0xfffe && (Event.KeyCode == _ShiftF7_ || Event.KeyCode == _F1_))
+		if (Event.KeyCode == _F10_ || Event.KeyCode == globconf::F10SpecKey || globconf::F10SpecKey == 0xffff
+			|| globconf::F10SpecKey == 0xfffe && (Event.KeyCode == _ShiftF7_ || Event.KeyCode == _F1_))
 		{
 			KbdChar = Event.KeyCode;
 		label2:
@@ -301,7 +301,7 @@ label1:
 	ClrEvent();
 	goto label1;
 label3:
-	F10SpecKey = 0;
+	globconf::F10SpecKey = 0;
 	ScrWrBuf(0, row, &Buf[0], TxtCols);
 }
 
@@ -325,14 +325,14 @@ bool PromptYN(WORD NMsg)
 	w = PushW(1, TxtRows, TxtCols, TxtRows); TextAttr = colors.pTxt;
 	ClrEol();
 	RdMsg(NMsg);
-	pstring tmp = MsgLine.substr(MaxI(MsgLine.length() - TxtCols + 3, 1), 255);
+	pstring tmp = globconf::MsgLine.substr(MaxI(globconf::MsgLine.length() - TxtCols + 3, 1), 255);
 	printf("%s", tmp.c_str());
 	col = WhereX(); row = WhereY(); TextAttr = colors.pNorm;
 	printf(" "); GotoXY(col, row); CrsShow();
 	label1:
 	cc = toupper((char)ReadKbd);
-	if ((KbdChar != F10SpecKey) && (cc != globconf::AbbrYes) && (cc != globconf::AbbrNo)) goto label1;
-	F10SpecKey = 0; PopW(w);
+	if ((KbdChar != globconf::F10SpecKey) && (cc != globconf::AbbrYes) && (cc != globconf::AbbrNo)) goto label1;
+	globconf::F10SpecKey = 0; PopW(w);
 	return cc == globconf::AbbrYes;
 }
 

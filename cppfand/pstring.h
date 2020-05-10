@@ -36,7 +36,8 @@ public:
     pstring operator + (const pstring& pstring);
 	bool operator == (const pstring& pstring);
     bool operator != (const pstring& pstring);
-    
+    void Append(unsigned char c);
+
 private:
     const unsigned short initLen;
     unsigned char len;

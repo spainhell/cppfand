@@ -495,7 +495,7 @@ void SetCPathForH(FILE* handle)
 		} RD = RD->ChainBack;
 	}
 	RdMsg(799);
-	globconf::CPath = MsgLine;
+	globconf::CPath = globconf::MsgLine;
 label1:
 	CFile = cf;
 }

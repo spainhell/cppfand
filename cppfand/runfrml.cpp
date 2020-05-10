@@ -174,11 +174,11 @@ double LastUpdate(FILE* Handle)
 WORD TypeDay(double R)
 {
 	WORD i, d;
-	if ((R >= WDaysFirst) && (R <= WDaysLast))
+	if ((R >= globconf::WDaysFirst) && (R <= globconf::WDaysLast))
 	{
-		d = trunc(R - WDaysFirst);
-		for (i = 1; i < NWDaysTab; i++)
-			if (WDaysTab[i].Nr == d) { return WDaysTab[i].Typ; }
+		d = trunc(R - globconf::WDaysFirst);
+		for (i = 1; i < globconf::NWDaysTab; i++)
+			if (globconf::WDaysTab[i].Nr == d) { return globconf::WDaysTab[i].Typ; }
 	}
 	d = longint(trunc(R)) % 7;
 	switch (d) {

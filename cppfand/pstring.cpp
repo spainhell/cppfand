@@ -203,3 +203,13 @@ bool pstring::operator!=(const pstring& eqpstring)
 	return !pstring::operator==(eqpstring);
 }
 
+void pstring::Append(unsigned char c)
+{
+	unsigned char firLen = len;
+	unsigned short newLen = firLen + 1;
+	if (newLen > initLen - 1) return;
+	this->len = newLen;
+	arr[len - 1] = c;
+	arr[len] = '\0'; // 'arr' je o 1 vìtší než 'len'
+}
+
