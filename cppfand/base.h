@@ -159,7 +159,9 @@ enum TKbdConv { OrigKbd, CsKbd, CaKbd, SlKbd, DtKbd };
 struct Spec // r.319
 {
 	BYTE UpdCount;
-	BYTE AutoRprtWidth, AutoRprtLimit, CpLines;
+	BYTE AutoRprtWidth;
+	BYTE AutoRprtLimit;
+	BYTE CpLines;
 	bool AutoRprtPrint;
 	bool ChoosePrMsg;
 	bool TxtInsPg;
@@ -169,20 +171,25 @@ struct Spec // r.319
 	bool F10Enter;
 	bool RDBcomment;
 	char CPMdrive;
-	WORD RefreshDelay, NetDelay;
-	BYTE LockDelay, LockRetries;
+	WORD RefreshDelay;
+	WORD NetDelay;
+	BYTE LockDelay;
+	BYTE LockRetries;
 	bool Beep;
 	bool LockBeepAllowed;
 	WORD XMSMaxKb;
 	bool NoCheckBreak;
 	TKbdConv KbdTyp;
-	bool NoMouseSupport, MouseReverse;
-	BYTE DoubleDelay, RepeatDelay, CtrlDelay;
+	bool NoMouseSupport;
+	bool MouseReverse;
+	BYTE DoubleDelay;
+	BYTE RepeatDelay;
+	BYTE CtrlDelay;
 	bool OverwrLabeledDisk;
 	WORD ScreenDelay;
 	BYTE OffDefaultYear;
 	bool WithDiskFree;
-} static spec;
+} extern spec;
 
 struct Video // ø. 345
 {
@@ -190,14 +197,14 @@ struct Video // ø. 345
 	BYTE TxtRows;
 	bool ChkSnow;	// {not used }
 	WORD CursOn, CursOff, CursBig;
-} static video;
+} extern video;
 
 struct Fonts // r350
 {
 	TVideoFont VFont = TVideoFont::foLatin2;
 	bool LoadVideoAllowed = false;
 	bool NoDiakrSupported = false;
-} static fonts;
+} extern fonts;
 
 struct Colors
 {
@@ -216,16 +223,16 @@ struct Colors
 	BYTE nNorm;
 	BYTE ShadowAttr;
 	BYTE DesktopColor;
-} static colors;
+} extern colors;
 
-static char CharOrdTab[256]; // after Colors /FANDDML/ // ø. 370
-static char UpcCharTab[256]; // TODO: v obou øádcích bylo 'array[char] of char;' - WTF?
-static WORD TxtCols, TxtRows;
+extern char CharOrdTab[256]; // after Colors /FANDDML/ // ø. 370
+extern char UpcCharTab[256]; // TODO: v obou øádcích bylo 'array[char] of char;' - WTF?
+extern WORD TxtCols, TxtRows;
 
 pstring PrTab(WORD N);
 void SetCurrPrinter(integer NewPr);
 
-static integer prCurr, prMax;
+extern integer prCurr, prMax;
 struct Printer {
 	void* Strg; char Typ, Kod; BYTE Lpti, TmOut;
 	bool OpCls, ToHandle, ToMgr; WORD Handle;

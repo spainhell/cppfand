@@ -679,7 +679,7 @@ extern pstring LexWord;
 static bool SpecFDNameAllowed, IdxLocVarAllowed, FDLocVarAllowed, IsCompileErr;
 static CompInpD* PrevCompInp;						// { saved at "include" }
 static CharArrPtr InpArrPtr; static RdbPos InpRdbPos;		// { "  "  }
-static WORD InpArrLen, CurrPos, OldErrPos;			// { "  "  }
+extern WORD InpArrLen, CurrPos, OldErrPos;			// { "  "  }
 static SumElPtr FrmlSumEl;				//{ set while reading sum / count argument }
 static bool FrstSumVar, FileVarsAllowed;
 // FrmlPtr RdFldNameFrml() = FrmlPtr(char& FTyp);

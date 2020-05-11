@@ -12,6 +12,17 @@
 
 globconf* gcfg2 = globconf::GetInstance();
 
+Video video;
+Spec spec;
+Fonts fonts;
+Colors colors;
+
+char CharOrdTab[256];
+char UpcCharTab[256];
+WORD TxtCols, TxtRows;
+
+integer prCurr, prMax;
+
 WORD OldNumH; // r1 
 void* OldHTPtr = nullptr;
 #ifdef FandDemo
@@ -118,8 +129,8 @@ label1:
 	//ConvKamenToCurr((unsigned char*)s.c_str(), s.length());
 	gcfg2->MsgLine = "";
 	j = 1;
-	// TODO: k èemu je toto? s[length(s) + 1] = 0x00;
-	for (int i = 1; i < s.length(); i++) {
+	s[s.length() + 1] = 0x00;
+	for (int i = 1; i <= s.length(); i++) {
 		if (s[i] == '$' && s[i + 1] != '$')
 		{
 			gcfg2->MsgLine += gcfg2->MsgPar[j];

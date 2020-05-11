@@ -138,7 +138,10 @@ void RdColors(FILE* CfgHandle)
 	if (StartMode == 7) typ = 1;
 	else if (VideoCard >= enVideoCard::viEga) typ = 3;
 	else typ = 2;
-	SeekH(CfgHandle, PosH(CfgHandle) + (sizeof(video) + sizeof(colors)) * (typ - 1));
+	//SeekH(CfgHandle, PosH(CfgHandle) + (sizeof(video) + sizeof(colors)) * (typ - 1));
+	int sizeVideo = sizeof(video); // 10
+	int sizeColors = sizeof(colors); // 54
+	SeekH(CfgHandle, PosH(CfgHandle) + (sizeVideo + sizeColors) * (typ - 1));
 	ReadH(CfgHandle, sizeof(video), &video);
 	ReadH(CfgHandle, sizeof(colors), &colors);
 	SeekH(CfgHandle, PosH(CfgHandle) + (sizeof(video) + sizeof(colors)) * (3 - typ));
@@ -146,33 +149,15 @@ void RdColors(FILE* CfgHandle)
 
 void RdPrinter(FILE* CfgHandle)
 {
-	const BYTE NPrintStrg = 32;
-	BYTE l;
-	WORD i, j, n;
-	BYTE* p = nullptr;
-	WORD* off = (WORD*)p;
-	BYTE A[NPrintStrg * 256];
+	BYTE L;
+	printf("Pozice v souboru pred tiskarnami: %i (0x%x)\n", ftell(CfgHandle), ftell(CfgHandle));
 	ReadH(CfgHandle, 1, &prMax);
-	for (j = 1; j < prMax; j++) {
-		p = (BYTE*)(&A); n = 0;
-		for (i = 0; i < NPrintStrg; i++) {
-			ReadH(CfgHandle, 1, &l); if (l == 0xFF) goto label1; *p = l; off++;
-			ReadH(CfgHandle, l, p); off += l; n += (l + 1);
-		}
-		ReadH(CfgHandle, 1, &l); if (l != 0xFF) {
-		label1:
-			printf("Invalid FAND.CFG\n"); wait(); Halt(-1);
-		}
-		/* !!! with printer[j-1] do!!! */ {
-			auto ap = printer[j - 1];
-			GetMem(ap.Strg, n); Move(A, ap.Strg, n);
-			ReadH(CfgHandle, 4, &ap.Typ);
-			ap.OpCls = false; ap.ToHandle = false; ap.ToMgr = false;
-			if (ap.TmOut == 255) { ap.OpCls = true; ap.TmOut = 0; }
-			else if (ap.TmOut == 254) { ap.ToHandle = true; ap.TmOut = 0; }
-			else if (ap.TmOut == 253) { ap.ToMgr = true; ap.TmOut = 0; }
-		}
+	while (prMax > 0)
+	{
+		ReadH(CfgHandle, 1, &L);
+		if (L == 0xFF) prMax--;
 	}
+	printf("Pozice v souboru po tiskarnach: %i (0x%x)\n", ftell(CfgHandle), ftell(CfgHandle));
 	SetCurrPrinter(0);
 }
 
@@ -183,27 +168,69 @@ void RdWDaysTab(FILE* CfgHandle)
 	ReadH(CfgHandle, sizeof(gcfg14->WDaysLast), &gcfg14->WDaysLast);
 	//GetMem(WDaysTab, NWDaysTab * 3);
 	gcfg14->WDaysTab = new wdaystt[3];
-	ReadH(CfgHandle, gcfg14->NWDaysTab * 3, gcfg14->WDaysTab);
+	ReadH(CfgHandle, sizeof(gcfg14->NWDaysTab) * 3, gcfg14->WDaysTab);
 }
 
 void RdCFG()
 {
 	FILE* CfgHandle;
 	char ver[5] = { 0,0,0,0,0 };
-	gcfg14->CVol = ""; gcfg14->CPath = MyFExpand("FAND.CFG", "FANDCFG");
+	gcfg14->CVol = "";
+	gcfg14->CPath = MyFExpand("FAND.CFG", "FANDCFG");
 	CfgHandle = OpenH(_isoldfile, RdOnly);
 	if (gcfg14->HandleError != 0) { printf("%s !found", gcfg14->CPath.c_str()); wait(); Halt(-1); }
 	ReadH(CfgHandle, 4, ver);
 	if (strcmp(ver, CfgVersion) != 0) {
 		printf("Invalid version of FAND.CFG"); wait(); Halt(-1);
 	}
-	ReadH(CfgHandle, sizeof(spec), &spec);
-	RdColors(CfgHandle);
-	ReadH(CfgHandle, sizeof(fonts), &fonts);
+	// naètení SPEC
+	ReadH(CfgHandle, sizeof(spec.UpdCount), &spec.UpdCount);
+	ReadH(CfgHandle, sizeof(spec.AutoRprtWidth), &spec.AutoRprtWidth);
+	ReadH(CfgHandle, sizeof(spec.AutoRprtLimit), &spec.AutoRprtLimit);
+	ReadH(CfgHandle, sizeof(spec.CpLines), &spec.CpLines);
+	ReadH(CfgHandle, sizeof(spec.AutoRprtPrint), &spec.AutoRprtPrint);
+	ReadH(CfgHandle, sizeof(spec.ChoosePrMsg), &spec.ChoosePrMsg);
+	ReadH(CfgHandle, sizeof(spec.TxtInsPg), &spec.TxtInsPg);
+	ReadH(CfgHandle, sizeof(spec.TxtCharPg), &spec.TxtCharPg);
+	ReadH(CfgHandle, sizeof(spec.ESCverify), &spec.ESCverify);
+	ReadH(CfgHandle, sizeof(spec.Prompt158), &spec.Prompt158);
+	ReadH(CfgHandle, sizeof(spec.F10Enter), &spec.F10Enter);
+	ReadH(CfgHandle, sizeof(spec.RDBcomment), &spec.RDBcomment);
+	ReadH(CfgHandle, sizeof(spec.CPMdrive), &spec.CPMdrive);
+	ReadH(CfgHandle, sizeof(spec.RefreshDelay), &spec.RefreshDelay);
+	ReadH(CfgHandle, sizeof(spec.NetDelay), &spec.NetDelay);
+	ReadH(CfgHandle, sizeof(spec.LockDelay), &spec.LockDelay);
+	ReadH(CfgHandle, sizeof(spec.LockRetries), &spec.LockRetries);
+	ReadH(CfgHandle, sizeof(spec.Beep), &spec.Beep);
+	ReadH(CfgHandle, sizeof(spec.LockBeepAllowed), &spec.LockBeepAllowed);
+	ReadH(CfgHandle, sizeof(spec.XMSMaxKb), &spec.XMSMaxKb);
+	ReadH(CfgHandle, sizeof(spec.NoCheckBreak), &spec.NoCheckBreak);
+	ReadH(CfgHandle, 1, &spec.KbdTyp); // v C++ je enum 4B, originál 1B
+	ReadH(CfgHandle, sizeof(spec.NoMouseSupport), &spec.NoMouseSupport);
+	ReadH(CfgHandle, sizeof(spec.MouseReverse), &spec.MouseReverse);
+	ReadH(CfgHandle, sizeof(spec.DoubleDelay), &spec.DoubleDelay);
+	ReadH(CfgHandle, sizeof(spec.RepeatDelay), &spec.RepeatDelay);
+	ReadH(CfgHandle, sizeof(spec.CtrlDelay), &spec.CtrlDelay);
+	ReadH(CfgHandle, sizeof(spec.OverwrLabeledDisk), &spec.OverwrLabeledDisk);
+	ReadH(CfgHandle, sizeof(spec.ScreenDelay), &spec.ScreenDelay);
+	ReadH(CfgHandle, sizeof(spec.OffDefaultYear), &spec.OffDefaultYear);
+	ReadH(CfgHandle, sizeof(spec.WithDiskFree), &spec.WithDiskFree);
+	// konec SPEC
+
+	RdColors(CfgHandle); // naètení konfigurace (VGA + barvy)
+
+	// Naètení fontù
+	ReadH(CfgHandle, 1, &fonts.VFont); // enum orginál 1B
+	ReadH(CfgHandle, sizeof(fonts.LoadVideoAllowed), &fonts.LoadVideoAllowed);
+	ReadH(CfgHandle, sizeof(fonts.NoDiakrSupported), &fonts.NoDiakrSupported);
+
 	ReadH(CfgHandle, sizeof(CharOrdTab), CharOrdTab);
 	ReadH(CfgHandle, sizeof(UpcCharTab), UpcCharTab);
+
 	RdPrinter(CfgHandle);
+
 	RdWDaysTab(CfgHandle);
+
 	CloseH(CfgHandle);
 }
 
@@ -360,29 +387,31 @@ void InitRunFand()
 	//OvrHandle = GetOverHandle(h, -1); // TODO: pùvodnì to byl WORD - 1, teï je to blbost;
 	//ReadH(h, sizeof(gcfg14->ResFile.A), gcfg14->ResFile.A);
 
-	for(int readindexes = 0; readindexes < FandFace; readindexes++)
+	for (int readindexes = 0; readindexes < FandFace; readindexes++)
 	{
 		ReadH(h, sizeof(gcfg14->ResFile.A->Pos), &gcfg14->ResFile.A[readindexes].Pos);
 		ReadH(h, sizeof(gcfg14->ResFile.A->Size), &gcfg14->ResFile.A[readindexes].Size);
 	}
-	
-	//ReadH(h, 4, &gcfg14->ResFile.A);
+
+	// *** NAÈTENÍ INFORMACÍ O ZPRÁVÁCH Z FAND.RES
 	ReadH(h, 2, &gcfg14->MsgIdxN);
-
-	l = /*sizeof(TMsgIdxItem)*/ 5 * gcfg14->MsgIdxN;
+	l = gcfg14->MsgIdxN;
 	gcfg14->MsgIdx = new TMsgIdxItem[l]; // GetMem(MsgIdx, l);
-
 	for (int readindexes = 0; readindexes < l; readindexes++)
 	{
 		ReadH(h, sizeof(gcfg14->MsgIdx->Nr), &gcfg14->MsgIdx[readindexes].Nr);
 		ReadH(h, sizeof(gcfg14->MsgIdx->Ofs), &gcfg14->MsgIdx[readindexes].Ofs);
 		ReadH(h, sizeof(gcfg14->MsgIdx->Count), &gcfg14->MsgIdx[readindexes].Count);
+		printf("Zprava cislo: %i, offset %i, delka %i\n", gcfg14->MsgIdx[readindexes].Nr, gcfg14->MsgIdx[readindexes].Ofs, gcfg14->MsgIdx[readindexes].Count);
 	}
-	
-	ReadH(h, l, gcfg14->MsgIdx);
 	gcfg14->FrstMsgPos = PosH(h);
+	// *** konec ***
+
+	// NAÈTENÍ ZNAKÙ PRO 'ANO' A 'NE' - originál je Y a N
 	RdMsg(50);
-	Move((void*)&gcfg14->MsgLine[1], (void*)&gcfg14->AbbrYes, 2);
+	gcfg14->AbbrYes = gcfg14->MsgLine[1];
+	gcfg14->AbbrNo = gcfg14->MsgLine[2];
+
 	RdCFG();
 	gcfg14->ProcAttr = colors.uNorm;
 	// ScrSeg = video.address; TODO: nepotøebujeme, nezapisujeme pøímo do GK
@@ -395,8 +424,8 @@ void InitRunFand()
 		case 16: {if (Fonts.VFont == foKamen) NrVFont = Vga8x16K; else NrVFont = Vga8x16L; break; }
 		}*/
 
-	// Access
-	// GetIntVec(0x3f, FandInt3f); // toto je vektor pøerušení INT 3fH - Overlay a DLL
+		// Access
+		// GetIntVec(0x3f, FandInt3f); // toto je vektor pøerušení INT 3fH - Overlay a DLL
 	FillChar(&XWork, sizeof(XWork), 0); // celý objekt nulovat nemusíme, snad ...
 	FillChar(&TWork, sizeof(TWork), 0); //  -"-
 	CRdb = nullptr;

@@ -25,6 +25,7 @@ pstring TopRdbDir, TopDataDir;
 pstring CatFDName;
 RdbD* CRdb, TopRdb;
 FileD* CatFD, HelpFD;
+WORD InpArrLen, CurrPos, OldErrPos;
 
 integer CompLongStr(LongStrPtr S1, LongStrPtr S2)
 {

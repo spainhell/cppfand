@@ -44,7 +44,7 @@ static pstring KbdBuffer = ""; // ř. 83
 static BYTE LLKeyFlags = 0; // ř. 84
 
 enum class enVideoCard { viCga = 0, viHercules = 1, viEga = 2, viVga = 3 };
-static enVideoCard VideoCard = enVideoCard::viVga;
+extern enVideoCard VideoCard;// = enVideoCard::viVga;
 static integer GraphDriver, GraphMode;
 static WORD ScrSeg, ScrGrSeg;
 static BYTE NrVFont, BytesPerChar;
@@ -58,7 +58,7 @@ const BYTE EventQSize = 16;
 const bool BGIReload = true;
 static TPoint LastWhere, LastWhereG, DownWhere;
 struct Wind { BYTE X, Y; } static WindMin, WindMax; // r137
-static BYTE TextAttr, StartAttr, StartMode; // r138
+extern BYTE TextAttr, StartAttr, StartMode; // r138
 static WORD LastMode;
 static void* FontArr; static void* BGIDriver; static void* BGILittFont; static void* BGITripFont;
 static BYTE ButtonCount, MouseButtons, LastButtons, DownButtons, LastDouble;

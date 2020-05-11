@@ -69,8 +69,8 @@ public:
 
 	wdaystt WDaysTabType;
 	WORD NWDaysTab;
-	float WDaysFirst;
-	float WDaysLast;
+	double WDaysFirst;
+	double WDaysLast;
 	wdaystt* WDaysTab;
 
 	bool TxtEdCtrlUBrk, TxtEdCtrlF4Brk;

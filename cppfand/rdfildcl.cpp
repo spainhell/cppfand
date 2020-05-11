@@ -305,7 +305,8 @@ void* RdFileD(pstring FileName, char FDTyp, pstring Ext)
 	integer n, i; bool isHlp; KeyDPtr K; pstring Prefix; pstring s(32);
 	LiRootsPtr li;
 
-	ResetCompilePars(); RdLex();
+	ResetCompilePars();
+	RdLex();
 	issql = SEquUpcase(Ext, ".SQL"); isHlp = SEquUpcase(Ext, ".HLP");
 	if (IsKeyWord("JOURNALOF")) {
 		FD = RdFileName(); if (Lexem == ';') RdLex(); SetMsgPar(FileName);

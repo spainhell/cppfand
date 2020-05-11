@@ -6,6 +6,9 @@
 #include "editor.h"
 #include "legacy.h"
 
+BYTE TextAttr, StartAttr, StartMode; // r138
+enVideoCard VideoCard = enVideoCard::viVga;
+
 // *** KEYBOARD ***
 BYTE ofsHeadKeyBuf = 0x1A;
 BYTE ofsTailKeyBuf = 0x1C; /*Bios*/
