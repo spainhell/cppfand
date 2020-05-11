@@ -155,7 +155,6 @@
     <ClCompile Include="drivers.cpp" />
     <ClCompile Include="editor.cpp" />
     <ClCompile Include="genrprt.cpp" />
-    <ClCompile Include="globconf.cpp" />
     <ClCompile Include="kbdww.cpp" />
     <ClCompile Include="legacy.cpp" />
     <ClCompile Include="oaccess.cpp" />
@@ -191,7 +190,6 @@
     <ClInclude Include="expimp.h" />
     <ClInclude Include="fanddml.h" />
     <ClInclude Include="genrprt.h" />
-    <ClInclude Include="globconf.h" />
     <ClInclude Include="kbdww.h" />
     <ClInclude Include="legacy.h" />
     <ClInclude Include="oaccess.h" />

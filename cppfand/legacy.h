@@ -2,6 +2,8 @@
 #include "constants.h"
 #include "pstring.h"
 
+extern std::vector<std::string> paramstr;
+
 static longint ExitCode = 0; // exit kód -> OS
 static void* ErrorAddr = nullptr; // adresa chyby
 static void (*ExitProc)() { }; // ukončovací procedura

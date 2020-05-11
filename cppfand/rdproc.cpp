@@ -1307,7 +1307,7 @@ CpOption RdCOpt()
 	for (i = 0; i < 3; i++)
 		if (EquUpcase(OptArr[i])) { RdLex(); return CpOption(i); }
 	Error(53);
-	throw exception("Bad value in RdCOpt() in rdproc.cpp");
+	throw std::exception("Bad value in RdCOpt() in rdproc.cpp");
 }
 
 bool RdX(FileD* FD)

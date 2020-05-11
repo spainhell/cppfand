@@ -2,11 +2,9 @@
 
 #include <set>
 #include "editor.h"
-#include "globconf.h"
 #include "kbdww.h"
 #include "obaseww.h"
 
-globconf* gcfg8 = gcfg8->GetInstance();
 
 void ResetCtrlFlags()
 {
@@ -18,7 +16,7 @@ void ResetCtrlFlags()
 bool IsPrintCtrl(char C)
 {
 	// ^S ^Q ^W ^B ^D ^E ^A ^X ^V ^T
-	set<char> pc = { 0x13, 0x11, 0x17, 0x02, 0x04, 0x05, 0x01, 0x18, 0x16, 0x14 };
+	std::set<char> pc = { 0x13, 0x11, 0x17, 0x02, 0x04, 0x05, 0x01, 0x18, 0x16, 0x14 };
 	return pc.count(C) == 0;
 }
 
@@ -190,8 +188,8 @@ void ClosePrinter(WORD LeftMargin)
 void TestTxtHError(TextFile* F)
 {
 	pstring s;
-	if (gcfg8->HandleError != 0) {
-		SetMsgPar(StrPas(F->name.c_str())); WrLLF10Msg(700 + gcfg8->HandleError); GoExit();
+	if (HandleError != 0) {
+		SetMsgPar(StrPas(F->name.c_str())); WrLLF10Msg(700 + HandleError); GoExit();
 	}
 }
 
@@ -279,25 +277,25 @@ void Seek0Txt(TextFile* F)
 
 bool ResetTxt(TextFile* F)
 {
-	F->Assign(gcfg8->CPath.c_str());
+	F->Assign(CPath.c_str());
 	/* !!! with TextRec(F) do!!! */
 	{
 		F->openfunc = &OpenTxt; F->Handle = nullptr; /* for error detection in OpenH */
 		F->Handle = OpenH(_isoldfile, RdOnly);
 	}
-	if (gcfg8->HandleError != 0) { return false; }
+	if (HandleError != 0) { return false; }
 	F->Reset();
 	return true;
 }
 
 bool RewriteTxt(TextFile* F, bool PrintCtrl)
 {
-	F->Assign(gcfg8->CPath.c_str());
-	if (gcfg8->CPath == "LPT1") F->openfunc = &OpenLPT1;
+	F->Assign(CPath.c_str());
+	if (CPath == "LPT1") F->openfunc = &OpenLPT1;
 	else {
 		PrintCtrlFlag = PrintCtrl; F->openfunc = &OpenTxt;
 		F->Handle = OpenH(_isoverwritefile, Exclusive);
-		if (gcfg8->HandleError != 0) { return false; };
+		if (HandleError != 0) { return false; };
 	}
 	F->Rewrite();
 	return true;
@@ -305,8 +303,8 @@ bool RewriteTxt(TextFile* F, bool PrintCtrl)
 
 void SetPrintTxtPath()
 {
-	gcfg8->CPath = gcfg8->WrkDir + "PRINTER.TXT";
-	gcfg8->CVol = "";
+	CPath = WrkDir + "PRINTER.TXT";
+	CVol = "";
 }
 
 

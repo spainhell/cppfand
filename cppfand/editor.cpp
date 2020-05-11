@@ -13,11 +13,8 @@
 #include "wwmix.h"
 #include <set>
 #include "compile.h"
-#include "globconf.h"
 #include "obaseww.h"
 #include "runfrml.h"
-
-globconf* gcfg4 = globconf::GetInstance();
 
 const int TXTCOLS = 80;
 longint Timer = 0;
@@ -59,7 +56,7 @@ const BYTE InterfL = 4; /*sizeof(Insert+Indent+Wrap+Just)*/
 const BYTE LineSize = 255; const WORD SuccLineSize = 256; const WORD TextStore = 0x1000;
 const BYTE TStatL = 35; /*=10(Col Row)+length(InsMsg+IndMsg+WrapMsg+JustMsg+BlockMsg)*/
 
-set<char> Oddel = { 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,
+std::set<char> Oddel = { 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,
 26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,58,59,60,61,62,63,64,
 91,92,93,94,96,123,124,125,126,127 };
 
@@ -167,7 +164,7 @@ FrmlPtr RdFldNameFrmlT(char& FTyp)
 
 void MyWrLLMsg(pstring s)
 {
-	if (gcfg4->HandleError == 4) s = ""; SetMsgPar(s); WrLLF10Msg(700 + gcfg4->HandleError);
+	if (HandleError == 4) s = ""; SetMsgPar(s); WrLLF10Msg(700 + HandleError);
 }
 
 void MyRunError(pstring s, WORD n)
@@ -177,11 +174,11 @@ void MyRunError(pstring s, WORD n)
 
 void HMsgExit(pstring s)
 {
-	switch (gcfg4->HandleError) {
+	switch (HandleError) {
 	case 0: return;
-	case 1: { s = s[1]; SetMsgPar(s); RunError(700 + gcfg4->HandleError); break; }
+	case 1: { s = s[1]; SetMsgPar(s); RunError(700 + HandleError); break; }
 	case 2:
-	case 3: { SetMsgPar(s); RunError(700 + gcfg4->HandleError); break; }
+	case 3: { SetMsgPar(s); RunError(700 + HandleError); break; }
 	case 4: RunError(704); break;
 	}
 }
@@ -446,7 +443,7 @@ void UpdateFile()
 			if (pos - pos1 < n) n = pos - pos1; pos -= n;
 			SeekH(TxtFH, pos); ReadH(TxtFH, n, p);
 			SeekH(TxtFH, pos + d); WriteH(TxtFH, n, p);
-			if (gcfg4->HandleError != 0) HErr = gcfg4->HandleError;
+			if (HandleError != 0) HErr = HandleError;
 		}
 	}
 	else if (d < 0)
@@ -465,7 +462,7 @@ void UpdateFile()
 	ReleaseStore(p);
 	SeekH(TxtFH, Part.PosP);
 	if (LenT > 0) WriteH(TxtFH, LenT, T);
-	if (gcfg4->HandleError != 0) HErr = gcfg4->HandleError;
+	if (HandleError != 0) HErr = HandleError;
 	FlushH(TxtFH); AbsLenT = FileSizeH(TxtFH);
 	if (HErr != 0) { SetMsgPar(TxtPath); WrLLF10Msg(700 + HErr); }
 	Part.UpdP = false; Part.LenP = LenT;
@@ -496,14 +493,14 @@ void RdFirstPart()
 void OpenTxtFh(char Mode)
 {
 	FileUseMode UM;
-	gcfg4->CPath = TxtPath; gcfg4->CVol = TxtVol;
-	TestMountVol(gcfg4->CPath[1]);
+	CPath = TxtPath; CVol = TxtVol;
+	TestMountVol(CPath[1]);
 	if (Mode == ViewM) UM = RdOnly;
 	else UM = Exclusive;
 	TxtFH = OpenH(_isoldnewfile, UM);
-	if (gcfg4->HandleError != 0) {
-		SetMsgPar(gcfg4->CPath);
-		RunError(700 + gcfg4->HandleError);
+	if (HandleError != 0) {
+		SetMsgPar(CPath);
+		RunError(700 + HandleError);
 	}
 	AbsLenT = FileSizeH(TxtFH);
 }
@@ -525,7 +522,7 @@ void WrStatusLine()
 {
 	pstring Blanks;
 	BYTE* Len = (BYTE*)&Blanks;
-	string s;
+	pstring s;
 	integer i;
 
 	if (Mode != HelpM) {
@@ -580,14 +577,14 @@ void WriteMargins()
 void WrLLMargMsg(pstring* s, WORD n)
 {
 	if (s != nullptr) {
-		gcfg4->MsgLine = *s;
+		MsgLine = *s;
 		WrLLMsgTxt();
 	}
 	else {
 		if (n != 0) WrLLMsg(n);
 		else {
 			if (LastS != nullptr) {
-				gcfg4->MsgLine = LastS;
+				MsgLine = LastS;
 				WrLLMsgTxt();
 			}
 			else {
@@ -1568,7 +1565,7 @@ bool MyGetEvent() {
 			if (My2GetEvent())
 			{
 				Wr("", OrigS);
-				set<char> setKc = { _B_, _K_, _H_, _S_, _Y_, _C_, _V_, _W_, _R_, _P_, _F_, _U_, _L_, _N_ };
+				std::set<char> setKc = { _B_, _K_, _H_, _S_, _Y_, _C_, _V_, _W_, _R_, _P_, _F_, _U_, _L_, _N_ };
 				if (setKc.count(Event.KeyCode) > 0)
 				{
 					Event.KeyCode = (ww << 8) | Event.KeyCode;
@@ -2127,7 +2124,7 @@ void Calculate()
 label0:
 	Txt = CalcTxt; Del = true; I = 1;
 label1:
-	gcfg4->TxtEdCtrlUBrk = true; gcfg4->TxtEdCtrlF4Brk = true;
+	TxtEdCtrlUBrk = true; TxtEdCtrlF4Brk = true;
 	ww.PromptLL(114, &Txt, I, Del);
 	if (KbdChar == _U_) goto label0;
 	if ((KbdChar == _ESC_) || (Txt.length() == 0)) goto label3;
@@ -2154,14 +2151,14 @@ label1:
 	}
 	case 'S': { Txt = RunShortStr(Z);   /* wie RdMode fuer T ??*/ break; }
 	case 'B': {
-		if (RunBool(Z)) Txt = gcfg4->AbbrYes;
-		else Txt = gcfg4->AbbrNo;
+		if (RunBool(Z)) Txt = AbbrYes;
+		else Txt = AbbrNo;
 		break;
 	}
 	}
 	I = 1; goto label1;
 label2:
-	Msg = gcfg4->MsgLine; I = CurrPos; SetMsgPar(Msg); WrLLF10Msg(110);
+	Msg = MsgLine; I = CurrPos; SetMsgPar(Msg); WrLLF10Msg(110);
 	IsCompileErr = false; ReleaseStore(p); Del = false; goto label1;
 label3:
 	ReleaseStore(p); RestoreExit(er);
@@ -2197,7 +2194,7 @@ void ResetPrint(char Oper, longint& fs, FILE* W1, longint LenPrint, ColorOrd* co
 	else
 	{
 		isPrintFile = true; W1 = WorkHandle; SeekH(W1, 0);
-		WriteH(W1, co->length(), &co[1]); HMsgExit(gcfg4->CPath);
+		WriteH(W1, co->length(), &co[1]); HMsgExit(CPath);
 	}
 }
 
@@ -2254,7 +2251,7 @@ bool BlockHandle(longint& fs, FILE* W1, char Oper)
 			case 'P': {
 				if (isPrintFile)
 				{
-					WriteH(W1, I2 - I1, T[I1]); HMsgExit(gcfg4->CPath);
+					WriteH(W1, I2 - I1, T[I1]); HMsgExit(CPath);
 				}
 				else {
 					Move(T[I1], p[fs + 1], I2 - I1);
@@ -2263,7 +2260,7 @@ bool BlockHandle(longint& fs, FILE* W1, char Oper)
 				break;
 			}
 			case 'W': {
-				SeekH(W1, fs); WriteH(W1, I2 - I1, T[I1]); HMsgExit(gcfg4->CPath);
+				SeekH(W1, fs); WriteH(W1, I2 - I1, T[I1]); HMsgExit(CPath);
 				fs += I2 - I1; LL1 += I2 - I1;
 				break;
 			}
@@ -2298,7 +2295,7 @@ bool BlockHandle(longint& fs, FILE* W1, char Oper)
 			case 'P': {
 				Move(&Arr[BegBPos], a, I1); a[I1 + 1] = _CR; a[I1 + 2] = _LF;
 				if ((Oper == 'P') && !isPrintFile) Move(a, p[fs + 1], I1 + 2);
-				else { WriteH(W1, I1 + 2, a); HMsgExit(gcfg4->CPath); }
+				else { WriteH(W1, I1 + 2, a); HMsgExit(CPath); }
 				fs += I1 + 2;
 				break;
 			}
@@ -2655,7 +2652,7 @@ char MyVerifyLL(WORD n, pstring s)
 				else { GotoXY(c1, r1); r = r1; }
 			}
 		cc = toupper(ReadKbd());
-	} while (!(cc == gcfg4->AbbrYes || cc == gcfg4->AbbrNo || cc == _ESC));
+	} while (!(cc == AbbrYes || cc == AbbrNo || cc == _ESC));
 	PopW(w);
 	return cc;
 }
@@ -2689,7 +2686,7 @@ label1:
 			else {
 				FirstEvent = true; Background(); FirstEvent = false;
 				c = MyVerifyLL(408, "");
-				if (c == gcfg4->AbbrYes) ReplaceString(fst, fst, lst, Last);
+				if (c == AbbrYes) ReplaceString(fst, fst, lst, Last);
 				else if (c == _ESC) return;
 				;
 			}
@@ -2894,7 +2891,7 @@ void HandleEvent() {
 					if (TypeT == LocalT) sp = TWork.Read(1, *LocalPPtr);
 					else {
 						CRecPtr = EditDRoot->NewRecPtr;
-						sp = _LongS(gcfg4->CFld->FldD);
+						sp = _LongS(CFld->FldD);
 					}
 					LenT = sp->LL; T = (CharArr*)(sp); Move(T[3], T[1], LenT);
 					break;
@@ -3282,21 +3279,21 @@ void HandleEvent() {
 					{
 						BegBLn = 1; EndBLn = 0x7FFF; BegBPos = 1; EndBPos = 0xFF; TypeB = TextBlock;
 					}
-					gcfg4->CPath = wwmix1.SelectDiskFile(".TXT", 401, false);
-					if (gcfg4->CPath == "")  goto Nic;
-					gcfg4->CVol = "";
+					CPath = wwmix1.SelectDiskFile(".TXT", 401, false);
+					if (CPath == "")  goto Nic;
+					CVol = "";
 					F1 = OpenH(_isnewfile, Exclusive);
-					if (gcfg4->HandleError == 80)
+					if (HandleError == 80)
 					{
-						SetMsgPar(gcfg4->CPath);
+						SetMsgPar(CPath);
 						if (PromptYN(780)) F1 = OpenH(_isoverwritefile, Exclusive);
 						else goto Nic;
 					}
-					if (gcfg4->HandleError != 0) { MyWrLLMsg(gcfg4->CPath); goto Nic; }
+					if (HandleError != 0) { MyWrLLMsg(CPath); goto Nic; }
 					fs = 0; // {L1 =LineAbs(LineL);I =Posi;}
 					if (BlockHandle(fs, F1, 'W'))
 					{
-						WriteH(F1, 0, *T); /*truncH*/ CloseH(F1); HMsgExit(gcfg4->CPath);
+						WriteH(F1, 0, *T); /*truncH*/ CloseH(F1); HMsgExit(CPath);
 					}
 					// { PosDekFindLine(L1,I,true); }
 					BegBLn = I1; BegBPos = I2; EndBLn = I3; EndBPos = I; TypeB = bb;
@@ -3308,10 +3305,10 @@ void HandleEvent() {
 					break;
 				}
 				case _KR_: {
-					gcfg4->CPath = wwmix1.SelectDiskFile(".TXT", 400, false);
-					if (gcfg4->CPath == "") goto Nic;
-					gcfg4->CVol = ""; F1 = OpenH(_isoldfile, RdOnly);
-					if (gcfg4->HandleError != 0) { MyWrLLMsg(gcfg4->CPath); goto Nic; }
+					CPath = wwmix1.SelectDiskFile(".TXT", 400, false);
+					if (CPath == "") goto Nic;
+					CVol = ""; F1 = OpenH(_isoldfile, RdOnly);
+					if (HandleError != 0) { MyWrLLMsg(CPath); goto Nic; }
 					BegBLn = Part.LineP + LineL; BegBPos = Posi;
 					L1 = Part.PosP + LineI + Posi - 1;
 					FillBlank();
@@ -3551,7 +3548,7 @@ Nic:
 
 void CursorWord()
 {
-	set<char> O;
+	std::set<char> O;
 	WORD pp;
 
 	LexWord = "";
@@ -3662,7 +3659,7 @@ void Edit(WORD SuccLineSize)
 	if (ErrMsg != "")
 	{
 		SetMsgPar(ErrMsg);
-		gcfg4->F10SpecKey = 0xffff;
+		F10SpecKey = 0xffff;
 		WrLLF10Msg(110);
 		ClearKbdBuf();
 		AddToKbdBuf(KbdChar);
@@ -3808,7 +3805,7 @@ void EditTxtFile(longint* LP, char Mode, pstring& ErrMsg, EdExitD* ExD,
 	if (!Loc)
 	{
 		MaxLenT = 0xFFF0; LenT = 0; Part.UpdP = false;
-		TxtPath = gcfg4->CPath; TxtVol = gcfg4->CVol; OpenTxtFh(Mode);
+		TxtPath = CPath; TxtVol = CVol; OpenTxtFh(Mode);
 		RdFirstPart();
 		SimplePrintHead();
 		while ((TxtPos > Part.PosP + Part.LenP) && !AllRd) RdNextPart();
@@ -3846,7 +3843,7 @@ label1:
 		}
 		case _AltF10_: { Help(nullptr, "", false); goto label2; }
 		case _F1_: {
-			RdMsg(6); Help((RdbDPtr)&HelpFD, gcfg4->MsgLine, false);
+			RdMsg(6); Help((RdbDPtr)&HelpFD, MsgLine, false);
 		label2:
 			if (!Loc) RdPart(); goto label1; }
 		}
@@ -3854,7 +3851,7 @@ label1:
 	if ((EdBreak == 0xFFFF) && (KbdChar == _F6_))
 		if (Loc) { PrintArray(*T, LenT, false); goto label1; }
 		else {
-			gcfg4->CPath = TxtPath; gcfg4->CVol = TxtVol; PrintTxtFile(0);
+			CPath = TxtPath; CVol = TxtVol; PrintTxtFile(0);
 			OpenTxtFh(Mode); RdPart(); goto label1;
 		}
 	if (!Loc && (Size < 1)) MyDeleteFile(TxtPath);
@@ -3862,7 +3859,7 @@ label1:
 label4:
 	if (IsCompileErr) {
 		IsCompileErr = false;
-		compErrTxt = gcfg4->MsgLine;
+		compErrTxt = MsgLine;
 		SetMsgPar(compErrTxt); WrLLF10Msg(110);
 	}
 	if (Loc)
@@ -3996,13 +3993,13 @@ void InitTxtEditor()
 	TxtColor = colors.tNorm; BlockColor = colors.tBlock; SysLColor = colors.fNorm;
 	ColKey[0] = colors.tCtrl;
 	Move(&colors.tUnderline, &ColKey[1], 7);
-	RdMsg(411); InsMsg = gcfg4->MsgLine;
-	RdMsg(412); nInsMsg = gcfg4->MsgLine;
-	RdMsg(413); IndMsg = gcfg4->MsgLine;
-	RdMsg(414); WrapMsg = gcfg4->MsgLine;
-	RdMsg(415); JustMsg = gcfg4->MsgLine;
-	RdMsg(417); BlockMsg = gcfg4->MsgLine;
-	RdMsg(416); ViewMsg = gcfg4->MsgLine;
+	RdMsg(411); InsMsg = MsgLine;
+	RdMsg(412); nInsMsg = MsgLine;
+	RdMsg(413); IndMsg = MsgLine;
+	RdMsg(414); WrapMsg = MsgLine;
+	RdMsg(415); JustMsg = MsgLine;
+	RdMsg(417); BlockMsg = MsgLine;
+	RdMsg(416); ViewMsg = MsgLine;
 	Insert = true; Indent = true; Wrap = false; Just = false; TypeB = false;
 	LeftMarg = 1; RightMarg = 78;
 	CharPg = /*char(250)*/ spec.TxtCharPg; InsPg = /*true*/ spec.TxtInsPg;

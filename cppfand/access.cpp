@@ -1,10 +1,6 @@
-#pragma once
-
 #include "access.h"
 
-
 #include "compile.h"
-#include "globconf.h"
 #include "kbdww.h"
 #include "legacy.h"
 #include "oaccess.h"
@@ -13,7 +9,6 @@
 #include "runfrml.h"
 #include "sort.h"
 
-globconf* gcfg1 = globconf::GetInstance();
 FileD* CFile;
 FieldDPtr CatRdbName, CatFileName, CatArchiv, CatPathName, CatVolume;
 FileD* FileDRoot; // { only current RDB }
@@ -26,6 +21,45 @@ pstring CatFDName;
 RdbD* CRdb, TopRdb;
 FileD* CatFD, HelpFD;
 WORD InpArrLen, CurrPos, OldErrPos;
+
+pstring LockModeTxt[9] = { "NULL", "NOEXCL","NODEL","NOCR","RD","WR","CR","DEL","EXCL" };
+
+structXPath XPath[10];
+WORD XPathN;
+XWFile XWork;
+TFile TWork;
+longint ClpBdPos = 0;
+bool IsTestRun = false;
+bool IsInstallRun = false;
+FileDPtr Chpt = FileDRoot; // absolute FileDRoot;
+TFilePtr ChptTF;
+FieldDPtr ChptTxtPos;
+FieldDPtr ChptVerif; // { updated record }
+FieldDPtr ChptOldTxt; // { ChptTyp = 'F' : -1 = new unchecked record, else = old declaration }
+FieldDPtr ChptTyp, ChptName, ChptTxt;
+bool EscPrompt = false;
+pstring UserName = pstring(20);
+pstring UserPassWORD = pstring(20);
+pstring AccRight;
+bool EdUpdated = false;
+longint EdRecNo = 0;
+pstring EdRecKey = "";
+pstring EdKey = pstring(32);
+bool EdOk = false;
+pstring EdField = pstring(32);
+longint LastTxtPos = 0;
+longint TxtXY = 0;
+// { consecutive WORD - sized / for formula access / }
+WORD RprtLine = 0; WORD RprtPage = 0; WORD PgeLimit = 0; // {report}
+WORD EdBreak = 0; WORD EdIRec = 1; // {common - alphabetical order}
+WORD MenuX = 1; WORD MenuY = 1;
+WORD UserCode = 0;
+WORD* WordVarArr = &RprtLine;
+pstring MountedVol[FloppyDrives] = { pstring(11), pstring(11), pstring(11) };
+pstring SQLDateMask = "DD.MM.YYYY hh:mm:ss";
+
+
+
 
 integer CompLongStr(LongStrPtr S1, LongStrPtr S2)
 {
@@ -55,7 +89,7 @@ void ModeLockBnds(LockMode Mode, longint& Pos, WORD& Len)
 	case CrMode: n = 0x01FF0200; break;
 	case DelMode: n = 0x02FF0100; break;
 	case ExclMode: n = 0x03FF0000; break;
-}
+	}
 	Pos = ModeLock + (n >> 16);
 	Len = n & 0xFFFF;
 }
@@ -148,14 +182,14 @@ void CloseGoExit()
 void TFile::Err(WORD n, bool ex)
 {
 	if (IsWork) {
-		SetMsgPar(gcfg1->FandWorkTName); WrLLF10Msg(n); if (ex) GoExit();
+		SetMsgPar(FandWorkTName); WrLLF10Msg(n); if (ex) GoExit();
 	}
 	else { CFileMsg(n, 'T'); if (ex) CloseGoExit(); }
 }
 
 void TFile::TestErr()
 {
-	if (gcfg1->HandleError != 0) Err(700 + gcfg1->HandleError, true);
+	if (HandleError != 0) Err(700 + HandleError, true);
 }
 
 longint TFile::UsedFileSize()
@@ -549,34 +583,34 @@ void WrPrefixes()
 
 void CExtToX()
 {
-	gcfg1->CExt[2] = 'X'; gcfg1->CPath = gcfg1->CDir + gcfg1->CName + gcfg1->CExt;
+	CExt[2] = 'X'; CPath = CDir + CName + CExt;
 }
 
 void TestCFileError()
 {
-	if (gcfg1->HandleError != 0) CFileError(700 + gcfg1->HandleError);
+	if (HandleError != 0) CFileError(700 + HandleError);
 }
 
 void TestCPathError()
 {
 	WORD n;
-	if (gcfg1->HandleError != 0) {
-		n = 700 + gcfg1->HandleError;
-		if ((n == 705) && (gcfg1->CPath[gcfg1->CPath.length()] == '\\')) n = 840;
-		SetMsgPar(gcfg1->CPath); RunError(n);
+	if (HandleError != 0) {
+		n = 700 + HandleError;
+		if ((n == 705) && (CPath[CPath.length()] == '\\')) n = 840;
+		SetMsgPar(CPath); RunError(n);
 	}
 }
 
 void CExtToT()
 {
-	if (SEquUpcase(gcfg1->CExt, ".RDB"))
-		gcfg1->CExt = ".TTT";
+	if (SEquUpcase(CExt, ".RDB"))
+		CExt = ".TTT";
 	else
-		if (SEquUpcase(gcfg1->CExt, ".DBF"))
-			if (CFile->TF->Format == TFile::FptFormat) gcfg1->CExt = ".FPT";
-			else gcfg1->CExt = ".DBT";
-		else gcfg1->CExt[2] = 'T';
-	gcfg1->CPath = gcfg1->CDir + gcfg1->CName + gcfg1->CExt;
+		if (SEquUpcase(CExt, ".DBF"))
+			if (CFile->TF->Format == TFile::FptFormat) CExt = ".FPT";
+			else CExt = ".DBT";
+		else CExt[2] = 'T';
+	CPath = CDir + CName + CExt;
 }
 
 void XFNotValid()
@@ -687,7 +721,7 @@ longint _T(FieldDescr* F)
 		n = 0;
 		// tváøíme se, že CRecPtr je pstring ...
 		pstring* s = (pstring*)CRecPtr;
-		auto result = stoi(LeadChar(' ', *s));
+		auto result = std::stoi(LeadChar(' ', *s));
 		return result;
 	}
 	else
@@ -1694,9 +1728,9 @@ bool FileD::IsShared()
 bool FileD::NotCached()
 {
 	/*asm  les di,Self; xor ax,ax; mov dl,es:[di].FileD.UMode;
-     cmp dl,Shared; je @1; cmp dl,RdShared; jne @2;
+	 cmp dl,Shared; je @1; cmp dl,RdShared; jne @2;
 @1:  cmp es:[di].FileD.LMode,ExclMode; je @2;
-     mov ax,1;
+	 mov ax,1;
 @2:  end;*/
 	return false;
 }
@@ -1853,9 +1887,9 @@ XItem* XItem::Next(WORD O)
 WORD XItem::UpdStr(WORD O, pstring* S)
 {
 	/*asm  push ds; lds bx,Self; les di,S; cld; add bx,O;
-     mov al,[bx];{M} add al,[bx+1];{L} stosb;
-     mov al,[bx]; xor ah,ah; add di,ax; lea si,[bx+2];
-     xor ch,ch; mov cl,[bx+1]; rep movsb; mov ax,si; pop ds;*/
+	 mov al,[bx];{M} add al,[bx+1];{L} stosb;
+	 mov al,[bx]; xor ah,ah; add di,ax; lea si,[bx+2];
+	 xor ch,ch; mov cl,[bx+1]; rep movsb; mov ax,si; pop ds;*/
 	return 0;
 }
 
@@ -2529,7 +2563,7 @@ void XWKey::AddToRecNr(longint RecNr, integer Dif)
 
 void XWFile::Err(WORD N)
 {
-	if (this == &XWork) { SetMsgPar(gcfg1->FandWorkXName); RunError(N); }
+	if (this == &XWork) { SetMsgPar(FandWorkXName); RunError(N); }
 	else {
 		CFile->XF->SetNotValid();
 		CFileMsg(N, 'X');
@@ -2539,7 +2573,7 @@ void XWFile::Err(WORD N)
 
 void XWFile::TestErr()
 {
-	if (gcfg1->HandleError != 0) Err(700 + gcfg1->HandleError);
+	if (HandleError != 0) Err(700 + HandleError);
 }
 
 longint XWFile::UsedFileSize()
@@ -2638,7 +2672,7 @@ XScan::XScan(FileD* aFD, KeyD* aKey, KeyInD* aKIRoot, bool aWithT)
 		Kind = 1;
 		if (aKIRoot != nullptr) Kind = 2;
 	}
-	}
+}
 
 void XScan::Reset(FrmlPtr ABool, bool SQLFilter)
 {
@@ -2685,7 +2719,7 @@ void XScan::ResetSort(KeyFldDPtr aSK, FrmlPtr& BoolZ, LockMode OldMd, bool SQLFi
 		if (SQLFilter) { Reset(BoolZ, true); BoolZ = nullptr; }
 		else Reset(nullptr, false);
 		return;
-}
+	}
 	if (aSK != nullptr) {
 		Reset(BoolZ, false);
 		ScanSubstWIndex(this, aSK, 'S');
@@ -2792,9 +2826,9 @@ void XScan::SeekRec(longint I)
 			if (hasSQLFilter) z = Bool else z = nullptr;
 			InpReset(Key, SK, KIRoot, z, withT);
 			EOF = AtEnd; IRec = 0; NRecs = 0x20000000;
-	}
+		}
 		return;
-}
+	}
 #endif
 	if ((Kind == 2) && (OwnerLV != nullptr)) {
 		IRec = 0;
@@ -2820,8 +2854,8 @@ void XScan::SeekRec(longint I)
 			KI = k; SeekOnKI(I);
 			break;
 		}
-	}
-	}
+		}
+}
 
 bool DeletedFlag()  // r771 ASM
 {

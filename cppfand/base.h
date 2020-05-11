@@ -2,9 +2,13 @@
 #include <array>
 #include "constants.h"
 #include "drivers.h"
-#include "globconf.h"
 #include "pstring.h"
 
+
+typedef char CharArr[50];
+typedef CharArr* CharArrPtr; // ø23
+struct LongStr { WORD LL; CharArr A; }; // ø24
+typedef LongStr* LongStrPtr; // ø25
 
 struct WRect { BYTE C1, R1, C2, R2; }; // r34
 struct WordRec { BYTE Lo = 0, Hi = 0; };
@@ -103,6 +107,21 @@ bool OSshell(pstring Path, pstring CmdLine, bool NoCancel, bool FreeMm, bool LdF
 // ***  VIRTUAL HANDLES  ***
 enum FileOpenMode { _isnewfile, _isoldfile, _isoverwritefile, _isoldnewfile }; // poradi se nesmi zmenit!!!
 enum FileUseMode { Closed, RdOnly, RdShared, Shared, Exclusive }; // poradi se nesmi zmenit!!!
+extern WORD HandleError; // r229
+extern pstring OldDir;
+extern pstring FandDir;
+extern pstring WrkDir;
+extern pstring FandOvrName;
+extern pstring FandResName;
+extern pstring FandWorkName;
+extern pstring FandWorkXName;
+extern pstring FandWorkTName;
+extern pstring CPath;
+extern pstring CDir;
+extern pstring CName;
+extern pstring CExt;
+extern pstring CVol;
+
 static bool WasLPTCancel;
 static FILE* WorkHandle;
 static longint MaxWSize = 0; // {currently occupied in FANDWORK.$$$}
@@ -140,6 +159,11 @@ void WrStyleStr(pstring s, WORD Attr);
 void WrLongStyleStr(LongStr* S, WORD Attr);
 
 // *** MESSAGES ***
+extern WORD F10SpecKey; // ø. 293
+extern BYTE ProcAttr;
+// extern bool SetStyleAttr(char c, BYTE& a); // je v KBDWW
+extern pstring MsgLine;
+extern pstring MsgPar[4];
 bool SetStyleAttr(char C, BYTE& a);
 void SetMsgPar(pstring s);
 void Set2MsgPar(pstring s1, pstring s2);
@@ -252,3 +276,35 @@ void OpenWorkH();
 
 //FILE* GetOverHandle(FILE* fptr, int diff);
 void NonameStartFunction(); // r639 BASE.PAS - kam to patøí?
+
+struct wdaystt { BYTE Typ = 0; WORD Nr = 0; };
+
+extern wdaystt WDaysTabType;
+extern WORD NWDaysTab;
+extern double WDaysFirst;
+extern double WDaysLast;
+extern wdaystt* WDaysTab;
+
+extern char AbbrYes;
+extern char AbbrNo;
+
+class TResFile // ø. 440
+{
+public:
+	FILE* Handle;
+	struct st
+	{
+		longint Pos;
+		WORD Size;
+	} A[FandFace];
+	WORD Get(WORD Kod, void* P);
+	LongStr* GetStr(WORD Kod);
+};
+
+struct TMsgIdxItem { WORD Nr; WORD Ofs; BYTE Count; };
+
+//TMsgIdxItem TMsgIdx[100];
+extern TResFile ResFile;
+extern TMsgIdxItem* MsgIdx;// = TMsgIdx;
+extern WORD MsgIdxN;
+extern longint FrstMsgPos;

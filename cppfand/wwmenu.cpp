@@ -6,7 +6,6 @@
 #include "runproc.h"
 #include "runproj.h"
 
-globconf* gcfg20 = globconf::GetInstance();
 
 WORD CountNTxt(ChoiceD* C, bool IsMenuBar)
 {
@@ -574,7 +573,7 @@ TMenuBarS::TMenuBarS()
 TMenuBarS::TMenuBarS(WORD MsgNr)
 {
 	RdMsg(MsgNr);
-	MsgTxt = StoreStr(gcfg20->MsgLine);
+	MsgTxt = StoreStr(MsgLine);
 	HlpRdb = (RdbD*)&HelpFD;
 	nTxt = (CountDLines(&MsgTxt[1], MsgTxt->length(), '/') - 1) / 2;
 	Move(&colors.mNorm, Palette, 3);
@@ -589,7 +588,7 @@ bool TMenuBarS::GetDownMenu(TMenuBox* W)
 	val(TNr, n, err); if ((TNr.length() == 0) || (err != 0)) return result;
 	RdMsg(n);
 	//New(p, Init(MenuX, MenuY, (pstring*)&MsgLine));
-	p = new TMenuBoxS(MenuX, MenuY, (pstring*)&gcfg20->MsgLine);
+	p = new TMenuBoxS(MenuX, MenuY, (pstring*)&MsgLine);
 	p->parent = this; W = p;
 	result = true;
 	return result;
@@ -679,7 +678,7 @@ WORD Menu(WORD MsgNr, WORD IStart)
 	MarkStore(p);
 	RdMsg(MsgNr);
 	//New(w, Init(0, 0, (pstring*)&MsgLine));
-	w = new TMenuBoxS(0, 0, (pstring*)&gcfg20->MsgLine);
+	w = new TMenuBoxS(0, 0, (pstring*)&MsgLine);
 	auto result = w->Exec(IStart);
 	delete w;
 	ReleaseStore(p);
@@ -703,11 +702,11 @@ bool PrinterMenu(WORD Msg)
 		lpt += nr;
 		lpt += ")";
 		if (printer[prCurr].ToMgr) lpt = "";
-		gcfg20->MsgLine = gcfg20->MsgLine + '/' + nm + copy("      ", 1, MaxI(0, 9 - nm.length())) + lpt;
+		MsgLine = MsgLine + '/' + nm + copy("      ", 1, MaxI(0, 9 - nm.length())) + lpt;
 	}
 	prCurr = j;
 	//New(w, Init(0, 0, (pstring*)&MsgLine));
-	w = new TMenuBoxS(0, 0, (pstring*)&gcfg20->MsgLine);
+	w = new TMenuBoxS(0, 0, (pstring*)&MsgLine);
 	i = w->Exec(prCurr + 1);
 	if (i > 0) SetCurrPrinter(i - 1);
 	delete w;
@@ -814,23 +813,23 @@ void DisplLLHelp(RdbD* R, pstring Name, bool R24)
 		iRec = 0; s = GetHlpText(R, Name, true, iRec);
 		if (s != nullptr) {
 			s = CopyLine(s, 1, 1);
-			gcfg20->MsgLine[0] = char(MinW(s->LL, sizeof(gcfg20->MsgLine) - 1));
-			Move(s->A, &gcfg20->MsgLine[1], gcfg20->MsgLine.length());
-			if (gcfg20->MsgLine[1] == '{') {
-				gcfg20->MsgLine = copy(gcfg20->MsgLine, 2, 255);
-				i = gcfg20->MsgLine.first('}');
-				if (i > 0) gcfg20->MsgLine.Delete(i, 255);
+			MsgLine[0] = char(MinW(s->LL, sizeof(MsgLine) - 1));
+			Move(s->A, &MsgLine[1], MsgLine.length());
+			if (MsgLine[1] == '{') {
+				MsgLine = copy(MsgLine, 2, 255);
+				i = MsgLine.first('}');
+				if (i > 0) MsgLine.Delete(i, 255);
 			}
-			gcfg20->MsgLine[0] = char(MinW(TxtCols, gcfg20->MsgLine.length()));
+			MsgLine[0] = char(MinW(TxtCols, MsgLine.length()));
 			goto label1;
 		};
 	}
-	gcfg20->MsgLine = "";
+	MsgLine = "";
 label1:
 	y = TxtRows - 1;
 	if (R24) y--;
-	ScrWrStr(0, y, gcfg20->MsgLine, colors.nNorm);
-	ScrClr(gcfg20->MsgLine.length(), y, TxtCols - gcfg20->MsgLine.length(), 1, ' ', colors.nNorm);
+	ScrWrStr(0, y, MsgLine, colors.nNorm);
+	ScrClr(MsgLine.length(), y, TxtCols - MsgLine.length(), 1, ' ', colors.nNorm);
 	CFile = cf; ReleaseStore(p);
 }
 

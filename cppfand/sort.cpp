@@ -1,12 +1,9 @@
 #include "sort.h"
 
-#include "globconf.h"
 #include "kbdww.h"
 #include "oaccess.h"
 #include "obaseww.h"
 #include "runfrml.h"
-
-globconf* gcfg19 = globconf::GetInstance();
 
 class XXPage; // forward declaration
 
@@ -272,9 +269,9 @@ void WorkFile::Output(WRec* R)
 
 void WorkFile::TestErr()
 {
-	if (gcfg19->HandleError != 0) {
-		SetMsgPar(gcfg19->FandWorkName);
-		RunError(700 + gcfg19->HandleError);
+	if (HandleError != 0) {
+		SetMsgPar(FandWorkName);
+		RunError(700 + HandleError);
 	}
 }
 

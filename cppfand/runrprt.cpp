@@ -1,6 +1,5 @@
 #include "runrprt.h"
 
-#include "globconf.h"
 #include "legacy.h"
 #include "oaccess.h"
 #include "obase.h"
@@ -8,8 +7,6 @@
 #include "runfrml.h"
 #include "runmerg.h"
 #include "wwmix.h"
-
-globconf* gcfg18 = globconf::GetInstance();
 
 void RunReport(RprtOpt* RO)
 {
@@ -75,7 +72,7 @@ label1:
 		if (PrintView && (NLinesOutp == 0) && (LineLenLst == 0)) {
 			RdMsg(159);
 			printf("%s\n", Rprt.c_str());
-			printf("%s%s", Rprt.c_str(), gcfg18->MsgLine.c_str());
+			printf("%s%s", Rprt.c_str(), MsgLine.c_str());
 		}
 		Rprt.Close(); if (isLPT1) ClosePrinter(0);
 		CloseInp(); PopProcStk();
@@ -317,8 +314,8 @@ label1:
 					NewTxtCol(S, M, L, RF->BlankOrWrap); ReleaseStore(S); break;
 				}
 				case 'B':
-					if (RunBool(RF->Frml)) printf("%s%c", Rprt.c_str(), gcfg18->AbbrYes);
-					else printf("%s%c", Rprt.c_str(), gcfg18->AbbrNo);
+					if (RunBool(RF->Frml)) printf("%s%c", Rprt.c_str(), AbbrYes);
+					else printf("%s%c", Rprt.c_str(), AbbrNo);
 				}
 			}
 		}
@@ -687,17 +684,17 @@ bool RewriteRprt(RprtOpt* RO, WORD Pl, WORD& Times, bool& IsLPT1)
 	else {
 		if (SEquUpcase(*RO->Path, "LPT1"))
 		{
-			gcfg18->CPath = "LPT1";
-			gcfg18->CVol = ""; IsLPT1 = true;
+			CPath = "LPT1";
+			CVol = ""; IsLPT1 = true;
 			result = ResetPrinter(Pl, 0, true, true) && RewriteTxt(&Rprt, false);
 			return result;
 		}
 		SetTxtPathVol(*RO->Path, RO->CatIRec);
 	}
-	TestMountVol(gcfg18->CPath[1]);
+	TestMountVol(CPath[1]);
 	if (!RewriteTxt(&Rprt, PrintCtrl))
 	{
-		SetMsgPar(gcfg18->CPath); WrLLF10Msg(700 + gcfg18->HandleError);
+		SetMsgPar(CPath); WrLLF10Msg(700 + HandleError);
 		PrintView = false; return result;
 	}
 	if (Times > 1) { printf("%s.ti %1i\n", Rprt.c_str(), Times); Times = 1; }

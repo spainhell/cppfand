@@ -2,10 +2,8 @@
 
 #include "base.h"
 #include "drivers.h"
-#include "globconf.h"
 #include "oaccess.h"
 
-globconf* gcfg9 = globconf::GetInstance();
 
 //void WrHd(pstring s, pstring Hd, WORD Row, WORD MaxCols)
 //{
@@ -209,8 +207,8 @@ longint PushWrLLMsg(WORD N, bool WithESC)
 	if (WithESC) printf("(ESC) ");
 	RdMsg(N);
 	l = TxtCols - WhereX();
-	if (gcfg9->MsgLine.length() > l) gcfg9->MsgLine[0] = char(l);
-	printf("%s", gcfg9->MsgLine.c_str());
+	if (MsgLine.length() > l) MsgLine[0] = char(l);
+	printf("%s", MsgLine.c_str());
 	return result;
 }
 
@@ -228,14 +226,14 @@ void WrLLMsgTxt()
 	On = false;
 	WORD i = 1;
 	WORD j = 0;
-	while ((i <= gcfg9->MsgLine.length()) && (j < TxtCols)) {
-		if (gcfg9->MsgLine[i] == 0x17)
+	while ((i <= MsgLine.length()) && (j < TxtCols)) {
+		if (MsgLine[i] == 0x17)
 		{
 			if (On) { w.Hi = colors.lNorm; On = false; }
 			else { w.Hi = colors.lFirst; On = true; }
 		}
 		else {
-			w.Lo = gcfg9->MsgLine[i];
+			w.Lo = MsgLine[i];
 			Buf[j] = (w.Hi << 8) + w.Lo;
 			j++;
 		}
@@ -260,22 +258,22 @@ void WrLLF10MsgLine()
 	ScrRdBuf(0, row, &Buf[0], TxtCols);
 	Beep();
 	ScrClr(0, row, TxtCols, 1, ' ', colors.zNorm);
-	if (gcfg9->F10SpecKey == 0xffff) ScrWrStr(0, row, "...!", colors.zNorm | 0x80);
+	if (F10SpecKey == 0xffff) ScrWrStr(0, row, "...!", colors.zNorm | 0x80);
 	else ScrWrStr(0, row, "F10!", colors.zNorm | 0x80);
-	col = gcfg9->MsgLine.length() + 5;
+	col = MsgLine.length() + 5;
 	len = 0;
-	if ((gcfg9->F10SpecKey == 0xfffe) || (gcfg9->F10SpecKey == _F1_)) {
-		gcfg9->MsgLine = gcfg9->MsgLine + ' ' + "F1";
+	if ((F10SpecKey == 0xfffe) || (F10SpecKey == _F1_)) {
+		MsgLine = MsgLine + ' ' + "F1";
 		len = 2;
 	}
-	if ((gcfg9->F10SpecKey == 0xfffe) || (gcfg9->F10SpecKey == _ShiftF7_)) {
-		gcfg9->MsgLine = gcfg9->MsgLine + ' ' + "ShiftF7"; len += 7;
+	if ((F10SpecKey == 0xfffe) || (F10SpecKey == _ShiftF7_)) {
+		MsgLine = MsgLine + ' ' + "ShiftF7"; len += 7;
 	}
-	if (gcfg9->MsgLine.length() > TxtCols - 5) {
-		gcfg9->MsgLine[0] = char(TxtCols - 5);
+	if (MsgLine.length() > TxtCols - 5) {
+		MsgLine[0] = char(TxtCols - 5);
 		len = 0;
 	}
-	ScrWrStr(5, row, gcfg9->MsgLine, colors.zNorm);
+	ScrWrStr(5, row, MsgLine, colors.zNorm);
 label1:
 	GetEvent();
 	/*with Event*/
@@ -287,12 +285,12 @@ label1:
 			goto label2;
 		}
 		if (len > 0 && MouseInRect(col, row, len, 1)) {
-			KbdChar = gcfg9->F10SpecKey;
+			KbdChar = F10SpecKey;
 			goto label2;
 		}
 	case evKeyDown:
-		if (Event.KeyCode == _F10_ || Event.KeyCode == gcfg9->F10SpecKey || gcfg9->F10SpecKey == 0xffff
-			|| gcfg9->F10SpecKey == 0xfffe && (Event.KeyCode == _ShiftF7_ || Event.KeyCode == _F1_))
+		if (Event.KeyCode == _F10_ || Event.KeyCode == F10SpecKey || F10SpecKey == 0xffff
+			|| F10SpecKey == 0xfffe && (Event.KeyCode == _ShiftF7_ || Event.KeyCode == _F1_))
 		{
 			KbdChar = Event.KeyCode;
 		label2:
@@ -303,7 +301,7 @@ label1:
 	ClrEvent();
 	goto label1;
 label3:
-	gcfg9->F10SpecKey = 0;
+	F10SpecKey = 0;
 	ScrWrBuf(0, row, &Buf[0], TxtCols);
 }
 
@@ -327,24 +325,23 @@ bool PromptYN(WORD NMsg)
 	w = PushW(1, TxtRows, TxtCols, TxtRows); TextAttr = colors.pTxt;
 	ClrEol();
 	RdMsg(NMsg);
-	pstring tmp = gcfg9->MsgLine.substr(MaxI(gcfg9->MsgLine.length() - TxtCols + 3, 1), 255);
+	pstring tmp = MsgLine.substr(MaxI(MsgLine.length() - TxtCols + 3, 1), 255);
 	printf("%s", tmp.c_str());
 	col = WhereX(); row = WhereY(); TextAttr = colors.pNorm;
 	printf(" "); GotoXY(col, row); CrsShow();
 	label1:
 	cc = toupper((char)ReadKbd);
-	if ((KbdChar != gcfg9->F10SpecKey) && (cc != gcfg9->AbbrYes) && (cc != gcfg9->AbbrNo)) goto label1;
-	gcfg9->F10SpecKey = 0; PopW(w);
-	return cc == gcfg9->AbbrYes;
+	if ((KbdChar != F10SpecKey) && (cc != AbbrYes) && (cc != AbbrNo)) goto label1;
+	F10SpecKey = 0; PopW(w);
+	return cc == AbbrYes;
 }
 
 void CFileMsg(WORD n, char Typ)
 {
-	string s;
 	SetCPathVol();
 	if (Typ == 'T') CExtToT();
 	else if (Typ == 'X') CExtToX();
-	SetMsgPar(gcfg9->CPath); WrLLF10Msg(n);
+	SetMsgPar(CPath); WrLLF10Msg(n);
 }
 
 void CFileError(WORD N)

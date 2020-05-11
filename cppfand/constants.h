@@ -2,11 +2,13 @@
 #include <vector>
 #include <string>
 
-
 typedef unsigned short WORD;
 typedef unsigned char BYTE;
 typedef int longint;
 typedef short integer;
+
+const BYTE FandFace = 17;
+const BYTE FloppyDrives = 3;
 
 const WORD _F1 = 59;
 const WORD _F6 = 64;

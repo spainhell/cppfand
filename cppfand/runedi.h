@@ -3,6 +3,8 @@
 #include "pstring.h"
 #include "rdrun.h"
 
+extern bool TxtEdCtrlUBrk, TxtEdCtrlF4Brk;
+extern EFldD* CFld;
 
 WORD EditTxt(pstring* s, WORD pos, WORD maxlen, WORD maxcol, char typ, bool del,
     bool star, bool upd, bool ret, WORD Delta); // r86

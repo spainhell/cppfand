@@ -2,20 +2,17 @@
 
 #include "base.h"
 #include "expimp.h"
-#include "globconf.h"
 #include "legacy.h"
 #include "obaseww.h"
 #include "runfrml.h"
 #include "wwmix.h"
 
-globconf* gcfg7 = globconf::GetInstance();
-
 void OpenXWorkH()
 {
-	gcfg7->CVol = "";
+	CVol = "";
 	FileOpenMode m = _isoldnewfile;
 	if (XWork.MaxPage == 0) m = _isoverwritefile;
-	gcfg7->CPath = gcfg7->FandWorkXName;
+	CPath = FandWorkXName;
 	XWork.Handle = OpenH(m, Exclusive);
 	XWork.TestErr();
 	if (FileSizeH(XWork.Handle) == 0) { XWork.FreeRoot = 0; XWork.MaxPage = 0; }
@@ -23,12 +20,12 @@ void OpenXWorkH()
 
 void OpenTWorkH()
 {
-	gcfg7->CVol = "";
+	CVol = "";
 	if (TWork.MaxPage == 0) {
-		gcfg7->CPath = gcfg7->FandWorkTName; TWork.IsWork = true; TWork.Create();
+		CPath = FandWorkTName; TWork.IsWork = true; TWork.Create();
 	}
 	else {
-		gcfg7->CPath = gcfg7->FandWorkTName; gcfg7->CVol = "";
+		CPath = FandWorkTName; CVol = "";
 		TWork.Handle = OpenH(_isoldnewfile, Exclusive); TWork.TestErr();
 	}
 }
@@ -107,13 +104,13 @@ void SetCPathMountVolSetNet(FileUseMode UM)
 {
 	SetCPathVol();
 	/* !!! with CFile^ do!!! */
-	CFile->UMode = UM; CFile->Drive = TestMountVol(gcfg7->CPath[1]);
+	CFile->UMode = UM; CFile->Drive = TestMountVol(CPath[1]);
 	if (!IsNetCVol() || (CFile == Chpt))
 		switch (UM) {
 		case RdShared: CFile->UMode = RdOnly; break;
 		case Shared: CFile->UMode = Exclusive; break;
 		}
-	else if ((UM == Shared) && SEquUpcase(gcfg7->CVol, "#R")) CFile->UMode = RdShared;
+	else if ((UM == Shared) && SEquUpcase(CVol, "#R")) CFile->UMode = RdShared;
 }
 
 bool OpenF1(FileUseMode UM)
@@ -125,50 +122,50 @@ bool OpenF1(FileUseMode UM)
 	if (b && (IsTestRun || IsInstallRun)
 		&& ((GetFileAttr() & 1/*RdOnly*/) != 0)) {
 		SetFileAttr(GetFileAttr() & 0x26);
-		if (gcfg7->HandleError == 5) gcfg7->HandleError = 79; TestCFileError(); CFile->WasRdOnly = true;
+		if (HandleError == 5) HandleError = 79; TestCFileError(); CFile->WasRdOnly = true;
 	}
 label1:
 	CFile->Handle = OpenH(_isoldfile, CFile->UMode);
-	if ((gcfg7->HandleError != 0) && CFile->WasRdOnly) {
+	if ((HandleError != 0) && CFile->WasRdOnly) {
 		SetFileAttr((GetFileAttr() & 0x27) | 0x1/*RdONly*/); TestCFileError();
 	}
-	if ((gcfg7->HandleError == 5) && (CFile->UMode == Exclusive)) { CFile->UMode = RdOnly; goto label1; }
-	if (gcfg7->HandleError == 2) { result = false; return result; }
+	if ((HandleError == 5) && (CFile->UMode == Exclusive)) { CFile->UMode = RdOnly; goto label1; }
+	if (HandleError == 2) { result = false; return result; }
 #ifndef FandNetV
-	if ((gcfg7->HandleError == 5 || gcfg7->HandleError == 0x21) &&
-		((gcfg7->CVol == '#') || (gcfg7->CVol == "##") || SEquUpcase(gcfg7->CVol, "#R"))) CFileError(842);
+	if ((HandleError == 5 || HandleError == 0x21) &&
+		((CVol == '#') || (CVol == "##") || SEquUpcase(CVol, "#R"))) CFileError(842);
 #endif
 	TestCFileError();
 	if (CFile->TF != nullptr) /* !!! with TF^ do!!! */ {
 		CExtToT(); if (CFile->WasRdOnly) SetFileAttr(GetFileAttr() & 0x26);
 	label2:
 		CFile->TF->Handle = OpenH(_isoldfile, CFile->UMode);
-		if (gcfg7->HandleError == 2) {
+		if (HandleError == 2) {
 			if (CFile->TF->Format == CFile->TF->DbtFormat) {
 				CFile->TF->Format = CFile->TF->FptFormat;
-				gcfg7->CExt = ".FPT";
-				gcfg7->CPath = gcfg7->CDir + gcfg7->CName + gcfg7->CExt;
+				CExt = ".FPT";
+				CPath = CDir + CName + CExt;
 				goto label2;
 			}
 			if (CFile->IsDynFile) {
 				CloseClearH(CFile->Handle); result = false; return result;
 			}
 		}
-		if (gcfg7->HandleError != 0) goto label4;
+		if (HandleError != 0) goto label4;
 	}
 	if (CFile->Typ == 'X') /* !!! with XF^ do!!! */ {
 		CExtToX();
 	label3:
 		CFile->XF->Handle = OpenH(_isoldfile, CFile->UMode);
-		if (gcfg7->HandleError == 2) {
+		if (HandleError == 2) {
 			CFile->XF->Handle = OpenH(_isoverwritefile, Exclusive);
-			if (gcfg7->HandleError != 0) goto label4;
+			if (HandleError != 0) goto label4;
 			CFile->XF->SetNotValid(); CloseH(CFile->XF->Handle);
 			goto label3;
 		}
-		if (gcfg7->HandleError != 0) {
+		if (HandleError != 0) {
 		label4:
-			n = gcfg7->HandleError; CloseClearHCFile(); gcfg7->HandleError = n; TestCPathError();
+			n = HandleError; CloseClearHCFile(); HandleError = n; TestCPathError();
 		}
 		if (FileSizeH(CFile->XF->Handle) < 512) CFile->XF->SetNotValid();
 	}
@@ -198,7 +195,7 @@ bool OpenF2()
 			goto label2;
 		}
 	if (n < CFile->NRecs) {
-		SetCPathVol(); SetMsgPar(gcfg7->CPath);
+		SetCPathVol(); SetMsgPar(CPath);
 		if (PromptYN(882)) {
 			CFile->NRecs = n;
 		label1:
@@ -321,7 +318,7 @@ void TruncF()
 	if (CFile->UMode == RdOnly) exit(0);
 	md = NewLMode(RdMode);
 	TruncH(CFile->Handle, CFile->UsedFileSize());
-	if (gcfg7->HandleError != 0) CFileMsg(700 + gcfg7->HandleError, '0');
+	if (HandleError != 0) CFileMsg(700 + HandleError, '0');
 	if (CFile->TF != nullptr)  /*with TF^*/ {
 		TruncH(CFile->TF->Handle, CFile->TF->UsedFileSize());
 		CFile->TF->TestErr();
@@ -355,7 +352,7 @@ void CloseFile()
 				label1:
 					SetCPathVol();
 					CExtToX();
-					MyDeleteFile(gcfg7->CPath);
+					MyDeleteFile(CPath);
 				}
 			}
 			if (CFile->TF != nullptr)  /*with TF^*/
@@ -364,13 +361,13 @@ void CloseFile()
 					if ((!CFile->IsShared()) && (CFile->NRecs == 0) && (CFile->Typ != 'D')) {
 						SetCPathVol();
 						CExtToT();
-						MyDeleteFile(gcfg7->CPath);
+						MyDeleteFile(CPath);
 					}
 				}
 			CloseClearH(CFile->Handle); CFile->LMode = NullMode;
 			if (!CFile->IsShared() && (CFile->NRecs == 0) && (CFile->Typ != 'D')) {
 				SetCPathVol();
-				MyDeleteFile(gcfg7->CPath);
+				MyDeleteFile(CPath);
 			}
 			if (CFile->WasRdOnly) {
 				CFile->WasRdOnly = false;
@@ -497,7 +494,7 @@ void SetCPathForH(FILE* handle)
 		} RD = RD->ChainBack;
 	}
 	RdMsg(799);
-	gcfg7->CPath = gcfg7->MsgLine;
+	CPath = MsgLine;
 label1:
 	CFile = cf;
 }
@@ -531,7 +528,7 @@ WORD Generation()
 	WORD i, j; pstring s(2);
 	if (CFile->CatIRec == 0) return 0;
 	RdCatPathVol(CFile->CatIRec);
-	s = gcfg7->CExt.substr(3, 2);
+	s = CExt.substr(3, 2);
 	val(s, i, j);
 	if (j == 0) return i;
 	return 0;
@@ -582,9 +579,9 @@ void WrCatField(WORD CatIRec, FieldDescr* CatF, pstring Txt)
 
 void RdCatPathVol(WORD CatIRec)
 {
-	gcfg7->CPath = FExpand(RdCatField(CatIRec, CatPathName));
-	FSplit(gcfg7->CPath, gcfg7->CDir, gcfg7->CName, gcfg7->CExt);
-	gcfg7->CVol = RdCatField(CatIRec, CatVolume);
+	CPath = FExpand(RdCatField(CatIRec, CatPathName));
+	FSplit(CPath, CDir, CName, CExt);
+	CVol = RdCatField(CatIRec, CatVolume);
 }
 
 bool SetContextDir(pstring& D, bool& IsRdb)
@@ -618,22 +615,22 @@ void GetCPathForCat(WORD I)
 	pstring d;
 	bool isRdb;
 
-	gcfg7->CVol = RdCatField(I, CatVolume);
-	gcfg7->CPath = RdCatField(I, CatPathName);
-	if (gcfg7->CPath[2] != ':' && SetContextDir(d, isRdb)) {
+	CVol = RdCatField(I, CatVolume);
+	CPath = RdCatField(I, CatPathName);
+	if (CPath[2] != ':' && SetContextDir(d, isRdb)) {
 		if (isRdb) {
-			FSplit(gcfg7->CPath, gcfg7->CDir, gcfg7->CName, gcfg7->CExt);
+			FSplit(CPath, CDir, CName, CExt);
 			AddBackSlash(d);
-			gcfg7->CDir = d;
-			gcfg7->CPath = gcfg7->CDir + gcfg7->CName + gcfg7->CExt; return;
+			CDir = d;
+			CPath = CDir + CName + CExt; return;
 		}
-		if (gcfg7->CPath[1] == '\\') gcfg7->CPath = copy(d, 1, 2) + gcfg7->CPath;
+		if (CPath[1] == '\\') CPath = copy(d, 1, 2) + CPath;
 		else {
-			AddBackSlash(d); gcfg7->CPath = d + gcfg7->CPath;
+			AddBackSlash(d); CPath = d + CPath;
 		}
 	}
-	else gcfg7->CPath = FExpand(gcfg7->CPath);
-	FSplit(gcfg7->CPath, gcfg7->CDir, gcfg7->CName, gcfg7->CExt);
+	else CPath = FExpand(CPath);
+	FSplit(CPath, CDir, CName, CExt);
 }
 
 void SetCPathVol()
@@ -641,16 +638,16 @@ void SetCPathVol()
 	WORD i;
 	bool isRdb;
 
-	gcfg7->CVol = "";
+	CVol = "";
 	if (CFile->Typ == 'C') {
-		gcfg7->CDir = GetEnv("FANDCAT");
-		if (gcfg7->CDir == "") {
-			if (TopDataDir == "") gcfg7->CDir = TopRdbDir;
-			else gcfg7->CDir = TopDataDir;
+		CDir = GetEnv("FANDCAT");
+		if (CDir == "") {
+			if (TopDataDir == "") CDir = TopRdbDir;
+			else CDir = TopDataDir;
 		}
-		AddBackSlash(gcfg7->CDir);
-		gcfg7->CName = CatFDName;
-		gcfg7->CExt = ".CAT";
+		AddBackSlash(CDir);
+		CName = CatFDName;
+		CExt = ".CAT";
 		goto label4;
 	}
 	i = CFile->CatIRec;
@@ -660,15 +657,15 @@ void SetCPathVol()
 		goto label4;
 	}
 	switch (CFile->Typ) {
-	case '0': gcfg7->CExt = ".RDB"; break;
-	case '8': gcfg7->CExt = ".DTA"; break;
-	case 'D': gcfg7->CExt = ".DBF"; break;
-	default: gcfg7->CExt = ".000";
+	case '0': CExt = ".RDB"; break;
+	case '8': CExt = ".DTA"; break;
+	case 'D': CExt = ".DBF"; break;
+	default: CExt = ".000";
 	}
-	if (SetContextDir(gcfg7->CDir, isRdb)) goto label2;
+	if (SetContextDir(CDir, isRdb)) goto label2;
 	if (CFile == &HelpFD) {
-		gcfg7->CDir = gcfg7->FandDir;
-		gcfg7->CName =
+		CDir = FandDir;
+		CName =
 #ifdef FandRunV
 			"UFANDHLP";
 #else
@@ -676,20 +673,20 @@ void SetCPathVol()
 #endif
 		goto label4;
 	}
-	gcfg7->CExt = ".100";
-	gcfg7->CDir = CRdb->DataDir;
+	CExt = ".100";
+	CDir = CRdb->DataDir;
 label2:
-	AddBackSlash(gcfg7->CDir);
+	AddBackSlash(CDir);
 label3:
-	gcfg7->CName = CFile->Name;
+	CName = CFile->Name;
 label4:
-	gcfg7->CPath = gcfg7->CDir + gcfg7->CName + gcfg7->CExt;
+	CPath = CDir + CName + CExt;
 }
 
 void SetTxtPathVol(pstring Path, WORD CatIRec)
 {
 	if (CatIRec != 0) RdCatPathVol(CatIRec);
-	else { gcfg7->CPath = FExpand(Path); gcfg7->CVol = ""; }
+	else { CPath = FExpand(Path); CVol = ""; }
 }
 
 void SetTempCExt(char Typ, bool IsNet)
@@ -697,15 +694,15 @@ void SetTempCExt(char Typ, bool IsNet)
 	char Nr;
 	if (Typ == 'T') {
 		Nr = '2';
-	switch (CFile->Typ) { case '0': gcfg7->CExt = ".TTT"; break; case 'D': gcfg7->CExt = ".DBT"; break; }
+	switch (CFile->Typ) { case '0': CExt = ".TTT"; break; case 'D': CExt = ".DBT"; break; }
 	}
 	else {
 		Nr = '1';
-	switch (CFile->Typ) { case '0': gcfg7->CExt = ".RDB"; break; case 'D': gcfg7->CExt = ".DBF"; break; };
+	switch (CFile->Typ) { case '0': CExt = ".RDB"; break; case 'D': CExt = ".DBF"; break; };
 	}
-	if (gcfg7->CExt.length() < 2) gcfg7->CExt = ".0"; gcfg7->CExt[2] = Nr;
-	if (IsNet) gcfg7->CPath = gcfg7->WrkDir + gcfg7->CName + gcfg7->CExt; /* work files are local */
-	else gcfg7->CPath = gcfg7->CDir + gcfg7->CName + gcfg7->CExt;
+	if (CExt.length() < 2) CExt = ".0"; CExt[2] = Nr;
+	if (IsNet) CPath = WrkDir + CName + CExt; /* work files are local */
+	else CPath = CDir + CName + CExt;
 }
 
 FileD* OpenDuplF(bool CrTF)
@@ -715,7 +712,7 @@ FileD* OpenDuplF(bool CrTF)
 	N = sizeof(FileD) - 1 + CFile->Name.length(); OldFD = CFile;
 	FD = (FileD*)GetStore(N); Move(OldFD, FD, N); CFile = FD;
 	/* !!! with FD^ do!!! */
-	{ SetTempCExt('0', net); gcfg7->CVol = "";
+	{ SetTempCExt('0', net); CVol = "";
 	FD->Handle = OpenH(_isoverwritefile, Exclusive); TestCFileError();
 	FD->NRecs = 0; FD->IRec = 0; FD->Eof = true; FD->UMode = Exclusive;
 	if (FD->Typ == 'X')
@@ -762,7 +759,7 @@ void CopyH(FILE* h1, FILE* h2)
 		ReadH(h1, BufSize, p); WriteH(h2, BufSize, p); sz -= BufSize;
 	}
 	ReadH(h1, sz, p); WriteH(h2, sz, p);
-	CloseH(h1); MyDeleteFile(gcfg7->CPath); ReleaseStore(p);
+	CloseH(h1); MyDeleteFile(CPath); ReleaseStore(p);
 }
 
 void SubstDuplF(FileD* TempFD, bool DelTF)
@@ -772,24 +769,24 @@ void SubstDuplF(FileD* TempFD, bool DelTF)
 
 	XFNotValid(); SetCPathVol();
 	if (IsNetCVol()) { CopyDuplF(TempFD, DelTF); return; }
-	SaveCache(0); PrimFD = CFile; p = gcfg7->CPath; CExtToT(); pt = gcfg7->CPath;
+	SaveCache(0); PrimFD = CFile; p = CPath; CExtToT(); pt = CPath;
 	/* !!! with PrimFD^ do!!! */ {
 		CloseClearH(PrimFD->Handle); MyDeleteFile(p); TestDelErr(&p);
 		FD = PrimFD->Chain; MD = PrimFD->TF; xf2 = PrimFD->XF; um = PrimFD->UMode;
 		Move(TempFD, PrimFD, sizeof(FileD) - 2);
 		PrimFD->Chain = FD; PrimFD->XF = xf2; PrimFD->UMode = um;
 		CloseClearH(PrimFD->Handle);
-		SetTempCExt('0', false); ptmp = gcfg7->CPath;
+		SetTempCExt('0', false); ptmp = CPath;
 		RenameFile56(ptmp, p, true);
-		gcfg7->CPath = p; PrimFD->Handle = OpenH(_isoldfile, PrimFD->UMode);
+		CPath = p; PrimFD->Handle = OpenH(_isoldfile, PrimFD->UMode);
 		SetUpdHandle(PrimFD->Handle);
 		if ((MD != nullptr) && DelTF) {
 			CloseClearH(MD->Handle); MyDeleteFile(pt); TestDelErr(&pt);
 			Move(PrimFD->TF, MD, sizeof(TFile)); PrimFD->TF = MD;
 			CloseClearH(MD->Handle);
-			gcfg7->CPath = ptmp; SetTempCExt('T', false);
-			RenameFile56(gcfg7->CPath, pt, true);
-			gcfg7->CPath = pt; MD->Handle = OpenH(_isoldfile, PrimFD->UMode);
+			CPath = ptmp; SetTempCExt('T', false);
+			RenameFile56(CPath, pt, true);
+			CPath = pt; MD->Handle = OpenH(_isoldfile, PrimFD->UMode);
 			SetUpdHandle(MD->Handle);
 		}
 		PrimFD->TF = MD;
@@ -798,7 +795,7 @@ void SubstDuplF(FileD* TempFD, bool DelTF)
 
 void TestDelErr(pstring* P)
 {
-	if (gcfg7->HandleError != 0) { SetMsgPar(*P); RunError(827); }
+	if (HandleError != 0) { SetMsgPar(*P); RunError(827); }
 }
 
 void DelDuplF(FileD* TempFD)
@@ -806,5 +803,5 @@ void DelDuplF(FileD* TempFD)
 	CloseClearH(TempFD->Handle);
 	SetCPathVol();
 	SetTempCExt('0', CFile->IsShared());
-	MyDeleteFile(gcfg7->CPath);
+	MyDeleteFile(CPath);
 }

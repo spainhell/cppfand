@@ -1,6 +1,5 @@
 #pragma once
 #include "access.h"
-#include "globconf.h"
 #include "pstring.h"
 
 #ifdef FandGraph

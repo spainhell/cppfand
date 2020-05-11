@@ -2,7 +2,6 @@
 
 #include "base.h"
 #include "constants.h"
-#include "globconf.h"
 #include "runfand.h"
 #ifdef FandSQL
 #include "channel.h"
@@ -20,7 +19,6 @@ struct LinkD;
 class FileD;
 struct RdbD;
 struct FieldDescr;
-using namespace std;
 
 // ********** CONST **********
 const BYTE LeftJust = 1; // {RightJust=0  coded in M for Typ='N','A'}
@@ -32,7 +30,7 @@ const BYTE f_Mask = 4; const BYTE f_Comma = 8; // {FieldD flags}
 
 enum LockMode { NullMode = 0, NoExclMode = 1, NoDelMode = 2, NoCrMode = 3,
 	RdMode = 4, WrMode = 5, CrMode = 6, DelMode = 7, ExclMode = 8 };
-static pstring LockModeTxt[9] = { "NULL", "NOEXCL","NODEL","NOCR","RD","WR","CR","DEL","EXCL" };
+extern pstring LockModeTxt[9];
 
 const WORD MPageSize = 512;
 const BYTE XPageShft = 10;
@@ -617,48 +615,48 @@ extern RdbD* CRdb, TopRdb;
 extern FileD* CatFD, HelpFD;
 
 // r483
-struct structXPath { longint Page; WORD I; } static XPath[10];
-static WORD XPathN;
-static XWFile XWork;
-static TFile TWork;
-static longint ClpBdPos = 0;
-static bool IsTestRun = false;
-static bool IsInstallRun = false;
+struct structXPath { longint Page; WORD I; };
+extern structXPath XPath[10];
+extern WORD XPathN;
+extern XWFile XWork;
+extern TFile TWork;
+extern longint ClpBdPos;
+extern bool IsTestRun;
+extern bool IsInstallRun;
 
-static FileDPtr Chpt = FileDRoot; // absolute FileDRoot;
-static TFilePtr ChptTF;
-static FieldDPtr ChptTxtPos;
-static FieldDPtr ChptVerif; // { updated record }
-static FieldDPtr ChptOldTxt; // { ChptTyp = 'F' : -1 = new unchecked record, else = old declaration }
-static FieldDPtr ChptTyp, ChptName, ChptTxt;
+extern FileDPtr Chpt; // absolute FileDRoot;
+extern TFilePtr ChptTF;
+extern FieldDPtr ChptTxtPos;
+extern FieldDPtr ChptVerif; // { updated record }
+extern FieldDPtr ChptOldTxt; // { ChptTyp = 'F' : -1 = new unchecked record, else = old declaration }
+extern FieldDPtr ChptTyp, ChptName, ChptTxt;
 
 
 // ********** konstanty ********** // r496
-const BYTE FloppyDrives = 3;
-static bool EscPrompt = false;
-static pstring UserName = pstring(20);
-static pstring UserPassWORD = pstring(20);
-static pstring AccRight;
-static bool EdUpdated = false;
-static longint EdRecNo = 0;
-static pstring EdRecKey = "";
-static pstring EdKey = pstring(32);
-static bool EdOk = false;
-static pstring EdField = pstring(32);
-static longint LastTxtPos = 0;
-static longint TxtXY = 0;
+extern bool EscPrompt;
+extern pstring UserName;
+extern pstring UserPassWORD;
+extern pstring AccRight;
+extern bool EdUpdated;
+extern longint EdRecNo;
+extern pstring EdRecKey;
+extern pstring EdKey;
+extern bool EdOk;
+extern pstring EdField;
+extern longint LastTxtPos;
+extern longint TxtXY;
 // { consecutive WORD - sized / for formula access / }
-static WORD RprtLine = 0; static WORD RprtPage = 0; static WORD PgeLimit = 0; // {report}
-static WORD EdBreak = 0; static WORD EdIRec = 1; // {common - alphabetical order}
-static WORD MenuX = 1; static WORD MenuY = 1;
-static WORD UserCode = 0;
+extern WORD RprtLine; extern WORD RprtPage; extern WORD PgeLimit; // {report}
+extern WORD EdBreak; extern WORD EdIRec; // {common - alphabetical order}
+extern WORD MenuX; extern WORD MenuY;
+extern WORD UserCode;
 // **********
 
-static WORD* WordVarArr = &RprtLine;
+extern WORD* WordVarArr;
 extern FieldDPtr CatRdbName, CatFileName, CatArchiv, CatPathName, CatVolume;
-static pstring MountedVol[FloppyDrives] = { pstring(11), pstring(11), pstring(11) };
+extern pstring MountedVol[FloppyDrives];
 
-static pstring SQLDateMask = "DD.MM.YYYY hh:mm:ss";
+extern pstring SQLDateMask;
 
 // ********** COMPARE FUNCTIONS **********
 static double Power10[21] = { 1E0, 1E1, 1E2, 1E3, 1E4, 1E5, 1E6, 1E7, 1E8, 1E9, 1E10,

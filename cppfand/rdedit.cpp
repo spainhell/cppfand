@@ -6,8 +6,6 @@
 #include "runedi.h"
 #include "runfrml.h"
 
-globconf* gcfg11 = globconf::GetInstance();
-
 void PushEdit()
 {
 	EditD* E1 = (EditD*)GetZStore(sizeof(*E));
@@ -234,7 +232,7 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 	if (E->NPages > 1) E->NRecs = 1;
 	else E->NRecs = (E->Rows - E->NHdTxt) / E->RecTxt->N;
 	E->BaseRec = 1; E->IRec = 1;
-	gcfg11->CFld = E->FirstFld; E->FirstEmptyFld = *E->FirstFld;
+	CFld = E->FirstFld; E->FirstEmptyFld = *E->FirstFld;
 	E->ChkSwitch = true; E->WarnSwitch = true;
 	CFile = E->FD; CRecPtr = GetRecSpace(); E->OldRecPtr = CRecPtr;
 #ifdef FandSQL
@@ -340,11 +338,11 @@ void RdDepChkImpl()
 	pstring s;
 	CFile = E->FD;
 	switch (CFile->Typ) {
-	case '0': { RdMsg(53); s = gcfg11->MsgLine; goto label1; break; }
+	case '0': { RdMsg(53); s = MsgLine; goto label1; break; }
 	case 'C': {
-		RdMsg(54); s = gcfg11->MsgLine;
+		RdMsg(54); s = MsgLine;
 		if (spec.CPMdrive != ' ') s = s + ',' + spec.CPMdrive + ':';
-		RdMsg(55); s = s + gcfg11->MsgLine;
+		RdMsg(55); s = s + MsgLine;
 		if (spec.CPMdrive != ' ') s = s + ',' + spec.CPMdrive + ':';
 		s = s + "''";
 	label1:

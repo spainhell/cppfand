@@ -4,9 +4,8 @@
 #include <ctime>
 #include <direct.h>
 #include "base.h"
-#include "globconf.h"
 
-globconf* gcfg6 = globconf::GetInstance();
+std::vector<std::string> paramstr;
 
 void val(pstring s, BYTE& b, WORD& err)
 {
@@ -158,7 +157,7 @@ pstring FExpand(pstring path)
 void ChDir(pstring cesta)
 {
 	if (_chdir(cesta.c_str())) {
-		gcfg6->HandleError = errno;
+		HandleError = errno;
 	}
 }
 
@@ -167,7 +166,7 @@ void GetDir(BYTE disk, pstring* cesta)
 	char buf[MAX_PATH];
 	if (_getcwd(buf, MAX_PATH) == nullptr)
 	{
-		gcfg6->HandleError = errno;
+		HandleError = errno;
 	}
 	*cesta = buf;
 }
@@ -177,7 +176,7 @@ pstring GetDir(BYTE disk)
 	char buf[MAX_PATH];
 	if (_getcwd(buf, MAX_PATH) == nullptr)
 	{
-		gcfg6->HandleError = errno;
+		HandleError = errno;
 	}
 	pstring result = buf;
 	return result;
@@ -187,7 +186,7 @@ void MkDir(pstring cesta)
 {
 	if (_mkdir(cesta.c_str()))
 	{
-		gcfg6->HandleError = errno;
+		HandleError = errno;
 	}
 }
 
@@ -195,7 +194,7 @@ void RmDir(pstring cesta)
 {
 	if (_rmdir(cesta.c_str()) == -1)
 	{
-		gcfg6->HandleError = errno;
+		HandleError = errno;
 	}
 }
 
@@ -203,7 +202,7 @@ void Rename(pstring soubor, pstring novejmeno)
 {
 	if (rename(soubor.c_str(), novejmeno.c_str()) != 0)
 	{
-		gcfg6->HandleError = errno;
+		HandleError = errno;
 	}
 }
 
@@ -211,7 +210,7 @@ void Erase(pstring soubor)
 {
 	if (remove(soubor.c_str()) == -1)
 	{
-		gcfg6->HandleError = errno;
+		HandleError = errno;
 	}
 }
 
@@ -249,13 +248,13 @@ WORD Random(WORD rozsah)
 
 WORD ParamCount()
 {
-	return (WORD)gcfg6->paramstr.size();
+	return (WORD)paramstr.size();
 }
 
 pstring ParamStr(integer index)
 {
-	if (index >= gcfg6->paramstr.size()) return "";
-	pstring ptmp = gcfg6->paramstr[index].c_str();
+	if (index >= paramstr.size()) return "";
+	pstring ptmp = paramstr[index].c_str();
 	return ptmp;
 }
 

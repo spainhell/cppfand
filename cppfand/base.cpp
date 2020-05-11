@@ -7,10 +7,7 @@
 #include "drivers.h"
 #include "legacy.h"
 #include <set>
-#include "globconf.h"
 #include "obaseww.h"
-
-globconf* gcfg2 = globconf::GetInstance();
 
 Video video;
 Spec spec;
@@ -22,6 +19,41 @@ char UpcCharTab[256];
 WORD TxtCols, TxtRows;
 
 integer prCurr, prMax;
+
+wdaystt WDaysTabType;
+WORD NWDaysTab;
+double WDaysFirst;
+double WDaysLast;
+wdaystt* WDaysTab;
+
+char AbbrYes = 'Y';
+char AbbrNo = 'N';
+
+WORD HandleError;
+pstring OldDir;
+pstring FandDir;
+pstring WrkDir;
+pstring FandOvrName;
+pstring FandResName;
+pstring FandWorkName;
+pstring FandWorkXName;
+pstring FandWorkTName;
+pstring CPath;
+pstring CDir;
+pstring CName;
+pstring CExt;
+pstring CVol;
+
+TResFile ResFile;
+TMsgIdxItem* MsgIdx;// = TMsgIdx;
+WORD MsgIdxN;
+longint FrstMsgPos;
+
+WORD F10SpecKey; // ø. 293
+BYTE ProcAttr;
+// bool SetStyleAttr(char c, BYTE& a); // je v KBDWW
+pstring MsgLine;
+pstring MsgPar[4];
 
 WORD OldNumH; // r1 
 void* OldHTPtr = nullptr;
@@ -44,31 +76,31 @@ std::vector<FILE*> vOverHandle;
 
 void SetMsgPar(pstring s)
 {
-	gcfg2->MsgPar[0] = s;
+	MsgPar[0] = s;
 }
 
 void Set2MsgPar(pstring s1, pstring s2)
 {
-	gcfg2->MsgPar[0] = s1;
-	gcfg2->MsgPar[1] = s2;
+	MsgPar[0] = s1;
+	MsgPar[1] = s2;
 }
 
 void Set3MsgPar(pstring s1, pstring s2, pstring s3)
 {
 	Set2MsgPar(s1, s2);
-	gcfg2->MsgPar[2] = s3;
+	MsgPar[2] = s3;
 }
 
 void Set4MsgPar(pstring s1, pstring s2, pstring s3, pstring s4)
 {
 	Set3MsgPar(s1, s2, s3);
-	gcfg2->MsgPar[3] = s4;
+	MsgPar[3] = s4;
 }
 
 longint PosH(FILE* handle)
 {
 	const auto result = ftell(handle);
-	gcfg2->HandleError = ferror(handle);
+	HandleError = ferror(handle);
 	return static_cast<longint>(result);
 }
 
@@ -78,7 +110,7 @@ longint MoveH(longint dist, WORD method, FILE* handle)
 	// dist - hodnota offsetu
 	// method: 0 - od zacatku, 1 - od aktualni, 2 - od konce
 	// handle - file handle
-	gcfg2->HandleError = fseek(handle, dist, method);
+	HandleError = fseek(handle, dist, method);
 	return ftell(handle);
 }
 
@@ -103,10 +135,10 @@ void RdMsg(integer N)
 	WORD j, o;
 	FILE* h;
 	pstring s;
-	for (int i = 1; i < gcfg2->MsgIdxN; i++) {
-		auto Nr = gcfg2->MsgIdx[i].Nr;
-		auto Count = gcfg2->MsgIdx[i].Count;
-		auto Ofs = gcfg2->MsgIdx[i].Ofs;
+	for (int i = 1; i < MsgIdxN; i++) {
+		auto Nr = MsgIdx[i].Nr;
+		auto Count = MsgIdx[i].Count;
+		auto Ofs = MsgIdx[i].Ofs;
 		if (N >= Nr && N < Nr + Count)
 		{
 			j = N - Nr + 1;
@@ -115,11 +147,11 @@ void RdMsg(integer N)
 		}
 	}
 	o = 0; j = 1;
-	gcfg2->MsgPar[1] = std::to_string(N).c_str();
+	MsgPar[1] = std::to_string(N).c_str();
 
 label1:
-	h = gcfg2->ResFile.Handle;
-	SeekH(h, gcfg2->FrstMsgPos + o);
+	h = ResFile.Handle;
+	SeekH(h, FrstMsgPos + o);
 
 	for (int i = 1; i <= j; i++)
 	{
@@ -127,18 +159,18 @@ label1:
 		ReadH(h, s.length(), &s[1]);
 	}
 	//ConvKamenToCurr((unsigned char*)s.c_str(), s.length());
-	gcfg2->MsgLine = "";
+	MsgLine = "";
 	j = 1;
 	s[s.length() + 1] = 0x00;
 	for (int i = 1; i <= s.length(); i++) {
 		if (s[i] == '$' && s[i + 1] != '$')
 		{
-			gcfg2->MsgLine += gcfg2->MsgPar[j];
+			MsgLine += MsgPar[j];
 			j++;
 		}
 		else
 		{
-			gcfg2->MsgLine.Append(s[i]);
+			MsgLine.Append(s[i]);
 			if (s[i] == '$') i++;
 		}
 	}
@@ -520,7 +552,7 @@ filePtr OpenH(FileOpenMode Mode, FileUseMode UM)
 
 	pstring txt[] = { "Clos", "OpRd", "OpRs", "OpSh", "OpEx" };
 
-	pstring path = gcfg2->CPath;
+	pstring path = CPath;
 	if (CardHandles == files) RunError(884);
 	longint w = 0;
 	pstring openFlags(5);
@@ -545,10 +577,10 @@ label1:
 	}
 
 	FILE* nFile = nullptr;
-	gcfg2->HandleError = fopen_s(&nFile, path.c_str(), openFlags.c_str());
+	HandleError = fopen_s(&nFile, path.c_str(), openFlags.c_str());
 
 	// https://docs.microsoft.com/en-us/cpp/c-runtime-library/errno-doserrno-sys-errlist-and-sys-nerr?view=vs-2019
-	if (IsNetCVol() && (gcfg2->HandleError == EACCES || gcfg2->HandleError == ENOLCK))
+	if (IsNetCVol() && (HandleError == EACCES || HandleError == ENOLCK))
 	{
 		if (w == 0)
 		{
@@ -560,13 +592,13 @@ label1:
 		goto label1;
 	}
 
-	if (gcfg2->HandleError == 0)
+	if (HandleError == 0)
 	{
 		SetHandle(nFile);
 		if (Mode != _isoldfile) SetUpdHandle(nFile);
 	}
 
-	else if (gcfg2->HandleError == ENOENT) // No such file or directory
+	else if (HandleError == ENOENT) // No such file or directory
 	{
 		if (Mode == _isoldnewfile)
 		{
@@ -590,7 +622,7 @@ WORD ReadLongH(filePtr handle, longint bytes, void* buffer)
 	{
 		// nebyl naèten požadovaný poèet B
 		auto eofReached = feof(handle);
-		gcfg2->HandleError = ferror(handle);
+		HandleError = ferror(handle);
 	}
 	return WORD(readed);
 }
@@ -601,7 +633,7 @@ void WriteLongH(filePtr handle, longint bytes, void* buffer)
 	if (bytes <= 0) return;
 	// uloží do souboru daný poèet Bytù z bufferu
 	fwrite(buffer, 1, bytes, handle);
-	gcfg2->HandleError = ferror(handle);
+	HandleError = ferror(handle);
 }
 
 void WriteH(FILE* handle, WORD bytes, void* buffer)
@@ -646,7 +678,7 @@ void CloseH(FILE* handle)
 {
 	if (handle == nullptr) return;
 	// uzavøe soubor
-	gcfg2->HandleError = fclose(handle);
+	HandleError = fclose(handle);
 }
 
 
@@ -667,17 +699,17 @@ void SetFileAttr(WORD Attr)
 	// nastaví atributy souboru/adresáøe
 	// 0 = read only, 1 = hidden file, 2 = system file, 3 = volume label, 4 = subdirectory,
 	// 5 = written since backup, 8 = shareable (Novell NetWare)
-	if (SetFileAttributesA(gcfg2->CPath.c_str(), Attr) == 0)
+	if (SetFileAttributesA(CPath.c_str(), Attr) == 0)
 	{
-		gcfg2->HandleError = GetLastError();
+		HandleError = GetLastError();
 	}
 }
 
 WORD GetFileAttr()
 {
 	// získá atributy souboru/adresáøe
-	auto result = GetFileAttributesA(gcfg2->CPath.c_str());
-	if (result == INVALID_FILE_ATTRIBUTES) gcfg2->HandleError = GetLastError();
+	auto result = GetFileAttributesA(CPath.c_str());
+	if (result == INVALID_FILE_ATTRIBUTES) HandleError = GetLastError();
 	return result;
 }
 
@@ -693,7 +725,7 @@ void FlushH(FILE* handle)
 	if (handle == nullptr) return;
 
 	auto result = fflush(handle);
-	if (result == EOF) { gcfg2->HandleError = result; }
+	if (result == EOF) { HandleError = result; }
 	//SetHandle(handle);
 	SetUpdHandle(handle);
 	//CloseH(handle);
@@ -749,7 +781,7 @@ longint GetDateTimeH(filePtr handle)
 	// 2 + 2 Byte (datum vlevo, èas vpravo)
 	FILETIME ft;
 	auto result = GetFileTime(handle, nullptr, nullptr, &ft);
-	if (result == 0) gcfg2->HandleError = GetLastError();
+	if (result == 0) HandleError = GetLastError();
 	return (ft.dwHighDateTime << 16) + ft.dwLowDateTime;
 }
 
@@ -757,7 +789,7 @@ void MyDeleteFile(pstring path)
 {
 	// smaže soubor - INT $41
 	auto result = remove(path.c_str());
-	if (result != 0) gcfg2->HandleError = result;
+	if (result != 0) HandleError = result;
 }
 
 void RenameFile56(pstring OldPath, pstring NewPath, bool Msg)
@@ -765,8 +797,8 @@ void RenameFile56(pstring OldPath, pstring NewPath, bool Msg)
 	// pøesouvá nebo pøejmenovává soubor
 	// potom:
 	auto result = rename(OldPath.c_str(), NewPath.c_str());
-	if (result != 0) gcfg2->HandleError = result;
-	if (Msg && gcfg2->HandleError != 0)
+	if (result != 0) HandleError = result;
+	if (Msg && HandleError != 0)
 	{
 		Set2MsgPar(OldPath, NewPath);
 		RunError(829);
@@ -777,7 +809,7 @@ pstring MyFExpand(pstring Nm, pstring EnvName)
 {
 	pstring d;
 	GetDir(0, &d);
-	pstring f = gcfg2->FandDir;
+	pstring f = FandDir;
 	DelBackSlash(f);
 	ChDir(f);
 	pstring p = GetEnv(EnvName.c_str());
@@ -1140,9 +1172,9 @@ void MyExit()
 #endif
 
 	UnExtendHandles();
-	MyDeleteFile(gcfg2->FandWorkName);
-	MyDeleteFile(gcfg2->FandWorkXName);
-	MyDeleteFile(gcfg2->FandWorkTName);
+	MyDeleteFile(FandWorkName);
+	MyDeleteFile(FandWorkXName);
+	MyDeleteFile(FandWorkTName);
 	// TODO? CloseXMS();
 label1: if (WasInitDrivers) {
 	// TODO? DoneMouseEvents();
@@ -1159,7 +1191,7 @@ label1: if (WasInitDrivers) {
 		TextAttr = StartAttr;
 		ClrScr();
 		CrsNorm();
-		ChDir(gcfg2->OldDir);
+		ChDir(OldDir);
 		SetCurrPrinter(-1);
 	}
 	if (ExitCode == 202) Halt(202);
@@ -1168,11 +1200,11 @@ label1: if (WasInitDrivers) {
 
 void OpenResFile()
 {
-	gcfg2->CPath = gcfg2->FandResName; gcfg2->CVol = "";
-	gcfg2->ResFile.Handle = OpenH(_isoldfile, RdOnly);
-	if (gcfg2->HandleError != 0)
+	CPath = FandResName; CVol = "";
+	ResFile.Handle = OpenH(_isoldfile, RdOnly);
+	if (HandleError != 0)
 	{
-		printf("can't open %s", gcfg2->FandResName.c_str());
+		printf("can't open %s", FandResName.c_str());
 		wait();
 		Halt(0);
 	}
@@ -1183,14 +1215,14 @@ void InitOverlays()
 	pstring name; pstring ext; integer sz, err; longint l; pstring s;
 	const BYTE OvrlSz = 124;
 
-	GetDir(0, &gcfg2->OldDir);
-	//gcfg2->OldDir = GetDir(0);
-	FSplit(FExpand(ParamStr(1)), gcfg2->FandDir, name, ext);
-	gcfg2->FandOvrName = MyFExpand(name + ".OVR", "FANDOVR");
-	//OvrInit(gcfg2->FandOvrName);
+	GetDir(0, &OldDir);
+	//OldDir = GetDir(0);
+	FSplit(FExpand(ParamStr(1)), FandDir, name, ext);
+	FandOvrName = MyFExpand(name + ".OVR", "FANDOVR");
+	//OvrInit(FandOvrName);
 	//if (OvrResult != 0) {          /*reshandle-1*/
-	//	gcfg2->FandOvrName = ParamStr(0);
-	//	OvrInit(gcfg2->FandOvrName);
+	//	FandOvrName = ParamStr(0);
+	//	OvrInit(FandOvrName);
 	//	if (OvrResult != 0) {
 	//		printf("can't open FAND.OVR"); wait(); Halt(-1);
 	//	}
@@ -1207,10 +1239,10 @@ void InitOverlays()
 
 void OpenWorkH()
 {
-	gcfg2->CPath = gcfg2->FandWorkName;
-	gcfg2->CVol = "";
-	gcfg2->ResFile.Handle = OpenH(_isoldnewfile, Exclusive);
-	if (gcfg2->HandleError != 0) printf("cant't open %s", gcfg2->FandWorkName.c_str());
+	CPath = FandWorkName;
+	CVol = "";
+	ResFile.Handle = OpenH(_isoldnewfile, Exclusive);
+	if (HandleError != 0) printf("cant't open %s", FandWorkName.c_str());
 	wait();
 	Halt(-1);
 }
@@ -1235,8 +1267,8 @@ bool SEquUpcase(pstring S1, pstring S2)
 //void OpenOvrFile()
 //{
 //	FILE* h;
-//	gcfg2->CPath = gcfg2->FandOvrName;
-//	gcfg2->CVol = "";
+//	CPath = FandOvrName;
+//	CVol = "";
 //	h = OpenH(_isoldfile, RdOnly);
 //		if (h != OvrHandle)
 //		{
@@ -1260,6 +1292,6 @@ void NonameStartFunction()
 	ExitProc = MyExit;
 	MyBP = nullptr;
 	UserLicNr = WORD(UserLicNrShow) & 0x7FFF;
-	gcfg2->FandResName = MyFExpand("Fand.Res", "FANDRES");
+	FandResName = MyFExpand("Fand.Res", "FANDRES");
 	OpenResFile();
 }

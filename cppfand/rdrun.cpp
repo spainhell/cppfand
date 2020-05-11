@@ -1,13 +1,10 @@
 #include "rdrun.h"
 
-#include "globconf.h"
 #include "kbdww.h"
 #include "legacy.h"
 #include "oaccess.h"
 #include "obaseww.h"
 #include "runfrml.h"
-
-globconf* gcfg12 = globconf::GetInstance();
 
 bool EFldD::Ed(bool IsNewRec)
 {
@@ -285,9 +282,9 @@ bool RunAddUpdte(char Kind, void* CRold, LinkD* notLD)
 {
 	LockMode md;
 	FileDPtr CF = CFile; LockForAdd(CF, 0, false, md);
-	while (not LockForAdd(CF, 1, false, md)) {
+	while (!LockForAdd(CF, 1, false, md)) {
 		SetCPathVol();
-		Set2MsgPar(gcfg12->CPath, LockModeTxt[md]);
+		Set2MsgPar(CPath, LockModeTxt[md]);
 		LockForAdd(CF, 2, false, md); longint w = PushWrLLMsg(825, false);
 		KbdTimer(spec.NetDelay, 0); if (w != 0) PopW(w);
 	}

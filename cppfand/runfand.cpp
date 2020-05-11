@@ -5,17 +5,16 @@
 #include "drivers.h"
 #include "access.h"
 #include "editor.h"
-#include "globconf.h"
 #include "oaccess.h"
 #include "obaseww.h"
 #include "rdedit.h"
 #include "rdfildcl.h"
+#include "runedi.h"
 #include "runfrml.h"
 #include "runproj.h"
 #include "wwmenu.h"
 #include "wwmix.h"
 
-globconf* gcfg14 = globconf::GetInstance();
 
 void ScrGraphMode(bool Redraw, WORD OldScrSeg)
 {
@@ -163,22 +162,22 @@ void RdPrinter(FILE* CfgHandle)
 
 void RdWDaysTab(FILE* CfgHandle)
 {
-	ReadH(CfgHandle, sizeof(gcfg14->NWDaysTab), &gcfg14->NWDaysTab);
-	ReadH(CfgHandle, sizeof(gcfg14->WDaysFirst), &gcfg14->WDaysFirst);
-	ReadH(CfgHandle, sizeof(gcfg14->WDaysLast), &gcfg14->WDaysLast);
+	ReadH(CfgHandle, sizeof(NWDaysTab), &NWDaysTab);
+	ReadH(CfgHandle, sizeof(WDaysFirst), &WDaysFirst);
+	ReadH(CfgHandle, sizeof(WDaysLast), &WDaysLast);
 	//GetMem(WDaysTab, NWDaysTab * 3);
-	gcfg14->WDaysTab = new wdaystt[3];
-	ReadH(CfgHandle, sizeof(gcfg14->NWDaysTab) * 3, gcfg14->WDaysTab);
+	WDaysTab = new wdaystt[3];
+	ReadH(CfgHandle, sizeof(NWDaysTab) * 3, WDaysTab);
 }
 
 void RdCFG()
 {
 	FILE* CfgHandle;
 	char ver[5] = { 0,0,0,0,0 };
-	gcfg14->CVol = "";
-	gcfg14->CPath = MyFExpand("FAND.CFG", "FANDCFG");
+	CVol = "";
+	CPath = MyFExpand("FAND.CFG", "FANDCFG");
 	CfgHandle = OpenH(_isoldfile, RdOnly);
-	if (gcfg14->HandleError != 0) { printf("%s !found", gcfg14->CPath.c_str()); wait(); Halt(-1); }
+	if (HandleError != 0) { printf("%s !found", CPath.c_str()); wait(); Halt(-1); }
 	ReadH(CfgHandle, 4, ver);
 	if (strcmp(ver, CfgVersion) != 0) {
 		printf("Invalid version of FAND.CFG"); wait(); Halt(-1);
@@ -238,7 +237,7 @@ void CompileHelpCatDcl()
 {
 	pstring s; void* p2 = nullptr;
 	FileDRoot = nullptr; CRdb = nullptr; MarkStore2(p2);
-	RdMsg(56); s = gcfg14->MsgLine; SetInpStr(s);
+	RdMsg(56); s = MsgLine; SetInpStr(s);
 #ifdef FandRunV
 	RdFileD("UFANDHLP", '6', "");
 #else
@@ -246,7 +245,7 @@ void CompileHelpCatDcl()
 #endif
 
 	HelpFD = *CFile;
-	RdMsg(52); s = gcfg14->MsgLine;
+	RdMsg(52); s = MsgLine;
 	SetInpStr(s);
 	RdFileD("Catalog", 'C', "");
 	CatFD = CFile; FileDRoot = nullptr;
@@ -307,7 +306,7 @@ void CallInstallRdb()
 
 void CallEditTxt()
 {
-	gcfg14->CPath = FExpand(gcfg14->CPath); gcfg14->CVol = "";
+	CPath = FExpand(CPath); CVol = "";
 	pstring errmsg = "";
 	EditTxtFile(nullptr, 'T', errmsg, nullptr, 1, 0, nullptr, 0, "", 0, nullptr);
 }
@@ -315,7 +314,7 @@ void CallEditTxt()
 void SelectEditTxt(pstring E, bool OnFace)
 {
 	wwmix ww;
-	gcfg14->CPath = ww.SelectDiskFile(E, 35, OnFace); if (gcfg14->CPath == "") return;
+	CPath = ww.SelectDiskFile(E, 35, OnFace); if (CPath == "") return;
 	CallEditTxt();
 }
 
@@ -351,19 +350,19 @@ void InitRunFand()
 	//CallCloseFandFiles = CloseFandFiles;  // TODO: CallCloseFandFiles: procedure(FromDML:boolean);
 	video.CursOn = 0x0607; // {if exit before reading.CFG}
 	KbdBuffer[0] = 0x0;
-	gcfg14->F10SpecKey = 0;
+	F10SpecKey = 0;
 	if (!GetEnv("DMLADDR").empty()) {
 		printf("type 'exit' to return to FAND");
 		wait();
 		return; // pùvodnì wait;
 	}
-	gcfg14->WrkDir = GetEnv("FANDWORK");
-	if (gcfg14->WrkDir == "") gcfg14->WrkDir = gcfg14->FandDir;
-	AddBackSlash(gcfg14->WrkDir);
-	s = gcfg14->WrkDir + "FANDWORK";
-	gcfg14->FandWorkName = s + ".$$$";
-	gcfg14->FandWorkXName = s + ".X$$";
-	gcfg14->FandWorkTName = s + ".T$$";
+	WrkDir = GetEnv("FANDWORK");
+	if (WrkDir == "") WrkDir = FandDir;
+	AddBackSlash(WrkDir);
+	s = WrkDir + "FANDWORK";
+	FandWorkName = s + ".$$$";
+	FandWorkXName = s + ".X$$";
+	FandWorkTName = s + ".T$$";
 	LANNode = 0;
 	s = GetEnv("LANNODE");
 	s = TrailChar(' ', s);
@@ -377,7 +376,7 @@ void InitRunFand()
 		}
 #endif 
 	}
-	h = gcfg14->ResFile.Handle;
+	h = ResFile.Handle;
 	ReadH(h, 2, &n);
 	if (n != ResVersion) {
 		printf("FAND.RES incorr. version");
@@ -385,35 +384,35 @@ void InitRunFand()
 	}
 
 	//OvrHandle = GetOverHandle(h, -1); // TODO: pùvodnì to byl WORD - 1, teï je to blbost;
-	//ReadH(h, sizeof(gcfg14->ResFile.A), gcfg14->ResFile.A);
+	//ReadH(h, sizeof(ResFile.A), ResFile.A);
 
 	for (int readindexes = 0; readindexes < FandFace; readindexes++)
 	{
-		ReadH(h, sizeof(gcfg14->ResFile.A->Pos), &gcfg14->ResFile.A[readindexes].Pos);
-		ReadH(h, sizeof(gcfg14->ResFile.A->Size), &gcfg14->ResFile.A[readindexes].Size);
+		ReadH(h, sizeof(ResFile.A->Pos), &ResFile.A[readindexes].Pos);
+		ReadH(h, sizeof(ResFile.A->Size), &ResFile.A[readindexes].Size);
 	}
 
 	// *** NAÈTENÍ INFORMACÍ O ZPRÁVÁCH Z FAND.RES
-	ReadH(h, 2, &gcfg14->MsgIdxN);
-	l = gcfg14->MsgIdxN;
-	gcfg14->MsgIdx = new TMsgIdxItem[l]; // GetMem(MsgIdx, l);
+	ReadH(h, 2, &MsgIdxN);
+	l = MsgIdxN;
+	MsgIdx = new TMsgIdxItem[l]; // GetMem(MsgIdx, l);
 	for (int readindexes = 0; readindexes < l; readindexes++)
 	{
-		ReadH(h, sizeof(gcfg14->MsgIdx->Nr), &gcfg14->MsgIdx[readindexes].Nr);
-		ReadH(h, sizeof(gcfg14->MsgIdx->Ofs), &gcfg14->MsgIdx[readindexes].Ofs);
-		ReadH(h, sizeof(gcfg14->MsgIdx->Count), &gcfg14->MsgIdx[readindexes].Count);
-		printf("Zprava cislo: %i, offset %i, delka %i\n", gcfg14->MsgIdx[readindexes].Nr, gcfg14->MsgIdx[readindexes].Ofs, gcfg14->MsgIdx[readindexes].Count);
+		ReadH(h, sizeof(MsgIdx->Nr), &MsgIdx[readindexes].Nr);
+		ReadH(h, sizeof(MsgIdx->Ofs), &MsgIdx[readindexes].Ofs);
+		ReadH(h, sizeof(MsgIdx->Count), &MsgIdx[readindexes].Count);
+		printf("Zprava cislo: %i, offset %i, delka %i\n", MsgIdx[readindexes].Nr, MsgIdx[readindexes].Ofs, MsgIdx[readindexes].Count);
 	}
-	gcfg14->FrstMsgPos = PosH(h);
+	FrstMsgPos = PosH(h);
 	// *** konec ***
 
 	// NAÈTENÍ ZNAKÙ PRO 'ANO' A 'NE' - originál je Y a N
 	RdMsg(50);
-	gcfg14->AbbrYes = gcfg14->MsgLine[1];
-	gcfg14->AbbrNo = gcfg14->MsgLine[2];
+	AbbrYes = MsgLine[1];
+	AbbrNo = MsgLine[2];
 
 	RdCFG();
-	gcfg14->ProcAttr = colors.uNorm;
+	ProcAttr = colors.uNorm;
 	// ScrSeg = video.address; TODO: nepotøebujeme, nezapisujeme pøímo do GK
 	if (video.TxtRows != 0) TxtRows = video.TxtRows;
 
@@ -433,8 +432,8 @@ void InitRunFand()
 	// Ww
 	ss.Empty = true;
 	ss.Pointto = nullptr;
-	gcfg14->TxtEdCtrlUBrk = false;
-	gcfg14->TxtEdCtrlF4Brk = false;
+	TxtEdCtrlUBrk = false;
+	TxtEdCtrlF4Brk = false;
 	InitMouseEvents();
 	// Editor
 	InitTxtEditor();
@@ -454,7 +453,7 @@ void InitRunFand()
 	OpenWorkH();
 	OpenFANDFiles(false);
 
-	if (!gcfg14->paramstr.at(1).empty() && gcfg14->paramstr.at(1) != "?") {
+	if (!paramstr.at(1).empty() && paramstr.at(1) != "?") {
 		{
 #ifndef FandRunV
 			if (SEquUpcase(paramstr(2), 'D')) {
@@ -463,17 +462,17 @@ void InitRunFand()
 			}
 			else
 #endif
-				if (SEquUpcase(gcfg14->paramstr.at(2), "T")) {
-					gcfg14->CPath = gcfg14->paramstr.at(1);
-					if (copy(gcfg14->CPath, 1, 2) == "*.")
-						SelectEditTxt(copy(gcfg14->CPath, 2, 4), false);
+				if (SEquUpcase(paramstr.at(2), "T")) {
+					CPath = paramstr.at(1);
+					if (copy(CPath, 1, 2) == "*.")
+						SelectEditTxt(copy(CPath, 2, 4), false);
 					else CallEditTxt();
 					return;
 				}
 				else {
 				label0:
-					if (copy(gcfg14->paramstr.at(1), 1, 2) == "*.") SelectRunRdb(false);
-					else RunRdb(gcfg14->paramstr.at(1));
+					if (copy(paramstr.at(1), 1, 2) == "*.") SelectRunRdb(false);
+					else RunRdb(paramstr.at(1));
 					if (IsTestRun) IsTestRun = false;
 					else return;
 				}
@@ -484,7 +483,7 @@ void InitRunFand()
 		WriteWFrame(WHasFrame + WDoubleFrame, "", "");
 		ScrClr(1, 1, TxtCols - 2, TxtRows - 13, (char)0xb1, TextAttr);
 		ScrClr(1, TxtRows - 12, TxtCols - 2, 10, (char)0xb2, TextAttr);
-		gcfg14->ResFile.Get(FandFace, p);
+		ResFile.Get(FandFace, p);
 		x = (pstring*)p;
 		xofs++;
 		for (int i = -11; i < -6; i++) {
@@ -533,11 +532,11 @@ void InitRunFand()
 
 		if (!txt.empty()) {
 			txt += ")";
-			gcfg14->MsgLine = gcfg14->MsgLine + "x (" + txt;
+			MsgLine = MsgLine + "x (" + txt;
 		}
-		else gcfg14->MsgLine += 'x';
+		else MsgLine += 'x';
 
-		GotoXY(5, TxtRows - 3); printf(gcfg14->MsgLine.c_str());
+		GotoXY(5, TxtRows - 3); printf(MsgLine.c_str());
 
 
 #ifdef FandRunV 
@@ -571,7 +570,7 @@ void InitRunFand()
 #endif
 
 		RdMsg(MsgNr);
-		mb = new TMenuBoxS(4, 3, &gcfg14->MsgLine);
+		mb = new TMenuBoxS(4, 3, &MsgLine);
 		i = 1;
 	label1:
 		i = mb->Exec(i);

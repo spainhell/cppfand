@@ -1,5 +1,4 @@
 #pragma once
-#include "globconf.h"
 #include "runfrml.h"
 
 LongStr* GetTxt(FrmlPtr Z);

@@ -6,7 +6,6 @@
 #include "rdedit.h"
 #include "runedi.h"
 
-globconf* gcfg21 = globconf::GetInstance();
 
 struct Item
 {
@@ -66,7 +65,7 @@ void wwmix::SelectStr(integer C1, integer R1, WORD NMsg, pstring LowTxt)
 	rows = 5; if (TxtCols > 52) cols = 50; else cols = TxtCols - 2; RdMsg(NMsg);
 	c2 = cols; if (C1 != 0) c2 = C1 + cols + 1;
 	r2 = rows; if (R1 != 0) r2 = R1 + rows + 1; TextAttr = colors.sNorm;
-	w2 = PushWFramed(C1, R1, c2, r2, TextAttr, gcfg21->MsgLine, LowTxt, WHasFrame + WDoubleFrame + WShadow + WPushPixel);
+	w2 = PushWFramed(C1, R1, c2, r2, TextAttr, MsgLine, LowTxt, WHasFrame + WDoubleFrame + WShadow + WPushPixel);
 	if (ss.Empty)
 	{
 		do { ReadKbd(); } while (KbdChar != _ESC_);
@@ -596,7 +595,7 @@ label2:
 	RestoreExit(er);
 	return result;
 label3:
-	pstring Msg = gcfg21->MsgLine;
+	pstring Msg = MsgLine;
 	I = CurrPos;
 	SetMsgPar(Msg);
 	WrLLF10Msg(110);
@@ -614,7 +613,7 @@ void wwmix::PromptLL(WORD N, pstring* Txt, WORD I, bool Del)
 	TextAttr = colors.pTxt;
 	ClrEol();
 	RdMsg(N);
-	printf("%s", gcfg21->MsgLine.c_str());
+	printf("%s", MsgLine.c_str());
 	TextAttr = colors.pNorm;
 	EditTxt(Txt, I, 255, TxtCols - WhereX(), 'A', Del, false, true, false, 0);
 	PopW(w);
@@ -629,7 +628,7 @@ pstring wwmix::PassWord(bool TwoTimes)
 label1:
 	TextAttr = colors.pNorm | 0x80;
 	GotoXY(1, 1); ClrEol(); RdMsg(MsgNr);
-	printf("%*s", (gcfg21->MsgLine.length() + 22) / 2, gcfg21->MsgLine.c_str());
+	printf("%*s", (MsgLine.length() + 22) / 2, MsgLine.c_str());
 	pstring tmpStr = char(ReadKbd);
 	KbdBuffer = tmpStr + KbdBuffer;
 	TextAttr = colors.pNorm;
