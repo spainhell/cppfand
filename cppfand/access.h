@@ -659,8 +659,7 @@ extern pstring MountedVol[FloppyDrives];
 extern pstring SQLDateMask;
 
 // ********** COMPARE FUNCTIONS **********
-static double Power10[21] = { 1E0, 1E1, 1E2, 1E3, 1E4, 1E5, 1E6, 1E7, 1E8, 1E9, 1E10,
-	1E11, 1E12, 1E13, 1E14, 1E15, 1E16, 1E17, 1E18, 1E19, 1E20 };
+extern double Power10[21];
 
 //void RunErrorM(LockMode Md, WORD N); // r528
 
@@ -674,21 +673,21 @@ extern BYTE CurrChar; // { Compile }
 extern BYTE ForwChar, ExpChar, Lexem;
 extern pstring LexWord;
 
-static bool SpecFDNameAllowed, IdxLocVarAllowed, FDLocVarAllowed, IsCompileErr;
-static CompInpD* PrevCompInp;						// { saved at "include" }
-static CharArrPtr InpArrPtr; static RdbPos InpRdbPos;		// { "  "  }
+extern bool SpecFDNameAllowed, IdxLocVarAllowed, FDLocVarAllowed, IsCompileErr;
+extern CompInpD* PrevCompInp;						// { saved at "include" }
+extern CharArrPtr InpArrPtr; extern RdbPos InpRdbPos;		// { "  "  }
 extern WORD InpArrLen, CurrPos, OldErrPos;			// { "  "  }
-static SumElPtr FrmlSumEl;				//{ set while reading sum / count argument }
-static bool FrstSumVar, FileVarsAllowed;
+extern SumElPtr FrmlSumEl;				//{ set while reading sum / count argument }
+extern bool FrstSumVar, FileVarsAllowed;
 // FrmlPtr RdFldNameFrml() = FrmlPtr(char& FTyp);
 // FrmlPtr RdFunction() = FrmlPtr(char& FTyp);
-static FrmlElem* (*RdFldNameFrml)(char&) = nullptr; // ukazatel na funkci
-static FrmlElem* (*RdFunction)(char&) = nullptr; // ukazatel na funkci
-static void(*ChainSumEl)(); // {set by user}
-static BYTE LstCompileVar; // { boundary }
+extern FrmlElem* (*RdFldNameFrml)(char&); // ukazatel na funkci
+extern FrmlElem* (*RdFunction)(char&); // ukazatel na funkci
+extern void(*ChainSumEl)(); // {set by user}
+extern BYTE LstCompileVar; // { boundary }
 
-static pstring Switches = "";
-static WORD SwitchLevel = 0;
+extern pstring Switches;
+extern WORD SwitchLevel;
 
 void RunErrorM(LockMode Md, WORD N); // r729
 pstring* FieldDMask(FieldDPtr F); // r734 ASM
@@ -782,6 +781,3 @@ bool ChangeLMode(LockMode Mode, WORD Kind, bool RdPref);
 void SeekRec(longint N);
 void WrPrefix();
 void RdPrefixes();
-
-
-

@@ -63,8 +63,8 @@ void DispH(void* ad, integer NoBytes);
 #endif
 
 // *** MEMORY MANAGEMENT ***
-static WORD CachePageSize;
-static void* AfterCatFD; // r108
+extern WORD CachePageSize;
+extern void* AfterCatFD; // r108
 struct CachePage { BYTE Pg3[3]; BYTE Handle; longint HPage; bool Upd; BYTE Arr[4096]; };
 struct ProcStkD { ProcStkD* ChainBack; void* LVRoot; }; // r199
 typedef ProcStkD* ProcStkPtr;
@@ -73,12 +73,13 @@ struct ExitRecord {
 	void* OvrEx = nullptr; void* mBP = nullptr;
 	WORD rBP = 0, rIP = 0, rCS = 0, rSP = 0, rDS = 0;
 	bool ExP = false, BrkP = false;
-} static ExitBuf; // r202 - r210
-static ProcStkD* MyBP;
-static ProcStkD* ProcMyBP;
-static WORD BPBound; // r212
-static bool ExitP, BreakP;
-static longint LastExitCode = 0; // r215
+};
+extern ExitRecord ExitBuf; // r202 - r210
+extern ProcStkD* MyBP;
+extern ProcStkD* ProcMyBP;
+extern WORD BPBound; // r212
+extern bool ExitP, BreakP;
+extern longint LastExitCode; // r215
 
 void* Normalize(longint L);
 longint AbsAdr(void* P);
@@ -122,9 +123,9 @@ extern pstring CName;
 extern pstring CExt;
 extern pstring CVol;
 
-static bool WasLPTCancel;
-static FILE* WorkHandle;
-static longint MaxWSize = 0; // {currently occupied in FANDWORK.$$$}
+extern bool WasLPTCancel;
+extern FILE* WorkHandle;
+extern longint MaxWSize; // {currently occupied in FANDWORK.$$$}
 
 bool IsNetCVol();
 bool CacheExist();
@@ -174,10 +175,10 @@ void WriteMsg(WORD N);
 void ClearLL(BYTE attr);
 
 // ********** DML **********
-static void* FandInt3f; // ø. 311
-static FILE* OvrHandle;
-static WORD Fand_ss, Fand_sp, Fand_bp, DML_ss, DML_sp, DML_bp;
-static longint _CallDMLAddr = 0; // {passed to FANDDML by setting "DMLADDR="in env.}
+extern void* FandInt3f; // ø. 311
+extern FILE* OvrHandle;
+extern WORD Fand_ss, Fand_sp, Fand_bp, DML_ss, DML_sp, DML_bp;
+extern longint _CallDMLAddr; // {passed to FANDDML by setting "DMLADDR="in env.}
 enum TKbdConv { OrigKbd, CsKbd, CaKbd, SlKbd, DtKbd };
 
 struct Spec // r.319
@@ -213,7 +214,8 @@ struct Spec // r.319
 	WORD ScreenDelay;
 	BYTE OffDefaultYear;
 	bool WithDiskFree;
-} extern spec;
+};
+extern Spec spec;
 
 struct Video // ø. 345
 {
@@ -221,14 +223,16 @@ struct Video // ø. 345
 	BYTE TxtRows;
 	bool ChkSnow;	// {not used }
 	WORD CursOn, CursOff, CursBig;
-} extern video;
+};
+extern Video video;
 
 struct Fonts // r350
 {
 	TVideoFont VFont = TVideoFont::foLatin2;
 	bool LoadVideoAllowed = false;
 	bool NoDiakrSupported = false;
-} extern fonts;
+};
+extern Fonts fonts;
 
 struct Colors
 {
@@ -247,7 +251,8 @@ struct Colors
 	BYTE nNorm;
 	BYTE ShadowAttr;
 	BYTE DesktopColor;
-} extern colors;
+};
+extern Colors colors;
 
 extern char CharOrdTab[256]; // after Colors /FANDDML/ // ø. 370
 extern char UpcCharTab[256]; // TODO: v obou øádcích bylo 'array[char] of char;' - WTF?
@@ -260,17 +265,18 @@ extern integer prCurr, prMax;
 struct Printer {
 	void* Strg; char Typ, Kod; BYTE Lpti, TmOut;
 	bool OpCls, ToHandle, ToMgr; WORD Handle;
-} static printer[10];
+};
+extern Printer printer[10];
 typedef std::array<BYTE, 4> TPrTimeOut; // ø. 418
-static TPrTimeOut OldPrTimeOut;
-static TPrTimeOut PrTimeOut;  // absolute 0:$478;
-static bool WasInitDrivers = false;
-static bool WasInitPgm = false;
-static WORD LANNode; // ø. 431
-static void (*CallOpenFandFiles)(); // r453
-static void (*CallCloseFandFiles)(); // r454
+extern TPrTimeOut OldPrTimeOut;
+extern TPrTimeOut PrTimeOut;  // absolute 0:$478;
+extern bool WasInitDrivers;
+extern bool WasInitPgm;
+extern WORD LANNode; // ø. 431
+extern void (*CallOpenFandFiles)(); // r453
+extern void (*CallCloseFandFiles)(); // r454
 
-static double userToday;
+extern double userToday;
 
 void OpenWorkH();
 

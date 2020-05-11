@@ -6,6 +6,7 @@
 #include "wwmix.h"
 
 const BYTE MaxLen = 9;
+RdbPos ChptIPos; // usen in LexAnal & ProjMgr
 
 bool KeyArgFound;
 FieldDPtr KeyArgFld;

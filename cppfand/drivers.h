@@ -34,43 +34,44 @@ struct TEvent
 	TPoint From;
 };
 
-static TEvent Event; // r39
-static WORD KbdChar;
-static BYTE KbdFlgs; // TODO: absolute $417
+extern TEvent Event; // r39
+extern WORD KbdChar;
+extern BYTE KbdFlgs; // TODO: absolute $417
 
 // ******** Konstanty *********
 const bool DemoAutoRd = false; // ř. 82
-static pstring KbdBuffer = ""; // ř. 83
-static BYTE LLKeyFlags = 0; // ř. 84
+extern pstring KbdBuffer; // ř. 83
+extern BYTE LLKeyFlags; // ř. 84
 
 enum class enVideoCard { viCga = 0, viHercules = 1, viEga = 2, viVga = 3 };
 extern enVideoCard VideoCard;// = enVideoCard::viVga;
-static integer GraphDriver, GraphMode;
-static WORD ScrSeg, ScrGrSeg;
-static BYTE NrVFont, BytesPerChar;
-static bool ChkSnow;
-static bool IsGraphMode;
-static BYTE GrBytesPerChar;
-static WORD GrBytesPerLine;
+extern integer GraphDriver, GraphMode;
+extern WORD ScrSeg, ScrGrSeg;
+extern BYTE NrVFont, BytesPerChar;
+extern bool ChkSnow;
+extern bool IsGraphMode;
+extern BYTE GrBytesPerChar;
+extern WORD GrBytesPerLine;
 
 const BYTE MaxTxtCols = 132; // r132 {the best adapter}
 const BYTE EventQSize = 16;
 const bool BGIReload = true;
-static TPoint LastWhere, LastWhereG, DownWhere;
-struct Wind { BYTE X, Y; } static WindMin, WindMax; // r137
+extern TPoint LastWhere, LastWhereG, DownWhere;
+struct Wind { BYTE X, Y; };
+extern Wind WindMin, WindMax; // r137
 extern BYTE TextAttr, StartAttr, StartMode; // r138
-static WORD LastMode;
-static void* FontArr; static void* BGIDriver; static void* BGILittFont; static void* BGITripFont;
-static BYTE ButtonCount, MouseButtons, LastButtons, DownButtons, LastDouble;
-static WORD EventCount, EventQHead, EventQTail;
+extern WORD LastMode;
+extern void* FontArr; extern void* BGIDriver; extern void* BGILittFont; extern void* BGITripFont;
+extern BYTE ButtonCount, MouseButtons, LastButtons, DownButtons, LastDouble;
+extern WORD EventCount, EventQHead, EventQTail;
 struct stEventQueue { WORD Time, Buttons, X, Y, GX, GY; };
-static stEventQueue EventQueue[EventQSize - 1];
+extern stEventQueue EventQueue[EventQSize - 1];
 
 struct TCrs
 {
 	WORD X = 0; WORD Y = 0; bool Big = false; bool On = false; bool Enabled = false; WORD Ticks = 0;
 };
-TCrs static  Crs;
+extern TCrs Crs;
 const bool MausExist = false;
 const WORD ofsTicks = 0x6C; // ř. 199
 const char FrameChars[] = { '┌', '─', '┐', '└', '─', '┘', '│', ' ', '│', '╔', '═', '╗', '╚', '═', '╝', '║', ' ', '║', '├', '─', '┤' };
@@ -81,9 +82,9 @@ const bool MausRefresh = false;
 
 enum class TVideoFont { foAscii = 0, foLatin2 = 1, foKamen = 2 };
 
-static int trialInterval;
+extern int trialInterval;
 	// příznaky klávesnice - původně 0:$417 (is used to make control to keys(Num, Caps, Scroll, Alt, ShR, ShL, CtrlL, CtrlR)
-static void* OldIntr08 = nullptr;
+extern void* OldIntr08;
 
 /*EventQueue:array[0..EventQSize-1] of record
 	Time,Buttons,
@@ -161,9 +162,9 @@ void GetEvent();
 void ClrEvent();
 //WORD AddCtrlAltShift(BYTE Flgs);
 void AssignCrt(pstring* filepath);
-static WORD AutoTicks, DownTicks, AutoDelay;
-static void* OldBreakIntr;
-static void* OldKbdIntr;
+extern WORD AutoTicks, DownTicks, AutoDelay;
+extern void* OldBreakIntr;
+extern void* OldKbdIntr;
 
 void GetMonoColor();
 void EgaWriteArr(WORD X, WORD Y, WORD L, void* From);

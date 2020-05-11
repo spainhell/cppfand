@@ -4,7 +4,7 @@
 #include "pstring.h"
 #include "rdrun.h"
 
-static RdbPos ChptIPos; // usen in LexAnal & ProjMgr
+extern RdbPos ChptIPos; // usen in LexAnal & ProjMgr
 
 // funkce dle COMPILE.PAS
 bool EquUpcase(pstring& S); // r274 ASM

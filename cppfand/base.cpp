@@ -64,6 +64,32 @@ WORD files = 250; // {files in CONFIG.SYS -3}
 #endif
 WORD CardHandles;
 
+WORD CachePageSize;
+void* AfterCatFD; // r108
+ProcStkD* MyBP;
+ProcStkD* ProcMyBP;
+WORD BPBound; // r212
+bool ExitP, BreakP;
+longint LastExitCode = 0; // r215
+bool WasLPTCancel;
+FILE* WorkHandle;
+longint MaxWSize = 0; // {currently occupied in FANDWORK.$$$}
+void* FandInt3f; // ø. 311
+FILE* OvrHandle;
+WORD Fand_ss, Fand_sp, Fand_bp, DML_ss, DML_sp, DML_bp;
+longint _CallDMLAddr = 0; // {passed to FANDDML by setting "DMLADDR="in env.}
+Printer printer[10];
+TPrTimeOut OldPrTimeOut;
+TPrTimeOut PrTimeOut;  // absolute 0:$478;
+bool WasInitDrivers = false;
+bool WasInitPgm = false;
+WORD LANNode; // ø. 431
+void (*CallOpenFandFiles)(); // r453
+void (*CallCloseFandFiles)(); // r454
+
+double userToday;
+ExitRecord ExitBuf;
+
 typedef FILE* filePtr;
 
 std::set<FILE*> Handles;

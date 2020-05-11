@@ -6,6 +6,34 @@
 #include "editor.h"
 #include "legacy.h"
 
+TEvent Event; // r39
+WORD KbdChar;
+BYTE KbdFlgs; // TODO: absolute $417
+pstring KbdBuffer = ""; // ø. 83
+BYTE LLKeyFlags = 0; // ø. 84
+integer GraphDriver, GraphMode;
+WORD ScrSeg, ScrGrSeg;
+BYTE NrVFont, BytesPerChar;
+bool ChkSnow;
+bool IsGraphMode;
+BYTE GrBytesPerChar;
+WORD GrBytesPerLine;
+TPoint LastWhere, LastWhereG, DownWhere;
+WORD LastMode;
+void* FontArr; void* BGIDriver; void* BGILittFont; void* BGITripFont;
+BYTE ButtonCount, MouseButtons, LastButtons, DownButtons, LastDouble;
+WORD EventCount, EventQHead, EventQTail;
+stEventQueue EventQueue[EventQSize - 1];
+TCrs Crs;
+int trialInterval;
+void* OldIntr08 = nullptr;
+WORD AutoTicks, DownTicks, AutoDelay;
+void* OldBreakIntr;
+void* OldKbdIntr;
+Wind WindMin, WindMax;
+
+
+
 BYTE TextAttr, StartAttr, StartMode; // r138
 enVideoCard VideoCard = enVideoCard::viVga;
 
