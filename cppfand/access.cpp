@@ -1485,7 +1485,7 @@ void TFile::WrPrefix()
 	// TODO: T.Time = Time;
 	Move(Pw, T.PwNew, 40);
 	srand(MLen + T.Time);
-	for (i = 14; i < 511; i++) TX[i] = TX[i] xor Random(255);
+	for (i = 14; i < 511; i++) TX[i] = TX[i] ^ Random(255);
 	T.LicNr = LicenseNr;
 	if (LicenseNr != 0) {
 		n = 0x6000; sum = T.LicNr;
@@ -1494,7 +1494,8 @@ void TFile::WrPrefix()
 	}
 	Move(&FreePart, &T.FreePart, 23);
 	T.OldMaxPage = 0xffff; T.Signum = 1; T.IRec += n;
-	Move((char*)Version[1], T.Version, 4); T.HasCoproc = HasCoproc;
+	Move(&Version[1], &T.Version, 4);
+	T.HasCoproc = HasCoproc;
 	srand(RS);
 label1:
 	RdWrCache(false, Handle, NotCached(), 0, 512, &T);
@@ -1632,13 +1633,15 @@ LongStr* TFile::Read(WORD StackNr, longint Pos)
 		label1:
 			Err(891, false);
 		label11:
-			if (StackNr == 1) s = (LongStr*)GetStore(2);
-			else s = (LongStr*)GetStore2(2); s->LL = 0;
+			if (StackNr == 1) s = new LongStr(); //(LongStr*)GetStore(2);
+			else s = new LongStr(); //(LongStr*)GetStore2(2);
+			s->LL = 0;
 			goto label2;
 		}
 		if (l == MaxLStrLen + 1) l--;
-		if (StackNr == 1) s = (LongStr*)GetStore(l + 2);
-		else s = (LongStr*)GetStore2(l + 2); s->LL = l;
+		if (StackNr == 1) s = new LongStr(); //(LongStr*)GetStore(l + 2);
+		else s = new LongStr(); //(LongStr*)GetStore2(l + 2);
+		s->LL = l;
 		RdWr(true, Pos + 2, l, s->A);
 		break;
 	}

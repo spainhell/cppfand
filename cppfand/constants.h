@@ -151,7 +151,6 @@ const WORD CrsTimeOff = 0x0005;
 
 // *** BASE.H ***
 longint const UserLicNrShow = 999001; // 160188
-const char Version[] = { '4', '.', '2', '0', '\0' };
 const WORD FDVersion = 0x0411;
 const WORD ResVersion = 0x0420;
 const char CfgVersion[] = { '4', '.', '2', '0', '\0' };

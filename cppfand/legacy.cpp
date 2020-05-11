@@ -15,7 +15,7 @@ BYTE OvrResult = 0; // vždy 0 OvrOK
 
 void val(pstring s, BYTE& b, WORD& err)
 {
-	unsigned int sz;
+	size_t sz;
 	auto a = std::stoul(s.c_str(), &sz, 10);
 	// přeložil se celý řetězec?
 	if (sz == s.length() - 1) {	err = 0; b = static_cast<BYTE>(a); }
@@ -24,17 +24,18 @@ void val(pstring s, BYTE& b, WORD& err)
 
 void val(pstring s, WORD& b, WORD& err)
 {
-	unsigned int sz;
+	if (s.empty()) return;
+	size_t sz;
 	auto a = std::stoul(s.c_str(), &sz, 10);
 	// přeložil se celý řetězec?
-	if (sz == s.length() - 1) { err = 0; b = static_cast<WORD>(a); }
+	if (sz == s.length()) { err = 0; b = static_cast<WORD>(a); }
 	else { err = static_cast<WORD>(sz);	b = static_cast<WORD>(a); }
 }
 
 void val(pstring s, integer& b, integer& err)
 {
 	if (s.empty()) return;
-	unsigned int sz;
+	size_t sz;
 	auto a = std::stoul(s.c_str(), &sz, 10);
 	// přeložil se celý řetězec?
 	if (sz == s.length()) { err = 0; b = static_cast<integer>(a); }

@@ -9,6 +9,8 @@
 #include <set>
 #include "obaseww.h"
 
+/*const*/ char Version[] = { '4', '.', '2', '0', '\0' };
+
 Video video;
 Spec spec;
 Fonts fonts;
@@ -598,7 +600,7 @@ label1:
 	}
 	case _isnewfile:
 	{
-		openFlags = UM == RdOnly ? "rb" : "r+b";
+		openFlags = "w+b"; // UM == RdOnly ? "w+b" : "w+b";
 		break;
 	}
 	}
@@ -1270,9 +1272,11 @@ void OpenWorkH()
 	CPath = FandWorkName;
 	CVol = "";
 	ResFile.Handle = OpenH(_isoldnewfile, Exclusive);
-	if (HandleError != 0) printf("cant't open %s", FandWorkName.c_str());
-	wait();
-	Halt(-1);
+	if (HandleError != 0) {
+		printf("cant't open %s", FandWorkName.c_str());
+		wait();
+		Halt(-1);
+	}
 }
 
 bool SEquUpcase(pstring S1, pstring S2)

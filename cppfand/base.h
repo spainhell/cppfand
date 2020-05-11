@@ -4,6 +4,7 @@
 #include "drivers.h"
 #include "pstring.h"
 
+extern char Version[5];
 
 typedef char CharArr[50];
 typedef CharArr* CharArrPtr; // ø23

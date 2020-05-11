@@ -453,7 +453,7 @@ void InitRunFand()
 	OpenWorkH();
 	OpenFANDFiles(false);
 
-	if (!paramstr.at(1).empty() && paramstr.at(1) != "?") {
+	if (paramstr.size() > 1 && !paramstr.at(1).empty() && paramstr.at(1) != "?") {
 		{
 #ifndef FandRunV
 			if (SEquUpcase(paramstr(2), 'D')) {

@@ -77,7 +77,7 @@ void OpenFANDFiles(bool FromDML)
 	OpenTWorkH();
 	CFile = &HelpFD;
 	OpenF(RdOnly);
-	if (CRdb == nullptr) exit(0);
+	if (CRdb == nullptr) return;
 	CFile = CatFD;
 	OpenF(Exclusive);
 	RD = CRdb;
