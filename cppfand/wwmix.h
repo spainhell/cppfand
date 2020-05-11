@@ -14,7 +14,8 @@ struct SS
 	bool Empty = false; /* returned, test before calling SelectStr*/
 	WORD Size = false; /* returned, subset size  after SelectStr */
 	char Tag = false;  /* returned for each GetSelect */
-} static ss;
+};
+extern SS ss;
 
 const BYTE SelMark = 0xF0;
 

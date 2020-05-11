@@ -5,6 +5,10 @@
 #include "rdfildcl.h"
 #include "rdrprt.h"
 
+char WhatToRd; /*i=Oi output FDs;O=O outp.FDs*/
+bool ReadingOutpBool;
+WORD Ii, Oi, SumIi;
+OutpRD* RD;
 
 FileD* InpFD_M(WORD I)
 {

@@ -7,9 +7,6 @@
 #include "runfrml.h"
 
 EditD* E = EditDRoot;
-bool HasTT;
-bool issql;
-
 
 void PushEdit()
 {

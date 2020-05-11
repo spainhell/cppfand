@@ -11,6 +11,9 @@
 #include "runproc.h"
 #include "wwmix.h"
 
+FileDPtr TFD02;
+TFilePtr TF02;
+longint TF02Pos; // r33
 
 double Owned(FrmlPtr Bool, FrmlPtr Sum, LinkDPtr LD)
 {

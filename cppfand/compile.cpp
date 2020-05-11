@@ -70,15 +70,18 @@ void Error(integer N)
 
 void SetInpStr(pstring& S)
 {
-	InpArrLen = S.length(); InpArrPtr = CharArrPtr(&S[1]);
-	if (InpArrLen == 0) ForwChar = 0x1A; else ForwChar = *InpArrPtr[1];
-	CurrPos = 1; FillChar(&InpRdbPos, sizeof(InpRdbPos), 0);
+	InpArrLen = S.length();
+	InpArrPtr = (CharArr*)&S[1];
+	if (InpArrLen == 0) ForwChar = 0x1A;
+	else ForwChar = *InpArrPtr[1];
+	CurrPos = 1;
+	FillChar(&InpRdbPos, sizeof(InpRdbPos), 0);
 }
 
 void SetInpLongStr(LongStr* S, bool ShowErr)
 {
 	InpArrLen = S->LL;
-	InpArrPtr = CharArrPtr(*S->A);
+	InpArrPtr = (CharArrPtr)(*S->A);
 	if (InpArrLen == 0) ForwChar = 0x1A; else ForwChar = *InpArrPtr[1];
 	CurrPos = 1; InpRdbPos.R = nullptr;
 	if (ShowErr) InpRdbPos.R = nullptr; // TODO: tady bylo InpRdbPos.R:=ptr(0,1);
@@ -91,7 +94,7 @@ void SetInpTTPos(longint Pos, bool Decode)
 	s = CFile->TF->Read(2, Pos);
 	if (Decode) CodingLongStr(s);
 	InpArrLen = s->LL;
-	InpArrPtr = CharArrPtr(s->A);
+	InpArrPtr = (CharArrPtr)(s->A);
 	if (InpArrLen == 0) ForwChar = 0x1A; else ForwChar = *InpArrPtr[1];
 	CurrPos = 1;
 }
@@ -131,7 +134,9 @@ void ReadChar()
 	CurrChar = ForwChar;
 	if (CurrPos < InpArrLen)
 	{
-		CurrPos++; ForwChar = *InpArrPtr[CurrPos];
+		CurrPos++;
+		char* k = InpArrPtr[CurrPos];
+		ForwChar = *(InpArrPtr[CurrPos]);
 	}
 	else if (CurrPos == InpArrLen) { CurrPos++; ForwChar = 0x1A; } // CTRL+Z = 0x1A
 }
@@ -302,7 +307,8 @@ label1:
 		{
 			if (toNextLine && (ForwChar == 0x0D)) // ^M = CR = 013 = 0x0D
 			{
-				ReadChar(); if (ForwChar == 0x0A) ReadChar(); // ^J = LF = 010 = 0x0A
+				ReadChar();
+				if (ForwChar == 0x0A) ReadChar(); // ^J = LF = 010 = 0x0A
 			}
 			else { ReadChar(); goto label1; }
 			break;

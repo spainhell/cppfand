@@ -7,6 +7,12 @@
 #include "rdmerg.h"
 #include "runfrml.h"
 
+BlkD* CBlk;
+FloatPtrList CZeroLst;
+LvDescr* LvToRd;           /*all used while translating frml*/
+bool WasIiPrefix;
+BlkD* CBlkSave;
+
 
 FileD* InpFD(WORD I)
 {

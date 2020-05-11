@@ -3,7 +3,7 @@
 #include "constants.h"
 #include "rdrun.h"
 
-static longint NRecsAll;
+extern longint NRecsAll;
 void RunMerge();
 WORD CompMFlds(KeyFldD* M);
 void SetOldMFlds(KeyFldD* M);

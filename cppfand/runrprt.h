@@ -19,18 +19,18 @@ struct YRec
     TTD* TD = nullptr;
 };
 
-static WORD PrintDH;
-static YRec Y;
-static bool FrstBlk, NoFF, WasFF2, SetPage, WasOutput;
-static integer LineLenLst, PageNo, PgeSize;
-static void* Store2Ptr;
+extern WORD PrintDH;
+extern YRec Y;
+extern bool FrstBlk, NoFF, WasFF2, SetPage, WasOutput;
+extern integer LineLenLst, PageNo, PgeSize;
+extern void* Store2Ptr;
 
 //longint NRecsAll;
-static longint RecCount;
-static WORD NEof;
-static InpD* MinID;
-static bool FirstLines, WasDot;
-static longint NLinesOutp;
+extern longint RecCount;
+extern WORD NEof;
+extern InpD* MinID;
+extern bool FirstLines, WasDot;
+extern longint NLinesOutp;
 
 void RunReport(RprtOpt* RO);
 //void PrintPageHd; forward;

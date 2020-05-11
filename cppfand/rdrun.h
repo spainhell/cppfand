@@ -504,27 +504,32 @@ struct Instr // POZOR konflikt názvù viz níže
 	FrmlPtr IsWord, Port, PortWhat;
 };
 
-static ConstListEl* OldMFlds; static ConstListEl* NewMFlds;   /* Merge + Report*/
-static InpD* IDA[9];
-static integer MaxIi;
-static XString OldMXStr;                  /* Merge */
-static OutpFD* OutpFDRoot;
-static OutpRD* OutpRDs;
-static bool Join;
-static bool PrintView;                  /* Report */
-static TextFile Rprt;		// pùvodnì text - souvisí s text. souborem
-static BlkD* RprtHd; static BlkD* PageHd; static BlkD* PageFt;
-static FloatPtrListEl* PFZeroLst;
-static LvDescr* FrstLvM; static LvDescr* LstLvM; /* LstLvM->Ft=RF */
-static bool SelQuest;
-static FrmlPtr PgeSizeZ, PgeLimitZ;
+extern ConstListEl* OldMFlds;
+extern ConstListEl* NewMFlds;   /* Merge + Report*/
+extern InpD* IDA[9];
+extern integer MaxIi;
+extern XString OldMXStr;                  /* Merge */
+extern OutpFD* OutpFDRoot;
+extern OutpRD* OutpRDs;
+extern bool Join;
+extern bool PrintView;                  /* Report */
+extern TextFile Rprt;		// pùvodnì text - souvisí s text. souborem
+extern BlkD* RprtHd;
+extern BlkD* PageHd;
+extern BlkD* PageFt;
+extern FloatPtrListEl* PFZeroLst;
+extern LvDescr* FrstLvM;
+extern LvDescr* LstLvM; /* LstLvM->Ft=RF */
+extern bool SelQuest;
+extern FrmlPtr PgeSizeZ, PgeLimitZ;
 	/* Edit */
-static EditD* EditDRoot;
-static bool CompileFD, EditRdbMode;
-static LocVarBlkD LVBD;
+extern EditD* EditDRoot;
+extern bool CompileFD, EditRdbMode;
+extern LocVarBlkD LVBD;
 
-static pstring CalcTxt = "";
-struct { char Op; double Group; } static MergOpGroup = { _const, 0.0 };
+extern pstring CalcTxt;
+struct MergOpSt { char Op; double Group; };
+extern MergOpSt MergOpGroup;
 
 // *** IMPLEMENTATION ***
 

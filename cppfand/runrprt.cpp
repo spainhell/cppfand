@@ -8,6 +8,18 @@
 #include "runmerg.h"
 #include "wwmix.h"
 
+WORD PrintDH;
+YRec Y;
+bool FrstBlk, NoFF, WasFF2, SetPage, WasOutput;
+integer LineLenLst, PageNo, PgeSize;
+void* Store2Ptr;
+longint RecCount;
+WORD NEof;
+InpD* MinID;
+bool FirstLines, WasDot;
+longint NLinesOutp;
+
+
 void RunReport(RprtOpt* RO)
 {
 	wwmix ww;

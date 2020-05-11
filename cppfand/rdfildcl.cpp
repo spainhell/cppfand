@@ -7,6 +7,8 @@
 #include "runfrml.h"
 #include "runproj.h"
 
+bool HasTT;
+bool issql;
 
 FieldDPtr RdFldDescr(pstring Name, bool Stored)
 {

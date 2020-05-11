@@ -5,6 +5,8 @@
 #include "runedi.h"
 #include "runfrml.h"
 
+longint NRecsAll;
+
 void RunMerge()
 {
 	integer I, MinIi, res, NEof;                     /*RunMerge - body*/

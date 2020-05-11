@@ -75,7 +75,7 @@ const WORD _OR_ = 0x0F12; const WORD _OJ_ = 0x0F0A; const WORD _OC_ = 0x0F03;
 const WORD _KF_ = 0x0B06;
 
 const BYTE CountC = 7;
-static pstring CtrlKey = "\x13\x17\x11\x04\x02\x05\x01";
+pstring CtrlKey = "\x13\x17\x11\x04\x02\x05\x01";
 const bool ColBlock = true;
 const bool TextBlock = false;
 

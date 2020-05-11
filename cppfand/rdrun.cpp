@@ -6,6 +6,30 @@
 #include "obaseww.h"
 #include "runfrml.h"
 
+ConstListEl* OldMFlds;
+ConstListEl* NewMFlds;   /* Merge + Report*/
+InpD* IDA[9];
+integer MaxIi;
+XString OldMXStr;                  /* Merge */
+OutpFD* OutpFDRoot;
+OutpRD* OutpRDs;
+bool Join;
+bool PrintView;                  /* Report */
+TextFile Rprt;		// pùvodnì text - souvisí s text. souborem
+BlkD* RprtHd;
+BlkD* PageHd;
+BlkD* PageFt;
+FloatPtrListEl* PFZeroLst;
+LvDescr* FrstLvM;
+LvDescr* LstLvM; /* LstLvM->Ft=RF */
+bool SelQuest;
+FrmlPtr PgeSizeZ, PgeLimitZ;
+EditD* EditDRoot;
+bool CompileFD, EditRdbMode;
+LocVarBlkD LVBD;
+pstring CalcTxt = "";
+MergOpSt MergOpGroup = { _const, 0.0 };
+
 bool EFldD::Ed(bool IsNewRec)
 {
 	return (FldD->Flg && f_Stored != 0) && (EdU || IsNewRec && EdN);

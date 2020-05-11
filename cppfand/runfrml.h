@@ -10,7 +10,9 @@
 #endif
 
 
-static FileDPtr TFD02; static TFilePtr TF02; static longint TF02Pos; // r33
+extern FileDPtr TFD02;
+extern TFilePtr TF02;
+extern longint TF02Pos; // r33
 
 double Owned(FrmlPtr Bool, FrmlPtr Sum, LinkDPtr LD);
 integer CompBool(bool B1, bool B2);
@@ -39,7 +41,6 @@ WORD RunWordImpl(FrmlPtr Z, WORD Impl);
 bool FieldInList(FieldDPtr F, FieldListEl* FL);
 KeyDPtr GetFromKey(LinkDPtr LD);
 FrmlPtr RunEvalFrml(FrmlPtr Z);
-bool CanCopyT(FieldDPtr F, FrmlPtr Z);
 LongStr* RunLongStr(FrmlPtr X);  // r417 zaèíná od 555
 pstring RunShortStr(FrmlPtr X); // r629 ASM
 void ConcatLongStr(LongStr* S1, LongStr* S2); // r418 ASM

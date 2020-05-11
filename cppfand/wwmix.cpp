@@ -6,6 +6,8 @@
 #include "rdedit.h"
 #include "runedi.h"
 
+SS ss;
+
 
 struct Item
 {

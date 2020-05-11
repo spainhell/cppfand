@@ -4,7 +4,7 @@
 #include "pstring.h"
 #include "rdrun.h"
 
-static bool IsRdUserFunc;
+extern bool IsRdUserFunc;
 
 void TestCatError(WORD I, pstring Nm, bool Old);
 bool IsRecVar(LocVar* LV);
@@ -37,33 +37,11 @@ bool NotCode(pstring Nm, WORD CodeBase, WORD BrkBase, EdExKeyD* E);
 
 const BYTE NKeyNames = 21;
 struct kNames { pstring Nm; BYTE Brk; WORD Code; };
-static kNames KeyNames[NKeyNames] = {
-	{"HOME", 51, _Home_},
-	{"UP", 52, _up_},
-	{"PGUP", 53, _PgUp_},
-	{"LEFT", 55, _left_},
-	{"RIGHT", 57, _right_},
-	{"END", 59, _End_},
-	{"DOWN", 60, _down_},
-	{"PGDN", 61, _PgDn_},
-	{"INS", 62, _Ins_},
-	{"CTRLLEFT", 71, _CtrlLeft_},
-	{"CTRLRIGHT", 72, _CtrlRight_},
-	{"CTRLEND", 73, _CtrlEnd_},
-	{"CTRLPGDN", 74, _CtrlPgDn_},
-	{"CTRLHOME", 75, _CtrlHome_},
-	{"CTRLPGUP", 76, _CtrlPgUp_},
-	{"TAB", 77, _Tab_},
-	{"SHIFTTAB", 78, _ShiftTab_},
-	{"CTRLN", 79, _N_},
-	{"CTRLY", 80, _Y_},
-	{"ESC", 81, _ESC_},
-	{"CTRLP", 82, _P_} };
-
+extern kNames KeyNames[NKeyNames];
 bool RdHeadLast(void* AA);
 bool RdViewOpt(EditOpt* EO);
 void RdKeyList(EdExitD* X);
-static Instr* RdPInstr; // toto bude ukazatel na pozdìji pøiøazenou funkci
+extern Instr* RdPInstr; // toto bude ukazatel na pozdìji pøiøazenou funkci
 Instr* GetPD(PInstrCode Kind, WORD Size);
 void RdProcCall(); // hlavní funkce v souboru
 FieldList RdFlds();

@@ -1,10 +1,10 @@
 #pragma once
 #include "rdrun.h"
 
-static char WhatToRd; /*i=Oi output FDs;O=O outp.FDs*/
-static bool ReadingOutpBool;
-static WORD Ii, Oi, SumIi;
-static OutpRD* RD;
+extern char WhatToRd; /*i=Oi output FDs;O=O outp.FDs*/
+extern bool ReadingOutpBool;
+extern WORD Ii, Oi, SumIi;
+extern OutpRD* RD;
 
 FileD* InpFD_M(WORD I); // InpFD exituje i v rdrprt.cpp -> pøejmenováno na *_M
 bool RdIiPrefix_M(); // exituje i v rdrprt.cpp -> pøejmenováno na *_M
