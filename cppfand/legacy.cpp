@@ -37,7 +37,7 @@ void val(pstring s, integer& b, integer& err)
 	unsigned int sz;
 	auto a = std::stoul(s.c_str(), &sz, 10);
 	// přeložil se celý řetězec?
-	if (sz == s.length() - 1) { err = 0; b = static_cast<integer>(a); }
+	if (sz == s.length()) { err = 0; b = static_cast<integer>(a); }
 	else { err = static_cast<integer>(sz);	b = static_cast<integer>(a); }
 }
 

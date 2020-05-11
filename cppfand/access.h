@@ -675,8 +675,10 @@ extern pstring LexWord;
 
 extern bool SpecFDNameAllowed, IdxLocVarAllowed, FDLocVarAllowed, IsCompileErr;
 extern CompInpD* PrevCompInp;						// { saved at "include" }
-extern CharArrPtr InpArrPtr; extern RdbPos InpRdbPos;		// { "  "  }
-extern WORD InpArrLen, CurrPos, OldErrPos;			// { "  "  }
+extern BYTE* InpArrPtr; extern RdbPos InpRdbPos;		// { "  "  }
+extern WORD InpArrLen;
+extern WORD CurrPos;
+extern WORD OldErrPos;			// { "  "  }
 extern SumElPtr FrmlSumEl;				//{ set while reading sum / count argument }
 extern bool FrstSumVar, FileVarsAllowed;
 // FrmlPtr RdFldNameFrml() = FrmlPtr(char& FTyp);

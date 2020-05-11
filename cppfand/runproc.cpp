@@ -991,7 +991,7 @@ void CallProcedure(Instr* PD)
 	n = LVBD.NParam; lvroot = LVBD.Root; oldbp = MyBP; PushProcStk();
 	if ((n != PD->N) && !((n == PD->N - 1) && PD->ExPar)) {
 	label1:
-		CurrPos = 1; Error(119);
+		CurrPos = 0; Error(119);
 	}
 	lv = lvroot;
 	for (i = 1; i < n; i++) /* !!! with PD->TArg[i] do!!! */

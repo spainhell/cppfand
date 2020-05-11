@@ -16,7 +16,8 @@ Colors colors;
 
 char CharOrdTab[256];
 char UpcCharTab[256];
-WORD TxtCols, TxtRows;
+WORD TxtCols = 80;
+WORD TxtRows = 25;
 
 integer prCurr, prMax;
 
@@ -1131,6 +1132,7 @@ void NewExit(PProcedure POvr, ExitRecord* Buf)
 
 void GoExit()
 {
+	printf("%s\n", MsgLine.c_str());
 }
 
 void RestoreExit(ExitRecord& Buf)

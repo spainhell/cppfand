@@ -23,10 +23,13 @@ FieldDPtr RdFldDescr(pstring Name, bool Stored)
 	F = new FieldDescr();
 	FieldDPtr result = F;
 	Move(&Name[0], &F->Name[0], Name.length() + 1);
-	if (Stored) Flg = f_Stored; else Flg = 0; Accept(':');
+	if (Stored) Flg = f_Stored;
+	else Flg = 0; Accept(':');
 	if ((Lexem != _identifier) || (LexWord.length() > 1)) Error(10);
-	Typ = (char)LexWord[1]; RdLex(); FrmlTyp = 'S'; M = 0;
-	if (Typ == 'N' || Typ == 'F') { Accept(','); L = RdInteger(); }
+	Typ = (char)LexWord[1];
+	RdLex();
+	FrmlTyp = 'S'; M = 0;
+	if (Typ == 'N' || Typ == 'F') {	Accept(','); L = RdInteger(); }
 	switch (Typ) {
 	case 'N': {
 		NBytes = (L + 1) / 2;
@@ -50,7 +53,8 @@ FieldDPtr RdFldDescr(pstring Name, bool Stored)
 			else M = LeftJust;
 		}
 		else {
-			S = RdStrConst(); L = 0; c = '?'; n = 0;
+			S = RdStrConst();
+			L = 0; c = '?'; n = 0;
 			for (i = 1; i < S->length(); i++) {
 				switch ((*S)[i]) {
 				case '[': if (c == '?') c = '['; else goto label1; break;
@@ -101,7 +105,7 @@ FieldDPtr RdFldDescr(pstring Name, bool Stored)
 		if (Stored && (Lexem == '!')) { RdLex(); Flg += f_Encryp; }
 		break;
 	}
-	default: OldError(10);
+	default: OldError(10); break;
 	}
 	if (NBytes == 0) OldError(113);
 	if ((L > TxtCols - 1) && (Typ != 'A')) OldError(3);
@@ -121,7 +125,7 @@ ChkD* RdChkD(WORD Low)
 		N = Upper - Low;
 		if (N > sizeof(pstring)) N = pred(sizeof(pstring));
 		Z = GetOp(_const, N + 1); C->TxtZ = Z;
-		Z->S[0] = char(N); Move(InpArrPtr[Low], &Z->S[1], N);
+		Z->S[0] = char(N); Move(&InpArrPtr[Low], &Z->S[1], N);
 	}
 	if (Lexem == ',') {
 		RdLex(); C->HelpName = RdHelpName();
@@ -398,7 +402,7 @@ label2:
 		RdKumul();
 	}
 	ChainLast(FileDRoot, CFile);
-	if (Ext == '$'/*compile from text at run time*/) {
+	if (Ext == "$"/*compile from text at run time*/) {
 		CFile->IsDynFile = true;
 		CFile->ChptPos.R = CRdb;
 		MarkStore(p);
@@ -411,7 +415,8 @@ label2:
 		TestUserView();
 	}
 	MarkStore(p);
-	li = (LiRoots*)GetZStore(sizeof(LiRoots));
+	//li = (LiRoots*)GetZStore(sizeof(LiRoots));
+	li = new LiRoots();
 	CFile->LiOfs = uintptr_t(li) - uintptr_t(CFile);
 	if ((Lexem == '#') && (ForwChar == 'D')) { RdLex(); TestDepend(); }
 	if ((Lexem == '#') && (ForwChar == 'L')) { RdLex(); RdChkDChain(li->Chks); }
@@ -697,7 +702,7 @@ void GetTFileD(char FDTyp)
 {
 	/* !!! with CFile^ do!!! */
 	if (!HasTT && (CFile->TF == nullptr)) return;
-	if (CFile->TF == nullptr) CFile->TF = (TFile*)GetZStore(sizeof(TFile));
+	if (CFile->TF == nullptr) CFile->TF = new TFile();
 	CFile->TF->Handle = nullptr;
 	if (FDTyp == 'D') CFile->TF->Format = TFile::DbtFormat;
 }

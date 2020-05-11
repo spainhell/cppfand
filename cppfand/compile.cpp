@@ -71,19 +71,20 @@ void Error(integer N)
 void SetInpStr(pstring& S)
 {
 	InpArrLen = S.length();
-	InpArrPtr = (CharArr*)&S[1];
+	InpArrPtr = &S[1];
 	if (InpArrLen == 0) ForwChar = 0x1A;
-	else ForwChar = *InpArrPtr[1];
-	CurrPos = 1;
+	else ForwChar = InpArrPtr[0];
+	CurrPos = 0;
 	FillChar(&InpRdbPos, sizeof(InpRdbPos), 0);
 }
 
 void SetInpLongStr(LongStr* S, bool ShowErr)
 {
 	InpArrLen = S->LL;
-	InpArrPtr = (CharArrPtr)(*S->A);
-	if (InpArrLen == 0) ForwChar = 0x1A; else ForwChar = *InpArrPtr[1];
-	CurrPos = 1; InpRdbPos.R = nullptr;
+	InpArrPtr = (BYTE*)S->A[0];
+	if (InpArrLen == 0) ForwChar = 0x1A; else ForwChar = InpArrPtr[0];
+	CurrPos = 0;
+	InpRdbPos.R = nullptr;
 	if (ShowErr) InpRdbPos.R = nullptr; // TODO: tady bylo InpRdbPos.R:=ptr(0,1);
 	InpRdbPos.IRec = 0;
 }
@@ -94,9 +95,10 @@ void SetInpTTPos(longint Pos, bool Decode)
 	s = CFile->TF->Read(2, Pos);
 	if (Decode) CodingLongStr(s);
 	InpArrLen = s->LL;
-	InpArrPtr = (CharArrPtr)(s->A);
-	if (InpArrLen == 0) ForwChar = 0x1A; else ForwChar = *InpArrPtr[1];
-	CurrPos = 1;
+	InpArrPtr = (BYTE*)s->A[0];
+	if (InpArrLen == 0) ForwChar = 0x1A;
+	else ForwChar = InpArrPtr[0];
+	CurrPos = 0;
 }
 
 void SetInpTT(RdbPos RP, bool FromTxt)
@@ -125,7 +127,7 @@ void SetInpTTxtPos(FileDPtr FD)
 	SetInpTT(FD->ChptPos, true);
 	pos = FD->TxtPosUDLI;
 	r = FD->ChptPos.R;
-	if (pos > InpArrLen) ForwChar = 0x1A; else ForwChar = *InpArrPtr[pos];
+	if (pos > InpArrLen) ForwChar = 0x1A; else ForwChar = InpArrPtr[pos];
 	CurrPos = pos;
 }
 
@@ -135,8 +137,7 @@ void ReadChar()
 	if (CurrPos < InpArrLen)
 	{
 		CurrPos++;
-		char* k = InpArrPtr[CurrPos];
-		ForwChar = *(InpArrPtr[CurrPos]);
+		ForwChar = InpArrPtr[CurrPos];
 	}
 	else if (CurrPos == InpArrLen) { CurrPos++; ForwChar = 0x1A; } // CTRL+Z = 0x1A
 }
@@ -261,9 +262,10 @@ label1:
 	case 0x1A: {
 		if (PrevCompInp != nullptr) {
 			ci = PrevCompInp; Move(ci->ChainBack, PrevCompInp, sizeof(CompInpD));
-			if (CurrPos <= InpArrLen) ForwChar = *InpArrPtr[CurrPos];
+			if (CurrPos <= InpArrLen) ForwChar = InpArrPtr[CurrPos];
 			goto label1;
 		}
+		break;
 	}
 	case '{':
 	{
@@ -301,6 +303,7 @@ label1:
 			ReadChar();
 			goto label2;
 		}
+		break;
 	}
 	default:
 		if (ForwChar >= 0x00 && ForwChar <= 0x20) // ^@..' '
@@ -320,7 +323,8 @@ label1:
 
 void OldError(integer N)
 {
-	CurrPos = OldErrPos; Error(N);
+	CurrPos = OldErrPos;
+	Error(N);
 }
 
 void RdBackSlashCode()
@@ -416,7 +420,7 @@ void RdLex()
 
 bool IsForwPoint()
 {
-	return (ForwChar == '.') && (*InpArrPtr[CurrPos + 1] != '.');
+	return (ForwChar == '.') && (InpArrPtr[CurrPos + 1] != '.');
 }
 
 void TestIdentif()
@@ -490,7 +494,7 @@ label1:
 		return ValofS(S);
 	}
 	if ((ForwChar == 'e' || ForwChar == 'E')
-		&& (*InpArrPtr[CurrPos + 1] == '-' || (ForwChar >= 0 && ForwChar <= 9))) {
+		&& (InpArrPtr[CurrPos + 1] == '-' || (ForwChar >= 0 && ForwChar <= 9))) {
 		S = S + "e"; ReadChar(); if (ForwChar == '-') { ReadChar(); S = S + "-"; }
 		RdLex(); TestLex(_number); S = S + LexWord;
 	}

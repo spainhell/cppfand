@@ -195,6 +195,7 @@ void pstring::Append(unsigned char c)
 	unsigned short newLen = firLen + 1;
 	if (newLen > initLen - 1) return;
 	arr[newLen] = c;
+	arr[newLen + 1] = '\0';
 	arr[0] = newLen;
 }
 
