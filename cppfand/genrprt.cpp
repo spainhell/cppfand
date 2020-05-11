@@ -6,6 +6,11 @@
 #include "wwmenu.h"
 #include "wwmix.h"
 
+PFldD* PFldDs = nullptr;
+bool KpLetter = false;
+integer MaxCol = 0, MaxColOld = 0, MaxColUsed = 0, NLines = 0, NLevels = 0;
+AutoRprtMode ARMode = _ALstg;
+LongStrPtr Txt = nullptr;
 
 void SubstChar(pstring S, char C1, char C2)
 {
@@ -289,7 +294,7 @@ void RunAutoReport(RprtOpt* RO)
 bool SelForAutoRprt(RprtOpt* RO)
 {
 	wwmix ww;
-	
+
 	FieldListEl* FL; WORD N;
 	auto result = false;
 	if ((RO->SK == nullptr) && !PromptSortKeys(RO->Flds, RO->SK)) return result;
@@ -317,7 +322,7 @@ bool SelForAutoRprt(RprtOpt* RO)
 LongStr* SelGenRprt(pstring RprtName)
 {
 	wwmix ww;
-	
+
 	RdbD* r; FileD* fd; FieldDescr* f; RprtOpt* ro;
 	pstring s; integer i;
 	FieldListEl* fl;

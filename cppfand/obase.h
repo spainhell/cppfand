@@ -1,8 +1,8 @@
 #pragma once
 #include "legacy.h"
 
-static bool SFlag, QFlag, WFlag, BFlag, DFlag, EFlag, AFlag, XFlag, VFlag, TFlag;
-static WORD CPState, CPCount;
+extern bool SFlag, QFlag, WFlag, BFlag, DFlag, EFlag, AFlag, XFlag, VFlag, TFlag;
+extern WORD CPState, CPCount;
 
 void ResetCtrlFlags();
 bool IsPrintCtrl(char C); // r43
@@ -17,7 +17,7 @@ WORD OpenLPTHandle();
 bool ResetPrinter(WORD PgeLength, WORD LeftMargin, bool Adj, bool Frst); // r141
 void ClosePrinter(WORD LeftMargin); // r169
 
-static bool PrintCtrlFlag;
+extern bool PrintCtrlFlag;
 
 void TestTxtHError(TextFile* F);
 integer InputTxt(TextFile* F);

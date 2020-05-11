@@ -6,6 +6,12 @@
 #include "base.h"
 
 std::vector<std::string> paramstr;
+longint ExitCode = 0; // exit kód -> OS
+void* ErrorAddr = nullptr; // adresa chyby
+void (*ExitProc)() { }; // ukončovací procedura
+BYTE OvrResult = 0; // vždy 0 OvrOK
+
+
 
 void val(pstring s, BYTE& b, WORD& err)
 {

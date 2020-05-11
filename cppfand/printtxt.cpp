@@ -8,6 +8,12 @@
 #include "runfrml.h"
 #include "wwmenu.h"
 
+CharArr* pBlk;
+WORD iBlk, nBlk, Po;
+longint charrd;
+bool printBlk, outpsw;
+WORD prFileNr;
+pstring Ln;
 
 pstring replaceNo(pstring s, pstring sNew)
 {

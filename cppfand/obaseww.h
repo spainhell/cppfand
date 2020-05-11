@@ -39,7 +39,7 @@ void WrLLMsgTxt();
 void WrLLF10MsgLine(); // stejná fce definována v kbdww.cpp
 void WrLLF10Msg(WORD N); // stejná fce definována v kbdww.cpp
 bool PromptYN(WORD NMsg);
-static WORD RunErrNr;
+extern WORD RunErrNr;
 void RunError(WORD N); // podobná fce definována v kbdww.cpp
 void CFileMsg(WORD n, char Typ); // podobná fce definována v kbdww.cpp
 void CFileError(WORD N); // podobná fce definována v kbdww.cpp
@@ -51,7 +51,7 @@ struct RunMsgD // r292
 	longint W = 0;
 };
 
-static RunMsgD* CM = nullptr;
+extern RunMsgD* CM;
 
 void RunMsgOn(char C, longint N); // r296
 void RunMsgN(longint N); // r305

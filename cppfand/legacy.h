@@ -4,9 +4,9 @@
 
 extern std::vector<std::string> paramstr;
 
-static longint ExitCode = 0; // exit kód -> OS
-static void* ErrorAddr = nullptr; // adresa chyby
-static void (*ExitProc)() { }; // ukončovací procedura
+extern longint ExitCode; // exit kód -> OS
+extern void* ErrorAddr; // adresa chyby
+extern void (*ExitProc)(); // ukončovací procedura
 
 void val(pstring s, BYTE& b, WORD& err);
 void val(pstring s, WORD& b, WORD& err);
@@ -66,7 +66,7 @@ inline void GetMem(void* pointer, int Size) { pointer = new unsigned char[Size];
 
 void beep();
 
-static BYTE OvrResult = 0; // vždy 0 OvrOK
+extern BYTE OvrResult; // vždy 0 OvrOK
 
 pstring GetEnv(const char* name);
 

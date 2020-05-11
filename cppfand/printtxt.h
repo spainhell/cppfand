@@ -3,11 +3,12 @@
 #include "editor.h"
 #include "pstring.h"
 
-static CharArr* pBlk; static WORD iBlk, nBlk, Po;
-static longint charrd;
-static bool printBlk, outpsw;
-static WORD prFileNr;
-static pstring Ln;
+extern CharArr* pBlk;
+extern WORD iBlk, nBlk, Po;
+extern longint charrd;
+extern bool printBlk, outpsw;
+extern WORD prFileNr;
+extern pstring Ln;
 
 pstring replaceNo(pstring s, pstring sNew);
 void ExecMgrPgm();

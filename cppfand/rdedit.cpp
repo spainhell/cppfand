@@ -6,6 +6,11 @@
 #include "runedi.h"
 #include "runfrml.h"
 
+EditD* E = EditDRoot;
+bool HasTT;
+bool issql;
+
+
 void PushEdit()
 {
 	EditD* E1 = (EditD*)GetZStore(sizeof(*E));

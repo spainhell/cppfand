@@ -4,6 +4,9 @@
 #include "drivers.h"
 #include "oaccess.h"
 
+WORD RunErrNr = 0;
+RunMsgD* CM = nullptr;
+
 
 //void WrHd(pstring s, pstring Hd, WORD Row, WORD MaxCols)
 //{

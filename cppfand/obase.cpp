@@ -5,6 +5,9 @@
 #include "kbdww.h"
 #include "obaseww.h"
 
+bool SFlag, QFlag, WFlag, BFlag, DFlag, EFlag, AFlag, XFlag, VFlag, TFlag;
+WORD CPState, CPCount;
+bool PrintCtrlFlag;
 
 void ResetCtrlFlags()
 {

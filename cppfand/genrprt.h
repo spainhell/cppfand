@@ -9,11 +9,11 @@ struct PFldD
 	BYTE Level = 0;
 };
 
-static PFldD* PFldDs;
-static bool KpLetter;
-static integer MaxCol, MaxColOld, MaxColUsed, NLines, NLevels;
-static AutoRprtMode ARMode;
-static LongStrPtr Txt;
+extern PFldD* PFldDs;
+extern bool KpLetter;
+extern integer MaxCol, MaxColOld, MaxColUsed, NLines, NLevels;
+extern AutoRprtMode ARMode;
+extern LongStrPtr Txt;
 
 void SubstChar(pstring S, char C1, char C2);
 void Design(RprtOpt* RO);

@@ -1,7 +1,7 @@
 #pragma once
 #include "editor.h"
 
-static bool HasTT;
+extern bool HasTT;
 FieldDPtr RdFldDescr(pstring Name, bool Stored); // r25
 ChkD* RdChkD(WORD Low);
 void RdChkDChain(ChkD* CRoot);
@@ -11,7 +11,7 @@ void RdByteList(pstring* s);
 void RdByteListInStore();
 bool RdUserView(pstring ViewName, EditOpt* EO);
 
-static bool issql;
+extern bool issql;
 
 void TestUserView();
 void TestDupl(FileD* FD);
