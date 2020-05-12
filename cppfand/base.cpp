@@ -187,7 +187,7 @@ label1:
 		ReadH(h, 1, &s[0]); // tady se má zøejmì jen vyèíst délka
 		ReadH(h, s.length(), &s[1]);
 	}
-	//ConvKamenToCurr((unsigned char*)s.c_str(), s.length());
+	ConvKamenToCurr(&s[1], s.length());
 	MsgLine = "";
 	j = 1;
 	s[s.length() + 1] = 0x00;

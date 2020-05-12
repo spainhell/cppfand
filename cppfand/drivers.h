@@ -96,7 +96,7 @@ extern void* OldIntr08;
 void Assign(WORD XX, WORD YY);
 void Assign(pstring XX, pstring YY);
 char CurrToKamen(char C);
-void ConvKamenToCurr(WORD* Buf, WORD L);
+void ConvKamenToCurr(void* Buf, WORD L);
 void ConvKamenLatin(WORD* Buf, WORD L, bool ToLatin);
 char ToggleCS(char C);
 char NoDiakr(char C);

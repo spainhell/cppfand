@@ -44,7 +44,7 @@ bool BreakFlag = false;
 BYTE diHacek = 1; const BYTE diCarka = 2; const BYTE diUmlaut = 3;
 char Diak = 0; /*diHacek, diCarka*/
 
-BYTE TabKtl[256] = {  /* Kamenicky to Latin2 */
+BYTE TabKtL[256] = {  /* Kamenicky to Latin2 */
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 	0xac,0x81,0x82,0xd4,0x84,0xd2,0x9b,0x9f,0xd8,0xb7,0x91,0xd6,0x96,0x92,0x8e,0xb5,
@@ -290,8 +290,47 @@ char CurrToKamen(char C)
 	return C;
 }
 
-void ConvKamenToCurr(WORD* Buf, WORD L)
+void ConvKamenToCurr(void* Buf, WORD L)
 {
+	BYTE* bBuf = (BYTE*)Buf;
+	BYTE* tab = TabKtN;
+	if (!fonts.NoDiakrSupported) {
+		tab = TabKtL;
+		if (fonts.VFont != TVideoFont::foLatin2) return;
+	}
+
+	for (WORD i = 0; i < L; i++) {
+		// v ES a DI budou segment a offset na Buf
+		short index = (BYTE)bBuf[i] - 0x80;
+		if (index > 0)
+		{
+			BYTE kam = bBuf[i];
+			BYTE lat = tab[kam];
+			bBuf[i] = lat;
+		}
+	}
+	
+	/*asm
+		mov si, OFFSET TabKtN;
+	cmp Fonts.NoDiakrSupported, 1;
+	je @1;
+	mov si, OFFSET TabKtL;
+	cmp Fonts.VFont, foLatin2;
+	jne @4;
+	@1: mov cx, L;
+	jcxz @4;
+	les di, Buf;
+	xor ah, ah;
+	cld;
+	@2: mov al, es : [di] ;
+	cmp al, 80H;
+	jb @3;
+	sub al, 80H;
+	mov bx, ax;
+	mov al, ds: [si + bx] ;
+	@3: stosb;
+	loop @2;
+	@4: end;*/
 }
 
 void ConvKamenLatin(WORD* Buf, WORD L, bool ToLatin)
