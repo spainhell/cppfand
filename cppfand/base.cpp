@@ -143,10 +143,10 @@ longint MoveH(longint dist, WORD method, FILE* handle)
 	return ftell(handle);
 }
 
-void SeekH(FILE* handle, longint pos)
+int SeekH(FILE* handle, longint pos)
 {
 	if (handle == nullptr) RunError(705);
-	MoveH(pos, 0, handle);
+	return MoveH(pos, 0, handle);
 }
 
 WORD ReadH(FILE* handle, WORD bytes, void* buffer)
@@ -214,14 +214,30 @@ void ClearLL(BYTE attr)
 {
 }
 
-WORD TResFile::Get(WORD Kod, void* P)
+WORD TResFile::Get(WORD Kod, void** P)
 {
-	WORD l;
-	l = A[Kod].Size;
-	GetMem(P, l);
-	SeekH(Handle, A[Kod].Pos);
-	ReadH(Handle, l, P);
+	// CPP: kod-1 (indexujeme tady od 0) 
+	WORD l = A[Kod - 1].Size;
+	//GetMem(P, l);
+	*P = new BYTE(l);
+	auto sizeF = FileSizeH(Handle);
+	auto seekF = SeekH(Handle, A[Kod - 1].Pos);
+	auto readF = ReadH(Handle, l, *P);
 	return l;
+}
+
+pstring TResFile::Get(WORD Kod)
+{
+	// do pstring je možné uložit jen 255 Bytu
+	BYTE tmpB[255];
+	WORD l = A[Kod - 1].Size;
+	if (l > 255) l = 255;
+	
+	auto sizeF = FileSizeH(Handle);
+	auto seekF = SeekH(Handle, A[Kod - 1].Pos);
+	auto readF = ReadH(Handle, l, &tmpB);
+	if (l < 255) tmpB[l + 1] = '\0';
+	return (const char*)tmpB;
 }
 
 void* GetStore(WORD Size)
@@ -1271,7 +1287,7 @@ void OpenWorkH()
 {
 	CPath = FandWorkName;
 	CVol = "";
-	ResFile.Handle = OpenH(_isoldnewfile, Exclusive);
+	WorkHandle = OpenH(_isoldnewfile, Exclusive);
 	if (HandleError != 0) {
 		printf("cant't open %s", FandWorkName.c_str());
 		wait();

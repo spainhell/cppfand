@@ -383,9 +383,6 @@ void InitRunFand()
 		wait(); Halt(0);
 	}
 
-	//OvrHandle = GetOverHandle(h, -1); // TODO: pùvodnì to byl WORD - 1, teï je to blbost;
-	//ReadH(h, sizeof(ResFile.A), ResFile.A);
-
 	for (int readindexes = 0; readindexes < FandFace; readindexes++)
 	{
 		ReadH(h, sizeof(ResFile.A->Pos), &ResFile.A[readindexes].Pos);
@@ -453,146 +450,148 @@ void InitRunFand()
 	OpenWorkH();
 	OpenFANDFiles(false);
 
-	if (paramstr.size() > 1 && !paramstr.at(1).empty() && paramstr.at(1) != "?") {
-		{
+	if (paramstr.size() > 1 && !paramstr.at(1).empty() && paramstr.at(1) != "?") 
+	{
 #ifndef FandRunV
-			if (paramstr.size() > 2 && SEquUpcase(paramstr(2), 'D')) {
-				IsTestRun = true;
-				goto label0;
-			}
-			else
+		if (paramstr.size() > 2 && SEquUpcase(paramstr(2), 'D')) {
+			IsTestRun = true;
+			goto label0;
+		}
+		else
 #endif
-				if (paramstr.size() > 2 && SEquUpcase(paramstr.at(2), "T")) {
-					CPath = paramstr.at(1);
-					if (copy(CPath, 1, 2) == "*.")
-						SelectEditTxt(copy(CPath, 2, 4), false);
-					else CallEditTxt();
-					return;
-				}
-				else {
-				label0:
-					pstring maska = "*.";
-					pstring podretez = copy(paramstr.at(1), 1, 2);
-					if (maska == podretez) SelectRunRdb(false);
-					//if (copy(paramstr.at(1), 1, 2) == "*.") SelectRunRdb(false);
-					else RunRdb(paramstr.at(1));
-					if (IsTestRun) IsTestRun = false;
-					else return;
-				}
-		}
+			if (paramstr.size() > 2 && SEquUpcase(paramstr.at(2), "T")) {
+				CPath = paramstr.at(1);
+				if (copy(CPath, 1, 2) == "*.")
+					SelectEditTxt(copy(CPath, 2, 4), false);
+				else CallEditTxt();
+				return;
+			}
+			else {
+			label0:
+				pstring maska = "*.";
+				pstring podretez = copy(paramstr.at(1), 1, 2);
+				if (maska == podretez) SelectRunRdb(false);
+				//if (copy(paramstr.at(1), 1, 2) == "*.") SelectRunRdb(false);
+				else RunRdb(paramstr.at(1));
+				if (IsTestRun) IsTestRun = false;
+				else return;
+			}
+	}
 
-		TextAttr = colors.DesktopColor;
-		Window(1, 1, (BYTE)TxtCols, TxtRows - 1);
-		WriteWFrame(WHasFrame + WDoubleFrame, "", "");
-		ScrClr(1, 1, TxtCols - 2, TxtRows - 13, (char)0xb1, TextAttr);
-		ScrClr(1, TxtRows - 12, TxtCols - 2, 10, (char)0xb2, TextAttr);
-		ResFile.Get(FandFace, p);
-		x = (pstring*)p;
-		xofs++;
-		for (int i = -11; i < -6; i++) {
-			x[0] = char(TxtCols - 2);
-			ScrWrStr(1, TxtRows + i, *x, TextAttr);
-			xofs += 82;
-		}
-		TextAttr = colors.mHili;
-		ScrClr(3, TxtRows - 4, TxtCols - 6, 1, ' ', TextAttr);
+	TextAttr = colors.DesktopColor;
+	Window(1, 1, (BYTE)TxtCols, TxtRows - 1);
+	WriteWFrame(WHasFrame + WDoubleFrame, "", "");
+	ScrClr(1, 1, TxtCols - 2, TxtRows - 13, (char)0xb1, TextAttr);
+	ScrClr(1, TxtRows - 12, TxtCols - 2, 10, (char)0xb2, TextAttr);
+	//ResFile.Get(FandFace, &p);
+	//x = (pstring*)p;
+
+	pstring Xx = ResFile.Get(FandFace);
+
+	xofs++;
+	for (int i = -11; i < -6; i++) {
+		Xx[0] = TxtCols - 2;
+		ScrWrStr(1, TxtRows + i, Xx, TextAttr);
+		xofs += 82;
+	}
+	TextAttr = colors.mHili;
+	ScrClr(3, TxtRows - 4, TxtCols - 6, 1, ' ', TextAttr);
 
 #ifdef Trial
-		RdMsg(70);
+	RdMsg(70);
 #elif FandRunV
-		RdMsg(42);
+	RdMsg(42);
 #elif FandDemo
-		RdMsg(43);
+	RdMsg(43);
 #else
-		RdMsg(41);
+	RdMsg(41);
 #endif
-		txt = "";
+	txt = "";
 #ifdef FandNetV
-		txt = "LAN,";
+	txt = "LAN,";
 #endif
 #ifdef FandSQL
-		txt = "SQL,";
+	txt = "SQL,";
 #endif
 #ifndef FandGraph
-		txt += "~GRAPH,";
+	txt += "~GRAPH,";
 #endif
 #ifndef FandProlog
-		txt += "~PRL,";
+	txt += "~PRL,";
 #endif
 #ifndef FandDML
-		txt += "~DML,";
+	txt += "~DML,";
 #endif
 #ifdef Coproc
-		txt = txt + "COPROC,";
+	txt = txt + "COPROC,";
 #endif
 #ifdef FandTest
-		txt = "test," + txt;
+	txt = "test," + txt;
 #endif
 
 #ifdef FandAng
-		txt = txt + "En ";
+	txt = txt + "En ";
 #endif
 
-		if (!txt.empty()) {
-			txt += ")";
-			MsgLine = MsgLine + "x (" + txt;
-		}
-		else MsgLine += 'x';
+	if (!txt.empty()) {
+		txt += ")";
+		MsgLine = MsgLine + "x (" + txt;
+	}
+	else MsgLine += 'x';
 
-		GotoXY(5, TxtRows - 3); printf("%s", MsgLine.c_str());
+	GotoXY(5, TxtRows - 3); printf("%s", MsgLine.c_str());
 
 
 #ifdef FandRunV 
 #ifndef FandNetV
-		goto label2;
+	goto label2;
 #endif
 #endif
 
 #ifndef FandDemo
-		if (TxtCols >= 80) {
-			RdMsg(40);
-			GotoXY(51, TxtRows - 3);
-			//printf(MsgLine, UserLicNrShow:7);
-		}
+	if (TxtCols >= 80) {
+		RdMsg(40);
+		GotoXY(51, TxtRows - 3);
+		//printf(MsgLine, UserLicNrShow:7);
+	}
 #endif
 
-	label2:
-		ReleaseStore(p);
-		MsgNr = 2;
+label2:
+	ReleaseStore(p);
+	MsgNr = 2;
 
 #ifdef FandRunV
-		MsgNr = 14;
+	MsgNr = 14;
 #endif
 
 #ifdef FandDemo
-		if (Today() > 731215.0) WrLLF10Msg(47);
+	if (Today() > 731215.0) WrLLF10Msg(47);
 #endif
 
 #ifdef FandTest
-		// if (today > 730210.0) { WrLLF10Msg(47); /*exit;*/ }
+	// if (today > 730210.0) { WrLLF10Msg(47); /*exit;*/ }
 #endif
 
-		RdMsg(MsgNr);
-		mb = new TMenuBoxS(4, 3, &MsgLine);
-		i = 1;
-	label1:
-		i = mb->Exec(i);
-		j = i;
+	RdMsg(MsgNr);
+	mb = new TMenuBoxS(4, 3, &MsgLine);
+	i = 1;
+label1:
+	i = mb->Exec(i);
+	j = i;
 #ifdef FandRunV
-		if (j != 0) j++;
+	if (j != 0) j++;
 #endif
-		w = PushW(1, 1, TxtCols, TxtRows);
+	w = PushW(1, 1, TxtCols, TxtRows);
 
-		switch (j) {
-		case 1: { IsTestRun = true; SelectRunRdb(true); IsTestRun = false; break; }
-		case 2: { SelectRunRdb(true); IsTestRun = false; break; }
-		case 3: { IsInstallRun = true; CallInstallRdb(); IsInstallRun = false; break; }
-		case 4: SelectEditTxt(".TXT", true); break;
-		case 5: OSshell("", "", false, true, true, true); break;
-		case 0:
-		case 6: { CloseH(WorkHandle); CloseFANDFiles(false); return; break; }
-		default:;
-		}
+	switch (j) {
+	case 1: { IsTestRun = true; SelectRunRdb(true); IsTestRun = false; break; }
+	case 2: { SelectRunRdb(true); IsTestRun = false; break; }
+	case 3: { IsInstallRun = true; CallInstallRdb(); IsInstallRun = false; break; }
+	case 4: SelectEditTxt(".TXT", true); break;
+	case 5: OSshell("", "", false, true, true, true); break;
+	case 0:
+	case 6: { CloseH(WorkHandle); CloseFANDFiles(false); return; break; }
+	default:;
 	}
 	PopW(w);
 	goto label1;

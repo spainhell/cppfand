@@ -136,7 +136,7 @@ void SetUpdHandle(FILE* H);
 void ResetUpdHandle(FILE* H);
 bool IsUpdHandle(FILE* H);
 longint PosH(FILE* handle);
-void SeekH(FILE* handle, longint pos);
+int SeekH(FILE* handle, longint pos);
 longint FileSizeH(FILE* handle);
 FILE* OpenH(FileOpenMode Mode, FileUseMode UM);
 WORD ReadH(FILE* handle, WORD bytes, void* buffer);
@@ -304,7 +304,8 @@ public:
 		longint Pos;
 		WORD Size;
 	} A[FandFace];
-	WORD Get(WORD Kod, void* P);
+	WORD Get(WORD Kod, void** P);
+	pstring Get(WORD Kod);
 	LongStr* GetStr(WORD Kod);
 };
 

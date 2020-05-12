@@ -20,7 +20,8 @@ RunMsgD* CM = nullptr;
 void* PushWParam(WORD C1, WORD R1, WORD C2, WORD R2, bool WW)
 {
 	WParam* wp;
-	wp = (WParam*)GetZStore(sizeof(WParam));
+	//wp = (WParam*)GetZStore(sizeof(WParam));
+	wp = new WParam();
 	wp->Min = (WindMin.X << 8) + WindMin.Y;
 	wp->Max = (WindMax.X << 8) + WindMin.Y;
 	wp->Attr = TextAttr;
@@ -72,7 +73,8 @@ longint PushW1(WORD C1, WORD R1, WORD C2, WORD R2, bool PushPixel, bool WW)
 		ShowMaus;
 	}
 #endif
-	s = (LongStr*)GetStore(2);
+	// s = (LongStr*)GetStore(2);
+	s = new LongStr();
 	w = (WParam*)PushWParam(C1, R1, C2, R2, WW);
 	w->GrRoot = pos;
 	PushScr(C1, R1, C2, R2);
