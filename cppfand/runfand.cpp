@@ -456,13 +456,13 @@ void InitRunFand()
 	if (paramstr.size() > 1 && !paramstr.at(1).empty() && paramstr.at(1) != "?") {
 		{
 #ifndef FandRunV
-			if (SEquUpcase(paramstr(2), 'D')) {
+			if (paramstr.size() > 2 && SEquUpcase(paramstr(2), 'D')) {
 				IsTestRun = true;
 				goto label0;
 			}
 			else
 #endif
-				if (SEquUpcase(paramstr.at(2), "T")) {
+				if (paramstr.size() > 2 && SEquUpcase(paramstr.at(2), "T")) {
 					CPath = paramstr.at(1);
 					if (copy(CPath, 1, 2) == "*.")
 						SelectEditTxt(copy(CPath, 2, 4), false);
@@ -471,7 +471,10 @@ void InitRunFand()
 				}
 				else {
 				label0:
-					if (copy(paramstr.at(1), 1, 2) == "*.") SelectRunRdb(false);
+					pstring maska = "*.";
+					pstring podretez = copy(paramstr.at(1), 1, 2);
+					if (maska == podretez) SelectRunRdb(false);
+					//if (copy(paramstr.at(1), 1, 2) == "*.") SelectRunRdb(false);
 					else RunRdb(paramstr.at(1));
 					if (IsTestRun) IsTestRun = false;
 					else return;
@@ -536,7 +539,7 @@ void InitRunFand()
 		}
 		else MsgLine += 'x';
 
-		GotoXY(5, TxtRows - 3); printf(MsgLine.c_str());
+		GotoXY(5, TxtRows - 3); printf("%s", MsgLine.c_str());
 
 
 #ifdef FandRunV 

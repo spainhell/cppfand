@@ -71,9 +71,11 @@ void val(pstring s, longint& b, WORD& err)
 
 pstring copy(pstring source, size_t index, size_t count)
 {
+	/*if (index < 1) return "";
 	std::string temp = source;
-	pstring result = temp.substr(index, count).c_str();
-	return result;
+	pstring result = temp.substr(index - 1, count).c_str();
+	return result;*/
+	return source.substr(index, count);
 }
 
 void str(int input, pstring& output)

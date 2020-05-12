@@ -11,6 +11,12 @@ int main(int argc, char* argv[])
 	}
 	//globconf::paramstr.push_back("pokus.rdb");
 	//paramstr2.push_back("pokus.rdb");
+
+
+	//pstring ahoj = "AHOJ";
+	//pstring alena = copy(ahoj, 0, 2);
+	
+	
 	InitRunFand();
 }
 

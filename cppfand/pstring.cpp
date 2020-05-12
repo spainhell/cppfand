@@ -2,26 +2,26 @@
 
 pstring::pstring() : initLen(256)
 {
-	arr = new unsigned char[initLen] { '\0' };
+	arr = new unsigned char[initLen + 1] { '\0' };
 }
 
 pstring::pstring(unsigned char length) : initLen(length + 1)
 {
-	arr = new unsigned char[initLen] { '\0' };
+	arr = new unsigned char[initLen + 1] { '\0' };
 }
 
 pstring::pstring(const char* text) : initLen(256)
 {
 	size_t input_len = strlen(text);
 	if (input_len > 255) input_len = 255;
-	arr = new unsigned char[initLen] { '\0' };
+	arr = new unsigned char[initLen + 1] { '\0' };
 	arr[0] = (unsigned char)input_len;
 	memcpy((void*)&arr[1], (void*)text, arr[0]);
 }
 
 pstring::pstring(const pstring& ps) : initLen(ps.initLen)
 {
-	arr = new unsigned char[ps.initLen] { '\0' };
+	arr = new unsigned char[ps.initLen + 1] { '\0' };
 	memcpy((void*)arr, (void*)ps.arr, ps.arr[0] + 1);
 }
 
