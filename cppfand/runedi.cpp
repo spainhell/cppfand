@@ -2996,10 +2996,10 @@ void FieldHelp()
 
 void DisplLASwitches()
 {
-	if (!ChkSwitch) ScrWrStr(0, TxtRows - 1, 'L', colors.lSwitch);
-	if (!WarnSwitch) ScrWrStr(2, TxtRows - 1, '?', colors.lSwitch);
-	if (!EdRecVar && !AddSwitch) ScrWrStr(3, TxtRows - 1, 'A', colors.lSwitch);
-	if (!WithBoolDispl && Select) ScrWrStr(5, TxtRows - 1, 0x12, colors.lSwitch);
+	if (!ChkSwitch) ScrWrStr(0, TxtRows - 1, "L", colors.lSwitch);
+	if (!WarnSwitch) ScrWrStr(2, TxtRows - 1, "?", colors.lSwitch);
+	if (!EdRecVar && !AddSwitch) ScrWrStr(3, TxtRows - 1, "A", colors.lSwitch);
+	if (!WithBoolDispl && Select) ScrWrStr(5, TxtRows - 1, "\x12", colors.lSwitch);
 }
 
 void DisplLL()

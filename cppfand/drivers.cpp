@@ -1,10 +1,20 @@
 #pragma once
 
 #include "drivers.h"
+
+#include <windows.h>
+#include <consoleapi.h>
+#include <handleapi.h>
 #include <iostream>
+#include <winbase.h>
+
 #include "base.h"
 #include "editor.h"
 #include "legacy.h"
+
+HANDLE hCons = GetStdHandle(STD_OUTPUT_HANDLE);
+SMALL_RECT hWin;
+DWORD ConsoleError;
 
 TEvent Event; // r39
 WORD KbdChar;
@@ -388,18 +398,58 @@ void LoadVideoFont()
 
 void ScrClr(WORD X, WORD Y, WORD SizeX, WORD SizeY, char C, BYTE Color)
 {
+	//SetConsoleScreenBufferSize(hCons, { 80,25 });
+	DWORD written = 0;
+	CHAR_INFO* _buf = new CHAR_INFO[SizeX * SizeY];
+	COORD BufferSize = { (short)SizeX, (short)SizeY };
+	SMALL_RECT rect = { X, Y, X + SizeX, Y + SizeY };
+	
+	CHAR_INFO ci; ci.Char.AsciiChar = C; ci.Attributes = Color;
+	for (int i = 0; i < SizeX * SizeY; i++) { _buf[i] = ci; }
+	WriteConsoleOutput(hCons, _buf, BufferSize, {0, 0}, &rect);
+	
+	//SetConsoleCursorPosition(hCons, leftTop);
+	//WriteConsoleOutput(hCons, _buf, rightBottom, leftTop, &hWin);
+	//FillConsoleOutputAttribute(hCons, Color, SizeX * SizeY, coordScreen, &written);
+	//FillConsoleOutputCharacter(hCons, C, SizeX * SizeY, coordScreen, &written);
+
+	delete[] _buf;
 }
 
 void ScrWrChar(WORD X, WORD Y, char C, BYTE Color)
 {
+	DWORD written = 0;
+	WORD attr = Color;
+	WriteConsoleOutputCharacter(hCons, &C, 1, { (short)X, (short)Y }, &written);
+	WriteConsoleOutputAttribute(hCons, &attr, 1, { (short)X, (short)Y }, &written);
 }
 
-void ScrWrStr(WORD X, WORD Y, pstring S, BYTE Color)
+void ScrWrStr(WORD X, WORD Y, std::string S, BYTE Color)
 {
+	short len = S.length();
+	CHAR_INFO* _buf = new CHAR_INFO[len];
+	COORD BufferSize = { len, 1 };
+	SMALL_RECT rect = { (short)X, (short)Y, (short)X + len, (short)Y };
+
+	CHAR_INFO ci;
+	ci.Attributes = Color;
+	for (int i = 0; i < len; i++)
+	{
+		ci.Char.AsciiChar = S[i];
+		_buf[i] = ci;
+	}
+	WriteConsoleOutput(hCons, _buf, BufferSize, { 0, 0 }, &rect);
 }
 
 void ScrWrFrameLn(WORD X, WORD Y, BYTE Typ, BYTE Width, BYTE Color)
 {
+}
+
+void ScrWrText(WORD X, WORD Y, const char* S)
+{
+	DWORD written = 0;
+	size_t len = strlen(S);
+	WriteConsoleOutputCharacter(hCons, S, len, { (short)X, (short)Y }, &written);
 }
 
 void ScrWrBuf(WORD X, WORD Y, void* Buf, WORD L)
@@ -468,6 +518,7 @@ void CrsIntrDone()
 
 void GotoXY(WORD X, WORD Y)
 {
+	SetConsoleCursorPosition(hCons, { (short)X, (short)Y });
 }
 
 BYTE WhereX()
@@ -482,6 +533,10 @@ BYTE WhereY()
 
 void Window(BYTE X1, BYTE Y1, BYTE X2, BYTE Y2)
 {
+	hWin.Left = X1;
+	hWin.Right = X2;
+	hWin.Top = Y1;
+	hWin.Bottom = Y2;
 }
 
 void ClrScr()

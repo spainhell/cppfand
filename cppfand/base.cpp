@@ -226,18 +226,17 @@ WORD TResFile::Get(WORD Kod, void** P)
 	return l;
 }
 
-pstring TResFile::Get(WORD Kod)
+std::string TResFile::Get(WORD Kod)
 {
-	// do pstring je možné uložit jen 255 Bytu
-	BYTE tmpB[255];
+	char* tmpCh = new char[A[Kod - 1].Size];
 	WORD l = A[Kod - 1].Size;
-	if (l > 255) l = 255;
 	
 	auto sizeF = FileSizeH(Handle);
 	auto seekF = SeekH(Handle, A[Kod - 1].Pos);
-	auto readF = ReadH(Handle, l, &tmpB);
-	if (l < 255) tmpB[l + 1] = '\0';
-	return (const char*)tmpB;
+	auto readF = ReadH(Handle, l, tmpCh);
+	std::string result = tmpCh;
+	delete[] tmpCh;
+	return result;
 }
 
 void* GetStore(WORD Size)
@@ -1098,11 +1097,23 @@ void ReleaseAfterLongStr(void* pointer)
 
 WORD CountDLines(void* Buf, WORD L, char C)
 {
-	return 0;
+	WORD count = 0;
+	for (int i = 0; i < L; i++) { if (((char*)Buf)[i] == C) count++; }
+	return count;
 }
 
-pstring GetDLine(void* Buf, WORD L, char C, WORD I)
+pstring GetDLine(void* Buf, WORD L, char C, WORD I) // I = 1 .. N
 {
+	std::string input((const char*)Buf, L);
+	std::vector<std::string> lines;
+	size_t pos = 0;
+	std::string token;
+	while ((pos = input.find(C)) != std::string::npos) {
+		token = input.substr(0, pos);
+		lines.push_back(token);
+		input.erase(0, pos + 1); // smazani vc. oddelovace
+	}
+	if (I <= lines.size()) return lines[I - 1]; // Pascal cislovani od 1
 	return "";
 }
 

@@ -387,10 +387,10 @@ TMenuBoxS::TMenuBoxS()
 
 TMenuBoxS::TMenuBoxS(WORD C1, WORD R1, pstring* Msg) : TMenuBox(C1, R1)
 {
-	MsgTxt = StoreStr(*Msg);
+	MsgTxt = Msg;
 	HlpRdb = (RdbDPtr)&HelpFD;
 	IsBoxS = true;
-	nTxt = CountDLines(&MsgTxt[1], MsgTxt->length(), '/') - 2;
+	nTxt = CountDLines(&(*MsgTxt)[1], MsgTxt->length(), '/') - 2;
 	Move(&colors.mNorm, Palette, 3);
 	SetState(sfShadow, true);
 }
@@ -415,7 +415,7 @@ pstring TMenuBoxS::GetHlpName()
 pstring TMenuBoxS::GetText(integer I)
 {
 	/*helpname/head/text1/text2/...*/
-	return GetDLine(&MsgTxt[1], MsgTxt->length(), '/', I + 2);
+	return GetDLine(&(*MsgTxt)[1], MsgTxt->length(), '/', I + 2);
 }
 
 TMenuBoxP::TMenuBoxP()

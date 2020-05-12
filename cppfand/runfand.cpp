@@ -249,9 +249,13 @@ void CompileHelpCatDcl()
 	SetInpStr(s);
 	RdFileD("Catalog", 'C', "");
 	CatFD = CFile; FileDRoot = nullptr;
-	CatRdbName = CatFD->FldD; CatFileName = CatRdbName->Chain;
-	CatArchiv = CatFileName->Chain;
-	CatPathName = CatArchiv->Chain; CatVolume = CatPathName->Chain;
+	CatRdbName = CatFD->FldD;
+	if (CatRdbName != nullptr) {
+		CatFileName = CatRdbName->Chain;
+		CatArchiv = CatFileName->Chain;
+		CatPathName = CatArchiv->Chain;
+		CatVolume = CatPathName->Chain;
+	}
 	MarkStore(AfterCatFD); ReleaseStore2(p2);
 }
 
@@ -329,8 +333,7 @@ void InitRunFand()
 	TMenuBoxS* mb = nullptr;
 	longint w = 0;
 	void* p = nullptr;
-	pstring* x = nullptr;
-	WORD* xofs = (WORD*)x;
+	WORD xofs = 1;
 	pstring txt(16);
 	double r;
 
@@ -422,8 +425,8 @@ void InitRunFand()
 
 		// Access
 		// GetIntVec(0x3f, FandInt3f); // toto je vektor pøerušení INT 3fH - Overlay a DLL
-	FillChar(&XWork, sizeof(XWork), 0); // celý objekt nulovat nemusíme, snad ...
-	FillChar(&TWork, sizeof(TWork), 0); //  -"-
+	//FillChar(&XWork, sizeof(XWork), 0); // celý objekt nulovat nemusíme, snad ...
+	//FillChar(&TWork, sizeof(TWork), 0); //  -"-
 	CRdb = nullptr;
 	for (i = 0; i < FloppyDrives; i++) { MountedVol[i] = ""; }
 	// Ww
@@ -481,17 +484,18 @@ void InitRunFand()
 	TextAttr = colors.DesktopColor;
 	Window(1, 1, (BYTE)TxtCols, TxtRows - 1);
 	WriteWFrame(WHasFrame + WDoubleFrame, "", "");
-	ScrClr(1, 1, TxtCols - 2, TxtRows - 13, (char)0xb1, TextAttr);
+	ScrClr(1, 1, TxtCols - 2, TxtRows - 13, (char)0xB1, TextAttr);
 	ScrClr(1, TxtRows - 12, TxtCols - 2, 10, (char)0xb2, TextAttr);
+	//ScrClr(1, 1, TxtCols - 2, TxtRows - 13, 'A', TextAttr);
 	//ResFile.Get(FandFace, &p);
 	//x = (pstring*)p;
 
-	pstring Xx = ResFile.Get(FandFace);
+	std::string ResText = ResFile.Get(FandFace);
 
 	xofs++;
-	for (int i = -11; i < -6; i++) {
-		Xx[0] = TxtCols - 2;
-		ScrWrStr(1, TxtRows + i, Xx, TextAttr);
+	for (int i = -11; i <= -6; i++) {
+		std::string sPrint = ResText.substr(xofs, TxtCols - 2);
+		ScrWrStr(1, TxtRows + i, sPrint, TextAttr);
 		xofs += 82;
 	}
 	TextAttr = colors.mHili;
@@ -539,7 +543,9 @@ void InitRunFand()
 	}
 	else MsgLine += 'x';
 
-	GotoXY(5, TxtRows - 3); printf("%s", MsgLine.c_str());
+	GotoXY(5, TxtRows - 3);
+	ScrWrText(5, TxtRows - 3, MsgLine.c_str());
+	//printf("%s", MsgLine.c_str());
 
 
 #ifdef FandRunV 

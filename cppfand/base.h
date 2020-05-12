@@ -305,7 +305,7 @@ public:
 		WORD Size;
 	} A[FandFace];
 	WORD Get(WORD Kod, void** P);
-	pstring Get(WORD Kod);
+	std::string Get(WORD Kod);
 	LongStr* GetStr(WORD Kod);
 };
 
