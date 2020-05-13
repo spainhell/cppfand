@@ -160,7 +160,9 @@ void WrHd(pstring Hd, WORD Row, WORD MaxCols)
 	s = " ";
 	s += Hd + " ";
 	if (s.length() > MaxCols) s[0] = char(MaxCols);
-	GotoXY((MaxCols - s.length()) / 2 + 2, Row); printf("%s", s.c_str());
+	//GotoXY((MaxCols - s.length()) / 2 + 2, Row);
+	ScrWrText((MaxCols - s.length()) / 2 + 2, Row, MsgLine.c_str());
+	//printf("%s", s.c_str());
 }
 
 void CenterWw(BYTE& C1, BYTE& R1, BYTE& C2, BYTE& R2, BYTE WFlags)

@@ -497,73 +497,72 @@ label1:
 
 pstring wwmix::SelectDiskFile(pstring Path, WORD HdMsg, bool OnFace)
 {
-	// TODO:
-//	pstring mask, s; SearchRec SR; longint w;
-//	pstring p; pstring d; pstring n; pstring ext, e; pstring ne;
-//	WORD c1, c2, r1, r2, c11, r11;
-//
-//	pstring result = ""; c1 = 0; r1 = 0; c2 = 22; r2 = 1; c11 = 0; r11 = 0;
-//	if (OnFace) {
-//		c1 = 43; r1 = 6; c2 = 67; r2 = 8; c11 = 28; r11 = 4;
-//	}
-//	if (Path == "") ext = ".*";
-//	else if (Path[1] == '.') ext = Path;
-//	else {
-//		FSplit(FExpand(Path), d, n, e);
-//		ne = n + e;
-//		if (ne == "") ne = "*.*";
-//		goto label3;
-//	}
-//	mask = pstring("*") + ext;
-//label1:
-//	RdMsg(HdMsg);
-//	w = PushWFramed(c1, r1, c2, r2, colors.sMask, MsgLine, "", WHasFrame + WShadow + WPushPixel);
-//label2:
-//	GotoXY(1, 1);
-//	EditTxt(&mask, 1, sizeof(mask) - 1, 22, 'A', true, false, true, false, 0);
-//	if (KbdChar == _ESC_) { PopW(w); return result; }
-//	if (mask.first(' ') != 0) { WrLLF10Msg(60); goto label2; }
-//	FSplit(FExpand(mask), d, n, e);
-//	if (e == "") e = ext;
-//	else if ((ext == ".RDB") && (e != ".RDB")) {
-//		WrLLF10Msg(005); goto label2;
-//	}
-//	PopW(w);
-//	if (n == "") n = '*'; ne = n + e;
-//	if (ne.first('*') == 0 && ne.first('?') == 0) {
-//		result = d + ne; return result;
-//	}
-//label3:
-//	p = d + ne;
-//	FindFirst(p + 00, 0, SR);
-//	if (!(DosError() == 0 || DosError() == 18)) {
-//		SetMsgPar(p);
-//		mask = p;
-//		WrLLF10Msg(811);
-//		goto label1;
-//	}
-//	while (DosError() == 0) {
-//		PutSelect(SR.name); FindNext(SR);
-//	}
-//	FindFirst(d + "*.*" + 00, Directory, SR);
-//	while (DosError() == 0) {
-//		if (((SR.Attr && Directory) != 0)
-//			&& (d.first('\\') != d.length() || (SR.name != ".."))
-//			&& (SR.name != '.')) {
-//			PutSelect('\\' + SR.name);
-//		}
-//		FindNext(SR);
-//	}
-//	ss.Abcd = true; SelectStr(c11, r11, HdMsg, p);
-//	if (KbdChar == _ESC_) return result;
-//	s = GetSelect();
-//	if (s[1] == '\\') {
-//		s.Delete(1, 1);
-//		if (s == "..") do { d[0]--; } while (!(d[d.length()] == '\\'));
-//		else d = d + s + '\\';
-//		goto label3;
-//	}
-//	return d + s;
+	pstring mask, s; longint w; //SearchRec SR;
+	pstring p; pstring d; pstring n; pstring ext, e; pstring ne;
+	WORD c1, c2, r1, r2, c11, r11;
+
+	pstring result = ""; c1 = 0; r1 = 0; c2 = 22; r2 = 1; c11 = 0; r11 = 0;
+	if (OnFace) {
+		c1 = 43; r1 = 6; c2 = 67; r2 = 8; c11 = 28; r11 = 4;
+	}
+	if (Path == "") ext = ".*";
+	else if (Path[1] == '.') ext = Path;
+	else {
+		FSplit(FExpand(Path), d, n, e);
+		ne = n + e;
+		if (ne == "") ne = "*.*";
+		goto label3;
+	}
+	mask = pstring("*") + ext;
+label1:
+	RdMsg(HdMsg);
+	w = PushWFramed(c1, r1, c2, r2, colors.sMask, MsgLine, "", WHasFrame + WShadow + WPushPixel);
+label2:
+	GotoXY(1, 1);
+	EditTxt(&mask, 1, sizeof(mask) - 1, 22, 'A', true, false, true, false, 0);
+	if (KbdChar == _ESC_) { PopW(w); return result; }
+	if (mask.first(' ') != 0) { WrLLF10Msg(60); goto label2; }
+	FSplit(FExpand(mask), d, n, e);
+	if (e == "") e = ext;
+	else if ((ext == ".RDB") && (e != ".RDB")) {
+		WrLLF10Msg(005); goto label2;
+	}
+	PopW(w);
+	if (n == "") n = '*'; ne = n + e;
+	if (ne.first('*') == 0 && ne.first('?') == 0) {
+		result = d + ne; return result;
+	}
+label3:
+	p = d + ne;
+	//FindFirst(p + 00, 0, SR);
+	/*if (!(DosError() == 0 || DosError() == 18)) {
+		SetMsgPar(p);
+		mask = p;
+		WrLLF10Msg(811);
+		goto label1;
+	}
+	while (DosError() == 0) {
+		PutSelect(SR.name); FindNext(SR);
+	}
+	FindFirst(d + "*.*" + 00, Directory, SR);
+	while (DosError() == 0) {
+		if (((SR.Attr && Directory) != 0)
+			&& (d.first('\\') != d.length() || (SR.name != ".."))
+			&& (SR.name != '.')) {
+			PutSelect('\\' + SR.name);
+		}
+		FindNext(SR);
+	}*/
+	ss.Abcd = true; SelectStr(c11, r11, HdMsg, p);
+	if (KbdChar == _ESC_) return result;
+	s = GetSelect();
+	if (s[1] == '\\') {
+		s.Delete(1, 1);
+		if (s == "..") do { d[0]--; } while (!(d[d.length()] == '\\'));
+		else d = d + s + '\\';
+		goto label3;
+	}
+	return d + s;
 	return "";
 }
 

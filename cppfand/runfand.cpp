@@ -295,7 +295,8 @@ void SelectRunRdb(bool OnFace)
 {
 	wwmix ww;
 	pstring p;
-	p = ww.SelectDiskFile(".RDB", 34, OnFace); RunRdb(p);
+	p = ww.SelectDiskFile(".RDB", 34, OnFace);
+	RunRdb(p);
 }
 
 void CallInstallRdb()
