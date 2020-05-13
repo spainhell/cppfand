@@ -8,7 +8,7 @@ Keyboard::Keyboard()
 	_kbdBuf = new _INPUT_RECORD[128];
 	_actualIndex = 0;
 	_lastIndex = 0;
-	DWORD fdwMode = ENABLE_WINDOW_INPUT | ENABLE_MOUSE_INPUT;
+	DWORD fdwMode = ENABLE_WINDOW_INPUT; // | ENABLE_MOUSE_INPUT;
 	bool scm = SetConsoleMode(_handle, fdwMode);
 	if (!scm) { throw std::exception("Cannot set console input mode."); }
 }
@@ -49,14 +49,26 @@ size_t Keyboard::FreeSpace()
 	return 128 - _lastIndex - 1;
 }
 
-KEY_EVENT_RECORD Keyboard::Get()
+bool Keyboard::Get(KEY_EVENT_RECORD& key)
 {
+	// pokud jsme na konci bufferu, naèteme jej znovu
 	if (_actualIndex == _lastIndex)
 	{
+		// pokud nic nepøišlo, vrátíme false
 		DWORD count = _read();
-		if (count == 0) return _KEY_EVENT_RECORD();
+		if (count == 0) return false;
 	}
-	return _kbdBuf[_actualIndex++].Event.KeyEvent;
+	// pokud událost není z klávesnice, jdeme na další
+	while (_kbdBuf[_actualIndex].EventType != KEY_EVENT && _actualIndex < _lastIndex)
+	{
+		_actualIndex++;
+	}
+
+	// narazili jsme na událost z klávesnice, nebo tam žádná taková není a jsme na konci?
+	if (_actualIndex == _lastIndex) return false;
+		
+	key = _kbdBuf[_actualIndex++].Event.KeyEvent;
+	return true;
 }
 
 DWORD Keyboard::_read()

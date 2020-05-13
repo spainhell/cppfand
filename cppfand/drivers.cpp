@@ -145,15 +145,6 @@ unsigned char CurrToKamen(unsigned char C)
 	return C;
 }
 
-BYTE ConvKamenToCurr(unsigned char* Buf, WORD L)
-{
-	return ' ';
-}
-
-void ConvKamenLatin(unsigned char* Buf, WORD L, bool ToLatin)
-{
-}
-
 unsigned char ToggleCS(unsigned char C)
 {
 	return C;
@@ -161,7 +152,9 @@ unsigned char ToggleCS(unsigned char C)
 
 unsigned char NoDiakr(unsigned char C)
 {
-	return C;
+	if (C < 0x80 || fonts.VFont == TVideoFont::foAscii) return C;
+	if (fonts.VFont == TVideoFont::foLatin2) return TabLtN[C];
+	return TabKtN[C];
 }
 
 void ConvToNoDiakr(unsigned char* Buf, WORD L, TVideoFont FromFont)
@@ -179,11 +172,12 @@ bool KeyPressed()
 
 WORD ReadKey()
 {
-	auto key = keyboard.Get();
-	auto d = key.wVirtualKeyCode;
-	Event.What = evKeyDown;
-	Event.KeyCode = d;
-	return d;
+	//auto key = keyboard.Get();
+	//auto d = key.wVirtualKeyCode;
+	//Event.What = evKeyDown;
+	//Event.KeyCode = d;
+	//return d;
+	return 0;
 }
 
 WORD ConvHCU()
@@ -372,13 +366,17 @@ bool ESCPressed()
 WORD ReadKbd()
 {
 	KEY_EVENT_RECORD key;
-	key.uChar.AsciiChar = '\0';
+	//key.uChar.AsciiChar = '\0';
+	bool exists = false;
+	bool pressed = false;
 	WORD code = 0;
+	
 	do {
-		key = keyboard.Get();
+		exists = keyboard.Get(key);
+		pressed = key.bKeyDown;
 		code = key.wVirtualKeyCode;
 		Sleep(50);
-	} while (code == 0);
+	} while (!exists || code == 0 || !pressed);
 
 	Event.What = evKeyDown;
 	Event.KeyCode = code;

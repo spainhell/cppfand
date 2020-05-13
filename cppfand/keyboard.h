@@ -12,7 +12,7 @@ public:
 	void ClearBuf();
 	size_t ActualIndex();
 	size_t FreeSpace();
-	KEY_EVENT_RECORD Get();
+	bool Get(KEY_EVENT_RECORD& key);
 
 private:
 	HANDLE _handle;
