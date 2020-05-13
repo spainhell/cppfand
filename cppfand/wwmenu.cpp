@@ -53,8 +53,13 @@ TWindow::TWindow()
 
 TWindow::TWindow(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, pstring top, pstring bottom, bool SaveLL)
 {
+	//InitTWindow(C1, R1, C2, R2, Attr, top, bottom, SaveLL);
+}
+
+void TWindow::InitTWindow(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, pstring top, pstring bottom, bool SaveLL)
+{
 	WORD i, n, m;
-	pstring s(80);
+	pstring s;
 	BYTE* l = (BYTE*)&s;
 	Assign(C1, R1, C2, R2);
 	if (GetState(sfShadow)) {
@@ -73,17 +78,22 @@ TWindow::TWindow(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, pstring top, pst
 		n = 0;
 		if (GetState(sfFrDouble)) n = 9;
 		ScrWrFrameLn(Orig.X, Orig.Y, n, Size.X, Attr);
-		for (i = 1; i < Size.Y - 2; i++)
+		for (i = 1; i <= Size.Y - 2; i++)
 			ScrWrFrameLn(Orig.X, Orig.Y + i, n + 6, Size.X, Attr);
 		ScrWrFrameLn(Orig.X, Orig.Y + Size.Y - 1, n + 3, Size.X, Attr);
 		m = Size.X - 2;
 		if (top.length() != 0) {
-			s = " "; s += top + " ";
+			s = " ";
+			s += top;
+			s += " ";
+			//s += top + " ";
 			*l = MinW(*l, m);
 			ScrWrStr(Col1() + (m - *l) / 2, Orig.Y, s, Attr);
 		}
 		if (bottom.length() != 0) {
-			s = " "; s += bottom + " "; *l = MinW(*l, m);
+			s = " ";
+			s += bottom + " ";
+			*l = MinW(*l, m);
 			ScrWrStr(Col1() + (m - *l) / 2, Row2() - 1, s, Attr);
 		}
 	}
@@ -102,11 +112,13 @@ void TWindow::Assign(BYTE C1, BYTE R1, BYTE C2, BYTE R2)
 	WORD cols, rows, m;
 	m = 0;
 	if (GetState(sfFramed)) m = 2;
-	cols = C2 + m; if (C1 != 0) cols = C2 - C1 + 1;
+	cols = C2 + m;
+	if (C1 != 0) cols = C2 - C1 + 1;
 	cols = MaxI(m + 1, MinI(cols, TxtCols));
 	if (C1 == 0) Orig.X = (TxtCols - cols) / 2;
 	else Orig.X = MinI(C1 - 1, TxtCols - cols);
-	rows = R2 + m; if (R1 != 0) rows = R2 - R1 + 1;
+	rows = R2 + m;
+	if (R1 != 0) rows = R2 - R1 + 1;
 	rows = MaxI(m + 1, MinI(rows, TxtRows));
 	if (R1 == 0) Orig.Y = (TxtRows - rows) / 2;
 	else Orig.Y = MinI(R1 - 1, TxtRows - rows);
@@ -150,11 +162,6 @@ void TWindow::SetState(WORD Flag, bool On)
 	else { State = State & !Flag; }
 }
 
-TMenu::TMenu()
-{
-	mx = MenuX; my = MenuY;
-}
-
 void TMenu::ClearHlp()
 {
 	if (HlpRdb != nullptr) ClearLL(colors.uNorm);
@@ -181,8 +188,10 @@ bool TMenu::FindChar()
 void TMenu::HandleEvent()
 {
 	WORD i; pstring hlp(40); bool frst;
-	WrText(iTxt); i = iTxt; frst = true;
-	hlp = GetHlpName(); TestEvent();
+	WrText(iTxt);
+	i = iTxt; frst = true;
+	hlp = GetHlpName();
+	TestEvent();
 label1:
 	KbdChar = 0;
 	/* !!! with Event do!!! */
@@ -218,7 +227,10 @@ label1:
 	}
 	default: {
 		if (frst) { DisplLLHelp(HlpRdb, hlp, false); frst = false; }
-		ClrEvent(); WaitEvent(0); goto label1;
+		ClrEvent();
+		WaitEvent(0);
+		Event.What = ReadKey(); // nové
+		goto label1;
 	}
 	}
 	ClrEvent();
@@ -226,7 +238,7 @@ label1:
 
 bool TMenu::IsMenuBar()
 {
-	return Size.Y = 1;
+	return Size.Y == 1;
 }
 
 void TMenu::LeadIn(TPoint* T)
@@ -291,7 +303,8 @@ void TMenu::WrText(WORD I)
 		ScrWrFrameLn(Orig.X, Orig.Y + I, 18, Size.X, Palette[0]);
 		return;
 	}
-	GetItemRect(I, &r); x = r.A.X; y = r.A.Y; x2 = x + r.Size.X;
+	GetItemRect(I, &r);
+	x = r.A.X; y = r.A.Y; x2 = x + r.Size.X;
 	ena = Enabled(I);
 
 	if (I == iTxt) attr = Palette[1];
@@ -321,27 +334,34 @@ void TMenu::SetPalette(Instr* aPD)
 	Palette[3] = RunWordImpl(aPD->mAttr[3], colors.mDisabled);
 }
 
+//TMenu::TMenu(WORD mx, WORD my)
+//{
+//	this.mx = mx;
+//	this.my = my;
+//}
+
 TMenuBox::TMenuBox()
 {
 }
 
-TMenuBox::TMenuBox(WORD C1, WORD R1)
+void TMenuBox::InitTMenuBox(WORD C1, WORD R1)
 {
 	WORD cols = 0, c2 = 0, r2 = 0, i = 0, l = 0;
-	pstring hd(80);
+	pstring hd;
 	// TODO:
-	//hd = GetText(0); cols = hd.length();
-	//for (i = 1; i <= nTxt; i++) {
-	//	l = LenStyleStr(GetText(i));
-	//	if (l > cols) cols = l;
-	//}
+	hd = GetText(0);
+	cols = hd.length();
+	for (i = 1; i <= nTxt; i++) {
+		l = LenStyleStr(GetText(i));
+		if (l > cols) cols = l;
+	}
 	cols += 4;
 	if ((cols + 2 > TxtCols) || (nTxt + 2 > TxtRows)) RunError(636);
 	c2 = cols; r2 = nTxt;
 	if (C1 != 0) c2 += C1 + 1;
 	if (R1 != 0) r2 += R1 + 1;
 	SetState(sfFramed, true);
-	TWindow(C1, R1, c2, r2, Palette[0], hd, "", HlpRdb != nullptr);
+	InitTWindow(C1, R1, c2, r2, Palette[0], hd, "", HlpRdb != nullptr);
 	for (i = 1; i <= nTxt; i++) { WrText(i); }
 }
 
@@ -378,21 +398,25 @@ label1:
 
 void TMenuBox::GetItemRect(WORD I, TRect* R)
 {
-	R->A.X = Orig.X + 2; R->A.Y = Orig.Y + I; R->Size.X = Size.X - 4; R->Size.Y = 1;
+	R->A.X = Orig.X + 2;
+	R->A.Y = Orig.Y + I;
+	R->Size.X = Size.X - 4;
+	R->Size.Y = 1;
 }
 
-TMenuBoxS::TMenuBoxS()
-{
-}
+//TMenuBoxS::TMenuBoxS()
+//{
+//}
 
-TMenuBoxS::TMenuBoxS(WORD C1, WORD R1, pstring* Msg) : TMenuBox(C1, R1)
+TMenuBoxS::TMenuBoxS(WORD C1, WORD R1, pstring Msg)
 {
 	MsgTxt = Msg;
 	HlpRdb = (RdbDPtr)&HelpFD;
 	IsBoxS = true;
-	nTxt = CountDLines(&(*MsgTxt)[1], MsgTxt->length(), '/') - 2;
+	nTxt = CountDLines(&MsgTxt[1], MsgTxt.length(), '/') - 2;
 	Move(&colors.mNorm, Palette, 3);
 	SetState(sfShadow, true);
+	InitTMenuBox(C1, R1);
 }
 
 bool TMenuBoxS::Enabled(WORD I)
@@ -409,17 +433,13 @@ pstring TMenuBoxS::GetHlpName()
 {
 	pstring s;
 	str(iTxt, s);
-	return GetText(-1) + '_' + s;
+	return GetText(-1) + "_" + s;
 }
 
 pstring TMenuBoxS::GetText(integer I)
 {
 	/*helpname/head/text1/text2/...*/
-	return GetDLine(&(*MsgTxt)[1], MsgTxt->length(), '/', I + 2);
-}
-
-TMenuBoxP::TMenuBoxP()
-{
+	return GetDLine(&MsgTxt[1], MsgTxt.length(), '/', I + 2);
 }
 
 TMenuBoxP::TMenuBoxP(WORD C1, WORD R1, TMenu* aParent, Instr* aPD)
@@ -445,7 +465,6 @@ TMenuBoxP::TMenuBoxP(WORD C1, WORD R1, TMenu* aParent, Instr* aPD)
 		R1 = MenuY;
 	}
 	if (aPD->Shdw) SetState(sfShadow, true);
-	//TMenuBox(C1, R1);
 }
 
 bool TMenuBoxP::Enabled(WORD I)
@@ -457,7 +476,7 @@ bool TMenuBoxP::ExecItem(WORD& I)
 {
 	auto result = false; if (not PD->PullDown) return result;
 	if (I == 0) {
-		if ((Event.What = evMouseDown) || !PD->WasESCBranch) return result;
+		if ((Event.What == evMouseDown) || !PD->WasESCBranch) return result;
 		RunInstr(PD->ESCInstr);
 	}
 	else RunInstr(CI(CRoot, I)->Instr);
@@ -491,9 +510,14 @@ TMenuBar::TMenuBar()
 
 TMenuBar::TMenuBar(WORD C1, WORD R1, WORD Cols)
 {
+	InitTMenuBar(C1, R1, Cols);
+}
+
+void TMenuBar::InitTMenuBar(WORD C1, WORD R1, WORD Cols)
+{
 	WORD c2, r2, i, l;
 	l = 0;
-	// TODO: for (i = 1; i <= nTxt; i++) l = l + LenStyleStr(GetText(i)) + 2;
+	for (i = 1; i <= nTxt; i++) l = l + LenStyleStr(GetText(i)) + 2;
 	if (l > TxtCols) RunError(636);
 	Cols = MaxW(l, Cols);
 	if (nTxt == 0) nBlks = 0;
@@ -503,7 +527,7 @@ TMenuBar::TMenuBar(WORD C1, WORD R1, WORD Cols)
 	if (C1 != 0) c2 += (C1 - 1);
 	r2 = 1;
 	if (R1 != 0) r2 = R1;
-	//TWindow.Init(C1, R1, c2, r2, Palette[0], "", "", HlpRdb != nullptr);
+	InitTWindow(C1, R1, c2, r2, Palette[0], "", "", HlpRdb != nullptr);
 }
 
 WORD TMenuBar::Exec()
@@ -577,7 +601,7 @@ TMenuBarS::TMenuBarS(WORD MsgNr)
 	HlpRdb = (RdbD*)&HelpFD;
 	nTxt = (CountDLines(&MsgTxt[1], MsgTxt->length(), '/') - 1) / 2;
 	Move(&colors.mNorm, Palette, 3);
-	//TMenuBar.Init(1, 1, TxtCols);
+	InitTMenuBar(1, 1, TxtCols);
 }
 
 bool TMenuBarS::GetDownMenu(TMenuBox* W)
@@ -588,7 +612,7 @@ bool TMenuBarS::GetDownMenu(TMenuBox* W)
 	val(TNr, n, err); if ((TNr.length() == 0) || (err != 0)) return result;
 	RdMsg(n);
 	//New(p, Init(MenuX, MenuY, (pstring*)&MsgLine));
-	p = new TMenuBoxS(MenuX, MenuY, (pstring*)&MsgLine);
+	p = new TMenuBoxS(MenuX, MenuY, MsgLine);
 	p->parent = this; W = p;
 	result = true;
 	return result;
@@ -625,7 +649,7 @@ TMenuBarP::TMenuBarP(Instr* aPD)
 		x1 = RunInt(PD->X);
 		l1 = RunInt(PD->XSz);
 	}
-	//TMenuBar.Init(x1, y1, l1);
+	InitTMenuBar(x1, y1, l1);
 }
 
 bool TMenuBarP::Enabled(WORD I)
@@ -649,7 +673,7 @@ bool TMenuBarP::GetDownMenu(TMenuBox* W)
 	Instr* PD1; TMenuBoxP* p;
 	auto result = false;
 	PD1 = CI(CRoot, iTxt)->Instr;
-	if ((PD1 == nullptr) || (PD1->Chain != nullptr) 
+	if ((PD1 == nullptr) || (PD1->Chain != nullptr)
 		|| (PD1->Kind != _menubox) || !PD1->PullDown) return result;
 	//New(p, Init(MenuX, MenuY, this, PD1));
 	p = new TMenuBoxP(MenuX, MenuY, this, PD1);
@@ -678,7 +702,7 @@ WORD Menu(WORD MsgNr, WORD IStart)
 	MarkStore(p);
 	RdMsg(MsgNr);
 	//New(w, Init(0, 0, (pstring*)&MsgLine));
-	w = new TMenuBoxS(0, 0, (pstring*)&MsgLine);
+	w = new TMenuBoxS(0, 0, MsgLine);
 	auto result = w->Exec(IStart);
 	delete w;
 	ReleaseStore(p);
@@ -706,7 +730,7 @@ bool PrinterMenu(WORD Msg)
 	}
 	prCurr = j;
 	//New(w, Init(0, 0, (pstring*)&MsgLine));
-	w = new TMenuBoxS(0, 0, (pstring*)&MsgLine);
+	w = new TMenuBoxS(0, 0, MsgLine);
 	i = w->Exec(prCurr + 1);
 	if (i > 0) SetCurrPrinter(i - 1);
 	delete w;
@@ -725,7 +749,7 @@ label1:
 	ReleaseStore(p);
 	if (!PD->PullDown) {
 		if (i == 0) {
-			if (! PD->WasESCBranch) return;
+			if (!PD->WasESCBranch) return;
 			RunInstr(PD->ESCInstr);
 		}
 		else RunInstr(CI(PD->Choices, i)->Instr);
@@ -801,7 +825,7 @@ label3:
 label5:
 	CRecPtr = cr;
 	return T;
-	
+
 }
 
 void DisplLLHelp(RdbD* R, pstring Name, bool R24)

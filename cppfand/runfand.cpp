@@ -111,7 +111,8 @@ void OpenCache()
 
 void DetectVideoCard()
 {
-	// ignorujeme
+	WindMax.X = 79;
+	WindMax.Y = 23;
 }
 
 void InitDrivers()
@@ -120,7 +121,7 @@ void InitDrivers()
 	BreakIntrInit();
 	//DetectGraph(GraphDriver, GraphMode);
 	/* GraphDriver = EGAMono; Mark****/
-	//DetectVideoCard();
+	DetectVideoCard();
 	//AssignCrt(Output); Rewrite(Output);
 	ClrEvent();
 }
@@ -149,14 +150,14 @@ void RdColors(FILE* CfgHandle)
 void RdPrinter(FILE* CfgHandle)
 {
 	BYTE L;
-	printf("Pozice v souboru pred tiskarnami: %i (0x%x)\n", ftell(CfgHandle), ftell(CfgHandle));
+	//printf("Pozice v souboru pred tiskarnami: %i (0x%x)\n", ftell(CfgHandle), ftell(CfgHandle));
 	ReadH(CfgHandle, 1, &prMax);
 	while (prMax > 0)
 	{
 		ReadH(CfgHandle, 1, &L);
 		if (L == 0xFF) prMax--;
 	}
-	printf("Pozice v souboru po tiskarnach: %i (0x%x)\n", ftell(CfgHandle), ftell(CfgHandle));
+	//printf("Pozice v souboru po tiskarnach: %i (0x%x)\n", ftell(CfgHandle), ftell(CfgHandle));
 	SetCurrPrinter(0);
 }
 
@@ -401,7 +402,7 @@ void InitRunFand()
 		ReadH(h, sizeof(MsgIdx->Nr), &MsgIdx[readindexes].Nr);
 		ReadH(h, sizeof(MsgIdx->Ofs), &MsgIdx[readindexes].Ofs);
 		ReadH(h, sizeof(MsgIdx->Count), &MsgIdx[readindexes].Count);
-		printf("Zprava cislo: %i, offset %i, delka %i\n", MsgIdx[readindexes].Nr, MsgIdx[readindexes].Ofs, MsgIdx[readindexes].Count);
+		//printf("Zprava cislo: %i, offset %i, delka %i\n", MsgIdx[readindexes].Nr, MsgIdx[readindexes].Ofs, MsgIdx[readindexes].Count);
 	}
 	FrstMsgPos = PosH(h);
 	// *** konec ***
@@ -543,8 +544,8 @@ void InitRunFand()
 	}
 	else MsgLine += 'x';
 
-	GotoXY(5, TxtRows - 3);
-	ScrWrText(5, TxtRows - 3, MsgLine.c_str());
+	//GotoXY(5, TxtRows - 3);
+	ScrWrText(4, TxtRows - 4, MsgLine.c_str());
 	//printf("%s", MsgLine.c_str());
 
 
@@ -579,7 +580,7 @@ label2:
 #endif
 
 	RdMsg(MsgNr);
-	mb = new TMenuBoxS(4, 3, &MsgLine);
+	mb = new TMenuBoxS(4, 3, MsgLine);
 	i = 1;
 label1:
 	i = mb->Exec(i);

@@ -1180,7 +1180,7 @@ void UpdScreen()
 	}
 	if (bScroll) // {tisk aktualniho radku}
 	{
-		FillChar(&PgStr, 256, CharPg);
+		FillChar(&PgStr[0], 255, CharPg);
 		PgStr[0] = 255;
 		co1 = ColScr; r = 1;
 		while (Arr[r] == 0x0C) { r++; }

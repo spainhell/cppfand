@@ -24,6 +24,7 @@ class TWindow // TODO: : TObject
 public:
 	TWindow();
 	TWindow(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, pstring top, pstring bottom, bool SaveLL);
+	void InitTWindow(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, pstring top, pstring bottom, bool SaveLL);
 	virtual ~TWindow();
 	TPoint Orig = {0, 0};
 	TPoint Size = { 0, 0 };
@@ -45,7 +46,7 @@ public:
 class TMenu : public TWindow
 {
 public:
-	TMenu();
+	//TMenu();
 	virtual ~TMenu();
 	TMenu* parent;
 	WORD iTxt, nTxt, mx, my;
@@ -68,26 +69,25 @@ public:
 	bool UnderMenuBar();
 	void WrText(WORD I);
 	void SetPalette(Instr* aPD);
+//protected:
+	//TMenu(WORD mx, WORD my);
 };
 
 class TMenuBox : public TMenu
 {
 public:
 	TMenuBox();
-	TMenuBox(WORD C1, WORD R1);
+	void InitTMenuBox(WORD C1, WORD R1);
 	WORD Exec(WORD IStart);
 	void GetItemRect(WORD I, TRect* R) override;
 };
 
-//typedef TMenuBox* PMenuBox;
-//typedef TMenu* PMenu;
-
 class TMenuBoxS : public TMenuBox
 {
 public:
-	TMenuBoxS();
-	TMenuBoxS(WORD C1, WORD R1, pstring* Msg);
-	pstring* MsgTxt;
+	//TMenuBoxS();
+	TMenuBoxS(WORD C1, WORD R1, pstring Msg);
+	pstring MsgTxt;
 	bool Enabled(WORD I) override;
 	bool ExecItem(WORD& I) override;
 	pstring GetHlpName() override;
@@ -97,7 +97,7 @@ public:
 class TMenuBoxP : public TMenuBox
 {
 public:
-	TMenuBoxP();
+	//TMenuBoxP();
 	TMenuBoxP(WORD C1, WORD R1, TMenu* aParent, Instr* aPD);
 	Instr* PD;
 	ChoiceD* CRoot;
@@ -113,6 +113,7 @@ class TMenuBar : public TMenu
 public:
 	TMenuBar();
 	TMenuBar(WORD C1, WORD R1, WORD Cols);
+	void InitTMenuBar(WORD C1, WORD R1, WORD Cols);
 	WORD nBlks;
 	BYTE DownI[30];
 	WORD Exec();

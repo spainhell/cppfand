@@ -34,7 +34,7 @@ void ExecMgrPgm()
 	pstring param = replaceNo(PrTab(prMgrParam), CPath);
 	Wind wmin = WindMin;
 	Wind wmax = WindMax;
-	longint crs = CrsGet();
+	TCrs crs = CrsGet();
 	longint w = PushW(1, 1, TxtCols, 1);
 	WindMin = wmin;
 	WindMax = wmax;

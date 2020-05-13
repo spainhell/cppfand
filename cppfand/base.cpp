@@ -203,7 +203,7 @@ label1:
 			if (s[i] == '$') i++;
 		}
 	}
-	printf("MSG: %s\n", MsgLine.c_str());
+	//printf("MSG: %s\n", MsgLine.c_str());
 }
 
 void WriteMsg(WORD N)
@@ -372,7 +372,7 @@ integer MinI(integer X, integer Y)
 integer MaxI(integer X, integer Y)
 {
 	if (X > Y) return X;
-	return X;
+	return Y;
 }
 
 WORD MinW(WORD X, WORD Y)
@@ -384,7 +384,7 @@ WORD MinW(WORD X, WORD Y)
 WORD MaxW(WORD X, WORD Y)
 {
 	if (X > Y) return X;
-	return X;
+	return Y;
 }
 
 longint MinL(longint X, longint Y)
@@ -396,7 +396,7 @@ longint MinL(longint X, longint Y)
 longint MaxL(longint X, longint Y)
 {
 	if (X > Y) return X;
-	return X;
+	return Y;
 }
 
 bool OlympYear(WORD year)
@@ -1099,7 +1099,7 @@ WORD CountDLines(void* Buf, WORD L, char C)
 {
 	WORD count = 0;
 	for (int i = 0; i < L; i++) { if (((char*)Buf)[i] == C) count++; }
-	return count;
+	return count + 1; // za posledni polozkou neni '/'
 }
 
 pstring GetDLine(void* Buf, WORD L, char C, WORD I) // I = 1 .. N
@@ -1113,6 +1113,7 @@ pstring GetDLine(void* Buf, WORD L, char C, WORD I) // I = 1 .. N
 		lines.push_back(token);
 		input.erase(0, pos + 1); // smazani vc. oddelovace
 	}
+	lines.push_back(input); // pridame zbyvajici cast retezce
 	if (I <= lines.size()) return lines[I - 1]; // Pascal cislovani od 1
 	return "";
 }

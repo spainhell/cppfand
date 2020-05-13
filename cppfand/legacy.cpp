@@ -267,7 +267,7 @@ pstring ParamStr(integer index)
 	return ptmp;
 }
 
-void FillChar(void* cil, WORD delka, char vypln)
+void FillChar(void* cil, int delka, size_t vypln)
 {
 	memset(cil, vypln, delka);
 }

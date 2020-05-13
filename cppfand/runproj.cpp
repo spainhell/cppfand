@@ -1498,7 +1498,7 @@ void InstallRdb(pstring n)
 	RdMsg(8);
 	//New(w, Init(43, 6, StringPtr(@MsgLine)));
 	i = 1;
-	w = new TMenuBoxS(43, 6, &MsgLine);
+	w = new TMenuBoxS(43, 6, MsgLine);
 label0:
 	i = w->Exec(i);
 	switch (i) {

@@ -1,12 +1,13 @@
 #pragma once
 #include "constants.h"
+#include "drivers.h"
 #include "pstring.h"
 
 
 struct WParam
 {
 	WORD Min, Max, Attr;
-	longint Cursor;
+	TCrs Cursor;
 	longint GrRoot;
 };
 

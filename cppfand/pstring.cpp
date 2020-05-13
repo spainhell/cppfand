@@ -19,13 +19,13 @@ pstring::pstring(const char* text) : initLen(256)
 	memcpy((void*)&arr[1], (void*)text, arr[0]);
 }
 
-pstring::pstring(const pstring& ps) : initLen(ps.initLen)
+pstring::pstring(const pstring& ps) : initLen(256)
 {
-	arr = new unsigned char[ps.initLen + 1] { '\0' };
-	memcpy((void*)arr, (void*)ps.arr, ps.arr[0] + 1);
+	arr = new unsigned char[ps.initLen] { '\0' };
+	memcpy((void*)arr, (void*)ps.arr, ps.arr[0] + 1); // kopiruje se 1B a pak delka retezce
 }
 
-pstring::pstring(std::string cs) : initLen(cs.length())
+pstring::pstring(std::string cs) : initLen(256)
 {
 	size_t origLen = cs.length();
 	arr = new unsigned char[origLen + 1]{ '\0' };
@@ -142,7 +142,12 @@ pstring& pstring::operator=(const pstring& newvalue)
 {
 	if (this == &newvalue) return *this;
 	
-	if (newvalue.initLen > this->initLen) { throw std::exception("Index out of range."); }
+	if (newvalue.initLen > this->initLen)
+	{
+		unsigned char* newArray = new unsigned char[newvalue.initLen];
+		delete[] this->arr;
+		this->arr = newArray;
+	}
 	memcpy((void*)arr, (void*)newvalue.arr, initLen);
 	return *this;
 }
@@ -150,7 +155,7 @@ pstring& pstring::operator=(const pstring& newvalue)
 pstring::operator std::string() const
 {
 	int len = arr[0];
-	arr[len + 1] = '\0';
+	arr[len + 2] = '\0';
 	const char* exp = (const char*)&arr[1];
 	return std::string(exp);
 }

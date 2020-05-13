@@ -48,7 +48,7 @@ inline void Exit() { return;; }
 //inline void RunError(WORD code) { exit(code); }
 inline void Halt(WORD code) { exit(code); }
 
-void FillChar(void* cil, WORD delka, char vypln);
+void FillChar(void* cil, int delka, size_t vypln);
 void Move(void* zdroj, void* cil, WORD delka);
 BYTE Hi(WORD cislo);
 BYTE Lo(WORD cislo);

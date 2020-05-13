@@ -19,7 +19,7 @@ DWORD ConsoleError;
 TEvent Event; // r39
 WORD KbdChar;
 BYTE KbdFlgs; // TODO: absolute $417
-pstring KbdBuffer = ""; // ø. 83
+pstring KbdBuffer; // ø. 83
 BYTE LLKeyFlags = 0; // ø. 84
 integer GraphDriver, GraphMode;
 WORD ScrSeg, ScrGrSeg;
@@ -41,8 +41,6 @@ WORD AutoTicks, DownTicks, AutoDelay;
 void* OldBreakIntr;
 void* OldKbdIntr;
 Wind WindMin, WindMax;
-
-
 
 BYTE TextAttr, StartAttr, StartMode; // r138
 enVideoCard VideoCard = enVideoCard::viVga;
@@ -166,7 +164,10 @@ bool KeyPressed()
 
 WORD ReadKey()
 {
-	return 0;
+	DWORD nrEvents;
+	_INPUT_RECORD KbdBuf;
+	ReadConsoleInput(hCons, &KbdBuf, 1, &nrEvents);
+	return KbdBuf.EventType;
 }
 
 WORD ConvHCU()
@@ -308,7 +309,6 @@ void ConvKamenToCurr(void* Buf, WORD L)
 		tab = TabKtL;
 		if (fonts.VFont != TVideoFont::foLatin2) return;
 	}
-
 	for (WORD i = 0; i < L; i++) {
 		// v ES a DI budou segment a offset na Buf
 		short index = (BYTE)bBuf[i] - 0x80;
@@ -319,28 +319,6 @@ void ConvKamenToCurr(void* Buf, WORD L)
 			bBuf[i] = lat;
 		}
 	}
-	
-	/*asm
-		mov si, OFFSET TabKtN;
-	cmp Fonts.NoDiakrSupported, 1;
-	je @1;
-	mov si, OFFSET TabKtL;
-	cmp Fonts.VFont, foLatin2;
-	jne @4;
-	@1: mov cx, L;
-	jcxz @4;
-	les di, Buf;
-	xor ah, ah;
-	cld;
-	@2: mov al, es : [di] ;
-	cmp al, 80H;
-	jb @3;
-	sub al, 80H;
-	mov bx, ax;
-	mov al, ds: [si + bx] ;
-	@3: stosb;
-	loop @2;
-	@4: end;*/
 }
 
 void ConvKamenLatin(WORD* Buf, WORD L, bool ToLatin)
@@ -392,10 +370,6 @@ void NoSound()
 {
 }
 
-void LoadVideoFont()
-{
-}
-
 void ScrClr(WORD X, WORD Y, WORD SizeX, WORD SizeY, char C, BYTE Color)
 {
 	//SetConsoleScreenBufferSize(hCons, { 80,25 });
@@ -420,7 +394,7 @@ void ScrWrChar(WORD X, WORD Y, char C, BYTE Color)
 {
 	DWORD written = 0;
 	WORD attr = Color;
-	WriteConsoleOutputCharacter(hCons, &C, 1, { (short)X, (short)Y }, &written);
+	WriteConsoleOutputCharacterA(hCons, &C, 1, { (short)X, (short)Y }, &written);
 	WriteConsoleOutputAttribute(hCons, &attr, 1, { (short)X, (short)Y }, &written);
 }
 
@@ -438,18 +412,24 @@ void ScrWrStr(WORD X, WORD Y, std::string S, BYTE Color)
 		ci.Char.AsciiChar = S[i];
 		_buf[i] = ci;
 	}
-	WriteConsoleOutput(hCons, _buf, BufferSize, { 0, 0 }, &rect);
+	WriteConsoleOutputA(hCons, _buf, BufferSize, { 0, 0 }, &rect);
 }
 
 void ScrWrFrameLn(WORD X, WORD Y, BYTE Typ, BYTE Width, BYTE Color)
 {
-}
+	pstring txt;
+	txt[0] = Width;
+	txt[1] = FrameChars[Typ];
+	txt[Width] = FrameChars[Typ + 2];
+	for (int i = 2; i <= Width - 1; i++) { txt[i] = FrameChars[Typ + 1]; }
+	ScrWrStr(X, Y, txt, Color);
+ }
 
 void ScrWrText(WORD X, WORD Y, const char* S)
 {
 	DWORD written = 0;
 	size_t len = strlen(S);
-	WriteConsoleOutputCharacter(hCons, S, len, { (short)X, (short)Y }, &written);
+	WriteConsoleOutputCharacterA(hCons, S, len, { (short)X, (short)Y }, &written);
 }
 
 void ScrWrBuf(WORD X, WORD Y, void* Buf, WORD L)
@@ -479,23 +459,32 @@ void ScrMove(WORD X, WORD Y, WORD ToX, WORD ToY, WORD L)
 
 void ScrColor(WORD X, WORD Y, WORD L, BYTE Color)
 {
+	DWORD written = 0;
+	FillConsoleOutputAttribute(hCons, Color, L, {(short)X, (short)Y}, &written);
 }
 
-longint CrsGet()
+TCrs CrsGet()
 {
-	return 0;
+	return Crs;
 }
 
-void CrsSet(longint S)
+void CrsSet(TCrs S)
 {
+	Crs = S;
 }
 
 void CrsShow()
 {
+	CONSOLE_CURSOR_INFO visible{ 1, true };
+	SetConsoleCursorInfo(hCons, &visible);
+	Crs.Enabled = true;
 }
 
 void CrsHide()
 {
+	CONSOLE_CURSOR_INFO invisible { 1, false };
+	SetConsoleCursorInfo(hCons, &invisible);
+	Crs.Enabled = false;
 }
 
 void CrsBig()
@@ -596,8 +585,10 @@ void AssignCrt(pstring* filepath)
 {
 	TextFile* F = (TextFile*)filepath;
 	/* !!! with F do!!! */
-	F->Mode = "fmClosed"; F->bufsize = 128; //BufPtr = buffer;
-	F->openfunc = OpenCrt; F->name[0] = 0;
+	F->Mode = "fmClosed";
+	F->bufsize = 128; //BufPtr = buffer;
+	F->openfunc = OpenCrt;
+	F->name[0] = 0;
 }
 
 void GetMonoColor()
@@ -612,20 +603,27 @@ void EgaScroll(WORD X, WORD Y, WORD SizeX, WORD SizeY, bool Up)
 {
 }
 
-void HercGetOfs()
-{
-}
-
-void HercWriteArr(WORD X, WORD Y, WORD L, void* From)
-{
-}
+//void HercGetOfs()
+//{
+//}
+//
+//void HercWriteArr(WORD X, WORD Y, WORD L, void* From)
+//{
+//}
 
 void CrsDraw()
 {
 }
 
-void ScrGetPtr()
+void ScrGetPtr(WORD X, WORD Y)
 {
+	//WORD mul = TxtCols * Y;
+	//mul = mul << 1;
+	//X = X << 1;
+	//X = X + mul;
+	//
+	//// v AX i v ES bude ScrSeg
+	//// v DI bude X
 }
 
 void HideMausIn()
@@ -658,6 +656,7 @@ void CrsIntr08()
 
 void ScrPush1(WORD X, WORD Y, WORD SizeX, WORD SizeY, void* P)
 {
+	
 }
 
 void Scroll(WORD X, WORD Y, WORD SizeX, WORD SizeY, bool Up)

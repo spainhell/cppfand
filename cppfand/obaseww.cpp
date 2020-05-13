@@ -137,9 +137,10 @@ void WriteWFrame(BYTE WFlags, pstring top, pstring bottom)
 	if ((WFlags & WHasFrame) == 0) return;
 	n = 0;
 	if ((WFlags & WDoubleFrame) != 0) n = 9;
-	cols = WindMax.X - WindMin.X + 1; rows = WindMax.Y - WindMin.Y + 1;
+	cols = WindMax.X - WindMin.X + 1;
+	rows = WindMax.Y - WindMin.Y + 1;
 	ScrWrFrameLn(WindMin.X, WindMin.Y, n, cols, TextAttr);
-	for (i = 1; i < rows - 2; i++) {
+	for (i = 1; i <= rows - 2; i++) {
 		if ((WFlags & WNoClrScr) == 0)
 			ScrWrFrameLn(WindMin.X, WindMin.Y + i, n + 6, cols, TextAttr);
 		else {

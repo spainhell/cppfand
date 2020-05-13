@@ -254,10 +254,10 @@ void ClrWwProc(Instr* PD)
 void ExecPgm(Instr* PD)
 {
 	pstring s; pstring Prog; WORD i; BYTE x = 0, y = 0; bool b = false;
-	Wind wmin, wmax; longint w, crs;
+	Wind wmin, wmax; longint w;
 	wmin = WindMin;
 	wmax = WindMax;
-	crs = CrsGet();
+	TCrs crs = CrsGet();
 	w = PushW(1, 1, TxtCols, 1);
 	WindMin = wmin;
 	WindMax = wmax;
