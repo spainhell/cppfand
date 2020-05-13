@@ -194,6 +194,7 @@ void TMenu::HandleEvent()
 	TestEvent();
 label1:
 	KbdChar = 0;
+	ReadKbd();
 	/* !!! with Event do!!! */
 	switch (Event.What) {
 	case evMouseDown: {
@@ -224,12 +225,12 @@ label1:
 		default:
 			KbdChar = Event.KeyCode; break;
 		}
+		break;
 	}
 	default: {
 		if (frst) { DisplLLHelp(HlpRdb, hlp, false); frst = false; }
 		ClrEvent();
 		WaitEvent(0);
-		Event.What = ReadKey(); // nové
 		goto label1;
 	}
 	}

@@ -3,18 +3,24 @@
 #include "drivers.h"
 
 #include <windows.h>
+#include <stdio.h>
 #include <consoleapi.h>
 #include <handleapi.h>
 #include <iostream>
 #include <winbase.h>
-
 #include "base.h"
 #include "editor.h"
+#include "keyboard.h"
 #include "legacy.h"
 
-HANDLE hCons = GetStdHandle(STD_OUTPUT_HANDLE);
+// *** KONZOLA ***
+HANDLE hConsOutput;
+Keyboard keyboard;
 SMALL_RECT hWin;
 DWORD ConsoleError;
+PINPUT_RECORD KbdBuf;
+DWORD cNumRead = 0;
+// ***
 
 TEvent Event; // r39
 WORD KbdChar;
@@ -102,6 +108,15 @@ BYTE TabLtN[256] = {  /* Latin2 to NoDiakr */
 
 const BYTE CsKbdSize = 67;
 
+void ConsoleInit()
+{
+	// inicializace vystupu na konzolu
+	hConsOutput = GetStdHandle(STD_OUTPUT_HANDLE);
+	
+	// inicializace vstupu z konzoly, nastaveni bufferu klavesnice
+	//keyboard = new Keyboard();
+}
+
 void BreakIntHandler()
 {
 }
@@ -164,10 +179,11 @@ bool KeyPressed()
 
 WORD ReadKey()
 {
-	DWORD nrEvents;
-	_INPUT_RECORD KbdBuf;
-	ReadConsoleInput(hCons, &KbdBuf, 1, &nrEvents);
-	return KbdBuf.EventType;
+	auto key = keyboard.Get();
+	auto d = key.wVirtualKeyCode;
+	Event.What = evKeyDown;
+	Event.KeyCode = d;
+	return d;
 }
 
 WORD ConvHCU()
@@ -355,7 +371,19 @@ bool ESCPressed()
 
 WORD ReadKbd()
 {
-	return 0;
+	KEY_EVENT_RECORD key;
+	key.uChar.AsciiChar = '\0';
+	WORD code = 0;
+	do {
+		key = keyboard.Get();
+		code = key.wVirtualKeyCode;
+		Sleep(50);
+	} while (code == 0);
+
+	Event.What = evKeyDown;
+	Event.KeyCode = code;
+	KbdChar = key.uChar.AsciiChar;
+	return code;
 }
 
 void Delay(WORD N)
@@ -372,7 +400,7 @@ void NoSound()
 
 void ScrClr(WORD X, WORD Y, WORD SizeX, WORD SizeY, char C, BYTE Color)
 {
-	//SetConsoleScreenBufferSize(hCons, { 80,25 });
+	//SetConsoleScreenBufferSize(hConsOutput, { 80,25 });
 	DWORD written = 0;
 	CHAR_INFO* _buf = new CHAR_INFO[SizeX * SizeY];
 	COORD BufferSize = { (short)SizeX, (short)SizeY };
@@ -380,12 +408,12 @@ void ScrClr(WORD X, WORD Y, WORD SizeX, WORD SizeY, char C, BYTE Color)
 	
 	CHAR_INFO ci; ci.Char.AsciiChar = C; ci.Attributes = Color;
 	for (int i = 0; i < SizeX * SizeY; i++) { _buf[i] = ci; }
-	WriteConsoleOutput(hCons, _buf, BufferSize, {0, 0}, &rect);
+	WriteConsoleOutput(hConsOutput, _buf, BufferSize, {0, 0}, &rect);
 	
-	//SetConsoleCursorPosition(hCons, leftTop);
-	//WriteConsoleOutput(hCons, _buf, rightBottom, leftTop, &hWin);
-	//FillConsoleOutputAttribute(hCons, Color, SizeX * SizeY, coordScreen, &written);
-	//FillConsoleOutputCharacter(hCons, C, SizeX * SizeY, coordScreen, &written);
+	//SetConsoleCursorPosition(hConsOutput, leftTop);
+	//WriteConsoleOutput(hConsOutput, _buf, rightBottom, leftTop, &hWin);
+	//FillConsoleOutputAttribute(hConsOutput, Color, SizeX * SizeY, coordScreen, &written);
+	//FillConsoleOutputCharacter(hConsOutput, C, SizeX * SizeY, coordScreen, &written);
 
 	delete[] _buf;
 }
@@ -394,8 +422,8 @@ void ScrWrChar(WORD X, WORD Y, char C, BYTE Color)
 {
 	DWORD written = 0;
 	WORD attr = Color;
-	WriteConsoleOutputCharacterA(hCons, &C, 1, { (short)X, (short)Y }, &written);
-	WriteConsoleOutputAttribute(hCons, &attr, 1, { (short)X, (short)Y }, &written);
+	WriteConsoleOutputCharacterA(hConsOutput, &C, 1, { (short)X, (short)Y }, &written);
+	WriteConsoleOutputAttribute(hConsOutput, &attr, 1, { (short)X, (short)Y }, &written);
 }
 
 void ScrWrStr(WORD X, WORD Y, std::string S, BYTE Color)
@@ -412,7 +440,7 @@ void ScrWrStr(WORD X, WORD Y, std::string S, BYTE Color)
 		ci.Char.AsciiChar = S[i];
 		_buf[i] = ci;
 	}
-	WriteConsoleOutputA(hCons, _buf, BufferSize, { 0, 0 }, &rect);
+	WriteConsoleOutputA(hConsOutput, _buf, BufferSize, { 0, 0 }, &rect);
 }
 
 void ScrWrFrameLn(WORD X, WORD Y, BYTE Typ, BYTE Width, BYTE Color)
@@ -429,7 +457,7 @@ void ScrWrText(WORD X, WORD Y, const char* S)
 {
 	DWORD written = 0;
 	size_t len = strlen(S);
-	WriteConsoleOutputCharacterA(hCons, S, len, { (short)X, (short)Y }, &written);
+	WriteConsoleOutputCharacterA(hConsOutput, S, len, { (short)X, (short)Y }, &written);
 }
 
 void ScrWrBuf(WORD X, WORD Y, void* Buf, WORD L)
@@ -460,7 +488,7 @@ void ScrMove(WORD X, WORD Y, WORD ToX, WORD ToY, WORD L)
 void ScrColor(WORD X, WORD Y, WORD L, BYTE Color)
 {
 	DWORD written = 0;
-	FillConsoleOutputAttribute(hCons, Color, L, {(short)X, (short)Y}, &written);
+	FillConsoleOutputAttribute(hConsOutput, Color, L, {(short)X, (short)Y}, &written);
 }
 
 TCrs CrsGet()
@@ -476,14 +504,14 @@ void CrsSet(TCrs S)
 void CrsShow()
 {
 	CONSOLE_CURSOR_INFO visible{ 1, true };
-	SetConsoleCursorInfo(hCons, &visible);
+	SetConsoleCursorInfo(hConsOutput, &visible);
 	Crs.Enabled = true;
 }
 
 void CrsHide()
 {
 	CONSOLE_CURSOR_INFO invisible { 1, false };
-	SetConsoleCursorInfo(hCons, &invisible);
+	SetConsoleCursorInfo(hConsOutput, &invisible);
 	Crs.Enabled = false;
 }
 
@@ -507,7 +535,7 @@ void CrsIntrDone()
 
 void GotoXY(WORD X, WORD Y)
 {
-	SetConsoleCursorPosition(hCons, { (short)X, (short)Y });
+	SetConsoleCursorPosition(hConsOutput, { (short)X, (short)Y });
 }
 
 BYTE WhereX()
@@ -570,7 +598,8 @@ void ScrBeep()
 
 WORD WaitEvent(WORD Delta)
 {
-	return 1;
+	GetKeyEvent();
+	return ReadKey();
 }
 
 void GetEvent()

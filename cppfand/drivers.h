@@ -101,17 +101,10 @@ void ConvKamenLatin(WORD* Buf, WORD L, bool ToLatin);
 char ToggleCS(char C);
 char NoDiakr(char C);
 void ConvToNoDiakr(WORD* Buf, WORD L, TVideoFont FromFont);
-//void ClearKeyBuf(); // { Bios }
 void ClearKbdBuf();
-//bool KeyPressed(); // { Bios }
-//WORD ReadKey(); // { Bios }
 bool KbdPressed(); // { buffer + Bios }
 bool ESCPressed(); // { other Bios input lost }
 WORD ReadKbd(); // { buffer + Bios / + mouse / }
-//bool KbdTimer(WORD Delta, BYTE Kind);
-//void AddToKbdBuf(WORD KeyCode);
-//void BreakIntrInit();
-//void BreakIntrDone();
 void Delay(WORD N);
 void Sound(WORD N);
 void NoSound();
@@ -148,19 +141,9 @@ void DelLine();
 void Beep();
 void LockBeep();
 void ScrBeep();
-//void InitMouseEvents();
-//void DoneMouseEvents();
-//void ShowMouse();
-//void HideMouse();
-//void ShowMaus();
-//void HideMaus();
-//void GetMouseEvent();
-//void SetMouse(WORD X, WORD Y, bool Visible);
-//bool TestEvent();
 WORD WaitEvent(WORD Delta);
 void GetEvent();
 void ClrEvent();
-//WORD AddCtrlAltShift(BYTE Flgs);
 void AssignCrt(pstring* filepath);
 extern WORD AutoTicks, DownTicks, AutoDelay;
 extern void* OldBreakIntr;
@@ -169,8 +152,6 @@ extern void* OldKbdIntr;
 void GetMonoColor();
 void EgaWriteArr(WORD X, WORD Y, WORD L, void* From);
 void EgaScroll(WORD X, WORD Y, WORD SizeX, WORD SizeY, bool Up);
-//void HercGetOfs();
-//void HercWriteArr(WORD X, WORD Y, WORD L, void* From);
 void CrsDraw();
 void ScrGetPtr(WORD X, WORD Y);
 void HideMausIn();
@@ -205,3 +186,4 @@ void ClearKeyBuf();
 void BreakIntrInit();
 void InitMouseEvents();
 
+void ConsoleInit();

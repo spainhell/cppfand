@@ -339,6 +339,7 @@ void InitRunFand()
 	double r;
 
 	InitDrivers();
+	ConsoleInit();
 	//WasInitDrivers = true;
 	InitAccess();
 

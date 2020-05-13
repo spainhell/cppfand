@@ -157,6 +157,7 @@
     <ClCompile Include="editor.cpp" />
     <ClCompile Include="genrprt.cpp" />
     <ClCompile Include="kbdww.cpp" />
+    <ClCompile Include="keyboard.cpp" />
     <ClCompile Include="legacy.cpp" />
     <ClCompile Include="oaccess.cpp" />
     <ClCompile Include="obase.cpp" />
@@ -192,6 +193,7 @@
     <ClInclude Include="fanddml.h" />
     <ClInclude Include="genrprt.h" />
     <ClInclude Include="kbdww.h" />
+    <ClInclude Include="keyboard.h" />
     <ClInclude Include="legacy.h" />
     <ClInclude Include="oaccess.h" />
     <ClInclude Include="obase.h" />
