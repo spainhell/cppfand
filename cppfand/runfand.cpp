@@ -547,7 +547,7 @@ void InitRunFand()
 	else MsgLine += 'x';
 
 	//GotoXY(5, TxtRows - 3);
-	ScrWrText(4, TxtRows - 4, MsgLine.c_str());
+	ScrWrText(5, TxtRows - 3, MsgLine.c_str());
 	//printf("%s", MsgLine.c_str());
 
 
@@ -598,6 +598,7 @@ label1:
 	case 3: { IsInstallRun = true; CallInstallRdb(); IsInstallRun = false; break; }
 	case 4: SelectEditTxt(".TXT", true); break;
 	case 5: OSshell("", "", false, true, true, true); break;
+	//case 5: GetOpenFileName(); break;
 	case 0:
 	case 6: { CloseH(WorkHandle); CloseFANDFiles(false); return; break; }
 	default:;

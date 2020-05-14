@@ -453,6 +453,8 @@ void ScrWrFrameLn(WORD X, WORD Y, BYTE Typ, BYTE Width, BYTE Color)
 
 void ScrWrText(WORD X, WORD Y, const char* S)
 {
+	X += WindMin.X - 1;
+	Y += WindMin.Y - 1;
 	DWORD written = 0;
 	size_t len = strlen(S);
 	WriteConsoleOutputCharacterA(hConsOutput, S, len, { (short)X, (short)Y }, &written);
@@ -552,6 +554,23 @@ void Window(BYTE X1, BYTE Y1, BYTE X2, BYTE Y2)
 	hWin.Right = X2;
 	hWin.Top = Y1;
 	hWin.Bottom = Y2;
+
+	// pùvodní kód z ASM
+	if (X2 <= X1) return;
+	if (Y2 <= Y1) return;
+	if (X1 == 0) return;
+	X1--;
+	if (Y1 == 0) return;
+	Y1--;
+	if (X2 > TxtCols) return;
+	X2--;
+	if (Y2 > TxtRows) return;
+	Y2--;
+	WindMin.X = X1;
+	WindMin.Y = Y1;
+	WindMax.X = X2;
+	WindMax.Y = Y2;
+	GotoXY(X1, Y1);
 }
 
 void ClrScr()

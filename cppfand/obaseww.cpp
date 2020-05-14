@@ -161,14 +161,15 @@ void WrHd(pstring Hd, WORD Row, WORD MaxCols)
 	s += Hd + " ";
 	if (s.length() > MaxCols) s[0] = char(MaxCols);
 	//GotoXY((MaxCols - s.length()) / 2 + 2, Row);
-	ScrWrText((MaxCols - s.length()) / 2 + 2, Row, MsgLine.c_str());
+	ScrWrText((MaxCols - s.length()) / 2 + 2, Row, s.c_str());
 	//printf("%s", s.c_str());
 }
 
 void CenterWw(BYTE& C1, BYTE& R1, BYTE& C2, BYTE& R2, BYTE WFlags)
 {
 	integer Cols, Rows, M;
-	M = 0; if ((WFlags && WHasFrame) != 0) M = 2;
+	M = 0;
+	if ((WFlags & WHasFrame) != 0) M = 2;
 	Cols = C2 + M;
 	if (C1 != 0) Cols = C2 - C1 + 1;
 	Cols = MaxI(M + 1, MinI(Cols, TxtCols));
@@ -188,7 +189,7 @@ longint PushWFramed(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, pstring top, 
 	WORD i, x, y;
 	CenterWw(C1, R1, C2, R2, WFlags);
 	x = 0; y = 0;
-	if ((WFlags && WShadow) != 0) {
+	if ((WFlags & WShadow) != 0) {
 		x = MinW(2, TxtCols - C2);
 		y = MinW(1, TxtRows - R2);
 	}
