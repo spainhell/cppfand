@@ -1,5 +1,7 @@
 #include "runedi.h"
 
+#include <windows.h>
+#include <consoleapi.h>
 #include "genrprt.h"
 #include "kbdww.h"
 #include "legacy.h"
@@ -50,48 +52,52 @@ void SetSelectFalse()
 
 void DelBlk(BYTE* sLen, pstring* s, WORD pos)
 {
-	while ((sLen > 0) && (s[*sLen] == ' ') && (pos <= *sLen)) sLen--;
+	while ((*sLen > 0) && ((*s)[*sLen] == ' ') && (pos <= *sLen)) sLen--;
 }
 
-void WriteStr(WORD& pos, WORD& base, WORD& maxLen, WORD& maxCol, BYTE* sLen, pstring* s, bool star,
+void WriteStr(WORD& pos, WORD& base, WORD& maxLen, WORD& maxCol, BYTE sLen, pstring* s, bool star,
 	WORD cx, WORD cy, WORD cx1, WORD cy1)
 {
-	WORD BuffLine[MaxTxtCols];
-	WORD i;
-	struct { BYTE chr; BYTE attr; } x{ 0, 0 };
-	WORD* item = (WORD*)&x;
-	if (pos <= base) base = pos - 1; else if (pos > base + maxCol) {
-		base = pos - maxCol; if (pos > maxLen) base--;
-	}
+	CHAR_INFO Buffer[MaxTxtCols];
+	if (pos <= base) base = pos - 1;
+	else if (pos > base + maxCol) { base = pos - maxCol; if (pos > maxLen) base--; }
 	if ((pos == base + 1) && (base > 0)) base--;
-	DelBlk(sLen, s, pos);
-	for (i = 1; i < maxCol; i++) {
-		x.attr = TextAttr;
-		if (base + i <= *sLen) {
-			if (star) x.chr = '*';
-			else x.chr = (*s)[base + i];
-			if (x.chr < ' ') {
-				x.chr = x.chr + 64;
-				x.attr = colors.tCtrl;
+	DelBlk(&sLen, s, pos);
+	
+	//WORD BuffLine[MaxTxtCols];
+	//WORD i;
+	//struct { BYTE chr; BYTE attr; } x{ 0, 0 };
+	//WORD* item = (WORD*)&x;
+
+
+	for (WORD i = 0; i < maxCol; i++) {
+		Buffer[i].Attributes = TextAttr;
+		if (base + i + 1 <= sLen) {
+			if (star) Buffer[i].Char.AsciiChar = '*';
+			else Buffer[i].Char.AsciiChar = (*s)[base + i + 1];
+			if (Buffer[i].Char.AsciiChar < ' ') {
+				Buffer[i].Char.AsciiChar = Buffer[i].Char.AsciiChar + 64;
+				Buffer[i].Attributes = colors.tCtrl;
 			}
 		}
-		else x.chr = ' ';
-		BuffLine[i] = *item;
+		else Buffer[i].Char.AsciiChar = ' ';
+		//BuffLine[i] = *item;
 	}
-	ScrWrBuf(cx1, cy1, BuffLine, maxCol);
+	ScrWrBuf(cx1, cy1, Buffer, maxCol);
 	GotoXY(cx + pos - base - 1, cy);
 }
 
 WORD EditTxt(pstring* s, WORD pos, WORD maxlen, WORD maxcol, char typ, bool del, bool star, bool upd, bool ret,
 	WORD Delta)
 {
-	BYTE* sLen = (BYTE*)s;
+	auto sLen = &(*s)[0];
 	WORD base, cx, cy, cx1, cy1;
 	longint EndTime; bool InsMode;
-	InsMode = true; base = 0; if (pos > maxlen + 1) pos = maxlen + 1;
+	InsMode = true; base = 0;
+	if (pos > maxlen + 1) pos = maxlen + 1;
 	cx = WhereX(); cx1 = cx + WindMin.X - 1; cy = WhereY(); cy1 = cy + WindMin.Y - 1;
 	CrsNorm();
-	WriteStr(pos, base, maxlen, maxcol, sLen, s, star, cx, cy, cx1, cy1);
+	WriteStr(pos, base, maxlen, maxcol, *sLen, s, star, cx, cy, cx1, cy1);
 label1:
 	switch (WaitEvent(Delta)) {
 	case 1/*flags*/: goto label1; break;
@@ -109,7 +115,7 @@ label1:
 	case evKeyDown: {
 		KbdChar = Event.KeyCode; ClrEvent();
 		if (del) {
-			if (KbdChar >= 0x20 && KbdChar <= 0xFE) { pos = 1; sLen = 0; WriteStr(pos, base, maxlen, maxcol, sLen, s, star, cx, cy, cx1, cy1); }
+			if (KbdChar >= 0x20 && KbdChar <= 0xFE) { pos = 1; sLen = 0; WriteStr(pos, base, maxlen, maxcol, *sLen, s, star, cx, cy, cx1, cy1); }
 			del = false;
 		}
 
@@ -193,7 +199,7 @@ label1:
 			}
 			break;
 		}
-		WriteStr(pos, base, maxlen, maxcol, sLen, s, star, cx, cy, cx1, cy1);
+		WriteStr(pos, base, maxlen, maxcol, *sLen, s, star, cx, cy, cx1, cy1);
 	};
 	}
 	ClrEvent();
@@ -2023,7 +2029,7 @@ bool PromptAndSearch(bool Create)
 void PromptGotoRecNr()
 {
 	wwmix ww;
-	
+
 	WORD I; pstring Txt; longint N; bool Del;
 	I = 1; Txt = ""; Del = true;
 	do {
@@ -2556,7 +2562,7 @@ label1:
 void PromptSelect()
 {
 	wwmix ww;
-	
+
 	pstring Txt;
 	if (Select) Txt = *E->BoolTxt; else Txt = "";
 	if (IsCurrChpt()) ReleaseFDLDAfterChpt();
@@ -2609,7 +2615,7 @@ bool FinArgs(LinkD* LD, FieldDPtr F)
 bool SelFldsForEO(EditOpt* EO, LinkD* LD)
 {
 	wwmix ww;
-	
+
 	FieldDPtr F; FieldList FL, FL1; pstring s; void* p = nullptr;
 	auto result = true; if (EO->Flds == nullptr) return result;
 	FL = EO->Flds;
@@ -2642,7 +2648,7 @@ bool SelFldsForEO(EditOpt* EO, LinkD* LD)
 void ImbeddEdit()
 {
 	wwmix ww;
-	
+
 	void* p = nullptr; pstring s, s1, s2; WORD Brk; StringList SL;
 	EditOpt* EO = nullptr; FileDPtr FD = nullptr; RdbD* R = nullptr; longint w;
 
@@ -2681,7 +2687,7 @@ label1:
 void DownEdit()
 {
 	wwmix ww;
-	
+
 	LinkDPtr LD = nullptr; FileDPtr FD = nullptr; StringList SL = nullptr; KeyDPtr K = nullptr;
 	EditOpt* EO = nullptr; WORD Brk, i; void* p = nullptr; pstring s, s1, s2; longint w;
 	MarkStore(p); w = PushW1(1, 1, TxtCols, TxtRows, true, true);
@@ -2788,7 +2794,7 @@ bool DuplToPrevEdit()
 void Calculate2()
 {
 	wwmix ww;
-	
+
 	FrmlPtr Z; pstring Txt; ExitRecord er; WORD I; pstring Msg;
 	void* p = nullptr; char FTyp; double R; FieldDPtr F; bool Del;
 	MarkStore(p);

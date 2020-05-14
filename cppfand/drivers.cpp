@@ -462,8 +462,10 @@ void ScrWrText(WORD X, WORD Y, const char* S)
 
 void ScrWrBuf(WORD X, WORD Y, void* Buf, WORD L)
 {
+	X++; // v Pacalu to bylo od 1
+	Y++; // --""--
 	SMALL_RECT XY = { (short)X, (short)Y, (short)X + L, (short)Y + 1 };
-	COORD BufferSize = { L, 1 };
+	COORD BufferSize = { (short)L, 1 };
 	WriteConsoleOutputA(hConsOutput, (CHAR_INFO*)Buf, BufferSize, { 0, 0 }, &XY);
 }
 
@@ -538,21 +540,26 @@ void CrsIntrDone()
 
 void GotoXY(WORD X, WORD Y)
 {
+	if (X > WindMax.X || Y > WindMax.Y) return;
+	X += WindMin.X;
+	Y += WindMin.Y;
 	SetConsoleCursorPosition(hConsOutput, { (short)X, (short)Y });
 }
 
 BYTE WhereX()
 {
+	// vrací relativní pozici (k aktuálnímu oknu)
 	CONSOLE_SCREEN_BUFFER_INFO sbi;
 	GetConsoleScreenBufferInfo(hConsOutput, &sbi);
-	return (BYTE)sbi.dwCursorPosition.X;
+	return (BYTE)sbi.dwCursorPosition.X - WindMin.X;
 }
 
 BYTE WhereY()
 {
+	// vrací relativní pozici (k aktuálnímu oknu)
 	CONSOLE_SCREEN_BUFFER_INFO sbi;
 	GetConsoleScreenBufferInfo(hConsOutput, &sbi);
-	return (BYTE)sbi.dwCursorPosition.Y;
+	return (BYTE)sbi.dwCursorPosition.Y - WindMin.Y;
 }
 
 void Window(BYTE X1, BYTE Y1, BYTE X2, BYTE Y2)
