@@ -25,3 +25,5 @@ void InitRunFand(); // !!! spuštìní - vstupní procedura
 //void CallInstallRdb();
 //void CallEditTxt();
 //void SelectEditTxt(pstring E, bool OnFace);
+
+void OpenFileDialog();

@@ -462,6 +462,9 @@ void ScrWrText(WORD X, WORD Y, const char* S)
 
 void ScrWrBuf(WORD X, WORD Y, void* Buf, WORD L)
 {
+	SMALL_RECT XY = { (short)X, (short)Y, (short)X + L, (short)Y + 1 };
+	COORD BufferSize = { L, 1 };
+	WriteConsoleOutputA(hConsOutput, (CHAR_INFO*)Buf, BufferSize, { 0, 0 }, &XY);
 }
 
 void ScrRdBuf(WORD X, WORD Y, void* Buf, WORD L)
@@ -540,12 +543,16 @@ void GotoXY(WORD X, WORD Y)
 
 BYTE WhereX()
 {
-	return 1;
+	CONSOLE_SCREEN_BUFFER_INFO sbi;
+	GetConsoleScreenBufferInfo(hConsOutput, &sbi);
+	return (BYTE)sbi.dwCursorPosition.X;
 }
 
 BYTE WhereY()
 {
-	return 1;
+	CONSOLE_SCREEN_BUFFER_INFO sbi;
+	GetConsoleScreenBufferInfo(hConsOutput, &sbi);
+	return (BYTE)sbi.dwCursorPosition.Y;
 }
 
 void Window(BYTE X1, BYTE Y1, BYTE X2, BYTE Y2)

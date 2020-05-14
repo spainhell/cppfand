@@ -1,4 +1,8 @@
 #include "runfand.h"
+
+#include <windows.h>
+#include <commdlg.h>
+
 #include "base.h"
 #include "legacy.h"
 #include "pstring.h"
@@ -456,7 +460,7 @@ void InitRunFand()
 	OpenWorkH();
 	OpenFANDFiles(false);
 
-	if (paramstr.size() > 1 && !paramstr.at(1).empty() && paramstr.at(1) != "?") 
+	if (paramstr.size() > 1 && !paramstr.at(1).empty() && paramstr.at(1) != "?")
 	{
 #ifndef FandRunV
 		if (paramstr.size() > 2 && SEquUpcase(paramstr(2), 'D')) {
@@ -597,12 +601,53 @@ label1:
 	case 2: { SelectRunRdb(true); IsTestRun = false; break; }
 	case 3: { IsInstallRun = true; CallInstallRdb(); IsInstallRun = false; break; }
 	case 4: SelectEditTxt(".TXT", true); break;
-	case 5: OSshell("", "", false, true, true, true); break;
-	//case 5: GetOpenFileName(); break;
+		//case 5: OSshell("", "", false, true, true, true); break;
+	case 5: OpenFileDialog(); break;
 	case 0:
 	case 6: { CloseH(WorkHandle); CloseFANDFiles(false); return; break; }
 	default:;
 	}
 	PopW(w);
 	goto label1;
+}
+
+void OpenFileDialog()
+{
+	char filename[MAX_PATH];
+	OPENFILENAME ofn;
+	ZeroMemory(&filename, sizeof(filename));
+	ZeroMemory(&ofn, sizeof(ofn));
+	ofn.lStructSize = sizeof(OPENFILENAME);
+	//ofn.hwndOwner = NULL;
+	ofn.lpstrFilter = "úloha RDB\0*.RDB\0všechny soubory\0*.*\0\0";
+	ofn.lpstrFile = filename;
+	ofn.nMaxFile = MAX_PATH;
+	ofn.lpstrTitle = "Vyberte úlohu";
+	ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST;
+	if (GetOpenFileName(&ofn))
+	{
+		printf("Dobøe to dopadlo :-)");
+	}
+	else
+	{
+		switch (CommDlgExtendedError())
+		{
+		case CDERR_DIALOGFAILURE: printf("CDERR_DIALOGFAILURE\n"); break;
+		case CDERR_FINDRESFAILURE: printf("CDERR_FINDRESFAILURE\n"); break;
+		case CDERR_INITIALIZATION: printf("CDERR_INITIALIZATION\n"); break;
+		case CDERR_LOADRESFAILURE: printf("CDERR_LOADRESFAILURE\n"); break;
+		case CDERR_LOADSTRFAILURE: printf("CDERR_LOADSTRFAILURE\n"); break;
+		case CDERR_LOCKRESFAILURE: printf("CDERR_LOCKRESFAILURE\n"); break;
+		case CDERR_MEMALLOCFAILURE: printf("CDERR_MEMALLOCFAILURE\n"); break;
+		case CDERR_MEMLOCKFAILURE: printf("CDERR_MEMLOCKFAILURE\n"); break;
+		case CDERR_NOHINSTANCE: printf("CDERR_NOHINSTANCE\n"); break;
+		case CDERR_NOHOOK: printf("CDERR_NOHOOK\n"); break;
+		case CDERR_NOTEMPLATE: printf("CDERR_NOTEMPLATE\n"); break;
+		case CDERR_STRUCTSIZE: printf("CDERR_STRUCTSIZE\n"); break;
+		case FNERR_BUFFERTOOSMALL: printf("FNERR_BUFFERTOOSMALL\n"); break;
+		case FNERR_INVALIDFILENAME: printf("FNERR_INVALIDFILENAME\n"); break;
+		case FNERR_SUBCLASSFAILURE: printf("FNERR_SUBCLASSFAILURE\n"); break;
+		default: printf("You cancelled.\n");
+		}
+	}
 }
