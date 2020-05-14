@@ -12,6 +12,8 @@
 #include "editor.h"
 #include "keyboard.h"
 #include "legacy.h"
+#include "obaseww.h"
+#include "wwmenu.h"
 
 // *** KONZOLA ***
 HANDLE hConsOutput;
@@ -112,7 +114,7 @@ void ConsoleInit()
 {
 	// inicializace vystupu na konzolu
 	hConsOutput = GetStdHandle(STD_OUTPUT_HANDLE);
-	
+
 	// inicializace vstupu z konzoly, nastaveni bufferu klavesnice
 	//keyboard = new Keyboard();
 }
@@ -167,17 +169,12 @@ void AddToKbdBuf(WORD KeyCode)
 
 bool KeyPressed()
 {
-	return true;
+	return keyboard.Exists();
 }
 
 WORD ReadKey()
 {
-	//auto key = keyboard.Get();
-	//auto d = key.wVirtualKeyCode;
-	//Event.What = evKeyDown;
-	//Event.KeyCode = d;
-	//return d;
-	return 0;
+	return ReadKbd();
 }
 
 WORD ConvHCU()
@@ -187,21 +184,36 @@ WORD ConvHCU()
 
 void GetKeyEvent()
 {
+	KEY_EVENT_RECORD key;
+	bool exists = false;
+	bool pressed = false;
+	WORD code = 0;
+
+	do {
+		exists = keyboard.Get(key);
+		if (exists && key.bKeyDown)
+		{
+			Event.What = evKeyDown;
+			Event.KeyCode = code;
+			KbdChar = key.uChar.AsciiChar;
+			return;
+		}
+	} while (exists);
 }
 
 bool KbdTimer(WORD Delta, BYTE Kind)
 {
-	//longint EndTime;
+	longint EndTime;
 	auto result = false;
-	//EndTime = Timer + Delta;
-	//result = false;
-	//label1:
-	//switch (Kind) {          /* 0 - wait, 1 - wait || ESC, 2 - wait || any key */
-	//case 1: if (KeyPressed() && (ReadKey() == _ESC_)) return result;
-	//case 2: if (KbdPressed()) { ReadKbd(); return result; }
-	//}
-	//if (Timer < EndTime) goto label1;
-	//result = true;
+	EndTime = GetTickCount() + Delta;
+	result = false;
+	label1:
+	switch (Kind) {          /* 0 - wait, 1 - wait || ESC, 2 - wait || any key */
+	case 1: if (KeyPressed() && (ReadKey() == _ESC_)) return result;
+	case 2: if (KbdPressed()) { ReadKbd(); return result; }
+	}
+	if (GetTickCount() < EndTime) goto label1;
+	result = true;
 	return result;
 }
 
@@ -243,6 +255,7 @@ void ShowMaus()
 
 void GetRedKeyName()
 {
+	// souvisi s mysi
 }
 
 void GetMouseEvent()
@@ -255,16 +268,79 @@ void GetMouseKeyEvent()
 
 void TestGlobalKey()
 {
+	WORD i;
+	bool InMenu6 = false; bool InMenu8 = false;
+	if (Event.What != evKeyDown) return;
+	switch (Event.KeyCode) {
+	case _AltF8_:
+	{
+		if (!InMenu8)
+		{
+			ClrEvent(); InMenu8 = true; i = Menu(45, spec.KbdTyp + 1);
+			if (i != 0) spec.KbdTyp = TKbdConv(i - 1);
+			InMenu8 = false;
+		}
+		break;
+	}
+	case _AltF6_:
+	{
+		if (!InMenu6)
+		{
+			ClrEvent(); InMenu6 = true; PrinterMenu(46); InMenu6 = false;
+		}
+		break;
+	}
+	case _ESC_:
+	{
+		if (LLKeyFlags != 0) { LLKeyFlags = 0; ClrEvent(); }
+		break;
+	}
+	}
 }
 
 WORD AddCtrlAltShift(BYTE Flgs)
 {
-	return 0;
+	WORD result = 0;
+	if (Event.What != evKeyDown) return Event.What;
+	if ((Flgs & 0x04) == 0) goto label3;
+	if (Event.KeyCode != VK_HOME) goto label1;
+	result = _CtrlHome_;
+	goto label6;
+label1:
+	if (Event.KeyCode != VK_END) goto label2;
+	result = _CtrlEnd_;
+	goto label6;
+label2:
+	if (Event.KeyCode != 'Y') goto label3;
+	result = _Y_;
+	goto label6;
+label3:
+	if (Event.KeyCode < VK_F1 || Event.KeyCode > VK_F10) return Event.KeyCode;
+	if ((Flgs & 0x04) == 0) goto label4;
+	result = Event.KeyCode + _CtrlF1_ - _F1_;
+	goto label6;
+label4:
+	if ((Flgs & 0x08) == 0) goto label5;
+	result = Event.KeyCode + _AltF1_ - _F1_;
+	goto label6;
+label5:
+	if ((Flgs & 0x03) == 0) goto label6;
+	result = Event.KeyCode + _ShiftF1_ - _F1_;
+label6:
+	Event.KeyCode = result;
+	TestGlobalKey();
+	return Event.KeyCode;
 }
 
 bool TestEvent()
 {
-	return false;
+label1:
+	if (Event.What == 0) GetMouseKeyEvent();
+	if (Event.What == 0) GetKeyEvent();
+	if (Event.What == 0) return false;
+	TestGlobalKey();
+	if (Event.What == 0) goto label1;
+	return true;
 }
 
 
@@ -351,26 +427,59 @@ void ConvToNoDiakr(WORD* Buf, WORD L, TVideoFont FromFont)
 
 void ClearKbdBuf()
 {
+	keyboard.ClearBuf();
 }
 
 bool KbdPressed()
 {
-	return true;
+	if (keyboard.Exists()) return true;
+	if (KeyPressed()) return true;
+	Event.What = 0;
+	GetMouseKeyEvent();
+	if (Event.What == evKeyDown)
+	{
+		AddToKbdBuf(Event.KeyCode);
+		ClrEvent();
+		return true;
+	}
+	return false;
 }
 
 bool ESCPressed()
 {
+	if (KeyPressed())
+	{
+		if (ReadKey() == VK_ESCAPE) return true;
+	}
+	else
+	{
+		GetMouseKeyEvent();
+		if (Event.What == evKeyDown)
+		{
+			if (Event.KeyCode == VK_ESCAPE)
+			{
+				ClrEvent(); return true;
+			}
+		}
+		ClrEvent();
+	}
 	return false;
 }
 
 WORD ReadKbd()
 {
+	// KEYBD.PAS r606
+	// v puvodnim kodu cekala, dokud neexistovala udalost Event.What == evKeyDown
+	// dokola volala ClrEvent + GetEvent
+	// pak vratila KeyCode a do KbdChar ulozila take KeyCode
+	// na konci zavolala ClrEvent
+
 	KEY_EVENT_RECORD key;
 	//key.uChar.AsciiChar = '\0';
 	bool exists = false;
 	bool pressed = false;
 	WORD code = 0;
-	
+
 	do {
 		exists = keyboard.Get(key);
 		pressed = key.bKeyDown;
@@ -403,11 +512,11 @@ void ScrClr(WORD X, WORD Y, WORD SizeX, WORD SizeY, char C, BYTE Color)
 	CHAR_INFO* _buf = new CHAR_INFO[SizeX * SizeY];
 	COORD BufferSize = { (short)SizeX, (short)SizeY };
 	SMALL_RECT rect = { X, Y, X + SizeX, Y + SizeY };
-	
+
 	CHAR_INFO ci; ci.Char.AsciiChar = C; ci.Attributes = Color;
 	for (int i = 0; i < SizeX * SizeY; i++) { _buf[i] = ci; }
-	WriteConsoleOutput(hConsOutput, _buf, BufferSize, {0, 0}, &rect);
-	
+	WriteConsoleOutput(hConsOutput, _buf, BufferSize, { 0, 0 }, &rect);
+
 	//SetConsoleCursorPosition(hConsOutput, leftTop);
 	//WriteConsoleOutput(hConsOutput, _buf, rightBottom, leftTop, &hWin);
 	//FillConsoleOutputAttribute(hConsOutput, Color, SizeX * SizeY, coordScreen, &written);
@@ -449,7 +558,7 @@ void ScrWrFrameLn(WORD X, WORD Y, BYTE Typ, BYTE Width, BYTE Color)
 	txt[Width] = FrameChars[Typ + 2];
 	for (int i = 2; i <= Width - 1; i++) { txt[i] = FrameChars[Typ + 1]; }
 	ScrWrStr(X, Y, txt, Color);
- }
+}
 
 void ScrWrText(WORD X, WORD Y, const char* S)
 {
@@ -493,17 +602,24 @@ void ScrMove(WORD X, WORD Y, WORD ToX, WORD ToY, WORD L)
 void ScrColor(WORD X, WORD Y, WORD L, BYTE Color)
 {
 	DWORD written = 0;
-	FillConsoleOutputAttribute(hConsOutput, Color, L, {(short)X, (short)Y}, &written);
+	FillConsoleOutputAttribute(hConsOutput, Color, L, { (short)X, (short)Y }, &written);
 }
 
 TCrs CrsGet()
 {
-	return Crs;
+	TCrs crs { Crs.X, Crs.Y, Crs.Big, Crs.Enabled, 0 };
+	return crs;
 }
 
 void CrsSet(TCrs S)
 {
-	Crs = S;
+	CrsHide();
+	Crs.X = S.X;
+	Crs.Y = S.Y;
+	Crs.Big = S.Big;
+	Crs.Enabled = S.Enabled;
+	CrsGotoXY(Crs.X, Crs.Y);
+	if (Crs.Enabled) CrsShow();
 }
 
 void CrsShow()
@@ -515,7 +631,7 @@ void CrsShow()
 
 void CrsHide()
 {
-	CONSOLE_CURSOR_INFO invisible { 1, false };
+	CONSOLE_CURSOR_INFO invisible{ 1, false };
 	SetConsoleCursorInfo(hConsOutput, &invisible);
 	Crs.Enabled = false;
 }
@@ -528,14 +644,6 @@ void CrsBig()
 void CrsNorm()
 {
 	if (Crs.Big) { CrsHide(); Crs.Big = false; } CrsShow();
-}
-
-void CrsIntrInit()
-{
-}
-
-void CrsIntrDone()
-{
 }
 
 void GotoXY(WORD X, WORD Y)
@@ -589,10 +697,14 @@ void Window(BYTE X1, BYTE Y1, BYTE X2, BYTE Y2)
 
 void ClrScr()
 {
+	ScrClr(WindMin.X, WindMin.Y, WindMax.X - WindMin.X + 1, WindMax.Y - WindMin.Y + 1,
+		' ', TextAttr);
+	GotoXY(WindMin.X, WindMin.Y);
 }
 
 void ClrEol()
 {
+	ScrClr(Crs.X, Crs.Y, WindMax.X - Crs.X + 1, 1, ' ', TextAttr);
 }
 
 void TextBackGround(BYTE Color)
@@ -629,16 +741,72 @@ void ScrBeep()
 
 WORD WaitEvent(WORD Delta)
 {
-	GetKeyEvent();
-	return ReadKey();
+	longint t = 0, tl = 0, pos = 0, l = 555;
+	BYTE Flgs = 0;
+	WORD x = 0, y = 0;
+	bool vis = false, ce = false;
+	const BYTE MoveDelay = 10;
+	WORD result = 0;
+
+	Flgs = KbdFlgs;
+label0:
+	pos = 0; t = GetTickCount();
+label1:
+	if (Event.What == 0) { GetMouseKeyEvent(); }
+	if (Event.What == 0) { GetKeyEvent(); }
+	if (Event.What != 0) { result = 0; goto label2; }
+	if (Flgs != KbdFlgs) { result = 1; goto label2; }
+	if ((Delta != 0) && (GetTickCount() > t + Delta)) { result = 2; goto label2; }
+	if (pos != 0)
+	{
+		if (GetTickCount() > tl + MoveDelay)
+		{
+			ScrWrStr(x, y, "       ", 7);
+			x = Random(TxtCols - 8); y = Random(TxtRows - 1);
+			ScrWrStr(x, y, "PC FAND", 7);
+			tl = GetTickCount();
+		}
+	}
+	else
+	{
+		l = TxtCols * TxtRows * 2 + 50;
+		ce = Crs.Enabled;
+		CrsHide();
+		pos = PushW1(1, 1, TxtCols, TxtRows, true, true);
+		TextAttr = 0; ClrScr(); vis = MausVisible; HideMouse(); l = 555;
+	}
+	goto label1;
+label2:
+	if (pos != 0)
+	{
+		srand(l);
+		if (vis) ShowMouse();
+		PopW(pos);
+		if (ce) CrsShow();
+		if (Event.What != 0)
+		{
+			Event.What = 0;
+			goto label0;
+		}
+	}
+	TestGlobalKey();
+#ifdef Trial
+	TestTrial();
+#endif
+	return result;
+
+	//GetKeyEvent();
+	//return ReadKey();
 }
 
 void GetEvent()
 {
+	do { WaitEvent(0); } while (Event.What == 0);
 }
 
 void ClrEvent()
 {
+	Event.What = 0;
 }
 
 void AssignCrt(pstring* filepath)
@@ -652,24 +820,16 @@ void AssignCrt(pstring* filepath)
 }
 
 void GetMonoColor()
-{	
+{
 }
 
 void EgaWriteArr(WORD X, WORD Y, WORD L, void* From)
-{	
+{
 }
 
 void EgaScroll(WORD X, WORD Y, WORD SizeX, WORD SizeY, bool Up)
 {
 }
-
-//void HercGetOfs()
-//{
-//}
-//
-//void HercWriteArr(WORD X, WORD Y, WORD L, void* From)
-//{
-//}
 
 void CrsDraw()
 {
@@ -704,23 +864,20 @@ void CrsBlink()
 
 void CrsGotoXY(WORD aX, WORD aY)
 {
-}
-
-void CrsGotoDX()
-{
-}
-
-void CrsIntr08()
-{
+	bool b;
+	Crs.X = aX;
+	Crs.Y = aY;
+	SetConsoleCursorPosition(hConsOutput, { (short)Crs.X, (short)Crs.Y });
 }
 
 void ScrPush1(WORD X, WORD Y, WORD SizeX, WORD SizeY, void* P)
 {
-	
+
 }
 
 void Scroll(WORD X, WORD Y, WORD SizeX, WORD SizeY, bool Up)
 {
+	printf("Scroll neumime! Zatim ...");
 }
 
 void WrDirect()

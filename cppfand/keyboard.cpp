@@ -7,7 +7,7 @@ Keyboard::Keyboard()
 	if (_handle == INVALID_HANDLE_VALUE) { throw std::exception("Cannot open console input handle."); }
 	_kbdBuf = new _INPUT_RECORD[128];
 	_actualIndex = 0;
-	_lastIndex = 0;
+	_inBuffer = 0;
 	DWORD fdwMode = ENABLE_WINDOW_INPUT; // | ENABLE_MOUSE_INPUT;
 	bool scm = SetConsoleMode(_handle, fdwMode);
 	if (!scm) { throw std::exception("Cannot set console input mode."); }
@@ -21,11 +21,14 @@ Keyboard::~Keyboard()
 bool Keyboard::Exists()
 {
 	return !Empty();
+	
 }
 
 bool Keyboard::Empty()
 {
-	return _actualIndex == _lastIndex;
+	if (_inBuffer > 0) return true;
+	_read();
+	return _inBuffer > 0;
 }
 
 size_t Keyboard::BufSize()
@@ -35,8 +38,9 @@ size_t Keyboard::BufSize()
 
 void Keyboard::ClearBuf()
 {
+	_read();
+	_inBuffer = 0;
 	_actualIndex = 0;
-	_lastIndex = 0;
 }
 
 size_t Keyboard::ActualIndex()
@@ -46,36 +50,33 @@ size_t Keyboard::ActualIndex()
 
 size_t Keyboard::FreeSpace()
 {
-	return 128 - _lastIndex - 1;
+	return 128 - _inBuffer;
 }
 
 bool Keyboard::Get(KEY_EVENT_RECORD& key)
 {
 	// pokud jsme na konci bufferu, naèteme jej znovu
-	if (_actualIndex == _lastIndex)
+	if (_inBuffer == 0 || _actualIndex >= _inBuffer)
 	{
 		// pokud nic nepøišlo, vrátíme false
-		DWORD count = _read();
-		if (count == 0) return false;
+		_read();
+		if (_inBuffer == 0) return false;
 	}
 	// pokud událost není z klávesnice, jdeme na další
-	while (_kbdBuf[_actualIndex].EventType != KEY_EVENT && _actualIndex < _lastIndex)
+	while (_kbdBuf[_actualIndex].EventType != KEY_EVENT && _actualIndex < _inBuffer)
 	{
 		_actualIndex++;
 	}
 
 	// narazili jsme na událost z klávesnice, nebo tam žádná taková není a jsme na konci?
-	if (_actualIndex == _lastIndex) return false;
+	if (_actualIndex == _inBuffer) return false;
 		
 	key = _kbdBuf[_actualIndex++].Event.KeyEvent;
 	return true;
 }
 
-DWORD Keyboard::_read()
+void Keyboard::_read()
 {
-	DWORD nrEvents;
-	ReadConsoleInput(_handle, _kbdBuf, 128, &nrEvents);
+	ReadConsoleInput(_handle, _kbdBuf, 128, &_inBuffer);
 	_actualIndex = 0;
-	_lastIndex = nrEvents + 1;
-	return nrEvents;
 }

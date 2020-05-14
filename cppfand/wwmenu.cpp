@@ -194,7 +194,7 @@ void TMenu::HandleEvent()
 	TestEvent();
 label1:
 	KbdChar = 0;
-	ReadKbd();
+	//ReadKbd();
 	/* !!! with Event do!!! */
 	switch (Event.What) {
 	case evMouseDown: {

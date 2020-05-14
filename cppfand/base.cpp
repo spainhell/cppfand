@@ -1236,7 +1236,7 @@ void MyExit()
 	// TODO? CloseXMS();
 label1: if (WasInitDrivers) {
 	// TODO? DoneMouseEvents();
-	CrsIntrDone();
+	// CrsIntrDone();
 	BreakIntrDone();
 	if (IsGraphMode) {
 		CloseGraph();

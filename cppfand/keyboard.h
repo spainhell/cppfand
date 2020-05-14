@@ -13,12 +13,12 @@ public:
 	size_t ActualIndex();
 	size_t FreeSpace();
 	bool Get(KEY_EVENT_RECORD& key);
-
+	
 private:
 	HANDLE _handle;
 	PINPUT_RECORD _kbdBuf;
 	size_t _actualIndex;
-	size_t _lastIndex;
-	DWORD _read();
+	DWORD _inBuffer;
+	void _read();
 };
 
