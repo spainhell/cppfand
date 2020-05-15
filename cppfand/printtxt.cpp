@@ -34,14 +34,14 @@ void ExecMgrPgm()
 	pstring param = replaceNo(PrTab(prMgrParam), CPath);
 	Wind wmin = WindMin;
 	Wind wmax = WindMax;
-	TCrs crs = CrsGet();
+	TCrs crs = screen.CrsGet();
 	longint w = PushW(1, 1, TxtCols, 1);
 	WindMin = wmin;
 	WindMax = wmax;
-	CrsSet(crs);
+	screen.CrsSet(crs);
 	OSshell(pgmNm, param, true, true, false, false);
 	//asm mov ah, 3; mov bh, 0; push bp; int 10H; pop bp; mov x, dl; mov y, dh;
-	PopW(w); GotoXY(x - WindMin.X + 1, y - WindMin.Y + 1);
+	PopW(w); screen.GotoXY(x - WindMin.X + 1, y - WindMin.Y + 1);
 }
 
 FILE* OpenMgrOutput()

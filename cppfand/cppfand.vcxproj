@@ -178,6 +178,7 @@
     <ClCompile Include="runfrml.cpp" />
     <ClCompile Include="runproc.cpp" />
     <ClCompile Include="runrprt.cpp" />
+    <ClCompile Include="screen.cpp" />
     <ClCompile Include="sort.cpp" />
     <ClCompile Include="wwmenu.cpp" />
     <ClCompile Include="wwmix.cpp" />
@@ -215,6 +216,7 @@
     <ClInclude Include="runfrml.h" />
     <ClInclude Include="runproc.h" />
     <ClInclude Include="runrprt.h" />
+    <ClInclude Include="screen.h" />
     <ClInclude Include="sort.h" />
     <ClInclude Include="switches.h" />
     <ClInclude Include="wwmenu.h" />

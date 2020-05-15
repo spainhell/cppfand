@@ -130,7 +130,7 @@ double RunRealStr(FrmlPtr X)
 	label1:
 		L = S->LL + 1 - J; I = 0;
 		if ((N > 0) && (L > 0)) {
-			I = FindText(Mask, X->Options, CharArrPtr(S->A[J]), L);
+			I = FindTextE(Mask, X->Options, CharArrPtr(S->A[J]), L);
 			if (I > 0) {
 				J = J + I - Mask.length(); N--;
 				if (N > 0) goto label1; I = J - 1;
@@ -1179,7 +1179,7 @@ LongStr* RunS(FrmlPtr Z)
 	label1:
 		l = t->LL - (j - 1);
 		if (l > 0) {
-			i = FindText(s, Z->Options, (CharArr*)(t->A[j]), l);
+			i = FindTextE(s, Z->Options, (CharArr*)(t->A[j]), l);
 			if (i > 0) {
 				AddToLongStr(tnew, &t->A[j], i - s.length() - 1);
 				AddToLongStr(tnew, &snew[1], snew.length());

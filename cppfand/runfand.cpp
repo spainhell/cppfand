@@ -1,8 +1,6 @@
 #include "runfand.h"
 
 #include <windows.h>
-#include <commdlg.h>
-
 #include "base.h"
 #include "legacy.h"
 #include "pstring.h"
@@ -344,7 +342,7 @@ void InitRunFand()
 	double r;
 
 	InitDrivers();
-	ConsoleInit();
+	//ConsoleInit();
 	//WasInitDrivers = true;
 	InitAccess();
 
@@ -489,10 +487,10 @@ void InitRunFand()
 	}
 
 	TextAttr = colors.DesktopColor;
-	Window(1, 1, (BYTE)TxtCols, TxtRows - 1);
+	screen.Window(1, 1, (BYTE)TxtCols, TxtRows - 1);
 	WriteWFrame(WHasFrame + WDoubleFrame, "", "");
-	ScrClr(1, 1, TxtCols - 2, TxtRows - 13, (char)0xB1, TextAttr);
-	ScrClr(1, TxtRows - 12, TxtCols - 2, 10, (char)0xb2, TextAttr);
+	screen.ScrClr(1, 1, TxtCols - 2, TxtRows - 13, (char)0xB1, TextAttr);
+	screen.ScrClr(1, TxtRows - 12, TxtCols - 2, 10, (char)0xb2, TextAttr);
 	//ScrClr(1, 1, TxtCols - 2, TxtRows - 13, 'A', TextAttr);
 	//ResFile.Get(FandFace, &p);
 	//x = (pstring*)p;
@@ -502,11 +500,11 @@ void InitRunFand()
 	xofs++;
 	for (int i = -11; i <= -6; i++) {
 		std::string sPrint = ResText.substr(xofs, TxtCols - 2);
-		ScrWrStr(1, TxtRows + i, sPrint, TextAttr);
+		screen.ScrWrStr(1, TxtRows + i, sPrint, TextAttr);
 		xofs += 82;
 	}
 	TextAttr = colors.mHili;
-	ScrClr(3, TxtRows - 4, TxtCols - 6, 1, ' ', TextAttr);
+	screen.ScrClr(3, TxtRows - 4, TxtCols - 6, 1, ' ', TextAttr);
 
 #ifdef Trial
 	RdMsg(70);
@@ -551,7 +549,7 @@ void InitRunFand()
 	else MsgLine += 'x';
 
 	//GotoXY(5, TxtRows - 3);
-	ScrWrText(5, TxtRows - 3, MsgLine.c_str());
+	screen.ScrWrText(5, TxtRows - 3, MsgLine.c_str());
 	//printf("%s", MsgLine.c_str());
 
 
@@ -564,7 +562,7 @@ void InitRunFand()
 #ifndef FandDemo
 	if (TxtCols >= 80) {
 		RdMsg(40);
-		GotoXY(51, TxtRows - 3);
+		screen.GotoXY(51, TxtRows - 3);
 		//printf(MsgLine, UserLicNrShow:7);
 	}
 #endif

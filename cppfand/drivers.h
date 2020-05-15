@@ -2,6 +2,7 @@
 #include "constants.h"
 #include "legacy.h"
 #include "pstring.h"
+#include "screen.h"
 
 
 // ******** Struktury *********
@@ -57,7 +58,6 @@ const BYTE MaxTxtCols = 132; // r132 {the best adapter}
 const BYTE EventQSize = 16;
 const bool BGIReload = true;
 extern TPoint LastWhere, LastWhereG, DownWhere;
-struct Wind { BYTE X, Y; };
 extern Wind WindMin, WindMax; // r137
 extern BYTE TextAttr, StartAttr, StartMode; // r138
 extern WORD LastMode;
@@ -66,15 +66,10 @@ extern BYTE ButtonCount, MouseButtons, LastButtons, DownButtons, LastDouble;
 extern WORD EventCount, EventQHead, EventQTail;
 struct stEventQueue { WORD Time, Buttons, X, Y, GX, GY; };
 extern stEventQueue EventQueue[EventQSize - 1];
-
-struct TCrs
-{
-	WORD X = 0; WORD Y = 0; bool Big = false; bool On = false; bool Enabled = false; WORD Ticks = 0;
-};
+extern Screen screen;
 extern TCrs Crs;
 const bool MausExist = false;
 const WORD ofsTicks = 0x6C; // ř. 199
-const char FrameChars[] = { 0xDA, 0xC4, 0xBF, 0xC0, 0xC4, 0xD9, 0xB3, 0x20, 0xB3, 0xC9, 0xCD, 0xBB, 0xC8, 0xCD, 0xBC, 0xBA, 0x20, 0xBA, 0xC3, 0xC4, 0xB4 };
 const TPoint MouseWhere = { 0, 0 };
 const TPoint MouseWhereG = { 0, 0 };
 const bool MausVisible = true;
@@ -108,30 +103,6 @@ WORD ReadKbd(); // { buffer + Bios / + mouse / }
 void Delay(WORD N);
 void Sound(WORD N);
 void NoSound();
-void ScrClr(WORD X, WORD Y, WORD SizeX, WORD SizeY, char C, BYTE Color);
-void ScrWrChar(WORD X, WORD Y, char C, BYTE Color);
-void ScrWrStr(WORD X, WORD Y, std::string S, BYTE Color);
-void ScrWrFrameLn(WORD X, WORD Y, BYTE Typ, BYTE Width, BYTE Color);
-void ScrWrText(WORD X, WORD Y, const char* S);
-void ScrWrBuf(WORD X, WORD Y, void* Buf, WORD L);
-void ScrRdBuf(WORD X, WORD Y, void* Buf, WORD L);
-void* ScrPush(WORD X, WORD Y, WORD SizeX, WORD SizeY);
-void ScrPop(WORD X, WORD Y, void* P);
-void ScrPopToGraph(WORD X, WORD Y, WORD SizeX, WORD SizeY, void* P, WORD DOfs);
-void ScrMove(WORD X, WORD Y, WORD ToX, WORD ToY, WORD L);
-void ScrColor(WORD X, WORD Y, WORD L, BYTE Color);
-TCrs CrsGet();
-void CrsSet(TCrs S);
-void CrsShow();
-void CrsHide();
-void CrsBig();
-void CrsNorm();
-void CrsIntrInit();
-void CrsIntrDone();
-void GotoXY(WORD X, WORD Y);
-BYTE WhereX();
-BYTE WhereY();
-void Window(BYTE X1, BYTE Y1, BYTE X2, BYTE Y2);
 void ClrScr();
 void ClrEol();
 void TextBackGround(BYTE Color);
@@ -153,16 +124,7 @@ void GetMonoColor();
 void EgaWriteArr(WORD X, WORD Y, WORD L, void* From);
 void EgaScroll(WORD X, WORD Y, WORD SizeX, WORD SizeY, bool Up);
 void CrsDraw();
-void ScrGetPtr(WORD X, WORD Y, WORD& DX, WORD& DI);
 void HideMausIn();
-void ScrWr();
-void CrsDark();
-void CrsBlink();
-void CrsGotoXY(WORD aX, WORD aY);
-void CrsGotoDX();
-void CrsIntr08();
-
-void ScrPush1(WORD X, WORD Y, WORD SizeX, WORD SizeY, void* P);
 void Scroll(WORD X, WORD Y, WORD SizeX, WORD SizeY, bool Up);
 void WrDirect();
 void ScrollUp();
@@ -185,5 +147,3 @@ void SetMouse(WORD X, WORD Y, bool Visible);
 void ClearKeyBuf();
 void BreakIntrInit();
 void InitMouseEvents();
-
-void ConsoleInit();

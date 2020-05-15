@@ -7,6 +7,7 @@
 #include "drivers.h"
 #include "legacy.h"
 #include <set>
+#include <vector>
 #include "obaseww.h"
 
 /*const*/ char Version[] = { '4', '.', '2', '0', '\0' };
@@ -1245,10 +1246,10 @@ label1: if (WasInitDrivers) {
 		/*asm  push bp; mov ah,0fH; int 10H; cmp al,StartMode; je @1;
 			 mov ah,0; mov al,StartMode; int 10H;
 		@1:  pop bp end; */
-		Window(1, 1, TxtCols, TxtRows);
+		screen.Window(1, 1, TxtCols, TxtRows);
 		TextAttr = StartAttr;
 		ClrScr();
-		CrsNorm();
+		screen.CrsNorm();
 		ChDir(OldDir);
 		SetCurrPrinter(-1);
 	}

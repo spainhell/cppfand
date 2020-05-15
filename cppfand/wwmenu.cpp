@@ -67,20 +67,20 @@ void TWindow::InitTWindow(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, pstring
 		Shadow.Y = MinW(1, TxtRows - Row2());
 	}
 	WasCrsEnabled = Crs.Enabled;
-	CrsHide();
+	screen.CrsHide();
 	SavedW = PushW1(Orig.X + 1, Orig.Y + 1, Orig.X + Size.X + Shadow.X, Orig.Y + Size.Y + Shadow.Y, true, false);
 	if (SaveLL) { SavedLLW = PushW1(1, TxtRows, TxtCols, TxtRows, true, false); }
 	else { SavedLLW = 0; }
-	if (Shadow.Y == 1) ScrColor(Orig.X + 2, Row2(), Size.X + Shadow.X - 2, colors.ShadowAttr);
+	if (Shadow.Y == 1) screen.ScrColor(Orig.X + 2, Row2(), Size.X + Shadow.X - 2, colors.ShadowAttr);
 	if (Shadow.X > 0)
-		for (i = Row1(); i < Row2(); i++) ScrColor(Col2(), i, Shadow.X, colors.ShadowAttr);
+		for (i = Row1(); i < Row2(); i++) screen.ScrColor(Col2(), i, Shadow.X, colors.ShadowAttr);
 	if (GetState(sfFramed)) {
 		n = 0;
 		if (GetState(sfFrDouble)) n = 9;
-		ScrWrFrameLn(Orig.X, Orig.Y, n, Size.X, Attr);
+		screen.ScrWrFrameLn(Orig.X, Orig.Y, n, Size.X, Attr);
 		for (i = 1; i <= Size.Y - 2; i++)
-			ScrWrFrameLn(Orig.X, Orig.Y + i, n + 6, Size.X, Attr);
-		ScrWrFrameLn(Orig.X, Orig.Y + Size.Y - 1, n + 3, Size.X, Attr);
+			screen.ScrWrFrameLn(Orig.X, Orig.Y + i, n + 6, Size.X, Attr);
+		screen.ScrWrFrameLn(Orig.X, Orig.Y + Size.Y - 1, n + 3, Size.X, Attr);
 		m = Size.X - 2;
 		if (top.length() != 0) {
 			s = " ";
@@ -88,23 +88,23 @@ void TWindow::InitTWindow(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, pstring
 			s += " ";
 			//s += top + " ";
 			*l = MinW(*l, m);
-			ScrWrStr(Col1() + (m - *l) / 2, Orig.Y, s, Attr);
+			screen.ScrWrStr(Col1() + (m - *l) / 2, Orig.Y, s, Attr);
 		}
 		if (bottom.length() != 0) {
 			s = " ";
 			s += bottom + " ";
 			*l = MinW(*l, m);
-			ScrWrStr(Col1() + (m - *l) / 2, Row2() - 1, s, Attr);
+			screen.ScrWrStr(Col1() + (m - *l) / 2, Row2() - 1, s, Attr);
 		}
 	}
-	else ScrClr(Orig.X, Orig.Y, Size.X, Size.Y, ' ', Attr);
+	else screen.ScrClr(Orig.X, Orig.Y, Size.X, Size.Y, ' ', Attr);
 }
 
 TWindow::~TWindow()
 {
 	if (SavedLLW != 0) PopW(SavedLLW);
 	PopW(SavedW);
-	if (WasCrsEnabled) CrsShow();
+	if (WasCrsEnabled) screen.CrsShow();
 }
 
 void TWindow::Assign(BYTE C1, BYTE R1, BYTE C2, BYTE R2)
@@ -301,7 +301,7 @@ void TMenu::WrText(WORD I)
 
 	s = GetText(I);
 	if (s.length() == 0) {  /* menubox only */
-		ScrWrFrameLn(Orig.X, Orig.Y + I, 18, Size.X, Palette[0]);
+		screen.ScrWrFrameLn(Orig.X, Orig.Y + I, 18, Size.X, Palette[0]);
 		return;
 	}
 	GetItemRect(I, &r);
@@ -312,7 +312,7 @@ void TMenu::WrText(WORD I)
 	else if (ena) attr = Palette[0];
 	else attr = Palette[3];
 
-	posw = s.first(0x17); ScrWrChar(x, y, ' ', attr); x++;
+	posw = s.first(0x17); screen.ScrWrChar(x, y, ' ', attr); x++;
 	red = false;
 	for (j = 1; j <= s.length(); j++)
 	{
@@ -321,8 +321,8 @@ void TMenu::WrText(WORD I)
 				if (red) { attr = Palette[0]; red = false; }
 				else { attr = Palette[2]; red = true; }
 			}
-		if (s[j] != 0x17) { ScrWrChar(x, y, s[j], attr); x++; };
-	} while (x < x2) { ScrWrChar(x, y, ' ', attr); x++; }
+		if (s[j] != 0x17) { screen.ScrWrChar(x, y, s[j], attr); x++; };
+	} while (x < x2) { screen.ScrWrChar(x, y, ' ', attr); x++; }
 }
 
 void TMenu::SetPalette(Instr* aPD)
@@ -853,8 +853,8 @@ void DisplLLHelp(RdbD* R, pstring Name, bool R24)
 label1:
 	y = TxtRows - 1;
 	if (R24) y--;
-	ScrWrStr(0, y, MsgLine, colors.nNorm);
-	ScrClr(MsgLine.length(), y, TxtCols - MsgLine.length(), 1, ' ', colors.nNorm);
+	screen.ScrWrStr(0, y, MsgLine, colors.nNorm);
+	screen.ScrClr(MsgLine.length(), y, TxtCols - MsgLine.length(), 1, ' ', colors.nNorm);
 	CFile = cf; ReleaseStore(p);
 }
 

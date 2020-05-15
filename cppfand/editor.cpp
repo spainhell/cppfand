@@ -548,7 +548,7 @@ void WrStatusLine()
 			if (s.length() + i >= TXTCOLS) i = TXTCOLS - s.length() - 2;
 			Move(&s[1], &Blanks[i], s.length());
 		}
-		ScrWrStr(0, 0, Blanks, SysLColor);
+		screen.ScrWrStr(0, 0, Blanks, SysLColor);
 	}
 }
 
@@ -557,7 +557,7 @@ void WriteMargins()
 	WORD LastL[201];
 
 	if ((Mode != HelpM) && (Mode != ViewM) && Wrap) {
-		ScrRdBuf(FirstC - 1, TxtRows - 1, &LastL[1], LineS);
+		screen.ScrRdBuf(FirstC - 1, TxtRows - 1, &LastL[1], LineS);
 		LastL[MargLL[0]] = MargLL[1];
 		LastL[MargLL[2]] = MargLL[3];
 		MargLL[0] = MaxI(0, LeftMarg - BPos);
@@ -570,7 +570,7 @@ void WriteMargins()
 			MargLL[3] = LastL[MargLL[2]];
 			LastL[MargLL[2]] = (LastL[LineS] & 0xFF00) + 0x11;
 		}
-		ScrWrBuf(FirstC - 1, TxtRows - 1, &LastL[1], LineS);
+		screen.ScrWrBuf(FirstC - 1, TxtRows - 1, &LastL[1], LineS);
 	}
 }
 
@@ -604,7 +604,7 @@ void InitScr()
 	if ((FirstR == 1) && (Mode != HelpM)) FirstR++;
 	if (LastR == TxtRows) LastR--;
 	MinC = FirstC; MinR = FirstR; MaxC = LastC; MaxR = LastR;
-	Window(FirstC, FirstR, LastC, LastR);
+	screen.Window(FirstC, FirstR, LastC, LastR);
 	FirstR--;
 	if ((Mode != HelpM) and (Mode != ViewM) and Wrap) LastC--;
 	PageS = LastR - FirstR; LineS = succ(LastC - FirstC);
@@ -647,7 +647,7 @@ void UpdStatLine(int Row, int Col)
 			i = MaxW(1, HeadS.first('_'));
 			if (i > TxtCols - TStatL) i = MaxI(integer(TxtCols) - TStatL, 1);
 		}
-		ScrWrStr(i - 1, 0, StatLine, SysLColor);
+		screen.ScrWrStr(i - 1, 0, StatLine, SysLColor);
 	}
 }
 
@@ -720,7 +720,7 @@ void EditWrline(ArrPtr P, int Row)
 			}
 		}
 	}
-	ScrWrBuf(WindMin.X, WindMin.Y + Row - 1, &BuffLine[BPos + 1], LineS);
+	screen.ScrWrBuf(WindMin.X, WindMin.Y + Row - 1, &BuffLine[BPos + 1], LineS);
 }
 
 BYTE Color(ColorOrd CO)
@@ -787,7 +787,7 @@ void ScrollWrline(ArrPtr P, int Row, ColorOrd CO)
 			BuffLine[J] = (BuffLine[J] & 0x00FF) + (Col << 8); J++;
 		}
 	}
-	ScrWrBuf(WindMin.X, WindMin.Y + Row - 1, &BuffLine[BCol + 1], LineS);
+	screen.ScrWrBuf(WindMin.X, WindMin.Y + Row - 1, &BuffLine[BCol + 1], LineS);
 }
 
 WORD PColumn(WORD w, ArrPtr P)
@@ -1139,7 +1139,7 @@ void WrEndL(bool Hard, int Row)
 	if ((Mode != HelpM) && (Mode != ViewM) && Wrap) {
 		if (Hard) w = 0x11 + (TxtColor << 8);
 		else w = 32 + (TxtColor << 8);
-		ScrWrBuf(WindMin.X + LineS, WindMin.Y + Row - 1, &w, 1);
+		screen.ScrWrBuf(WindMin.X + LineS, WindMin.Y + Row - 1, &w, 1);
 	}
 }
 
@@ -1263,7 +1263,7 @@ void Background()
 	if (LineL >= ScrL + PageS) { ScrL = succ(LineL - PageS); ChangeScr = true; }
 	UpdScreen(); // {tisk obrazovky}
 	WriteMargins();
-	GotoXY(Posi - BPos, succ(LineL - ScrL));
+	screen.GotoXY(Posi - BPos, succ(LineL - ScrL));
 	IsWrScreen = true;
 }
 
@@ -1317,7 +1317,7 @@ void ScrollPress()
 		{
 			WrStatusLine();
 			TestKod();
-			CrsHide();
+			screen.CrsHide();
 			PredScLn = LineAbs(LineL);
 			PredScPos = Posi;
 			if (UpdPHead)
@@ -1344,8 +1344,8 @@ void ScrollPress()
 			if (!(PredScPos >= BPos + 1 && PredScPos <= BPos + LineS)) PredScPos = BPos + 1;
 			PosDekFindLine(PredScLn, PredScPos, false);
 			if (Mode == ViewM || Mode == SinFM || Mode == DouFM
-				|| Mode == DelFM || Mode == NotFM) CrsBig();
-			else CrsNorm();
+				|| Mode == DelFM || Mode == NotFM) screen.CrsBig();
+			else screen.CrsNorm();
 		}
 		Background();
 	}
@@ -1400,11 +1400,11 @@ void Wr(pstring s, pstring OrigS)
 	{
 		if (s.empty()) s = OrigS;
 		else {
-			ScrRdBuf(0, 0, &OrigS[1], 2);
+			screen.ScrRdBuf(0, 0, &OrigS[1], 2);
 			Move(&OrigS[3], &OrigS[2], 1);
 			OrigS[0] = 2;
 		}
-		ScrWrStr(0, 0, s, SysLColor);
+		screen.ScrWrStr(0, 0, s, SysLColor);
 	}
 }
 
@@ -1637,14 +1637,14 @@ void PredLine()
 		else SetDekCurrI(LineI - 1); LineL--;
 		if (LineL < ScrL)
 		{
-			GotoXY(1, 1); MyInsLine(); ScrL--; ChangeScr = true;
+			screen.GotoXY(1, 1); MyInsLine(); ScrL--; ChangeScr = true;
 			if (Scroll)
 			{ /*dec(RLineL);*/
 				RScrL--;
 				/*if (ModPage(RLineL))*/
 				if (ModPage(RScrL))
 				{
-					GotoXY(1, 1); MyInsLine();/*dec(RLineL);*/RScrL--;
+					screen.GotoXY(1, 1); MyInsLine();/*dec(RLineL);*/RScrL--;
 				}
 			}
 		}
@@ -1656,7 +1656,7 @@ void RollNext()
 	if ((NextI >= LenT) && !AllRd) NextPartDek();
 	if (NextI <= LenT)
 	{
-		GotoXY(1, 1); MyDelLine(); ScrL++; ChangeScr = true;
+		screen.GotoXY(1, 1); MyDelLine(); ScrL++; ChangeScr = true;
 		if (LineL < ScrL)
 		{
 			TestKod(); LineL++; LineI = NextI; DekodLine();
@@ -1669,7 +1669,7 @@ void RollPred()
 	if ((ScrL == 1) && (Part.PosP > 0)) PredPart();
 	if (ScrL > 1)
 	{
-		GotoXY(1, 1); MyInsLine(); ScrL--; ChangeScr = true;
+		screen.GotoXY(1, 1); MyInsLine(); ScrL--; ChangeScr = true;
 		if (LineL == ScrL + PageS)
 		{
 			TestKod(); LineL--;
@@ -1733,14 +1733,14 @@ void Frame()
 	FS3 = "\x50\x48\xBA\x4D\xC9\xC8\xCC\x4B\xBB\xBC\xB9\xCD\xCB\xCA\xCE";
 	char oldzn; BYTE dir, odir, zn1, zn2, b;
 
-	UpdStatLine(LineL, Posi); CrsBig(); odir = 0;
+	UpdStatLine(LineL, Posi); screen.CrsBig(); odir = 0;
 	ClrEvent();
 	while (true) /* !!! with Event do!!! */
 	{
 		if (!MyGetEvent() ||
 			((Event.What == evKeyDown) && (Event.KeyCode == _ESC_)) || (Event.What != evKeyDown))
 		{
-			ClrEvent(); CrsNorm(); Mode = TextM; return;
+			ClrEvent(); screen.CrsNorm(); Mode = TextM; return;
 		}
 		switch (Event.KeyCode) {
 		case _frmsin_: Mode = SinFM; break;
@@ -1794,7 +1794,7 @@ void CleanFrameM()
 		if (!MyGetEvent() ||
 			((Event.What == evKeyDown) && (Event.KeyCode == _ESC_)) || (Event.What != evKeyDown))
 		{
-			ClrEvent(); CrsNorm(); Mode = TextM;
+			ClrEvent(); screen.CrsNorm(); Mode = TextM;
 			UpdStatLine(LineL, Posi); return;
 		}
 }
@@ -2226,7 +2226,7 @@ bool BlockHandle(longint& fs, FILE* W1, char Oper)
 	if (Oper == 'p') { tb = TypeB; TypeB = TextBlock; }
 	else
 		if (!BlockExist()) { return false; }
-	CrsHide();
+	screen.CrsHide();
 	auto result = true;
 	if (TypeB == TextBlock)
 	{
@@ -2318,7 +2318,7 @@ bool BlockHandle(longint& fs, FILE* W1, char Oper)
 	if (Oper == 'p') TypeB = tb;
 	if (Oper == 'Y') PosDekFindLine(BegBLn, BegBPos, true);
 	else { if (Oper == 'p') SetPart(1); PosDekFindLine(Ln, Ps, true); }
-	if (!bScroll) CrsShow();
+	if (!bScroll) screen.CrsShow();
 	return result;
 }
 
@@ -2638,18 +2638,18 @@ void ReplaceString(WORD& J, WORD& fst, WORD& lst, longint& Last)
 char MyVerifyLL(WORD n, pstring s)
 {
 	longint w, t; WORD c1, c2, r1, r2, r; char cc;
-	c2 = WhereX() + FirstC - 1; r2 = WhereY() + FirstR;
-	w = PushW(1, 1, TxtCols, TxtRows); GotoXY(1, TxtRows);
+	c2 = screen.WhereX() + FirstC - 1; r2 = screen.WhereY() + FirstR;
+	w = PushW(1, 1, TxtCols, TxtRows); screen.GotoXY(1, TxtRows);
 	TextAttr = colors.pTxt; ClrEol(); SetMsgPar(s); WriteMsg(n);
-	c1 = WhereX(); r1 = WhereY();
+	c1 = screen.WhereX(); r1 = screen.WhereY();
 	TextAttr = colors.pNorm;
-	printf(" "); CrsNorm(); t = Timer + 15; r = r1;
+	printf(" "); screen.CrsNorm(); t = Timer + 15; r = r1;
 	do {
 		while (!KbdPressed())
 			if (Timer >= t) {
 				t = Timer + 15;
-				if (r == r1) { GotoXY(c2, r2); r = r2; }
-				else { GotoXY(c1, r1); r = r1; }
+				if (r == r1) { screen.GotoXY(c2, r2); r = r2; }
+				else { screen.GotoXY(c1, r1); r = r1; }
 			}
 		cc = toupper(ReadKbd());
 	} while (!(cc == AbbrYes || cc == AbbrNo || cc == _ESC));
@@ -2870,13 +2870,13 @@ void HandleEvent() {
 					break;
 				}
 				}
-				L2 = SavePar(); CrsHide();
+				L2 = SavePar(); screen.CrsHide();
 				RestoreExit(er);
 				if (TypeT == MemoT) StartExit(X, false);
 				else CallProcedure(X->Proc);
 				//NewExit(Ovr(), er);
 				goto Opet;
-				if (!bScroll) CrsShow(); RestorePar(L2);
+				if (!bScroll) screen.CrsShow(); RestorePar(L2);
 				switch (TypeT) {
 				case FileT: {
 					fs = Part.PosP + IndT;
@@ -2905,7 +2905,7 @@ void HandleEvent() {
 					AbsLenT = LenT - 1; Part.LenP = AbsLenT; SimplePrintHead();
 				}
 				SetScreen(IndT, ScrT, Posi);
-				if (!bScroll) { CrsShow(); }
+				if (!bScroll) { screen.CrsShow(); }
 				if (!EdOk) { goto Nic; }
 			}
 			X = X->Chain;
@@ -3103,9 +3103,9 @@ void HandleEvent() {
 							NewLine('m'); Posi = 1; ClrEol();
 							if (LineL - ScrL == PageS)
 							{
-								GotoXY(1, 1); MyDelLine(); ScrL++; ChangeScr = true;
+								screen.GotoXY(1, 1); MyDelLine(); ScrL++; ChangeScr = true;
 							}
-							else { GotoXY(1, succ(LineL - ScrL)); MyInsLine(); }
+							else { screen.GotoXY(1, succ(LineL - ScrL)); MyInsLine(); }
 							if (Indent)
 							{
 								I1 = SetPredI(); I = I1;
@@ -3119,7 +3119,7 @@ void HandleEvent() {
 					}
 					break;
 				}
-				case _N_: { NewLine('n'); ClrEol(); GotoXY(1, LineL - ScrL + 2); MyInsLine(); break; }
+				case _N_: { NewLine('n'); ClrEol(); screen.GotoXY(1, LineL - ScrL + 2); MyInsLine(); break; }
 
 				case _Ins_: { Insert = !Insert; break; }
 				case _Del_:
@@ -3360,13 +3360,13 @@ void HandleEvent() {
 				case _KF_: {
 					if (BlockExist() && (TypeB == TextBlock))
 					{
-						TestKod(); CrsHide();
+						TestKod(); screen.CrsHide();
 						SetPartLine(EndBLn); I2 = EndBLn - Part.LineP;
 						L1 = SetInd(FindLine(integer(I2)), EndBPos) + Part.PosP;
 						L2 = BegBLn; Posi = BegBPos; SetPartLine(L2); I2 = BegBLn - Part.LineP;
 						Format(I, FindLine(integer(I2)) + Part.PosP, L1, BegBPos, true);
 						DekFindLine(L2);
-						if (!bScroll) CrsShow();
+						if (!bScroll) screen.CrsShow();
 					}
 					break;
 				}
@@ -3376,10 +3376,10 @@ void HandleEvent() {
 					if (Wrap) { LineS--; LastC--; }
 					else {
 						LastC++; LineS++;
-						ScrRdBuf(FirstC - 1, TxtRows - 1, &LastL[1], LineS);
+						screen.ScrRdBuf(FirstC - 1, TxtRows - 1, &LastL[1], LineS);
 						LastL[MargLL[0]] = MargLL[1];
 						LastL[MargLL[2]] = MargLL[3];
-						ScrWrBuf(FirstC - 1, TxtRows - 1, &LastL[1], LineS);
+						screen.ScrWrBuf(FirstC - 1, TxtRows - 1, &LastL[1], LineS);
 					}
 					break;
 				}
@@ -3423,9 +3423,9 @@ void HandleEvent() {
 					SetPart(L1); I2 = L1 - Part.PosP; SetDekLnCurrI(I2); Posi = 1;
 					break;
 				}
-				case _framesingle_: { Mode = SinFM; CrsBig(); FrameDir = 0; break; }
-				case _framedouble_: { Mode = DouFM; CrsBig(); FrameDir = 0; break; }
-				case _delframe_: { Mode = DelFM; CrsBig(); FrameDir = 0; break; }
+				case _framesingle_: { Mode = SinFM; screen.CrsBig(); FrameDir = 0; break; }
+				case _framedouble_: { Mode = DouFM; screen.CrsBig(); FrameDir = 0; break; }
+				case _delframe_: { Mode = DelFM; screen.CrsBig(); FrameDir = 0; break; }
 				case _F4_: {
 					W1 = ToggleCS(Arr[Posi]);
 					UpdatedL = W1 != Arr[Posi];
@@ -3449,10 +3449,10 @@ void HandleEvent() {
 				case 0x1000: {
 				Opet:
 					if ((Mode != HelpM) && (Mode != ViewM) && Wrap)
-						Window(FirstC, FirstR + 1, LastC + 1, LastR);
-					else Window(FirstC, FirstR + 1, LastC, LastR);
+						screen.Window(FirstC, FirstR + 1, LastC + 1, LastR);
+					else screen.Window(FirstC, FirstR + 1, LastC, LastR);
 
-					if (!Scroll) CrsShow();
+					if (!Scroll) screen.CrsShow();
 					SetScreen(LineI, 0, 0); }
 
 				case _U_: {
@@ -3601,7 +3601,7 @@ void Edit(WORD SuccLineSize)
 	InitScr();
 	IsWrScreen = false;
 	WrEndT();
-	IndT = std::min((WORD)std::max(1, (int)IndT), LenT);
+	//IndT = std::min((WORD)std::max(1, (int)IndT), LenT);
 	BegBLn = 1;
 	EndBLn = 1;
 	BegBPos = 1;
@@ -3633,8 +3633,8 @@ void Edit(WORD SuccLineSize)
 		ChangeScr = true;
 	}
 	HelpScroll = bScroll || (Mode == HelpM);
-	if (HelpScroll) { CrsHide(); }
-	else { CrsNorm(); }
+	if (HelpScroll) { screen.CrsHide(); }
+	else { screen.CrsNorm(); }
 	BCol = 0;
 	BPos = 0;
 	SetScreen(IndT, ScrT, Posi);
@@ -3683,8 +3683,8 @@ void Edit(WORD SuccLineSize)
 		CursorWord();
 		if (Mode == HelpM) { ClrWord(); }
 	}
-	CrsHide();
-	Window(MinC, MinR, MaxC, MaxR);
+	screen.CrsHide();
+	screen.Window(MinC, MinR, MaxC, MaxR);
 	TestUpdFile();
 }
 
@@ -3760,7 +3760,7 @@ void SimpleEditText(char pMode, pstring pErrMsg, pstring pName, CharArr* TxtPtr,
 	EditText(pMode, LocalT, pName, pErrMsg, TxtPtr, MaxLen, Len, Ind, Scr, "", nullptr, Srch, Updat, 0, 0, nullptr);
 }
 
-WORD FindText(const pstring& Pstr, pstring Popt, CharArr* PTxtPtr, WORD PLen)
+WORD FindTextE(const pstring& Pstr, pstring Popt, CharArr* PTxtPtr, WORD PLen)
 {
 	CharArrPtr tt = T; T = PTxtPtr;
 	pstring f = FindStr; pstring o = OptionStr;

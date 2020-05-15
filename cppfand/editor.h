@@ -19,7 +19,7 @@ bool EditText(char pMode, char pTxtType, pstring pName, pstring pErrMsg,
 	WORD pLastNr, WORD pCtrlLastNr, MsgStrPtr pMsgS); // r169
 void SimpleEditText(char pMode, pstring pErrMsg, pstring pName, CharArr* TxtPtr,
 	WORD MaxLen, WORD& Len, WORD& Ind, bool& Updat); // r202
-WORD FindText(const pstring& PstrScreenStr, pstring Popt, CharArr* PTxtPtr, WORD PLen); // r209
+WORD FindTextE(const pstring& PstrScreenStr, pstring Popt, CharArr* PTxtPtr, WORD PLen); // r209
 void Help(RdbDPtr R, pstring Name, bool InCWw);
 void InitTxtEditor();
 void EditTxtFile(longint* LP, char Mode, pstring& ErrMsg, EdExitD* ExD, longint TxtPos,

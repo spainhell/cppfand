@@ -1,6 +1,4 @@
 #pragma once
-#include <vector>
-#include <string>
 
 typedef unsigned short WORD;
 typedef unsigned char BYTE;

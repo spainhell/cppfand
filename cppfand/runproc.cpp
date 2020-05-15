@@ -38,7 +38,7 @@ void UserHeadLine(pstring UserHeader)
 	n = (TxtCols - l) / 2;
 	if (n > 0) printf("%*c", n, ' ');
 	WrStyleStr(UserHeader, colors.fNorm);
-	GotoXY(TxtCols - 10, 1);
+	screen.GotoXY(TxtCols - 10, 1);
 	printf("%s", StrDate(Today(), "DD.MM.YYYY").c_str());
 	PopWParam(p);
 	ReleaseStore(p);
@@ -248,7 +248,7 @@ void ClrWwProc(Instr* PD)
 	if (PD->FillC != nullptr) {
 		s = RunShortStr(PD->FillC); if (s.length() > 0) c = s[1];
 	}
-	ScrClr(v.C1 - 1, v.R1 - 1, v.C2 - v.C1 + 1, v.R2 - v.R1 + 1, c, a);
+	screen.ScrClr(v.C1 - 1, v.R1 - 1, v.C2 - v.C1 + 1, v.R2 - v.R1 + 1, c, a);
 }
 
 void ExecPgm(Instr* PD)
@@ -257,17 +257,17 @@ void ExecPgm(Instr* PD)
 	Wind wmin, wmax; longint w;
 	wmin = WindMin;
 	wmax = WindMax;
-	TCrs crs = CrsGet();
+	TCrs crs = screen.CrsGet();
 	w = PushW(1, 1, TxtCols, 1);
 	WindMin = wmin;
 	WindMax = wmax;
-	CrsSet(crs);
+	screen.CrsSet(crs);
 	s = RunShortStr(PD->Param); i = PD->ProgCatIRec; CVol = "";
 	if (i != 0) Prog = RdCatField(i, CatPathName); else Prog = *PD->ProgPath;
 	b = OSshell(Prog, s, PD->NoCancel, PD->FreeMm, PD->LdFont, PD->TextMd);
 	/*asm mov ah, 3; mov bh, 0; push bp; int 10H; pop bp; mov x, dl; mov y, dh;*/
 	PopW(w);
-	GotoXY(x - WindMin.X + 1, y - WindMin.Y + 1);
+	screen.GotoXY(x - WindMin.X + 1, y - WindMin.Y + 1);
 	if (!b) GoExit();
 }
 
@@ -873,7 +873,7 @@ void RunInstr(Instr* PD)
 		case _headline: HeadLineProc(PD->Frml); break;
 		case _setkeybuf: SetKeyBufProc(PD->Frml); break;
 		case _writeln: WritelnProc(PD); break;
-		case _gotoxy: GotoXY(RunInt(PD->GoX), RunInt(PD->GoY));
+		case _gotoxy: screen.GotoXY(RunInt(PD->GoX), RunInt(PD->GoY));
 		case _merge: MergeProc(PD); break;
 #ifdef FandProlog
 		case _lproc: RunProlog(PD->lpPos, PD->lpName); break;
@@ -1079,12 +1079,12 @@ void RunMainProc(RdbPos RP, bool NewWw)
 {
 	Instr* PD; void* p1; void* p2; LocVar* lv;
 	if (NewWw) {
-		ProcAttr = colors.uNorm; Window(1, 2, TxtCols, TxtRows);
+		ProcAttr = colors.uNorm; screen.Window(1, 2, TxtCols, TxtRows);
 		TextAttr = ProcAttr; ClrScr(); UserHeadLine(""); MenuX = 1; MenuY = 2;
 	}
 	PD = GetPInstr(_proc, sizeof(RdbPos) + 2); PD->Pos = RP;
 	CallProcedure(PD);
-	ReleaseStore(PD); if (NewWw) Window(1, 1, TxtCols, TxtRows);
+	ReleaseStore(PD); if (NewWw) screen.Window(1, 1, TxtCols, TxtRows);
 }
 
 

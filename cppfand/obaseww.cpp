@@ -25,8 +25,8 @@ void* PushWParam(WORD C1, WORD R1, WORD C2, WORD R2, bool WW)
 	wp->Min = (WindMin.X << 8) + WindMin.Y;
 	wp->Max = (WindMax.X << 8) + WindMin.Y;
 	wp->Attr = TextAttr;
-	wp->Cursor = CrsGet();
-	if (WW) Window(C1, R1, C2, R2);
+	wp->Cursor = screen.CrsGet();
+	if (WW) screen.Window(C1, R1, C2, R2);
 	return wp;
 }
 
@@ -38,7 +38,7 @@ void PopWParam(void* p)
 	WindMax.X = (BYTE)wp->Max >> 8;
 	WindMax.Y = (BYTE)wp->Max & 0xFF;
 	TextAttr = wp->Attr;
-	CrsSet(wp->Cursor);
+	screen.CrsSet(wp->Cursor);
 }
 
 void* PushScr(WORD C1, WORD R1, WORD C2, WORD R2)
@@ -46,7 +46,7 @@ void* PushScr(WORD C1, WORD R1, WORD C2, WORD R2)
 	void* p;
 	C1--; R1--; p = GetStore(4);
 	// asm  les di,p; cld; mov ax,C1; stosw; mov ax,R1; stosw ;
-	ScrPush(C1, R1, C2 - C1, R2 - R1);
+	screen.ScrPush(C1, R1, C2 - C1, R2 - R1);
 	return p;
 }
 
@@ -95,7 +95,7 @@ void PopScr(void* p)
 {
 	WORD C1 = 0, R1 = 0;
 	// asm  push ds; lds si,p; cld; lodsw; mov C1,ax; lodsw; mov R1,ax; mov p.WORD, si; pop ds;
-	ScrPop(C1, R1, p);
+	screen.ScrPop(C1, R1, p);
 }
 
 void PopW2(longint pos, bool draw)
@@ -139,16 +139,16 @@ void WriteWFrame(BYTE WFlags, pstring top, pstring bottom)
 	if ((WFlags & WDoubleFrame) != 0) n = 9;
 	cols = WindMax.X - WindMin.X + 1;
 	rows = WindMax.Y - WindMin.Y + 1;
-	ScrWrFrameLn(WindMin.X, WindMin.Y, n, cols, TextAttr);
+	screen.ScrWrFrameLn(WindMin.X, WindMin.Y, n, cols, TextAttr);
 	for (i = 1; i <= rows - 2; i++) {
 		if ((WFlags & WNoClrScr) == 0)
-			ScrWrFrameLn(WindMin.X, WindMin.Y + i, n + 6, cols, TextAttr);
+			screen.ScrWrFrameLn(WindMin.X, WindMin.Y + i, n + 6, cols, TextAttr);
 		else {
-			ScrWrChar(WindMin.X, WindMin.Y + i, FrameChars[n + 6], TextAttr);
-			ScrWrChar(WindMin.X + cols - 1, WindMin.Y + i, FrameChars[n + 8], TextAttr);
+			screen.ScrWrChar(WindMin.X, WindMin.Y + i, FrameChars[n + 6], TextAttr);
+			screen.ScrWrChar(WindMin.X + cols - 1, WindMin.Y + i, FrameChars[n + 8], TextAttr);
 		}
 	}
-	ScrWrFrameLn(WindMin.X, WindMax.Y, n + 3, cols, TextAttr);
+	screen.ScrWrFrameLn(WindMin.X, WindMax.Y, n + 3, cols, TextAttr);
 	WrHd(top, 1, cols - 2);
 	WrHd(bottom, rows, cols - 2);
 }
@@ -161,7 +161,7 @@ void WrHd(pstring Hd, WORD Row, WORD MaxCols)
 	s += Hd + " ";
 	if (s.length() > MaxCols) s[0] = char(MaxCols);
 	//GotoXY((MaxCols - s.length()) / 2 + 2, Row);
-	ScrWrText((MaxCols - s.length()) / 2 + 2, Row, s.c_str());
+	screen.ScrWrText((MaxCols - s.length()) / 2 + 2, Row, s.c_str());
 	//printf("%s", s.c_str());
 }
 
@@ -194,14 +194,14 @@ longint PushWFramed(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, pstring top, 
 		y = MinW(1, TxtRows - R2);
 	}
 	auto result = PushW1(C1, R1, C2 + x, R2 + y, (WFlags & WPushPixel) != 0, true);
-	CrsHide();
-	if (y == 1) ScrColor(C1 + 1, R2, C2 - C1 + x - 1, colors.ShadowAttr);
-	if (x > 0) for (i = R1; i < R2; i++) ScrColor(C2, i, x, colors.ShadowAttr);
-	Window(C1, R1, C2, R2);
+	screen.CrsHide();
+	if (y == 1) screen.ScrColor(C1 + 1, R2, C2 - C1 + x - 1, colors.ShadowAttr);
+	if (x > 0) for (i = R1; i < R2; i++) screen.ScrColor(C2, i, x, colors.ShadowAttr);
+	screen.Window(C1, R1, C2, R2);
 	TextAttr = Attr;
 	if ((WFlags & WHasFrame) != 0) {
 		WriteWFrame(WFlags, top, bottom);
-		Window(C1 + 1, R1 + 1, C2 - 1, R2 - 1);
+		screen.Window(C1 + 1, R1 + 1, C2 - 1, R2 - 1);
 	}
 	return result;
 }
@@ -215,7 +215,7 @@ longint PushWrLLMsg(WORD N, bool WithESC)
 	TextAttr = colors.zNorm;
 	if (WithESC) printf("(ESC) ");
 	RdMsg(N);
-	l = TxtCols - WhereX();
+	l = TxtCols - screen.WhereX();
 	if (MsgLine.length() > l) MsgLine[0] = char(l);
 	printf("%s", MsgLine.c_str());
 	return result;
@@ -254,7 +254,7 @@ void WrLLMsgTxt()
 		Buf[j] = (w.Hi << 8) + w.Lo;
 		j++;
 	}
-	ScrWrBuf(0, TxtRows - 1, Buf, TxtCols);
+	screen.ScrWrBuf(0, TxtRows - 1, Buf, TxtCols);
 	PopWParam(p); ReleaseStore(p);
 }
 
@@ -264,11 +264,11 @@ void WrLLF10MsgLine()
 	WORD col, row, len;
 
 	row = TxtRows - 1;
-	ScrRdBuf(0, row, &Buf[0], TxtCols);
+	screen.ScrRdBuf(0, row, &Buf[0], TxtCols);
 	Beep();
-	ScrClr(0, row, TxtCols, 1, ' ', colors.zNorm);
-	if (F10SpecKey == 0xffff) ScrWrStr(0, row, "...!", colors.zNorm | 0x80);
-	else ScrWrStr(0, row, "F10!", colors.zNorm | 0x80);
+	screen.ScrClr(0, row, TxtCols, 1, ' ', colors.zNorm);
+	if (F10SpecKey == 0xffff) screen.ScrWrStr(0, row, "...!", colors.zNorm | 0x80);
+	else screen.ScrWrStr(0, row, "F10!", colors.zNorm | 0x80);
 	col = MsgLine.length() + 5;
 	len = 0;
 	if ((F10SpecKey == 0xfffe) || (F10SpecKey == _F1_)) {
@@ -282,7 +282,7 @@ void WrLLF10MsgLine()
 		MsgLine[0] = char(TxtCols - 5);
 		len = 0;
 	}
-	ScrWrStr(5, row, MsgLine, colors.zNorm);
+	screen.ScrWrStr(5, row, MsgLine, colors.zNorm);
 label1:
 	GetEvent();
 	/*with Event*/
@@ -311,7 +311,7 @@ label1:
 	goto label1;
 label3:
 	F10SpecKey = 0;
-	ScrWrBuf(0, row, &Buf[0], TxtCols);
+	screen.ScrWrBuf(0, row, &Buf[0], TxtCols);
 }
 
 void WrLLF10Msg(WORD N)
@@ -336,8 +336,8 @@ bool PromptYN(WORD NMsg)
 	RdMsg(NMsg);
 	pstring tmp = MsgLine.substr(MaxI(MsgLine.length() - TxtCols + 3, 1), 255);
 	printf("%s", tmp.c_str());
-	col = WhereX(); row = WhereY(); TextAttr = colors.pNorm;
-	printf(" "); GotoXY(col, row); CrsShow();
+	col = screen.WhereX(); row = screen.WhereY(); TextAttr = colors.pNorm;
+	printf(" "); screen.GotoXY(col, row); screen.CrsShow();
 	label1:
 	cc = toupper((char)ReadKbd);
 	if ((KbdChar != F10SpecKey) && (cc != AbbrYes) && (cc != AbbrNo)) goto label1;
@@ -383,7 +383,7 @@ void RunMsgN(longint N)
 #ifndef norunmsg
 	if (N < CM->MsgKum) return;
 	while (N >= CM->MsgKum) CM->MsgKum += CM->MsgStep;
-	Perc = (N * 100) / CM->MsgNN; GotoXY(3, 1);
+	Perc = (N * 100) / CM->MsgNN; screen.GotoXY(3, 1);
 	printf("%*i", 3, Perc);
 #endif
 }

@@ -225,7 +225,7 @@ void wwmix::WriteItem(WORD N)
 	WORD i, l; Item* p;
 	/* !!! with sv do!!! */
 	i = N - sv.Base;
-	GotoXY((i % sv.Tabs) * sv.TabSize + 2, i / sv.Tabs + 1);
+	screen.GotoXY((i % sv.Tabs) * sv.TabSize + 2, i / sv.Tabs + 1);
 	if (N > sv.NItems) l = sv.TabSize - 2;
 	else {
 		p = GetItem(N);
@@ -258,9 +258,9 @@ void wwmix::DisplWw()
 	TextAttr = colors.sNorm;
 	WORD max = sv.Base + sv.WwSize - 1;
 	if (sv.Base > 1) c = ''; else c = ' ';
-	ScrWrChar(WindMin.X, WindMin.Y, c, TextAttr);
+	screen.ScrWrChar(WindMin.X, WindMin.Y, c, TextAttr);
 	if (max >= sv.NItems) c = ' '; else c = '';
-	ScrWrChar(WindMax.X, WindMax.Y, c, TextAttr);
+	screen.ScrWrChar(WindMax.X, WindMax.Y, c, TextAttr);
 	for (WORD i = sv.Base; i < max; i++) WriteItem(i);
 	SetAttr(colors.sHili);
 }
@@ -519,7 +519,7 @@ label1:
 	RdMsg(HdMsg);
 	w = PushWFramed(c1, r1, c2, r2, colors.sMask, MsgLine, "", WHasFrame + WShadow + WPushPixel);
 label2:
-	GotoXY(1, 1);
+	screen.GotoXY(1, 1);
 	//EditTxt(&mask, 1, sizeof(mask) - 1, 22, 'A', true, false, true, false, 0);
 	EditTxt(&mask, 1, sizeOfMask, 22, 'A', true, false, true, false, 0);
 	if (KbdChar == _ESC_) { PopW(w); return result; }
@@ -612,13 +612,13 @@ label3:
 void wwmix::PromptLL(WORD N, pstring* Txt, WORD I, bool Del)
 {
 	longint w = PushW(1, TxtRows, TxtCols, TxtRows);
-	GotoXY(1, TxtRows);
+	screen.GotoXY(1, TxtRows);
 	TextAttr = colors.pTxt;
 	ClrEol();
 	RdMsg(N);
 	printf("%s", MsgLine.c_str());
 	TextAttr = colors.pNorm;
-	EditTxt(Txt, I, 255, TxtCols - WhereX(), 'A', Del, false, true, false, 0);
+	EditTxt(Txt, I, 255, TxtCols - screen.WhereX(), 'A', Del, false, true, false, 0);
 	PopW(w);
 }
 
@@ -630,12 +630,12 @@ pstring wwmix::PassWord(bool TwoTimes)
 	MsgNr = 628;
 label1:
 	TextAttr = colors.pNorm | 0x80;
-	GotoXY(1, 1); ClrEol(); RdMsg(MsgNr);
+	screen.GotoXY(1, 1); ClrEol(); RdMsg(MsgNr);
 	printf("%*s", (MsgLine.length() + 22) / 2, MsgLine.c_str());
 	pstring tmpStr = char(ReadKbd);
 	KbdBuffer = tmpStr + KbdBuffer;
 	TextAttr = colors.pNorm;
-	GotoXY(2, 1);
+	screen.GotoXY(2, 1);
 	Txt = "";
 	EditTxt(&Txt, 1, 20, 20, 'A', true, true, true, false, 0);
 	if (KbdChar == _ESC_) { Txt = ""; goto label2; }

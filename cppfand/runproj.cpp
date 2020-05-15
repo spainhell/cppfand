@@ -990,16 +990,16 @@ WORD CompileMsgOn(WORD* Buf, longint& w)
 		w = PushWFramed(0, 0, 30, 4, colors.sNorm, MsgLine, "", WHasFrame + WDoubleFrame + WShadow);
 		RdMsg(117);
 		s = GetDLine(&MsgLine[1], MsgLine.length(), '/', 1);
-		GotoXY(3, 2);
+		screen.GotoXY(3, 2);
 		printf("%s", s.c_str()); result = s.length();
-		GotoXY(3, 3);
+		screen.GotoXY(3, 3);
 		printf("%s", GetDLine(&MsgLine[1], MsgLine.length(), '/', 2).c_str());
 	}
 	else {
-		ScrRdBuf(0, TxtRows - 1, Buf, 40); w = 0;
+		screen.ScrRdBuf(0, TxtRows - 1, Buf, 40); w = 0;
 		result = 0;
-		ScrClr(0, TxtRows - 1, MsgLine.length() + 2, 1, ' ', colors.zNorm);
-		ScrWrStr(1, TxtRows - 1, MsgLine, colors.zNorm);
+		screen.ScrClr(0, TxtRows - 1, MsgLine.length() + 2, 1, ' ', colors.zNorm);
+		screen.ScrWrStr(1, TxtRows - 1, MsgLine, colors.zNorm);
 	}
 	return result;
 }
@@ -1163,7 +1163,7 @@ label1:
 
 void CompileMsgOff(WORD* Buf, longint& w)
 {
-	if (w != 0) PopW(w); else ScrWrBuf(0, TxtRows - 1, Buf, 40);
+	if (w != 0) PopW(w); else screen.ScrWrBuf(0, TxtRows - 1, Buf, 40);
 }
 
 bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
@@ -1200,8 +1200,8 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 			(Typ == 'P') && ChptTF->CompileProc) {
 			OldTxt = _T(ChptOldTxt); InpRdbPos = RP;
 			if (IsTestRun) {
-				ClrScr(); GotoXY(3 + lmsg, 2); printf("%*i", 4, I);
-				GotoXY(3 + lmsg, 3);
+				ClrScr(); screen.GotoXY(3 + lmsg, 2); printf("%*i", 4, I);
+				screen.GotoXY(3 + lmsg, 3);
 				printf("%*s%*s", 4, STyp.c_str(), 14, _ShortS(ChptName).c_str());
 				if (!(Typ == ' ' || Typ == 'D' || Typ == 'U')) { /* dupclicate name checking */
 					for (J = 1; J < I - 1; J++) {

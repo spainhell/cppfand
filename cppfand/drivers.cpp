@@ -13,12 +13,13 @@
 #include "keyboard.h"
 #include "legacy.h"
 #include "obaseww.h"
+#include "screen.h"
 #include "wwmenu.h"
 
 // *** KONZOLA ***
-HANDLE hConsOutput;
+Screen screen(&TxtCols, &TxtRows, &WindMin, &WindMax, &Crs);
 Keyboard keyboard;
-SMALL_RECT hWin;
+//SMALL_RECT hWin;
 DWORD ConsoleError;
 PINPUT_RECORD KbdBuf;
 DWORD cNumRead = 0;
@@ -109,15 +110,6 @@ BYTE TabLtN[256] = {  /* Latin2 to NoDiakr */
 	0xf0,0xf1,0xf2,0xf3,0xf4,0xf5,0xf6,0xf7,0xf8,0xf9,0xfa,0x75,0x52,0x72,0xfe,0xff };
 
 const BYTE CsKbdSize = 67;
-
-void ConsoleInit()
-{
-	// inicializace vystupu na konzolu
-	hConsOutput = GetStdHandle(STD_OUTPUT_HANDLE);
-
-	// inicializace vstupu z konzoly, nastaveni bufferu klavesnice
-	//keyboard = new Keyboard();
-}
 
 void BreakIntHandler()
 {
@@ -507,232 +499,16 @@ void NoSound()
 {
 }
 
-void ScrClr(WORD X, WORD Y, WORD SizeX, WORD SizeY, char C, BYTE Color)
-{
-	//WORD DX = 0;
-	//WORD DI = 0;
-	//ScrGetPtr(X, Y, DX, DI);
-	//
-	//CHAR_INFO* videobufferESDI = new CHAR_INFO[128*1024];
-	//CHAR_INFO AhAl;
-	//AhAl.Char.AsciiChar = C;
-	//AhAl.Attributes = Color;
-
-	//for (WORD row = 0; row <= SizeY; row++)
-	//{
-	//	for (WORD col = 0; col < SizeX; col++)
-	//	{
-	//		videobufferESDI[DI] = AhAl; // do videopamìti na indexu z DI uložíme znak
-	//	}
-	//	DI += TxtCols;
-	//	DI += TxtCols;
-	//}
-
-	//AhAl.Attributes = 9;
-
-	//do { AhAl.Char.AsciiChar = videobufferESDI[DX].Char.AsciiChar; }
-	//while ((videobufferESDI[DX].Char.AsciiChar & 0x0001) == 1);
-	
-	
-	
-	SetConsoleScreenBufferSize(hConsOutput, { 80,25 });
-	DWORD written = 0;
-	CHAR_INFO* _buf = new CHAR_INFO[SizeX * SizeY];
-	COORD BufferSize = { (short)SizeX, (short)SizeY };
-	SMALL_RECT rect = { X, Y, X + SizeX, Y + SizeY };
-
-	CHAR_INFO ci; ci.Char.AsciiChar = C; ci.Attributes = Color;
-	for (int i = 0; i < SizeX * SizeY; i++) { _buf[i] = ci; }
-	WriteConsoleOutput(hConsOutput, _buf, BufferSize, { 0, 0 }, &rect);
-
-	//SetConsoleCursorPosition(hConsOutput, leftTop);
-	//WriteConsoleOutput(hConsOutput, _buf, rightBottom, leftTop, &hWin);
-	//FillConsoleOutputAttribute(hConsOutput, Color, SizeX * SizeY, coordScreen, &written);
-	//FillConsoleOutputCharacter(hConsOutput, C, SizeX * SizeY, coordScreen, &written);
-
-	delete[] _buf;
-}
-
-void ScrWrChar(WORD X, WORD Y, char C, BYTE Color)
-{
-	DWORD written = 0;
-	WORD attr = Color;
-	WriteConsoleOutputCharacterA(hConsOutput, &C, 1, { (short)X, (short)Y }, &written);
-	WriteConsoleOutputAttribute(hConsOutput, &attr, 1, { (short)X, (short)Y }, &written);
-}
-
-void ScrWrStr(WORD X, WORD Y, std::string S, BYTE Color)
-{
-	short len = S.length();
-	CHAR_INFO* _buf = new CHAR_INFO[len];
-	COORD BufferSize = { len, 1 };
-	SMALL_RECT rect = { (short)X, (short)Y, (short)X + len, (short)Y };
-
-	CHAR_INFO ci;
-	ci.Attributes = Color;
-	for (int i = 0; i < len; i++)
-	{
-		ci.Char.AsciiChar = S[i];
-		_buf[i] = ci;
-	}
-	WriteConsoleOutputA(hConsOutput, _buf, BufferSize, { 0, 0 }, &rect);
-}
-
-void ScrWrFrameLn(WORD X, WORD Y, BYTE Typ, BYTE Width, BYTE Color)
-{
-	pstring txt;
-	txt[0] = Width;
-	txt[1] = FrameChars[Typ];
-	txt[Width] = FrameChars[Typ + 2];
-	for (int i = 2; i <= Width - 1; i++) { txt[i] = FrameChars[Typ + 1]; }
-	ScrWrStr(X, Y, txt, Color);
-}
-
-void ScrWrText(WORD X, WORD Y, const char* S)
-{
-	X += WindMin.X - 1;
-	Y += WindMin.Y - 1;
-	DWORD written = 0;
-	size_t len = strlen(S);
-	WriteConsoleOutputCharacterA(hConsOutput, S, len, { (short)X, (short)Y }, &written);
-}
-
-void ScrWrBuf(WORD X, WORD Y, void* Buf, WORD L)
-{
-	X++; // v Pacalu to bylo od 1
-	Y++; // --""--
-	SMALL_RECT XY = { (short)X, (short)Y, (short)X + L, (short)Y + 1 };
-	COORD BufferSize = { (short)L, 1 };
-	WriteConsoleOutputA(hConsOutput, (CHAR_INFO*)Buf, BufferSize, { 0, 0 }, &XY);
-}
-
-void ScrRdBuf(WORD X, WORD Y, void* Buf, WORD L)
-{
-}
-
-void* ScrPush(WORD X, WORD Y, WORD SizeX, WORD SizeY)
-{
-	return nullptr;
-}
-
-void ScrPop(WORD X, WORD Y, void* P)
-{
-}
-
-void ScrPopToGraph(WORD X, WORD Y, WORD SizeX, WORD SizeY, void* P, WORD DOfs)
-{
-}
-
-void ScrMove(WORD X, WORD Y, WORD ToX, WORD ToY, WORD L)
-{
-}
-
-void ScrColor(WORD X, WORD Y, WORD L, BYTE Color)
-{
-	DWORD written = 0;
-	FillConsoleOutputAttribute(hConsOutput, Color, L, { (short)X, (short)Y }, &written);
-}
-
-TCrs CrsGet()
-{
-	TCrs crs { Crs.X, Crs.Y, Crs.Big, Crs.Enabled, 0 };
-	return crs;
-}
-
-void CrsSet(TCrs S)
-{
-	CrsHide();
-	Crs.X = S.X;
-	Crs.Y = S.Y;
-	Crs.Big = S.Big;
-	Crs.Enabled = S.Enabled;
-	CrsGotoXY(Crs.X, Crs.Y);
-	if (Crs.Enabled) CrsShow();
-}
-
-void CrsShow()
-{
-	CONSOLE_CURSOR_INFO visible{ 1, true };
-	SetConsoleCursorInfo(hConsOutput, &visible);
-	Crs.Enabled = true;
-}
-
-void CrsHide()
-{
-	CONSOLE_CURSOR_INFO invisible{ 1, false };
-	SetConsoleCursorInfo(hConsOutput, &invisible);
-	Crs.Enabled = false;
-}
-
-void CrsBig()
-{
-	if (!Crs.Big) { CrsHide(); Crs.Big = true; } CrsShow();
-}
-
-void CrsNorm()
-{
-	if (Crs.Big) { CrsHide(); Crs.Big = false; } CrsShow();
-}
-
-void GotoXY(WORD X, WORD Y)
-{
-	if (X > WindMax.X || Y > WindMax.Y) return;
-	X += WindMin.X;
-	Y += WindMin.Y;
-	SetConsoleCursorPosition(hConsOutput, { (short)X, (short)Y });
-}
-
-BYTE WhereX()
-{
-	// vrací relativní pozici (k aktuálnímu oknu)
-	CONSOLE_SCREEN_BUFFER_INFO sbi;
-	GetConsoleScreenBufferInfo(hConsOutput, &sbi);
-	return (BYTE)sbi.dwCursorPosition.X - WindMin.X;
-}
-
-BYTE WhereY()
-{
-	// vrací relativní pozici (k aktuálnímu oknu)
-	CONSOLE_SCREEN_BUFFER_INFO sbi;
-	GetConsoleScreenBufferInfo(hConsOutput, &sbi);
-	return (BYTE)sbi.dwCursorPosition.Y - WindMin.Y;
-}
-
-void Window(BYTE X1, BYTE Y1, BYTE X2, BYTE Y2)
-{
-	hWin.Left = X1;
-	hWin.Right = X2;
-	hWin.Top = Y1;
-	hWin.Bottom = Y2;
-
-	// pùvodní kód z ASM
-	if (X2 <= X1) return;
-	if (Y2 <= Y1) return;
-	if (X1 == 0) return;
-	X1--;
-	if (Y1 == 0) return;
-	Y1--;
-	if (X2 > TxtCols) return;
-	X2--;
-	if (Y2 > TxtRows) return;
-	Y2--;
-	WindMin.X = X1;
-	WindMin.Y = Y1;
-	WindMax.X = X2;
-	WindMax.Y = Y2;
-	GotoXY(X1, Y1);
-}
-
 void ClrScr()
 {
-	ScrClr(WindMin.X, WindMin.Y, WindMax.X - WindMin.X + 1, WindMax.Y - WindMin.Y + 1,
+	screen.ScrClr(WindMin.X, WindMin.Y, WindMax.X - WindMin.X + 1, WindMax.Y - WindMin.Y + 1,
 		' ', TextAttr);
-	GotoXY(WindMin.X, WindMin.Y);
+	screen.GotoXY(WindMin.X, WindMin.Y);
 }
 
 void ClrEol()
 {
-	ScrClr(Crs.X, Crs.Y, WindMax.X - Crs.X + 1, 1, ' ', TextAttr);
+	screen.ScrClr(Crs.X, Crs.Y, WindMax.X - Crs.X + 1, 1, ' ', TextAttr);
 }
 
 void TextBackGround(BYTE Color)
@@ -789,9 +565,9 @@ label1:
 	{
 		if (GetTickCount() > t1 + MoveDelay)
 		{
-			ScrWrStr(x, y, "       ", 7);
+			screen.ScrWrStr(x, y, "       ", 7);
 			x = Random(TxtCols - 8); y = Random(TxtRows - 1);
-			ScrWrStr(x, y, "PC FAND", 7);
+			screen.ScrWrStr(x, y, "PC FAND", 7);
 			t1 = GetTickCount();
 		}
 	}
@@ -800,7 +576,7 @@ label1:
 		if ((spec.ScreenDelay > 0) && (GetTickCount() > t + spec.ScreenDelay)) {
 			l = TxtCols * TxtRows * 2 + 50;
 			ce = Crs.Enabled;
-			CrsHide();
+			screen.CrsHide();
 			pos = PushW1(1, 1, TxtCols, TxtRows, true, true);
 			TextAttr = 0; ClrScr(); vis = MausVisible; HideMouse(); l = 555;
 			t1 = GetTickCount() - MoveDelay;
@@ -813,7 +589,7 @@ label2:
 		srand(l);
 		if (vis) ShowMouse();
 		PopW(pos);
-		if (ce) CrsShow();
+		if (ce) screen.CrsShow();
 		if (Event.What != 0)
 		{
 			Event.What = 0;
@@ -866,48 +642,10 @@ void CrsDraw()
 {
 }
 
-void ScrGetPtr(WORD X, WORD Y, WORD& DX, WORD& DI)
-{
-	// v AX je Y, v DI je X
-	DI = X;
-	integer DXAX = Y * TxtCols;
-	WORD AX = DXAX & 0x0000FFFF; // dolní WORD z int. DXAX
-	DX = DXAX >> 16; // horní WORD z int. DXAX
-	AX = AX < 1;
-	DI = DI < 2; // (v reg. DI je X)
-	DI += AX;
-	// v ES i AX se vrací video adresa B800H - ignorujeme
-	// dále se vrací hodnoty DX a DI(tady X)
-}
-
 void HideMausIn()
 {
 }
 
-void ScrWr()
-{
-}
-
-void CrsDark()
-{
-}
-
-void CrsBlink()
-{
-}
-
-void CrsGotoXY(WORD aX, WORD aY)
-{
-	bool b;
-	Crs.X = aX;
-	Crs.Y = aY;
-	SetConsoleCursorPosition(hConsOutput, { (short)Crs.X, (short)Crs.Y });
-}
-
-void ScrPush1(WORD X, WORD Y, WORD SizeX, WORD SizeY, void* P)
-{
-
-}
 
 void Scroll(WORD X, WORD Y, WORD SizeX, WORD SizeY, bool Up)
 {
