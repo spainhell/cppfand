@@ -498,6 +498,7 @@ label1:
 pstring wwmix::SelectDiskFile(pstring Path, WORD HdMsg, bool OnFace)
 {
 	pstring mask, s; longint w; //SearchRec SR;
+	BYTE sizeOfMask = 255;
 	pstring p; pstring d; pstring n; pstring ext, e; pstring ne;
 	WORD c1, c2, r1, r2, c11, r11;
 
@@ -519,7 +520,8 @@ label1:
 	w = PushWFramed(c1, r1, c2, r2, colors.sMask, MsgLine, "", WHasFrame + WShadow + WPushPixel);
 label2:
 	GotoXY(1, 1);
-	EditTxt(&mask, 1, sizeof(mask) - 1, 22, 'A', true, false, true, false, 0);
+	//EditTxt(&mask, 1, sizeof(mask) - 1, 22, 'A', true, false, true, false, 0);
+	EditTxt(&mask, 1, sizeOfMask, 22, 'A', true, false, true, false, 0);
 	if (KbdChar == _ESC_) { PopW(w); return result; }
 	if (mask.first(' ') != 0) { WrLLF10Msg(60); goto label2; }
 	FSplit(FExpand(mask), d, n, e);

@@ -75,7 +75,8 @@ void WriteStr(WORD& pos, WORD& base, WORD& maxLen, WORD& maxCol, BYTE sLen, pstr
 		if (base + i + 1 <= sLen) {
 			if (star) Buffer[i].Char.AsciiChar = '*';
 			else Buffer[i].Char.AsciiChar = (*s)[base + i + 1];
-			if (Buffer[i].Char.AsciiChar < ' ') {
+			if (Buffer[i].Char.AsciiChar >= '\0' && Buffer[i].Char.AsciiChar < ' ') 
+			{	// jedná se o netisknutelný znak ...
 				Buffer[i].Char.AsciiChar = Buffer[i].Char.AsciiChar + 64;
 				Buffer[i].Attributes = colors.tCtrl;
 			}
@@ -113,7 +114,7 @@ label1:
 		break;
 	}
 	case evKeyDown: {
-		KbdChar = Event.KeyCode;
+		//KbdChar = Event.KeyCode;
 		ClrEvent();
 		if (del) {
 			if (KbdChar >= 0x20 && KbdChar <= 0xFE)
@@ -123,22 +124,56 @@ label1:
 			}
 			del = false;
 		}
+		if (KbdChar >= 0x20 && KbdChar <= 0xFF) {
+			if (upd) {
+				switch (typ) {
+				case 'N': { if (KbdChar < '0' || KbdChar > '9') goto label7; }
+				case 'F': {
+					if (!((KbdChar >= '0' && KbdChar <= '9') || KbdChar == '.' || KbdChar == ','
+						|| KbdChar == '-')) goto label7;
+				}
+				case 'R': {
+					if (!((KbdChar >= '0' && KbdChar <= '9') || KbdChar == '.' || KbdChar == ','
+						|| KbdChar == '-' || KbdChar == '+' || KbdChar == 'e' || KbdChar == 'E'))
+						goto label7;
+				}
+				}
+			label5:
+				if (pos > maxlen) { beep(); goto label7; }
+				if (InsMode) {
+					if (*sLen == maxlen)
+						if ((*s)[*sLen] == ' ') (*sLen)--;
+						else { beep(); goto label7; }
+					Move(&(*s)[pos], &(*s)[pos + 1], *sLen - pos + 1); (*sLen)++;
+				}
+				else if (pos > * sLen) (*sLen)++;
+				(*s)[pos] = char(KbdChar); pos++;
+			label7: {}
+			}
+		}
+		else if (ret && ((KbdChar < 0x20) || (KbdChar >= 0x100))) {
+			Event.What = evKeyDown;
+			goto label8;
+		}
 
-		switch (KbdChar) {
-		case _Ins_:
+		if (KbdChar > 0x20) break; // jedná se o znak, ne o funkèní klávesu -> dál nezpracováváme
+			
+		//switch (KbdChar) {
+		switch(Event.KeyCode) {
+		case VK_INSERT:
 		case _V_: InsMode = !InsMode; break;
 		case _U_: if (TxtEdCtrlUBrk) goto label6; break;
 		case _CtrlF4_: if (TxtEdCtrlF4Brk) goto label6; break;
-		case _ESC_:
-		case _M_: {
+		case VK_ESCAPE:
+		case VK_RETURN: {
 		label6:
 			DelBlk(sLen, s, pos);
 			CrsHide(); TxtEdCtrlUBrk = false; TxtEdCtrlF4Brk = false;
 			return 0;
 		}
-		case _left_:
+		case VK_LEFT:
 		case _S_: if ((pos > 1)) pos--; break;
-		case _right_:
+		case VK_RIGHT:
 		case _D_: {
 			if (pos <= maxlen)
 			{
@@ -152,17 +187,17 @@ label1:
 			if (ReadKbd() == _D_) goto label4;
 			break;
 		}
-		case _Home_:
+		case VK_HOME:
 		label3:
 			pos = 1; break;
-		case _End_:
+		case VK_END:
 		label4:
 			pos = *sLen + 1; break;
-		case _H_: if (upd && (pos > 1)) { pos--; goto label2; } break;
-		case _Del_:
+		case VK_BACK: if (upd && (pos > 1)) { pos--; goto label2; } break;
+		case VK_DELETE:
 		case _G_: if (upd && (pos <= *sLen)) {
 		label2:
-			if (*sLen > pos) Move(&s[pos + 1], &s[pos], *sLen - pos);
+			if (*sLen > pos) Move(&(*s)[pos + 1], &(*s)[pos], *sLen - pos);
 			(*sLen)--;
 		} break;
 		case _P_: if (upd) { ReadKbd(); if (KbdChar >= 0 && KbdChar <= 31) goto label5; }
@@ -171,42 +206,11 @@ label1:
 			break;
 		}
 		default:
-			if (KbdChar >= 0x20 && KbdChar <= 0xFF) {
-				if (upd) {
-					switch (typ) {
-					case 'N': { if (KbdChar < '0' || KbdChar > '9') goto label7; }
-					case 'F': {
-						if (!((KbdChar >= '0' && KbdChar <= '9') || KbdChar == '.' || KbdChar == ','
-							|| KbdChar == '-')) goto label7;
-					}
-					case 'R': {
-						if (!((KbdChar >= '0' && KbdChar <= '9') || KbdChar == '.' || KbdChar == ','
-							|| KbdChar == '-' || KbdChar == '+' || KbdChar == 'e' || KbdChar == 'E'))
-							goto label7;
-					}
-					}
-				label5:
-					if (pos > maxlen) { beep(); goto label7; }
-					if (InsMode) {
-						if (*sLen == maxlen)
-							if ((*s)[*sLen] == ' ') (*sLen)--;
-							else { beep(); goto label7; }
-						Move(&s[pos], &s[pos + 1], *sLen - pos + 1); (*sLen)++;
-					}
-					else if (pos > * sLen) (*sLen)++;
-					(*s)[pos] = char(KbdChar); pos++;
-				label7: {}
-				}
-			}
-			else if (ret && ((KbdChar < 0x20) || (KbdChar >= 0x100))) {
-				Event.What = evKeyDown;
-				goto label8;
-			}
 			break;
 		}
-		WriteStr(pos, base, maxlen, maxcol, *sLen, s, star, cx, cy, cx1, cy1);
 	}
 	}
+	WriteStr(pos, base, maxlen, maxcol, *sLen, s, star, cx, cy, cx1, cy1);
 	ClrEvent();
 	if (!ret) goto label1;
 label8:

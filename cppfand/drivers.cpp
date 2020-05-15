@@ -197,7 +197,7 @@ void GetKeyEvent()
 			if (code == 0) continue;
 			Event.What = evKeyDown;
 			Event.KeyCode = code;
-			KbdChar = key.uChar.AsciiChar;
+			KbdChar = key.uChar.AsciiChar & 0x00FF; // èeské znaky jsou 0xFFxx
 			return;
 		}
 	} while (exists);
@@ -491,7 +491,7 @@ WORD ReadKbd()
 
 	Event.What = evKeyDown;
 	Event.KeyCode = code;
-	KbdChar = key.uChar.AsciiChar;
+	KbdChar = key.uChar.AsciiChar & 0x00FF; // èeské znaky jsou 0xFFxx;
 	return code;
 }
 
