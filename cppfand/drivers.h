@@ -153,7 +153,7 @@ void GetMonoColor();
 void EgaWriteArr(WORD X, WORD Y, WORD L, void* From);
 void EgaScroll(WORD X, WORD Y, WORD SizeX, WORD SizeY, bool Up);
 void CrsDraw();
-void ScrGetPtr(WORD X, WORD Y);
+void ScrGetPtr(WORD X, WORD Y, WORD& DX, WORD& DI);
 void HideMausIn();
 void ScrWr();
 void CrsDark();

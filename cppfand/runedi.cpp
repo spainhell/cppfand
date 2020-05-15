@@ -101,21 +101,26 @@ WORD EditTxt(pstring* s, WORD pos, WORD maxlen, WORD maxcol, char typ, bool del,
 label1:
 	switch (WaitEvent(Delta)) {
 	case 1/*flags*/: goto label1; break;
-	case 2/*timer*/: { KbdChar = _ESC_; goto label6; break; }
+	case 2/*timer*/: { KbdChar = VK_ESCAPE; goto label6; break; }
 	}
 
 	switch (Event.What) {
 	case evMouseDown: {
 		if (MouseInRect(cx1, cy1, maxcol, 1))
 		{
-			ClrEvent(); KbdChar = _M_; goto label6;
+			ClrEvent(); KbdChar = VK_RETURN; goto label6;
 		}
 		break;
 	}
 	case evKeyDown: {
-		KbdChar = Event.KeyCode; ClrEvent();
+		KbdChar = Event.KeyCode;
+		ClrEvent();
 		if (del) {
-			if (KbdChar >= 0x20 && KbdChar <= 0xFE) { pos = 1; sLen = 0; WriteStr(pos, base, maxlen, maxcol, *sLen, s, star, cx, cy, cx1, cy1); }
+			if (KbdChar >= 0x20 && KbdChar <= 0xFE)
+			{
+				pos = 1; *sLen = 0;
+				WriteStr(pos, base, maxlen, maxcol, *sLen, s, star, cx, cy, cx1, cy1);
+			}
 			del = false;
 		}
 
@@ -137,7 +142,7 @@ label1:
 		case _D_: {
 			if (pos <= maxlen)
 			{
-				if ((pos > * sLen) && (*sLen < maxlen)) s = s + ' ';
+				if ((pos > *sLen) && (*sLen < maxlen)) s = s + ' ';
 				pos++;
 			}
 			break;
@@ -158,7 +163,7 @@ label1:
 		case _G_: if (upd && (pos <= *sLen)) {
 		label2:
 			if (*sLen > pos) Move(&s[pos + 1], &s[pos], *sLen - pos);
-			sLen--;
+			(*sLen)--;
 		} break;
 		case _P_: if (upd) { ReadKbd(); if (KbdChar >= 0 && KbdChar <= 31) goto label5; }
 		case _F4_: if (upd && (typ == 'A') && (pos <= *sLen)) {
@@ -189,7 +194,7 @@ label1:
 						Move(&s[pos], &s[pos + 1], *sLen - pos + 1); (*sLen)++;
 					}
 					else if (pos > * sLen) (*sLen)++;
-					s[pos] = char(KbdChar); pos++;
+					(*s)[pos] = char(KbdChar); pos++;
 				label7: {}
 				}
 			}
@@ -200,7 +205,7 @@ label1:
 			break;
 		}
 		WriteStr(pos, base, maxlen, maxcol, *sLen, s, star, cx, cy, cx1, cy1);
-	};
+	}
 	}
 	ClrEvent();
 	if (!ret) goto label1;

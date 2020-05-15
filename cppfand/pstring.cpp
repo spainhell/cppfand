@@ -155,7 +155,7 @@ pstring& pstring::operator=(const pstring& newvalue)
 pstring::operator std::string() const
 {
 	int len = arr[0];
-	arr[len + 2] = '\0';
+	arr[len + 1] = '\0';
 	const char* exp = (const char*)&arr[1];
 	return std::string(exp);
 }

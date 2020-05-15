@@ -193,6 +193,8 @@ void GetKeyEvent()
 		exists = keyboard.Get(key);
 		if (exists && key.bKeyDown)
 		{
+			code = key.wVirtualKeyCode;
+			if (code == 0) continue;
 			Event.What = evKeyDown;
 			Event.KeyCode = code;
 			KbdChar = key.uChar.AsciiChar;
@@ -507,7 +509,33 @@ void NoSound()
 
 void ScrClr(WORD X, WORD Y, WORD SizeX, WORD SizeY, char C, BYTE Color)
 {
-	//SetConsoleScreenBufferSize(hConsOutput, { 80,25 });
+	//WORD DX = 0;
+	//WORD DI = 0;
+	//ScrGetPtr(X, Y, DX, DI);
+	//
+	//CHAR_INFO* videobufferESDI = new CHAR_INFO[128*1024];
+	//CHAR_INFO AhAl;
+	//AhAl.Char.AsciiChar = C;
+	//AhAl.Attributes = Color;
+
+	//for (WORD row = 0; row <= SizeY; row++)
+	//{
+	//	for (WORD col = 0; col < SizeX; col++)
+	//	{
+	//		videobufferESDI[DI] = AhAl; // do videopamìti na indexu z DI uložíme znak
+	//	}
+	//	DI += TxtCols;
+	//	DI += TxtCols;
+	//}
+
+	//AhAl.Attributes = 9;
+
+	//do { AhAl.Char.AsciiChar = videobufferESDI[DX].Char.AsciiChar; }
+	//while ((videobufferESDI[DX].Char.AsciiChar & 0x0001) == 1);
+	
+	
+	
+	SetConsoleScreenBufferSize(hConsOutput, { 80,25 });
 	DWORD written = 0;
 	CHAR_INFO* _buf = new CHAR_INFO[SizeX * SizeY];
 	COORD BufferSize = { (short)SizeX, (short)SizeY };
@@ -697,8 +725,8 @@ void Window(BYTE X1, BYTE Y1, BYTE X2, BYTE Y2)
 
 void ClrScr()
 {
-	ScrClr(WindMin.X, WindMin.Y, WindMax.X - WindMin.X + 1, WindMax.Y - WindMin.Y + 1,
-		' ', TextAttr);
+	//ScrClr(WindMin.X, WindMin.Y, WindMax.X - WindMin.X + 1, WindMax.Y - WindMin.Y + 1,
+	//	' ', TextAttr);
 	GotoXY(WindMin.X, WindMin.Y);
 }
 
@@ -741,7 +769,7 @@ void ScrBeep()
 
 WORD WaitEvent(WORD Delta)
 {
-	longint t = 0, tl = 0, pos = 0, l = 555;
+	longint t = 0, t1 = 0, pos = 0, l = 555;
 	BYTE Flgs = 0;
 	WORD x = 0, y = 0;
 	bool vis = false, ce = false;
@@ -757,23 +785,26 @@ label1:
 	if (Event.What != 0) { result = 0; goto label2; }
 	if (Flgs != KbdFlgs) { result = 1; goto label2; }
 	if ((Delta != 0) && (GetTickCount() > t + Delta)) { result = 2; goto label2; }
-	if (pos != 0)
+ 	if (pos != 0)
 	{
-		if (GetTickCount() > tl + MoveDelay)
+		if (GetTickCount() > t1 + MoveDelay)
 		{
 			ScrWrStr(x, y, "       ", 7);
 			x = Random(TxtCols - 8); y = Random(TxtRows - 1);
 			ScrWrStr(x, y, "PC FAND", 7);
-			tl = GetTickCount();
+			t1 = GetTickCount();
 		}
 	}
 	else
 	{
-		l = TxtCols * TxtRows * 2 + 50;
-		ce = Crs.Enabled;
-		CrsHide();
-		pos = PushW1(1, 1, TxtCols, TxtRows, true, true);
-		TextAttr = 0; ClrScr(); vis = MausVisible; HideMouse(); l = 555;
+		if ((spec.ScreenDelay > 0) && (GetTickCount() > t + spec.ScreenDelay)) {
+			l = TxtCols * TxtRows * 2 + 50;
+			ce = Crs.Enabled;
+			CrsHide();
+			pos = PushW1(1, 1, TxtCols, TxtRows, true, true);
+			TextAttr = 0; ClrScr(); vis = MausVisible; HideMouse(); l = 555;
+			t1 = GetTickCount() - MoveDelay;
+		}
 	}
 	goto label1;
 label2:
@@ -835,15 +866,18 @@ void CrsDraw()
 {
 }
 
-void ScrGetPtr(WORD X, WORD Y)
+void ScrGetPtr(WORD X, WORD Y, WORD& DX, WORD& DI)
 {
-	//WORD mul = TxtCols * Y;
-	//mul = mul << 1;
-	//X = X << 1;
-	//X = X + mul;
-	//
-	//// v AX i v ES bude ScrSeg
-	//// v DI bude X
+	// v AX je Y, v DI je X
+	DI = X;
+	integer DXAX = Y * TxtCols;
+	WORD AX = DXAX & 0x0000FFFF; // dolní WORD z int. DXAX
+	DX = DXAX >> 16; // horní WORD z int. DXAX
+	AX = AX < 1;
+	DI = DI < 2; // (v reg. DI je X)
+	DI += AX;
+	// v ES i AX se vrací video adresa B800H - ignorujeme
+	// dále se vrací hodnoty DX a DI(tady X)
 }
 
 void HideMausIn()
