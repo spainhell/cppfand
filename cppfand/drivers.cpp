@@ -725,8 +725,8 @@ void Window(BYTE X1, BYTE Y1, BYTE X2, BYTE Y2)
 
 void ClrScr()
 {
-	//ScrClr(WindMin.X, WindMin.Y, WindMax.X - WindMin.X + 1, WindMax.Y - WindMin.Y + 1,
-	//	' ', TextAttr);
+	ScrClr(WindMin.X, WindMin.Y, WindMax.X - WindMin.X + 1, WindMax.Y - WindMin.Y + 1,
+		' ', TextAttr);
 	GotoXY(WindMin.X, WindMin.Y);
 }
 
