@@ -713,7 +713,7 @@ WORD CompLexStr(const pstring& S1, const pstring& S2); // r871 ASM
 bool EquKFlds(KeyFldDPtr KF1, KeyFldDPtr KF2); // r881
 void Code(void* A, WORD L); // r897 ASM
 void CodingLongStr(LongStrPtr S);
-longint StoreInTWork(LongStrPtr S);
+longint StoreInTWork(LongStr* S);
 LongStrPtr ReadDelInTWork(longint Pos);
 void ForAllFDs(void(*procedure)()); // r935
 bool IsActiveRdb(FileDPtr FD);

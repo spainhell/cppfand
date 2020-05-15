@@ -1272,7 +1272,7 @@ LongStr* RunSelectStr(FrmlPtr Z)
 	ww.SelectStr(RunInt(Z->P1), RunInt(Z->P2), 110, RunShortStr(Z->P5));
 	MarkStore2(p2);
 	s2 = (LongStr*)GetStore2(s->LL + 2); n = 1; LastExitCode = 0;
-	if (KbdChar = _ESC_) LastExitCode = 1;
+	if (KbdChar == _ESC_) LastExitCode = 1;
 	else
 		do {
 			x = ww.GetSelect();

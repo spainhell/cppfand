@@ -25,7 +25,7 @@
 
 void UserHeadLine(pstring UserHeader)
 {
-	WORD n, l, maxlen; void* p;
+	WORD n, l, maxlen; WParam* p;
 	p = PushWParam(1, 1, TxtCols, 1, true);
 	TextAttr = colors.fNorm;
 	ClrEol();

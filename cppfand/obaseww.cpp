@@ -17,26 +17,21 @@ RunMsgD* CM = nullptr;
 //	printf(s.c_str());
 //}
 
-void* PushWParam(WORD C1, WORD R1, WORD C2, WORD R2, bool WW)
+WParam* PushWParam(WORD C1, WORD R1, WORD C2, WORD R2, bool WW)
 {
-	WParam* wp;
-	//wp = (WParam*)GetZStore(sizeof(WParam));
-	wp = new WParam();
-	wp->Min = (WindMin.X << 8) + WindMin.Y;
-	wp->Max = (WindMax.X << 8) + WindMin.Y;
+	WParam* wp = new WParam();
+	wp->Min = WindMin;
+	wp->Max = WindMax;
 	wp->Attr = TextAttr;
 	wp->Cursor = screen.CrsGet();
 	if (WW) screen.Window(C1, R1, C2, R2);
 	return wp;
 }
 
-void PopWParam(void* p)
+void PopWParam(WParam* wp)
 {
-	WParam* wp = (WParam*)p;
-	WindMin.X = (BYTE)wp->Min >> 8;
-	WindMin.Y = (BYTE)wp->Min & 0xFF;
-	WindMax.X = (BYTE)wp->Max >> 8;
-	WindMax.Y = (BYTE)wp->Max & 0xFF;
+	WindMin = wp->Min;
+	WindMax = wp->Max;
 	TextAttr = wp->Attr;
 	screen.CrsSet(wp->Cursor);
 }
@@ -46,7 +41,7 @@ void* PushScr(WORD C1, WORD R1, WORD C2, WORD R2)
 	void* p;
 	C1--; R1--; p = GetStore(4);
 	// asm  les di,p; cld; mov ax,C1; stosw; mov ax,R1; stosw ;
-	screen.ScrPush(C1, R1, C2 - C1, R2 - R1);
+	p = screen.ScrPush(C1, R1, C2 - C1, R2 - R1);
 	return p;
 }
 
@@ -73,16 +68,16 @@ longint PushW1(WORD C1, WORD R1, WORD C2, WORD R2, bool PushPixel, bool WW)
 		ShowMaus;
 	}
 #endif
-	// s = (LongStr*)GetStore(2);
 	s = new LongStr();
-	w = (WParam*)PushWParam(C1, R1, C2, R2, WW);
+	w = PushWParam(C1, R1, C2, R2, WW);
 	w->GrRoot = pos;
 	PushScr(C1, R1, C2, R2);
 	// TODO:
 	// s->LL = AbsAdr(HeapPtr) - AbsAdr(s) - 2;
 	s->LL = 0;
 	auto result = StoreInTWork(s);
-	ReleaseStore(s);
+	delete s;
+	s = nullptr;
 	return result;
 }
 
@@ -228,7 +223,7 @@ void WrLLMsg(WORD N)
 
 void WrLLMsgTxt()
 {
-	void* p; WordRec w; bool On;
+	WParam* p; WordRec w; bool On;
 	WORD Buf[MaxTxtCols + 1];
 	p = PushWParam(1, TxtRows, TxtCols, TxtRows, true);
 	w.Hi = colors.lNorm;

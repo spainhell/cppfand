@@ -6,9 +6,11 @@
 
 struct WParam
 {
-	WORD Min, Max, Attr;
-	TCrs Cursor;
-	longint GrRoot;
+	Wind Min = { 0,0 };
+	Wind Max = { 0, 0 };
+	WORD Attr = 0;
+	TCrs Cursor = { 0,0,false, false, false, 0 };
+	longint GrRoot = 0;
 };
 
 struct WGrBuf
@@ -21,8 +23,8 @@ struct WGrBuf
 
 const WORD MaxGrBufSz = 0x7fff - 4;
 
-void* PushWParam(WORD C1, WORD R1, WORD C2, WORD R2, bool WW);
-void PopWParam(void* p);
+WParam* PushWParam(WORD C1, WORD R1, WORD C2, WORD R2, bool WW);
+void PopWParam(WParam* wp);
 void* PushScr(WORD C1, WORD R1, WORD C2, WORD R2); // r72
 longint PushW1(WORD C1, WORD R1, WORD C2, WORD R2, bool PushPixel, bool WW); // r80
 longint PushW(WORD C1, WORD R1, WORD C2, WORD R2);

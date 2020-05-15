@@ -14,7 +14,7 @@ Screen::Screen(WORD* TxtCols, WORD* TxtRows, Wind* WindMin, Wind* WindMax, TCrs*
 	
 	_handle = GetStdHandle(STD_OUTPUT_HANDLE);
 	if (_handle == INVALID_HANDLE_VALUE) { throw std::exception("Cannot open console output handle."); }
-	SetConsoleScreenBufferSize(_handle, { 80,25 });
+	SetConsoleScreenBufferSize(_handle, { (short)*TxtCols, (short)*TxtRows });
 	_scrBuf = new CHAR_INFO[BUFFSIZE];
 	_actualIndex = 0;
 	_inBuffer = 0;
@@ -133,11 +133,14 @@ void Screen::ScrRdBuf(WORD X, WORD Y, void* Buf, WORD L)
 
 void* Screen::ScrPush(WORD X, WORD Y, WORD SizeX, WORD SizeY)
 {
-	return nullptr;
+	CHAR_INFO* nci = new CHAR_INFO[SizeX * SizeY];
+	ScrPush1(X, Y, SizeX, SizeY, nci);
+	return nci;
 }
 
 void Screen::ScrPop(WORD X, WORD Y, void* P)
 {
+	
 }
 
 void Screen::ScrPopToGraph(WORD X, WORD Y, WORD SizeX, WORD SizeY, void* P, WORD DOfs)
@@ -261,7 +264,13 @@ void Screen::CrsGotoXY(WORD aX, WORD aY)
 
 void Screen::ScrPush1(WORD X, WORD Y, WORD SizeX, WORD SizeY, void* P)
 {
-
+	WORD DX = 0;
+	WORD DI = 0;
+	ScrGetPtr(X, Y, DX, DI);
+	
+	SMALL_RECT rect{ (short)X, (short)Y, (short)X + (short)SizeX, (short)Y + (short)SizeY };
+	// do ukazatele zøejmì uloží obsah videopamìti ...
+	ReadConsoleOutput(_handle, (CHAR_INFO*)P, { (short)SizeX, (short)SizeY }, { 0, 0 }, &rect);
 }
 
 void Screen::ScrGetPtr(WORD X, WORD Y, WORD& DX, WORD& DI)

@@ -1655,7 +1655,8 @@ longint TFile::Store(LongStrPtr S)
 	char X[MPageSize + 1];
 	struct stFptD { longint Typ = 0, Len = 0; } FptD;
 	longint result = 0;
-	l = S->LL; if (l == 0) { return result; }
+	l = S->LL;
+	if (l == 0) { return result; }
 	if (Format == DbtFormat) {
 		pos = MaxPage + 1; N = pos << MPageShft; if (l > 0x7fff) l = 0x7fff;
 		RdWrCache(false, Handle, NotCached(), N, l, S->A);
@@ -3069,7 +3070,7 @@ void DirMinusBackslash(pstring& D)
 	if ((D.length() > 3) && (D[D.length() - 1] == '\\')) D[0]--;
 }
 
-longint StoreInTWork(LongStrPtr S)
+longint StoreInTWork(LongStr* S)
 {
 	return TWork.Store(S);
 }

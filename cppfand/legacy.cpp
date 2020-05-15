@@ -115,7 +115,7 @@ void FSplit(pstring fullname, pstring& dir, pstring& name, pstring& ext)
 	std::string s = fullname;
 	size_t found = 0;
 	found = s.find_last_of("/\\");
-	dir = s.substr(0, found);
+	dir = s.substr(0, found + 1);
 	std::string filename = s.substr(found + 1);
 	found = filename.find_last_of('.');
 	if (found > MAX_PATH) { name = ""; ext = ""; }
