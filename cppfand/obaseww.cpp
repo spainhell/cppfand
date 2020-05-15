@@ -7,16 +7,6 @@
 WORD RunErrNr = 0;
 RunMsgD* CM = nullptr;
 
-
-//void WrHd(pstring s, pstring Hd, WORD Row, WORD MaxCols)
-//{
-//	if (Hd == "") exit(0);
-//	s = " " + Hd + " ";
-//	if (s.length() > MaxCols) { s = s.substr(0, MaxCols); }
-//	GotoXY((MaxCols - s.length()) / 2 + 2, Row);
-//	printf(s.c_str());
-//}
-
 WParam* PushWParam(WORD C1, WORD R1, WORD C2, WORD R2, bool WW)
 {
 	WParam* wp = new WParam();
@@ -38,47 +28,21 @@ void PopWParam(WParam* wp)
 
 void* PushScr(WORD C1, WORD R1, WORD C2, WORD R2)
 {
-	void* p;
-	C1--; R1--; p = GetStore(4);
-	// asm  les di,p; cld; mov ax,C1; stosw; mov ax,R1; stosw ;
-	p = screen.ScrPush(C1, R1, C2 - C1, R2 - R1);
-	return p;
+	//void* p;
+	C1--; R1--;
+	//p = screen.ScrPush(C1, R1, C2 - C1, R2 - R1);
+	//return p;
+	screen.SaveScreen(nullptr, C1, R1, C2, R2);
+	return nullptr;
 }
 
 longint PushW1(WORD C1, WORD R1, WORD C2, WORD R2, bool PushPixel, bool WW)
 {
-	LongStr* s; WParam* w;
-	WORD x1, y1, x2, y2, i, n, sz; longint pos; WGrBuf* buf; //ViewPortType vp;
-	pos = 0;
-#ifdef FandGraph
-	if (IsGraphMode && PushPixel) {
-		HideMaus;
-		GetViewSettings(vp); SetViewPort(0, 0, GetMaxX, GetMaxY, true);
-		RectToPixel(C1 - 1, R1 - 1, C2 - 1, R2 - 1, x1, y1, x2, y2);
-		buf = GetStore(0x7fff + 2); i = y1;
-		repeat n = y2 - i + 1;
-		sz  1 = ImageSize(x1, i, x2, i + n - 1);
-		if ((sz = 0) || (sz > 0x7fff - 8)) { n = n shr 1; goto label1; }
-		/* !!! with buf^ do!!! */ { LL = sz + 8; ChainPos = pos; X = x1; Y = i; }
-		GetImage(x1, i, x2, i + n - 1, buf->A);
-		pos = StoreInTWork(LongStrPtr(buf));
-		inc(i, n);
-		until i > y2;
-		ReleaseStore(buf); SetViewPort(vp.X1, vp.Y1, vp.X2, vp.Y2, vp.Clip);
-		ShowMaus;
-	}
-#endif
-	s = new LongStr();
-	w = PushWParam(C1, R1, C2, R2, WW);
-	w->GrRoot = pos;
-	PushScr(C1, R1, C2, R2);
-	// TODO:
-	// s->LL = AbsAdr(HeapPtr) - AbsAdr(s) - 2;
-	s->LL = 0;
-	auto result = StoreInTWork(s);
-	delete s;
-	s = nullptr;
-	return result;
+	longint pos = 0;
+	WParam* wp = PushWParam(C1, R1, C2, R2, WW);
+	wp->GrRoot = pos;
+	screen.SaveScreen(wp, C1, R1, C2, R2);
+	return 0;
 }
 
 longint PushW(WORD C1, WORD R1, WORD C2, WORD R2)
@@ -86,44 +50,22 @@ longint PushW(WORD C1, WORD R1, WORD C2, WORD R2)
 	return PushW1(C1, R1, C2, R2, false, true);
 }
 
-void PopScr(void* p)
+void PopScr(void* p, bool draw)
 {
-	WORD C1 = 0, R1 = 0;
-	// asm  push ds; lds si,p; cld; lodsw; mov C1,ax; lodsw; mov R1,ax; mov p.WORD, si; pop ds;
-	screen.ScrPop(C1, R1, p);
+	WParam* wp = nullptr;
+	screen.LoadScreen(draw, wp);
+	//PopWParam(wp);
+	//delete wp;
 }
 
 void PopW2(longint pos, bool draw)
 {
-	LongStrPtr s; WParam* w = nullptr;
-	WORD* wofs = (WORD*)w;
-	WGrBuf* buf; bool b; //ViewPortType vp;
-	s = ReadDelInTWork(pos);
-	w = (WParam*)(&s->A); PopWParam(w); pos = w->GrRoot;
-	if (draw) {
-		wofs += sizeof(WParam); b = IsGraphMode;
-		if (pos != 0) IsGraphMode = false;/*don't actually draw content of text buf*/
-		PopScr(w); IsGraphMode = b;
-	}
-	ReleaseStore(s);
-#ifdef FandGraph
-	if (IsGraphMode && (pos != 0)) {
-		HideMaus;
-		GetViewSettings(vp); SetViewPort(0, 0, GetMaxX, GetMaxY, true);
-		while (pos != 0) {
-			buf = WGrBufPtr(ReadDelInTWork(pos));
-			if (draw) PutImage(buf->X, buf->Y, buf->A, 0);
-			pos = buf->ChainPos; ReleaseStore(buf);
-		}
-		SetViewPort(vp.X1, vp.Y1, vp.X2, vp.Y2, vp.Clip);
-		ShowMaus;
-	}
-#endif
+	PopScr(nullptr, draw);
 }
 
 void PopW(longint pos)
 {
-	PopW2(pos, true);
+	PopScr(nullptr, true);
 }
 
 void WriteWFrame(BYTE WFlags, pstring top, pstring bottom)

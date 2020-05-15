@@ -1,4 +1,6 @@
 #pragma once
+#include <stack>
+
 #include "constants.h"
 #include <string>
 #include <windows.h>
@@ -9,6 +11,24 @@ struct TCrs
 };
 struct Wind { BYTE X, Y; };
 const char FrameChars[] = { 0xDA, 0xC4, 0xBF, 0xC0, 0xC4, 0xD9, 0xB3, 0x20, 0xB3, 0xC9, 0xCD, 0xBB, 0xC8, 0xCD, 0xBC, 0xBA, 0x20, 0xBA, 0xC3, 0xC4, 0xB4 };
+
+struct WParam
+{
+	Wind Min = { 0,0 };
+	Wind Max = { 0, 0 };
+	WORD Attr = 0;
+	TCrs Cursor = { 0,0,false, false, false, 0 };
+	longint GrRoot = 0;
+};
+
+struct storeWindow
+{
+	WParam* wp = nullptr;
+	COORD coord{ 0, 0 };
+	SMALL_RECT rect{ 0,0,0,0 };
+	CHAR_INFO* content = nullptr;
+};
+
 
 class Screen
 {
@@ -24,9 +44,6 @@ public:
 	void ScrWrText(WORD X, WORD Y, const char* S);
 	void ScrWrBuf(WORD X, WORD Y, void* Buf, WORD L);
 	void ScrRdBuf(WORD X, WORD Y, void* Buf, WORD L);
-	void* ScrPush(WORD X, WORD Y, WORD SizeX, WORD SizeY);
-	void ScrPop(WORD X, WORD Y, void* P);
-	void ScrPopToGraph(WORD X, WORD Y, WORD SizeX, WORD SizeY, void* P, WORD DOfs);
 	void ScrMove(WORD X, WORD Y, WORD ToX, WORD ToY, WORD L);
 	void ScrColor(WORD X, WORD Y, WORD L, BYTE Color);
 	TCrs CrsGet();
@@ -45,16 +62,23 @@ public:
 	void CrsBlink();
 	void CrsGotoXY(WORD aX, WORD aY);
 
-	void ScrPush1(WORD X, WORD Y, WORD SizeX, WORD SizeY, void* P);
+	int ScrPush1(WORD X, WORD Y, WORD SizeX, WORD SizeY, void* P);
 	void ScrGetPtr(WORD X, WORD Y, WORD& DX, WORD& DI);
-	
+
+	void pushScreen(storeWindow sw);
+	storeWindow popScreen();
+	void SaveScreen(WParam* wp, short c1, short r1, short c2, short r2);
+	void LoadScreen(bool draw, WParam* wp);
+
 private:
 	WORD* TxtCols;
 	WORD* TxtRows;
 	Wind* WindMin;
 	Wind* WindMax;
 	TCrs* Crs;
-	
+
+	std::stack<storeWindow> _windowStack;
+
 	HANDLE _handle;
 	CHAR_INFO* _scrBuf;
 	size_t _actualIndex;

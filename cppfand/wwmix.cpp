@@ -117,7 +117,7 @@ label1:
 		case _ESC_: {
 		label3:
 			ClrEvent(); PopW(w2);
-			PopScr(pw); ReleaseStore(pw);
+			PopScr(pw, true); ReleaseStore(pw);
 			if (ss.Empty) return;
 			ss.Empty = true; ss.Pointto = nullptr;
 			ss.Size = 0; p = sv.ItemRoot;

@@ -4,15 +4,6 @@
 #include "pstring.h"
 
 
-struct WParam
-{
-	Wind Min = { 0,0 };
-	Wind Max = { 0, 0 };
-	WORD Attr = 0;
-	TCrs Cursor = { 0,0,false, false, false, 0 };
-	longint GrRoot = 0;
-};
-
 struct WGrBuf
 {
 	WORD LL;
@@ -28,7 +19,7 @@ void PopWParam(WParam* wp);
 void* PushScr(WORD C1, WORD R1, WORD C2, WORD R2); // r72
 longint PushW1(WORD C1, WORD R1, WORD C2, WORD R2, bool PushPixel, bool WW); // r80
 longint PushW(WORD C1, WORD R1, WORD C2, WORD R2);
-void PopScr(void* p);
+void PopScr(void* p, bool draw);
 void PopW2(longint pos, bool draw);
 void PopW(longint pos);
 void WriteWFrame(BYTE WFlags, pstring top, pstring bottom); // r142

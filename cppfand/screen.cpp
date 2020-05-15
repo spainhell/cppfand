@@ -131,22 +131,6 @@ void Screen::ScrRdBuf(WORD X, WORD Y, void* Buf, WORD L)
 {
 }
 
-void* Screen::ScrPush(WORD X, WORD Y, WORD SizeX, WORD SizeY)
-{
-	CHAR_INFO* nci = new CHAR_INFO[SizeX * SizeY];
-	ScrPush1(X, Y, SizeX, SizeY, nci);
-	return nci;
-}
-
-void Screen::ScrPop(WORD X, WORD Y, void* P)
-{
-	
-}
-
-void Screen::ScrPopToGraph(WORD X, WORD Y, WORD SizeX, WORD SizeY, void* P, WORD DOfs)
-{
-}
-
 void Screen::ScrMove(WORD X, WORD Y, WORD ToX, WORD ToY, WORD L)
 {
 }
@@ -262,15 +246,12 @@ void Screen::CrsGotoXY(WORD aX, WORD aY)
 	SetConsoleCursorPosition(_handle, { (short)Crs->X, (short)Crs->Y });
 }
 
-void Screen::ScrPush1(WORD X, WORD Y, WORD SizeX, WORD SizeY, void* P)
+int Screen::ScrPush1(WORD X, WORD Y, WORD SizeX, WORD SizeY, void* P)
 {
-	WORD DX = 0;
-	WORD DI = 0;
-	ScrGetPtr(X, Y, DX, DI);
-	
 	SMALL_RECT rect{ (short)X, (short)Y, (short)X + (short)SizeX, (short)Y + (short)SizeY };
 	// do ukazatele zøejmì uloží obsah videopamìti ...
 	ReadConsoleOutput(_handle, (CHAR_INFO*)P, { (short)SizeX, (short)SizeY }, { 0, 0 }, &rect);
+	return SizeX * SizeY;
 }
 
 void Screen::ScrGetPtr(WORD X, WORD Y, WORD& DX, WORD& DI)
@@ -285,4 +266,39 @@ void Screen::ScrGetPtr(WORD X, WORD Y, WORD& DX, WORD& DI)
 	DI += AX;
 	// v ES i AX se vrací video adresa B800H - ignorujeme
 	// dále se vrací hodnoty DX a DI(tady X)
+}
+
+void Screen::pushScreen(storeWindow sw)
+{
+	_windowStack.push(sw);
+}
+
+storeWindow Screen::popScreen()
+{
+	auto result = _windowStack.top();
+	_windowStack.pop();
+	return result;
+}
+
+void Screen::SaveScreen(WParam* wp, short c1, short r1, short c2, short r2)
+{
+	c1--; c2--;
+	r1--; r2--;
+	
+	SMALL_RECT rect{ c1, r1, c2, r2 };
+	COORD bufSize{ (short)(c2 - c1 + 1), (short)r2 - r1 + 1 };
+	CHAR_INFO* buf = new CHAR_INFO[bufSize.X * bufSize.Y];
+	ReadConsoleOutput(_handle, buf, bufSize, { 0, 0 }, &rect);
+	_windowStack.push({ wp, bufSize, rect, buf });
+}
+
+void Screen::LoadScreen(bool draw, WParam* wp)
+{
+	auto scr = _windowStack.top();
+	_windowStack.pop();
+	wp = scr.wp;
+	if (draw) {
+		WriteConsoleOutput(_handle, scr.content, scr.coord, { 0, 0 }, &scr.rect);
+	}
+	delete[] scr.content;
 }

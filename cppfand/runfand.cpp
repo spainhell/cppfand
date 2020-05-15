@@ -314,7 +314,7 @@ void CallInstallRdb()
 
 void CallEditTxt()
 {
-	CPath = FExpand(CPath); CVol = "";
+	//CPath = FExpand(CPath); CVol = "";
 	pstring errmsg = "";
 	EditTxtFile(nullptr, 'T', errmsg, nullptr, 1, 0, nullptr, 0, "", 0, nullptr);
 }

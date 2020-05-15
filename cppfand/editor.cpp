@@ -291,13 +291,12 @@ void SimplePrintHead()
 
 void LastLine(WORD from, WORD num, WORD& Ind, WORD& Count)
 {
-	char* C = nullptr;
-	WORD* COfs = (WORD*)C;
+	char C = '\0';
 	WORD i;
-	Count = 0; Ind = from; C = &(*T[from]);
+	Count = 0; Ind = from; C = *T[from];
 	for (i = 1; i < num; i++)
 	{
-		COfs++; if (*C == _CR) { Count++; Ind = from + i; };
+		C++; if (C == _CR) { Count++; Ind = from + i; };
 	}
 	if ((Count > 0) && (*T[Ind + 1] == _LF)) Ind++;
 }
@@ -3799,7 +3798,7 @@ void EditTxtFile(longint* LP, char Mode, pstring& ErrMsg, EdExitD* ExD,
 		TextAttr = Atr;
 	}
 	//NewExit(Ovr(), er);
-	goto label4;
+	//goto label4;
 	Loc = (LP != nullptr);
 	LocalPPtr = LP;
 	if (!Loc)
