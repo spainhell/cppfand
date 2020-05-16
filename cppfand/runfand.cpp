@@ -461,7 +461,7 @@ void InitRunFand()
 	if (paramstr.size() > 1 && !paramstr.at(1).empty() && paramstr.at(1) != "?")
 	{
 #ifndef FandRunV
-		if (paramstr.size() > 2 && SEquUpcase(paramstr(2), 'D')) {
+		if (paramstr.size() > 2 && SEquUpcase(paramstr[2], "D")) {
 			IsTestRun = true;
 			goto label0;
 		}

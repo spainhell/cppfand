@@ -27,3 +27,12 @@ inline void BackupM(Instr* PD)
 inline void CheckFile(FileD* FD)
 {
 }
+
+inline void CodingCRdb(bool Rotate)
+{
+}
+
+inline bool PromptCodeRdb()
+{
+	return false;
+}

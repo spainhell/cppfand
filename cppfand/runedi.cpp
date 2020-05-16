@@ -82,7 +82,7 @@ void WriteStr(WORD& pos, WORD& base, WORD& maxLen, WORD& maxCol, BYTE sLen, pstr
 		else Buffer[i].Char.AsciiChar = ' ';
 		//BuffLine[i] = *item;
 	}
-	screen.ScrWrBuf(cx1, cy1, Buffer, maxCol);
+	screen.ScrWrCharInfoBuf(cx1 + 1, cy1 + 1, Buffer, maxCol);
 	screen.GotoXY(cx + pos - base - 1, cy);
 }
 

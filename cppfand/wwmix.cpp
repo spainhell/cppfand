@@ -555,7 +555,8 @@ label3:
 		}
 		FindNext(SR);
 	}*/
-	ss.Abcd = true; SelectStr(c11, r11, HdMsg, p);
+	ss.Abcd = true;
+	SelectStr(c11, r11, HdMsg, p);
 	if (KbdChar == _ESC_) return result;
 	s = GetSelect();
 	if (s[1] == '\\') {

@@ -597,6 +597,11 @@ void StoreChptTxt(FieldDPtr F, LongStr* S, bool Del)
 	ReleaseStore(p);
 }
 
+bool EditExecRdb(pstring* Nm, pstring* ProcNm, Instr* ProcCall)
+{
+	return false;
+}
+
 void SgKF(KeyFldDPtr kf, WORD Sg)
 {
 	while (kf->Chain != nullptr) {
@@ -1326,9 +1331,9 @@ void WrErrMsg630(pstring* Nm)
 	SetMsgPar(*Nm); WrLLF10Msg(630);
 }
 
-bool EditExecRdb(pstring* Nm, pstring* ProcNm, Instr* ProcCall)
+bool EditExecRdb(pstring* Nm, pstring* ProcNm, Instr* ProcCall, wwmix* ww)
 {
-	WORD Brk, cc; void* p; pstring passw(20); bool b;
+	WORD Brk, cc; void* p = nullptr; pstring passw(20); bool b;
 	ExitRecord er, er2; RdbPos RP; EditOpt* EO;
 
 	auto result = false;
@@ -1340,7 +1345,7 @@ bool EditExecRdb(pstring* Nm, pstring* ProcNm, Instr* ProcCall)
 	if (top) SQLConnect();
 #endif
 	//NewExit(Ovr(), er);
-	goto label9;
+	//goto label9;
 	CreateOpenChpt(Nm, true); CompileFD = true;
 #ifndef FandRunV
 	if (!IsTestRun || (ChptTF->LicenseNr != 0) ||
@@ -1368,15 +1373,15 @@ bool EditExecRdb(pstring* Nm, pstring* ProcNm, Instr* ProcCall)
 		ReleaseFDLDAfterChpt(); ReleaseStore(p);
 	}
 	else if (!top) UserW = PushW(1, 1, TxtCols, TxtRows);
-	EditRdbMode = true; if (CRdb->Encrypted) passw = PassWord(false);
+	EditRdbMode = true; if (CRdb->Encrypted) passw = ww->PassWord(false);
 	IsTestRun = true; EO = GetEditOpt();
 	EO->Flds = AllFldsList(Chpt, true);
 	EO->Flds = EO->Flds->Chain->Chain->Chain;
 	NewEditD(Chpt, EO);
 	E->MustCheck = true; /*ChptTyp*/
 	if (CRdb->Encrypted)
-		if (HasPassWord(Chpt, 1, passw)) {
-			CRdb->Encrypted = false; SetPassWord(Chpt, 1, ""); CodingCRdb(false);
+		if (ww->HasPassWord(Chpt, 1, passw)) {
+			CRdb->Encrypted = false; ww->SetPassWord(Chpt, 1, ""); CodingCRdb(false);
 		}
 		else { WrLLF10Msg(629); goto label9; }
 	if (!OpenEditWw()) goto label8; result = true; Chpt->WasRdOnly = false;

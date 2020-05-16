@@ -197,11 +197,11 @@ void WrLLMsgTxt()
 
 void WrLLF10MsgLine()
 {
-	WORD Buf[MaxTxtCols];
 	WORD col, row, len;
 
 	row = TxtRows - 1;
-	screen.ScrRdBuf(0, row, &Buf[0], TxtCols);
+	CHAR_INFO* Buf = new CHAR_INFO[TxtCols];
+	screen.ScrRdBuf(0, row, Buf, TxtCols);
 	Beep();
 	screen.ScrClr(0, row, TxtCols, 1, ' ', colors.zNorm);
 	if (F10SpecKey == 0xffff) screen.ScrWrStr(0, row, "...!", colors.zNorm | 0x80);
@@ -248,7 +248,8 @@ label1:
 	goto label1;
 label3:
 	F10SpecKey = 0;
-	screen.ScrWrBuf(0, row, &Buf[0], TxtCols);
+	screen.ScrWrCharInfoBuf(0, row, Buf, TxtCols);
+	delete[] Buf;
 }
 
 void WrLLF10Msg(WORD N)

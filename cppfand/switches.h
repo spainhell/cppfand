@@ -1,6 +1,6 @@
 #pragma once
 
-#define FandRunV 0
+//#define FandRunV 0
 //#define FandNetV 1
 //#define FandGraph 2
 //#define FandDML 3

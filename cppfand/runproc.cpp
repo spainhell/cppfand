@@ -835,6 +835,10 @@ void WaitProc() // ø. 604
 	} while (w != evKeyDown && w != evMouseDown);
 }
 
+void MemDiagProc()
+{
+}
+
 void RunInstr(Instr* PD)
 {
 	LongStr* s;

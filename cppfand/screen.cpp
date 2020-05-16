@@ -120,15 +120,39 @@ void Screen::ScrWrText(WORD X, WORD Y, const char* S)
 
 void Screen::ScrWrBuf(WORD X, WORD Y, void* Buf, WORD L)
 {
-	X++; // v Pacalu to bylo od 1
-	Y++; // --""--
+	//X++; // v Pacalu to bylo od 1
+	//Y++; // --""--
 	SMALL_RECT XY = { (short)X, (short)Y, (short)X + L, (short)Y + 1 };
 	COORD BufferSize = { (short)L, 1 };
-	WriteConsoleOutputA(_handle, (CHAR_INFO*)Buf, BufferSize, { 0, 0 }, &XY);
+
+	// zkonvertujeme WORD do CHAR_INFO
+	WORD* pBuf = (WORD*)Buf;
+	CHAR_INFO* ci = new CHAR_INFO[L];
+	for (int i = 0; i < L; i++)
+	{
+		ci[i].Attributes = pBuf[i] >> 8;
+		ci[i].Char.AsciiChar = pBuf[i] & 0x00FF;
+	}
+	
+	WriteConsoleOutputA(_handle, ci, BufferSize, { 0, 0 }, &XY);
+	delete[] ci;
+}
+
+void Screen::ScrWrCharInfoBuf(short X, short Y, CHAR_INFO* Buf, short L)
+{
+	//X++; // v Pacalu to bylo od 1
+	//Y++; // --""--
+	SMALL_RECT XY = { X, Y, (short)(X + L), (short)(Y + 1) };
+	COORD BufferSize = { (short)L, 1 };
+	WriteConsoleOutputA(_handle, Buf, BufferSize, { 0, 0 }, &XY);
 }
 
 void Screen::ScrRdBuf(WORD X, WORD Y, void* Buf, WORD L)
 {
+	SMALL_RECT rect{ (short)X, (short)Y, (short)X + L, (short)Y };
+	COORD bufSize{ (short)(L), 1 };
+	CHAR_INFO* buf = new CHAR_INFO[bufSize.X * bufSize.Y];
+	ReadConsoleOutput(_handle, buf, bufSize, { 0, 0 }, &rect);
 }
 
 void Screen::ScrMove(WORD X, WORD Y, WORD ToX, WORD ToY, WORD L)
