@@ -235,14 +235,8 @@ void Screen::Window(BYTE X1, BYTE Y1, BYTE X2, BYTE Y2)
 	// pùvodní kód z ASM
 	if (X2 <= X1) return;
 	if (Y2 <= Y1) return;
-	if (X1 == 0) return;
-	X1--;
-	if (Y1 == 0) return;
-	Y1--;
-	if (X2 > *TxtCols) return;
-	X2--;
-	if (Y2 > *TxtRows) return;
-	Y2--;
+	if (X2 + 1 > *TxtCols) return;
+	if (Y2 + 1 > *TxtRows) return;
 	WindMin->X = X1;
 	WindMin->Y = Y1;
 	WindMax->X = X2;
