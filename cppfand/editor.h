@@ -14,7 +14,7 @@ struct MsgStr
 typedef MsgStr* MsgStrPtr;
 
 bool EditText(char pMode, char pTxtType, pstring pName, pstring pErrMsg,
-	CharArr* pTxtPtr, WORD pMaxLen, WORD& pLen, WORD& pInd, longint pScr,
+	char* pTxtPtr, WORD pMaxLen, WORD& pLen, WORD& pInd, longint pScr,
 	pstring pBreaks, EdExitD* pExD, bool& pSrch, bool& pUpdat,
 	WORD pLastNr, WORD pCtrlLastNr, MsgStrPtr pMsgS); // r169
 void SimpleEditText(char pMode, pstring pErrMsg, pstring pName, CharArr* TxtPtr,

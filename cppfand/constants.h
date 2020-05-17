@@ -225,8 +225,8 @@ const WORD _ShiftF1 = 0x54;
 const WORD _CtrlHome = 0x77;
 const WORD _CtrlEnd = 0x75;
 const WORD _EOF = 0x04;
-const WORD _CR = 0x13;
-const WORD _LF = 0x10;
+const WORD _CR = 0x0D;
+const WORD _LF = 0x0A;
 const WORD _ESC = 0x1B;
 
 const WORD _F1_ = 0x3B00;

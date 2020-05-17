@@ -85,11 +85,12 @@ pstring pstring::substr(unsigned char index)
 
 pstring pstring::substr(unsigned char index, unsigned char count)
 {
-	pstring psbst = pstring();
+	pstring psbst;
 	if (index < arr[0])
 	{
 		if (count > arr[0] - index) count = arr[0] - index;
-		memcpy((void*)psbst.arr, &arr[index], count);
+		psbst[0] = count;
+		memcpy(&psbst.arr[1], &arr[index + 1], count);
 	}
 	return psbst;
 }

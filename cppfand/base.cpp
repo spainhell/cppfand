@@ -1150,7 +1150,7 @@ void ReleaseBoth(void* p, void* p2)
 
 longint StoreAvail()
 {
-	return 512 * 1024 * 1024;
+	return /*512 * */1024 * 1024;
 }
 
 void AlignLongStr()

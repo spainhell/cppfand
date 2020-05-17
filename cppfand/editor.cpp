@@ -90,7 +90,7 @@ bool SrchT, UpdatT;
 WORD LastNr, CtrlLastNr;
 integer LeftMarg, RightMarg;
 bool TypeB;
-pstring  LastS, CtrlLastS, ShiftLastS, AltLastS, HeadS;
+pstring LastS, CtrlLastS, ShiftLastS, AltLastS, HeadS;
 longint* LocalPPtr;
 bool EditT;
 
@@ -122,7 +122,7 @@ pstring TxtVol;
 bool AllRd;
 longint AbsLenT;
 bool ChangePart, UpdPHead;
-char T[128];
+char T[50];
 longint SavePar(); // r133
 void RestorePar(longint l);
 
@@ -184,7 +184,7 @@ void HMsgExit(pstring s)
 
 WORD FindChar(WORD& Num, char C, WORD Pos, WORD Len)
 {
-	// ASM
+	for (WORD i = Pos; i < Len; i++) if (T[i] == C) { Num = i;  return i; }
 	return 0;
 }
 
@@ -288,22 +288,23 @@ void SimplePrintHead()
 	PHNum = 0; PPageS = 0x7FFF;
 }
 
-void LastLine(WORD from, WORD num, WORD& Ind, WORD& Count)
+void LastLine(char* input, WORD from, WORD num, WORD& Ind, WORD& Count)
 {
-	char C = '\0';
-	WORD i;
-	Count = 0; Ind = from; C = T[from];
-	for (i = 1; i < num; i++)
+	WORD length = Count;
+	WORD lastCR = 0;
+	Count = 0;
+	for (int i = from; i < length; i++)
 	{
-		C++; if (C == _CR) { Count++; Ind = from + i; };
+		if (input[i] == _CR) { lastCR = i; Count++; }
 	}
-	if ((Count > 0) && (T[Ind + 1] == _LF)) Ind++;
+	Count++;
+	Ind = lastCR + 1;
 }
 
 bool RdNextPart()
 {
+	char* ppa = nullptr;
 	WORD L11, L1;
-
 	longint Max = MinL(MaxLenT, StoreAvail() + LenT);
 	WORD Pass = Max - (Max >> 3);
 	Part.MovL = 0;
@@ -316,7 +317,7 @@ bool RdNextPart()
 	longint BL = Part.LineP;
 
 	if (LenT > (Pass >> 1)) {
-		LastLine(0, LenT - (Pass >> 1), MI, Part.MovL);     /* 28kB+1 radek*/
+		LastLine(ppa, 0, LenT - (Pass >> 1), MI, Part.MovL);     /* 28kB+1 radek*/
 		SetColorOrd(Part.ColorP, 1, MI + 1);
 		Pos += MI;
 		LenT -= MI;
@@ -338,7 +339,7 @@ bool RdNextPart()
 		Max = StoreAvail();
 		if (Max > 0x400) Max -= 0x400;
 		if (L11 > Max) L11 = Max;
-		CharArr* ppa = (CharArr*)GetStore(L11);
+		ppa = new char[L11];
 		L1 = L11;
 		if (L1 > 0) { SeekH(TxtFH, Pos); ReadH(TxtFH, L1, ppa); }
 		AllRd = Pos + L11 >= FSize;
@@ -346,7 +347,7 @@ bool RdNextPart()
 		Pos += L1;
 	} while (!((LenT > Pass) || AllRd || (L11 == Max)));
 
-	LastLine(iL, LenT - iL - 1, iL, L1);
+	LastLine(ppa, iL, LenT - iL - 1, iL, L1);
 	if (AllRd) iL = LenT;
 	if ((iL < LenT)) { LenT = iL; AllRd = false; }
 	Part.LenP = LenT;
@@ -509,8 +510,8 @@ pstring ShortName(pstring Name)
 	pstring s;
 	J = Name.length();
 	while (!(Name[J] == '\\' || Name[J] == ':') && (J > 0)) J--;
-	s = Name.substr(succ(J), Name.length() - J);
-	if (Name[2] == ':') { s = Name.substr(1, 2) + s; }
+	s = Name.substr(J, Name.length() - J);
+	if (Name[2] == ':') { s = Name.substr(0, 2) + s; }
 	return s;
 }
 
@@ -519,14 +520,13 @@ pstring ShortName(pstring Name)
 void WrStatusLine()
 {
 	pstring Blanks;
-	BYTE* Len = (BYTE*)&Blanks;
 	pstring s;
 	integer i;
 
 	if (Mode != HelpM) {
 		FillChar(&Blanks[1], TxtCols, 32);
-		*Len = TXTCOLS;
-		if (HeadS != nullptr) {
+		Blanks[0] = TXTCOLS;
+		if (HeadS.length() > 0) {
 			Move(&HeadS[1], &Blanks[1], HeadS.length());
 			i = Blanks.first('_');
 			if (i == 0) {
@@ -534,7 +534,7 @@ void WrStatusLine()
 				FillChar(&Blanks[1], TStatL + 2, 32);
 			}
 			else {
-				while ((i <= *Len) && (Blanks[i] == ' ')) {
+				while ((i <= Blanks.length()) && (Blanks[i] == ' ')) {
 					Blanks[i] = ' ';
 					i++;
 				}
@@ -610,9 +610,10 @@ void InitScr()
 
 void UpdStatLine(int Row, int Col)
 {
-	pstring StatLine(35);
-	pstring st(10);
-	BYTE* len = (BYTE*)&st;
+	pstring StatLine;
+	StatLine[0] = 35;
+	pstring st;
+	st[0] = 10;
 	integer i;
 	longint lRow;
 
@@ -622,7 +623,7 @@ void UpdStatLine(int Row, int Col)
 		str(lRow, 5, st);
 		Move(&st[1], &StatLine[2], 5);
 		str(Col, st);
-		while (st.length() < 4) { st = st + ' '; }
+		while (st.length() < 4) { st.Append(' '); }
 		Move(&st[1], &StatLine[8], 4);
 		switch (Mode) {
 		case TextM: {
@@ -641,7 +642,7 @@ void UpdStatLine(int Row, int Col)
 		default: break;
 		}
 		i = 1;
-		if (HeadS != nullptr) {
+		if (HeadS.length() > 0) {
 			i = MaxW(1, HeadS.first('_'));
 			if (i > TxtCols - TStatL) i = MaxI(integer(TxtCols) - TStatL, 1);
 		}
@@ -673,28 +674,37 @@ bool LineBndBlock(int Ln)
 
 void EditWrline(char* P, int Row)
 {
-	WORD BuffLine[255];
-	WORD Line;
-	integer I, LP, B, E;
-	integer Newvalue;
-	BYTE* Nv = (BYTE*)&Newvalue;
-	bool IsCtrl;
+	WORD BuffLine[255] { 0 };
+	WORD Line = 0;
+	integer I = 0, LP = 0, B = 0, E = 0;
+
+	BYTE nv1 = 0;
+	BYTE nv2 = 0;
+	
+	//integer Newvalue = 0;
+	//BYTE* Nv = (BYTE*)&Newvalue;
+	bool IsCtrl = false;
 
 	Line = pred(ScrL + Row);
-	if (LineInBlock(Line) && (TypeB == TextBlock)) Nv[2] = BlockColor;
-	else Nv[2] = TxtColor;
+	if (LineInBlock(Line) && (TypeB == TextBlock)) nv2 = BlockColor;
+	else nv2 = TxtColor;
 	I = 1;
-	while ((P[I] != _CR) && (I <= LineSize)) {
-		Nv[1] = P[I];
-		BuffLine[I] = Newvalue;
-		if (Nv[1] < 32) IsCtrl = true;
+	while ((P[I] != _CR) && (I < LineSize)) {
+		nv1 = P[I];
+		if (I < 0 || I > 254) throw std::exception("Index");
+		BuffLine[I] = (nv2 << 8) + nv1;
+		if (nv1 < 32) IsCtrl = true;
 		I++;
 	}
 
 	LP = I - 1;
-	Nv[1] = 32;
+	nv1 = 32;
 
-	for (int i = LP + 1; i < BPos + LineS; i++) { BuffLine[I] = Newvalue; }
+	for (I = LP + 1; I < BPos + LineS; I++)
+	{
+		if (I < 0 || I > 254) throw std::exception("Index");
+		BuffLine[I] = (nv2 << 8) + nv1;
+	}
 
 	if (BegBLn <= EndBLn) {
 		if (LineBndBlock(Line) || ((TypeB == ColBlock) && LineInBlock(Line))) {
@@ -702,18 +712,20 @@ void EditWrline(char* P, int Row)
 				B = MinI(BegBPos, LineS + BPos + 1);
 			}
 			else { B = 1; }
-			if ((EndBLn == LineAbs(Line)) || (TypeB = ColBlock)) {
+			if ((EndBLn == LineAbs(Line)) || (TypeB == ColBlock)) {
 				E = MinI(EndBPos, LineS + BPos + 1);
 			}
 			else { E = LineS + BPos + 1; }
-			for (int i = B; i < pred(E); i++) {
+			for (I = B; I < pred(E); I++) {
+				if (I < 0 || I > 254) throw std::exception("Index");
 				BuffLine[I] = (BuffLine[I] & 0x00FF) + (BlockColor << 8);
 			}
 		}
 	}
 	if (IsCtrl) {
-		for (int i = succ(BPos); i < LP; i++) {
+		for (I = succ(BPos); I < LP; I++) {
 			if (P[I] < 32) {
+				if (I < 0 || I > 254) throw std::exception("Index");
 				BuffLine[I] = ((P[I] + 64) & 0x00FF) + (ColKey[CtrlKey.first(P[I])] << 8);
 			}
 		}
@@ -845,6 +857,7 @@ void PredPart()
 
 WORD CountChar(char C, WORD First, WORD Last)
 {
+	return 1;
 	WORD I, j, n;
 	j = 1;
 	I = FindChar(j, C, First, LenT);
@@ -3702,7 +3715,7 @@ void GetEditTxt(bool& pInsert, bool& pIndent, bool& pWrap, bool& pJust, bool& pC
 	pLeftMarg = LeftMarg; pRightMarg = RightMarg;
 }
 
-bool EditText(char pMode, char pTxtType, pstring pName, pstring pErrMsg, CharArr* pTxtPtr, WORD pMaxLen, WORD& pLen,
+bool EditText(char pMode, char pTxtType, pstring pName, pstring pErrMsg, char* pTxtPtr, WORD pMaxLen, WORD& pLen,
 	WORD& pInd, longint pScr, pstring pBreaks, EdExitD* pExD, bool& pSrch, bool& pUpdat, WORD pLastNr,
 	WORD pCtrlLastNr, MsgStrPtr pMsgS)
 {
@@ -3749,7 +3762,7 @@ bool EditText(char pMode, char pTxtType, pstring pName, pstring pErrMsg, CharArr
 	return EditT;
 }
 
-void SimpleEditText(char pMode, pstring pErrMsg, pstring pName, CharArr* TxtPtr, WORD MaxLen, WORD& Len, WORD& Ind,
+void SimpleEditText(char pMode, pstring pErrMsg, pstring pName, char* TxtPtr, WORD MaxLen, WORD& Len, WORD& Ind,
 	bool& Updat)
 {
 	bool Srch; longint Scr;
@@ -3803,7 +3816,9 @@ void EditTxtFile(longint* LP, char Mode, pstring& ErrMsg, EdExitD* ExD,
 	if (!Loc)
 	{
 		MaxLenT = 0xFFF0; LenT = 0; Part.UpdP = false;
-		TxtPath = CPath; TxtVol = CVol; OpenTxtFh(Mode);
+		TxtPath = CPath; TxtVol = CVol;
+		// zaèátek práce se souborem
+		OpenTxtFh(Mode);
 		RdFirstPart();
 		SimplePrintHead();
 		while ((TxtPos > Part.PosP + Part.LenP) && !AllRd) RdNextPart();
@@ -3818,10 +3833,10 @@ void EditTxtFile(longint* LP, char Mode, pstring& ErrMsg, EdExitD* ExD,
 label1:
 	Srch = false; Upd = false;
 	if (!Loc)
-		EditText(Mode, FileT, TxtPath, ErrMsg, (CharArr*)&T, 0xFFF0, LenT, Ind, Txtxy,
+		EditText(Mode, FileT, TxtPath, ErrMsg, ppa, 0xFFF0, LenT, Ind, Txtxy,
 			_F1 + _F6 + _F9 + _AltF10, ExD,
 			Srch, Upd, 126, 143, MsgS);
-	else EditText(Mode, LocalT, "", ErrMsg, &LS->A, MaxLStrLen, LS->LL, Ind, Txtxy,
+	else EditText(Mode, LocalT, "", ErrMsg, (char*)&LS->A, MaxLStrLen, LS->LL, Ind, Txtxy,
 		_F1 + _F6, ExD, Srch, Upd, 126, 143, MsgS);
 	TxtPos = Ind + Part.PosP;
 	if (Upd) EdUpdated = true;
