@@ -147,12 +147,13 @@ void Screen::ScrWrCharInfoBuf(short X, short Y, CHAR_INFO* Buf, short L)
 	WriteConsoleOutputA(_handle, Buf, BufferSize, { 0, 0 }, &XY);
 }
 
-void Screen::ScrRdBuf(WORD X, WORD Y, void* Buf, WORD L)
+bool Screen::ScrRdBuf(WORD X, WORD Y, CHAR_INFO* Buf, WORD L)
 {
-	SMALL_RECT rect{ (short)X, (short)Y, (short)X + L, (short)Y };
+	SMALL_RECT rect{ (short)X, (short)Y, (short)X + L - 1, (short)Y };
 	COORD bufSize{ (short)(L), 1 };
-	CHAR_INFO* buf = new CHAR_INFO[bufSize.X * bufSize.Y];
-	ReadConsoleOutput(_handle, buf, bufSize, { 0, 0 }, &rect);
+	//CHAR_INFO* buf = new CHAR_INFO[bufSize.X * bufSize.Y];
+	bool result = ReadConsoleOutput(_handle, Buf, bufSize, { 0, 0 }, &rect);
+	return result;
 }
 
 void Screen::ScrMove(WORD X, WORD Y, WORD ToX, WORD ToY, WORD L)

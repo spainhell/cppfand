@@ -235,7 +235,7 @@ label1:
 			goto label2;
 		}
 	case evKeyDown:
-		if (Event.KeyCode == _F10_ || Event.KeyCode == F10SpecKey || F10SpecKey == 0xffff
+		if (Event.KeyCode == VK_F10 || Event.KeyCode == F10SpecKey || F10SpecKey == 0xffff
 			|| F10SpecKey == 0xfffe && (Event.KeyCode == _ShiftF7_ || Event.KeyCode == _F1_))
 		{
 			KbdChar = Event.KeyCode;

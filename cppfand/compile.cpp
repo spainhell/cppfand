@@ -57,7 +57,7 @@ void Error(integer N)
 		Move(InpArrPtr, p, l);
 		if (PrevCompInp != nullptr) RdMsg(63); else RdMsg(61);
 		HdTxt = MsgLine;
-		SimpleEditText('T', ErrMsg, HdTxt, (CharArr*)p, 0xfff, l, i, upd);
+		SimpleEditText('T', ErrMsg, HdTxt, (char*)p, 0xfff, l, i, upd);
 		PopW(w);
 		ReleaseStore(p1);
 	}

@@ -2430,7 +2430,7 @@ label1:
 label2:
 	X = nullptr; if (TTExit) X = E->ExD; Upd = false;
 	result =
-		EditText(Kind, MemoT, HdTxt, ErrMsg, &S->A, MaxLStrLen, S->LL, TxtPos, TxtXY, Breaks, X,
+		EditText(Kind, MemoT, HdTxt, ErrMsg, (char*)&S->A, MaxLStrLen, S->LL, TxtPos, TxtXY, Breaks, X,
 			Srch, Upd, 141, CtrlMsgNr, PTxtMsgS);
 	ErrMsg = ""; heslo = LexWord; LastLen = S->LL;
 	if (EdBreak == 0xffff) C = KbdChar; else C = 0;

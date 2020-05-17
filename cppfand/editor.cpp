@@ -30,28 +30,30 @@ struct Character {
 	BYTE color = 0;
 };
 
+// *** Promenne metody EDIT
 char Arr[SuccLineSize];
-WORD NextI;
-integer LineL, ScrL;
-longint RScrL;
-bool UpdatedL, CtrlL, HardL;
-WORD BCol, Colu, Row;
-bool ChangeScr;
+WORD NextI = 0;
+integer LineL = 0, ScrL = 0;
+longint RScrL = 0;
+bool UpdatedL = false, CtrlL = false, HardL = false;
+WORD BCol = 0, Colu = 0, Row = 0;
+bool ChangeScr = false;
 ColorOrd ColScr;
-bool IsWrScreen;
-
-WORD FirstR, FirstC, LastR, LastC, MinC, MinR, MaxC, MaxR;
-WORD MargLL[4];
-WORD PageS, LineS;
-bool bScroll, FirstScroll, HelpScroll;
-longint PredScLn;
-WORD PredScPos;
-BYTE FrameDir;
-WORD WordL;
-bool Konec;
+bool IsWrScreen = false;
+WORD FirstR = 0, FirstC = 0, LastR = 0, LastC = 0;
+WORD MinC = 0, MinR = 0, MaxC = 0, MaxR = 0;
+WORD MargLL[4] { 0, 0, 0, 0 };
+WORD PageS = 0, LineS = 0;
+bool bScroll = false, FirstScroll = false, HelpScroll = false;
+longint PredScLn = 0;
+WORD PredScPos = 0; // {pozice pred Scroll}
+BYTE FrameDir = 0;
+WORD WordL = 0; // {Mode=HelpM & ctrl-word is on screen}
+bool Konec = false;
+WORD i1 = 0, i2 = 0, i3 = 0;
+// *** konec promennych
 
 const BYTE InterfL = 4; /*sizeof(Insert+Indent+Wrap+Just)*/
-
 const BYTE LineSize = 255; const WORD TextStore = 0x1000;
 const BYTE TStatL = 35; /*=10(Col Row)+length(InsMsg+IndMsg+WrapMsg+JustMsg+BlockMsg)*/
 
@@ -122,7 +124,7 @@ pstring TxtVol;
 bool AllRd;
 longint AbsLenT;
 bool ChangePart, UpdPHead;
-char T[50];
+char* T;
 longint SavePar(); // r133
 void RestorePar(longint l);
 
@@ -339,7 +341,8 @@ bool RdNextPart()
 		Max = StoreAvail();
 		if (Max > 0x400) Max -= 0x400;
 		if (L11 > Max) L11 = Max;
-		ppa = new char[L11];
+		//ppa = new char[L11];
+		ppa = T;
 		L1 = L11;
 		if (L1 > 0) { SeekH(TxtFH, Pos); ReadH(TxtFH, L1, ppa); }
 		AllRd = Pos + L11 >= FSize;
@@ -347,7 +350,7 @@ bool RdNextPart()
 		Pos += L1;
 	} while (!((LenT > Pass) || AllRd || (L11 == Max)));
 
-	LastLine(ppa, iL, LenT - iL - 1, iL, L1);
+	LastLine(T, iL, LenT - iL - 1, iL, L1);
 	if (AllRd) iL = LenT;
 	if ((iL < LenT)) { LenT = iL; AllRd = false; }
 	Part.LenP = LenT;
@@ -515,8 +518,6 @@ pstring ShortName(pstring Name)
 	return s;
 }
 
-/// POZOR na 'Len:byte absolute Blanks;'
-//  http://home.pf.jcu.cz/~edpo/program/kap08.html
 void WrStatusLine()
 {
 	pstring Blanks;
@@ -552,23 +553,28 @@ void WrStatusLine()
 
 void WriteMargins()
 {
-	WORD LastL[201];
+	CHAR_INFO LastL[201];
 
 	if ((Mode != HelpM) && (Mode != ViewM) && Wrap) {
-		screen.ScrRdBuf(FirstC - 1, TxtRows - 1, &LastL[1], LineS);
-		LastL[MargLL[0]] = MargLL[1];
-		LastL[MargLL[2]] = MargLL[3];
+		screen.ScrRdBuf(FirstC - 1, TxtRows - 1, LastL, LineS);
+		LastL[MargLL[0]].Attributes = MargLL[1] >> 8;
+		LastL[MargLL[0]].Char.AsciiChar = MargLL[1] & 0x00FF;
+		LastL[MargLL[2]].Attributes = MargLL[3] >> 8;
+		LastL[MargLL[2]].Char.AsciiChar = MargLL[3] & 0x00FF;
+		
 		MargLL[0] = MaxI(0, LeftMarg - BPos);
-		if (MargLL[0] > 0) {
-			MargLL[1] = LastL[MargLL[0]];
-			LastL[MargLL[0]] = (LastL[LineS] & 0xFF00) + 0x10;
+		if (MargLL[0] > 0) { 
+			MargLL[1] = (LastL[MargLL[0]].Attributes << 8) + LastL[MargLL[0]].Char.AsciiChar;
+			LastL[MargLL[0]].Attributes = LastL[LineS].Attributes;
+			LastL[MargLL[0]].Char.AsciiChar = 0x10;
 		}
 		MargLL[2] = MaxI(0, RightMarg - BPos);
-		if (MargLL[2] > 0) {
-			MargLL[3] = LastL[MargLL[2]];
-			LastL[MargLL[2]] = (LastL[LineS] & 0xFF00) + 0x11;
+		if (MargLL[2] > 0) { 
+			MargLL[3] = (LastL[MargLL[2]].Attributes << 8) + LastL[MargLL[2]].Char.AsciiChar;
+			LastL[MargLL[2]].Attributes = LastL[LineS].Attributes;
+			LastL[MargLL[2]].Char.AsciiChar = 0x11;
 		}
-		screen.ScrWrBuf(FirstC - 1, TxtRows - 1, &LastL[1], LineS);
+		screen.ScrWrCharInfoBuf(short(FirstC - 1), short(TxtRows - 1), LastL, LineS);
 	}
 }
 
@@ -1407,12 +1413,16 @@ label1:
 
 void Wr(pstring s, pstring OrigS)
 {
+	CHAR_INFO ci2[2];
 	if (Mode != HelpM)
 	{
 		if (s.empty()) s = OrigS;
 		else {
-			screen.ScrRdBuf(0, 0, &OrigS[1], 2);
-			Move(&OrigS[3], &OrigS[2], 1);
+			screen.ScrRdBuf(0, 0, ci2, 2);
+			//screen.ScrRdBuf(0, 0, &OrigS[1], 2);
+			OrigS[1] = ci2[0].Char.AsciiChar;
+			//Move(&OrigS[3], &OrigS[2], 1);
+			OrigS[2] = OrigS[3];
 			OrigS[0] = 2;
 		}
 		screen.ScrWrStr(0, 0, s, SysLColor);
@@ -2834,7 +2844,7 @@ void HandleEvent() {
 	longint L1, L2, fs;
 	pstring ss;
 	int j;
-	WORD LastL[161];
+	CHAR_INFO LastL[161];
 	LongStr* sp = nullptr;
 	void* P1 = nullptr;
 	bool bb;
@@ -3386,10 +3396,12 @@ void HandleEvent() {
 					if (Wrap) { LineS--; LastC--; }
 					else {
 						LastC++; LineS++;
-						screen.ScrRdBuf(FirstC - 1, TxtRows - 1, &LastL[1], LineS);
-						LastL[MargLL[0]] = MargLL[1];
-						LastL[MargLL[2]] = MargLL[3];
-						screen.ScrWrBuf(FirstC - 1, TxtRows - 1, &LastL[1], LineS);
+						screen.ScrRdBuf(FirstC - 1, TxtRows - 1, LastL, LineS);
+						LastL[MargLL[0]].Attributes = MargLL[1] >> 8;
+						LastL[MargLL[0]].Char.AsciiChar = MargLL[1] & 0x00FF;
+						LastL[MargLL[2]].Attributes = MargLL[3] >> 8;
+						LastL[MargLL[2]].Char.AsciiChar = MargLL[3] & 0x00FF;
+						screen.ScrWrBuf(FirstC - 1, TxtRows - 1, LastL, LineS);
 					}
 					break;
 				}
@@ -3578,34 +3590,6 @@ void CursorWord()
 
 void Edit(WORD SuccLineSize)
 {
-	// {line descriptor LineI, Posi, BPos}
-	char* Arr = nullptr;
-	WORD NextI = 0;
-	int LineL = 0, ScrL = 0;
-	longint RScrL = 0;
-	bool UpdatedL = false, CtrlL = false, HardL = false;
-	// {screen descriptor  ScrI}
-	WORD BCol = 0, Colu = 0, Row = 0;
-	bool ChangeScr = false;
-	ColorOrd ColScr;
-	bool IsWrScreen = false;
-
-	WORD FirstR = 0, FirstC = 0, LastR = 0, LastC = 0, MinC = 0, MinR = 0, MaxC = 0, MaxR = 0;
-	WORD MargLL[4] = { 0,0,0,0 };
-	WORD PageS = 0, LineS = 0;
-
-	bool Scroll = false, FirstScroll = false, HelpScroll = false;
-	longint PredScLn = 0;
-	WORD PredScPos = 0; // {pozice pred Scroll}
-	BYTE FrameDir = 0;
-
-	WORD WordL = 0; // {Mode=HelpM & ctrl-word is on screen}
-	bool Konec = false;
-
-	// registers Regs;
-	WORD i1 = 0, i2 = 0, i3 = 0;
-
-	// *** zaèátek metody ***
 	InitScr();
 	IsWrScreen = false;
 	WrEndT();
@@ -3679,7 +3663,7 @@ void Edit(WORD SuccLineSize)
 	do {
 		if (TypeT == FileT) { NullChangePart(); HandleEvent(); }
 		if (!(Konec || IsWrScreen)) { Background(); }
-	} while (Konec);
+	} while (!Konec);
 
 	if (bScroll && (Mode != HelpM)) {
 		Posi = BPos + 1; LineL = ScrL; LineI = ScrI;
@@ -3770,7 +3754,7 @@ void SimpleEditText(char pMode, pstring pErrMsg, pstring pName, char* TxtPtr, WO
 	EditText(pMode, LocalT, pName, pErrMsg, TxtPtr, MaxLen, Len, Ind, Scr, "", nullptr, Srch, Updat, 0, 0, nullptr);
 }
 
-WORD FindTextE(const pstring& Pstr, pstring Popt, CharArr* PTxtPtr, WORD PLen)
+WORD FindTextE(const pstring& Pstr, pstring Popt, char* PTxtPtr, WORD PLen)
 {
 	CharArrPtr tt = (CharArr*)&T; /*T = (char*)PTxtPtr;*/
 	pstring f = FindStr; pstring o = OptionStr;
@@ -3784,9 +3768,8 @@ WORD FindTextE(const pstring& Pstr, pstring Popt, CharArr* PTxtPtr, WORD PLen)
 	return result;
 }
 
-void EditTxtFile(longint* LP, char Mode, pstring& ErrMsg, EdExitD* ExD,
-	longint TxtPos, longint Txtxy, WRect* V,
-	WORD Atr, const pstring Hd, BYTE WFlags, MsgStrPtr MsgS)
+void EditTxtFile(longint* LP, char Mode, pstring& ErrMsg, EdExitD* ExD, longint TxtPos, 
+	longint Txtxy, WRect* V, WORD Atr, const pstring Hd, BYTE WFlags, MsgStrPtr MsgS)
 {
 	bool Srch = false, Upd = false;
 	longint Size = 0, L = 0;
@@ -3796,6 +3779,7 @@ void EditTxtFile(longint* LP, char Mode, pstring& ErrMsg, EdExitD* ExD,
 	WORD Ind = 0, oldInd = 0;
 	longint oldTxtxy = 0;
 	LongStr* LS = nullptr; pstring compErrTxt;
+	T = new char[65536];
 
 	if (Atr == 0) Atr = colors.tNorm;
 	longint w2 = 0; longint w3 = 0;
@@ -3833,7 +3817,7 @@ void EditTxtFile(longint* LP, char Mode, pstring& ErrMsg, EdExitD* ExD,
 label1:
 	Srch = false; Upd = false;
 	if (!Loc)
-		EditText(Mode, FileT, TxtPath, ErrMsg, ppa, 0xFFF0, LenT, Ind, Txtxy,
+		EditText(Mode, FileT, TxtPath, ErrMsg, T, 0xFFF0, LenT, Ind, Txtxy,
 			_F1 + _F6 + _F9 + _AltF10, ExD,
 			Srch, Upd, 126, 143, MsgS);
 	else EditText(Mode, LocalT, "", ErrMsg, (char*)&LS->A, MaxLStrLen, LS->LL, Ind, Txtxy,
@@ -3986,7 +3970,7 @@ void ViewHelpText(LongStr* S, WORD& TxtPos)
 	ColKey[5] = colors.hSpec; ColKey[3] = colors.hHili; ColKey[1] = colors.hMenu;
 	bool Srch = false; bool Upd = false; longint Scr = 0;
 label1:
-	EditText(HelpM, MemoT, "", "", &S->A, 0xFFF0, S->LL, TxtPos, Scr,
+	EditText(HelpM, MemoT, "", "", (char*)&S->A, 0xFFF0, S->LL, TxtPos, Scr,
 		_F1 + _F10 + _F6 + _CtrlHome + _CtrlEnd, nullptr, Srch, Upd, 142, 145, nullptr);
 	if (KbdChar == _F6_) { PrintArray(&S->A, S->LL, true); goto label1; }
 	RestorePar(L);

@@ -44,7 +44,7 @@ public:
 	void ScrWrText(WORD X, WORD Y, const char* S);
 	void ScrWrBuf(WORD X, WORD Y, void* Buf, WORD L);
 	void ScrWrCharInfoBuf(short X, short Y, CHAR_INFO* Buf, short L);
-	void ScrRdBuf(WORD X, WORD Y, void* Buf, WORD L);
+	bool ScrRdBuf(WORD X, WORD Y, CHAR_INFO* Buf, WORD L);
 	void ScrMove(WORD X, WORD Y, WORD ToX, WORD ToY, WORD L);
 	void ScrColor(WORD X, WORD Y, WORD L, BYTE Color);
 	TCrs CrsGet();

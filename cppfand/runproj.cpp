@@ -986,7 +986,7 @@ label1:
 	if (Chk) RunError(629);
 }
 
-WORD CompileMsgOn(WORD* Buf, longint& w)
+WORD CompileMsgOn(CHAR_INFO* Buf, longint& w)
 {
 	pstring s(12);
 	WORD result = 0;
@@ -1166,14 +1166,15 @@ label1:
 	return result;
 }
 
-void CompileMsgOff(WORD* Buf, longint& w)
+void CompileMsgOff(CHAR_INFO* Buf, longint& w)
 {
-	if (w != 0) PopW(w); else screen.ScrWrBuf(0, TxtRows - 1, Buf, 40);
+	if (w != 0) PopW(w);
+	else screen.ScrWrCharInfoBuf(0, TxtRows - 1, Buf, 40);
 }
 
 bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 {
-	WORD Buf[40];
+	CHAR_INFO Buf[40];
 	longint w;
 	longint I = 0, J, OldTxt, Txt, OldCRec; pstring STyp(1); char Typ;
 	pstring Name(12); pstring dir; pstring nm; pstring ext;
@@ -1185,8 +1186,9 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 	FileD* lstFD = nullptr;
 	auto result = false;
 
-	OldE = E; MarkBoth(p, p2); p1 = p; //NewExit(Ovr, er);
-	goto label1;
+	OldE = E; MarkBoth(p, p2); p1 = p;
+	//NewExit(Ovr, er);
+	//goto label1;
 	IsCompileErr = false; FDCompiled = false; OldCRec = CRec(); RP.R = CRdb;
 	top = CRdb->ChainBack = nullptr;
 	if (top) {
@@ -1469,7 +1471,7 @@ void UpdateUTxt()
 	goto label4;
 	SetInpLongStr(S, false); MarkStore(p); RdUserId(false); ReleaseStore(p); b = true;
 label2:
-	SimpleEditText('T', "", "", &S->A, 0x7FFF, S->LL, TxtPos, Upd);
+	SimpleEditText('T', "", "", (char*)&S->A, 0x7FFF, S->LL, TxtPos, Upd);
 	SetInpLongStr(S, false); MarkStore(p); RdUserId(false); ReleaseStore(p); b = false;
 	if (Upd) { StoreChptTxt(ChptTxt, S, true); WriteRec(1); }
 label3:

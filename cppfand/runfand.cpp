@@ -297,7 +297,8 @@ void SelectRunRdb(bool OnFace)
 {
 	wwmix ww;
 	pstring p;
-	p = ww.SelectDiskFile(".RDB", 34, OnFace);
+	//p = ww.SelectDiskFile(".RDB", 34, OnFace);
+	p = "UCTO2020.RDB";
 	RunRdb(p);
 }
 
