@@ -9,23 +9,23 @@ struct TCrs
 {
 	WORD X = 0; WORD Y = 0; bool Big = false; bool On = false; bool Enabled = false; WORD Ticks = 0;
 };
-struct Wind { BYTE X, Y; };
-const char FrameChars[] = { 0xDA, 0xC4, 0xBF, 0xC0, 0xC4, 0xD9, 0xB3, 0x20, 0xB3, 0xC9, 0xCD, 0xBB, 0xC8, 0xCD, 0xBC, 0xBA, 0x20, 0xBA, 0xC3, 0xC4, 0xB4 };
+struct Wind { BYTE X = 0, Y = 0; };
+const BYTE FrameChars[] { 0xDA, 0xC4, 0xBF, 0xC0, 0xC4, 0xD9, 0xB3, 0x20, 0xB3, 0xC9, 0xCD, 0xBB, 0xC8, 0xCD, 0xBC, 0xBA, 0x20, 0xBA, 0xC3, 0xC4, 0xB4 };
 
 struct WParam
 {
-	Wind Min = { 0,0 };
-	Wind Max = { 0, 0 };
+	Wind Min;
+	Wind Max;
 	WORD Attr = 0;
-	TCrs Cursor = { 0,0,false, false, false, 0 };
+	TCrs Cursor; // { 0, 0, false, false, false, 0 };
 	longint GrRoot = 0;
 };
 
 struct storeWindow
 {
 	WParam* wp = nullptr;
-	COORD coord{ 0, 0 };
-	SMALL_RECT rect{ 0,0,0,0 };
+	COORD coord { 0, 0 };
+	SMALL_RECT rect { 0, 0, 0, 0 };
 	CHAR_INFO* content = nullptr;
 };
 

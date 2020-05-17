@@ -318,23 +318,10 @@ pstring StrPas(const char* Src)
 	return s;
 }
 
-void ChainLast(void* Frst, void* New)
+void ChainLast(Chained* Frst, Chained* New)
 {
-	/* asm
-	push ds;
-	lds si, Frst;
-@1: cmp[si + 2].word, 0;
-	je @2;
-	lds si, [si];
-	jmp @1;
-@2: les di, New;
-	mov[si], di;
-	mov ax, es;
-	mov[si + 2], ax;
-	mov es : [di] .word, 0;
-	mov es : [di + 2] .word, 0;
-	pop ds;
-	*/
+	// ve Frst najde postupnì poslení v øetìzu a do nìj dosadí New
+	// do New->Chain dá nullptr
 
 	// zøejmì hledá poslední Chain a ten vrací
 	if (Frst == nullptr) { New = nullptr; return; }

@@ -61,12 +61,6 @@ void WriteStr(WORD& pos, WORD& base, WORD& maxLen, WORD& maxCol, BYTE sLen, pstr
 	else if (pos > base + maxCol) { base = pos - maxCol; if (pos > maxLen) base--; }
 	if ((pos == base + 1) && (base > 0)) base--;
 	DelBlk(&sLen, s, pos);
-	
-	//WORD BuffLine[MaxTxtCols];
-	//WORD i;
-	//struct { BYTE chr; BYTE attr; } x{ 0, 0 };
-	//WORD* item = (WORD*)&x;
-
 
 	for (WORD i = 0; i < maxCol; i++) {
 		Buffer[i].Attributes = TextAttr;

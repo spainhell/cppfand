@@ -80,7 +80,8 @@ FieldDPtr RdFldDescr(pstring Name, bool Stored)
 				}
 			}
 			Flg += f_Mask;
-			M = LeftJust; if (c != '?')
+			M = LeftJust; 
+			if (c != '?')
 				label1:
 			Error(171);
 		}
@@ -427,7 +428,7 @@ label2:
 	//}
 	if (Lexem != 0x1A) Error(66);
 label1:
-	return p;
+	return p; // má asi vracet HeapPtr
 }
 
 void RdKeyD()

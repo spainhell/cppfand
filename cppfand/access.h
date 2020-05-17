@@ -279,7 +279,7 @@ struct DBaseFld // ø. 208
 struct DBaseHd // ø. 213
 {
 	BYTE Ver = 0;
-	BYTE Date[4] = { 0,0,0,0 };
+	BYTE Date[4] { 0,0,0,0 };
 	longint NRecs = 0;
 	WORD HdLen = 0, RecLen = 0;
 	DBaseFld Flds[1];

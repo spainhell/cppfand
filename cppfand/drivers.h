@@ -70,8 +70,8 @@ extern Screen screen;
 extern TCrs Crs;
 const bool MausExist = false;
 const WORD ofsTicks = 0x6C; // ř. 199
-const TPoint MouseWhere = { 0, 0 };
-const TPoint MouseWhereG = { 0, 0 };
+const TPoint MouseWhere;
+const TPoint MouseWhereG;
 const bool MausVisible = true;
 const bool MausRefresh = false;
 

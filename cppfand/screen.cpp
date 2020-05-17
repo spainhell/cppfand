@@ -168,7 +168,12 @@ void Screen::ScrColor(WORD X, WORD Y, WORD L, BYTE Color)
 
 TCrs Screen::CrsGet()
 {
-	TCrs crs{ Crs->X, Crs->Y, Crs->Big, Crs->Enabled, 0 };
+	TCrs crs;
+	crs.X = Crs->X;
+	crs.Y = Crs->Y;
+	crs.Big = Crs->Big;
+	crs.Enabled = Crs->Enabled;
+	crs.Ticks = 0;
 	return crs;
 }
 
@@ -301,9 +306,10 @@ storeWindow Screen::popScreen()
 
 void Screen::SaveScreen(WParam* wp, short c1, short r1, short c2, short r2)
 {
-	c1--; c2--;
-	r1--; r2--;
-	
+	//c1--; c2--;
+	//r1--; r2--;
+	if (c1 < 0 || c2 > 79 || r1 < 0 || r2 > 24) { throw std::exception("Bad SaveScreen index."); }
+		
 	SMALL_RECT rect{ c1, r1, c2, r2 };
 	COORD bufSize{ (short)(c2 - c1 + 1), (short)r2 - r1 + 1 };
 	CHAR_INFO* buf = new CHAR_INFO[bufSize.X * bufSize.Y];

@@ -595,7 +595,7 @@ label1:
 #ifdef FandRunV
 	if (j != 0) j++;
 #endif
-	w = PushW(1, 1, TxtCols, TxtRows);
+	w = PushW(0, 0, TxtCols - 1, TxtRows - 1);
 
 	switch (j) {
 	case 1: { IsTestRun = true; SelectRunRdb(true); IsTestRun = false; break; }

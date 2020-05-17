@@ -49,6 +49,12 @@ bool TRect::Contains(TPoint* P)
 
 TWindow::TWindow()
 {
+	Orig.X = 0;
+	Orig.Y = 0;
+	Size.X = 0;
+	Size.Y = 0;
+	Shadow.X = 0;
+	Shadow.Y = 0;
 }
 
 TWindow::TWindow(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, pstring top, pstring bottom, bool SaveLL)
@@ -69,7 +75,7 @@ void TWindow::InitTWindow(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, pstring
 	WasCrsEnabled = Crs.Enabled;
 	screen.CrsHide();
 	SavedW = PushW1(Orig.X + 1, Orig.Y + 1, Orig.X + Size.X + Shadow.X, Orig.Y + Size.Y + Shadow.Y, true, false);
-	if (SaveLL) { SavedLLW = PushW1(1, TxtRows, TxtCols, TxtRows, true, false); }
+	if (SaveLL) { SavedLLW = PushW1(0, TxtRows - 1, TxtCols - 1, TxtRows - 1, true, false); }
 	else { SavedLLW = 0; }
 	if (Shadow.Y == 1) screen.ScrColor(Orig.X + 2, Row2(), Size.X + Shadow.X - 2, colors.ShadowAttr);
 	if (Shadow.X > 0)
@@ -109,7 +115,7 @@ TWindow::~TWindow()
 
 void TWindow::Assign(BYTE C1, BYTE R1, BYTE C2, BYTE R2)
 {
-	WORD cols, rows, m;
+	WORD cols = 0, rows = 0, m = 0;
 	m = 0;
 	if (GetState(sfFramed)) m = 2;
 	cols = C2 + m;
@@ -122,7 +128,8 @@ void TWindow::Assign(BYTE C1, BYTE R1, BYTE C2, BYTE R2)
 	rows = MaxI(m + 1, MinI(rows, TxtRows));
 	if (R1 == 0) Orig.Y = (TxtRows - rows) / 2;
 	else Orig.Y = MinI(R1 - 1, TxtRows - rows);
-	Size = { cols, rows };
+	Size.X = cols;
+	Size.Y = rows;
 }
 
 WORD TWindow::Col1()
@@ -244,7 +251,8 @@ bool TMenu::IsMenuBar()
 
 void TMenu::LeadIn(TPoint* T)
 {
-	WORD i, j; TRect r = { {0,0},{0,0} };
+	WORD i, j; 
+	TRect r { {0,0},{0,0} };
 	i = iTxt;
 	for (j = 1; j <= nTxt; j++) {
 		GetItemRect(j, &r);
@@ -296,7 +304,7 @@ void TMenu::WrText(WORD I)
 	pstring s(80);
 	WORD j, posw, x, x2, y;
 	BYTE attr;
-	TRect r = { {0,0}, {0,0} };
+	TRect r { {0,0}, {0,0} };
 	bool red, ena;
 
 	s = GetText(I);
@@ -475,7 +483,7 @@ bool TMenuBoxP::Enabled(WORD I)
 
 bool TMenuBoxP::ExecItem(WORD& I)
 {
-	auto result = false; if (not PD->PullDown) return result;
+	auto result = false; if (!PD->PullDown) return result;
 	if (I == 0) {
 		if ((Event.What == evMouseDown) || !PD->WasESCBranch) return result;
 		RunInstr(PD->ESCInstr);

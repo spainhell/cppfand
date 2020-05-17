@@ -379,7 +379,7 @@ void RdLex()
 			if (LexWord.length() == sizeof(LexWord) - 1) Error(6);
 			if (CurrChar == '\'') ReadChar();
 			else if (CurrChar == '\\') RdBackSlashCode();
-			LexWord = LexWord + CurrChar; ReadChar();
+			LexWord.Append(CurrChar); ReadChar();
 		}
 		break;
 	}

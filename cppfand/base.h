@@ -16,8 +16,13 @@ struct WordRec { BYTE Lo = 0, Hi = 0; };
 struct LongRec { WORD Lo = 0, Hi = 0; };
 typedef void* PProcedure;
 
+class Chained 
+{
+	Chained* Chain = nullptr;
+};
+
 void MyMove(void* A1, void* A2, WORD N);
-void ChainLast(void* Frst, void* New); // r13 ASM
+void ChainLast(Chained* Frst, Chained* New); // r13 ASM
 void* LastInChain(void* Frst); // r18 ASM
 WORD ListLength(void* P); // r22 ASM
 void ReplaceChar(pstring S, char C1, char C2); // r30 ASM

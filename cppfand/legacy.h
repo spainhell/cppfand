@@ -89,7 +89,7 @@ public:
 	void* flushfunc = nullptr;
 	void* closefunc = nullptr;
 	void* opentxt = nullptr;
-	BYTE UserData[32] = { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 };
+	BYTE UserData[32] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 	std::string name;
 	std::string LineEnd;
 	BYTE* buffer = nullptr;

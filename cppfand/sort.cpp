@@ -10,8 +10,8 @@ class XXPage; // forward declaration
 class WRec /* record on WPage */
 {
 public:
-	BYTE N[3] = { 0,0,0 };
-	BYTE IR[3] = { 0,0,0 };
+	BYTE N[3] { 0, 0 ,0 };
+	BYTE IR[3] { 0, 0, 0 };
 	XString X;
 	longint GetN(); // ASM
 	void PutN(longint NN); // ASM
@@ -42,7 +42,7 @@ public:
 	longint MaxWPage = 0, WRoot = 0, NChains = 0, PgWritten = 0;
 	longint WBaseSize = 0;
 	WPage* PW = nullptr; WPage* PW1 = nullptr; WPage* PW2 = nullptr;
-	longint FreeNr[5] = { 0,0,0,0,0 };
+	longint FreeNr[5] { 0, 0, 0, 0, 0 };
 	WORD NFreeNr = 0;
 	longint IRec = 0, RecNr = 0;
 	KeyFldD* KFRoot = nullptr;

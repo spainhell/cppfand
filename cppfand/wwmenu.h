@@ -26,9 +26,9 @@ public:
 	TWindow(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, pstring top, pstring bottom, bool SaveLL);
 	void InitTWindow(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, pstring top, pstring bottom, bool SaveLL);
 	virtual ~TWindow();
-	TPoint Orig = {0, 0};
-	TPoint Size = { 0, 0 };
-	TPoint Shadow = {0, 0};
+	TPoint Orig;
+	TPoint Size;
+	TPoint Shadow;
 	longint SavedW = 0, SavedLLW = 0;
 	WORD State = 0;
 	bool WasCrsEnabled = false;

@@ -58,7 +58,7 @@ void wwmix::SelectStr(integer C1, integer R1, WORD NMsg, pstring LowTxt)
 	void* pw; WORD cols, rows, c2, r2, MaxBase; longint w2;
 	char schar; integer b; Item* p = nullptr; integer i, iOld;
 	/* !!! with sv do!!! */
-	pw = PushScr(1, TxtRows, TxtCols, TxtRows);
+	pw = PushScr(0, TxtRows - 1, TxtCols - 1, TxtRows - 1);
 	if (ss.Subset)
 	{
 		if (ss.AscDesc) WrLLMsg(135); else WrLLMsg(134);
@@ -556,7 +556,7 @@ label3:
 		FindNext(SR);
 	}*/
 	ss.Abcd = true;
-	SelectStr(c11, r11, HdMsg, p);
+	SelectStr(c11 - 1, r11 - 1, HdMsg, p);
 	if (KbdChar == _ESC_) return result;
 	s = GetSelect();
 	if (s[1] == '\\') {

@@ -235,7 +235,7 @@ WORD ChptWriteCRec()
 		if (New.Name != "") { WrLLF10Msg(623); return result; }
 	}
 	else if (New.Typ != ' ')
-		if (not IsIdentifStr(New.Name) || (New.Typ != 'F') && (New.Ext != "")) {
+		if (!IsIdentifStr(New.Name) || (New.Typ != 'F') && (New.Ext != "")) {
 			WrLLF10Msg(138); return result;
 		}
 	if (New.Typ == 'F') {
@@ -751,18 +751,21 @@ void CreateOpenChpt(pstring* Nm, bool create, wwmix* ww)
 	oldChptTF = ChptTF;
 	R->ChainBack = CRdb; R->OldLDRoot = LinkDRoot; R->OldFCRoot = FuncDRoot;
 	MarkStore2(R->Mark2);
-	RdMsg(51); s = MsgLine; RdMsg(48); val(MsgLine, n, i);
+	RdMsg(51); s = MsgLine; RdMsg(48); 
+	val(MsgLine, n, i);
 	str(TxtCols - n, nr);
 	s = s + nr;
 	SetInpStr(s);
 	if (((*Nm)[1] == '\\')) Nm1 = Nm->substr(2, 8);
 	else Nm1 = *Nm;
 	RdFileD(Nm1, '0', ""); /*old CRdb for GetCatIRec*/
-	R->FD = CFile; CRdb = R; CFile->RecPtr = GetRecSpace();
+	R->FD = CFile; CRdb = R; 
+	CFile->RecPtr = GetRecSpace();
 	SetRdbDir((*Nm)[1], &Nm1);
 	p = CDir + Nm1 + ".RDB";
 	CFile->Drive = TestMountVol(CPath[1]);
-	SetChptFldDPtr(); if (!spec.RDBcomment) ChptTxt->L = 1;
+	SetChptFldDPtr(); 
+	if (!spec.RDBcomment) ChptTxt->L = 1;
 	SetMsgPar(p);
 	if (top) { UserName = ""; UserCode = 0; AccRight = 0; goto label2; }
 	CRdb->HelpFD = CRdb->ChainBack->HelpFD;
@@ -1274,7 +1277,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 				if (!top || (I > 1)) GoCompileErr(I, 623);
 				if (Txt != 0) {
 					ResetCompilePars(); SetInpTTPos(Txt, Encryp);
-					RdUserId(not IsTestRun || (ChptTF->LicenseNr != 0)); MarkStore(p1);
+					RdUserId(!IsTestRun || (ChptTF->LicenseNr != 0)); MarkStore(p1);
 				}
 				break;
 			}
