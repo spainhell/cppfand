@@ -104,7 +104,8 @@ void SetCPathMountVolSetNet(FileUseMode UM)
 {
 	SetCPathVol();
 	/* !!! with CFile^ do!!! */
-	CFile->UMode = UM; CFile->Drive = TestMountVol(CPath[1]);
+	CFile->UMode = UM;
+	CFile->Drive = TestMountVol(CPath[1]);
 	if (!IsNetCVol() || (CFile == Chpt))
 		switch (UM) {
 		case RdShared: CFile->UMode = RdOnly; break;
@@ -674,7 +675,8 @@ void SetCPathVol()
 		goto label4;
 	}
 	CExt = ".100";
-	CDir = CRdb->DataDir;
+	if (CRdb != nullptr) CDir = CRdb->DataDir;
+	else CDir = "";
 label2:
 	AddBackSlash(CDir);
 label3:

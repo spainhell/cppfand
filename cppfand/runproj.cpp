@@ -16,7 +16,6 @@
 #include "runproc.h"
 #include "runrprt.h"
 #include "wwmenu.h"
-#include "wwmix.h"
 
 
 void* O(void* p) // ASM
@@ -597,10 +596,10 @@ void StoreChptTxt(FieldDPtr F, LongStr* S, bool Del)
 	ReleaseStore(p);
 }
 
-bool EditExecRdb(pstring* Nm, pstring* ProcNm, Instr* ProcCall)
-{
-	return false;
-}
+//bool EditExecRdb(pstring* Nm, pstring* ProcNm, Instr* ProcCall)
+//{
+//	return false;
+//}
 
 void SgKF(KeyFldDPtr kf, WORD Sg)
 {
@@ -740,21 +739,23 @@ void ResetRdOnly()
 	}
 }
 
-void CreateOpenChpt(pstring* Nm, bool create)
+void CreateOpenChpt(pstring* Nm, bool create, wwmix* ww)
 {
-	wwmix ww;
-
-	RdbDPtr R; bool top; pstring p; pstring s; TFilePtr oldChptTF;
+	RdbD* R; bool top; pstring p; pstring s; TFile* oldChptTF;
 	integer i, n; pstring nr(10); pstring Nm1(8); FileUseMode um;
 
-	top = CRdb = nullptr; FileDRoot = nullptr;
-	R = (RdbD*)GetZStore(sizeof(*R));
+	top = CRdb = nullptr;
+	FileDRoot = nullptr;
+	//R = (RdbD*)GetZStore(sizeof(*R));
+	R = new RdbD();
 	oldChptTF = ChptTF;
 	R->ChainBack = CRdb; R->OldLDRoot = LinkDRoot; R->OldFCRoot = FuncDRoot;
 	MarkStore2(R->Mark2);
 	RdMsg(51); s = MsgLine; RdMsg(48); val(MsgLine, n, i);
-	str(TxtCols - n, nr); s = s + nr; SetInpStr(s);
-	if ((Nm[1] == '\\')) Nm1 = Nm->substr(2, 8);
+	str(TxtCols - n, nr);
+	s = s + nr;
+	SetInpStr(s);
+	if (((*Nm)[1] == '\\')) Nm1 = Nm->substr(2, 8);
 	else Nm1 = *Nm;
 	RdFileD(Nm1, '0', ""); /*old CRdb for GetCatIRec*/
 	R->FD = CFile; CRdb = R; CFile->RecPtr = GetRecSpace();
@@ -786,7 +787,7 @@ label2:
 	if (!create || (top && !IsTestRun)) RunError(631);
 	OpenCreateF(Exclusive); SetCompileAll();
 label3:
-	if (ww.HasPassWord(Chpt, 1, "")) CRdb->Encrypted = false;
+	if (ww->HasPassWord(Chpt, 1, "")) CRdb->Encrypted = false;
 	else CRdb->Encrypted = true;
 }
 
@@ -1348,7 +1349,7 @@ bool EditExecRdb(pstring* Nm, pstring* ProcNm, Instr* ProcCall, wwmix* ww)
 #endif
 	//NewExit(Ovr(), er);
 	//goto label9;
-	CreateOpenChpt(Nm, true); CompileFD = true;
+	CreateOpenChpt(Nm, true, ww); CompileFD = true;
 #ifndef FandRunV
 	if (!IsTestRun || (ChptTF->LicenseNr != 0) ||
 		!top && CRdb->Encrypted) {
@@ -1494,7 +1495,7 @@ void InstallRdb(pstring n)
 
 	//NewExit(Ovr(), er);
 	goto label1;
-	CreateOpenChpt(&n, false);
+	CreateOpenChpt(&n, false, &ww);
 	if (!ww.HasPassWord(Chpt, 1, "") && !ww.HasPassWord(Chpt, 2, "")) {
 		passw = ww.PassWord(false);
 		if (!ww.HasPassWord(Chpt, 2, passw)) {

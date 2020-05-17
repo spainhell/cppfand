@@ -582,8 +582,7 @@ bool IsDigitOpt(pstring S, WORD& N)
 
 pstring* RdStrConst()
 {
-	pstring* S = nullptr;
-	S = StoreStr(LexWord);
+	pstring* S = new pstring(LexWord);
 	Accept(_quotedstr);
 	return S;
 }
@@ -609,7 +608,7 @@ bool IsIdentifStr(pstring& S)
 	WORD i;
 	if ((S.length() == 0) || !isalpha(S[1])) return false;
 	for (i = 2; i < S.length(); i++) {
-		if (!isalpha(S[i]) || isdigit(S[i])) return false;
+		if (!(isalpha(S[i]) || isdigit(S[i]))) return false;
 	}
 	return true;
 }

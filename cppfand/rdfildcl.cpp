@@ -55,7 +55,7 @@ FieldDPtr RdFldDescr(pstring Name, bool Stored)
 		else {
 			S = RdStrConst();
 			L = 0; c = '?'; n = 0;
-			for (i = 1; i < S->length(); i++) {
+			for (i = 1; i <= S->length(); i++) {
 				switch ((*S)[i]) {
 				case '[': if (c == '?') c = '['; else goto label1; break;
 				case ']': if (c == '[') c = '?'; else goto label1; break;

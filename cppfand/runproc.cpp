@@ -274,8 +274,9 @@ void ExecPgm(Instr* PD)
 void CallRdbProc(Instr* PD)
 {
 	bool b; void* p = nullptr; ProcStkPtr bp = nullptr;
+	wwmix ww;
 	MarkStore(p); bp = MyBP;
-	b = EditExecRdb(PD->RdbNm, PD->ProcNm, PD->ProcCall);
+	b = EditExecRdb(PD->RdbNm, PD->ProcNm, PD->ProcCall, &ww);
 	SetMyBP(bp); ReleaseStore(p); if (!b) GoExit();
 }
 

@@ -113,16 +113,26 @@ WORD succ(WORD input)
 void FSplit(pstring fullname, pstring& dir, pstring& name, pstring& ext)
 {
 	std::string s = fullname;
-	size_t found = 0;
-	found = s.find_last_of("/\\");
-	dir = s.substr(0, found + 1);
-	std::string filename = s.substr(found + 1);
-	found = filename.find_last_of('.');
-	if (found > MAX_PATH) { name = ""; ext = ""; }
-	else {
-		name = filename.substr(0, found);
-		ext = filename.substr(found);
+	size_t foundBackslash = s.find_last_of("/\\");
+	dir = s.substr(0, foundBackslash + 1);
+
+	if (foundBackslash < s.length() - 1) // ještě nejsme na konci -> existuje název nebo název s příponou
+	{
+		std::string filename = s.substr(foundBackslash + 1);
+		
+		size_t foundDot = filename.find_last_of('.');
+		if (foundDot < filename.length()) // přípona existuje
+		{
+			name = filename.substr(0, foundDot);
+			ext = filename.substr(foundDot);
+		}
+		else
+		{
+			name = filename;
+			ext = "";
+		}
 	}
+	else { name = ""; ext = ""; }
 }
 
 pstring FSearch(pstring& path, pstring& dirlist)

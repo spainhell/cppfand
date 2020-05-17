@@ -3,6 +3,7 @@
 #include "constants.h"
 #include "pstring.h"
 #include "rdrun.h"
+#include "wwmix.h"
 
 bool IsCurrChpt();
 void ReleaseFDLDAfterChpt();
@@ -12,7 +13,7 @@ WORD ChptWriteCRec(); /* 0-O.K., 1-fail, 2-fail && undo*/
 bool PromptHelpName(WORD& N);
 void EditHelpOrCat(WORD cc, WORD kind, pstring txt);
 void StoreChptTxt(FieldDPtr F, LongStr* S, bool Del);
-bool EditExecRdb(pstring* Nm, pstring* ProcNm, Instr* ProcCall);
+bool EditExecRdb(pstring* Nm, pstring* ProcNm, Instr* ProcCall, wwmix* ww);
 void InstallRdb(pstring n);
 
 

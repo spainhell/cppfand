@@ -273,8 +273,9 @@ bool SetTopDir(pstring& p, pstring& n)
 	if (TopDataDir != "") TopDataDir = FExpand(TopDataDir);
 	ChDir(TopRdbDir);
 	if (IOResult() != 0) { SetMsgPar(p); WrLLF10Msg(703); return result; }
-	CatFDName = n; //NewExit(Ovr(), er);
-	goto label1;
+	CatFDName = n;
+	//NewExit(Ovr(), er);
+	//goto label1;
 	CFile = CatFD; OpenF(Exclusive); result = true;
 label1:
 	RestoreExit(er);
@@ -287,18 +288,19 @@ void RunRdb(pstring p)
 	if ((p != "") && SetTopDir(p, n))
 	{
 		pstring main = "main";
-		EditExecRdb(&n, &main, nullptr);
+		wwmix ww;
+		EditExecRdb(&n, &main, nullptr, &ww);
 		CFile = CatFD;
 		CloseFile();
 	}
+
 }
 
 void SelectRunRdb(bool OnFace)
 {
 	wwmix ww;
 	pstring p;
-	//p = ww.SelectDiskFile(".RDB", 34, OnFace);
-	p = "UCTO2020.RDB";
+	p = ww.SelectDiskFile(".RDB", 34, OnFace);
 	RunRdb(p);
 }
 
