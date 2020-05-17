@@ -487,7 +487,7 @@ void WrDBaseHd()
 {
 	DBaseHd* P = nullptr;
 
-	FieldDPtr F;
+	FieldDescr* F;
 	WORD n, y, m, d, w;
 	pstring s;
 
@@ -518,7 +518,7 @@ void WrDBaseHd()
 				StrLPCopy((char*)&actual.Name[1], s, 11);
 			}
 		}
-		F = F->Chain;
+		F = (FieldDescr*)F->Chain;
 	}
 
 	{ //with P^ do 
@@ -780,11 +780,11 @@ void DelDifTFld(void* Rec, void* CompRec, FieldDPtr F)
 
 void DelAllDifTFlds(void* Rec, void* CompRec)
 {
-	FieldDPtr F = CFile->FldD;
+	FieldDescr* F = CFile->FldD;
 	while (F != nullptr)
 	{
 		if (F->Typ == 'T' && F->Flg && f_Stored != 0) DelDifTFld(Rec, CompRec, F);
-		F = F->Chain;
+		F = (FieldDescr*)F->Chain;
 	}
 }
 
@@ -836,7 +836,7 @@ void CompKIFrml(KeyDPtr K, KeyInD* KI, bool AddFF)
 		if (KI->FL2 != nullptr) x.PackFrml(KI->FL2, K->KFlds);
 		if (AddFF) AddFFs(K, x.S);
 		KI->X2 = &x.S;
-		KI = KI->Chain;
+		KI = (KeyInD*)KI->Chain;
 	}
 }
 
@@ -981,7 +981,7 @@ void ZeroAllFlds()
 	FillChar(CRecPtr, CFile->RecLen, 0);
 	FieldDPtr F = CFile->FldD; while (F != nullptr) {
 		if ((F->Flg && f_Stored != 0) && (F->Typ == 'A')) S_(F, "");
-		F = F->Chain;
+		F = (FieldDescr*)F->Chain;
 	}
 }
 
@@ -1300,7 +1300,7 @@ bool LinkUpw(LinkDPtr LD, longint& N, bool WithT)
 				case 'R': { r = _R(F); CFile = ToFD; CRecPtr = RecPtr; R_(F2, r); break; }
 				case 'B': { b = _B(F); CFile = ToFD; CRecPtr = RecPtr; B_(F2, b); break; }
 				}
-			Arg = Arg->Chain; KF = KF->Chain;
+			Arg = (KeyFldD*)Arg->Chain; KF = (KeyFldD*)KF->Chain;
 		}
 		CFile = ToFD; CRecPtr = RecPtr;
 	}
@@ -1349,7 +1349,7 @@ void ClearRecSpace(void* p)
 				if ((f->Flg && f_Stored != 0) && (f->Typ == 'T')) {
 					TWork.Delete(_T(f)); T_(f, 0);
 				}
-				f = f->Chain;
+				f = (FieldDescr*)f->Chain;
 			}
 		}
 		CRecPtr = cr;
@@ -1360,7 +1360,8 @@ void DelTFlds()
 {
 	FieldDPtr F = CFile->FldD;
 	while (F != nullptr) {
-		if ((F->Flg && f_Stored != 0) && (F->Typ == 'T')) DelTFld(F); F = F->Chain;
+		if ((F->Flg && f_Stored != 0) && (F->Typ == 'T')) DelTFld(F); 
+		F = (FieldDescr*)F->Chain;
 	}
 }
 
@@ -1385,7 +1386,7 @@ void CopyRecWithT(void* p1, void* p2)
 				T_(F, pos);
 			}
 		}
-		F = F->Chain;
+		F = (FieldDescr*)F->Chain;
 	}
 }
 
@@ -1826,7 +1827,7 @@ void XString::StoreKF(KeyFldD* KF)
 void XString::PackKF(KeyFldD* KF)
 {
 	Clear();
-	while (KF != nullptr) { StoreKF(KF); KF = KF->Chain; }
+	while (KF != nullptr) { StoreKF(KF); KF = (KeyFldD*)KF->Chain; }
 }
 
 bool XString::PackFrml(FrmlList FL, KeyFldD* KF)
@@ -1840,7 +1841,7 @@ bool XString::PackFrml(FrmlList FL, KeyFldD* KF)
 		case 'R':StoreReal(RunReal(Z), KF); break;
 		case 'B':StoreBool(RunBool(Z), KF); break;
 		}
-		KF = KF->Chain; FL = FL->Chain;
+		KF = (KeyFldD*)KF->Chain; FL = (FrmlListEl*)FL->Chain;
 	}
 	return KF != nullptr;
 }
@@ -2498,7 +2499,7 @@ void XWKey::Open(KeyFldD* KF, bool Dupl, bool Intvl)
 	p->IsLeaf = true; XF()->WrPage(p, IndexRoot); ReleaseStore(p); IndexLen = 0;
 	while (KF != nullptr) {
 		IndexLen += KF->FldD->NBytes;
-		KF = KF->Chain;
+		KF = (KeyFldD*)KF->Chain;
 	}
 }
 
@@ -2718,7 +2719,7 @@ void XScan::Reset(FrmlPtr ABool, bool SQLFilter)
 			k->N = 0;
 			if (n >= k->XNrBeg) k->N = n - k->XNrBeg + b;
 			NRecs += k->N;
-			k = k->Chain;
+			k = (KeyInD*)k->Chain;
 		}
 		break;
 	}
@@ -2787,13 +2788,13 @@ void XScan::ResetOwner(XString* XX, FrmlPtr aBool)
 	SeekRec(0);
 }
 
-bool EquKFlds(KeyFldDPtr KF1, KeyFldDPtr KF2)
+bool EquKFlds(KeyFldD* KF1, KeyFldD* KF2)
 {
 	bool result = false;
 	while (KF1 != nullptr) {
 		if ((KF2 == nullptr) || (KF1->CompLex != KF2->CompLex) || (KF1->Descend != KF2->Descend)
 			|| (KF1->FldD->Name != KF2->FldD->Name)) return result;
-		KF1 = KF1->Chain; KF2 = KF2->Chain;
+		KF1 = (KeyFldD*)KF1->Chain; KF2 = (KeyFldD*)KF2->Chain;
 	}
 	if (KF2 != nullptr) return false;
 	return true;
@@ -2868,7 +2869,7 @@ void XScan::SeekRec(longint I)
 		}
 		case 2: {
 			k = KIRoot;
-			while (I >= k->N) { I -= k->N; k = k->Chain; }
+			while (I >= k->N) { I -= k->N; k = (KeyInD*)k->Chain; }
 			KI = k; SeekOnKI(I);
 			break;
 		}
@@ -3000,7 +3001,7 @@ void XScan::NextIntvl()
 		NRecs = IRec; /*EOF*/
 	}
 	else {
-		do { KI = KI->Chain; } while ((KI != nullptr) || (KI->N > 0));
+		do { KI = (KeyInD*)KI->Chain; } while ((KI != nullptr) || (KI->N > 0));
 		if (KI != nullptr) SeekOnKI(0);
 	}
 }
@@ -3088,7 +3089,7 @@ void ForAllFDs(void(*procedure)())
 	cf = CFile; R = CRdb;
 	while (R != nullptr) {
 		CFile = R->FD;
-		while (CFile != nullptr) { procedure(); CFile = CFile->Chain; };
+		while (CFile != nullptr) { procedure(); CFile = (FileD*)CFile->Chain; };
 		R = R->ChainBack;
 	}
 	CFile = cf;

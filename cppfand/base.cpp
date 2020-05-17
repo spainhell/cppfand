@@ -320,23 +320,17 @@ pstring StrPas(const char* Src)
 
 void ChainLast(Chained* Frst, Chained* New)
 {
-	// ve Frst najde postupnì poslení v øetìzu a do nìj dosadí New
-	// do New->Chain dá nullptr
+	if (Frst == nullptr) throw std::exception("ChainLast: Parent is NULL!");
 
-	// zøejmì hledá poslední Chain a ten vrací
-	if (Frst == nullptr) { New = nullptr; return; }
-	void* last = nullptr;
-	uintptr_t mask = 0;
-	while (true)
-	{
-		int result = memcmp(Frst, &mask, 4);
-		if (result == 0) last = (void*)uintptr_t(last);
-		else
-		{
-			New = last;
-			return;
-		}
+	if (New == nullptr) return;
+	
+	Chained* last = Frst;
+
+	while (last->Chain != nullptr) {
+		last = last->Chain;
 	}
+
+	last->Chain = New;
 }
 
 void* LastInChain(void* Frst)

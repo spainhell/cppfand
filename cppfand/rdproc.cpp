@@ -277,7 +277,8 @@ FrmlPtr RdFunctionP(char& FFTyp)
 			while (KF != nullptr) {
 				Accept(','); N++;
 				if (N > 30) Error(123); Arg[N] = RdFrml(Typ);
-				if (Typ != KF->FldD->FrmlTyp) OldError(12); KF = KF->Chain;
+				if (Typ != KF->FldD->FrmlTyp) OldError(12); 
+				KF = (KeyFldD*)KF->Chain;
 			}
 		}
 		else { Accept(','); N = 1; Arg[1] = RdRealFrml(); }
@@ -410,7 +411,7 @@ void RdPInstrAndChain(Instr* PD)
 {
 	Instr* PD1 = RdPInstr; /*may be a chain itself*/
 	Instr* PD2 = PD;
-	while (PD2->Chain != nullptr) PD2 = PD2->Chain;
+	while (PD2->Chain != nullptr) PD2 = (Instr*)PD2->Chain;
 	PD2->Chain = PD1;
 }
 
@@ -425,7 +426,8 @@ label1:
 		PD->ESCInstr = RdPInstr;
 	}
 	else {
-		CD = (ChoiceD*)GetZStore(sizeof(CD)); ChainLast(PD->Choices, CD); N++;
+		CD = (ChoiceD*)GetZStore(sizeof(CD)); 
+		ChainLast(PD->Choices, CD); N++;
 		if ((PD->Kind == _menubar) && (N > 30)) Error(102);
 		CD->TxtFrml = RdStrFrml();
 		if (Lexem == ',') {
@@ -536,7 +538,7 @@ Instr* RdFor()
 	Accept(_assign);
 	PD->Frml = RdRealFrml(); AcceptKeyWord("TO");
 	PD->Chain = GetPInstr(_whiledo, 8);
-	PD = PD->Chain;
+	PD = (Instr*)PD->Chain;
 	FrmlPtr Z = GetOp(_compreal, 2);
 	Z->P1 = (FrmlElem*)LV->Op;
 	Z->N21 = _le;
@@ -1040,7 +1042,7 @@ label1:
 		while (FL1 != nullptr)
 		{
 			if (EquUpcase(FL1->FldD->Name)) goto label2;
-			FL1 = FL1->Chain;
+			FL1 = (FieldList)FL1->Chain;
 		}
 		Error(43);
 	label2:
@@ -1483,7 +1485,8 @@ label1:
 		if ((OpKind == 2) && IsOpt("HELP")) z = RdStrFrml();
 		else {
 			w = (WrLnD*)GetZStore(sizeof(d));
-			ChainLast(&d, w); goto label1;
+			ChainLast(d, w);  // TODO: tady bylo (&d, w)
+			goto label1;
 		}
 	}
 	WORD N = 1 + sizeof(d);
@@ -1819,21 +1822,24 @@ AssignD* MakeImplAssign(FileD* FD1, FileD* FD2)
 	FieldDPtr F1 = FD1->FldD;
 	while (F1 != nullptr) {
 		if (F1->Flg && f_Stored != 0) {
-			LexWord = F1->Name; FieldDPtr F2 = FindFldName(FD2);
+			LexWord = F1->Name; 
+			FieldDPtr F2 = FindFldName(FD2);
 			if (F2 != nullptr) {
-				A = (AssignD*)GetZStore(sizeof(*A)); ChainLast(ARoot, A);
+				A = (AssignD*)GetZStore(sizeof(*A)); 
+				ChainLast(ARoot, A);
 				if ((F2->FrmlTyp != F1->FrmlTyp) || (F1->FrmlTyp == 'R')
 					&& (F1->Typ != F2->Typ)) {
 					A->Kind = _zero; A->FldD = F1;
 				}
 				else {
 					A->Kind = _output; A->OFldD = F1;
-					FrmlPtr Z = MakeFldFrml(F2, FTyp); Z = AdjustComma(Z, F2, _divide);
+					FrmlPtr Z = MakeFldFrml(F2, FTyp); 
+					Z = AdjustComma(Z, F2, _divide);
 					A->Frml = FrmlContxt(AdjustComma(Z, F1, _times), FD2, nullptr);
 				}
 			}
 		}
-		F1 = F1->Chain;
+		F1 = (FieldDescr*)F1->Chain;
 	}
 	LexWord = S;
 	return ARoot;

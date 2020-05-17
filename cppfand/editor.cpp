@@ -1479,7 +1479,7 @@ bool ScrollEvent() {
 					result = true;
 					return result;
 				}
-				else X = X->Chain;
+				else X = (EdExitD*)X->Chain;
 			}
 		}
 	}
@@ -2928,7 +2928,7 @@ void HandleEvent() {
 				if (!bScroll) { screen.CrsShow(); }
 				if (!EdOk) { goto Nic; }
 			}
-			X = X->Chain;
+			X = (EdExitD*)X->Chain;
 
 			if (((Mode == SinFM) || (Mode == DouFM) || (Mode == DelFM) || (Mode == NotFM)) && !bScroll)
 				FrameStep(FrameDir, ww);

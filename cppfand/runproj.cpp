@@ -67,7 +67,7 @@ void ReleaseFDLDAfterChpt()
 	FileD* FD = nullptr;
 	RdbD* R = nullptr;
 
-	if (Chpt->Chain != nullptr) CloseFAfter(Chpt->Chain);
+	if (Chpt->Chain != nullptr) CloseFAfter((FileD*)Chpt->Chain);
 	Chpt->Chain = nullptr;
 	LinkDRoot = CRdb->OldLDRoot;
 	FuncDRoot = CRdb->OldFCRoot;
@@ -283,7 +283,7 @@ void OKF(KeyFldDPtr kf)
 {
 	while (kf->Chain != nullptr) {
 		kf->Chain = (KeyFldD*)O(kf->Chain);
-		kf = kf->Chain;
+		kf = (KeyFldD*)kf->Chain;
 		kf->FldD = (FieldDescr*)O(kf->FldD);
 	}
 }
@@ -335,7 +335,7 @@ void OFrml(FrmlPtr Z)
 			//fl = FrmlList(&FrmlL);
 			while (fl->Chain != nullptr) {
 				fl->Chain = (FrmlListEl*)O(fl->Chain);
-				fl = fl->Chain;
+				fl = (FrmlListEl*)fl->Chain;
 				OFrml(fl->Frml);
 			}
 			break;
@@ -377,12 +377,12 @@ void WrFDSegment(longint RecNr)
 	s = CFile->ViewNames;
 	while (s->Chain != nullptr) {
 		s->Chain = (StringListEl*)O(s->Chain);
-		s = s->Chain;
+		s = (StringList)s->Chain;
 	}
 	f = CFile->FldD;
 	while (f->Chain != nullptr) {
 		f->Chain = (FieldDescr*)O(f->Chain);
-		f = f->Chain;
+		f = (FieldDescr*)f->Chain;
 		if (f->Flg & f_Stored == 0) OFrml(f->Frml);
 	}
 	k = CFile->Keys; while (k->Chain != nullptr) {
@@ -421,12 +421,12 @@ void WrFDSegment(longint RecNr)
 	if (CFile->LiOfs > 0) {
 		li = (LiRoots*)Normalize(AbsAdr(CFile) + CFile->LiOfs);
 		id = ImplDPtr(&li->Impls); while (id->Chain != nullptr) {
-			id->Chain = (ImplD*)O(id->Chain); id = id->Chain;
+			id->Chain = (ImplD*)O(id->Chain); id = (ImplD*)id->Chain;
 			id->FldD = (FieldDescr*)O(id->FldD);
 			OFrml(id->Frml);
 		}
 		c = ChkDPtr(&li->Chks); while (c->Chain != nullptr) {
-			c->Chain = (ChkD*)O(c->Chain); c = c->Chain;
+			c->Chain = (ChkD*)O(c->Chain); c = (ChkD*)c->Chain;
 			c->HelpName = (pstring*)O(c->HelpName);
 			OFrml(c->TxtZ);
 			OFrml(c->Bool);
@@ -519,7 +519,7 @@ WORD FindHelpRecNr(FileDPtr FD, pstring txt)
 	CFile = FD;
 	CRecPtr = GetRecSpace();
 	md = NewLMode(RdMode); if (CFile->Handle == nullptr) goto label1;
-	NmF = CFile->FldD; TxtF = NmF->Chain;
+	NmF = CFile->FldD; TxtF = (FieldDescr*)NmF->Chain;
 	for (i = 1; i < CFile->NRecs; i++) {
 		ReadRec(i); nm = TrailChar(' ', _ShortS(NmF));
 		ConvToNoDiakr((WORD*)nm[1], nm.length(), fonts.VFont);
@@ -666,7 +666,7 @@ void SgFrml(FrmlPtr Z, WORD Sg, WORD SgF)
 			//fl = FrmlList(FrmlL);
 			while (fl->Chain != nullptr) {
 				fl->Chain = (FrmlListEl*)Sg;
-				fl = fl->Chain;
+				fl = (FrmlListEl*)fl->Chain;
 				SgFrml(fl->Frml, Sg, SgF);
 			}
 			break;
@@ -690,10 +690,16 @@ void SgFrml(FrmlPtr Z, WORD Sg, WORD SgF)
 
 void SetChptFldDPtr()
 {
-	ChptTF = Chpt->TF;
-	ChptTxtPos = Chpt->FldD; ChptVerif = ChptTxtPos->Chain;
-	ChptOldTxt = ChptVerif->Chain; ChptTyp = ChptOldTxt->Chain;
-	ChptName = ChptTyp->Chain; ChptTxt = ChptName->Chain;
+	if (Chpt == nullptr) ChptTF = nullptr;
+	else {
+		ChptTF = Chpt->TF;
+		ChptTxtPos = Chpt->FldD;
+		ChptVerif = (FieldDescr*)ChptTxtPos->Chain;
+		ChptOldTxt = (FieldDescr*)ChptVerif->Chain;
+		ChptTyp = (FieldDescr*)ChptOldTxt->Chain;
+		ChptName = (FieldDescr*)ChptTyp->Chain;
+		ChptTxt = (FieldDescr*)ChptName->Chain;
+	}
 }
 
 void SetRdbDir(char Typ, pstring* Nm)
@@ -759,7 +765,8 @@ void CreateOpenChpt(pstring* Nm, bool create, wwmix* ww)
 	if (((*Nm)[1] == '\\')) Nm1 = Nm->substr(2, 8);
 	else Nm1 = *Nm;
 	RdFileD(Nm1, '0', ""); /*old CRdb for GetCatIRec*/
-	R->FD = CFile; CRdb = R; 
+	R->FD = CFile; 
+	CRdb = R; 
 	CFile->RecPtr = GetRecSpace();
 	SetRdbDir((*Nm)[1], &Nm1);
 	p = CDir + Nm1 + ".RDB";
@@ -768,7 +775,7 @@ void CreateOpenChpt(pstring* Nm, bool create, wwmix* ww)
 	if (!spec.RDBcomment) ChptTxt->L = 1;
 	SetMsgPar(p);
 	if (top) { UserName = ""; UserCode = 0; AccRight = 0; goto label2; }
-	CRdb->HelpFD = CRdb->ChainBack->HelpFD;
+	if (CRdb->ChainBack != nullptr)	CRdb->HelpFD = CRdb->ChainBack->HelpFD;
 label1:
 	ChDir(R->RdbDir);
 	if (IOResult() != 0)
@@ -836,7 +843,7 @@ FileD* FindFD()
 	FD = FileDRoot;
 	while (FD != nullptr) {
 		if (SEquUpcase(FD->Name, name)) break;
-		FD = FD->Chain;
+		FD = (FileD*)FD->Chain;
 	}
 	return FD;
 }
@@ -942,9 +949,10 @@ label2:
 	if (uw) { UserW = 0;/*mem overflow*/UserW = PushW(1, 1, TxtCols, TxtRows); }
 	SaveFiles(); if (mv) ShowMouse();
 	if (WasError) ForAllFDs(ClearXFUpdLock);
-	CFile = lstFD->Chain;
+	CFile = (FileD*)lstFD->Chain;
 	while (CFile != nullptr) {
-		CloseFile(); CFile = CFile->Chain;
+		CloseFile(); 
+		CFile = (FileD*)CFile->Chain;
 	}
 	lstFD->Chain = nullptr;
 	LinkDRoot = oldLd;
@@ -1072,8 +1080,8 @@ bool EquStoredF(FieldDPtr F1, FieldDPtr F2)
 {
 	auto result = false;
 label1:
-	while ((F1 != nullptr) && (F1->Flg && f_Stored == 0)) F1 = F1->Chain;
-	while ((F2 != nullptr) && (F2->Flg && f_Stored == 0)) F2 = F2->Chain;
+	while ((F1 != nullptr) && (F1->Flg && f_Stored == 0)) F1 = (FieldDescr*)F1->Chain;
+	while ((F2 != nullptr) && (F2->Flg && f_Stored == 0)) F2 = (FieldDescr*)F2->Chain;
 	if (F1 == nullptr)
 	{
 		if (F2 != nullptr) return result;
@@ -1082,7 +1090,7 @@ label1:
 	}
 	if ((F2 == nullptr) || !FldTypIdentity(F1, F2) ||
 		(F1->Flg && !f_Mask != F2->Flg && !f_Mask)) return result;
-	F1 = F1->Chain; F2 = F2->Chain;
+	F1 = (FieldDescr*)F1->Chain; F2 = (FieldDescr*)F2->Chain;
 	goto label1;
 }
 
@@ -1128,7 +1136,7 @@ bool EquKeys(KeyD* K1, KeyD* K2)
 		while (KF1 != nullptr) {
 			if ((KF2 == nullptr) || (KF1->CompLex != KF2->CompLex) || (KF1->Descend != KF2->Descend)
 				|| (KF1->FldD->Name != KF2->FldD->Name)) return result;
-			KF1 = KF1->Chain; KF2 = KF2->Chain;
+			KF1 = (KeyFldD*)KF1->Chain; KF2 = (KeyFldD*)KF2->Chain;
 		}
 		if (KF2 != nullptr) return result;
 		K1 = K1->Chain; K2 = K2->Chain;
@@ -1323,7 +1331,7 @@ void GotoErrPos(WORD& Brk)
 	}
 	if (CurrPos == 0) {
 		DisplEditWw();
-		GotoRecFld(InpRdbPos.IRec, E->FirstFld->Chain);
+		GotoRecFld(InpRdbPos.IRec, (EFldD*)E->FirstFld->Chain);
 		SetMsgPar(s); WrLLF10Msg(110); Brk = 0; return;
 	}
 	CFld = &E->LastFld; SetNewCRec(InpRdbPos.IRec, true);
@@ -1382,7 +1390,7 @@ bool EditExecRdb(pstring* Nm, pstring* ProcNm, Instr* ProcCall, wwmix* ww)
 	EditRdbMode = true; if (CRdb->Encrypted) passw = ww->PassWord(false);
 	IsTestRun = true; EO = GetEditOpt();
 	EO->Flds = AllFldsList(Chpt, true);
-	EO->Flds = EO->Flds->Chain->Chain->Chain;
+	EO->Flds = (FieldList)EO->Flds->Chain->Chain->Chain;
 	NewEditD(Chpt, EO);
 	E->MustCheck = true; /*ChptTyp*/
 	if (CRdb->Encrypted)
@@ -1414,7 +1422,7 @@ label2:
 		if (!CompileRdb(Brk = 2, false, false)) {
 		label3:
 			if (IsCompileErr) goto label4; if (Brk == 1) DisplEditWw();
-			GotoRecFld(InpRdbPos.IRec, E->FirstFld->Chain); goto label1;
+			GotoRecFld(InpRdbPos.IRec, (EFldD*)E->FirstFld->Chain); goto label1;
 		}
 		if (cc == _AltF2_) {
 			EditHelpOrCat(cc, 0, ""); goto label41;

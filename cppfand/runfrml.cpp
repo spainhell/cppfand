@@ -910,7 +910,7 @@ bool FieldInList(FieldDPtr F, FieldListEl* FL)
 	auto result = false;
 	while (FL != nullptr) {
 		if (FL->FldD == F) result = true;
-		FL = FL->Chain;
+		FL = (FieldListEl*)FL->Chain;
 	}
 	return result;
 }
@@ -1367,7 +1367,8 @@ void* RunUserFunc(FrmlPtr X)
 	oldbp = MyBP; oldprocbp = ProcMyBP; LVBD = X->FC->LVB; PushProcStk();
 	lv = LVBD.Root; fl = X->FrmlL;
 	while (fl != nullptr) {
-		LVAssignFrml(lv, oldbp, false, fl->Frml); lv = lv->Chain; fl = fl->Chain;
+		LVAssignFrml(lv, oldbp, false, fl->Frml); 
+		lv = (LocVar*)lv->Chain; fl = (FrmlListEl*)fl->Chain;
 	}
 	ProcMyBP = MyBP;
 	RunProcedure(X->FC->Instr);
@@ -1389,7 +1390,7 @@ void GetRecNoXString(FrmlPtr Z, XString& X)
 		case 'R': X.StoreReal(RunReal(zz), kf); break;
 		case 'B': X.StoreBool(RunBool(zz), kf); break;
 		}
-		kf = kf->Chain;
+		kf = (KeyFldD*)kf->Chain;
 	}
 }
 

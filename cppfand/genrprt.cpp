@@ -147,7 +147,7 @@ void WrLevel(integer Level)
 
 LongStr* GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 {
-	PFldD* d; FieldDPtr f; FieldList fl, fl1; KeyFldDPtr kf;
+	PFldD* d; FieldDescr* f; FieldListEl* fl; FieldListEl* fl1; KeyFldD* kf;
 	integer i, l, col; char* p; bool first, point; pstring s;
 
 	CFile = RO->FDL.FD; ARMode = RO->Mode;
@@ -160,11 +160,11 @@ LongStr* GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 		fl1 = RO->Ctrl; i = NLevels;
 		while (fl1 != nullptr) {
 			if (fl1->FldD == f) { d->IsCtrl = true; d->Level = i; }
-			i--; fl1 = fl1->Chain;
+			i--; fl1 = (FieldListEl*)fl1->Chain;
 		}
 		if ((ARMode == _ATotal) && !d->IsSum && !d->IsCtrl) ReleaseStore(d);
 		else ChainLast(PFldDs, d);
-		fl = fl->Chain;
+		fl = (FieldListEl*)fl->Chain;
 	}
 	Design(RO);
 
@@ -180,11 +180,11 @@ LongStr* GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 		if ((kf != nullptr) && (f == kf->FldD)) {
 			if (kf->Descend) WrChar('>');
 			if (kf->CompLex) WrChar('~');
-			kf = kf->Chain;
+			kf = (KeyFldD*)kf->Chain;
 		}
 		else if (f->Typ == 'A') WrChar('~');
 		WrStr(f->Name);
-		fl = fl->Chain; first = false;
+		fl = (FieldListEl*)fl->Chain; first = false;
 	}
 	if (kf != nullptr) {
 		if (!first) WrChar(';'); first = true;
@@ -193,7 +193,7 @@ LongStr* GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 			if (kf->Descend) WrChar('>');
 			if (kf->CompLex) WrChar('~');
 			WrStr(kf->FldD->Name);
-			kf = kf->Chain; first = false;
+			kf = (KeyFldD*)kf->Chain; first = false;
 		}
 	}
 
@@ -304,13 +304,13 @@ bool SelForAutoRprt(RprtOpt* RO)
 		FL = RO->Flds;
 		while (FL != nullptr) {
 			if (FL->FldD->Typ != 'T') ww.PutSelect(FL->FldD->Name);
-			FL = FL->Chain;
+			FL = (FieldListEl*)FL->Chain;
 		}
 		if (!ww.SelFieldList(37, false, RO->Ctrl)) return result;
 		FL = RO->Flds;
 		while (FL != nullptr) {
 			if (FL->FldD->FrmlTyp == 'R') ww.PutSelect(FL->FldD->Name);
-			FL = FL->Chain;
+			FL = (FieldListEl*)FL->Chain;
 		}
 		if (!ww.SelFieldList(38, true, RO->Sum)) return result;
 	}
@@ -327,10 +327,13 @@ LongStr* SelGenRprt(pstring RprtName)
 	pstring s; integer i;
 	FieldListEl* fl;
 	LongStr* result = nullptr;
-	r = CRdb; while (r != nullptr) {
-		fd = r->FD->Chain; while (fd != nullptr) {
-			s = fd->Name; if (r != CRdb) s = r->FD->Name + '.' + s; ww.PutSelect(s);
-			fd = fd->Chain;
+	r = CRdb; 
+	while (r != nullptr) {
+		fd = (FileD*)r->FD->Chain; while (fd != nullptr) {
+			s = fd->Name; 
+			if (r != CRdb) s = r->FD->Name + '.' + s; 
+			ww.PutSelect(s);
+			fd = (FileD*)fd->Chain;
 		}
 		r = r->ChainBack;
 	}
@@ -345,7 +348,7 @@ LongStr* SelGenRprt(pstring RprtName)
 		s = s.substr(i + 1, 255);
 	}
 	fd = r->FD;
-	do { fd = fd->Chain; } while (fd->Name != s);
+	do { fd = (FileD*)fd->Chain; } while (fd->Name != s);
 	ro = GetRprtOpt(); ro->FDL.FD = fd;
 	f = fd->FldD; while (f != nullptr) {
 		s = f->Name;
@@ -355,20 +358,20 @@ LongStr* SelGenRprt(pstring RprtName)
 			s = SelMark; s += oldS;
 		}
 		ww.PutSelect(s);
-		f = f->Chain;
+		f = (FieldDescr*)f->Chain;
 	}
 	CFile = fd; ww.SelFieldList(36, true, ro->Flds);
 	if (ro->Flds == nullptr) return result;
 	ro->Mode = _ARprt;
 	fl = ro->Flds;
 	while (fl != nullptr) {
-		ww.PutSelect(fl->FldD->Name); fl = fl->Chain;
+		ww.PutSelect(fl->FldD->Name); fl = (FieldListEl*)fl->Chain;
 	}
 	if (!ww.SelFieldList(37, false, ro->Ctrl)) return result;
 	fl = ro->Flds;
 	while (fl != nullptr) {
 		if (fl->FldD->FrmlTyp == 'R') ww.PutSelect(fl->FldD->Name);
-		fl = fl->Chain;
+		fl = (FieldListEl*)fl->Chain;
 	}
 	if (!ww.SelFieldList(38, false, ro->Sum)) return result;
 	result = GenAutoRprt(ro, false);

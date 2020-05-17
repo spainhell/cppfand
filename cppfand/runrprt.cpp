@@ -255,9 +255,9 @@ void PendingTT()
 				WriteNBlks(TD->Col - Col); SL = TD->SL;
 				printf("%s%s", Rprt.c_str(), SL->S.c_str());
 				l = LenStyleStr(SL->S); Col = TD->Col + l; TD->Ln--;
-				TD->SL = SL->Chain;
+				TD->SL = (StringList)SL->Chain;
 			}
-			TD = TD->Chain;
+			TD = (TTD*)TD->Chain;
 		}
 		Y.TLn--;
 		LineLenLst = lll;
@@ -278,7 +278,9 @@ label1:
 	while (Y.I < Y.Sz) {
 		RE = (REditD*)(&Y.P[Y.I]); C = RE->Char;
 		if (C == 0xFF) {
-			RF = RF->Chain; if (RF == nullptr) return; L = RE->L; M = RE->M;
+			RF = (RFldD*)RF->Chain; 
+			if (RF == nullptr) return; 
+			L = RE->L; M = RE->M;
 			if (RF->FrmlTyp == 'R') {
 				if (!Skip) R = RunReal(RF->Frml);
 				switch (RF->Typ) {
@@ -364,7 +366,7 @@ void RunAProc(AssignD* A)
 			break;
 		}
 		}
-		A = A->Chain;
+		A = (AssignD*)A->Chain;
 	}
 }
 
@@ -405,7 +407,7 @@ void PrintBlkChn(BlkD* B, bool ChkPg, bool ChkLine)
 			}
 			PrintTxt(B, ChkPg); WasFF2 = B->FF2;
 		}
-		B = B->Chain;
+		B = (BlkD*)B->Chain;
 	}
 }
 
@@ -445,8 +447,9 @@ void PrintBlock(BlkD* B, BlkD* DH)
 				LAfter = RprtLine + MaxI(0, B->NTxtLines - 1);
 				if ((DH != nullptr) && (PrintDH >= DH->DHLevel + 1)) {
 					B1 = DH; while (B1 != nullptr) {
-						if (RunBool(B1->Bool)) LAfter += B1->NTxtLines; B1 = B1->Chain;
-					};
+						if (RunBool(B1->Bool)) LAfter += B1->NTxtLines; 
+						B1 = (BlkD*)B1->Chain;
+					}
 				}
 				if (B->FF1 || WasFF2 || FrstBlk && (B->NTxtLines > 0) ||
 					(PgeLimit < PgeSize) && (LAfter > PgeLimit)) NewPage();
@@ -460,7 +463,7 @@ void PrintBlock(BlkD* B, BlkD* DH)
 			if ((DH == nullptr) && WasOutput) pdh = true;
 			SumUp(B->Sum);
 		}
-		B = B->Chain;
+		B = (BlkD*)B->Chain;
 	}
 	if (pdh) PrintDH = 2;
 }
@@ -527,7 +530,7 @@ WORD CompMFlds(ConstListEl* C, KeyFldD* M, integer& NLv)
 		NLv++; x.Clear(); x.StoreKF(M);
 		res = CompStr(x.S, C->S);
 		if (res != _equ) { return res; }
-		C = C->Chain; M = M->Chain;
+		C = (ConstListEl*)C->Chain; M = (KeyFldD*)M->Chain;
 	}
 	return _equ;
 }
@@ -536,14 +539,17 @@ void GetMFlds(ConstListEl* C, KeyFldD* M)
 {
 	XString* x;
 	while (C != nullptr) {
-		x = (XString*)(&C->S); x->Clear(); x->StoreKF(M); C = C->Chain; M = M->Chain;
+		x = (XString*)(&C->S); 
+		x->Clear(); x->StoreKF(M); 
+		C = (ConstListEl*)C->Chain; 
+		M = (KeyFldD*)M->Chain;
 	}
 }
 
 void MoveMFlds(ConstListEl* C1, ConstListEl* C2)
 {
 	while (C2 != nullptr) {
-		C2->S = C1->S; C1 = C1->Chain; C2 = C2->Chain;
+		C2->S = C1->S; C1 = (ConstListEl*)C1->Chain; C2 = (ConstListEl*)C2->Chain;
 	}
 }
 
@@ -561,7 +567,7 @@ void PutMFlds(KeyFldDPtr M)
 		case 'R': { r = _R(f1); CFile = cf; CRecPtr = cr; R_(f, r); break; }
 		default: b = _B(f1); CFile = cf; CRecPtr = cr; B_(f, b); break;
 		}
-		M = M->Chain; m1 = m1->Chain;
+		M = (KeyFldD*)M->Chain; m1 = (KeyFldD*)m1->Chain;
 	}
 }
 
@@ -608,7 +614,8 @@ LvDescr* GetDifLevel()
 	C1 = NewMFlds; C2 = OldMFlds; M = IDA[1]->MFld; L = LstLvM->ChainBack;
 	while (M != nullptr) {
 		if (C1->S != C2->S) { return L; }
-		C1 = C1->Chain; C2 = C2->Chain; M = M->Chain; L = L->ChainBack;
+		C1 = (ConstListEl*)C1->Chain; C2 = (ConstListEl*)C2->Chain; 
+		M = (KeyFldD*)M->Chain; L = L->ChainBack;
 	}
 	return nullptr;
 }
@@ -627,7 +634,7 @@ void MoveForwToRec(InpD* ID)
 				ID->Warning = true; ID->ErrTxtFrml->S = RunShortStr(C->TxtZ);
 				if (!C->Warning) { ID->Error = true; return; };
 			}
-			C = C->Chain;
+			C = (ChkD*)C->Chain;
 		}
 	}
 }

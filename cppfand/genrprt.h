@@ -1,7 +1,7 @@
 #pragma once
 #include "rdrun.h"
 
-struct PFldD
+struct PFldD : public Chained
 {
 	PFldD* Chain = nullptr; FieldDescr* FldD = nullptr;
 	integer ColTxt = 0, ColItem = 0;

@@ -215,7 +215,7 @@ void WorkFile::Reset(KeyFldD* KF, longint RestBytes, char Typ, longint NRecs)
 		/* !!! with KF->FldD^ do!!! */
 		if (Typ == 'D') RecLen += 6;
 		else RecLen += KF->FldD->NBytes;
-		KF = KF->Chain;
+		KF = (KeyFldD*)KF->Chain;
 	}
 	BYTEs = (StoreAvail() - RestBytes - sizeof(WRec)) / 3;
 	if (BYTEs < 4096) RunError(624);
@@ -627,7 +627,7 @@ void ScanSubstWIndex(XScan* Scan, KeyFldD* SK, char Typ)
 	if (Scan->FD->IsSQLFile && (Scan->Kind == 3)) /*F6-autoreport & sort*/ {
 		k = Scan->Key; n = k->IndexLen; kf = SK;
 		while (kf != nullptr) {
-			n += kf->FldD->NBytes; kf = kf->Chain;
+			n += kf->FldD->NBytes; kf = (KeyFldD*)kf->Chain;
 		}
 		if (n > 255) { WrLLF10Msg(155); ReleaseStore(k2); return; }
 		kf = k->KFlds; kfroot = nullptr;
@@ -635,7 +635,7 @@ void ScanSubstWIndex(XScan* Scan, KeyFldD* SK, char Typ)
 			kf2 = (KeyFldD*)GetStore(sizeof(KeyFldD));
 			*kf2 = *kf;
 			ChainLast(kfroot, kf2);
-			kf = kf->Chain;
+			kf = (KeyFldD*)kf->Chain;
 		}
 		kf2->Chain = SK; SK = kfroot;
 	}

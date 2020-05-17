@@ -70,7 +70,7 @@ void SetOldMFlds(KeyFldD* M)
 		case 'R': { C->R = _R(F); OldMXStr.StoreReal(C->R, M); break; }
 		default: C->B = _B(F); OldMXStr.StoreBool(C->B, M); break;
 		}
-		C = C->Chain; M = M->Chain;
+		C = (ConstListEl*)C->Chain; M = (KeyFldD*)M->Chain;
 	}
 }
 
@@ -87,7 +87,7 @@ void SetMFlds(KeyFldD* M)
 		case 'R': R_(F, C->R); break;
 		default: B_(F, C->B); break;
 		}
-		M = M->Chain; C = C->Chain;
+		M = (KeyFldD*)M->Chain; C = (ConstListEl*)C->Chain;
 	}
 }
 
@@ -134,7 +134,7 @@ void RunAssign(AssignD* A)
 			break;
 		}
 		}
-		A = A->Chain;
+		A = (AssignD*)A->Chain;
 	}
 }
 
@@ -160,7 +160,7 @@ void WriteOutp(OutpRD* RD)
 				}
 		}
 	}
-		RD = RD->Chain;
+		RD = (OutpRD*)RD->Chain;
 }
 }
 
@@ -192,7 +192,7 @@ void OpenOutp()
 #endif
 			if (OD->InplFD != nullptr) OD->FD = OpenDuplF(true);
 			else OD->Md = RewriteF(OD->Append);
-		OD = OD->Chain;
+		OD = (OutpFD*)OD->Chain;
 	}
 }
 
@@ -212,7 +212,7 @@ void CloseInpOutp()
 			if (OD->InplFD != nullptr) { CFile = OD->InplFD; SubstDuplF(OD->FD, true); }
 			else OldLMode(OD->Md);
 		}
-		OD = OD->Chain;
+		OD = (OutpFD*)OD->Chain;
 	}
 	for (i = 1; i < MaxIi; i++) /* !!! with IDA[i]^ do!!! */ {
 		IDA[i]->Scan->Close(); ClearRecSpace(IDA[i]->ForwRecPtr); OldLMode(IDA[i]->Md);
@@ -233,7 +233,7 @@ void MoveForwToRecM(InpD* ID)
 				ID->Warning = true; ID->ErrTxtFrml->S = RunShortStr(C->TxtZ);
 				if (!C->Warning) { ID->Error = true; return; }
 			}
-			C = C->Chain;
+			C = (ChkD*)C->Chain;
 		}
 	}
 }

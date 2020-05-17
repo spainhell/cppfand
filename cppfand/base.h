@@ -18,6 +18,7 @@ typedef void* PProcedure;
 
 class Chained 
 {
+public:
 	Chained* Chain = nullptr;
 };
 

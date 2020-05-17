@@ -3,9 +3,9 @@
 #include "constants.h"
 #include "rdrun.h"
 
-struct TTD
+struct TTD : public Chained
 {
-    TTD* Chain = nullptr;
+    //TTD* Chain = nullptr;
     StringList SL = nullptr;
     WORD Col = 0, Width = 0, Ln = 0;
 };

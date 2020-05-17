@@ -9,16 +9,16 @@
 SS ss;
 
 
-struct Item
+struct Item : Chained
 {
-	Item* Chain;
+	//Item* Chain;
 	char Tag;
 	pstring S;
 };
 
-struct
+struct stSv : public Chained
 {
-	Item* ItemRoot;
+	//Item* ItemRoot;
 	void* markp;
 	integer NItems, MaxItemLen, Tabs, TabSize, WwSize, Base, iItem;
 } sv;
@@ -26,8 +26,8 @@ struct
 Item* GetItem(WORD N)
 {
 	Item* p; WORD i;
-	p = sv.ItemRoot;
-	for (i = 2; i <= N; i++) p = p->Chain;
+	p = (Item*)sv.Chain;
+	for (i = 2; i <= N; i++) p = (Item*)p->Chain;
 	return p;
 }
 
@@ -48,7 +48,7 @@ void wwmix::PutSelect(pstring s)
 		FillChar(&ss.Abcd, sizeof(ss) - 5, 0);
 		sv.markp = p;
 	}
-	ChainLast(sv.ItemRoot, p);
+	ChainLast(sv.Chain, p);
 	sv.NItems++;
 	sv.MaxItemLen = MaxW(l, sv.MaxItemLen);
 }
@@ -120,16 +120,16 @@ label1:
 			PopScr(pw, true); ReleaseStore(pw);
 			if (ss.Empty) return;
 			ss.Empty = true; ss.Pointto = nullptr;
-			ss.Size = 0; p = sv.ItemRoot;
+			ss.Size = 0; p = (Item*)sv.Chain;
 			while (p != nullptr) {
 				if (p->Tag != ' ') ss.Size++;
-				p = p->Chain;
+				p = (Item*)p->Chain;
 			}
 			if (ss.Subset && ss.ImplAll && (ss.Size == 0)) {
-				p = sv.ItemRoot;
+				p = (Item*)sv.Chain;
 				while (p != nullptr) {
 					if (p->S[1] != SelMark) { p->Tag = schar; ss.Size++; }
-					p = p->Chain;
+					p = (Item*)p->Chain;
 				}
 			}
 			if (KbdChar == _ESC_) ReleaseStore(sv.markp);
@@ -332,7 +332,7 @@ void wwmix::SetTag(char c)
 void wwmix::SetAllTags(char c)
 {
 	Item* p;
-	p = sv.ItemRoot; while (p != nullptr) { p->Tag = c; p = p->Chain; }
+	p = (Item*)sv.Chain; while (p != nullptr) { p->Tag = c; p = (Item*)p->Chain; }
 	DisplWw();
 }
 
@@ -341,13 +341,13 @@ void wwmix::Switch(WORD I1, WORD I2)
 	Item* p1; Item* p2; Item* q1; Item* q2; Item* h;
 	WORD i;
 
-	p1 = (Item*)(&sv.ItemRoot);
-	for (i = 2; i <= I1; i++) p1 = p1->Chain;
-	q1 = p1->Chain;
-	p2 = (Item*)(&sv.ItemRoot);
-	for (i = 2; i <= I2; i++) p2 = p2->Chain;
-	q2 = p2->Chain;
-	h = q1->Chain;
+	p1 = (Item*)(&sv.Chain);
+	for (i = 2; i <= I1; i++) p1 = (Item*)p1->Chain;
+	q1 = (Item*)p1->Chain;
+	p2 = (Item*)(&sv.Chain);
+	for (i = 2; i <= I2; i++) p2 = (Item*)p2->Chain;
+	q2 = (Item*)p2->Chain;
+	h = (Item*)q1->Chain;
 	p1->Chain = q2;
 	q1->Chain = q2->Chain;
 
@@ -417,14 +417,14 @@ void wwmix::AbcdSort()
 	Item* p; Item* q; Item* r;
 	bool sorted;
 	do {
-		r = (Item*)(&sv.ItemRoot); p = sv.ItemRoot; q = p->Chain;
+		r = (Item*)(&sv.Chain); p = (Item*)sv.Chain; q = (Item*)p->Chain;
 		sorted = true;
 		while (q != nullptr) {
 			if (CompLexStr(p->S, q->S) == _gt) {
 				r->Chain = q; p->Chain = q->Chain; q->Chain = p;
-				r = q; q = p->Chain; sorted = false;
+				r = q; q = (Item*)p->Chain; sorted = false;
 			}
-			else { r = p; p = q; q = q->Chain; };
+			else { r = p; p = q; q = (Item*)q->Chain; };
 		}
 	} while (!sorted);
 }
@@ -433,11 +433,11 @@ void wwmix::SetFirstiItem()
 {
 	sv.iItem = 1;
 	if (ss.Pointto == nullptr) return;
-	Item* p = sv.ItemRoot;
+	Item* p = (Item*)sv.Chain;
 	while (p != nullptr) {
 		if (p->S == *ss.Pointto) return;
 		sv.iItem++;
-		p = p->Chain;
+		p = (Item*)p->Chain;
 	}
 }
 
@@ -462,9 +462,9 @@ pstring wwmix::GetSelect()
 	{
 		p = GetItem(sv.iItem); result = p->S; ReleaseStore(sv.markp); return result;
 	}
-	while ((p != nullptr) && (p->Tag == ' ')) p = p->Chain;
+	while ((p != nullptr) && (p->Tag == ' ')) p = (Item*)p->Chain;
 	if (p == nullptr) { ss.Tag = ' '; result = ""; return result; }
-	ss.Tag = p->Tag; result = p->S; p = p->Chain;
+	ss.Tag = p->Tag; result = p->S; p = (Item*)p->Chain;
 	return result;
 }
 
@@ -489,7 +489,7 @@ label1:
 				FL->FldD = F;
 				goto label1;
 			}
-			else F = F->Chain;
+			else F = (FieldDescr*)F->Chain;
 		goto label1;
 	}
 	return result;

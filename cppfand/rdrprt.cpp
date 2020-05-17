@@ -31,9 +31,9 @@ label1:
 				if ((Lexem == _identifier) && EquUpcase(RF1->Name)) {
 					RdLex(); result = true; RF = RF1; B = B1; return result;
 				}
-				RF1 = RF1->Chain;
+				RF1 = (RFldD*)RF1->Chain;
 			}
-			B1 = B1->Chain;
+			B1 = (BlkD*)B1->Chain;
 		}
 		L = L->ChainBack;
 	}
@@ -176,7 +176,7 @@ bool OwnInBlock(char& FTyp, FrmlElem* res)
 			RdLex(); FTyp = RF->FrmlTyp; res = RF->Frml;
 			result = true; return result;
 		}
-		RF = RF->Chain;
+		RF = (RFldD*)RF->Chain;
 	}
 	return result;
 }
@@ -348,7 +348,7 @@ void CopyPrevMFlds()
 		if (!FldTypIdentity(M->FldD, F)) OldError(12);
 		MNew = (KeyFldD*)GetStore(sizeof(*MNew));
 		Move(M, MNew, sizeof(*MNew));
-		MNew->FldD = F; ChainLast(IDA[Ii]->MFld, MNew); M = M->Chain;
+		MNew->FldD = F; ChainLast(IDA[Ii]->MFld, MNew); M = (KeyFldD*)M->Chain;
 	}
 	LexWord = s;
 }
@@ -359,7 +359,7 @@ void CheckMFlds(KeyFldD* M1, KeyFldD* M2)
 		if (M2 == nullptr) OldError(30);
 		if (!FldTypIdentity(M1->FldD, M2->FldD) || (M1->Descend != M2->Descend)
 			|| (M1->CompLex != M2->CompLex)) OldError(12);
-		M1 = M1->Chain; M2 = M2->Chain;
+		M1 = (KeyFldD*)M1->Chain; M2 = (KeyFldD*)M2->Chain;
 	}
 	if (M2 != nullptr) OldError(30);
 }
@@ -376,7 +376,7 @@ LvDescr* MakeOldMLvD()
 		C = (ConstListEl*)GetStore(n); ChainLast(NewMFlds, C);
 		L1 = (LvDescr*)GetZStore(sizeof(*L1));
 		L->ChainBack = L1; L1->Chain = L; L = L1;
-		L->Fld = M->FldD; M = M->Chain;
+		L->Fld = M->FldD; M = (KeyFldD*)M->Chain;
 	}
 	return L;
 }
@@ -390,8 +390,8 @@ void RdAutoSortSK(InpD* ID)
 	as = ID->AutoSort;
 	if (as) {
 		SK = (KeyFldD*)(&ID->SK); M = ID->MFld; while (M != nullptr) {
-			SK->Chain = (KeyFldD*)GetStore(sizeof(*SK)); SK = SK->Chain;
-			Move(M, SK, sizeof(*SK)); M = M->Chain;
+			SK->Chain = (KeyFldD*)GetStore(sizeof(*SK)); SK = (KeyFldD*)SK->Chain;
+			Move(M, SK, sizeof(*SK)); M = (KeyFldD*)M->Chain;
 		}
 	}
 	M = ID->SFld;
@@ -402,10 +402,10 @@ void RdAutoSortSK(InpD* ID)
 		ChainLast(ID->OldSFlds, C);
 		if (as) {
 			SK->Chain = (KeyFldD*)GetStore(sizeof(*SK));
-			SK = SK->Chain;
+			SK = (KeyFldD*)SK->Chain;
 			Move(M, SK, sizeof(*SK));
 		}
-		M = M->Chain;
+		M = (KeyFldD*)M->Chain;
 	}
 	if (as && (ID->SK == nullptr)) OldError(60);
 	ID->FrstLvS = NewLvS(L, ID);
@@ -554,7 +554,7 @@ label3:
 			}
 			TestSetBlankOrWrap(RepeatedGrp, UC, RF);
 		label5:
-			RF = RF->Chain;
+			RF = (RFldD*)RF->Chain;
 			break;
 		}
 		case '\\': { CBlk->FF2 = true; EndString(LineLen, NBytesStored, LnL, StrL); ReadChar(); goto label4; break; }

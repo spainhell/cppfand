@@ -27,7 +27,7 @@ WORD CountNTxt(ChoiceD* C, bool IsMenuBar)
 			if (s == "") b = false;
 			if (b) nValid++;
 		}
-		C->Enabled = b; C = C->Chain;
+		C->Enabled = b; C = (ChoiceD*)C->Chain;
 	}
 	if (nValid == 0) n = 0;
 	return n;
@@ -38,7 +38,7 @@ ChoiceD* CI(ChoiceD* C, WORD I)
 label1:
 	if (C->Displ) I--;
 	if (I == 0) { return C; }
-	C = C->Chain;
+	C = (ChoiceD*)C->Chain;
 	goto label1;
 }
 
@@ -798,7 +798,7 @@ label1:
 	md = NewLMode(RdMode);
 	if (CFile->Handle == nullptr) goto label5;
 	CRecPtr = GetRecSpace2();
-	NmF = CFile->FldD; TxtF = NmF->Chain;
+	NmF = CFile->FldD; TxtF = (FieldDescr*)NmF->Chain;
 	if (!ByName) {
 		i = MaxW(1, MinW(IRec, CFile->NRecs));
 		ReadRec(i);

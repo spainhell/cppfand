@@ -183,7 +183,7 @@ label1:
 			fl->FldD = f;
 			ChainLast(EO->Flds, fl);
 		}
-		f = f->Chain;
+		f = (FieldDescr*)f->Chain;
 	}
 	if (EO->Flds == nullptr) OldError(117);
 }
@@ -261,7 +261,7 @@ void TestUserView()
 label1:
 	TestIdentif();
 	TestDupl(CFile); FD = FileDRoot;
-	while (FD != nullptr) { TestDupl(FD); FD = FD->Chain; }
+	while (FD != nullptr) { TestDupl(FD); FD = (FileD*)FD->Chain; }
 	S = (StringList)GetStore(LexWord.length() + 5);
 	S->S = LexWord; ChainLast(CFile->ViewNames, S);
 	RdLex(); RdByteListInStore(); Accept(':'); MarkStore(p);
@@ -281,7 +281,7 @@ void TestDupl(FileD* FD)
 	StringList S;
 	S = FD->ViewNames;
 	while (S != nullptr) {
-		if (EquUpcase(S->S)) Error(26); S = S->Chain;
+		if (EquUpcase(S->S)) Error(26); S = (StringList)S->Chain;
 	}
 }
 
@@ -293,7 +293,10 @@ label1:
 	RdLex(); if (!Stored) { Accept(_assign); Z = RdFrml(FTyp); }
 	F = RdFldDescr(Name, Stored);
 	if ((CFile->Typ == 'D') && Stored && (F->Typ == 'R' || F->Typ == 'N')) OldError(86);
-	ChainLast(CFile->FldD, F);
+	
+	if (CFile->FldD == nullptr) CFile->FldD = F;
+	else ChainLast(CFile->FldD, F);
+	
 	if (Stored) {
 		if (CFile->Typ == '8') { if ((F->Typ == 'R' || F->Typ == 'B' || F->Typ == 'T')) OldError(35); }
 		else if ((F->Typ == 'F') && (F->NBytes > 5)) OldError(36);
@@ -339,7 +342,7 @@ void* RdFileD(pstring FileName, char FDTyp, pstring Ext)
 					F->L = 10;
 					F->Flg = F->Flg & !f_Encryp;
 				}
-				F = F->Chain;
+				F = (FieldDescr*)F->Chain;
 			}
 		}
 		F2->Chain = nullptr; CompileRecLen(); ChainLast(FileDRoot, CFile);
@@ -376,7 +379,7 @@ void* RdFileD(pstring FileName, char FDTyp, pstring Ext)
 	CFile->ChptPos = OrigInp()->InpRdbPos;
 	if (isHlp) {
 		F = CFile->FldD;
-		F2 = F->Chain;
+		F2 = (FieldDescr*)F->Chain;
 		if ((F->Typ != 'A') || (F2 == nullptr) || (F2->Typ != 'T') || (F2->Chain != nullptr)) OldError(128);
 		CFile->IsHlpFile = true;
 	}
@@ -402,7 +405,10 @@ label2:
 		RdLex();
 		RdKumul();
 	}
-	ChainLast(FileDRoot, CFile);
+	
+	if (FileDRoot == nullptr) FileDRoot = CFile;
+	else ChainLast(FileDRoot, CFile);
+	
 	if (Ext == "$"/*compile from text at run time*/) {
 		CFile->IsDynFile = true;
 		CFile->ChptPos.R = CRdb;
@@ -492,13 +498,13 @@ label2:
 	Arg = (KeyFldDPtr)(&L->Args); KF = K->KFlds;
 label3:
 	F = RdFldName(CFile); if (F->Typ == 'T') OldError(84);
-	Arg->Chain = (KeyFldD*)GetZStore(sizeof(*Arg)); Arg = Arg->Chain;
+	Arg->Chain = (KeyFldD*)GetZStore(sizeof(*Arg)); Arg = (KeyFldD*)Arg->Chain;
 	/* !!! with Arg^ do!!! */
 	{ Arg->FldD = F; Arg->CompLex = KF->CompLex; Arg->Descend = KF->Descend; }
 	F2 = KF->FldD;
 	if ((F->Typ != F2->Typ) || (F->Typ != 'D') && (F->L != F2->L) ||
 		(F->Typ == 'F') && (F->M != F2->M)) OldError(12);
-	KF = KF->Chain; if (KF != nullptr) { Accept(','); goto label3; }
+	KF = (KeyFldD*)KF->Chain; if (KF != nullptr) { Accept(','); goto label3; }
 label6:
 	if (Lexem == ';')
 	{
@@ -517,7 +523,7 @@ void CheckDuplAlias(pstring Name)
 	LookForK(&Name, CFile);
 	F = FileDRoot;
 	while (F != nullptr) {
-		LookForK(&Name, F); F = F->Chain;
+		LookForK(&Name, F); F = (FileD*)F->Chain;
 	}
 }
 
@@ -546,10 +552,16 @@ label1:
 void RdFileOrAlias(FileD* FD, KeyD* KD)
 {
 	FileDPtr f; RdbDPtr r; KeyDPtr k;
-	TestIdentif(); f = CFile; k = RdFileOrAlias1(f); if (k != nullptr) goto label1;
-	r = CRdb; while (r != nullptr) {
-		f = r->FD; while (f != nullptr) {
-			k = RdFileOrAlias1(f); if (k != nullptr) goto label1; f = f->Chain;
+	TestIdentif(); f = CFile; 
+	k = RdFileOrAlias1(f); 
+	if (k != nullptr) goto label1;
+	r = CRdb; 
+	while (r != nullptr) {
+		f = r->FD; 
+		while (f != nullptr) {
+			k = RdFileOrAlias1(f); 
+			if (k != nullptr) goto label1; 
+			f = (FileD*)f->Chain;
 		}
 		r = r->ChainBack;
 	}
@@ -571,7 +583,7 @@ void SetLDIndexRoot(LinkD* L, LinkD* L2)
 					if ((KF == nullptr) || (Arg->FldD != KF->FldD) || (Arg->CompLex != KF->CompLex)
 						|| (Arg->Descend != KF->Descend)) goto label1;
 					if ((Arg->FldD->Flg & f_Stored) == 0) cmptd = true;
-					Arg = Arg->Chain; KF = KF->Chain;
+					Arg = (KeyFldD*)Arg->Chain; KF = (KeyFldD*)KF->Chain;
 				}
 				L->IndexRoot = K->IndexRoot; goto label2;
 			label1:
@@ -671,7 +683,8 @@ void RdImper(AddDPtr AD)
 		if (AD->LD != nullptr) {
 			KF = AD->LD->ToKey->KFlds;
 			while (KF != nullptr) {
-				if ((KF->FldD->Flg & f_Stored) == 0) OldError(148); KF = KF->Chain;
+				if ((KF->FldD->Flg & f_Stored) == 0) OldError(148); 
+				KF = (KeyFldD*)KF->Chain;
 			}
 		}
 		if (Lexem == '!') { RdLex(); AD->Create = 2; }

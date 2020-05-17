@@ -61,7 +61,7 @@ void PushProcStk()
 		if ((lv->FTyp == 'R' || lv->FTyp == 'S' || lv->FTyp == 'B')
 			&& (lv->Init != nullptr))
 			LVAssignFrml(lv, MyBP, false, lv->Init);
-		lv = lv->Chain;
+		lv = (LocVar*)lv->Chain;
 	}
 }
 
@@ -74,7 +74,7 @@ void PopProcStk()
 			longint* posptr = (longint*)LocVarAd(lv);
 			TWork.Delete(*posptr);
 		}
-		lv = lv->Chain;
+		lv = (LocVar*)lv->Chain;
 	}
 	SetMyBP(MyBP->ChainBack);
 }

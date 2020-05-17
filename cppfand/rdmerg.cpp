@@ -268,7 +268,7 @@ void CopyPrevMFlds_M()
 		if (!FldTypIdentity(M->FldD, F)) OldError(12);
 		MNew = (KeyFldD*)GetStore(sizeof(*MNew));
 		Move(M, MNew, sizeof(*MNew));
-		MNew->FldD = F; ChainLast(IDA[Ii]->MFld, MNew); M = M->Chain;
+		MNew->FldD = F; ChainLast(IDA[Ii]->MFld, MNew); M = (KeyFldD*)M->Chain;
 	}
 	LexWord = S;
 }
@@ -281,7 +281,7 @@ void CheckMFlds_M(KeyFldD* M1, KeyFldD* M2)
 		if (!FldTypIdentity(M1->FldD, M2->FldD) || (M1->Descend != M2->Descend)
 			|| (M1->CompLex != M2->CompLex))
 			OldError(12);
-		M1 = M1->Chain; M2 = M2->Chain;
+		M1 = (KeyFldD*)M1->Chain; M2 = (KeyFldD*)M2->Chain;
 	}
 	if (M2 != nullptr) OldError(30);
 }
@@ -297,8 +297,8 @@ void MakeOldMFlds()
 		case 'R': n = sizeof(double); break;
 		default: n = 256; break;
 		}
-		ChainLast(OldMFlds, GetStore(sizeof(void*) + n));
-		M = M->Chain;
+		ChainLast(OldMFlds, (Chained*)GetStore(sizeof(void*) + n));
+		M = (KeyFldD*)M->Chain;
 	}
 }
 
@@ -309,7 +309,7 @@ void RdAutoSortSK_M(InpD* ID)
 	while (M != nullptr) {
 		SK = (KeyFldD*)GetStore(sizeof(*SK));
 		Move(M, SK, sizeof(SK));
-		ChainLast(ID->SK, SK); M = M->Chain;
+		ChainLast(ID->SK, SK); M = (KeyFldD*)M->Chain;
 	}
 	if (Lexem == ';') { RdLex(); RdKFList(ID->SK, CFile); }
 	if (ID->SK == nullptr) OldError(60);
@@ -384,7 +384,7 @@ bool FindAssignToF(AssignD* A, FieldDescr* F)
 {
 	while (A != nullptr) {
 		if ((A->Kind == _output) && (A->OFldD == F) && !A->Add) return true;
-		A = A->Chain;
+		A = (AssignD*)A->Chain;
 	}
 	return false;
 }
@@ -396,7 +396,7 @@ void MakeImplAssign()
 	FNew = RD->OD->FD->FldD;
 	while (FNew != nullptr) {                 /*implic.assign   name = name*/
 		if ((FNew->Flg && f_Stored != 0) && !FindAssignToF(RD->Ass, FNew)) ImplAssign(RD, FNew);
-		FNew = FNew->Chain;
+		FNew = (FieldDescr*)FNew->Chain;
 	}
 }
 
@@ -404,7 +404,7 @@ void TestIsOutpFile(FileDPtr FD)
 {
 	OutpFD* OFD = OutpFDRoot;
 	while (OFD != nullptr) {
-		if (OFD->FD == FD) OldError(173); OFD = OFD->Chain;
+		if (OFD->FD == FD) OldError(173); OFD = (OutpFD*)OFD->Chain;
 	}
 }
 
@@ -447,7 +447,7 @@ AssignD* RdAssSequ()
 	AssignD* ARoot = nullptr;
 label1:
 	A = (AssignD*)(&ARoot);
-	while (A->Chain != nullptr) A = A->Chain;
+	while (A->Chain != nullptr) A = (AssignD*)A->Chain;
 	A->Chain = RdAssign_M();
 	if (Lexem == ';')
 	{
@@ -476,7 +476,7 @@ void RdOutpRD(OutpRD* RDRoot)
 				else if (OD->Append) Error(31);
 				goto label1;
 			}
-			OD = OD->Chain;
+			OD = (OutpFD*)OD->Chain;
 		}
 		OD = (OutpFD*)GetStore(sizeof(*OD));
 		OD->FD = FD; CFile = FD;

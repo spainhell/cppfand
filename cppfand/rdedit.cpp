@@ -15,7 +15,7 @@ void PushEdit()
 	{
 		E1->V.C1 = 1; E1->V.R1 = 2; E1->V.C2 = TxtCols; E1->V.R2 = TxtRows - 1;
 	}
-	E1->PrevE = E; E = E1;
+	E1->Chain = E; E = E1;
 }
 
 void SToSL(void* SLRoot, pstring s)
@@ -23,7 +23,7 @@ void SToSL(void* SLRoot, pstring s)
 	StringList SL;
 	SL = (StringListEl*)GetStore(s.length() + 5);
 	SL->S = s;
-	ChainLast(SLRoot, SL);
+	ChainLast((Chained*)SLRoot, SL);
 }
 
 void StoreRT(WORD Ln, StringList SL, WORD NFlds)
@@ -94,7 +94,7 @@ label5:
 				str(D->L, 2, s); Set2MsgPar(s, F->Name); Error(79);
 			}
 			if (Col > E->LastCol) Error(102);
-			D = D->Chain;
+			D = (EFldD*)D->Chain;
 		}
 		else {
 			if (!SetStyleAttr(ForwChar, a)) {
@@ -127,7 +127,7 @@ EFldD* FindScanNr(WORD N)
 	D = E->FirstFld; M = 0xffff; D1 = nullptr;
 	while (D != nullptr) {
 		if ((D->ScanNr >= N) && (D->ScanNr < M)) { M = D->ScanNr; D1 = D; }
-		D = D->Chain;
+		D = (EFldD*)D->Chain;
 	}
 	return D1;
 }
@@ -140,8 +140,9 @@ void AutoDesign(FieldList FL)
 	D = (EFldD*)(&E->FirstFld); PrevD = nullptr; NPages = 1; s = ""; Ln = 0; SLRoot = nullptr;
 	Col = E->FrstCol; maxcol = E->LastCol - E->FrstCol;
 	while (FL != nullptr) {
-		F = FL->FldD; FL = FL->Chain;
-		D->Chain = (EFldD*)GetZStore(sizeof(*D)); D = D->Chain; D->ChainBack = PrevD;
+		F = FL->FldD; FL = (FieldListEl*)FL->Chain;
+		D->Chain = (EFldD*)GetZStore(sizeof(*D)); 
+		D = (EFldD*)D->Chain; D->ChainBack = PrevD;
 		PrevD = D;
 		D->FldD = F; D->L = F->L; if (D->L > maxcol) D->L = maxcol;
 		if ((E->FD->Typ == 'C') && (D->L > 44)) D->L = 44; /*catalog pathname*/
@@ -167,10 +168,10 @@ void AutoDesign(FieldList FL)
 	if (NPages == 1) { /* !!! with E->RecTxt^ do!!! */
 		auto er = *E->RecTxt;
 		if (er.N == 2) {
-			E->HdTxt = er.SL; er.SL = er.SL->Chain;
+			E->HdTxt = er.SL; er.SL = (StringList)er.SL->Chain;
 			E->HdTxt->Chain = nullptr;
 			E->NHdTxt = 1; er.N = 1; D = E->FirstFld;
-			while (D != nullptr) { D->Ln--; D = D->Chain; }
+			while (D != nullptr) { D->Ln--; D = (EFldD*)D->Chain; }
 			if (E->Rows == 1) { E->NHdTxt = 0; E->HdTxt = nullptr; }
 		}
 		else if (er.N < E->Rows) {
@@ -275,7 +276,7 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 	if (EO->StartFieldZ != nullptr) {
 		s = TrailChar(' ', RunShortStr(EO->StartFieldZ)); D = E->FirstFld;
 		while (D != nullptr) {
-			if (SEquUpcase(D->FldD->Name, s)) E->StartFld = *D; D = D->Chain;
+			if (SEquUpcase(D->FldD->Name, s)) E->StartFld = *D; D = (EFldD*)D->Chain;
 		};
 	}
 	E->WatchDelay = RunInt(EO->WatchDelayZ) * 18;
@@ -298,7 +299,7 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 		b = FieldInList(F, EO->Dupl); if (EO->NegDupl) b = !b;
 		if (b && (F->Flg && f_Stored != 0)) D->Dupl = true;
 		if (b || (F->Flg && f_Stored != 0)) E->NDuplSet++;
-		D = D->Chain;
+		D = (EFldD*)D->Chain;
 	}
 	if (E->OnlyTabs && (E->NTabsSet == 0)) {
 		E->NoDelete = true; if (!E->OnlyAppend) E->NoCreate = true;
@@ -313,14 +314,14 @@ EFldD* FindEFld_E(FieldDescr* F)
 {
 	EFldD* D;
 	D = E->FirstFld;
-	while (D != nullptr) { if (D->FldD == F) goto label1; D = D->Chain; }
+	while (D != nullptr) { if (D->FldD == F) goto label1; D = (EFldD*)D->Chain; }
 label1:
 	return D;
 }
 
 void ZeroUsed()
 {
-	EFldD* D = E->FirstFld; while (D != nullptr) { D->Used = false; D = D->Chain; };
+	EFldD* D = E->FirstFld; while (D != nullptr) { D->Used = false; D = (EFldD*)D->Chain; };
 }
 
 EFldD* LstUsedFld()
@@ -364,7 +365,7 @@ void TestedFlagOff()
 	while (F != nullptr)
 	{
 		F->Typ = char(F->Typ & 0x7F);
-		F = F->Chain;
+		F = (FieldDescr*)F->Chain;
 	}
 }
 
@@ -378,13 +379,13 @@ void SetFrmlFlags(FrmlPtr Z)
 		if (Z->LD != nullptr)
 		{
 			Arg = Z->LD->Args;
-			while (Arg != nullptr) { SetFlag(Arg->FldD); Arg = Arg->Chain; }
+			while (Arg != nullptr) { SetFlag(Arg->FldD); Arg = (KeyFldD*)Arg->Chain; }
 		}
 		break;
 	}
 	case _userfunc: {
 		fl = Z->FrmlL; while (fl != nullptr) {
-			SetFrmlFlags(fl->Frml); fl = fl->Chain;
+			SetFrmlFlags(fl->Frml); fl = (FrmlListEl*)fl->Chain;
 		}
 		break;
 	}
@@ -529,7 +530,7 @@ void NewChkKey()
 			while (KF != nullptr) {
 				D = FindEFld_E(KF->FldD);
 				if (D != nullptr) D->Used = true;
-				KF = KF->Chain;
+				KF = (KeyFldD*)KF->Chain;
 			}
 			D = LstUsedFld(); if (D != nullptr) {
 				KL = (KeyListEl*)GetStore(sizeof(*KL));

@@ -44,23 +44,20 @@ typedef FuncD* FuncDPtr;
 typedef XWKey* WKeyDPtr;
 
 
-struct FieldListEl // r32
+struct FieldListEl : public Chained // r32
 {
-	FieldListEl* Chain;
 	FieldDescr* FldD;
 };
 typedef FieldListEl* FieldList;
 
-struct FrmlListEl // ø. 34
+struct FrmlListEl : public Chained // ø. 34
 {
-	FrmlListEl* Chain;
 	FrmlElem* Frml;
 };
 typedef FrmlListEl* FrmlList;
 
-struct StringListEl // ø. 38
+struct StringListEl : public Chained // ø. 38
 {
-	StringListEl* Chain;
 	pstring S;
 };
 typedef StringListEl* StringList;
@@ -72,9 +69,9 @@ struct FloatPtrListEl // r42
 };
 typedef FloatPtrListEl* FloatPtrList;
 
-struct KeyListEl // ø. 49
+struct KeyListEl : public Chained // ø. 49
 {
-	KeyListEl* Chain;
+	//KeyListEl* Chain;
 	KeyDPtr Key;
 };
 typedef KeyListEl* KeyList;
@@ -111,13 +108,13 @@ struct FrmlElem // ø. 51
 };
 typedef FrmlElem* FrmlPtr;
 
-struct KeyInD // r89
+struct KeyInD : public Chained // r89
 {
-	KeyInD* Chain;
-	FrmlList FL1, FL2;
-	longint XNrBeg, N;
-	pstring* X1;
-	pstring* X2;
+	FrmlListEl* FL1 = nullptr;
+	FrmlListEl* FL2 = nullptr;
+	longint XNrBeg = 0, N = 0;
+	pstring* X1 = nullptr;
+	pstring* X2 = nullptr;
 };
 
 struct SumElem // r95
@@ -129,9 +126,8 @@ struct SumElem // r95
 };
 typedef SumElem* SumElPtr;
 
-struct FieldDescr // ø. 100
+struct FieldDescr : public Chained // ø. 100
 {
-	FieldDescr* Chain = nullptr;
 	char Typ = 0, FrmlTyp = 0;
 	BYTE L = 0, M = 0, NBytes = 0, Flg = 0;
 	// case boolean {Stored} of True:(Displ:integer); False:(Frml:FrmlPtr; Name:string[1]{ curr.length });
@@ -141,9 +137,8 @@ struct FieldDescr // ø. 100
 };
 typedef FieldDescr* FieldDPtr;
 
-struct KeyFldD // ø. 108
+struct KeyFldD : public Chained // ø. 108
 {
-	KeyFldD* Chain = nullptr;
 	FieldDescr* FldD = nullptr;
 	bool CompLex = false, Descend = false;
 };
@@ -155,9 +150,9 @@ struct RdbPos // ø. 113
 	WORD IRec = 0;
 };
 
-struct ChkD // ø. 115
+struct ChkD : public Chained // ø. 115
 {
-	ChkD* Chain = nullptr;
+	// ChkD* Chain = nullptr;
 	FrmlPtr Bool;
 	pstring* HelpName = nullptr;
 	FrmlPtr TxtZ;
@@ -165,15 +160,18 @@ struct ChkD // ø. 115
 };
 typedef ChkD* ChkDPtr;
 
-struct DepD // r122
+struct DepD : Chained // r122
 {
-	DepD* Chain; FrmlPtr Bool, Frml;
+	//DepD* Chain; 
+	FrmlPtr Bool, Frml;
 };
 typedef DepD* DepDPtr;
 
-struct ImplD
+struct ImplD : public Chained
 {
-	ImplD* Chain; FieldDPtr FldD; FrmlPtr Frml;
+	//ImplD* Chain; 
+	FieldDPtr FldD; 
+	FrmlPtr Frml;
 };
 typedef ImplD* ImplDPtr;
 
@@ -231,11 +229,11 @@ private:
 };
 typedef TFile* TFilePtr;
 
-class FileD // ø. 177
+class FileD : public Chained // ø. 177
 {
 public:
 	FileD();
-	FileD* Chain = nullptr;
+	// FileD* Chain = nullptr;
 	WORD RecLen = 0;
 	void* RecPtr = nullptr;
 	longint NRecs = 0;
@@ -297,7 +295,7 @@ struct LinkD // ø. 220
 };
 typedef LinkD* LinkDPtr;
 
-struct LocVarBlkD // ø. 228
+struct LocVarBlkD : public Chained// ø. 228
 {
 	LocVar* Root;
 	WORD NParam, Size;
@@ -312,9 +310,8 @@ struct FuncD // ø. 233
 	pstring Name;
 };
 
-struct LocVar // ø. 239
+struct LocVar : public Chained // ø. 239
 {
-	LocVar* Chain;
 	bool IsPar;
 	char FTyp;
 	FileD* FD;

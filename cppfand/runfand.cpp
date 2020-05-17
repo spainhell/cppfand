@@ -254,10 +254,10 @@ void CompileHelpCatDcl()
 	CatFD = CFile; FileDRoot = nullptr;
 	CatRdbName = CatFD->FldD;
 	if (CatRdbName != nullptr) {
-		CatFileName = CatRdbName->Chain;
-		CatArchiv = CatFileName->Chain;
-		CatPathName = CatArchiv->Chain;
-		CatVolume = CatPathName->Chain;
+		CatFileName = (FieldDescr*)CatRdbName->Chain;
+		CatArchiv = (FieldDescr*)CatFileName->Chain;
+		CatPathName = (FieldDescr*)CatArchiv->Chain;
+		CatVolume = (FieldDescr*)CatPathName->Chain;
 	}
 	MarkStore(AfterCatFD); ReleaseStore2(p2);
 }

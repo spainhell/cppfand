@@ -9,9 +9,9 @@ struct Instr;
 struct EdExitD;
 
 enum MInstrCode { _zero, _move, _output, _locvar, _parfile, _ifthenelseM };
-struct AssignD
+struct AssignD : public Chained
 {
-	AssignD* Chain;
+	//AssignD* Chain;
 	MInstrCode Kind;
 	FieldDPtr FldD;
 	BYTE& ToPtr, FromPtr; WORD L;
@@ -24,9 +24,9 @@ struct AssignD
 	AssignD* ElseInstr;
 };
 
-struct OutpFD
+struct OutpFD : public Chained
 {
-	OutpFD* Chain;
+	//OutpFD* Chain;
 	FileDPtr FD;
 	LockMode Md;
 	void* RecPtr;
@@ -37,17 +37,16 @@ struct OutpFD
 #endif
 };
 
-struct OutpRD
+struct OutpRD : public Chained
 {
-	OutpRD* Chain;
+	//OutpRD* Chain;
 	OutpFD* OD; /*nullptr=dummy*/
 	FrmlPtr Bool;
 	AssignD* Ass;
 };
 
-struct ConstListEl
+struct ConstListEl : public Chained
 {
-	ConstListEl* Chain = nullptr;
 	pstring S = "";
 	double R = 0;
 	bool B = false;
@@ -113,18 +112,18 @@ struct RprtOpt
 	bool Edit, PrintCtrl;
 };
 
-struct RFldD
+struct RFldD : public Chained
 {
-	RFldD* Chain;
+	//RFldD* Chain;
 	char FrmlTyp, Typ;    /*R,F,D,T*/
 	bool BlankOrWrap; /*long date "DD.MM.YYYY"*/
 	FrmlPtr Frml;
 	pstring Name = pstring(1); /*curr. length*/
 };
 
-struct BlkD
+struct BlkD : public Chained
 {
-	BlkD* Chain;
+	// BlkD* Chain;
 	FrmlPtr Bool;
 	SumElPtr Sum;
 	char* Txt;          /*sequence of pstrings*/
@@ -150,9 +149,9 @@ struct EdExKeyD
 	WORD KeyCode;
 };
 
-struct EdExitD
+struct EdExitD : Chained
 {
-	EdExitD* Chain = nullptr;
+	//EdExitD* Chain = nullptr;
 	EdExKeyD* Keys = nullptr;;
 	bool AtWrRec = false, AtNewRec = false, NegFlds = false;
 	FieldList Flds = nullptr;;   /*in edittxt !used*/
@@ -193,9 +192,9 @@ struct EditOpt
 	KeyDPtr SelKey, ViewKey;
 };
 
-struct EFldD
+struct EFldD : public Chained
 {
-	EFldD* Chain;
+	//EFldD* Chain;
 	EFldD* ChainBack;
 	FieldDPtr FldD;
 	ChkDPtr Chk;
@@ -208,16 +207,15 @@ struct EFldD
 	bool Ed(bool IsNewRec);
 };
 
-struct ERecTxtD
+struct ERecTxtD : public Chained
 {
-	ERecTxtD* Chain;
 	WORD N;
 	StringList SL;
 };
 
-struct EditD
+struct EditD : Chained
 {
-	EditD* PrevE;
+	// EditD* PrevE; - toto bude Chain ...
 	FileD* FD;
 	LockMode OldMd;
 	bool IsUserForm;
@@ -317,9 +315,9 @@ struct CopyD
 	BYTE Mode;
 };
 
-struct ChoiceD
+struct ChoiceD : Chained
 {
-	ChoiceD* Chain = nullptr;
+	//ChoiceD* Chain = nullptr;
 	pstring* HelpName = nullptr;
 	bool Displ = false, DisplEver = false, Enabled = false, TxtConst = false;
 	FrmlPtr Bool = nullptr;
@@ -328,9 +326,9 @@ struct ChoiceD
 	pstring* Txt = nullptr;
 };
 
-struct WrLnD
+struct WrLnD : public Chained
 {
-	WrLnD* Chain;
+	//WrLnD* Chain;
 	FrmlPtr Frml;
 	char Typ; /*S,B,F,D*/
 	BYTE N, M;
@@ -346,23 +344,23 @@ struct LockD
 	longint N;
 };
 
-struct GraphVD
+struct GraphVD : public Chained
 {
-	GraphVD* Chain;
+	//GraphVD* Chain;
 	FrmlPtr XZ, YZ, Velikost; /*float*/
 	FrmlPtr BarPis, Text; /*pstring*/
 };
 
-struct GraphWD
+struct GraphWD : public Chained
 {
-	GraphWD* Chain;
+	//GraphWD* Chain;
 	FrmlPtr XZ, YZ, XK, YK; /*float*/
 	FrmlPtr BarPoz, BarPis, Text; /*pstring*/
 };
 
-struct GraphRGBD
+struct GraphRGBD : public Chained
 {
-	GraphRGBD* Chain;
+	// GraphRGBD* Chain;
 	FrmlPtr Barva; /*pstring*/
 	FrmlPtr R, G, B; /*float*/
 };
@@ -403,9 +401,9 @@ struct TypAndFrml
 	FrmlPtr TxtFrml; pstring Name; // if RecPtr != nullptr
 };
 
-struct Instr // POZOR konflikt názvù viz níže
+struct Instr : public Chained// POZOR konflikt názvù viz níže
 {
-	Instr* Chain = nullptr;
+	//Instr* Chain = nullptr;
 	PInstrCode Kind;
 	FrmlPtr HdLine;
 	RdbDPtr HelpRdb;

@@ -97,7 +97,7 @@ void PromptAutoRprt(RprtOpt* RO)
 			pstring tmpStr = SelMark;
 			ww.PutSelect(tmpStr + F->Name);
 		}
-		FL = FL->Chain;
+		FL = (FieldList)FL->Chain;
 	}
 	CFile = RO->FDL.FD; if (!ww.SelFieldList(36, true, RO2->Flds)) return;
 	if ((RO->FDL.Cond == nullptr) &&
@@ -147,7 +147,7 @@ void AssignRecVar(LocVar* LV1, LocVar* LV2, AssignD* A)
 			break;
 		}
 		}
-		A = A->Chain;
+		A = (AssignD*)A->Chain;
 	}
 	CFile = FD1; CRecPtr = RP1;
 	SetUpdFlag();
@@ -206,7 +206,7 @@ void WritelnProc(Instr* PD)
 		if (LF >= 2) t = t + x;
 		else printf("%s", x.c_str());
 	label1:
-		W = W->Chain;
+		W = (WrLnD*)W->Chain;
 	}
 label2:
 	switch (LF) {
@@ -775,14 +775,14 @@ void ResetCatalog()
 	FileDPtr cf; RdbDPtr r;
 	cf = CFile; r = CRdb;
 	while (CRdb != nullptr) {
-		CFile = CRdb->FD->Chain;
+		CFile = (FileD*)CRdb->FD->Chain;
 		while (CFile != nullptr) {
 			CloseFile();
 			CFile->CatIRec = GetCatIRec(CFile->Name, CFile->Typ = '0');
 #ifdef FandSQL
 			SetIsSQLFile();
 #endif
-			CFile = CFile->Chain;
+			CFile = (FileD*)CFile->Chain;
 		}
 		CRdb = CRdb->ChainBack;
 	}
@@ -965,7 +965,7 @@ void RunInstr(Instr* PD)
 		case _asgnxnrecs: PD->xnrIdx->Release(); break;
 		case _portout: PortOut(RunBool(PD->IsWord), WORD(RunInt(PD->Port)), WORD(RunInt(PD->PortWhat))); break;
 		}
-		PD = PD->Chain;
+		PD = (Instr*)PD->Chain;
 	}
 }
 
@@ -1013,7 +1013,7 @@ void CallProcedure(Instr* PD)
 			else CFile = PD->TArg[i].FD;
 			lv1 = lv; while (lv1 != nullptr) {
 				if ((lv1->FTyp == 'i' || lv1->FTyp == 'r') && (lv1->FD == lv->FD)) lv1->FD = CFile;
-				lv1 = lv1->Chain;
+				lv1 = (LocVar*)lv1->Chain;
 			}
 			lv->FD = CFile; FDLocVarAllowed = true;
 			break;
@@ -1027,14 +1027,14 @@ void CallProcedure(Instr* PD)
 			break;
 		}
 		}
-		lv = lv->Chain;
+		lv = (LocVar*)lv->Chain;
 	}
 	lv1 = lv; while (lv != nullptr) {
 		if (lv->FTyp == 'r') {
 			CFile = lv->FD; CRecPtr = GetRecSpace();
 			SetTWorkFlag(); ZeroAllFlds(); ClearDeletedFlag(); lv->RecPtr = CRecPtr;
 		}
-		lv = lv->Chain;
+		lv = (LocVar*)lv->Chain;
 	}
 	ProcMyBP = MyBP; pd1 = ReadProcBody(); FDLocVarAllowed = false;
 	lv = lv1; while (lv != nullptr) {
@@ -1044,7 +1044,7 @@ void CallProcedure(Instr* PD)
 			auto tmp = (XWKey*)lv->RecPtr;
 			tmp->Open(hX->KFlds, true, false);
 		}
-		lv = lv->Chain;
+		lv = (LocVar*)lv->Chain;
 	}
 	ReleaseStore2(p2);
 	RunProcedure(pd1);
@@ -1069,13 +1069,13 @@ void CallProcedure(Instr* PD)
 		case 'r': { CFile = lv->FD; ClearRecSpace(lv->RecPtr); break; }
 		case 'i': { CFile = lv->FD; WKeyDPtr(lv->RecPtr)->Close(); break; };
 		}
-		i++; lv = lv->Chain;
+		i++; lv = (LocVar*)lv->Chain;
 	}
 	PopProcStk();
 	ProcMyBP = (ProcStkD*)oldprocbp;
 	LinkDRoot = ld;
-	CFile = lstFD->Chain;
-	while (CFile != nullptr) { CloseFile(); CFile = CFile->Chain; }
+	CFile = (FileD*)lstFD->Chain;
+	while (CFile != nullptr) { CloseFile(); CFile = (FileD*)CFile->Chain; }
 	lstFD->Chain = nullptr;
 	ReleaseBoth(p1, p2);
 }
