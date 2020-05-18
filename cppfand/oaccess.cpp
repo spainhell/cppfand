@@ -138,7 +138,8 @@ label1:
 #endif
 	TestCFileError();
 	if (CFile->TF != nullptr) /* !!! with TF^ do!!! */ {
-		CExtToT(); if (CFile->WasRdOnly) SetFileAttr(GetFileAttr() & 0x26);
+		CExtToT();
+		if (CFile->WasRdOnly) SetFileAttr(GetFileAttr() & 0x26);
 	label2:
 		CFile->TF->Handle = OpenH(_isoldfile, CFile->UMode);
 		if (HandleError == 2) {
@@ -149,7 +150,8 @@ label1:
 				goto label2;
 			}
 			if (CFile->IsDynFile) {
-				CloseClearH(CFile->Handle); result = false; return result;
+				CloseClearH(CFile->Handle);
+				result = false; return result;
 			}
 		}
 		if (HandleError != 0) goto label4;
@@ -166,7 +168,10 @@ label1:
 		}
 		if (HandleError != 0) {
 		label4:
-			n = HandleError; CloseClearHCFile(); HandleError = n; TestCPathError();
+			n = HandleError;
+			CloseClearHCFile();
+			HandleError = n;
+			TestCPathError();
 		}
 		if (FileSizeH(CFile->XF->Handle) < 512) CFile->XF->SetNotValid();
 	}

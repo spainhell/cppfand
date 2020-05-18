@@ -395,7 +395,7 @@ struct TT1Page
 
 // nahraje prvnich 24 Bytu ze souboru do struktury
 // (navíc i hodnotu HasCoproc, aby byla pripravena pro porovnani)
-void TT1Page::Load(BYTE* input512) 
+void TT1Page::Load(BYTE* input512)
 {
 	size_t index = 0;
 	memcpy(&Signum, &input512[index], 2); index += 2;
@@ -699,8 +699,7 @@ void CExtToT()
 
 void XFNotValid()
 {
-	XFile* XF;
-	XF = CFile->XF;
+	XFile* XF = CFile->XF;
 	if (XF == nullptr) return;
 	if (XF->Handle == nullptr) RunError(903);
 	XF->SetNotValid();
@@ -734,7 +733,7 @@ longint XNRecs(KeyDPtr K)
 void ReadRec(longint N)
 {
 	/* with CFile^ do */
-	RdWrCache(true, CFile->Handle, CFile->NotCached(), 
+	RdWrCache(true, CFile->Handle, CFile->NotCached(),
 		(N - 1) * CFile->RecLen + CFile->FrstDispl, CFile->RecLen, CRecPtr);
 }
 
@@ -794,6 +793,11 @@ void DeleteAllIndexes(longint RecNr)
 
 bool IsNullValue(void* p, WORD l)
 {
+	BYTE* pb = (BYTE*)p;
+	for (size_t i = 0; i < l; i++)
+	{
+		if (pb[i] == 0xFF) return true;
+	}
 	return false;
 }
 
@@ -1050,8 +1054,9 @@ void S_(FieldDPtr F, pstring S)
 void ZeroAllFlds()
 {
 	FillChar(CRecPtr, CFile->RecLen, 0);
-	FieldDPtr F = CFile->FldD; while (F != nullptr) {
-		if ((F->Flg && f_Stored != 0) && (F->Typ == 'A')) S_(F, "");
+	FieldDPtr F = CFile->FldD;
+	while (F != nullptr) {
+		if (((F->Flg & f_Stored) != 0) && (F->Typ == 'A')) S_(F, "");
 		F = (FieldDescr*)F->Chain;
 	}
 }
@@ -1188,19 +1193,19 @@ LongStr* _LongS(FieldDPtr F)
 
 pstring _ShortS(FieldDPtr F)
 {
-	void* P = nullptr; WORD* POfs = (WORD*)P; /*absolute P;*/
+	void* P = CRecPtr;;
 	pstring S;
-	if (F->Flg && f_Stored != 0) {
+	if ((F->Flg & f_Stored) != 0) {
 		WORD l = F->L;
-		S[0] = char(l);
-		P = CRecPtr;
-		POfs += F->Displ;
+		S[0] = l;
+		WORD* POfs = (WORD*)P; /*absolute P;*/
+		*POfs += F->Displ;
 		switch (F->Typ) {
 		case 'A':
 		case 'N': {
 			if (F->Typ == 'A') {
 				Move(P, &S[1], l);
-				if (F->Flg && f_Encryp != 0) Code(&S[1], l);
+				if ((F->Flg & f_Encryp) != 0) Code(&S[1], l);
 				if (IsNullValue(&S[2], l)) FillChar(&S[0], l, ' ');
 			}
 			else if (IsNullValue(P, F->NBytes)) FillChar(&S[0], l, ' ');
@@ -1280,14 +1285,13 @@ double _R(FieldDPtr F)
 bool _B(FieldDPtr F)
 {
 	bool result;
-	void* p = nullptr;
+	void* p = CRecPtr;
 	WORD* O = (WORD*)p;
 	unsigned char* CP = (unsigned char*)p;
-
-	if (F->Flg && f_Stored != 0) {
-		p = CRecPtr; O += F->Displ;
+	if ((F->Flg & f_Stored) != 0) {
+		*O += F->Displ;
 		if (CFile->Typ == 'D') result = *CP == 'Y' || *CP == 'y' || *CP == 'T' || *CP == 't';
-		else if ((*CP == '\0') || (*CP == 0xff)) result = false;
+		else if ((*CP == '\0') || (*CP == 0xFF)) result = false;
 		else result = true;
 	}
 	else result = RunBool(F->Frml);
@@ -1296,17 +1300,19 @@ bool _B(FieldDPtr F)
 
 void R_(FieldDPtr F, double R)
 {
-	void* p = nullptr; pstring s; WORD m; longint l;
+	void* p = CRecPtr;
+	pstring s; WORD m; longint l;
 	WORD* O = (WORD*)p;
 	integer* IP = (integer*)p;
-
-	if (F->Flg && f_Stored != 0) {
-		p = CRecPtr; O += F->Displ; m = F->M;
+	if ((F->Flg & f_Stored) != 0) {
+		O += F->Displ;
+		m = F->M;
 		switch (F->Typ) {
 		case 'F': {
 			if (CFile->Typ == 'D') {
 				if (F->Flg && f_Comma != 0) R = R / Power10[m];
-				str(F->NBytes, s); Move(&s[1], p, F->NBytes);
+				str(F->NBytes, s);
+				Move(&s[1], p, F->NBytes);
 			}
 			else {
 				if (F->Flg && f_Comma == 0) R = R * Power10[m];
@@ -1316,8 +1322,16 @@ void R_(FieldDPtr F, double R)
 			} }
 		case 'D': {
 			switch (CFile->Typ) {
-			case '8': { if (trunc(R) == 0) *IP = 0; else *IP = trunc(R - FirstDate); break; }
-			case 'D': { s = StrDate(R, "YYYYMMDD"); Move(&s[1], p, 8); break; }
+			case '8': {
+				if (trunc(R) == 0) *IP = 0;
+				else *IP = trunc(R - FirstDate);
+				break;
+			}
+			case 'D': {
+				s = StrDate(R, "YYYYMMDD");
+				Move(&s[1], p, 8);
+				break;
+			}
 			default: p = &R; break;
 			}
 		}
@@ -1328,10 +1342,12 @@ void R_(FieldDPtr F, double R)
 
 void B_(FieldDPtr F, bool B)
 {
-	void* p = nullptr;
-	WORD* O = (WORD*)p; bool* BP = (bool*)p; char* CP = (char*)p;
+	void* p = CRecPtr;
+	WORD* O = (WORD*)p;
+	bool* BP = (bool*)p;
+	char* CP = (char*)p;
 	if ((F->Typ == 'B') && (F->Flg && f_Stored != 0)) {
-		p = CRecPtr; *O += F->Displ;
+		*O += F->Displ;
 		if (CFile->Typ == 'D')
 		{
 			if (B) *CP = 'T'; else *CP = 'F';
@@ -1519,7 +1535,7 @@ void RandArrayByBytes(void* arr, size_t len)
 
 void TFile::RdPrefix(bool Chk)
 {
-	
+
 	TT1Page T;
 	BYTE* TX = (BYTE*)&T;
 	longint* TNxtAvailPage = (longint*)&T; /* .DBT */
@@ -1549,9 +1565,19 @@ void TFile::RdPrefix(bool Chk)
 
 	// nactena data jsou porad v poli, je nutne je nahrat do T
 	T.Load(header512);
-	Move(&T.FreePart, &FreePart, 23);
+
+	// Move(&T.FreePart, &FreePart, 23);
+	FreePart = T.FreePart; // 4B
+	Reserved = T.Rsrvd1; // 1B
+	CompileProc = T.CompileProc; // 1B
+	CompileAll = T.CompileAll; // 1B
+	IRec = T.IRec; // 2B
+	FreeRoot = T.FreeRoot; // 4B
+	MaxPage = T.MaxPage; // 4B
+	TimeStmp = T.TimeStmp; // 6B v Pascalu, 8B v C++ 
+	
 	if (!IsWork && (CFile == Chpt) && ((T.HasCoproc != HasCoproc) ||
-		(CompArea((char*)Version[0], &T.Version, 4) != _equ))) CompileAll = true;
+		(CompArea(Version, T.Version, 4) != _equ))) CompileAll = true;
 	if (T.OldMaxPage == 0xffff) goto label1;
 	else {
 		FreeRoot = 0;
@@ -1602,7 +1628,8 @@ void TFile::RdPrefix(bool Chk)
 		Move(T.PwNew, PwCode, 20);
 		Move(&T.PwNew[20], Pw2Code, 20);
 	}
-	Code(PwCode, 40);
+	Code(PwCode, 20);
+	Code(Pw2Code, 20);
 	if ((FreePart < MPageSize) || (FreePart > ML) || (FS < ML) ||
 		(FreeRoot > MaxPage) || (MaxPage == 0)) {
 		Err(893, false);
@@ -1716,7 +1743,8 @@ void TFile::Delete(longint Pos)
 	if (Pos <= 0) return;
 	if ((Format != T00Format) || NotCached()) return;
 	if ((Pos < MPageSize) || (Pos >= MLen)) { Err(889, false); return; }
-	PosPg = Pos & (0xFFFFFFFF << MPageShft); PosI = Pos & (MPageSize - 1);
+	PosPg = Pos & (0xFFFFFFFF << MPageShft);
+	PosI = Pos & (MPageSize - 1);
 	RdWrCache(true, Handle, NotCached(), PosPg, MPageSize, X);
 	wp = (WORD*)(&X[PosI]); l = *wp;
 	if (l <= MPageSize - 2) {       /* small text on 1 page*/
@@ -1762,11 +1790,14 @@ LongStr* TFile::Read(WORD StackNr, longint Pos)
 	if (Pos <= 0 /*OldTxt=-1 in RDB!*/) goto label11;
 	else switch (Format) {
 	case DbtFormat: {
-		s = (LongStr*)GetStore(32770); Pos = Pos << MPageShft; p = &s->A; l = 0;
+		s = (LongStr*)GetStore(32770);
+		Pos = Pos << MPageShft;
+		p = &s->A; l = 0;
 		while (l <= 32768 - MPageSize) {
 			RdWrCache(true, Handle, NotCached(), Pos, MPageSize, p);
 			for (i = 1; i < MPageSize; i++) { if ((*p)[i] == 0x1A) goto label0; l++; }
-			pofs += MPageSize; Pos += MPageSize;
+			pofs += MPageSize;
+			Pos += MPageSize;
 		}
 		l--;
 	label0:
@@ -1860,9 +1891,9 @@ label1:
 void TFile::RdWr(bool ReadOp, longint Pos, WORD N, void* X)
 {
 	WORD Rest, L; longint NxtPg;
-	void* P = nullptr;
+	void* P = X;
 	WORD* POfs = (WORD*)P;
-	Rest = MPageSize - (WORD(Pos) && (MPageSize - 1)); P = X;
+	Rest = MPageSize - (WORD(Pos) & (MPageSize - 1));
 	while (N > Rest) {
 		L = Rest - 4;
 		RdWrCache(ReadOp, Handle, NotCached(), Pos, L, P);
@@ -1871,7 +1902,9 @@ void TFile::RdWr(bool ReadOp, longint Pos, WORD N, void* X)
 		RdWrCache(ReadOp, Handle, NotCached(), Pos + L, 4, &NxtPg);
 		Pos = NxtPg;
 		if (ReadOp && ((Pos < MPageSize) || (Pos + MPageSize > MLen))) {
-			Err(890, false); FillChar(P, N, ' '); return;
+			Err(890, false);
+			FillChar(P, N, ' ');
+			return;
 		}
 		Rest = MPageSize;
 	}
@@ -1880,7 +1913,7 @@ void TFile::RdWr(bool ReadOp, longint Pos, WORD N, void* X)
 
 void TFile::GetMLen()
 {
-	MLen = abs((MaxPage + 1) << MPageShft);
+	MLen = (MaxPage + 1) << MPageShft;
 }
 
 FileD::FileD()
@@ -1907,7 +1940,7 @@ bool FileD::NotCached()
 @1:  cmp es:[di].FileD.LMode,ExclMode; je @2;
 	 mov ax,1;
 @2:  end;*/
-	return false;
+	return true;
 }
 
 WORD FileD::GetNrKeys()
@@ -1936,7 +1969,7 @@ void XString::StoreReal(double R, KeyFldD* KF)
 		StoreD(&R, b);
 		return;
 	}
-	if (X->Flg && f_Comma == 0) R = R * Power10[X->M];
+	if ((X->Flg & f_Comma) == 0) R = R * Power10[X->M];
 	WORD n = X->L - 1;
 	if (X->M > 0) n--;
 	n = TabF[n];
@@ -1997,7 +2030,8 @@ bool XString::PackFrml(FrmlList FL, KeyFldD* KF)
 		case 'R':StoreReal(RunReal(Z), KF); break;
 		case 'B':StoreBool(RunBool(Z), KF); break;
 		}
-		KF = (KeyFldD*)KF->Chain; FL = (FrmlListEl*)FL->Chain;
+		KF = (KeyFldD*)KF->Chain;
+		FL = (FrmlListEl*)FL->Chain;
 	}
 	return KF != nullptr;
 }
@@ -2102,12 +2136,11 @@ bool XPage::Overflow()
 
 pstring XPage::StrI(WORD I)
 {
-	XItemPtr x = nullptr;
+	XItemPtr x = XItemPtr(&A);
 	WORD* xofs = (WORD*)x; // absolute x
 	WORD o = 0;
 	pstring* s = nullptr;
 
-	x = XItemPtr(&A);
 	o = Off();
 	//TODO: asm les di, @result; mov s.WORD, di; mov s[2].WORD, es;
 
@@ -2319,12 +2352,12 @@ bool XKey::Search(XString& XX, bool AfterEqu, longint& RecNr)
 			searchResult = false;
 			ReleaseStore(p);
 			return searchResult;
-		}
+	}
 		if (iItem > nItems) page = p->GreaterPage;
 		else page = x->DownPage;
 		XPathN++;
 		goto label1;
-	}
+}
 	return searchResult;
 }
 
@@ -3001,9 +3034,9 @@ void XScan::SeekRec(longint I)
 			if (hasSQLFilter) z = Bool else z = nullptr;
 			InpReset(Key, SK, KIRoot, z, withT);
 			EOF = AtEnd; IRec = 0; NRecs = 0x20000000;
-		}
+}
 		return;
-	}
+}
 #endif
 	if ((Kind == 2) && (OwnerLV != nullptr)) {
 		IRec = 0;
@@ -3030,7 +3063,7 @@ void XScan::SeekRec(longint I)
 			break;
 		}
 		}
-}
+	}
 
 bool DeletedFlag()  // r771 ASM
 {
@@ -3171,7 +3204,7 @@ pstring* FieldDMask(FieldDPtr F)
 void* GetRecSpace()
 {
 	//return GetZStore(CFile->RecLen + 2);
-	return new BYTE*[CFile->RecLen];
+	return new BYTE * [CFile->RecLen];
 }
 
 void* GetRecSpace2()
@@ -3273,5 +3306,3 @@ void ResetCompilePars()
 	IdxLocVarAllowed = false;
 	PrevCompInp = nullptr;
 }
-
-

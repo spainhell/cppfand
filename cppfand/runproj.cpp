@@ -747,15 +747,16 @@ void ResetRdOnly()
 
 void CreateOpenChpt(pstring* Nm, bool create, wwmix* ww)
 {
-	RdbD* R; bool top; pstring p; pstring s; TFile* oldChptTF;
-	integer i, n; pstring nr(10); pstring Nm1(8); FileUseMode um;
+	pstring p; pstring s;
+	integer i = 0, n = 0; pstring nr(10); pstring Nm1(8);
+	FileUseMode um = Closed;
 
-	top = CRdb = nullptr;
+	bool top = (CRdb == nullptr);
 	FileDRoot = nullptr;
 	Chpt = nullptr;
 	//R = (RdbD*)GetZStore(sizeof(*R));
-	R = new RdbD();
-	oldChptTF = ChptTF;
+	RdbD* R = new RdbD();
+	TFile* oldChptTF = ChptTF;
 	R->ChainBack = CRdb; R->OldLDRoot = LinkDRoot; R->OldFCRoot = FuncDRoot;
 	MarkStore2(R->Mark2);
 	RdMsg(51); s = MsgLine; RdMsg(48); 
@@ -775,7 +776,7 @@ void CreateOpenChpt(pstring* Nm, bool create, wwmix* ww)
 	SetChptFldDPtr(); 
 	if (!spec.RDBcomment) ChptTxt->L = 1;
 	SetMsgPar(p);
-	if (top) { UserName = ""; UserCode = 0; AccRight = 0; goto label2; }
+	if (top) { UserName = ""; UserCode = 0; AccRight[0] = 0; goto label2; }
 	if (CRdb->ChainBack != nullptr)	CRdb->HelpFD = CRdb->ChainBack->HelpFD;
 label1:
 	ChDir(R->RdbDir);
@@ -790,7 +791,8 @@ label2:
 	if (IsTestRun || !create) um = Exclusive; else um = RdOnly;
 	if (OpenF(um)) {
 		if (ChptTF->CompileAll) ResetRdOnly();
-		else if (!top && (ChptTF->TimeStmp < oldChptTF->TimeStmp)) {
+		else if (!top && oldChptTF != nullptr && (ChptTF->TimeStmp < oldChptTF->TimeStmp)) {
+			// TODO: oldChptTF != nullptr je v podmínce navíc, protože další podmínka vždy vyhoøela 
 			ResetRdOnly(); SetCompileAll();
 		}
 		goto label3;
@@ -804,32 +806,47 @@ label3:
 
 void CloseChpt()
 {
-	void* p; void* p2; bool del; pstring d; WORD i;
-	if (CRdb == nullptr) return; ClearHelpStkForCRdb();
-	SaveFiles(); del = Chpt->NRecs = 0;
-	d = CRdb->RdbDir; CloseFAfter(FileDRoot);
-	LinkDRoot = CRdb->OldLDRoot; FuncDRoot = CRdb->OldFCRoot;
-	p = CRdb; p2 = CRdb->Mark2; CRdb = CRdb->ChainBack;
+	void* p; void* p2;
+	bool del; pstring d; WORD i;
+	if (CRdb == nullptr) return;
+	ClearHelpStkForCRdb();
+	SaveFiles();
+	del = Chpt->NRecs = 0;
+	d = CRdb->RdbDir;
+	CloseFAfter(FileDRoot);
+	LinkDRoot = CRdb->OldLDRoot;
+	FuncDRoot = CRdb->OldFCRoot;
+	p = CRdb;
+	p2 = CRdb->Mark2;
+	CRdb = CRdb->ChainBack;
 	ReleaseBoth(p, p2);
 	if (CRdb != nullptr) {
-		FileDRoot = CRdb->FD; Chpt = FileDRoot;
-		SetChptFldDPtr(); ChDir(CRdb->RdbDir);
+		FileDRoot = CRdb->FD;
+		Chpt = FileDRoot;
+		SetChptFldDPtr();
+		ChDir(CRdb->RdbDir);
 		if (del) {
 			RmDir(d);
 			if (IOResult() != 0) {
-				SetMsgPar(d); WrLLF10Msg(621);
+				SetMsgPar(d);
+				WrLLF10Msg(621);
 			}
 		}
 	}
 	else {
-		ChDir(OldDir); for (i = 1; i < FloppyDrives; i++) ReleaseDrive(i);
+		ChDir(OldDir);
+		for (i = 1; i < FloppyDrives; i++) ReleaseDrive(i);
 	}
 }
 
 void GoCompileErr(WORD IRec, WORD N)
 {
-	IsCompileErr = true; InpRdbPos.R = CRdb; InpRdbPos.IRec = IRec;
-	CurrPos = 0; RdMsg(N); GoExit();
+	IsCompileErr = true;
+	InpRdbPos.R = CRdb;
+	InpRdbPos.IRec = IRec;
+	CurrPos = 0;
+	RdMsg(N);
+	GoExit();
 }
 
 void ClearXFUpdLock()
@@ -1189,14 +1206,16 @@ void CompileMsgOff(CHAR_INFO* Buf, longint& w)
 bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 {
 	CHAR_INFO Buf[40];
-	longint w;
-	longint I = 0, J, OldTxt, Txt, OldCRec; pstring STyp(1); char Typ;
+	longint w = 0;
+	longint I = 0, J = 0, OldTxt = 0, Txt = 0, OldCRec = 0;
+	pstring STyp(1); char Typ = '\0';
 	pstring Name(12); pstring dir; pstring nm; pstring ext;
-	bool Verif, FDCompiled, Encryp; char Mode;  RdbPos RP;
+	bool Verif = false, FDCompiled = false, Encryp = false;
+	char Mode = '\0'; RdbPos RP;
 	void* p = nullptr; void* p1 = nullptr; void* p2 = nullptr;
-	ExitRecord er; EditD* OldE = nullptr; WORD lmsg;
+	ExitRecord er; EditD* OldE = nullptr; WORD lmsg = 0;
 	LinkD* ld = nullptr;
-	LongStr* RprtTxt = nullptr; bool top;
+	LongStr* RprtTxt = nullptr; bool top = false;
 	FileD* lstFD = nullptr;
 	auto result = false;
 
@@ -1204,17 +1223,22 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 	//NewExit(Ovr, er);
 	//goto label1;
 	IsCompileErr = false; FDCompiled = false; OldCRec = CRec(); RP.R = CRdb;
-	top = CRdb->ChainBack = nullptr;
+	top = (CRdb->ChainBack == nullptr);
 	if (top) {
 		UserName[0] = 0; UserCode = 0; UserPassWORD[0] = 0; AccRight[0] = 0;
 		if (ChptTF->CompileAll || CompileFD) Switches[0] = 0;
 	}
 	lmsg = CompileMsgOn(Buf, w);
-	CRecPtr = Chpt->RecPtr; Encryp = CRdb->Encrypted;
+	CRecPtr = Chpt->RecPtr;
+	Encryp = CRdb->Encrypted;
 	for (I = 1; I < Chpt->NRecs; I++) {
-		ReadRec(I); RP.IRec = I;
-		Verif = _B(ChptVerif); STyp = _ShortS(ChptTyp); Typ = STyp[1];
-		Name = TrailChar(' ', _ShortS(ChptName)); Txt = _T(ChptTxt);
+		ReadRec(I);
+		RP.IRec = I;
+		Verif = _B(ChptVerif);
+		STyp = _ShortS(ChptTyp);
+		Typ = STyp[1];
+		Name = TrailChar(' ', _ShortS(ChptName));
+		Txt = _T(ChptTxt);
 		if (Verif && ((ChptTF->LicenseNr != 0) || Encryp || (Chpt->UMode == RdOnly))) GoCompileErr(I, 647);
 		if (Verif || ChptTF->CompileAll || FromCtrlF10 || (Typ == 'U') ||
 			(Typ == 'F' || Typ == 'D') && CompileFD ||
