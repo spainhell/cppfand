@@ -243,7 +243,7 @@ label3:
 bool OpenF(FileUseMode UM)
 {
 	bool result = true;
-	if (CFile->Handle != nullptr) { exit(0); }
+	if (CFile->Handle != nullptr) return result;
 	if (OpenF1(UM))
 	{
 		if (
@@ -316,7 +316,7 @@ void TruncF()
 {
 	/* with CFile^ */
 	LockMode md; longint sz;
-	if (CFile->UMode == RdOnly) exit(0);
+	if (CFile->UMode == RdOnly) return;
 	md = NewLMode(RdMode);
 	TruncH(CFile->Handle, CFile->UsedFileSize());
 	if (HandleError != 0) CFileMsg(700 + HandleError, '0');
@@ -337,7 +337,7 @@ void TruncF()
 void CloseFile()
 {
 	//with CFile^ do {
-	if (CFile->Handle == nullptr) exit(0);
+	if (CFile->Handle == nullptr) return;
 	if (CFile->IsShared()) OldLMode(NullMode);
 	else WrPrefixes();
 	SaveCache(0);

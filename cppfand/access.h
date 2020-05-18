@@ -621,8 +621,8 @@ extern longint ClpBdPos;
 extern bool IsTestRun;
 extern bool IsInstallRun;
 
-extern FileDPtr Chpt; // absolute FileDRoot;
-extern TFilePtr ChptTF;
+extern FileD* Chpt; // absolute FileDRoot;
+extern TFile* ChptTF;
 extern FieldDPtr ChptTxtPos;
 extern FieldDPtr ChptVerif; // { updated record }
 extern FieldDPtr ChptOldTxt; // { ChptTyp = 'F' : -1 = new unchecked record, else = old declaration }

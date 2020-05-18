@@ -1,13 +1,42 @@
 #include "access.h"
 
 #include "compile.h"
-#include "kbdww.h"
 #include "legacy.h"
 #include "oaccess.h"
 #include "obaseww.h"
 #include "olongstr.h"
 #include "runfrml.h"
 #include "sort.h"
+
+// Random z TP7 pro Seed = 739328 + 205
+BYTE randomice[512] = { 127, 73, 105, 45, 152, 197, 176, 159, 158, 83, 66, 240, 82, 71, 130, 28,
+	149, 163, 70, 61, 81, 145, 16, 32, 122, 85, 119, 176, 96, 218, 146, 143, 209, 72, 138, 93,
+	196, 70, 174, 135, 135, 227, 162, 165, 181, 75, 135, 168, 108, 168, 51, 119, 110, 242, 222,
+	181, 79, 142, 222, 206, 193, 220, 65, 131, 156, 61, 116, 142, 74, 29, 73, 48, 150, 7, 245,
+	160, 39, 225, 236, 185, 17, 190, 172, 111, 66, 240, 219, 209, 203, 84, 83, 171, 50, 236, 241,
+	18, 85, 77, 79, 95, 158, 115, 181, 120, 121, 0, 242, 85, 67, 1, 229, 49, 74, 167, 217, 205,
+	117, 175, 28, 184, 177, 71, 79, 131, 67, 189, 121, 71, 146, 86, 195, 2, 27, 231, 104, 142,
+	129, 72, 85, 76, 14, 147, 105, 196, 4, 218, 104, 205, 147, 198, 247, 7, 98, 55, 79, 166,
+	232, 242, 112, 3, 19, 229, 0, 60, 252, 141, 28, 246, 165, 139, 218, 30, 236, 122, 52, 252,
+	75, 128, 134, 64, 10, 67, 11, 168, 231, 45, 211, 123, 123, 38, 54, 247, 183, 64, 181, 102,
+	101, 232, 207, 138, 127, 170, 71, 122, 169, 134, 196, 55, 84, 117, 233, 135, 45, 165, 55,
+	225, 236, 98, 98, 121, 182, 228, 234, 172, 131, 93, 27, 112, 89, 245, 197, 118, 75, 185,
+	98, 37, 115, 127, 95, 165, 117, 77, 200, 155, 52, 223, 160, 72, 192, 70, 132, 45, 186, 176,
+	116, 125, 159, 231, 233, 218, 194, 33, 132, 58, 235, 3, 245, 242, 219, 33, 10, 77, 41, 75,
+	223, 9, 58, 92, 175, 197, 87, 123, 197, 57, 13, 252, 124, 153, 90, 64, 97, 187, 109, 76,
+	213, 169, 230, 1, 208, 208, 217, 27, 145, 7, 14, 107, 110, 239, 62, 244, 16, 153, 73, 215,
+	183, 80, 148, 51, 111, 5, 34, 122, 65, 188, 12, 207, 201, 237, 102, 101, 198, 188, 198, 15,
+	133, 128, 230, 89, 58, 4, 36, 251, 179, 85, 208, 102, 238, 60, 158, 177, 127, 149, 141, 93,
+	209, 29, 51, 115, 177, 130, 55, 21, 174, 200, 96, 147, 56, 59, 154, 119, 137, 139, 178, 52,
+	204, 222, 206, 101, 5, 218, 217, 200, 162, 247, 84, 101, 219, 172, 91, 118, 35, 57, 202, 40,
+	99, 29, 202, 54, 193, 140, 52, 219, 41, 100, 148, 213, 214, 114, 198, 71, 151, 28, 91, 189,
+	145, 170, 84, 192, 172, 209, 226, 137, 250, 52, 56, 235, 194, 243, 138, 116, 253, 157, 225,
+	79, 104, 253, 90, 141, 139, 156, 223, 179, 70, 4, 156, 201, 202, 1, 140, 83, 23, 135, 11,
+	212, 85, 238, 57, 223, 177, 155, 138, 192, 139, 108, 245, 80, 28, 91, 117, 123, 236, 65,
+	230, 132, 182, 172, 119, 25, 142, 35, 34, 181, 113, 91, 247, 241, 150, 50, 41, 184, 22, 120,
+	25, 131, 205, 200, 231, 15, 155, 20, 63, 50, 62, 149, 74, 199, 145, 66, 45, 206, 226, 12 };
+WORD randIndex = 0;
+
 
 FileD* CFile;
 FieldDPtr CatRdbName, CatFileName, CatArchiv, CatPathName, CatVolume;
@@ -31,7 +60,7 @@ TFile TWork;
 longint ClpBdPos = 0;
 bool IsTestRun = false;
 bool IsInstallRun = false;
-FileDPtr Chpt = FileDRoot; // absolute FileDRoot;
+FileD* Chpt = FileDRoot; // absolute FileDRoot;
 TFilePtr ChptTF;
 FieldDPtr ChptTxtPos;
 FieldDPtr ChptVerif; // { updated record }
@@ -87,7 +116,15 @@ integer CompLongShortStr(LongStrPtr S1, pstring S2)
 
 integer CompArea(void* A, void* B, integer L)
 {
-	return 0;
+	auto result = memcmp(A, B, L);
+
+	// 1 jsou si rovny
+	// 2 A<B
+	// 4 A>B
+
+	if (result == 0) return _equ;
+	if (result < 0) return 2;
+	return 4;
 }
 
 #ifdef FandNetV
@@ -335,23 +372,56 @@ const longint RecLock = 0x0B000000;  /* base for record locking */
 
 struct TT1Page
 {
-	WORD Signum = 0, OldMaxPage = 0;
+	WORD Signum = 0;
+	WORD OldMaxPage = 0;
 	longint FreePart = 0;
 	bool Rsrvd1 = false, CompileProc = false, CompileAll = false;
 	WORD IRec = 0;
 	longint FreeRoot = 0, MaxPage = 0;   /*eldest version=>array Pw[1..40] of char;*/
 	double TimeStmp = 0.0;
 	bool HasCoproc = false;
-	char Rsrvd2[25];
-	char Version[4];
-	BYTE LicText[105];
+	char Rsrvd2[25]{ '\0' };
+	char Version[4]{ '\0' };
+	BYTE LicText[105]{ '\0' };
 	BYTE Sum = 0;
-	char X1[295];
+	char X1[295]{ '\0' };
 	WORD LicNr = 0;
-	char X2[11];
-	char PwNew[40];
+	char X2[11]{ '\0' };
+	char PwNew[40]{ '\0' };
 	BYTE Time = 0;
+
+	void Load(BYTE* input512);
 };
+
+// nahraje prvnich 24 Bytu ze souboru do struktury
+// (navíc i hodnotu HasCoproc, aby byla pripravena pro porovnani)
+void TT1Page::Load(BYTE* input512) 
+{
+	size_t index = 0;
+	memcpy(&Signum, &input512[index], 2); index += 2;
+	memcpy(&OldMaxPage, &input512[index], 2); index += 2;
+	memcpy(&FreePart, &input512[index], 4); index += 4;
+	memcpy(&Rsrvd1, &input512[index], 1); index++;
+	memcpy(&CompileProc, &input512[index], 1); index++;
+	memcpy(&CompileAll, &input512[index], 1); index++;
+	memcpy(&IRec, &input512[index], 2); index += 2;
+	memcpy(&FreeRoot, &input512[index], 4); index += 4;
+	memcpy(&MaxPage, &input512[index], 4); index += 4;
+	memcpy(&TimeStmp, &input512[index], 6); index += 6;
+	memset(&TimeStmp + 6, 0, 2); // v pascalu to bylo 6B, tady je to 8B
+	memcpy(&HasCoproc, &input512[index], 1); index++;
+	memcpy(&Rsrvd2, &input512[index], 25); index += 25;
+	memcpy(&Version, &input512[index], 4); index += 4;
+	memcpy(&LicText, &input512[index], 105); index += 105;
+	memcpy(&Sum, &input512[index], 1); index++;
+	memcpy(&X1, &input512[index], 195); index += 295;
+	memcpy(&LicNr, &input512[index], 2); index += 2;
+	memcpy(&X2, &input512[index], 11); index += 11;
+	memcpy(&PwNew, &input512[index], 40); index += 40;
+	memcpy(&Time, &input512[index], 1); index++;
+	// index by teï mìl mít 512
+	if (index != 512) throw std::exception("Error in TT1Page::Load");
+}
 
 void ResetCFileUpdH()
 {
@@ -661,7 +731,12 @@ longint XNRecs(KeyDPtr K)
 	return CFile->NRecs;
 }
 
-void ReadRec(longint N) {}
+void ReadRec(longint N)
+{
+	/* with CFile^ do */
+	RdWrCache(true, CFile->Handle, CFile->NotCached(), 
+		(N - 1) * CFile->RecLen + CFile->FrstDispl, CFile->RecLen, CRecPtr);
+}
 
 void WriteRec(longint N)
 {
@@ -799,10 +874,6 @@ void DeleteXRec(longint RecNr, bool DelT)
 }
 
 void OverWrXRec(longint RecNr, void* P2, void* P)
-{
-}
-
-void OverwrXRec(longint RecNr, void* P2, void* P)
 {
 	XString x, x2; KeyDPtr K;
 	CRecPtr = P2;
@@ -1360,7 +1431,7 @@ void DelTFlds()
 {
 	FieldDPtr F = CFile->FldD;
 	while (F != nullptr) {
-		if ((F->Flg && f_Stored != 0) && (F->Typ == 'T')) DelTFld(F); 
+		if ((F->Flg && f_Stored != 0) && (F->Typ == 'T')) DelTFld(F);
 		F = (FieldDescr*)F->Chain;
 	}
 }
@@ -1393,17 +1464,68 @@ void CopyRecWithT(void* p1, void* p2)
 /// nedìlá nic, pùvodnì dìlal XOR 0xAA;
 void Code(void* A, WORD L)
 {
-	return;
+	BYTE* pb = (BYTE*)A;
+	for (int i = 0; i < L; i++)
+	{
+		pb[i] = pb[i] ^ 0xAA;
+	}
 }
+
+void RandIntByBytes(longint& nr)
+{
+	BYTE* byte = (BYTE*)&nr;
+	for (size_t i = 0; i < 4; i++)
+	{
+		byte[i] = byte[i] ^ randomice[randIndex++];
+	}
+}
+
+void RandWordByBytes(WORD& nr)
+{
+	BYTE* byte = (BYTE*)&nr;
+	for (size_t i = 0; i < 2; i++)
+	{
+		byte[i] = byte[i] ^ randomice[randIndex++];
+	}
+}
+
+void RandDoubleByBytes(double& nr)
+{
+	BYTE* byte = (BYTE*)&nr;
+	for (size_t i = 0; i < 6; i++)
+	{
+		byte[i] = byte[i] ^ randomice[randIndex++];
+	}
+}
+
+void RandBooleanByBytes(bool& nr)
+{
+	BYTE* byte = (BYTE*)&nr;
+	for (size_t i = 0; i < sizeof(nr); i++)
+	{
+		byte[i] = byte[i] ^ randomice[randIndex++];
+	}
+}
+
+void RandArrayByBytes(void* arr, size_t len)
+{
+	BYTE* byte = (BYTE*)arr;
+	for (size_t i = 0; i < len; i++)
+	{
+		byte[i] = byte[i] ^ randomice[randIndex++];
+	}
+}
+
 
 void TFile::RdPrefix(bool Chk)
 {
+	
 	TT1Page T;
 	BYTE* TX = (BYTE*)&T;
 	longint* TNxtAvailPage = (longint*)&T; /* .DBT */
 	struct stFptHd { longint FreePart = 0; WORD X = 0, BlockSize = 0; }; /* .FPT */
 	stFptHd* FptHd = (stFptHd*)&T;
-	BYTE sum; longint FS, ML, RS = 0; WORD i, n;
+	BYTE sum = 0; longint FS = 0, ML = 0, RS = 0; WORD i = 0, n = 0;
 	if (Chk) {
 		FS = FileSizeH(Handle);
 		if (FS <= 512) {
@@ -1413,7 +1535,10 @@ void TFile::RdPrefix(bool Chk)
 			return;
 		}
 	}
-	RdWrCache(true, Handle, NotCached(), 0, 512, &T); srand(RS); LicenseNr = 0;
+	BYTE header512[512];
+	RdWrCache(true, Handle, NotCached(), 0, 512, header512);
+	srand(RS);
+	LicenseNr = 0;
 	if (Format == DbtFormat) {
 		MaxPage = *TNxtAvailPage - 1; GetMLen(); return;
 	}
@@ -1421,9 +1546,12 @@ void TFile::RdPrefix(bool Chk)
 		FreePart = SwapLong((*FptHd).FreePart);
 		BlockSize = Swap((*FptHd).BlockSize); return;
 	}
+
+	// nactena data jsou porad v poli, je nutne je nahrat do T
+	T.Load(header512);
 	Move(&T.FreePart, &FreePart, 23);
 	if (!IsWork && (CFile == Chpt) && ((T.HasCoproc != HasCoproc) ||
-		(CompArea((char*)Version[1], &T.Version, 4) != _equ))) CompileAll = true;
+		(CompArea((char*)Version[0], &T.Version, 4) != _equ))) CompileAll = true;
 	if (T.OldMaxPage == 0xffff) goto label1;
 	else {
 		FreeRoot = 0;
@@ -1434,7 +1562,9 @@ void TFile::RdPrefix(bool Chk)
 		else {
 			FreePart = -FreePart; MaxPage = T.OldMaxPage;
 		label1:
-			GetMLen(); ML = MLen; if (!Chk) FS = ML;
+			GetMLen();
+			ML = MLen;
+			if (!Chk) FS = ML;
 		}
 	}
 	if (IRec >= 0x6000) {
@@ -1444,20 +1574,46 @@ void TFile::RdPrefix(bool Chk)
 	if (IRec >= 0x4000) {
 		IRec = IRec - 0x4000;
 		srand(ML + T.Time);
-		for (i = 14; i < 511; i++) TX[i] = TX[i] xor Random(255);
-		Move(T.PwNew, PwCode, 40);
+		//for (i = 14; i < 511; i++) TX[i] = TX[i] ^ Random(255);
+		RandIntByBytes(T.FreeRoot);
+		RandIntByBytes(T.MaxPage);
+		RandDoubleByBytes(T.TimeStmp);
+		RandBooleanByBytes(T.HasCoproc);
+		RandArrayByBytes(T.Rsrvd2, 25);
+		RandArrayByBytes(T.Version, 4);
+		RandArrayByBytes(T.LicText, 105);
+		RandArrayByBytes(&T.Sum, 1);
+		RandArrayByBytes(T.X1, 295);
+		RandWordByBytes(T.LicNr);
+		RandArrayByBytes(T.X2, 11);
+		RandArrayByBytes(T.PwNew, 40);
+		Move(T.PwNew, PwCode, 20);
+		Move(&T.PwNew[20], Pw2Code, 20);
 	}
 	else {
-		srand(ML); for (i = 14; i < 53; i++) TX[i] = TX[i] xor Random(255);
-		Move(&T.FreeRoot/*Pw*/, PwCode, 40);
+		srand(ML);
+		// for (i = 14; i < 53; i++) TX[i] = TX[i] ^ Random(255);
+		RandIntByBytes(T.FreeRoot);
+		RandIntByBytes(T.MaxPage);
+		RandDoubleByBytes(T.TimeStmp);
+		RandBooleanByBytes(T.HasCoproc);
+		RandArrayByBytes(T.Rsrvd2, 25);
+		//Move(&T.FreeRoot/*Pw*/, PwCode, 40);
+		Move(T.PwNew, PwCode, 20);
+		Move(&T.PwNew[20], Pw2Code, 20);
 	}
 	Code(PwCode, 40);
 	if ((FreePart < MPageSize) || (FreePart > ML) || (FS < ML) ||
 		(FreeRoot > MaxPage) || (MaxPage == 0)) {
-		Err(893, false); MaxPage = (FS - 1) >> MPageShft; FreeRoot = 0; GetMLen();
-		FreePart = NewPage(true); SetUpdHandle(Handle);
+		Err(893, false);
+		MaxPage = (FS - 1) >> MPageShft;
+		FreeRoot = 0;
+		GetMLen();
+		FreePart = NewPage(true);
+		SetUpdHandle(Handle);
 	}
-	FillChar(&T, 512, 0); srand(RS);
+	FillChar(&T, 512, 0);
+	srand(RS);
 }
 
 void TFile::WrPrefix()
@@ -1724,7 +1880,7 @@ void TFile::RdWr(bool ReadOp, longint Pos, WORD N, void* X)
 
 void TFile::GetMLen()
 {
-	MLen = (MaxPage + 1) << MPageShft;
+	MLen = abs((MaxPage + 1) << MPageShft);
 }
 
 FileD::FileD()
@@ -1741,7 +1897,7 @@ longint FileD::UsedFileSize()
 
 bool FileD::IsShared()
 {
-	return (UMode = Shared) || (UMode = RdShared);
+	return (UMode == Shared) || (UMode == RdShared);
 }
 
 bool FileD::NotCached()
@@ -3014,7 +3170,8 @@ pstring* FieldDMask(FieldDPtr F)
 
 void* GetRecSpace()
 {
-	return GetZStore(CFile->RecLen + 2);
+	//return GetZStore(CFile->RecLen + 2);
+	return new BYTE*[CFile->RecLen];
 }
 
 void* GetRecSpace2()

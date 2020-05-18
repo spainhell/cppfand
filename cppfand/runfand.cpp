@@ -239,7 +239,8 @@ void RdCFG()
 void CompileHelpCatDcl()
 {
 	pstring s; void* p2 = nullptr;
-	FileDRoot = nullptr; CRdb = nullptr; MarkStore2(p2);
+	FileDRoot = nullptr; Chpt = FileDRoot;
+	CRdb = nullptr; MarkStore2(p2);
 	RdMsg(56); s = MsgLine; SetInpStr(s);
 #ifdef FandRunV
 	RdFileD("UFANDHLP", '6', "");
@@ -251,14 +252,14 @@ void CompileHelpCatDcl()
 	RdMsg(52); s = MsgLine;
 	SetInpStr(s);
 	RdFileD("Catalog", 'C', "");
-	CatFD = CFile; FileDRoot = nullptr;
+	CatFD = CFile; FileDRoot = nullptr; Chpt = FileDRoot;
 	CatRdbName = CatFD->FldD;
-	if (CatRdbName != nullptr) {
-		CatFileName = (FieldDescr*)CatRdbName->Chain;
-		CatArchiv = (FieldDescr*)CatFileName->Chain;
-		CatPathName = (FieldDescr*)CatArchiv->Chain;
-		CatVolume = (FieldDescr*)CatPathName->Chain;
-	}
+	if (CatRdbName == nullptr) throw std::exception("CompileHelpCatDcl: CarRdbName is NULL");
+	CatFileName = (FieldDescr*)CatRdbName->Chain;
+	CatArchiv = (FieldDescr*)CatFileName->Chain;
+	CatPathName = (FieldDescr*)CatArchiv->Chain;
+	CatVolume = (FieldDescr*)CatPathName->Chain;
+
 	MarkStore(AfterCatFD); ReleaseStore2(p2);
 }
 

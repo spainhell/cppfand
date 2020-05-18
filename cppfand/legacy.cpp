@@ -241,7 +241,7 @@ void CloseGraph()
 
 double Random()
 {
-	srand(time(0));
+	//srand(time(0));
 	double randnr = rand();
 	while (randnr >= 1)
 	{
@@ -252,13 +252,9 @@ double Random()
 
 WORD Random(WORD rozsah)
 {
-	srand(time(0));
-	double randnr = rand();
-	while (randnr >= rozsah)
-	{
-		randnr = randnr / 2;
-	}
-	return (WORD)randnr;
+	//srand(time(0));
+	int randnr = rand();
+	return randnr % rozsah;
 }
 
 WORD ParamCount()

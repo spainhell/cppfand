@@ -1,6 +1,5 @@
 #include "printtxt.h"
 
-#include "kbdww.h"
 #include "legacy.h"
 #include "oaccess.h"
 #include "obase.h"

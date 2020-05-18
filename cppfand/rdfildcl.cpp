@@ -406,7 +406,7 @@ label2:
 		RdKumul();
 	}
 	
-	if (FileDRoot == nullptr) FileDRoot = CFile;
+	if (FileDRoot == nullptr) { FileDRoot = CFile; Chpt = FileDRoot; }
 	else ChainLast(FileDRoot, CFile);
 	
 	if (Ext == "$"/*compile from text at run time*/) {

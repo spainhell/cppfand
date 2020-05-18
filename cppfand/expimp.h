@@ -3,10 +3,7 @@
 #include "rdrun.h"
 
 
-inline bool OldToNewCat(longint& FilSz)
-{
-	return false;
-}
+bool OldToNewCat(longint& FilSz);
 
 inline void XEncode(LongStr* S1, LongStr* S2)
 {

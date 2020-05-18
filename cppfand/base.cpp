@@ -9,6 +9,7 @@
 #include <set>
 #include <vector>
 #include "obaseww.h"
+#include "oaccess.h"
 
 /*const*/ char Version[] = { '4', '.', '2', '0', '\0' };
 
@@ -231,7 +232,7 @@ std::string TResFile::Get(WORD Kod)
 {
 	char* tmpCh = new char[A[Kod - 1].Size];
 	WORD l = A[Kod - 1].Size;
-	
+
 	auto sizeF = FileSizeH(Handle);
 	auto seekF = SeekH(Handle, A[Kod - 1].Pos);
 	auto readF = ReadH(Handle, l, tmpCh);
@@ -323,7 +324,7 @@ void ChainLast(Chained* Frst, Chained* New)
 	if (Frst == nullptr) throw std::exception("ChainLast: Parent is NULL!");
 
 	if (New == nullptr) return;
-	
+
 	Chained* last = Frst;
 
 	while (last->Chain != nullptr) {
@@ -739,11 +740,49 @@ WORD GetFileAttr()
 	return result;
 }
 
+CachePage* Cache(FILE* Handle, longint Page)
+{
+	return nullptr;
+}
+
 void RdWrCache(bool ReadOp, FILE* Handle, bool NotCached, longint Pos, WORD N, void* Buf)
 {
-	if (Handle == nullptr) return;
-	// asi netøeba øešit
-	return;
+	integer PgeIdx = 0, PgeRest = 0; WORD err = 0; longint PgeNo = 0;
+	CachePage* Z = nullptr;
+
+	if (Handle == nullptr) RunError(706);
+	//if (NotCached) {
+		SeekH(Handle, Pos);
+		if (ReadOp) ReadH(Handle, N, Buf);
+		else WriteH(Handle, N, Buf);
+		if (HandleError == 0) return;
+		err = HandleError;
+		SetCPathForH(Handle);
+		SetMsgPar(CPath);
+		RunError(700 + err);
+	//}
+	//PgeIdx = Pos + CachePageSize - 1;
+	//PgeRest = CachePageSize - PgeIdx;
+	//PgeNo = Pos >> CachePageShft;
+	//Z = Cache(Handle, PgeNo);
+	//while (N > PgeRest) {
+	//	if (ReadOp) Move(&Z->Arr[PgeIdx], Buf, PgeRest);
+	//	else { Move(Buf, &Z->Arr[PgeIdx], PgeRest); Z->Upd = true; }
+
+	//	WORD* bp = (WORD*)Buf;
+	//	bp[0] += PgeRest;
+
+	//	N -= PgeRest; PgeNo++;
+	//	Z = Cache(Handle, PgeNo);
+	//	PgeRest = CachePageSize;
+	//	PgeIdx = 0;
+	//}
+	//if (ReadOp) Move(&Z->Arr[PgeIdx], Buf, N);
+	//else {
+	//	Move(Buf, &Z->Arr[PgeIdx], N);
+	//	Z->Upd = true;
+	//	SetUpdHandle(Handle);
+	//}
 }
 
 void FlushH(FILE* handle)
@@ -778,7 +817,7 @@ WORD FindCtrlM(LongStrPtr s, WORD i, WORD n)
 WORD SkipCtrlMJ(LongStrPtr s, WORD i)
 {
 	WORD l = s->LL;
-	if (i<=1)
+	if (i <= 1)
 	{
 		i++;
 		if (i <= 1 && s->A[i] == 0x0A) i++;
@@ -925,7 +964,7 @@ void WrStyleStr(pstring s, WORD Attr)
 {
 	WORD i;
 	TextAttr = Attr, CStyle = ""; CColor = char(Attr);
-	for (i=1; i < s.length(); i++)
+	for (i = 1; i < s.length(); i++)
 	{
 		WrStyleChar(s[i]);
 	}
@@ -997,11 +1036,6 @@ bool WriteCachePage(CachePage* Z, WORD ErrH)
 
 void ReadCachePage(CachePage* Z)
 {
-}
-
-CachePage* Cache(BYTE Handle, longint Page)
-{
-	return nullptr;
 }
 
 void LockCache()
@@ -1236,7 +1270,7 @@ label1: if (WasInitDrivers) {
 	}
 	if (ExitCode == 202) Halt(202);
 }
-}
+		}
 
 void OpenResFile()
 {

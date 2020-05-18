@@ -690,7 +690,7 @@ void SgFrml(FrmlPtr Z, WORD Sg, WORD SgF)
 
 void SetChptFldDPtr()
 {
-	if (Chpt == nullptr) ChptTF = nullptr;
+	if (Chpt == nullptr) /*ChptTF = nullptr;*/ throw std::exception("SetChptFldDPtr: Chpt is NULL.");
 	else {
 		ChptTF = Chpt->TF;
 		ChptTxtPos = Chpt->FldD;
@@ -752,6 +752,7 @@ void CreateOpenChpt(pstring* Nm, bool create, wwmix* ww)
 
 	top = CRdb = nullptr;
 	FileDRoot = nullptr;
+	Chpt = nullptr;
 	//R = (RdbD*)GetZStore(sizeof(*R));
 	R = new RdbD();
 	oldChptTF = ChptTF;
@@ -811,7 +812,8 @@ void CloseChpt()
 	p = CRdb; p2 = CRdb->Mark2; CRdb = CRdb->ChainBack;
 	ReleaseBoth(p, p2);
 	if (CRdb != nullptr) {
-		FileDRoot = CRdb->FD; SetChptFldDPtr(); ChDir(CRdb->RdbDir);
+		FileDRoot = CRdb->FD; Chpt = FileDRoot;
+		SetChptFldDPtr(); ChDir(CRdb->RdbDir);
 		if (del) {
 			RmDir(d);
 			if (IOResult() != 0) {

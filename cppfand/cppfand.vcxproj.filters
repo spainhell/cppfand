@@ -36,9 +36,6 @@
     <ClCompile Include="obaseww.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="kbdww.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="oaccess.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -114,6 +111,9 @@
     <ClCompile Include="screen.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="expimp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base.h">
@@ -135,9 +135,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="fanddml.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="kbdww.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="oaccess.h">
