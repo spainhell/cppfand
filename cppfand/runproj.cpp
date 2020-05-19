@@ -1086,12 +1086,20 @@ longint MakeDbfDcl(pstring Nm)
 
 void* RdF(pstring* FileName)
 {
-	pstring d; pstring name; pstring ext; char FDTyp; pstring s;
-	FieldDPtr IdF, TxtF;  integer i, n; pstring nr(10);
-	FSplit(*FileName, d, name, ext); FDTyp = ExtToTyp(ext);
+	pstring d; pstring name; pstring ext;
+	char FDTyp = '\0';
+	pstring s;
+	FieldDescr* IdF = nullptr; FieldDescr* TxtF = nullptr;
+	integer i = 0, n = 0;
+	pstring nr(10);
+	FSplit(*FileName, d, name, ext);
+
+	FDTyp = ExtToTyp(ext);
 	if (FDTyp == '0') {
 		RdMsg(51); s = MsgLine; RdMsg(49); val(MsgLine, n, i);
-		str(TxtCols - n, nr); s = s + nr; SetInpStr(s);
+		str(TxtCols - n, nr);
+		s = s + nr;
+		SetInpStr(s);
 	}
 	else SetInpTTPos(_T(ChptTxt), CRdb->Encrypted);
 	return RdFileD(name, FDTyp, ext);

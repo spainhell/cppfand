@@ -128,7 +128,20 @@ void FSplit(pstring fullname, pstring& dir, pstring& name, pstring& ext)
 			ext = "";
 		}
 	}
-	else { name = ""; ext = ""; }
+	else
+	{ // lomítko nebylo nalezeno, bude exitovat jen název a možná přípona
+		size_t foundDot = s.find_last_of('.');
+		if (foundDot < s.length()) // přípona existuje
+		{
+			name = s.substr(0, foundDot);
+			ext = s.substr(foundDot);
+		}
+		else
+		{ // přípona neexistuje, celé je to název souboru
+			name = s;
+			ext = "";
+		}
+	}
 }
 
 pstring FSearch(pstring& path, pstring& dirlist)

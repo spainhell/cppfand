@@ -808,23 +808,24 @@ bool IsNullValue(void* p, WORD l)
 /// nechápu, co to dìlá - oøeže úvodní znaky, pøevádí na èíslo, ...
 longint _T(FieldDescr* F)
 {
-	void* p; longint n; integer err;
-	WORD* O = (WORD*)&p;
+	void* p = CRecPtr;
+	longint n = 0;
+	integer err = 0;
+	char* source = (char*)p + F->Displ;
+	//std::string s1(source, 10);
 
-	p = CRecPtr;
-	O += F->Displ;
 	if (CFile->Typ == 'D')
 	{
-		n = 0;
 		// tváøíme se, že CRecPtr je pstring ...
+		// TODO: toto je asi blbì, nutno opravit pøed 1. použitím
 		pstring* s = (pstring*)CRecPtr;
 		auto result = std::stoi(LeadChar(' ', *s));
 		return result;
 	}
 	else
 	{
-		if (IsNullValue(p, 4)) return 0;
-		longint* lip = (longint*)p;
+		if (IsNullValue(source, 4)) return 0;
+		longint* lip = (longint*)source;
 		return *lip;
 	}
 }
@@ -1197,22 +1198,23 @@ LongStr* _LongS(FieldDPtr F)
 
 pstring _ShortS(FieldDPtr F)
 {
-	void* P = CRecPtr;;
+	void* P = CRecPtr;
 	pstring S;
 	if ((F->Flg & f_Stored) != 0) {
 		WORD l = F->L;
 		S[0] = l;
-		WORD* POfs = (WORD*)P; /*absolute P;*/
-		*POfs += F->Displ;
+		//WORD* POfs = (WORD*)P; /*absolute P;*/
+		//*POfs += F->Displ;
+		char* source = (char*)P;
 		switch (F->Typ) {
 		case 'A':
 		case 'N': {
 			if (F->Typ == 'A') {
-				Move(P, &S[1], l);
+				Move(&source[F->Displ], &S[1], l);
 				if ((F->Flg & f_Encryp) != 0) Code(&S[1], l);
 				if (IsNullValue(&S[2], l)) FillChar(&S[0], l, ' ');
 			}
-			else if (IsNullValue(P, F->NBytes)) FillChar(&S[0], l, ' ');
+			else if (IsNullValue(&source[F->Displ], F->NBytes)) FillChar(&S[0], l, ' ');
 			else
 			{
 				// nebudeme volat, zøejmìní není potøeba
@@ -1256,12 +1258,14 @@ double _RforD(FieldDPtr F, void* P)
 double _R(FieldDPtr F)
 {
 	double result = 0.0;
-	void* p = nullptr; double r;
+	void* p = nullptr;
+	double r;
 	WORD* O = (WORD*)p;
 	integer* IP = (integer*)p;
 
 	if (F->Flg && f_Stored != 0) {
-		p = CRecPtr; *O += F->Displ;
+		p = CRecPtr;
+		*O += F->Displ;
 		if (CFile->Typ == 'D') result = _RforD(F, p);
 		else switch (F->Typ) {
 		case 'F': {
@@ -1290,10 +1294,10 @@ bool _B(FieldDPtr F)
 {
 	bool result;
 	void* p = CRecPtr;
-	WORD* O = (WORD*)p;
-	unsigned char* CP = (unsigned char*)p;
+	//char* source = (char*)p;
+	unsigned char* CP = (unsigned char*)p + F->Displ;
 	if ((F->Flg & f_Stored) != 0) {
-		*O += F->Displ;
+		//*O += F->Displ;
 		if (CFile->Typ == 'D') result = *CP == 'Y' || *CP == 'y' || *CP == 'T' || *CP == 't';
 		else if ((*CP == '\0') || (*CP == 0xFF)) result = false;
 		else result = true;
@@ -1795,20 +1799,24 @@ void TFile::Delete(longint Pos)
 
 LongStr* TFile::Read(WORD StackNr, longint Pos)
 {
-	LongStr* s = nullptr; WORD i = 0, l = 0; CharArr* p = nullptr;
-	WORD* pofs = (WORD*)p;
+	LongStr* s = nullptr;
+	WORD i = 0, l = 0;
+	CharArr* p = nullptr;
+	//WORD* pofs = (WORD*)p;
+	int offset = 0;
 	struct stFptD { longint Typ = 0, Len = 0; } FptD;
 	Pos -= LicenseNr;
 	if (Pos <= 0 /*OldTxt=-1 in RDB!*/) goto label11;
 	else switch (Format) {
 	case DbtFormat: {
-		s = (LongStr*)GetStore(32770);
+		s = new LongStr(32768); //(LongStr*)GetStore(32770);
 		Pos = Pos << MPageShft;
-		p = &s->A; l = 0;
+		p = &s->A;
+		l = 0;
 		while (l <= 32768 - MPageSize) {
-			RdWrCache(true, Handle, NotCached(), Pos, MPageSize, p);
-			for (i = 1; i < MPageSize; i++) { if ((*p)[i] == 0x1A) goto label0; l++; }
-			pofs += MPageSize;
+			RdWrCache(true, Handle, NotCached(), Pos, MPageSize, &p[offset]);
+			for (i = 1; i < MPageSize; i++) { if (*p[offset + i] == 0x1A) goto label0; l++; }
+			offset += MPageSize;
 			Pos += MPageSize;
 		}
 		l--;
@@ -1821,7 +1829,10 @@ LongStr* TFile::Read(WORD StackNr, longint Pos)
 		RdWrCache(true, Handle, NotCached(), Pos, sizeof(FptD), &FptD);
 		if (SwapLong(FptD.Typ) != 1/*text*/) goto label11;
 		else {
-			l = SwapLong(FptD.Len) & 0x7FFF; s = (LongStr*)GetStore(l + 2); s->LL = l;
+			l = SwapLong(FptD.Len) & 0x7FFF;
+			s = new LongStr(); //(LongStr*)GetStore(l + 2);
+
+			s->LL = l;
 			RdWrCache(true, Handle, NotCached(), Pos + sizeof(FptD), l, s->A);
 		}
 		break;
@@ -1838,7 +1849,7 @@ LongStr* TFile::Read(WORD StackNr, longint Pos)
 			s->LL = 0;
 			goto label2;
 		}
-		if (l == MaxLStrLen + 1) l--;
+		if (l == MaxLStrLen + 1) { l--; }
 		if (StackNr == 1) s = new LongStr(); //(LongStr*)GetStore(l + 2);
 		else s = new LongStr(); //(LongStr*)GetStore2(l + 2);
 		s->LL = l;
@@ -1902,25 +1913,26 @@ label1:
 
 void TFile::RdWr(bool ReadOp, longint Pos, WORD N, void* X)
 {
-	WORD Rest, L; longint NxtPg;
-	void* P = X;
-	WORD* POfs = (WORD*)P;
+	WORD Rest = 0, L = 0;
+	longint NxtPg = 0;
+	char* source = (char*)X;
+	int offset = 0;
 	Rest = MPageSize - (WORD(Pos) & (MPageSize - 1));
 	while (N > Rest) {
 		L = Rest - 4;
-		RdWrCache(ReadOp, Handle, NotCached(), Pos, L, P);
-		*POfs += L; N -= L;
+		RdWrCache(ReadOp, Handle, NotCached(), Pos, L, &source[offset]);
+		offset += L; N -= L;
 		if (!ReadOp) NxtPg = NewPage(false);
 		RdWrCache(ReadOp, Handle, NotCached(), Pos + L, 4, &NxtPg);
 		Pos = NxtPg;
 		if (ReadOp && ((Pos < MPageSize) || (Pos + MPageSize > MLen))) {
 			Err(890, false);
-			FillChar(P, N, ' ');
+			FillChar(&source[offset], N, ' ');
 			return;
 		}
 		Rest = MPageSize;
 	}
-	RdWrCache(ReadOp, Handle, NotCached(), Pos, N, P);
+	RdWrCache(ReadOp, Handle, NotCached(), Pos, N, &source[offset]);
 }
 
 void TFile::GetMLen()
@@ -3216,7 +3228,7 @@ pstring* FieldDMask(FieldDPtr F)
 void* GetRecSpace()
 {
 	//return GetZStore(CFile->RecLen + 2);
-	return new BYTE * [CFile->RecLen];
+	return new BYTE * [CFile->RecLen + 2];
 }
 
 void* GetRecSpace2()

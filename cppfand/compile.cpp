@@ -95,7 +95,7 @@ void SetInpTTPos(longint Pos, bool Decode)
 	s = CFile->TF->Read(2, Pos);
 	if (Decode) CodingLongStr(s);
 	InpArrLen = s->LL;
-	InpArrPtr = (BYTE*)s->A[0];
+	InpArrPtr = (BYTE*)&s->A[0];
 	if (InpArrLen == 0) ForwChar = 0x1A;
 	else ForwChar = InpArrPtr[0];
 	CurrPos = 0;
@@ -103,7 +103,10 @@ void SetInpTTPos(longint Pos, bool Decode)
 
 void SetInpTT(RdbPos RP, bool FromTxt)
 {
-	longint Pos;  FileDPtr CF; void* CR; LongStrPtr s;
+	longint Pos = 0;
+	FileD* CF = nullptr;
+	void* CR = nullptr;
+	LongStr* s = nullptr;
 
 	if (RP.IRec == 0) {
 		SetInpLongStr(RunLongStr(FrmlPtr(RP.R)), true);
