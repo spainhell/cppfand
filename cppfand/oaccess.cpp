@@ -70,8 +70,8 @@ void CloseFANDFiles(bool FromDML)
 
 void OpenFANDFiles(bool FromDML)
 {
-	RdbDPtr RD;
-	LockMode md;
+	RdbD* RD = nullptr;
+	LockMode md = NullMode;
 
 	OpenXWorkH();
 	OpenTWorkH();
@@ -181,8 +181,10 @@ label1:
 bool OpenF2()
 {
 	wwmix ww;
-	
-	longint FS, n, l; WORD Signum, rLen; LockMode md;
+
+	longint FS = 0, n = 0, l = 0;
+	WORD Signum = 0, rLen = 0;
+	LockMode md = NullMode;
 	/* !!! with CFile^ do!!! */
 	FS = FileSizeH(CFile->Handle); CFile->NRecs = 0;
 	auto result = false;
@@ -347,7 +349,7 @@ void CloseFile()
 	else WrPrefixes();
 	SaveCache(0);
 	TruncF();
-	if (CFile->Typ == 'X')  /*with XF^*/
+	if (CFile->Typ == 'X') { /*with XF^*/
 		if (CFile->XF->Handle != nullptr) {
 			CloseClearH(CFile->Handle);
 			if (!CFile->IsShared())
@@ -361,32 +363,37 @@ void CloseFile()
 					MyDeleteFile(CPath);
 				}
 			}
-			if (CFile->TF != nullptr)  /*with TF^*/
-				if (CFile->TF->Handle != nullptr) {
-					CloseClearH(CFile->TF->Handle);
-					if ((!CFile->IsShared()) && (CFile->NRecs == 0) && (CFile->Typ != 'D')) {
-						SetCPathVol();
-						CExtToT();
-						MyDeleteFile(CPath);
-					}
-				}
-			CloseClearH(CFile->Handle); CFile->LMode = NullMode;
-			if (!CFile->IsShared() && (CFile->NRecs == 0) && (CFile->Typ != 'D')) {
+		}
+	}
+	if (CFile->TF != nullptr) { /*with TF^*/
+		if (CFile->TF->Handle != nullptr) {
+			CloseClearH(CFile->TF->Handle);
+			if (HandleError == 0) CFile->TF->Handle == nullptr; // soubor byl uspesne uzavren
+			if ((!CFile->IsShared()) && (CFile->NRecs == 0) && (CFile->Typ != 'D')) {
 				SetCPathVol();
+				CExtToT();
 				MyDeleteFile(CPath);
 			}
-			if (CFile->WasRdOnly) {
-				CFile->WasRdOnly = false;
-				SetCPathVol();
-				SetFileAttr((GetFileAttr() & 0x27) | 0x01); // {RdONly; }
-				if (CFile->TF != nullptr) {
-					CExtToT();
-					SetFileAttr((GetFileAttr() & 0x27) | 0x1); //  {RdONly; }
-				}
-			}
-
 		}
+	}
+	CloseClearH(CFile->Handle);
+	if (HandleError == 0) CFile->Handle = nullptr;
+	CFile->LMode = NullMode;
+	if (!CFile->IsShared() && (CFile->NRecs == 0) && (CFile->Typ != 'D')) {
+		SetCPathVol();
+		MyDeleteFile(CPath);
+	}
+	if (CFile->WasRdOnly) {
+		CFile->WasRdOnly = false;
+		SetCPathVol();
+		SetFileAttr((GetFileAttr() & 0x27) | 0x01); // {RdONly; }
+		if (CFile->TF != nullptr) {
+			CExtToT();
+			SetFileAttr((GetFileAttr() & 0x27) | 0x01); //  {RdONly; }
+		}
+	}
 }
+
 
 void CloseFAfter(FileD* FD)
 {
@@ -513,7 +520,7 @@ WORD GetCatIRec(pstring Name, bool MultiLevel)
 	if (CRdb == nullptr) return result;
 	CF = CFile; CR = CRecPtr; CFile = CatFD; CRecPtr = GetRecSpace();
 	R = CRdb;
-	label1:
+label1:
 	for (i = 1; i < CatFD->NRecs; i++)
 	{
 		ReadRec(i);
@@ -524,7 +531,7 @@ WORD GetCatIRec(pstring Name, bool MultiLevel)
 		}
 	}
 	R = R->ChainBack; if ((R != nullptr) && MultiLevel) goto label1;
-	label2:
+label2:
 	CFile = CF; ReleaseStore(CRecPtr); CRecPtr = CR;
 	return result;
 }
@@ -779,7 +786,7 @@ void SubstDuplF(FileD* TempFD, bool DelTF)
 	SaveCache(0); PrimFD = CFile; p = CPath; CExtToT(); pt = CPath;
 	/* !!! with PrimFD^ do!!! */ {
 		CloseClearH(PrimFD->Handle); MyDeleteFile(p); TestDelErr(&p);
-		FD = (FileD*)PrimFD->Chain; MD = PrimFD->TF; 
+		FD = (FileD*)PrimFD->Chain; MD = PrimFD->TF;
 		xf2 = PrimFD->XF; um = PrimFD->UMode;
 		Move(TempFD, PrimFD, sizeof(FileD) - 2);
 		PrimFD->Chain = FD; PrimFD->XF = xf2; PrimFD->UMode = um;

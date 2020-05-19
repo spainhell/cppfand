@@ -33,6 +33,13 @@ pstring::pstring(std::string cs) : initLen(256)
 	memcpy(&arr[1], cs.c_str(), origLen);
 }
 
+pstring::pstring(char str[], unsigned char i) : initLen(256)
+{
+	arr = new unsigned char[256]{ '\0' };
+	arr[0] = i;
+	memcpy(&arr[1], str, i);
+}
+
 pstring::~pstring()
 {
 	delete[] arr;

@@ -794,18 +794,24 @@ bool FindLocVar(LocVar* LVRoot, LocVar* LV)
 
 bool FindChpt(char Typ, const pstring& name, bool local, RdbPos* RP)
 {
-	RdbDPtr R; WORD I;  FileDPtr CF; void* CR;
-	CF = CFile; CR = CRecPtr; CFile = Chpt;
-	CRecPtr = GetRecSpace(); R = CRdb;
+	FileD* CF = CFile;
+	void* CR = CRecPtr;
+	CFile = Chpt;
+	CRecPtr = GetRecSpace();
+	RdbD* R = CRdb;
 	auto result = false;
 	while (R != nullptr) {
 		CFile = R->FD;
-		for (I = 1; I < CFile->NRecs; I++) {
-			ReadRec(I);
+		for (WORD i = 1; i <= CFile->NRecs; i++) {
+			ReadRec(i);
+			pstring chapterType = _ShortS(ChptTyp);
+			pstring chapterName = _ShortS(ChptName);
+			
 			if ((_ShortS(ChptTyp) == Typ)
 				&& SEquUpcase(TrailChar(' ', _ShortS(ChptName)), name))
 			{
-				RP->R = R; RP->IRec = I;
+				RP->R = R;
+				RP->IRec = i;
 				result = true;
 				goto label1;
 			}
@@ -820,12 +826,12 @@ label1:
 
 void RdChptName(char C, RdbPos* Pos, bool TxtExpr)
 {
-	if (TxtExpr && (Lexem = '[')) {
+	if (TxtExpr && (Lexem == '[')) {
 		RdLex(); Pos->R = RdbDPtr(RdStrFrml); Pos->IRec = 0; Accept(']');
 	}
 	else {
 		TestLex(_identifier);
-		if (not FindChpt(C, LexWord, false, Pos)) Error(37);
+		if (!FindChpt(C, LexWord, false, Pos)) Error(37);
 		RdLex();
 	}
 }

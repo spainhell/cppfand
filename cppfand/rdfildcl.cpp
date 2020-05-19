@@ -311,9 +311,13 @@ void* RdFileD(pstring FileName, char FDTyp, pstring Ext)
 {
 	pstring JournalFlds(64);
 	JournalFlds = "A Upd,1;F RecNr,8.0;F User,4.0;D TimeStamp,'DD.MM.YYYY mm hh:ss'";
-	FileD* FD; FieldDPtr F, F2; void* p = nullptr; ChkD* C; LinkD* LDOld;
-	integer n, i; bool isHlp; KeyDPtr K; pstring Prefix; pstring s(32);
-	LiRootsPtr li;
+	FileD* FD = nullptr; KeyD* K = nullptr;
+	FieldDescr* F = nullptr; FieldDescr* F2 = nullptr;
+	void* p = nullptr;
+	ChkD* C = nullptr; LinkD* LDOld = nullptr;
+	integer n = 0, i = 0; bool isHlp = false;
+	pstring Prefix; pstring s(32);
+	LiRoots* li = nullptr;
 
 	ResetCompilePars();
 	RdLex();

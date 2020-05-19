@@ -162,8 +162,10 @@ bool ChptDelFor(RdbRecVars* X)
 			RdCatPathVol(X->CatIRec);
 			TestMountVol(CPath[1]);
 		}
-		else { CDir = "";
-			CName = X->Name; CExt = X->Ext; }
+		else {
+			CDir = "";
+			CName = X->Name; CExt = X->Ext;
+		}
 		MyDeleteFile(CDir + CName + CExt);
 		CExtToT();
 		MyDeleteFile(CPath);
@@ -759,7 +761,7 @@ void CreateOpenChpt(pstring* Nm, bool create, wwmix* ww)
 	TFile* oldChptTF = ChptTF;
 	R->ChainBack = CRdb; R->OldLDRoot = LinkDRoot; R->OldFCRoot = FuncDRoot;
 	MarkStore2(R->Mark2);
-	RdMsg(51); s = MsgLine; RdMsg(48); 
+	RdMsg(51); s = MsgLine; RdMsg(48);
 	val(MsgLine, n, i);
 	str(TxtCols - n, nr);
 	s = s + nr;
@@ -767,13 +769,13 @@ void CreateOpenChpt(pstring* Nm, bool create, wwmix* ww)
 	if (((*Nm)[1] == '\\')) Nm1 = Nm->substr(2, 8);
 	else Nm1 = *Nm;
 	RdFileD(Nm1, '0', ""); /*old CRdb for GetCatIRec*/
-	R->FD = CFile; 
-	CRdb = R; 
+	R->FD = CFile;
+	CRdb = R;
 	CFile->RecPtr = GetRecSpace();
 	SetRdbDir((*Nm)[1], &Nm1);
 	p = CDir + Nm1 + ".RDB";
 	CFile->Drive = TestMountVol(CPath[1]);
-	SetChptFldDPtr(); 
+	SetChptFldDPtr();
 	if (!spec.RDBcomment) ChptTxt->L = 1;
 	SetMsgPar(p);
 	if (top) { UserName = ""; UserCode = 0; AccRight[0] = 0; goto label2; }
@@ -970,7 +972,7 @@ label2:
 	if (WasError) ForAllFDs(ClearXFUpdLock);
 	CFile = (FileD*)lstFD->Chain;
 	while (CFile != nullptr) {
-		CloseFile(); 
+		CloseFile();
 		CFile = (FileD*)CFile->Chain;
 	}
 	lstFD->Chain = nullptr;

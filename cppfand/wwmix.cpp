@@ -659,11 +659,17 @@ void wwmix::SetPassWord(FileDPtr FD, WORD Nr, pstring Pw)
 
 bool wwmix::HasPassWord(FileDPtr FD, WORD Nr, pstring Pw)
 {
-	PwCodeArr* X;
+	PwCodeArr* X = nullptr;
 	/* !!! with FD->TF^ do!!! */
 	if (Nr == 1) X = &FD->TF->PwCode;
 	else X = &FD->TF->Pw2Code;
 	Code(X, 20);
-	return Pw == TrailChar('@', *X);
+	/*for (int i = 0; i < 20; i++)
+	{
+		if (*X[i] != '@') return true;
+	}
+	return false;*/
+	pstring tmp(*X, 20);
+	return Pw == TrailChar('@', tmp);
 }
 

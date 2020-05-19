@@ -9,6 +9,7 @@ public:
     pstring(const char* text);
     pstring(const pstring& ps);
     pstring(std::string cs);
+    pstring(char str[], unsigned char i);
     ~pstring();
 
     unsigned char length();
