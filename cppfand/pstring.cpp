@@ -156,7 +156,8 @@ pstring& pstring::operator=(const pstring& newvalue)
 		delete[] this->arr;
 		this->arr = newArray;
 	}
-	memcpy((void*)arr, (void*)newvalue.arr, initLen);
+	memset(arr, 0, initLen);
+	memcpy(arr, newvalue.arr, newvalue.arr[0] + 1);
 	return *this;
 }
 

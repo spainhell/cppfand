@@ -1415,11 +1415,11 @@ FrmlPtr RdPrim(char& FTyp)
 	pstring S3Fun[S3FunN] = { "copy","str","text" };
 	char S3Code[S3FunN] = { _copy,_str,_str };
 
-	char FunCode;
-	FrmlPtr Z = nullptr, Z1 = nullptr, Z2 = nullptr, Z3 = nullptr;
-	char Typ;
-	integer I, N; BYTE* B;
-	pstring Options(5);
+	char FunCode = '\0';;
+	FrmlElem* Z = nullptr; FrmlElem* Z1 = nullptr; FrmlElem* Z2 = nullptr; FrmlElem* Z3 = nullptr;
+	char Typ = '\0';
+	integer I = 0, N = 0; BYTE* B = nullptr;
+	pstring Options;
 
 	switch (Lexem) {
 	case _identifier: { SkipBlank(false);

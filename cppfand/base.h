@@ -8,7 +8,17 @@ extern char Version[5];
 
 typedef char CharArr[50];
 typedef CharArr* CharArrPtr; // ø23
-struct LongStr { WORD LL; CharArr A; }; // ø24
+
+class LongStr // ø24
+{
+public:
+	LongStr() { A = new char[50]; }
+	LongStr(int size) { A = new char[size]; }
+	~LongStr() { delete[] A; }
+	WORD LL = 0;
+	char* A;
+};
+
 typedef LongStr* LongStrPtr; // ø25
 
 struct WRect { BYTE C1, R1, C2, R2; }; // r34

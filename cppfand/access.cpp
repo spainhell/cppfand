@@ -1801,7 +1801,7 @@ LongStr* TFile::Read(WORD StackNr, longint Pos)
 {
 	LongStr* s = nullptr;
 	WORD i = 0, l = 0;
-	CharArr* p = nullptr;
+	char* p = nullptr;
 	//WORD* pofs = (WORD*)p;
 	int offset = 0;
 	struct stFptD { longint Typ = 0, Len = 0; } FptD;
@@ -1811,11 +1811,11 @@ LongStr* TFile::Read(WORD StackNr, longint Pos)
 	case DbtFormat: {
 		s = new LongStr(32768); //(LongStr*)GetStore(32770);
 		Pos = Pos << MPageShft;
-		p = &s->A;
+		p = s->A;
 		l = 0;
 		while (l <= 32768 - MPageSize) {
 			RdWrCache(true, Handle, NotCached(), Pos, MPageSize, &p[offset]);
-			for (i = 1; i < MPageSize; i++) { if (*p[offset + i] == 0x1A) goto label0; l++; }
+			for (i = 1; i < MPageSize; i++) { if (p[offset + i] == 0x1A) goto label0; l++; }
 			offset += MPageSize;
 			Pos += MPageSize;
 		}
@@ -1830,7 +1830,7 @@ LongStr* TFile::Read(WORD StackNr, longint Pos)
 		if (SwapLong(FptD.Typ) != 1/*text*/) goto label11;
 		else {
 			l = SwapLong(FptD.Len) & 0x7FFF;
-			s = new LongStr(); //(LongStr*)GetStore(l + 2);
+			s = new LongStr(l); //(LongStr*)GetStore(l + 2);
 
 			s->LL = l;
 			RdWrCache(true, Handle, NotCached(), Pos + sizeof(FptD), l, s->A);
@@ -1844,14 +1844,14 @@ LongStr* TFile::Read(WORD StackNr, longint Pos)
 		label1:
 			Err(891, false);
 		label11:
-			if (StackNr == 1) s = new LongStr(); //(LongStr*)GetStore(2);
-			else s = new LongStr(); //(LongStr*)GetStore2(2);
+			if (StackNr == 1) s = new LongStr(l); //(LongStr*)GetStore(2);
+			else s = new LongStr(l); //(LongStr*)GetStore2(2);
 			s->LL = 0;
 			goto label2;
 		}
 		if (l == MaxLStrLen + 1) { l--; }
-		if (StackNr == 1) s = new LongStr(); //(LongStr*)GetStore(l + 2);
-		else s = new LongStr(); //(LongStr*)GetStore2(l + 2);
+		if (StackNr == 1) s = new LongStr(l); //(LongStr*)GetStore(l + 2);
+		else s = new LongStr(l); //(LongStr*)GetStore2(l + 2);
 		s->LL = l;
 		RdWr(true, Pos + 2, l, s->A);
 		break;

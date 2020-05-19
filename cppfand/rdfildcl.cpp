@@ -29,7 +29,7 @@ FieldDPtr RdFldDescr(pstring Name, bool Stored)
 	Typ = (char)LexWord[1];
 	RdLex();
 	FrmlTyp = 'S'; M = 0;
-	if (Typ == 'N' || Typ == 'F') {	Accept(','); L = RdInteger(); }
+	if (Typ == 'N' || Typ == 'F') { Accept(','); L = RdInteger(); }
 	switch (Typ) {
 	case 'N': {
 		NBytes = (L + 1) / 2;
@@ -80,7 +80,7 @@ FieldDPtr RdFldDescr(pstring Name, bool Stored)
 				}
 			}
 			Flg += f_Mask;
-			M = LeftJust; 
+			M = LeftJust;
 			if (c != '?')
 				label1:
 			Error(171);
@@ -93,8 +93,9 @@ FieldDPtr RdFldDescr(pstring Name, bool Stored)
 		ss[0] = 0;
 		if (Lexem == ',') { RdLex(); ss = LexWord; Accept(_quotedstr); }
 		if (ss[0] == 0) ss = "DD.MM.YY";
-		S = StoreStr(ss);
-		FrmlTyp = 'R'; NBytes = sizeof(float); L = S->length(); Flg += f_Mask;
+		S = new pstring(ss);
+		FrmlTyp = 'R'; NBytes = 6; // sizeof(float); // v Pascalu je to 6B
+		L = S->length(); Flg += f_Mask;
 		break;
 	}
 	case 'B': { L = 1; NBytes = 1; FrmlTyp = 'B'; break; }
@@ -289,14 +290,16 @@ void RdFieldDList(bool Stored)
 {
 	pstring Name; FieldDescr* F = nullptr; char FTyp = 0; FrmlPtr Z = nullptr;
 label1:
-	TestIdentif(); Name = LexWord; F = FindFldName(CFile); if (F != nullptr) Error(26);
-	RdLex(); if (!Stored) { Accept(_assign); Z = RdFrml(FTyp); }
+	TestIdentif(); Name = LexWord;
+	F = FindFldName(CFile);	if (F != nullptr) Error(26);
+	RdLex();
+	if (!Stored) { Accept(_assign); Z = RdFrml(FTyp); }
 	F = RdFldDescr(Name, Stored);
 	if ((CFile->Typ == 'D') && Stored && (F->Typ == 'R' || F->Typ == 'N')) OldError(86);
-	
+
 	if (CFile->FldD == nullptr) CFile->FldD = F;
 	else ChainLast(CFile->FldD, F);
-	
+
 	if (Stored) {
 		if (CFile->Typ == '8') { if ((F->Typ == 'R' || F->Typ == 'B' || F->Typ == 'T')) OldError(35); }
 		else if ((F->Typ == 'F') && (F->NBytes > 5)) OldError(36);
@@ -309,14 +312,13 @@ label1:
 
 void* RdFileD(pstring FileName, char FDTyp, pstring Ext)
 {
-	pstring JournalFlds(64);
-	JournalFlds = "A Upd,1;F RecNr,8.0;F User,4.0;D TimeStamp,'DD.MM.YYYY mm hh:ss'";
+	pstring JournalFlds = "A Upd,1;F RecNr,8.0;F User,4.0;D TimeStamp,'DD.MM.YYYY mm hh:ss'";
 	FileD* FD = nullptr; KeyD* K = nullptr;
 	FieldDescr* F = nullptr; FieldDescr* F2 = nullptr;
 	void* p = nullptr;
 	ChkD* C = nullptr; LinkD* LDOld = nullptr;
 	integer n = 0, i = 0; bool isHlp = false;
-	pstring Prefix; pstring s(32);
+	pstring Prefix; pstring s;
 	LiRoots* li = nullptr;
 
 	ResetCompilePars();
@@ -409,10 +411,10 @@ label2:
 		RdLex();
 		RdKumul();
 	}
-	
+
 	if (FileDRoot == nullptr) { FileDRoot = CFile; Chpt = FileDRoot; }
 	else ChainLast(FileDRoot, CFile);
-	
+
 	if (Ext == "$"/*compile from text at run time*/) {
 		CFile->IsDynFile = true;
 		CFile->ChptPos.R = CRdb;
@@ -468,12 +470,12 @@ void RdKeyD()
 				if (CFile->typSQLFile) Error(155);
 #endif
 				K->Duplic = true; RdLex();
-			}
+		}
 			K->IndexRoot = N; K->IndexLen = RdKFList(K->KFlds, CFile);
 			if (K->IndexLen > MaxIndexLen) OldError(105);
-		}
-		goto label6;
 	}
+		goto label6;
+}
 label2:
 	TestIdentif(); Name = LexWord; SkipBlank(false);
 	if (ForwChar == '(')
@@ -556,15 +558,15 @@ label1:
 void RdFileOrAlias(FileD* FD, KeyD* KD)
 {
 	FileDPtr f; RdbDPtr r; KeyDPtr k;
-	TestIdentif(); f = CFile; 
-	k = RdFileOrAlias1(f); 
+	TestIdentif(); f = CFile;
+	k = RdFileOrAlias1(f);
 	if (k != nullptr) goto label1;
-	r = CRdb; 
+	r = CRdb;
 	while (r != nullptr) {
-		f = r->FD; 
+		f = r->FD;
 		while (f != nullptr) {
-			k = RdFileOrAlias1(f); 
-			if (k != nullptr) goto label1; 
+			k = RdFileOrAlias1(f);
+			if (k != nullptr) goto label1;
 			f = (FileD*)f->Chain;
 		}
 		r = r->ChainBack;
@@ -687,7 +689,7 @@ void RdImper(AddDPtr AD)
 		if (AD->LD != nullptr) {
 			KF = AD->LD->ToKey->KFlds;
 			while (KF != nullptr) {
-				if ((KF->FldD->Flg & f_Stored) == 0) OldError(148); 
+				if ((KF->FldD->Flg & f_Stored) == 0) OldError(148);
 				KF = (KeyFldD*)KF->Chain;
 			}
 		}
