@@ -28,7 +28,7 @@ label1:
 	while (L != nullptr) {
 		B1 = &L->Ft; while (B1 != nullptr) {
 			RF1 = B1->RFD; while (RF1 != nullptr) {
-				if ((Lexem == _identifier) && EquUpcase(RF1->Name)) {
+				if ((Lexem == _identifier) && EquUpcase(RF1->Name, LexWord)) {
 					RdLex(); result = true; RF = RF1; B = B1; return result;
 				}
 				RF1 = (RFldD*)RF1->Chain;
@@ -171,7 +171,7 @@ bool OwnInBlock(char& FTyp, FrmlElem* res)
 	RF = CBlk->RFD;
 	while (RF != nullptr)
 	{
-		if (EquUpcase(RF->Name))
+		if (EquUpcase(RF->Name, LexWord))
 		{
 			RdLex(); FTyp = RF->FrmlTyp; res = RF->Frml;
 			result = true; return result;

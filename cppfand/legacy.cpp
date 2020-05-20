@@ -16,57 +16,58 @@ BYTE OvrResult = 0; // vždy 0 OvrOK
 void val(pstring s, BYTE& b, WORD& err)
 {
 	size_t sz;
-	auto a = std::stoul(s.c_str(), &sz, 10);
+	b = std::stoul(s.c_str(), &sz, 10);
 	// přeložil se celý řetězec?
-	if (sz == s.length() - 1) {	err = 0; b = static_cast<BYTE>(a); }
-	else { err = static_cast<WORD>(sz);	b = static_cast<BYTE>(a); }
+	if (sz == s.length() - 1) {	err = 0; }
+	else { err = static_cast<WORD>(sz); }
 }
 
 void val(pstring s, WORD& b, WORD& err)
 {
 	if (s.empty()) return;
-	size_t sz;
-	auto a = std::stoul(s.c_str(), &sz, 10);
+	size_t idx;
+	b = std::stoul(s.c_str(), &idx, 10);
 	// přeložil se celý řetězec?
-	if (sz == s.length()) { err = 0; b = static_cast<WORD>(a); }
-	else { err = static_cast<WORD>(sz);	b = static_cast<WORD>(a); }
+	if (idx == s.length()) { err = 0; }
+	else { err = static_cast<WORD>(idx); }
 }
 
 void val(pstring s, integer& b, integer& err)
 {
 	if (s.empty()) return;
-	size_t sz;
-	auto a = std::stoul(s.c_str(), &sz, 10);
+	size_t idx;
+	b = std::stoul(s.c_str(), &idx, 10);
 	// přeložil se celý řetězec?
-	if (sz == s.length()) { err = 0; b = static_cast<integer>(a); }
-	else { err = static_cast<integer>(sz);	b = static_cast<integer>(a); }
+	if (idx == s.length()) { err = 0; }
+	else { err = static_cast<integer>(idx);	}
 }
 
 void val(pstring s, double& b, integer& err)
 {
 	size_t idx = 0;
-	double sz = std::stod(s.c_str(), &idx);
+	b = std::stod(s.c_str(), &idx);
 	// přeložil se celý řetězec?
-	if (sz == s.length() - 1) { err = 0; b = static_cast<double>(sz); }
-	else { err = static_cast<integer>(idx);	b = static_cast<double>(sz); }
+	if (idx == s.length()) { err = 0; }
+	else { err = static_cast<integer>(idx);	}
 }
 
 void val(pstring s, double& b, WORD& err)
 {
 	size_t idx = 0;
-	double sz = std::stod(s.c_str(), &idx);
+	b = std::stod(s.c_str(), &idx);
 	// přeložil se celý řetězec?
-	if (sz == s.length() - 1) { err = 0; b = static_cast<double>(sz); }
-	else { err = static_cast<WORD>(idx); b = static_cast<double>(sz); }
+	if (idx == s.length()) { err = 0; }
+	else { err = static_cast<WORD>(idx); }
 }
 
 void val(pstring s, longint& b, WORD& err)
 {
+	if (s.length() == 0) { err = 1;	return;	}
 	size_t idx = 0;
-	double sz = std::stod(s.c_str(), &idx);
+	b = std::stoi(s.c_str(), &idx);
 	// přeložil se celý řetězec?
-	if (sz == s.length() - 1) { err = 0; b = static_cast<longint>(sz); }
-	else { err = static_cast<WORD>(idx); b = static_cast<longint>(sz); }
+	if (idx == s.length()) { err = 0; }
+	else { err = static_cast<WORD>(idx); }
 }
 
 pstring copy(pstring source, size_t index, size_t count)

@@ -567,7 +567,7 @@ const BYTE _isdeleted = 0x64; const BYTE _setmybp = 0x65;  // {RecFD}
 const BYTE _modulo = 0x66;  // {length,modulo,weight1,...};                          // {B}
 const BYTE _getpath = 0x68; const BYTE _upcase = 0x69; const BYTE _lowcase = 0x6A;
 const BYTE _leadchar = 0x6B; const BYTE _getenv = 0x6C;
-const BYTE _trailchar = 0x6D; const BYTE _strdate = 0x6E;  // {char}  // {maskstring};
+const BYTE _trailchar = 0x6D; const BYTE _strdate1 = 0x6E;  // {char}  // {maskstring};
 const BYTE _nodiakr = 0x6F;  // {S}
 const BYTE _char = 0x70; const BYTE _sqlfun = 0x71;  // {SR}
 const BYTE _unminus = 0x73; const BYTE _abs = 0x74; const BYTE _int = 0x75; const BYTE _frac = 0x76; const BYTE _sqr = 0x77;

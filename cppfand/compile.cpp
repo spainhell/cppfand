@@ -1,4 +1,7 @@
 #include "compile.h"
+
+#include <map>
+
 #include "editor.h"
 #include "obaseww.h"
 #include "rdfildcl.h"
@@ -379,7 +382,7 @@ void RdLex()
 		while (CurrChar != '\'' || ForwChar == '\'')
 		{
 			if (CurrChar == 0x1A) Error(17);
-			if (LexWord.length() == sizeof(LexWord) - 1) Error(6);
+			if (LexWord.length() == LexWord.initLength() - 1) Error(6);
 			if (CurrChar == '\'') ReadChar();
 			else if (CurrChar == '\\') RdBackSlashCode();
 			LexWord.Append(CurrChar); ReadChar();
@@ -471,10 +474,14 @@ double ValofS(pstring& S)
 {
 	integer I; double R;
 
-	val(S, R, I); if (I != 0) {
-		R = ValDate(S, "DD.MM.YY"); if (R == 0) {
-			R = ValDate(S, "DD.MM.YYYY"); if (R == 0) {
-				R = ValDate(S, "mm hh:ss.tt"); if (R == 0) Error(7);
+	val(S, R, I);
+	if (I != 0) {
+		R = ValDate(S, "DD.MM.YY");
+		if (R == 0) {
+			R = ValDate(S, "DD.MM.YYYY");
+			if (R == 0) {
+				R = ValDate(S, "mm hh:ss.tt");
+				if (R == 0) Error(7);
 			}
 		}
 	}
@@ -505,9 +512,17 @@ label1:
 	return ValofS(S);
 }
 
-bool EquUpcase(pstring& S)
+bool EquUpcase(pstring& S1, pstring& S2)
 {
-	// TODO
+	if (S1.length() != S2.length()) return false;
+	for (size_t i = 1; i <= S1.length(); i++) // Pascal. string -> index od 1
+	{
+		BYTE c1 = S1[i]; BYTE c2 = S2[i];
+		BYTE upC1 = UpcCharTab[c1]; BYTE upC2 = UpcCharTab[c2];
+		if (upC1 != upC2) return false;
+	}
+	return true;
+
 	/*asm  lea si, LexWord; les di, S; cld;xor ch, ch; mov cl, [si]; cmpsb; jnz @3;
 	jcxz @2;xor bh, bh;
 	@1:  mov bl, [si]; mov al, BYTE PTR UpcCharTab[bx]; mov bl, es: [di] ;
@@ -515,37 +530,49 @@ bool EquUpcase(pstring& S)
 	@2:  mov ax, 1; jmp @4;
 	@3: xor ax, ax;
 	@4:  end;*/
-	return false;
+	//return false;
 }
 
 bool EquUpcase(const char* S)
 {
 	pstring temp = S;
-	return EquUpcase(temp);
+	return EquUpcase(temp, LexWord);
 }
 
 bool TestKeyWord(pstring S)
 {
-	return (Lexem == _identifier) && EquUpcase(S);
+	return (Lexem == _identifier) && EquUpcase(S, LexWord);
 }
 
 bool IsKeyWord(pstring S)
 {
-	if (Lexem == _identifier)
+	if (Lexem != _identifier) return false;
+	if (LexWord.length() != S.length()) return false;
+	for (size_t i = 1; i <= LexWord.length(); i++) // procházíme Pascalovský string, tedy od indexu 1
 	{
-		size_t count = LexWord.length();
-		if (S.length() == count)
-		{
-		label1:
-			size_t index = 1;
-			if (UpcCharTab[index] != S[1]) return false;
-			index++;
-			if (count - index > 0) goto label1;
-			RdLex();
-			return true;
-		}
+		BYTE lw = LexWord[i];
+		BYTE upcLw = UpcCharTab[lw]; // velke pismeno dle UpcCharTab
+		if (upcLw != S[i]) return false;
 	}
-	return false;
+	RdLex();
+	return true;
+	
+	//if (Lexem == _identifier)
+	//{
+	//	size_t count = LexWord.length();
+	//	if (S.length() == count)
+	//	{
+	//	label1:
+	//		size_t index = 1;
+	//		
+	//		if (UpcCharTab[LexWord[index]] != S[index]) return false;
+	//		index++;
+	//		if (count - index > 0) goto label1;
+	//		RdLex();
+	//		return true;
+	//	}
+	//}
+	//return false;
 }
 
 void AcceptKeyWord(pstring S)
@@ -631,7 +658,8 @@ LocVar* RdVarName(LocVarBlkD* LVB, bool IsParList)
 	TestIdentif();
 	lv = LVB->Root;
 	while (lv != nullptr) {
-		if (EquUpcase(lv->Name)) Error(26); lv = (LocVar*)lv->Chain;
+		if (EquUpcase(lv->Name, LexWord)) Error(26);
+		lv = (LocVar*)lv->Chain;
 	}
 	lv = (LocVar*)GetZStore(sizeof(*lv) - 1 + LexWord.length());
 	ChainLast(LVB->Root, lv);
@@ -679,7 +707,7 @@ label1:
 		if (CTyp == 'D') OldError(174); rp = true;
 	}
 	lv = RdVarName(LVB, IsParList);
-	if (not IsParList) while (Lexem == ',') { RdLex(); RdVarName(LVB, IsParList); }
+	if (!IsParList) while (Lexem == ',') { RdLex(); RdVarName(LVB, IsParList); }
 	Accept(':'); Z = nullptr;
 	if (IsKeyWord("BOOLEAN")) {
 		if ((Lexem == _equ) && !IsParList) {
@@ -727,7 +755,7 @@ label1:
 			if (LexWord.length() > 8) OldError(2);
 			fd = FindFileD(); RdLex();
 			if (IsParList) {
-				if (not WithRecVar) OldError(162);
+				if (!WithRecVar) OldError(162);
 				if (fd == nullptr) OldError(163); lv->FD = fd;
 			}
 			else {
@@ -789,7 +817,7 @@ bool FindLocVar(LocVar* LVRoot, LocVar* LV)
 {
 	auto result = false; if (Lexem != _identifier) return result;
 	LV = LVRoot; while (LV != nullptr) {
-		if (EquUpcase(LV->Name)) { return true; }
+		if (EquUpcase(LV->Name, LexWord)) { return true; }
 		LV = (LocVar*)LV->Chain;
 	}
 	return result;
@@ -1027,7 +1055,7 @@ KeyDPtr RdViewKey()
 	if (Lexem == '@') goto label1;
 	TestIdentif();
 	while (k != nullptr) {
-		if (EquUpcase(*k->Alias)) goto label1;
+		if (EquUpcase(*k->Alias, LexWord)) goto label1;
 		k = k->Chain;
 	}
 	s = LexWord;
@@ -1209,9 +1237,9 @@ label1:
 		break;
 	}
 	case _identifier: {
-		if (EquUpcase(QQdiv)) { Z = GetOp(_div, 0); goto label2; }
-		else if (EquUpcase(QQmod)) { Z = GetOp(_mod, 0); goto label2; }
-		else if (EquUpcase(QQround)) {
+		if (EquUpcase(QQdiv, LexWord)) { Z = GetOp(_div, 0); goto label2; }
+		else if (EquUpcase(QQmod, LexWord)) { Z = GetOp(_mod, 0); goto label2; }
+		else if (EquUpcase(QQround, LexWord)) {
 			TestReal(FTyp); Z = GetOp(_round, 0); RdLex();
 			Z->P1 = Z1;
 			Z->P2 = RdPrim(FTyp);
@@ -1361,7 +1389,7 @@ bool FindFuncD(FrmlPtr* ZZ)
 	char typ = '\0';
 	FuncDPtr fc = FuncDRoot;
 	while (fc != nullptr) {
-		if (EquUpcase(fc->Name)) {
+		if (EquUpcase(fc->Name, LexWord)) {
 			RdLex(); RdLex(); FrmlPtr z = GetOp(_userfunc, 8); z->FC = fc;
 			LocVar* lv = fc->LVB.Root;
 			WORD n = fc->LVB.NParam;
@@ -1382,35 +1410,49 @@ bool FindFuncD(FrmlPtr* ZZ)
 
 FrmlPtr RdPrim(char& FTyp)
 {
-	const BYTE R0FunN = 16; // { alphabetic ordered lower case names }
-	pstring R0Fun[R0FunN] = { "cprinter","currtime", "edrecno","exitcode","getmaxx","getmaxy",
-		"maxcol","maxrow","memavail","mousex","mousey", "pi","random","today","txtpos","txtxy" };
-	char R0Code[R0FunN] = { _cprinter,_currtime, _edrecno,_exitcode,_getmaxx,_getmaxy,
-		_maxcol,_maxrow,_memavail,_mousex,_mousey, _pi,_random,_today,_txtpos,_txtxy };
+	std::map<int, std::string> R0Fun = {
+		std::pair<int, std::string> {_cprinter, "cprinter"},
+		std::pair<int, std::string> {_currtime, "currtime"},
+		std::pair<int, std::string> {_edrecno, "edrecno"},
+		std::pair<int, std::string> {_exitcode, "exitcode"},
+		std::pair<int, std::string> {_getmaxx, "getmaxx"},
+		std::pair<int, std::string> {_getmaxy, "getmaxy"},
+		std::pair<int, std::string> {_maxcol, "maxcol"},
+		std::pair<int, std::string> {_maxrow, "maxrow"},
+		std::pair<int, std::string> {_memavail, "memavail"},
+		std::pair<int, std::string> {_mousex, "mousex"},
+		std::pair<int, std::string> {_mousey, "mousey"},
+		std::pair<int, std::string> {_pi, "pi"},
+		std::pair<int, std::string> {_random, "random"},
+		std::pair<int, std::string> {_today, "today"},
+		std::pair<int, std::string> {_txtpos, "txtpos"},
+		std::pair<int, std::string> {_txtxy, "txtxy"},
+	};
+
 	const BYTE RCFunN = 5;
 	pstring RCFun[RCFunN] = { "edbreak","edirec","menux","menuy","usercode" };
 	char RCCode[RCFunN] = { 3, 4, 5, 6, 7 };
 	const BYTE S0FunN = 12;
 	pstring S0Fun[S0FunN] = { "accright","clipbd","edbool","edfield","edfile","edkey",
 		"edreckey","keybuf","passWORD","readkey","username","version" };
-	char S0Code[S0FunN] = { _accright,_clipbd,_edbool,_edfield,	_edfile,_edkey,_edreckey,
-		_keybuf,_passWORD,_readkey,_username,_version };
+	char S0Code[S0FunN] = { _accright, _clipbd, _edbool, _edfield, _edfile, _edkey, _edreckey,
+		_keybuf, _passWORD, _readkey, _username, _version };
 	const BYTE B0FunN = 2;
 	pstring B0Fun[B0FunN] = { "isnewrec","testmode" };
-	char B0Code[B0FunN] = { _isnewrec,_testmode };
+	char B0Code[B0FunN] = { _isnewrec, _testmode };
 	const BYTE S1FunN = 5;
 	pstring S1Fun[S1FunN] = { "char","getenv", "lowcase","nodiakr","upcase" };
-	char S1Code[S1FunN] = { _char,_getenv,_lowcase,_nodiakr,_upcase };
+	char S1Code[S1FunN] = { _char, _getenv, _lowcase, _nodiakr, _upcase };
 	const BYTE R1FunN = 12;
 	pstring R1Fun[R1FunN] = { "abs","arctan","color","cos","exp","frac","int",
 		"ln","sin","sqr","sqrt","typeday" };
 	char R1Code[R1FunN] = { _abs,_arctan,_color,_cos,_exp,_frac,_int,_ln,_sin,_sqr,_sqrt,_typeday };
 	const BYTE R2FunN = 4;
 	pstring R2Fun[R2FunN] = { "addmonth","addwdays","difmonth","difwdays" };
-	char R2Code[R2FunN] = { _addmonth,_addwdays,_difmonth,_difwdays };
+	char R2Code[R2FunN] = { _addmonth, _addwdays, _difmonth, _difwdays };
 	const BYTE RS1FunN = 5;
 	pstring RS1Fun[RS1FunN] = { "diskfree","length","linecnt","ord","val" };
-	char RS1Code[RS1FunN] = { _diskfree,_length,_linecnt,_ord,_val };
+	char RS1Code[RS1FunN] = { _diskfree, _length, _linecnt, _ord, _val };
 	const BYTE S3FunN = 5;
 	pstring S3Fun[S3FunN] = { "copy","str","text" };
 	char S3Code[S3FunN] = { _copy,_str,_str };
@@ -1429,7 +1471,8 @@ FrmlPtr RdPrim(char& FTyp)
 		}
 		else if (IsFun(RCFun, RCFunN, RCCode, FunCode))
 		{
-			Z = GetOp(_getWORDvar, 1); Z->N01 = FunCode; FTyp = 'R';
+			Z = GetOp(_getWORDvar, 1);
+			Z->N01 = FunCode; FTyp = 'R';
 		}
 		else if (IsFun(S0Fun, S0FunN, S0Code, FunCode))
 		{
@@ -1452,7 +1495,7 @@ FrmlPtr RdPrim(char& FTyp)
 			else if (IsFun(S3Fun, S3FunN, S3Code, FunCode))
 			{
 				RdLex(); Z = GetOp(FunCode, 0); Z->P1 = RdAdd(FTyp);
-				if (FunCode == _copy) TestString(FTyp);
+				if ((BYTE)FunCode == _copy) TestString(FTyp);
 				else { TestReal(FTyp); FTyp = 'S'; }
 				Accept(','); Z->P2 = RdAdd(Typ);
 				if (((BYTE)FunCode == _str) && (Typ == 'S')) goto label0;
@@ -1466,7 +1509,7 @@ FrmlPtr RdPrim(char& FTyp)
 				RdLex(); Z2 = nullptr;
 			label1:
 				Z = GetOp(_cond, 0);
-				if (not IsKeyWord("ELSE"))
+				if (!IsKeyWord("ELSE"))
 				{
 					Z->P1 = RdFormula(Typ); TestBool(Typ);
 				}
@@ -1520,7 +1563,7 @@ FrmlPtr RdPrim(char& FTyp)
 				RdLex(); Z1 = RdAdd(Typ); TestReal(Typ);
 				Accept(','); TestLex(_quotedstr);
 			label2:
-				Z = GetOp(_strdate, LexWord.length() + 1); Z->P1 = Z1;
+				Z = GetOp(_strdate1, LexWord.length() + 1); Z->P1 = Z1;
 				Z->Mask = LexWord; RdLex();
 				Accept(')'); FTyp = 'S';
 			}
@@ -1621,7 +1664,7 @@ FrmlPtr RdPrim(char& FTyp)
 				FTyp = 'S'; Accept(')');
 			}
 			else if (IsKeyWord("TRUST")) {
-				Z = GetOp(_trust, 0); RdByteListInStore; FTyp = 'B';
+				Z = GetOp(_trust, 0); RdByteListInStore(); FTyp = 'B';
 			}
 			else if (IsKeyWord("EQUMASK")) {
 				Z = GetOp(_equmask, 0); FTyp = 'B'; RdLex();
@@ -1632,7 +1675,8 @@ FrmlPtr RdPrim(char& FTyp)
 			else Error(75);
 		else {
 			if (RdFldNameFrml == nullptr) Error(110);
-			Z = RdFldNameFrml(FTyp);
+			auto zx = *RdFldNameFrml;
+			Z = zx(FTyp);
 			if ((Z->Op != _access) || (Z->LD != nullptr)) FrstSumVar = false;
 		}
 		break;
@@ -1775,12 +1819,14 @@ FrmlPtr RdStrFrml()
 
 FrmlPtr GetOp(BYTE Op, integer BytesAfter)
 {
-	FrmlPtr Z; WORD l;
+	WORD l;
 	if (Op < 0x60) l = 1;
 	else if (Op < 0xb0) l = 5;
 	else if (Op < 0xf0) l = 9;
 	else l = 13;
-	Z = (FrmlPtr)GetZStore(l + BytesAfter); Z->Op = Op;
+	//Z = (FrmlPtr)GetZStore(l + BytesAfter);
+	FrmlElem* Z = new FrmlElem();
+	Z->Op = Op;
 	return Z;
 }
 
@@ -1789,7 +1835,7 @@ FieldDPtr FindFldName(FileDPtr FD)
 	FieldDPtr F = FD->FldD;
 	while (F != nullptr) {
 		{
-			if (EquUpcase(F->Name)) goto label1;
+			if (EquUpcase(F->Name, LexWord)) goto label1;
 			F = (FieldDescr*)F->Chain;
 		}
 	}
@@ -1816,7 +1862,7 @@ FileDPtr FindFileD()
 	while (R != nullptr) {
 		FD = R->FD;
 		while (FD != nullptr) {
-			if (EquUpcase(FD->Name)) { return FD; }
+			if (EquUpcase(FD->Name, LexWord)) { return FD; }
 			FD = (FileD*)FD->Chain;
 		}
 		R = R->ChainBack;
@@ -1902,7 +1948,7 @@ LinkDPtr FindOwnLD(FileDPtr FD, const pstring& RoleName)
 	LinkDPtr result = nullptr;
 	ld = LinkDRoot;
 	while (ld != nullptr) {
-		if ((ld->ToFD == FD) && EquUpcase(ld->FromFD->Name) &&
+		if ((ld->ToFD == FD) && EquUpcase(ld->FromFD->Name, LexWord) &&
 			(ld->IndexRoot != 0) && SEquUpcase(ld->RoleName, RoleName)) goto label1;
 		ld = ld->Chain;
 	}
@@ -1913,7 +1959,9 @@ label1:
 
 FrmlPtr TryRdFldFrml(FileDPtr FD, char& FTyp)
 {
-	FileDPtr cf; FieldDPtr f; LinkDPtr ld; FrmlPtr z; pstring roleNm;
+	FileD* cf = nullptr; FieldDescr* f = nullptr;
+	LinkD* ld = nullptr; FrmlElem* z = nullptr;
+	pstring roleNm;
 	FrmlElem* (*rff)(char&);
 	char typ = '\0';
 

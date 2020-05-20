@@ -1162,7 +1162,7 @@ LongStr* RunS(FrmlPtr Z)
 
 	switch (Z->Op) {
 	case _char: { s[0] = 1; s[1] = char(trunc(RunReal(Z->P1))); break; }
-	case _strdate: s = StrDate(RunReal(Z->P1), Z->Mask);
+	case _strdate1: s = StrDate(RunReal(Z->P1), Z->Mask);
 	case _str: {
 		if (Z->P3 != nullptr) {
 			r = RunReal(Z->P1);

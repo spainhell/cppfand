@@ -64,7 +64,7 @@ bool MouseInRectProc(WORD X, WORD Y, WORD XSize, WORD Size); // r182 ASM - rozdì
 void SplitDate(double R, WORD& d, WORD& m, WORD& y);
 double AddMonth(double R, double RM);
 double DifMonth(double R1, double R2);
-double ValDate(const pstring& Txtpstring, pstring Mask); // r276
+double ValDate(pstring Txt, pstring Mask); // r276
 pstring StrDate(double R, pstring Mask); //r321
 double Today(); // r362
 double CurrTime();

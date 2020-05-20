@@ -7,7 +7,7 @@
 extern RdbPos ChptIPos; // usen in LexAnal & ProjMgr
 
 // funkce dle COMPILE.PAS
-bool EquUpcase(pstring& S); // r274 ASM
+bool EquUpcase(pstring& S1, pstring& S2); // r274 ASM
 bool EquUpcase(const char* S);
 void Error(integer N); // r1
 void SetInpStr(pstring& S); //r31

@@ -614,7 +614,7 @@ FileD* GetFD(void* p, bool WithSelf, WORD Sg)
 {
 	if (p != nullptr) {
 		LexWord = *(pstring*)(p);
-		if (WithSelf && EquUpcase(CFile->Name)) p = CFile;
+		if (WithSelf && EquUpcase(CFile->Name, LexWord)) p = CFile;
 		else p = FindFileD();
 	}
 	return (FileD*)p;
@@ -625,7 +625,7 @@ FuncD* GetFC(void* p, WORD Sg)
 	FuncD* fc;
 	LexWord = *(pstring*)(p);
 	fc = FuncDRoot; while (fc != nullptr) {
-		if (EquUpcase(fc->Name)) goto label1;
+		if (EquUpcase(fc->Name, LexWord)) goto label1;
 		fc = fc->Chain;
 	}
 label1:

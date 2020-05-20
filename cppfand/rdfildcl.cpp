@@ -231,7 +231,7 @@ label1:
 	RdLex();/*#*/ RdLex();/*U*/
 label2:
 	ReleaseStore(p); Move(&EOD, EO, sizeof(*EO));
-	if (EquUpcase(ViewName)) found = true;
+	if (EquUpcase(ViewName, LexWord)) found = true;
 	EO->ViewName = StoreStr(LexWord); RdLex(); /*'('*/
 	do {
 		RdLex();
@@ -242,7 +242,7 @@ label2:
 	RdBegViewDcl(EO);
 	while (Lexem == ',') {
 		FVA = FileVarsAllowed; FileVarsAllowed = false;
-		if (not RdViewOpt(EO)) Error(44);
+		if (!RdViewOpt(EO)) Error(44);
 		FileVarsAllowed = FVA;
 	}
 	if (!found && (Lexem == ';')) {
@@ -282,7 +282,7 @@ void TestDupl(FileD* FD)
 	StringList S;
 	S = FD->ViewNames;
 	while (S != nullptr) {
-		if (EquUpcase(S->S)) Error(26); S = (StringList)S->Chain;
+		if (EquUpcase(S->S, LexWord)) Error(26); S = (StringList)S->Chain;
 	}
 }
 
@@ -546,9 +546,9 @@ void LookForK(pstring* Name, FileD* F)
 KeyD* RdFileOrAlias1(FileD* F)
 {
 	KeyD* k = F->Keys;
-	if (!EquUpcase(F->Name))
+	if (!EquUpcase(F->Name, LexWord))
 		while (k != nullptr) {
-			if (EquUpcase(*k->Alias)) goto label1;
+			if (EquUpcase(*k->Alias, LexWord)) goto label1;
 			k = k->Chain;
 		}
 label1:

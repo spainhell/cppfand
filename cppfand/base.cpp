@@ -10,6 +10,7 @@
 #include <vector>
 #include "obaseww.h"
 #include "oaccess.h"
+#include <ctime>
 
 /*const*/ char Version[] = { '4', '.', '2', '0', '\0' };
 
@@ -416,16 +417,6 @@ void SplitDate(double R, WORD& d, WORD& m, WORD& y)
 	}
 }
 
-double Today()
-{
-	return 0.0;
-}
-
-double CurrTime()
-{
-	return 0.0;
-}
-
 void wait()
 {
 }
@@ -435,9 +426,136 @@ bool MouseInRect(WORD X, WORD Y, WORD XSize, WORD Size)
 	return false;
 }
 
-double ValDate(const pstring& Txtpstring, pstring Mask)
+void EncodeMask(pstring& Mask, WORD& Min, WORD& Max)
 {
-	return 0.0;
+	char Code[] = "YMDhmst";
+	WORD i = 0, j = 0;
+	Min = 9; Max = 0;
+	for (i = 1; i <= Mask.length(); i++)
+	{
+		for (j = 0; j <= 6; j++) {
+			if (Mask[i] == Code[j])
+			{
+				Mask[i] = char(j);
+				if (Min > j) Min = j;
+				if (Max < j) Max = j;
+			}
+		}
+	}
+}
+
+void AnalDateMask(pstring& Mask, WORD& I, WORD& IDate, WORD& N)
+{
+	N = 0;
+	if (Mask[I] <= 6) {
+		IDate = Mask[I];
+		do { I++; N++; } while (!((I > Mask.length()) || (Mask[I] != IDate)));
+	}
+}
+
+double RDate(WORD Y, WORD M, WORD D, WORD hh, WORD mm, WORD ss, WORD tt)
+{
+	WORD i = 0; longint l = 0, n = 0; double r = 0;
+	if ((D > NoDayInMonth[M]) && ((M != 2) || (D != 29) || !(OlympYear(Y)))) { return 0; }
+	if (Y + M + D == 0) l = 0;
+	else {
+		l = longint(Y - 1) * 365 + OlympYears(Y) + D;
+		for (i = 1; i <= M - 1; i++) l = l + NoDayInMonth[i];
+		if ((M > 2) && OlympYear(Y)) l++;
+	}
+	n = tt + 100 * ss + 6000 * longint(mm); r = (n + 360000.0 * hh) / (8640000.0);
+	return l + r;
+}
+
+double Today()
+{
+	std::time_t t = std::time(0);   // get time now
+	struct tm lt;
+	errno_t err = localtime_s(&lt, &t);
+	return RDate(lt.tm_year + 1900, lt.tm_mon, lt.tm_mday, 0, 0, 0, 0);
+}
+
+double CurrTime()
+{
+	std::time_t t = std::time(0);   // get time now
+	struct tm lt;
+	errno_t err = localtime_s(&lt, &t);
+	return RDate(1 + 1900, 1, 0, lt.tm_hour, lt.tm_min, lt.tm_sec, 0);
+}
+
+double ValDate(pstring Txt, pstring Mask)
+{
+	struct Z { longint Y = 0, M = 0, D = 0, hh = 0, mm = 0, ss = 0, tt = 0; } z;
+	longint* Date = &z.Y;
+	WORD i = 0, j = 0, k = 0, min = 0, max = 0, iDate = 0,
+		n = 0, Ylength = 0, Year = 0, y = 0, Month = 0, Day = 0;
+	pstring s; bool WasYMD = false, WasMinus = false; double R = 0; longint nl = 0;
+
+	double result = 0.0;
+	Ylength = 0; z.Y = -1; z.M = -1; z.D = -1;
+	for (i = 3; i <= 6; i++) Date[i] = 0;
+	WasYMD = false; WasMinus = false;
+	EncodeMask(Mask, min, max);
+	i = 1; j = 1;
+label1:
+	if (j > Txt.length()) goto label2;
+	else if (i > Mask.length()) return result;
+	AnalDateMask(Mask, i, iDate, n);
+	if (n == 0) {
+		if (Mask[i] != Txt[j]) return result;
+		i++; j++;
+	} /* delimiter */
+	else { /* YMDhmst */
+		s = ""; if (iDate < 3) WasYMD = true;
+		while ((Txt[j] == ' ') && (n > 1)) { j++; n--; }
+		if ((Txt[j] == '-') && (n > 1) && (iDate == min) && (iDate > 2)) {
+			WasMinus = true; j++; n--;
+		}
+		if (!(Txt[j] >= '0' && Txt[j] <= '9')) return result;
+		while ((j <= Txt.length()) && (isdigit(Txt[j])) && (n > 0)) {
+			s.Append(Txt[j]); j++; n--;
+		}
+		val(s, Date[iDate], k);
+		if (iDate == 0) Ylength = s.length();
+	}
+	goto label1;
+label2:
+	if ((min == 2) && (max >= 3)) {
+		if (z.D < 0) z.D = 0;
+		R = z.D + (z.tt + 100 * z.ss + 6000 * longint(z.mm) + 360000.0 * z.hh) / 8640000.0;
+		goto label3;
+	}
+	if (WasYMD) {
+		SplitDate(Today(), Day, Month, Year);
+		/*if ((max<3) && (z.D=-1) && (z.M=-1) && (z.Y=-1)) return;*/
+		if (z.D == -1) z.D = 1;
+		else {
+			if ((z.D == 0) || (z.D > 31)) return result;
+			else if (z.M == -1) z.M = Month;
+		}
+		if (z.M == -1) z.M = 1;
+		else if ((z.M == 0) || (z.M > 12)) return result;
+		if (Ylength == 0) z.Y = Year;
+		else if (z.Y > 9999) return result;
+		else
+			if (Ylength <= 2) {
+				if (spec.OffDefaultYear == 0) z.Y = (Year / 100) * 100 + z.Y;
+				else {
+					y = (Year + spec.OffDefaultYear) % 100;
+					if (z.Y < y) z.Y = z.Y + 2000; else z.Y = z.Y + 1900;
+				}
+			}
+	}
+	else { z.Y = 0; z.M = 0; z.D = 0; }
+	if ((min < 3) && (z.hh > 23)) return result;
+	if ((min < 4) && (z.mm > 59)) return result;
+	if ((min < 5) && (z.ss > 59)) return result;
+	R = RDate(z.Y, z.M, z.D, z.hh, z.mm, z.ss, z.tt);
+label3:
+	if (!WasYMD && (R == 0.0)) R = 1E-11;
+	if (WasMinus) result = -R;
+	else result = R;
+	return result;
 }
 
 pstring StrDate(double R, pstring Mask)
@@ -752,14 +870,14 @@ void RdWrCache(bool ReadOp, FILE* Handle, bool NotCached, longint Pos, WORD N, v
 
 	if (Handle == nullptr) RunError(706);
 	//if (NotCached) {
-		SeekH(Handle, Pos);
-		if (ReadOp) ReadH(Handle, N, Buf);
-		else WriteH(Handle, N, Buf);
-		if (HandleError == 0) return;
-		err = HandleError;
-		SetCPathForH(Handle);
-		SetMsgPar(CPath);
-		RunError(700 + err);
+	SeekH(Handle, Pos);
+	if (ReadOp) ReadH(Handle, N, Buf);
+	else WriteH(Handle, N, Buf);
+	if (HandleError == 0) return;
+	err = HandleError;
+	SetCPathForH(Handle);
+	SetMsgPar(CPath);
+	RunError(700 + err);
 	//}
 	//PgeIdx = Pos + CachePageSize - 1;
 	//PgeRest = CachePageSize - PgeIdx;

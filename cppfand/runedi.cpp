@@ -1154,7 +1154,7 @@ void GotoRecFld(longint NewRec, EFldD* NewFld)
 		if (CPage != CFld->Page) DisplWwRecsOrPage();
 		else IVon(); return;
 	}
-	if (not EdRecVar) md = NewLMode(RdMode);
+	if (!EdRecVar) md = NewLMode(RdMode);
 	if (NewRec > CNRecs()) NewRec = CNRecs();
 	if (NewRec <= 0) NewRec = 1;
 	if (Select) SetRecAttr(IRec);
@@ -1300,7 +1300,7 @@ label1:
 		cf2 = CFile; goto label2;
 	}
 	if (MembMd == NullMode) goto label4;
-	if (not LockForMemb(cf, 1, MembMd, md)) {
+	if (!LockForMemb(cf, 1, MembMd, md)) {
 		cf2 = CFile; LockForMemb(cf, 2, MembMd, md);
 	label2:
 		LockForAdd(cf, 2, true, md);
@@ -1748,7 +1748,7 @@ longint UpdateIndexes()
 	K = CFile->Keys;
 	while (K != nullptr) {
 		if (K != VK) {
-			if (not IsNewRec) { CRecPtr = E->OldRecPtr; K->Delete(E->LockedRec); }
+			if (!IsNewRec) { CRecPtr = E->OldRecPtr; K->Delete(E->LockedRec); }
 			CRecPtr = E->NewRecPtr; K->Insert(NNew, true);
 		}
 		K = K->Chain;
@@ -1764,7 +1764,7 @@ bool WriteCRec(bool MayDispl, bool& Displ)
 	EFldD* D; ChkDPtr C; LockMode OldMd; KeyDPtr K;
 	Displ = false;
 	auto result = false;
-	if (not WasUpdated || !IsNewRec && EquOldNewRec()) {
+	if (!WasUpdated || !IsNewRec && EquOldNewRec()) {
 		IsNewRec = false; WasUpdated = false; result = true; UnLockRec(E); return result;
 	}
 	result = false;
@@ -2046,7 +2046,7 @@ void CheckFromHere()
 	longint N; EFldD* D; ChkD* C; LockMode md;
 	D = CFld; N = CRec(); md = NewLMode(RdMode);
 label1:
-	if (not DeletedFlag)
+	if (!DeletedFlag)
 		while (D != nullptr) {
 			C = CompChk(D, '?');
 			if (C != nullptr) {
@@ -2476,7 +2476,7 @@ label2:
 		if (C == _CtrlHome_) { GoPrevNextRec(-1, false); TxtXY = 0; goto label4; }
 		if (C == _CtrlEnd_) {
 		label31:
-			if (not GoPrevNextRec(+1, false) && Srch) {
+			if (!GoPrevNextRec(+1, false) && Srch) {
 				UpdateTxtPos(LastLen); Srch = false;
 			}
 			TxtXY = 0;
@@ -3025,7 +3025,7 @@ void DisplLL()
 		else n = 128;
 	else if (IsNewRec) n = 123;
 	else n = 124;
-	if (not F1Mode || Mode24) { WrLLMsg(n); DisplLASwitches(); }
+	if (!F1Mode || Mode24) { WrLLMsg(n); DisplLASwitches(); }
 	;
 }
 
@@ -3159,7 +3159,7 @@ label8:
 label81:
 	OldTimeR = Timer; CtrlReadKbd();
 	if (CFile->NotCached()) {
-		if (not EdRecVar && (E->RefreshDelay > 0) && (OldTimeR + E->RefreshDelay < Timer))
+		if (!EdRecVar && (E->RefreshDelay > 0) && (OldTimeR + E->RefreshDelay < Timer))
 			DisplAllWwRecs();
 		if (Event.What == 0)
 			if ((E->WatchDelay > 0) && (OldTimeW + E->WatchDelay < Timer))
@@ -3236,7 +3236,7 @@ label81:
 				if (IsNewRec) {
 					if ((CNRecs() > 1) && (!Prompt158 || EquOldNewRec() || PromptYN(158))) DelNewRec();
 				}
-				else if (not NoCreate && !Only1Record && WriteCRec(true, Displ))
+				else if (!NoCreate && !Only1Record && WriteCRec(true, Displ))
 				{
 					if (Displ) DisplAllWwRecs(); SwitchToAppend();
 				} goto label0;
@@ -3317,7 +3317,7 @@ label81:
 						switch (w) {
 						case _F9_: { SaveFiles; UpdCount = 0; break; }
 						case _N_:
-							if (not NoCreate && !Only1Record)
+							if (!NoCreate && !Only1Record)
 							{
 								InsertRecProc(nullptr); goto label0;
 							}

@@ -105,7 +105,7 @@ char RdOwner(LinkD* LLD, LocVar* LLV)
 	TestIdentif();
 	ld = LinkDRoot;
 	while (ld != nullptr) {
-		if ((ld->FromFD == CFile) && EquUpcase(ld->RoleName)) {
+		if ((ld->FromFD == CFile) && EquUpcase(ld->RoleName, LexWord)) {
 			if ((ld->IndexRoot = 0)) Error(116);
 			RdLex(); fd = ld->ToFD;
 			if (Lexem == '(') {
@@ -301,7 +301,7 @@ FrmlPtr RdFunctionP(char& FFTyp)
 		if (FD->typSQLFile) OldError(155);
 #endif
 		cf = CFile; CFile = FD;
-		if (not IsRoleName(true, FD, LD) || (LD = nullptr)) Error(9);
+		if (!IsRoleName(true, FD, LD) || (LD == nullptr)) Error(9);
 		CFile = cf; Z->LinkLD = LD; FTyp = 'R'; goto label2;
 	}
 	else if (IsKeyWord("ISDELETED")) {
@@ -572,7 +572,7 @@ label1:
 	PD->Instr1 = RdPInstr;
 	bool b = Lexem = ';';
 	if (b) RdLex();
-	if (not IsKeyWord("END"))
+	if (!IsKeyWord("END"))
 		if (IsKeyWord("ELSE"))
 			while (!IsKeyWord("END")) {
 				RdPInstrAndChain(PD->ElseInstr1);
@@ -723,7 +723,7 @@ void RdKeyCode(EdExitD* X)
 		for (i = 0; i < NKeyNames; i++)
 		{
 			/* !!! with KeyNames[i] do!!! */
-			if (EquUpcase(KeyNames[i].Nm)) {
+			if (EquUpcase(KeyNames[i].Nm, LexWord)) {
 				E->KeyCode = KeyNames[i].Code;
 				E->Break = KeyNames[i].Brk;
 				RdLex();
@@ -1041,7 +1041,7 @@ label1:
 		TestIdentif(); FL1 = InFL;
 		while (FL1 != nullptr)
 		{
-			if (EquUpcase(FL1->FldD->Name)) goto label2;
+			if (EquUpcase(FL1->FldD->Name, LexWord)) goto label2;
 			FL1 = (FieldList)FL1->Chain;
 		}
 		Error(43);
@@ -1332,7 +1332,7 @@ CpOption RdCOpt()
 	pstring OptArr[3] = { "FIX", "VAR", "TXT" };
 	RdLex(); TestIdentif();
 	for (i = 0; i < 3; i++)
-		if (EquUpcase(OptArr[i])) { RdLex(); return CpOption(i); }
+		if (EquUpcase(OptArr[i], LexWord)) { RdLex(); return CpOption(i); }
 	Error(53);
 	throw std::exception("Bad value in RdCOpt() in rdproc.cpp");
 }
@@ -2068,7 +2068,7 @@ void ReadDeclChpt()
 label1:
 	if (IsKeyWord("FUNCTION")) {
 		TestIdentif(); fc = FuncDRoot; while (fc != CRdb->OldFCRoot) {
-			if (EquUpcase(fc->Name)) Error(26); fc = fc->Chain;
+			if (EquUpcase(fc->Name, LexWord)) Error(26); fc = fc->Chain;
 		}
 		fc = (FuncD*)GetStore(sizeof(FuncD) - 1 + LexWord.length());
 		fc->Chain = FuncDRoot; FuncDRoot = fc;
@@ -2162,7 +2162,7 @@ label1:
 	while (Lexem == ',') {
 		RdLex();
 		if (MTyp == 'M') {
-			if (not IsBackup && IsKeyWord("OVERWRITE")) { PD->bmOverwr = true; goto label2; }
+			if (!IsBackup && IsKeyWord("OVERWRITE")) { PD->bmOverwr = true; goto label2; }
 			if (IsKeyWord("SUBDIR")) { PD->bmSubDir = true; goto label2; };
 		}
 		if (IsKeyWord("NOCOMPRESS")) PD->NoCompress = true;

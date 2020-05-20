@@ -184,7 +184,7 @@ label1:
 		ModeLockBnds(oldmode, oldpos, oldlen); UnLockH(h, oldpos, oldlen);
 	}
 	if (Mode != NullMode) {
-		ModeLockBnds(Mode, pos, len); if (not TryLockH(h, pos, len)) {
+		ModeLockBnds(Mode, pos, len); if (!TryLockH(h, pos, len)) {
 			if (oldmode != NullMode) TryLockH(h, oldpos, oldlen);
 			UnLockH(h, TransLock, 1); goto label2;
 		}
@@ -765,7 +765,7 @@ void TryInsertAllIndexes(longint RecNr)
 	MarkStore(p);
 	KeyDPtr K = CFile->Keys;
 	while (K != nullptr) {
-		if (not K->Insert(RecNr, true)) goto label1; K = K->Chain;
+		if (!K->Insert(RecNr, true)) goto label1; K = K->Chain;
 	}
 	CFile->XF->NRecs++;
 	return;
@@ -2731,7 +2731,7 @@ void XWKey::ReleaseTree(longint Page, bool IsClose)
 	if ((Page == 0) || (Page > XF()->MaxPage)) return;
 	XPagePtr p = (XPage*)GetStore(XPageSize);
 	XF()->RdPage(p, Page);
-	if (not p->IsLeaf) {
+	if (!p->IsLeaf) {
 		WORD n = p->NItems;
 		for (WORD i = 1; i < n; i++) {
 			ReleaseTree(p->XI(i)->DownPage, IsClose);

@@ -104,7 +104,7 @@ bool RunAddUpdte1(char Kind, void* CRold, bool Back, AddDPtr StopAD, LinkDPtr no
 		if (R != 0)
 		{
 			CRecPtr = CR;
-			if (not Link(AD, N2, Kind2)) goto fail; CR2 = CRecPtr;
+			if (!Link(AD, N2, Kind2)) goto fail; CR2 = CRecPtr;
 		}
 		if (Rold != 0)
 		{

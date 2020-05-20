@@ -112,7 +112,7 @@ void WrLevel(integer Level)
 		d = d->Chain;
 	}
 	if (b) {
-		if (not first) WrChar(',');
+		if (!first) WrChar(',');
 		WrStr("errortext+cond(^error:' ??')");
 	}
 	WrStr(";\r\n"); col = 1; if (CFile->Typ == '0'/*RDB*/) WrChar(0x11);
