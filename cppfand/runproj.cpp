@@ -375,7 +375,7 @@ void WrFDSegment(longint RecNr)
 	fdsaved = GetStore2(sz);
 	Move(CFile, fdsaved, sz);
 	
-	FileD savedFD = *CFile; // toto snad nahradí "požadovanou" záloha ...
+	FileD savedFD = *CFile; // toto snad nahradí "požadovanou" zálohu ...
 	
 	CFileF = CFile;
 	/* !!! with CFile^ do!!! */

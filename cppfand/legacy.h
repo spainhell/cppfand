@@ -38,8 +38,8 @@ void Erase(pstring soubor);
 void InitGraph(short GraphDriver, short GraphMode, pstring PathToDriver); // IGNORE
 void CloseGraph(); // IGNORE
 
-double Random();
-WORD Random(WORD rozsah);
+//double Random();
+//WORD Random(WORD rozsah);
 
 WORD ParamCount(); // vrací počet parametrů příkazové řádky
 pstring ParamStr(integer index);

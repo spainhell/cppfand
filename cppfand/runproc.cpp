@@ -1,5 +1,7 @@
 #include "runproc.h"
 
+
+#include "../pascal/random.h"
 #include "compile.h"
 #include "drivers.h"
 #include "expimp.h"
@@ -959,7 +961,6 @@ void RunInstr(Instr* PD)
 		case _login: /* !!! with PD^ do!!! */ StartLogIn(liName, liPassWord); break;
 		case _sqlrdwrtxt: SQLRdWrTxt(PD); break;
 #endif
-
 		case _asgnrand: srand(RunInt(PD->Frml)); break;
 		case _randomize: Random(); break;
 		case _asgnxnrecs: PD->xnrIdx->Release(); break;

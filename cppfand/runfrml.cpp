@@ -3,6 +3,8 @@
 #include "legacy.h"
 #include "rdrun.h"
 #include <math.h>
+
+#include "../pascal/random.h"
 #include "oaccess.h"
 #include "obaseww.h"
 #include "olongstr.h"
@@ -66,9 +68,8 @@ integer CompReal(double R1, double R2, integer M)
 LongStr* CopyToLongStr(pstring& SS)
 {
 	WORD l;
-	LongStr* s;
 	l = SS.length();
-	s = (LongStr*)GetStore(l + 2);
+	LongStr* s = new LongStr(l);
 	s->LL = l;
 	Move(&SS[1], s->A, l);
 	return s;

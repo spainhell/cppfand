@@ -8,6 +8,8 @@
 #include <handleapi.h>
 #include <iostream>
 #include <winbase.h>
+
+#include "../pascal/random.h"
 #include "base.h"
 #include "editor.h"
 #include "keyboard.h"
