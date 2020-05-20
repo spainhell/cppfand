@@ -246,7 +246,7 @@ public:
 	RdbPos ChptPos;     // zero for Rdb and FD translated from string 
 	WORD TxtPosUDLI = 0;    // =0 if not present
 	FileD* OrigFD = nullptr;    // like orig. or nil
-	BYTE Drive = 0;         // 1=A ,2=B ,else 0
+	BYTE Drive = 0;         // 1=A, 2=B, else 0
 	WORD CatIRec = 0;
 	FieldDPtr FldD = nullptr;
 	bool IsParFile = false, IsJournal = false, IsHlpFile = false, typSQLFile = false, IsSQLFile = false, IsDynFile = false;
@@ -551,7 +551,7 @@ const BYTE _filesize = 0x2e;  // {txtpath,txtcatirec}
 const BYTE _txtpos = 0x2f; const BYTE _cprinter = 0x30; const BYTE _mousex = 0x31; const BYTE _mousey = 0x32;
 const BYTE _txtxy = 0x33; const BYTE _indexnrecs = 0x34; const BYTE _owned = 0x35;  // {bool,sum,ld}           // {R}
 const BYTE _catfield = 0x36; // {CatIRec,CatFld}
-const BYTE _passWORD = 0x37; const BYTE _version = 0x38; const BYTE _username = 0x39; const BYTE _edfield = 0x3a;
+const BYTE _password = 0x37; const BYTE _version = 0x38; const BYTE _username = 0x39; const BYTE _edfield = 0x3a;
 const BYTE _accright = 0x3b; const BYTE _readkey = 0x3c; const BYTE _edreckey = 0x3d; const BYTE _edbool = 0x3e;
 const BYTE _edfile = 0x3f; const BYTE _edkey = 0x40; const BYTE _clipbd = 0x41; const BYTE _keybuf = 0x42;
 const BYTE _keyof = 0x43;  // {LV,KeyD}                                             // {S}

@@ -1516,9 +1516,12 @@ bool TestAccRight(StringList S)
 bool ForNavigate(FileDPtr FD)
 {
 	StringList S;
-	auto result = true; if (UserCode == 0) return result; S = FD->ViewNames;
+	auto result = true;
+	if (UserCode == 0) return result;
+	S = FD->ViewNames;
 	while (S != nullptr) {
-		if (TestAccRight(S)) return result; S = (StringList)S->Chain;
+		if (TestAccRight(S)) return result;
+		S = (StringList)S->Chain;
 	}
 	result = false;
 	return result;

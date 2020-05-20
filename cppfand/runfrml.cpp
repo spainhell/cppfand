@@ -1200,7 +1200,7 @@ LongStr* RunS(FrmlPtr Z)
 		if (Z->CatFld == CatPathName) s = FExpand(s);
 		break;
 	}
-	case _passWORD: s = ww.PassWord(false); break;
+	case _password: s = ww.PassWord(false); break;
 	case _readkey: {
 		ReadKbd();
 		s[1] = char(Lo(KbdChar));

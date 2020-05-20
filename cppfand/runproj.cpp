@@ -20,12 +20,12 @@
 
 void* O(void* p) // ASM
 {
-	return nullptr;
+	return p;
 }
 
 void* OCF(void* p) // ASM
 {
-	return nullptr;
+	return p;
 }
 
 //EditD* E = EditDRoot;
@@ -371,45 +371,62 @@ void WrFDSegment(longint RecNr)
 	//sz = AbsAdr(HeapPtr) - AbsAdr(CFile);
 	if (sz > MaxLStrLen) RunError(664);
 	oldsz = sz; nTb = 0; //Tb = O(HeapPtr);
-	MarkStore2(p2); fdsaved = GetStore2(sz); Move(CFile, fdsaved, sz);
+	MarkStore2(p2);
+	fdsaved = GetStore2(sz);
+	Move(CFile, fdsaved, sz);
+	
+	FileD savedFD = *CFile; // toto snad nahradí "požadovanou" záloha ...
+	
 	CFileF = CFile;
 	/* !!! with CFile^ do!!! */
-	CFile->TF = (TFile*)O(CFile->TF); CFile->XF = (XFile*)O(CFile->XF);
+	CFile->TF = (TFile*)O(CFile->TF);
+	CFile->XF = (XFile*)O(CFile->XF);
 	if (CFile->OrigFD != nullptr) CFile->OrigFD = (FileD*)OTb(CFile->OrigFD->Name);
 	s = CFile->ViewNames;
-	while (s->Chain != nullptr) {
-		s->Chain = (StringListEl*)O(s->Chain);
-		s = (StringList)s->Chain;
+	if (s != nullptr) {
+		while (s->Chain != nullptr) {
+			s->Chain = (StringListEl*)O(s->Chain);
+			s = (StringList)s->Chain;
+		}
 	}
 	f = CFile->FldD;
-	while (f->Chain != nullptr) {
-		f->Chain = (FieldDescr*)O(f->Chain);
-		f = (FieldDescr*)f->Chain;
-		if (f->Flg & f_Stored == 0) OFrml(f->Frml);
-	}
-	k = CFile->Keys; while (k->Chain != nullptr) {
-		k->Chain = (XKey*)O(k->Chain); k = k->Chain;
-		k->Alias = (pstring*)O(k->Alias);
-		OKF((KeyFldD*)(&k->KFlds));
-	}
-	ad = CFile->Add; while (ad->Chain != nullptr) {
-		ad->Chain = (AddD*)O(ad->Chain); ad = ad->Chain;
-		ad->LD = (LinkD*)O(ad->LD); OFrml(ad->Frml);
-		if (ad->Assign) OFrml(ad->Bool);
-		else {
-			c = ad->Chk;
-			if (c != nullptr) {
-				ad->Chk = (ChkD*)O(c);
-				c->HelpName = (pstring*)O(c->HelpName);
-			}
+	if (f != nullptr) {
+		while (f->Chain != nullptr) {
+			f->Chain = (FieldDescr*)O(f->Chain);
+			f = (FieldDescr*)f->Chain;
+			if ((f->Flg & f_Stored) == 0) OFrml(f->Frml);
 		}
-		cf = CFileF; CFileF = ad->File2;
-		ad->File2 = (FileD*)OTb(CFileF->Name);
-		ad->Field = (FieldDescr*)OCF(ad->Field);
-		if (!ad->Assign && (c != nullptr)) { OFrml(c->Bool); OFrml(c->TxtZ); }
-		CFileF = cf;
 	}
-	ld = (LinkD*)O(LinkDRoot); n = CFile->nLDs;
+	k = CFile->Keys;
+	if (k != nullptr) {
+		while (k->Chain != nullptr) {
+			k->Chain = (XKey*)O(k->Chain); k = k->Chain;
+			k->Alias = (pstring*)O(k->Alias);
+			OKF((KeyFldD*)(&k->KFlds));
+		}
+	}
+	ad = CFile->Add;
+	if (ad != nullptr) {
+		while (ad->Chain != nullptr) {
+			ad->Chain = (AddD*)O(ad->Chain); ad = ad->Chain;
+			ad->LD = (LinkD*)O(ad->LD); OFrml(ad->Frml);
+			if (ad->Assign) OFrml(ad->Bool);
+			else {
+				c = ad->Chk;
+				if (c != nullptr) {
+					ad->Chk = (ChkD*)O(c);
+					c->HelpName = (pstring*)O(c->HelpName);
+				}
+			}
+			cf = CFileF; CFileF = ad->File2;
+			ad->File2 = (FileD*)OTb(CFileF->Name);
+			ad->Field = (FieldDescr*)OCF(ad->Field);
+			if (!ad->Assign && (c != nullptr)) { OFrml(c->Bool); OFrml(c->TxtZ); }
+			CFileF = cf;
+		}
+	}
+	ld = (LinkD*)O(LinkDRoot);
+	n = CFile->nLDs;
 	while (n > 0) {
 		OKF(KeyFldDPtr(ld->Args)); cf = CFileF; CFileF = ld->ToFD;
 		ld->ToFD = (FileD*)OTb(CFileF->Name); ld->ToKey = (XKey*)OCF(ld->ToKey);
@@ -434,10 +451,13 @@ void WrFDSegment(longint RecNr)
 			OFrml(c->Bool);
 		}
 	}
-	ss = nullptr; // Ptr(PtrRec(CFile).Seg - 1, 14);
-	ss->LL = sz; cf = CFile; CFile = Chpt;
-	StoreChptTxt(ChptOldTxt, ss, false); WriteRec(RecNr);
-	CFile = cf; Move(fdsaved, CFile, oldsz);
+	ss = (LongStr*)&CFile->WasWrRec; // Ptr(PtrRec(CFile).Seg - 1, 14);
+	ss->LL = sz;
+	cf = CFile; CFile = Chpt;
+	StoreChptTxt(ChptOldTxt, ss, false);
+	WriteRec(RecNr);
+	CFile = cf;
+	Move(fdsaved, CFile, oldsz);
 	ReleaseStore2(p2);
 }
 

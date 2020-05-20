@@ -832,13 +832,14 @@ longint _T(FieldDescr* F)
 
 void T_(FieldDPtr F, longint Pos)
 {
-	void* p = nullptr; pstring s;
-	WORD* O = (WORD*)p; longint* LP = (longint*)p;
+	pstring s;
+	void* p = CRecPtr;
+	char* source = (char*)p + F->Displ;
+	longint* LP = (longint*)p;
 	if ((F->Typ == 'T') && (F->Flg && f_Stored != 0)) {
-		p = CRecPtr; *O += F->Displ;
 		if (CFile->Typ == 'D')
-			if (Pos == 0) FillChar(p, 10, ' ');
-			else { str(Pos, s); Move(&s[1], p, 10); }
+			if (Pos == 0) FillChar(source, 10, ' ');
+			else { str(Pos, s); Move(&s[1], source, 10); }
 		else *LP = Pos;
 	}
 	else RunError(906);
