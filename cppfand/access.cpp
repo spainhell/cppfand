@@ -1842,7 +1842,7 @@ LongStr* TFile::Read(WORD StackNr, longint Pos)
 		}
 		if (l == MaxLStrLen + 1) { l--; }
 		if (StackNr == 1) s = new LongStr(l); //(LongStr*)GetStore(l + 2);
-		else s = new LongStr(l); //(LongStr*)GetStore2(l + 2);
+		else s = new LongStr(l + 2); //(LongStr*)GetStore2(l + 2);
 		s->LL = l;
 		RdWr(true, Pos + 2, l, s->A);
 		break;
@@ -3259,46 +3259,8 @@ void* LocVarAd(LocVar* LV)
 	return nullptr;
 }
 
-/// nedìlá nic
 void XDecode(LongStr* S)
 {
-	BYTE RMask = 0; WORD h = 0, oldL = 0, newL = 0;
-	// v DS:SI je S
-	// do ES nahrajeme první 2B z S->A
-	// do BX nahrajeme offset od S
-	// do AX nahrajeme WORD DS:SI -> to je délka; SI += 2 -> už ukazujeme na pole S->A
-	// kontrola délky, pøi 0 -> konec
-	//
-	// do DI nahrajeme SI -> offset je teï i v DI
-	// do BX pøesuneme AX (to byla délka øetìzce)
-	// do AX nahrajeme byte z adresy DS:[BX] (to jest asi za koncem øetìzce)
-	// AX ^ 0xCCCC
-	// SI += AX;
-	// BX--;
-	// do CL naèteme DS:[BX]
-	// CL += 3;
-	// AL = 0x9C;
-	// rotace doleva o CL, i ve flg CF je poslední rotovaný bit
-	// RMask = AL;
-	// CH = 0;
-	//
-	// @1
-	// z DS:SI do AL, SI++
-	// DH = 0xFF;
-	// DL = AL;
-	// @2
-	// SI >= BX -> @4
-	// DH & 1 = 0 -> @1
-	// DL & 1 != 0 -> @3
-	// další byte z DS:SI do AL, SI++
-	// rotace RMASK << o 1
-	// AL = AL ^ RMask
-	// pøesnuò AL do ES:DI; DI++;
-	// DX >> 1
-	// skok na @2
-	// 
-	
-	
 	return;
 }
 

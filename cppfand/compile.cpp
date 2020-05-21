@@ -94,7 +94,7 @@ void SetInpLongStr(LongStr* S, bool ShowErr)
 
 void SetInpTTPos(longint Pos, bool Decode)
 {
-	LongStrPtr s;
+	LongStr* s;
 	s = CFile->TF->Read(2, Pos);
 	if (Decode) CodingLongStr(s);
 	InpArrLen = s->LL;
