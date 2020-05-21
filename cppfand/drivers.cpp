@@ -503,7 +503,7 @@ void NoSound()
 
 void ClrScr()
 {
-	screen.ScrClr(WindMin.X, WindMin.Y, WindMax.X - WindMin.X + 1, WindMax.Y - WindMin.Y + 1,
+	screen.ScrClr(WindMin.X - 1, WindMin.Y - 1, WindMax.X - WindMin.X + 1, WindMax.Y - WindMin.Y + 1,
 		' ', TextAttr);
 	screen.GotoXY(WindMin.X, WindMin.Y);
 }

@@ -601,16 +601,22 @@ void WrLLMargMsg(pstring* s, WORD n)
 
 void InitScr()
 {
+	// TODO: 
+	// tyto 2 radky jsou navic, editor se otviral prilis maly, nutno doresit proc
+	WindMin = { 1, 2 };
+	WindMax = { 80, 24 };
+	
 	FirstR = WindMin.Y; // +1;
 	FirstC = WindMin.X; // +1;
 	LastR = WindMax.Y; // +1;
 	LastC = WindMax.X; // +1;
+
 	if ((FirstR == 0) && (Mode != HelpM)) FirstR++;
 	if (LastR + 1 == TxtRows) LastR--;
 	MinC = FirstC; MinR = FirstR; MaxC = LastC; MaxR = LastR;
 	screen.Window(FirstC, FirstR, LastC, LastR);
 	FirstR--;
-	if ((Mode != HelpM) and (Mode != ViewM) and Wrap) LastC--;
+	if ((Mode != HelpM) && (Mode != ViewM) && Wrap) LastC--;
 	PageS = LastR - FirstR; LineS = succ(LastC - FirstC);
 }
 
@@ -2824,7 +2830,7 @@ void HelpRD(char dir)
 	else
 	{
 		if (WordNo2() > h1) h1++;
-		if (WordFind(h1, I1, I2, I) and (I <= ScrL + PageS)) SetWord(I1, I2);
+		if (WordFind(h1, I1, I2, I) && (I <= ScrL + PageS)) SetWord(I1, I2);
 		else { I1 = SetInd(LineI, Posi); WordL = 0; }
 		I = ScrL + PageS;
 	}
@@ -2838,16 +2844,16 @@ void HelpRD(char dir)
 void HandleEvent() {
 	wwmix wwmix1;
 
-	WORD I, I1, I2, I3;
+	WORD I = 0, I1 = 0, I2 = 0, I3 = 0;
 	FILE* F1 = nullptr;
 	WORD W1 = 0, W2 = 0, ww = 0;
-	longint L1, L2, fs;
+	longint L1 = 0, L2 = 0, fs = 0;
 	pstring ss;
-	int j;
+	int j = 0;
 	CHAR_INFO LastL[161];
 	LongStr* sp = nullptr;
 	void* P1 = nullptr;
-	bool bb;
+	bool bb = false;
 
 	ExitRecord er;
 	EdExitD* X = nullptr;
@@ -2857,7 +2863,7 @@ void HandleEvent() {
 	if (!MyGetEvent()) { ClrEvent(); IsWrScreen = false; return; }
 	if (!bScroll) CleanFrameM();
 	//NewExit(Ovr(), er);
-	goto Opet;
+	//goto Opet;
 	// !!! with Event do:
 	if (Event.What == evKeyDown) {
 		EdOk = false; ww = Event.KeyCode; ClrEvent();
@@ -3818,8 +3824,7 @@ label1:
 	Srch = false; Upd = false;
 	if (!Loc)
 		EditText(Mode, FileT, TxtPath, ErrMsg, T, 0xFFF0, LenT, Ind, Txtxy,
-			_F1 + _F6 + _F9 + _AltF10, ExD,
-			Srch, Upd, 126, 143, MsgS);
+			_F1 + _F6 + _F9 + _AltF10, ExD,	Srch, Upd, 126, 143, MsgS);
 	else EditText(Mode, LocalT, "", ErrMsg, (char*)&LS->A, MaxLStrLen, LS->LL, Ind, Txtxy,
 		_F1 + _F6, ExD, Srch, Upd, 126, 143, MsgS);
 	TxtPos = Ind + Part.PosP;

@@ -514,7 +514,7 @@ label1:
 
 WORD GetCatIRec(pstring Name, bool MultiLevel)
 {
-	longint i; FileDPtr CF; RdbDPtr R; void* CR;
+	longint i = 0; FileD* CF = nullptr; RdbD* R = nullptr; void* CR = nullptr;
 	WORD result = 0;
 	if (CatFD == nullptr || CatFD->Handle == nullptr) return result;
 	if (CRdb == nullptr) return result;

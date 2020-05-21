@@ -53,7 +53,7 @@ void ExChange(void* X, void* Y, WORD L);
 bool OverlapByteStr(void* p1, void* p2); // ASM
 WORD CountDLines(void* Buf, WORD L, char C); // r139 ASM
 pstring GetDLine(void* Buf, WORD L, char C, WORD I); // r144 ASM
-WORD FindCtrlM(LongStrPtr s, WORD i, WORD n); // r152
+WORD FindCtrlM(LongStr* s, WORD i, WORD n); // r152
 WORD SkipCtrlMJ(LongStrPtr s, WORD i); // r158
 void AddBackSlash(pstring& s);
 void DelBackSlash(pstring& s);

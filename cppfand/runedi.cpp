@@ -76,7 +76,7 @@ void WriteStr(WORD& pos, WORD& base, WORD& maxLen, WORD& maxCol, BYTE sLen, pstr
 		//BuffLine[i] = *item;
 	}
 	screen.ScrWrCharInfoBuf(cx1 + 1, cy1 + 1, Buffer, maxCol);
-	screen.GotoXY(cx + pos - base - 1, cy);
+	screen.GotoXY(cx + pos - base, cy + 1);
 }
 
 WORD EditTxt(pstring* s, WORD pos, WORD maxlen, WORD maxcol, char typ, bool del, bool star, bool upd, bool ret,

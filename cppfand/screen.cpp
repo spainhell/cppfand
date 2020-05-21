@@ -32,29 +32,9 @@ size_t Screen::BufSize()
 
 void Screen::ScrClr(WORD X, WORD Y, WORD SizeX, WORD SizeY, char C, BYTE Color)
 {
-	//WORD DX = 0;
-	//WORD DI = 0;
-	//ScrGetPtr(X, Y, DX, DI);
-	//
-	//CHAR_INFO* videobufferESDI = new CHAR_INFO[128*1024];
-	//CHAR_INFO AhAl;
-	//AhAl.Char.AsciiChar = C;
-	//AhAl.Attributes = Color;
-
-	//for (WORD row = 0; row <= SizeY; row++)
-	//{
-	//	for (WORD col = 0; col < SizeX; col++)
-	//	{
-	//		videobufferESDI[DI] = AhAl; // do videopamìti na indexu z DI uložíme znak
-	//	}
-	//	DI += TxtCols;
-	//	DI += TxtCols;
-	//}
-
-	//AhAl.Attributes = 9;
-
-	//do { AhAl.Char.AsciiChar = videobufferESDI[DX].Char.AsciiChar; }
-	//while ((videobufferESDI[DX].Char.AsciiChar & 0x0001) == 1);
+	// cislovani radku a sloupcu prichazi od 1 .. X
+	if (X < 0 || Y < 0) { throw std::exception("Bad ScrClr index."); }
+	//X--; Y--;
 
 	DWORD written = 0;
 	CHAR_INFO* _buf = new CHAR_INFO[SizeX * SizeY];
@@ -64,11 +44,6 @@ void Screen::ScrClr(WORD X, WORD Y, WORD SizeX, WORD SizeY, char C, BYTE Color)
 	CHAR_INFO ci; ci.Char.AsciiChar = C; ci.Attributes = Color;
 	for (int i = 0; i < SizeX * SizeY; i++) { _buf[i] = ci; }
 	WriteConsoleOutput(_handle, _buf, BufferSize, { 0, 0 }, &rect);
-
-	//SetConsoleCursorPosition(hConsOutput, leftTop);
-	//WriteConsoleOutput(hConsOutput, _buf, rightBottom, leftTop, &hWin);
-	//FillConsoleOutputAttribute(hConsOutput, Color, SizeX * SizeY, coordScreen, &written);
-	//FillConsoleOutputCharacter(hConsOutput, C, SizeX * SizeY, coordScreen, &written);
 
 	delete[] _buf;
 }
@@ -215,25 +190,25 @@ void Screen::CrsNorm()
 void Screen::GotoXY(WORD X, WORD Y)
 {
 	if (X > WindMax->X || Y > WindMax->Y) return;
-	X += WindMin->X;
-	Y += WindMin->Y;
+	X += WindMin->X - 1;
+	Y += WindMin->Y - 1;
 	SetConsoleCursorPosition(_handle, { (short)X, (short)Y });
 }
 
 BYTE Screen::WhereX()
 {
-	// vrací relativní pozici (k aktuálnímu oknu)
+	// vrací relativní pozici (k aktuálnímu oknu) èíslovanou od 1
 	CONSOLE_SCREEN_BUFFER_INFO sbi;
 	GetConsoleScreenBufferInfo(_handle, &sbi);
-	return (BYTE)sbi.dwCursorPosition.X - WindMin->X;
+	return (BYTE)sbi.dwCursorPosition.X - WindMin->X + 1;
 }
 
 BYTE Screen::WhereY()
 {
-	// vrací relativní pozici (k aktuálnímu oknu)
+	// vrací relativní pozici (k aktuálnímu oknu) èíslovanou od 1
 	CONSOLE_SCREEN_BUFFER_INFO sbi;
 	GetConsoleScreenBufferInfo(_handle, &sbi);
-	return (BYTE)sbi.dwCursorPosition.Y - WindMin->Y;
+	return (BYTE)sbi.dwCursorPosition.Y - WindMin->Y + 1;
 }
 
 void Screen::Window(BYTE X1, BYTE Y1, BYTE X2, BYTE Y2)
@@ -306,9 +281,11 @@ storeWindow Screen::popScreen()
 
 void Screen::SaveScreen(WParam* wp, short c1, short r1, short c2, short r2)
 {
-	//c1--; c2--;
-	//r1--; r2--;
-	if (c1 < 0 || c2 > 79 || r1 < 0 || r2 > 24) { throw std::exception("Bad SaveScreen index."); }
+	// cislovani radku a sloupcu prichazi od 1 .. X
+	if (c1 < 1 || c2 > 80 || r1 < 1 || r2 > 25) { throw std::exception("Bad SaveScreen index."); }
+
+	c1--; c2--;
+	r1--; r2--;
 		
 	SMALL_RECT rect{ c1, r1, c2, r2 };
 	COORD bufSize{ (short)(c2 - c1 + 1), (short)r2 - r1 + 1 };

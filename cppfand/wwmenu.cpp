@@ -75,11 +75,11 @@ void TWindow::InitTWindow(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, pstring
 	WasCrsEnabled = Crs.Enabled;
 	screen.CrsHide();
 	SavedW = PushW1(Orig.X + 1, Orig.Y + 1, Orig.X + Size.X + Shadow.X, Orig.Y + Size.Y + Shadow.Y, true, false);
-	if (SaveLL) { SavedLLW = PushW1(0, TxtRows - 1, TxtCols - 1, TxtRows - 1, true, false); }
+	if (SaveLL) { SavedLLW = PushW1(1, TxtRows, TxtCols, TxtRows, true, false); }
 	else { SavedLLW = 0; }
 	if (Shadow.Y == 1) screen.ScrColor(Orig.X + 2, Row2(), Size.X + Shadow.X - 2, colors.ShadowAttr);
 	if (Shadow.X > 0)
-		for (i = Row1(); i < Row2(); i++) screen.ScrColor(Col2(), i, Shadow.X, colors.ShadowAttr);
+		for (i = Row1(); i <= Row2(); i++) screen.ScrColor(Col2(), i, Shadow.X, colors.ShadowAttr);
 	if (GetState(sfFramed)) {
 		n = 0;
 		if (GetState(sfFrDouble)) n = 9;
@@ -235,13 +235,14 @@ label1:
 		break;
 	}
 	default: {
-		if (frst) { DisplLLHelp(HlpRdb, hlp, false); frst = false; }
-		ClrEvent();
+		//if (frst) { DisplLLHelp(HlpRdb, hlp, false); frst = false; }
+		//ClrEvent();
 		WaitEvent(0);
 		goto label1;
 	}
 	}
 	ClrEvent();
+	if (frst) { DisplLLHelp(HlpRdb, hlp, false); frst = false; }
 }
 
 bool TMenu::IsMenuBar()
@@ -751,7 +752,6 @@ void MenuBoxProc(Instr* PD)
 {
 	TMenuBoxP* w = nullptr; WORD i = 0; BYTE mx, my; void* p = nullptr;
 label1:
-	//New(w, Init(0, 0, nullptr, PD));
 	w = new TMenuBoxP(0, 0, nullptr, PD);
 	i = w->Exec(i);
 	delete w;
@@ -772,7 +772,6 @@ void MenuBarProc(Instr* PD)
 	TMenuBarP* w = nullptr;
 	void* p = nullptr;
 	MarkStore(p);
-	//New(w, Init(PD));
 	w = new TMenuBarP(PD);
 	w->Exec();
 	delete w;
@@ -781,24 +780,31 @@ void MenuBarProc(Instr* PD)
 
 LongStr* GetHlpText(RdbD* R, pstring S, bool ByName, WORD& IRec)
 {
-	FieldDescr* NmF; FieldDescr* TxtF; WORD i; LongStr* T; pstring Nm;
-	TVideoFont fo; FileDPtr cf;
+	FieldDescr* NmF = nullptr; FieldDescr* TxtF = nullptr; 
+	WORD i = 0; LongStr* T = nullptr; pstring Nm;
+	TVideoFont fo; FileD* cf = nullptr;
 	void* p = nullptr;
-	LockMode md;
+	LockMode md = NullMode;
 	void* cr = CRecPtr;
 	MarkStore2(p);
-	T = nullptr;
 	if (ByName) {
-		if (R == nullptr) goto label5; CFile = FileDPtr(R);
-		if (CFile == &HelpFD) { if (CFile->Handle == nullptr) goto label5; }
-		else { CFile = R->HelpFD; if (CFile == nullptr) goto label5; }
+		if (R == nullptr) goto label5; 
+		CFile = (FileD*)R;
+		if (CFile == &HelpFD) { 
+			if (CFile->Handle == nullptr) goto label5; 
+		}
+		else { 
+			CFile = R->HelpFD; 
+			if (CFile == nullptr) goto label5; 
+		}
 		ConvToNoDiakr((WORD*)S[1], S.length(), fonts.VFont);
 	}
 label1:
 	md = NewLMode(RdMode);
 	if (CFile->Handle == nullptr) goto label5;
-	CRecPtr = GetRecSpace2();
-	NmF = CFile->FldD; TxtF = (FieldDescr*)NmF->Chain;
+	CRecPtr = new BYTE[CFile->RecLen + 2];
+	NmF = CFile->FldD; 
+	TxtF = (FieldDescr*)NmF->Chain;
 	if (!ByName) {
 		i = MaxW(1, MinW(IRec, CFile->NRecs));
 		ReadRec(i);
@@ -814,7 +820,8 @@ label1:
 		label2:
 			T = _LongS(TxtF);
 			if (!ByName || (T->LL > 0) || (i == CFile->NRecs)) {
-				if (CFile == &HelpFD) ConvKamenToCurr((WORD*)T->A, T->LL); IRec = i; goto label3;
+				if (CFile == &HelpFD) ConvKamenToCurr((WORD*)T->A, T->LL); 
+				IRec = i; goto label3;
 			}
 			ReleaseStore(T); i++; ReadRec(i); goto label2;
 		}
@@ -839,21 +846,24 @@ label5:
 
 void DisplLLHelp(RdbD* R, pstring Name, bool R24)
 {
-	LongStr* s; void* p = nullptr; WORD i, y; WORD iRec; FileD* cf;
+	LongStr* s = nullptr; void* p = nullptr; 
+	WORD i = 0, y = 0; WORD iRec = 0; FileD* cf = nullptr;
 	if ((R == nullptr) || (R != (RdbD*)&HelpFD) && (R->HelpFD == nullptr)) return;
-	MarkStore(p); cf = CFile;
+	MarkStore(p); 
+	cf = CFile;
 	if (Name != "") {
-		iRec = 0; s = GetHlpText(R, Name, true, iRec);
+		iRec = 0; 
+		s = GetHlpText(R, Name, true, iRec);
 		if (s != nullptr) {
 			s = CopyLine(s, 1, 1);
-			MsgLine[0] = char(MinW(s->LL, sizeof(MsgLine) - 1));
-			Move(s->A, &MsgLine[1], MsgLine.length());
+			MsgLine[0] = char(MinW(s->LL, MsgLine.initLength() - 1));
+			Move(s->A, &MsgLine[1], MsgLine[0]);
 			if (MsgLine[1] == '{') {
 				MsgLine = copy(MsgLine, 2, 255);
 				i = MsgLine.first('}');
 				if (i > 0) MsgLine.Delete(i, 255);
 			}
-			MsgLine[0] = char(MinW(TxtCols, MsgLine.length()));
+			MsgLine[0] = char(MinW(TxtCols, MsgLine[0]));
 			goto label1;
 		};
 	}

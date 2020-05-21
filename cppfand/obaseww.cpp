@@ -126,11 +126,11 @@ longint PushWFramed(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, pstring top, 
 		x = MinW(2, TxtCols - C2);
 		y = MinW(1, TxtRows - R2);
 	}
-	auto result = PushW1(C1 - 1, R1 - 1, C2 + x - 1, R2 + y - 1, (WFlags & WPushPixel) != 0, true);
+	auto result = PushW1(C1, R1, C2 + x, R2 + y, (WFlags & WPushPixel) != 0, true);
 	screen.CrsHide();
 	if (y == 1) screen.ScrColor(C1 + 1, R2, C2 - C1 + x - 1, colors.ShadowAttr);
-	if (x > 0) for (i = R1; i < R2; i++) screen.ScrColor(C2, i, x, colors.ShadowAttr);
-	screen.Window(C1, R1, C2, R2);
+	if (x > 0) for (i = R1; i <= R2; i++) screen.ScrColor(C2, i, x, colors.ShadowAttr);
+	screen.Window(C1 - 1, R1 - 1, C2 - 1, R2 - 1);
 	TextAttr = Attr;
 	if ((WFlags & WHasFrame) != 0) {
 		WriteWFrame(WFlags, top, bottom);
@@ -161,9 +161,9 @@ void WrLLMsg(WORD N)
 
 void WrLLMsgTxt()
 {
-	WParam* p; WordRec w; bool On;
+	WordRec w; bool On;
 	WORD Buf[MaxTxtCols + 1];
-	p = PushWParam(1, TxtRows, TxtCols, TxtRows, true);
+	WParam* p = PushWParam(1, TxtRows, TxtCols, TxtRows, true);
 	w.Hi = colors.lNorm;
 	On = false;
 	WORD i = 1;
@@ -188,7 +188,8 @@ void WrLLMsgTxt()
 		j++;
 	}
 	screen.ScrWrBuf(0, TxtRows - 1, Buf, TxtCols);
-	PopWParam(p); ReleaseStore(p);
+	PopWParam(p); 
+	delete p;
 }
 
 void WrLLF10MsgLine()

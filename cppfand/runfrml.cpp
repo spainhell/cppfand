@@ -351,9 +351,11 @@ WORD PortIn(bool IsWord, WORD Port)
 
 LongStr* CopyLine(LongStr* S, WORD N, WORD M)
 {
-	WORD i, j, l;
-	i = 1; if (N > 1) { i = FindCtrlM(S, 1, N - 1); i = SkipCtrlMJ(S, i); }
-	j = FindCtrlM(S, i, M); l = j - i; if ((i > 1) && (l > 0)) Move(&S->A[i], &S->A[1], l);
+	WORD i = 1;
+	if (N > 1) { i = FindCtrlM(S, 1, N - 1); i = SkipCtrlMJ(S, i); }
+	WORD j = FindCtrlM(S, i, M); 
+	WORD l = j - i; 
+	if ((i > 1) && (l > 0)) Move(&S->A[i], &S->A[1], l);
 	S->LL = l;
 	ReleaseAfterLongStr(S);
 	return S;

@@ -79,10 +79,21 @@ int pstring::first(char c)
 
 void pstring::Delete(int index, int size)
 {
-	if (index < 1 || index > arr[0]) return;
-	int end = index + size;
-	if (end > arr[0]) end = arr[0];
-	memcpy(&arr[index], &arr[index + size], arr[0] - size + 1);
+	if (index > arr[0] || size < 1) return;
+	if (index + size + 1 > arr[0])
+	{
+		// odebíráme od konce
+		size = arr[0] - index + 1;
+		arr[0] = index - 1;
+		arr[index] = '\0';
+	}
+	else 
+	{
+		// odebíráme uvnitø øetìzce
+		memcpy(&arr[index], &arr[index + size], arr[0] - index - size + 1);
+		arr[0] = arr[0] - size;
+		arr[arr[0] + 1] = '\0';
+	}
 }
 
 pstring pstring::substr(unsigned char index)
@@ -174,6 +185,7 @@ pstring& pstring::operator+=(const pstring& second)
 	unsigned char secLen = second.arr[0];
 	unsigned char firLen = arr[0];
 	unsigned short newLen = firLen + secLen;
+	if (newLen > initLen) throw std::exception("String is too small to add new text into it. (+=)");
 	if (newLen > 255) newLen = 255;
 	arr[0] = newLen;
 	memcpy((void*)&arr[firLen + 1], (void*)&second.arr[1] , newLen - firLen);

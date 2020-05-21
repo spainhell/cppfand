@@ -712,7 +712,7 @@ void SetHCatTyp(char FDTyp)
 	/* !!! with CFile^ do!!! */
 	CFile->Handle = nullptr;
 	CFile->Typ = FDTyp;
-	CFile->CatIRec = GetCatIRec(CFile->Name, CFile->Typ = '0'/*multilevel*/);
+	CFile->CatIRec = GetCatIRec(CFile->Name, CFile->Typ == '0'/*multilevel*/);
 #ifdef FandSQL
 	typSQLFile = issql; SetIsSQLFile();
 #endif

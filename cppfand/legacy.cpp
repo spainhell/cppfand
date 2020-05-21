@@ -176,10 +176,17 @@ pstring FSearch(pstring& path, pstring& dirlist)
 
 pstring FExpand(pstring path)
 {
+	pstring dir, name, ext;
+	FSplit(path, dir, name, ext);
+
+	// je cesta kompletni?
+	if (dir.length() > 0 && name.length() > 0 && ext.length() > 0) return path;
+
 	pstring fullpath = pstring(255);
 	GetDir(0, &fullpath);
 	fullpath += "\\";
-	fullpath += path;
+	fullpath += name;
+	if (ext.length() > 0) { fullpath += ext; }
 	return fullpath;
 }
 

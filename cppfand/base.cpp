@@ -918,7 +918,7 @@ void DeleteFile(pstring path)
 {
 }
 
-WORD FindCtrlM(LongStrPtr s, WORD i, WORD n)
+WORD FindCtrlM(LongStr* s, WORD i, WORD n)
 {
 	WORD l = s->LL;
 	while (i <= 1)
@@ -1264,7 +1264,13 @@ bool MouseInRectProc(WORD X, WORD Y, WORD XSize, WORD Size)
 
 bool EqualsMask(void* p, WORD l, pstring Mask)
 {
-	return false;
+	if (Mask.length() < l) return false;
+	BYTE* inp = (BYTE*)p;
+	for (size_t i = 0; i < l; i++) 
+	{
+		if (inp[i] != Mask[i + 1]) return false;
+	}
+	return true;
 }
 
 WORD ListLength(void* P)

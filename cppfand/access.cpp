@@ -1150,53 +1150,53 @@ bool SearchKey(XString& XX, KeyDPtr Key, longint& NN)
 
 LongStr* _LongS(FieldDPtr F)
 {
-	void* P = nullptr;
-	WORD* POfs = (WORD*)P;
-	//LP ^longint absolute P;
-	LongStrPtr S = nullptr; longint Pos; integer err; LockMode md; WORD l;
-	{
-		if (F->Flg && f_Stored != 0) {
-			P = CRecPtr; POfs += F->Displ; l = F->L;
-			switch (F->Typ)
+	void* P = CRecPtr;
+	char* source = (char*)P;
+	LongStr* S = nullptr; longint Pos = 0; integer err = 0;
+	LockMode md; WORD l = 0;
+	if ((F->Flg & f_Stored) != 0) {
+
+		l = F->L;
+		switch (F->Typ)
+		{
+		case 'A': 
+		case 'N': {
+			S = new LongStr(l + 2);
+			S->LL = l;
+			if (F->Typ == 'A') {
+				Move(&source[F->Displ], &S[0], l);
+				if (F->Flg && f_Encryp != 0) Code(S->A, l);
+				if (IsNullValue(S, l)) { S->LL = 0; ReleaseAfterLongStr(S); }
+			}
+			else if (IsNullValue(&source[F->Displ], F->NBytes)) {
+				S->LL = 0;
+				ReleaseAfterLongStr(S);
+			}
+			else
 			{
-			case 'A': case 'N': {
-				S = (LongStr*)GetStore(l + 2);
-				S->LL = l;
-				if (F->Typ == 'A') {
-					Move(P, &S[0], l);
-					if (F->Flg && f_Encryp != 0) Code(S->A, l);
-					if (IsNullValue(S, l)) { S->LL = 0; ReleaseAfterLongStr(S); }
-				}
-				else if (IsNullValue(P, F->NBytes)) {
-					S->LL = 0;
-					ReleaseAfterLongStr(S);
-				}
-				else
-				{
-					// nebudeme volat, zøejmìní není potøeba
-					// UnPack(P, S->A, l);
-				}
-				break;
+				// nebudeme volat, zøejmìní není potøeba
+				// UnPack(P, S->A, l);
 			}
-			case 'T': {
-				if (HasTWorkFlag()) S = TWork.Read(1, _T(F));
-				else {
-					md = NewLMode(RdMode);
-					S = CFile->TF->Read(1, _T(F));
-					OldLMode(md);
-				}
-				if (F->Flg && f_Encryp != 0) Code(S->A, S->LL);
-				if (IsNullValue(&S->A, S->LL))
-				{
-					S->LL = 0;
-					ReleaseAfterLongStr(S);
-				}
-				break; }
-			}
-			return S;
+			break;
 		}
-		return RunLongStr(F->Frml);
+		case 'T': {
+			if (HasTWorkFlag()) S = TWork.Read(1, _T(F));
+			else {
+				md = NewLMode(RdMode);
+				S = CFile->TF->Read(1, _T(F));
+				OldLMode(md);
+			}
+			if ((F->Flg & f_Encryp) != 0) Code(S->A, S->LL);
+			if (IsNullValue(&S->A, S->LL))
+			{
+				S->LL = 0;
+				ReleaseAfterLongStr(S);
+			}
+			break; }
+		}
+		return S;
 	}
+	return RunLongStr(F->Frml);
 }
 
 pstring _ShortS(FieldDPtr F)
@@ -1585,7 +1585,7 @@ void TFile::RdPrefix(bool Chk)
 	FreeRoot = T.FreeRoot; // 4B
 	MaxPage = T.MaxPage; // 4B
 	TimeStmp = T.TimeStmp; // 6B v Pascalu, 8B v C++ 
-	
+
 	if (!IsWork && (CFile == Chpt) && ((T.HasCoproc != HasCoproc) ||
 		(CompArea(Version, T.Version, 4) != _equ))) CompileAll = true;
 	if (T.OldMaxPage == 0xffff) goto label1;
@@ -1609,7 +1609,7 @@ void TFile::RdPrefix(bool Chk)
 	}
 	if (IRec >= 0x4000) {
 		IRec = IRec - 0x4000;
-		RandSeed = ML + T.Time;		
+		RandSeed = ML + T.Time;
 		RandIntByBytes(T.FreeRoot);
 		RandIntByBytes(T.MaxPage);
 		RandDoubleByBytes(T.TimeStmp);
@@ -1646,7 +1646,7 @@ void TFile::RdPrefix(bool Chk)
 		FreePart = NewPage(true);
 		SetUpdHandle(Handle);
 	}
-	FillChar(&T, 512, 0);
+	//FillChar(&T, 512, 0);
 	srand(RS);
 }
 
@@ -1663,13 +1663,15 @@ void TFile::WrPrefix()
 	const PwCodeArr EmptyPw = { '@','@','@','@','@','@','@','@','@','@','@','@','@','@','@','@','@','@','@','@' };
 
 	if (Format == DbtFormat) {
-		FillChar(&T, 512, ' '); *TNxtAvailPage = MaxPage + 1; goto label1;
+		//FillChar(&T, 512, ' '); 
+		*TNxtAvailPage = MaxPage + 1; goto label1;
 	}
 	if (Format == FptFormat) {
-		FillChar(&T, 512, 0); (*FptHd).FreePart = SwapLong(FreePart);
+		//FillChar(&T, 512, 0); 
+		(*FptHd).FreePart = SwapLong(FreePart);
 		(*FptHd).BlockSize = Swap(BlockSize); goto label1;
 	}
-	FillChar(&T, 512, '@');
+	//FillChar(&T, 512, '@');
 	Move(PwCode, Pw, 40); Code(Pw, 40); srand(RS);
 	if (LicenseNr != 0) for (i = 1; i < 20; i++) Pw[i] = char(Random(255));
 	n = 0x4000;
@@ -1700,14 +1702,18 @@ void TFile::SetEmpty()
 	if (Format == FptFormat) { FreePart = 8; BlockSize = 64; WrPrefix(); return; }
 	FreeRoot = 0; MaxPage = 1; FreePart = MPageSize; MLen = 2 * MPageSize;
 	WrPrefix();
-	FillChar(X, MPageSize, 0); *XL = -510;
+	//FillChar(X, MPageSize, 0); 
+	*XL = -510;
 	RdWrCache(false, Handle, NotCached(), MPageSize, MPageSize, X);
 }
 
 void TFile::Create()
 {
-	Handle = OpenH(_isoverwritefile, Exclusive); TestErr();
-	IRec = 1; LicenseNr = 0; FillChar(PwCode, 40, '@'); Code(PwCode, 40);
+	Handle = OpenH(_isoverwritefile, Exclusive); 
+	TestErr();
+	IRec = 1; LicenseNr = 0; 
+	FillChar(PwCode, 40, '@'); 
+	Code(PwCode, 40);
 	SetEmpty();
 }
 
@@ -1728,7 +1734,8 @@ longint TFile::NewPage(bool NegL)
 	label1:
 		MaxPage++; MLen += MPageSize; PosPg = MaxPage << MPageShft;
 	}
-	FillChar(X, MPageSize, 0); if (NegL) *L = -510;
+	//FillChar(X, MPageSize, 0); 
+	if (NegL) *L = -510;
 	RdWrCache(false, Handle, NotCached(), PosPg, MPageSize, X);
 	return PosPg;
 }
@@ -1737,7 +1744,8 @@ void TFile::ReleasePage(longint PosPg)
 {
 	BYTE X[MPageSize - 1];
 	longint* Next = (longint*)&X;
-	FillChar(X, MPageSize, 0); *Next = FreeRoot;
+	//FillChar(X, MPageSize, 0); 
+	*Next = FreeRoot;
 	RdWrCache(false, Handle, NotCached(), PosPg, MPageSize, X);
 	FreeRoot = PosPg >> MPageShft;
 }
@@ -2367,12 +2375,12 @@ bool XKey::Search(XString& XX, bool AfterEqu, longint& RecNr)
 			searchResult = false;
 			ReleaseStore(p);
 			return searchResult;
-	}
+		}
 		if (iItem > nItems) page = p->GreaterPage;
 		else page = x->DownPage;
 		XPathN++;
 		goto label1;
-}
+	}
 	return searchResult;
 }
 
@@ -3049,9 +3057,9 @@ void XScan::SeekRec(longint I)
 			if (hasSQLFilter) z = Bool else z = nullptr;
 			InpReset(Key, SK, KIRoot, z, withT);
 			EOF = AtEnd; IRec = 0; NRecs = 0x20000000;
-}
+		}
 		return;
-}
+	}
 #endif
 	if ((Kind == 2) && (OwnerLV != nullptr)) {
 		IRec = 0;
@@ -3078,7 +3086,7 @@ void XScan::SeekRec(longint I)
 			break;
 		}
 		}
-	}
+}
 
 bool DeletedFlag()  // r771 ASM
 {

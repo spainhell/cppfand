@@ -242,7 +242,7 @@ void CompileHelpCatDcl()
 	FileDRoot = nullptr; Chpt = FileDRoot;
 	CRdb = nullptr; MarkStore2(p2);
 	RdMsg(56); s = MsgLine; SetInpStr(s);
-#ifdef FandRunV
+#if defined (FandRunV)
 	RdFileD("UFANDHLP", '6', "");
 #else
 	RdFileD("FANDHLP", '6', "");
@@ -318,7 +318,7 @@ void CallInstallRdb()
 
 void CallEditTxt()
 {
-	//CPath = FExpand(CPath); CVol = "";
+	CPath = FExpand(CPath); CVol = "";
 	pstring errmsg = "";
 	EditTxtFile(nullptr, 'T', errmsg, nullptr, 1, 0, nullptr, 0, "", 0, nullptr);
 }
@@ -326,7 +326,8 @@ void CallEditTxt()
 void SelectEditTxt(pstring E, bool OnFace)
 {
 	wwmix ww;
-	CPath = ww.SelectDiskFile(E, 35, OnFace); if (CPath == "") return;
+	CPath = ww.SelectDiskFile(E, 35, OnFace); 
+	if (CPath == "") return;
 	CallEditTxt();
 }
 
@@ -342,7 +343,7 @@ void InitRunFand()
 	longint w = 0;
 	void* p = nullptr;
 	WORD xofs = 1;
-	pstring txt(16);
+	pstring txt;
 	double r;
 
 	InitDrivers();
@@ -491,7 +492,7 @@ void InitRunFand()
 	}
 
 	TextAttr = colors.DesktopColor;
-	screen.Window(0, 0, (BYTE)TxtCols - 1, TxtRows - 2);
+	screen.Window(1, 1, (BYTE)TxtCols, TxtRows - 1);
 	WriteWFrame(WHasFrame + WDoubleFrame, "", "");
 	screen.ScrClr(1, 1, TxtCols - 2, TxtRows - 13, (char)0xB1, TextAttr);
 	screen.ScrClr(1, TxtRows - 12, TxtCols - 2, 10, (char)0xb2, TextAttr);
@@ -508,13 +509,13 @@ void InitRunFand()
 		xofs += 82;
 	}
 	TextAttr = colors.mHili;
-	screen.ScrClr(2, TxtRows - 4, TxtCols - 6, 1, ' ', TextAttr);
+	screen.ScrClr(3, TxtRows - 4, TxtCols - 6, 1, ' ', TextAttr);
 
-#ifdef Trial
+#if defined (Trial)
 	RdMsg(70);
-#elif FandRunV
+#elif defined (FandRunV)
 	RdMsg(42);
-#elif FandDemo
+#elif defined (FandDemo)
 	RdMsg(43);
 #else
 	RdMsg(41);
@@ -550,12 +551,9 @@ void InitRunFand()
 		txt += ")";
 		MsgLine = MsgLine + "x (" + txt;
 	}
-	else MsgLine += 'x';
+	else MsgLine.Append('x');
 
-	//GotoXY(5, TxtRows - 3);
-	screen.ScrWrText(4, TxtRows - 3, MsgLine.c_str());
-	//printf("%s", MsgLine.c_str());
-
+	screen.ScrWrText(5, TxtRows - 3, MsgLine.c_str());
 
 #ifdef FandRunV 
 #ifndef FandNetV
@@ -596,7 +594,7 @@ label1:
 #ifdef FandRunV
 	if (j != 0) j++;
 #endif
-	w = PushW(0, 0, TxtCols - 1, TxtRows - 1);
+	w = PushW(1, 1, TxtCols, TxtRows);
 
 	switch (j) {
 	case 1: { IsTestRun = true; SelectRunRdb(true); IsTestRun = false; break; }

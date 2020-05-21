@@ -1197,7 +1197,7 @@ void CompileRecLen()
 			break;
 		}
 		}
-		if (F->Flg && f_Stored != 0) { F->Displ = l; l += F->NBytes; n++; }
+		if ((F->Flg & f_Stored) != 0) { F->Displ = l; l += F->NBytes; n++; }
 		F = (FieldDescr*)F->Chain;
 	}
 	CFile->RecLen = l;
