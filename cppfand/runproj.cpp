@@ -439,7 +439,8 @@ void WrFDSegment(longint RecNr)
 
 	if (CFile->LiOfs > 0) {
 		li = (LiRoots*)Normalize(AbsAdr(CFile) + CFile->LiOfs);
-		id = ImplDPtr(&li->Impls); while (id->Chain != nullptr) {
+		id = ImplDPtr(&li->Impls); 
+		while (id->Chain != nullptr) {
 			id->Chain = (ImplD*)O(id->Chain); id = (ImplD*)id->Chain;
 			id->FldD = (FieldDescr*)O(id->FldD);
 			OFrml(id->Frml);

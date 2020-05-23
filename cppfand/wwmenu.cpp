@@ -235,14 +235,14 @@ label1:
 		break;
 	}
 	default: {
-		//if (frst) { DisplLLHelp(HlpRdb, hlp, false); frst = false; }
-		//ClrEvent();
+		if (frst) { DisplLLHelp(HlpRdb, hlp, false); frst = false; }
+		ClrEvent();
 		WaitEvent(0);
 		goto label1;
 	}
 	}
 	ClrEvent();
-	if (frst) { DisplLLHelp(HlpRdb, hlp, false); frst = false; }
+	//if (frst) { DisplLLHelp(HlpRdb, hlp, false); frst = false; }
 }
 
 bool TMenu::IsMenuBar()

@@ -249,7 +249,8 @@ public:
 	BYTE Drive = 0;         // 1=A, 2=B, else 0
 	WORD CatIRec = 0;
 	FieldDPtr FldD = nullptr;
-	bool IsParFile = false, IsJournal = false, IsHlpFile = false, typSQLFile = false, IsSQLFile = false, IsDynFile = false;
+	bool IsParFile = false, IsJournal = false, IsHlpFile = false;
+	bool typSQLFile = false, IsSQLFile = false, IsDynFile = false;
 	FileUseMode UMode = Closed;
 	LockMode LMode = NullMode, ExLMode = NullMode, TaLMode = NullMode;
 	StringList ViewNames = nullptr;  //after each string BYTE string with user codes 
