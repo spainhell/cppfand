@@ -166,11 +166,14 @@ void RdPrinter(FILE* CfgHandle)
 void RdWDaysTab(FILE* CfgHandle)
 {
 	ReadH(CfgHandle, sizeof(NWDaysTab), &NWDaysTab);
-	ReadH(CfgHandle, sizeof(WDaysFirst), &WDaysFirst);
-	ReadH(CfgHandle, sizeof(WDaysLast), &WDaysLast);
+	ReadH(CfgHandle, 6, &WDaysFirst);  // v Pascalu real 6B
+	ReadH(CfgHandle, 6, &WDaysLast);  // v Pascalu real 6B
 	//GetMem(WDaysTab, NWDaysTab * 3);
 	WDaysTab = new wdaystt[3];
-	ReadH(CfgHandle, sizeof(NWDaysTab) * 3, WDaysTab);
+	for (int i = 0; i < 3; i++) {
+		ReadH(CfgHandle, sizeof(WDaysTab[i].Typ), &WDaysTab[i].Typ);
+		ReadH(CfgHandle, sizeof(WDaysTab[i].Typ), &WDaysTab[i].Typ);
+	}
 }
 
 void RdCFG()

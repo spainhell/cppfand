@@ -402,7 +402,8 @@ void RdSelectStr(FrmlPtr Z)
 
 Instr* GetPInstr(PInstrCode Kind, WORD Size)
 {
-	Instr* PD = (Instr*)GetZStore(Size + 5);
+	//Instr* PD = (Instr*)GetZStore(Size + 5);
+	Instr* PD = new Instr();
 	PD->Kind = Kind;
 	return PD;
 }
@@ -411,8 +412,10 @@ void RdPInstrAndChain(Instr* PD)
 {
 	Instr* PD1 = RdPInstr; /*may be a chain itself*/
 	Instr* PD2 = PD;
-	while (PD2->Chain != nullptr) PD2 = (Instr*)PD2->Chain;
-	PD2->Chain = PD1;
+	if (PD2 != nullptr) {
+		while (PD2->Chain != nullptr) PD2 = (Instr*)PD2->Chain;
+		PD2->Chain = PD1;
+	}
 }
 
 void RdChoices(Instr* PD)
@@ -2070,7 +2073,8 @@ label1:
 		TestIdentif(); fc = FuncDRoot; while (fc != CRdb->OldFCRoot) {
 			if (EquUpcase(fc->Name, LexWord)) Error(26); fc = fc->Chain;
 		}
-		fc = (FuncD*)GetStore(sizeof(FuncD) - 1 + LexWord.length());
+		//fc = (FuncD*)GetStore(sizeof(FuncD) - 1 + LexWord.length());
+		fc = new FuncD();
 		fc->Chain = FuncDRoot; FuncDRoot = fc;
 		Move(&LexWord, &fc->Name, LexWord.length() + 1);
 		RdFldNameFrml = RdFldNameFrmlP; RdFunction = RdFunctionP;

@@ -837,10 +837,11 @@ bool FindChpt(char Typ, const pstring& name, bool local, RdbPos* RP)
 		for (WORD i = 1; i <= CFile->NRecs; i++) {
 			ReadRec(i);
 			pstring chapterType = _ShortS(ChptTyp);
-			pstring chapterName = _ShortS(ChptName);
+			pstring chapterName = TrailChar(' ', _ShortS(ChptName));
 			
-			if ((_ShortS(ChptTyp) == Typ)
-				&& SEquUpcase(TrailChar(' ', _ShortS(ChptName)), name))
+			//if ((_ShortS(ChptTyp) == Typ)
+				//&& SEquUpcase(TrailChar(' ', _ShortS(ChptName)), name))
+			if (chapterType.length() == 1 && chapterType[1] == Typ && SEquUpcase(chapterName, name))
 			{
 				RP->R = R;
 				RP->IRec = i;

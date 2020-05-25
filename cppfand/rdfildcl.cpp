@@ -739,19 +739,32 @@ void GetXFileD()
 
 void CallRdFDSegment(FileDPtr FD)
 {
-	RdbDPtr rdb, r; void* cr; FileDPtr cf; bool b; WORD i; longint pos;
+	RdbD* rdb = nullptr; 
+	void* cr = nullptr; 
+	FileD* cf = nullptr; 
+	bool b = false; WORD i = 0; longint pos = 0;;
 	if (Lexem != 0x1A) Accept(';');
-	rdb = CRdb; cr = CRecPtr; r = FD->ChptPos.R;
+	rdb = CRdb; cr = CRecPtr; 
+	RdbD* r = FD->ChptPos.R;
 	if ((r == nullptr) || FD->IsDynFile) OldError(106);
-	CRdb = r; i = FD->ChptPos.IRec;
-	CFile = CRdb->FD; CRecPtr = CFile->RecPtr; ReadRec(i);
-	pos = _T(ChptOldTxt); if (pos <= 0) Error(25);
+	CRdb = r; 
+	i = FD->ChptPos.IRec;
+	CFile = CRdb->FD; 
+	CRecPtr = CFile->RecPtr; 
+	ReadRec(i);
+	pos = _T(ChptOldTxt); 
+	if (pos <= 0) Error(25);
 	b = RdFDSegment(i, pos);
-	cf = CFile; CRdb = rdb; if (InpRdbPos.IRec != 0) {
-		CFile = rdb->FD; ReadRec(InpRdbPos.IRec); CFile = cf;
+	cf = CFile; CRdb = rdb; 
+	if (InpRdbPos.IRec != 0) {
+		CFile = rdb->FD; 
+		ReadRec(InpRdbPos.IRec); 
+		CFile = cf;
 	}
-	CRecPtr = cr; if (!b) Error(25);
-	CFile->OrigFD = FD; CFile->TxtPosUDLI = 0;
+	CRecPtr = cr; 
+	if (!b) Error(25);
+	CFile->OrigFD = FD; 
+	CFile->TxtPosUDLI = 0;
 }
 
 CompInpD* OrigInp()

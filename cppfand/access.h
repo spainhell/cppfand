@@ -28,8 +28,10 @@ const BYTE oLeaf = 3; const BYTE oNotLeaf = 7;
 const BYTE f_Stored = 1; const BYTE f_Encryp = 2; // {FieldD flags}
 const BYTE f_Mask = 4; const BYTE f_Comma = 8; // {FieldD flags}
 
-enum LockMode { NullMode = 0, NoExclMode = 1, NoDelMode = 2, NoCrMode = 3,
-	RdMode = 4, WrMode = 5, CrMode = 6, DelMode = 7, ExclMode = 8 };
+enum LockMode {
+	NullMode = 0, NoExclMode = 1, NoDelMode = 2, NoCrMode = 3,
+	RdMode = 4, WrMode = 5, CrMode = 6, DelMode = 7, ExclMode = 8
+};
 extern pstring LockModeTxt[9];
 
 const WORD MPageSize = 512;
@@ -126,8 +128,11 @@ struct SumElem // r95
 };
 typedef SumElem* SumElPtr;
 
-struct FieldDescr : public Chained // ø. 100
+class FieldDescr : public Chained // ø. 100
 {
+public:
+	FieldDescr();
+	FieldDescr(BYTE* inputStr);
 	char Typ = 0, FrmlTyp = 0;
 	BYTE L = 0, M = 0, NBytes = 0, Flg = 0;
 	// case boolean {Stored} of True:(Displ:integer); False:(Frml:FrmlPtr; Name:string[1]{ curr.length });
@@ -170,7 +175,7 @@ typedef DepD* DepDPtr;
 struct ImplD : public Chained
 {
 	//ImplD* Chain; 
-	FieldDPtr FldD; 
+	FieldDPtr FldD;
 	FrmlPtr Frml;
 };
 typedef ImplD* ImplDPtr;
@@ -251,7 +256,7 @@ public:
 	FieldDPtr FldD = nullptr;
 	bool IsParFile = false, IsJournal = false, IsHlpFile = false;
 	bool typSQLFile = false, IsSQLFile = false, IsDynFile = false;
-	FileUseMode UMode = Closed;
+	FileUseMode UMode = FileUseMode::Closed;
 	LockMode LMode = NullMode, ExLMode = NullMode, TaLMode = NullMode;
 	StringList ViewNames = nullptr;  //after each string BYTE string with user codes 
 	XFile* XF = nullptr;
@@ -278,7 +283,7 @@ struct DBaseFld // ø. 208
 struct DBaseHd // ø. 213
 {
 	BYTE Ver = 0;
-	BYTE Date[4] { 0,0,0,0 };
+	BYTE Date[4]{ 0,0,0,0 };
 	longint NRecs = 0;
 	WORD HdLen = 0, RecLen = 0;
 	DBaseFld Flds[1];

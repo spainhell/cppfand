@@ -50,7 +50,8 @@ void PushProcStk()
 {
 	ProcStkPtr ps;
 	LocVar* lv;
-	ps = (ProcStkD*)GetZStore(LVBD.Size);
+	//ps = (ProcStkD*)GetZStore(LVBD.Size);
+	ps = new ProcStkD();
 	ps->ChainBack = MyBP;
 	MyBP = ps;
 	lv = LVBD.Root;

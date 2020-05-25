@@ -1012,7 +1012,8 @@ void CallProcedure(Instr* PD)
 				RdFileD(PD->TArg[i].Name, '6', '$'); RestoreCompState(p);
 			}
 			else CFile = PD->TArg[i].FD;
-			lv1 = lv; while (lv1 != nullptr) {
+			lv1 = lv; 
+			while (lv1 != nullptr) {
 				if ((lv1->FTyp == 'i' || lv1->FTyp == 'r') && (lv1->FD == lv->FD)) lv1->FD = CFile;
 				lv1 = (LocVar*)lv1->Chain;
 			}
@@ -1030,7 +1031,8 @@ void CallProcedure(Instr* PD)
 		}
 		lv = (LocVar*)lv->Chain;
 	}
-	lv1 = lv; while (lv != nullptr) {
+	lv1 = lv; 
+	while (lv != nullptr) {
 		if (lv->FTyp == 'r') {
 			CFile = lv->FD; CRecPtr = GetRecSpace();
 			SetTWorkFlag(); ZeroAllFlds(); ClearDeletedFlag(); lv->RecPtr = CRecPtr;

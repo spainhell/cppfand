@@ -34,7 +34,7 @@ public:
 
 void MyMove(void* A1, void* A2, WORD N);
 void ChainLast(Chained* Frst, Chained* New); // r13 ASM
-void* LastInChain(void* Frst); // r18 ASM
+Chained* LastInChain(Chained* Frst); // r18 ASM
 WORD ListLength(void* P); // r22 ASM
 void ReplaceChar(pstring S, char C1, char C2); // r30 ASM
 bool SEquUpcase(pstring S1, pstring S2);
@@ -123,8 +123,8 @@ bool OSshell(pstring Path, pstring CmdLine, bool NoCancel, bool FreeMm, bool LdF
 
 
 // ***  VIRTUAL HANDLES  ***
-enum FileOpenMode { _isnewfile, _isoldfile, _isoverwritefile, _isoldnewfile }; // poradi se nesmi zmenit!!!
-enum FileUseMode { Closed, RdOnly, RdShared, Shared, Exclusive }; // poradi se nesmi zmenit!!!
+enum FileOpenMode { _isnewfile = 0, _isoldfile = 1, _isoverwritefile = 2, _isoldnewfile = 3 }; // poradi se nesmi zmenit!!!
+enum FileUseMode { Closed = 0, RdOnly = 1, RdShared = 2, Shared = 3, Exclusive = 4 }; // poradi se nesmi zmenit!!!
 extern WORD HandleError; // r229
 extern pstring OldDir;
 extern pstring FandDir;

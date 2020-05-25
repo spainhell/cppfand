@@ -335,9 +335,13 @@ void ChainLast(Chained* Frst, Chained* New)
 	last->Chain = New;
 }
 
-void* LastInChain(void* Frst)
+Chained* LastInChain(Chained* Frst)
 {
-	return nullptr;
+	Chained* last = Frst->Chain;
+	while (last != nullptr) {
+		if (last->Chain == nullptr) return last;
+		last = last->Chain;
+	}
 }
 
 void StrLPCopy(char* Dest, pstring s, WORD MaxL)
