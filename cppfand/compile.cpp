@@ -584,16 +584,22 @@ void AcceptKeyWord(pstring S)
 
 bool IsOpt(pstring S)
 {
-	//// TODO
-	//asm  cmp Lexem, _identifier; jne @3;
-	//lea si, LexWord; les di, S; cld;xor ch, ch; mov cl, [si]; cmpsb; jnz @3;
-	//jcxz @2;xor bh, bh;
-	//@1:  mov bl, [si]; mov al, BYTE PTR UpcCharTab[bx]; cmp al, es: [di] ; jnz @3;
-	//inc si; inc di; loop @1;
-	//@2:  call RdLex; mov ax, _equ; push ax; call Accept; mov ax, 1; jmp @4;
-	//@3: xor ax, ax;
-	//@4:;
-	return false;
+	if (Lexem != _identifier) return false;
+	if (S.length() != LexWord.length()) return false;
+
+	if (S.length() != 0) {
+		for (size_t i = 1; i <= S.length(); i++) {
+			char cL = LexWord[i];
+			char cU = UpcCharTab[cL];
+			char cS = S[i];
+			if (cU != cS) return false;
+		}
+	}
+
+	RdLex();
+	Accept(_equ);
+
+	return true;
 }
 
 bool IsDigitOpt(pstring S, WORD& N)
@@ -670,14 +676,15 @@ LocVar* RdVarName(LocVarBlkD* LVB, bool IsParList)
 	return lv;
 }
 
-KeyFldD* RdKF(FileDPtr FD)
+KeyFldD* RdKF(FileD* FD)
 {
-	KeyFldDPtr KF; FieldDPtr F;
-	KF = (KeyFldD*)GetZStore(sizeof(KeyFldD));
+	//KF = (KeyFldD*)GetZStore(sizeof(KeyFldD));
+	KeyFldD* KF = new KeyFldD();
 	KeyFldD* result = KF;
 	if (Lexem == _gt) { RdLex(); KF->Descend = true; }
 	if (Lexem == '~') { RdLex(); KF->CompLex = true; }
-	F = RdFldName(FD); KF->FldD = F;
+	FieldDescr* F = RdFldName(FD); 
+	KF->FldD = F;
 	if (F->Typ == 'T') OldError(84);
 	if (KF->CompLex && (F->Typ != 'A')) OldError(94);
 	return result;
@@ -685,12 +692,16 @@ KeyFldD* RdKF(FileDPtr FD)
 
 WORD RdKFList(KeyFldD* KFRoot, FileD* FD)
 {
-	WORD n; KeyFldD* KF;
+	WORD n = 0; KeyFldD* KF = nullptr;
 label1:
 	ChainLast(KFRoot, RdKF(FD));
 	if (Lexem == ',') { RdLex(); goto label1; }
-	n = 0; KF = KFRoot;   /*looping over all fields, !only the last read*/
-	while (KF != nullptr) { n += KF->FldD->NBytes; KF = (KeyFldD*)KF->Chain; }
+	n = 0; 
+	KF = KFRoot;   /*looping over all fields, !only the last read*/
+	while (KF != nullptr) 
+	{ 
+		if (KF->FldD != nullptr) n += KF->FldD->NBytes;
+		KF = (KeyFldD*)KF->Chain; }
 	if (n > 255) OldError(126);
 	return n;
 }
@@ -887,8 +898,8 @@ FieldList AllFldsList(FileDPtr FD, bool OnlyStored)
 
 EditOpt* GetEditOpt()
 {
-	EditOpt* EO;
-	EO = (EditOpt*)GetZStore(sizeof(*EO));
+	EditOpt* EO = new EditOpt();
+	//EO = (EditOpt*)GetZStore(sizeof(*EO));
 	auto result = EO;
 	EO->UserSelFlds = true;
 	return result;
@@ -1005,10 +1016,11 @@ bool FldTypIdentity(FieldDescr* F1, FieldDescr* F2)
 
 void RdFldList(FieldListEl* FLRoot)
 {
-	FieldDPtr F; FieldList FL;
+	FieldDescr* F = nullptr; FieldListEl* FL = nullptr;
 label1:
 	F = RdFldName(CFile);
-	FL = (FieldListEl*)GetStore(sizeof(*FL));
+	//FL = (FieldListEl*)GetStore(sizeof(*FL));
+	FL = new FieldListEl();
 	FL->FldD = F;
 	ChainLast(FLRoot, FL);
 	if (Lexem == ',') { RdLex(); goto label1; };
@@ -1926,7 +1938,8 @@ FileDPtr FindFileD()
 		}
 		R = R->ChainBack;
 	}
-	if (EquUpcase("CATALOG")) return CatFD; return nullptr;
+	if (EquUpcase("CATALOG")) return CatFD; 
+	return nullptr;
 }
 
 FileD* RdFileName()

@@ -163,13 +163,19 @@ void RdChkDsFromPos(FileD* FD, ChkD* C)
 
 void RdBegViewDcl(EditOpt* EO)
 {
-	bool neg, all; FieldList fl, fl1; FieldDescr* f;
+	bool neg = false, all = false; 
+	FieldListEl* fl = nullptr; 
+	FieldDescr* f = nullptr;
 	if ((Lexem == _identifier || Lexem == '[')) {
-		RdChptName('E', &EO->FormPos, true); return;
+		RdChptName('E', &EO->FormPos, true); 
+		return;
 	}
-	neg = false; all = false; fl1 = nullptr; EO->UserSelFlds = false;
+	neg = false; all = false; 
+	FieldListEl* fl1 = new FieldListEl(); // FieldListEl* fl1 = nullptr;
+	EO->UserSelFlds = false;
 	if (Lexem == '^') { RdLex(); neg = true; } Accept('(');
-	if (Lexem == _identifier) RdFldList(fl1); else neg = true;
+	if (Lexem == _identifier) RdFldList(fl1); 
+	else neg = true;
 label1:
 	switch (Lexem) {
 	case '!': if (neg) { RdLex(); all = true; goto label1; } break;

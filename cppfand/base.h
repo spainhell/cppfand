@@ -66,6 +66,7 @@ double AddMonth(double R, double RM);
 double DifMonth(double R1, double R2);
 double ValDate(pstring Txt, pstring Mask); // r276
 pstring StrDate(double R, pstring Mask); //r321
+std::string CppToday();
 double Today(); // r362
 double CurrTime();
 

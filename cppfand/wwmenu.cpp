@@ -377,7 +377,8 @@ void TMenuBox::InitTMenuBox(WORD C1, WORD R1)
 
 WORD TMenuBox::Exec(WORD IStart)
 {
-	WORD i, j; TMenuBox* w;
+	WORD i = 0, j = 0;
+	TMenuBox* w = nullptr;
 	if (nTxt == 0) { return 0; }
 	j = 0; iTxt = IStart; if (iTxt == 0) iTxt = 1;
 	Prev(); Next();  /*get valid iTxt*/
@@ -750,19 +751,21 @@ bool PrinterMenu(WORD Msg)
 
 void MenuBoxProc(Instr* PD)
 {
-	TMenuBoxP* w = nullptr; WORD i = 0; BYTE mx, my; void* p = nullptr;
+	TMenuBoxP* w = nullptr; WORD i = 0; 
+	BYTE mx = 0, my = 0; 
 label1:
 	w = new TMenuBoxP(0, 0, nullptr, PD);
 	i = w->Exec(i);
 	delete w;
-	ReleaseStore(p);
 	if (!PD->PullDown) {
 		if (i == 0) {
 			if (!PD->WasESCBranch) return;
 			RunInstr(PD->ESCInstr);
 		}
 		else RunInstr(CI(PD->Choices, i)->Instr);
-		if (BreakP || ExitP) { if (PD->Loop) BreakP = false; }
+		if (BreakP || ExitP) { 
+			if (PD->Loop) BreakP = false; 
+		}
 		else if (PD->Loop) goto label1;
 	}
 }

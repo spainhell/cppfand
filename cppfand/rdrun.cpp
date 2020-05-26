@@ -48,8 +48,8 @@ void SetMyBP(ProcStkPtr Bp)
 
 void PushProcStk()
 {
-	ProcStkPtr ps;
-	LocVar* lv;
+	ProcStkD* ps = nullptr;
+	LocVar* lv = nullptr;
 	//ps = (ProcStkD*)GetZStore(LVBD.Size);
 	ps = new ProcStkD();
 	ps->ChainBack = MyBP;
@@ -67,7 +67,7 @@ void PushProcStk()
 
 void PopProcStk()
 {
-	LocVar* lv;
+	LocVar* lv = nullptr;
 	lv = (LocVar*)MyBP->LVRoot;
 	while (lv != nullptr) {
 		if (lv->FTyp == 'S') {

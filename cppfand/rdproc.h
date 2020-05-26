@@ -18,7 +18,9 @@ FrmlPtr RdFunctionP(char& FFTyp);
 KeyD* RdViewKeyImpl(FileD* FD);
 void RdSelectStr(FrmlPtr Z);
 Instr* GetPInstr(PInstrCode Kind, WORD Size);
-// Instr* RdPInstr(); je níže
+
+Instr* RdPInstr(); // hlavní funkce
+
 void RdPInstrAndChain(Instr* PD);
 void RdChoices(Instr* PD);
 void RdMenuAttr(Instr* PD);
@@ -41,9 +43,9 @@ extern kNames KeyNames[NKeyNames];
 bool RdHeadLast(void* AA);
 bool RdViewOpt(EditOpt* EO);
 void RdKeyList(EdExitD* X);
-extern Instr* RdPInstr; // toto bude ukazatel na pozdìji pøiøazenou funkci
+//extern Instr* RdPInstr; // toto bude ukazatel na pozdìji pøiøazenou funkci
 Instr* GetPD(PInstrCode Kind, WORD Size);
-void RdProcCall(); // hlavní funkce v souboru
+void RdProcCall(Instr** pinstr); // mùže upravit pinstr z hlavní funkce
 FieldList RdFlds();
 FieldList RdSubFldList(FieldList InFL, char Opt);
 void RdSortCall();
@@ -62,7 +64,7 @@ void RdPrintTxt();
 void RdEditTxt();
 void RdPutTxt();
 void RdTurnCat();
-void RdWriteln(BYTE OpKind);
+void RdWriteln(BYTE OpKind, Instr** pinstr);
 void RdReleaseDrive();
 void RdIndexfile();
 void RdGetIndex();
@@ -83,7 +85,7 @@ void RdCallLProc();
 #endif
 FrmlPtr AdjustComma(FrmlPtr Z1, FieldDPtr F, char Op);
 AssignD* MakeImplAssign(FileD* FD1, FileD* FD2);
-void RdAssign();
+Instr* RdAssign();
 Instr* RdWith();
 Instr* RdUserFuncAssign();
 void ReadProcHead();

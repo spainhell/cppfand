@@ -27,23 +27,33 @@
 
 void UserHeadLine(pstring UserHeader)
 {
-	WORD n, l, maxlen; WParam* p;
-	p = PushWParam(1, 1, TxtCols, 1, true);
+	WParam* p = PushWParam(1, 1, TxtCols, 1, true);
 	TextAttr = colors.fNorm;
 	ClrEol();
-	maxlen = TxtCols - 10;
-	l = LenStyleStr(UserHeader);
+	WORD maxlen = TxtCols - 10;
+	WORD l = LenStyleStr(UserHeader);
 	if (l >= maxlen) {
-		UserHeader[0] = char(maxlen);
+		UserHeader[0] = (BYTE)maxlen;
 		l = LenStyleStr(UserHeader);
 	}
-	n = (TxtCols - l) / 2;
-	if (n > 0) printf("%*c", n, ' ');
+	WORD n = (TxtCols - l) / 2;
+
+	if (n > 0) { 
+		//printf(); 
+		char buf[MaxTxtCols]{ '\0' };
+		size_t len = snprintf(buf, MaxTxtCols, "%*c", n, ' ');
+		screen.ScrWrText(screen.WhereX(), screen.WhereY(), buf);
+	}
+	
 	WrStyleStr(UserHeader, colors.fNorm);
-	screen.GotoXY(TxtCols - 10, 1);
-	printf("%s", StrDate(Today(), "DD.MM.YYYY").c_str());
+	
+	// screen.GotoXY(TxtCols - 10, 1);
+	// printf("%s", StrDate(Today(), "DD.MM.YYYY").c_str());
+	//screen.ScrWrText(TxtCols - 10, 1, StrDate(Today(), "DD.MM.YYYY").c_str());
+	screen.ScrWrText(TxtCols - 10, 1, CppToday().c_str());
+	
 	PopWParam(p);
-	ReleaseStore(p);
+	delete p;
 }
 
 void ReportProc(RprtOpt* RO, bool save)
@@ -56,7 +66,7 @@ void ReportProc(RprtOpt* RO, bool save)
 		if (RO->SyntxChk) {
 			IsCompileErr = false;
 			//NewExit(Ovr(), er);
-			goto label1;
+			//goto label1;
 			ReadReport(RO);
 			LastExitCode = 0;
 		label1:
@@ -1051,7 +1061,8 @@ void CallProcedure(Instr* PD)
 	}
 	ReleaseStore2(p2);
 	RunProcedure(pd1);
-	lv = lvroot; i = 1; while (lv != nullptr) {
+	lv = lvroot; i = 1; 
+	while (lv != nullptr) {
 		if (lv->IsRetPar) {
 			z = PD->TArg[i].Frml;
 			switch (lv->FTyp) {
@@ -1085,14 +1096,22 @@ void CallProcedure(Instr* PD)
 
 void RunMainProc(RdbPos RP, bool NewWw)
 {
-	Instr* PD; void* p1; void* p2; LocVar* lv;
+	Instr* PD = nullptr; 
+	void* p1 = nullptr; void* p2 = nullptr; 
+	LocVar* lv = nullptr;
 	if (NewWw) {
-		ProcAttr = colors.uNorm; screen.Window(1, 2, TxtCols, TxtRows);
-		TextAttr = ProcAttr; ClrScr(); UserHeadLine(""); MenuX = 1; MenuY = 2;
+		ProcAttr = colors.uNorm; 
+		screen.Window(1, 2, TxtCols, TxtRows);
+		TextAttr = ProcAttr; 
+		ClrScr(); 
+		UserHeadLine(""); 
+		MenuX = 1; MenuY = 2;
 	}
-	PD = GetPInstr(_proc, sizeof(RdbPos) + 2); PD->Pos = RP;
+	PD = GetPInstr(_proc, sizeof(RdbPos) + 2); 
+	PD->Pos = RP;
 	CallProcedure(PD);
-	ReleaseStore(PD); if (NewWw) screen.Window(1, 1, TxtCols, TxtRows);
+	ReleaseStore(PD); 
+	if (NewWw) screen.Window(1, 1, TxtCols, TxtRows);
 }
 
 

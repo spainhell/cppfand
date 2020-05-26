@@ -479,6 +479,16 @@ double Today()
 	return RDate(lt.tm_year + 1900, lt.tm_mon, lt.tm_mday, 0, 0, 0, 0);
 }
 
+std::string CppToday()
+{
+	std::time_t t = std::time(0);   // get time now
+	struct tm lt;
+	char buffer[32]{ '\0' };
+	errno_t err = localtime_s(&lt, &t);
+	strftime(buffer, sizeof(buffer), "%d.%m.%Y", &lt);
+	return buffer;
+}
+
 double CurrTime()
 {
 	std::time_t t = std::time(0);   // get time now
@@ -510,7 +520,8 @@ label1:
 		i++; j++;
 	} /* delimiter */
 	else { /* YMDhmst */
-		s = ""; if (iDate < 3) WasYMD = true;
+		s = ""; 
+		if (iDate < 3) WasYMD = true;
 		while ((Txt[j] == ' ') && (n > 1)) { j++; n--; }
 		if ((Txt[j] == '-') && (n > 1) && (iDate == min) && (iDate > 2)) {
 			WasMinus = true; j++; n--;
@@ -562,9 +573,90 @@ label3:
 	return result;
 }
 
+bool ExCode(WORD N, pstring Mask)
+{
+	for (WORD i = 1; i <= Mask.length(); i++) {
+		if ((Mask[i]) == N) return true;
+	}
+	return false;
+}
+
 pstring StrDate(double R, pstring Mask)
 {
-	return "";
+	struct stD { WORD Y = 0; WORD M = 0; WORD D = 0; } d;
+	struct stT { longint hh = 0, mm = 0, ss = 0, tt = 0; } t;
+	pstring s; pstring x;
+	WORD i = 0, iDate = 0, n = 0, m = 0, min = 0, max = 0;
+	longint f = 0, l = 0; bool First = false, WasMinus = false; char c = 0;
+
+	double MultX[7]{ 0, 0, 0, 24, 1440, 86400, 8640000 };
+	longint DivX[12]{ 0, 0, 0, 1, 60, 3600, 360000, 1, 60, 6000, 1, 100 };
+
+	s = ""; EncodeMask(Mask, min, max); WasMinus = false;
+	if ((R == 0) || (R < 0) && (min < 3)) {
+		for (i = 1; i <= Mask.length(); i++) {
+			if (Mask[i] <= 6) s.Append(' ');
+			else s = s + Mask[i]; 
+		}
+		goto label1;
+	}
+	else if (R < 0) { WasMinus = true; R = -R; }
+	if (min < 3) {
+		if ((min == 2) && (max >= 3)) d.D = trunc(R); 
+		else SplitDate(R, d.D, d.M, d.Y);
+		double intpart;
+		R = modf(R, &intpart);
+	}
+	if (max >= 3)
+	{
+		l = round(R * MultX[max]);
+		if (ExCode(3, Mask))
+		{
+			f = DivX[max]; t.hh = l / f; l = l % f;
+		}
+		if (ExCode(4, Mask))
+		{
+			f = DivX[max + 3]; t.mm = l / f; l = l % f;
+		}
+		if (ExCode(5, Mask))
+		{
+			f = DivX[max + 5]; t.ss = l / f; l = l % f;
+		}
+		t.tt = l;
+	}
+	i = 1; 
+	First = true;
+	while (i <= Mask.length())
+	{
+		AnalDateMask(Mask, i, iDate, n);
+		if (n == 0) { s = s + Mask[i]; i++; }
+		else {
+			throw std::exception("not implemented"); // pod tím nutno dodìlat ...
+			/*if (iDate < 3) str(Date[iDate], x);
+			else {
+				str(Time[iDate], x);
+				if ((iDate = min) && WasMinus) 
+				{ 
+					pstring oldX = x;
+					x = "-"; 
+					x += oldX;
+				}
+			}*/
+			if (First && (iDate > 2) && (iDate == min)) c = ' '; 
+			else c = '0';
+			First = false; 
+			while (x.length() < n) {
+				pstring oldX = x;
+				x = ""; x.Append(c);
+				x += oldX;
+			}
+			if (iDate < 3) x = copy(x, x.length() - n + 1, n);
+			s = s + x;
+		}
+	}
+	label1:
+	return s;
+
 }
 
 double AddMonth(double R, double RM)

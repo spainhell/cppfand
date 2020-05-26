@@ -1324,9 +1324,12 @@ bool MergeOldNew(bool Veriflongint, bool Pos)
 	pstring Name(20);
 	LinkD* ld = LinkDRoot;
 	auto result = false;
-	FileD* FDOld;
-	FileD* FDNew = CFile; SetCPathVol(); Name = FDNew->Name; FDNew->Name = '@';
-	CFile = Chpt; if (!RdFDSegment(0, Pos)) goto label1;
+	FileD* FDOld = nullptr;
+	FileD* FDNew = CFile; 
+	SetCPathVol(); 
+	Name = FDNew->Name; FDNew->Name = "@";
+	CFile = Chpt; 
+	if (!RdFDSegment(0, Pos)) goto label1;
 	ChainLast(FileDRoot, CFile);
 	FDOld = CFile; FDOld->Name = Name;
 	if ((FDNew->Typ != FDOld->Typ) || !EquStoredF(FDNew->FldD, FDOld->FldD)
@@ -1345,7 +1348,7 @@ bool MergeOldNew(bool Veriflongint, bool Pos)
 label1:
 	FDNew->Chain = nullptr;
 	LinkDRoot = ld;
-	Move(&Name, &FDNew->Name, Name.length() + 1);
+	Move(&Name[0], &FDNew->Name[0], Name.length() + 1);
 	CFile = FDNew;
 	CRecPtr = Chpt->RecPtr;
 	return result;
