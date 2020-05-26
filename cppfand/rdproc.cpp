@@ -29,8 +29,8 @@ kNames KeyNames[NKeyNames] = {
 	{"CTRLY", 80, _Y_},
 	{"ESC", 81, _ESC_},
 	{"CTRLP", 82, _P_} };
-Instr* RdPInstr;
 
+Instr* RdPInstr();
 
 void TestCatError(WORD I, pstring Nm, bool Old)
 {
@@ -410,7 +410,7 @@ Instr* GetPInstr(PInstrCode Kind, WORD Size)
 
 void RdPInstrAndChain(Instr* PD)
 {
-	Instr* PD1 = RdPInstr; /*may be a chain itself*/
+	Instr* PD1 = RdPInstr(); /*may be a chain itself*/
 	Instr* PD2 = PD;
 	if (PD2 != nullptr) {
 		while (PD2->Chain != nullptr) PD2 = (Instr*)PD2->Chain;
@@ -426,7 +426,7 @@ label1:
 	if (IsKeyWord("ESCAPE")) {
 		Accept(':');
 		PD->WasESCBranch = true;
-		PD->ESCInstr = RdPInstr;
+		PD->ESCInstr = RdPInstr();
 	}
 	else {
 		CD = (ChoiceD*)GetZStore(sizeof(CD)); 
@@ -446,7 +446,7 @@ label1:
 				}
 			};
 		}
-		Accept(':'); CD->Instr = RdPInstr;
+		Accept(':'); CD->Instr = RdPInstr();
 	}
 	if (Lexem == ';') {
 		RdLex();
@@ -515,8 +515,8 @@ Instr* RdIfThenElse()
 	auto result = PD;
 	PD->Bool = RdBool();
 	AcceptKeyWord("THEN");
-	PD->Instr1 = RdPInstr;
-	if (IsKeyWord("ELSE")) PD->ElseInstr1 = RdPInstr;
+	PD->Instr1 = RdPInstr();
+	if (IsKeyWord("ELSE")) PD->ElseInstr1 = RdPInstr();
 	return result;
 }
 
@@ -526,7 +526,7 @@ Instr* RdWhileDo()
 	auto result = PD;
 	PD->Bool = RdBool();
 	AcceptKeyWord("DO");
-	PD->Instr1 = RdPInstr;
+	PD->Instr1 = RdPInstr();
 	return result;
 }
 
@@ -549,7 +549,7 @@ Instr* RdFor()
 	Z->P2 = RdRealFrml();
 	PD->Bool = Z;
 	AcceptKeyWord("DO");
-	Instr* PD1 = RdPInstr;
+	Instr* PD1 = RdPInstr();
 	PD->Instr1 = PD1;
 	PD1 = GetPInstr(_asgnloc, 9);
 	ChainLast(PD->Instr1, PD1);
@@ -572,7 +572,7 @@ label1:
 	else PD->ElseInstr1 = PD1;
 	PD = PD1; first = false;
 	PD->Bool = RdBool(); Accept(':');
-	PD->Instr1 = RdPInstr;
+	PD->Instr1 = RdPInstr();
 	bool b = Lexem = ';';
 	if (b) RdLex();
 	if (!IsKeyWord("END"))
@@ -653,13 +653,13 @@ Instr* RdForAll()
 	if (Lexem == '%') { RdLex(); PD->CProcent = true; }
 	PD->CKey = CViewKey;
 label2:
-	AcceptKeyWord("DO"); PD->CInstr = RdPInstr;
+	AcceptKeyWord("DO"); PD->CInstr = RdPInstr();
 	return PD;
 }
 
 Instr* RdBeginEnd()
 {
-	Instr* PD = nullptr;
+	Instr* PD = new Instr();
 	if (!IsKeyWord("END")) {
 	label1:
 		RdPInstrAndChain(PD);
@@ -888,7 +888,7 @@ Instr* GetPD(PInstrCode Kind, WORD Size)
 
 void RdProcCall()
 {
-	Instr* PD;
+	Instr* PD = nullptr;
 	if (IsKeyWord("EXEC")) RdExec();
 	else if (IsKeyWord("COPYFILE")) RdCopyFile();
 	else if (IsKeyWord("PROC")) { RdLex(); RdPInstr = RdProcArg('P'); }
@@ -899,7 +899,8 @@ void RdProcCall()
 	else if (IsKeyWord("HEADLINE")) { PD = GetPD(_headline, 4); goto label1; }
 	else if (IsKeyWord("SETKEYBUF")) { PD = GetPD(_setkeybuf, 4); goto label1; }
 	else if (IsKeyWord("HELP")) {
-		PD = GetPD(_help, 8); if (CRdb->HelpFD == nullptr) OldError(132);
+		PD = GetPD(_help, 8); 
+		if (CRdb->HelpFD == nullptr) OldError(132);
 		PD->HelpRdb = CRdb;
 	label1: PD->Frml = RdStrFrml();
 	}
@@ -1848,23 +1849,26 @@ AssignD* MakeImplAssign(FileD* FD1, FileD* FD2)
 	return ARoot;
 }
 
-void RdAssign()
+Instr* RdAssign()
 {
 	FileDPtr FD = nullptr; FieldDPtr F = nullptr;
 	LocVar* LV = nullptr; LocVar* LV2 = nullptr; char PV;
 	Instr* PD = nullptr; pstring FName; char FTyp = 0;
 	if (ForwChar == '.')
 		if (FindLocVar(LVBD.Root, LV) && (LV->FTyp == 'r' || LV->FTyp == 'i')) {
-			FTyp = LV->FTyp; RdLex(); RdLex();
+			FTyp = LV->FTyp;
+			RdLex(); RdLex();
 			if (FTyp == 'i') {
 				AcceptKeyWord("NRECS"); Accept(_assign);
-				if ((Lexem != _number) || (LexWord != '0')) Error(183); RdLex();
-				PD = GetPInstr(_asgnxnrecs, 4); PD->xnrIdx = WKeyDPtr(LV->RecPtr);
+				if ((Lexem != _number) || (LexWord != '0')) Error(183); 
+				RdLex();
+				PD = GetPInstr(_asgnxnrecs, 4); 
+				PD->xnrIdx = (WKeyDPtr)LV->RecPtr;
 			}
 			else {
 				PD = GetPInstr(_asgnrecfld, 13); PD->AssLV = LV;
 				F = RdFldName(LV->FD); PD->RecFldD = F;
-				if (F->Flg & f_Stored == 0) OldError(14);
+				if ((F->Flg & f_Stored) == 0) OldError(14);
 				FTyp = F->FrmlTyp;
 			label0:
 				RdAssignFrml(FTyp, PD->Add, PD->Frml);
@@ -1872,7 +1876,8 @@ void RdAssign()
 		}
 		else {
 			FName = LexWord; FD = FindFileD();
-			if (IsActiveRdb(FD)) Error(121); RdLex(); RdLex();
+			if (IsActiveRdb(FD)) Error(121); 
+			RdLex(); RdLex();
 			if (IsKeyWord("ARCHIVES")) { F = CatArchiv; goto label1; }
 			if (IsKeyWord("PATH")) { F = CatPathName; goto label1; }
 			if (IsKeyWord("VOLUME")) {
@@ -1894,7 +1899,7 @@ void RdAssign()
 				PD->FD = FD;
 				F = RdFldName(FD);
 				PD->FldD = F;
-				if (F->Flg & f_Stored == 0) OldError(14);
+				if ((F->Flg & f_Stored) == 0) OldError(14);
 				FTyp = F->FrmlTyp;
 				goto label0;
 			}
@@ -1905,19 +1910,29 @@ void RdAssign()
 		if (FD->typSQLFile) OldError(155);
 #endif
 
-		PD->RecFrml = RdRealFrml(); Accept(']'); Accept('.'); F = RdFldName(FD);
-		PD->FldD = F; if (F->Flg & f_Stored == 0) OldError(14);
-		PD->Indexarg = (FD->Typ = 'X') && IsKeyArg(F, FD);
+		PD->RecFrml = RdRealFrml(); 
+		Accept(']'); 
+		Accept('.'); 
+		F = RdFldName(FD);
+		PD->FldD = F; 
+		if ((F->Flg & f_Stored) == 0) OldError(14);
+		PD->Indexarg = (FD->Typ == 'X') && IsKeyArg(F, FD);
 		RdAssignFrml(F->FrmlTyp, PD->Add, PD->Frml);
 	}
 	else if (FindLocVar(LVBD.Root, LV)) {
-		RdLex(); FTyp = LV->FTyp;
+		RdLex(); 
+		FTyp = LV->FTyp;
 		switch (FTyp) {
 		case 'f':
 		case 'i': OldError(140); break;
-		case 'r': { Accept(_assign); if (!IsRecVar(LV2)) Error(141);
-			PD = GetPInstr(_asgnrecvar, 12); PD->RecLV1 = LV; PD->RecLV2 = LV2;
-			PD->Ass = MakeImplAssign(LV->FD, LV2->FD); }
+		case 'r': { 
+			Accept(_assign); 
+			if (!IsRecVar(LV2)) Error(141);
+			PD = GetPInstr(_asgnrecvar, 12); 
+			PD->RecLV1 = LV; PD->RecLV2 = LV2;
+			PD->Ass = MakeImplAssign(LV->FD, LV2->FD); 
+			break;
+		}
 		default: PD = GetPInstr(_asgnloc, 9); PD->AssLV = LV; goto label0;
 		}
 	}
@@ -1942,7 +1957,7 @@ void RdAssign()
 		RdLex();
 		if (Lexem == _assign) OldError(8); else OldError(34);
 	}
-	RdPInstr = PD;
+	return PD;
 }
 
 Instr* RdWith()
@@ -1954,7 +1969,7 @@ Instr* RdWith()
 		RdW(P->W); RdFrame(P->Top, P->WithWFlags);
 		if (Lexem == ',') { RdLex(); P->Attr = RdAttr(); }
 		Accept(')'); if ((P->WithWFlags & WNoPop) != 0) Accept(')');
-		AcceptKeyWord("DO"); P->WwInstr = RdPInstr;
+		AcceptKeyWord("DO"); P->WwInstr = RdPInstr();
 	}
 	else if (IsKeyWord("SHARED")) { Op = _withshared; goto label1; }
 	else if (IsKeyWord("LOCKED")) {
@@ -1981,14 +1996,14 @@ Instr* RdWith()
 			ld = ld->Chain;
 			goto label2;
 		}
-		AcceptKeyWord("DO"); P->WDoInstr = RdPInstr;
+		AcceptKeyWord("DO"); P->WDoInstr = RdPInstr();
 		if (IsKeyWord("ELSE")) {
-			P->WasElse = true; P->WElseInstr = RdPInstr;
+			P->WasElse = true; P->WElseInstr = RdPInstr();
 		}
 	}
 	else if (IsKeyWord("GRAPHICS")) {
 		P = GetPInstr(_withgraphics, 4); AcceptKeyWord("DO");
-		P->WDoInstr = RdPInstr;
+		P->WDoInstr = RdPInstr();
 	}
 	else Error(131);
 	return P;
@@ -2000,42 +2015,46 @@ Instr* RdUserFuncAssign()
 	if (!FindLocVar(LVBD.Root, lv)) Error(34);
 	RdLex(); pd = GetPInstr(_asgnloc, 9); pd->AssLV = lv;
 	RdAssignFrml(lv->FTyp, pd->Add, pd->Frml);
-	auto result = pd;
+	return pd;
+}
 
-	if (IsKeyWord("IF")) RdPInstr = RdIfThenElse();
-	else if (IsKeyWord("WHILE")) RdPInstr = RdWhileDo();
-	else if (IsKeyWord("REPEAT")) RdPInstr = RdRepeatUntil();
-	else if (IsKeyWord("CASE")) RdPInstr = RdCase();
-	else if (IsKeyWord("FOR")) RdPInstr = RdFor();
-	else if (IsKeyWord("BEGIN")) RdPInstr = RdBeginEnd();
-	else if (IsKeyWord("BREAK")) RdPInstr = GetPInstr(_break, 0);
-	else if (IsKeyWord("EXIT")) RdPInstr = GetPInstr(_exitP, 0);
-	else if (IsKeyWord("CANCEL")) RdPInstr = GetPInstr(_cancel, 0);
-	else if (Lexem == ';') RdPInstr = nullptr;
-	else if (IsRdUserFunc) RdPInstr = RdUserFuncAssign();
-	else if (IsKeyWord("MENULOOP")) RdPInstr = RdMenuBox(true);
-	else if (IsKeyWord("MENU")) RdPInstr = RdMenuBox(false);
-	else if (IsKeyWord("MENUBAR")) RdPInstr = RdMenuBar();
-	else if (IsKeyWord("WITH")) RdPInstr = RdWith();
-	else if (IsKeyWord("SAVE")) RdPInstr = GetPInstr(_save, 0);
-	else if (IsKeyWord("CLREOL")) RdPInstr = GetPInstr(_clreol, 0);
-	else if (IsKeyWord("FORALL")) RdPInstr = RdForAll();
-	else if (IsKeyWord("CLEARKEYBUF")) RdPInstr = GetPInstr(_clearkeybuf, 0);
-	else if (IsKeyWord("WAIT")) RdPInstr = GetPInstr(_wait, 0);
-	else if (IsKeyWord("BEEP")) RdPInstr = GetPInstr(_beepP, 0);
-	else if (IsKeyWord("NOSOUND")) RdPInstr = GetPInstr(_nosound, 0);
+Instr* RdPInstr() 
+{
+	Instr* result = nullptr;
+	if (IsKeyWord("IF")) result = RdIfThenElse();
+	else if (IsKeyWord("WHILE")) result = RdWhileDo();
+	else if (IsKeyWord("REPEAT")) result = RdRepeatUntil();
+	else if (IsKeyWord("CASE")) result = RdCase();
+	else if (IsKeyWord("FOR")) result = RdFor();
+	else if (IsKeyWord("BEGIN")) result = RdBeginEnd();
+	else if (IsKeyWord("BREAK")) result = GetPInstr(_break, 0);
+	else if (IsKeyWord("EXIT")) result = GetPInstr(_exitP, 0);
+	else if (IsKeyWord("CANCEL")) result = GetPInstr(_cancel, 0);
+	else if (Lexem == ';') result = nullptr;
+	else if (IsRdUserFunc) result = RdUserFuncAssign();
+	else if (IsKeyWord("MENULOOP")) result = RdMenuBox(true);
+	else if (IsKeyWord("MENU")) result = RdMenuBox(false);
+	else if (IsKeyWord("MENUBAR")) result = RdMenuBar();
+	else if (IsKeyWord("WITH")) result = RdWith();
+	else if (IsKeyWord("SAVE")) result = GetPInstr(_save, 0);
+	else if (IsKeyWord("CLREOL")) result = GetPInstr(_clreol, 0);
+	else if (IsKeyWord("FORALL")) result = RdForAll();
+	else if (IsKeyWord("CLEARKEYBUF")) result = GetPInstr(_clearkeybuf, 0);
+	else if (IsKeyWord("WAIT")) result = GetPInstr(_wait, 0);
+	else if (IsKeyWord("BEEP")) result = GetPInstr(_beepP, 0);
+	else if (IsKeyWord("NOSOUND")) result = GetPInstr(_nosound, 0);
 #ifndef FandRunV
 	else if (IsKeyWord("MEMDIAG")) RdPInstr = GetPInstr(_memdiag, 0);
 #endif 
-	else if (IsKeyWord("RESETCATALOG")) RdPInstr = GetPInstr(_resetcat, 0);
-	else if (IsKeyWord("RANDOMIZE")) RdPInstr = GetPInstr(_randomize, 0);
+	else if (IsKeyWord("RESETCATALOG")) result = GetPInstr(_resetcat, 0);
+	else if (IsKeyWord("RANDOMIZE")) result = GetPInstr(_randomize, 0);
 	else if (Lexem == _identifier) {
 		SkipBlank(false);
 		if (ForwChar == '(') RdProcCall();
-		else if (IsKeyWord("CLRSCR")) RdPInstr = GetPInstr(_clrscr, 0);
-		else if (IsKeyWord("GRAPH")) RdPInstr = GetPInstr(_graph, 4);
-		else if (IsKeyWord("CLOSE")) RdPInstr = GetPInstr(_closefds, 4);
-		else RdAssign();
+		else if (IsKeyWord("CLRSCR")) result = GetPInstr(_clrscr, 0);
+		else if (IsKeyWord("GRAPH")) result = GetPInstr(_graph, 4);
+		else if (IsKeyWord("CLOSE")) result = GetPInstr(_closefds, 4);
+		else result = RdAssign();
 	}
 	else Error(34);
 	return result;
@@ -2043,11 +2062,15 @@ Instr* RdUserFuncAssign()
 
 void ReadProcHead()
 {
-	ResetCompilePars(); RdFldNameFrml = RdFldNameFrmlP; RdFunction = RdFunctionP;
+	ResetCompilePars(); 
+	RdFldNameFrml = RdFldNameFrmlP; RdFunction = RdFunctionP;
 	FileVarsAllowed = false; IdxLocVarAllowed = true; IsRdUserFunc = false;
-	RdLex(); ResetLVBD();
+	RdLex(); 
+	ResetLVBD();
 	if (Lexem == '(') {
-		RdLex(); RdLocDcl(&LVBD, true, true, 'P'); Accept(')');
+		RdLex(); 
+		RdLocDcl(&LVBD, true, true, 'P'); 
+		Accept(')');
 	}
 	if (IsKeyWord("VAR")) RdLocDcl(&LVBD, false, true, 'P');
 }
