@@ -1049,8 +1049,11 @@ void CallProcedure(Instr* PD)
 		}
 		lv = (LocVar*)lv->Chain;
 	}
-	ProcMyBP = MyBP; pd1 = ReadProcBody(); FDLocVarAllowed = false;
-	lv = lv1; while (lv != nullptr) {
+	ProcMyBP = MyBP; 
+	pd1 = ReadProcBody(); 
+	FDLocVarAllowed = false;
+	lv = lv1; 
+	while (lv != nullptr) {
 		if (lv->FTyp == 'i') /* !!! with WKeyDPtr(lv->RecPtr)^ do!!! */ {
 			auto hX = WKeyDPtr(lv->RecPtr);
 			if (hX->KFlds == nullptr) hX->KFlds = lv->FD->Keys->KFlds;

@@ -92,10 +92,11 @@ void SetInpLongStr(LongStr* S, bool ShowErr)
 	InpRdbPos.IRec = 0;
 }
 
+// vycte z CFile->TF blok dat
+// nastavi InpArrPtr a InptArrLen - retezec pro zpracovani
 void SetInpTTPos(longint Pos, bool Decode)
 {
-	LongStr* s;
-	s = CFile->TF->Read(2, Pos);
+	LongStr* s = CFile->TF->Read(2, Pos);
 	if (Decode) CodingLongStr(s);
 	InpArrLen = s->LL;
 	InpArrPtr = (BYTE*)&s->A[0];

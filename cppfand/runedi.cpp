@@ -442,7 +442,8 @@ double PromptR(pstring* S, FrmlPtr Impl, FieldDPtr F)
 
 longint CRec()
 {
-	return BaseRec + IRec - 1;
+	// return BaseRec + IRec - 1;
+	return 0;
 }
 
 longint CNRecs()

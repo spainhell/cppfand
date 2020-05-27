@@ -316,6 +316,7 @@ label1:
 	}
 }
 
+// ze souboru .000 vycte data
 void* RdFileD(pstring FileName, char FDTyp, pstring Ext)
 {
 	pstring JournalFlds = "A Upd,1;F RecNr,8.0;F User,4.0;D TimeStamp,'DD.MM.YYYY mm hh:ss'";
@@ -713,6 +714,7 @@ void RdAssign(AddDPtr AD)
 	if (FTyp != AD->Field->FrmlTyp) OldError(12);
 }
 
+// smaze CFile->Handle, nastavi typ na FDTyp a ziska CatIRec z GetCatIRec() - musi existovat CatFD
 void SetHCatTyp(char FDTyp)
 {
 	/* !!! with CFile^ do!!! */

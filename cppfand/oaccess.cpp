@@ -433,45 +433,49 @@ void CloseFilesOnDrive(WORD D)
 
 WORD TestMountVol(char DriveC)
 {
-	// TODO:
-//	SearchRec S; WORD D, i; pstring Vol;
-//	pstring Drive(1); Drive = "A";
-//
-//	WORD result = 0; if (IsNetCVol()) return result;
-//	D = toupper(DriveC) - '@';
-//	if (D >= FloppyDrives)
-//		if (toupper(CDir[1]) == spec.CPMdrive) D = FloppyDrives;
-//		else return result;
-//	if ((CVol == "") || SEquUpcase(MountedVol[D], CVol)) goto label3;
-//	Drive[1] = DriveC;
-//	if (ActiveRdbOnDrive(D))
-//	{
-//		Set3MsgPar(Drive, CVol, MountedVol[D]); RunError(812);
-//	}
-//	Vol = CVol; CloseFilesOnDrive(D); CVol = Vol;
-//label1:
-//	F10SpecKey = _ESC_; Set2MsgPar(Drive, CVol); WrLLF10Msg(808);
-//	if (KbdChar == _ESC_) if (PromptYN(21)) GoExit(); else goto label1;
-//	if (D == FloppyDrives) FindFirst(Drive + ":\\*.VOL", 0, S);
-//	else FindFirst(Drive + ":\\*.*", VolumeID, S);
-//	switch (DosError()) {
-//	case 18/*label missing*/: { WrLLF10Msg(809); goto label1; break; }
-//	case 0: break;
-//	default: WrLLF10Msg(810); goto label1; break;
-//	}
-//	i = S.Name.First('.');
-//	if (D == FloppyDrives) S.Name.Delete(i, 255);
-//	else if (i != 0) S.Name.Delete(i, 1);
-//	if (!SEquUpcase(S.Name, CVol))
-//	{
-//		SetMsgPar(S.Name); WrLLF10Msg(817); goto label1;
-//	}
-//label2:
-//	MountedVol[D] = CVol;
-//label3:
-//	result = D;
-//	return result;
-	return 0;
+	//SearchRec S; 
+	WORD D = 0, i = 0; pstring Vol;
+	pstring Drive(1); Drive = "A";
+
+	if (IsNetCVol()) return 0;
+	D = toupper(DriveC) - '@';
+	if (D >= FloppyDrives)
+		if (toupper(CDir[1]) == spec.CPMdrive) D = FloppyDrives;
+		else return 0;
+	if ((CVol == "") || SEquUpcase(MountedVol[D], CVol)) goto label3;
+	Drive[1] = DriveC;
+	if (ActiveRdbOnDrive(D))
+	{
+		Set3MsgPar(Drive, CVol, MountedVol[D]); 
+		RunError(812);
+	}
+	Vol = CVol; 
+	CloseFilesOnDrive(D); 
+	CVol = Vol;
+label1:
+	F10SpecKey = _ESC_; 
+	Set2MsgPar(Drive, CVol); 
+	WrLLF10Msg(808);
+	if (KbdChar == _ESC_) if (PromptYN(21)) GoExit(); 
+	else goto label1;
+	//if (D == FloppyDrives) FindFirst(Drive + ":\\*.VOL", 0, S);
+	//else FindFirst(Drive + ":\\*.*", VolumeID, S);
+	switch (DosError()) {
+	case 18/*label missing*/: { WrLLF10Msg(809); goto label1; break; }
+	case 0: break;
+	default: WrLLF10Msg(810); goto label1; break;
+	}
+	//i = S.Name.First('.');
+	//if (D == FloppyDrives) S.Name.Delete(i, 255);
+	//else if (i != 0) S.Name.Delete(i, 1);
+	//if (!SEquUpcase(S.Name, CVol))
+	//{
+	//	SetMsgPar(S.Name); WrLLF10Msg(817); goto label1;
+	//}
+label2:
+	MountedVol[D] = CVol;
+label3:
+	return D;
 }
 
 void ReleaseDrive(WORD D)
@@ -518,10 +522,11 @@ WORD GetCatIRec(pstring Name, bool MultiLevel)
 	WORD result = 0;
 	if (CatFD == nullptr || CatFD->Handle == nullptr) return result;
 	if (CRdb == nullptr) return result;
-	CF = CFile; CR = CRecPtr; CFile = CatFD; CRecPtr = GetRecSpace();
+	CF = CFile; CR = CRecPtr; CFile = CatFD; 
+	CRecPtr = GetRecSpace();
 	R = CRdb;
 label1:
-	for (i = 1; i < CatFD->NRecs; i++)
+	for (i = 1; i <= CatFD->NRecs; i++)
 	{
 		ReadRec(i);
 		if (SEquUpcase(TrailChar(' ', _ShortS(CatRdbName)), R->FD->Name) &&
@@ -532,7 +537,9 @@ label1:
 	}
 	R = R->ChainBack; if ((R != nullptr) && MultiLevel) goto label1;
 label2:
-	CFile = CF; ReleaseStore(CRecPtr); CRecPtr = CR;
+	CFile = CF; 
+	ReleaseStore(CRecPtr); 
+	CRecPtr = CR;
 	return result;
 }
 

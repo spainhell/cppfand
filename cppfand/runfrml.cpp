@@ -934,22 +934,25 @@ FrmlPtr RunEvalFrml(FrmlPtr Z)
 
 LongStr* RunLongStr(FrmlPtr X)
 {
-	LongStr* S; bool b;
-	WORD I;
+	LongStr* S = nullptr; bool b = false;
+	WORD I = 0;
 	LockMode* md = (LockMode*)&I;
 	integer* J = (integer*)&I;
-	longint RecNo;
-	WORD* N = (WORD*)&RecNo; longint* L1 = (longint*)&RecNo;
-	FileDPtr cf = nullptr; void* cr = nullptr; longint* L2 = (longint*)cr;
+	longint RecNo = 0;
+	WORD* N = (WORD*)&RecNo; 
+	longint* L1 = (longint*)&RecNo;
+	FileDPtr cf = nullptr; 
+	void* cr = nullptr; 
+	longint* L2 = (longint*)cr;
 	void* p = &RecNo;
 
 	LongStr* result = nullptr;
 
-	if (X == nullptr) return (LongStr*)GetZStore(2);
+	if (X == nullptr) return new LongStr(2);
 label1:
 	switch (X->Op) {
 	case _field: result = _LongS(X->Field); break;
-	case _getlocvar: result = TWork.Read(1, *(longint*)(MyBP + X->BPOfs));
+	case _getlocvar: result = TWork.Read(1, *(longint*)(MyBP + X->BPOfs)); break;
 	case _access: {
 		cf = CFile; cr = CRecPtr;
 		CFile = X->File2; *md = NewLMode(RdMode);
@@ -991,18 +994,21 @@ label1:
 			{
 				if (X->P3 == nullptr)
 				{
-					S = (LongStr*)GetZStore(2);
-					result = S; return result;
+					return new LongStr(2);
 				}
-				X = X->P3; goto label2;
+				X = X->P3; 
+				goto label2;
 			}
-		X = X->P2; goto label1;
+		X = X->P2; 
+		goto label1;
 		break;
 	}
 	case _copy: {
 		S = RunLongStr(X->P1);
-		*L1 = RunInt(X->P2); *L2 = RunInt(X->P3);
-		if ((L1 < 0) || (L2 < 0)) S->LL = 0; else CopyLongStr(S, (WORD)*L1, (WORD)*L2);
+		*L1 = RunInt(X->P2); 
+		*L2 = RunInt(X->P3);
+		if ((L1 < 0) || (L2 < 0)) S->LL = 0; 
+		else CopyLongStr(S, (WORD)*L1, (WORD)*L2);
 		ReleaseAfterLongStr(S);
 		result = S;
 		break;
@@ -1070,11 +1076,12 @@ label1:
 
 pstring RunShortStr(FrmlPtr X)
 {
-	LongStr* s;
-	s = RunLongStr(X);
-	/* ASM */
-	ReleaseStore(s);
-	return "";
+	LongStr* s = RunLongStr(X);
+	pstring result;
+	if (s->LL > 255) result[0] = 255;
+	memcpy(&result[1], s->A, result[0]);
+	delete s;
+	return result;
 }
 
 void ConcatLongStr(LongStr* S1, LongStr* S2)

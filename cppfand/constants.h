@@ -343,7 +343,7 @@ const WORD ResVersion = 0x0420;
 const char CfgVersion[] = { '4', '.', '2', '0', '\0' };
 const BYTE DMLVersion = 41;
 const WORD NoDayInMonth[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
-const bool HasCoproc = false;
+const bool HasCoproc = true;
 
 const WORD MaxLStrLen = 65000;
 const BYTE WShadow = 0x01; // window flags

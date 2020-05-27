@@ -807,14 +807,13 @@ bool IsNullValue(void* p, WORD l)
 	return false;
 }
 
-/// nechápu, co to dìlá - oøeže úvodní znaky, pøevádí na èíslo, ...
+// v CRecPtr se posune o F->Displ a vyète integer
 longint _T(FieldDescr* F)
 {
 	void* p = CRecPtr;
 	longint n = 0;
 	integer err = 0;
 	char* source = (char*)p + F->Displ;
-	//std::string s1(source, 10);
 
 	if (CFile->Typ == 'D')
 	{
@@ -837,7 +836,7 @@ void T_(FieldDPtr F, longint Pos)
 	pstring s;
 	void* p = CRecPtr;
 	char* source = (char*)p + F->Displ;
-	longint* LP = (longint*)p;
+	longint* LP = (longint*)source;
 	if ((F->Typ == 'T') && (F->Flg && f_Stored != 0)) {
 		if (CFile->Typ == 'D')
 			if (Pos == 0) FillChar(source, 10, ' ');
@@ -1199,6 +1198,7 @@ LongStr* _LongS(FieldDPtr F)
 	return RunLongStr(F->Frml);
 }
 
+// z CRecPtr vyète øetìzec o délce F->L z pozice F->Displ
 pstring _ShortS(FieldDPtr F)
 {
 	void* P = CRecPtr;
@@ -1293,6 +1293,7 @@ double _R(FieldDPtr F)
 	return result;
 }
 
+// vrací BOOL ze záznamu CRecPtr na pozici F->Displ
 bool _B(FieldDPtr F)
 {
 	bool result;
