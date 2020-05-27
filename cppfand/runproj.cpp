@@ -16,6 +16,7 @@
 #include "runproc.h"
 #include "runrprt.h"
 #include "wwmenu.h"
+#include <map>
 
 
 void* O(void* p) // ASM
@@ -527,19 +528,23 @@ void WrFDSegment(longint RecNr)
 	if (CFile->LiOfs > 0) {
 		li = (LiRoots*)Normalize(AbsAdr(CFile) + CFile->LiOfs);
 		id = ImplDPtr(&li->Impls);
-		while (id->Chain != nullptr) {
-			id->Chain = (ImplD*)O(id->Chain);
-			id = (ImplD*)id->Chain;
-			id->FldD = (FieldDescr*)O(id->FldD);
-			OFrml(id->Frml);
+		if (id != nullptr) {
+			while (id->Chain != nullptr) {
+				id->Chain = (ImplD*)O(id->Chain);
+				id = (ImplD*)id->Chain;
+				id->FldD = (FieldDescr*)O(id->FldD);
+				OFrml(id->Frml);
+			}
 		}
 		c = ChkDPtr(&li->Chks);
-		while (c->Chain != nullptr) {
-			c->Chain = (ChkD*)O(c->Chain);
-			c = (ChkD*)c->Chain;
-			c->HelpName = (pstring*)O(c->HelpName);
-			OFrml(c->TxtZ);
-			OFrml(c->Bool);
+		if (c != nullptr) {
+			while (c->Chain != nullptr) {
+				c->Chain = (ChkD*)O(c->Chain);
+				c = (ChkD*)c->Chain;
+				c->HelpName = (pstring*)O(c->HelpName);
+				OFrml(c->TxtZ);
+				OFrml(c->Bool);
+			}
 		}
 	}
 	ss = (LongStr*)&CFile->WasWrRec; // Ptr(PtrRec(CFile).Seg - 1, 14);
@@ -561,7 +566,7 @@ void SgKF(KeyFldDPtr kf, WORD Sg)
 	}
 }
 
-FileD* FileDfromSegment(LongStr* ss) {
+FileD* FileD_FromSegment(LongStr* ss) {
 	char* A = ss->A;
 	size_t index = 0;
 	FileD* f = new FileD;
@@ -612,35 +617,30 @@ FileD* FileDfromSegment(LongStr* ss) {
 	return f;
 }
 
-void createFileDescrFromStr(FileD* F, BYTE* str, WORD offset, WORD len)
+void createFileDescrFromStr(FileD* F, uintptr_t firstAddress, BYTE* str)
 {
-	FieldDescr* nfide = new FieldDescr(&str[0]);
+	// nacte vsechny zretezene FileDescr z predaneho retezce, vytvori mapu, kde klicem je puvodni adresa prvku
+	// nactene polozky vzajemne zretezi, posledni ma jako Chain NULL
+	WORD nextItemIndex = uintptr_t(CFile->FldD) & 0x0000FFFF;
+	std::map<uintptr_t, FieldDescr*> mFieldD;
+	FieldDescr* lastFieldD = new FieldDescr(&str[nextItemIndex]);
+	nextItemIndex = (uintptr_t(lastFieldD->Chain) & 0x0000FFFF);
+	mFieldD.insert(std::pair<uintptr_t, FieldDescr*>(firstAddress, lastFieldD));
 	
-	WORD next = (uintptr_t(nfide->Chain) & 0x0000FFFF) - offset;
-	FieldDescr* nfide2 = new FieldDescr(&str[next]);
-	nfide->Chain = nfide2;
-	
-	next = (uintptr_t(nfide2->Chain) & 0x0000FFFF) - offset;
-	FieldDescr* nfide3 = new FieldDescr(&str[next]);
-	nfide2->Chain = nfide3;
+	while (nextItemIndex != 0) {
+		FieldDescr* nFieldD = new FieldDescr(&str[nextItemIndex]);
+		nextItemIndex = (uintptr_t(nFieldD->Chain) & 0x0000FFFF);
+		mFieldD.insert(std::pair<uintptr_t, FieldDescr*>((uintptr_t)lastFieldD->Chain, nFieldD));
+		lastFieldD->Chain = nFieldD;
+		lastFieldD = nFieldD;
+	}
 
-	next = (uintptr_t(nfide3->Chain) & 0x0000FFFF) - offset;
-	FieldDescr* nfide4 = new FieldDescr(&str[next]);
-	nfide3->Chain = nfide4;
+	// jednotlive polozky v mape ted maji jako Frml uvedene stare adresy
+	// je nutne i jednotlive Frml vytvorit a adresy nahradit
+	// projdeme tedy mapu a ke vsem polozkam nacteme formulare
 
-	next = (uintptr_t(nfide4->Chain) & 0x0000FFFF) - offset;
-	FieldDescr* nfide5 = new FieldDescr(&str[next]);
-	nfide4->Chain = nfide5;
 
-	next = (uintptr_t(nfide5->Chain) & 0x0000FFFF) - offset;
-	FieldDescr* nfide6 = new FieldDescr(&str[next]);
-	nfide5->Chain = nfide6;
-
-	next = (uintptr_t(nfide6->Chain) & 0x0000FFFF) - offset;
-	FieldDescr* nfide7 = new FieldDescr(&str[next]);
-	nfide6->Chain = nfide7;
 }
-
 
 
 bool RdFDSegment(WORD FromI, longint Pos)
@@ -659,7 +659,7 @@ bool RdFDSegment(WORD FromI, longint Pos)
 	if (CRdb->Encrypted) CodingLongStr(ss);
 	Sg = uintptr_t(ss + 1);
 	SgF = Sg;
-	CFile = FileDfromSegment(ss);
+	CFile = FileD_FromSegment(ss);
 	//CFile = (FileD*)Sg;
 	/* !!! with CFile^ do!!! */
 	if (CFile->IRec != FDVersion) return result;
@@ -669,9 +669,9 @@ bool RdFDSegment(WORD FromI, longint Pos)
 	//if (CFile->TF != nullptr) Pr(CFile->TF).Seg = Sg;
 	//if (CFile->XF != nullptr) Pr(CFile->XF).Seg = Sg;
 
-	WORD offset = uintptr_t(CFile->FldD) & 0x0000FFFF;
-	WORD ssDataLen = ss->LL - offset;
-	createFileDescrFromStr(CFile, (BYTE*)&ss->A[offset], offset, ssDataLen);
+	//WORD offset = uintptr_t(CFile->FldD) & 0x0000FFFF;
+	//WORD ssDataLen = ss->LL - offset;
+	createFileDescrFromStr(CFile, uintptr_t(CFile->FldD), (BYTE*)&ss->A[0]);
 
 	f = CFile->FldD;
 	while (f->Chain != nullptr) {
@@ -1430,7 +1430,8 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 				if (Verif || ChptTF->CompileAll || (OldTxt == 0)) {
 				label2:
 					p1 = RdF(&Name);
-					// TODO: toto se asi zase musí povolit !!! WrFDSegment(I);
+					// TODO: toto se asi zase musí povolit !!! 
+					WrFDSegment(I);
 					if (CFile->IsHlpFile) CRdb->HelpFD = CFile;
 					if (OldTxt > 0)
 						MergeOldNew(Verif, OldTxt); ReleaseStore(p1);
