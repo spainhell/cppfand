@@ -328,12 +328,17 @@ label1:
 
 void EditProc(Instr* PD)
 {
-	EditOpt* EO;
-	EdUpdated = false; SaveFiles(); CFile = PD->EditFD;
-	EO = (EditOpt*)GetStore(sizeof(*EO));
-	Move(PD->EO, EO, sizeof(*EO));
+	EdUpdated = false; 
+	SaveFiles(); 
+	CFile = PD->EditFD;
+	//EditOpt* EO = (EditOpt*)GetStore(sizeof(*EO));
+	EditOpt* EO = new EditOpt();
+	//Move(PD->EO, EO, sizeof(*EO));
+	EO = PD->EO;
 	if (!EO->UserSelFlds || SelFldsForEO(EO, nullptr)) EditDataFile(CFile, EO);
-	SaveFiles; ReleaseStore(EO);
+	SaveFiles(); 
+	//ReleaseStore(EO);
+	delete EO;
 }
 
 void EditTxtProc(Instr* PD)
@@ -1044,8 +1049,12 @@ void CallProcedure(Instr* PD)
 	lv1 = lv; 
 	while (lv != nullptr) {
 		if (lv->FTyp == 'r') {
-			CFile = lv->FD; CRecPtr = GetRecSpace();
-			SetTWorkFlag(); ZeroAllFlds(); ClearDeletedFlag(); lv->RecPtr = CRecPtr;
+			CFile = lv->FD; 
+			CRecPtr = GetRecSpace();
+			SetTWorkFlag(); 
+			ZeroAllFlds(); 
+			ClearDeletedFlag(); 
+			lv->RecPtr = CRecPtr;
 		}
 		lv = (LocVar*)lv->Chain;
 	}
@@ -1054,7 +1063,8 @@ void CallProcedure(Instr* PD)
 	FDLocVarAllowed = false;
 	lv = lv1; 
 	while (lv != nullptr) {
-		if (lv->FTyp == 'i') /* !!! with WKeyDPtr(lv->RecPtr)^ do!!! */ {
+		if (lv->FTyp == 'i') /* !!! with WKeyDPtr(lv->RecPtr)^ do!!! */ 
+		{
 			auto hX = WKeyDPtr(lv->RecPtr);
 			if (hX->KFlds == nullptr) hX->KFlds = lv->FD->Keys->KFlds;
 			auto tmp = (XWKey*)lv->RecPtr;
@@ -1064,7 +1074,8 @@ void CallProcedure(Instr* PD)
 	}
 	ReleaseStore2(p2);
 	RunProcedure(pd1);
-	lv = lvroot; i = 1; 
+	lv = lvroot; 
+	i = 1; 
 	while (lv != nullptr) {
 		if (lv->IsRetPar) {
 			z = PD->TArg[i].Frml;

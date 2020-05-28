@@ -21,7 +21,7 @@ Instr* GetPInstr(PInstrCode Kind, WORD Size);
 
 Instr* RdPInstr(); // hlavní funkce
 
-void RdPInstrAndChain(Instr* PD);
+void RdPInstrAndChain(Instr** PD);
 void RdChoices(Instr* PD);
 void RdMenuAttr(Instr* PD);
 Instr* RdMenuBox(bool Loop);
@@ -48,8 +48,8 @@ Instr* GetPD(PInstrCode Kind, WORD Size);
 void RdProcCall(Instr** pinstr); // mùže upravit pinstr z hlavní funkce
 FieldList RdFlds();
 FieldList RdSubFldList(FieldList InFL, char Opt);
-void RdSortCall();
-void RdEditCall();
+Instr* RdSortCall();
+Instr* RdEditCall();
 void RdEditOpt(EditOpt* EO);
 void RdReportCall();
 void RdRprtOpt(RprtOpt* RO, bool HasFrst);

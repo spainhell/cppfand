@@ -409,13 +409,16 @@ Instr* GetPInstr(PInstrCode Kind, WORD Size)
 	return PD;
 }
 
-void RdPInstrAndChain(Instr* PD)
+void RdPInstrAndChain(Instr** PD)
 {
 	Instr* PD1 = RdPInstr(); /*may be a chain itself*/
-	Instr* PD2 = PD;
-	if (PD2 != nullptr) {
-		while (PD2->Chain != nullptr) PD2 = (Instr*)PD2->Chain;
-		PD2->Chain = PD1;
+	//Instr* PD2 = *PD;
+	if (*PD != nullptr) {
+		while ((*PD)->Chain != nullptr) *PD = (Instr*)(*PD)->Chain;
+		(*PD)->Chain = PD1;
+	}
+	else {
+		*PD = PD1;
 	}
 }
 
@@ -580,7 +583,7 @@ label1:
 	if (!IsKeyWord("END"))
 		if (IsKeyWord("ELSE"))
 			while (!IsKeyWord("END")) {
-				RdPInstrAndChain(PD->ElseInstr1);
+				RdPInstrAndChain(&PD->ElseInstr1);
 				if (Lexem == ';') RdLex();
 				else goto label2;
 			}
@@ -597,7 +600,7 @@ Instr* RdRepeatUntil()
 	Instr* PD = GetPInstr(_repeatuntil, 8);
 	auto result = PD;
 	while (!IsKeyWord("UNTIL")) {
-		RdPInstrAndChain(PD->Instr1);
+		RdPInstrAndChain(&PD->Instr1);
 		if (Lexem == ';') RdLex();
 		else {
 			AcceptKeyWord("UNTIL");
@@ -661,10 +664,10 @@ label2:
 
 Instr* RdBeginEnd()
 {
-	Instr* PD = new Instr();
+	Instr* PD = nullptr;
 	if (!IsKeyWord("END")) {
 	label1:
-		RdPInstrAndChain(PD);
+		RdPInstrAndChain(&PD);
 		if (Lexem == ';') {
 			RdLex();
 			if (!IsKeyWord("END")) goto label1;
@@ -913,8 +916,8 @@ void RdProcCall(Instr** pinstr)
 	else if (IsKeyWord("MERGE")) {
 		PD = GetPD(_merge, sizeof(RdbPos)); RdChptName('M', &PD->Pos, true);
 	}
-	else if (IsKeyWord("SORT")) RdSortCall();
-	else if (IsKeyWord("EDIT")) RdEditCall();
+	else if (IsKeyWord("SORT")) *pinstr = RdSortCall();
+	else if (IsKeyWord("EDIT")) *pinstr = RdEditCall();
 	else if (IsKeyWord("REPORT")) RdReportCall();
 	else if (IsKeyWord("EDITTXT")) RdEditTxt();
 	else if (IsKeyWord("PRINTTXT")) RdPrintTxt();
@@ -1063,7 +1066,7 @@ label1:
 	return FLRoot;
 }
 
-void RdSortCall()
+Instr* RdSortCall()
 {
 	Instr* PD = GetPD(_sort, 8);
 	FileD* FD = RdFileName();
@@ -1075,9 +1078,10 @@ void RdSortCall()
 	Accept('(');
 	RdKFList(PD->SK, PD->SortFD);
 	Accept(')');
+	return PD;
 }
 
-void RdEditCall()
+Instr* RdEditCall()
 {
 	void* p = nullptr; bool b = false; KeyDPtr K = nullptr;
 	LocVar* lv = nullptr;
@@ -1107,6 +1111,7 @@ void RdEditCall()
 		b = RdViewOpt(EO);
 		if (!b) RdEditOpt(EO);
 	}
+	return PD;
 }
 
 void RdEditOpt(EditOpt* EO)
@@ -1725,11 +1730,11 @@ void RdMixRecAcc(PInstrCode Op)
 		if (CFile->typSQLFile) OldError(155);
 #endif
 
-		if (Op = _recallrec) { Accept(','); PD->RecNr = RdRealFrml(); }
+		if (Op == _recallrec) { Accept(','); PD->RecNr = RdRealFrml(); }
 }
 	else {
 		PD = GetPD(Op, 15);
-		if (Op = _deleterec) { CFile = RdFileName(); PD->RecFD = CFile; }
+		if (Op == _deleterec) { CFile = RdFileName(); PD->RecFD = CFile; }
 		else { /*_readrec,_writerec*/
 			if (!IsRecVar(PD->LV)) Error(141); CFile = PD->LV->FD;
 		}

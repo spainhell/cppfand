@@ -3424,22 +3424,29 @@ label81:
 
 void EditDataFile(FileDPtr FD, EditOpt* EO)
 {
-	void* p = nullptr; longint w1, w2, w3; WORD Brk, r1, r2;
-	bool pix; ExitRecord er;
-	MarkStore(p); if (EO->SyntxChk) {
+	void* p = nullptr; 
+	longint w1 = 0, w2 = 0, w3 = 0; 
+	WORD Brk = 0, r1 = 0, r2 = 0;
+	bool pix = false; ExitRecord er;
+	MarkStore(p); 
+	if (EO->SyntxChk) {
 		IsCompileErr = false;
 		//NewExit(Ovr(), er);
-		goto label1; NewEditD(FD, EO);
+		//goto label1; 
+		NewEditD(FD, EO);
 	label1:
 		RestoreExit(er);
 		if (IsCompileErr) {
-			EdRecKey = MsgLine; LastExitCode = CurrPos + 1; IsCompileErr = false;
+			EdRecKey = MsgLine; 
+			LastExitCode = CurrPos + 1; 
+			IsCompileErr = false;
 		}
 		else LastExitCode = 0;
 		goto label2;
 	}
 	NewEditD(FD, EO);
-	w2 = 0; w3 = 0; pix = (E->WFlags & WPushPixel) != 0;
+	w2 = 0; w3 = 0; 
+	pix = (E->WFlags & WPushPixel) != 0;
 	if (E->WwPart) /* !!! with E^ do!!! */
 	{
 		if (E->WithBoolDispl) r2 = 2;
@@ -3455,9 +3462,12 @@ void EditDataFile(FileDPtr FD, EditOpt* EO)
 		if (OnlyAppend && !Append) SwitchToAppend();
 	}
 	RunEdit(nullptr, Brk);
-	if (w3 != 0) PopW(w3); if (w2 != 0) PopW(w2); PopW(w1);
+	if (w3 != 0) PopW(w3); 
+	if (w2 != 0) PopW(w2); 
+	PopW(w1);
 label2:
-	PopEdit(); ReleaseStore(p);
+	PopEdit(); 
+	ReleaseStore(p);
 }
 
 

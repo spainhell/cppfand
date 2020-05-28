@@ -154,42 +154,49 @@ struct EdExitD : Chained
 	//EdExitD* Chain = nullptr;
 	EdExKeyD* Keys = nullptr;;
 	bool AtWrRec = false, AtNewRec = false, NegFlds = false;
-	FieldList Flds = nullptr;;   /*in edittxt !used*/
+	FieldList Flds = nullptr;    /*in edittxt !used*/
 	char Typ = 0;
-	void* RO = nullptr;;
-	Instr* Proc = nullptr;;                     /*in edittxt only "P","Q"*/
+	void* RO = nullptr;
+	Instr* Proc = nullptr;       /*in edittxt only "P","Q"*/
 	/*"Q" quit   #0 dummy*/
 };
 
 struct EditOpt
 {
 	RdbPos FormPos;
-	bool UserSelFlds, SetOnlyView, NegDupl, NegTab, NegNoEd, SyntxChk;
-	FieldList Flds, Dupl, Tab, NoEd;
-	FrmlPtr Cond;
-	FrmlPtr Head, Last, CtrlLast, AltLast, ShiftLast, Mode;
-	FrmlPtr StartRecNoZ, StartRecKeyZ, StartIRecZ, StartFieldZ;
-	FrmlPtr SaveAfterZ, WatchDelayZ, RefreshDelayZ;
+	bool UserSelFlds = false, SetOnlyView = false, NegDupl = false;
+	bool NegTab = false, NegNoEd = false, SyntxChk = false;
+	FieldListEl* Flds = nullptr; FieldListEl* Dupl = nullptr; 
+	FieldListEl* Tab = nullptr; FieldListEl* NoEd = nullptr;
+	FrmlElem* Cond = nullptr;
+	FrmlElem* Head = nullptr; FrmlElem* Last = nullptr; 
+	FrmlElem* CtrlLast = nullptr; FrmlElem* AltLast = nullptr; FrmlElem* ShiftLast = nullptr;
+	FrmlElem* Mode = nullptr;
+	FrmlElem* StartRecNoZ = nullptr; FrmlElem* StartRecKeyZ = nullptr;
+	FrmlElem* StartIRecZ = nullptr; FrmlElem* StartFieldZ = nullptr;
+	FrmlElem* SaveAfterZ = nullptr; FrmlElem* WatchDelayZ = nullptr; 
+	FrmlElem* RefreshDelayZ = nullptr;
 	WRectFrml W;
-	FrmlPtr ZAttr = nullptr;
+	FrmlElem* ZAttr = nullptr;
 	FrmlElem* ZdNorm = nullptr;
 	FrmlElem* ZdHiLi = nullptr;
 	FrmlElem* ZdSubset = nullptr;
 	FrmlElem* ZdDel = nullptr;
 	FrmlElem* ZdTab = nullptr;
 	FrmlElem* ZdSelect = nullptr;
-	FrmlPtr Top = nullptr;
+	FrmlElem* Top = nullptr;
 	BYTE WFlags = 0;
 	EdExitD* ExD = nullptr;
-	FileDPtr Journal;
-	pstring* ViewName;
-	char OwnerTyp;
-	LinkDPtr DownLD;
-	LocVar* DownLV;
-	void* DownRecPtr; void* LVRecPtr;
-	KeyInD* KIRoot;
-	bool SQLFilter;
-	KeyDPtr SelKey, ViewKey;
+	FileD* Journal = nullptr;
+	pstring* ViewName = nullptr;
+	char OwnerTyp= '\0';
+	LinkD* DownLD = nullptr;
+	LocVar* DownLV = nullptr;
+	void* DownRecPtr = nullptr; void* LVRecPtr = nullptr;
+	KeyInD* KIRoot = nullptr;
+	bool SQLFilter = false;
+	XKey* SelKey = nullptr; 
+	XKey* ViewKey = nullptr;
 };
 
 struct EFldD : public Chained
@@ -226,16 +233,16 @@ struct EditD : Chained
 	BYTE Attr, dNorm, dHiLi, dSubSet, dDel, dTab, dSelect;
 	pstring* Top = nullptr;
 	BYTE WFlags;                                 /* copied from EO */
-	EdExitD* ExD = nullptr;                              /*      "         */
-	FileD* Journal = nullptr;                            /*      "         */
-	pstring* ViewName;                          /*      "         */
-	char OwnerTyp; /* #0=CtrlF7 */                 /*      "         */
-	LinkD* DownLD = nullptr;                             /*      "         */
-	LocVar* DownLV = nullptr;                            /*      "         */
-	void* DownRecPtr; void* LVRecPtr;                 /*      "         */
-	KeyInD* KIRoot = nullptr;                            /*      "         */
-	bool SQLFilter;                           /*      "         */
-	XWKey* SelKey = nullptr;                             /*      "         */
+	EdExitD* ExD = nullptr;                      /*      "         */
+	FileD* Journal = nullptr;                    /*      "         */
+	pstring* ViewName;                           /*      "         */
+	char OwnerTyp; /* #0=CtrlF7 */               /*      "         */
+	LinkD* DownLD = nullptr;                     /*      "         */
+	LocVar* DownLV = nullptr;                    /*      "         */
+	void* DownRecPtr; void* LVRecPtr;            /*      "         */
+	KeyInD* KIRoot = nullptr;                    /*      "         */
+	bool SQLFilter;                              /*      "         */
+	XWKey* SelKey = nullptr;                     /*      "         */
 	StringList HdTxt; BYTE NHdTxt;
 	WORD SaveAfter, WatchDelay, RefreshDelay;
 	BYTE RecNrPos, RecNrLen;

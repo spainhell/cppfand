@@ -10,27 +10,30 @@ EditD* E = EditDRoot;
 
 void PushEdit()
 {
-	EditD* E1 = (EditD*)GetZStore(sizeof(*E));
+	//EditD* E1 = (EditD*)GetZStore(sizeof(*E));
+	EditD* E1 = new EditD();
 	/* !!! with E1->V do!!! */
 	{
 		E1->V.C1 = 1; E1->V.R1 = 2; E1->V.C2 = TxtCols; E1->V.R2 = TxtRows - 1;
 	}
-	E1->Chain = E; E = E1;
+	E1->Chain = E; 
+	E = E1;
 }
 
-void SToSL(void* SLRoot, pstring s)
+void SToSL(Chained* SLRoot, pstring s)
 {
-	StringList SL;
-	SL = (StringListEl*)GetStore(s.length() + 5);
+	//StringList SL = (StringListEl*)GetStore(s.length() + 5);
+	StringListEl* SL = new StringListEl();
 	SL->S = s;
-	ChainLast((Chained*)SLRoot, SL);
+	if (SLRoot == nullptr) SLRoot = SL;
+	else ChainLast((Chained*)SLRoot, SL);
 }
 
 void StoreRT(WORD Ln, StringList SL, WORD NFlds)
 {
-	ERecTxtD* RT;
+	//ERecTxtD* RT = (ERecTxtD*)GetStore(sizeof(*RT));
+	ERecTxtD* RT = new ERecTxtD();
 	if (NFlds == 0) Error(81);
-	RT = (ERecTxtD*)GetStore(sizeof(*RT));
 	ChainLast(E->RecTxt, RT);
 	RT->N = Ln;
 	RT->SL = SL;
@@ -134,24 +137,41 @@ EFldD* FindScanNr(WORD N)
 
 void AutoDesign(FieldList FL)
 {
-	WORD NPages, Col, Ln, L, i, m, FldLen, maxcol;
-	pstring s; StringList SLRoot;
-	EFldD* D; EFldD* PrevD; FieldDPtr F;
-	D = (EFldD*)(&E->FirstFld); PrevD = nullptr; NPages = 1; s = ""; Ln = 0; SLRoot = nullptr;
-	Col = E->FrstCol; maxcol = E->LastCol - E->FrstCol;
+	WORD NPages = 0, Col = 0, Ln = 0, L = 0, i = 0, m = 0, FldLen = 0, maxcol = 0;
+	pstring s; 
+	StringListEl* SLRoot = nullptr;
+	EFldD* D = nullptr; EFldD* PrevD = nullptr; FieldDescr* F = nullptr;
+	D = (EFldD*)(&E->FirstFld); 
+	PrevD = nullptr;
+	NPages = 1; s = ""; Ln = 0; SLRoot = nullptr;
+	Col = E->FrstCol;
+	maxcol = E->LastCol - E->FrstCol;
 	while (FL != nullptr) {
-		F = FL->FldD; FL = (FieldListEl*)FL->Chain;
-		D->Chain = (EFldD*)GetZStore(sizeof(*D)); 
-		D = (EFldD*)D->Chain; D->ChainBack = PrevD;
+		F = FL->FldD; 
+		FL = (FieldListEl*)FL->Chain;
+		if (F == nullptr) continue; // tady to padalo na 1. polozce, protoze ta ma FldD = nullptr
+		//D->Chain = (EFldD*)GetZStore(sizeof(*D)); 
+		D->Chain = new EFldD();
+		D = (EFldD*)D->Chain; 
+		D->ChainBack = PrevD;
 		PrevD = D;
-		D->FldD = F; D->L = F->L; if (D->L > maxcol) D->L = maxcol;
+		D->FldD = F; 
+		D->L = F->L; 
+		if (D->L > maxcol) D->L = maxcol;
 		if ((E->FD->Typ == 'C') && (D->L > 44)) D->L = 44; /*catalog pathname*/
-		FldLen = D->L; if (F->Typ == 'T') D->L = 1;
-		L = F->Name.length(); if (FldLen > L) L = FldLen;
+		FldLen = D->L; 
+		if (F->Typ == 'T') D->L = 1;
+		L = F->Name.length(); 
+		if (FldLen > L) L = FldLen;
 		if (Col + L > E->LastCol) {
-			SToSL(SLRoot, s); SToSL(SLRoot, ""); Ln += 2;
+			SToSL(SLRoot, s); 
+			SToSL(SLRoot, ""); 
+			Ln += 2;
 			if (Ln + 2 > E->Rows) {
-				StoreRT(Ln, SLRoot, 1); NPages++; Ln = 0; SLRoot = nullptr;
+				StoreRT(Ln, SLRoot, 1); 
+				NPages++; 
+				Ln = 0; 
+				SLRoot = nullptr;
 			}
 			Col = E->FrstCol; s = "";
 		}
@@ -160,10 +180,14 @@ void AutoDesign(FieldList FL)
 		s = s + F->Name;
 		m = L - F->Name.length() - m;
 		for (i = 1; i < m + 1; i++) s = s + ' ';
-		D->Col = Col + (L - FldLen + 1) / 2; D->Ln = Ln + 2; D->Page = NPages;
+		D->Col = Col + (L - FldLen + 1) / 2; 
+		D->Ln = Ln + 2; 
+		D->Page = NPages;
 		Col += (L + 1);
 	}
-	SToSL(SLRoot, s); SToSL(SLRoot, ""); Ln += 2; StoreRT(Ln, SLRoot, 1);
+	SLRoot = SToSL(SLRoot, s);
+	SToSL(SLRoot, ""); Ln += 2; 
+	StoreRT(Ln, SLRoot, 1);
 	D->Chain = nullptr; E->LastFld = *D; E->NPages = NPages;
 	if (NPages == 1) { /* !!! with E->RecTxt^ do!!! */
 		auto er = *E->RecTxt;
@@ -199,12 +223,29 @@ void RdFormOrDesign(FileD* F, FieldList FL, RdbPos FormPos)
 
 void NewEditD(FileD* ParFD, EditOpt* EO)
 {
-	EFldD* D = nullptr; FieldList FL = nullptr; void* p = nullptr;
-	WORD i = 0; pstring s; FieldDescr* F = nullptr;
+	EFldD* D = nullptr; 
+	FieldList FL = nullptr; 
+	void* p = nullptr;
+	WORD i = 0; pstring s; 
+	FieldDescr* F = nullptr;
 	bool b = false, b2 = false, F2NoUpd = false;
 	PushEdit(); MarkStore2(p);
 	/* !!! with E^ do!!! */
-	Move(&EO->WFlags, &E->WFlags, (uintptr_t)(E->SelKey) - (uintptr_t)(E->WFlags) + 4);
+	//Move(&EO->WFlags, &E->WFlags, (uintptr_t)(E->SelKey) - (uintptr_t)(E->WFlags) + 4);
+	// move je nahrazen kopirovanim jednotlivych polozek:
+	E->WFlags = EO->WFlags;
+	E->ExD = EO->ExD;
+	E->Journal = EO->Journal;
+	E->ViewName = EO->ViewName;
+	E->OwnerTyp = EO->OwnerTyp;
+	E->DownLD = EO->DownLD;
+	E->DownLV = EO->DownLV;
+	E->DownRecPtr = EO->DownRecPtr;
+	E->LVRecPtr = EO->LVRecPtr;
+	E->KIRoot = EO->KIRoot;
+	E->SQLFilter = EO->SQLFilter;
+	E->SelKey = (XWKey*)EO->SelKey;
+
 	E->Attr = RunWordImpl(EO->ZAttr, colors.dTxt);
 	E->dNorm = RunWordImpl(EO->ZdNorm, colors.dNorm);
 	E->dHiLi = RunWordImpl(EO->ZdHiLi, colors.dHili);
@@ -229,7 +270,8 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 		}
 	}
 	else {
-		if (E->WithBoolDispl) E->V.R1 = 3; if (E->Mode24) E->V.R2--;
+		if (E->WithBoolDispl) E->V.R1 = 3; 
+		if (E->Mode24) E->V.R2--;
 	}
 	RdFormOrDesign(ParFD, EO->Flds, EO->FormPos);
 	if (E->NPages > 1) E->NRecs = 1;
@@ -237,7 +279,9 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 	E->BaseRec = 1; E->IRec = 1;
 	CFld = E->FirstFld; E->FirstEmptyFld = *E->FirstFld;
 	E->ChkSwitch = true; E->WarnSwitch = true;
-	CFile = E->FD; CRecPtr = GetRecSpace(); E->OldRecPtr = CRecPtr;
+	CFile = E->FD; 
+	CRecPtr = GetRecSpace(); 
+	E->OldRecPtr = CRecPtr;
 #ifdef FandSQL
 	if (CFile->IsSQLFile) SetTWorkFlag;
 #endif
@@ -250,7 +294,8 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 #ifdef FandSQL
 		if (CFile->IsSQLFile) SetTWorkFlag;
 #endif
-		E->AddSwitch = true; E->Cond = RunEvalFrml(EO->Cond);
+		E->AddSwitch = true; 
+		E->Cond = RunEvalFrml(EO->Cond);
 		E->RefreshDelay = RunWordImpl(EO->RefreshDelayZ, spec.RefreshDelay) * 18;
 		E->SaveAfter = RunWordImpl(EO->SaveAfterZ, spec.UpdCount);
 		if (EO->StartRecKeyZ != nullptr) E->StartRecKey = StoreStr(RunShortStr(EO->StartRecKeyZ));
@@ -261,8 +306,13 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 			if (E->VK == nullptr) E->VK = E->DownKey;
 			switch (E->OwnerTyp) {
 			case 'r': E->DownRecPtr = E->DownLV->RecPtr; break;
-			case 'F': { E->OwnerRecNo = RunInt(FrmlPtr(EO->DownLV));
-				CFile = E->DownLD->ToFD; E->DownRecPtr = GetRecSpace; CFile = E->FD; break; }
+			case 'F': { 
+				E->OwnerRecNo = RunInt(FrmlPtr(EO->DownLV));
+				CFile = E->DownLD->ToFD; 
+				E->DownRecPtr = GetRecSpace; 
+				CFile = E->FD; 
+				break; 
+			}
 			}
 		}
 		else if (E->VK == nullptr) E->VK = E->FD->Keys;
@@ -274,35 +324,43 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 			else if (!EquKFlds(E->SelKey->KFlds, E->VK->KFlds)) RunError(663);
 	}
 	if (EO->StartFieldZ != nullptr) {
-		s = TrailChar(' ', RunShortStr(EO->StartFieldZ)); D = E->FirstFld;
+		s = TrailChar(' ', RunShortStr(EO->StartFieldZ)); 
+		D = E->FirstFld;
 		while (D != nullptr) {
-			if (SEquUpcase(D->FldD->Name, s)) E->StartFld = *D; D = (EFldD*)D->Chain;
-		};
+			if (SEquUpcase(D->FldD->Name, s)) E->StartFld = *D; 
+			D = (EFldD*)D->Chain;
+		}
 	}
 	E->WatchDelay = RunInt(EO->WatchDelayZ) * 18;
 	if (EO->Head == nullptr) E->Head = *StandardHead();
 	else E->Head = *(pstring*)GetStr_E(EO->Head);
-	E->Last = *(pstring*)GetStr_E(EO->Last); E->AltLast = *(pstring*)GetStr_E(EO->AltLast);
-	E->CtrlLast = *(pstring*)GetStr_E(EO->CtrlLast); E->ShiftLast = *(pstring*)GetStr_E(EO->ShiftLast);
+	E->Last = *(pstring*)GetStr_E(EO->Last); 
+	E->AltLast = *(pstring*)GetStr_E(EO->AltLast);
+	E->CtrlLast = *(pstring*)GetStr_E(EO->CtrlLast); 
+	E->ShiftLast = *(pstring*)GetStr_E(EO->ShiftLast);
 	F2NoUpd = E->OnlyTabs && (EO->Tab == nullptr) && !EO->NegTab && E->OnlyAppend;
 	/* END WITH */
 
 	D = E->FirstFld;
 	while (D != nullptr) {
 		E->NFlds++; F = D->FldD;
-		b = FieldInList(F, EO->Tab); if (EO->NegTab) b = !b;
+		b = FieldInList(F, EO->Tab); 
+		if (EO->NegTab) b = !b;
 		if (b) { D->Tab = true; E->NTabsSet++; }
-		b2 = FieldInList(F, EO->NoEd); if (EO->NegNoEd) b2 = !b2;
+		b2 = FieldInList(F, EO->NoEd); 
+		if (EO->NegNoEd) b2 = !b2;
 		D->EdU = !(b2 || E->OnlyTabs && !b);
 		D->EdN = F2NoUpd;
 		if ((F->Flg && f_Stored != 0) && D->EdU) E->NEdSet++;
-		b = FieldInList(F, EO->Dupl); if (EO->NegDupl) b = !b;
+		b = FieldInList(F, EO->Dupl); 
+		if (EO->NegDupl) b = !b;
 		if (b && (F->Flg && f_Stored != 0)) D->Dupl = true;
 		if (b || (F->Flg && f_Stored != 0)) E->NDuplSet++;
 		D = (EFldD*)D->Chain;
 	}
 	if (E->OnlyTabs && (E->NTabsSet == 0)) {
-		E->NoDelete = true; if (!E->OnlyAppend) E->NoCreate = true;
+		E->NoDelete = true; 
+		if (!E->OnlyAppend) E->NoCreate = true;
 	}
 	RdDepChkImpl();
 	NewChkKey();

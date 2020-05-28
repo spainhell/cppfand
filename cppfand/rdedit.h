@@ -6,7 +6,7 @@
 extern EditD* E;
 
 void PushEdit();
-void SToSL(void* SLRoot, pstring s);
+void SToSL(Chained* SLRoot, pstring s);
 void StoreRT(WORD Ln, StringList SL, WORD NFlds);
 void RdEForm(FileD* ParFD, RdbPos FormPos);
 EFldD* FindScanNr(WORD N);
