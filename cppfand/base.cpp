@@ -440,7 +440,7 @@ void EncodeMask(pstring& Mask, WORD& Min, WORD& Max)
 		for (j = 0; j <= 6; j++) {
 			if (Mask[i] == Code[j])
 			{
-				Mask[i] = char(j);
+				Mask[i] = (char)j;
 				if (Min > j) Min = j;
 				if (Max < j) Max = j;
 			}
@@ -1302,7 +1302,8 @@ void* GetZStore2(WORD Size)
 
 pstring* StoreStr(pstring S)
 {
-	return nullptr;
+	auto nss = new pstring(S);
+	return nss;
 }
 
 void MarkStore(void* p)

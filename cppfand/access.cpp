@@ -1154,7 +1154,6 @@ LongStr* _LongS(FieldDPtr F)
 	LongStr* S = nullptr; longint Pos = 0; integer err = 0;
 	LockMode md; WORD l = 0;
 	if ((F->Flg & f_Stored) != 0) {
-
 		l = F->L;
 		switch (F->Typ)
 		{
@@ -1260,32 +1259,33 @@ double _RforD(FieldDPtr F, void* P)
 
 double _R(FieldDPtr F)
 {
+	void* P = CRecPtr;
+	char* source = (char*)P;
 	double result = 0.0;
-	void* p = nullptr;
 	double r;
-	WORD* O = (WORD*)p;
-	integer* IP = (integer*)p;
+	//integer* IP = (integer*)p;
 
 	if (F->Flg && f_Stored != 0) {
-		p = CRecPtr;
-		*O += F->Displ;
-		if (CFile->Typ == 'D') result = _RforD(F, p);
+		if (CFile->Typ == 'D') result = _RforD(F, &source[F->Displ]);
 		else switch (F->Typ) {
 		case 'F': {
-			r = RealFromFix(p, F->NBytes);
-			if (F->Flg && f_Comma == 0) result = r / Power10[F->M]; else result = r; break;
+			r = RealFromFix(&source[F->Displ], F->NBytes);
+			if (F->Flg && f_Comma == 0) result = r / Power10[F->M]; 
+			else result = r; 
+			break;
 		}
 		case 'D': {
 			if (CFile->Typ == '8') {
-				if (*IP == 0) result = 0.0;
-				else result = *IP + FirstDate;
+				if (*(integer*)&source[F->Displ] == 0) result = 0.0;
+				else result = *(integer*)&source[F->Displ] + FirstDate;
 			}
-			else goto label1; break;
+			else goto label1; 
+			break;
 		}
 		case 'R': {
 		label1:
-			if (IsNullValue(p, F->NBytes)) result = 0;
-			else result = *(double*)p;
+			if (IsNullValue(&source[F->Displ], F->NBytes)) result = 0;
+			else result = *(double*)&source[F->Displ];
 		}
 		}
 	}
@@ -3091,7 +3091,16 @@ void XScan::SeekRec(longint I)
 
 bool DeletedFlag()  // r771 ASM
 {
-	// TODO:
+	if (CFile->Typ == 'X') {
+		if (((BYTE*)CRecPtr)[0] == 0) return false;
+		return true;
+	}
+
+	if (CFile->Typ == 'D') {
+		if (((BYTE*)CRecPtr)[0] != '*') return false;
+		return true;
+	}
+
 	return false;
 }
 

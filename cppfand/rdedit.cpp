@@ -20,23 +20,31 @@ void PushEdit()
 	E = E1;
 }
 
-void SToSL(Chained* SLRoot, pstring s)
+StringListEl* SToSL(Chained* SLRoot, pstring s)
 {
 	//StringList SL = (StringListEl*)GetStore(s.length() + 5);
 	StringListEl* SL = new StringListEl();
 	SL->S = s;
-	if (SLRoot == nullptr) SLRoot = SL;
-	else ChainLast((Chained*)SLRoot, SL);
+	if (SLRoot == nullptr) return SL;
+	else { 
+		ChainLast((Chained*)SLRoot, SL); 
+		return (StringListEl*)SLRoot;
+	}
 }
 
-void StoreRT(WORD Ln, StringList SL, WORD NFlds)
+ERecTxtD* StoreRT(WORD Ln, StringList SL, WORD NFlds)
 {
 	//ERecTxtD* RT = (ERecTxtD*)GetStore(sizeof(*RT));
 	ERecTxtD* RT = new ERecTxtD();
 	if (NFlds == 0) Error(81);
-	ChainLast(E->RecTxt, RT);
 	RT->N = Ln;
 	RT->SL = SL;
+	if (E->RecTxt == nullptr) return RT;
+	else { 
+		ChainLast(E->RecTxt, RT); 
+		return E->RecTxt;
+	}
+
 }
 
 void RdEForm(FileD* ParFD, RdbPos FormPos)
@@ -186,8 +194,9 @@ void AutoDesign(FieldList FL)
 		Col += (L + 1);
 	}
 	SLRoot = SToSL(SLRoot, s);
-	SToSL(SLRoot, ""); Ln += 2; 
-	StoreRT(Ln, SLRoot, 1);
+	SLRoot = SToSL(SLRoot, "");
+	Ln += 2; 
+	E->RecTxt = StoreRT(Ln, SLRoot, 1);
 	D->Chain = nullptr; E->LastFld = *D; E->NPages = NPages;
 	if (NPages == 1) { /* !!! with E->RecTxt^ do!!! */
 		auto er = *E->RecTxt;
@@ -332,12 +341,12 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 		}
 	}
 	E->WatchDelay = RunInt(EO->WatchDelayZ) * 18;
-	if (EO->Head == nullptr) E->Head = *StandardHead();
-	else E->Head = *(pstring*)GetStr_E(EO->Head);
-	E->Last = *(pstring*)GetStr_E(EO->Last); 
-	E->AltLast = *(pstring*)GetStr_E(EO->AltLast);
-	E->CtrlLast = *(pstring*)GetStr_E(EO->CtrlLast); 
-	E->ShiftLast = *(pstring*)GetStr_E(EO->ShiftLast);
+	if (EO->Head == nullptr) { E->Head = StandardHead(); }
+	else E->Head = GetStr_E(EO->Head);
+	E->Last = GetStr_E(EO->Last); 
+	E->AltLast = GetStr_E(EO->AltLast);
+	E->CtrlLast = GetStr_E(EO->CtrlLast); 
+	E->ShiftLast = GetStr_E(EO->ShiftLast);
 	F2NoUpd = E->OnlyTabs && (EO->Tab == nullptr) && !EO->NegTab && E->OnlyAppend;
 	/* END WITH */
 
@@ -547,35 +556,37 @@ void RdAllUDLIs(FileD* FD)
 	}
 }
 
-pstring* StandardHead()
+pstring StandardHead()
 {
-	pstring s; pstring* p;
+	pstring s; 
 	pstring c(59);
 	c = "          ______                                 __.__.____";
-	if (E->ViewName != nullptr) s = *E->ViewName; else if (E->EdRecVar) s = "";
+	if (E->ViewName != nullptr) s = *E->ViewName; 
+	else if (E->EdRecVar) s = "";
 	else {
 		s = E->FD->Name;
 		switch (E->FD->Typ) {
 		case 'X': {
-			p = E->VK->Alias;
-			if ((p != nullptr) && (*p != "")) s = s + '/' + *E->VK->Alias;
+			pstring* p = E->VK->Alias;
+			if ((p != nullptr) && (*p != "")) s = s + "/" + *E->VK->Alias;
 			break; }
 		case '0': s = s + ".RDB"; break;
 		case '8': s = s + ".DTA"; break;
 		}
 	}
 	if (s.length() > 16) s[0] = 16;
-	return StoreStr(copy(c, 17, 20 - s.length()) + s + c);
+	auto str = copy(c, 17, 20 - s.length()) + s + c;
+	return str;
 }
 
-pstring* GetStr_E(FrmlPtr Z)
+pstring GetStr_E(FrmlPtr Z)
 {
 	pstring s;
-	if (Z == nullptr) return nullptr;
+	if (Z == nullptr) return "";
 	else {
 		s = RunShortStr(Z);
 		while (LenStyleStr(s) > TxtCols) s[0]--;
-		return StoreStr(s);
+		return s;
 	}
 }
 

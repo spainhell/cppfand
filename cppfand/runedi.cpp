@@ -703,7 +703,7 @@ void SetCPage()
 	WORD i;
 	CPage = CFld->Page;
 	RT = (ERecTxtD*)E->RecTxt;
-	for (i = 1; i < CPage; i++) RT = (ERecTxtD*)RT->Chain;
+	for (i = 1; i <= CPage; i++) RT = (ERecTxtD*)RT->Chain;
 }
 
 
@@ -742,9 +742,30 @@ void WrEStatus()
 void RdEStatus()
 {
 	LockMode md;
-	Move(&E->FirstEmptyFld, FirstEmptyFld, uintptr_t(SelMode) - uintptr_t(FirstEmptyFld) + 1);
+	//Move(&E->FirstEmptyFld, FirstEmptyFld, uintptr_t(SelMode) - uintptr_t(FirstEmptyFld) + 1);
+	// predchozi move nahrazen jednotlivymi polozkami:
+	FirstEmptyFld = &E->FirstEmptyFld;
+	VK = E->VK;
+	WK = E->WK;
+	BaseRec = E->BaseRec;
+	IRec = E->IRec;
+	IsNewRec = E->IsNewRec;	Append = E->Append; Select = E->Select; 
+	WasUpdated = E->WasUpdated; EdRecVar = E->EdRecVar;	AddSwitch = E->AddSwitch; 
+	ChkSwitch = E->ChkSwitch; WarnSwitch = E->WarnSwitch; Subset = E->SubSet; 
+	NoDelTFlds = E->NoDelTFlds; WasWK = E->WasWK;
+	NoDelete = E->NoDelete; VerifyDelete = E->VerifyDelete; NoCreate = E->NoCreate; 
+	F1Mode = E->F1Mode;	OnlyAppend = E->OnlyAppend; OnlySearch = E->OnlySearch; 
+	Only1Record = E->Only1Record; OnlyTabs = E->OnlyTabs; NoESCPrompt = E->NoESCPrompt;
+	MustESCPrompt = E->MustESCPrompt; Prompt158 = E->Prompt158; NoSrchMsg = E->NoSrchMsg;
+	WithBoolDispl = E->WithBoolDispl; Mode24 = E->Mode24; NoCondCheck = E->NoCondCheck;
+	F3LeadIn = E->F3LeadIn;	LUpRDown = E->LUpRDown; MouseEnter = E->MouseEnter; 
+	TTExit = E->TTExit;	MakeWorkX = E->MakeWorkX; NoShiftF7Msg = E->NoShiftF7Msg;
+	MustAdd = E->MustAdd; MustCheck = E->MustCheck; SelMode = E->SelMode;
+
 	if (VK == nullptr) OnlySearch = false;
-	CFile = E->FD; CRecPtr = E->NewRecPtr; CFld = E->CFld;
+	CFile = E->FD; 
+	CRecPtr = E->NewRecPtr; 
+	//CFld = E->CFld;
 	if (CFile->XF != nullptr) HasIndex = true; else HasIndex = false;
 	if (CFile->TF != nullptr) HasTF = true; else HasTF = false;
 	SetCPage();
@@ -912,8 +933,10 @@ void WriteSL(StringList SL)
 {
 	WORD Row;
 	while (SL != nullptr) {
-		Row = screen.WhereY(); WrStyleStr(SL->S, E->Attr);
-		screen.GotoXY(E->FrstCol, Row + 1); SL = (StringList)SL->Chain;
+		Row = screen.WhereY(); 
+		WrStyleStr(SL->S, E->Attr);
+		screen.GotoXY(E->FrstCol, Row + 1); 
+		SL = (StringList)SL->Chain;
 	}
 }
 

@@ -846,7 +846,7 @@ void LVAssignFrml(LocVar* LV, void* OldBP, bool Add, FrmlPtr X)
 
 void DecodeFieldRSB(FieldDPtr F, WORD LWw, double R, pstring T, bool B, pstring& Txt)
 {
-	WORD L, M; char C;
+	WORD L = 0, M = 0; char C = 0;
 	L = F->L; M = F->M;
 	switch (F->Typ) {
 	case 'D':T = StrDate(R, *FieldDMask(F)); break;
@@ -875,7 +875,9 @@ void DecodeFieldRSB(FieldDPtr F, WORD LWw, double R, pstring T, bool B, pstring&
 
 void DecodeField(FieldDPtr F, WORD LWw, pstring& Txt)
 {
-	double r; pstring s; bool b;
+	double r = 0; 
+	pstring s; 
+	bool b = false;;
 	switch (F->FrmlTyp) {
 	case 'R': r = _R(F); break;
 	case 'S': {

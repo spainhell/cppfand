@@ -6,8 +6,8 @@
 extern EditD* E;
 
 void PushEdit();
-void SToSL(Chained* SLRoot, pstring s);
-void StoreRT(WORD Ln, StringList SL, WORD NFlds);
+StringListEl* SToSL(Chained* SLRoot, pstring s);
+ERecTxtD* StoreRT(WORD Ln, StringList SL, WORD NFlds);
 void RdEForm(FileD* ParFD, RdbPos FormPos);
 EFldD* FindScanNr(WORD N);
 void AutoDesign(FieldList FL);
@@ -25,7 +25,7 @@ void RdCheck();
 void RdImpl();
 void RdUDLI();
 void RdAllUDLIs(FileD* FD);
-pstring* StandardHead();
-pstring* GetStr_E(FrmlPtr Z); // existuje -> *_E
+pstring StandardHead();
+pstring GetStr_E(FrmlPtr Z); // existuje -> *_E
 void NewChkKey();
 
