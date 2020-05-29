@@ -94,6 +94,11 @@ FieldDPtr RdFldDescr(pstring Name, bool Stored)
 		if (Lexem == ',') { RdLex(); ss = LexWord; Accept(_quotedstr); }
 		if (ss[0] == 0) ss = "DD.MM.YY";
 		S = new pstring(ss);
+		// jedna se o datum a nazev polozky musi byt nasledovat retezcem DD.MM.YY
+		BYTE nameLen = Name.length();
+		Name[nameLen + 1] = S->length();
+		memcpy(&Name[nameLen + 2], &(*S)[1], S->length());
+		// nazev se pak zpetne vytahne pomoci funkce FieldDMask()
 		FrmlTyp = 'R'; NBytes = 6; // sizeof(float); // v Pascalu je to 6B
 		L = S->length(); Flg += f_Mask;
 		break;

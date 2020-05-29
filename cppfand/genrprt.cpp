@@ -103,7 +103,7 @@ void WrLevel(integer Level)
 			if ((Level != 0) && d->IsSum) { s = "sum("; s += (s + ')'); }
 			if (f->Typ == 'D') {
 				WrStr("strdate("); WrStr(s); WrStr(",'");
-				x = *FieldDMask(f);
+				x = FieldDMask(f);
 				SubstChar(x, '\'', '\"'); WrStr(x); WrStr("')");
 			}
 			else WrStr(s);

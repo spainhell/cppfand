@@ -325,6 +325,13 @@ void Pack(void* NumArr, WORD& PackArr, WORD& NoDigits)
 	return;
 }
 
+double DoubleFrom6Bytes(void* buf)
+{
+	BYTE arr[8]{ 0 };
+	memcpy(arr, buf, 6);
+	return *(double*)&arr;
+}
+
 void beep()
 {
 }

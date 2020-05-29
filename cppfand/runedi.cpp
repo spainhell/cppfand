@@ -306,12 +306,19 @@ WORD FieldEdit(FieldDPtr F, FrmlPtr Impl, WORD LWw, WORD iPos, pstring* Txt, dou
 			}
 		}
 		}
-		ClrEvent(); goto label0;
+		ClrEvent(); 
+		goto label0;
 	label1:
-		printf("%c", cc); *Txt = cc; screen.CrsHide(); return 0;
+		printf("%c", cc); 
+		*Txt = cc; 
+		screen.CrsHide(); 
+		return 0;
 	}
-	L = F->L; M = F->M; Mask = FieldDMask(F);
-	if ((F->Flg && f_Mask != 0) && (F->Typ == 'A')) Msk = Mask; else Msk = nullptr;      /*!!!!*/
+	L = F->L; 
+	M = F->M; 
+	Mask = new pstring(FieldDMask(F));
+	if ((F->Flg && f_Mask != 0) && (F->Typ == 'A')) Msk = Mask; 
+	else Msk = nullptr;      /*!!!!*/
 label2:
 	iPos = EditTxt(Txt, iPos, L, LWw, F->Typ, del, false, upd, (F->FrmlTyp == 'S')
 		&& ret, Delta);
@@ -442,13 +449,13 @@ double PromptR(pstring* S, FrmlPtr Impl, FieldDPtr F)
 
 longint CRec()
 {
-	// return BaseRec + IRec - 1;
-	return 0;
+	return BaseRec + IRec - 1;
+	//return 0;
 }
 
 longint CNRecs()
 {
-	longint n;
+	longint n = 0;
 	if (EdRecVar) { return 1; }
 	if (Subset) n = WK->NRecs();
 	else if (HasIndex) n = VK->NRecs();
@@ -949,19 +956,27 @@ void DisplRecTxt()
 
 void DisplEditWw()
 {
-	WORD i, x, y;
+	WORD i = 0, x = 0, y = 0;
 	/* !!! with E->V do!!! */
 	auto EV = E->V;
-	if (E->ShdwY == 1)
+	if (E->ShdwY == 1) {
 		screen.ScrColor(EV.C1 + 1, EV.R2, EV.C2 - EV.C1 + E->ShdwX - 1, colors.ShadowAttr);
+	}
 	if (E->ShdwX > 0)
-		for (i = EV.R1; i < EV.R2; i++) screen.ScrColor(EV.C2, i, E->ShdwX, colors.ShadowAttr);
-	screen.Window(EV.C1, EV.R1, EV.C2, EV.R2); TextAttr = E->Attr; ClrScr();
+		for (i = EV.R1; i < EV.R2; i++) { screen.ScrColor(EV.C2, i, E->ShdwX, colors.ShadowAttr); }
+	screen.Window(EV.C1, EV.R1, EV.C2, EV.R2); 
+	TextAttr = E->Attr; 
+	ClrScr();
 
-	WriteWFrame(E->WFlags, *E->Top, ""); screen.Window(1, 1, TxtCols, TxtRows);
-	DisplSysLine(); DisplBool();
-	screen.GotoXY(E->FrstCol, E->FrstRow); WriteSL(E->HdTxt);
-	DisplRecTxt(); DisplTabDupl(); NewDisplLL = true;
+	WriteWFrame(E->WFlags, *E->Top, ""); 
+	screen.Window(1, 1, TxtCols, TxtRows);
+	DisplSysLine(); 
+	DisplBool();
+	screen.GotoXY(E->FrstCol, E->FrstRow); 
+	WriteSL(E->HdTxt);
+	DisplRecTxt(); 
+	DisplTabDupl(); 
+	NewDisplLL = true;
 	DisplAllWwRecs();
 }
 
@@ -1066,9 +1081,11 @@ label1:
 
 void SetStartRec()
 {
-	longint n; KeyDPtr k; KeyFldDPtr kf;
-
-	k = VK; if (Subset) k = WK; kf = nullptr; if (k != nullptr) kf = k->KFlds;
+	longint n = 0; 
+	KeyFldD* kf = nullptr;;
+	KeyD* k = VK; 
+	if (Subset) k = WK;
+	if (k != nullptr) kf = k->KFlds;
 	if ((E->StartRecKey != nullptr) && (k != nullptr)) {
 		if (k->FindNr(*(XString*)(E->StartRecKey), n)) goto label1;
 	}
@@ -1082,10 +1099,12 @@ void SetStartRec()
 	if (Only1Record) {
 		if (CNRecs > 0) { RdRec(CRec()); n = AbsRecNr(CRec()); }
 		else n = 0;
-		if (Subset) WK->Close(); Subset = true;
+		if (Subset) WK->Close(); 
+		Subset = true;
 		if (n == 0) WK->Open(nullptr, true, false);
 		else WK->OneRecIdx(kf, n);
-		BaseRec = 1; IRec = 1;
+		BaseRec = 1; 
+		IRec = 1;
 	}
 }
 
@@ -1119,7 +1138,7 @@ bool OpenEditWw()
 		}
 		else if ((VK != nullptr) && VK->InWork) md = NoExclMode;
 	}
-	if (Subset || Only1Record) WK = (WKeyDPtr)GetZStore(sizeof(*WK));
+	if (Subset || Only1Record) WK = new XWKey(); // GetZStore(sizeof(*WK));
 	if (!TryLMode(md, md1, 1)) { EdBreak = 15; goto label1; }
 	md2 = NewLMode(RdMode);
 	if (E->DownSet && (E->OwnerTyp == 'F')) {
@@ -1130,7 +1149,7 @@ bool OpenEditWw()
 	}
 	if (Subset) BuildWork();
 	if (!Only1Record && HasIndex && VK->InWork) {
-		if (!Subset) WK = WKeyDPtr(VK);
+		if (!Subset) WK = (XWKey*)VK;
 		VK = CFile->Keys; WasWK = true; Subset = true;
 	}
 #ifdef FandSQL
@@ -1139,7 +1158,8 @@ bool OpenEditWw()
 	if (!OnlyAppend) SetStartRec();
 	if (CNRecs() == 0)
 		if (NoCreate) {
-			if (Subset) CFileMsg(107, '0'); else CFileMsg(115, '0');
+			if (Subset) CFileMsg(107, '0'); 
+			else CFileMsg(115, '0');
 			EdBreak = 13;
 		label1:
 			if (Subset && !WasWK) WK->Close();
@@ -1148,12 +1168,16 @@ bool OpenEditWw()
 		else {
 		label2:
 			IsNewRec = true; Append = true;
-			LockRec(false); ZeroAllFlds();
-			DuplOwnerKey(); SetWasUpdated();
+			LockRec(false); 
+			ZeroAllFlds();
+			DuplOwnerKey(); 
+			SetWasUpdated();
 		}
 	else RdRec(CRec());
 label3:
-	MarkStore(E->AfterE); DisplEditWw(); result = true;
+	MarkStore(E->AfterE); 
+	DisplEditWw(); 
+	result = true;
 	if (!EdRecVar) OldLMode(md2);
 	if (IsNewRec) NewRecExit();
 	return result;
@@ -1161,22 +1185,24 @@ label3:
 
 void RefreshSubset()
 {
-	LockMode md;
-	md = NewLMode(RdMode);
+	LockMode md = NewLMode(RdMode);
 	if (Subset && !(OnlyAppend || Only1Record || WasWK)) {
 		WK->Close();
 		BuildWork();
 	}
-	DisplAllWwRecs(); OldLMode(md);
+	DisplAllWwRecs(); 
+	OldLMode(md);
 }
 
 void GotoRecFld(longint NewRec, EFldD* NewFld)
 {
-	longint NewIRec, NewBase, D, Delta; WORD i, Max; LockMode md;
+	longint NewIRec = 0, NewBase = 0, D = 0, Delta = 0; 
+	WORD i = 0, Max = 0; LockMode md;
 	IVoff(); CFld = NewFld;
 	if (NewRec == CRec()) {
 		if (CPage != CFld->Page) DisplWwRecsOrPage();
-		else IVon(); return;
+		else IVon(); 
+		return;
 	}
 	if (!EdRecVar) md = NewLMode(RdMode);
 	if (NewRec > CNRecs()) NewRec = CNRecs();

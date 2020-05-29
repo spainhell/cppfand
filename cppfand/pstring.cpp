@@ -22,7 +22,10 @@ pstring::pstring(const char* text) : initLen(256)
 pstring::pstring(const pstring& ps) : initLen(256)
 {
 	arr = new unsigned char[ps.initLen] { '\0' };
-	memcpy((void*)arr, (void*)ps.arr, ps.arr[0] + 1); // kopiruje se 1B a pak delka retezce
+	unsigned short copyLen = initLen < ps.initLen ? initLen : ps.initLen;
+	// memcpy((void*)arr, (void*)ps.arr, ps.arr[0] + 1); // kopiruje se 1B a pak delka retezce
+	// kopiruje se vetsi delka (nektere retezce za sebou jeste nesou data) - napr. fce FieldDMask je pak vytahuje
+	memcpy((void*)arr, (void*)ps.arr, copyLen); 
 }
 
 pstring::pstring(std::string cs) : initLen(256)
@@ -167,8 +170,10 @@ pstring& pstring::operator=(const pstring& newvalue)
 		delete[] this->arr;
 		this->arr = newArray;
 	}
-	memset(arr, 0, initLen);
-	memcpy(arr, newvalue.arr, newvalue.arr[0] + 1);
+	//memset(arr, 0, initLen);
+	//memcpy(arr, newvalue.arr, newvalue.arr[0] + 1);
+	// musí se zkopírovat i data za retezcem - nekter funkce je vyuzivaji
+	memcpy(arr, newvalue.arr, newvalue.initLen); 
 	return *this;
 }
 

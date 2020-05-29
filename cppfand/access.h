@@ -695,7 +695,7 @@ extern pstring Switches;
 extern WORD SwitchLevel;
 
 void RunErrorM(LockMode Md, WORD N); // r729
-pstring* FieldDMask(FieldDPtr F); // r734 ASM
+pstring FieldDMask(FieldDescr* F); // r734 ASM
 void* GetRecSpace(); // r739
 void* GetRecSpace2(); // r742
 WORD CFileRecSize(); // r744

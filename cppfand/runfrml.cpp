@@ -849,7 +849,7 @@ void DecodeFieldRSB(FieldDPtr F, WORD LWw, double R, pstring T, bool B, pstring&
 	WORD L = 0, M = 0; char C = 0;
 	L = F->L; M = F->M;
 	switch (F->Typ) {
-	case 'D':T = StrDate(R, *FieldDMask(F)); break;
+	case 'D':T = StrDate(R, FieldDMask(F)); break;
 	case 'N': { C = '0'; goto label1; break; }
 	case 'A': { C = ' ';
 	label1:

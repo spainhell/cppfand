@@ -218,15 +218,19 @@ void RdFormOrDesign(FileD* F, FieldList FL, RdbPos FormPos)
 {
 	/* !!! with E^ do!!! */
 	E->FrstCol = E->V.C1; E->FrstRow = E->V.R1; E->LastCol = E->V.C2; E->LastRow = E->V.R2;
-	if ((E->WFlags && WHasFrame) != 0) {
+	if ((E->WFlags & WHasFrame) != 0) {
 		E->FrstCol++; E->LastCol--; E->FrstRow++; E->LastRow--;
 	}
 	E->Rows = E->LastRow - E->FrstRow + 1;
 	if (FL == nullptr) {
-		ResetCompilePars(); RdEForm(F, FormPos); E->IsUserForm = true;
+		ResetCompilePars(); 
+		RdEForm(F, FormPos); 
+		E->IsUserForm = true;
 	}
 	else {
-		E->FD = F; E->Flds = FL; AutoDesign(FL);
+		E->FD = F; 
+		E->Flds = FL; 
+		AutoDesign(FL);
 	}
 }
 
@@ -360,11 +364,11 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 		if (EO->NegNoEd) b2 = !b2;
 		D->EdU = !(b2 || E->OnlyTabs && !b);
 		D->EdN = F2NoUpd;
-		if ((F->Flg && f_Stored != 0) && D->EdU) E->NEdSet++;
+		if (((F->Flg & f_Stored) != 0) && D->EdU) E->NEdSet++;
 		b = FieldInList(F, EO->Dupl); 
 		if (EO->NegDupl) b = !b;
-		if (b && (F->Flg && f_Stored != 0)) D->Dupl = true;
-		if (b || (F->Flg && f_Stored != 0)) E->NDuplSet++;
+		if (b && ((F->Flg & f_Stored) != 0)) D->Dupl = true;
+		if (b || ((F->Flg & f_Stored) != 0)) E->NDuplSet++;
 		D = (EFldD*)D->Chain;
 	}
 	if (E->OnlyTabs && (E->NTabsSet == 0)) {
@@ -379,8 +383,7 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 
 EFldD* FindEFld_E(FieldDescr* F)
 {
-	EFldD* D;
-	D = E->FirstFld;
+	EFldD* D = E->FirstFld;
 	while (D != nullptr) { if (D->FldD == F) goto label1; D = (EFldD*)D->Chain; }
 label1:
 	return D;
@@ -388,7 +391,8 @@ label1:
 
 void ZeroUsed()
 {
-	EFldD* D = E->FirstFld; while (D != nullptr) { D->Used = false; D = (EFldD*)D->Chain; };
+	EFldD* D = E->FirstFld; 
+	while (D != nullptr) { D->Used = false; D = (EFldD*)D->Chain; };
 }
 
 EFldD* LstUsedFld()

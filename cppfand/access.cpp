@@ -1265,7 +1265,7 @@ double _R(FieldDPtr F)
 	double r;
 	//integer* IP = (integer*)p;
 
-	if (F->Flg && f_Stored != 0) {
+	if ((F->Flg & f_Stored) != 0) {
 		if (CFile->Typ == 'D') result = _RforD(F, &source[F->Displ]);
 		else switch (F->Typ) {
 		case 'F': {
@@ -1285,7 +1285,7 @@ double _R(FieldDPtr F)
 		case 'R': {
 		label1:
 			if (IsNullValue(&source[F->Displ], F->NBytes)) result = 0;
-			else result = *(double*)&source[F->Displ];
+			else result = DoubleFrom6Bytes(&source[F->Displ]);
 		}
 		}
 	}
@@ -3229,9 +3229,16 @@ void XScan::NextIntvl()
 }
 
 
-pstring* FieldDMask(FieldDPtr F)
+pstring FieldDMask(FieldDescr* F)
 {
-	return nullptr;
+	BYTE startIndex = F->Name[0] + 1;
+	BYTE newLen = F->Name[startIndex];
+
+	pstring result;
+	result[0] = newLen;
+	memcpy(&result[1], &F[startIndex], newLen);
+
+	return result;
 }
 
 void* GetRecSpace()
