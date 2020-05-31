@@ -327,9 +327,26 @@ void Pack(void* NumArr, WORD& PackArr, WORD& NoDigits)
 
 double DoubleFrom6Bytes(void* buf)
 {
-	BYTE arr[8]{ 0 };
-	memcpy(arr, buf, 6);
-	return *(double*)&arr;
+	//BYTE arr[8]{ 0 };
+	//memcpy(arr, buf, 6);
+	BYTE* real48 = (BYTE*)buf;
+	if (real48[0] == 0) return 0.0; // Null exponent = 0
+	double exponent = real48[0] - 129.0;
+	double mantissa = 0.0;
+	for (int i = 1; i < 5; i++) // loop through bytes 1 - 4
+	{
+		mantissa += real48[i];
+		mantissa *= 0.00390625; // mantissa /= 256
+	}
+
+	mantissa += (real48[5] & 0x7F);
+	mantissa *= 0x0078125; // mantissa /= 128
+	mantissa += 1.0;
+
+	if ((real48[5] & 0x80) == 0x80) // Sign bit check
+		mantissa = -mantissa;
+
+	return mantissa * pow(2.0, exponent);
 }
 
 void beep()

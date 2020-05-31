@@ -1263,7 +1263,6 @@ double _R(FieldDPtr F)
 	char* source = (char*)P;
 	double result = 0.0;
 	double r;
-	//integer* IP = (integer*)p;
 
 	if ((F->Flg & f_Stored) != 0) {
 		if (CFile->Typ == 'D') result = _RforD(F, &source[F->Displ]);

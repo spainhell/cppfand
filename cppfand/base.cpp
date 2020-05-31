@@ -592,6 +592,7 @@ pstring StrDate(double R, pstring Mask)
 	double MultX[7]{ 0, 0, 0, 24, 1440, 86400, 8640000 };
 	longint DivX[12]{ 0, 0, 0, 1, 60, 3600, 360000, 1, 60, 6000, 1, 100 };
 
+	if (Mask.empty()) Mask = "DD.MM.YY";
 	s = ""; EncodeMask(Mask, min, max); WasMinus = false;
 	if ((R == 0) || (R < 0) && (min < 3)) {
 		for (i = 1; i <= Mask.length(); i++) {
@@ -631,17 +632,23 @@ pstring StrDate(double R, pstring Mask)
 		AnalDateMask(Mask, i, iDate, n);
 		if (n == 0) { s = s + Mask[i]; i++; }
 		else {
-			throw std::exception("not implemented"); // pod tím nutno dodìlat ...
-			/*if (iDate < 3) str(Date[iDate], x);
+			if (iDate < 3) { 
+				if (iDate == 0)	str(d.Y, x); 
+				if (iDate == 1)	str(d.M, x);
+				if (iDate == 2)	str(d.D, x);
+			}
 			else {
-				str(Time[iDate], x);
+				if (iDate == 3) str(t.hh, x);
+				if (iDate == 4) str(t.mm, x);
+				if (iDate == 5) str(t.ss, x);
+				if (iDate == 6) str(t.tt, x);
 				if ((iDate = min) && WasMinus) 
 				{ 
 					pstring oldX = x;
 					x = "-"; 
 					x += oldX;
 				}
-			}*/
+			}
 			if (First && (iDate > 2) && (iDate == min)) c = ' '; 
 			else c = '0';
 			First = false; 

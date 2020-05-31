@@ -95,6 +95,7 @@ FieldDPtr RdFldDescr(pstring Name, bool Stored)
 		if (ss[0] == 0) ss = "DD.MM.YY";
 		S = new pstring(ss);
 		// jedna se o datum a nazev polozky musi byt nasledovat retezcem DD.MM.YY
+		// UPDATE: stejne to nefunguje, pri spusteni ulohy se to odnekud nacita znovu, tezko rict odkud
 		BYTE nameLen = Name.length();
 		Name[nameLen + 1] = S->length();
 		memcpy(&Name[nameLen + 2], &(*S)[1], S->length());

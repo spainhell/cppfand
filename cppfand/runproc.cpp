@@ -38,20 +38,20 @@ void UserHeadLine(pstring UserHeader)
 	}
 	WORD n = (TxtCols - l) / 2;
 
-	if (n > 0) { 
+	if (n > 0) {
 		//printf(); 
 		char buf[MaxTxtCols]{ '\0' };
 		size_t len = snprintf(buf, MaxTxtCols, "%*c", n, ' ');
 		screen.ScrWrText(screen.WhereX(), screen.WhereY(), buf);
 	}
-	
+
 	WrStyleStr(UserHeader, colors.fNorm);
-	
+
 	// screen.GotoXY(TxtCols - 10, 1);
 	// printf("%s", StrDate(Today(), "DD.MM.YYYY").c_str());
 	//screen.ScrWrText(TxtCols - 10, 1, StrDate(Today(), "DD.MM.YYYY").c_str());
 	screen.ScrWrText(TxtCols - 10, 1, CppToday().c_str());
-	
+
 	PopWParam(p);
 	delete p;
 }
@@ -96,7 +96,7 @@ label2:
 void PromptAutoRprt(RprtOpt* RO)
 {
 	wwmix ww;
-	
+
 	FieldList FL; FieldDPtr F; RprtOpt* RO2;
 	RO2 = (RprtOpt*)GetStore(sizeof(*RO)); Move(RO, RO2, sizeof(*RO));
 	FL = RO->Flds;
@@ -328,15 +328,15 @@ label1:
 
 void EditProc(Instr* PD)
 {
-	EdUpdated = false; 
-	SaveFiles(); 
+	EdUpdated = false;
+	SaveFiles();
 	CFile = PD->EditFD;
 	//EditOpt* EO = (EditOpt*)GetStore(sizeof(*EO));
 	EditOpt* EO = new EditOpt();
 	//Move(PD->EO, EO, sizeof(*EO));
 	EO = PD->EO;
 	if (!EO->UserSelFlds || SelFldsForEO(EO, nullptr)) EditDataFile(CFile, EO);
-	SaveFiles(); 
+	SaveFiles();
 	//ReleaseStore(EO);
 	delete EO;
 }
@@ -968,7 +968,7 @@ void RunInstr(Instr* PD)
 		case _backupm: BackupM(PD); break;
 		case _resetcat: ResetCatalog(); break;
 		case _setedittxt: { SetEditTxt(PD); break; }
-		//case _getindex: { GetIndex(); break; }
+						//case _getindex: { GetIndex(); break; }
 		case _setmouse: SetMouse(RunInt(PD->MouseX), RunInt(PD->MouseY), RunBool(PD->Show)); break;
 		case _checkfile: { SetTxtPathVol(*PD->cfPath, PD->cfCatIRec); CheckFile(PD->cfFD); break; }
 #ifdef FandSQL
@@ -979,7 +979,12 @@ void RunInstr(Instr* PD)
 		case _asgnrand: srand(RunInt(PD->Frml)); break;
 		case _randomize: Random(); break;
 		case _asgnxnrecs: PD->xnrIdx->Release(); break;
-		case _portout: PortOut(RunBool(PD->IsWord), WORD(RunInt(PD->Port)), WORD(RunInt(PD->PortWhat))); break;
+		case _portout: {
+			PortOut(RunBool(PD->IsWord),
+				WORD(RunInt(PD->Port)),
+				WORD(RunInt(PD->PortWhat)));
+			break;
+		}
 		}
 		PD = (Instr*)PD->Chain;
 	}
@@ -1027,7 +1032,7 @@ void CallProcedure(Instr* PD)
 				RdFileD(PD->TArg[i].Name, '6', '$'); RestoreCompState(p);
 			}
 			else CFile = PD->TArg[i].FD;
-			lv1 = lv; 
+			lv1 = lv;
 			while (lv1 != nullptr) {
 				if ((lv1->FTyp == 'i' || lv1->FTyp == 'r') && (lv1->FD == lv->FD)) lv1->FD = CFile;
 				lv1 = (LocVar*)lv1->Chain;
@@ -1046,24 +1051,24 @@ void CallProcedure(Instr* PD)
 		}
 		lv = (LocVar*)lv->Chain;
 	}
-	lv1 = lv; 
+	lv1 = lv;
 	while (lv != nullptr) {
 		if (lv->FTyp == 'r') {
-			CFile = lv->FD; 
+			CFile = lv->FD;
 			CRecPtr = GetRecSpace();
-			SetTWorkFlag(); 
-			ZeroAllFlds(); 
-			ClearDeletedFlag(); 
+			SetTWorkFlag();
+			ZeroAllFlds();
+			ClearDeletedFlag();
 			lv->RecPtr = CRecPtr;
 		}
 		lv = (LocVar*)lv->Chain;
 	}
-	ProcMyBP = MyBP; 
-	pd1 = ReadProcBody(); 
+	ProcMyBP = MyBP;
+	pd1 = ReadProcBody();
 	FDLocVarAllowed = false;
-	lv = lv1; 
+	lv = lv1;
 	while (lv != nullptr) {
-		if (lv->FTyp == 'i') /* !!! with WKeyDPtr(lv->RecPtr)^ do!!! */ 
+		if (lv->FTyp == 'i') /* !!! with WKeyDPtr(lv->RecPtr)^ do!!! */
 		{
 			auto hX = WKeyDPtr(lv->RecPtr);
 			if (hX->KFlds == nullptr) hX->KFlds = lv->FD->Keys->KFlds;
@@ -1074,8 +1079,8 @@ void CallProcedure(Instr* PD)
 	}
 	ReleaseStore2(p2);
 	RunProcedure(pd1);
-	lv = lvroot; 
-	i = 1; 
+	lv = lvroot;
+	i = 1;
 	while (lv != nullptr) {
 		if (lv->IsRetPar) {
 			z = PD->TArg[i].Frml;
@@ -1110,21 +1115,21 @@ void CallProcedure(Instr* PD)
 
 void RunMainProc(RdbPos RP, bool NewWw)
 {
-	Instr* PD = nullptr; 
-	void* p1 = nullptr; void* p2 = nullptr; 
+	Instr* PD = nullptr;
+	void* p1 = nullptr; void* p2 = nullptr;
 	LocVar* lv = nullptr;
 	if (NewWw) {
-		ProcAttr = colors.uNorm; 
+		ProcAttr = colors.uNorm;
 		screen.Window(1, 2, TxtCols, TxtRows);
-		TextAttr = ProcAttr; 
-		ClrScr(); 
-		UserHeadLine(""); 
+		TextAttr = ProcAttr;
+		ClrScr();
+		UserHeadLine("");
 		MenuX = 1; MenuY = 2;
 	}
-	PD = GetPInstr(_proc, sizeof(RdbPos) + 2); 
+	PD = GetPInstr(_proc, sizeof(RdbPos) + 2);
 	PD->Pos = RP;
 	CallProcedure(PD);
-	ReleaseStore(PD); 
+	ReleaseStore(PD);
 	if (NewWw) screen.Window(1, 1, TxtCols, TxtRows);
 }
 

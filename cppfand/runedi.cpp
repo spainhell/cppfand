@@ -543,21 +543,29 @@ bool CheckOwner(EditD* E)
 	auto result = true;
 	if (E->DownSet && (E->OwnerTyp != 'i')) {
 		X.PackKF(E->DownKey->KFlds);
-		CFile = E->DownLD->ToFD; CRecPtr = E->DownRecPtr;
+		CFile = E->DownLD->ToFD; 
+		CRecPtr = E->DownRecPtr;
 		X1.PackKF(E->DownLD->ToKey->KFlds);
 		X.S[0] = char(MinW(X.S.length(), X1.S.length()));
 		if (X.S != X1.S) result = false;
-		CFile = E->FD; CRecPtr = E->NewRecPtr;
+		CFile = E->FD; 
+		CRecPtr = E->NewRecPtr;
 	}
 	return result;
 }
 
 bool CheckKeyIn(EditD* E)
 {
-	KeyInD* k; XString X; pstring* p1; pstring* p2;
-	auto result = true; k = E->KIRoot; if (k == nullptr) return result;
-	X.PackKF(E->VK->KFlds); while (k != nullptr) {
-		p1 = k->X1; p2 = k->X2; if (p2 == nullptr) p2 = p1;
+	KeyInD* k = E->KIRoot;
+	XString X; 
+	pstring* p1; 
+	pstring* p2;
+	auto result = true; 
+	if (k == nullptr) return result;
+	X.PackKF(E->VK->KFlds); 
+	while (k != nullptr) {
+		p1 = k->X1; p2 = k->X2; 
+		if (p2 == nullptr) p2 = p1;
 		if ((p1->length() <= X.S.length()) && (X.S.length() <= p2->length() + 0xFF)) return result;
 		k = (KeyInD*)k->Chain;
 	}
@@ -578,7 +586,10 @@ bool ELockRec(EditD* E, longint N, bool IsNewRec, bool Subset)
 #endif
 		) {
 		if (CFile->NotCached()) {
-			if (!TryLockN(N, 1/*withESC*/)) { result = false; return result; }
+			if (!TryLockN(N, 1/*withESC*/)) { 
+				result = false; 
+				return result; 
+			}
 			md = NewLMode(RdMode); ReadRec(N); OldLMode(md);
 			if (Subset && !
 				((NoCondCheck || RunBool(E->Cond) && CheckKeyIn(E)) && CheckOwner(E))) {
@@ -612,7 +623,7 @@ WORD FldRow(EFldD* D, WORD I)
 	return E->FrstRow + E->NHdTxt + (I - 1) * RT->N + D->Ln - 1;
 }
 
-bool HasTTWw(FieldDPtr F)
+bool HasTTWw(FieldDescr* F)
 {
 	return (F->Typ == 'T') && (F->L > 1) && !E->IsUserForm;
 }
@@ -620,31 +631,42 @@ bool HasTTWw(FieldDPtr F)
 void DisplEmptyFld(EFldD* D, WORD I)
 {
 	WORD j; char c;
-	screen.GotoXY(D->Col, FldRow(D, I)); if (D->FldD->Flg && f_Stored != 0) c = '.'; else c = ' ';
+	screen.GotoXY(D->Col, FldRow(D, I)); 
+	if (D->FldD->Flg && f_Stored != 0) c = '.'; 
+	else c = ' ';
 	for (j = 1; j < D->L; j++) printf("%c", c);
 	if (HasTTWw(D->FldD)) printf("%*c", D->FldD->L - 1, ' ');
 }
 
-void Wr1Line(FieldDPtr F)
+void Wr1Line(FieldDescr* F)
 {
-	pstring Txt; LongStr* s; WORD max, l;
-	s = CopyLine(_LongS(F), 1, 1);
-	max = F->L - 2; l = s->LL; if (l > 255) l = 255;
-	Move(s->A, &Txt[1], l); Txt[0] = char(l); l = LenStyleStr(Txt);
+	pstring Txt; 
+	LongStr* s = CopyLine(_LongS(F), 1, 1);
+	WORD max = F->L - 2;	
+	WORD l = s->LL; 
+	if (l > 255) l = 255;
+	Move(s->A, &Txt[1], l); 
+	Txt[0] = char(l); 
+	l = LenStyleStr(Txt);
 	if (l > max)
 	{
-		l = max; Txt[0] = char(LogToAbsLenStyleStr(Txt, l));
+		l = max; 
+		Txt[0] = char(LogToAbsLenStyleStr(Txt, l));
 	}
 	WrStyleStr(Txt, E->dNorm);
-	ReleaseStore(s); TextAttr = E->dNorm;
+	ReleaseStore(s); 
+	TextAttr = E->dNorm;
 	if (l < max) printf("%*c", max - l, ' ');
 }
 
 void DisplFld(EFldD* D, WORD I)
 {
-	pstring Txt; WORD j, r; FieldDPtr F;
-	r = FldRow(D, I); screen.GotoXY(D->Col, r); F = D->FldD;
-	DecodeField(F, D->L, Txt); for (j = 1; j < Txt.length(); j++)
+	pstring Txt;
+	WORD r = FldRow(D, I); 
+	screen.GotoXY(D->Col, r); 
+	auto F = D->FldD;
+	DecodeField(F, D->L, Txt); 
+	for (WORD j = 1; j <= Txt.length(); j++)
 		if (Txt[j] < ' ') Txt[j] = Txt[j] + 0x40;
 	printf("%s", Txt.c_str());
 	if (HasTTWw(F)) {
@@ -655,23 +677,38 @@ void DisplFld(EFldD* D, WORD I)
 
 void DisplRec(WORD I)
 {
-	EFldD* D; bool NewFlds;
-	WORD a; longint N; void* p;
-	a = E->dNorm; N = BaseRec + I - 1;
+	EFldD* D = nullptr; 
+	bool NewFlds = false;
+	WORD a = E->dNorm;
+	longint N = BaseRec + I - 1;
 	bool IsCurrNewRec = IsNewRec && (I == IRec);
-	p = GetRecSpace();
-	if ((N > CNRecs()) && !IsCurrNewRec) { NewFlds = true; goto label1; }
-	if (I == IRec) CRecPtr = E->NewRecPtr; else { CRecPtr = p; RdRec(N); }
-	NewFlds = false; if (!IsNewRec) a = RecAttr(I);
+	void* p = GetRecSpace();
+	if ((N > CNRecs()) && !IsCurrNewRec) { 
+		NewFlds = true;
+		goto label1; 
+	}
+	if (I == IRec) CRecPtr = E->NewRecPtr; 
+	else { 
+		CRecPtr = p; 
+		RdRec(N); 
+	}
+	NewFlds = false; 
+	if (!IsNewRec) a = RecAttr(I);
 label1:
-	D = E->FirstFld; while (D != nullptr) {
+	D = E->FirstFld; 
+	while (D != nullptr) {
 		if (IsCurrNewRec && (D == FirstEmptyFld) && (D->Impl == nullptr)) NewFlds = true;
 		TextAttr = a;
-		if (D->Page == CPage) if (NewFlds) DisplEmptyFld(D, I); else DisplFld(D, I);
+		if (D->Page == CPage) {
+			if (NewFlds) DisplEmptyFld(D, I);
+			else DisplFld(D, I);
+		}
 		if (IsCurrNewRec && (D == FirstEmptyFld)) NewFlds = true;
 		D = (EFldD*)D->Chain;
 	}
-	ClearRecSpace(p); ReleaseStore(p); CRecPtr = E->NewRecPtr;
+	ClearRecSpace(p); 
+	ReleaseStore(p); 
+	CRecPtr = E->NewRecPtr;
 }
 
 bool LockRec(bool Displ)
@@ -710,7 +747,7 @@ void SetCPage()
 	WORD i;
 	CPage = CFld->Page;
 	RT = (ERecTxtD*)E->RecTxt;
-	for (i = 1; i <= CPage; i++) RT = (ERecTxtD*)RT->Chain;
+	for (i = 1; i < CPage; i++) RT = (ERecTxtD*)RT->Chain;
 }
 
 
@@ -1128,8 +1165,9 @@ bool OpenEditWw()
 	else
 #endif
 	{
-		if (HasIndex) TestXFExist(); md = NoDelMode;
-		if (OnlyAppend || (E->Cond != nullptr) || (E->KIRoot != nullptr) || E->DownSet or
+		if (HasIndex) TestXFExist(); 
+		md = NoDelMode;
+		if (OnlyAppend || (E->Cond != nullptr) || (E->KIRoot != nullptr) || E->DownSet ||
 			MakeWorkX && HasIndex && CFile->NotCached() && !Only1Record)
 		{
 			Subset = true;
@@ -1143,9 +1181,13 @@ bool OpenEditWw()
 	md2 = NewLMode(RdMode);
 	if (E->DownSet && (E->OwnerTyp == 'F')) {
 		CFile = E->DownLD->ToFD; CRecPtr = E->DownRecPtr;
-		md1 = NewLMode(RdMode); n = E->OwnerRecNo;
-		if ((n == 0) || (n > CFile->NRecs)) RunErrorM(E->OldMd, 611); ReadRec(n);
-		OldLMode(md1); CFile = E->FD; CRecPtr = E->NewRecPtr;
+		md1 = NewLMode(RdMode); 
+		n = E->OwnerRecNo;
+		if ((n == 0) || (n > CFile->NRecs)) RunErrorM(E->OldMd, 611); 
+		ReadRec(n);
+		OldLMode(md1); 
+		CFile = E->FD; 
+		CRecPtr = E->NewRecPtr;
 	}
 	if (Subset) BuildWork();
 	if (!Only1Record && HasIndex && VK->InWork) {
@@ -1198,7 +1240,8 @@ void GotoRecFld(longint NewRec, EFldD* NewFld)
 {
 	longint NewIRec = 0, NewBase = 0, D = 0, Delta = 0; 
 	WORD i = 0, Max = 0; LockMode md;
-	IVoff(); CFld = NewFld;
+	IVoff(); 
+	CFld = NewFld;
 	if (NewRec == CRec()) {
 		if (CPage != CFld->Page) DisplWwRecsOrPage();
 		else IVon(); 

@@ -253,7 +253,7 @@ struct Fonts // r350
 extern Fonts fonts;
 
 struct Colors
-{
+{  // celkem 54x BYTE
 	BYTE userColor[16];
 	BYTE mNorm, mHili, mFirst, mDisabled; // menu
 	BYTE sNorm, sHili, sMask; // select

@@ -584,8 +584,10 @@ bool RunEquMask(FrmlPtr X)
 
 double RunReal(FrmlPtr X)
 {
-	double R; FileD* cf = nullptr; LockMode md; bool b;
-	longint RecNo; void* p = &RecNo; void* cr;
+	if (X == nullptr) return 0;
+
+	double R = 0.0; FileD* cf = nullptr; LockMode md; bool b = false;
+	longint RecNo = 0; void* p = &RecNo; void* cr = nullptr;
 #ifdef FandGraph
 	ViewPortType vp/*9 BYTE*/ absolute R;
 #endif
@@ -593,8 +595,6 @@ double RunReal(FrmlPtr X)
 	WORD* n = (WORD*)cf;
 	BYTE* AColors = (BYTE*)&colors;
 	double result = 0;
-
-	if (X == nullptr) return result;
 label1:
 	switch (X->Op) {
 	case _field: result = _R(X->Field); break;
@@ -604,16 +604,26 @@ label1:
 	case _minus: { result = RunReal(X->P1) - RunReal(X->P2); break; }
 	case _times: { result = RunReal(X->P1) * RunReal(X->P2); break; }
 	case _access: {
-		cf = CFile; cr = CRecPtr;
+		cf = CFile; 
+		cr = CRecPtr;
 		if (X->LD != nullptr) LinkUpw(X->LD, RecNo, false);
 		else LinkLastRec(X->File2, RecNo, false);
 		result = RunReal(X->P1);
 		ReleaseStore(CRecPtr);
-		CFile = cf; CRecPtr = cr;
+		CFile = cf; 
+		CRecPtr = cr;
 		break;
 	}
-	case _recvarfld: { cf = CFile; cr = CRecPtr; CFile = X->File2; CRecPtr = X->LD;
-		result = RunReal(X->P1); CFile = cf; CRecPtr = cr; break; }
+	case _recvarfld: { 
+		cf = CFile; 
+		cr = CRecPtr; 
+		CFile = X->File2; 
+		CRecPtr = X->LD;
+		result = RunReal(X->P1); 
+		CFile = cf; 
+		CRecPtr = cr; 
+		break; 
+	}
 	case _eval: { MarkStore(p); result = RunReal(GetEvalFrml(X));	ReleaseStore(p); break; }
 	case _divide: result = RunReal(X->P1) / RunReal(X->P2); break;
 	case _cond: {
@@ -649,20 +659,31 @@ label1:
 	case _cos: result = cos(RunReal(X->P1)); break;
 	case _arctan: result = atan(RunReal(X->P1)); break;
 	case _ln: result = log(RunReal(X->P1));
-	case _exp: { R = RunReal(X->P1);
-		if ((R <= -50) || (R > 88)) result = 0; else result = exp(R); break; }
+	case _exp: { 
+		R = RunReal(X->P1);
+		if ((R <= -50) || (R > 88)) result = 0; 
+		else result = exp(R); 
+		break; 
+	}
 	case _nrecs:
 	case _nrecsabs: {
 		cf = CFile; CFile = X->FD; md = NewLMode(RdMode);
 		if (X->Op == _nrecs) RecNo = XNRecs(CFile->Keys);
 		else RecNo = CFile->NRecs;
 		OldLMode(md); result = int(RecNo); CFile = cf;
-		break; }
-	case _generation: { cf = CFile; CFile = X->FD;
-		result = int(Generation); CFile = cf; break; }
-	case _lastupdate: { cf = CFile;
+		break; 
+	}
+	case _generation: { 
+		cf = CFile; CFile = X->FD;
+		result = int(Generation); CFile = cf; 
+		break; 
+	}
+	case _lastupdate: { 
+		cf = CFile;
 		CFile = X->FD; md = NewLMode(RdMode);
-		result = LastUpdate(CFile->Handle); OldLMode(md); CFile = cf; break; }
+		result = LastUpdate(CFile->Handle); OldLMode(md); CFile = cf; 
+		break; 
+	}
 	case _catfield: {
 		RdCatPathVol(X->CatIRec);
 		TestMountVol(CPath[1]);
@@ -854,16 +875,21 @@ void DecodeFieldRSB(FieldDPtr F, WORD LWw, double R, pstring T, bool B, pstring&
 	case 'A': { C = ' ';
 	label1:
 		if (M == LeftJust)
-			while (T.length() < L) T = T + C;
+			while (T.length() < L) T.Append(C);
 		else while (T.length() < L) { pstring oldT = T; T = C; T += oldT; }
 		break;
 	}
-	case 'B': if (B) T = AbbrYes; else T = AbbrNo; break;
-	case 'R': str(R, L, T); break;
-	default: /*"F"*/
-		if (F->Flg && f_Comma != 0) R = R / Power10[M];
-		str(RoundReal(R, M),L, M, T);
+	case 'B': {
+		if (B) T = AbbrYes;
+		else T = AbbrNo;
 		break;
+	}
+	case 'R': str(R, L, T); break;
+	default: /*"F"*/ {
+		if (F->Flg && f_Comma != 0) R = R / Power10[M];
+		str(RoundReal(R, M), L, M, T);
+		break;
+	}
 	}
 	if (T.length() > L) { T[0] = char(L); T[L] = '>'; }
 	if (T.length() > LWw) {
@@ -1081,6 +1107,7 @@ pstring RunShortStr(FrmlPtr X)
 	LongStr* s = RunLongStr(X);
 	pstring result;
 	if (s->LL > 255) result[0] = 255;
+	else result[0] = s->LL;
 	memcpy(&result[1], s->A, result[0]);
 	delete s;
 	return result;
