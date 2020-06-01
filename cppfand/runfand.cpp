@@ -162,21 +162,22 @@ void RdPrinter(FILE* CfgHandle)
 	//printf("Pozice v souboru po tiskarnach: %i (0x%x)\n", ftell(CfgHandle), ftell(CfgHandle));
 	
 	// jeste jsou tam nejaka data a datum v nasl. konfiguraci je posunuty -> nutno rucne posunout:
-	SeekH(CfgHandle, PosH(CfgHandle) + 4);
+	SeekH(CfgHandle, PosH(CfgHandle) + 3);
 	SetCurrPrinter(0);
 }
 
 void RdWDaysTab(FILE* CfgHandle)
 {
-	ReadH(CfgHandle, sizeof(NWDaysTab), &NWDaysTab);
+	ReadH(CfgHandle, 1, &NWDaysTab); // je to WORD, ale nacita se spatne, takze jen 1 Byte ...
+	SeekH(CfgHandle, PosH(CfgHandle) + 2); // dalsi 2 Byty vyjadruji neznamou hodnotu
 	ReadH(CfgHandle, 6, &WDaysFirst);  // v Pascalu real 6B
 	WDaysFirst = Real48ToDouble(&WDaysFirst);
 	ReadH(CfgHandle, 6, &WDaysLast);  // v Pascalu real 6B
 	WDaysLast = Real48ToDouble(&WDaysLast);
 
 	//GetMem(WDaysTab, NWDaysTab * 3);
-	WDaysTab = new wdaystt[3];
-	for (int i = 0; i < 3; i++) {
+	WDaysTab = new wdaystt[NWDaysTab];
+	for (int i = 0; i < NWDaysTab; i++) {
 		ReadH(CfgHandle, sizeof(WDaysTab[i].Typ), &WDaysTab[i].Typ);
 		ReadH(CfgHandle, sizeof(WDaysTab[i].Nr), &WDaysTab[i].Nr);
 	}

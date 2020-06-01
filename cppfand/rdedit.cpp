@@ -184,10 +184,10 @@ void AutoDesign(FieldList FL)
 			Col = E->FrstCol; s = "";
 		}
 		m = (L - F->Name.length() + 1) / 2;
-		for (i = 1; i < m; i++) s = s + ' ';
+		for (i = 1; i <= m; i++) s.Append(' ');
 		s = s + F->Name;
 		m = L - F->Name.length() - m;
-		for (i = 1; i < m + 1; i++) s = s + ' ';
+		for (i = 1; i <= m + 1; i++) s.Append(' ');
 		D->Col = Col + (L - FldLen + 1) / 2; 
 		D->Ln = Ln + 2; 
 		D->Page = NPages;
@@ -197,19 +197,32 @@ void AutoDesign(FieldList FL)
 	SLRoot = SToSL(SLRoot, "");
 	Ln += 2; 
 	E->RecTxt = StoreRT(Ln, SLRoot, 1);
-	D->Chain = nullptr; E->LastFld = *D; E->NPages = NPages;
+	D->Chain = nullptr; 
+	E->LastFld = *D; 
+	E->NPages = NPages;
 	if (NPages == 1) { /* !!! with E->RecTxt^ do!!! */
-		auto er = *E->RecTxt;
+		auto& er = *E->RecTxt;
 		if (er.N == 2) {
-			E->HdTxt = er.SL; er.SL = (StringList)er.SL->Chain;
+			E->HdTxt = er.SL; 
+			er.SL = (StringList)er.SL->Chain;
 			E->HdTxt->Chain = nullptr;
-			E->NHdTxt = 1; er.N = 1; D = E->FirstFld;
-			while (D != nullptr) { D->Ln--; D = (EFldD*)D->Chain; }
-			if (E->Rows == 1) { E->NHdTxt = 0; E->HdTxt = nullptr; }
+			E->NHdTxt = 1; 
+			er.N = 1; 
+			D = E->FirstFld;
+			while (D != nullptr) { 
+				D->Ln--; 
+				D = (EFldD*)D->Chain; 
+			}
+			if (E->Rows == 1) { 
+				E->NHdTxt = 0; 
+				E->HdTxt = nullptr; 
+			}
 		}
 		else if (er.N < E->Rows) {
-			s = ""; for (i = E->FrstCol; i < E->LastCol; i++) s = s + '-';
-			SToSL(er.SL, s); er.N++;
+			s = ""; 
+			for (i = E->FrstCol; i <= E->LastCol; i++) s.Append('-');
+			SToSL(er.SL, s); 
+			er.N++;
 		}
 	}
 }
@@ -287,11 +300,14 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 		if (E->Mode24) E->V.R2--;
 	}
 	RdFormOrDesign(ParFD, EO->Flds, EO->FormPos);
-	if (E->NPages > 1) E->NRecs = 1;
-	else E->NRecs = (E->Rows - E->NHdTxt) / E->RecTxt->N;
-	E->BaseRec = 1; E->IRec = 1;
-	CFld = E->FirstFld; E->FirstEmptyFld = *E->FirstFld;
-	E->ChkSwitch = true; E->WarnSwitch = true;
+	if (E->NPages > 1) { E->NRecs = 1; }
+	else { E->NRecs = (E->Rows - E->NHdTxt) / E->RecTxt->N; }
+	E->BaseRec = 1; 
+	E->IRec = 1;
+	CFld = E->FirstFld; 
+	E->FirstEmptyFld = *E->FirstFld;
+	E->ChkSwitch = true; 
+	E->WarnSwitch = true;
 	CFile = E->FD; 
 	CRecPtr = GetRecSpace(); 
 	E->OldRecPtr = CRecPtr;
@@ -303,7 +319,8 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 		E->Journal = nullptr; E->KIRoot = nullptr;
 	}
 	else {
-		CRecPtr = GetRecSpace(); E->NewRecPtr = CRecPtr;
+		CRecPtr = GetRecSpace(); 
+		E->NewRecPtr = CRecPtr;
 #ifdef FandSQL
 		if (CFile->IsSQLFile) SetTWorkFlag;
 #endif
@@ -322,7 +339,7 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 			case 'F': { 
 				E->OwnerRecNo = RunInt(FrmlPtr(EO->DownLV));
 				CFile = E->DownLD->ToFD; 
-				E->DownRecPtr = GetRecSpace; 
+				E->DownRecPtr = GetRecSpace(); 
 				CFile = E->FD; 
 				break; 
 			}

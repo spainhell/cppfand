@@ -924,7 +924,7 @@ void DisplBool()
 
 void DisplAllWwRecs()
 {
-	WORD i, n; LockMode md = NullMode;
+	WORD i = 0, n = 0; LockMode md = NullMode;
 	n = E->NRecs;
 	if ((n > 1) && !EdRecVar) md = NewLMode(RdMode);
 	AdjustCRec();
@@ -1147,7 +1147,8 @@ void SetStartRec()
 
 bool OpenEditWw()
 {
-	LockMode md, md1, md2; longint n;
+	LockMode md, md1, md2; 
+	longint n = 0;
 	auto result = false;
 	CFile = E->Journal;
 	if (CFile != nullptr) OpenCreateF(Shared);
@@ -1192,7 +1193,8 @@ bool OpenEditWw()
 	if (Subset) BuildWork();
 	if (!Only1Record && HasIndex && VK->InWork) {
 		if (!Subset) WK = (XWKey*)VK;
-		VK = CFile->Keys; WasWK = true; Subset = true;
+		VK = CFile->Keys; 
+		WasWK = true; Subset = true;
 	}
 #ifdef FandSQL
 	if (CFile->IsSQLFile) Strm1->DefKeyAcc(WK);
@@ -3109,7 +3111,8 @@ void DisplLASwitches()
 void DisplLL()
 {
 	WORD n;
-	if (E->Last != nullptr) {
+	//if (E->Last != nullptr) {
+	if (!E->Last.empty()) {
 		MsgLine = E->Last; 
 		if (MsgLine.length() > 0) {
 			WrLLMsgTxt(); 
