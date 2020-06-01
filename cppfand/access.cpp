@@ -285,49 +285,62 @@ void Pack(void* NumArr, void* PackArr, WORD NoDigits)
 
 double RealFromFix(void* FixNo, WORD FLen)
 {
-	double r;
-	BYTE* rr = (BYTE*)&r;
-	BYTE ff[FixS];
-	integer i;
-
-	FillChar(rr, DblS, 0);
-	Move(FixNo, ff, FLen);
-	bool neg = (ff[1] & 0x80) != 0;
-	if (neg) {
-		if (ff[1] == 0x80) {
-			for (i = 2; i < FLen; i++) if (ff[i] != 0x00) goto label1;   /*NULL value*/
-			return 0.;
-		}
-	label1:
-		for (i = 1; i < FLen; i++) ff[i] = !(ff[i]);
-		ff[FLen]++;
-		i = FLen;
-		while (ff[i] == 0) { i--; if (i > 0) ff[i]++; }
-	}
-	integer first = 1;
-	while (ff[first] == 0) first++;
-	if (first > FLen) { return 0; }
-	integer lef = 0;
-	BYTE b = ff[first];
-	while ((b & 0x80) == 0) { b = b << 1; lef++; }
-	ff[first] = ff[first] && (0x7F >> lef);
-	integer exp = ((FLen - first) << 3) - lef + 1030;
-	if (lef == 7) first++;
-	lef = (lef + 5) & 0x07;
-	integer rig = 8 - lef;
-	i = DblS - 1;
-	if ((rig <= 4) && (first <= FLen)) { rr[i] = ff[first] >> rig; i--; }
-	while ((i > 0) && (first < FLen))
+	if (FLen == 0) return 0;
+	BYTE* source = (BYTE*)FixNo;
+	double r = 0;
+	// pricteme 1. byte
+	r += source[0];
+	// dalsi byte se postupne nasobi 256 na i-tou
+	for (size_t i = 1; i < FLen; i++) 
 	{
-		rr[i] = (ff[first] << lef) + (ff[first + 1] >> rig);
-		i--;
-		first++;
+		r += source[i] * pow(256, i);
 	}
-	if ((first == FLen) && (i > 0)) rr[i] = ff[first] << lef;
-	rr[DblS - 1] = (rr[DblS - 1] & 0x0F) + ((exp & 0x0F) << 4);
-	rr[DblS] = exp >> 4;
-	if (neg) rr[DblS] = rr[DblS] | 0x80;
+
 	return r;
+
+	//double r = 0;
+	//BYTE* rr = (BYTE*)&r;
+	//BYTE ff[FixS]{ '\0' };
+	//integer i = 0;
+
+	////FillChar(rr, DblS, 0);
+	//Move(FixNo, &ff[0], FLen);
+	//bool neg = (ff[1] & 0x80) != 0;
+	//if (neg) {
+	//	if (ff[1] == 0x80) {
+	//		for (i = 2; i < FLen; i++) if (ff[i] != 0x00) goto label1;   /*NULL value*/
+	//		return 0.0;
+	//	}
+	//label1:
+	//	for (i = 1; i < FLen; i++) ff[i] = !(ff[i]);
+	//	ff[FLen]++;
+	//	i = FLen;
+	//	while (ff[i] == 0) { i--; if (i > 0) ff[i]++; }
+	//}
+	//integer first = 1;
+	//while (ff[first] == 0) first++;
+	//if (first > FLen) { return 0; }
+	//integer lef = 0;
+	//BYTE b = ff[first];
+	//while ((b & 0x80) == 0) { b = b << 1; lef++; }
+	//ff[first] = ff[first] && (0x7F >> lef);
+	//integer exp = ((FLen - first) << 3) - lef + 1030;
+	//if (lef == 7) first++;
+	//lef = (lef + 5) & 0x07;
+	//integer rig = 8 - lef;
+	//i = DblS - 1;
+	//if ((rig <= 4) && (first <= FLen)) { rr[i] = ff[first] >> rig; i--; }
+	//while ((i > 0) && (first < FLen))
+	//{
+	//	rr[i] = (ff[first] << lef) + (ff[first + 1] >> rig);
+	//	i--;
+	//	first++;
+	//}
+	//if ((first == FLen) && (i > 0)) rr[i] = ff[first] << lef;
+	//rr[DblS - 1] = (rr[DblS - 1] & 0x0F) + ((exp & 0x0F) << 4);
+	//rr[DblS] = exp >> 4;
+	//if (neg) rr[DblS] = rr[DblS] | 0x80;
+	//return r;
 }
 
 void FixFromReal(double r, void* FixNo, WORD& flen)
@@ -1269,7 +1282,7 @@ double _R(FieldDPtr F)
 		else switch (F->Typ) {
 		case 'F': {
 			r = RealFromFix(&source[F->Displ], F->NBytes);
-			if (F->Flg && f_Comma == 0) result = r / Power10[F->M]; 
+			if ((F->Flg & f_Comma) == 0) result = r / Power10[F->M]; 
 			else result = r; 
 			break;
 		}
@@ -1284,7 +1297,7 @@ double _R(FieldDPtr F)
 		case 'R': {
 		label1:
 			if (IsNullValue(&source[F->Displ], F->NBytes)) result = 0;
-			else result = DoubleFrom6Bytes(&source[F->Displ]);
+			else result = Real48ToDouble(&source[F->Displ]);
 		}
 		}
 	}

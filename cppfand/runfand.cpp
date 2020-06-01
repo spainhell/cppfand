@@ -160,6 +160,9 @@ void RdPrinter(FILE* CfgHandle)
 		if (L == 0xFF) prMax--;
 	}
 	//printf("Pozice v souboru po tiskarnach: %i (0x%x)\n", ftell(CfgHandle), ftell(CfgHandle));
+	
+	// jeste jsou tam nejaka data a datum v nasl. konfiguraci je posunuty -> nutno rucne posunout:
+	SeekH(CfgHandle, PosH(CfgHandle) + 4);
 	SetCurrPrinter(0);
 }
 
@@ -167,12 +170,15 @@ void RdWDaysTab(FILE* CfgHandle)
 {
 	ReadH(CfgHandle, sizeof(NWDaysTab), &NWDaysTab);
 	ReadH(CfgHandle, 6, &WDaysFirst);  // v Pascalu real 6B
+	WDaysFirst = Real48ToDouble(&WDaysFirst);
 	ReadH(CfgHandle, 6, &WDaysLast);  // v Pascalu real 6B
+	WDaysLast = Real48ToDouble(&WDaysLast);
+
 	//GetMem(WDaysTab, NWDaysTab * 3);
 	WDaysTab = new wdaystt[3];
 	for (int i = 0; i < 3; i++) {
 		ReadH(CfgHandle, sizeof(WDaysTab[i].Typ), &WDaysTab[i].Typ);
-		ReadH(CfgHandle, sizeof(WDaysTab[i].Typ), &WDaysTab[i].Typ);
+		ReadH(CfgHandle, sizeof(WDaysTab[i].Nr), &WDaysTab[i].Nr);
 	}
 }
 

@@ -3110,9 +3110,12 @@ void DisplLL()
 {
 	WORD n;
 	if (E->Last != nullptr) {
-		MsgLine = E->Last; if (MsgLine.length() > 0) {
-			WrLLMsgTxt(); DisplLASwitches();
-		} return;
+		MsgLine = E->Last; 
+		if (MsgLine.length() > 0) {
+			WrLLMsgTxt(); 
+			DisplLASwitches();
+		} 
+		return;
 	}
 	if (E->ShiftF7LD != nullptr) n = 144;
 	else if (NoCreate || Only1Record)
@@ -3122,7 +3125,6 @@ void DisplLL()
 	else if (IsNewRec) n = 123;
 	else n = 124;
 	if (!F1Mode || Mode24) { WrLLMsg(n); DisplLASwitches(); }
-	;
 }
 
 void DisplCtrlAltLL(WORD Flags)

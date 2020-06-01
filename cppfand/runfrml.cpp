@@ -179,7 +179,7 @@ WORD TypeDay(double R)
 	if ((R >= WDaysFirst) && (R <= WDaysLast))
 	{
 		d = trunc(R - WDaysFirst);
-		for (i = 1; i < NWDaysTab; i++)
+		for (i = 0; i < NWDaysTab; i++)
 			if (WDaysTab[i].Nr == d) { return WDaysTab[i].Typ; }
 	}
 	d = longint(trunc(R)) % 7;
@@ -387,7 +387,10 @@ bool RunBool(FrmlPtr X)
 	}
 	case _inreal: { result = InReal(RunReal(X->P1), &X->N12, X->N11); break; }
 	case _compreal: {
-		result = (CompReal(RunReal(X->P1), RunReal(X->P2), X->N22) && X->N21) != 0;
+		auto rrP1 = RunReal(X->P1);
+		auto rrP2 = RunReal(X->P2);
+		auto cmpR = CompReal(rrP1, rrP2, X->N22);
+		result = (cmpR & X->N21) != 0;
 		break;
 	}
 	case _compstr: {
@@ -422,7 +425,7 @@ bool RunBool(FrmlPtr X)
 	case _access: { cf = CFile; cr = CRecPtr;
 		if (X->LD != nullptr) *b = LinkUpw(X->LD, RecNo, false);
 		else *b = LinkLastRec(X->File2, RecNo, false);
-		if ((X->P1 = nullptr)) result = b;
+		if ((X->P1 == nullptr)) result = b;
 		else result = RunBool(X->P1);
 		ReleaseStore(CRecPtr); CFile = cf; CRecPtr = cr;
 		break;
@@ -693,7 +696,11 @@ label1:
 		break;
 	}
 	case _currtime: result = CurrTime(); break;
-	case _typeday: result = TypeDay(RunReal(X->P1)); break;
+	case _typeday: { 
+		auto rr = RunReal(X->P1);
+		result = TypeDay(rr);
+		break; 
+	}
 	case _addwdays: result = AddWDays(RunReal(X->P1), RunInt(X->P2), X->N21); break;
 	case _difwdays: result = DifWDays(RunReal(X->P1), RunReal(X->P2), X->N21); break;
 	case _addmonth: result = AddMonth(RunReal(X->P1), RunReal(X->P2)); break;
@@ -758,7 +765,8 @@ label1:
 
 longint RunInt(FrmlPtr X)
 {
-	return trunc(RunReal(X));
+	auto rr = RunReal(X);
+	return trunc(rr);
 }
 
 void TestTFrml(FieldDPtr F, FrmlPtr Z)
@@ -933,7 +941,9 @@ void RunWFrml(WRectFrml X, BYTE WFlags, WRect& W)
 WORD RunWordImpl(FrmlPtr Z, WORD Impl)
 {
 	WORD n;
-	n = RunInt(Z); if (n == 0) n = Impl; return n;
+	n = RunInt(Z); 
+	if (n == 0) n = Impl; 
+	return n;
 }
 
 bool FieldInList(FieldDPtr F, FieldListEl* FL)
