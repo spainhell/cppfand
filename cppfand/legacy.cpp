@@ -340,7 +340,7 @@ double DoubleFrom6Bytes(void* buf)
 	}
 
 	mantissa += (real48[5] & 0x7F);
-	mantissa *= 0x0078125; // mantissa /= 128
+	mantissa *= 0.0078125; // mantissa /= 128
 	mantissa += 1.0;
 
 	if ((real48[5] & 0x80) == 0x80) // Sign bit check
