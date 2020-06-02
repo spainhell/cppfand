@@ -189,7 +189,7 @@ void Screen::CrsNorm()
 
 void Screen::GotoXY(WORD X, WORD Y)
 {
-	if (X > WindMax->X || Y > WindMax->Y) return;
+	// if (X > WindMax->X || Y > WindMax->Y) return;
 	X += WindMin->X - 1;
 	Y += WindMin->Y - 1;
 	SetConsoleCursorPosition(_handle, { (short)X, (short)Y });

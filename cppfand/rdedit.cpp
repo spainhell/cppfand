@@ -127,7 +127,7 @@ label5:
 	for (i = 2; i < N; i++) {
 		PrevD = D; D = FindScanNr(D->ScanNr + 1); D->ChainBack = PrevD;
 	}
-	E->LastFld = *D; PrevD = nullptr;
+	E->LastFld = D; PrevD = nullptr;
 	while (D != nullptr) { D->Chain = PrevD; PrevD = D; D = D->ChainBack; }
 	E->FirstFld = PrevD;
 }
@@ -198,7 +198,7 @@ void AutoDesign(FieldList FL)
 	Ln += 2; 
 	E->RecTxt = StoreRT(Ln, SLRoot, 1);
 	D->Chain = nullptr; 
-	E->LastFld = *D; 
+	E->LastFld = D; 
 	E->NPages = NPages;
 	if (NPages == 1) { /* !!! with E->RecTxt^ do!!! */
 		auto& er = *E->RecTxt;
@@ -305,7 +305,7 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 	E->BaseRec = 1; 
 	E->IRec = 1;
 	CFld = E->FirstFld; 
-	E->FirstEmptyFld = *E->FirstFld;
+	E->FirstEmptyFld = E->FirstFld;
 	E->ChkSwitch = true; 
 	E->WarnSwitch = true;
 	CFile = E->FD; 
@@ -357,7 +357,7 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 		s = TrailChar(' ', RunShortStr(EO->StartFieldZ)); 
 		D = E->FirstFld;
 		while (D != nullptr) {
-			if (SEquUpcase(D->FldD->Name, s)) E->StartFld = *D; 
+			if (SEquUpcase(D->FldD->Name, s)) E->StartFld = D; 
 			D = (EFldD*)D->Chain;
 		}
 	}
@@ -414,7 +414,7 @@ void ZeroUsed()
 
 EFldD* LstUsedFld()
 {
-	EFldD* D = &E->LastFld;
+	EFldD* D = E->LastFld;
 	while (D != nullptr)
 	{
 		if (D->Used) goto label1;

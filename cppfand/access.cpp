@@ -2719,9 +2719,18 @@ bool XKey::Delete(longint RecNr)
 
 void XWKey::Open(KeyFldD* KF, bool Dupl, bool Intvl)
 {
-	KFlds = KF; Duplic = Dupl; InWork = true; Intervaltest = Intvl; NR = 0;
-	XPagePtr p = (XPage*)GetStore(sizeof(p)); IndexRoot = XF()->NewPage(p);
-	p->IsLeaf = true; XF()->WrPage(p, IndexRoot); ReleaseStore(p); IndexLen = 0;
+	KFlds = KF; 
+	Duplic = Dupl; 
+	InWork = true; 
+	Intervaltest = Intvl; 
+	NR = 0;
+	//XPage* p = (XPage*)GetStore(sizeof(p)); 
+	XPage* p = new XPage();
+	IndexRoot = XF()->NewPage(p);
+	p->IsLeaf = true; 
+	XF()->WrPage(p, IndexRoot); 
+	ReleaseStore(p); 
+	IndexLen = 0;
 	while (KF != nullptr) {
 		IndexLen += KF->FldD->NBytes;
 		KF = (KeyFldD*)KF->Chain;
@@ -2920,7 +2929,7 @@ XScan::XScan(FileD* aFD, KeyD* aKey, KeyInD* aKIRoot, bool aWithT)
 
 void XScan::Reset(FrmlPtr ABool, bool SQLFilter)
 {
-	KeyInD* k; longint n; XString xx; bool b;
+	KeyInD* k = nullptr; longint n = 0; XString xx; bool b = false;
 	CFile = FD;
 	Bool = ABool;
 	if (SQLFilter) {
@@ -2930,10 +2939,18 @@ void XScan::Reset(FrmlPtr ABool, bool SQLFilter)
 	switch (Kind) {
 	case 0: NRecs = CFile->NRecs; break;
 	case 1:
-	case 3: { if (!Key->InWork) TestXFExist(); NRecs = Key->NRecs(); break; }
+	case 3: { 
+		if (Key != nullptr) {
+			if (!Key->InWork) TestXFExist();
+			NRecs = Key->NRecs();
+		}
+		break; 
+	}
 	case 2: {
 		if (!Key->InWork) TestXFExist();
-		CompKIFrml(Key, KIRoot, true); NRecs = 0; k = KIRoot;
+		CompKIFrml(Key, KIRoot, true); 
+		NRecs = 0; 
+		k = KIRoot;
 		while (k != nullptr) {
 			XString a1;
 			XString b2;
@@ -3250,6 +3267,7 @@ pstring FieldDMask(FieldDescr* F)
 	result[0] = newLen;
 	memcpy(&result[1], &F[startIndex], newLen);
 
+	if (result.empty()) return "DD.MM.YY";
 	return result;
 }
 
@@ -3296,9 +3314,100 @@ void* LocVarAd(LocVar* LV)
 	return nullptr;
 }
 
-void XDecode(LongStr* S)
+void rol(BYTE& input, size_t count)
 {
-	return;
+	for (size_t i = 0; i < count; i++) {
+		input = input << 1 | input >> 7;
+	}
+}
+
+void XDecode(LongStr* origS)
+{
+	BYTE RMask = 0;
+	WORD* AX = new WORD();
+	BYTE* AL = (BYTE*)AX;
+	BYTE* AH = AL + 1;
+
+	WORD* BX = new WORD();
+	BYTE* BL = (BYTE*)BX;
+	BYTE* BH = BL + 1;
+
+	WORD* CX = new WORD();
+	BYTE* CL = (BYTE*)CX;
+	BYTE* CH = CL + 1;
+
+	WORD* DX = new WORD();
+	BYTE* DL = (BYTE*)DX;
+	BYTE* DH = DL + 1;
+
+	if (origS->LL == 0) return;
+	BYTE* S = new BYTE[origS->LL + 2];
+	WORD* len = (WORD*)&S[0];
+	*len = origS->LL;
+	memcpy(&S[2], &origS->A[0], origS->LL);
+
+	WORD offset = 0;
+
+	BYTE* DS = S; // ukazuje na delku pred retezcem
+	BYTE* ES = &S[2]; // ukazuje na zacatek retezce
+	WORD SI = 0;
+	*BX = SI;
+	*AX = *(WORD*)&DS[SI];
+	if (*AX == 0) return;
+	SI = 2;
+	WORD DI = 0;
+	*BX += *AX;
+	*AX = *(WORD*)&S[*BX];
+	*AX = *AX ^ 0xCCCC;
+	SI += *AX;
+	(*BX)--;
+	*CL = S[*BX];
+	*CL = *CL & 3;
+	*AL = 0x9C;
+	rol(*AL, *CL);
+	RMask = *AL;
+	*CH = 0;
+
+label1:
+	*AL = DS[SI]; SI++; // lodsb
+	*DH = 0xFF;
+	*DL = *AL;
+
+label2:
+	if (SI >= *BX) goto label4;
+	if ((*DH & 1) == 0) goto label1;
+	if ((*DL & 1) != 0) goto label3;
+	*AL = DS[SI]; SI++; // lodsb
+	rol(RMask, 1);
+	*AL = *AL ^ RMask;
+	ES[DI] = *AL; DI++; // stosb
+	*DX = *DX >> 1;
+	goto label2;
+
+label3:
+	*AL = DS[SI]; SI++; // lodsb
+	*CL = *AL;
+	*AX = *(WORD*)&DS[SI]; SI++; SI++; // lodsw
+	offset = *AX;
+	for (size_t i = 0; i < *CX; i++) { // rep
+		ES[DI] = DS[offset]; offset++; DI++; // movsb
+	}
+	*DX = *DX >> 1;
+	goto label2;
+
+label4:
+	origS->LL = DI;
+	memcpy(origS->A, &S[2], DI);
+
+	/**AX = DI;
+	DI = *len;
+	*AX -= DI;
+	*AX -= 2;
+	ES[DI] = *AL; DI++;
+	ES[DI] = *AH; DI++;*/
+
+	delete AX; delete BX; delete CX; delete DX;
+	delete[] S;
 }
 
 void CodingLongStr(LongStr* S)

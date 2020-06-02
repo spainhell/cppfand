@@ -249,20 +249,22 @@ struct EditD : Chained
 	BYTE NPages;
 	ERecTxtD* RecTxt = nullptr;
 	BYTE NRecs;     /*display*/
-	EFldD* FirstFld, LastFld, StartFld;
-	EFldD* CFld, FirstEmptyFld;                         /*copied*/
-	KeyDPtr VK = nullptr; WKeyDPtr WK = nullptr;                             /*  "   */
-	longint BaseRec; BYTE IRec;                          /*  "   */
-	bool IsNewRec, Append, Select, WasUpdated, EdRecVar,          /*  "   */
-		AddSwitch, ChkSwitch, WarnSwitch, SubSet;               /*  "   */
-	bool NoDelTFlds, WasWK;                            /*  "   */
-	bool NoDelete, VerifyDelete, NoCreate, F1Mode,               /*  "   */
-		OnlyAppend, OnlySearch, Only1Record, OnlyTabs,          /*  "   */
-		NoESCPrompt, MustESCPrompt, Prompt158, NoSrchMsg,       /*  "   */
-		WithBoolDispl, Mode24, NoCondCheck, F3LeadIn,           /*  "   */
-		LUpRDown, MouseEnter, TTExit,                          /*  "   */
-		MakeWorkX, NoShiftF7Msg, MustAdd;                      /*  "   */
-	bool MustCheck, SelMode;                          /*  "   */
+	EFldD* FirstFld = nullptr;
+	EFldD* LastFld = nullptr; 
+	EFldD* StartFld = nullptr;
+	EFldD* CFld = nullptr; EFldD* FirstEmptyFld = nullptr;    /*copied*/
+	KeyDPtr VK = nullptr; WKeyDPtr WK = nullptr;              /*  "   */
+	longint BaseRec; BYTE IRec;                               /*  "   */
+	bool IsNewRec, Append, Select, WasUpdated, EdRecVar,      /*  "   */
+		AddSwitch, ChkSwitch, WarnSwitch, SubSet;             /*  "   */
+	bool NoDelTFlds, WasWK;                                   /*  "   */
+	bool NoDelete, VerifyDelete, NoCreate, F1Mode,            /*  "   */
+		OnlyAppend, OnlySearch, Only1Record, OnlyTabs,        /*  "   */
+		NoESCPrompt, MustESCPrompt, Prompt158, NoSrchMsg,     /*  "   */
+		WithBoolDispl, Mode24, NoCondCheck, F3LeadIn,         /*  "   */
+		LUpRDown, MouseEnter, TTExit,                         /*  "   */
+		MakeWorkX, NoShiftF7Msg, MustAdd;                     /*  "   */
+	bool MustCheck, SelMode;                                  /*  "   */
 	bool DownSet, IsLocked, WwPart;
 	KeyDPtr DownKey;
 	longint LockedRec;

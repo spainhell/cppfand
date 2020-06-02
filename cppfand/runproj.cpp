@@ -1615,7 +1615,8 @@ void GotoErrPos(WORD& Brk)
 		GotoRecFld(InpRdbPos.IRec, (EFldD*)E->FirstFld->Chain);
 		SetMsgPar(s); WrLLF10Msg(110); Brk = 0; return;
 	}
-	CFld = &E->LastFld; SetNewCRec(InpRdbPos.IRec, true);
+	CFld = E->LastFld; 
+	SetNewCRec(InpRdbPos.IRec, true);
 	R_(ChptTxtPos, integer(CurrPos)); WriteRec(CRec());
 	EditFreeTxt(ChptTxt, s, true, Brk);
 }

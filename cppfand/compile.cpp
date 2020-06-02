@@ -669,9 +669,13 @@ LocVar* RdVarName(LocVarBlkD* LVB, bool IsParList)
 		if (EquUpcase(lv->Name, LexWord)) Error(26);
 		lv = (LocVar*)lv->Chain;
 	}
-	lv = (LocVar*)GetZStore(sizeof(*lv) - 1 + LexWord.length());
-	ChainLast(LVB->Root, lv);
-	Move(&LexWord, &lv->Name, LexWord.length() + 1); RdLex();
+	//lv = (LocVar*)GetZStore(sizeof(*lv) - 1 + LexWord.length());
+	lv = new LocVar();
+	if (LVB->Root == nullptr) LVB->Root = lv;
+	else ChainLast(LVB->Root, lv);
+	//Move(&LexWord, &lv->Name, LexWord.length() + 1); 
+	lv->Name = LexWord;
+	RdLex();
 	auto result = lv;
 	if (IsParList) { lv->IsPar = true; LVB->NParam++; }
 	return lv;

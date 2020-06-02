@@ -619,27 +619,38 @@ void CreateWIndex(XScan* Scan, WKeyDPtr K, char Typ)
 
 void ScanSubstWIndex(XScan* Scan, KeyFldD* SK, char Typ)
 {
-	XWKey* k2 = nullptr; KeyD* k = nullptr;
-	KeyFldD* kf = nullptr; KeyFldD* kf2 = nullptr; KeyFldD* kfroot = nullptr;
 	WORD n = 0;
-	k2 = (XWKey*)GetZStore(sizeof(*k2));
+	//k2 = (XWKey*)GetZStore(sizeof(*k2));
+	XWKey* k2 = new XWKey();
 	if (Scan->FD->IsSQLFile && (Scan->Kind == 3)) /*F6-autoreport & sort*/ {
-		k = Scan->Key; n = k->IndexLen; kf = SK;
+		KeyD* k = Scan->Key;
+		n = k->IndexLen; 
+		KeyFldD* kf = SK;
 		while (kf != nullptr) {
-			n += kf->FldD->NBytes; kf = (KeyFldD*)kf->Chain;
+			n += kf->FldD->NBytes; 
+			kf = (KeyFldD*)kf->Chain;
 		}
-		if (n > 255) { WrLLF10Msg(155); ReleaseStore(k2); return; }
-		kf = k->KFlds; kfroot = nullptr;
+		if (n > 255) { 
+			WrLLF10Msg(155); 
+			ReleaseStore(k2); 
+			return; 
+		}
+		kf = k->KFlds; 
+		KeyFldD* kfroot = nullptr;
+		KeyFldD* kf2 = nullptr;
 		while (kf != nullptr) {
-			kf2 = (KeyFldD*)GetStore(sizeof(KeyFldD));
+			//kf2 = (KeyFldD*)GetStore(sizeof(KeyFldD));
+			kf2 = new KeyFldD();
 			*kf2 = *kf;
 			ChainLast(kfroot, kf2);
 			kf = (KeyFldD*)kf->Chain;
 		}
-		kf2->Chain = SK; SK = kfroot;
+		if (kf2 != nullptr)	kf2->Chain = SK; 
+		SK = kfroot;
 	}
 	k2->Open(SK, true, false);
-	CreateWIndex(Scan, k2, Typ); Scan->SubstWIndex(k2);
+	CreateWIndex(Scan, k2, Typ); 
+	Scan->SubstWIndex(k2);
 }
 
 void SortAndSubst(KeyFldD* SK)

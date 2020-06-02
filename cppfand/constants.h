@@ -342,7 +342,7 @@ const WORD FDVersion = 0x0411;
 const WORD ResVersion = 0x0420;
 const char CfgVersion[] = { '4', '.', '2', '0', '\0' };
 const BYTE DMLVersion = 41;
-const WORD NoDayInMonth[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+const WORD NoDayInMonth[13] = { 0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }; // aby mesice byly 1-12
 const bool HasCoproc = true;
 
 const WORD MaxLStrLen = 65000;

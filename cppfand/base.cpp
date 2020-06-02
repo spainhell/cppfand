@@ -437,7 +437,7 @@ void EncodeMask(pstring& Mask, WORD& Min, WORD& Max)
 	Min = 9; Max = 0;
 	for (i = 1; i <= Mask.length(); i++)
 	{
-		for (j = 0; j <= 6; j++) {
+		for (j = 0; j < 7; j++) {
 			if (Mask[i] == Code[j])
 			{
 				Mask[i] = (char)j;
@@ -592,8 +592,9 @@ pstring StrDate(double R, pstring Mask)
 	double MultX[7]{ 0, 0, 0, 24, 1440, 86400, 8640000 };
 	longint DivX[12]{ 0, 0, 0, 1, 60, 3600, 360000, 1, 60, 6000, 1, 100 };
 
-	if (Mask.empty()) Mask = "DD.MM.YY";
-	s = ""; EncodeMask(Mask, min, max); WasMinus = false;
+	s = ""; 
+	EncodeMask(Mask, min, max); 
+	WasMinus = false;
 	if ((R == 0) || (R < 0) && (min < 3)) {
 		for (i = 1; i <= Mask.length(); i++) {
 			if (Mask[i] <= 6) s.Append(' ');
@@ -630,7 +631,7 @@ pstring StrDate(double R, pstring Mask)
 	while (i <= Mask.length())
 	{
 		AnalDateMask(Mask, i, iDate, n);
-		if (n == 0) { s = s + Mask[i]; i++; }
+		if (n == 0) { s.Append(Mask[i]); i++; }
 		else {
 			if (iDate < 3) { 
 				if (iDate == 0)	str(d.Y, x); 

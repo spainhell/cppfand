@@ -75,19 +75,22 @@ void WriteStr(WORD& pos, WORD& base, WORD& maxLen, WORD& maxCol, BYTE sLen, pstr
 		else Buffer[i].Char.AsciiChar = ' ';
 		//BuffLine[i] = *item;
 	}
-	screen.ScrWrCharInfoBuf(cx1 + 1, cy1 + 1, Buffer, maxCol);
-	screen.GotoXY(cx + pos - base, cy + 1);
+	screen.ScrWrCharInfoBuf(cx1, cy1, Buffer, maxCol);
+	screen.GotoXY(cx + pos - base - 1, cy);
 }
 
 WORD EditTxt(pstring* s, WORD pos, WORD maxlen, WORD maxcol, char typ, bool del, bool star, bool upd, bool ret,
 	WORD Delta)
 {
 	auto sLen = &(*s)[0];
-	WORD base, cx, cy, cx1, cy1;
-	longint EndTime; bool InsMode;
+	WORD base = 0, cx = 0, cy = 0, cx1 = 0, cy1 = 0;
+	longint EndTime = 0; bool InsMode = false;
 	InsMode = true; base = 0;
 	if (pos > maxlen + 1) pos = maxlen + 1;
-	cx = screen.WhereX(); cx1 = cx + WindMin.X - 1; cy = screen.WhereY(); cy1 = cy + WindMin.Y - 1;
+	cx = screen.WhereX(); 
+	cx1 = cx + WindMin.X - 1; 
+	cy = screen.WhereY(); 
+	cy1 = cy + WindMin.Y - 1;
 	screen.CrsNorm();
 	WriteStr(pos, base, maxlen, maxcol, *sLen, s, star, cx, cy, cx1, cy1);
 label1:
@@ -273,17 +276,20 @@ void AssignFld(FieldDPtr F, FrmlPtr Z)
 WORD FieldEdit(FieldDPtr F, FrmlPtr Impl, WORD LWw, WORD iPos, pstring* Txt, double& RR, bool del, bool upd, bool ret,
 	WORD Delta)
 {
-	WORD I, N, L, M, Col, Row; char cc;
-	pstring* Mask; pstring* Msk;
+	WORD I = 0, N = 0, L = 0, M = 0, Col = 0, Row = 0; char cc = '\0';
+	pstring* Mask = nullptr; 
+	pstring* Msk = nullptr;
 	pstring s;
-	double r;
+	double r = 0;
 	pstring T;
-	bool b;
+	bool b =  false;
 	WORD result = 0;
 	pstring C999 = "999999999999999";
-	Col = screen.WhereX(); Row = screen.WhereY();
+	Col = screen.WhereX(); 
+	Row = screen.WhereY();
 	if (F->Typ == 'B') {
-		if (*Txt == "") printf(" "); else printf("%s", Txt->c_str());
+		if (*Txt == "") printf(" "); 
+		else printf("%s", Txt->c_str());
 		screen.GotoXY(Col, Row); screen.CrsNorm();
 	label0:
 		GetEvent();
@@ -317,7 +323,7 @@ WORD FieldEdit(FieldDPtr F, FrmlPtr Impl, WORD LWw, WORD iPos, pstring* Txt, dou
 	L = F->L; 
 	M = F->M; 
 	Mask = new pstring(FieldDMask(F));
-	if ((F->Flg && f_Mask != 0) && (F->Typ == 'A')) Msk = Mask; 
+	if (((F->Flg & f_Mask) != 0) && (F->Typ == 'A')) Msk = Mask; 
 	else Msk = nullptr;      /*!!!!*/
 label2:
 	iPos = EditTxt(Txt, iPos, L, LWw, F->Typ, del, false, upd, (F->FrmlTyp == 'S')
@@ -326,7 +332,8 @@ label2:
 	if ((KbdChar == _ESC_) || !upd) return result;
 	del = true; iPos = 1; r = 0;
 	if ((Txt->length() == 0) && (Impl != nullptr)) {
-		AssignFld(F, Impl); DecodeField(F, L, *Txt);
+		AssignFld(F, Impl); 
+		DecodeField(F, L, *Txt);
 	}
 	switch (F->Typ) {
 	case 'F':
@@ -390,7 +397,10 @@ label2:
 void WrPromptTxt(pstring* S, FrmlPtr Impl, FieldDPtr F, pstring* Txt, double& R)
 {
 	WORD x, y, d, LWw; pstring SS, T; double RR; bool BB;
-	WrStyleStr(*S, ProcAttr); T = ""; x = screen.WhereX(); y = screen.WhereY(); d = WindMax.X - WindMin.X + 1;
+	WrStyleStr(*S, ProcAttr); 
+	T = ""; 
+	x = screen.WhereX(); y = screen.WhereY(); 
+	d = WindMax.X - WindMin.X + 1;
 	if (x + F->L - 1 > d) LWw = d - x; else LWw = F->L;  TextAttr = colors.dHili;
 	if (Impl != nullptr) {
 		switch (F->FrmlTyp) {
@@ -788,7 +798,7 @@ void RdEStatus()
 	LockMode md;
 	//Move(&E->FirstEmptyFld, FirstEmptyFld, uintptr_t(SelMode) - uintptr_t(FirstEmptyFld) + 1);
 	// predchozi move nahrazen jednotlivymi polozkami:
-	FirstEmptyFld = &E->FirstEmptyFld;
+	FirstEmptyFld = E->FirstEmptyFld;
 	VK = E->VK;
 	WK = E->WK;
 	BaseRec = E->BaseRec;
@@ -809,9 +819,11 @@ void RdEStatus()
 	if (VK == nullptr) OnlySearch = false;
 	CFile = E->FD; 
 	CRecPtr = E->NewRecPtr; 
-	//CFld = E->CFld;
-	if (CFile->XF != nullptr) HasIndex = true; else HasIndex = false;
-	if (CFile->TF != nullptr) HasTF = true; else HasTF = false;
+	// TODO: CFld = E->CFld; // pokud je povoleno, spusteni spadne v SetCPage()
+	if (CFile->XF != nullptr) HasIndex = true; 
+	else HasIndex = false;
+	if (CFile->TF != nullptr) HasTF = true; 
+	else HasTF = false;
 	SetCPage();
 }
 
@@ -922,14 +934,17 @@ void DisplBool()
 	}
 }
 
+// zobrazi zaznamy v editoru
 void DisplAllWwRecs()
 {
-	WORD i = 0, n = 0; LockMode md = NullMode;
-	n = E->NRecs;
+	LockMode md = NullMode;
+	WORD n = E->NRecs; // pocet zaznamu k zobrazeni (na strance)
 	if ((n > 1) && !EdRecVar) md = NewLMode(RdMode);
 	AdjustCRec();
 	if (!IsNewRec && !WasUpdated) RdRec(CRec());
-	for (i = 1; i < n; i++) DisplRec(i);
+	for (WORD i = 1; i <= n; i++) { 
+		DisplRec(i); 
+	}
 	IVon();
 	if ((n > 1) && !EdRecVar) OldLMode(md);
 }
@@ -2593,8 +2608,8 @@ label6:
 
 bool EditItemProc(bool del, bool ed, WORD& Brk)
 {
-	FieldDPtr F; pstring Txt; double R; bool b; ChkD* C; WORD wd;
-	F = CFld->FldD;
+	pstring Txt; double R = 0; bool b = false; ChkD* C = nullptr; WORD wd = 0;
+	FieldDescr* F = CFld->FldD;
 	auto result = true;
 	if (F->Typ == 'T') {
 		if (!EditFreeTxt(F, "", ed, Brk)) {
@@ -3133,15 +3148,25 @@ void DisplLL()
 void DisplCtrlAltLL(WORD Flags)
 {
 	if (Flags && 0x04 != 0) {        /* Ctrl */
-		if (E->CtrlLast != nullptr) { MsgLine = E->CtrlLast; WrLLMsgTxt(); }
+		if (E->CtrlLast != nullptr) { 
+			MsgLine = E->CtrlLast; 
+			WrLLMsgTxt(); 
+		}
 		else if (IsCurrChpt) WrLLMsg(125);
-		else if (EdRecVar) WrLLMsg(154); else WrLLMsg(127);
+		else if (EdRecVar) WrLLMsg(154); 
+		else WrLLMsg(127);
 	}
 	else if (Flags && 0x03 != 0)         /* Shift */
-		if (E->ShiftLast != nullptr) { MsgLine = E->ShiftLast; WrLLMsgTxt(); }
+		if (E->ShiftLast != nullptr) { 
+			MsgLine = E->ShiftLast; 
+			WrLLMsgTxt(); 
+		}
 		else DisplLL();
 	else if (Flags && 0x08 != 0)          /* Alt */
-		if (E->AltLast != nullptr) { MsgLine = E->AltLast; WrLLMsgTxt(); }
+		if (E->AltLast != nullptr) { 
+			MsgLine = E->AltLast; 
+			WrLLMsgTxt(); 
+		}
 		else DisplLL();
 }
 
@@ -3152,14 +3177,19 @@ void DisplLLHlp()
 	}
 }
 
+// po nacteni editoru se smycka drzi tady a ceka na stisknuti klavesy
 void CtrlReadKbd()
 {
-	longint TimeBeg; WORD D; BYTE flgs;
-	flgs = 0;
+	BYTE flgs = 0;
+	longint TimeBeg = TimerRE;
+	WORD D = 0;
 	TestEvent();
 	if (Event.What == evKeyDown || Event.What == evMouseDown) goto label2;
-	ClrEvent(); if (NewDisplLL) { DisplLL(); NewDisplLL = false; }
-	TimeBeg = TimerRE; D = 0;
+	ClrEvent(); 
+	if (NewDisplLL) { 
+		DisplLL(); 
+		NewDisplLL = false; 
+	}
 	if (CFile->NotCached()) {
 		if (!E->EdRecVar && ((spec.ScreenDelay == 0) || (E->RefreshDelay < spec.ScreenDelay)))
 			D = E->RefreshDelay;
@@ -3176,15 +3206,26 @@ label1:
 	label11:
 		DisplCtrlAltLL(flgs);
 	}
-	else { DisplLL(); flgs = 0; if (F1Mode && !Mode24) DisplLLHlp(); }
-	if (D > 0)
-		if (TimerRE >= TimeBeg + D) goto label2; else WaitEvent(TimeBeg + D - TimerRE);
+	else { 
+		DisplLL(); 
+		flgs = 0; 
+		if (F1Mode && !Mode24) DisplLLHlp(); 
+	}
+	if (D > 0) {
+		if (TimerRE >= TimeBeg + D) goto label2;
+		else WaitEvent(TimeBeg + D - TimerRE);
+	}
 	else WaitEvent(0);
 	if (!(Event.What == evKeyDown || Event.What == evMouseDown)) {
-		ClrEvent(); goto label1;
+		ClrEvent(); 
+		goto label1;
 	}
 label2:
-	if (flgs != 0) { LLKeyFlags = 0; DisplLL(); AddCtrlAltShift(flgs); }
+	if (flgs != 0) { 
+		LLKeyFlags = 0; 
+		DisplLL(); 
+		AddCtrlAltShift(flgs); 
+	}
 }
 
 void MouseProc()
@@ -3242,15 +3283,19 @@ void GoStartFld(EFldD* SFld)
 
 void RunEdit(XString* PX, WORD& Brk)
 {
-	WORD i, LongBeep, w; bool Displ, b; EdExitD* X;
-	longint OldTimeW, OldTimeR, n; BYTE EdBr;
+	WORD i = 0, LongBeep = 0, w = 0; bool Displ = false, b = false; 
+	EdExitD* X = nullptr;
+	longint OldTimeW = 0, OldTimeR = 0, n = 0; 
+	BYTE EdBr = 0;
 	longint Timer = 0; // pùvodnì: Timer:longint absolute 0:$46C;
 
-	Brk = 0; DisplLL();
+	Brk = 0; 
+	DisplLL();
 	if (OnlySearch) goto label2;
 	if (!IsNewRec && (PX != nullptr)) GotoXRec(PX, n);
 	if (Select && !RunBool(E->Bool)) GoPrevNextRec(+1, true);
-	if (/*E->StartFld != nullptr*/ true) { GoStartFld(&E->StartFld); goto label1; }
+	//if (/*E->StartFld != nullptr*/ true) { GoStartFld(&E->StartFld); goto label1; }
+	if (E->StartFld != nullptr) { GoStartFld(E->StartFld); goto label1; }
 label0:
 	if (!CtrlMProc(0)) goto label7;
 label1:
@@ -3258,7 +3303,8 @@ label1:
 label8:
 	OldTimeW = Timer;
 label81:
-	OldTimeR = Timer; CtrlReadKbd();
+	OldTimeR = Timer; 
+	CtrlReadKbd();
 	if (CFile->NotCached()) {
 		if (!EdRecVar && (E->RefreshDelay > 0) && (OldTimeR + E->RefreshDelay < Timer))
 			DisplAllWwRecs();
@@ -3276,7 +3322,8 @@ label81:
 	case evMouseDown: {
 		if (F1Mode && (CRdb->HelpFD != nullptr) && (Mode24 && (Event.Where.Y == TxtRows - 2) ||
 			!Mode24 && (Event.Where.Y == TxtRows - 1))) {
-			ClrEvent(); FieldHelp();
+			ClrEvent(); 
+			FieldHelp();
 		}
 		else MouseProc();
 		break;
@@ -3290,7 +3337,7 @@ label81:
 		case 2:/*exit*/ goto label1; break;
 		}
 		switch (KbdChar) {
-		case _F1_: { RdMsg(7); Help((RdbDPtr)(&HelpFD), MsgLine, false); break; }
+		case _F1_: { RdMsg(7); Help((RdbD*)&HelpFD, MsgLine, false); break; }
 		case _CtrlF1_: FieldHelp(); break;
 		case _AltF10_: Help(nullptr, "", false); break;
 		case _ESC_: {
@@ -3363,7 +3410,7 @@ label81:
 		label4:
 			if (IsNewRec && (FirstEmptyFld != nullptr))
 				GotoRecFld(CRec(), FirstEmptyFld);
-			else GotoRecFld(CRec(), &E->LastFld);
+			else GotoRecFld(CRec(), E->LastFld);
 			break;
 		case _M_:
 			if (SelMode && (E->SelKey != nullptr) && !IsNewRec) {
@@ -3461,7 +3508,7 @@ label81:
 							GotoRecFld(1, E->FirstFld); break;
 						case _CtrlPgDn_:
 						label6:
-							GotoRecFld(CNRecs(), &E->LastFld); break;
+							GotoRecFld(CNRecs(), E->LastFld); break;
 						case _CtrlLeft_:
 							if (CRec() > 1) SwitchRecs(-1); break;
 						case _CtrlRight_:
@@ -3566,18 +3613,3 @@ label2:
 	PopEdit(); 
 	ReleaseStore(p);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

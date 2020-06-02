@@ -2120,15 +2120,19 @@ label1:
 		else if (IsKeyWord("STRING")) { typ = 'S'; n = sizeof(longint); }
 		else if (IsKeyWord("BOOLEAN")) { typ = 'B'; n = sizeof(bool); }
 		else Error(39);
-		lv = (LocVar*)GetZStore(sizeof(*lv) - 1 + (fc->Name).length());
+		//lv = (LocVar*)GetZStore(sizeof(*lv) - 1 + (fc->Name).length());
+		lv = new LocVar();
 		ChainLast(LVBD.Root, lv);
 		Move(&fc->Name, &lv->Name, (fc->Name).length() + 1);
 		/* !!! with lv^ do!!! */
 		{ lv->FTyp = typ; lv->Op = _getlocvar; lv->BPOfs = LVBD.Size; }
 		fc->FTyp = typ; LVBD.Size += n;
 		Accept(';');
-		if (IsKeyWord("VAR")) RdLocDcl(&LVBD, false, false, 'D'); fc->LVB = LVBD;
-		AcceptKeyWord("BEGIN"); fc->Instr = RdBeginEnd; Accept(';');
+		if (IsKeyWord("VAR")) RdLocDcl(&LVBD, false, false, 'D'); 
+		fc->LVB = LVBD;
+		AcceptKeyWord("BEGIN"); 
+		fc->Instr = RdBeginEnd; 
+		Accept(';');
 	}
 	else if (Lexem == 0x1A) return;
 	else Error(40);
