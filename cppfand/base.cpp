@@ -1417,6 +1417,7 @@ void NewExit(PProcedure POvr, ExitRecord* Buf)
 void GoExit()
 {
 	printf("%s\n", MsgLine.c_str());
+	throw std::exception("GoExit()");
 }
 
 void RestoreExit(ExitRecord& Buf)

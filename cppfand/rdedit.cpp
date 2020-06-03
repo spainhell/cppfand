@@ -49,15 +49,20 @@ ERecTxtD* StoreRT(WORD Ln, StringList SL, WORD NFlds)
 
 void RdEForm(FileD* ParFD, RdbPos FormPos)
 {
-	EFldD* D; EFldD* D1; EFldD* PrevD; FieldDPtr F; FieldList FL; StringList SLRoot;
-	pstring s; WORD NPages, Col, Ln, Max, M, N, NFlds, i; FileDPtr FD1;
-	bool comment; char c; BYTE a;
-	SetInpTT(FormPos, true); N = 0; Max = 0;
+	EFldD* D = nullptr; EFldD* D1 = nullptr; EFldD* PrevD = nullptr; 
+	FieldDescr* F = nullptr; FieldListEl* FL = nullptr; 
+	FileD* FD1 = nullptr;
+	StringListEl* SLRoot = nullptr;
+	pstring s; 
+	WORD NPages = 0, Col = 0, Ln = 0, Max = 0, M = 0, N = 0, NFlds = 0, i = 0;
+	bool comment = false; char c = '\0'; BYTE a = 0;
+	SetInpTT(FormPos, true);
 label1:
 	s = "";
 	while (!(ForwChar == '#' || ForwChar == 0x1A || ForwChar == 0x0D || ForwChar == '{')) {
 		/* read headlines */
-		s = s + ForwChar; ReadChar();
+		s.Append(ForwChar); 
+		ReadChar();
 	}
 	switch (ForwChar) {
 	case 0x1A: Error(76); break;
@@ -66,76 +71,116 @@ label1:
 	}
 	ReadChar();
 	if (ForwChar == 0x0A) ReadChar();
-	SToSL(E->HdTxt, s); E->NHdTxt++;
-	if (E->NHdTxt + 1 > E->Rows) Error(102); goto label1;
+	SToSL(E->HdTxt, s); 
+	E->NHdTxt++;
+	if (E->NHdTxt + 1 > E->Rows) Error(102); 
+	goto label1;
 	/* read field list */
 label2:
-	ReadChar(); ReadChar(); Lexem = CurrChar; Accept('_'); FD1 = RdFileName();
-	if (ParFD == nullptr) CFile = FD1; else CFile = ParFD;
+	ReadChar(); ReadChar(); 
+	Lexem = CurrChar; 
+	Accept('_'); 
+	FD1 = RdFileName();
+	if (ParFD == nullptr) CFile = FD1; 
+	else CFile = ParFD;
 	E->FD = CFile;
 label3:
-	N++; D = (EFldD*)GetZStore(sizeof(*D));
+	N++; 
+	//D = (EFldD*)GetZStore(sizeof(*D));
+	D = new EFldD();
 	if (Lexem == _number) {
-		M = RdInteger(); if (M == 0) OldError(115); Accept(':'); D->ScanNr = M;
+		M = RdInteger(); 
+		if (M == 0) OldError(115); 
+		Accept(':'); 
+		D->ScanNr = M;
 	}
 	else D->ScanNr = N;
-	D1 = FindScanNr(D->ScanNr); ChainLast(E->FirstFld, D);
+	D1 = FindScanNr(D->ScanNr); 
+	if (E->FirstFld == nullptr) E->FirstFld = D;
+	else ChainLast(E->FirstFld, D);
 	if ((D1 != nullptr) && (D->ScanNr == D1->ScanNr)) Error(77);
-	F = RdFldName(CFile); D->FldD = F;
-	FL = (FieldListEl*)GetStore(sizeof(*FL));
-	FL->FldD = F; ChainLast(E->Flds, FL);
+	F = RdFldName(CFile); 
+	D->FldD = F;
+	//FL = (FieldListEl*)GetStore(sizeof(*FL));
+	FL = new FieldListEl();
+	FL->FldD = F; 
+	if (E->Flds == nullptr) E->Flds == FL;
+	else ChainLast(E->Flds, FL);
 	if (Lexem == ',') { RdLex(); goto label3; }
-	TestLex(';'); SkipBlank(true);
+	TestLex(';'); 
+	SkipBlank(true);
 	/* read record lines */
-	D = E->FirstFld; NPages = 0;
+	D = E->FirstFld; 
+	NPages = 0;
 label4:
 	NPages++; Ln = 0; NFlds = 0; SLRoot = nullptr;
 label5:
-	s = ""; Ln++; Col = E->FrstCol;
+	s = ""; Ln++; 
+	Col = E->FrstCol;
 	while (!(ForwChar == 0x0D || ForwChar == 0x1A || ForwChar == '\\' || ForwChar == '{'))
 		if (ForwChar == '_') {
 			if (D == nullptr) Error(30); NFlds++;
 			D->Col = Col; D->Ln = Ln; D->Page = NPages; M = 0;
 			while (ForwChar == '_') {
-				s = s + ' '; M++; Col++; ReadChar();
+				s.Append(' '); 
+				M++; Col++; 
+				ReadChar();
 			}
-			F = D->FldD; D->L = F->L; if (F->Typ == 'T') D->L = 1;
+			F = D->FldD; D->L = F->L; 
+			if (F->Typ == 'T') D->L = 1;
 			if ((F->Typ == 'A') && (M < F->L)) D->L = M;
 			else if (M != D->L) {
-				str(D->L, 2, s); Set2MsgPar(s, F->Name); Error(79);
+				str(D->L, 2, s); 
+				Set2MsgPar(s, F->Name); 
+				Error(79);
 			}
 			if (Col > E->LastCol) Error(102);
 			D = (EFldD*)D->Chain;
 		}
 		else {
 			if (!SetStyleAttr(ForwChar, a)) {
-				if (Col > E->LastCol) Error(102); Col++;
+				if (Col > E->LastCol) Error(102); 
+				Col++;
 			}
-			s = s + ForwChar; ReadChar();
+			s.Append(ForwChar); 
+			ReadChar();
 		}
-	SToSL(SLRoot, s); c = ForwChar; if (c == '\\') ReadChar();
+	SToSL(SLRoot, s); 
+	c = ForwChar; 
+	if (c == '\\') ReadChar();
 	SkipBlank(true);
-	if (ForwChar != 0x1A)
+	if (ForwChar != 0x1A) {
 		if ((c == '\\') || (E->NHdTxt + Ln == E->Rows)) {
-			StoreRT(Ln, SLRoot, NFlds); goto label4;
+			StoreRT(Ln, SLRoot, NFlds);
+			goto label4;
 		}
 		else goto label5;
-	StoreRT(Ln, SLRoot, NFlds); E->NPages = NPages;
+	}
+	StoreRT(Ln, SLRoot, NFlds); 
+	E->NPages = NPages;
 
 	if (D != nullptr) Error(30);
-	D = FindScanNr(1); D->ChainBack = nullptr;
-	for (i = 2; i < N; i++) {
-		PrevD = D; D = FindScanNr(D->ScanNr + 1); D->ChainBack = PrevD;
+	D = FindScanNr(1); 
+	D->ChainBack = nullptr;
+	for (i = 2; i <= N; i++) {
+		PrevD = D; 
+		D = FindScanNr(D->ScanNr + 1); 
+		D->ChainBack = PrevD;
 	}
-	E->LastFld = D; PrevD = nullptr;
-	while (D != nullptr) { D->Chain = PrevD; PrevD = D; D = D->ChainBack; }
+	E->LastFld = D; 
+	PrevD = nullptr;
+	while (D != nullptr) {
+		D->Chain = PrevD; 
+		PrevD = D; 
+		D = D->ChainBack; }
 	E->FirstFld = PrevD;
 }
 
 EFldD* FindScanNr(WORD N)
 {
-	EFldD* D; EFldD* D1; WORD M;
-	D = E->FirstFld; M = 0xffff; D1 = nullptr;
+	EFldD* D = E->FirstFld; 
+	EFldD* D1 = nullptr;
+	WORD M = 0xffff;
 	while (D != nullptr) {
 		if ((D->ScanNr >= N) && (D->ScanNr < M)) { M = D->ScanNr; D1 = D; }
 		D = (EFldD*)D->Chain;

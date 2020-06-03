@@ -194,7 +194,7 @@ void WrLLMsgTxt()
 
 void WrLLF10MsgLine()
 {
-	WORD col, row, len;
+	WORD col = 0, row = 0, len = 0;
 
 	row = TxtRows - 1;
 	CHAR_INFO* Buf = new CHAR_INFO[TxtCols];
@@ -259,7 +259,7 @@ void RunError(WORD N)
 {
 	RunErrNr = N;
 	ClearKbdBuf();
-	//WrLLF10Msg(RunErrNr);
+	WrLLF10Msg(RunErrNr);
 	GoExit();
 }
 

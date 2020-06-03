@@ -302,9 +302,10 @@ FrmlPtr RdFunctionP(char& FFTyp)
 			if (KF == nullptr) OldError(176);
 			while (KF != nullptr) {
 				Accept(','); 
-				N++;
-				if (N > 30) Error(123);
+				if (N > 29) Error(123);
+				if (N > 2) throw std::exception("O par radku niz je Move do Z->Arg, ale kapacita je jen 2 -> nutno doresit");
 				Arg[N] = RdFrml(Typ);
+				N++;
 				if (Typ != KF->FldD->FrmlTyp) OldError(12);
 				KF = (KeyFldD*)KF->Chain;
 			}
@@ -316,7 +317,7 @@ FrmlPtr RdFunctionP(char& FFTyp)
 		Z = GetOp(Op, (N + 2) * 4);
 		Z->FD = FD; 
 		Z->Key = K;
-		Move(Arg[0], Z->Arg[0], 4 * N);
+		Move(Arg, Z->Arg, 4 * N);
 		//Z->Arg = Arg;
 		if (FTyp == 'R') goto label2;
 	}
@@ -1144,7 +1145,7 @@ Instr* RdSortCall()
 #endif
 	Accept(',');
 	Accept('(');
-	RdKFList(PD->SK, PD->SortFD);
+	RdKFList(&PD->SK, PD->SortFD);
 	Accept(')');
 	return PD;
 }
@@ -1313,7 +1314,7 @@ void RdRprtOpt(RprtOpt* RO, bool HasFrst)
 		if (!HasFrst)
 			label2:
 		OldError(51);
-		Accept('('); RdKFList(RO->SK, CFile); Accept(')');
+		Accept('('); RdKFList(&RO->SK, CFile); Accept(')');
 	}
 	else if (IsOpt("HEAD")) RO->Head = RdStrFrml();
 	else Error(45);
@@ -1620,7 +1621,7 @@ void RdGetIndex()
 		if (IsOpt("SORT")) {
 			if (WKeyDPtr(lv->RecPtr)->KFlds != nullptr) OldError(175);
 			Accept('(');
-			RdKFList(PD->giKFlds, CFile); Accept(')');
+			RdKFList(&PD->giKFlds, CFile); Accept(')');
 		}
 		else if (IsOpt("COND")) {
 			Accept('(');

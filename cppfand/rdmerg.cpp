@@ -208,7 +208,7 @@ void ReadMerge()
 		}
 		//New(ID->Scan, Init(FD, CViewKey, KI, true));
 		ID->Scan = new XScan(FD, CViewKey, KI, true);
-		if (!(Lexem == ';' || Lexem == '#' || Lexem == 0x1A)) RdKFList(ID->MFld, FD);
+		if (!(Lexem == ';' || Lexem == '#' || Lexem == 0x1A)) RdKFList(&ID->MFld, FD);
 		if (Ii > 1) {
 			if (IDA[Ii - 1]->MFld == nullptr) {
 				if (ID->MFld != nullptr) OldError(22);
@@ -311,7 +311,7 @@ void RdAutoSortSK_M(InpD* ID)
 		Move(M, SK, sizeof(SK));
 		ChainLast(ID->SK, SK); M = (KeyFldD*)M->Chain;
 	}
-	if (Lexem == ';') { RdLex(); RdKFList(ID->SK, CFile); }
+	if (Lexem == ';') { RdLex(); RdKFList(&ID->SK, CFile); }
 	if (ID->SK == nullptr) OldError(60);
 }
 

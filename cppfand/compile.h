@@ -66,7 +66,7 @@ FrmlPtr RdRealFrml();
 FrmlPtr RdStrFrml();
 KeyDPtr RdViewKey(); // r238
 KeyFldD* RdKF(FileD* FD);
-WORD RdKFList(KeyFldD* KFRoot, FileD* FD); // r298
+WORD RdKFList(KeyFldD** KFRoot, FileD* FD); // r298
 bool IsKeyArg(FieldDPtr F, FileDPtr FD); // r278
 void CompileRecLen();
 void* SaveCompState(); // r104

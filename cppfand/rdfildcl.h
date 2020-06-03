@@ -4,7 +4,7 @@
 extern bool HasTT;
 FieldDPtr RdFldDescr(pstring Name, bool Stored); // r25
 ChkD* RdChkD(WORD Low);
-void RdChkDChain(ChkD* CRoot);
+void RdChkDChain(ChkD** CRoot);
 void RdChkDsFromPos(FileD* FD, ChkD* C); // r98
 void RdBegViewDcl(EditOpt* EO); // r110
 void RdByteList(pstring* s);
@@ -24,7 +24,7 @@ KeyD* RdFileOrAlias1(FileD* F);
 void RdFileOrAlias(FileD* FD, KeyD* KD);
 void SetLDIndexRoot(LinkD* L, LinkD* L2);
 void TestDepend();
-void RdImpl(ImplD* IDRoot);
+void RdImpl(ImplD** IDRoot);
 void RdKumul();
 void RdRoleField(AddDPtr AD);
 void RdImper(AddDPtr AD);

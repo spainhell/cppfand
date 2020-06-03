@@ -703,15 +703,15 @@ KeyFldD* RdKF(FileD* FD)
 	return result;
 }
 
-WORD RdKFList(KeyFldD* KFRoot, FileD* FD)
+WORD RdKFList(KeyFldD** KFRoot, FileD* FD)
 {
 	WORD n = 0; KeyFldD* KF = nullptr;
 label1:
-	if (KFRoot == nullptr) KFRoot = RdKF(FD);
-	else ChainLast(KFRoot, RdKF(FD));
+	if (*KFRoot == nullptr) *KFRoot = RdKF(FD);
+	else ChainLast(*KFRoot, RdKF(FD));
 	if (Lexem == ',') { RdLex(); goto label1; }
 	n = 0; 
-	KF = KFRoot;   /*looping over all fields, !only the last read*/
+	KF = *KFRoot;   /*looping over all fields, !only the last read*/
 	while (KF != nullptr) 
 	{ 
 		if (KF->FldD != nullptr) n += KF->FldD->NBytes;
@@ -811,7 +811,7 @@ label1:
 			AcceptKeyWord("OF"); cf = CFile; cr = CRecPtr; CFile = RdFileName();
 			if (typ == 'i') {
 				if (CFile->Typ != 'X') OldError(108); kf1 = nullptr;
-				if (Lexem == '(') { RdLex(); RdKFList(kf1, CFile); Accept(')'); }
+				if (Lexem == '(') { RdLex(); RdKFList(&kf1, CFile); Accept(')'); }
 			}
 			while (lv != nullptr) {
 				lv->FTyp = typ; lv->FD = CFile;
