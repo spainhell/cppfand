@@ -36,7 +36,11 @@ bool EFldD::Ed(bool IsNewRec)
 
 void ResetLVBD()
 {
-	FillChar(&LVBD, sizeof(LVBD), 0); LVBD.Size = 2 * 4;
+	//FillChar(&LVBD, sizeof(LVBD), 0); 
+	LVBD.Chain = nullptr;
+	LVBD.Root = nullptr;
+	LVBD.NParam = 0;
+	LVBD.Size = 2 * 4;
 }
 
 void SetMyBP(ProcStkPtr Bp)

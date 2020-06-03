@@ -32,6 +32,7 @@ public:
 	Chained* Chain = nullptr;
 };
 
+bool IsLetter(char C); // r4
 void MyMove(void* A1, void* A2, WORD N);
 void ChainLast(Chained* Frst, Chained* New); // r13 ASM
 Chained* LastInChain(Chained* Frst); // r18 ASM

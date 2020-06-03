@@ -1520,7 +1520,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 				label2:
 					p1 = RdF(&Name);
 					// TODO: toto se asi zase musí povolit !!! 
-					WrFDSegment(I);
+					// WrFDSegment(I);
 					if (CFile->IsHlpFile) CRdb->HelpFD = CFile;
 					if (OldTxt > 0)
 						MergeOldNew(Verif, OldTxt); ReleaseStore(p1);
@@ -1570,7 +1570,10 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 				}
 				break;
 			}
-			case 'D': { ResetCompilePars(); SetInpTTPos(Txt, Encryp); ReadDeclChpt();
+			case 'D': { 
+				ResetCompilePars(); 
+				SetInpTTPos(Txt, Encryp); 
+				ReadDeclChpt();
 				MarkStore(p1);
 				break;
 			}

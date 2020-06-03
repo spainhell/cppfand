@@ -472,11 +472,15 @@ void RdKeyD()
 		else {
 			Name = "";
 		label1:
-			K = (KeyDPtr)GetZStore(sizeof(*K));
-			K1 = (KeyDPtr)(&CFile->Keys); N = 1;
+			//K = (KeyDPtr)GetZStore(sizeof(*K));
+			K = new XKey();
+			K1 = (XKey*)(&CFile->Keys); 
+			N = 1;
 			while (K1->Chain != nullptr) { K1 = K1->Chain; N++; }
-			K1->Chain = K; K->Alias = StoreStr(Name);
-			K->Intervaltest = false; K->Duplic = false;
+			K1->Chain = K; 
+			K->Alias = StoreStr(Name);
+			K->Intervaltest = false; 
+			K->Duplic = false;
 			if (Lexem == _le) { K->Intervaltest = true; RdLex(); }
 			else if (Lexem == '*') {
 #ifdef FandSQL
@@ -746,7 +750,8 @@ void GetXFileD()
 	/* !!! with CFile^ do!!! */
 	if (CFile->Typ != 'X') { if (CFile->XF != nullptr) OldError(104); }
 	else {
-		if (CFile->XF == nullptr) CFile->XF = (XFile*)GetZStore(sizeof(XFile));
+		//if (CFile->XF == nullptr) CFile->XF = (XFile*)GetZStore(sizeof(XFile));
+		if (CFile->XF == nullptr) CFile->XF = new XFile();
 		CFile->XF->Handle = nullptr;
 	}
 }

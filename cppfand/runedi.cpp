@@ -236,9 +236,9 @@ label1:
 		switch ((*Mask)[j]) {
 		case '#':
 		case '9': if (!isdigit(c)) goto label3; break;
-		case '@': if (!isalpha(c)) goto label3; break;
+		case '@': if (!IsLetter(c)) goto label3; break;
 		case '?':
-		case '$': { if (!isalpha(c)) goto label3;
+		case '$': { if (!IsLetter(c)) goto label3;
 				else goto label2; break; }
 		case '!':
 		label2:

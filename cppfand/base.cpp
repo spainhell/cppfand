@@ -677,6 +677,15 @@ double DifMonth(double R1, double R2)
 	return 0.0;
 }
 
+bool IsLetter(char C)
+{
+	if (C >= 'a' && C <= 'z') return true;
+	if (C >= 'A' && C <= 'Z') return true;
+	if (C == '_') return true;
+	if (C < 0) return true; // ekviv. >= 0x80;
+	return false;
+}
+
 void MyMove(void* A1, void* A2, WORD N)
 {
 }

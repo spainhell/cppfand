@@ -1433,7 +1433,7 @@ void GetRecNoXString(FrmlPtr Z, XString& X)
 	KeyFldDPtr kf = Z->Key->KFlds;
 	while (kf != nullptr) {
 		i++;
-		FrmlPtr zz = Z->Arg[i];
+		FrmlElem* zz = Z->Arg[i];
 		switch (kf->FldD->FrmlTyp) {
 		case 'S': X.StoreStr(RunShortStr(zz), kf); break;
 		case 'R': X.StoreReal(RunReal(zz), kf); break;

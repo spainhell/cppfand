@@ -211,7 +211,7 @@ label1:
 void RdForwName(pstring& s)
 {
 	s[0] = 0;
-	while ((s.length() < 12) && (isalpha(ForwChar) || isdigit(ForwChar)))
+	while ((s.length() < 12) && (IsLetter(ForwChar) || isdigit(ForwChar)))
 	{
 		s[0]++; s[s.length()] = ForwChar; ReadChar();
 	}
@@ -354,26 +354,32 @@ void RdBackSlashCode()
 
 void RdLex()
 {
-	WORD i;
 	OldErrPos = CurrPos;
 	SkipBlank(false);
 	ReadChar();
 	Lexem = CurrChar;
-	if (std::isalpha(CurrChar))
+	if (IsLetter(CurrChar))
 	{
-		Lexem = _identifier; LexWord[1] = CurrChar; i = 1;
-		while (isalpha(ForwChar) || isdigit(ForwChar))
+		Lexem = _identifier; LexWord[1] = CurrChar; 
+		WORD i = 1;
+		while (IsLetter(ForwChar) || isdigit(ForwChar))
 		{
-			i++; if (i > 32) Error(2); ReadChar(); LexWord[i] = CurrChar;
+			i++; if (i > 32) Error(2); 
+			ReadChar(); 
+			LexWord[i] = CurrChar;
 		}
 		LexWord[0] = char(i);
+		LexWord[i + 1] = '\0';
 	}
 	else if (isdigit(CurrChar))
 	{
-		Lexem = _number; LexWord[1] = CurrChar; i = 1;
+		Lexem = _number; LexWord[1] = CurrChar; 
+		WORD i = 1;
 		while (isdigit(ForwChar))
 		{
-			i++; if (i > 15) Error(6); ReadChar(); LexWord[i] = CurrChar;
+			i++; if (i > 15) Error(6); 
+			ReadChar(); 
+			LexWord[i] = CurrChar;
 		}
 		LexWord[0] = char(i);
 	}
@@ -499,15 +505,18 @@ double RdRealConst()
 label1:
 	if ((ForwChar == '.' || ForwChar == ':')) {
 		RdLex();
-		if ((Lexem != _subrange) && (ForwChar >= 0 && ForwChar <= 9)) {
-			S = S + Lexem; RdLex(); S = S + LexWord;
+		if ((Lexem != _subrange) && (ForwChar >= '0' && ForwChar <= '9')) {
+			S.Append(Lexem); 
+			RdLex(); 
+			S = S + LexWord;
 			goto label1;
 		}
 		return ValofS(S);
 	}
 	if ((ForwChar == 'e' || ForwChar == 'E')
-		&& (InpArrPtr[CurrPos + 1] == '-' || (ForwChar >= 0 && ForwChar <= 9))) {
-		S = S + "e"; ReadChar(); if (ForwChar == '-') { ReadChar(); S = S + "-"; }
+		&& (InpArrPtr[CurrPos + 1] == '-' || (InpArrPtr[CurrPos + 1] >= 0 && InpArrPtr[CurrPos + 1] <= 9))) {
+		S.Append('e'); ReadChar(); 
+		if (ForwChar == '-') { ReadChar(); S.Append('-'); }
 		RdLex(); TestLex(_number); S = S + LexWord;
 	}
 	RdLex();
@@ -644,9 +653,9 @@ char RdQuotedChar()
 bool IsIdentifStr(pstring& S)
 {
 	WORD i;
-	if ((S.length() == 0) || !isalpha(S[1])) return false;
+	if ((S.length() == 0) || !IsLetter(S[1])) return false;
 	for (i = 2; i < S.length(); i++) {
-		if (!(isalpha(S[i]) || isdigit(S[i]))) return false;
+		if (!(IsLetter(S[i]) || isdigit(S[i]))) return false;
 	}
 	return true;
 }
@@ -662,9 +671,8 @@ void RestoreCompState(void* p)
 
 LocVar* RdVarName(LocVarBlkD* LVB, bool IsParList)
 {
-	LocVar* lv;
 	TestIdentif();
-	lv = LVB->Root;
+	LocVar* lv = LVB->Root;
 	while (lv != nullptr) {
 		if (EquUpcase(lv->Name, LexWord)) Error(26);
 		lv = (LocVar*)lv->Chain;
@@ -699,7 +707,8 @@ WORD RdKFList(KeyFldD* KFRoot, FileD* FD)
 {
 	WORD n = 0; KeyFldD* KF = nullptr;
 label1:
-	ChainLast(KFRoot, RdKF(FD));
+	if (KFRoot == nullptr) KFRoot = RdKF(FD);
+	else ChainLast(KFRoot, RdKF(FD));
 	if (Lexem == ',') { RdLex(); goto label1; }
 	n = 0; 
 	KF = KFRoot;   /*looping over all fields, !only the last read*/
@@ -713,11 +722,13 @@ label1:
 
 void RdLocDcl(LocVarBlkD* LVB, bool IsParList, bool WithRecVar, char CTyp)
 {
-	LocVar* lv; FrmlPtr Z; pstring s; double r; char typ, lx, fc; WORD sz, n;
+	LocVar* lv = nullptr; FrmlElem* Z = nullptr; 
+	pstring s; double r = 0; char typ = '\0', lx = '\0', fc = '\0'; 
+	WORD sz = 0, n = 0;
 	FileD* cf = nullptr; FileD* fd = nullptr;
 	void* cr = nullptr; void* p = nullptr; XWKey* k = nullptr; bool rp = false;
 	KeyFldD* kf = nullptr; KeyFldD* kf1 = nullptr;
-	char FDTyp;
+	char FDTyp = '\0';
 label1:
 	rp = false;
 	if (IsParList && IsKeyWord("VAR")) {
@@ -1287,21 +1298,34 @@ label1:
 
 FrmlPtr RdAdd(char& FTyp)
 {
-	FrmlPtr Z, Z1;
+	FrmlElem* Z = nullptr;
+	FrmlElem* Z1 = nullptr;
 	Z = RdMult(FTyp);
 label1:
 	switch (Lexem) {
 	case '+': { Z1 = Z;
 		if (FTyp == 'R') { Z = GetOp(_plus, 0); goto label2; }
 		else {
-			Z = GetOp(_concat, 0); TestString(FTyp); RdLex(); Z->P1 = Z1;
-			Z->P2 = RdMult(FTyp); TestString(FTyp); goto label1;
+			Z = GetOp(_concat, 0); 
+			TestString(FTyp); 
+			RdLex(); 
+			Z->P1 = Z1;
+			Z->P2 = RdMult(FTyp); 
+			TestString(FTyp); 
+			goto label1;
 		}
 		break;
 	}
-	case '-': { Z1 = Z; Z = GetOp(_minus, 0); TestReal(FTyp);
+	case '-': { 
+		Z1 = Z; 
+		Z = GetOp(_minus, 0); 
+		TestReal(FTyp);
 	label2:
-		RdLex(); Z->P1 = Z1; Z->P2 = RdMult(FTyp); TestReal(FTyp); goto label1;
+		RdLex();
+		Z->P1 = Z1; 
+		Z->P2 = RdMult(FTyp); 
+		TestReal(FTyp); 
+		goto label1;
 		break; }
 	}
 	return Z;
@@ -1331,18 +1355,23 @@ void StoreConst(double& R, pstring* S, char& FTyp)
 	double* RPtr;
 	switch (FTyp) {
 	case 'S': StoreStr(*S); break;
-	case 'R': { RPtr = (double*)GetStore(sizeof(*RPtr)); *RPtr = R; break; }
+	case 'R': { 
+		//RPtr = (double*)GetStore(sizeof(*RPtr)); 
+		RPtr = new double();
+		*RPtr = R; 
+		break; 
+	}
 	}
 }
 
 FrmlPtr RdComp(char& FTyp)
 {
-	FrmlPtr Z;
-	double R;
+	FrmlElem* Z = nullptr;
+	double R = 0.0;
 	pstring S;
-	BYTE* B = new BYTE;
-	integer N;
-	FrmlPtr Z1;
+	BYTE* B = nullptr;
+	integer N = 0;
+	FrmlElem* Z1 = nullptr;
 	Z = RdAdd(FTyp);
 	Z1 = Z;
 	if (Lexem >= _equ && Lexem <= _ne)
@@ -1370,16 +1399,26 @@ FrmlPtr RdComp(char& FTyp)
 		if (Lexem == _subrange)
 		{
 			if (N != 0) { *B = N; N = 0; }
-			B = (BYTE*)GetStore(sizeof(*B)); *B = 0xFF; StoreConst(R, &S, FTyp);
-			RdLex(); RdInConst(Z, R, &S, FTyp); StoreConst(R, &S, FTyp);
+			//B = (BYTE*)GetStore(sizeof(*B)); 
+			B = new BYTE();
+			*B = 0xFF; 
+			StoreConst(R, &S, FTyp);
+			RdLex(); 
+			RdInConst(Z, R, &S, FTyp); 
+			StoreConst(R, &S, FTyp);
 		}
 		else {
-			if (N == 0) B = (BYTE*)GetStore(sizeof(*B));
-			N++; StoreConst(R, &S, FTyp);
+			//if (N == 0) B = (BYTE*)GetStore(sizeof(*B));
+			if (N == 0) B = new BYTE();
+			N++; 
+			StoreConst(R, &S, FTyp);
 		}
 		if (Lexem != ']') { Accept(','); goto label1; }
 		RdLex();
-		if (N != 0) *B = N; *B = (BYTE)GetStore(sizeof(*B)); *B = 0;
+		if (N != 0) *B = N; 
+		//*B = (BYTE)GetStore(sizeof(*B)); 
+		B = new BYTE();
+		*B = 0;
 		FTyp = 'B';
 	}
 	return Z;
@@ -1403,7 +1442,9 @@ FrmlPtr RdBOr(char& FTyp)
 	FrmlPtr Z = RdBAnd(FTyp);
 	while (Lexem == '|')
 	{
-		Z = BOperation(FTyp, _or, Z); Z->P2 = RdBAnd(FTyp); TestBool(FTyp);
+		Z = BOperation(FTyp, _or, Z); 
+		Z->P2 = RdBAnd(FTyp); 
+		TestBool(FTyp);
 	}
 	return Z;
 }
@@ -1413,7 +1454,9 @@ FrmlPtr RdFormula(char& FTyp)
 	FrmlPtr Z = RdBOr(FTyp);
 	while ((BYTE)Lexem == _limpl || (BYTE)Lexem == _lequ)
 	{
-		Z = BOperation(FTyp, Lexem, Z); Z->P2 = RdBOr(FTyp); TestBool(FTyp);
+		Z = BOperation(FTyp, Lexem, Z); 
+		Z->P2 = RdBOr(FTyp); 
+		TestBool(FTyp);
 	}
 	return Z;
 }
@@ -1424,17 +1467,23 @@ bool FindFuncD(FrmlPtr* ZZ)
 	FuncDPtr fc = FuncDRoot;
 	while (fc != nullptr) {
 		if (EquUpcase(fc->Name, LexWord)) {
-			RdLex(); RdLex(); FrmlPtr z = GetOp(_userfunc, 8); z->FC = fc;
+			RdLex(); RdLex(); 
+			FrmlElem* z = GetOp(_userfunc, 8); 
+			z->FC = fc;
 			LocVar* lv = fc->LVB.Root;
 			WORD n = fc->LVB.NParam;
-			for (WORD i = 1; i < n; i++) {
-				FrmlList fl = (FrmlList)GetStore(sizeof(*fl));
-				ChainLast(z->FrmlL, fl);
-				fl->Frml = RdFormula(typ); if (typ != lv->FTyp) OldError(12);
-				lv = (LocVar*)lv->Chain; if (i < n) Accept(',');
+			for (WORD i = 1; i <= n; i++) {
+				//FrmlList fl = (FrmlList)GetStore(sizeof(*fl));
+				FrmlListEl* fl = new FrmlListEl();
+				if (z->FrmlL == nullptr) z->FrmlL = fl;
+				else ChainLast(z->FrmlL, fl);
+				fl->Frml = RdFormula(typ);
+				if (typ != lv->FTyp) OldError(12);
+				lv = (LocVar*)lv->Chain;
+				if (i < n) Accept(',');
 			}
 			Accept(')');
-			ZZ = &z;
+			*ZZ = z;
 			return true;
 		}
 		fc = fc->Chain;
@@ -1647,7 +1696,9 @@ FrmlPtr RdPrim(char& FTyp)
 			}
 			else if (IsKeyWord("DATE"))
 			{
-				RdLex(); Z = GetOp(_valdate, 9); Z->Mask = "DD.MM.YY";
+				RdLex(); 
+				Z = GetOp(_valdate, 9); 
+				Z->Mask = "DD.MM.YY";
 				goto label3;
 			}
 			else if (IsKeyWord("VALDATE"))
@@ -1753,9 +1804,10 @@ FrmlPtr RdPrim(char& FTyp)
 			else Error(75);
 		else {
 			if (RdFldNameFrml == nullptr) Error(110);
-			//auto zx = RdFldNameFrml;
-			Z = (RdFldNameFrml)(FTyp); // volání ukazatele na funkci
-			if ((Z->Op != _access) || (Z->LD != nullptr)) FrstSumVar = false;
+			else {
+				Z = RdFldNameFrml(FTyp); // volani ukazatele na funkci
+				if ((Z->Op != _access) || (Z->LD != nullptr)) FrstSumVar = false;
+			}
 		}
 		break;
 	}
