@@ -830,12 +830,14 @@ label1:
 		goto label1;
 }
 
-bool FindLocVar(LocVar* LVRoot, LocVar* LV)
+bool FindLocVar(LocVar* LVRoot, LocVar** LV)
 {
-	auto result = false; if (Lexem != _identifier) return result;
-	LV = LVRoot; while (LV != nullptr) {
-		if (EquUpcase(LV->Name, LexWord)) { return true; }
-		LV = (LocVar*)LV->Chain;
+	auto result = false; 
+	if (Lexem != _identifier) return result;
+	*LV = LVRoot; 
+	while (*LV != nullptr) {
+		if (EquUpcase((*LV)->Name, LexWord)) { return true; }
+		*LV = (LocVar*)(*LV)->Chain;
 	}
 	return result;
 }
@@ -1085,7 +1087,7 @@ KeyDPtr RdViewKey()
 		if (SEquUpcase(s, *k->Alias)) goto label1;
 		k = k->Chain;
 	}
-	if (IdxLocVarAllowed && FindLocVar(LVBD.Root, lv) && (lv->FTyp == 'i'))
+	if (IdxLocVarAllowed && FindLocVar(LVBD.Root, &lv) && (lv->FTyp == 'i'))
 	{
 		if (lv->FD != CFile) Error(164);
 		k = KeyDPtr(lv->RecPtr);
@@ -1751,8 +1753,8 @@ FrmlPtr RdPrim(char& FTyp)
 			else Error(75);
 		else {
 			if (RdFldNameFrml == nullptr) Error(110);
-			auto zx = *RdFldNameFrml;
-			Z = zx(FTyp);
+			//auto zx = RdFldNameFrml;
+			Z = (RdFldNameFrml)(FTyp); // volání ukazatele na funkci
 			if ((Z->Op != _access) || (Z->LD != nullptr)) FrstSumVar = false;
 		}
 		break;
@@ -1930,7 +1932,7 @@ FieldDPtr RdFldName(FileDPtr FD)
 FileDPtr FindFileD()
 {
 	FileD* FD = nullptr; RdbD* R = nullptr; LocVar* LV = nullptr;
-	if (FDLocVarAllowed && FindLocVar(LVBD.Root, LV) && (LV->FTyp == 'f'))
+	if (FDLocVarAllowed && FindLocVar(LVBD.Root, &LV) && (LV->FTyp == 'f'))
 	{
 		return LV->FD;
 	}

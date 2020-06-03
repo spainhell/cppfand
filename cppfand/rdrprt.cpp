@@ -52,7 +52,7 @@ FrmlPtr RdFldNameFrmlR(char& FTyp)
 		SumIi = 0; CBlkSave = CBlk; CBlk = nullptr;
 	}
 	if (IsForwPoint()) { RdDirFilVar(FTyp, result); return result; }
-	if (!WasIiPrefix && FindLocVar(LVBD.Root, LV)) {
+	if (!WasIiPrefix && FindLocVar(LVBD.Root, &LV)) {
 		RdLex(); TestNotSum();
 		result = (FrmlElem*)(&LV->Op); FTyp = LV->FTyp; return result;
 	}
@@ -457,7 +457,7 @@ label0:
 		if (ForwChar == ':') {
 			TestIdentif(); GetStore(LexWord.length());
 			Move(&LexWord, &RF->Name, LexWord.length() + 1);
-			if (FindInLvBlk(LstLvM, DummyB, RF1) || FindLocVar(LVBD.Root, LV)) Error(26);
+			if (FindInLvBlk(LstLvM, DummyB, RF1) || FindLocVar(LVBD.Root, &LV)) Error(26);
 			RdLex(); Accept(_assign);
 		}
 		else RF->Name = "";
@@ -647,7 +647,7 @@ AssignD* RdAssign2()
 		if (F->Flg && f_Stored == 0) OldError(14);
 		RdAssignFrml(F->FrmlTyp, A->Add, A->Frml);
 	}
-	else if (FindLocVar(LVBD.Root, LV)) {
+	else if (FindLocVar(LVBD.Root, &LV)) {
 		RdLex(); A->Kind = _locvar; A->LV = LV;
 		RdAssignFrml(LV->FTyp, A->Add, A->Frml);
 	}

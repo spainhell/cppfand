@@ -43,7 +43,7 @@ void TestCatError(WORD I, pstring Nm, bool Old)
 
 bool IsRecVar(LocVar* LV)
 {
-	if (!FindLocVar(LVBD.Root, LV) || (LV->FTyp != 'r')) return false;
+	if (!FindLocVar(LVBD.Root, &LV) || (LV->FTyp != 'r')) return false;
 	RdLex();
 	return true;
 }
@@ -58,7 +58,7 @@ LocVar* RdRecVar()
 LocVar* RdIdxVar()
 {
 	LocVar* lv = nullptr;
-	if (!FindLocVar(LVBD.Root, lv) || (lv->FTyp != 'i')) Error(165);
+	if (!FindLocVar(LVBD.Root, &lv) || (lv->FTyp != 'i')) Error(165);
 	auto result = lv;
 	RdLex();
 	return result;
@@ -93,7 +93,7 @@ char RdOwner(LinkD* LLD, LocVar* LLV)
 	auto result = '\0';
 	LinkD* ld = nullptr;
 	LocVar* lv = nullptr;
-	if (FindLocVar(LVBD.Root, lv)) {
+	if (FindLocVar(LVBD.Root, &lv)) {
 		if (!(lv->FTyp == 'i' || lv->FTyp == 'r' || lv->FTyp == 'f')) Error(177);
 		ld = nullptr; LinkD* ld1 = LinkDRoot; while (ld1 != nullptr) {
 			if ((ld1->FromFD == CFile) && (ld1->IndexRoot != 0) && (ld1->ToFD == lv->FD))
@@ -106,11 +106,11 @@ char RdOwner(LinkD* LLD, LocVar* LLV)
 	ld = LinkDRoot;
 	while (ld != nullptr) {
 		if ((ld->FromFD == CFile) && EquUpcase(ld->RoleName, LexWord)) {
-			if ((ld->IndexRoot = 0)) Error(116);
+			if ((ld->IndexRoot == 0)) Error(116);
 			RdLex(); fd = ld->ToFD;
 			if (Lexem == '(') {
 				RdLex();
-				if (!FindLocVar(LVBD.Root, lv) || !(lv->FTyp == 'i' || lv->FTyp == 'r')) Error(177);
+				if (!FindLocVar(LVBD.Root, &lv) || !(lv->FTyp == 'i' || lv->FTyp == 'r')) Error(177);
 				RdLex(); Accept(')'); if (lv->FD != fd) OldError(149);
 			label1:
 				if (lv->FTyp == 'i') {
@@ -144,8 +144,8 @@ FrmlPtr RdFldNameFrmlP(char& FTyp)
 
 	FrmlPtr result = nullptr;
 
-	if (IsForwPoint)
-		if (FindLocVar(LVBD.Root, LV) && (LV->FTyp == 'i' || LV->FTyp == 'r')) {
+	if (IsForwPoint())
+		if (FindLocVar(LVBD.Root, &LV) && (LV->FTyp == 'i' || LV->FTyp == 'r')) {
 			RdLex();
 			result = RdRecVarFldFrml(LV, FTyp);
 			return result;
@@ -202,9 +202,11 @@ FrmlPtr RdFldNameFrmlP(char& FTyp)
 		result = GetOp(_getpath, 0); FTyp = 'S';
 		return result;
 	}
-	if (FindLocVar(LVBD.Root, LV)) {
+	if (FindLocVar(LVBD.Root, &LV)) {
 		if (LV->FTyp == 'r' || LV->FTyp == 'f' || LV->FTyp == 'i') Error(143);
-		RdLex(); result = FrmlPtr(LV->Op); FTyp = LV->FTyp;
+		RdLex(); 
+		result = (FrmlElem*)&LV->Op; 
+		FTyp = LV->FTyp;
 		return result;
 	}
 	if (FileVarsAllowed) {
@@ -538,7 +540,7 @@ Instr* RdWhileDo()
 Instr* RdFor()
 {
 	LocVar* LV = nullptr;
-	if (!FindLocVar(LVBD.Root, LV) || (LV->FTyp != 'R')) Error(146);
+	if (!FindLocVar(LVBD.Root, &LV) || (LV->FTyp != 'R')) Error(146);
 	RdLex();
 	Instr* PD = GetPInstr(_asgnloc, 9);
 	auto result = PD;
@@ -615,12 +617,12 @@ Instr* RdForAll()
 {
 	LocVar* LVi = nullptr; LocVar* LVr = nullptr;
 	LinkD* LD = nullptr; FrmlPtr Z = nullptr;
-	if (!FindLocVar(LVBD.Root, LVi)) Error(122);
+	if (!FindLocVar(LVBD.Root, &LVi)) Error(122);
 	RdLex();
 	if (LVi->FTyp == 'r') { LVr = LVi; LVi = nullptr; CFile = LVr->FD; }
 	else {
 		TestReal(LVi->FTyp); AcceptKeyWord("IN");
-		if (FindLocVar(LVBD.Root, LVr)) {
+		if (FindLocVar(LVBD.Root, &LVr)) {
 			if (LVr->FTyp == 'f') { CFile = LVr->FD; RdLex(); goto label1; }
 			if (LVr->FTyp != 'r') Error(141);
 			CFile = LVr->FD; RdLex();
@@ -690,7 +692,7 @@ Instr* RdProcArg(char Caller)
 		N++;
 		if (N > 30) Error(123);
 		FillChar(&TArg[N].FTyp, sizeof(TypAndFrml), 0);
-		if ((ForwChar != '.') && FindLocVar(LVBD.Root, LV) && (LV->FTyp == 'i' || LV->FTyp == 'r'))
+		if ((ForwChar != '.') && FindLocVar(LVBD.Root, &LV) && (LV->FTyp == 'i' || LV->FTyp == 'r'))
 		{
 			RdLex(); TArg[N].FTyp = LV->FTyp; TArg[N].FD = LV->FD; TArg[N].RecPtr = LV->RecPtr;
 		}
@@ -1389,7 +1391,7 @@ void RdPrintTxt()
 	Instr* PD;
 	PD = GetPD(_printtxt, 10);
 	/* !!! with PD^ do!!! */
-	if (FindLocVar(LVBD.Root, PD->TxtLV)) { RdLex(); TestString(PD->TxtLV->FTyp); }
+	if (FindLocVar(LVBD.Root, &PD->TxtLV)) { RdLex(); TestString(PD->TxtLV->FTyp); }
 	else RdPath(true, PD->TxtPath, PD->TxtCatIRec);
 }
 
@@ -1398,7 +1400,7 @@ void RdEditTxt()
 	Instr* PD; EdExitD* pX;
 	PD = GetPD(_edittxt, 73);
 	/* !!! with PD^ do!!! */
-	if (FindLocVar(LVBD.Root, PD->TxtLV)) { RdLex(); TestString(PD->TxtLV->FTyp); }
+	if (FindLocVar(LVBD.Root, &PD->TxtLV)) { RdLex(); TestString(PD->TxtLV->FTyp); }
 	else RdPath(true, PD->TxtPath, PD->TxtCatIRec);
 	PD->EdTxtMode = 'T';
 	while (Lexem == ',') {
@@ -1864,7 +1866,7 @@ Instr* RdAssign()
 	LocVar* LV = nullptr; LocVar* LV2 = nullptr; char PV;
 	Instr* PD = nullptr; pstring FName; char FTyp = 0;
 	if (ForwChar == '.')
-		if (FindLocVar(LVBD.Root, LV) && (LV->FTyp == 'r' || LV->FTyp == 'i')) {
+		if (FindLocVar(LVBD.Root, &LV) && (LV->FTyp == 'r' || LV->FTyp == 'i')) {
 			FTyp = LV->FTyp;
 			RdLex(); RdLex();
 			if (FTyp == 'i') {
@@ -1918,7 +1920,6 @@ Instr* RdAssign()
 #ifdef FandSQL
 		if (FD->typSQLFile) OldError(155);
 #endif
-
 		PD->RecFrml = RdRealFrml();
 		Accept(']');
 		Accept('.');
@@ -1928,7 +1929,7 @@ Instr* RdAssign()
 		PD->Indexarg = (FD->Typ == 'X') && IsKeyArg(F, FD);
 		RdAssignFrml(F->FrmlTyp, PD->Add, PD->Frml);
 }
-	else if (FindLocVar(LVBD.Root, LV)) {
+	else if (FindLocVar(LVBD.Root, &LV)) {
 		RdLex();
 		FTyp = LV->FTyp;
 		switch (FTyp) {
@@ -1938,7 +1939,8 @@ Instr* RdAssign()
 			Accept(_assign);
 			if (!IsRecVar(LV2)) Error(141);
 			PD = GetPInstr(_asgnrecvar, 12);
-			PD->RecLV1 = LV; PD->RecLV2 = LV2;
+			PD->RecLV1 = LV; 
+			PD->RecLV2 = LV2;
 			PD->Ass = MakeImplAssign(LV->FD, LV2->FD);
 			break;
 		}
@@ -1950,10 +1952,13 @@ Instr* RdAssign()
 	else if (IsKeyWord("ACCRIGHT")) {
 		PD = GetPInstr(_asgnaccright, 4);
 	label2:
-		Accept(_assign); PD->Frml = RdStrFrml();
+		Accept(_assign); 
+		PD->Frml = RdStrFrml();
 	}
 	else if (IsKeyWord("EDOK")) {
-		PD = GetPInstr(_asgnedok, 4); Accept(_assign); PD->Frml = RdBool();
+		PD = GetPInstr(_asgnedok, 4); 
+		Accept(_assign); 
+		PD->Frml = RdBool();
 	}
 	else if (IsKeyWord("RANDSEED")) { PD = GetPInstr(_asgnrand, 4); goto label3; }
 	else if (IsKeyWord("TODAY")) { PD = GetPInstr(_asgnusertoday, 4); goto label3; }
@@ -1964,7 +1969,8 @@ Instr* RdAssign()
 	}
 	else {
 		RdLex();
-		if (Lexem == _assign) OldError(8); else OldError(34);
+		if (Lexem == _assign) OldError(8);
+		else OldError(34);
 	}
 	return PD;
 }
@@ -1973,12 +1979,16 @@ Instr* RdWith()
 {
 	Instr* P = nullptr; Instr* p2; PInstrCode Op;
 	if (IsKeyWord("WINDOW")) {
-		P = GetPInstr(_window, 29); Accept('(');
+		P = GetPInstr(_window, 29); 
+		Accept('(');
 		if (Lexem == '(') { RdLex(); P->WithWFlags = WNoPop; }
-		RdW(P->W); RdFrame(P->Top, P->WithWFlags);
+		RdW(P->W); 
+		RdFrame(P->Top, P->WithWFlags);
 		if (Lexem == ',') { RdLex(); P->Attr = RdAttr(); }
-		Accept(')'); if ((P->WithWFlags & WNoPop) != 0) Accept(')');
-		AcceptKeyWord("DO"); P->WwInstr = RdPInstr();
+		Accept(')'); 
+		if ((P->WithWFlags & WNoPop) != 0) Accept(')');
+		AcceptKeyWord("DO"); 
+		P->WwInstr = RdPInstr();
 	}
 	else if (IsKeyWord("SHARED")) { Op = _withshared; goto label1; }
 	else if (IsKeyWord("LOCKED")) {
@@ -1989,7 +1999,9 @@ Instr* RdWith()
 	label2:
 		ld->FD = RdFileName();
 		if (Op == _withlocked) {
-			Accept('['); ld->Frml = RdRealFrml(); Accept(']');
+			Accept('['); 
+			ld->Frml = RdRealFrml(); 
+			Accept(']');
 		}
 		else {
 			Accept('(');
@@ -2005,13 +2017,16 @@ Instr* RdWith()
 			ld = ld->Chain;
 			goto label2;
 		}
-		AcceptKeyWord("DO"); P->WDoInstr = RdPInstr();
+		AcceptKeyWord("DO"); 
+		P->WDoInstr = RdPInstr();
 		if (IsKeyWord("ELSE")) {
-			P->WasElse = true; P->WElseInstr = RdPInstr();
+			P->WasElse = true; 
+			P->WElseInstr = RdPInstr();
 		}
 	}
 	else if (IsKeyWord("GRAPHICS")) {
-		P = GetPInstr(_withgraphics, 4); AcceptKeyWord("DO");
+		P = GetPInstr(_withgraphics, 4); 
+		AcceptKeyWord("DO");
 		P->WDoInstr = RdPInstr();
 	}
 	else Error(131);
@@ -2020,9 +2035,12 @@ Instr* RdWith()
 
 Instr* RdUserFuncAssign()
 {
-	Instr* pd = nullptr; LocVar* lv = nullptr;
-	if (!FindLocVar(LVBD.Root, lv)) Error(34);
-	RdLex(); pd = GetPInstr(_asgnloc, 9); pd->AssLV = lv;
+	Instr* pd = nullptr; 
+	LocVar* lv = nullptr;
+	if (!FindLocVar(LVBD.Root, &lv)) Error(34);
+	RdLex(); 
+	pd = GetPInstr(_asgnloc, 9); 
+	pd->AssLV = lv;
 	RdAssignFrml(lv->FTyp, pd->Add, pd->Frml);
 	return pd;
 }
@@ -2102,19 +2120,25 @@ void ReadDeclChpt()
 	RdLex();
 label1:
 	if (IsKeyWord("FUNCTION")) {
-		TestIdentif(); fc = FuncDRoot; while (fc != CRdb->OldFCRoot) {
-			if (EquUpcase(fc->Name, LexWord)) Error(26); fc = fc->Chain;
+		TestIdentif(); fc = FuncDRoot; 
+		while (fc != CRdb->OldFCRoot) {
+			if (EquUpcase(fc->Name, LexWord)) Error(26); 
+			fc = fc->Chain;
 		}
 		//fc = (FuncD*)GetStore(sizeof(FuncD) - 1 + LexWord.length());
 		fc = new FuncD();
-		fc->Chain = FuncDRoot; FuncDRoot = fc;
+		fc->Chain = FuncDRoot; 
+		FuncDRoot = fc;
 		Move(&LexWord, &fc->Name, LexWord.length() + 1);
-		RdFldNameFrml = RdFldNameFrmlP; RdFunction = RdFunctionP;
+		RdFldNameFrml = RdFldNameFrmlP; 
+		RdFunction = RdFunctionP;
 		ChainSumEl = nullptr;
 		FileVarsAllowed = false; IsRdUserFunc = true;
-		RdLex(); ResetLVBD();
+		RdLex(); 
+		ResetLVBD();
 		Accept('(');
-		if (Lexem != ')') RdLocDcl(&LVBD, true, false, 'D'); Accept(')');
+		if (Lexem != ')') RdLocDcl(&LVBD, true, false, 'D'); 
+		Accept(')');
 		Accept(':');
 		if (IsKeyWord("REAL")) { typ = 'R'; n = sizeof(double); }
 		else if (IsKeyWord("STRING")) { typ = 'S'; n = sizeof(longint); }
@@ -2131,7 +2155,7 @@ label1:
 		if (IsKeyWord("VAR")) RdLocDcl(&LVBD, false, false, 'D'); 
 		fc->LVB = LVBD;
 		AcceptKeyWord("BEGIN"); 
-		fc->Instr = RdBeginEnd; 
+		fc->Instr = RdBeginEnd(); 
 		Accept(';');
 	}
 	else if (Lexem == 0x1A) return;
