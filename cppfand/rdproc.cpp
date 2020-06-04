@@ -140,7 +140,7 @@ FrmlPtr RdFldNameFrmlP(char& FTyp)
 {
 	FileD* FD = nullptr; FrmlPtr Z = nullptr; LocVar* LV = nullptr;
 	char Op = 0; LinkD* LD = nullptr; FieldDescr* F = nullptr;
-	KeyD* K;
+	KeyD* K = nullptr;
 
 	FrmlPtr result = nullptr;
 
@@ -191,9 +191,13 @@ FrmlPtr RdFldNameFrmlP(char& FTyp)
 		if (FD->typSQLFile) OldError(155);
 #endif
 
-		Z->P1 = RdRealFrml(); Accept(']'); Accept('.');
-		F = RdFldName(FD); Z->RecFldD = F;
-		FTyp = F->FrmlTyp; result = Z;
+		Z->P1 = RdRealFrml(); 
+		Accept(']'); 
+		Accept('.');
+		F = RdFldName(FD); 
+		Z->RecFldD = F;
+		FTyp = F->FrmlTyp; 
+		result = Z;
 		return result;
 	}
 	if (IsKeyWord("KEYPRESSED")) { Op = _keypressed; goto label3; }
@@ -279,7 +283,7 @@ FrmlPtr RdFunctionP(char& FFTyp)
 	else if (IsKeyWord("KEYOF")) {
 		RdLex();
 		FTyp = 'S';
-		if (!IsRecVar(LV)) { Op = _recno; goto label11; }
+		if (!IsRecVar(&LV)) { Op = _recno; goto label11; }
 		Z = GetOp(_keyof, 8);
 		Z->LV = LV;
 		Z->PackKey = RdViewKeyImpl(Z->LV->FD);
@@ -329,7 +333,7 @@ FrmlPtr RdFunctionP(char& FFTyp)
 	else if (IsKeyWord("LINK")) {
 		RdLex();
 		Z = GetOp(_link, 5);
-		if (IsRecVar(LV)) {
+		if (IsRecVar(&LV)) {
 			Z->LinkFromRec = true;
 			Z->LinkLV = LV;
 			FD = LV->FD;
@@ -355,7 +359,7 @@ FrmlPtr RdFunctionP(char& FFTyp)
 	else if (IsKeyWord("ISDELETED")) {
 		RdLex();
 		FTyp = 'B';
-		if (IsRecVar(LV)) {
+		if (IsRecVar(&LV)) {
 			Z = GetOp(_lvdeleted, 4);
 			Z->LV = LV;
 		}
@@ -404,7 +408,7 @@ FrmlPtr RdFunctionP(char& FFTyp)
 		Z->P1 = RdRealFrml(); Accept(',');
 		Z->P2 = RdRealFrml(); Accept(',');
 		Typ = 'r';
-		if (IsRecVar(LV)) Z->P3 = (FrmlElem*)LV->RecPtr;
+		if (IsRecVar(&LV)) Z->P3 = (FrmlElem*)LV->RecPtr;
 		else Z->P3 = RdFrml(Typ);
 		Z->N31 = Typ;
 		FTyp = 'R';
@@ -1173,7 +1177,7 @@ Instr* RdEditCall()
 	Instr* PD = GetPD(_edit, 8);
 	EditOpt* EO = GetEditOpt();
 	PD->EO = EO;
-	if (IsRecVar(lv)) { EO->LVRecPtr = lv->RecPtr; CFile = lv->FD; }
+	if (IsRecVar(&lv)) { EO->LVRecPtr = lv->RecPtr; CFile = lv->FD; }
 	else {
 		CFile = RdFileName();
 		K = RdViewKey();
@@ -1240,7 +1244,7 @@ void RdReportCall()
 	FDL = &RO->FDL; b = false;
 	if (Lexem == '(') { RdLex(); b = true; }
 label1:
-	if (IsRecVar(lv)) { FDL->LVRecPtr = lv->RecPtr; FDL->FD = lv->FD; }
+	if (IsRecVar(&lv)) { FDL->LVRecPtr = lv->RecPtr; FDL->FD = lv->FD; }
 	else {
 		CFile = RdFileName(); FDL->FD = CFile;
 		CViewKey = RdViewKey(); FDL->ViewKey = CViewKey;
@@ -1250,7 +1254,7 @@ label1:
 			Accept(')');
 		}
 	}
-	if (b && (Lexem = ',')) {
+	if (b && (Lexem == ',')) {
 		RdLex();
 		FDL->Chain = (RprtFDListEl*)GetZStore(sizeof(RprtFDListEl));
 		FDL = FDL->Chain; goto label1;
@@ -1828,7 +1832,7 @@ void RdMixRecAcc(PInstrCode Op)
 			PD->RecFD = CFile;
 		}
 		else { /*_readrec,_writerec*/
-			if (!IsRecVar(PD->LV)) Error(141);
+			if (!IsRecVar(&PD->LV)) Error(141);
 			CFile = PD->LV->FD;
 		}
 		KeyD* K = RdViewKey();
@@ -1873,18 +1877,23 @@ void RdMixRecAcc(PInstrCode Op)
 
 void RdLinkRec()
 {
-	LocVar* LV = nullptr; LinkD* LD = nullptr;
+	LocVar* LV = nullptr; 
+	LinkD* LD = nullptr;
 	Instr* PD = GetPD(_linkrec, 12);
-	if (!IsRecVar(PD->RecLV1)) Error(141);
-	Accept(','); CFile = PD->RecLV1->FD;
-	if (IsRecVar(LV)) {
+	if (!IsRecVar(&PD->RecLV1)) Error(141);
+	Accept(','); 
+	CFile = PD->RecLV1->FD;
+	if (IsRecVar(&LV)) {
 		LD = FindLD(LV->FD->Name);
 		if (LD == nullptr) OldError(154);
 	}
 	else {
-		TestIdentif(); LD = FindLD(LexWord);
-		if (LD == nullptr) Error(9); RdLex();
-		Accept('('); LV = RdRecVar();
+		TestIdentif(); 
+		LD = FindLD(LexWord);
+		if (LD == nullptr) Error(9); 
+		RdLex();
+		Accept('('); 
+		LV = RdRecVar();
 		if (LD->ToFD != LV->FD) OldError(141);
 		Accept(')');
 	}
@@ -1910,10 +1919,10 @@ label1:
 
 FrmlPtr AdjustComma(FrmlPtr Z1, FieldDPtr F, char Op)
 {
-	FrmlPtr Z, Z2;
+	FrmlElem* Z = nullptr; FrmlElem* Z2 = nullptr;
 	auto result = Z1;
 	if (F->Typ != 'F') return result;
-	if (F->Flg && f_Comma == 0) return result;
+	if ((F->Flg & f_Comma) == 0) return result;
 	Z2 = GetOp(_const, sizeof(double));
 	Z2->R = Power10[F->M];
 	Z = GetOp(Op, 0);
@@ -2033,7 +2042,7 @@ Instr* RdAssign()
 		case 'i': OldError(140); break;
 		case 'r': {
 			Accept(_assign);
-			if (!IsRecVar(LV2)) Error(141);
+			if (!IsRecVar(&LV2)) Error(141);
 			PD = GetPInstr(_asgnrecvar, 12);
 			PD->RecLV1 = LV;
 			PD->RecLV2 = LV2;
