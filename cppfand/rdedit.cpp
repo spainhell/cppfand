@@ -104,7 +104,7 @@ label3:
 	//FL = (FieldListEl*)GetStore(sizeof(*FL));
 	FL = new FieldListEl();
 	FL->FldD = F; 
-	if (E->Flds == nullptr) E->Flds == FL;
+	if (E->Flds == nullptr) E->Flds = FL;
 	else ChainLast(E->Flds, FL);
 	if (Lexem == ',') { RdLex(); goto label3; }
 	TestLex(';'); 

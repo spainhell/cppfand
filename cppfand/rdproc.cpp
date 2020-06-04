@@ -503,13 +503,19 @@ label1:
 		PD->ESCInstr = RdPInstr();
 	}
 	else {
-		CD = (ChoiceD*)GetZStore(sizeof(CD));
-		ChainLast(PD->Choices, CD); N++;
+		//CD = (ChoiceD*)GetZStore(sizeof(CD));
+		CD = new ChoiceD();
+		if (PD->Choices == nullptr) PD->Choices = CD;
+		else ChainLast(PD->Choices, CD); 
+		N++;
 		if ((PD->Kind == _menubar) && (N > 30)) Error(102);
 		CD->TxtFrml = RdStrFrml();
 		if (Lexem == ',') {
 			RdLex();
-			if (Lexem != ',') { CD->HelpName = RdHelpName(); PD->HelpRdb = CRdb; }
+			if (Lexem != ',') { 
+				CD->HelpName = RdHelpName(); 
+				PD->HelpRdb = CRdb; 
+			}
 			if (Lexem == ',') {
 				RdLex();
 				if (Lexem != ',') {
@@ -520,7 +526,8 @@ label1:
 				}
 			};
 		}
-		Accept(':'); CD->Instr = RdPInstr();
+		Accept(':'); 
+		CD->Instr = RdPInstr();
 	}
 	if (Lexem == ';') {
 		RdLex();
@@ -789,9 +796,10 @@ Instr* RdProcArg(char Caller)
 
 void RdKeyCode(EdExitD* X)
 {
-	WORD i; EdExKeyD* E;
-	E = (EdExKeyD*)GetStore(sizeof(EdExKeyD));
-	E->Chain = X->Keys; X->Keys = E;
+	WORD i = 0; EdExKeyD* E = new EdExKeyD();
+	//E = (EdExKeyD*)GetStore(sizeof(EdExKeyD));
+	E->Chain = X->Keys; 
+	X->Keys = E;
 	if (NotCode('F', _F1_, 21, E)
 		&& NotCode("ShiftF", _ShiftF1_, 1, E)
 		&& NotCode("CtrlF", _CtrlF1_, 31, E)
@@ -895,8 +903,10 @@ bool RdViewOpt(EditOpt* EO)
 	else if (IsOpt("EXIT")) {
 		Accept('(');
 	label1:
-		EdExitD* X = (EdExitD*)GetZStore(sizeof(*X));
-		ChainLast(EO->ExD, X);
+		//EdExitD* X = (EdExitD*)GetZStore(sizeof(*X));
+		EdExitD* X = new EdExitD();
+		if (EO->ExD == nullptr) EO->ExD = X;
+		else ChainLast(EO->ExD, X);
 		RdKeyList(X);
 		if (IsKeyWord("QUIT")) X->Typ = 'Q';
 		else if (IsKeyWord("REPORT")) {
@@ -2227,7 +2237,8 @@ label1:
 		else Error(39);
 		//lv = (LocVar*)GetZStore(sizeof(*lv) - 1 + (fc->Name).length());
 		lv = new LocVar();
-		ChainLast(LVBD.Root, lv);
+		if (LVBD.Root == nullptr) LVBD.Root = lv;
+		else ChainLast(LVBD.Root, lv);
 		//Move(&fc->Name, &lv->Name, (fc->Name).length() + 1);
 		lv->Name = fc->Name;
 		/* !!! with lv^ do!!! */

@@ -1431,8 +1431,7 @@ bool OSshell(pstring Path, pstring CmdLine, bool NoCancel, bool FreeMm, bool LdF
 
 pstring PrTab(WORD N)
 {
-	void* p;
-	p = printer[prCurr].Strg;
+	void* p = printer[prCurr].Strg;
 
 	// ASM
 	return "";

@@ -134,7 +134,8 @@ void SetInpTTxtPos(FileDPtr FD)
 	SetInpTT(FD->ChptPos, true);
 	pos = FD->TxtPosUDLI;
 	r = FD->ChptPos.R;
-	if (pos > InpArrLen) ForwChar = 0x1A; else ForwChar = InpArrPtr[pos];
+	if (pos > InpArrLen) ForwChar = 0x1A; 
+	else ForwChar = InpArrPtr[pos];
 	CurrPos = pos;
 }
 
@@ -480,7 +481,7 @@ integer RdInteger()
 
 double ValofS(pstring& S)
 {
-	integer I; double R;
+	integer I = 0; double R = 0.0;
 
 	val(S, R, I);
 	if (I != 0) {
@@ -488,8 +489,10 @@ double ValofS(pstring& S)
 		if (R == 0) {
 			R = ValDate(S, "DD.MM.YYYY");
 			if (R == 0) {
-				R = ValDate(S, "mm hh:ss.tt");
-				if (R == 0) Error(7);
+				R = ValDate(S, "mm:hh:ss.tt");
+				if (R == 0) {
+					Error(7);
+				}
 			}
 		}
 	}
@@ -1040,7 +1043,8 @@ label1:
 	//FL = (FieldListEl*)GetStore(sizeof(*FL));
 	FL = new FieldListEl();
 	FL->FldD = F;
-	ChainLast(FLRoot, FL);
+	if (FLRoot == nullptr) FLRoot = FL;
+	else ChainLast(FLRoot, FL);
 	if (Lexem == ',') { RdLex(); goto label1; };
 }
 
@@ -1060,13 +1064,12 @@ void EditModeToFlags(pstring Mode, void* Flgs, bool Err)
 	"->","^M","EX","WX","S7","#A","#L","SL" };
 	pstring s = "xx";
 	bool* Flags = (bool*)Flgs;
-	WORD i, j;
-	i = 0;
+	WORD i = 1;
 	while (i < Mode.length()) {
 		s[1] = toupper(Mode[i]);
 		s[2] = toupper(Mode[i + 1]);
 		i += 2;
-		for (j = 0; j < 24; j++)
+		for (WORD j = 0; j < 24; j++)
 			if (s == FlgTxt[j]) { Flags[j] = true; goto label1; }
 		goto label2;
 	label1:
@@ -1093,7 +1096,8 @@ KeyDPtr RdViewKey()
 	s = LexWord;
 	i = s.first('_');
 	if (i != 0) s = copy(s, i + 1, 255);
-	s = CFile->Name + '_' + s; k = CFile->Keys;
+	s = CFile->Name + "_" + s; 
+	k = CFile->Keys;
 	while (k != nullptr) {
 		if (SEquUpcase(s, *k->Alias)) goto label1;
 		k = k->Chain;
@@ -2062,15 +2066,19 @@ FrmlPtr RdFAccess(FileDPtr FD, LinkD* LD, char& FTyp)
 
 FrmlPtr FrmlContxt(FrmlPtr Z, FileDPtr FD, void* RP)
 {
-	FrmlPtr Z1;
-	Z1 = GetOp(_newfile, 8); Z1->Frml = Z;
-	Z1->NewFile = FD; Z1->NewRP = RP; return Z1;
+	FrmlElem* Z1 = GetOp(_newfile, 8); 
+	Z1->Frml = Z;
+	Z1->NewFile = FD; 
+	Z1->NewRP = RP; 
+	return Z1;
 }
 
 FrmlPtr MakeFldFrml(FieldDPtr F, char& FTyp)
 {
-	FrmlPtr Z;
-	Z = GetOp(_field, 4); Z->Field = F; FTyp = F->FrmlTyp; return Z;
+	FrmlElem* Z = GetOp(_field, 4);
+	Z->Field = F; 
+	FTyp = F->FrmlTyp; 
+	return Z;
 }
 
 LinkDPtr FindOwnLD(FileDPtr FD, const pstring& RoleName)
@@ -2133,7 +2141,10 @@ FrmlPtr TryRdFldFrml(FileDPtr FD, char& FTyp)
 	else {
 		f = FindFldName(FD);
 		if (f == nullptr) z = nullptr;
-		else { RdLex(); z = MakeFldFrml(f, FTyp); };
+		else { 
+			RdLex(); 
+			z = MakeFldFrml(f, FTyp); 
+		}
 	}
 	return z;
 }

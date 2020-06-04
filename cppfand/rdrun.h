@@ -124,29 +124,33 @@ struct RFldD : public Chained
 struct BlkD : public Chained
 {
 	// BlkD* Chain;
-	FrmlPtr Bool;
-	SumElPtr Sum;
-	char* Txt;          /*sequence of pstrings*/
-	bool AbsLine, SetPage, NotAtEnd, FF1, FF2;
-	FrmlPtr LineBound, LineNo, PageNo;
-	WORD NTxtLines, NBlksFrst, DHLevel;
-	RFldD* RFD;
-	AssignD* BeforeProc, AfterProc;
+	FrmlElem* Bool = nullptr;
+	SumElem* Sum = nullptr;
+	char* Txt = nullptr;          /*sequence of pstrings*/
+	bool AbsLine = false, SetPage = false, NotAtEnd = false, FF1 = false, FF2 = false;
+	FrmlElem* LineBound = nullptr;
+	FrmlElem* LineNo = nullptr;
+	FrmlElem* PageNo = nullptr;
+	WORD NTxtLines = 0, NBlksFrst = 0, DHLevel = 0;
+	RFldD* RFD = nullptr;
+	AssignD* BeforeProc = nullptr; 
+	AssignD* AfterProc = nullptr;
 };
 
 struct LvDescr {
-	LvDescr* Chain;
-	LvDescr* ChainBack;
-	FloatPtrListEl* ZeroLst;
-	BlkD* Hd, Ft;
-	FieldDPtr Fld;
+	LvDescr* Chain = nullptr;
+	LvDescr* ChainBack = nullptr;
+	FloatPtrListEl* ZeroLst = nullptr;
+	BlkD* Hd = nullptr; 
+	BlkD* Ft = nullptr;
+	FieldDescr* Fld = nullptr;
 };
 
 struct EdExKeyD
 {
-	EdExKeyD* Chain;
-	BYTE Break;
-	WORD KeyCode;
+	EdExKeyD* Chain = nullptr;
+	BYTE Break = 0;
+	WORD KeyCode = 0;
 };
 
 struct EdExitD : Chained

@@ -2921,7 +2921,8 @@ XScan::XScan(FileD* aFD, KeyD* aKey, KeyInD* aKIRoot, bool aWithT)
 	else
 #endif
 	{
-		P = (XPage*)GetStore(XPageSize);
+		//P = (XPage*)GetStore(XPageSize);
+		P = new XPage();
 		Kind = 1;
 		if (aKIRoot != nullptr) Kind = 2;
 	}
@@ -3457,7 +3458,6 @@ bool IsActiveRdb(FileDPtr FD)
 
 void ResetCompilePars()
 {
-	char a;
 	RdFldNameFrml = RdFldNameFrmlF;
 	RdFunction = nullptr;
 	ChainSumEl = nullptr;

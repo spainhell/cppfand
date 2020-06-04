@@ -683,7 +683,7 @@ void createFileDescrFromStr(FileD* F, uintptr_t firstAddress, BYTE* str)
 	nextItemIndex = (uintptr_t(lastFieldD->Chain) & 0x0000FFFF);
 	mFieldD.insert(std::pair<uintptr_t, FieldDescr*>(firstAddress, lastFieldD));
 	F->FldD = lastFieldD;
-	
+
 	while (nextItemIndex != 0) {
 		FieldDescr* nFieldD = new FieldDescr(&str[nextItemIndex]);
 		nextItemIndex = (uintptr_t(nFieldD->Chain) & 0x0000FFFF);
@@ -695,7 +695,7 @@ void createFileDescrFromStr(FileD* F, uintptr_t firstAddress, BYTE* str)
 	// jednotlive polozky v mape ted maji jako Frml uvedene stare adresy
 	// je nutne i jednotlive Frml vytvorit a adresy nahradit
 	// projdeme tedy mapu a ke vsem polozkam nacteme formulare
-	for (auto && d : mFieldD)
+	for (auto&& d : mFieldD)
 	{
 		auto frml = d.second->Frml;
 		if (frml == nullptr) continue;
@@ -904,7 +904,7 @@ void StoreChptTxt(FieldDPtr F, LongStr* S, bool Del)
 	if (Del) if (LicNr == 0) ChptTF->Delete(oldpos);
 	else if (oldpos != 0) ChptTF->Delete(oldpos - LicNr);
 	pos = ChptTF->Store(S);
-	if (LicNr == 0) T_(F, pos); 
+	if (LicNr == 0) T_(F, pos);
 	else T_(F, pos + LicNr);
 	ReleaseStore(p);
 }
@@ -926,18 +926,18 @@ void SetChptFldDPtr()
 void SetRdbDir(char Typ, pstring* Nm)
 {
 	RdbD* r = nullptr; RdbD* rb = nullptr; pstring d;
-	r = CRdb; 
+	r = CRdb;
 	rb = r->ChainBack;
 	if (rb == nullptr) TopRdb = *r; CVol = "";
 	if (Typ == '\\') {
-		rb = &TopRdb; CRdb = rb; 
+		rb = &TopRdb; CRdb = rb;
 		CFile->CatIRec = GetCatIRec(*Nm, false);
 		CRdb = r;
 	}
 	if (CFile->CatIRec != 0) {
 		CPath = RdCatField(CFile->CatIRec, CatPathName);
 		if (CPath[2] != ':') {
-			d = rb->RdbDir; 
+			d = rb->RdbDir;
 			if (CPath[1] == '\\') CPath = copy(d, 1, 2) + CPath;
 			else {
 				AddBackSlash(d); CPath = d + CPath;
@@ -945,18 +945,18 @@ void SetRdbDir(char Typ, pstring* Nm)
 		}
 		FSplit(CPath, CDir, CName, CExt); DelBackSlash(CDir);
 	}
-	else if (rb == nullptr) CDir = TopRdbDir; 
+	else if (rb == nullptr) CDir = TopRdbDir;
 	else {
-		CDir = rb->RdbDir; 
-		AddBackSlash(CDir); 
+		CDir = rb->RdbDir;
+		AddBackSlash(CDir);
 		CDir = CDir + CFile->Name;
 	}
 	/* !!! with r^ do!!! */ {
 		r->RdbDir = CDir; if (TopDataDir == "") r->DataDir = CDir;
 		else if (rb == nullptr) r->DataDir = TopDataDir;
 		else {
-			d = rb->DataDir; 
-			AddBackSlash(d); 
+			d = rb->DataDir;
+			AddBackSlash(d);
 			r->DataDir = d + CFile->Name;
 		}
 	}
@@ -1016,7 +1016,7 @@ label1:
 		}
 		else RunError(631);
 label2:
-	if (IsTestRun || !create) um = Exclusive; 
+	if (IsTestRun || !create) um = Exclusive;
 	else um = RdOnly;
 	if (OpenF(um)) {
 		if (ChptTF->CompileAll) ResetRdOnly();
@@ -1193,7 +1193,7 @@ label2:
 		TextAttr = colors.uNorm;
 		if (IsGraphMode && !WasGraph) ScrTextMode(false, false);
 		else ClrScr();
-		}
+	}
 	if (uw) { UserW = 0;/*mem overflow*/UserW = PushW(1, 1, TxtCols, TxtRows); }
 	SaveFiles(); if (mv) ShowMouse();
 	if (WasError) ForAllFDs(ClearXFUpdLock);
@@ -1328,9 +1328,9 @@ void* RdF(pstring* FileName)
 		s = s + nr;
 		SetInpStr(s);
 	}
-	else { 
+	else {
 		longint pos = _T(ChptTxt);
-		SetInpTTPos(pos, CRdb->Encrypted); 
+		SetInpTTPos(pos, CRdb->Encrypted);
 	}
 	return RdFileD(name, FDTyp, ext);
 }
@@ -1411,10 +1411,10 @@ bool MergeOldNew(bool Veriflongint, bool Pos)
 	LinkD* ld = LinkDRoot;
 	auto result = false;
 	FileD* FDOld = nullptr;
-	FileD* FDNew = CFile; 
-	SetCPathVol(); 
+	FileD* FDNew = CFile;
+	SetCPathVol();
 	Name = FDNew->Name; FDNew->Name = "@";
-	CFile = Chpt; 
+	CFile = Chpt;
 	if (!RdFDSegment(0, Pos)) goto label1;
 	ChainLast(FileDRoot, CFile);
 	FDOld = CFile; FDOld->Name = Name;
@@ -1463,11 +1463,11 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 	auto result = false;
 
 	EditD* OldE = E;
-	MarkBoth(p, p2); 
+	MarkBoth(p, p2);
 	p1 = p;
 	//NewExit(Ovr, er);
 	//goto label1;
-	IsCompileErr = false; FDCompiled = false; 
+	IsCompileErr = false; FDCompiled = false;
 	OldCRec = CRec(); RP.R = CRdb;
 	top = (CRdb->ChainBack == nullptr);
 	if (top) {
@@ -1520,7 +1520,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 				label2:
 					p1 = RdF(&Name);
 					// TODO: toto se asi zase musí povolit !!! 
-					// WrFDSegment(I);
+					//WrFDSegment(I);
 					if (CFile->IsHlpFile) CRdb->HelpFD = CFile;
 					if (OldTxt > 0)
 						MergeOldNew(Verif, OldTxt); ReleaseStore(p1);
@@ -1542,37 +1542,48 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 			case 'M': { SetInpTTPos(Txt, Encryp); ReadMerge(); break; }
 			case 'R': {
 				if ((Txt == 0) && IsTestRun) {
-					RprtTxt = SelGenRprt(Name); CFile = Chpt;
+					RprtTxt = SelGenRprt(Name); 
+					CFile = Chpt;
 					if (RprtTxt == nullptr) GoCompileErr(I, 1145);
 					LongS_(ChptTxt, RprtTxt);
 					WriteRec(I);
 				}
-				else { SetInpTTPos(Txt, Encryp); ReadReport(nullptr); }
+				else { 
+					SetInpTTPos(Txt, Encryp); 
+					ReadReport(nullptr); 
+				}
 				break;
 			}
 			case 'P': {
 				if (FileDRoot->Chain == nullptr) lstFD = FileDRoot;
-				else lstFD = (FileD*)LastInChain(FileDRoot); 
+				else lstFD = (FileD*)LastInChain(FileDRoot);
 				ld = LinkDRoot;
-				SetInpTTPos(Txt, Encryp); 
-				ReadProcHead(); 
+				SetInpTTPos(Txt, Encryp);
+				ReadProcHead();
 				ReadProcBody();
-				lstFD->Chain = nullptr; 
+				lstFD->Chain = nullptr;
 				LinkDRoot = ld;
 				break;
 			}
-			case 'E': { PushEdit(); RdFormOrDesign(nullptr, nullptr, RP); E = OldE; break; }
+			case 'E': {
+				PushEdit();
+				RdFormOrDesign(nullptr, nullptr, RP);
+				E = OldE;
+				break;
+			}
 			case 'U': {
 				if (!top || (I > 1)) GoCompileErr(I, 623);
 				if (Txt != 0) {
-					ResetCompilePars(); SetInpTTPos(Txt, Encryp);
-					RdUserId(!IsTestRun || (ChptTF->LicenseNr != 0)); MarkStore(p1);
+					ResetCompilePars();
+					SetInpTTPos(Txt, Encryp);
+					RdUserId(!IsTestRun || (ChptTF->LicenseNr != 0));
+					MarkStore(p1);
 				}
 				break;
 			}
-			case 'D': { 
-				ResetCompilePars(); 
-				SetInpTTPos(Txt, Encryp); 
+			case 'D': {
+				ResetCompilePars();
+				SetInpTTPos(Txt, Encryp);
 				ReadDeclChpt();
 				MarkStore(p1);
 				break;
@@ -1582,14 +1593,18 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 #endif
 			}
 			}
+		ReleaseBoth(p1, p2); CFile = Chpt; CRecPtr = Chpt->RecPtr;
+		if (Verif) { ReadRec(I); B_(ChptVerif, false); WriteRec(I); }
 		}
-	ReleaseBoth(p1, p2); CFile = Chpt; CRecPtr = Chpt->RecPtr;
-	if (Verif) { ReadRec(I); B_(ChptVerif, false); WriteRec(I); }
 	/* !!! with ChptTF^ do!!! */
 	if (ChptTF->CompileAll || ChptTF->CompileProc) {
-		ChptTF->CompileAll = false; ChptTF->CompileProc = false; SetUpdHandle(ChptTF->Handle);
+		ChptTF->CompileAll = false; 
+		ChptTF->CompileProc = false; 
+		SetUpdHandle(ChptTF->Handle);
 	}
-	CompileFD = false; result = true; RestoreExit(er);
+	CompileFD = false; 
+	result = true; 
+	RestoreExit(er);
 	if (!Run) { CRecPtr = E->NewRecPtr; ReadRec(CRec()); }
 	CompileMsgOff(Buf, w);
 #ifdef FandSQL
@@ -1618,7 +1633,7 @@ void GotoErrPos(WORD& Brk)
 		GotoRecFld(InpRdbPos.IRec, (EFldD*)E->FirstFld->Chain);
 		SetMsgPar(s); WrLLF10Msg(110); Brk = 0; return;
 	}
-	CFld = E->LastFld; 
+	CFld = E->LastFld;
 	SetNewCRec(InpRdbPos.IRec, true);
 	R_(ChptTxtPos, integer(CurrPos)); WriteRec(CRec());
 	EditFreeTxt(ChptTxt, s, true, Brk);
@@ -1632,12 +1647,12 @@ void WrErrMsg630(pstring* Nm)
 
 bool EditExecRdb(pstring* Nm, pstring* ProcNm, Instr* ProcCall, wwmix* ww)
 {
-	WORD Brk = 0, cc = 0; 
-	void* p = nullptr; 
-	pstring passw(20); 
+	WORD Brk = 0, cc = 0;
+	void* p = nullptr;
+	pstring passw(20);
 	bool b = false;
-	ExitRecord er, er2; 
-	RdbPos RP; 
+	ExitRecord er, er2;
+	RdbPos RP;
 	EditOpt* EO = nullptr;
 
 	auto result = false;
@@ -1650,13 +1665,13 @@ bool EditExecRdb(pstring* Nm, pstring* ProcNm, Instr* ProcCall, wwmix* ww)
 #endif
 	//NewExit(Ovr(), er);
 	//goto label9;
-	CreateOpenChpt(Nm, true, ww); 
+	CreateOpenChpt(Nm, true, ww);
 	CompileFD = true;
 #ifndef FandRunV
 	if (!IsTestRun || (ChptTF->LicenseNr != 0) ||
 		!top && CRdb->Encrypted) {
 #endif
-		MarkStore(p); 
+		MarkStore(p);
 		EditRdbMode = false;
 		bool hasToCompileRdb = CompileRdb(false, true, false);
 		if (hasToCompileRdb) {
@@ -1676,9 +1691,9 @@ bool EditExecRdb(pstring* Nm, pstring* ProcNm, Instr* ProcCall, wwmix* ww)
 				if (IsCompileErr) WrErrMsg630(Nm);
 				goto label9;
 			}
-			else { 
-				Set2MsgPar(*Nm, *ProcNm); 
-				WrLLF10Msg(632); 
+			else {
+				Set2MsgPar(*Nm, *ProcNm);
+				WrLLF10Msg(632);
 			}
 		}
 		else if (IsCompileErr) WrErrMsg630(Nm);
@@ -1751,25 +1766,25 @@ label8:
 label9:
 	RestoreExit(er);
 	if (!wasGraph && IsGraphMode) ScrTextMode(false, false);
-	if (UserW != 0) PopW(UserW); 
-	UserW = w; 
+	if (UserW != 0) PopW(UserW);
+	UserW = w;
 	RunMsgClear();
 	CloseChpt();
 #ifdef FandSQL
 	if (top) SQLDisconnect;
 #endif
 	return result;
-	}
+			}
 
 void UpdateCat()
 {
 	EditOpt* EO = nullptr;
-	CFile = CatFD; 
+	CFile = CatFD;
 	if (CatFD->Handle == nullptr) OpenCreateF(Exclusive);
-	EO = GetEditOpt(); 
+	EO = GetEditOpt();
 	EO->Flds = AllFldsList(CatFD, true);
-	EditDataFile(CatFD, EO); 
-	ChDir(OldDir); 
+	EditDataFile(CatFD, EO);
+	ChDir(OldDir);
 	ReleaseStore(EO);
 }
 
@@ -1778,51 +1793,51 @@ void UpdateUTxt()
 	longint w; WORD TxtPos, LicNr; LongStr* S = nullptr; LongStr* s2 = nullptr;
 	bool Srch, Upd, b;
 	longint OldPos, Pos; ExitRecord er; void* p = nullptr; void* p1 = nullptr;
-	CFile = Chpt; 
-	CRecPtr = Chpt->RecPtr; 
-	LicNr = ChptTF->LicenseNr; 
+	CFile = Chpt;
+	CRecPtr = Chpt->RecPtr;
+	LicNr = ChptTF->LicenseNr;
 	MarkStore(p1);
-	if (CFile->NRecs == 0) goto label1; 
+	if (CFile->NRecs == 0) goto label1;
 	ReadRec(1);
 	if (_ShortS(ChptTyp) != 'U') {
 	label1:
 		WrLLF10Msg(9); /*exit*/;
 	}
-	w = PushW(1, 1, TxtCols, TxtRows - 1); 
-	TxtPos = 1; 
+	w = PushW(1, 1, TxtCols, TxtRows - 1);
+	TxtPos = 1;
 	TextAttr = colors.tNorm;
-	OldPos = _T(ChptTxt); 
+	OldPos = _T(ChptTxt);
 	S = _LongS(ChptTxt); b = false;
 	if (CRdb->Encrypted) CodingLongStr(S); // NewExit(Ovr, er);
 	goto label4;
-	SetInpLongStr(S, false); 
-	MarkStore(p); 
-	RdUserId(false); 
-	ReleaseStore(p); 
+	SetInpLongStr(S, false);
+	MarkStore(p);
+	RdUserId(false);
+	ReleaseStore(p);
 	b = true;
 label2:
 	SimpleEditText('T', "", "", (char*)&S->A, 0x7FFF, S->LL, TxtPos, Upd);
-	SetInpLongStr(S, false); 
-	MarkStore(p); 
-	RdUserId(false); 
-	ReleaseStore(p); 
+	SetInpLongStr(S, false);
+	MarkStore(p);
+	RdUserId(false);
+	ReleaseStore(p);
 	b = false;
-	if (Upd) { 
-		StoreChptTxt(ChptTxt, S, true); 
-		WriteRec(1); 
+	if (Upd) {
+		StoreChptTxt(ChptTxt, S, true);
+		WriteRec(1);
 	}
 label3:
-	PopW(w); 
-	ReleaseStore(p1); 
+	PopW(w);
+	ReleaseStore(p1);
 	return;
 label4:
 	if (b) {
-		WrLLF10MsgLine(); 
-		ReleaseStore(p); 
-		if (PromptYN(59)) goto label2; 
+		WrLLF10MsgLine();
+		ReleaseStore(p);
+		if (PromptYN(59)) goto label2;
 		goto label3;
 	}
-	WrLLF10Msg(9); 
+	WrLLF10Msg(9);
 	goto label3;
 }
 
@@ -1844,9 +1859,9 @@ void InstallRdb(pstring n)
 			WrLLF10Msg(629); goto label1;
 		}
 	}
-	if (Chpt->UMode == RdOnly) { 
+	if (Chpt->UMode == RdOnly) {
 		UpdateCat();
-		goto label1; 
+		goto label1;
 	}
 	RdMsg(8);
 	//New(w, Init(43, 6, StringPtr(@MsgLine)));
@@ -1862,6 +1877,6 @@ label0:
 	}
 	SetUpdHandle(ChptTF->Handle); goto label0;
 label1:
-	RestoreExit(er); 
+	RestoreExit(er);
 	CloseChpt();
 }

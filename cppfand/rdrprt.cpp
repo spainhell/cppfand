@@ -26,10 +26,16 @@ bool FindInLvBlk(LvDescr* L, BlkD* B, RFldD* RF)
 	auto result = false;
 label1:
 	while (L != nullptr) {
-		B1 = &L->Ft; while (B1 != nullptr) {
-			RF1 = B1->RFD; while (RF1 != nullptr) {
+		B1 = L->Ft; 
+		while (B1 != nullptr) {
+			RF1 = B1->RFD; 
+			while (RF1 != nullptr) {
 				if ((Lexem == _identifier) && EquUpcase(RF1->Name, LexWord)) {
-					RdLex(); result = true; RF = RF1; B = B1; return result;
+					RdLex(); 
+					result = true;
+					RF = RF1; 
+					B = B1; 
+					return result;
 				}
 				RF1 = (RFldD*)RF1->Chain;
 			}
@@ -51,7 +57,7 @@ FrmlPtr RdFldNameFrmlR(char& FTyp)
 	if ((FrmlSumEl != nullptr) && FrstSumVar && (CBlk != nullptr)) {
 		SumIi = 0; CBlkSave = CBlk; CBlk = nullptr;
 	}
-	if (IsForwPoint()) { RdDirFilVar(FTyp, result); return result; }
+	if (IsForwPoint()) { RdDirFilVar(FTyp, &result); return result; }
 	if (!WasIiPrefix && FindLocVar(LVBD.Root, &LV)) {
 		RdLex(); TestNotSum();
 		result = (FrmlElem*)(&LV->Op); FTyp = LV->FTyp; return result;
@@ -85,16 +91,19 @@ FrmlPtr RdFldNameFrmlR(char& FTyp)
 	if (FrmlSumEl != nullptr) {
 		if (FrstSumVar) {
 			if (FindInLvBlk(LvToRd->ChainBack, CBlk, RF)) {
-				FTyp = RF->FrmlTyp; result = RF->Frml; return result;
+				FTyp = RF->FrmlTyp; 
+				result = RF->Frml; 
+				return result;
 			}
-			FindInRec(FTyp, result); return result;
+			FindInRec(FTyp, &result); 
+			return result;
 		}
-		else if (CBlk == nullptr) { FindInRec(FTyp, result); return result; }
-		else if (OwnInBlock(FTyp, result)) return result;
+		else if (CBlk == nullptr) { FindInRec(FTyp, &result); return result; }
+		else if (OwnInBlock(FTyp, &result)) return result;
+		else OldError(8);
 	}
-	else OldError(8);
-	if (OwnInBlock(FTyp, result)) return result;
-	FindInRec(FTyp, result);
+	if (OwnInBlock(FTyp, &result)) return result;
+	FindInRec(FTyp, &result);
 	return result;
 }
 
@@ -116,27 +125,35 @@ bool RdIiPrefix()
 void TestSetSumIi()
 {
 	if ((FrmlSumEl != nullptr) && (Ii != 0))
-		if (FrstSumVar || (SumIi = 0)) SumIi = Ii;
+		if (FrstSumVar || (SumIi == 0)) SumIi = Ii;
 		else if (SumIi != Ii) OldError(27);
 }
 
-FrmlPtr FindIiandFldFrml(FileD* FD, char& FTyp)
+FrmlPtr FindIiandFldFrml(FileD** FD, char& FTyp)
 {
-	integer i = 0; FrmlPtr z = nullptr;;
+	integer i = 0; 
+	FrmlPtr z = nullptr;;
 	if (WhatToRd == 'i') {       /* search first in Ii*/
-		FD = InpFD(Oi); z = TryRdFldFrml(FD, FTyp);
-		if (z != nullptr) { Ii = Oi; goto label1; };
+		*FD = InpFD(Oi); 
+		z = TryRdFldFrml(*FD, FTyp);
+		if (z != nullptr) { 
+			Ii = Oi; 
+			goto label1; 
+		}
 	}
-	for (i = 1; i < MaxIi; i++) {       /* search in  I1 .. Imax resp. Oi*/
-		FD = InpFD(i); z = TryRdFldFrml(FD, FTyp);
-		if (z != nullptr) { Ii = i; goto label1; }
+	for (i = 1; i <= MaxIi; i++) {       /* search in  I1 .. Imax resp. Oi*/
+		*FD = InpFD(i); 
+		z = TryRdFldFrml(*FD, FTyp);
+		if (z != nullptr) { 
+			Ii = i; 
+			goto label1; }
 		if ((WhatToRd == 'i') && (i == Oi)) goto label1;
 	}
 label1:
 	return z;
 }
 
-void RdDirFilVar(char& FTyp, FrmlElem* res)
+void RdDirFilVar(char& FTyp, FrmlElem** res)
 {
 	LinkD* LD = nullptr; FileD* FD = nullptr; integer I = 0; FrmlPtr Z = nullptr;
 	if (WasIiPrefix) {
@@ -161,10 +178,10 @@ label2:
 		Z = FrmlContxt(Z, CFile, CFile->RecPtr); TestSetSumIi();
 		if ((FrmlSumEl != nullptr) && !FrstSumVar && (CBlk != nullptr)) OldError(59);
 	}
-	res = Z;
+	*res = Z;
 }
 
-bool OwnInBlock(char& FTyp, FrmlElem* res)
+bool OwnInBlock(char& FTyp, FrmlElem** res)
 {
 	RFldD* RF;
 	auto result = false;
@@ -173,30 +190,38 @@ bool OwnInBlock(char& FTyp, FrmlElem* res)
 	{
 		if (EquUpcase(RF->Name, LexWord))
 		{
-			RdLex(); FTyp = RF->FrmlTyp; res = RF->Frml;
-			result = true; return result;
+			RdLex(); 
+			FTyp = RF->FrmlTyp; 
+			*res = RF->Frml;
+			result = true; 
+			return result;
 		}
 		RF = (RFldD*)RF->Chain;
 	}
 	return result;
 }
 
-void FindInRec(char& FTyp, FrmlElem* res)
+void FindInRec(char& FTyp, FrmlElem** res)
 {
 	FileD* FD = nullptr;
 	FieldDescr* F = nullptr;
 	FrmlElem* Z = nullptr;
 	if (WasIiPrefix) {
-		FD = InpFD(Ii); Z = TryRdFldFrml(FD, FTyp);
+		FD = InpFD(Ii); 
+		Z = TryRdFldFrml(FD, FTyp);
 	}
-	else Z = FindIiandFldFrml(FD, FTyp);
-	if (Z == nullptr) Error(8); TestSetSumIi();
-	res = FrmlContxt(Z, FD, FD->RecPtr);
+	else Z = FindIiandFldFrml(&FD, FTyp);
+	if (Z == nullptr) Error(8); 
+	TestSetSumIi();
+	*res = FrmlContxt(Z, FD, FD->RecPtr);
 }
 
 void SetIi()
 {
-	if (!WasIiPrefix) { if (WhatToRd == 'i') Ii = Oi; else Ii = 1; }
+	if (!WasIiPrefix) { 
+		if (WhatToRd == 'i') Ii = Oi; 
+		else Ii = 1; 
+	}
 }
 
 void TestNotSum()
@@ -206,7 +231,8 @@ void TestNotSum()
 
 void Err()
 {
-	TestNotSum(); SetIi();
+	TestNotSum(); 
+	SetIi();
 	if (IDA[Ii]->ErrTxtFrml == nullptr)
 	{
 		IDA[Ii]->ErrTxtFrml = GetOp(_const, 256);
@@ -215,51 +241,70 @@ void Err()
 
 void ChainSumElR()
 {
-	SumElPtr S; FloatPtrList Z;
+	SumElPtr S; 
+	FloatPtrList Z;
 	if (FrstSumVar || (SumIi == 0)) SumIi = 1;
 	if (FrstSumVar || (CBlk == nullptr)) S = (SumElPtr)(&IDA[SumIi]->Sum);
-	else S = (SumElPtr)(&CBlk->Sum);
-	FrmlSumEl->Chain = S->Chain; S->Chain = FrmlSumEl;
+	else S = (SumElPtr)&CBlk->Sum;
+	FrmlSumEl->Chain = S->Chain; 
+	S->Chain = FrmlSumEl;
 	if (CBlkSave != nullptr) { CBlk = CBlkSave; CBlkSave = nullptr; }
 	Z = (FloatPtrListEl*)GetStore(sizeof(*Z));
 	Z->RPtr = &FrmlSumEl->R;
-	Z->Chain = CZeroLst->Chain; CZeroLst->Chain = Z;
+	Z->Chain = CZeroLst->Chain; 
+	CZeroLst->Chain = Z;
 }
 
 void ReadReport(RprtOpt* RO)
 {
-	FileD* FD; KeyInD* KI; BlkD* B; WORD i;
-	InpD* ID; LvDescr* L; pstring s(2); RprtFDListEl* FDL;
+	FileD* FD = nullptr; KeyInD* KI = nullptr; BlkD* B = nullptr; WORD i = 0;
+	InpD* ID = nullptr; LvDescr* L = nullptr; pstring s(2); 
+	RprtFDListEl* FDL = nullptr;
 
-	ResetCompilePars(); RdLex();
+	ResetCompilePars(); 
+	RdLex();
 	CBlkSave = nullptr; PgeSizeZ = nullptr; PgeLimitZ = nullptr;
-	FDL = nullptr; if ((RO != nullptr) && (RO->FDL.FD != nullptr)) FDL = &RO->FDL;
-	ResetLVBD(); if (IsKeyWord("VAR")) RdLocDcl(&LVBD, false, false, 'R');
+	FDL = nullptr; 
+	if ((RO != nullptr) && (RO->FDL.FD != nullptr)) FDL = &RO->FDL;
+	ResetLVBD(); 
+	if (IsKeyWord("VAR")) RdLocDcl(&LVBD, false, false, 'R');
 label1:
 	if (Lexem == '.') {
-		RdLex(); TestIdentif();
-		if (IsKeyWord("PAGESIZE")) { Accept(_assign); PgeSizeZ = RdRealFrml(); }
+		RdLex(); 
+		TestIdentif();
+		if (IsKeyWord("PAGESIZE")) { 
+			Accept(_assign); 
+			PgeSizeZ = RdRealFrml(); 
+		}
 		else if (IsKeyWord("PAGELIMIT")) {
-			Accept(_assign); PgeLimitZ = RdRealFrml();
+			Accept(_assign); 
+			PgeLimitZ = RdRealFrml();
 		}
 		else Error(56);
 		if (Lexem == ';') { RdLex(); goto label1; }
 	}
-	SelQuest = false; Ii = 0; TestLex('#');
+	SelQuest = false; Ii = 0; 
+	TestLex('#');
 	do {
-		Ii++; ReadChar(); if (CurrChar == 'I') {
+		Ii++; ReadChar(); 
+		if (CurrChar == 'I') {
 			ReadChar();
 			if (isdigit(CurrChar)) {
-				if (Ii != CurrChar - '0') Error(61); ReadChar();
+				if (Ii != CurrChar - '0') Error(61); 
+				ReadChar();
 				if (CurrChar == '_') goto label2;
 			}
 			else if (Ii == 1) goto label2;
 		}
 		Error(89);
 	label2:
-		ID = (InpD*)GetZStore(sizeof(*ID)); IDA[Ii] = ID;
-		RdLex(); FD = RdFileName(); CFile = FD;
-		for (i = 1; i < Ii - 1; i++) if (InpFD(i) == FD) OldError(26);
+		//ID = (InpD*)GetZStore(sizeof(*ID)); 
+		ID = new InpD();
+		IDA[Ii] = ID;
+		RdLex(); 
+		FD = RdFileName(); 
+		CFile = FD;
+		for (i = 1; i <= Ii - 1; i++) if (InpFD(i) == FD) OldError(26);
 		if ((FDL != nullptr)) { CFile = FDL->FD; FD = CFile; }
 		CViewKey = RdViewKey();
 		if ((FDL != nullptr)) {
@@ -267,7 +312,8 @@ label1:
 		}
 		if (Lexem == '!') { RdLex(); ID->AutoSort = true; }
 		ID->Op = _const; ID->OpErr = _const; ID->OpWarn = _const; KI = nullptr;
-		ID->ForwRecPtr = GetRecSpace(); FD->RecPtr = GetRecSpace();
+		ID->ForwRecPtr = GetRecSpace(); 
+		FD->RecPtr = GetRecSpace();
 		if (Lexem == '(') {
 			RdLex();
 			if ((Ii == 1) && (Lexem == '?')) { SelQuest = true; RdLex(); }
@@ -277,7 +323,8 @@ label1:
 		if ((FDL != nullptr) && (FDL->LVRecPtr == nullptr) &&
 			((FDL->Cond != nullptr) || (FDL->KeyIn != nullptr) || (Ii == 1) && RO->UserCondQuest)) {
 			ID->Bool = RunEvalFrml(FDL->Cond);
-			KI = FDL->KeyIn; ID->SQLFilter = FDL->SQLFilter;
+			KI = FDL->KeyIn; 
+			ID->SQLFilter = FDL->SQLFilter;
 			if (Ii == 1) SelQuest = RO->UserCondQuest;
 		}
 		//New(ID->Scan, Init(FD, CViewKey, KI, true));
@@ -290,42 +337,73 @@ label1:
 			}
 			else if (ID->MFld == nullptr) CopyPrevMFlds();
 			else CheckMFlds(IDA[Ii - 1]->MFld, ID->MFld);
-		RdAutoSortSK(ID); TestLex('#');
+		RdAutoSortSK(ID); 
+		TestLex('#');
 		if (FDL != nullptr) FDL = FDL->Chain;
 	} while (ForwChar == 'I');
-	MaxIi = Ii; FrstLvM = MakeOldMLvD();
+	MaxIi = Ii; 
+	FrstLvM = MakeOldMLvD();
 
 	PageHd = nullptr; RprtHd = nullptr; PageFt = nullptr; PFZeroLst = nullptr;
 label3:
-	s[0] = 2; ReadChar(); s[1] = toupper(CurrChar); ReadChar(); s[2] = toupper(CurrChar);
-	ChainSumEl = nullptr; RdFldNameFrml = RdFldNameFrmlR; WhatToRd = 'O';
+	s[0] = 2; ReadChar(); 
+	s[1] = toupper(CurrChar); 
+	ReadChar(); 
+	s[2] = toupper(CurrChar);
+	ChainSumEl = nullptr; 
+	RdFldNameFrml = RdFldNameFrmlR; 
+	WhatToRd = 'O';
 	if (s == "DE") {
-		Rd_Oi(); RdLex(); WhatToRd = 'i'; RdBlock(&IDA[Oi]->FrstLvS->Ft); goto label4;
+		Rd_Oi(); 
+		RdLex(); 
+		WhatToRd = 'i';
+		RdBlock(IDA[Oi]->FrstLvS->Ft); 
+		goto label4;
 	}
 	if (s == "RH") {
-		RdLex(); RdBlock(RprtHd); goto label4;
+		RdLex(); 
+		RdBlock(RprtHd); 
+		goto label4;
 	}
 	if (s == "PH") {
-		RdLex(); RdBlock(PageHd); goto label4;
+		RdLex(); 
+		RdBlock(PageHd); 
+		goto label4;
 	}
 	if (s == "DH") {
-		Rd_Oi(); RdLex(); WhatToRd = 'i'; RdBlock(IDA[Oi]->FrstLvS->Hd); goto label4;
+		Rd_Oi(); 
+		RdLex(); 
+		WhatToRd = 'i'; 
+		RdBlock(IDA[Oi]->FrstLvS->Hd); 
+		goto label4;
 	}
 	if (s == "CH") {
-		Rd_Oi(); L = RdKeyName(); RdBlock(L->Hd); goto label4;
+		Rd_Oi(); 
+		L = RdKeyName(); 
+		RdBlock(L->Hd); 
+		goto label4;
 	}
 	ChainSumEl = ChainSumElR;
 	if (s == "RF") {
-		RdLex(); LvToRd = LstLvM; CZeroLst = (FloatPtrList)(&LvToRd->ZeroLst);
-		RdBlock(&LvToRd->Ft); goto label4;
+		RdLex(); 
+		LvToRd = LstLvM; 
+		CZeroLst = LvToRd->ZeroLst;
+		RdBlock(LvToRd->Ft); 
+		goto label4;
 	}
 	if (s == "CF") {
-		Rd_Oi(); LvToRd = RdKeyName(); CZeroLst = (FloatPtrList)(&LvToRd->ZeroLst);
-		RdBlock(&LvToRd->Ft); goto label4;
+		Rd_Oi(); 
+		LvToRd = RdKeyName(); 
+		CZeroLst = LvToRd->ZeroLst;
+		RdBlock(LvToRd->Ft); 
+		goto label4;
 	}
 	if (s == "PF") {
-		RdLex(); LvToRd = LstLvM; CZeroLst = (FloatPtrList)(&PFZeroLst);
-		RdBlock(PageFt); goto label4;
+		RdLex(); 
+		LvToRd = LstLvM; 
+		CZeroLst = PFZeroLst;
+		RdBlock(PageFt); 
+		goto label4;
 	}
 	Error(57);
 label4:
@@ -366,17 +444,27 @@ void CheckMFlds(KeyFldD* M1, KeyFldD* M2)
 
 LvDescr* MakeOldMLvD()
 {
-	LvDescr* L1; WORD n;
+	LvDescr* L1 = nullptr; WORD n = 0;
 	OldMFlds = nullptr; NewMFlds = nullptr;
-	LvDescr* L = (LvDescr*)GetZStore(sizeof(*L)); LstLvM = L;
+	//LvDescr* L = (LvDescr*)GetZStore(sizeof(*L)); 
+	LvDescr* L = new LvDescr();
+	LstLvM = L;
 	KeyFldD* M = IDA[1]->MFld;
 	while (M != nullptr) {
 		n = sizeof(void*) + M->FldD->NBytes + 1;
-		ConstListEl* C = (ConstListEl*)GetStore(n); ChainLast(OldMFlds, C);
-		C = (ConstListEl*)GetStore(n); ChainLast(NewMFlds, C);
-		L1 = (LvDescr*)GetZStore(sizeof(*L1));
-		L->ChainBack = L1; L1->Chain = L; L = L1;
-		L->Fld = M->FldD; M = (KeyFldD*)M->Chain;
+		//ConstListEl* C = (ConstListEl*)GetStore(n);
+		ConstListEl* C = new ConstListEl();
+		ChainLast(OldMFlds, C);
+		//C = (ConstListEl*)GetStore(n);
+		C = new ConstListEl();
+		ChainLast(NewMFlds, C);
+		//L1 = (LvDescr*)GetZStore(sizeof(*L1));
+		L1 = new LvDescr();
+		L->ChainBack = L1; 
+		L1->Chain = L; 
+		L = L1;
+		L->Fld = M->FldD; 
+		M = (KeyFldD*)M->Chain;
 	}
 	return L;
 }
@@ -389,9 +477,13 @@ void RdAutoSortSK(InpD* ID)
 	L = nullptr;
 	as = ID->AutoSort;
 	if (as) {
-		SK = (KeyFldD*)(&ID->SK); M = ID->MFld; while (M != nullptr) {
-			SK->Chain = (KeyFldD*)GetStore(sizeof(*SK)); SK = (KeyFldD*)SK->Chain;
-			Move(M, SK, sizeof(*SK)); M = (KeyFldD*)M->Chain;
+		SK = (KeyFldD*)(&ID->SK); M = ID->MFld; 
+		while (M != nullptr) {
+			//SK->Chain = (KeyFldD*)GetStore(sizeof(*SK)); 
+			SK->Chain = new KeyFldD();
+			SK = (KeyFldD*)SK->Chain;
+			Move(M, SK, sizeof(*SK)); 
+			M = (KeyFldD*)M->Chain;
 		}
 	}
 	M = ID->SFld;
@@ -413,8 +505,8 @@ void RdAutoSortSK(InpD* ID)
 
 LvDescr* NewLvS(LvDescr* L, InpD* ID)
 {
-	LvDescr* L1 = nullptr;
-	L1 = (LvDescr*)GetZStore(sizeof(*L1));
+	LvDescr* L1 = new LvDescr();
+	//L1 = (LvDescr*)GetZStore(sizeof(*L1));
 	L1->Chain = L;
 	if (L == nullptr) ID->LstLvS = L1;
 	else L->ChainBack = L1;
@@ -425,19 +517,24 @@ void RdBlock(BlkD* BB)
 {
 	integer LineLen = 0;
 	integer NBytesStored = 0;
-	BYTE* LnL = nullptr; WORD* StrL = nullptr;
+	BYTE* LnL = nullptr; 
+	WORD* StrL = nullptr;
 	integer I = 0, N = 0, L = 0, M = 0;
 	bool RepeatedGrp = false;        /*RdBlock - body*/
-	RFldD* RF = nullptr; RFldD* RF1 = nullptr;
+	RFldD* RF = nullptr; 
+	RFldD* RF1 = nullptr;
 	BlkD* DummyB = nullptr;
 	char UC = 0;
 	LocVar* LV = nullptr;
-	CBlk = (BlkD*)GetZStore(sizeof(BlkD)); ChainLast(BB, CBlk);
+	//CBlk = (BlkD*)GetZStore(sizeof(BlkD)); 
+	CBlk = new BlkD();
+	if (BB == nullptr) BB = CBlk;
+	else ChainLast(BB, CBlk);
 	RdCond();
 	if (IsKeyWord("BEGIN")) { RdBeginEnd(CBlk->BeforeProc); goto label1; }
 	if (Lexem == ';') goto label2;     /*read var decl.*/
 label0:
-	if (IsKeyWord("BEGIN")) { RdBeginEnd(&CBlk->AfterProc); goto label2; }
+	if (IsKeyWord("BEGIN")) { RdBeginEnd(CBlk->AfterProc); goto label2; }
 	if (Lexem == '.') {
 		RdLex();
 		if (IsKeyWord("LINE"))
@@ -453,7 +550,9 @@ label0:
 		else Error(54);
 	}
 	else {
-		RF = (RFldD*)GetStore(sizeof(*RF) - 1); SkipBlank(false);
+		//RF = (RFldD*)GetStore(sizeof(*RF) - 1); 
+		RF = new RFldD();
+		SkipBlank(false);
 		if (ForwChar == ':') {
 			TestIdentif(); GetStore(LexWord.length());
 			Move(&LexWord, &RF->Name, LexWord.length() + 1);
@@ -461,8 +560,10 @@ label0:
 			RdLex(); Accept(_assign);
 		}
 		else RF->Name = "";
-		RF->Frml = RdFrml(RF->FrmlTyp); RF->BlankOrWrap = false;
-		ChainLast(CBlk->RFD, RF);
+		RF->Frml = RdFrml(RF->FrmlTyp); 
+		RF->BlankOrWrap = false;
+		if (CBlk->RFD == nullptr) CBlk->RFD = RF;
+		else ChainLast(CBlk->RFD, RF);
 	}
 label1:
 	if (Lexem != ';') { Accept(','); goto label0; }
@@ -473,8 +574,10 @@ label2:
 	case '\\': { CBlk->FF1 = true; ReadChar(); break; }
 	}
 label3:
-	LnL = (BYTE*)GetZStore(1);
-	StrL = (WORD*)GetZStore(2);
+	//LnL = (BYTE*)GetZStore(1);
+	LnL = new BYTE();
+	//StrL = (WORD*)GetZStore(2);
+	StrL = new (WORD);
 	LineLen = 0;
 	NBytesStored = 0;
 	if (CBlk->NTxtLines == 0) {
@@ -510,7 +613,8 @@ label3:
 				break;
 			}
 			case '.': {
-				RdCh(LineLen); if (RF->FrmlTyp != 'R') Error(12);
+				RdCh(LineLen); 
+				if (RF->FrmlTyp != 'R') Error(12);
 				M = NUnderscores(UC, LineLen);
 				if (ForwChar == '.')
 				{
@@ -546,8 +650,10 @@ label3:
 				break;
 			}
 			default: {
-				StoreCh(char(L), NBytesStored); TestSetRFTyp(RF->FrmlTyp, RepeatedGrp, RF);
-				M = 0; if (RF->Typ == 'S') M = LineLen - L + 1; /*current column*/
+				StoreCh(char(L), NBytesStored); 
+				TestSetRFTyp(RF->FrmlTyp, RepeatedGrp, RF);
+				M = 0; 
+				if (RF->Typ == 'S') M = LineLen - L + 1; /*current column*/
 				StoreCh(char(M), NBytesStored);
 				break;
 			}
@@ -586,8 +692,9 @@ void RdCh(integer& LineLen)
 
 void StoreCh(BYTE C, integer& NBytesStored)
 {
-	char* P;
-	P = (char*)GetStore(1); *P = C;
+	char* P = new char();
+	//P = (char*)GetStore(1); 
+	*P = C;
 	NBytesStored++;
 }
 

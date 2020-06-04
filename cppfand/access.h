@@ -391,10 +391,11 @@ typedef XItem* XItemPtr;
 class XPage // r289
 {
 public:
-	bool IsLeaf;
-	longint GreaterPage;  // or free pages chaining
-	WORD NItems;
-	BYTE A[XPageSize - 4];  // item array
+	XPage() {};
+	bool IsLeaf = false;
+	longint GreaterPage = 0;  // or free pages chaining
+	WORD NItems = 0;
+	BYTE A[XPageSize - 4]{'\0'};  // item array
 	WORD Off();
 	XItem* XI(WORD I);
 	uintptr_t EndOff();
@@ -494,12 +495,12 @@ public:
 class XScan
 {
 public:
-	FileD* FD;
-	KeyD* Key;
-	FrmlPtr Bool;
-	BYTE Kind;
-	longint NRecs, IRec, RecNr;
-	bool hasSQLFilter, eof;
+	FileD* FD = nullptr;
+	KeyD* Key = nullptr;
+	FrmlElem* Bool = nullptr;
+	BYTE Kind = 0;
+	longint NRecs = 0, IRec = 0, RecNr = 0;
+	bool hasSQLFilter = false, eof = false;
 	XScan(FileD* aFD, KeyD* aKey, KeyInD* aKIRoot, bool aWithT);
 	void Reset(FrmlPtr ABool, bool SQLFilter);
 	void ResetSort(KeyFldDPtr aSK, FrmlPtr& BoolZ, LockMode OldMd, bool SQLFilter);
@@ -514,16 +515,16 @@ public:
 	void SeekRec(longint I);
 	void GetRec();
 private:
-	KeyInD* KIRoot;
-	LocVar* OwnerLV;
-	KeyFldD* SK;
-	XItem* X;
-	XPage* P;
-	WORD NOnPg;
-	KeyInD* KI;
-	longint NOfKI, iOKey;
-	bool TempWX, NotFrst, withT;
-	void* Strm; // {SQLStreamPtr or LVRecPtr}
+	KeyInD* KIRoot = nullptr;
+	LocVar* OwnerLV = nullptr;
+	KeyFldD* SK = nullptr;
+	XItem* X = nullptr;
+	XPage* P = nullptr;
+	WORD NOnPg = 0;
+	KeyInD* KI = nullptr;
+	longint NOfKI = 0, iOKey = 0;
+	bool TempWX = false, NotFrst = false, withT = false;
+	void* Strm = nullptr; // {SQLStreamPtr or LVRecPtr}
 	void SeekOnKI(longint I);
 	void SeekOnPage(longint Page, WORD I);
 	void NextIntvl();

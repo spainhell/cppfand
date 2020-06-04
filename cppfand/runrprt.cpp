@@ -54,7 +54,8 @@ label0:
 	}
 	RprtPage = 1; RprtLine = 1; SetPage = false; FirstLines = true; WasDot = false;
 	WasFF2 = false; NoFF = false; LineLenLst = 0; FrstBlk = true; ResetY();
-	L = LstLvM; RFb = &LstLvM->Ft;
+	L = LstLvM; 
+	RFb = LstLvM->Ft;
 	ZeroSumFlds(L); GetMinKey(); ZeroCount(); MoveFrstRecs();
 	if (RprtHd != nullptr) {
 		if (RprtHd->FF1) FormFeed(); RprtPage = 1;
@@ -389,7 +390,7 @@ void PrintTxt(BlkD* B, bool ChkPg)
 			LineLenLst = *(Y.P); Y.P++; Y.Sz = *(WORD*)(Y.P); Y.P += 2;
 		}
 	}
-	RunAProc(B->BeforeProc); Print1NTupel(false); RunAProc(&B->AfterProc);
+	RunAProc(B->BeforeProc); Print1NTupel(false); RunAProc(B->AfterProc);
 }
 
 void TruncLine()
@@ -470,7 +471,7 @@ void PrintBlock(BlkD* B, BlkD* DH)
 
 void Footings(LvDescr* L, LvDescr* L2)
 {
-	while (L != nullptr) { PrintBlock(&L->Ft, nullptr); if (L == L2) return; L = L->Chain; }
+	while (L != nullptr) { PrintBlock(L->Ft, nullptr); if (L == L2) return; L = L->Chain; }
 }
 
 void Headings(LvDescr* L, LvDescr* L2)
@@ -665,7 +666,7 @@ void MergeProc()
 			if (WasFF2) PrintPageHd(); Headings(L, ID->FrstLvS);
 			if (PrintDH == 0) PrintDH = 1;
 		label2:
-			PrintBlock(&ID->FrstLvS->Ft, ID->FrstLvS->Hd); /*DE*/
+			PrintBlock(ID->FrstLvS->Ft, ID->FrstLvS->Hd); /*DE*/
 			SumUp(ID->Sum);
 			ReadInpFile(ID);
 			if (ID->Scan->eof) goto label4;
