@@ -12,16 +12,18 @@ enum MInstrCode { _zero, _move, _output, _locvar, _parfile, _ifthenelseM };
 struct AssignD : public Chained
 {
 	//AssignD* Chain;
-	MInstrCode Kind;
-	FieldDPtr FldD;
-	BYTE& ToPtr, FromPtr; WORD L;
-	bool Add; FrmlPtr Frml; FieldDPtr OFldD;
-	bool Add1; FrmlPtr Frml1; LocVar* LV;
-	bool Add2; FrmlPtr Frml2;
-	FileDPtr FD; FieldDPtr PFldD;
-	FrmlPtr Bool;
-	AssignD* Instr;
-	AssignD* ElseInstr;
+	MInstrCode Kind = _zero;
+	FieldDescr* FldD = nullptr;
+	BYTE* ToPtr = nullptr;
+	BYTE* FromPtr = nullptr; 
+	WORD L = 0;
+	bool Add = false; FrmlElem* Frml = nullptr; FieldDescr* OFldD = nullptr;
+	bool Add1 = false; FrmlElem* Frml1 = nullptr; LocVar* LV = nullptr;
+	bool Add2 = false; FrmlElem* Frml2 = nullptr;
+	FileD* FD = nullptr; FieldDescr* PFldD = nullptr;
+	FrmlElem* Bool = nullptr;
+	AssignD* Instr = nullptr;
+	AssignD* ElseInstr = nullptr;
 };
 
 struct OutpFD : public Chained

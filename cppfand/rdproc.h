@@ -7,7 +7,7 @@
 extern bool IsRdUserFunc;
 
 void TestCatError(WORD I, pstring Nm, bool Old);
-bool IsRecVar(LocVar* LV);
+bool IsRecVar(LocVar** LV);
 LocVar* RdRecVar();
 LocVar* RdIdxVar();
 FrmlPtr RdRecVarFldFrml(LocVar* LV, char& FTyp);

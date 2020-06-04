@@ -424,6 +424,7 @@ void RdLex()
 		}
 		default: Lexem = _lt; break;
 		}
+		break;
 	}
 	case '>':
 		if (ForwChar == '=') { ReadChar(); Lexem = _ge; }
@@ -1381,14 +1382,25 @@ FrmlPtr RdComp(char& FTyp)
 	if (Lexem >= _equ && Lexem <= _ne)
 		if (FTyp == 'R')
 		{
-			Z = GetOp(_compreal, 2); Z->P1 = Z1;
-			Z->N21 = Lexem; RdLex(); Z->N22 = RdPrecision();
-			Z->P2 = RdAdd(FTyp); TestReal(FTyp); FTyp = 'B';
+			Z = GetOp(_compreal, 2); 
+			Z->P1 = Z1;
+			Z->N21 = Lexem; 
+			RdLex(); 
+			Z->N22 = RdPrecision();
+			Z->P2 = RdAdd(FTyp); 
+			TestReal(FTyp); 
+			FTyp = 'B';
 		}
 		else {
-			TestString(FTyp); Z = GetOp(_compstr, 2); Z->P1 = Z1;
-			Z->N21 = Lexem; RdLex(); Z->N22 = RdTilde();
-			Z->P2 = RdAdd(FTyp); TestString(FTyp); FTyp = 'B';
+			TestString(FTyp); 
+			Z = GetOp(_compstr, 2); 
+			Z->P1 = Z1;
+			Z->N21 = Lexem; 
+			RdLex(); 
+			Z->N22 = RdTilde();
+			Z->P2 = RdAdd(FTyp); 
+			TestString(FTyp); 
+			FTyp = 'B';
 		}
 	else if ((Lexem == _identifier) && IsKeyWord("IN"))
 	{
@@ -1815,25 +1827,46 @@ FrmlPtr RdPrim(char& FTyp)
 		}
 		break;
 	}
-	case '^': { RdLex(); Z = GetOp(_lneg, 0); Z->P1 = RdPrim(FTyp); TestBool(FTyp); break; }
-	case '(': { RdLex(); Z = RdFormula(FTyp); Accept(')'); break; }
+	case '^': { 
+		RdLex(); 
+		Z = GetOp(_lneg, 0);
+		Z->P1 = RdPrim(FTyp); 
+		TestBool(FTyp); 
+		break; 
+	}
+	case '(': { 
+		RdLex(); 
+		Z = RdFormula(FTyp); 
+		Accept(')'); 
+		break;
+	}
 	case '-': {
-		RdLex(); if (Lexem == '-') Error(7); Z = GetOp(_unminus, 0);
-		Z->P1 = RdPrim(FTyp); TestReal(FTyp);
+		RdLex(); if (Lexem == '-') Error(7); 
+		Z = GetOp(_unminus, 0);
+		Z->P1 = RdPrim(FTyp); 
+		TestReal(FTyp);
 		break;
 	}
 	case '+': {
-		RdLex(); if (Lexem == '+') Error(7); Z = RdPrim(FTyp);
+		RdLex(); 
+		if (Lexem == '+') Error(7); 
+		Z = RdPrim(FTyp);
 		TestReal(FTyp);
 		break;
 	}
 	case _quotedstr: {
 		Z = GetOp(_const, LexWord.length() + 1);
-		FTyp = 'S'; Z->S = LexWord; RdLex();
+		FTyp = 'S';
+		Z->S = LexWord; 
+		RdLex();
 		break;
 	}
-	default: FTyp = 'R'; Z = GetOp(_const, sizeof(double));
+	default: {
+		FTyp = 'R';
+		Z = GetOp(_const, sizeof(double));
 		Z->R = RdRealConst();
+		break;
+	}
 	}
 	return Z;
 }
