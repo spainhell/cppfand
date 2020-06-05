@@ -505,6 +505,9 @@ Instr* GetPInstr(PInstrCode Kind, WORD Size)
 
 void RdPInstrAndChain(Instr** PD)
 {
+	if (InpArrLen == 0x052c && CurrPos >= 0x0190) {
+		printf("Je to tady.");
+	}
 	Instr* PD1 = RdPInstr(); /*may be a chain itself*/
 	//Instr* PD2 = *PD;
 	if (*PD != nullptr) {
@@ -785,6 +788,9 @@ Instr* RdBeginEnd()
 	Instr* PD = nullptr;
 	if (!IsKeyWord("END")) {
 	label1:
+		if (InpArrLen == 0x052c && CurrPos >= 0x0150) {
+			printf("Je to tady.");
+		}
 		RdPInstrAndChain(&PD);
 		if (Lexem == ';') {
 			RdLex();
@@ -831,7 +837,13 @@ Instr* RdProcArg(char Caller)
 	if (Caller == 'E') { N++; TArg[N].FTyp = 'r'; }
 	WORD L = N * sizeof(TypAndFrml);
 	Instr* PD = GetPInstr(_proc, sizeof(RdbPos) + 2 + L);
-	PD->Pos = Pos; PD->N = N; Move(TArg, PD->TArg, L);
+	PD->Pos = Pos; 
+	PD->N = N; 
+	if (N > 2) printf("Do PD->TArg se vejdou jen 2 zaznamy! Ukladame mimo cil ...");
+	for (size_t i = 0; i < N; i++) {
+		PD->TArg[i] = TArg[i + 1]; // do TArg ukladame od 1 - pozustatek
+	}
+	// Move(TArg, PD->TArg, L); // toto je puvodni prikaz
 	PD->ExPar = (Caller = 'E');
 	return PD;
 }

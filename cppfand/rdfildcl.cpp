@@ -549,8 +549,9 @@ label2:
 	if (L != nullptr) OldError(26);
 	//L = (LinkD*)GetZStore(sizeof(*L) - 1 + Name.length());
 	L = new LinkD();
-	L->Args = new KeyFldD(); // pridano navic, aby to o par radku niz nepadalo
-	L->Chain = LinkDRoot; LinkDRoot = L;
+	//L->Args = new KeyFldD(); // pridano navic, aby to o par radku niz nepadalo
+	L->Chain = LinkDRoot; 
+	LinkDRoot = L;
 	//Move(&Name, &L->RoleName, Name.length() + 1);
 	L->RoleName = Name;
 	L->FromFD = CFile; L->ToFD = FD; L->ToKey = K;
@@ -568,7 +569,7 @@ label2:
 			L->MemberRef = 2; 
 		}
 	}
-	Arg = (KeyFldD*)L->Args; 
+	Arg = (KeyFldD*)&L->Args; 
 	KF = K->KFlds;
 label3:
 	F = RdFldName(CFile); 
@@ -661,14 +662,17 @@ label1:
 void SetLDIndexRoot(LinkD* L, LinkD* L2)
 {
 	KeyD* K = nullptr; 
-	KeyFldD* Arg = nullptr; KeyFldD* KF = nullptr; 
+	KeyFldD* Arg = nullptr; 
+	KeyFldD* KF = nullptr; 
 	bool cmptd = false;
 	L = LinkDRoot;
 	while (L != L2) {   /* find key with equal beginning */
 		if (CFile->Typ == 'X') {
 			K = CFile->Keys;
 			while (K != nullptr) {
-				KF = K->KFlds; Arg = L->Args; cmptd = false;
+				KF = K->KFlds; 
+				Arg = L->Args; 
+				cmptd = false;
 				while (Arg != nullptr) {
 					if ((KF == nullptr) || (Arg->FldD != KF->FldD) 
 						|| (Arg->CompLex != KF->CompLex)
@@ -686,7 +690,8 @@ void SetLDIndexRoot(LinkD* L, LinkD* L2)
 		}
 	label2:
 		if ((L->MemberRef != 0) && ((L->IndexRoot == 0) || cmptd)) {
-			SetMsgPar(L->RoleName); OldError(152);
+			SetMsgPar(L->RoleName); 
+			OldError(152);
 		}
 		L = L->Chain; 
 		CFile->nLDs++;
