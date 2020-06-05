@@ -17,6 +17,7 @@
 #include "runrprt.h"
 #include "wwmenu.h"
 #include <map>
+#include "runprolg.h"
 
 
 void* O(void* p) // ASM
@@ -1177,7 +1178,14 @@ bool CompRunChptRec(WORD CC)
 			break;
 		}
 #ifdef FandProlog
-		case 'L': if (CC = _CtrlF9_) { TextAttr = ProcAttr; ClrScr; RunProlog(RP, nullptr); break; }
+		case 'L': {
+			if (CC = _CtrlF9_) {
+				TextAttr = ProcAttr;
+				ClrScr();
+				RunProlog(&RP, nullptr);
+			}
+			break;
+		}
 #endif
 		}
 	WasError = false;
@@ -1592,7 +1600,11 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 				break;
 			}
 #ifdef FandProlog
-			case 'L': { SetInpTTPos(Txt, Encryp); ReadProlog(I); break; }
+			case 'L': { 
+				SetInpTTPos(Txt, Encryp); 
+				ReadProlog(I); 
+				break; 
+			}
 #endif
 			}
 			}

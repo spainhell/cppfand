@@ -114,6 +114,9 @@
     <ClCompile Include="expimp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="runprolg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base.h">
@@ -222,6 +225,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="screen.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="runprolg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

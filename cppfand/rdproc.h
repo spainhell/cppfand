@@ -80,7 +80,7 @@ void RdSetEditTxt();
 #ifndef FandSQL
 void RdSqlRdWrTxt(bool Rd);
 #endif
-#ifndef FandProlog
+#ifdef FandProlog
 void RdCallLProc();
 #endif
 FrmlPtr AdjustComma(FrmlPtr Z1, FieldDPtr F, char Op);

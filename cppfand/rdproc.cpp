@@ -1079,7 +1079,7 @@ void RdProcCall(Instr** pinstr)
 		PD->Frml = RdRealFrml();
 	}
 #ifdef FandProlog
-	else if (IsKeyWord("LPROC")) RdCallLProc;
+	else if (IsKeyWord("LPROC")) RdCallLProc();
 #endif
 
 #ifdef FandGraph
@@ -2435,9 +2435,13 @@ void RdSqlRdWrTxt(bool Rd)
 #ifdef FandProlog
 void RdCallLProc()
 {
-	Instr* pd = GetPD(_lproc, sizeof(RdbPos) + 4); RdChptName('L', pd->lpPos, true);
+	Instr* pd = GetPD(_lproc, sizeof(RdbPos) + 4); 
+	RdChptName('L', &pd->lpPos, true);
 	if (Lexem == ',') {
-		RdLex(); TestIdentif(); pd->lpName = StoreStr(LexWord); RdLex();
+		RdLex(); 
+		TestIdentif(); 
+		pd->lpName = StoreStr(LexWord); 
+		RdLex();
 	}
 }
 #endif

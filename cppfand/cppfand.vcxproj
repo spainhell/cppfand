@@ -178,6 +178,7 @@
     <ClCompile Include="runfand.cpp" />
     <ClCompile Include="runfrml.cpp" />
     <ClCompile Include="runproc.cpp" />
+    <ClCompile Include="runprolg.cpp" />
     <ClCompile Include="runrprt.cpp" />
     <ClCompile Include="screen.cpp" />
     <ClCompile Include="sort.cpp" />
@@ -215,6 +216,7 @@
     <ClInclude Include="runfand.h" />
     <ClInclude Include="runfrml.h" />
     <ClInclude Include="runproc.h" />
+    <ClInclude Include="runprolg.h" />
     <ClInclude Include="runrprt.h" />
     <ClInclude Include="screen.h" />
     <ClInclude Include="sort.h" />

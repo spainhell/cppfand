@@ -23,6 +23,7 @@
 #include "runrprt.h"
 #include "wwmenu.h"
 #include "wwmix.h"
+#include "runprolg.h"
 
 
 void UserHeadLine(pstring UserHeader)
@@ -898,7 +899,7 @@ void RunInstr(Instr* PD)
 		case _gotoxy: screen.GotoXY(RunInt(PD->GoX), RunInt(PD->GoY));
 		case _merge: MergeProc(PD); break;
 #ifdef FandProlog
-		case _lproc: RunProlog(PD->lpPos, PD->lpName); break;
+		case _lproc: RunProlog(&PD->lpPos, PD->lpName); break;
 #endif
 		case _report: ReportProc(PD->RO, true); break;
 		case _sort: SortProc(PD->SortFD, PD->SK); break;
