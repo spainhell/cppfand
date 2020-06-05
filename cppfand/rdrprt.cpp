@@ -155,16 +155,26 @@ label1:
 
 void RdDirFilVar(char& FTyp, FrmlElem** res)
 {
-	LinkD* LD = nullptr; FileD* FD = nullptr; integer I = 0; FrmlPtr Z = nullptr;
+	LinkD* LD = nullptr; 
+	FileD* FD = nullptr; 
+	integer I = 0; 
+	FrmlPtr Z = nullptr;
 	if (WasIiPrefix) {
-		CFile = InpFD(Ii); if (!IsRoleName(true, FD, LD)) Error(9);
+		CFile = InpFD(Ii); 
+		if (!IsRoleName(true, &FD, &LD)) Error(9);
 	}
 	else {
 		if (!Join && (WhatToRd == 'i')) {
-			Ii = Oi; CFile = InpFD(Ii); if (IsRoleName(true, FD, LD)) goto label2;
+			Ii = Oi; 
+			CFile = InpFD(Ii); 
+			if (IsRoleName(true, &FD, &LD)) goto label2;
 		}
-		for (I = 1; I < MaxIi; I++) {
-			CFile = InpFD(I); if (IsRoleName(true, FD, LD)) { Ii = I; goto label2; }
+		for (I = 1; I <= MaxIi; I++) {
+			CFile = InpFD(I); 
+			if (IsRoleName(true, &FD, &LD)) { 
+				Ii = I; 
+				goto label2; 
+			}
 			if ((WhatToRd == 'i') && (I == Oi)) goto label1;
 		}
 	label1:
@@ -241,18 +251,27 @@ void Err()
 
 void ChainSumElR()
 {
-	SumElPtr S; 
-	FloatPtrList Z;
+	SumElem* S = nullptr; 
 	if (FrstSumVar || (SumIi == 0)) SumIi = 1;
-	if (FrstSumVar || (CBlk == nullptr)) S = (SumElPtr)(&IDA[SumIi]->Sum);
-	else S = (SumElPtr)&CBlk->Sum;
-	FrmlSumEl->Chain = S->Chain; 
-	S->Chain = FrmlSumEl;
+	if (FrstSumVar || (CBlk == nullptr)) S = IDA[SumIi]->Sum;
+	else S = CBlk->Sum;
+
+	// TODO: byla pridana kontrola S, tady to padalo ...
+	if (S != nullptr) {
+		FrmlSumEl->Chain = S->Chain;
+		S->Chain = FrmlSumEl;
+	}
+	
 	if (CBlkSave != nullptr) { CBlk = CBlkSave; CBlkSave = nullptr; }
-	Z = (FloatPtrListEl*)GetStore(sizeof(*Z));
+	//Z = (FloatPtrListEl*)GetStore(sizeof(*Z));
+	FloatPtrListEl* Z = new FloatPtrListEl();
 	Z->RPtr = &FrmlSumEl->R;
-	Z->Chain = CZeroLst->Chain; 
-	CZeroLst->Chain = Z;
+
+	// TODO: byla pridana kontrola CZeroLst, tady to padalo ...
+	if (CZeroLst != nullptr) {
+		Z->Chain = CZeroLst->Chain;
+		CZeroLst->Chain = Z;
+	}
 }
 
 void ReadReport(RprtOpt* RO)
@@ -454,10 +473,12 @@ LvDescr* MakeOldMLvD()
 		n = sizeof(void*) + M->FldD->NBytes + 1;
 		//ConstListEl* C = (ConstListEl*)GetStore(n);
 		ConstListEl* C = new ConstListEl();
-		ChainLast(OldMFlds, C);
+		if (OldMFlds == nullptr) OldMFlds = C;
+		else ChainLast(OldMFlds, C);
 		//C = (ConstListEl*)GetStore(n);
 		C = new ConstListEl();
-		ChainLast(NewMFlds, C);
+		if (NewMFlds == nullptr) NewMFlds = C;
+		else ChainLast(NewMFlds, C);
 		//L1 = (LvDescr*)GetZStore(sizeof(*L1));
 		L1 = new LvDescr();
 		L->ChainBack = L1; 
@@ -477,25 +498,32 @@ void RdAutoSortSK(InpD* ID)
 	L = nullptr;
 	as = ID->AutoSort;
 	if (as) {
-		SK = (KeyFldD*)(&ID->SK); M = ID->MFld; 
+		SK = (KeyFldD*)(&ID->SK); 
+		M = ID->MFld; 
 		while (M != nullptr) {
 			//SK->Chain = (KeyFldD*)GetStore(sizeof(*SK)); 
 			SK->Chain = new KeyFldD();
 			SK = (KeyFldD*)SK->Chain;
-			Move(M, SK, sizeof(*SK)); 
+			//Move(M, SK, sizeof(*SK)); 
+			*SK = *M;
 			M = (KeyFldD*)M->Chain;
 		}
 	}
 	M = ID->SFld;
 	while (M != nullptr) {
-		L = NewLvS(L, ID); L->Fld = M->FldD;
+		L = NewLvS(L, ID); 
+		L->Fld = M->FldD;
 		n = sizeof(void*) + M->FldD->NBytes + 1;
-		C = (ConstListEl*)GetStore(n);
-		ChainLast(ID->OldSFlds, C);
+		//C = (ConstListEl*)GetStore(n);
+		C = new ConstListEl();
+		if (ID->OldSFlds == nullptr) ID->OldSFlds = C;
+		else ChainLast(ID->OldSFlds, C);
 		if (as) {
-			SK->Chain = (KeyFldD*)GetStore(sizeof(*SK));
+			//SK->Chain = (KeyFldD*)GetStore(sizeof(*SK));
+			SK->Chain = new KeyFldD();
 			SK = (KeyFldD*)SK->Chain;
-			Move(M, SK, sizeof(*SK));
+			//Move(M, SK, sizeof(*SK));
+			*SK = *M;
 		}
 		M = (KeyFldD*)M->Chain;
 	}

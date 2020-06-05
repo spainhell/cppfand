@@ -51,7 +51,7 @@ FieldDPtr RdFldName(FileDPtr FD); // r17
 FileDPtr FindFileD(); // r22
 FileD* RdFileName(); // r34
 LinkDPtr FindLD(pstring RoleName); // r41
-bool IsRoleName(bool Both, FileDPtr& FD, LinkDPtr& LD); // r49
+bool IsRoleName(bool Both, FileD** FD, LinkD** LD); // r49
 FrmlPtr RdFAccess(FileDPtr FD, LinkD* LD, char& FTyp); // r58
 FrmlPtr TryRdFldFrml(FileDPtr FD, char& FTyp); // r76
 FrmlElem* RdFldNameFrmlF(char& FTyp); // r111
@@ -67,7 +67,7 @@ FrmlPtr RdStrFrml();
 KeyDPtr RdViewKey(); // r238
 KeyFldD* RdKF(FileD* FD);
 WORD RdKFList(KeyFldD** KFRoot, FileD* FD); // r298
-bool IsKeyArg(FieldDPtr F, FileDPtr FD); // r278
+bool IsKeyArg(FieldDescr* F, FileD* FD); // r278
 void CompileRecLen();
 void* SaveCompState(); // r104
 void RestoreCompState(void* p); // 109

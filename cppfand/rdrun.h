@@ -344,19 +344,19 @@ struct ChoiceD : Chained
 struct WrLnD : public Chained
 {
 	//WrLnD* Chain;
-	FrmlPtr Frml;
-	char Typ; /*S,B,F,D*/
-	BYTE N, M;
-	pstring* Mask;
+	FrmlElem* Frml = nullptr;
+	char Typ = '\0'; /*S,B,F,D*/
+	BYTE N = 0, M = 0;
+	pstring* Mask = nullptr;
 };
 
 struct LockD
 {
-	LockD* Chain;
-	FileD* FD;
-	FrmlPtr Frml;
+	LockD* Chain = nullptr;
+	FileD* FD = nullptr;
+	FrmlElem* Frml = nullptr;
 	LockMode Md, OldMd;
-	longint N;
+	longint N = 0;
 };
 
 struct GraphVD : public Chained

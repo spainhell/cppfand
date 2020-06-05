@@ -99,7 +99,8 @@ char RdOwner(LinkD* LLD, LocVar* LLV)
 			if ((ld1->FromFD == CFile) && (ld1->IndexRoot != 0) && (ld1->ToFD == lv->FD))
 				ld = ld1; ld1 = ld1->Chain;
 		}
-		if (ld == nullptr) Error(116); RdLex();
+		if (ld == nullptr) Error(116); 
+		RdLex();
 		if (lv->FTyp == 'f') goto label2; else goto label1;
 	}
 	TestIdentif();
@@ -111,14 +112,18 @@ char RdOwner(LinkD* LLD, LocVar* LLV)
 			if (Lexem == '(') {
 				RdLex();
 				if (!FindLocVar(LVBD.Root, &lv) || !(lv->FTyp == 'i' || lv->FTyp == 'r')) Error(177);
-				RdLex(); Accept(')'); if (lv->FD != fd) OldError(149);
+				RdLex(); 
+				Accept(')'); 
+				if (lv->FD != fd) OldError(149);
 			label1:
 				if (lv->FTyp == 'i') {
 					KeyFldD* kf = WKeyDPtr(lv->RecPtr)->KFlds;
 					if (ld->FromFD->IsSQLFile || ld->ToFD->IsSQLFile) OldError(155);
 					if ((kf != nullptr) && !EquKFlds(kf, ld->ToKey->KFlds)) OldError(181);
 				}
-				LLV = lv; result = lv->FTyp; goto label3;
+				LLV = lv; 
+				result = lv->FTyp; 
+				goto label3;
 			}
 			else {
 			label2:
@@ -126,9 +131,14 @@ char RdOwner(LinkD* LLD, LocVar* LLV)
 				if (ld->ToFD->typSQLFile) Error(155);
 #endif
 
-				Accept('['); LLV = (LocVar*)RdRealFrml(); Accept(']'); result = 'F';
-			label3: LLD = ld; return result;
-			};
+				Accept('['); 
+				LLV = (LocVar*)RdRealFrml(); 
+				Accept(']'); 
+				result = 'F';
+			label3: 
+				LLD = ld; 
+				return result;
+			}
 		}
 		ld = ld->Chain;
 	}
@@ -151,12 +161,17 @@ FrmlPtr RdFldNameFrmlP(char& FTyp)
 			return result;
 		}
 		else {
-			pstring FName = LexWord; bool linked = IsRoleName(FileVarsAllowed, FD, LD);
-			if (FD != nullptr) FName = FD->Name; if (!linked) RdLex();
+			pstring FName = LexWord; 
+			bool linked = IsRoleName(FileVarsAllowed, &FD, &LD);
+			if (FD != nullptr) FName = FD->Name; 
+			if (!linked) RdLex();
 			RdLex();
 			FTyp = 'R';
 			if (IsKeyWord("LASTUPDATE")) {
-				Op = _lastupdate; if (FD != nullptr) goto label2; F = nullptr; goto label1;
+				Op = _lastupdate; 
+				if (FD != nullptr) goto label2; 
+				F = nullptr; 
+				goto label1;
 			}
 			if (IsKeyWord("ARCHIVES")) { F = CatArchiv; goto label0; }
 			if (IsKeyWord("PATH")) { F = CatPathName; goto label0; }
@@ -225,6 +240,7 @@ FrmlPtr RdFldNameFrmlP(char& FTyp)
 		return result;
 	}
 	Error(8);
+	return result;
 }
 
 FileD* RdPath(bool NoFD, pstring* Path, WORD& CatIRec)
@@ -350,7 +366,7 @@ FrmlPtr RdFunctionP(char& FFTyp)
 #endif
 		cf = CFile;
 		CFile = FD;
-		if (!IsRoleName(true, FD, LD) || (LD == nullptr)) Error(9);
+		if (!IsRoleName(true, &FD, &LD) || (LD == nullptr)) Error(9);
 		CFile = cf;
 		Z->LinkLD = LD;
 		FTyp = 'R';
@@ -415,7 +431,7 @@ FrmlPtr RdFunctionP(char& FFTyp)
 	}
 #ifdef FandSQL
 	else if (IsKeyWord("SQL")) {
-		RdLex; Z = GetOp(_sqlfun, 0); Z->P1 = RdStrFrml(); FTyp = 'R';
+		RdLex(); Z = GetOp(_sqlfun, 0); Z->P1 = RdStrFrml(); FTyp = 'R';
 	}
 #endif
 	else if (IsKeyWord("SELECTSTR")) {
@@ -698,17 +714,29 @@ label1: PD->Bool = RdBool();
 
 Instr* RdForAll()
 {
-	LocVar* LVi = nullptr; LocVar* LVr = nullptr;
-	LinkD* LD = nullptr; FrmlPtr Z = nullptr;
+	LocVar* LVi = nullptr; 
+	LocVar* LVr = nullptr;
+	LinkD* LD = nullptr; 
+	FrmlElem* Z = nullptr;
 	if (!FindLocVar(LVBD.Root, &LVi)) Error(122);
 	RdLex();
-	if (LVi->FTyp == 'r') { LVr = LVi; LVi = nullptr; CFile = LVr->FD; }
+	if (LVi->FTyp == 'r') { 
+		LVr = LVi; 
+		LVi = nullptr; 
+		CFile = LVr->FD; 
+	}
 	else {
-		TestReal(LVi->FTyp); AcceptKeyWord("IN");
+		TestReal(LVi->FTyp); 
+		AcceptKeyWord("IN");
 		if (FindLocVar(LVBD.Root, &LVr)) {
-			if (LVr->FTyp == 'f') { CFile = LVr->FD; RdLex(); goto label1; }
+			if (LVr->FTyp == 'f') { 
+				CFile = LVr->FD; 
+				RdLex(); 
+				goto label1; 
+			}
 			if (LVr->FTyp != 'r') Error(141);
-			CFile = LVr->FD; RdLex();
+			CFile = LVr->FD; 
+			RdLex();
 		}
 		else {
 			CFile = RdFileName();
@@ -720,7 +748,10 @@ Instr* RdForAll()
 #endif
 	}
 	Instr* PD = GetPInstr(_forall, 41);
-	PD->CFD = CFile; PD->CVar = LVi; PD->CRecVar = *LVr;
+	PD->CFD = CFile; 
+	PD->CVar = LVi; 
+	// TODO: tady je podminka, by to nespadlo
+	if (LVr != nullptr)	PD->CRecVar = *LVr;
 #ifdef FandSQL
 	if (CFile->typSQLFile && IsKeyWord("IN")) {
 		AcceptKeyWord("SQL"); Accept('('); PD->CBool = RdStrFrml(); Accept(')');
@@ -729,7 +760,8 @@ Instr* RdForAll()
 #endif
 	if (IsKeyWord("OWNER")) {
 		/* !!! with PD^ do!!! */
-		PD->COwnerTyp = RdOwner(PD->CLD, PD->CLV); CViewKey = GetFromKey(PD->CLD);
+		PD->COwnerTyp = RdOwner(PD->CLD, PD->CLV); 
+		CViewKey = GetFromKey(PD->CLD);
 	}
 	else CViewKey = RdViewKey();
 	if (Lexem == '(') {
@@ -743,7 +775,8 @@ Instr* RdForAll()
 	if (Lexem == '%') { RdLex(); PD->CProcent = true; }
 	PD->CKey = CViewKey;
 label2:
-	AcceptKeyWord("DO"); PD->CInstr = RdPInstr();
+	AcceptKeyWord("DO"); 
+	PD->CInstr = RdPInstr();
 	return PD;
 }
 
@@ -986,7 +1019,10 @@ void RdProcCall(Instr** pinstr)
 	Instr* PD = nullptr;
 	if (IsKeyWord("EXEC")) RdExec();
 	else if (IsKeyWord("COPYFILE")) RdCopyFile();
-	else if (IsKeyWord("PROC")) { RdLex(); *pinstr = RdProcArg('P'); }
+	else if (IsKeyWord("PROC")) { 
+		RdLex(); 
+		*pinstr = RdProcArg('P'); 
+	}
 	else if (IsKeyWord("DISPLAY")) RdDisplay();
 	else if (IsKeyWord("CALL")) RdRDBCall();
 	else if (IsKeyWord("WRITELN")) RdWriteln(1, pinstr);
@@ -1558,9 +1594,11 @@ void RdTurnCat()
 
 void RdWriteln(BYTE OpKind, Instr** pinstr)
 {
-	WrLnD* d;
+	WrLnD* d = new WrLnD();
 	RdLex();
-	FrmlPtr z = nullptr; FillChar(&d, sizeof(d), 0); WrLnD* w = d;
+	FrmlElem* z = nullptr; 
+	//FillChar(&d, sizeof(d), 0); 
+	WrLnD* w = d;
 label1:
 	/* !!! with w^ do!!! */
 	w->Frml = RdFrml(w->Typ);
@@ -1570,13 +1608,17 @@ label1:
 			RdLex();
 			if (Lexem == _quotedstr) {
 				w->Typ = 'D';
-				w->Mask = StoreStr(LexWord); RdLex();
+				w->Mask = StoreStr(LexWord); 
+				RdLex();
 			}
 			else {
 				w->N = RdInteger();
 				if (Lexem == ':') {
 					RdLex();
-					if (Lexem == '-') { RdLex(); w->M = -RdInteger(); }
+					if (Lexem == '-') { 
+						RdLex(); 
+						w->M = -RdInteger(); 
+					}
 					else w->M = RdInteger();
 				}
 			}
@@ -1586,8 +1628,10 @@ label1:
 		RdLex();
 		if ((OpKind == 2) && IsOpt("HELP")) z = RdStrFrml();
 		else {
-			w = (WrLnD*)GetZStore(sizeof(d));
-			ChainLast(d, w);  // TODO: tady bylo (&d, w)
+			//w = (WrLnD*)GetZStore(sizeof(d));
+			w = new WrLnD();
+			if (d == nullptr) d = w;
+			else ChainLast(d, w);
 			goto label1;
 		}
 	}
@@ -1792,7 +1836,7 @@ void RdGraphP()
 		else if (IsOpt("WW")) {
 			Ww = (WinG*)GetZStore(sizeof(*Ww));
 			Accept('(');
-			if (Lexem == '(') { RdLex; Ww->WFlags = WNoPop; }
+			if (Lexem == '(') { RdLex(); Ww->WFlags = WNoPop; }
 			RdW(Ww->W); RdFrame(Ww->Top, Ww->WFlags);
 			if (Lexem == ',') {
 				RdLex(); Ww->ColBack = RdStrFrml(); Accept(',');
@@ -1941,19 +1985,24 @@ AssignD* MakeImplAssign(FileD* FD1, FileD* FD2)
 	ARoot = nullptr;
 	FieldDPtr F1 = FD1->FldD;
 	while (F1 != nullptr) {
-		if (F1->Flg && f_Stored != 0) {
+		if ((F1->Flg & f_Stored) != 0) {
 			LexWord = F1->Name;
-			FieldDPtr F2 = FindFldName(FD2);
+			FieldDescr* F2 = FindFldName(FD2);
 			if (F2 != nullptr) {
-				A = (AssignD*)GetZStore(sizeof(*A));
-				ChainLast(ARoot, A);
-				if ((F2->FrmlTyp != F1->FrmlTyp) || (F1->FrmlTyp == 'R')
+				//A = (AssignD*)GetZStore(sizeof(*A));
+				A = new AssignD();
+				if (ARoot == nullptr) ARoot = A;
+				else ChainLast(ARoot, A);
+				if ((F2->FrmlTyp != F1->FrmlTyp) 
+					|| (F1->FrmlTyp == 'R')
 					&& (F1->Typ != F2->Typ)) {
-					A->Kind = _zero; A->FldD = F1;
+					A->Kind = _zero; 
+					A->FldD = F1;
 				}
 				else {
-					A->Kind = _output; A->OFldD = F1;
-					FrmlPtr Z = MakeFldFrml(F2, FTyp);
+					A->Kind = _output; 
+					A->OFldD = F1;
+					FrmlElem* Z = MakeFldFrml(F2, FTyp);
 					Z = AdjustComma(Z, F2, _divide);
 					A->Frml = FrmlContxt(AdjustComma(Z, F1, _times), FD2, nullptr);
 				}

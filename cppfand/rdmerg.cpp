@@ -103,18 +103,18 @@ void RdDirFilVar_M(char& FTyp, FrmlElem* res)
 	if (WasIiPrefix)
 	{
 		CFile = InpFD_M(Ii);
-		if (!IsRoleName(true, FD, LD)) Error(9);
+		if (!IsRoleName(true, &FD, &LD)) Error(9);
 	}
 	else {
 		if (!Join && (WhatToRd == 'i'))
 		{
 			Ii = Oi; CFile = InpFD_M(Ii);
-			if (IsRoleName(true, FD, LD)) goto label2;
+			if (IsRoleName(true, &FD, &LD)) goto label2;
 		}
 		for (I = 1; I < MaxIi; I++)
 		{
 			CFile = InpFD_M(I);
-			if (IsRoleName(true, FD, LD)) { Ii = I; goto label2; }
+			if (IsRoleName(true, &FD, &LD)) { Ii = I; goto label2; }
 			if ((WhatToRd == 'i') && (I == Oi)) goto label1;
 		}
 	label1:

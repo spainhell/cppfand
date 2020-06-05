@@ -815,9 +815,9 @@ bool IsNullValue(void* p, WORD l)
 	BYTE* pb = (BYTE*)p;
 	for (size_t i = 0; i < l; i++)
 	{
-		if (pb[i] == 0xFF) return true;
+		if (pb[i] != 0xFF) return false;
 	}
-	return false;
+	return true;
 }
 
 // v CRecPtr se posune o F->Displ a vyète integer
@@ -2333,9 +2333,11 @@ bool XKey::Search(XString& XX, bool AfterEqu, longint& RecNr)
 	WORD iItem = 0;
 	char result;
 	{
-		p = (XPage*)GetStore(XPageSize);
+		p = new XPage(); // (XPage*)GetStore(XPageSize);
 	label1:
-		XPathN = 1; longint page = IndexRoot; AfterEqu = AfterEqu && Duplic;
+		XPathN = 1; 
+		longint page = IndexRoot; 
+		AfterEqu = AfterEqu && Duplic;
 		XPath[XPathN].Page = page;
 		XF()->RdPage(p, page);
 		XItemPtr x = XItemPtr(p->A);
@@ -2420,10 +2422,13 @@ longint XKey::PathToNr()
 
 void XKey::NrToPath(longint I)
 {
-	XPagePtr p = (XPage*)GetStore(XPageSize);
-	longint page = IndexRoot; XPathN = 0;
+	XPage* p = new XPage(); // (XPage*)GetStore(XPageSize);
+	longint page = IndexRoot; 
+	XPathN = 0;
 label1:
-	XF()->RdPage(p, page); XPathN++; XPath[XPathN].Page = page;
+	XF()->RdPage(p, page); 
+	XPathN++; 
+	XPath[XPathN].Page = page;
 	if (p->IsLeaf) {
 		if (I > p->NItems + 1) XF()->Err(837);
 		XPath[XPathN].I = I;
@@ -2432,7 +2437,10 @@ label1:
 	}
 	XItemPtr x = XItemPtr(p->A);
 	for (WORD j = 1; j < p->NItems; j++) {
-		if (I <= x->GetN()) { XPath[XPathN].I = j; page = x->DownPage; goto label1; }
+		if (I <= x->GetN()) { 
+			XPath[XPathN].I = j; 
+			page = x->DownPage; 
+			goto label1; }
 		I -= x->GetN();
 		x = x->Next(oNotLeaf);
 	}
@@ -2739,12 +2747,14 @@ void XWKey::Open(KeyFldD* KF, bool Dupl, bool Intvl)
 
 void XWKey::Close()
 {
-	ReleaseTree(IndexRoot, true); IndexRoot = 0;
+	ReleaseTree(IndexRoot, true); 
+	IndexRoot = 0;
 }
 
 void XWKey::Release()
 {
-	ReleaseTree(IndexRoot, false); NR = 0;
+	ReleaseTree(IndexRoot, false); 
+	NR = 0;
 }
 
 void XWKey::ReleaseTree(longint Page, bool IsClose)

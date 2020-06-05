@@ -291,42 +291,42 @@ struct DBaseHd // ø. 213
 
 struct LinkD // ø. 220
 {
-	LinkD* Chain;
-	WORD IndexRoot;
-	BYTE MemberRef; // { 0-no, 1-!, 2-!!(no delete)}
-	KeyFldD* Args;
-	FileDPtr FromFD, ToFD;
-	KeyDPtr ToKey;
+	LinkD* Chain = nullptr;
+	WORD IndexRoot = 0;
+	BYTE MemberRef = 0; // { 0-no, 1-!, 2-!!(no delete)}
+	KeyFldD* Args = nullptr;
+	FileD* FromFD = nullptr; FileD* ToFD = nullptr;
+	KeyD* ToKey = nullptr;
 	pstring RoleName;
 };
 typedef LinkD* LinkDPtr;
 
 struct LocVarBlkD : public Chained// ø. 228
 {
-	LocVar* Root;
-	WORD NParam, Size;
+	LocVar* Root = nullptr;
+	WORD NParam = 0, Size = 0;
 };
 
 struct FuncD // ø. 233
 {
-	FuncD* Chain;
-	char FTyp;
+	FuncD* Chain = nullptr;
+	char FTyp = '\0';
 	LocVarBlkD LVB; // {1.LV is result}
-	void* Instr; // {InstrPtr}
+	void* Instr = nullptr; // {InstrPtr}
 	pstring Name;
 };
 
 struct LocVar : public Chained // ø. 239
 {
-	bool IsPar;
-	char FTyp;
-	FileD* FD;
-	void* RecPtr;
+	bool IsPar = false;
+	char FTyp = '\0';
+	FileD* FD = nullptr;
+	void* RecPtr = nullptr;
 	pstring Name;
-	char Op;
-	WORD BPOfs;
-	bool IsRetPar;
-	FrmlElem* Init;
+	char Op = '\0';
+	WORD BPOfs = 0;
+	bool IsRetPar = false;
+	FrmlElem* Init = nullptr;
 };
 
 struct RdbD // ø. 243
