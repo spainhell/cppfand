@@ -726,14 +726,416 @@ label4:
 	}
 }
 
-void RdConstants();
-WORD GetPredicate(); /*PPredicate*/
-WORD RdPredicate(); /*PPredicate*/
-WORD GetOutpMask(TPredicate* P);
-void RdPredicateDcl(bool FromClauses, TDatabase* Db);
-WORD GetCommand(TCommandTyp Code, WORD N);
-void RdTermList(TCommand* C, WORD D, WORD Kind);
-WORD RdCommand(); /*PCommand*/
+void RdConstants()
+{
+	TConst* p;
+	WORD pofs = 0; // absolute p
+	WORD dofs = 0;
+label1:
+	dofs = RdDomain();
+	Accept(':');
+label2:
+	TestIdentif();
+	if (IsCharUpper2(LexWord[1])) Error(515);
+	if (FindConst(dofs) != 0) Error(505);
+	p = ptr(_Sg, GetZStor(sizeof(TConst) - 1 + LexWord.length()));
+	Move(LexWord, p->Name, LexWord.length() + 1);
+	RdLex();
+	p->Dom = dofs;
+	Accept('=');
+	p->Expr = RdTerm(dofs, 6);
+	ChainLst(Roots->Consts, pofs);
+	if (Lexem = ',') { RdLex; goto label2; }
+	if (!(Lexem = 0x1A || Lexem == '#')) goto label1;
+}
+
+WORD GetPredicate() /*PPredicate*/
+{
+	TPredicate* p = nullptr;
+	WORD pofs = 0;  // absolute p
+	PtrRec(p).Seg = _Sg;
+	pofs = Roots->Predicates;
+	while (pofs != 0) {
+		if (LexWord == PString(ptr(_Sg, p->Name))^) { RdLex; goto label1; }
+		pofs = p->Chain;
+	}
+	pofs = ClausePreds;
+	while (pofs != 0) {
+		if (LexWord == PString(ptr(_Sg, p->Name))^) { RdLex; goto label1; }
+		pofs = p->Chain;
+	}
+label1:
+	return pofs;
+}
+
+WORD RdPredicate() /*PPredicate*/
+{
+	WORD pofs = GetPredicate();
+	if (pofs = 0) Error(513);
+	return pofs;
+}
+
+WORD GetOutpMask(TPredicate* P)
+{
+	return (0xffff >> (16 - P->Arity)) && !P->InpMask;
+}
+
+void RdPredicateDcl(bool FromClauses, TDatabase* Db)
+{
+	TDomain* d = nullptr;
+	WORD dofs = 0; // absolute d
+	TPredicate* p = nullptr;
+	WORD pofs = 0; // absolute p
+	TScanInf* si = nullptr;
+	WORD siofs = 0; // absolute si
+	TFldList* fl = nullptr;
+	WORD flofs = 0; // absolute fl
+	Instr* ip = nullptr;
+	WORD ipofs = 0; // absolute ip
+	WORD nm = 0; /*PString*/
+	integer i = 0, n = 0;
+	WORD w = 0, m = 0;
+	WORD a[32]{ 0 }; /*PDomain*/
+	RdbPos pos;
+	char typ = '\0';
+	WORD bpOfs = 0;
+	bool isOutp = false, b = false;
+	FieldDescr* f = nullptr;
+	BYTE o = 0;
+	RdbD* r = nullptr;
+	FrmlElem* z = nullptr;
+	WORD zofs = 0; // absolute z
+
+	PtrRec(d).Seg = _Sg; PtrRec(p).Seg = _Sg; PtrRec(si).Seg = _Sg;
+	PtrRec(fl).Seg = _Sg; PtrRec(ip).Seg = _Sg;
+	o = 0;
+	if (Db != nullptr) o = _DbaseOpt + _CioMaskOpt;
+	if (Lexem = '@') {
+		RdLex();
+		o = o || _FandCallOpt;
+	}
+	else if (Db != nullptr) o = o || _PackInpOpt;
+	TestIdentif();
+	if (IsCharUpper(LexWord[1])) Error(518);
+	if (GetPredicate != 0) OldError(505);
+	nm = StorStr(LexWord);
+	if ((o & _FandCallOpt) != 0) {
+		if (Db != nullptr) {
+			siofs = GetZStor(sizeof(TScanInf) - 1 + LexWord.length());
+			Move(LexWord, si->Name, LexWord.length() + 1);
+			CFile = RdFileName();
+			if (CFile->typSQLFile) OldError(155);
+			si->FD = CFile;
+			goto label2;
+		}
+		else {
+			SkipBlank(false);
+			if (ForwChar = '[') {
+				RdLex();
+				RdLex();
+				TestLex(_quotedstr);
+				z = GetOp(_const, LexWord.length() + 1);
+				z->S = LexWord;
+				pos.R = ptr(0, OOfs(z));
+				pos.IRec = 0;
+				Accept(_quotedstr);
+				TestLex(']');
+			}
+			else {
+				if (!FindChpt('P', LexWord, false, pos)) Error(37);
+				pos.R = ptr(0, StorStr(LexWord));
+				pos.IRec = 0xffff;
+			}
+		}
+	}
+	RdLex();
+label2:
+	n = 0; w = 0; m = 1;
+	if (Lexem = '(') {
+		RdLex();
+	label3:
+		if (Db != nullptr) {
+			if ((o & _FandCallOpt) != 0) {
+				f = RdFldName(CFile);
+				flofs = GetZStor(sizeof(TFldList));
+				fl->FldD = OPtr(PtrRec(CFile).Seg, f);
+				ChainLst(si->FL, flofs);
+				dofs = 0;
+				Accept('/');
+				dofs = RdDomain();
+				switch (f->FrmlTyp) {
+				case 'B': { if (dofs != BoolDom) OldError(510); break; }
+				case 'R': {
+					if ((dofs != RealDom) && ((f->Typ != 'F') || (dofs != IntDom))) OldError(510);
+					break;
+				}
+				default: {
+					if (f->Typ = 'T') {
+						if ((dofs != LongStrDom) && ((d->Typ != _FunD) || (dofs = BoolDom))) OldError(510);
+					}
+					else if (dofs != StrDom) OldError(510);
+					break;
+				}
+				}
+				goto label4;
+			}
+			else if (Lexem = '&') RdLex();
+			else w = w || m;
+			dofs = RdDomain();
+			if ((dofs = LongStrDom) && (Db != nullptr)) OldError(541);
+			if (((o & _FandCallOpt) != 0) && (d->Typ = _FunD) && (dofs != BoolDom))	OldError(528);
+		label4:
+			a[n] = dofs; n++; m = m << 1;
+			if (Lexem = ',') {
+				if (n = 15) Error(519);
+				RdLex();
+				goto label3;
+			}
+			Accept(')');
+		}
+		pofs = GetZStor(sizeof(TPredicate) - 6 + 2 * n);
+		if (FromClauses) ChainLst(ClausePreds, pofs);
+		else ChainLst(Roots->Predicates, pofs);
+		if ((Db != nullptr)) { p->ChainDb = Db->Pred; Db->Pred = pofs; }
+		/* !!! with p^ do!!! */
+		{ p->Name = nm; p->Arity = n; Move(a, p->Arg, 2 * n); p->Opt = o;
+		p->InpMask = w; p->InstSz = 4 * n; }
+		if ((o & _FandCallOpt) != 0) {
+			if ((o & _DbaseOpt) != 0) WORD(p->Branch) = siofs;
+			else {
+				ipofs = GetZStor(5 + sizeof(RdbPos) + 2 + n * sizeof(TypAndFrml));
+				ip->Kind = _proc;
+				ip->PPos = pos; ip->N = n; bpOfs = 4;
+				for (i = 1; i <= n; i++) {
+					dofs = p->Arg[i - 1];
+					if ((dofs == RealDom) || (dofs == IntDom)) typ = 'R';
+					else if ((dofs = BoolDom)) typ = 'B';
+					else typ = 'S';
+					isOutp = (w & 1) == 0;
+					if (isOutp) {
+						z = GetOp(_getlocvar, 2);
+						z->BPOfs = bpOfs;
+						switch (typ) {
+						case 'S': bpOfs += sizeof(longint); break;
+						case 'R': bpOfs += sizeof(double); break;
+						default: bpOfs += sizeof(bool); break;
+						}
+					}
+					else {
+						switch (typ) {
+						case 'R': z = GetOp(_const, sizeof(double)); break;
+						case 'B': z = GetOp(_const, sizeof(bool)); break;
+						default: {
+							if (dofs == StrDom) z = GetOp(_const, sizeof(pstring));
+							else {
+								z = GetOp(_getlocvar, 2);
+								z->BPOfs = bpOfs;
+								bpOfs += sizeof(longint);
+							}
+							break;
+						}
+						}
+					}
+					/* !!! with ip->TArg[i] do!!! */ {
+						ip->TArg[i].FTyp = typ; ip->TArg[i].Frml = OPtr(_Sg, z);
+						ip->TArg[i].FromProlog = true; ip->TArg[i].IsRetPar = isOutp;
+					}
+					w = w >> 1;
+				}
+				WORD(p->Branch) = ipofs;
+				p->LocVarSz = bpOfs;
+			}
+		}
+	}
+}
+
+WORD GetCommand(TCommandTyp Code, WORD N)
+{
+	TCommand* c = ptr(_Sg, GetZStor(3 + N));
+	WORD cofs; // absolute c
+	c->Code = Code;
+	return cofs;
+}
+
+void RdTermList(TCommand* C, WORD D, WORD Kind)
+{
+	TTermList* l = ptr(_Sg, GetZStor(sizeof(TTermList)));
+	WORD lofs; // absolute l
+	ChainLst(C->Arg, lofs);
+	l->Elem = RdTerm(D, Kind);
+}
+
+WORD RdCommand() /*PCommand*/
+{
+	TVarDcl* v = nullptr;
+	char cm = '\0'; /*PDomain d;*/
+	char op = '\0', fTyp = '\0';
+	TCommandTyp code;
+	TWriteD* w = nullptr;
+	WORD wofs = 0; // absolute w
+	bool nl = false;
+	TPredicate* p = nullptr;
+	WORD pofs = 0; // absolute p
+	TCommand* c = nullptr;
+	WORD cofs = 0; // absolute c
+	LinkD* ld = nullptr;
+	FileD* fd = nullptr;
+	TDomain* d = nullptr;
+	WORD dofs = 0; // absolute d
+	TTermList* l = nullptr;
+	WORD lofs = 0; // absolute l
+	WORD n = 0;
+	pstring s;
+	integer i = 0;
+
+	PtrRec(p).Seg = _Sg; c = ptr(_Sg, 0); PtrRec(w).Seg = _Sg; PtrRec(d).Seg = _Sg;
+	PtrRec(l).Seg = _Sg;
+	if (Lexem == '!') {
+		RdLex();
+		cofs = GetCommand(_CutC, 0);
+		goto label9;
+	}
+	else if (Lexem != _identifier) goto label9;
+	if (IsUpperIdentif()) {
+		v = FindVarDcl();
+		if (v == nullptr) v = MakeVarDcl(0, -1);
+		RdLex();
+		dofs = v->Dom;
+		if (v->Bound) {
+			switch (Lexem) {
+			case '=': op = _equ; break;
+			case '<': {
+				switch (ForwChar) {
+				case '>': { ReadChar; op = _ne; break; }
+				case '=': { ReadChar; op = _le; break; }
+				default: op = _lt; break;
+				}
+				break;
+			}
+			case '>': {
+				if (ForwChar = '=') { ReadChar; op = _ge; break; }
+				else op = _gt; 
+				break;
+			}
+			default: { Error(524); break; }
+			}
+			if ((dofs != IntDom) && (dofs != RealDom) && !(op  == _equ || op == _ne)) Error(538);
+			RdLex();
+		}
+		else {
+			if (!v->Used) { 
+				Accept(':'); 
+				dofs = RdDomain(); 
+				v->Dom = dofs; 
+			}
+			Accept('='); 
+			op = _assign;
+		}
+		cofs = GetCommand(_CompC, 1 + 1 + 2 * 2); 
+		c->Typ = d->Typ;
+		c->E1Idx = v->Idx; c->CompOp = op; 
+		c->E2 = RdTerm(dofs, 2);
+		if (v->Bound) v->Used = true; 
+		v->Bound = true; 
+		goto label9;
+	}
+	if (IsKeyWord("fail")) {
+		cofs = GetCommand(_FailC, 0); 
+		goto label9;
+	}
+	if (IsKeyWord("wait")) {
+		cofs = GetCommand(_WaitC, 0); 
+		goto label9;
+	}
+	if (IsKeyWord("trace")) {
+		cofs = GetCommand(_Trace, 2);
+		Accept('('); 
+		c->TrcLevel = RdInteger();
+		goto label8;
+	}
+	if (IsKeyWord("error")) {
+		Accept('('); 
+		cofs = GetCommand(_ErrorC, 2 + 2); 
+		c->MsgNr = RdInteger();
+		goto label20;
+	}
+	if (IsKeyWord("writeln")) { nl = true; goto label1; }
+	if (IsKeyWord("write")) {
+		nl = false;
+		label1:
+		cofs = GetCommand(_WriteC, 2 + 1); 
+		c->NL = nl; 
+		Accept('(');
+		label2:
+		if (Lexem == _quotedstr) {
+			wofs = GetZStor(3 + 1 + LexWord.length()); 
+			w->IsString = true; 
+			w->SS = LexWord;
+		}
+		else {
+			wofs = GetZStor(3 + 2 + 2); 
+			TestIdentif(); 
+			v = FindVarDcl();
+			if (v = nullptr) Error(511); 
+			else if (not v->Bound) Error(509);
+			v->Used = true; w->Dom = v->Dom; w->Idx = v->Idx;
+			if (c->Code = _ErrorC) && (v->Dom != StrDom) and
+				((c->WrD != 0) || (v->Dom != IntDom)) then Error(558);
+		}
+		RdLex; ChainLst(c->WrD, wofs);
+		if  20(Lexem = ',') { RdLex; goto label2; } goto label8;
+	}
+	if (copy(LexWord, 1, 6) = "union_") { pofs = UnionPred; goto label21; }
+	if (copy(LexWord, 1, 6) = "minus_") { pofs = MinusPred; goto label21; }
+	if (copy(LexWord, 1, 6) = "inter_") {
+		pofs = InterPred;
+		dofs  21 = GetDomain(false, "L_" + copy(LexWord, 7, 255));
+		if (d->Typ != _ListD) Error(548); RdLex; Accept('(');
+		cofs = GetCommand(_PredC, 5 * 2); c->Pred = pofs; c->Elem = dofs;
+		RdTermList(c, dofs, 2); Accept(','); RdTermList(c, dofs, 2); Accept(',');
+		RdTermList(c, dofs, 1); goto label8;
+	}
+	if (copy(LexWord, 1, 4) = "mem_") { pofs = MemPred; goto label22; }
+	if (copy(LexWord, 1, 4) = "len_") { pofs = LenPred; goto label22; }
+	if (copy(LexWord, 1, 4) = "inv_") { pofs = InvPred; goto label22; }
+	if (copy(LexWord, 1, 4) = "add_") { pofs = AddPred; goto label22; }
+	if (copy(LexWord, 1, 4) = "del_") {
+		pofs = DelPred;
+		dofs  22 = GetDomain(false, "L_" + copy(LexWord, 5, 255));
+		if (d->Typ != _ListD) Error(548); RdLex; Accept('(');
+		cofs = GetCommand(_PredC, 5 * 2); c->Pred = pofs; c->Elem/*ListDom*/ = dofs;
+		if (pofs = MemPred) {
+			UnbdVarsInTerm = false; RdTermList(c, d->ElemDom, 4);
+			if (UnbdVarsInTerm) n = 2 else n = 3; c->InpMask = n; c->OutpMask = !n;
+			Accept(','); RdTermList(c, dofs, 2)
+		}
+		else {
+			if (pofs = AddPred) { RdTermList(c, d->ElemDom, 2); Accept(',') }
+			else if (pofs = DelPred) { RdTermList(c, d->ElemDom, 1); Accept(','); }
+			RdTermList(c, dofs, 2); Accept(',');
+			if (pofs = LenPred) RdTermList(c, IntDom, 1) else RdTermList(c, dofs, 1);
+		}
+		goto label8;
+	}
+	if (IsKeyWord("loadlex")) {
+		code = _LoadLexC; Accept('('); pofs = 0; goto label4;
+	}
+	if (IsKeyWord("save")) { code = _SaveC; goto label3; }
+	if (IsKeyWord("consult")) {
+		code = _ConsultC;
+		Accept 3('('); TestIdentif; pofs = FindDatabase(LexWord);
+		if (pofs = 0) Error(531); RdLex; Accept(',');
+		cofs  4 = GetCommand(code, 2 + 4 + 4 + 1 + length(LexWord)); c->DbPred = pofs;
+		move(LexWord, c->Name, length(LexWord) + 1);
+		if (not IsRoleName(false, fd, ld)) Error(9);
+		if (fd->typSQLFile) OldError(155); Accept('.');
+		c->FldD = OPtr(PtrRec(fd).Seg, RdFldName(fd));
+		if (c->FldD->Typ != 'T') OldError(537);
+		Accept 8(')');
+	}
+	RdCommand  9 = cofs;
+}
+
 WORD RdPredCommand(TCommandTyp Code);
 void RdDbTerm(WORD DOfs);
 void RdDbClause(TPredicate* P);
