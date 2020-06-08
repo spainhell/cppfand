@@ -4130,34 +4130,60 @@ label3:
 
 void RunProlog(RdbPos Pos, pstring* PredName)
 {
-	PInstance q, q1, TopInst; PDbBranch b1;
-	WORD w, n; integer i; LongStrPtr s; Pchar absolute PackedTermPtr pt;
-	char A[MaxPackedPredLen + 1]; WordPtr wp;
-	void* pp, pp1, pp2, pp3, pm1, pm2; LongStrPtr ss; longint WMark;
-	PPredicate p, p1; WORD absolute p pofs; PCommand c; WORD absolute c cofs;
-	PBranch b; WORD absolute b bofs; PDbBranch absolute b bd;
-	PTermList l; WORD absolute l lofs;  PDatabase db; WORD absolute db dbofs;
-	PTerm t; PProgRoots Roots; RdbDPtr ChptLRdb;
-	WORD oldSg; PInstance oldCurrInst; WORD tl, cl; ExitRecord er;
+	TInstance* q = nullptr; TInstance* q1 = nullptr; TInstance* TopInst = nullptr;
+	TDbBranch* b1 = nullptr;
+	WORD w = 0, n = 0; integer i = 0;
+	LongStr* s = nullptr; char* pt = PackedTermPtr;
+	char A[MaxPackedPredLen + 1]{ '\0' };
+	WORD* wp = nullptr;
+	void* pp = nullptr; void* pp1 = nullptr; void* pp2 = nullptr;
+	void* pp3 = nullptr; void* pm1 = nullptr; void* pm2 = nullptr;
+	LongStr* ss = nullptr; longint WMark = 0;
+	TPredicate* p = nullptr; TPredicate* p1 = nullptr; WORD pofs = 0; // absolute p
+	TCommand* c = nullptr; WORD cofs = 0; // absolute c
+	TBranch* b = nullptr; WORD bofs = 0; // absolute b
+	TDbBranch* bd = nullptr; // absolute b
+	TTermList* l = nullptr; WORD lofs = 0; // absolute l
+	TDatabase* db = nullptr; WORD dbofs = 0; // absolute db
+	TTerm* t = nullptr; TProgRoots* Roots = nullptr;
+	RdbD* ChptLRdb = nullptr;
+	WORD oldSg = 0; TInstance* oldCurrInst = nullptr;
+	WORD tl = 0, cl = 0;
+	ExitRecord er;
 
-	inc(ProlgCallLevel); NewExit(Ovr, er); goto label7; LastExitCode = 1;
-	oldSg = _Sg; oldCurrInst = CurrInst; ForallFDs(SaveLMode); WMark = MaxWSize;
-	if (ProlgCallLevel = 1) {
-		MarkBoth(pm1, pm2); FreeMemList = nullptr; Mem1.Init; Mem2.Init; Mem3.Init;
-		TrcLevel = 0; CallLevel = 0
+	ProlgCallLevel++;
+	//NewExit(Ovr, er); 
+	//goto label7; 
+	LastExitCode = 1;
+	oldSg = _Sg; oldCurrInst = CurrInst;
+	ForAllFDs(SaveLMode);
+	WMark = MaxWSize;
+	if (ProlgCallLevel == 1) {
+		MarkBoth(pm1, pm2);
+		FreeMemList = nullptr;
+		Mem1.Init; Mem2.Init; Mem3.Init;
+		TrcLevel = 0;
+		CallLevel = 0;
 	}
 	else {
-		MarkStore(pp); pp1 = Mem1.Mark; pp2 = Mem2.Mark; pp3 = Mem3.Mark;
-		tl = TrcLevel; cl = CallLevel;
+		MarkStore(pp);
+		pp1 = Mem1.Mark(); pp2 = Mem2.Mark(); pp3 = Mem3.Mark();
+		tl = TrcLevel;
+		cl = CallLevel;
 	}
-	if (Pos.IRec = 0) {
-		SetInpLongStr(RunLongStr(FrmlPtr(Pos.R)), true); _Sg = ReadProlog(0);
-		ChptLRdb = CRdb
+	if (Pos.IRec == 0) {
+		SetInpLongStr(RunLongStr(FrmlPtr(Pos.R)), true);
+		_Sg = ReadProlog(0);
+		ChptLRdb = CRdb;
 	}
 	else {
-		ChptLRdb = Pos.R; CFile = ChptLRdb->FD; CRecPtr = GetRecSpace;
-		ReadRec(Pos.IRec); AlignLongStr;
-		_Sg = PtrRec(HeapPtr).Seg + 1; ss = _longs(ChptOldTxt);
+		ChptLRdb = Pos.R;
+		CFile = ChptLRdb->FD;
+		CRecPtr = GetRecSpace();
+		ReadRec(Pos.IRec);
+		AlignLongStr();
+		_Sg = PtrRec(HeapPtr).Seg + 1;
+		ss = _LongS(ChptOldTxt);
 		if (ChptLRdb->Encrypted) CodingLongStr(ss);
 	}
 	Roots = ptr(_Sg, 0);
@@ -4171,14 +4197,14 @@ void RunProlog(RdbPos Pos, pstring* PredName)
 	c = ptr(_Sg, 0); b = ptr(_Sg, 0); l = ptr(_Sg, 0);
 	p = ptr(_Sg, Roots->Predicates); /* main */
 	if (PredName != nullptr) {
-		while ((pofs != 0) && (StringPtr(ptr(_Sg, p->Name)) ^ != PredName^)) pofs = p->Chain;
+		while ((pofs != 0) && (*(pstring*)(ptr(_Sg, p->Name)) != PredName)) pofs = p->Chain;
 		if ((pofs = 0) || (p->Arity != 0)) {
-			Set2MsgPar(Pos.R->FD->Name, PredName^);
+			Set2MsgPar(Pos.R->FD->Name, PredName);
 			RunError(1545);
 		}
 	}
 label1:
-	/*    new instance        remember prev. inst,branch,cmd */
+	/* new instance remember prev. inst,branch,cmd */
 	q = Mem2.Get(p->InstSz + (sizeof(TInstance) - 7 * 4));
 	q->Pred = pofs;
 	q->PrevInst = TopInst;
@@ -4190,7 +4216,7 @@ label1:
 		CallLevel = CurrInst->CallLevel + 1;
 		q->CallLevel = CallLevel;
 	}
-	/*          copy input parameters  */
+	/* copy input parameters */
 	b = p->Branch; i = 0;
 	if ((p->Opt & _CioMaskOpt) != 0) w = c->InpMask;
 	else w = p->InpMask;
@@ -4201,7 +4227,7 @@ label1:
 			PackTermV(l->Elem);
 			n = PtrRec(pt).Ofs - ofs(A);
 			s = Mem1.Get(2 + n);
-			q->Vars[i] = PTerm(s);
+			q->Vars[i] = (TTerm*)s;
 			s->LL = n;
 			Move(A, s->A, n);
 		}
@@ -4211,9 +4237,9 @@ label1:
 		w = w >> 1;
 	}
 	if ((p->Opt && (_FandCallOpt + _DbaseOpt)) == _FandCallOpt + _DbaseOpt)
-		q->NextBranch = PBranch(GetScan(bofs, c, q));
+		q->NextBranch = (TBranch*)GetScan(bofs, c, q);
 	if (Trace) TraceCall(q, 1);
-	q->StkMark = Mem1.Mark;
+	q->StkMark = Mem1.Mark();
 	q->WMark = MaxWSize;
 	CurrInst = q;
 	if ((p->Opt && (_FandCallOpt + _DbaseOpt)) == _FandCallOpt) {
@@ -4233,21 +4259,23 @@ label2:
 		cofs = q->RetCmd;
 	label21:
 		s = LongStrPtr(@bd->LL); w = c->InpMask;
-		for (i = 0 to integer(p->Arity) - 1) {
+		for (i = 0; i <= integer(p->Arity) - 1; i++) {
 			if (((w && 1) != 0) && !EquLongStr(LongStrPtr(q->Vars[i]), s)) {
-				bd = bd->Chain; if (bd = nullptr) { q->NextBranch = nullptr; goto label5; }
+				bd = bd->Chain;
+				if (bd == nullptr) { q->NextBranch = nullptr; goto label5; }
 				goto label21;
 			}
-			inc(PtrRec(s).Ofs, s->LL + 2); w = w shr 1;
+			inc(PtrRec(s).Ofs, s->LL + 2);
+			w = w >> 1;
 		}
 	label22:
 		q->NextBranch = PBranch(bd->Chain);
 		s = LongStrPtr(@bd->LL);
 		w = c->OutpMask;
-		for (i = 0 to integer(p->Arity) - 1)
+		for (i = 0; i <= integer(p->Arity) - 1; i++)
 		{ /* unpack db outp.parameters */
-			if ((w && 1) != 0) { pt = Pchar(@s->A); q->Vars[i] = UnpackTerm(p->Arg[i]); }
-			inc(PtrRec(s).Ofs, s->LL + 2);
+			if ((w & 1) != 0) { pt = Pchar(@s->A); q->Vars[i] = UnpackTerm(p->Arg[i]); }
+			PtrRec(s).Ofs += s->LL + 2;
 			w = w >> 1;
 		}
 		if (c->Code = _RetractC) RetractDbEntry(TopInst, pofs, bd);
@@ -4255,13 +4283,20 @@ label2:
 	}
 	PtrRec(b).Seg = _Sg;
 label23:
-	/* normal unify branch head * predicates/
-WORD(q->NextBranch) = b->Chain;
-i = 0; lofs = b->Head; w = b->HeadIMask; while (lofs != 0) {
-  if (((w && 1) != 0) && !UnifyTermsCV(q->Vars[i],l->Elem)) {
-	bofs = b->Chain; if (bofs=0) goto label5; goto label23;}
-  inc(i); lofs = l->Chain; w = w shr 1 ;}
-			  /*           execute all commands       */
+	/* normal unify branch head predicates */
+	WORD(q->NextBranch) = b->Chain;
+	i = 0; lofs = b->Head; w = b->HeadIMask; 
+	while (lofs != 0) {
+		if (((w & 1) != 0) && !UnifyTermsCV(q->Vars[i], l->Elem)) {
+			bofs = b->Chain; 
+			if (bofs = 0) goto label5;
+			goto label23;
+		}
+		i++; 
+		lofs = l->Chain; 
+		w = w >> 1;
+	}
+	/* execute all commands */
 	cofs = b->Cmd;
 	while (cofs != 0) {
 		switch (c->Code) {
