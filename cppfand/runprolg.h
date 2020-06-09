@@ -21,52 +21,55 @@ const BYTE _CallP = 32;
 
 enum TDomainTyp { _UndefD, _IntD, _RealD, _StrD, _LongStrD, _ListD, _FunD, _RedefD };
 
-struct TDomain {
-	WORD Chain = 0;
+struct TDomain : public Chained {
+	//WORD Chain = 0;
 	TDomainTyp Typ = _UndefD;
 	// case byte of
-	WORD ElemDom = 0; pstring Name; // 0
-	WORD OrigDom = 0; // 1
-	WORD FunDcl = 0; // 2
+	TDomain* ElemDom = nullptr; pstring Name; // 0
+	TDomain* OrigDom = nullptr; // 1
+	Chained* FunDcl = 0; // 2
 };
 
-struct TConst {
-	WORD Chain = 0; WORD Dom = 0;/*PDomain*/
+struct TConst : public Chained {
+	//WORD Chain = 0;
+	WORD Dom = 0;/*PDomain*/
 	WORD Expr = 0;/*PPTerm*/ pstring Name;
 };
 
-struct TFunDcl {
-	WORD Chain = 0; WORD Name = 0; BYTE Arity = 0;
-	WORD Arg[3]{ 0 };
+struct TFunDcl : public Chained {
+	//WORD Chain = 0;
+	WORD Name = 0; BYTE Arity = 0;
+	Chained* Arg[3]{ nullptr };
 };
 
 struct TPTerm {
-	BYTE Fun = 0;
-	BYTE Arity = 0; WORD Arg[1]{ 0 }; /*PPTerm*/
-	char Op = '\0'; WORD E1 = 0, E2 = 0, E3 = 0; /*PPTerm*/
+	WORD Fun = 0;
+	BYTE Arity = 0; TPTerm* Arg[1]{ nullptr }; /*PPTerm*/
+	char Op = '\0';
+	TPTerm* E1 = nullptr; TPTerm* E2 = nullptr; TPTerm* E3 = nullptr; /*PPTerm*/
 	char Op0 = '\0'; WORD E[4]{ 0 }; // puvodne 1..3
 	char Op1 = '\0'; integer II = 0;
 	char Op2 = '\0'; double RR = 0.0;
 	char Op3 = '\0'; pstring SS;
-	char Op4 = '\0'; WORD Elem = 0, Next = 0; /*PPTerm*/
-	WORD Idx = 0; bool Bound;
+	char Op4 = '\0'; TPTerm* Elem = nullptr; TPTerm* Next = nullptr; /*PPTerm*/
+	WORD Idx = 0; bool Bound = false;
 };
 
-struct TTermList {
-	WORD Chain = 0; /*PTermList*/
+struct TTermList : public Chained {
+	//WORD Chain = 0; /*PTermList*/
 	WORD Elem = 0; /*PPTerm*/
 };
 
-struct TVarDcl {
-	TVarDcl* Chain = nullptr;
+struct TVarDcl : public Chained {
+	//TVarDcl* Chain = nullptr;
 	WORD Dom = 0;
 	integer Idx = 0;
 	bool Bound = false, Used = false;
 	pstring Name;
 };
 
-struct TWriteD {
-	WORD Chain = 0; /*PWriteD*/
+struct TWriteD : public Chained {
+	// WORD Chain = 0; /*PWriteD*/
 	bool IsString = false;
 	pstring SS;
 	integer Idx = 0;
@@ -80,8 +83,8 @@ enum TCommandTyp {
 	_ErrorC, _WaitC, _NotC, _AllC, _AutoC
 };
 
-struct TCommand {
-	WORD Chain = 0; /*PCommand*/
+struct TCommand : public Chained {
+	// WORD Chain = 0; /*PCommand*/
 	TCommandTyp Code;
 	WORD Arg = 0; /*PTermList*/
 	WORD Pred = 0; /*PPredicate*/
@@ -101,20 +104,20 @@ struct TCommand {
 	struct stPair { BYTE iInp = 0; BYTE iOutp = 0; } Pair[6];
 };
 
-struct TBranch {
-	WORD Chain = 0; /*PBranch*/
+struct TBranch : public Chained {
+	//WORD Chain = 0; /*PBranch*/
 	WORD HeadIMask = 0, HeadOMask = 0; 
 	WORD Head = 0; /*PTermList*/ 
 	WORD Cmd = 0; /*PCommand*/
 };
 
 struct TDbBranch {
-	WORD LL; 
+	WORD LL = 0; 
 	BYTE A[2/*LL*/]{ 0 }; /*  for all Arguments */
 };
 
-struct TFldList {
-	WORD Chain = 0; /*PFldList*/
+struct TFldList : public Chained {
+	//WORD Chain = 0; /*PFldList*/
 	FieldDescr* FldD = nullptr;
 };
 
@@ -124,30 +127,34 @@ struct TScanInf {
 	pstring Name;
 };
 
-struct TPredicate {
-	WORD Chain = 0, ChainDb = 0; /*PPredicate*/
+struct TPredicate : public Chained {
+	// WORD Chain = 0;
+	WORD ChainDb = 0; /*PPredicate*/
 	WORD Name = 0; /*PString*/
-	TBranch* Branch; /*offset*/ /*InstrPtr|ofs PScanInf|PDbBranch*/
+	TBranch* Branch = nullptr; /*offset*/ /*InstrPtr|ofs PScanInf|PDbBranch*/
 	WORD InstSz = 0, InpMask = 0, LocVarSz = 0; /*FAND-proc| _xxxP for buildIn*/
-	BYTE Opt = 0; BYTE Arity = 0; WORD Arg[3]{ 0 }; /*PDomain*/
+	BYTE Opt = 0; BYTE Arity = 0; TDomain* Arg[3]{ nullptr }; /*PDomain*/
 };
 
-struct TDatabase {
-	WORD Chain = 0; /*PDatabase*/
+struct TDatabase : public Chained {
+	// WORD Chain = 0; /*PDatabase*/
 	WORD Pred = 0; /*PPredicate*/ 
 	WORD SOfs = 0; /*LongStrPtr/saved/*/
 	pstring Name;
 };
 
 struct TProgRoots {
-	WORD Domains = 0, Consts = 0, Predicates = 0, Databases = 0;
+	TDomain* Domains = nullptr;
+	TConst* Consts = nullptr;
+	TPredicate* Predicates = nullptr;
+	TDatabase* Databases = nullptr;
 };
 
 extern WORD _Sg;
 
-struct TMemBlkHd
+struct TMemBlkHd : public Chained
 {
-	TMemBlkHd* Chain = nullptr;
+	// TMemBlkHd* Chain = nullptr;
 	WORD Sz = 0;
 };
 
@@ -155,10 +162,10 @@ class TMemory {
 public:
 	TMemory();
 	void Init();
-	WORD RestSz = 0;
-	void* CurLoc = nullptr;
-	TMemBlkHd* CurBlk = nullptr;
-	TMemBlkHd* FreeList = nullptr;
+	WORD RestSz;
+	void* CurLoc;
+	TMemBlkHd* CurBlk;
+	TMemBlkHd* FreeList;
 	void* Get(WORD Sz);
 	void* Mark();
 	void Release(void* P);
@@ -173,6 +180,6 @@ extern TMemory Mem2;
 extern TMemory Mem3;
 extern WORD ProlgCallLevel;
 
-void RunProlog(RdbPos* Pos, pstring* PredName);
 LongStr* SaveDb(WORD DbOfs/*PDatabase*/, longint AA);
 WORD ReadProlog(WORD RecNr);
+void RunProlog(RdbPos* Pos, pstring* PredName);
