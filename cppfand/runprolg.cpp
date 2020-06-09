@@ -1435,7 +1435,7 @@ void CheckPredicates(WORD POff)
 			OldError(522);
 		}
 		if ((p->Opt & _DbaseOpt) != 0)
-			if (p->Opt & _FandCallOpt != 0) {
+			if ((p->Opt & _FandCallOpt) != 0) {
 				si = ptr(_Sg, WORD(p->Branch));
 				si->FD = nullptr;
 			}
@@ -1446,10 +1446,13 @@ void CheckPredicates(WORD POff)
 
 void RdAutoRecursionHead(TPredicate* P, TBranch* B)
 {
-	TTermList* l = nullptr; TTermList* l1 = nullptr;
+	TTermList* l = nullptr;
+	TTermList* l1 = nullptr;
 	WORD w = 0;
-	TCommand* c = nullptr; TPTerm* t = nullptr;
-	TDomain* d = nullptr; TVarDcl* v = nullptr;
+	TCommand* c = nullptr;
+	TPTerm* t = nullptr;
+	TDomain* d = nullptr;
+	TVarDcl* v = nullptr;
 	WORD lofs = 0; // absolute l
 	WORD l1ofs = 0; // absolute l1
 	WORD cofs = 0; // absolute c
@@ -1514,7 +1517,7 @@ void RdAutoRecursionHead(TPredicate* P, TBranch* B)
 	Accept(')');
 }
 
-void RdSemicolonClause(TPredicate* P, TBranch* B)
+void RdSemicolonClause(TPredicate* p, TBranch* b)
 {
 	TVarDcl* v = nullptr;
 	TCommand* c = nullptr;
@@ -1523,7 +1526,7 @@ void RdSemicolonClause(TPredicate* P, TBranch* B)
 	WORD bofs = 0; // absolute B
 	RdLex();
 	PtrRec(c).Seg = _Sg;
-	if (IsUpperIdentif) {
+	if (IsUpperIdentif()) {
 		x = 'a';
 		v = FindVarDcl();
 		if (p->InpMask != (1 << (p->Arity - 1)) - 1) Error(562);
@@ -1604,7 +1607,9 @@ label1:
 	pofs = RdPredicate();
 	if (p->Opt && (_FandCallOpt + _BuildInOpt) != 0) OldError(529);
 	if (p->Opt && _DbaseOpt != 0) { RdDbClause(p); goto label6; }
-	VarDcls = nullptr; VarCount = p->Arity; x = Mem1.Mark;
+	VarDcls = nullptr;
+	VarCount = p->Arity;
+	x = Mem1.Mark;
 	bofs = GetZStor(sizeof(TBranch));
 	ChainLst(p->Branch, bofs);
 	if (p->Arity > 0) {
@@ -1619,7 +1624,7 @@ label1:
 			lofs = GetZStor(sizeof(TTermList));
 			ChainLst(b->Head, lofs);
 			SkipBlank(false);
-			if (IsUpperIdentif() && (ForwChar == ',' || FoorwChar == ')') /*solo variable*/) {
+			if (IsUpperIdentif() && (ForwChar == ',' || ForwChar == ')') /*solo variable*/) {
 				RdVar(dofs, kind, i, tofs);
 				if (tofs != 0) goto label11;
 			}
@@ -1647,7 +1652,7 @@ label1:
 		}
 		if (IsKeyWord("not")) { Accept('('); WasNotC = true; }
 		cofs = RdCommand();
-		if (cofs = 0)
+		if (cofs == 0)
 			if ((Lexem == _identifier) && (copy(LexWord, 1, 4) == "all_")) {
 				dofs = GetDomain(false, "L_" + copy(LexWord, 5, 255));
 				if (d->Typ != _ListD) Error(548); RdLex();
@@ -1664,19 +1669,22 @@ label1:
 					label3:
 						Accept('(');
 						cofs = RdPredCommand(code);
-						Accept(')')
+						Accept(')');
 					}
 					else cofs = RdPredCommand(_PredC);
 				}
 			}
 		ChainLst(b->Cmd, cofs);
 		if (WasNotC) {
-			if (c->Code != _PredC) OldError(546); p1ofs = c->Pred; lofs = c->Arg;
-			if ((p1->Opt && _CioMaskOpt) != 0) w = c->InpMask else w = p1->InpMask;
+			if (c->Code != _PredC) OldError(546);
+			p1ofs = c->Pred;
+			lofs = c->Arg;
+			if ((p1->Opt & _CioMaskOpt) != 0) w = c->InpMask;
+			else w = p1->InpMask;
 			while (lofs != 0) {
-				if ((w & 1) = 0) {
+				if ((w & 1) == 0) {
 					tofs = l->Elem;
-					if ((tofs = 0) || (t->Fun != _UnderscT)) OldError(547);
+					if ((tofs == 0) || (t->Fun != _UnderscT)) OldError(547);
 				}
 				lofs = l->Chain;
 				w = w >> 1;
@@ -1684,8 +1692,8 @@ label1:
 			Accept(')');
 			c->Code = _NotC;
 		}
-		if (Lexem = ',') { RdLex; goto label2; }
-		if (Lexem = ';') RdSemicolonClause(p, b);
+		if (Lexem == ',') { RdLex(); goto label2; }
+		if (Lexem == ';') RdSemicolonClause(p, b);
 	}
 label4:
 	Accept('.');

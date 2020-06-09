@@ -53,19 +53,24 @@ struct TPTerm {
 };
 
 struct TTermList {
-	WORD Chain = 0; /*PTermList*/ WORD Elem = 0; /*PPTerm*/
+	WORD Chain = 0; /*PTermList*/
+	WORD Elem = 0; /*PPTerm*/
 };
 
 struct TVarDcl {
-	TVarDcl* Chain = nullptr; WORD Dom = 0; integer Idx = 0;
-	bool Bound = false, Used = false; pstring Name;
+	TVarDcl* Chain = nullptr;
+	WORD Dom = 0;
+	integer Idx = 0;
+	bool Bound = false, Used = false;
+	pstring Name;
 };
 
 struct TWriteD {
 	WORD Chain = 0; /*PWriteD*/
 	bool IsString = false;
 	pstring SS;
-	integer Idx = 0; WORD Dom = 0;
+	integer Idx = 0;
+	WORD Dom = 0;
 };
 
 enum TCommandTyp {
@@ -163,11 +168,11 @@ public:
 };
 
 extern TMemBlkHd* FreeMemList;
-extern TMemory Mem1; extern TMemory Mem2; extern TMemory Mem3;
-extern WORD ProlgCallLevel = 0;
+extern TMemory Mem1;
+extern TMemory Mem2;
+extern TMemory Mem3;
+extern WORD ProlgCallLevel;
 
 void RunProlog(RdbPos* Pos, pstring* PredName);
 LongStr* SaveDb(WORD DbOfs/*PDatabase*/, longint AA);
-
 WORD ReadProlog(WORD RecNr);
-
