@@ -149,6 +149,7 @@ struct TMemBlkHd
 class TMemory {
 public:
 	TMemory();
+	void Init();
 	WORD RestSz = 0;
 	void* CurLoc = nullptr;
 	TMemBlkHd* CurBlk = nullptr;
@@ -163,7 +164,7 @@ public:
 
 extern TMemBlkHd* FreeMemList;
 extern TMemory Mem1; extern TMemory Mem2; extern TMemory Mem3;
-const WORD ProlgCallLevel = 0;
+extern WORD ProlgCallLevel = 0;
 
 void RunProlog(RdbPos* Pos, pstring* PredName);
 LongStr* SaveDb(WORD DbOfs/*PDatabase*/, longint AA);

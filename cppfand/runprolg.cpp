@@ -1,6 +1,7 @@
 #include "runprolg.h"
 #include "runproj.h"
 #include "compile.h"
+#include "obaseww.h"
 
 TVarDcl* VarDcls; integer VarCount;
 WORD IntDom, RealDom, StrDom, LongStrDom, BoolDom, LexDom, LLexDom; /*PDomain*/
@@ -10,8 +11,8 @@ WORD TxtPred; /*PPredicate*/
 WORD UnderscoreTerm; /*PPTerm*/
 bool UnbdVarsInTerm, WasUnbd, WasOp;
 TProgRoots* Roots;
-char* PackedTermPtr;
-WORD PTPMaxOfs;
+char* PackedTermPtr = nullptr;
+WORD PTPMaxOfs = 0;
 WORD ClausePreds;
 
 void ChainLst(void* Root, WORD NewOfs) // assembler
@@ -1738,23 +1739,27 @@ WORD ReadProlog(WORD RecNr)
 {
 	const pstring Booln = "Boolean";
 	const pstring Reell = "Real";
-	TDatabase* db; WORD* dbpfs = &db->Chain; // absolute db dbofs;
-	TPredicate* p; WORD* pofs = &p->Chain;
-	TDomain* d; WORD* dofs = &d->Chain;
-	TFunDcl* f; WORD* fofs = &f->Chain;
-	pstring s; RdbPos pos;
+	TDatabase* db = nullptr;
+	WORD* dbofs = &db->Chain; // absolute db dbofs;
+	TPredicate* p = nullptr;
+	WORD* pofs = &p->Chain;
+	TDomain* d = nullptr;
+	WORD* dofs = &d->Chain;
+	TFunDcl* f = nullptr;
+	WORD* fofs = &f->Chain;
+	pstring s;
+	RdbPos pos;
 	LongStr* ss = nullptr;
 	void* p1 = nullptr; void* p2 = nullptr; void* pp1 = nullptr;
 	void* pp2 = nullptr; void* pp3 = nullptr; void* cr = nullptr;
-	longint AA;
-
+	longint AA = 0;
 	WORD result = 0;
 
 	MarkBoth(p1, p2);
 	cr = CRecPtr;
 	if (ProlgCallLevel == 0) {
 		FreeMemList = nullptr;
-		Mem1.Init; Mem2.Init; Mem3.Init;
+		Mem1.Init(); Mem2.Init(); Mem3.Init();
 	}
 	else {
 		pp1 = Mem1.Mark(); pp2 = Mem2.Mark(); pp3 = Mem3.Mark();
@@ -1818,16 +1823,16 @@ WORD ReadProlog(WORD RecNr)
 	ResetCompilePars(); RdLex();
 	while (Lexem != 0x1A) {
 		Accept('#');
-		if (IsKeyWord("DOMAINS")) RdDomains;
-		else if (IsKeyWord("CONSTANTS")) RdConstants;
+		if (IsKeyWord("DOMAINS")) RdDomains();
+		else if (IsKeyWord("CONSTANTS")) RdConstants();
 		else if (IsKeyWord("DATABASE")) {
 			s[0] = 0;
-			if (Lexem = '-') {
+			if (Lexem == '-') {
 				RdLex(); TestIdentif();
 				s = LexWord; RdLex();
 			}
 			dbofs = FindDataBase(s);
-			if (dbofs = 0) {
+			if (dbofs == 0) {
 				dbofs = GetZStor(sizeof(TDatabase) - 1 + s.length());
 				ChainLst(Roots->Databases, dbofs);
 				//Move(s, db->Name, s.length() + 1);
@@ -1884,10 +1889,15 @@ struct TTerm {
 
 struct TInstance {
 	WORD Pred = 0; /*PPredicate*/
-	TInstance* PrevInst = nullptr; TInstance* RetInst = nullptr; WORD RetCmd = 0; /*PCommand*/
+	TInstance* PrevInst = nullptr;
+	TInstance* RetInst = nullptr;
+	WORD RetCmd = 0; /*PCommand*/
 	TBranch* NextBranch = nullptr; /*PDbBranch,PFileScan*/
-	WORD RetBranch/*PBranch*/; void* StkMark; longint WMark; WORD CallLevel;
-	TTerm* Vars[7];
+	WORD RetBranch = 0; /*PBranch*/
+	void* StkMark = nullptr;
+	longint WMark = 0;
+	WORD CallLevel = 0;
+	TTerm* Vars[7]{ nullptr };
 };
 
 struct TFileScan {
@@ -1895,7 +1905,6 @@ struct TFileScan {
 };
 
 TInstance* CurrInst = nullptr;
-char* PackedTermPtr = nullptr; WORD PTPMaxOfs = 0;
 integer TrcLevel = 0, CallLevel = 0;
 TTerm* LexemList = nullptr;
 
@@ -1935,6 +1944,14 @@ TMemory::TMemory()
 	FreeList = nullptr;
 }
 
+void TMemory::Init()
+{
+	CurBlk = nullptr;
+	CurLoc = nullptr;
+	RestSz = 0;
+	FreeList = nullptr;
+}
+
 void* TMemory::Get(WORD Sz)
 {
 	void* p = nullptr;
@@ -1943,7 +1960,7 @@ void* TMemory::Get(WORD Sz)
 	if (Sz > RestSz) {
 		n = Sz + sizeof(TMemBlkHd);
 		if (n < MemBlockSize) n = MemBlockSize;
-		p2 = PMemBlkHd(@FreeMemList);
+		p2 = (TMemBlkHd*)FreeMemList;
 		p1 = FreeMemList;
 		while (p1 != nullptr) {
 			if (p1->Sz >= n) { p2->Chain = p1->Chain; goto label1; }
@@ -1969,9 +1986,9 @@ void* TMemory::Mark()
 	return CurLoc;
 }
 
-void TMemory::Release(void* P) /* only for pure stack */
+void TMemory::Release(void* p) /* only for pure stack */
 {
-	TMemBlkHd* p1; TMemBlkHd* p2;
+	TMemBlkHd* p1 = nullptr; TMemBlkHd* p2 = nullptr;
 	p1 = CurBlk;
 	while (PtrRec(p1).Seg != PtrRec(p).Seg) {
 		p2 = p1->Chain;
@@ -1981,7 +1998,7 @@ void TMemory::Release(void* P) /* only for pure stack */
 	}
 	CurBlk = p1;
 	CurLoc = p;
-	if (p = nullptr) RestSz = 0;
+	if (p == nullptr) RestSz = 0;
 	else RestSz = p1->Sz - (PtrRec(p).Ofs - (PtrRec(p1).Ofs + sizeof(TMemBlkHd)));
 }
 
@@ -1989,13 +2006,13 @@ pstring TMemory::StoreStr(pstring s)
 {
 	void* p;
 	p = Get(s.length() + 1);
-	Move(s, p^, s.length() + 1);
+	Move(&s, p, s.length() + 1);
 	return p;
 }
 
 void* TMemory::Alloc(WORD Sz) /* doesn't free once allocated blocks */
 {
-	TMemBlkHd* p; TMemBlkHd* p1; TMemBlkHd* p2;
+	TMemBlkHd* p = nullptr; TMemBlkHd* p1 = nullptr; TMemBlkHd* p2 = nullptr;
 	Sz = (Sz + 7) & 0xfff8;
 	p1 = (TMemBlkHd*)(&FreeList);
 	p = FreeList;
@@ -2028,14 +2045,14 @@ void TMemory::Free(void* P, WORD Sz)
 	while ((PtrRec(p2).Seg != 0) && (PtrRec(p2).Seg != PtrRec(P).Seg)) {
 		p1 = p2; p2 = p2->Chain;
 	}
-	while ((PtrRec(p2).Seg = PtrRec(P).Seg) && (PtrRec(p2).Ofs < PtrRec(P).Ofs)) {
+	while ((PtrRec(p2).Seg == PtrRec(P).Seg) && (PtrRec(p2).Ofs < PtrRec(P).Ofs)) {
 		p1 = p2; p2 = p2->Chain;
 	}
-	if ((PtrRec(P).Seg = PtrRec(p2).Seg) && (PtrRec(P).Ofs + Sz = PtrRec(p2).Ofs)) {
+	if ((PtrRec(P).Seg == PtrRec(p2).Seg) && (PtrRec(P).Ofs + Sz == PtrRec(p2).Ofs)) {
 		pp->Sz = Sz + p2->Sz; pp->Chain = p2->Chain;
 	}
 	else { pp->Sz = Sz; pp->Chain = p2; }
-	if ((PtrRec(p1).Seg = PtrRec(P).Seg) && (PtrRec(p1).Ofs + p1->Sz = PtrRec(P).Ofs)) {
+	if ((PtrRec(p1).Seg == PtrRec(P).Seg) && (PtrRec(p1).Ofs + p1->Sz == PtrRec(P).Ofs)) {
 		p1->Sz = p1->Sz + pp->Sz; p1->Chain = pp->Chain;
 	}
 	else p1->Chain = pp;
@@ -2128,10 +2145,10 @@ void ChainList(void* Frst, void* New)
 pstring XXS;
 LongStr* RdLongStr(longint Pos)
 {
-	LongStrPtr p = GetStore(2);
+	LongStr* p = GetStore(2);
 	WORD l = 0;
 	SeekH(WorkHandle, Pos);
-	ReadH(WorkHandle, 2, l);
+	ReadH(WorkHandle, 2, &l);
 	p->LL = l;
 	if (l > 0) { GetStore(l); ReadH(WorkHandle, l, p->A); }
 	return p;
@@ -2156,19 +2173,19 @@ LongStr* RunLSExpr(WORD TOfs);
 void RunSExpr(WORD TOfs, pstring* s);
 double RunRExpr(WORD TOfs);
 
-integer RunIExpr1(TPTerm* T)
+integer RunIExpr1(TPTerm* t)
 {
 	pstring s, s2;
 	integer i = 0, err = 0, l = 0;
 	LongStr* ss = nullptr;
-	switch (T->Op) {
+	switch (t->Op) {
 	case _length: { RunSExpr(t->E1, &s); i = s.length(); break; }
 	case _val: { RunSExpr(t->E1, &s); val(s, i, err); break; }
 	case _pos: {
 		RunSExpr(t->E1, &s);
 		ss = RunLSExpr(t->E2);
 		l = ss->LL;
-		i = FindText(s, "", @ss->A, l);
+		i = FindTextE(s, "", ss->A, l);
 		if (i > 0) i = i - s.length();
 		ReleaseStore(ss);
 		break;
@@ -2211,9 +2228,10 @@ double RunRExpr(WORD TOfs/*PPTerm*/)
 	case '/': return RunRExpr(t->E1) / RunRExpr(t->E2);
 	case _conv: return RunIExpr(t->E1);
 	}
+	return 0.0;
 }
 
-void RunSExpr1(TPTerm* T, pstring* s)
+void RunSExpr1(TPTerm* t, pstring* s)
 {
 	pstring s2;
 	WORD tofs = 0; // absolute T
@@ -2223,9 +2241,9 @@ void RunSExpr1(TPTerm* T, pstring* s)
 		b = (t->Fun == _StrT) && (t->Op == '+');
 		if (b) t1ofs = t->E1;
 		else t1ofs = tofs;
-		RunSExpr(t1ofs, s2);
+		RunSExpr(t1ofs, &s2);
 		l2 = MinW(s2.length(), 255 - l);
-		Move(s2[1], s[l + 1], l2);
+		Move(&s2[1], &s[l + 1], l2);
 		l += l2;
 		if (b) tofs = t->E2;
 	} while (b);
@@ -2239,13 +2257,13 @@ void RunSExpr(WORD TOfs, pstring* s)
 	LongStr* p = nullptr;
 	pstring* q = nullptr;
 	t = ptr(_Sg, TOfs);
-	if (t->Fun = _VarT) { q = CurrInst->Vars[t->Idx]->SS; goto label1; }
+	if (t->Fun == _VarT) { q = &CurrInst->Vars[t->Idx]->SS; goto label1; }
 	else {
 		switch (t->Op) {
 		case _const: {
 			q = &t->SS;
 		label1:
-			Move(q^, s, q->length() + 1);
+			Move(q, s, q->length() + 1);
 			break;
 		}
 		case '+': RunSExpr1(t, s); break;
@@ -2298,7 +2316,7 @@ void RunSExpr(WORD TOfs, pstring* s)
 			s[0] = char(i);
 			break;
 		}
-		case _str: str(RunIExpr(t->E1), s); break;
+		case _str: str(RunIExpr(t->E1), *s); break;
 		}
 	}
 }
@@ -2306,7 +2324,8 @@ void RunSExpr(WORD TOfs, pstring* s)
 LongStr* RunLSExpr(WORD TOfs)
 {
 	TPTerm* t = ptr(_Sg, TOfs);
-	LongStr* p = nullptr; LongStr* p2 = nullptr;
+	LongStr* p = nullptr;
+	LongStr* p2 = nullptr;
 	WORD l = 0;
 	pstring* s = nullptr;
 
@@ -2371,11 +2390,14 @@ bool UnifyTermsCC(TTerm* T1, TTerm* T2)
 	return result;
 }
 
+bool UnifyVList(TTerm* TT1, TPTerm* T2);
+
 bool UnifyTermsCV(TTerm* T1, WORD T2Ofs/*PPTerm*/)
 {
 	integer i = 0;
 	TPTerm* T2 = nullptr;
-	LongStr* p = nullptr; LongStr* p2 = nullptr;
+	LongStr* p = nullptr;
+	LongStr* p2 = nullptr;
 	auto result = true;
 	if (T2Ofs == 0) { if (T1 != nullptr) return false; }
 	T2 = ptr(_Sg, T2Ofs);
@@ -2394,7 +2416,7 @@ bool UnifyTermsCV(TTerm* T1, WORD T2Ofs/*PPTerm*/)
 		case _StrT: {
 			if (T2->Op == _const) result = T1->SS == T2->SS;
 			else {
-				RunSExpr(T2Ofs, XXS);
+				RunSExpr(T2Ofs, &XXS);
 				result = T1->SS == XXS;
 			}
 			break;
@@ -2407,7 +2429,7 @@ bool UnifyTermsCV(TTerm* T1, WORD T2Ofs/*PPTerm*/)
 			break;
 		}
 		case _ListT: {
-			while (T2->Op = '+') {
+			while (T2->Op == '+') {
 				if (!UnifyVList(T1, ptr(_Sg, T2->E1))) goto label1;
 				T2Ofs = T2->E2;
 			}
@@ -2425,12 +2447,13 @@ bool UnifyTermsCV(TTerm* T1, WORD T2Ofs/*PPTerm*/)
 		}
 	}
 	}
+	return result;
 }
 
 bool UnifyVList(TTerm* TT1, TPTerm* T2)
 {
 	WORD t2ofs = 0; // absolute T2
-	TTerm* t; TTerm* t1;
+	TTerm* t = nullptr; TTerm* t1 = nullptr;
 	t1 = TT1;
 	auto result = false;
 	while (t2ofs != 0)
@@ -2439,8 +2462,9 @@ bool UnifyVList(TTerm* TT1, TPTerm* T2)
 			if (T2->Bound) {
 				t = CurrInst->Vars[T2->Idx];
 				while (t != nullptr) {
-					if ((t1 = nullptr) || !UnifyTermsCC(t1->Elem, t->Elem)) return result;
-					t = t->Next; t1 = t1->Next;
+					if ((t1 == nullptr) || !UnifyTermsCC(t1->Elem, t->Elem)) return result;
+					t = t->Next;
+					t1 = t1->Next;
 				}
 			}
 			else {
@@ -2452,8 +2476,9 @@ bool UnifyVList(TTerm* TT1, TPTerm* T2)
 		}
 		case _UnderscT: { t1 = nullptr; goto label1; break; }
 		default: {
-			if ((t1 = nullptr) || !UnifyTermsCV(t1->Elem, T2->Elem)) return result;
-			t1 = t1->Next; t2ofs = T2->Next;
+			if ((t1 == nullptr) || !UnifyTermsCV(t1->Elem, T2->Elem)) return result;
+			t1 = t1->Next;
+			t2ofs = T2->Next;
 			break;
 		}
 		}
@@ -2486,14 +2511,16 @@ TTerm* CopyCList(TTerm* T)
 		if (root == nullptr) root = t1;
 		else prev->Next = t1;
 		prev = t1;
-		T = T->Next
+		T = T->Next;
 	} while (T != nullptr);
-		return root;
+	return root;
 }
+
+TTerm* CopyVList(TPTerm* T, bool Cpy);
 
 TTerm* CopyTerm(WORD TOff/*PPTerm*/)
 {
-	TPTerm* t = nullptr; PTerm* t1 = nullptr;
+	TPTerm* t = nullptr; TTerm* t1 = nullptr;
 	WORD tofs = 0; // absolute t
 	TTerm* t2 = nullptr;
 	integer i = 0;
@@ -2501,12 +2528,12 @@ TTerm* CopyTerm(WORD TOff/*PPTerm*/)
 	if (TOff == 0) { return nullptr; }
 	t = ptr(_Sg, TOff);
 	switch (t->Fun) {
-	case _IntT: return GetIntTerm(RunIExpr(TOfs)); break;
-	case _RealT: return GetRealTerm(RunRExpr(TOfs)); break;
+	case _IntT: return GetIntTerm(RunIExpr(tofs)); break;
+	case _RealT: return GetRealTerm(RunRExpr(tofs)); break;
 	case _StrT: {
 		if (t->Op == _const) return GetStringTerm(t->SS);
 		else {
-			RunSExpr(TOff, XXS);
+			RunSExpr(TOff, &XXS);
 			return GetStringTerm(XXS);
 		}
 		break;
@@ -2518,10 +2545,10 @@ TTerm* CopyTerm(WORD TOff/*PPTerm*/)
 		return result;
 		break;
 	}
-	case _VarT: return CurrInst->Vars[T->Idx]; break;
+	case _VarT: return CurrInst->Vars[t->Idx]; break;
 	case _ListT: {
 		t2 = nullptr;
-		while (t->Op = '+') {
+		while (t->Op == '+') {
 			ChainList(t2, CopyVList(ptr(_Sg, t->E1), true));
 			tofs = t->E2;
 		}
@@ -2530,8 +2557,9 @@ TTerm* CopyTerm(WORD TOff/*PPTerm*/)
 		break;
 	}
 	default: {
-		t2 = GetFunTerm(T->Fun, T->Arity);
-		for (i = 0; i <= integer(T->Arity) - 1; i++) t2->Arg[i] = CopyTerm(T->Arg[i]);
+		t2 = GetFunTerm(t->Fun, t->Arity);
+		for (i = 0; i <= integer(t->Arity) - 1; i++)
+			t2->Arg[i] = CopyTerm(t->Arg[i]);
 		return t2;
 		break;
 	}
@@ -3755,7 +3783,7 @@ void AssertFand(TPredicate* P, TCommand* C)
 	}
 	OldLMode(md);
 	ReleaseStore(CRecPtr);
-}
+	}
 
 TFileScan* GetScan(WORD SIOfs, TCommand* C, TInstance* Q)
 {
@@ -4161,7 +4189,7 @@ void RunProlog(RdbPos Pos, pstring* PredName)
 	if (ProlgCallLevel == 1) {
 		MarkBoth(pm1, pm2);
 		FreeMemList = nullptr;
-		Mem1.Init; Mem2.Init; Mem3.Init;
+		Mem1.Init(); Mem2.Init(); Mem3.Init();
 		TrcLevel = 0;
 		CallLevel = 0;
 	}
@@ -4193,13 +4221,16 @@ void RunProlog(RdbPos Pos, pstring* PredName)
 		ConsultDb(ptr(_Sg, db->SOfs), dbofs);
 		dbofs = db->Chain;
 	}
-	TopInst = nullptr; CurrInst = nullptr;
-	c = ptr(_Sg, 0); b = ptr(_Sg, 0); l = ptr(_Sg, 0);
+	TopInst = nullptr;
+	CurrInst = nullptr;
+	c = ptr(_Sg, 0);
+	b = ptr(_Sg, 0);
+	l = ptr(_Sg, 0);
 	p = ptr(_Sg, Roots->Predicates); /* main */
 	if (PredName != nullptr) {
-		while ((pofs != 0) && (*(pstring*)(ptr(_Sg, p->Name)) != PredName)) pofs = p->Chain;
-		if ((pofs = 0) || (p->Arity != 0)) {
-			Set2MsgPar(Pos.R->FD->Name, PredName);
+		while ((pofs != 0) && (*(pstring*)(ptr(_Sg, p->Name)) != *PredName)) pofs = p->Chain;
+		if ((pofs == 0) || (p->Arity != 0)) {
+			Set2MsgPar(Pos.R->FD->Name, *PredName);
 			RunError(1545);
 		}
 	}
@@ -4221,35 +4252,37 @@ label1:
 	if ((p->Opt & _CioMaskOpt) != 0) w = c->InpMask;
 	else w = p->InpMask;
 	while (lofs != 0) {
-		if ((w & 1) != 0) if ((p->Opt && _PackInpOpt) != 0) {
-			pt = Pchar(@A);
-			PTPMaxOfs = ofs(A) + MaxPackedPredLen - 2;
-			PackTermV(l->Elem);
-			n = PtrRec(pt).Ofs - ofs(A);
-			s = Mem1.Get(2 + n);
-			q->Vars[i] = (TTerm*)s;
-			s->LL = n;
-			Move(A, s->A, n);
+		if ((w & 1) != 0) {
+			if ((p->Opt & _PackInpOpt) != 0) {
+				pt = (char*)A;
+				PTPMaxOfs = ofs(A) + MaxPackedPredLen - 2;
+				PackTermV(l->Elem);
+				n = PtrRec(pt).Ofs - ofs(A);
+				s = Mem1.Get(2 + n);
+				q->Vars[i] = (TTerm*)s;
+				s->LL = n;
+				Move(A, s->A, n);
+			}
+			else q->Vars[i] = CopyTerm(l->Elem);
 		}
-		else q->Vars[i] = CopyTerm(l->Elem);
 		i++;
 		lofs = l->Chain;
 		w = w >> 1;
 	}
-	if ((p->Opt && (_FandCallOpt + _DbaseOpt)) == _FandCallOpt + _DbaseOpt)
+	if ((p->Opt & (_FandCallOpt + _DbaseOpt)) == _FandCallOpt + _DbaseOpt)
 		q->NextBranch = (TBranch*)GetScan(bofs, c, q);
-	if (Trace) TraceCall(q, 1);
+	if (Trace()) TraceCall(q, 1);
 	q->StkMark = Mem1.Mark();
 	q->WMark = MaxWSize;
 	CurrInst = q;
-	if ((p->Opt && (_FandCallOpt + _DbaseOpt)) == _FandCallOpt) {
+	if ((p->Opt & (_FandCallOpt + _DbaseOpt)) == _FandCallOpt) {
 		CallFandProc();
 		goto label4;
 	}
 label2:
 	/*        branch       / redo /        */
-	if ((p->Opt && _BuildInOpt) != 0)             /* build-in predicates */
-		if (RunBuildIn) goto label4;
+	if ((p->Opt & _BuildInOpt) != 0)             /* build-in predicates */
+		if (RunBuildIn()) goto label4;
 		else goto label5;
 	if ((p->Opt & _DbaseOpt) != 0) {         /* database predicates */
 		if ((p->Opt & _FandCallOpt) != 0)
@@ -4258,9 +4291,10 @@ label2:
 		if (bd == nullptr) goto label5;
 		cofs = q->RetCmd;
 	label21:
-		s = LongStrPtr(@bd->LL); w = c->InpMask;
+		s = (LongStr*)bd->LL;
+		w = c->InpMask;
 		for (i = 0; i <= integer(p->Arity) - 1; i++) {
-			if (((w && 1) != 0) && !EquLongStr(LongStrPtr(q->Vars[i]), s)) {
+			if (((w & 1) != 0) && !EquLongStr(LongStrPtr(q->Vars[i]), s)) {
 				bd = bd->Chain;
 				if (bd == nullptr) { q->NextBranch = nullptr; goto label5; }
 				goto label21;
@@ -4269,12 +4303,12 @@ label2:
 			w = w >> 1;
 		}
 	label22:
-		q->NextBranch = PBranch(bd->Chain);
-		s = LongStrPtr(@bd->LL);
+		q->NextBranch = (TBranch*)(bd->Chain);
+		s = (LongStr*)(bd->LL);
 		w = c->OutpMask;
 		for (i = 0; i <= integer(p->Arity) - 1; i++)
 		{ /* unpack db outp.parameters */
-			if ((w & 1) != 0) { pt = Pchar(@s->A); q->Vars[i] = UnpackTerm(p->Arg[i]); }
+			if ((w & 1) != 0) { pt = (char*)s->A; q->Vars[i] = UnpackTerm(p->Arg[i]); }
 			PtrRec(s).Ofs += s->LL + 2;
 			w = w >> 1;
 		}
@@ -4284,71 +4318,109 @@ label2:
 	PtrRec(b).Seg = _Sg;
 label23:
 	/* normal unify branch head predicates */
-	WORD(q->NextBranch) = b->Chain;
-	i = 0; lofs = b->Head; w = b->HeadIMask; 
+	q->NextBranch = (TBranch*)b->Chain;
+	i = 0; lofs = b->Head; w = b->HeadIMask;
 	while (lofs != 0) {
 		if (((w & 1) != 0) && !UnifyTermsCV(q->Vars[i], l->Elem)) {
-			bofs = b->Chain; 
-			if (bofs = 0) goto label5;
+			bofs = b->Chain;
+			if (bofs == 0) goto label5;
 			goto label23;
 		}
-		i++; 
-		lofs = l->Chain; 
+		i++;
+		lofs = l->Chain;
 		w = w >> 1;
 	}
 	/* execute all commands */
 	cofs = b->Cmd;
 	while (cofs != 0) {
 		switch (c->Code) {
-			_PredC, _RetractC, _NotC: {
-				pofs  24 = c->Pred; lofs = c->Arg; goto label1; }
-		_AllC: { q->vars[c->Idx] = nullptr; goto label24; }
-			_  CutC{ q->NextBranch = nullptr; while (TopInst != q) {
-					  q1 = TopInst->PrevInst; Mem2.Release(TopInst); TopInst = q1
-	  }; }
-			_goto label5 FailC;
-			_  Trace{ TrcLevel = c->TrcLevel;
-					if (TrcLevel != 0) {
-					  inc(TrcLevel); CallLevel = 1; q->CallLevel = 1
-	  }
-else { CallLevel = 0; q->CallLevel = 0 }; }
-			_  AssertC{ p1 = ptr(_Sg,c->Pred);
-					if (p1->Opt && _FandCallOpt != 0) AssertFand(p1,c) else {
-					lofs = c->Arg; pt = Pchar(@A); PTPMaxOfs = ofs(A) + MaxPackedPredLen - 2;
-					while (lofs != 0) {
-					  wp = WordPtr(pt); inc(pt,2); PackTermV(l->Elem);
-					  wp^ = PtrRec(pt).Ofs - PtrRec(wp).Ofs - 2; lofs = l->Chain;
-	  }
-n = PtrRec(pt).Ofs - Ofs(A); b1 = Mem3.Alloc(4 + n); move(A,b1->LL,n);
-ChainLast(p1->Branch,b1);
-if (Trace) PrintPackedPred(Pchar(@A),c->Pred)
-}; }
-			_25 AutoC : if (AutoRecursion(q, p, c)) { lofs = c->Arg; goto label1; }
-			_  SelfC{
-					if (TopInst != q) {
-	   q1 = TopInst;
-while (q1->PrevInst != q) q1 = q1->PrevInst;
-Mem2.Release(q1); TopInst = q;
-}
-Mem1.Release(q->StkMark); MaxWSize = q->WMark; pofs = q->Pred;
-b = p->Branch; goto label6; }
-			else if (not RunCommand(cofs)) goto label5;
+		case _PredC:
+		case _RetractC:
+		case _NotC: {
+		label24:
+			pofs = c->Pred; lofs = c->Arg; goto label1;
+			break;
+		}
+		case _AllC: { q->Vars[c->Idx] = nullptr; goto label24; break; }
+		case _CutC: {
+			q->NextBranch = nullptr;
+			while (TopInst != q) {
+				q1 = TopInst->PrevInst;
+				Mem2.Release(TopInst);
+				TopInst = q1;
+			}
+			break;
+		}
+		case _FailC: goto label5; break;
+		case _Trace: {
+			TrcLevel = c->TrcLevel;
+			if (TrcLevel != 0) {
+				TrcLevel++; CallLevel = 1; q->CallLevel = 1;
+			}
+			else { CallLevel = 0; q->CallLevel = 0; }
+			break;
+		}
+		case _AssertC: {
+			p1 = ptr(_Sg, c->Pred);
+			if (p1->Opt && _FandCallOpt != 0) AssertFand(p1, c);
+			else {
+				lofs = c->Arg;
+				pt = (char*)A;
+				PTPMaxOfs = ofs(A) + MaxPackedPredLen - 2;
+				while (lofs != 0) {
+					wp = (WORD*)pt;
+					pt += 2;
+					PackTermV(l->Elem);
+					*wp = PtrRec(pt).Ofs - PtrRec(wp).Ofs - 2;
+					lofs = l->Chain;
+				}
+				n = PtrRec(pt).Ofs - Ofs(A);
+				b1 = Mem3.Alloc(4 + n);
+				Move(A, b1->LL, n);
+				ChainLast(p1->Branch, b1);
+				if (Trace()) PrintPackedPred(Pchar(@A), c->Pred);
+			}
+			break;
+		}
+		case _AutoC:
+		label25:
+			if (AutoRecursion(q, p, c)) { lofs = c->Arg; goto label1; }
+			break;
+		case _SelfC:
+		{
+			if (TopInst != q) {
+				q1 = TopInst;
+				while (q1->PrevInst != q) q1 = q1->PrevInst;
+				Mem2.Release(q1);
+				TopInst = q;
+			}
+			Mem1.Release(q->StkMark);
+			MaxWSize = q->WMark;
+			pofs = q->Pred;
+			b = p->Branch;
+			goto label6;
+			break;
+		}
+		default: if (!RunCommand(cofs)) goto label5; break;
 		}
 		/*       resume command   */
 	label3:
 		cofs = c->Chain;
 	}
 	/*           copy output parameters */
-	i = 0; lofs = b->Head; w = b->HeadOMask; while (lofs != 0) {
-		if ((w && 1) != 0) q->Vars[i] = CopyTerm(l->Elem);
-		inc(i); lofs = l->Chain; w = w shr 1;
+	i = 0; lofs = b->Head; w = b->HeadOMask;
+	while (lofs != 0) {
+		if ((w & 1) != 0) q->Vars[i] = CopyTerm(l->Elem);
+		i++;
+		lofs = l->Chain;
+		w = w >> 1;
 	}
 	/*       called predicate finished   */
 label4:
 	cofs = q->RetCmd;
-	if (c->Code = _NotC) { TopInst = q->PrevInst; goto label5; }
+	if (c->Code == _NotC) { TopInst = q->PrevInst; goto label5; }
 label41:
-	if (Trace)TraceCall(q, 0);
+	if (Trace()) TraceCall(q, 0);
 	/*      unify output with caller terms */
 	b = ptr(_Sg, q->RetBranch);
 	pofs = q->Pred;
@@ -4361,56 +4433,75 @@ label41:
 	i = 0;
 	lofs = c->Arg;
 	while (lofs != 0) {
-		if (((w && 1) = 1) && !UnifyTermsCV(q1->Vars[i], l->Elem)) goto label5;
-		inc(i); lofs = l->Chain; w = w shr 1;
+		if (((w & 1) == 1) && !UnifyTermsCV(q1->Vars[i], l->Elem)) goto label5;
+		i++;
+		lofs = l->Chain;
+		w = w >> 1;
 	}
-	/*            return to caller;       */
-	if (c->Code = _AllC) {
+	/*  return to caller;  */
+	if (c->Code == _AllC) {
 		ChainList(q->Vars[c->Idx], GetListTerm(CopyTerm(c->Elem), nullptr));
-		q1 = TopInst; while (q1 != q) {
-			q1->StkMark = Mem1.Mark; q1->WMark = MaxWSize; q1 = q1->PrevInst;
+		q1 = TopInst;
+		while (q1 != q) {
+			q1->StkMark = Mem1.Mark();
+			q1->WMark = MaxWSize;
+			q1 = q1->PrevInst;
 		}
 		goto label5;
 	}
-	if ((q1->NextBranch = nullptr) && (q1 = TopInst)) {
-		TopInst = q1->PrevInst; Mem2.Release(q1);
+	if ((q1->NextBranch == nullptr) && (q1 == TopInst)) {
+		TopInst = q1->PrevInst;
+		Mem2.Release(q1);
 	}
 	SetCallLevel(q->CallLevel);
-	if (c->Code = _AutoC) goto label25;
+	if (c->Code == _AutoC) goto label25;
 	else goto label3;
 
 	/*---------------------------------  backtracking  ---------------------------*/
 label5:
 	q1 = nullptr; q = TopInst;
-	while (q != nullptr) && (q->NextBranch = nullptr) and
-		!(PCommand(ptr(_Sg, q->RetCmd))->Code in[_NotC, _AllC]) do
+	while ((q != nullptr) && (q->NextBranch == nullptr) &&
+		!((TCommand*)(ptr(_Sg, q->RetCmd))->Code in[_NotC, _AllC]))
 	{
-		q1 = q; q = q->PrevInst;
+		q1 = q;
+		q = q->PrevInst;
 	}
-	if (q = nullptr) {
-		if (Trace) { writeln("FAIL"); waitC; }
+	if (q == nullptr) {
+		if (Trace()) { printf("FAIL"); WaitC(); }
 		EdBreak = 1; LastExitCode = 0; goto label8;
 	}
-	Mem1.Release(q->StkMark); MaxWSize = q->WMark;
-	if (q->NextBranch = nullptr) {
-		q1 = q; q = q1->RetInst; b = ptr(_Sg, q1->RetBranch); cofs = q1->RetCmd;
-		CurrInst = q; TopInst = q1->PrevInst; Mem2.Release(q1);
-		if (c->Code = _NotC) {
-			if (Trace) { writeln("FAIL" ^ m ^ j"RETURN not()"); waitC }
+	Mem1.Release(q->StkMark);
+	MaxWSize = q->WMark;
+	if (q->NextBranch == nullptr) {
+		q1 = q; q = q1->RetInst;
+		b = ptr(_Sg, q1->RetBranch);
+		cofs = q1->RetCmd;
+		CurrInst = q;
+		TopInst = q1->PrevInst;
+		Mem2.Release(q1);
+		if (c->Code == _NotC) {
+			if (Trace()) { printf("FAIL" ^ m ^ j"RETURN not()"); WaitC(); }
 		}
 		else {
-			q->Vars[c->Idx2] = q->Vars[c->Idx]; q->Vars[c->Idx] = nullptr;
-			if (Trace) { writeln("RETURN all_()"); waitC };
+			q->Vars[c->Idx2] = q->Vars[c->Idx];
+			q->Vars[c->Idx] = nullptr;
+			if (Trace()) {
+				printf("RETURN all_()"); WaitC();
+			}
 		}
-		SetCallLevel(q->CallLevel); pofs = q->Pred;
+		SetCallLevel(q->CallLevel);
+		pofs = q->Pred;
 		goto label3;
 	}
-	if (Trace) { writeln("FAIL"); waitC; }
-	TopInst = q; CurrInst = TopInst; b = q->NextBranch; pofs = q->Pred;
+	if (Trace()) { printf("FAIL"); WaitC(); }
+	TopInst = q;
+	CurrInst = TopInst;
+	b = q->NextBranch;
+	pofs = q->Pred;
 	SetCallLevel(q->CallLevel);
 	if (q1 != nullptr) Mem2.Release(q1);
 label6:
-	if (Trace) { writeln("REDO ", PString(ptr(_Sg, p->Name))^); waitC; }
+	if (Trace()) { printf("REDO ", (pstring*)(ptr(_Sg, p->Name))^); WaitC(); }
 	goto label2;
 
 	/*--------------------------  } of program  ------------------------------*/
@@ -4419,10 +4510,18 @@ label7:
 label8:
 	RestoreExit(er);
 	/*writeln(AbsAdr(HeapPtr)-AbsAdr(pm1),'/',AbsAdr(pm2)-AbsAdr(Stack2Ptr)); */
-	_Sg = oldSg; CurrInst = oldCurrInst; ForallFDs(SetOldLMode); MaxWSize = WMark;
-	if (ProlgCallLevel = 1) ReleaseBoth(pm1, pm2) else {
-		ReleaseStore(pp); Mem1.Release(pp1); Mem2.Release(pp2); Mem3.Release(pp3);
-		TrcLevel = tl; CallLevel = cl;
+	_Sg = oldSg;
+	CurrInst = oldCurrInst;
+	ForAllFDs(SetOldLMode);
+	MaxWSize = WMark;
+	if (ProlgCallLevel == 1) ReleaseBoth(pm1, pm2);
+	else {
+		ReleaseStore(pp);
+		Mem1.Release(pp1);
+		Mem2.Release(pp2);
+		Mem3.Release(pp3);
+		TrcLevel = tl;
+		CallLevel = cl;
 	}
-	dec(ProlgCallLevel);
+	ProlgCallLevel--;
 }

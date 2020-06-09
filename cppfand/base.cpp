@@ -1387,6 +1387,17 @@ bool EqualsMask(void* p, WORD l, pstring Mask)
 	return true;
 }
 
+bool EquLongStr(LongStr* S1, LongStr* S2)
+{
+	if (S1->LL != S2->LL) return false;
+	if (S1->LL == 0) return true;
+	for (size_t i = 0; i < S1->LL; i++)
+	{
+		if (S1->A[i] != S2->A[i]) return false;
+	}
+	return true;
+}
+
 WORD ListLength(void* P)
 {
 	return 0;
