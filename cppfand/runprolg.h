@@ -30,10 +30,12 @@ struct TDomain : public Chained {
 	Chained* FunDcl = 0; // 2
 };
 
+struct TPTerm;
+
 struct TConst : public Chained {
 	//WORD Chain = 0;
-	WORD Dom = 0;/*PDomain*/
-	WORD Expr = 0;/*PPTerm*/ pstring Name;
+	TDomain* Dom = nullptr;/*PDomain*/
+	TPTerm* Expr = nullptr;/*PPTerm*/ pstring Name;
 };
 
 struct TFunDcl : public Chained {
@@ -57,12 +59,12 @@ struct TPTerm {
 
 struct TTermList : public Chained {
 	//WORD Chain = 0; /*PTermList*/
-	WORD Elem = 0; /*PPTerm*/
+	TPTerm* Elem = nullptr; /*PPTerm*/
 };
 
 struct TVarDcl : public Chained {
 	//TVarDcl* Chain = nullptr;
-	WORD Dom = 0;
+	TDomain* Dom = nullptr;
 	integer Idx = 0;
 	bool Bound = false, Used = false;
 	pstring Name;
@@ -73,7 +75,7 @@ struct TWriteD : public Chained {
 	bool IsString = false;
 	pstring SS;
 	integer Idx = 0;
-	WORD Dom = 0;
+	TDomain* Dom = nullptr;
 };
 
 enum TCommandTyp {
@@ -86,16 +88,16 @@ enum TCommandTyp {
 struct TCommand : public Chained {
 	// WORD Chain = 0; /*PCommand*/
 	TCommandTyp Code;
-	WORD Arg = 0; /*PTermList*/
+	TTermList* Arg = nullptr; /*PTermList*/
 	WORD Pred = 0; /*PPredicate*/
 	WORD InpMask = 0, OutpMask = 0; /*only _CioMaskOpt*/
-	WORD Elem = 0; /*_MemP..:ListDom else PPTerm*/
+	TDomain* Elem = nullptr; /*_MemP..:ListDom else PPTerm*/
 	WORD Idx = 0, Idx2 = 0; /*_AllC*/
 	WORD CompMask = 0, KDOfs = 0; BYTE ArgI[1]{ 0 }; /*only FAND-file*/
 	WORD WrD = 0; /*PWriteD*/ bool NL = false;
 	WORD WrD1 = 0; WORD MsgNr = 0;
 	integer TrcLevel = 0;
-	TDomainTyp Typ; char CompOp = 0; WORD E1Idx = 0, E2 = 0;/*PPTerm*/
+	TDomainTyp Typ; char CompOp = 0; WORD E1Idx = 0; TPTerm* E2 = nullptr;/*PPTerm*/
 	WORD DbPred = 0;  /* !_LoadLexC */
 	FileD* FD = nullptr; FieldDescr* FldD = nullptr; pstring Name;
 	WORD apIdx = 0, apDom = 0, /*Unpk*/ apTerm = 0;
@@ -123,13 +125,13 @@ struct TFldList : public Chained {
 
 struct TScanInf {
 	FileD* FD = nullptr; 
-	WORD FL = 0; /*PFldList*/
+	TFldList* FL = nullptr; /*PFldList*/
 	pstring Name;
 };
 
 struct TPredicate : public Chained {
 	// WORD Chain = 0;
-	WORD ChainDb = 0; /*PPredicate*/
+	TPredicate* ChainDb = nullptr; /*PPredicate*/
 	WORD Name = 0; /*PString*/
 	TBranch* Branch = nullptr; /*offset*/ /*InstrPtr|ofs PScanInf|PDbBranch*/
 	WORD InstSz = 0, InpMask = 0, LocVarSz = 0; /*FAND-proc| _xxxP for buildIn*/
@@ -138,7 +140,7 @@ struct TPredicate : public Chained {
 
 struct TDatabase : public Chained {
 	// WORD Chain = 0; /*PDatabase*/
-	WORD Pred = 0; /*PPredicate*/ 
+	TPredicate* Pred = nullptr; /*PPredicate*/ 
 	WORD SOfs = 0; /*LongStrPtr/saved/*/
 	pstring Name;
 };
