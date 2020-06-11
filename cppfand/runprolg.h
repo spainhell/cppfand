@@ -157,7 +157,7 @@ struct TProgRoots {
 	TDatabase* Databases = nullptr;
 };
 
-extern WORD _Sg;
+//extern WORD _Sg;
 
 struct TMemBlkHd : public Chained
 {
@@ -180,12 +180,6 @@ public:
 	void* Alloc(WORD Sz);
 	void Free(void* P, WORD Sz);
 };
-
-extern TMemBlkHd* FreeMemList;
-extern TMemory Mem1;
-extern TMemory Mem2;
-extern TMemory Mem3;
-extern WORD ProlgCallLevel;
 
 LongStr* SaveDb(WORD DbOfs/*PDatabase*/, longint AA);
 WORD ReadProlog(WORD RecNr);

@@ -1123,7 +1123,7 @@ bool CompRunChptRec(WORD CC)
 	auto result = false;
 
 	OldE = E; MarkBoth(p, p2); WrEStatus(); //NewExit(Ovr(), er);
-	goto label2;
+	//goto label2;
 	IsCompileErr = false; uw = false; mv = MausVisible;
 	lstFD = (FileD*)LastInChain(FileDRoot);
 	oldLd = LinkDRoot;
@@ -1179,7 +1179,7 @@ bool CompRunChptRec(WORD CC)
 		}
 #ifdef FandProlog
 		case 'L': {
-			if (CC = _CtrlF9_) {
+			if (CC == _CtrlF9_) {
 				TextAttr = ProcAttr;
 				ClrScr();
 				RunProlog(&RP, nullptr);
@@ -1190,7 +1190,7 @@ bool CompRunChptRec(WORD CC)
 		}
 	WasError = false;
 label2:
-	MaxHp = 0;
+	MaxHp = nullptr;
 	ReleaseStore2(p2); Free = StoreAvail(); RestoreExit(er);
 	RunMsgClear();
 	if (WasError) {
