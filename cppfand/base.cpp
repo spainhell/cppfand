@@ -403,7 +403,7 @@ void SplitDate(double R, WORD& d, WORD& m, WORD& y)
 {
 	WORD i, j;
 
-	longint l = (longint)std::trunc(R);
+	longint l = (longint)trunc(R);
 
 	if (l == 0) { y = 1; m = 1; d = 1; }
 	else {
@@ -1394,6 +1394,17 @@ bool EquLongStr(LongStr* S1, LongStr* S2)
 	for (size_t i = 0; i < S1->LL; i++)
 	{
 		if (S1->A[i] != S2->A[i]) return false;
+	}
+	return true;
+}
+
+bool EquArea(void* P1, void* P2, WORD L)
+{
+	unsigned char* c1 = (unsigned char*)P1;
+	unsigned char* c2 = (unsigned char*)P2;
+	for (size_t i = 0; i < L; i++)
+	{
+		if (c1[i] != c2[i]) return false;
 	}
 	return true;
 }

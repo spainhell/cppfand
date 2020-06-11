@@ -44,6 +44,7 @@ void StrLPCopy(char* Dest, pstring s, WORD MaxL);
 WORD SLeadEqu(pstring S1, pstring S2);
 bool EqualsMask(void* p, WORD l, pstring Mask); // r86 ASM
 bool EquLongStr(LongStr* S1, LongStr* S2);
+bool EquArea(void* P1, void* P2, WORD L);
 integer MinI(integer X, integer Y);
 integer MaxI(integer X, integer Y);
 WORD MinW(WORD X, WORD Y);

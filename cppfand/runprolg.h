@@ -97,7 +97,7 @@ struct TCommand : public Chained {
 	WORD InpMask = 0, OutpMask = 0; /*only _CioMaskOpt*/
 	TDomain* Elem = nullptr; /*_MemP..:ListDom else PPTerm*/
 	WORD Idx = 0;
-	TPTerm* Idx2 = nullptr; /*_AllC*/
+	WORD Idx2 = 0; /*_AllC*/
 	WORD CompMask = 0; KeyD* KDOfs = nullptr; BYTE ArgI[1]{ 0 }; /*only FAND-file*/
 	TWriteD* WrD = nullptr; /*PWriteD*/ bool NL = false;
 	WORD WrD1 = 0; WORD MsgNr = 0;
@@ -146,7 +146,7 @@ struct TPredicate : public Chained {
 struct TDatabase : public Chained {
 	// WORD Chain = 0; /*PDatabase*/
 	TPredicate* Pred = nullptr; /*PPredicate*/ 
-	WORD SOfs = 0; /*LongStrPtr/saved/*/
+	LongStr* SOfs = nullptr; /*LongStrPtr/saved/*/
 	pstring Name;
 };
 

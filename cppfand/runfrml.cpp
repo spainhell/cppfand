@@ -650,7 +650,7 @@ label1:
 	case _mod: result = RMod(X); break;
 	case _unminus: result = -RunReal(X->P1); break;
 	case _today: result = Today(); break;
-	case _pi: result = std::atan(1.0) * 4; break;
+	case _pi: result = atan(1.0) * 4; break;
 	case _random: result = Random(); break;
 	case _round: result = RoundReal(RunReal(X->P1), RunInt(X->P2)); break;
 	case _abs: result = abs(RunReal(X->P1)); break;
