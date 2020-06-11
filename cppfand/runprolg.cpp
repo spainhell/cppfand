@@ -1777,7 +1777,8 @@ TPredicate* MakePred(pstring PredName, pstring ArgTyp, WORD PredKod, WORD PredMa
 	ChainLst(Roots->Predicates, p->Chain);
 	auto result = (TPredicate*)p->Chain;
 	/* !!! with p^ do!!! */ {
-		p->Name = StorStr(PredName); p->Arity = n; p->LocVarSz = PredKod;
+		p->Name = StorStr(PredName); 
+		p->Arity = n; p->LocVarSz = PredKod;
 		for (i = 1; i <= n; i++) {
 			switch (ArgTyp[i]) {
 			case 's': dofs = StrDom; break;
@@ -1831,9 +1832,13 @@ WORD ReadProlog(WORD RecNr)
 	//_Sg = PtrRec(HeapPtr).Seg;
 	//result = _Sg;
 	//PtrRec(db).Seg = _Sg;
+	db = new TDatabase();
 	//PtrRec(p).Seg = _Sg;
+	p = new TPredicate();
 	//PtrRec(d).Seg = _Sg;
+	d = new TDomain();
 	//PtrRec(f).Seg = _Sg;
+	f = new TFunDcl();
 	ClausePreds = 0;
 	Roots = new TProgRoots(); // GetZStore(sizeof(TProgRoots));
 	UnderscoreTerm = new TPTerm(); // GetZStor(1);
@@ -3828,7 +3833,7 @@ void AssertFand(TPredicate* P, TCommand* C)
 				break;
 			}
 			default: {
-				if (f->Typ = 'T') {
+				if (f->Typ == 'T') {
 					if (d->Typ == _LongStrD) s = RdLongStr(t->Pos);
 					else s = GetPackedTerm(t);
 					LongS_(f, s);
@@ -4000,14 +4005,14 @@ label1:
 			case 'B': if (_B(f) != t->Fun) goto label1; break;
 			case 'R': {
 				r = _R(f);
-				if (t->Fun = _IntT) { if (r != t->II) goto label1; }
+				if (t->Fun == _IntT) { if (r != t->II) goto label1; }
 				else if (r != t->RR) goto label1;
 				break;
 			}
 			default: {
 				if (f->Typ == 'T') {
 					dofs = p->Arg[i];
-					if (d->Typ = _LongStrD) s = RdLongStr(t->Pos);
+					if (d->Typ == _LongStrD) s = RdLongStr(t->Pos);
 					else s = GetPackedTerm(t);
 					b = EquLongStr(s, _LongS(f));
 					ReleaseStore(s);

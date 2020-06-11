@@ -13,7 +13,7 @@ LocVar* RdIdxVar();
 FrmlPtr RdRecVarFldFrml(LocVar* LV, char& FTyp);
 char RdOwner(LinkD* LLD, LocVar* LLV); // 'r','i','F'
 FrmlPtr RdFldNameFrmlP(char& FTyp);
-FileD* RdPath(bool NoFD, pstring* Path, WORD& CatIRec);
+FileD* RdPath(bool NoFD, pstring** Path, WORD& CatIRec);
 FrmlPtr RdFunctionP(char& FFTyp);
 KeyD* RdViewKeyImpl(FileD* FD);
 void RdSelectStr(FrmlPtr Z);

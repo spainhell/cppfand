@@ -212,7 +212,7 @@ pstring pstring::operator+(const pstring& second)
 bool pstring::operator==(const pstring& eqpstring)
 {
 	if (arr[0] != eqpstring.arr[0]) return false;
-	return strcmp((char*)&arr[1], (char*)&eqpstring.arr[1]) == 0;
+	return memcmp((char*)&arr[1], (char*)&eqpstring.arr[1], arr[0]) == 0;
 }
 
 bool pstring::operator!=(const pstring& eqpstring)

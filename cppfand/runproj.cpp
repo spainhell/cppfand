@@ -1486,8 +1486,8 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 	CRecPtr = Chpt->RecPtr;
 	Encryp = CRdb->Encrypted;
 	for (I = 1; I <= Chpt->NRecs; I++) {
-		if (I == 0x70) {
-			printf("ASSERT");
+		if (I >= 0x94) {
+			printf("%i\n", I);
 		}
 		ReadRec(I);
 		RP.IRec = I;
