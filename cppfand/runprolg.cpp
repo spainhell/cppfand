@@ -8,7 +8,7 @@
 #include "obaseww.h"
 #include "runproc.h"
 
-TMemBlkHd* FreeMemList;
+TMemBlkHd* FreeMemList = nullptr;
 TMemory Mem1;
 TMemory Mem2;
 TMemory Mem3;
