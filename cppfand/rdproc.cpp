@@ -1221,7 +1221,9 @@ Instr* RdSortCall()
 
 Instr* RdEditCall()
 {
-	void* p = nullptr; bool b = false; KeyDPtr K = nullptr;
+	stSaveState* p = nullptr; 
+	bool b = false; 
+	KeyD* K = nullptr;
 	LocVar* lv = nullptr;
 	Instr* PD = GetPD(_edit, 8);
 	EditOpt* EO = GetEditOpt();
@@ -2359,7 +2361,7 @@ label1:
 
 FrmlPtr GetEvalFrml(FrmlPtr X)
 {
-	void* p = nullptr;
+	stSaveState* p = nullptr;
 	void* cr = nullptr;
 	char fTyp;
 	WORD cpos = 0;
@@ -2380,7 +2382,9 @@ FrmlPtr GetEvalFrml(FrmlPtr X)
 	SetInpLongStr(s, false); RdLex(); z = RdFrml(fTyp);
 	if ((fTyp != X->EvalTyp) || (Lexem != 0x1A)) z = nullptr; else LastExitCode = 0;
 label1:
-	cpos = CurrPos; RestoreExit(er); RestoreCompState(p);
+	cpos = CurrPos; 
+	RestoreExit(er); 
+	RestoreCompState(p);
 	if (LastExitCode != 0) {
 		LastTxtPos = cpos;
 		if (X->EvalTyp == 'B') { z = GetOp(_const, 1); z->B = false; }

@@ -6,6 +6,22 @@
 
 extern RdbPos ChptIPos; // usen in LexAnal & ProjMgr
 
+struct stSaveState
+{
+	BYTE CurrChar = 0;
+	BYTE ForwChar = 0; BYTE ExpChar = 0; BYTE Lexem = 0;
+	pstring LexWord;
+	bool SpecFDNameAllowed = false, IdxLocVarAllowed = false, FDLocVarAllowed = false, IsCompileErr = false;
+	CompInpD* PrevCompInp = nullptr;
+	BYTE* InpArrPtr = nullptr; RdbPos InpRdbPos;
+	WORD InpArrLen = 0, CurrPos = 0, OldErrPos = 0;
+	SumElem* FrmlSumEl = nullptr;
+	bool FrstSumVar = false, FileVarsAllowed = false;
+	FrmlElem* (*RdFldNameFrml)(char&) = nullptr; // ukazatel na funkci
+	FrmlElem* (*RdFunction)(char&) = nullptr; // ukazatel na funkci
+	void(*ChainSumEl)(); // {set by user}
+};
+
 // funkce dle COMPILE.PAS
 bool EquUpcase(pstring& S1, pstring& S2); // r274 ASM
 bool EquUpcase(const char* S);
@@ -69,8 +85,8 @@ KeyFldD* RdKF(FileD* FD);
 WORD RdKFList(KeyFldD** KFRoot, FileD* FD); // r298
 bool IsKeyArg(FieldDescr* F, FileD* FD); // r278
 void CompileRecLen();
-void* SaveCompState(); // r104
-void RestoreCompState(void* p); // 109
+stSaveState* SaveCompState(); // r104
+void RestoreCompState(stSaveState* p); // 109
 void CFileLikeFD(FileD* FD, WORD MsgNr);
 pstring* RdHelpName(); // r144
 FrmlPtr RdAttr(); // r152

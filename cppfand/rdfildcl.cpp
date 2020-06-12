@@ -329,8 +329,13 @@ void RdFieldDList(bool Stored)
 {
 	pstring Name; FieldDescr* F = nullptr; char FTyp = 0; FrmlPtr Z = nullptr;
 label1:
-	TestIdentif(); Name = LexWord;
-	F = FindFldName(CFile);	if (F != nullptr) Error(26);
+	if (InpArrLen == 0x0ce2) {
+		printf("D\n");
+	}
+	TestIdentif(); 
+	Name = LexWord;
+	F = FindFldName(CFile);	
+	if (F != nullptr) Error(26);
 	RdLex();
 	if (!Stored) { Accept(_assign); Z = RdFrml(FTyp); }
 	F = RdFldDescr(Name, Stored);
@@ -345,7 +350,8 @@ label1:
 	}
 	else { F->Frml = Z; if (FTyp != F->FrmlTyp) OldError(12); }
 	if (Lexem == ';') {
-		RdLex(); if (!(Lexem == '#' || Lexem == 0x1A)) goto label1;
+		RdLex(); 
+		if (!(Lexem == '#' || Lexem == 0x1A)) goto label1;
 	}
 }
 
@@ -365,17 +371,25 @@ void* RdFileD(pstring FileName, char FDTyp, pstring Ext)
 	RdLex();
 	issql = SEquUpcase(Ext, ".SQL"); isHlp = SEquUpcase(Ext, ".HLP");
 	if (IsKeyWord("JOURNALOF")) {
-		FD = RdFileName(); if (Lexem == ';') RdLex(); SetMsgPar(FileName);
+		FD = RdFileName(); 
+		if (Lexem == ';') RdLex(); 
+		SetMsgPar(FileName);
 		if (FDTyp != '6') OldError(103);
 		if (Lexem != 0x1A) Error(40);
 #ifdef FandSQL
 		if (issql || FD->typSQLFile) OldError(155);
 #endif
-		LDOld = LinkDRoot; CallRdFDSegment(FD); LinkDRoot = LDOld;
-		F = CFile->FldD; FillChar(CFile, sizeof(FileD), 0); CFile->Name = FileName;
-		CFile->IsJournal = true; SetHCatTyp(FDTyp);
+		LDOld = LinkDRoot; 
+		CallRdFDSegment(FD); 
+		LinkDRoot = LDOld;
+		F = CFile->FldD; 
+		FillChar(CFile, sizeof(FileD), 0); CFile->Name = FileName;
+		CFile->IsJournal = true; 
+		SetHCatTyp(FDTyp);
 		CFile->ChptPos = OrigInp()->InpRdbPos;
-		SetInpStr(JournalFlds); RdLex(); RdFieldDList(true);
+		SetInpStr(JournalFlds); 
+		RdLex(); 
+		RdFieldDList(true);
 		F2 = (FieldDescr*)LastInChain(CFile->FldD);
 		while (F != nullptr) {
 			if ((F->Flg & f_Stored) != 0) {
@@ -391,19 +405,30 @@ void* RdFileD(pstring FileName, char FDTyp, pstring Ext)
 				F = (FieldDescr*)F->Chain;
 			}
 		}
-		F2->Chain = nullptr; CompileRecLen(); ChainLast(FileDRoot, CFile);
-		MarkStore(p); goto label1;
+		F2->Chain = nullptr; 
+		CompileRecLen(); 
+		ChainLast(FileDRoot, CFile);
+		MarkStore(p); 
+		goto label1;
 	}
 	if (IsKeyWord("LIKE")) {
-		Prefix = FileName; FD = RdFileName(); if (Lexem == '(') {
-			RdLex(); TestIdentif(); Prefix = LexWord; RdLex(); Accept(')');
+		Prefix = FileName; 
+		FD = RdFileName(); 
+		if (Lexem == '(') {
+			RdLex(); 
+			TestIdentif(); 
+			Prefix = LexWord; 
+			RdLex(); 
+			Accept(')');
 		}
-		CallRdFDSegment(FD); CFile->IsHlpFile = false;
+		CallRdFDSegment(FD); 
+		CFile->IsHlpFile = false;
 		if (!(FDTyp == '6' || FDTyp == 'X') || !(CFile->Typ == '6' || CFile->Typ == 'X')) OldError(106);
 		K = CFile->Keys;
 		while (K != nullptr) {
 			if (*K->Alias != "") {
-				s = *K->Alias; i = s.first('_');
+				s = *K->Alias; 
+				i = s.first('_');
 				if (i != 0) s = copy(s, i + 1, 255);
 				s = Prefix + '_' + s;
 				K->Alias = StoreStr(s);
@@ -478,7 +503,7 @@ label2:
 	//if (PtrRec(InpRdbPos.R).Seg == 0/*compiled from pstring*/) {
 	//	CFile->LiOfs = 0; ReleaseStore(p);
 	//}
-	if (Lexem != 0x1A) Error(66);
+	if (Lexem != ']' && Lexem != 0x1A) Error(66); // !!! pridana podminka ']' oproti originalu
 label1:
 	return p; // má asi vracet HeapPtr
 }

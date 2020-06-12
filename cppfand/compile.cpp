@@ -664,13 +664,57 @@ bool IsIdentifStr(pstring& S)
 	return true;
 }
 
-void* SaveCompState()
+stSaveState* SaveCompState()
 {
-	return nullptr;
+	stSaveState* state = new stSaveState();
+	state->CurrChar = CurrChar;
+	state->ForwChar = ForwChar;
+	state->ExpChar = ExpChar;
+	state->Lexem = Lexem;
+	state->LexWord = LexWord;
+	state->SpecFDNameAllowed = SpecFDNameAllowed;
+	state->IdxLocVarAllowed = IdxLocVarAllowed;
+	state->FDLocVarAllowed = FDLocVarAllowed;
+	state->IsCompileErr = IsCompileErr;
+	state->PrevCompInp = PrevCompInp;
+	state->InpArrPtr = InpArrPtr;
+	state->InpRdbPos = InpRdbPos;
+	state->InpArrLen = InpArrLen;
+	state->CurrPos = CurrPos;
+	state->OldErrPos = OldErrPos;
+	state->FrmlSumEl = FrmlSumEl;
+	state->FrstSumVar = FrstSumVar;
+	state->FileVarsAllowed = FileVarsAllowed;
+	state->RdFldNameFrml = RdFldNameFrml;
+	state->RdFunction = RdFunction;
+	state->ChainSumEl = ChainSumEl;
+	return state;
 }
 
-void RestoreCompState(void* p)
+void RestoreCompState(stSaveState* p)
 {
+	CurrChar = p->CurrChar;
+	ForwChar = p->ForwChar;
+	ExpChar = p->ExpChar;
+	Lexem = p->Lexem;
+	LexWord = p->LexWord;
+	SpecFDNameAllowed = p->SpecFDNameAllowed;
+	IdxLocVarAllowed = p->IdxLocVarAllowed;
+	FDLocVarAllowed = p->FDLocVarAllowed;
+	IsCompileErr = p->IsCompileErr;
+	PrevCompInp = p->PrevCompInp;
+	InpArrPtr = p->InpArrPtr;
+	InpRdbPos = p->InpRdbPos;
+	InpArrLen = p->InpArrLen;
+	CurrPos = p->CurrPos;
+	OldErrPos = p->OldErrPos;
+	FrmlSumEl = p->FrmlSumEl;
+	FrstSumVar = p->FrstSumVar;
+	FileVarsAllowed = p->FileVarsAllowed;
+	RdFldNameFrml = p->RdFldNameFrml;
+	RdFunction = p->RdFunction;
+	ChainSumEl = p->ChainSumEl;
+	delete p;
 }
 
 LocVar* RdVarName(LocVarBlkD* LVB, bool IsParList)
@@ -731,7 +775,8 @@ void RdLocDcl(LocVarBlkD* LVB, bool IsParList, bool WithRecVar, char CTyp)
 	pstring s; double r = 0; char typ = '\0', lx = '\0', fc = '\0';
 	WORD sz = 0, n = 0;
 	FileD* cf = nullptr; FileD* fd = nullptr;
-	void* cr = nullptr; void* p = nullptr; XWKey* k = nullptr; bool rp = false;
+	void* cr = nullptr; stSaveState* p = nullptr; 
+	XWKey* k = nullptr; bool rp = false;
 	KeyFldD* kf = nullptr; KeyFldD* kf1 = nullptr;
 	char FDTyp = '\0';
 label1:
@@ -741,7 +786,8 @@ label1:
 	}
 	lv = RdVarName(LVB, IsParList);
 	if (!IsParList) while (Lexem == ',') { RdLex(); RdVarName(LVB, IsParList); }
-	Accept(':'); Z = nullptr;
+	Accept(':');
+	Z = nullptr;
 	if (IsKeyWord("BOOLEAN")) {
 		if ((Lexem == _equ) && !IsParList) {
 			RdLex();
@@ -750,7 +796,9 @@ label1:
 			}
 			else { if (!IsKeyWord("FALSE")) Error(42); }
 		}
-		typ = 'B'; sz = sizeof(bool); goto label2;
+		typ = 'B'; 
+		sz = sizeof(bool); 
+		goto label2;
 	}
 	else if (IsKeyWord("REAL")) {
 		if ((Lexem == _equ) && !IsParList) {
@@ -808,7 +856,8 @@ label1:
 				p = SaveCompState();
 				RdFileD(lv->Name, FDTyp, '$');
 				TestLex(']');
-				lv->FD = CFile; n = CurrPos; lx = Lexem; fc = ForwChar;
+				lv->FD = CFile; 
+				n = CurrPos; lx = Lexem; fc = ForwChar;
 				RestoreCompState(p);
 				CurrPos = n; Lexem = lx; ForwChar = fc;
 				RdLex();
@@ -2358,6 +2407,10 @@ FrmlPtr TryRdFldFrml(FileDPtr FD, char& FTyp)
 
 FrmlElem* RdFldNameFrmlF(char& FTyp)
 {
+	if (InpArrLen == 0x0ce2 && CurrPos >= 0x0b00) {
+		printf("RF");
+	}
+
 	LinkD* ld = nullptr;
 	FileD* fd = nullptr;
 	FrmlElem* z = nullptr;

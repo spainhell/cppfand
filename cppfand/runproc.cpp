@@ -1001,7 +1001,8 @@ void RunProcedure(void* PDRoot)
 
 void CallProcedure(Instr* PD)
 {
-	void* p = nullptr; void* p1 = nullptr; void* p2 = nullptr;
+	stSaveState* p = nullptr; 
+	void* p1 = nullptr; void* p2 = nullptr;
 	void* oldbp = nullptr; void* oldprocbp = nullptr;
 	LocVar* lv = nullptr; LocVar* lv1 = nullptr; LocVar* lvroot = nullptr;
 	WORD i, j, n;

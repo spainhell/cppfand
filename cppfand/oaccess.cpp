@@ -535,7 +535,8 @@ label1:
 			result = i; goto label2;
 		}
 	}
-	R = R->ChainBack; if ((R != nullptr) && MultiLevel) goto label1;
+	R = R->ChainBack; 
+	if ((R != nullptr) && MultiLevel) goto label1;
 label2:
 	CFile = CF; 
 	ReleaseStore(CRecPtr); 
