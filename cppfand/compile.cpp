@@ -593,7 +593,10 @@ bool IsKeyWord(pstring S)
 void AcceptKeyWord(pstring S)
 {
 	if (TestKeyWord(S)) RdLex();
-	else { SetMsgPar(S); Error(33); }
+	else { 
+		SetMsgPar(S); 
+		Error(33); 
+	}
 }
 
 bool IsOpt(pstring S)
@@ -1093,12 +1096,12 @@ label1:
 	return result;
 }
 
-void RdAssignFrml(char FTyp, bool& Add, FrmlPtr Z)
+void RdAssignFrml(char FTyp, bool& Add, FrmlElem** Z)
 {
 	char Typ;
 	if (Lexem == _addass) { RdLex(); Add = true; }
 	else Accept(_assign);
-	Z = RdFrml(Typ);
+	*Z = RdFrml(Typ);
 	if ((FTyp != Typ) || Add && (Typ != 'R')) OldError(12);
 }
 

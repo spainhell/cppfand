@@ -1486,7 +1486,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 	CRecPtr = Chpt->RecPtr;
 	Encryp = CRdb->Encrypted;
 	for (I = 1; I <= Chpt->NRecs; I++) {
-		if (I >= 0x94) {
+		if (I >= 276) {
 			printf("%i\n", I);
 		}
 		ReadRec(I);
@@ -1602,7 +1602,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 #ifdef FandProlog
 			case 'L': { 
 				SetInpTTPos(Txt, Encryp); 
-				ReadProlog(I); 
+				// ReadProlog(I); 
 				break; 
 			}
 #endif

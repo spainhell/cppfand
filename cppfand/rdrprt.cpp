@@ -770,21 +770,31 @@ AssignD* RdAssign2()
 	AssignD* A = nullptr; LocVar* LV = nullptr; char FTyp = 0;
 	FileD* FD = nullptr; FieldDescr* F = nullptr;
 	AssignD* result = nullptr;
-	A = (AssignD*)GetZStore(sizeof(*A)); result = A;
+	A = new AssignD(); // (AssignD*)GetZStore(sizeof(*A));
+	result = A;
 	if (IsKeyWord("IF")) {
-		A->Kind = _ifthenelseM; A->Bool = RdBool();
-		AcceptKeyWord("THEN"); RdAssignBlk(A->Instr);
+		A->Kind = _ifthenelseM; 
+		A->Bool = RdBool();
+		AcceptKeyWord("THEN"); 
+		RdAssignBlk(A->Instr);
 		if (IsKeyWord("ELSE")) RdAssignBlk(A->ElseInstr);
 	}
 	else if (ForwChar == '.') {
-		A->Kind = _parfile; FD = RdFileName(); if (!FD->IsParFile) OldError(9);
-		Accept('.'); A->FD = FD; F = RdFldName(FD); A->PFldD = F;
+		A->Kind = _parfile; 
+		FD = RdFileName(); 
+		if (!FD->IsParFile) OldError(9);
+		Accept('.'); 
+		A->FD = FD; 
+		F = RdFldName(FD); 
+		A->PFldD = F;
 		if (F->Flg && f_Stored == 0) OldError(14);
-		RdAssignFrml(F->FrmlTyp, A->Add, A->Frml);
+		RdAssignFrml(F->FrmlTyp, A->Add, &A->Frml);
 	}
 	else if (FindLocVar(LVBD.Root, &LV)) {
-		RdLex(); A->Kind = _locvar; A->LV = LV;
-		RdAssignFrml(LV->FTyp, A->Add, A->Frml);
+		RdLex(); 
+		A->Kind = _locvar; 
+		A->LV = LV;
+		RdAssignFrml(LV->FTyp, A->Add, &A->Frml);
 	}
 	else Error(147);
 	return result;
@@ -792,22 +802,31 @@ AssignD* RdAssign2()
 
 void RdAssignBlk(AssignD* ARoot)
 {
-	AssignD* A;
+	AssignD* A = nullptr;
 	if (IsKeyWord("BEGIN")) RdBeginEnd(ARoot);
-	else { A = RdAssign2(); ChainLast(ARoot, A); }
+	else { 
+		A = RdAssign2(); 
+		if (ARoot == nullptr) { ARoot = A; A->Chain = nullptr; }
+		else ChainLast(ARoot, A); 
+	}
 }
 
 void RdCond()
 {
 	if (Lexem == '(') {
-		RdLex(); CBlk->Bool = RdBool(); Accept(')');
+		RdLex(); 
+		CBlk->Bool = RdBool(); 
+		Accept(')');
 	}
 }
 
 LvDescr* RdKeyName()
 {
-	LvDescr* L; FieldDescr* F;
-	ReadChar(); Lexem = CurrChar; Accept('_');
+	LvDescr* L= nullptr; 
+	FieldDescr* F = nullptr;
+	ReadChar(); 
+	Lexem = CurrChar; 
+	Accept('_');
 	if (WhatToRd == 'O') L = FrstLvM;
 	else L = IDA[Oi]->FrstLvS;
 	F = RdFldName(InpFD(Oi));
@@ -821,8 +840,10 @@ LvDescr* RdKeyName()
 
 void Rd_Oi()
 {
-	Oi = 1; if (isdigit(ForwChar)) {
-		ReadChar(); Oi = CurrChar - '0';
+	Oi = 1; 
+	if (isdigit(ForwChar)) {
+		ReadChar(); 
+		Oi = CurrChar - '0';
 		if ((Oi == 0) || (Oi > MaxIi)) Error(62);
 		WhatToRd = 'i';
 	}

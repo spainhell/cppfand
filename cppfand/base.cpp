@@ -333,6 +333,8 @@ void ChainLast(Chained* Frst, Chained* New)
 	}
 
 	last->Chain = New;
+	
+	New->Chain = nullptr; // TODO: pridano kvuli zacykleni v RdAutoSortSK_M
 }
 
 Chained* LastInChain(Chained* Frst)

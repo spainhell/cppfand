@@ -202,12 +202,14 @@ label1:
 	}
 	Accept(')');
 	if (!neg) { EO->Flds = fl1; return; }
-	EO->Flds = nullptr; f = CFile->FldD;
+	EO->Flds = nullptr; 
+	f = CFile->FldD;
 	while (f != nullptr) {
-		if (((f->Flg && f_Stored != 0) || all) && !FieldInList(f, fl1)) {
-			fl = (FieldListEl*)GetStore(sizeof(*fl));
+		if ((((f->Flg & f_Stored) != 0) || all) && !FieldInList(f, fl1)) {
+			fl = new FieldListEl(); // (FieldListEl*)GetStore(sizeof(*fl));
 			fl->FldD = f;
-			ChainLast(EO->Flds, fl);
+			if (EO->Flds == nullptr) { EO->Flds = fl; fl->Chain = nullptr; }
+			else ChainLast(EO->Flds, fl);
 		}
 		f = (FieldDescr*)f->Chain;
 	}

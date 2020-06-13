@@ -93,7 +93,7 @@ FrmlPtr RdAttr(); // r152
 void RdW(WRectFrml& W); // r161
 void RdFrame(FrmlPtr Z, BYTE& WFlags); // r166
 bool PromptSortKeys(FieldList FL, KeyFldD* SKRoot);
-void RdAssignFrml(char FTyp, bool& Add, FrmlPtr Z); // r193
+void RdAssignFrml(char FTyp, bool& Add, FrmlElem** Z); // r193
 bool FldTypIdentity(FieldDescr* F1, FieldDescr* F2);
 void RdFldList(FieldListEl* FLRoot);
 void RdNegFldList(bool& Neg, FieldList FLRoot); // r214
