@@ -339,13 +339,13 @@ void OldError(integer N)
 void RdBackSlashCode()
 {
 	WORD i, n;
-	pstring Num(3);
+	pstring Num;
 
 	if (ForwChar == '\\') { ReadChar(); return; }
 	Num = "";
 	while ((std::isdigit(ForwChar)) && (Num.length() < 3)) {
 		ReadChar();
-		Num = Num + CurrChar;
+		Num.Append(CurrChar);
 	}
 	if (Num == "") return;
 	val(Num, n, i);
@@ -977,16 +977,18 @@ void RdChptName(char C, RdbPos* Pos, bool TxtExpr)
 	}
 }
 
-FieldList AllFldsList(FileDPtr FD, bool OnlyStored)
+FieldListEl* AllFldsList(FileD* FD, bool OnlyStored)
 {
-	FieldList FLRoot, FL; FieldDPtr F;
-	F = FD->FldD; FLRoot = nullptr;
+	FieldListEl* FLRoot = nullptr;
+	FieldListEl* FL = nullptr; 
+	FieldDescr* F = FD->FldD;
 	while (F != nullptr) {
-		if ((F->Flg && f_Stored != 0) || !OnlyStored)
+		if (((F->Flg & f_Stored) != 0) || !OnlyStored)
 		{
-			FL = (FieldListEl*)GetStore(sizeof(*FL));
+			FL = new FieldListEl(); // (FieldListEl*)GetStore(sizeof(*FL));
 			FL->FldD = F;
-			ChainLast(FLRoot, FL);
+			if (FLRoot == nullptr) { FLRoot = FL; FL->Chain = nullptr; }
+			else ChainLast(FLRoot, FL);
 		}
 		F = (FieldDescr*)F->Chain;
 	}
@@ -1354,7 +1356,7 @@ FrmlPtr BOperation(char Typ, char Fun, FrmlPtr Frml)
 	RdLex(); Z->P1 = Frml; return Z;
 }
 
-FrmlPtr RdPrim(char& FTyp);
+FrmlElem* RdPrim(char& FTyp);
 
 FrmlPtr RdMult(char& FTyp)
 {
@@ -1595,107 +1597,108 @@ bool FindFuncD(FrmlPtr* ZZ)
 	return false;
 }
 
-FrmlPtr RdPrim(char& FTyp)
+std::map<std::string, int> R0Fun = {
+	std::pair<std::string, int> {"cprinter", _cprinter},
+	std::pair<std::string, int> {"currtime", _currtime},
+	std::pair<std::string, int> {"edrecno", _edrecno},
+	std::pair<std::string, int> {"exitcode", _exitcode},
+	std::pair<std::string, int> {"getmaxx", _getmaxx},
+	std::pair<std::string, int> {"getmaxy", _getmaxy},
+	std::pair<std::string, int> {"maxcol", _maxcol},
+	std::pair<std::string, int> {"maxrow", _maxrow},
+	std::pair<std::string, int> {"memavail", _memavail},
+	std::pair<std::string, int> {"mousex", _mousex},
+	std::pair<std::string, int> {"mousey", _mousey},
+	std::pair<std::string, int> {"pi", _pi},
+	std::pair<std::string, int> {"random", _random},
+	std::pair<std::string, int> {"today", _today},
+	std::pair<std::string, int> {"txtpos", _txtpos},
+	std::pair<std::string, int> {"txtxy", _txtxy},
+};
+
+std::map<std::string, int> RCFun = {
+	std::pair<std::string, int> {"edbreak", 3},
+	std::pair<std::string, int> {"edirec", 4},
+	std::pair<std::string, int> {"menux", 5},
+	std::pair<std::string, int> {"menuy", 6},
+	std::pair<std::string, int> {"usercode", 7},
+};
+
+std::map<std::string, int> S0Fun = {
+	std::pair<std::string, int> {"accright", _accright},
+	std::pair<std::string, int> {"clipbd", _clipbd},
+	std::pair<std::string, int> {"edbool", _edbool},
+	std::pair<std::string, int> {"edfield", _edfield},
+	std::pair<std::string, int> {"edfile", _edfile},
+	std::pair<std::string, int> {"edkey", _edkey},
+	std::pair<std::string, int> {"edreckey", _edreckey},
+	std::pair<std::string, int> {"keybuf", _keybuf},
+	std::pair<std::string, int> {"password", _password},
+	std::pair<std::string, int> {"readkey", _readkey},
+	std::pair<std::string, int> {"username", _username},
+	std::pair<std::string, int> {"version", _version},
+};
+
+std::map<std::string, int> B0Fun = {
+	std::pair<std::string, int> {"isnewrec", _isnewrec},
+	std::pair<std::string, int> {"testmode", _testmode},
+};
+
+std::map<std::string, int> S1Fun = {
+	std::pair<std::string, int> {"char", _char},
+	std::pair<std::string, int> {"getenv", _getenv},
+	std::pair<std::string, int> {"lowcase", _lowcase},
+	std::pair<std::string, int> {"nodiakr", _nodiakr},
+	std::pair<std::string, int> {"upcase", _upcase},
+};
+
+std::map<std::string, int> R1Fun = {
+	std::pair<std::string, int> {"abs", _abs},
+	std::pair<std::string, int> {"arctan", _arctan},
+	std::pair<std::string, int> {"color", _color},
+	std::pair<std::string, int> {"cos", _cos},
+	std::pair<std::string, int> {"exp", _exp},
+	std::pair<std::string, int> {"frac", _frac},
+	std::pair<std::string, int> {"int", _int},
+	std::pair<std::string, int> {"ln", _ln},
+	std::pair<std::string, int> {"sin", _sin},
+	std::pair<std::string, int> {"sqr", _sqr},
+	std::pair<std::string, int> {"sqrt", _sqrt},
+	std::pair<std::string, int> {"typeday", _typeday},
+};
+
+std::map<std::string, int> R2Fun = {
+	std::pair<std::string, int> {"addmonth", _addmonth},
+	std::pair<std::string, int> {"addwdays", _addwdays},
+	std::pair<std::string, int> {"difmonth", _difmonth},
+	std::pair<std::string, int> {"difwdays", _difwdays},
+};
+
+std::map<std::string, int> RS1Fun = {
+	std::pair<std::string, int> {"diskfree", _diskfree},
+	std::pair<std::string, int> {"length", _length},
+	std::pair<std::string, int> {"linecnt", _linecnt},
+	std::pair<std::string, int> {"ord", _ord},
+	std::pair<std::string, int> {"val", _val},
+};
+
+std::map<std::string, int> S3Fun = {
+	std::pair<std::string, int> {"copy", _copy},
+	std::pair<std::string, int> {"str", _str},
+	std::pair<std::string, int> {"text", _str},
+};
+
+FrmlElem* RdPrim(char& FTyp)
 {
-	std::map<std::string, int> R0Fun = {
-		std::pair<std::string, int> {"cprinter", _cprinter},
-		std::pair<std::string, int> {"currtime", _currtime},
-		std::pair<std::string, int> {"edrecno", _edrecno},
-		std::pair<std::string, int> {"exitcode", _exitcode},
-		std::pair<std::string, int> {"getmaxx", _getmaxx},
-		std::pair<std::string, int> {"getmaxy", _getmaxy},
-		std::pair<std::string, int> {"maxcol", _maxcol},
-		std::pair<std::string, int> {"maxrow", _maxrow},
-		std::pair<std::string, int> {"memavail", _memavail},
-		std::pair<std::string, int> {"mousex", _mousex},
-		std::pair<std::string, int> {"mousey", _mousey},
-		std::pair<std::string, int> {"pi", _pi},
-		std::pair<std::string, int> {"random", _random},
-		std::pair<std::string, int> {"today", _today},
-		std::pair<std::string, int> {"txtpos", _txtpos},
-		std::pair<std::string, int> {"txtxy", _txtxy},
-	};
-
-	std::map<std::string, int> RCFun = {
-		std::pair<std::string, int> {"edbreak", 3},
-		std::pair<std::string, int> {"edirec", 4},
-		std::pair<std::string, int> {"menux", 5},
-		std::pair<std::string, int> {"menuy", 6},
-		std::pair<std::string, int> {"usercode", 7},
-	};
-
-	std::map<std::string, int> S0Fun = {
-		std::pair<std::string, int> {"accright", _accright},
-		std::pair<std::string, int> {"clipbd", _clipbd},
-		std::pair<std::string, int> {"edbool", _edbool},
-		std::pair<std::string, int> {"edfield", _edfield},
-		std::pair<std::string, int> {"edfile", _edfile},
-		std::pair<std::string, int> {"edkey", _edkey},
-		std::pair<std::string, int> {"edreckey", _edreckey},
-		std::pair<std::string, int> {"keybuf", _keybuf},
-		std::pair<std::string, int> {"password", _password},
-		std::pair<std::string, int> {"readkey", _readkey},
-		std::pair<std::string, int> {"username", _username},
-		std::pair<std::string, int> {"version", _version},
-	};
-
-	std::map<std::string, int> B0Fun = {
-		std::pair<std::string, int> {"isnewrec", _isnewrec},
-		std::pair<std::string, int> {"testmode", _testmode},
-	};
-
-	std::map<std::string, int> S1Fun = {
-		std::pair<std::string, int> {"char", _char},
-		std::pair<std::string, int> {"getenv", _getenv},
-		std::pair<std::string, int> {"lowcase", _lowcase},
-		std::pair<std::string, int> {"nodiakr", _nodiakr},
-		std::pair<std::string, int> {"upcase", _upcase},
-	};
-
-	std::map<std::string, int> R1Fun = {
-		std::pair<std::string, int> {"abs", _abs},
-		std::pair<std::string, int> {"arctan", _arctan},
-		std::pair<std::string, int> {"color", _color},
-		std::pair<std::string, int> {"cos", _cos},
-		std::pair<std::string, int> {"exp", _exp},
-		std::pair<std::string, int> {"frac", _frac},
-		std::pair<std::string, int> {"int", _int},
-		std::pair<std::string, int> {"ln", _ln},
-		std::pair<std::string, int> {"sin", _sin},
-		std::pair<std::string, int> {"sqr", _sqr},
-		std::pair<std::string, int> {"sqrt", _sqrt},
-		std::pair<std::string, int> {"typeday", _typeday},
-	};
-
-	std::map<std::string, int> R2Fun = {
-		std::pair<std::string, int> {"addmonth", _addmonth},
-		std::pair<std::string, int> {"addwdays", _addwdays},
-		std::pair<std::string, int> {"difmonth", _difmonth},
-		std::pair<std::string, int> {"difwdays", _difwdays},
-	};
-
-	std::map<std::string, int> RS1Fun = {
-		std::pair<std::string, int> {"diskfree", _diskfree},
-		std::pair<std::string, int> {"length", _length},
-		std::pair<std::string, int> {"linecnt", _linecnt},
-		std::pair<std::string, int> {"ord", _ord},
-		std::pair<std::string, int> {"val", _val},
-	};
-
-	std::map<std::string, int> S3Fun = {
-		std::pair<std::string, int> {"copy", _copy},
-		std::pair<std::string, int> {"str", _str},
-		std::pair<std::string, int> {"text", _str},
-	};
-
-	char FunCode = '\0';;
+	char FunCode = '\0';
 	FrmlElem* Z = nullptr; FrmlElem* Z1 = nullptr; FrmlElem* Z2 = nullptr; FrmlElem* Z3 = nullptr;
 	char Typ = '\0';
 	integer I = 0, N = 0; BYTE* B = nullptr;
 	pstring Options;
 
 	switch (Lexem) {
-	case _identifier: { SkipBlank(false);
+	case _identifier: { 
+		SkipBlank(false);
 		if (IsFun(R0Fun, LexWord, FunCode))
 		{
 			Z = GetOp(FunCode, 0);
@@ -1888,7 +1891,8 @@ FrmlPtr RdPrim(char& FTyp)
 				FunCode = _pos;
 				FTyp = 'R';
 			label8:
-				Options = ""; if (Lexem == ',') {
+				Options = ""; 
+				if (Lexem == ',') {
 					RdLex();
 					if (Lexem != ',')
 					{
@@ -2169,7 +2173,7 @@ FrmlPtr RdFrml(char& FTyp)
 
 FrmlPtr RdBool()
 {
-	char FTyp;
+	char FTyp = 0;
 	FrmlSumEl = nullptr;
 	auto result = RdFormula(FTyp);
 	TestBool(FTyp);
@@ -2178,7 +2182,7 @@ FrmlPtr RdBool()
 
 FrmlPtr RdRealFrml()
 {
-	char FTyp;
+	char FTyp = 0;
 	FrmlSumEl = nullptr;
 	auto result = RdAdd(FTyp);
 	TestReal(FTyp);
@@ -2187,7 +2191,7 @@ FrmlPtr RdRealFrml()
 
 FrmlPtr RdStrFrml()
 {
-	char FTyp;
+	char FTyp = 0;
 	FrmlSumEl = nullptr;
 	auto result = RdAdd(FTyp);
 	TestString(FTyp);
@@ -2196,7 +2200,7 @@ FrmlPtr RdStrFrml()
 
 FrmlPtr GetOp(BYTE Op, integer BytesAfter)
 {
-	WORD l;
+	WORD l = 0;
 	if (Op < 0x60) l = 1;
 	else if (Op < 0xb0) l = 5;
 	else if (Op < 0xf0) l = 9;
@@ -2207,9 +2211,9 @@ FrmlPtr GetOp(BYTE Op, integer BytesAfter)
 	return Z;
 }
 
-FieldDPtr FindFldName(FileDPtr FD)
+FieldDescr* FindFldName(FileD* FD)
 {
-	FieldDPtr F = FD->FldD;
+	FieldDescr* F = FD->FldD;
 	while (F != nullptr) {
 		{
 			if (EquUpcase(F->Name, LexWord)) goto label1;
@@ -2220,11 +2224,10 @@ label1:
 	return F;
 }
 
-FieldDPtr RdFldName(FileDPtr FD)
+FieldDescr* RdFldName(FileD* FD)
 {
-	FieldDPtr F;
+	FieldDescr* F = FindFldName(FD);
 	TestIdentif();
-	F = FindFldName(FD);
 	if (F == nullptr) {
 		Set2MsgPar(LexWord, FD->Name);
 		Error(87);
@@ -2255,20 +2258,21 @@ FileDPtr FindFileD()
 
 FileD* RdFileName()
 {
-	FileDPtr FD;
+	FileD* FD = nullptr;
 	if (SpecFDNameAllowed && (Lexem == '@'))
 	{
 		LexWord = '@'; Lexem = _identifier;
 	}
-	TestIdentif(); FD = FindFileD();
+	TestIdentif(); 
+	FD = FindFileD();
 	if ((FD == nullptr) || (FD == CRdb->FD) && !SpecFDNameAllowed) Error(9);
-	RdLex(); return FD;
+	RdLex(); 
+	return FD;
 }
 
 LinkDPtr FindLD(pstring RoleName)
 {
-	LinkDPtr L;
-	L = LinkDRoot;
+	LinkD* L = LinkDRoot;
 	while (L != nullptr) {
 		if ((L->FromFD == CFile) && SEquUpcase(L->RoleName, RoleName)) {
 			return L;
@@ -2301,18 +2305,17 @@ bool IsRoleName(bool Both, FileD** FD, LinkD** LD)
 	return result;
 }
 
-FrmlPtr RdFAccess(FileDPtr FD, LinkD* LD, char& FTyp)
+FrmlElem* RdFAccess(FileD* FD, LinkD* LD, char& FTyp)
 {
-	FrmlPtr Z; FileDPtr cf; bool fa;
 	TestIdentif();
-	Z = GetOp(_access, 12);
+	FrmlElem* Z = GetOp(_access, 12);
 	Z->File2 = FD;
 	Z->LD = LD;
 	if ((LD != nullptr) && EquUpcase("EXIST")) { RdLex(); FTyp = 'B'; }
 	else {
-		cf = CFile;
+		FileD* cf = CFile;
 		CFile = FD;
-		fa = FileVarsAllowed;
+		bool fa = FileVarsAllowed;
 		FileVarsAllowed = true;
 		Z->P1 = RdFldNameFrmlF(FTyp);
 		CFile = cf;
@@ -2410,8 +2413,8 @@ FrmlPtr TryRdFldFrml(FileDPtr FD, char& FTyp)
 
 FrmlElem* RdFldNameFrmlF(char& FTyp)
 {
-	if (InpArrLen == 0x0ce2 && CurrPos >= 0x0b00) {
-		printf("RF");
+	if (InpArrLen == 0x02f3) {
+		printf("RdFldNameFrmlF() %i\n", CurrPos);
 	}
 
 	LinkD* ld = nullptr;

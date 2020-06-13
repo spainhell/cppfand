@@ -58,17 +58,17 @@ void RdLocDcl(LocVarBlkD* LVB, bool IsParList, bool WithRecVar, char CTyp); // r
 bool FindLocVar(LocVar* LVRoot, LocVar** LV); // r84
 bool FindChpt(char Typ, const pstring& name, bool local, RdbPos* RP);
 void RdChptName(char C, RdbPos* Pos, bool TxtExpr); // r108
-FieldList AllFldsList(FileDPtr FD, bool OnlyStored); // r118
+FieldListEl* AllFldsList(FileD* FD, bool OnlyStored); // r118
 EditOpt* GetEditOpt(); // r129
 RprtOpt* GetRprtOpt(); // r132
 FrmlPtr GetOp(BYTE Op, integer BytesAfter); // r1
-FieldDPtr FindFldName(FileDPtr FD); // r7
-FieldDPtr RdFldName(FileDPtr FD); // r17
+FieldDescr* FindFldName(FileD* FD); // r7
+FieldDescr* RdFldName(FileD* FD); // r17
 FileDPtr FindFileD(); // r22
 FileD* RdFileName(); // r34
 LinkDPtr FindLD(pstring RoleName); // r41
 bool IsRoleName(bool Both, FileD** FD, LinkD** LD); // r49
-FrmlPtr RdFAccess(FileDPtr FD, LinkD* LD, char& FTyp); // r58
+FrmlElem* RdFAccess(FileD* FD, LinkD* LD, char& FTyp); // r58
 FrmlPtr TryRdFldFrml(FileDPtr FD, char& FTyp); // r76
 FrmlElem* RdFldNameFrmlF(char& FTyp); // r111
 FrmlPtr FrmlContxt(FrmlPtr Z, FileDPtr FD, void* RP); // r68

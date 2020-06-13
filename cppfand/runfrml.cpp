@@ -972,7 +972,8 @@ FrmlPtr RunEvalFrml(FrmlPtr Z)
 
 LongStr* RunLongStr(FrmlPtr X)
 {
-	LongStr* S = nullptr; bool b = false;
+	LongStr* S = nullptr; 
+	bool b = false;
 	WORD I = 0;
 	LockMode* md = (LockMode*)&I;
 	integer* J = (integer*)&I;

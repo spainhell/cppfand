@@ -154,6 +154,10 @@ FrmlPtr RdFldNameFrmlP(char& FTyp)
 
 	FrmlPtr result = nullptr;
 
+	if (InpArrLen == 0x0571) {
+		printf("RdFldNameFrmlP() %i", CurrPos);
+	}
+
 	if (IsForwPoint())
 		if (FindLocVar(LVBD.Root, &LV) && (LV->FTyp == 'i' || LV->FTyp == 'r')) {
 			RdLex();
@@ -683,7 +687,7 @@ label1:
 	PD = PD1; first = false;
 	PD->Bool = RdBool(); Accept(':');
 	PD->Instr1 = RdPInstr();
-	bool b = Lexem = ';';
+	bool b = Lexem == ';';
 	if (b) RdLex();
 	if (!IsKeyWord("END"))
 		if (IsKeyWord("ELSE"))
@@ -1295,16 +1299,22 @@ void RdReportCall()
 	Instr* PD = nullptr; RprtOpt* RO = nullptr; LocVar* lv = nullptr;
 	RprtFDListEl* FDL = nullptr; bool b = false;
 	bool hasfrst;
-	PD = GetPD(_report, 4); RO = GetRprtOpt(); PD->RO = RO;
+	PD = GetPD(_report, 4);
+	RO = GetRprtOpt();
+	PD->RO = RO;
 	hasfrst = false;
-	if (Lexem == ',') goto label2; hasfrst = true;
-	FDL = &RO->FDL; b = false;
+	if (Lexem == ',') goto label2;
+	hasfrst = true;
+	FDL = &RO->FDL;
+	b = false;
 	if (Lexem == '(') { RdLex(); b = true; }
 label1:
 	if (IsRecVar(&lv)) { FDL->LVRecPtr = lv->RecPtr; FDL->FD = lv->FD; }
 	else {
-		CFile = RdFileName(); FDL->FD = CFile;
-		CViewKey = RdViewKey(); FDL->ViewKey = CViewKey;
+		CFile = RdFileName();
+		FDL->FD = CFile;
+		CViewKey = RdViewKey();
+		FDL->ViewKey = CViewKey;
 		if (Lexem == '(') {
 			RdLex();
 			FDL->Cond = RdKeyInBool(FDL->KeyIn, true, true, FDL->SQLFilter);
@@ -1313,15 +1323,20 @@ label1:
 	}
 	if (b && (Lexem == ',')) {
 		RdLex();
-		FDL->Chain = (RprtFDListEl*)GetZStore(sizeof(RprtFDListEl));
-		FDL = FDL->Chain; goto label1;
+		FDL->Chain = new RprtFDListEl(); // (RprtFDListEl*)GetZStore(sizeof(RprtFDListEl));
+		FDL = FDL->Chain;
+		goto label1;
 	}
 	if (b) Accept(')');
 	CFile = RO->FDL.FD; CViewKey = RO->FDL.ViewKey;
-label2: Accept(',');
+label2:
+	Accept(',');
 	if (Lexem == '[') {
-		RdLex(); RO->RprtPos.R = RdbDPtr(RdStrFrml); RO->RprtPos.IRec = 0;
-		RO->FromStr = true; Accept(']');
+		RdLex();
+		RO->RprtPos.R = (RdbD*)RdStrFrml();
+		RO->RprtPos.IRec = 0;
+		RO->FromStr = true;
+		Accept(']');
 	}
 	else if (!hasfrst || (Lexem == _identifier)) {
 		TestIdentif();
@@ -1405,14 +1420,15 @@ void RdRprtOpt(RprtOpt* RO, bool HasFrst)
 
 void RdRDBCall()
 {
-	Instr* PD; pstring s;
-	PD = GetPD(_call, 12);
+	pstring s;
+	Instr* PD = GetPD(_call, 12);
 	s[0] = 0;
 	if (Lexem == '\\') { s = Lexem; RdLex(); }
 	TestIdentif();
 	if (LexWord.length() > 8) Error(2);
-	PD->RdbNm = StoreStr(s + LexWord); RdLex();
-	if (Lexem = ',') {
+	PD->RdbNm = StoreStr(s + LexWord); 
+	RdLex();
+	if (Lexem == ',') {
 		RdLex();
 		TestIdentif();
 		if (LexWord.length() > 12) Error(2);

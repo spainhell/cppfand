@@ -3146,10 +3146,18 @@ bool DeletedFlag()  // r771 ASM
 
 void ClearDeletedFlag()
 {
+	switch (CFile->Typ) {
+	case 'X': ((BYTE*)CRecPtr)[0] = 0; break;
+	case 'D': ((BYTE*)CRecPtr)[0] = ' '; break;
+	}
 }
 
 void SetDeletedFlag()
 {
+	switch (CFile->Typ) {
+	case 'X': ((BYTE*)CRecPtr)[0] = 1; break;
+	case 'D': ((BYTE*)CRecPtr)[0] = '*'; break;
+	}
 }
 
 integer CompStr(pstring& S1, pstring& S2)
