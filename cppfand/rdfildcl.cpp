@@ -331,9 +331,9 @@ void RdFieldDList(bool Stored)
 {
 	pstring Name; FieldDescr* F = nullptr; char FTyp = 0; FrmlPtr Z = nullptr;
 label1:
-	if (InpArrLen == 0x0ce2) {
-		printf("D\n");
-	}
+	//if (InpArrLen == 0x0ce2) {
+	//	printf("D\n");
+	//}
 	TestIdentif(); 
 	Name = LexWord;
 	F = FindFldName(CFile);	

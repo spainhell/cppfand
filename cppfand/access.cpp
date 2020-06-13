@@ -1452,13 +1452,17 @@ label1:
 
 void ClearRecSpace(void* p)
 {
-	FieldDPtr f; void* cr;
+	FieldDescr* f = nullptr; 
+	void* cr = nullptr;
 	if (CFile->TF != nullptr) {
-		cr = CRecPtr; CRecPtr = p;
-		if (HasTWorkFlag) {
-			f = CFile->FldD; while (f != nullptr) {
-				if ((f->Flg && f_Stored != 0) && (f->Typ == 'T')) {
-					TWork.Delete(_T(f)); T_(f, 0);
+		cr = CRecPtr; 
+		CRecPtr = p;
+		if (HasTWorkFlag()) {
+			f = CFile->FldD; 
+			while (f != nullptr) {
+				if (((f->Flg & f_Stored) != 0) && (f->Typ == 'T')) {
+					TWork.Delete(_T(f)); 
+					T_(f, 0);
 				}
 				f = (FieldDescr*)f->Chain;
 			}
@@ -1469,7 +1473,7 @@ void ClearRecSpace(void* p)
 
 void DelTFlds()
 {
-	FieldDPtr F = CFile->FldD;
+	FieldDescr* F = CFile->FldD;
 	while (F != nullptr) {
 		if ((F->Flg && f_Stored != 0) && (F->Typ == 'T')) DelTFld(F);
 		F = (FieldDescr*)F->Chain;
@@ -1479,7 +1483,7 @@ void DelTFlds()
 void CopyRecWithT(void* p1, void* p2)
 {
 	Move(p1, p2, CFile->RecLen);
-	FieldDPtr F = CFile->FldD;
+	FieldDescr* F = CFile->FldD;
 	while (F != nullptr) {
 		if ((F->Typ == 'T') && (F->Flg && f_Stored != 0)) {
 			TFilePtr tf1 = CFile->TF; TFilePtr tf2 = tf1; CRecPtr = p1;

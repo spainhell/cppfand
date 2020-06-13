@@ -2413,10 +2413,9 @@ FrmlPtr TryRdFldFrml(FileDPtr FD, char& FTyp)
 
 FrmlElem* RdFldNameFrmlF(char& FTyp)
 {
-	if (InpArrLen == 0x02f3) {
-		printf("RdFldNameFrmlF() %i\n", CurrPos);
-	}
-
+	//if (InpArrLen == 0x02f3) {
+	//	printf("RdFldNameFrmlF() %i\n", CurrPos);
+	//}
 	LinkD* ld = nullptr;
 	FileD* fd = nullptr;
 	FrmlElem* z = nullptr;

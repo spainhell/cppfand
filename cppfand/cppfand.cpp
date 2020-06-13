@@ -3,6 +3,9 @@
 #include "drivers.h"
 #include "runfand.h"
 
+// puvodni DEBUG adresar:
+// $(ProjectDir)
+
 int main(int argc, char* argv[])
 {
 	for (int i = 0; i < argc; i++)

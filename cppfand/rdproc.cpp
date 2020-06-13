@@ -154,9 +154,9 @@ FrmlPtr RdFldNameFrmlP(char& FTyp)
 
 	FrmlPtr result = nullptr;
 
-	if (InpArrLen == 0x0571) {
-		printf("RdFldNameFrmlP() %i", CurrPos);
-	}
+	//if (InpArrLen == 0x0571) {
+	//	printf("RdFldNameFrmlP() %i", CurrPos);
+	//}
 
 	if (IsForwPoint())
 		if (FindLocVar(LVBD.Root, &LV) && (LV->FTyp == 'i' || LV->FTyp == 'r')) {

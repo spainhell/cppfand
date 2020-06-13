@@ -332,7 +332,8 @@ struct LocVar : public Chained // ø. 239
 struct RdbD // ø. 243
 {
 	RdbD* ChainBack = nullptr;
-	FileD* FD = nullptr; FileD* HelpFD = nullptr; // { FD=FileDRoot and = Chpt for this RDB }
+	FileD* FD = nullptr; 
+	FileD* HelpFD = nullptr; // { FD=FileDRoot and = Chpt for this RDB }
 	LinkD* OldLDRoot = nullptr;
 	FuncD* OldFCRoot = nullptr;
 	void* Mark2 = nullptr; // { markstore2 at beginning }
@@ -343,7 +344,10 @@ typedef RdbD* RdbDPtr;
 
 struct WRectFrml // r251
 {
-	FrmlPtr C1, R1, C2, R2;
+	FrmlElem* C1 = nullptr;
+	FrmlElem* R1 = nullptr; 
+	FrmlElem* C2 = nullptr; 
+	FrmlElem* R2 = nullptr;
 };
 
 class XString // ø. 254

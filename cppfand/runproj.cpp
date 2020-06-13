@@ -733,9 +733,9 @@ bool RdFDSegment(WORD FromI, longint Pos)
 	Tb = &CFile->Handle;
 	//CFile->Handle = nullptr;
 	//if (CFile->TF != nullptr) Pr(CFile->TF).Seg = Sg;
-	if (CFile->TF != nullptr) throw std::exception("Not implemented.");
+	//if (CFile->TF != nullptr) throw std::exception("Not implemented.");
 	//if (CFile->XF != nullptr) Pr(CFile->XF).Seg = Sg;
-	if (CFile->XF != nullptr) throw std::exception("Not implemented.");
+	//if (CFile->XF != nullptr) throw std::exception("Not implemented.");
 
 	//WORD offset = uintptr_t(CFile->FldD) & 0x0000FFFF;
 	//WORD ssDataLen = ss->LL - offset;
@@ -1486,9 +1486,9 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 	CRecPtr = Chpt->RecPtr;
 	Encryp = CRdb->Encrypted;
 	for (I = 1; I <= Chpt->NRecs; I++) {
-		if (I == 380) {
-			printf("%i\n", I);
-		}
+		//if (I == 380) {
+		//	printf("%i\n", I);
+		//}
 		ReadRec(I);
 		RP.IRec = I;
 		Verif = _B(ChptVerif);

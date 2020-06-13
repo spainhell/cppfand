@@ -363,10 +363,16 @@ LongStr* CopyLine(LongStr* S, WORD N, WORD M)
 
 bool RunBool(FrmlPtr X)
 {
-	longint RecNo; WORD* res = (WORD*)&RecNo;
-	LongStr* S = nullptr; LongStr* S2 = nullptr; bool* b = (bool*)S;
-	WORD* w1 = (WORD*)&RecNo; WORD* w2 = (WORD*)S;
-	FileDPtr cf = nullptr; void* cr = nullptr; void* p = &RecNo;
+	longint RecNo; 
+	WORD* res = (WORD*)&RecNo;
+	LongStr* S = nullptr; 
+	LongStr* S2 = nullptr;
+	bool* b = (bool*)S;
+	WORD* w1 = (WORD*)&RecNo; 
+	WORD* w2 = (WORD*)S;
+	FileD* cf = nullptr; 
+	void* cr = nullptr; 
+	void* p = &RecNo;
 
 	auto result = false;
 	if (X == nullptr) { return true; }
@@ -415,7 +421,8 @@ bool RunBool(FrmlPtr X)
 		break;
 	}
 	case _mousein: {
-		*w1 = RunInt(X->P1); *w2 = RunInt(X->P2);
+		*w1 = RunInt(X->P1); 
+		*w2 = RunInt(X->P2);
 		result = MouseInRectProc(*w1, *w2, RunInt(X->P3) - *w1 + 1, RunInt(X->P4) - *w2 + 1);
 		break;
 	}
@@ -916,7 +923,7 @@ void DecodeField(FieldDPtr F, WORD LWw, pstring& Txt)
 	case 'R': r = _R(F); break;
 	case 'S': {
 		if (F->Typ == 'T') {
-			if ((F->Flg && f_Stored != 0) && (_R(F) == 0)) Txt = ".";
+			if (((F->Flg & f_Stored) != 0) && (_R(F) == 0)) Txt = ".";
 			else Txt = "*";
 			return;
 		}
@@ -928,13 +935,12 @@ void DecodeField(FieldDPtr F, WORD LWw, pstring& Txt)
 	DecodeFieldRSB(F, LWw, r, s, b, Txt);
 }
 
-void RunWFrml(WRectFrml X, BYTE WFlags, WRect& W)
+void RunWFrml(WRectFrml& X, BYTE WFlags, WRect& W)
 {
-	WORD i;
-	FrmlPtr XA = (FrmlPtr)&X;
-	BYTE* WA = (BYTE*)&W;
-
-	for (i = 0; i < 3; i++) WA[i] = RunInt(&XA[i]);
+	W.C1 = RunInt(X.C1);
+	W.R1 = RunInt(X.R1);
+	W.C2 = RunInt(X.C2);
+	W.R2 = RunInt(X.R2);
 	CenterWw(W.C1, W.R1, W.C2, W.R2, WFlags);
 }
 
@@ -994,15 +1000,19 @@ label1:
 	case _getlocvar: result = TWork.Read(1, *(longint*)(MyBP + X->BPOfs)); break;
 	case _access: {
 		cf = CFile; cr = CRecPtr;
-		CFile = X->File2; *md = NewLMode(RdMode);
+		CFile = X->File2; 
+		*md = NewLMode(RdMode);
 		if (X->LD != nullptr) { CFile = cf; LinkUpw(X->LD, RecNo, true); }
 		else LinkLastRec(X->File2, RecNo, true);
 		S = RunLongStr(X->P1);
 		OldLMode(*md);  /*possibly reading .T*/
 		ClearRecSpace(CRecPtr);
-		MyMove(S, CRecPtr, S->LL + 2);
+		//memcpy(CRecPtr, &S->LL, sizeof(S->LL));
+		//memcpy(&((BYTE*)CRecPtr)[sizeof(S->LL)], S->A, S->LL);
+		//MyMove(S, CRecPtr, S->LL + 2);
 		ReleaseAfterLongStr(CRecPtr);
-		result = (LongStr*)CRecPtr;
+		//result = (LongStr*)CRecPtr;
+		result = S;
 		CFile = cf; CRecPtr = cr;
 		break;
 	}
