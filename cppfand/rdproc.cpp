@@ -233,7 +233,10 @@ FrmlPtr RdFldNameFrmlP(char& FTyp)
 	if (FindLocVar(LVBD.Root, &LV)) {
 		if (LV->FTyp == 'r' || LV->FTyp == 'f' || LV->FTyp == 'i') Error(143);
 		RdLex();
-		result = (FrmlElem*)&LV->Op;
+		//result = (FrmlElem*)&LV->Op;
+		result = new FrmlElem(LV->BPOfs);
+		result->Op = LV->Op;
+		result->BPOfs = LV->BPOfs;
 		FTyp = LV->FTyp;
 		return result;
 	}
@@ -1015,7 +1018,9 @@ void RdKeyList(EdExitD* X)
 {
 label1:
 	if ((Lexem == '(') || (Lexem == '^')) RdNegFldList(X->NegFlds, X->Flds);
-	else if (IsKeyWord("RECORD")) X->AtWrRec = true;
+	else if (IsKeyWord("RECORD")) {
+		X->AtWrRec = true;
+	}
 	else if (IsKeyWord("NEWREC")) X->AtNewRec = true;
 	else RdKeyCode(X);
 	if (Lexem == ',') { RdLex(); goto label1; }

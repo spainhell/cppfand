@@ -21,7 +21,7 @@ public:
 
 typedef LongStr* LongStrPtr; // ø25
 
-struct WRect { BYTE C1, R1, C2, R2; }; // r34
+struct WRect { BYTE C1 = 0, R1 = 0, C2 = 0, R2 = 0; }; // r34
 struct WordRec { BYTE Lo = 0, Hi = 0; };
 struct LongRec { WORD Lo = 0, Hi = 0; };
 typedef void* PProcedure;

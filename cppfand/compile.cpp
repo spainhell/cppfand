@@ -812,7 +812,9 @@ label1:
 				Z->R = r;
 			}
 		}
-		typ = 'R'; sz = sizeof(double); goto label2;
+		typ = 'R'; 
+		sz = sizeof(double); 
+		goto label2;
 	}
 	else if (IsKeyWord("STRING")) {
 		if ((Lexem == _equ) && !IsParList) {
@@ -822,13 +824,18 @@ label1:
 				Z = GetOp(_const, s.length() + 1); Z->S = s;
 			}
 		}
-		typ = 'S'; sz = sizeof(longint);
+		typ = 'S'; 
+		sz = sizeof(longint);
 	label2:
 		while (lv != nullptr) {
 			/* !!! with lv^ do!!! */
-			lv->FTyp = typ; lv->Op = _getlocvar; lv->IsRetPar = rp;
-			lv->Init = Z; lv->BPOfs = LVB->Size;
-			LVB->Size += sz; lv = (LocVar*)lv->Chain;
+			lv->FTyp = typ; 
+			lv->Op = _getlocvar; 
+			lv->IsRetPar = rp;
+			lv->Init = Z; 
+			lv->BPOfs = LVB->Size;
+			LVB->Size += sz; 
+			lv = (LocVar*)lv->Chain;
 		}
 	}
 	else if (rp) Error(168);
@@ -2205,17 +2212,20 @@ FrmlPtr RdStrFrml()
 FrmlPtr GetOp(BYTE Op, integer BytesAfter)
 {
 	WORD l = 0;
-	if (Op < 0x60) l = 1;
-	else if (Op < 0xb0) l = 5;
-	else if (Op < 0xf0) l = 9;
-	else l = 13;
+	if (Op < 0x60) l = 1;	// bude uložen jen "Op"
+	else if (Op < 0xb0) l = 5;   // bude uložen "Op" a 1 ukazatel
+	else if (Op < 0xf0) l = 9;   // bude uložen "Op" a 2 ukazatele
+	else l = 13; // bude uložen "Op" a 3 ukazatele
 	//Z = (FrmlPtr)GetZStore(l + BytesAfter);
-	FrmlElem* Z = new FrmlElem();
+	FrmlElem* Z = new FrmlElem(BytesAfter);
 	//ElemCount++;
 	//ElemTotalSize += l + BytesAfter;
 	//printf("FrmlElem: count %i, total size %i;", ElemCount, ElemTotalSize);
 	//printf("SizeOf FrmlElem* = %i; ", sizeof(FrmlElem));
 	Z->Op = Op;
+	//if (BytesAfter == 0) {
+	//	printf("GetOp() BytesAfter: %i", BytesAfter);
+	//}
 	return Z;
 }
 

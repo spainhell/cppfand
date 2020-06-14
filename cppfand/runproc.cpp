@@ -514,7 +514,7 @@ void ReadWriteRecProc(bool IsRead, Instr* PD)
 	else {
 		CopyRecWithT(PD->LV->RecPtr, cr);
 		if (app) {
-			CRecPtr = cr; if (CFile->Typ = 'X') RecallRec(N); else WriteRec(N);
+			CRecPtr = cr; if (CFile->Typ == 'X') RecallRec(N); else WriteRec(N);
 			if (ad) LastExitCode = !RunAddUpdte('+', nullptr, nullptr);
 		}
 		else UpdRec(cr, N, ad);
@@ -660,8 +660,10 @@ void SetWwViewPort()
 
 void WithWindowProc(Instr* PD)
 {
-	BYTE PAttr; longint w1; WRect v;
-	PAttr = ProcAttr;
+	BYTE PAttr = ProcAttr;
+	longint w1 = 0; 
+	WRect v;
+	 
 	/* !!! with PD^ do!!! */
 	ProcAttr = RunWordImpl(PD->Attr, colors.uNorm);
 	RunWFrml(PD->W, PD->WithWFlags, v);
@@ -904,7 +906,10 @@ void RunInstr(Instr* PD)
 		case _report: ReportProc(PD->RO, true); break;
 		case _sort: SortProc(PD->SortFD, PD->SK); break;
 		case _edit: EditProc(PD); break;
-		case _asgnloc:/* !!! with PD^ do!!! */ LVAssignFrml(PD->LV, MyBP, PD->Add, PD->Frml); break;
+		case _asgnloc:/* !!! with PD^ do!!! */ {
+			LVAssignFrml(PD->LV, MyBP, PD->Add, PD->Frml);
+			break;
+		}
 		case _asgnrecfld: AssignRecFld(PD); break;
 		case _asgnrecvar:/* !!! with PD^ do!!! */ AssignRecVar(PD->RecLV1, PD->RecLV2, PD->Ass); break;
 		case _asgnpar:/* !!! with PD^ do!!! */ AsgnParFldFrml(PD->FD, PD->FldD, PD->Frml, PD->Add); break;

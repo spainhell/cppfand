@@ -37,7 +37,7 @@ void LVAssignFrml(LocVar* LV, void* OldBP, bool Add, FrmlPtr X);
 void DecodeFieldRSB(FieldDPtr F, WORD LWw, double R, pstring T, bool B, pstring& Txt);
 void DecodeField(FieldDPtr F, WORD LWw, pstring& Txt);
 void RunWFrml(WRectFrml& X, BYTE WFlags, WRect& W);
-WORD RunWordImpl(FrmlPtr Z, WORD Impl);
+WORD RunWordImpl(FrmlElem* Z, WORD Impl);
 bool FieldInList(FieldDPtr F, FieldListEl* FL);
 KeyDPtr GetFromKey(LinkDPtr LD);
 FrmlPtr RunEvalFrml(FrmlPtr Z);

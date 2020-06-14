@@ -74,12 +74,16 @@ typedef FloatPtrListEl* FloatPtrList;
 struct KeyListEl : public Chained // ø. 49
 {
 	//KeyListEl* Chain;
-	KeyDPtr Key;
+	KeyD* Key = nullptr;
 };
 typedef KeyListEl* KeyList;
 
-struct FrmlElem // ø. 51
+class FrmlElem // ø. 51
 {
+public:
+	FrmlElem() {}
+	FrmlElem(size_t buff_size) { buffer = new BYTE[buff_size]{ 0 }; }
+	~FrmlElem() { delete[] buffer; }
 	BYTE Op = 0;
 	FrmlElem* P1 = nullptr; FrmlElem* P2 = nullptr; FrmlElem* P3 = nullptr; 
 	FrmlElem* P4 = nullptr; FrmlElem* P5 = nullptr; FrmlElem* P6 = nullptr; // 0
@@ -107,6 +111,7 @@ struct FrmlElem // ø. 51
 	FrmlElem* EvalP1 = nullptr; char EvalTyp = '\0'; FileD* EvalFD = nullptr; // 21 {_eval}
 	XWKey* WKey = nullptr; // 22 {_indexnrecs}
 	FrmlElem* ownBool = nullptr; FrmlElem* ownSum = nullptr; LinkD* ownLD = nullptr; // 23 { _owned }
+	BYTE* buffer = nullptr;
 };
 typedef FrmlElem* FrmlPtr;
 
