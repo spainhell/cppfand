@@ -547,7 +547,7 @@ extern MergOpSt MergOpGroup;
 // *** IMPLEMENTATION ***
 
 void ResetLVBD();
-void SetMyBP(ProcStkPtr Bp);
+void SetMyBP(ProcStkD* Bp);
 void PushProcStk();
 void PopProcStk();
 bool RunAddUpdte1(char Kind/*+,-,d*/, void* CRold, bool Back/*tracking*/,

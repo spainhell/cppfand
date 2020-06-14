@@ -787,15 +787,15 @@ void TestTFrml(FieldDPtr F, FrmlPtr Z)
 	}
 	case _field: { f1 = Z->Field;
 		if ((f1->Typ != 'T') || (f1->Flg && f_Stored == 0)) return;
-		if (F = nullptr) { if (f1->Flg && f_Encryp != 0) return; }
-		else if (F->Flg && f_Encryp != f1->Flg && f_Encryp) return;
+		if (F == nullptr) { if (f1->Flg && f_Encryp != 0) return; }
+		else if ((F->Flg & f_Encryp) != (f1->Flg & f_Encryp)) return;
 		TFD02 = CFile; TF02 = CFile->TF;
 		if (HasTWorkFlag()) TF02 = &TWork;
 		TF02Pos = _T(f1);
 		break;
 	}
 	case _getlocvar: {
-		if ((F != nullptr) && (F->Flg && f_Encryp != 0)) return;
+		if ((F != nullptr) && ((F->Flg & f_Encryp) != 0)) return;
 		TFD02 = CFile; TF02 = &TWork;
 		TF02Pos = *(longint*)(MyBP + Z->BPOfs);
 		break;

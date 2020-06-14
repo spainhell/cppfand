@@ -43,7 +43,7 @@ void ResetLVBD()
 	LVBD.Size = 2 * 4;
 }
 
-void SetMyBP(ProcStkPtr Bp)
+void SetMyBP(ProcStkD* Bp)
 {
 	MyBP = Bp;
 	if (MyBP != nullptr) LVBD.Root = (LocVar*)MyBP->LVRoot;

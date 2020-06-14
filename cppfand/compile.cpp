@@ -2082,11 +2082,12 @@ WORD RdPrecision()
 	return n;
 }
 
-FrmlPtr MyBPContext(FrmlPtr Z, bool NewMyBP)
+FrmlElem* MyBPContext(FrmlElem* Z, bool NewMyBP)
 {
-	FrmlPtr Z1;
+	FrmlElem* Z1;
 	if (NewMyBP) {
-		Z1 = GetOp(_setmybp, 0); Z1->P1 = Z; Z = Z1;
+		Z1 = GetOp(_setmybp, 0); 
+		Z1->P1 = Z; Z = Z1;
 	}
 	return Z;
 }
@@ -2198,6 +2199,9 @@ FrmlPtr RdStrFrml()
 	return result;
 }
 
+//int ElemCount = 0;
+//int ElemTotalSize = 0;
+
 FrmlPtr GetOp(BYTE Op, integer BytesAfter)
 {
 	WORD l = 0;
@@ -2207,6 +2211,10 @@ FrmlPtr GetOp(BYTE Op, integer BytesAfter)
 	else l = 13;
 	//Z = (FrmlPtr)GetZStore(l + BytesAfter);
 	FrmlElem* Z = new FrmlElem();
+	//ElemCount++;
+	//ElemTotalSize += l + BytesAfter;
+	//printf("FrmlElem: count %i, total size %i;", ElemCount, ElemTotalSize);
+	//printf("SizeOf FrmlElem* = %i; ", sizeof(FrmlElem));
 	Z->Op = Op;
 	return Z;
 }

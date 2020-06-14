@@ -78,35 +78,35 @@ struct KeyListEl : public Chained // ø. 49
 };
 typedef KeyListEl* KeyList;
 
-
 struct FrmlElem // ø. 51
 {
-	BYTE Op;
-	FrmlElem* P1; FrmlElem* P2; FrmlElem* P3; FrmlElem* P4; FrmlElem* P5; FrmlElem* P6; // 0
-	char Delim; // 0
-	BYTE N01, N02, N03, N04, N11, N12, N13, N14, N21, N22, N23, N24, N31; // 1
-	BYTE W01, W02, W11, W12, W21, W22; // 1
-	double R; // 2
+	BYTE Op = 0;
+	FrmlElem* P1 = nullptr; FrmlElem* P2 = nullptr; FrmlElem* P3 = nullptr; 
+	FrmlElem* P4 = nullptr; FrmlElem* P5 = nullptr; FrmlElem* P6 = nullptr; // 0
+	char Delim = '\0'; // 0
+	BYTE N01 = 0, N02 = 0, N03 = 0, N04 = 0, N11 = 0, N12 = 0, N13 = 0, N14 = 0, N21 = 0, N22 = 0, N23 = 0, N24 = 0, N31 = 0; // 1
+	BYTE W01 = 0, W02 = 0, W11 = 0, W12 = 0, W21 = 0, W22 = 0; // 1
+	double R = 0.0; // 2
 	pstring S; // 4
-	bool B; // 5
-	FrmlElem* PP1; pstring Mask; // 6
-	FieldDescr* Field; // 7 {_field}
-	FrmlElem* P011; FileD* File2; LinkD* LD; // 7  {LD=nil for param} {_access} {LD=RecPtr} {_recvarfld}
-	FrmlElem* Frml; FileD* NewFile; void* NewRP; // 8 {_newfile}
-	FileD* FD; // 9 {_lastupdate, _generation}
-	WORD CatIRec; FieldDescr* CatFld; // 10 {_catfield}
-	FrmlElem* PPP1; FrmlElem* PP2; FieldDescr* FldD; // 11 {_prompt}
-	FrmlElem* PPPP1; FrmlElem* PPP2; FrmlElem* PP3; pstring Options; // 12 {_pos,_replace}
-	FileD* FFD; KeyD* Key; FrmlElem* Arg[2]; // 13 {_recno/typ='R' or'S'/,_recnoabs,_recnolog}
-	FrmlElem* PPPPP1; FileD* RecFD; FieldDescr* RecFldD; // 14 {_accrecno,_isdeleted}
-	LinkD* LinkLD; bool LinkFromRec; LocVar* LinkLV; FrmlElem* LinkRecFrml; // 15 {_link}
-	FrmlElem* PPPPPP1; FrmlElem* PPPP2; pstring* TxtPath; WORD TxtCatIRec; // 16 {_gettxt,_filesize}
-	WORD BPOfs; // 18 { _getlocvar }
-	FuncDPtr FC; FrmlList FrmlL; // 19 { _userfunc }
-	LocVar* LV; KeyD* PackKey; // 20 { _keyof,_lvdeleted }
-	FrmlElem* EvalP1; char EvalTyp; FileD* EvalFD; // 21 {_eval}
-	WKeyDPtr WKey; // 22 {_indexnrecs}
-	FrmlElem* ownBool; FrmlElem* ownSum; LinkD* ownLD; // 23 { _owned }
+	bool B = false; // 5
+	FrmlElem* PP1 = nullptr; pstring Mask; // 6
+	FieldDescr* Field = nullptr; // 7 {_field}
+	FrmlElem* P011 = nullptr; FileD* File2 = nullptr; LinkD* LD = nullptr; // 7  {LD=nil for param} {_access} {LD=RecPtr} {_recvarfld}
+	FrmlElem* Frml = nullptr; FileD* NewFile = nullptr; void* NewRP = nullptr; // 8 {_newfile}
+	FileD* FD = nullptr; // 9 {_lastupdate, _generation}
+	WORD CatIRec = 0; FieldDescr* CatFld = nullptr; // 10 {_catfield}
+	FrmlElem* PPP1 = nullptr; FrmlElem* PP2 = nullptr; FieldDescr* FldD = nullptr; // 11 {_prompt}
+	FrmlElem* PPPP1 = nullptr; FrmlElem* PPP2 = nullptr; FrmlElem* PP3; pstring Options; // 12 {_pos,_replace}
+	FileD* FFD = nullptr; KeyD* Key = nullptr; FrmlElem* Arg[2]{ nullptr }; // 13 {_recno/typ='R' or'S'/,_recnoabs,_recnolog}
+	FrmlElem* PPPPP1 = nullptr; FileD* RecFD = nullptr; FieldDescr* RecFldD = nullptr; // 14 {_accrecno,_isdeleted}
+	LinkD* LinkLD = nullptr; bool LinkFromRec = false; LocVar* LinkLV = nullptr; FrmlElem* LinkRecFrml = nullptr; // 15 {_link}
+	FrmlElem* PPPPPP1 = nullptr; FrmlElem* PPPP2 = nullptr; pstring* TxtPath = nullptr; WORD TxtCatIRec = 0; // 16 {_gettxt,_filesize}
+	WORD BPOfs = 0; // 18 { _getlocvar }
+	FuncD* FC = nullptr; FrmlListEl* FrmlL = nullptr; // 19 { _userfunc }
+	LocVar* LV = nullptr; KeyD* PackKey = nullptr; // 20 { _keyof,_lvdeleted }
+	FrmlElem* EvalP1 = nullptr; char EvalTyp = '\0'; FileD* EvalFD = nullptr; // 21 {_eval}
+	XWKey* WKey = nullptr; // 22 {_indexnrecs}
+	FrmlElem* ownBool = nullptr; FrmlElem* ownSum = nullptr; LinkD* ownLD = nullptr; // 23 { _owned }
 };
 typedef FrmlElem* FrmlPtr;
 
