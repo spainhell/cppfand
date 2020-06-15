@@ -814,7 +814,7 @@ void RdPredicateDcl(bool FromClauses, TDatabase* Db)
 	TScanInf* siofs = nullptr; // absolute si
 	TFldList* fl = nullptr;
 	TFldList* flofs = nullptr; // absolute fl
-	Instr* ip = nullptr;
+	Instr_proc* ip = nullptr;
 	WORD ipofs = 0; // absolute ip
 	WORD nm = 0; /*PString*/
 	integer i = 0, n = 0;
@@ -3686,7 +3686,7 @@ bool RunCommand(TCommand* COff/*PCommand*/)
 void CallFandProc()
 {
 	TPredicate* p = nullptr;
-	Instr* pd = nullptr;
+	Instr_proc* pd = nullptr;
 	ProcStkD* oldBP = nullptr;
 	ProcStkD* ps = nullptr;
 	WORD i = 0, n = 0, w = 0;
@@ -3700,7 +3700,7 @@ void CallFandProc()
 
 	p = CurrInst->Pred;
 	//PtrRec(d).Seg = _Sg;
-	pd = (Instr*)p->Branch;
+	pd = (Instr_proc*)p->Branch;
 	//ps = GetZStore(p->LocVarSz);
 	w = p->InpMask;
 	//if (PtrRec(pd->Pos.R).Seg == 0) {

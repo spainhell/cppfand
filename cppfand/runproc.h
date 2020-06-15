@@ -8,16 +8,16 @@ void UserHeadLine(pstring UserHeader);
 
 void ReportProc(RprtOpt* RO, bool save);
 void PromptAutoRprt(RprtOpt* RO);
-void AssignField(Instr* PD);
+void AssignField(Instr_assign* PD);
 void AssignRecVar(LocVar* LV1, LocVar* LV2, AssignD* A);
-void AssignRecFld(Instr* PD);
+void AssignRecFld(Instr_assign* PD);
 void SortProc(FileDPtr FD, KeyFldDPtr SK);
-void MergeProc(Instr* PD);
-void WritelnProc(Instr* PD);
+void MergeProc(Instr_proc* PD);
+void WritelnProc(Instr_writeln* PD);
 void DisplayProc(RdbDPtr R, WORD IRec);
 void ClrWwProc(Instr* PD);
-void ExecPgm(Instr* PD);
-void CallRdbProc(Instr* PD);
+void ExecPgm(Instr_exec* PD);
+void CallRdbProc(Instr_call* PD);
 void IndexfileProc(FileDPtr FD, bool Compress);
 void MountProc(WORD CatIRec, bool NoCancel);
 void EditProc(Instr* PD);
@@ -26,12 +26,12 @@ pstring* GetStr(FrmlPtr Z);
 
 void PrintTxtProc(Instr* PD);
 bool SrchXKey(KeyDPtr K, XString& X, longint& N);
-void DeleteRecProc(Instr* PD);
-void RecallRecProc(Instr* PD);
+void DeleteRecProc(Instr_recs* PD);
+void RecallRecProc(Instr_recs* PD);
 void AppendRecProc();
 void UpdRec(void* CR, longint N, bool AdUpd);
-void ReadWriteRecProc(bool IsRead, Instr* PD);
-void LinkRecProc(Instr* PD);
+void ReadWriteRecProc(bool IsRead, Instr_recs* PD);
+void LinkRecProc(Instr_assign* PD);
 void ForAllProc(Instr* PD);
 void HeadLineProc(FrmlPtr Z);
 void SetKeyBufProc(FrmlPtr Z);
@@ -40,12 +40,12 @@ void WithWindowProc(Instr* PD);
 void WithLockedProc(Instr* PD);
 void UnLck(Instr* PD, LockD* Ld1, PInstrCode Op);
 
-void HelpProc(Instr_menubox_menubar* PD);
+void HelpProc(Instr_help* PD);
 FILE* OpenHForPutTxt(Instr* PD);
 void PutTxt(Instr* PD);
-void AssgnCatFld(Instr* PD);
-void AssgnAccRight(Instr* PD);
-void AssgnUserName(Instr* PD);
+void AssgnCatFld(Instr_assign* PD);
+void AssgnAccRight(Instr_assign* PD);
+void AssgnUserName(Instr_assign* PD);
 void ReleaseDriveProc(FrmlPtr Z);
 void WithGraphicsProc(Instr* PD);
 
@@ -70,5 +70,5 @@ void MemDiagProc();
 
 void RunInstr(Instr* PD);
 void RunProcedure(void* PDRoot);
-void CallProcedure(Instr* PD); // TODO: nìjaké ukazatele
+void CallProcedure(Instr_proc* PD); // TODO: nìjaké ukazatele
 void RunMainProc(RdbPos RP, bool NewWw);

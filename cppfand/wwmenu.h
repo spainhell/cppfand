@@ -69,7 +69,7 @@ public:
 	void Prev();
 	bool UnderMenuBar();
 	void WrText(WORD I);
-	void SetPalette(Instr_menubox_menubar* aPD);
+	void SetPalette(Instr_menu* aPD);
 //protected:
 	//TMenu(WORD mx, WORD my);
 };
@@ -99,8 +99,8 @@ class TMenuBoxP : public TMenuBox
 {
 public:
 	//TMenuBoxP();
-	TMenuBoxP(WORD C1, WORD R1, TMenu* aParent, Instr_menubox_menubar* aPD);
-	Instr_menubox_menubar* PD;
+	TMenuBoxP(WORD C1, WORD R1, TMenu* aParent, Instr_menu* aPD);
+	Instr_menu* PD;
 	ChoiceD* CRoot;
 	pstring* HdTxt;
 	bool Enabled(WORD I) override;
@@ -137,8 +137,8 @@ class TMenuBarP : public TMenuBar
 {
 public:
 	TMenuBarP();
-	TMenuBarP(Instr_menubox_menubar* aPD);
-	Instr_menubox_menubar* PD;
+	TMenuBarP(Instr_menu* aPD);
+	Instr_menu* PD;
 	ChoiceD* CRoot;
 	bool Enabled(WORD I) override;
 	bool ExecItem(WORD& I) override;
@@ -151,7 +151,7 @@ WORD Menu(WORD MsgNr, WORD IStart);
 bool PrinterMenu(WORD Msg);
 //ChoiceD* CI(ChoiceD* C, WORD I);
 //WORD CountNTxt(ChoiceD* C, bool IsMenuBar);
-void MenuBoxProc(Instr_menubox_menubar* PD);
-void MenuBarProc(Instr_menubox_menubar* PD);
+void MenuBoxProc(Instr_menu* PD);
+void MenuBarProc(Instr_menu* PD);
 LongStr* GetHlpText(RdbD* R, pstring S, bool ByName, WORD& IRec);
 void DisplLLHelp(RdbD* R, pstring Name, bool R24);

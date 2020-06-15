@@ -9,7 +9,7 @@ inline void XEncode(LongStr* S1, LongStr* S2)
 {
 }
 
-inline void CopyFile(CopyD* CD)
+inline void CopyFileE(CopyD* CD)
 {
 }
 

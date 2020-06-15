@@ -3019,7 +3019,7 @@ void SetEdRecNoEtc(longint RNr)
 	}
 }
 
-bool StartProc(Instr* ExitProc, bool Displ)
+bool StartProc(Instr_proc* ExitProc, bool Displ)
 {
 	bool upd; bool b, b2, lkd; char* p = nullptr; FieldDPtr f = nullptr;
 	WORD d; LockMode md; /*float t;*/
@@ -3031,21 +3031,32 @@ bool StartProc(Instr* ExitProc, bool Displ)
 		Move(CRecPtr, p, CFile->RecLen);
 	}
 	SetEdRecNoEtc(0);
-	lkd = E->IsLocked; if (!lkd && !LockRec(false)) return result;
-	b = WasUpdated; EdUpdated = b; b2 = HasUpdFlag(); SetWasUpdated(); ClearUpdFlag();
+	lkd = E->IsLocked;
+	if (!lkd && !LockRec(false)) return result;
+	b = WasUpdated;
+	EdUpdated = b;
+	b2 = HasUpdFlag();
+	SetWasUpdated();
+	ClearUpdFlag();
 	/* !!! with ExitProc->TArg[ExitProc->N] do!!! */
 	{
 		auto tempX = ExitProc->TArg[ExitProc->N];
-		tempX.FD = CFile; tempX.RecPtr = CRecPtr;
+		tempX.FD = CFile;
+		tempX.RecPtr = CRecPtr;
 	}
-	md = CFile->LMode; WrEStatus();                            /*t = currtime;*/
+	md = CFile->LMode;
+	WrEStatus();                            /*t = currtime;*/
 	CallProcedure(ExitProc);
-	RdEStatus(); NewLMode(md); upd = CFile->WasWrRec;      /*writeln(strdate(currtime-t,"ss mm.ttt"));wait;*/
+	RdEStatus();
+	NewLMode(md);
+	upd = CFile->WasWrRec;      /*writeln(strdate(currtime-t,"ss mm.ttt"));wait;*/
 	if (HasUpdFlag()) { b = true; upd = true; }
-	WasUpdated = b; if (b2) SetUpdFlag();
+	WasUpdated = b;
+	if (b2) SetUpdFlag();
 	if (!WasUpdated && !lkd) UnLockRec(E);
 	if (Displ && upd) DisplAllWwRecs();
-	if (Displ) NewDisplLL = true; result = true;
+	if (Displ) NewDisplLL = true;
+	result = true;
 	if (HasTF) {
 		f = CFile->FldD;
 		while (f != nullptr) {

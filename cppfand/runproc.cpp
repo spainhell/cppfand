@@ -118,9 +118,9 @@ void PromptAutoRprt(RprtOpt* RO)
 	if (SelForAutoRprt(RO2)) RunAutoReport(RO2);
 }
 
-void AssignField(Instr* PD)
+void AssignField(Instr_assign* PD)
 {
-	longint N; LockMode md; WORD msg; FieldDPtr F;
+	longint N = 0; LockMode md; WORD msg = 0; FieldDPtr F = nullptr;
 	CFile = PD->FD; md = NewLMode(WrMode); F = PD->FldD;
 	N = RunInt(PD->RecFrml);
 	if ((N <= 0) || (N > CFile->NRecs)) { msg = 640; goto label1; }
@@ -166,9 +166,9 @@ void AssignRecVar(LocVar* LV1, LocVar* LV2, AssignD* A)
 	SetUpdFlag();
 }
 
-void AssignRecFld(Instr* PD)
+void AssignRecFld(Instr_assign* PD)
 {
-	FieldDPtr F = PD->RecFldD;
+	FieldDescr* F = PD->RecFldD;
 	CFile = PD->AssLV->FD; CRecPtr = PD->AssLV->RecPtr;
 	SetUpdFlag();
 	AssgnFrml(F, PD->Frml, HasTWorkFlag(), PD->Add);
@@ -182,18 +182,18 @@ void SortProc(FileDPtr FD, KeyFldDPtr SK)
 	SortAndSubst(SK); CFile = FD; OldLMode(md); SaveFiles;
 }
 
-void MergeProc(Instr* PD)
+void MergeProc(Instr_proc* PD)
 {
 	void* p = nullptr; void* p2 = nullptr;
-	MarkBoth(p, p2); 
+	MarkBoth(p, p2);
 	SetInpTT(PD->PPos, true);
-	ReadMerge(); 
-	RunMerge(); 
-	SaveFiles(); 
+	ReadMerge();
+	RunMerge();
+	SaveFiles();
 	ReleaseBoth(p, p2);
 }
 
-void WritelnProc(Instr* PD)
+void WritelnProc(Instr_writeln* PD)
 {
 	LongStr* S; WORD i; char c; BYTE LF; WrLnD* W; pstring t, x; double r;
 	W = &PD->WD; LF = PD->LF; t[0] = 0;
@@ -268,7 +268,7 @@ void ClrWwProc(Instr* PD)
 	screen.ScrClr(v.C1 - 1, v.R1 - 1, v.C2 - v.C1 + 1, v.R2 - v.R1 + 1, c, a);
 }
 
-void ExecPgm(Instr* PD)
+void ExecPgm(Instr_exec* PD)
 {
 	pstring s; pstring Prog; WORD i; BYTE x = 0, y = 0; bool b = false;
 	Wind wmin, wmax; longint w;
@@ -280,7 +280,8 @@ void ExecPgm(Instr* PD)
 	WindMax = wmax;
 	screen.CrsSet(crs);
 	s = RunShortStr(PD->Param); i = PD->ProgCatIRec; CVol = "";
-	if (i != 0) Prog = RdCatField(i, CatPathName); else Prog = *PD->ProgPath;
+	if (i != 0) Prog = RdCatField(i, CatPathName);
+	else Prog = *PD->ProgPath;
 	b = OSshell(Prog, s, PD->NoCancel, PD->FreeMm, PD->LdFont, PD->TextMd);
 	/*asm mov ah, 3; mov bh, 0; push bp; int 10H; pop bp; mov x, dl; mov y, dh;*/
 	PopW(w);
@@ -288,13 +289,16 @@ void ExecPgm(Instr* PD)
 	if (!b) GoExit();
 }
 
-void CallRdbProc(Instr* PD)
+void CallRdbProc(Instr_call* PD)
 {
-	bool b; void* p = nullptr; ProcStkPtr bp = nullptr;
+	bool b = false; void* p = nullptr; ProcStkPtr bp = nullptr;
 	wwmix ww;
-	MarkStore(p); bp = MyBP;
+	MarkStore(p);
+	bp = MyBP;
 	b = EditExecRdb(PD->RdbNm, PD->ProcNm, PD->ProcCall, &ww);
-	SetMyBP(bp); ReleaseStore(p); if (!b) GoExit();
+	SetMyBP(bp);
+	ReleaseStore(p);
+	if (!b) GoExit();
 }
 
 void IndexfileProc(FileDPtr FD, bool Compress)
@@ -406,7 +410,7 @@ bool SrchXKey(KeyDPtr K, XString& X, longint& N)
 	}
 }
 
-void DeleteRecProc(Instr* PD)
+void DeleteRecProc(Instr_recs* PD)
 {
 	LockMode md; longint n; XString x;
 	CFile = PD->RecFD; CRecPtr = GetRecSpace();
@@ -439,9 +443,13 @@ label2:
 void AppendRecProc()
 {
 	LockMode md;
-	md = NewLMode(CrMode); CRecPtr = GetRecSpace(); ZeroAllFlds();
-	SetDeletedFlag(); CreateRec(CFile->NRecs + 1);
-	ReleaseStore(CRecPtr); OldLMode(md);
+	md = NewLMode(CrMode);
+	CRecPtr = GetRecSpace();
+	ZeroAllFlds();
+	SetDeletedFlag();
+	CreateRec(CFile->NRecs + 1);
+	ReleaseStore(CRecPtr);
+	OldLMode(md);
 }
 
 void UpdRec(void* CR, longint N, bool AdUpd)
@@ -457,7 +465,7 @@ void UpdRec(void* CR, longint N, bool AdUpd)
 	ReleaseStore(cr2);
 }
 
-void ReadWriteRecProc(bool IsRead, Instr* PD)
+void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 {
 	longint N; bool app, ad; LockMode md; void* cr; XString x;
 	KeyDPtr k; WORD msg;
@@ -527,7 +535,7 @@ label4:
 	ReleaseStore(cr); OldLMode(md);
 }
 
-void LinkRecProc(Instr* PD)
+void LinkRecProc(Instr_assign* PD)
 {
 	void* p = nullptr; void* r2 = nullptr; void* lr2 = nullptr;
 	FileDPtr cf = nullptr; void* cr = nullptr; LinkDPtr ld = nullptr; longint n;
@@ -665,9 +673,9 @@ void SetWwViewPort()
 void WithWindowProc(Instr* PD)
 {
 	BYTE PAttr = ProcAttr;
-	longint w1 = 0; 
+	longint w1 = 0;
 	WRect v;
-	 
+
 	/* !!! with PD^ do!!! */
 	ProcAttr = RunWordImpl(PD->Attr, colors.uNorm);
 	RunWFrml(PD->W, PD->WithWFlags, v);
@@ -725,9 +733,9 @@ label1:
 	UnLck(PD, nullptr, op);
 }
 
-void HelpProc(Instr_menubox_menubar* PD)
+void HelpProc(Instr_help* PD)
 {
-	Help(PD->HelpRdb, RunShortStr(PD->Frml), true);
+	Help(PD->HelpRdb0, RunShortStr(PD->Frml0), true);
 }
 
 FILE* OpenHForPutTxt(Instr* PD)
@@ -753,20 +761,21 @@ void PutTxt(Instr* PD)
 	CPath = pth; TestCPathError(); WriteH(h, 0, h)/*trunc*/; CloseH(h);
 }
 
-void AssgnCatFld(Instr* PD)
+void AssgnCatFld(Instr_assign* PD)
 {
 	/* !!! with PD^ do!!! */
+
 	CFile = PD->FD3;
 	if (CFile != nullptr) CloseFile();
 	WrCatField(PD->CatIRec, PD->CatFld, RunShortStr(PD->Frml3));
 }
 
-void AssgnAccRight(Instr* PD)
+void AssgnAccRight(Instr_assign* PD)
 {
 	AccRight = RunShortStr(PD->Frml);
 }
 
-void AssgnUserName(Instr* PD)
+void AssgnUserName(Instr_assign* PD)
 {
 	UserName = RunShortStr(PD->Frml);
 }
@@ -817,7 +826,7 @@ void PortOut(bool IsWord, WORD Port, WORD What)
 {
 }
 
-void RecallRecProc(Instr* PD)
+void RecallRecProc(Instr_recs* PD)
 {
 	LockMode md; longint N;
 	CFile = PD->RecFD;
@@ -871,24 +880,24 @@ void RunInstr(Instr* PD)
 		switch (PD->Kind) {
 		case _ifthenelseP: {
 			/* !!! with PD^ do!!! */
-			auto iPD = (Instr_ifthenelseP_whiledo_repeatuntil*)PD;
+			auto iPD = (Instr_loops*)PD;
 			if (RunBool(iPD->Bool)) RunInstr(iPD->Instr1);
 			else RunInstr(iPD->ElseInstr1);
 			break; }
 		case _whiledo: {
 			/* !!! with PD^ do!!! */
-			auto iPD = (Instr_ifthenelseP_whiledo_repeatuntil*)PD;
+			auto iPD = (Instr_loops*)PD;
 			while (!ExitP && !BreakP && RunBool(iPD->Bool)) RunInstr(iPD->Instr1);
 			BreakP = false;
 			break; }
 		case _repeatuntil: {
 			/* !!! with PD^ do!!! */
-			auto iPD = (Instr_ifthenelseP_whiledo_repeatuntil*)PD;
+			auto iPD = (Instr_loops*)PD;
 			do { RunInstr(iPD->Instr1); } while (!(ExitP || BreakP || RunBool(iPD->Bool)));
 			BreakP = false;
 			break; }
-		case _menubox: { MenuBoxProc((Instr_menubox_menubar*)PD); break; }
-		case _menubar: { MenuBarProc((Instr_menubox_menubar*)PD); break; }
+		case _menubox: { MenuBoxProc((Instr_menu*)PD); break; }
+		case _menubar: { MenuBarProc((Instr_menu*)PD); break; }
 		case _forall: ForAllProc(PD); break;
 		case _window: WithWindowProc(PD); break;
 		case _break: BreakP = true; break;
@@ -898,74 +907,102 @@ void RunInstr(Instr* PD)
 		case _clrscr: { TextAttr = ProcAttr; ClrScr(); break; }
 		case _clrww: ClrWwProc(PD); break;
 		case _clreol: { TextAttr = ProcAttr; ClrEol(); break; }
-		case _exec: ExecPgm(PD); break;
-		case _proc: CallProcedure(PD); break;
-		case _call: CallRdbProc(PD); break;
-		case _copyfile: CopyFile(PD->CD); break;
-		case _headline: HeadLineProc(PD->Frml); break;
-		case _setkeybuf: SetKeyBufProc(PD->Frml); break;
-		case _writeln: WritelnProc(PD); break;
-		case _gotoxy: screen.GotoXY(RunInt(PD->GoX), RunInt(PD->GoY));
-		case _merge: MergeProc(PD); break;
+		case _exec: ExecPgm((Instr_exec*)PD); break;
+		case _proc: CallProcedure((Instr_proc*)PD); break;
+		case _call: CallRdbProc((Instr_call*)PD); break;
+		case _copyfile: CopyFileE(((Instr_copyfile*)PD)->CD); break;
+		case _headline: HeadLineProc(((Instr_assign*)PD)->Frml); break;
+		case _setkeybuf: SetKeyBufProc(((Instr_assign*)PD)->Frml); break;
+		case _writeln: WritelnProc((Instr_writeln*)PD); break;
+		case _gotoxy: screen.GotoXY(RunInt(((Instr_gotoxy*)PD)->GoX), RunInt(((Instr_gotoxy*)PD)->GoY));
+		case _merge: MergeProc((Instr_proc*)PD); break;
 #ifdef FandProlog
-		case _lproc: RunProlog(&PD->lpPos, PD->lpName); break;
-#endif
-		case _report: ReportProc(PD->RO, true); break;
-		case _sort: SortProc(PD->SortFD, PD->SK); break;
-		case _edit: EditProc(PD); break;
-		case _asgnloc:/* !!! with PD^ do!!! */ {
-			LVAssignFrml(PD->LV, MyBP, PD->Add, PD->Frml);
+		case _lproc:
+		{
+			auto iPD = (Instr_lproc*)PD;
+			RunProlog(&iPD->lpPos, iPD->lpName);
 			break;
 		}
-		case _asgnrecfld: AssignRecFld(PD); break;
-		case _asgnrecvar:/* !!! with PD^ do!!! */ AssignRecVar(PD->RecLV1, PD->RecLV2, PD->Ass); break;
-		case _asgnpar:/* !!! with PD^ do!!! */ AsgnParFldFrml(PD->FD, PD->FldD, PD->Frml, PD->Add); break;
-		case _asgnfield: AssignField(PD); break;
-		case _asgnnrecs:/* !!! with PD^ do!!! */ { CFile = PD->FD; AssignNRecs(PD->Add, RunInt(PD->Frml)); break; }
-		case _appendrec: { CFile = PD->RecFD; AppendRecProc(); break; }
-		case _deleterec: DeleteRecProc(PD); break;
-		case _recallrec: RecallRecProc(PD); break;
-		case _readrec: ReadWriteRecProc(true, PD); break;
-		case _writerec: ReadWriteRecProc(false, PD); break;
-		case _linkrec: LinkRecProc(PD); break;
+#endif
+		case _report: ReportProc(PD->RO, true); break;
+		case _sort: {
+			auto iPD = (Instr_sort*)PD;
+			SortProc(iPD->SortFD, iPD->SK);
+			break;
+		}
+		case _edit: EditProc(PD); break;
+		case _asgnloc:/* !!! with PD^ do!!! */ {
+			auto iPD = (Instr_assign*)PD;
+			LVAssignFrml(iPD->LV, MyBP, iPD->Add, iPD->Frml);
+			break;
+		}
+		case _asgnrecfld: AssignRecFld(((Instr_assign*)PD)); break;
+		case _asgnrecvar:/* !!! with PD^ do!!! */ {
+			auto iPD = (Instr_assign*)PD;
+			AssignRecVar(iPD->RecLV1, iPD->RecLV2, iPD->Ass);
+			break;
+		}
+		case _asgnpar: /* !!! with PD^ do!!! */ {
+			auto iPD = (Instr_assign*)PD;
+			AsgnParFldFrml(iPD->FD, iPD->FldD, iPD->Frml, iPD->Add);
+			break;
+		}
+		case _asgnfield: AssignField(((Instr_assign*)PD)); break;
+		case _asgnnrecs: /* !!! with PD^ do!!! */ {
+			auto iPD = (Instr_assign*)PD;
+			CFile = iPD->FD;
+			AssignNRecs(iPD->Add, RunInt(iPD->Frml));
+			break;
+		}
+		case _appendrec: {
+			CFile = ((Instr_recs*)PD)->RecFD;
+			AppendRecProc();
+			break;
+		}
+		case _deleterec: DeleteRecProc((Instr_recs*)PD); break;
+		case _recallrec: RecallRecProc((Instr_recs*)PD); break;
+		case _readrec: ReadWriteRecProc(true, (Instr_recs*)PD); break;
+		case _writerec: ReadWriteRecProc(false, (Instr_recs*)PD); break;
+		case _linkrec: LinkRecProc((Instr_assign*)PD); break;
 		case _withshared:
 		case _withlocked: WithLockedProc(PD); break;
 		case _edittxt: EditTxtProc(PD); break;
 		case _printtxt: PrintTxtProc(PD); break;
 		case _puttxt: PutTxt(PD); break;
-		case _asgncatfield: AssgnCatFld(PD); break;
-		case _asgnusercode: { UserCode = RunInt(PD->Frml); AccRight[0] = 0x01; AccRight[1] = char(UserCode); break; }
-		case _asgnaccright: AssgnAccRight(PD); break;
-		case _asgnusername: AssgnUserName(PD); break;
-		case _asgnusertoday: userToday = RunReal(PD->Frml); break;
+		case _asgncatfield: AssgnCatFld((Instr_assign*)PD); break;
+		case _asgnusercode: { UserCode = RunInt(((Instr_assign*)PD)->Frml); AccRight[0] = 0x01; AccRight[1] = char(UserCode); break; }
+		case _asgnaccright: AssgnAccRight((Instr_assign*)PD); break;
+		case _asgnusername: AssgnUserName((Instr_assign*)PD); break;
+		case _asgnusertoday: userToday = RunReal(((Instr_assign*)PD)->Frml); break;
 		case _asgnclipbd: {
-			s = RunLongStr(PD->Frml);
+			s = RunLongStr(((Instr_assign*)PD)->Frml);
 			TWork.Delete(ClpBdPos);
 			ClpBdPos = TWork.Store(s);
 			ReleaseStore(s);
 			break; }
-		case _asgnedok: EdOk = RunBool(PD->Frml);
+		case _asgnedok: EdOk = RunBool(((Instr_assign*)PD)->Frml);
 		case _turncat:/* !!! with PD^ do!!! */ {
-			CFile = PD->NextGenFD;
-			TurnCat(PD->FrstCatIRec, PD->NCatIRecs, RunInt(PD->TCFrml));
+			auto iPD = (Instr_turncat*)PD;
+			CFile = iPD->NextGenFD;
+			TurnCat(iPD->FrstCatIRec, iPD->NCatIRecs, RunInt(iPD->TCFrml));
 			break;
 		}
 		case _releasedrive: ReleaseDriveProc(PD->Drive); break;
-		case _setprinter: SetCurrPrinter(abs(RunInt(PD->Frml))); break;
+		case _setprinter: SetCurrPrinter(abs(RunInt(((Instr_assign*)PD)->Frml))); break;
 		case _indexfile:/* !!! with PD^ do!!! */ IndexfileProc(PD->IndexFD, PD->Compress); break;
-		case _display: { 
-			/* !!! with PD^ do!!! */ 
+		case _display: {
+			/* !!! with PD^ do!!! */
 			auto iPD = (Instr_merge_display*)PD;
 			DisplayProc(iPD->Pos.R, iPD->Pos.IRec);
-			break; 
+			break;
 		}
 		case _mount:/* !!! with PD^ do!!! */ MountProc(PD->MountCatIRec, PD->MountNoCancel); break;
 		case _clearkeybuf: ClearKbdBuf(); break;
-		case _help: HelpProc((Instr_menubox_menubar*)PD); break;
+		case _help: HelpProc((Instr_help*)PD); break;
 		case _wait: WaitProc(); break;
 		case _beepP: beep(); break;
-		case _delay: Delay((RunInt(PD->Frml) + 27) / 55); break;
-		case _sound: Sound(RunInt(PD->Frml)); break;
+		case _delay: Delay((RunInt(((Instr_assign*)PD)->Frml) + 27) / 55); break;
+		case _sound: Sound(RunInt(((Instr_assign*)PD)->Frml)); break;
 		case _nosound: NoSound(); break;
 #ifdef FandGraph
 		case _graph: RunBGraph(PD->GD, false); break;
@@ -994,9 +1031,9 @@ void RunInstr(Instr* PD)
 		case _login: /* !!! with PD^ do!!! */ StartLogIn(liName, liPassWord); break;
 		case _sqlrdwrtxt: SQLRdWrTxt(PD); break;
 #endif
-		case _asgnrand: srand(RunInt(PD->Frml)); break;
+		case _asgnrand: srand(RunInt(((Instr_assign*)PD)->Frml)); break;
 		case _randomize: Random(); break;
-		case _asgnxnrecs: PD->xnrIdx->Release(); break;
+		case _asgnxnrecs: ((Instr_assign*)PD)->xnrIdx->Release(); break;
 		case _portout: {
 			PortOut(RunBool(PD->IsWord),
 				WORD(RunInt(PD->Port)),
@@ -1016,9 +1053,9 @@ void RunProcedure(void* PDRoot)
 	ExitP = ExP; BreakP = BrkP;
 }
 
-void CallProcedure(Instr* PD)
+void CallProcedure(Instr_proc* PD)
 {
-	stSaveState* p = nullptr; 
+	stSaveState* p = nullptr;
 	void* p1 = nullptr; void* p2 = nullptr;
 	void* oldbp = nullptr; void* oldprocbp = nullptr;
 	LocVar* lv = nullptr; LocVar* lv1 = nullptr; LocVar* lvroot = nullptr;
@@ -1134,7 +1171,6 @@ void CallProcedure(Instr* PD)
 
 void RunMainProc(RdbPos RP, bool NewWw)
 {
-	Instr* PD = nullptr;
 	void* p1 = nullptr; void* p2 = nullptr;
 	LocVar* lv = nullptr;
 	if (NewWw) {
@@ -1145,7 +1181,7 @@ void RunMainProc(RdbPos RP, bool NewWw)
 		UserHeadLine("");
 		MenuX = 1; MenuY = 2;
 	}
-	PD = GetPInstr(_proc, sizeof(RdbPos) + 2);
+	auto PD = new Instr_proc(0); // GetPInstr(_proc, sizeof(RdbPos) + 2);
 	PD->PPos = RP;
 	CallProcedure(PD);
 	ReleaseStore(PD);

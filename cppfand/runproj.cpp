@@ -1486,7 +1486,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 	CRecPtr = Chpt->RecPtr;
 	Encryp = CRdb->Encrypted;
 	for (I = 1; I <= Chpt->NRecs; I++) {
-		if (I == 12) {
+		if (I >= 52) {
 			printf("%i\n", I);
 		}
 		ReadRec(I);
@@ -1660,7 +1660,7 @@ void WrErrMsg630(pstring* Nm)
 	SetMsgPar(*Nm); WrLLF10Msg(630);
 }
 
-bool EditExecRdb(pstring* Nm, pstring* ProcNm, Instr* ProcCall, wwmix* ww)
+bool EditExecRdb(pstring* Nm, pstring* ProcNm, Instr_proc* ProcCall, wwmix* ww)
 {
 	WORD Brk = 0, cc = 0;
 	void* p = nullptr;

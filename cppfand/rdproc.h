@@ -1,6 +1,7 @@
 #pragma once
 #include "access.h"
 #include "constants.h"
+#include "models/Instr.h"
 #include "pstring.h"
 #include "rdrun.h"
 
@@ -26,14 +27,14 @@ void RdChoices(Instr* PD);
 void RdMenuAttr(Instr* PD);
 Instr* RdMenuBox(bool Loop);
 Instr* RdMenuBar();
-Instr* RdIfThenElse();
-Instr* RdWhileDo();
+Instr_loops* RdIfThenElse();
+Instr_loops* RdWhileDo();
 Instr* RdFor();
 Instr* RdCase();
-Instr* RdRepeatUntil();
+Instr_loops* RdRepeatUntil();
 Instr* RdForAll();
 Instr* RdBeginEnd();
-Instr* RdProcArg(char Caller);
+Instr_proc* RdProcArg(char Caller);
 void RdKeyCode(EdExitD* X);
 bool NotCode(pstring Nm, WORD CodeBase, WORD BrkBase, EdExKeyD* E);
 
@@ -44,11 +45,11 @@ bool RdHeadLast(void* AA);
 bool RdViewOpt(EditOpt* EO);
 void RdKeyList(EdExitD* X);
 //extern Instr* RdPInstr; // toto bude ukazatel na pozdìji pøiøazenou funkci
-Instr* GetPD(PInstrCode Kind, WORD Size);
+//Instr* GetPD(PInstrCode Kind, WORD Size);
 void RdProcCall(Instr** pinstr); // mùže upravit pinstr z hlavní funkce
 FieldList RdFlds();
 FieldList RdSubFldList(FieldList InFL, char Opt);
-Instr* RdSortCall();
+Instr_sort* RdSortCall();
 Instr* RdEditCall();
 void RdEditOpt(EditOpt* EO);
 void RdReportCall();
@@ -64,7 +65,7 @@ void RdPrintTxt();
 void RdEditTxt();
 void RdPutTxt();
 void RdTurnCat();
-void RdWriteln(BYTE OpKind, Instr** pinstr);
+void RdWriteln(BYTE OpKind, Instr_writeln** pinstr);
 void RdReleaseDrive();
 void RdIndexfile();
 void RdGetIndex();
@@ -73,7 +74,7 @@ void RdClrWw();
 void RdMount();
 void RdDisplay();
 void RdGraphP();
-void RdMixRecAcc(PInstrCode Op);
+Instr_recs* RdMixRecAcc(PInstrCode Op);
 void RdLinkRec();
 void RdBackup(char MTyp, bool IsBackup);
 void RdSetEditTxt();
@@ -85,9 +86,9 @@ void RdCallLProc();
 #endif
 FrmlPtr AdjustComma(FrmlPtr Z1, FieldDPtr F, char Op);
 AssignD* MakeImplAssign(FileD* FD1, FileD* FD2);
-Instr* RdAssign();
+Instr_assign* RdAssign();
 Instr* RdWith();
-Instr* RdUserFuncAssign();
+Instr_assign* RdUserFuncAssign();
 void ReadProcHead();
 Instr* ReadProcBody();
 void ReadDeclChpt();

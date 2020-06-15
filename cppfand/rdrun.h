@@ -2,10 +2,11 @@
 #include "access.h"
 #include "editor.h"
 #include "legacy.h"
-
+//#include "models/Instr.h"
 
 struct LvDescr;
-struct Instr;
+class Instr;
+class Instr_proc;
 struct EdExitD;
 
 enum MInstrCode { _zero, _move, _output, _locvar, _parfile, _ifthenelseM };
@@ -163,7 +164,7 @@ struct EdExitD : Chained
 	FieldList Flds = nullptr;    /*in edittxt !used*/
 	char Typ = 0;
 	void* RO = nullptr;
-	Instr* Proc = nullptr;       /*in edittxt only "P","Q"*/
+	Instr_proc* Proc = nullptr;       /*in edittxt only "P","Q"*/
 	/*"Q" quit   #0 dummy*/
 };
 
@@ -422,50 +423,7 @@ class Instr : public Chained// POZOR konflikt názvù viz níže
 public:
 	//Instr* Chain = nullptr;
 	PInstrCode Kind;
-	
-	RdbPos PPos;
-	BYTE N;
-	bool ExPar;
-	TypAndFrml TArg[2];
-	RdbPos lpPos;
-	pstring* lpName = nullptr;
-	pstring* RdbNm = nullptr;
-	pstring* ProcNm = nullptr;
-	Instr* ProcCall = nullptr;
-	pstring* ProgPath = nullptr;
-	WORD ProgCatIRec;
-	bool NoCancel, FreeMm, LdFont, TextMd;
-	FrmlPtr Param;
-	CopyD* CD = nullptr;
-	BYTE LF /*0-write,1-writeln,2-message,3-message+help*/;
-	WrLnD WD;
-	RdbDPtr mHlpRdb = nullptr;
-	FrmlPtr mHlpFrml = nullptr;
-	FrmlPtr GoX, GoY;
-	FrmlPtr Frml = nullptr;
-	bool Add;
-	LocVar* AssLV;
-	FrmlPtr Frml0 = nullptr;
-	RdbDPtr HelpRdb0 = nullptr;
-	FrmlPtr Frml1 = nullptr;
-	bool Add1;
-	FileDPtr FD = nullptr;
-	FieldDPtr FldD = nullptr;
-	FrmlPtr RecFrml = nullptr;
-	bool Indexarg;
-	FrmlPtr Frml2 = nullptr; bool Add2; LocVar* AssLV2 = nullptr; FieldDPtr RecFldD = nullptr;
-	FrmlPtr Frml3 = nullptr; FileDPtr FD3 = nullptr; WORD CatIRec; FieldDPtr CatFld = nullptr;
-	LocVar* RecLV1 = nullptr; LocVar* RecLV2 = nullptr;
-	AssignD* Ass;
-	LinkDPtr LinkLD = nullptr;
-	WKeyDPtr xnrIdx;
-	FrmlPtr RecNr; bool AdUpd;
-	LocVar* LV; bool ByKey; KeyDPtr Key;
-	char CompOp;
-	FileDPtr RecFD;
-	FileDPtr NextGenFD;
-	WORD FrstCatIRec, NCatIRecs; FrmlPtr TCFrml;
-	FileDPtr SortFD = nullptr; KeyFldDPtr SK = nullptr;
+		
 	FileDPtr EditFD = nullptr; EditOpt* EO = nullptr;
 	RprtOpt* RO = nullptr;
 	pstring* TxtPath = nullptr; WORD TxtCatIRec; LocVar* TxtLV = nullptr;
