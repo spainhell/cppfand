@@ -12,7 +12,7 @@ TMemBlkHd* FreeMemList = nullptr;
 TMemory Mem1;
 TMemory Mem2;
 TMemory Mem3;
-WORD ProlgCallLevel;
+WORD ProlgCallLevel = 0;
 
 TVarDcl* VarDcls = nullptr; integer VarCount = 0;
 TDomain* IntDom = nullptr; TDomain* RealDom = nullptr; TDomain* StrDom = nullptr; TDomain* LongStrDom = nullptr; /*PDomain*/

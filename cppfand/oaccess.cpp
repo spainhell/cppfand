@@ -638,7 +638,8 @@ void GetCPathForCat(WORD I)
 
 	CVol = RdCatField(I, CatVolume);
 	CPath = RdCatField(I, CatPathName);
-	if (CPath[2] != ':' && SetContextDir(d, isRdb)) {
+	bool setContentDir = SetContextDir(d, isRdb);
+	if (CPath[2] != ':' && setContentDir) {
 		if (isRdb) {
 			FSplit(CPath, CDir, CName, CExt);
 			AddBackSlash(d);
@@ -650,14 +651,17 @@ void GetCPathForCat(WORD I)
 			AddBackSlash(d); CPath = d + CPath;
 		}
 	}
-	else CPath = FExpand(CPath);
+	else {
+		CPath = FExpand(CPath);
+		CPath = d + CPath.substr(3, 255);
+	}
 	FSplit(CPath, CDir, CName, CExt);
 }
 
 void SetCPathVol()
 {
-	WORD i;
-	bool isRdb;
+	WORD i = 0;
+	bool isRdb = false;
 
 	CVol = "";
 	if (CFile->Typ == 'C') {
@@ -801,7 +805,8 @@ void SubstDuplF(FileD* TempFD, bool DelTF)
 		CloseClearH(PrimFD->Handle);
 		SetTempCExt('0', false); ptmp = CPath;
 		RenameFile56(ptmp, p, true);
-		CPath = p; PrimFD->Handle = OpenH(_isoldfile, PrimFD->UMode);
+		CPath = p;
+		PrimFD->Handle = OpenH(_isoldfile, PrimFD->UMode);
 		SetUpdHandle(PrimFD->Handle);
 		if ((MD != nullptr) && DelTF) {
 			CloseClearH(MD->Handle); MyDeleteFile(pt); TestDelErr(&pt);

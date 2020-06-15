@@ -299,8 +299,8 @@ bool CacheLocked = false; // r510
 void AddBackSlash(pstring& s)
 {
 	if (s.empty()) { return; }
-	if (s[s.length() - 1] == '\\') return;
-	s += "\\";
+	if (s[s.length()] == '\\') return;
+	s.Append('\\');
 }
 
 void DelBackSlash(pstring& s)

@@ -2790,13 +2790,17 @@ void XWKey::OneRecIdx(KeyFldD* KF, longint N)
 void XWKey::InsertAtNr(longint I, longint RecNr)
 {
 	XString x;
-	x.PackKF(KFlds); NR++; NrToPath(I); InsertOnPath(x, RecNr);
+	x.PackKF(KFlds);
+	NR++;
+	NrToPath(I);
+	InsertOnPath(x, RecNr);
 }
 
 longint XWKey::InsertGetNr(longint RecNr)
 {
 	XString x; longint n;
-	NR++; x.PackKF(KFlds); Search(x, true, n);
+	NR++; x.PackKF(KFlds);
+	Search(x, true, n);
 	auto result = PathToNr();
 	InsertOnPath(x, RecNr);
 	return result;
@@ -2804,7 +2808,9 @@ longint XWKey::InsertGetNr(longint RecNr)
 
 void XWKey::DeleteAtNr(longint I)
 {
-	NrToPath(I); DeleteOnPath(); NR--;
+	NrToPath(I);
+	DeleteOnPath();
+	NR--;
 }
 
 void XWKey::AddToRecNr(longint RecNr, integer Dif)
@@ -2821,9 +2827,12 @@ void XWKey::AddToRecNr(longint RecNr, integer Dif)
 		while (n > 0) {
 			longint nn = x->GetN();
 			if (nn >= RecNr) x->PutN(nn + Dif);
-			x = x->Next(oLeaf); n--;
+			x = x->Next(oLeaf);
+			n--;
 		}
-		XF()->WrPage(p, pg); pg = p->GreaterPage; j = 1;
+		XF()->WrPage(p, pg);
+		pg = p->GreaterPage;
+		j = 1;
 	} while (pg != 0);
 	ReleaseStore(p);
 }
@@ -2942,7 +2951,7 @@ XScan::XScan(FileD* aFD, KeyD* aKey, KeyInD* aKIRoot, bool aWithT)
 	}
 }
 
-void XScan::Reset(FrmlPtr ABool, bool SQLFilter)
+void XScan::Reset(FrmlElem* ABool, bool SQLFilter)
 {
 	KeyInD* k = nullptr; longint n = 0; XString xx; bool b = false;
 	CFile = FD;
@@ -2987,12 +2996,16 @@ void XScan::Reset(FrmlPtr ABool, bool SQLFilter)
 	SeekRec(0);
 }
 
-void XScan::ResetSort(KeyFldDPtr aSK, FrmlPtr& BoolZ, LockMode OldMd, bool SQLFilter)
+void XScan::ResetSort(KeyFldD* aSK, FrmlPtr& BoolZ, LockMode OldMd, bool SQLFilter)
 {
 	LockMode m;
 	if (Kind == 4) {
 		SK = aSK;
-		if (SQLFilter) { Reset(BoolZ, true); BoolZ = nullptr; }
+		if (SQLFilter)
+		{
+			Reset(BoolZ, true);
+			BoolZ = nullptr;
+		}
 		else Reset(nullptr, false);
 		return;
 	}
@@ -3016,16 +3029,21 @@ void XScan::ResetSort(KeyFldDPtr aSK, FrmlPtr& BoolZ, LockMode OldMd, bool SQLFi
 
 void XScan::SubstWIndex(WKeyDPtr WK)
 {
-	Key = WK; if (Kind != 3) Kind = 1;
+	Key = WK;
+	if (Kind != 3) Kind = 1;
 	if (P == nullptr) P = (XPage*)GetStore(XPageSize);
 	NRecs = Key->NRecs();
-	Bool = nullptr; SeekRec(0); TempWX = true;
+	Bool = nullptr;
+	SeekRec(0);
+	TempWX = true;
 }
 
 void XScan::ResetOwner(XString* XX, FrmlPtr aBool)
 {
-	longint n; bool b;
-	CFile = FD; Bool = aBool;
+	longint n;
+	bool b;
+	CFile = FD;
+	Bool = aBool;
 #ifdef FandSQL
 	if (Kind = 4) {           /* !on .SQL with Workindex */
 		KIRoot = GetZStore(sizeof(KIRoot^));
@@ -3039,7 +3057,8 @@ void XScan::ResetOwner(XString* XX, FrmlPtr aBool)
 		KIRoot = (KeyInD*)GetZStore(sizeof(*KIRoot));
 		Key->FindNr(*XX, KIRoot->XNrBeg);
 		AddFFs(Key, XX->S);
-		b = Key->FindNr(*XX, n); NRecs = n - KIRoot->XNrBeg + b;
+		b = Key->FindNr(*XX, n);
+		NRecs = n - KIRoot->XNrBeg + b;
 		KIRoot->N = NRecs; Kind = 2;
 	}
 	SeekRec(0);
