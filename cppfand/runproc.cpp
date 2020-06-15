@@ -185,8 +185,12 @@ void SortProc(FileDPtr FD, KeyFldDPtr SK)
 void MergeProc(Instr* PD)
 {
 	void* p = nullptr; void* p2 = nullptr;
-	MarkBoth(p, p2); SetInpTT(PD->Pos, true);
-	ReadMerge(); RunMerge(); SaveFiles(); ReleaseBoth(p, p2);
+	MarkBoth(p, p2); 
+	SetInpTT(PD->PPos, true);
+	ReadMerge(); 
+	RunMerge(); 
+	SaveFiles(); 
+	ReleaseBoth(p, p2);
 }
 
 void WritelnProc(Instr* PD)
@@ -721,7 +725,7 @@ label1:
 	UnLck(PD, nullptr, op);
 }
 
-void HelpProc(Instr* PD)
+void HelpProc(Instr_menubox_menubar* PD)
 {
 	Help(PD->HelpRdb, RunShortStr(PD->Frml), true);
 }
@@ -867,21 +871,24 @@ void RunInstr(Instr* PD)
 		switch (PD->Kind) {
 		case _ifthenelseP: {
 			/* !!! with PD^ do!!! */
-			if (RunBool(PD->Bool)) RunInstr(PD->Instr1);
-			else RunInstr(PD->ElseInstr1);
+			auto iPD = (Instr_ifthenelseP_whiledo_repeatuntil*)PD;
+			if (RunBool(iPD->Bool)) RunInstr(iPD->Instr1);
+			else RunInstr(iPD->ElseInstr1);
 			break; }
 		case _whiledo: {
 			/* !!! with PD^ do!!! */
-			while (!ExitP && !BreakP && RunBool(PD->Bool)) RunInstr(PD->Instr1);
+			auto iPD = (Instr_ifthenelseP_whiledo_repeatuntil*)PD;
+			while (!ExitP && !BreakP && RunBool(iPD->Bool)) RunInstr(iPD->Instr1);
 			BreakP = false;
 			break; }
 		case _repeatuntil: {
 			/* !!! with PD^ do!!! */
-			do { RunInstr(PD->Instr1); } while (!(ExitP || BreakP || RunBool(PD->Bool)));
+			auto iPD = (Instr_ifthenelseP_whiledo_repeatuntil*)PD;
+			do { RunInstr(iPD->Instr1); } while (!(ExitP || BreakP || RunBool(iPD->Bool)));
 			BreakP = false;
 			break; }
-		case _menubox: { MenuBoxProc(PD); break; }
-		case _menubar: { MenuBarProc(PD); break; }
+		case _menubox: { MenuBoxProc((Instr_menubox_menubar*)PD); break; }
+		case _menubar: { MenuBarProc((Instr_menubox_menubar*)PD); break; }
 		case _forall: ForAllProc(PD); break;
 		case _window: WithWindowProc(PD); break;
 		case _break: BreakP = true; break;
@@ -946,10 +953,15 @@ void RunInstr(Instr* PD)
 		case _releasedrive: ReleaseDriveProc(PD->Drive); break;
 		case _setprinter: SetCurrPrinter(abs(RunInt(PD->Frml))); break;
 		case _indexfile:/* !!! with PD^ do!!! */ IndexfileProc(PD->IndexFD, PD->Compress); break;
-		case _display:/* !!! with PD^ do!!! */ DisplayProc(PD->Pos.R, PD->Pos.IRec); break;
+		case _display: { 
+			/* !!! with PD^ do!!! */ 
+			auto iPD = (Instr_merge_display*)PD;
+			DisplayProc(iPD->Pos.R, iPD->Pos.IRec);
+			break; 
+		}
 		case _mount:/* !!! with PD^ do!!! */ MountProc(PD->MountCatIRec, PD->MountNoCancel); break;
 		case _clearkeybuf: ClearKbdBuf(); break;
-		case _help: HelpProc(PD); break;
+		case _help: HelpProc((Instr_menubox_menubar*)PD); break;
 		case _wait: WaitProc(); break;
 		case _beepP: beep(); break;
 		case _delay: Delay((RunInt(PD->Frml) + 27) / 55); break;
@@ -1019,7 +1031,7 @@ void CallProcedure(Instr* PD)
 	MarkBoth(p1, p2); oldprocbp = ProcMyBP;
 	ld = LinkDRoot;
 	lstFD = (FileD*)LastInChain(FileDRoot);
-	SetInpTT(PD->Pos, true);
+	SetInpTT(PD->PPos, true);
 	ReadProcHead();
 	n = LVBD.NParam; lvroot = LVBD.Root; oldbp = MyBP; PushProcStk();
 	if ((n != PD->N) && !((n == PD->N - 1) && PD->ExPar)) {
@@ -1134,7 +1146,7 @@ void RunMainProc(RdbPos RP, bool NewWw)
 		MenuX = 1; MenuY = 2;
 	}
 	PD = GetPInstr(_proc, sizeof(RdbPos) + 2);
-	PD->Pos = RP;
+	PD->PPos = RP;
 	CallProcedure(PD);
 	ReleaseStore(PD);
 	if (NewWw) screen.Window(1, 1, TxtCols, TxtRows);

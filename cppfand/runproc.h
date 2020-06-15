@@ -2,6 +2,7 @@
 #include "constants.h"
 #include "pstring.h"
 #include "rdrun.h"
+#include "models/Instr.h"
 
 void UserHeadLine(pstring UserHeader);
 
@@ -39,7 +40,7 @@ void WithWindowProc(Instr* PD);
 void WithLockedProc(Instr* PD);
 void UnLck(Instr* PD, LockD* Ld1, PInstrCode Op);
 
-void HelpProc(Instr* PD);
+void HelpProc(Instr_menubox_menubar* PD);
 FILE* OpenHForPutTxt(Instr* PD);
 void PutTxt(Instr* PD);
 void AssgnCatFld(Instr* PD);

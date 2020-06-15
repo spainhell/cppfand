@@ -1697,7 +1697,7 @@ bool EditExecRdb(pstring* Nm, pstring* ProcNm, Instr* ProcCall, wwmix* ww)
 				//goto label0;
 				IsCompileErr = false;
 				if (ProcCall != nullptr) {
-					ProcCall->Pos = RP;
+					ProcCall->PPos = RP;
 					CallProcedure(ProcCall);
 				}
 				else RunMainProc(RP, top);

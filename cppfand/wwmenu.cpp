@@ -334,7 +334,7 @@ void TMenu::WrText(WORD I)
 	} while (x < x2) { screen.ScrWrChar(x, y, ' ', attr); x++; }
 }
 
-void TMenu::SetPalette(Instr* aPD)
+void TMenu::SetPalette(Instr_menubox_menubar* aPD)
 {
 	WORD i;
 	/* !!! with aPD^ do!!! */
@@ -453,7 +453,7 @@ pstring TMenuBoxS::GetText(integer I)
 	return GetDLine(&MsgTxt[1], MsgTxt.length(), '/', I + 2);
 }
 
-TMenuBoxP::TMenuBoxP(WORD C1, WORD R1, TMenu* aParent, Instr* aPD)
+TMenuBoxP::TMenuBoxP(WORD C1, WORD R1, TMenu* aParent, Instr_menubox_menubar* aPD)
 {
 	pstring s;
 	PD = aPD;
@@ -485,7 +485,8 @@ bool TMenuBoxP::Enabled(WORD I)
 
 bool TMenuBoxP::ExecItem(WORD& I)
 {
-	auto result = false; if (!PD->PullDown) return result;
+	auto result = false; 
+	if (!PD->PullDown) return result;
 	if (I == 0) {
 		if ((Event.What == evMouseDown) || !PD->WasESCBranch) return result;
 		RunInstr(PD->ESCInstr);
@@ -644,7 +645,7 @@ TMenuBarP::TMenuBarP()
 {
 }
 
-TMenuBarP::TMenuBarP(Instr* aPD)
+TMenuBarP::TMenuBarP(Instr_menubox_menubar* aPD)
 {
 	WORD x1, y1, l1;
 	PD = aPD;
@@ -681,13 +682,13 @@ bool TMenuBarP::ExecItem(WORD& I)
 
 bool TMenuBarP::GetDownMenu(TMenuBox* W)
 {
-	Instr* PD1; TMenuBoxP* p;
+	// Instr_menubox_menubar* PD1; TMenuBoxP* p;
 	auto result = false;
-	PD1 = CI(CRoot, iTxt)->Instr;
+	auto PD1 = (Instr_menubox_menubar*)CI(CRoot, iTxt)->Instr;
 	if ((PD1 == nullptr) || (PD1->Chain != nullptr)
 		|| (PD1->Kind != _menubox) || !PD1->PullDown) return result;
 	//New(p, Init(MenuX, MenuY, this, PD1));
-	p = new TMenuBoxP(MenuX, MenuY, this, PD1);
+	auto p = new TMenuBoxP(MenuX, MenuY, this, PD1);
 	W = p;
 	result = true;
 	return result;
@@ -749,7 +750,7 @@ bool PrinterMenu(WORD Msg)
 	return i > 0;
 }
 
-void MenuBoxProc(Instr* PD)
+void MenuBoxProc(Instr_menubox_menubar* PD)
 {
 	TMenuBoxP* w = nullptr; WORD i = 0; 
 	BYTE mx = 0, my = 0; 
@@ -770,7 +771,7 @@ label1:
 	}
 }
 
-void MenuBarProc(Instr* PD)
+void MenuBarProc(Instr_menubox_menubar* PD)
 {
 	TMenuBarP* w = nullptr;
 	void* p = nullptr;

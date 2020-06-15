@@ -3,6 +3,7 @@
 #include "drivers.h"
 #include "constants.h"
 #include "rdrun.h"
+#include "models/Instr.h"
 
 const WORD sfCursorVis = 0x0002;
 const WORD sfCursorBig = 0x0004;
@@ -68,7 +69,7 @@ public:
 	void Prev();
 	bool UnderMenuBar();
 	void WrText(WORD I);
-	void SetPalette(Instr* aPD);
+	void SetPalette(Instr_menubox_menubar* aPD);
 //protected:
 	//TMenu(WORD mx, WORD my);
 };
@@ -98,8 +99,8 @@ class TMenuBoxP : public TMenuBox
 {
 public:
 	//TMenuBoxP();
-	TMenuBoxP(WORD C1, WORD R1, TMenu* aParent, Instr* aPD);
-	Instr* PD;
+	TMenuBoxP(WORD C1, WORD R1, TMenu* aParent, Instr_menubox_menubar* aPD);
+	Instr_menubox_menubar* PD;
 	ChoiceD* CRoot;
 	pstring* HdTxt;
 	bool Enabled(WORD I) override;
@@ -136,8 +137,8 @@ class TMenuBarP : public TMenuBar
 {
 public:
 	TMenuBarP();
-	TMenuBarP(Instr* aPD);
-	Instr* PD;
+	TMenuBarP(Instr_menubox_menubar* aPD);
+	Instr_menubox_menubar* PD;
 	ChoiceD* CRoot;
 	bool Enabled(WORD I) override;
 	bool ExecItem(WORD& I) override;
@@ -150,7 +151,7 @@ WORD Menu(WORD MsgNr, WORD IStart);
 bool PrinterMenu(WORD Msg);
 //ChoiceD* CI(ChoiceD* C, WORD I);
 //WORD CountNTxt(ChoiceD* C, bool IsMenuBar);
-void MenuBoxProc(Instr* PD);
-void MenuBarProc(Instr* PD);
+void MenuBoxProc(Instr_menubox_menubar* PD);
+void MenuBarProc(Instr_menubox_menubar* PD);
 LongStr* GetHlpText(RdbD* R, pstring S, bool ByName, WORD& IRec);
 void DisplLLHelp(RdbD* R, pstring Name, bool R24);

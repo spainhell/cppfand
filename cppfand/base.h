@@ -86,7 +86,7 @@ void DispH(void* ad, integer NoBytes);
 // *** MEMORY MANAGEMENT ***
 extern WORD CachePageSize;
 extern void* AfterCatFD; // r108
-struct CachePage { BYTE Pg3[3]; BYTE Handle; longint HPage; bool Upd; BYTE Arr[4096]; };
+struct CachePage { BYTE Pg3[3]{ 0 }; BYTE Handle = 0; longint HPage = 0; bool Upd = false; BYTE Arr[4096]{ 0 }; };
 struct ProcStkD { ProcStkD* ChainBack; void* LVRoot; }; // r199
 typedef ProcStkD* ProcStkPtr;
 

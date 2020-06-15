@@ -410,28 +410,19 @@ struct GraphD
 
 struct TypAndFrml
 {
-	char FTyp;
-	FrmlPtr Frml; bool FromProlog, IsRetPar;
-	FileDPtr FD; void* RecPtr;
-	FrmlPtr TxtFrml; pstring Name; // if RecPtr != nullptr
+	char FTyp = '\0';
+	FrmlElem* Frml = nullptr; 
+	bool FromProlog = false, IsRetPar = false;
+	FileD* FD = nullptr; void* RecPtr = nullptr;
+	FrmlElem* TxtFrml = nullptr; pstring Name; // if RecPtr != nullptr
 };
 
-struct Instr : public Chained// POZOR konflikt názvù viz níže
+class Instr : public Chained// POZOR konflikt názvù viz níže
 {
+public:
 	//Instr* Chain = nullptr;
 	PInstrCode Kind;
-	FrmlPtr HdLine;
-	RdbDPtr HelpRdb;
-	bool WasESCBranch;
-	Instr* ESCInstr = nullptr;
-	ChoiceD* Choices = nullptr;
-	bool Loop, PullDown, Shdw;
-	FrmlPtr X, Y, XSz;
-	FrmlPtr mAttr[4];
-	FrmlPtr Bool;
-	Instr* Instr1 = nullptr;
-	Instr* ElseInstr1 = nullptr;  // pùvodnì Instr a ElseInstr -> konflikt názvù
-	RdbPos Pos;
+	
 	RdbPos PPos;
 	BYTE N;
 	bool ExPar;

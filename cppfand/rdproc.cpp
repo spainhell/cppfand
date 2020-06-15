@@ -5,6 +5,7 @@
 #include "rdfildcl.h"
 #include "rdrun.h"
 #include "runfrml.h"
+#include "models/Instr.h"
 
 bool IsRdUserFunc;
 kNames KeyNames[NKeyNames] = {
@@ -527,7 +528,7 @@ void RdPInstrAndChain(Instr** PD)
 	}
 }
 
-void RdChoices(Instr* PD)
+void RdChoices(Instr_menubox_menubar* PD)
 {
 	ChoiceD* CD = nullptr;
 	WORD N = 0, SumL = 0;
@@ -573,7 +574,7 @@ label1:
 	AcceptKeyWord("END");
 }
 
-void RdMenuAttr(Instr* PD)
+void RdMenuAttr(Instr_menubox_menubar* PD)
 {
 	if (Lexem != ';') return;
 	RdLex();
@@ -586,8 +587,8 @@ void RdMenuAttr(Instr* PD)
 
 Instr* RdMenuBox(bool Loop)
 {
-	Instr* PD = nullptr; pstring* S = nullptr;
-	PD = GetPInstr(_menubox, 48);
+	Instr_menubox_menubar* PD = nullptr; pstring* S = nullptr;
+	PD = (Instr_menubox_menubar*)GetPInstr(_menubox, 48);
 	auto result = PD;
 	PD->Loop = Loop;
 	if (Lexem == '(') {
@@ -607,7 +608,7 @@ Instr* RdMenuBox(bool Loop)
 
 Instr* RdMenuBar()
 {
-	Instr* PD = GetPInstr(_menubar, 48);
+	Instr_menubox_menubar* PD = (Instr_menubox_menubar*)GetPInstr(_menubar, 48);
 	auto result = PD;
 	if (Lexem == '(') {
 		RdLex();
@@ -628,7 +629,7 @@ Instr* RdMenuBar()
 
 Instr* RdIfThenElse()
 {
-	auto PD = GetPInstr(_ifthenelseP, 12);
+	auto PD = (Instr_ifthenelseP_whiledo_repeatuntil*)GetPInstr(_ifthenelseP, 12);
 	auto result = PD;
 	PD->Bool = RdBool();
 	AcceptKeyWord("THEN");
@@ -639,7 +640,7 @@ Instr* RdIfThenElse()
 
 Instr* RdWhileDo()
 {
-	Instr* PD = GetPInstr(_whiledo, 8);
+	auto PD = (Instr_ifthenelseP_whiledo_repeatuntil*)GetPInstr(_whiledo, 8);
 	auto result = PD;
 	PD->Bool = RdBool();
 	AcceptKeyWord("DO");
@@ -652,13 +653,13 @@ Instr* RdFor()
 	LocVar* LV = nullptr;
 	if (!FindLocVar(LVBD.Root, &LV) || (LV->FTyp != 'R')) Error(146);
 	RdLex();
-	Instr* PD = GetPInstr(_asgnloc, 9);
+	auto PD = (Instr_ifthenelseP_whiledo_repeatuntil*)GetPInstr(_asgnloc, 9);
 	auto result = PD;
 	PD->AssLV = LV;
 	Accept(_assign);
 	PD->Frml = RdRealFrml(); AcceptKeyWord("TO");
-	PD->Chain = GetPInstr(_whiledo, 8);
-	PD = (Instr*)PD->Chain;
+	PD->Chain = (Instr_ifthenelseP_whiledo_repeatuntil*)GetPInstr(_whiledo, 8);
+	PD = (Instr_ifthenelseP_whiledo_repeatuntil*)PD->Chain;
 	FrmlPtr Z = GetOp(_compreal, 2);
 	Z->P1 = (FrmlElem*)LV->Op;
 	Z->N21 = _le;
@@ -680,14 +681,15 @@ Instr* RdFor()
 
 Instr* RdCase()
 {
-	Instr* PD = nullptr;
+	Instr_ifthenelseP_whiledo_repeatuntil* PD = nullptr;
 	bool first = true;
 label1:
-	Instr* PD1 = GetPInstr(_ifthenelseP, 12);
+	auto PD1 = (Instr_ifthenelseP_whiledo_repeatuntil*)GetPInstr(_ifthenelseP, 12);
 	Instr* result = nullptr;
 	if (first) result = PD1;
 	else PD->ElseInstr1 = PD1;
-	PD = PD1; first = false;
+	PD = PD1;
+	first = false;
 	PD->Bool = RdBool(); Accept(':');
 	PD->Instr1 = RdPInstr();
 	bool b = Lexem == ';';
@@ -709,7 +711,7 @@ label1:
 
 Instr* RdRepeatUntil()
 {
-	Instr* PD = GetPInstr(_repeatuntil, 8);
+	auto PD = (Instr_ifthenelseP_whiledo_repeatuntil*)GetPInstr(_repeatuntil, 8);
 	auto result = PD;
 	while (!IsKeyWord("UNTIL")) {
 		RdPInstrAndChain(&PD->Instr1);
@@ -811,32 +813,39 @@ Instr* RdBeginEnd()
 
 Instr* RdProcArg(char Caller)
 {
-	RdbPos Pos; TypAndFrml TArg[31];
+	RdbPos Pos; 
+	TypAndFrml TArg[31];
 	LocVar* LV = nullptr;
 	if (Caller != 'C') RdChptName('P', &Pos, Caller == 'P' || Caller == 'E' || Caller == 'T');
 	WORD N = 0;
 	if (Caller != 'P') { if (Lexem == '(') { RdLex(); goto label1; } }
 	else if (Lexem == ',') {
-		RdLex(); Accept('(');
+		RdLex(); 
+		Accept('(');
 	label1:
 		N++;
 		if (N > 30) Error(123);
 		FillChar(&TArg[N].FTyp, sizeof(TypAndFrml), 0);
 		if ((ForwChar != '.') && FindLocVar(LVBD.Root, &LV) && (LV->FTyp == 'i' || LV->FTyp == 'r'))
 		{
-			RdLex(); TArg[N].FTyp = LV->FTyp; TArg[N].FD = LV->FD; TArg[N].RecPtr = LV->RecPtr;
+			RdLex(); 
+			TArg[N].FTyp = LV->FTyp; TArg[N].FD = LV->FD; TArg[N].RecPtr = LV->RecPtr;
 		}
 		else if (Lexem == '@')
 		{
 			RdLex();
 			if (Lexem == '[') {
-				RdLex(); TArg[N].Name = *StoreStr(LexWord); Accept(_identifier);
-				Accept(','); FrmlPtr z = GetOp(_setmybp, 0);
+				RdLex(); 
+				TArg[N].Name = *StoreStr(LexWord); 
+				Accept(_identifier);
+				Accept(','); 
+				FrmlElem* z = GetOp(_setmybp, 0);
 				z->P1 = RdStrFrml();
 				TArg[N].TxtFrml = z;
 				Accept(']');
 			}
-			else TArg[N].FD = RdFileName(); TArg[N].FTyp = 'f';
+			else TArg[N].FD = RdFileName(); 
+			TArg[N].FTyp = 'f';
 		}
 		else TArg[N].Frml = RdFrml(TArg[N].FTyp);
 		if (Lexem == ',') { RdLex(); goto label1; }
@@ -845,7 +854,7 @@ Instr* RdProcArg(char Caller)
 	if (Caller == 'E') { N++; TArg[N].FTyp = 'r'; }
 	WORD L = N * sizeof(TypAndFrml);
 	Instr* PD = GetPInstr(_proc, sizeof(RdbPos) + 2 + L);
-	PD->Pos = Pos;
+	PD->PPos = Pos;
 	PD->N = N;
 	if (N > 2) printf("PD->TArg %i > 2 !\n", N);
 	for (size_t i = 0; i < N; i++) {
@@ -1052,16 +1061,17 @@ void RdProcCall(Instr** pinstr)
 	else if (IsKeyWord("HEADLINE")) { PD = GetPD(_headline, 4); goto label1; }
 	else if (IsKeyWord("SETKEYBUF")) { PD = GetPD(_setkeybuf, 4); goto label1; }
 	else if (IsKeyWord("HELP")) {
-		PD = GetPD(_help, 8);
+		PD = (Instr_menubox_menubar*)GetPD(_help, 8);
 		if (CRdb->HelpFD == nullptr) OldError(132);
-		PD->HelpRdb = CRdb;
+		((Instr_menubox_menubar*)PD)->HelpRdb = CRdb;
 	label1:
 		PD->Frml = RdStrFrml();
 	}
 	else if (IsKeyWord("MESSAGE")) RdWriteln(2, pinstr);
 	else if (IsKeyWord("GOTOXY")) RdGotoXY();
 	else if (IsKeyWord("MERGE")) {
-		PD = GetPD(_merge, sizeof(RdbPos)); RdChptName('M', &PD->Pos, true);
+		PD = (Instr_merge_display*)GetPD(_merge, sizeof(RdbPos));
+		RdChptName('M', &((Instr_merge_display*)PD)->Pos, true);
 	}
 	else if (IsKeyWord("SORT")) *pinstr = RdSortCall();
 	else if (IsKeyWord("EDIT")) *pinstr = RdEditCall();
@@ -1802,12 +1812,13 @@ void RdMount()
 
 void RdDisplay()
 {
-	Instr* PD; pstring* s;
-	PD = GetPD(_display, sizeof(RdbPos));
+	auto PD = (Instr_merge_display*)GetPD(_display, sizeof(RdbPos));
+	pstring* s = nullptr;
 	if ((Lexem == _identifier) && FindChpt('H', LexWord, false, &PD->Pos)) RdLex();
 	else {
 		/* !!! with PD->Pos do!!! */
-		PD->Pos.R = RdbDPtr(RdStrFrml); PD->Pos.IRec = 0;
+		PD->Pos.R = RdbDPtr(RdStrFrml); 
+		PD->Pos.IRec = 0;
 	}
 }
 

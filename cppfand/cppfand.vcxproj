@@ -160,6 +160,7 @@
     <ClCompile Include="genrprt.cpp" />
     <ClCompile Include="keyboard.cpp" />
     <ClCompile Include="legacy.cpp" />
+    <ClCompile Include="models\Instr.cpp" />
     <ClCompile Include="oaccess.cpp" />
     <ClCompile Include="obase.cpp" />
     <ClCompile Include="obaseww.cpp" />
@@ -197,6 +198,7 @@
     <ClInclude Include="genrprt.h" />
     <ClInclude Include="keyboard.h" />
     <ClInclude Include="legacy.h" />
+    <ClInclude Include="models\Instr.h" />
     <ClInclude Include="oaccess.h" />
     <ClInclude Include="obase.h" />
     <ClInclude Include="obaseww.h" />
