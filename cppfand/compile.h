@@ -61,7 +61,7 @@ void RdChptName(char C, RdbPos* Pos, bool TxtExpr); // r108
 FieldListEl* AllFldsList(FileD* FD, bool OnlyStored); // r118
 EditOpt* GetEditOpt(); // r129
 RprtOpt* GetRprtOpt(); // r132
-FrmlPtr GetOp(BYTE Op, integer BytesAfter); // r1
+//FrmlPtr GetOp(BYTE Op, integer BytesAfter); // r1
 FieldDescr* FindFldName(FileD* FD); // r7
 FieldDescr* RdFldName(FileD* FD); // r17
 FileDPtr FindFileD(); // r22

@@ -81,8 +81,7 @@ typedef KeyListEl* KeyList;
 class FrmlElem // ø. 51
 {
 public:
-	FrmlElem() {}
-	FrmlElem(size_t buff_size) { buffer = new BYTE[buff_size]{ 0 }; }
+	FrmlElem(BYTE Op, size_t buff_size) { this->Op = Op; buffer = new BYTE[buff_size]{ 0 }; }
 	~FrmlElem() { delete[] buffer; }
 	BYTE Op = 0;
 	BYTE* buffer = nullptr;
