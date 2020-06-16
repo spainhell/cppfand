@@ -856,12 +856,12 @@ void RdPredicateDcl(bool FromClauses, TDatabase* Db)
 		}
 		else {
 			SkipBlank(false);
-			if (ForwChar = '[') {
+			if (ForwChar == '[') {
 				RdLexP();
 				RdLexP();
 				TestLex(_quotedstr);
-				z = GetOp(_const, LexWord.length() + 1);
-				z->S = LexWord;
+				z = new FrmlElem4(_const, 0); // GetOp(_const, LexWord.length() + 1);
+				((FrmlElem4*)z)->S = LexWord;
 				//pos.R = ptr(0, OOfs(z));
 				pos.IRec = 0;
 				AcceptP(_quotedstr);
@@ -896,8 +896,8 @@ label2:
 					break;
 				}
 				default: {
-					if (f->Typ = 'T') {
-						if ((dofs != LongStrDom) && ((d->Typ != _FunD) || (dofs = BoolDom))) OldError(510);
+					if (f->Typ == 'T') {
+						if ((dofs != LongStrDom) && ((d->Typ != _FunD) || (dofs == BoolDom))) OldError(510);
 					}
 					else if (dofs != StrDom) OldError(510);
 					break;
@@ -939,8 +939,8 @@ label2:
 					else typ = 'S';
 					isOutp = (w & 1) == 0;
 					if (isOutp) {
-						z = GetOp(_getlocvar, 2);
-						z->BPOfs = bpOfs;
+						z = new FrmlElem18(_getlocvar, 2); // GetOp(_getlocvar, 2);
+						((FrmlElem18*)z)->BPOfs = bpOfs;
 						switch (typ) {
 						case 'S': bpOfs += sizeof(longint); break;
 						case 'R': bpOfs += sizeof(double); break;
@@ -949,13 +949,13 @@ label2:
 					}
 					else {
 						switch (typ) {
-						case 'R': z = GetOp(_const, sizeof(double)); break;
-						case 'B': z = GetOp(_const, sizeof(bool)); break;
+						case 'R': z = new FrmlElem2(_const, 0); /* GetOp(_const, sizeof(double));*/ break;
+						case 'B': z = new FrmlElem5(_const, 0); /* GetOp(_const, sizeof(bool));*/ break;
 						default: {
-							if (dofs == StrDom) z = GetOp(_const, sizeof(pstring));
+							if (dofs == StrDom) z = new FrmlElem4(_const, 0); // GetOp(_const, sizeof(pstring));
 							else {
-								z = GetOp(_getlocvar, 2);
-								z->BPOfs = bpOfs;
+								z = new FrmlElem18(_getlocvar, 2); // GetOp(_getlocvar, 2);
+								((FrmlElem18*)z)->BPOfs = bpOfs;
 								bpOfs += sizeof(longint);
 							}
 							break;
@@ -1777,7 +1777,7 @@ TPredicate* MakePred(pstring PredName, pstring ArgTyp, WORD PredKod, WORD PredMa
 	ChainLst(Roots->Predicates, p->Chain);
 	auto result = (TPredicate*)p->Chain;
 	/* !!! with p^ do!!! */ {
-		p->Name = StorStr(PredName); 
+		p->Name = StorStr(PredName);
 		p->Arity = n; p->LocVarSz = PredKod;
 		for (i = 1; i <= n; i++) {
 			switch (ArgTyp[i]) {
@@ -3235,7 +3235,7 @@ bool RunBuildIn()
 			else mask = "";
 			CurrInst->Vars[6] = GetStringTerm(mask);
 			if (w == 3) CurrInst->NextBranch = nullptr;
-			else CurrInst->NextBranch =(TBranch*)f->Chain;
+			else CurrInst->NextBranch = (TBranch*)f->Chain;
 			break;
 		}
 		case _FandKeyP: {
@@ -3716,14 +3716,21 @@ void CallFandProc()
 		t = CurrInst->Vars[i - 1];
 		if ((w & 1) != 0) {
 			switch (ta->FTyp) {
-			case 'R': if (t->Fun == _IntT) ta->Frml->R = t->II; else ta->Frml->R = t->RR; break;
-			case 'B': ta->Frml->B = bool(t->Fun); break;
+			case 'R': {
+				if (t->Fun == _IntT) ((FrmlElem2*)ta->Frml)->R = t->II;
+				else ((FrmlElem2*)ta->Frml)->R = t->RR;
+				break;
+			}
+			case 'B': {
+				((FrmlElem5*)ta->Frml)->B = bool(t->Fun);
+				break;
+			}
 			default: {
-				if (ta->Frml->Op == _const) ta->Frml->S = t->SS;
+				if (ta->Frml->Op == _const) ((FrmlElem4*)ta->Frml)->S = t->SS;
 				else {
 					if (d->Typ == _LongStrD) s = RdLongStr(t->Pos);
 					else s = GetPackedTerm(t);
-					*(longint*)(pp + ta->Frml->BPOfs) = TWork.Store(s);
+					*(longint*)(pp + ((FrmlElem18*)ta->Frml)->BPOfs) = TWork.Store(s);
 					ReleaseStore(s);
 				}
 				break;
@@ -3846,8 +3853,8 @@ void AssertFand(TPredicate* P, TCommand* C)
 			flofs = (TFldList*)fl->Chain;
 			lofs = (TTermList*)l->Chain;
 			i++;
-		}
-	}
+			}
+			}
 #ifdef FandSQL
 	if (trace) { writeln("))"); waitC; }
 	if (CFile->IsSQLFile) Strm1->InsertRec(false, true); else
@@ -3860,7 +3867,7 @@ void AssertFand(TPredicate* P, TCommand* C)
 	}
 	OldLMode(md);
 	ReleaseStore(CRecPtr);
-}
+		}
 
 TFileScan* GetScan(TScanInf* SIOfs, TCommand* C, TInstance* Q)
 {
@@ -4100,7 +4107,7 @@ void TraceCall(TInstance* Q, BYTE X)
 	TCommand* c = nullptr;
 	TDomain* d = nullptr;
 	TDomain* dofs = nullptr; // absolute d
-	
+
 	p = Q->Pred;
 	c = Q->RetCmd;
 	//PtrRec(d).Seg = _Sg;

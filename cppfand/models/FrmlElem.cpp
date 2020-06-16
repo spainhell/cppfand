@@ -76,7 +76,8 @@ void FrmlElem13::SaveArgs(FrmlElem* arguments[], size_t count)
 {
 	for (size_t i = 0; i < count; i++)
 	{
-		this->Arg.push_back(Arg[i]);
+		auto ai = arguments[i];
+		this->Arg.push_back(arguments[i]);
 	}
 }
 

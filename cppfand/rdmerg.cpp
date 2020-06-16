@@ -166,7 +166,7 @@ void Err_M()
 	TestNotSum_M(); SetIi_M();
 	if (IDA[Ii]->ErrTxtFrml == nullptr)
 	{
-		IDA[Ii]->ErrTxtFrml = GetOp(_const, 256);
+		IDA[Ii]->ErrTxtFrml = new FrmlElem4(_const, 0); // GetOp(_const, 256);
 	}
 }
 
@@ -431,13 +431,17 @@ label1:
 
 FrmlElem* AdjustComma_M(FrmlElem* Z1, FieldDescr* F, char Op)
 {
-	FrmlPtr Z, Z2;
+	FrmlElem0* Z = nullptr;
+	FrmlElem2* Z2 = nullptr;
 	FrmlElem* result = Z1;
 	if (F->Typ != 'F') return result;
 	if (F->Flg && f_Comma == 0) return result;
-	Z2 = GetOp(_const, sizeof(double));
-	Z2->R = Power10[F->M];
-	Z = GetOp(Op, 0); Z->P1 = Z1; Z->P2 = Z2; result = Z;
+	Z2 = new FrmlElem2(_const, 0, Power10[F->M]); // GetOp(_const, sizeof(double));
+	//Z2->R = Power10[F->M];
+	Z = new FrmlElem0(Op, 0); // GetOp(Op, 0);
+	Z->P1 = Z1;
+	Z->P2 = Z2;
+	result = Z;
 	return result;
 }
 

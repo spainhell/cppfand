@@ -8,6 +8,7 @@ public:
 	FrmlElem* P1 = nullptr; FrmlElem* P2 = nullptr; FrmlElem* P3 = nullptr;
 	FrmlElem* P4 = nullptr; FrmlElem* P5 = nullptr; FrmlElem* P6 = nullptr; // 0
 	char Delim = '\0'; // 0
+	BYTE buff[64]{ 0 };
 };
 
 class FrmlElem1 : public FrmlElem
@@ -147,6 +148,7 @@ class FrmlElem18 : public FrmlElem
 public:
 	FrmlElem18(BYTE Op, size_t buff_size);
 	WORD BPOfs = 0; // 18 { _getlocvar }
+	BYTE buff[64]{ 0 };
 };
 
 class FrmlElem19 : public FrmlElem

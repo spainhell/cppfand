@@ -226,11 +226,14 @@ void MoveForwToRecM(InpD* ID)
 	CRecPtr = CFile->RecPtr;
 	Move(ID->ForwRecPtr, CRecPtr, CFile->RecLen + 1);
 	ID->Count = ID->Count + 1;
-	ChkD* C = ID->Chk; if (C != nullptr) {
-		ID->Error = false; ID->Warning = false; ID->ErrTxtFrml->S[0] = 0;
+	ChkD* C = ID->Chk;
+	if (C != nullptr) {
+		ID->Error = false; ID->Warning = false;
+		ID->ErrTxtFrml->S[0] = 0;
 		while (C != nullptr) {
 			if (!RunBool(C->Bool)) {
-				ID->Warning = true; ID->ErrTxtFrml->S = RunShortStr(C->TxtZ);
+				ID->Warning = true;
+				ID->ErrTxtFrml->S = RunShortStr(C->TxtZ);
 				if (!C->Warning) { ID->Error = true; return; }
 			}
 			C = (ChkD*)C->Chain;

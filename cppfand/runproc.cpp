@@ -155,7 +155,9 @@ void AssignRecVar(LocVar* LV1, LocVar* LV2, AssignD* A)
 			break;
 		}
 		case _output: {
-			CFile = FD1; CRecPtr = RP1; A->Frml->NewRP = RP2;
+			CFile = FD1;
+			CRecPtr = RP1;
+			((FrmlElem8*)A->Frml)->NewRP = RP2;
 			AssgnFrml(A->OFldD, A->Frml, false, false);
 			break;
 		}
@@ -427,7 +429,7 @@ void DeleteRecProc(Instr_recs* PD)
 #ifdef FandSQL
 		if (CFile->IsSQLFile) { Strm1->DeleteXRec(PD->Key, &x, PD->AdUpd); goto label2; }
 #endif
-	}
+}
 	md = NewLMode(DelMode);
 	if (PD->ByKey)
 	{
@@ -486,7 +488,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 		if (CFile->IsSQLFile) {
 			if (IsRead) if (Strm1->SelectXRec(k, @x, PD->CompOp, true)) goto label4; else goto label2;
 			else if (Strm1->UpdateXRec(k, @x, ad)) goto label4; else goto label2;
-		}
+}
 #endif
 	}
 	else N = RunInt(PD->RecNr);
@@ -629,7 +631,7 @@ label1:
 			if (HasUpdFlag && !PD->inSQL) {
 				if (k = nullptr) CFileError(650); Strm1->UpdateXRec(k, @xx, CFile->Add != nullptr);
 			}
-		}
+	}
 		else
 #endif
 		{
@@ -648,7 +650,7 @@ label1:
 				Scan->IRec--; Scan->NRecs--;
 			}
 			goto label1;
-		}
+}
 	}
 	if (lk) CFile->XF->UpdLockCnt--;
 	Scan->Close(); OldLMode(md);
@@ -1085,8 +1087,8 @@ void RunInstr(Instr* PD)
 		}
 		}
 		PD = (Instr*)PD->Chain;
+		}
 	}
-}
 
 void RunProcedure(void* PDRoot)
 {

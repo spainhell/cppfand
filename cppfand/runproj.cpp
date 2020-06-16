@@ -317,49 +317,49 @@ void* OLinkD(LinkD* Ld)
 
 void OFrml(FrmlPtr Z)
 {
-	FileDPtr cf = nullptr; FileDPtr fd1 = nullptr;
-	FrmlList fl = nullptr; LinkDPtr ld = nullptr;
-	if (Z != nullptr) {
-		Z = (FrmlElem*)O(Z);
-		/* !!! with Z^ do!!! */
-		switch (Z->Op) {
-		case _field: { Z->Field = (FieldDescr*)OCF(Z->Field); break; }
-		case _access: {
-			Z->LD = (LinkD*)OCF(Z->LD);
-			cf = CFileF;
-			CFileF = Z->File2;
-			Z->File2 = (FileD*)OTb(CFileF->Name);
-			OFrml(Z->P1);
-			CFileF = cf;
-			break;
-		}
-		case _userfunc: {
-			Z->FC = (FuncD*)OTb(Z->FC->Name);
-			fl = FrmlList(&Z->FrmlL);
-			while (fl->Chain != nullptr) {
-				fl->Chain = (FrmlListEl*)O(fl->Chain);
-				fl = (FrmlListEl*)fl->Chain;
-				OFrml(fl->Frml);
-			}
-			break;
-		}
-		case _owned: {
-			ld = Z->ownLD;
-			fd1 = ld->FromFD;
-			Z->ownLD = (LinkD*)OLinkD(ld);
-			cf = CFileF;
-			CFileF = fd1;
-			OFrml(Z->ownBool);
-			OFrml(Z->ownSum);
-			CFileF = cf;
-		}
-		default: {
-			if (Z->Op >= 0x60 && Z->Op <= 0xaf) { OFrml(Z->P1); break; }
-			if (Z->Op >= 0xb0 && Z->Op <= 0xef) { OFrml(Z->P1); OFrml(Z->P2); break; }
-			if (Z->Op >= 0xf0 && Z->Op <= 0xff) { OFrml(Z->P1); OFrml(Z->P2); OFrml(Z->P3); break; }
-		}
-		}
-	}
+	//FileDPtr cf = nullptr; FileDPtr fd1 = nullptr;
+	//FrmlList fl = nullptr; LinkDPtr ld = nullptr;
+	//if (Z != nullptr) {
+	//	Z = (FrmlElem*)O(Z);
+	//	/* !!! with Z^ do!!! */
+	//	switch (Z->Op) {
+	//	case _field: { Z->Field = (FieldDescr*)OCF(Z->Field); break; }
+	//	case _access: {
+	//		Z->LD = (LinkD*)OCF(Z->LD);
+	//		cf = CFileF;
+	//		CFileF = Z->File2;
+	//		Z->File2 = (FileD*)OTb(CFileF->Name);
+	//		OFrml(Z->P1);
+	//		CFileF = cf;
+	//		break;
+	//	}
+	//	case _userfunc: {
+	//		Z->FC = (FuncD*)OTb(Z->FC->Name);
+	//		fl = FrmlList(&Z->FrmlL);
+	//		while (fl->Chain != nullptr) {
+	//			fl->Chain = (FrmlListEl*)O(fl->Chain);
+	//			fl = (FrmlListEl*)fl->Chain;
+	//			OFrml(fl->Frml);
+	//		}
+	//		break;
+	//	}
+	//	case _owned: {
+	//		ld = Z->ownLD;
+	//		fd1 = ld->FromFD;
+	//		Z->ownLD = (LinkD*)OLinkD(ld);
+	//		cf = CFileF;
+	//		CFileF = fd1;
+	//		OFrml(Z->ownBool);
+	//		OFrml(Z->ownSum);
+	//		CFileF = cf;
+	//	}
+	//	default: {
+	//		if (Z->Op >= 0x60 && Z->Op <= 0xaf) { OFrml(Z->P1); break; }
+	//		if (Z->Op >= 0xb0 && Z->Op <= 0xef) { OFrml(Z->P1); OFrml(Z->P2); break; }
+	//		if (Z->Op >= 0xf0 && Z->Op <= 0xff) { OFrml(Z->P1); OFrml(Z->P2); OFrml(Z->P3); break; }
+	//	}
+	//	}
+	//}
 }
 
 FileD* GetFD(void* p, bool WithSelf, WORD Sg)
@@ -401,46 +401,46 @@ LinkD* GetLinkD(void* P, WORD Sg)
 
 void SgFrml(FrmlElem* Z, WORD Sg, WORD SgF)
 {
-	FrmlList fl = nullptr;
-	WORD SgFold = 0;
-	if (Z != nullptr) {
-		Z = (FrmlElem*)(Sg);
-		/* !!! with Z^ do!!! */
-		switch (Z->Op) {
-		case _field: Z->Field = (FieldDescr*)SgF; break;
-		case _access: {
-			if (Z->LD != nullptr) Z->LD = (LinkD*)SgF;
-			Z->File2 = GetFD(Z->File2, Z->LD != nullptr, Sg);
-			SgFold = SgF;
-			SgF = *(WORD*)Z->File2;
-			SgFrml(Z->P1, Sg, SgF);
-			SgF = SgFold;
-			break; }
-		case _userfunc: {
-			Z->FC = GetFC(Z->FC, Sg);
-			fl = (FrmlListEl*)Z->FrmlL;
-			while (fl->Chain != nullptr) {
-				fl->Chain = (FrmlListEl*)Sg;
-				fl = (FrmlListEl*)fl->Chain;
-				SgFrml(fl->Frml, Sg, SgF);
-			}
-			break;
-		}
-		case _owned: {
-			Z->ownLD = GetLinkD(Z->ownLD, Sg);
-			SgFold = SgF;
-			//SgF = (Z->ownLD->FromFD);
-			SgFrml(Z->ownBool, Sg, SgF);
-			SgFrml(Z->ownSum, Sg, SgF);
-			SgF = SgFold;
-			break; }
-		default: {
-			if (Z->Op >= 0x60 && Z->Op <= 0xaf) { SgFrml(Z->P1, Sg, SgF); break; }
-			if (Z->Op >= 0xb0 && Z->Op <= 0xef) { SgFrml(Z->P1, Sg, SgF); SgFrml(Z->P2, Sg, SgF); break; }
-			if (Z->Op >= 0xf0 && Z->Op <= 0xff) { SgFrml(Z->P1, Sg, SgF); SgFrml(Z->P2, Sg, SgF); SgFrml(Z->P3, Sg, SgF); break; }
-		}
-		}
-	}
+	//FrmlList fl = nullptr;
+	//WORD SgFold = 0;
+	//if (Z != nullptr) {
+	//	Z = (FrmlElem*)(Sg);
+	//	/* !!! with Z^ do!!! */
+	//	switch (Z->Op) {
+	//	case _field: Z->Field = (FieldDescr*)SgF; break;
+	//	case _access: {
+	//		if (Z->LD != nullptr) Z->LD = (LinkD*)SgF;
+	//		Z->File2 = GetFD(Z->File2, Z->LD != nullptr, Sg);
+	//		SgFold = SgF;
+	//		SgF = *(WORD*)Z->File2;
+	//		SgFrml(Z->P1, Sg, SgF);
+	//		SgF = SgFold;
+	//		break; }
+	//	case _userfunc: {
+	//		Z->FC = GetFC(Z->FC, Sg);
+	//		fl = (FrmlListEl*)Z->FrmlL;
+	//		while (fl->Chain != nullptr) {
+	//			fl->Chain = (FrmlListEl*)Sg;
+	//			fl = (FrmlListEl*)fl->Chain;
+	//			SgFrml(fl->Frml, Sg, SgF);
+	//		}
+	//		break;
+	//	}
+	//	case _owned: {
+	//		Z->ownLD = GetLinkD(Z->ownLD, Sg);
+	//		SgFold = SgF;
+	//		//SgF = (Z->ownLD->FromFD);
+	//		SgFrml(Z->ownBool, Sg, SgF);
+	//		SgFrml(Z->ownSum, Sg, SgF);
+	//		SgF = SgFold;
+	//		break; }
+	//	default: {
+	//		if (Z->Op >= 0x60 && Z->Op <= 0xaf) { SgFrml(Z->P1, Sg, SgF); break; }
+	//		if (Z->Op >= 0xb0 && Z->Op <= 0xef) { SgFrml(Z->P1, Sg, SgF); SgFrml(Z->P2, Sg, SgF); break; }
+	//		if (Z->Op >= 0xf0 && Z->Op <= 0xff) { SgFrml(Z->P1, Sg, SgF); SgFrml(Z->P2, Sg, SgF); SgFrml(Z->P3, Sg, SgF); break; }
+	//	}
+	//	}
+	//}
 }
 
 void WrFDSegment(longint RecNr)
@@ -620,52 +620,55 @@ FileD* FileD_FromSegment(LongStr* ss) {
 
 FrmlElem* createFrmlElemFromStr(BYTE* str, uintptr_t address, std::map<uintptr_t, FieldDescr*>* mFields)
 {
-	FrmlElem* frml = new FrmlElem();
+	FrmlElem* frml = nullptr;
 	WORD nextItemIndex = address & 0x0000FFFF;
 	BYTE Op = str[nextItemIndex];
-	frml->Op = Op;
+	//frml->Op = Op;
 	if (Op == _field)
 	{
 		auto fDescAddress = *(uintptr_t*)&str[nextItemIndex + 1];
 		auto it = mFields->find(fDescAddress);
 		if (it == mFields->end()) throw std::exception("Field wasn't found.");
-		frml->Field = it->second;
+		frml = new FrmlElem7(Op, 0);
+		((FrmlElem7*)frml)->Field = it->second;
 	}
 	else if (Op == _access)
 	{
-		if (frml->LD != nullptr) frml->LD = new LinkD();
-		frml->File2 = GetFD(frml->File2, frml->File2 != nullptr, address); // tady bude adresa segmentu - tedy bez offsetu asi
+		auto frml7 = new FrmlElem7(Op, 0);
+		if (frml7->LD != nullptr) frml7->LD = new LinkD();
+		frml7->File2 = GetFD(frml7->File2, frml7->File2 != nullptr, address); // tady bude adresa segmentu - tedy bez offsetu asi
+		return frml7;
 		// nedopsáno
 	}
 	else if (Op == _userfunc)
 	{
-		frml->FC = GetFC(frml->FC, address);
-		FrmlListEl* fl = frml->FrmlL;
-		while (fl->Chain != nullptr)
-		{
-			fl->Chain = (FrmlListEl*)fl->Chain;
-			fl->Frml = createFrmlElemFromStr(str, address, mFields); // taky nesmysl
-		}
+		//frml->FC = GetFC(frml->FC, address);
+		//FrmlListEl* fl = frml->FrmlL;
+		//while (fl->Chain != nullptr)
+		//{
+		//	fl->Chain = (FrmlListEl*)fl->Chain;
+		//	fl->Frml = createFrmlElemFromStr(str, address, mFields); // taky nesmysl
+		//}
 	}
 	else if (Op == _owned)
 	{
-		frml->ownLD = GetLinkD(frml->ownLD, address);
-		// nedopsáno
+		//frml->ownLD = GetLinkD(frml->ownLD, address);
+		//// nedopsáno
 	}
 	else if (Op >= 0x60 && Op <= 0xAF)
 	{
-		frml->P1 = createFrmlElemFromStr(str, *(uintptr_t*)&str[nextItemIndex + 1], mFields);
+		//frml->P1 = createFrmlElemFromStr(str, *(uintptr_t*)&str[nextItemIndex + 1], mFields);
 	}
 	else if (Op >= 0xB0 && Op <= 0xEF)
 	{
-		frml->P1 = createFrmlElemFromStr(str, *(uintptr_t*)&str[nextItemIndex + 1], mFields);
-		frml->P2 = createFrmlElemFromStr(str, *(uintptr_t*)&str[nextItemIndex + 5], mFields);
+		/*frml->P1 = createFrmlElemFromStr(str, *(uintptr_t*)&str[nextItemIndex + 1], mFields);
+		frml->P2 = createFrmlElemFromStr(str, *(uintptr_t*)&str[nextItemIndex + 5], mFields);*/
 	}
 	else if (Op >= 0xF0 && Op <= 0xFF)
 	{
-		frml->P1 = createFrmlElemFromStr(str, *(uintptr_t*)&str[nextItemIndex + 1], mFields);
+		/*frml->P1 = createFrmlElemFromStr(str, *(uintptr_t*)&str[nextItemIndex + 1], mFields);
 		frml->P2 = createFrmlElemFromStr(str, *(uintptr_t*)&str[nextItemIndex + 5], mFields);
-		frml->P3 = createFrmlElemFromStr(str, *(uintptr_t*)&str[nextItemIndex + 9], mFields);
+		frml->P3 = createFrmlElemFromStr(str, *(uintptr_t*)&str[nextItemIndex + 9], mFields);*/
 	}
 	else
 	{
@@ -702,7 +705,7 @@ void createFileDescrFromStr(FileD* F, uintptr_t firstAddress, BYTE* str)
 		if (frml == nullptr) continue;
 		if ((d.second->Flg & f_Stored) != 0) continue; // opsana podminka z puvodni RdFDSegment();
 		uintptr_t address = (uintptr_t)d.second->Frml;
-		d.second->Frml = new FrmlElem();
+		d.second->Frml = new FrmlElem(0, 0);
 		d.second->Frml = createFrmlElemFromStr(str, address, &mFieldD);
 	}
 }

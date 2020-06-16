@@ -63,7 +63,11 @@ FrmlPtr RdFldNameFrmlR(char& FTyp)
 		result = (FrmlElem*)(&LV->Op); FTyp = LV->FTyp; return result;
 	}
 	if (IsKeyWord("COUNT")) {
-		TestNotSum(); SetIi(); result = (FrmlElem*)(&IDA[Ii]->Op); FTyp = 'R'; return result;
+		TestNotSum();
+		SetIi();
+		result = (FrmlElem*)(&IDA[Ii]->Op);
+		FTyp = 'R';
+		return result;
 	}
 	if (IsKeyWord("GROUP")) {
 		TestNotSum(); if (WasIiPrefix) OldError(41);
@@ -75,8 +79,11 @@ FrmlPtr RdFldNameFrmlR(char& FTyp)
 		n = 2;
 	label1:
 		if ((FrmlSumEl == nullptr) && !WasIiPrefix) {
-			Z = GetOp(_getWORDvar, 1); Z->N01 = n;
-			result = Z; FTyp = 'R'; return result;
+			Z = new FrmlElem1(_getWORDvar, 0); // GetOp(_getWORDvar, 1);
+			((FrmlElem1*)Z)->N01 = n;
+			result = Z;
+			FTyp = 'R';
+			return result;
 		}
 	}
 	if (IsKeyWord("ERROR")) {
@@ -245,7 +252,7 @@ void Err()
 	SetIi();
 	if (IDA[Ii]->ErrTxtFrml == nullptr)
 	{
-		IDA[Ii]->ErrTxtFrml = GetOp(_const, 256);
+		IDA[Ii]->ErrTxtFrml = new FrmlElem4(_const, 0); // GetOp(_const, 256);
 	}
 }
 

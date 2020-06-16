@@ -2,6 +2,7 @@
 #include "access.h"
 #include "editor.h"
 #include "legacy.h"
+#include "models/FrmlElem.h"
 //#include "models/Instr.h"
 
 struct LvDescr;
@@ -75,7 +76,7 @@ struct InpD
 	bool Error;
 	char OpWarn;
 	bool Warning;
-	FrmlPtr ErrTxtFrml;
+	FrmlElem4* ErrTxtFrml = nullptr;
 	KeyFldDPtr SFld;                /* only Report */
 	ConstListEl* OldSFlds;
 	LvDescr* FrstLvS;

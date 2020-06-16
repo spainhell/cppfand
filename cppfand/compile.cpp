@@ -1519,8 +1519,9 @@ FrmlElem* RdComp(char& FTyp)
 			iZ1->N11 = RdPrecision();
 		}
 		else
-		{	TestString(FTyp);
-		Z = new FrmlElem1(_instr, 1); // GetOp(_instr, 1);
+		{
+			TestString(FTyp);
+			Z = new FrmlElem1(_instr, 1); // GetOp(_instr, 1);
 			iZ1->N11 = RdTilde();
 		}
 		iZ0->P1 = Z1;
@@ -1723,6 +1724,10 @@ FrmlElem* RdPrim(char& FTyp)
 
 	switch (Lexem) {
 	case _identifier: {
+		if (InpArrLen == 705 && CurrPos >= 210)
+		{
+			printf("compile.cpp 1728; ");
+		}
 		SkipBlank(false);
 		if (IsFun(R0Fun, LexWord, FunCode))
 		{
@@ -1999,12 +2004,12 @@ FrmlElem* RdPrim(char& FTyp)
 			}
 			else if (IsKeyWord("COPYLINE"))
 			{
-			Z = new FrmlElem0(_copyline, 0); // GetOp(_copyline, 0);
+				Z = new FrmlElem0(_copyline, 0); // GetOp(_copyline, 0);
 				goto label7;
 			}
 			else if (IsKeyWord("REPEATSTR"))
 			{
-			Z = new FrmlElem0(_repeatstr, 0); // GetOp(_repeatstr, 0);
+				Z = new FrmlElem0(_repeatstr, 0); // GetOp(_repeatstr, 0);
 			label7:
 				RdLex();
 				((FrmlElem0*)Z)->P1 = RdAdd(Typ);
@@ -2073,7 +2078,7 @@ FrmlElem* RdPrim(char& FTyp)
 	}
 	case '-': {
 		RdLex();
-			if (Lexem == '-') Error(7);
+		if (Lexem == '-') Error(7);
 		Z = new FrmlElem0(_unminus, 0); // GetOp(_unminus, 0);
 		((FrmlElem0*)Z)->P1 = RdPrim(FTyp);
 		TestReal(FTyp);

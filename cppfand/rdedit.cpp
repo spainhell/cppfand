@@ -16,7 +16,7 @@ void PushEdit()
 	{
 		E1->V.C1 = 1; E1->V.R1 = 2; E1->V.C2 = TxtCols; E1->V.R2 = TxtRows - 1;
 	}
-	E1->Chain = E; 
+	E1->Chain = E;
 	E = E1;
 }
 
@@ -26,8 +26,8 @@ StringListEl* SToSL(Chained* SLRoot, pstring s)
 	StringListEl* SL = new StringListEl();
 	SL->S = s;
 	if (SLRoot == nullptr) return SL;
-	else { 
-		ChainLast((Chained*)SLRoot, SL); 
+	else {
+		ChainLast((Chained*)SLRoot, SL);
 		return (StringListEl*)SLRoot;
 	}
 }
@@ -40,8 +40,8 @@ ERecTxtD* StoreRT(WORD Ln, StringList SL, WORD NFlds)
 	RT->N = Ln;
 	RT->SL = SL;
 	if (E->RecTxt == nullptr) return RT;
-	else { 
-		ChainLast(E->RecTxt, RT); 
+	else {
+		ChainLast(E->RecTxt, RT);
 		return E->RecTxt;
 	}
 
@@ -49,11 +49,11 @@ ERecTxtD* StoreRT(WORD Ln, StringList SL, WORD NFlds)
 
 void RdEForm(FileD* ParFD, RdbPos FormPos)
 {
-	EFldD* D = nullptr; EFldD* D1 = nullptr; EFldD* PrevD = nullptr; 
-	FieldDescr* F = nullptr; FieldListEl* FL = nullptr; 
+	EFldD* D = nullptr; EFldD* D1 = nullptr; EFldD* PrevD = nullptr;
+	FieldDescr* F = nullptr; FieldListEl* FL = nullptr;
 	FileD* FD1 = nullptr;
 	StringListEl* SLRoot = nullptr;
-	pstring s; 
+	pstring s;
 	WORD NPages = 0, Col = 0, Ln = 0, Max = 0, M = 0, N = 0, NFlds = 0, i = 0;
 	bool comment = false; char c = '\0'; BYTE a = 0;
 	SetInpTT(FormPos, true);
@@ -61,7 +61,7 @@ label1:
 	s = "";
 	while (!(ForwChar == '#' || ForwChar == 0x1A || ForwChar == 0x0D || ForwChar == '{')) {
 		/* read headlines */
-		s.Append(ForwChar); 
+		s.Append(ForwChar);
 		ReadChar();
 	}
 	switch (ForwChar) {
@@ -71,67 +71,67 @@ label1:
 	}
 	ReadChar();
 	if (ForwChar == 0x0A) ReadChar();
-	SToSL(E->HdTxt, s); 
+	SToSL(E->HdTxt, s);
 	E->NHdTxt++;
-	if (E->NHdTxt + 1 > E->Rows) Error(102); 
+	if (E->NHdTxt + 1 > E->Rows) Error(102);
 	goto label1;
 	/* read field list */
 label2:
-	ReadChar(); ReadChar(); 
-	Lexem = CurrChar; 
-	Accept('_'); 
+	ReadChar(); ReadChar();
+	Lexem = CurrChar;
+	Accept('_');
 	FD1 = RdFileName();
-	if (ParFD == nullptr) CFile = FD1; 
+	if (ParFD == nullptr) CFile = FD1;
 	else CFile = ParFD;
 	E->FD = CFile;
 label3:
-	N++; 
+	N++;
 	//D = (EFldD*)GetZStore(sizeof(*D));
 	D = new EFldD();
 	if (Lexem == _number) {
-		M = RdInteger(); 
-		if (M == 0) OldError(115); 
-		Accept(':'); 
+		M = RdInteger();
+		if (M == 0) OldError(115);
+		Accept(':');
 		D->ScanNr = M;
 	}
 	else D->ScanNr = N;
-	D1 = FindScanNr(D->ScanNr); 
+	D1 = FindScanNr(D->ScanNr);
 	if (E->FirstFld == nullptr) E->FirstFld = D;
 	else ChainLast(E->FirstFld, D);
 	if ((D1 != nullptr) && (D->ScanNr == D1->ScanNr)) Error(77);
-	F = RdFldName(CFile); 
+	F = RdFldName(CFile);
 	D->FldD = F;
 	//FL = (FieldListEl*)GetStore(sizeof(*FL));
 	FL = new FieldListEl();
-	FL->FldD = F; 
+	FL->FldD = F;
 	if (E->Flds == nullptr) E->Flds = FL;
 	else ChainLast(E->Flds, FL);
 	if (Lexem == ',') { RdLex(); goto label3; }
-	TestLex(';'); 
+	TestLex(';');
 	SkipBlank(true);
 	/* read record lines */
-	D = E->FirstFld; 
+	D = E->FirstFld;
 	NPages = 0;
 label4:
 	NPages++; Ln = 0; NFlds = 0; SLRoot = nullptr;
 label5:
-	s = ""; Ln++; 
+	s = ""; Ln++;
 	Col = E->FrstCol;
 	while (!(ForwChar == 0x0D || ForwChar == 0x1A || ForwChar == '\\' || ForwChar == '{'))
 		if (ForwChar == '_') {
 			if (D == nullptr) Error(30); NFlds++;
 			D->Col = Col; D->Ln = Ln; D->Page = NPages; M = 0;
 			while (ForwChar == '_') {
-				s.Append(' '); 
-				M++; Col++; 
+				s.Append(' ');
+				M++; Col++;
 				ReadChar();
 			}
-			F = D->FldD; D->L = F->L; 
+			F = D->FldD; D->L = F->L;
 			if (F->Typ == 'T') D->L = 1;
 			if ((F->Typ == 'A') && (M < F->L)) D->L = M;
 			else if (M != D->L) {
-				str(D->L, 2, s); 
-				Set2MsgPar(s, F->Name); 
+				str(D->L, 2, s);
+				Set2MsgPar(s, F->Name);
 				Error(79);
 			}
 			if (Col > E->LastCol) Error(102);
@@ -139,14 +139,14 @@ label5:
 		}
 		else {
 			if (!SetStyleAttr(ForwChar, a)) {
-				if (Col > E->LastCol) Error(102); 
+				if (Col > E->LastCol) Error(102);
 				Col++;
 			}
-			s.Append(ForwChar); 
+			s.Append(ForwChar);
 			ReadChar();
 		}
-	SToSL(SLRoot, s); 
-	c = ForwChar; 
+	SToSL(SLRoot, s);
+	c = ForwChar;
 	if (c == '\\') ReadChar();
 	SkipBlank(true);
 	if (ForwChar != 0x1A) {
@@ -156,29 +156,30 @@ label5:
 		}
 		else goto label5;
 	}
-	StoreRT(Ln, SLRoot, NFlds); 
+	StoreRT(Ln, SLRoot, NFlds);
 	E->NPages = NPages;
 
 	if (D != nullptr) Error(30);
-	D = FindScanNr(1); 
+	D = FindScanNr(1);
 	D->ChainBack = nullptr;
 	for (i = 2; i <= N; i++) {
-		PrevD = D; 
-		D = FindScanNr(D->ScanNr + 1); 
+		PrevD = D;
+		D = FindScanNr(D->ScanNr + 1);
 		D->ChainBack = PrevD;
 	}
-	E->LastFld = D; 
+	E->LastFld = D;
 	PrevD = nullptr;
 	while (D != nullptr) {
-		D->Chain = PrevD; 
-		PrevD = D; 
-		D = D->ChainBack; }
+		D->Chain = PrevD;
+		PrevD = D;
+		D = D->ChainBack;
+	}
 	E->FirstFld = PrevD;
 }
 
 EFldD* FindScanNr(WORD N)
 {
-	EFldD* D = E->FirstFld; 
+	EFldD* D = E->FirstFld;
 	EFldD* D1 = nullptr;
 	WORD M = 0xffff;
 	while (D != nullptr) {
@@ -191,39 +192,39 @@ EFldD* FindScanNr(WORD N)
 void AutoDesign(FieldList FL)
 {
 	WORD NPages = 0, Col = 0, Ln = 0, L = 0, i = 0, m = 0, FldLen = 0, maxcol = 0;
-	pstring s; 
+	pstring s;
 	StringListEl* SLRoot = nullptr;
 	EFldD* D = nullptr; EFldD* PrevD = nullptr; FieldDescr* F = nullptr;
-	D = (EFldD*)(&E->FirstFld); 
+	D = (EFldD*)(&E->FirstFld);
 	PrevD = nullptr;
 	NPages = 1; s = ""; Ln = 0; SLRoot = nullptr;
 	Col = E->FrstCol;
 	maxcol = E->LastCol - E->FrstCol;
 	while (FL != nullptr) {
-		F = FL->FldD; 
+		F = FL->FldD;
 		FL = (FieldListEl*)FL->Chain;
 		if (F == nullptr) continue; // tady to padalo na 1. polozce, protoze ta ma FldD = nullptr
 		//D->Chain = (EFldD*)GetZStore(sizeof(*D)); 
 		D->Chain = new EFldD();
-		D = (EFldD*)D->Chain; 
+		D = (EFldD*)D->Chain;
 		D->ChainBack = PrevD;
 		PrevD = D;
-		D->FldD = F; 
-		D->L = F->L; 
+		D->FldD = F;
+		D->L = F->L;
 		if (D->L > maxcol) D->L = maxcol;
 		if ((E->FD->Typ == 'C') && (D->L > 44)) D->L = 44; /*catalog pathname*/
-		FldLen = D->L; 
+		FldLen = D->L;
 		if (F->Typ == 'T') D->L = 1;
-		L = F->Name.length(); 
+		L = F->Name.length();
 		if (FldLen > L) L = FldLen;
 		if (Col + L > E->LastCol) {
-			SToSL(SLRoot, s); 
-			SToSL(SLRoot, ""); 
+			SToSL(SLRoot, s);
+			SToSL(SLRoot, "");
 			Ln += 2;
 			if (Ln + 2 > E->Rows) {
-				StoreRT(Ln, SLRoot, 1); 
-				NPages++; 
-				Ln = 0; 
+				StoreRT(Ln, SLRoot, 1);
+				NPages++;
+				Ln = 0;
 				SLRoot = nullptr;
 			}
 			Col = E->FrstCol; s = "";
@@ -233,40 +234,40 @@ void AutoDesign(FieldList FL)
 		s = s + F->Name;
 		m = L - F->Name.length() - m;
 		for (i = 1; i <= m + 1; i++) s.Append(' ');
-		D->Col = Col + (L - FldLen + 1) / 2; 
-		D->Ln = Ln + 2; 
+		D->Col = Col + (L - FldLen + 1) / 2;
+		D->Ln = Ln + 2;
 		D->Page = NPages;
 		Col += (L + 1);
 	}
 	SLRoot = SToSL(SLRoot, s);
 	SLRoot = SToSL(SLRoot, "");
-	Ln += 2; 
+	Ln += 2;
 	E->RecTxt = StoreRT(Ln, SLRoot, 1);
-	D->Chain = nullptr; 
-	E->LastFld = D; 
+	D->Chain = nullptr;
+	E->LastFld = D;
 	E->NPages = NPages;
 	if (NPages == 1) { /* !!! with E->RecTxt^ do!!! */
 		auto& er = *E->RecTxt;
 		if (er.N == 2) {
-			E->HdTxt = er.SL; 
+			E->HdTxt = er.SL;
 			er.SL = (StringList)er.SL->Chain;
 			E->HdTxt->Chain = nullptr;
-			E->NHdTxt = 1; 
-			er.N = 1; 
+			E->NHdTxt = 1;
+			er.N = 1;
 			D = E->FirstFld;
-			while (D != nullptr) { 
-				D->Ln--; 
-				D = (EFldD*)D->Chain; 
+			while (D != nullptr) {
+				D->Ln--;
+				D = (EFldD*)D->Chain;
 			}
-			if (E->Rows == 1) { 
-				E->NHdTxt = 0; 
-				E->HdTxt = nullptr; 
+			if (E->Rows == 1) {
+				E->NHdTxt = 0;
+				E->HdTxt = nullptr;
 			}
 		}
 		else if (er.N < E->Rows) {
-			s = ""; 
+			s = "";
 			for (i = E->FrstCol; i <= E->LastCol; i++) s.Append('-');
-			SToSL(er.SL, s); 
+			SToSL(er.SL, s);
 			er.N++;
 		}
 	}
@@ -281,23 +282,23 @@ void RdFormOrDesign(FileD* F, FieldList FL, RdbPos FormPos)
 	}
 	E->Rows = E->LastRow - E->FrstRow + 1;
 	if (FL == nullptr) {
-		ResetCompilePars(); 
-		RdEForm(F, FormPos); 
+		ResetCompilePars();
+		RdEForm(F, FormPos);
 		E->IsUserForm = true;
 	}
 	else {
-		E->FD = F; 
-		E->Flds = FL; 
+		E->FD = F;
+		E->Flds = FL;
 		AutoDesign(FL);
 	}
 }
 
 void NewEditD(FileD* ParFD, EditOpt* EO)
 {
-	EFldD* D = nullptr; 
-	FieldList FL = nullptr; 
+	EFldD* D = nullptr;
+	FieldList FL = nullptr;
 	void* p = nullptr;
-	WORD i = 0; pstring s; 
+	WORD i = 0; pstring s;
 	FieldDescr* F = nullptr;
 	bool b = false, b2 = false, F2NoUpd = false;
 	PushEdit(); MarkStore2(p);
@@ -341,20 +342,20 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 		}
 	}
 	else {
-		if (E->WithBoolDispl) E->V.R1 = 3; 
+		if (E->WithBoolDispl) E->V.R1 = 3;
 		if (E->Mode24) E->V.R2--;
 	}
 	RdFormOrDesign(ParFD, EO->Flds, EO->FormPos);
 	if (E->NPages > 1) { E->NRecs = 1; }
 	else { E->NRecs = (E->Rows - E->NHdTxt) / E->RecTxt->N; }
-	E->BaseRec = 1; 
+	E->BaseRec = 1;
 	E->IRec = 1;
-	CFld = E->FirstFld; 
+	CFld = E->FirstFld;
 	E->FirstEmptyFld = E->FirstFld;
-	E->ChkSwitch = true; 
+	E->ChkSwitch = true;
 	E->WarnSwitch = true;
-	CFile = E->FD; 
-	CRecPtr = GetRecSpace(); 
+	CFile = E->FD;
+	CRecPtr = GetRecSpace();
 	E->OldRecPtr = CRecPtr;
 #ifdef FandSQL
 	if (CFile->IsSQLFile) SetTWorkFlag;
@@ -364,12 +365,12 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 		E->Journal = nullptr; E->KIRoot = nullptr;
 	}
 	else {
-		CRecPtr = GetRecSpace(); 
+		CRecPtr = GetRecSpace();
 		E->NewRecPtr = CRecPtr;
 #ifdef FandSQL
 		if (CFile->IsSQLFile) SetTWorkFlag;
 #endif
-		E->AddSwitch = true; 
+		E->AddSwitch = true;
 		E->Cond = RunEvalFrml(EO->Cond);
 		E->RefreshDelay = RunWordImpl(EO->RefreshDelayZ, spec.RefreshDelay) * 18;
 		E->SaveAfter = RunWordImpl(EO->SaveAfterZ, spec.UpdCount);
@@ -381,12 +382,12 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 			if (E->VK == nullptr) E->VK = E->DownKey;
 			switch (E->OwnerTyp) {
 			case 'r': E->DownRecPtr = E->DownLV->RecPtr; break;
-			case 'F': { 
+			case 'F': {
 				E->OwnerRecNo = RunInt(FrmlPtr(EO->DownLV));
-				CFile = E->DownLD->ToFD; 
-				E->DownRecPtr = GetRecSpace(); 
-				CFile = E->FD; 
-				break; 
+				CFile = E->DownLD->ToFD;
+				E->DownRecPtr = GetRecSpace();
+				CFile = E->FD;
+				break;
 			}
 			}
 		}
@@ -399,19 +400,19 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 			else if (!EquKFlds(E->SelKey->KFlds, E->VK->KFlds)) RunError(663);
 	}
 	if (EO->StartFieldZ != nullptr) {
-		s = TrailChar(' ', RunShortStr(EO->StartFieldZ)); 
+		s = TrailChar(' ', RunShortStr(EO->StartFieldZ));
 		D = E->FirstFld;
 		while (D != nullptr) {
-			if (SEquUpcase(D->FldD->Name, s)) E->StartFld = D; 
+			if (SEquUpcase(D->FldD->Name, s)) E->StartFld = D;
 			D = (EFldD*)D->Chain;
 		}
 	}
 	E->WatchDelay = RunInt(EO->WatchDelayZ) * 18;
 	if (EO->Head == nullptr) { E->Head = StandardHead(); }
 	else E->Head = GetStr_E(EO->Head);
-	E->Last = GetStr_E(EO->Last); 
+	E->Last = GetStr_E(EO->Last);
 	E->AltLast = GetStr_E(EO->AltLast);
-	E->CtrlLast = GetStr_E(EO->CtrlLast); 
+	E->CtrlLast = GetStr_E(EO->CtrlLast);
 	E->ShiftLast = GetStr_E(EO->ShiftLast);
 	F2NoUpd = E->OnlyTabs && (EO->Tab == nullptr) && !EO->NegTab && E->OnlyAppend;
 	/* END WITH */
@@ -419,22 +420,22 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 	D = E->FirstFld;
 	while (D != nullptr) {
 		E->NFlds++; F = D->FldD;
-		b = FieldInList(F, EO->Tab); 
+		b = FieldInList(F, EO->Tab);
 		if (EO->NegTab) b = !b;
 		if (b) { D->Tab = true; E->NTabsSet++; }
-		b2 = FieldInList(F, EO->NoEd); 
+		b2 = FieldInList(F, EO->NoEd);
 		if (EO->NegNoEd) b2 = !b2;
 		D->EdU = !(b2 || E->OnlyTabs && !b);
 		D->EdN = F2NoUpd;
 		if (((F->Flg & f_Stored) != 0) && D->EdU) E->NEdSet++;
-		b = FieldInList(F, EO->Dupl); 
+		b = FieldInList(F, EO->Dupl);
 		if (EO->NegDupl) b = !b;
 		if (b && ((F->Flg & f_Stored) != 0)) D->Dupl = true;
 		if (b || ((F->Flg & f_Stored) != 0)) E->NDuplSet++;
 		D = (EFldD*)D->Chain;
 	}
 	if (E->OnlyTabs && (E->NTabsSet == 0)) {
-		E->NoDelete = true; 
+		E->NoDelete = true;
 		if (!E->OnlyAppend) E->NoCreate = true;
 	}
 	RdDepChkImpl();
@@ -453,7 +454,7 @@ label1:
 
 void ZeroUsed()
 {
-	EFldD* D = E->FirstFld; 
+	EFldD* D = E->FirstFld;
 	while (D != nullptr) { D->Used = false; D = (EFldD*)D->Chain; };
 }
 
@@ -505,32 +506,36 @@ void TestedFlagOff()
 void SetFrmlFlags(FrmlPtr Z)
 {
 	KeyFldDPtr Arg; FrmlList fl;
+	auto iZ0 = (FrmlElem0*)Z;
+	auto iZ7 = (FrmlElem7*)Z;
 	if (Z == nullptr) return;
 	switch (Z->Op) {
-	case _field: SetFlag(Z->Field); break;
+	case _field: SetFlag(iZ7->Field); break;
 	case _access: {
-		if (Z->LD != nullptr)
+		if (iZ7->LD != nullptr)
 		{
-			Arg = Z->LD->Args;
+			Arg = iZ7->LD->Args;
 			while (Arg != nullptr) { SetFlag(Arg->FldD); Arg = (KeyFldD*)Arg->Chain; }
 		}
 		break;
 	}
 	case _userfunc: {
-		fl = Z->FrmlL; while (fl != nullptr) {
-			SetFrmlFlags(fl->Frml); fl = (FrmlListEl*)fl->Chain;
+		fl = ((FrmlElem19*)Z)->FrmlL;
+		while (fl != nullptr) {
+			SetFrmlFlags(fl->Frml);
+			fl = (FrmlListEl*)fl->Chain;
 		}
 		break;
 	}
 	default: {
-		if (Z->Op >= 0x60 && Z->Op <= 0xaf) /*1-ary*/ SetFrmlFlags(Z->P1);
+		if (Z->Op >= 0x60 && Z->Op <= 0xaf) /*1-ary*/ SetFrmlFlags(iZ0->P1);
 		if (Z->Op >= 0xB0 && Z->Op <= 0xEf) /*2-ary*/
 		{
-			SetFrmlFlags(Z->P1); SetFrmlFlags(Z->P2);
+			SetFrmlFlags(iZ0->P1); SetFrmlFlags(iZ0->P2);
 		}
 		if (Z->Op >= 0xF0 && Z->Op <= 0xFf) /*3-ary*/ {
-			SetFrmlFlags(Z->P1); SetFrmlFlags(Z->P2);
-			SetFrmlFlags(Z->P3);
+			SetFrmlFlags(iZ0->P1); SetFrmlFlags(iZ0->P2);
+			SetFrmlFlags(iZ0->P3);
 		}
 		break;
 	}
@@ -624,10 +629,10 @@ void RdAllUDLIs(FileD* FD)
 
 pstring StandardHead()
 {
-	pstring s; 
+	pstring s;
 	pstring c(59);
 	c = "          ______                                 __.__.____";
-	if (E->ViewName != nullptr) s = *E->ViewName; 
+	if (E->ViewName != nullptr) s = *E->ViewName;
 	else if (E->EdRecVar) s = "";
 	else {
 		s = E->FD->Name;

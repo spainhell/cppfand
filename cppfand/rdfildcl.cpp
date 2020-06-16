@@ -136,10 +136,11 @@ ChkD* RdChkD(WORD Low)
 	else {
 		N = Upper - Low;
 		if (N > sizeof(pstring)) N = pred(sizeof(pstring));
-		Z = GetOp(_const, N + 1); 
+		Z = new FrmlElem4(_const, 0); // GetOp(_const, N + 1);
 		C->TxtZ = Z;
-		Z->S[0] = char(N); 
-		Move(&InpArrPtr[Low], &Z->S[1], N);
+		auto iZ = (FrmlElem4*)Z;
+		iZ->S[0] = char(N);
+		Move(&InpArrPtr[Low], &iZ->S[1], N);
 	}
 	if (Lexem == ',') {
 		RdLex(); C->HelpName = RdHelpName();

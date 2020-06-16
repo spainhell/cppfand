@@ -526,7 +526,6 @@ KeyD* RdViewKeyImpl(FileD* FD)
 
 void RdSelectStr(FrmlElem0* Z)
 {
-	// TODO: nema to neco vracet?!
 	Z->Delim = 0x0D; // CTRL+M
 	Z->P1 = RdRealFrml(); Accept(',');
 	Z->P2 = RdRealFrml(); Accept(',');

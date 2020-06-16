@@ -477,7 +477,7 @@ bool RunBool(FrmlPtr X)
 		break;
 	}
 	case _eval: {
-		MarkStore(p); result = RunBool(GetEvalFrml(X));
+		MarkStore(p); result = RunBool(GetEvalFrml((FrmlElem21*)X));
 		ReleaseStore(p);
 		break;
 	}
@@ -693,7 +693,12 @@ label1:
 		CRecPtr = cr;
 		break;
 	}
-	case _eval: { MarkStore(p); result = RunReal(GetEvalFrml(X));	ReleaseStore(p); break; }
+	case _eval: {
+			MarkStore(p);
+			result = RunReal(GetEvalFrml((FrmlElem21*)X));
+			ReleaseStore(p);
+			break;
+	}
 	case _divide: {
 		result = RunReal(iX0->P1) / RunReal(iX0->P2);
 		break;
@@ -871,8 +876,8 @@ void TestTFrml(FieldDescr* F, FrmlElem* Z)
 	case _field: {
 		auto iZ = (FrmlElem7*)Z;
 		f1 = iZ->Field;
-		if ((f1->Typ != 'T') || (f1->Flg && f_Stored == 0)) return;
-		if (F == nullptr) { if (f1->Flg && f_Encryp != 0) return; }
+		if ((f1->Typ != 'T') || ((f1->Flg & f_Stored) == 0)) return;
+		if (F == nullptr) { if ((f1->Flg & f_Encryp) != 0) return; }
 		else if ((F->Flg & f_Encryp) != (f1->Flg & f_Encryp)) return;
 		TFD02 = CFile; TF02 = CFile->TF;
 		if (HasTWorkFlag()) TF02 = &TWork;
@@ -1069,7 +1074,7 @@ KeyDPtr GetFromKey(LinkDPtr LD)
 
 FrmlPtr RunEvalFrml(FrmlPtr Z)
 {
-	if ((Z != nullptr) && ((BYTE)Z->Op == _eval)) Z = GetEvalFrml(Z);
+	if ((Z != nullptr) && ((BYTE)Z->Op == _eval)) Z = GetEvalFrml((FrmlElem21*)Z);
 	return Z;
 }
 
@@ -1129,7 +1134,7 @@ label1:
 	}
 	case _eval: {
 		MarkStore(p);
-		S = RunLongStr(GetEvalFrml(X)); MyMove(S, p, S->LL + 2);
+		S = RunLongStr(GetEvalFrml((FrmlElem21*)X)); MyMove(S, p, S->LL + 2);
 		ReleaseAfterLongStr(p); result = (LongStr*)p;
 		break;
 	}
