@@ -674,7 +674,7 @@ void SortAndSubst(KeyFldD* SK)
 	ReleaseStore(p);
 }
 
-void GetIndex(Instr_getindex* PD)
+void GetIndexSort(Instr_getindex* PD)
 {
 	XScan* Scan = nullptr; void* p = nullptr; LocVar* lv = nullptr;
 	LocVar* lv2 = nullptr; XWKey* kNew = nullptr; XWKey* k = nullptr; longint nr = 0;

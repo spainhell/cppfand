@@ -421,29 +421,9 @@ struct TypAndFrml
 class Instr : public Chained// POZOR konflikt názvù viz níže
 {
 public:
+	Instr(PInstrCode kind);
 	//Instr* Chain = nullptr;
 	PInstrCode Kind;
-		
-	WRectFrml W2; FrmlPtr Attr2, FillC;
-	FileDPtr CFD; KeyDPtr CKey; LocVar* CVar, CRecVar;
-	KeyInD* CKIRoot; FrmlPtr CBool/*or SQLTxt*/; Instr* CInstr;
-	LinkDPtr CLD; bool CWIdx, inSQL, CSQLFilter, CProcent;
-	char COwnerTyp; LocVar* CLV;
-	Instr* WDoInstr; Instr* WElseInstr; bool WasElse; LockD WLD;
-	GraphD* GD;
-	FrmlPtr Par1, Par2, Par3, Par4, Par5, Par6, Par7, Par8, Par9, Par10, Par11;
-	WORD BrCatIRec; bool IsBackup, NoCompress, BrNoCancel;
-	BYTE bmX[5];
-	FrmlPtr bmDir; FrmlPtr bmMasks; /*backup only*/
-	bool bmSubDir, bmOverwr;
-	FileDPtr clFD;
-	FrmlPtr Insert, Indent, Wrap, Just, ColBlk, Left, Right;
-	FrmlPtr MouseX, MouseY, Show;
-	FileDPtr cfFD; pstring* cfPath; WORD cfCatIRec;
-	FrmlPtr liName, liPassWord;
-	pstring* TxtPath2; WORD TxtCatIRec2; bool IsRead;
-	FileDPtr sqlFD; KeyDPtr sqlKey; FieldDPtr sqlFldD; FrmlPtr sqlXStr;
-	FrmlPtr IsWord, Port, PortWhat;
 };
 
 extern ConstListEl* OldMFlds;

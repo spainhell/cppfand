@@ -258,7 +258,7 @@ label1:
 	ReleaseStore(p);
 }
 
-void ClrWwProc(Instr* PD)
+void ClrWwProc(Instr_clrww* PD)
 {
 	WRect v; WORD a = 0; pstring s; char c = '\0';
 	RunWFrml(PD->W2, 0, v);
@@ -557,7 +557,7 @@ void LinkRecProc(Instr_assign* PD)
 	ReleaseStore(p); CFile = cf; CRecPtr = cr;
 }
 
-void ForAllProc(Instr* PD)
+void ForAllProc(Instr_forall* PD)
 {
 	FileDPtr FD = nullptr; KeyDPtr Key = nullptr, k = nullptr; FrmlPtr Bool = nullptr;
 	LinkDPtr LD = nullptr; KeyInD* KI = nullptr;
@@ -568,7 +568,7 @@ void ForAllProc(Instr* PD)
 #ifdef FandSQL
 	bool sql;
 #endif
-	MarkStore(p); FD = PD->CFD; Key = PD->CKey; LVi = PD->CVar; LVr = &PD->CRecVar;
+	MarkStore(p); FD = PD->CFD; Key = PD->CKey; LVi = PD->CVar; LVr = PD->CRecVar;
 	LD = PD->CLD; KI = PD->CKIRoot; Bool = RunEvalFrml(PD->CBool); lk = false;
 #ifdef FandSQL
 	if (PD->inSQL && !FD->IsSQLFile) return;
@@ -696,7 +696,7 @@ void WithWindowProc(Instr_window* PD)
 	ProcAttr = PAttr;
 }
 
-void WithLockedProc(Instr* PD)
+void WithLockedProc(Instr_withshared* PD)
 {
 	PInstrCode op; LockD* ld; longint w, w1;
 	WORD msg; pstring ntxt(10); LockMode md;
@@ -865,7 +865,7 @@ void RecallRecProc(Instr_recs* PD)
 	OldLMode(md); ReleaseStore(CRecPtr);
 }
 
-void UnLck(Instr* PD, LockD* Ld1, PInstrCode Op)
+void UnLck(Instr_withshared* PD, LockD* Ld1, PInstrCode Op)
 {
 	LockD* ld;
 	ld = &PD->WLD;
@@ -919,14 +919,14 @@ void RunInstr(Instr* PD)
 			break; }
 		case _menubox: { MenuBoxProc((Instr_menu*)PD); break; }
 		case _menubar: { MenuBarProc((Instr_menu*)PD); break; }
-		case _forall: ForAllProc(PD); break;
+		case _forall: ForAllProc((Instr_forall*)PD); break;
 		case _window: WithWindowProc((Instr_window*)PD); break;
 		case _break: BreakP = true; break;
 		case _exitP: ExitP = true; break;
 		case _cancel: GoExit(); break;
 		case _save: SaveFiles(); break;
 		case _clrscr: { TextAttr = ProcAttr; ClrScr(); break; }
-		case _clrww: ClrWwProc(PD); break;
+		case _clrww: ClrWwProc((Instr_clrww*)PD); break;
 		case _clreol: { TextAttr = ProcAttr; ClrEol(); break; }
 		case _exec: ExecPgm((Instr_exec*)PD); break;
 		case _proc: CallProcedure((Instr_proc*)PD); break;
@@ -986,7 +986,7 @@ void RunInstr(Instr* PD)
 		case _writerec: ReadWriteRecProc(false, (Instr_recs*)PD); break;
 		case _linkrec: LinkRecProc((Instr_assign*)PD); break;
 		case _withshared:
-		case _withlocked: WithLockedProc(PD); break;
+		case _withlocked: WithLockedProc((Instr_withshared*)PD); break;
 		case _edittxt: EditTxtProc((Instr_edittxt*)PD); break;
 		case _printtxt: PrintTxtProc((Instr_edittxt*)PD); break;
 		case _puttxt: PutTxt((Instr_puttxt*)PD); break;
@@ -1038,23 +1038,36 @@ void RunInstr(Instr* PD)
 		case _putpixel: case _line: case _rectangle: case _ellipse:
 		case _floodfill: {DrawProc outtextxy(PD); break; }
 #endif
-		case _withgraphics: WithGraphicsProc(PD->WDoInstr);
+		case _withgraphics: WithGraphicsProc(((Instr_withshared*)PD)->WDoInstr);
 #ifndef FandRunV
 		case _memdiag: MemDiagProc();
 #endif 
 		case _closefds: {
-			CFile = PD->clFD;
+			CFile = ((Instr_closefds*)PD)->clFD;
 			if (CFile == nullptr) ForAllFDs(ClosePassiveFD);
 			else if (!CFile->IsShared() || (CFile->LMode == NullMode)) CloseFile();
 			break;
 		}
-		case _backup: Backup(PD->IsBackup, PD->NoCompress, PD->BrCatIRec, PD->BrNoCancel); break;
-		case _backupm: BackupM(PD); break;
+		case _backup: {
+			auto iPD = (Instr_backup*)PD;
+			Backup(iPD->IsBackup, iPD->NoCompress, iPD->BrCatIRec, iPD->BrNoCancel);
+			break;
+		}
+		case _backupm: BackupM((Instr_backup*)PD); break;
 		case _resetcat: ResetCatalog(); break;
 		case _setedittxt: { SetEditTxt(PD); break; }
-						//case _getindex: { GetIndex(); break; }
-		case _setmouse: SetMouse(RunInt(PD->MouseX), RunInt(PD->MouseY), RunBool(PD->Show)); break;
-		case _checkfile: { SetTxtPathVol(*PD->cfPath, PD->cfCatIRec); CheckFile(PD->cfFD); break; }
+		case _getindex: { GetIndexSort((Instr_getindex*)PD); break; }
+		case _setmouse: {
+			auto iPD = (Instr_setmouse*)PD;
+			SetMouse(RunInt(iPD->MouseX), RunInt(iPD->MouseY), RunBool(iPD->Show));
+			break;
+		}
+		case _checkfile: {
+			auto iPD = (Instr_checkfile*)PD;
+			SetTxtPathVol(*iPD->cfPath, iPD->cfCatIRec);
+			CheckFile(iPD->cfFD);
+			break;
+		}
 #ifdef FandSQL
 		case _sql: SQLProc(PD->Frml); break;
 		case _login: /* !!! with PD^ do!!! */ StartLogIn(liName, liPassWord); break;
@@ -1064,14 +1077,15 @@ void RunInstr(Instr* PD)
 		case _randomize: Random(); break;
 		case _asgnxnrecs: ((Instr_assign*)PD)->xnrIdx->Release(); break;
 		case _portout: {
-			PortOut(RunBool(PD->IsWord),
-				WORD(RunInt(PD->Port)),
-				WORD(RunInt(PD->PortWhat)));
+			auto iPD = (Instr_portout*)PD;
+			PortOut(RunBool(iPD->IsWord),
+				WORD(RunInt(iPD->Port)),
+				WORD(RunInt(iPD->PortWhat)));
 			break;
 		}
-		}
-		PD = (Instr*)PD->Chain;
 	}
+		PD = (Instr*)PD->Chain;
+}
 }
 
 void RunProcedure(void* PDRoot)

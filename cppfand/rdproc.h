@@ -18,7 +18,7 @@ FileD* RdPath(bool NoFD, pstring** Path, WORD& CatIRec);
 FrmlPtr RdFunctionP(char& FFTyp);
 KeyD* RdViewKeyImpl(FileD* FD);
 void RdSelectStr(FrmlPtr Z);
-Instr* GetPInstr(PInstrCode Kind, WORD Size);
+//Instr* GetPInstr(PInstrCode Kind, WORD Size);
 
 Instr* RdPInstr(); // hlavní funkce
 
@@ -32,7 +32,7 @@ Instr_loops* RdWhileDo();
 Instr* RdFor();
 Instr* RdCase();
 Instr_loops* RdRepeatUntil();
-Instr* RdForAll();
+Instr_forall* RdForAll();
 Instr* RdBeginEnd();
 Instr_proc* RdProcArg(char Caller);
 void RdKeyCode(EdExitD* X);

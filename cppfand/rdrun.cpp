@@ -34,6 +34,11 @@ bool EFldD::Ed(bool IsNewRec)
 	return (FldD->Flg && f_Stored != 0) && (EdU || IsNewRec && EdN);
 }
 
+Instr::Instr(PInstrCode kind)
+{
+	this->Kind = kind;
+}
+
 void ResetLVBD()
 {
 	//FillChar(&LVBD, sizeof(LVBD), 0); 

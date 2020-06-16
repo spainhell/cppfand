@@ -2,6 +2,7 @@
 #include "constants.h"
 #include "rdrun.h"
 
+class Instr_backup;
 
 bool OldToNewCat(longint& FilSz);
 
@@ -17,7 +18,7 @@ inline void Backup(bool IsBackup, bool NoCompress, WORD Ir, bool NoCancel)
 {
 }
 
-inline void BackupM(Instr* PD)
+inline void BackupM(Instr_backup* PD)
 {
 }
 

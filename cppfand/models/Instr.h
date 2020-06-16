@@ -255,3 +255,134 @@ public:
 	FrmlElem* Top = nullptr;
 	BYTE WithWFlags = 0;
 };
+
+class Instr_clrww : public Instr
+{
+public:
+	Instr_clrww();
+	WRectFrml W2;
+	FrmlElem* Attr2 = nullptr;
+	FrmlElem* FillC = nullptr;
+};
+
+class Instr_forall : public Instr
+{
+public:
+	Instr_forall();
+	FileD* CFD = nullptr;
+	KeyD* CKey = nullptr;
+	LocVar* CVar = nullptr;
+	LocVar* CRecVar = nullptr;
+	KeyInD* CKIRoot = nullptr;
+	FrmlElem* CBool = nullptr; /*or SQLTxt*/
+	Instr* CInstr = nullptr;
+	LinkD* CLD = nullptr;
+	bool CWIdx = false, inSQL = false, CSQLFilter = false, CProcent = false;
+	char COwnerTyp = '\0';
+	LocVar* CLV = nullptr;
+};
+
+class Instr_withshared : public Instr
+{
+public:
+	Instr_withshared(PInstrCode Kind);
+	Instr* WDoInstr = nullptr;
+	Instr* WElseInstr = nullptr;
+	bool WasElse = false;
+	LockD WLD;
+};
+
+class Instr_graph : public Instr
+{
+public:
+	Instr_graph();
+	GraphD* GD = nullptr;
+};
+
+class Instr_putpixel : public Instr
+{
+public:
+	Instr_putpixel(PInstrCode Kind);
+	FrmlElem* Par1 = nullptr;
+	FrmlElem* Par2 = nullptr;
+	FrmlElem* Par3 = nullptr;
+	FrmlElem* Par4 = nullptr;
+	FrmlElem* Par5 = nullptr;
+	FrmlElem* Par6 = nullptr;
+	FrmlElem* Par7 = nullptr;
+	FrmlElem* Par8 = nullptr;
+	FrmlElem* Par9 = nullptr;
+	FrmlElem* Par10 = nullptr;
+	FrmlElem* Par11 = nullptr;
+};
+
+class Instr_backup : public Instr
+{
+public:
+	Instr_backup(PInstrCode Kind);
+	WORD BrCatIRec = 0;
+	bool IsBackup = false, NoCompress = false, BrNoCancel = false;
+	BYTE bmX[5]{ 0 };
+	FrmlElem* bmDir = nullptr; FrmlElem* bmMasks = nullptr; /*backup only*/
+	bool bmSubDir = false, bmOverwr = false;
+};
+
+class Instr_closefds : public Instr
+{
+public:
+	Instr_closefds();
+	FileD* clFD = nullptr;
+};
+
+class Instr_setedittxt : public Instr
+{
+public:
+	Instr_setedittxt();
+	FrmlElem* Insert = nullptr; FrmlElem* Indent = nullptr;
+	FrmlElem* Wrap = nullptr; FrmlElem* Just = nullptr;
+	FrmlElem* ColBlk = nullptr; FrmlElem* Left = nullptr; FrmlElem* Right = nullptr;
+};
+
+class Instr_setmouse : public Instr
+{
+public:
+	Instr_setmouse();
+	FrmlElem* MouseX = nullptr; FrmlElem* MouseY = nullptr; FrmlElem* Show = nullptr;
+};
+
+class Instr_checkfile : public Instr
+{
+public:
+	Instr_checkfile();
+	FileD* cfFD = nullptr;
+	pstring* cfPath = nullptr;
+	WORD cfCatIRec = 0;
+};
+
+class Instr_login : public Instr
+{
+public:
+	Instr_login();
+	FrmlElem* liName = nullptr;
+	FrmlElem* liPassWord = nullptr;
+};
+
+class Instr_sqlrdwrtxt : public Instr
+{
+public:
+	Instr_sqlrdwrtxt();
+	pstring* TxtPath2 = nullptr;
+	WORD TxtCatIRec2 = 0;
+	bool IsRead = false;
+	FileDPtr sqlFD = nullptr; KeyD* sqlKey = nullptr;
+	FieldDPtr sqlFldD = nullptr; FrmlElem* sqlXStr = nullptr;
+};
+
+class Instr_portout : public Instr
+{
+public:
+	Instr_portout();
+	FrmlElem* IsWord = nullptr;
+	FrmlElem* Port = nullptr;
+	FrmlElem* PortWhat = nullptr;
+};
