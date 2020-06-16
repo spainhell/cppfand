@@ -36,7 +36,7 @@ void ForAllProc(Instr* PD);
 void HeadLineProc(FrmlPtr Z);
 void SetKeyBufProc(FrmlPtr Z);
 void SetWwViewPort();
-void WithWindowProc(Instr* PD);
+void WithWindowProc(Instr_window* PD);
 void WithLockedProc(Instr* PD);
 void UnLck(Instr* PD, LockD* Ld1, PInstrCode Op);
 

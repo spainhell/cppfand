@@ -1820,10 +1820,10 @@ void RdClrWw()
 {
 	Instr* PD = GetPD(_clrww, 24);
 	/* !!! with PD^ do!!! */
-	RdW(PD->W);
+	RdW(PD->W2);
 	if (Lexem == ',') {
 		RdLex();
-		if (Lexem != ',') PD->Attr = RdAttr();
+		if (Lexem != ',') PD->Attr2 = RdAttr();
 		if (Lexem == ',') { RdLex(); PD->FillC = RdStrFrml(); }
 	}
 }
@@ -2279,18 +2279,19 @@ Instr_assign* RdAssign()
 
 Instr* RdWith()
 {
-	Instr* P = nullptr; Instr* p2; PInstrCode Op;
+	Instr* P = nullptr; Instr* p2 = nullptr; PInstrCode Op;
 	if (IsKeyWord("WINDOW")) {
-		P = GetPInstr(_window, 29);
+		P = new Instr_window(); //GetPInstr(_window, 29);
+		auto iP = (Instr_window*)P;
 		Accept('(');
-		if (Lexem == '(') { RdLex(); P->WithWFlags = WNoPop; }
-		RdW(P->W);
-		RdFrame(P->Top, P->WithWFlags);
-		if (Lexem == ',') { RdLex(); P->Attr = RdAttr(); }
+		if (Lexem == '(') { RdLex(); iP->WithWFlags = WNoPop; }
+		RdW(iP->W);
+		RdFrame(iP->Top, iP->WithWFlags);
+		if (Lexem == ',') { RdLex(); iP->Attr = RdAttr(); }
 		Accept(')');
-		if ((P->WithWFlags & WNoPop) != 0) Accept(')');
+		if ((iP->WithWFlags & WNoPop) != 0) Accept(')');
 		AcceptKeyWord("DO");
-		P->WwInstr = RdPInstr();
+		iP->WwInstr = RdPInstr();
 	}
 	else if (IsKeyWord("SHARED")) { Op = _withshared; goto label1; }
 	else if (IsKeyWord("LOCKED")) {

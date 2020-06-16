@@ -260,10 +260,13 @@ label1:
 
 void ClrWwProc(Instr* PD)
 {
-	WRect v; WORD a; pstring s; char c;
-	RunWFrml(PD->W, 0, v); a = RunWordImpl(PD->Attr, colors.uNorm); c = ' ';
+	WRect v; WORD a = 0; pstring s; char c = '\0';
+	RunWFrml(PD->W2, 0, v);
+	a = RunWordImpl(PD->Attr2, colors.uNorm);
+	c = ' ';
 	if (PD->FillC != nullptr) {
-		s = RunShortStr(PD->FillC); if (s.length() > 0) c = s[1];
+		s = RunShortStr(PD->FillC);
+		if (s.length() > 0) c = s[1];
 	}
 	screen.ScrClr(v.C1 - 1, v.R1 - 1, v.C2 - v.C1 + 1, v.R2 - v.R1 + 1, c, a);
 }
@@ -675,7 +678,7 @@ void SetWwViewPort()
 #endif
 }
 
-void WithWindowProc(Instr* PD)
+void WithWindowProc(Instr_window* PD)
 {
 	BYTE PAttr = ProcAttr;
 	longint w1 = 0;
@@ -917,7 +920,7 @@ void RunInstr(Instr* PD)
 		case _menubox: { MenuBoxProc((Instr_menu*)PD); break; }
 		case _menubar: { MenuBarProc((Instr_menu*)PD); break; }
 		case _forall: ForAllProc(PD); break;
-		case _window: WithWindowProc(PD); break;
+		case _window: WithWindowProc((Instr_window*)PD); break;
 		case _break: BreakP = true; break;
 		case _exitP: ExitP = true; break;
 		case _cancel: GoExit(); break;

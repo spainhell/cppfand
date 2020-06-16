@@ -121,3 +121,8 @@ Instr_getindex::Instr_getindex()
 	Kind = PInstrCode::_getindex;
 }
 
+Instr_window::Instr_window()
+{
+	Kind = PInstrCode::_window;
+}
+

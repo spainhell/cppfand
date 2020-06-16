@@ -424,8 +424,6 @@ public:
 	//Instr* Chain = nullptr;
 	PInstrCode Kind;
 		
-	WRectFrml W; FrmlPtr Attr; Instr* WwInstr; FrmlPtr Top;
-	BYTE WithWFlags;
 	WRectFrml W2; FrmlPtr Attr2, FillC;
 	FileDPtr CFD; KeyDPtr CKey; LocVar* CVar, CRecVar;
 	KeyInD* CKIRoot; FrmlPtr CBool/*or SQLTxt*/; Instr* CInstr;

@@ -245,3 +245,13 @@ public:
 	LinkD* giLD = nullptr; LocVar* giLV2 = nullptr;
 };
 
+class Instr_window : public Instr
+{
+public:
+	Instr_window();
+	WRectFrml W;
+	FrmlElem* Attr = nullptr;
+	Instr* WwInstr = nullptr;
+	FrmlElem* Top = nullptr;
+	BYTE WithWFlags = 0;
+};
