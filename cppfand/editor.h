@@ -6,6 +6,7 @@
 
 struct Instr;
 struct EdExitD;
+class Instr_setedittxt;
 
 struct MsgStr
 {
@@ -25,7 +26,7 @@ void InitTxtEditor();
 void EditTxtFile(longint* LP, char Mode, pstring& ErrMsg, EdExitD* ExD, longint TxtPos,
 	longint Txtxy, WRect* V, WORD Atr, pstring Hd, BYTE WFlags, MsgStrPtr MsgS);
 void ViewPrinterTxt(); // r353
-void SetEditTxt(Instr* PD);
+void SetEditTxt(Instr_setedittxt* PD);
 void GetEditTxt(bool& pInsert, bool& pIndent, bool& pWrap, bool& pJust, bool& pColBlk,
 	integer& pLeftMarg, integer& pRightMarg); // r162
 void ClearHelpStkForCRdb();

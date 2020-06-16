@@ -1,13 +1,20 @@
 #include "pstring.h"
 
+int strcount = 0;
+int strbytes = 0;
+
 pstring::pstring() : initLen(256)
 {
 	arr = new unsigned char[initLen + 1] { '\0' };
+	strcount++;
+	strbytes += initLen + 1;
 }
 
 pstring::pstring(unsigned char length) : initLen(length + 1)
 {
 	arr = new unsigned char[initLen + 1] { '\0' };
+	strcount++;
+	strbytes += length + 1;
 }
 
 pstring::pstring(const char* text) : initLen(256)
@@ -17,6 +24,8 @@ pstring::pstring(const char* text) : initLen(256)
 	arr = new unsigned char[initLen + 1] { '\0' };
 	arr[0] = (unsigned char)input_len;
 	memcpy((void*)&arr[1], (void*)text, arr[0]);
+	strcount++;
+	strbytes += initLen + 1;
 }
 
 pstring::pstring(const pstring& ps) : initLen(256)
@@ -25,7 +34,9 @@ pstring::pstring(const pstring& ps) : initLen(256)
 	unsigned short copyLen = initLen < ps.initLen ? initLen : ps.initLen;
 	// memcpy((void*)arr, (void*)ps.arr, ps.arr[0] + 1); // kopiruje se 1B a pak delka retezce
 	// kopiruje se vetsi delka (nektere retezce za sebou jeste nesou data) - napr. fce FieldDMask je pak vytahuje
-	memcpy((void*)arr, (void*)ps.arr, copyLen); 
+	memcpy((void*)arr, (void*)ps.arr, copyLen);
+	strcount++;
+	strbytes += initLen + 1;
 }
 
 pstring::pstring(std::string cs) : initLen(256)
@@ -34,6 +45,8 @@ pstring::pstring(std::string cs) : initLen(256)
 	arr = new unsigned char[origLen + 1]{ '\0' };
 	arr[0] = origLen;
 	memcpy(&arr[1], cs.c_str(), origLen);
+	strcount++;
+	strbytes += initLen + 1;
 }
 
 pstring::pstring(char str[], unsigned char i) : initLen(256)
@@ -41,11 +54,16 @@ pstring::pstring(char str[], unsigned char i) : initLen(256)
 	arr = new unsigned char[256]{ '\0' };
 	arr[0] = i;
 	memcpy(&arr[1], str, i);
+	strcount++;
+	strbytes += initLen + 1;
 }
 
 pstring::~pstring()
 {
 	delete[] arr;
+	strcount--;
+	strbytes--;
+	strbytes -= initLen;
 }
 
 unsigned char pstring::length()

@@ -3687,7 +3687,7 @@ void Edit(WORD SuccLineSize)
 	TestUpdFile();
 }
 
-void SetEditTxt(Instr* PD)
+void SetEditTxt(Instr_setedittxt* PD)
 {
 	if (PD->Insert != nullptr) Insert = !RunBool(PD->Insert);
 	if (PD->Indent != nullptr) Indent = RunBool(PD->Indent);

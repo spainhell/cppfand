@@ -1055,7 +1055,7 @@ void RunInstr(Instr* PD)
 		}
 		case _backupm: BackupM((Instr_backup*)PD); break;
 		case _resetcat: ResetCatalog(); break;
-		case _setedittxt: { SetEditTxt(PD); break; }
+		case _setedittxt: { SetEditTxt((Instr_setedittxt*)PD); break; }
 		case _getindex: { GetIndexSort((Instr_getindex*)PD); break; }
 		case _setmouse: {
 			auto iPD = (Instr_setmouse*)PD;
@@ -1083,9 +1083,9 @@ void RunInstr(Instr* PD)
 				WORD(RunInt(iPD->PortWhat)));
 			break;
 		}
-	}
+		}
 		PD = (Instr*)PD->Chain;
-}
+	}
 }
 
 void RunProcedure(void* PDRoot)
@@ -1116,10 +1116,11 @@ void CallProcedure(Instr_proc* PD)
 	n = LVBD.NParam; lvroot = LVBD.Root; oldbp = MyBP; PushProcStk();
 	if ((n != PD->N) && !((n == PD->N - 1) && PD->ExPar)) {
 	label1:
-		CurrPos = 0; Error(119);
+		CurrPos = 0;
+		Error(119);
 	}
 	lv = lvroot;
-	for (i = 1; i < n; i++) /* !!! with PD->TArg[i] do!!! */
+	for (i = 0; i < n; i++) /* !!! with PD->TArg[i] do!!! */
 	{
 		if (PD->TArg[i].FTyp != lv->FTyp) goto label1;
 		switch (PD->TArg[i].FTyp) {
@@ -1127,8 +1128,10 @@ void CallProcedure(Instr_proc* PD)
 		case 'i': { if (lv->FD != PD->TArg[i].FD) goto label1; lv->RecPtr = PD->TArg[i].RecPtr; break; }
 		case 'f': {
 			if (PD->TArg[i].RecPtr != nullptr) {
-				p = SaveCompState(); SetInpLongStr(RunLongStr(PD->TArg[i].TxtFrml), true);
-				RdFileD(PD->TArg[i].Name, '6', '$'); RestoreCompState(p);
+				p = SaveCompState();
+				SetInpLongStr(RunLongStr(PD->TArg[i].TxtFrml), true);
+				RdFileD(PD->TArg[i].Name, '6', '$');
+				RestoreCompState(p);
 			}
 			else CFile = PD->TArg[i].FD;
 			lv1 = lv;
@@ -1136,7 +1139,8 @@ void CallProcedure(Instr_proc* PD)
 				if ((lv1->FTyp == 'i' || lv1->FTyp == 'r') && (lv1->FD == lv->FD)) lv1->FD = CFile;
 				lv1 = (LocVar*)lv1->Chain;
 			}
-			lv->FD = CFile; FDLocVarAllowed = true;
+			lv->FD = CFile;
+			FDLocVarAllowed = true;
 			break;
 		}
 		default: {
@@ -1169,7 +1173,7 @@ void CallProcedure(Instr_proc* PD)
 	while (lv != nullptr) {
 		if (lv->FTyp == 'i') /* !!! with WKeyDPtr(lv->RecPtr)^ do!!! */
 		{
-			auto hX = WKeyDPtr(lv->RecPtr);
+			auto hX = (XWKey*)lv->RecPtr;
 			if (hX->KFlds == nullptr) hX->KFlds = lv->FD->Keys->KFlds;
 			auto tmp = (XWKey*)lv->RecPtr;
 			tmp->Open(hX->KFlds, true, false);

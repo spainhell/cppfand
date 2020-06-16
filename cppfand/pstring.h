@@ -1,6 +1,9 @@
 #pragma once
 #include <string>
 
+extern int strcount;
+extern int strbytes;
+
 class pstring
 {
 public:

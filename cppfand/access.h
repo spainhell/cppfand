@@ -100,7 +100,7 @@ public:
 	FileD* FD = nullptr; // 9 {_lastupdate, _generation}
 	WORD CatIRec = 0; FieldDescr* CatFld = nullptr; // 10 {_catfield}
 	FrmlElem* PPP1 = nullptr; FrmlElem* PP2 = nullptr; FieldDescr* FldD = nullptr; // 11 {_prompt}
-	FrmlElem* PPPP1 = nullptr; FrmlElem* PPP2 = nullptr; FrmlElem* PP3; pstring Options; // 12 {_pos,_replace}
+	FrmlElem* PPPP1 = nullptr; FrmlElem* PPP2 = nullptr; FrmlElem* PP3 = nullptr; pstring Options; // 12 {_pos,_replace}
 	FileD* FFD = nullptr; KeyD* Key = nullptr; FrmlElem* Arg[2]{ nullptr }; // 13 {_recno/typ='R' or'S'/,_recnoabs,_recnolog}
 	FrmlElem* PPPPP1 = nullptr; FileD* RecFD = nullptr; FieldDescr* RecFldD = nullptr; // 14 {_accrecno,_isdeleted}
 	LinkD* LinkLD = nullptr; bool LinkFromRec = false; LocVar* LinkLV = nullptr; FrmlElem* LinkRecFrml = nullptr; // 15 {_link}
@@ -126,10 +126,10 @@ struct KeyInD : public Chained // r89
 
 struct SumElem // r95
 {
-	SumElem* Chain;
-	char Op;
-	double R;
-	FrmlPtr Frml;
+	SumElem* Chain = nullptr;
+	char Op = '\0';
+	double R = 0.0;
+	FrmlElem* Frml = nullptr;
 };
 typedef SumElem* SumElPtr;
 

@@ -1056,9 +1056,10 @@ FrmlPtr RdAttr()
 
 void RdW(WRectFrml& W)
 {
-	W.C1 = RdRealFrml(); Accept(','); W.R1 = RdRealFrml();
-	Accept(',');
-	W.C2 = RdRealFrml(); Accept(','); W.R2 = RdRealFrml();
+	W.C1 = RdRealFrml(); Accept(',');
+	W.R1 = RdRealFrml(); Accept(',');
+	W.C2 = RdRealFrml(); Accept(',');
+	W.R2 = RdRealFrml();
 }
 
 void RdFrame(FrmlPtr Z, BYTE& WFlags)
