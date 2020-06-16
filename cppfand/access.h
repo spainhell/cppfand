@@ -85,32 +85,6 @@ public:
 	FrmlElem(size_t buff_size) { buffer = new BYTE[buff_size]{ 0 }; }
 	~FrmlElem() { delete[] buffer; }
 	BYTE Op = 0;
-	FrmlElem* P1 = nullptr; FrmlElem* P2 = nullptr; FrmlElem* P3 = nullptr; 
-	FrmlElem* P4 = nullptr; FrmlElem* P5 = nullptr; FrmlElem* P6 = nullptr; // 0
-	char Delim = '\0'; // 0
-	BYTE N01 = 0, N02 = 0, N03 = 0, N04 = 0, N11 = 0, N12 = 0, N13 = 0, N14 = 0, N21 = 0, N22 = 0, N23 = 0, N24 = 0, N31 = 0; // 1
-	BYTE W01 = 0, W02 = 0, W11 = 0, W12 = 0, W21 = 0, W22 = 0; // 1
-	double R = 0.0; // 2
-	pstring S; // 4
-	bool B = false; // 5
-	FrmlElem* PP1 = nullptr; pstring Mask; // 6
-	FieldDescr* Field = nullptr; // 7 {_field}
-	FrmlElem* P011 = nullptr; FileD* File2 = nullptr; LinkD* LD = nullptr; // 7  {LD=nil for param} {_access} {LD=RecPtr} {_recvarfld}
-	FrmlElem* Frml = nullptr; FileD* NewFile = nullptr; void* NewRP = nullptr; // 8 {_newfile}
-	FileD* FD = nullptr; // 9 {_lastupdate, _generation}
-	WORD CatIRec = 0; FieldDescr* CatFld = nullptr; // 10 {_catfield}
-	FrmlElem* PPP1 = nullptr; FrmlElem* PP2 = nullptr; FieldDescr* FldD = nullptr; // 11 {_prompt}
-	FrmlElem* PPPP1 = nullptr; FrmlElem* PPP2 = nullptr; FrmlElem* PP3 = nullptr; pstring Options; // 12 {_pos,_replace}
-	FileD* FFD = nullptr; KeyD* Key = nullptr; FrmlElem* Arg[2]{ nullptr }; // 13 {_recno/typ='R' or'S'/,_recnoabs,_recnolog}
-	FrmlElem* PPPPP1 = nullptr; FileD* RecFD = nullptr; FieldDescr* RecFldD = nullptr; // 14 {_accrecno,_isdeleted}
-	LinkD* LinkLD = nullptr; bool LinkFromRec = false; LocVar* LinkLV = nullptr; FrmlElem* LinkRecFrml = nullptr; // 15 {_link}
-	FrmlElem* PPPPPP1 = nullptr; FrmlElem* PPPP2 = nullptr; pstring* TxtPath = nullptr; WORD TxtCatIRec = 0; // 16 {_gettxt,_filesize}
-	WORD BPOfs = 0; // 18 { _getlocvar }
-	FuncD* FC = nullptr; FrmlListEl* FrmlL = nullptr; // 19 { _userfunc }
-	LocVar* LV = nullptr; KeyD* PackKey = nullptr; // 20 { _keyof,_lvdeleted }
-	FrmlElem* EvalP1 = nullptr; char EvalTyp = '\0'; FileD* EvalFD = nullptr; // 21 {_eval}
-	XWKey* WKey = nullptr; // 22 {_indexnrecs}
-	FrmlElem* ownBool = nullptr; FrmlElem* ownSum = nullptr; LinkD* ownLD = nullptr; // 23 { _owned }
 	BYTE* buffer = nullptr;
 };
 typedef FrmlElem* FrmlPtr;

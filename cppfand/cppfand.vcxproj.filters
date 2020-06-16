@@ -120,6 +120,9 @@
     <ClCompile Include="models\Instr.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="models\FrmlElem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base.h">
@@ -234,6 +237,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="models\Instr.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="models\FrmlElem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
