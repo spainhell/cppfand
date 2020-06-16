@@ -335,7 +335,7 @@ label1:
 	else GoExit();
 }
 
-void EditProc(Instr* PD)
+void EditProc(Instr_edit* PD)
 {
 	EdUpdated = false;
 	SaveFiles();
@@ -350,25 +350,30 @@ void EditProc(Instr* PD)
 	delete EO;
 }
 
-void EditTxtProc(Instr* PD)
+void EditTxtProc(Instr_edittxt* PD)
 {
-	longint i; WRect v; WRect* pv = nullptr; BYTE a; longint* lp;
+	longint i = 0; WRect v;
+	WRect* pv = nullptr; BYTE a = 0; longint* lp = nullptr;
 	MsgStr MsgS; void* p = nullptr; pstring msg;
 	MarkStore(p);
-	i = 1; if (PD->TxtPos != nullptr) i = RunInt(PD->TxtPos); EdUpdated = false;
+	i = 1;
+	if (PD->TxtPos != nullptr) i = RunInt(PD->TxtPos);
+	EdUpdated = false;
 	a = RunWordImpl(PD->Atr, 0);
 	pv = nullptr;
 	if (PD->Ww.C1 != nullptr) { RunWFrml(PD->Ww, PD->WFlags, v); pv = &v; }
-	MsgS.Head = GetStr(PD->Head); MsgS.Last = *GetStr(PD->Last);
-	MsgS.CtrlLast = *GetStr(PD->CtrlLast); MsgS.ShiftLast = *GetStr(PD->ShiftLast);
+	MsgS.Head = GetStr(PD->Head);
+	MsgS.Last = *GetStr(PD->Last);
+	MsgS.CtrlLast = *GetStr(PD->CtrlLast);
+	MsgS.ShiftLast = *GetStr(PD->ShiftLast);
 	MsgS.AltLast = *GetStr(PD->AltLast);
 
 	if (PD->TxtLV != nullptr) lp = (longint*)(uintptr_t(MyBP) + PD->TxtLV->BPOfs);
 	else { SetTxtPathVol(*PD->TxtPath, PD->TxtCatIRec); lp = nullptr; }
-	msg = ""; if (PD->ErrMsg != nullptr) msg = RunShortStr(PD->ErrMsg);
+	msg = "";
+	if (PD->ErrMsg != nullptr) msg = RunShortStr(PD->ErrMsg);
 	EditTxtFile(lp, PD->EdTxtMode, msg, PD->ExD, i, RunInt(PD->TxtXY), pv, a, RunShortStr(PD->Hd), PD->WFlags, &MsgS);
 	ReleaseStore(p);
-
 }
 
 pstring* GetStr(FrmlPtr Z)
@@ -379,9 +384,9 @@ pstring* GetStr(FrmlPtr Z)
 	return StoreStr(s);
 }
 
-void PrintTxtProc(Instr* PD)
+void PrintTxtProc(Instr_edittxt* PD)
 {
-	LongStr* s;
+	LongStr* s = nullptr;
 	/* !!! with PD^ do!!! */
 	if (PD->TxtLV != nullptr) {
 		s = TWork.Read(1, *(longint*)(uintptr_t(MyBP) + PD->TxtLV->BPOfs));
@@ -738,27 +743,40 @@ void HelpProc(Instr_help* PD)
 	Help(PD->HelpRdb0, RunShortStr(PD->Frml0), true);
 }
 
-FILE* OpenHForPutTxt(Instr* PD)
+FILE* OpenHForPutTxt(Instr_puttxt* PD)
 {
 	FileOpenMode m; FILE* h;
-	SetTxtPathVol(*PD->TxtPath, PD->TxtCatIRec); TestMountVol(CPath[1]);
-	m = _isoverwritefile; if (PD->App) m = _isoldnewfile;
-	h = OpenH(m, Exclusive); TestCPathError();
+	SetTxtPathVol(*PD->TxtPath1, PD->TxtCatIRec1);
+	TestMountVol(CPath[1]);
+	m = _isoverwritefile;
+	if (PD->App) m = _isoldnewfile;
+	h = OpenH(m, Exclusive);
+	TestCPathError();
 	if (PD->App) SeekH(h, FileSizeH(h));
 	return h;
 }
 
-void PutTxt(Instr* PD)
+void PutTxt(Instr_puttxt* PD)
 {
-	FILE* h; LongStr* s; FrmlPtr z; pstring pth;
-	z = PD->Txt; if (CanCopyT(nullptr, z)) {
-		h = OpenHForPutTxt(PD); pth = CPath; CopyTFStringToH(h); CPath = pth;
+	FILE* h = nullptr; LongStr* s = nullptr;
+	FrmlElem* z = nullptr; pstring pth;
+	z = PD->Txt;
+	if (CanCopyT(nullptr, z)) {
+		h = OpenHForPutTxt(PD);
+		pth = CPath;
+		CopyTFStringToH(h);
+		CPath = pth;
 	}
 	else {
-		s = RunLongStr(z); h = OpenHForPutTxt(PD);
-		WriteH(h, s->LL, s->A); ReleaseStore(s);
+		s = RunLongStr(z);
+		h = OpenHForPutTxt(PD);
+		WriteH(h, s->LL, s->A);
+		ReleaseStore(s);
 	}
-	CPath = pth; TestCPathError(); WriteH(h, 0, h)/*trunc*/; CloseH(h);
+	CPath = pth;
+	TestCPathError();
+	WriteH(h, 0, h)/*trunc*/;
+	CloseH(h);
 }
 
 void AssgnCatFld(Instr_assign* PD)
@@ -924,13 +942,13 @@ void RunInstr(Instr* PD)
 			break;
 		}
 #endif
-		case _report: ReportProc(PD->RO, true); break;
+		case _report: ReportProc(((Instr_report*)PD)->RO, true); break;
 		case _sort: {
 			auto iPD = (Instr_sort*)PD;
 			SortProc(iPD->SortFD, iPD->SK);
 			break;
 		}
-		case _edit: EditProc(PD); break;
+		case _edit: EditProc((Instr_edit*)PD); break;
 		case _asgnloc:/* !!! with PD^ do!!! */ {
 			auto iPD = (Instr_assign*)PD;
 			LVAssignFrml(iPD->LV, MyBP, iPD->Add, iPD->Frml);
@@ -966,9 +984,9 @@ void RunInstr(Instr* PD)
 		case _linkrec: LinkRecProc((Instr_assign*)PD); break;
 		case _withshared:
 		case _withlocked: WithLockedProc(PD); break;
-		case _edittxt: EditTxtProc(PD); break;
-		case _printtxt: PrintTxtProc(PD); break;
-		case _puttxt: PutTxt(PD); break;
+		case _edittxt: EditTxtProc((Instr_edittxt*)PD); break;
+		case _printtxt: PrintTxtProc((Instr_edittxt*)PD); break;
+		case _puttxt: PutTxt((Instr_puttxt*)PD); break;
 		case _asgncatfield: AssgnCatFld((Instr_assign*)PD); break;
 		case _asgnusercode: { UserCode = RunInt(((Instr_assign*)PD)->Frml); AccRight[0] = 0x01; AccRight[1] = char(UserCode); break; }
 		case _asgnaccright: AssgnAccRight((Instr_assign*)PD); break;
@@ -987,16 +1005,24 @@ void RunInstr(Instr* PD)
 			TurnCat(iPD->FrstCatIRec, iPD->NCatIRecs, RunInt(iPD->TCFrml));
 			break;
 		}
-		case _releasedrive: ReleaseDriveProc(PD->Drive); break;
+		case _releasedrive: ReleaseDriveProc(((Instr_releasedrive*)PD)->Drive); break;
 		case _setprinter: SetCurrPrinter(abs(RunInt(((Instr_assign*)PD)->Frml))); break;
-		case _indexfile:/* !!! with PD^ do!!! */ IndexfileProc(PD->IndexFD, PD->Compress); break;
+		case _indexfile: /* !!! with PD^ do!!! */ {
+			auto iPD = (Instr_indexfile*)PD;
+			IndexfileProc(iPD->IndexFD, iPD->Compress);
+			break;
+		}
 		case _display: {
 			/* !!! with PD^ do!!! */
 			auto iPD = (Instr_merge_display*)PD;
 			DisplayProc(iPD->Pos.R, iPD->Pos.IRec);
 			break;
 		}
-		case _mount:/* !!! with PD^ do!!! */ MountProc(PD->MountCatIRec, PD->MountNoCancel); break;
+		case _mount: /* !!! with PD^ do!!! */ {
+			auto iPD = (Instr_mount*)PD;
+			MountProc(iPD->MountCatIRec, iPD->MountNoCancel);
+			break;
+		}
 		case _clearkeybuf: ClearKbdBuf(); break;
 		case _help: HelpProc((Instr_help*)PD); break;
 		case _wait: WaitProc(); break;

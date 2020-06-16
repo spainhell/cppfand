@@ -170,3 +170,78 @@ public:
 	FileD* SortFD = nullptr;
 	KeyFldD* SK = nullptr;
 };
+
+class Instr_edit : public Instr
+{
+public:
+	Instr_edit();
+	FileDPtr EditFD = nullptr;
+	EditOpt* EO = nullptr;
+};
+
+class Instr_report : public Instr
+{
+public:
+	Instr_report();
+	RprtOpt* RO = nullptr;
+};
+
+class Instr_edittxt : public Instr
+{
+public:
+	Instr_edittxt(PInstrCode Kind);
+	pstring* TxtPath = nullptr;
+	WORD TxtCatIRec = 0;
+	LocVar* TxtLV = nullptr;
+	char EdTxtMode = '\0';
+	EdExitD* ExD = nullptr;
+	BYTE WFlags = 0;
+	FrmlElem* TxtPos = nullptr; FrmlElem* TxtXY = nullptr; FrmlElem* ErrMsg = nullptr;
+	WRectFrml Ww; FrmlElem* Atr = nullptr; FrmlElem* Hd = nullptr;
+	FrmlElem* Head = nullptr; FrmlElem* Last = nullptr; FrmlElem* CtrlLast = nullptr;
+	FrmlElem* AltLast = nullptr; FrmlElem* ShiftLast = nullptr;
+};
+
+class Instr_puttxt : public Instr
+{
+public:
+	Instr_puttxt();
+	pstring* TxtPath1 = nullptr; WORD TxtCatIRec1 = 0;
+	FrmlElem* Txt = nullptr; bool App = false;
+};
+
+class Instr_releasedrive : public Instr
+{
+public:
+	Instr_releasedrive();
+	FrmlElem* Drive = nullptr;
+};
+
+class Instr_mount : public Instr
+{
+public:
+	Instr_mount();
+	WORD MountCatIRec = 0;
+	bool MountNoCancel = false;
+};
+
+class Instr_indexfile : public Instr
+{
+public:
+	Instr_indexfile();
+	FileD* IndexFD = nullptr;
+	bool Compress = false;
+};
+
+class Instr_getindex : public Instr
+{
+public:
+	Instr_getindex();
+	LocVar* giLV = nullptr; char giMode = '\0'; /*+,-,blank*/
+	FrmlElem* giCond = nullptr; /* || RecNr-Frml */
+	KeyD* giKD = nullptr; KeyFldD* giKFlds = nullptr;
+	KeyInD* giKIRoot = nullptr; bool giSQLFilter = false;
+	char giOwnerTyp = '\0';
+	LinkD* giLD = nullptr; LocVar* giLV2 = nullptr;
+};
+

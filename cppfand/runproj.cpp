@@ -1486,7 +1486,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 	CRecPtr = Chpt->RecPtr;
 	Encryp = CRdb->Encrypted;
 	for (I = 1; I <= Chpt->NRecs; I++) {
-		if (I >= 52) {
+		if (I >= 153) {
 			printf("%i\n", I);
 		}
 		ReadRec(I);
@@ -1520,8 +1520,10 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 				if ((Txt == 0) && IsTestRun) {
 					SetMsgPar(Name);
 					if (SEquUpcase(ext, ".DBF") && PromptYN(39)) {
-						T_(ChptOldTxt, 0); OldTxt = 0; MakeDbfDcl(nm);
-						Txt = _T(ChptTxt); WriteRec(I);
+						T_(ChptOldTxt, 0); OldTxt = 0;
+						MakeDbfDcl(nm);
+						Txt = _T(ChptTxt);
+						WriteRec(I);
 					}
 				}
 #ifndef FandSQL
@@ -1533,18 +1535,19 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 					// TODO: toto se asi zase musí povolit !!! 
 					//WrFDSegment(I);
 					if (CFile->IsHlpFile) CRdb->HelpFD = CFile;
-					if (OldTxt > 0)
-						MergeOldNew(Verif, OldTxt); ReleaseStore(p1);
+					if (OldTxt > 0) MergeOldNew(Verif, OldTxt);
+					ReleaseStore(p1);
 					CFile = Chpt;
 					if (ChptTF->LicenseNr == 0) ChptTF->Delete(OldTxt);
 					else if (OldTxt != 0) ChptTF->Delete(OldTxt - ChptTF->LicenseNr);
 				}
-				else if
-					(!RdFDSegment(I, OldTxt)) {
-					LinkDRoot = ld; ReleaseStore(p1); CFile = Chpt; goto label2;
+				else if (!RdFDSegment(I, OldTxt)) {
+					LinkDRoot = ld;
+					ReleaseStore(p1);
+					CFile = Chpt;
+					goto label2;
 				}
-				else
-				{
+				else {
 					ChainLast(FileDRoot, CFile); MarkStore(p1);
 					if (CFile->IsHlpFile) CRdb->HelpFD = CFile;
 				}
@@ -1553,15 +1556,15 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 			case 'M': { SetInpTTPos(Txt, Encryp); ReadMerge(); break; }
 			case 'R': {
 				if ((Txt == 0) && IsTestRun) {
-					RprtTxt = SelGenRprt(Name); 
+					RprtTxt = SelGenRprt(Name);
 					CFile = Chpt;
 					if (RprtTxt == nullptr) GoCompileErr(I, 1145);
 					LongS_(ChptTxt, RprtTxt);
 					WriteRec(I);
 				}
-				else { 
-					SetInpTTPos(Txt, Encryp); 
-					ReadReport(nullptr); 
+				else {
+					SetInpTTPos(Txt, Encryp);
+					ReadReport(nullptr);
 				}
 				break;
 			}
@@ -1600,25 +1603,25 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 				break;
 			}
 #ifdef FandProlog
-			case 'L': { 
-				SetInpTTPos(Txt, Encryp); 
+			case 'L': {
+				SetInpTTPos(Txt, Encryp);
 				// ReadProlog(I); 
-				break; 
+				break;
 			}
 #endif
 			}
-			}
+		}
 		ReleaseBoth(p1, p2); CFile = Chpt; CRecPtr = Chpt->RecPtr;
 		if (Verif) { ReadRec(I); B_(ChptVerif, false); WriteRec(I); }
-		}
+	}
 	/* !!! with ChptTF^ do!!! */
 	if (ChptTF->CompileAll || ChptTF->CompileProc) {
-		ChptTF->CompileAll = false; 
-		ChptTF->CompileProc = false; 
+		ChptTF->CompileAll = false;
+		ChptTF->CompileProc = false;
 		SetUpdHandle(ChptTF->Handle);
 	}
-	CompileFD = false; 
-	result = true; 
+	CompileFD = false;
+	result = true;
 	RestoreExit(er);
 	if (!Run) { CRecPtr = E->NewRecPtr; ReadRec(CRec()); }
 	CompileMsgOff(Buf, w);
@@ -1633,7 +1636,7 @@ label1:
 	if (!Run) CRecPtr = E->NewRecPtr;
 	if (!IsCompileErr) { InpRdbPos.IRec = I; }
 	return result;
-	}
+}
 
 void GotoErrPos(WORD& Brk)
 {
@@ -1688,30 +1691,30 @@ bool EditExecRdb(pstring* Nm, pstring* ProcNm, Instr_proc* ProcCall, wwmix* ww)
 #endif
 		MarkStore(p);
 		EditRdbMode = false;
-		bool hasToCompileRdb = CompileRdb(false, true, false);
-		if (hasToCompileRdb) {
-			bool procedureFound = FindChpt('P', *ProcNm, true, &RP);
-			if (procedureFound)
-			{
-				//NewExit(Ovr(), er2);
-				//goto label0;
-				IsCompileErr = false;
-				if (ProcCall != nullptr) {
-					ProcCall->PPos = RP;
-					CallProcedure(ProcCall);
-				}
-				else RunMainProc(RP, top);
-				result = true; goto label9;
-			label0:
-				if (IsCompileErr) WrErrMsg630(Nm);
-				goto label9;
+			bool hasToCompileRdb = CompileRdb(false, true, false);
+			if (hasToCompileRdb) {
+				bool procedureFound = FindChpt('P', *ProcNm, true, &RP);
+					if (procedureFound)
+					{
+						//NewExit(Ovr(), er2);
+						//goto label0;
+						IsCompileErr = false;
+						if (ProcCall != nullptr) {
+							ProcCall->PPos = RP;
+							CallProcedure(ProcCall);
+						}
+						else RunMainProc(RP, top);
+						result = true; goto label9;
+					label0:
+						if (IsCompileErr) WrErrMsg630(Nm);
+						goto label9;
+					}
+					else {
+						Set2MsgPar(*Nm, *ProcNm);
+						WrLLF10Msg(632);
+					}
 			}
-			else {
-				Set2MsgPar(*Nm, *ProcNm);
-				WrLLF10Msg(632);
-			}
-		}
-		else if (IsCompileErr) WrErrMsg630(Nm);
+			else if (IsCompileErr) WrErrMsg630(Nm);
 #ifndef FandRunV
 		if ((ChptTF->LicenseNr != 0) || CRdb->Encrypted
 			|| (Chpt->UMode == RdOnly)) goto label9;
@@ -1789,7 +1792,7 @@ label9:
 	if (top) SQLDisconnect;
 #endif
 	return result;
-			}
+}
 
 void UpdateCat()
 {

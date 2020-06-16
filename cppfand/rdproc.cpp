@@ -586,13 +586,15 @@ void RdMenuAttr(Instr_menu* PD)
 Instr* RdMenuBox(bool Loop)
 {
 	Instr_menu* PD = nullptr; pstring* S = nullptr;
-	PD = (Instr_menu*)GetPInstr(_menubox, 48);
+	PD = new Instr_menu(_menubox); // GetPInstr(_menubox, 48);
 	auto result = PD;
 	PD->Loop = Loop;
 	if (Lexem == '(') {
 		RdLex();
 		if (Lexem != ';') {
-			PD->X = RdRealFrml(); Accept(','); PD->Y = RdRealFrml();
+			PD->X = RdRealFrml();
+			Accept(',');
+			PD->Y = RdRealFrml();
 		}
 		RdMenuAttr(PD);
 		Accept(')');
@@ -606,7 +608,7 @@ Instr* RdMenuBox(bool Loop)
 
 Instr* RdMenuBar()
 {
-	Instr_menu* PD = (Instr_menu*)GetPInstr(_menubar, 48);
+	Instr_menu* PD = new Instr_menu(_menubar); // GetPInstr(_menubar, 48);
 	auto result = PD;
 	if (Lexem == '(') {
 		RdLex();
@@ -689,7 +691,8 @@ label1:
 	else PD->ElseInstr1 = PD1;
 	PD = PD1;
 	first = false;
-	PD->Bool = RdBool(); Accept(':');
+	PD->Bool = RdBool();
+	Accept(':');
 	PD->Instr1 = RdPInstr();
 	bool b = Lexem == ';';
 	if (b) RdLex();
@@ -797,9 +800,9 @@ Instr* RdBeginEnd()
 	Instr* PD = nullptr;
 	if (!IsKeyWord("END")) {
 	label1:
-		//if (InpArrLen == 0x287e && CurrPos >= 0x054a) {
-		//	printf("RdBeginEnd()\n");
-		//}
+		/*if (InpArrLen == 1602 && CurrPos >= 880) {
+			printf("RdBeginEnd()\n");
+		}*/
 		RdPInstrAndChain(&PD);
 		if (Lexem == ';') {
 			RdLex();
@@ -1070,6 +1073,7 @@ void RdProcCall(Instr** pinstr)
 	else if (IsKeyWord("MERGE")) {
 		// PD = (Instr_merge_display*)GetPD(_merge, sizeof(RdbPos));
 		PD = new Instr_merge_display(_merge);
+		RdLex();
 		RdChptName('M', &((Instr_merge_display*)PD)->Pos, true);
 	}
 	else if (IsKeyWord("SORT")) *pinstr = RdSortCall();
@@ -1094,6 +1098,7 @@ void RdProcCall(Instr** pinstr)
 	else if (IsKeyWord("DELAY")) { PD = GetPD(_delay, 4); goto label2; }
 	else if (IsKeyWord("SOUND")) {
 		PD = new Instr_assign(_sound); // GetPD(_sound, 4);
+		RdLex();
 	label2:
 		((Instr_assign*)PD)->Frml = RdRealFrml();
 	}
@@ -1244,13 +1249,14 @@ Instr_sort* RdSortCall()
 	return PD;
 }
 
-Instr* RdEditCall()
+Instr_edit* RdEditCall()
 {
 	stSaveState* p = nullptr;
 	bool b = false;
 	KeyD* K = nullptr;
 	LocVar* lv = nullptr;
-	Instr* PD = GetPD(_edit, 8);
+	Instr_edit* PD = new Instr_edit(); // GetPD(_edit, 8);
+	RdLex();
 	EditOpt* EO = GetEditOpt();
 	PD->EO = EO;
 	if (IsRecVar(&lv)) { EO->LVRecPtr = lv->RecPtr; CFile = lv->FD; }
@@ -1311,10 +1317,14 @@ void RdEditOpt(EditOpt* EO)
 
 void RdReportCall()
 {
-	Instr* PD = nullptr; RprtOpt* RO = nullptr; LocVar* lv = nullptr;
-	RprtFDListEl* FDL = nullptr; bool b = false;
+	Instr_report* PD = nullptr;
+	RprtOpt* RO = nullptr;
+	LocVar* lv = nullptr;
+	RprtFDListEl* FDL = nullptr;
+	bool b = false;
 	bool hasfrst;
-	PD = GetPD(_report, 4);
+	PD = new Instr_report(); // GetPD(_report, 4);
+	RdLex();
 	RO = GetRprtOpt();
 	PD->RO = RO;
 	hasfrst = false;
@@ -1437,6 +1447,7 @@ void RdRDBCall()
 {
 	pstring s;
 	auto PD = new Instr_call(); // GetPD(_call, 12);
+	RdLex();
 	s[0] = 0;
 	if (Lexem == '\\') { s = Lexem; RdLex(); }
 	TestIdentif();
@@ -1459,6 +1470,7 @@ void RdExec()
 	//Instr* PD;
 	//FileD* FD;
 	auto PD = new Instr_exec(); // GetPD(_exec, 14);
+	RdLex();
 	RdPath(true, &PD->ProgPath, PD->ProgCatIRec);
 	Accept(',');
 	PD->Param = RdStrFrml();
@@ -1480,6 +1492,7 @@ void RdCopyFile()
 	CopyD* D = nullptr;
 	bool noapp = false;
 	auto PD = new Instr_copyfile(); // GetPD(_copyfile, 4);
+	RdLex();
 	noapp = false;
 	D = new CopyD(); // (CopyD*)GetZStore(sizeof(*D));
 	PD->CD = D;
@@ -1586,8 +1599,8 @@ bool RdList(pstring* S)
 
 void RdPrintTxt()
 {
-	Instr* PD;
-	PD = GetPD(_printtxt, 10);
+	auto PD = new Instr_edittxt(_printtxt); // GetPD(_printtxt, 10);
+	RdLex();
 	/* !!! with PD^ do!!! */
 	if (FindLocVar(LVBD.Root, &PD->TxtLV)) { RdLex(); TestString(PD->TxtLV->FTyp); }
 	else RdPath(true, &PD->TxtPath, PD->TxtCatIRec);
@@ -1595,8 +1608,10 @@ void RdPrintTxt()
 
 void RdEditTxt()
 {
-	Instr* PD; EdExitD* pX;
-	PD = GetPD(_edittxt, 73);
+	//Instr* PD;
+	EdExitD* pX;
+	auto PD = new Instr_edittxt(_edittxt); // GetPD(_edittxt, 73);
+	RdLex();
 	/* !!! with PD^ do!!! */
 	if (FindLocVar(LVBD.Root, &PD->TxtLV)) { RdLex(); TestString(PD->TxtLV->FTyp); }
 	else RdPath(true, &PD->TxtPath, PD->TxtCatIRec);
@@ -1642,11 +1657,17 @@ void RdEditTxt()
 
 void RdPutTxt()
 {
-	Instr* PD = GetPD(_puttxt, 11);
-	RdPath(true, &PD->TxtPath, PD->TxtCatIRec);
+	auto PD = new Instr_puttxt(); // GetPD(_puttxt, 11);
+	RdLex();
+	RdPath(true, &PD->TxtPath1, PD->TxtCatIRec1);
 	Accept(',');
 	PD->Txt = RdStrFrml();
-	if (Lexem == ',') { RdLex(); AcceptKeyWord("APPEND"); PD->App = true; }
+	if (Lexem == ',')
+	{
+		RdLex();
+		AcceptKeyWord("APPEND");
+		PD->App = true;
+	}
 }
 
 void RdTurnCat()
@@ -1725,13 +1746,15 @@ label1:
 
 void RdReleaseDrive()
 {
-	Instr* PD = GetPD(_releasedrive, 4);
+	auto PD = new Instr_releasedrive(); // GetPD(_releasedrive, 4);
+	RdLex();
 	PD->Drive = RdStrFrml();
 }
 
 void RdIndexfile()
 {
-	Instr* PD = GetPD(_indexfile, 5);
+	auto PD = new Instr_indexfile(); // GetPD(_indexfile, 5);
+	RdLex();
 	PD->IndexFD = RdFileName();
 	if (PD->IndexFD->Typ != 'X') OldError(108);
 	if (Lexem == ',') {
@@ -1743,8 +1766,10 @@ void RdIndexfile()
 
 void RdGetIndex()
 {
-	LocVar* lv2; bool b; LinkD* ld;
-	Instr* PD = GetPD(_getindex, 31); LocVar* lv = RdIdxVar();
+	LocVar* lv2 = nullptr; bool b = false; LinkD* ld = nullptr;
+	auto PD = new Instr_getindex(); // GetPD(_getindex, 31);
+	RdLex();
+	LocVar* lv = RdIdxVar();
 	PD->giLV = lv; Accept(',');
 	PD->giMode = ' ';
 	if (Lexem == '+' || Lexem == '-') {
@@ -1785,6 +1810,7 @@ void RdGetIndex()
 void RdGotoXY()
 {
 	auto PD = new Instr_gotoxy(); // GetPD(_gotoxy, 8);
+	RdLex();
 	PD->GoX = RdRealFrml();
 	Accept(',');
 	PD->GoY = RdRealFrml();
@@ -1804,12 +1830,16 @@ void RdClrWw()
 
 void RdMount()
 {
-	Instr* PD; FileD* FD; WORD I;
-	PD = GetPD(_mount, 3);
+	auto PD = new Instr_mount(); // GetPD(_mount, 3);
+	RdLex();
+	WORD I = 0;
 	TestIdentif();
-	FD = FindFileD();
-	if (FD == nullptr) I = GetCatIRec(LexWord, true); else I = FD->CatIRec;
-	TestCatError(I, LexWord, false); RdLex(); PD->MountCatIRec = I;
+	FileD* FD = FindFileD();
+	if (FD == nullptr) I = GetCatIRec(LexWord, true);
+	else I = FD->CatIRec;
+	TestCatError(I, LexWord, false);
+	RdLex();
+	PD->MountCatIRec = I;
 	if (Lexem == ',') {
 		RdLex();
 		AcceptKeyWord("NOCANCEL");
@@ -1819,7 +1849,8 @@ void RdMount()
 
 void RdDisplay()
 {
-	auto PD = (Instr_merge_display*)GetPD(_display, sizeof(RdbPos));
+	auto PD = new Instr_merge_display(_display); // GetPD(_display, sizeof(RdbPos));
+	RdLex();
 	pstring* s = nullptr;
 	if ((Lexem == _identifier) && FindChpt('H', LexWord, false, &PD->Pos)) RdLex();
 	else {
@@ -1952,9 +1983,9 @@ Instr_recs* RdMixRecAcc(PInstrCode Op)
 		}
 	}
 	else {
+		// PD = GetPD(Op, 15);
 		PD = new Instr_recs(Op);
 		RdLex();
-		// PD = GetPD(Op, 15);
 		if (Op == _deleterec) {
 			CFile = RdFileName();
 			PD->RecFD = CFile;
@@ -2009,6 +2040,7 @@ void RdLinkRec()
 	LocVar* LV = nullptr;
 	LinkD* LD = nullptr;
 	auto PD = new Instr_assign(_linkrec); // GetPD(_linkrec, 12);
+	RdLex();
 	if (!IsRecVar(&PD->RecLV1)) Error(141);
 	Accept(',');
 	CFile = PD->RecLV1->FD;
@@ -2542,6 +2574,7 @@ void RdSqlRdWrTxt(bool Rd)
 void RdCallLProc()
 {
 	auto pd = new Instr_lproc(); // GetPD(_lproc, sizeof(RdbPos) + 4);
+	RdLex();
 	RdChptName('L', &pd->lpPos, true);
 	if (Lexem == ',') {
 		RdLex();

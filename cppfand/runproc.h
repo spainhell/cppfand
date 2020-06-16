@@ -20,11 +20,11 @@ void ExecPgm(Instr_exec* PD);
 void CallRdbProc(Instr_call* PD);
 void IndexfileProc(FileDPtr FD, bool Compress);
 void MountProc(WORD CatIRec, bool NoCancel);
-void EditProc(Instr* PD);
-void EditTxtProc(Instr* PD);
+void EditProc(Instr_edit* PD);
+void EditTxtProc(Instr_edittxt* PD);
 pstring* GetStr(FrmlPtr Z);
 
-void PrintTxtProc(Instr* PD);
+void PrintTxtProc(Instr_edittxt* PD);
 bool SrchXKey(KeyDPtr K, XString& X, longint& N);
 void DeleteRecProc(Instr_recs* PD);
 void RecallRecProc(Instr_recs* PD);
@@ -41,8 +41,8 @@ void WithLockedProc(Instr* PD);
 void UnLck(Instr* PD, LockD* Ld1, PInstrCode Op);
 
 void HelpProc(Instr_help* PD);
-FILE* OpenHForPutTxt(Instr* PD);
-void PutTxt(Instr* PD);
+FILE* OpenHForPutTxt(Instr_puttxt* PD);
+void PutTxt(Instr_puttxt* PD);
 void AssgnCatFld(Instr_assign* PD);
 void AssgnAccRight(Instr_assign* PD);
 void AssgnUserName(Instr_assign* PD);

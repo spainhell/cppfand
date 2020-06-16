@@ -50,7 +50,7 @@ void RdProcCall(Instr** pinstr); // mùže upravit pinstr z hlavní funkce
 FieldList RdFlds();
 FieldList RdSubFldList(FieldList InFL, char Opt);
 Instr_sort* RdSortCall();
-Instr* RdEditCall();
+Instr_edit* RdEditCall();
 void RdEditOpt(EditOpt* EO);
 void RdReportCall();
 void RdRprtOpt(RprtOpt* RO, bool HasFrst);

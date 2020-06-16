@@ -424,24 +424,6 @@ public:
 	//Instr* Chain = nullptr;
 	PInstrCode Kind;
 		
-	FileDPtr EditFD = nullptr; EditOpt* EO = nullptr;
-	RprtOpt* RO = nullptr;
-	pstring* TxtPath = nullptr; WORD TxtCatIRec; LocVar* TxtLV = nullptr;
-	char EdTxtMode;
-	EdExitD* ExD = nullptr;
-	BYTE WFlags; FrmlPtr TxtPos, TxtXY, ErrMsg;
-	WRectFrml Ww; FrmlPtr Atr; FrmlPtr Hd;
-	FrmlPtr Head, Last, CtrlLast, AltLast, ShiftLast;
-	pstring* TxtPath1 = nullptr; WORD TxtCatIRec1;
-	FrmlPtr Txt; bool App;
-	FrmlPtr Drive;
-	WORD MountCatIRec; bool MountNoCancel;
-	FileDPtr IndexFD; bool Compress;
-	LocVar* giLV; char giMode; /*+,-,blank*/
-	FrmlPtr giCond; /* || RecNr-Frml */
-	KeyDPtr giKD; KeyFldDPtr giKFlds;
-	KeyInD* giKIRoot; bool giSQLFilter;
-	char giOwnerTyp; LinkDPtr giLD; LocVar* giLV2;
 	WRectFrml W; FrmlPtr Attr; Instr* WwInstr; FrmlPtr Top;
 	BYTE WithWFlags;
 	WRectFrml W2; FrmlPtr Attr2, FillC;

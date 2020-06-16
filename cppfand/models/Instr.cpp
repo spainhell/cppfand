@@ -81,3 +81,43 @@ Instr_sort::~Instr_sort()
 	delete SK;
 }
 
+Instr_edit::Instr_edit()
+{
+	Kind = PInstrCode::_edit;
+}
+
+Instr_report::Instr_report()
+{
+	Kind = PInstrCode::_report;
+}
+
+Instr_edittxt::Instr_edittxt(PInstrCode Kind)
+{
+	this->Kind = Kind;
+}
+
+Instr_puttxt::Instr_puttxt()
+{
+	Kind = PInstrCode::_puttxt;
+}
+
+Instr_releasedrive::Instr_releasedrive()
+{
+	Kind = PInstrCode::_releasedrive;
+}
+
+Instr_mount::Instr_mount()
+{
+	Kind = PInstrCode::_mount;
+}
+
+Instr_indexfile::Instr_indexfile()
+{
+	Kind = PInstrCode::_indexfile;
+}
+
+Instr_getindex::Instr_getindex()
+{
+	Kind = PInstrCode::_getindex;
+}
+

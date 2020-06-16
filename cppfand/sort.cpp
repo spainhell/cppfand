@@ -1,8 +1,8 @@
 #include "sort.h"
-
 #include "oaccess.h"
 #include "obaseww.h"
 #include "runfrml.h"
+#include "models/Instr.h"
 
 class XXPage; // forward declaration
 
@@ -603,7 +603,7 @@ label1:
 	if (fail) GoExit();
 }
 
-void CreateWIndex(XScan* Scan, WKeyDPtr K, char Typ)
+void CreateWIndex(XScan* Scan, XWKey* K, char Typ)
 {
 	void* p = nullptr;
 	MarkStore(p);
@@ -674,13 +674,14 @@ void SortAndSubst(KeyFldD* SK)
 	ReleaseStore(p);
 }
 
-void GetIndex(Instr* PD)
+void GetIndex(Instr_getindex* PD)
 {
 	XScan* Scan = nullptr; void* p = nullptr; LocVar* lv = nullptr;
-	LocVar* lv2 = nullptr; XWKey* kNew = nullptr; XWKey* k = nullptr; longint nr;
+	LocVar* lv2 = nullptr; XWKey* kNew = nullptr; XWKey* k = nullptr; longint nr = 0;
 	LockMode md, md1; FrmlPtr cond = nullptr; LinkD* ld = nullptr;
 	KeyFldD* kf = nullptr; XString x;
-	MarkStore(p); lv = PD->giLV; CFile = lv->FD; k = WKeyDPtr(lv->RecPtr);
+	MarkStore(p);
+	lv = PD->giLV; CFile = lv->FD; k = WKeyDPtr(lv->RecPtr);
 	md = NewLMode(RdMode);
 	if (PD->giMode == ' ') {
 		ld = PD->giLD; kf = ld->ToKey->KFlds; lv2 = PD->giLV2;
