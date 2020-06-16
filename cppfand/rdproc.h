@@ -1,6 +1,7 @@
 #pragma once
 #include "access.h"
 #include "constants.h"
+#include "models/FrmlElem.h"
 #include "models/Instr.h"
 #include "pstring.h"
 #include "rdrun.h"
@@ -17,7 +18,7 @@ FrmlPtr RdFldNameFrmlP(char& FTyp);
 FileD* RdPath(bool NoFD, pstring** Path, WORD& CatIRec);
 FrmlPtr RdFunctionP(char& FFTyp);
 KeyD* RdViewKeyImpl(FileD* FD);
-void RdSelectStr(FrmlPtr Z);
+void RdSelectStr(FrmlElem0* Z);
 //Instr* GetPInstr(PInstrCode Kind, WORD Size);
 
 Instr* RdPInstr(); // hlavní funkce
@@ -84,7 +85,7 @@ void RdSqlRdWrTxt(bool Rd);
 #ifdef FandProlog
 Instr* RdCallLProc();
 #endif
-FrmlPtr AdjustComma(FrmlPtr Z1, FieldDPtr F, char Op);
+FrmlElem* AdjustComma(FrmlElem* Z1, FieldDescr* F, char Op);
 AssignD* MakeImplAssign(FileD* FD1, FileD* FD2);
 Instr_assign* RdAssign();
 Instr* RdWith();
@@ -92,4 +93,4 @@ Instr_assign* RdUserFuncAssign();
 void ReadProcHead();
 Instr* ReadProcBody();
 void ReadDeclChpt();
-FrmlPtr GetEvalFrml(FrmlPtr X);
+FrmlElem* GetEvalFrml(FrmlElem21* X);

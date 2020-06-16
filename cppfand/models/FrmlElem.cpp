@@ -72,6 +72,14 @@ FrmlElem13::FrmlElem13(BYTE Op, size_t buff_size) : FrmlElem(Op, buff_size)
 {
 }
 
+void FrmlElem13::SaveArgs(FrmlElem* arguments[], size_t count)
+{
+	for (size_t i = 0; i < count; i++)
+	{
+		this->Arg.push_back(Arg[i]);
+	}
+}
+
 FrmlElem14::FrmlElem14(BYTE Op, size_t buff_size) : FrmlElem(Op, buff_size)
 {
 }

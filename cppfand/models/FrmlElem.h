@@ -112,7 +112,9 @@ public:
 	FrmlElem13(BYTE Op, size_t buff_size);
 	FileD* FFD = nullptr;
 	KeyD* Key = nullptr;
-	FrmlElem* Arg[2]{ nullptr }; // 13 {_recno/typ='R' or 'S'/,_recnoabs,_recnolog}
+	void SaveArgs(FrmlElem* arguments[], size_t count);
+	std::vector<FrmlElem*> Arg;
+	//FrmlElem* Arg[2]{ nullptr }; // 13 {_recno/typ='R' or 'S'/,_recnoabs,_recnolog}
 };
 
 class FrmlElem14 : public FrmlElem
