@@ -1300,7 +1300,7 @@ void UpdMemberRef(void* POld, void* PNew)
 	void* cr = nullptr; void* p = nullptr; void* p2 = nullptr; bool sql;
 	KeyDPtr k = nullptr; KeyFldDPtr kf = nullptr, kf1 = nullptr, kf2 = nullptr, Arg = nullptr;
 	cf = CFile; cr = CRecPtr; LD = LinkDRoot; while (LD != nullptr) {
-		if ((LD->MemberRef != 0) && (LD->ToFD = cf) &&
+		if ((LD->MemberRef != 0) && (LD->ToFD == cf) &&
 			((PNew != nullptr) || (LD->MemberRef != 2))) {
 			CFile = cf; kf2 = LD->ToKey->KFlds; CRecPtr = POld; xold.PackKF(kf2);
 			if (PNew != nullptr) {

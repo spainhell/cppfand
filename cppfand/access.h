@@ -7,10 +7,11 @@
 #include "channel.h"
 #endif
 
+
 struct FrmlListEl;
 class XFile;
-struct FrmlElem;
-struct LocVar;
+class FrmlElem;
+class LocVar;
 struct FuncD;
 class XWKey;
 class XWFile;
@@ -18,7 +19,7 @@ class XKey;
 struct LinkD;
 class FileD;
 struct RdbD;
-struct FieldDescr;
+class FieldDescr;
 
 // ********** CONST **********
 const BYTE LeftJust = 1; // {RightJust=0  coded in M for Typ='N','A'}
@@ -279,10 +280,18 @@ struct LinkD // ø. 220
 };
 typedef LinkD* LinkDPtr;
 
-struct LocVarBlkD : public Chained// ø. 228
+class LocVarBlkD : public Chained// ø. 228
 {
-	LocVar* Root = nullptr;
-	WORD NParam = 0, Size = 0;
+public:
+	LocVarBlkD() {  }
+	//~LocVarBlkD() {
+	//	for (size_t i = 0; i < vLocVar.size(); i ++) { delete vLocVar[i]; }
+	//}
+	LocVar* FindByName(std::string Name);
+	std::vector<LocVar*> vLocVar;
+	//LocVar* Root = nullptr;
+	WORD NParam = 0;
+	WORD Size = 0;
 };
 
 struct FuncD // ø. 233
@@ -297,6 +306,8 @@ struct FuncD // ø. 233
 class LocVar : public Chained // ø. 239
 {
 public:
+	LocVar() = default;
+	LocVar(std::string Name) { this->Name = Name; }
 	bool IsPar = false;
 	char FTyp = '\0';
 	FileD* FD = nullptr;

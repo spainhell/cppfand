@@ -723,22 +723,30 @@ void RestoreCompState(stSaveState* p)
 LocVar* RdVarName(LocVarBlkD* LVB, bool IsParList)
 {
 	TestIdentif();
-	LocVar* lv = LVB->Root;
-	while (lv != nullptr) {
-		pstring lvName = lv->Name.c_str();
-		if (EquUpcase(lvName, LexWord)) Error(26);
-		lv = (LocVar*)lv->Chain;
+	LocVar* lvar = LVB->FindByName(LexWord);
+	if (lvar != nullptr) Error(26); // promenna uz existuje
+	else
+	{
+		lvar = new LocVar(LexWord);
+		if (IsParList) { lvar->IsPar = true; LVB->NParam++; }
+		LVB->vLocVar.push_back(lvar);
+		
 	}
-	//lv = (LocVar*)GetZStore(sizeof(*lv) - 1 + LexWord.length());
-	lv = new LocVar();
-	if (LVB->Root == nullptr) LVB->Root = lv;
-	else ChainLast(LVB->Root, lv);
-	//Move(&LexWord, &lv->Name, LexWord.length() + 1); 
-	lv->Name = LexWord;
 	RdLex();
-	auto result = lv;
-	if (IsParList) { lv->IsPar = true; LVB->NParam++; }
-	return lv;
+	return lvar;
+	
+	//LocVar* lv = LVB->Root;
+	//while (lv != nullptr) {
+	//	pstring lvName = lv->Name.c_str();
+	//	if (EquUpcase(lvName, LexWord)) Error(26);
+	//	lv = (LocVar*)lv->Chain;
+	//}
+	////lv = (LocVar*)GetZStore(sizeof(*lv) - 1 + LexWord.length());
+	//lv = new LocVar();
+	//if (LVB->Root == nullptr) LVB->Root = lv;
+	//else ChainLast(LVB->Root, lv);
+	////Move(&LexWord, &lv->Name, LexWord.length() + 1); 
+	//lv->Name = LexWord;
 }
 
 KeyFldD* RdKF(FileD* FD)
@@ -936,6 +944,23 @@ bool FindLocVar(LocVar* LVRoot, LocVar** LV)
 		*LV = (LocVar*)(*LV)->Chain;
 	}
 	return result;
+}
+
+bool FindLocVar(LocVarBlkD* LVB, LocVar** LV)
+{
+	//auto result = false;
+	if (Lexem != _identifier) return false;
+	*LV = LVB->FindByName(LexWord);
+	if (*LV == nullptr) return false;
+	return true;
+
+	//*LV = LVRoot;
+	//while (*LV != nullptr) {
+	//	pstring lvName = (*LV)->Name.c_str();
+	//	if (EquUpcase(lvName, LexWord)) { return true; }
+	//	*LV = (LocVar*)(*LV)->Chain;
+	//}
+	//return result;
 }
 
 bool FindChpt(char Typ, const pstring& name, bool local, RdbPos* RP)
@@ -1194,7 +1219,7 @@ KeyDPtr RdViewKey()
 		if (SEquUpcase(s, *k->Alias)) goto label1;
 		k = k->Chain;
 	}
-	if (IdxLocVarAllowed && FindLocVar(LVBD.Root, &lv) && (lv->FTyp == 'i'))
+	if (IdxLocVarAllowed && FindLocVar(&LVBD, &lv) && (lv->FTyp == 'i'))
 	{
 		if (lv->FD != CFile) Error(164);
 		k = KeyDPtr(lv->RecPtr);
@@ -1604,16 +1629,17 @@ bool FindFuncD(FrmlPtr* ZZ)
 			RdLex(); RdLex();
 			FrmlElem19* z = new FrmlElem19(_userfunc, 8); // GetOp(_userfunc, 8);
 			z->FC = fc;
-			LocVar* lv = fc->LVB.Root;
+			//LocVar* lv = fc->LVB.Root;
 			WORD n = fc->LVB.NParam;
+			auto itr = fc->LVB.vLocVar.begin();
 			for (WORD i = 1; i <= n; i++) {
 				//FrmlList fl = (FrmlList)GetStore(sizeof(*fl));
 				FrmlListEl* fl = new FrmlListEl();
 				if (z->FrmlL == nullptr) z->FrmlL = fl;
 				else ChainLast(z->FrmlL, fl);
 				fl->Frml = RdFormula(typ);
-				if (typ != lv->FTyp) OldError(12);
-				lv = (LocVar*)lv->Chain;
+				if (typ != (*itr++)->FTyp) OldError(12);
+				//lv = (LocVar*)lv->Chain;
 				if (i < n) Accept(',');
 			}
 			Accept(')');
@@ -2290,7 +2316,7 @@ FieldDescr* RdFldName(FileD* FD)
 FileDPtr FindFileD()
 {
 	FileD* FD = nullptr; RdbD* R = nullptr; LocVar* LV = nullptr;
-	if (FDLocVarAllowed && FindLocVar(LVBD.Root, &LV) && (LV->FTyp == 'f'))
+	if (FDLocVarAllowed && FindLocVar(&LVBD, &LV) && (LV->FTyp == 'f'))
 	{
 		return LV->FD;
 	}

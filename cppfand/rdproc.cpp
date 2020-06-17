@@ -44,7 +44,7 @@ void TestCatError(WORD I, pstring Nm, bool Old)
 
 bool IsRecVar(LocVar** LV)
 {
-	if (!FindLocVar(LVBD.Root, LV) || ((*LV)->FTyp != 'r')) return false;
+	if (!FindLocVar(&LVBD, LV) || ((*LV)->FTyp != 'r')) return false;
 	RdLex();
 	return true;
 }
@@ -59,7 +59,7 @@ LocVar* RdRecVar()
 LocVar* RdIdxVar()
 {
 	LocVar* lv = nullptr;
-	if (!FindLocVar(LVBD.Root, &lv) || (lv->FTyp != 'i')) Error(165);
+	if (!FindLocVar(&LVBD, &lv) || (lv->FTyp != 'i')) Error(165);
 	auto result = lv;
 	RdLex();
 	return result;
@@ -103,7 +103,7 @@ char RdOwner(LinkD* LLD, LocVar* LLV)
 	auto result = '\0';
 	LinkD* ld = nullptr;
 	LocVar* lv = nullptr;
-	if (FindLocVar(LVBD.Root, &lv)) {
+	if (FindLocVar(&LVBD, &lv)) {
 		if (!(lv->FTyp == 'i' || lv->FTyp == 'r' || lv->FTyp == 'f')) Error(177);
 		ld = nullptr; LinkD* ld1 = LinkDRoot; while (ld1 != nullptr) {
 			if ((ld1->FromFD == CFile) && (ld1->IndexRoot != 0) && (ld1->ToFD == lv->FD))
@@ -121,7 +121,7 @@ char RdOwner(LinkD* LLD, LocVar* LLV)
 			RdLex(); fd = ld->ToFD;
 			if (Lexem == '(') {
 				RdLex();
-				if (!FindLocVar(LVBD.Root, &lv) || !(lv->FTyp == 'i' || lv->FTyp == 'r')) Error(177);
+				if (!FindLocVar(&LVBD, &lv) || !(lv->FTyp == 'i' || lv->FTyp == 'r')) Error(177);
 				RdLex();
 				Accept(')');
 				if (lv->FD != fd) OldError(149);
@@ -169,7 +169,7 @@ FrmlPtr RdFldNameFrmlP(char& FTyp)
 	//}
 
 	if (IsForwPoint())
-		if (FindLocVar(LVBD.Root, &LV) && (LV->FTyp == 'i' || LV->FTyp == 'r')) {
+		if (FindLocVar(&LVBD, &LV) && (LV->FTyp == 'i' || LV->FTyp == 'r')) {
 			RdLex();
 			result = RdRecVarFldFrml(LV, FTyp);
 			return result;
@@ -245,7 +245,7 @@ FrmlPtr RdFldNameFrmlP(char& FTyp)
 		FTyp = 'S';
 		return result;
 	}
-	if (FindLocVar(LVBD.Root, &LV)) {
+	if (FindLocVar(&LVBD, &LV)) {
 		if (LV->FTyp == 'r' || LV->FTyp == 'f' || LV->FTyp == 'i') Error(143);
 		RdLex();
 		result = new FrmlElem18(LV->Op, LV->BPOfs);
@@ -688,7 +688,7 @@ Instr_loops* RdWhileDo()
 Instr* RdFor()
 {
 	LocVar* LV = nullptr;
-	if (!FindLocVar(LVBD.Root, &LV) || (LV->FTyp != 'R')) Error(146);
+	if (!FindLocVar(&LVBD, &LV) || (LV->FTyp != 'R')) Error(146);
 	RdLex();
 	Instr* PD = new Instr_assign(_asgnloc); // GetPInstr(_asgnloc, 9);
 	auto result = PD;
@@ -771,7 +771,7 @@ Instr_forall* RdForAll()
 	LocVar* LVr = nullptr;
 	LinkD* LD = nullptr;
 	FrmlElem* Z = nullptr;
-	if (!FindLocVar(LVBD.Root, &LVi)) Error(122);
+	if (!FindLocVar(&LVBD, &LVi)) Error(122);
 	RdLex();
 	if (LVi->FTyp == 'r') {
 		LVr = LVi;
@@ -781,7 +781,7 @@ Instr_forall* RdForAll()
 	else {
 		TestReal(LVi->FTyp);
 		AcceptKeyWord("IN");
-		if (FindLocVar(LVBD.Root, &LVr)) {
+		if (FindLocVar(&LVBD, &LVr)) {
 			if (LVr->FTyp == 'f') {
 				CFile = LVr->FD;
 				RdLex();
@@ -865,7 +865,7 @@ Instr_proc* RdProcArg(char Caller)
 	label1:
 		N++;
 		if (N > 30) Error(123);
-		if ((ForwChar != '.') && FindLocVar(LVBD.Root, &LV) && (LV->FTyp == 'i' || LV->FTyp == 'r'))
+		if ((ForwChar != '.') && FindLocVar(&LVBD, &LV) && (LV->FTyp == 'i' || LV->FTyp == 'r'))
 		{
 			RdLex();
 			TArg[N].FTyp = LV->FTyp; TArg[N].FD = LV->FD; TArg[N].RecPtr = LV->RecPtr;
@@ -1671,7 +1671,7 @@ Instr* RdPrintTxt()
 	auto PD = new Instr_edittxt(_printtxt); // GetPD(_printtxt, 10);
 	RdLex();
 	/* !!! with PD^ do!!! */
-	if (FindLocVar(LVBD.Root, &PD->TxtLV)) { RdLex(); TestString(PD->TxtLV->FTyp); }
+	if (FindLocVar(&LVBD, &PD->TxtLV)) { RdLex(); TestString(PD->TxtLV->FTyp); }
 	else RdPath(true, &PD->TxtPath, PD->TxtCatIRec);
 	return PD;
 }
@@ -1683,7 +1683,7 @@ Instr* RdEditTxt()
 	auto PD = new Instr_edittxt(_edittxt); // GetPD(_edittxt, 73);
 	RdLex();
 	/* !!! with PD^ do!!! */
-	if (FindLocVar(LVBD.Root, &PD->TxtLV)) { RdLex(); TestString(PD->TxtLV->FTyp); }
+	if (FindLocVar(&LVBD, &PD->TxtLV)) { RdLex(); TestString(PD->TxtLV->FTyp); }
 	else RdPath(true, &PD->TxtPath, PD->TxtCatIRec);
 	PD->EdTxtMode = 'T';
 	while (Lexem == ',') {
@@ -2223,7 +2223,7 @@ Instr_assign* RdAssign()
 	LocVar* LV = nullptr; LocVar* LV2 = nullptr; char PV;
 	Instr_assign* PD = nullptr; pstring FName; char FTyp = 0;
 	if (ForwChar == '.')
-		if (FindLocVar(LVBD.Root, &LV) && (LV->FTyp == 'r' || LV->FTyp == 'i')) {
+		if (FindLocVar(&LVBD, &LV) && (LV->FTyp == 'r' || LV->FTyp == 'i')) {
 			FTyp = LV->FTyp;
 			RdLex(); RdLex();
 			if (FTyp == 'i') {
@@ -2296,7 +2296,7 @@ Instr_assign* RdAssign()
 		PD->Indexarg = (FD->Typ == 'X') && IsKeyArg(F, FD);
 		RdAssignFrml(F->FrmlTyp, PD->Add, &PD->Frml);
 	}
-	else if (FindLocVar(LVBD.Root, &LV)) {
+	else if (FindLocVar(&LVBD, &LV)) {
 		RdLex();
 		FTyp = LV->FTyp;
 		switch (FTyp) {
@@ -2427,7 +2427,7 @@ Instr_assign* RdUserFuncAssign()
 {
 	Instr_assign* pd = nullptr;
 	LocVar* lv = nullptr;
-	if (!FindLocVar(LVBD.Root, &lv)) Error(34);
+	if (!FindLocVar(&LVBD, &lv)) Error(34);
 	RdLex();
 	pd = new Instr_assign(_asgnloc); // GetPInstr(_asgnloc, 9);
 	pd->AssLV = lv;
@@ -2550,8 +2550,9 @@ label1:
 		else Error(39);
 		//lv = (LocVar*)GetZStore(sizeof(*lv) - 1 + (fc->Name).length());
 		lv = new LocVar();
-		if (LVBD.Root == nullptr) LVBD.Root = lv;
-		else ChainLast(LVBD.Root, lv);
+		//if (LVBD.Root == nullptr) LVBD.Root = lv;
+		//else ChainLast(LVBD.Root, lv);
+		LVBD.vLocVar.push_back(lv);
 		//Move(&fc->Name, &lv->Name, (fc->Name).length() + 1);
 		lv->Name = fc->Name;
 		/* !!! with lv^ do!!! */

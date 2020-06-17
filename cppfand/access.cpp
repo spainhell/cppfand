@@ -1991,6 +1991,15 @@ WORD FileD::GetNrKeys()
 	return n;
 }
 
+LocVar* LocVarBlkD::FindByName(std::string Name)
+{	
+	for (auto& i : vLocVar)
+	{
+		if (SEquUpcase(Name, i->Name)) return i;
+	}
+	return nullptr;
+}
+
 
 void XString::Clear()
 {

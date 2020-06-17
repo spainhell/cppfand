@@ -55,6 +55,7 @@ char Rd1Char(); // r317
 char RdQuotedChar(); // r320
 void AcceptKeyWord(pstring S); // r293
 void RdLocDcl(LocVarBlkD* LVB, bool IsParList, bool WithRecVar, char CTyp); // r1
+bool FindLocVar(LocVarBlkD* LVB, LocVar** LV); // r84
 bool FindLocVar(LocVar* LVRoot, LocVar** LV); // r84
 bool FindChpt(char Typ, const pstring& name, bool local, RdbPos* RP);
 void RdChptName(char C, RdbPos* Pos, bool TxtExpr); // r108

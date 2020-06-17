@@ -64,7 +64,7 @@ FrmlPtr RdFldNameFrmlM(char& FTyp)
 	if (IsForwPoint()) {
 		RdDirFilVar_M(FTyp, &result); TestSetSumIi_M(); return result;
 	}
-	if (!WasIiPrefix) if (FindLocVar(LVBD.Root, &LV)) {
+	if (!WasIiPrefix) if (FindLocVar(&LVBD, &LV)) {
 		RdLex(); TestNotSum_M(); result = (FrmlPtr)(&LV->Op); FTyp = LV->FTyp; return result;
 	}
 	if (IsKeyWord("COUNT")) {
@@ -519,7 +519,7 @@ AssignD* RdAssign_M()
 		if ((F->Flg & f_Stored) == 0) OldError(14);
 		RdAssignFrml(F->FrmlTyp, AD->Add, &AD->Frml);
 	}
-	else if (FindLocVar(LVBD.Root, &LV)) {
+	else if (FindLocVar(&LVBD, &LV)) {
 		RdLex();
 		AD->Kind = _locvar;
 		AD->LV = LV;

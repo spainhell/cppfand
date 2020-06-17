@@ -43,16 +43,16 @@ void ResetLVBD()
 {
 	//FillChar(&LVBD, sizeof(LVBD), 0); 
 	LVBD.Chain = nullptr;
-	LVBD.Root = nullptr;
+	LVBD.vLocVar.clear();
 	LVBD.NParam = 0;
 	LVBD.Size = 2 * 4;
 }
 
 void SetMyBP(ProcStkD* Bp)
 {
-	MyBP = Bp;
+	/*MyBP = Bp;
 	if (MyBP != nullptr) LVBD.Root = (LocVar*)MyBP->LVRoot;
-	else LVBD.Root = nullptr;
+	else LVBD.Root = nullptr;*/
 }
 
 void PushProcStk()

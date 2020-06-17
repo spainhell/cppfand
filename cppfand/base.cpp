@@ -1140,6 +1140,23 @@ void ReplaceChar(pstring S, char C1, char C2)
 {
 }
 
+bool SEquUpcase(std::string S1, std::string S2)
+{
+	size_t s1_len = S1.length();
+	size_t s2_len = S2.length();
+	if (s1_len != s2_len) return false;
+	if (s1_len == 0) return true;
+
+	const char* s1_c = S1.c_str();
+	const char* s2_c = S2.c_str();
+
+	for (size_t i = 0; i < s1_len; i++)
+	{
+		if (toupper(s1_c[i]) != toupper(s2_c[i])) return false;
+	}
+	return true;
+}
+
 bool SetStyleAttr(char C, BYTE& a)
 {
 	auto result = true;
@@ -1584,6 +1601,8 @@ void OpenWorkH()
 		Halt(-1);
 	}
 }
+
+
 
 bool SEquUpcase(pstring S1, pstring S2)
 {

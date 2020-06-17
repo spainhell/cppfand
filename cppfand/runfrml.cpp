@@ -1580,11 +1580,18 @@ void AccRecNoProc(FrmlElem14* X, WORD Msg)
 void* RunUserFunc(FrmlElem19* X)
 {
 	FrmlList fl; LocVar* lv; void* oldbp; void* oldprocbp;
-	oldbp = MyBP; oldprocbp = ProcMyBP; LVBD = X->FC->LVB; PushProcStk();
-	lv = LVBD.Root; fl = X->FrmlL;
+	oldbp = MyBP;
+	oldprocbp = ProcMyBP;
+	LVBD = X->FC->LVB;
+	PushProcStk();
+	size_t i = 0;
+	lv = LVBD.vLocVar.front();
+	auto itr = LVBD.vLocVar.begin();
+	fl = X->FrmlL;
 	while (fl != nullptr) {
 		LVAssignFrml(lv, oldbp, false, fl->Frml);
-		lv = (LocVar*)lv->Chain; fl = (FrmlListEl*)fl->Chain;
+		lv = *itr++;
+		fl = (FrmlListEl*)fl->Chain;
 	}
 	ProcMyBP = MyBP;
 	RunProcedure(X->FC->Instr);
