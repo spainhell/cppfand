@@ -16,14 +16,15 @@ Screen::Screen(WORD* TxtCols, WORD* TxtRows, Wind* WindMin, Wind* WindMax, TCrs*
 	_handle = GetStdHandle(STD_OUTPUT_HANDLE);
 	if (_handle == INVALID_HANDLE_VALUE) { throw std::exception("Cannot open console output handle."); }
 	SetConsoleScreenBufferSize(_handle, { (short)*TxtCols, (short)*TxtRows });
-	_scrBuf = new CHAR_INFO[BUFFSIZE];
+	SetConsoleTitle("C++ FAND");
+	//_scrBuf = new CHAR_INFO[BUFFSIZE];
 	_actualIndex = 0;
 	_inBuffer = 0;
 }
 
 Screen::~Screen()
 {
-	delete[] _scrBuf;
+	//delete[] _scrBuf;
 }
 
 size_t Screen::BufSize()

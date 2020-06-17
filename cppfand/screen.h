@@ -82,7 +82,7 @@ private:
 	std::stack<storeWindow> _windowStack;
 
 	HANDLE _handle;
-	CHAR_INFO* _scrBuf;
+	//CHAR_INFO* _scrBuf;
 	size_t _actualIndex;
 	DWORD _inBuffer;
 };
