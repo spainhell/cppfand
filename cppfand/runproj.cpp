@@ -1490,7 +1490,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 	Encryp = CRdb->Encrypted;
 	for (I = 1; I <= Chpt->NRecs; I++) {
 		if (I >= 0) {
-			printf("I = %i, strings: %i, total: %i\n", I, strcount, strbytes);
+			//printf("I = %i, strings: %i, total: %i\n", I, strcount, strbytes);
 		}
 		ReadRec(I);
 		RP.IRec = I;

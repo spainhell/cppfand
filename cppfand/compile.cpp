@@ -725,7 +725,8 @@ LocVar* RdVarName(LocVarBlkD* LVB, bool IsParList)
 	TestIdentif();
 	LocVar* lv = LVB->Root;
 	while (lv != nullptr) {
-		if (EquUpcase(lv->Name, LexWord)) Error(26);
+		pstring lvName = lv->Name.c_str();
+		if (EquUpcase(lvName, LexWord)) Error(26);
 		lv = (LocVar*)lv->Chain;
 	}
 	//lv = (LocVar*)GetZStore(sizeof(*lv) - 1 + LexWord.length());
@@ -930,7 +931,8 @@ bool FindLocVar(LocVar* LVRoot, LocVar** LV)
 	if (Lexem != _identifier) return result;
 	*LV = LVRoot;
 	while (*LV != nullptr) {
-		if (EquUpcase((*LV)->Name, LexWord)) { return true; }
+		pstring lvName = (*LV)->Name.c_str();
+		if (EquUpcase(lvName, LexWord)) { return true; }
 		*LV = (LocVar*)(*LV)->Chain;
 	}
 	return result;
@@ -1726,7 +1728,7 @@ FrmlElem* RdPrim(char& FTyp)
 	case _identifier: {
 		if (InpArrLen == 705 && CurrPos >= 210)
 		{
-			printf("compile.cpp 1728; ");
+			//printf("compile.cpp 1728; ");
 		}
 		SkipBlank(false);
 		if (IsFun(R0Fun, LexWord, FunCode))

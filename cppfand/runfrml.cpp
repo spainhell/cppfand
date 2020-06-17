@@ -694,10 +694,10 @@ label1:
 		break;
 	}
 	case _eval: {
-			MarkStore(p);
-			result = RunReal(GetEvalFrml((FrmlElem21*)X));
-			ReleaseStore(p);
-			break;
+		MarkStore(p);
+		result = RunReal(GetEvalFrml((FrmlElem21*)X));
+		ReleaseStore(p);
+		break;
 	}
 	case _divide: {
 		result = RunReal(iX0->P1) / RunReal(iX0->P2);
@@ -848,8 +848,10 @@ label1:
 	case _color: result = AColors[MinW(WORD(RunInt(iX0->P1)), 53)]; break;
 	case _portin: result = PortIn(RunBool(iX0->P1), WORD(RunInt(iX0->P2))); break;
 	case _setmybp: {
-		cr = MyBP; SetMyBP(ProcMyBP);
-		result = RunReal(iX0->P1); SetMyBP((ProcStkD*)cr);
+		cr = MyBP;
+		SetMyBP(ProcMyBP);
+		result = RunReal(iX0->P1);
+		SetMyBP((ProcStkD*)cr);
 		break;
 	}
 	default: { result = RunRealStr(X); break; }
@@ -908,9 +910,9 @@ void TestTFrml(FieldDescr* F, FrmlElem* Z)
 	}
 }
 
-bool CanCopyT(FieldDPtr F, FrmlPtr Z)
+bool CanCopyT(FieldDescr* F, FrmlElem* Z)
 {
-	FileDPtr cf; void* cr;
+	FileD* cf = nullptr; void* cr = nullptr;
 	auto result = false;
 	cf = CFile; cr = CRecPtr; TF02 = nullptr; result = false; TestTFrml(F, Z);
 	CFile = cf; CRecPtr = cr; result = TF02 != nullptr;
@@ -922,33 +924,44 @@ bool TryCopyT(FieldDPtr F, TFilePtr TF, longint& pos, FrmlPtr Z)
 	LockMode md, md2;
 	bool result = false;
 	if (TF->Format == TFile::DbtFormat || TF->Format == TFile::FptFormat) return result;
-	if ((BYTE)Z->Op == _gettxt) { pos = CopyTFFromGetTxt(TF, Z); result = true; }
+	if ((BYTE)Z->Op == _gettxt)	{
+		pos = CopyTFFromGetTxt(TF, Z);
+		result = true;
+	}
 	else if (CanCopyT(F, Z) && (TF02->Format == TF->Format)) {
-		result = true; pos = CopyTFString(TF, TFD02, TF02, TF02Pos);
+		result = true;
+		pos = CopyTFString(TF, TFD02, TF02, TF02Pos);
 	}
 	return result;
 }
 
-void AssgnFrml(FieldDPtr F, FrmlPtr X, bool Delete, bool Add)
+void AssgnFrml(FieldDescr* F, FrmlElem* X, bool Delete, bool Add)
 {
 	LongStr* s; longint pos; TFilePtr tf;
 	switch (F->FrmlTyp) {
 	case 'S': {
 		if (F->Typ == 'T') {
-			if (HasTWorkFlag) tf = &TWork;
+			if (HasTWorkFlag()) tf = &TWork;
 			else tf = CFile->TF;
 			if (TryCopyT(F, tf, pos, X)) {
-				if (Delete) DelTFld(F); T_(F, pos);
+				if (Delete) DelTFld(F);
+				T_(F, pos);
 			}
 			else {
-				s = RunLongStr(X); if (Delete) DelTFld(F); LongS_(F, s);
+				s = RunLongStr(X);
+				if (Delete) DelTFld(F);
+				LongS_(F, s);
 				ReleaseStore(s);
 			}
 		}
 		else S_(F, RunShortStr(X));
 		break;
 	}
-	case 'R': { if (Add) R_(F, _R(F) + RunReal(X)); else R_(F, RunReal(X)); break; }
+	case 'R': {
+			if (Add) R_(F, _R(F) + RunReal(X));
+			else R_(F, RunReal(X));
+			break;
+		}
 	case 'B': { B_(F, RunBool(X)); break;	}
 	}
 }
@@ -983,7 +996,7 @@ void LVAssignFrml(LocVar* LV, void* OldBP, bool Add, FrmlPtr X)
 	SetMyBP((ProcStkD*)bp);
 }
 
-void DecodeFieldRSB(FieldDPtr F, WORD LWw, double R, pstring T, bool B, pstring& Txt)
+void DecodeFieldRSB(FieldDescr* F, WORD LWw, double R, pstring T, bool B, pstring& Txt)
 {
 	WORD L = 0, M = 0; char C = 0;
 	L = F->L; M = F->M;
@@ -1017,7 +1030,7 @@ void DecodeFieldRSB(FieldDPtr F, WORD LWw, double R, pstring T, bool B, pstring&
 	Txt = T;
 }
 
-void DecodeField(FieldDPtr F, WORD LWw, pstring& Txt)
+void DecodeField(FieldDescr* F, WORD LWw, pstring& Txt)
 {
 	double r = 0;
 	pstring s;

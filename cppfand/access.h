@@ -301,7 +301,7 @@ public:
 	char FTyp = '\0';
 	FileD* FD = nullptr;
 	void* RecPtr = nullptr;
-	pstring Name;
+	std::string Name;
 	char Op = '\0';
 	WORD BPOfs = 0;
 	bool IsRetPar = false;
