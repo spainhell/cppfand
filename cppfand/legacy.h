@@ -63,8 +63,6 @@ inline longint OvrGetBuf() { return 1024 * 1024; }
 inline void OvrSetBuf(longint Size) {}
 inline void OvrSetRetry(longint Size) {};
 
-double Real48ToDouble(void* buf);
-
 inline void GetMem(void* pointer, int Size) { pointer = new unsigned char[Size]; }
 
 void beep();

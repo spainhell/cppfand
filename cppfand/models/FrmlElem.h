@@ -8,6 +8,8 @@ public:
 	FrmlElem* P1 = nullptr; FrmlElem* P2 = nullptr; FrmlElem* P3 = nullptr;
 	FrmlElem* P4 = nullptr; FrmlElem* P5 = nullptr; FrmlElem* P6 = nullptr; // 0
 	char Delim = '\0'; // 0
+	BYTE N11 = 0, N12 = 0;
+	BYTE N21 = 0, N22 = 0;
 	BYTE buff[64]{ 0 };
 };
 

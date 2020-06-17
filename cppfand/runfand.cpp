@@ -4,6 +4,7 @@
 #include "base.h"
 #include "legacy.h"
 #include "pstring.h"
+#include "../pascal/real48.h"
 #include "drivers.h"
 #include "access.h"
 #include "editor.h"

@@ -764,8 +764,10 @@ void SetCPage()
 void DisplRecNr(longint N)
 {
 	if (E->RecNrLen > 0) {
-		screen.GotoXY(E->RecNrPos, 1); TextAttr = colors.fNorm;
-		printf("%*i", E->RecNrLen, N);
+		screen.GotoXY(E->RecNrPos, 1); 
+		TextAttr = colors.fNorm;
+		//printf("%*i", E->RecNrLen, N);
+		screen.ScrFormatWrText(E->RecNrPos, 1, "%*i", E->RecNrLen, N);
 	}
 }
 
@@ -778,8 +780,12 @@ void AdjustCRec()
 	if (BaseRec == 0) {
 		BaseRec = 1;
 		if (!IsNewRec) {
-			IsNewRec = true; Append = true; FirstEmptyFld = CFld; ZeroAllFlds();
-			SetWasUpdated(); NewRecExit();
+			IsNewRec = true; 
+			Append = true; 
+			FirstEmptyFld = CFld; 
+			ZeroAllFlds();
+			SetWasUpdated(); 
+			NewRecExit();
 		}
 		else SetWasUpdated();
 		NewDisplLL = true;
@@ -897,15 +903,22 @@ void DisplTabDupl()
 
 void DisplSysLine()
 {
-	WORD i, j; pstring m, s, x, z; bool point;
+	WORD i = 0, j = 0; 
+	pstring m, s, x, z; 
+	bool point = false;
 	s = E->Head;
-	if (s == "") return; screen.GotoXY(1, 1); TextAttr = colors.fNorm; ClrEol();
+	if (s == "") return; 
+	screen.GotoXY(1, 1); 
+	TextAttr = colors.fNorm; 
+	ClrEol();
 	i = 1; x = "";
 	while (i <= s.length())
 		if (s[i] == '_') {
-			m = ""; point = false;
+			m = ""; 
+			point = false;
 			while ((i <= s.length()) && (s[i] == '_' || s[i] == '.')) {
-				if (s[i] == '.') point = true; m = m + s[i]; i++;
+				if (s[i] == '.') point = true; 
+				m.Append(s[i]); i++;
 			}
 			if (point) {
 				if (m == "__.__.__") x = x + StrDate(Today(), "DD.MM.YY");
@@ -914,12 +927,15 @@ void DisplSysLine()
 			}
 			else if (m.length() == 1) x = x + m;
 			else {
-				E->RecNrLen = m.length(); E->RecNrPos = i - m.length();
-				for (j = 1; j < m.length(); j++) x = x + ' ';
+				E->RecNrLen = m.length(); 
+				E->RecNrPos = i - m.length();
+				for (j = 1; j < m.length(); j++) x.Append(' ');
 			}
 		}
-		else { x = x + s[i]; i++; }
-	if (x.length() > TxtCols) x[0] = char(TxtCols); printf("%s", x.c_str());
+		else { x.Append(s[i]); i++; }
+	if (x.length() > TxtCols) x[0] = char(TxtCols); 
+	//printf("%s", x.c_str());
+	screen.ScrWrText(1, 1, x.c_str());
 	DisplRecNr(CRec());
 }
 
@@ -3173,7 +3189,7 @@ void DisplLL()
 
 void DisplCtrlAltLL(WORD Flags)
 {
-	if (Flags && 0x04 != 0) {        /* Ctrl */
+	if ((Flags & 0x04) != 0) {        /* Ctrl */
 		if (E->CtrlLast != nullptr) {
 			MsgLine = E->CtrlLast;
 			WrLLMsgTxt();
@@ -3182,13 +3198,13 @@ void DisplCtrlAltLL(WORD Flags)
 		else if (EdRecVar) WrLLMsg(154);
 		else WrLLMsg(127);
 	}
-	else if (Flags && 0x03 != 0)         /* Shift */
+	else if ((Flags & 0x03) != 0)         /* Shift */
 		if (E->ShiftLast != nullptr) {
 			MsgLine = E->ShiftLast;
 			WrLLMsgTxt();
 		}
 		else DisplLL();
-	else if (Flags && 0x08 != 0)          /* Alt */
+	else if ((Flags & 0x08) != 0)          /* Alt */
 		if (E->AltLast != nullptr) {
 			MsgLine = E->AltLast;
 			WrLLMsgTxt();
@@ -3227,7 +3243,7 @@ void CtrlReadKbd()
 	if (F1Mode && Mode24) DisplLLHlp();
 label1:
 	if (LLKeyFlags != 0) { flgs = LLKeyFlags; goto label11; }
-	else if (KbdFlgs && 0x0f != 0) {
+	else if ((KbdFlgs & 0x0f) != 0) {
 		flgs = KbdFlgs;
 	label11:
 		DisplCtrlAltLL(flgs);
@@ -3426,7 +3442,7 @@ label81:
 		case _right_:
 		case _D_:
 		label12:
-			if ((CFld->Chain != nullptr) && !IsFirstEmptyFld)
+			if ((CFld->Chain != nullptr) && !IsFirstEmptyFld())
 				GotoRecFld(CRec(), (EFldD*)CFld->Chain);
 			break;
 		case _Home_:

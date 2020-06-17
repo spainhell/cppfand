@@ -2,6 +2,7 @@
 
 
 #include "../pascal/random.h"
+#include "../pascal/real48.h"
 #include "compile.h"
 #include "legacy.h"
 #include "oaccess.h"
@@ -1297,7 +1298,9 @@ double _R(FieldDPtr F)
 		case 'R': {
 		label1:
 			if (IsNullValue(&source[F->Displ], F->NBytes)) result = 0;
-			else result = Real48ToDouble(&source[F->Displ]);
+			else { 
+				result = Real48ToDouble(&source[F->Displ]); 
+			}
 		}
 		}
 	}
@@ -1989,6 +1992,12 @@ WORD FileD::GetNrKeys()
 	n = 0; k = Keys;
 	while (k != nullptr) { n++; k = k->Chain; }
 	return n;
+}
+
+LocVar* LocVarBlkD::GetRoot()
+{
+	if (this->vLocVar.size() > 0) return this->vLocVar[0];
+	return nullptr;
 }
 
 LocVar* LocVarBlkD::FindByName(std::string Name)

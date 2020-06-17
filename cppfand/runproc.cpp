@@ -1121,7 +1121,7 @@ void CallProcedure(Instr_proc* PD)
 	SetInpTT(PD->PPos, true);
 	ReadProcHead();
 	n = LVBD.NParam;
-	lvroot = LVBD.vLocVar[0];
+	lvroot = LVBD.GetRoot();
 	oldbp = MyBP;
 	//PushProcStk();
 	if ((n != PD->N) && !((n == PD->N - 1) && PD->ExPar)) {
@@ -1131,7 +1131,7 @@ void CallProcedure(Instr_proc* PD)
 	}
 	lv0 = lvroot;
 	it0 = LVBD.vLocVar.begin();
-	for (i = 0; i <= n; i++) /* !!! with PD->TArg[i] do!!! */
+	for (i = 0; i < n; i++) /* !!! with PD->TArg[i] do!!! */
 	{
 		if (PD->TArg[i].FTyp != lv0->FTyp) goto label1;
 		switch (PD->TArg[i].FTyp) {

@@ -1,6 +1,7 @@
 #include "screen.h"
 #include <exception>
 #include "pstring.h"
+#include <stdarg.h>
 
 const unsigned int BUFFSIZE = 128 * 1024;
 
@@ -91,6 +92,16 @@ void Screen::ScrWrText(WORD X, WORD Y, const char* S)
 	DWORD written = 0;
 	size_t len = strlen(S);
 	WriteConsoleOutputCharacterA(_handle, S, len, { (short)X, (short)Y }, &written);
+}
+
+void Screen::ScrFormatWrText(WORD X, WORD Y, char const* const _Format, ...)
+{
+	va_list args;
+	va_start(args, _Format);
+	char buffer[255];
+	vsnprintf(buffer, sizeof(buffer), _Format, args);
+	ScrWrText(X, Y, buffer);
+	va_end(args);
 }
 
 void Screen::ScrWrBuf(WORD X, WORD Y, void* Buf, WORD L)

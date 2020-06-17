@@ -287,6 +287,7 @@ public:
 	//~LocVarBlkD() {
 	//	for (size_t i = 0; i < vLocVar.size(); i ++) { delete vLocVar[i]; }
 	//}
+	LocVar* GetRoot();
 	LocVar* FindByName(std::string Name);
 	std::vector<LocVar*> vLocVar;
 	//LocVar* Root = nullptr;

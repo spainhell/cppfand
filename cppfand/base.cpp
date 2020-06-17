@@ -12,7 +12,8 @@
 #include "oaccess.h"
 #include <ctime>
 
-/*const*/ char Version[] = { '4', '.', '2', '0', '\0' };
+/*const*/ 
+char Version[] = { '4', '.', '2', '0', '\0' };
 
 Video video;
 Spec spec;
@@ -1356,10 +1357,12 @@ void MarkBoth(void* p, void* p2)
 
 void ReleaseStore(void* pointer)
 {
+	delete[] pointer;
 }
 
 void ReleaseAfterLongStr(void* pointer)
 {
+	delete[] pointer;
 }
 
 WORD CountDLines(void* Buf, WORD L, char C)

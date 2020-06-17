@@ -1512,17 +1512,16 @@ FrmlElem* RdComp(char& FTyp)
 	integer N = 0;
 	FrmlElem* Z1 = nullptr;
 	FrmlElem* Z = RdAdd(FTyp);
-	auto iZ0 = (FrmlElem0*)Z;
-	auto iZ1 = (FrmlElem1*)Z;
 	Z1 = Z;
 	if (Lexem >= _equ && Lexem <= _ne)
 		if (FTyp == 'R')
 		{
 			Z = new FrmlElem0(_compreal, 2); // GetOp(_compreal, 2);
+			auto iZ0 = (FrmlElem0*)Z;
 			iZ0->P1 = Z1;
-			iZ1->N21 = Lexem;
+			iZ0->N21 = Lexem;
 			RdLex();
-			iZ1->N22 = RdPrecision();
+			iZ0->N22 = RdPrecision();
 			iZ0->P2 = RdAdd(FTyp);
 			TestReal(FTyp);
 			FTyp = 'B';
@@ -1530,10 +1529,11 @@ FrmlElem* RdComp(char& FTyp)
 		else {
 			TestString(FTyp);
 			Z = new FrmlElem0(_compstr, 2); // GetOp(_compstr, 2);
+			auto iZ0 = (FrmlElem0*)Z;
 			iZ0->P1 = Z1;
-			iZ1->N21 = Lexem;
+			iZ0->N21 = Lexem;
 			RdLex();
-			iZ1->N22 = RdTilde();
+			iZ0->N22 = RdTilde();
 			iZ0->P2 = RdAdd(FTyp);
 			TestString(FTyp);
 			FTyp = 'B';
@@ -1543,14 +1543,18 @@ FrmlElem* RdComp(char& FTyp)
 		if (FTyp == 'R')
 		{
 			Z = new FrmlElem1(_inreal, 1); // GetOp(_inreal, 1);
+			auto iZ1 = (FrmlElem1*)Z;
 			iZ1->N11 = RdPrecision();
 		}
 		else
 		{
 			TestString(FTyp);
 			Z = new FrmlElem1(_instr, 1); // GetOp(_instr, 1);
+			auto iZ1 = (FrmlElem1*)Z;
 			iZ1->N11 = RdTilde();
 		}
+		auto iZ0 = (FrmlElem0*)Z;
+		auto iZ1 = (FrmlElem1*)Z;
 		iZ0->P1 = Z1;
 		Accept('['); N = 0;
 	label1:
