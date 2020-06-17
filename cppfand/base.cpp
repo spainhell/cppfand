@@ -1038,7 +1038,7 @@ WORD FindCtrlM(LongStr* s, WORD i, WORD n)
 	WORD l = s->LL;
 	while (i <= 1)
 	{
-		if (s->A[i] == '0x0D') {
+		if (s->A[i] == 0x0D) {
 			if (n > 1) n--;
 			else return i;
 		}

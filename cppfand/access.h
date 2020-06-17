@@ -294,8 +294,9 @@ struct FuncD // ø. 233
 	pstring Name;
 };
 
-struct LocVar : public Chained // ø. 239
+class LocVar : public Chained // ø. 239
 {
+public:
 	bool IsPar = false;
 	char FTyp = '\0';
 	FileD* FD = nullptr;
