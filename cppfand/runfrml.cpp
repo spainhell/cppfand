@@ -1065,7 +1065,7 @@ void DecodeFieldRSB(FieldDescr* F, WORD LWw, double R, pstring T, bool B, pstrin
 	}
 	case 'R': str(R, L, T); break;
 	default: /*"F"*/ {
-		if (F->Flg && f_Comma != 0) R = R / Power10[M];
+		if ((F->Flg & f_Comma) != 0) R = R / Power10[M];
 		str(RoundReal(R, M), L, M, T);
 		break;
 	}

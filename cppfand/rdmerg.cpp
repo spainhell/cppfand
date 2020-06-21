@@ -400,7 +400,7 @@ void ImplAssign(OutpRD* RD, FieldDescr* FNew)
 		FD = InpFD_M(Ii);
 		RP = FD->RecPtr;
 		if ((FD->Typ == FDNew->Typ) && FldTypIdentity(F, FNew) &&
-			(F->Typ != 'T') && (F->Flg && f_Stored != 0) && (FNew->Flg == F->Flg)) {
+			(F->Typ != 'T') && ((F->Flg & f_Stored) != 0) && (FNew->Flg == F->Flg)) {
 			A->Kind = _move;
 			A->L = FNew->NBytes;
 			// TODO: nutno doresit ToPtr a FromPtr
@@ -435,7 +435,7 @@ FrmlElem* AdjustComma_M(FrmlElem* Z1, FieldDescr* F, char Op)
 	FrmlElem2* Z2 = nullptr;
 	FrmlElem* result = Z1;
 	if (F->Typ != 'F') return result;
-	if (F->Flg && f_Comma == 0) return result;
+	if ((F->Flg & f_Comma) == 0) return result;
 	Z2 = new FrmlElem2(_const, 0, Power10[F->M]); // GetOp(_const, sizeof(double));
 	//Z2->R = Power10[F->M];
 	Z = new FrmlElem0(Op, 0); // GetOp(Op, 0);

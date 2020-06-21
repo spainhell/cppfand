@@ -1597,7 +1597,7 @@ Instr* RdCopyFile()
 			D->HdF = RdFldName(D->HdFD);
 			if ((D->HdF->FrmlTyp != 'S') || !D->HdFD->IsParFile
 				|| (D->Opt1 == cpFix || D->Opt1 == cpVar)
-				&& (D->HdF->Flg && f_Stored == 0)) Error(52);
+				&& ((D->HdF->Flg & f_Stored) == 0)) Error(52);
 		}
 		else if (IsOpt("MODE")) {
 			TestLex(_quotedstr);

@@ -794,7 +794,7 @@ AssignD* RdAssign2()
 		A->FD = FD; 
 		F = RdFldName(FD); 
 		A->PFldD = F;
-		if (F->Flg && f_Stored == 0) OldError(14);
+		if ((F->Flg & f_Stored) == 0) OldError(14);
 		RdAssignFrml(F->FrmlTyp, A->Add, &A->Frml);
 	}
 	else if (FindLocVar(&LVBD, &LV)) {

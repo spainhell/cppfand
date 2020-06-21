@@ -356,7 +356,7 @@ label2:
 		}
 		if (F->Typ == 'F') {
 			str(r, L, M, *Txt);
-			if (F->Flg && f_Comma != 0) {
+			if ((F->Flg & f_Comma) != 0) {
 				r = r * Power10[M];
 				if (r >= 0) r = r + 0.5; else r = r - 0.5; r = (int)r;
 			}
@@ -1460,7 +1460,7 @@ void UndoRecord()
 		if (HasTF) if (NoDelTFlds) {
 			f = CFile->FldD;
 			while (f != nullptr) {
-				if ((f->Flg && f_Stored != 0) && (f->Typ == 'T'))
+				if (((f->Flg & f_Stored) != 0) && (f->Typ == 'T'))
 					*(longint*)((char*)(E->OldRecPtr) + f->Displ) = *(longint*)(((char*)(CRecPtr)+f->Displ));
 				f = (FieldDescr*)f->Chain;
 			}
@@ -2297,7 +2297,7 @@ bool FldInModeF3Key(FieldDPtr F)
 {
 	KeyFldD* KF;
 	auto result = false;
-	if (F->Flg && f_Stored == 0) return result;
+	if ((F->Flg & f_Stored) == 0) return result;
 	KF = VK->KFlds;
 	while (KF != nullptr) {
 		if (KF->FldD == F) { result = true; return result; }
@@ -2309,7 +2309,7 @@ bool FldInModeF3Key(FieldDPtr F)
 bool IsSkipFld(EFldD* D)
 {
 	/* !!! with D^ do!!! */
-	return (!D->Tab && ((E->NTabsSet > 0) || (D->FldD->Flg && f_Stored == 0)
+	return (!D->Tab && ((E->NTabsSet > 0) || ((D->FldD->Flg & f_Stored) == 0)
 		|| OnlySearch && FldInModeF3Key(D->FldD)));
 }
 
@@ -2558,7 +2558,7 @@ label1:
 	screen.Window(E->FrstCol, R1, E->LastCol, E->LastRow); TextAttr = colors.tNorm;
 	Kind = 'V'; OldTxtPos = TxtPos;
 	if (Ed) LockRec(false);
-	if (F->Flg && f_Stored != 0) { S = _LongS(F); if (Ed) Kind = 'T'; }
+	if ((F->Flg & f_Stored) != 0) { S = _LongS(F); if (Ed) Kind = 'T'; }
 	else S = RunLongStr(F->Frml);
 label2:
 	X = nullptr; if (TTExit) X = E->ExD; Upd = false;
@@ -2775,7 +2775,7 @@ bool SelFldsForEO(EditOpt* EO, LinkD* LD)
 		F = FL->FldD;
 		if ((LD == nullptr) || !FinArgs(LD, F)) {
 			s = F->Name;
-			if (F->Flg && f_Stored == 0) { pstring olds = s; s = SelMark; s += olds; }
+			if ((F->Flg & f_Stored) == 0) { pstring olds = s; s = SelMark; s += olds; }
 			ww.PutSelect(s);
 		}
 		FL = (FieldList)FL->Chain;
@@ -3091,7 +3091,7 @@ bool StartProc(Instr_proc* ExitProc, bool Displ)
 	if (HasTF) {
 		f = CFile->FldD;
 		while (f != nullptr) {
-			if ((f->Typ == 'T') && (f->Flg && f_Stored != 0) &&
+			if ((f->Typ == 'T') && ((f->Flg & f_Stored) != 0) &&
 				(*(longint*)(p + f->Displ) == *(longint*)(E->OldRecPtr) + f->Displ))
 				NoDelTFlds = true;
 			f = (FieldDescr*)f->Chain;

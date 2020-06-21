@@ -124,9 +124,11 @@ void WrLevel(integer Level)
 			if ((Level != 0) && d->IsSum) { n -= 2; l += 2; }
 			WrBlks(n);
 			if (f->Typ == 'F' || f->Typ == 'R') {
-				m = f->M; if (m != 0) {
-					for (i = 1; i < l - m - 1; i++) WrChar('_'); l = m;
-					if (f->Flg && f_Comma != 0) WrChar(',');
+				m = f->M;
+				if (m != 0) {
+					for (i = 1; i < l - m - 1; i++) WrChar('_');
+					l = m;
+					if ((f->Flg & f_Comma) != 0) WrChar(',');
 					else WrChar('.');
 				}
 			}

@@ -588,7 +588,7 @@ void WrDBaseHd()
 	F = CFile->FldD;
 	n = 0;
 	while (F != nullptr) {
-		if (F->Flg && f_Stored != 0) {
+		if ((F->Flg & f_Stored) != 0) {
 			n++;
 			{ // with P^.Flds[n]
 				auto actual = P->Flds[n];
@@ -851,7 +851,7 @@ void T_(FieldDPtr F, longint Pos)
 	void* p = CRecPtr;
 	char* source = (char*)p + F->Displ;
 	longint* LP = (longint*)source;
-	if ((F->Typ == 'T') && (F->Flg && f_Stored != 0)) {
+	if ((F->Typ == 'T') && ((F->Flg & f_Stored) != 0)) {
 		if (CFile->Typ == 'D')
 			if (Pos == 0) FillChar(source, 10, ' ');
 			else { str(Pos, s); Move(&s[1], source, 10); }
@@ -883,7 +883,7 @@ void DelAllDifTFlds(void* Rec, void* CompRec)
 	FieldDescr* F = CFile->FldD;
 	while (F != nullptr)
 	{
-		if (F->Typ == 'T' && F->Flg && f_Stored != 0) DelDifTFld(Rec, CompRec, F);
+		if (F->Typ == 'T' && ((F->Flg & f_Stored) != 0)) DelDifTFld(Rec, CompRec, F);
 		F = (FieldDescr*)F->Chain;
 	}
 }
@@ -1001,10 +1001,10 @@ void LongS_(FieldDPtr F, LongStr* S)
 {
 	longint Pos; LockMode md;
 
-	if (F->Flg && f_Stored != 0) {
+	if ((F->Flg & f_Stored) != 0) {
 		if (S->LL == 0) T_(F, 0);
 		else {
-			if (F->Flg && f_Encryp != 0) Code(S->A, S->LL);
+			if ((F->Flg & f_Encryp) != 0) Code(S->A, S->LL);
 #ifdef FandSQL
 			if (CFile->IsSQLFile) { SetTWorkFlag; goto label1; }
 			else
@@ -1017,7 +1017,8 @@ void LongS_(FieldDPtr F, LongStr* S)
 					Pos = CFile->TF->Store(S);
 					OldLMode(md);
 				}
-			if (F->Flg && f_Encryp != 0) Code(S->A, S->LL); T_(F, Pos);
+			if ((F->Flg & f_Encryp) != 0) Code(S->A, S->LL);
+			T_(F, Pos);
 		}
 	}
 }
@@ -1029,7 +1030,7 @@ void S_(FieldDPtr F, pstring S)
 	integer i, L, M; longint Pos; LongStrPtr ss;
 	const BYTE LeftJust = 1;
 
-	if (F->Flg && f_Stored != 0)
+	if ((F->Flg & f_Stored) != 0)
 	{
 		p = CRecPtr; O += F->Displ; L = F->L; M = F->M;
 		switch (F->Typ) {
@@ -1045,7 +1046,7 @@ void S_(FieldDPtr F, pstring S)
 			i = 1;
 			if ((S.length() > L) && (M != LeftJust)) i = S.length() + 1 - L;
 			Move(&S[i], p, L);
-			if (F->Flg && f_Encryp != 0) Code(p, L);
+			if ((F->Flg & f_Encryp) != 0) Code(p, L);
 			break;
 		}
 		case 'N': {
@@ -1177,7 +1178,7 @@ LongStr* _LongS(FieldDPtr F)
 			S->LL = l;
 			if (F->Typ == 'A') {
 				Move(&source[F->Displ], &S[0], l);
-				if (F->Flg && f_Encryp != 0) Code(S->A, l);
+				if ((F->Flg & f_Encryp) != 0) Code(S->A, l);
 				if (IsNullValue(S, l)) { S->LL = 0; ReleaseAfterLongStr(S); }
 			}
 			else if (IsNullValue(&source[F->Displ], F->NBytes)) {
@@ -1259,7 +1260,7 @@ double _RforD(FieldDPtr F, void* P)
 	Move(P, &s[1], s.length());
 	switch (F->Typ) {
 	case 'F': { ReplaceChar(s, ',', '.');
-		if (F->Flg && f_Comma != 0) {
+		if ((F->Flg & f_Comma) != 0) {
 			integer i = s.first('.');
 			if (i > 0) s.Delete(i, 1);
 		}
@@ -1337,12 +1338,12 @@ void R_(FieldDPtr F, double R)
 		switch (F->Typ) {
 		case 'F': {
 			if (CFile->Typ == 'D') {
-				if (F->Flg && f_Comma != 0) R = R / Power10[m];
+				if ((F->Flg & f_Comma) != 0) R = R / Power10[m];
 				str(F->NBytes, s);
 				Move(&s[1], p, F->NBytes);
 			}
 			else {
-				if (F->Flg && f_Comma == 0) R = R * Power10[m];
+				if ((F->Flg & f_Comma) == 0) R = R * Power10[m];
 				WORD tmp = F->NBytes;
 				FixFromReal(R, p, tmp);
 				F->NBytes = (BYTE)tmp;
@@ -1373,7 +1374,7 @@ void B_(FieldDPtr F, bool B)
 	WORD* O = (WORD*)p;
 	bool* BP = (bool*)p;
 	char* CP = (char*)p;
-	if ((F->Typ == 'B') && (F->Flg && f_Stored != 0)) {
+	if ((F->Typ == 'B') && ((F->Flg & f_Stored) != 0)) {
 		*O += F->Displ;
 		if (CFile->Typ == 'D')
 		{
@@ -1478,7 +1479,7 @@ void DelTFlds()
 {
 	FieldDescr* F = CFile->FldD;
 	while (F != nullptr) {
-		if ((F->Flg && f_Stored != 0) && (F->Typ == 'T')) DelTFld(F);
+		if (((F->Flg & f_Stored) != 0) && (F->Typ == 'T')) DelTFld(F);
 		F = (FieldDescr*)F->Chain;
 	}
 }
@@ -1488,7 +1489,7 @@ void CopyRecWithT(void* p1, void* p2)
 	Move(p1, p2, CFile->RecLen);
 	FieldDescr* F = CFile->FldD;
 	while (F != nullptr) {
-		if ((F->Typ == 'T') && (F->Flg && f_Stored != 0)) {
+		if ((F->Typ == 'T') && ((F->Flg & f_Stored) != 0)) {
 			TFilePtr tf1 = CFile->TF; TFilePtr tf2 = tf1; CRecPtr = p1;
 			if ((tf1->Format != TFile::T00Format)) {
 				LongStrPtr s = _LongS(F);

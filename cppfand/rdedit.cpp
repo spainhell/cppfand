@@ -544,31 +544,44 @@ void SetFrmlFlags(FrmlPtr Z)
 
 void SetFlag(FieldDescr* F)
 {
-	EFldD* D;
+	EFldD* D = nullptr;
 	if ((F->Typ & 0x80) != 0) return;
 	F->Typ = F->Typ | 0x80;
-	if (F->Flg && f_Stored != 0) { D = FindEFld_E(F); if (D != nullptr) D->Used = true; }
+	if ((F->Flg & f_Stored) != 0) {
+		D = FindEFld_E(F);
+		if (D != nullptr) D->Used = true;
+	}
 	else SetFrmlFlags(F->Frml);
 }
 
 void RdDep()
 {
-	FrmlPtr Bool, Z; EFldD* D; char FTyp; DepDPtr Dp;
+	FrmlElem* Bool = nullptr; FrmlElem* Z = nullptr;
+	EFldD* D = nullptr; char FTyp = '\0'; DepD* Dp = nullptr;
+	
 	RdLex();
 label1:
-	Accept('('); Bool = RdBool(); Accept(')');
+	Accept('(');
+	Bool = RdBool();
+	Accept(')');
 label2:
-	D = FindEFld_E(RdFldName(CFile)); Accept(_assign); Z = RdFrml(FTyp);
+	D = FindEFld_E(RdFldName(CFile));
+	Accept(_assign);
+	Z = RdFrml(FTyp);
 	if (D != nullptr)
 	{
-		Dp = (DepD*)GetStore(sizeof(*Dp)); Dp->Bool = Bool; Dp->Frml = Z;
+		Dp = new DepD(); // (DepD*)GetStore(sizeof(*Dp));
+		Dp->Bool = Bool;
+		Dp->Frml = Z;
 		ChainLast(D->Dep, Dp);
 	}
 	if (Lexem == ';')
 	{
-		RdLex(); if (!(Lexem == '#' || Lexem == 0x1A))
+		RdLex();
+		if (!(Lexem == '#' || Lexem == 0x1A))
 		{
-			if (Lexem == '(') goto label1; else goto label2;
+			if (Lexem == '(') goto label1;
+			else goto label2;
 		}
 	}
 }

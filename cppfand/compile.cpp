@@ -1242,7 +1242,7 @@ void SrchZ(FrmlElem* Z);
 void SrchF(FieldDPtr F)
 {
 	if (F == KeyArgFld) { KeyArgFound = true; return; }
-	if (F->Flg && f_Stored == 0) SrchZ(F->Frml);
+	if ((F->Flg & f_Stored) == 0) SrchZ(F->Frml);
 }
 
 void SrchZ(FrmlElem* Z)

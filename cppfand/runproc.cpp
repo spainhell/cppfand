@@ -104,7 +104,7 @@ void PromptAutoRprt(RprtOpt* RO)
 	while (FL != nullptr)
 	{
 		F = FL->FldD;
-		if (F->Flg && f_Stored != 0) ww.PutSelect(F->Name);
+		if ((F->Flg & f_Stored) != 0) ww.PutSelect(F->Name);
 		else
 		{
 			pstring tmpStr = SelMark;
