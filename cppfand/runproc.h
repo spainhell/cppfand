@@ -69,6 +69,6 @@ void MemDiagProc();
 #endif
 
 void RunInstr(Instr* PD);
-void RunProcedure(void* PDRoot);
+void RunProcedure(Instr* PDRoot);
 void CallProcedure(Instr_proc* PD); // TODO: nìjaké ukazatele
 void RunMainProc(RdbPos RP, bool NewWw);

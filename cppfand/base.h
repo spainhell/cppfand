@@ -13,7 +13,7 @@ class LongStr // ø24
 {
 public:
 	LongStr() { A = new char[50]; }
-	LongStr(int size) { A = new char[size]; }
+	LongStr(WORD size) { A = new char[size]; LL = size; }
 	~LongStr() { delete[] A; }
 	WORD LL = 0;
 	char* A;

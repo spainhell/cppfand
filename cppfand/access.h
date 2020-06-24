@@ -295,12 +295,13 @@ public:
 	WORD Size = 0;
 };
 
+class Instr;
 struct FuncD // ø. 233
 {
 	FuncD* Chain = nullptr;
 	char FTyp = '\0';
 	LocVarBlkD LVB; // {1.LV is result}
-	void* Instr = nullptr; // {InstrPtr}
+	Instr* pInstr = nullptr; // {InstrPtr}
 	pstring Name;
 };
 

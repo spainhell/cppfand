@@ -985,7 +985,7 @@ bool TryCopyT(FieldDPtr F, TFilePtr TF, longint& pos, FrmlPtr Z)
 
 void AssgnFrml(FieldDescr* F, FrmlElem* X, bool Delete, bool Add)
 {
-	LongStr* s; longint pos; TFilePtr tf;
+	LongStr* s = nullptr; longint pos = 0; TFile* tf = nullptr;
 	switch (F->FrmlTyp) {
 	case 'S': {
 		if (F->Typ == 'T') {
@@ -1243,9 +1243,11 @@ label1:
 	}
 	case _concat: {
 		auto iX0 = (FrmlElem0*)X;
-		S = RunLongStr(iX0->P1);
-		ConcatLongStr(S, RunLongStr(iX0->P2));
-		ReleaseAfterLongStr(S); result = S;
+		auto S1 = RunLongStr(iX0->P1);
+		auto S2 = RunLongStr(iX0->P2);
+		result = ConcatLongStr(S1, S2);
+		delete S1;
+		delete S2;
 		break;
 	}
 	case _const: result = CopyToLongStr(((FrmlElem4*)X)->S); break;
@@ -1339,8 +1341,14 @@ pstring RunShortStr(FrmlPtr X)
 	return result;
 }
 
-void ConcatLongStr(LongStr* S1, LongStr* S2)
+LongStr* ConcatLongStr(LongStr* S1, LongStr* S2)
 {
+	WORD newLen = S1->LL + S2->LL;
+	if (newLen > MaxLStrLen) newLen = MaxLStrLen;
+	auto result = new LongStr(newLen);
+	memcpy(result->A, S1->A, S1->LL); // zkopiruje S1 do noveho retezce;
+	memcpy(&result->A[S1->LL], S2->A, newLen - S1->LL); // zkopiruje S2 (prip. jeho cast) do noveho retezce
+	return result;
 }
 
 void CopyLongStr(LongStr* S, WORD From, WORD Number)
@@ -1665,7 +1673,7 @@ void* RunUserFunc(FrmlElem19* X)
 		fl = (FrmlListEl*)fl->Chain;
 	}
 	ProcMyBP = MyBP;
-	RunProcedure(X->FC->Instr);
+	RunProcedure(X->FC->pInstr);
 	auto result = LocVarAd(lv);
 	ProcMyBP = (ProcStkD*)oldprocbp;
 	return result;

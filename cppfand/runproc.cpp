@@ -1090,11 +1090,11 @@ void RunInstr(Instr* PD)
 		}
 	}
 
-void RunProcedure(void* PDRoot)
+void RunProcedure(Instr* PDRoot)
 {
-	bool ExP, BrkP;
-	ExP = ExitP; BrkP = BreakP; ExitP = false; BreakP = false;
-	RunInstr((Instr*)PDRoot);
+	bool ExP = ExitP; bool BrkP = BreakP;
+	ExitP = false; BreakP = false;
+	RunInstr(PDRoot);
 	ExitP = ExP; BreakP = BrkP;
 }
 
@@ -1103,9 +1103,9 @@ void CallProcedure(Instr_proc* PD)
 	stSaveState* p = nullptr;
 	void* p1 = nullptr; void* p2 = nullptr;
 	void* oldbp = nullptr; void* oldprocbp = nullptr;
-	LocVar* lv0 = nullptr;
+	//LocVar* lv0 = nullptr;
 	std::_Vector_iterator<std::_Vector_val<std::_Simple_types<LocVar*>>> it0;
-	LocVar* lv1 = nullptr;
+	//LocVar* lv1 = nullptr;
 	std::_Vector_iterator<std::_Vector_val<std::_Simple_types<LocVar*>>> it1;
 	LocVar* lvroot = nullptr;
 	WORD i, j, n;
@@ -1129,16 +1129,16 @@ void CallProcedure(Instr_proc* PD)
 		CurrPos = 0;
 		Error(119);
 	}
-	lv0 = lvroot;
+	//lv0 = lvroot;
 	it0 = LVBD.vLocVar.begin();
 	for (i = 0; i < n; i++) /* !!! with PD->TArg[i] do!!! */
 	{
-		if (PD->TArg[i].FTyp != lv0->FTyp) goto label1;
+		if (PD->TArg[i].FTyp != (*it0)->FTyp) goto label1;
 		switch (PD->TArg[i].FTyp) {
 		case 'r':
 		case 'i': {
-				if (lv0->FD != PD->TArg[i].FD) goto label1;
-				lv0->RecPtr = PD->TArg[i].RecPtr;
+				if ((*it0)->FD != PD->TArg[i].FD) goto label1;
+				(*it0)->RecPtr = PD->TArg[i].RecPtr;
 				break;
 		}
 		case 'f': {
@@ -1149,64 +1149,64 @@ void CallProcedure(Instr_proc* PD)
 				RestoreCompState(p);
 			}
 			else CFile = PD->TArg[i].FD;
-			lv1 = lv0;
 			it1 = it0;
-			while (lv1 != nullptr) {
-				if ((lv1->FTyp == 'i' || lv1->FTyp == 'r') && (lv1->FD == lv0->FD)) lv1->FD = CFile;
-				lv1 = *it1++; // (LocVar*)lv1->Chain;
+			while (it1 != LVBD.vLocVar.end()) {
+				if (((*it1)->FTyp == 'i' || (*it1)->FTyp == 'r') 
+					&& ((*it1)->FD == (*it0)->FD)) (*it1)->FD = CFile;
+				it1++; // (LocVar*)lv1->Chain;
 			}
-			lv0->FD = CFile;
+			(*it0)->FD = CFile;
 			FDLocVarAllowed = true;
 			break;
 		}
 		default: {
 			z = PD->TArg[i].Frml;
-			if (lv0->IsRetPar && (z->Op != _getlocvar)
+			if ((*it0)->IsRetPar && (z->Op != _getlocvar)
 				|| PD->TArg[i].FromProlog
-				&& (PD->TArg[i].IsRetPar != lv0->IsRetPar)) goto label1;
-			LVAssignFrml(lv0, oldbp, false, PD->TArg[i].Frml);
+				&& (PD->TArg[i].IsRetPar != (*it0)->IsRetPar)) goto label1;
+			LVAssignFrml((*it0), oldbp, false, PD->TArg[i].Frml);
 			break;
 		}
 		}
-		lv0 = *it0++; // (LocVar*)lv0->Chain;
+		it0++; // (LocVar*)lv0->Chain;
 	}
-	lv1 = lv0;
+	//lv1 = lv0;
 	it1 = it0;
-	while (lv0 != nullptr) {
-		if (lv0->FTyp == 'r') {
-			CFile = lv0->FD;
+	while (it0 != LVBD.vLocVar.end()) {
+		if ((*it0)->FTyp == 'r') {
+			CFile = (*it0)->FD;
 			CRecPtr = GetRecSpace();
 			SetTWorkFlag();
 			ZeroAllFlds();
 			ClearDeletedFlag();
-			lv0->RecPtr = CRecPtr;
+			(*it0)->RecPtr = CRecPtr;
 		}
-		lv0 = *it0++; // (LocVar*)lv0->Chain;
+		it0++; // (LocVar*)lv0->Chain;
 	}
 	ProcMyBP = MyBP;
 	pd1 = ReadProcBody();
 	FDLocVarAllowed = false;
-	lv0 = lv1;
+	//lv0 = lv1;
 	it0 = it1;
-	while (lv0 != nullptr) {
-		if (lv0->FTyp == 'i') /* !!! with WKeyDPtr(lv->RecPtr)^ do!!! */
+	while (it0 != LVBD.vLocVar.end()/*lv0 != nullptr*/) {
+		if ((*it0)->FTyp == 'i') /* !!! with WKeyDPtr(lv->RecPtr)^ do!!! */
 		{
-			auto hX = (XWKey*)lv0->RecPtr;
-			if (hX->KFlds == nullptr) hX->KFlds = lv0->FD->Keys->KFlds;
-			auto tmp = (XWKey*)lv0->RecPtr;
+			auto hX = (XWKey*)(*it0)->RecPtr;
+			if (hX->KFlds == nullptr) hX->KFlds = (*it0)->FD->Keys->KFlds;
+			auto tmp = (XWKey*)(*it0)->RecPtr;
 			tmp->Open(hX->KFlds, true, false);
 		}
-		lv0 = *it0++; // (LocVar*)lv0->Chain;
+		it0++; // (LocVar*)lv0->Chain;
 	}
 	ReleaseStore2(p2);
 	RunProcedure(pd1);
-	lv0 = lvroot;
+	//lv0 = lvroot;
 	it0 = LVBD.vLocVar.begin();
 	i = 1;
-	while (lv0 != nullptr) {
-		if (lv0->IsRetPar) {
+	while (it0 != LVBD.vLocVar.end()) {
+		if ((*it0)->IsRetPar) {
 			z = PD->TArg[i].Frml;
-			switch (lv0->FTyp) {
+			switch ((*it0)->FTyp) {
 			case 'R': /*FloatPtr(Ptr(Seg(oldbp^), Ofs(oldbp^) + z->BPOfs)) =
 				FloatPtr(Ptr(Seg(MyBP^), Ofs(MyBP^) + lv->BPOfs))*;*/
 				break;
@@ -1220,12 +1220,12 @@ void CallProcedure(Instr_proc* PD)
 				break;
 			}
 		}
-		if (i > n) switch (lv0->FTyp) {
-		case 'r': { CFile = lv0->FD; ClearRecSpace(lv0->RecPtr); break; }
-		case 'i': { CFile = lv0->FD; WKeyDPtr(lv0->RecPtr)->Close(); break; };
+		if (i > n) switch ((*it0)->FTyp) {
+		case 'r': { CFile = (*it0)->FD; ClearRecSpace((*it0)->RecPtr); break; }
+		case 'i': { CFile = (*it0)->FD; ((XWKey*)(*it0)->RecPtr)->Close(); break; };
 		}
 		i++;
-		lv0 = *it0++; // (LocVar*)lv0->Chain;
+		it0++; // (LocVar*)lv0->Chain;
 	}
 	PopProcStk();
 	ProcMyBP = (ProcStkD*)oldprocbp;

@@ -2565,7 +2565,7 @@ label1:
 		fc->LVB = LVBD;
 		// nacte kod funkce (procedury)
 		AcceptKeyWord("BEGIN");
-		fc->Instr = RdBeginEnd();
+		fc->pInstr = RdBeginEnd();
 		Accept(';');
 	}
 	else if (Lexem == 0x1A) return;

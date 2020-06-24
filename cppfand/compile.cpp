@@ -783,7 +783,7 @@ label1:
 
 void RdLocDcl(LocVarBlkD* LVB, bool IsParList, bool WithRecVar, char CTyp)
 {
-	LocVar* lv = nullptr; FrmlElem* Z = nullptr;
+	FrmlElem* Z = nullptr;
 	pstring s; double r = 0; char typ = '\0', lx = '\0', fc = '\0';
 	WORD sz = 0, n = 0;
 	FileD* cf = nullptr; FileD* fd = nullptr;
@@ -791,13 +791,18 @@ void RdLocDcl(LocVarBlkD* LVB, bool IsParList, bool WithRecVar, char CTyp)
 	XWKey* k = nullptr; bool rp = false;
 	KeyFldD* kf = nullptr; KeyFldD* kf1 = nullptr;
 	char FDTyp = '\0';
+	std::vector<LocVar*> newVars;
 label1:
 	rp = false;
 	if (IsParList && IsKeyWord("VAR")) {
 		if (CTyp == 'D') OldError(174); rp = true;
 	}
-	lv = RdVarName(LVB, IsParList);
-	if (!IsParList) while (Lexem == ',') { RdLex(); RdVarName(LVB, IsParList); }
+	newVars.clear(); // zde se budou ukladat vsechny promenne stejneho typu oddelene carkami
+	newVars.push_back(RdVarName(LVB, IsParList)); // ulozime novou promennou do vektoru pro jeji dalsi nastaveni
+	if (!IsParList) while (Lexem == ',') { 
+		RdLex(); 
+		newVars.push_back(RdVarName(LVB, IsParList)); // vsechny stejne promenne ulozime do vektoru
+	}
 	Accept(':');
 	Z = nullptr;
 	if (IsKeyWord("BOOLEAN")) {
@@ -836,20 +841,32 @@ label1:
 		typ = 'S';
 		sz = sizeof(longint);
 	label2:
-		while (lv != nullptr) {
-			/* !!! with lv^ do!!! */
-			lv->FTyp = typ;
-			lv->Op = _getlocvar;
-			lv->IsRetPar = rp;
-			lv->Init = Z;
-			lv->BPOfs = LVB->Size;
+		for (LocVar* locvar : newVars)
+		{
+			locvar->FTyp = typ;
+			locvar->Op = _getlocvar;
+			locvar->IsRetPar = rp;
+			locvar->Init = Z;
+			locvar->BPOfs = LVB->Size;
 			LVB->Size += sz;
-			lv = (LocVar*)lv->Chain;
 		}
+
+		//while (lv != nullptr) {
+		//	/* !!! with lv^ do!!! */
+		//	lv->FTyp = typ;
+		//	lv->Op = _getlocvar;
+		//	lv->IsRetPar = rp;
+		//	lv->Init = Z;
+		//	lv->BPOfs = LVB->Size;
+		//	LVB->Size += sz;
+		//	lv = (LocVar*)lv->Chain;
+		//}
 	}
 	else if (rp) Error(168);
 	else if (WithRecVar)
 		if (TestKeyWord("FILE")) {
+			// budeme pracovat jen s 1. promennou ve vektoru
+			auto lv = newVars[0];
 			lv->FTyp = 'f';
 			LexWord = lv->Name;
 			if (LexWord.length() > 8) OldError(2);
@@ -898,10 +915,12 @@ label1:
 					Accept(')');
 				}
 			}
-			while (lv != nullptr) {
-				lv->FTyp = typ;
-				lv->FD = CFile;
-				if (typ == 'r') lv->RecPtr = nullptr; // ptr(0,1) ??? /* for RdProc nullptr-tests + no Run*/
+			//while (lv != nullptr) {
+			for (LocVar* locvar : newVars)
+			{
+				locvar->FTyp = typ;
+				locvar->FD = CFile;
+				if (typ == 'r') locvar->RecPtr = nullptr; // ptr(0,1) ??? /* for RdProc nullptr-tests + no Run*/
 				   /* frueher bei IsParList K = nullptr; warum? */
 				else {
 					k = new XWKey(); // (XWKey*)GetZStore(sizeof(*k));
@@ -913,9 +932,9 @@ label1:
 						k->IndexLen += kf->FldD->NBytes;
 						kf = (KeyFldD*)kf->Chain;
 					}
-					lv->RecPtr = k;
+					locvar->RecPtr = k;
 				}
-				lv = (LocVar*)lv->Chain;
+				//lv = (LocVar*)lv->Chain;
 			}
 			CFile = cf; CRecPtr = cr;
 		}
@@ -1136,7 +1155,7 @@ label1:
 
 void RdAssignFrml(char FTyp, bool& Add, FrmlElem** Z)
 {
-	char Typ;
+	char Typ = '\0';
 	if (Lexem == _addass) { RdLex(); Add = true; }
 	else Accept(_assign);
 	*Z = RdFrml(Typ);
