@@ -222,9 +222,9 @@ bool SEquOrder(pstring S1, pstring S2)
 
 bool FindString(WORD& I, WORD Len)
 {
-	WORD j, i1;
+	WORD j = 0, i1 = 0;
 	pstring s1, s2;
-	char c;
+	char c = '\0';
 	auto result = false;
 	c = FindStr[1];
 	if (FindStr != "")
@@ -234,8 +234,10 @@ bool FindString(WORD& I, WORD Len)
 		else if (TestOptStr('u')) i1 = FindUpcChar(c, I, Len);
 		else { j = 1; i1 = FindChar(j, c, I, Len); }
 		I = i1;
-		if (I + FindStr.length() > Len) return result; s2 = FindStr;
-		Move(&T[I], &s1[1], FindStr.length()); s1[0] = FindStr.length();
+		if (I + FindStr.length() > Len) return result;
+		s2 = FindStr;
+		Move(&T[I], &s1[1], FindStr.length());
+		s1[0] = FindStr.length();
 		if (TestOptStr('~'))
 		{
 			if (!SEquOrder(s1, s2))
@@ -257,7 +259,8 @@ bool FindString(WORD& I, WORD Len)
 				I++;
 				goto label1;
 			}
-		result = true; I += FindStr.length();
+		result = true;
+		I += FindStr.length();
 	}
 	return result;
 }

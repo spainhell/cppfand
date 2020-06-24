@@ -248,8 +248,8 @@ FrmlPtr RdFldNameFrmlP(char& FTyp)
 	if (FindLocVar(&LVBD, &LV)) {
 		if (LV->FTyp == 'r' || LV->FTyp == 'f' || LV->FTyp == 'i') Error(143);
 		RdLex();
-		result = new FrmlElem18(LV->Op, LV->BPOfs);
-		((FrmlElem18*)result)->BPOfs = LV->BPOfs;
+		result = new FrmlElem18(LV->Op, LV);
+		//((FrmlElem18*)result)->BPOfs = LV->BPOfs;
 		FTyp = LV->FTyp;
 		return result;
 	}
@@ -455,7 +455,7 @@ FrmlPtr RdFunctionP(char& FFTyp)
 		Typ = 'r';
 		if (IsRecVar(&LV)) iZ->P3 = (FrmlElem*)LV->RecPtr;
 		else iZ->P3 = RdFrml(Typ);
-		((FrmlElem1*)Z)->N31 = Typ;
+		iZ->N31 = Typ;
 		FTyp = 'R';
 	}
 #ifdef FandSQL
@@ -701,8 +701,8 @@ Instr* RdFor()
 	FrmlElem* Z = new FrmlElem0(_compreal, 2); // GetOp(_compreal, 2);
 	auto iZ0 = (FrmlElem0*)Z;
 	iZ0->P1 = (FrmlElem*)LV->Op;
-	((FrmlElem1*)Z)->N21 = _le;
-	((FrmlElem1*)Z)->N22 = 5;
+	iZ0->N21 = _le;
+	iZ0->N22 = 5;
 	iZ0->P2 = RdRealFrml();
 	((Instr_loops*)PD)->Bool = Z;
 	AcceptKeyWord("DO");
@@ -985,7 +985,8 @@ bool RdViewOpt(EditOpt* EO)
 	else if (IsOpt("WW")) {
 		Accept('('); EO->WFlags = 0;
 		if (Lexem == '(') { RdLex(); EO->WFlags = WNoPop; }
-		RdW(EO->W); RdFrame(EO->Top, EO->WFlags);
+		RdW(EO->W);
+		RdFrame(&EO->Top, EO->WFlags);
 		if (Lexem == ',') {
 			RdLex();
 			EO->ZAttr = RdAttr(); Accept(',');
@@ -1691,7 +1692,8 @@ Instr* RdEditTxt()
 		if (IsOpt("WW")) {
 			Accept('(');
 			if (Lexem == '(') { RdLex(); PD->WFlags = WNoPop; }
-			RdW(PD->Ww); RdFrame(PD->Hd, PD->WFlags);
+			RdW(PD->Ww);
+			RdFrame(&PD->Hd, PD->WFlags);
 			if (Lexem == ',') { RdLex(); PD->Atr = RdAttr(); }
 			Accept(')');
 			if ((PD->WFlags & WNoPop) != 0) Accept(')');
@@ -2030,7 +2032,8 @@ void RdGraphP()
 			Ww = new WinG();
 			Accept('(');
 			if (Lexem == '(') { RdLex(); Ww->WFlags = WNoPop; }
-			RdW(Ww->W); RdFrame(Ww->Top, Ww->WFlags);
+			RdW(Ww->W);
+			RdFrame(&Ww->Top, Ww->WFlags);
 			if (Lexem == ',') {
 				RdLex(); Ww->ColBack = RdStrFrml(); Accept(',');
 				Ww->ColFor = RdStrFrml();
@@ -2372,7 +2375,7 @@ Instr* RdWith()
 		Accept('(');
 		if (Lexem == '(') { RdLex(); iP->WithWFlags = WNoPop; }
 		RdW(iP->W);
-		RdFrame(iP->Top, iP->WithWFlags);
+		RdFrame(&iP->Top, iP->WithWFlags);
 		if (Lexem == ',') { RdLex(); iP->Attr = RdAttr(); }
 		Accept(')');
 		if ((iP->WithWFlags & WNoPop) != 0) Accept(')');

@@ -689,7 +689,8 @@ void WithWindowProc(Instr_window* PD)
 	/* !!! with PD^ do!!! */
 	ProcAttr = RunWordImpl(PD->Attr, colors.uNorm);
 	RunWFrml(PD->W, PD->WithWFlags, v);
-	w1 = PushWFramed(v.C1, v.R1, v.C2, v.R2, ProcAttr, RunShortStr(PD->Top), "", PD->WithWFlags);
+	auto top = RunShortStr(PD->Top);
+	w1 = PushWFramed(v.C1, v.R1, v.C2, v.R2, ProcAttr, top, "", PD->WithWFlags);
 	if ((PD->WithWFlags & WNoClrScr) == 0) ClrScr();
 	SetWwViewPort();
 	RunInstr(PD->WwInstr);
@@ -956,7 +957,7 @@ void RunInstr(Instr* PD)
 		case _edit: EditProc((Instr_edit*)PD); break;
 		case _asgnloc:/* !!! with PD^ do!!! */ {
 			auto iPD = (Instr_assign*)PD;
-			LVAssignFrml(iPD->LV, MyBP, iPD->Add, iPD->Frml);
+			LVAssignFrml(iPD->AssLV, MyBP, iPD->Add, iPD->Frml);
 			break;
 		}
 		case _asgnrecfld: AssignRecFld(((Instr_assign*)PD)); break;

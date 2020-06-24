@@ -92,7 +92,7 @@ void CFileLikeFD(FileD* FD, WORD MsgNr);
 pstring* RdHelpName(); // r144
 FrmlPtr RdAttr(); // r152
 void RdW(WRectFrml& W); // r161
-void RdFrame(FrmlPtr Z, BYTE& WFlags); // r166
+void RdFrame(FrmlElem** Z, BYTE& WFlags); // r166
 bool PromptSortKeys(FieldList FL, KeyFldD* SKRoot);
 void RdAssignFrml(char FTyp, bool& Add, FrmlElem** Z); // r193
 bool FldTypIdentity(FieldDescr* F1, FieldDescr* F2);

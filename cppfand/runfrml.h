@@ -56,7 +56,7 @@ LongStr* LongLeadChar(char C, char CNew, LongStr* S);
 LongStr* LongTrailChar(char C, char CNew, LongStr* S);
 LongStr* RepeatStr(LongStr* S, integer N);
 void AccRecNoProc(FrmlElem14* X, WORD Msg);
-void* RunUserFunc(FrmlElem19* X);
+//LocVar* RunUserFunc(FrmlElem19* X);
 void GetRecNoXString(FrmlElem13* Z, XString& X);
 double RunRealStr(FrmlElem* X);
 double RMod(FrmlElem0* X);

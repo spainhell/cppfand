@@ -1174,10 +1174,10 @@ LongStr* _LongS(FieldDPtr F)
 		{
 		case 'A': 
 		case 'N': {
-			S = new LongStr(l + 2);
+			S = new LongStr(l);
 			S->LL = l;
 			if (F->Typ == 'A') {
-				Move(&source[F->Displ], &S[0], l);
+				Move(&source[F->Displ], &S->A[0], l);
 				if ((F->Flg & f_Encryp) != 0) Code(S->A, l);
 				if (IsNullValue(S, l)) { S->LL = 0; ReleaseAfterLongStr(S); }
 			}

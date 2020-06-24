@@ -653,7 +653,7 @@ void GetCPathForCat(WORD I)
 	}
 	else {
 		CPath = FExpand(CPath);
-		CPath = d + CPath.substr(3, 255);
+		//CPath = d + CPath.substr(3, 255);
 	}
 	FSplit(CPath, CDir, CName, CExt);
 }

@@ -351,7 +351,8 @@ WORD IntTSR(FrmlElem* X)
 	@mov 2 @result, ax;*/
 
 	if (z->Op == _getlocvar) {
-		p = (void*)(MyBP + ((FrmlElem18*)z)->BPOfs);
+		// p = (void*)(MyBP + ((FrmlElem18*)z)->BPOfs);
+		p = ((FrmlElem18*)z)->locvar;
 		switch (((FrmlElem1*)X)->N31) {
 		case 'R': p = (void*)&r; break;
 		case 'S': {
@@ -386,6 +387,37 @@ LongStr* CopyLine(LongStr* S, WORD N, WORD M)
 	S->LL = l;
 	ReleaseAfterLongStr(S);
 	return S;
+}
+
+LocVar* RunUserFunc(FrmlElem19* X)
+{
+	//void* oldbp; void* oldprocbp;
+	//oldbp = MyBP;
+	//oldprocbp = ProcMyBP;
+	LVBD = X->FC->LVB;
+	//PushProcStk();
+	//size_t i = 0;
+	//LocVar* lv = LVBD.vLocVar.front();
+	auto itr = LVBD.vLocVar.begin();
+	FrmlList fl = X->FrmlL;
+	while (itr != LVBD.vLocVar.end()) {
+		LVAssignFrml(*itr, nullptr, false, fl->Frml);
+		itr++;
+		//fl = (FrmlListEl*)fl->Chain;
+	}
+	//ProcMyBP = MyBP;
+	auto instr = X->FC->pInstr;
+	RunProcedure(instr);
+
+	switch (instr->Kind)
+	{
+	case _asgnloc: return ((Instr_assign*)instr)->AssLV;
+	}
+
+
+	//auto result = LVBD.vLocVar.back();
+	//ProcMyBP = (ProcStkD*)oldprocbp;
+	return nullptr;
 }
 
 bool RunBool(FrmlPtr X)
@@ -484,7 +516,6 @@ bool RunBool(FrmlPtr X)
 	}
 	case _mousein: {
 		auto iX0 = (FrmlElem0*)X;
-		auto iX1 = (FrmlElem1*)X;
 		*w1 = RunInt(iX0->P1);
 		*w2 = RunInt(iX0->P2);
 		result = MouseInRectProc(*w1, *w2, RunInt(iX0->P3) - *w1 + 1, RunInt(iX0->P4) - *w2 + 1);
@@ -560,7 +591,7 @@ bool RunBool(FrmlPtr X)
 	}
 	case _trust: {
 		auto iX1 = (FrmlElem1*)X;
-		result = (UserCode == 0) || OverlapByteStr(&iX1->N01, &AccRight); 
+		result = (UserCode == 0) || OverlapByteStr(&iX1->N01, &AccRight);
 		break;
 	}
 	case _isnewrec: result = TestIsNewRec(); break;
@@ -573,9 +604,9 @@ bool RunBool(FrmlPtr X)
 	}
 	case _setmybp: {
 		auto iX0 = (FrmlElem0*)X;
-		cr = MyBP; 
+		cr = MyBP;
 		SetMyBP(ProcMyBP);
-		result = RunBool(iX0->P1); 
+		result = RunBool(iX0->P1);
 		SetMyBP((ProcStkD*)cr);
 		break;
 	}
@@ -705,7 +736,8 @@ label1:
 	}
 	case _getlocvar: {
 		auto iX = (FrmlElem18*)X;
-		result = *(double*)(uintptr_t(MyBP) + iX->BPOfs);
+		//result = *(double*)(uintptr_t(MyBP) + iX->BPOfs);
+		result = iX->locvar->R;
 		break;
 	}
 	case _const: result = ((FrmlElem2*)X)->R; break;
@@ -833,8 +865,8 @@ label1:
 		result = TypeDay(rr);
 		break;
 	}
-	case _addwdays: result = AddWDays(RunReal(iX0->P1), RunInt(iX0->P2), ((FrmlElem1*)X)->N21); break;
-	case _difwdays: result = DifWDays(RunReal(iX0->P1), RunReal(iX0->P2), ((FrmlElem1*)X)->N21); break;
+	case _addwdays: result = AddWDays(RunReal(iX0->P1), RunInt(iX0->P2), iX0->N21); break;
+	case _difwdays: result = DifWDays(RunReal(iX0->P1), RunReal(iX0->P2), iX0->N21); break;
 	case _addmonth: result = AddMonth(RunReal(iX0->P1), RunReal(iX0->P2)); break;
 	case _difmonth: result = DifMonth(RunReal(iX0->P1), RunReal(iX0->P2)); break;
 	case _recno: result = RecNoFun((FrmlElem13*)X); break;
@@ -937,7 +969,8 @@ void TestTFrml(FieldDescr* F, FrmlElem* Z)
 	case _getlocvar: {
 		if ((F != nullptr) && ((F->Flg & f_Encryp) != 0)) return;
 		TFD02 = CFile; TF02 = &TWork;
-		TF02Pos = *(longint*)(MyBP + ((FrmlElem18*)Z)->BPOfs);
+		//TF02Pos = *(longint*)(MyBP + ((FrmlElem18*)Z)->BPOfs);
+		TF02Pos = (longint)((FrmlElem18*)Z)->locvar->R;
 		break;
 	}
 	case _access: {
@@ -1020,6 +1053,7 @@ void LVAssignFrml(LocVar* LV, void* OldBP, bool Add, FrmlPtr X)
 	case 'S': {
 		LongStr* s = RunLongStr(X);
 		LV->S = std::string(s->A, s->LL);
+		LV->orig_S_length = s->LL;
 		break;
 	}
 	case 'R': {
@@ -1032,7 +1066,7 @@ void LVAssignFrml(LocVar* LV, void* OldBP, bool Add, FrmlPtr X)
 		break;
 	}
 	}
-	
+
 	/*longint pos = 0;
 	void* p = LocVarAd(LV);
 	void* bp = MyBP;
@@ -1186,12 +1220,17 @@ label1:
 	switch (X->Op) {
 	case _field: {
 		auto iX7 = (FrmlElem7*)X;
-		result = _LongS(iX7->Field); 
-		break; 
+		result = _LongS(iX7->Field);
+		break;
 	}
 	case _getlocvar: {
-		result = TWork.Read(1, *(longint*)(MyBP + ((FrmlElem18*)X)->BPOfs));
-		break; 
+		//result = TWork.Read(1, *(longint*)(MyBP + ((FrmlElem18*)X)->BPOfs));
+		auto str = ((FrmlElem18*)X)->locvar->S;
+		result = new LongStr(max(256, str.length()));
+		result->LL = str.length();
+		memcpy(result->A, str.c_str(), str.length());
+		// result->A = (char*)((FrmlElem18*)X)->locvar->S.c_str();
+		break;
 	}
 	case _access: {
 		auto iX7 = (FrmlElem7*)X;
@@ -1226,9 +1265,9 @@ label1:
 	}
 	case _eval: {
 		MarkStore(p);
-		S = RunLongStr(GetEvalFrml((FrmlElem21*)X)); 
+		S = RunLongStr(GetEvalFrml((FrmlElem21*)X));
 		MyMove(S, p, S->LL + 2);
-		ReleaseAfterLongStr(p); 
+		ReleaseAfterLongStr(p);
 		result = (LongStr*)p;
 		break;
 	}
@@ -1284,20 +1323,23 @@ label1:
 	}
 	case _trailchar: {
 		auto iX0 = (FrmlElem0*)X;
-		result = LongTrailChar((char)iX0->N11, (char)iX0->N12, RunLongStr(iX0->P1));
+		char c = iX0->N11;
+		char cnew = iX0->N12;
+		auto sp1 = RunLongStr(iX0->P1);
+		result = LongTrailChar(c, cnew, sp1);
 		break;
 	}
 	case _upcase: {
 		auto iX0 = (FrmlElem0*)X;
 		S = RunLongStr(iX0->P1);
-		for (WORD i = 1; i < S->LL; i++) S->A[i] = UpcCharTab[S->A[i]];
+		for (WORD i = 0; i < S->LL; i++) S->A[i] = UpcCharTab[S->A[i]];
 		result = S;
 		break;
 	}
 	case _lowcase: {
 		auto iX0 = (FrmlElem0*)X;
 		S = RunLongStr(iX0->P1);
-		LowCase(S); 
+		LowCase(S);
 		result = S;
 		break;
 	}
@@ -1310,7 +1352,7 @@ label1:
 	}
 	case _repeatstr: {
 		auto iX0 = (FrmlElem0*)X;
-		result = RepeatStr(RunLongStr(iX0->P1), RunInt(iX0->P2)); 
+		result = RepeatStr(RunLongStr(iX0->P1), RunInt(iX0->P2));
 		break;
 	}
 	case _accrecno: {
@@ -1327,19 +1369,22 @@ label1:
 	case _gettxt: result = GetTxt(X); break;
 	case _nodiakr: {
 		auto iX0 = (FrmlElem0*)X;
-		S = RunLongStr(iX0->P1); 
+		S = RunLongStr(iX0->P1);
 		ConvToNoDiakr((WORD*)S->A[0], S->LL, fonts.VFont);
 		result = S;
 		break;
 	}
 	case _userfunc: {
-		cr = RunUserFunc((FrmlElem19*)X);
-		*L1 = *(longint*)(cr);
+		LocVar* lv = RunUserFunc((FrmlElem19*)X);
+		auto ls = new LongStr(lv->orig_S_length);
+		memcpy(ls->A, lv->S.c_str(), lv->S.length());
+		result = ls;
+		/**L1 = *(longint*)(cr);
 		*(longint*)cr = 0;
-		cr = MyBP; PopProcStk(); 
+		cr = MyBP; PopProcStk();
 		ReleaseStore(cr);
-		result = TWork.Read(1, *L1); 
-		TWork.Delete(*L1);
+		result = TWork.Read(1, *L1);
+		TWork.Delete(*L1);*/
 		break;
 	}
 	case _setmybp: {
@@ -1633,12 +1678,16 @@ return S;
 LongStr* LongTrailChar(char C, char CNew, LongStr* S)
 {
 	WORD l;
-	l = S->LL; while (l > 0) {
+	l = S->LL;
+	while (l > 0) {
 		if (S->A[l] != C) goto label1;
 		if (CNew != 0) S->A[l] = CNew; l--;
 	}
 label1:
-	if (CNew == 0) { S->LL = l; ReleaseAfterLongStr(S); }
+	if (CNew == 0) {
+		S->LL = l;
+		// ReleaseAfterLongStr(S);
+	}
 	return S;
 }
 
@@ -1670,29 +1719,6 @@ void AccRecNoProc(FrmlElem14* X, WORD Msg)
 	}
 	ReadRec(N);
 	OldLMode(md);
-}
-
-void* RunUserFunc(FrmlElem19* X)
-{
-	FrmlList fl; LocVar* lv; void* oldbp; void* oldprocbp;
-	oldbp = MyBP;
-	oldprocbp = ProcMyBP;
-	LVBD = X->FC->LVB;
-	PushProcStk();
-	size_t i = 0;
-	lv = LVBD.vLocVar.front();
-	auto itr = LVBD.vLocVar.begin();
-	fl = X->FrmlL;
-	while (fl != nullptr) {
-		LVAssignFrml(lv, oldbp, false, fl->Frml);
-		lv = *itr++;
-		fl = (FrmlListEl*)fl->Chain;
-	}
-	ProcMyBP = MyBP;
-	RunProcedure(X->FC->pInstr);
-	auto result = LocVarAd(lv);
-	ProcMyBP = (ProcStkD*)oldprocbp;
-	return result;
 }
 
 void GetRecNoXString(FrmlElem13* Z, XString& X)

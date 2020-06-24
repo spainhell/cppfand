@@ -97,6 +97,11 @@ FrmlElem18::FrmlElem18(BYTE Op, size_t buff_size) : FrmlElem(Op, buff_size)
 {
 }
 
+FrmlElem18::FrmlElem18(BYTE Op, LocVar* lv) : FrmlElem(Op, 0)
+{
+	locvar = lv;
+}
+
 FrmlElem19::FrmlElem19(BYTE Op, size_t buff_size) : FrmlElem(Op, buff_size)
 {
 }

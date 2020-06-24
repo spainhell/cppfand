@@ -323,6 +323,7 @@ public:
 	bool B = false;
 	double R = 0.0;
 	std::string S;
+	WORD orig_S_length = 0;
 };
 
 struct RdbD // ø. 243

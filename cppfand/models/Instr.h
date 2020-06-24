@@ -129,7 +129,7 @@ public:
 
 	// pridano navic, chybi u volani LVAssignFrml(iPD->LV, MyBP, iPD->Add, iPD->Frml);
 	// v runproc.cpp
-	LocVar* LV = nullptr;
+	//LocVar* LV = nullptr;
 };
 
 class Instr_help : public Instr

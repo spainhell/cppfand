@@ -432,6 +432,10 @@ void RdLex()
 		break;
 	default: break;
 	}
+	if (LexWord == "sloup")
+	{
+		printf("RdLex() r. 437 - sloup\n");
+	}
 }
 
 bool IsForwPoint()
@@ -1109,7 +1113,7 @@ void RdW(WRectFrml& W)
 	W.R2 = RdRealFrml();
 }
 
-void RdFrame(FrmlPtr Z, BYTE& WFlags)
+void RdFrame(FrmlElem** Z, BYTE& WFlags)
 {
 	if (Lexem != ',') return;
 	RdLex();
@@ -1120,7 +1124,7 @@ void RdFrame(FrmlPtr Z, BYTE& WFlags)
 		if (Lexem == _equ) {
 			RdLex(); WFlags = WFlags | WDoubleFrame;
 		}
-		Z = RdStrFrml();
+		*Z = RdStrFrml();
 	}
 	if (Lexem == '!') { WFlags = WFlags | WShadow; RdLex(); }
 }
@@ -1883,7 +1887,7 @@ FrmlElem* RdPrim(char& FTyp)
 					N++;
 				} while (Lexem == ',');
 				Accept(')');
-				((FrmlElem1*)Z)->W11 = N;
+				((FrmlElem0*)Z)->W11 = N;
 				FTyp = 'B';
 			}
 			else if (IsKeyWord("SUM"))
@@ -2028,8 +2032,8 @@ FrmlElem* RdPrim(char& FTyp)
 				if ((Z->Op == _addwdays || Z->Op == _difwdays) && (Lexem == ','))
 				{
 					RdLex();
-					((FrmlElem1*)Z)->N21 = RdInteger();
-					if (((FrmlElem1*)Z)->N21 > 3) OldError(136);
+					((FrmlElem0*)Z)->N21 = RdInteger();
+					if (((FrmlElem0*)Z)->N21 > 3) OldError(136);
 				}
 				goto label4;
 			}
@@ -2043,13 +2047,13 @@ FrmlElem* RdPrim(char& FTyp)
 				Z = new FrmlElem0(_trailchar, 2); // GetOp(_trailchar, 2);
 			label5:
 				RdLex();
-				((FrmlElem1*)Z)->N11 = RdQuotedChar();
+				((FrmlElem0*)Z)->N11 = RdQuotedChar();
 				Accept(',');
 				((FrmlElem0*)Z)->P1 = RdAdd(Typ);
 				TestString(Typ);
 				if (Lexem == ',') {
 					RdLex();
-					((FrmlElem1*)Z)->N12 = RdQuotedChar();
+					((FrmlElem0*)Z)->N12 = RdQuotedChar();
 				}
 				goto label6;
 			}

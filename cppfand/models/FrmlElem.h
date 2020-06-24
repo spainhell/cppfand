@@ -10,6 +10,8 @@ public:
 	char Delim = '\0'; // 0
 	BYTE N11 = 0, N12 = 0;
 	BYTE N21 = 0, N22 = 0;
+	BYTE N31 = 0;
+	WORD W11 = 0;
 	BYTE buff[64]{ 0 };
 };
 
@@ -149,6 +151,7 @@ class FrmlElem18 : public FrmlElem
 {
 public:
 	FrmlElem18(BYTE Op, size_t buff_size);
+	FrmlElem18(BYTE Op, LocVar* lv);
 	LocVar* locvar = nullptr;
 	//WORD BPOfs = 0; // 18 { _getlocvar }
 	BYTE buff[64]{ 0 };

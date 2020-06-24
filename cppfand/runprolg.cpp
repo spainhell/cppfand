@@ -940,7 +940,7 @@ label2:
 					isOutp = (w & 1) == 0;
 					if (isOutp) {
 						z = new FrmlElem18(_getlocvar, 2); // GetOp(_getlocvar, 2);
-						((FrmlElem18*)z)->BPOfs = bpOfs;
+						//((FrmlElem18*)z)->BPOfs = bpOfs;
 						switch (typ) {
 						case 'S': bpOfs += sizeof(longint); break;
 						case 'R': bpOfs += sizeof(double); break;
@@ -955,7 +955,7 @@ label2:
 							if (dofs == StrDom) z = new FrmlElem4(_const, 0); // GetOp(_const, sizeof(pstring));
 							else {
 								z = new FrmlElem18(_getlocvar, 2); // GetOp(_getlocvar, 2);
-								((FrmlElem18*)z)->BPOfs = bpOfs;
+								//((FrmlElem18*)z)->BPOfs = bpOfs;
 								bpOfs += sizeof(longint);
 							}
 							break;
@@ -3730,7 +3730,7 @@ void CallFandProc()
 				else {
 					if (d->Typ == _LongStrD) s = RdLongStr(t->Pos);
 					else s = GetPackedTerm(t);
-					*(longint*)(pp + ((FrmlElem18*)ta->Frml)->BPOfs) = TWork.Store(s);
+					//*(longint*)(pp + ((FrmlElem18*)ta->Frml)->BPOfs) = TWork.Store(s);
 					ReleaseStore(s);
 				}
 				break;
