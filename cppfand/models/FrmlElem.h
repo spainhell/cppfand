@@ -149,7 +149,8 @@ class FrmlElem18 : public FrmlElem
 {
 public:
 	FrmlElem18(BYTE Op, size_t buff_size);
-	WORD BPOfs = 0; // 18 { _getlocvar }
+	LocVar* locvar = nullptr;
+	//WORD BPOfs = 0; // 18 { _getlocvar }
 	BYTE buff[64]{ 0 };
 };
 

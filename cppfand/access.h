@@ -319,6 +319,10 @@ public:
 	WORD BPOfs = 0;
 	bool IsRetPar = false;
 	FrmlElem* Init = nullptr;
+
+	bool B = false;
+	double R = 0.0;
+	std::string S;
 };
 
 struct RdbD // ø. 243

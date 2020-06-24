@@ -1016,7 +1016,24 @@ void AssgnFrml(FieldDescr* F, FrmlElem* X, bool Delete, bool Add)
 
 void LVAssignFrml(LocVar* LV, void* OldBP, bool Add, FrmlPtr X)
 {
-	longint pos = 0;
+	switch (LV->FTyp) {
+	case 'S': {
+		LongStr* s = RunLongStr(X);
+		LV->S = std::string(s->A, s->LL);
+		break;
+	}
+	case 'R': {
+		if (Add) LV->R += RunReal(X);
+		else LV->R = RunReal(X);
+		break;
+	}
+	case 'B': {
+		LV->B = RunBool(X);
+		break;
+	}
+	}
+	
+	/*longint pos = 0;
 	void* p = LocVarAd(LV);
 	void* bp = MyBP;
 	SetMyBP((ProcStkD*)OldBP);
@@ -1041,7 +1058,7 @@ void LVAssignFrml(LocVar* LV, void* OldBP, bool Add, FrmlPtr X)
 		break;
 	}
 	}
-	SetMyBP((ProcStkD*)bp);
+	SetMyBP((ProcStkD*)bp);*/
 }
 
 void DecodeFieldRSB(FieldDescr* F, WORD LWw, double R, pstring T, bool B, pstring& Txt)
@@ -1127,8 +1144,7 @@ bool FieldInList(FieldDPtr F, FieldListEl* FL)
 
 KeyDPtr GetFromKey(LinkDPtr LD)
 {
-	KeyD* K;
-	K = LD->FromFD->Keys;
+	KeyD* K = LD->FromFD->Keys;
 	while (K->IndexRoot != LD->IndexRoot) K = K->Chain;
 	return K;
 }
@@ -1137,6 +1153,16 @@ FrmlPtr RunEvalFrml(FrmlPtr Z)
 {
 	if ((Z != nullptr) && ((BYTE)Z->Op == _eval)) Z = GetEvalFrml((FrmlElem21*)Z);
 	return Z;
+}
+
+LongStr* ConcatLongStr(LongStr* S1, LongStr* S2)
+{
+	WORD newLen = S1->LL + S2->LL;
+	if (newLen > MaxLStrLen) newLen = MaxLStrLen;
+	auto result = new LongStr(newLen);
+	memcpy(result->A, S1->A, S1->LL); // zkopiruje S1 do noveho retezce;
+	memcpy(&result->A[S1->LL], S2->A, newLen - S1->LL); // zkopiruje S2 (prip. jeho cast) do noveho retezce
+	return result;
 }
 
 LongStr* RunLongStr(FrmlPtr X)
@@ -1338,16 +1364,6 @@ pstring RunShortStr(FrmlPtr X)
 	else result[0] = s->LL;
 	memcpy(&result[1], s->A, result[0]);
 	delete s;
-	return result;
-}
-
-LongStr* ConcatLongStr(LongStr* S1, LongStr* S2)
-{
-	WORD newLen = S1->LL + S2->LL;
-	if (newLen > MaxLStrLen) newLen = MaxLStrLen;
-	auto result = new LongStr(newLen);
-	memcpy(result->A, S1->A, S1->LL); // zkopiruje S1 do noveho retezce;
-	memcpy(&result->A[S1->LL], S2->A, newLen - S1->LL); // zkopiruje S2 (prip. jeho cast) do noveho retezce
 	return result;
 }
 

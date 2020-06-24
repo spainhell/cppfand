@@ -898,7 +898,7 @@ void MemDiagProc()
 
 void RunInstr(Instr* PD)
 {
-	LongStr* s;
+	LongStr* s = nullptr;
 	while (!ExitP && !BreakP && (PD != nullptr)) {
 		switch (PD->Kind) {
 		case _ifthenelseP: {
