@@ -155,6 +155,10 @@ int SeekH(FILE* handle, longint pos)
 
 WORD ReadH(FILE* handle, WORD bytes, void* buffer)
 {
+	if (CFile != nullptr && CFile->Name == "TIPY")
+	{
+		printf("ReadH() r160: TIPY\n");
+	}
 	size_t bufferSize = bytes; // sizeof(buffer);
 	return fread_s(buffer, bufferSize, 1, bytes, handle);
 	//return ReadH(handle, bytes, buffer);

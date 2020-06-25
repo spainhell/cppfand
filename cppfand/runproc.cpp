@@ -124,7 +124,8 @@ void AssignField(Instr_assign* PD)
 	CFile = PD->FD; md = NewLMode(WrMode); F = PD->FldD;
 	N = RunInt(PD->RecFrml);
 	if ((N <= 0) || (N > CFile->NRecs)) { msg = 640; goto label1; }
-	CRecPtr = GetRecSpace(); ReadRec(N);
+	CRecPtr = GetRecSpace();
+	ReadRec(N);
 	if (PD->Indexarg && !DeletedFlag()) {
 		msg = 627;
 	label1:
@@ -251,7 +252,8 @@ void DisplayProc(RdbDPtr R, WORD IRec)
 		if (S == nullptr) goto label1;
 	}
 	else {
-		CFile = R->FD; CRecPtr = Chpt->RecPtr; ReadRec(IRec);
+		CFile = R->FD; CRecPtr = Chpt->RecPtr;
+		ReadRec(IRec);
 		S = CFile->TF->Read(1, _T(ChptTxt));
 		if (R->Encrypted) CodingLongStr(S);
 	}
@@ -314,12 +316,15 @@ void IndexfileProc(FileDPtr FD, bool Compress)
 	if (Compress) {
 		FD2 = OpenDuplF(false); for (I = 1; I < FD->NRecs; I++)
 		{
-			CFile = FD; ReadRec(I); if (!DeletedFlag())
+			CFile = FD;
+			ReadRec(I);
+			if (!DeletedFlag())
 			{
-				CFile = FD2; PutRec();
-			};
+				CFile = FD2;
+				PutRec();
+			}
 		}
-		if (not SaveCache(0)) GoExit(); CFile = FD; SubstDuplF(FD2, false);
+		if (! SaveCache(0)) GoExit(); CFile = FD; SubstDuplF(FD2, false);
 	}
 	CFile->XF->NoCreate = false; TestXFExist();
 	OldLMode(md); SaveFiles;

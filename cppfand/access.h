@@ -668,9 +668,9 @@ extern double Power10[21];
 
 //void RunErrorM(LockMode Md, WORD N); // r528
 
-integer CompLongStr(LongStrPtr S1, LongStrPtr S2); // r529 ASM
+integer CompLongStr(LongStr* S1, LongStr* S2); // r529 ASM
 //integer CompStr(pstring S1, pstring S2);
-integer CompLongShortStr(LongStrPtr S1, pstring S2); // r551 ASM
+integer CompLongShortStr(LongStr* S1, pstring* S2); // r551 ASM
 integer CompArea(void* A, void* B, integer L); // r575 ASM
 
 //void ResetCompilePars(); // r686

@@ -672,17 +672,17 @@ label1:
 	*LOffs++;
 	if (N == 0) { result = false; return result; }
 	if (N == 0xFF) {
-		if (CompLongShortStr(S, *Cs) == _lt) {
+		if (CompLongShortStr(S, Cs) == _lt) {
 			*LOffs += *L + 1; *LOffs += *L + 1;
 		}
 		else {
 			*LOffs += *L + 1;
-			if (CompLongShortStr(S, *Cs) != _gt) return result; *LOffs += *L + 1;
+			if (CompLongShortStr(S, Cs) != _gt) return result; *LOffs += *L + 1;
 		}
 	}
 	else {
-		for (I = 1; I < N; I++)
-			if (CompLongShortStr(S, *Cs) == _equ) return result;
+		for (I = 1; I <= N; I++)
+			if (CompLongShortStr(S, Cs) == _equ) return result;
 			else *LOffs += *L + 1;
 	}
 	goto label1;

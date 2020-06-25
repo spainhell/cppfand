@@ -111,13 +111,37 @@ pstring Switches = "";
 WORD SwitchLevel = 0;
 
 
-integer CompLongStr(LongStrPtr S1, LongStrPtr S2)
+integer CompLongStr(LongStr* S1, LongStr* S2)
 {
+	integer result = 0;
+	if (S1->LL != S2->LL) {
+		if (S1->LL < S2->LL) result = 2;
+		else result = 4;
+	}
+	if (S2->LL == 0) return result;
+	for (size_t i = 0; i < S2->LL; i++)
+	{
+		if (S1->A[i] == S2->A[i]) continue;
+		if (S1->A[i] < S2->A[i]) return 2;
+		return 4;
+	}
 	return 0;
 }
 
-integer CompLongShortStr(LongStrPtr S1, pstring S2)
+integer CompLongShortStr(LongStr* S1, pstring* S2)
 {
+	integer result = 0;
+	if (S1->LL != (*S2)[0]) {
+		if (S1->LL < (*S2)[0]) result = 2;
+		else result = 4;
+	}
+	if ((*S2)[0] == 0) return result;
+	for (size_t i = 0; i < (*S2)[0]; i++)
+	{
+		if (S1->A[i] == (*S2)[i + 1]) continue;
+		if (S1->A[i] < (*S2)[i + 1]) return 2;
+		return 4;
+	}
 	return 0;
 }
 
@@ -234,15 +258,21 @@ void CloseClearHCFile()
 
 void CloseGoExit()
 {
-	CloseClearHCFile(); GoExit();
+	CloseClearHCFile();
+	GoExit();
 }
 
 void TFile::Err(WORD n, bool ex)
 {
 	if (IsWork) {
-		SetMsgPar(FandWorkTName); WrLLF10Msg(n); if (ex) GoExit();
+		SetMsgPar(FandWorkTName);
+		WrLLF10Msg(n);
+		if (ex) GoExit();
 	}
-	else { CFileMsg(n, 'T'); if (ex) CloseGoExit(); }
+	else {
+		CFileMsg(n, 'T');
+		if (ex) CloseGoExit();
+	}
 }
 
 void TFile::TestErr()
@@ -3350,24 +3380,32 @@ WORD CFileRecSize()
 
 void SetTWorkFlag()
 {
+	BYTE* p = (BYTE*)CRecPtr;
+	p[CFile->RecLen] = 1;
 }
 
 bool HasTWorkFlag()
 {
-	return false;
+	BYTE* p = (BYTE*)CRecPtr;
+	return p[CFile->RecLen] == 1;
 }
 
 void SetUpdFlag()
 {
+	BYTE* p = (BYTE*)CRecPtr;
+	p[CFile->RecLen + 1] = 1;
 }
 
 void ClearUpdFlag()
 {
+	BYTE* p = (BYTE*)CRecPtr;
+	p[CFile->RecLen + 1] = 0;
 }
 
 bool HasUpdFlag()
 {
-	return false;
+	BYTE* p = (BYTE*)CRecPtr;
+	return p[CFile->RecLen + 1] == 1;
 }
 
 void* LocVarAd(LocVar* LV)

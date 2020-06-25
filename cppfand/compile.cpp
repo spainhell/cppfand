@@ -432,9 +432,9 @@ void RdLex()
 		break;
 	default: break;
 	}
-	if (LexWord == "sloup")
+	if (LexWord == "TIPY")
 	{
-		printf("RdLex() r. 437 - sloup\n");
+		printf("RdLex() r. 437 - TIPY\n");
 	}
 }
 
@@ -903,7 +903,10 @@ label1:
 				RdLex();
 			}
 		}
-		else if (IsKeyWord("INDEX")) { typ = 'i'; goto label3; }
+		else if (IsKeyWord("INDEX")) {
+			typ = 'i';
+			goto label3;
+		}
 		else if (IsKeyWord("RECORD")) {
 			typ = 'r';
 		label3:

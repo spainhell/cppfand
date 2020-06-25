@@ -2364,7 +2364,7 @@ Instr_assign* RdAssign()
 		else OldError(34);
 	}
 	return PD;
-			}
+}
 
 Instr* RdWith()
 {
