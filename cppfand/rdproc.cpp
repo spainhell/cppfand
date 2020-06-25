@@ -549,14 +549,12 @@ void RdSelectStr(FrmlElem0* Z)
 
 void RdPInstrAndChain(Instr** PD)
 {
-	/*if (InpArrLen == 0x052c && CurrPos >= 0x0190) {
-		printf("Je to tady.");
-	}*/
+
 	Instr* PD1 = RdPInstr(); /*may be a chain itself*/
-	//Instr* PD2 = *PD;
 	if (*PD != nullptr) {
-		while ((*PD)->Chain != nullptr) *PD = (Instr*)(*PD)->Chain;
-		(*PD)->Chain = PD1;
+		Instr* last = *PD;
+		while (last->Chain != nullptr) last = (Instr*)last->Chain;
+		last->Chain = PD1;
 	}
 	else {
 		*PD = PD1;

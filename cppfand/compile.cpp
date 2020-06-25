@@ -432,10 +432,10 @@ void RdLex()
 		break;
 	default: break;
 	}
-	if (LexWord == "TIPY")
-	{
-		printf("RdLex() r. 437 - TIPY\n");
-	}
+	//if (LexWord == "TIPY")
+	//{
+	//	printf("RdLex() r. 437 - TIPY\n");
+	//}
 }
 
 bool IsForwPoint()

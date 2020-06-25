@@ -594,8 +594,11 @@ void WrCatField(WORD CatIRec, FieldDescr* CatF, pstring Txt)
 {
 	FileDPtr CF; void* CR;
 	CF = CFile; CR = CRecPtr; CFile = CatFD; CRecPtr = GetRecSpace();
-	ReadRec(CatIRec); S_(CatF, Txt); WriteRec(CatIRec);
-	ReleaseStore(CRecPtr); CFile = CF; CRecPtr = CR;
+	ReadRec(CatIRec);
+	S_(CatF, Txt);
+	WriteRec(CatIRec);
+	ReleaseStore(CRecPtr);
+	CFile = CF; CRecPtr = CR;
 }
 
 void RdCatPathVol(WORD CatIRec)

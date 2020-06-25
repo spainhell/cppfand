@@ -1055,28 +1055,29 @@ void LongS_(FieldDPtr F, LongStr* S)
 
 void S_(FieldDPtr F, pstring S)
 {
-	void* p = nullptr;
-	WORD* O = (WORD*)p; double* RP = (double*)p;
-	integer i, L, M; longint Pos; LongStrPtr ss;
 	const BYTE LeftJust = 1;
+	WORD offset = 0;
 
 	if ((F->Flg & f_Stored) != 0)
 	{
-		p = CRecPtr; O += F->Displ; L = F->L; M = F->M;
+		BYTE* pRec = (BYTE*)CRecPtr;
+		offset += F->Displ;
+		integer L = F->L;
+		integer M = F->M;
 		switch (F->Typ) {
 		case 'A': {
 			while (S.length() < L)
-				if (M == LeftJust) S = S + " ";
+				if (M == LeftJust) S.Append(' ');
 				else
 				{
 					pstring oldS = S;
 					S = " ";
 					S += oldS;
 				}
-			i = 1;
+			integer i = 1;
 			if ((S.length() > L) && (M != LeftJust)) i = S.length() + 1 - L;
-			Move(&S[i], p, L);
-			if ((F->Flg & f_Encryp) != 0) Code(p, L);
+			memcpy(&pRec[offset], &S[i], L); //Move(&S[i], &pRec[offset], L);
+			if ((F->Flg & f_Encryp) != 0) Code(&pRec[offset], L);
 			break;
 		}
 		case 'N': {
@@ -1088,13 +1089,13 @@ void S_(FieldDPtr F, pstring S)
 					S = " ";
 					S += oldS;
 				}
-			i = 1;
+			integer i = 1;
 			if ((S.length() > L) && (M != LeftJust)) i = S.length() + 1 - L;
 			//Pack(&S[i], p, L);
 			break;
 		}
 		case 'T': {
-			ss = CopyToLongStr(S);
+			LongStrPtr ss = CopyToLongStr(S);
 			LongS_(F, ss);
 			ReleaseStore(ss);
 			break;
@@ -1140,10 +1141,10 @@ bool LinkLastRec(FileDPtr FD, longint& N, bool WithT)
 	return result;
 }
 
-void AsgnParFldFrml(FileD* FD, FieldDPtr F, FrmlPtr Z, bool Ad)
+void AsgnParFldFrml(FileD* FD, FieldDescr* F, FrmlElem* Z, bool Ad)
 {
-	void* p; longint N; LockMode md; bool b;
-	FileDPtr cf = CFile; void* cr = CRecPtr; CFile = FD;
+	void* p = nullptr; longint N = 0; LockMode md; bool b = false;
+	FileD* cf = CFile; void* cr = CRecPtr; CFile = FD;
 #ifdef FandSQL
 	if (CFile->IsSQLFile) {
 		CRecPtr = GetRecSpace; ZeroAllFlds; AssgnFrml(F, Z, true, Ad);
@@ -1153,10 +1154,16 @@ void AsgnParFldFrml(FileD* FD, FieldDPtr F, FrmlPtr Z, bool Ad)
 #endif
 	{
 		md = NewLMode(WrMode);
-		if (!LinkLastRec(CFile, N, true)) { IncNRecs(1); WriteRec(N); }
-		AssgnFrml(F, Z, true, Ad); WriteRec(N); OldLMode(md);
+		if (!LinkLastRec(CFile, N, true)) {
+			IncNRecs(1);
+			WriteRec(N);
+		}
+		AssgnFrml(F, Z, true, Ad);
+		WriteRec(N);
+		OldLMode(md);
 	}
-	ReleaseStore(CRecPtr); CFile = cf; CRecPtr = cr;
+	ReleaseStore(CRecPtr);
+	CFile = cf; CRecPtr = cr;
 }
 
 bool SearchKey(XString& XX, KeyDPtr Key, longint& NN)
@@ -3237,23 +3244,80 @@ integer CompStr(pstring& S1, pstring& S2)
 	return 0;
 }
 
-void CmpLxStr()
+WORD CmpLxStr(char* p1, WORD len1, char* p2, WORD len2)
 {
+	WORD cmpLen = min(len1, len2);
+	for (size_t i = 0; i < cmpLen; i++) {
+		if (p1[i] == p2[i]) continue;
+		if (p1[i] < p2[i]) return 2;
+		return 4;
+	}
+	if (len1 < len2) return 2;
+	if (len1 > len2) return 4;
+	return _equ;
 }
 
 WORD CompLexLongStr(LongStrPtr S1, LongStrPtr S2)
 {
-	return 0;
+	WORD l1 = min(S1->LL, 256);
+	char* b1 = new char[l1];
+	WORD l2 = min(S2->LL, 256);
+	char* b2 = new char[l2];
+
+	for (size_t i = 0; i < l1; i++) {
+		b1[i] = CharOrdTab[S1->A[i]];
+	}
+	for (size_t i = 0; i < l2; i++) {
+		b2[i] = CharOrdTab[S2->A[i]];
+	}
+
+	auto result = CmpLxStr(b1, l1, b2, l2);
+
+	delete[] b1;
+	delete[] b2;
+	return result;
 }
 
 WORD CompLexLongShortStr(LongStrPtr S1, pstring& S2)
 {
-	return 0;
+	WORD l1 = min(S1->LL, 256);
+	char* b1 = new char[l1];
+	WORD l2 = S2[0];
+	char* b2 = new char[l2];
+
+	for (size_t i = 0; i < l1; i++) {
+		b1[i] = CharOrdTab[S1->A[i]];
+	}
+	for (size_t i = 0; i < l2; i++) {
+		b2[i] = CharOrdTab[S2[i + 1]];
+	}
+
+	auto result = CmpLxStr(b1, l1, b2, l2);
+
+	delete[] b1;
+	delete[] b2;
+	return result;
 }
 
-WORD CompLexStr(const pstring& S1, const pstring& S2)
+WORD CompLexStr(pstring& S1, pstring& S2)
 {
-	return 0;
+	WORD l1 = S1[0];
+	char* b1 = new char[l1];
+	WORD l2 = S2[0];
+	char* b2 = new char[l2];
+
+	for (size_t i = 0; i < l1; i++) {
+		b1[i] = CharOrdTab[S1[i + 1]];
+	}
+	for (size_t i = 0; i < l2; i++) {
+		b2[i] = CharOrdTab[S2[i + 1]];
+	}
+
+	auto result = CmpLxStr(b1, l1, b2, l2);
+
+	delete[] b1;
+	delete[] b2;
+	return result;
 }
 
 

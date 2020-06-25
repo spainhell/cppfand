@@ -124,7 +124,7 @@ pstring TxtVol;
 bool AllRd;
 longint AbsLenT;
 bool ChangePart, UpdPHead;
-char* T;
+char T[256];
 longint SavePar(); // r133
 void RestorePar(longint l);
 
@@ -232,7 +232,10 @@ bool FindString(WORD& I, WORD Len)
 	label1:
 		if (TestOptStr('~')) i1 = FindOrdChar(c, I, Len);
 		else if (TestOptStr('u')) i1 = FindUpcChar(c, I, Len);
-		else { j = 1; i1 = FindChar(j, c, I, Len); }
+		else {
+			j = 1;
+			i1 = FindChar(j, c, I, Len);
+		}
 		I = i1;
 		if (I + FindStr.length() > Len) return result;
 		s2 = FindStr;
@@ -3788,7 +3791,7 @@ void EditTxtFile(longint* LP, char Mode, pstring& ErrMsg, EdExitD* ExD, longint 
 	WORD Ind = 0, oldInd = 0;
 	longint oldTxtxy = 0;
 	LongStr* LS = nullptr; pstring compErrTxt;
-	T = new char[65536];
+	//T = new char[65536];
 
 	if (Atr == 0) Atr = colors.tNorm;
 	longint w2 = 0; longint w3 = 0;

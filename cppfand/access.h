@@ -714,7 +714,7 @@ integer CompStr(pstring& S1, pstring& S2); // r792 ASM
 void CmpLxStr(); // r846 ASM
 WORD CompLexLongStr(LongStrPtr S1, LongStrPtr S2); // r854 ASM
 WORD CompLexLongShortStr(LongStrPtr S1, pstring& S2); // r863 ASM
-WORD CompLexStr(const pstring& S1, const pstring& S2); // r871 ASM
+WORD CompLexStr(pstring& S1, pstring& S2); // r871 ASM
 bool EquKFlds(KeyFldDPtr KF1, KeyFldDPtr KF2); // r881
 void Code(void* A, WORD L); // r897 ASM
 void CodingLongStr(LongStrPtr S);
@@ -769,7 +769,7 @@ void DeleteRec(longint N);
 bool SearchKey(XString& XX, KeyDPtr Key, longint& NN);
 longint XNRecs(KeyDPtr K);
 void T_(FieldDPtr F, longint Pos);
-void AsgnParFldFrml(FileD* FD, FieldDPtr F, FrmlPtr Z, bool Ad);
+void AsgnParFldFrml(FileD* FD, FieldDescr* F, FrmlElem* Z, bool Ad);
 void PutRec();
 void TryInsertAllIndexes(longint RecNr);
 void XFNotValid();

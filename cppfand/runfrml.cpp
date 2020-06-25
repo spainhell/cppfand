@@ -490,10 +490,11 @@ bool RunBool(FrmlPtr X)
 		auto iX0 = (FrmlElem0*)X;
 		S = RunLongStr(iX0->P1);
 		S2 = RunLongStr(iX0->P2);
+		WORD cmpRes = 0;
 		if (iX0->N22 == 1)
-			*res = CompLexLongStr(LongTrailChar(' ', 0, S), LongTrailChar(' ', 0, S2));
-		else *res = CompLongStr(S, S2);
-		result = res && iX0->N21 != 0;
+			cmpRes = CompLexLongStr(LongTrailChar(' ', 0, S), LongTrailChar(' ', 0, S2));
+		else cmpRes = CompLongStr(S, S2);
+		result = (cmpRes & iX0->N21) != 0;
 		ReleaseStore(S);
 		break;
 	}
@@ -527,11 +528,13 @@ bool RunBool(FrmlPtr X)
 	case _access: {
 		auto iX = (FrmlElem7*)X;
 		cf = CFile; cr = CRecPtr;
-		if (iX->LD != nullptr) *b = LinkUpw(iX->LD, RecNo, false);
-		else *b = LinkLastRec(iX->File2, RecNo, false);
-		if ((iX->P011 == nullptr)) result = b;
+		bool b7 = false;
+		if (iX->LD != nullptr) b7 = LinkUpw(iX->LD, RecNo, false);
+		else b7 = LinkLastRec(iX->File2, RecNo, false);
+		if ((iX->P011 == nullptr)) result = b7;
 		else result = RunBool(iX->P011);
-		ReleaseStore(CRecPtr); CFile = cf; CRecPtr = cr;
+		ReleaseStore(CRecPtr);
+		CFile = cf; CRecPtr = cr;
 		break;
 	}
 	case _recvarfld: {
@@ -1404,6 +1407,10 @@ label1:
 pstring RunShortStr(FrmlPtr X)
 {
 	LongStr* s = RunLongStr(X);
+	if (s->LL == 0) {
+		return "";
+	}
+	
 	pstring result;
 	if (s->LL > 255) result[0] = 255;
 	else result[0] = s->LL;
