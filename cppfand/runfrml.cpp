@@ -146,21 +146,42 @@ double RunRealStr(FrmlElem* X)
 	case _pos: {
 		auto iX = (FrmlElem12*)X;
 		S = RunLongStr(iX->PPP2);
+		auto strS = std::string(S->A, S->LL);
+		delete S;
 		Mask = RunShortStr(iX->PPPP1);
-		N = 1;
-		if (iX->PP3 != nullptr) N = RunInt(iX->PP3);
-		J = 1;
-	label1:
-		L = S->LL + 1 - J; I = 0;
-		if ((N > 0) && (L > 0)) {
-			I = FindTextE(Mask, iX->Options, (char*)(&S->A[J]), L);
-			if (I > 0) {
-				J = J + I - Mask.length(); N--;
-				if (N > 0) goto label1; I = J - 1;
-			}
+		std::string strMask = Mask;
+		size_t n = 1; // kolikaty vyskyt najit
+		if (iX->PP3 != nullptr) {
+			n = RunInt(iX->PP3);
+			if (n < 1) return -1;
 		}
-		ReleaseStore(S); result = I;
+		size_t offset = 0;
+		while (n > 0) {
+			size_t found = strS.find(strMask, offset);
+			if (found == std::string::npos)	{
+				// n-ty vyskyt nenalezen
+				return -1;
+			}
+			offset = found;
+			n--;
+		}
+		return offset;
 		break;
+			
+	//	J = 1;
+	//label1:
+	//	L = S->LL + 1 - J; I = 0;
+	//	if ((N > 0) && (L > 0)) {
+	//		I = FindTextE(Mask, iX->Options, (char*)(&S->A[J]), L);
+	//		if (I > 0) {
+	//			J = J + I - Mask.length();
+	//			N--;
+	//			if (N > 0) goto label1;
+	//			I = J - 1;
+	//		}
+	//	}
+	//	ReleaseStore(S);
+	//	result = I;
 	}
 	case _diskfree: {
 		auto iX = (FrmlElem0*)X;
@@ -748,7 +769,10 @@ label1:
 		result = RunReal(iX0->P1) + RunReal(iX0->P2); break;
 	}
 	case _minus: {
-		result = RunReal(iX0->P1) - RunReal(iX0->P2); break;
+		auto d1 = RunReal(iX0->P1);
+		auto d2 = RunReal(iX0->P2);
+		result = d1 - d2;
+		break;
 	}
 	case _times: {
 		result = RunReal(iX0->P1) * RunReal(iX0->P2); break;
@@ -1202,19 +1226,14 @@ LongStr* ConcatLongStr(LongStr* S1, LongStr* S2)
 	return result;
 }
 
-LongStr* RunLongStr(FrmlPtr X)
+LongStr* RunLongStr(FrmlElem* X)
 {
 	LongStr* S = nullptr;
 	bool b = false;
 	WORD I = 0;
-	//LockMode* md = (LockMode*)&I;
-	//integer* J = (integer*)&I;
 	longint RecNo = 0;
-	WORD* N = (WORD*)&RecNo;
-	longint* L1 = (longint*)&RecNo;
-	FileDPtr cf = nullptr;
+	FileD* cf = nullptr;
 	void* cr = nullptr;
-	longint* L2 = (longint*)cr;
 	void* p = &RecNo;
 	LongStr* result = nullptr;
 
@@ -1299,13 +1318,22 @@ label1:
 		break;
 	}
 	case _copy: {
-		auto iX0 = (FrmlElem0*)X;
+		const auto iX0 = static_cast<FrmlElem0*>(X);
 		S = RunLongStr(iX0->P1);
-		*L1 = RunInt(iX0->P2);
-		*L2 = RunInt(iX0->P3);
-		if ((*L1 < 0) || (*L2 < 0)) S->LL = 0;
-		else CopyLongStr(S, (WORD)*L1, (WORD)*L2);
-		ReleaseAfterLongStr(S);
+		std::string str = std::string(S->A, S->LL);
+
+		const auto L1 = RunInt(iX0->P2) - 1;
+		const auto L2 = RunInt(iX0->P3);
+
+		if ((L1 < 0) || (L2 < 0)) S->LL = 0;
+		else {
+			str = str.substr(L1, L2 - L1 + 1); // L2 udava index, ne pocet
+			memcpy(S->A, str.c_str(), str.length());
+			S->LL = str.length();
+			//CopyLongStr(S, static_cast<WORD>(L1), static_cast<WORD>(L2));
+		}
+			
+		//ReleaseAfterLongStr(S);
 		result = S;
 		break;
 	}

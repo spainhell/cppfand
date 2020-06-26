@@ -1179,8 +1179,8 @@ bool SetStyleAttr(char C, BYTE& a)
 WORD LenStyleStr(pstring s)
 {
 	WORD l, i;
-	l = s.length(); for (i = 1; i < s.length(); i++)
-	{
+	l = s.length();
+	for (i = 1; i < s.length(); i++) {
 		if (s[i] == 0x13 || s[i] == 0x17 || s[i] == 0x11 || s[i] == 0x04
 			|| s[i] == 0x02 || s[i] == 0x05 || s[i] == 0x01)
 			l--;
@@ -1193,13 +1193,14 @@ pstring CColor(11);
 
 void WrStyleChar(char C)
 {
-	BYTE a; bool b; WORD i;
+	BYTE a = 0;
 	if (SetStyleAttr(C, a))
 	{
-		i = CStyle.first(C);
+		WORD i = CStyle.first(C);
 		if (i != 0)
 		{
-			CStyle.Delete(i, 1); CColor.Delete(i, 1);
+			CStyle.Delete(i, 1);
+			CColor.Delete(i, 1);
 		}
 		else {
 			pstring oldCStyle = CStyle;
@@ -1211,16 +1212,14 @@ void WrStyleChar(char C)
 		}
 		TextAttr = CColor[1];
 	}
-	else if (C == 0x0D) printf("\r\n");
-	else if (C != 0x0A) printf("%c", C);
+	else if (C == 0x0D) screen.ScrWrText(screen.WhereX(), screen.WhereY(), "\n"); // printf("\r\n");
+	else if (C != 0x0A) screen.WriteChar(0, 0, C, actual);
 }
 
 void WrStyleStr(pstring s, WORD Attr)
 {
-	WORD i;
 	TextAttr = Attr, CStyle = ""; CColor = char(Attr);
-	for (i = 1; i < s.length(); i++)
-	{
+	for (size_t i = 1; i <= s.length(); i++) {
 		WrStyleChar(s[i]);
 	}
 	TextAttr = Attr;
@@ -1228,9 +1227,11 @@ void WrStyleStr(pstring s, WORD Attr)
 
 void WrLongStyleStr(LongStr* S, WORD Attr)
 {
-	WORD i;
 	TextAttr = Attr; CStyle = ""; CColor = char(Attr);
-	for (i = 1; i < S->LL; i++) WrStyleChar(S->A[i]); TextAttr = Attr;
+	for (size_t i = 0; i < S->LL; i++)	{
+		WrStyleChar(S->A[i]);
+	}
+	TextAttr = Attr;
 }
 
 WORD LogToAbsLenStyleStr(pstring s, WORD l)

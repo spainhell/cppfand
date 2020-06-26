@@ -12,6 +12,8 @@ struct TCrs
 struct Wind { BYTE X = 0, Y = 0; };
 const BYTE FrameChars[] { 0xDA, 0xC4, 0xBF, 0xC0, 0xC4, 0xD9, 0xB3, 0x20, 0xB3, 0xC9, 0xCD, 0xBB, 0xC8, 0xCD, 0xBC, 0xBA, 0x20, 0xBA, 0xC3, 0xC4, 0xB4 };
 
+enum Position { relative = 0, absolute = 1, actual = 2 };
+
 struct WParam
 {
 	Wind Min;
@@ -48,15 +50,18 @@ public:
 	bool ScrRdBuf(WORD X, WORD Y, CHAR_INFO* Buf, WORD L);
 	void ScrMove(WORD X, WORD Y, WORD ToX, WORD ToY, WORD L);
 	void ScrColor(WORD X, WORD Y, WORD L, BYTE Color);
+	void WriteChar(short X, short Y, char C, Position pos = relative);
 	TCrs CrsGet();
 	void CrsSet(TCrs S);
 	void CrsShow();
 	void CrsHide();
 	void CrsBig();
 	void CrsNorm();
-	void GotoXY(WORD X, WORD Y);
+	void GotoXY(WORD X, WORD Y, Position pos = relative);
 	BYTE WhereX();
 	BYTE WhereY();
+	short WhereXabs();
+	short WhereYabs();
 	void Window(BYTE X1, BYTE Y1, BYTE X2, BYTE Y2);
 
 	void ScrWr();

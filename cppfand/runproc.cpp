@@ -206,7 +206,9 @@ void WritelnProc(Instr_writeln* PD)
 		case 'S': {
 			if (LF >= 2) t = t + RunShortStr(W->Frml);
 			else {
-				S = RunLongStr(W->Frml); WrLongStyleStr(S, ProcAttr); ReleaseStore(S);
+				S = RunLongStr(W->Frml);
+				WrLongStyleStr(S, ProcAttr);
+				ReleaseStore(S);
 			}
 			goto label1; break;
 		}
@@ -696,6 +698,9 @@ void WithWindowProc(Instr_window* PD)
 	RunWFrml(PD->W, PD->WithWFlags, v);
 	auto top = RunShortStr(PD->Top);
 	w1 = PushWFramed(v.C1, v.R1, v.C2, v.R2, ProcAttr, top, "", PD->WithWFlags);
+
+	screen.CrsShow();
+	
 	if ((PD->WithWFlags & WNoClrScr) == 0) ClrScr();
 	SetWwViewPort();
 	RunInstr(PD->WwInstr);

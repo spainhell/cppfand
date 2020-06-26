@@ -42,7 +42,7 @@ WORD RunWordImpl(FrmlElem* Z, WORD Impl);
 bool FieldInList(FieldDPtr F, FieldListEl* FL);
 KeyDPtr GetFromKey(LinkDPtr LD);
 FrmlPtr RunEvalFrml(FrmlPtr Z);
-LongStr* RunLongStr(FrmlPtr X);  // r417 zaèíná od 555
+LongStr* RunLongStr(FrmlElem* X);  // r417 zaèíná od 555
 pstring RunShortStr(FrmlPtr X); // r629 ASM
 // LongStr* ConcatLongStr(LongStr* S1, LongStr* S2); // r418 ASM
 void CopyLongStr(LongStr* S, WORD From, WORD Number); // r425 ASM

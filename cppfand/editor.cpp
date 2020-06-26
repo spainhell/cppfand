@@ -42,7 +42,7 @@ ColorOrd ColScr;
 bool IsWrScreen = false;
 WORD FirstR = 0, FirstC = 0, LastR = 0, LastC = 0;
 WORD MinC = 0, MinR = 0, MaxC = 0, MaxR = 0;
-WORD MargLL[4] { 0, 0, 0, 0 };
+WORD MargLL[4]{ 0, 0, 0, 0 };
 WORD PageS = 0, LineS = 0;
 bool bScroll = false, FirstScroll = false, HelpScroll = false;
 longint PredScLn = 0;
@@ -97,20 +97,20 @@ longint* LocalPPtr;
 bool EditT;
 
 // od r101
-BYTE ColKey[CountC + 1];
-BYTE TxtColor, BlockColor, SysLColor;
+BYTE ColKey[CountC + 1]{ 0 };
+BYTE TxtColor = 0, BlockColor = 0, SysLColor = 0;
 pstring InsMsg, nInsMsg, IndMsg, WrapMsg, JustMsg, BlockMsg;
 pstring ViewMsg;
-char CharPg;
-bool InsPg;
-longint BegBLn, EndBLn;
-WORD BegBPos, EndBPos;
-WORD ScrI, LineI, Posi, BPos; // {screen status}
+char CharPg = '\0';
+bool InsPg = false;
+longint BegBLn = 0, EndBLn = 0;
+WORD BegBPos = 0, EndBPos = 0;
+WORD ScrI = 0, LineI = 0, Posi = 0, BPos = 0; // {screen status}
 pstring FindStr, ReplaceStr;
-bool Replace;
+bool Replace = false;
 pstring OptionStr;
-bool FirstEvent;
-WORD PHNum, PPageS; // {strankovani ve Scroll}
+bool FirstEvent = false;
+WORD PHNum = 0, PPageS = 0; // {strankovani ve Scroll}
 struct PartDescr
 {
 	longint PosP = 0; longint LineP = 0;
@@ -118,13 +118,13 @@ struct PartDescr
 	bool UpdP = false;
 	ColorOrd ColorP;
 } Part;
-FILE* TxtFH;
+FILE* TxtFH = nullptr;
 pstring TxtPath;
 pstring TxtVol;
-bool AllRd;
-longint AbsLenT;
+bool AllRd = false;
+longint AbsLenT = 0;
 bool ChangePart, UpdPHead;
-char T[256];
+char* T = nullptr;
 longint SavePar(); // r133
 void RestorePar(longint l);
 
@@ -165,7 +165,9 @@ FrmlPtr RdFldNameFrmlT(char& FTyp)
 
 void MyWrLLMsg(pstring s)
 {
-	if (HandleError == 4) s = ""; SetMsgPar(s); WrLLF10Msg(700 + HandleError);
+	if (HandleError == 4) s = "";
+	SetMsgPar(s);
+	WrLLF10Msg(700 + HandleError);
 }
 
 void MyRunError(pstring s, WORD n)
@@ -186,7 +188,14 @@ void HMsgExit(pstring s)
 
 WORD FindChar(WORD& Num, char C, WORD Pos, WORD Len)
 {
-	for (WORD i = Pos; i < Len; i++) if (T[i] == C) { Num = i;  return i; }
+	for (WORD i = Pos; i < Len; i++)
+	{
+		if (T[i] == C)
+		{
+			Num = i;
+			return i;
+		}
+	}
 	return 0;
 }
 
@@ -567,15 +576,15 @@ void WriteMargins()
 		LastL[MargLL[0]].Char.AsciiChar = MargLL[1] & 0x00FF;
 		LastL[MargLL[2]].Attributes = MargLL[3] >> 8;
 		LastL[MargLL[2]].Char.AsciiChar = MargLL[3] & 0x00FF;
-		
+
 		MargLL[0] = MaxI(0, LeftMarg - BPos);
-		if (MargLL[0] > 0) { 
+		if (MargLL[0] > 0) {
 			MargLL[1] = (LastL[MargLL[0]].Attributes << 8) + LastL[MargLL[0]].Char.AsciiChar;
 			LastL[MargLL[0]].Attributes = LastL[LineS].Attributes;
 			LastL[MargLL[0]].Char.AsciiChar = 0x10;
 		}
 		MargLL[2] = MaxI(0, RightMarg - BPos);
-		if (MargLL[2] > 0) { 
+		if (MargLL[2] > 0) {
 			MargLL[3] = (LastL[MargLL[2]].Attributes << 8) + LastL[MargLL[2]].Char.AsciiChar;
 			LastL[MargLL[2]].Attributes = LastL[LineS].Attributes;
 			LastL[MargLL[2]].Char.AsciiChar = 0x11;
@@ -611,7 +620,7 @@ void InitScr()
 	// tyto 2 radky jsou navic, editor se otviral prilis maly, nutno doresit proc
 	WindMin = { 1, 2 };
 	WindMax = { 80, 24 };
-	
+
 	FirstR = WindMin.Y; // +1;
 	FirstC = WindMin.X; // +1;
 	LastR = WindMax.Y; // +1;
@@ -692,13 +701,13 @@ bool LineBndBlock(int Ln)
 
 void EditWrline(char* P, int Row)
 {
-	WORD BuffLine[255] { 0 };
+	WORD BuffLine[255]{ 0 };
 	WORD Line = 0;
 	integer I = 0, LP = 0, B = 0, E = 0;
 
 	BYTE nv1 = 0;
 	BYTE nv2 = 0;
-	
+
 	//integer Newvalue = 0;
 	//BYTE* Nv = (BYTE*)&Newvalue;
 	bool IsCtrl = false;
@@ -3627,7 +3636,7 @@ void Edit(WORD SuccLineSize)
 		NullChangePart();
 		SimplePrintHead();
 	}
-	
+
 	bool keybScroll = GetKeyState(VK_SCROLL) & 0x0001;
 	FirstScroll = Mode == ViewM;
 	Mode = ViewM;
@@ -3768,19 +3777,20 @@ void SimpleEditText(char pMode, pstring pErrMsg, pstring pName, char* TxtPtr, WO
 
 WORD FindTextE(const pstring& Pstr, pstring Popt, char* PTxtPtr, WORD PLen)
 {
-	CharArrPtr tt = (CharArr*)&T; /*T = (char*)PTxtPtr;*/
-	pstring f = FindStr; pstring o = OptionStr;
-	bool r = Replace;
+	auto origT = T;
+	T = (char*)PTxtPtr;
+	pstring f = FindStr; pstring o = OptionStr;	bool r = Replace;
 	FindStr = Pstr; OptionStr = Popt; Replace = false;
 	WORD I = 1;
 	WORD result;
 	if (FindString(I, PLen + 1)) result = I;
 	else result = 0;
-	FindStr = f; OptionStr = o; Replace = r; /*T = tt;*/
+	FindStr = f; OptionStr = o; Replace = r;
+	T = origT;
 	return result;
 }
 
-void EditTxtFile(longint* LP, char Mode, pstring& ErrMsg, EdExitD* ExD, longint TxtPos, 
+void EditTxtFile(longint* LP, char Mode, pstring& ErrMsg, EdExitD* ExD, longint TxtPos,
 	longint Txtxy, WRect* V, WORD Atr, const pstring Hd, BYTE WFlags, MsgStrPtr MsgS)
 {
 	bool Srch = false, Upd = false;
@@ -3830,7 +3840,7 @@ label1:
 	Srch = false; Upd = false;
 	if (!Loc)
 		EditText(Mode, FileT, TxtPath, ErrMsg, T, 0xFFF0, LenT, Ind, Txtxy,
-			_F1 + _F6 + _F9 + _AltF10, ExD,	Srch, Upd, 126, 143, MsgS);
+			_F1 + _F6 + _F9 + _AltF10, ExD, Srch, Upd, 126, 143, MsgS);
 	else EditText(Mode, LocalT, "", ErrMsg, (char*)&LS->A, MaxLStrLen, LS->LL, Ind, Txtxy,
 		_F1 + _F6, ExD, Srch, Upd, 126, 143, MsgS);
 	TxtPos = Ind + Part.PosP;

@@ -12,7 +12,7 @@ Screen::Screen(WORD* TxtCols, WORD* TxtRows, Wind* WindMin, Wind* WindMax, TCrs*
 	this->WindMin = WindMin;
 	this->WindMax = WindMax;
 	this->Crs = Crs;
-	
+
 	_handle = GetStdHandle(STD_OUTPUT_HANDLE);
 	if (_handle == INVALID_HANDLE_VALUE) { throw std::exception("Cannot open console output handle."); }
 	SetConsoleScreenBufferSize(_handle, { (short)*TxtCols, (short)*TxtRows });
@@ -120,7 +120,7 @@ void Screen::ScrWrBuf(WORD X, WORD Y, void* Buf, WORD L)
 		ci[i].Attributes = pBuf[i] >> 8;
 		ci[i].Char.AsciiChar = pBuf[i] & 0x00FF;
 	}
-	
+
 	WriteConsoleOutputA(_handle, ci, BufferSize, { 0, 0 }, &XY);
 	delete[] ci;
 }
@@ -151,6 +151,29 @@ void Screen::ScrColor(WORD X, WORD Y, WORD L, BYTE Color)
 {
 	DWORD written = 0;
 	FillConsoleOutputAttribute(_handle, Color, L, { (short)X, (short)Y }, &written);
+}
+
+void Screen::WriteChar(short X, short Y, char C, Position pos)
+{
+	DWORD written = 0;
+	switch (pos) {
+	case relative: {
+		X += WindMin->X;
+		Y += WindMin->Y;
+		break;
+	}
+	case absolute: {
+		break;
+	}
+	case actual: {
+		X = WhereXabs();
+		Y = WhereYabs();
+		break;
+	}
+	default:;
+	}
+	auto result = WriteConsoleOutputCharacterA(_handle, &C, 1, { X - 1, Y - 1}, &written);
+	GotoXY(WhereXabs(), WhereYabs() + 1, absolute); // po zapisu poseneme kurzor
 }
 
 TCrs Screen::CrsGet()
@@ -199,12 +222,21 @@ void Screen::CrsNorm()
 	if (Crs->Big) { CrsHide(); Crs->Big = false; } CrsShow();
 }
 
-void Screen::GotoXY(WORD X, WORD Y)
+void Screen::GotoXY(WORD X, WORD Y, Position pos)
 {
 	// if (X > WindMax->X || Y > WindMax->Y) return;
-	X += WindMin->X - 1;
-	Y += WindMin->Y - 1;
-	SetConsoleCursorPosition(_handle, { (short)X, (short)Y });
+	switch (pos)
+	{
+	case relative: {
+		X += WindMin->X;
+		Y += WindMin->Y;
+		break;
+	}
+	case absolute: break;
+	case actual: return;
+	default: return;
+	}
+	SetConsoleCursorPosition(_handle, { (short)X - 1, (short)Y - 1 });
 }
 
 BYTE Screen::WhereX()
@@ -223,13 +255,29 @@ BYTE Screen::WhereY()
 	return (BYTE)sbi.dwCursorPosition.Y - WindMin->Y + 1;
 }
 
+short Screen::WhereXabs()
+{
+	// vrací absolutní pozici èíslovanou od 1
+	CONSOLE_SCREEN_BUFFER_INFO sbi;
+	GetConsoleScreenBufferInfo(_handle, &sbi);
+	return sbi.dwCursorPosition.X + 1;
+}
+
+short Screen::WhereYabs()
+{
+	// vrací absolutní pozici èíslovanou od 1
+	CONSOLE_SCREEN_BUFFER_INFO sbi;
+	GetConsoleScreenBufferInfo(_handle, &sbi);
+	return sbi.dwCursorPosition.Y + 1;
+}
+
 void Screen::Window(BYTE X1, BYTE Y1, BYTE X2, BYTE Y2)
 {
 	// pùvodní kód z ASM
-	if (X2 <= X1) return;
-	if (Y2 <= Y1) return;
-	if (X2 + 1 > *TxtCols) return;
-	if (Y2 + 1 > *TxtRows) return;
+	if (X2 < X1) return;
+	if (Y2 < Y1) return;
+	if (X2 + 1 > * TxtCols) return;
+	if (Y2 + 1 > * TxtRows) return;
 	WindMin->X = X1;
 	WindMin->Y = Y1;
 	WindMax->X = X2;
@@ -298,7 +346,7 @@ void Screen::SaveScreen(WParam* wp, short c1, short r1, short c2, short r2)
 
 	c1--; c2--;
 	r1--; r2--;
-		
+
 	SMALL_RECT rect{ c1, r1, c2, r2 };
 	COORD bufSize{ (short)(c2 - c1 + 1), (short)r2 - r1 + 1 };
 	CHAR_INFO* buf = new CHAR_INFO[bufSize.X * bufSize.Y];
