@@ -406,7 +406,7 @@ LongStr* CopyLine(LongStr* S, WORD N, WORD M)
 	WORD l = j - i;
 	if ((i > 1) && (l > 0)) Move(&S->A[i], &S->A[1], l);
 	S->LL = l;
-	ReleaseAfterLongStr(S);
+	//ReleaseAfterLongStr(S);
 	return S;
 }
 
@@ -501,7 +501,11 @@ bool RunBool(FrmlPtr X)
 	}
 	case _compreal: {
 		auto iX0 = (FrmlElem0*)X;
-		auto rrP1 = RunReal(iX0->P1);
+		double rrP1 = 0;
+		// pokud jde o smycku FOR, je hodnota ulozena v LV1
+		if (iX0->P1 == nullptr) rrP1 = iX0->LV1->R;
+		// v ostatnich pripadech je v P1
+		else rrP1 = RunReal(iX0->P1);
 		auto rrP2 = RunReal(iX0->P2);
 		auto cmpR = CompReal(rrP1, rrP2, iX0->N22);
 		result = (cmpR & iX0->N21) != 0;
@@ -932,7 +936,7 @@ label1:
 				else result = Event.Where.Y + 1; break; }
 	case _filesize: {
 		auto iX = (FrmlElem16*)X;
-		SetTxtPathVol(*iX->TxtPath, iX->TxtCatIRec);
+		SetTxtPathVol(iX->TxtPath, iX->TxtCatIRec);
 		result = GetFileSize();
 		break;
 	}
@@ -1453,11 +1457,13 @@ void CopyLongStr(LongStr* S, WORD From, WORD Number)
 
 void AddToLongStr(LongStr* S, void* P, WORD L)
 {
-	void* p2;
 	L = MinW(L, MaxLStrLen - S->LL);
-	p2 = GetStore(L);
-	Move(P, p2, L);
+	auto oldA = S->A;
+	S->A = new char[S->LL + L];
+	memcpy(S->A, oldA, S->LL);
+	memcpy(&S->A[S->LL], P, L);
 	S->LL += L;
+	delete[] oldA;
 }
 
 void StrMask(double R, pstring& Mask)
@@ -1566,7 +1572,8 @@ LongStr* RunS(FrmlElem* Z)
 				goto label1;
 			}
 		}
-		AddToLongStr(tnew, &t->A[j], l); MyMove(tnew, t, tnew->LL + 2);
+		AddToLongStr(tnew, &t->A[j], l);
+		MyMove(tnew, t, tnew->LL + 2);
 		ReleaseAfterLongStr(t);
 		return t;
 		break;
@@ -1728,17 +1735,20 @@ label1:
 
 LongStr* RepeatStr(LongStr* S, integer N)
 {
-	WORD l; void* p;
-	l = S->LL;
+	WORD l = S->LL;
 	if (l == 0) return S;
-	if (N <= 0) { S->LL = 0; ReleaseAfterLongStr(S); return S; }
-	while ((N > 1) && (longint(S->LL) + l <= MaxLStrLen))
+	if (N <= 0) { S->LL = 0; return S; }
+
+	auto newS = new LongStr(S->LL * N);
+	newS->LL = 0;
+
+	while ((N > 1) && (S->LL + l <= MaxLStrLen))
 	{
-		p = GetStore(l);
-		MyMove(S->A, p, l);
-		S->LL += l; N--;
+		memcpy(&newS->A[newS->LL], S->A, l);
+		newS->LL += l; 
+		N--;
 	}
-	return S;
+	return newS;
 }
 
 void AccRecNoProc(FrmlElem14* X, WORD Msg)

@@ -274,7 +274,7 @@ void ClrWwProc(Instr_clrww* PD)
 		s = RunShortStr(PD->FillC);
 		if (s.length() > 0) c = s[1];
 	}
-	screen.ScrClr(v.C1 - 1, v.R1 - 1, v.C2 - v.C1 + 1, v.R2 - v.R1 + 1, c, a);
+	screen.ScrClr(v.C1, v.R1, v.C2 - v.C1 + 1, v.R2 - v.R1 + 1, c, a);
 }
 
 void ExecPgm(Instr_exec* PD)
@@ -381,7 +381,7 @@ void EditTxtProc(Instr_edittxt* PD)
 	MsgS.AltLast = *GetStr(PD->AltLast);
 
 	if (PD->TxtLV != nullptr) lp = (longint*)(uintptr_t(MyBP) + PD->TxtLV->BPOfs);
-	else { SetTxtPathVol(*PD->TxtPath, PD->TxtCatIRec); lp = nullptr; }
+	else { SetTxtPathVol(PD->TxtPath, PD->TxtCatIRec); lp = nullptr; }
 	msg = "";
 	if (PD->ErrMsg != nullptr) msg = RunShortStr(PD->ErrMsg);
 	EditTxtFile(lp, PD->EdTxtMode, msg, PD->ExD, i, RunInt(PD->TxtXY), pv, a, RunShortStr(PD->Hd), PD->WFlags, &MsgS);
@@ -406,7 +406,7 @@ void PrintTxtProc(Instr_edittxt* PD)
 		ReleaseStore(s);
 	}
 	else {
-		SetTxtPathVol(*PD->TxtPath, PD->TxtCatIRec);
+		SetTxtPathVol(PD->TxtPath, PD->TxtCatIRec);
 		PrintTxtFile(0);
 	}
 }
@@ -698,9 +698,6 @@ void WithWindowProc(Instr_window* PD)
 	RunWFrml(PD->W, PD->WithWFlags, v);
 	auto top = RunShortStr(PD->Top);
 	w1 = PushWFramed(v.C1, v.R1, v.C2, v.R2, ProcAttr, top, "", PD->WithWFlags);
-
-	screen.CrsShow();
-	
 	if ((PD->WithWFlags & WNoClrScr) == 0) ClrScr();
 	SetWwViewPort();
 	RunInstr(PD->WwInstr);
@@ -762,7 +759,7 @@ void HelpProc(Instr_help* PD)
 FILE* OpenHForPutTxt(Instr_puttxt* PD)
 {
 	FileOpenMode m; FILE* h;
-	SetTxtPathVol(*PD->TxtPath1, PD->TxtCatIRec1);
+	SetTxtPathVol(PD->TxtPath1, PD->TxtCatIRec1);
 	TestMountVol(CPath[1]);
 	m = _isoverwritefile;
 	if (PD->App) m = _isoldnewfile;
@@ -921,7 +918,9 @@ void RunInstr(Instr* PD)
 		case _whiledo: {
 			/* !!! with PD^ do!!! */
 			auto iPD = (Instr_loops*)PD;
-			while (!ExitP && !BreakP && RunBool(iPD->Bool)) RunInstr(iPD->Instr1);
+			while (!ExitP && !BreakP && RunBool(iPD->Bool)) {
+				RunInstr(iPD->Instr1);
+			}
 			BreakP = false;
 			break; }
 		case _repeatuntil: {
@@ -1077,7 +1076,7 @@ void RunInstr(Instr* PD)
 		}
 		case _checkfile: {
 			auto iPD = (Instr_checkfile*)PD;
-			SetTxtPathVol(*iPD->cfPath, iPD->cfCatIRec);
+			SetTxtPathVol(iPD->cfPath, iPD->cfCatIRec);
 			CheckFile(iPD->cfFD);
 			break;
 		}

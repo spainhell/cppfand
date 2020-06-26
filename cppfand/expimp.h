@@ -22,9 +22,7 @@ inline void BackupM(Instr_backup* PD)
 {
 }
 
-inline void CheckFile(FileD* FD)
-{
-}
+void CheckFile(FileD* FD);
 
 inline void CodingCRdb(bool Rotate)
 {

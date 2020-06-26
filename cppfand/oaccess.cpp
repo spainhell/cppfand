@@ -712,10 +712,10 @@ label4:
 	CPath = CDir + CName + CExt;
 }
 
-void SetTxtPathVol(pstring Path, WORD CatIRec)
+void SetTxtPathVol(pstring* Path, WORD CatIRec)
 {
 	if (CatIRec != 0) RdCatPathVol(CatIRec);
-	else { CPath = FExpand(Path); CVol = ""; }
+	else { CPath = FExpand(*Path); CVol = ""; }
 }
 
 void SetTempCExt(char Typ, bool IsNet)

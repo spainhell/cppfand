@@ -709,7 +709,7 @@ bool RewriteRprt(RprtOpt* RO, WORD Pl, WORD& Times, bool& IsLPT1)
 			result = ResetPrinter(Pl, 0, true, true) && RewriteTxt(&Rprt, false);
 			return result;
 		}
-		SetTxtPathVol(*RO->Path, RO->CatIRec);
+		SetTxtPathVol(RO->Path, RO->CatIRec);
 	}
 	TestMountVol(CPath[1]);
 	if (!RewriteTxt(&Rprt, PrintCtrl))

@@ -1274,8 +1274,8 @@ WORD CompileMsgOn(CHAR_INFO* Buf, longint& w)
 	else {
 		screen.ScrRdBuf(0, TxtRows - 1, Buf, 40); w = 0;
 		result = 0;
-		screen.ScrClr(0, TxtRows - 1, MsgLine.length() + 2, 1, ' ', colors.zNorm);
-		screen.ScrWrStr(1, TxtRows - 1, MsgLine, colors.zNorm);
+		screen.ScrClr(1, TxtRows, MsgLine.length() + 2, 1, ' ', colors.zNorm);
+		screen.ScrWrStr(2, TxtRows, MsgLine, colors.zNorm);
 	}
 	return result;
 }

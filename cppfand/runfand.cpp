@@ -508,8 +508,8 @@ void InitRunFand()
 	TextAttr = colors.DesktopColor;
 	screen.Window(1, 1, (BYTE)TxtCols, TxtRows - 1);
 	WriteWFrame(WHasFrame + WDoubleFrame, "", "");
-	screen.ScrClr(1, 1, TxtCols - 2, TxtRows - 13, (char)0xB1, TextAttr);
-	screen.ScrClr(1, TxtRows - 12, TxtCols - 2, 10, (char)0xb2, TextAttr);
+	screen.ScrClr(2, 2, TxtCols - 2, TxtRows - 13, (char)0xB1, TextAttr);
+	screen.ScrClr(2, TxtRows - 11, TxtCols - 2, 10, (char)0xb2, TextAttr);
 	//ScrClr(1, 1, TxtCols - 2, TxtRows - 13, 'A', TextAttr);
 	//ResFile.Get(FandFace, &p);
 	//x = (pstring*)p;
@@ -519,11 +519,11 @@ void InitRunFand()
 	xofs++;
 	for (int i = -11; i <= -6; i++) {
 		std::string sPrint = ResText.substr(xofs, TxtCols - 2);
-		screen.ScrWrStr(1, TxtRows + i, sPrint, TextAttr);
+		screen.ScrWrStr(2, TxtRows + i + 1, sPrint, TextAttr);
 		xofs += 82;
 	}
 	TextAttr = colors.mHili;
-	screen.ScrClr(3, TxtRows - 4, TxtCols - 6, 1, ' ', TextAttr);
+	screen.ScrClr(4, TxtRows - 3, TxtCols - 6, 1, ' ', TextAttr);
 
 #if defined (Trial)
 	RdMsg(70);

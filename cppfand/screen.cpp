@@ -35,13 +35,12 @@ size_t Screen::BufSize()
 void Screen::ScrClr(WORD X, WORD Y, WORD SizeX, WORD SizeY, char C, BYTE Color)
 {
 	// cislovani radku a sloupcu prichazi od 1 .. X
-	if (X < 0 || Y < 0) { throw std::exception("Bad ScrClr index."); }
-	//X--; Y--;
+	if (X < 1 || Y < 1) { throw std::exception("Bad ScrClr index."); }
 
 	DWORD written = 0;
 	CHAR_INFO* _buf = new CHAR_INFO[SizeX * SizeY];
 	COORD BufferSize = { (short)SizeX, (short)SizeY };
-	SMALL_RECT rect = { X, Y, X + SizeX, Y + SizeY };
+	SMALL_RECT rect = { X - 1, Y - 1, X + SizeX, Y + SizeY };
 
 	CHAR_INFO ci; ci.Char.AsciiChar = C; ci.Attributes = Color;
 	for (int i = 0; i < SizeX * SizeY; i++) { _buf[i] = ci; }
@@ -64,7 +63,7 @@ void Screen::ScrWrStr(WORD X, WORD Y, std::string S, BYTE Color)
 	short len = S.length();
 	CHAR_INFO* _buf = new CHAR_INFO[len];
 	COORD BufferSize = { len, 1 };
-	SMALL_RECT rect = { (short)X, (short)Y, (short)X + len, (short)Y };
+	SMALL_RECT rect = { (short)X - 1, (short)Y - 1, (short)X + len - 1, (short)Y - 1 };
 
 	CHAR_INFO ci;
 	ci.Attributes = Color;
@@ -92,7 +91,7 @@ void Screen::ScrWrText(WORD X, WORD Y, const char* S)
 	Y += WindMin->Y - 1;
 	DWORD written = 0;
 	size_t len = strlen(S);
-	WriteConsoleOutputCharacterA(_handle, S, len, { (short)X, (short)Y }, &written);
+	WriteConsoleOutputCharacterA(_handle, S, len, { (short)X - 1, (short)Y - 1 }, &written);
 }
 
 void Screen::ScrFormatWrText(WORD X, WORD Y, char const* const _Format, ...)
@@ -129,7 +128,7 @@ void Screen::ScrWrCharInfoBuf(short X, short Y, CHAR_INFO* Buf, short L)
 {
 	//X++; // v Pacalu to bylo od 1
 	//Y++; // --""--
-	SMALL_RECT XY = { X, Y, (short)(X + L), (short)(Y + 1) };
+	SMALL_RECT XY = { X - 1, Y - 1, (short)(X + L), (short)(Y + 1) };
 	COORD BufferSize = { (short)L, 1 };
 	WriteConsoleOutputA(_handle, Buf, BufferSize, { 0, 0 }, &XY);
 }
@@ -173,7 +172,7 @@ void Screen::WriteChar(short X, short Y, char C, Position pos)
 	default:;
 	}
 	auto result = WriteConsoleOutputCharacterA(_handle, &C, 1, { X - 1, Y - 1}, &written);
-	GotoXY(WhereXabs(), WhereYabs() + 1, absolute); // po zapisu poseneme kurzor
+	GotoXY(WhereXabs() + 1, WhereYabs(), absolute); // po zapisu poseneme kurzor
 }
 
 TCrs Screen::CrsGet()
@@ -276,8 +275,8 @@ void Screen::Window(BYTE X1, BYTE Y1, BYTE X2, BYTE Y2)
 	// pùvodní kód z ASM
 	if (X2 < X1) return;
 	if (Y2 < Y1) return;
-	if (X2 + 1 > * TxtCols) return;
-	if (Y2 + 1 > * TxtRows) return;
+	if (X2 > * TxtCols) return;
+	if (Y2 > * TxtRows) return;
 	WindMin->X = X1;
 	WindMin->Y = Y1;
 	WindMax->X = X2;

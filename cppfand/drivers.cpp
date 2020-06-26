@@ -510,7 +510,7 @@ void ClrScr()
 
 void ClrEol()
 {
-	screen.ScrClr(Crs.X, Crs.Y, WindMax.X - Crs.X + 1, 1, ' ', TextAttr);
+	screen.ScrClr(Crs.X + 1, Crs.Y + 1, WindMax.X - Crs.X + 1, 1, ' ', TextAttr);
 }
 
 void TextBackGround(BYTE Color)

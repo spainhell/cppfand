@@ -83,10 +83,10 @@ void TWindow::InitTWindow(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, pstring
 	if (GetState(sfFramed)) {
 		n = 0;
 		if (GetState(sfFrDouble)) n = 9;
-		screen.ScrWrFrameLn(Orig.X, Orig.Y, n, Size.X, Attr);
+		screen.ScrWrFrameLn(Orig.X + 1, Orig.Y + 1, n, Size.X, Attr);
 		for (i = 1; i <= Size.Y - 2; i++)
-			screen.ScrWrFrameLn(Orig.X, Orig.Y + i, n + 6, Size.X, Attr);
-		screen.ScrWrFrameLn(Orig.X, Orig.Y + Size.Y - 1, n + 3, Size.X, Attr);
+			screen.ScrWrFrameLn(Orig.X + 1, Orig.Y + i + 1, n + 6, Size.X, Attr);
+		screen.ScrWrFrameLn(Orig.X + 1, Orig.Y + Size.Y, n + 3, Size.X, Attr);
 		m = Size.X - 2;
 		if (top.length() != 0) {
 			s = " ";
@@ -875,8 +875,8 @@ void DisplLLHelp(RdbD* R, pstring Name, bool R24)
 label1:
 	y = TxtRows - 1;
 	if (R24) y--;
-	screen.ScrWrStr(0, y, MsgLine, colors.nNorm);
-	screen.ScrClr(MsgLine.length(), y, TxtCols - MsgLine.length(), 1, ' ', colors.nNorm);
+	screen.ScrWrStr(1, y + 1, MsgLine, colors.nNorm);
+	screen.ScrClr(MsgLine.length() + 1, y + 1, TxtCols - MsgLine.length(), 1, ' ', colors.nNorm);
 	CFile = cf; ReleaseStore(p);
 }
 

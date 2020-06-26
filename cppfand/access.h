@@ -218,6 +218,8 @@ class FileD : public Chained // ø. 177
 public:
 	FileD();
 	// FileD* Chain = nullptr;
+	pstring Name;
+	std::string FullName;
 	WORD RecLen = 0;
 	void* RecPtr = nullptr;
 	longint NRecs = 0;
@@ -232,7 +234,7 @@ public:
 	FileD* OrigFD = nullptr;    // like orig. or nil
 	BYTE Drive = 0;         // 1=A, 2=B, else 0
 	WORD CatIRec = 0;
-	FieldDPtr FldD = nullptr;
+	FieldDescr* FldD = nullptr;
 	bool IsParFile = false, IsJournal = false, IsHlpFile = false;
 	bool typSQLFile = false, IsSQLFile = false, IsDynFile = false;
 	FileUseMode UMode = FileUseMode::Closed;
@@ -242,7 +244,6 @@ public:
 	KeyDPtr Keys = nullptr;
 	AddD* Add = nullptr;
 	uintptr_t nLDs = 0, LiOfs = 0;
-	pstring Name;
 	longint UsedFileSize();
 	bool IsShared();
 	bool NotCached();

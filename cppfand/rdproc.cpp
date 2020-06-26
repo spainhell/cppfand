@@ -267,7 +267,10 @@ FileD* RdPath(bool NoFD, pstring** Path, WORD& CatIRec)
 {
 	FileD* fd = nullptr;
 	CatIRec = 0;
-	if (Lexem == _quotedstr) { *Path = RdStrConst(); fd = nullptr; }
+	if (Lexem == _quotedstr) { 
+		*Path = RdStrConst(); 
+		fd = nullptr; 
+	}
 	else {
 		TestIdentif();
 		fd = FindFileD();
@@ -426,7 +429,7 @@ FrmlPtr RdFunctionP(char& FFTyp)
 	}
 	else if (IsKeyWord("GETTXT")) {
 		RdLex();
-		Z = new FrmlElem0(_gettxt, 6); // GetOp(_gettxt, 6);
+		Z = new FrmlElem16(_gettxt, 6); // GetOp(_gettxt, 6);
 		FTyp = 'S';
 		goto label3;
 	}
@@ -688,31 +691,34 @@ Instr* RdFor()
 	LocVar* LV = nullptr;
 	if (!FindLocVar(&LVBD, &LV) || (LV->FTyp != 'R')) Error(146);
 	RdLex();
-	Instr* PD = new Instr_assign(_asgnloc); // GetPInstr(_asgnloc, 9);
+	auto* PD = new Instr_assign(_asgnloc); // GetPInstr(_asgnloc, 9);
 	auto result = PD;
-	((Instr_assign*)PD)->AssLV = LV;
+	PD->AssLV = LV;
 	Accept(_assign);
-	((Instr_assign*)PD)->Frml = RdRealFrml();
+	PD->Frml = RdRealFrml();
+
 	AcceptKeyWord("TO");
-	PD->Chain = new Instr_loops(_whiledo); // GetPInstr(_whiledo, 8);
-	PD = (Instr_assign*)PD->Chain;
-	FrmlElem* Z = new FrmlElem0(_compreal, 2); // GetOp(_compreal, 2);
-	auto iZ0 = (FrmlElem0*)Z;
-	iZ0->P1 = (FrmlElem*)LV->Op;
-	iZ0->N21 = _le;
-	iZ0->N22 = 5;
-	iZ0->P2 = RdRealFrml();
-	((Instr_loops*)PD)->Bool = Z;
+	auto iLoop = new Instr_loops(_whiledo); // GetPInstr(_whiledo, 8);
+	PD->Chain = iLoop;
+	//PD = (Instr_assign*)PD->Chain;
+	auto Z1 = new FrmlElem0(_compreal, 2); // GetOp(_compreal, 2);
+	Z1->P1 = nullptr;
+	Z1->LV1 = LV;
+	Z1->N21 = _le;
+	Z1->N22 = 5;
+	Z1->P2 = RdRealFrml();
+	iLoop->Bool = Z1;
+
 	AcceptKeyWord("DO");
-	Instr* PD1 = RdPInstr();
-	((Instr_loops*)PD)->Instr1 = PD1;
-	PD1 = new Instr_assign(_asgnloc); // GetPInstr(_asgnloc, 9);
-	ChainLast(((Instr_loops*)PD)->Instr1, PD1);
-	((Instr_assign*)PD1)->Add = true;
-	((Instr_assign*)PD1)->AssLV = LV;
-	Z = new FrmlElem2(_const, 0, 1); // GetOp(_const, sizeof(double));
+	iLoop->Instr1 = RdPInstr();
+
+	auto iAsg = new Instr_assign(_asgnloc); // GetPInstr(_asgnloc, 9);
+	ChainLast(iLoop->Instr1, iAsg);
+	iAsg->Add = true;
+	iAsg->AssLV = LV;
+	auto Z2 = new FrmlElem2(_const, 0, 1); // GetOp(_const, sizeof(double));
 	//Z->R = 1;
-	((Instr_assign*)PD1)->Frml = Z;
+	iAsg->Frml = Z2;
 	return result;
 }
 
@@ -759,7 +765,8 @@ Instr_loops* RdRepeatUntil()
 			goto label1;
 		}
 	}
-label1: PD->Bool = RdBool();
+label1: 
+	PD->Bool = RdBool();
 	return result;
 }
 

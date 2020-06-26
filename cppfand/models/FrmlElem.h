@@ -13,6 +13,7 @@ public:
 	BYTE N31 = 0;
 	WORD W11 = 0;
 	BYTE buff[64]{ 0 };
+	LocVar* LV1 = nullptr; // pro potreby smycky FOR
 };
 
 class FrmlElem1 : public FrmlElem

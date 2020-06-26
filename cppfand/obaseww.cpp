@@ -130,7 +130,7 @@ longint PushWFramed(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, pstring top, 
 	screen.CrsHide();
 	if (y == 1) screen.ScrColor(C1 + 1, R2, C2 - C1 + x - 1, colors.ShadowAttr);
 	if (x > 0) for (i = R1; i <= R2; i++) screen.ScrColor(C2, i, x, colors.ShadowAttr);
-	screen.Window(C1 - 1, R1 - 1, C2 - 1, R2 - 1);
+	screen.Window(C1, R1, C2, R2);
 	TextAttr = Attr;
 	if ((WFlags & WHasFrame) != 0) {
 		WriteWFrame(WFlags, top, bottom);
@@ -200,23 +200,23 @@ void WrLLF10MsgLine()
 	CHAR_INFO* Buf = new CHAR_INFO[TxtCols];
 	screen.ScrRdBuf(0, row, Buf, TxtCols);
 	Beep();
-	screen.ScrClr(0, row, TxtCols, 1, ' ', colors.zNorm);
-	if (F10SpecKey == 0xffff) screen.ScrWrStr(0, row, "...!", colors.zNorm | 0x80);
-	else screen.ScrWrStr(0, row, "F10!", colors.zNorm | 0x80);
+	screen.ScrClr(1, row + 1, TxtCols, 1, ' ', colors.zNorm);
+	if (F10SpecKey == 0xffff) screen.ScrWrStr(1, row + 1, "...!", colors.zNorm | 0x80);
+	else screen.ScrWrStr(1, row + 1, "F10!", colors.zNorm | 0x80);
 	col = MsgLine.length() + 5;
 	len = 0;
 	if ((F10SpecKey == 0xfffe) || (F10SpecKey == _F1_)) {
-		MsgLine = MsgLine + ' ' + "F1";
+		MsgLine = MsgLine + " " + "F1";
 		len = 2;
 	}
 	if ((F10SpecKey == 0xfffe) || (F10SpecKey == _ShiftF7_)) {
-		MsgLine = MsgLine + ' ' + "ShiftF7"; len += 7;
+		MsgLine = MsgLine + " " + "ShiftF7"; len += 7;
 	}
 	if (MsgLine.length() > TxtCols - 5) {
 		MsgLine[0] = char(TxtCols - 5);
 		len = 0;
 	}
-	screen.ScrWrStr(5, row, MsgLine, colors.zNorm);
+	screen.ScrWrStr(6, row + 1, MsgLine, colors.zNorm);
 label1:
 	GetEvent();
 	/*with Event*/

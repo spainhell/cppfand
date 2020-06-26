@@ -76,7 +76,7 @@ void WriteStr(WORD& pos, WORD& base, WORD& maxLen, WORD& maxCol, BYTE sLen, pstr
 		//BuffLine[i] = *item;
 	}
 	screen.ScrWrCharInfoBuf(cx1, cy1, Buffer, maxCol);
-	screen.GotoXY(cx + pos - base - 1, cy);
+	screen.GotoXY(cx + pos - base - 2, cy - 1);
 }
 
 WORD EditTxt(pstring* s, WORD pos, WORD maxlen, WORD maxcol, char typ, bool del, bool star, bool upd, bool ret,
@@ -673,7 +673,7 @@ void DisplFld(EFldD* D, WORD I)
 {
 	pstring Txt;
 	WORD r = FldRow(D, I);
-	screen.GotoXY(D->Col, r);
+	screen.GotoXY(D->Col - 1, r - 1);
 	auto F = D->FldD;
 	DecodeField(F, D->L, Txt);
 	for (WORD j = 1; j <= Txt.length(); j++)
@@ -1040,7 +1040,7 @@ void DisplEditWw()
 	screen.Window(1, 1, TxtCols, TxtRows);
 	DisplSysLine();
 	DisplBool();
-	screen.GotoXY(E->FrstCol, E->FrstRow);
+	screen.GotoXY(E->FrstCol - 1, E->FrstRow - 1);
 	WriteSL(E->HdTxt);
 	DisplRecTxt();
 	DisplTabDupl();
