@@ -152,7 +152,7 @@ void Screen::ScrColor(WORD X, WORD Y, WORD L, BYTE Color)
 	FillConsoleOutputAttribute(_handle, Color, L, { (short)X, (short)Y }, &written);
 }
 
-void Screen::WriteChar(short X, short Y, char C, Position pos)
+void Screen::WriteChar(short X, short Y, char C, BYTE attr, Position pos)
 {
 	DWORD written = 0;
 	switch (pos) {
@@ -171,6 +171,8 @@ void Screen::WriteChar(short X, short Y, char C, Position pos)
 	}
 	default:;
 	}
+	WORD color = attr;
+	auto resatr = WriteConsoleOutputAttribute(_handle, &color, 1, { X - 1, Y - 1 }, &written);
 	auto result = WriteConsoleOutputCharacterA(_handle, &C, 1, { X - 1, Y - 1}, &written);
 	GotoXY(WhereXabs() + 1, WhereYabs(), absolute); // po zapisu poseneme kurzor
 }

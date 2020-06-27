@@ -1562,6 +1562,24 @@ void StrMask(double R, pstring& Mask)
 	if (minus) Mask = tmp + Mask;
 }
 
+std::string Replace(std::string& text, std::string& oldText, std::string& newText, std::string options) {
+	bool tilda = options.find('~') != std::string::npos;
+	bool words = (options.find('w') != std::string::npos) || (options.find('W') != std::string::npos);
+	bool upper = (options.find('u') != std::string::npos) || (options.find('U') != std::string::npos);
+
+	if (tilda || words || upper) throw std::exception("Replace() not implemented.");
+
+	size_t old_len = oldText.length();
+	size_t pos = text.find("oldText");
+	
+	if (pos != std::string::npos) {
+		auto s = text.replace(pos, old_len, newText);
+		return s;
+	}
+
+	return text;
+}
+
 LongStr* RunS(FrmlElem* Z)
 {
 	wwmix ww;
@@ -1603,26 +1621,37 @@ LongStr* RunS(FrmlElem* Z)
 	case _replace: {
 		auto iZ = (FrmlElem12*)Z;
 		t = RunLongStr(iZ->PPP2);
-		s = RunShortStr(iZ->PPPP1); j = 1;
+		s = RunShortStr(iZ->PPPP1); //j = 1;
 		snew = RunShortStr(iZ->PP3);
-		tnew = new LongStr(2); // GetZStore(2);
-	label1:
-		l = t->LL - (j - 1);
-		if (l > 0) {
-			i = FindTextE(s, iZ->Options, (char*)(&t->A[j]), l);
-			if (i > 0) {
-				AddToLongStr(tnew, &t->A[j], i - s.length() - 1);
-				AddToLongStr(tnew, &snew[1], snew.length());
-				j += i - 1;
-				goto label1;
-			}
-		}
-		AddToLongStr(tnew, &t->A[j], l);
-		MyMove(tnew, t, tnew->LL + 2);
-		//ReleaseAfterLongStr(t);
-		delete tnew;
-		return t;
-		break;
+
+		std::string text = std::string(t->A, t->LL);
+		std::string oldText = s;
+		std::string newText = snew;
+		delete t;
+
+		auto res = Replace(text, oldText, newText, iZ->Options);
+		auto result = new LongStr(res.length());
+		result->LL = res.length();
+		memcpy(result->A, res.c_str(), res.length());
+		return result;
+	//	tnew = new LongStr(2); // GetZStore(2);
+	//label1:
+	//	l = t->LL - (j - 1);
+	//	if (l > 0) {
+	//		i = FindTextE(s, iZ->Options, (char*)(&t->A[j]), l);
+	//		if (i > 0) {
+	//			AddToLongStr(tnew, &t->A[j], i - s.length() - 1);
+	//			AddToLongStr(tnew, &snew[1], snew.length());
+	//			j += i - 1;
+	//			goto label1;
+	//		}
+	//	}
+	//	AddToLongStr(tnew, &t->A[j], l);
+	//	MyMove(tnew, t, tnew->LL + 2);
+	//	//ReleaseAfterLongStr(t);
+	//	delete tnew;
+	//	return t;
+	//	break;
 	}
 	case _prompt:
 	{

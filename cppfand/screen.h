@@ -50,7 +50,7 @@ public:
 	bool ScrRdBuf(WORD X, WORD Y, CHAR_INFO* Buf, WORD L);
 	void ScrMove(WORD X, WORD Y, WORD ToX, WORD ToY, WORD L);
 	void ScrColor(WORD X, WORD Y, WORD L, BYTE Color);
-	void WriteChar(short X, short Y, char C, Position pos = relative);
+	void WriteChar(short X, short Y, char C, BYTE attr, Position pos = relative);
 	TCrs CrsGet();
 	void CrsSet(TCrs S);
 	void CrsShow();

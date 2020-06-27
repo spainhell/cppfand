@@ -694,10 +694,10 @@ void WithWindowProc(Instr_window* PD)
 	WRect v;
 
 	/* !!! with PD^ do!!! */
-	ProcAttr = RunWordImpl(PD->Attr, colors.uNorm);
-	RunWFrml(PD->W, PD->WithWFlags, v);
-	auto top = RunShortStr(PD->Top);
-	w1 = PushWFramed(v.C1, v.R1, v.C2, v.R2, ProcAttr, top, "", PD->WithWFlags);
+	ProcAttr = RunWordImpl(PD->Attr, colors.uNorm); // nacte barvy do ProcAttr
+	RunWFrml(PD->W, PD->WithWFlags, v); // nacte rozmery okna
+	auto top = RunShortStr(PD->Top); // nacte nadpis
+	w1 = PushWFramed(v.C1, v.R1, v.C2, v.R2, ProcAttr, top, "", PD->WithWFlags); // vykresli oramovane okno s nadpisem
 	if ((PD->WithWFlags & WNoClrScr) == 0) ClrScr();
 	SetWwViewPort();
 	RunInstr(PD->WwInstr);
@@ -926,7 +926,9 @@ void RunInstr(Instr* PD)
 		case _repeatuntil: {
 			/* !!! with PD^ do!!! */
 			auto iPD = (Instr_loops*)PD;
-			do { RunInstr(iPD->Instr1); } while (!(ExitP || BreakP || RunBool(iPD->Bool)));
+			do { 
+				RunInstr(iPD->Instr1); 
+			} while (!(ExitP || BreakP || RunBool(iPD->Bool)));
 			BreakP = false;
 			break; }
 		case _menubox: { MenuBoxProc((Instr_menu*)PD); break; }

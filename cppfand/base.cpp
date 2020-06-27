@@ -1188,35 +1188,31 @@ WORD LenStyleStr(pstring s)
 	return l;
 }
 
-pstring CStyle(10);
-pstring CColor(11);
+std::string CStyle;
+std::string CColor;
 
 void WrStyleChar(char C)
 {
 	BYTE a = 0;
 	if (SetStyleAttr(C, a))
 	{
-		WORD i = CStyle.first(C);
-		if (i != 0)
+		size_t i = CStyle.find_first_of(C);
+		if (i != std::string::npos)
 		{
-			CStyle.Delete(i, 1);
-			CColor.Delete(i, 1);
+			CStyle.erase(i, 1);
+			CColor.erase(i, 1);
 		}
 		else {
-			pstring oldCStyle = CStyle;
-			CStyle = C;
-			CStyle += oldCStyle;
-			pstring oldCColor = CColor;
-			CColor = a;
-			CColor += oldCColor;
+			CStyle = C + CStyle;
+			CColor = (char)a + CColor;
 		}
-		TextAttr = CColor[1];
+		TextAttr = CColor[0];
 	}
 	else if (C == 0x0D) {
 		screen.GotoXY(0, screen.WhereY() + 1);
 	}
 	else if (C != 0x0A) { 
-		screen.WriteChar(0, 0, C, actual); 
+		screen.WriteChar(0, 0, C, TextAttr, actual);
 	}
 }
 
@@ -1232,7 +1228,7 @@ void WrStyleStr(pstring s, WORD Attr)
 void WrLongStyleStr(LongStr* S, WORD Attr)
 {
 	TextAttr = Attr; CStyle = ""; 
-	CColor = ""; CColor.Append(Attr);
+	CColor = (char)Attr;
 	for (size_t i = 0; i < S->LL; i++)	{
 		WrStyleChar(S->A[i]);
 	}
