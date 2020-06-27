@@ -126,7 +126,7 @@ double RunRealStr(FrmlElem* X)
 	case _linecnt: {
 		auto iX = (FrmlElem6*)X;
 		S = RunLongStr(iX->PP1);
-		result = int(CountDLines(S->A, S->LL, 0x0D));
+		result = CountDLines(S->A, S->LL, 0x0D);
 		ReleaseStore(S);
 		break;
 	}
@@ -398,10 +398,36 @@ WORD PortIn(bool IsWord, WORD Port)
 	return 0;
 }
 
-LongStr* CopyLine(LongStr* S, WORD N, WORD M)
+std::string CopyLine(std::string& S, WORD N, WORD M)
 {
+	size_t begin = 0;
+	size_t end = 0;
+	size_t LFcount = 0;
+	for (size_t i = 0; i < S.length(); i++) {
+		if (S[i] == '\r') LFcount++;
+		if (LFcount + 1 == N) {
+			if (N != 1) i++; // 1. radek pred sebou nema \r
+			begin = i; // nastavujeme jen pri prvnim nalezu
+			break;
+		}
+	}
+	LFcount = 0;
+	for (size_t i = begin + 1; i < S.length(); i++) {
+		if (S[i] == '\r') LFcount++;
+		if (LFcount == M) {
+			end = i;
+			break;
+		}
+	}
+	return S.substr(begin, end - begin);
+}
+
+LongStr* CopyLine(LongStr* S, WORD N, WORD M) {
 	WORD i = 1;
-	if (N > 1) { i = FindCtrlM(S, 1, N - 1); i = SkipCtrlMJ(S, i); }
+	if (N > 1) { 
+		i = FindCtrlM(S, 1, N - 1); 
+		i = SkipCtrlMJ(S, i); 
+	}
 	WORD j = FindCtrlM(S, i, M);
 	WORD l = j - i;
 	if ((i > 1) && (l > 0)) Move(&S->A[i], &S->A[1], l);
@@ -1384,7 +1410,13 @@ label1:
 		auto iX0 = (FrmlElem0*)X;
 		I = 1;
 		if (iX0->P3 != nullptr) I = (WORD)RunInt(iX0->P3);
-		result = CopyLine(RunLongStr(iX0->P1), RunInt(iX0->P2), I);
+		auto* lstr = RunLongStr(iX0->P1);
+		std::string text = std::string(lstr->A, lstr->LL);
+		WORD start = RunInt(iX0->P2);
+		auto r = CopyLine(text, start, I);
+		result = new LongStr(r.length());
+		result->LL = r.length();
+		memcpy(result->A, r.c_str(), r.length());
 		break;
 	}
 	case _repeatstr: {

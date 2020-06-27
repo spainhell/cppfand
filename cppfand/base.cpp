@@ -1231,7 +1231,8 @@ void WrStyleStr(pstring s, WORD Attr)
 
 void WrLongStyleStr(LongStr* S, WORD Attr)
 {
-	TextAttr = Attr; CStyle = ""; CColor = char(Attr);
+	TextAttr = Attr; CStyle = ""; 
+	CColor = ""; CColor.Append(Attr);
 	for (size_t i = 0; i < S->LL; i++)	{
 		WrStyleChar(S->A[i]);
 	}
@@ -1377,7 +1378,9 @@ void ReleaseAfterLongStr(void* pointer)
 WORD CountDLines(void* Buf, WORD L, char C)
 {
 	WORD count = 0;
-	for (int i = 0; i < L; i++) { if (((char*)Buf)[i] == C) count++; }
+	for (int i = 0; i < L; i++) { 
+		if (((char*)Buf)[i] == C) count++; 
+	}
 	return count + 1; // za posledni polozkou neni '/'
 }
 

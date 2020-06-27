@@ -423,7 +423,7 @@ void ConvToNoDiakr(WORD* Buf, WORD L, TVideoFont FromFont)
 
 void ClearKbdBuf()
 {
-	keyboard.ClearBuf();
+	// keyboard.ClearBuf();
 }
 
 bool KbdPressed()

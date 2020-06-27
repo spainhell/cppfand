@@ -444,10 +444,10 @@ void* RdFileD(std::string FileName, char FDTyp, pstring Ext)
 		//GetStore(2);
 		CFile = new FileD();
 	}
-	if (InpArrLen == 6261 && CurrPos == 5052)
+	/*if (InpArrLen == 6261 && CurrPos == 5052)
 	{
 		printf("RdFileD() r. 449\n");
-	}
+	}*/
 	CFile->Name = FileName;
 	SetHCatTyp(FDTyp);
 	HasTT = false;
