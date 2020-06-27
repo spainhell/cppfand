@@ -115,17 +115,17 @@ integer CompLongStr(LongStr* S1, LongStr* S2)
 {
 	integer result = 0;
 	if (S1->LL != S2->LL) {
-		if (S1->LL < S2->LL) result = 2;
-		else result = 4;
+		if (S1->LL < S2->LL) result = _lt;
+		else result = _gt;
 	}
 	if (S2->LL == 0) return result;
 	for (size_t i = 0; i < S2->LL; i++)
 	{
 		if (S1->A[i] == S2->A[i]) continue;
-		if (S1->A[i] < S2->A[i]) return 2;
-		return 4;
+		if (S1->A[i] < S2->A[i]) return _lt;
+		return _gt;
 	}
-	return 0;
+	return _equ;
 }
 
 integer CompLongShortStr(LongStr* S1, pstring* S2)

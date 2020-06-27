@@ -444,11 +444,12 @@ LocVar* RunUserFunc(FrmlElem19* X)
 	LVBD = X->FC->LVB;
 	//PushProcStk();
 	//size_t i = 0;
-	//LocVar* lv = LVBD.vLocVar.front();
+	LocVar* lv = nullptr; // tady je ulozena posledni LV, ktera je pak navratovou hodnotou
 	auto itr = LVBD.vLocVar.begin();
 	FrmlList fl = X->FrmlL;
 	while (itr != LVBD.vLocVar.end()) {
 		LVAssignFrml(*itr, nullptr, false, fl->Frml);
+		lv = *itr;
 		itr++;
 		//fl = (FrmlListEl*)fl->Chain;
 	}
@@ -458,9 +459,8 @@ LocVar* RunUserFunc(FrmlElem19* X)
 
 	switch (instr->Kind)
 	{
-	case _asgnloc: return ((Instr_assign*)instr)->AssLV;
+	case _asgnloc: return lv;
 	}
-
 
 	//auto result = LVBD.vLocVar.back();
 	//ProcMyBP = (ProcStkD*)oldprocbp;
@@ -1359,7 +1359,7 @@ label1:
 
 		if ((L1 < 0) || (L2 < 0)) S->LL = 0;
 		else {
-			str = str.substr(L1, L2 - L1 + 1); // L2 udava index, ne pocet
+			str = str.substr(L1, L2); // L2 udava pocet
 			memcpy(S->A, str.c_str(), str.length());
 			S->LL = str.length();
 			//CopyLongStr(S, static_cast<WORD>(L1), static_cast<WORD>(L2));
@@ -1446,6 +1446,7 @@ label1:
 	case _userfunc: {
 		LocVar* lv = RunUserFunc((FrmlElem19*)X);
 		auto ls = new LongStr(lv->orig_S_length);
+		ls->LL = lv->S.length();
 		memcpy(ls->A, lv->S.c_str(), lv->S.length());
 		result = ls;
 		/**L1 = *(longint*)(cr);
@@ -1668,7 +1669,11 @@ LongStr* RunS(FrmlElem* Z)
 	case _catfield: {
 		auto iZ = (FrmlElem10*)Z;
 		s = RdCatField(iZ->CatIRec, iZ->CatFld);
-		if (iZ->CatFld == CatPathName) s = FExpand(s);
+		bool empty = s.empty(); // bude se jednat jen o cestu, bez nazvu souboru
+		if (iZ->CatFld == CatPathName) {
+			s = FExpand(s);
+			if (empty) AddBackSlash(s); // za cestu pridame '\'
+		}
 		break;
 	}
 	case _password: s = ww.PassWord(false); break;

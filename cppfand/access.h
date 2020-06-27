@@ -290,6 +290,7 @@ public:
 	//}
 	LocVar* GetRoot();
 	LocVar* FindByName(std::string Name);
+	std::string FceName;
 	std::vector<LocVar*> vLocVar;
 	//LocVar* Root = nullptr;
 	WORD NParam = 0;

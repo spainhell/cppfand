@@ -289,8 +289,11 @@ bool OpenCreateF(FileUseMode UM)
 {
 	/* !!! with CFile^ do!!! */
 	if (!OpenF(UM)) {
-		CreateF(); if ((UM == Shared) || (UM == RdShared)) {
-			WrPrefixes(); SaveCache(0); CloseClearH(CFile->Handle);
+		CreateF(); 
+		if ((UM == Shared) || (UM == RdShared)) {
+			WrPrefixes(); 
+			SaveCache(0); 
+			CloseClearH(CFile->Handle);
 			if (CFile->Typ == 'X') CloseClearH(CFile->XF->Handle);
 			if (CFile->TF != nullptr) CloseClearH(CFile->TF->Handle);
 			OpenF(UM);

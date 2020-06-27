@@ -296,10 +296,10 @@ void CFileError(WORD N)
 
 void RunMsgOn(char C, longint N)
 {
-	RunMsgD* CM1;
+	RunMsgD* CM1 = new RunMsgD(); // (RunMsgD*)GetStore(sizeof(RunMsgD));
 #ifndef norunmsg
-	CM1 = (RunMsgD*)GetStore(sizeof(RunMsgD));
-	CM1->Last = CM; CM = CM1;
+	CM1->Last = CM; 
+	CM = CM1;
 	CM->MsgStep = N / 100;
 	if (CM->MsgStep == 0) CM->MsgStep = 1;
 	CM->MsgKum = CM->MsgStep;

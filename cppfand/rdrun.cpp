@@ -46,6 +46,7 @@ void ResetLVBD()
 	LVBD.vLocVar.clear();
 	LVBD.NParam = 0;
 	LVBD.Size = 2 * 4;
+	LVBD.FceName = "";
 }
 
 void SetMyBP(ProcStkD* Bp)

@@ -2539,6 +2539,7 @@ label1:
 		FileVarsAllowed = false; IsRdUserFunc = true;
 		RdLex();
 		ResetLVBD();
+		LVBD.FceName = fc->Name;
 		Accept('(');
 		if (Lexem != ')') RdLocDcl(&LVBD, true, false, 'D'); // nacte parametry funkce
 		Accept(')');

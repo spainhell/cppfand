@@ -130,9 +130,16 @@ void FSplit(pstring fullname, pstring& dir, pstring& name, pstring& ext)
 		}
 	}
 	else
-	{ // lomítko nebylo nalezeno, bude exitovat jen název a možná přípona
+	{	
+		if (foundBackslash != std::string::npos) {
+			// lomitko je na konci, existuje jen adresar
+			name = ""; ext = "";
+			return;
+		}
+
+		// lomitko nebylo nalezeno, bude exitovat jen nazev a mozna pripona
 		size_t foundDot = s.find_last_of('.');
-		if (foundDot < s.length()) // přípona existuje
+		if (foundDot < s.length()) // pripona existuje
 		{
 			name = s.substr(0, foundDot);
 			ext = s.substr(foundDot);
@@ -180,13 +187,17 @@ pstring FExpand(pstring path)
 	FSplit(path, dir, name, ext);
 
 	// je cesta kompletni?
-	if (dir.length() > 0 && name.length() > 0 && ext.length() > 0) return path;
+	if (dir.length() > 0 && name.length() > 0 && ext.length() > 0) return path; // je to kompletni soubor
+	if (dir.length() > 0) { return dir; } // je to jen adresar
 
 	pstring fullpath = pstring(255);
 	GetDir(0, &fullpath);
-	fullpath += "\\";
-	fullpath += name;
-	if (ext.length() > 0) { fullpath += ext; }
+	
+	if (name.length() > 0 || ext.length() > 0) {
+		fullpath += "\\";
+		fullpath += name;
+		if (ext.length() > 0) { fullpath += ext; }
+	}
 	return fullpath;
 }
 
