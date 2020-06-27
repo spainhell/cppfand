@@ -23,7 +23,7 @@ pstring LeadChar(char C, pstring S); // r69
 pstring TrailChar(char C, pstring s); // r73
 LongStr* CopyLine(LongStr* S, WORD N, WORD M);
 bool RunBool(FrmlPtr X);
-bool InReal(double R, BYTE* L, integer M);
+bool InReal(FrmlElemIn* frml);
 bool LexInStr(LongStr* S, BYTE* L);
 bool InStr(LongStr* S, BYTE* L);
 bool RunModulo(FrmlElem1* X);

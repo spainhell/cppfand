@@ -359,7 +359,7 @@ label1:
 }
 
 // ze souboru .000 vycte data
-void* RdFileD(pstring FileName, char FDTyp, pstring Ext)
+void* RdFileD(std::string FileName, char FDTyp, pstring Ext)
 {
 	pstring JournalFlds = "A Upd,1;F RecNr,8.0;F User,4.0;D TimeStamp,'DD.MM.YYYY mm hh:ss'";
 	FileD* FD = nullptr; KeyD* K = nullptr;
@@ -433,7 +433,7 @@ void* RdFileD(pstring FileName, char FDTyp, pstring Ext)
 				s = *K->Alias; 
 				i = s.first('_');
 				if (i != 0) s = copy(s, i + 1, 255);
-				s = Prefix + '_' + s;
+				s = Prefix + "_" + s;
 				K->Alias = StoreStr(s);
 			}
 			K = K->Chain;
@@ -443,6 +443,10 @@ void* RdFileD(pstring FileName, char FDTyp, pstring Ext)
 		//AlignLongStr();
 		//GetStore(2);
 		CFile = new FileD();
+	}
+	if (InpArrLen == 6261 && CurrPos == 5052)
+	{
+		printf("RdFileD() r. 449\n");
 	}
 	CFile->Name = FileName;
 	SetHCatTyp(FDTyp);

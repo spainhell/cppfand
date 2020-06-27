@@ -122,4 +122,6 @@ FrmlElem23::FrmlElem23(BYTE Op, size_t buff_size) : FrmlElem(Op, buff_size)
 {
 }
 
-
+FrmlElemIn::FrmlElemIn(BYTE Op) : FrmlElem(Op, 0)
+{
+}

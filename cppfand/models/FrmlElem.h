@@ -195,3 +195,17 @@ public:
 	FrmlElem* ownSum = nullptr;
 	LinkD* ownLD = nullptr; // 23 { _owned }
 };
+
+// pro zjisteni polozky v mnozine IN[] (string nebo double)
+class FrmlElemIn : public FrmlElem
+{
+public:
+	FrmlElemIn(BYTE Op);
+	FrmlElem* P1 = nullptr;
+	BYTE param1 = 0;
+	BYTE param2 = 0;
+	std::vector<std::string> strings;
+	std::vector<double> reals;
+	std::vector<std::pair<std::string, std::string>> strings_range;
+	std::vector<std::pair<double, double>> reals_range;
+};

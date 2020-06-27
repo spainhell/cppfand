@@ -1700,7 +1700,7 @@ void GetSel2S(pstring* s, pstring* s2, char C, WORD wh)
 
 bool EquRoleName(pstring S, LinkD* LD)
 {
-	if (S == "") return LD->ToFD->Name == LD->RoleName;
+	if (S == "") return LD->ToFD->Name == (std::string)LD->RoleName;
 	else return S == LD->RoleName;
 }
 

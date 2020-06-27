@@ -487,16 +487,20 @@ bool RunBool(FrmlPtr X)
 		break;
 	}
 	case _instr: {
-		auto iX0 = (FrmlElem0*)X;
+		auto iX0 = (FrmlElemIn*)X;
 		S = RunLongStr(iX0->P1);
-		if (iX0->N11 == 1) result = LexInStr(LongTrailChar(' ', 0, S), &iX0->N12);
-		else result = InStr(S, &iX0->N12);
+		if (iX0->param1 == 1) { 
+			// ~
+			result = LexInStr(LongTrailChar(' ', 0, S), &iX0->param2);
+		}
+		else {
+			result = InStr(S, &iX0->param2);
+		}
 		ReleaseStore(S);
 		break;
 	}
 	case _inreal: {
-		auto iX0 = (FrmlElem0*)X;
-		result = InReal(RunReal(iX0->P1), &iX0->N12, iX0->N11);
+		result = InReal((FrmlElemIn*)X);
 		break;
 	}
 	case _compreal: {
@@ -642,25 +646,19 @@ bool RunBool(FrmlPtr X)
 	return result;
 }
 
-bool InReal(double R, BYTE* L, integer M)
+bool InReal(FrmlElemIn* frml)
 {
-	WORD* LOffs = (WORD*)L; double* Cr = (double*)L; integer I, N;
-	auto result = true;
-label1:
-	N = *L;
-	LOffs++;
-	if (N == 0) { result = false; exit; }
-	if (N == 0xFF)
-		if (CompReal(R, *Cr, M) == _lt) LOffs += 2 * sizeof(double);
-		else {
-			LOffs += sizeof(double);
-			if (CompReal(R, *Cr, M) != _gt) return result;
-			LOffs += sizeof(double);
-		}
-	else for (I = 1; I < N; I++)
-		if (CompReal(R, *Cr, M) == _equ) return result;
-		else LOffs += sizeof(double);
-	goto label1;
+	auto R = RunReal(frml->P1);
+	for (auto r : frml->reals) { 
+		if (r == R) return true; 
+	}
+	for (auto range : frml->reals_range) {
+		auto range1 = range.first;
+		auto range2 = range.second;
+		if (range1 <= R && R <= range2) return true;
+	}
+	return false;
+
 }
 
 bool LexInStr(LongStr* S, BYTE* L)

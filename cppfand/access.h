@@ -218,7 +218,7 @@ class FileD : public Chained // ø. 177
 public:
 	FileD();
 	// FileD* Chain = nullptr;
-	pstring Name;
+	std::string Name;
 	std::string FullName;
 	WORD RecLen = 0;
 	void* RecPtr = nullptr;

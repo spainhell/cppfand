@@ -724,11 +724,11 @@ LocVar* RdVarName(LocVarBlkD* LVB, bool IsParList)
 		lvar = new LocVar(LexWord);
 		if (IsParList) { lvar->IsPar = true; LVB->NParam++; }
 		LVB->vLocVar.push_back(lvar);
-		
+
 	}
 	RdLex();
 	return lvar;
-	
+
 	//LocVar* lv = LVB->Root;
 	//while (lv != nullptr) {
 	//	pstring lvName = lv->Name.c_str();
@@ -793,8 +793,8 @@ label1:
 	}
 	newVars.clear(); // zde se budou ukladat vsechny promenne stejneho typu oddelene carkami
 	newVars.push_back(RdVarName(LVB, IsParList)); // ulozime novou promennou do vektoru pro jeji dalsi nastaveni
-	if (!IsParList) while (Lexem == ',') { 
-		RdLex(); 
+	if (!IsParList) while (Lexem == ',') {
+		RdLex();
 		newVars.push_back(RdVarName(LVB, IsParList)); // vsechny stejne promenne ulozime do vektoru
 	}
 	Accept(':');
@@ -1495,34 +1495,20 @@ WORD RdTilde()
 	return 0;
 }
 
-void RdInConst(FrmlElem0* Z, double& R, pstring* S, char& FTyp)
+void RdInConst(FrmlElemIn* Z, char& FTyp, std::string& str, double& R)
 {
-	if (FTyp == 'S')
-	{
-		if (Z->N11 == 1/*tilde*/) *S = TrailChar(' ', LexWord);
-		else *S = LexWord;
+	if (FTyp == 'S') {
+		if (Z->param1 == 1/*tilde*/) str = TrailChar(' ', LexWord);
+		else str = LexWord;
 		Accept(_quotedstr);
 	}
-	else R = RdRealConst();
-}
-
-void StoreConst(double& R, pstring* S, char& FTyp)
-{
-	double* RPtr;
-	switch (FTyp) {
-	case 'S': StoreStr(*S); break;
-	case 'R': {
-		//RPtr = (double*)GetStore(sizeof(*RPtr)); 
-		RPtr = new double();
-		*RPtr = R;
-		break;
-	}
+	else {
+		R = RdRealConst();
 	}
 }
 
 FrmlElem* RdComp(char& FTyp)
 {
-	double R = 0.0;
 	pstring S;
 	BYTE* B = nullptr;
 	integer N = 0;
@@ -1556,47 +1542,48 @@ FrmlElem* RdComp(char& FTyp)
 		}
 	else if ((Lexem == _identifier) && IsKeyWord("IN"))
 	{
-		FrmlElem0* Z0 = nullptr;
+		FrmlElemIn* zIn = nullptr;
 		if (FTyp == 'R')
 		{
-			Z0 = new FrmlElem0(_inreal, 1); // GetOp(_inreal, 1);
-			Z0->N11 = RdPrecision();
+			zIn = new FrmlElemIn(_inreal); // GetOp(_inreal, 1);
+			zIn->param1 = RdPrecision();
 		}
 		else
 		{
 			TestString(FTyp);
-			Z0 = new FrmlElem0(_instr, 1); // GetOp(_instr, 1);
-			Z0->N11 = RdTilde();
+			zIn = new FrmlElemIn(_instr); // GetOp(_instr, 1);
+			zIn->param1 = RdTilde();
 		}
-		Z0->P1 = Z1;
-		Accept('['); N = 0;
+		zIn->P1 = Z1;
+		Accept('[');
 	label1:
-		RdInConst(Z0, R, &S, FTyp);
-		if (Lexem == _subrange)
-		{
-			if (N != 0) { *B = N; N = 0; }
-			//B = (BYTE*)GetStore(sizeof(*B)); 
-			B = new BYTE();
-			*B = 0xFF;
-			StoreConst(R, &S, FTyp);
-			RdLex();
-			RdInConst(Z0, R, &S, FTyp);
-			StoreConst(R, &S, FTyp);
+		std::string str;
+		double R = 0.0;
+		RdInConst(zIn, FTyp, str, R);
+		if (Lexem != _subrange) {
+			// jde o samostatnou hodnotu
+			if (FTyp == 'S') zIn->strings.push_back(str);
+			else zIn->reals.push_back(R);
 		}
 		else {
-			//if (N == 0) B = (BYTE*)GetStore(sizeof(*B));
-			if (N == 0) B = new BYTE();
-			N++;
-			StoreConst(R, &S, FTyp);
+			std::string f_str;
+			double f_double;
+			// jde o rozsah
+			if (FTyp == 'S') { f_str = str; }
+			else { f_double = R; }
+			RdLex();
+			RdInConst(zIn, FTyp, str, R);
+			if (FTyp == 'S') {
+				zIn->strings_range.push_back(std::pair<std::string, std::string>(f_str, str));
+			}
+			else {
+				zIn->reals_range.push_back(std::pair<double, double>(f_double, R));
+			}
 		}
 		if (Lexem != ']') { Accept(','); goto label1; }
 		RdLex();
-		if (N != 0) *B = N;
-		//*B = (BYTE)GetStore(sizeof(*B)); 
-		B = new BYTE();
-		*B = 0;
 		FTyp = 'B';
-		Z = Z0;
+		Z = zIn;
 	}
 	return Z;
 }
