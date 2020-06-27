@@ -158,7 +158,7 @@ double RunRealStr(FrmlElem* X)
 		size_t offset = 0;
 		while (n > 0) {
 			size_t found = strS.find(strMask, offset);
-			if (found == std::string::npos)	{
+			if (found == std::string::npos) {
 				// n-ty vyskyt nenalezen
 				return -1;
 			}
@@ -167,21 +167,21 @@ double RunRealStr(FrmlElem* X)
 		}
 		return offset;
 		break;
-			
-	//	J = 1;
-	//label1:
-	//	L = S->LL + 1 - J; I = 0;
-	//	if ((N > 0) && (L > 0)) {
-	//		I = FindTextE(Mask, iX->Options, (char*)(&S->A[J]), L);
-	//		if (I > 0) {
-	//			J = J + I - Mask.length();
-	//			N--;
-	//			if (N > 0) goto label1;
-	//			I = J - 1;
-	//		}
-	//	}
-	//	ReleaseStore(S);
-	//	result = I;
+
+		//	J = 1;
+		//label1:
+		//	L = S->LL + 1 - J; I = 0;
+		//	if ((N > 0) && (L > 0)) {
+		//		I = FindTextE(Mask, iX->Options, (char*)(&S->A[J]), L);
+		//		if (I > 0) {
+		//			J = J + I - Mask.length();
+		//			N--;
+		//			if (N > 0) goto label1;
+		//			I = J - 1;
+		//		}
+		//	}
+		//	ReleaseStore(S);
+		//	result = I;
 	}
 	case _diskfree: {
 		auto iX = (FrmlElem0*)X;
@@ -692,7 +692,9 @@ label1:
 
 bool InStr(LongStr* S, BYTE* L)
 {
-	WORD* LOffs = (WORD*)L; pstring* Cs = (pstring*)L; integer I, N;
+	WORD* LOffs = (WORD*)L; 
+	pstring* Cs = (pstring*)L; 
+	integer I, N;
 
 	auto result = true;
 label1:
@@ -1085,6 +1087,7 @@ void LVAssignFrml(LocVar* LV, void* OldBP, bool Add, FrmlPtr X)
 		LongStr* s = RunLongStr(X);
 		LV->S = std::string(s->A, s->LL);
 		LV->orig_S_length = s->LL;
+		delete s;
 		break;
 	}
 	case 'R': {
@@ -1227,6 +1230,7 @@ LongStr* ConcatLongStr(LongStr* S1, LongStr* S2)
 	auto result = new LongStr(newLen);
 	memcpy(result->A, S1->A, S1->LL); // zkopiruje S1 do noveho retezce;
 	memcpy(&result->A[S1->LL], S2->A, newLen - S1->LL); // zkopiruje S2 (prip. jeho cast) do noveho retezce
+	result->LL = newLen;
 	return result;
 }
 
@@ -1336,7 +1340,7 @@ label1:
 			S->LL = str.length();
 			//CopyLongStr(S, static_cast<WORD>(L1), static_cast<WORD>(L2));
 		}
-			
+
 		//ReleaseAfterLongStr(S);
 		result = S;
 		break;
@@ -1442,7 +1446,7 @@ pstring RunShortStr(FrmlPtr X)
 	if (s->LL == 0) {
 		return "";
 	}
-	
+
 	pstring result;
 	if (s->LL > 255) result[0] = 255;
 	else result[0] = s->LL;
@@ -1532,13 +1536,21 @@ LongStr* RunS(FrmlElem* Z)
 {
 	wwmix ww;
 
-	pstring s, snew; WORD w; FileDPtr cf; void* cr; XString* x = (XString*)&s;
-	LongStr* t; LongStr* tnew; WORD l, i, j; double r; BYTE m;
+	pstring s, snew; WORD w = 0; 
+	FileD* cf = nullptr; void* cr = nullptr; 
+	XString* x = (XString*)&s;
+	LongStr* t = nullptr; LongStr* tnew = nullptr; 
+	WORD l = 0, i = 0, j = 0; 
+	double r = 0; BYTE m = 0;
 
 	auto iZ0 = (FrmlElem0*)Z;
 
 	switch (Z->Op) {
-	case _char: { s[0] = 1; s[1] = char(trunc(RunReal(iZ0->P1))); break; }
+	case _char: { 
+		s[0] = 1; 
+		s[1] = char(trunc(RunReal(iZ0->P1))); 
+		break; 
+	}
 	case _strdate1: {
 		auto iZ = (FrmlElem6*)Z;
 		s = StrDate(RunReal(iZ->PP1), iZ->Mask);
@@ -1552,7 +1564,10 @@ LongStr* RunS(FrmlElem* Z)
 			if (m == 255) str(r, s);
 			else str(m, s);
 		}
-		else { s = RunShortStr(iZ0->P2); StrMask(RunReal(iZ0->P1), s); }
+		else {
+			s = RunShortStr(iZ0->P2);
+			StrMask(RunReal(iZ0->P1), s);
+		}
 		break;
 	}
 	case _replace: {
@@ -1574,7 +1589,8 @@ LongStr* RunS(FrmlElem* Z)
 		}
 		AddToLongStr(tnew, &t->A[j], l);
 		MyMove(tnew, t, tnew->LL + 2);
-		ReleaseAfterLongStr(t);
+		//ReleaseAfterLongStr(t);
+		delete tnew;
 		return t;
 		break;
 	}
@@ -1634,10 +1650,16 @@ LongStr* RunS(FrmlElem* Z)
 		x->PackKF(iZ->PackKey->KFlds); CFile = cf; CRecPtr = cr;
 		break;
 	}
-	case _keybuf: { while (KeyPressed()) AddToKbdBuf(ReadKey()); s = KbdBuffer; break; }
+	case _keybuf: {
+		while (KeyPressed()) AddToKbdBuf(ReadKey());
+		s = KbdBuffer;
+		break; 
+	}
 	case _recno: GetRecNoXString((FrmlElem13*)Z, *x); break;
-	case _edbool: { s[0] = 0; if ((EditDRoot != nullptr) && EditDRoot->Select
-		&& (EditDRoot->BoolTxt != nullptr)) s = *EditDRoot->BoolTxt;
+	case _edbool: {
+		s[0] = 0;
+		if ((EditDRoot != nullptr) && EditDRoot->Select
+			&& (EditDRoot->BoolTxt != nullptr)) s = *EditDRoot->BoolTxt;
 		break;
 	}
 	}
@@ -1745,7 +1767,7 @@ LongStr* RepeatStr(LongStr* S, integer N)
 	while ((N > 1) && (S->LL + l <= MaxLStrLen))
 	{
 		memcpy(&newS->A[newS->LL], S->A, l);
-		newS->LL += l; 
+		newS->LL += l;
 		N--;
 	}
 	return newS;

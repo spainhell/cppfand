@@ -432,10 +432,10 @@ void RdLex()
 		break;
 	default: break;
 	}
-	if (LexWord == "FILE")
-	{
-		printf("RdLex() r. 437 - FILE\n");
-	}
+	//if (LexWord == "FILE")
+	//{
+	//	printf("RdLex() r. 437 - FILE\n");
+	//}
 }
 
 bool IsForwPoint()
@@ -1495,7 +1495,7 @@ WORD RdTilde()
 	return 0;
 }
 
-void RdInConst(FrmlElem1* Z, double& R, pstring* S, char& FTyp)
+void RdInConst(FrmlElem0* Z, double& R, pstring* S, char& FTyp)
 {
 	if (FTyp == 'S')
 	{
@@ -1556,25 +1556,22 @@ FrmlElem* RdComp(char& FTyp)
 		}
 	else if ((Lexem == _identifier) && IsKeyWord("IN"))
 	{
+		FrmlElem0* Z0 = nullptr;
 		if (FTyp == 'R')
 		{
-			Z = new FrmlElem1(_inreal, 1); // GetOp(_inreal, 1);
-			auto iZ1 = (FrmlElem1*)Z;
-			iZ1->N11 = RdPrecision();
+			Z0 = new FrmlElem0(_inreal, 1); // GetOp(_inreal, 1);
+			Z0->N11 = RdPrecision();
 		}
 		else
 		{
 			TestString(FTyp);
-			Z = new FrmlElem1(_instr, 1); // GetOp(_instr, 1);
-			auto iZ1 = (FrmlElem1*)Z;
-			iZ1->N11 = RdTilde();
+			Z0 = new FrmlElem0(_instr, 1); // GetOp(_instr, 1);
+			Z0->N11 = RdTilde();
 		}
-		auto iZ0 = (FrmlElem0*)Z;
-		auto iZ1 = (FrmlElem1*)Z;
-		iZ0->P1 = Z1;
+		Z0->P1 = Z1;
 		Accept('['); N = 0;
 	label1:
-		RdInConst(iZ1, R, &S, FTyp);
+		RdInConst(Z0, R, &S, FTyp);
 		if (Lexem == _subrange)
 		{
 			if (N != 0) { *B = N; N = 0; }
@@ -1583,7 +1580,7 @@ FrmlElem* RdComp(char& FTyp)
 			*B = 0xFF;
 			StoreConst(R, &S, FTyp);
 			RdLex();
-			RdInConst(iZ1, R, &S, FTyp);
+			RdInConst(Z0, R, &S, FTyp);
 			StoreConst(R, &S, FTyp);
 		}
 		else {
@@ -1599,6 +1596,7 @@ FrmlElem* RdComp(char& FTyp)
 		B = new BYTE();
 		*B = 0;
 		FTyp = 'B';
+		Z = Z0;
 	}
 	return Z;
 }

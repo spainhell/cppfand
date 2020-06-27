@@ -419,12 +419,13 @@ struct TypAndFrml
 	FrmlElem* TxtFrml = nullptr; pstring Name; // if RecPtr != nullptr
 };
 
-class Instr : public Chained// POZOR konflikt názvù viz níže
+class Instr /*: public Chained// POZOR konflikt názvù viz níže*/
 {
 public:
 	Instr(PInstrCode kind);
 	//Instr* Chain = nullptr;
 	PInstrCode Kind;
+	Instr* Chain = nullptr;
 };
 
 extern ConstListEl* OldMFlds;

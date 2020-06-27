@@ -1195,6 +1195,16 @@ void CallProcedure(Instr_proc* PD)
 	}
 	ProcMyBP = MyBP;
 	pd1 = ReadProcBody();
+
+	// vytvorime vektor instrukci pro snadny prehled
+#ifdef _DEBUG
+	std::vector<Instr*> vI;
+	Instr* next = PD;
+	while (next != nullptr) {
+		vI.push_back(next);
+		next = (Instr*)next->Chain;
+	}
+#endif
 	FDLocVarAllowed = false;
 	//lv0 = lv1;
 	it0 = it1;

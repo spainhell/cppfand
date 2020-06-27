@@ -1424,7 +1424,8 @@ bool MergeOldNew(bool Veriflongint, bool Pos)
 	FileD* FDOld = nullptr;
 	FileD* FDNew = CFile;
 	SetCPathVol();
-	Name = FDNew->Name; FDNew->Name = "@";
+	Name = FDNew->Name;
+	FDNew->Name = "@";
 	CFile = Chpt;
 	if (!RdFDSegment(0, Pos)) goto label1;
 	ChainLast(FileDRoot, CFile);
@@ -1446,6 +1447,7 @@ label1:
 	FDNew->Chain = nullptr;
 	LinkDRoot = ld;
 	Move(&Name[0], &FDNew->Name[0], Name.length() + 1);
+	FDNew->FullName = CPath;
 	CFile = FDNew;
 	CRecPtr = Chpt->RecPtr;
 	return result;
@@ -1489,9 +1491,9 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 	CRecPtr = Chpt->RecPtr;
 	Encryp = CRdb->Encrypted;
 	for (I = 1; I <= Chpt->NRecs; I++) {
-		if (I >= 0) {
-			//printf("I = %i, strings: %i, total: %i\n", I, strcount, strbytes);
-		}
+		//if (I >= 26) {
+		//	printf("RunProj r1495, CompileRdb(), I = %i, strings: %i, total: %i\n", I, strcount, strbytes);
+		//}
 		ReadRec(I);
 		RP.IRec = I;
 		Verif = _B(ChptVerif);

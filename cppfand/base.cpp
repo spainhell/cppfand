@@ -1212,8 +1212,12 @@ void WrStyleChar(char C)
 		}
 		TextAttr = CColor[1];
 	}
-	else if (C == 0x0D) screen.ScrWrText(screen.WhereX(), screen.WhereY(), "\n"); // printf("\r\n");
-	else if (C != 0x0A) screen.WriteChar(0, 0, C, actual);
+	else if (C == 0x0D) {
+		screen.GotoXY(0, screen.WhereY() + 1);
+	}
+	else if (C != 0x0A) { 
+		screen.WriteChar(0, 0, C, actual); 
+	}
 }
 
 void WrStyleStr(pstring s, WORD Attr)

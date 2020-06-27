@@ -651,7 +651,8 @@ void GetCPathForCat(WORD I)
 		}
 		if (CPath[1] == '\\') CPath = copy(d, 1, 2) + CPath;
 		else {
-			AddBackSlash(d); CPath = d + CPath;
+			AddBackSlash(d); 
+			CPath = d + CPath;
 		}
 	}
 	else {

@@ -31,6 +31,8 @@ public:
 	FrmlElem* Bool = nullptr;
 	Instr* Instr1 = nullptr;
 	Instr* ElseInstr1 = nullptr;  // pùvodnì Instr a ElseInstr -> konflikt názvù
+	void AddInstr(Instr* i);
+	void AddElseInstr(Instr* i);
 };
 
 class Instr_merge_display : public Instr

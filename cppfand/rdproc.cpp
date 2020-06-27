@@ -713,7 +713,8 @@ Instr* RdFor()
 	iLoop->Instr1 = RdPInstr();
 
 	auto iAsg = new Instr_assign(_asgnloc); // GetPInstr(_asgnloc, 9);
-	ChainLast(iLoop->Instr1, iAsg);
+	//ChainLast(iLoop->Instr1, iAsg);
+	iLoop->AddInstr(iAsg);
 	iAsg->Add = true;
 	iAsg->AssLV = LV;
 	auto Z2 = new FrmlElem2(_const, 0, 1); // GetOp(_const, sizeof(double));

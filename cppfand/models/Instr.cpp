@@ -8,6 +8,22 @@ Instr_loops::Instr_loops(PInstrCode Kind): Instr(Kind)
 {
 }
 
+void Instr_loops::AddInstr(Instr* i)
+{
+	Instr* prelast = Instr1;
+	Instr* last = Instr1;
+	while (last != nullptr) { prelast = last; last = last->Chain; }
+	prelast->Chain = i;
+}
+
+void Instr_loops::AddElseInstr(Instr* i)
+{
+	Instr* prelast = ElseInstr1;
+	Instr* last = ElseInstr1;
+	while (last != nullptr) { prelast = last; last = last->Chain; }
+	prelast->Chain = i;
+}
+
 Instr_merge_display::Instr_merge_display(PInstrCode Kind) : Instr(Kind)
 {
 }
