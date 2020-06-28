@@ -88,7 +88,8 @@ FrmlElem* RdRecVarFldFrml(LocVar* LV, char& FTyp)
 		auto Z = new FrmlElem22(_indexnrecs, 4); // GetOp(_indexnrecs, 4);
 		Z->WKey = WKeyDPtr(LV->RecPtr);
 		pstring nrecs = "nrecs";
-		AcceptKeyWord(nrecs); FTyp = 'R';
+		AcceptKeyWord(nrecs); 
+		FTyp = 'R';
 		return Z;
 		break;
 	}
@@ -2275,7 +2276,10 @@ Instr_assign* RdAssign()
 			}
 			else if (FD == nullptr) OldError(9);
 			else if (IsKeyWord("NRECS")) {
-				if (FD->Typ == '0') OldError(127);
+				//if (FName == "PGM") {
+				//	printf("RdAssign() rdproc.cpp 2280: soubor PGM, typ %c\n", FD->Typ);
+				//}
+				if (FD->Typ == '0') { OldError(127); }
 				PD = new Instr_assign(_asgnnrecs); // GetPInstr(_asgnnrecs, 9);
 				PD->FD = FD; FTyp = 'R'; goto label0;
 			}

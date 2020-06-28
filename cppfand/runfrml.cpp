@@ -941,23 +941,31 @@ label1:
 	case _nrecs:
 	case _nrecsabs: {
 		auto iX = (FrmlElem9*)X;
-		cf = CFile; CFile = iX->FD; md = NewLMode(RdMode);
+		cf = CFile; 
+		CFile = iX->FD; 
+		md = NewLMode(RdMode);
 		if (X->Op == _nrecs) RecNo = XNRecs(CFile->Keys);
 		else RecNo = CFile->NRecs;
-		OldLMode(md); result = int(RecNo); CFile = cf;
+		OldLMode(md); 
+		result = int(RecNo); 
+		CFile = cf;
 		break;
 	}
 	case _generation: {
 		auto iX = (FrmlElem9*)X;
-		cf = CFile; CFile = iX->FD;
-		result = (int)Generation(); CFile = cf;
+		cf = CFile; 
+		CFile = iX->FD;
+		result = (int)Generation(); 
+		CFile = cf;
 		break;
 	}
 	case _lastupdate: {
 		cf = CFile;
 		auto iX = (FrmlElem9*)X;
-		CFile = iX->FD; md = NewLMode(RdMode);
-		result = LastUpdate(CFile->Handle); OldLMode(md); CFile = cf;
+		CFile = iX->FD; 
+		md = NewLMode(RdMode);
+		result = LastUpdate(CFile->Handle); 
+		OldLMode(md); CFile = cf;
 		break;
 	}
 	case _catfield: {
@@ -1912,7 +1920,6 @@ void GetRecNoXString(FrmlElem13* Z, XString& X)
 	X.Clear();
 	KeyFldDPtr kf = Z->Key->KFlds;
 	while (kf != nullptr) {
-		i++;
 		FrmlElem* zz = Z->Arg[i];
 		switch (kf->FldD->FrmlTyp) {
 		case 'S': X.StoreStr(RunShortStr(zz), kf); break;

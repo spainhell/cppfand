@@ -144,6 +144,9 @@ longint MoveH(longint dist, WORD method, FILE* handle)
 	// method: 0 - od zacatku, 1 - od aktualni, 2 - od konce
 	// handle - file handle
 	HandleError = fseek(handle, dist, method);
+	if (HandleError != 0) {
+		printf("MoveH() base.cpp 148 HandleError != 0 \n");
+	}
 	return ftell(handle);
 }
 

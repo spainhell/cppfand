@@ -432,9 +432,9 @@ void RdLex()
 		break;
 	default: break;
 	}
-	//if (LexWord == "FILE")
+	//if (LexWord == "DEALER")
 	//{
-	//	printf("RdLex() r. 437 - FILE\n");
+	//	printf("RdLex() r. 437 - DEALER\n");
 	//}
 }
 

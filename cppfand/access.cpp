@@ -1242,12 +1242,13 @@ LongStr* _LongS(FieldDPtr F)
 				OldLMode(md);
 			}
 			if ((F->Flg & f_Encryp) != 0) Code(S->A, S->LL);
-			if (IsNullValue(&S->A, S->LL))
+			if (IsNullValue(S->A, S->LL))
 			{
 				S->LL = 0;
-				ReleaseAfterLongStr(S);
+				// ReleaseAfterLongStr(S);
 			}
-			break; }
+			break; 
+		}
 		}
 		return S;
 	}
@@ -1389,7 +1390,9 @@ void R_(FieldDPtr F, double R)
 				WORD tmp = F->NBytes;
 				FixFromReal(R, p, tmp);
 				F->NBytes = (BYTE)tmp;
-			} }
+			} 
+			break;
+		}
 		case 'D': {
 			switch (CFile->Typ) {
 			case '8': {
@@ -1404,6 +1407,7 @@ void R_(FieldDPtr F, double R)
 			}
 			default: p = &R; break;
 			}
+			break;
 		}
 		case 'R': { p = &R; break; }
 		}

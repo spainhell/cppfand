@@ -88,14 +88,19 @@ label1:
 			printf("%s%s", Rprt.c_str(), MsgLine.c_str());
 		}
 		Rprt.Close(); // if (isLPT1) ClosePrinter(0);
-		CloseInp(); PopProcStk();
-		if (ex) { RunMsgOff(); if (!WasLPTCancel) GoExit(); }
+		CloseInp(); 
+		PopProcStk();
+		if (ex) { RunMsgOff(); 
+		if (!WasLPTCancel) GoExit(); }
 		return;
 	}
 	L = GetDifLevel();
-	Footings(FrstLvM, L); if (WasFF2) PrintPageFt();
-	ZeroSumFlds(L); ZeroCount();
-	MoveFrstRecs(); MergOpGroup.Group = MergOpGroup.Group + 1.0;
+	Footings(FrstLvM, L); 
+	if (WasFF2) PrintPageFt();
+	ZeroSumFlds(L); 
+	ZeroCount();
+	MoveFrstRecs(); 
+	MergOpGroup.Group = MergOpGroup.Group + 1.0;
 	goto label1;
 }
 
@@ -702,7 +707,7 @@ bool RewriteRprt(RprtOpt* RO, WORD Pl, WORD& Times, bool& IsLPT1)
 		SetPrintTxtPath(); PrintView = true; PrintCtrl = false;
 	}
 	else {
-		if (SEquUpcase(*RO->Path, "LPT1"))
+		if (RO->Path != nullptr && SEquUpcase(*RO->Path, "LPT1"))
 		{
 			CPath = "LPT1";
 			CVol = ""; IsLPT1 = true;
