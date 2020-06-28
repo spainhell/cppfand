@@ -128,8 +128,8 @@ longint PushWFramed(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, pstring top, 
 	}
 	auto result = PushW1(C1, R1, C2 + x, R2 + y, (WFlags & WPushPixel) != 0, true);
 	screen.CrsHide();
-	if (y == 1) screen.ScrColor(C1 + 1, R2, C2 - C1 + x - 1, colors.ShadowAttr);
-	if (x > 0) for (i = R1; i <= R2; i++) screen.ScrColor(C2, i, x, colors.ShadowAttr);
+	if (y == 1) screen.ScrColor(C1 + 1, R2, C2 - C1 + x - 1, screen.colors.ShadowAttr);
+	if (x > 0) for (i = R1; i <= R2; i++) screen.ScrColor(C2, i, x, screen.colors.ShadowAttr);
 	screen.Window(C1, R1, C2, R2);
 	TextAttr = Attr;
 	if ((WFlags & WHasFrame) != 0) {
@@ -143,9 +143,9 @@ longint PushWrLLMsg(WORD N, bool WithESC)
 {
 	WORD l;
 	auto result = PushW(1, TxtRows, TxtCols, TxtRows);
-	TextAttr = colors.zNorm; ClrEol();
-	TextAttr = colors.zNorm | 0x80; printf("  ");
-	TextAttr = colors.zNorm;
+	TextAttr = screen.colors.zNorm; ClrEol();
+	TextAttr = screen.colors.zNorm | 0x80; printf("  ");
+	TextAttr = screen.colors.zNorm;
 	if (WithESC) printf("(ESC) ");
 	RdMsg(N);
 	l = TxtCols - screen.WhereX();
@@ -164,15 +164,15 @@ void WrLLMsgTxt()
 	WordRec w; bool On;
 	WORD Buf[MaxTxtCols + 1];
 	WParam* p = PushWParam(1, TxtRows, TxtCols, TxtRows, true);
-	w.Hi = colors.lNorm;
+	w.Hi = screen.colors.lNorm;
 	On = false;
 	WORD i = 1;
 	WORD j = 0;
 	while ((i <= MsgLine.length()) && (j < TxtCols)) {
 		if (MsgLine[i] == 0x17)
 		{
-			if (On) { w.Hi = colors.lNorm; On = false; }
-			else { w.Hi = colors.lFirst; On = true; }
+			if (On) { w.Hi = screen.colors.lNorm; On = false; }
+			else { w.Hi = screen.colors.lFirst; On = true; }
 		}
 		else {
 			w.Lo = MsgLine[i];
@@ -200,9 +200,9 @@ void WrLLF10MsgLine()
 	CHAR_INFO* Buf = new CHAR_INFO[TxtCols];
 	screen.ScrRdBuf(0, row, Buf, TxtCols);
 	Beep();
-	screen.ScrClr(1, row + 1, TxtCols, 1, ' ', colors.zNorm);
-	if (F10SpecKey == 0xffff) screen.ScrWrStr(1, row + 1, "...!", colors.zNorm | 0x80);
-	else screen.ScrWrStr(1, row + 1, "F10!", colors.zNorm | 0x80);
+	screen.ScrClr(1, row + 1, TxtCols, 1, ' ', screen.colors.zNorm);
+	if (F10SpecKey == 0xffff) screen.ScrWrStr(1, row + 1, "...!", screen.colors.zNorm | 0x80);
+	else screen.ScrWrStr(1, row + 1, "F10!", screen.colors.zNorm | 0x80);
 	col = MsgLine.length() + 5;
 	len = 0;
 	if ((F10SpecKey == 0xfffe) || (F10SpecKey == _F1_)) {
@@ -216,7 +216,7 @@ void WrLLF10MsgLine()
 		MsgLine[0] = char(TxtCols - 5);
 		len = 0;
 	}
-	screen.ScrWrStr(6, row + 1, MsgLine, colors.zNorm);
+	screen.ScrWrStr(6, row + 1, MsgLine, screen.colors.zNorm);
 label1:
 	GetEvent();
 	/*with Event*/
@@ -266,12 +266,12 @@ void RunError(WORD N)
 bool PromptYN(WORD NMsg)
 {
 	longint w; WORD col, row; char cc;
-	w = PushW(1, TxtRows, TxtCols, TxtRows); TextAttr = colors.pTxt;
+	w = PushW(1, TxtRows, TxtCols, TxtRows); TextAttr = screen.colors.pTxt;
 	ClrEol();
 	RdMsg(NMsg);
 	pstring tmp = MsgLine.substr(MaxI(MsgLine.length() - TxtCols + 3, 1), 255);
 	printf("%s", tmp.c_str());
-	col = screen.WhereX(); row = screen.WhereY(); TextAttr = colors.pNorm;
+	col = screen.WhereX(); row = screen.WhereY(); TextAttr = screen.colors.pNorm;
 	printf(" "); screen.GotoXY(col, row); screen.CrsShow();
 	label1:
 	cc = toupper((char)ReadKbd);
@@ -305,7 +305,7 @@ void RunMsgOn(char C, longint N)
 	CM->MsgKum = CM->MsgStep;
 	CM->MsgNN = N;
 	CM->W = PushW1(1, TxtRows, 8, TxtRows, true, true);
-	TextAttr = colors.zNorm;
+	TextAttr = screen.colors.zNorm;
 
 	screen.ScrFormatWrStyledText(1, 1, TextAttr, "%c%c", 0xAF, C);
 	if (N == 0) screen.ScrFormatWrStyledText(3, 1, TextAttr, "    %c", 0xAE /*0x11*/);

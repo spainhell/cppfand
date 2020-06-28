@@ -69,7 +69,7 @@ void WriteStr(WORD& pos, WORD& base, WORD& maxLen, WORD& maxCol, BYTE sLen, pstr
 			if (Buffer[i].Char.AsciiChar >= '\0' && Buffer[i].Char.AsciiChar < ' ')
 			{	// jedná se o netisknutelný znak ...
 				Buffer[i].Char.AsciiChar = Buffer[i].Char.AsciiChar + 64;
-				Buffer[i].Attributes = colors.tCtrl;
+				Buffer[i].Attributes = screen.colors.tCtrl;
 			}
 		}
 		else Buffer[i].Char.AsciiChar = ' ';
@@ -397,11 +397,11 @@ label2:
 void WrPromptTxt(pstring* S, FrmlPtr Impl, FieldDPtr F, pstring* Txt, double& R)
 {
 	WORD x, y, d, LWw; pstring SS, T; double RR; bool BB;
-	WrStyleStr(*S, ProcAttr);
+	screen.WriteStyledStringToWindow(*S, ProcAttr);
 	T = "";
 	x = screen.WhereX(); y = screen.WhereY();
 	d = WindMax.X - WindMin.X + 1;
-	if (x + F->L - 1 > d) LWw = d - x; else LWw = F->L;  TextAttr = colors.dHili;
+	if (x + F->L - 1 > d) LWw = d - x; else LWw = F->L;  TextAttr = screen.colors.dHili;
 	if (Impl != nullptr) {
 		switch (F->FrmlTyp) {
 		case 'R': RR = RunReal(Impl); break;
@@ -663,7 +663,8 @@ void Wr1Line(FieldDescr* F)
 		l = max;
 		Txt[0] = char(LogToAbsLenStyleStr(Txt, l));
 	}
-	WrStyleStr(Txt, E->dNorm);
+	//WrStyleStr(Txt, E->dNorm);
+	screen.WriteStyledStringToWindow(Txt, E->dNorm);
 	ReleaseStore(s);
 	TextAttr = E->dNorm;
 	if (l < max) printf("%*c", max - l, ' ');
@@ -765,7 +766,7 @@ void DisplRecNr(longint N)
 {
 	if (E->RecNrLen > 0) {
 		screen.GotoXY(E->RecNrPos, 1); 
-		TextAttr = colors.fNorm;
+		TextAttr = screen.colors.fNorm;
 		//printf("%*i", E->RecNrLen, N);
 		screen.ScrFormatWrText(E->RecNrPos, 1, "%*i", E->RecNrLen, N);
 	}
@@ -909,7 +910,7 @@ void DisplSysLine()
 	s = E->Head;
 	if (s == "") return; 
 	screen.GotoXY(1, 1); 
-	TextAttr = colors.fNorm; 
+	TextAttr = screen.colors.fNorm; 
 	ClrEol();
 	i = 1; x = "";
 	while (i <= s.length())
@@ -1009,7 +1010,8 @@ void WriteSL(StringList SL)
 	WORD Row;
 	while (SL != nullptr) {
 		Row = screen.WhereY();
-		WrStyleStr(SL->S, E->Attr);
+		// WrStyleStr(SL->S, E->Attr);
+		screen.WriteStyledStringToWindow(SL->S, E->dNorm);
 		screen.GotoXY(E->FrstCol, Row + 1);
 		SL = (StringList)SL->Chain;
 	}
@@ -1028,10 +1030,12 @@ void DisplEditWw()
 	/* !!! with E->V do!!! */
 	auto EV = E->V;
 	if (E->ShdwY == 1) {
-		screen.ScrColor(EV.C1 + 1, EV.R2, EV.C2 - EV.C1 + E->ShdwX - 1, colors.ShadowAttr);
+		screen.ScrColor(EV.C1 + 1, EV.R2, EV.C2 - EV.C1 + E->ShdwX - 1, screen.colors.ShadowAttr);
 	}
 	if (E->ShdwX > 0)
-		for (i = EV.R1; i < EV.R2; i++) { screen.ScrColor(EV.C2, i, E->ShdwX, colors.ShadowAttr); }
+		for (i = EV.R1; i < EV.R2; i++) { 
+			screen.ScrColor(EV.C2, i, E->ShdwX, screen.colors.ShadowAttr); 
+		}
 	screen.Window(EV.C1, EV.R1, EV.C2, EV.R2);
 	TextAttr = E->Attr;
 	ClrScr();
@@ -2122,12 +2126,17 @@ bool PromptSearch(bool Create)
 		F = KF->FldD; if (li) {
 			D = FindEFld(F); if (D != nullptr) GotoRecFld(CRec(), D);
 		}
-		screen.GotoXY(1, TxtRows); TextAttr = colors.pTxt; ClrEol();
+		screen.GotoXY(1, TxtRows); 
+		TextAttr = screen.colors.pTxt; 
+		ClrEol();
 		printf("%s:", F->Name.c_str());
-		s = ""; pos = 1; Col = screen.WhereX();
-		if (Col + F->L > TxtCols) LWw = TxtCols - Col; else LWw = F->L;
+		s = ""; pos = 1; 
+		Col = screen.WhereX();
+		if (Col + F->L > TxtCols) LWw = TxtCols - Col; 
+		else LWw = F->L;
 	label2:
-		TextAttr = colors.pNorm; screen.GotoXY(Col, TxtRows);
+		TextAttr = screen.colors.pNorm; 
+		screen.GotoXY(Col, TxtRows);
 		pos = FieldEdit(F, nullptr, LWw, pos, &s, r, false, true, li, E->WatchDelay);
 		xOld = x;
 		if ((KbdChar == _ESC_) || (Event.What == evKeyDown)) {
@@ -2548,17 +2557,22 @@ label1:
 	if (CRec < CNRecs) HdTxt[4] = 0x19; // ^Y
 	if (IsCurrChpt()) {
 		HdTxt = _ShortS(ChptTyp) + ':' + _ShortS(ChptName) + HdTxt;
-		TxtPos = trunc(_R(ChptTxtPos)); Breaks = BreakKeys2; CtrlMsgNr = 131;
+		TxtPos = trunc(_R(ChptTxtPos)); 
+		Breaks = BreakKeys2; 
+		CtrlMsgNr = 131;
 	}
 	else {
 		CtrlMsgNr = 151;
-		if (CFile == CRdb->HelpFD) Breaks = BreakKeys1; else Breaks = BreakKeys;
+		if (CFile == CRdb->HelpFD) Breaks = BreakKeys1; 
+		else Breaks = BreakKeys;
 	}
-	R1 = E->FrstRow; if ((R1 = 3) && WithBoolDispl) R1 = 2;
-	screen.Window(E->FrstCol, R1, E->LastCol, E->LastRow); TextAttr = colors.tNorm;
+	R1 = E->FrstRow; 
+	if ((R1 = 3) && WithBoolDispl) R1 = 2;
+	screen.Window(E->FrstCol, R1, E->LastCol, E->LastRow); TextAttr = screen.colors.tNorm;
 	Kind = 'V'; OldTxtPos = TxtPos;
 	if (Ed) LockRec(false);
-	if ((F->Flg & f_Stored) != 0) { S = _LongS(F); if (Ed) Kind = 'T'; }
+	if ((F->Flg & f_Stored) != 0) { S = _LongS(F); 
+	if (Ed) Kind = 'T'; }
 	else S = RunLongStr(F->Frml);
 label2:
 	X = nullptr; if (TTExit) X = E->ExD; Upd = false;
@@ -3159,10 +3173,10 @@ void FieldHelp()
 
 void DisplLASwitches()
 {
-	if (!ChkSwitch) screen.ScrWrStr(0, TxtRows - 1, "L", colors.lSwitch);
-	if (!WarnSwitch) screen.ScrWrStr(2, TxtRows - 1, "?", colors.lSwitch);
-	if (!EdRecVar && !AddSwitch) screen.ScrWrStr(3, TxtRows - 1, "A", colors.lSwitch);
-	if (!WithBoolDispl && Select) screen.ScrWrStr(5, TxtRows - 1, "\x12", colors.lSwitch);
+	if (!ChkSwitch) screen.ScrWrStr(0, TxtRows - 1, "L", screen.colors.lSwitch);
+	if (!WarnSwitch) screen.ScrWrStr(2, TxtRows - 1, "?", screen.colors.lSwitch);
+	if (!EdRecVar && !AddSwitch) screen.ScrWrStr(3, TxtRows - 1, "A", screen.colors.lSwitch);
+	if (!WithBoolDispl && Select) screen.ScrWrStr(5, TxtRows - 1, "\x12", screen.colors.lSwitch);
 }
 
 void DisplLL()

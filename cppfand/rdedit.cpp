@@ -138,7 +138,7 @@ label5:
 			D = (EFldD*)D->Chain;
 		}
 		else {
-			if (!SetStyleAttr(ForwChar, a)) {
+			if (!screen.SetStyleAttr(ForwChar, a)) {
 				if (Col > E->LastCol) Error(102);
 				Col++;
 			}
@@ -318,13 +318,13 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 	E->SQLFilter = EO->SQLFilter;
 	E->SelKey = (XWKey*)EO->SelKey;
 
-	E->Attr = RunWordImpl(EO->ZAttr, colors.dTxt);
-	E->dNorm = RunWordImpl(EO->ZdNorm, colors.dNorm);
-	E->dHiLi = RunWordImpl(EO->ZdHiLi, colors.dHili);
-	E->dSubSet = RunWordImpl(EO->ZdSubset, colors.dSubset);
-	E->dDel = RunWordImpl(EO->ZdDel, colors.dDeleted);
+	E->Attr = RunWordImpl(EO->ZAttr, screen.colors.dTxt);
+	E->dNorm = RunWordImpl(EO->ZdNorm, screen.colors.dNorm);
+	E->dHiLi = RunWordImpl(EO->ZdHiLi, screen.colors.dHili);
+	E->dSubSet = RunWordImpl(EO->ZdSubset, screen.colors.dSubset);
+	E->dDel = RunWordImpl(EO->ZdDel, screen.colors.dDeleted);
 	E->dTab = RunWordImpl(EO->ZdTab, E->Attr | 0x08);
-	E->dSelect = RunWordImpl(EO->ZdSelect, colors.dSelect);
+	E->dSelect = RunWordImpl(EO->ZdSelect, screen.colors.dSelect);
 	E->Top = StoreStr(RunShortStr(EO->Top));
 	if (EO->Mode != nullptr)
 		EditModeToFlags(RunShortStr(EO->Mode), &E->NoDelete, false);

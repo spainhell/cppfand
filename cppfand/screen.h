@@ -31,6 +31,24 @@ struct storeWindow
 	CHAR_INFO* content = nullptr;
 };
 
+struct Colors
+{  // celkem 54x BYTE
+	BYTE userColor[16]{ 0 };
+	BYTE mNorm = 0, mHili = 0, mFirst = 0, mDisabled = 0; // menu
+	BYTE sNorm = 0, sHili = 0, sMask = 0; // select
+	BYTE pNorm = 0, pTxt = 0; // prompt, verify, password
+	BYTE zNorm = 0; // message
+	BYTE lNorm = 0, lFirst = 0, lSwitch = 0; // last line
+	BYTE fNorm = 0; // first line
+	BYTE tNorm = 0, tCtrl = 0, tBlock = 0; // text edit
+	BYTE tUnderline = 0, tItalic = 0, tDWidth = 0, tDStrike = 0, tEmphasized = 0, tCompressed = 0, tElite = 0; // data edit
+	BYTE dNorm = 0, dHili = 0, dSubset = 0, dTxt = 0, dDeleted = 0, dSelect = 0; // -"-
+	BYTE uNorm = 0; // user screen
+	BYTE hNorm = 0, hHili = 0, hMenu = 0, hSpec = 0;
+	BYTE nNorm = 0;
+	BYTE ShadowAttr = 0;
+	BYTE DesktopColor = 0;
+};
 
 class Screen
 {
@@ -52,6 +70,8 @@ public:
 	void ScrMove(WORD X, WORD Y, WORD ToX, WORD ToY, WORD L);
 	void ScrColor(WORD X, WORD Y, WORD L, BYTE Color);
 	void WriteChar(short X, short Y, char C, BYTE attr, Position pos = relative);
+	void WriteStyledStringToWindow(std::string text, BYTE Attr);
+	bool SetStyleAttr(char C, BYTE& a);
 	TCrs CrsGet();
 	void CrsSet(TCrs S);
 	void CrsShow();
@@ -77,6 +97,7 @@ public:
 	storeWindow popScreen();
 	void SaveScreen(WParam* wp, short c1, short r1, short c2, short r2);
 	void LoadScreen(bool draw, WParam* wp);
+	Colors colors;
 
 private:
 	WORD* TxtCols;

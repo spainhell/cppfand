@@ -65,7 +65,7 @@ void wwmix::SelectStr(integer C1, integer R1, WORD NMsg, pstring LowTxt)
 	else WrLLMsg(152);
 	rows = 5; if (TxtCols > 52) cols = 50; else cols = TxtCols - 2; RdMsg(NMsg);
 	c2 = cols; if (C1 != 0) c2 = C1 + cols + 1;
-	r2 = rows; if (R1 != 0) r2 = R1 + rows + 1; TextAttr = colors.sNorm;
+	r2 = rows; if (R1 != 0) r2 = R1 + rows + 1; TextAttr = screen.colors.sNorm;
 	w2 = PushWFramed(C1, R1, c2, r2, TextAttr, MsgLine, LowTxt, WHasFrame + WDoubleFrame + WShadow + WPushPixel);
 	if (ss.Empty)
 	{
@@ -242,26 +242,26 @@ void wwmix::SetAttr(WORD Attr)
 
 void wwmix::IVOn()
 {
-	TextAttr = colors.sHili; WriteItem(sv.iItem);
+	TextAttr = screen.colors.sHili; WriteItem(sv.iItem);
 }
 
 void wwmix::IVOff()
 {
-	TextAttr = colors.sNorm; WriteItem(sv.iItem);
+	TextAttr = screen.colors.sNorm; WriteItem(sv.iItem);
 }
 
 void wwmix::DisplWw()
 {
 	char c;
 	/* !!! with sv do!!! */
-	TextAttr = colors.sNorm;
+	TextAttr = screen.colors.sNorm;
 	WORD max = sv.Base + sv.WwSize - 1;
 	if (sv.Base > 1) c = ''; else c = ' ';
 	screen.ScrWrChar(WindMin.X, WindMin.Y, c, TextAttr);
 	if (max >= sv.NItems) c = ' '; else c = '';
 	screen.ScrWrChar(WindMax.X, WindMax.Y, c, TextAttr);
 	for (WORD i = sv.Base; i < max; i++) WriteItem(i);
-	SetAttr(colors.sHili);
+	SetAttr(screen.colors.sHili);
 }
 
 void wwmix::Right()
@@ -324,7 +324,7 @@ void wwmix::Up()
 void wwmix::SetTag(char c)
 {
 	Item* p;
-	p = GetItem(sv.iItem); p->Tag = c; TextAttr = colors.sHili;
+	p = GetItem(sv.iItem); p->Tag = c; TextAttr = screen.colors.sHili;
 	WriteItem(sv.iItem); Right();
 }
 
@@ -365,9 +365,9 @@ void wwmix::GraspAndMove(char schar)
 	/* !!! with sv do!!! */
 	p = GetItem(sv.iItem);
 	if (p->Tag == ' ') p->Tag = schar;
-	SetAttr(colors.sHili + 0x80);
-	A = colors.sHili;
-	colors.sHili = colors.sHili + 0x80;
+	SetAttr(screen.colors.sHili + 0x80);
+	A = screen.colors.sHili;
+	screen.colors.sHili = screen.colors.sHili + 0x80;
 label1:
 	switch (ReadKbd()) {
 	case _left_:
@@ -402,7 +402,7 @@ label1:
 	}
 	case _F9_:
 	case _ESC_: {
-		colors.sHili = A;
+		screen.colors.sHili = A;
 		SetAttr(A);
 		return;
 		break;
@@ -516,7 +516,7 @@ pstring wwmix::SelectDiskFile(pstring Path, WORD HdMsg, bool OnFace)
 	mask = pstring("*") + ext;
 label1:
 	RdMsg(HdMsg);
-	w = PushWFramed(c1, r1, c2, r2, colors.sMask, MsgLine, "", WHasFrame + WShadow + WPushPixel);
+	w = PushWFramed(c1, r1, c2, r2, screen.colors.sMask, MsgLine, "", WHasFrame + WShadow + WPushPixel);
 label2:
 	screen.GotoXY(1, 1);
 	//EditTxt(&mask, 1, sizeof(mask) - 1, 22, 'A', true, false, true, false, 0);
@@ -613,11 +613,11 @@ void wwmix::PromptLL(WORD N, pstring* Txt, WORD I, bool Del)
 {
 	longint w = PushW(1, TxtRows, TxtCols, TxtRows);
 	screen.GotoXY(1, TxtRows);
-	TextAttr = colors.pTxt;
+	TextAttr = screen.colors.pTxt;
 	ClrEol();
 	RdMsg(N);
 	printf("%s", MsgLine.c_str());
-	TextAttr = colors.pNorm;
+	TextAttr = screen.colors.pNorm;
 	EditTxt(Txt, I, 255, TxtCols - screen.WhereX(), 'A', Del, false, true, false, 0);
 	PopW(w);
 }
@@ -629,12 +629,12 @@ pstring wwmix::PassWord(bool TwoTimes)
 	w = PushW(col, TxtRows - 2, col + 21, TxtRows - 2);
 	MsgNr = 628;
 label1:
-	TextAttr = colors.pNorm | 0x80;
+	TextAttr = screen.colors.pNorm | 0x80;
 	screen.GotoXY(1, 1); ClrEol(); RdMsg(MsgNr);
 	printf("%*s", (MsgLine.length() + 22) / 2, MsgLine.c_str());
 	pstring tmpStr = char(ReadKbd);
 	KbdBuffer = tmpStr + KbdBuffer;
-	TextAttr = colors.pNorm;
+	TextAttr = screen.colors.pNorm;
 	screen.GotoXY(2, 1);
 	Txt = "";
 	EditTxt(&Txt, 1, 20, 20, 'A', true, true, true, false, 0);

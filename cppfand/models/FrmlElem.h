@@ -203,7 +203,7 @@ public:
 	FrmlElemIn(BYTE Op);
 	FrmlElem* P1 = nullptr;
 	BYTE param1 = 0;
-	BYTE param2 = 0;
+	//BYTE param2 = 0;
 	std::vector<std::string> strings;
 	std::vector<double> reals;
 	std::vector<std::pair<std::string, std::string>> strings_range;

@@ -180,8 +180,8 @@ pstring MyFExpand(pstring Nm, pstring EnvName);
 
 WORD LenStyleStr(pstring s);
 WORD LogToAbsLenStyleStr(pstring s, WORD l);
-void WrStyleStr(pstring s, WORD Attr);
-void WrLongStyleStr(LongStr* S, WORD Attr);
+//void WrStyleStr(pstring s, WORD Attr);
+//void WrLongStyleStr(LongStr* S, WORD Attr);
 
 // *** MESSAGES ***
 extern WORD F10SpecKey; // ø. 293
@@ -189,7 +189,6 @@ extern BYTE ProcAttr;
 // extern bool SetStyleAttr(char c, BYTE& a); // je v KBDWW
 extern pstring MsgLine;
 extern pstring MsgPar[4];
-bool SetStyleAttr(char C, BYTE& a);
 void SetMsgPar(pstring s);
 void Set2MsgPar(pstring s1, pstring s2);
 void Set3MsgPar(pstring s1, pstring s2, pstring s3);
@@ -257,26 +256,6 @@ struct Fonts // r350
 	bool NoDiakrSupported = false;
 };
 extern Fonts fonts;
-
-struct Colors
-{  // celkem 54x BYTE
-	BYTE userColor[16];
-	BYTE mNorm, mHili, mFirst, mDisabled; // menu
-	BYTE sNorm, sHili, sMask; // select
-	BYTE pNorm, pTxt; // prompt, verify, password
-	BYTE zNorm; // message
-	BYTE lNorm, lFirst, lSwitch; // last line
-	BYTE fNorm; // first line
-	BYTE tNorm, tCtrl, tBlock; // text edit
-	BYTE tUnderline, tItalic, tDWidth, tDStrike, tEmphasized, tCompressed, tElite; // data edit
-	BYTE dNorm, dHili, dSubset, dTxt, dDeleted, dSelect; // -"-
-	BYTE uNorm; // user screen
-	BYTE hNorm, hHili, hMenu, hSpec;
-	BYTE nNorm;
-	BYTE ShadowAttr;
-	BYTE DesktopColor;
-};
-extern Colors colors;
 
 extern char CharOrdTab[256]; // after Colors /FANDDML/ // ø. 370
 extern char UpcCharTab[256]; // TODO: v obou øádcích bylo 'array[char] of char;' - WTF?

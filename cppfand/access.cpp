@@ -3249,11 +3249,11 @@ WORD CmpLxStr(char* p1, WORD len1, char* p2, WORD len2)
 	WORD cmpLen = min(len1, len2);
 	for (size_t i = 0; i < cmpLen; i++) {
 		if (p1[i] == p2[i]) continue;
-		if (p1[i] < p2[i]) return 2;
-		return 4;
+		if (p1[i] < p2[i]) return _lt;
+		return _gt;
 	}
-	if (len1 < len2) return 2;
-	if (len1 > len2) return 4;
+	if (len1 < len2) return _lt;
+	if (len1 > len2) return _gt;
 	return _equ;
 }
 
@@ -3311,6 +3311,27 @@ WORD CompLexStr(pstring& S1, pstring& S2)
 	}
 	for (size_t i = 0; i < l2; i++) {
 		b2[i] = CharOrdTab[S2[i + 1]];
+	}
+
+	auto result = CmpLxStr(b1, l1, b2, l2);
+
+	delete[] b1;
+	delete[] b2;
+	return result;
+}
+
+WORD CompLexStrings(const std::string& S1, const std::string& S2)
+{
+	WORD l1 = S1.length();
+	char* b1 = new char[l1];
+	WORD l2 = S2.length();
+	char* b2 = new char[l2];
+
+	for (size_t i = 0; i < l1; i++) {
+		b1[i] = CharOrdTab[S1[i]];
+	}
+	for (size_t i = 0; i < l2; i++) {
+		b2[i] = CharOrdTab[S2[i]];
 	}
 
 	auto result = CmpLxStr(b1, l1, b2, l2);

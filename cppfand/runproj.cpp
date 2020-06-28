@@ -1201,7 +1201,7 @@ label2:
 		ShutDownStreams(nStrm);
 #endif
 
-		TextAttr = colors.uNorm;
+		TextAttr = screen.colors.uNorm;
 		if (IsGraphMode && !WasGraph) ScrTextMode(false, false);
 		else ClrScr();
 	}
@@ -1263,7 +1263,7 @@ WORD CompileMsgOn(CHAR_INFO* Buf, longint& w)
 	WORD result = 0;
 	RdMsg(15);
 	if (IsTestRun) {
-		w = PushWFramed(0, 0, 30, 4, colors.sNorm, MsgLine, "", WHasFrame + WDoubleFrame + WShadow);
+		w = PushWFramed(0, 0, 30, 4, screen.colors.sNorm, MsgLine, "", WHasFrame + WDoubleFrame + WShadow);
 		RdMsg(117);
 		s = GetDLine(&MsgLine[1], MsgLine.length(), '/', 1);
 		screen.GotoXY(3, 2);
@@ -1274,8 +1274,8 @@ WORD CompileMsgOn(CHAR_INFO* Buf, longint& w)
 	else {
 		screen.ScrRdBuf(0, TxtRows - 1, Buf, 40); w = 0;
 		result = 0;
-		screen.ScrClr(1, TxtRows, MsgLine.length() + 2, 1, ' ', colors.zNorm);
-		screen.ScrWrStr(2, TxtRows, MsgLine, colors.zNorm);
+		screen.ScrClr(1, TxtRows, MsgLine.length() + 2, 1, ' ', screen.colors.zNorm);
+		screen.ScrWrStr(2, TxtRows, MsgLine, screen.colors.zNorm);
 	}
 	return result;
 }
@@ -1828,7 +1828,7 @@ void UpdateUTxt()
 	}
 	w = PushW(1, 1, TxtCols, TxtRows - 1);
 	TxtPos = 1;
-	TextAttr = colors.tNorm;
+	TextAttr = screen.colors.tNorm;
 	OldPos = _T(ChptTxt);
 	S = _LongS(ChptTxt); b = false;
 	if (CRdb->Encrypted) CodingLongStr(S); // NewExit(Ovr, er);

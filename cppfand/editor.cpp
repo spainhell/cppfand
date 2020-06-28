@@ -2681,9 +2681,9 @@ char MyVerifyLL(WORD n, pstring s)
 	longint w, t; WORD c1, c2, r1, r2, r; char cc;
 	c2 = screen.WhereX() + FirstC - 1; r2 = screen.WhereY() + FirstR;
 	w = PushW(1, 1, TxtCols, TxtRows); screen.GotoXY(1, TxtRows);
-	TextAttr = colors.pTxt; ClrEol(); SetMsgPar(s); WriteMsg(n);
+	TextAttr = screen.colors.pTxt; ClrEol(); SetMsgPar(s); WriteMsg(n);
 	c1 = screen.WhereX(); r1 = screen.WhereY();
-	TextAttr = colors.pNorm;
+	TextAttr = screen.colors.pNorm;
 	printf(" "); screen.CrsNorm(); t = Timer + 15; r = r1;
 	do {
 		while (!KbdPressed())
@@ -3803,7 +3803,7 @@ void EditTxtFile(longint* LP, char Mode, pstring& ErrMsg, EdExitD* ExD, longint 
 	LongStr* LS = nullptr; pstring compErrTxt;
 	//T = new char[65536];
 
-	if (Atr == 0) Atr = colors.tNorm;
+	if (Atr == 0) Atr = screen.colors.tNorm;
 	longint w2 = 0; longint w3 = 0;
 	if (V != nullptr) {
 		w1 = PushW1(1, 1, TxtCols, 1, (WFlags & WPushPixel) != 0, false);
@@ -3987,8 +3987,8 @@ label2:
 void ViewHelpText(LongStr* S, WORD& TxtPos)
 {
 	longint L = SavePar();
-	TxtColor = colors.hNorm; FillChar(ColKey, 8, colors.tCtrl);
-	ColKey[5] = colors.hSpec; ColKey[3] = colors.hHili; ColKey[1] = colors.hMenu;
+	TxtColor = screen.colors.hNorm; FillChar(ColKey, 8, screen.colors.tCtrl);
+	ColKey[5] = screen.colors.hSpec; ColKey[3] = screen.colors.hHili; ColKey[1] = screen.colors.hMenu;
 	bool Srch = false; bool Upd = false; longint Scr = 0;
 label1:
 	EditText(HelpM, MemoT, "", "", (char*)&S->A, 0xFFF0, S->LL, TxtPos, Scr,
@@ -4008,9 +4008,9 @@ void ClearHelpStkForCRdb()
 void InitTxtEditor()
 {
 	FindStr[0] = 0; ReplaceStr[0] = 0; OptionStr[0] = 0; Replace = false;
-	TxtColor = colors.tNorm; BlockColor = colors.tBlock; SysLColor = colors.fNorm;
-	ColKey[0] = colors.tCtrl;
-	Move(&colors.tUnderline, &ColKey[1], 7);
+	TxtColor = screen.colors.tNorm; BlockColor = screen.colors.tBlock; SysLColor = screen.colors.fNorm;
+	ColKey[0] = screen.colors.tCtrl;
+	Move(&screen.colors.tUnderline, &ColKey[1], 7);
 	RdMsg(411); InsMsg = MsgLine;
 	RdMsg(412); nInsMsg = MsgLine;
 	RdMsg(413); IndMsg = MsgLine;

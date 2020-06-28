@@ -515,14 +515,15 @@ bool RunBool(FrmlPtr X)
 	case _instr: {
 		auto iX0 = (FrmlElemIn*)X;
 		S = RunLongStr(iX0->P1);
-		if (iX0->param1 == 1) { 
-			// ~
-			result = LexInStr(LongTrailChar(' ', 0, S), &iX0->param2);
-		}
-		else {
-			//result = InStr(S, &iX0->param2);
-			result = InStr(S, &iX0->param2);
-		}
+		//if (iX0->param1 == 1) { 
+		//	// ~
+		//	result = LexInStr(LongTrailChar(' ', 0, S), &iX0->param2);
+		//}
+		//else {
+		//	//result = InStr(S, &iX0->param2);
+		//	result = InStr(S, iX0);
+		//}
+		result = InStr(S, iX0);
 		ReleaseStore(S);
 		break;
 	}
@@ -688,59 +689,108 @@ bool InReal(FrmlElemIn* frml)
 
 }
 
-bool LexInStr(LongStr* S, BYTE* L)
+bool LexInStr(LongStr* S, FrmlElemIn* X)
 {
-	WORD* LOffs = (WORD*)L; pstring* Cs = (pstring*)L; integer I, N;
-	auto result = true;
-label1:
-	N = *L;
-	*LOffs += 1;
-	if (N == 0) { result = false; return result; }
-	if (N == 0xFF) {
-		if (CompLexLongShortStr(S, *Cs) == _lt) {
-			*LOffs += *L + 1; *LOffs += *L + 1;
-		}
-		else {
-			*LOffs += *L + 1;
-			if (CompLexLongShortStr(S, *Cs) != _gt) return result;
-			*LOffs += *L + 1;
-		}
+	BYTE param = X->param1;
+	std::string s = std::string(S->A, S->LL);
+
+	for (auto& pat : X->strings) {
+		bool res = CompLexStrings(pat, s);
 	}
-	else {
-		for (I = 1; I < N; I++) {
-			if (CompLexLongShortStr(S, *Cs) == _equ) return result;
-			else *LOffs += *L + 1;
-		}
+
+	for (auto& ran : X->strings_range) {
+		auto s1 = ran.first;
+		auto s2 = ran.second;
+		WORD res1 = CompLexStrings(s1, s);
+		WORD res2 = CompLexStrings(s2, s);
+		if (res1 == _equ || res2 == _equ) return true;
+		if (res1 == _lt && res2 == _gt) return true;
 	}
-	goto label1;
+	return false;
+
+
+//	WORD* LOffs = (WORD*)L; pstring* Cs = (pstring*)L; integer I, N;
+//	auto result = true;
+//label1:
+//	N = *L;
+//	*LOffs += 1;
+//	if (N == 0) { result = false; return result; }
+//	if (N == 0xFF) {
+//		if (CompLexLongShortStr(S, *Cs) == _lt) {
+//			*LOffs += *L + 1; *LOffs += *L + 1;
+//		}
+//		else {
+//			*LOffs += *L + 1;
+//			if (CompLexLongShortStr(S, *Cs) != _gt) return result;
+//			*LOffs += *L + 1;
+//		}
+//	}
+//	else {
+//		for (I = 1; I < N; I++) {
+//			if (CompLexLongShortStr(S, *Cs) == _equ) return result;
+//			else *LOffs += *L + 1;
+//		}
+//	}
+//	goto label1;
 }
 
-bool InStr(LongStr* S, BYTE* L)
+bool InStr(LongStr* S, FrmlElemIn* X)
 {
-	WORD* LOffs = (WORD*)L; 
-	pstring* Cs = (pstring*)L; 
-	integer I, N;
+	BYTE param = X->param1;
+	if (param == 1) {
+		// '~' lexikalni porovnani
+		return LexInStr(LongTrailChar(' ', 0, S), X);
+	}
+	if (param > 0) throw std::exception("InStr() not implemented.");
 
-	auto result = true;
-label1:
-	N = *L;
-	*LOffs++;
-	if (N == 0) { result = false; return result; }
-	if (N == 0xFF) {
-		if (CompLongShortStr(S, Cs) == _lt) {
-			*LOffs += *L + 1; *LOffs += *L + 1;
-		}
-		else {
-			*LOffs += *L + 1;
-			if (CompLongShortStr(S, Cs) != _gt) return result; *LOffs += *L + 1;
+	std::string s = std::string(S->A, S->LL);
+
+	for (auto& pat : X->strings) {
+		if (s == pat) return true;
+	}
+
+	for (auto& ran : X->strings_range) {
+		bool success = false;
+		auto s1 = ran.first; 
+		auto s2 = ran.second;
+		if (s.length() != s1.length()) break;
+		for (size_t i = 0; i < s.length(); i++) {
+			if (s1[i] <= s[i] && s[i] <= s2[i]) { 
+				if (i == s.length() - 1) {
+					// posledni znak je take shodny, nasli jsme
+					return true;
+				}
+				continue;
+			}
 		}
 	}
-	else {
-		for (I = 1; I <= N; I++)
-			if (CompLongShortStr(S, Cs) == _equ) return result;
-			else *LOffs += *L + 1;
-	}
-	goto label1;
+
+	return false;
+
+//	WORD* LOffs = (WORD*)L; 
+//	pstring* Cs = (pstring*)L; 
+//	integer I, N;
+//
+//	auto result = true;
+//label1:
+//	N = *L;
+//	*LOffs++;
+//	if (N == 0) { result = false; return result; }
+//	if (N == 0xFF) {
+//		if (CompLongShortStr(S, Cs) == _lt) {
+//			*LOffs += *L + 1; *LOffs += *L + 1;
+//		}
+//		else {
+//			*LOffs += *L + 1;
+//			if (CompLongShortStr(S, Cs) != _gt) return result; *LOffs += *L + 1;
+//		}
+//	}
+//	else {
+//		for (I = 1; I <= N; I++)
+//			if (CompLongShortStr(S, Cs) == _equ) return result;
+//			else *LOffs += *L + 1;
+//	}
+//	goto label1;
 }
 
 bool RunModulo(FrmlElem1* X)
@@ -779,7 +829,7 @@ double RunReal(FrmlElem* X)
 #endif
 	FILE* h = (FILE*)&R;
 	WORD* n = (WORD*)cf;
-	BYTE* AColors = (BYTE*)&colors;
+	BYTE* AColors = (BYTE*)&screen.colors;
 	double result = 0;
 	auto iX0 = (FrmlElem0*)X;
 label1:

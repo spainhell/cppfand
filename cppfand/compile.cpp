@@ -55,7 +55,7 @@ void Error(integer N)
 	{
 		MarkStore(p1);
 		w = PushW(1, 1, TxtCols, TxtRows);
-		TextAttr = colors.tNorm;
+		TextAttr = screen.colors.tNorm;
 		p = GetStore(l);
 		Move(InpArrPtr, p, l);
 		if (PrevCompInp != nullptr) RdMsg(63); else RdMsg(61);
@@ -1090,7 +1090,7 @@ FrmlPtr RdAttr()
 	if (Lexem == '^') {
 		RdLex();
 		c = (char)toupper(Rd1Char()) - 64;
-		if (!SetStyleAttr(c, n)) OldError(120);
+		if (!screen.SetStyleAttr(c, n)) OldError(120);
 		z = new FrmlElem2(_const, 0, n); // GetOp(_const, sizeof(double));
 		//z->R = n;
 		return z;

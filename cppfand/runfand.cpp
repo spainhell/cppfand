@@ -143,11 +143,11 @@ void RdColors(FILE* CfgHandle)
 	else typ = 2;
 	//SeekH(CfgHandle, PosH(CfgHandle) + (sizeof(video) + sizeof(colors)) * (typ - 1));
 	int sizeVideo = sizeof(video); // 10
-	int sizeColors = sizeof(colors); // 54
+	int sizeColors = sizeof(screen.colors); // 54
 	SeekH(CfgHandle, PosH(CfgHandle) + (sizeVideo + sizeColors) * (typ - 1));
 	ReadH(CfgHandle, sizeof(video), &video);
-	ReadH(CfgHandle, sizeof(colors), &colors);
-	SeekH(CfgHandle, PosH(CfgHandle) + (sizeof(video) + sizeof(colors)) * (3 - typ));
+	ReadH(CfgHandle, sizeof(screen.colors), &screen.colors);
+	SeekH(CfgHandle, PosH(CfgHandle) + (sizeof(video) + sizeof(screen.colors)) * (3 - typ));
 }
 
 void RdPrinter(FILE* CfgHandle)
@@ -436,7 +436,7 @@ void InitRunFand()
 	AbbrNo = MsgLine[2];
 
 	RdCFG();
-	ProcAttr = colors.uNorm;
+	ProcAttr = screen.colors.uNorm;
 	// ScrSeg = video.address; TODO: nepotøebujeme, nezapisujeme pøímo do GK
 	if (video.TxtRows != 0) TxtRows = video.TxtRows;
 
@@ -505,7 +505,7 @@ void InitRunFand()
 			}
 	}
 
-	TextAttr = colors.DesktopColor;
+	TextAttr = screen.colors.DesktopColor;
 	screen.Window(1, 1, (BYTE)TxtCols, TxtRows - 1);
 	WriteWFrame(WHasFrame + WDoubleFrame, "", "");
 	screen.ScrClr(2, 2, TxtCols - 2, TxtRows - 13, (char)0xB1, TextAttr);
@@ -522,7 +522,7 @@ void InitRunFand()
 		screen.ScrWrStr(2, TxtRows + i + 1, sPrint, TextAttr);
 		xofs += 82;
 	}
-	TextAttr = colors.mHili;
+	TextAttr = screen.colors.mHili;
 	screen.ScrClr(4, TxtRows - 3, TxtCols - 6, 1, ' ', TextAttr);
 
 #if defined (Trial)

@@ -713,10 +713,10 @@ bool DeletedFlag(); // r771 ASM
 void ClearDeletedFlag(); // r779 ASM
 void SetDeletedFlag(); // r785 ASM
 integer CompStr(pstring& S1, pstring& S2); // r792 ASM
-void CmpLxStr(); // r846 ASM
 WORD CompLexLongStr(LongStrPtr S1, LongStrPtr S2); // r854 ASM
 WORD CompLexLongShortStr(LongStrPtr S1, pstring& S2); // r863 ASM
 WORD CompLexStr(pstring& S1, pstring& S2); // r871 ASM
+WORD CompLexStrings(const std::string& S1, const std::string& S2);
 bool EquKFlds(KeyFldDPtr KF1, KeyFldDPtr KF2); // r881
 void Code(void* A, WORD L); // r897 ASM
 void CodingLongStr(LongStrPtr S);

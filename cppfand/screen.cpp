@@ -2,6 +2,8 @@
 #include <exception>
 #include "pstring.h"
 #include <stdarg.h>
+#include <vector>
+#include "../textfunc/textfunc.h"
 
 const unsigned int BUFFSIZE = 128 * 1024;
 
@@ -73,6 +75,7 @@ void Screen::ScrWrStr(WORD X, WORD Y, std::string S, BYTE Color)
 		_buf[i] = ci;
 	}
 	WriteConsoleOutputA(_handle, _buf, BufferSize, { 0, 0 }, &rect);
+	delete[] _buf;
 }
 
 void Screen::ScrWrFrameLn(WORD X, WORD Y, BYTE Typ, BYTE Width, BYTE Color)
@@ -192,6 +195,89 @@ void Screen::WriteChar(short X, short Y, char C, BYTE attr, Position pos)
 	GotoXY(WhereXabs() + 1, WhereYabs(), absolute); // po zapisu poseneme kurzor
 }
 
+// vypise stylizovany text do aktualniho okna
+void Screen::WriteStyledStringToWindow(std::string text, BYTE Attr)
+{
+	if (text.length() == 0) return;
+
+	std::string CStyle;
+	std::string CColor;
+	CColor = (char)Attr;
+
+	// ziskame jendotlive radky textu
+	auto vStr = GetAllRows(text);
+
+	CHAR_INFO ci;
+
+	short cols = WindMax->X - WindMin->X + 1;
+	short rows = WindMax->Y - WindMin->Y + 1;
+
+	// buffer bude mit delku jednoho radku okna
+	CHAR_INFO* _buf = new CHAR_INFO[cols];
+
+	// pocet radku je mensi hodnota z poctu textu nebo radku okna
+	for (size_t i = 0; i < min(rows, vStr.size()); i++)
+	{
+		auto str = vStr[i];
+		auto strLen = str.length();
+		// okenko bude mit jen 1 radek
+		SMALL_RECT rect = { WindMin->X - 1, WindMin->Y - 1 + i, WindMax->X - 1, WindMin->Y - 1 + i };
+
+		size_t ctrlCharsCount = 0;
+
+		for (size_t i = 0; i < strLen; i++)
+		{
+			char c = str[i];
+			BYTE a = 0;
+			if (SetStyleAttr(c, a))
+			{
+				ctrlCharsCount++;
+				size_t i = CStyle.find_first_of(c);
+				if (i != std::string::npos)
+				{
+					CStyle.erase(i, 1);
+					CColor.erase(i, 1);
+				}
+				else {
+					CStyle = c + CStyle;
+					CColor = (char)a + CColor;
+				}
+				Attr = CColor[0];
+				continue;
+			}
+			if (c == '\n' || c == '\r') {
+				ctrlCharsCount++;
+				continue;
+			}
+			ci.Attributes = Attr;
+			ci.Char.AsciiChar = c;
+			size_t position = i - ctrlCharsCount;
+			if (position > cols - 1) {
+				// retezec se do radku nevleze, ale budeme pokracovat kvuli nastaveni barev
+				continue;
+			}
+			_buf[position] = ci;
+		}
+		COORD BufferSize = { strLen - ctrlCharsCount, 1 }; // pocet tisknutelnych znaku, 1 radek
+		WriteConsoleOutputA(_handle, _buf, BufferSize, { 0, 0 }, &rect);
+	}
+	delete[] _buf;
+}
+
+bool Screen::SetStyleAttr(char C, BYTE& a)
+{
+	auto result = true;
+	if (C == 0x13) a = colors.tUnderline;
+	else if (C == 0x17) a = colors.tItalic;
+	else if (C == 0x11) a = colors.tDWidth;
+	else if (C == 0x04) a = colors.tDStrike;
+	else if (C == 0x02) a = colors.tEmphasized;
+	else if (C == 0x05) a = colors.tCompressed;
+	else if (C == 0x01) a = colors.tElite;
+	else result = false;
+	return result;
+}
+
 TCrs Screen::CrsGet()
 {
 	TCrs crs;
@@ -244,15 +330,15 @@ void Screen::GotoXY(WORD X, WORD Y, Position pos)
 	switch (pos)
 	{
 	case relative: {
-		X += WindMin->X;
-		Y += WindMin->Y;
+		X = X + WindMin->X - 1;
+		Y = Y + WindMin->Y - 1;
 		break;
 	}
 	case absolute: break;
 	case actual: return;
 	default: return;
 	}
-	SetConsoleCursorPosition(_handle, { (short)X - 1, (short)Y - 1 });
+	bool res = SetConsoleCursorPosition(_handle, { (short)X - 1, (short)Y - 1 });
 }
 
 BYTE Screen::WhereX()

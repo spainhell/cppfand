@@ -235,6 +235,9 @@
     <ProjectReference Include="..\pascal\pascal.vcxproj">
       <Project>{1dca247b-35ec-434d-9e3b-66c507e4ac95}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\textfunc\textfunc.vcxproj">
+      <Project>{4ce9c1c6-998b-48ae-b5a1-3403b2e02fbe}</Project>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Resources\cpp.ico" />

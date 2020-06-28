@@ -77,9 +77,9 @@ void TWindow::InitTWindow(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, pstring
 	SavedW = PushW1(Orig.X + 1, Orig.Y + 1, Orig.X + Size.X + Shadow.X, Orig.Y + Size.Y + Shadow.Y, true, false);
 	if (SaveLL) { SavedLLW = PushW1(1, TxtRows, TxtCols, TxtRows, true, false); }
 	else { SavedLLW = 0; }
-	if (Shadow.Y == 1) screen.ScrColor(Orig.X + 2, Row2(), Size.X + Shadow.X - 2, colors.ShadowAttr);
+	if (Shadow.Y == 1) screen.ScrColor(Orig.X + 2, Row2(), Size.X + Shadow.X - 2, screen.colors.ShadowAttr);
 	if (Shadow.X > 0)
-		for (i = Row1(); i <= Row2(); i++) screen.ScrColor(Col2(), i, Shadow.X, colors.ShadowAttr);
+		for (i = Row1(); i <= Row2(); i++) screen.ScrColor(Col2(), i, Shadow.X, screen.colors.ShadowAttr);
 	if (GetState(sfFramed)) {
 		n = 0;
 		if (GetState(sfFrDouble)) n = 9;
@@ -171,7 +171,7 @@ void TWindow::SetState(WORD Flag, bool On)
 
 void TMenu::ClearHlp()
 {
-	if (HlpRdb != nullptr) ClearLL(colors.uNorm);
+	if (HlpRdb != nullptr) ClearLL(screen.colors.uNorm);
 }
 
 bool TMenu::FindChar()
@@ -338,10 +338,10 @@ void TMenu::SetPalette(Instr_menu* aPD)
 {
 	WORD i;
 	/* !!! with aPD^ do!!! */
-	Palette[0] = RunWordImpl(aPD->mAttr[0], colors.mNorm);
-	Palette[1] = RunWordImpl(aPD->mAttr[1], colors.mHili);
-	Palette[2] = RunWordImpl(aPD->mAttr[2], colors.mFirst);
-	Palette[3] = RunWordImpl(aPD->mAttr[3], colors.mDisabled);
+	Palette[0] = RunWordImpl(aPD->mAttr[0], screen.colors.mNorm);
+	Palette[1] = RunWordImpl(aPD->mAttr[1], screen.colors.mHili);
+	Palette[2] = RunWordImpl(aPD->mAttr[2], screen.colors.mFirst);
+	Palette[3] = RunWordImpl(aPD->mAttr[3], screen.colors.mDisabled);
 }
 
 //TMenu::TMenu(WORD mx, WORD my)
@@ -425,7 +425,7 @@ TMenuBoxS::TMenuBoxS(WORD C1, WORD R1, pstring Msg)
 	HlpRdb = (RdbDPtr)&HelpFD;
 	IsBoxS = true;
 	nTxt = CountDLines(&MsgTxt[1], MsgTxt.length(), '/') - 2;
-	Move(&colors.mNorm, Palette, 3);
+	Move(&screen.colors.mNorm, Palette, 3);
 	SetState(sfShadow, true);
 	InitTMenuBox(C1, R1);
 }
@@ -612,7 +612,7 @@ TMenuBarS::TMenuBarS(WORD MsgNr)
 	MsgTxt = StoreStr(MsgLine);
 	HlpRdb = (RdbD*)&HelpFD;
 	nTxt = (CountDLines(&MsgTxt[1], MsgTxt->length(), '/') - 1) / 2;
-	Move(&colors.mNorm, Palette, 3);
+	Move(&screen.colors.mNorm, Palette, 3);
 	InitTMenuBar(1, 1, TxtCols);
 }
 
@@ -875,8 +875,8 @@ void DisplLLHelp(RdbD* R, pstring Name, bool R24)
 label1:
 	y = TxtRows - 1;
 	if (R24) y--;
-	screen.ScrWrStr(1, y + 1, MsgLine, colors.nNorm);
-	screen.ScrClr(MsgLine.length() + 1, y + 1, TxtCols - MsgLine.length(), 1, ' ', colors.nNorm);
+	screen.ScrWrStr(1, y + 1, MsgLine, screen.colors.nNorm);
+	screen.ScrClr(MsgLine.length() + 1, y + 1, TxtCols - MsgLine.length(), 1, ' ', screen.colors.nNorm);
 	CFile = cf; ReleaseStore(p);
 }
 

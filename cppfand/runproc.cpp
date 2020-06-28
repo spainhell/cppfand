@@ -29,7 +29,7 @@
 void UserHeadLine(pstring UserHeader)
 {
 	WParam* p = PushWParam(1, 1, TxtCols, 1, true);
-	TextAttr = colors.fNorm;
+	TextAttr = screen.colors.fNorm;
 	ClrEol();
 	WORD maxlen = TxtCols - 10;
 	WORD l = LenStyleStr(UserHeader);
@@ -46,7 +46,8 @@ void UserHeadLine(pstring UserHeader)
 		screen.ScrWrText(screen.WhereX(), screen.WhereY(), buf);
 	}
 
-	WrStyleStr(UserHeader, colors.fNorm);
+	//WrStyleStr(UserHeader, screen.colors.fNorm);
+	screen.WriteStyledStringToWindow(UserHeader, ProcAttr);
 
 	// screen.GotoXY(TxtCols - 10, 1);
 	// printf("%s", StrDate(Today(), "DD.MM.YYYY").c_str());
@@ -207,7 +208,9 @@ void WritelnProc(Instr_writeln* PD)
 			if (LF >= 2) t = t + RunShortStr(W->Frml);
 			else {
 				S = RunLongStr(W->Frml);
-				WrLongStyleStr(S, ProcAttr);
+				//WrLongStyleStr(S, ProcAttr);
+				std::string str = std::string(S->A, S->LL);
+				screen.WriteStyledStringToWindow(str, ProcAttr);
 				ReleaseStore(S);
 			}
 			goto label1; break;
@@ -248,6 +251,7 @@ label2:
 void DisplayProc(RdbDPtr R, WORD IRec)
 {
 	LongStr* S = nullptr; void* p = nullptr; WORD i;
+	std::string str;
 	MarkStore(p);
 	if (IRec == 0) {
 		S = GetHlpText(CRdb, RunShortStr(FrmlPtr(R)), true, i);
@@ -259,7 +263,11 @@ void DisplayProc(RdbDPtr R, WORD IRec)
 		S = CFile->TF->Read(1, _T(ChptTxt));
 		if (R->Encrypted) CodingLongStr(S);
 	}
-	WrLongStyleStr(S, ProcAttr);
+	//WrLongStyleStr(S, ProcAttr);
+	str = std::string(S->A, S->LL);
+	screen.WriteStyledStringToWindow(str, ProcAttr);
+	ReleaseStore(S);
+	
 label1:
 	ReleaseStore(p);
 }
@@ -268,7 +276,7 @@ void ClrWwProc(Instr_clrww* PD)
 {
 	WRect v; WORD a = 0; pstring s; char c = '\0';
 	RunWFrml(PD->W2, 0, v);
-	a = RunWordImpl(PD->Attr2, colors.uNorm);
+	a = RunWordImpl(PD->Attr2, screen.colors.uNorm);
 	c = ' ';
 	if (PD->FillC != nullptr) {
 		s = RunShortStr(PD->FillC);
@@ -714,7 +722,7 @@ void WithWindowProc(Instr_window* PD)
 	WRect v;
 
 	/* !!! with PD^ do!!! */
-	ProcAttr = RunWordImpl(PD->Attr, colors.uNorm); // nacte barvy do ProcAttr
+	ProcAttr = RunWordImpl(PD->Attr, screen.colors.uNorm); // nacte barvy do ProcAttr
 	RunWFrml(PD->W, PD->WithWFlags, v); // nacte rozmery okna
 	auto top = RunShortStr(PD->Top); // nacte nadpis
 	w1 = PushWFramed(v.C1, v.R1, v.C2, v.R2, ProcAttr, top, "", PD->WithWFlags); // vykresli oramovane okno s nadpisem
@@ -953,7 +961,8 @@ void RunInstr(Instr* PD)
 			auto iPD = (Instr_loops*)PD;
 			if (RunBool(iPD->Bool)) RunInstr(iPD->Instr1);
 			else RunInstr(iPD->ElseInstr1);
-			break; }
+			break; 
+		}
 		case _whiledo: {
 			/* !!! with PD^ do!!! */
 			auto iPD = (Instr_loops*)PD;
@@ -961,7 +970,8 @@ void RunInstr(Instr* PD)
 				RunInstr(iPD->Instr1);
 			}
 			BreakP = false;
-			break; }
+			break; 
+		}
 		case _repeatuntil: {
 			/* !!! with PD^ do!!! */
 			auto iPD = (Instr_loops*)PD;
@@ -969,7 +979,8 @@ void RunInstr(Instr* PD)
 				RunInstr(iPD->Instr1);
 			} while (!(ExitP || BreakP || RunBool(iPD->Bool)));
 			BreakP = false;
-			break; }
+			break; 
+		}
 		case _menubox: { MenuBoxProc((Instr_menu*)PD); break; }
 		case _menubar: { MenuBarProc((Instr_menu*)PD); break; }
 		case _forall: ForAllProc((Instr_forall*)PD); break;
@@ -988,7 +999,13 @@ void RunInstr(Instr* PD)
 		case _headline: HeadLineProc(((Instr_assign*)PD)->Frml); break;
 		case _setkeybuf: SetKeyBufProc(((Instr_assign*)PD)->Frml); break;
 		case _writeln: WritelnProc((Instr_writeln*)PD); break;
-		case _gotoxy: screen.GotoXY(RunInt(((Instr_gotoxy*)PD)->GoX), RunInt(((Instr_gotoxy*)PD)->GoY));
+		case _gotoxy: {
+			auto iPD = (Instr_gotoxy*)PD;
+			WORD x = RunInt(iPD->GoX);
+			WORD y = RunInt(iPD->GoX);
+			screen.GotoXY(x, y, absolute);
+			break;
+		}
 		case _merge: MergeProc((Instr_proc*)PD); break;
 #ifdef FandProlog
 		case _lproc:
@@ -1053,8 +1070,9 @@ void RunInstr(Instr* PD)
 			TWork.Delete(ClpBdPos);
 			ClpBdPos = TWork.Store(s);
 			ReleaseStore(s);
-			break; }
-		case _asgnedok: EdOk = RunBool(((Instr_assign*)PD)->Frml);
+			break; 
+		}
+		case _asgnedok: EdOk = RunBool(((Instr_assign*)PD)->Frml); break;
 		case _turncat:/* !!! with PD^ do!!! */ {
 			auto iPD = (Instr_turncat*)PD;
 			CFile = iPD->NextGenFD;
@@ -1091,9 +1109,9 @@ void RunInstr(Instr* PD)
 		case _putpixel: case _line: case _rectangle: case _ellipse:
 		case _floodfill: {DrawProc outtextxy(PD); break; }
 #endif
-		case _withgraphics: WithGraphicsProc(((Instr_withshared*)PD)->WDoInstr);
+		case _withgraphics: WithGraphicsProc(((Instr_withshared*)PD)->WDoInstr); break;
 #ifndef FandRunV
-		case _memdiag: MemDiagProc();
+		case _memdiag: MemDiagProc(); break;
 #endif 
 		case _closefds: {
 			CFile = ((Instr_closefds*)PD)->clFD;
@@ -1240,7 +1258,7 @@ void CallProcedure(Instr_proc* PD)
 	// vytvorime vektor instrukci pro snadny prehled
 #ifdef _DEBUG
 	std::vector<Instr*> vI;
-	Instr* next = PD;
+	Instr* next = pd1;
 	while (next != nullptr) {
 		vI.push_back(next);
 		next = (Instr*)next->Chain;
@@ -1306,7 +1324,7 @@ void RunMainProc(RdbPos RP, bool NewWw)
 	void* p1 = nullptr; void* p2 = nullptr;
 	LocVar* lv = nullptr;
 	if (NewWw) {
-		ProcAttr = colors.uNorm;
+		ProcAttr = screen.colors.uNorm;
 		screen.Window(1, 2, TxtCols, TxtRows);
 		TextAttr = ProcAttr;
 		ClrScr();

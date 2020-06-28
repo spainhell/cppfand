@@ -10,6 +10,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cppfand", "cppfand\cppfand.
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pascal", "pascal\pascal.vcxproj", "{1DCA247B-35EC-434D-9E3B-66C507E4AC95}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "textfunc", "textfunc\textfunc.vcxproj", "{4CE9C1C6-998B-48AE-B5A1-3403B2E02FBE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -34,6 +36,14 @@ Global
 		{1DCA247B-35EC-434D-9E3B-66C507E4AC95}.Release|x64.Build.0 = Release|x64
 		{1DCA247B-35EC-434D-9E3B-66C507E4AC95}.Release|x86.ActiveCfg = Release|Win32
 		{1DCA247B-35EC-434D-9E3B-66C507E4AC95}.Release|x86.Build.0 = Release|Win32
+		{4CE9C1C6-998B-48AE-B5A1-3403B2E02FBE}.Debug|x64.ActiveCfg = Debug|x64
+		{4CE9C1C6-998B-48AE-B5A1-3403B2E02FBE}.Debug|x64.Build.0 = Debug|x64
+		{4CE9C1C6-998B-48AE-B5A1-3403B2E02FBE}.Debug|x86.ActiveCfg = Debug|Win32
+		{4CE9C1C6-998B-48AE-B5A1-3403B2E02FBE}.Debug|x86.Build.0 = Debug|Win32
+		{4CE9C1C6-998B-48AE-B5A1-3403B2E02FBE}.Release|x64.ActiveCfg = Release|x64
+		{4CE9C1C6-998B-48AE-B5A1-3403B2E02FBE}.Release|x64.Build.0 = Release|x64
+		{4CE9C1C6-998B-48AE-B5A1-3403B2E02FBE}.Release|x86.ActiveCfg = Release|Win32
+		{4CE9C1C6-998B-48AE-B5A1-3403B2E02FBE}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
