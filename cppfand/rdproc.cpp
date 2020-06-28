@@ -726,10 +726,11 @@ Instr* RdFor()
 Instr* RdCase()
 {
 	Instr_loops* PD = nullptr;
+	Instr_loops* PD1 = nullptr;
 	bool first = true;
+	Instr_loops* result = nullptr;
 label1:
-	auto PD1 = new Instr_loops(_ifthenelseP); // GetPInstr(_ifthenelseP, 12);
-	Instr* result = nullptr;
+	PD1 = new Instr_loops(_ifthenelseP); // GetPInstr(_ifthenelseP, 12);
 	if (first) result = PD1;
 	else PD->ElseInstr1 = PD1;
 	PD = PD1;
@@ -2379,10 +2380,16 @@ Instr* RdWith()
 		P = new Instr_window(); //GetPInstr(_window, 29);
 		auto iP = (Instr_window*)P;
 		Accept('(');
-		if (Lexem == '(') { RdLex(); iP->WithWFlags = WNoPop; }
+		if (Lexem == '(') { 
+			RdLex(); 
+			iP->WithWFlags = WNoPop; 
+		}
 		RdW(iP->W);
 		RdFrame(&iP->Top, iP->WithWFlags);
-		if (Lexem == ',') { RdLex(); iP->Attr = RdAttr(); }
+		if (Lexem == ',') { 
+			RdLex();
+			iP->Attr = RdAttr(); 
+		}
 		Accept(')');
 		if ((iP->WithWFlags & WNoPop) != 0) Accept(')');
 		AcceptKeyWord("DO");

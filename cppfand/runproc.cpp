@@ -202,6 +202,7 @@ void WritelnProc(Instr_writeln* PD)
 	LongStr* S; WORD i; char c; BYTE LF; WrLnD* W; pstring t, x; double r;
 	W = &PD->WD; LF = PD->LF; t[0] = 0;
 	TextAttr = ProcAttr;
+	std::string printS;
 	while (W != nullptr) {
 		switch (W->Typ) {
 		case 'S': {
@@ -210,7 +211,7 @@ void WritelnProc(Instr_writeln* PD)
 				S = RunLongStr(W->Frml);
 				//WrLongStyleStr(S, ProcAttr);
 				std::string str = std::string(S->A, S->LL);
-				screen.WriteStyledStringToWindow(str, ProcAttr);
+				printS.append(str);
 				ReleaseStore(S);
 			}
 			goto label1; break;
@@ -233,6 +234,7 @@ void WritelnProc(Instr_writeln* PD)
 	label1:
 		W = (WrLnD*)W->Chain;
 	}
+	screen.WriteStyledStringToWindow(printS, ProcAttr);
 label2:
 	switch (LF) {
 	case 1: printf("\n"); break;
@@ -296,7 +298,9 @@ void ExecPgm(Instr_exec* PD)
 	WindMin = wmin;
 	WindMax = wmax;
 	screen.CrsSet(crs);
-	s = RunShortStr(PD->Param); i = PD->ProgCatIRec; CVol = "";
+	s = RunShortStr(PD->Param); 
+	i = PD->ProgCatIRec; 
+	CVol = "";
 	if (i != 0) Prog = RdCatField(i, CatPathName);
 	else Prog = *PD->ProgPath;
 	b = OSshell(Prog, s, PD->NoCancel, PD->FreeMm, PD->LdFont, PD->TextMd);
@@ -959,8 +963,12 @@ void RunInstr(Instr* PD)
 		case _ifthenelseP: {
 			/* !!! with PD^ do!!! */
 			auto iPD = (Instr_loops*)PD;
-			if (RunBool(iPD->Bool)) RunInstr(iPD->Instr1);
-			else RunInstr(iPD->ElseInstr1);
+			if (RunBool(iPD->Bool)) {
+				RunInstr(iPD->Instr1);
+			}
+			else {
+				RunInstr(iPD->ElseInstr1);
+			}
 			break; 
 		}
 		case _whiledo: {
@@ -1003,6 +1011,7 @@ void RunInstr(Instr* PD)
 			auto iPD = (Instr_gotoxy*)PD;
 			WORD x = RunInt(iPD->GoX);
 			WORD y = RunInt(iPD->GoX);
+			screen.Window(1, 1, TxtCols, TxtRows);
 			screen.GotoXY(x, y, absolute);
 			break;
 		}
@@ -1034,6 +1043,7 @@ void RunInstr(Instr* PD)
 			break;
 		}
 		case _asgnpar: /* !!! with PD^ do!!! */ {
+			// ulozi parametr do souboru
 			auto iPD = (Instr_assign*)PD;
 			AsgnParFldFrml(iPD->FD, iPD->FldD, iPD->Frml, iPD->Add);
 			break;
@@ -1114,6 +1124,7 @@ void RunInstr(Instr* PD)
 		case _memdiag: MemDiagProc(); break;
 #endif 
 		case _closefds: {
+			// zavre soubor
 			CFile = ((Instr_closefds*)PD)->clFD;
 			if (CFile == nullptr) ForAllFDs(ClosePassiveFD);
 			else if (!CFile->IsShared() || (CFile->LMode == NullMode)) CloseFile();
@@ -1257,6 +1268,7 @@ void CallProcedure(Instr_proc* PD)
 
 	// vytvorime vektor instrukci pro snadny prehled
 #ifdef _DEBUG
+	std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
 	std::vector<Instr*> vI;
 	Instr* next = pd1;
 	while (next != nullptr) {

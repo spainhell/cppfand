@@ -1141,8 +1141,13 @@ bool LinkLastRec(FileDPtr FD, longint& N, bool WithT)
 	return result;
 }
 
+// ulozi hodnotu parametru do souboru
 void AsgnParFldFrml(FileD* FD, FieldDescr* F, FrmlElem* Z, bool Ad)
 {
+#ifdef _DEBUG
+	std::string FileName = FD->FullName;
+	std::string Varible = F->Name;
+#endif
 	void* p = nullptr; longint N = 0; LockMode md; bool b = false;
 	FileD* cf = CFile; void* cr = CRecPtr; CFile = FD;
 #ifdef FandSQL
@@ -1408,16 +1413,14 @@ void R_(FieldDPtr F, double R)
 void B_(FieldDPtr F, bool B)
 {
 	void* p = CRecPtr;
-	WORD* O = (WORD*)p;
-	bool* BP = (bool*)p;
-	char* CP = (char*)p;
+	char* pB = (char*)p + F->Displ;
 	if ((F->Typ == 'B') && ((F->Flg & f_Stored) != 0)) {
-		*O += F->Displ;
 		if (CFile->Typ == 'D')
 		{
-			if (B) *CP = 'T'; else *CP = 'F';
+			if (B) *pB = 'T'; 
+			else *pB = 'F';
 		}
-		else *BP = B;
+		else *pB = B;
 	}
 }
 
@@ -3246,6 +3249,19 @@ integer CompStr(pstring& S1, pstring& S2)
 
 WORD CmpLxStr(char* p1, WORD len1, char* p2, WORD len2)
 {
+	if (len1 > 0) {
+		for (size_t i = len1 - 1; i > 0; i--) { 
+			if (p1[i] == ' ') { len1--; continue; }
+			break;
+		}
+	}
+	if (len2 > 0) {
+		for (size_t i = len2 - 1; i > 0; i--) { 
+			if (p2[i] == ' ') { len1--; continue; }
+			break;
+		}
+	}
+
 	WORD cmpLen = min(len1, len2);
 	for (size_t i = 0; i < cmpLen; i++) {
 		if (p1[i] == p2[i]) continue;

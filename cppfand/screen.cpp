@@ -209,7 +209,7 @@ void Screen::WriteStyledStringToWindow(std::string text, BYTE Attr)
 
 	CHAR_INFO ci;
 
-	short cols = WindMax->X - WindMin->X + 1;
+	short cols = 200;
 	short rows = WindMax->Y - WindMin->Y + 1;
 
 	// buffer bude mit delku jednoho radku okna

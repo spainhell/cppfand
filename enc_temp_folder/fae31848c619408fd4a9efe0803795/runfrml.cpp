@@ -579,7 +579,7 @@ bool RunBool(FrmlPtr X)
 		result = MouseInRectProc(*w1, *w2, RunInt(iX0->P3) - *w1 + 1, RunInt(iX0->P4) - *w2 + 1);
 		break;
 	}
-	case _getlocvar: result = ((FrmlElem20*)X)->LV->B; break;
+	case _getlocvar: result = (bool*)(&MyBP); break;
 	case _modulo: result = RunModulo((FrmlElem1*)X); break;
 	case _field: result = _B(((FrmlElem7*)X)->Field); break;
 	case _access: {
