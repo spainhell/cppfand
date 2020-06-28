@@ -326,7 +326,7 @@ void IndexfileProc(FileDPtr FD, bool Compress)
 				PutRec();
 			}
 		}
-		if (! SaveCache(0)) GoExit(); CFile = FD; SubstDuplF(FD2, false);
+		if (!SaveCache(0)) GoExit(); CFile = FD; SubstDuplF(FD2, false);
 	}
 	CFile->XF->NoCreate = false; TestXFExist();
 	OldLMode(md); SaveFiles;
@@ -436,7 +436,7 @@ void DeleteRecProc(Instr_recs* PD)
 #ifdef FandSQL
 		if (CFile->IsSQLFile) { Strm1->DeleteXRec(PD->Key, &x, PD->AdUpd); goto label2; }
 #endif
-}
+	}
 	md = NewLMode(DelMode);
 	if (PD->ByKey)
 	{
@@ -495,7 +495,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 		if (CFile->IsSQLFile) {
 			if (IsRead) if (Strm1->SelectXRec(k, @x, PD->CompOp, true)) goto label4; else goto label2;
 			else if (Strm1->UpdateXRec(k, @x, ad)) goto label4; else goto label2;
-}
+		}
 #endif
 	}
 	else N = RunInt(PD->RecNr);
@@ -577,18 +577,30 @@ void ForAllProc(Instr_forall* PD)
 #ifdef FandSQL
 	bool sql;
 #endif
-	MarkStore(p); FD = PD->CFD; Key = PD->CKey; LVi = PD->CVar; LVr = PD->CRecVar;
-	LD = PD->CLD; KI = PD->CKIRoot; Bool = RunEvalFrml(PD->CBool); lk = false;
+	MarkStore(p); 
+	FD = PD->CFD; Key = PD->CKey; 
+	LVi = PD->CVar; LVr = PD->CRecVar;
+	LD = PD->CLD; KI = PD->CKIRoot; 
+	Bool = RunEvalFrml(PD->CBool); 
+	lk = false;
 #ifdef FandSQL
 	if (PD->inSQL && !FD->IsSQLFile) return;
 #endif
 	if (LD != nullptr) {
 		CFile = LD->ToFD; KF = LD->ToKey->KFlds;
 		switch (PD->COwnerTyp) {
-		case 'r': { CRecPtr = PD->CLV->RecPtr; xx.PackKF(KF); break; }
-		case 'F': { md = NewLMode(RdMode); CRecPtr = GetRecSpace();
-			ReadRec(RunInt(FrmlPtr(PD->CLV))); xx.PackKF(KF);
-			ReleaseStore(p); OldLMode(md);
+		case 'r': { 
+			CRecPtr = PD->CLV->RecPtr; 
+			xx.PackKF(KF); 
+			break; 
+		}
+		case 'F': { 
+			md = NewLMode(RdMode); 
+			CRecPtr = GetRecSpace();
+			ReadRec(RunInt(FrmlPtr(PD->CLV))); 
+			xx.PackKF(KF);
+			ReleaseStore(p); 
+			OldLMode(md);
 			break;
 		}
 		}
@@ -599,14 +611,14 @@ void ForAllProc(Instr_forall* PD)
 #endif
 	md = NewLMode(RdMode);
 	cr = GetRecSpace(); CRecPtr = cr; lr = cr;
-	//New(Scan, Init(CFile, Key, KI, true));
-	Scan = new XScan(CFile, Key, KI, true);
+	Scan = new XScan(CFile, Key, KI, true); //New(Scan, Init(CFile, Key, KI, true));
 #ifdef FandSQL
 	if (PD->inSQL) Scan->ResetSQLTxt(Bool); else
 #endif
-		if (LD != nullptr)
+		if (LD != nullptr) {
 			if (PD->COwnerTyp == 'i') Scan->ResetOwnerIndex(LD, PD->CLV, Bool);
 			else Scan->ResetOwner(&xx, Bool);
+		}
 		else Scan->Reset(Bool, PD->CSQLFilter);
 #ifdef FandSQL
 	if (!CFile->IsSQLFile)
@@ -614,14 +626,18 @@ void ForAllProc(Instr_forall* PD)
 		if (Key != nullptr)
 			if (PD->CWIdx) ScanSubstWIndex(Scan, Key->KFlds, 'W');
 			else { CFile->XF->UpdLockCnt++; lk = true; }
-	if (LVr != nullptr) lr = LVr->RecPtr; k = CFile->Keys;
-	b = PD->CProcent; if (b) RunMsgOn('F', Scan->NRecs);
+	if (LVr != nullptr) lr = LVr->RecPtr; 
+	k = CFile->Keys;
+	b = PD->CProcent; 
+	if (b) RunMsgOn('F', Scan->NRecs);
 label1:
 #ifdef FandSQL
-	if (sql) CRecPtr = lr else
+	if (sql) CRecPtr = lr; 
+	else
 #endif
 		CRecPtr = cr;
-	Scan->GetRec(); if (b) RunMsgN(Scan->IRec);
+	Scan->GetRec();
+	if (b) RunMsgN(Scan->IRec);
 	if (!Scan->eof) {
 #ifdef FandSQL
 
@@ -638,29 +654,33 @@ label1:
 			if (HasUpdFlag && !PD->inSQL) {
 				if (k = nullptr) CFileError(650); Strm1->UpdateXRec(k, @xx, CFile->Add != nullptr);
 			}
-	}
+		}
 		else
 #endif
 		{
 			OpenCreateF(Shared);
 			if ((LVr != nullptr) && (LVi == nullptr) && HasUpdFlag()) {
-				md1 = NewLMode(WrMode); CopyRecWithT(lr, cr);
-				UpdRec(cr, Scan->RecNr, true); OldLMode(md1);
-			};
+				md1 = NewLMode(WrMode);
+				CopyRecWithT(lr, cr);
+				UpdRec(cr, Scan->RecNr, true);
+				OldLMode(md1);
+			}
 		}
-		if (not (ExitP || BreakP)) {
+		if (!(ExitP || BreakP)) {
 			if (
 #ifdef FandSQL
 				!sql &&
 #endif 
-				(Key = nullptr) && (Scan->NRecs > CFile->NRecs)) {
-				Scan->IRec--; Scan->NRecs--;
+				(Key == nullptr) && (Scan->NRecs > CFile->NRecs)) {
+				Scan->IRec--; 
+				Scan->NRecs--;
 			}
 			goto label1;
-}
+		}
 	}
 	if (lk) CFile->XF->UpdLockCnt--;
-	Scan->Close(); OldLMode(md);
+	Scan->Close(); 
+	OldLMode(md);
 	if (b) RunMsgOff();
 	ReleaseStore(p);
 	BreakP = false;
@@ -724,24 +744,43 @@ label1:
 		CFile = ld->FD;
 		if (CFile->Handle == nullptr)
 			if (OpenF1(Shared))
-				if (TryLMode(RdMode, md, 2)) { OpenF2(); OldLMode(NullMode); }
-				else { CloseClearHCFile(); goto label2; }
+				if (TryLMode(RdMode, md, 2)) { 
+					OpenF2(); 
+					OldLMode(NullMode); 
+				}
+				else { 
+					CloseClearHCFile(); 
+					goto label2; 
+				}
 			else OpenCreateF(Shared);
 		if (CFile->IsShared()) {
-			if (op == _withlocked) { if (TryLockN(ld->N, 2)) goto label3; }
-			else { if (TryLMode(ld->Md, ld->OldMd, 2)) goto label3; }
+			if (op == _withlocked) { 
+				if (TryLockN(ld->N, 2)) goto label3; }
+			else { 
+				if (TryLMode(ld->Md, ld->OldMd, 2)) goto label3; }
 		label2:
 			UnLck(PD, ld, op);
-			if (PD->WasElse) { RunInstr(PD->WElseInstr); return; }
-			CFile = ld->FD; SetCPathVol();
-			if (op == _withlocked) {
-				msg = 839; str(ld->N, ntxt); Set2MsgPar(ntxt, CPath);
+			if (PD->WasElse) {
+				RunInstr(PD->WElseInstr); 
+				return; 
 			}
-			else { msg = 825; Set2MsgPar(CPath, LockModeTxt[ld->Md]); }
+			CFile = ld->FD; 
+			SetCPathVol();
+			if (op == _withlocked) {
+				msg = 839; 
+				str(ld->N, ntxt); 
+				Set2MsgPar(ntxt, CPath);
+			}
+			else { 
+				msg = 825; 
+				Set2MsgPar(CPath, LockModeTxt[ld->Md]); 
+			}
 			w1 = PushWrLLMsg(msg, false);
 			if (w == 0) w = w1;
 			else TWork.Delete(w1);
-			beep(); KbdTimer(spec.NetDelay, 0); goto label1;
+			beep(); 
+			KbdTimer(spec.NetDelay, 0); 
+			goto label1;
 		}
 	label3:
 		ld = ld->Chain;
@@ -926,8 +965,8 @@ void RunInstr(Instr* PD)
 		case _repeatuntil: {
 			/* !!! with PD^ do!!! */
 			auto iPD = (Instr_loops*)PD;
-			do { 
-				RunInstr(iPD->Instr1); 
+			do {
+				RunInstr(iPD->Instr1);
 			} while (!(ExitP || BreakP || RunBool(iPD->Bool)));
 			BreakP = false;
 			break; }
@@ -1099,8 +1138,8 @@ void RunInstr(Instr* PD)
 		}
 		}
 		PD = (Instr*)PD->Chain;
-		}
 	}
+}
 
 void RunProcedure(Instr* PDRoot)
 {
@@ -1149,9 +1188,9 @@ void CallProcedure(Instr_proc* PD)
 		switch (PD->TArg[i].FTyp) {
 		case 'r':
 		case 'i': {
-				if ((*it0)->FD != PD->TArg[i].FD) goto label1;
-				(*it0)->RecPtr = PD->TArg[i].RecPtr;
-				break;
+			if ((*it0)->FD != PD->TArg[i].FD) goto label1;
+			(*it0)->RecPtr = PD->TArg[i].RecPtr;
+			break;
 		}
 		case 'f': {
 			if (PD->TArg[i].RecPtr != nullptr) {
@@ -1163,7 +1202,7 @@ void CallProcedure(Instr_proc* PD)
 			else CFile = PD->TArg[i].FD;
 			it1 = it0;
 			while (it1 != LVBD.vLocVar.end()) {
-				if (((*it1)->FTyp == 'i' || (*it1)->FTyp == 'r') 
+				if (((*it1)->FTyp == 'i' || (*it1)->FTyp == 'r')
 					&& ((*it1)->FD == (*it0)->FD)) (*it1)->FD = CFile;
 				it1++; // (LocVar*)lv1->Chain;
 			}

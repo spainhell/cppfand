@@ -45,6 +45,7 @@ public:
 	void ScrWrFrameLn(WORD X, WORD Y, BYTE Typ, BYTE Width, BYTE Color);
 	void ScrWrText(WORD X, WORD Y, const char* S);
 	void ScrFormatWrText(WORD X, WORD Y, char const* const _Format, ...);
+	void ScrFormatWrStyledText(WORD X, WORD Y, BYTE Color, char const* const _Format, ...);
 	void ScrWrBuf(WORD X, WORD Y, void* Buf, WORD L);
 	void ScrWrCharInfoBuf(short X, short Y, CHAR_INFO* Buf, short L);
 	bool ScrRdBuf(WORD X, WORD Y, CHAR_INFO* Buf, WORD L);

@@ -520,6 +520,7 @@ bool RunBool(FrmlPtr X)
 			result = LexInStr(LongTrailChar(' ', 0, S), &iX0->param2);
 		}
 		else {
+			//result = InStr(S, &iX0->param2);
 			result = InStr(S, &iX0->param2);
 		}
 		ReleaseStore(S);
@@ -1808,8 +1809,9 @@ LongStr* LongTrailChar(char C, char CNew, LongStr* S)
 	WORD l;
 	l = S->LL;
 	while (l > 0) {
-		if (S->A[l] != C) goto label1;
-		if (CNew != 0) S->A[l] = CNew; l--;
+		if (S->A[l-1] != C) goto label1;
+		if (CNew != 0) S->A[l-1] = CNew; 
+		l--;
 	}
 label1:
 	if (CNew == 0) {

@@ -100,10 +100,24 @@ void Screen::ScrFormatWrText(WORD X, WORD Y, char const* const _Format, ...)
 	va_start(args, _Format);
 	char buffer[255];
 	vsnprintf(buffer, sizeof(buffer), _Format, args);
-	ScrWrText(X, Y, buffer);
+	Screen::ScrWrText(X, Y, buffer);
 	va_end(args);
 }
 
+void Screen::ScrFormatWrStyledText(WORD X, WORD Y, BYTE Color, char const* const _Format, ...)
+{
+	va_list args;
+	va_start(args, _Format);
+	char buffer[255];
+	vsnprintf(buffer, sizeof(buffer), _Format, args);
+	for (size_t i = 0; i < strlen(buffer); i++) {
+		char c = buffer[i];
+		WriteChar(X++, Y, c, Color, relative);
+	}
+	va_end(args);
+}
+
+// vypise pole WORDu (Attr + Znak)
 void Screen::ScrWrBuf(WORD X, WORD Y, void* Buf, WORD L)
 {
 	//X++; // v Pacalu to bylo od 1
@@ -119,11 +133,11 @@ void Screen::ScrWrBuf(WORD X, WORD Y, void* Buf, WORD L)
 		ci[i].Attributes = pBuf[i] >> 8;
 		ci[i].Char.AsciiChar = pBuf[i] & 0x00FF;
 	}
-
 	WriteConsoleOutputA(_handle, ci, BufferSize, { 0, 0 }, &XY);
 	delete[] ci;
 }
 
+// vypise pole CHAR_INFO
 void Screen::ScrWrCharInfoBuf(short X, short Y, CHAR_INFO* Buf, short L)
 {
 	//X++; // v Pacalu to bylo od 1
@@ -152,13 +166,14 @@ void Screen::ScrColor(WORD X, WORD Y, WORD L, BYTE Color)
 	FillConsoleOutputAttribute(_handle, Color, L, { (short)X, (short)Y }, &written);
 }
 
+// vypise na zadanou pozici 1 znak v zadane barve
 void Screen::WriteChar(short X, short Y, char C, BYTE attr, Position pos)
 {
 	DWORD written = 0;
 	switch (pos) {
 	case relative: {
-		X += WindMin->X;
-		Y += WindMin->Y;
+		X += WindMin->X - 1;
+		Y += WindMin->Y - 1;
 		break;
 	}
 	case absolute: {
