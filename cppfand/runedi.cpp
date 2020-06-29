@@ -396,12 +396,15 @@ label2:
 
 void WrPromptTxt(pstring* S, FrmlPtr Impl, FieldDPtr F, pstring* Txt, double& R)
 {
-	WORD x, y, d, LWw; pstring SS, T; double RR; bool BB;
+	WORD x = 0, y = 0, d = 0, LWw = 0; 
+	pstring SS, T; double RR = 0.0; bool BB = false;
 	screen.WriteStyledStringToWindow(*S, ProcAttr);
 	T = "";
 	x = screen.WhereX(); y = screen.WhereY();
 	d = WindMax.X - WindMin.X + 1;
-	if (x + F->L - 1 > d) LWw = d - x; else LWw = F->L;  TextAttr = screen.colors.dHili;
+	if (x + F->L - 1 > d) LWw = d - x; 
+	else LWw = F->L;  
+	TextAttr = screen.colors.dHili;
 	if (Impl != nullptr) {
 		switch (F->FrmlTyp) {
 		case 'R': RR = RunReal(Impl); break;
@@ -410,7 +413,8 @@ void WrPromptTxt(pstring* S, FrmlPtr Impl, FieldDPtr F, pstring* Txt, double& R)
 		}
 		DecodeFieldRSB(F, F->L, RR, SS, BB, T);
 	}
-	screen.GotoXY(x, y); FieldEdit(F, nullptr, LWw, 1, &T, R, true, true, false, 0);
+	screen.GotoXY(x, y); 
+	FieldEdit(F, nullptr, LWw, 1, &T, R, true, true, false, 0);
 	TextAttr = ProcAttr;
 	if (KbdChar == _ESC_) { EscPrompt = true; printf("\n"); }
 	else {

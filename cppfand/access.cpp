@@ -376,42 +376,58 @@ double RealFromFix(void* FixNo, WORD FLen)
 
 void FixFromReal(double r, void* FixNo, WORD& flen)
 {
-	BYTE* rr = (BYTE*)&r;
-	BYTE* ff = (BYTE*)FixNo;
-
-	FillChar(ff, flen, 0);
-	if (r > 0) r = r + 0.5;
-	else r = r - 0.5;
-	bool neg = bool(rr[DblS] & 0x80);
-	integer exp = (rr[DblS - 1] >> 4) + (WORD(rr[DblS] & 0x7F) << 4);
-	if (exp < 2047)
-	{
-		rr[DblS] = 0; rr[DblS - 1] = rr[DblS - 1] & 0x0F;
-		if (exp > 0) { rr[DblS - 1] = rr[DblS - 1] | 0x10; }
-		else { exp++; }
-		exp -= 1023;
-		if (exp > (flen << 3) - 1) /*overflow*/ return;
-		integer lef = (exp + 4) & 0x0007;
-		integer rig = 8 - lef;
-		if ((exp & 0x0007) > 3) exp += 4;
-		integer first = 7 - (exp >> 3);
-		integer i = flen;
-		while ((first < DblS) and (i > 0))
-		{
-			ff[i] = (rr[first] >> rig) + (rr[first + 1] << lef);
-			i--; first++;
-		}
-		if (i > 0) ff[i] = rr[first] >> rig;
-		if (neg)
-		{
-			for (i = 1; i < flen; i++) ff[i] = !ff[i]; ff[flen]++;
-			i = flen;
-			while (ff[i] == 0) {
-				i--;
-				if (i > 0) ff[i]++;
-			}
-		}
+	if (r >= -128 && r <= 127) { 
+		flen = 1;
+		*(char*)FixNo = (char)r;
+		return;
 	}
+	if (r >= -32768 && r <= 32767) { 
+		flen = 2;
+		*(short*)FixNo = (short)r;
+	}
+	if (r >= -2147483648 && r <= 2147483647) { 
+		if (sizeof(long) != 4) throw std::exception("FixFromReal() sizeof(long) on this machine isn't 4!");
+		flen = 4;
+		*(long*)FixNo = (long)r;
+	}
+	throw std::exception("FixFromReal() size is 8 Bytes. Error?");
+	*(long long*)FixNo = (long long)r;
+	flen = 8;
+
+
+	//FillChar(ff, flen, 0);
+	//if (r > 0) r = r + 0.5;
+	//else r = r - 0.5;
+	//bool neg = bool(rr[DblS] & 0x80);
+	//integer exp = (rr[DblS - 1] >> 4) + (WORD(rr[DblS] & 0x7F) << 4);
+	//if (exp < 2047)
+	//{
+	//	rr[DblS] = 0; rr[DblS - 1] = rr[DblS - 1] & 0x0F;
+	//	if (exp > 0) { rr[DblS - 1] = rr[DblS - 1] | 0x10; }
+	//	else { exp++; }
+	//	exp -= 1023;
+	//	if (exp > (flen << 3) - 1) /*overflow*/ return;
+	//	integer lef = (exp + 4) & 0x0007;
+	//	integer rig = 8 - lef;
+	//	if ((exp & 0x0007) > 3) exp += 4;
+	//	integer first = 7 - (exp >> 3);
+	//	integer i = flen;
+	//	while ((first < DblS) and (i > 0))
+	//	{
+	//		ff[i] = (rr[first] >> rig) + (rr[first + 1] << lef);
+	//		i--; first++;
+	//	}
+	//	if (i > 0) ff[i] = rr[first] >> rig;
+	//	if (neg)
+	//	{
+	//		for (i = 1; i < flen; i++) ff[i] = !ff[i]; ff[flen]++;
+	//		i = flen;
+	//		while (ff[i] == 0) {
+	//			i--;
+	//			if (i > 0) ff[i]++;
+	//		}
+	//	}
+	//}
 }
 
 #ifdef FandNetV
@@ -1372,23 +1388,24 @@ bool _B(FieldDPtr F)
 void R_(FieldDPtr F, double R)
 {
 	void* p = CRecPtr;
-	pstring s; WORD m; longint l;
-	WORD* O = (WORD*)p;
-	integer* IP = (integer*)p;
+	BYTE* bp = (BYTE*)p;
+	pstring s; WORD m = 0; longint l = 0;
+	//WORD* O = (WORD*)p;
+	//integer* IP = (integer*)p;
 	if ((F->Flg & f_Stored) != 0) {
-		O += F->Displ;
+		//O += F->Displ;
 		m = F->M;
 		switch (F->Typ) {
 		case 'F': {
 			if (CFile->Typ == 'D') {
 				if ((F->Flg & f_Comma) != 0) R = R / Power10[m];
 				str(F->NBytes, s);
-				Move(&s[1], p, F->NBytes);
+				Move(&s[1], &bp[F->Displ], F->NBytes);
 			}
 			else {
 				if ((F->Flg & f_Comma) == 0) R = R * Power10[m];
 				WORD tmp = F->NBytes;
-				FixFromReal(R, p, tmp);
+				FixFromReal(R, &bp[F->Displ], tmp);
 				F->NBytes = (BYTE)tmp;
 			} 
 			break;
@@ -1396,20 +1413,26 @@ void R_(FieldDPtr F, double R)
 		case 'D': {
 			switch (CFile->Typ) {
 			case '8': {
-				if (trunc(R) == 0) *IP = 0;
-				else *IP = trunc(R - FirstDate);
+				if (trunc(R) == 0) *(long*)&bp[F->Displ] = 0;
+				else *(long*)&bp[F->Displ] = trunc(R - FirstDate);
 				break;
 			}
 			case 'D': {
 				s = StrDate(R, "YYYYMMDD");
-				Move(&s[1], p, 8);
+				Move(&s[1], &bp[F->Displ], 8);
 				break;
 			}
-			default: p = &R; break;
+			default: {
+				p = &R; 
+				break; 
+			}
 			}
 			break;
 		}
-		case 'R': { p = &R; break; }
+		case 'R': { 
+			p = &R; 
+			break; 
+		}
 		}
 	}
 }

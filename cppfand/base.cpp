@@ -11,6 +11,7 @@
 #include "obaseww.h"
 #include "oaccess.h"
 #include <ctime>
+#include <iostream>
 
 /*const*/ 
 char Version[] = { '4', '.', '2', '0', '\0' };
@@ -132,9 +133,17 @@ void Set4MsgPar(pstring s1, pstring s2, pstring s3, pstring s4)
 
 longint PosH(FILE* handle)
 {
-	const auto result = ftell(handle);
-	HandleError = ferror(handle);
-	return static_cast<longint>(result);
+	try
+	{
+		const auto result = ftell(handle);
+		HandleError = ferror(handle);
+		return static_cast<longint>(result);
+	}
+	catch (const std::exception &e)
+	{
+		std::cout << e.what() << "\n";
+		return -1;
+	}	
 }
 
 longint MoveH(longint dist, WORD method, FILE* handle)
@@ -143,11 +152,23 @@ longint MoveH(longint dist, WORD method, FILE* handle)
 	// dist - hodnota offsetu
 	// method: 0 - od zacatku, 1 - od aktualni, 2 - od konce
 	// handle - file handle
-	HandleError = fseek(handle, dist, method);
-	if (HandleError != 0) {
-		printf("MoveH() base.cpp 148 HandleError != 0 \n");
+	try
+	{
+		auto result = fseek(handle, dist, method);
+		if (result != 0) {
+			errno_t err;
+			_get_errno(&err);
+			HandleError = err;
+			return -1;
+		}
+		HandleError = (WORD)result;
+		return ftell(handle);
 	}
-	return ftell(handle);
+	catch (const std::exception &e)
+	{
+		std::cout << e.what() << "\n";
+		return -1;
+	}
 }
 
 int SeekH(FILE* handle, longint pos)
@@ -158,9 +179,9 @@ int SeekH(FILE* handle, longint pos)
 
 WORD ReadH(FILE* handle, WORD bytes, void* buffer)
 {
-	if (CFile != nullptr && CFile->Name == "TIPY")
+	if (CFile != nullptr && CFile->Name == "DEALER")
 	{
-		printf("ReadH() r160: TIPY\n");
+		printf("ReadH() r160: DEALER\n");
 	}
 	size_t bufferSize = bytes; // sizeof(buffer);
 	return fread_s(buffer, bufferSize, 1, bytes, handle);
@@ -1271,7 +1292,7 @@ void UnLockCache()
 
 bool SaveCache(WORD ErrH)
 {
-	return true;
+	return false;
 }
 
 void SubstHandle(WORD h1, WORD h2)

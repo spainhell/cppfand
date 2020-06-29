@@ -221,7 +221,12 @@ void Screen::WriteStyledStringToWindow(std::string text, BYTE Attr)
 		auto str = vStr[i];
 		auto strLen = str.length();
 		// okenko bude mit jen 1 radek
-		SMALL_RECT rect = { WindMin->X - 1, WindMin->Y - 1 + i, WindMax->X - 1, WindMin->Y - 1 + i };
+		SMALL_RECT rect = { 
+			WindMin->X + actualWindowCol - 2,			// oba parametry jsou cislovane od 1
+			WindMin->Y + actualWindowRow - 2,			// oba parametry jsou cislovane od 1
+			WindMax->X - 1,								// prava strana zustava stejna
+			WindMin->Y + actualWindowRow - 2,			// dolni strana stejna jako horni (jen 1 radek)
+		};
 
 		size_t ctrlCharsCount = 0;
 
@@ -260,6 +265,9 @@ void Screen::WriteStyledStringToWindow(std::string text, BYTE Attr)
 		}
 		COORD BufferSize = { strLen - ctrlCharsCount, 1 }; // pocet tisknutelnych znaku, 1 radek
 		WriteConsoleOutputA(_handle, _buf, BufferSize, { 0, 0 }, &rect);
+		// nastavime zacatek dalsiho radku
+		actualWindowRow++;
+		actualWindowCol = 1;
 	}
 	delete[] _buf;
 }
@@ -384,6 +392,8 @@ void Screen::Window(BYTE X1, BYTE Y1, BYTE X2, BYTE Y2)
 	WindMin->Y = Y1;
 	WindMax->X = X2;
 	WindMax->Y = Y2;
+	actualWindowRow = 1;
+	actualWindowCol = 1;
 	GotoXY(X1, Y1);
 }
 

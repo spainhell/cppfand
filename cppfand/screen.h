@@ -105,6 +105,8 @@ private:
 	Wind* WindMin;
 	Wind* WindMax;
 	TCrs* Crs;
+	short actualWindowRow = 1; // cislovane od 1
+	short actualWindowCol = 1; // cislovane od 1
 
 	std::stack<storeWindow> _windowStack;
 

@@ -84,8 +84,9 @@ void SetInpStr(pstring& S)
 void SetInpLongStr(LongStr* S, bool ShowErr)
 {
 	InpArrLen = S->LL;
-	InpArrPtr = (BYTE*)S->A[0];
-	if (InpArrLen == 0) ForwChar = 0x1A; else ForwChar = InpArrPtr[0];
+	InpArrPtr = (BYTE*)&S->A;
+	if (InpArrLen == 0) ForwChar = 0x1A; 
+	else ForwChar = InpArrPtr[0];
 	CurrPos = 0;
 	InpRdbPos.R = nullptr;
 	if (ShowErr) InpRdbPos.R = nullptr; // TODO: tady bylo InpRdbPos.R:=ptr(0,1);

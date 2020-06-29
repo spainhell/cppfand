@@ -1800,7 +1800,8 @@ LongStr* RunSelectStr(FrmlElem0* Z)
 	void* p2 = nullptr; void* pl = nullptr;
 	WORD i, n;
 
-	s = RunLongStr(Z->P3); n = CountDLines(s->A, s->LL, Z->Delim);
+	s = RunLongStr(Z->P3); 
+	n = CountDLines(s->A, s->LL, Z->Delim);
 	for (i = 1; i < n; i++) {
 		x = GetDLine(s->A, s->LL, Z->Delim, i);
 		if (x != "") ww.PutSelect(x);
@@ -1828,7 +1829,9 @@ LongStr* RunSelectStr(FrmlElem0* Z)
 			}
 		} while (!(!ss.Subset || (x == "")));
 		ReleaseStore(s);
-		s = (LongStr*)GetStore(n + 1); s->LL = n - 1; Move(s2->A, s->A, n - 1);
+		s = (LongStr*)GetStore(n + 1); 
+		s->LL = n - 1; 
+		Move(s2->A, s->A, n - 1);
 		ReleaseStore2(p2);
 		return s;
 }
@@ -1929,7 +1932,3 @@ void GetRecNoXString(FrmlElem13* Z, XString& X)
 		kf = (KeyFldD*)kf->Chain;
 	}
 }
-
-
-
-
