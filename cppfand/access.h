@@ -738,31 +738,35 @@ void ResetCompilePars(); // r953 - posledni fce
 
 
 void ReadRec(longint N);
+// * NACITANI ZE SOUBORU / Z FRMLELEM *
+bool _B(FieldDescr* F);
+double _R(FieldDescr* F);
+pstring _ShortS(FieldDescr* F);
+LongStr* _LongS(FieldDescr* F);
 longint _T(FieldDescr* F);
-pstring _ShortS(FieldDPtr F);
+// * UKLADANI DO SOUBORU *
+void B_(FieldDescr* F, bool B);
+void R_(FieldDescr* F, double R);
+void S_(FieldDescr* F, pstring S);
+void LongS_(FieldDescr* F, LongStr* S);
+void T_(FieldDescr* F, longint Pos);
+
 void CreateRec(longint N);
 void RecallRec(longint RecNr);
 bool LinkUpw(LinkDPtr LD, longint& N, bool WithT);
 bool LinkLastRec(FileDPtr FD, longint& N, bool WithT);
 void IncNRecs(longint N);
 void WriteRec(longint N);
-void R_(FieldDPtr F, double R);
-double _R(FieldDPtr F);
-void LongS_(FieldDPtr F, LongStr* S);
-void S_(FieldDPtr F, pstring S);
-void B_(FieldDPtr F, bool B);
 bool TryLMode(LockMode Mode, LockMode& OldMode, WORD Kind);
 void OldLMode(LockMode Mode);
 LockMode NewLMode(LockMode Mode);
 void TestXFExist();
 bool TryLockN(longint N, WORD Kind);
 void UnLockN(longint N);
-LongStr* _LongS(FieldDPtr F);
 void ClearRecSpace(void* p);
 void ZeroAllFlds();
 void DelTFld(FieldDPtr F);
 void DelDifTFld(void* Rec, void* CompRec, FieldDPtr F);
-bool _B(FieldDPtr F);
 void DeleteXRec(longint RecNr, bool DelT);
 void OverWrXRec(longint RecNr, void* P2, void* P);
 void DelAllDifTFlds(void* Rec, void* CompRec);
@@ -770,7 +774,6 @@ void DecNRecs(longint N);
 void DeleteRec(longint N);
 bool SearchKey(XString& XX, KeyDPtr Key, longint& NN);
 longint XNRecs(KeyDPtr K);
-void T_(FieldDPtr F, longint Pos);
 void AsgnParFldFrml(FileD* FD, FieldDescr* F, FrmlElem* Z, bool Ad);
 void PutRec();
 void TryInsertAllIndexes(longint RecNr);

@@ -368,10 +368,11 @@ void CloseFile()
 			}
 		}
 	}
+	// zavreni souboru volnych textu .T00
 	if (CFile->TF != nullptr) { /*with TF^*/
 		if (CFile->TF->Handle != nullptr) {
 			CloseClearH(CFile->TF->Handle);
-			if (HandleError == 0) CFile->TF->Handle == nullptr; // soubor byl uspesne uzavren
+			if (HandleError == 0) CFile->TF->Handle = nullptr; // soubor byl uspesne uzavren
 			if ((!CFile->IsShared()) && (CFile->NRecs == 0) && (CFile->Typ != 'D')) {
 				SetCPathVol();
 				CExtToT();
@@ -487,14 +488,20 @@ void ReleaseDrive(WORD D)
 	if (MountedVol[D] == "") return;
 	if (D == FloppyDrives) Drive = spec.CPMdrive;
 	else Drive = char(D + '@');
-	if (ActiveRdbOnDrive(D)) { SetMsgPar(Drive); RunError(813); }
-	CloseFilesOnDrive(D); Set2MsgPar(MountedVol[D], Drive); WrLLF10Msg(818);
+	if (ActiveRdbOnDrive(D)) { 
+		SetMsgPar(Drive); 
+		RunError(813); 
+	}
+	CloseFilesOnDrive(D); 
+	Set2MsgPar(MountedVol[D], Drive); 
+	WrLLF10Msg(818);
 	MountedVol[D] = "";
 }
 
 void SetCPathForH(FILE* handle)
 {
-	RdbDPtr RD; FileDPtr cf;
+	RdbD* RD = nullptr; 
+	FileD* cf = nullptr;
 	cf = CFile; RD = CRdb;
 	while (RD != nullptr)
 	{
@@ -504,11 +511,15 @@ void SetCPathForH(FILE* handle)
 			if (CFile->Handle == handle) { SetCPathVol(); goto label1; }
 			if ((CFile->XF != nullptr) && (CFile->XF->Handle == handle))
 			{
-				SetCPathVol(); CExtToX(); goto label1;
+				SetCPathVol(); 
+				CExtToX(); 
+				goto label1;
 			}
 			if ((CFile->TF != nullptr) && (CFile->TF->Handle == handle))
 			{
-				SetCPathVol(); CExtToT(); goto label1;
+				SetCPathVol(); 
+				CExtToT(); 
+				goto label1;
 			}
 			CFile = (FileD*)CFile->Chain;
 		} RD = RD->ChainBack;
@@ -786,13 +797,22 @@ void CopyH(FILE* h1, FILE* h2)
 {
 	const WORD BufSize = 32768;
 	void* p; longint sz;
-	ClearCacheH(h1); ClearCacheH(h2);
-	p = GetStore(BufSize); sz = FileSizeH(h1); SeekH(h1, 0); SeekH(h2, 0);
+	// cache nepouzivame
+	//ClearCacheH(h1); 
+	//ClearCacheH(h2);
+	p = GetStore(BufSize); 
+	sz = FileSizeH(h1);
+	SeekH(h1, 0); 
+	SeekH(h2, 0);
 	while (sz > BufSize) {
-		ReadH(h1, BufSize, p); WriteH(h2, BufSize, p); sz -= BufSize;
+		ReadH(h1, BufSize, p); 
+		WriteH(h2, BufSize, p); sz -= BufSize;
 	}
-	ReadH(h1, sz, p); WriteH(h2, sz, p);
-	CloseH(h1); MyDeleteFile(CPath); ReleaseStore(p);
+	ReadH(h1, sz, p);
+	WriteH(h2, sz, p);
+	CloseH(h1); 
+	MyDeleteFile(CPath); 
+	ReleaseStore(p);
 }
 
 void SubstDuplF(FileD* TempFD, bool DelTF)

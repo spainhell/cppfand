@@ -134,6 +134,7 @@ void Set4MsgPar(pstring s1, pstring s2, pstring s3, pstring s4)
 
 longint PosH(FILE* handle)
 {
+	if (handle == nullptr) return -1;
 	try
 	{
 		const auto result = ftell(handle);
@@ -901,8 +902,7 @@ label1:
 	// pøidání FILE* od vektoru kvùli 'WORD OvrHandle = h - 1;'
 	vOverHandle.push_back(nFile);
 #ifdef _DEBUG
-	DataFile f = DataFile(CFile->Name, CFile, nFile);
-	filesMap.insert(std::pair<std::string, DataFile>(CPath, f));
+	filesMap.insert(std::pair<std::string, DataFile>(CPath, DataFile(CPath, CFile, nFile)));
 #endif
 	return nFile;
 }
@@ -970,25 +970,27 @@ void TruncH(FILE* handle, longint N)
 
 void CloseH(FILE* handle)
 {
-	auto it = filesMap.find(CFile->FullName);
+	auto it = filesMap.find(CPath);
 	if (it != filesMap.end()) {
 		it->second.SetClose();
 	}
 	if (handle == nullptr) return;
 	// uzavøe soubor
-	HandleError = fclose(handle);
+	auto res = fclose(handle);
+	WORD HandleError = res;
+	//if (CFile != nullptr) CFile->Handle = nullptr;
 }
 
 
-void ClearCacheH(FILE* h)
-{
-}
+//void ClearCacheH(FILE* h)
+//{
+//}
 
 void CloseClearH(FILE* h)
 {
 	if (h == nullptr) return;
 	CloseH(h);
-	ClearCacheH(h);
+	//ClearCacheH(h);
 	h = nullptr;
 }
 

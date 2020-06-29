@@ -316,76 +316,73 @@ void Pack(void* NumArr, void* PackArr, WORD NoDigits)
 
 double RealFromFix(void* FixNo, WORD FLen)
 {
-	if (FLen == 0) return 0;
-	BYTE* source = (BYTE*)FixNo;
-	double r = 0;
-	// pricteme 1. byte
-	r += source[0];
-	// dalsi byte se postupne nasobi 256 na i-tou
-	for (size_t i = 1; i < FLen; i++) 
-	{
-		r += source[i] * pow(256, i);
+	unsigned char ff[8]{ 0 };
+	unsigned char* fixno = (unsigned char*)FixNo;
+	double r;
+	unsigned char* rr = (unsigned char*)&r;
+
+	memset(rr, 0, sizeof(r));
+	memcpy(ff, fixno, FLen);
+	bool neg = (*fixno & 0x80 != 0); // zaporne cislo urcuje 1 bit
+
+	if (neg) {
+		if (ff[0] == 0x80) {
+			for (size_t i = 1; i <= FLen; i++) {
+				if (ff[i] != 0x00) break;
+				return 0;
+			}
+		}
+		for (size_t i = 0; i < FLen; i++) ff[i] = ~ff[i];
+		ff[FLen - 1]++;
+		WORD I = FLen - 1;
+		while (ff[I] == 0) {
+			I--;
+			if (I >= 0) ff[I]++;
+		}
 	}
+	integer first = 0;
+	while (ff[first] == 0) first++;
+	if (first > FLen - 1) return 0;
 
+	integer lef = 0;
+	unsigned char b = ff[first];
+	while ((b & 0x80) == 0) {
+		b = b << 1;
+		lef++;
+	}
+	ff[first] = ff[first] & (0x7F >> lef);
+	integer exp = ((FLen - first) << 3) - lef + 1030;
+	if (lef == 6) first++;
+	lef = (lef + 5) & 0x07;
+	integer rig = 7 - lef;
+	integer i = sizeof(double) - 2;
+	if ((rig <= 3) && (first <= FLen)) {
+		rr[i] = ff[first] >> rig;
+		i--;
+	}
+	while ((i >= 0) && (first <= FLen)) {
+		rr[i] = ff[first] >> rig;
+		i--;
+	}
+	if ((first == FLen) && (i > 0)) rr[i] = ff[first] << lef;
+	rr[DblS - 2] = rr[DblS - 2] & 0x0F + ((exp & 0x0F) << 4);
+	rr[DblS - 1] = exp >> 4;
+	if (neg) rr[DblS - 1] = rr[DblS - 1] || 0x80;
 	return r;
-
-	//double r = 0;
-	//BYTE* rr = (BYTE*)&r;
-	//BYTE ff[FixS]{ '\0' };
-	//integer i = 0;
-
-	////FillChar(rr, DblS, 0);
-	//Move(FixNo, &ff[0], FLen);
-	//bool neg = (ff[1] & 0x80) != 0;
-	//if (neg) {
-	//	if (ff[1] == 0x80) {
-	//		for (i = 2; i < FLen; i++) if (ff[i] != 0x00) goto label1;   /*NULL value*/
-	//		return 0.0;
-	//	}
-	//label1:
-	//	for (i = 1; i < FLen; i++) ff[i] = !(ff[i]);
-	//	ff[FLen]++;
-	//	i = FLen;
-	//	while (ff[i] == 0) { i--; if (i > 0) ff[i]++; }
-	//}
-	//integer first = 1;
-	//while (ff[first] == 0) first++;
-	//if (first > FLen) { return 0; }
-	//integer lef = 0;
-	//BYTE b = ff[first];
-	//while ((b & 0x80) == 0) { b = b << 1; lef++; }
-	//ff[first] = ff[first] && (0x7F >> lef);
-	//integer exp = ((FLen - first) << 3) - lef + 1030;
-	//if (lef == 7) first++;
-	//lef = (lef + 5) & 0x07;
-	//integer rig = 8 - lef;
-	//i = DblS - 1;
-	//if ((rig <= 4) && (first <= FLen)) { rr[i] = ff[first] >> rig; i--; }
-	//while ((i > 0) && (first < FLen))
-	//{
-	//	rr[i] = (ff[first] << lef) + (ff[first + 1] >> rig);
-	//	i--;
-	//	first++;
-	//}
-	//if ((first == FLen) && (i > 0)) rr[i] = ff[first] << lef;
-	//rr[DblS - 1] = (rr[DblS - 1] & 0x0F) + ((exp & 0x0F) << 4);
-	//rr[DblS] = exp >> 4;
-	//if (neg) rr[DblS] = rr[DblS] | 0x80;
-	//return r;
 }
 
 void FixFromReal(double r, void* FixNo, WORD& flen)
 {
-	if (r >= -128 && r <= 127) { 
+	if (r >= -128 && r <= 127) {
 		flen = 1;
 		*(char*)FixNo = (char)r;
 		return;
 	}
-	if (r >= -32768 && r <= 32767) { 
+	if (r >= -32768 && r <= 32767) {
 		flen = 2;
 		*(short*)FixNo = (short)r;
 	}
-	if (r >= -2147483648 && r <= 2147483647) { 
+	if (r >= -2147483648 && r <= 2147483647) {
 		if (sizeof(long) != 4) throw std::exception("FixFromReal() sizeof(long) on this machine isn't 4!");
 		flen = 4;
 		*(long*)FixNo = (long)r;
@@ -499,10 +496,12 @@ void ResetCFileUpdH()
 
 void ClearCacheCFile()
 {
+	// chache nepouzivame
+	return;
 	/* !!! with CFile^ do!!! */
-	ClearCacheH(CFile->Handle);
+	/*ClearCacheH(CFile->Handle);
 	if (CFile->Typ == 'X') ClearCacheH(CFile->XF->Handle);
-	if (CFile->TF != nullptr) ClearCacheH(CFile->TF->Handle);
+	if (CFile->TF != nullptr) ClearCacheH(CFile->TF->Handle);*/
 }
 
 bool TryLMode(LockMode Mode, LockMode& OldMode, WORD Kind)
@@ -551,9 +550,9 @@ label1:
 			else TWork.Delete(w1);
 			/*beep; don't disturb*/
 			if (KbdTimer(spec.NetDelay, Kind)) goto label1;
-		}
+}
 		result = false;
-	}
+}
 	if (w != 0) PopW(w);
 #endif
 	return result;
@@ -731,9 +730,11 @@ void WrPrefixes()
 		CFile->XF->WrPrefix();
 }
 
+// zmeni priponu na ._X_ a nastavi CPath
 void CExtToX()
 {
-	CExt[2] = 'X'; CPath = CDir + CName + CExt;
+	CExt[2] = 'X';
+	CPath = CDir + CName + CExt;
 }
 
 void TestCFileError()
@@ -751,10 +752,10 @@ void TestCPathError()
 	}
 }
 
+// zmeni priponu souboru a nastavi CPath
 void CExtToT()
 {
-	if (SEquUpcase(CExt, ".RDB"))
-		CExt = ".TTT";
+	if (SEquUpcase(CExt, ".RDB")) CExt = ".TTT";
 	else
 		if (SEquUpcase(CExt, ".DBF"))
 			if (CFile->TF->Format == TFile::FptFormat) CExt = ".FPT";
@@ -891,7 +892,7 @@ longint _T(FieldDescr* F)
 	}
 }
 
-void T_(FieldDPtr F, longint Pos)
+void T_(FieldDescr* F, longint Pos)
 {
 	pstring s;
 	void* p = CRecPtr;
@@ -1043,7 +1044,7 @@ void DeleteRec(longint N)
 	DecNRecs(1);
 }
 
-void LongS_(FieldDPtr F, LongStr* S)
+void LongS_(FieldDescr* F, LongStr* S)
 {
 	longint Pos; LockMode md;
 
@@ -1067,9 +1068,9 @@ void LongS_(FieldDPtr F, LongStr* S)
 			T_(F, Pos);
 		}
 	}
-}
+	}
 
-void S_(FieldDPtr F, pstring S)
+void S_(FieldDescr* F, pstring S)
 {
 	const BYTE LeftJust = 1;
 	WORD offset = 0;
@@ -1220,26 +1221,29 @@ bool SearchKey(XString& XX, KeyDPtr Key, longint& NN)
 	return bResult;
 }
 
-LongStr* _LongS(FieldDPtr F)
+LongStr* _LongS(FieldDescr* F)
 {
 	void* P = CRecPtr;
-	char* source = (char*)P;
+	char* source = (char*)P + F->Displ;
 	LongStr* S = nullptr; longint Pos = 0; integer err = 0;
 	LockMode md; WORD l = 0;
 	if ((F->Flg & f_Stored) != 0) {
 		l = F->L;
 		switch (F->Typ)
 		{
-		case 'A': 
-		case 'N': {
+		case 'A':		// znakovy retezec max. 255 znaku
+		case 'N': {		// ciselny retezec max. 79 znaku
 			S = new LongStr(l);
 			S->LL = l;
 			if (F->Typ == 'A') {
-				Move(&source[F->Displ], &S->A[0], l);
+				Move(source, &S->A[0], l);
 				if ((F->Flg & f_Encryp) != 0) Code(S->A, l);
-				if (IsNullValue(S, l)) { S->LL = 0; ReleaseAfterLongStr(S); }
+				if (IsNullValue(S, l)) {
+					S->LL = 0;
+					ReleaseAfterLongStr(S);
+				}
 			}
-			else if (IsNullValue(&source[F->Displ], F->NBytes)) {
+			else if (IsNullValue(source, F->NBytes)) {
 				S->LL = 0;
 				ReleaseAfterLongStr(S);
 			}
@@ -1250,7 +1254,7 @@ LongStr* _LongS(FieldDPtr F)
 			}
 			break;
 		}
-		case 'T': {
+		case 'T': {		// volny text max. 65k
 			if (HasTWorkFlag()) S = TWork.Read(1, _T(F));
 			else {
 				md = NewLMode(RdMode);
@@ -1263,7 +1267,7 @@ LongStr* _LongS(FieldDPtr F)
 				S->LL = 0;
 				// ReleaseAfterLongStr(S);
 			}
-			break; 
+			break;
 		}
 		}
 		return S;
@@ -1272,25 +1276,23 @@ LongStr* _LongS(FieldDPtr F)
 }
 
 // z CRecPtr vyète øetìzec o délce F->L z pozice F->Displ
-pstring _ShortS(FieldDPtr F)
+pstring _ShortS(FieldDescr* F)
 {
 	void* P = CRecPtr;
+	char* source = (char*)P + F->Displ;
 	pstring S;
 	if ((F->Flg & f_Stored) != 0) {
 		WORD l = F->L;
 		S[0] = l;
-		//WORD* POfs = (WORD*)P; /*absolute P;*/
-		//*POfs += F->Displ;
-		char* source = (char*)P;
 		switch (F->Typ) {
-		case 'A':
-		case 'N': {
+		case 'A':		// znakovy retezec max. 255 znaku
+		case 'N': {		// ciselny retezec max. 79 znaku
 			if (F->Typ == 'A') {
-				Move(&source[F->Displ], &S[1], l);
+				Move(source, &S[1], l);
 				if ((F->Flg & f_Encryp) != 0) Code(&S[1], l);
 				if (IsNullValue(&S[2], l)) FillChar(&S[0], l, ' ');
 			}
-			else if (IsNullValue(&source[F->Displ], F->NBytes)) FillChar(&S[0], l, ' ');
+			else if (IsNullValue(source, F->NBytes)) FillChar(&S[0], l, ' ');
 			else
 			{
 				// nebudeme volat, zøejmìní není potøeba
@@ -1298,7 +1300,7 @@ pstring _ShortS(FieldDPtr F)
 			}
 			break;
 		}
-		case 'T': {
+		case 'T': {		// volny text max. 65k
 			LongStrPtr ss = _LongS(F);
 			if (ss->LL > 255) S = S.substr(0, 255);
 			else S = S.substr(0, ss->LL);
@@ -1331,35 +1333,35 @@ double _RforD(FieldDPtr F, void* P)
 	return r;
 }
 
-double _R(FieldDPtr F)
+double _R(FieldDescr* F)
 {
 	void* P = CRecPtr;
-	char* source = (char*)P;
+	char* source = (char*)P + F->Displ;
 	double result = 0.0;
 	double r;
 
 	if ((F->Flg & f_Stored) != 0) {
-		if (CFile->Typ == 'D') result = _RforD(F, &source[F->Displ]);
+		if (CFile->Typ == 'D') result = _RforD(F, source);
 		else switch (F->Typ) {
-		case 'F': {
-			r = RealFromFix(&source[F->Displ], F->NBytes);
-			if ((F->Flg & f_Comma) == 0) result = r / Power10[F->M]; 
-			else result = r; 
+		case 'F': { // FIX CISLO (M,N)
+			r = RealFromFix(source, F->NBytes);
+			if ((F->Flg & f_Comma) == 0) result = r / Power10[F->M];
+			else result = r;
 			break;
 		}
-		case 'D': {
+		case 'D': { // DATUM DD.MM.YY
 			if (CFile->Typ == '8') {
-				if (*(integer*)&source[F->Displ] == 0) result = 0.0;
-				else result = *(integer*)&source[F->Displ] + FirstDate;
+				if (*(integer*)source == 0) result = 0.0;
+				else result = *(integer*)source + FirstDate;
 			}
-			else goto label1; 
+			else goto label1;
 			break;
 		}
 		case 'R': {
 		label1:
-			if (IsNullValue(&source[F->Displ], F->NBytes)) result = 0;
-			else { 
-				result = Real48ToDouble(&source[F->Displ]); 
+			if (IsNullValue(source, F->NBytes)) result = 0;
+			else {
+				result = Real48ToDouble(source);
 			}
 		}
 		}
@@ -1369,14 +1371,12 @@ double _R(FieldDPtr F)
 }
 
 // vrací BOOL ze záznamu CRecPtr na pozici F->Displ
-bool _B(FieldDPtr F)
+bool _B(FieldDescr* F)
 {
-	bool result;
+	bool result = false;
 	void* p = CRecPtr;
-	//char* source = (char*)p;
 	unsigned char* CP = (unsigned char*)p + F->Displ;
 	if ((F->Flg & f_Stored) != 0) {
-		//*O += F->Displ;
 		if (CFile->Typ == 'D') result = *CP == 'Y' || *CP == 'y' || *CP == 'T' || *CP == 't';
 		else if ((*CP == '\0') || (*CP == 0xFF)) result = false;
 		else result = true;
@@ -1385,7 +1385,7 @@ bool _B(FieldDPtr F)
 	return result;
 }
 
-void R_(FieldDPtr F, double R)
+void R_(FieldDescr* F, double R)
 {
 	void* p = CRecPtr;
 	BYTE* bp = (BYTE*)p;
@@ -1407,7 +1407,7 @@ void R_(FieldDPtr F, double R)
 				WORD tmp = F->NBytes;
 				FixFromReal(R, &bp[F->Displ], tmp);
 				F->NBytes = (BYTE)tmp;
-			} 
+			}
 			break;
 		}
 		case 'D': {
@@ -1423,28 +1423,28 @@ void R_(FieldDPtr F, double R)
 				break;
 			}
 			default: {
-				p = &R; 
-				break; 
+				p = &R;
+				break;
 			}
 			}
 			break;
 		}
-		case 'R': { 
-			p = &R; 
-			break; 
+		case 'R': {
+			p = &R;
+			break;
 		}
 		}
 	}
 }
 
-void B_(FieldDPtr F, bool B)
+void B_(FieldDescr* F, bool B)
 {
 	void* p = CRecPtr;
 	char* pB = (char*)p + F->Displ;
 	if ((F->Typ == 'B') && ((F->Flg & f_Stored) != 0)) {
 		if (CFile->Typ == 'D')
 		{
-			if (B) *pB = 'T'; 
+			if (B) *pB = 'T';
 			else *pB = 'F';
 		}
 		else *pB = B;
@@ -1483,9 +1483,9 @@ bool LinkUpw(LinkDPtr LD, longint& N, bool WithT)
 				case 'B': { b = _B(F); CFile = ToFD; CRecPtr = RecPtr; B_(F2, b); break; }
 				}
 			Arg = (KeyFldD*)Arg->Chain; KF = (KeyFldD*)KF->Chain;
-		}
+				}
 		CFile = ToFD; CRecPtr = RecPtr;
-	}
+		}
 label2:
 	auto result = LU;
 #ifdef FandSQL
@@ -1523,16 +1523,16 @@ label1:
 
 void ClearRecSpace(void* p)
 {
-	FieldDescr* f = nullptr; 
+	FieldDescr* f = nullptr;
 	void* cr = nullptr;
 	if (CFile->TF != nullptr) {
-		cr = CRecPtr; 
+		cr = CRecPtr;
 		CRecPtr = p;
 		if (HasTWorkFlag()) {
-			f = CFile->FldD; 
+			f = CFile->FldD;
 			while (f != nullptr) {
 				if (((f->Flg & f_Stored) != 0) && (f->Typ == 'T')) {
-					TWork.Delete(_T(f)); 
+					TWork.Delete(_T(f));
 					T_(f, 0);
 				}
 				f = (FieldDescr*)f->Chain;
@@ -1797,10 +1797,10 @@ void TFile::SetEmpty()
 
 void TFile::Create()
 {
-	Handle = OpenH(_isoverwritefile, Exclusive); 
+	Handle = OpenH(_isoverwritefile, Exclusive);
 	TestErr();
-	IRec = 1; LicenseNr = 0; 
-	FillChar(PwCode, 40, '@'); 
+	IRec = 1; LicenseNr = 0;
+	FillChar(PwCode, 40, '@');
 	Code(PwCode, 40);
 	SetEmpty();
 }
@@ -2069,7 +2069,7 @@ LocVar* LocVarBlkD::GetRoot()
 }
 
 LocVar* LocVarBlkD::FindByName(std::string Name)
-{	
+{
 	for (auto& i : vLocVar)
 	{
 		if (SEquUpcase(Name, i->Name)) return i;
@@ -2425,8 +2425,8 @@ bool XKey::Search(XString& XX, bool AfterEqu, longint& RecNr)
 	{
 		p = new XPage(); // (XPage*)GetStore(XPageSize);
 	label1:
-		XPathN = 1; 
-		longint page = IndexRoot; 
+		XPathN = 1;
+		longint page = IndexRoot;
 		AfterEqu = AfterEqu && Duplic;
 		XPath[XPathN].Page = page;
 		XF()->RdPage(p, page);
@@ -2513,11 +2513,11 @@ longint XKey::PathToNr()
 void XKey::NrToPath(longint I)
 {
 	XPage* p = new XPage(); // (XPage*)GetStore(XPageSize);
-	longint page = IndexRoot; 
+	longint page = IndexRoot;
 	XPathN = 0;
 label1:
-	XF()->RdPage(p, page); 
-	XPathN++; 
+	XF()->RdPage(p, page);
+	XPathN++;
 	XPath[XPathN].Page = page;
 	if (p->IsLeaf) {
 		if (I > p->NItems + 1) XF()->Err(837);
@@ -2527,10 +2527,11 @@ label1:
 	}
 	XItemPtr x = XItemPtr(p->A);
 	for (WORD j = 1; j < p->NItems; j++) {
-		if (I <= x->GetN()) { 
-			XPath[XPathN].I = j; 
-			page = x->DownPage; 
-			goto label1; }
+		if (I <= x->GetN()) {
+			XPath[XPathN].I = j;
+			page = x->DownPage;
+			goto label1;
+		}
 		I -= x->GetN();
 		x = x->Next(oNotLeaf);
 	}
@@ -2817,17 +2818,17 @@ bool XKey::Delete(longint RecNr)
 
 void XWKey::Open(KeyFldD* KF, bool Dupl, bool Intvl)
 {
-	KFlds = KF; 
-	Duplic = Dupl; 
-	InWork = true; 
-	Intervaltest = Intvl; 
+	KFlds = KF;
+	Duplic = Dupl;
+	InWork = true;
+	Intervaltest = Intvl;
 	NR = 0;
 	//XPage* p = (XPage*)GetStore(sizeof(p)); 
 	XPage* p = new XPage();
 	IndexRoot = XF()->NewPage(p);
-	p->IsLeaf = true; 
-	XF()->WrPage(p, IndexRoot); 
-	ReleaseStore(p); 
+	p->IsLeaf = true;
+	XF()->WrPage(p, IndexRoot);
+	ReleaseStore(p);
 	IndexLen = 0;
 	while (KF != nullptr) {
 		IndexLen += KF->FldD->NBytes;
@@ -2837,13 +2838,13 @@ void XWKey::Open(KeyFldD* KF, bool Dupl, bool Intvl)
 
 void XWKey::Close()
 {
-	ReleaseTree(IndexRoot, true); 
+	ReleaseTree(IndexRoot, true);
 	IndexRoot = 0;
 }
 
 void XWKey::Release()
 {
-	ReleaseTree(IndexRoot, false); 
+	ReleaseTree(IndexRoot, false);
 	NR = 0;
 }
 
@@ -3049,17 +3050,17 @@ void XScan::Reset(FrmlElem* ABool, bool SQLFilter)
 	switch (Kind) {
 	case 0: NRecs = CFile->NRecs; break;
 	case 1:
-	case 3: { 
+	case 3: {
 		if (Key != nullptr) {
 			if (!Key->InWork) TestXFExist();
 			NRecs = Key->NRecs();
 		}
-		break; 
+		break;
 	}
 	case 2: {
 		if (!Key->InWork) TestXFExist();
-		CompKIFrml(Key, KIRoot, true); 
-		NRecs = 0; 
+		CompKIFrml(Key, KIRoot, true);
+		NRecs = 0;
 		k = KIRoot;
 		while (k != nullptr) {
 			XString a1;
@@ -3183,7 +3184,7 @@ void XScan::ResetSQLTxt(FrmlPtr Z)
 void XScan::ResetLV(void* aRP)
 {
 	Strm = aRP; Kind = 5; NRecs = 1;
-}
+	}
 
 void XScan::Close()
 {
@@ -3209,7 +3210,7 @@ void XScan::SeekRec(longint I)
 			EOF = AtEnd; IRec = 0; NRecs = 0x20000000;
 		}
 		return;
-	}
+}
 #endif
 	if ((Kind == 2) && (OwnerLV != nullptr)) {
 		IRec = 0;
@@ -3277,13 +3278,13 @@ integer CompStr(pstring& S1, pstring& S2)
 WORD CmpLxStr(char* p1, WORD len1, char* p2, WORD len2)
 {
 	if (len1 > 0) {
-		for (size_t i = len1 - 1; i > 0; i--) { 
+		for (size_t i = len1 - 1; i > 0; i--) {
 			if (p1[i] == ' ') { len1--; continue; }
 			break;
 		}
 	}
 	if (len2 > 0) {
-		for (size_t i = len2 - 1; i > 0; i--) { 
+		for (size_t i = len2 - 1; i > 0; i--) {
 			if (p2[i] == ' ') { len1--; continue; }
 			break;
 		}
@@ -3428,8 +3429,8 @@ label1:
 			break;
 		}
 		}
+		}
 	}
-}
 
 void XScan::SeekOnKI(longint I)
 {
