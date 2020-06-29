@@ -307,7 +307,7 @@ void RunMsgOn(char C, longint N)
 	CM->W = PushW1(1, TxtRows, 8, TxtRows, true, true);
 	TextAttr = screen.colors.zNorm;
 
-	screen.ScrFormatWrStyledText(1, 1, TextAttr, "%c%c", 0x10 /*0xAF*/, C);
+	screen.ScrFormatWrStyledText(1, 1, TextAttr, "%c%c", 0xAF, C);
 	if (N == 0) screen.ScrFormatWrStyledText(3, 1, TextAttr, "    %c", 0xAE /*0x11*/);
 	else screen.ScrFormatWrStyledText(3, 1, TextAttr, "  0%c%c", '%', 0xAE /*0x11*/);
 

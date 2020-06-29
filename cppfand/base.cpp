@@ -12,6 +12,7 @@
 #include "oaccess.h"
 #include <ctime>
 #include <iostream>
+#include "../datafiles/datafiles.h"
 
 /*const*/ 
 char Version[] = { '4', '.', '2', '0', '\0' };
@@ -899,6 +900,10 @@ label1:
 
 	// pøidání FILE* od vektoru kvùli 'WORD OvrHandle = h - 1;'
 	vOverHandle.push_back(nFile);
+#ifdef _DEBUG
+	DataFile f = DataFile(CFile->Name, CFile, nFile);
+	filesMap.insert(std::pair<std::string, DataFile>(CPath, f));
+#endif
 	return nFile;
 }
 
@@ -965,6 +970,10 @@ void TruncH(FILE* handle, longint N)
 
 void CloseH(FILE* handle)
 {
+	auto it = filesMap.find(CFile->FullName);
+	if (it != filesMap.end()) {
+		it->second.SetClose();
+	}
 	if (handle == nullptr) return;
 	// uzavøe soubor
 	HandleError = fclose(handle);
