@@ -316,33 +316,30 @@ void Pack(void* NumArr, void* PackArr, WORD NoDigits)
 
 double RealFromFix(void* FixNo, WORD FLen)
 {
-	unsigned char ff[8]{ 0 };
+	unsigned char ff[9]{ 0 };
+	unsigned char rr[9]{ 0 };
 	unsigned char* fixno = (unsigned char*)FixNo;
-	double r;
-	unsigned char* rr = (unsigned char*)&r;
-
-	memset(rr, 0, sizeof(r));
-	memcpy(ff, fixno, FLen);
-	bool neg = (*fixno & 0x80 != 0); // zaporne cislo urcuje 1 bit
-
+	memcpy(ff + 1, FixNo, FLen); // zacneme na indexu 1 podle Pascal. kodu
+	
+	bool neg = ((ff[1] & 0x80) != 0); // zaporne cislo urcuje 1 bit
 	if (neg) {
-		if (ff[0] == 0x80) {
-			for (size_t i = 1; i <= FLen; i++) {
+		if (ff[1] == 0x80) {
+			for (size_t i = 2; i <= FLen; i++) {
 				if (ff[i] != 0x00) break;
-				return 0;
+				return 0.0;
 			}
 		}
-		for (size_t i = 0; i < FLen; i++) ff[i] = ~ff[i];
-		ff[FLen - 1]++;
-		WORD I = FLen - 1;
+		for (size_t i = 1; i <= FLen; i++) ff[i] = ~ff[i];
+		ff[FLen]++;
+		WORD I = FLen;
 		while (ff[I] == 0) {
 			I--;
-			if (I >= 0) ff[I]++;
+			if (I > 0) ff[I]++;
 		}
 	}
-	integer first = 0;
+	integer first = 1;
 	while (ff[first] == 0) first++;
-	if (first > FLen - 1) return 0;
+	if (first > FLen) return 0;
 
 	integer lef = 0;
 	unsigned char b = ff[first];
@@ -352,23 +349,27 @@ double RealFromFix(void* FixNo, WORD FLen)
 	}
 	ff[first] = ff[first] & (0x7F >> lef);
 	integer exp = ((FLen - first) << 3) - lef + 1030;
-	if (lef == 6) first++;
+	if (lef == 7) first++;
 	lef = (lef + 5) & 0x07;
-	integer rig = 7 - lef;
-	integer i = sizeof(double) - 2;
-	if ((rig <= 3) && (first <= FLen)) {
+	integer rig = 8 - lef;
+	integer i = 8 - 1; // velikost double - 1
+	if ((rig <= 4) && (first <= FLen)) {
 		rr[i] = ff[first] >> rig;
 		i--;
 	}
-	while ((i >= 0) && (first <= FLen)) {
-		rr[i] = ff[first] >> rig;
+	while ((i > 0) && (first < FLen)) {
+		rr[i] = (ff[first] << lef) + (ff[first+1] >> rig);
 		i--;
+		first++;
 	}
-	if ((first == FLen) && (i > 0)) rr[i] = ff[first] << lef;
-	rr[DblS - 2] = rr[DblS - 2] & 0x0F + ((exp & 0x0F) << 4);
-	rr[DblS - 1] = exp >> 4;
-	if (neg) rr[DblS - 1] = rr[DblS - 1] || 0x80;
-	return r;
+	if ((first == FLen) && (i > 0)) {
+		unsigned char t = ff[first] << lef;
+		rr[i] = t;
+	}
+	rr[DblS - 1] = (rr[DblS - 1] & 0x0F) + ((exp & 0x0F) << 4);
+	rr[DblS] = exp >> 4;
+	if (neg) rr[DblS] = rr[DblS] || 0x80;
+	return *(double*)&rr[1];
 }
 
 void FixFromReal(double r, void* FixNo, WORD& flen)

@@ -1203,7 +1203,6 @@ void CallProcedure(Instr_proc* PD)
 	SetInpTT(PD->PPos, true);
 #ifdef _DEBUG
 	std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
-	if (srcCode.find(""))
 #endif
 	ReadProcHead();
 	n = LVBD.NParam;
@@ -1301,7 +1300,6 @@ void CallProcedure(Instr_proc* PD)
 	it0 = LVBD.vLocVar.begin();
 	i = 1;
 	while (it0 != LVBD.vLocVar.end()) {
-		// projdeme navratove hodnoty (navratova hodnota funkce + VAR parametry)
 		if ((*it0)->IsRetPar) {
 			z = PD->TArg[i].Frml;
 			switch ((*it0)->FTyp) {

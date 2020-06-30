@@ -790,7 +790,8 @@ void RdLocDcl(LocVarBlkD* LVB, bool IsParList, bool WithRecVar, char CTyp)
 label1:
 	rp = false;
 	if (IsParList && IsKeyWord("VAR")) {
-		if (CTyp == 'D') OldError(174); rp = true;
+		if (CTyp == 'D') OldError(174); 
+		rp = true;
 	}
 	newVars.clear(); // zde se budou ukladat vsechny promenne stejneho typu oddelene carkami
 	newVars.push_back(RdVarName(LVB, IsParList)); // ulozime novou promennou do vektoru pro jeji dalsi nastaveni

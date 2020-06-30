@@ -2509,7 +2509,9 @@ void ReadProcHead()
 		RdLocDcl(&LVBD, true, true, 'P');
 		Accept(')');
 	}
-	if (IsKeyWord("VAR")) RdLocDcl(&LVBD, false, true, 'P');
+	if (IsKeyWord("VAR")) {
+		RdLocDcl(&LVBD, false, true, 'P');
+	}
 }
 
 Instr* ReadProcBody()

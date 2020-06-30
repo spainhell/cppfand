@@ -187,7 +187,9 @@ void ReadMerge()
 	ResetCompilePars();
 	RdLex();
 	ResetLVBD();
-	if (IsKeyWord("VAR")) RdLocDcl(&LVBD, false, false, 'M');
+	if (IsKeyWord("VAR")) {
+		RdLocDcl(&LVBD, false, false, 'M');
+	}
 	WhatToRd = 'I';
 	ReadingOutpBool = false; WasSqlFile = false;
 	Ii = 0;
