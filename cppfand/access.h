@@ -737,17 +737,22 @@ void ResetCompilePars(); // r953 - posledni fce
 //void DirMinusBackslash(pstring& D);
 
 
+// * CTENI A ZAPISOVANI SOUBORU *
 void ReadRec(longint N);
+void ReadRec(FileD* file, longint N, void* record);
+void WriteRec(longint N);
+void WriteRec(FileD* file, longint N, void* record);
+
 // * NACITANI ZE SOUBORU / Z FRMLELEM *
 bool _B(FieldDescr* F);
 double _R(FieldDescr* F);
 pstring _ShortS(FieldDescr* F);
 LongStr* _LongS(FieldDescr* F);
 longint _T(FieldDescr* F);
-// * UKLADANI DO SOUBORU *
+// * UKLADANI DO SOUBORU * / DO FRMLELEM *
 void B_(FieldDescr* F, bool B);
 void R_(FieldDescr* F, double R);
-void S_(FieldDescr* F, pstring S);
+void S_(FieldDescr* F, pstring S, void* record = nullptr);
 void LongS_(FieldDescr* F, LongStr* S);
 void T_(FieldDescr* F, longint Pos);
 
@@ -756,7 +761,6 @@ void RecallRec(longint RecNr);
 bool LinkUpw(LinkDPtr LD, longint& N, bool WithT);
 bool LinkLastRec(FileDPtr FD, longint& N, bool WithT);
 void IncNRecs(longint N);
-void WriteRec(longint N);
 bool TryLMode(LockMode Mode, LockMode& OldMode, WORD Kind);
 void OldLMode(LockMode Mode);
 LockMode NewLMode(LockMode Mode);

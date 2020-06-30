@@ -606,13 +606,25 @@ pstring RdCatField(WORD CatIRec, FieldDPtr CatF)
 
 void WrCatField(WORD CatIRec, FieldDescr* CatF, pstring Txt)
 {
-	FileDPtr CF; void* CR;
-	CF = CFile; CR = CRecPtr; CFile = CatFD; CRecPtr = GetRecSpace();
+	FileD* CF = CFile; 
+	void* CR = CRecPtr; 
+	CFile = CatFD; 
+	CRecPtr = GetRecSpace();
 	ReadRec(CatIRec);
 	S_(CatF, Txt);
 	WriteRec(CatIRec);
 	ReleaseStore(CRecPtr);
-	CFile = CF; CRecPtr = CR;
+	CFile = CF; 
+	CRecPtr = CR;
+}
+
+void WrCatField(FileD* catFD, WORD CatIRec, FieldDescr* CatF, const std::string& Txt)
+{
+	BYTE* record = new BYTE[catFD->RecLen];
+	ReadRec(catFD, CatIRec, record);
+	S_(CatF, Txt, record);
+	WriteRec(catFD, CatIRec, record);
+	delete[] record;
 }
 
 void RdCatPathVol(WORD CatIRec)

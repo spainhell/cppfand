@@ -805,11 +805,24 @@ void ReadRec(longint N)
 		(N - 1) * CFile->RecLen + CFile->FrstDispl, CFile->RecLen, CRecPtr);
 }
 
+void ReadRec(FileD* file, longint N, void* record)
+{
+	RdWrCache(true, file->Handle, file->NotCached(), 
+		(N - 1) * file->RecLen + file->FrstDispl, file->RecLen, record);
+}
+
 void WriteRec(longint N)
 {
 	RdWrCache(false, CFile->Handle, CFile->NotCached(),
 		(N - 1) * CFile->RecLen + CFile->FrstDispl, CFile->RecLen, CRecPtr);
 	CFile->WasWrRec = true;
+}
+
+void WriteRec(FileD* file, longint N, void* record)
+{
+	RdWrCache(false, file->Handle, file->NotCached(),
+		(N - 1) * file->RecLen + file->FrstDispl, file->RecLen, record);
+	file->WasWrRec = true;
 }
 
 void RecallRec(longint RecNr)
@@ -1071,14 +1084,16 @@ void LongS_(FieldDescr* F, LongStr* S)
 	}
 	}
 
-void S_(FieldDescr* F, pstring S)
+void S_(FieldDescr* F, pstring S, void* record)
 {
 	const BYTE LeftJust = 1;
 	WORD offset = 0;
+	BYTE* pRec = nullptr;
 
 	if ((F->Flg & f_Stored) != 0)
 	{
-		BYTE* pRec = (BYTE*)CRecPtr;
+		if (record == nullptr) { pRec = (BYTE*)CRecPtr; }
+		else { pRec = (BYTE*)record; }
 		offset += F->Displ;
 		integer L = F->L;
 		integer M = F->M;

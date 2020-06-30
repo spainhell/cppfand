@@ -845,13 +845,13 @@ void PutTxt(Instr_puttxt* PD)
 	CloseH(h);
 }
 
+// ulozi do souboru hodnotu promenne
 void AssgnCatFld(Instr_assign* PD)
 {
-	/* !!! with PD^ do!!! */
-
 	CFile = PD->FD3;
 	if (CFile != nullptr) CloseFile();
-	WrCatField(PD->CatIRec, PD->CatFld, RunShortStr(PD->Frml3));
+	std::string data = RunShortStr(PD->Frml3);
+	WrCatField(CatFD, PD->CatIRec, PD->CatFld, data);
 }
 
 void AssgnAccRight(Instr_assign* PD)
@@ -1203,7 +1203,9 @@ void CallProcedure(Instr_proc* PD)
 	SetInpTT(PD->PPos, true);
 #ifdef _DEBUG
 	std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
-	if (srcCode.find(""))
+	if (srcCode.find("PDFTISK1.Volume") != std::string::npos) {
+		printf(" ");
+	}
 #endif
 	ReadProcHead();
 	n = LVBD.NParam;
