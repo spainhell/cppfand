@@ -19,6 +19,7 @@ double Owned(FrmlPtr Bool, FrmlPtr Sum, LinkDPtr LD);
 integer CompBool(bool B1, bool B2);
 integer CompReal(double R1, double R2, integer M); // r42
 LongStr* CopyToLongStr(pstring& SS);
+LongStr* CopyToLongStr(std::string& SS);
 pstring LeadChar(char C, pstring S); // r69
 pstring TrailChar(char C, pstring s); // r73
 std::string CopyLine(std::string& S, WORD N, WORD M);

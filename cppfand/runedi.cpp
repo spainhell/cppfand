@@ -1384,17 +1384,31 @@ void UpdMemberRef(void* POld, void* PNew)
 void WrJournal(char Upd, void* RP, double Time)
 {
 	WORD* RPOfs = (WORD*)RP; WORD l; FieldDPtr F; longint n; LockMode md;
-	if (E->Journal == nullptr) goto label1;
-	l = CFile->RecLen; n = AbsRecNr(CRec());
-	if ((CFile->XF != nullptr)) { RPOfs++; l--; }
-	CFile = E->Journal; CRecPtr = GetRecSpace(); F = CFile->FldD;
-	S_(F, Upd); F = (FieldDescr*)F->Chain; R_(F, int(n)); F = (FieldDescr*)F->Chain;
-	R_(F, int(UserCode)); F = (FieldDescr*)F->Chain; R_(F, Time); F = (FieldDescr*)F->Chain;
-	Move(RP, &CRecPtr + F->Displ, l);
-	md = NewLMode(CrMode); IncNRecs(1); WriteRec(CFile->NRecs); OldLMode(md);
-	ReleaseStore(CRecPtr); CFile = E->FD; CRecPtr = E->NewRecPtr;
-label1:
-	UpdCount++; if (UpdCount == E->SaveAfter) { SaveFiles(); UpdCount = 0; }
+	if (E->Journal != nullptr) {
+		l = CFile->RecLen;
+		n = AbsRecNr(CRec());
+		if ((CFile->XF != nullptr)) { RPOfs++; l--; }
+		CFile = E->Journal;
+		CRecPtr = GetRecSpace();
+		F = CFile->FldD;
+		std::string UpdStr = std::string(Upd, 1);
+		S_(F, UpdStr);
+		F = (FieldDescr*)F->Chain;
+		R_(F, int(n));
+		F = (FieldDescr*)F->Chain;
+		R_(F, int(UserCode));
+		F = (FieldDescr*)F->Chain; R_(F, Time);
+		F = (FieldDescr*)F->Chain;
+		Move(RP, &CRecPtr + F->Displ, l);
+		md = NewLMode(CrMode);
+		IncNRecs(1);
+		WriteRec(CFile->NRecs);
+		OldLMode(md);
+		ReleaseStore(CRecPtr);
+		CFile = E->FD; CRecPtr = E->NewRecPtr;
+	}
+	UpdCount++;
+	if (UpdCount == E->SaveAfter) { SaveFiles(); UpdCount = 0; }
 }
 
 bool LockForMemb(FileDPtr FD, WORD Kind, LockMode NewMd, LockMode& md)

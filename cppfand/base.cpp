@@ -839,6 +839,11 @@ filePtr OpenH(FileOpenMode Mode, FileUseMode UM)
 	// pøi 'IsNetCVol' se chová jinak
 	// RdOnly $20, RdShared $40, Shared $42, Exclusive $12
 
+	if (CPath == "C:\\UCTO2020\\UCTO.000")
+	{
+		printf("");
+	}
+	
 	pstring s;
 
 	pstring txt[] = { "Clos", "OpRd", "OpRs", "OpSh", "OpEx" };
@@ -891,7 +896,8 @@ label1:
 
 	else if (HandleError == ENOENT) // No such file or directory
 	{
-		if (Mode == _isoldnewfile)
+		
+		if (Mode == _isoldfile || Mode == _isoldnewfile)
 		{
 			Mode = _isnewfile;
 			goto label1;

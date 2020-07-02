@@ -752,14 +752,14 @@ longint _T(FieldDescr* F);
 // * UKLADANI DO SOUBORU * / DO FRMLELEM *
 void B_(FieldDescr* F, bool B);
 void R_(FieldDescr* F, double R);
-void S_(FieldDescr* F, pstring S, void* record = nullptr);
+void S_(FieldDescr* F, std::string S, void* record = nullptr);
 void LongS_(FieldDescr* F, LongStr* S);
 void T_(FieldDescr* F, longint Pos);
 
 void CreateRec(longint N);
 void RecallRec(longint RecNr);
 bool LinkUpw(LinkDPtr LD, longint& N, bool WithT);
-bool LinkLastRec(FileDPtr FD, longint& N, bool WithT);
+bool LinkLastRec(FileD* FD, longint& N, bool WithT);
 void IncNRecs(longint N);
 bool TryLMode(LockMode Mode, LockMode& OldMode, WORD Kind);
 void OldLMode(LockMode Mode);

@@ -67,11 +67,19 @@ integer CompReal(double R1, double R2, integer M)
 
 LongStr* CopyToLongStr(pstring& SS)
 {
-	WORD l;
-	l = SS.length();
+	WORD l = SS.length();
 	LongStr* s = new LongStr(l);
 	s->LL = l;
 	Move(&SS[1], s->A, l);
+	return s;
+}
+
+LongStr* CopyToLongStr(std::string& SS)
+{
+	WORD l = SS.length();
+	LongStr* s = new LongStr(l);
+	s->LL = l;
+	memcpy(s->A, SS.c_str(), l);
 	return s;
 }
 
