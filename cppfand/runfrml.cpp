@@ -142,7 +142,7 @@ double RunRealStr(FrmlElem* X)
 		auto iX = (FrmlElem6*)X;
 		S = RunLongStr(iX->PP1);
 		N = 0;
-		if (S->LL > 0) N = S->A[1];
+		if (S->LL > 0) N = S->A[0];
 		result = N;
 		ReleaseStore(S);
 		break;
@@ -955,7 +955,7 @@ label1:
 		if (X->Op == _nrecs) RecNo = XNRecs(CFile->Keys);
 		else RecNo = CFile->NRecs;
 		OldLMode(md); 
-		result = int(RecNo); 
+		result = (int)RecNo; 
 		CFile = cf;
 		break;
 	}
@@ -1007,9 +1007,9 @@ label1:
 		break;
 	}
 	case _link: result = LinkProc((FrmlElem15*)X); break;
-	case _memavail: result = int(StoreAvail); break;
-	case _maxcol: result = int(TxtCols); break;
-	case _maxrow: result = int(TxtRows); break;
+	case _memavail: result = StoreAvail(); break;
+	case _maxcol: result = TxtCols; break;
+	case _maxrow: result = TxtRows; break;
 #ifdef FandGraph
 	case _getmaxx: if (IsGraphMode) {
 		GetViewSettings(vp); result = vp.x2 - vp.x1;
@@ -1666,7 +1666,7 @@ LongStr* RunS(FrmlElem* Z)
 	switch (Z->Op) {
 	case _char: { 
 		s[0] = 1; 
-		s[1] = char(trunc(RunReal(iZ0->P1))); 
+		s[1] = trunc(RunReal(iZ0->P1)); 
 		break; 
 	}
 	case _strdate1: {

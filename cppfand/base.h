@@ -112,7 +112,7 @@ void* GetZStore(WORD Size);
 void MarkStore(void* p);
 void ReleaseStore(void* pointer);
 void ReleaseAfterLongStr(void* p);
-longint StoreAvail();
+int StoreAvail();
 void* GetStore2(WORD Size);
 void* GetZStore2(WORD Size);
 pstring* StoreStr(pstring S);

@@ -181,16 +181,16 @@ int SeekH(FILE* handle, longint pos)
 
 WORD ReadH(FILE* handle, WORD bytes, void* buffer)
 {
-	if (CFile != nullptr && CFile->Name == "DEALER")
+	//if (CFile != nullptr && CFile->Name == "DEALER")
+	//{
+	//	printf("ReadH() r160: DEALER\n");
+	//}
+	if ((uintptr_t)handle == 0x0117d388)
 	{
-		printf("ReadH() r160: DEALER\n");
+		printf("");
 	}
 	size_t bufferSize = bytes; // sizeof(buffer);
 	return fread_s(buffer, bufferSize, 1, bytes, handle);
-	//return ReadH(handle, bytes, buffer);
-	// read from file INT
-	// bytes - poèet byte k pøeètení
-	// vrací - poèet skuteènì pøeètených
 }
 
 void RdMsg(integer N)
@@ -839,7 +839,7 @@ filePtr OpenH(FileOpenMode Mode, FileUseMode UM)
 	// pøi 'IsNetCVol' se chová jinak
 	// RdOnly $20, RdShared $40, Shared $42, Exclusive $12
 
-	if (CPath == "C:\\UCTO2020\\UCTO.000")
+	if (CPath == "C:\\UCTO2020\\{STAN}\\PARAM3.T00")
 	{
 		printf("");
 	}
@@ -929,6 +929,10 @@ WORD ReadLongH(filePtr handle, longint bytes, void* buffer)
 
 void WriteLongH(filePtr handle, longint bytes, void* buffer)
 {
+	if (CFile != nullptr && CFile->Name == "PARAM3")
+	{
+		printf("");
+	}
 	if (handle == nullptr) RunError(706);
 	if (bytes <= 0) return;
 	// uloží do souboru daný poèet Bytù z bufferu
@@ -938,6 +942,10 @@ void WriteLongH(filePtr handle, longint bytes, void* buffer)
 
 void WriteH(FILE* handle, WORD bytes, void* buffer)
 {
+	if ((uintptr_t)handle == 0x0117d388)
+	{
+		printf("");
+	}
 	WriteLongH(handle, bytes, buffer);
 }
 
@@ -1457,9 +1465,9 @@ void ReleaseBoth(void* p, void* p2)
 	ReleaseStore(p); ReleaseStore2(p2);
 }
 
-longint StoreAvail()
+int StoreAvail()
 {
-	return /*512 * */1024 * 1024;
+	return 512 * 1024;
 }
 
 void AlignLongStr()

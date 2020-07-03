@@ -344,16 +344,16 @@ void FixFromReal(double r, void* FixNo, WORD FLen)
 {
 	unsigned char ff[9]{ 0 };
 	unsigned char rr[9]{ 0 };
-	memcpy(ff + 1, FixNo, FLen); // zacneme na indexu 1 podle Pascal. kodu
-	//if (r > 0) r += 0.5;
-	//else r -= 0.5;
-	memcpy(rr + 1, &FixNo, 8);
+	// memcpy(ff + 1, FixNo, FLen); // zacneme na indexu 1 podle Pascal. kodu
+	if (r > 0) r += 0.5;
+	else r -= 0.5;
+	memcpy(rr + 1, &r, 8);
 	bool neg = ((rr[8] & 0x80) != 0); // zaporne cislo urcuje 1 bit
 	integer exp = (rr[8 - 1] >> 4) + (WORD)((rr[8] & 0x7F) << 4);
 	if (exp < 2047)
 	{
 		rr[8] = 0;
-		rr[8 - 1] = rr[8 - 1] & 0x7F;
+		rr[8 - 1] = rr[8 - 1] & 0x0F;
 		if (exp > 0) rr[8 - 1] = rr[8 - 1] | 0x10;
 		else exp++;
 		exp -= 1023;
@@ -362,7 +362,7 @@ void FixFromReal(double r, void* FixNo, WORD FLen)
 		longint rig = 8 - lef;
 		if ((exp & 0x0007) > 3) exp += 4;
 		longint first = 7 - (exp >> 3);
-		WORD i = FLen;
+		int i = FLen;
 		while ((first < 8) && (i > 0)) {
 			ff[i] = (rr[first] >> rig) + (rr[first + 1] << lef);
 			i--;
@@ -379,7 +379,7 @@ void FixFromReal(double r, void* FixNo, WORD FLen)
 			}
 		}
 	}
-	memcpy(FixNo, &ff[1], 8);
+	memcpy(FixNo, &ff[1], FLen);
 }
 
 #ifdef FandNetV
@@ -1155,7 +1155,7 @@ void AsgnParFldFrml(FileD* FD, FieldDescr* F, FrmlElem* Z, bool Ad)
 #endif
 	{
 		md = NewLMode(WrMode);
-		if (!LinkLastRec(CFile, N, true)) { -
+		if (!LinkLastRec(CFile, N, true)) {
 			IncNRecs(1);
 			WriteRec(CFile, N, CRecPtr);
 		}
@@ -1367,47 +1367,50 @@ bool _B(FieldDescr* F)
 void R_(FieldDescr* F, double R)
 {
 	void* p = CRecPtr;
-	BYTE* bp = (BYTE*)p;
+	BYTE* bp = (BYTE*)p + F->Displ;
 	pstring s; WORD m = 0; longint l = 0;
-	//WORD* O = (WORD*)p;
-	//integer* IP = (integer*)p;
 	if ((F->Flg & f_Stored) != 0) {
-		//O += F->Displ;
 		m = F->M;
 		switch (F->Typ) {
 		case 'F': {
 			if (CFile->Typ == 'D') {
 				if ((F->Flg & f_Comma) != 0) R = R / Power10[m];
 				str(F->NBytes, s);
-				Move(&s[1], &bp[F->Displ], F->NBytes);
+				Move(&s[1], bp, F->NBytes);
 			}
 			else {
 				if ((F->Flg & f_Comma) == 0) R = R * Power10[m];
-				FixFromReal(R, &bp[F->Displ], F->NBytes);
+				FixFromReal(R, bp, F->NBytes);
 			}
 			break;
 		}
 		case 'D': {
 			switch (CFile->Typ) {
 			case '8': {
-				if (trunc(R) == 0) *(long*)&bp[F->Displ] = 0;
-				else *(long*)&bp[F->Displ] = trunc(R - FirstDate);
+				if (trunc(R) == 0) *(long*)&bp = 0;
+				else *(long*)bp = trunc(R - FirstDate);
 				break;
 			}
 			case 'D': {
 				s = StrDate(R, "YYYYMMDD");
-				Move(&s[1], &bp[F->Displ], 8);
+				Move(&s[1], bp, 8);
 				break;
 			}
 			default: {
-				p = &R;
+				auto r48 = DoubleToReal48(R);
+				for (size_t i = 0; i < 6; i++) {
+					bp[i] = r48[i];
+				}
 				break;
 			}
 			}
 			break;
 		}
 		case 'R': {
-			p = &R;
+			auto r48 = DoubleToReal48(R);
+			for (size_t i = 0; i < 6; i++) {
+				bp[i] = r48[i];
+			}
 			break;
 		}
 		}
@@ -1610,7 +1613,6 @@ void RandArrayByBytes(void* arr, size_t len)
 
 void TFile::RdPrefix(bool Chk)
 {
-
 	TT1Page T;
 	BYTE* TX = (BYTE*)&T;
 	longint* TNxtAvailPage = (longint*)&T; /* .DBT */
@@ -1738,7 +1740,9 @@ void TFile::WrPrefix()
 	}
 	//FillChar(&T, 512, '@');
 	Move(PwCode, Pw, 40); Code(Pw, 40); srand(RS);
-	if (LicenseNr != 0) for (i = 1; i < 20; i++) Pw[i] = char(Random(255));
+	if (LicenseNr != 0) 
+		for (i = 1; i < 20; i++) 
+			Pw[i] = (char)Random(255);
 	n = 0x4000;
 	// TODO: T.Time = Time;
 	Move(Pw, T.PwNew, 40);
