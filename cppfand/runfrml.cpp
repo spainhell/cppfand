@@ -432,9 +432,9 @@ std::string CopyLine(std::string& S, WORD N, WORD M)
 
 LongStr* CopyLine(LongStr* S, WORD N, WORD M) {
 	WORD i = 1;
-	if (N > 1) { 
-		i = FindCtrlM(S, 1, N - 1); 
-		i = SkipCtrlMJ(S, i); 
+	if (N > 1) {
+		i = FindCtrlM(S, 1, N - 1);
+		i = SkipCtrlMJ(S, i);
 	}
 	WORD j = FindCtrlM(S, i, M);
 	WORD l = j - i;
@@ -686,8 +686,8 @@ bool RunBool(FrmlPtr X)
 bool InReal(FrmlElemIn* frml)
 {
 	auto R = RunReal(frml->P1);
-	for (auto r : frml->reals) { 
-		if (r == R) return true; 
+	for (auto r : frml->reals) {
+		if (r == R) return true;
 	}
 	for (auto range : frml->reals_range) {
 		auto range1 = range.first;
@@ -719,29 +719,29 @@ bool LexInStr(LongStr* S, FrmlElemIn* X)
 	return false;
 
 
-//	WORD* LOffs = (WORD*)L; pstring* Cs = (pstring*)L; integer I, N;
-//	auto result = true;
-//label1:
-//	N = *L;
-//	*LOffs += 1;
-//	if (N == 0) { result = false; return result; }
-//	if (N == 0xFF) {
-//		if (CompLexLongShortStr(S, *Cs) == _lt) {
-//			*LOffs += *L + 1; *LOffs += *L + 1;
-//		}
-//		else {
-//			*LOffs += *L + 1;
-//			if (CompLexLongShortStr(S, *Cs) != _gt) return result;
-//			*LOffs += *L + 1;
-//		}
-//	}
-//	else {
-//		for (I = 1; I < N; I++) {
-//			if (CompLexLongShortStr(S, *Cs) == _equ) return result;
-//			else *LOffs += *L + 1;
-//		}
-//	}
-//	goto label1;
+	//	WORD* LOffs = (WORD*)L; pstring* Cs = (pstring*)L; integer I, N;
+	//	auto result = true;
+	//label1:
+	//	N = *L;
+	//	*LOffs += 1;
+	//	if (N == 0) { result = false; return result; }
+	//	if (N == 0xFF) {
+	//		if (CompLexLongShortStr(S, *Cs) == _lt) {
+	//			*LOffs += *L + 1; *LOffs += *L + 1;
+	//		}
+	//		else {
+	//			*LOffs += *L + 1;
+	//			if (CompLexLongShortStr(S, *Cs) != _gt) return result;
+	//			*LOffs += *L + 1;
+	//		}
+	//	}
+	//	else {
+	//		for (I = 1; I < N; I++) {
+	//			if (CompLexLongShortStr(S, *Cs) == _equ) return result;
+	//			else *LOffs += *L + 1;
+	//		}
+	//	}
+	//	goto label1;
 }
 
 bool InStr(LongStr* S, FrmlElemIn* X)
@@ -761,11 +761,11 @@ bool InStr(LongStr* S, FrmlElemIn* X)
 
 	for (auto& ran : X->strings_range) {
 		bool success = false;
-		auto s1 = ran.first; 
+		auto s1 = ran.first;
 		auto s2 = ran.second;
 		if (s.length() != s1.length()) break;
 		for (size_t i = 0; i < s.length(); i++) {
-			if (s1[i] <= s[i] && s[i] <= s2[i]) { 
+			if (s1[i] <= s[i] && s[i] <= s2[i]) {
 				if (i == s.length() - 1) {
 					// posledni znak je take shodny, nasli jsme
 					return true;
@@ -777,30 +777,30 @@ bool InStr(LongStr* S, FrmlElemIn* X)
 
 	return false;
 
-//	WORD* LOffs = (WORD*)L; 
-//	pstring* Cs = (pstring*)L; 
-//	integer I, N;
-//
-//	auto result = true;
-//label1:
-//	N = *L;
-//	*LOffs++;
-//	if (N == 0) { result = false; return result; }
-//	if (N == 0xFF) {
-//		if (CompLongShortStr(S, Cs) == _lt) {
-//			*LOffs += *L + 1; *LOffs += *L + 1;
-//		}
-//		else {
-//			*LOffs += *L + 1;
-//			if (CompLongShortStr(S, Cs) != _gt) return result; *LOffs += *L + 1;
-//		}
-//	}
-//	else {
-//		for (I = 1; I <= N; I++)
-//			if (CompLongShortStr(S, Cs) == _equ) return result;
-//			else *LOffs += *L + 1;
-//	}
-//	goto label1;
+	//	WORD* LOffs = (WORD*)L; 
+	//	pstring* Cs = (pstring*)L; 
+	//	integer I, N;
+	//
+	//	auto result = true;
+	//label1:
+	//	N = *L;
+	//	*LOffs++;
+	//	if (N == 0) { result = false; return result; }
+	//	if (N == 0xFF) {
+	//		if (CompLongShortStr(S, Cs) == _lt) {
+	//			*LOffs += *L + 1; *LOffs += *L + 1;
+	//		}
+	//		else {
+	//			*LOffs += *L + 1;
+	//			if (CompLongShortStr(S, Cs) != _gt) return result; *LOffs += *L + 1;
+	//		}
+	//	}
+	//	else {
+	//		for (I = 1; I <= N; I++)
+	//			if (CompLongShortStr(S, Cs) == _equ) return result;
+	//			else *LOffs += *L + 1;
+	//	}
+	//	goto label1;
 }
 
 bool RunModulo(FrmlElem1* X)
@@ -949,30 +949,30 @@ label1:
 	case _nrecs:
 	case _nrecsabs: {
 		auto iX = (FrmlElem9*)X;
-		cf = CFile; 
-		CFile = iX->FD; 
+		cf = CFile;
+		CFile = iX->FD;
 		md = NewLMode(RdMode);
 		if (X->Op == _nrecs) RecNo = XNRecs(CFile->Keys);
 		else RecNo = CFile->NRecs;
-		OldLMode(md); 
-		result = (int)RecNo; 
+		OldLMode(md);
+		result = (int)RecNo;
 		CFile = cf;
 		break;
 	}
 	case _generation: {
 		auto iX = (FrmlElem9*)X;
-		cf = CFile; 
+		cf = CFile;
 		CFile = iX->FD;
-		result = (int)Generation(); 
+		result = (int)Generation();
 		CFile = cf;
 		break;
 	}
 	case _lastupdate: {
 		cf = CFile;
 		auto iX = (FrmlElem9*)X;
-		CFile = iX->FD; 
+		CFile = iX->FD;
 		md = NewLMode(RdMode);
-		result = LastUpdate(CFile->Handle); 
+		result = LastUpdate(CFile->Handle);
 		OldLMode(md); CFile = cf;
 		break;
 	}
@@ -1498,9 +1498,22 @@ label1:
 		cf = CFile; cr = CRecPtr;
 		AccRecNoProc(iX, 640);
 		S = _LongS(iX->RecFldD);
-		MyMove(S, CRecPtr, S->LL + 2);
+		// vysledkem by melo byt cislo -> pozadujeme ASCII
+		bool isNum = true;
+		for (size_t i = 0; i < S->LL; i++) {
+			if (isdigit(S->A[i] + 0x30)) continue;
+			isNum = false;
+			break;
+		}
+		if (isNum) {
+			// retezec predstavuje cislo
+			for (size_t i = 0; i < S->LL; i++) {
+				S->A[i] += 0x30;
+			}
+		}
+		//MyMove(S, CRecPtr, S->LL + 2);
 		ReleaseAfterLongStr(CRecPtr);
-		result = (LongStr*)CRecPtr;
+		result = S;
 		CFile = cf; CRecPtr = cr;
 		break;
 	}
@@ -1641,7 +1654,7 @@ std::string Replace(std::string& text, std::string& oldText, std::string& newTex
 
 	size_t old_len = oldText.length();
 	size_t pos = text.find("oldText");
-	
+
 	if (pos != std::string::npos) {
 		auto s = text.replace(pos, old_len, newText);
 		return s;
@@ -1654,20 +1667,20 @@ LongStr* RunS(FrmlElem* Z)
 {
 	wwmix ww;
 
-	pstring s, snew; WORD w = 0; 
-	FileD* cf = nullptr; void* cr = nullptr; 
+	pstring s, snew; WORD w = 0;
+	FileD* cf = nullptr; void* cr = nullptr;
 	XString* x = (XString*)&s;
-	LongStr* t = nullptr; LongStr* tnew = nullptr; 
-	WORD l = 0, i = 0, j = 0; 
+	LongStr* t = nullptr; LongStr* tnew = nullptr;
+	WORD l = 0, i = 0, j = 0;
 	double r = 0; BYTE m = 0;
 
 	auto iZ0 = (FrmlElem0*)Z;
 
 	switch (Z->Op) {
-	case _char: { 
-		s[0] = 1; 
-		s[1] = trunc(RunReal(iZ0->P1)); 
-		break; 
+	case _char: {
+		s[0] = 1;
+		s[1] = trunc(RunReal(iZ0->P1));
+		break;
 	}
 	case _strdate1: {
 		auto iZ = (FrmlElem6*)Z;
@@ -1704,24 +1717,24 @@ LongStr* RunS(FrmlElem* Z)
 		result->LL = res.length();
 		memcpy(result->A, res.c_str(), res.length());
 		return result;
-	//	tnew = new LongStr(2); // GetZStore(2);
-	//label1:
-	//	l = t->LL - (j - 1);
-	//	if (l > 0) {
-	//		i = FindTextE(s, iZ->Options, (char*)(&t->A[j]), l);
-	//		if (i > 0) {
-	//			AddToLongStr(tnew, &t->A[j], i - s.length() - 1);
-	//			AddToLongStr(tnew, &snew[1], snew.length());
-	//			j += i - 1;
-	//			goto label1;
-	//		}
-	//	}
-	//	AddToLongStr(tnew, &t->A[j], l);
-	//	MyMove(tnew, t, tnew->LL + 2);
-	//	//ReleaseAfterLongStr(t);
-	//	delete tnew;
-	//	return t;
-	//	break;
+		//	tnew = new LongStr(2); // GetZStore(2);
+		//label1:
+		//	l = t->LL - (j - 1);
+		//	if (l > 0) {
+		//		i = FindTextE(s, iZ->Options, (char*)(&t->A[j]), l);
+		//		if (i > 0) {
+		//			AddToLongStr(tnew, &t->A[j], i - s.length() - 1);
+		//			AddToLongStr(tnew, &snew[1], snew.length());
+		//			j += i - 1;
+		//			goto label1;
+		//		}
+		//	}
+		//	AddToLongStr(tnew, &t->A[j], l);
+		//	MyMove(tnew, t, tnew->LL + 2);
+		//	//ReleaseAfterLongStr(t);
+		//	delete tnew;
+		//	return t;
+		//	break;
 	}
 	case _prompt:
 	{
@@ -1786,7 +1799,7 @@ LongStr* RunS(FrmlElem* Z)
 	case _keybuf: {
 		while (KeyPressed()) AddToKbdBuf(ReadKey());
 		s = KbdBuffer;
-		break; 
+		break;
 	}
 	case _recno: GetRecNoXString((FrmlElem13*)Z, *x); break;
 	case _edbool: {
@@ -1808,7 +1821,7 @@ LongStr* RunSelectStr(FrmlElem0* Z)
 	void* p2 = nullptr; void* pl = nullptr;
 	WORD i, n;
 
-	s = RunLongStr(Z->P3); 
+	s = RunLongStr(Z->P3);
 	n = CountDLines(s->A, s->LL, Z->Delim);
 	for (i = 1; i < n; i++) {
 		x = GetDLine(s->A, s->LL, Z->Delim, i);
@@ -1837,8 +1850,8 @@ LongStr* RunSelectStr(FrmlElem0* Z)
 			}
 		} while (!(!ss.Subset || (x == "")));
 		ReleaseStore(s);
-		s = (LongStr*)GetStore(n + 1); 
-		s->LL = n - 1; 
+		s = (LongStr*)GetStore(n + 1);
+		s->LL = n - 1;
 		Move(s2->A, s->A, n - 1);
 		ReleaseStore2(p2);
 		return s;
@@ -1880,8 +1893,8 @@ LongStr* LongTrailChar(char C, char CNew, LongStr* S)
 	WORD l;
 	l = S->LL;
 	while (l > 0) {
-		if (S->A[l-1] != C) goto label1;
-		if (CNew != 0) S->A[l-1] = CNew; 
+		if (S->A[l - 1] != C) goto label1;
+		if (CNew != 0) S->A[l - 1] = CNew;
 		l--;
 	}
 label1:

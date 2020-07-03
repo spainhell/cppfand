@@ -1203,7 +1203,7 @@ void CallProcedure(Instr_proc* PD)
 	SetInpTT(PD->PPos, true);
 #ifdef _DEBUG
 	std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
-	if (srcCode.find("PARAM3.F4:=memavail") != std::string::npos) {
+	if (srcCode.find("PARAM3.Ano:=false;") != std::string::npos) {
 		printf(" ");
 	}
 #endif

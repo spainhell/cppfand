@@ -721,6 +721,7 @@ bool IsLetter(char C)
 
 void MyMove(void* A1, void* A2, WORD N)
 {
+	memcpy(A2, A1, N);
 }
 
 FILE* GetOverHandle(FILE* fptr, int diff)

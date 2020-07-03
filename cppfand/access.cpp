@@ -84,10 +84,10 @@ integer CompLongStr(LongStr* S1, LongStr* S2)
 {
 	integer result = 0;
 	if (S1->LL != S2->LL) {
-		if (S1->LL < S2->LL) result = _lt;
-		else result = _gt;
+		if (S1->LL < S2->LL) return _lt;
+		else return _gt;
 	}
-	if (S2->LL == 0) return result;
+	if (S2->LL == 0) return _equ;
 	for (size_t i = 0; i < S2->LL; i++)
 	{
 		if (S1->A[i] == S2->A[i]) continue;
@@ -395,12 +395,14 @@ struct TT1Page
 	longint FreePart = 0;
 	bool Rsrvd1 = false, CompileProc = false, CompileAll = false;
 	WORD IRec = 0;
+	// potud se to nekoduje (13B)
+	// odtud jsou polozky prohnany XORem
 	longint FreeRoot = 0, MaxPage = 0;   /*eldest version=>array Pw[1..40] of char;*/
 	double TimeStmp = 0.0;
 	bool HasCoproc = false;
 	char Rsrvd2[25]{ '\0' };
 	char Version[4]{ '\0' };
-	BYTE LicText[105]{ '\0' };
+	BYTE LicText[105]{ 0 };
 	BYTE Sum = 0;
 	char X1[295]{ '\0' };
 	WORD LicNr = 0;
@@ -409,10 +411,10 @@ struct TT1Page
 	BYTE Time = 0;
 
 	void Load(BYTE* input512);
+	void Save(BYTE* output512);
 };
 
-// nahraje prvnich 24 Bytu ze souboru do struktury
-// (navíc i hodnotu HasCoproc, aby byla pripravena pro porovnani)
+// nahraje nactenych 512B ze souboru do struktury
 void TT1Page::Load(BYTE* input512)
 {
 	size_t index = 0;
@@ -432,12 +434,41 @@ void TT1Page::Load(BYTE* input512)
 	memcpy(&Version, &input512[index], 4); index += 4;
 	memcpy(&LicText, &input512[index], 105); index += 105;
 	memcpy(&Sum, &input512[index], 1); index++;
-	memcpy(&X1, &input512[index], 195); index += 295;
+	memcpy(&X1, &input512[index], 295); index += 295;
 	memcpy(&LicNr, &input512[index], 2); index += 2;
 	memcpy(&X2, &input512[index], 11); index += 11;
 	memcpy(&PwNew, &input512[index], 40); index += 40;
 	memcpy(&Time, &input512[index], 1); index++;
-	// index by teï mìl mít 512
+	// index by ted mel mit hodnotu 512
+	if (index != 512) throw std::exception("Error in TT1Page::Load");
+}
+
+// nahraje nactenych 512B ze souboru do struktury
+void TT1Page::Save(BYTE* output512)
+{
+	size_t index = 0;
+	memcpy(&output512[index], &Signum, 2); index += 2;
+	memcpy(&output512[index], &OldMaxPage, 2); index += 2;
+	memcpy(&output512[index], &FreePart, 4); index += 4;
+	memcpy(&output512[index], &Rsrvd1, 1); index++;
+	memcpy(&output512[index], &CompileProc, 1); index++;
+	memcpy(&output512[index], &CompileAll, 1); index++;
+	memcpy(&output512[index], &IRec, 2); index += 2;
+	memcpy(&output512[index], &FreeRoot, 4); index += 4;
+	memcpy(&output512[index], &MaxPage, 4); index += 4;
+	memcpy(&output512[index], &TimeStmp, 6); index += 6;
+	//memset(&TimeStmp + 6, 0, 2); // v pascalu to bylo 6B, tady je to 8B
+	memcpy(&output512[index], &HasCoproc, 1); index++;
+	memcpy(&output512[index], &Rsrvd2, 25); index += 25;
+	memcpy(&output512[index], &Version, 4); index += 4;
+	memcpy(&output512[index], &LicText, 105); index += 105;
+	memcpy(&output512[index], &Sum, 1); index++;
+	memcpy(&output512[index], &X1, 295); index += 295;
+	memcpy(&output512[index], &LicNr, 2); index += 2;
+	memcpy(&output512[index], &X2, 11); index += 11;
+	memcpy(&output512[index], &PwNew, 40); index += 40;
+	memcpy(&output512[index], &Time, 1); index++;
+	// index by ted mel mit hodnotu 512
 	if (index != 512) throw std::exception("Error in TT1Page::Load");
 }
 
@@ -1583,7 +1614,7 @@ void RandWordByBytes(WORD& nr)
 	}
 }
 
-void RandDoubleByBytes(double& nr)
+void RandReal48ByBytes(double& nr)
 {
 	BYTE* byte = (BYTE*)&nr;
 	for (size_t i = 0; i < 6; i++)
@@ -1614,7 +1645,6 @@ void RandArrayByBytes(void* arr, size_t len)
 void TFile::RdPrefix(bool Chk)
 {
 	TT1Page T;
-	BYTE* TX = (BYTE*)&T;
 	longint* TNxtAvailPage = (longint*)&T; /* .DBT */
 	struct stFptHd { longint FreePart = 0; WORD X = 0, BlockSize = 0; }; /* .FPT */
 	stFptHd* FptHd = (stFptHd*)&T;
@@ -1633,11 +1663,14 @@ void TFile::RdPrefix(bool Chk)
 	srand(RS);
 	LicenseNr = 0;
 	if (Format == DbtFormat) {
-		MaxPage = *TNxtAvailPage - 1; GetMLen(); return;
+		MaxPage = *TNxtAvailPage - 1;
+		GetMLen();
+		return;
 	}
 	if (Format == FptFormat) {
 		FreePart = SwapLong((*FptHd).FreePart);
-		BlockSize = Swap((*FptHd).BlockSize); return;
+		BlockSize = Swap((*FptHd).BlockSize);
+		return;
 	}
 
 	// nactena data jsou porad v poli, je nutne je nahrat do T
@@ -1679,7 +1712,7 @@ void TFile::RdPrefix(bool Chk)
 		RandSeed = ML + T.Time;
 		RandIntByBytes(T.FreeRoot);
 		RandIntByBytes(T.MaxPage);
-		RandDoubleByBytes(T.TimeStmp);
+		RandReal48ByBytes(T.TimeStmp);
 		RandBooleanByBytes(T.HasCoproc);
 		RandArrayByBytes(T.Rsrvd2, 25);
 		RandArrayByBytes(T.Version, 4);
@@ -1696,7 +1729,7 @@ void TFile::RdPrefix(bool Chk)
 		RandSeed = ML + T.Time;
 		RandIntByBytes(T.FreeRoot);
 		RandIntByBytes(T.MaxPage);
-		RandDoubleByBytes(T.TimeStmp);
+		RandReal48ByBytes(T.TimeStmp);
 		RandBooleanByBytes(T.HasCoproc);
 		RandArrayByBytes(T.Rsrvd2, 25);
 		Move(T.PwNew, PwCode, 20);
@@ -1720,47 +1753,78 @@ void TFile::RdPrefix(bool Chk)
 void TFile::WrPrefix()
 {
 	TT1Page T;
-	BYTE* TX = (BYTE*)&T;
-	longint* TNxtAvailPage = (longint*)&T;                               /* .DBT */
-	struct stFptHd { longint FreePart; WORD X, BlockSize; }; /* .FPT */
+	longint* TNxtAvailPage = (longint*)&T;		/* .DBT */
+	struct stFptHd { longint FreePart = 0; WORD X = 0, BlockSize = 0; }; /* .FPT */
 	stFptHd* FptHd = (stFptHd*)&T;
 	char Pw[40];
 	// BYTE absolute 0 Time:0x46C; TODO: TIMER
-	WORD i, n; BYTE sum; longint RS = 0;
+	WORD i = 0, n = 0;
+	BYTE sum = 0; longint RS = 0;
 	const PwCodeArr EmptyPw = { '@','@','@','@','@','@','@','@','@','@','@','@','@','@','@','@','@','@','@','@' };
 
 	if (Format == DbtFormat) {
-		//FillChar(&T, 512, ' '); 
-		*TNxtAvailPage = MaxPage + 1; goto label1;
+		memset(&T, ' ', sizeof(T));
+		*TNxtAvailPage = MaxPage + 1;
+		goto label1;
 	}
 	if (Format == FptFormat) {
-		//FillChar(&T, 512, 0); 
+		memset(&T, 0, sizeof(T));
 		(*FptHd).FreePart = SwapLong(FreePart);
-		(*FptHd).BlockSize = Swap(BlockSize); goto label1;
+		(*FptHd).BlockSize = Swap(BlockSize);
+		goto label1;
 	}
-	//FillChar(&T, 512, '@');
-	Move(PwCode, Pw, 40); Code(Pw, 40); srand(RS);
+	memset(&T, '@', sizeof(T));
+	Move(PwCode, Pw, 40);
+	Code(Pw, 40);
+	RandSeed = RS;
 	if (LicenseNr != 0) 
-		for (i = 1; i < 20; i++) 
-			Pw[i] = (char)Random(255);
+		for (i = 0; i < 20; i++) 
+			Pw[i] = static_cast<char>(Random(255));
 	n = 0x4000;
 	// TODO: T.Time = Time;
 	Move(Pw, T.PwNew, 40);
-	srand(MLen + T.Time);
-	for (i = 14; i < 511; i++) TX[i] = TX[i] ^ Random(255);
+	RandSeed = MLen + T.Time; // srand(MLen + T.Time);
+	// for (i = 14; i < 511; i++) TX[i] = TX[i] ^ Random(255);
+	RandIntByBytes(T.FreeRoot);
+	RandIntByBytes(T.MaxPage);
+	RandReal48ByBytes(T.TimeStmp);
+	RandBooleanByBytes(T.HasCoproc);
+	RandArrayByBytes(T.Rsrvd2, 25);
+	RandArrayByBytes(T.Version, 4);
+	RandArrayByBytes(T.LicText, 105);
+	RandArrayByBytes(&T.Sum, 1);
+	RandArrayByBytes(T.X1, 295);
+	RandWordByBytes(T.LicNr);
+	RandArrayByBytes(T.X2, 11);
+	RandArrayByBytes(T.PwNew, 40);
+		
 	T.LicNr = LicenseNr;
 	if (LicenseNr != 0) {
-		n = 0x6000; sum = T.LicNr;
-		for (i = 1; i < 105; i++) sum = sum + T.LicText[i];
+		n = 0x6000;
+		sum = T.LicNr;
+		for (i = 0; i < 105; i++) sum += T.LicText[i];
 		T.Sum = sum;
 	}
-	Move(&FreePart, &T.FreePart, 23);
-	T.OldMaxPage = 0xffff; T.Signum = 1; T.IRec += n;
-	Move(&Version[1], &T.Version, 4);
+	//Move(&FreePart, &T.FreePart, 23);
+	T.FreePart = FreePart; // 8B
+	T.Rsrvd1 = Reserved; // 1B
+	T.CompileProc = CompileProc; // 1B
+	T.CompileAll = CompileAll; // 1B
+	T.IRec = IRec; // 2B
+	T.FreeRoot = FreeRoot; // 4B
+	T.MaxPage = MaxPage; // 4B
+	T.TimeStmp = TimeStmp; // 6B Pascal
+	
+	T.OldMaxPage = 0xffff;
+	T.Signum = 1;
+	T.IRec += n;
+	memcpy(T.Version, Version, 4); // Move(&Version[1], &T.Version, 4);
 	T.HasCoproc = HasCoproc;
-	srand(RS);
+	RandSeed = RS;
 label1:
-	RdWrCache(false, Handle, NotCached(), 0, 512, &T);
+	BYTE header512[512]{0};
+	T.Save(header512);
+	RdWrCache(false, Handle, NotCached(), 0, 512, header512);
 }
 
 void TFile::SetEmpty()
