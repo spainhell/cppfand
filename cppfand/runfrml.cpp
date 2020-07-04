@@ -611,7 +611,8 @@ bool RunBool(FrmlPtr X)
 		break;
 	}
 	case _eval: {
-		MarkStore(p); result = RunBool(GetEvalFrml((FrmlElem21*)X));
+		MarkStore(p);
+		result = RunBool(GetEvalFrml((FrmlElem21*)X));
 		ReleaseStore(p);
 		break;
 	}
@@ -1312,7 +1313,7 @@ KeyDPtr GetFromKey(LinkDPtr LD)
 
 FrmlPtr RunEvalFrml(FrmlPtr Z)
 {
-	if ((Z != nullptr) && ((BYTE)Z->Op == _eval)) Z = GetEvalFrml((FrmlElem21*)Z);
+	if ((Z != nullptr) && (Z->Op == _eval)) Z = GetEvalFrml((FrmlElem21*)Z);
 	return Z;
 }
 

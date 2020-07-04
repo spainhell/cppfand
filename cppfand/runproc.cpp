@@ -1,6 +1,6 @@
 #include "runproc.h"
 
-
+#include <fstream>
 #include "../pascal/random.h"
 #include "compile.h"
 #include "drivers.h"
@@ -1203,8 +1203,16 @@ void CallProcedure(Instr_proc* PD)
 	SetInpTT(PD->PPos, true);
 #ifdef _DEBUG
 	std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
-	if (srcCode.find("PARAM3.Ano:=false;") != std::string::npos) {
+	if (srcCode.find("cfg:=gettxt(FANDCFG);") != std::string::npos) {
 		printf(" ");
+		//FuncD* f = FuncDRoot;
+		//std::ofstream myfile;
+		//myfile.open("functions.txt");
+		//while (f != nullptr) {
+		//	myfile << f->Name.c_str() << "\n";
+		//	f = f->Chain;
+		//}
+		//myfile.close();
 	}
 #endif
 	ReadProcHead();

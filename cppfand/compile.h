@@ -77,7 +77,7 @@ FrmlPtr MakeFldFrml(FieldDPtr F, char& FTyp); // r72
 void TestString(char FTyp);
 void TestReal(char FTyp);
 FrmlPtr RdFrml(char& FTyp);
-FrmlPtr RdKeyInBool(KeyInD* KIRoot, bool NewMyBP, bool FromRdProc, bool& SQLFilter);
+FrmlElem* RdKeyInBool(KeyInD* KIRoot, bool NewMyBP, bool FromRdProc, bool& SQLFilter);
 FrmlPtr RdBool();
 FrmlPtr RdRealFrml();
 FrmlPtr RdStrFrml();

@@ -84,7 +84,7 @@ void SetInpStr(pstring& S)
 void SetInpLongStr(LongStr* S, bool ShowErr)
 {
 	InpArrLen = S->LL;
-	InpArrPtr = (BYTE*)&S->A;
+	InpArrPtr = reinterpret_cast<BYTE*>(S->A);
 	if (InpArrLen == 0) ForwChar = 0x1A; 
 	else ForwChar = InpArrPtr[0];
 	CurrPos = 0;
@@ -433,10 +433,10 @@ void RdLex()
 		break;
 	default: break;
 	}
-	//if (LexWord == "TISKADR")
-	//{
-	//	printf("RdLex() r. 437 - %s\n", LexWord.c_str());
-	//}
+	if (LexWord == "DzpR")
+	{
+		printf("RdLex() r. 437 - %s\n", LexWord.c_str());
+	}
 }
 
 bool IsForwPoint()
@@ -2193,21 +2193,27 @@ label1:
 	return result;
 }
 
-FrmlPtr RdKeyInBool(KeyInD* KIRoot, bool NewMyBP, bool FromRdProc, bool& SQLFilter)
+FrmlElem* RdKeyInBool(KeyInD* KIRoot, bool NewMyBP, bool FromRdProc, bool& SQLFilter)
 {
-	KeyInD* KI; WORD l; char FTyp; FrmlPtr Z; bool FVA;
-	FrmlPtr result = nullptr; KIRoot = nullptr; SQLFilter = false;
+	KeyInD* KI = nullptr; WORD l = 0; char FTyp = '\0';
+	FrmlElem* Z = nullptr; bool FVA = false;
+	FrmlElem* result = nullptr;
+	KIRoot = nullptr; SQLFilter = false;
+
 	if (FromRdProc) {
-		FVA = FileVarsAllowed; FileVarsAllowed = true;
-		if ((Lexem == _identifier) && (ForwChar == '(') and
-			(EquUpcase("EVALB") || EquUpcase("EVALS") || EquUpcase("EVALR")))
+		FVA = FileVarsAllowed;
+		FileVarsAllowed = true;
+		if ((Lexem == _identifier) 
+			&& (ForwChar == '(') 
+			&& (EquUpcase("EVALB") || EquUpcase("EVALS") || EquUpcase("EVALR")))
 			FileVarsAllowed = false;
 	}
 	if (IsKeyWord("KEY")) {
 		AcceptKeyWord("IN");
 		if ((CFile->Typ != 'X') || (CViewKey == nullptr)) OldError(118);
 		if (CViewKey->KFlds == nullptr) OldError(176);
-		Accept('['); l = CViewKey->IndexLen + 1;
+		Accept('[');
+		l = CViewKey->IndexLen + 1;
 	label1:
 		//KI = (KeyInD*)GetZStore(sizeof(KeyInD));
 		KI = new KeyInD();
@@ -2233,7 +2239,7 @@ FrmlPtr RdKeyInBool(KeyInD* KIRoot, bool NewMyBP, bool FromRdProc, bool& SQLFilt
 			TestBool(FTyp);
 			if (Z->Op == _eval) ((FrmlElem21*)Z)->EvalFD = CFile;
 		}
-		result = MyBPContext(Z, NewMyBP && ((BYTE)Z->Op != _eval));
+		result = MyBPContext(Z, NewMyBP && (Z->Op != _eval));
 	}
 	if (FromRdProc) FileVarsAllowed = FVA;
 	return result;

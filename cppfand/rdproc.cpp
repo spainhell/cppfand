@@ -300,8 +300,14 @@ FrmlPtr RdFunctionP(char& FFTyp)
 	void* p = nullptr;
 	//WORD* pofs = (WORD*)&p;
 
-	if (IsKeyWord("EVALB")) { FTyp = 'B'; goto label4; }
-	else if (IsKeyWord("EVALS")) { FTyp = 'S'; goto label4; }
+	if (IsKeyWord("EVALB")) {
+		FTyp = 'B';
+		goto label4;
+	}
+	else if (IsKeyWord("EVALS")) {
+		FTyp = 'S';
+		goto label4;
+	}
 	else if (IsKeyWord("EVALR")) {
 		FTyp = 'R';
 	label4:
@@ -2534,6 +2540,9 @@ void ReadDeclChpt()
 	RdLex();
 label1:
 	if (IsKeyWord("FUNCTION")) {
+#ifdef _DEBUG
+		printf("F: %s, ", LexWord.c_str());
+#endif
 		TestIdentif();
 		fc = FuncDRoot;
 		while (fc != CRdb->OldFCRoot) {
@@ -2602,22 +2611,30 @@ FrmlElem* GetEvalFrml(FrmlElem21* X)
 	void* cr = nullptr;
 	char fTyp;
 	WORD cpos = 0;
-	ExitRecord er = ExitRecord();
+	//ExitRecord er = ExitRecord();
 	ProcStkD* oldbp;
 
-	LocVarBlkD oldLVBD = LVBD; oldbp = MyBP;
+	LocVarBlkD oldLVBD = LVBD;
+	oldbp = MyBP;
 	SetMyBP(ProcMyBP);
-	FrmlPtr z = nullptr;
-	FileDPtr cf = CFile; cr = CRecPtr;
+	FrmlElem* z = nullptr;
+	FileD* cf = CFile;
+	cr = CRecPtr;
 	LongStr* s = RunLongStr(X->EvalP1);
-	if (s->LL == 0) { LastExitCode = 0; goto label2; }
+	if (s->LL == 0) {
+		LastExitCode = 0;
+		goto label2;
+	}
 	LastExitCode = 1;
 	p = SaveCompState();
 	ResetCompilePars();
 	RdFldNameFrml = RdFldNameFrmlP;
 	RdFunction = RdFunctionP;
 	if (X->EvalFD == nullptr) FileVarsAllowed = false;
-	else { CFile = X->EvalFD; FileVarsAllowed = true; }
+	else {
+		CFile = X->EvalFD;
+		FileVarsAllowed = true;
+	}
 	//NewExit(Ovr, er);
 	//goto label1;
 	SetInpLongStr(s, false);
@@ -2627,7 +2644,7 @@ FrmlElem* GetEvalFrml(FrmlElem21* X)
 	else LastExitCode = 0;
 label1:
 	cpos = CurrPos;
-	RestoreExit(er);
+	//RestoreExit(er);
 	RestoreCompState(p);
 	if (LastExitCode != 0) {
 		LastTxtPos = cpos;
