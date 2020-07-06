@@ -585,7 +585,7 @@ void ForAllProc(Instr_forall* PD)
 	void* cr = nullptr; void* p = nullptr; void* lr = nullptr;
 	XScan* Scan = nullptr; LockMode md, md1; XString xx;
 	KeyFldDPtr KF = nullptr; LocVar* LVi = nullptr; LocVar* LVr = nullptr;
-	bool lk, b;
+	bool lk = false, b = false;
 #ifdef FandSQL
 	bool sql;
 #endif
@@ -657,10 +657,15 @@ label1:
 		else
 #endif
 			if (LVr != nullptr) {
-				CRecPtr = lr; ClearUpdFlag(); DelTFlds(); CopyRecWithT(cr, lr);
+				CRecPtr = lr;
+				ClearUpdFlag();
+				DelTFlds();
+				CopyRecWithT(cr, lr);
 			}
 		if (LVi != nullptr) *(double*)(LocVarAd(LVi)) = Scan->RecNr;
-		RunInstr(PD->CInstr); CFile = FD; CRecPtr = lr;
+		RunInstr(PD->CInstr);
+		CFile = FD;
+		CRecPtr = lr;
 #ifdef FandSQL
 		if (sql) {
 			if (HasUpdFlag && !PD->inSQL) {
@@ -1203,8 +1208,8 @@ void CallProcedure(Instr_proc* PD)
 	SetInpTT(PD->PPos, true);
 #ifdef _DEBUG
 	std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
-	if (srcCode.find("cfg:=gettxt(FANDCFG);") != std::string::npos) {
-		printf(" ");
+	if (srcCode.find("MODUL") != std::string::npos) {
+		printf("");
 		//FuncD* f = FuncDRoot;
 		//std::ofstream myfile;
 		//myfile.open("functions.txt");

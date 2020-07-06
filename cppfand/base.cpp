@@ -13,6 +13,7 @@
 #include <ctime>
 #include <iostream>
 #include "../datafiles/datafiles.h"
+#include "../exprcmp/exprcmp.h"
 
 /*const*/ 
 char Version[] = { '4', '.', '2', '0', '\0' };
@@ -1421,6 +1422,9 @@ bool MouseInRectProc(WORD X, WORD Y, WORD XSize, WORD Size)
 
 bool EqualsMask(void* p, WORD l, pstring Mask)
 {
+	std::string Value = std::string((char*)p, l);
+	return CmpStringWithMask(Value, Mask);
+	
 	if (Mask.length() < l) return false;
 	BYTE* inp = (BYTE*)p;
 	for (size_t i = 0; i < l; i++) 

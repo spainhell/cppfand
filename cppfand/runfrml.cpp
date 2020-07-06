@@ -823,8 +823,8 @@ bool RunModulo(FrmlElem1* X)
 
 bool RunEquMask(FrmlElem0* X)
 {
-	LongStr* s;
-	s = RunLongStr(X->P1); auto result = EqualsMask(s->A, s->LL, RunShortStr(X->P2));
+	LongStr* s = RunLongStr(X->P1);
+	auto result = EqualsMask(s->A, s->LL, RunShortStr(X->P2));
 	ReleaseStore(s);
 	return result;
 }

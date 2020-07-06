@@ -1777,8 +1777,8 @@ void TFile::WrPrefix()
 	Move(PwCode, Pw, 40);
 	Code(Pw, 40);
 	RandSeed = RS;
-	if (LicenseNr != 0) 
-		for (i = 0; i < 20; i++) 
+	if (LicenseNr != 0)
+		for (i = 0; i < 20; i++)
 			Pw[i] = static_cast<char>(Random(255));
 	n = 0x4000;
 	// TODO: T.Time = Time;
@@ -1797,7 +1797,7 @@ void TFile::WrPrefix()
 	RandWordByBytes(T.LicNr);
 	RandArrayByBytes(T.X2, 11);
 	RandArrayByBytes(T.PwNew, 40);
-		
+
 	T.LicNr = LicenseNr;
 	if (LicenseNr != 0) {
 		n = 0x6000;
@@ -1814,7 +1814,7 @@ void TFile::WrPrefix()
 	T.FreeRoot = FreeRoot; // 4B
 	T.MaxPage = MaxPage; // 4B
 	T.TimeStmp = TimeStmp; // 6B Pascal
-	
+
 	T.OldMaxPage = 0xffff;
 	T.Signum = 1;
 	T.IRec += n;
@@ -1822,7 +1822,7 @@ void TFile::WrPrefix()
 	T.HasCoproc = HasCoproc;
 	RandSeed = RS;
 label1:
-	BYTE header512[512]{0};
+	BYTE header512[512]{ 0 };
 	T.Save(header512);
 	RdWrCache(false, Handle, NotCached(), 0, 512, header512);
 }
@@ -3076,10 +3076,12 @@ XScan::XScan(FileD* aFD, KeyD* aKey, KeyInD* aKIRoot, bool aWithT)
 	else
 #endif
 	{
-		//P = (XPage*)GetStore(XPageSize);
-		P = new XPage();
-		Kind = 1;
-		if (aKIRoot != nullptr) Kind = 2;
+		if (aKey != nullptr) {
+			//P = (XPage*)GetStore(XPageSize);
+			P = new XPage();
+			Kind = 1;
+			if (aKIRoot != nullptr) Kind = 2;
+		}
 	}
 }
 
@@ -3242,7 +3244,7 @@ void XScan::Close()
 
 void XScan::SeekRec(longint I)
 {
-	KeyInD* k; FrmlPtr z;
+	KeyInD* k = nullptr; FrmlElem* z = nullptr;
 	CFile = FD;
 
 #ifdef FandSQL
@@ -3267,7 +3269,7 @@ void XScan::SeekRec(longint I)
 	}
 	IRec = I;
 	eof = I >= NRecs;
-	if (!eof)
+	if (!eof) {
 		switch (Kind) {
 		case 1:
 		case 3: {
@@ -3282,6 +3284,7 @@ void XScan::SeekRec(longint I)
 			break;
 		}
 		}
+	}
 }
 
 bool DeletedFlag()  // r771 ASM
@@ -3449,7 +3452,8 @@ label1:
 		switch (Kind) {
 		case 0: { RecNr = IRec; goto label2; break; }
 		case 1:
-		case 2: { RecNr = X->GetN(); NOnPg--;
+		case 2: {
+			RecNr = X->GetN(); NOnPg--;
 			if (NOnPg > 0) X = X->Next(oLeaf);
 			else if ((Kind == 2) && (NOfKI == 0)) NextIntvl();
 			else if (P->GreaterPage > 0) SeekOnPage(P->GreaterPage, 1);
@@ -3457,6 +3461,7 @@ label1:
 			ReadRec(RecNr); if (DeletedFlag()) goto label1;
 		label3:
 			if (!RunBool(Bool)) goto label1;
+			break;
 		}
 #ifdef FandSQL
 		case 3: {

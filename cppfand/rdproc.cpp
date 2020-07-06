@@ -88,7 +88,7 @@ FrmlElem* RdRecVarFldFrml(LocVar* LV, char& FTyp)
 		auto Z = new FrmlElem22(_indexnrecs, 4); // GetOp(_indexnrecs, 4);
 		Z->WKey = WKeyDPtr(LV->RecPtr);
 		pstring nrecs = "nrecs";
-		AcceptKeyWord(nrecs); 
+		AcceptKeyWord(nrecs);
 		FTyp = 'R';
 		return Z;
 		break;
@@ -268,9 +268,9 @@ FileD* RdPath(bool NoFD, pstring** Path, WORD& CatIRec)
 {
 	FileD* fd = nullptr;
 	CatIRec = 0;
-	if (Lexem == _quotedstr) { 
-		*Path = RdStrConst(); 
-		fd = nullptr; 
+	if (Lexem == _quotedstr) {
+		*Path = RdStrConst();
+		fd = nullptr;
 	}
 	else {
 		TestIdentif();
@@ -774,7 +774,7 @@ Instr_loops* RdRepeatUntil()
 			goto label1;
 		}
 	}
-label1: 
+label1:
 	PD->Bool = RdBool();
 	return result;
 }
@@ -821,8 +821,8 @@ Instr_forall* RdForAll()
 	if (LVr != nullptr)	PD->CRecVar = LVr;
 #ifdef FandSQL
 	if (CFile->typSQLFile && IsKeyWord("IN")) {
-		AcceptKeyWord("SQL"); Accept('('); PD->CBool = RdStrFrml(); Accept(')');
-		PD->inSQL = true; goto label2;
+		AcceptKeyWord("SQL"); Accept('('); PD->CBool = RdStrFrml();
+		Accept(')'); PD->inSQL = true; goto label2;
 	}
 #endif
 	if (IsKeyWord("OWNER")) {
@@ -845,7 +845,7 @@ label2:
 	AcceptKeyWord("DO");
 	PD->CInstr = RdPInstr();
 	return PD;
-	}
+}
 
 Instr* RdBeginEnd()
 {
@@ -1211,8 +1211,8 @@ void RdProcCall(Instr** pinstr)
 			if ((PD->Kind == _ellipse) && (Lexem == ',')) {
 				RdLex(); PD->Par6 = RdRealFrml(); Accept(','); PD->Par7 = RdRealFrml();
 			}
+		}
 	}
-}
 #endif 
 	else if (IsKeyWord("CLOSE")) {
 		*pinstr = new Instr_closefds(); // GetPD(_closefds, 4);
@@ -1376,7 +1376,7 @@ void RdEditOpt(EditOpt* EO)
 	else if (IsOpt("OWNER")) {
 		if (EO->SQLFilter || (EO->KIRoot != nullptr)) OldError(179);
 		EO->OwnerTyp = RdOwner(EO->DownLD, EO->DownLV);
-}
+	}
 	else if (IsOpt("RECKEY")) EO->StartRecKeyZ = RdStrFrml();
 	else if (
 #ifdef FandSQL
@@ -2080,7 +2080,7 @@ Instr_recs* RdMixRecAcc(PInstrCode Op)
 			Accept(',');
 			PD->RecNr = RdRealFrml();
 		}
-}
+	}
 	else {
 		// PD = GetPD(Op, 15);
 		PD = new Instr_recs(Op);
@@ -2124,7 +2124,7 @@ Instr_recs* RdMixRecAcc(PInstrCode Op)
 		}
 #endif
 		}
-		}
+	}
 	if ((Lexem == ',') && (Op == _writerec || Op == _deleterec || Op == _recallrec)) {
 		RdLex();
 		Accept('+');
@@ -2132,7 +2132,7 @@ Instr_recs* RdMixRecAcc(PInstrCode Op)
 	}
 	CFile = cf;
 	return PD;
-	}
+}
 
 Instr* RdLinkRec()
 {
@@ -2390,15 +2390,15 @@ Instr* RdWith()
 		P = new Instr_window(); //GetPInstr(_window, 29);
 		auto iP = (Instr_window*)P;
 		Accept('(');
-		if (Lexem == '(') { 
-			RdLex(); 
-			iP->WithWFlags = WNoPop; 
+		if (Lexem == '(') {
+			RdLex();
+			iP->WithWFlags = WNoPop;
 		}
 		RdW(iP->W);
 		RdFrame(&iP->Top, iP->WithWFlags);
-		if (Lexem == ',') { 
+		if (Lexem == ',') {
 			RdLex();
-			iP->Attr = RdAttr(); 
+			iP->Attr = RdAttr();
 		}
 		Accept(')');
 		if ((iP->WithWFlags & WNoPop) != 0) Accept(')');
@@ -2717,7 +2717,7 @@ void RdSqlRdWrTxt(bool Rd)
 	KeyDPtr k = RdViewKey(); if (k == nullptr) k = CFile->Keys; pd->sqlKey = k; Accept(',');
 	pd->sqlFldD = RdFldName(CFile); Accept(','); pd->sqlXStr = RdStrFrml();
 	if (!pd->sqlFD->typSQLFile || (pd->sqlFldD->Typ != 'T')) OldError(170);
-	}
+}
 #endif
 #ifdef FandProlog
 Instr* RdCallLProc()
