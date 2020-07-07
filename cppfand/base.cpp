@@ -510,7 +510,7 @@ double Today()
 	std::time_t t = std::time(0);   // get time now
 	struct tm lt;
 	errno_t err = localtime_s(&lt, &t);
-	return RDate(lt.tm_year + 1900, lt.tm_mon, lt.tm_mday, 0, 0, 0, 0);
+	return RDate(lt.tm_year + 1900, lt.tm_mon + 1, lt.tm_mday, 0, 0, 0, 0);
 }
 
 std::string CppToday()

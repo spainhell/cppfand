@@ -323,7 +323,8 @@ void RunMsgN(longint N)
 #ifndef norunmsg
 	if (N < CM->MsgKum) return;
 	while (N >= CM->MsgKum) CM->MsgKum += CM->MsgStep;
-	Perc = (N * 100) / CM->MsgNN; screen.GotoXY(3, 1);
+	Perc = (N * 100) / CM->MsgNN;
+	screen.GotoXY(3, 1);
 	printf("%*i", 3, Perc);
 #endif
 }

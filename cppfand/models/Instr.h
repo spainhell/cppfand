@@ -46,6 +46,7 @@ class Instr_proc : public Instr
 {
 public:
 	Instr_proc(size_t TArg_Count);
+	std::string ProcName;
 	RdbPos PPos;
 	BYTE N = 0;
 	bool ExPar = false;

@@ -90,7 +90,7 @@ AssignD* MakeImplAssign(FileD* FD1, FileD* FD2);
 Instr_assign* RdAssign();
 Instr* RdWith();
 Instr_assign* RdUserFuncAssign();
-void ReadProcHead();
+void ReadProcHead(const std::string& name);
 Instr* ReadProcBody();
 void ReadDeclChpt();
 FrmlElem* GetEvalFrml(FrmlElem21* X);

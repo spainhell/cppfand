@@ -370,7 +370,7 @@ void RdLex()
 			ReadChar();
 			LexWord[i] = CurrChar;
 		}
-		LexWord[0] = char(i);
+		LexWord[0] = (char)i;
 		LexWord[i + 1] = '\0';
 	}
 	else if (isdigit(CurrChar))
@@ -433,7 +433,7 @@ void RdLex()
 		break;
 	default: break;
 	}
-	//if (LexWord == "DzpR")
+	//if (LexWord == "Hlaseni")
 	//{
 	//	printf("RdLex() r. 437 - %s\n", LexWord.c_str());
 	//}
@@ -451,7 +451,7 @@ void TestIdentif()
 
 void TestLex(char X)
 {
-	if (Lexem != X) { ExpChar = X; Error(1); };
+	if (Lexem != X) { ExpChar = X; Error(1); }
 }
 
 void Accept(char X)

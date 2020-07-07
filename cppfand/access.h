@@ -312,14 +312,15 @@ class LocVar : public Chained // ø. 239
 public:
 	LocVar() = default;
 	LocVar(std::string Name) { this->Name = Name; }
-	bool IsPar = false; // asi urcuje, zda se jedna o vstupni parametr
+	bool IsPar = false; // urcuje, zda se jedna o vstupni parametr
+	bool IsRetPar = false; // urcuje, zda jde o parametr predavany odkazem
+	bool IsRetValue = false; // pridano navic - urcuje navratovou hodnotu funkce
 	char FTyp = '\0';
 	FileD* FD = nullptr;
 	void* RecPtr = nullptr;
 	std::string Name;
 	char Op = '\0';
 	WORD BPOfs = 0;
-	bool IsRetPar = false; // asi urcuje, zda jde o navratovou hodnotu z funkce
 	FrmlElem* Init = nullptr;
 
 	bool B = false;

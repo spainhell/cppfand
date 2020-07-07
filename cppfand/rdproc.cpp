@@ -867,6 +867,10 @@ Instr* RdBeginEnd()
 
 Instr_proc* RdProcArg(char Caller)
 {
+	std::string ProcName = LexWord;
+	if (ProcName == "M01") {
+		printf("");
+	}
 	RdbPos Pos;
 	TypAndFrml TArg[31];
 	LocVar* LV = nullptr;
@@ -908,6 +912,7 @@ Instr_proc* RdProcArg(char Caller)
 	auto* PD = new Instr_proc(N); //GetPInstr(_proc, sizeof(RdbPos) + 2 + L);
 	PD->PPos = Pos;
 	PD->N = N;
+	PD->ProcName = ProcName;
 	for (size_t i = 0; i < N; i++) {
 		auto targ = TArg[i + 1];
 		PD->TArg.push_back(targ); // do TArg ukladame od 1 - pozustatek
@@ -2503,13 +2508,17 @@ Instr* RdPInstr()
 	return result;
 }
 
-void ReadProcHead()
+void ReadProcHead(const std::string& name)
 {
+	if (name.find("M01") != std::string::npos) {
+		printf("ReadProcHead(): Name '%s'", name.c_str());
+	}
 	ResetCompilePars();
 	RdFldNameFrml = RdFldNameFrmlP; RdFunction = RdFunctionP;
 	FileVarsAllowed = false; IdxLocVarAllowed = true; IsRdUserFunc = false;
 	RdLex();
 	ResetLVBD();
+	LVBD.FceName = name;
 	if (Lexem == '(') {
 		RdLex();
 		RdLocDcl(&LVBD, true, true, 'P');
@@ -2587,6 +2596,7 @@ label1:
 		LVBD.vLocVar.push_back(lv);
 		//Move(&fc->Name, &lv->Name, (fc->Name).length() + 1);
 		lv->Name = fc->Name;
+		lv->IsRetValue = true;
 		/* !!! with lv^ do!!! */
 		{ lv->FTyp = typ; lv->Op = _getlocvar; lv->BPOfs = LVBD.Size; }
 		fc->FTyp = typ;

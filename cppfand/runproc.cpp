@@ -496,11 +496,19 @@ void UpdRec(void* CR, longint N, bool AdUpd)
 
 void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 {
-	longint N; bool app, ad; LockMode md; void* cr; XString x;
-	KeyDPtr k; WORD msg;
+	longint N = 0;
+	bool app = false;
+	XString x;
+	WORD msg = 0;
 	/* !!! with PD->LV^ do!!! */
-	CFile = PD->LV->FD; CRecPtr = PD->LV->RecPtr; N = 1; k = PD->Key; ad = PD->AdUpd;
-	md = CFile->LMode; app = false; cr = GetRecSpace();
+	CFile = PD->LV->FD;
+	CRecPtr = PD->LV->RecPtr;
+	N = 1;
+	KeyD* k = PD->Key;
+	bool ad = PD->AdUpd;
+	LockMode md = CFile->LMode;
+	app = false;
+	void* cr = GetRecSpace();
 	if (PD->ByKey) {
 		x.S = RunShortStr(PD->RecNr);
 #ifdef FandSQL
@@ -528,40 +536,57 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 			if (CFile->NRecs == 0)
 				if (IsRead) {
 				label0:
-					DelTFlds(); ZeroAllFlds();
+					DelTFlds();
+					ZeroAllFlds();
 					goto label4;
 				}
 				else {
 				label1:
-					NewLMode(CrMode); TestXFExist(); IncNRecs(1); app = true;
+					NewLMode(CrMode);
+					TestXFExist();
+					IncNRecs(1);
+					app = true;
 				}
 			N = CFile->NRecs;
 		}
 		else if (not SrchXKey(k, x, N)) {
 		label2:
-			if (IsRead) { DelTFlds(); ZeroAllFlds(); SetDeletedFlag(); goto label4; }
-			msg = 613; goto label3;
+			if (IsRead)	{
+				DelTFlds();
+				ZeroAllFlds();
+				SetDeletedFlag();
+				goto label4;
+			}
+			msg = 613;
+			goto label3;
 		}
 	}
 	else if ((N <= 0) || (N > CFile->NRecs)) {
 		msg = 641;
 	label3:
-		SetMsgPar(PD->LV->Name); RunErrorM(md, msg);
+		SetMsgPar(PD->LV->Name);
+		RunErrorM(md, msg);
 	}
 	if (IsRead) {
-		CRecPtr = cr; ReadRec(N);
-		CRecPtr = PD->LV->RecPtr; DelTFlds(); CopyRecWithT(cr, PD->LV->RecPtr);
+		CRecPtr = cr;
+		ReadRec(N);
+		CRecPtr = PD->LV->RecPtr;
+		DelTFlds();
+		CopyRecWithT(cr, PD->LV->RecPtr);
 	}
 	else {
 		CopyRecWithT(PD->LV->RecPtr, cr);
 		if (app) {
-			CRecPtr = cr; if (CFile->Typ == 'X') RecallRec(N); else WriteRec(N);
+			CRecPtr = cr;
+			if (CFile->Typ == 'X') RecallRec(N);
+			else WriteRec(N);
 			if (ad) LastExitCode = !RunAddUpdte('+', nullptr, nullptr);
 		}
 		else UpdRec(cr, N, ad);
 	}
 label4:
-	ReleaseStore(cr); OldLMode(md);
+	ReleaseStore(cr);
+	OldLMode(md);
 }
 
 void LinkRecProc(Instr_assign* PD)
@@ -1195,10 +1220,10 @@ void CallProcedure(Instr_proc* PD)
 	//LocVar* lv1 = nullptr;
 	std::_Vector_iterator<std::_Vector_val<std::_Simple_types<LocVar*>>> it1;
 	LocVar* lvroot = nullptr;
-	WORD i, j, n;
-	FrmlPtr z = nullptr; longint l; Instr* pd1 = nullptr;
-	LinkDPtr ld = nullptr; FileDPtr lstFD = nullptr;
-	KeyFldDPtr kf1 = nullptr, kf2 = nullptr;
+	WORD i = 0, j = 0, n = 0;
+	FrmlPtr z = nullptr; longint l = 0; Instr* pd1 = nullptr;
+	LinkD* ld = nullptr; FileD* lstFD = nullptr;
+	KeyFldD* kf1 = nullptr; KeyFldD* kf2 = nullptr;
 
 	if (PD == nullptr) return;
 	MarkBoth(p1, p2);
@@ -1220,7 +1245,7 @@ void CallProcedure(Instr_proc* PD)
 		//myfile.close();
 	}
 #endif
-	ReadProcHead();
+	ReadProcHead("");
 	n = LVBD.NParam;
 	lvroot = LVBD.GetRoot();
 	oldbp = MyBP;

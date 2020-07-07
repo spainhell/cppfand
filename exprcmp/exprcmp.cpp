@@ -4,7 +4,11 @@
 bool CmpStringWithMask(std::string Value, std::string Mask)
 {
 	Mask = RegexFromString(Mask);
-	return true;
+	std::regex self_regex(Mask);
+	if (std::regex_search(Value, self_regex)) {
+		return true;
+	}
+	return false;
 }
 
 std::string RegexFromString(std::string Mask)

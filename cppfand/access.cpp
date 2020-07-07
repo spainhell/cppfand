@@ -1090,11 +1090,34 @@ void S_(FieldDescr* F, std::string S, void* record)
 			else {
 				// doplnime mezery zleva
 				memset(pRec, ' ', F->L - S.length());
-				memcpy(&pRec[S.length()], S.c_str(), S.length());
+				memcpy(&pRec[F->L - S.length()], S.c_str(), S.length());
 			}
 			break;
+		}
+		case 'N': {
+			BYTE tmpArr[80]{ 0 };
+			if (M == LeftJust) {
+				// doplnime nuly zprava
+				memcpy(tmpArr, S.c_str(), S.length());
+				memset(&tmpArr[F->L - S.length()], '0', F->L - S.length());
+			}
+			else {
+				// doplnime mezery zleva
+				memset(tmpArr, ' ', F->L - S.length());
+				memcpy(&tmpArr[F->L - S.length()], S.c_str(), S.length());
+			}
+			bool odd = F->L % 2 == 1; // lichy pocet znaku
+			for (size_t i = 0; i < F->NBytes; i++) {
+				if (odd && i == F->NBytes - 1) {
+					pRec[i] = ((tmpArr[2 * i] - 0x30) << 4);
+				}
+				else {
+					pRec[i] = ((tmpArr[2 * i] - 0x30) << 4) + (tmpArr[2 * i + 1] - 0x30);
+				}
+			}
+
 			//while (S.length() < L)
-			//	if (M == LeftJust) S.Append(' ');
+			//	if (M == LeftJust) S = S + "0";
 			//	else
 			//	{
 			//		pstring oldS = S;
@@ -1103,22 +1126,7 @@ void S_(FieldDescr* F, std::string S, void* record)
 			//	}
 			//integer i = 1;
 			//if ((S.length() > L) && (M != LeftJust)) i = S.length() + 1 - L;
-			//memcpy(pRec, &S[i], L); //Move(&S[i], &pRec[offset], L);
-			//if ((F->Flg & f_Encryp) != 0) Code(pRec, L);
-			//break;
-		}
-		case 'N': {
-			while (S.length() < L)
-				if (M == LeftJust) S = S + "0";
-				else
-				{
-					pstring oldS = S;
-					S = " ";
-					S += oldS;
-				}
-			integer i = 1;
-			if ((S.length() > L) && (M != LeftJust)) i = S.length() + 1 - L;
-			//Pack(&S[i], p, L);
+			////Pack(&S[i], p, L);
 			break;
 		}
 		case 'T': {
@@ -1151,7 +1159,7 @@ bool LinkLastRec(FileD* FD, longint& N, bool WithT)
 	if (FD->IsSQLFile)
 	{
 		if (Strm1->SelectXRec(nullptr, nullptr, _equ, WithT)) N = 1; else goto label1;
-	}
+}
 	else
 #endif
 	{
@@ -1181,7 +1189,7 @@ void AsgnParFldFrml(FileD* FD, FieldDescr* F, FrmlElem* Z, bool Ad)
 	if (CFile->IsSQLFile) {
 		CRecPtr = GetRecSpace; ZeroAllFlds; AssgnFrml(F, Z, true, Ad);
 		Strm1->UpdateXFld(nullptr, nullptr, F); ClearRecSpace(CRecPtr)
-	}
+}
 	else
 #endif
 	{
@@ -1250,17 +1258,21 @@ LongStr* _LongS(FieldDescr* F)
 				if ((F->Flg & f_Encryp) != 0) Code(S->A, l);
 				if (IsNullValue(S, l)) {
 					S->LL = 0;
-					ReleaseAfterLongStr(S);
+					//ReleaseAfterLongStr(S);
 				}
 			}
 			else if (IsNullValue(source, F->NBytes)) {
 				S->LL = 0;
-				ReleaseAfterLongStr(S);
+				//ReleaseAfterLongStr(S);
 			}
 			else
 			{
-				// nebudeme volat, zøejmìní není potøeba
+				// jedna je o typ N - prevedeme cislo na znaky
 				// UnPack(P, S->A, l);
+				for (size_t i = 0; i < F->NBytes; i++) {
+					S->A[2 * i] = ((BYTE)source[i] >> 4) + 0x30;
+					S->A[2 * i + 1] = ((BYTE)source[i] & 0x0F) + 0x30;
+				}
 			}
 			break;
 		}
@@ -1504,7 +1516,7 @@ label2:
 #endif
 		OldLMode(md);
 	return result;
-}
+	}
 
 void AssignNRecs(bool Add, longint N)
 {
@@ -1520,16 +1532,27 @@ void AssignNRecs(bool Add, longint N)
 	if ((N == 0) && (CFile->TF != nullptr)) CFile->TF->SetEmpty();
 	if (CFile->Typ == 'X')
 		if (N == 0) {
-			CFile->NRecs = 0; SetUpdHandle(CFile->Handle); XFNotValid(); goto label1;
+			CFile->NRecs = 0;
+			SetUpdHandle(CFile->Handle);
+			XFNotValid();
+			goto label1;
 		}
-		else { SetMsgPar(CFile->Name); RunErrorM(md, 821); }
-	if (N < OldNRecs) { DecNRecs(OldNRecs - N); goto label1; }
-	CRecPtr = GetRecSpace(); ZeroAllFlds(); SetDeletedFlag();
-	IncNRecs(N - OldNRecs); for (longint i = OldNRecs + 1; i < N; i++) WriteRec(i);
+		else {
+			SetMsgPar(CFile->Name);
+			RunErrorM(md, 821);
+		}
+	if (N < OldNRecs) {
+		DecNRecs(OldNRecs - N);
+		goto label1;
+	}
+	CRecPtr = GetRecSpace();
+	ZeroAllFlds();
+	SetDeletedFlag();
+	IncNRecs(N - OldNRecs);
+	for (longint i = OldNRecs + 1; i < N; i++) WriteRec(i);
 	ReleaseStore(CRecPtr);
 label1:
 	OldLMode(md);
-
 }
 
 void ClearRecSpace(void* p)
@@ -3122,13 +3145,13 @@ void XScan::Reset(FrmlElem* ABool, bool SQLFilter)
 			k = (KeyInD*)k->Chain;
 		}
 		break;
-	}
+		}
 #ifdef FandSQL
 	case 4: { CompKIFrml(Key, KIRoot, false); New(SQLStreamPtr(Strm), Init); IRec = 1; break; }
 #endif
 	}
 	SeekRec(0);
-}
+	}
 
 void XScan::ResetSort(KeyFldD* aSK, FrmlPtr& BoolZ, LockMode OldMd, bool SQLFilter)
 {
@@ -3183,7 +3206,7 @@ void XScan::ResetOwner(XString* XX, FrmlPtr aBool)
 		KIRoot = GetZStore(sizeof(KIRoot^));
 		KIRoot->X1 = StoreStr(XX->S); KIRoot->X2 = StoreStr(XX->S);
 		New(SQLStreamPtr(Strm), Init); IRec = 1
-	}
+}
 	else
 #endif
 	{
@@ -3255,7 +3278,7 @@ void XScan::SeekRec(longint I)
 			if (hasSQLFilter) z = Bool else z = nullptr;
 			InpReset(Key, SK, KIRoot, z, withT);
 			EOF = AtEnd; IRec = 0; NRecs = 0x20000000;
-		}
+}
 		return;
 	}
 #endif

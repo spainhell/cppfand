@@ -1175,8 +1175,11 @@ bool CompRunChptRec(WORD CC)
 			}
 			else {
 				lstFD = (FileD*)LastInChain(FileDRoot); ld = LinkDRoot;
-				SetInpTT(RP, true); ReadProcHead(); ReadProcBody();
-				lstFD->Chain = nullptr; LinkDRoot = ld;
+				SetInpTT(RP, true);
+				ReadProcHead("");
+				ReadProcBody();
+				lstFD->Chain = nullptr;
+				LinkDRoot = ld;
 			}
 			break;
 		}
@@ -1578,7 +1581,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 				else lstFD = (FileD*)LastInChain(FileDRoot);
 				ld = LinkDRoot;
 				SetInpTTPos(Txt, Encryp);
-				ReadProcHead();
+				ReadProcHead(Name);
 				ReadProcBody();
 				lstFD->Chain = nullptr;
 				LinkDRoot = ld;

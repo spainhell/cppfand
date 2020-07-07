@@ -286,19 +286,27 @@ longint GetFileSize()
 
 longint RecNoFun(FrmlElem13* Z)
 {
-	KeyDPtr k; FileDPtr cf; void* cr;
-	bool b; longint n; LockMode md; XString x;
-	GetRecNoXString(Z, x); cf = CFile; cr = CRecPtr; k = Z->Key;
-	CFile = Z->FFD; md = NewLMode(RdMode); CRecPtr = GetRecSpace();
+	bool b = false; longint n = 0;
+	XString x;
+	GetRecNoXString(Z, x);
+	FileD* cf = CFile;
+	void* cr = CRecPtr;
+	KeyD* k = Z->Key;
+	CFile = Z->FFD;
+	LockMode md = NewLMode(RdMode);
+	CRecPtr = GetRecSpace();
 	if (CFile->NRecs > 0) {
 		if (CFile->Typ == 'X') {
-			TestXFExist(); b = k->SearchIntvl(x, false, n);
+			TestXFExist();
+			b = k->SearchIntvl(x, false, n);
 		}
 		else b = SearchKey(x, k, n);
 		if (!b) n = -n;
 	}
 	else n = -1;
-	OldLMode(md); ReleaseStore(CRecPtr); CFile = cf; CRecPtr = cr;
+	OldLMode(md);
+	ReleaseStore(CRecPtr);
+	CFile = cf; CRecPtr = cr;
 	return n;
 }
 
@@ -452,14 +460,16 @@ LocVar* RunUserFunc(FrmlElem19* X)
 	LVBD = X->FC->LVB;
 	//PushProcStk();
 	//size_t i = 0;
-	LocVar* lv = nullptr; // tady je ulozena posledni LV, ktera je pak navratovou hodnotou
+	LocVar* lv = nullptr; // tady je pak ulozena posledni promenna, ktera je pak navratovou hodnotou
 	auto itr = LVBD.vLocVar.begin();
-	FrmlList fl = X->FrmlL;
+	auto fl = X->FrmlL;
 	while (itr != LVBD.vLocVar.end()) {
-		LVAssignFrml(*itr, nullptr, false, fl->Frml);
-		lv = *itr;
-		itr++;
-		//fl = (FrmlListEl*)fl->Chain;
+		if ((*itr)->IsPar || (*itr)->IsRetPar) {
+			LVAssignFrml(*itr, nullptr, false, fl->Frml);
+		}
+		if ((*itr)->IsRetValue)	lv = *itr;
+		++itr;
+		if (fl != nullptr) fl = static_cast<FrmlListEl*>(fl->Chain);
 	}
 	//ProcMyBP = MyBP;
 	auto instr = X->FC->pInstr;
@@ -611,9 +621,10 @@ bool RunBool(FrmlPtr X)
 		break;
 	}
 	case _eval: {
-		MarkStore(p);
-		result = RunBool(GetEvalFrml((FrmlElem21*)X));
-		ReleaseStore(p);
+		//MarkStore(p);
+		auto gef = GetEvalFrml((FrmlElem21*)X);
+		result = RunBool(gef);
+		//ReleaseStore(p);
 		break;
 	}
 	case _newfile: {
@@ -668,8 +679,10 @@ bool RunBool(FrmlPtr X)
 	case _testmode: result = IsTestRun; break;
 	case _equmask: result = RunEquMask((FrmlElem0*)X); break;
 	case _userfunc: {
-		result = *(bool*)(RunUserFunc((FrmlElem19*)X));
-		cr = MyBP; PopProcStk(); ReleaseStore(cr);
+		result = RunUserFunc((FrmlElem19*)X)->B;
+		cr = MyBP;
+		PopProcStk();
+		ReleaseStore(cr);
 		break;
 	}
 	case _setmybp: {
@@ -1038,7 +1051,7 @@ label1:
 	}
 	case _inttsr: result = IntTSR(X);
 	case _userfunc: {
-		result = *(double*)RunUserFunc((FrmlElem19*)X);
+		result = RunUserFunc((FrmlElem19*)X)->R;
 		cr = MyBP; PopProcStk(); ReleaseStore(cr);
 		break;
 	}
@@ -1499,19 +1512,6 @@ label1:
 		cf = CFile; cr = CRecPtr;
 		AccRecNoProc(iX, 640);
 		S = _LongS(iX->RecFldD);
-		// vysledkem by melo byt cislo -> pozadujeme ASCII
-		bool isNum = true;
-		for (size_t i = 0; i < S->LL; i++) {
-			if (isdigit(S->A[i] + 0x30)) continue;
-			isNum = false;
-			break;
-		}
-		if (isNum) {
-			// retezec predstavuje cislo
-			for (size_t i = 0; i < S->LL; i++) {
-				S->A[i] += 0x30;
-			}
-		}
 		//MyMove(S, CRecPtr, S->LL + 2);
 		ReleaseAfterLongStr(CRecPtr);
 		result = S;
@@ -1943,7 +1943,7 @@ void GetRecNoXString(FrmlElem13* Z, XString& X)
 {
 	WORD i = 0;
 	X.Clear();
-	KeyFldDPtr kf = Z->Key->KFlds;
+	KeyFldD* kf = Z->Key->KFlds;
 	while (kf != nullptr) {
 		FrmlElem* zz = Z->Arg[i];
 		switch (kf->FldD->FrmlTyp) {
