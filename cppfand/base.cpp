@@ -186,10 +186,10 @@ WORD ReadH(FILE* handle, WORD bytes, void* buffer)
 	//{
 	//	printf("ReadH() r160: DEALER\n");
 	//}
-	if ((uintptr_t)handle == 0x0117d388)
-	{
-		printf("");
-	}
+	//if ((uintptr_t)handle == 0x0117d388)
+	//{
+	//	printf("");
+	//}
 	size_t bufferSize = bytes; // sizeof(buffer);
 	return fread_s(buffer, bufferSize, 1, bytes, handle);
 }

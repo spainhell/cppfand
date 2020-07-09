@@ -40,7 +40,9 @@ public:
 	WORD RecLen = 0, MaxOnWPage = 0, WPageSize = 0;
 	longint MaxWPage = 0, WRoot = 0, NChains = 0, PgWritten = 0;
 	longint WBaseSize = 0;
-	WPage* PW = nullptr; WPage* PW1 = nullptr; WPage* PW2 = nullptr;
+	WPage* PW = nullptr; 
+	WPage* PW1 = nullptr; 
+	WPage* PW2 = nullptr;
 	longint FreeNr[5] { 0, 0, 0, 0, 0 };
 	WORD NFreeNr = 0;
 	longint IRec = 0, RecNr = 0;
@@ -109,6 +111,10 @@ longint WRec::GetN()
 void WRec::PutN(longint NN)
 {
 	//asm { asm les di, Self; mov ax, NN.WORD; cld; stosw; mov al, NN[2].BYTE; stosb; }
+	BYTE* p = (BYTE*)&NN;
+	N[0] = p[0];
+	N[1] = p[1];
+	N[2] = p[2];
 }
 
 void WRec::PutIR(longint II)
@@ -389,11 +395,14 @@ XWorkFile::XWorkFile(XScan* AScan, XKey* AK)
 
 void XWorkFile::Main(char Typ)
 {
-	WRec* R; KeyDPtr k; KeyFldDPtr kf; XPagePtr p; bool frst;
-	XPP = (XPage*)GetStore(XPageSize); NxtXPage = XF->NewPage(XPP);
-	MsgWritten = false; frst = true;
+	WRec* R = nullptr; KeyD* k = nullptr; KeyFldD* kf = nullptr; 
+	XPage* p = nullptr; bool frst = false;
+	XPP = new XPage(); // (XPage*)GetStore(XPageSize);
+	NxtXPage = XF->NewPage(XPP);
+	MsgWritten = false; 
+	frst = true;
 	while (KD != nullptr) {
-		PX = (XXPage*)GetZStore(sizeof(XXPage));
+		PX = new XXPage(); // (XXPage*)GetZStore(sizeof(XXPage));
 		PX->Reset(this);
 		PX->IsLeaf = true;
 		k = Scan->Key;
@@ -405,13 +414,17 @@ void XWorkFile::Main(char Typ)
 			(Scan->Bool == nullptr
 				&& (EquKFlds(k->KFlds, kf) || kf == nullptr))) CopyIndex(k, kf, Typ);
 		else {
-			if (frst) frst = false; else Scan->SeekRec(0);
-			Reset(KD->KFlds, sizeof(XXPage) * 9, Typ, Scan->NRecs); SortMerge();
+			if (frst) frst = false; 
+			else Scan->SeekRec(0);
+			Reset(KD->KFlds, sizeof(XXPage) * 9, Typ, Scan->NRecs); 
+			SortMerge();
 		}
 		FinishIndex();
-		ReleaseStore(PX); KD = KD->Chain;
+		ReleaseStore(PX); 
+		KD = KD->Chain;
 	}
-	XF->ReleasePage(XPP, NxtXPage); ReleaseStore(XPP);
+	XF->ReleasePage(XPP, NxtXPage); 
+	ReleaseStore(XPP);
 }
 
 void XWorkFile::CopyIndex(KeyD* K, KeyFldD* KF, char Typ)
@@ -577,7 +590,7 @@ void CreateIndexFile()
 	XScan* Scan;
 	XFile* XF = nullptr;
 	//NewExit(Ovr(), er);
-	goto label1;
+	//goto label1;
 	MarkStore(p); fail = true;
 	XF = CFile->XF; cr = CRecPtr; CRecPtr = GetRecSpace();
 	md = NewLMode(RdMode); TryLockN(0, 0); /*ClearCacheCFile;*/

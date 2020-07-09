@@ -354,6 +354,7 @@ class XString // ø. 254
 {
 public:
 	pstring S; // S:string255;
+	//BYTE S[256]{ 0 };
 	void Clear(); // index.pas ASM
 	void StoreReal(double R, KeyFldD* KF);
 	void StoreStr(pstring V, KeyFldD* KF);
@@ -377,10 +378,14 @@ private:
 class XItem // r274
 {
 public:
+	// konstruktor pro "pretypovani" z XPage
+	XItem(BYTE Nr0, BYTE Nr1, BYTE Nr2, longint downpage, BYTE* data);
 	BYTE Nr[3]; // NN  RecNr /on leaf/ or NumberofRecordsBelow
 	longint DownPage; // not on leaf
 	// M byte  number of equal bytes /not stored bytes/ 
 	// Index string  /L=length, A area ptr/
+	// p->A z XPage se prevadi na XItem, po 7B zacinaji data, aby k nim byl pristup, je tady ukazatel:
+	BYTE* XPageData = nullptr;
 	longint GetN(); // index.pas r129 ASM
 	void PutN(longint N); // index.pas r132 ASM
 	WORD GetM(WORD O); // index.pas r136 ASM
@@ -412,6 +417,7 @@ public:
 	void Delete(WORD I);
 	void AddPage(XPage* P);
 	void SplitPage(XPage* P, longint ThisPage);
+	void Clean();
 };
 typedef XPage* XPagePtr;
 
@@ -465,17 +471,17 @@ class XWFile // r345
 {
 public:
 	//XWFile();
-	WORD UpdLockCnt;
-	FILE* Handle;
-	longint FreeRoot, MaxPage;
+	WORD UpdLockCnt = 0;
+	FILE* Handle = nullptr;
+	longint FreeRoot = 0, MaxPage = 0;
 	void Err(WORD N);
 	void TestErr();
 	longint UsedFileSize();
 	bool NotCached();
-	void RdPage(XPagePtr P, longint N);
-	void WrPage(XPagePtr P, longint N);
-	longint NewPage(XPagePtr P);
-	void ReleasePage(XPagePtr P, longint N);
+	void RdPage(XPage* P, longint N);
+	void WrPage(XPage* P, longint N);
+	longint NewPage(XPage* P);
+	void ReleasePage(XPage* P, longint N);
 };
 typedef XWFile* XWFilePtr;
 
@@ -483,10 +489,10 @@ class XFile : public XWFile // r357
 {
 public:
 	// XFile();
-	longint NRecs, NRecsAbs; // {FreeRoot..NrKeys read / written by 1 instr.}
-	bool NotValid;
-	BYTE NrKeys;
-	bool NoCreate, FirstDupl;
+	longint NRecs = 0, NRecsAbs = 0; // {FreeRoot..NrKeys read / written by 1 instr.}
+	bool NotValid = false;
+	BYTE NrKeys = 0;
+	bool NoCreate = false, FirstDupl = false;
 	void SetEmpty();
 	void RdPrefix();
 	void WrPrefix();

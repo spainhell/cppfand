@@ -10,6 +10,7 @@
 #include "olongstr.h"
 #include "runfrml.h"
 #include "sort.h"
+#include "../pascal/asm.h"
 
 WORD randIndex = 0;
 
@@ -2244,13 +2245,22 @@ void XString::StoreF(void* F, WORD Len, bool Descend)
 
 void XString::StoreA(void* A, WORD Len, bool CompLex, bool Descend)
 {
-	S[0] = Len;
-	memcpy(&S[1], A, Len);
+	//S[0] = Len;
+	//memcpy(&S[1], A, Len);
+	XStringStoreA(&S, (unsigned char*)A, Len, CompLex, Descend);
+}
+
+XItem::XItem(BYTE Nr0, BYTE Nr1, BYTE Nr2, longint downpage, BYTE* data)
+{
+	Nr[0] = Nr0; Nr[1] = Nr1; Nr[2] = Nr2; DownPage = downpage;
+	XPageData = data;
 }
 
 longint XItem::GetN()
 {
 	// asm les bx,Self; mov ax,es:[bx]; mov dl,es:[bx+2]; xor dh,dh end;
+	WORD AX = Nr[0] + (Nr[1] * 256);
+	WORD DX = Nr[2];
 	return 0;
 }
 
@@ -2258,6 +2268,7 @@ void XItem::PutN(longint N)
 {
 	// asm les bx,Self; mov ax,N.word; mov es:[bx],ax; mov al,N[2].byte;
 	// mov es : [bx + 2] , al
+
 }
 
 WORD XItem::GetM(WORD O)
@@ -2474,6 +2485,14 @@ void XPage::SplitPage(XPage* P, longint ThisPage)
 	P->IsLeaf = IsLeaf;
 }
 
+void XPage::Clean()
+{
+	IsLeaf = false;
+	GreaterPage = 0;
+	WORD NItems = 0;
+	memset(A, 0, XPageSize - 4);
+}
+
 XWFile* XKey::XF()
 {
 	if (InWork) return &XWork;
@@ -2491,15 +2510,16 @@ bool XKey::Search(XString& XX, bool AfterEqu, longint& RecNr)
 	bool searchResult = false;
 	XPage* p = nullptr;
 	WORD iItem = 0;
-	char result;
+	XItem* x = nullptr;
+	char result = '\0';
 	p = new XPage(); // (XPage*)GetStore(XPageSize);
-label1:
 	XPathN = 1;
 	longint page = IndexRoot;
 	AfterEqu = AfterEqu && Duplic;
+label1:
 	XPath[XPathN].Page = page;
 	XF()->RdPage(p, page);
-	XItem* x = (XItem*)p->A;
+	
 	WORD o = p->Off();
 	WORD nItems = p->NItems;
 	if (nItems == 0) {
@@ -2508,37 +2528,16 @@ label1:
 		goto label2;
 	}
 
-	//__asm {
-	//	push ds;
-	//	cld;
-	//	les dx, x;
-	//	mov iItem, 1;
-	//}
+	// * PUVODNI ASM
+	result = XKeySearch(p->A, &XX.S[0], iItem, nItems, p->Off(), AfterEqu);
+	// * KONEC PUVODNIHO ASM
 
-	//asm
-	//	push ds; cld; les bx, x; mov iItem, 1; mov dx, 1;
-	//@@add 1 bx, o;xor ax, ax; mov al, es: [bx] ; cmp dx, ax; jna @@5; /*first different <= prefix length?*/
-	//mov dx, ax; lds si, XX;xor ax, ax; lodsb; sub ax, dx; add si, dx;
-	//mov ah, es: [bx + 1] ; /*pstring length*/ lea di, [bx + 2]; /*pstring addr*/
-	//xor cx, cx; mov cl, ah; cmp ah, al; jna @@2; mov cl, al;  /*min length*/
-	//@@add 2 dx, cx;xor ch, ch; /*set zero flag*/
-	//repe cmpsb; jb @@8; ja @@4; cmp al, ah; jb @@8; ja @@3;
-	//cmp AfterEqu, 0; je @@7;
-	//@@inc 3 dx;
-	//@@sub 4 dx, cx;
-	//@@mov 5 ax, iItem; cmp ax, nItems; je @@6; /*last item?*/
-	//inc ax; mov iItem, ax;
-	//xor ax, ax; mov al, es: [bx + 1] ; add ax, 2; add bx, ax;  /*next item*/
-	//jmp @@1;
-	//@@mov 6 al, _gt; inc iItem; jmp @@9;
-	//@@mov 7 al, _equ; jmp @@9;
-	//@@mov 8 al, _lt;
-	//@@mov 9 result, al; sub bx, o; mov x.WORD, bx; pop ds; }
 	XPath[XPathN].I = iItem;
+	x = new XItem(p->A[0], p->A[1], p->A[2], *(longint*)&p->A[3], &p->A[7]);
 	if (p->IsLeaf) {
 		if (iItem > nItems) RecNr = CFile->NRecs + 1;
 		else RecNr = x->GetN();
-		if (searchResult == _equ)
+		if (result == _equ)
 			if
 #ifdef FandSQL
 				!CFile->IsSQLFile&&
@@ -2549,12 +2548,14 @@ label1:
 			label2:
 		searchResult = false;
 		ReleaseStore(p);
+		delete x;
 		return searchResult;
 	}
 	if (iItem > nItems) page = p->GreaterPage;
 	else page = x->DownPage;
 	XPathN++;
 	goto label1;
+	delete x;
 	return searchResult;
 }
 
@@ -2641,7 +2642,9 @@ bool XKey::RecNrToPath(XString& XX, longint RecNr)
 			if (IncPath(XPathN - 1, X.Page)) { X.I = 1; goto label1; }
 		}
 		else {
-			x = x->Next(oLeaf); if (x->GetL(oLeaf) != 0) goto label3; goto label2;
+			x = x->Next(oLeaf); 
+			if (x->GetL(oLeaf) != 0) goto label3; 
+			goto label2;
 		}; }
 label3:
 	ReleaseStore(p);
@@ -3018,19 +3021,27 @@ bool XWFile::NotCached()
 	return (this != &XWork) && CFile->NotCached();
 }
 
-void XWFile::RdPage(XPagePtr P, longint N)
+void XWFile::RdPage(XPage* P, longint N)
 {
 	if ((N == 0) || (N > MaxPage)) Err(831);
-	RdWrCache(true, Handle, NotCached(), N << XPageShft, XPageSize, P);
+	// puvodne se nacitalo celych XPageSize z P, bylo nutno to rozhodit na jednotlive tridni promenne
+	RdWrCache(true, Handle, NotCached(), N << XPageShft, 1, &P->IsLeaf);
+	RdWrCache(true, Handle, NotCached(), (N << XPageShft) + 1, 4, &P->GreaterPage);
+	RdWrCache(true, Handle, NotCached(), (N << XPageShft) + 5, 2, &P->NItems);
+	RdWrCache(true, Handle, NotCached(), (N << XPageShft) + 7, XPageSize - 7, P->A);
 }
 
-void XWFile::WrPage(XPagePtr P, longint N)
+void XWFile::WrPage(XPage* P, longint N)
 {
 	if (UpdLockCnt > 0) Err(645);
-	RdWrCache(false, Handle, NotCached(), N << XPageShft, XPageSize, P);
+	// puvodne se zapisovalo celych XPageSize z P, bylo nutno to rozhodit na jednotlive tridni promenne
+	RdWrCache(false, Handle, NotCached(), N << XPageShft, 1, &P->IsLeaf);
+	RdWrCache(false, Handle, NotCached(), (N << XPageShft) + 1, 4, &P->GreaterPage);
+	RdWrCache(false, Handle, NotCached(), (N << XPageShft) + 5, 2, &P->NItems);
+	RdWrCache(false, Handle, NotCached(), (N << XPageShft) + 7, XPageSize - 7, P->A);
 }
 
-longint XWFile::NewPage(XPagePtr P)
+longint XWFile::NewPage(XPage* P)
 {
 	longint result = 0;
 	if (FreeRoot != 0) {
@@ -3047,7 +3058,7 @@ longint XWFile::NewPage(XPagePtr P)
 	return result;
 }
 
-void XWFile::ReleasePage(XPagePtr P, longint N)
+void XWFile::ReleasePage(XPage* P, longint N)
 {
 	FillChar(P, XPageSize, 0);
 	P->GreaterPage = FreeRoot;
@@ -3057,10 +3068,12 @@ void XWFile::ReleasePage(XPagePtr P, longint N)
 
 void XFile::SetEmpty()
 {
-	auto p = (XPage*)GetZStore(XPageSize);
+	auto p = new XPage(); // (XPage*)GetZStore(XPageSize);
 	WrPage(p, 0);
-	p->IsLeaf = true; FreeRoot = 0; NRecs = 0;
-	KeyDPtr k = CFile->Keys;
+	p->IsLeaf = true; 
+	FreeRoot = 0; 
+	NRecs = 0;
+	KeyD* k = CFile->Keys;
 	while (k != nullptr) {
 		longint n = k->IndexRoot;
 		MaxPage = n;
@@ -3073,15 +3086,26 @@ void XFile::SetEmpty()
 
 void XFile::RdPrefix()
 {
-	RdWrCache(true, Handle, NotCached(), 2, 18, &FreeRoot);
+	RdWrCache(true, Handle, NotCached(), 2, 4, &FreeRoot);
+	RdWrCache(true, Handle, NotCached(), 6, 4, &MaxPage);
+	RdWrCache(true, Handle, NotCached(), 10, 4, &NRecs);
+	RdWrCache(true, Handle, NotCached(), 14, 4, &NRecsAbs);
+	RdWrCache(true, Handle, NotCached(), 18, 1, &NotValid);
+	RdWrCache(true, Handle, NotCached(), 19, 1, &NrKeys);
 }
 
 void XFile::WrPrefix()
 {
 	WORD Signum = 0x04FF;
 	RdWrCache(false, Handle, NotCached(), 0, 2, &Signum);
-	NRecsAbs = CFile->NRecs; NrKeys = CFile->GetNrKeys();
-	RdWrCache(false, Handle, NotCached(), 2, 18, &FreeRoot);
+	NRecsAbs = CFile->NRecs; 
+	NrKeys = CFile->GetNrKeys();
+	RdWrCache(false, Handle, NotCached(), 2, 4, &FreeRoot);
+	RdWrCache(false, Handle, NotCached(), 6, 4, &MaxPage);
+	RdWrCache(false, Handle, NotCached(), 10, 4, &NRecs);
+	RdWrCache(false, Handle, NotCached(), 14, 4, &NRecsAbs);
+	RdWrCache(false, Handle, NotCached(), 18, 1, &NotValid);
+	RdWrCache(false, Handle, NotCached(), 19, 1, &NrKeys);
 }
 
 void XFile::SetNotValid()
@@ -3146,13 +3170,13 @@ void XScan::Reset(FrmlElem* ABool, bool SQLFilter)
 			k = (KeyInD*)k->Chain;
 		}
 		break;
-	}
+		}
 #ifdef FandSQL
 	case 4: { CompKIFrml(Key, KIRoot, false); New(SQLStreamPtr(Strm), Init); IRec = 1; break; }
 #endif
 	}
 	SeekRec(0);
-}
+	}
 
 void XScan::ResetSort(KeyFldD* aSK, FrmlPtr& BoolZ, LockMode OldMd, bool SQLFilter)
 {
@@ -3207,7 +3231,7 @@ void XScan::ResetOwner(XString* XX, FrmlPtr aBool)
 		KIRoot = GetZStore(sizeof(KIRoot^));
 		KIRoot->X1 = StoreStr(XX->S); KIRoot->X2 = StoreStr(XX->S);
 		New(SQLStreamPtr(Strm), Init); IRec = 1
-	}
+}
 	else
 #endif
 	{
@@ -3279,7 +3303,7 @@ void XScan::SeekRec(longint I)
 			if (hasSQLFilter) z = Bool else z = nullptr;
 			InpReset(Key, SK, KIRoot, z, withT);
 			EOF = AtEnd; IRec = 0; NRecs = 0x20000000;
-		}
+}
 		return;
 	}
 #endif
