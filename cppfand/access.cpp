@@ -1159,7 +1159,7 @@ bool LinkLastRec(FileD* FD, longint& N, bool WithT)
 	if (FD->IsSQLFile)
 	{
 		if (Strm1->SelectXRec(nullptr, nullptr, _equ, WithT)) N = 1; else goto label1;
-}
+	}
 	else
 #endif
 	{
@@ -1189,7 +1189,7 @@ void AsgnParFldFrml(FileD* FD, FieldDescr* F, FrmlElem* Z, bool Ad)
 	if (CFile->IsSQLFile) {
 		CRecPtr = GetRecSpace; ZeroAllFlds; AssgnFrml(F, Z, true, Ad);
 		Strm1->UpdateXFld(nullptr, nullptr, F); ClearRecSpace(CRecPtr)
-}
+	}
 	else
 #endif
 	{
@@ -1516,7 +1516,7 @@ label2:
 #endif
 		OldLMode(md);
 	return result;
-	}
+}
 
 void AssignNRecs(bool Add, longint N)
 {
@@ -2173,10 +2173,10 @@ void XString::StoreReal(double R, KeyFldD* KF)
 
 void XString::StoreStr(pstring V, KeyFldD* KF)
 {
-	WORD n;
+	WORD n = 0;
 	auto X = KF->FldD;
 	while (V[0] < X->L) {
-		if (X->M == LeftJust) V = V + " ";
+		if (X->M == LeftJust) V.Append(' ');
 		else {
 			auto oldV = V;
 			V = " ";
@@ -2244,6 +2244,8 @@ void XString::StoreF(void* F, WORD Len, bool Descend)
 
 void XString::StoreA(void* A, WORD Len, bool CompLex, bool Descend)
 {
+	S[0] = Len;
+	memcpy(&S[1], A, Len);
 }
 
 longint XItem::GetN()
@@ -2487,73 +2489,72 @@ longint XKey::NRecs()
 bool XKey::Search(XString& XX, bool AfterEqu, longint& RecNr)
 {
 	bool searchResult = false;
-	XPagePtr p;
+	XPage* p = nullptr;
 	WORD iItem = 0;
 	char result;
-	{
-		p = new XPage(); // (XPage*)GetStore(XPageSize);
-	label1:
-		XPathN = 1;
-		longint page = IndexRoot;
-		AfterEqu = AfterEqu && Duplic;
-		XPath[XPathN].Page = page;
-		XF()->RdPage(p, page);
-		XItemPtr x = XItemPtr(p->A);
-		WORD o = p->Off();
-		WORD nItems = p->NItems;
-		if (nItems == 0) {
-			RecNr = CFile->NRecs + 1;
-			XPath[1].I = 1;
-			goto label2;
-		}
-
-		//__asm {
-		//	push ds;
-		//	cld;
-		//	les dx, x;
-		//	mov iItem, 1;
-		//}
-
-		//asm
-		//	push ds; cld; les bx, x; mov iItem, 1; mov dx, 1;
-		//@@add 1 bx, o;xor ax, ax; mov al, es: [bx] ; cmp dx, ax; jna @@5; /*first different <= prefix length?*/
-		//mov dx, ax; lds si, XX;xor ax, ax; lodsb; sub ax, dx; add si, dx;
-		//mov ah, es: [bx + 1] ; /*pstring length*/ lea di, [bx + 2]; /*pstring addr*/
-		//xor cx, cx; mov cl, ah; cmp ah, al; jna @@2; mov cl, al;  /*min length*/
-		//@@add 2 dx, cx;xor ch, ch; /*set zero flag*/
-		//repe cmpsb; jb @@8; ja @@4; cmp al, ah; jb @@8; ja @@3;
-		//cmp AfterEqu, 0; je @@7;
-		//@@inc 3 dx;
-		//@@sub 4 dx, cx;
-		//@@mov 5 ax, iItem; cmp ax, nItems; je @@6; /*last item?*/
-		//inc ax; mov iItem, ax;
-		//xor ax, ax; mov al, es: [bx + 1] ; add ax, 2; add bx, ax;  /*next item*/
-		//jmp @@1;
-		//@@mov 6 al, _gt; inc iItem; jmp @@9;
-		//@@mov 7 al, _equ; jmp @@9;
-		//@@mov 8 al, _lt;
-		//@@mov 9 result, al; sub bx, o; mov x.WORD, bx; pop ds; }
-		XPath[XPathN].I = iItem;
-		if (p->IsLeaf) {
-			if (iItem > nItems) RecNr = CFile->NRecs + 1; else RecNr = x->GetN();
-			if (searchResult == _equ)
-				if
-#ifdef FandSQL
-					!CFile->IsSQLFile&&
-#endif
-					(((RecNr == 0) || (RecNr > CFile->NRecs))) XF()->Err(833);
-				else searchResult = true;
-			else
-				label2:
-			searchResult = false;
-			ReleaseStore(p);
-			return searchResult;
-		}
-		if (iItem > nItems) page = p->GreaterPage;
-		else page = x->DownPage;
-		XPathN++;
-		goto label1;
+	p = new XPage(); // (XPage*)GetStore(XPageSize);
+label1:
+	XPathN = 1;
+	longint page = IndexRoot;
+	AfterEqu = AfterEqu && Duplic;
+	XPath[XPathN].Page = page;
+	XF()->RdPage(p, page);
+	XItem* x = (XItem*)p->A;
+	WORD o = p->Off();
+	WORD nItems = p->NItems;
+	if (nItems == 0) {
+		RecNr = CFile->NRecs + 1;
+		XPath[1].I = 1;
+		goto label2;
 	}
+
+	//__asm {
+	//	push ds;
+	//	cld;
+	//	les dx, x;
+	//	mov iItem, 1;
+	//}
+
+	//asm
+	//	push ds; cld; les bx, x; mov iItem, 1; mov dx, 1;
+	//@@add 1 bx, o;xor ax, ax; mov al, es: [bx] ; cmp dx, ax; jna @@5; /*first different <= prefix length?*/
+	//mov dx, ax; lds si, XX;xor ax, ax; lodsb; sub ax, dx; add si, dx;
+	//mov ah, es: [bx + 1] ; /*pstring length*/ lea di, [bx + 2]; /*pstring addr*/
+	//xor cx, cx; mov cl, ah; cmp ah, al; jna @@2; mov cl, al;  /*min length*/
+	//@@add 2 dx, cx;xor ch, ch; /*set zero flag*/
+	//repe cmpsb; jb @@8; ja @@4; cmp al, ah; jb @@8; ja @@3;
+	//cmp AfterEqu, 0; je @@7;
+	//@@inc 3 dx;
+	//@@sub 4 dx, cx;
+	//@@mov 5 ax, iItem; cmp ax, nItems; je @@6; /*last item?*/
+	//inc ax; mov iItem, ax;
+	//xor ax, ax; mov al, es: [bx + 1] ; add ax, 2; add bx, ax;  /*next item*/
+	//jmp @@1;
+	//@@mov 6 al, _gt; inc iItem; jmp @@9;
+	//@@mov 7 al, _equ; jmp @@9;
+	//@@mov 8 al, _lt;
+	//@@mov 9 result, al; sub bx, o; mov x.WORD, bx; pop ds; }
+	XPath[XPathN].I = iItem;
+	if (p->IsLeaf) {
+		if (iItem > nItems) RecNr = CFile->NRecs + 1;
+		else RecNr = x->GetN();
+		if (searchResult == _equ)
+			if
+#ifdef FandSQL
+				!CFile->IsSQLFile&&
+#endif
+				(((RecNr == 0) || (RecNr > CFile->NRecs))) XF()->Err(833);
+			else searchResult = true;
+		else
+			label2:
+		searchResult = false;
+		ReleaseStore(p);
+		return searchResult;
+	}
+	if (iItem > nItems) page = p->GreaterPage;
+	else page = x->DownPage;
+	XPathN++;
+	goto label1;
 	return searchResult;
 }
 
@@ -3145,13 +3146,13 @@ void XScan::Reset(FrmlElem* ABool, bool SQLFilter)
 			k = (KeyInD*)k->Chain;
 		}
 		break;
-		}
+	}
 #ifdef FandSQL
 	case 4: { CompKIFrml(Key, KIRoot, false); New(SQLStreamPtr(Strm), Init); IRec = 1; break; }
 #endif
 	}
 	SeekRec(0);
-	}
+}
 
 void XScan::ResetSort(KeyFldD* aSK, FrmlPtr& BoolZ, LockMode OldMd, bool SQLFilter)
 {
@@ -3206,7 +3207,7 @@ void XScan::ResetOwner(XString* XX, FrmlPtr aBool)
 		KIRoot = GetZStore(sizeof(KIRoot^));
 		KIRoot->X1 = StoreStr(XX->S); KIRoot->X2 = StoreStr(XX->S);
 		New(SQLStreamPtr(Strm), Init); IRec = 1
-}
+	}
 	else
 #endif
 	{
@@ -3278,7 +3279,7 @@ void XScan::SeekRec(longint I)
 			if (hasSQLFilter) z = Bool else z = nullptr;
 			InpReset(Key, SK, KIRoot, z, withT);
 			EOF = AtEnd; IRec = 0; NRecs = 0x20000000;
-}
+		}
 		return;
 	}
 #endif
