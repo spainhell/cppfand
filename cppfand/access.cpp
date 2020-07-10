@@ -2245,9 +2245,18 @@ void XString::StoreF(void* F, WORD Len, bool Descend)
 
 void XString::StoreA(void* A, WORD Len, bool CompLex, bool Descend)
 {
-	//S[0] = Len;
-	//memcpy(&S[1], A, Len);
-	XStringStoreA(&S, (unsigned char*)A, Len, CompLex, Descend);
+	if (CompLex || Descend) throw std::exception("XString::StoreA() not implemented.");
+	// jinak asi nahradi mezery na konci retezce za '0x1F'
+	char* p = (char*)A;
+	for (size_t i = Len - 1; i >= 0; i++) {
+		if (p[i] == ' ') {
+			p[i] = 0x1F;
+			continue;
+		}
+		break;
+	}
+	S[0] = Len;
+	memcpy(&S[1], p, Len);
 }
 
 XItem::XItem(BYTE Nr0, BYTE Nr1, BYTE Nr2, longint downpage, BYTE* data)
