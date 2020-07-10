@@ -433,7 +433,7 @@ void RdLex()
 		break;
 	default: break;
 	}
-	//if (LexWord == "Hlaseni")
+	//if (LexWord == "Akt")
 	//{
 	//	printf("RdLex() r. 437 - %s\n", LexWord.c_str());
 	//}
