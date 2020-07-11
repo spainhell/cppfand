@@ -1045,6 +1045,15 @@ void RdWrCache(bool ReadOp, FILE* Handle, bool NotCached, longint Pos, WORD N, v
 
 	if (Handle == nullptr) RunError(706);
 
+	if (!ReadOp && (CFile != nullptr) && (CFile->UMode == RdOnly)) {
+		// snazime se zapsat do RdOnly souboru
+		// zapisem pouze do cache
+		// nutno doresit, co s tim dal ...
+		FileCache* c1 = Cache::GetCache(Handle);
+		c1->Save(Pos, N, (unsigned char*)Buf);
+		return;
+	}
+
 	//if (NotCached) {
 		SeekH(Handle, Pos);
 		if (ReadOp) ReadH(Handle, N, Buf);

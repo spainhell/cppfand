@@ -728,10 +728,10 @@ label1:
 
 bool LockRec(bool Displ)
 {
-	bool b;
+	
 	auto result = false;
 	if (E->IsLocked) { return true; }
-	b = ELockRec(E, AbsRecNr(CRec()), IsNewRec, Subset);
+	bool b = ELockRec(E, AbsRecNr(CRec()), IsNewRec, Subset);
 	result = b;
 	if (b && !IsNewRec && !EdRecVar && CFile->NotCached() && Displ)
 		DisplRec(IRec);

@@ -308,12 +308,16 @@ void CopyPrevMFlds_M()
 	S = LexWord;
 	while (M != nullptr)
 	{
-		LexWord = M->FldD->Name; F = FindFldName(InpFD_M(Ii));
+		LexWord = M->FldD->Name; 
+		F = FindFldName(InpFD_M(Ii));
 		if (F == nullptr) OldError(8);
 		if (!FldTypIdentity(M->FldD, F)) OldError(12);
-		MNew = (KeyFldD*)GetStore(sizeof(*MNew));
+		MNew = new KeyFldD(); // (KeyFldD*)GetStore(sizeof(*MNew));
 		Move(M, MNew, sizeof(*MNew));
-		MNew->FldD = F; ChainLast(IDA[Ii]->MFld, MNew); M = (KeyFldD*)M->Chain;
+		MNew->FldD = F; 
+		if (IDA[Ii]->MFld == nullptr) IDA[Ii]->MFld = MNew;
+		else ChainLast(IDA[Ii]->MFld, MNew);
+		M = (KeyFldD*)M->Chain;
 	}
 	LexWord = S;
 }

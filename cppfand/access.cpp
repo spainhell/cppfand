@@ -560,6 +560,7 @@ void UnLockN(longint N)
 
 WORD RdPrefix()
 {
+	// NRs - celkovy pocet zaznamu v souboru; RLen - delka 1 zaznamu
 	struct x6 { longint NRs = 0; WORD RLen = 0; } X6;
 	struct x8 { WORD NRs = 0, RLen = 0; } X8;
 	struct xD {
@@ -662,9 +663,9 @@ void WrDBaseHd()
 
 	// with CFile^
 	{
-		bool chached = CFile->NotCached();
-		RdWrCache(false, CFile->Handle, chached, 0, CFile->FrstDispl, (void*)&P);
-		RdWrCache(false, CFile->Handle, chached,
+		bool cached = CFile->NotCached();
+		RdWrCache(false, CFile->Handle, cached, 0, CFile->FrstDispl, (void*)&P);
+		RdWrCache(false, CFile->Handle, cached,
 			longint(CFile->NRecs) * CFile->RecLen + CFile->FrstDispl, 1, (void*)&CtrlZ);
 	}
 
@@ -687,13 +688,13 @@ void WrPrefix()
 
 	if (IsUpdHandle(CFile->Handle))
 	{
-		bool chached = CFile->NotCached();
+		bool cached = CFile->NotCached();
 		switch (CFile->Typ)
 		{
 		case '8': {
 			Pfx8.RLen = CFile->RecLen;
 			Pfx8.NRs = CFile->NRecs;
-			RdWrCache(false, CFile->Handle, chached, 0, 4, (void*)&Pfx8);
+			RdWrCache(false, CFile->Handle, cached, 0, 4, (void*)&Pfx8);
 			break;
 		}
 		case 'D': {
@@ -704,7 +705,7 @@ void WrPrefix()
 			Pfx6.RLen = CFile->RecLen;
 			if (CFile->Typ == 'X') Pfx6.NRs = -CFile->NRecs;
 			else Pfx6.NRs = CFile->NRecs;
-			RdWrCache(false, CFile->Handle, chached, 0, 6, (void*)&Pfx6);
+			RdWrCache(false, CFile->Handle, cached, 0, 6, (void*)&Pfx6);
 		}
 		}
 	}
@@ -2118,10 +2119,10 @@ bool FileD::IsShared()
 
 bool FileD::NotCached()
 {
-	/*if (UMode == Shared) goto label1;
-	if (UMode != RdShared) return false;
-label1:
-	if (LMode == ExclMode) return false;*/
+//	if (UMode == Shared) goto label1;
+//	if (UMode != RdShared) return false;
+//label1:
+//	if (LMode == ExclMode) return false;
 	return true;
 }
 
