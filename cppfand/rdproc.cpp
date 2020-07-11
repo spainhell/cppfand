@@ -868,9 +868,9 @@ Instr* RdBeginEnd()
 Instr_proc* RdProcArg(char Caller)
 {
 	std::string ProcName = LexWord;
-	if (ProcName == "M01") {
-		printf("");
-	}
+	//if (ProcName == "MyCall1") {
+	//	printf("");
+	//}
 	RdbPos Pos;
 	TypAndFrml TArg[31];
 	LocVar* LV = nullptr;
@@ -883,10 +883,13 @@ Instr_proc* RdProcArg(char Caller)
 	label1:
 		N++;
 		if (N > 30) Error(123);
+		TArg[N].Name = LexWord;
 		if ((ForwChar != '.') && FindLocVar(&LVBD, &LV) && (LV->FTyp == 'i' || LV->FTyp == 'r'))
 		{
 			RdLex();
-			TArg[N].FTyp = LV->FTyp; TArg[N].FD = LV->FD; TArg[N].RecPtr = LV->RecPtr;
+			TArg[N].FTyp = LV->FTyp; 
+			TArg[N].FD = LV->FD; 
+			TArg[N].RecPtr = LV->RecPtr;
 		}
 		else if (Lexem == '@')
 		{

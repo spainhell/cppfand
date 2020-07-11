@@ -14,8 +14,9 @@
 #include <iostream>
 #include "../datafiles/datafiles.h"
 #include "../exprcmp/exprcmp.h"
+#include "../fandio/cache.h"
 
-/*const*/ 
+/*const*/
 char Version[] = { '4', '.', '2', '0', '\0' };
 
 Video video;
@@ -74,6 +75,8 @@ WORD files = 250; // {files in CONFIG.SYS -3}
 #endif
 WORD CardHandles;
 
+//Cache cache = Cache();
+std::map<FILE*, FileCache> Cache::cacheMap;
 WORD CachePageSize;
 void* AfterCatFD; // r108
 ProcStkD* MyBP;
@@ -142,11 +145,11 @@ longint PosH(FILE* handle)
 		HandleError = ferror(handle);
 		return static_cast<longint>(result);
 	}
-	catch (const std::exception &e)
+	catch (const std::exception& e)
 	{
 		std::cout << e.what() << "\n";
 		return -1;
-	}	
+	}
 }
 
 longint MoveH(longint dist, WORD method, FILE* handle)
@@ -167,7 +170,7 @@ longint MoveH(longint dist, WORD method, FILE* handle)
 		HandleError = (WORD)result;
 		return ftell(handle);
 	}
-	catch (const std::exception &e)
+	catch (const std::exception& e)
 	{
 		std::cout << e.what() << "\n";
 		return -1;
@@ -365,7 +368,7 @@ void ChainLast(Chained* Frst, Chained* New)
 	}
 
 	last->Chain = New;
-	
+
 	New->Chain = nullptr; // TODO: pridano kvuli zacykleni v RdAutoSortSK_M
 }
 
@@ -554,7 +557,7 @@ label1:
 		i++; j++;
 	} /* delimiter */
 	else { /* YMDhmst */
-		s = ""; 
+		s = "";
 		if (iDate < 3) WasYMD = true;
 		while ((Txt[j] == ' ') && (n > 1)) { j++; n--; }
 		if ((Txt[j] == '-') && (n > 1) && (iDate == min) && (iDate > 2)) {
@@ -626,19 +629,19 @@ pstring StrDate(double R, pstring Mask)
 	double MultX[7]{ 0, 0, 0, 24, 1440, 86400, 8640000 };
 	longint DivX[12]{ 0, 0, 0, 1, 60, 3600, 360000, 1, 60, 6000, 1, 100 };
 
-	s = ""; 
-	EncodeMask(Mask, min, max); 
+	s = "";
+	EncodeMask(Mask, min, max);
 	WasMinus = false;
 	if ((R == 0) || (R < 0) && (min < 3)) {
 		for (i = 1; i <= Mask.length(); i++) {
 			if (Mask[i] <= 6) s.Append(' ');
-			else s = s + Mask[i]; 
+			else s = s + Mask[i];
 		}
 		goto label1;
 	}
 	else if (R < 0) { WasMinus = true; R = -R; }
 	if (min < 3) {
-		if ((min == 2) && (max >= 3)) d.D = trunc(R); 
+		if ((min == 2) && (max >= 3)) d.D = trunc(R);
 		else SplitDate(R, d.D, d.M, d.Y);
 		double intpart;
 		R = modf(R, &intpart);
@@ -660,15 +663,15 @@ pstring StrDate(double R, pstring Mask)
 		}
 		t.tt = l;
 	}
-	i = 1; 
+	i = 1;
 	First = true;
 	while (i <= Mask.length())
 	{
 		AnalDateMask(Mask, i, iDate, n);
 		if (n == 0) { s.Append(Mask[i]); i++; }
 		else {
-			if (iDate < 3) { 
-				if (iDate == 0)	str(d.Y, x); 
+			if (iDate < 3) {
+				if (iDate == 0)	str(d.Y, x);
 				if (iDate == 1)	str(d.M, x);
 				if (iDate == 2)	str(d.D, x);
 			}
@@ -677,16 +680,16 @@ pstring StrDate(double R, pstring Mask)
 				if (iDate == 4) str(t.mm, x);
 				if (iDate == 5) str(t.ss, x);
 				if (iDate == 6) str(t.tt, x);
-				if ((iDate = min) && WasMinus) 
-				{ 
+				if ((iDate = min) && WasMinus)
+				{
 					pstring oldX = x;
-					x = "-"; 
+					x = "-";
 					x += oldX;
 				}
 			}
-			if (First && (iDate > 2) && (iDate == min)) c = ' '; 
+			if (First && (iDate > 2) && (iDate == min)) c = ' ';
 			else c = '0';
-			First = false; 
+			First = false;
 			while (x.length() < n) {
 				pstring oldX = x;
 				x = ""; x.Append(c);
@@ -696,7 +699,7 @@ pstring StrDate(double R, pstring Mask)
 			s = s + x;
 		}
 	}
-	label1:
+label1:
 	return s;
 
 }
@@ -841,11 +844,11 @@ filePtr OpenH(FileOpenMode Mode, FileUseMode UM)
 	// pøi 'IsNetCVol' se chová jinak
 	// RdOnly $20, RdShared $40, Shared $42, Exclusive $12
 
-	if (CPath == "C:\\UCTO2020\\{STAN}\\PARAM3.T00")
-	{
-		printf("");
-	}
-	
+	//if (CPath == "C:\\UCTO2020\\{STAN}\\PARAM3.T00")
+	//{
+	//	printf("");
+	//}
+
 	pstring s;
 
 	pstring txt[] = { "Clos", "OpRd", "OpRs", "OpSh", "OpEx" };
@@ -898,7 +901,7 @@ label1:
 
 	else if (HandleError == ENOENT) // No such file or directory
 	{
-		
+
 		if (Mode == _isoldfile || Mode == _isoldnewfile)
 		{
 			Mode = _isnewfile;
@@ -931,10 +934,10 @@ WORD ReadLongH(filePtr handle, longint bytes, void* buffer)
 
 void WriteLongH(filePtr handle, longint bytes, void* buffer)
 {
-	if (CFile != nullptr && CFile->Name == "PARAM3")
-	{
-		printf("");
-	}
+	//if (CFile != nullptr && CFile->Name == "PARAM3")
+	//{
+	//	printf("");
+	//}
 	if (handle == nullptr) RunError(706);
 	if (bytes <= 0) return;
 	// uloží do souboru daný poèet Bytù z bufferu
@@ -944,10 +947,10 @@ void WriteLongH(filePtr handle, longint bytes, void* buffer)
 
 void WriteH(FILE* handle, WORD bytes, void* buffer)
 {
-	if ((uintptr_t)handle == 0x0117d388)
-	{
-		printf("");
-	}
+	//if ((uintptr_t)handle == 0x0117d388)
+	//{
+	//	printf("");
+	//}
 	WriteLongH(handle, bytes, buffer);
 }
 
@@ -1000,6 +1003,7 @@ void CloseH(FILE* handle)
 
 //void ClearCacheH(FILE* h)
 //{
+//	Cache::RemoveCache(h);
 //}
 
 void CloseClearH(FILE* h)
@@ -1029,27 +1033,33 @@ WORD GetFileAttr()
 	return result;
 }
 
-CachePage* Cache(FILE* Handle, longint Page)
-{
-	return nullptr;
-}
+//CachePage* Cache(FILE* Handle, longint Page)
+//{
+//	return nullptr;
+//}
 
 void RdWrCache(bool ReadOp, FILE* Handle, bool NotCached, longint Pos, WORD N, void* Buf)
 {
 	integer PgeIdx = 0, PgeRest = 0; WORD err = 0; longint PgeNo = 0;
-	CachePage* Z = nullptr;
+	//CachePage* Z = nullptr;
 
 	if (Handle == nullptr) RunError(706);
+
 	//if (NotCached) {
-	SeekH(Handle, Pos);
-	if (ReadOp) ReadH(Handle, N, Buf);
-	else WriteH(Handle, N, Buf);
-	if (HandleError == 0) return;
-	err = HandleError;
-	SetCPathForH(Handle);
-	SetMsgPar(CPath);
-	RunError(700 + err);
+		SeekH(Handle, Pos);
+		if (ReadOp) ReadH(Handle, N, Buf);
+		else WriteH(Handle, N, Buf);
+		if (HandleError == 0) return;
+		err = HandleError;
+		SetCPathForH(Handle);
+		SetMsgPar(CPath);
+		RunError(700 + err);
 	//}
+
+	/*FileCache* c1 = Cache::GetCache(Handle);
+	if (ReadOp) memcpy(Buf, c1->Load(Pos), N);
+	else c1->Save(Pos, N, (unsigned char*)Buf);*/
+
 	//PgeIdx = Pos + CachePageSize - 1;
 	//PgeRest = CachePageSize - PgeIdx;
 	//PgeNo = Pos >> CachePageShft;
@@ -1287,27 +1297,27 @@ void SetMyHeapEnd()
 	// MyHeapEnd = ptr(PtrRec(CacheEnd).Seg - CachePageSz, PtrRec(CacheEnd).Ofs);
 }
 
-void NewCachePage(CachePage* ZLast, CachePage* Z)
-{
-}
-
-void FormatCache()
-{
-}
+//void NewCachePage(CachePage* ZLast, CachePage* Z)
+//{
+//}
+//
+//void FormatCache()
+//{
+//}
 
 bool WrCPage(FILE* Handle, longint N, void* Buf, WORD ErrH)
 {
 	return true;
 }
 
-bool WriteCachePage(CachePage* Z, WORD ErrH)
-{
-	return true;
-}
-
-void ReadCachePage(CachePage* Z)
-{
-}
+//bool WriteCachePage(CachePage* Z, WORD ErrH)
+//{
+//	return true;
+//}
+//
+//void ReadCachePage(CachePage* Z)
+//{
+//}
 
 void LockCache()
 {
@@ -1326,17 +1336,17 @@ void SubstHandle(WORD h1, WORD h2)
 {
 }
 
-void FreeCachePage(CachePage* Z)
-{
-}
-
-void ExpandCacheUp()
-{
-}
-
-void ExpandCacheDown()
-{
-}
+//void FreeCachePage(CachePage* Z)
+//{
+//}
+//
+//void ExpandCacheUp()
+//{
+//}
+//
+//void ExpandCacheDown()
+//{
+//}
 
 integer HeapErrFun(WORD Size)
 {
@@ -1388,8 +1398,8 @@ void ReleaseAfterLongStr(void* pointer)
 WORD CountDLines(void* Buf, WORD L, char C)
 {
 	WORD count = 0;
-	for (int i = 0; i < L; i++) { 
-		if (((char*)Buf)[i] == C) count++; 
+	for (int i = 0; i < L; i++) {
+		if (((char*)Buf)[i] == C) count++;
 	}
 	return count + 1; // za posledni polozkou neni '/'
 }
@@ -1424,10 +1434,10 @@ bool EqualsMask(void* p, WORD l, pstring Mask)
 {
 	std::string Value = std::string((char*)p, l);
 	return CmpStringWithMask(Value, Mask);
-	
+
 	if (Mask.length() < l) return false;
 	BYTE* inp = (BYTE*)p;
-	for (size_t i = 0; i < l; i++) 
+	for (size_t i = 0; i < l; i++)
 	{
 		if (inp[i] != Mask[i + 1]) return false;
 	}
@@ -1577,7 +1587,7 @@ label1: if (WasInitDrivers) {
 	}
 	if (ExitCode == 202) Halt(202);
 }
-		}
+}
 
 void OpenResFile()
 {

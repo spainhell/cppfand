@@ -3,6 +3,7 @@
 
 #include "../pascal/random.h"
 #include "../pascal/real48.h"
+#include "../pascal/asm.h"
 #include "compile.h"
 #include "legacy.h"
 #include "oaccess.h"
@@ -10,10 +11,8 @@
 #include "olongstr.h"
 #include "runfrml.h"
 #include "sort.h"
-#include "../pascal/asm.h"
 
 WORD randIndex = 0;
-
 
 FileD* CFile;
 FieldDPtr CatRdbName, CatFileName, CatArchiv, CatPathName, CatVolume;
@@ -570,22 +569,23 @@ WORD RdPrefix()
 	} XD;
 	auto result = 0xffff;
 	/* !!! with CFile^ do!!! */
+	bool cached = CFile->NotCached();
 	switch (CFile->Typ) {
 	case '8': {
-		RdWrCache(true, CFile->Handle, CFile->NotCached(), 0, 4, &X8);
+		RdWrCache(true, CFile->Handle, cached, 0, 4, &X8);
 		CFile->NRecs = X8.NRs;
 		if (CFile->RecLen != X8.RLen) { return X8.RLen; }
 		break;
 	}
 	case 'D': {
-		RdWrCache(true, CFile->Handle, CFile->NotCached(), 0, 12, &XD);
+		RdWrCache(true, CFile->Handle, cached, 0, 12, &XD);
 		CFile->NRecs = XD.NRecs;
 		if ((CFile->RecLen != XD.RecLen)) { return XD.RecLen; }
 		CFile->FrstDispl = XD.HdLen;
 		break;
 	}
 	default: {
-		RdWrCache(true, CFile->Handle, CFile->NotCached(), 0, 6, &X6);
+		RdWrCache(true, CFile->Handle, cached, 0, 6, &X6);
 		CFile->NRecs = abs(X6.NRs);
 		if ((X6.NRs < 0) && (CFile->Typ != 'X') || (X6.NRs > 0) && (CFile->Typ == 'X')
 			|| (CFile->RecLen != X6.RLen)) {
@@ -662,8 +662,9 @@ void WrDBaseHd()
 
 	// with CFile^
 	{
-		RdWrCache(false, CFile->Handle, CFile->NotCached(), 0, CFile->FrstDispl, (void*)&P);
-		RdWrCache(false, CFile->Handle, CFile->NotCached(),
+		bool chached = CFile->NotCached();
+		RdWrCache(false, CFile->Handle, chached, 0, CFile->FrstDispl, (void*)&P);
+		RdWrCache(false, CFile->Handle, chached,
 			longint(CFile->NRecs) * CFile->RecLen + CFile->FrstDispl, 1, (void*)&CtrlZ);
 	}
 
@@ -686,22 +687,24 @@ void WrPrefix()
 
 	if (IsUpdHandle(CFile->Handle))
 	{
+		bool chached = CFile->NotCached();
 		switch (CFile->Typ)
 		{
 		case '8': {
 			Pfx8.RLen = CFile->RecLen;
 			Pfx8.NRs = CFile->NRecs;
-			RdWrCache(false, CFile->Handle, CFile->NotCached(), 0, 4, (void*)&Pfx8);
+			RdWrCache(false, CFile->Handle, chached, 0, 4, (void*)&Pfx8);
 			break;
 		}
 		case 'D': {
-			WrDBaseHd(); break;
+			WrDBaseHd(); 
+			break;
 		}
 		default: {
 			Pfx6.RLen = CFile->RecLen;
 			if (CFile->Typ == 'X') Pfx6.NRs = -CFile->NRecs;
 			else Pfx6.NRs = CFile->NRecs;
-			RdWrCache(false, CFile->Handle, CFile->NotCached(), 0, 6, (void*)&Pfx6);
+			RdWrCache(false, CFile->Handle, chached, 0, 6, (void*)&Pfx6);
 		}
 		}
 	}
@@ -2115,11 +2118,10 @@ bool FileD::IsShared()
 
 bool FileD::NotCached()
 {
-	/*asm  les di,Self; xor ax,ax; mov dl,es:[di].FileD.UMode;
-	 cmp dl,Shared; je @1; cmp dl,RdShared; jne @2;
-@1:  cmp es:[di].FileD.LMode,ExclMode; je @2;
-	 mov ax,1;
-@2:  end;*/
+	/*if (UMode == Shared) goto label1;
+	if (UMode != RdShared) return false;
+label1:
+	if (LMode == ExclMode) return false;*/
 	return true;
 }
 
@@ -2528,7 +2530,7 @@ bool XKey::Search(XString& XX, bool AfterEqu, longint& RecNr)
 label1:
 	XPath[XPathN].Page = page;
 	XF()->RdPage(p, page);
-	
+
 	WORD o = p->Off();
 	WORD nItems = p->NItems;
 	if (nItems == 0) {
@@ -2651,8 +2653,8 @@ bool XKey::RecNrToPath(XString& XX, longint RecNr)
 			if (IncPath(XPathN - 1, X.Page)) { X.I = 1; goto label1; }
 		}
 		else {
-			x = x->Next(oLeaf); 
-			if (x->GetL(oLeaf) != 0) goto label3; 
+			x = x->Next(oLeaf);
+			if (x->GetL(oLeaf) != 0) goto label3;
 			goto label2;
 		}; }
 label3:
@@ -3079,8 +3081,8 @@ void XFile::SetEmpty()
 {
 	auto p = new XPage(); // (XPage*)GetZStore(XPageSize);
 	WrPage(p, 0);
-	p->IsLeaf = true; 
-	FreeRoot = 0; 
+	p->IsLeaf = true;
+	FreeRoot = 0;
 	NRecs = 0;
 	KeyD* k = CFile->Keys;
 	while (k != nullptr) {
@@ -3107,7 +3109,7 @@ void XFile::WrPrefix()
 {
 	WORD Signum = 0x04FF;
 	RdWrCache(false, Handle, NotCached(), 0, 2, &Signum);
-	NRecsAbs = CFile->NRecs; 
+	NRecsAbs = CFile->NRecs;
 	NrKeys = CFile->GetNrKeys();
 	RdWrCache(false, Handle, NotCached(), 2, 4, &FreeRoot);
 	RdWrCache(false, Handle, NotCached(), 6, 4, &MaxPage);
@@ -3119,7 +3121,10 @@ void XFile::WrPrefix()
 
 void XFile::SetNotValid()
 {
-	NotValid = true; MaxPage = 0; WrPrefix(); SaveCache(0);
+	NotValid = true; 
+	MaxPage = 0; 
+	WrPrefix(); 
+	SaveCache(0);
 }
 
 XScan::XScan(FileD* aFD, KeyD* aKey, KeyInD* aKIRoot, bool aWithT)
@@ -3179,13 +3184,13 @@ void XScan::Reset(FrmlElem* ABool, bool SQLFilter)
 			k = (KeyInD*)k->Chain;
 		}
 		break;
-		}
+	}
 #ifdef FandSQL
 	case 4: { CompKIFrml(Key, KIRoot, false); New(SQLStreamPtr(Strm), Init); IRec = 1; break; }
 #endif
 	}
 	SeekRec(0);
-	}
+}
 
 void XScan::ResetSort(KeyFldD* aSK, FrmlPtr& BoolZ, LockMode OldMd, bool SQLFilter)
 {
@@ -3240,7 +3245,7 @@ void XScan::ResetOwner(XString* XX, FrmlPtr aBool)
 		KIRoot = GetZStore(sizeof(KIRoot^));
 		KIRoot->X1 = StoreStr(XX->S); KIRoot->X2 = StoreStr(XX->S);
 		New(SQLStreamPtr(Strm), Init); IRec = 1
-}
+	}
 	else
 #endif
 	{
@@ -3312,7 +3317,7 @@ void XScan::SeekRec(longint I)
 			if (hasSQLFilter) z = Bool else z = nullptr;
 			InpReset(Key, SK, KIRoot, z, withT);
 			EOF = AtEnd; IRec = 0; NRecs = 0x20000000;
-}
+		}
 		return;
 	}
 #endif

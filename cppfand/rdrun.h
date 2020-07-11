@@ -415,8 +415,10 @@ struct TypAndFrml
 	char FTyp = '\0';
 	FrmlElem* Frml = nullptr; 
 	bool FromProlog = false, IsRetPar = false;
-	FileD* FD = nullptr; void* RecPtr = nullptr;
-	FrmlElem* TxtFrml = nullptr; pstring Name; // if RecPtr != nullptr
+	FileD* FD = nullptr; 
+	void* RecPtr = nullptr;
+	FrmlElem* TxtFrml = nullptr; 
+	std::string Name; // if RecPtr != nullptr
 };
 
 class Instr /*: public Chained// POZOR konflikt názvù viz níže*/

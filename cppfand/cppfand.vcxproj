@@ -150,6 +150,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\fandio\fandio.cpp" />
     <ClCompile Include="access.cpp" />
     <ClCompile Include="base.cpp" />
     <ClCompile Include="compile.cpp" />

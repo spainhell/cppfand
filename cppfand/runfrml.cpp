@@ -457,6 +457,7 @@ LocVar* RunUserFunc(FrmlElem19* X)
 	//void* oldbp; void* oldprocbp;
 	//oldbp = MyBP;
 	//oldprocbp = ProcMyBP;
+	auto oldLVBD = LVBD;
 	LVBD = X->FC->LVB;
 	//PushProcStk();
 	//size_t i = 0;
@@ -475,6 +476,7 @@ LocVar* RunUserFunc(FrmlElem19* X)
 	auto instr = X->FC->pInstr;
 	RunProcedure(instr);
 
+	LVBD = oldLVBD;
 	switch (instr->Kind)
 	{
 	case _asgnloc: return lv;
@@ -679,10 +681,12 @@ bool RunBool(FrmlPtr X)
 	case _testmode: result = IsTestRun; break;
 	case _equmask: result = RunEquMask((FrmlElem0*)X); break;
 	case _userfunc: {
+		//auto save_LVDB = LVBD;
 		result = RunUserFunc((FrmlElem19*)X)->B;
-		cr = MyBP;
-		PopProcStk();
-		ReleaseStore(cr);
+		//LVBD = save_LVDB;
+		//cr = MyBP;
+		//PopProcStk();
+		//ReleaseStore(cr);
 		break;
 	}
 	case _setmybp: {

@@ -551,7 +551,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 		}
 		else if (not SrchXKey(k, x, N)) {
 		label2:
-			if (IsRead)	{
+			if (IsRead) {
 				DelTFlds();
 				ZeroAllFlds();
 				SetDeletedFlag();
@@ -1221,7 +1221,7 @@ void CallProcedure(Instr_proc* PD)
 	std::_Vector_iterator<std::_Vector_val<std::_Simple_types<LocVar*>>> it1;
 	LocVar* lvroot = nullptr;
 	WORD i = 0, j = 0, n = 0;
-	FrmlPtr z = nullptr; longint l = 0; Instr* pd1 = nullptr;
+	longint l = 0; Instr* pd1 = nullptr;
 	LinkD* ld = nullptr; FileD* lstFD = nullptr;
 	KeyFldD* kf1 = nullptr; KeyFldD* kf2 = nullptr;
 
@@ -1233,7 +1233,7 @@ void CallProcedure(Instr_proc* PD)
 	SetInpTT(PD->PPos, true);
 #ifdef _DEBUG
 	std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
-	if (srcCode.find("MODUL") != std::string::npos) {
+	if (srcCode.find("if PARAM3.Ano then proc([pgm]);") != std::string::npos) {
 		printf("");
 		//FuncD* f = FuncDRoot;
 		//std::ofstream myfile;
@@ -1287,7 +1287,7 @@ void CallProcedure(Instr_proc* PD)
 			break;
 		}
 		default: {
-			z = PD->TArg[i].Frml;
+			FrmlElem* z = PD->TArg[i].Frml;
 			if ((*it0)->IsRetPar && (z->Op != _getlocvar)
 				|| PD->TArg[i].FromProlog
 				&& (PD->TArg[i].IsRetPar != (*it0)->IsRetPar)) goto label1;
@@ -1339,23 +1339,32 @@ void CallProcedure(Instr_proc* PD)
 	RunProcedure(pd1);
 	//lv0 = lvroot;
 	it0 = LVBD.vLocVar.begin();
-	i = 1;
+	i = 0;
 	while (it0 != LVBD.vLocVar.end()) {
 		// projdeme navratove hodnoty (navratova hodnota funkce + VAR parametry)
+		// a tyto navratove hodnoty ulozime zpet do patricneho FrmlElem
 		if ((*it0)->IsRetPar) {
-			z = PD->TArg[i].Frml;
+			auto z18 = (FrmlElem18*)PD->TArg[i].Frml;
 			switch ((*it0)->FTyp) {
-			case 'R': /*FloatPtr(Ptr(Seg(oldbp^), Ofs(oldbp^) + z->BPOfs)) =
+			case 'R': {
+				z18->locvar->R = (*it0)->R;
+				/*FloatPtr(Ptr(Seg(oldbp^), Ofs(oldbp^) + z->BPOfs)) =
 				FloatPtr(Ptr(Seg(MyBP^), Ofs(MyBP^) + lv->BPOfs))*;*/
 				break;
-			case 'S': { /*l = LongintPtr(Ptr(Seg(oldbp^), Ofs(oldbp^) + z->BPOfs))*;
-			LongintPtr(Ptr(Seg(oldbp^), Ofs(oldbp^) + z->BPOfs)) ^ =
+			}
+			case 'S': {
+				z18->locvar->S = (*it0)->S;
+				/*l = LongintPtr(Ptr(Seg(oldbp^), Ofs(oldbp^) + z->BPOfs))*;
+				LongintPtr(Ptr(Seg(oldbp^), Ofs(oldbp^) + z->BPOfs)) ^ =
 				LongintPtr(Ptr(Seg(MyBP^), Ofs(MyBP^) + lv->BPOfs))*;
-			LongintPtr(Ptr(Seg(MyBP^), Ofs(MyBP^) + lv->BPOfs)) ^ = l;*/
+				LongintPtr(Ptr(Seg(MyBP^), Ofs(MyBP^) + lv->BPOfs)) ^ = l;*/
 				break; }
-			case 'B': /*BooleanPtr(Ptr(Seg(oldbp^), Ofs(oldbp^) + z->BPOfs)) ^ =
+			case 'B': {
+				z18->locvar->B = (*it0)->B;
+				/*BooleanPtr(Ptr(Seg(oldbp^), Ofs(oldbp^) + z->BPOfs)) ^ =
 				BooleanPtr(Ptr(Seg(MyBP^), Ofs(MyBP^) + lv->BPOfs))^*/
 				break;
+			}
 			}
 		}
 		if (i > n)
