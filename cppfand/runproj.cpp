@@ -560,6 +560,7 @@ void WrFDSegment(longint RecNr)
 
 void SgKF(KeyFldDPtr kf, WORD Sg)
 {
+	if (kf == nullptr) return;
 	while (kf->Chain != nullptr) {
 		// PtrRec(kf->Chain).Seg = Sg; 
 		// kf = kf->Chain; 
@@ -567,6 +568,7 @@ void SgKF(KeyFldDPtr kf, WORD Sg)
 	}
 }
 
+// preklopi data ze souboru (TTT, ...) do jednotlivych promennych objektu FileD
 FileD* FileD_FromSegment(LongStr* ss) {
 	char* A = ss->A;
 	size_t index = 0;
@@ -624,6 +626,15 @@ FrmlElem* createFrmlElemFromStr(BYTE* str, uintptr_t address, std::map<uintptr_t
 	WORD nextItemIndex = address & 0x0000FFFF;
 	BYTE Op = str[nextItemIndex];
 	//frml->Op = Op;
+	switch (Op) {
+	case _instr: {
+		frml = new FrmlElemIn(_instr);
+		break;
+	}
+	
+	}
+
+
 	if (Op == _field)
 	{
 		auto fDescAddress = *(uintptr_t*)&str[nextItemIndex + 1];
@@ -677,9 +688,9 @@ FrmlElem* createFrmlElemFromStr(BYTE* str, uintptr_t address, std::map<uintptr_t
 	return frml;
 }
 
-void createFileDescrFromStr(FileD* F, uintptr_t firstAddress, BYTE* str)
+void createFieldDescrFromStr(FileD* F, uintptr_t firstAddress, BYTE* str)
 {
-	// nacte vsechny zretezene FileDescr z predaneho retezce, vytvori mapu, kde klicem je puvodni adresa prvku
+	// nacte vsechny zretezene FieldDescr z predaneho retezce, vytvori mapu, kde klicem je puvodni adresa prvku
 	// nactene polozky vzajemne zretezi, posledni ma jako Chain NULL
 	WORD nextItemIndex = (uintptr_t)CFile->FldD & 0x0000FFFF;
 	std::map<uintptr_t, FieldDescr*> mFieldD;
@@ -705,11 +716,51 @@ void createFileDescrFromStr(FileD* F, uintptr_t firstAddress, BYTE* str)
 		if (frml == nullptr) continue;
 		if ((d.second->Flg & f_Stored) != 0) continue; // opsana podminka z puvodni RdFDSegment();
 		uintptr_t address = (uintptr_t)d.second->Frml;
-		d.second->Frml = new FrmlElem(0, 0);
+		// TODO: musi to tady byt? d.second->Frml = new FrmlElem(0, 0);
 		d.second->Frml = createFrmlElemFromStr(str, address, &mFieldD);
 	}
 }
 
+KeyFldD* createKFldsFromStr(BYTE* str, uintptr_t address, std::map<uintptr_t, KeyD*>* mKeyDs)
+{
+	WORD nextItemIndex = address & 0x0000FFFF;
+	auto kfd = new KeyFldD(&str[nextItemIndex]);
+
+	return kfd;
+}
+
+void createKeysFromStr(FileD* F, uintptr_t firstAddress, BYTE* str)
+{
+	// nacte vsechny zretezene FileDescr z predaneho retezce, vytvori mapu, kde klicem je puvodni adresa prvku
+	// nactene polozky vzajemne zretezi, posledni ma jako Chain NULL
+	WORD nextItemIndex = (uintptr_t)CFile->Keys & 0x0000FFFF;
+	// pokud soubor klice nema, koncime
+	if (nextItemIndex == 0) { CFile->Keys = nullptr; return; }
+	std::map<uintptr_t, KeyD*> mKeyD;
+	KeyD* lastKeyD = new KeyD(&str[nextItemIndex]);
+	nextItemIndex = (uintptr_t(lastKeyD->Chain) & 0x0000FFFF);
+	mKeyD.insert(std::pair<uintptr_t, KeyD*>(firstAddress, lastKeyD));
+	F->Keys = lastKeyD;
+
+	while (nextItemIndex != 0) {
+		KeyD* nKeyD = new KeyD(&str[nextItemIndex]);
+		nextItemIndex = (uintptr_t(nKeyD->Chain) & 0x0000FFFF);
+		mKeyD.insert(std::pair<uintptr_t, KeyD*>((uintptr_t)lastKeyD->Chain, nKeyD));
+		lastKeyD->Chain = nKeyD;
+		lastKeyD = nKeyD;
+	}
+
+	// jednotlive klice v mape ted maji jako KFlds uvedene stare adresy
+	// je nutne i jednotlive KFlds vytvorit a adresy nahradit
+	// projdeme tedy mapu a ke vsem polozkam nacteme KFlds
+	for (auto&& k : mKeyD)
+	{
+		auto kflds = k.second->KFlds;
+		if (kflds == nullptr) continue;
+		uintptr_t address = (uintptr_t)k.second->KFlds;
+		k.second->KFlds = createKFldsFromStr(str, address, &mKeyD);
+	}
+}
 
 bool RdFDSegment(WORD FromI, longint Pos)
 {
@@ -729,6 +780,9 @@ bool RdFDSegment(WORD FromI, longint Pos)
 	FILE* origHandle = CFile->Handle;
 	CFile = FileD_FromSegment(ss);
 	CFile->Handle = origHandle;
+
+	if (CFile->TF != nullptr) CFile->TF = new TFile();
+
 	//CFile = (FileD*)Sg;
 	/* !!! with CFile^ do!!! */
 	if (CFile->IRec != FDVersion) return result;
@@ -742,7 +796,8 @@ bool RdFDSegment(WORD FromI, longint Pos)
 
 	//WORD offset = uintptr_t(CFile->FldD) & 0x0000FFFF;
 	//WORD ssDataLen = ss->LL - offset;
-	createFileDescrFromStr(CFile, uintptr_t(CFile->FldD), (BYTE*)&ss->A[0]);
+	createFieldDescrFromStr(CFile, uintptr_t(CFile->FldD), (BYTE*)&ss->A[0]);
+	createKeysFromStr(CFile, uintptr_t(CFile->Keys), (BYTE*)&ss->A[0]);
 
 	//FieldDescr* f = CFile->FldD;
 	//while (f->Chain != nullptr) {
@@ -751,7 +806,9 @@ bool RdFDSegment(WORD FromI, longint Pos)
 	//	if ((f->Flg & f_Stored) == 0) SgFrml(f->Frml, Sg, SgF);
 	//}
 
-	if (CFile->OrigFD != nullptr) throw std::exception("Not implemented.");
+	if (CFile->OrigFD != nullptr) {
+		throw std::exception("Not implemented.");
+	}
 	//CFile->OrigFD = GetFD(CFile->OrigFD, false, Sg);
 	//StringList s = CFile->ViewNames;
 	//while (s->Chain != nullptr) {
@@ -759,7 +816,9 @@ bool RdFDSegment(WORD FromI, longint Pos)
 	//	s = (StringList)s->Chain;
 	//}
 
-	if (CFile->Keys != nullptr) throw std::exception("Not implemented.");
+	if (CFile->Keys != nullptr) { 
+		throw std::exception("Not implemented."); 
+	}
 	//KeyD* k = CFile->Keys;
 	//while (k->Chain != nullptr) {
 	//	//(k->Chain).Seg = Sg;
@@ -768,7 +827,9 @@ bool RdFDSegment(WORD FromI, longint Pos)
 	//	SgKF(KeyFldDPtr(&k->KFlds), Sg);
 	//}
 
-	if (CFile->Add != nullptr) throw std::exception("Not implemented.");
+	if (CFile->Add != nullptr) {
+		throw std::exception("Not implemented.");
+	}
 	//AddD* ad = (AddD*)&Add;
 	//while (ad->Chain != nullptr) {
 	//	//Pr(ad->Chain).Seg = Sg; 
@@ -796,15 +857,15 @@ bool RdFDSegment(WORD FromI, longint Pos)
 	//Pr(ld).Seg = Sg;
 	n = CFile->nLDs;
 	if (n > 0) LinkDRoot = ld;
-	while (n > 0) {
-		if (n == 1) ld->Chain = ld1;
-		//else Pr(ld->Chain).Seg = Sg;
-		SgKF((KeyFldD*)ld->Args, Sg);
-		ld->FromFD = CFile;
-		ld->ToFD = GetFD(ld->ToFD, true, Sg);
-		//Pr(ld->ToKey).Seg = Pr(ld->ToFD).Seg;
-		ld = ld->Chain; n--;
-	}
+	//while (n > 0) {
+	//	if (n == 1) ld->Chain = ld1;
+	//	//else Pr(ld->Chain).Seg = Sg;
+	//	SgKF((KeyFldD*)ld->Args, Sg);
+	//	ld->FromFD = CFile;
+	//	ld->ToFD = GetFD(ld->ToFD, true, Sg);
+	//	//Pr(ld->ToKey).Seg = Pr(ld->ToFD).Seg;
+	//	ld = ld->Chain; n--;
+	//}
 	CFile->CatIRec = GetCatIRec(CFile->Name, CFile->Typ == '0'/*multilevel*/);
 	CFile->ChptPos.R = CRdb; CFile->ChptPos.IRec = FromI;
 #ifdef FandSQL
@@ -1494,7 +1555,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 	CRecPtr = Chpt->RecPtr;
 	Encryp = CRdb->Encrypted;
 	for (I = 1; I <= Chpt->NRecs; I++) {
-		if (I == 146) {
+		if (I == 0x010a) {
 			printf("RunProj r1495, CompileRdb(), I = %i, strings: %i, total: %i\n", I, strcount, strbytes);
 		}
 		ReadRec(I);

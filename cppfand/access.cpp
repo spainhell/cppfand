@@ -231,6 +231,11 @@ void CloseGoExit()
 	GoExit();
 }
 
+TFile::TFile(const TFile& orig)
+{
+	Format = orig.Format;
+}
+
 void TFile::Err(WORD n, bool ex)
 {
 	if (IsWork) {
@@ -2104,6 +2109,32 @@ FileD::FileD()
 {
 }
 
+FileD::FileD(const FileD& orig)
+{
+	Name = orig.Name;
+	RecLen = orig.RecLen;
+	Typ = orig.Typ;
+	if (orig.TF != nullptr) TF = new TFile(*orig.TF);
+	ChptPos = orig.ChptPos;
+	//*OrigFD = orig;
+	Drive = orig.Drive;
+	if (orig.FldD != nullptr) FldD = new FieldDescr(*orig.FldD);
+	IsParFile = orig.IsParFile;
+	IsJournal = orig.IsJournal;
+	IsHlpFile = orig.IsHlpFile;
+	typSQLFile = orig.typSQLFile;
+	IsSQLFile = orig.IsSQLFile;
+	IsDynFile = orig.IsDynFile;
+	if (orig.XF != nullptr) XF = new XFile(*orig.XF);
+	if (orig.Keys != nullptr) {
+		Keys = new XKey(*orig.Keys, false); // nebudeme kopirovat Keys->KFlds->FldD
+		Keys->KFlds->FldD = FldD; // pripojime stavajici FldD
+	}
+	if (orig.Add != nullptr) Add = new AddD(*orig.Add);
+	nLDs = orig.nLDs;
+	LiOfs = orig.LiOfs;
+}
+
 longint FileD::UsedFileSize()
 {
 	longint n;
@@ -2503,6 +2534,49 @@ void XPage::Clean()
 	GreaterPage = 0;
 	WORD NItems = 0;
 	memset(A, 0, XPageSize - 4);
+}
+
+XKey::XKey()
+{
+}
+
+XKey::XKey(const XKey& orig, bool copyFlds)
+{
+	if (orig.Chain != nullptr) Chain = new XKey(*orig.Chain);
+	if (orig.KFlds != nullptr) KFlds = new KeyFldD(*orig.KFlds, copyFlds);
+	Intervaltest = orig.Intervaltest;
+	Duplic = orig.Duplic;
+	InWork = orig.InWork;
+	IndexRoot = orig.IndexRoot;
+	IndexLen = orig.IndexLen;
+	NR = orig.NR;
+	Alias = orig.Alias;
+}
+
+XKey::XKey(BYTE* inputStr)
+{
+	size_t index = 0;
+	Chain = reinterpret_cast<XKey*>(*(unsigned int*)&inputStr[index]); index += 4;
+	KFlds = reinterpret_cast<KeyFldD*>(*(unsigned int*)&inputStr[index]); index += 4;
+	Intervaltest = *(bool*)&inputStr[index]; index++;
+	Duplic = *(bool*)&inputStr[index]; index++;
+	InWork = *(bool*)&inputStr[index]; index++;
+	IndexRoot = *(unsigned short*)&inputStr[index]; index += 2;
+	IndexLen = *(unsigned char*)&inputStr[index]; index ++;
+	NR = *(longint*)&inputStr[index]; index += 4;
+	Alias = reinterpret_cast<pstring*>(*(unsigned int*)&inputStr[index]); index += 4;
+
+	//unsigned int DisplOrFrml = *(unsigned int*)&inputStr[index]; index += 4;
+	//if (DisplOrFrml > MaxTxtCols) {
+	//	// jedna se o ukazatel
+	//	Frml = reinterpret_cast<FrmlElem*>(DisplOrFrml);
+	//}
+	//else {
+	//	// jedna se o delku
+	//	Displ = DisplOrFrml;
+	//}
+	//Name[0] = inputStr[index]; index++;
+	//memcpy(&Name[1], &inputStr[index], Name[0]); index += Name[0];
 }
 
 XWFile* XKey::XF()
@@ -3076,6 +3150,16 @@ void XWFile::ReleasePage(XPage* P, longint N)
 	P->GreaterPage = FreeRoot;
 	FreeRoot = N;
 	WrPage(P, N);
+}
+
+XFile::XFile(const XFile& orig)
+{
+	NRecs = orig.NRecs;
+	NRecsAbs = orig.NRecsAbs;
+	NotValid = orig.NotValid;
+	NrKeys = orig.NrKeys;
+	NoCreate = orig.NoCreate;
+	FirstDupl = orig.FirstDupl;
 }
 
 void XFile::SetEmpty()
@@ -3835,3 +3919,52 @@ FieldDescr::FieldDescr(BYTE* inputStr)
 	memcpy(&Name[1], &inputStr[index], Name[0]); index += Name[0];
 }
 
+FieldDescr::FieldDescr(const FieldDescr& orig)
+{
+	if (orig.Chain != nullptr) Chain = new FieldDescr(*(FieldDescr*)orig.Chain);
+	Typ = orig.Typ;
+	FrmlTyp = orig.FrmlTyp;
+	L = orig.L; M = orig.M; NBytes = orig.NBytes; Flg = orig.Flg;
+	Displ = orig.Displ;
+	Frml = CopyFrmlElem(orig.Frml);
+	Name = orig.Name;
+}
+
+KeyFldD::KeyFldD(const KeyFldD& orig, bool copyFlds)
+{
+	if (orig.Chain != nullptr) Chain = new KeyFldD(*(KeyFldD*)orig.Chain);
+	// v objektu FileD jsou asi ukazatele FldD a Keys->KFlds->FldD stejne
+	if (copyFlds && orig.FldD != nullptr) FldD = new FieldDescr(*orig.FldD);
+	CompLex = orig.CompLex;
+	Descend = orig.Descend;
+}
+
+KeyFldD::KeyFldD(BYTE* inputStr)
+{
+	size_t index = 0;
+	Chain = reinterpret_cast<KeyFldD*>(*(unsigned int*)&inputStr[index]); index += 4;
+	FldD = reinterpret_cast<FieldDescr*>(*(unsigned int*)&inputStr[index]); index += 4;
+	CompLex = *(bool*)&inputStr[index]; index++;
+	Descend = *(bool*)&inputStr[index]; index++;
+}
+
+AddD::AddD(const AddD& orig)
+{
+	if (orig.Chain != nullptr) Chain = new AddD(*orig.Chain);
+	if (orig.Chain != nullptr) Field = new FieldDescr(*orig.Field);
+	if (orig.Chain != nullptr) File2 = new FileD(*orig.File2);
+	if (orig.Chain != nullptr) LD = new LinkD(*orig.LD);
+	Create = orig.Create;
+	if (orig.Chain != nullptr) Frml = CopyFrmlElem(orig.Frml);
+	Assign = orig.Assign;
+	if (orig.Chain != nullptr) Bool = CopyFrmlElem(orig.Bool);
+	if (orig.Chain != nullptr) Chk = new ChkD(*orig.Chk);
+}
+
+ChkD::ChkD(const ChkD& orig)
+{
+	if (orig.Bool != nullptr) Bool = CopyFrmlElem(orig.Bool);
+	HelpName = orig.HelpName;
+	if (orig.TxtZ != nullptr) TxtZ = CopyFrmlElem(orig.TxtZ);
+	Warning = orig.Warning;
+}

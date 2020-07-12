@@ -112,6 +112,7 @@ class FieldDescr : public Chained // ø. 100
 public:
 	FieldDescr();
 	FieldDescr(BYTE* inputStr);
+	FieldDescr(const FieldDescr& orig);
 	char Typ = 0, FrmlTyp = 0;
 	BYTE L = 0, M = 0, NBytes = 0, Flg = 0;
 	// case boolean {Stored} of True:(Displ:integer); False:(Frml:FrmlPtr; Name:string[1]{ curr.length });
@@ -121,8 +122,12 @@ public:
 };
 typedef FieldDescr* FieldDPtr;
 
-struct KeyFldD : public Chained // ø. 108
+class KeyFldD : public Chained // ø. 108
 {
+public:
+	KeyFldD() {};
+	KeyFldD(const KeyFldD& orig, bool copyFlds);
+	KeyFldD(BYTE* inputStr);
 	FieldDescr* FldD = nullptr;
 	bool CompLex = false, Descend = false;
 };
@@ -134,12 +139,15 @@ struct RdbPos // ø. 113
 	WORD IRec = 0;
 };
 
-struct ChkD : public Chained // ø. 115
+class ChkD : public Chained // ø. 115
 {
+public:
+	ChkD() {};
+	ChkD(const ChkD& orig);
 	// ChkD* Chain = nullptr;
-	FrmlPtr Bool;
+	FrmlElem* Bool = nullptr;
 	pstring* HelpName = nullptr;
-	FrmlPtr TxtZ;
+	FrmlElem* TxtZ = nullptr;
 	bool Warning = false;
 };
 typedef ChkD* ChkDPtr;
@@ -165,35 +173,41 @@ struct LiRoots
 };
 typedef LiRoots* LiRootsPtr;
 
-struct AddD // ø. 135
+class AddD // ø. 135
 {
-	AddD* Chain;
-	FieldDPtr Field;
-	FileD* File2;
-	LinkD* LD;
-	BYTE Create; // { 0-no, 1-!, 2-!! }
-	FrmlPtr Frml;
-	bool Assign;
-	FrmlPtr Bool;
-	ChkDPtr Chk;
+public:
+	AddD() {};
+	AddD(const AddD& orig);
+	AddD* Chain = nullptr;
+	FieldDescr* Field = nullptr;
+	FileD* File2 = nullptr;
+	LinkD* LD = nullptr;
+	BYTE Create = 0; // { 0-no, 1-!, 2-!! }
+	FrmlElem* Frml = nullptr;
+	bool Assign = false;
+	FrmlElem* Bool = nullptr;
+	ChkD* Chk = nullptr;
 };
 typedef AddD* AddDPtr;
 
 class TFile // ø. 147
 {
 public:
-	FILE* Handle;
-	longint FreePart;
-	bool Reserved, CompileProc, CompileAll;
-	WORD IRec;
-	longint FreeRoot, MaxPage;
-	double TimeStmp;
-	integer LicenseNr;
-	longint MLen;
-	PwCodeArr PwCode, Pw2Code;
-	enum eFormat { T00Format, DbtFormat, FptFormat } Format;
-	WORD BlockSize; // FptFormat
-	bool IsWork;
+	TFile() {};
+	TFile(const TFile& orig);
+	FILE* Handle = nullptr;
+	longint FreePart = 0;
+	bool Reserved = false, CompileProc = false, CompileAll = false;
+	WORD IRec = 0;
+	longint FreeRoot = 0, MaxPage = 0;
+	double TimeStmp = 0.0;
+	integer LicenseNr = 0;
+	longint MLen = 0;
+	PwCodeArr PwCode{ 0 };
+	PwCodeArr Pw2Code{ 0 };
+	enum eFormat { T00Format, DbtFormat, FptFormat } Format = T00Format;
+	WORD BlockSize = 0; // FptFormat
+	bool IsWork = false;
 	void Err(WORD n, bool ex);
 	void TestErr();
 	longint UsedFileSize();
@@ -217,6 +231,7 @@ class FileD : public Chained // ø. 177
 {
 public:
 	FileD();
+	FileD(const FileD& orig);
 	// FileD* Chain = nullptr;
 	pstring Name;
 	std::string FullName;
@@ -241,7 +256,7 @@ public:
 	LockMode LMode = NullMode, ExLMode = NullMode, TaLMode = NullMode;
 	StringList ViewNames = nullptr;  //after each string BYTE string with user codes 
 	XFile* XF = nullptr;
-	KeyDPtr Keys = nullptr;
+	KeyD* Keys = nullptr;
 	AddD* Add = nullptr;
 	uintptr_t nLDs = 0, LiOfs = 0;
 	longint UsedFileSize();
@@ -332,7 +347,7 @@ public:
 struct RdbD // ø. 243
 {
 	RdbD* ChainBack = nullptr;
-	FileD* FD = nullptr; 
+	FileD* FD = nullptr;
 	FileD* HelpFD = nullptr; // { FD=FileDRoot and = Chpt for this RDB }
 	LinkD* OldLDRoot = nullptr;
 	FuncD* OldFCRoot = nullptr;
@@ -345,8 +360,8 @@ typedef RdbD* RdbDPtr;
 struct WRectFrml // r251
 {
 	FrmlElem* C1 = nullptr;
-	FrmlElem* R1 = nullptr; 
-	FrmlElem* C2 = nullptr; 
+	FrmlElem* R1 = nullptr;
+	FrmlElem* C2 = nullptr;
 	FrmlElem* R2 = nullptr;
 };
 
@@ -404,7 +419,7 @@ public:
 	bool IsLeaf = false;
 	longint GreaterPage = 0;  // or free pages chaining
 	WORD NItems = 0;
-	BYTE A[XPageSize - 4]{'\0'};  // item array
+	BYTE A[XPageSize - 4]{ '\0' };  // item array
 	WORD Off();
 	XItem* XI(WORD I);
 	uintptr_t EndOff();
@@ -424,12 +439,15 @@ typedef XPage* XPagePtr;
 class XKey // r309
 {
 public:
-	XKey* Chain;
-	KeyFldD* KFlds;
-	bool Intervaltest, Duplic, InWork;
-	WORD IndexRoot; BYTE IndexLen;
-	longint NR; // {used only by XWKey}
-	pstring* Alias;
+	XKey();
+	XKey(const XKey& orig, bool copyFlds);
+	XKey(BYTE* inputStr);
+	XKey* Chain = nullptr;
+	KeyFldD* KFlds = nullptr;
+	bool Intervaltest = false, Duplic = false, InWork = false;
+	WORD IndexRoot = 0; BYTE IndexLen = 0;
+	longint NR = 0; // {used only by XWKey}
+	pstring* Alias = nullptr;
 	XWFile* XF();
 	longint NRecs();
 	bool Search(XString& XX, bool AfterEqu, longint& RecNr);
@@ -488,7 +506,8 @@ typedef XWFile* XWFilePtr;
 class XFile : public XWFile // r357
 {
 public:
-	// XFile();
+	XFile() {};
+	XFile(const XFile& orig);
 	longint NRecs = 0, NRecsAbs = 0; // {FreeRoot..NrKeys read / written by 1 instr.}
 	bool NotValid = false;
 	BYTE NrKeys = 0;

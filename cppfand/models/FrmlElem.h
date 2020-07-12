@@ -209,3 +209,5 @@ public:
 	std::vector<std::pair<std::string, std::string>> strings_range;
 	std::vector<std::pair<double, double>> reals_range;
 };
+
+FrmlElem* CopyFrmlElem(const FrmlElem* orig);

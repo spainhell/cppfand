@@ -458,6 +458,7 @@ void CopyPrevMFlds()
 		if (IDA[Ii]->MFld == nullptr) IDA[Ii]->MFld = MNew;
 		else ChainLast(IDA[Ii]->MFld, MNew); 
 		M = (KeyFldD*)M->Chain;
+		if (M == LastInChain(IDA[Ii]->MFld)) break;
 	}
 	LexWord = s;
 }

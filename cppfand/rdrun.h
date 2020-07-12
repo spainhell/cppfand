@@ -58,31 +58,31 @@ struct ConstListEl : public Chained
 
 struct InpD
 {
-	XScan* Scan;
-	bool AutoSort;
-	KeyFldDPtr SK;
-	LockMode Md;
-	longint IRec;
-	void* ForwRecPtr;
-	FrmlPtr Bool;
-	bool SQLFilter;
-	KeyFldDPtr MFld;
-	SumElPtr Sum;
-	bool Exist;
-	char Op;
-	double Count;
-	ChkDPtr Chk;
-	char OpErr;
-	bool Error;
-	char OpWarn;
-	bool Warning;
+	XScan* Scan = nullptr;
+	bool AutoSort = false;
+	KeyFldD* SK = nullptr;
+	LockMode Md = NullMode;
+	longint IRec = 0;
+	void* ForwRecPtr = nullptr;
+	FrmlElem* Bool = nullptr;
+	bool SQLFilter = false;
+	KeyFldD* MFld = nullptr;
+	SumElem* Sum = nullptr;
+	bool Exist = false;
+	char Op = '\0';
+	double Count = 0.0;
+	ChkD* Chk = nullptr;
+	char OpErr = '\0';
+	bool Error = false;
+	char OpWarn = '\0';
+	bool Warning = false;
 	FrmlElem4* ErrTxtFrml = nullptr;
-	KeyFldDPtr SFld;                /* only Report */
-	ConstListEl* OldSFlds;
-	LvDescr* FrstLvS;
-	LvDescr* LstLvS;		/* FrstLvS->Ft=DE */
-	bool IsInplace;              /* only Merge */
-	OutpRD* RD;
+	KeyFldD* SFld = nullptr;                /* only Report */
+	ConstListEl* OldSFlds = nullptr;
+	LvDescr* FrstLvS = nullptr;
+	LvDescr* LstLvS = nullptr;		/* FrstLvS->Ft=DE */
+	bool IsInplace = false;              /* only Merge */
+	OutpRD* RD = nullptr;
 };
 
 /* Report */

@@ -1233,7 +1233,7 @@ void CallProcedure(Instr_proc* PD)
 	SetInpTT(PD->PPos, true);
 #ifdef _DEBUG
 	std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
-	if (srcCode.find("if PARAM3.Ano then proc([pgm]);") != std::string::npos) {
+	if (srcCode.find("CISSLOUP") != std::string::npos) {
 		printf("");
 		//FuncD* f = FuncDRoot;
 		//std::ofstream myfile;

@@ -124,12 +124,12 @@ FieldDPtr RdFldDescr(pstring Name, bool Stored)
 
 ChkD* RdChkD(WORD Low)
 {
-	WORD Upper = 0, N = 0; 
+	WORD Upper = 0, N = 0;
 	FrmlElem* Z = nullptr;
 	//C = (ChkD*)GetZStore(sizeof(*C));
 	ChkD* C = new ChkD();
-	ChkD* result = C; 
-	C->Bool = RdBool(); 
+	ChkD* result = C;
+	C->Bool = RdBool();
 	Upper = OldErrPos;
 	if (Lexem == '?') { RdLex(); C->Warning = true; }
 	if (Lexem == ':') { RdLex(); C->TxtZ = RdStrFrml(); }
@@ -151,12 +151,12 @@ ChkD* RdChkD(WORD Low)
 void RdChkDChain(ChkD** CRoot)
 {
 	WORD Low = 0;
-	SkipBlank(false); 
-	Low = CurrPos; 
+	SkipBlank(false);
+	Low = CurrPos;
 	RdLex();
 label1:
 	if (*CRoot == nullptr) *CRoot = RdChkD(Low);
-	else ChainLast(*CRoot, RdChkD(Low)); 
+	else ChainLast(*CRoot, RdChkD(Low));
 	if (Lexem == ';') {
 		SkipBlank(false); Low = CurrPos; RdLex();
 		if (!(Lexem == '#' || Lexem == 0x1A)) goto label1;
@@ -175,26 +175,26 @@ void RdChkDsFromPos(FileD* FD, ChkD* C)
 	}
 	if (Lexem == 0x1A) return;
 	RdLex();
-	FileD* cf = CFile; 
-	CFile = FD; 
-	RdChkDChain(&C); 
+	FileD* cf = CFile;
+	CFile = FD;
+	RdChkDChain(&C);
 	CFile = cf;
 }
 
 void RdBegViewDcl(EditOpt* EO)
 {
-	bool neg = false, all = false; 
-	FieldListEl* fl = nullptr; 
+	bool neg = false, all = false;
+	FieldListEl* fl = nullptr;
 	FieldDescr* f = nullptr;
 	if ((Lexem == _identifier || Lexem == '[')) {
-		RdChptName('E', &EO->FormPos, true); 
+		RdChptName('E', &EO->FormPos, true);
 		return;
 	}
-	neg = false; all = false; 
+	neg = false; all = false;
 	FieldListEl* fl1 = new FieldListEl(); // FieldListEl* fl1 = nullptr;
 	EO->UserSelFlds = false;
 	if (Lexem == '^') { RdLex(); neg = true; } Accept('(');
-	if (Lexem == _identifier) RdFldList(fl1); 
+	if (Lexem == _identifier) RdFldList(fl1);
 	else neg = true;
 label1:
 	switch (Lexem) {
@@ -203,7 +203,7 @@ label1:
 	}
 	Accept(')');
 	if (!neg) { EO->Flds = fl1; return; }
-	EO->Flds = nullptr; 
+	EO->Flds = nullptr;
 	f = CFile->FldD;
 	while (f != nullptr) {
 		if ((((f->Flg & f_Stored) != 0) || all) && !FieldInList(f, fl1)) {
@@ -289,32 +289,32 @@ void TestUserView()
 	RdLex();
 label1:
 	TestIdentif();
-	TestDupl(CFile); 
+	TestDupl(CFile);
 	FD = FileDRoot;
-	while (FD != nullptr) { 
-		TestDupl(FD); 
-		FD = (FileD*)FD->Chain; 
+	while (FD != nullptr) {
+		TestDupl(FD);
+		FD = (FileD*)FD->Chain;
 	}
 	//S = (StringList)GetStore(LexWord.length() + 5);
 	S = new StringListEl();
-	S->S = LexWord; 
+	S->S = LexWord;
 	if (CFile->ViewNames == nullptr) CFile->ViewNames = S;
 	else ChainLast(CFile->ViewNames, S);
-	RdLex(); 
-	RdByteListInStore(); 
-	Accept(':'); 
+	RdLex();
+	RdByteListInStore();
+	Accept(':');
 	MarkStore(p);
 	EO = GetEditOpt();
 	K = RdViewKey();
-	if (K != nullptr) { 
-		Accept(','); 
-		EO->ViewKey = K; 
+	if (K != nullptr) {
+		Accept(',');
+		EO->ViewKey = K;
 	}
 	RdBegViewDcl(EO);
 	while (Lexem == ',') if (!RdViewOpt(EO)) Error(44);
 	ReleaseStore(p);
 	if (Lexem == ';') {
-		RdLex(); 
+		RdLex();
 		if (!(Lexem == '#' || Lexem == 0x1A)) goto label1;
 	}
 }
@@ -335,9 +335,9 @@ label1:
 	//if (InpArrLen == 0x0ce2) {
 	//	printf("D\n");
 	//}
-	TestIdentif(); 
+	TestIdentif();
 	Name = LexWord;
-	F = FindFldName(CFile);	
+	F = FindFldName(CFile);
 	if (F != nullptr) Error(26);
 	RdLex();
 	if (!Stored) { Accept(_assign); Z = RdFrml(FTyp); }
@@ -353,9 +353,18 @@ label1:
 	}
 	else { F->Frml = Z; if (FTyp != F->FrmlTyp) OldError(12); }
 	if (Lexem == ';') {
-		RdLex(); 
+		RdLex();
 		if (!(Lexem == '#' || Lexem == 0x1A)) goto label1;
 	}
+}
+
+void FakeRdFDSegment(FileD* FD)
+{
+	if (Lexem != 0x1A) Accept(';');
+	WORD i = FD->ChptPos.IRec;
+	CFile = new FileD(*FD);
+	CFile->OrigFD = FD;
+	CFile->TxtPosUDLI = 0;
 }
 
 // ze souboru .000 vycte data
@@ -374,24 +383,24 @@ void* RdFileD(std::string FileName, char FDTyp, pstring Ext)
 	RdLex();
 	issql = SEquUpcase(Ext, ".SQL"); isHlp = SEquUpcase(Ext, ".HLP");
 	if (IsKeyWord("JOURNALOF")) {
-		FD = RdFileName(); 
-		if (Lexem == ';') RdLex(); 
+		FD = RdFileName();
+		if (Lexem == ';') RdLex();
 		SetMsgPar(FileName);
 		if (FDTyp != '6') OldError(103);
 		if (Lexem != 0x1A) Error(40);
 #ifdef FandSQL
 		if (issql || FD->typSQLFile) OldError(155);
 #endif
-		LDOld = LinkDRoot; 
-		CallRdFDSegment(FD); 
+		LDOld = LinkDRoot;
+		CallRdFDSegment(FD);
 		LinkDRoot = LDOld;
-		F = CFile->FldD; 
+		F = CFile->FldD;
 		FillChar(CFile, sizeof(FileD), 0); CFile->Name = FileName;
-		CFile->IsJournal = true; 
+		CFile->IsJournal = true;
 		SetHCatTyp(FDTyp);
 		CFile->ChptPos = OrigInp()->InpRdbPos;
-		SetInpStr(JournalFlds); 
-		RdLex(); 
+		SetInpStr(JournalFlds);
+		RdLex();
 		RdFieldDList(true);
 		F2 = (FieldDescr*)LastInChain(CFile->FldD);
 		while (F != nullptr) {
@@ -408,29 +417,31 @@ void* RdFileD(std::string FileName, char FDTyp, pstring Ext)
 				F = (FieldDescr*)F->Chain;
 			}
 		}
-		F2->Chain = nullptr; 
-		CompileRecLen(); 
+		F2->Chain = nullptr;
+		CompileRecLen();
 		ChainLast(FileDRoot, CFile);
-		MarkStore(p); 
+		MarkStore(p);
 		goto label1;
 	}
 	if (IsKeyWord("LIKE")) {
-		Prefix = FileName; 
-		FD = RdFileName(); 
+		Prefix = FileName;
+		FD = RdFileName();
 		if (Lexem == '(') {
-			RdLex(); 
-			TestIdentif(); 
-			Prefix = LexWord; 
-			RdLex(); 
+			RdLex();
+			TestIdentif();
+			Prefix = LexWord;
+			RdLex();
 			Accept(')');
 		}
-		CallRdFDSegment(FD); 
+		//CallRdFDSegment(FD);
+		// misto nacitani objektu ze souboru budeme objekt kopirovat
+		FakeRdFDSegment(FD);
 		CFile->IsHlpFile = false;
 		if (!(FDTyp == '6' || FDTyp == 'X') || !(CFile->Typ == '6' || CFile->Typ == 'X')) OldError(106);
 		K = CFile->Keys;
 		while (K != nullptr) {
 			if (*K->Alias != "") {
-				s = *K->Alias; 
+				s = *K->Alias;
 				i = s.first('_');
 				if (i != 0) s = copy(s, i + 1, 255);
 				s = Prefix + "_" + s;
@@ -525,64 +536,64 @@ void RdKeyD()
 	RdLex();
 	if (Lexem == '@')
 	{
-		if ((CFile->Keys != nullptr) || CFile->IsParFile) Error(26); 
+		if ((CFile->Keys != nullptr) || CFile->IsParFile) Error(26);
 		RdLex();
-		if (Lexem == '@') { 
-			RdLex(); 
-			CFile->IsParFile = true; 
+		if (Lexem == '@') {
+			RdLex();
+			CFile->IsParFile = true;
 		}
 		else {
 			Name = "";
 		label1:
 			//K = (KeyDPtr)GetZStore(sizeof(*K));
 			K = new XKey();
-			K1 = (XKey*)(&CFile->Keys); 
+			K1 = (XKey*)(&CFile->Keys);
 			N = 1;
 			while (K1->Chain != nullptr) { K1 = K1->Chain; N++; }
-			K1->Chain = K; 
+			K1->Chain = K;
 			K->Alias = StoreStr(Name);
-			K->Intervaltest = false; 
+			K->Intervaltest = false;
 			K->Duplic = false;
-			if (Lexem == _le) { 
-				K->Intervaltest = true; 
-				RdLex(); 
+			if (Lexem == _le) {
+				K->Intervaltest = true;
+				RdLex();
 			}
 			else if (Lexem == '*') {
 #ifdef FandSQL
 				if (CFile->typSQLFile) Error(155);
 #endif
-				K->Duplic = true; 
+				K->Duplic = true;
 				RdLex();
-		}
-			K->IndexRoot = N; 
+			}
+			K->IndexRoot = N;
 			K->IndexLen = RdKFList(&K->KFlds, CFile);
 			if (K->IndexLen > MaxIndexLen) OldError(105);
-	}
+		}
 		goto label6;
-}
+	}
 label2:
-	TestIdentif(); 
-	Name = LexWord; 
+	TestIdentif();
+	Name = LexWord;
 	SkipBlank(false);
 	if (ForwChar == '(')
 	{
-		RdLex(); RdLex(); 
+		RdLex(); RdLex();
 		if (Lexem == '@')
 		{
-			CheckDuplAlias(Name); 
-			RdLex(); Accept(')'); 
+			CheckDuplAlias(Name);
+			RdLex(); Accept(')');
 			goto label1;
 		}
-		RdFileOrAlias(&FD, &K); 
+		RdFileOrAlias(&FD, &K);
 		Accept(')');
 	}
 	else RdFileOrAlias(&FD, &K);
-	L = FindLD(Name); 
+	L = FindLD(Name);
 	if (L != nullptr) OldError(26);
 	//L = (LinkD*)GetZStore(sizeof(*L) - 1 + Name.length());
 	L = new LinkD();
 	//L->Args = new KeyFldD(); // pridano navic, aby to o par radku niz nepadalo
-	L->Chain = LinkDRoot; 
+	L->Chain = LinkDRoot;
 	LinkDRoot = L;
 	//Move(&Name, &L->RoleName, Name.length() + 1);
 	L->RoleName = Name;
@@ -593,18 +604,18 @@ label2:
 			&& !CFile->typSQLFile
 #endif
 			) Error(108);
-		if (K->Duplic) Error(153);  
-		RdLex(); 
+		if (K->Duplic) Error(153);
+		RdLex();
 		L->MemberRef = 1;
-		if (Lexem == '!') { 
-			RdLex(); 
-			L->MemberRef = 2; 
+		if (Lexem == '!') {
+			RdLex();
+			L->MemberRef = 2;
 		}
 	}
-	Arg = (KeyFldD*)&L->Args; 
+	Arg = (KeyFldD*)&L->Args;
 	KF = K->KFlds;
 label3:
-	F = RdFldName(CFile); 
+	F = RdFldName(CFile);
 	if (F->Typ == 'T') OldError(84);
 	//Arg->Chain = (KeyFldD*)GetZStore(sizeof(*Arg)); 
 	Arg->Chain = new KeyFldD();
@@ -614,15 +625,15 @@ label3:
 	F2 = KF->FldD;
 	if ((F->Typ != F2->Typ) || (F->Typ != 'D') && (F->L != F2->L) ||
 		(F->Typ == 'F') && (F->M != F2->M)) OldError(12);
-	KF = (KeyFldD*)KF->Chain; 
-	if (KF != nullptr) { 
-		Accept(','); 
-		goto label3; 
+	KF = (KeyFldD*)KF->Chain;
+	if (KF != nullptr) {
+		Accept(',');
+		goto label3;
 	}
 label6:
 	if (Lexem == ';')
 	{
-		RdLex(); 
+		RdLex();
 		if (!(Lexem == '#' || Lexem == 0x1A)) goto label2;
 	}
 }
@@ -638,7 +649,7 @@ void CheckDuplAlias(pstring Name)
 	LookForK(&Name, CFile);
 	F = FileDRoot;
 	while (F != nullptr) {
-		LookForK(&Name, F); 
+		LookForK(&Name, F);
 		F = (FileD*)F->Chain;
 	}
 }
@@ -647,7 +658,7 @@ void LookForK(pstring* Name, FileD* F)
 {
 	KeyD* K = nullptr;
 	if (SEquUpcase(F->Name, *Name)) Error(26);
-	K = F->Keys; 
+	K = F->Keys;
 	while (K != nullptr) {
 		if (SEquUpcase(*K->Alias, *Name)) Error(26);
 		K = K->Chain;
@@ -669,7 +680,7 @@ label1:
 void RdFileOrAlias(FileD** FD, KeyD** KD)
 {
 	FileD* f = nullptr; RdbD* r = nullptr; KeyD* k = nullptr;
-	TestIdentif(); 
+	TestIdentif();
 	f = CFile;
 	k = RdFileOrAlias1(f);
 	if (k != nullptr) goto label1;
@@ -685,36 +696,36 @@ void RdFileOrAlias(FileD** FD, KeyD** KD)
 	}
 	Error(9);
 label1:
-	if (k == nullptr) Error(24); 
-	RdLex(); 
-	*FD = f; 
+	if (k == nullptr) Error(24);
+	RdLex();
+	*FD = f;
 	*KD = k;
 }
 
 void SetLDIndexRoot(LinkD* L, LinkD* L2)
 {
-	KeyD* K = nullptr; 
-	KeyFldD* Arg = nullptr; 
-	KeyFldD* KF = nullptr; 
+	KeyD* K = nullptr;
+	KeyFldD* Arg = nullptr;
+	KeyFldD* KF = nullptr;
 	bool cmptd = false;
 	L = LinkDRoot;
 	while (L != L2) {   /* find key with equal beginning */
 		if (CFile->Typ == 'X') {
 			K = CFile->Keys;
 			while (K != nullptr) {
-				KF = K->KFlds; 
-				Arg = L->Args; 
+				KF = K->KFlds;
+				Arg = L->Args;
 				cmptd = false;
 				while (Arg != nullptr) {
-					if ((KF == nullptr) || (Arg->FldD != KF->FldD) 
+					if ((KF == nullptr) || (Arg->FldD != KF->FldD)
 						|| (Arg->CompLex != KF->CompLex)
-						|| (Arg->Descend != KF->Descend)) 
+						|| (Arg->Descend != KF->Descend))
 						goto label1;
 					if ((Arg->FldD->Flg & f_Stored) == 0) cmptd = true;
-					Arg = (KeyFldD*)Arg->Chain; 
+					Arg = (KeyFldD*)Arg->Chain;
 					KF = (KeyFldD*)KF->Chain;
 				}
-				L->IndexRoot = K->IndexRoot; 
+				L->IndexRoot = K->IndexRoot;
 				goto label2;
 			label1:
 				K = K->Chain;
@@ -722,10 +733,10 @@ void SetLDIndexRoot(LinkD* L, LinkD* L2)
 		}
 	label2:
 		if ((L->MemberRef != 0) && ((L->IndexRoot == 0) || cmptd)) {
-			SetMsgPar(L->RoleName); 
+			SetMsgPar(L->RoleName);
 			OldError(152);
 		}
-		L = L->Chain; 
+		L = L->Chain;
 		CFile->nLDs++;
 	}
 }
@@ -733,27 +744,27 @@ void SetLDIndexRoot(LinkD* L, LinkD* L2)
 void TestDepend()
 {
 	FrmlElem* ZBool = nullptr; FrmlElem* Z = nullptr;
-	FieldDescr* F = nullptr; 
-	char FTyp; 
+	FieldDescr* F = nullptr;
+	char FTyp;
 	void* p = nullptr;
-	RdLex(); 
+	RdLex();
 	MarkStore(p);
 label1:
-	Accept('('); 
-	ZBool = RdBool(); 
+	Accept('(');
+	ZBool = RdBool();
 	Accept(')');
 label2:
 	F = RdFldName(CFile);
 	if ((F->Flg & f_Stored) == 0) OldError(14);
-	Accept(_assign); 
+	Accept(_assign);
 	Z = RdFrml(FTyp);
 	if (F->FrmlTyp != FTyp) Error(12);
 	if (Lexem == ';')
 	{
-		RdLex(); 
+		RdLex();
 		if (!(Lexem == '#' || Lexem == 0x1A))
 		{
-			if (Lexem == '(') goto label1; 
+			if (Lexem == '(') goto label1;
 			else goto label2;
 		}
 	}
@@ -762,15 +773,15 @@ label2:
 
 void RdImpl(ImplD** IDRoot)
 {
-	FrmlElem* Z = nullptr; 
-	FieldDescr* F = nullptr; 
-	char FTyp = '\0'; 
+	FrmlElem* Z = nullptr;
+	FieldDescr* F = nullptr;
+	char FTyp = '\0';
 	ImplD* ID = nullptr;
 	RdLex();
 label1:
-	F = RdFldName(CFile); 
+	F = RdFldName(CFile);
 	if ((F->Flg & f_Stored) == 0) OldError(14);
-	Accept(_assign); 
+	Accept(_assign);
 	Z = RdFrml(FTyp);
 	if (FTyp != F->FrmlTyp) OldError(12);
 	//ID = (ImplD*)GetStore(sizeof(*ID)); 
@@ -781,7 +792,7 @@ label1:
 	else ChainLast(*IDRoot, ID);
 	if (Lexem == ';')
 	{
-		RdLex(); 
+		RdLex();
 		if (!(Lexem == '#' || Lexem == 0x1A)) goto label1;
 	}
 }
@@ -789,44 +800,45 @@ label1:
 void RdKumul()
 {
 	AddD* AD = nullptr; WORD Low = 0; FileD* CF = nullptr;
-	RdLex(); 
-	AD = (AddD*)(&CFile->Add);
+	RdLex();
+	AD = CFile->Add;
 label1:
 	//AD->Chain = (AddD*)GetZStore(sizeof(AddD)); 
-	AD->Chain = new AddD();
-	AD = AD->Chain;
+	if (AD == nullptr) { CFile->Add = new AddD(); AD = CFile->Add; }
+	else { AD->Chain = new AddD(); AD = AD->Chain; }
+	
 	if (IsKeyWord("IF"))
 	{
-		AD->Bool = RdBool(); 
-		AcceptKeyWord("THEN"); 
+		AD->Bool = RdBool();
+		AcceptKeyWord("THEN");
 		RdRoleField(AD);
-		RdImper(AD); 
+		RdImper(AD);
 		RdAssign(AD);
 	}
 	else {
 		RdRoleField(AD);
 		if (Lexem == '(')
 		{
-			Low = CurrPos; 
-			RdLex(); 
-			CF = CFile; 
+			Low = CurrPos;
+			RdLex();
+			CF = CFile;
 			CFile = AD->File2;
-			AD->Chk = RdChkD(Low); 
-			CFile = CF; 
+			AD->Chk = RdChkD(Low);
+			CFile = CF;
 			Accept(')');
 		}
 		RdImper(AD);
 		if ((AD->Chk == nullptr) && (Lexem == _assign)) RdAssign(AD);
 		else {
-			Accept(_addass); 
+			Accept(_addass);
 			AD->Assign = false;
-			TestReal(AD->Field->FrmlTyp); 
+			TestReal(AD->Field->FrmlTyp);
 			AD->Frml = RdRealFrml();
 		}
 	}
 	if (Lexem == ';')
 	{
-		RdLex(); 
+		RdLex();
 		if (!(Lexem == '#' || Lexem == 0x1A)) goto label1;
 	}
 }
@@ -834,9 +846,9 @@ label1:
 void RdRoleField(AddDPtr AD)
 {
 	FieldDescr* F;
-	if (!IsRoleName(true, &AD->File2, &AD->LD)) Error(9); 
+	if (!IsRoleName(true, &AD->File2, &AD->LD)) Error(9);
 	Accept('.');
-	F = RdFldName(AD->File2); 
+	F = RdFldName(AD->File2);
 	AD->Field = F;
 	if ((F->Flg & f_Stored) == 0) OldError(14);
 	if (IsKeyArg(F, AD->File2)) OldError(135);
@@ -860,15 +872,18 @@ void RdImper(AddDPtr AD)
 
 void RdAssign(AddDPtr AD)
 {
-	FrmlPtr Z; char FTyp;
+	FrmlElem* Z = nullptr; char FTyp = '\0';
 #ifdef FandSQL
 	if (AD->File2->typSQLFile) Error(155);
 #endif
-	Accept(_assign); AD->Assign = true; AD->Frml = RdFrml(FTyp);
+	Accept(_assign); 
+	AD->Assign = true; 
+	AD->Frml = RdFrml(FTyp);
 	if (FTyp != AD->Field->FrmlTyp) OldError(12);
 }
 
-// smaze CFile->Handle, nastavi typ na FDTyp a ziska CatIRec z GetCatIRec() - musi existovat CatFD
+// smaze CFile->Handle, nastavi typ na FDTyp a ziska 
+// CatIRec z GetCatIRec() - musi existovat CatFD
 void SetHCatTyp(char FDTyp)
 {
 	/* !!! with CFile^ do!!! */
@@ -882,7 +897,10 @@ void SetHCatTyp(char FDTyp)
 
 void GetTFileD(char FDTyp)
 {
-	if ((uintptr_t)CFile->TF == 0x534b007f) return;
+	if ((uintptr_t)CFile->TF == 0x534b007f)
+	{
+		return;
+	}
 	/* !!! with CFile^ do!!! */
 	if (!HasTT && (CFile->TF == nullptr)) return;
 	if (CFile->TF == nullptr) CFile->TF = new TFile();
@@ -903,31 +921,31 @@ void GetXFileD()
 
 void CallRdFDSegment(FileDPtr FD)
 {
-	RdbD* rdb = nullptr; 
-	void* cr = nullptr; 
-	FileD* cf = nullptr; 
+	RdbD* rdb = nullptr;
+	void* cr = nullptr;
+	FileD* cf = nullptr;
 	bool b = false; WORD i = 0; longint pos = 0;;
 	if (Lexem != 0x1A) Accept(';');
-	rdb = CRdb; cr = CRecPtr; 
+	rdb = CRdb; cr = CRecPtr;
 	RdbD* r = FD->ChptPos.R;
 	if ((r == nullptr) || FD->IsDynFile) OldError(106);
-	CRdb = r; 
+	CRdb = r;
 	i = FD->ChptPos.IRec;
-	CFile = CRdb->FD; 
-	CRecPtr = CFile->RecPtr; 
+	CFile = CRdb->FD;
+	CRecPtr = CFile->RecPtr;
 	ReadRec(i);
-	pos = _T(ChptOldTxt); 
+	pos = _T(ChptOldTxt);
 	if (pos <= 0) Error(25);
 	b = RdFDSegment(i, pos);
-	cf = CFile; CRdb = rdb; 
+	cf = CFile; CRdb = rdb;
 	if (InpRdbPos.IRec != 0) {
-		CFile = rdb->FD; 
-		ReadRec(InpRdbPos.IRec); 
+		CFile = rdb->FD;
+		ReadRec(InpRdbPos.IRec);
 		CFile = cf;
 	}
-	CRecPtr = cr; 
+	CRecPtr = cr;
 	if (!b) Error(25);
-	CFile->OrigFD = FD; 
+	CFile->OrigFD = FD;
 	CFile->TxtPosUDLI = 0;
 }
 
