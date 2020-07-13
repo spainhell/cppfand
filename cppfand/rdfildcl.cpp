@@ -845,10 +845,9 @@ label1:
 
 void RdRoleField(AddDPtr AD)
 {
-	FieldDescr* F;
 	if (!IsRoleName(true, &AD->File2, &AD->LD)) Error(9);
 	Accept('.');
-	F = RdFldName(AD->File2);
+	FieldDescr* F = RdFldName(AD->File2);
 	AD->Field = F;
 	if ((F->Flg & f_Stored) == 0) OldError(14);
 	if (IsKeyArg(F, AD->File2)) OldError(135);

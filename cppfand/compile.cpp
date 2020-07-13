@@ -1347,7 +1347,7 @@ end;
 
 bool IsKeyArg(FieldDescr* F, FileD* FD)
 {
-
+	KeyArgFound = false;
 	KeyFldD* kf = nullptr;
 	KeyD* k = FD->Keys;
 	while (k != nullptr) {
