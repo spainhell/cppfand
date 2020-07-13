@@ -2351,7 +2351,7 @@ FileD* RdFileName()
 	FileD* FD = nullptr;
 	if (SpecFDNameAllowed && (Lexem == '@'))
 	{
-		LexWord = '@'; Lexem = _identifier;
+		LexWord = "@"; Lexem = _identifier;
 	}
 	TestIdentif();
 	FD = FindFileD();

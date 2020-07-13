@@ -12,7 +12,11 @@ OutpRD* RD = nullptr;
 
 FileD* InpFD_M(WORD I)
 {
-	return IDA[I]->Scan->FD;
+	// tady si to sahalo na neexistujici polozky
+	// proto je to cele prepsane
+	if (IDA[I] != nullptr) return IDA[I]->Scan->FD;
+	if (IDA[I + 1] != nullptr) { Ii++; return IDA[I + 1]->Scan->FD; }
+	return nullptr;
 }
 
 bool RdIiPrefix_M()
@@ -278,7 +282,7 @@ label3:
 			RdLex();
 			WhatToRd = 'i';
 			ChainSumEl = nullptr;
-			RdOutpRD(&IDA[Oi]->RD);
+			RdOutpRD(&(IDA[Oi]->RD));
 		}
 		else if (CurrChar == '_') {
 			RdLex(); 

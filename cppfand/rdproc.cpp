@@ -2254,7 +2254,7 @@ Instr_assign* RdAssign()
 			if (FTyp == 'i') {
 				AcceptKeyWord("NRECS");
 				Accept(_assign);
-				if ((Lexem != _number) || (LexWord != '0')) Error(183);
+				if ((Lexem != _number) || (LexWord != "0")) Error(183);
 				RdLex();
 				PD = new Instr_assign(_asgnxnrecs); // GetPInstr(_asgnxnrecs, 4);
 				PD->xnrIdx = (WKeyDPtr)LV->RecPtr;

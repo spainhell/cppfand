@@ -1555,7 +1555,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 	CRecPtr = Chpt->RecPtr;
 	Encryp = CRdb->Encrypted;
 	for (I = 1; I <= Chpt->NRecs; I++) {
-		if (I == 0x010a) {
+		if (I == 355) {
 			printf("RunProj r1495, CompileRdb(), I = %i, strings: %i, total: %i\n", I, strcount, strbytes);
 		}
 		ReadRec(I);
@@ -1622,7 +1622,11 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 				}
 				break;
 			}
-			case 'M': { SetInpTTPos(Txt, Encryp); ReadMerge(); break; }
+			case 'M': { 
+				SetInpTTPos(Txt, Encryp); 
+				ReadMerge(); 
+				break; 
+			}
 			case 'R': {
 				if ((Txt == 0) && IsTestRun) {
 					RprtTxt = SelGenRprt(Name);

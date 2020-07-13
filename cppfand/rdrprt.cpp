@@ -447,18 +447,34 @@ void CopyPrevMFlds()
 	KeyFldD* M = nullptr; KeyFldD* MNew = nullptr; FieldDescr* F = nullptr;
 	pstring s = LexWord;
 	M = IDA[Ii - 1]->MFld;
+	//std::vector<std::string> vFieldNames;
+	//std::vector<std::string>::iterator it;
 	while (M != nullptr) {
-		LexWord = M->FldD->Name; 
+		LexWord = M->FldD->Name;
+		std::string LexWordString = LexWord;
+		// toto je pridano navic, protoze se metoda cyklila
+		// - zkontrolumeme, jestli uz uvedena polozka nebyla pridana
+		// - je mozne, ze v nekterych sestavach bude nutne toto osetrit jinak
+		//   (protoze se bude 1 polozka v sestave opakovat)
+		// !!!! NAKONEC VYRESENO NASTAVENIM CHAIN NOVE POLOZKY NA NULL !!!!
+		// !!!! O PAR RADKU NIZ !!!!
+		/*it = std::find(vFieldNames.begin(), vFieldNames.end(), LexWordString);
+		if (it != vFieldNames.end()) break;
+		vFieldNames.push_back(LexWordString);*/
+
 		F = FindFldName(InpFD(Ii));
 		if (F == nullptr) OldError(8);
 		if (!FldTypIdentity(M->FldD, F)) OldError(12);
 		MNew = new KeyFldD(); // (KeyFldD*)GetStore(sizeof(*MNew));
-		Move(M, MNew, sizeof(*MNew));
-		MNew->FldD = F; 
+		MNew->Chain = nullptr; // M->Chain;
+		MNew->CompLex = M->CompLex;
+		MNew->Descend = M->Descend;
+		MNew->FldD = F;
+
 		if (IDA[Ii]->MFld == nullptr) IDA[Ii]->MFld = MNew;
 		else ChainLast(IDA[Ii]->MFld, MNew); 
+
 		M = (KeyFldD*)M->Chain;
-		if (M == LastInChain(IDA[Ii]->MFld)) break;
 	}
 	LexWord = s;
 }
