@@ -61,33 +61,57 @@ FrmlPtr RdFldNameFrmlM(char& FTyp)
 	WasIiPrefix = RdIiPrefix_M();
 	if ((FrmlSumEl != nullptr) && FrstSumVar) SumIi = 0;
 	TestIdentif();
-	if ((LexWord == 'O') && IsForwPoint() && !WasIiPrefix) {
-		RdLex(); RdLex(); if ((FrmlSumEl != nullptr) || ReadingOutpBool) Error(99);
-		RdOutpFldName(FTyp, &result); return result;
+	if ((LexWord == "O") && IsForwPoint() && !WasIiPrefix) {
+		RdLex(); RdLex(); 
+		if ((FrmlSumEl != nullptr) || ReadingOutpBool) Error(99);
+		RdOutpFldName(FTyp, &result); 
+		return result;
 	}
 	if (IsForwPoint()) {
-		RdDirFilVar_M(FTyp, &result); TestSetSumIi_M(); return result;
+		RdDirFilVar_M(FTyp, &result); 
+		TestSetSumIi_M(); 
+		return result;
 	}
 	if (!WasIiPrefix) if (FindLocVar(&LVBD, &LV)) {
-		RdLex(); TestNotSum_M(); result = (FrmlPtr)(&LV->Op); FTyp = LV->FTyp; return result;
+		RdLex(); 
+		TestNotSum_M(); 
+		result = (FrmlPtr)(&LV->Op); 
+		FTyp = LV->FTyp; 
+		return result;
 	}
 	if (IsKeyWord("COUNT")) {
 	label1:
-		TestNotSum_M(); SetIi_M(); result = (FrmlPtr)(&IDA[Ii]->Op); FTyp = 'R'; return result;
+		TestNotSum_M(); 
+		SetIi_M(); 
+		result = (FrmlPtr)(&IDA[Ii]->Op); 
+		FTyp = 'R'; 
+		return result;
 	}
 	if (IsKeyWord("GROUP")) {
 	label2:
-		TestNotSum_M(); if (WasIiPrefix) OldError(41);
-		result = (FrmlPtr)(&MergOpGroup); FTyp = 'R'; return result;
+		TestNotSum_M(); 
+		if (WasIiPrefix) OldError(41);
+		result = (FrmlPtr)(&MergOpGroup); 
+		FTyp = 'R'; 
+		return result;
 	}
 	if (IsKeyWord("ERROR")) {
-		Err_M(); result = (FrmlPtr)(&IDA[Ii]->OpErr); FTyp = 'B'; return result;
+		Err_M(); 
+		result = (FrmlPtr)(&IDA[Ii]->OpErr); 
+		FTyp = 'B'; 
+		return result;
 	}
 	if (IsKeyWord("WARNING")) {
-		Err_M(); result = (FrmlPtr)(&IDA[Ii]->OpWarn); FTyp = 'B'; return result;
+		Err_M(); 
+		result = (FrmlPtr)(&IDA[Ii]->OpWarn); 
+		FTyp = 'B'; 
+		return result;
 	}
 	if (IsKeyWord("ERRORTEXT")) {
-		Err_M(); result = IDA[Ii]->ErrTxtFrml; FTyp = 'S'; return result;
+		Err_M(); 
+		result = IDA[Ii]->ErrTxtFrml; 
+		FTyp = 'S'; 
+		return result;
 	}
 	if (WasIiPrefix) { 
 		FD = InpFD_M(Ii); 
@@ -117,7 +141,8 @@ void RdDirFilVar_M(char& FTyp, FrmlElem** res)
 	else {
 		if (!Join && (WhatToRd == 'i'))
 		{
-			Ii = Oi; CFile = InpFD_M(Ii);
+			Ii = Oi; 
+			CFile = InpFD_M(Ii);
 			if (IsRoleName(true, &FD, &LD)) goto label2;
 		}
 		for (I = 1; I < MaxIi; I++)
@@ -132,7 +157,8 @@ void RdDirFilVar_M(char& FTyp, FrmlElem** res)
 label2:
 	Accept('.');
 	Z = RdFAccess(FD, LD, FTyp);
-	if (LD == nullptr) Ii = 0; else Z = FrmlContxt(Z, CFile, CFile->RecPtr);
+	if (LD == nullptr) Ii = 0; 
+	else Z = FrmlContxt(Z, CFile, CFile->RecPtr);
 	*res = Z;
 }
 
