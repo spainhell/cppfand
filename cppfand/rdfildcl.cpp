@@ -843,7 +843,7 @@ label1:
 	}
 }
 
-void RdRoleField(AddDPtr AD)
+void RdRoleField(AddD* AD)
 {
 	if (!IsRoleName(true, &AD->File2, &AD->LD)) Error(9);
 	Accept('.');
@@ -853,13 +853,12 @@ void RdRoleField(AddDPtr AD)
 	if (IsKeyArg(F, AD->File2)) OldError(135);
 }
 
-void RdImper(AddDPtr AD)
+void RdImper(AddD* AD)
 {
-	KeyFldDPtr KF;
 	if (Lexem == '!') {
 		RdLex(); AD->Create = 1;
 		if (AD->LD != nullptr) {
-			KF = AD->LD->ToKey->KFlds;
+			KeyFldDPtr KF = AD->LD->ToKey->KFlds;
 			while (KF != nullptr) {
 				if ((KF->FldD->Flg & f_Stored) == 0) OldError(148);
 				KF = (KeyFldD*)KF->Chain;
@@ -869,7 +868,7 @@ void RdImper(AddDPtr AD)
 	}
 }
 
-void RdAssign(AddDPtr AD)
+void RdAssign(AddD* AD)
 {
 	FrmlElem* Z = nullptr; char FTyp = '\0';
 #ifdef FandSQL

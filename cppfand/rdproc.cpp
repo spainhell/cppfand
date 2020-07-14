@@ -98,7 +98,7 @@ FrmlElem* RdRecVarFldFrml(LocVar* LV, char& FTyp)
 	return nullptr;
 }
 
-char RdOwner(LinkD* LLD, LocVar* LLV)
+char RdOwner(LinkD** LLD, LocVar** LLV)
 {
 	FileD* fd = nullptr;
 	auto result = '\0';
@@ -106,20 +106,25 @@ char RdOwner(LinkD* LLD, LocVar* LLV)
 	LocVar* lv = nullptr;
 	if (FindLocVar(&LVBD, &lv)) {
 		if (!(lv->FTyp == 'i' || lv->FTyp == 'r' || lv->FTyp == 'f')) Error(177);
-		ld = nullptr; LinkD* ld1 = LinkDRoot; while (ld1 != nullptr) {
+		ld = nullptr;
+		LinkD* ld1 = LinkDRoot;
+		while (ld1 != nullptr) {
 			if ((ld1->FromFD == CFile) && (ld1->IndexRoot != 0) && (ld1->ToFD == lv->FD))
-				ld = ld1; ld1 = ld1->Chain;
+				ld = ld1;
+			ld1 = ld1->Chain;
 		}
 		if (ld == nullptr) Error(116);
 		RdLex();
-		if (lv->FTyp == 'f') goto label2; else goto label1;
+		if (lv->FTyp == 'f') goto label2;
+		else goto label1;
 	}
 	TestIdentif();
 	ld = LinkDRoot;
 	while (ld != nullptr) {
 		if ((ld->FromFD == CFile) && EquUpcase(ld->RoleName, LexWord)) {
 			if ((ld->IndexRoot == 0)) Error(116);
-			RdLex(); fd = ld->ToFD;
+			RdLex();
+			fd = ld->ToFD;
 			if (Lexem == '(') {
 				RdLex();
 				if (!FindLocVar(&LVBD, &lv) || !(lv->FTyp == 'i' || lv->FTyp == 'r')) Error(177);
@@ -132,7 +137,7 @@ char RdOwner(LinkD* LLD, LocVar* LLV)
 					if (ld->FromFD->IsSQLFile || ld->ToFD->IsSQLFile) OldError(155);
 					if ((kf != nullptr) && !EquKFlds(kf, ld->ToKey->KFlds)) OldError(181);
 				}
-				LLV = lv;
+				*LLV = lv;
 				result = lv->FTyp;
 				goto label3;
 			}
@@ -143,11 +148,11 @@ char RdOwner(LinkD* LLD, LocVar* LLV)
 #endif
 
 				Accept('[');
-				LLV = (LocVar*)RdRealFrml();
+				*LLV = (LocVar*)RdRealFrml();
 				Accept(']');
 				result = 'F';
 			label3:
-				LLD = ld;
+				*LLD = ld;
 				return result;
 			}
 		}
@@ -827,7 +832,7 @@ Instr_forall* RdForAll()
 #endif
 	if (IsKeyWord("OWNER")) {
 		/* !!! with PD^ do!!! */
-		PD->COwnerTyp = RdOwner(PD->CLD, PD->CLV);
+		PD->COwnerTyp = RdOwner(&PD->CLD, &PD->CLV);
 		CViewKey = GetFromKey(PD->CLD);
 	}
 	else CViewKey = RdViewKey();
@@ -852,9 +857,9 @@ Instr* RdBeginEnd()
 	Instr* PD = nullptr;
 	if (!IsKeyWord("END")) {
 	label1:
-		/*if (InpArrLen == 1602 && CurrPos >= 880) {
+		if (InpArrLen == 0x0f97 && CurrPos >= 0x0190) {
 			printf("RdBeginEnd()\n");
-		}*/
+		}
 		RdPInstrAndChain(&PD);
 		if (Lexem == ';') {
 			RdLex();
@@ -1383,7 +1388,7 @@ void RdEditOpt(EditOpt* EO)
 	else if (EO->LVRecPtr != nullptr) Error(125);
 	else if (IsOpt("OWNER")) {
 		if (EO->SQLFilter || (EO->KIRoot != nullptr)) OldError(179);
-		EO->OwnerTyp = RdOwner(EO->DownLD, EO->DownLV);
+		EO->OwnerTyp = RdOwner(&EO->DownLD, &EO->DownLV);
 	}
 	else if (IsOpt("RECKEY")) EO->StartRecKeyZ = RdStrFrml();
 	else if (
@@ -1895,7 +1900,7 @@ Instr* RdGetIndex()
 			Accept(')');
 		}
 		else if (IsOpt("OWNER")) {
-			PD->giOwnerTyp = RdOwner(PD->giLD, PD->giLV2);
+			PD->giOwnerTyp = RdOwner(&PD->giLD, &PD->giLV2);
 			KeyD* k = GetFromKey(PD->giLD);
 			if (CViewKey == nullptr) PD->giKD = k;
 			else if (CViewKey != k) OldError(178);
@@ -2553,7 +2558,7 @@ void ReadDeclChpt()
 label1:
 	if (IsKeyWord("FUNCTION")) {
 #ifdef _DEBUG
-		printf("F: %s, ", LexWord.c_str());
+		// printf("F: %s, ", LexWord.c_str());
 #endif
 		TestIdentif();
 		fc = FuncDRoot;

@@ -13,7 +13,7 @@ bool IsRecVar(LocVar** LV);
 LocVar* RdRecVar();
 LocVar* RdIdxVar();
 FrmlPtr RdRecVarFldFrml(LocVar* LV, char& FTyp);
-char RdOwner(LinkD* LLD, LocVar* LLV); // 'r','i','F'
+char RdOwner(LinkD** LLD, LocVar** LLV); // 'r','i','F'
 FrmlPtr RdFldNameFrmlP(char& FTyp);
 FileD* RdPath(bool NoFD, pstring** Path, WORD& CatIRec);
 FrmlPtr RdFunctionP(char& FFTyp);
