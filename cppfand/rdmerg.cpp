@@ -145,7 +145,7 @@ void RdDirFilVar_M(char& FTyp, FrmlElem** res)
 			CFile = InpFD_M(Ii);
 			if (IsRoleName(true, &FD, &LD)) goto label2;
 		}
-		for (I = 1; I < MaxIi; I++)
+		for (I = 1; I <= MaxIi; I++)
 		{
 			CFile = InpFD_M(I);
 			if (IsRoleName(true, &FD, &LD)) { Ii = I; goto label2; }
@@ -576,12 +576,17 @@ AssignD* RdAssign_M()
 
 AssignD* RdAssSequ()
 {
-	AssignD* A;
+	AssignD* A = nullptr;
 	AssignD* ARoot = nullptr;
 label1:
-	A = (AssignD*)(&ARoot);
-	while (A->Chain != nullptr) A = (AssignD*)A->Chain;
-	A->Chain = RdAssign_M();
+	if (ARoot == nullptr) {
+		ARoot = RdAssign_M();
+	}
+	else {
+		A = ARoot;
+		while (A->Chain != nullptr) A = (AssignD*)A->Chain;
+		A->Chain = RdAssign_M();
+	}
 	if (Lexem == ';')
 	{
 		RdLex();
@@ -651,7 +656,9 @@ void RdOutpRD(OutpRD** RDRoot)
 		ReadingOutpBool = false;
 		Accept(')');
 	}
-	if (!(Lexem == '#' || Lexem == 0x1A)) RD->Ass = RdAssSequ();
+	if (!(Lexem == '#' || Lexem == 0x1A)) {
+		RD->Ass = RdAssSequ();
+	}
 	MakeImplAssign();
 }
 

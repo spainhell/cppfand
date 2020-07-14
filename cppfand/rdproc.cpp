@@ -857,9 +857,9 @@ Instr* RdBeginEnd()
 	Instr* PD = nullptr;
 	if (!IsKeyWord("END")) {
 	label1:
-		if (InpArrLen == 0x0f97 && CurrPos >= 0x0190) {
-			printf("RdBeginEnd()\n");
-		}
+		//if (InpArrLen == 0x0f97 && CurrPos >= 0x0190) {
+		//	printf("RdBeginEnd()\n");
+		//}
 		RdPInstrAndChain(&PD);
 		if (Lexem == ';') {
 			RdLex();

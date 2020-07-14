@@ -1233,7 +1233,7 @@ void CallProcedure(Instr_proc* PD)
 	SetInpTT(PD->PPos, true);
 #ifdef _DEBUG
 	std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
-	if (srcCode.find("CISSLOUP") != std::string::npos) {
+	if (srcCode.find("begin proc(Hlaseni23,('minulì start: '") != std::string::npos) {
 		printf("");
 		//FuncD* f = FuncDRoot;
 		//std::ofstream myfile;
@@ -1295,7 +1295,9 @@ void CallProcedure(Instr_proc* PD)
 			break;
 		}
 		}
-		it0++; // (LocVar*)lv0->Chain;
+		/*if (it0 != LVBD.vLocVar.end())*/
+		++it0;
+		// (LocVar*)lv0->Chain;
 	}
 	//lv1 = lv0;
 	it1 = it0;
@@ -1308,7 +1310,7 @@ void CallProcedure(Instr_proc* PD)
 			ClearDeletedFlag();
 			(*it0)->RecPtr = CRecPtr;
 		}
-		it0++; // (LocVar*)lv0->Chain;
+		++it0; // (LocVar*)lv0->Chain;
 	}
 	ProcMyBP = MyBP;
 	pd1 = ReadProcBody();
@@ -1333,7 +1335,7 @@ void CallProcedure(Instr_proc* PD)
 			auto tmp = (XWKey*)(*it0)->RecPtr;
 			tmp->Open(hX->KFlds, true, false);
 		}
-		it0++; // (LocVar*)lv0->Chain;
+		++it0; // (LocVar*)lv0->Chain;
 	}
 	ReleaseStore2(p2);
 	RunProcedure(pd1);

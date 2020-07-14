@@ -484,7 +484,7 @@ LocVar* RunUserFunc(FrmlElem19* X)
 
 	//auto result = LVBD.vLocVar.back();
 	//ProcMyBP = (ProcStkD*)oldprocbp;
-	return nullptr;
+	return lv;
 }
 
 bool RunBool(FrmlPtr X)
