@@ -531,7 +531,8 @@ double CurrTime()
 	std::time_t t = std::time(0);   // get time now
 	struct tm lt;
 	errno_t err = localtime_s(&lt, &t);
-	return RDate(1 + 1900, 1, 0, lt.tm_hour, lt.tm_min, lt.tm_sec, 0);
+	//return RDate(1 + 1900, 1, 0, lt.tm_hour, lt.tm_min, lt.tm_sec, 0);
+	return RDate(1, 1, 0, lt.tm_hour, lt.tm_min, lt.tm_sec, 0);
 }
 
 double ValDate(pstring Txt, pstring Mask)

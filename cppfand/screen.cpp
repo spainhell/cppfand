@@ -347,7 +347,10 @@ void Screen::GotoXY(WORD X, WORD Y, Position pos)
 	case actual: return;
 	default: return;
 	}
-	bool res = SetConsoleCursorPosition(_handle, { (short)X - 1, (short)Y - 1 });
+	bool succ = SetConsoleCursorPosition(_handle, { (short)X - 1, (short)Y - 1 });
+	if (!succ) {
+		printf("GotoXY() fail");
+	}
 }
 
 BYTE Screen::WhereX()
@@ -395,7 +398,7 @@ void Screen::Window(BYTE X1, BYTE Y1, BYTE X2, BYTE Y2)
 	WindMax->Y = Y2;
 	actualWindowRow = 1;
 	actualWindowCol = 1;
-	GotoXY(X1, Y1);
+	GotoXY(1, 1, relative);
 }
 
 void Screen::ScrWr()
@@ -412,10 +415,12 @@ void Screen::CrsBlink()
 
 void Screen::CrsGotoXY(WORD aX, WORD aY)
 {
-	bool b;
 	Crs->X = aX;
 	Crs->Y = aY;
-	SetConsoleCursorPosition(_handle, { (short)Crs->X, (short)Crs->Y });
+	bool succ = SetConsoleCursorPosition(_handle, { (short)Crs->X, (short)Crs->Y });
+	if (!succ) {
+		printf("GotoXY() fail");
+	}
 }
 
 int Screen::ScrPush1(WORD X, WORD Y, WORD SizeX, WORD SizeY, void* P)

@@ -1003,7 +1003,10 @@ label1:
 		CloseH(h);
 		break;
 	}
-	case _currtime: result = CurrTime(); break;
+	case _currtime: {
+		result = CurrTime(); 
+		break; 
+	}
 	case _typeday: {
 		auto rr = RunReal(iX0->P1);
 		result = TypeDay(rr);

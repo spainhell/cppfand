@@ -9,25 +9,34 @@
 
 WORD CountNTxt(ChoiceD* C, bool IsMenuBar)
 {
-	WORD n, nValid; pstring s; bool b;
-	n = 0; nValid = 0;
+	WORD n = 0, nValid = 0; 
+	//pstring s; 
+	std::string s;
+	bool b = false;
 	while (C != nullptr) {
 		b = RunBool(C->Bool);
 		C->Displ = false;
 		if (b || C->DisplEver) {
-			C->Displ = true; n++; s = RunShortStr(C->TxtFrml);
+			C->Displ = true; 
+			n++; 
+			s = RunShortStr(C->TxtFrml);
 			if (s.length() != 0) {
-				s[0] = char(MinI(s.length(), TxtCols - 6));
-				pstring ctrlW(1);
-				ctrlW = "\x17";
-				if (s.first(0x17) == 0) s = ctrlW + s[1] + ctrlW + copy(s, 2, 255);
+				short maxLen = min(s.length(), TxtCols - 6);
+				if (s.length() > maxLen) s = s.substr(0, maxLen);
+				char ctrlW = '\x17';
+				if (s.find(ctrlW) == std::string::npos) {
+					char arr[MaxTxtCols]{ 0 };
+					sprintf_s(arr, "\x17%c\x17%s", s[0], &(s.c_str()[1]));
+					s = arr;
+				}
 			}
-			else if (IsMenuBar) s = ' ';
-			C->Txt = StoreStr(s);
-			if (s == "") b = false;
+			else if (IsMenuBar) s = " ";
+			C->Txt = s;
+			if (C->Txt == "") b = false;
 			if (b) nValid++;
 		}
-		C->Enabled = b; C = (ChoiceD*)C->Chain;
+		C->Enabled = b; 
+		C = (ChoiceD*)C->Chain;
 	}
 	if (nValid == 0) n = 0;
 	return n;
@@ -62,11 +71,11 @@ TWindow::TWindow(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, pstring top, pst
 	//InitTWindow(C1, R1, C2, R2, Attr, top, bottom, SaveLL);
 }
 
-void TWindow::InitTWindow(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, pstring top, pstring bottom, bool SaveLL)
+void TWindow::InitTWindow(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, std::string top, std::string bottom, bool SaveLL)
 {
-	WORD i, n, m;
-	pstring s;
-	BYTE* l = (BYTE*)&s;
+	WORD i = 0, n = 0, m = 0;
+	//pstring s;
+	//BYTE* l = (BYTE*)&s;
 	Assign(C1, R1, C2, R2);
 	if (GetState(sfShadow)) {
 		Shadow.X = MinW(2, TxtCols - Col2());
@@ -89,18 +98,16 @@ void TWindow::InitTWindow(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, pstring
 		screen.ScrWrFrameLn(Orig.X + 1, Orig.Y + Size.Y, n + 3, Size.X, Attr);
 		m = Size.X - 2;
 		if (top.length() != 0) {
-			s = " ";
-			s += top;
-			s += " ";
-			//s += top + " ";
-			*l = MinW(*l, m);
-			screen.ScrWrStr(Col1() + (m - *l) / 2, Orig.Y, s, Attr);
+			std::string sTop = " " + top + " ";
+			short l = min(sTop.length(), m);
+			if (l > m) sTop = sTop.substr(0, m);
+			screen.ScrWrStr(Col1() + (m - sTop.length()) / 2, Orig.Y + 1, sTop, Attr);
 		}
 		if (bottom.length() != 0) {
-			s = " ";
-			s += bottom + " ";
-			*l = MinW(*l, m);
-			screen.ScrWrStr(Col1() + (m - *l) / 2, Row2() - 1, s, Attr);
+			std::string sBottom = " " + bottom + " ";
+			short l = min(sBottom.length(), m);
+			if (l > m) sBottom = sBottom.substr(0, m);
+			screen.ScrWrStr(Col1() + (m - sBottom.length()) / 2, Row2() - 1, sBottom, Attr);
 		}
 	}
 	else screen.ScrClr(Orig.X, Orig.Y, Size.X, Size.Y, ' ', Attr);
@@ -302,15 +309,14 @@ bool TMenu::UnderMenuBar()
 
 void TMenu::WrText(WORD I)
 {
-	pstring s(80);
-	WORD j, posw, x, x2, y;
-	BYTE attr;
+	WORD j = 0, posw = 0, x = 0, x2 = 0, y = 0;
+	BYTE attr = 0;
 	TRect r { {0,0}, {0,0} };
-	bool red, ena;
+	bool red = false, ena = false;
 
-	s = GetText(I);
+	pstring s = GetText(I);
 	if (s.length() == 0) {  /* menubox only */
-		screen.ScrWrFrameLn(Orig.X, Orig.Y + I, 18, Size.X, Palette[0]);
+		screen.ScrWrFrameLn(Orig.X + 1, Orig.Y + I + 1, 18, Size.X, Palette[0]);
 		return;
 	}
 	GetItemRect(I, &r);
@@ -321,7 +327,8 @@ void TMenu::WrText(WORD I)
 	else if (ena) attr = Palette[0];
 	else attr = Palette[3];
 
-	posw = s.first(0x17); screen.ScrWrChar(x, y, ' ', attr); x++;
+	posw = s.first(0x17);
+	screen.ScrWrChar(x, y, ' ', attr); x++;
 	red = false;
 	for (j = 1; j <= s.length(); j++)
 	{
@@ -440,14 +447,14 @@ bool TMenuBoxS::ExecItem(WORD& I)
 	return false;
 }
 
-pstring TMenuBoxS::GetHlpName()
+std::string TMenuBoxS::GetHlpName()
 {
 	pstring s;
 	str(iTxt, s);
-	return GetText(-1) + "_" + s;
+	return GetText(-1) + "_" + s.c_str();
 }
 
-pstring TMenuBoxS::GetText(integer I)
+std::string TMenuBoxS::GetText(integer I)
 {
 	/*helpname/head/text1/text2/...*/
 	return GetDLine(&MsgTxt[1], MsgTxt.length(), '/', I + 2);
@@ -503,7 +510,7 @@ bool TMenuBoxP::ExecItem(WORD& I)
 	return result;
 }
 
-pstring TMenuBoxP::GetHlpName()
+std::string TMenuBoxP::GetHlpName()
 {
 	pstring* S;
 	S = CI(CRoot, iTxt)->HelpName;
@@ -511,10 +518,10 @@ pstring TMenuBoxP::GetHlpName()
 	return "";
 }
 
-pstring TMenuBoxP::GetText(integer I)
+std::string TMenuBoxP::GetText(integer I)
 {
 	if (I == 0) return HdTxt;
-	else return *CI(CRoot, I)->Txt;
+	else return CI(CRoot, I)->Txt;
 }
 
 TMenuBar::TMenuBar()
@@ -622,7 +629,8 @@ bool TMenuBarS::GetDownMenu(TMenuBox* W)
 	pstring TNr(10); WORD n, err; TMenuBoxS* p;
 	auto result = false;
 	TNr = GetText(nTxt + iTxt);
-	val(TNr, n, err); if ((TNr.length() == 0) || (err != 0)) return result;
+	val(TNr, n, err); 
+	if ((TNr.length() == 0) || (err != 0)) return result;
 	RdMsg(n);
 	//New(p, Init(MenuX, MenuY, (pstring*)&MsgLine));
 	p = new TMenuBoxS(MenuX, MenuY, MsgLine);
@@ -631,13 +639,14 @@ bool TMenuBarS::GetDownMenu(TMenuBox* W)
 	return result;
 }
 
-pstring TMenuBarS::GetHlpName()
+std::string TMenuBarS::GetHlpName()
 {
 	pstring s;
-	str(iTxt, s); return GetText(0) + '_' + s;
+	str(iTxt, s); 
+	return GetText(0) + "_" + s.c_str();
 }
 
-pstring TMenuBarS::GetText(integer I)
+std::string TMenuBarS::GetText(integer I)
 {
 	return GetDLine(&MsgTxt[1], MsgTxt->length(), '/', I + 1);
 }
@@ -695,7 +704,7 @@ bool TMenuBarP::GetDownMenu(TMenuBox* W)
 	return result;
 }
 
-pstring TMenuBarP::GetHlpName()
+std::string TMenuBarP::GetHlpName()
 {
 	pstring* S;
 	S = CI(CRoot, iTxt)->HelpName;
@@ -703,9 +712,9 @@ pstring TMenuBarP::GetHlpName()
 	else return "";
 }
 
-pstring TMenuBarP::GetText(integer I)
+std::string TMenuBarP::GetText(integer I)
 {
-	return *CI(CRoot, I)->Txt;
+	return CI(CRoot, I)->Txt;
 }
 
 WORD Menu(WORD MsgNr, WORD IStart)

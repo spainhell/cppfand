@@ -337,10 +337,10 @@ struct ChoiceD : Chained
 	//ChoiceD* Chain = nullptr;
 	pstring* HelpName = nullptr;
 	bool Displ = false, DisplEver = false, Enabled = false, TxtConst = false;
-	FrmlPtr Bool = nullptr;
+	FrmlElem* Bool = nullptr;
 	Instr* Instr = nullptr;
-	FrmlPtr TxtFrml = nullptr;
-	pstring* Txt = nullptr;
+	FrmlElem* TxtFrml = nullptr;
+	std::string Txt;
 };
 
 struct WrLnD : public Chained

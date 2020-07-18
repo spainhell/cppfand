@@ -25,7 +25,7 @@ class TWindow // TODO: : TObject
 public:
 	TWindow();
 	TWindow(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, pstring top, pstring bottom, bool SaveLL);
-	void InitTWindow(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, pstring top, pstring bottom, bool SaveLL);
+	void InitTWindow(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, std::string top, std::string bottom, bool SaveLL);
 	virtual ~TWindow();
 	TPoint Orig;
 	TPoint Size;
@@ -58,9 +58,9 @@ public:
 	virtual bool Enabled(WORD I) = 0;
 	virtual bool ExecItem(WORD& I) = 0;
 	bool FindChar();
-	virtual pstring GetHlpName() = 0;
+	virtual std::string GetHlpName() = 0;
 	virtual void GetItemRect(WORD I, TRect* R) = 0;
-	virtual pstring GetText(integer I) = 0;
+	virtual std::string GetText(integer I) = 0;
 	void HandleEvent();
 	bool IsMenuBar();
 	void LeadIn(TPoint* T);
@@ -91,8 +91,8 @@ public:
 	pstring MsgTxt;
 	bool Enabled(WORD I) override;
 	bool ExecItem(WORD& I) override;
-	pstring GetHlpName() override;
-	pstring GetText(integer I) override;
+	std::string GetHlpName() override;
+	std::string GetText(integer I) override;
 };
 
 class TMenuBoxP : public TMenuBox
@@ -105,8 +105,8 @@ public:
 	std::string HdTxt;
 	bool Enabled(WORD I) override;
 	bool ExecItem(WORD& I) override;
-	pstring GetHlpName() override;
-	pstring GetText(integer I) override;
+	std::string GetHlpName() override;
+	std::string GetText(integer I) override;
 };
 
 class TMenuBar : public TMenu
@@ -129,8 +129,8 @@ public:
 	TMenuBarS(WORD MsgNr);
 	pstring* MsgTxt;
 	bool GetDownMenu(TMenuBox* W) override;
-	pstring GetHlpName() override;
-	pstring GetText(integer I) override;
+	std::string GetHlpName() override;
+	std::string GetText(integer I) override;
 };
 
 class TMenuBarP : public TMenuBar
@@ -143,8 +143,8 @@ public:
 	bool Enabled(WORD I) override;
 	bool ExecItem(WORD& I) override;
 	bool GetDownMenu(TMenuBox* W) override;
-	pstring GetHlpName() override;
-	pstring GetText(integer I) override;
+	std::string GetHlpName() override;
+	std::string GetText(integer I) override;
 };
 
 WORD Menu(WORD MsgNr, WORD IStart);

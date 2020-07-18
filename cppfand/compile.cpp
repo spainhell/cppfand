@@ -2127,7 +2127,7 @@ FrmlElem* RdPrim(char& FTyp)
 		break;
 	}
 	case _quotedstr: {
-		Z = new FrmlElem0(_const, 0); // GetOp(_const, LexWord.length() + 1);
+		Z = new FrmlElem4(_const, 0); // GetOp(_const, LexWord.length() + 1);
 		FTyp = 'S';
 		((FrmlElem4*)Z)->S = LexWord;
 		RdLex();
@@ -2135,7 +2135,7 @@ FrmlElem* RdPrim(char& FTyp)
 	}
 	default: {
 		FTyp = 'R';
-		Z = new FrmlElem0(_const, 0); // GetOp(_const, sizeof(double));
+		Z = new FrmlElem2(_const, 0); // GetOp(_const, sizeof(double));
 		((FrmlElem2*)Z)->R = RdRealConst();
 		break;
 	}
