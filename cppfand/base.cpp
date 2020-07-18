@@ -76,7 +76,7 @@ WORD files = 250; // {files in CONFIG.SYS -3}
 WORD CardHandles;
 
 //Cache cache = Cache();
-std::map<FILE*, FileCache> Cache::cacheMap;
+std::map<FILE*, FileCache*> Cache::cacheMap;
 WORD CachePageSize;
 void* AfterCatFD; // r108
 ProcStkD* MyBP;
@@ -832,7 +832,7 @@ void UnExtendHandles()
 	// zavøe všechny otevøené soubory, pøesune zpìt NewHT do Old... promìnných
 }
 
-filePtr OpenH(FileOpenMode Mode, FileUseMode UM)
+FILE* OpenH(FileOpenMode Mode, FileUseMode UM)
 {
 	// $3C vytvoøí nebo pøepíše soubor
 	// $3D otevírá exitující soubor
@@ -856,7 +856,7 @@ filePtr OpenH(FileOpenMode Mode, FileUseMode UM)
 	pstring path = CPath;
 	if (CardHandles == files) RunError(884);
 	longint w = 0;
-	pstring openFlags(5);
+	std::string openFlags;
 label1:
 	switch (Mode) {
 	case _isoldfile:
@@ -1001,16 +1001,17 @@ void CloseH(FILE* handle)
 }
 
 
-//void ClearCacheH(FILE* h)
-//{
-//	Cache::RemoveCache(h);
-//}
+void ClearCacheH(FILE* h)
+{
+	// smazeme cache
+	Cache::SaveRemoveCache(h);
+}
 
 void CloseClearH(FILE* h)
 {
 	if (h == nullptr) return;
+	ClearCacheH(h);
 	CloseH(h);
-	//ClearCacheH(h);
 	h = nullptr;
 }
 
@@ -1040,6 +1041,7 @@ WORD GetFileAttr()
 
 void RdWrCache(bool ReadOp, FILE* Handle, bool NotCached, longint Pos, WORD N, void* Buf)
 {
+	bool Cached = !NotCached;
 	integer PgeIdx = 0, PgeRest = 0; WORD err = 0; longint PgeNo = 0;
 	//CachePage* Z = nullptr;
 
@@ -1048,13 +1050,23 @@ void RdWrCache(bool ReadOp, FILE* Handle, bool NotCached, longint Pos, WORD N, v
 	if (!ReadOp && (CFile != nullptr) && (CFile->UMode == RdOnly)) {
 		// snazime se zapsat do RdOnly souboru
 		// zapisem pouze do cache
-		// nutno doresit, co s tim dal ...
+		// TODO: nutno doresit, co s tim dal ...
 		FileCache* c1 = Cache::GetCache(Handle);
 		c1->Save(Pos, N, (unsigned char*)Buf);
 		return;
 	}
 
-	//if (NotCached) {
+	if (Cached) {
+		FileCache* c1 = Cache::GetCache(Handle);
+		if (ReadOp) { 
+			memcpy(Buf, c1->Load(Pos), N); 
+		}
+		else { 
+			c1->Save(Pos, N, (unsigned char*)Buf); 
+		}
+	}
+	else {
+		// soubor nema cache, cteme (zapisujeme) primo z disku (na disk)
 		SeekH(Handle, Pos);
 		if (ReadOp) ReadH(Handle, N, Buf);
 		else WriteH(Handle, N, Buf);
@@ -1063,7 +1075,7 @@ void RdWrCache(bool ReadOp, FILE* Handle, bool NotCached, longint Pos, WORD N, v
 		SetCPathForH(Handle);
 		SetMsgPar(CPath);
 		RunError(700 + err);
-	//}
+	}
 
 	/*FileCache* c1 = Cache::GetCache(Handle);
 	if (ReadOp) memcpy(Buf, c1->Load(Pos), N);

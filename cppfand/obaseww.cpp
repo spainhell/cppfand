@@ -285,7 +285,8 @@ void CFileMsg(WORD n, char Typ)
 	SetCPathVol();
 	if (Typ == 'T') CExtToT();
 	else if (Typ == 'X') CExtToX();
-	SetMsgPar(CPath); WrLLF10Msg(n);
+	SetMsgPar(CPath); 
+	WrLLF10Msg(n);
 }
 
 void CFileError(WORD N)

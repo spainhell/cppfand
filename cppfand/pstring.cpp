@@ -61,6 +61,7 @@ pstring::pstring(char str[], unsigned char i) : initLen(256)
 pstring::~pstring()
 {
 	delete[] arr;
+	arr = nullptr;
 	strcount--;
 	strbytes--;
 	strbytes -= initLen;

@@ -118,12 +118,16 @@ bool OpenF1(FileUseMode UM)
 {
 	bool b; WORD n;
 	/* !!! with CFile^ do!!! */
-	auto result = true; CFile->LMode = NullMode;
-	SetCPathMountVolSetNet(UM);  b = (CFile == Chpt) || (CFile == CatFD);
+	auto result = true; 
+	CFile->LMode = NullMode;
+	SetCPathMountVolSetNet(UM);  
+	b = (CFile == Chpt) || (CFile == CatFD);
 	if (b && (IsTestRun || IsInstallRun)
 		&& ((GetFileAttr() & 1/*RdOnly*/) != 0)) {
 		SetFileAttr(GetFileAttr() & 0x26);
-		if (HandleError == 5) HandleError = 79; TestCFileError(); CFile->WasRdOnly = true;
+		if (HandleError == 5) HandleError = 79; 
+		TestCFileError(); 
+		CFile->WasRdOnly = true;
 	}
 label1:
 	CFile->Handle = OpenH(_isoldfile, CFile->UMode);
@@ -186,7 +190,8 @@ bool OpenF2()
 	WORD Signum = 0, rLen = 0;
 	LockMode md = NullMode;
 	/* !!! with CFile^ do!!! */
-	FS = FileSizeH(CFile->Handle); CFile->NRecs = 0;
+	FS = FileSizeH(CFile->Handle); 
+	CFile->NRecs = 0;
 	auto result = false;
 	if (FS < CFile->FrstDispl) goto label1;
 	rLen = RdPrefix();

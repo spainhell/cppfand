@@ -895,10 +895,10 @@ void SetHCatTyp(char FDTyp)
 
 void GetTFileD(char FDTyp)
 {
-	if ((uintptr_t)CFile->TF == 0x534b007f)
-	{
-		return;
-	}
+	//if ((uintptr_t)CFile->TF == 0x534b007f)
+	//{
+	//	return;
+	//}
 	/* !!! with CFile^ do!!! */
 	if (!HasTT && (CFile->TF == nullptr)) return;
 	if (CFile->TF == nullptr) CFile->TF = new TFile();

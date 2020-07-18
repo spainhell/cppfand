@@ -469,6 +469,10 @@ void Screen::SaveScreen(WParam* wp, short c1, short r1, short c2, short r2)
 
 void Screen::LoadScreen(bool draw, WParam* wp)
 {
+	if (_windowStack.size() == 0) {
+			printf("Screen::LoadScreen() zasobnik je prazdny!!!\n");
+		return;
+	}
 	auto scr = _windowStack.top();
 	_windowStack.pop();
 	wp = scr.wp;

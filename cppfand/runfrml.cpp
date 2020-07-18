@@ -457,14 +457,14 @@ LocVar* RunUserFunc(FrmlElem19* X)
 	//void* oldbp; void* oldprocbp;
 	//oldbp = MyBP;
 	//oldprocbp = ProcMyBP;
-	auto oldLVBD = LVBD;
-	LVBD = X->FC->LVB;
+	//auto oldLVBD = LVBD;
+	//LVBD = X->FC->LVB;
 	//PushProcStk();
 	//size_t i = 0;
 	LocVar* lv = nullptr; // tady je pak ulozena posledni promenna, ktera je pak navratovou hodnotou
-	auto itr = LVBD.vLocVar.begin();
+	auto itr = X->FC->LVB.vLocVar.begin();
 	auto fl = X->FrmlL;
-	while (itr != LVBD.vLocVar.end()) {
+	while (itr != X->FC->LVB.vLocVar.end()) {
 		if ((*itr)->IsPar || (*itr)->IsRetPar) {
 			LVAssignFrml(*itr, nullptr, false, fl->Frml);
 		}
@@ -476,11 +476,11 @@ LocVar* RunUserFunc(FrmlElem19* X)
 	auto instr = X->FC->pInstr;
 	RunProcedure(instr);
 
-	LVBD = oldLVBD;
-	switch (instr->Kind)
+	//LVBD = oldLVBD;
+	/*switch (instr->Kind)
 	{
 	case _asgnloc: return lv;
-	}
+	}*/
 
 	//auto result = LVBD.vLocVar.back();
 	//ProcMyBP = (ProcStkD*)oldprocbp;
@@ -1069,7 +1069,10 @@ label1:
 		result = Owned(iX->ownBool, iX->ownSum, iX->ownLD);
 		break;
 	}
-	case _color: result = AColors[MinW(WORD(RunInt(iX0->P1)), 53)]; break;
+	case _color: {
+		result = AColors[MinW((WORD)RunInt(iX0->P1), 53)]; 
+		break; 
+	}
 	case _portin: result = PortIn(RunBool(iX0->P1), WORD(RunInt(iX0->P2))); break;
 	case _setmybp: {
 		cr = MyBP;
@@ -1446,7 +1449,8 @@ label1:
 
 		if ((L1 < 0) || (L2 < 0)) S->LL = 0;
 		else {
-			str = str.substr(L1, L2); // L2 udava pozici
+			if (L1 >= str.length()) str = ""; // index L1 je vetsi delka retezce
+			else str = str.substr(L1, L2); // L2 udava delku
 			memcpy(S->A, str.c_str(), str.length());
 			S->LL = str.length();
 			//CopyLongStr(S, static_cast<WORD>(L1), static_cast<WORD>(L2));

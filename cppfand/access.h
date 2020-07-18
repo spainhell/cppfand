@@ -212,6 +212,7 @@ public:
 	void TestErr();
 	longint UsedFileSize();
 	bool NotCached();
+	bool Cached();
 	void RdPrefix(bool Chk);
 	void WrPrefix();
 	void SetEmpty();
@@ -262,6 +263,7 @@ public:
 	longint UsedFileSize();
 	bool IsShared();
 	bool NotCached();
+	bool Cached();
 	WORD GetNrKeys();
 };
 typedef FileD* FileDPtr;

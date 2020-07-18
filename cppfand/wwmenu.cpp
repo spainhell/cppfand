@@ -459,8 +459,8 @@ TMenuBoxP::TMenuBoxP(WORD C1, WORD R1, TMenu* aParent, Instr_menu* aPD)
 	PD = aPD;
 	parent = aParent;
 	s = RunShortStr(aPD->HdLine);
-	s[0] = char(MinI(s.length(), TxtCols - 6));
-	HdTxt = StoreStr(s);
+	s[0] = (char)MinI(s.length(), TxtCols - 6);
+	HdTxt = s;
 	HlpRdb = aPD->HelpRdb;
 	CRoot = aPD->Choices;
 	nTxt = CountNTxt(CRoot, false);
@@ -476,6 +476,7 @@ TMenuBoxP::TMenuBoxP(WORD C1, WORD R1, TMenu* aParent, Instr_menu* aPD)
 		R1 = MenuY;
 	}
 	if (aPD->Shdw) SetState(sfShadow, true);
+	InitTMenuBox(C1, R1);
 }
 
 bool TMenuBoxP::Enabled(WORD I)
@@ -512,7 +513,7 @@ pstring TMenuBoxP::GetHlpName()
 
 pstring TMenuBoxP::GetText(integer I)
 {
-	if (I == 0) return *HdTxt;
+	if (I == 0) return HdTxt;
 	else return *CI(CRoot, I)->Txt;
 }
 

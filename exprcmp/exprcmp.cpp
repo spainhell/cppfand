@@ -15,14 +15,28 @@ std::string RegexFromString(std::string Mask)
 {
 	if (Mask.length() == 0) return "";
 
+	// puvodni "{" je v reg. vyrazu r"\{"
+	size_t index = Mask.find('{'); // { -> \{
+	while (index != std::string::npos) {
+		Mask = Mask.replace(index, 1, "\\{");
+		index = Mask.find('{', index + 2);
+	}
+
+	// puvodni "}" je v reg. vyrazu r"\}"
+	index = Mask.find('}'); // } -> \}
+	while (index != std::string::npos) {
+		Mask = Mask.replace(index, 1, "\\}");
+		index = Mask.find('}', index + 2);
+	}
+
 	// puvodni "." je v reg. vyrazu r"\."
-	size_t index = Mask.find('.'); // . -> \.
+	index = Mask.find('.'); // . -> \.
 	while (index != std::string::npos) {
 		Mask = Mask.replace(index, 1, "\\.");
 		index = Mask.find('.', index + 2);
 	}
 
-	// puvodni otaznik je nahrazen r"." - jakokoliv 1 znak
+	// puvodni otaznik je nahrazen r"." - jakykoliv 1 znak
 	index = Mask.find('?'); // ? -> .
 	while (index != std::string::npos) {
 		Mask[index] = '.';

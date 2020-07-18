@@ -1233,7 +1233,8 @@ void CallProcedure(Instr_proc* PD)
 	SetInpTT(PD->PPos, true);
 #ifdef _DEBUG
 	std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
-	if (srcCode.find("begin proc(Hlaseni23,('minulì start: '") != std::string::npos) {
+	if (srcCode.find("FIRMA:") != std::string::npos
+		|| srcCode.find("STAT.Start") != std::string::npos) {
 		printf("");
 		//FuncD* f = FuncDRoot;
 		//std::ofstream myfile;
@@ -1288,10 +1289,11 @@ void CallProcedure(Instr_proc* PD)
 		}
 		default: {
 			FrmlElem* z = PD->TArg[i].Frml;
-			if ((*it0)->IsRetPar && (z->Op != _getlocvar)
+			auto lv = *it0;
+			if (lv->IsRetPar && (z->Op != _getlocvar)
 				|| PD->TArg[i].FromProlog
-				&& (PD->TArg[i].IsRetPar != (*it0)->IsRetPar)) goto label1;
-			LVAssignFrml((*it0), oldbp, false, PD->TArg[i].Frml);
+				&& (PD->TArg[i].IsRetPar != lv->IsRetPar)) goto label1;
+			LVAssignFrml(lv, oldbp, false, PD->TArg[i].Frml);
 			break;
 		}
 		}

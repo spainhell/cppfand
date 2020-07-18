@@ -102,7 +102,7 @@ public:
 	TMenuBoxP(WORD C1, WORD R1, TMenu* aParent, Instr_menu* aPD);
 	Instr_menu* PD;
 	ChoiceD* CRoot;
-	pstring* HdTxt;
+	std::string HdTxt;
 	bool Enabled(WORD I) override;
 	bool ExecItem(WORD& I) override;
 	pstring GetHlpName() override;

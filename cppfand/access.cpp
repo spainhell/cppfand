@@ -265,6 +265,11 @@ bool TFile::NotCached()
 	return !IsWork && CFile->NotCached();
 }
 
+bool TFile::Cached()
+{
+	return !NotCached();
+}
+
 BYTE ByteMask[_MAX_INT_DIG];
 
 const BYTE DblS = 8;
@@ -1918,21 +1923,43 @@ void TFile::ReleasePage(longint PosPg)
 
 void TFile::Delete(longint Pos)
 {
-	longint PosPg, NxtPg; WORD PosI; integer N; WORD l;
-	BYTE X[MPageSize]; integer* XL = (integer*)&X;
-	WORD* wp = nullptr; WORD* wpofs = wp; bool IsLongTxt;
+	// funkce smaze cast T00 nebo TTT souboru
+	// s ohledem na to, ze v TTT souboru jsou predkompilovana data
+	// a tato data pak nejsou nicim nahrazena (novou kompilaci neumime ulozit)
+	// dojde ke ztrate dat
+
+	// proto budeme kontrolovat, zda se jedna o TTT soubor a pokud ano,
+	// tak koncime a nic mazat nebudeme
+
+	std::string name = CFile->Name;
+	if (name.find("ucto2020") == std::string::npos) return;
+	if (name.find("MODUL") == std::string::npos) return;
+
+	longint PosPg = 0, NxtPg = 0; WORD PosI = 0; integer N = 0; WORD l = 0;
+	BYTE X[MPageSize]{ 0 }; 
+	integer* XL = (integer*)&X;
+	WORD* wp = nullptr; 
+	
+	bool IsLongTxt = false;
 	if (Pos <= 0) return;
 	if ((Format != T00Format) || NotCached()) return;
 	if ((Pos < MPageSize) || (Pos >= MLen)) { Err(889, false); return; }
 	PosPg = Pos & (0xFFFFFFFF << MPageShft);
 	PosI = Pos & (MPageSize - 1);
 	RdWrCache(true, Handle, NotCached(), PosPg, MPageSize, X);
-	wp = (WORD*)(&X[PosI]); l = *wp;
+	wp = (WORD*)(&X[PosI]); 
+	WORD* wpofs = wp;
+	l = *wp;
 	if (l <= MPageSize - 2) {       /* small text on 1 page*/
-		*wp = -integer(l); N = 0; wp = (WORD*)(&X);
+		*wp = -integer(l); N = 0; wp = (WORD*)X;
 		while (N < MPageSize - 2) {
-			if (*wp > 0) { FillChar(&X[PosI + 2], l, 0); goto label1; }
-			N += -(*wp) + 2; *wpofs += -(*wp) + 2;
+			short* signed_wp = (short*)wp;
+			if (*signed_wp > 0) {
+				FillChar(&X[PosI + 2], l, 0); 
+				goto label1; 
+			}
+			N += -(*wp) + 2; 
+			*wpofs += -(*wp) + 2;
 		}
 		if ((FreePart >= PosPg) && (FreePart < PosPg + MPageSize)) {
 			FillChar(X, MPageSize, 0); *XL = -510; FreePart = PosPg;
@@ -1944,7 +1971,8 @@ void TFile::Delete(longint Pos)
 	else {                        /* long text on more than 1 page */
 		if (PosI != 0) goto label3;
 	label2:
-		l = WORD(XL); if (l > MaxLStrLen + 1) {
+		l = (WORD)XL; 
+		if (l > MaxLStrLen + 1) {
 		label3:
 			Err(889, false); return;
 		}
@@ -2150,17 +2178,22 @@ bool FileD::IsShared()
 
 bool FileD::NotCached()
 {
-//	if (UMode == Shared) goto label1;
-//	if (UMode != RdShared) return false;
-//label1:
-//	if (LMode == ExclMode) return false;
+	if (UMode == Shared) goto label1;
+	if (UMode != RdShared) return false;
+label1:
+	if (LMode == ExclMode) return false;
 	return true;
+}
+
+bool FileD::Cached()
+{
+	return !NotCached();
 }
 
 WORD FileD::GetNrKeys()
 {
-	KeyD* k; WORD n;
-	n = 0; k = Keys;
+	KeyD* k = Keys;
+	WORD n = 0; 
 	while (k != nullptr) { n++; k = k->Chain; }
 	return n;
 }
