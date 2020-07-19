@@ -241,9 +241,11 @@ label2:
 	case 3: { F10SpecKey = _F1_; goto label3; break; }
 	case 2: {
 	label3:
-		SetMsgPar(t); WrLLF10Msg(110);
+		SetMsgPar(t); 
+		WrLLF10Msg(110);
 		if (KbdChar == _F1_) {
-			Help(PD->mHlpRdb, RunShortStr(PD->mHlpFrml), false); goto label2;
+			Help(PD->mHlpRdb, RunShortStr(PD->mHlpFrml), false); 
+			goto label2;
 		}
 		break;
 	}
