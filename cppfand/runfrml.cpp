@@ -57,8 +57,10 @@ integer CompReal(double R1, double R2, integer M)
 {
 	if (M > 0) { R1 = R1 * Power10[M]; R2 = R2 * Power10[M]; }
 	if (M >= 0) {
-		if (R1 >= 0) R1 = int(R1 + 0.5); else R1 = int(R1 - 0.5);
-		if (R2 >= 0) R2 = int(R2 + 0.5); else R2 = int(R2 - 0.5);
+		if (R1 >= 0) R1 = int(R1 + 0.5);
+		else R1 = int(R1 - 0.5);
+		if (R2 >= 0) R2 = int(R2 + 0.5);
+		else R2 = int(R2 - 0.5);
 	}
 	if (R1 > R2) return _gt;
 	if (R1 < R2) return _lt;
@@ -857,10 +859,9 @@ double RunReal(FrmlElem* X)
 #endif
 	FILE* h = (FILE*)&R;
 	WORD* n = (WORD*)cf;
-	BYTE* AColors = (BYTE*)&screen.colors;
 	double result = 0;
-	auto iX0 = (FrmlElem0*)X;
 label1:
+	auto iX0 = (FrmlElem0*)X;
 	switch (X->Op) {
 	case _field: {
 		auto iX = (FrmlElem7*)X;
@@ -1073,7 +1074,10 @@ label1:
 		break;
 	}
 	case _color: {
-		result = AColors[MinW((WORD)RunInt(iX0->P1), 53)]; 
+		// Colors ma 54 prvku (BYTE)
+		size_t colorFromFrml = RunInt(iX0->P1);
+		BYTE* AColors = (BYTE*)&screen.colors;
+		result = AColors[min(colorFromFrml, 53)];
 		break; 
 	}
 	case _portin: result = PortIn(RunBool(iX0->P1), WORD(RunInt(iX0->P2))); break;
@@ -1489,7 +1493,9 @@ label1:
 	case _upcase: {
 		auto iX0 = (FrmlElem0*)X;
 		S = RunLongStr(iX0->P1);
-		for (WORD i = 0; i < S->LL; i++) S->A[i] = UpcCharTab[S->A[i]];
+		for (WORD i = 0; i < S->LL; i++) {
+			S->A[i] = UpcCharTab[(BYTE)S->A[i]];
+		}
 		result = S;
 		break;
 	}
