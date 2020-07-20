@@ -417,8 +417,22 @@ char NoDiakr(char C)
 	return C;
 }
 
-void ConvToNoDiakr(WORD* Buf, WORD L, TVideoFont FromFont)
+void ConvToNoDiakr(void* Buf, WORD L, TVideoFont FromFont)
 {
+	auto c = static_cast<BYTE*>(Buf);
+	if (FromFont == TVideoFont::foAscii) return;
+	if (FromFont == TVideoFont::foLatin2) {
+		for (size_t i = 0; i < L; i++) {
+			if (c[i] < 0x80) continue;
+			c[i] = TabLtN[c[i]];
+		}
+	}
+	else {
+		for (size_t i = 0; i < L; i++) {
+			if (c[i] < 0x80) continue;
+			c[i] = TabKtN[c[i]];
+		}
+	}
 }
 
 void ClearKbdBuf()

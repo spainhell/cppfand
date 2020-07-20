@@ -95,7 +95,7 @@ void ConvKamenToCurr(void* Buf, WORD L);
 void ConvKamenLatin(WORD* Buf, WORD L, bool ToLatin);
 char ToggleCS(char C);
 char NoDiakr(char C);
-void ConvToNoDiakr(WORD* Buf, WORD L, TVideoFont FromFont);
+void ConvToNoDiakr(void* Buf, WORD L, TVideoFont FromFont);
 void ClearKbdBuf();
 bool KbdPressed(); // { buffer + Bios }
 bool ESCPressed(); // { other Bios input lost }

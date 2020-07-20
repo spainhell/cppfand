@@ -201,10 +201,10 @@ bool TMenu::FindChar()
 
 void TMenu::HandleEvent()
 {
-	WORD i; pstring hlp(40); bool frst;
+	WORD i = 0; bool frst = false;
 	WrText(iTxt);
 	i = iTxt; frst = true;
-	hlp = GetHlpName();
+	std::string hlp = GetHlpName();
 	TestEvent();
 label1:
 	KbdChar = 0;
@@ -794,10 +794,11 @@ void MenuBarProc(Instr_menu* PD)
 	ReleaseStore(p);
 }
 
-LongStr* GetHlpText(RdbD* R, pstring S, bool ByName, WORD& IRec)
+LongStr* GetHlpText(RdbD* R, std::string S, bool ByName, WORD& IRec)
 {
 	FieldDescr* NmF = nullptr; FieldDescr* TxtF = nullptr; 
-	WORD i = 0; LongStr* T = nullptr; pstring Nm;
+	LongStr* T = nullptr; std::string Nm;
+	longint i = 0;
 	TVideoFont fo; FileD* cf = nullptr;
 	void* p = nullptr;
 	LockMode md = NullMode;
@@ -813,7 +814,7 @@ LongStr* GetHlpText(RdbD* R, pstring S, bool ByName, WORD& IRec)
 			CFile = R->HelpFD; 
 			if (CFile == nullptr) goto label5; 
 		}
-		ConvToNoDiakr((WORD*)S[1], S.length(), fonts.VFont);
+		ConvToNoDiakr(&S[0], S.length(), fonts.VFont);
 	}
 label1:
 	md = NewLMode(RdMode);
@@ -831,15 +832,20 @@ label1:
 		Nm = TrailChar(' ', _ShortS(NmF));
 		if (CFile == &HelpFD) fo = TVideoFont::foKamen;
 		else fo = fonts.VFont;
-		ConvToNoDiakr((WORD*)Nm[1], Nm.length(), fo);
-		if (EqualsMask(&S[1], S.length(), Nm)) {
+		ConvToNoDiakr(&Nm[0], Nm.length(), fo);
+		//printf("comp: %s <=> %s\n", S.c_str(), Nm.c_str());
+		if (EqualsMask(&S[0], S.length(), Nm)) {
 		label2:
 			T = _LongS(TxtF);
 			if (!ByName || (T->LL > 0) || (i == CFile->NRecs)) {
-				if (CFile == &HelpFD) ConvKamenToCurr((WORD*)T->A, T->LL); 
-				IRec = i; goto label3;
+				if (CFile == &HelpFD) ConvKamenToCurr(&T->A, T->LL); 
+				IRec = i;
+				goto label3;
 			}
-			ReleaseStore(T); i++; ReadRec(i); goto label2;
+			ReleaseStore(T);
+			i++;
+			ReadRec(i);
+			goto label2;
 		}
 	}
 label3:
@@ -847,7 +853,8 @@ label3:
 	ReleaseStore2(p);
 	if ((T == nullptr) && (CFile != &HelpFD)) {
 	label4:
-		R = R->ChainBack; if (R != nullptr)
+		R = R->ChainBack;
+		if (R != nullptr)
 			if ((R->HelpFD != nullptr) && (R->HelpFD != CFile)) {
 				CFile = R->HelpFD;
 				goto label1;
@@ -860,7 +867,7 @@ label5:
 
 }
 
-void DisplLLHelp(RdbD* R, pstring Name, bool R24)
+void DisplLLHelp(RdbD* R, std::string Name, bool R24)
 {
 	LongStr* s = nullptr; void* p = nullptr; 
 	WORD i = 0, y = 0; WORD iRec = 0; FileD* cf = nullptr;
@@ -889,12 +896,14 @@ label1:
 	if (R24) y--;
 	screen.ScrWrStr(1, y + 1, MsgLine, screen.colors.nNorm);
 	screen.ScrClr(MsgLine.length() + 1, y + 1, TxtCols - MsgLine.length(), 1, ' ', screen.colors.nNorm);
-	CFile = cf; ReleaseStore(p);
+	CFile = cf;
+	ReleaseStore(p);
 }
 
 TMenu::~TMenu()
 {
-	MenuX = mx; MenuY = my;
+	MenuX = mx;
+	MenuY = my;
 }
 
 

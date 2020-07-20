@@ -4,7 +4,7 @@
 bool CmpStringWithMask(std::string Value, std::string Mask)
 {
 	Mask = RegexFromString(Mask);
-	std::regex self_regex(Mask);
+	std::regex self_regex(Mask, std::regex_constants::icase);
 	if (std::regex_search(Value, self_regex)) {
 		return true;
 	}
@@ -15,8 +15,29 @@ std::string RegexFromString(std::string Mask)
 {
 	if (Mask.length() == 0) return "";
 
+	// puvodni "\" je v reg. vyrazu r"\\"
+	size_t index = Mask.find('\\'); /* \ -> \\ */
+	while (index != std::string::npos) {
+		Mask = Mask.replace(index, 1, "\\\\");
+		index = Mask.find('\\', index + 2);
+	}
+
+	// puvodni "[" je v reg. vyrazu r"\["
+	index = Mask.find('['); // { -> \[
+	while (index != std::string::npos) {
+		Mask = Mask.replace(index, 1, "\\[");
+		index = Mask.find('[', index + 2);
+	}
+
+	// puvodni "]" je v reg. vyrazu r"\]"
+	index = Mask.find(']'); // ] -> \]
+	while (index != std::string::npos) {
+		Mask = Mask.replace(index, 1, "\\]");
+		index = Mask.find(']', index + 2);
+	}
+
 	// puvodni "{" je v reg. vyrazu r"\{"
-	size_t index = Mask.find('{'); // { -> \{
+	index = Mask.find('{'); // { -> \{
 	while (index != std::string::npos) {
 		Mask = Mask.replace(index, 1, "\\{");
 		index = Mask.find('{', index + 2);
