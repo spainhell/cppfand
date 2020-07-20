@@ -242,7 +242,10 @@ label1:
 		break;
 	}
 	default: {
-		if (frst) { DisplLLHelp(HlpRdb, hlp, false); frst = false; }
+		if (frst) {
+			DisplLLHelp(HlpRdb, hlp, false);
+			frst = false;
+		}
 		ClrEvent();
 		WaitEvent(0);
 		goto label1;
@@ -330,15 +333,15 @@ void TMenu::WrText(WORD I)
 	posw = s.first(0x17);
 	screen.ScrWrChar(x, y, ' ', attr); x++;
 	red = false;
-	for (j = 1; j <= s.length(); j++)
-	{
+	for (j = 1; j <= s.length(); j++) {
 		if ((s[j] == 0x17) || (posw == 0) && ((j == 1) || (j == 2)))
 			if (ena && (I != iTxt)) {
 				if (red) { attr = Palette[0]; red = false; }
 				else { attr = Palette[2]; red = true; }
 			}
 		if (s[j] != 0x17) { screen.ScrWrChar(x, y, s[j], attr); x++; };
-	} while (x < x2) { screen.ScrWrChar(x, y, ' ', attr); x++; }
+	}
+	while (x < x2) { screen.ScrWrChar(x, y, ' ', attr); x++; }
 }
 
 void TMenu::SetPalette(Instr_menu* aPD)
@@ -364,9 +367,8 @@ TMenuBox::TMenuBox()
 void TMenuBox::InitTMenuBox(WORD C1, WORD R1)
 {
 	WORD cols = 0, c2 = 0, r2 = 0, i = 0, l = 0;
-	pstring hd;
-	// TODO:
-	hd = GetText(0);
+	
+	std::string hd = GetText(0);
 	cols = hd.length();
 	for (i = 1; i <= nTxt; i++) {
 		l = LenStyleStr(GetText(i));

@@ -55,13 +55,28 @@ integer CompBool(bool B1, bool B2)
 
 integer CompReal(double R1, double R2, integer M)
 {
-	if (M > 0) { R1 = R1 * Power10[M]; R2 = R2 * Power10[M]; }
-	if (M >= 0) {
-		if (R1 >= 0) R1 = int(R1 + 0.5);
-		else R1 = int(R1 - 0.5);
-		if (R2 >= 0) R2 = int(R2 + 0.5);
-		else R2 = int(R2 - 0.5);
+	// porovname nejdriv celou cast
+	auto tR1 = trunc(R1);
+	auto tR2 = trunc(R2);
+	if (tR1 > tR2) return _gt;
+	if (tR1 < tR2) return _lt;
+	// cisla jsou stejna nebo se lisi jen desetinnou casti
+	// zjistime znamenko (zaporne jsou ve vysledku opacne)
+	bool neg = R1 < 0; 
+	// vezmeme jen desetinnou cast
+	R1 = R1 - tR1;
+	R2 = R2 - tR2;
+	if (M > 0) {
+		R1 = trunc(R1 * Power10[M]);
+		R2 = trunc(R2 * Power10[M]);
 	}
+	//if (M >= 0) {
+	//	if (R1 >= 0) R1 = int(R1 + 0.5);
+	//	else R1 = int(R1 - 0.5);
+	//	if (R2 >= 0) R2 = int(R2 + 0.5);
+	//	else R2 = int(R2 - 0.5);
+	//}
+	if (neg) { R1 = -R1; R2 = -R2; }
 	if (R1 > R2) return _gt;
 	if (R1 < R2) return _lt;
 	return _equ;

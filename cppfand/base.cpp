@@ -1454,6 +1454,7 @@ bool MouseInRectProc(WORD X, WORD Y, WORD XSize, WORD Size)
 
 bool EqualsMask(void* p, WORD l, pstring Mask)
 {
+	if (Mask.length() < l) return false;
 	std::string Value = std::string((char*)p, l);
 	return CmpStringWithMask(Value, Mask);
 
