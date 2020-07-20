@@ -9,7 +9,7 @@
 
 WORD CountNTxt(ChoiceD* C, bool IsMenuBar)
 {
-	WORD n = 0, nValid = 0; 
+	WORD n = 0, nValid = 0;
 	//pstring s; 
 	std::string s;
 	bool b = false;
@@ -17,8 +17,8 @@ WORD CountNTxt(ChoiceD* C, bool IsMenuBar)
 		b = RunBool(C->Bool);
 		C->Displ = false;
 		if (b || C->DisplEver) {
-			C->Displ = true; 
-			n++; 
+			C->Displ = true;
+			n++;
 			s = RunShortStr(C->TxtFrml);
 			if (s.length() != 0) {
 				short maxLen = min(s.length(), TxtCols - 6);
@@ -35,7 +35,7 @@ WORD CountNTxt(ChoiceD* C, bool IsMenuBar)
 			if (C->Txt == "") b = false;
 			if (b) nValid++;
 		}
-		C->Enabled = b; 
+		C->Enabled = b;
 		C = (ChoiceD*)C->Chain;
 	}
 	if (nValid == 0) n = 0;
@@ -218,16 +218,32 @@ label1:
 	case evKeyDown: {
 		switch (Event.KeyCode) {
 		case _Home_:
-		case _PgUp_: { iTxt = 0; Next(); WrText(i); break; }
+		case _PgUp_: {
+			iTxt = 0;
+			Next();
+			WrText(i);
+			break;
+		}
 		case _End_:
-		case _PgDn_: { iTxt = nTxt + 1; Prev(); WrText(i); break; }
+		case _PgDn_: {
+			iTxt = nTxt + 1;
+			Prev();
+			WrText(i);
+			break;
+		}
 		case  _F1_: {
 		label2:
 			ClrEvent();
-			if (HlpRdb != nullptr) Help(HlpRdb, hlp, false); KbdChar = 0;
+			if (HlpRdb != nullptr) Help(HlpRdb, hlp, false);
+			KbdChar = 0;
 			break;
 		}
-		case _AltF10_: { ClrEvent(); Help(nullptr, "", false); KbdChar = 0; break; }
+		case _AltF10_: {
+			ClrEvent();
+			Help(nullptr, "", false);
+			KbdChar = 0;
+			break;
+		}
 		case _AltF2_: {
 			if (IsTestRun && !IsBoxS) {
 				ClrEvent();
@@ -262,8 +278,8 @@ bool TMenu::IsMenuBar()
 
 void TMenu::LeadIn(TPoint* T)
 {
-	WORD i, j; 
-	TRect r { {0,0},{0,0} };
+	WORD i, j;
+	TRect r{ {0,0},{0,0} };
 	i = iTxt;
 	for (j = 1; j <= nTxt; j++) {
 		GetItemRect(j, &r);
@@ -314,7 +330,7 @@ void TMenu::WrText(WORD I)
 {
 	WORD j = 0, posw = 0, x = 0, x2 = 0, y = 0;
 	BYTE attr = 0;
-	TRect r { {0,0}, {0,0} };
+	TRect r{ {0,0}, {0,0} };
 	bool red = false, ena = false;
 
 	pstring s = GetText(I);
@@ -367,7 +383,7 @@ TMenuBox::TMenuBox()
 void TMenuBox::InitTMenuBox(WORD C1, WORD R1)
 {
 	WORD cols = 0, c2 = 0, r2 = 0, i = 0, l = 0;
-	
+
 	std::string hd = GetText(0);
 	cols = hd.length();
 	for (i = 1; i <= nTxt; i++) {
@@ -495,7 +511,7 @@ bool TMenuBoxP::Enabled(WORD I)
 
 bool TMenuBoxP::ExecItem(WORD& I)
 {
-	auto result = false; 
+	auto result = false;
 	if (!PD->PullDown) return result;
 	if (I == 0) {
 		if ((Event.What == evMouseDown) || !PD->WasESCBranch) return result;
@@ -631,7 +647,7 @@ bool TMenuBarS::GetDownMenu(TMenuBox* W)
 	pstring TNr(10); WORD n, err; TMenuBoxS* p;
 	auto result = false;
 	TNr = GetText(nTxt + iTxt);
-	val(TNr, n, err); 
+	val(TNr, n, err);
 	if ((TNr.length() == 0) || (err != 0)) return result;
 	RdMsg(n);
 	//New(p, Init(MenuX, MenuY, (pstring*)&MsgLine));
@@ -644,7 +660,7 @@ bool TMenuBarS::GetDownMenu(TMenuBox* W)
 std::string TMenuBarS::GetHlpName()
 {
 	pstring s;
-	str(iTxt, s); 
+	str(iTxt, s);
 	return GetText(0) + "_" + s.c_str();
 }
 
@@ -764,8 +780,8 @@ bool PrinterMenu(WORD Msg)
 
 void MenuBoxProc(Instr_menu* PD)
 {
-	TMenuBoxP* w = nullptr; WORD i = 0; 
-	BYTE mx = 0, my = 0; 
+	TMenuBoxP* w = nullptr; WORD i = 0;
+	BYTE mx = 0, my = 0;
 label1:
 	w = new TMenuBoxP(0, 0, nullptr, PD);
 	i = w->Exec(i);
@@ -776,8 +792,8 @@ label1:
 			RunInstr(PD->ESCInstr);
 		}
 		else RunInstr(CI(PD->Choices, i)->Instr);
-		if (BreakP || ExitP) { 
-			if (PD->Loop) BreakP = false; 
+		if (BreakP || ExitP) {
+			if (PD->Loop) BreakP = false;
 		}
 		else if (PD->Loop) goto label1;
 	}
@@ -796,7 +812,7 @@ void MenuBarProc(Instr_menu* PD)
 
 LongStr* GetHlpText(RdbD* R, std::string S, bool ByName, WORD& IRec)
 {
-	FieldDescr* NmF = nullptr; FieldDescr* TxtF = nullptr; 
+	FieldDescr* NmF = nullptr; FieldDescr* TxtF = nullptr;
 	LongStr* T = nullptr; std::string Nm;
 	longint i = 0;
 	TVideoFont fo; FileD* cf = nullptr;
@@ -805,14 +821,14 @@ LongStr* GetHlpText(RdbD* R, std::string S, bool ByName, WORD& IRec)
 	void* cr = CRecPtr;
 	MarkStore2(p);
 	if (ByName) {
-		if (R == nullptr) goto label5; 
+		if (R == nullptr) goto label5;
 		CFile = (FileD*)R;
-		if (CFile == &HelpFD) { 
-			if (CFile->Handle == nullptr) goto label5; 
+		if (CFile == &HelpFD) {
+			if (CFile->Handle == nullptr) goto label5;
 		}
-		else { 
-			CFile = R->HelpFD; 
-			if (CFile == nullptr) goto label5; 
+		else {
+			CFile = R->HelpFD;
+			if (CFile == nullptr) goto label5;
 		}
 		ConvToNoDiakr(&S[0], S.length(), fonts.VFont);
 	}
@@ -820,7 +836,7 @@ label1:
 	md = NewLMode(RdMode);
 	if (CFile->Handle == nullptr) goto label5;
 	CRecPtr = new BYTE[CFile->RecLen + 2];
-	NmF = CFile->FldD; 
+	NmF = CFile->FldD;
 	TxtF = (FieldDescr*)NmF->Chain;
 	if (!ByName) {
 		i = MaxW(1, MinW(IRec, CFile->NRecs));
@@ -838,7 +854,7 @@ label1:
 		label2:
 			T = _LongS(TxtF);
 			if (!ByName || (T->LL > 0) || (i == CFile->NRecs)) {
-				if (CFile == &HelpFD) ConvKamenToCurr(&T->A, T->LL); 
+				if (CFile == &HelpFD) ConvKamenToCurr(&T->A, T->LL);
 				IRec = i;
 				goto label3;
 			}
@@ -869,13 +885,13 @@ label5:
 
 void DisplLLHelp(RdbD* R, std::string Name, bool R24)
 {
-	LongStr* s = nullptr; void* p = nullptr; 
+	LongStr* s = nullptr; void* p = nullptr;
 	WORD i = 0, y = 0; WORD iRec = 0; FileD* cf = nullptr;
 	if ((R == nullptr) || (R != (RdbD*)&HelpFD) && (R->HelpFD == nullptr)) return;
-	MarkStore(p); 
+	MarkStore(p);
 	cf = CFile;
 	if (Name != "") {
-		iRec = 0; 
+		iRec = 0;
 		s = GetHlpText(R, Name, true, iRec);
 		if (s != nullptr) {
 			s = CopyLine(s, 1, 1);
