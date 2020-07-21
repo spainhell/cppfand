@@ -200,7 +200,8 @@ bool OpenF2()
 		if (CFile->IsDynFile) { CloseClearHCFile(); return result; }
 		else {
 			if (OldToNewCat(FS)) goto label3;
-			CFileMsg(883, ' '); l = longint(CFile->NRecs) * rLen + CFile->FrstDispl;
+			CFileMsg(883, ' ');
+			l = longint(CFile->NRecs) * rLen + CFile->FrstDispl;
 			if ((l == FS) || !PromptYN(885)) CloseGoExit();
 			if ((CFile->NRecs == 0) || (l >> CachePageShft != FS >> CachePageShft)) {
 				WrLLF10Msg(886); CFile->NRecs = n;

@@ -84,11 +84,16 @@ void TWindow::InitTWindow(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, std::st
 	WasCrsEnabled = Crs.Enabled;
 	screen.CrsHide();
 	SavedW = PushW1(Orig.X + 1, Orig.Y + 1, Orig.X + Size.X + Shadow.X, Orig.Y + Size.Y + Shadow.Y, true, false);
-	if (SaveLL) { SavedLLW = PushW1(1, TxtRows, TxtCols, TxtRows, true, false); }
-	else { SavedLLW = 0; }
+	if (SaveLL) {
+		SavedLLW = PushW1(1, TxtRows, TxtCols, TxtRows, true, false);
+	}
+	else {
+		SavedLLW = 0;
+	}
 	if (Shadow.Y == 1) screen.ScrColor(Orig.X + 2, Row2(), Size.X + Shadow.X - 2, screen.colors.ShadowAttr);
 	if (Shadow.X > 0)
-		for (i = Row1(); i <= Row2(); i++) screen.ScrColor(Col2(), i, Shadow.X, screen.colors.ShadowAttr);
+		for (i = Row1(); i <= Row2(); i++)
+			screen.ScrColor(Col2(), i, Shadow.X, screen.colors.ShadowAttr);
 	if (GetState(sfFramed)) {
 		n = 0;
 		if (GetState(sfFrDouble)) n = 9;
@@ -405,8 +410,11 @@ WORD TMenuBox::Exec(WORD IStart)
 	WORD i = 0, j = 0;
 	TMenuBox* w = nullptr;
 	if (nTxt == 0) { return 0; }
-	j = 0; iTxt = IStart; if (iTxt == 0) iTxt = 1;
-	Prev(); Next();  /*get valid iTxt*/
+	j = 0;
+	iTxt = IStart;
+	if (iTxt == 0) iTxt = 1;
+	Prev();
+	Next();  /*get valid iTxt*/
 label1:
 	HandleEvent();
 	i = iTxt;
@@ -418,11 +426,15 @@ label1:
 	case VK_LEFT: if (UnderMenuBar()) { j = 1; goto label4; } break;
 	case VK_RIGHT: if (UnderMenuBar()) { j = 2; goto label4; } break;
 	default: {
-		if (!FindChar()) goto label1; WrText(iTxt);
+		if (!FindChar()) goto label1;
+		WrText(iTxt);
 	label2:
-		i = iTxt; MenuX = Orig.X + 4; MenuY = Orig.Y + i + 2;
+		i = iTxt;
+		MenuX = Orig.X + 4;
+		MenuY = Orig.Y + i + 2;
 	label3:
-		ClearHlp(); if (!ExecItem(i)) {
+		ClearHlp();
+		if (!ExecItem(i)) {
 		label4:
 			return (j << 8) + i;
 		}
@@ -578,14 +590,16 @@ WORD TMenuBar::Exec()
 	for (i = 1; i < nTxt; i++) WrText(i);
 label1:
 	HandleEvent();
-	i = iTxt; bool enter = false;
+	i = iTxt;
+	bool enter = false;
 	switch (KbdChar) {
 	case _M_: { enter = true; goto label2; break; }
 	case _ESC_: { i = 0; goto label4; break; }
 	case _down_: goto label3; break;
 	case _left_: { Prev(); WrText(i); if (down) goto label2; break; }
 	case _right_: { Next(); WrText(i); if (down) goto label2; break; }
-	default: { if (!FindChar()) goto label1;
+	default: {
+		if (!FindChar()) goto label1;
 		enter = true;
 	label2:
 		WrText(iTxt);
@@ -595,17 +609,21 @@ label1:
 			i = w->Exec(DownI[iTxt]);
 			delete w;
 			ReleaseStore(w);
-			DownI[iTxt] = Lo(i); enter = false; down = true;
+			DownI[iTxt] = Lo(i);
+			enter = false; down = true;
 			if (Hi(i) == 1) { i = iTxt; Prev(); WrText(i); goto label2; }
 			if (Hi(i) == 2) { i = iTxt; Next(); WrText(i); goto label2; }
-			down = false; if (i == 0) goto label1;
+			down = false;
+			if (i == 0) goto label1;
 			return (iTxt << 8) + i;
 		}
 		if (enter) {
 			i = iTxt;
 		label4:
 			ClearHlp();
-			if (ExecItem(i)) { return i << 8; }
+			if (ExecItem(i)) {
+				return i << 8;
+			}
 		}
 	}
 	}
@@ -701,9 +719,13 @@ bool TMenuBarP::ExecItem(WORD& I)
 {
 	TRect r;
 	auto result = false;
-	if (I == 0) { if (!PD->WasESCBranch) return result; RunInstr(PD->ESCInstr); }
+	if (I == 0) {
+		if (!PD->WasESCBranch) return result;
+		RunInstr(PD->ESCInstr);
+	}
 	else RunInstr(CI(CRoot, I)->Instr);
-	I = 0; if (BreakP || ExitP) { result = false; return result; }
+	I = 0;
+	if (BreakP || ExitP) { result = false; return result; }
 	result = true;
 	return result;
 }

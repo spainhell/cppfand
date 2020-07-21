@@ -1235,7 +1235,7 @@ void CallProcedure(Instr_proc* PD)
 	SetInpTT(PD->PPos, true);
 #ifdef _DEBUG
 	std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
-	if (srcCode.find("DenTxt") != std::string::npos) {
+	if (srcCode.find("(PARAM1:file) begin case PARAM1.nrecs=0: begin setkeybuf('") != std::string::npos) {
 		//|| srcCode.find("STAT.Start") != std::string::npos) {
 		printf("");
 		//FuncD* f = FuncDRoot;

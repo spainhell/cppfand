@@ -457,7 +457,7 @@ storeWindow Screen::popScreen()
 	return result;
 }
 
-void Screen::SaveScreen(WParam* wp, short c1, short r1, short c2, short r2)
+int Screen::SaveScreen(WParam* wp, short c1, short r1, short c2, short r2)
 {
 	// cislovani radku a sloupcu prichazi od 1 .. X
 	if (c1 < 1 || c2 > 80 || r1 < 1 || r2 > 25) { throw std::exception("Bad SaveScreen index."); }
@@ -470,6 +470,7 @@ void Screen::SaveScreen(WParam* wp, short c1, short r1, short c2, short r2)
 	CHAR_INFO* buf = new CHAR_INFO[bufSize.X * bufSize.Y];
 	ReadConsoleOutput(_handle, buf, bufSize, { 0, 0 }, &rect);
 	_windowStack.push({ wp, bufSize, rect, buf });
+	return _windowStack.size();
 }
 
 void Screen::LoadScreen(bool draw, WParam* wp)

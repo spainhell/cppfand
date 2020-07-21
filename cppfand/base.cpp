@@ -75,8 +75,8 @@ WORD files = 250; // {files in CONFIG.SYS -3}
 #endif
 WORD CardHandles;
 
-//Cache cache = Cache();
-std::map<FILE*, FileCache*> Cache::cacheMap;
+Cache cache;
+//std::map<FILE*, FileCache*> Cache::cacheMap;
 WORD CachePageSize;
 void* AfterCatFD; // r108
 ProcStkD* MyBP;
@@ -1001,11 +1001,10 @@ void CloseH(FILE* handle)
 	//if (CFile != nullptr) CFile->Handle = nullptr;
 }
 
-
 void ClearCacheH(FILE* h)
 {
 	// smazeme cache
-	Cache::SaveRemoveCache(h);
+	cache.SaveRemoveCache(h);
 }
 
 void CloseClearH(FILE* h)
@@ -1052,13 +1051,13 @@ void RdWrCache(bool ReadOp, FILE* Handle, bool NotCached, longint Pos, WORD N, v
 		// snazime se zapsat do RdOnly souboru
 		// zapisem pouze do cache
 		// TODO: nutno doresit, co s tim dal ...
-		FileCache* c1 = Cache::GetCache(Handle);
+		FileCache* c1 = cache.GetCache(Handle);
 		c1->Save(Pos, N, (unsigned char*)Buf);
 		return;
 	}
 
 	if (Cached) {
-		FileCache* c1 = Cache::GetCache(Handle);
+		FileCache* c1 = cache.GetCache(Handle);
 		if (ReadOp) { 
 			memcpy(Buf, c1->Load(Pos), N); 
 		}

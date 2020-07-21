@@ -231,60 +231,72 @@ struct ERecTxtD : public Chained
 struct EditD : Chained
 {
 	// EditD* PrevE; - toto bude Chain ...
-	FileD* FD;
-	LockMode OldMd;
-	bool IsUserForm;
-	FieldList Flds;
-	void* OldRecPtr; void* NewRecPtr;
-	BYTE FrstCol, FrstRow, LastCol, LastRow, Rows;
-	WRect V; BYTE ShdwX, ShdwY;
-	BYTE Attr, dNorm, dHiLi, dSubSet, dDel, dTab, dSelect;
+	FileD* FD = nullptr;
+	LockMode OldMd = NullMode;
+	bool IsUserForm = false;
+	FieldListEl* Flds = nullptr;
+	void* OldRecPtr = nullptr; void* NewRecPtr = nullptr;
+	BYTE FrstCol = 0, FrstRow = 0, LastCol = 0, LastRow = 0, Rows = 0;
+	WRect V; BYTE ShdwX = 0, ShdwY = 0;
+	BYTE Attr = 0, dNorm = 0, dHiLi = 0, dSubSet = 0;
+	BYTE dDel = 0, dTab = 0, dSelect = 0;
 	pstring* Top = nullptr;
-	BYTE WFlags;                                 /* copied from EO */
+	BYTE WFlags = 0;                             /* copied from EO */
 	EdExitD* ExD = nullptr;                      /*      "         */
 	FileD* Journal = nullptr;                    /*      "         */
-	pstring* ViewName;                           /*      "         */
-	char OwnerTyp; /* #0=CtrlF7 */               /*      "         */
+	pstring* ViewName = nullptr;                 /*      "         */
+	char OwnerTyp = '\0'; /* #0=CtrlF7 */        /*      "         */
 	LinkD* DownLD = nullptr;                     /*      "         */
 	LocVar* DownLV = nullptr;                    /*      "         */
 	void* DownRecPtr; void* LVRecPtr;            /*      "         */
 	KeyInD* KIRoot = nullptr;                    /*      "         */
-	bool SQLFilter;                              /*      "         */
+	bool SQLFilter = false;                      /*      "         */
 	XWKey* SelKey = nullptr;                     /*      "         */
-	StringList HdTxt; BYTE NHdTxt;
-	WORD SaveAfter, WatchDelay, RefreshDelay;
-	BYTE RecNrPos, RecNrLen;
-	BYTE NPages;
+	StringListEl* HdTxt = nullptr; BYTE NHdTxt = 0;
+	WORD SaveAfter = 0, WatchDelay = 0, RefreshDelay = 0;
+	BYTE RecNrPos = 0, RecNrLen = 0;
+	BYTE NPages = 0;
 	ERecTxtD* RecTxt = nullptr;
-	BYTE NRecs;     /*display*/
+	BYTE NRecs = 0;     /*display*/
 	EFldD* FirstFld = nullptr;
 	EFldD* LastFld = nullptr; 
 	EFldD* StartFld = nullptr;
 	EFldD* CFld = nullptr; EFldD* FirstEmptyFld = nullptr;    /*copied*/
-	KeyDPtr VK = nullptr; WKeyDPtr WK = nullptr;              /*  "   */
-	longint BaseRec; BYTE IRec;                               /*  "   */
-	bool IsNewRec, Append, Select, WasUpdated, EdRecVar,      /*  "   */
-		AddSwitch, ChkSwitch, WarnSwitch, SubSet;             /*  "   */
-	bool NoDelTFlds, WasWK;                                   /*  "   */
-	bool NoDelete, VerifyDelete, NoCreate, F1Mode,            /*  "   */
-		OnlyAppend, OnlySearch, Only1Record, OnlyTabs,        /*  "   */
-		NoESCPrompt, MustESCPrompt, Prompt158, NoSrchMsg,     /*  "   */
-		WithBoolDispl, Mode24, NoCondCheck, F3LeadIn,         /*  "   */
-		LUpRDown, MouseEnter, TTExit,                         /*  "   */
-		MakeWorkX, NoShiftF7Msg, MustAdd;                     /*  "   */
-	bool MustCheck, SelMode;                                  /*  "   */
-	bool DownSet, IsLocked, WwPart;
-	KeyDPtr DownKey;
-	longint LockedRec;
-	FrmlPtr Cond, Bool;
-	pstring* BoolTxt, Head, Last, CtrlLast, AltLast, ShiftLast;
-	WORD NFlds, NTabsSet, NDuplSet, NEdSet;
-	bool EdUpdated;
-	ImplD* Impl;
-	longint StartRecNo; pstring* StartRecKey; integer StartIRec;
-	longint OwnerRecNo;
-	LinkD* ShiftF7LD;
-	void* AfterE;
+	KeyD* VK = nullptr; XWKey* WK = nullptr;                  /*  "   */
+	longint BaseRec = 0; BYTE IRec = 0;                       /*  "   */
+	bool IsNewRec = false, Append = false, Select = false,    /*  "   */
+		 WasUpdated = false, EdRecVar = false,                /*  "   */
+		 AddSwitch = false, ChkSwitch = false,                /*  "   */
+		 WarnSwitch = false, SubSet = false;                  /*  "   */
+	bool NoDelTFlds = false, WasWK = false;                   /*  "   */
+	bool NoDelete = false, VerifyDelete = false,              /*  "   */
+	     NoCreate = false, F1Mode = false,                    /*  "   */
+		 OnlyAppend = false, OnlySearch = false,              /*  "   */
+	     Only1Record = false, OnlyTabs = false,               /*  "   */
+		 NoESCPrompt = false, MustESCPrompt = false,          /*  "   */
+	     Prompt158 = false, NoSrchMsg = false,                /*  "   */
+		 WithBoolDispl = false, Mode24 = false,               /*  "   */
+	     NoCondCheck = false, F3LeadIn = false,               /*  "   */
+		 LUpRDown = false, MouseEnter = false,                /*  "   */
+	     TTExit = false,                                      /*  "   */
+		 MakeWorkX = false, NoShiftF7Msg = false,             /*  "   */
+	     MustAdd = false;                                     /*  "   */
+	bool MustCheck = false, SelMode = false;                  /*  "   */
+	bool DownSet = false, IsLocked = false, WwPart = false;    
+	KeyD* DownKey = nullptr;
+	longint LockedRec = 0;
+	FrmlElem* Cond = nullptr; FrmlElem* Bool = nullptr;
+	pstring* BoolTxt = nullptr; std::string Head; std::string Last;
+	std::string CtrlLast; std::string AltLast; std::string ShiftLast;
+	WORD NFlds = 0, NTabsSet = 0, NDuplSet = 0, NEdSet = 0;
+	bool EdUpdated = false;
+	ImplD* Impl = nullptr;
+	longint StartRecNo = 0;
+	pstring* StartRecKey = nullptr;
+	integer StartIRec = 0;
+	longint OwnerRecNo = 0;
+	LinkD* ShiftF7LD = nullptr;
+	void* AfterE = nullptr;
 };
 
 enum PInstrCode

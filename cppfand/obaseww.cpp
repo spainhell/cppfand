@@ -37,8 +37,7 @@ longint PushW1(WORD C1, WORD R1, WORD C2, WORD R2, bool PushPixel, bool WW)
 	longint pos = 0;
 	WParam* wp = PushWParam(C1, R1, C2, R2, WW);
 	wp->GrRoot = pos;
-	screen.SaveScreen(wp, C1, R1, C2, R2);
-	return 0;
+	return screen.SaveScreen(wp, C1, R1, C2, R2);
 }
 
 longint PushW(WORD C1, WORD R1, WORD C2, WORD R2)

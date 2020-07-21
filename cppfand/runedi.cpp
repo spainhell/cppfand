@@ -3222,7 +3222,7 @@ void DisplLL()
 void DisplCtrlAltLL(WORD Flags)
 {
 	if ((Flags & 0x04) != 0) {        /* Ctrl */
-		if (E->CtrlLast != nullptr) {
+		if (!E->CtrlLast.empty()) {
 			MsgLine = E->CtrlLast;
 			WrLLMsgTxt();
 		}
@@ -3231,13 +3231,13 @@ void DisplCtrlAltLL(WORD Flags)
 		else WrLLMsg(127);
 	}
 	else if ((Flags & 0x03) != 0)         /* Shift */
-		if (E->ShiftLast != nullptr) {
+		if (!E->ShiftLast.empty()) {
 			MsgLine = E->ShiftLast;
 			WrLLMsgTxt();
 		}
 		else DisplLL();
 	else if ((Flags & 0x08) != 0)          /* Alt */
-		if (E->AltLast != nullptr) {
+		if (!E->AltLast.empty()) {
 			MsgLine = E->AltLast;
 			WrLLMsgTxt();
 		}

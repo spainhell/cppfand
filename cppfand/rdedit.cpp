@@ -317,6 +317,7 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 	E->KIRoot = EO->KIRoot;
 	E->SQLFilter = EO->SQLFilter;
 	E->SelKey = (XWKey*)EO->SelKey;
+	//rectxt
 
 	E->Attr = RunWordImpl(EO->ZAttr, screen.colors.dTxt);
 	E->dNorm = RunWordImpl(EO->ZdNorm, screen.colors.dNorm);
@@ -346,8 +347,12 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 		if (E->Mode24) E->V.R2--;
 	}
 	RdFormOrDesign(ParFD, EO->Flds, EO->FormPos);
-	if (E->NPages > 1) { E->NRecs = 1; }
-	else { E->NRecs = (E->Rows - E->NHdTxt) / E->RecTxt->N; }
+	if (E->NPages > 1) {
+		E->NRecs = 1;
+	}
+	else {
+		E->NRecs = (E->Rows - E->NHdTxt) / E->RecTxt->N;
+	}
 	E->BaseRec = 1;
 	E->IRec = 1;
 	CFld = E->FirstFld;

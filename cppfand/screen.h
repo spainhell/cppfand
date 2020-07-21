@@ -95,7 +95,7 @@ public:
 
 	void pushScreen(storeWindow sw);
 	storeWindow popScreen();
-	void SaveScreen(WParam* wp, short c1, short r1, short c2, short r2);
+	int SaveScreen(WParam* wp, short c1, short r1, short c2, short r2);
 	void LoadScreen(bool draw, WParam* wp);
 	Colors colors;
 
