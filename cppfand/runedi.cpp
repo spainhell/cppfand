@@ -1173,7 +1173,7 @@ void SetStartRec()
 		if (BaseRec <= 0) { IRec += BaseRec - 1; BaseRec = 1; };
 	}
 	if (Only1Record) {
-		if (CNRecs > 0) { RdRec(CRec()); n = AbsRecNr(CRec()); }
+		if (CNRecs() > 0) { RdRec(CRec()); n = AbsRecNr(CRec()); }
 		else n = 0;
 		if (Subset) WK->Close();
 		Subset = true;

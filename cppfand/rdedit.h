@@ -7,7 +7,7 @@ extern EditD* E;
 
 void PushEdit();
 StringListEl* SToSL(Chained* SLRoot, pstring s);
-ERecTxtD* StoreRT(WORD Ln, StringList SL, WORD NFlds);
+void StoreRT(WORD Ln, StringList SL, WORD NFlds);
 void RdEForm(FileD* ParFD, RdbPos FormPos);
 EFldD* FindScanNr(WORD N);
 void AutoDesign(FieldList FL);

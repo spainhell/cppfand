@@ -32,19 +32,15 @@ StringListEl* SToSL(Chained* SLRoot, pstring s)
 	}
 }
 
-ERecTxtD* StoreRT(WORD Ln, StringList SL, WORD NFlds)
+void StoreRT(WORD Ln, StringList SL, WORD NFlds)
 {
 	//ERecTxtD* RT = (ERecTxtD*)GetStore(sizeof(*RT));
 	ERecTxtD* RT = new ERecTxtD();
 	if (NFlds == 0) Error(81);
 	RT->N = Ln;
 	RT->SL = SL;
-	if (E->RecTxt == nullptr) return RT;
-	else {
-		ChainLast(E->RecTxt, RT);
-		return E->RecTxt;
-	}
-
+	if (E->RecTxt == nullptr) E->RecTxt = RT;
+	else ChainLast(E->RecTxt, RT);
 }
 
 void RdEForm(FileD* ParFD, RdbPos FormPos)
@@ -242,7 +238,7 @@ void AutoDesign(FieldList FL)
 	SLRoot = SToSL(SLRoot, s);
 	SLRoot = SToSL(SLRoot, "");
 	Ln += 2;
-	E->RecTxt = StoreRT(Ln, SLRoot, 1);
+	StoreRT(Ln, SLRoot, 1);
 	D->Chain = nullptr;
 	E->LastFld = D;
 	E->NPages = NPages;
@@ -250,7 +246,7 @@ void AutoDesign(FieldList FL)
 		auto& er = *E->RecTxt;
 		if (er.N == 2) {
 			E->HdTxt = er.SL;
-			er.SL = (StringList)er.SL->Chain;
+			er.SL = (StringListEl*)er.SL->Chain;
 			E->HdTxt->Chain = nullptr;
 			E->NHdTxt = 1;
 			er.N = 1;
