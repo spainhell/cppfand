@@ -876,7 +876,7 @@ label1:
 		label2:
 			T = _LongS(TxtF);
 			if (!ByName || (T->LL > 0) || (i == CFile->NRecs)) {
-				if (CFile == &HelpFD) ConvKamenToCurr(&T->A, T->LL);
+				if (CFile == &HelpFD) ConvKamenToCurr(T->A, T->LL);
 				IRec = i;
 				goto label3;
 			}

@@ -87,11 +87,13 @@ public:
 	CopyD* CD = nullptr;
 };
 
+enum class WriteType { write = 0, writeln = 1, message = 2, msgAndHelp = 3 };
+
 class Instr_writeln : public Instr
 {
 public:
 	Instr_writeln();
-	BYTE LF = 0; /*0-write,1-writeln,2-message,3-message+help*/;
+	WriteType LF = WriteType::write; /* 0-write, 1-writeln, 2-message, 3-message+help */;
 	WrLnD WD;
 	RdbD* mHlpRdb = nullptr;
 	FrmlElem* mHlpFrml = nullptr;

@@ -359,7 +359,7 @@ struct WrLnD : public Chained
 {
 	//WrLnD* Chain;
 	FrmlElem* Frml = nullptr;
-	char Typ = '\0'; /*S,B,F,D*/
+	char Typ = '\0'; /* S, B, F, D */
 	BYTE N = 0, M = 0;
 	pstring* Mask = nullptr;
 };

@@ -76,7 +76,7 @@ void WriteStr(WORD& pos, WORD& base, WORD& maxLen, WORD& maxCol, BYTE sLen, pstr
 		//BuffLine[i] = *item;
 	}
 	screen.ScrWrCharInfoBuf(cx1, cy1, Buffer, maxCol);
-	screen.GotoXY(cx + pos - base - 2, cy - 1);
+	screen.GotoXY(cx + pos - base - 1, cy);
 }
 
 WORD EditTxt(pstring* s, WORD pos, WORD maxlen, WORD maxcol, char typ, bool del, bool star, bool upd, bool ret,
@@ -276,7 +276,9 @@ void AssignFld(FieldDPtr F, FrmlPtr Z)
 WORD FieldEdit(FieldDPtr F, FrmlPtr Impl, WORD LWw, WORD iPos, pstring* Txt, double& RR, bool del, bool upd, bool ret,
 	WORD Delta)
 {
-	WORD I = 0, N = 0, L = 0, M = 0, Col = 0, Row = 0; char cc = '\0';
+	WORD I = 0, N = 0, L = 0, M = 0;
+	short Col = 0, Row = 0;
+	char cc = '\0';
 	pstring* Mask = nullptr;
 	pstring* Msk = nullptr;
 	pstring s;
@@ -288,18 +290,24 @@ WORD FieldEdit(FieldDPtr F, FrmlPtr Impl, WORD LWw, WORD iPos, pstring* Txt, dou
 	Col = screen.WhereX();
 	Row = screen.WhereY();
 	if (F->Typ == 'B') {
-		if (*Txt == "") printf(" ");
-		else printf("%s", Txt->c_str());
-		screen.GotoXY(Col, Row); screen.CrsNorm();
+		if (*Txt == "") screen.ScrFormatWrText(Col, Row, " ");
+		else screen.ScrFormatWrText(Col, Row, "%s", Txt->c_str()); //printf("%s", Txt->c_str());
+		screen.GotoXY(Col, Row); 
+		screen.CrsNorm();
 	label0:
 		GetEvent();
 		switch (Event.What) {
 		case evKeyDown: {
-			KbdChar = Event.KeyCode; ClrEvent();
-			if (KbdChar == _ESC_) { screen.CrsHide(); return result; }
+			KbdChar = Event.KeyCode; 
+			ClrEvent();
+			if (KbdChar == _ESC_) { 
+				screen.CrsHide(); 
+				return result; 
+			}
 			if (KbdChar == _M_) {
 			label11:
-				if ((Txt->length() > 0) && ((*Txt)[1] == AbbrYes)) cc = AbbrYes; else cc = AbbrNo;
+				if ((Txt->length() > 0) && ((*Txt)[1] == AbbrYes)) cc = AbbrYes; 
+				else cc = AbbrNo;
 				goto label1;
 			}
 			cc = toupper((char)KbdChar);
@@ -308,14 +316,17 @@ WORD FieldEdit(FieldDPtr F, FrmlPtr Impl, WORD LWw, WORD iPos, pstring* Txt, dou
 		}
 		case evMouseDown: {
 			if (MouseInRect(WindMin.X + screen.WhereX() - 1, WindMin.Y + screen.WhereY() - 1, 1, 1)) {
-				ClrEvent(); KbdChar = _M_; goto label11;
+				ClrEvent(); 
+				KbdChar = _M_; 
+				goto label11;
 			}
 		}
 		}
 		ClrEvent();
 		goto label0;
 	label1:
-		printf("%c", cc);
+		//printf("%c", cc);
+		screen.ScrFormatWrText(Col, Row, "%c", cc);
 		*Txt = cc;
 		screen.CrsHide();
 		return 0;
@@ -394,16 +405,17 @@ label2:
 }
 
 
-void WrPromptTxt(pstring* S, FrmlPtr Impl, FieldDPtr F, pstring* Txt, double& R)
+void WrPromptTxt(pstring* S, FrmlElem* Impl, FieldDescr* F, pstring* Txt, double& R)
 {
-	WORD x = 0, y = 0, d = 0, LWw = 0; 
+	WORD x = 0, y = 0, d = 0, LWw = 0;
 	pstring SS, T; double RR = 0.0; bool BB = false;
 	screen.WriteStyledStringToWindow(*S, ProcAttr);
 	T = "";
-	x = screen.WhereX(); y = screen.WhereY();
+	x = screen.WhereX();
+	y = screen.WhereY();
 	d = WindMax.X - WindMin.X + 1;
-	if (x + F->L - 1 > d) LWw = d - x; 
-	else LWw = F->L;  
+	if (x + F->L - 1 > d) LWw = d - x;
+	else LWw = F->L;
 	TextAttr = screen.colors.dHili;
 	if (Impl != nullptr) {
 		switch (F->FrmlTyp) {
@@ -413,21 +425,25 @@ void WrPromptTxt(pstring* S, FrmlPtr Impl, FieldDPtr F, pstring* Txt, double& R)
 		}
 		DecodeFieldRSB(F, F->L, RR, SS, BB, T);
 	}
-	screen.GotoXY(x, y); 
+	screen.GotoXY(x, y);
 	FieldEdit(F, nullptr, LWw, 1, &T, R, true, true, false, 0);
 	TextAttr = ProcAttr;
-	if (KbdChar == _ESC_) { EscPrompt = true; printf("\n"); }
+	if (KbdChar == _ESC_) {
+		EscPrompt = true;
+		printf("\n");
+	}
 	else {
 		EscPrompt = false; Txt = &T;
 		T[0] = char(LWw);
 		screen.GotoXY(x, y);
-		printf("%s", T.c_str());
+		// printf("%s", T.c_str());
+		screen.ScrFormatWrText(x, y, "%s", T.c_str());
 	}
 }
 
-bool PromptB(pstring* S, FrmlPtr Impl, FieldDPtr F)
+bool PromptB(pstring* S, FrmlElem* Impl, FieldDescr* F)
 {
-	pstring Txt; double R;
+	pstring Txt; double R = 0.0;
 	WrPromptTxt(S, Impl, F, &Txt, R);
 	bool result = Txt[1] == AbbrYes;
 	if (KbdChar == _ESC_) {
@@ -437,7 +453,7 @@ bool PromptB(pstring* S, FrmlPtr Impl, FieldDPtr F)
 	return result;
 }
 
-pstring PromptS(pstring* S, FrmlPtr Impl, FieldDPtr F)
+pstring PromptS(pstring* S, FrmlElem* Impl, FieldDescr* F)
 {
 	pstring Txt; double R;
 	WrPromptTxt(S, Impl, F, &Txt, R);
@@ -543,7 +559,7 @@ void RdRec(longint N)
 	if (CFile->IsSQLFile) {
 		if (IsNewRec && (N > CRec)) dec(N); x.S = WK->NrToStr(N);
 		Strm1->KeyAcc(WK, @x);
-	}
+}
 	else
 #endif
 	{
@@ -728,7 +744,7 @@ label1:
 
 bool LockRec(bool Displ)
 {
-	
+
 	auto result = false;
 	if (E->IsLocked) { return true; }
 	bool b = ELockRec(E, AbsRecNr(CRec()), IsNewRec, Subset);
@@ -769,7 +785,7 @@ void SetCPage()
 void DisplRecNr(longint N)
 {
 	if (E->RecNrLen > 0) {
-		screen.GotoXY(E->RecNrPos, 1); 
+		screen.GotoXY(E->RecNrPos, 1);
 		TextAttr = screen.colors.fNorm;
 		//printf("%*i", E->RecNrLen, N);
 		screen.ScrFormatWrText(E->RecNrPos, 1, "%*i", E->RecNrLen, N);
@@ -785,11 +801,11 @@ void AdjustCRec()
 	if (BaseRec == 0) {
 		BaseRec = 1;
 		if (!IsNewRec) {
-			IsNewRec = true; 
-			Append = true; 
-			FirstEmptyFld = CFld; 
+			IsNewRec = true;
+			Append = true;
+			FirstEmptyFld = CFld;
 			ZeroAllFlds();
-			SetWasUpdated(); 
+			SetWasUpdated();
 			NewRecExit();
 		}
 		else SetWasUpdated();
@@ -908,21 +924,21 @@ void DisplTabDupl()
 
 void DisplSysLine()
 {
-	WORD i = 0, j = 0; 
-	pstring m, s, x, z; 
+	WORD i = 0, j = 0;
+	pstring m, s, x, z;
 	bool point = false;
 	s = E->Head;
-	if (s == "") return; 
-	screen.GotoXY(1, 1); 
-	TextAttr = screen.colors.fNorm; 
+	if (s == "") return;
+	screen.GotoXY(1, 1);
+	TextAttr = screen.colors.fNorm;
 	ClrEol();
 	i = 1; x = "";
 	while (i <= s.length())
 		if (s[i] == '_') {
-			m = ""; 
+			m = "";
 			point = false;
 			while ((i <= s.length()) && (s[i] == '_' || s[i] == '.')) {
-				if (s[i] == '.') point = true; 
+				if (s[i] == '.') point = true;
 				m.Append(s[i]); i++;
 			}
 			if (point) {
@@ -932,13 +948,13 @@ void DisplSysLine()
 			}
 			else if (m.length() == 1) x = x + m;
 			else {
-				E->RecNrLen = m.length(); 
+				E->RecNrLen = m.length();
 				E->RecNrPos = i - m.length();
 				for (j = 1; j < m.length(); j++) x.Append(' ');
 			}
 		}
 		else { x.Append(s[i]); i++; }
-	if (x.length() > TxtCols) x[0] = char(TxtCols); 
+	if (x.length() > TxtCols) x[0] = char(TxtCols);
 	//printf("%s", x.c_str());
 	screen.ScrWrText(1, 1, x.c_str());
 	DisplRecNr(CRec());
@@ -1037,8 +1053,8 @@ void DisplEditWw()
 		screen.ScrColor(EV.C1 + 1, EV.R2, EV.C2 - EV.C1 + E->ShdwX - 1, screen.colors.ShadowAttr);
 	}
 	if (E->ShdwX > 0)
-		for (i = EV.R1; i < EV.R2; i++) { 
-			screen.ScrColor(EV.C2, i, E->ShdwX, screen.colors.ShadowAttr); 
+		for (i = EV.R1; i < EV.R2; i++) {
+			screen.ScrColor(EV.C2, i, E->ShdwX, screen.colors.ShadowAttr);
 		}
 	screen.Window(EV.C1, EV.R1, EV.C2, EV.R2);
 	TextAttr = E->Attr;
@@ -1134,7 +1150,7 @@ void BuildWork()
 #ifdef FandSQL
 		if (CFile->IsSQLFile && (bool = nullptr)) {
 			l = CFile->RecLen; f = CFile->FldD; OnlyKeyArgFlds(WK);
-		}
+	}
 #endif
 		if (
 #ifdef FandSQL
@@ -1145,7 +1161,7 @@ void BuildWork()
 		//New(Scan, Init(CFile, K, ki, false));
 		Scan = new XScan(CFile, K, ki, false);
 		Scan->Reset(boolP, E->SQLFilter);
-	}
+}
 	CreateWIndex(Scan, WK, 'W');
 	Scan->Close(); if (wk2 != nullptr) wk2->Close(); ok = true;
 label1:
@@ -1201,7 +1217,7 @@ bool OpenEditWw()
 #ifdef FandSQL
 	if (CFile->IsSQLFile) {
 		if ((VK = nullptr) || !VK->InWork) Subset = true
-	}
+}
 	else
 #endif
 	{
@@ -1264,7 +1280,7 @@ label3:
 	if (!EdRecVar) OldLMode(md2);
 	if (IsNewRec) NewRecExit();
 	return result;
-}
+	}
 
 void RefreshSubset()
 {
@@ -1357,7 +1373,7 @@ void UpdMemberRef(void* POld, void* PNew)
 #endif
 
 						DeleteXRec(Scan->RecNr, true);
-				}
+			}
 				else {
 					Move(CRecPtr, p2, CFile->RecLen);
 					CRecPtr = p2; kf = kf2; Arg = LD->Args; while (kf != nullptr) {
@@ -1372,12 +1388,12 @@ void UpdMemberRef(void* POld, void* PNew)
 						OverWrXRec(Scan->RecNr, p, p2);
 				}
 				goto label1;
-			}
-			Scan->Close(); ClearRecSpace(p); ReleaseStore(p);
 		}
+			Scan->Close(); ClearRecSpace(p); ReleaseStore(p);
+	}
 	label2:
 		LD = LD->Chain;
-	}
+}
 	CFile = cf; CRecPtr = cr;
 }
 
@@ -1532,7 +1548,7 @@ bool DelIndRec(longint I, longint N)
 #ifdef FandSQL
 		if (CFile->IsSQLFile) {
 			x.PackKF(VK->KFlds); Strm1->DeleteXRec(VK, @x, false);
-		}
+}
 		else
 #endif
 			DeleteXRec(N, true);
@@ -1847,7 +1863,7 @@ bool OldRecDiffers()
 			f = f->Chain;
 		}
 		goto label2;
-	}
+}
 	else
 #endif
 		ReadRec(E->LockedRec);
@@ -2144,16 +2160,16 @@ bool PromptSearch(bool Create)
 		F = KF->FldD; if (li) {
 			D = FindEFld(F); if (D != nullptr) GotoRecFld(CRec(), D);
 		}
-		screen.GotoXY(1, TxtRows); 
-		TextAttr = screen.colors.pTxt; 
+		screen.GotoXY(1, TxtRows);
+		TextAttr = screen.colors.pTxt;
 		ClrEol();
 		printf("%s:", F->Name.c_str());
-		s = ""; pos = 1; 
+		s = ""; pos = 1;
 		Col = screen.WhereX();
-		if (Col + F->L > TxtCols) LWw = TxtCols - Col; 
+		if (Col + F->L > TxtCols) LWw = TxtCols - Col;
 		else LWw = F->L;
 	label2:
-		TextAttr = screen.colors.pNorm; 
+		TextAttr = screen.colors.pNorm;
 		screen.GotoXY(Col, TxtRows);
 		pos = FieldEdit(F, nullptr, LWw, pos, &s, r, false, true, li, E->WatchDelay);
 		xOld = x;
@@ -2575,22 +2591,24 @@ label1:
 	if (CRec < CNRecs) HdTxt[4] = 0x19; // ^Y
 	if (IsCurrChpt()) {
 		HdTxt = _ShortS(ChptTyp) + ':' + _ShortS(ChptName) + HdTxt;
-		TxtPos = trunc(_R(ChptTxtPos)); 
-		Breaks = BreakKeys2; 
+		TxtPos = trunc(_R(ChptTxtPos));
+		Breaks = BreakKeys2;
 		CtrlMsgNr = 131;
 	}
 	else {
 		CtrlMsgNr = 151;
-		if (CFile == CRdb->HelpFD) Breaks = BreakKeys1; 
+		if (CFile == CRdb->HelpFD) Breaks = BreakKeys1;
 		else Breaks = BreakKeys;
 	}
-	R1 = E->FrstRow; 
+	R1 = E->FrstRow;
 	if ((R1 = 3) && WithBoolDispl) R1 = 2;
 	screen.Window(E->FrstCol, R1, E->LastCol, E->LastRow); TextAttr = screen.colors.tNorm;
 	Kind = 'V'; OldTxtPos = TxtPos;
 	if (Ed) LockRec(false);
-	if ((F->Flg & f_Stored) != 0) { S = _LongS(F); 
-	if (Ed) Kind = 'T'; }
+	if ((F->Flg & f_Stored) != 0) {
+		S = _LongS(F);
+		if (Ed) Kind = 'T';
+	}
 	else S = RunLongStr(F->Frml);
 label2:
 	X = nullptr; if (TTExit) X = E->ExD; Upd = false;

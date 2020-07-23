@@ -217,7 +217,8 @@ void Screen::WriteStyledStringToWindow(std::string text, BYTE Attr)
 	CHAR_INFO* _buf = new CHAR_INFO[cols];
 
 	// pocet radku je mensi hodnota z poctu textu nebo radku okna
-	for (size_t i = 0; i < min(rows, vStr.size()); i++)
+	short rowsToPrint = min(rows, vStr.size());
+	for (size_t i = 0; i < rowsToPrint; i++)
 	{
 		auto str = vStr[i];
 		auto strLen = str.length();
@@ -266,11 +267,25 @@ void Screen::WriteStyledStringToWindow(std::string text, BYTE Attr)
 		}
 		COORD BufferSize = { strLen - ctrlCharsCount, 1 }; // pocet tisknutelnych znaku, 1 radek
 		WriteConsoleOutputA(_handle, _buf, BufferSize, { 0, 0 }, &rect);
-		// nastavime zacatek dalsiho radku
-		actualWindowRow++;
-		actualWindowCol = 1;
+		// nastavime zacatek dalsiho radku, pokud se nejedna o posledni radek
+		if (i < rowsToPrint - 1) {
+			actualWindowRow++;
+			actualWindowCol = 1;
+		}
+		// pokud se jedna o posledni radek, nastavime korektne RELATIVNI souradnice
+		else {
+			GotoXY(BufferSize.X + 1, actualWindowRow);
+		}
+
 	}
 	delete[] _buf;
+}
+
+void Screen::LF()
+{
+	actualWindowRow++;
+	actualWindowCol = 1;
+	GotoXY(actualWindowCol, actualWindowRow);
 }
 
 bool Screen::SetStyleAttr(char C, BYTE& a)
@@ -318,9 +333,13 @@ void Screen::CrsShow()
 
 void Screen::CrsHide()
 {
+#ifndef _DEBUG
 	CONSOLE_CURSOR_INFO invisible{ 1, false };
 	SetConsoleCursorInfo(_handle, &invisible);
 	Crs->Enabled = false;
+#else
+	CrsShow();
+#endif
 }
 
 void Screen::CrsBig()
@@ -353,20 +372,20 @@ void Screen::GotoXY(WORD X, WORD Y, Position pos)
 	}
 }
 
-BYTE Screen::WhereX()
+short Screen::WhereX()
 {
 	// vrací relativní pozici (k aktuálnímu oknu) èíslovanou od 1
 	CONSOLE_SCREEN_BUFFER_INFO sbi;
 	GetConsoleScreenBufferInfo(_handle, &sbi);
-	return (BYTE)sbi.dwCursorPosition.X - WindMin->X + 1;
+	return (sbi.dwCursorPosition.X + 1) - WindMin->X + 1;
 }
 
-BYTE Screen::WhereY()
+short Screen::WhereY()
 {
 	// vrací relativní pozici (k aktuálnímu oknu) èíslovanou od 1
 	CONSOLE_SCREEN_BUFFER_INFO sbi;
 	GetConsoleScreenBufferInfo(_handle, &sbi);
-	return (BYTE)sbi.dwCursorPosition.Y - WindMin->Y + 1;
+	return (sbi.dwCursorPosition.Y + 1) - WindMin->Y + 1;
 }
 
 short Screen::WhereXabs()

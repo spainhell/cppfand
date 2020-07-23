@@ -1323,7 +1323,7 @@ label1:
 
 WORD CompileMsgOn(CHAR_INFO* Buf, longint& w)
 {
-	pstring s(12);
+	pstring s;
 	WORD result = 0;
 	RdMsg(15);
 	if (IsTestRun) {
@@ -1336,12 +1336,19 @@ WORD CompileMsgOn(CHAR_INFO* Buf, longint& w)
 		printf("%s", GetDLine(&MsgLine[1], MsgLine.length(), '/', 2).c_str());
 	}
 	else {
-		screen.ScrRdBuf(0, TxtRows - 1, Buf, 40); w = 0;
+		screen.ScrRdBuf(0, TxtRows - 1, Buf, 40); 
+		w = 0;
 		result = 0;
 		screen.ScrClr(1, TxtRows, MsgLine.length() + 2, 1, ' ', screen.colors.zNorm);
 		screen.ScrWrStr(2, TxtRows, MsgLine, screen.colors.zNorm);
 	}
 	return result;
+}
+
+void CompileMsgOff(CHAR_INFO* Buf, longint& w)
+{
+	if (w != 0) PopW(w);
+	else screen.ScrWrCharInfoBuf(1, TxtRows, Buf, 40);
 }
 
 longint MakeDbfDcl(pstring Nm)
@@ -1515,12 +1522,6 @@ label1:
 	CFile = FDNew;
 	CRecPtr = Chpt->RecPtr;
 	return result;
-}
-
-void CompileMsgOff(CHAR_INFO* Buf, longint& w)
-{
-	if (w != 0) PopW(w);
-	else screen.ScrWrCharInfoBuf(0, TxtRows - 1, Buf, 40);
 }
 
 bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)

@@ -63,7 +63,7 @@ bool BreakFlag = false;
 BYTE diHacek = 1; const BYTE diCarka = 2; const BYTE diUmlaut = 3;
 char Diak = 0; /*diHacek, diCarka*/
 
-BYTE TabKtL[256] = {  /* Kamenicky to Latin2 */
+BYTE TabKtL[256] = {  /* unsigned charicky to Latin2 */
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 	0xac,0x81,0x82,0xd4,0x84,0xd2,0x9b,0x9f,0xd8,0xb7,0x91,0xd6,0x96,0x92,0x8e,0xb5,

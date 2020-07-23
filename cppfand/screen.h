@@ -71,6 +71,7 @@ public:
 	void ScrColor(WORD X, WORD Y, WORD L, BYTE Color);
 	void WriteChar(short X, short Y, char C, BYTE attr, Position pos = relative);
 	void WriteStyledStringToWindow(std::string text, BYTE Attr);
+	void LF();
 	bool SetStyleAttr(char C, BYTE& a);
 	TCrs CrsGet();
 	void CrsSet(TCrs S);
@@ -79,8 +80,8 @@ public:
 	void CrsBig();
 	void CrsNorm();
 	void GotoXY(WORD X, WORD Y, Position pos = relative);
-	BYTE WhereX();
-	BYTE WhereY();
+	short WhereX();
+	short WhereY();
 	short WhereXabs();
 	short WhereYabs();
 	void Window(BYTE X1, BYTE Y1, BYTE X2, BYTE Y2);

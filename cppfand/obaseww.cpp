@@ -264,18 +264,25 @@ void RunError(WORD N)
 
 bool PromptYN(WORD NMsg)
 {
-	longint w; WORD col, row; char cc;
-	w = PushW(1, TxtRows, TxtCols, TxtRows); TextAttr = screen.colors.pTxt;
+	longint w = PushW(1, TxtRows, TxtCols, TxtRows); 
+	TextAttr = screen.colors.pTxt;
 	ClrEol();
 	RdMsg(NMsg);
 	pstring tmp = MsgLine.substr(MaxI(MsgLine.length() - TxtCols + 3, 1), 255);
-	printf("%s", tmp.c_str());
-	col = screen.WhereX(); row = screen.WhereY(); TextAttr = screen.colors.pNorm;
-	printf(" "); screen.GotoXY(col, row); screen.CrsShow();
+	// printf("%s", tmp.c_str());
+	screen.ScrFormatWrText(screen.WhereX(), screen.WhereY(), "%s", tmp.c_str());
+	WORD col = screen.WhereX(); 
+	WORD row = screen.WhereY();
+	TextAttr = screen.colors.pNorm;
+	// printf(" "); 
+	screen.ScrFormatWrText(col, row, " ");
+	screen.GotoXY(col, row); 
+	screen.CrsShow();
 	label1:
-	cc = toupper((char)ReadKbd);
+	char cc = toupper((char)ReadKbd);
 	if ((KbdChar != F10SpecKey) && (cc != AbbrYes) && (cc != AbbrNo)) goto label1;
-	F10SpecKey = 0; PopW(w);
+	F10SpecKey = 0; 
+	PopW(w);
 	return cc == AbbrYes;
 }
 

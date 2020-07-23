@@ -199,14 +199,21 @@ void MergeProc(Instr_proc* PD)
 
 void WritelnProc(Instr_writeln* PD)
 {
-	LongStr* S; WORD i; char c; BYTE LF; WrLnD* W; pstring t, x; double r;
-	W = &PD->WD; LF = PD->LF; t[0] = 0;
+	LongStr* S = nullptr; WORD i = 0; char c = '\0';
+	WriteType LF = WriteType::write;
+	WrLnD* W = nullptr;
+	pstring t, x; double r = 0.0;
+	W = &PD->WD;
+	LF = PD->LF;
+	t[0] = 0;
 	TextAttr = ProcAttr;
 	std::string printS;
 	while (W != nullptr) {
 		switch (W->Typ) {
 		case 'S': {
-			if (LF >= 2) t = t + RunShortStr(W->Frml);
+			if (LF == WriteType::message || LF == WriteType::msgAndHelp) {
+				t = t + RunShortStr(W->Frml);
+			}
 			else {
 				S = RunLongStr(W->Frml);
 				//WrLongStyleStr(S, ProcAttr);
@@ -214,7 +221,8 @@ void WritelnProc(Instr_writeln* PD)
 				printS.append(str);
 				ReleaseStore(S);
 			}
-			goto label1; break;
+			goto label1;
+			break;
 		}
 		case 'B': {
 			if (RunBool(W->Frml)) x = AbbrYes;
@@ -229,7 +237,7 @@ void WritelnProc(Instr_writeln* PD)
 		}
 		case 'D': x = StrDate(RunReal(W->Frml), *W->Mask); break;
 		}
-		if (LF >= 2) t = t + x;
+		if (LF == WriteType::message || LF == WriteType::msgAndHelp) t = t + x;
 		else printf("%s", x.c_str());
 	label1:
 		W = (WrLnD*)W->Chain;
@@ -237,14 +245,21 @@ void WritelnProc(Instr_writeln* PD)
 	screen.WriteStyledStringToWindow(printS, ProcAttr);
 label2:
 	switch (LF) {
-	case 1: printf("\n"); break;
-	case 3: { F10SpecKey = _F1_; goto label3; break; }
-	case 2: {
+	case WriteType::writeln: {
+		//printf("\n");
+		screen.LF();
+		break;
+	}
+	case WriteType::msgAndHelp: {
+		F10SpecKey = _F1_;
+		goto label3;
+		break; }
+	case WriteType::message: {
 	label3:
-		SetMsgPar(t); 
+		SetMsgPar(t);
 		WrLLF10Msg(110);
 		if (KbdChar == _F1_) {
-			Help(PD->mHlpRdb, RunShortStr(PD->mHlpFrml), false); 
+			Help(PD->mHlpRdb, RunShortStr(PD->mHlpFrml), false);
 			goto label2;
 		}
 		break;
@@ -308,7 +323,8 @@ void ExecPgm(Instr_exec* PD)
 	b = OSshell(Prog, s, PD->NoCancel, PD->FreeMm, PD->LdFont, PD->TextMd);
 	/*asm mov ah, 3; mov bh, 0; push bp; int 10H; pop bp; mov x, dl; mov y, dh;*/
 	PopW(w);
-	screen.GotoXY(x - WindMin.X + 1, y - WindMin.Y + 1);
+	//screen.GotoXY(x - WindMin.X + 1, y - WindMin.Y + 1);
+	screen.GotoXY(1, 1);
 	if (!b) GoExit();
 }
 
@@ -1235,7 +1251,7 @@ void CallProcedure(Instr_proc* PD)
 	SetInpTT(PD->PPos, true);
 #ifdef _DEBUG
 	std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
-	if (srcCode.find("(PARAM1:file) begin case PARAM1.nrecs=0: begin setkeybuf('") != std::string::npos) {
+	if (srcCode.find("b:=Akt(Mod);") != std::string::npos) {
 		//|| srcCode.find("STAT.Start") != std::string::npos) {
 		printf("");
 		//FuncD* f = FuncDRoot;

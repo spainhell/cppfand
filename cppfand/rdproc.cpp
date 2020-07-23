@@ -1123,8 +1123,8 @@ void RdProcCall(Instr** pinstr)
 	}
 	else if (IsKeyWord("DISPLAY")) *pinstr = RdDisplay();
 	else if (IsKeyWord("CALL")) *pinstr = RdRDBCall();
-	else if (IsKeyWord("WRITELN")) RdWriteln(1, (Instr_writeln**)pinstr);
-	else if (IsKeyWord("WRITE")) RdWriteln(0, (Instr_writeln**)pinstr);
+	else if (IsKeyWord("WRITELN")) RdWriteln(WriteType::writeln, (Instr_writeln**)pinstr);
+	else if (IsKeyWord("WRITE")) RdWriteln(WriteType::write, (Instr_writeln**)pinstr);
 	else if (IsKeyWord("HEADLINE")) {
 		*pinstr = new Instr_assign(_headline); // GetPD(_headline, 4);
 		RdLex();
@@ -1143,7 +1143,7 @@ void RdProcCall(Instr** pinstr)
 	label1:
 		((Instr_help*)*pinstr)->Frml0 = RdStrFrml();
 	}
-	else if (IsKeyWord("MESSAGE")) RdWriteln(2, (Instr_writeln**)pinstr);
+	else if (IsKeyWord("MESSAGE")) RdWriteln(WriteType::message, (Instr_writeln**)pinstr);
 	else if (IsKeyWord("GOTOXY")) *pinstr = RdGotoXY();
 	else if (IsKeyWord("MERGE")) {
 		// PD = (Instr_merge_display*)GetPD(_merge, sizeof(RdbPos));
@@ -1793,7 +1793,7 @@ Instr* RdTurnCat()
 	return PD;
 }
 
-void RdWriteln(BYTE OpKind, Instr_writeln** pinstr)
+void RdWriteln(WriteType OpKind, Instr_writeln** pinstr)
 {
 	WrLnD* d = new WrLnD();
 	RdLex();
@@ -1827,7 +1827,7 @@ label1:
 	}
 	if (Lexem == ',') {
 		RdLex();
-		if ((OpKind == 2) && IsOpt("HELP")) z = RdStrFrml();
+		if ((OpKind == WriteType::message) && IsOpt("HELP")) z = RdStrFrml();
 		else {
 			//w = (WrLnD*)GetZStore(sizeof(d));
 			w = new WrLnD();
@@ -1837,12 +1837,15 @@ label1:
 		}
 	}
 	WORD N = 1 + sizeof(d);
-	if (z != nullptr) { OpKind = 3; N += 8; }
+	if (z != nullptr) { OpKind = WriteType::msgAndHelp; N += 8; }
 	auto pd = new Instr_writeln(); // GetPInstr(_writeln, N);
 	/* !!! with pd^ do!!! */
 	pd->LF = OpKind;
 	pd->WD = *d;
-	if (OpKind == 3) { pd->mHlpRdb = CRdb; pd->mHlpFrml = z; }
+	if (OpKind == WriteType::msgAndHelp) { 
+		pd->mHlpRdb = CRdb; 
+		pd->mHlpFrml = z; 
+	}
 	*pinstr = pd;
 }
 

@@ -66,7 +66,7 @@ Instr* RdPrintTxt();
 Instr* RdEditTxt();
 Instr* RdPutTxt();
 Instr* RdTurnCat();
-void RdWriteln(BYTE OpKind, Instr_writeln** pinstr);
+void RdWriteln(WriteType OpKind, Instr_writeln** pinstr);
 Instr* RdReleaseDrive();
 Instr* RdIndexfile();
 Instr* RdGetIndex();
