@@ -764,6 +764,8 @@ void createKeysFromStr(FileD* F, uintptr_t firstAddress, BYTE* str)
 
 bool RdFDSegment(WORD FromI, longint Pos)
 {
+	return false;
+
 	integer Sg = 0, SgF = 0;/*CFile-Seg*/
 	ChkD* c = nullptr;
 	LinkD* ld = nullptr; LinkD* ld1 = nullptr;
@@ -1470,24 +1472,27 @@ label1:
 
 bool EquKeys(KeyD* K1, KeyD* K2)
 {
-	auto result = false; while (K1 != nullptr) {
+	auto result = false; 
+	while (K1 != nullptr) {
 		if ((K2 == nullptr) || (K1->Duplic != K2->Duplic)) return result;
 		KeyFldD* KF1 = K1->KFlds;
 		KeyFldD* KF2 = K2->KFlds;
 		while (KF1 != nullptr) {
 			if ((KF2 == nullptr) || (KF1->CompLex != KF2->CompLex) || (KF1->Descend != KF2->Descend)
 				|| (KF1->FldD->Name != KF2->FldD->Name)) return result;
-			KF1 = (KeyFldD*)KF1->Chain; KF2 = (KeyFldD*)KF2->Chain;
+			KF1 = (KeyFldD*)KF1->Chain; 
+			KF2 = (KeyFldD*)KF2->Chain;
 		}
 		if (KF2 != nullptr) return result;
-		K1 = K1->Chain; K2 = K2->Chain;
+		K1 = K1->Chain; 
+		K2 = K2->Chain;
 	}
 	if (K2 != nullptr) return result;
 	result = true;
 	return result;
 }
 
-bool MergeOldNew(bool Veriflongint, bool Pos)
+bool MergeOldNew(bool Veriflongint, longint Pos)
 {
 	pstring Name(20);
 	LinkD* ld = LinkDRoot;
@@ -1570,9 +1575,12 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 		if (Verif || ChptTF->CompileAll || FromCtrlF10 || (Typ == 'U') ||
 			(Typ == 'F' || Typ == 'D') && CompileFD ||
 			(Typ == 'P') && ChptTF->CompileProc) {
-			OldTxt = _T(ChptOldTxt); InpRdbPos = RP;
+			OldTxt = _T(ChptOldTxt); 
+			InpRdbPos = RP;
 			if (IsTestRun) {
-				ClrScr(); screen.GotoXY(3 + lmsg, 2); printf("%*i", 4, I);
+				ClrScr(); 
+				screen.GotoXY(3 + lmsg, 2); 
+				printf("%*i", 4, I);
 				screen.GotoXY(3 + lmsg, 3);
 				printf("%*s%*s", 4, STyp.c_str(), 14, _ShortS(ChptName).c_str());
 				if (!(Typ == ' ' || Typ == 'D' || Typ == 'U')) { /* dupclicate name checking */
@@ -1585,12 +1593,15 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 			}
 			switch (Typ) {
 			case 'F': {
-				FDCompiled = true; ld = LinkDRoot; MarkStore(p1);
+				FDCompiled = true; 
+				ld = LinkDRoot; 
+				MarkStore(p1);
 				FSplit(Name, dir, nm, ext);
 				if ((Txt == 0) && IsTestRun) {
 					SetMsgPar(Name);
 					if (SEquUpcase(ext, ".DBF") && PromptYN(39)) {
-						T_(ChptOldTxt, 0); OldTxt = 0;
+						T_(ChptOldTxt, 0); 
+						OldTxt = 0;
 						MakeDbfDcl(nm);
 						Txt = _T(ChptTxt);
 						WriteRec(I);

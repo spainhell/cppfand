@@ -56,8 +56,8 @@ void Screen::ScrWrChar(WORD X, WORD Y, char C, BYTE Color)
 {
 	DWORD written = 0;
 	WORD attr = Color;
-	WriteConsoleOutputCharacterA(_handle, &C, 1, { (short)X, (short)Y }, &written);
-	WriteConsoleOutputAttribute(_handle, &attr, 1, { (short)X, (short)Y }, &written);
+	WriteConsoleOutputCharacterA(_handle, &C, 1, { (short)X - 1, (short)Y - 1 }, &written);
+	WriteConsoleOutputAttribute(_handle, &attr, 1, { (short)X - 1, (short)Y - 1 }, &written);
 }
 
 
@@ -96,6 +96,7 @@ void Screen::ScrWrText(WORD X, WORD Y, const char* S)
 	DWORD written = 0;
 	size_t len = strlen(S);
 	WriteConsoleOutputCharacterA(_handle, S, len, { (short)X - 1, (short)Y - 1 }, &written);
+	GotoXY(X + len, Y);
 }
 
 void Screen::ScrFormatWrText(WORD X, WORD Y, char const* const _Format, ...)

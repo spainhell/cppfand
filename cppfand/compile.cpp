@@ -2260,7 +2260,7 @@ FrmlPtr RdBool()
 	return result;
 }
 
-FrmlPtr RdRealFrml()
+FrmlElem* RdRealFrml()
 {
 	char FTyp = 0;
 	FrmlSumEl = nullptr;
@@ -2269,7 +2269,7 @@ FrmlPtr RdRealFrml()
 	return result;
 }
 
-FrmlPtr RdStrFrml()
+FrmlElem* RdStrFrml()
 {
 	char FTyp = 0;
 	FrmlSumEl = nullptr;

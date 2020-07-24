@@ -989,7 +989,7 @@ bool RdViewOpt(EditOpt* EO)
 {
 	FileD* FD = nullptr;
 	RprtOpt* RO = nullptr;
-	bool Flgs[23];
+	bool Flgs[23]{ false };
 	auto result = false;
 	/* !!! with EO^ do!!! */
 	RdLex(); result = true;
@@ -1967,7 +1967,7 @@ Instr* RdDisplay()
 	if ((Lexem == _identifier) && FindChpt('H', LexWord, false, &PD->Pos)) RdLex();
 	else {
 		/* !!! with PD->Pos do!!! */
-		PD->Pos.R = RdbDPtr(RdStrFrml);
+		PD->Pos.R = (RdbD*)RdStrFrml();
 		PD->Pos.IRec = 0;
 	}
 	return PD;

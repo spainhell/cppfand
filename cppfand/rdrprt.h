@@ -28,7 +28,7 @@ void CheckMFlds(KeyFldD* M1, KeyFldD* M2);
 LvDescr* MakeOldMLvD();
 void RdAutoSortSK(InpD* ID);
 LvDescr* NewLvS(LvDescr* L, InpD* ID);
-void RdBlock(BlkD* BB);
+void RdBlock(BlkD** BB);
 void RdCh(integer& LineLen);
 void StoreCh(BYTE C, integer& NBytesStored);
 integer NUnderscores(char C, integer& LineLen);

@@ -115,7 +115,9 @@ void TWindow::InitTWindow(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, std::st
 			screen.ScrWrStr(Col1() + (m - sBottom.length()) / 2, Row2() - 1, sBottom, Attr);
 		}
 	}
-	else screen.ScrClr(Orig.X, Orig.Y, Size.X, Size.Y, ' ', Attr);
+	else { 
+		screen.ScrClr(Orig.X + 1, Orig.Y + 1, Size.X, Size.Y, ' ', Attr); 
+	}
 }
 
 TWindow::~TWindow()
@@ -565,8 +567,7 @@ TMenuBar::TMenuBar(WORD C1, WORD R1, WORD Cols)
 
 void TMenuBar::InitTMenuBar(WORD C1, WORD R1, WORD Cols)
 {
-	WORD c2, r2, i, l;
-	l = 0;
+	WORD c2 = 0, r2 = 0, i = 0, l = 0;
 	for (i = 1; i <= nTxt; i++) l = l + LenStyleStr(GetText(i)) + 2;
 	if (l > TxtCols) RunError(636);
 	Cols = MaxW(l, Cols);
@@ -693,7 +694,7 @@ TMenuBarP::TMenuBarP()
 
 TMenuBarP::TMenuBarP(Instr_menu* aPD)
 {
-	WORD x1, y1, l1;
+	WORD x1 = 0, y1 = 0, l1 = 0;
 	PD = aPD;
 	HlpRdb = PD->HelpRdb;
 	CRoot = PD->Choices;

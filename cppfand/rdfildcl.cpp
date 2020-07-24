@@ -165,13 +165,15 @@ label1:
 
 void RdChkDsFromPos(FileD* FD, ChkD* C)
 {
-
 	if (FD->OrigFD != nullptr) RdChkDsFromPos(FD->OrigFD, C);
 	if (FD->ChptPos.R == nullptr) return;
 	if (FD->TxtPosUDLI == 0) return;
-	ResetCompilePars(); SetInpTTxtPos(FD); RdLex();
+	ResetCompilePars(); 
+	SetInpTTxtPos(FD); 
+	RdLex();
 	while (!(ForwChar == 'L' || ForwChar == 0x1A)) {
-		do { RdLex(); } while (!(Lexem == 0x1A || Lexem == '#'));
+		do { RdLex(); } 
+		while (!(Lexem == 0x1A || Lexem == '#'));
 	}
 	if (Lexem == 0x1A) return;
 	RdLex();
@@ -249,43 +251,62 @@ void RdByteListInStore()
 
 bool RdUserView(pstring ViewName, EditOpt* EO)
 {
-	bool found, Fin, FVA; void* p = nullptr; void* p2 = nullptr; KeyD* K; EditOpt EOD; FileD* fd;
-	found = false; fd = CFile;
-	MarkStore(p); MarkStore2(p2); Move(EO, &EOD, sizeof(EOD));
+	bool found = false, Fin = false, FVA = false;
+	void* p = nullptr; void* p2 = nullptr; 
+	KeyD* K = nullptr; EditOpt EOD; 
+	FileD* fd = CFile;
+	MarkStore(p); 
+	MarkStore2(p2); 
+	Move(EO, &EOD, sizeof(EOD));
 label1:
 	if (fd->TxtPosUDLI == 0) goto label3;
-	ResetCompilePars(); SetInpTTxtPos(fd); RdLex();
+	ResetCompilePars(); 
+	SetInpTTxtPos(fd); 
+	RdLex();
 	if ((Lexem != '#') || (ForwChar != 'U')) goto label3;
-	RdLex();/*#*/ RdLex();/*U*/
+	RdLex();/*#*/ 
+	RdLex();/*U*/
 label2:
-	ReleaseStore(p); Move(&EOD, EO, sizeof(*EO));
+	ReleaseStore(p); 
+	Move(&EOD, EO, sizeof(*EO));
 	if (EquUpcase(ViewName, LexWord)) found = true;
-	EO->ViewName = StoreStr(LexWord); RdLex(); /*'('*/
+	EO->ViewName = StoreStr(LexWord); 
+	RdLex(); /*'('*/
 	do {
 		RdLex();
 	} while (!(Lexem == ')' || Lexem == 0x1A));
-	RdLex(); RdLex();/*"):"*/
+	RdLex(); 
+	RdLex();/*"):"*/
 	K = RdViewKey();
-	if (K != nullptr) { RdLex();/*','*/ EO->ViewKey = K; }
+	if (K != nullptr) { 
+		RdLex();/*','*/ 
+		EO->ViewKey = K; 
+	}
 	RdBegViewDcl(EO);
 	while (Lexem == ',') {
-		FVA = FileVarsAllowed; FileVarsAllowed = false;
+		FVA = FileVarsAllowed; 
+		FileVarsAllowed = false;
 		if (!RdViewOpt(EO)) Error(44);
 		FileVarsAllowed = FVA;
 	}
 	if (!found && (Lexem == ';')) {
-		RdLex(); if (!(Lexem == '#' || Lexem == 0x1A)) goto label2;
+		RdLex(); 
+		if (!(Lexem == '#' || Lexem == 0x1A)) goto label2;
 	}
 label3:
 	ReleaseStore2(p2);
-	fd = fd->OrigFD; if ((fd != nullptr) && !found) goto label1;
+	fd = fd->OrigFD; 
+	if ((fd != nullptr) && !found) goto label1;
 	return found;
 }
 
 void TestUserView()
 {
-	void* p = nullptr; KeyD* K = nullptr; EditOpt* EO = nullptr;
-	StringList S; FileD* FD = nullptr;
+	void* p = nullptr;
+	KeyD* K = nullptr; 
+	EditOpt* EO = nullptr;
+	StringListEl* S = nullptr; 
+	FileD* FD = nullptr;
 	RdLex();
 label1:
 	TestIdentif();
@@ -304,8 +325,8 @@ label1:
 	RdByteListInStore();
 	Accept(':');
 	MarkStore(p);
-	EO = GetEditOpt();
-	K = RdViewKey();
+	EO = GetEditOpt(); // vytvori objekt EditOpt
+	K = RdViewKey(); // nacteni klice, podle ktereho budou polozky setrideny
 	if (K != nullptr) {
 		Accept(',');
 		EO->ViewKey = K;
@@ -324,7 +345,8 @@ void TestDupl(FileD* FD)
 	StringList S;
 	S = FD->ViewNames;
 	while (S != nullptr) {
-		if (EquUpcase(S->S, LexWord)) Error(26); S = (StringList)S->Chain;
+		if (EquUpcase(S->S, LexWord)) Error(26); 
+		S = (StringList)S->Chain;
 	}
 }
 
@@ -504,9 +526,14 @@ label2:
 		MarkStore(p);
 		goto label1;
 	}
-	if (Lexem != 0x1A) CFile->TxtPosUDLI = OrigInp()->CurrPos - 1;
+	if (Lexem != 0x1A) { 
+		CFile->TxtPosUDLI = /*OrigInp()->*/CurrPos - 1; 
+	}
 	if ((Lexem == '#') && (ForwChar == 'U'))
 	{
+		// nacteni uzivatelskych pohledu
+		// nazev musi byt jedinecny v ramci cele ulohy
+		// format: #U NazevPohledu (SeznamPristupovychPrav): DruhEditace;
 		RdLex();
 		TestUserView();
 	}

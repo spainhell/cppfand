@@ -384,30 +384,30 @@ label3:
 		Rd_Oi(); 
 		RdLex(); 
 		WhatToRd = 'i';
-		RdBlock(IDA[Oi]->FrstLvS->Ft); 
+		RdBlock(&IDA[Oi]->FrstLvS->Ft); 
 		goto label4;
 	}
 	if (s == "RH") {
 		RdLex(); 
-		RdBlock(RprtHd); 
+		RdBlock(&RprtHd); 
 		goto label4;
 	}
 	if (s == "PH") {
 		RdLex(); 
-		RdBlock(PageHd); 
+		RdBlock(&PageHd); 
 		goto label4;
 	}
 	if (s == "DH") {
 		Rd_Oi(); 
 		RdLex(); 
 		WhatToRd = 'i'; 
-		RdBlock(IDA[Oi]->FrstLvS->Hd); 
+		RdBlock(&IDA[Oi]->FrstLvS->Hd); 
 		goto label4;
 	}
 	if (s == "CH") {
 		Rd_Oi(); 
 		L = RdKeyName(); 
-		RdBlock(L->Hd); 
+		RdBlock(&L->Hd); 
 		goto label4;
 	}
 	ChainSumEl = ChainSumElR;
@@ -415,28 +415,28 @@ label3:
 		RdLex(); 
 		LvToRd = LstLvM; 
 		CZeroLst = LvToRd->ZeroLst;
-		RdBlock(LvToRd->Ft); 
+		RdBlock(&LvToRd->Ft); 
 		goto label4;
 	}
 	if (s == "CF") {
 		Rd_Oi(); 
 		LvToRd = RdKeyName(); 
 		CZeroLst = LvToRd->ZeroLst;
-		RdBlock(LvToRd->Ft); 
+		RdBlock(&LvToRd->Ft); 
 		goto label4;
 	}
 	if (s == "PF") {
 		RdLex(); 
 		LvToRd = LstLvM; 
 		CZeroLst = PFZeroLst;
-		RdBlock(PageFt); 
+		RdBlock(&PageFt); 
 		goto label4;
 	}
 	Error(57);
 label4:
 	if (Lexem != 0x1A) { TestLex('#'); goto label3; }
 
-	for (i = 1; i < MaxIi; i++) {
+	for (i = 1; i <= MaxIi; i++) {
 		ID = IDA[i];
 		if (ID->ErrTxtFrml != nullptr) RdChkDsFromPos(ID->Scan->FD, ID->Chk);
 	}
@@ -570,7 +570,7 @@ LvDescr* NewLvS(LvDescr* L, InpD* ID)
 	return L1;
 }
 
-void RdBlock(BlkD* BB)
+void RdBlock(BlkD** BB)
 {
 	integer LineLen = 0;
 	integer NBytesStored = 0;
@@ -585,8 +585,8 @@ void RdBlock(BlkD* BB)
 	LocVar* LV = nullptr;
 	//CBlk = (BlkD*)GetZStore(sizeof(BlkD)); 
 	CBlk = new BlkD();
-	if (BB == nullptr) BB = CBlk;
-	else ChainLast(BB, CBlk);
+	if (*BB == nullptr) *BB = CBlk;
+	else ChainLast(*BB, CBlk);
 	RdCond();
 	if (IsKeyWord("BEGIN")) { RdBeginEnd(CBlk->BeforeProc); goto label1; }
 	if (Lexem == ';') goto label2;     /*read var decl.*/
@@ -780,7 +780,7 @@ void TestSetRFTyp(char Typ, bool RepeatedGrp, RFldD* RF)
 void TestSetBlankOrWrap(bool RepeatedGrp, char UC, RFldD* RF)
 {
 	if (RF->Typ == 'R' || RF->Typ == 'F' || RF->Typ == 'S')
-		if (!RepeatedGrp) RF->BlankOrWrap = (UC = '@');
+		if (!RepeatedGrp) RF->BlankOrWrap = (UC == '@');
 		else { if (RF->BlankOrWrap && (UC == '_')) Error(73); }
 	else if (UC == '@') Error(80);
 }

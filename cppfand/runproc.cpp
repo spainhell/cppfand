@@ -267,13 +267,13 @@ label2:
 	}
 }
 
-void DisplayProc(RdbDPtr R, WORD IRec)
+void DisplayProc(RdbD* R, WORD IRec)
 {
 	LongStr* S = nullptr; void* p = nullptr; WORD i;
 	std::string str;
 	MarkStore(p);
 	if (IRec == 0) {
-		S = GetHlpText(CRdb, RunShortStr(FrmlPtr(R)), true, i);
+		S = GetHlpText(CRdb, RunShortStr((FrmlElem*)R), true, i);
 		if (S == nullptr) goto label1;
 	}
 	else {

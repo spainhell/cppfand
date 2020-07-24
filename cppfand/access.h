@@ -246,7 +246,7 @@ public:
 	WORD FrstDispl = 0;
 	TFile* TF = nullptr;
 	RdbPos ChptPos;     // zero for Rdb and FD translated from string 
-	WORD TxtPosUDLI = 0;    // =0 if not present
+	WORD TxtPosUDLI = 0;    // =0 if not present; urcuje zacatek odstavcu #U #D #L #I
 	FileD* OrigFD = nullptr;    // like orig. or nil
 	BYTE Drive = 0;         // 1=A, 2=B, else 0
 	WORD CatIRec = 0;
@@ -255,7 +255,7 @@ public:
 	bool typSQLFile = false, IsSQLFile = false, IsDynFile = false;
 	FileUseMode UMode = FileUseMode::Closed;
 	LockMode LMode = NullMode, ExLMode = NullMode, TaLMode = NullMode;
-	StringList ViewNames = nullptr;  //after each string BYTE string with user codes 
+	StringListEl* ViewNames = nullptr;  //after each string BYTE string with user codes 
 	XFile* XF = nullptr;
 	KeyD* Keys = nullptr;
 	AddD* Add = nullptr;

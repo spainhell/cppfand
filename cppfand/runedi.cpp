@@ -1690,13 +1690,12 @@ bool TestAccRight(StringList S)
 
 bool ForNavigate(FileDPtr FD)
 {
-	StringList S;
 	auto result = true;
 	if (UserCode == 0) return result;
-	S = FD->ViewNames;
+	StringListEl* S = FD->ViewNames;
 	while (S != nullptr) {
 		if (TestAccRight(S)) return result;
-		S = (StringList)S->Chain;
+		S = (StringListEl*)S->Chain;
 	}
 	result = false;
 	return result;
@@ -1744,17 +1743,24 @@ bool EquRoleName(pstring S, LinkD* LD)
 
 bool EquFileViewName(FileD* FD, pstring S, EditOpt* EO)
 {
-	StringList SL; FileDPtr cf;
+	StringListEl* SL; FileD* cf;
 	auto result = true; cf = CFile; CFile = FD;
 	if (S[1] == 0x01) { // ^A
-		S = copy(S, 2, 255); SL = CFile->ViewNames;
+		S = copy(S, 2, 255);
+		SL = CFile->ViewNames;
 		while (SL != nullptr) {
-			if (SL->S == S) { EO = GetEditOpt(); RdUserView(S, EO); goto label1; }
+			if (SL->S == S) { 
+				EO = GetEditOpt(); 
+				RdUserView(S, EO); 
+				goto label1; 
+			}
 			SL = (StringList)SL->Chain;
 		}
 	}
 	else if (S == CFile->Name) {
-		EO = GetEditOpt(); EO->Flds = AllFldsList(CFile, false); return result;
+		EO = GetEditOpt(); 
+		EO->Flds = AllFldsList(CFile, false); 
+		return result;
 	}
 	result = false;
 label1:
