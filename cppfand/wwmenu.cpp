@@ -194,12 +194,15 @@ bool TMenu::FindChar()
 	WORD i, j, k; char c2;
 	bool result = false; i = iTxt;
 	for (j = 1; j <= nTxt; j++) if (Enabled(j)) {
-		s = GetText(j); if (s.length() > 0) {
+		s = GetText(j); 
+		if (s.length() > 0) {
 			k = s.first(0x17 /* CTRL+W */);
 			if (k != 0) c2 = s[k + 1];
 			else c2 = s[1];
-			if (toupper(NoDiakr(c2)) == toupper(NoDiakr(char(KbdChar)))) {
-				iTxt = j; WrText(i); return true;
+			if (toupper(NoDiakr(c2)) == toupper(NoDiakr((char)KbdChar))) {
+				iTxt = j; 
+				WrText(i);
+				return true;
 			}
 		}
 	}
@@ -224,21 +227,21 @@ label1:
 		else if (ParentsContain(&Event.Where)) { KbdChar = _ESC_; return; }}
 	case evKeyDown: {
 		switch (Event.KeyCode) {
-		case _Home_:
-		case _PgUp_: {
+		case VK_HOME:
+		case VK_PRIOR: {
 			iTxt = 0;
 			Next();
 			WrText(i);
 			break;
 		}
-		case _End_:
-		case _PgDn_: {
+		case VK_END:
+		case VK_NEXT: {
 			iTxt = nTxt + 1;
 			Prev();
 			WrText(i);
 			break;
 		}
-		case  _F1_: {
+		case  VK_F1: {
 		label2:
 			ClrEvent();
 			if (HlpRdb != nullptr) Help(HlpRdb, hlp, false);
@@ -567,6 +570,7 @@ TMenuBar::TMenuBar(WORD C1, WORD R1, WORD Cols)
 
 void TMenuBar::InitTMenuBar(WORD C1, WORD R1, WORD Cols)
 {
+	InitTMenu();
 	WORD c2 = 0, r2 = 0, i = 0, l = 0;
 	for (i = 1; i <= nTxt; i++) l = l + LenStyleStr(GetText(i)) + 2;
 	if (l > TxtCols) RunError(636);
@@ -596,26 +600,36 @@ label1:
 	i = iTxt;
 	bool enter = false;
 	switch (KbdChar) {
-	case _M_: { enter = true; goto label2; break; }
-	case _ESC_: { i = 0; goto label4; break; }
-	case _down_: goto label3; break;
-	case _left_: { Prev(); WrText(i); if (down) goto label2; break; }
-	case _right_: { Next(); WrText(i); if (down) goto label2; break; }
+	case VK_RETURN: { enter = true; goto label2; break; }
+	case VK_ESCAPE: { i = 0; goto label4; break; }
+	case VK_DOWN: goto label3; break;
+	case VK_LEFT: { Prev(); WrText(i); if (down) goto label2; break; }
+	case VK_RIGHT: { Next(); WrText(i); if (down) goto label2; break; }
 	default: {
 		if (!FindChar()) goto label1;
 		enter = true;
 	label2:
 		WrText(iTxt);
 	label3:
-		GetItemRect(iTxt, &r); MenuX = r.A.X + 1; MenuY = r.A.Y + 2;
-		if (GetDownMenu(w)) {
+		GetItemRect(iTxt, &r); 
+		MenuX = r.A.X; MenuY = r.A.Y + 1;
+		if (GetDownMenu(&w)) {
 			i = w->Exec(DownI[iTxt]);
 			delete w;
-			ReleaseStore(w);
+			//ReleaseStore(w);
 			DownI[iTxt] = Lo(i);
-			enter = false; down = true;
-			if (Hi(i) == 1) { i = iTxt; Prev(); WrText(i); goto label2; }
-			if (Hi(i) == 2) { i = iTxt; Next(); WrText(i); goto label2; }
+			enter = false; 
+			down = true;
+			if (Hi(i) == 1) { 
+				i = iTxt; 
+				Prev(); WrText(i); 
+				goto label2; 
+			}
+			if (Hi(i) == 2) { 
+				i = iTxt; 
+				Next(); WrText(i); 
+				goto label2;
+			}
 			down = false;
 			if (i == 0) goto label1;
 			return (iTxt << 8) + i;
@@ -624,7 +638,7 @@ label1:
 			i = iTxt;
 		label4:
 			ClearHlp();
-			if (ExecItem(i)) {
+			if (!ExecItem(i)) {
 				return i << 8;
 			}
 		}
@@ -633,7 +647,7 @@ label1:
 	goto label1;
 }
 
-bool TMenuBar::GetDownMenu(TMenuBox* W)
+bool TMenuBar::GetDownMenu(TMenuBox** W)
 {
 	return false;
 }
@@ -664,7 +678,7 @@ TMenuBarS::TMenuBarS(WORD MsgNr)
 	InitTMenuBar(1, 1, TxtCols);
 }
 
-bool TMenuBarS::GetDownMenu(TMenuBox* W)
+bool TMenuBarS::GetDownMenu(TMenuBox** W)
 {
 	pstring TNr(10); WORD n, err; TMenuBoxS* p;
 	auto result = false;
@@ -674,7 +688,8 @@ bool TMenuBarS::GetDownMenu(TMenuBox* W)
 	RdMsg(n);
 	//New(p, Init(MenuX, MenuY, (pstring*)&MsgLine));
 	p = new TMenuBoxS(MenuX, MenuY, MsgLine);
-	p->parent = this; W = p;
+	p->parent = this; 
+	*W = p;
 	result = true;
 	return result;
 }
@@ -734,7 +749,7 @@ bool TMenuBarP::ExecItem(WORD& I)
 	return result;
 }
 
-bool TMenuBarP::GetDownMenu(TMenuBox* W)
+bool TMenuBarP::GetDownMenu(TMenuBox** W)
 {
 	// Instr_menu* PD1; TMenuBoxP* p;
 	auto result = false;
@@ -743,7 +758,7 @@ bool TMenuBarP::GetDownMenu(TMenuBox* W)
 		|| (PD1->Kind != _menubox) || !PD1->PullDown) return result;
 	//New(p, Init(MenuX, MenuY, this, PD1));
 	auto p = new TMenuBoxP(MenuX, MenuY, this, PD1);
-	W = p;
+	*W = p;
 	result = true;
 	return result;
 }
@@ -758,7 +773,8 @@ std::string TMenuBarP::GetHlpName()
 
 std::string TMenuBarP::GetText(integer I)
 {
-	return CI(CRoot, I)->Txt;
+	auto tmp = CI(CRoot, I);
+	return tmp->Txt;
 }
 
 WORD Menu(WORD MsgNr, WORD IStart)
@@ -940,6 +956,12 @@ label1:
 	screen.ScrClr(MsgLine.length() + 1, y + 1, TxtCols - MsgLine.length(), 1, ' ', screen.colors.nNorm);
 	CFile = cf;
 	ReleaseStore(p);
+}
+
+void TMenu::InitTMenu()
+{
+	mx = MenuX; 
+	my = MenuY;
 }
 
 TMenu::~TMenu()

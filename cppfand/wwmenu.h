@@ -48,6 +48,7 @@ class TMenu : public TWindow
 {
 public:
 	//TMenu();
+	void InitTMenu();
 	virtual ~TMenu();
 	TMenu* parent;
 	WORD iTxt, nTxt, mx, my;
@@ -118,7 +119,7 @@ public:
 	WORD nBlks;
 	BYTE DownI[30];
 	WORD Exec();
-	virtual bool GetDownMenu(TMenuBox* W);
+	virtual bool GetDownMenu(TMenuBox** W);
 	void GetItemRect(WORD I, TRect* R) override;
 };
 
@@ -128,7 +129,7 @@ public:
 	TMenuBarS();
 	TMenuBarS(WORD MsgNr);
 	pstring* MsgTxt;
-	bool GetDownMenu(TMenuBox* W) override;
+	bool GetDownMenu(TMenuBox** W) override;
 	std::string GetHlpName() override;
 	std::string GetText(integer I) override;
 };
@@ -142,7 +143,7 @@ public:
 	ChoiceD* CRoot;
 	bool Enabled(WORD I) override;
 	bool ExecItem(WORD& I) override;
-	bool GetDownMenu(TMenuBox* W) override;
+	bool GetDownMenu(TMenuBox** W) override;
 	std::string GetHlpName() override;
 	std::string GetText(integer I) override;
 };
