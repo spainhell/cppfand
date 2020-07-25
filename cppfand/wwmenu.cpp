@@ -448,8 +448,8 @@ label1:
 
 void TMenuBox::GetItemRect(WORD I, TRect* R)
 {
-	R->A.X = Orig.X + 2;
-	R->A.Y = Orig.Y + I;
+	R->A.X = Orig.X + 2 + 1;
+	R->A.Y = Orig.Y + I + 1;
 	R->Size.X = Size.X - 4;
 	R->Size.Y = 1;
 }
@@ -583,12 +583,14 @@ void TMenuBar::InitTMenuBar(WORD C1, WORD R1, WORD Cols)
 
 WORD TMenuBar::Exec()
 {
-	WORD i;
+	WORD i = 0;
 	TMenuBox* w = nullptr;
 	TRect r;
 	if (nTxt == 0) { return 0; }
-	bool down = false; iTxt = 1; Prev(); Next();  /*get valid iTxt*/
-	for (i = 1; i < nTxt; i++) WrText(i);
+	bool down = false; iTxt = 1; 
+	Prev(); 
+	Next();  /*get valid iTxt*/
+	for (i = 1; i <= nTxt; i++) WrText(i);
 label1:
 	HandleEvent();
 	i = iTxt;
@@ -638,11 +640,12 @@ bool TMenuBar::GetDownMenu(TMenuBox* W)
 
 void TMenuBar::GetItemRect(WORD I, TRect* R)
 {
-	WORD j, x;
-	x = Orig.X + nBlks;
-	for (j = 1; j < I - 1; j++) x += LenStyleStr(GetText(j)) + 2 + nBlks;
-	R->A.X = x;
-	R->A.Y = Orig.Y;
+	short x = Orig.X + nBlks;
+	for (short j = 1; j <= I - 1; j++) {
+		x += LenStyleStr(GetText(j)) + 2 + nBlks;
+	}
+	R->A.X = x + 1;
+	R->A.Y = Orig.Y + 1;
 	R->Size.X = LenStyleStr(GetText(I)) + 2;
 	R->Size.Y = 1;
 }
