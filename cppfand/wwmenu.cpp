@@ -949,14 +949,14 @@ void DisplLLHelp(RdbD* R, std::string Name, bool R24)
 		s = GetHlpText(R, Name, true, iRec);
 		if (s != nullptr) {
 			s = CopyLine(s, 1, 1);
-			MsgLine[0] = char(MinW(s->LL, MsgLine.initLength() - 1));
+			MsgLine[0] = (char)min(s->LL, MsgLine.initLength() - 1);
 			Move(s->A, &MsgLine[1], MsgLine[0]);
 			if (MsgLine[1] == '{') {
 				MsgLine = copy(MsgLine, 2, 255);
 				i = MsgLine.first('}');
 				if (i > 0) MsgLine.Delete(i, 255);
 			}
-			MsgLine[0] = char(MinW(TxtCols, MsgLine[0]));
+			MsgLine[0] = (char)min(TxtCols, MsgLine[0]);
 			goto label1;
 		};
 	}

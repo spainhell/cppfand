@@ -155,7 +155,8 @@ longint PushWrLLMsg(WORD N, bool WithESC)
 
 void WrLLMsg(WORD N)
 {
-	RdMsg(N); WrLLMsgTxt();
+	RdMsg(N); 
+	WrLLMsgTxt();
 }
 
 void WrLLMsgTxt()

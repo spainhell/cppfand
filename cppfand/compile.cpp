@@ -433,7 +433,7 @@ void RdLex()
 		break;
 	default: break;
 	}
-	//if (LexWord == "DenTxt")
+	//if (LexWord == "Spotreba1")
 	//{
 	//	printf("RdLex() r. 437 - %s\n", LexWord.c_str());
 	//}

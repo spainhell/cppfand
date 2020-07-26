@@ -649,8 +649,7 @@ bool ELockRec(EditD* E, longint N, bool IsNewRec, bool Subset)
 
 WORD RecAttr(WORD I)
 {
-	bool b;
-	b = (I != IRec) || !IsNewRec;
+	bool b = (I != IRec) || !IsNewRec;
 	if (!IsNewRec && DeletedFlag()) return E->dDel;
 	else if (b && Select && RunBool(E->Bool)) return E->dSubSet;
 	else if (b && IsSelectedRec(I)) return E->dSelect;
@@ -673,7 +672,8 @@ void DisplEmptyFld(EFldD* D, WORD I)
 	screen.GotoXY(D->Col, FldRow(D, I));
 	if (D->FldD->Flg && f_Stored != 0) c = '.';
 	else c = ' ';
-	for (j = 1; j < D->L; j++) printf("%c", c);
+	//for (j = 1; j <= D->L; j++) printf("%c", c);
+	printf("%s", std::string(D->L, '.').c_str());
 	if (HasTTWw(D->FldD)) printf("%*c", D->FldD->L - 1, ' ');
 }
 
@@ -703,7 +703,7 @@ void DisplFld(EFldD* D, WORD I)
 {
 	pstring Txt;
 	WORD r = FldRow(D, I);
-	screen.GotoXY(D->Col - 1, r - 1);
+	screen.GotoXY(D->Col, r);
 	auto F = D->FldD;
 	DecodeField(F, D->L, Txt);
 	for (WORD j = 1; j <= Txt.length(); j++)
@@ -972,11 +972,15 @@ void DisplSysLine()
 void DisplBool()
 {
 	pstring s;
-	if (!WithBoolDispl) return; screen.GotoXY(1, 2); TextAttr = E->dSubSet; ClrEol();
+	if (!WithBoolDispl) return; 
+	screen.GotoXY(1, 2); 
+	TextAttr = E->dSubSet; 
+	ClrEol();
 	if (Select) {
 		s = *E->BoolTxt;
-		if (s.length() > TxtCols) s[0] = char(TxtCols);
-		screen.GotoXY((TxtCols - s.length()) / 2 + 1, 2); printf("%s", s.c_str());
+		if (s.length() > TxtCols) s[0] = (char)TxtCols;
+		screen.GotoXY((TxtCols - s.length()) / 2 + 1, 2); 
+		printf("%s", s.c_str());
 	}
 }
 
@@ -1036,9 +1040,8 @@ void SetNewCRec(longint N, bool withRead)
 
 void WriteSL(StringList SL)
 {
-	WORD Row;
 	while (SL != nullptr) {
-		Row = screen.WhereY();
+		WORD Row = screen.WhereY();
 		// WrStyleStr(SL->S, E->Attr);
 		screen.WriteStyledStringToWindow(SL->S, E->dNorm);
 		screen.GotoXY(E->FrstCol, Row + 1);
@@ -1048,9 +1051,10 @@ void WriteSL(StringList SL)
 
 void DisplRecTxt()
 {
-	WORD i;
 	screen.GotoXY(E->FrstCol, E->FrstRow + E->NHdTxt);
-	for (i = 1; i <= E->NRecs; i++) WriteSL(RT->SL);
+	for (WORD i = 1; i <= E->NRecs; i++) { 
+		WriteSL(RT->SL); 
+	}
 }
 
 void DisplEditWw()
@@ -3249,7 +3253,10 @@ void DisplLL()
 		else n = 128;
 	else if (IsNewRec) n = 123;
 	else n = 124;
-	if (!F1Mode || Mode24) { WrLLMsg(n); DisplLASwitches(); }
+	if (!F1Mode || Mode24) { 
+		WrLLMsg(n); 
+		DisplLASwitches(); 
+	}
 }
 
 void DisplCtrlAltLL(WORD Flags)
@@ -3280,7 +3287,7 @@ void DisplCtrlAltLL(WORD Flags)
 void DisplLLHlp()
 {
 	if (CRdb->HelpFD != nullptr) {
-		DisplLLHelp(CFile->ChptPos.R, CFile->Name + '.' + CFld->FldD->Name, Mode24);
+		DisplLLHelp(CFile->ChptPos.R, CFile->Name + "." + CFld->FldD->Name, Mode24);
 	}
 }
 
@@ -3360,20 +3367,28 @@ label1:
 
 void ToggleSelectRec()
 {
-	XString x; WKeyDPtr k; longint n; LockMode md;
-	k = E->SelKey; n = AbsRecNr(CRec());
-	if (k->RecNrToPath(x, n)) { k->NR--; k->DeleteOnPath(); }
-	else { k->NR++; k->Insert(n, false); }
-	SetRecAttr(IRec); IVon();
+	XString x; LockMode md;
+	XWKey* k = E->SelKey;
+	longint n = AbsRecNr(CRec());
+	if (k->RecNrToPath(x, n)) { 
+		k->NR--;
+		k->DeleteOnPath(); 
+	}
+	else { 
+		k->NR++; 
+		k->Insert(n, false); 
+	}
+	SetRecAttr(IRec); 
+	IVon();
 }
 
 void ToggleSelectAll()
 {
-	WKeyDPtr k;
-	k = E->SelKey;
+	XWKey* k = E->SelKey;
 	if (k == nullptr) return;
 	if (k->NR > 0) k->Release();
-	else if (Subset) CopyIndex(k, WK); else CopyIndex(k, VK);
+	else if (Subset) CopyIndex(k, WK); 
+	else CopyIndex(k, VK);
 	DisplAllWwRecs();
 }
 
@@ -3382,7 +3397,8 @@ void GoStartFld(EFldD* SFld)
 	while ((CFld != SFld) && (CFld->Chain != nullptr)) {
 		if (IsFirstEmptyFld()) {
 			if ((CFld->Impl != nullptr) && LockRec(true)) AssignFld(CFld->FldD, CFld->Impl);
-			FirstEmptyFld = (EFldD*)FirstEmptyFld->Chain; DisplFld(CFld, IRec);
+			FirstEmptyFld = (EFldD*)FirstEmptyFld->Chain; 
+			DisplFld(CFld, IRec);
 		}
 		GotoRecFld(CRec(), (EFldD*)CFld->Chain);
 	}
@@ -3427,8 +3443,8 @@ label81:
 	}
 	switch (Event.What) {
 	case evMouseDown: {
-		if (F1Mode && (CRdb->HelpFD != nullptr) && (Mode24 && (Event.Where.Y == TxtRows - 2) ||
-			!Mode24 && (Event.Where.Y == TxtRows - 1))) {
+		if (F1Mode && (CRdb->HelpFD != nullptr) 
+			&& (Mode24 && (Event.Where.Y == TxtRows - 2) || !Mode24 && (Event.Where.Y == TxtRows - 1))) {
 			ClrEvent();
 			FieldHelp();
 		}

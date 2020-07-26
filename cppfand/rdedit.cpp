@@ -20,16 +20,13 @@ void PushEdit()
 	E = E1;
 }
 
-StringListEl* SToSL(Chained* SLRoot, pstring s)
+void SToSL(StringListEl** SLRoot, pstring s)
 {
 	//StringList SL = (StringListEl*)GetStore(s.length() + 5);
 	StringListEl* SL = new StringListEl();
 	SL->S = s;
-	if (SLRoot == nullptr) return SL;
-	else {
-		ChainLast((Chained*)SLRoot, SL);
-		return (StringListEl*)SLRoot;
-	}
+	if (*SLRoot == nullptr) *SLRoot = SL;
+	else ChainLast(*SLRoot, SL);
 }
 
 void StoreRT(WORD Ln, StringList SL, WORD NFlds)
@@ -67,7 +64,7 @@ label1:
 	}
 	ReadChar();
 	if (ForwChar == 0x0A) ReadChar();
-	SToSL(E->HdTxt, s);
+	SToSL(&E->HdTxt, s);
 	E->NHdTxt++;
 	if (E->NHdTxt + 1 > E->Rows) Error(102);
 	goto label1;
@@ -141,7 +138,7 @@ label5:
 			s.Append(ForwChar);
 			ReadChar();
 		}
-	SToSL(SLRoot, s);
+	SToSL(&SLRoot, s);
 	c = ForwChar;
 	if (c == '\\') ReadChar();
 	SkipBlank(true);
@@ -214,8 +211,8 @@ void AutoDesign(FieldList FL)
 		L = F->Name.length();
 		if (FldLen > L) L = FldLen;
 		if (Col + L > E->LastCol) {
-			SToSL(SLRoot, s);
-			SToSL(SLRoot, "");
+			SToSL(&SLRoot, s);
+			SToSL(&SLRoot, "");
 			Ln += 2;
 			if (Ln + 2 > E->Rows) {
 				StoreRT(Ln, SLRoot, 1);
@@ -235,8 +232,8 @@ void AutoDesign(FieldList FL)
 		D->Page = NPages;
 		Col += (L + 1);
 	}
-	SLRoot = SToSL(SLRoot, s);
-	SLRoot = SToSL(SLRoot, "");
+	SToSL(&SLRoot, s);
+	SToSL(&SLRoot, "");
 	Ln += 2;
 	StoreRT(Ln, SLRoot, 1);
 	D->Chain = nullptr;
@@ -263,7 +260,7 @@ void AutoDesign(FieldList FL)
 		else if (er.N < E->Rows) {
 			s = "";
 			for (i = E->FrstCol; i <= E->LastCol; i++) s.Append('-');
-			SToSL(er.SL, s);
+			SToSL(&er.SL, s);
 			er.N++;
 		}
 	}

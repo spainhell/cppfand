@@ -63,6 +63,8 @@ void Screen::ScrWrChar(WORD X, WORD Y, char C, BYTE Color)
 
 void Screen::ScrWrStr(WORD X, WORD Y, std::string S, BYTE Color)
 {
+	// TODO: doresit zobrazeni znaku jako '\r' nebo '\n'
+
 	short len = S.length();
 	CHAR_INFO* _buf = new CHAR_INFO[len];
 	COORD BufferSize = { len, 1 };
@@ -84,8 +86,8 @@ void Screen::ScrWrFrameLn(WORD X, WORD Y, BYTE Typ, BYTE Width, BYTE Color)
 	pstring txt;
 	txt[0] = Width;
 	txt[1] = FrameChars[Typ];
-	txt[Width] = FrameChars[Typ + 2];
 	for (int i = 2; i <= Width - 1; i++) { txt[i] = FrameChars[Typ + 1]; }
+	txt[Width] = FrameChars[Typ + 2];
 	ScrWrStr(X, Y, txt, Color);
 }
 
@@ -216,6 +218,10 @@ void Screen::WriteStyledStringToWindow(std::string text, BYTE Attr)
 
 	// buffer bude mit delku jednoho radku okna
 	CHAR_INFO* _buf = new CHAR_INFO[cols];
+
+	// prevezmeme aktualni pozici kurzoru:
+	actualWindowCol = WhereX();
+	actualWindowRow = WhereY();
 
 	// pocet radku je mensi hodnota z poctu textu nebo radku okna
 	short rowsToPrint = min(rows, vStr.size());

@@ -256,6 +256,7 @@ struct EditD : Chained
 	WORD SaveAfter = 0, WatchDelay = 0, RefreshDelay = 0;
 	BYTE RecNrPos = 0, RecNrLen = 0;
 	BYTE NPages = 0;
+	//std::vector<std::string> RecTxt;
 	ERecTxtD* RecTxt = nullptr;
 	BYTE NRecs = 0;     /*display*/
 	EFldD* FirstFld = nullptr;
