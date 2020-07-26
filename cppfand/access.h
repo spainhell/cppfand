@@ -395,14 +395,12 @@ private:
 class XItem // r274
 {
 public:
-	// konstruktor pro "pretypovani" z XPage
-	XItem(BYTE Nr0, BYTE Nr1, BYTE Nr2, longint downpage, BYTE* data);
-	BYTE Nr[3]; // NN  RecNr /on leaf/ or NumberofRecordsBelow
-	longint DownPage; // not on leaf
+	XItem(BYTE* data); 
+	BYTE* Nr; // NN  RecNr /on leaf/ or NumberofRecordsBelow
+	longint* DownPage; // not on leaf
 	// M byte  number of equal bytes /not stored bytes/ 
 	// Index string  /L=length, A area ptr/
-	// p->A z XPage se prevadi na XItem, po 7B zacinaji data, aby k nim byl pristup, je tady ukazatel:
-	BYTE* XPageData = nullptr;
+	BYTE* XPageData;
 	longint GetN(); // index.pas r129 ASM
 	void PutN(longint N); // index.pas r132 ASM
 	WORD GetM(WORD O); // index.pas r136 ASM
@@ -435,6 +433,8 @@ public:
 	void AddPage(XPage* P);
 	void SplitPage(XPage* P, longint ThisPage);
 	void Clean();
+private:
+	XItem* _xItem = nullptr;
 };
 typedef XPage* XPagePtr;
 

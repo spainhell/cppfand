@@ -1,6 +1,5 @@
 #include "access.h"
 
-
 #include "../pascal/random.h"
 #include "../pascal/real48.h"
 #include "../pascal/asm.h"
@@ -1506,14 +1505,21 @@ bool LinkUpw(LinkDPtr LD, longint& N, bool WithT)
 	}
 #endif
 	md = NewLMode(RdMode);
-	if (ToFD->Typ == 'X') { TestXFExist(); LU = K->SearchIntvl(*x, false, N); }
+	if (ToFD->Typ == 'X') { 
+		TestXFExist(); 
+		LU = K->SearchIntvl(*x, false, N); 
+	}
 	else if (CFile->NRecs = 0) { LU = false; N = 1; }
 	else LU = SearchKey(*x, K, N);
 	if (LU) ReadRec(N);
 	else {
 	label1:
-		ZeroAllFlds; KF = K->KFlds; while (Arg != nullptr) {
-			F = Arg->FldD; F2 = KF->FldD; CFile = CF; CRecPtr = CP;
+		ZeroAllFlds(); 
+		KF = K->KFlds; 
+		while (Arg != nullptr) {
+			F = Arg->FldD; 
+			F2 = KF->FldD; 
+			CFile = CF; CRecPtr = CP;
 			if (F2->Flg && f_Stored != 0)
 				switch (F->FrmlTyp) {
 				case 'S': { s = _ShortS(F); CFile = ToFD; CRecPtr = RecPtr; S_(F2, s); break; }
@@ -2278,7 +2284,10 @@ void XString::StoreKF(KeyFldD* KF)
 void XString::PackKF(KeyFldD* KF)
 {
 	Clear();
-	while (KF != nullptr) { StoreKF(KF); KF = (KeyFldD*)KF->Chain; }
+	while (KF != nullptr) { 
+		StoreKF(KF); 
+		KF = (KeyFldD*)KF->Chain; 
+	}
 }
 
 bool XString::PackFrml(FrmlList FL, KeyFldD* KF)
@@ -2326,18 +2335,16 @@ void XString::StoreA(void* A, WORD Len, bool CompLex, bool Descend)
 	memcpy(&S[1], p, Len);
 }
 
-XItem::XItem(BYTE Nr0, BYTE Nr1, BYTE Nr2, longint downpage, BYTE* data)
+XItem::XItem(BYTE* data)
 {
-	Nr[0] = Nr0; Nr[1] = Nr1; Nr[2] = Nr2; DownPage = downpage;
-	XPageData = data;
+	Nr = data;
+	DownPage = (longint*)data;
+	XPageData = &data[4];
 }
 
 longint XItem::GetN()
 {
-	// asm les bx,Self; mov ax,es:[bx]; mov dl,es:[bx+2]; xor dh,dh end;
-	WORD AX = Nr[0] + (Nr[1] * 256);
-	WORD DX = Nr[2];
-	return 0;
+	return *DownPage & 0xffffff;
 }
 
 void XItem::PutN(longint N)
@@ -2393,20 +2400,20 @@ WORD XPage::Off()
 
 XItem* XPage::XI(WORD I)
 {
-	XItem* x = (XItem*)A; 
+	_xItem = new XItem(A);
 	WORD o = Off();
 	while (I > 1) { 
-		x = x->Next(o); 
+		_xItem = _xItem->Next(o); 
 		I--; 
 	}
-	return x;
+	return _xItem;
 }
 
 uintptr_t XPage::EndOff()
 {
-	XItemPtr x = nullptr;
+	XItem* x = XI(NItems + 1);
 	WORD* xofs = (WORD*)x; // absolute x
-	x = XI(NItems + 1); return uintptr_t(xofs);
+	return (uintptr_t)xofs;
 }
 
 bool XPage::Underflow()
@@ -2488,7 +2495,7 @@ void XPage::InsDownIndex(WORD I, longint Page, XPage* P)
 	s = P->StrI(P->NItems);
 	Insert(I, &s, x);
 	x->PutN(P->SumN());
-	x->DownPage = Page;
+	*(x->DownPage) = Page;
 }
 
 void XPage::Delete(WORD I)
@@ -2654,7 +2661,7 @@ label1:
 	// * KONEC PUVODNIHO ASM
 
 	XPath[XPathN].I = iItem;
-	x = new XItem(p->A[0], p->A[1], p->A[2], *(longint*)&p->A[3], &p->A[7]);
+	x = new XItem(p->A/*p->A[0], p->A[1], p->A[2], *(longint*)&p->A[3], &p->A[7]*/);
 	if (p->IsLeaf) {
 		if (iItem > nItems) RecNr = CFile->NRecs + 1;
 		else RecNr = x->GetN();
@@ -2673,7 +2680,7 @@ label1:
 		return searchResult;
 	}
 	if (iItem > nItems) page = p->GreaterPage;
-	else page = x->DownPage;
+	else page = *(x->DownPage);
 	XPathN++;
 	goto label1;
 	delete x;
@@ -2693,7 +2700,10 @@ longint XKey::PathToNr()
 	{
 		XF()->RdPage(p, XPath[j].Page);
 		x = XItemPtr(p->A);
-		for (i = 1; i < XPath[j].I - 1; i++) { (n += x->GetN()); x = x->Next(oNotLeaf); };
+		for (i = 1; i < XPath[j].I - 1; i++) {
+			n += x->GetN(); 
+			x = x->Next(oNotLeaf); 
+		}
 	}
 	n += XPath[XPathN].I;
 	if (n > NRecs() + 1) XF()->Err(834);
@@ -2720,7 +2730,7 @@ label1:
 	for (WORD j = 1; j < p->NItems; j++) {
 		if (I <= x->GetN()) {
 			XPath[XPathN].I = j;
-			page = x->DownPage;
+			page = *(x->DownPage);
 			goto label1;
 		}
 		I -= x->GetN();
@@ -2793,7 +2803,7 @@ bool XKey::IncPath(WORD J, longint& Pg)
 				X.I = 0; if (IncPath(J - 1, X.Page)) goto label1; goto label2;
 			}
 			else Pg = p->GreaterPage;
-		else Pg = p->XI(X.I)->DownPage;
+		else Pg = *(p->XI(X.I)->DownPage);
 	}
 	result = true;
 label2:
@@ -2852,24 +2862,34 @@ void XKey::InsertOnPath(XString& XX, longint RecNr)
 		}
 		else {
 			if (i <= p->NItems) {
-				x = p->XI(i); n = x->GetN() + 1; if (uppage != 0) n -= upsum;
+				x = p->XI(i); 
+				n = x->GetN() + 1; 
+				if (uppage != 0) n -= upsum;
 				x->PutN(n);
 			}
 			if (uppage != 0) {
-				downpage = uppage; InsertItem(XX, p, upp, page, i, x, uppage);
-				x->DownPage = downpage; x->PutN(upsum);
-			};
+				downpage = uppage; 
+				InsertItem(XX, p, upp, page, i, x, uppage);
+				*(x->DownPage) = downpage; 
+				x->PutN(upsum);
+			}
 		}
-		XF()->WrPage(p, page); if (uppage != 0) {
-			XF()->WrPage(upp, uppage); upsum = upp->SumN();
+		XF()->WrPage(p, page); 
+		if (uppage != 0) {
+			XF()->WrPage(upp, uppage); 
+			upsum = upp->SumN();
 			if (upp->IsLeaf) ChainPrevLeaf(p1, uppage);
 		}
 	}
 	if (uppage != 0) {
-		page1 = XF()->NewPage(p1); p1->GreaterPage = page1;
-		p1->InsDownIndex(1, uppage, upp); XF()->WrPage(p, page1); XF()->WrPage(p1, page);
+		page1 = XF()->NewPage(p1); 
+		p1->GreaterPage = page1;
+		p1->InsDownIndex(1, uppage, upp);
+		XF()->WrPage(p, page1); 
+		XF()->WrPage(p1, page);
 		if (upp->IsLeaf) {
-			upp->GreaterPage = page1; XF()->WrPage(upp, uppage);
+			upp->GreaterPage = page1;
+			XF()->WrPage(upp, uppage);
 		}
 	}
 	ReleaseStore(p);
@@ -2890,14 +2910,22 @@ void XKey::InsertItem(XString& XX, XPage* P, XPage* UpP, longint Page, WORD I, X
 
 void XKey::ChainPrevLeaf(XPagePtr P, longint N)
 {
-	longint page; WORD i, j;
+	longint page = 0; 
+	WORD i = 0, j = 0;
 	for (j = XPathN - 1; j > 1; j--)
 		if (XPath[j].I > 1) {
-			XF()->RdPage(P, XPath[j].Page); i = XPath[j].I - 1;
+			XF()->RdPage(P, XPath[j].Page); 
+			i = XPath[j].I - 1;
 		label1:
-			page = P->XI(i)->DownPage; XF()->RdPage(P, page);
-			if (P->IsLeaf) { P->GreaterPage = N; XF()->WrPage(P, page); return; }
-			i = P->NItems; goto label1;
+			page = *(P->XI(i)->DownPage);
+			XF()->RdPage(P, page);
+			if (P->IsLeaf) { 
+				P->GreaterPage = N; 
+				XF()->WrPage(P, page); 
+				return; 
+			}
+			i = P->NItems; 
+			goto label1;
 		}
 }
 
@@ -3001,7 +3029,7 @@ void XKey::BalancePages(XPage* P1, XPage* P2, bool& Released)
 void XKey::XIDown(XPage* P, XPage* P1, WORD I, longint& Page1)
 {
 	if (I > P->NItems) Page1 = P->GreaterPage;
-	else Page1 = P->XI(I)->DownPage;
+	else Page1 = *(P->XI(I)->DownPage);
 	XF()->RdPage(P1, Page1);
 }
 
@@ -3053,7 +3081,7 @@ void XWKey::ReleaseTree(longint Page, bool IsClose)
 	if (!p->IsLeaf) {
 		WORD n = p->NItems;
 		for (WORD i = 1; i < n; i++) {
-			ReleaseTree(p->XI(i)->DownPage, IsClose);
+			ReleaseTree(*(p->XI(i)->DownPage), IsClose);
 			XF()->RdPage(p, Page);
 		}
 		if (p->GreaterPage != 0) ReleaseTree(p->GreaterPage, IsClose);

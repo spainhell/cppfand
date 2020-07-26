@@ -503,16 +503,23 @@ longint AbsRecNr(longint N)
 		|| CFile->IsSQLFile
 #endif
 		) {
-		if (IsNewRec) result = 0; else result = 1; return result;
+		if (IsNewRec) result = 0; 
+		else result = 1; 
+		return result;
 	}
 	if (IsNewRec) {
-		if ((N == CRec()) && (N == CNRecs())) { result = 0; return result; }
+		if ((N == CRec()) && (N == CNRecs())) { 
+			result = 0; 
+			return result; 
+		}
 		if (N > CRec()) N--;
 	}
 	if (Subset) N = WK->NrToRecNr(N);
 	else if (HasIndex) {
-		md = NewLMode(RdMode); TestXFExist();
-		N = VK->NrToRecNr(N); OldLMode(md);
+		md = NewLMode(RdMode); 
+		TestXFExist();
+		N = VK->NrToRecNr(N); 
+		OldLMode(md);
 	}
 	result = N;
 	return result;
@@ -1043,7 +1050,7 @@ void DisplRecTxt()
 {
 	WORD i;
 	screen.GotoXY(E->FrstCol, E->FrstRow + E->NHdTxt);
-	for (i = 1; i < E->NRecs; i++) WriteSL(RT->SL);
+	for (i = 1; i <= E->NRecs; i++) WriteSL(RT->SL);
 }
 
 void DisplEditWw()
@@ -3437,10 +3444,14 @@ label81:
 		case 2:/*exit*/ goto label1; break;
 		}
 		switch (KbdChar) {
-		case _F1_: { RdMsg(7); Help((RdbD*)&HelpFD, MsgLine, false); break; }
+		case VK_F1: { 
+			RdMsg(7); 
+			Help((RdbD*)&HelpFD, MsgLine, false); 
+			break; 
+		}
 		case _CtrlF1_: FieldHelp(); break;
 		case _AltF10_: Help(nullptr, "", false); break;
-		case _ESC_: {
+		case VK_ESCAPE: {
 			if (OnlySearch) {
 				if (IsNewRec) { if (CNRecs() > 1) DelNewRec(); else goto label9; }
 				else if (!WriteCRec(true, Displ)) goto label1;
@@ -3477,9 +3488,9 @@ label81:
 			break;
 		}
 		case _AltEqual_: { UndoRecord(); EdBreak = 0; goto fin; }
-		case _U_: if (PromptYN(108)) UndoRecord(); break;
+		case 'U': if (PromptYN(108)) UndoRecord(); break;
 		case 0x1C /*^\*/: if (!CtrlMProc(2)) goto label7;
-		case _F2_: {
+		case VK_F2: {
 			if (!EdRecVar)
 				if (IsNewRec) {
 					if ((CNRecs() > 1) && (!Prompt158 || EquOldNewRec() || PromptYN(158))) DelNewRec();
@@ -3490,29 +3501,29 @@ label81:
 				} goto label0;
 			break;
 		}
-		case _up_: if (LUpRDown) goto label11; else goto label13;
-		case _down_: if (LUpRDown) goto label12; else goto label13;
-		case _left_:
-		case _S_:
+		case VK_UP: if (LUpRDown) goto label11; else goto label13;
+		case VK_DOWN: if (LUpRDown) goto label12; else goto label13;
+		case VK_LEFT:
+		case 'S':
 		label11:
 			if (CFld->ChainBack != nullptr) GotoRecFld(CRec(), CFld->ChainBack);
 			break;
-		case _right_:
-		case _D_:
+		case VK_RIGHT:
+		case 'D':
 		label12:
 			if ((CFld->Chain != nullptr) && !IsFirstEmptyFld())
 				GotoRecFld(CRec(), (EFldD*)CFld->Chain);
 			break;
-		case _Home_:
+		case VK_HOME:
 		label3:
 			GotoRecFld(CRec(), E->FirstFld); break;
-		case _End_:
+		case VK_END:
 		label4:
 			if (IsNewRec && (FirstEmptyFld != nullptr))
 				GotoRecFld(CRec(), FirstEmptyFld);
 			else GotoRecFld(CRec(), E->LastFld);
 			break;
-		case _M_:
+		case 'M':
 			if (SelMode && (E->SelKey != nullptr) && !IsNewRec) {
 				if (WriteCRec(true, Displ)) {
 					if ((E->SelKey != nullptr) && (E->SelKey->NRecs() == 0)) ToggleSelectRec();
@@ -3526,15 +3537,15 @@ label81:
 				else
 					if (!CtrlMProc(3)) goto label7;
 			break;
-		case _Ins_: { b = false; if (CFld->Ed(IsNewRec) && LockRec(true)) b = true;
+		case VK_INSERT: { b = false; if (CFld->Ed(IsNewRec) && LockRec(true)) b = true;
 			if (!EditItemProc(false, b, Brk)) goto label7; if (Brk != 0) goto fin; break; }
-		case _F4_:
+		case VK_F4:
 			if ((CRec() > 1) && (IsFirstEmptyFld() || PromptYN(121)) && LockRec(true))
 			{
 				DuplFromPrevRec(); if (!CtrlMProc(1)) goto label7;
 			}
-		case _F5_: SetSwitchProc(); break;
-		case _F7_: UpwEdit(nullptr); break;
+		case VK_F5: SetSwitchProc(); break;
+		case VK_F7: UpwEdit(nullptr); break;
 		case _CtrlF5_: Calculate2(); break;
 		default: {
 			if (KbdChar >= 0x20 && KbdChar <= 0xFE)
@@ -3542,7 +3553,7 @@ label81:
 				if (CFld->Ed(IsNewRec) && ((CFld->FldD->Typ != 'T') || (_T(CFld->FldD) == 0))
 					&& LockRec(true)) {
 					pstring oldKbdBuffer = KbdBuffer;
-					KbdBuffer = char(KbdChar);
+					KbdBuffer = (char)KbdChar;
 					KbdBuffer += oldKbdBuffer;
 					if (!EditItemProc(true, true, Brk)) goto label7;
 					if (Brk != 0) goto fin;
@@ -3550,33 +3561,37 @@ label81:
 			label13:
 				if (!IsNewRec) {
 					w = KbdChar;
-					if (w == _Y_) {
+					if (w == 'Y') {
 						if (!NoDelete) if (DeleteRecProc()) {
-							ClearKeyBuf(); b = true;
+							ClearKeyBuf(); 
+							b = true;
 						label14:
 							if (((CNRecs() == 0) || (CNRecs() == 1) && IsNewRec) && NoCreate) {
-								WrLLF10Msg(112); EdBreak = 13; goto fin;
+								WrLLF10Msg(112); 
+								EdBreak = 13; 
+								goto fin;
 							}
 							if (b && !CtrlMProc(0)) goto label7;
 						}
 					}
 					else if (WriteCRec(true, Displ)) {
-						if (Displ) DisplAllWwRecs(); KbdChar = w;       /*only in edit mode*/
+						if (Displ) DisplAllWwRecs(); 
+						KbdChar = w;       /*only in edit mode*/
 						switch (w) {
-						case _F9_: { SaveFiles; UpdCount = 0; break; }
-						case _N_:
+						case VK_F9: { SaveFiles; UpdCount = 0; break; }
+						case 'N':
 							if (!NoCreate && !Only1Record)
 							{
 								InsertRecProc(nullptr); goto label0;
 							}
 							break;
-						case _up_:
-						case _E_:
+						case VK_UP:
+						case 'E':
 							if (E->NRecs > 1) GoPrevNextRec(-1, true); break;
 						case _CtrlHome_:
 							GoPrevNextRec(-1, true); break;
-						case _down_:
-						case _X_:
+						case VK_DOWN:
+						case 'X':
 							if (E->NRecs > 1) GoPrevNextRec(+1, true); break;
 						case _CtrlEnd_:
 							GoPrevNextRec(+1, true); break;
@@ -3635,7 +3650,7 @@ label81:
 							break;
 						case _CtrlF3_:
 							if (!EdRecVar) PromptGotoRecNr(); break;
-						case _F6_: if (!EdRecVar) F6Proc(); break;
+						case VK_F6: if (!EdRecVar) F6Proc(); break;
 						case _CtrlF4_: if (DuplToPrevEdit()) { EdBreak = 14; goto fin; } break;
 						case _CtrlF7_: DownEdit(); break;
 						case _F8_: {
