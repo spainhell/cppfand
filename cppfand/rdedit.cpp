@@ -589,16 +589,26 @@ label2:
 
 void RdCheck()
 {
-	WORD Low; ChkDPtr C; EFldD* D;
-	SkipBlank(false); Low = CurrPos; RdLex();
+	WORD Low = 0; ChkD* C = nullptr; EFldD* D = nullptr;
+	SkipBlank(false); 
+	Low = CurrPos; 
+	RdLex();
 label1:
 	C = RdChkD(Low);
-	ZeroUsed(); SetFrmlFlags(C->Bool); TestedFlagOff();
+	ZeroUsed(); 
+	SetFrmlFlags(C->Bool); 
+	TestedFlagOff();
 	D = LstUsedFld();
-	if (D != nullptr) ChainLast(D->Chk, C); else ReleaseStore(C);
+	if (D != nullptr) {
+		if (D->Chk == nullptr) D->Chk = C;
+		else ChainLast(D->Chk, C);
+	}
+	else ReleaseStore(C);
 	if (Lexem == ';')
 	{
-		SkipBlank(false); Low = CurrPos; RdLex();
+		SkipBlank(false); 
+		Low = CurrPos; 
+		RdLex();
 		if (!(Lexem == '#' || Lexem == 0x1A)) goto label1;
 	}
 }
@@ -677,18 +687,22 @@ pstring GetStr_E(FrmlPtr Z)
 
 void NewChkKey()
 {
-	KeyD* K; KeyFldD* KF; EFldD* D; KeyList KL;
-	K = CFile->Keys; while (K != nullptr) {
+	KeyD* K = CFile->Keys; KeyFldD* KF = nullptr; EFldD* D = nullptr; KeyListEl* KL = nullptr;
+	while (K != nullptr) {
 		if (!K->Duplic) {
-			ZeroUsed(); KF = K->KFlds;
+			ZeroUsed(); 
+			KF = K->KFlds;
 			while (KF != nullptr) {
 				D = FindEFld_E(KF->FldD);
 				if (D != nullptr) D->Used = true;
 				KF = (KeyFldD*)KF->Chain;
 			}
-			D = LstUsedFld(); if (D != nullptr) {
-				KL = (KeyListEl*)GetStore(sizeof(*KL));
-				ChainLast(D->KL, KL); KL->Key = K;
+			D = LstUsedFld(); 
+			if (D != nullptr) {
+				KL = new KeyListEl(); // (KeyListEl*)GetStore(sizeof(*KL));
+				if (D->KL == nullptr) D->KL = KL;
+				else ChainLast(D->KL, KL);
+				KL->Key = K;
 			}
 			K = K->Chain;
 		}

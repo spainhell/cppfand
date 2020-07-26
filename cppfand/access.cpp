@@ -2393,10 +2393,12 @@ WORD XPage::Off()
 
 XItem* XPage::XI(WORD I)
 {
-	XItemPtr x; WORD o;
-	x = XItemPtr(&A);
-	o = Off();
-	while (I > 1) { x = x->Next(o); I--; }
+	XItem* x = (XItem*)A; 
+	WORD o = Off();
+	while (I > 1) { 
+		x = x->Next(o); 
+		I--; 
+	}
 	return x;
 }
 
@@ -2731,8 +2733,9 @@ label1:
 
 longint XKey::PathToRecNr()
 {
+	/* !!! with XPath[XPathN] do!!! */
 	auto X = XPath[XPathN];
-	XPagePtr p = (XPage*)GetStore(XPageSize); /* !!! with XPath[XPathN] do!!! */
+	XPagePtr p = new XPage(); // (XPage*)GetStore(XPageSize);
 	XF()->RdPage(p, X.Page);
 	longint recnr = p->XI(X.I)->GetN();
 	longint result = recnr;
@@ -2807,7 +2810,9 @@ longint XKey::NrToRecNr(longint I)
 pstring XKey::NrToStr(longint I)
 {
 	pstring result;
-	XPagePtr p = (XPage*)GetStore(XPageSize); NrToPath(I); /* !!! with XPath[XPathN] do!!! */
+	XPagePtr p = (XPage*)GetStore(XPageSize); 
+	NrToPath(I); 
+	/* !!! with XPath[XPathN] do!!! */
 	XF()->RdPage(p, XPath[XPathN].Page);
 	result = p->StrI(I);
 	ReleaseStore(p);
@@ -2817,7 +2822,8 @@ pstring XKey::NrToStr(longint I)
 longint XKey::RecNrToNr(longint RecNr)
 {
 	XString x;
-	if (RecNrToPath(x, RecNr)) return PathToNr(); else return 0;
+	if (RecNrToPath(x, RecNr)) return PathToNr(); 
+	else return 0;
 }
 
 bool XKey::FindNr(XString& X, longint& IndexNr)

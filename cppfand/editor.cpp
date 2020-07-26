@@ -3960,8 +3960,8 @@ label2:
 			Stk[iStk].Rdb = R; Stk[iStk].FD = cf2; Stk[iStk].iR = iRec; Stk[iStk].iT = i;
 			oldIRec = iRec; i = 1; delta = 0; ReleaseStore(s); CFile = cf2;
 			switch (KbdChar) {
-			case _ESC_: break;
-			case _F10_: {
+			case VK_ESCAPE: break;
+			case VK_F10: {
 				iStk--;
 			label3:
 				if (iStk > 0) {
@@ -3979,8 +3979,10 @@ label2:
 		}
 	label4:
 		RestoreExit(er);
-		if (w2 != 0) PopW(w2); if (w != 0) PopW(w);
-		ReleaseStore(p); CFile = cf;
+		if (w2 != 0) PopW(w2); 
+		if (w != 0) PopW(w);
+		ReleaseStore(p); 
+		CFile = cf;
 	}
 }
 
@@ -3993,7 +3995,7 @@ void ViewHelpText(LongStr* S, WORD& TxtPos)
 label1:
 	EditText(HelpM, MemoT, "", "", (char*)&S->A, 0xFFF0, S->LL, TxtPos, Scr,
 		_F1 + _F10 + _F6 + _CtrlHome + _CtrlEnd, nullptr, Srch, Upd, 142, 145, nullptr);
-	if (KbdChar == _F6_) { PrintArray(&S->A, S->LL, true); goto label1; }
+	if (KbdChar == VK_F6) { PrintArray(&S->A, S->LL, true); goto label1; }
 	RestorePar(L);
 }
 

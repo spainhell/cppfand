@@ -428,8 +428,20 @@ label1:
 	case VK_ESCAPE: { i = 0; goto label3; break; }
 	case VK_UP: { Prev(); WrText(i); break; }
 	case VK_DOWN: { Next(); WrText(i); break; }
-	case VK_LEFT: if (UnderMenuBar()) { j = 1; goto label4; } break;
-	case VK_RIGHT: if (UnderMenuBar()) { j = 2; goto label4; } break;
+	case VK_LEFT: { 
+		if (UnderMenuBar()) { 
+			j = 1; 
+			goto label4; 
+		} 
+		break; 
+	}
+	case VK_RIGHT: { 
+		if (UnderMenuBar()) { 
+			j = 2; 
+			goto label4; 
+		} 
+		break; 
+	}
 	default: {
 		if (!FindChar()) goto label1;
 		WrText(iTxt);

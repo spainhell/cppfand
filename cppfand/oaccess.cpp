@@ -408,7 +408,10 @@ void CloseFile()
 void CloseFAfter(FileD* FD)
 {
 	CFile = FD;
-	while (CFile != nullptr) { CloseFile(); CFile = (FileD*)CFile->Chain; }
+	while (CFile != nullptr) { 
+		CloseFile(); 
+		CFile = (FileD*)CFile->Chain; 
+	}
 }
 
 bool ActiveRdbOnDrive(WORD D)

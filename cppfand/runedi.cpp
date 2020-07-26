@@ -563,7 +563,9 @@ void RdRec(longint N)
 	else
 #endif
 	{
-		md = NewLMode(RdMode); ReadRec(AbsRecNr(N)); OldLMode(md);
+		md = NewLMode(RdMode); 
+		ReadRec(AbsRecNr(N)); 
+		OldLMode(md);
 	}
 }
 

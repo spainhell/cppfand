@@ -313,7 +313,7 @@ void Move(void* zdroj, void* cil, WORD delka)
 
 BYTE Hi(WORD cislo)
 {
-	return cislo >> 4;
+	return cislo >> 8;
 }
 
 BYTE Lo(WORD cislo)
