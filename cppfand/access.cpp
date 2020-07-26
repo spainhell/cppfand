@@ -1488,29 +1488,40 @@ void B_(FieldDescr* F, bool B)
 	}
 }
 
+// zrejme zajistuje pristup do jine tabulky (cizi klic)
 bool LinkUpw(LinkDPtr LD, longint& N, bool WithT)
 {
-	KeyFldDPtr KF;
-	FieldDPtr F, F2;
-	bool LU; LockMode md;
-	pstring s; double r; bool b;
-	XString* x = (XString*)&s;
+	KeyFldD* KF;
+	FieldDescr* F, * F2;
+	bool LU = false; LockMode md;
+	//pstring s; 
+	double r = 0.0; 
+	bool b = false;
+	//XString* x = (XString*)&s;
+	XString x;
 
-	FileDPtr ToFD = LD->ToFD; FileDPtr CF = CFile; void* CP = CRecPtr;
-	KeyDPtr K = LD->ToKey; KeyFldDPtr Arg = LD->Args; x->PackKF(Arg);
-	CFile = ToFD; void* RecPtr = GetRecSpace(); CRecPtr = RecPtr;
+	FileD* ToFD = LD->ToFD; 
+	FileD* CF = CFile; 
+	void* CP = CRecPtr;
+	KeyD* K = LD->ToKey; 
+	KeyFldD* Arg = LD->Args; 
+	x.PackKF(Arg);
+	CFile = ToFD; 
+	void* RecPtr = GetRecSpace(); 
+	CRecPtr = RecPtr;
 #ifdef FandSQL
 	if (CFile->IsSQLFile) {
-		LU = Strm1->SelectXRec(K, @X, _equ, WithT); N = 1; if (LU) goto label2; else goto label1;
+		LU = Strm1->SelectXRec(K, @X, _equ, WithT); N = 1; 
+		if (LU) goto label2; else goto label1;
 	}
 #endif
 	md = NewLMode(RdMode);
 	if (ToFD->Typ == 'X') { 
 		TestXFExist(); 
-		LU = K->SearchIntvl(*x, false, N); 
+		LU = K->SearchIntvl(x, false, N); 
 	}
-	else if (CFile->NRecs = 0) { LU = false; N = 1; }
-	else LU = SearchKey(*x, K, N);
+	else if (CFile->NRecs == 0) { LU = false; N = 1; }
+	else LU = SearchKey(x, K, N);
 	if (LU) ReadRec(N);
 	else {
 	label1:
@@ -1522,13 +1533,29 @@ bool LinkUpw(LinkDPtr LD, longint& N, bool WithT)
 			CFile = CF; CRecPtr = CP;
 			if (F2->Flg && f_Stored != 0)
 				switch (F->FrmlTyp) {
-				case 'S': { s = _ShortS(F); CFile = ToFD; CRecPtr = RecPtr; S_(F2, s); break; }
-				case 'R': { r = _R(F); CFile = ToFD; CRecPtr = RecPtr; R_(F2, r); break; }
-				case 'B': { b = _B(F); CFile = ToFD; CRecPtr = RecPtr; B_(F2, b); break; }
+				case 'S': { 
+					x.S = _ShortS(F); 
+					CFile = ToFD; CRecPtr = RecPtr; 
+					S_(F2, x.S); 
+					break; 
+				}
+				case 'R': { 
+					r = _R(F); 
+					CFile = ToFD; CRecPtr = RecPtr; 
+					R_(F2, r); 
+					break; 
+				}
+				case 'B': { 
+					b = _B(F); 
+					CFile = ToFD; CRecPtr = RecPtr; 
+					B_(F2, b); 
+					break; 
+			}
 				}
 			Arg = (KeyFldD*)Arg->Chain; KF = (KeyFldD*)KF->Chain;
 		}
-		CFile = ToFD; CRecPtr = RecPtr;
+		CFile = ToFD; 
+		CRecPtr = RecPtr;
 	}
 label2:
 	auto result = LU;
@@ -2262,7 +2289,9 @@ void XString::StoreStr(pstring V, KeyFldD* KF)
 		n = (X->L + 1) / 2;
 		StoreN(&V, n, KF->Descend);
 	}
-	else StoreA(&V[1], X->L, KF->CompLex, KF->Descend);
+	else { 
+		StoreA(&V[1], X->L, KF->CompLex, KF->Descend); 
+	}
 }
 
 void XString::StoreBool(bool B, KeyFldD* KF)
@@ -2272,8 +2301,7 @@ void XString::StoreBool(bool B, KeyFldD* KF)
 
 void XString::StoreKF(KeyFldD* KF)
 {
-	FieldDPtr F;
-	F = KF->FldD;
+	FieldDescr* F = KF->FldD;
 	switch (F->FrmlTyp) {
 	case 'S': StoreStr(_ShortS(F), KF); break;
 	case 'R': StoreReal(_R(F), KF); break;
@@ -2321,7 +2349,9 @@ void XString::StoreF(void* F, WORD Len, bool Descend)
 
 void XString::StoreA(void* A, WORD Len, bool CompLex, bool Descend)
 {
-	if (CompLex || Descend) throw std::exception("XString::StoreA() not implemented.");
+	if (CompLex) {
+		// call TranslateOrd;
+	}
 	// jinak asi nahradi mezery na konci retezce za '0x1F'
 	char* p = (char*)A;
 	for (size_t i = Len - 1; i >= 0; i++) {
@@ -2333,6 +2363,9 @@ void XString::StoreA(void* A, WORD Len, bool CompLex, bool Descend)
 	}
 	S[0] = Len;
 	memcpy(&S[1], p, Len);
+	if (Descend) {
+		// call NegateESDI;
+	}
 }
 
 XItem::XItem(BYTE* data)
