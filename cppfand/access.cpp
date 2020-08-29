@@ -2349,12 +2349,13 @@ void XString::StoreF(void* F, WORD Len, bool Descend)
 
 void XString::StoreA(void* A, WORD Len, bool CompLex, bool Descend)
 {
+	char* p = (char*)A;
 	if (CompLex) {
-		// call TranslateOrd;
+		std::string cplx = TranslateOrd(p);
+		memcpy(p, cplx.c_str(), cplx.length());
 	}
 	// jinak asi nahradi mezery na konci retezce za '0x1F'
-	char* p = (char*)A;
-	for (size_t i = Len - 1; i >= 0; i++) {
+	for (int i = Len - 1; i >= 0; i--) {
 		if (p[i] == ' ') {
 			p[i] = 0x1F;
 			continue;
@@ -2377,7 +2378,7 @@ XItem::XItem(BYTE* data)
 
 longint XItem::GetN()
 {
-	return *DownPage & 0xffffff;
+	return *DownPage & 0x00ffffff;
 }
 
 void XItem::PutN(longint N)
@@ -2411,9 +2412,10 @@ void XItem::PutL(WORD O, WORD L)
 
 XItem* XItem::Next(WORD O)
 {
-	// asm les bx,Self; add bx,O; xor ah,ah; mov al,es:[bx+1]; add ax,bx; add ax,2;
-	// mov dx, es
-	return nullptr;
+	unsigned char recLen = XPageData[0];
+	O += recLen - 2;
+	auto xi = new XItem(&XPageData[O]);
+	return xi;
 }
 
 WORD XItem::UpdStr(WORD O, pstring* S)
@@ -2679,7 +2681,7 @@ bool XKey::Search(XString& XX, bool AfterEqu, longint& RecNr)
 	AfterEqu = AfterEqu && Duplic;
 label1:
 	XPath[XPathN].Page = page;
-	XF()->RdPage(p, page);
+	XF()->RdPage(p, page); // je nactena asi cela stranka indexu
 
 	WORD o = p->Off();
 	WORD nItems = p->NItems;
@@ -2690,14 +2692,14 @@ label1:
 	}
 
 	// * PUVODNI ASM
-	result = XKeySearch(p->A, &XX.S[0], iItem, nItems, p->Off(), AfterEqu);
+	result = XKeySearch2(p->A, &XX.S[0], iItem, nItems, o, AfterEqu);
 	// * KONEC PUVODNIHO ASM
 
 	XPath[XPathN].I = iItem;
 	x = new XItem(p->A/*p->A[0], p->A[1], p->A[2], *(longint*)&p->A[3], &p->A[7]*/);
 	if (p->IsLeaf) {
 		if (iItem > nItems) RecNr = CFile->NRecs + 1;
-		else RecNr = x->GetN();
+		else RecNr = iItem; // x->GetN();
 		if (result == _equ)
 			if
 #ifdef FandSQL
@@ -2780,7 +2782,8 @@ longint XKey::PathToRecNr()
 	auto X = XPath[XPathN];
 	XPagePtr p = new XPage(); // (XPage*)GetStore(XPageSize);
 	XF()->RdPage(p, X.Page);
-	longint recnr = p->XI(X.I)->GetN();
+	auto pxi = p->XI(X.I);
+	longint recnr = pxi->GetN();
 	longint result = recnr;
 	if ((recnr == 0) || (recnr > CFile->NRecs)) XF()->Err(835);
 	ReleaseStore(p);
@@ -3989,6 +3992,19 @@ void ResetCompilePars()
 	FDLocVarAllowed = false;
 	IdxLocVarAllowed = false;
 	PrevCompInp = nullptr;
+}
+
+std::string TranslateOrd(std::string text)
+{
+	std::string trans;
+	for (size_t i = 0; i < text.length(); i++) {
+		char c = CharOrdTab[text[i]];
+#ifndef FandAng
+		if (c == 0x4a) continue;
+#endif
+		trans += c;
+	}
+	return trans;
 }
 
 FieldDescr::FieldDescr()

@@ -759,7 +759,7 @@ void ResetCompilePars(); // r953 - posledni fce
 // 
 
 //void ClearTWorkFlag(); // r749 ASM
-//void TranslateOrd(); // r804 ASM
+std::string TranslateOrd(std::string text); // r804 ASM
 //WORD TranslateOrdBack(); // r834 ASM
 //void XDecode(LongStrPtr S); // r903 ASM
 //void DirMinusBackslash(pstring& D);
