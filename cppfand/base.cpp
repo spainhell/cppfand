@@ -636,7 +636,7 @@ pstring StrDate(double R, pstring Mask)
 	if ((R == 0) || (R < 0) && (min < 3)) {
 		for (i = 1; i <= Mask.length(); i++) {
 			if (Mask[i] <= 6) s.Append(' ');
-			else s = s + Mask[i];
+			else s.Append(Mask[i]);
 		}
 		goto label1;
 	}

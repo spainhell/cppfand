@@ -671,12 +671,12 @@ bool HasTTWw(FieldDescr* F)
 
 void DisplEmptyFld(EFldD* D, WORD I)
 {
-	WORD j; char c;
+	char c = '\0';
 	screen.GotoXY(D->Col, FldRow(D, I));
-	if (D->FldD->Flg && f_Stored != 0) c = '.';
+	if ((D->FldD->Flg & f_Stored) != 0) c = '.';
 	else c = ' ';
 	//for (j = 1; j <= D->L; j++) printf("%c", c);
-	printf("%s", std::string(D->L, '.').c_str());
+	printf("%s", std::string(D->L, c).c_str());
 	if (HasTTWw(D->FldD)) printf("%*c", D->FldD->L - 1, ' ');
 }
 
