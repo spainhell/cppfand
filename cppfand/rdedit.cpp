@@ -701,7 +701,7 @@ void NewChkKey()
 				else ChainLast(D->KL, KL);
 				KL->Key = K;
 			}
-			K = K->Chain;
 		}
+		K = K->Chain;
 	}
 }

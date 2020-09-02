@@ -268,12 +268,13 @@ void SetWasUpdated()
 	}
 }
 
-void AssignFld(FieldDPtr F, FrmlPtr Z)
+void AssignFld(FieldDescr* F, FrmlElem* Z)
 {
-	SetWasUpdated(); AssgnFrml(F, Z, false, false);
+	SetWasUpdated();
+	AssgnFrml(F, Z, false, false);
 }
 
-WORD FieldEdit(FieldDPtr F, FrmlPtr Impl, WORD LWw, WORD iPos, pstring* Txt, double& RR, bool del, bool upd, bool ret,
+WORD FieldEdit(FieldDescr* F, FrmlElem* Impl, WORD LWw, WORD iPos, pstring* Txt, double& RR, bool del, bool upd, bool ret,
 	WORD Delta)
 {
 	WORD I = 0, N = 0, L = 0, M = 0;
@@ -292,21 +293,21 @@ WORD FieldEdit(FieldDPtr F, FrmlPtr Impl, WORD LWw, WORD iPos, pstring* Txt, dou
 	if (F->Typ == 'B') {
 		if (*Txt == "") screen.ScrFormatWrText(Col, Row, " ");
 		else screen.ScrFormatWrText(Col, Row, "%s", Txt->c_str()); //printf("%s", Txt->c_str());
-		screen.GotoXY(Col, Row); 
+		screen.GotoXY(Col, Row);
 		screen.CrsNorm();
 	label0:
 		GetEvent();
 		switch (Event.What) {
 		case evKeyDown: {
-			KbdChar = Event.KeyCode; 
+			KbdChar = Event.KeyCode;
 			ClrEvent();
-			if (KbdChar == _ESC_) { 
-				screen.CrsHide(); 
-				return result; 
+			if (KbdChar == _ESC_) {
+				screen.CrsHide();
+				return result;
 			}
 			if (KbdChar == _M_) {
 			label11:
-				if ((Txt->length() > 0) && ((*Txt)[1] == AbbrYes)) cc = AbbrYes; 
+				if ((Txt->length() > 0) && ((*Txt)[1] == AbbrYes)) cc = AbbrYes;
 				else cc = AbbrNo;
 				goto label1;
 			}
@@ -316,8 +317,8 @@ WORD FieldEdit(FieldDPtr F, FrmlPtr Impl, WORD LWw, WORD iPos, pstring* Txt, dou
 		}
 		case evMouseDown: {
 			if (MouseInRect(WindMin.X + screen.WhereX() - 1, WindMin.Y + screen.WhereY() - 1, 1, 1)) {
-				ClrEvent(); 
-				KbdChar = _M_; 
+				ClrEvent();
+				KbdChar = _M_;
 				goto label11;
 			}
 		}
@@ -392,12 +393,14 @@ label2:
 			r = ValDate(T, *Mask);
 			if ((r == 0) && (T != LeadChar(' ', TrailChar(' ', StrDate(r, *Mask)))))
 			{
-				SetMsgPar(*Mask); WrLLF10Msg(618);
+				SetMsgPar(*Mask);
+				WrLLF10Msg(618);
 			label4:
 				screen.GotoXY(Col, Row); goto label2;
 			}
 		}
-		*Txt = StrDate(r, *Mask); RR = r;
+		*Txt = StrDate(r, *Mask);
+		RR = r;
 		break;
 	}
 	}
@@ -434,7 +437,7 @@ void WrPromptTxt(pstring* S, FrmlElem* Impl, FieldDescr* F, pstring* Txt, double
 	}
 	else {
 		EscPrompt = false; Txt = &T;
-		T[0] = char(LWw);
+		T[0] = (char)LWw;
 		screen.GotoXY(x, y);
 		// printf("%s", T.c_str());
 		screen.ScrFormatWrText(x, y, "%s", T.c_str());
@@ -503,22 +506,22 @@ longint AbsRecNr(longint N)
 		|| CFile->IsSQLFile
 #endif
 		) {
-		if (IsNewRec) result = 0; 
-		else result = 1; 
+		if (IsNewRec) result = 0;
+		else result = 1;
 		return result;
 	}
 	if (IsNewRec) {
-		if ((N == CRec()) && (N == CNRecs())) { 
-			result = 0; 
-			return result; 
+		if ((N == CRec()) && (N == CNRecs())) {
+			result = 0;
+			return result;
 		}
 		if (N > CRec()) N--;
 	}
 	if (Subset) N = WK->NrToRecNr(N);
 	else if (HasIndex) {
-		md = NewLMode(RdMode); 
+		md = NewLMode(RdMode);
 		TestXFExist();
-		N = VK->NrToRecNr(N); 
+		N = VK->NrToRecNr(N);
 		OldLMode(md);
 	}
 	result = N;
@@ -570,8 +573,8 @@ void RdRec(longint N)
 	else
 #endif
 	{
-		md = NewLMode(RdMode); 
-		ReadRec(AbsRecNr(N)); 
+		md = NewLMode(RdMode);
+		ReadRec(AbsRecNr(N));
 		OldLMode(md);
 	}
 }
@@ -972,14 +975,14 @@ void DisplSysLine()
 void DisplBool()
 {
 	pstring s;
-	if (!WithBoolDispl) return; 
-	screen.GotoXY(1, 2); 
-	TextAttr = E->dSubSet; 
+	if (!WithBoolDispl) return;
+	screen.GotoXY(1, 2);
+	TextAttr = E->dSubSet;
 	ClrEol();
 	if (Select) {
 		s = *E->BoolTxt;
 		if (s.length() > TxtCols) s[0] = (char)TxtCols;
-		screen.GotoXY((TxtCols - s.length()) / 2 + 1, 2); 
+		screen.GotoXY((TxtCols - s.length()) / 2 + 1, 2);
 		printf("%s", s.c_str());
 	}
 }
@@ -1001,15 +1004,18 @@ void DisplAllWwRecs()
 
 void SetNewWwRecAttr()
 {
-	WORD I;
 	CRecPtr = GetRecSpace();
-	for (I = 1; I < E->NRecs; I++) {
+	for (WORD I = 1; I < E->NRecs; I++) {
 		if (BaseRec + I - 1 > CNRecs()) break;
 		if (!IsNewRec || (I != IRec)) {
-			RdRec(BaseRec + I - 1); SetRecAttr(I);
+			RdRec(BaseRec + I - 1);
+			SetRecAttr(I);
 		}
 	}
-	IVon(); ClearRecSpace(CRecPtr); ReleaseStore(CRecPtr); CRecPtr = E->NewRecPtr;
+	IVon();
+	ClearRecSpace(CRecPtr);
+	ReleaseStore(CRecPtr);
+	CRecPtr = E->NewRecPtr;
 }
 
 void MoveDispl(WORD From, WORD Where, WORD Number)
@@ -1043,7 +1049,7 @@ void WriteSL(StringList SL)
 	while (SL != nullptr) {
 		WORD Row = screen.WhereY();
 		// WrStyleStr(SL->S, E->Attr);
-		screen.WriteStyledStringToWindow(SL->S, E->dNorm);
+		screen.WriteStyledStringToWindow(SL->S, E->Attr);
 		screen.GotoXY(E->FrstCol, Row + 1);
 		SL = (StringList)SL->Chain;
 	}
@@ -1052,8 +1058,8 @@ void WriteSL(StringList SL)
 void DisplRecTxt()
 {
 	screen.GotoXY(E->FrstCol, E->FrstRow + E->NHdTxt);
-	for (WORD i = 1; i <= E->NRecs; i++) { 
-		WriteSL(RT->SL); 
+	for (WORD i = 1; i <= E->NRecs; i++) {
+		WriteSL(RT->SL);
 	}
 }
 
@@ -1079,10 +1085,10 @@ void DisplEditWw()
 	DisplBool();
 	screen.GotoXY(E->FrstCol, E->FrstRow);
 	WriteSL(E->HdTxt);
-	DisplRecTxt();
+	DisplRecTxt(); // zobrazi prazdne formulare
 	DisplTabDupl();
 	NewDisplLL = true;
-	DisplAllWwRecs();
+	DisplAllWwRecs(); // doplni do formularu data nebo tecky
 }
 
 void DisplWwRecsOrPage()
@@ -1095,10 +1101,10 @@ void DisplWwRecsOrPage()
 		ClrScr();
 		WindMin = oldMin;
 		WindMax = oldMax;
-		DisplRecTxt(); 
+		DisplRecTxt();
 		DisplTabDupl();
 	}
-	DisplAllWwRecs(); 
+	DisplAllWwRecs();
 	DisplRecNr(CRec());
 }
 
@@ -1106,12 +1112,12 @@ void DuplOwnerKey()
 {
 	KeyFldD* KF = nullptr, * Arg = nullptr;
 	if (!E->DownSet || (E->OwnerTyp == 'i')) return;
-	KF = E->DownLD->ToKey->KFlds; 
+	KF = E->DownLD->ToKey->KFlds;
 	Arg = E->DownLD->Args;
 	while (Arg != nullptr) {
 		DuplFld(E->DownLD->ToFD, CFile, E->DownRecPtr, E->NewRecPtr, E->OldRecPtr,
 			KF->FldD, Arg->FldD);
-		Arg = (KeyFldD*)Arg->Chain; 
+		Arg = (KeyFldD*)Arg->Chain;
 		KF = (KeyFldD*)KF->Chain;
 	}
 }
@@ -1766,17 +1772,17 @@ bool EquFileViewName(FileD* FD, pstring S, EditOpt* EO)
 		S = copy(S, 2, 255);
 		SL = CFile->ViewNames;
 		while (SL != nullptr) {
-			if (SL->S == S) { 
-				EO = GetEditOpt(); 
-				RdUserView(S, EO); 
-				goto label1; 
+			if (SL->S == S) {
+				EO = GetEditOpt();
+				RdUserView(S, EO);
+				goto label1;
 			}
 			SL = (StringList)SL->Chain;
 		}
 	}
 	else if (S == CFile->Name) {
-		EO = GetEditOpt(); 
-		EO->Flds = AllFldsList(CFile, false); 
+		EO = GetEditOpt();
+		EO->Flds = AllFldsList(CFile, false);
 		return result;
 	}
 	result = false;
@@ -3257,9 +3263,9 @@ void DisplLL()
 		else n = 128;
 	else if (IsNewRec) n = 123;
 	else n = 124;
-	if (!F1Mode || Mode24) { 
-		WrLLMsg(n); 
-		DisplLASwitches(); 
+	if (!F1Mode || Mode24) {
+		WrLLMsg(n);
+		DisplLASwitches();
 	}
 }
 
@@ -3374,15 +3380,15 @@ void ToggleSelectRec()
 	XString x; LockMode md;
 	XWKey* k = E->SelKey;
 	longint n = AbsRecNr(CRec());
-	if (k->RecNrToPath(x, n)) { 
+	if (k->RecNrToPath(x, n)) {
 		k->NR--;
-		k->DeleteOnPath(); 
+		k->DeleteOnPath();
 	}
-	else { 
-		k->NR++; 
-		k->Insert(n, false); 
+	else {
+		k->NR++;
+		k->Insert(n, false);
 	}
-	SetRecAttr(IRec); 
+	SetRecAttr(IRec);
 	IVon();
 }
 
@@ -3391,7 +3397,7 @@ void ToggleSelectAll()
 	XWKey* k = E->SelKey;
 	if (k == nullptr) return;
 	if (k->NR > 0) k->Release();
-	else if (Subset) CopyIndex(k, WK); 
+	else if (Subset) CopyIndex(k, WK);
 	else CopyIndex(k, VK);
 	DisplAllWwRecs();
 }
@@ -3401,7 +3407,7 @@ void GoStartFld(EFldD* SFld)
 	while ((CFld != SFld) && (CFld->Chain != nullptr)) {
 		if (IsFirstEmptyFld()) {
 			if ((CFld->Impl != nullptr) && LockRec(true)) AssignFld(CFld->FldD, CFld->Impl);
-			FirstEmptyFld = (EFldD*)FirstEmptyFld->Chain; 
+			FirstEmptyFld = (EFldD*)FirstEmptyFld->Chain;
 			DisplFld(CFld, IRec);
 		}
 		GotoRecFld(CRec(), (EFldD*)CFld->Chain);
@@ -3447,7 +3453,7 @@ label81:
 	}
 	switch (Event.What) {
 	case evMouseDown: {
-		if (F1Mode && (CRdb->HelpFD != nullptr) 
+		if (F1Mode && (CRdb->HelpFD != nullptr)
 			&& (Mode24 && (Event.Where.Y == TxtRows - 2) || !Mode24 && (Event.Where.Y == TxtRows - 1))) {
 			ClrEvent();
 			FieldHelp();
@@ -3464,10 +3470,10 @@ label81:
 		case 2:/*exit*/ goto label1; break;
 		}
 		switch (KbdChar) {
-		case VK_F1: { 
-			RdMsg(7); 
-			Help((RdbD*)&HelpFD, MsgLine, false); 
-			break; 
+		case VK_F1: {
+			RdMsg(7);
+			Help((RdbD*)&HelpFD, MsgLine, false);
+			break;
 		}
 		case _CtrlF1_: FieldHelp(); break;
 		case _AltF10_: Help(nullptr, "", false); break;
@@ -3583,19 +3589,19 @@ label81:
 					w = KbdChar;
 					if (w == 'Y') {
 						if (!NoDelete) if (DeleteRecProc()) {
-							ClearKeyBuf(); 
+							ClearKeyBuf();
 							b = true;
 						label14:
 							if (((CNRecs() == 0) || (CNRecs() == 1) && IsNewRec) && NoCreate) {
-								WrLLF10Msg(112); 
-								EdBreak = 13; 
+								WrLLF10Msg(112);
+								EdBreak = 13;
 								goto fin;
 							}
 							if (b && !CtrlMProc(0)) goto label7;
 						}
 					}
 					else if (WriteCRec(true, Displ)) {
-						if (Displ) DisplAllWwRecs(); 
+						if (Displ) DisplAllWwRecs();
 						KbdChar = w;       /*only in edit mode*/
 						switch (w) {
 						case VK_F9: { SaveFiles; UpdCount = 0; break; }
