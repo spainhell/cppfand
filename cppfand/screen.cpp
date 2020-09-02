@@ -98,7 +98,7 @@ void Screen::ScrWrText(WORD X, WORD Y, const char* S)
 	DWORD written = 0;
 	size_t len = strlen(S);
 	WriteConsoleOutputCharacterA(_handle, S, len, { (short)X - 1, (short)Y - 1 }, &written);
-	GotoXY(X + len, Y);
+	GotoXY(X + len, Y, absolute);
 }
 
 void Screen::ScrFormatWrText(WORD X, WORD Y, char const* const _Format, ...)
@@ -281,9 +281,14 @@ void Screen::WriteStyledStringToWindow(std::string text, BYTE Attr)
 		}
 		// pokud se jedna o posledni radek, nastavime korektne RELATIVNI souradnice
 		else {
-			GotoXY(BufferSize.X + 1, actualWindowRow);
+			// pokud jsme na konci radku, prejdeme na zacatek
+			if (BufferSize.X + 1 > WindMax->X) {
+				GotoXY(1, actualWindowRow);
+			}
+			else {
+				GotoXY(BufferSize.X + 1, actualWindowRow);
+			}
 		}
-
 	}
 	delete[] _buf;
 }

@@ -1077,7 +1077,7 @@ void DisplEditWw()
 	screen.Window(1, 1, TxtCols, TxtRows);
 	DisplSysLine();
 	DisplBool();
-	screen.GotoXY(E->FrstCol - 1, E->FrstRow - 1);
+	screen.GotoXY(E->FrstCol, E->FrstRow);
 	WriteSL(E->HdTxt);
 	DisplRecTxt();
 	DisplTabDupl();
@@ -1095,20 +1095,24 @@ void DisplWwRecsOrPage()
 		ClrScr();
 		WindMin = oldMin;
 		WindMax = oldMax;
-		DisplRecTxt(); DisplTabDupl();
+		DisplRecTxt(); 
+		DisplTabDupl();
 	}
-	DisplAllWwRecs(); DisplRecNr(CRec());
+	DisplAllWwRecs(); 
+	DisplRecNr(CRec());
 }
 
 void DuplOwnerKey()
 {
-	KeyFldDPtr KF, Arg;
+	KeyFldD* KF = nullptr, * Arg = nullptr;
 	if (!E->DownSet || (E->OwnerTyp == 'i')) return;
-	KF = E->DownLD->ToKey->KFlds; Arg = E->DownLD->Args;
+	KF = E->DownLD->ToKey->KFlds; 
+	Arg = E->DownLD->Args;
 	while (Arg != nullptr) {
 		DuplFld(E->DownLD->ToFD, CFile, E->DownRecPtr, E->NewRecPtr, E->OldRecPtr,
 			KF->FldD, Arg->FldD);
-		Arg = (KeyFldD*)Arg->Chain; KF = (KeyFldD*)KF->Chain;
+		Arg = (KeyFldD*)Arg->Chain; 
+		KF = (KeyFldD*)KF->Chain;
 	}
 }
 
