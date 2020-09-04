@@ -1094,7 +1094,8 @@ void DisplEditWw()
 void DisplWwRecsOrPage()
 {
 	if (CPage != CFld->Page) {
-		SetCPage(); TextAttr = E->Attr;
+		SetCPage();
+		TextAttr = E->Attr;
 		Wind oldMin = WindMin;
 		Wind oldMax = WindMax;
 		screen.Window(E->FrstCol, E->FrstRow + E->NHdTxt, E->LastCol, E->FrstRow + E->Rows - 1);
