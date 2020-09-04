@@ -1221,12 +1221,16 @@ bool OpenEditWw()
 	CFile = E->Journal;
 	if (CFile != nullptr) OpenCreateF(Shared);
 	RdEStatus();
-	if (EdRecVar) { if (OnlyAppend) goto label2; else goto label3; }
+	if (EdRecVar) {
+		if (OnlyAppend) goto label2;
+		else goto label3;
+	}
 #ifdef FandSQL
 	if (!CFile->IsSQLFile)
 #endif
 		OpenCreateF(Shared);
-	E->OldMd = E->FD->LMode; UpdCount = 0;
+	E->OldMd = E->FD->LMode;
+	UpdCount = 0;
 #ifdef FandSQL
 	if (CFile->IsSQLFile) {
 		if ((VK = nullptr) || !VK->InWork) Subset = true

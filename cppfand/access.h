@@ -395,7 +395,7 @@ private:
 class XItem // r274
 {
 public:
-	XItem(BYTE* data); 
+	XItem(BYTE* data, bool isLeaf);
 	BYTE* Nr; // NN  RecNr /on leaf/ or NumberofRecordsBelow
 	longint* DownPage; // not on leaf
 	// M byte  number of equal bytes /not stored bytes/ 
@@ -407,7 +407,7 @@ public:
 	void PutM(WORD O, WORD M); // index.pas r139 ASM
 	WORD GetL(WORD O); // index.pas r142 ASM
 	void PutL(WORD O, WORD L); // index.pas r145 ASM
-	XItem* Next(WORD O); // index.pas r148 ASM
+	XItem* Next(WORD O, bool isLeaf); // index.pas r148 ASM
 	WORD UpdStr(WORD O, pstring* S); // index.pas r152 ASM
 };
 typedef XItem* XItemPtr;
@@ -421,7 +421,7 @@ public:
 	WORD NItems = 0;
 	BYTE A[XPageSize - 4]{ '\0' };  // item array
 	WORD Off();
-	XItem* XI(WORD I);
+	XItem* XI(WORD I, bool isLeaf);
 	uintptr_t EndOff();
 	bool Underflow();
 	bool Overflow();

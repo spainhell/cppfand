@@ -167,7 +167,8 @@ label1:
 		if (HandleError == 2) {
 			CFile->XF->Handle = OpenH(_isoverwritefile, Exclusive);
 			if (HandleError != 0) goto label4;
-			CFile->XF->SetNotValid(); CloseH(CFile->XF->Handle);
+			CFile->XF->SetNotValid();
+			CloseH(CFile->XF->Handle);
 			goto label3;
 		}
 		if (HandleError != 0) {
@@ -382,7 +383,7 @@ void CloseFile()
 			if ((!CFile->IsShared()) && (CFile->NRecs == 0) && (CFile->Typ != 'D')) {
 				SetCPathVol();
 				CExtToT();
-				MyDeleteFile(CPath);
+				// MyDeleteFile(CPath);
 			}
 		}
 	}
@@ -391,7 +392,7 @@ void CloseFile()
 	CFile->LMode = NullMode;
 	if (!CFile->IsShared() && (CFile->NRecs == 0) && (CFile->Typ != 'D')) {
 		SetCPathVol();
-		MyDeleteFile(CPath);
+		// MyDeleteFile(CPath);
 	}
 	if (CFile->WasRdOnly) {
 		CFile->WasRdOnly = false;

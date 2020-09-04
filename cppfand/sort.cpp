@@ -445,7 +445,7 @@ void XWorkFile::CopyIndex(KeyD* K, KeyFldD* KF, char Typ)
 		n = p->NItems;
 		while (n > 0) {
 			r->PutN(x->GetN());
-			if (KF == nullptr) x = x->Next(oLeaf);
+			if (KF == nullptr) x = x->Next(oLeaf, p->IsLeaf);
 			else *xofs = x->UpdStr(oLeaf, (pstring*)(&r->X.S));
 			Output(r); n--;
 		}
