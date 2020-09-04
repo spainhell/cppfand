@@ -605,7 +605,8 @@ void CreateIndexFile()
 		XW = new XWorkFile(Scan, CFile->Keys);
 		XW->Main('X');
 		delete XW;
-		XF->NotValid = false; XF->WrPrefix();
+		XF->NotValid = false;
+		XF->WrPrefix();
 		if (!SaveCache(0)) GoExit(); /*FlushHandles;*/;
 	}
 	fail = false;

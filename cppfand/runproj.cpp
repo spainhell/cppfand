@@ -1333,7 +1333,8 @@ WORD CompileMsgOn(CHAR_INFO* Buf, longint& w)
 		RdMsg(117);
 		s = GetDLine(&MsgLine[1], MsgLine.length(), '/', 1);
 		screen.GotoXY(3, 2);
-		printf("%s", s.c_str()); result = s.length();
+		printf("%s", s.c_str());
+		result = s.length();
 		screen.GotoXY(3, 3);
 		printf("%s", GetDLine(&MsgLine[1], MsgLine.length(), '/', 2).c_str());
 	}
@@ -1803,21 +1804,32 @@ bool EditExecRdb(pstring* Nm, pstring* ProcNm, Instr_proc* ProcCall, wwmix* ww)
 #ifndef FandRunV
 		if ((ChptTF->LicenseNr != 0) || CRdb->Encrypted
 			|| (Chpt->UMode == RdOnly)) goto label9;
-		ReleaseFDLDAfterChpt(); ReleaseStore(p);
+		ReleaseFDLDAfterChpt();
+		ReleaseStore(p);
 	}
 	else if (!top) UserW = PushW(1, 1, TxtCols, TxtRows);
-	EditRdbMode = true; if (CRdb->Encrypted) passw = ww->PassWord(false);
-	IsTestRun = true; EO = GetEditOpt();
+	EditRdbMode = true;
+	if (CRdb->Encrypted) passw = ww->PassWord(false);
+	IsTestRun = true;
+	EO = GetEditOpt();
 	EO->Flds = AllFldsList(Chpt, true);
 	EO->Flds = (FieldList)EO->Flds->Chain->Chain->Chain;
 	NewEditD(Chpt, EO);
 	E->MustCheck = true; /*ChptTyp*/
-	if (CRdb->Encrypted)
+	if (CRdb->Encrypted) {
 		if (ww->HasPassWord(Chpt, 1, passw)) {
-			CRdb->Encrypted = false; ww->SetPassWord(Chpt, 1, ""); CodingCRdb(false);
+			CRdb->Encrypted = false;
+			ww->SetPassWord(Chpt, 1, "");
+			CodingCRdb(false);
 		}
-		else { WrLLF10Msg(629); goto label9; }
-	if (!OpenEditWw()) goto label8; result = true; Chpt->WasRdOnly = false;
+		else {
+			WrLLF10Msg(629);
+			goto label9;
+		}
+	}
+	if (!OpenEditWw()) goto label8;
+	result = true;
+	Chpt->WasRdOnly = false;
 	if (!top && (Chpt->NRecs > 0))
 		if (CompileRdb(true, false, false)) {
 			if (FindChpt('P', *ProcNm, true, &RP)) GotoRecFld(RP.IRec, CFld);
@@ -1827,41 +1839,53 @@ bool EditExecRdb(pstring* Nm, pstring* ProcNm, Instr_proc* ProcCall, wwmix* ww)
 label1:
 	RunEdit(nullptr, Brk);
 label2:
-	cc = KbdChar; SaveFiles();
+	cc = KbdChar;
+	SaveFiles();
 	if ((cc == _CtrlF10_) || ChptTF->CompileAll || CompileFD) {
-		ReleaseFDLDAfterChpt(); SetSelectFalse(); E->Bool = nullptr;
+		ReleaseFDLDAfterChpt();
+		SetSelectFalse();
+		E->Bool = nullptr;
 		ReleaseStore(E->AfterE);
 	}
 	if (cc == _CtrlF10_) {
 		SetUpdHandle(ChptTF->Handle);
 		if (!CompileRdb(true, false, true)) goto label3;
-		if (!PromptCodeRdb) goto label6; Chpt->WasRdOnly = true; goto label8;
+		if (!PromptCodeRdb) goto label6;
+		Chpt->WasRdOnly = true;
+		goto label8;
 	}
 	if (Brk != 0) {
 		if (!CompileRdb(Brk = 2, false, false)) {
 		label3:
-			if (IsCompileErr) goto label4; if (Brk == 1) DisplEditWw();
-			GotoRecFld(InpRdbPos.IRec, (EFldD*)E->FirstFld->Chain); goto label1;
+			if (IsCompileErr) goto label4;
+			if (Brk == 1) DisplEditWw();
+			GotoRecFld(InpRdbPos.IRec, (EFldD*)E->FirstFld->Chain);
+			goto label1;
 		}
 		if (cc == _AltF2_) {
-			EditHelpOrCat(cc, 0, ""); goto label41;
+			EditHelpOrCat(cc, 0, "");
+			goto label41;
 		}
 		if (!CompRunChptRec(cc)) {
 		label4:
-			GotoErrPos(Brk); goto label5;
+			GotoErrPos(Brk);
+			goto label5;
 		}
 	label41:
 		if (Brk == 1) {
 			EditFreeTxt(ChptTxt, "", true, Brk);
 		label5:
-			if (Brk != 0) goto label2; else goto label1;
+			if (Brk != 0) goto label2;
+			else goto label1;
 		}
 		else {
 		label6:
-			DisplEditWw(); goto label1;
+			DisplEditWw();
+			goto label1;
 		}
 	}
-	ChptTF->IRec = CRec(); SetUpdHandle(ChptTF->Handle);
+	ChptTF->IRec = CRec();
+	SetUpdHandle(ChptTF->Handle);
 label8:
 	PopEdit();
 #endif

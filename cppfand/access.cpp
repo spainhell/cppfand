@@ -1334,6 +1334,17 @@ pstring _ShortS(FieldDescr* F)
 			{
 				// nebudeme volat, zøejmìní není potøeba
 				// UnPack(P, (WORD*)S[0], l);
+				for (size_t i = 0; i < l; i++) {
+					// kolikaty byte?
+					size_t iB = i / 2;
+					// leva nebo prava cislice?
+					if (i % 2 == 0) {
+						S[i + 1] = ((unsigned char)source[iB] >> 4) + 0x30;
+					}
+					else {
+						S[i + 1] = (source[iB] & 0x0F) + 0x30;
+					}
+				}
 			}
 			break;
 		}
@@ -2256,6 +2267,7 @@ void XString::Clear()
 void XString::StoreReal(double R, KeyFldD* KF)
 {
 	BYTE A[20];
+	// pole urcuje pocet Bytu, ve kterych bude ulozeno cislo
 	const BYTE TabF[18] = { 1, 1, 2, 2, 3, 3, 4, 4, 4, 5, 5, 6, 6, 6, 7, 7, 8, 8 };
 	auto X = KF->FldD;
 
@@ -2268,7 +2280,7 @@ void XString::StoreReal(double R, KeyFldD* KF)
 	if ((X->Flg & f_Comma) == 0) R = R * Power10[X->M];
 	WORD n = X->L - 1;
 	if (X->M > 0) n--;
-	n = TabF[n];
+	n = TabF[n - 1];
 	FixFromReal(R, A, n);
 	StoreF(A, n, KF->Descend);
 }
@@ -2286,9 +2298,21 @@ void XString::StoreStr(pstring V, KeyFldD* KF)
 		}
 	}
 	if (X->Typ == 'N') {
+		for (size_t i = 0; i < X->L; i++) {
+			// kolikaty byte zapisujeme?
+			size_t iB = i / 2;
+			// zapisujeme levou nebo pravou cast?
+			if (i % 2 == 0) {
+				V[iB + 1] = (V[i + 1] - 0x30) << 4;
+			}
+			else {
+				V[iB + 1] += V[i + 1] - 0x30;
+			}
+		}
 		// Pack(&V[1], &V[0], X->L);
 		n = (X->L + 1) / 2;
-		StoreN(&V, n, KF->Descend);
+		V[0] = n;
+		StoreN(&V[1], n, KF->Descend);
 	}
 	else { 
 		StoreA(&V[1], X->L, KF->CompLex, KF->Descend); 
@@ -2342,10 +2366,24 @@ void XString::StoreD(void* R, bool Descend)
 
 void XString::StoreN(void* N, WORD Len, bool Descend)
 {
+	std::string inpStr((char*)N, Len);
+	pstring inpPStr = inpStr;
+	S += inpPStr;
 }
 
 void XString::StoreF(void* F, WORD Len, bool Descend)
 {
+	unsigned char* data = (unsigned char*)F;
+	unsigned char origLen = S[0];
+	if (origLen + Len < Len) return; // proc to v ASM je? kvuli preteceni?
+	S[0] = origLen + Len;
+	if (data[0] < 0x0F)	S[origLen + 1] = data[0] | 0x80; // 1. bit bude '1'
+	else S[origLen + 1] = data[0] & 0x7F; // 1. bit bude '0'
+	unsigned char newIndex = origLen + 2; // zacneme zapisovat do S za puvodni data
+	// dokopirujeme zbytek dat (1. Byte uz mame, pokracujeme od 2.)
+	for (size_t i = 1; i < Len; i++) {
+		S[newIndex++] = data[i];
+	}
 }
 
 void XString::StoreA(void* A, WORD Len, bool CompLex, bool Descend)
@@ -2355,7 +2393,7 @@ void XString::StoreA(void* A, WORD Len, bool CompLex, bool Descend)
 		std::string cplx = TranslateOrd(p);
 		memcpy(p, cplx.c_str(), cplx.length());
 	}
-	// jinak asi nahradi mezery na konci retezce za '0x1F'
+	// nahradi mezery na konci retezce za '0x1F'
 	for (int i = Len - 1; i >= 0; i--) {
 		if (p[i] == ' ') {
 			p[i] = 0x1F;

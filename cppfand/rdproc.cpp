@@ -2503,7 +2503,7 @@ Instr* RdPInstr()
 	else if (IsKeyWord("BEEP")) result = new Instr(_beepP);
 	else if (IsKeyWord("NOSOUND")) result = new Instr(_nosound);
 #ifndef FandRunV
-	else if (IsKeyWord("MEMDIAG")) RdPInstr = GetPInstr(_memdiag, 0);
+	else if (IsKeyWord("MEMDIAG")) result = new Instr(_memdiag);
 #endif 
 	else if (IsKeyWord("RESETCATALOG")) result = new Instr(_resetcat);
 	else if (IsKeyWord("RANDOMIZE")) result = new Instr(_randomize);

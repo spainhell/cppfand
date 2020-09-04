@@ -118,9 +118,9 @@ void CenterWw(BYTE& C1, BYTE& R1, BYTE& C2, BYTE& R2, BYTE WFlags)
 
 longint PushWFramed(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, pstring top, pstring bottom, BYTE WFlags)
 {
-	WORD i, x, y;
+	WORD i = 0;
 	CenterWw(C1, R1, C2, R2, WFlags);
-	x = 0; y = 0;
+	WORD x = 0; WORD y = 0;
 	if ((WFlags & WShadow) != 0) {
 		x = MinW(2, TxtCols - C2);
 		y = MinW(1, TxtRows - R2);
