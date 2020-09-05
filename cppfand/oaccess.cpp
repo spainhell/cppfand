@@ -361,7 +361,7 @@ void CloseFile()
 	TruncF();
 	if (CFile->Typ == 'X') { /*with XF^*/
 		if (CFile->XF->Handle != nullptr) {
-			CloseClearH(CFile->Handle);
+			CloseClearH(CFile->XF->Handle);
 			if (!CFile->IsShared())
 			{
 				if (CFile->XF->NotValid) goto label1;

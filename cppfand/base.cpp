@@ -845,11 +845,6 @@ FILE* OpenH(FileOpenMode Mode, FileUseMode UM)
 	// pøi 'IsNetCVol' se chová jinak
 	// RdOnly $20, RdShared $40, Shared $42, Exclusive $12
 
-	//if (CPath == "C:\\UCTO2020\\{STAN}\\PARAM3.T00")
-	//{
-	//	printf("");
-	//}
-
 	pstring s;
 
 	pstring txt[] = { "Clos", "OpRd", "OpRs", "OpSh", "OpEx" };

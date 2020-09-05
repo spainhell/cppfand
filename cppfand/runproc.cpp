@@ -567,7 +567,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 				}
 			N = CFile->NRecs;
 		}
-		else if (not SrchXKey(k, x, N)) {
+		else if (!SrchXKey(k, x, N)) {
 		label2:
 			if (IsRead) {
 				DelTFlds();
@@ -937,8 +937,8 @@ void WithGraphicsProc(Instr* PD)
 
 void ResetCatalog()
 {
-	FileDPtr cf; RdbDPtr r;
-	cf = CFile; r = CRdb;
+	FileD* cf = CFile;
+	RdbD* r = CRdb;
 	while (CRdb != nullptr) {
 		CFile = (FileD*)CRdb->FD->Chain;
 		while (CFile != nullptr) {
@@ -951,7 +951,8 @@ void ResetCatalog()
 		}
 		CRdb = CRdb->ChainBack;
 	}
-	CFile = cf; CRdb = r;
+	CFile = cf;
+	CRdb = r;
 }
 
 void PortOut(bool IsWord, WORD Port, WORD What)
@@ -1252,9 +1253,9 @@ void CallProcedure(Instr_proc* PD)
 #ifdef _DEBUG
 	std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
 
-	if (srcCode.find("b:=Akt(Mod);") != std::string::npos) {
+	if (srcCode.find("tipT:=true; f8:=true  ; hd:='Tip: '; pg:=^(edfile in~['TIPY','HESLA','FAQ']); end; end;") != std::string::npos) {
 		//|| srcCode.find("STAT.Start") != std::string::npos) {
-		printf("");
+		//printf("");
 		//FuncD* f = FuncDRoot;
 		//std::ofstream myfile;
 		//myfile.open("functions.txt");

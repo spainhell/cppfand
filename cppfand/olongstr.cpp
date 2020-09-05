@@ -193,7 +193,7 @@ label3:
 		frst = false;
 	}
 	if ((l > MPageSize) || isLongTxt) {
-		Pos2 = *(longint*)X[MPageSize - 4];
+		Pos2 = *(longint*)&X[MPageSize - 4];
 		nxtpos = TF->NewPage(false);
 		*(longint*)&X[MPageSize - 4] = nxtpos;
 		RdWrCache(false, TF->Handle, TF->NotCached(), pos, MPageSize, X);
