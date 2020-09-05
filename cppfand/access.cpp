@@ -2391,7 +2391,8 @@ void XString::StoreA(void* A, WORD Len, bool CompLex, bool Descend)
 	char* p = (char*)A;
 	if (CompLex) {
 		std::string cplx = TranslateOrd(p);
-		memcpy(p, cplx.c_str(), cplx.length());
+		Len = cplx.length();
+		memcpy(p, cplx.c_str(), Len);
 	}
 	// nahradi mezery na konci retezce za '0x1F'
 	for (int i = Len - 1; i >= 0; i--) {
@@ -2719,6 +2720,7 @@ bool XKey::Search(XString& XX, bool AfterEqu, longint& RecNr)
 	XPage* p = nullptr;
 	WORD iItem = 0;
 	XItem* x = nullptr;
+	size_t iItemIndex = 0;
 	char result = '\0';
 	p = new XPage(); // (XPage*)GetStore(XPageSize);
 	XPathN = 1;
@@ -2737,14 +2739,14 @@ label1:
 	}
 
 	// * PUVODNI ASM
-	result = XKeySearch2(p->A, &XX.S[0], iItem, nItems, o, AfterEqu);
+	result = XKeySearch2(p->A, &XX.S[0], iItem, iItemIndex, nItems, o, AfterEqu);
 	// * KONEC PUVODNIHO ASM
 
 	XPath[XPathN].I = iItem;
-	x = new XItem(p->A, p->IsLeaf/*p->A[0], p->A[1], p->A[2], *(longint*)&p->A[3], &p->A[7]*/);
+	x = new XItem(&p->A[iItemIndex], p->IsLeaf);
 	if (p->IsLeaf) {
 		if (iItem > nItems) RecNr = CFile->NRecs + 1;
-		else RecNr = iItem; // x->GetN();
+		else RecNr = x->GetN();
 		if (result == _equ)
 			if
 #ifdef FandSQL
@@ -4044,7 +4046,12 @@ std::string TranslateOrd(std::string text)
 	for (size_t i = 0; i < text.length(); i++) {
 		char c = CharOrdTab[text[i]];
 #ifndef FandAng
-		if (c == 0x4a) continue;
+		if (c == 0x49) { // znak 'H'
+			if (trans[trans.length() - 1] == 0x43) { // posledni znak ve vystupnim retezci je 'C' ?
+				trans[trans.length() - 1] = 0x4A; // na vstupu bude 'J' jako 'CH'
+				continue;
+			}
+		}
 #endif
 		trans += c;
 	}

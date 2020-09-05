@@ -2864,7 +2864,8 @@ bool SelFldsForEO(EditOpt* EO, LinkD* LD)
 		}
 		FL = (FieldList)FL->Chain;
 	}
-	if (EO->Flds == nullptr) WrLLF10Msg(156); else ww.SelFieldList(36, true, EO->Flds);
+	if (EO->Flds == nullptr) WrLLF10Msg(156);
+	else ww.SelFieldList(36, true, EO->Flds);
 	if (EO->Flds == nullptr) { ReleaseStore(p); result = false; }
 	return result;
 }
