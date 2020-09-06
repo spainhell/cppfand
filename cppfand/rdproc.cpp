@@ -609,7 +609,7 @@ label1:
 						CD->DisplEver = true; RdLex();
 					}
 				}
-			};
+			}
 		}
 		Accept(':');
 		CD->Instr = RdPInstr();

@@ -743,7 +743,8 @@ TMenuBarP::TMenuBarP(Instr_menu* aPD)
 
 bool TMenuBarP::Enabled(WORD I)
 {
-	return CI(CRoot, I)->Enabled;
+	auto choice = CI(CRoot, I);
+	return choice->Enabled;
 }
 
 bool TMenuBarP::ExecItem(WORD& I)

@@ -178,14 +178,14 @@ double RunRealStr(FrmlElem* X)
 		size_t n = 1; // kolikaty vyskyt najit
 		if (iX->PP3 != nullptr) {
 			n = RunInt(iX->PP3);
-			if (n < 1) return -1;
+			if (n < 1) return 0; // 0 - nenalezeno
 		}
 		size_t offset = 0;
 		while (n > 0) {
 			size_t found = strS.find(strMask, offset);
 			if (found == std::string::npos) {
 				// n-ty vyskyt nenalezen
-				return -1;
+				return 0; // 0 - nenalezeno
 			}
 			offset = found;
 			n--;
@@ -1072,7 +1072,7 @@ label1:
 		result = GetFileSize();
 		break;
 	}
-	case _inttsr: result = IntTSR(X);
+	case _inttsr: result = IntTSR(X); break;
 	case _userfunc: {
 		result = RunUserFunc((FrmlElem19*)X)->R;
 		cr = MyBP; PopProcStk(); ReleaseStore(cr);

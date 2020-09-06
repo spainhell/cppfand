@@ -705,7 +705,10 @@ label1:
 				DelTFlds();
 				CopyRecWithT(cr, lr);
 			}
-		if (LVi != nullptr) *(double*)(LocVarAd(LVi)) = Scan->RecNr;
+		//if (LVi != nullptr) *(double*)(LocVarAd(LVi)) = Scan->RecNr;
+		if (LVi != nullptr) {
+			LVi->R = Scan->RecNr;
+		}
 		RunInstr(PD->CInstr);
 		CFile = FD;
 		CRecPtr = lr;
@@ -1253,9 +1256,9 @@ void CallProcedure(Instr_proc* PD)
 #ifdef _DEBUG
 	std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
 
-	if (srcCode.find("tipT:=true; f8:=true  ; hd:='Tip: '; pg:=^(edfile in~['TIPY','HESLA','FAQ']); end; end;") != std::string::npos) {
+	if (srcCode.find("menubar of 'Finance','finance',NoBlk('F')!:") != std::string::npos) {
 		//|| srcCode.find("STAT.Start") != std::string::npos) {
-		//printf("");
+		printf("");
 		//FuncD* f = FuncDRoot;
 		//std::ofstream myfile;
 		//myfile.open("functions.txt");

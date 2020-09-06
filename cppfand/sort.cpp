@@ -213,7 +213,7 @@ WorkFile::~WorkFile()
 
 void WorkFile::Reset(KeyFldD* KF, longint RestBytes, char Typ, longint NRecs)
 {
-	longint BYTEs; longint pages;
+	longint BYTEs = 0; longint pages = 0;
 	const WORD kB60 = 0x0F000;
 	KFRoot = KF; RecLen = 7;
 	while (KF != nullptr) {
@@ -224,10 +224,10 @@ void WorkFile::Reset(KeyFldD* KF, longint RestBytes, char Typ, longint NRecs)
 	}
 	BYTEs = (StoreAvail() - RestBytes - sizeof(WRec)) / 3;
 	if (BYTEs < 4096) RunError(624);
-	if (BYTEs < kB60) WPageSize = WORD(BYTEs) & 0xF000;
+	if (BYTEs < kB60) WPageSize = (WORD)BYTEs & 0xF000;
 	else WPageSize = kB60;
 	MaxOnWPage = (WPageSize - sizeof(WPage) + 1) / RecLen;
-	if (integer(MaxOnWPage) < 4) RunError(624);
+	if ((integer)MaxOnWPage < 4) RunError(624);
 	MaxWPage = 0; NFreeNr = 0;
 	PW = (WPage*)GetStore(WPageSize);
 	WRoot = GetFreeNr();
@@ -243,18 +243,28 @@ void WorkFile::Reset(KeyFldD* KF, longint RestBytes, char Typ, longint NRecs)
 
 void WorkFile::SortMerge()
 {
-	WRec* r = nullptr; WORD* rofs = (WORD*)r;
-	WORD n; longint pg, nxt;
+	WRec* r = nullptr;
+	WORD* rofs = (WORD*)r;
+	WORD n = 0; longint pg = 0, nxt = 0;
 	PgWritten = 0;
-	n = 0; r = (WRec*)(&PW->A); nxt = WRoot; NChains = 1;
+	r = (WRec*)(&PW->A);
+	nxt = WRoot;
+	NChains = 1;
 	while (GetCRec()) {
 		if (n == MaxOnWPage) {
-			PW->Sort(n, RecLen); pg = nxt; nxt = GetFreeNr(); NChains++;
+			PW->Sort(n, RecLen);
+			pg = nxt;
+			nxt = GetFreeNr();
+			NChains++;
 			WriteWPage(n, pg, nxt, 0);
-			n = 0; r = (WRec*)(&PW->A);
+			n = 0;
+			r = (WRec*)(&PW->A);
 		}
-		r->PutN(RecNr); r->PutIR(IRec); r->X.PackKF(KFRoot);
-		n++; rofs += RecLen;
+		r->PutN(RecNr);
+		r->PutIR(IRec);
+		r->X.PackKF(KFRoot);
+		n++;
+		rofs += RecLen;
 	}
 	PW->Sort(n, RecLen);
 	WriteWPage(n, nxt, 0, 0);
