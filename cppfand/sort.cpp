@@ -400,7 +400,10 @@ void WorkFile::WriteWPage(WORD N, longint Pg, longint Nxt, longint Chn)
 
 XWorkFile::XWorkFile(XScan* AScan, XKey* AK)
 {
-	Scan = AScan; CFile = Scan->FD; KD = AK; XF = AK->XF();
+	Scan = AScan;
+	CFile = Scan->FD;
+	KD = AK;
+	XF = AK->XF();
 }
 
 void XWorkFile::Main(char Typ)

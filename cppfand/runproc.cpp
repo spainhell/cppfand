@@ -596,7 +596,9 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 		CopyRecWithT(PD->LV->RecPtr, cr);
 		if (app) {
 			CRecPtr = cr;
-			if (CFile->Typ == 'X') RecallRec(N);
+			if (CFile->Typ == 'X') {
+				RecallRec(N);
+			}
 			else WriteRec(N);
 			if (ad) LastExitCode = !RunAddUpdte('+', nullptr, nullptr);
 		}
@@ -1192,7 +1194,10 @@ void RunInstr(Instr* PD)
 		case _backupm: BackupM((Instr_backup*)PD); break;
 		case _resetcat: ResetCatalog(); break;
 		case _setedittxt: { SetEditTxt((Instr_setedittxt*)PD); break; }
-		case _getindex: { GetIndexSort((Instr_getindex*)PD); break; }
+		case _getindex: {
+				GetIndexSort((Instr_getindex*)PD);
+				break;
+			}
 		case _setmouse: {
 			auto iPD = (Instr_setmouse*)PD;
 			SetMouse(RunInt(iPD->MouseX), RunInt(iPD->MouseY), RunBool(iPD->Show));
@@ -1256,7 +1261,7 @@ void CallProcedure(Instr_proc* PD)
 #ifdef _DEBUG
 	std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
 
-	if (srcCode.find("menubar of 'Finance','finance',NoBlk('F')!:") != std::string::npos) {
+	if (srcCode.find("dir='{PRIK}':'U002',dir='{TREN}':'U003'") != std::string::npos) {
 		//|| srcCode.find("STAT.Start") != std::string::npos) {
 		printf("");
 		//FuncD* f = FuncDRoot;
