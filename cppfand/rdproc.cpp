@@ -2521,9 +2521,6 @@ Instr* RdPInstr()
 
 void ReadProcHead(const std::string& name)
 {
-	if (name.find("M01") != std::string::npos) {
-		printf("ReadProcHead(): Name '%s'", name.c_str());
-	}
 	ResetCompilePars();
 	RdFldNameFrml = RdFldNameFrmlP; RdFunction = RdFunctionP;
 	FileVarsAllowed = false; IdxLocVarAllowed = true; IsRdUserFunc = false;

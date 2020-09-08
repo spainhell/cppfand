@@ -433,7 +433,7 @@ void RdLex()
 		break;
 	default: break;
 	}
-	//if (LexWord == "NoBlk")
+	//if (LexWord == "EDIT")
 	//{
 	//	printf("RdLex() r. 437 - %s\n", LexWord.c_str());
 	//}
@@ -779,7 +779,10 @@ label1:
 void RdLocDcl(LocVarBlkD* LVB, bool IsParList, bool WithRecVar, char CTyp)
 {
 	FrmlElem* Z = nullptr;
-	pstring s; double r = 0; char typ = '\0', lx = '\0', fc = '\0';
+	bool b = false;
+	double r = 0;
+	std::string s;
+	char typ = '\0', lx = '\0', fc = '\0';
 	WORD sz = 0, n = 0;
 	FileD* cf = nullptr; FileD* fd = nullptr;
 	void* cr = nullptr; stSaveState* p = nullptr;
@@ -805,9 +808,13 @@ label1:
 		if ((Lexem == _equ) && !IsParList) {
 			RdLex();
 			if (IsKeyWord("TRUE")) {
-				Z = new FrmlElem5(_const, 0, true); // GetOp(_const, sizeof(bool));
+				b = true;
+				// Z = new FrmlElem5(_const, 0, true); // GetOp(_const, sizeof(bool));
 			}
-			else { if (!IsKeyWord("FALSE")) Error(42); }
+			else {
+				b = false;
+				if (!IsKeyWord("FALSE")) Error(42);
+			}
 		}
 		typ = 'B';
 		sz = sizeof(bool);
@@ -817,9 +824,9 @@ label1:
 		if ((Lexem == _equ) && !IsParList) {
 			RdLex();
 			r = RdRealConst();
-			if (r != 0) {
-				Z = new FrmlElem2(_const, 0, r); // GetOp(_const, sizeof(double));
-			}
+			//if (r != 0) {
+			//	Z = new FrmlElem2(_const, 0, r); // GetOp(_const, sizeof(double));
+			//}
 		}
 		typ = 'R';
 		sz = sizeof(double);
@@ -830,9 +837,9 @@ label1:
 			RdLex();
 			s = LexWord;
 			Accept(_quotedstr);
-			if (s != "") {
-				Z = new FrmlElem4(_const, 0, s); // GetOp(_const, s.length() + 1);
-			}
+			//if (s != "") {
+			//	Z = new FrmlElem4(_const, 0, s); // GetOp(_const, s.length() + 1);
+			//}
 		}
 		typ = 'S';
 		sz = sizeof(longint);
@@ -845,6 +852,11 @@ label1:
 			locvar->Init = Z;
 			locvar->BPOfs = LVB->Size;
 			LVB->Size += sz;
+			switch (typ) {
+			case 'B': locvar->B = b; break;
+			case 'R': locvar->R = r; break;
+			case 'S': locvar->S = s; break;
+			}
 		}
 
 		//while (lv != nullptr) {

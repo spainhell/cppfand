@@ -1984,5 +1984,6 @@ void GetRecNoXString(FrmlElem13* Z, XString& X)
 		case 'B': X.StoreBool(RunBool(zz), kf); break;
 		}
 		kf = (KeyFldD*)kf->Chain;
+		i++;
 	}
 }

@@ -1261,7 +1261,7 @@ void CallProcedure(Instr_proc* PD)
 #ifdef _DEBUG
 	std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
 
-	if (srcCode.find("dir='{PRIK}':'U002',dir='{TREN}':'U003'") != std::string::npos) {
+	if (srcCode.find("var n2000,n2001,n2002,n2003,n2004,n2005,n2006,n2007,n2008,n2009,") != std::string::npos) {
 		//|| srcCode.find("STAT.Start") != std::string::npos) {
 		printf("");
 		//FuncD* f = FuncDRoot;

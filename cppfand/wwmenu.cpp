@@ -546,7 +546,10 @@ bool TMenuBoxP::ExecItem(WORD& I)
 		if ((Event.What == evMouseDown) || !PD->WasESCBranch) return result;
 		RunInstr(PD->ESCInstr);
 	}
-	else RunInstr(CI(CRoot, I)->Instr);
+	else {
+		auto choice = CI(CRoot, I);
+		RunInstr(choice->Instr);
+	}
 	if (ExitP) { I = 255; return result; } I = 0;
 	if (PD->Loop) {
 		if (BreakP) { BreakP = false; return result; }

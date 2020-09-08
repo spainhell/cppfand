@@ -612,19 +612,26 @@ label1:
 
 void RdImpl()
 {
-	EFldD* D; FrmlPtr Z; char FTyp; FieldDPtr F; ImplDPtr ID;
+	EFldD* D = nullptr; FrmlElem* Z = nullptr; char FTyp = '\0';
+	FieldDescr* F = nullptr; ImplD* ID = nullptr;
 	RdLex();
 label1:
-	F = RdFldName(CFile); Accept(_assign); Z = RdFrml(FTyp);
+	F = RdFldName(CFile);
+	Accept(_assign);
+	Z = RdFrml(FTyp);
 	D = FindEFld_E(F);
 	if (D != nullptr) D->Impl = Z;
 	else {
-		ID = (ImplD*)GetStore(sizeof(*ID)); ID->FldD = F; ID->Frml = Z;
-		ChainLast(E->Impl, ID);
+		ID = new ImplD(); // (ImplD*)GetStore(sizeof(*ID));
+		ID->FldD = F;
+		ID->Frml = Z;
+		if (E->Impl == nullptr) E->Impl = ID;
+		else ChainLast(E->Impl, ID);
 	}
 	if (Lexem == ';')
 	{
-		RdLex(); if (!(Lexem == '#' || Lexem == 0x1A)) goto label1;
+		RdLex();
+		if (!(Lexem == '#' || Lexem == 0x1A)) goto label1;
 	}
 }
 
@@ -643,8 +650,12 @@ void RdAllUDLIs(FileD* FD)
 	RdbD* r = nullptr;
 	if (FD->OrigFD != nullptr) RdAllUDLIs(FD->OrigFD);
 	if (FD->TxtPosUDLI != 0) {
-		ResetCompilePars(); SetInpTTxtPos(FD);
-		r = CRdb; CRdb = FD->ChptPos.R; RdUDLI(); CRdb = r;
+		ResetCompilePars();
+		SetInpTTxtPos(FD);
+		r = CRdb;
+		CRdb = FD->ChptPos.R;
+		RdUDLI();
+		CRdb = r;
 	}
 }
 

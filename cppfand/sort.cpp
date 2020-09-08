@@ -599,8 +599,8 @@ void CreateIndexFile()
 	ExitRecord er;
 	void* cr = nullptr; void* p = nullptr;
 	LockMode md = NullMode; bool fail = false;
-	XWorkFile* XW;
-	XScan* Scan;
+	XWorkFile* XW = nullptr;
+	XScan* Scan = nullptr;
 	XFile* XF = nullptr;
 	//NewExit(Ovr(), er);
 	//goto label1;

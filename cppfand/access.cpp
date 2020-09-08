@@ -2388,6 +2388,7 @@ void XString::StoreF(void* F, WORD Len, bool Descend)
 
 void XString::StoreA(void* A, WORD Len, bool CompLex, bool Descend)
 {
+	int endSpaces = 0; // pocet mezer na konci retezce
 	char* p = (char*)A;
 	if (CompLex) {
 		std::string cplx = TranslateOrd(p);
@@ -2398,12 +2399,18 @@ void XString::StoreA(void* A, WORD Len, bool CompLex, bool Descend)
 	for (int i = Len - 1; i >= 0; i--) {
 		if (p[i] == ' ') {
 			p[i] = 0x1F;
+			endSpaces++;
 			continue;
 		}
 		break;
 	}
-	S[0] = Len;
-	memcpy(&S[1], p, Len);
+	// pokud je koncovych mezer vic, kopirujeme jen jednu
+	if (endSpaces > 1) {
+		Len = Len - (endSpaces - 1);
+	}
+	auto oldLen = S[0];
+	S[0] = oldLen + Len;
+	memcpy(&S[oldLen + 1], p, Len);
 	if (Descend) {
 		// call NegateESDI;
 	}
