@@ -62,7 +62,7 @@ integer CompReal(double R1, double R2, integer M)
 	if (tR1 < tR2) return _lt;
 	// cisla jsou stejna nebo se lisi jen desetinnou casti
 	// zjistime znamenko (zaporne jsou ve vysledku opacne)
-	bool neg = R1 < 0; 
+	bool neg = R1 < 0;
 	// vezmeme jen desetinnou cast
 	R1 = R1 - tR1;
 	R2 = R2 - tR2;
@@ -1020,8 +1020,8 @@ label1:
 		break;
 	}
 	case _currtime: {
-		result = CurrTime(); 
-		break; 
+		result = CurrTime();
+		break;
 	}
 	case _typeday: {
 		auto rr = RunReal(iX0->P1);
@@ -1093,7 +1093,7 @@ label1:
 		size_t colorFromFrml = RunInt(iX0->P1);
 		BYTE* AColors = (BYTE*)&screen.colors;
 		result = AColors[min(colorFromFrml, 53)];
-		break; 
+		break;
 	}
 	case _portin: result = PortIn(RunBool(iX0->P1), WORD(RunInt(iX0->P2))); break;
 	case _setmybp: {
@@ -1618,25 +1618,35 @@ void AddToLongStr(LongStr* S, void* P, WORD L)
 
 void StrMask(double R, pstring& Mask)
 {
-	pstring Num; WORD i, l, n, sw, pos, pos1; bool minus;
-
-	sw = 2; l = Mask.length(); n = 0; pos = l + 1; pos1 = pos;
-	for (i = l; i > 1; i--)
+	pstring Num; WORD i = 0;
+	WORD sw = 2; WORD l = Mask.length();
+	WORD n = 0; WORD pos = l + 1;
+	WORD pos1 = pos;
+	for (i = l; i >= 1; i--)
 		switch (Mask[i]) {
 		case ',': if (sw == 2) sw = 1; break;
 		case '0':
-		case '*': { pos = i; goto label1; break; }
+		case '*': {
+			pos = i;
+			goto label1;
+			break;
+		}
 		case '_': {
 			if (sw == 1) pos1 = i;
 		label1:
-			if (sw == 1) sw = 0; else if (sw == 2) n++; break; }
+			if (sw == 1) sw = 0;
+			else if (sw == 2) n++;
+			break;
 		}
-	if (sw == 2) n = 0; R = R * Power10[n];
+		}
+	if (sw == 2) n = 0;
+	R = R * Power10[n];
 	R = RoundReal(R, 0);
-	minus = false;
+	bool minus = false;
 	if (R == 0) Num[0] = 0;
 	else {
-		if (R < 0) { minus = true; R = -R; } str(R, Num);
+		if (R < 0) { minus = true; R = -R; }
+		str(R, Num);
 		pos = MinW(pos, pos1);
 	}
 	i = Num.length();
@@ -1666,7 +1676,8 @@ void StrMask(double R, pstring& Mask)
 				}
 
 			label3:
-				Mask[l] = Num[i]; i--;
+				Mask[l] = Num[i];
+				i--;
 			}
 			break;
 		}

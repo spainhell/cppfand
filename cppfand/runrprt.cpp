@@ -43,7 +43,7 @@ void RunReport(RprtOpt* RO)
 	MarkStore2(Store2Ptr); ex = true;
 	PushProcStk();
 	//NewExit(Ovr(), er);
-	goto label3;
+	//goto label3;
 	OpenInp();
 	MergOpGroup.Group = 1.0; frst = true; NLinesOutp = 0; PrintDH = 2;
 label0:
@@ -90,8 +90,10 @@ label1:
 		Rprt.Close(); // if (isLPT1) ClosePrinter(0);
 		CloseInp(); 
 		PopProcStk();
-		if (ex) { RunMsgOff(); 
-		if (!WasLPTCancel) GoExit(); }
+		if (ex) {
+			RunMsgOff(); 
+			if (!WasLPTCancel) GoExit();
+		}
 		return;
 	}
 	L = GetDifLevel();

@@ -808,11 +808,10 @@ label1:
 		if ((Lexem == _equ) && !IsParList) {
 			RdLex();
 			if (IsKeyWord("TRUE")) {
-				b = true;
 				// Z = new FrmlElem5(_const, 0, true); // GetOp(_const, sizeof(bool));
+				newVars[0]->B = true;
 			}
 			else {
-				b = false;
 				if (!IsKeyWord("FALSE")) Error(42);
 			}
 		}
@@ -827,6 +826,7 @@ label1:
 			//if (r != 0) {
 			//	Z = new FrmlElem2(_const, 0, r); // GetOp(_const, sizeof(double));
 			//}
+			newVars[0]->R = r;
 		}
 		typ = 'R';
 		sz = sizeof(double);
@@ -840,6 +840,7 @@ label1:
 			//if (s != "") {
 			//	Z = new FrmlElem4(_const, 0, s); // GetOp(_const, s.length() + 1);
 			//}
+			newVars[0]->S = s;
 		}
 		typ = 'S';
 		sz = sizeof(longint);
@@ -852,11 +853,6 @@ label1:
 			locvar->Init = Z;
 			locvar->BPOfs = LVB->Size;
 			LVB->Size += sz;
-			switch (typ) {
-			case 'B': locvar->B = b; break;
-			case 'R': locvar->R = r; break;
-			case 'S': locvar->S = s; break;
-			}
 		}
 
 		//while (lv != nullptr) {
