@@ -24,7 +24,7 @@ void RunReport(RprtOpt* RO)
 {
 	wwmix ww;
 	
-	LvDescr* L = nullptr; ExitRecord er = nullptr;
+	LvDescr* L = nullptr; ExitRecord er;
 	pstring* s = nullptr;
 	WORD i = 0;
 	bool frst = false, isLPT1 = false;
