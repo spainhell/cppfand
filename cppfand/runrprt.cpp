@@ -24,10 +24,14 @@ void RunReport(RprtOpt* RO)
 {
 	wwmix ww;
 	
-	LvDescr* L; ExitRecord er;
+	LvDescr* L = nullptr; ExitRecord er = nullptr;
 	pstring* s = nullptr;
-	WORD i; bool frst, isLPT1;
-	WORD Times; bool ex, b; BlkD* BD; BlkD* RFb; LockMode md;
+	WORD i = 0;
+	bool frst = false, isLPT1 = false;
+	WORD Times = 0;
+	bool ex = false, b = false;
+	BlkD* BD = nullptr; BlkD* RFb = nullptr;
+	LockMode md;
 	if (SelQuest) /* !!! with IDA[1]^ do!!! */ {
 		CFile = IDA[1]->Scan->FD; if (!ww.PromptFilter("", IDA[1]->Bool, s)) {
 			PrintView = false; return;
@@ -39,8 +43,9 @@ void RunReport(RprtOpt* RO)
 	else PgeSize = spec.AutoRprtLimit + spec.CpLines;
 	if (PgeSize < 2) PgeSize = 2;
 	if ((PgeLimit > PgeSize) || (PgeLimit == 0)) PgeLimit = PgeSize - 1;
-	if (! RewriteRprt(RO, PgeSize, Times, isLPT1)) return;
-	MarkStore2(Store2Ptr); ex = true;
+	if (!RewriteRprt(RO, PgeSize, Times, isLPT1)) return;
+	MarkStore2(Store2Ptr);
+	ex = true;
 	PushProcStk();
 	//NewExit(Ovr(), er);
 	//goto label3;
@@ -50,33 +55,51 @@ label0:
 	RunMsgOn('R', NRecsAll); RecCount = 0;
 	for (i = 1; i < MaxIi; i++) {
 		if (frst) frst = false;
-		else IDA[i]->Scan->SeekRec(0); ReadInpFile(IDA[i]);
+		else IDA[i]->Scan->SeekRec(0);
+		ReadInpFile(IDA[i]);
 	}
 	RprtPage = 1; RprtLine = 1; SetPage = false; FirstLines = true; WasDot = false;
-	WasFF2 = false; NoFF = false; LineLenLst = 0; FrstBlk = true; ResetY();
+	WasFF2 = false; NoFF = false; LineLenLst = 0; FrstBlk = true;
+	ResetY();
 	L = LstLvM; 
 	RFb = LstLvM->Ft;
-	ZeroSumFlds(L); GetMinKey(); ZeroCount(); MoveFrstRecs();
+	ZeroSumFlds(L);
+	GetMinKey();
+	ZeroCount();
+	MoveFrstRecs();
 	if (RprtHd != nullptr) {
-		if (RprtHd->FF1) FormFeed(); RprtPage = 1;
+		if (RprtHd->FF1) FormFeed();
+		RprtPage = 1;
 		PrintBlkChn(RprtHd, false, false);
-		TruncLine(); if (WasFF2) FormFeed();
-		if (SetPage) { SetPage = false; RprtPage = PageNo; }
+		TruncLine();
+		if (WasFF2) FormFeed();
+		if (SetPage) {
+			SetPage = false;
+			RprtPage = PageNo;
+		}
 		else RprtPage = 1;
 	}
 	if (NEof == MaxIi) goto label2;
 label1:
-	if (WasFF2) PrintPageHd(); Headings(L, nullptr);
+	if (WasFF2) PrintPageHd();
+	Headings(L, nullptr);
 	MergeProc();
-	MoveMFlds(NewMFlds, OldMFlds); GetMinKey();
+	MoveMFlds(NewMFlds, OldMFlds);
+	GetMinKey();
 	if (NEof == MaxIi) {
 		if (FrstLvM != LstLvM) Footings(FrstLvM, LstLvM->ChainBack);
 	label2:
-		WasFF2 = false; TruncLine(); PrintBlkChn(RFb, false, true); b = WasFF2;
+		WasFF2 = false;
+		TruncLine();
+		PrintBlkChn(RFb, false, true);
+		b = WasFF2;
 		if ((PageFt != nullptr) && !PageFt->NotAtEnd) PrintPageFt();
-		TruncLine(); RunMsgOff();
+		TruncLine();
+		RunMsgOff();
 		if (Times > 1 /*only LPT1*/) {
-			Times--; printf("%s%c", Rprt.c_str(), 0x0C); goto label0;
+			Times--;
+			printf("%s%c", Rprt.c_str(), 0x0C);
+			goto label0;
 		}
 		if (b) FormFeed();
 		ex = false;
@@ -113,7 +136,10 @@ void ResetY()
 
 void IncPage()
 {
-	if (SetPage) { SetPage = false; RprtPage = PageNo; }
+	if (SetPage) {
+		SetPage = false;
+		RprtPage = PageNo;
+	}
 	else RprtPage++;
 }
 
@@ -122,23 +148,36 @@ void NewLine()
 	printf("%s\n", Rprt.c_str());
 	if (WasDot) WasDot = false;
 	else {
-		RprtLine++; NLinesOutp++; FirstLines = false;
+		RprtLine++;
+		NLinesOutp++;
+		FirstLines = false;
 	}
 	LineLenLst = 0;
-	if (RprtLine > PgeSize) { RprtLine -= PgeSize; IncPage(); }
+	if (RprtLine > PgeSize) {
+		RprtLine -= PgeSize;
+		IncPage();
+	}
 }
 
 void FormFeed()
 {
-	integer I;
+	integer I = 0;
 	if (NoFF) NoFF = false;
-	else { printf("%s%c", Rprt.c_str(), 0x0C); RprtLine = 1; IncPage(); }
-	LineLenLst = 0; WasFF2 = false;
+	else {
+		printf("%s%c", Rprt.c_str(), 0x0C);
+		RprtLine = 1;
+		IncPage();
+	}
+	LineLenLst = 0;
+	WasFF2 = false;
 }
 
 void NewPage()
 {
-	PrintPageFt(); PrintPageHd(); TruncLine(); FrstBlk = false;
+	PrintPageFt();
+	PrintPageHd();
+	TruncLine();
+	FrstBlk = false;
 }
 
 bool OutOfLineBound(BlkD* B)
@@ -149,7 +188,10 @@ bool OutOfLineBound(BlkD* B)
 
 void Zero(FloatPtrList Z)
 {
-	while (Z != nullptr) { *Z->RPtr = 0; Z = Z->Chain; };
+	while (Z != nullptr) {
+		*Z->RPtr = 0;
+		Z = Z->Chain;
+	}
 }
 
 void WriteNBlks(integer N)
