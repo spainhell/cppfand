@@ -2,6 +2,7 @@
 
 #include "base.h"
 #include "constants.h"
+#include "sort.h"
 #include "runfand.h"
 #ifdef FandSQL
 #include "channel.h"
@@ -94,8 +95,8 @@ struct KeyInD : public Chained // r89
 	FrmlListEl* FL1 = nullptr;
 	FrmlListEl* FL2 = nullptr;
 	longint XNrBeg = 0, N = 0;
-	pstring* X1 = nullptr;
-	pstring* X2 = nullptr;
+	std::string X1;
+	std::string X2;
 };
 
 struct SumElem // r95
@@ -500,6 +501,7 @@ public:
 	bool NotCached();
 	void RdPage(XPage* P, longint N);
 	void WrPage(XPage* P, longint N);
+	void WrPage(XXPage* P, longint N);
 	longint NewPage(XPage* P);
 	void ReleasePage(XPage* P, longint N);
 };

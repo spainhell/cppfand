@@ -600,15 +600,21 @@ bool CheckKeyIn(EditD* E)
 {
 	KeyInD* k = E->KIRoot;
 	XString X;
-	pstring* p1;
-	pstring* p2;
+	//pstring* p1;
+	//pstring* p2;
 	auto result = true;
 	if (k == nullptr) return result;
 	X.PackKF(E->VK->KFlds);
 	while (k != nullptr) {
-		p1 = k->X1; p2 = k->X2;
-		if (p2 == nullptr) p2 = p1;
-		if ((p1->length() <= X.S.length()) && (X.S.length() <= p2->length() + 0xFF)) return result;
+		//p1 = k->X1; p2 = k->X2;
+		//if (p2 == nullptr) p2 = p1;
+		//if ((p1->length() <= X.S.length()) && (X.S.length() <= p2->length() + 0xFF)) return result;
+		if (k->X2.empty()) {
+			if ((k->X1.length() <= X.S.length()) && (X.S.length() <= k->X1.length() + 0xFF)) return result;
+		}
+		else {
+			if ((k->X1.length() <= X.S.length()) && (X.S.length() <= k->X2.length() + 0xFF)) return result;
+		}
 		k = (KeyInD*)k->Chain;
 	}
 	result = false;
