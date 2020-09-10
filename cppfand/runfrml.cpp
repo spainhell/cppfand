@@ -1276,7 +1276,11 @@ void DecodeFieldRSB(FieldDescr* F, WORD LWw, double R, pstring T, bool B, pstrin
 	label1:
 		if (M == LeftJust)
 			while (T.length() < L) T.Append(C);
-		else while (T.length() < L) { pstring oldT = T; T = C; T += oldT; }
+		else while (T.length() < L) {
+			pstring oldT = T;
+			T = C;
+			T += oldT;
+		}
 		break;
 	}
 	case 'B': {
@@ -1291,7 +1295,7 @@ void DecodeFieldRSB(FieldDescr* F, WORD LWw, double R, pstring T, bool B, pstrin
 		break;
 	}
 	}
-	if (T.length() > L) { T[0] = char(L); T[L] = '>'; }
+	if (T.length() > L) { T[0] = (char)L; T[L] = '>'; }
 	if (T.length() > LWw) {
 		if (M == LeftJust) { T[0] = (unsigned char)LWw; }
 		else { T = copy(T, T.length() - LWw + 1, LWw); }
@@ -1471,7 +1475,7 @@ label1:
 
 		if ((L1 < 0) || (L2 < 0)) S->LL = 0;
 		else {
-			if (L1 >= str.length()) str = ""; // index L1 je vetsi delka retezce
+			if (L1 >= str.length()) str = ""; // index L1 je vetsi nez delka retezce
 			else str = str.substr(L1, L2); // L2 udava delku
 			memcpy(S->A, str.c_str(), str.length());
 			S->LL = str.length();
@@ -1837,8 +1841,10 @@ LongStr* RunS(FrmlElem* Z)
 		cf = CFile;
 		cr = CRecPtr;
 		/* !!! with Z->LV^ do!!! */
-		CFile = iZ->LV->FD; CRecPtr = iZ->LV->RecPtr;
-		x->PackKF(iZ->PackKey->KFlds); CFile = cf; CRecPtr = cr;
+		CFile = iZ->LV->FD;
+		CRecPtr = iZ->LV->RecPtr;
+		x->PackKF(iZ->PackKey->KFlds);
+		CFile = cf; CRecPtr = cr;
 		break;
 	}
 	case _keybuf: {
@@ -1846,7 +1852,10 @@ LongStr* RunS(FrmlElem* Z)
 		s = KbdBuffer;
 		break;
 	}
-	case _recno: GetRecNoXString((FrmlElem13*)Z, *x); break;
+	case _recno: {
+		GetRecNoXString((FrmlElem13*)Z, *x);
+		break;
+	}
 	case _edbool: {
 		s[0] = 0;
 		if ((EditDRoot != nullptr) && EditDRoot->Select
