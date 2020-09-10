@@ -343,7 +343,7 @@ label1:
 		if (Lexem == '(') {
 			RdLex();
 			if ((Ii == 1) && (Lexem == '?')) { SelQuest = true; RdLex(); }
-			else ID->Bool = RdKeyInBool(KI, false, false, ID->SQLFilter);
+			else ID->Bool = RdKeyInBool(&KI, false, false, ID->SQLFilter);
 			Accept(')');
 		}
 		if ((FDL != nullptr) && (FDL->LVRecPtr == nullptr) &&

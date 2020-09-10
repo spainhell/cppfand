@@ -263,7 +263,7 @@ void ReadMerge()
 		FD->RecPtr = GetRecSpace();
 		if (Lexem == '(') {
 			RdLex();
-			ID->Bool = RdKeyInBool(KI, false, false, ID->SQLFilter);
+			ID->Bool = RdKeyInBool(&KI, false, false, ID->SQLFilter);
 			Accept(')');
 		}
 		//New(ID->Scan, Init(FD, CViewKey, KI, true));

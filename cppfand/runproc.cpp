@@ -1086,7 +1086,10 @@ void RunInstr(Instr* PD)
 			SortProc(iPD->SortFD, iPD->SK);
 			break;
 		}
-		case _edit: EditProc((Instr_edit*)PD); break;
+		case _edit: {
+			EditProc((Instr_edit*)PD);
+			break;
+		}
 		case _asgnloc:/* !!! with PD^ do!!! */ {
 			auto iPD = (Instr_assign*)PD;
 			LVAssignFrml(iPD->AssLV, MyBP, iPD->Add, iPD->Frml);

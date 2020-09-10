@@ -839,7 +839,7 @@ Instr_forall* RdForAll()
 	if (Lexem == '(') {
 		/* !!! with PD^ do!!! */
 		RdLex();
-		PD->CBool = RdKeyInBool(PD->CKIRoot, false, true, PD->CSQLFilter);
+		PD->CBool = RdKeyInBool(&PD->CKIRoot, false, true, PD->CSQLFilter);
 		if ((PD->CKIRoot != nullptr) && (PD->CLV != nullptr)) OldError(118);
 		Accept(')');
 	}
@@ -1073,10 +1073,10 @@ bool RdViewOpt(EditOpt* EO)
 	else if (IsOpt("COND")) {
 		if (Lexem == '(') {
 			RdLex();
-			EO->Cond = RdKeyInBool(EO->KIRoot, false, true, EO->SQLFilter);
+			EO->Cond = RdKeyInBool(&EO->KIRoot, false, true, EO->SQLFilter);
 			Accept(')');
 		}
-		else EO->Cond = RdKeyInBool(EO->KIRoot, false, true, EO->SQLFilter);
+		else EO->Cond = RdKeyInBool(&EO->KIRoot, false, true, EO->SQLFilter);
 	}
 	else if (IsOpt("JOURNAL")) {
 		EO->Journal = RdFileName();
@@ -1437,7 +1437,7 @@ label1:
 		FDL->ViewKey = CViewKey;
 		if (Lexem == '(') {
 			RdLex();
-			FDL->Cond = RdKeyInBool(FDL->KeyIn, true, true, FDL->SQLFilter);
+			FDL->Cond = RdKeyInBool(&FDL->KeyIn, true, true, FDL->SQLFilter);
 			Accept(')');
 		}
 	}
@@ -1506,7 +1506,7 @@ void RdRprtOpt(RprtOpt* RO, bool HasFrst)
 			br = true;
 			if (Lexem == '?') { RdLex(); RO->UserCondQuest = true; goto label1; };
 		}
-		RO->FDL.Cond = RdKeyInBool(RO->FDL.KeyIn, true, true, RO->FDL.SQLFilter);
+		RO->FDL.Cond = RdKeyInBool(&RO->FDL.KeyIn, true, true, RO->FDL.SQLFilter);
 		N = OldErrPos - Low;
 		RO->CondTxt = new pstring(); // (pstring*)GetStore(N + 1);
 		Move(&InpArrPtr[Low], &(*RO->CondTxt)[1], N);
@@ -1899,7 +1899,7 @@ Instr* RdGetIndex()
 		}
 		else if (IsOpt("COND")) {
 			Accept('(');
-			PD->giCond = RdKeyInBool(PD->giKIRoot, false, true, PD->giSQLFilter);
+			PD->giCond = RdKeyInBool(&PD->giKIRoot, false, true, PD->giSQLFilter);
 			Accept(')');
 		}
 		else if (IsOpt("OWNER")) {
@@ -2015,10 +2015,10 @@ void RdGraphP()
 			if (Lexem == '(')
 			{
 				RdLex();
-				PDGD->Cond = RdKeyInBool(PDGD->KeyIn, false, true, PDGD->SQLFilter);
+				PDGD->Cond = RdKeyInBool(&PDGD->KeyIn, false, true, PDGD->SQLFilter);
 				Accept(')');
 			}
-			else PDGD->Cond = RdKeyInBool(PDGD->KeyIn, false, true, PDGD->SQLFilter);
+			else PDGD->Cond = RdKeyInBool(&PDGD->KeyIn, false, true, PDGD->SQLFilter);
 		}
 		else if (IsOpt("TXT")) {
 			VD = (GraphVD*)GetZStore(sizeof(*VD));

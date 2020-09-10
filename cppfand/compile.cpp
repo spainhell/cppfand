@@ -2201,12 +2201,12 @@ label1:
 	return result;
 }
 
-FrmlElem* RdKeyInBool(KeyInD* KIRoot, bool NewMyBP, bool FromRdProc, bool& SQLFilter)
+FrmlElem* RdKeyInBool(KeyInD** KIRoot, bool NewMyBP, bool FromRdProc, bool& SQLFilter)
 {
 	KeyInD* KI = nullptr; WORD l = 0; char FTyp = '\0';
 	FrmlElem* Z = nullptr; bool FVA = false;
 	FrmlElem* result = nullptr;
-	KIRoot = nullptr; SQLFilter = false;
+	*KIRoot = nullptr; SQLFilter = false;
 
 	if (FromRdProc) {
 		FVA = FileVarsAllowed;
@@ -2225,8 +2225,8 @@ FrmlElem* RdKeyInBool(KeyInD* KIRoot, bool NewMyBP, bool FromRdProc, bool& SQLFi
 	label1:
 		//KI = (KeyInD*)GetZStore(sizeof(KeyInD));
 		KI = new KeyInD();
-		if (KIRoot == nullptr) KIRoot = KI;
-		else ChainLast(KIRoot, KI);
+		if (*KIRoot == nullptr) *KIRoot = KI;
+		else ChainLast(*KIRoot, KI);
 		KI->X1 = new pstring(); //(pstring*)GetZStore(l);
 		KI->X2 = new pstring(); //(pstring*)GetZStore(l + 1);
 		KI->FL1 = RdFL(NewMyBP, nullptr);
