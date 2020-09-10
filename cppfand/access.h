@@ -94,8 +94,8 @@ struct KeyInD : public Chained // r89
 	FrmlListEl* FL1 = nullptr;
 	FrmlListEl* FL2 = nullptr;
 	longint XNrBeg = 0, N = 0;
-	pstring* X1 = nullptr;
-	pstring* X2 = nullptr;
+	std::string X1;
+	std::string X2;
 };
 
 struct SumElem // r95

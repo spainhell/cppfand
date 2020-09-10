@@ -2227,8 +2227,8 @@ FrmlElem* RdKeyInBool(KeyInD** KIRoot, bool NewMyBP, bool FromRdProc, bool& SQLF
 		KI = new KeyInD();
 		if (*KIRoot == nullptr) *KIRoot = KI;
 		else ChainLast(*KIRoot, KI);
-		KI->X1 = new pstring(); //(pstring*)GetZStore(l);
-		KI->X2 = new pstring(); //(pstring*)GetZStore(l + 1);
+		// KI->X1 = new pstring(); //(pstring*)GetZStore(l);
+		// KI->X2 = new pstring(); //(pstring*)GetZStore(l + 1);
 		KI->FL1 = RdFL(NewMyBP, nullptr);
 		if (Lexem == _subrange) {
 			RdLex();

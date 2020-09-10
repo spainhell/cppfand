@@ -707,7 +707,7 @@ void WrPrefix()
 			break;
 		}
 		case 'D': {
-			WrDBaseHd(); 
+			WrDBaseHd();
 			break;
 		}
 		default: {
@@ -989,10 +989,10 @@ void CompKIFrml(KeyDPtr K, KeyInD* KI, bool AddFF)
 	XString x; bool b; integer i;
 	while (KI != nullptr) {
 		b = x.PackFrml(KI->FL1, K->KFlds);
-		KI->X1 = &x.S;
+		KI->X1 = x.S;
 		if (KI->FL2 != nullptr) x.PackFrml(KI->FL2, K->KFlds);
 		if (AddFF) AddFFs(K, x.S);
-		KI->X2 = &x.S;
+		KI->X2 = x.S;
 		KI = (KeyInD*)KI->Chain;
 	}
 }
@@ -1507,66 +1507,66 @@ bool LinkUpw(LinkDPtr LD, longint& N, bool WithT)
 	FieldDescr* F, * F2;
 	bool LU = false; LockMode md;
 	//pstring s; 
-	double r = 0.0; 
+	double r = 0.0;
 	bool b = false;
 	//XString* x = (XString*)&s;
 	XString x;
 
-	FileD* ToFD = LD->ToFD; 
-	FileD* CF = CFile; 
+	FileD* ToFD = LD->ToFD;
+	FileD* CF = CFile;
 	void* CP = CRecPtr;
-	KeyD* K = LD->ToKey; 
-	KeyFldD* Arg = LD->Args; 
+	KeyD* K = LD->ToKey;
+	KeyFldD* Arg = LD->Args;
 	x.PackKF(Arg);
-	CFile = ToFD; 
-	void* RecPtr = GetRecSpace(); 
+	CFile = ToFD;
+	void* RecPtr = GetRecSpace();
 	CRecPtr = RecPtr;
 #ifdef FandSQL
 	if (CFile->IsSQLFile) {
-		LU = Strm1->SelectXRec(K, @X, _equ, WithT); N = 1; 
+		LU = Strm1->SelectXRec(K, @X, _equ, WithT); N = 1;
 		if (LU) goto label2; else goto label1;
 	}
 #endif
 	md = NewLMode(RdMode);
-	if (ToFD->Typ == 'X') { 
-		TestXFExist(); 
-		LU = K->SearchIntvl(x, false, N); 
+	if (ToFD->Typ == 'X') {
+		TestXFExist();
+		LU = K->SearchIntvl(x, false, N);
 	}
 	else if (CFile->NRecs == 0) { LU = false; N = 1; }
 	else LU = SearchKey(x, K, N);
 	if (LU) ReadRec(N);
 	else {
 	label1:
-		ZeroAllFlds(); 
-		KF = K->KFlds; 
+		ZeroAllFlds();
+		KF = K->KFlds;
 		while (Arg != nullptr) {
-			F = Arg->FldD; 
-			F2 = KF->FldD; 
+			F = Arg->FldD;
+			F2 = KF->FldD;
 			CFile = CF; CRecPtr = CP;
 			if (F2->Flg && f_Stored != 0)
 				switch (F->FrmlTyp) {
-				case 'S': { 
-					x.S = _ShortS(F); 
-					CFile = ToFD; CRecPtr = RecPtr; 
-					S_(F2, x.S); 
-					break; 
+				case 'S': {
+					x.S = _ShortS(F);
+					CFile = ToFD; CRecPtr = RecPtr;
+					S_(F2, x.S);
+					break;
 				}
-				case 'R': { 
-					r = _R(F); 
-					CFile = ToFD; CRecPtr = RecPtr; 
-					R_(F2, r); 
-					break; 
+				case 'R': {
+					r = _R(F);
+					CFile = ToFD; CRecPtr = RecPtr;
+					R_(F2, r);
+					break;
 				}
-				case 'B': { 
-					b = _B(F); 
-					CFile = ToFD; CRecPtr = RecPtr; 
-					B_(F2, b); 
-					break; 
-			}
+				case 'B': {
+					b = _B(F);
+					CFile = ToFD; CRecPtr = RecPtr;
+					B_(F2, b);
+					break;
+				}
 				}
 			Arg = (KeyFldD*)Arg->Chain; KF = (KeyFldD*)KF->Chain;
 		}
-		CFile = ToFD; 
+		CFile = ToFD;
 		CRecPtr = RecPtr;
 	}
 label2:
@@ -1981,10 +1981,10 @@ void TFile::Delete(longint Pos)
 	if (name.find("MODUL") == std::string::npos) return;
 
 	longint PosPg = 0, NxtPg = 0; WORD PosI = 0; integer N = 0; WORD l = 0;
-	BYTE X[MPageSize]{ 0 }; 
+	BYTE X[MPageSize]{ 0 };
 	integer* XL = (integer*)&X;
-	WORD* wp = nullptr; 
-	
+	WORD* wp = nullptr;
+
 	bool IsLongTxt = false;
 	if (Pos <= 0) return;
 	if ((Format != T00Format) || NotCached()) return;
@@ -1992,7 +1992,7 @@ void TFile::Delete(longint Pos)
 	PosPg = Pos & (0xFFFFFFFF << MPageShft);
 	PosI = Pos & (MPageSize - 1);
 	RdWrCache(true, Handle, NotCached(), PosPg, MPageSize, X);
-	wp = (WORD*)(&X[PosI]); 
+	wp = (WORD*)(&X[PosI]);
 	WORD* wpofs = wp;
 	l = *wp;
 	if (l <= MPageSize - 2) {       /* small text on 1 page*/
@@ -2000,10 +2000,10 @@ void TFile::Delete(longint Pos)
 		while (N < MPageSize - 2) {
 			short* signed_wp = (short*)wp;
 			if (*signed_wp > 0) {
-				FillChar(&X[PosI + 2], l, 0); 
-				goto label1; 
+				FillChar(&X[PosI + 2], l, 0);
+				goto label1;
 			}
-			N += -(*wp) + 2; 
+			N += -(*wp) + 2;
 			*wpofs += -(*wp) + 2;
 		}
 		if ((FreePart >= PosPg) && (FreePart < PosPg + MPageSize)) {
@@ -2016,7 +2016,7 @@ void TFile::Delete(longint Pos)
 	else {                        /* long text on more than 1 page */
 		if (PosI != 0) goto label3;
 	label2:
-		l = (WORD)XL; 
+		l = (WORD)XL;
 		if (l > MaxLStrLen + 1) {
 		label3:
 			Err(889, false); return;
@@ -2238,7 +2238,7 @@ bool FileD::Cached()
 WORD FileD::GetNrKeys()
 {
 	KeyD* k = Keys;
-	WORD n = 0; 
+	WORD n = 0;
 	while (k != nullptr) { n++; k = k->Chain; }
 	return n;
 }
@@ -2314,8 +2314,8 @@ void XString::StoreStr(pstring V, KeyFldD* KF)
 		V[0] = n;
 		StoreN(&V[1], n, KF->Descend);
 	}
-	else { 
-		StoreA(&V[1], X->L, KF->CompLex, KF->Descend); 
+	else {
+		StoreA(&V[1], X->L, KF->CompLex, KF->Descend);
 	}
 }
 
@@ -2337,9 +2337,9 @@ void XString::StoreKF(KeyFldD* KF)
 void XString::PackKF(KeyFldD* KF)
 {
 	Clear();
-	while (KF != nullptr) { 
-		StoreKF(KF); 
-		KF = (KeyFldD*)KF->Chain; 
+	while (KF != nullptr) {
+		StoreKF(KF);
+		KF = (KeyFldD*)KF->Chain;
 	}
 }
 
@@ -2465,9 +2465,10 @@ void XItem::PutL(WORD O, WORD L)
 
 XItem* XItem::Next(WORD O, bool isLeaf)
 {
+	// O by melo byt 3 nebo 7 - urcuje delku "hlavicky" zaznamu
 	unsigned char recLen = XPageData[0];
-	O += recLen - 2;
-	auto xi = new XItem(&XPageData[O], isLeaf);
+	// dalsi zaznam zacina hned za daty o delce recLen
+	auto xi = new XItem(&XPageData[recLen + 1], isLeaf);
 	return xi;
 }
 
@@ -2490,9 +2491,11 @@ XItem* XPage::XI(WORD I, bool isLeaf)
 {
 	_xItem = new XItem(A, isLeaf);
 	WORD o = Off();
-	while (I > 1) { 
+	while (I > 1) {
+		auto oldXitem = _xItem;
 		_xItem = _xItem->Next(o, isLeaf);
-		I--; 
+		delete oldXitem; oldXitem = nullptr;
+		I--;
 	}
 	return _xItem;
 }
@@ -2692,7 +2695,7 @@ XKey::XKey(BYTE* inputStr)
 	Duplic = *(bool*)&inputStr[index]; index++;
 	InWork = *(bool*)&inputStr[index]; index++;
 	IndexRoot = *(unsigned short*)&inputStr[index]; index += 2;
-	IndexLen = *(unsigned char*)&inputStr[index]; index ++;
+	IndexLen = *(unsigned char*)&inputStr[index]; index++;
 	NR = *(longint*)&inputStr[index]; index += 4;
 	Alias = reinterpret_cast<pstring*>(*(unsigned int*)&inputStr[index]); index += 4;
 
@@ -2782,16 +2785,19 @@ bool XKey::SearchIntvl(XString& XX, bool AfterEqu, longint& RecNr)
 
 longint XKey::PathToNr()
 {
-	WORD i, j; longint n; XPagePtr p; XItemPtr x;
-	p = (XPage*)GetStore(XPageSize); n = 0;
-	for (j = 1; j < XPathN - 1; j++)
+	longint n = 0;
+	XPage* p = new XPage(); // (XPage*)GetStore(XPageSize);
+	for (WORD j = 1; j <= XPathN - 1; j++)
 	{
 		XF()->RdPage(p, XPath[j].Page);
-		x = XItemPtr(p->A);
-		for (i = 1; i < XPath[j].I - 1; i++) {
-			n += x->GetN(); 
+		XItem* x = new XItem(p->A, p->IsLeaf); // XItemPtr(p->A);
+		for (WORD i = 1; i <= XPath[j].I - 1; i++) {
+			n += x->GetN();
+			auto prevX = x;
 			x = x->Next(oNotLeaf, p->IsLeaf);
+			delete prevX; prevX = 0;
 		}
+		delete x; x = nullptr;
 	}
 	n += XPath[XPathN].I;
 	if (n > NRecs() + 1) XF()->Err(834);
@@ -2823,7 +2829,9 @@ label1:
 			goto label1;
 		}
 		I -= x->GetN();
+		auto prevX = x;
 		x = x->Next(oNotLeaf, p->IsLeaf);
+		delete prevX; prevX = nullptr;
 	}
 	delete x; x = nullptr;
 	XPath[XPathN].I = p->NItems + 1;
@@ -2835,7 +2843,7 @@ longint XKey::PathToRecNr()
 {
 	/* !!! with XPath[XPathN] do!!! */
 	auto X = XPath[XPathN];
-	XPagePtr p = new XPage(); // (XPage*)GetStore(XPageSize);
+	XPage* p = new XPage(); // (XPage*)GetStore(XPageSize);
 	XF()->RdPage(p, X.Page);
 	auto pxi = p->XI(X.I, p->IsLeaf);
 	longint recnr = pxi->GetN();
@@ -2912,7 +2920,7 @@ pstring XKey::NrToStr(longint I)
 {
 	pstring result;
 	XPage* p = new XPage(); // (XPage*)GetStore(XPageSize);
-	NrToPath(I); 
+	NrToPath(I);
 	/* !!! with XPath[XPathN] do!!! */
 	XF()->RdPage(p, XPath[XPathN].Page);
 	result = p->StrI(I);
@@ -2923,7 +2931,7 @@ pstring XKey::NrToStr(longint I)
 longint XKey::RecNrToNr(longint RecNr)
 {
 	XString x;
-	if (RecNrToPath(x, RecNr)) return PathToNr(); 
+	if (RecNrToPath(x, RecNr)) return PathToNr();
 	else return 0;
 }
 
@@ -2941,7 +2949,7 @@ void XKey::InsertOnPath(XString& XX, longint RecNr)
 	longint page = 0, page1 = 0, uppage = 0, downpage = 0;
 	XItem* x = nullptr;
 	longint n = 0, upsum = 0;
-	
+
 	XPage* p = new XPage(); // (XPage*)GetStore(2 * XPageSize);
 	XPage* p1 = new XPage(); // (XPage*)GetStore(2 * XPageSize);
 	XPage* upp = new XPage(); // (XPage*)GetStore(2 * XPageSize);
@@ -2956,29 +2964,29 @@ void XKey::InsertOnPath(XString& XX, longint RecNr)
 		else {
 			if (i <= p->NItems) {
 				x = p->XI(i, p->IsLeaf);
-				n = x->GetN() + 1; 
+				n = x->GetN() + 1;
 				if (uppage != 0) n -= upsum;
 				x->PutN(n);
 			}
 			if (uppage != 0) {
-				downpage = uppage; 
+				downpage = uppage;
 				InsertItem(XX, p, upp, page, i, x, uppage);
-				*(x->DownPage) = downpage; 
+				*(x->DownPage) = downpage;
 				x->PutN(upsum);
 			}
 		}
-		XF()->WrPage(p, page); 
+		XF()->WrPage(p, page);
 		if (uppage != 0) {
-			XF()->WrPage(upp, uppage); 
+			XF()->WrPage(upp, uppage);
 			upsum = upp->SumN();
 			if (upp->IsLeaf) ChainPrevLeaf(p1, uppage);
 		}
 	}
 	if (uppage != 0) {
-		page1 = XF()->NewPage(p1); 
+		page1 = XF()->NewPage(p1);
 		p1->GreaterPage = page1;
 		p1->InsDownIndex(1, uppage, upp);
-		XF()->WrPage(p, page1); 
+		XF()->WrPage(p, page1);
 		XF()->WrPage(p1, page);
 		if (upp->IsLeaf) {
 			upp->GreaterPage = page1;
@@ -3003,21 +3011,21 @@ void XKey::InsertItem(XString& XX, XPage* P, XPage* UpP, longint Page, WORD I, X
 
 void XKey::ChainPrevLeaf(XPagePtr P, longint N)
 {
-	longint page = 0; 
+	longint page = 0;
 	WORD i = 0, j = 0;
 	for (j = XPathN - 1; j > 1; j--)
 		if (XPath[j].I > 1) {
-			XF()->RdPage(P, XPath[j].Page); 
+			XF()->RdPage(P, XPath[j].Page);
 			i = XPath[j].I - 1;
 		label1:
 			page = *(P->XI(i, P->IsLeaf)->DownPage);
 			XF()->RdPage(P, page);
-			if (P->IsLeaf) { 
-				P->GreaterPage = N; 
-				XF()->WrPage(P, page); 
-				return; 
+			if (P->IsLeaf) {
+				P->GreaterPage = N;
+				XF()->WrPage(P, page);
+				return;
 			}
-			i = P->NItems; 
+			i = P->NItems;
 			goto label1;
 		}
 }
@@ -3174,7 +3182,7 @@ void XWKey::ReleaseTree(longint Page, bool IsClose)
 	if (!p->IsLeaf) {
 		WORD n = p->NItems;
 		for (WORD i = 1; i < n; i++) {
-			ReleaseTree(*(p->XI(i,p->IsLeaf)->DownPage), IsClose);
+			ReleaseTree(*(p->XI(i, p->IsLeaf)->DownPage), IsClose);
 			XF()->RdPage(p, Page);
 		}
 		if (p->GreaterPage != 0) ReleaseTree(p->GreaterPage, IsClose);
@@ -3287,6 +3295,16 @@ void XWFile::WrPage(XPage* P, longint N)
 	RdWrCache(false, Handle, NotCached(), (N << XPageShft) + 7, XPageSize - 7, P->A);
 }
 
+//void XWFile::WrPage(XXPage* P, longint N)
+//{
+//	if (UpdLockCnt > 0) Err(645);
+//	// puvodne se zapisovalo celych XPageSize z P, bylo nutno to rozhodit na jednotlive tridni promenne
+//	RdWrCache(false, Handle, NotCached(), N << XPageShft, 1, &P->IsLeaf);
+//	RdWrCache(false, Handle, NotCached(), (N << XPageShft) + 1, 4, &P->GreaterPage);
+//	RdWrCache(false, Handle, NotCached(), (N << XPageShft) + 5, 2, &P->NItems);
+//	RdWrCache(false, Handle, NotCached(), (N << XPageShft) + 7, XPageSize - 7, P->A);
+//}
+
 longint XWFile::NewPage(XPage* P)
 {
 	longint result = 0;
@@ -3369,9 +3387,9 @@ void XFile::WrPrefix()
 
 void XFile::SetNotValid()
 {
-	NotValid = true; 
-	MaxPage = 0; 
-	WrPrefix(); 
+	NotValid = true;
+	MaxPage = 0;
+	WrPrefix();
 	SaveCache(0);
 }
 
@@ -3422,8 +3440,8 @@ void XScan::Reset(FrmlElem* ABool, bool SQLFilter)
 		while (k != nullptr) {
 			XString a1;
 			XString b2;
-			a1.S = *k->X1;
-			b2.S = *k->X2;
+			a1.S = k->X1;
+			b2.S = k->X2;
 			Key->FindNr(a1, k->XNrBeg);
 			b = Key->FindNr(b2, n);
 			k->N = 0;
@@ -3812,14 +3830,19 @@ void XScan::SeekOnPage(longint Page, WORD I)
 
 void XScan::NextIntvl()
 {
-	XString xx; bool b; longint n, nBeg; WKeyDPtr k;
+	XString xx;
+	bool b = false;
+	longint n = 0, nBeg = 0;
+
 	if (OwnerLV != nullptr) {
-		k = WKeyDPtr(OwnerLV->RecPtr);
+		XWKey* k = (XWKey*)OwnerLV->RecPtr; // bude toto fungovat?
 		while (iOKey < k->NRecs()) {
 			iOKey++;
-			CFile = OwnerLV->FD; xx.S = k->NrToStr(iOKey);
+			CFile = OwnerLV->FD;
+			xx.S = k->NrToStr(iOKey);
 			CFile = FD;
-			Key->FindNr(xx, nBeg); AddFFs(Key, xx.S);
+			Key->FindNr(xx, nBeg);
+			AddFFs(Key, xx.S);
 			b = Key->FindNr(xx, n);
 			n = n - nBeg + b;
 			if (n > 0) {
@@ -3832,7 +3855,7 @@ void XScan::NextIntvl()
 		NRecs = IRec; /*EOF*/
 	}
 	else {
-		do { KI = (KeyInD*)KI->Chain; } while ((KI != nullptr) || (KI->N > 0));
+		do { KI = (KeyInD*)KI->Chain; } while (!((KI == nullptr) || (KI->N > 0)));
 		if (KI != nullptr) SeekOnKI(0);
 	}
 }
