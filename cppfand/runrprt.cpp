@@ -22,15 +22,18 @@ longint NLinesOutp;
 
 void RunReport(RprtOpt* RO)
 {
-	wwmix ww;
+	return;
 	
-	LvDescr* L = nullptr; ExitRecord er;
+	wwmix ww;
+	ExitRecord er;
+	LvDescr* L = nullptr; 
 	pstring* s = nullptr;
 	WORD i = 0;
 	bool frst = false, isLPT1 = false;
 	WORD Times = 0;
 	bool ex = false, b = false;
-	BlkD* BD = nullptr; BlkD* RFb = nullptr;
+	BlkD* BD = nullptr;
+	BlkD* RFb = nullptr;
 	LockMode md;
 	if (SelQuest) /* !!! with IDA[1]^ do!!! */ {
 		CFile = IDA[1]->Scan->FD; if (!ww.PromptFilter("", IDA[1]->Bool, s)) {
@@ -53,7 +56,7 @@ void RunReport(RprtOpt* RO)
 	MergOpGroup.Group = 1.0; frst = true; NLinesOutp = 0; PrintDH = 2;
 label0:
 	RunMsgOn('R', NRecsAll); RecCount = 0;
-	for (i = 1; i < MaxIi; i++) {
+	for (i = 1; i <= MaxIi; i++) {
 		if (frst) frst = false;
 		else IDA[i]->Scan->SeekRec(0);
 		ReadInpFile(IDA[i]);

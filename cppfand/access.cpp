@@ -2814,16 +2814,18 @@ label1:
 		ReleaseStore(p);
 		return;
 	}
-	XItemPtr x = XItemPtr(p->A);
-	for (WORD j = 1; j < p->NItems; j++) {
+	XItem* x = new XItem(p->A, p->IsLeaf);
+	for (WORD j = 1; j <= p->NItems; j++) {
 		if (I <= x->GetN()) {
 			XPath[XPathN].I = j;
 			page = *(x->DownPage);
+			delete x; x = nullptr;
 			goto label1;
 		}
 		I -= x->GetN();
 		x = x->Next(oNotLeaf, p->IsLeaf);
 	}
+	delete x; x = nullptr;
 	XPath[XPathN].I = p->NItems + 1;
 	page = p->GreaterPage;
 	goto label1;
@@ -2845,11 +2847,12 @@ longint XKey::PathToRecNr()
 
 bool XKey::RecNrToPath(XString& XX, longint RecNr)
 {
-	bool result;
-	XPagePtr p; XItemPtr x; longint n;
-	XX.PackKF(KFlds); Search(XX, false, n);
-	p = (XPage*)GetStore(XPageSize);
-	result = false; /* !!! with XPath[XPathN] do!!! */
+	bool result = false;
+	XItem* x = nullptr; longint n = 0;
+	XX.PackKF(KFlds);
+	Search(XX, false, n);
+	XPage* p = new XPage(); // (XPage*)GetStore(XPageSize);
+	/* !!! with XPath[XPathN] do!!! */
 	{
 		auto X = XPath[XPathN];
 	label1:
@@ -2866,7 +2869,8 @@ bool XKey::RecNrToPath(XString& XX, longint RecNr)
 			x = x->Next(oLeaf, p->IsLeaf);
 			if (x->GetL(oLeaf) != 0) goto label3;
 			goto label2;
-		}; }
+		}
+	}
 label3:
 	ReleaseStore(p);
 	return result;
@@ -2874,10 +2878,8 @@ label3:
 
 bool XKey::IncPath(WORD J, longint& Pg)
 {
-	bool result;
-	XPagePtr p;
-	p = (XPage*)GetStore(XPageSize);
-	result = false;
+	XPage* p = new XPage(); // (XPage*)GetStore(XPageSize);
+	bool result = false;
 	auto X = XPath[J];
 	if (J == 0) { goto label2; } /* !!! with XPath[J] do!!! */
 	{
@@ -2909,7 +2911,7 @@ longint XKey::NrToRecNr(longint I)
 pstring XKey::NrToStr(longint I)
 {
 	pstring result;
-	XPagePtr p = (XPage*)GetStore(XPageSize); 
+	XPage* p = new XPage(); // (XPage*)GetStore(XPageSize);
 	NrToPath(I); 
 	/* !!! with XPath[XPathN] do!!! */
 	XF()->RdPage(p, XPath[XPathN].Page);
@@ -2935,19 +2937,21 @@ bool XKey::FindNr(XString& X, longint& IndexNr)
 
 void XKey::InsertOnPath(XString& XX, longint RecNr)
 {
-	WORD i, j;
-	longint page, page1, uppage, downpage;
-	XItemPtr x;
-	longint n, upsum;
-	XPagePtr p, p1, upp;
-
-	p = (XPage*)GetStore(2 * XPageSize);
-	p1 = (XPage*)GetStore(2 * XPageSize);
-	upp = (XPage*)GetStore(2 * XPageSize);
+	WORD i = 0, j = 0;
+	longint page = 0, page1 = 0, uppage = 0, downpage = 0;
+	XItem* x = nullptr;
+	longint n = 0, upsum = 0;
+	
+	XPage* p = new XPage(); // (XPage*)GetStore(2 * XPageSize);
+	XPage* p1 = new XPage(); // (XPage*)GetStore(2 * XPageSize);
+	XPage* upp = new XPage(); // (XPage*)GetStore(2 * XPageSize);
 	for (j = XPathN; j > 1; j--) {
-		page = XPath[j].Page; XF()->RdPage(p, page); i = XPath[j].I;
+		page = XPath[j].Page;
+		XF()->RdPage(p, page);
+		i = XPath[j].I;
 		if (p->IsLeaf) {
-			InsertItem(XX, p, upp, page, i, x, uppage); x->PutN(RecNr);
+			InsertItem(XX, p, upp, page, i, x, uppage);
+			x->PutN(RecNr);
 		}
 		else {
 			if (i <= p->NItems) {
@@ -3296,7 +3300,10 @@ longint XWFile::NewPage(XPage* P)
 		if (MaxPage > 0x1fffff) Err(887);
 		result = MaxPage;
 	}
-	FillChar(P, XPageSize, 0);
+	P->IsLeaf = false;
+	P->GreaterPage = 0;
+	P->NItems = 0;
+	memset(P->A, 0, XPageSize - 4);
 	return result;
 }
 

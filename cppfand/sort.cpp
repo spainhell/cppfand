@@ -5,12 +5,15 @@
 #include "models/Instr.h"
 
 class XXPage; // forward declaration
+class WPage; // forward declaration
 
 class WRec /* record on WPage */
 {
 public:
-	BYTE N[3] { 0, 0 ,0 };
-	BYTE IR[3] { 0, 0, 0 };
+	WRec();
+	WRec(WPage* wp);
+	BYTE N[3]{ 0, 0 ,0 };
+	BYTE IR[3]{ 0, 0, 0 };
 	XString X;
 	longint GetN(); // ASM
 	void PutN(longint NN); // ASM
@@ -24,7 +27,7 @@ public:
 	longint NxtChain = 0;
 	longint Chain = 0;
 	WORD NRecs = 0;
-	BYTE A = 0;
+	BYTE A[65535]{ 0 };
 	void Sort(WORD N, WORD RecLen);
 private:
 	void PushWord(WORD W);
@@ -40,10 +43,10 @@ public:
 	WORD RecLen = 0, MaxOnWPage = 0, WPageSize = 0;
 	longint MaxWPage = 0, WRoot = 0, NChains = 0, PgWritten = 0;
 	longint WBaseSize = 0;
-	WPage* PW = nullptr; 
-	WPage* PW1 = nullptr; 
+	WPage* PW = nullptr;
+	WPage* PW1 = nullptr;
 	WPage* PW2 = nullptr;
-	longint FreeNr[5] { 0, 0, 0, 0, 0 };
+	longint FreeNr[5]{ 0, 0, 0, 0, 0 };
 	WORD NFreeNr = 0;
 	longint IRec = 0, RecNr = 0;
 	KeyFldD* KFRoot = nullptr;
@@ -102,6 +105,14 @@ public:
 	void AddToUpper(XXPage* P, longint DownPage);
 };
 
+WRec::WRec(WPage* wp)
+{
+	N[0] = wp->A[0]; N[1] = wp->A[1]; N[2] = wp->A[2];
+	IR[0] = wp->A[3]; IR[1] = wp->A[4]; IR[2] = wp->A[5];
+	X.S[0] = wp->A[6];
+	memcpy(&X.S[1], &wp->A[7], X.S[0]);
+}
+
 longint WRec::GetN()
 {
 	// asm les di,Self; mov ax,es:[di]; mov dl,es:[di+2]; xor dh,dh ;
@@ -111,15 +122,17 @@ longint WRec::GetN()
 void WRec::PutN(longint NN)
 {
 	//asm { asm les di, Self; mov ax, NN.WORD; cld; stosw; mov al, NN[2].BYTE; stosb; }
-	BYTE* p = (BYTE*)&NN;
-	N[0] = p[0];
-	N[1] = p[1];
-	N[2] = p[2];
+	N[0] = NN & 0xFF;
+	N[1] = (NN >> 8) & 0xFF;
+	N[2] = (NN >> 16) & 0xFF;
 }
 
 void WRec::PutIR(longint II)
 {
 	// asm les di,Self; add di,3; mov ax,II.WORD; cld; stosw; mov al,II[2].BYTE; stosb;
+	IR[0] = II & 0xFF;
+	IR[1] = (II >> 8) & 0xFF;
+	IR[2] = (II >> 16) & 0xFF;
 }
 
 WORD WRec::Comp(WRec* R)
@@ -227,11 +240,14 @@ void WorkFile::Reset(KeyFldD* KF, longint RestBytes, char Typ, longint NRecs)
 	if (BYTEs < kB60) WPageSize = (WORD)BYTEs & 0xF000;
 	else WPageSize = kB60;
 	MaxOnWPage = (WPageSize - sizeof(WPage) + 1) / RecLen;
-	if ((integer)MaxOnWPage < 4) RunError(624);
+	if (MaxOnWPage < 4) RunError(624);
 	MaxWPage = 0; NFreeNr = 0;
-	PW = (WPage*)GetStore(WPageSize);
+	PW = new WPage(); // (WPage*)GetStore(WPageSize);
 	WRoot = GetFreeNr();
 	pages = (NRecs + MaxOnWPage - 1) / MaxOnWPage;
+
+	// nasledujici usek v ASM zrejme jen udela nejaky prepocet kvuli zobrazeni zpravy
+	// v RunMsgOn()
 	//asm mov dx, pages.WORD; mov bx, dx; mov cx, dx; mov ax, 1;
 	//@add cx 1, dx; test bx, 1; jz @2; sub cx, ax; shr bx, 1; add bx, 1; jmp @3;
 	//@shr bx 2, 1;            /* how many pages must be written ? */
@@ -243,11 +259,10 @@ void WorkFile::Reset(KeyFldD* KF, longint RestBytes, char Typ, longint NRecs)
 
 void WorkFile::SortMerge()
 {
-	WRec* r = nullptr;
-	WORD* rofs = (WORD*)r;
+	WRec* r = new WRec(PW);
 	WORD n = 0; longint pg = 0, nxt = 0;
 	PgWritten = 0;
-	r = (WRec*)(&PW->A);
+	// r = (WRec*)(&PW->A);
 	nxt = WRoot;
 	NChains = 1;
 	while (GetCRec()) {
@@ -258,14 +273,23 @@ void WorkFile::SortMerge()
 			NChains++;
 			WriteWPage(n, pg, nxt, 0);
 			n = 0;
-			r = (WRec*)(&PW->A);
+			delete r;
+			//r = (WRec*)(&PW->A);
+			r = new WRec(PW);
 		}
 		r->PutN(RecNr);
 		r->PutIR(IRec);
 		r->X.PackKF(KFRoot);
 		n++;
-		rofs += RecLen;
+		WORD* rofs = (WORD*)&r->N[0];
+		*rofs += RecLen;
 	}
+	// ted je potreba WRec vratit zpet do PW (provest serializaci)
+	memcpy(&PW->A[0], &r->N[0], 3);
+	memcpy(&PW->A[3], &r->IR[0], 3);
+	PW->A[6] = r->X.S[0];
+	memcpy(&PW->A[7], &r->IR[0], r->X.S[0]);
+	delete r; r = nullptr;
 	PW->Sort(n, RecLen);
 	WriteWPage(n, nxt, 0, 0);
 	if (NChains > 1) Merge();
@@ -364,7 +388,7 @@ label3:
 	}
 	goto label1;
 label4:
-	WriteWPage((*rofs - w->A) / l, Pg, Nxt, 0);
+	WriteWPage((*rofs - w->A[0]) / l, Pg, Nxt, 0);
 }
 
 void WorkFile::PutFreeNr(longint N)
@@ -408,11 +432,11 @@ XWorkFile::XWorkFile(XScan* AScan, XKey* AK)
 
 void XWorkFile::Main(char Typ)
 {
-	WRec* R = nullptr; KeyD* k = nullptr; KeyFldD* kf = nullptr; 
+	WRec* R = nullptr; KeyD* k = nullptr; KeyFldD* kf = nullptr;
 	XPage* p = nullptr; bool frst = false;
 	XPP = new XPage(); // (XPage*)GetStore(XPageSize);
 	NxtXPage = XF->NewPage(XPP);
-	MsgWritten = false; 
+	MsgWritten = false;
 	frst = true;
 	while (KD != nullptr) {
 		PX = new XXPage(); // (XXPage*)GetZStore(sizeof(XXPage));
@@ -427,16 +451,16 @@ void XWorkFile::Main(char Typ)
 			(Scan->Bool == nullptr
 				&& (EquKFlds(k->KFlds, kf) || kf == nullptr))) CopyIndex(k, kf, Typ);
 		else {
-			if (frst) frst = false; 
+			if (frst) frst = false;
 			else Scan->SeekRec(0);
-			Reset(KD->KFlds, sizeof(XXPage) * 9, Typ, Scan->NRecs); 
+			Reset(KD->KFlds, sizeof(XXPage) * 9, Typ, Scan->NRecs);
 			SortMerge();
 		}
 		FinishIndex();
-		ReleaseStore(PX); 
+		ReleaseStore(PX);
 		KD = KD->Chain;
 	}
-	XF->ReleasePage(XPP, NxtXPage); 
+	XF->ReleasePage(XPP, NxtXPage);
 	ReleaseStore(XPP);
 }
 
@@ -500,6 +524,10 @@ void XXPage::Reset(XWorkFile* OwnerXW)
 {
 	XW = OwnerXW; Sum = 0; NItems = 0;
 	// MaxOff = ofs(Chain) + sizeof(XXPage); Off = ofs(A);
+	// MaxOff je tedy asi celkova velikost objektu vc. dat
+	MaxOff = 0;
+	// Off je asi zacatek pole A
+	Off = 0;
 }
 
 void XXPage::PutN(void* N)
@@ -651,18 +679,18 @@ void ScanSubstWIndex(XScan* Scan, KeyFldD* SK, char Typ)
 	XWKey* k2 = new XWKey();
 	if (Scan->FD->IsSQLFile && (Scan->Kind == 3)) /*F6-autoreport & sort*/ {
 		KeyD* k = Scan->Key;
-		n = k->IndexLen; 
+		n = k->IndexLen;
 		KeyFldD* kf = SK;
 		while (kf != nullptr) {
-			n += kf->FldD->NBytes; 
+			n += kf->FldD->NBytes;
 			kf = (KeyFldD*)kf->Chain;
 		}
-		if (n > 255) { 
-			WrLLF10Msg(155); 
-			ReleaseStore(k2); 
-			return; 
+		if (n > 255) {
+			WrLLF10Msg(155);
+			ReleaseStore(k2);
+			return;
 		}
-		kf = k->KFlds; 
+		kf = k->KFlds;
 		KeyFldD* kfroot = nullptr;
 		KeyFldD* kf2 = nullptr;
 		while (kf != nullptr) {
@@ -672,11 +700,11 @@ void ScanSubstWIndex(XScan* Scan, KeyFldD* SK, char Typ)
 			ChainLast(kfroot, kf2);
 			kf = (KeyFldD*)kf->Chain;
 		}
-		if (kf2 != nullptr)	kf2->Chain = SK; 
+		if (kf2 != nullptr)	kf2->Chain = SK;
 		SK = kfroot;
 	}
 	k2->Open(SK, true, false);
-	CreateWIndex(Scan, k2, Typ); 
+	CreateWIndex(Scan, k2, Typ);
 	Scan->SubstWIndex(k2);
 }
 
@@ -704,48 +732,78 @@ void SortAndSubst(KeyFldD* SK)
 void GetIndexSort(Instr_getindex* PD)
 {
 	XScan* Scan = nullptr; void* p = nullptr; LocVar* lv = nullptr;
-	LocVar* lv2 = nullptr; XWKey* kNew = nullptr; XWKey* k = nullptr; longint nr = 0;
-	LockMode md, md1; FrmlPtr cond = nullptr; LinkD* ld = nullptr;
+	LocVar* lv2 = nullptr; XWKey* kNew = nullptr; longint nr = 0;
+	LockMode md, md1; FrmlElem* cond = nullptr; LinkD* ld = nullptr;
 	KeyFldD* kf = nullptr; XString x;
 	MarkStore(p);
-	lv = PD->giLV; CFile = lv->FD; k = WKeyDPtr(lv->RecPtr);
+	lv = PD->giLV;
+	CFile = lv->FD;
+	XWKey* k = (XWKey*)lv->RecPtr;
 	md = NewLMode(RdMode);
 	if (PD->giMode == ' ') {
-		ld = PD->giLD; kf = ld->ToKey->KFlds; lv2 = PD->giLV2;
+		ld = PD->giLD;
+		if (ld != nullptr) kf = ld->ToKey->KFlds;
+		if (PD != nullptr) lv2 = PD->giLV2;
 		//New(Scan, Init(CFile, PD->giKD, PD->giKIRoot, false));
 		Scan = new XScan(CFile, PD->giKD, PD->giKIRoot, false);
 		cond = RunEvalFrml(PD->giCond);
 		switch (PD->giOwnerTyp) {
-		case 'i': Scan->ResetOwnerIndex(ld, lv2, cond); break;
-		case 'r': { CFile = ld->ToFD; CRecPtr = lv2->RecPtr; x.PackKF(kf); goto label1; break; }
-		case 'F': { CFile = ld->ToFD; md = NewLMode(RdMode); CRecPtr = GetRecSpace();
-			ReadRec(RunInt(FrmlPtr(PD->giLV2))); x.PackKF(kf);
-			ReleaseStore(CRecPtr); OldLMode(md);
+		case 'i': {
+			Scan->ResetOwnerIndex(ld, lv2, cond);
+			break;
+		}
+		case 'r': {
+			CFile = ld->ToFD;
+			CRecPtr = lv2->RecPtr;
+			x.PackKF(kf);
+			goto label1;
+			break;
+		}
+		case 'F': {
+			CFile = ld->ToFD;
+			md = NewLMode(RdMode);
+			CRecPtr = GetRecSpace();
+			ReadRec(RunInt((FrmlElem*)PD->giLV2));
+			x.PackKF(kf);
+			ReleaseStore(CRecPtr);
+			OldLMode(md);
 		label1:
-			CFile = lv->FD; Scan->ResetOwner(&x, cond); break; }
-		default: Scan->Reset(cond, PD->giSQLFilter); break;
+			CFile = lv->FD;
+			Scan->ResetOwner(&x, cond);
+			break;
+		}
+		default: {
+			Scan->Reset(cond, PD->giSQLFilter);
+			break;
+		}
 		}
 		kf = PD->giKFlds;
 		if (kf == nullptr) kf = k->KFlds;
-		kNew = (XWKey*)GetZStore(sizeof(*kNew));
+		kNew = new XWKey(); // (XWKey*)GetZStore(sizeof(*kNew));
 		kNew->Open(kf, true, false);
-		CreateWIndex(Scan, kNew, 'X'); k->Close(); *k = *kNew;
+		CreateWIndex(Scan, kNew, 'X');
+		k->Close();
+		*k = *kNew;
 	}
 	else {
-		CRecPtr = GetRecSpace(); nr = RunInt(PD->giCond);
+		CRecPtr = GetRecSpace();
+		nr = RunInt(PD->giCond);
 		if ((nr > 0) && (nr <= CFile->NRecs)) {
 			ReadRec(nr);
 			if (PD->giMode == '+') {
 				if (!DeletedFlag()) {
-					x.PackKF(k->KFlds); if (!k->RecNrToPath(x, nr)) {
-						k->InsertOnPath(x, nr); k->NR++;
+					x.PackKF(k->KFlds);
+					if (!k->RecNrToPath(x, nr)) {
+						k->InsertOnPath(x, nr);
+						k->NR++;
 					}
 				}
 			}
 			else if (k->Delete(nr)) k->NR--;
 		}
 	}
-	OldLMode(md); ReleaseStore(p);
+	OldLMode(md);
+	ReleaseStore(p);
 }
 
 void CopyIndex(WKeyDPtr K, KeyDPtr FromK)

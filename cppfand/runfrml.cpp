@@ -1646,7 +1646,7 @@ void StrMask(double R, pstring& Mask)
 	if (R == 0) Num[0] = 0;
 	else {
 		if (R < 0) { minus = true; R = -R; }
-		str(R, Num);
+		str(R, Num); // str(R:1:0,Num)
 		pos = MinW(pos, pos1);
 	}
 	i = Num.length();
@@ -1674,7 +1674,8 @@ void StrMask(double R, pstring& Mask)
 					if (minus) { minus = false; Mask[l] = '-'; }
 					else { Mask[l] = ' '; }
 				}
-
+			}
+			else {
 			label3:
 				Mask[l] = Num[i];
 				i--;

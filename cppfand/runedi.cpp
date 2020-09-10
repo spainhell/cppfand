@@ -569,7 +569,7 @@ void RdRec(longint N)
 	if (CFile->IsSQLFile) {
 		if (IsNewRec && (N > CRec)) dec(N); x.S = WK->NrToStr(N);
 		Strm1->KeyAcc(WK, @x);
-}
+	}
 	else
 #endif
 	{
@@ -966,7 +966,7 @@ void DisplSysLine()
 			}
 		}
 		else { x.Append(s[i]); i++; }
-	if (x.length() > TxtCols) x[0] = char(TxtCols);
+	if (x.length() > TxtCols) x[0] = (char)TxtCols;
 	//printf("%s", x.c_str());
 	screen.ScrWrText(1, 1, x.c_str());
 	DisplRecNr(CRec());
@@ -1123,58 +1123,77 @@ void DuplOwnerKey()
 	}
 }
 
-bool TestDuplKey(KeyDPtr K)
+bool TestDuplKey(XKey* K)
 {
 	XString x; longint N;
 	x.PackKF(K->KFlds);
 	return K->Search(x, false, N) && (IsNewRec || (E->LockedRec != N));
 }
 
-void DuplKeyMsg(KeyDPtr K)
+void DuplKeyMsg(XKey* K)
 {
-	SetMsgPar(*K->Alias); WrLLF10Msg(820);
+	SetMsgPar(*K->Alias);
+	WrLLF10Msg(820);
 }
 
 void BuildWork()
 {
-	XScan* Scan = nullptr; XScan* Scan2 = nullptr; void* p = nullptr;
-	KeyDPtr K = nullptr; KeyFldDPtr KF = nullptr;
-	XString xx; bool dupl, intvl, ok; WKeyDPtr wk2 = nullptr; KeyInD* ki = nullptr;
-	FrmlPtr boolP = nullptr; WORD l = 0; FieldDPtr f = nullptr; ExitRecord er;
+	XScan* Scan = nullptr; XScan* Scan2 = nullptr;
+	void* p = nullptr;
+	KeyD* K = nullptr;
+	KeyFldD* KF = nullptr;
+	XString xx;
+	bool dupl = true, intvl = false, ok = false;
+	XWKey* wk2 = nullptr; KeyInD* ki = nullptr;
+	FrmlElem* boolP = nullptr;
+	WORD l = 0;
+	FieldDescr* f = nullptr;
+	ExitRecord er;
 
-	K = nullptr; KF = nullptr; if (CFile->Keys != nullptr) KF = CFile->Keys->KFlds;
-	dupl = true; intvl = false;
+	if (CFile->Keys != nullptr) KF = CFile->Keys->KFlds;
 	if (HasIndex) {
-		K = VK; KF = K->KFlds; dupl = K->Duplic; intvl = K->Intervaltest;
+		K = VK;
+		KF = K->KFlds;
+		dupl = K->Duplic;
+		intvl = K->Intervaltest;
 	}
 	WK->Open(KF, dupl, intvl);
 	if (OnlyAppend) return;
-	boolP = E->Cond; ki = E->KIRoot; wk2 = nullptr;
-	MarkStore(p); ok = false; f = nullptr;
+	boolP = E->Cond;
+	ki = E->KIRoot;
+	wk2 = nullptr;
+	MarkStore(p);
+	ok = false;
+	f = nullptr;
 	//NewExit(Ovr(), er);
-	goto label1;
+	//goto label1;
 	if (E->DownSet) {
 		//New(Scan, Init(CFile, E->DownKey, nullptr, false));
 		Scan = new XScan(CFile, E->DownKey, nullptr, false);
 		if (E->OwnerTyp == 'i') Scan->ResetOwnerIndex(E->DownLD, E->DownLV, boolP);
 		else {
-			CFile = E->DownLD->ToFD; CRecPtr = E->DownRecPtr;
-			xx.PackKF(E->DownLD->ToKey->KFlds); CFile = E->FD; CRecPtr = E->NewRecPtr;
+			CFile = E->DownLD->ToFD;
+			CRecPtr = E->DownRecPtr;
+			xx.PackKF(E->DownLD->ToKey->KFlds);
+			CFile = E->FD;
+			CRecPtr = E->NewRecPtr;
 			Scan->ResetOwner(&xx, boolP);
 		}
 		if (ki != nullptr) {
-			wk2 = (XWKey*)GetZStore(sizeof(*wk2)); wk2->Open(KF, true, false);
+			wk2 = (XWKey*)GetZStore(sizeof(*wk2));
+			wk2->Open(KF, true, false);
 			CreateWIndex(Scan, wk2, 'W');
 			//New(Scan2, Init(CFile, wk2, ki, false));
 			Scan2 = new XScan(CFile, wk2, ki, false);
-			Scan2->Reset(nullptr, false); Scan = Scan2;
+			Scan2->Reset(nullptr, false);
+			Scan = Scan2;
 		}
 	}
 	else {
 #ifdef FandSQL
 		if (CFile->IsSQLFile && (bool = nullptr)) {
 			l = CFile->RecLen; f = CFile->FldD; OnlyKeyArgFlds(WK);
-	}
+		}
 #endif
 		if (
 #ifdef FandSQL
@@ -1185,11 +1204,17 @@ void BuildWork()
 		//New(Scan, Init(CFile, K, ki, false));
 		Scan = new XScan(CFile, K, ki, false);
 		Scan->Reset(boolP, E->SQLFilter);
-}
+	}
 	CreateWIndex(Scan, WK, 'W');
-	Scan->Close(); if (wk2 != nullptr) wk2->Close(); ok = true;
+	Scan->Close();
+	if (wk2 != nullptr) wk2->Close();
+	ok = true;
 label1:
-	if (f != nullptr) { CFile->FldD = f; WK->KFlds = KF; CFile->RecLen = l; }
+	if (f != nullptr) {
+		CFile->FldD = f;
+		WK->KFlds = KF;
+		CFile->RecLen = l;
+	}
 	RestoreExit(er);
 	if (!ok) GoExit();
 	ReleaseStore(p);
@@ -1245,7 +1270,7 @@ bool OpenEditWw()
 #ifdef FandSQL
 	if (CFile->IsSQLFile) {
 		if ((VK = nullptr) || !VK->InWork) Subset = true
-}
+	}
 	else
 #endif
 	{
@@ -1308,7 +1333,7 @@ label3:
 	if (!EdRecVar) OldLMode(md2);
 	if (IsNewRec) NewRecExit();
 	return result;
-	}
+}
 
 void RefreshSubset()
 {
@@ -1401,7 +1426,7 @@ void UpdMemberRef(void* POld, void* PNew)
 #endif
 
 						DeleteXRec(Scan->RecNr, true);
-			}
+				}
 				else {
 					Move(CRecPtr, p2, CFile->RecLen);
 					CRecPtr = p2; kf = kf2; Arg = LD->Args; while (kf != nullptr) {
@@ -1416,12 +1441,12 @@ void UpdMemberRef(void* POld, void* PNew)
 						OverWrXRec(Scan->RecNr, p, p2);
 				}
 				goto label1;
-		}
+			}
 			Scan->Close(); ClearRecSpace(p); ReleaseStore(p);
-	}
+		}
 	label2:
 		LD = LD->Chain;
-}
+	}
 	CFile = cf; CRecPtr = cr;
 }
 
@@ -1576,7 +1601,7 @@ bool DelIndRec(longint I, longint N)
 #ifdef FandSQL
 		if (CFile->IsSQLFile) {
 			x.PackKF(VK->KFlds); Strm1->DeleteXRec(VK, @x, false);
-}
+		}
 		else
 #endif
 			DeleteXRec(N, true);
@@ -1897,7 +1922,7 @@ bool OldRecDiffers()
 			f = f->Chain;
 		}
 		goto label2;
-}
+	}
 	else
 #endif
 		ReadRec(E->LockedRec);
@@ -2016,7 +2041,7 @@ bool WriteCRec(bool MayDispl, bool& Displ)
 #ifdef FandSQL
 	if (CFile->IsSQLFile) {
 		if (UpdSQLFile) goto label2; else goto label1;
-}
+	}
 #endif
 	if (HasIndex) {   /* test duplicate keys */
 		K = CFile->Keys; while (K != nullptr) {
@@ -2085,7 +2110,7 @@ label2:
 label1:
 	UnLockWithDep(OldMd);
 	return result;
-	}
+}
 
 void DuplFromPrevRec()
 {
@@ -3514,9 +3539,9 @@ label81:
 					if (CFile->IsSQLFile) Strm1->EndKeyAcc(WK);
 #endif
 					OldLMode(E->OldMd);
-			}
+				}
 				return;
-		}
+			}
 			break;
 		}
 		case _AltEqual_: { UndoRecord(); EdBreak = 0; goto fin; }
@@ -3706,10 +3731,10 @@ label81:
 				}
 			}
 		}
-	}
+		}
 	}
 	default: ClrEvent(); break;
-}
+	}
 	goto label1;
 }
 
