@@ -4,8 +4,8 @@
 #include "runfrml.h"
 #include "models/Instr.h"
 
-class XXPage;
-class WPage;
+class XXPage; // forward declaration
+class WPage; // forward declaration
 
 class WRec /* record on WPage */
 {
@@ -88,7 +88,7 @@ class XXPage /* for building XPage */
 public:
 	XXPage* Chain = nullptr;
 	XWorkFile* XW = nullptr;
-	WORD Off = 0, MaxOff = XPageSize - XPageOverHead - 1;
+	WORD Off = 0, MaxOff = 0;
 	pstring LastIndex;
 	longint LastRecNr = 0, Sum = 0;
 	bool IsLeaf = false;
@@ -96,7 +96,7 @@ public:
 	WORD NItems = 0;
 	BYTE A[XPageSize - XPageOverHead];
 	void Reset(XWorkFile* OwnerXW);
-	void PutN(longint* N); // ASM
+	void PutN(void* N); // ASM
 	void PutDownPage(longint DownPage); // ASM
 	void PutMLX(BYTE M, BYTE L); // ASM
 	void ClearRest(); // ASM
@@ -104,7 +104,6 @@ public:
 	void AddToLeaf(WRec* R, KeyDPtr KD);
 	void AddToUpper(XXPage* P, longint DownPage);
 };
-
 
 WRec::WRec(WPage* wp)
 {
@@ -117,7 +116,7 @@ WRec::WRec(WPage* wp)
 longint WRec::GetN()
 {
 	// asm les di,Self; mov ax,es:[di]; mov dl,es:[di+2]; xor dh,dh ;
-	return N[0] + (N[1] << 8) + (N[2] << 16);
+	return 0;
 }
 
 void WRec::PutN(longint NN)
@@ -240,7 +239,7 @@ void WorkFile::Reset(KeyFldD* KF, longint RestBytes, char Typ, longint NRecs)
 	if (BYTEs < 4096) RunError(624);
 	if (BYTEs < kB60) WPageSize = (WORD)BYTEs & 0xF000;
 	else WPageSize = kB60;
-	MaxOnWPage = (WPageSize - (sizeof(WPage) - 65535 + 1)) / RecLen; // nebude se do toho pocitat delka pole 'A' (66535)
+	MaxOnWPage = (WPageSize - sizeof(WPage) + 1) / RecLen;
 	if (MaxOnWPage < 4) RunError(624);
 	MaxWPage = 0; NFreeNr = 0;
 	PW = new WPage(); // (WPage*)GetStore(WPageSize);
@@ -406,24 +405,20 @@ void WorkFile::ReadWPage(WPage* W, longint Pg)
 void WorkFile::WriteWPage(WORD N, longint Pg, longint Nxt, longint Chn)
 {
 	WRec* r = nullptr;
-	WORD* rofs = nullptr;
+	WORD* rofs = (WORD*)r;
 	PgWritten++;
 	RunMsgN(PgWritten);
 	if (NChains == 1) {
-		//r = (WRec*)(&PW->A);
-		r = new WRec(PW);
+		r = (WRec*)(&PW->A);
 		while (N > 0) {
-			Output(r);
-			N--;
-			*(WORD*)&r->N[0] += RecLen;
+			Output(r); N--; rofs += RecLen;
 		}
 	}
 	else {
 		/* !!! with PW^ do!!! */
 		{ PW->NRecs = N; PW->NxtChain = Nxt; PW->Chain = Chn; }
 		SeekH(Handle, WBaseSize + (Pg - 1) * WPageSize);
-		WriteH(Handle, WPageSize, PW);
-		TestErr();
+		WriteH(Handle, WPageSize, PW); TestErr();
 	}
 }
 
@@ -513,39 +508,33 @@ void XWorkFile::Output(WRec* R)
 
 void XWorkFile::FinishIndex()
 {
-	longint sum = 0, n = 0; XXPage* p = PX; XXPage* p1 = nullptr;
+	longint sum, n; XXPage* p; XXPage* p1;
+	n = 0; sum = 0; p = PX;
 label1:
 	sum = sum + p->Sum;
-	p->ClearRest();
-	p->GreaterPage = n;
-	p1 = p->Chain;
-	if (p1 == nullptr) n = KD->IndexRoot;
-	else n = NxtXPage;
-	XF->WrPage(p, n);
-	p = p1;
-	if (p != nullptr) {
-		NxtXPage = XF->NewPage(XPP);
-		goto label1;
-	}
-	if (KD->InWork) ((XWKey*)KD)->NR = sum;
+	p->ClearRest(); p->GreaterPage = n; p1 = p->Chain;
+	if (p1 == nullptr) n = KD->IndexRoot; else n = NxtXPage;
+	XF->WrPage(XPagePtr(&p->IsLeaf), n); p = p1;
+	if (p != nullptr) { NxtXPage = XF->NewPage(XPP); goto label1; }
+	if (KD->InWork) WKeyDPtr(KD)->NR = sum;
 	else ((XFile*)XF)->NRecs = sum;
 }
 
 void XXPage::Reset(XWorkFile* OwnerXW)
 {
 	XW = OwnerXW; Sum = 0; NItems = 0;
-	// Offset a Max. offset objektu
-	MaxOff = XPageSize - XPageOverHead - 1;
+	// MaxOff = ofs(Chain) + sizeof(XXPage); Off = ofs(A);
+	// MaxOff je tedy asi celkova velikost objektu vc. dat
+	MaxOff = 0;
+	// Off je asi zacatek pole A
 	Off = 0;
 }
 
-void XXPage::PutN(longint* N)
+void XXPage::PutN(void* N)
 {
 	/*asm push ds; cld; les bx, Self; mov di, es: [bx] .XXPage.Off;
 	lds si, N; lodsw; stosw; lodsb; stosb;
 	mov es : [bx] .XXPage.Off, di; pop ds;*/
-	memcpy(A, N, 3); // kopirujeme 3 nejnizsi Byty, posledni se ignoruje
-	Off += 3;
 }
 
 void XXPage::PutDownPage(longint DownPage)
@@ -562,45 +551,34 @@ void XXPage::PutMLX(BYTE M, BYTE L)
 	mov ax, es; mov ds, ax; lea si, es: [bx] .XXPage.LastIndex;
 	inc si;xor ch, ch; mov cl, M; add si, cx; mov cl, L; rep movsb;
 	mov es : [bx] .XXPage.Off, di; pop ds;*/
-
-	A[Off++] = M;
-	A[Off++] = L;
-	memcpy(&A[Off], &LastIndex[M + 1], L);
-	Off += L;
 }
 
 void XXPage::ClearRest()
 {
 	/*asm les bx, Self; mov di, es: [bx] .XXPage.Off; mov cx, es: [bx] .XXPage.MaxOff;
 	sub cx, di; jcxz @1; cld; mov al, 0; rep stosb; @  1;*/
-	memset(&A[Off], 0, sizeof(A) - Off);
 }
 
 void XXPage::PageFull()
 {
-	longint n = 0;
+	longint n;
 	ClearRest();
 	if (Chain == nullptr) {
-		Chain = new XXPage(); // (XXPage*)GetZStore(sizeof(XXPage));
+		Chain = (XXPage*)GetZStore(sizeof(XXPage));
 		Chain->Reset(XW);
 	}
 	if (IsLeaf) n = XW->NxtXPage;
 	else n = XW->XF->NewPage(XW->XPP);
 	Chain->AddToUpper(this, n);
-	if (IsLeaf) {
-		XW->NxtXPage = XW->XF->NewPage(XW->XPP);
-		GreaterPage = XW->NxtXPage;
-	}
+	if (IsLeaf) { XW->NxtXPage = XW->XF->NewPage(XW->XPP); GreaterPage = XW->NxtXPage; }
 	XW->XF->WrPage((XPage*)(&IsLeaf), n);
 }
 
 void XXPage::AddToLeaf(WRec* R, KeyDPtr KD)
 {
-	BYTE m, l; longint n;
+	BYTE m, l; XKey* k; longint n;
 label1:
-	m = 0;
-	l = R->X.S.length();
-	n = R->GetN();
+	m = 0; l = R->X.S.length(); n = R->GetN();
 	if ((l > 0) && (NItems > 0)) {
 		m = SLeadEqu(R->X.S, LastIndex);
 		if ((m == l) && (m == LastIndex.length())) {
@@ -613,51 +591,35 @@ label1:
 					XW->MsgWritten = true;
 				}
 				ReadRec(n);
-				XKey* k = CFile->Keys;
-				while ((k != KD)) {
-					k->Delete(n);
-					k = k->Chain;
+				k = CFile->Keys; while ((k != KD)) {
+					k->Delete(n); k = k->Chain;
 				}
-				SetDeletedFlag();
-				WriteRec(n);
-				return;
+				SetDeletedFlag(); WriteRec(n); return;
 			}
 		}
 		l = l - m;
 	}
 	if (Off + 5 + l > MaxOff) {
-		PageFull();
-		Reset(XW);
-		goto label1;
+		PageFull(); Reset(XW); goto label1;
 	}
-	LastIndex = R->X.S;
-	LastRecNr = n;
-	Sum++;
-	NItems++;
-	PutN(&n);
-	PutMLX(m, l);
+	LastIndex = R->X.S; LastRecNr = n; Sum++;
+	NItems++; PutN(&n); PutMLX(m, l);
 }
 
 void XXPage::AddToUpper(XXPage* P, longint DownPage)
 {
 	WORD l, m;
 label1:
-	m = 0;
-	l = P->LastIndex.length();
+	m = 0; l = P->LastIndex.length();
 	if ((l > 0) && (NItems > 0)) {
 		m = SLeadEqu(P->LastIndex, LastIndex); l = l - m;
 	}
 	if (Off + 9 + l > MaxOff) {
-		PageFull();
-		Reset(XW);
+		PageFull(); Reset(XW);
 		goto label1;
 	}
-	LastIndex = P->LastIndex;
-	Sum += P->Sum;
-	NItems++;
-	PutN(&P->Sum);
-	PutDownPage(DownPage);
-	PutMLX(m, l);
+	LastIndex = P->LastIndex; Sum += P->Sum; NItems++; PutN(&P->Sum);
+	PutDownPage(DownPage); PutMLX(m, l);
 }
 
 void CreateIndexFile()

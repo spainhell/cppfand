@@ -989,10 +989,10 @@ void CompKIFrml(KeyDPtr K, KeyInD* KI, bool AddFF)
 	XString x; bool b; integer i;
 	while (KI != nullptr) {
 		b = x.PackFrml(KI->FL1, K->KFlds);
-		KI->X1 = x.S;
+		KI->X1 = &x.S;
 		if (KI->FL2 != nullptr) x.PackFrml(KI->FL2, K->KFlds);
 		if (AddFF) AddFFs(K, x.S);
-		KI->X2 = x.S;
+		KI->X2 = &x.S;
 		KI = (KeyInD*)KI->Chain;
 	}
 }
@@ -2465,10 +2465,9 @@ void XItem::PutL(WORD O, WORD L)
 
 XItem* XItem::Next(WORD O, bool isLeaf)
 {
-	// O by melo byt 3 nebo 7 - urcuje delku "hlavicky" zaznamu
 	unsigned char recLen = XPageData[0];
-	// dalsi zaznam zacina hned za daty o delce recLen
-	auto xi = new XItem(&XPageData[recLen + 1], isLeaf);
+	O += recLen - 2;
+	auto xi = new XItem(&XPageData[O], isLeaf);
 	return xi;
 }
 
@@ -2491,10 +2490,8 @@ XItem* XPage::XI(WORD I, bool isLeaf)
 {
 	_xItem = new XItem(A, isLeaf);
 	WORD o = Off();
-	while (I > 1) {
-		auto oldXitem = _xItem;
+	while (I > 1) { 
 		_xItem = _xItem->Next(o, isLeaf);
-		delete oldXitem; oldXitem = nullptr;
 		I--; 
 	}
 	return _xItem;
@@ -2785,19 +2782,16 @@ bool XKey::SearchIntvl(XString& XX, bool AfterEqu, longint& RecNr)
 
 longint XKey::PathToNr()
 {
-	longint n = 0;
-	XPage* p = new XPage(); // (XPage*)GetStore(XPageSize);
-	for (WORD j = 1; j <= XPathN - 1; j++)
+	WORD i, j; longint n; XPagePtr p; XItemPtr x;
+	p = (XPage*)GetStore(XPageSize); n = 0;
+	for (j = 1; j < XPathN - 1; j++)
 	{
 		XF()->RdPage(p, XPath[j].Page);
-		XItem* x = new XItem(p->A, p->IsLeaf); // XItemPtr(p->A);
-		for (WORD i = 1; i <= XPath[j].I - 1; i++) {
-			n += x->GetN();
-			auto prevX = x;
+		x = XItemPtr(p->A);
+		for (i = 1; i < XPath[j].I - 1; i++) {
+			n += x->GetN(); 
 			x = x->Next(oNotLeaf, p->IsLeaf);
-			delete prevX; prevX = 0;
 		}
-		delete x; x = nullptr;
 	}
 	n += XPath[XPathN].I;
 	if (n > NRecs() + 1) XF()->Err(834);
@@ -2829,9 +2823,7 @@ label1:
 			goto label1;
 		}
 		I -= x->GetN();
-		auto prevX = x;
 		x = x->Next(oNotLeaf, p->IsLeaf);
-		delete prevX; prevX = nullptr;
 	}
 	delete x; x = nullptr;
 	XPath[XPathN].I = p->NItems + 1;
@@ -2843,7 +2835,7 @@ longint XKey::PathToRecNr()
 {
 	/* !!! with XPath[XPathN] do!!! */
 	auto X = XPath[XPathN];
-	XPage* p = new XPage(); // (XPage*)GetStore(XPageSize);
+	XPagePtr p = new XPage(); // (XPage*)GetStore(XPageSize);
 	XF()->RdPage(p, X.Page);
 	auto pxi = p->XI(X.I, p->IsLeaf);
 	longint recnr = pxi->GetN();
@@ -3295,16 +3287,6 @@ void XWFile::WrPage(XPage* P, longint N)
 	RdWrCache(false, Handle, NotCached(), (N << XPageShft) + 7, XPageSize - 7, P->A);
 }
 
-void XWFile::WrPage(XXPage* P, longint N)
-{
-	if (UpdLockCnt > 0) Err(645);
-	// puvodne se zapisovalo celych XPageSize z P, bylo nutno to rozhodit na jednotlive tridni promenne
-	RdWrCache(false, Handle, NotCached(), N << XPageShft, 1, &P->IsLeaf);
-	RdWrCache(false, Handle, NotCached(), (N << XPageShft) + 1, 4, &P->GreaterPage);
-	RdWrCache(false, Handle, NotCached(), (N << XPageShft) + 5, 2, &P->NItems);
-	RdWrCache(false, Handle, NotCached(), (N << XPageShft) + 7, XPageSize - 7, P->A);
-}
-
 longint XWFile::NewPage(XPage* P)
 {
 	longint result = 0;
@@ -3440,8 +3422,8 @@ void XScan::Reset(FrmlElem* ABool, bool SQLFilter)
 		while (k != nullptr) {
 			XString a1;
 			XString b2;
-			a1.S = k->X1;
-			b2.S = k->X2;
+			a1.S = *k->X1;
+			b2.S = *k->X2;
 			Key->FindNr(a1, k->XNrBeg);
 			b = Key->FindNr(b2, n);
 			k->N = 0;
@@ -3830,19 +3812,14 @@ void XScan::SeekOnPage(longint Page, WORD I)
 
 void XScan::NextIntvl()
 {
-	XString xx;
-	bool b = false;
-	longint n = 0, nBeg = 0;
-	
+	XString xx; bool b; longint n, nBeg; WKeyDPtr k;
 	if (OwnerLV != nullptr) {
-		XWKey* k = (XWKey*)OwnerLV->RecPtr; // bude toto fungovat?
+		k = WKeyDPtr(OwnerLV->RecPtr);
 		while (iOKey < k->NRecs()) {
 			iOKey++;
-			CFile = OwnerLV->FD;
-			xx.S = k->NrToStr(iOKey);
+			CFile = OwnerLV->FD; xx.S = k->NrToStr(iOKey);
 			CFile = FD;
-			Key->FindNr(xx, nBeg);
-			AddFFs(Key, xx.S);
+			Key->FindNr(xx, nBeg); AddFFs(Key, xx.S);
 			b = Key->FindNr(xx, n);
 			n = n - nBeg + b;
 			if (n > 0) {
@@ -3855,7 +3832,7 @@ void XScan::NextIntvl()
 		NRecs = IRec; /*EOF*/
 	}
 	else {
-		do { KI = (KeyInD*)KI->Chain; } while (!((KI == nullptr) || (KI->N > 0)));
+		do { KI = (KeyInD*)KI->Chain; } while ((KI != nullptr) || (KI->N > 0));
 		if (KI != nullptr) SeekOnKI(0);
 	}
 }
