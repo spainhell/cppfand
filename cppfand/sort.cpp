@@ -1,109 +1,11 @@
 #include "sort.h"
+
+#include <queue>
+
 #include "oaccess.h"
 #include "obaseww.h"
 #include "runfrml.h"
 #include "models/Instr.h"
-
-class XXPage;
-class WPage;
-
-class WRec /* record on WPage */
-{
-public:
-	WRec();
-	WRec(WPage* wp);
-	BYTE N[3]{ 0, 0 ,0 };
-	BYTE IR[3]{ 0, 0, 0 };
-	XString X;
-	longint GetN(); // ASM
-	void PutN(longint NN); // ASM
-	void PutIR(longint II); // ASM
-	WORD Comp(WRec* R); // ASM
-};
-
-class WPage /* ca. 64k pages in work file */
-{
-public:
-	longint NxtChain = 0;
-	longint Chain = 0;
-	WORD NRecs = 0;
-	BYTE A[65535]{ 0 };
-	void Sort(WORD N, WORD RecLen);
-private:
-	void PushWord(WORD W);
-	WORD PopWord(WORD N, WORD RecLen);
-};
-
-class WorkFile
-{
-public:
-	WorkFile();
-	virtual ~WorkFile();
-	FILE* Handle = nullptr;
-	WORD RecLen = 0, MaxOnWPage = 0, WPageSize = 0;
-	longint MaxWPage = 0, WRoot = 0, NChains = 0, PgWritten = 0;
-	longint WBaseSize = 0;
-	WPage* PW = nullptr;
-	WPage* PW1 = nullptr;
-	WPage* PW2 = nullptr;
-	longint FreeNr[5]{ 0, 0, 0, 0, 0 };
-	WORD NFreeNr = 0;
-	longint IRec = 0, RecNr = 0;
-	KeyFldD* KFRoot = nullptr;
-	void Reset(KeyFldD* KF, longint RestBytes, char Typ, longint NRecs);
-	void SortMerge();
-	virtual bool GetCRec();
-	virtual void Output(WRec* R);
-private:
-	void TestErr();
-	longint GetFreeNr();
-	void Merge();
-	void Merge2Chains(longint Pg1, longint Pg2, longint Pg, longint Nxt);
-	void PutFreeNr(longint N);
-	void ReadWPage(WPage* W, longint Pg);
-	void WriteWPage(WORD N, longint Pg, longint Nxt, longint Chn);
-};
-
-class XWorkFile : public WorkFile
-{
-public:
-	XWorkFile(XScan* AScan, XKey* AK);
-	XXPage* PX = nullptr;
-	KeyD* KD = nullptr;
-	XScan* Scan = nullptr;
-	bool MsgWritten = false;
-	longint NxtXPage = 0;
-	XWFile* XF = nullptr;
-	XPage* XPP = nullptr;
-	void Main(char Typ);
-	void CopyIndex(KeyD* K, KeyFldD* KF, char Typ);
-	bool GetCRec() override;
-	void Output(WRec* R) override;
-private:
-	void FinishIndex();
-};
-
-class XXPage /* for building XPage */
-{
-public:
-	XXPage* Chain = nullptr;
-	XWorkFile* XW = nullptr;
-	WORD Off = 0, MaxOff = XPageSize - XPageOverHead - 1;
-	pstring LastIndex;
-	longint LastRecNr = 0, Sum = 0;
-	bool IsLeaf = false;
-	longint GreaterPage = 0;
-	WORD NItems = 0;
-	BYTE A[XPageSize - XPageOverHead];
-	void Reset(XWorkFile* OwnerXW);
-	void PutN(longint* N); // ASM
-	void PutDownPage(longint DownPage); // ASM
-	void PutMLX(BYTE M, BYTE L); // ASM
-	void ClearRest(); // ASM
-	void PageFull();
-	void AddToLeaf(WRec* R, KeyDPtr KD);
-	void AddToUpper(XXPage* P, longint DownPage);
-};
 
 
 WRec::WRec(WPage* wp)
@@ -152,66 +54,90 @@ WORD WRec::Comp(WRec* R)
 	return 0;
 }
 
+void WRec::Deserialize(unsigned char* data)
+{
+	memcpy(N, &data[0], 3);
+	memcpy(IR, &data[3], 3);
+	size_t len = data[6];
+	memcpy(&X.S[0], &data[6], len + 1);
+}
+
+size_t WRec::Serialize(unsigned char* buffer)
+{
+	memcpy(&buffer[0], N, 3);
+	memcpy(&buffer[3], IR, 3);
+	size_t len = X.S[0];
+	memcpy(&buffer[4], &X.S[0], len + 1);
+	return 3 + 3 + 1 + len; // N + IR + S[0] + 1 B delka
+}
+
+void ExChange(void* X, void* Y, WORD L)
+{
+	if (L == 0) return;
+	
+}
+
 void WPage::Sort(WORD N, WORD RecLen)
 {
+	if (N <= 1) return;
 
-}
-
-void WPage::PushWord(WORD W)
-{
-}
-
-WORD WPage::PopWord(WORD N, WORD RecLen)
-{
-	WRec* X = nullptr; WRec* Y = nullptr; WRec* Z = nullptr; WRec* V = nullptr;
-	WORD* oX = (WORD*)X;
-	WORD* oY = (WORD*)Y;
-	WORD* oZ = (WORD*)Z;
+	std::queue<integer> stack;
+	WRec* X = nullptr, * Y = nullptr, * Z = nullptr, * V = nullptr;
 	WORD oA = 0, cx = 0, cy = 0, OldSP = 0, CurSP = 0;
 	integer iX, iY, R, L;
-	if (N <= 1) return 0; // TODO: co má vracet?
-	V = (WRec*)GetStore(sizeof(WRec));
-	X = (WRec*)&A;
-	// TODO: PtrRec(X).Seg -= 0x10; oX += 0x100; /*prevent negative ofs*/
-	Y = X; Z = X; oA = *oX;
-	// TODO: asm mov OldSP, sp;
-	PushWord(0); PushWord(N - 1);
+
+	V = new WRec(); // GetStore(sizeof(WRec));
+	X = new WRec(this); // WRecPtr(A);
+	//dec(PtrRec(X).Seg, 0x10);
+	*(WORD*)X->N[0] += 0x100; /*prevent negative ofs*/
+	Y = X; Z = X;
+	oA = *(WORD*)X->N[0];
+	stack.push(0);
+	stack.push(N - 1);
+	
 	do {
-		R = PopWord(N, RecLen);
-		L = PopWord(N, RecLen);
+		R = stack.back();
+		L = stack.back();
 		do {
-			*oZ = oA + ((L + R) >> 1) * RecLen;
-			MyMove(Z, V, RecLen);
-			*oX = oA + L * RecLen;
-			*oY = oA + R * RecLen;
+			*(WORD*)Z->N[0] = oA + ((L + R) >> 1) * RecLen;
+			memcpy(V, Z, RecLen); // MyMove(Z^, V^, RecLen);
+			*(WORD*)X->N[0] = oA + L * RecLen;
+			*(WORD*)Y->N[0] = oA + R * RecLen;
 			do {
 			label1:
 				cx = X->Comp(V);
-				if (cx == _lt) { oX += RecLen; goto label1; }
+				if (cx == _lt) { *(WORD*)X->N[0] += RecLen; goto label1; }
 			label2:
 				cy = V->Comp(Y);
-				if (cy == _lt) { oY -= RecLen; goto label2; }
-				if (oX <= oY) {
+				if (cy == _lt) { *(WORD*)Y->N[0] -= RecLen; goto label2; }
+				if (*(WORD*)X->N[0] <= *(WORD*)Y->N[0]) {
 					if ((cx || cy) != _equ) ExChange(X, Y, RecLen);
-					oX += RecLen; oY -= RecLen;
+					*(WORD*)X->N[0] += RecLen;
+					*(WORD*)Y->N[0] -= RecLen;
 				}
-			} while (oX <= oY);
-			iX = (*oX - oA) / RecLen;
-			if (oX - RecLen > oY) iY = iX - 2; else iY = iX - 1;
+			} while (!(*(WORD*)X->N[0] > *(WORD*)Y->N[0]));
+			iX = (*(WORD*)X->N[0] - oA) / RecLen;
+			if (*(WORD*)X->N[0] - RecLen > *(WORD*)Y->N[0]) iY = iX - 2;
+			else iY = iX - 1;
 			if (iY == L) L = iX;
 			else if (iX == R) R = iY;
 			else if (iY - L < R - iX) {  /*push longest interval on stack*/
-				if (iX < R) { PushWord(iX); PushWord(R); } R = iY;
+				if (iX < R) {
+					stack.push(iX);
+					stack.push(R);
+				}
+				R = iY;
 			}
 			else {
-				if (L < iY) { PushWord(L); PushWord(iY); } L = iX;
+				if (L < iY) {
+					stack.push(L);
+					stack.push(iY);
+				}
+				L = iX;
 			}
-		} while (L < R);
-		// TODO: asm mov CurSP, sp;
-	} while (OldSP != CurSP);
+		} while (!(L >= R));
+	} while (!stack.empty());
 	ReleaseStore(V);
-	// TODO: co má vracet?
-	return 0;
 }
 
 WorkFile::WorkFile()
@@ -260,10 +186,15 @@ void WorkFile::Reset(KeyFldD* KF, longint RestBytes, char Typ, longint NRecs)
 
 void WorkFile::SortMerge()
 {
-	WRec* r = new WRec(PW);
+	// z 'PW->A' se postupne berou jednotlive WRec;
+	// ty pak projdou upravou;
+	// a zpatky se vraci na stejne misto do PW->A;
+	
+	WRec* r = new WRec();
+	BYTE buffer[512]{ 0 };
+	size_t offsetOfPwA = 0;
 	WORD n = 0; longint pg = 0, nxt = 0;
 	PgWritten = 0;
-	// r = (WRec*)(&PW->A);
 	nxt = WRoot;
 	NChains = 1;
 	while (GetCRec()) {
@@ -274,22 +205,16 @@ void WorkFile::SortMerge()
 			NChains++;
 			WriteWPage(n, pg, nxt, 0);
 			n = 0;
-			delete r;
-			//r = (WRec*)(&PW->A);
-			r = new WRec(PW);
 		}
+		r->Deserialize(&PW->A[offsetOfPwA]);
 		r->PutN(RecNr);
 		r->PutIR(IRec);
 		r->X.PackKF(KFRoot);
+		auto serLen = r->Serialize(buffer);
+		memcpy(&PW->A[offsetOfPwA], buffer, serLen);
 		n++;
-		WORD* rofs = (WORD*)&r->N[0];
-		*rofs += RecLen;
+		offsetOfPwA += RecLen;
 	}
-	// ted je potreba WRec vratit zpet do PW (provest serializaci)
-	memcpy(&PW->A[0], &r->N[0], 3);
-	memcpy(&PW->A[3], &r->IR[0], 3);
-	PW->A[6] = r->X.S[0];
-	memcpy(&PW->A[7], &r->IR[0], r->X.S[0]);
 	delete r; r = nullptr;
 	PW->Sort(n, RecLen);
 	WriteWPage(n, nxt, 0, 0);
@@ -394,7 +319,8 @@ label4:
 
 void WorkFile::PutFreeNr(longint N)
 {
-	NFreeNr++; FreeNr[NFreeNr] = N;
+	NFreeNr++;
+	FreeNr[NFreeNr] = N;
 }
 
 void WorkFile::ReadWPage(WPage* W, longint Pg)
@@ -521,7 +447,16 @@ label1:
 	p1 = p->Chain;
 	if (p1 == nullptr) n = KD->IndexRoot;
 	else n = NxtXPage;
-	XF->WrPage((XPage*)p, n);
+
+	// kopie XXPage do XPage a jeji zapis;
+	auto xp = new XPage();
+	xp->IsLeaf = p->IsLeaf;
+	xp->GreaterPage = p->GreaterPage;
+	xp->NItems = p->NItems;
+	memcpy(xp->A, p->A, sizeof(xp->A));
+	XF->WrPage(xp, n);
+	delete xp; xp = nullptr;
+	
 	p = p1;
 	if (p != nullptr) {
 		NxtXPage = XF->NewPage(XPP);

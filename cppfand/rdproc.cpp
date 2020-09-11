@@ -292,6 +292,10 @@ FileD* RdPath(bool NoFD, pstring** Path, WORD& CatIRec)
 
 FrmlPtr RdFunctionP(char& FFTyp)
 {
+	/*if (InpArrLen == 0x257)	{
+		printf("RdFunctionP");
+	}*/
+	
 	FrmlElem* Z = nullptr;
 	char Typ = '\0', FTyp = '\0';
 	FileD* cf = nullptr;
@@ -376,7 +380,7 @@ FrmlPtr RdFunctionP(char& FFTyp)
 		else {
 			Accept(',');
 			N = 1;
-			Arg[1] = RdRealFrml();
+			Arg[0] = RdRealFrml();
 		}
 		Z = new FrmlElem13(Op, (N + 2) * 4); // GetOp(Op, (N + 2) * 4);
 		auto iZ = (FrmlElem13*)Z;

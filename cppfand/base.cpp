@@ -1214,10 +1214,6 @@ longint AbsAdr(void* P)
 	return 0;
 }
 
-void ExChange(void* X, void* Y, WORD L)
-{
-}
-
 void ReplaceChar(pstring S, char C1, char C2)
 {
 }
@@ -1512,7 +1508,7 @@ void NewExit(PProcedure POvr, ExitRecord* Buf)
 void GoExit()
 {
 #ifdef _DEBUG
-	printf("\n%s\n", MsgLine.c_str());
+	printf("%s ", MsgLine.c_str());
 	//throw std::exception("GoExit()");
 #endif
 }

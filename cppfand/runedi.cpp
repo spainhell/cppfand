@@ -491,8 +491,10 @@ longint CNRecs()
 	longint n = 0;
 	if (EdRecVar) { return 1; }
 	if (Subset) n = WK->NRecs();
-	else if (HasIndex) n = VK->NRecs();
-	else n = CFile->NRecs;
+	else {
+		if (HasIndex) n = VK->NRecs();
+		else n = CFile->NRecs;
+	}
 	if (IsNewRec) n++;
 	return n;
 }
@@ -531,12 +533,16 @@ longint AbsRecNr(longint N)
 longint LogRecNo(longint N)
 {
 	LockMode md;
-	longint result = 0; if ((N <= 0) || (N > CFile->NRecs)) return result;
+	longint result = 0;
+	if ((N <= 0) || (N > CFile->NRecs)) return result;
 	md = NewLMode(RdMode);
 	ReadRec(N);
 	if (!DeletedFlag()) {
 		if (Subset) result = WK->RecNrToNr(N);
-		else if (HasIndex) { TestXFExist(); result = VK->RecNrToNr(N); }
+		else if (HasIndex) {
+			TestXFExist();
+			result = VK->RecNrToNr(N);
+		}
 		else result = N;
 	}
 	OldLMode(md);
@@ -829,7 +835,9 @@ void AdjustCRec()
 		else SetWasUpdated();
 		NewDisplLL = true;
 	}
-	UnLockRec(E); LockRec(false); DisplRecNr(CRec());
+	UnLockRec(E);
+	LockRec(false);
+	DisplRecNr(CRec());
 }
 
 void WrEStatus()
@@ -883,9 +891,14 @@ void DuplFld(FileD* FD1, FileD* FD2, void* RP1, void* RP2, void* RPt, FieldDPtr 
 			CFile = FD2; CRecPtr = RP2;
 			if (RPt == nullptr) DelTFld(F2);
 			else DelDifTFld(RP2, RPt, F2);
-			LongS_(F2, ss); ReleaseStore(ss);
+			LongS_(F2, ss);
+			ReleaseStore(ss);
 		}
-		else { s = _ShortS(F1); CFile = FD2; CRecPtr = RP2; S_(F2, s); }
+		else {
+			s = _ShortS(F1);
+			CFile = FD2; CRecPtr = RP2;
+			S_(F2, s);
+		}
 		break;
 	}
 	case 'R': { r = _R(F1); CFile = FD2; CRecPtr = RP2; R_(F2, r); break; }
@@ -922,7 +935,8 @@ void SetRecAttr(WORD I)
 	WORD TA; EFldD* D;
 	TA = RecAttr(I); D = E->FirstFld;
 	while (D != nullptr) {
-		if (D->Page == CPage) SetFldAttr(D, I, TA); D = (EFldD*)D->Chain;
+		if (D->Page == CPage) SetFldAttr(D, I, TA);
+		D = (EFldD*)D->Chain;
 	}
 }
 
@@ -1027,16 +1041,18 @@ void SetNewWwRecAttr()
 void MoveDispl(WORD From, WORD Where, WORD Number)
 {
 	EFldD* D; WORD i, r1, r2;
-	for (i = 1; i < Number; i++) {
-		D = E->FirstFld; while (D != nullptr) {
-			r1 = FldRow(D, From) - 1; r2 = FldRow(D, Where) - 1;
+	for (i = 1; i <= Number; i++) {
+		D = E->FirstFld;
+		while (D != nullptr) {
+			r1 = FldRow(D, From) - 1;
+			r2 = FldRow(D, Where) - 1;
 			screen.ScrMove(D->Col - 1, r1, D->Col - 1, r2, D->L);
 			if (HasTTWw(D->FldD))
 				screen.ScrMove(D->Col + 1, r1, D->Col + 1, r2, D->FldD->L - 2);
 			D = (EFldD*)D->Chain;
 		}
 		if (From < Where) { From--; Where--; }
-		else { From++; Where++; };
+		else { From++; Where++; }
 	}
 }
 
@@ -1240,11 +1256,17 @@ void SetStartRec()
 		n = LogRecNo(E->StartRecNo);
 	label1:
 		n = MaxL(1, MinL(n, CNRecs()));
-		IRec = MaxW(1, MinW(E->StartIRec, E->NRecs)); BaseRec = n - IRec + 1;
-		if (BaseRec <= 0) { IRec += BaseRec - 1; BaseRec = 1; };
+		IRec = MaxW(1, MinW(E->StartIRec, E->NRecs));
+		BaseRec = n - IRec + 1;
+		if (BaseRec <= 0) { IRec += BaseRec - 1;
+			BaseRec = 1;
+		}
 	}
 	if (Only1Record) {
-		if (CNRecs() > 0) { RdRec(CRec()); n = AbsRecNr(CRec()); }
+		if (CNRecs() > 0) {
+			RdRec(CRec());
+			n = AbsRecNr(CRec());
+		}
 		else n = 0;
 		if (Subset) WK->Close();
 		Subset = true;
@@ -1292,10 +1314,14 @@ bool OpenEditWw()
 		else if ((VK != nullptr) && VK->InWork) md = NoExclMode;
 	}
 	if (Subset || Only1Record) WK = new XWKey(); // GetZStore(sizeof(*WK));
-	if (!TryLMode(md, md1, 1)) { EdBreak = 15; goto label1; }
+	if (!TryLMode(md, md1, 1)) {
+		EdBreak = 15;
+		goto label1;
+	}
 	md2 = NewLMode(RdMode);
 	if (E->DownSet && (E->OwnerTyp == 'F')) {
-		CFile = E->DownLD->ToFD; CRecPtr = E->DownRecPtr;
+		CFile = E->DownLD->ToFD;
+		CRecPtr = E->DownRecPtr;
 		md1 = NewLMode(RdMode);
 		n = E->OwnerRecNo;
 		if ((n == 0) || (n > CFile->NRecs)) RunErrorM(E->OldMd, 611);
@@ -1308,7 +1334,8 @@ bool OpenEditWw()
 	if (!Only1Record && HasIndex && VK->InWork) {
 		if (!Subset) WK = (XWKey*)VK;
 		VK = CFile->Keys;
-		WasWK = true; Subset = true;
+		WasWK = true;
+		Subset = true;
 	}
 #ifdef FandSQL
 	if (CFile->IsSQLFile) Strm1->DefKeyAcc(WK);
@@ -1321,7 +1348,9 @@ bool OpenEditWw()
 			EdBreak = 13;
 		label1:
 			if (Subset && !WasWK) WK->Close();
-			OldLMode(E->OldMd); result = false; return result;
+			OldLMode(E->OldMd);
+			result = false;
+			return result;
 		}
 		else {
 		label2:
@@ -1370,20 +1399,28 @@ void GotoRecFld(longint NewRec, EFldD* NewFld)
 	CFld = NewFld; Max = E->NRecs;
 	Delta = NewRec - CRec(); NewIRec = IRec + Delta;
 	if ((NewIRec > 0) && (NewIRec <= Max)) {
-		IRec = NewIRec; RdRec(CRec()); goto label1;
+		IRec = NewIRec;
+		RdRec(CRec());
+		goto label1;
 	}
 	NewBase = BaseRec + Delta;
 	if (NewBase + Max - 1 > CNRecs()) NewBase = CNRecs() - pred(Max);
 	if (NewBase <= 0) NewBase = 1;
-	IRec = NewRec - NewBase + 1; D = NewBase - BaseRec; BaseRec = NewBase;
+	IRec = NewRec - NewBase + 1;
+	D = NewBase - BaseRec;
+	BaseRec = NewBase;
 	RdRec(CRec());
-	if (abs(D) >= Max) { DisplWwRecsOrPage(); goto label2; }
+	if (abs(D) >= Max) {
+		DisplWwRecsOrPage();
+		goto label2;
+	}
 	if (D > 0) {
 		MoveDispl(D + 1, 1, Max - D);
 		for (i = Max - D + 1; i < Max; i++) DisplRec(i);
 	}
 	else {
-		D = -D; MoveDispl(Max - D, Max, Max - D);
+		D = -D;
+		MoveDispl(Max - D, Max, Max - D);
 		for (i = 1; i < D; i++) DisplRec(i);
 	}
 label1:
@@ -1398,19 +1435,26 @@ void UpdMemberRef(void* POld, void* PNew)
 	LinkDPtr LD = nullptr; XString x, xnew, xold; XScan* Scan = nullptr; FileDPtr cf = nullptr;
 	void* cr = nullptr; void* p = nullptr; void* p2 = nullptr; bool sql;
 	KeyDPtr k = nullptr; KeyFldDPtr kf = nullptr, kf1 = nullptr, kf2 = nullptr, Arg = nullptr;
-	cf = CFile; cr = CRecPtr; LD = LinkDRoot; while (LD != nullptr) {
+	cf = CFile; cr = CRecPtr; LD = LinkDRoot;
+	while (LD != nullptr) {
 		if ((LD->MemberRef != 0) && (LD->ToFD == cf) &&
 			((PNew != nullptr) || (LD->MemberRef != 2))) {
-			CFile = cf; kf2 = LD->ToKey->KFlds; CRecPtr = POld; xold.PackKF(kf2);
+			CFile = cf; kf2 = LD->ToKey->KFlds;
+			CRecPtr = POld;
+			xold.PackKF(kf2);
 			if (PNew != nullptr) {
-				CRecPtr = PNew; xnew.PackKF(kf2); if (xnew.S == xold.S) goto label2;
+				CRecPtr = PNew;
+				xnew.PackKF(kf2);
+				if (xnew.S == xold.S) goto label2;
 			}
 			CFile = LD->FromFD;
 #ifdef FandSQL
 			sql = CFile->IsSQLFile;
 #endif
-			k = GetFromKey(LD); kf1 = k->KFlds;
-			p = GetRecSpace(); CRecPtr = p;
+			k = GetFromKey(LD);
+			kf1 = k->KFlds;
+			p = GetRecSpace();
+			CRecPtr = p;
 			if (PNew != nullptr) p2 = GetRecSpace();
 			// New(Scan, Init(CFile, k, nullptr, true));
 			Scan = new XScan(CFile, k, nullptr, true);
@@ -1420,7 +1464,8 @@ void UpdMemberRef(void* POld, void* PNew)
 #endif
 				ScanSubstWIndex(Scan, kf1, 'W');
 		label1:
-			CRecPtr = p; Scan->GetRec();
+			CRecPtr = p;
+			Scan->GetRec();
 			if (!Scan->eof) {
 #ifdef FandSQL
 				if (sql) x.PackKF(kf1);
@@ -1435,9 +1480,11 @@ void UpdMemberRef(void* POld, void* PNew)
 				}
 				else {
 					Move(CRecPtr, p2, CFile->RecLen);
-					CRecPtr = p2; kf = kf2; Arg = LD->Args; while (kf != nullptr) {
+					CRecPtr = p2; kf = kf2; Arg = LD->Args;
+					while (kf != nullptr) {
 						DuplFld(cf, CFile, PNew, p2, nullptr, kf->FldD, Arg->FldD);
-						Arg = (KeyFldD*)Arg->Chain; kf = (KeyFldD*)kf->Chain;
+						Arg = (KeyFldD*)Arg->Chain;
+						kf = (KeyFldD*)kf->Chain;
 					}
 					RunAddUpdte1('d', p, false, nullptr, LD);
 					UpdMemberRef(p, p2);
@@ -1448,7 +1495,9 @@ void UpdMemberRef(void* POld, void* PNew)
 				}
 				goto label1;
 			}
-			Scan->Close(); ClearRecSpace(p); ReleaseStore(p);
+			Scan->Close();
+			ClearRecSpace(p);
+			ReleaseStore(p);
 		}
 	label2:
 		LD = LD->Chain;

@@ -2478,7 +2478,17 @@ WORD XItem::UpdStr(WORD O, pstring* S)
 	 mov al,[bx];{M} add al,[bx+1];{L} stosb;
 	 mov al,[bx]; xor ah,ah; add di,ax; lea si,[bx+2];
 	 xor ch,ch; mov cl,[bx+1]; rep movsb; mov ax,si; pop ds;*/
-	return 0;
+
+	// 'O' je index
+	// delka S bude M + L
+	S[0] = Nr[O] + Nr[O + 1];
+	BYTE NrO1 = Nr[O + 1];
+	BYTE NrO2 = Nr[O + 2];
+	for (BYTE i = 0; i < NrO1; i++) {
+		S[NrO1 + i] = Nr[NrO2 + i];
+	}
+	
+	return NrO2 + NrO1;
 }
 
 WORD XPage::Off()
@@ -2519,17 +2529,21 @@ bool XPage::Overflow()
 
 pstring XPage::StrI(WORD I)
 {
-	XItemPtr x = XItemPtr(&A);
-	WORD* xofs = (WORD*)x; // absolute x
+	XItem* x = new XItem(A, IsLeaf);
+	WORD* xofs = (WORD*)x->Nr[0]; // absolute x
 	WORD o = 0;
-	pstring* s = nullptr;
+	pstring s;
 
 	o = Off();
 	//TODO: asm les di, @result; mov s.WORD, di; mov s[2].WORD, es;
+	pstring es_di;
+	
 
 	if (I > NItems) s[0] = 0;
 	else {
-		for (WORD j = 1; j < I; j++) { *xofs = x->UpdStr(o, s); }
+		for (WORD j = 1; j <= I; j++) {
+			*xofs = x->UpdStr(o, &s);
+		}
 	}
 	//TODO: co a jak to vrací?
 	return "";
@@ -3177,11 +3191,11 @@ void XWKey::Release()
 void XWKey::ReleaseTree(longint Page, bool IsClose)
 {
 	if ((Page == 0) || (Page > XF()->MaxPage)) return;
-	XPagePtr p = (XPage*)GetStore(XPageSize);
+	XPage* p = new XPage(); // (XPage*)GetStore(XPageSize);
 	XF()->RdPage(p, Page);
 	if (!p->IsLeaf) {
 		WORD n = p->NItems;
-		for (WORD i = 1; i < n; i++) {
+		for (WORD i = 1; i <= n; i++) {
 			ReleaseTree(*(p->XI(i, p->IsLeaf)->DownPage), IsClose);
 			XF()->RdPage(p, Page);
 		}
@@ -3190,14 +3204,18 @@ void XWKey::ReleaseTree(longint Page, bool IsClose)
 	if ((Page != IndexRoot) || IsClose)
 		XF()->ReleasePage(p, Page);
 	else {
-		FillChar(p, XPageSize, 0); p->IsLeaf = true; XF()->WrPage(p, Page);
+		FillChar(p, XPageSize, 0);
+		p->IsLeaf = true;
+		XF()->WrPage(p, Page);
 	}
 	ReleaseStore(p);
 }
 
 void XWKey::OneRecIdx(KeyFldD* KF, longint N)
 {
-	Open(KF, true, false); Insert(N, true); NR++;
+	Open(KF, true, false);
+	Insert(N, true);
+	NR++;
 }
 
 void XWKey::InsertAtNr(longint I, longint RecNr)
@@ -3230,17 +3248,20 @@ void XWKey::AddToRecNr(longint RecNr, integer Dif)
 {
 	if (NRecs() == 0) return;
 	NrToPath(1);
-	XPagePtr p = (XPage*)GetStore(sizeof(*p)); /* !!! with XPath[XPathN] do!!! */
+	XPage* p = new XPage(); // (XPage*)GetStore(sizeof(*p));
+	/* !!! with XPath[XPathN] do!!! */
 	longint pg = XPath[XPathN].Page;
 	integer j = XPath[XPathN].I;
 	do {
 		XF()->RdPage(p, pg);
 		integer n = p->NItems - j + 1;
-		XItemPtr x = p->XI(j, p->IsLeaf);
+		XItem* x = p->XI(j, p->IsLeaf);
 		while (n > 0) {
 			longint nn = x->GetN();
 			if (nn >= RecNr) x->PutN(nn + Dif);
+			auto prevX = x;
 			x = x->Next(oLeaf, p->IsLeaf);
+			delete prevX; prevX = nullptr;
 			n--;
 		}
 		XF()->WrPage(p, pg);
@@ -3252,7 +3273,10 @@ void XWKey::AddToRecNr(longint RecNr, integer Dif)
 
 void XWFile::Err(WORD N)
 {
-	if (this == &XWork) { SetMsgPar(FandWorkXName); RunError(N); }
+	if (this == &XWork) {
+		SetMsgPar(FandWorkXName);
+		RunError(N);
+	}
 	else {
 		CFile->XF->SetNotValid();
 		CFileMsg(N, 'X');
@@ -3295,16 +3319,6 @@ void XWFile::WrPage(XPage* P, longint N)
 	RdWrCache(false, Handle, NotCached(), (N << XPageShft) + 7, XPageSize - 7, P->A);
 }
 
-//void XWFile::WrPage(XXPage* P, longint N)
-//{
-//	if (UpdLockCnt > 0) Err(645);
-//	// puvodne se zapisovalo celych XPageSize z P, bylo nutno to rozhodit na jednotlive tridni promenne
-//	RdWrCache(false, Handle, NotCached(), N << XPageShft, 1, &P->IsLeaf);
-//	RdWrCache(false, Handle, NotCached(), (N << XPageShft) + 1, 4, &P->GreaterPage);
-//	RdWrCache(false, Handle, NotCached(), (N << XPageShft) + 5, 2, &P->NItems);
-//	RdWrCache(false, Handle, NotCached(), (N << XPageShft) + 7, XPageSize - 7, P->A);
-//}
-
 longint XWFile::NewPage(XPage* P)
 {
 	longint result = 0;
@@ -3327,7 +3341,10 @@ longint XWFile::NewPage(XPage* P)
 
 void XWFile::ReleasePage(XPage* P, longint N)
 {
-	FillChar(P, XPageSize, 0);
+	P->IsLeaf = false;
+	P->NItems = 0;
+	//FillChar(P, XPageSize, 0);
+	memset(P->A, 0, sizeof(P->A));
 	P->GreaterPage = FreeRoot;
 	FreeRoot = N;
 	WrPage(P, N);
