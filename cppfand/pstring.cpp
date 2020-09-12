@@ -67,7 +67,7 @@ pstring::~pstring()
 	strbytes -= initLen;
 }
 
-unsigned char pstring::length()
+unsigned char pstring::length() const
 {
 	return arr[0];
 }
@@ -146,6 +146,11 @@ void pstring::replace(const char* value)
 
 void pstring::insert(const char* value, unsigned char position)
 {
+}
+
+unsigned char pstring::at(unsigned char index) const
+{
+	return arr[index];
 }
 
 const char* pstring::c_str()

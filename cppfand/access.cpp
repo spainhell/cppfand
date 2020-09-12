@@ -980,8 +980,8 @@ void OverWrXRec(longint RecNr, void* P2, void* P)
 void AddFFs(KeyDPtr K, pstring& s)
 {
 	WORD l = MinW(K->IndexLen + 1, 255);
-	for (WORD i = s.length() + 1; i < l; i++) s[i] = 0xff;
-	s[0] = char(l);
+	for (WORD i = s.length() + 1; i <= l; i++) s[i] = 0xff;
+	s[0] = (char)l;
 }
 
 void CompKIFrml(KeyDPtr K, KeyInD* KI, bool AddFF)

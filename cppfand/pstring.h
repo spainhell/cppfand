@@ -15,7 +15,7 @@ public:
     pstring(char str[], unsigned char i);
     ~pstring();
 
-    unsigned char length();
+    unsigned char length() const;
     unsigned short initLength();
     void cut(unsigned char length);
     void clean();
@@ -28,7 +28,8 @@ public:
     void replace(const char* value); // smaže obsah a nahradí jej novou hodnotou
     void insert(const char* value, unsigned char position); // vloží na pozici novou hodnotu, pùvodní se posune
 
-    const char* c_str();
+    unsigned char at(unsigned char index) const;
+	const char* c_str();
     bool empty();
 
     unsigned char& operator[] (size_t i);

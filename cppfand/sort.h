@@ -18,7 +18,7 @@ public:
 class WRec /* record on WPage */
 {
 public:
-	WRec() {};
+	WRec() = default;
 	WRec(WPage* wp);
 	BYTE N[3]{ 0, 0 ,0 };
 	BYTE IR[3]{ 0, 0, 0 };
@@ -27,8 +27,12 @@ public:
 	void PutN(longint NN); // ASM
 	void PutIR(longint II); // ASM
 	WORD Comp(WRec* R); // ASM
+	WORD Compare(const WRec& w) const;
 	void Deserialize(unsigned char* data);
 	size_t Serialize(unsigned char* buffer);
+	bool operator == (const WRec& w) const;
+	bool operator < (const WRec& w) const;
+	bool operator > (const WRec& w) const;
 };
 
 class WorkFile

@@ -69,8 +69,37 @@ WORD WRec::Comp(WRec* R)
 		else return _gt;
 	}
 
-	integer irThis = IR[0] + (IR[1] << 8) + (IR[2] << 16);
-	integer irR = R->IR[0] + (R->IR[1] << 8) + (R->IR[2] << 16);
+	int irThis = IR[0] + (IR[1] << 8) + (IR[2] << 16);
+	int irR = R->IR[0] + (R->IR[1] << 8) + (R->IR[2] << 16);
+	if (irThis != irR) { // compare IR
+		if (irThis < irR) return _lt;
+		else return _gt;
+	}
+
+	return _equ;
+}
+
+WORD WRec::Compare(const WRec& w) const
+{
+	WORD offThis = 0;
+	WORD offR = 0;
+	BYTE lenThis = X.S.length(); // AL
+	BYTE lenR = w.X.S.length(); // AH
+	if (lenThis != 0 && lenR != 0) {
+		// porovnani retezcu VETSI delkou - nechapu ale proc ...
+		for (unsigned char i = 0; i < max(lenThis, lenR); i++) {
+			if (X.S.at(i + 1) == w.X.S.at(i + 1)) continue;
+			if (X.S.at(i + 1) < w.X.S.at(i + 1)) return _lt;
+			else return _gt;
+		}
+	}
+	if (lenThis != lenR) { // compare X
+		if (lenThis < lenR) return _lt;
+		else return _gt;
+	}
+
+	int irThis = IR[0] + (IR[1] << 8) + (IR[2] << 16);
+	int irR = w.IR[0] + (w.IR[1] << 8) + (w.IR[2] << 16);
 	if (irThis != irR) { // compare IR
 		if (irThis < irR) return _lt;
 		else return _gt;
@@ -96,6 +125,21 @@ size_t WRec::Serialize(unsigned char* buffer)
 	return 3 + 3 + 1 + len; // N + IR + S[0] + 1 B delka
 }
 
+bool WRec::operator==(const WRec& w) const
+{
+	return Compare(w) == 1;
+}
+
+bool WRec::operator<(const WRec& w) const
+{
+	return Compare(w) == 2;
+}
+
+bool WRec::operator>(const WRec& w) const
+{
+	return Compare(w) == 4;
+}
+
 void ExChange(void* X, void* Y, WORD L)
 {
 	if (L == 0) return;
@@ -105,64 +149,75 @@ void ExChange(void* X, void* Y, WORD L)
 void WPage::Sort(WORD N, WORD RecLen)
 {
 	if (N <= 1) return;
+	std::vector<WRec> recs;
+	size_t offset = 0;
 
-	std::stack<integer> stack;
-	WRec* X = nullptr, * Y = nullptr, * Z = nullptr, * V = nullptr;
-	WORD oA = 0, cx = 0, cy = 0, OldSP = 0, CurSP = 0;
-	integer iX, iY, R, L;
+	for (size_t i = 0; i < N; i++) {
+		WRec r;
+		r.Deserialize(&A[offset]);
+		recs.push_back(r);
+		offset += RecLen;
+	}
 
-	V = new WRec(); // GetStore(sizeof(WRec));
-	X = new WRec(this); // WRecPtr(A);
-	//dec(PtrRec(X).Seg, 0x10);
-	*(WORD*)&X->N[0] += 0x100; /*prevent negative ofs*/
-	Y = X; Z = X;
-	oA = *(WORD*)&X->N[0];
-	stack.push(0);
-	stack.push(N - 1);
-	
-	do {
-		R = stack.top(); stack.pop();
-		L = stack.top(); stack.pop();
-		do {
-			*(WORD*)&Z->N[0] = oA + ((L + R) >> 1) * RecLen;
-			memcpy(V, Z, RecLen); // MyMove(Z^, V^, RecLen);
-			*(WORD*)&X->N[0] = oA + L * RecLen;
-			*(WORD*)&Y->N[0] = oA + R * RecLen;
-			do {
-			label1:
-				cx = X->Comp(V);
-				if (cx == _lt) { *(WORD*)&X->N[0] += RecLen; goto label1; }
-			label2:
-				cy = V->Comp(Y);
-				if (cy == _lt) { *(WORD*)&Y->N[0] -= RecLen; goto label2; }
-				if (*(WORD*)&X->N[0] <= *(WORD*)&Y->N[0]) {
-					if ((cx || cy) != _equ) ExChange(X, Y, RecLen);
-					*(WORD*)&X->N[0] += RecLen;
-					*(WORD*)&Y->N[0] -= RecLen;
-				}
-			} while (!(*(WORD*)&X->N[0] > *(WORD*)&Y->N[0]));
-			iX = (*(WORD*)&X->N[0] - oA) / RecLen;
-			if (*(WORD*)&X->N[0] - RecLen > *(WORD*)&Y->N[0]) iY = iX - 2;
-			else iY = iX - 1;
-			if (iY == L) L = iX;
-			else if (iX == R) R = iY;
-			else if (iY - L < R - iX) {  /*push longest interval on stack*/
-				if (iX < R) {
-					stack.push(iX);
-					stack.push(R);
-				}
-				R = iY;
-			}
-			else {
-				if (L < iY) {
-					stack.push(L);
-					stack.push(iY);
-				}
-				L = iX;
-			}
-		} while (!(L >= R));
-	} while (!stack.empty());
-	ReleaseStore(V);
+	std::sort(recs.begin(), recs.end());
+
+	//std::stack<integer> stack;
+	//WRec* X = nullptr, * Y = nullptr, * Z = nullptr, * V = nullptr;
+	//WORD oA = 0, cx = 0, cy = 0, OldSP = 0, CurSP = 0;
+	//integer iX, iY, R, L;
+
+	//V = new WRec(); // GetStore(sizeof(WRec));
+	//X = new WRec(this); // WRecPtr(A);
+	////dec(PtrRec(X).Seg, 0x10);
+	//*(WORD*)&X->N[0] += 0x100; /*prevent negative ofs*/
+	//Y = X; Z = X;
+	//oA = *(WORD*)&X->N[0];
+	//stack.push(0);
+	//stack.push(N - 1);
+	//
+	//do {
+	//	R = stack.top(); stack.pop();
+	//	L = stack.top(); stack.pop();
+	//	do {
+	//		*(WORD*)&Z->N[0] = oA + ((L + R) >> 1) * RecLen;
+	//		memcpy(V, Z, RecLen); // MyMove(Z^, V^, RecLen);
+	//		*(WORD*)&X->N[0] = oA + L * RecLen;
+	//		*(WORD*)&Y->N[0] = oA + R * RecLen;
+	//		do {
+	//		label1:
+	//			cx = X->Comp(V);
+	//			if (cx == _lt) { *(WORD*)&X->N[0] += RecLen; goto label1; }
+	//		label2:
+	//			cy = V->Comp(Y);
+	//			if (cy == _lt) { *(WORD*)&Y->N[0] -= RecLen; goto label2; }
+	//			if (*(WORD*)&X->N[0] <= *(WORD*)&Y->N[0]) {
+	//				if ((cx || cy) != _equ) ExChange(X, Y, RecLen);
+	//				*(WORD*)&X->N[0] += RecLen;
+	//				*(WORD*)&Y->N[0] -= RecLen;
+	//			}
+	//		} while (!(*(WORD*)&X->N[0] > *(WORD*)&Y->N[0]));
+	//		iX = (*(WORD*)&X->N[0] - oA) / RecLen;
+	//		if (*(WORD*)&X->N[0] - RecLen > *(WORD*)&Y->N[0]) iY = iX - 2;
+	//		else iY = iX - 1;
+	//		if (iY == L) L = iX;
+	//		else if (iX == R) R = iY;
+	//		else if (iY - L < R - iX) {  /*push longest interval on stack*/
+	//			if (iX < R) {
+	//				stack.push(iX);
+	//				stack.push(R);
+	//			}
+	//			R = iY;
+	//		}
+	//		else {
+	//			if (L < iY) {
+	//				stack.push(L);
+	//				stack.push(iY);
+	//			}
+	//			L = iX;
+	//		}
+	//	} while (!(L >= R));
+	//} while (!stack.empty());
+	//ReleaseStore(V);
 }
 
 WorkFile::WorkFile()
@@ -249,7 +304,8 @@ void WorkFile::SortMerge()
 
 bool WorkFile::GetCRec()
 {
-	// TODO: v originále nevrací nic
+	// vola se pouze ze zdedenych trid
+	// tady nema vyznam
 	return false;
 }
 
@@ -356,17 +412,17 @@ void WorkFile::ReadWPage(WPage* W, longint Pg)
 
 void WorkFile::WriteWPage(WORD N, longint Pg, longint Nxt, longint Chn)
 {
-	WRec* r = nullptr;
-	WORD* rofs = nullptr;
+	size_t offset = 0;
 	PgWritten++;
 	RunMsgN(PgWritten);
 	if (NChains == 1) {
 		//r = (WRec*)(&PW->A);
-		r = new WRec(PW);
-		while (N > 0) {
-			Output(r);
+		for (size_t i = 0; i < N; i++) {
+			WRec r;
+			r.Deserialize(&PW->A[offset]);
+			Output(&r);
 			N--;
-			*(WORD*)&r->N[0] += RecLen;
+			offset += RecLen;
 		}
 	}
 	else {
