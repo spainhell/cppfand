@@ -51,7 +51,32 @@ WORD WRec::Comp(WRec* R)
 	//@mov ax 2, 2; jmp @4;
 	//@mov ax 3, 4;
 	//@pop ds 4;
-	return 0;
+
+	WORD offThis = 0;
+	WORD offR = 0;
+	BYTE lenThis = X.S[0]; // AL
+	BYTE lenR = R->X.S[0]; // AH
+	if (lenThis != 0 && lenR != 0) {
+		// porovnani retezcu VETSI delkou - nechapu ale proc ...
+		for (size_t i = 0; i < max(lenThis, lenR); i++) {
+			if (X.S[i + 1] == R->X.S[i + 1]) continue;
+			if (X.S[i + 1] < R->X.S[i + 1]) return _lt;
+			else return _gt;
+		}
+	}
+	if (lenThis != lenR) { // compare X
+		if (lenThis < lenR) return _lt;
+		else return _gt;
+	}
+
+	integer irThis = IR[0] + (IR[1] << 8) + (IR[2] << 16);
+	integer irR = R->IR[0] + (R->IR[1] << 8) + (R->IR[2] << 16);
+	if (irThis != irR) { // compare IR
+		if (irThis < irR) return _lt;
+		else return _gt;
+	}
+
+	return _equ;
 }
 
 void WRec::Deserialize(unsigned char* data)
@@ -74,14 +99,14 @@ size_t WRec::Serialize(unsigned char* buffer)
 void ExChange(void* X, void* Y, WORD L)
 {
 	if (L == 0) return;
-	
+	printf("sort.cpp ExChange() - not implemented");
 }
 
 void WPage::Sort(WORD N, WORD RecLen)
 {
 	if (N <= 1) return;
 
-	std::queue<integer> stack;
+	std::stack<integer> stack;
 	WRec* X = nullptr, * Y = nullptr, * Z = nullptr, * V = nullptr;
 	WORD oA = 0, cx = 0, cy = 0, OldSP = 0, CurSP = 0;
 	integer iX, iY, R, L;
@@ -89,35 +114,35 @@ void WPage::Sort(WORD N, WORD RecLen)
 	V = new WRec(); // GetStore(sizeof(WRec));
 	X = new WRec(this); // WRecPtr(A);
 	//dec(PtrRec(X).Seg, 0x10);
-	*(WORD*)X->N[0] += 0x100; /*prevent negative ofs*/
+	*(WORD*)&X->N[0] += 0x100; /*prevent negative ofs*/
 	Y = X; Z = X;
-	oA = *(WORD*)X->N[0];
+	oA = *(WORD*)&X->N[0];
 	stack.push(0);
 	stack.push(N - 1);
 	
 	do {
-		R = stack.back();
-		L = stack.back();
+		R = stack.top(); stack.pop();
+		L = stack.top(); stack.pop();
 		do {
-			*(WORD*)Z->N[0] = oA + ((L + R) >> 1) * RecLen;
+			*(WORD*)&Z->N[0] = oA + ((L + R) >> 1) * RecLen;
 			memcpy(V, Z, RecLen); // MyMove(Z^, V^, RecLen);
-			*(WORD*)X->N[0] = oA + L * RecLen;
-			*(WORD*)Y->N[0] = oA + R * RecLen;
+			*(WORD*)&X->N[0] = oA + L * RecLen;
+			*(WORD*)&Y->N[0] = oA + R * RecLen;
 			do {
 			label1:
 				cx = X->Comp(V);
-				if (cx == _lt) { *(WORD*)X->N[0] += RecLen; goto label1; }
+				if (cx == _lt) { *(WORD*)&X->N[0] += RecLen; goto label1; }
 			label2:
 				cy = V->Comp(Y);
-				if (cy == _lt) { *(WORD*)Y->N[0] -= RecLen; goto label2; }
-				if (*(WORD*)X->N[0] <= *(WORD*)Y->N[0]) {
+				if (cy == _lt) { *(WORD*)&Y->N[0] -= RecLen; goto label2; }
+				if (*(WORD*)&X->N[0] <= *(WORD*)&Y->N[0]) {
 					if ((cx || cy) != _equ) ExChange(X, Y, RecLen);
-					*(WORD*)X->N[0] += RecLen;
-					*(WORD*)Y->N[0] -= RecLen;
+					*(WORD*)&X->N[0] += RecLen;
+					*(WORD*)&Y->N[0] -= RecLen;
 				}
-			} while (!(*(WORD*)X->N[0] > *(WORD*)Y->N[0]));
-			iX = (*(WORD*)X->N[0] - oA) / RecLen;
-			if (*(WORD*)X->N[0] - RecLen > *(WORD*)Y->N[0]) iY = iX - 2;
+			} while (!(*(WORD*)&X->N[0] > *(WORD*)&Y->N[0]));
+			iX = (*(WORD*)&X->N[0] - oA) / RecLen;
+			if (*(WORD*)&X->N[0] - RecLen > *(WORD*)&Y->N[0]) iY = iX - 2;
 			else iY = iX - 1;
 			if (iY == L) L = iX;
 			else if (iX == R) R = iY;

@@ -335,7 +335,7 @@ longint AbsLogRecNoFun(FrmlElem13* Z)
 	void* cr = CRecPtr;
 	MarkStore(p);
 	KeyDPtr k = Z->Key;
-	longint N = RunInt(Z->Arg[1]);
+	longint N = RunInt(Z->Arg[0]);
 	if (N <= 0) return result;
 	CFile = Z->FFD;
 	LockMode md = NewLMode(RdMode);
