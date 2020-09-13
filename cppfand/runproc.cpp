@@ -501,9 +501,11 @@ void AppendRecProc()
 
 void UpdRec(void* CR, longint N, bool AdUpd)
 {
-	void* cr2; bool del;
-	cr2 = GetRecSpace(); CRecPtr = cr2; ReadRec(N);
-	del = DeletedFlag(); CRecPtr = CR;
+	void* cr2 = GetRecSpace();
+	CRecPtr = cr2;
+	ReadRec(N);
+	bool del = DeletedFlag();
+	CRecPtr = CR;
 	if (AdUpd)
 		if (del) LastExitCode = !RunAddUpdte('+', nullptr, nullptr);
 		else LastExitCode = !RunAddUpdte('d', cr2, nullptr);
@@ -1279,8 +1281,8 @@ void CallProcedure(Instr_proc* PD)
 #endif
 	ReadProcHead("");
 	PD->variables = LVBD;
-	n = LVBD.NParam;
-	lvroot = LVBD.GetRoot();
+	n = PD->variables.NParam;
+	lvroot = PD->variables.GetRoot();
 	oldbp = MyBP;
 	//PushProcStk();
 	if ((n != PD->N) && !((n == PD->N - 1) && PD->ExPar)) {
@@ -1289,7 +1291,7 @@ void CallProcedure(Instr_proc* PD)
 		Error(119);
 	}
 	//lv0 = lvroot;
-	it0 = LVBD.vLocVar.begin();
+	it0 = PD->variables.vLocVar.begin();
 	// projdeme vstupni parametry funkce
 	for (i = 0; i < n; i++) /* !!! with PD->TArg[i] do!!! */
 	{
@@ -1310,7 +1312,7 @@ void CallProcedure(Instr_proc* PD)
 			}
 			else CFile = PD->TArg[i].FD;
 			it1 = it0;
-			while (it1 != LVBD.vLocVar.end()) {
+			while (it1 != PD->variables.vLocVar.end()) {
 				if (((*it1)->FTyp == 'i' || (*it1)->FTyp == 'r')
 					&& ((*it1)->FD == (*it0)->FD)) (*it1)->FD = CFile;
 				it1++; // (LocVar*)lv1->Chain;
@@ -1335,7 +1337,7 @@ void CallProcedure(Instr_proc* PD)
 	}
 	//lv1 = lv0;
 	it1 = it0;
-	while (it0 != LVBD.vLocVar.end()) {
+	while (it0 != PD->variables.vLocVar.end()) {
 		if ((*it0)->FTyp == 'r') {
 			CFile = (*it0)->FD;
 			CRecPtr = GetRecSpace();
@@ -1361,7 +1363,7 @@ void CallProcedure(Instr_proc* PD)
 	FDLocVarAllowed = false;
 	//lv0 = lv1;
 	it0 = it1;
-	while (it0 != LVBD.vLocVar.end()/*lv0 != nullptr*/) {
+	while (it0 != PD->variables.vLocVar.end()/*lv0 != nullptr*/) {
 		if ((*it0)->FTyp == 'i') /* !!! with WKeyDPtr(lv->RecPtr)^ do!!! */
 		{
 			auto hX = (XWKey*)(*it0)->RecPtr;
@@ -1374,9 +1376,9 @@ void CallProcedure(Instr_proc* PD)
 	ReleaseStore2(p2);
 	RunProcedure(pd1);
 	//lv0 = lvroot;
-	it0 = LVBD.vLocVar.begin();
+	it0 = PD->variables.vLocVar.begin();
 	i = 0;
-	while (it0 != LVBD.vLocVar.end()) {
+	while (it0 != PD->variables.vLocVar.end()) {
 		// projdeme navratove hodnoty (navratova hodnota funkce + VAR parametry)
 		// a tyto navratove hodnoty ulozime zpet do patricneho FrmlElem
 		if ((*it0)->IsRetPar) {

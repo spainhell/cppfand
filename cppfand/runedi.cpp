@@ -1245,7 +1245,7 @@ label1:
 void SetStartRec()
 {
 	longint n = 0;
-	KeyFldD* kf = nullptr;;
+	KeyFldD* kf = nullptr;
 	KeyD* k = VK;
 	if (Subset) k = WK;
 	if (k != nullptr) kf = k->KFlds;

@@ -1272,14 +1272,18 @@ void DecodeFieldRSB(FieldDescr* F, WORD LWw, double R, pstring T, bool B, pstrin
 	switch (F->Typ) {
 	case 'D':T = StrDate(R, FieldDMask(F)); break;
 	case 'N': { C = '0'; goto label1; break; }
-	case 'A': { C = ' ';
+	case 'A': {
+		C = ' ';
 	label1:
 		if (M == LeftJust)
 			while (T.length() < L) T.Append(C);
-		else while (T.length() < L) {
-			pstring oldT = T;
-			T = C;
-			T += oldT;
+		else {
+			if (T.length() < L) {
+				char buf[256]{ 0 };
+				sprintf_s(buf, 256, "%*s", L, T.c_str());
+				std::string s(buf, L);
+				T = s;
+			}
 		}
 		break;
 	}
@@ -1307,7 +1311,7 @@ void DecodeField(FieldDescr* F, WORD LWw, pstring& Txt)
 {
 	double r = 0;
 	pstring s;
-	bool b = false;;
+	bool b = false;
 	switch (F->FrmlTyp) {
 	case 'R': r = _R(F); break;
 	case 'S': {
@@ -1742,7 +1746,7 @@ LongStr* RunS(FrmlElem* Z)
 			l = RunInt(iZ0->P2);
 			m = RunInt(iZ0->P3);
 			if (m == 255) str(r, s);
-			else str(m, s);
+			else str(r, l, m, s);
 		}
 		else {
 			s = RunShortStr(iZ0->P2);

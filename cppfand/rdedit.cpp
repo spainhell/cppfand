@@ -571,7 +571,8 @@ label2:
 		Dp = new DepD(); // (DepD*)GetStore(sizeof(*Dp));
 		Dp->Bool = Bool;
 		Dp->Frml = Z;
-		ChainLast(D->Dep, Dp);
+		if (D->Dep == nullptr) D->Dep = Dp;
+		else ChainLast(D->Dep, Dp);
 	}
 	if (Lexem == ';')
 	{
