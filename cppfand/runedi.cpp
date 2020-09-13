@@ -1258,7 +1258,8 @@ void SetStartRec()
 		n = MaxL(1, MinL(n, CNRecs()));
 		IRec = MaxW(1, MinW(E->StartIRec, E->NRecs));
 		BaseRec = n - IRec + 1;
-		if (BaseRec <= 0) { IRec += BaseRec - 1;
+		if (BaseRec <= 0) {
+			IRec += BaseRec - 1;
 			BaseRec = 1;
 		}
 	}
@@ -2570,17 +2571,20 @@ label2:
 
 bool GoPrevNextRec(integer Delta, bool Displ)
 {
-	longint i, D, OldBaseRec; LockMode md; WORD w, Max;
-	auto result = false; if (EdRecVar) return result;
-	md = NewLMode(RdMode); i = CRec();
+	longint i = 0; LockMode md; WORD w = 0, Max = 0;
+	longint OldBaseRec = 0;
+	auto result = false;
+	if (EdRecVar) return result;
+	md = NewLMode(RdMode);
+	i = CRec();
 	if (Displ) IVoff();
 label0:
 	i += Delta;
 	if ((i > 0) && (i <= CNRecs())) {
 		RdRec(i);
-		if (Displ) DisplRecNr(i);
-		if (!Select || !DeletedFlag && RunBool(E->Bool)) goto label2;
-		if (KeyPressed) {
+		if (Displ) DisplRecNr(i); // zobrazi cislo zaznamu v hlavicce
+		if (!Select || !DeletedFlag() && RunBool(E->Bool)) goto label2;
+		if (KeyPressed()) {
 			w = ReadKey();
 			if (((Delta > 0) && (w != _down_) && (w != _CtrlEnd_) && (w != _PgDn_)
 				|| (Delta < 0) && (w != _up_) && (w != _CtrlHome_) && (w != _PgUp_))
@@ -2591,19 +2595,30 @@ label0:
 	if (Select) WrLLF10Msg(16);
 label1:
 	RdRec(CRec());
-	if (Displ) { DisplRecNr(CRec()); IVon(); } goto label4;
-label2:
-	result = true; OldBaseRec = BaseRec; SetNewCRec(i, false);
 	if (Displ) {
-		Max = E->NRecs; D = BaseRec - OldBaseRec;
-		if (abs(D) >= Max) { DisplWwRecsOrPage(); goto label3; }
+		DisplRecNr(CRec());
+		IVon();
+	}
+	goto label4;
+label2:
+	result = true;
+	OldBaseRec = BaseRec;
+	SetNewCRec(i, false);
+	if (Displ) {
+		Max = E->NRecs;
+		longint D = BaseRec - OldBaseRec;
+		if (abs(D) > 0) {
+			DisplWwRecsOrPage();
+			goto label3;
+		}
 		if (D > 0) {
 			MoveDispl(D + 1, 1, Max - D);
-			for (i = Max - D + 1; i < Max; i++) DisplRec(i);
+			for (i = Max - D + 1; i <= Max; i++) DisplRec(i);
 		}
 		else if (D < 0) {
-			D = -D; MoveDispl(Max - D, Max, Max - D);
-			for (i = 1; i < D; i++) DisplRec(i);
+			D = -D;
+			MoveDispl(Max - D, Max, Max - D);
+			for (i = 1; i <= D; i++) DisplRec(i);
 		}
 	}
 label3:
@@ -2920,14 +2935,18 @@ bool SelFldsForEO(EditOpt* EO, LinkD* LD)
 {
 	wwmix ww;
 
-	FieldDPtr F; FieldList FL, FL1; pstring s; void* p = nullptr;
-	auto result = true; if (EO->Flds == nullptr) return result;
-	FL = EO->Flds;
+	void* p = nullptr;
+	auto result = true;
+	if (EO->Flds == nullptr) return result;
+	FieldListEl* FL = EO->Flds;
 	if (!EO->UserSelFlds) {
 		if (LD != nullptr) {
-			FL1 = FieldList(EO->Flds);
+			FieldListEl* FL1 = FieldList(EO->Flds);
 			while (FL != nullptr) {
-				if (FinArgs(LD, FL->FldD)) { FL1->Chain = FL; FL1 = FL; }
+				if (FinArgs(LD, FL->FldD)) {
+					FL1->Chain = FL;
+					FL1 = FL;
+				}
 				FL = (FieldList)FL->Chain;
 			}
 			FL1->Chain = nullptr;
@@ -2936,17 +2955,24 @@ bool SelFldsForEO(EditOpt* EO, LinkD* LD)
 	}
 	MarkStore(p);
 	while (FL != nullptr) {
-		F = FL->FldD;
+		FieldDescr* F = FL->FldD;
 		if ((LD == nullptr) || !FinArgs(LD, F)) {
-			s = F->Name;
-			if ((F->Flg & f_Stored) == 0) { pstring olds = s; s = SelMark; s += olds; }
+			pstring s = F->Name;
+			if ((F->Flg & f_Stored) == 0) {
+				pstring olds = s; s = SelMark; s += olds;
+			}
 			ww.PutSelect(s);
 		}
 		FL = (FieldList)FL->Chain;
 	}
 	if (EO->Flds == nullptr) WrLLF10Msg(156);
-	else ww.SelFieldList(36, true, EO->Flds);
-	if (EO->Flds == nullptr) { ReleaseStore(p); result = false; }
+	else {
+		ww.SelFieldList(36, true, EO->Flds);
+	}
+	if (EO->Flds == nullptr) {
+		ReleaseStore(p);
+		result = false;
+	}
 	return result;
 }
 
@@ -2954,12 +2980,14 @@ void ImbeddEdit()
 {
 	wwmix ww;
 
-	void* p = nullptr; pstring s, s1, s2; WORD Brk; StringList SL;
-	EditOpt* EO = nullptr; FileDPtr FD = nullptr; RdbD* R = nullptr; longint w;
+	void* p = nullptr; pstring s, s1, s2; WORD Brk; StringListEl* SL = nullptr;
+	EditOpt* EO = nullptr; FileD* FD = nullptr; RdbD* R = nullptr; longint w = 0;
 
-	MarkStore(p); w = PushW1(1, 1, TxtCols, TxtRows, true, true);
+	MarkStore(p);
+	w = PushW1(1, 1, TxtCols, TxtRows, true, true);
 	CFile->IRec = AbsRecNr(CRec());
-	WrEStatus(); R = CRdb;
+	WrEStatus();
+	R = CRdb;
 	while (R != nullptr) {
 		FD = (FileD*)R->FD->Chain;
 		while (FD != nullptr) {
@@ -2967,7 +2995,7 @@ void ImbeddEdit()
 				SL = FD->ViewNames;
 				do {
 					s = GetFileViewName(FD, SL);
-					if (R != CRdb) s = R->FD->Name + '.' + s;
+					if (R != CRdb) s = R->FD->Name + "." + s;
 					ww.PutSelect(s);
 				} while (SL != nullptr);
 			}
@@ -2978,17 +3006,23 @@ void ImbeddEdit()
 	ss.Abcd = true; ww.SelectStr(0, 0, 35, "");
 	if (KbdChar == _ESC_) goto label1;
 	GetSel2S(&s1, &s2, '.', 1);
-	R = CRdb; if (s2 != "") do {
-		R = R->ChainBack;
-	} while (R->FD->Name != s2);
+	R = CRdb;
+	if (s2 != "") {
+		do { R = R->ChainBack; } while (R->FD->Name != s2);
+	}
 	CFile = R->FD;
 	while (!EquFileViewName(CFile, s1, EO)) CFile = (FileD*)CFile->Chain;
 	if (SelFldsForEO(EO, nullptr)) {
-		NewEditD(CFile, EO); if (OpenEditWw()) RunEdit(nullptr, Brk);
-		SaveFiles; PopEdit();
+		NewEditD(CFile, EO);
+		if (OpenEditWw()) RunEdit(nullptr, Brk);
+		SaveFiles;
+		PopEdit();
 	}
 label1:
-	PopW(w); ReleaseStore(p); RdEStatus(); DisplEditWw();
+	PopW(w);
+	ReleaseStore(p);
+	RdEStatus();
+	DisplEditWw();
 }
 
 void DownEdit()
@@ -2997,7 +3031,8 @@ void DownEdit()
 
 	LinkDPtr LD = nullptr; FileDPtr FD = nullptr; StringList SL = nullptr; KeyDPtr K = nullptr;
 	EditOpt* EO = nullptr; WORD Brk, i; void* p = nullptr; pstring s, s1, s2; longint w;
-	MarkStore(p); w = PushW1(1, 1, TxtCols, TxtRows, true, true);
+	MarkStore(p);
+	w = PushW1(1, 1, TxtCols, TxtRows, true, true);
 	CFile->IRec = AbsRecNr(CRec());
 	WrEStatus();
 	LD = LinkDRoot;
@@ -3006,27 +3041,37 @@ void DownEdit()
 		if ((LD->ToFD == CFile) && ForNavigate(FD) && (LD->IndexRoot != 0))
 			/*own key with equal beginning*/
 		{
-			SL = FD->ViewNames; K = GetFromKey(LD);
+			SL = FD->ViewNames;
+			K = GetFromKey(LD);
 			do {
 				s = GetFileViewName(FD, SL);
-				if (*K->Alias != "") s = s + '/' + *K->Alias; ww.PutSelect(s);
+				if (*K->Alias != "") s = s + '/' + *K->Alias;
+				ww.PutSelect(s);
 			} while (SL != nullptr);
 		}
 		LD = LD->Chain;
 	}
-	ss.Abcd = true; ww.SelectStr(0, 0, 35, ""); if (KbdChar == _ESC_) goto label1;
+	ss.Abcd = true;
+	ww.SelectStr(0, 0, 35, "");
+	if (KbdChar == _ESC_) goto label1;
 	GetSel2S(&s1, &s2, '/', 2);
 	LD = LinkDRoot;
 	while ((LD->ToFD != E->FD) || (LD->IndexRoot == 0) || (s2 != *GetFromKey(LD)->Alias)
 		|| !EquFileViewName(LD->FromFD, s1, EO)) LD = LD->Chain;
 	CFile = LD->FromFD;
 	if (SelFldsForEO(EO, LD)) {
-		EO->DownLD = LD; EO->DownRecPtr = CRecPtr;
+		EO->DownLD = LD;
+		EO->DownRecPtr = CRecPtr;
 		NewEditD(CFile, EO);
-		if (OpenEditWw()) RunEdit(nullptr, Brk); SaveFiles; PopEdit();
+		if (OpenEditWw()) RunEdit(nullptr, Brk);
+		SaveFiles();
+		PopEdit();
 	}
 label1:
-	PopW(w); ReleaseStore(p); RdEStatus(); DisplEditWw();
+	PopW(w);
+	ReleaseStore(p);
+	RdEStatus();
+	DisplEditWw();
 }
 
 void ShiftF7Proc()
@@ -3051,13 +3096,15 @@ bool ShiftF7Duplicate()
 	auto result = false;
 	ee = (EditD*)E->Chain;
 	{ /* !!! with ee^ do!!! */
-		CFile = ee->FD; CRecPtr = ee->NewRecPtr;
+		CFile = ee->FD;
+		CRecPtr = ee->NewRecPtr;
 		if (!ELockRec(ee, CFile->IRec, ee->IsNewRec, ee->SubSet)) return result;
 		if (!WasUpdated) {
 			Move(CRecPtr, ee->OldRecPtr, CFile->RecLen);
 			WasUpdated = true;
 		}
-		kf = E->ShiftF7LD->Args; kf2 = E->ShiftF7LD->ToKey->KFlds;
+		kf = E->ShiftF7LD->Args;
+		kf2 = E->ShiftF7LD->ToKey->KFlds;
 		while (kf != nullptr) {
 			DuplFld(E->FD, CFile, E->NewRecPtr, CRecPtr, ee->OldRecPtr, kf2->FldD, kf->FldD);
 			kf = (KeyFldD*)kf->Chain; kf2 = (KeyFldD*)kf2->Chain;
@@ -3065,7 +3112,8 @@ bool ShiftF7Duplicate()
 		SetUpdFlag();
 	}
 
-	CFile = E->FD; CRecPtr = E->NewRecPtr;
+	CFile = E->FD;
+	CRecPtr = E->NewRecPtr;
 	result = true;
 	pstring oldKbdBuffer = KbdBuffer;
 	KbdBuffer = 0x0D; // ^M
@@ -3707,14 +3755,14 @@ label81:
 							if (E->NRecs > 1) GoPrevNextRec(+1, true); break;
 						case _CtrlEnd_:
 							GoPrevNextRec(+1, true); break;
-						case _PgUp_:
+						case VK_PRIOR:
 						case _R_:
 							if (E->NPages == 1)
 								if (E->NRecs == 1) GoPrevNextRec(-1, true);
 								else GotoRecFld(CRec() - E->NRecs, CFld);
 							else if (CPage > 1) GotoRecFld(CRec(), FrstFldOnPage(CPage - 1));
 							break;
-						case _PgDn_:
+						case VK_NEXT:
 						case _C_:
 							if (E->NPages == 1)
 								if (E->NRecs == 1) GoPrevNextRec(+1, true);

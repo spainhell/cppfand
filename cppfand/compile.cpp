@@ -2101,6 +2101,7 @@ FrmlElem* RdPrim(char& FTyp)
 			if (RdFldNameFrml == nullptr) Error(110);
 			else {
 				Z = RdFldNameFrml(FTyp); // volani ukazatele na funkci
+				if (Z == nullptr) return nullptr;
 				if ((Z->Op != _access) || (((FrmlElem7*)Z)->LD != nullptr)) FrstSumVar = false;
 			}
 		}

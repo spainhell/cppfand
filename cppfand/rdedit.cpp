@@ -294,7 +294,8 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 	WORD i = 0; pstring s;
 	FieldDescr* F = nullptr;
 	bool b = false, b2 = false, F2NoUpd = false;
-	PushEdit(); MarkStore2(p);
+	PushEdit();
+	MarkStore2(p);
 	/* !!! with E^ do!!! */
 	//Move(&EO->WFlags, &E->WFlags, (uintptr_t)(E->SelKey) - (uintptr_t)(E->WFlags) + 4);
 	// move je nahrazen kopirovanim jednotlivych polozek:

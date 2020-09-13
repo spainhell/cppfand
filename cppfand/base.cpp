@@ -1053,8 +1053,9 @@ void RdWrCache(bool ReadOp, FILE* Handle, bool NotCached, longint Pos, WORD N, v
 
 	if (Cached) {
 		FileCache* c1 = cache.GetCache(Handle);
-		if (ReadOp) { 
-			memcpy(Buf, c1->Load(Pos), N); 
+		if (ReadOp) {
+			auto src = c1->Load(Pos);
+			memcpy(Buf, src, N); 
 		}
 		else { 
 			c1->Save(Pos, N, (unsigned char*)Buf); 

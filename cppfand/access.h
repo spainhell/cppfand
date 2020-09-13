@@ -355,7 +355,8 @@ struct RdbD // ø. 243
 	FuncD* OldFCRoot = nullptr;
 	void* Mark2 = nullptr; // { markstore2 at beginning }
 	bool Encrypted = false;
-	pstring RdbDir, DataDir;
+	pstring RdbDir;
+	pstring DataDir;
 };
 typedef RdbD* RdbDPtr;
 

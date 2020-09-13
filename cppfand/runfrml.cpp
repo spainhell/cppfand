@@ -1438,11 +1438,11 @@ label1:
 		break;
 	}
 	case _eval: {
-		MarkStore(p);
+		//MarkStore(p);
 		S = RunLongStr(GetEvalFrml((FrmlElem21*)X));
-		MyMove(S, p, S->LL + 2);
-		ReleaseAfterLongStr(p);
-		result = (LongStr*)p;
+		//MyMove(S, p, S->LL + 2);
+		//ReleaseAfterLongStr(p);
+		result = S;
 		break;
 	}
 	case _newfile: {

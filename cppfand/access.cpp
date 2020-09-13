@@ -3081,7 +3081,7 @@ void XKey::ChainPrevLeaf(XPagePtr P, longint N)
 
 bool XKey::Insert(longint RecNr, bool Try)
 {
-	longint N, XNr; XString x;
+	longint N = 0, XNr = 0; XString x;
 	x.PackKF(KFlds);
 	if (Search(x, true, N)) {
 		if (Try) { return false; }
