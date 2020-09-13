@@ -3206,7 +3206,7 @@ void XWKey::Open(KeyFldD* KF, bool Dupl, bool Intvl)
 	ReleaseStore(p);
 	IndexLen = 0;
 	while (KF != nullptr) {
-		IndexLen += KF->FldD->NBytes;
+		if (KF->FldD != nullptr) IndexLen += KF->FldD->NBytes;
 		KF = (KeyFldD*)KF->Chain;
 	}
 }

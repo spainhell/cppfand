@@ -183,7 +183,10 @@ void SortProc(FileDPtr FD, KeyFldDPtr SK)
 	LockMode md;
 	CFile = FD;
 	md = NewLMode(ExclMode);
-	SortAndSubst(SK); CFile = FD; OldLMode(md); SaveFiles;
+	SortAndSubst(SK);
+	CFile = FD;
+	OldLMode(md);
+	SaveFiles();
 }
 
 void MergeProc(Instr_proc* PD)

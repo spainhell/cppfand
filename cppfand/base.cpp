@@ -1055,6 +1055,7 @@ void RdWrCache(bool ReadOp, FILE* Handle, bool NotCached, longint Pos, WORD N, v
 		FileCache* c1 = cache.GetCache(Handle);
 		if (ReadOp) {
 			auto src = c1->Load(Pos);
+			if (src == nullptr) return;
 			memcpy(Buf, src, N); 
 		}
 		else { 
