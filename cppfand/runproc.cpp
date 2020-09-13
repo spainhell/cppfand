@@ -1278,6 +1278,7 @@ void CallProcedure(Instr_proc* PD)
 	}
 #endif
 	ReadProcHead("");
+	PD->variables = LVBD;
 	n = LVBD.NParam;
 	lvroot = LVBD.GetRoot();
 	oldbp = MyBP;

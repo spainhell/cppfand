@@ -421,6 +421,9 @@ void WorkFile::WriteWPage(WORD N, longint Pg, longint Nxt, longint Chn)
 			WRec r;
 			r.Deserialize(&PW->A[offset]);
 			Output(&r);
+			BYTE buffer[512]{ 0 };
+			auto len = r.Serialize(buffer);
+			memcpy(&PW->A[offset], buffer, len);
 			N--;
 			offset += RecLen;
 		}
@@ -560,7 +563,7 @@ void XXPage::PutN(longint* N)
 	/*asm push ds; cld; les bx, Self; mov di, es: [bx] .XXPage.Off;
 	lds si, N; lodsw; stosw; lodsb; stosb;
 	mov es : [bx] .XXPage.Off, di; pop ds;*/
-	memcpy(A, N, 3); // kopirujeme 3 nejnizsi Byty, posledni se ignoruje
+	memcpy(&A[Off], N, 3); // kopirujeme 3 nejnizsi Byty, posledni se ignoruje
 	Off += 3;
 }
 

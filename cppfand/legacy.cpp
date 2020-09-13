@@ -53,6 +53,10 @@ void val(pstring s, double& b, integer& err)
 
 void val(pstring s, double& b, WORD& err)
 {
+	if (s.length() == 0) {
+		b = 0; err = 0;
+		return;
+	}
 	size_t idx = 0;
 	b = std::stod(s.c_str(), &idx);
 	// přeložil se celý řetězec?
