@@ -938,14 +938,17 @@ void ReleaseDriveProc(FrmlPtr Z)
 
 void WithGraphicsProc(Instr* PD)
 {
-	void* p = nullptr;
-	MarkStore(p);
-	if (IsGraphMode) RunInstr(PD);
-	else {
-		ScrGraphMode(true, 0); SetWwViewPort();
-		RunInstr(PD); ScrTextMode(true, false);
-	}
-	ReleaseStore(p);
+	throw std::exception("WithGraphicsProc() not implemented!");
+	//void* p = nullptr;
+	//MarkStore(p);
+	//if (IsGraphMode) RunInstr(PD);
+	//else {
+	//	ScrGraphMode(true, 0);
+	//	SetWwViewPort();
+	//	RunInstr(PD);
+	//	ScrTextMode(true, false);
+	//}
+	//ReleaseStore(p);
 }
 
 void ResetCatalog()

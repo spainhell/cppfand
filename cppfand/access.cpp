@@ -1546,7 +1546,7 @@ bool LinkUpw(LinkDPtr LD, longint& N, bool WithT)
 			F = Arg->FldD;
 			F2 = KF->FldD;
 			CFile = CF; CRecPtr = CP;
-			if (F2->Flg && f_Stored != 0)
+			if ((F2->Flg & f_Stored) != 0)
 				switch (F->FrmlTyp) {
 				case 'S': {
 					x.S = _ShortS(F);
@@ -2588,9 +2588,12 @@ longint XPage::SumN()
 {
 	if (IsLeaf) { return NItems; }
 	longint n = 0;
-	XItemPtr x = XItemPtr(&A);
+	XItem* x = new XItem(A, IsLeaf);
 	WORD o = Off();
-	for (WORD i = 1; i < NItems; i++) { n += x->GetN(); x = x->Next(o, IsLeaf); }
+	for (WORD i = 1; i < NItems; i++) {
+		n += x->GetN();
+		x = x->Next(o, IsLeaf);
+	}
 	return n;
 }
 
