@@ -129,12 +129,11 @@ void SetInpTT(RdbPos RP, bool FromTxt)
 	ReleaseStore(CRecPtr); CFile = CF; CRecPtr = CR;
 }
 
-void SetInpTTxtPos(FileDPtr FD)
+void SetInpTTxtPos(FileD* FD)
 {
-	WORD pos; RdbDPtr r;
 	SetInpTT(FD->ChptPos, true);
-	pos = FD->TxtPosUDLI;
-	r = FD->ChptPos.R;
+	WORD pos = FD->TxtPosUDLI;
+	RdbD* r = FD->ChptPos.R;
 	if (pos > InpArrLen) ForwChar = 0x1A;
 	else ForwChar = InpArrPtr[pos];
 	CurrPos = pos;
@@ -164,10 +163,11 @@ WORD RdDirective(bool& b)
 	};
 	WORD i, j;
 	pstring s(12);
-	RdbDPtr r;
-	bool res;
+	RdbD* r = nullptr;
+	bool res = false;
 
-	ReadChar(); RdForwName(s);
+	ReadChar();
+	RdForwName(s);
 	for (i = 0; i < 5; i++) {
 		if (SEquUpcase(s, Dirs[i])) goto label1;
 	}
@@ -221,9 +221,9 @@ void RdForwName(pstring& s)
 
 void SkipLevel(bool withElse)
 {
-	WORD begLevel, n;
-	bool b;
-	begLevel = SwitchLevel;
+	WORD n = 0;
+	bool b = false;
+	WORD begLevel = SwitchLevel;
 
 label1:
 	switch (ForwChar) {       /* skip to directive */
@@ -383,7 +383,7 @@ void RdLex()
 			ReadChar();
 			LexWord[i] = CurrChar;
 		}
-		LexWord[0] = char(i);
+		LexWord[0] = (char)i;
 	}
 	else switch (CurrChar) {
 	case '\'': {
