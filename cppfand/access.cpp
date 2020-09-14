@@ -1034,7 +1034,8 @@ void PutRec()
 	CFile->NRecs++;
 	RdWrCache(false, CFile->Handle, CFile->NotCached(),
 		longint(CFile->IRec) * CFile->RecLen + CFile->FrstDispl, CFile->RecLen, CRecPtr);
-	CFile->IRec++; CFile->Eof = true;
+	CFile->IRec++;
+	CFile->Eof = true;
 }
 
 void CreateRec(longint N)
@@ -2513,15 +2514,15 @@ WORD XItem::UpdStr(WORD O, pstring* S)
 	 mov al,[bx]; xor ah,ah; add di,ax; lea si,[bx+2];
 	 xor ch,ch; mov cl,[bx+1]; rep movsb; mov ax,si; pop ds;*/
 
-	// 'O' je index
-	// delka S bude M + L
+	 // 'O' je index
+	 // delka S bude M + L
 	S[0] = Nr[O] + Nr[O + 1];
 	BYTE NrO1 = Nr[O + 1];
 	BYTE NrO2 = Nr[O + 2];
 	for (BYTE i = 0; i < NrO1; i++) {
 		S[NrO1 + i] = Nr[NrO2 + i];
 	}
-	
+
 	return NrO2 + NrO1;
 }
 
@@ -2571,7 +2572,7 @@ pstring XPage::StrI(WORD I)
 	o = Off();
 	//TODO: asm les di, @result; mov s.WORD, di; mov s[2].WORD, es;
 	pstring es_di;
-	
+
 
 	if (I > NItems) s[0] = 0;
 	else {
@@ -3441,7 +3442,7 @@ void XFile::SetNotValid()
 	NotValid = true;
 	MaxPage = 0;
 	WrPrefix();
-	SaveCache(0);
+	SaveCache(0, CFile->Handle);
 }
 
 XScan::XScan(FileD* aFD, KeyD* aKey, KeyInD* aKIRoot, bool aWithT)
@@ -3662,7 +3663,7 @@ void XScan::SeekRec(longint I)
 			k = KIRoot;
 			while (I >= k->N) { I -= k->N; k = (KeyInD*)k->Chain; }
 			KI = k;
-				SeekOnKI(I);
+			SeekOnKI(I);
 			break;
 		}
 		}
@@ -3835,12 +3836,14 @@ label1:
 		case 0: { RecNr = IRec; goto label2; break; }
 		case 1:
 		case 2: {
-			RecNr = X->GetN(); NOnPg--;
+			RecNr = X->GetN();
+			NOnPg--;
 			if (NOnPg > 0) X = X->Next(oLeaf, P->IsLeaf);
 			else if ((Kind == 2) && (NOfKI == 0)) NextIntvl();
 			else if (P->GreaterPage > 0) SeekOnPage(P->GreaterPage, 1);
 		label2:
-			ReadRec(RecNr); if (DeletedFlag()) goto label1;
+			ReadRec(RecNr);
+			if (DeletedFlag()) goto label1;
 		label3:
 			if (!RunBool(Bool)) goto label1;
 			break;
@@ -3873,7 +3876,8 @@ void XScan::SeekOnKI(longint I)
 
 void XScan::SeekOnPage(longint Page, WORD I)
 {
-	Key->XF()->RdPage(P, Page); NOnPg = P->NItems - I + 1;
+	Key->XF()->RdPage(P, Page);
+	NOnPg = P->NItems - I + 1;
 	if (Kind == 2)
 	{
 		if (NOnPg > NOfKI) NOnPg = NOfKI;

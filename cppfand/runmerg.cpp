@@ -38,7 +38,7 @@ label1:
 	}
 	for (I = 1; I < MinIi - 1; I++) IDA[I]->Exist = false;
 	if (NEof == MaxIi) {
-		b = SaveCache(0); RunMsgOff; if (!b) GoExit();
+		b = SaveCache(0, CFile->Handle); RunMsgOff(); if (!b) GoExit();
 		CloseInpOutp();
 		PopProcStk(); return;
 	}

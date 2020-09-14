@@ -121,7 +121,7 @@ size_t WRec::Serialize(unsigned char* buffer)
 	memcpy(&buffer[0], N, 3);
 	memcpy(&buffer[3], IR, 3);
 	size_t len = X.S[0];
-	memcpy(&buffer[4], &X.S[0], len + 1);
+	memcpy(&buffer[6], &X.S[0], len + 1);
 	return 3 + 3 + 1 + len; // N + IR + S[0] + 1 B delka
 }
 
@@ -424,7 +424,6 @@ void WorkFile::WriteWPage(WORD N, longint Pg, longint Nxt, longint Chn)
 			BYTE buffer[512]{ 0 };
 			auto len = r.Serialize(buffer);
 			memcpy(&PW->A[offset], buffer, len);
-			N--;
 			offset += RecLen;
 		}
 	}
@@ -572,6 +571,8 @@ void XXPage::PutDownPage(longint DownPage)
 	/*asm cld; les bx, Self; mov di, es: [bx] .XXPage.Off;
 	mov ax, DownPage.WORD; stosw; mov ax, DownPage[2].WORD; stosw;
 	mov es : [bx] .XXPage.Off, di;*/
+	memcpy(&A[Off], &DownPage, 4);
+	Off += 4;
 }
 
 void XXPage::PutMLX(BYTE M, BYTE L)
@@ -705,7 +706,7 @@ void CreateIndexFile()
 		delete XW;
 		XF->NotValid = false;
 		XF->WrPrefix();
-		if (!SaveCache(0)) GoExit(); /*FlushHandles;*/;
+		if (!SaveCache(0, CFile->Handle)) GoExit(); /*FlushHandles;*/;
 	}
 	fail = false;
 label1:
@@ -717,16 +718,16 @@ label1:
 
 void CreateWIndex(XScan* Scan, XWKey* K, char Typ)
 {
-	void* p = nullptr;
-	MarkStore(p);
+	//void* p = nullptr;
+	//MarkStore(p);
 	void* cr = CRecPtr;
 	CRecPtr = GetRecSpace();
 	//New(XW, Init(Scan, K));
 	XWorkFile* XW = new XWorkFile(Scan, K);
 	XW->Main(Typ);
-	delete XW;
+	delete XW; XW = nullptr;
 	CRecPtr = cr;
-	ReleaseStore(p);
+	//ReleaseStore(p);
 }
 
 void ScanSubstWIndex(XScan* Scan, KeyFldD* SK, char Typ)
@@ -779,10 +780,16 @@ void SortAndSubst(KeyFldD* SK)
 	RunMsgOn('S', Scan->NRecs);
 	Scan->GetRec();
 	while (!Scan->eof) {
-		RunMsgN(Scan->IRec); CFile = FD2; PutRec(); Scan->GetRec();
+		RunMsgN(Scan->IRec);
+		CFile = FD2;
+		PutRec();
+		Scan->GetRec();
 	}
-	if (!SaveCache(0)) GoExit();
-	CFile = cf; SubstDuplF(FD2, false); Scan->Close(); RunMsgOff();
+	if (!SaveCache(0, CFile->Handle)) GoExit();
+	CFile = cf;
+	SubstDuplF(FD2, false);
+	Scan->Close();
+	RunMsgOff();
 	ReleaseStore(p);
 }
 

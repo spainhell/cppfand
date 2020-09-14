@@ -178,11 +178,10 @@ void AssignRecFld(Instr_assign* PD)
 	AssgnFrml(F, PD->Frml, HasTWorkFlag(), PD->Add);
 }
 
-void SortProc(FileDPtr FD, KeyFldDPtr SK)
+void SortProc(FileD* FD, KeyFldD* SK)
 {
-	LockMode md;
 	CFile = FD;
-	md = NewLMode(ExclMode);
+	LockMode md = NewLMode(ExclMode);
 	SortAndSubst(SK);
 	CFile = FD;
 	OldLMode(md);
@@ -359,10 +358,14 @@ void IndexfileProc(FileDPtr FD, bool Compress)
 				PutRec();
 			}
 		}
-		if (!SaveCache(0)) GoExit(); CFile = FD; SubstDuplF(FD2, false);
+		if (!SaveCache(0, CFile->Handle)) GoExit();
+		CFile = FD;
+		SubstDuplF(FD2, false);
 	}
-	CFile->XF->NoCreate = false; TestXFExist();
-	OldLMode(md); SaveFiles;
+	CFile->XF->NoCreate = false;
+	TestXFExist();
+	OldLMode(md);
+	SaveFiles();
 	ReleaseStore(CRecPtr); CFile = cf;
 }
 

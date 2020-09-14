@@ -1340,9 +1340,11 @@ void UnLockCache()
 {
 }
 
-bool SaveCache(WORD ErrH)
+bool SaveCache(WORD ErrH, FILE* f)
 {
-	return false;
+	// ulozi cache do souboru
+	cache.SaveRemoveCache(f);
+	return true;
 }
 
 void SubstHandle(WORD h1, WORD h2)

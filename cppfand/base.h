@@ -153,7 +153,7 @@ extern longint MaxWSize; // {currently occupied in FANDWORK.$$$}
 
 bool IsNetCVol();
 bool CacheExist();
-bool SaveCache(WORD ErrH);
+bool SaveCache(WORD ErrH, FILE* f);
 //void ClearCacheH(FILE* h);
 void SetUpdHandle(FILE* H);
 void ResetUpdHandle(FILE* H);

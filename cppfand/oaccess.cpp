@@ -40,7 +40,7 @@ void SaveFiles()
 	bool b = false; WORD i = 0; FileD* cf = nullptr;
 	if (!CacheExist()) return;
 	cf = CFile; CFile = CatFD; WrPrefixes();
-	ForAllFDs(SaveFD); b = SaveCache(0); FlushHandles();
+	ForAllFDs(SaveFD); b = SaveCache(0, CFile->Handle); FlushHandles();
 	CFile = cf; if (!b) GoExit();
 }
 
@@ -118,15 +118,15 @@ bool OpenF1(FileUseMode UM)
 {
 	bool b; WORD n;
 	/* !!! with CFile^ do!!! */
-	auto result = true; 
+	auto result = true;
 	CFile->LMode = NullMode;
-	SetCPathMountVolSetNet(UM);  
+	SetCPathMountVolSetNet(UM);
 	b = (CFile == Chpt) || (CFile == CatFD);
 	if (b && (IsTestRun || IsInstallRun)
 		&& ((GetFileAttr() & 1/*RdOnly*/) != 0)) {
 		SetFileAttr(GetFileAttr() & 0x26);
-		if (HandleError == 5) HandleError = 79; 
-		TestCFileError(); 
+		if (HandleError == 5) HandleError = 79;
+		TestCFileError();
 		CFile->WasRdOnly = true;
 	}
 label1:
@@ -191,7 +191,7 @@ bool OpenF2()
 	WORD Signum = 0, rLen = 0;
 	LockMode md = NullMode;
 	/* !!! with CFile^ do!!! */
-	FS = FileSizeH(CFile->Handle); 
+	FS = FileSizeH(CFile->Handle);
 	CFile->NRecs = 0;
 	auto result = false;
 	if (FS < CFile->FrstDispl) goto label1;
@@ -296,10 +296,10 @@ bool OpenCreateF(FileUseMode UM)
 {
 	/* !!! with CFile^ do!!! */
 	if (!OpenF(UM)) {
-		CreateF(); 
+		CreateF();
 		if ((UM == Shared) || (UM == RdShared)) {
-			WrPrefixes(); 
-			SaveCache(0); 
+			WrPrefixes();
+			SaveCache(0, CFile->Handle);
 			CloseClearH(CFile->Handle);
 			if (CFile->Typ == 'X') CloseClearH(CFile->XF->Handle);
 			if (CFile->TF != nullptr) CloseClearH(CFile->TF->Handle);
@@ -357,7 +357,7 @@ void CloseFile()
 	if (CFile->Handle == nullptr) return;
 	if (CFile->IsShared()) OldLMode(NullMode);
 	else WrPrefixes();
-	SaveCache(0);
+	SaveCache(0, CFile->Handle);
 	TruncF();
 	if (CFile->Typ == 'X') { /*with XF^*/
 		if (CFile->XF->Handle != nullptr) {
@@ -409,9 +409,9 @@ void CloseFile()
 void CloseFAfter(FileD* FD)
 {
 	CFile = FD;
-	while (CFile != nullptr) { 
-		CloseFile(); 
-		CFile = (FileD*)CFile->Chain; 
+	while (CFile != nullptr) {
+		CloseFile();
+		CFile = (FileD*)CFile->Chain;
 	}
 }
 
@@ -460,17 +460,17 @@ WORD TestMountVol(char DriveC)
 	Drive[1] = DriveC;
 	if (ActiveRdbOnDrive(D))
 	{
-		Set3MsgPar(Drive, CVol, MountedVol[D]); 
+		Set3MsgPar(Drive, CVol, MountedVol[D]);
 		RunError(812);
 	}
-	Vol = CVol; 
-	CloseFilesOnDrive(D); 
+	Vol = CVol;
+	CloseFilesOnDrive(D);
 	CVol = Vol;
 label1:
-	F10SpecKey = _ESC_; 
-	Set2MsgPar(Drive, CVol); 
+	F10SpecKey = _ESC_;
+	Set2MsgPar(Drive, CVol);
 	WrLLF10Msg(808);
-	if (KbdChar == _ESC_) if (PromptYN(21)) GoExit(); 
+	if (KbdChar == _ESC_) if (PromptYN(21)) GoExit();
 	else goto label1;
 	//if (D == FloppyDrives) FindFirst(Drive + ":\\*.VOL", 0, S);
 	//else FindFirst(Drive + ":\\*.*", VolumeID, S);
@@ -498,19 +498,19 @@ void ReleaseDrive(WORD D)
 	if (MountedVol[D] == "") return;
 	if (D == FloppyDrives) Drive = spec.CPMdrive;
 	else Drive = char(D + '@');
-	if (ActiveRdbOnDrive(D)) { 
-		SetMsgPar(Drive); 
-		RunError(813); 
+	if (ActiveRdbOnDrive(D)) {
+		SetMsgPar(Drive);
+		RunError(813);
 	}
-	CloseFilesOnDrive(D); 
-	Set2MsgPar(MountedVol[D], Drive); 
+	CloseFilesOnDrive(D);
+	Set2MsgPar(MountedVol[D], Drive);
 	WrLLF10Msg(818);
 	MountedVol[D] = "";
 }
 
 void SetCPathForH(FILE* handle)
 {
-	RdbD* RD = nullptr; 
+	RdbD* RD = nullptr;
 	FileD* cf = nullptr;
 	cf = CFile; RD = CRdb;
 	while (RD != nullptr)
@@ -521,14 +521,14 @@ void SetCPathForH(FILE* handle)
 			if (CFile->Handle == handle) { SetCPathVol(); goto label1; }
 			if ((CFile->XF != nullptr) && (CFile->XF->Handle == handle))
 			{
-				SetCPathVol(); 
-				CExtToX(); 
+				SetCPathVol();
+				CExtToX();
 				goto label1;
 			}
 			if ((CFile->TF != nullptr) && (CFile->TF->Handle == handle))
 			{
-				SetCPathVol(); 
-				CExtToT(); 
+				SetCPathVol();
+				CExtToT();
 				goto label1;
 			}
 			CFile = (FileD*)CFile->Chain;
@@ -546,7 +546,7 @@ WORD GetCatIRec(pstring Name, bool MultiLevel)
 	WORD result = 0;
 	if (CatFD == nullptr || CatFD->Handle == nullptr) return result;
 	if (CRdb == nullptr) return result;
-	CF = CFile; CR = CRecPtr; CFile = CatFD; 
+	CF = CFile; CR = CRecPtr; CFile = CatFD;
 	CRecPtr = GetRecSpace();
 	R = CRdb;
 label1:
@@ -559,11 +559,11 @@ label1:
 			result = i; goto label2;
 		}
 	}
-	R = R->ChainBack; 
+	R = R->ChainBack;
 	if ((R != nullptr) && MultiLevel) goto label1;
 label2:
-	CFile = CF; 
-	ReleaseStore(CRecPtr); 
+	CFile = CF;
+	ReleaseStore(CRecPtr);
 	CRecPtr = CR;
 	return result;
 }
@@ -616,15 +616,15 @@ pstring RdCatField(WORD CatIRec, FieldDPtr CatF)
 
 void WrCatField(WORD CatIRec, FieldDescr* CatF, pstring Txt)
 {
-	FileD* CF = CFile; 
-	void* CR = CRecPtr; 
-	CFile = CatFD; 
+	FileD* CF = CFile;
+	void* CR = CRecPtr;
+	CFile = CatFD;
 	CRecPtr = GetRecSpace();
 	ReadRec(CatIRec);
 	S_(CatF, Txt);
 	WriteRec(CatIRec);
 	ReleaseStore(CRecPtr);
-	CFile = CF; 
+	CFile = CF;
 	CRecPtr = CR;
 }
 
@@ -687,7 +687,7 @@ void GetCPathForCat(WORD I)
 		}
 		if (CPath[1] == '\\') CPath = copy(d, 1, 2) + CPath;
 		else {
-			AddBackSlash(d); 
+			AddBackSlash(d);
 			CPath = d + CPath;
 		}
 	}
@@ -773,43 +773,64 @@ void SetTempCExt(char Typ, bool IsNet)
 
 FileD* OpenDuplF(bool CrTF)
 {
-	FileDPtr OldFD, FD; WORD N; integer Len; bool net;
-	SetCPathVol(); net = IsNetCVol();
-	N = sizeof(FileD) - 1 + CFile->Name.length(); OldFD = CFile;
-	FD = (FileD*)GetStore(N); Move(OldFD, FD, N); CFile = FD;
+	FileD* OldFD = nullptr;
+	integer Len = 0;
+	SetCPathVol();
+	bool net = IsNetCVol();
+	// WORD N = sizeof(FileD) - 1 + CFile->Name.length();
+	OldFD = CFile;
+	FileD* FD = new FileD(); // (FileD*)GetStore(N);
+	*FD = *OldFD; // Move(OldFD, FD, N);
+	CFile = FD;
 	/* !!! with FD^ do!!! */
-	{ SetTempCExt('0', net); CVol = "";
-	FD->Handle = OpenH(_isoverwritefile, Exclusive); TestCFileError();
-	FD->NRecs = 0; FD->IRec = 0; FD->Eof = true; FD->UMode = Exclusive;
-	if (FD->Typ == 'X')
 	{
-		FD->XF = (XFile*)GetStore(sizeof(XFile)); FD->XF->Handle = nullptr;
-		FD->XF->NoCreate = true;
-		/*else xfile name identical with orig file*/
-	}; }
+		SetTempCExt('0', net);
+		CVol = "";
+		FD->Handle = OpenH(_isoverwritefile, Exclusive);
+		TestCFileError();
+		FD->NRecs = 0;
+		FD->IRec = 0;
+		FD->Eof = true;
+		FD->UMode = Exclusive;
+		if (FD->Typ == 'X')
+		{
+			FD->XF = new XFile(); // (XFile*)GetStore(sizeof(XFile));
+			FD->XF->Handle = nullptr;
+			FD->XF->NoCreate = true;
+			/*else xfile name identical with orig file*/
+		}
+	}
 	if (CrTF && (FD->TF != nullptr))
 	{
-		FD->TF = (TFile*)GetStore(sizeof(TFile));
-		Move(OldFD->TF, FD->TF, sizeof(TFile));
+		FD->TF = new TFile(); // (TFile*)GetStore(sizeof(TFile));
+		*FD->TF = *OldFD->TF; // Move(OldFD->TF, FD->TF, sizeof(TFile));
 		/* !!! with FD->TF^ do!!! */
 		{
 			SetTempCExt('T', net);
-			FD->TF->Handle = OpenH(_isoverwritefile, Exclusive); FD->TF->TestErr();
-			FD->TF->CompileAll = true; FD->TF->SetEmpty();
-			; }
-		;
+			FD->TF->Handle = OpenH(_isoverwritefile, Exclusive);
+			FD->TF->TestErr();
+			FD->TF->CompileAll = true;
+			FD->TF->SetEmpty();
+		}
 	}
 	return FD;
 }
 
 void CopyDuplF(FileD* TempFD, bool DelTF)
 {
-	FILE* h1; FILE* h2; FileD* cf;
-	cf = CFile; CFile = TempFD; WrPrefixes(); CFile = cf;
-	SaveCache(0); SetTempCExt('0', true); CopyH(TempFD->Handle, CFile->Handle);
+	FileD* cf = CFile;
+	CFile = TempFD;
+	WrPrefixes();
+	CFile = cf;
+	SaveCache(0, CFile->Handle);
+	SetTempCExt('0', true);
+	CopyH(TempFD->Handle, CFile->Handle);
 	if ((CFile->TF != nullptr) && DelTF) {
-		h1 = TempFD->TF->Handle; h2 = CFile->TF->Handle; SetTempCExt('T', true);
-		Move(TempFD->TF, CFile->TF, sizeof(TFile)); CFile->TF->Handle = h2;
+		FILE* h1 = TempFD->TF->Handle;
+		FILE* h2 = CFile->TF->Handle;
+		SetTempCExt('T', true);
+		*CFile->TF = *TempFD->TF; // Move(TempFD->TF, CFile->TF, sizeof(TFile));
+		CFile->TF->Handle = h2;
 		CopyH(h1, h2);
 	}
 	RdPrefixes();
@@ -822,48 +843,69 @@ void CopyH(FILE* h1, FILE* h2)
 	// cache nepouzivame
 	//ClearCacheH(h1); 
 	//ClearCacheH(h2);
-	p = GetStore(BufSize); 
+	p = GetStore(BufSize);
 	sz = FileSizeH(h1);
-	SeekH(h1, 0); 
+	SeekH(h1, 0);
 	SeekH(h2, 0);
 	while (sz > BufSize) {
-		ReadH(h1, BufSize, p); 
-		WriteH(h2, BufSize, p); sz -= BufSize;
+		ReadH(h1, BufSize, p);
+		WriteH(h2, BufSize, p);
+		sz -= BufSize;
 	}
 	ReadH(h1, sz, p);
 	WriteH(h2, sz, p);
-	CloseH(h1); 
-	MyDeleteFile(CPath); 
+	CloseH(h1);
+	MyDeleteFile(CPath);
 	ReleaseStore(p);
 }
 
 void SubstDuplF(FileD* TempFD, bool DelTF)
 {
-	FileD* PrimFD; FileD* FD;  TFile* MD;
-	pstring p, ptmp, pt; XFile* xf2; FileUseMode um; bool net;
-
-	XFNotValid(); SetCPathVol();
-	if (IsNetCVol()) { CopyDuplF(TempFD, DelTF); return; }
-	SaveCache(0); PrimFD = CFile; p = CPath; CExtToT(); pt = CPath;
+	//bool net;
+	XFNotValid();
+	SetCPathVol();
+	if (IsNetCVol()) {
+		CopyDuplF(TempFD, DelTF);
+		return;
+	}
+	SaveCache(0, CFile->Handle);
+	FileD* PrimFD = CFile;
+	pstring p = CPath;
+	CExtToT();
+	pstring pt = CPath;
 	/* !!! with PrimFD^ do!!! */ {
-		CloseClearH(PrimFD->Handle); MyDeleteFile(p); TestDelErr(&p);
-		FD = (FileD*)PrimFD->Chain; MD = PrimFD->TF;
-		xf2 = PrimFD->XF; um = PrimFD->UMode;
-		Move(TempFD, PrimFD, sizeof(FileD) - 2);
-		PrimFD->Chain = FD; PrimFD->XF = xf2; PrimFD->UMode = um;
 		CloseClearH(PrimFD->Handle);
-		SetTempCExt('0', false); ptmp = CPath;
+		MyDeleteFile(p);
+		TestDelErr(&p);
+		FileD* FD = (FileD*)PrimFD->Chain;
+		TFile* MD = PrimFD->TF;
+		XFile* xf2 = PrimFD->XF;
+		FileUseMode um = PrimFD->UMode;
+		//Move(TempFD, PrimFD, sizeof(FileD) - 2);
+		*PrimFD = *TempFD;
+		PrimFD->Chain = FD;
+		PrimFD->XF = xf2;
+		PrimFD->UMode = um;
+		CloseClearH(PrimFD->Handle);
+		SetTempCExt('0', false);
+		pstring ptmp = CPath;
 		RenameFile56(ptmp, p, true);
 		CPath = p;
 		PrimFD->Handle = OpenH(_isoldfile, PrimFD->UMode);
 		SetUpdHandle(PrimFD->Handle);
 		if ((MD != nullptr) && DelTF) {
-			CloseClearH(MD->Handle); MyDeleteFile(pt); TestDelErr(&pt);
-			Move(PrimFD->TF, MD, sizeof(TFile)); PrimFD->TF = MD;
 			CloseClearH(MD->Handle);
-			CPath = ptmp; SetTempCExt('T', false);
+			MyDeleteFile(pt);
+			TestDelErr(&pt);
+			//Move(PrimFD->TF, MD, sizeof(TFile));
+			*MD = *PrimFD->TF;
+			PrimFD->TF = MD;
+			CloseClearH(MD->Handle);
+			CPath = ptmp;
+			SetTempCExt('T', false);
 			RenameFile56(CPath, pt, true);
-			CPath = pt; MD->Handle = OpenH(_isoldfile, PrimFD->UMode);
+			CPath = pt;
+			MD->Handle = OpenH(_isoldfile, PrimFD->UMode);
 			SetUpdHandle(MD->Handle);
 		}
 		PrimFD->TF = MD;
@@ -872,7 +914,10 @@ void SubstDuplF(FileD* TempFD, bool DelTF)
 
 void TestDelErr(pstring* P)
 {
-	if (HandleError != 0) { SetMsgPar(*P); RunError(827); }
+	if (HandleError != 0) {
+		SetMsgPar(*P);
+		RunError(827);
+	}
 }
 
 void DelDuplF(FileD* TempFD)
