@@ -3210,10 +3210,17 @@ label3:
 void DelNewRec()
 {
 	LockMode md;
-	DelAllDifTFlds(CRecPtr, nullptr); if (CNRecs() == 1) return;
-	IsNewRec = false; Append = false; WasUpdated = false; CFld = E->FirstFld;
-	if (CRec > CNRecs) if (IRec > 1) IRec--; else BaseRec--;
-	RdRec(CRec()); NewDisplLL = true; DisplWwRecsOrPage();
+	DelAllDifTFlds(CRecPtr, nullptr);
+	if (CNRecs() == 1) return;
+	IsNewRec = false; Append = false;
+	WasUpdated = false; CFld = E->FirstFld;
+	if (CRec > CNRecs) { // pozor! uspodarani IF a ELSE neni jasne !!!
+		if (IRec > 1) IRec--;
+		else BaseRec--;
+	}
+	RdRec(CRec());
+	NewDisplLL = true;
+	DisplWwRecsOrPage();
 }
 
 EFldD* FrstFldOnPage(WORD Page)
@@ -3265,8 +3272,11 @@ void SetEdRecNoEtc(longint RNr)
 
 bool StartProc(Instr_proc* ExitProc, bool Displ)
 {
-	bool upd; bool b, b2, lkd; char* p = nullptr; FieldDPtr f = nullptr;
-	WORD d; LockMode md; /*float t;*/
+	bool upd = false;
+	bool b = false, b2 = false, lkd = false;
+	char* p = nullptr;
+	FieldDescr* f = nullptr;
+	WORD d = 0; LockMode md; /*float t;*/
 
 	auto result = false;
 	CFile->WasWrRec = false;
@@ -3284,7 +3294,7 @@ bool StartProc(Instr_proc* ExitProc, bool Displ)
 	ClearUpdFlag();
 	/* !!! with ExitProc->TArg[ExitProc->N] do!!! */
 	{
-		auto tempX = ExitProc->TArg[ExitProc->N];
+		auto tempX = ExitProc->TArg[ExitProc->N - 1];
 		tempX.FD = CFile;
 		tempX.RecPtr = CRecPtr;
 	}
@@ -3316,10 +3326,13 @@ bool StartProc(Instr_proc* ExitProc, bool Displ)
 
 void StartRprt(RprtOpt* RO)
 {
-	bool displ; WKeyDPtr k; KeyFldD* kf;
+	bool displ = false;
+	XWKey* k = nullptr; KeyFldD* kf = nullptr;
 	if (IsNewRec || EdRecVar || (EdBreak == 16) || !WriteCRec(true, displ)) return;
-	if (displ) DisplAllWwRecs(); kf = nullptr; if (VK != nullptr) kf = VK->KFlds;
-	k = (WKeyDPtr)GetZStore(sizeof(*k));
+	if (displ) DisplAllWwRecs();
+	kf = nullptr;
+	if (VK != nullptr) kf = VK->KFlds;
+	k = new XWKey(); // (WKeyDPtr)GetZStore(sizeof(*k));
 	k->OneRecIdx(kf, AbsRecNr(CRec()));
 	RO->FDL.FD = CFile;
 	RO->FDL.ViewKey = k;

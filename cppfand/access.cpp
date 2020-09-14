@@ -900,9 +900,8 @@ longint _T(FieldDescr* F)
 	}
 	else
 	{
-		if (IsNullValue(source, 4)) return 0;
-		longint* lip = (longint*)source;
-		return *lip;
+		if (p == nullptr) return 0;
+		return *(longint*)source;
 	}
 }
 
@@ -1410,7 +1409,7 @@ double _R(FieldDescr* F)
 		}
 		case 'R': {
 		label1:
-			if (IsNullValue(source, F->NBytes)) result = 0;
+			if (P == nullptr) result = 0;
 			else {
 				result = Real48ToDouble(source);
 			}
@@ -3545,7 +3544,7 @@ void XScan::SubstWIndex(WKeyDPtr WK)
 {
 	Key = WK;
 	if (Kind != 3) Kind = 1;
-	if (P == nullptr) P = (XPage*)GetStore(XPageSize);
+	if (P == nullptr) P = new XPage(); // (XPage*)GetStore(XPageSize);
 	NRecs = Key->NRecs();
 	Bool = nullptr;
 	SeekRec(0);
@@ -3568,7 +3567,7 @@ void XScan::ResetOwner(XString* XX, FrmlPtr aBool)
 #endif
 	{
 		TestXFExist();
-		KIRoot = (KeyInD*)GetZStore(sizeof(*KIRoot));
+		KIRoot = new KeyInD(); // (KeyInD*)GetZStore(sizeof(*KIRoot));
 		Key->FindNr(*XX, KIRoot->XNrBeg);
 		AddFFs(Key, XX->S);
 		b = Key->FindNr(*XX, n);
@@ -3584,7 +3583,8 @@ bool EquKFlds(KeyFldD* KF1, KeyFldD* KF2)
 	while (KF1 != nullptr) {
 		if ((KF2 == nullptr) || (KF1->CompLex != KF2->CompLex) || (KF1->Descend != KF2->Descend)
 			|| (KF1->FldD->Name != KF2->FldD->Name)) return result;
-		KF1 = (KeyFldD*)KF1->Chain; KF2 = (KeyFldD*)KF2->Chain;
+		KF1 = (KeyFldD*)KF1->Chain;
+		KF2 = (KeyFldD*)KF2->Chain;
 	}
 	if (KF2 != nullptr) return false;
 	return true;
@@ -3624,7 +3624,8 @@ void XScan::Close()
 
 void XScan::SeekRec(longint I)
 {
-	KeyInD* k = nullptr; FrmlElem* z = nullptr;
+	KeyInD* k = nullptr;
+	FrmlElem* z = nullptr;
 	CFile = FD;
 
 #ifdef FandSQL
@@ -3660,7 +3661,8 @@ void XScan::SeekRec(longint I)
 		case 2: {
 			k = KIRoot;
 			while (I >= k->N) { I -= k->N; k = (KeyInD*)k->Chain; }
-			KI = k; SeekOnKI(I);
+			KI = k;
+				SeekOnKI(I);
 			break;
 		}
 		}

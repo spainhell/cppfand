@@ -926,9 +926,9 @@ label1:
 		break;
 	}
 	case _eval: {
-		MarkStore(p);
+		// MarkStore(p);
 		result = RunReal(GetEvalFrml((FrmlElem21*)X));
-		ReleaseStore(p);
+		// ReleaseStore(p);
 		break;
 	}
 	case _divide: {

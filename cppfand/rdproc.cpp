@@ -1537,7 +1537,9 @@ void RdRprtOpt(RprtOpt* RO, bool HasFrst)
 		if (!HasFrst)
 			label2:
 		OldError(51);
-		Accept('('); RdKFList(&RO->SK, CFile); Accept(')');
+		Accept('(');
+		RdKFList(&RO->SK, CFile);
+		Accept(')');
 	}
 	else if (IsOpt("HEAD")) RO->Head = RdStrFrml();
 	else Error(45);
@@ -1897,9 +1899,10 @@ Instr* RdGetIndex()
 	while (Lexem == ',') {
 		RdLex();
 		if (IsOpt("SORT")) {
-			if (WKeyDPtr(lv->RecPtr)->KFlds != nullptr) OldError(175);
+			if (((XWKey*)lv->RecPtr)->KFlds != nullptr) OldError(175);
 			Accept('(');
-			RdKFList(&PD->giKFlds, CFile); Accept(')');
+			RdKFList(&PD->giKFlds, CFile);
+			Accept(')');
 		}
 		else if (IsOpt("COND")) {
 			Accept('(');

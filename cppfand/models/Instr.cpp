@@ -74,7 +74,7 @@ Instr_turncat::Instr_turncat() : Instr(_turncat)
 
 Instr_sort::Instr_sort() : Instr(_sort)
 {
-	SK = new KeyFldD();
+	//SK = new KeyFldD();
 }
 
 Instr_sort::~Instr_sort()
