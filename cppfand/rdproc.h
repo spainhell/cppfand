@@ -5,6 +5,7 @@
 #include "models/Instr.h"
 #include "pstring.h"
 #include "rdrun.h"
+#include "switches.h"
 
 extern bool IsRdUserFunc;
 

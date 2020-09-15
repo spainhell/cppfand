@@ -766,6 +766,37 @@ void ScanSubstWIndex(XScan* Scan, KeyFldD* SK, char Typ)
 	Scan->SubstWIndex(k2);
 }
 
+void GenerateNew000File(FileD* f, XScan* x)
+{
+	// vytvorime si novy buffer pro data,
+	// ten pak zapiseme do souboru naprimo (bez cache)
+
+	const WORD header000len = 6; // 4B pocet zaznamu, 2B delka 1 zaznamu
+	// z puvodniho .000 vycteme pocet zaznamu a jejich delku
+	const size_t totalLen = x->FD->NRecs * x->FD->RecLen + header000len;
+	BYTE* buffer = new BYTE[totalLen]{ 0 };
+	size_t offset = header000len; // zapisujeme nejdriv data; hlavicku az nakonec
+	
+	while (!x->eof) {
+		RunMsgN(x->IRec);
+		f->NRecs++;
+		memcpy(&buffer[offset], CRecPtr, f->RecLen);
+		offset += f->RecLen;
+		f->IRec++;
+		f->Eof = true;
+		x->GetRec();
+	}
+
+	// zapiseme hlavicku
+	memcpy(&buffer[0], &f->NRecs, 4);
+	memcpy(&buffer[4], &f->RecLen, 2);
+
+	// provedeme primy zapis do souboru
+	WriteH(f->Handle, totalLen, buffer);
+
+	delete[] buffer; buffer = nullptr;
+}
+
 void SortAndSubst(KeyFldD* SK)
 {
 	void* p = nullptr;
@@ -779,13 +810,17 @@ void SortAndSubst(KeyFldD* SK)
 	FileD* FD2 = OpenDuplF(false);
 	RunMsgOn('S', Scan->NRecs);
 	Scan->GetRec();
-	while (!Scan->eof) {
-		RunMsgN(Scan->IRec);
-		CFile = FD2;
-		PutRec();
-		Scan->GetRec();
-	}
-	if (!SaveCache(0, CFile->Handle)) GoExit();
+
+	// zapiseme data do souboru .100
+	GenerateNew000File(FD2, Scan);
+	//while (!Scan->eof) {
+	//	RunMsgN(Scan->IRec);
+	//	CFile = FD2;
+	//	PutRec();
+	//	Scan->GetRec();
+	//}
+	//if (!SaveCache(0, CFile->Handle)) GoExit();
+
 	CFile = cf;
 	SubstDuplF(FD2, false);
 	Scan->Close();

@@ -1268,7 +1268,10 @@ label2:
 #endif
 
 		TextAttr = screen.colors.uNorm;
-		if (IsGraphMode && !WasGraph) ScrTextMode(false, false);
+		if (IsGraphMode && !WasGraph) {
+			// ScrTextMode(false, false);
+			throw std::exception("CompRunChptRec() Graph <-> Text Mode not implemented.");
+		}
 		else ClrScr();
 	}
 	if (uw) { UserW = 0;/*mem overflow*/UserW = PushW(1, 1, TxtCols, TxtRows); }
@@ -1892,7 +1895,10 @@ label8:
 
 label9:
 	RestoreExit(er);
-	if (!wasGraph && IsGraphMode) ScrTextMode(false, false);
+	if (!wasGraph && IsGraphMode) {
+		// ScrTextMode(false, false);
+		throw std::exception("CompRunChptRec() Graph <-> Text Mode not implemented.");
+	}
 	if (UserW != 0) PopW(UserW);
 	UserW = w;
 	RunMsgClear();

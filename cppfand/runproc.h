@@ -2,6 +2,7 @@
 #include "constants.h"
 #include "pstring.h"
 #include "rdrun.h"
+#include "switches.h"
 #include "models/Instr.h"
 
 void UserHeadLine(pstring UserHeader);
