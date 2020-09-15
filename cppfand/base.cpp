@@ -768,9 +768,20 @@ void SetUpdHandle(FILE* H)
 	UpdHandles.insert(H);
 }
 
+/// vrati pocet stejnych znaku na zacatku retezce
 WORD SLeadEqu(pstring S1, pstring S2)
 {
-	return 0;
+	WORD count = 0;
+	// pocet znaku k otestovani
+	WORD minLen = min(S1.length(), S2.length());
+	for (size_t i = 0; i < minLen; i++) {
+		if (S1[i + 1] == S2[i + 1]) {
+			count++;
+			continue;
+		}
+		break;
+	}
+	return count;
 }
 
 void SetFlshHandle(FILE* H)

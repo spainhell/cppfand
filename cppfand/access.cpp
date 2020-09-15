@@ -2564,6 +2564,8 @@ bool XPage::Overflow()
 
 pstring XPage::StrI(WORD I)
 {
+	return ""; // netusim, co to ma delat ...
+	
 	XItem* x = new XItem(A, IsLeaf);
 	WORD* xofs = (WORD*)x->Nr[0]; // absolute x
 	WORD o = 0;

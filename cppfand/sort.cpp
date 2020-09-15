@@ -665,7 +665,8 @@ label1:
 	m = 0;
 	l = P->LastIndex.length();
 	if ((l > 0) && (NItems > 0)) {
-		m = SLeadEqu(P->LastIndex, LastIndex); l = l - m;
+		m = SLeadEqu(P->LastIndex, LastIndex);
+		l = l - m;
 	}
 	if (Off + 9 + l > MaxOff) {
 		PageFull();
@@ -683,16 +684,21 @@ label1:
 void CreateIndexFile()
 {
 	ExitRecord er;
-	void* cr = nullptr; void* p = nullptr;
-	LockMode md = NullMode; bool fail = false;
+	void* cr = nullptr; //void* p = nullptr;
+	LockMode md = NullMode;
+	bool fail = false;
 	XWorkFile* XW = nullptr;
 	XScan* Scan = nullptr;
 	XFile* XF = nullptr;
 	//NewExit(Ovr(), er);
 	//goto label1;
-	MarkStore(p); fail = true;
-	XF = CFile->XF; cr = CRecPtr; CRecPtr = GetRecSpace();
-	md = NewLMode(RdMode); TryLockN(0, 0); /*ClearCacheCFile;*/
+	//MarkStore(p);
+	fail = true;
+	XF = CFile->XF;
+	cr = CRecPtr;
+	CRecPtr = GetRecSpace();
+	md = NewLMode(RdMode);
+	TryLockN(0, 0); /*ClearCacheCFile;*/
 	if (XF->Handle == nullptr) RunError(903);
 	XF->RdPrefix();
 	if (XF->NotValid) {
@@ -710,9 +716,15 @@ void CreateIndexFile()
 	}
 	fail = false;
 label1:
-	RestoreExit(er); ReleaseStore(p); CRecPtr = cr;
-	if (fail) { XF->SetNotValid(); XF->NoCreate = true; }
-	UnLockN(0); OldLMode(md);
+	RestoreExit(er);
+	//ReleaseStore(p);
+	CRecPtr = cr;
+	if (fail) {
+		XF->SetNotValid();
+		XF->NoCreate = true;
+	}
+	UnLockN(0);
+	OldLMode(md);
 	if (fail) GoExit();
 }
 
