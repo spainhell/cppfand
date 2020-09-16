@@ -7,7 +7,7 @@
 
 ConstListEl* OldMFlds;
 ConstListEl* NewMFlds;   /* Merge + Report*/
-InpD* IDA[9];
+InpD* IDA[30];
 integer MaxIi;
 XString OldMXStr;                  /* Merge */
 OutpFD* OutpFDRoot;

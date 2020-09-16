@@ -85,7 +85,7 @@ void SetInpLongStr(LongStr* S, bool ShowErr)
 {
 	InpArrLen = S->LL;
 	InpArrPtr = reinterpret_cast<BYTE*>(S->A);
-	if (InpArrLen == 0) ForwChar = 0x1A; 
+	if (InpArrLen == 0) ForwChar = 0x1A;
 	else ForwChar = InpArrPtr[0];
 	CurrPos = 0;
 	InpRdbPos.R = nullptr;
@@ -114,19 +114,20 @@ void SetInpTT(RdbPos RP, bool FromTxt)
 	LongStr* s = nullptr;
 
 	if (RP.IRec == 0) {
-		SetInpLongStr(RunLongStr(FrmlPtr(RP.R)), true);
+		SetInpLongStr(RunLongStr((FrmlElem*)RP.R), true);
 		return;
 	}
 	InpRdbPos = RP;
 	CF = CFile;
 	CR = CRecPtr;
 	CFile = RP.R->FD;
-	CRecPtr = GetRecSpace();
+	CRecPtr = new BYTE[RP.R->FD->RecLen];
 	ReadRec(RP.IRec);
 	if (FromTxt) Pos = _T(ChptTxt);
 	else Pos = _T(ChptOldTxt);
 	SetInpTTPos(Pos, RP.R->Encrypted);
-	ReleaseStore(CRecPtr); CFile = CF; CRecPtr = CR;
+	ReleaseStore(CRecPtr);
+	CFile = CF; CRecPtr = CR;
 }
 
 void SetInpTTxtPos(FileD* FD)
@@ -148,7 +149,9 @@ void ReadChar()
 		if (CurrPos == InpArrLen) ForwChar = 0x1A;
 		else ForwChar = InpArrPtr[CurrPos];
 	}
-	else if (CurrPos == InpArrLen) { CurrPos++; ForwChar = 0x1A; } // CTRL+Z = 0x1A
+	else if (CurrPos == InpArrLen) {
+		CurrPos++; ForwChar = 0x1A; // CTRL+Z = 0x1A
+	}
 }
 
 WORD RdDirective(bool& b)
@@ -161,7 +164,7 @@ WORD RdDirective(bool& b)
 		pstring(7) = "endif",
 		pstring(7) = "include"
 	};
-	WORD i, j;
+	WORD i;
 	pstring s(12);
 	RdbD* r = nullptr;
 	bool res = false;
@@ -189,7 +192,7 @@ label1:
 			if (!(ForwChar >= 'A' && ForwChar <= 'Z')) Error(158);
 			ReadChar();
 			b = false;
-			for (j = 1; j < Switches.length(); j++)
+			for (WORD j = 1; j < Switches.length(); j++)
 				if (Switches[j] == CurrChar) b = true;
 			if (i == 2) b = !b;
 			i = 1;
@@ -215,7 +218,8 @@ void RdForwName(pstring& s)
 	s[0] = 0;
 	while ((s.length() < 12) && (IsLetter(ForwChar) || isdigit(ForwChar)))
 	{
-		s[0]++; s[s.length()] = ForwChar; ReadChar();
+		s[0]++; s[s.length()] = ForwChar;
+		ReadChar();
 	}
 }
 
@@ -227,9 +231,13 @@ void SkipLevel(bool withElse)
 
 label1:
 	switch (ForwChar) {       /* skip to directive */
-	case '\'': { do { ReadChar(); } while (!(ForwChar == '\'' || ForwChar == 0x1A)); break; }
+	case '\'': {
+		do { ReadChar(); } while (!(ForwChar == '\'' || ForwChar == 0x1A));
+		break;
+	}
 	case '{': {
-		ReadChar(); if (ForwChar == '$') goto label3;
+		ReadChar();
+		if (ForwChar == '$') goto label3;
 		n = 1;
 	label2:
 		switch (ForwChar) {
@@ -260,11 +268,10 @@ label3:
 
 void SkipBlank(bool toNextLine)
 {
-	char CC;
-	WORD n;
-	bool b;
-	CompInpD* ci;
-	CC = CurrChar;
+	WORD n = 0;
+	bool b = false;
+	CompInpD* ci = nullptr;
+	char CC = CurrChar;
 
 label1:
 	switch (ForwChar)
@@ -285,15 +292,21 @@ label1:
 			switch (n)
 			{
 			case 0: break;
-			case 1: { SwitchLevel++; if (!b) SkipLevel(true); break; }
+			case 1: {
+				SwitchLevel++;
+				if (!b) SkipLevel(true);
+				break;
+			}
 			case 5: {
 				ci = (CompInpD*)GetStore2(sizeof(CompInpD));
 				Move(PrevCompInp, ci, sizeof(CompInpD));
-				PrevCompInp = ci; SetInpTT(ChptIPos, true); break; }
+				PrevCompInp = ci;
+				SetInpTT(ChptIPos, true); break; }
 			default:
 			{
 				if (SwitchLevel == 0) Error(159);
-				if (n == 3) SkipLevel(false); else SwitchLevel--;
+				if (n == 3) SkipLevel(false);
+				else SwitchLevel--;
 				break;
 			}
 			}
@@ -351,7 +364,7 @@ void RdBackSlashCode()
 	if (Num == "") return;
 	val(Num, n, i);
 	if (n > 255) Error(7);
-	CurrChar = char(n);
+	CurrChar = (char)n;
 }
 
 void RdLex()
@@ -362,7 +375,8 @@ void RdLex()
 	Lexem = CurrChar;
 	if (IsLetter(CurrChar))
 	{
-		Lexem = _identifier; LexWord[1] = CurrChar;
+		Lexem = _identifier;
+		LexWord[1] = CurrChar;
 		WORD i = 1;
 		while (IsLetter(ForwChar) || isdigit(ForwChar))
 		{
@@ -793,7 +807,7 @@ void RdLocDcl(LocVarBlkD* LVB, bool IsParList, bool WithRecVar, char CTyp)
 label1:
 	rp = false;
 	if (IsParList && IsKeyWord("VAR")) {
-		if (CTyp == 'D') OldError(174); 
+		if (CTyp == 'D') OldError(174);
 		rp = true;
 	}
 	newVars.clear(); // zde se budou ukladat vsechny promenne stejneho typu oddelene carkami
@@ -2212,8 +2226,8 @@ FrmlElem* RdKeyInBool(KeyInD** KIRoot, bool NewMyBP, bool FromRdProc, bool& SQLF
 	if (FromRdProc) {
 		FVA = FileVarsAllowed;
 		FileVarsAllowed = true;
-		if ((Lexem == _identifier) 
-			&& (ForwChar == '(') 
+		if ((Lexem == _identifier)
+			&& (ForwChar == '(')
 			&& (EquUpcase("EVALB") || EquUpcase("EVALS") || EquUpcase("EVALR")))
 			FileVarsAllowed = false;
 	}

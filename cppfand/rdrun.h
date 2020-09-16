@@ -445,7 +445,7 @@ public:
 
 extern ConstListEl* OldMFlds;
 extern ConstListEl* NewMFlds;   /* Merge + Report*/
-extern InpD* IDA[9];
+extern InpD* IDA[30];
 extern integer MaxIi;
 extern XString OldMXStr;                  /* Merge */
 extern OutpFD* OutpFDRoot;

@@ -265,14 +265,15 @@ void MergeProcM()
 
 void JoinProc(WORD Ii, bool& EmptyGroup)
 {
-	WORD I, res; InpD* ID;
+	WORD res;
 	if (Ii > MaxIi) {
 		if (!EmptyGroup) {
-			for (I = 1; I < MaxIi; I++) SumUpM(IDA[I]->Sum); WriteOutp(IDA[MaxIi]->RD);
+			for (WORD I = 1; I <= MaxIi; I++) SumUpM(IDA[I]->Sum);
+			WriteOutp(IDA[MaxIi]->RD);
 		}
 	}
 	else {
-		ID = IDA[Ii]; /* !!! with ID^ do!!! */
+		InpD* ID = IDA[Ii]; /* !!! with ID^ do!!! */
 		if (ID->Exist) {
 			ID->Scan->SeekRec(ID->IRec - 1); ID->Count = 0.0;
 			CRecPtr = ID->ForwRecPtr; ID->Scan->GetRec();
