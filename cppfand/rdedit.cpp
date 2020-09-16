@@ -46,7 +46,7 @@ void RdEForm(FileD* ParFD, RdbPos FormPos)
 	FieldDescr* F = nullptr; FieldListEl* FL = nullptr;
 	FileD* FD1 = nullptr;
 	StringListEl* SLRoot = nullptr;
-	pstring s;
+	pstring s = "";
 	WORD NPages = 0, Col = 0, Ln = 0, Max = 0, M = 0, N = 0, NFlds = 0, i = 0;
 	bool comment = false; char c = '\0'; BYTE a = 0;
 	SetInpTT(FormPos, true);
@@ -488,7 +488,10 @@ void RdDepChkImpl()
 		return;
 		break;
 	}
-	default: RdAllUDLIs(CFile);
+	default: {
+		RdAllUDLIs(CFile);
+		break;
+	}
 	}
 }
 

@@ -361,3 +361,5 @@ MigrationBackup/
 /cppfand/FANDWORK.T$$
 /cppfand/FANDWORK.$$$
 /fandio
+/ReleaseDebug
+/cppfand/ReleaseDebug

@@ -517,9 +517,9 @@ void InitRunFand()
 	std::string ResText = ResFile.Get(FandFace);
 
 	xofs++;
-	for (int i = -11; i <= -6; i++) {
+	for (int ii = -11; ii <= -6; ii++) {
 		std::string sPrint = ResText.substr(xofs, TxtCols - 2);
-		screen.ScrWrStr(2, TxtRows + i + 1, sPrint, TextAttr);
+		screen.ScrWrStr(2, TxtRows + ii + 1, sPrint, TextAttr);
 		xofs += 82;
 	}
 	TextAttr = screen.colors.mHili;

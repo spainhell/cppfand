@@ -74,7 +74,8 @@ void ReportProc(RprtOpt* RO, bool save)
 		label1:
 			RestoreExit(er); IsCompileErr = false; goto label2;
 		}
-		ReadReport(RO); RunReport(RO);
+		ReadReport(RO);
+		RunReport(RO);
 	}
 	else {
 		if (RO->WidthFrml != nullptr) RO->Width = RunInt(RO->WidthFrml);
@@ -411,10 +412,10 @@ void EditTxtProc(Instr_edittxt* PD)
 	pv = nullptr;
 	if (PD->Ww.C1 != nullptr) { RunWFrml(PD->Ww, PD->WFlags, v); pv = &v; }
 	MsgS.Head = GetStr(PD->Head);
-	MsgS.Last = *GetStr(PD->Last);
-	MsgS.CtrlLast = *GetStr(PD->CtrlLast);
-	MsgS.ShiftLast = *GetStr(PD->ShiftLast);
-	MsgS.AltLast = *GetStr(PD->AltLast);
+	MsgS.Last = (PD->Last == nullptr) ? "" : *GetStr(PD->Last);
+	MsgS.CtrlLast = (PD->CtrlLast == nullptr) ? "" : *GetStr(PD->CtrlLast);
+	MsgS.ShiftLast = (PD->ShiftLast == nullptr) ? "" : *GetStr(PD->ShiftLast);
+	MsgS.AltLast = (PD->AltLast == nullptr) ? "" : *GetStr(PD->AltLast);
 
 	if (PD->TxtLV != nullptr) lp = (longint*)(uintptr_t(MyBP) + PD->TxtLV->BPOfs);
 	else { SetTxtPathVol(PD->TxtPath, PD->TxtCatIRec); lp = nullptr; }
@@ -1275,7 +1276,7 @@ void CallProcedure(Instr_proc* PD)
 #ifdef _DEBUG
 	std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
 
-	if (srcCode.find("var n2000,n2001,n2002,n2003,n2004,n2005,n2006,n2007,n2008,n2009,") != std::string::npos) {
+	if (srcCode.find("(Path:string) var pos,xy,Ÿ¡s,i,AL:real;") != std::string::npos) {
 		//|| srcCode.find("STAT.Start") != std::string::npos) {
 		printf("");
 		//FuncD* f = FuncDRoot;

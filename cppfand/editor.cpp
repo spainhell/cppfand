@@ -321,7 +321,7 @@ void LastLine(char* input, WORD from, WORD num, WORD& Ind, WORD& Count)
 bool RdNextPart()
 {
 	char* ppa = nullptr;
-	WORD L11, L1;
+	WORD L11 = 0, L1 = 0;
 	longint Max = MinL(MaxLenT, StoreAvail() + LenT);
 	WORD Pass = Max - (Max >> 3);
 	Part.MovL = 0;
@@ -329,7 +329,10 @@ bool RdNextPart()
 	WORD MI = 0;
 	auto result = false;
 	if (AllRd) return result;
-	if (Part.LenP == 0) { LenT = 0; /*T = (CharArr*)GetStore(0);*/ }
+	if (Part.LenP == 0) {
+		LenT = 0; /*T = (CharArr*)GetStore(0);*/
+		T = new char[0xFFFF];
+	}
 	longint Pos = Part.PosP;
 	longint BL = Part.LineP;
 
@@ -769,23 +772,28 @@ BYTE Color(ColorOrd CO)
 
 void ScrollWrline(char* P, int Row, ColorOrd CO)
 {
-	pstring GrafCtrl(15);
+	return;
+	
+	//pstring GrafCtrl(15);
 	BYTE* len = (BYTE*)&CO;
-	GrafCtrl = "\x03\x06\x09\x11\x15\x16\x18\x21\x22\x24\x25\x26\x29\x30\x31";
+	std::string GrafCtrl = "\x03\x06\x09\x11\x15\x16\x18\x21\x22\x24\x25\x26\x29\x30\x31";
 	WORD BuffLine[255];
-	integer I, J, LP, pp;
-	integer Newvalue;
+	integer I = 0, J = 0, LP = 0, pp = 0;
+	integer Newvalue = 0;
 	// Nv : array [1..2] of byte absolute Newvalue;
 	BYTE* Nv = (BYTE*)&Newvalue;
-	bool IsCtrl;
-	char cc;
-	BYTE Col;
+	bool IsCtrl = false;
+	BYTE Col = 0;
 
 	Col = Color(CO);
-	Nv[2] = Col; I = 1; J = 1; cc = P[I];
-	while ((cc != _CR) && (I <= LineSize) || !InsPage) {
-		if ((cc >= 32) || (GrafCtrl.first(cc) > 0)) {
-			Nv[1] = cc; BuffLine[J] = Newvalue; J++;
+	Nv[2] = Col;
+	I = 1; J = 1;
+	char cc = P[I];
+	while (cc != _CR && I <= LineSize && !InsPage) {
+		if ((cc >= 32) || (GrafCtrl.find(cc) != std::string::npos)) {
+			Nv[1] = cc;
+			BuffLine[J] = Newvalue;
+			J++;
 		}
 		else {
 			if (CtrlKey.first(cc) > 0) IsCtrl = true;
@@ -805,7 +813,7 @@ void ScrollWrline(char* P, int Row, ColorOrd CO)
 		I = 1; J = 1;
 		while (I <= LP) {
 			cc = P[I];
-			if ((cc >= 32) || (GrafCtrl.first(cc)) > 0)
+			if ((cc >= 32) || (GrafCtrl.find(cc)) != std::string::npos)
 			{
 				BuffLine[J] = (BuffLine[J] & 0x00FF) + (Col << 8);
 				J++;
@@ -821,7 +829,8 @@ void ScrollWrline(char* P, int Row, ColorOrd CO)
 			I++;
 		}
 		while (J <= BCol + LineS) {
-			BuffLine[J] = (BuffLine[J] & 0x00FF) + (Col << 8); J++;
+			BuffLine[J] = (BuffLine[J] & 0x00FF) + (Col << 8);
+			J++;
 		}
 	}
 	screen.ScrWrBuf(WindMin.X, WindMin.Y + Row - 1, &BuffLine[BCol + 1], LineS);
@@ -845,10 +854,18 @@ bool MyTestEvent()
 
 void DelEndT()
 {
-	if (LenT > 0) {
-		ReleaseStore(&T[LenT]);
-		LenT--;
-	}
+	// T by melo mit 65535 B
+	//if (LenT > 0) {
+	//	char* newT = new char[LenT];
+	//	memcpy(newT, T, LenT);
+	//	// ReleaseStore(&T[LenT]);
+	//	delete[] T;
+	//	T = newT; newT = nullptr;
+	//	LenT--;
+	//}
+	//else {
+	//	delete[] T; T = nullptr;
+	//}
 }
 
 void TestUpdFile()
@@ -1109,10 +1126,10 @@ WORD FindLine(int Num)
 label1:
 	if (Num <= 0) {
 		if (Part.PosP == 0) Num = 1;
-	}
-	else {
-		PredPart();
-		goto label1;
+		else {
+			PredPart();
+			goto label1;
+		}
 	}
 	if (Num == 1) { result = 1; }
 	else {
@@ -3724,10 +3741,9 @@ bool EditText(char pMode, char pTxtType, pstring pName, pstring pErrMsg, char* p
 	WORD& pInd, longint pScr, pstring pBreaks, EdExitD* pExD, bool& pSrch, bool& pUpdat, WORD pLastNr,
 	WORD pCtrlLastNr, MsgStrPtr pMsgS)
 {
-	bool oldEdOK;
-	oldEdOK = EdOk; EditT = true;
+	bool oldEdOK = EdOk; EditT = true;
 	Mode = pMode; TypeT = pTxtType; NameT = pName; ErrMsg = pErrMsg;
-	/*T = pTxtPtr*/; MaxLenT = pMaxLen;
+	/*T = pTxtPtr;*/ MaxLenT = pMaxLen;
 	LenT = pLen; IndT = pInd;
 	ScrT = pScr & 0xFFFF;
 	Posi = pScr >> 16;
@@ -3737,9 +3753,11 @@ bool EditText(char pMode, char pTxtType, pstring pName, pstring pErrMsg, char* p
 	LastNr = pLastNr; CtrlLastNr = pCtrlLastNr;
 	if (pMsgS != nullptr)
 	{
-		LastS = pMsgS->Last; CtrlLastS = pMsgS->CtrlLast;
-		ShiftLastS = pMsgS->ShiftLast; AltLastS = pMsgS->AltLast;
-		HeadS = *pMsgS->Head;
+		LastS = pMsgS->Last;
+		CtrlLastS = pMsgS->CtrlLast;
+		ShiftLastS = pMsgS->ShiftLast;
+		AltLastS = pMsgS->AltLast;
+		HeadS = (pMsgS->Head == nullptr) ? "" : *pMsgS->Head;
 	}
 	else
 	{

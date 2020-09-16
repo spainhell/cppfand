@@ -71,7 +71,7 @@ void Error(integer N)
 	GoExit();
 }
 
-void SetInpStr(pstring& S)
+__declspec(noinline) void SetInpStr(pstring& S)
 {
 	InpArrLen = S.length();
 	InpArrPtr = &S[1];
@@ -81,10 +81,11 @@ void SetInpStr(pstring& S)
 	FillChar(&InpRdbPos, sizeof(InpRdbPos), 0);
 }
 
-void SetInpLongStr(LongStr* S, bool ShowErr)
+__declspec(noinline) void SetInpLongStr(LongStr* S, bool ShowErr)
 {
 	InpArrLen = S->LL;
-	InpArrPtr = reinterpret_cast<BYTE*>(S->A);
+	InpArrPtr = (BYTE*)&S->A[0];
+	//printf("%i ", InpArrLen);
 	if (InpArrLen == 0) ForwChar = 0x1A;
 	else ForwChar = InpArrPtr[0];
 	CurrPos = 0;
@@ -95,44 +96,48 @@ void SetInpLongStr(LongStr* S, bool ShowErr)
 
 // vycte z CFile->TF blok dat
 // nastavi InpArrPtr a InptArrLen - retezec pro zpracovani
-void SetInpTTPos(longint Pos, bool Decode)
+__declspec(noinline) void SetInpTTPos(longint Pos, bool Decode)
 {
 	LongStr* s = CFile->TF->Read(2, Pos);
 	if (Decode) CodingLongStr(s);
 	InpArrLen = s->LL;
 	InpArrPtr = (BYTE*)&s->A[0];
+	//printf("%i ", InpArrLen);
+	//if (InpArrLen == 272) {
+	//	printf("%i ", InpArrLen);
+	//}
 	if (InpArrLen == 0) ForwChar = 0x1A;
 	else ForwChar = InpArrPtr[0];
 	CurrPos = 0;
 }
 
-void SetInpTT(RdbPos RP, bool FromTxt)
+void SetInpTT(RdbPos* RP, bool FromTxt)
 {
 	longint Pos = 0;
 	FileD* CF = nullptr;
 	void* CR = nullptr;
 	LongStr* s = nullptr;
 
-	if (RP.IRec == 0) {
-		SetInpLongStr(RunLongStr((FrmlElem*)RP.R), true);
+	if (RP->IRec == 0) {
+		SetInpLongStr(RunLongStr((FrmlElem*)RP->R), true);
 		return;
 	}
-	InpRdbPos = RP;
+	InpRdbPos = *RP;
 	CF = CFile;
 	CR = CRecPtr;
-	CFile = RP.R->FD;
-	CRecPtr = new BYTE[RP.R->FD->RecLen];
-	ReadRec(RP.IRec);
+	CFile = RP->R->FD;
+	CRecPtr = new BYTE[RP->R->FD->RecLen];
+	ReadRec(RP->IRec);
 	if (FromTxt) Pos = _T(ChptTxt);
 	else Pos = _T(ChptOldTxt);
-	SetInpTTPos(Pos, RP.R->Encrypted);
+	SetInpTTPos(Pos, RP->R->Encrypted);
 	ReleaseStore(CRecPtr);
 	CFile = CF; CRecPtr = CR;
 }
 
 void SetInpTTxtPos(FileD* FD)
 {
-	SetInpTT(FD->ChptPos, true);
+	SetInpTT(&FD->ChptPos, true);
 	WORD pos = FD->TxtPosUDLI;
 	RdbD* r = FD->ChptPos.R;
 	if (pos > InpArrLen) ForwChar = 0x1A;
@@ -301,7 +306,7 @@ label1:
 				ci = (CompInpD*)GetStore2(sizeof(CompInpD));
 				Move(PrevCompInp, ci, sizeof(CompInpD));
 				PrevCompInp = ci;
-				SetInpTT(ChptIPos, true); break; }
+				SetInpTT(&ChptIPos, true); break; }
 			default:
 			{
 				if (SwitchLevel == 0) Error(159);
@@ -393,7 +398,8 @@ void RdLex()
 		WORD i = 1;
 		while (isdigit(ForwChar))
 		{
-			i++; if (i > 15) Error(6);
+			i++;
+			if (i > 15) Error(6);
 			ReadChar();
 			LexWord[i] = CurrChar;
 		}

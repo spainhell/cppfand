@@ -858,7 +858,8 @@ bool RunModulo(FrmlElem1* X)
 bool RunEquMask(FrmlElem0* X)
 {
 	LongStr* s = RunLongStr(X->P1);
-	auto result = EqualsMask(s->A, s->LL, RunShortStr(X->P2));
+	auto mask = RunShortStr(X->P2);
+	auto result = EqualsMask(s->A, s->LL, mask);
 	ReleaseStore(s);
 	return result;
 }
@@ -1502,7 +1503,8 @@ label1:
 	case _const: result = CopyToLongStr(((FrmlElem4*)X)->S); break;
 	case _leadchar: {
 		auto iX0 = (FrmlElem0*)X;
-		result = LongLeadChar((char)iX0->N11, (char)iX0->N12, RunLongStr(iX0->P1));
+		auto s = RunLongStr(iX0->P1);
+		result = LongLeadChar((char)iX0->N11, (char)iX0->N12, s);
 		break;
 	}
 	case _trailchar: {
@@ -1931,19 +1933,20 @@ double RoundReal(double RR, integer M)
 
 LongStr* LongLeadChar(char C, char CNew, LongStr* S)
 {
-	WORD i, l;
-	i = 1; l = S->LL;
+	WORD i = 1;
+	WORD l = S->LL;
 	while (i <= l) {
 		if (S->A[i] != C) goto label1;
 		if (CNew != 0) S->A[i] = CNew; i++;
 	}
-label1: if (CNew == 0) {
-	l -= i - 1;
-	S->LL = l;
-	if ((i > 1) && (l > 0)) MyMove(&S->A[i], &S->A[1], l);
-	ReleaseAfterLongStr(S);
-}
-return S;
+label1:
+	if (CNew == 0) {
+		l -= i - 1;
+		S->LL = l;
+		if ((i > 1) && (l > 0)) memcpy(&S->A[1], &S->A[i], l);
+		// ReleaseAfterLongStr(S);
+	}
+	return S;
 }
 
 LongStr* LongTrailChar(char C, char CNew, LongStr* S)
