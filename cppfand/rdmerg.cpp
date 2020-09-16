@@ -14,6 +14,8 @@ FileD* InpFD_M(WORD I)
 {
 	// tady si to sahalo na neexistujici polozky
 	// proto je to cele prepsane
+	// velikost IDA je 9, z toho [0] se nepoužívá, max. index je tedy 8
+	if (I > 8) return nullptr;
 	if (IDA[I] != nullptr) return IDA[I]->Scan->FD;
 	if (IDA[I + 1] != nullptr) { Ii++; return IDA[I + 1]->Scan->FD; }
 	return nullptr;

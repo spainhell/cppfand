@@ -1532,8 +1532,30 @@ void RestoreExit(ExitRecord& Buf)
 {
 }
 
-bool OSshell(pstring Path, pstring CmdLine, bool NoCancel, bool FreeMm, bool LdFont, bool TextMd)
+bool OSshell(std::string Path, std::string CmdLine, bool NoCancel, bool FreeMm, bool LdFont, bool TextMd)
 {
+	char psBuffer[128];
+	FILE* pPipe;
+
+	std::string cmd = Path.empty() ? CmdLine : Path + " " + CmdLine;
+	
+	if ((pPipe = _popen(cmd.c_str(), "rt")) == nullptr)
+		return false;
+
+	while (fgets(psBuffer, 128, pPipe))
+	{
+		puts(psBuffer);
+	}
+
+	if (feof(pPipe))
+	{
+		//printf("\nProcess returned %d\n", _pclose(pPipe));
+	}
+	else
+	{
+		//printf("Error: Failed to read the pipe to the end.\n");
+	}
+
 	return true;
 }
 

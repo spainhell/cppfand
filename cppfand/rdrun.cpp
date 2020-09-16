@@ -22,7 +22,7 @@ FloatPtrListEl* PFZeroLst;
 LvDescr* FrstLvM;
 LvDescr* LstLvM; /* LstLvM->Ft=RF */
 bool SelQuest;
-FrmlPtr PgeSizeZ, PgeLimitZ;
+FrmlElem* PgeSizeZ, *PgeLimitZ;
 EditD* EditDRoot;
 bool CompileFD, EditRdbMode;
 LocVarBlkD LVBD;
