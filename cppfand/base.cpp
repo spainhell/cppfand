@@ -919,9 +919,9 @@ label1:
 
 	// pøidání FILE* od vektoru kvùli 'WORD OvrHandle = h - 1;'
 	vOverHandle.push_back(nFile);
-#ifdef _DEBUG
+//#ifdef _DEBUG
 	filesMap.insert(std::pair<std::string, DataFile>(CPath, DataFile(CPath, CFile, nFile)));
-#endif
+//#endif
 	return nFile;
 }
 

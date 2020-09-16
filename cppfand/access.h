@@ -777,7 +777,7 @@ double _R(FieldDescr* F);
 pstring _ShortS(FieldDescr* F);
 LongStr* _LongS(FieldDescr* F);
 longint _T(FieldDescr* F);
-longint _T(FieldDescr* F, unsigned char* data);
+longint _T(FieldDescr* F, unsigned char* data, char Typ);
 // * UKLADANI DO SOUBORU * / DO FRMLELEM *
 void B_(FieldDescr* F, bool B);
 void R_(FieldDescr* F, double R);

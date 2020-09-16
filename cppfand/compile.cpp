@@ -135,8 +135,8 @@ void SetInpTT(RdbPos* RP, bool FromTxt)
 	CFile = RP->R->FD;
 	CRecPtr = new BYTE[RP->R->FD->RecLen];
 	ReadRec(CFile, RP->IRec, CRecPtr);
-	if (FromTxt) Pos = _T(ChptTxt, (unsigned char*)CRecPtr);
-	else Pos = _T(ChptOldTxt, (unsigned char*)CRecPtr);
+	if (FromTxt) Pos = _T(ChptTxt, (unsigned char*)CRecPtr, CFile->Typ);
+	else Pos = _T(ChptOldTxt, (unsigned char*)CRecPtr, CFile->Typ);
 	SetInpTTPos(CFile, Pos, RP->R->Encrypted);
 	ReleaseStore(CRecPtr);
 	CFile = CF; CRecPtr = CR;
@@ -259,6 +259,7 @@ label1:
 		}
 		ReadChar();
 		goto label2;
+		break;
 	}
 	case 0x1A: { Error(11); break; }
 	}

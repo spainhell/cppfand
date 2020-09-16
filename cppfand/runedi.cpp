@@ -820,7 +820,8 @@ void AdjustCRec()
 {
 	if (CRec <= CNRecs) return;
 	while (CRec > CNRecs) {
-		if (IRec > 1) IRec--; else BaseRec--;
+		if (IRec > 1) IRec--;
+		else BaseRec--;
 	}
 	if (BaseRec == 0) {
 		BaseRec = 1;

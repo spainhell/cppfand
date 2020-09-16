@@ -1273,7 +1273,7 @@ void CallProcedure(Instr_proc* PD)
 	ld = LinkDRoot;
 	lstFD = (FileD*)LastInChain(FileDRoot);
 	SetInpTT(&PD->PPos, true);
-#ifdef _DEBUG
+//#ifdef _DEBUG
 	std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
 
 	if (srcCode.find("(Path:string) var pos,xy,Ÿ¡s,i,AL:real;") != std::string::npos) {
@@ -1288,7 +1288,7 @@ void CallProcedure(Instr_proc* PD)
 		//}
 		//myfile.close();
 	}
-#endif
+//#endif
 	ReadProcHead("");
 	PD->variables = LVBD;
 	n = PD->variables.NParam;
@@ -1362,14 +1362,14 @@ void CallProcedure(Instr_proc* PD)
 	pd1 = ReadProcBody();
 
 	// vytvorime vektor instrukci pro snadny prehled
-#ifdef _DEBUG
+//#ifdef _DEBUG
 	std::vector<Instr*> vI;
 	Instr* next = pd1;
 	while (next != nullptr) {
 		vI.push_back(next);
 		next = (Instr*)next->Chain;
 	}
-#endif
+//#endif
 	FDLocVarAllowed = false;
 	//lv0 = lv1;
 	it0 = it1;

@@ -2555,6 +2555,7 @@ Instr* ReadProcBody()
 
 // metoda nacita funkce a procedury z InpArrPtr a postupne je zpracovava
 // nacte nazev, parametry, navr. hodnotu, promenne, konstanty i kód
+
 void ReadDeclChpt()
 {
 	FuncD* fc = nullptr;
@@ -2564,9 +2565,6 @@ void ReadDeclChpt()
 	RdLex();
 label1:
 	if (IsKeyWord("FUNCTION")) {
-#ifdef _DEBUG
-		// printf("F: %s, ", LexWord.c_str());
-#endif
 		TestIdentif();
 		fc = FuncDRoot;
 		while (fc != CRdb->OldFCRoot) {

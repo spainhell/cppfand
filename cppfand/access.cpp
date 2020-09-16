@@ -885,16 +885,16 @@ bool IsNullValue(void* p, WORD l)
 // v CRecPtr se posune o F->Displ a vyète integer
 longint _T(FieldDescr* F)
 {
-	return _T(F, (unsigned char*)CRecPtr);
+	return _T(F, (unsigned char*)CRecPtr, CFile->Typ);
 }
 
-longint _T(FieldDescr* F, unsigned char* data)
+longint _T(FieldDescr* F, unsigned char* data, char Typ)
 {
 	longint n = 0;
 	integer err = 0;
 	char* source = (char*)data + F->Displ;
 
-	if (CFile->Typ == 'D')
+	if (Typ == 'D')
 	{
 		// tváøíme se, že CRecPtr je pstring ...
 		// TODO: toto je asi blbì, nutno opravit pøed 1. použitím
@@ -1202,10 +1202,10 @@ bool LinkLastRec(FileD* FD, longint& N, bool WithT)
 // ulozi hodnotu parametru do souboru
 void AsgnParFldFrml(FileD* FD, FieldDescr* F, FrmlElem* Z, bool Ad)
 {
-#ifdef _DEBUG
+//#ifdef _DEBUG
 	std::string FileName = FD->FullName;
 	std::string Varible = F->Name;
-#endif
+//#endif
 	void* p = nullptr; longint N = 0; LockMode md; bool b = false;
 	FileD* cf = CFile; void* cr = CRecPtr; CFile = FD;
 #ifdef FandSQL
