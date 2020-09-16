@@ -27,13 +27,13 @@ void FSplit(pstring fullname, pstring& dir, pstring& name, pstring& ext);
 pstring FSearch(pstring& path, pstring& dirlist);
 pstring FExpand(pstring path);
 
-void ChDir(pstring cesta);
+void ChDir(std::string cesta);
 void GetDir(BYTE disk, pstring* cesta);
 pstring GetDir(BYTE disk);
-void MkDir(pstring cesta);
-void RmDir(pstring cesta);
-void Rename(pstring soubor, pstring novejmeno);
-void Erase(pstring soubor);
+void MkDir(std::string cesta);
+void RmDir(std::string cesta);
+void Rename(std::string soubor, std::string novejmeno);
+void Erase(std::string soubor);
 
 void InitGraph(short GraphDriver, short GraphMode, pstring PathToDriver); // IGNORE
 void CloseGraph(); // IGNORE
@@ -44,7 +44,7 @@ void CloseGraph(); // IGNORE
 WORD ParamCount(); // vrací počet parametrů příkazové řádky
 pstring ParamStr(integer index);
 
-inline void Exit() { return;; }
+inline void Exit() { return; }
 
 //inline void RunError(WORD code) { exit(code); }
 inline void Halt(WORD code) { exit(code); }

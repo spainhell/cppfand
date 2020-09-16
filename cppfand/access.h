@@ -354,8 +354,8 @@ struct RdbD // ø. 243
 	FuncD* OldFCRoot = nullptr;
 	void* Mark2 = nullptr; // { markstore2 at beginning }
 	bool Encrypted = false;
-	pstring RdbDir;
-	pstring DataDir;
+	std::string RdbDir;
+	std::string DataDir;
 };
 typedef RdbD* RdbDPtr;
 
@@ -766,7 +766,7 @@ std::string TranslateOrd(std::string text); // r804 ASM
 
 
 // * CTENI A ZAPISOVANI SOUBORU *
-void ReadRec(longint N);
+//void ReadRec(longint N);
 void ReadRec(FileD* file, longint N, void* record);
 void WriteRec(longint N);
 void WriteRec(FileD* file, longint N, void* record);
@@ -777,6 +777,7 @@ double _R(FieldDescr* F);
 pstring _ShortS(FieldDescr* F);
 LongStr* _LongS(FieldDescr* F);
 longint _T(FieldDescr* F);
+longint _T(FieldDescr* F, unsigned char* data);
 // * UKLADANI DO SOUBORU * / DO FRMLELEM *
 void B_(FieldDescr* F, bool B);
 void R_(FieldDescr* F, double R);

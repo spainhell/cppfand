@@ -216,7 +216,7 @@ bool TransAdd(AddD* AD, FileD* FD, void* RP, void* CRnew, longint N, char Kind2,
 	}
 	else
 #endif
-		ReadRec(N);
+		ReadRec(CFile, N, CRecPtr);
 	CRecPtr = CRnew;
 	auto result = RunAddUpdte1('d', CRold, Back, nullptr, nullptr);
 	ReleaseStore(CRold);

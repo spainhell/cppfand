@@ -71,7 +71,7 @@ void Error(integer N)
 	GoExit();
 }
 
-__declspec(noinline) void SetInpStr(pstring& S)
+void SetInpStr(pstring& S)
 {
 	InpArrLen = S.length();
 	InpArrPtr = &S[1];
@@ -81,7 +81,7 @@ __declspec(noinline) void SetInpStr(pstring& S)
 	FillChar(&InpRdbPos, sizeof(InpRdbPos), 0);
 }
 
-__declspec(noinline) void SetInpLongStr(LongStr* S, bool ShowErr)
+void SetInpLongStr(LongStr* S, bool ShowErr)
 {
 	InpArrLen = S->LL;
 	InpArrPtr = (BYTE*)&S->A[0];
@@ -96,16 +96,23 @@ __declspec(noinline) void SetInpLongStr(LongStr* S, bool ShowErr)
 
 // vycte z CFile->TF blok dat
 // nastavi InpArrPtr a InptArrLen - retezec pro zpracovani
-__declspec(noinline) void SetInpTTPos(longint Pos, bool Decode)
+void SetInpTTPos(longint Pos, bool Decode)
 {
 	LongStr* s = CFile->TF->Read(2, Pos);
 	if (Decode) CodingLongStr(s);
 	InpArrLen = s->LL;
 	InpArrPtr = (BYTE*)&s->A[0];
-	//printf("%i ", InpArrLen);
-	//if (InpArrLen == 272) {
-	//	printf("%i ", InpArrLen);
-	//}
+	if (InpArrLen == 0) ForwChar = 0x1A;
+	else ForwChar = InpArrPtr[0];
+	CurrPos = 0;
+}
+
+void SetInpTTPos(FileD* file, longint Pos, bool Decode)
+{
+	LongStr* s = file->TF->Read(2, Pos);
+	if (Decode) CodingLongStr(s);
+	InpArrLen = s->LL;
+	InpArrPtr = (BYTE*)&s->A[0];
 	if (InpArrLen == 0) ForwChar = 0x1A;
 	else ForwChar = InpArrPtr[0];
 	CurrPos = 0;
@@ -127,10 +134,10 @@ void SetInpTT(RdbPos* RP, bool FromTxt)
 	CR = CRecPtr;
 	CFile = RP->R->FD;
 	CRecPtr = new BYTE[RP->R->FD->RecLen];
-	ReadRec(RP->IRec);
-	if (FromTxt) Pos = _T(ChptTxt);
-	else Pos = _T(ChptOldTxt);
-	SetInpTTPos(Pos, RP->R->Encrypted);
+	ReadRec(CFile, RP->IRec, CRecPtr);
+	if (FromTxt) Pos = _T(ChptTxt, (unsigned char*)CRecPtr);
+	else Pos = _T(ChptOldTxt, (unsigned char*)CRecPtr);
+	SetInpTTPos(CFile, Pos, RP->R->Encrypted);
 	ReleaseStore(CRecPtr);
 	CFile = CF; CRecPtr = CR;
 }
@@ -1020,7 +1027,7 @@ bool FindChpt(char Typ, const pstring& name, bool local, RdbPos* RP)
 	while (R != nullptr) {
 		CFile = R->FD;
 		for (WORD i = 1; i <= CFile->NRecs; i++) {
-			ReadRec(i);
+			ReadRec(CFile, i, CRecPtr);
 			pstring chapterType = _ShortS(ChptTyp);
 			pstring chapterName = TrailChar(' ', _ShortS(ChptName));
 

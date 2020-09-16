@@ -958,14 +958,14 @@ void CallRdFDSegment(FileDPtr FD)
 	i = FD->ChptPos.IRec;
 	CFile = CRdb->FD;
 	CRecPtr = CFile->RecPtr;
-	ReadRec(i);
+	ReadRec(CFile, i, CRecPtr);
 	pos = _T(ChptOldTxt);
 	if (pos <= 0) Error(25);
 	b = RdFDSegment(i, pos);
 	cf = CFile; CRdb = rdb;
 	if (InpRdbPos.IRec != 0) {
 		CFile = rdb->FD;
-		ReadRec(InpRdbPos.IRec);
+		ReadRec(CFile, InpRdbPos.IRec, CRecPtr);
 		CFile = cf;
 	}
 	CRecPtr = cr;

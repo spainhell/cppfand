@@ -29,6 +29,7 @@ void Error(integer N); // r1
 void SetInpStr(pstring& S); //r31
 void SetInpLongStr(LongStr* S, bool ShowErr); // r37
 void SetInpTTPos(longint Pos, bool Decode); // r46
+void SetInpTTPos(FileD* file, longint Pos, bool Decode);
 void SetInpTT(RdbPos* RP, bool FromTxt); // r53
 void SetInpTTxtPos(FileDPtr FD);
 void ReadChar(); // r73

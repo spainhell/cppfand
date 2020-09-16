@@ -344,7 +344,7 @@ longint AbsLogRecNoFun(FrmlElem13* Z)
 		TestXFExist();
 		if (Z->Op == _recnolog) {
 			CRecPtr = GetRecSpace();
-			ReadRec(N);
+			ReadRec(CFile, N, CRecPtr);
 			if (DeletedFlag()) goto label1;
 			result = k->RecNrToNr(N);
 		}
@@ -376,7 +376,7 @@ double LinkProc(FrmlElem15* X)
 			Set2MsgPar(CFile->Name, LD->RoleName);
 			RunErrorM(md, 609);
 		}
-		CRecPtr = GetRecSpace(); ReadRec(N); OldLMode(md);
+		CRecPtr = GetRecSpace(); ReadRec(CFile, N, CRecPtr); OldLMode(md);
 	}
 	if (!LinkUpw(LD, N, false)) N = -N;
 	auto result = int(N);
@@ -1995,7 +1995,7 @@ void AccRecNoProc(FrmlElem14* X, WORD Msg)
 	{
 		Set2MsgPar(CFile->Name, X->RecFldD->Name); RunErrorM(md, Msg);
 	}
-	ReadRec(N);
+	ReadRec(CFile, N, CRecPtr);
 	OldLMode(md);
 }
 

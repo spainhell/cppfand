@@ -798,12 +798,12 @@ longint XNRecs(KeyDPtr K)
 	return CFile->NRecs;
 }
 
-void ReadRec(longint N)
-{
-	/* with CFile^ do */
-	RdWrCache(true, CFile->Handle, CFile->NotCached(),
-		(N - 1) * CFile->RecLen + CFile->FrstDispl, CFile->RecLen, CRecPtr);
-}
+//void ReadRec(longint N)
+//{
+//	/* with CFile^ do */
+//	RdWrCache(true, CFile->Handle, CFile->NotCached(),
+//		(N - 1) * CFile->RecLen + CFile->FrstDispl, CFile->RecLen, CRecPtr);
+//}
 
 void ReadRec(FileD* file, longint N, void* record)
 {
@@ -885,10 +885,14 @@ bool IsNullValue(void* p, WORD l)
 // v CRecPtr se posune o F->Displ a vyète integer
 longint _T(FieldDescr* F)
 {
-	void* p = CRecPtr;
+	return _T(F, (unsigned char*)CRecPtr);
+}
+
+longint _T(FieldDescr* F, unsigned char* data)
+{
 	longint n = 0;
 	integer err = 0;
-	char* source = (char*)p + F->Displ;
+	char* source = (char*)data + F->Displ;
 
 	if (CFile->Typ == 'D')
 	{
@@ -900,7 +904,7 @@ longint _T(FieldDescr* F)
 	}
 	else
 	{
-		if (p == nullptr) return 0;
+		if (data == nullptr) return 0;
 		return *(longint*)source;
 	}
 }
@@ -1044,7 +1048,7 @@ void CreateRec(longint N)
 	void* cr = CRecPtr;
 	CRecPtr = GetRecSpace();
 	for (longint i = CFile->NRecs - 1; i > N; i--) {
-		ReadRec(i);
+		ReadRec(CFile, i, CRecPtr);
 		WriteRec(i + 1);
 	}
 	ReleaseStore(CRecPtr);
@@ -1056,7 +1060,8 @@ void DeleteRec(longint N)
 {
 	DelAllDifTFlds(CRecPtr, nullptr);
 	for (longint i = N; i < CFile->NRecs - 1; i++) {
-		ReadRec(i + 1); WriteRec(i);
+		ReadRec(CFile, i + 1, CRecPtr);
+		WriteRec(i);
 	}
 	DecNRecs(1);
 }
@@ -1188,7 +1193,7 @@ bool LinkLastRec(FileD* FD, longint& N, bool WithT)
 			result = false;
 			N = 1;
 		}
-		else ReadRec(N);
+		else ReadRec(CFile, N, CRecPtr);
 	}
 	OldLMode(md);
 	return result;
@@ -1237,18 +1242,25 @@ bool SearchKey(XString& XX, KeyDPtr Key, longint& NN)
 	if (N == 0) return bResult;
 	KeyFldDPtr KF = Key->KFlds;
 	do {
-		if (Result == _gt) R = N; else L = N + 1;
-		N = (L + R) / 2; ReadRec(N); x.PackKF(KF);
+		if (Result == _gt) R = N;
+		else L = N + 1;
+		N = (L + R) / 2;
+		ReadRec(CFile, N, CRecPtr);
+		x.PackKF(KF);
 		Result = CompStr(x.S, XX.S);
 	} while (!((L >= R) || (Result == _equ)));
 	if ((N == NN) && (Result == _lt)) NN++;
 	else {
 		if (Key->Duplic && (Result == _equ))
 			while (N > 1) {
-				N--; ReadRec(N); x.PackKF(KF);
+				N--;
+				ReadRec(CFile, N, CRecPtr);
+				x.PackKF(KF);
 				if (CompStr(x.S, XX.S) != _equ) {
-					N++; ReadRec(N); goto label1;
-				};
+					N++;
+					ReadRec(CFile, N, CRecPtr);
+					goto label1;
+				}
 			}
 	label1:  NN = N;
 	}
@@ -1537,7 +1549,7 @@ bool LinkUpw(LinkDPtr LD, longint& N, bool WithT)
 	}
 	else if (CFile->NRecs == 0) { LU = false; N = 1; }
 	else LU = SearchKey(x, K, N);
-	if (LU) ReadRec(N);
+	if (LU) ReadRec(CFile, N, CRecPtr);
 	else {
 	label1:
 		ZeroAllFlds();
@@ -3847,7 +3859,7 @@ label1:
 			else if ((Kind == 2) && (NOfKI == 0)) NextIntvl();
 			else if (P->GreaterPage > 0) SeekOnPage(P->GreaterPage, 1);
 		label2:
-			ReadRec(RecNr);
+			ReadRec(CFile, RecNr, CRecPtr);
 			if (DeletedFlag()) goto label1;
 		label3:
 			if (!RunBool(Bool)) goto label1;

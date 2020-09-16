@@ -552,7 +552,7 @@ WORD GetCatIRec(pstring Name, bool MultiLevel)
 label1:
 	for (i = 1; i <= CatFD->NRecs; i++)
 	{
-		ReadRec(i);
+		ReadRec(CFile, i, CRecPtr);
 		if (SEquUpcase(TrailChar(' ', _ShortS(CatRdbName)), R->FD->Name) &&
 			SEquUpcase(TrailChar(' ', _ShortS(CatFileName)), Name))
 		{
@@ -587,14 +587,14 @@ void TurnCat(WORD Frst, WORD N, integer I)
 	CRecPtr = q; last = Frst + N - 1;
 	if (I > 0)
 		while (I > 0) {
-			ReadRec(Frst); CRecPtr = p;
-			for (j = 1; j < N - 1; j++) { ReadRec(Frst + j); WriteRec(Frst + j - 1); }
+			ReadRec(CFile, Frst, CRecPtr); CRecPtr = p;
+			for (j = 1; j < N - 1; j++) { ReadRec(CFile, Frst + j, CRecPtr); WriteRec(Frst + j - 1); }
 			CRecPtr = q; WriteRec(last); I--;
 		}
 	else
 		while (I < 0) {
-			ReadRec(last); CRecPtr = p;
-			for (j = 1; j < N - 1; j++) { ReadRec(last - j); WriteRec(last - j + 1); }
+			ReadRec(CFile, last, CRecPtr); CRecPtr = p;
+			for (j = 1; j < N - 1; j++) { ReadRec(CFile, last - j, CRecPtr); WriteRec(last - j + 1); }
 			CRecPtr = q; WriteRec(Frst); I++;
 		}
 	ReleaseStore(p);
@@ -606,7 +606,7 @@ pstring RdCatField(WORD CatIRec, FieldDPtr CatF)
 	void* CR = CRecPtr;
 	CFile = CatFD;
 	CRecPtr = GetRecSpace();
-	ReadRec(CatIRec);
+	ReadRec(CFile, CatIRec, CRecPtr);
 	auto result = TrailChar(' ', _ShortS(CatF));
 	ReleaseStore(CRecPtr);
 	CFile = CF;
@@ -620,7 +620,7 @@ void WrCatField(WORD CatIRec, FieldDescr* CatF, pstring Txt)
 	void* CR = CRecPtr;
 	CFile = CatFD;
 	CRecPtr = GetRecSpace();
-	ReadRec(CatIRec);
+	ReadRec(CFile, CatIRec, CRecPtr);
 	S_(CatF, Txt);
 	WriteRec(CatIRec);
 	ReleaseStore(CRecPtr);

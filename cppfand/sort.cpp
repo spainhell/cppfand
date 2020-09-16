@@ -646,7 +646,7 @@ label1:
 					else WrLLF10Msg(828);
 					XW->MsgWritten = true;
 				}
-				ReadRec(n);
+				ReadRec(CFile, n, CRecPtr);
 				XKey* k = CFile->Keys;
 				while ((k != KD)) {
 					k->Delete(n);
@@ -888,7 +888,7 @@ void GetIndexSort(Instr_getindex* PD)
 			CFile = ld->ToFD;
 			md = NewLMode(RdMode);
 			CRecPtr = GetRecSpace();
-			ReadRec(RunInt((FrmlElem*)PD->giLV2));
+			ReadRec(CFile, RunInt((FrmlElem*)PD->giLV2), CRecPtr);
 			x.PackKF(kf);
 			ReleaseStore(CRecPtr);
 			OldLMode(md);
@@ -914,7 +914,7 @@ void GetIndexSort(Instr_getindex* PD)
 		CRecPtr = GetRecSpace();
 		nr = RunInt(PD->giCond);
 		if ((nr > 0) && (nr <= CFile->NRecs)) {
-			ReadRec(nr);
+			ReadRec(CFile, nr, CRecPtr);
 			if (PD->giMode == '+') {
 				if (!DeletedFlag()) {
 					x.PackKF(k->KFlds);

@@ -205,7 +205,7 @@ pstring FExpand(pstring path)
 	return fullpath;
 }
 
-void ChDir(pstring cesta)
+void ChDir(std::string cesta)
 {
 	if (_chdir(cesta.c_str())) {
 		HandleError = errno;
@@ -233,7 +233,7 @@ pstring GetDir(BYTE disk)
 	return result;
 }
 
-void MkDir(pstring cesta)
+void MkDir(std::string cesta)
 {
 	if (_mkdir(cesta.c_str()))
 	{
@@ -241,7 +241,7 @@ void MkDir(pstring cesta)
 	}
 }
 
-void RmDir(pstring cesta)
+void RmDir(std::string cesta)
 {
 	if (_rmdir(cesta.c_str()) == -1)
 	{
@@ -249,7 +249,7 @@ void RmDir(pstring cesta)
 	}
 }
 
-void Rename(pstring soubor, pstring novejmeno)
+void Rename(std::string soubor, std::string novejmeno)
 {
 	if (rename(soubor.c_str(), novejmeno.c_str()) != 0)
 	{
@@ -257,7 +257,7 @@ void Rename(pstring soubor, pstring novejmeno)
 	}
 }
 
-void Erase(pstring soubor)
+void Erase(std::string soubor)
 {
 	if (remove(soubor.c_str()) == -1)
 	{

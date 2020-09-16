@@ -898,11 +898,11 @@ label1:
 	TxtF = (FieldDescr*)NmF->Chain;
 	if (!ByName) {
 		i = MaxW(1, MinW(IRec, CFile->NRecs));
-		ReadRec(i);
+		ReadRec(CFile, i, CRecPtr);
 		goto label2;
 	}
 	for (i = 1; i < CFile->NRecs; i++) {
-		ReadRec(i);
+		ReadRec(CFile, i, CRecPtr);
 		Nm = TrailChar(' ', _ShortS(NmF));
 		if (CFile == &HelpFD) fo = TVideoFont::foKamen;
 		else fo = fonts.VFont;
@@ -918,7 +918,7 @@ label1:
 			}
 			ReleaseStore(T);
 			i++;
-			ReadRec(i);
+			ReadRec(CFile, i, CRecPtr);
 			goto label2;
 		}
 	}

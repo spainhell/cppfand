@@ -3985,7 +3985,7 @@ label1:
 				CurrInst->NextBranch = nullptr;
 				goto label2;
 			}
-			ReadRec(RecNr);
+			ReadRec(CFile, RecNr, CRecPtr);
 			(fs->IRec)++;
 		} while (DeletedFlag());
 		if (fs->IRec > CFile->NRecs) CurrInst->NextBranch = nullptr;
@@ -3996,7 +3996,7 @@ label1:
 			goto label2;
 		}
 		RecNr = k->NrToRecNr(fs->IRec);
-		ReadRec(RecNr);
+		ReadRec(CFile, RecNr, CRecPtr);
 		fs->IRec++;
 		fs->Count--;
 		if ((fs->Count == 0) || (fs->IRec > k->NRecs())) CurrInst->NextBranch = nullptr;
@@ -4309,7 +4309,7 @@ void RunProlog(RdbPos* Pos, pstring* PredName)
 		ChptLRdb = Pos->R;
 		CFile = ChptLRdb->FD;
 		CRecPtr = GetRecSpace();
-		ReadRec(Pos->IRec);
+		ReadRec(CFile, Pos->IRec, CRecPtr);
 		AlignLongStr();
 		//_Sg = PtrRec(HeapPtr).Seg + 1;
 		ss = _LongS(ChptOldTxt);

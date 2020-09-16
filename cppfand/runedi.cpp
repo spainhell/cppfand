@@ -536,7 +536,7 @@ longint LogRecNo(longint N)
 	longint result = 0;
 	if ((N <= 0) || (N > CFile->NRecs)) return result;
 	md = NewLMode(RdMode);
-	ReadRec(N);
+	ReadRec(CFile, N, CRecPtr);
 	if (!DeletedFlag()) {
 		if (Subset) result = WK->RecNrToNr(N);
 		else if (HasIndex) {
@@ -580,7 +580,7 @@ void RdRec(longint N)
 #endif
 	{
 		md = NewLMode(RdMode);
-		ReadRec(AbsRecNr(N));
+		ReadRec(CFile, AbsRecNr(N), CRecPtr);
 		OldLMode(md);
 	}
 }
@@ -644,7 +644,7 @@ bool ELockRec(EditD* E, longint N, bool IsNewRec, bool Subset)
 				result = false;
 				return result;
 			}
-			md = NewLMode(RdMode); ReadRec(N); OldLMode(md);
+			md = NewLMode(RdMode); ReadRec(CFile, N, CRecPtr); OldLMode(md);
 			if (Subset && !
 				((NoCondCheck || RunBool(E->Cond) && CheckKeyIn(E)) && CheckOwner(E))) {
 				WrLLF10Msg(150); goto label1;
@@ -1326,7 +1326,7 @@ bool OpenEditWw()
 		md1 = NewLMode(RdMode);
 		n = E->OwnerRecNo;
 		if ((n == 0) || (n > CFile->NRecs)) RunErrorM(E->OldMd, 611);
-		ReadRec(n);
+		ReadRec(CFile, n, CRecPtr);
 		OldLMode(md1);
 		CFile = E->FD;
 		CRecPtr = E->NewRecPtr;
@@ -1706,7 +1706,8 @@ bool DeleteRecProc()
 	else if (Group) {
 		J = 0; fail = false; BaseRec = 1; IRec = 1; E->EdUpdated = true;
 		for (I = 1; I < CFile->NRecs; I++) {
-			ReadRec(I); if (fail) goto label2;
+			ReadRec(CFile, I, CRecPtr);
+			if (fail) goto label2;
 			if (Subset) /* !!! with WK^ do!!! */ {
 				if ((BaseRec > WK->NRecs()) || (WK->NrToRecNr(BaseRec) != J + 1)) goto label2;
 			}
@@ -1981,7 +1982,7 @@ bool OldRecDiffers()
 	}
 	else
 #endif
-		ReadRec(E->LockedRec);
+		ReadRec(CFile, E->LockedRec, CRecPtr);
 	if (CompArea(CRecPtr, E->OldRecPtr, CFile->RecLen) != _equ) {
 	label1:
 		DelAllDifTFlds(E->NewRecPtr, E->OldRecPtr);
@@ -2633,7 +2634,7 @@ bool GetChpt(pstring Heslo, longint& NN)
 	longint j; pstring s(12); integer i;
 	auto result = true;
 	for (j = 1; j < CFile->NRecs; j++) {
-		ReadRec(j);
+		ReadRec(CFile, j, CRecPtr);
 		if (IsCurrChpt()) {
 			s = TrailChar(' ', _ShortS(ChptName)); i = s.first('.');
 			if (i > 0) s.Delete(i, 255);
@@ -2900,9 +2901,9 @@ void SwitchRecs(integer Delta)
 	if (NoCreate && NoDelete || WasWK) return;
 	if (!TryLMode(WrMode, md, 1)) return;
 	p1 = GetRecSpace(); p2 = GetRecSpace();
-	CRecPtr = p1; n1 = AbsRecNr(CRec()); ReadRec(n1);
+	CRecPtr = p1; n1 = AbsRecNr(CRec()); ReadRec(CFile, n1, CRecPtr);
 	if (HasIndex) x1.PackKF(VK->KFlds);
-	CRecPtr = p2; n2 = AbsRecNr(CRec() + Delta); ReadRec(n2);
+	CRecPtr = p2; n2 = AbsRecNr(CRec() + Delta); ReadRec(CFile, n2, CRecPtr);
 	if (HasIndex) { x2.PackKF(VK->KFlds); if (x1.S != x2.S) goto label1; }
 	WriteRec(n1); CRecPtr = p1; WriteRec(n2);
 	if (HasIndex) {

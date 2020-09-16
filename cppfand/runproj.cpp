@@ -193,7 +193,7 @@ bool IsDuplFileName(pstring name)
 	CRecPtr = GetRecSpace();
 	for (I = 1; I < Chpt->NRecs; I++)
 		if (I != CRec()) {
-			ReadRec(I);
+			ReadRec(CFile, I, CRecPtr);
 			if (_ShortS(ChptTyp) == 'F') {
 				GetSplitChptName(&n, &e);
 				if (SEquUpcase(name, n)) goto label1;
@@ -900,10 +900,10 @@ WORD FindHelpRecNr(FileDPtr FD, pstring txt)
 	if (CFile->Handle == nullptr) goto label1;
 	NmF = CFile->FldD; TxtF = (FieldDescr*)NmF->Chain;
 	for (i = 1; i < CFile->NRecs; i++) {
-		ReadRec(i); nm = TrailChar(' ', _ShortS(NmF));
+		ReadRec(CFile, i, CRecPtr); nm = TrailChar(' ', _ShortS(NmF));
 		ConvToNoDiakr((WORD*)nm[1], nm.length(), fonts.VFont);
 		if (EqualsMask(&txt[1], txt.length(), nm)) {
-			while ((i < CFile->NRecs) && (_T(TxtF) == 0)) { i++; ReadRec(i); }
+			while ((i < CFile->NRecs) && (_T(TxtF) == 0)) { i++; ReadRec(CFile, i, CRecPtr); }
 			result = i; goto label2;
 		}
 	}
@@ -1220,13 +1220,13 @@ bool CompRunChptRec(WORD CC)
 			break;
 		}
 		case 'M': {
-			SetInpTT(RP, true);
+			SetInpTT(&RP, true);
 			ReadMerge();
 			if (CC == _CtrlF9_) RunMerge();
 			break;
 		}
 		case 'R': {
-			SetInpTT(RP, true); ReadReport(nullptr);
+			SetInpTT(&RP, true); ReadReport(nullptr);
 			if (CC == _CtrlF9_) { RunReport(nullptr); SaveFiles(); ViewPrinterTxt(); }
 			break;
 		}
@@ -1238,7 +1238,7 @@ bool CompRunChptRec(WORD CC)
 			}
 			else {
 				lstFD = (FileD*)LastInChain(FileDRoot); ld = LinkDRoot;
-				SetInpTT(RP, true);
+				SetInpTT(&RP, true);
 				ReadProcHead("");
 				ReadProcBody();
 				lstFD->Chain = nullptr;
@@ -1285,7 +1285,7 @@ label2:
 	lstFD->Chain = nullptr;
 	LinkDRoot = oldLd;
 	ReleaseBoth(p, p2); E = OldE; RdEStatus(); CRdb = RP.R; PrevCompInp = nullptr;
-	ReadRec(CRec());
+	ReadRec(CFile, CRec(), CRecPtr);
 	if (IsCompileErr) result = false;
 	else {
 		result = true;
@@ -1568,7 +1568,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 		//if (I >= 580) {
 		//	printf("RunProj r1495, CompileRdb(), I = %i, strings: %i, total: %i\n", I, strcount, strbytes);
 		//}
-		ReadRec(I);
+		ReadRec(CFile, I, CRecPtr);
 		RP.IRec = I;
 		Verif = _B(ChptVerif);
 		STyp = _ShortS(ChptTyp);
@@ -1589,10 +1589,10 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 				printf("%*s%*s", 4, STyp.c_str(), 14, _ShortS(ChptName).c_str());
 				if (!(Typ == ' ' || Typ == 'D' || Typ == 'U')) { /* dupclicate name checking */
 					for (J = 1; J < I - 1; J++) {
-						ReadRec(J);
+						ReadRec(CFile, J, CRecPtr);
 						if ((STyp == _ShortS(ChptTyp)) && SEquUpcase(Name, TrailChar(' ', _ShortS(ChptName)))) GoCompileErr(I, 649);
 					}
-					ReadRec(I);
+					ReadRec(CFile, I, CRecPtr);
 				}
 			}
 			switch (Typ) {
@@ -1701,7 +1701,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 			}
 		}
 		ReleaseBoth(p1, p2); CFile = Chpt; CRecPtr = Chpt->RecPtr;
-		if (Verif) { ReadRec(I); B_(ChptVerif, false); WriteRec(I); }
+		if (Verif) { ReadRec(CFile, I, CRecPtr); B_(ChptVerif, false); WriteRec(I); }
 	}
 	/* !!! with ChptTF^ do!!! */
 	if (ChptTF->CompileAll || ChptTF->CompileProc) {
@@ -1712,7 +1712,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 	CompileFD = false;
 	result = true;
 	RestoreExit(er);
-	if (!Run) { CRecPtr = E->NewRecPtr; ReadRec(CRec()); }
+	if (!Run) { CRecPtr = E->NewRecPtr; ReadRec(CFile, CRec(), CRecPtr); }
 	CompileMsgOff(Buf, w);
 #ifdef FandSQL
 	if (top && (Strm1 != nullptr)) Strm1->Login(UserName, UserPassWORD);
@@ -1732,7 +1732,8 @@ void GotoErrPos(WORD& Brk)
 	pstring s;
 	IsCompileErr = false; s = MsgLine; if (InpRdbPos.R != CRdb) {
 		DisplEditWw(); SetMsgPar(s); WrLLF10Msg(110);
-		if (InpRdbPos.IRec == 0) SetMsgPar(""); else SetMsgPar(InpRdbPos.R->FD->Name);
+		if (InpRdbPos.IRec == 0) SetMsgPar("");
+		else SetMsgPar(InpRdbPos.R->FD->Name);
 		WrLLF10Msg(622); Brk = 0; return;
 	}
 	if (CurrPos == 0) {
@@ -1931,7 +1932,7 @@ void UpdateUTxt()
 	LicNr = ChptTF->LicenseNr;
 	MarkStore(p1);
 	if (CFile->NRecs == 0) goto label1;
-	ReadRec(1);
+	ReadRec(CFile, 1, CRecPtr);
 	if (_ShortS(ChptTyp) != 'U') {
 	label1:
 		WrLLF10Msg(9); /*exit*/;
