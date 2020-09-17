@@ -990,11 +990,13 @@ void AddFFs(KeyDPtr K, pstring& s)
 	s[0] = (char)l;
 }
 
-void CompKIFrml(KeyDPtr K, KeyInD* KI, bool AddFF)
+/// asi vytvori XStringy pro zacatek a konec (rozsah) vyhledavani
+/// pokud se hleda interval v klici
+void CompKIFrml(XKey* K, KeyInD* KI, bool AddFF)
 {
-	XString x; bool b; integer i;
+	XString x;
 	while (KI != nullptr) {
-		b = x.PackFrml(KI->FL1, K->KFlds);
+		bool b = x.PackFrml(KI->FL1, K->KFlds);
 		KI->X1 = x.S;
 		if (KI->FL2 != nullptr) x.PackFrml(KI->FL2, K->KFlds);
 		if (AddFF) AddFFs(K, x.S);
@@ -3511,7 +3513,9 @@ void XScan::Reset(FrmlElem* ABool, bool SQLFilter)
 			XString b2;
 			a1.S = k->X1;
 			b2.S = k->X2;
+			// vyhleda 1. zaznam odpovidajici klici 
 			Key->FindNr(a1, k->XNrBeg);
+			// vyhleda posledni zaznam odpovidajici klici
 			b = Key->FindNr(b2, n);
 			k->N = 0;
 			if (n >= k->XNrBeg) k->N = n - k->XNrBeg + b;
