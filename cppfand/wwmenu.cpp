@@ -550,13 +550,20 @@ bool TMenuBoxP::ExecItem(WORD& I)
 		auto choice = CI(CRoot, I);
 		RunInstr(choice->Instr);
 	}
-	if (ExitP) { I = 255; return result; } I = 0;
+	if (ExitP) { I = 255; return result; }
+	I = 0;
 	if (PD->Loop) {
-		if (BreakP) { BreakP = false; return result; }
+		if (BreakP) {
+			BreakP = false;
+			return result;
+		}
 		result = true;
 	}
 	else
-		if (BreakP) { BreakP = false; I = 255; }
+		if (BreakP) {
+			BreakP = false;
+			I = 255;
+		}
 	return result;
 }
 
@@ -653,9 +660,8 @@ label1:
 			i = iTxt;
 		label4:
 			ClearHlp();
-			if (!ExecItem(i)) {
-				return i << 8;
-			}
+			bool exI = ExecItem(i);
+			if (!exI) return i << 8;
 		}
 	}
 	}
@@ -985,7 +991,3 @@ TMenu::~TMenu()
 	MenuX = mx;
 	MenuY = my;
 }
-
-
-
-

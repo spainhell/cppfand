@@ -1153,7 +1153,9 @@ void RdProcCall(Instr** pinstr)
 		// PD = (Instr_merge_display*)GetPD(_merge, sizeof(RdbPos));
 		*pinstr = new Instr_merge_display(_merge);
 		RdLex();
-		RdChptName('M', &((Instr_merge_display*)*pinstr)->Pos, true);
+		RdbPos rp;
+		RdChptName('M', &rp, true);
+		((Instr_merge_display*)*pinstr)->Pos = rp;
 	}
 	else if (IsKeyWord("SORT")) *pinstr = RdSortCall();
 	else if (IsKeyWord("EDIT")) *pinstr = RdEditCall();

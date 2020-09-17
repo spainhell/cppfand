@@ -13,7 +13,7 @@ void AssignField(Instr_assign* PD);
 void AssignRecVar(LocVar* LV1, LocVar* LV2, AssignD* A);
 void AssignRecFld(Instr_assign* PD);
 void SortProc(FileDPtr FD, KeyFldDPtr SK);
-void MergeProc(Instr_proc* PD);
+void MergeProc(Instr_merge_display* PD);
 void WritelnProc(Instr_writeln* PD);
 void DisplayProc(RdbDPtr R, WORD IRec);
 void ClrWwProc(Instr_clrww* PD);

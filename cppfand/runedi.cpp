@@ -214,13 +214,18 @@ label8:
 
 bool TestMask(pstring* S, pstring* Mask, bool TypeN)
 {
-	WORD i, ii, j, v, ls, lm; char c;
-	auto result = true; if (Mask == nullptr) return result;
-	v = 0; i = 0; ls = S->length(); j = 0; lm = Mask->length();
+	WORD ii; char c;
+	auto result = true;
+	if (Mask == nullptr) return result;
+	WORD v = 0; WORD i = 0;
+	WORD ls = S->length();
+	WORD j = 0;
+	WORD lm = Mask->length();
 label1:
 	if (j == lm) {
 		while (i < ls) {
-			i++; if (S[i] != ' ') goto label4;
+			i++;
+			if (S[i] != ' ') goto label4;
 		}
 		return result;
 	}
@@ -232,7 +237,8 @@ label1:
 	case '(': { v = 2; ii = i; break; }
 	case '|': { do { j++; } while ((*Mask)[j] != ')'); break; }
 	default: {
-		if (i == ls) goto label4; i++; c = (*S)[i];
+		if (i == ls) goto label4; i++;
+		c = (*S)[i];
 		switch ((*Mask)[j]) {
 		case '#':
 		case '9': if (!isdigit(c)) goto label3; break;
@@ -250,12 +256,22 @@ label1:
 	goto label1;
 label3:
 	switch (v) {
-	case 1: { do { j++; } while ((*Mask)[j] != ']'); v = 0; i = ii; goto label1; break; }
-	case 2: { do { j++; } while (!((*Mask)[j] == '|' || (*Mask)[j] == ')')); i = ii;
-		if ((*Mask)[j] == '|') goto label1; break; }
+	case 1: {
+		do { j++; } while ((*Mask)[j] != ']');
+		v = 0; i = ii;
+		goto label1;
+		break;
+	}
+	case 2: {
+		do { j++; } while (!((*Mask)[j] == '|' || (*Mask)[j] == ')'));
+		i = ii;
+		if ((*Mask)[j] == '|') goto label1;
+		break; }
 	}
 label4:
-	result = false; SetMsgPar(*Mask); WrLLF10Msg(653);
+	result = false;
+	SetMsgPar(*Mask);
+	WrLLF10Msg(653);
 	return result;
 }
 
@@ -328,7 +344,7 @@ WORD FieldEdit(FieldDescr* F, FrmlElem* Impl, WORD LWw, WORD iPos, pstring* Txt,
 	label1:
 		//printf("%c", cc);
 		screen.ScrFormatWrText(Col, Row, "%c", cc);
-		*Txt = cc;
+		Txt->Append(cc);
 		screen.CrsHide();
 		return 0;
 	}
@@ -340,44 +356,55 @@ WORD FieldEdit(FieldDescr* F, FrmlElem* Impl, WORD LWw, WORD iPos, pstring* Txt,
 label2:
 	iPos = EditTxt(Txt, iPos, L, LWw, F->Typ, del, false, upd, (F->FrmlTyp == 'S')
 		&& ret, Delta);
-	result = iPos; if (iPos != 0) return result;
+	result = iPos;
+	if (iPos != 0) return result;
 	if ((KbdChar == _ESC_) || !upd) return result;
-	del = true; iPos = 1; r = 0;
+	del = true;
+	iPos = 1;
+	r = 0;
 	if ((Txt->length() == 0) && (Impl != nullptr)) {
 		AssignFld(F, Impl);
 		DecodeField(F, L, *Txt);
 	}
 	switch (F->Typ) {
 	case 'F':
-	case 'R': { T = LeadChar(' ', TrailChar(' ', *Txt));
+	case 'R': {
+		T = LeadChar(' ', TrailChar(' ', *Txt));
 		I = T.first(',');
-		if (I > 0) { T = copy(T, 1, I - 1) + '.' + copy(T, I + 1, 255); }
+		if (I > 0) { T = copy(T, 1, I - 1) + "." + copy(T, I + 1, 255); }
 		if (T.length() == 0) r = 0.0;
 		else {
 			val(T, r, I);
 			if (F->Typ == 'F') {
-				N = L - 2 - M; if (M == 0) N++;
+				N = L - 2 - M;
+				if (M == 0) N++;
 				if ((I != 0) || (abs(r) >= Power10[N])) {
-					s = copy(C999, 1, N) + '.' + copy(C999, 1, M);
+					s = copy(C999, 1, N) + "." + copy(C999, 1, M);
 					Set2MsgPar(s, s);
 					WrLLF10Msg(617);
 					goto label4;
 				}
 			}
-			else /*'R'*/ if (I != 0) { WrLLF10Msg(639); goto label4; };
+			else /*'R'*/ if (I != 0) { WrLLF10Msg(639); goto label4; }
 		}
 		if (F->Typ == 'F') {
 			str(r, L, M, *Txt);
 			if ((F->Flg & f_Comma) != 0) {
 				r = r * Power10[M];
-				if (r >= 0) r = r + 0.5; else r = r - 0.5; r = (int)r;
+				if (r >= 0) r = r + 0.5;
+				else r = r - 0.5;
+				r = (int)r;
 			}
 		}
 		else /*'R'*/ str(r, L, 0, *Txt);
 		RR = r;
 		break;
 	}
-	case 'A': { cc = ' '; goto label3; break; }
+	case 'A': {
+		cc = ' ';
+		goto label3;
+		break;
+	}
 	case 'N': {
 		cc = '0';
 	label3:
@@ -396,7 +423,8 @@ label2:
 				SetMsgPar(*Mask);
 				WrLLF10Msg(618);
 			label4:
-				screen.GotoXY(Col, Row); goto label2;
+				screen.GotoXY(Col, Row);
+				goto label2;
 			}
 		}
 		*Txt = StrDate(r, *Mask);
@@ -411,7 +439,9 @@ label2:
 void WrPromptTxt(pstring* S, FrmlElem* Impl, FieldDescr* F, pstring* Txt, double& R)
 {
 	WORD x = 0, y = 0, d = 0, LWw = 0;
-	pstring SS, T; double RR = 0.0; bool BB = false;
+	pstring SS, T;
+	double RR = 0.0;
+	bool BB = false;
 	screen.WriteStyledStringToWindow(*S, ProcAttr);
 	T = "";
 	x = screen.WhereX();
@@ -431,12 +461,13 @@ void WrPromptTxt(pstring* S, FrmlElem* Impl, FieldDescr* F, pstring* Txt, double
 	screen.GotoXY(x, y);
 	FieldEdit(F, nullptr, LWw, 1, &T, R, true, true, false, 0);
 	TextAttr = ProcAttr;
-	if (KbdChar == _ESC_) {
+	if (KbdChar == VK_ESCAPE) {
 		EscPrompt = true;
 		printf("\n");
 	}
 	else {
-		EscPrompt = false; Txt = &T;
+		EscPrompt = false;
+		*Txt = T;
 		T[0] = (char)LWw;
 		screen.GotoXY(x, y);
 		// printf("%s", T.c_str());
@@ -446,7 +477,8 @@ void WrPromptTxt(pstring* S, FrmlElem* Impl, FieldDescr* F, pstring* Txt, double
 
 bool PromptB(pstring* S, FrmlElem* Impl, FieldDescr* F)
 {
-	pstring Txt; double R = 0.0;
+	pstring Txt;
+	double R = 0.0;
 	WrPromptTxt(S, Impl, F, &Txt, R);
 	bool result = Txt[1] == AbbrYes;
 	if (KbdChar == _ESC_) {
@@ -458,7 +490,8 @@ bool PromptB(pstring* S, FrmlElem* Impl, FieldDescr* F)
 
 pstring PromptS(pstring* S, FrmlElem* Impl, FieldDescr* F)
 {
-	pstring Txt; double R;
+	pstring Txt;
+	double R = 0.0;
 	WrPromptTxt(S, Impl, F, &Txt, R);
 	auto result = Txt;
 	if (KbdChar == _ESC_) {
@@ -470,7 +503,8 @@ pstring PromptS(pstring* S, FrmlElem* Impl, FieldDescr* F)
 
 double PromptR(pstring* S, FrmlPtr Impl, FieldDPtr F)
 {
-	pstring Txt; double R;
+	pstring Txt;
+	double R = 0.0;
 	WrPromptTxt(S, Impl, F, &Txt, R);
 	auto result = R;
 	if (KbdChar == _ESC_) {
@@ -551,11 +585,11 @@ longint LogRecNo(longint N)
 
 bool IsSelectedRec(WORD I)
 {
-	XString x; void* cr; longint n;
+	XString x;
 	auto result = false;
 	if ((E->SelKey == nullptr) || (I == IRec) && IsNewRec) return result;
-	n = AbsRecNr(BaseRec + I - 1);
-	cr = CRecPtr;
+	longint n = AbsRecNr(BaseRec + I - 1);
+	void* cr = CRecPtr;
 	if ((I == IRec) && WasUpdated) CRecPtr = E->OldRecPtr;
 	result = E->SelKey->RecNrToPath(x, n);
 	CRecPtr = cr;
@@ -1216,7 +1250,7 @@ void BuildWork()
 #ifdef FandSQL
 		if (CFile->IsSQLFile && (bool = nullptr)) {
 			l = CFile->RecLen; f = CFile->FldD; OnlyKeyArgFlds(WK);
-		}
+}
 #endif
 		if (
 #ifdef FandSQL
@@ -1227,7 +1261,7 @@ void BuildWork()
 		//New(Scan, Init(CFile, K, ki, false));
 		Scan = new XScan(CFile, K, ki, false);
 		Scan->Reset(boolP, E->SQLFilter);
-	}
+		}
 	CreateWIndex(Scan, WK, 'W');
 	Scan->Close();
 	if (wk2 != nullptr) wk2->Close();
@@ -1241,7 +1275,7 @@ label1:
 	RestoreExit(er);
 	if (!ok) GoExit();
 	ReleaseStore(p);
-}
+	}
 
 void SetStartRec()
 {
@@ -1370,7 +1404,7 @@ label3:
 	if (!EdRecVar) OldLMode(md2);
 	if (IsNewRec) NewRecExit();
 	return result;
-}
+	}
 
 void RefreshSubset()
 {
@@ -1496,16 +1530,16 @@ void UpdMemberRef(void* POld, void* PNew)
 						OverWrXRec(Scan->RecNr, p, p2);
 				}
 				goto label1;
-			}
+		}
 			Scan->Close();
 			ClearRecSpace(p);
 			ReleaseStore(p);
-		}
+	}
 	label2:
 		LD = LD->Chain;
-	}
-	CFile = cf; CRecPtr = cr;
 }
+	CFile = cf; CRecPtr = cr;
+	}
 
 void WrJournal(char Upd, void* RP, double Time)
 {
@@ -1664,7 +1698,7 @@ bool DelIndRec(longint I, longint N)
 			DeleteXRec(N, true);
 		if ((E->SelKey != nullptr) && E->SelKey->Delete(N)) E->SelKey->NR--;
 		if (Subset) WK->DeleteAtNr(I); result = true; E->EdUpdated = true;
-	}
+}
 	return result;
 }
 
@@ -2099,7 +2133,7 @@ bool WriteCRec(bool MayDispl, bool& Displ)
 #ifdef FandSQL
 	if (CFile->IsSQLFile) {
 		if (UpdSQLFile) goto label2; else goto label1;
-	}
+}
 #endif
 	if (HasIndex) {   /* test duplicate keys */
 		K = CFile->Keys; while (K != nullptr) {
@@ -2168,7 +2202,7 @@ label2:
 label1:
 	UnLockWithDep(OldMd);
 	return result;
-}
+	}
 
 void DuplFromPrevRec()
 {
@@ -3657,9 +3691,9 @@ label81:
 					if (CFile->IsSQLFile) Strm1->EndKeyAcc(WK);
 #endif
 					OldLMode(E->OldMd);
-				}
-				return;
 			}
+				return;
+		}
 			break;
 		}
 		case _AltEqual_: { UndoRecord(); EdBreak = 0; goto fin; }
@@ -3849,10 +3883,10 @@ label81:
 				}
 			}
 		}
-		}
+	}
 	}
 	default: ClrEvent(); break;
-	}
+}
 	goto label1;
 }
 
