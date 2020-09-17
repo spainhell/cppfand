@@ -278,6 +278,7 @@ void WorkFile::Reset(KeyFldD* KF, longint RestBytes, char Typ, longint NRecs)
 	RunMsgOn(Typ, pages);
 }
 
+/// precte zaznamy, vytvori uplnou delku klice, setridi zaznamy
 void WorkFile::SortMerge()
 {
 	// z 'PW->A' se postupne berou jednotlive WRec;
@@ -550,7 +551,7 @@ label1:
 	xp->IsLeaf = p->IsLeaf;
 	xp->GreaterPage = p->GreaterPage;
 	xp->NItems = p->NItems;
-	memcpy(xp->A, p->A, sizeof(xp->A));
+	memcpy(xp->A, p->A, sizeof(p->A)); // p->A ma 1017B, xp->A ma 1024B
 	XF->WrPage(xp, n);
 	delete xp; xp = nullptr;
 	
@@ -607,6 +608,9 @@ void XXPage::ClearRest()
 {
 	/*asm les bx, Self; mov di, es: [bx] .XXPage.Off; mov cx, es: [bx] .XXPage.MaxOff;
 	sub cx, di; jcxz @1; cld; mov al, 0; rep stosb; @  1;*/
+	// max. offset je 1 mensi nez delka pole
+	// aktualni offset vcetne -> maximalni offset vcetne (proto +1)
+	size_t count = MaxOff - Off + 1;
 	memset(&A[Off], 0, sizeof(A) - Off);
 }
 
@@ -659,7 +663,7 @@ label1:
 		}
 		l = l - m;
 	}
-	if (Off + 5 + l > MaxOff) {
+	if (Off + 5 + l > MaxOff + 1) { // pristi offset muze skoncit +1, protoze pak uz se nebude zapisovat ...
 		PageFull();
 		Reset(XW);
 		goto label1;

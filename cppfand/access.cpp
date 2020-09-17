@@ -64,7 +64,7 @@ pstring SQLDateMask = "DD.MM.YYYY hh:mm:ss";
 double Power10[21] = { 1E0, 1E1, 1E2, 1E3, 1E4, 1E5, 1E6, 1E7, 1E8, 1E9, 1E10,
 	1E11, 1E12, 1E13, 1E14, 1E15, 1E16, 1E17, 1E18, 1E19, 1E20 };
 bool SpecFDNameAllowed, IdxLocVarAllowed, FDLocVarAllowed, IsCompileErr;
-CompInpD* PrevCompInp;						// { saved at "include" }
+CompInpD* PrevCompInp = nullptr;			// { saved at "include" }
 BYTE* InpArrPtr; RdbPos InpRdbPos;		// { "  "  }
 SumElPtr FrmlSumEl;				//{ set while reading sum / count argument }
 bool FrstSumVar, FileVarsAllowed;
@@ -3389,7 +3389,7 @@ longint XWFile::NewPage(XPage* P)
 	P->IsLeaf = false;
 	P->GreaterPage = 0;
 	P->NItems = 0;
-	memset(P->A, 0, XPageSize - 4);
+	memset(P->A, 0, sizeof(P->A));
 	return result;
 }
 

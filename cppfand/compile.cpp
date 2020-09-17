@@ -291,7 +291,8 @@ label1:
 	{
 	case 0x1A: {
 		if (PrevCompInp != nullptr) {
-			ci = PrevCompInp; Move(ci->ChainBack, PrevCompInp, sizeof(CompInpD));
+			ci = PrevCompInp;
+			Move(ci->ChainBack, PrevCompInp, sizeof(CompInpD));
 			if (CurrPos <= InpArrLen) ForwChar = InpArrPtr[CurrPos];
 			goto label1;
 		}

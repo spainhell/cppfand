@@ -415,7 +415,7 @@ typedef XItem* XItemPtr;
 class XPage // r289
 {
 public:
-	XPage() {};
+	XPage() {}
 	bool IsLeaf = false;
 	longint GreaterPage = 0;  // or free pages chaining
 	WORD NItems = 0;
