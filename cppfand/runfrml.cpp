@@ -1500,7 +1500,10 @@ label1:
 		delete S2;
 		break;
 	}
-	case _const: result = CopyToLongStr(((FrmlElem4*)X)->S); break;
+	case _const: {
+		result = CopyToLongStr(((FrmlElem4*)X)->S);
+		break;
+	}
 	case _leadchar: {
 		auto iX0 = (FrmlElem0*)X;
 		auto s = RunLongStr(iX0->P1);

@@ -1047,6 +1047,11 @@ WORD GetFileAttr()
 
 void RdWrCache(bool ReadOp, FILE* Handle, bool NotCached, longint Pos, WORD N, void* Buf)
 {
+	if (Pos >= 0x4400 && ReadOp == false)
+	{
+		printf("");
+	}
+	
 	bool Cached = !NotCached;
 	integer PgeIdx = 0, PgeRest = 0; WORD err = 0; longint PgeNo = 0;
 	//CachePage* Z = nullptr;

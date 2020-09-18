@@ -400,6 +400,7 @@ void* RdFileD(std::string FileName, char FDTyp, pstring Ext)
 	integer n = 0, i = 0; bool isHlp = false;
 	pstring Prefix; pstring s;
 	LiRoots* li = nullptr;
+	CompInpD* ChPos = nullptr;
 
 	ResetCompilePars();
 	RdLex();
@@ -487,7 +488,8 @@ void* RdFileD(std::string FileName, char FDTyp, pstring Ext)
 	if ((CFile->OrigFD == nullptr) || !(Lexem == 0x1A || Lexem == '#' || Lexem == ']'))	RdFieldDList(true);
 	GetTFileD(FDTyp);
 	LDOld = LinkDRoot;
-	CFile->ChptPos = OrigInp()->InpRdbPos;
+	ChPos = OrigInp();
+	if (ChPos != nullptr) CFile->ChptPos = ChPos->InpRdbPos;
 	if (isHlp) {
 		F = CFile->FldD;
 		F2 = (FieldDescr*)F->Chain;
@@ -976,9 +978,8 @@ void CallRdFDSegment(FileDPtr FD)
 
 CompInpD* OrigInp()
 {
-	CompInpD* i = (CompInpD*)(&PrevCompInp);
+	if (PrevCompInp == nullptr) return nullptr;
+	CompInpD* i = PrevCompInp;
 	while (i->ChainBack != nullptr) i = i->ChainBack;
 	return i;
 }
-
-

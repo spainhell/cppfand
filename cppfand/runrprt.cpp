@@ -22,8 +22,6 @@ longint NLinesOutp;
 
 void RunReport(RprtOpt* RO)
 {
-	return;
-	
 	wwmix ww;
 	ExitRecord er;
 	LvDescr* L = nullptr; 
@@ -772,8 +770,5 @@ bool RewriteRprt(RprtOpt* RO, WORD Pl, WORD& Times, bool& IsLPT1)
 	if (Times > 1) { printf("%s.ti %1i\n", Rprt.c_str(), Times); Times = 1; }
 	if (Pl != 72) printf("%s.pl %i\n", Rprt.c_str(), Pl);
 	result = true;
+	return result;
 }
-
-
-
-

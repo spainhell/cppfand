@@ -189,11 +189,11 @@ void SortProc(FileD* FD, KeyFldD* SK)
 	SaveFiles();
 }
 
-void MergeProc(Instr_proc* PD)
+void MergeProc(Instr_merge_display* PD)
 {
 	void* p = nullptr; void* p2 = nullptr;
 	MarkBoth(p, p2);
-	SetInpTT(&PD->PPos, true);
+	SetInpTT(&PD->Pos, true);
 	ReadMerge();
 	RunMerge();
 	SaveFiles();
@@ -1083,7 +1083,7 @@ void RunInstr(Instr* PD)
 			screen.GotoXY(x, y, absolute);
 			break;
 		}
-		case _merge: MergeProc((Instr_proc*)PD); break;
+		case _merge: MergeProc((Instr_merge_display*)PD); break;
 #ifdef FandProlog
 		case _lproc:
 		{

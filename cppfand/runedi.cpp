@@ -328,7 +328,7 @@ WORD FieldEdit(FieldDescr* F, FrmlElem* Impl, WORD LWw, WORD iPos, pstring* Txt,
 	label1:
 		//printf("%c", cc);
 		screen.ScrFormatWrText(Col, Row, "%c", cc);
-		*Txt = cc;
+		Txt->Append(cc);
 		screen.CrsHide();
 		return 0;
 	}
@@ -436,7 +436,8 @@ void WrPromptTxt(pstring* S, FrmlElem* Impl, FieldDescr* F, pstring* Txt, double
 		printf("\n");
 	}
 	else {
-		EscPrompt = false; Txt = &T;
+		EscPrompt = false;
+		*Txt = T;
 		T[0] = (char)LWw;
 		screen.GotoXY(x, y);
 		// printf("%s", T.c_str());

@@ -1284,7 +1284,10 @@ label2:
 	}
 	lstFD->Chain = nullptr;
 	LinkDRoot = oldLd;
-	ReleaseBoth(p, p2); E = OldE; RdEStatus(); CRdb = RP.R; PrevCompInp = nullptr;
+	ReleaseBoth(p, p2); E = OldE;
+	RdEStatus();
+	CRdb = RP.R;
+	PrevCompInp = nullptr;
 	ReadRec(CFile, CRec(), CRecPtr);
 	if (IsCompileErr) result = false;
 	else {
