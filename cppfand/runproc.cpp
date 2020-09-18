@@ -60,8 +60,10 @@ void UserHeadLine(pstring UserHeader)
 
 void ReportProc(RprtOpt* RO, bool save)
 {
-	void* p = nullptr; void* p2 = nullptr; char md; longint w; ExitRecord er;
-	MarkBoth(p, p2); PrintView = false;
+	void* p = nullptr; void* p2 = nullptr;
+	char md = '\0'; longint w = 0; ExitRecord er;
+	MarkBoth(p, p2);
+	PrintView = false;
 	/* !!! with RO^ do!!! */
 	if (RO->Flds == nullptr) {
 		SetInpTT(&RO->RprtPos, true);
@@ -72,7 +74,9 @@ void ReportProc(RprtOpt* RO, bool save)
 			ReadReport(RO);
 			LastExitCode = 0;
 		label1:
-			RestoreExit(er); IsCompileErr = false; goto label2;
+			RestoreExit(er);
+			IsCompileErr = false;
+			goto label2;
 		}
 		ReadReport(RO);
 		RunReport(RO);
@@ -1092,7 +1096,10 @@ void RunInstr(Instr* PD)
 			break;
 		}
 #endif
-		case _report: ReportProc(((Instr_report*)PD)->RO, true); break;
+		case _report: {
+			ReportProc(((Instr_report*)PD)->RO, true);
+			break;
+		}
 		case _sort: {
 			auto iPD = (Instr_sort*)PD;
 			SortProc(iPD->SortFD, iPD->SK);
@@ -1210,9 +1217,9 @@ void RunInstr(Instr* PD)
 		case _resetcat: ResetCatalog(); break;
 		case _setedittxt: { SetEditTxt((Instr_setedittxt*)PD); break; }
 		case _getindex: {
-				GetIndexSort((Instr_getindex*)PD);
-				break;
-			}
+			GetIndexSort((Instr_getindex*)PD);
+			break;
+		}
 		case _setmouse: {
 			auto iPD = (Instr_setmouse*)PD;
 			SetMouse(RunInt(iPD->MouseX), RunInt(iPD->MouseY), RunBool(iPD->Show));
@@ -1241,8 +1248,8 @@ void RunInstr(Instr* PD)
 		}
 		}
 		PD = (Instr*)PD->Chain;
+		}
 	}
-}
 
 void RunProcedure(Instr* PDRoot)
 {
@@ -1273,10 +1280,10 @@ void CallProcedure(Instr_proc* PD)
 	ld = LinkDRoot;
 	lstFD = (FileD*)LastInChain(FileDRoot);
 	SetInpTT(&PD->PPos, true);
-//#ifdef _DEBUG
+	//#ifdef _DEBUG
 	std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
 
-	if (srcCode.find("(Path:string) var pos,xy,Ÿ¡s,i,AL:real;") != std::string::npos) {
+	if (srcCode.find("PromptObdobi") != std::string::npos) {
 		//|| srcCode.find("STAT.Start") != std::string::npos) {
 		printf("");
 		//FuncD* f = FuncDRoot;
@@ -1288,7 +1295,7 @@ void CallProcedure(Instr_proc* PD)
 		//}
 		//myfile.close();
 	}
-//#endif
+	//#endif
 	ReadProcHead("");
 	PD->variables = LVBD;
 	n = PD->variables.NParam;
@@ -1369,7 +1376,7 @@ void CallProcedure(Instr_proc* PD)
 		vI.push_back(next);
 		next = (Instr*)next->Chain;
 	}
-//#endif
+	//#endif
 	FDLocVarAllowed = false;
 	//lv0 = lv1;
 	it0 = it1;
@@ -1454,5 +1461,3 @@ void RunMainProc(RdbPos RP, bool NewWw)
 	ReleaseStore(PD);
 	if (NewWw) screen.Window(1, 1, TxtCols, TxtRows);
 }
-
-

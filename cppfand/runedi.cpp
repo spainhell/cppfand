@@ -833,10 +833,9 @@ void NewRecExit()
 
 void SetCPage()
 {
-	WORD i;
 	CPage = CFld->Page;
 	RT = (ERecTxtD*)E->RecTxt;
-	for (i = 1; i < CPage; i++) RT = (ERecTxtD*)RT->Chain;
+	for (WORD i = 1; i < CPage; i++) RT = (ERecTxtD*)RT->Chain;
 }
 
 
@@ -907,7 +906,7 @@ void RdEStatus()
 	if (VK == nullptr) OnlySearch = false;
 	CFile = E->FD;
 	CRecPtr = E->NewRecPtr;
-	// TODO: CFld = E->CFld; // pokud je povoleno, spusteni spadne v SetCPage()
+	CFld = E->CFld; // pokud je povoleno, spusteni spadne v SetCPage()
 	if (CFile->XF != nullptr) HasIndex = true;
 	else HasIndex = false;
 	if (CFile->TF != nullptr) HasTF = true;
@@ -1767,12 +1766,16 @@ bool DeleteRecProc()
 		if (Subset) /* !!! with WK^ do!!! */ { WK->DeleteAtNr(CRec()); WK->AddToRecNr(N, -1); }
 		DeleteRec(N);
 	}
-	CFld = E->FirstFld; IRec = oIRec; BaseRec = oBaseRec;
-	ClearDeletedFlag(); AdjustCRec();
+	CFld = E->FirstFld;
+	IRec = oIRec;
+	BaseRec = oBaseRec;
+	ClearDeletedFlag();
+	AdjustCRec();
 	if (IsNewRec) DuplOwnerKey();
 	else RdRec(CRec());
 	DisplWwRecsOrPage();
-	UnLockWithDep(OldMd); result = true;
+	UnLockWithDep(OldMd);
+	result = true;
 	return result;
 }
 
@@ -2254,7 +2257,8 @@ bool GotoXRec(XString* PX, longint& N)
 		N = k->PathToNr();
 	}
 	else result = SearchKey(*PX, k, N);
-	RdRec(CRec()); GotoRecFld(N, CFld); OldLMode(md);
+	RdRec(CRec());
+	GotoRecFld(N, CFld); OldLMode(md);
 	return result;
 }
 
@@ -2572,7 +2576,7 @@ label1:
 						if (KeyPressed && (ReadKey() != _M_) && PromptYN(23)) goto label4;
 						RdRec(i); DisplRecNr(i); if (!DeletedFlag() && RunBool(E->Bool)) {
 							RdRec(CRec()); GotoRecFld(i, E->FirstFld); goto label2;
-						};
+						}
 					}
 				label4:
 					RdRec(CRec()); DisplRecNr(CRec());
@@ -3919,7 +3923,8 @@ void EditDataFile(FileDPtr FD, EditOpt* EO)
 	{
 		if (E->WithBoolDispl) r2 = 2;
 		else r2 = 1;
-		r1 = TxtRows; if (E->Mode24) r1--;
+		r1 = TxtRows;
+		if (E->Mode24) r1--;
 		w1 = PushW1(1, 1, TxtCols, r2, pix, true);
 		w2 = PushW1(1, r1, TxtCols, TxtRows, pix, true);
 		if ((E->WFlags & WNoPop) == 0)

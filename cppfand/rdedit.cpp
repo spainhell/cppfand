@@ -330,7 +330,8 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 	if (E->LVRecPtr != nullptr) { E->EdRecVar = true; E->Only1Record = true; }
 	if (E->Only1Record) E->OnlySearch = false;
 	if (EO->W.C1 != nullptr) {
-		RunWFrml(EO->W, E->WFlags, E->V); E->WwPart = true;
+		RunWFrml(EO->W, E->WFlags, E->V);
+		E->WwPart = true;
 		if ((E->WFlags & WShadow) != 0) {
 			E->ShdwX = MinW(2, TxtCols - E->V.C2);
 			E->ShdwY = MinW(1, TxtRows - E->V.R2);
@@ -349,7 +350,7 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 	}
 	E->BaseRec = 1;
 	E->IRec = 1;
-	CFld = E->FirstFld;
+	E->CFld = E->FirstFld;
 	E->FirstEmptyFld = E->FirstFld;
 	E->ChkSwitch = true;
 	E->WarnSwitch = true;

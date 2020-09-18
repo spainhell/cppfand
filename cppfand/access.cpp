@@ -3104,11 +3104,11 @@ bool XKey::Insert(longint RecNr, bool Try)
 	x.PackKF(KFlds);
 	if (Search(x, true, N)) {
 		if (Try) { return false; }
-	}
-	else
-	{
-		XFNotValid();
-		CFileError(822);
+		else
+		{
+			XFNotValid();
+			CFileError(822);
+		}
 	}
 	InsertOnPath(x, RecNr);
 	return true;

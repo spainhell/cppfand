@@ -34,8 +34,10 @@ void RunReport(RprtOpt* RO)
 	BlkD* RFb = nullptr;
 	LockMode md;
 	if (SelQuest) /* !!! with IDA[1]^ do!!! */ {
-		CFile = IDA[1]->Scan->FD; if (!ww.PromptFilter("", IDA[1]->Bool, s)) {
-			PrintView = false; return;
+		CFile = IDA[1]->Scan->FD;
+		if (!ww.PromptFilter("", IDA[1]->Bool, s)) {
+			PrintView = false;
+			return;
 		}
 	}
 	if (PgeLimitZ != nullptr) PgeLimit = RunInt(PgeLimitZ);

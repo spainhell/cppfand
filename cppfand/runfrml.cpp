@@ -1599,6 +1599,11 @@ label1:
 	return result;
 }
 
+std::string RunStdStr(FrmlElem* X)
+{
+	
+}
+
 pstring RunShortStr(FrmlPtr X)
 {
 	LongStr* s = RunLongStr(X);
