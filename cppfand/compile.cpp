@@ -81,6 +81,19 @@ void SetInpStr(pstring& S)
 	FillChar(&InpRdbPos, sizeof(InpRdbPos), 0);
 }
 
+void SetInpStdStr(std::string& s, bool ShowErr)
+{
+	InpArrLen = s.length();
+	InpArrPtr = (BYTE*)s.c_str();
+	//printf("%i ", InpArrLen);
+	if (InpArrLen == 0) ForwChar = 0x1A;
+	else ForwChar = InpArrPtr[0];
+	CurrPos = 0;
+	InpRdbPos.R = nullptr;
+	if (ShowErr) InpRdbPos.R = nullptr; // TODO: tady bylo InpRdbPos.R:=ptr(0,1);
+	InpRdbPos.IRec = 0;
+}
+
 void SetInpLongStr(LongStr* S, bool ShowErr)
 {
 	InpArrLen = S->LL;
@@ -462,10 +475,10 @@ void RdLex()
 		break;
 	default: break;
 	}
-	//if (LexWord == "EDIT")
-	//{
-	//	printf("RdLex() r. 437 - %s\n", LexWord.c_str());
-	//}
+	if (LexWord == "DOKLADY")
+	{
+		printf("RdLex() r. 437 - %s\n", LexWord.c_str());
+	}
 }
 
 bool IsForwPoint()

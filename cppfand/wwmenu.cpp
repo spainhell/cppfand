@@ -594,7 +594,9 @@ void TMenuBar::InitTMenuBar(WORD C1, WORD R1, WORD Cols)
 {
 	InitTMenu();
 	WORD c2 = 0, r2 = 0, i = 0, l = 0;
-	for (i = 1; i <= nTxt; i++) l = l + LenStyleStr(GetText(i)) + 2;
+	for (i = 1; i <= nTxt; i++) {
+		l = l + LenStyleStr(GetText(i)) + 2;
+	}
 	if (l > TxtCols) RunError(636);
 	Cols = MaxW(l, Cols);
 	if (nTxt == 0) nBlks = 0;

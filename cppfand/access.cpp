@@ -1379,6 +1379,60 @@ pstring _ShortS(FieldDescr* F)
 	return RunShortStr(F->Frml);
 }
 
+std::string _StdS(FieldDescr* F)
+{
+	void* P = CRecPtr;
+	char* source = (char*)P + F->Displ;
+	std::string S;
+	longint Pos = 0; integer err = 0;
+	LockMode md; WORD l = 0;
+	if ((F->Flg & f_Stored) != 0) {
+		l = F->L;
+		switch (F->Typ)
+		{
+		case 'A':		// znakovy retezec max. 255 znaku
+		case 'N': {		// ciselny retezec max. 79 znaku
+			if (F->Typ == 'A') {
+				S = std::string(source, l);
+				if ((F->Flg & f_Encryp) != 0) Code(S);
+			}
+			else if (IsNullValue(source, F->NBytes)) {
+				S = "";
+				//ReleaseAfterLongStr(S);
+			}
+			else
+			{
+				// jedna je o typ N - prevedeme cislo na znaky
+				// UnPack(P, S->A, l);
+				for (size_t i = 0; i < F->NBytes; i++) {
+					S[2 * i] = ((BYTE)source[i] >> 4) + 0x30;
+					S[2 * i + 1] = ((BYTE)source[i] & 0x0F) + 0x30;
+				}
+			}
+			break;
+		}
+		case 'T': { // volny text max. 65k
+			if (HasTWorkFlag()) {
+				LongStr* ls = TWork.Read(1, _T(F));
+				S = std::string(ls->A, ls->LL);
+				delete ls;
+			}
+			else {
+				md = NewLMode(RdMode);
+				LongStr* ls = CFile->TF->Read(1, _T(F));
+				S = std::string(ls->A, ls->LL);
+				delete ls;
+				OldLMode(md);
+			}
+			if ((F->Flg & f_Encryp) != 0) Code(S);
+			break;
+		}
+		}
+		return S;
+	}
+	return RunStdStr(F->Frml);
+}
+
 double _RforD(FieldDPtr F, void* P)
 {
 	pstring s; integer err;
@@ -1684,6 +1738,14 @@ void CopyRecWithT(void* p1, void* p2)
 			}
 		}
 		F = (FieldDescr*)F->Chain;
+	}
+}
+
+void Code(std::string& data)
+{
+	for (size_t i = 0; i < data.length(); i++)
+	{
+		data[i] = data[i] ^ 0xAA;
 	}
 }
 
@@ -2307,16 +2369,14 @@ void XString::StoreReal(double R, KeyFldD* KF)
 	StoreF(A, n, KF->Descend);
 }
 
-void XString::StoreStr(pstring V, KeyFldD* KF)
+void XString::StoreStr(std::string V, KeyFldD* KF)
 {
 	WORD n = 0;
 	auto X = KF->FldD;
-	while (V[0] < X->L) {
-		if (X->M == LeftJust) V.Append(' ');
+	while (V.length() < X->L) {
+		if (X->M == LeftJust) V += ' ';
 		else {
-			auto oldV = V;
-			V = " ";
-			V += oldV;
+			V = " " + V;
 		}
 	}
 	if (X->Typ == 'N') {
@@ -2325,19 +2385,18 @@ void XString::StoreStr(pstring V, KeyFldD* KF)
 			size_t iB = i / 2;
 			// zapisujeme levou nebo pravou cast?
 			if (i % 2 == 0) {
-				V[iB + 1] = (V[i + 1] - 0x30) << 4;
+				V[iB] = (V[i] - 0x30) << 4;
 			}
 			else {
-				V[iB + 1] += V[i + 1] - 0x30;
+				V[iB] += V[i] - 0x30;
 			}
 		}
-		// Pack(&V[1], &V[0], X->L);
 		n = (X->L + 1) / 2;
-		V[0] = n;
-		StoreN(&V[1], n, KF->Descend);
+		//V = V.substr(0, n); // neni potreba, do fce vstupuje delka ...
+		StoreN(&V[0], n, KF->Descend);
 	}
 	else {
-		StoreA(&V[1], X->L, KF->CompLex, KF->Descend);
+		StoreA(&V[0], X->L, KF->CompLex, KF->Descend);
 	}
 }
 

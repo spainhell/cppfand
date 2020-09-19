@@ -166,7 +166,8 @@ double RunRealStr(FrmlElem* X)
 	}
 	case _prompt: {
 		auto iX = (FrmlElem11*)X;
-		result = PromptR(&RunShortStr(iX->PPP1), iX->PP2, iX->FldD);
+		auto s = RunShortStr(iX->PPP1);
+		result = PromptR(s, iX->PP2, iX->FldD);
 		break; }
 	case _pos: {
 		auto iX = (FrmlElem12*)X;
@@ -504,18 +505,15 @@ LocVar* RunUserFunc(FrmlElem19* X)
 	return lv;
 }
 
-bool RunBool(FrmlPtr X)
+bool RunBool(FrmlElem* X)
 {
 	longint RecNo;
-	WORD* res = (WORD*)&RecNo;
 	LongStr* S = nullptr;
 	LongStr* S2 = nullptr;
-	bool* b = (bool*)S;
 	WORD* w1 = (WORD*)&RecNo;
 	WORD* w2 = (WORD*)S;
 	FileD* cf = nullptr;
 	void* cr = nullptr;
-	void* p = &RecNo;
 
 	auto result = false;
 	if (X == nullptr) { return true; }
@@ -656,7 +654,8 @@ bool RunBool(FrmlPtr X)
 	}
 	case _prompt: {
 		auto iX = (FrmlElem11*)X;
-		result = PromptB(&RunShortStr(iX->PPP1), iX->PP2, iX->FldD);
+		auto s = RunShortStr(iX->PPP1);
+		result = PromptB(s, iX->PP2, iX->FldD);
 		break;
 	}
 	case _promptyn: {
@@ -1217,14 +1216,11 @@ void AssgnFrml(FieldDescr* F, FrmlElem* X, bool Delete, bool Add)
 	}
 }
 
-void LVAssignFrml(LocVar* LV, void* OldBP, bool Add, FrmlPtr X)
+void LVAssignFrml(LocVar* LV, void* OldBP, bool Add, FrmlElem* X)
 {
 	switch (LV->FTyp) {
 	case 'S': {
-		LongStr* s = RunLongStr(X);
-		LV->S = std::string(s->A, s->LL);
-		LV->orig_S_length = s->LL;
-		delete s;
+		LV->S = RunStdStr(X);
 		break;
 	}
 	case 'R': {
@@ -1237,33 +1233,6 @@ void LVAssignFrml(LocVar* LV, void* OldBP, bool Add, FrmlPtr X)
 		break;
 	}
 	}
-
-	/*longint pos = 0;
-	void* p = LocVarAd(LV);
-	void* bp = MyBP;
-	SetMyBP((ProcStkD*)OldBP);
-	switch (LV->FTyp) {
-	case 'S': {
-		if (!TryCopyT(nullptr, &TWork, pos, X)) {
-			LongStr* s = RunLongStr(X);
-			pos = TWork.Store(s);
-			ReleaseStore(s);
-		}
-		TWork.Delete(*(longint*)(p));
-		p = &pos;
-		break;
-	}
-	case 'R': {
-		if (Add) *(double*)(p) = *(double*)(p)+RunReal(X);
-		else *(double*)(p) = RunReal(X);
-		break;
-	}
-	case 'B': {
-		*(bool*)(p) = RunBool(X);
-		break;
-	}
-	}
-	SetMyBP((ProcStkD*)bp);*/
 }
 
 void DecodeFieldRSB(FieldDescr* F, WORD LWw, double R, pstring T, bool B, pstring& Txt)
@@ -1493,11 +1462,12 @@ label1:
 	}
 	case _concat: {
 		auto iX0 = (FrmlElem0*)X;
-		auto S1 = RunLongStr(iX0->P1);
-		auto S2 = RunLongStr(iX0->P2);
-		result = ConcatLongStr(S1, S2);
-		delete S1;
-		delete S2;
+		auto S1 = RunStdStr(iX0->P1);
+		auto S2 = RunStdStr(iX0->P2);
+		auto S12 = S1 + S2;
+		result = new LongStr(S12.length());
+		result->LL = S12.length();
+		memcpy(result->A, S12.c_str(), S12.length());
 		break;
 	}
 	case _const: {
@@ -1601,22 +1571,233 @@ label1:
 
 std::string RunStdStr(FrmlElem* X)
 {
-	
+	bool b = false;
+	WORD I = 0;
+	longint RecNo = 0;
+	FileD* cf = nullptr;
+	void* cr = nullptr;
+	std::string result;
+
+	if (X == nullptr) return "";
+label1:
+	switch (X->Op) {
+	case _field: {
+		auto iX7 = (FrmlElem7*)X;
+		auto s = _LongS(iX7->Field);
+		result = std::string(s->A, s->LL);
+		delete s;
+		break;
+	}
+	case _getlocvar: {
+		return ((FrmlElem18*)X)->locvar->S;
+	}
+	case _access: {
+		auto iX7 = (FrmlElem7*)X;
+		cf = CFile; cr = CRecPtr;
+		CFile = iX7->File2;
+		//*md = NewLMode(RdMode);
+		I = (WORD)NewLMode(RdMode);
+		if (iX7->LD != nullptr) {
+			CFile = cf;
+			LinkUpw(iX7->LD, RecNo, true);
+		}
+		else LinkLastRec(iX7->File2, RecNo, true);
+		result = RunStdStr(iX7->P011);
+		OldLMode((LockMode)I);  /*possibly reading .T*/
+		ClearRecSpace(CRecPtr);
+		ReleaseAfterLongStr(CRecPtr);
+		CFile = cf; CRecPtr = cr;
+		return result;
+		break;
+	}
+	case _recvarfld: {
+		auto iX7 = (FrmlElem7*)X;
+		cf = CFile; cr = CRecPtr;
+		CFile = iX7->File2; CRecPtr = iX7->LD;
+		result = RunStdStr(iX7->P011);
+		CFile = cf; CRecPtr = cr;
+		return result;
+		break;
+	}
+	case _eval: {
+		return RunStdStr(GetEvalFrml((FrmlElem21*)X));
+		break;
+	}
+	case _newfile: {
+		auto iX8 = (FrmlElem8*)X;
+		cf = CFile; cr = CRecPtr;
+		CFile = iX8->NewFile; CRecPtr = iX8->NewRP;
+		result = RunStdStr(iX8->Frml);
+		CFile = cf; CRecPtr = cr;
+		return result;
+		break;
+	}
+	case _cond: {
+	label2:
+		if (((FrmlElem0*)X)->P1 != nullptr)
+			if (!RunBool(((FrmlElem0*)X)->P1))
+			{
+				if (((FrmlElem0*)X)->P3 == nullptr)
+				{
+					return "";
+				}
+				X = ((FrmlElem0*)X)->P3;
+				goto label2;
+			}
+		X = ((FrmlElem0*)X)->P2;
+		goto label1;
+		break;
+	}
+	case _copy: {
+		const auto iX0 = static_cast<FrmlElem0*>(X);
+		auto str = RunStdStr(iX0->P1);
+		const auto L1 = RunInt(iX0->P2) - 1;
+		const auto L2 = RunInt(iX0->P3);
+
+		if ((L1 < 0) || (L2 < 0)) str = "";
+		else {
+			if (L1 >= str.length()) str = ""; // index L1 je vetsi nez delka retezce
+			else str = str.substr(L1, L2); // L2 udava delku
+		}
+		return str;
+		break;
+	}
+	case _concat: {
+		auto iX0 = (FrmlElem0*)X;
+		auto S1 = RunStdStr(iX0->P1);
+		auto S2 = RunStdStr(iX0->P2);
+		result = S1 + S2;
+		break;
+	}
+	case _const: {
+		auto s = CopyToLongStr(((FrmlElem4*)X)->S);
+		result = std::string(s->A, s->LL);
+		delete s;
+		return result;
+		break;
+	}
+	case _leadchar: {
+		auto iX0 = (FrmlElem0*)X;
+		auto s0 = RunLongStr(iX0->P1);
+		auto s = LongLeadChar((char)iX0->N11, (char)iX0->N12, s0);
+		result = std::string(s->A, s->LL);
+		delete s;
+		return result;
+		break;
+	}
+	case _trailchar: {
+		auto iX0 = (FrmlElem0*)X;
+		char c = iX0->N11;
+		char cnew = iX0->N12;
+		auto sp1 = RunLongStr(iX0->P1);
+		auto s = LongTrailChar(c, cnew, sp1);
+		result = std::string(s->A, s->LL);
+		delete s;
+		break;
+	}
+	case _upcase: {
+		auto iX0 = (FrmlElem0*)X;
+		auto s = RunStdStr(iX0->P1);
+		for (WORD i = 0; i < s.length(); i++) {
+			s[i] = UpcCharTab[(BYTE)s[i]];
+		}
+		return s;
+		break;
+	}
+	case _lowcase: {
+		auto iX0 = (FrmlElem0*)X;
+		auto s = RunLongStr(iX0->P1);
+		LowCase(s);
+		result = std::string(s->A, s->LL);
+		delete s;
+		return result;
+		break;
+	}
+	case _copyline: {
+		auto iX0 = (FrmlElem0*)X;
+		I = 1;
+		if (iX0->P3 != nullptr) I = (WORD)RunInt(iX0->P3);
+		auto* lstr = RunLongStr(iX0->P1);
+		std::string text = std::string(lstr->A, lstr->LL);
+		WORD start = RunInt(iX0->P2);
+		return CopyLine(text, start, I);
+		break;
+	}
+	case _repeatstr: {
+		auto iX0 = (FrmlElem0*)X;
+		auto s = RepeatStr(RunLongStr(iX0->P1), RunInt(iX0->P2));
+		result = std::string(s->A, s->LL);
+		delete s;
+		return result;
+		break;
+	}
+	case _accrecno: {
+		auto iX = (FrmlElem14*)X;
+		cf = CFile; cr = CRecPtr;
+		AccRecNoProc(iX, 640);
+		auto s = _LongS(iX->RecFldD);
+		ReleaseAfterLongStr(CRecPtr);
+		CFile = cf; CRecPtr = cr;
+		result = std::string(s->A, s->LL);
+		delete s;
+		return result;
+		break;
+	}
+	case _gettxt: {
+		auto s = GetTxt(X);
+		result = std::string(s->A, s->LL);
+		delete s;
+		return result;
+		break;
+	}
+	case _nodiakr: {
+		auto iX0 = (FrmlElem0*)X;
+		auto s = RunLongStr(iX0->P1);
+		ConvToNoDiakr((WORD*)s->A[0], s->LL, fonts.VFont);
+		result = std::string(s->A, s->LL);
+		delete s;
+		return result;
+		break;
+	}
+	case _userfunc: {
+		LocVar* lv = RunUserFunc((FrmlElem19*)X);
+		return lv->S;
+		break;
+	}
+	case _setmybp: {
+		auto iX0 = (FrmlElem0*)X;
+		return RunStdStr(iX0->P1);
+		break;
+	}
+	case _selectstr: {
+		auto s = RunSelectStr((FrmlElem0*)X);
+		result = std::string(s->A, s->LL);
+		delete s;
+		return result;
+		break;
+	}
+	case _clipbd: {
+		auto s = TWork.Read(1, ClpBdPos);
+		result = std::string(s->A, s->LL);
+		delete s;
+		return result;
+		break;
+	}
+	default: {
+		auto s = RunS(X);
+		result = std::string(s->A, s->LL);
+		delete s;
+		return result;
+	}
+	}
+	return result;
 }
 
-pstring RunShortStr(FrmlPtr X)
+std::string RunShortStr(FrmlPtr X)
 {
-	LongStr* s = RunLongStr(X);
-	if (s->LL == 0) {
-		return "";
-	}
-
-	pstring result;
-	if (s->LL > 255) result[0] = 255;
-	else result[0] = s->LL;
-	memcpy(&result[1], s->A, result[0]);
-	delete s;
-	return result;
+	auto s = RunStdStr(X);
+	if (s.length() > 255) s = s.substr(0, 255);
+	return s;
 }
 
 void CopyLongStr(LongStr* S, WORD From, WORD Number)
@@ -1802,7 +1983,8 @@ LongStr* RunS(FrmlElem* Z)
 	case _prompt:
 	{
 		auto iZ = (FrmlElem11*)Z;
-		s = PromptS(&(RunShortStr(iZ->PPP1)), iZ->PP2, iZ->FldD);
+		auto s0 = RunShortStr(iZ->PPP1);
+		s = PromptS(s0, iZ->PP2, iZ->FldD);
 		break;
 	}
 	case _getpath: {

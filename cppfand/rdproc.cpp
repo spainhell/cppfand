@@ -2645,8 +2645,8 @@ FrmlElem* GetEvalFrml(FrmlElem21* X)
 	FrmlElem* z = nullptr;
 	FileD* cf = CFile;
 	cr = CRecPtr;
-	LongStr* s = RunLongStr(X->EvalP1);
-	if (s->LL == 0) {
+	auto s = RunStdStr(X->EvalP1);
+	if (s.empty()) {
 		LastExitCode = 0;
 		goto label2;
 	}
@@ -2662,7 +2662,7 @@ FrmlElem* GetEvalFrml(FrmlElem21* X)
 	}
 	//NewExit(Ovr, er);
 	//goto label1;
-	SetInpLongStr(s, false);
+	SetInpStdStr(s, false);
 	RdLex();
 	z = RdFrml(fTyp);
 	if ((fTyp != X->EvalTyp) || (Lexem != 0x1A)) z = nullptr;

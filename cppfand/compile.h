@@ -27,6 +27,7 @@ bool EquUpcase(pstring& S1, pstring& S2); // r274 ASM
 bool EquUpcase(const char* S);
 void Error(integer N); // r1
 void SetInpStr(pstring& S); //r31
+void SetInpStdStr(std::string& s, bool ShowErr);
 void SetInpLongStr(LongStr* S, bool ShowErr); // r37
 void SetInpTTPos(longint Pos, bool Decode); // r46
 void SetInpTTPos(FileD* file, longint Pos, bool Decode);

@@ -374,7 +374,7 @@ public:
 	//BYTE S[256]{ 0 };
 	void Clear(); // index.pas ASM
 	void StoreReal(double R, KeyFldD* KF);
-	void StoreStr(pstring V, KeyFldD* KF);
+	void StoreStr(std::string V, KeyFldD* KF);
 	void StoreBool(bool B, KeyFldD* KF);
 	void StoreKF(KeyFldD* KF);
 	void PackKF(KeyFldD* KF);
@@ -746,6 +746,7 @@ WORD CompLexLongShortStr(LongStrPtr S1, pstring& S2); // r863 ASM
 WORD CompLexStr(pstring& S1, pstring& S2); // r871 ASM
 WORD CompLexStrings(const std::string& S1, const std::string& S2);
 bool EquKFlds(KeyFldDPtr KF1, KeyFldDPtr KF2); // r881
+void Code(std::string& data);
 void Code(void* A, WORD L); // r897 ASM
 void CodingLongStr(LongStrPtr S);
 longint StoreInTWork(LongStr* S);
@@ -775,6 +776,7 @@ void WriteRec(FileD* file, longint N, void* record);
 bool _B(FieldDescr* F);
 double _R(FieldDescr* F);
 pstring _ShortS(FieldDescr* F);
+std::string _StdS(FieldDescr* F);
 LongStr* _LongS(FieldDescr* F);
 longint _T(FieldDescr* F);
 longint _T(FieldDescr* F, unsigned char* data, char Typ);

@@ -21,9 +21,9 @@ void DisplEditWw();
 bool OpenEditWw();
 void RunEdit(XString* PX, WORD& Brk);
 
-bool PromptB(pstring* S, FrmlPtr Impl, FieldDPtr F);
-pstring PromptS(pstring* S, FrmlPtr Impl, FieldDPtr F);
-double PromptR(pstring* S, FrmlPtr Impl, FieldDPtr F);
+bool PromptB(std::string& S, FrmlPtr Impl, FieldDPtr F);
+pstring PromptS(std::string& S, FrmlPtr Impl, FieldDPtr F);
+double PromptR(std::string& S, FrmlElem* Impl, FieldDPtr F);
 /*called from Proc && Projmgr */
 void EditDataFile(FileDPtr FD, EditOpt* EO);
 bool SelFldsForEO(EditOpt* EO, LinkD* LD);

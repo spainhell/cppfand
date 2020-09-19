@@ -436,13 +436,13 @@ label2:
 }
 
 
-void WrPromptTxt(pstring* S, FrmlElem* Impl, FieldDescr* F, pstring* Txt, double& R)
+void WrPromptTxt(std::string& S, FrmlElem* Impl, FieldDescr* F, pstring* Txt, double& R)
 {
 	WORD x = 0, y = 0, d = 0, LWw = 0;
 	pstring SS, T;
 	double RR = 0.0;
 	bool BB = false;
-	screen.WriteStyledStringToWindow(*S, ProcAttr);
+	screen.WriteStyledStringToWindow(S, ProcAttr);
 	T = "";
 	x = screen.WhereX();
 	y = screen.WhereY();
@@ -475,7 +475,7 @@ void WrPromptTxt(pstring* S, FrmlElem* Impl, FieldDescr* F, pstring* Txt, double
 	}
 }
 
-bool PromptB(pstring* S, FrmlElem* Impl, FieldDescr* F)
+bool PromptB(std::string& S, FrmlElem* Impl, FieldDescr* F)
 {
 	pstring Txt;
 	double R = 0.0;
@@ -488,7 +488,7 @@ bool PromptB(pstring* S, FrmlElem* Impl, FieldDescr* F)
 	return result;
 }
 
-pstring PromptS(pstring* S, FrmlElem* Impl, FieldDescr* F)
+pstring PromptS(std::string& S, FrmlElem* Impl, FieldDescr* F)
 {
 	pstring Txt;
 	double R = 0.0;
@@ -501,7 +501,7 @@ pstring PromptS(pstring* S, FrmlElem* Impl, FieldDescr* F)
 	return result;
 }
 
-double PromptR(pstring* S, FrmlPtr Impl, FieldDPtr F)
+double PromptR(std::string& S, FrmlElem* Impl, FieldDPtr F)
 {
 	pstring Txt;
 	double R = 0.0;

@@ -36,7 +36,7 @@ void TestTFrml(FieldDescr* F, FrmlElem* Z);
 bool CanCopyT(FieldDescr* F, FrmlElem* Z);
 bool TryCopyT(FieldDPtr F, TFilePtr TF, longint& pos, FrmlPtr Z);
 void AssgnFrml(FieldDescr* F, FrmlElem* X, bool Delete, bool Add);
-void LVAssignFrml(LocVar* LV, void* OldBP, bool Add, FrmlPtr X);
+void LVAssignFrml(LocVar* LV, void* OldBP, bool Add, FrmlElem* X);
 void DecodeFieldRSB(FieldDescr* F, WORD LWw, double R, pstring T, bool B, pstring& Txt);
 void DecodeField(FieldDescr* F, WORD LWw, pstring& Txt);
 void RunWFrml(WRectFrml& X, BYTE WFlags, WRect& W);
@@ -46,7 +46,7 @@ KeyDPtr GetFromKey(LinkDPtr LD);
 FrmlPtr RunEvalFrml(FrmlPtr Z);
 LongStr* RunLongStr(FrmlElem* X);  // r417 zacina od 555
 std::string RunStdStr(FrmlElem* X);  // nove, vraci std::string
-pstring RunShortStr(FrmlPtr X); // r629 ASM
+std::string RunShortStr(FrmlPtr X); // r629 ASM
 // LongStr* ConcatLongStr(LongStr* S1, LongStr* S2); // r418 ASM
 void CopyLongStr(LongStr* S, WORD From, WORD Number); // r425 ASM
 void AddToLongStr(LongStr* S, void* P, WORD L); // r433
