@@ -585,6 +585,18 @@ bool EquUpcase(pstring& S1, pstring& S2)
 	//return false;
 }
 
+bool EquUpcase(std::string& S1, std::string& S2)
+{
+	if (S1.length() != S2.length()) return false;
+	for (size_t i = 0; i <= S1.length(); i++)
+	{
+		BYTE c1 = S1[i]; BYTE c2 = S2[i];
+		BYTE upC1 = UpcCharTab[c1]; BYTE upC2 = UpcCharTab[c2];
+		if (upC1 != upC2) return false;
+	}
+	return true;
+}
+
 bool EquUpcase(const char* S)
 {
 	pstring temp = S;

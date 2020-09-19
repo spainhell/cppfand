@@ -81,11 +81,11 @@ const bool ColBlock = true;
 const bool TextBlock = false;
 
 // {**********global param begin for SavePar}  // r85
-char Mode;
-char TypeT;
+char Mode = '\0';
+char TypeT = '\0';
 pstring NameT;
 pstring ErrMsg;
-WORD MaxLenT, LenT, IndT, ScrT;
+WORD MaxLenT = 0, LenT = 0, IndT = 0, ScrT = 0;
 pstring Breaks;
 EdExitD* ExitD = nullptr;
 bool SrchT, UpdatT;
@@ -565,7 +565,7 @@ void WrStatusLine()
 			if (s.length() + i >= TXTCOLS) i = TXTCOLS - s.length() - 2;
 			Move(&s[1], &Blanks[i], s.length());
 		}
-		screen.ScrWrStr(0, 0, Blanks, SysLColor);
+		screen.ScrWrStr(1, 1, Blanks, SysLColor);
 	}
 }
 
@@ -676,7 +676,7 @@ void UpdStatLine(int Row, int Col)
 			i = MaxW(1, HeadS.first('_'));
 			if (i > TxtCols - TStatL) i = MaxI(integer(TxtCols) - TStatL, 1);
 		}
-		screen.ScrWrStr(i - 1, 0, StatLine, SysLColor);
+		screen.ScrWrStr(i, 1, StatLine, SysLColor);
 	}
 }
 
@@ -730,7 +730,7 @@ void EditWrline(char* P, int Row)
 	LP = I - 1;
 	nv1 = 32;
 
-	for (I = LP + 1; I < BPos + LineS; I++)
+	for (I = LP + 1; I <= BPos + LineS; I++)
 	{
 		if (I < 0 || I > 254) throw std::exception("Index");
 		BuffLine[I] = (nv2 << 8) + nv1;
@@ -876,9 +876,8 @@ void TestUpdFile()
 
 void WrEndT()
 {
-	void* p; // var p:pointer;
-	p = GetStore(1);
 	LenT++;
+	T = new char(LenT);
 	T[LenT] = _CR;
 }
 
@@ -1211,11 +1210,11 @@ bool ModPage(longint RLine)
 
 void UpdScreen()
 {
-	integer r, rr;
-	WORD w;
-	WORD Ind;
+	integer r = 0, rr = 0;
+	WORD w = 0;
+	WORD Ind = 0;
 	ColorOrd co1, co2;
-	WORD oldSI;
+	WORD oldSI = 0;
 	pstring PgStr;
 
 	oldSI = ScrI; InsPage = false;
@@ -1314,8 +1313,14 @@ void Background()
 		if (Posi > LineS) if (Posi > BPos + LineS) BPos = Posi - LineS;
 		if (Posi <= BPos) BPos = pred(Posi);
 	}
-	if (LineL < ScrL) { ScrL = LineL; ChangeScr = true; }
-	if (LineL >= ScrL + PageS) { ScrL = succ(LineL - PageS); ChangeScr = true; }
+	if (LineL < ScrL) {
+		ScrL = LineL;
+		ChangeScr = true;
+	}
+	if (LineL >= ScrL + PageS) {
+		ScrL = succ(LineL - PageS);
+		ChangeScr = true;
+	}
 	UpdScreen(); // {tisk obrazovky}
 	WriteMargins();
 	screen.GotoXY(Posi - BPos, succ(LineL - ScrL));
@@ -3699,8 +3704,13 @@ void Edit(WORD SuccLineSize)
 	WrLLMargMsg(&LastS, LastNr);
 
 	do {
-		if (TypeT == FileT) { NullChangePart(); HandleEvent(); }
-		if (!(Konec || IsWrScreen)) { Background(); }
+		if (TypeT == FileT) {
+			NullChangePart();
+			HandleEvent();
+		}
+		if (!(Konec || IsWrScreen)) {
+			Background();
+		}
 	} while (!Konec);
 
 	if (bScroll && (Mode != HelpM)) {
@@ -3742,7 +3752,10 @@ bool EditText(char pMode, char pTxtType, pstring pName, pstring pErrMsg, char* p
 	WORD pCtrlLastNr, MsgStrPtr pMsgS)
 {
 	bool oldEdOK = EdOk; EditT = true;
-	Mode = pMode; TypeT = pTxtType; NameT = pName; ErrMsg = pErrMsg;
+	Mode = pMode;
+	TypeT = pTxtType;
+	NameT = pName;
+	ErrMsg = pErrMsg;
 	/*T = pTxtPtr;*/ MaxLenT = pMaxLen;
 	LenT = pLen; IndT = pInd;
 	ScrT = pScr & 0xFFFF;

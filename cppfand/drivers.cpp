@@ -524,7 +524,9 @@ void ClrScr()
 
 void ClrEol()
 {
-	screen.ScrClr(Crs.X + 1, Crs.Y + 1, WindMax.X - Crs.X + 1, 1, ' ', TextAttr);
+	auto X = screen.WhereX();
+	auto Y = screen.WhereY();
+	screen.ScrClr(X, Y, WindMax.X - X + 1, 1, ' ', TextAttr);
 }
 
 void TextBackGround(BYTE Color)

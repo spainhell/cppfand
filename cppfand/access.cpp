@@ -3091,6 +3091,7 @@ bool XKey::FindNr(XString& X, longint& IndexNr)
 
 void XKey::InsertOnPath(XString& XX, longint RecNr)
 {
+
 	WORD i = 0, j = 0;
 	longint page = 0, page1 = 0, uppage = 0, downpage = 0;
 	XItem* x = nullptr;
@@ -3969,7 +3970,8 @@ label1:
 
 void XScan::SeekOnKI(longint I)
 {
-	NOfKI = KI->N - I; Key->NrToPath(KI->XNrBeg + I);
+	NOfKI = KI->N - I;
+	Key->NrToPath(KI->XNrBeg + I);
 	/* !!! with XPath[XPathN] do!!! */
 	SeekOnPage(XPath[XPathN].Page, XPath[XPathN].I);
 }

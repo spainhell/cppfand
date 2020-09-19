@@ -19,7 +19,7 @@ void WrEStatus();
 void RdEStatus();
 void SetNewCRec(longint N, bool withRead);
 void GotoRecFld(longint NewRec, EFldD* NewFld);
-bool EditFreeTxt(FieldDPtr F, pstring ErrMsg, bool Ed, WORD& Brk);
+bool EditFreeTxt(FieldDescr* F, std::string ErrMsg, bool Ed, WORD& Brk);
 void DisplEditWw();
 bool OpenEditWw();
 void RunEdit(XString* PX, WORD& Brk);

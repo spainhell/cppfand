@@ -331,7 +331,7 @@ void RunMsgN(longint N)
 #ifndef norunmsg
 	if (N < CM->MsgKum) return;
 	while (N >= CM->MsgKum) CM->MsgKum += CM->MsgStep;
-	Perc = (N * 100) / CM->MsgNN;
+	Perc = (N * 100) / (CM->MsgNN + 1); // tady je pridane navic 1
 	screen.GotoXY(3, 1);
 	printf("%*i", 3, Perc);
 #endif

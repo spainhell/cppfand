@@ -345,7 +345,8 @@ void TestDupl(FileD* FD)
 	StringList S;
 	S = FD->ViewNames;
 	while (S != nullptr) {
-		if (EquUpcase(S->S, LexWord)) Error(26); 
+		std::string tmp = LexWord;
+		if (EquUpcase(S->S, tmp)) Error(26); 
 		S = (StringList)S->Chain;
 	}
 }

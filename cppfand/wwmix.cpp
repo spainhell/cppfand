@@ -36,9 +36,8 @@ wwmix::wwmix()
 
 void wwmix::PutSelect(pstring s)
 {
-	Item* p; WORD l;
-	l = MinW(s.length(), 46);
-	p = (Item*)GetStore(sizeof(*p) - 1 + l);
+	Item* p = new Item(); // (Item*)GetStore(sizeof(*p) - 1 + l);
+	WORD l = MinW(s.length(), 46);
 	p->Tag = ' ';
 	Move(&s[1], &p->S[1], l);
 	p->S[0] = char(l);
@@ -47,7 +46,8 @@ void wwmix::PutSelect(pstring s)
 		FillChar(&ss.Abcd, sizeof(ss) - 5, 0);
 		sv.markp = p;
 	}
-	ChainLast(sv.Chain, p);
+	if (sv.Chain == nullptr) sv.Chain = p;
+	else ChainLast(sv.Chain, p);
 	sv.NItems++;
 	sv.MaxItemLen = MaxW(l, sv.MaxItemLen);
 }

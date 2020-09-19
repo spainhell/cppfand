@@ -60,7 +60,7 @@ typedef FrmlListEl* FrmlList;
 
 struct StringListEl : public Chained // ø. 38
 {
-	pstring S;
+	std::string S;
 };
 typedef StringListEl* StringList;
 
