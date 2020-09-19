@@ -776,7 +776,8 @@ void DisplFld(EFldD* D, WORD I)
 	std::string Txt = DecodeField(F, D->L);
 	for (size_t j = 0; j < Txt.length(); j++)
 		if ((unsigned char)Txt[j] < ' ') Txt[j] = Txt[j] + 0x40;
-	printf("%s", Txt.c_str());
+	screen.WriteStyledStringToWindow(Txt, E->dNorm);
+	//printf("%s", Txt.c_str());
 	if (HasTTWw(F)) {
 		screen.GotoXY(D->Col + 2, r);
 		Wr1Line(F);

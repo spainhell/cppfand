@@ -74,6 +74,20 @@ void val(pstring s, longint& b, WORD& err)
 	else { err = static_cast<WORD>(idx); }
 }
 
+double valDouble(std::string& s, integer& err)
+{
+	if (s.length() == 0) {
+		err = 0;
+		return 0;
+	}
+	size_t idx = 0;
+	auto result = std::stod(s.c_str(), &idx);
+	// přeložil se celý řetězec?
+	if (idx == s.length()) { err = 0; }
+	else { err = static_cast<WORD>(idx); }
+	return result;
+}
+
 pstring copy(pstring source, size_t index, size_t count)
 {
 	return source.substr(index - 1, count);

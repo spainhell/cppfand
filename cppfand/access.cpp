@@ -1371,7 +1371,8 @@ pstring _ShortS(FieldDescr* F)
 			else S = S.substr(0, ss->LL);
 			Move(&ss[0], &S[0], S.length());
 			ReleaseStore(ss);
-			break; };
+			break;
+		}
 		default:;
 		}
 		return S;
@@ -1405,8 +1406,8 @@ std::string _StdS(FieldDescr* F)
 				// jedna je o typ N - prevedeme cislo na znaky
 				// UnPack(P, S->A, l);
 				for (size_t i = 0; i < F->NBytes; i++) {
-					S[2 * i] = ((BYTE)source[i] >> 4) + 0x30;
-					S[2 * i + 1] = ((BYTE)source[i] & 0x0F) + 0x30;
+					S += ((BYTE)source[i] >> 4) + 0x30;
+					S += ((BYTE)source[i] & 0x0F) + 0x30;
 				}
 			}
 			break;
@@ -1482,6 +1483,12 @@ double _R(FieldDescr* F)
 			else {
 				result = Real48ToDouble(source);
 			}
+			break;
+		}
+		case 'T': {
+			integer i = *(integer*)source;
+			result = i;
+			break;
 		}
 		}
 	}

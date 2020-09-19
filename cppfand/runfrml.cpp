@@ -123,7 +123,7 @@ pstring TrailChar(char C, pstring S)
 
 double RunRealStr(FrmlElem* X)
 {
-	WORD I, J, L, N;
+	WORD N;
 	double R = 0.0;
 	LongStr* S = nullptr;
 	pstring Mask;
@@ -137,8 +137,11 @@ double RunRealStr(FrmlElem* X)
 	}
 	case _val: {
 		auto iX = (FrmlElem6*)X;
-		val(LeadChar(' ', TrailChar(' ', RunShortStr(iX->PP1))), R, I);
-		result = R;
+		auto valS = RunShortStr(iX->PP1);
+		valS = TrailChar(' ', valS);
+		valS = LeadChar(' ', valS);
+		integer i;
+		result = valDouble(valS, i);
 		break;
 	}
 	case _length: {
@@ -1308,7 +1311,7 @@ std::string DecodeField(FieldDescr* F, WORD LWw)
 	}
 	case 'S': {
 		if (F->Typ == 'T') {
-			if (((F->Flg & f_Stored) != 0) && (_R(F) == 0)) Txt = ".";
+			if (((F->Flg & f_Stored) != 0) && (_R(F) == 0.0)) Txt = ".";
 			else Txt = "*";
 			return Txt;
 		}
@@ -1608,9 +1611,7 @@ label1:
 	switch (X->Op) {
 	case _field: {
 		auto iX7 = (FrmlElem7*)X;
-		auto s = _LongS(iX7->Field);
-		result = std::string(s->A, s->LL);
-		delete s;
+		result = _StdS(iX7->Field);
 		break;
 	}
 	case _getlocvar: {
@@ -1914,7 +1915,8 @@ void StrMask(double R, pstring& Mask)
 	if (minus) Mask = tmp + Mask;
 }
 
-std::string Replace(std::string& text, std::string& oldText, std::string& newText, std::string options) {
+std::string Replace(std::string text, std::string& oldText, std::string& newText, std::string options)
+{
 	bool tilda = options.find('~') != std::string::npos;
 	bool words = (options.find('w') != std::string::npos) || (options.find('W') != std::string::npos);
 	bool upper = (options.find('u') != std::string::npos) || (options.find('U') != std::string::npos);
@@ -1922,11 +1924,11 @@ std::string Replace(std::string& text, std::string& oldText, std::string& newTex
 	if (tilda || words || upper) throw std::exception("Replace() not implemented.");
 
 	size_t old_len = oldText.length();
-	size_t pos = text.find("oldText");
+	size_t pos = text.find(oldText);
 
-	if (pos != std::string::npos) {
-		auto s = text.replace(pos, old_len, newText);
-		return s;
+	while (pos != std::string::npos) {
+		text = text.replace(pos, old_len, newText);
+		pos = text.find(oldText);
 	}
 
 	return text;
@@ -1972,38 +1974,15 @@ LongStr* RunS(FrmlElem* Z)
 	}
 	case _replace: {
 		auto iZ = (FrmlElem12*)Z;
-		t = RunLongStr(iZ->PPP2);
-		s = RunShortStr(iZ->PPPP1); //j = 1;
-		snew = RunShortStr(iZ->PP3);
-
-		std::string text = std::string(t->A, t->LL);
-		std::string oldText = s;
-		std::string newText = snew;
-		delete t;
+		std::string text = RunStdStr(iZ->PPP2);
+		std::string oldText = RunStdStr(iZ->PPPP1); //j = 1;
+		std::string newText = RunStdStr(iZ->PP3);
 
 		auto res = Replace(text, oldText, newText, iZ->Options);
 		auto result = new LongStr(res.length());
 		result->LL = res.length();
 		memcpy(result->A, res.c_str(), res.length());
 		return result;
-		//	tnew = new LongStr(2); // GetZStore(2);
-		//label1:
-		//	l = t->LL - (j - 1);
-		//	if (l > 0) {
-		//		i = FindTextE(s, iZ->Options, (char*)(&t->A[j]), l);
-		//		if (i > 0) {
-		//			AddToLongStr(tnew, &t->A[j], i - s.length() - 1);
-		//			AddToLongStr(tnew, &snew[1], snew.length());
-		//			j += i - 1;
-		//			goto label1;
-		//		}
-		//	}
-		//	AddToLongStr(tnew, &t->A[j], l);
-		//	MyMove(tnew, t, tnew->LL + 2);
-		//	//ReleaseAfterLongStr(t);
-		//	delete tnew;
-		//	return t;
-		//	break;
 	}
 	case _prompt:
 	{
