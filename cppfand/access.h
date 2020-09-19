@@ -422,12 +422,12 @@ public:
 	BYTE A[XPageSize - 4]{ '\0' };  // item array
 	WORD Off();
 	XItem* XI(WORD I, bool isLeaf);
-	uintptr_t EndOff();
+	WORD EndOff();
 	bool Underflow();
 	bool Overflow();
 	pstring StrI(WORD I);
 	longint SumN();
-	void Insert(WORD I, void* SS, XItem* XX);
+	void Insert(WORD I, void* SS, XItem** XX);
 	void InsDownIndex(WORD I, longint Page, XPage* P);
 	void Delete(WORD I);
 	void AddPage(XPage* P);
@@ -464,7 +464,7 @@ public:
 	longint RecNrToNr(longint RecNr);
 	bool FindNr(XString& X, longint& IndexNr);
 	void InsertOnPath(XString& XX, longint RecNr);
-	void InsertItem(XString& XX, XPage* P, XPage* UpP, longint Page, WORD I, XItemPtr& X, longint& UpPage);
+	void InsertItem(XString& XX, XPage* P, XPage* UpP, longint Page, WORD I, XItem** X, longint& UpPage);
 	void ChainPrevLeaf(XPagePtr P, longint N);
 	bool Insert(longint RecNr, bool Try);
 	void DeleteOnPath();

@@ -113,7 +113,8 @@ label1:
 			printf("%s\n", Rprt.c_str());
 			printf("%s%s", Rprt.c_str(), MsgLine.c_str());
 		}
-		Rprt.Close(); // if (isLPT1) ClosePrinter(0);
+		Rprt.Close();
+		// if (isLPT1) ClosePrinter(0);
 		CloseInp(); 
 		PopProcStk();
 		if (ex) {
@@ -628,7 +629,7 @@ void GetMinKey()
 {
 	integer i, nlv, mini, res;
 	mini = 0; NEof = 0;
-	for (i = 1; i < MaxIi; i++) {
+	for (i = 1; i <= MaxIi; i++) {
 		/* !!! with IDA[i]^ do!!! */
 		CFile = IDA[i]->Scan->FD; if (IDA[i]->Scan->eof) NEof++;
 		if (OldMFlds == nullptr) { IDA[i]->Exist = !IDA[i]->Scan->eof; mini = 1; }

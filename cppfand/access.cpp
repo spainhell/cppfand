@@ -2546,7 +2546,7 @@ void XItem::PutN(longint N)
 {
 	// asm les bx,Self; mov ax,N.word; mov es:[bx],ax; mov al,N[2].byte;
 	// mov es : [bx + 2] , al
-
+	memcpy(Nr, &N, 3); // kopirujeme 3 nejnizsi Byty, posledni se ignoruje
 }
 
 WORD XItem::GetM(WORD O)
@@ -2618,8 +2618,9 @@ XItem* XPage::XI(WORD I, bool isLeaf)
 	return _xItem;
 }
 
-uintptr_t XPage::EndOff()
+WORD XPage::EndOff()
 {
+	return sizeof(A);
 	XItem* x = XI(NItems + 1, IsLeaf);
 	WORD* xofs = (WORD*)x; // absolute x
 	return (uintptr_t)xofs;
@@ -2672,17 +2673,19 @@ longint XPage::SumN()
 	return n;
 }
 
-void XPage::Insert(WORD I, void* SS, XItem* XX)
+void XPage::Insert(WORD I, void* SS, XItem** XX)
 {
 	pstring* S = (pstring*)SS;
 	XItemPtr x = nullptr, x2 = nullptr;
 	WORD* xofs = (WORD*)x;
 	WORD* x2ofs = (WORD*)x2;
-	WORD m, m2, o, oE, l, l2, sz;
+	WORD m, m2, l, l2, sz;
 	integer d;
 
-	o = Off(); oE = EndOff();
-	NItems++; x = XI(I, IsLeaf);
+	WORD o = Off();
+	WORD oE = EndOff();
+	NItems++;
+	x = XI(I, IsLeaf);
 	m = 0;
 	if (I > 1) m = SLeadEqu(StrI(I - 1), *S);
 	l = S->length() - m;
@@ -2700,18 +2703,18 @@ void XPage::Insert(WORD I, void* SS, XItem* XX)
 		}
 		Move(x2, uintptr_t(x2) + x2ofs + sz, oE - *x2ofs);
 	}
-	XX = x;
+	*XX = x;
 	x->PutM(o, m); x->PutL(o, l);
-	xofs += (o + 2);
-	Move(&S[m + 1], x, l);
+	//xofs += (o + 2);
+	memcpy(x, &S[m + 1], l);
 }
 
 void XPage::InsDownIndex(WORD I, longint Page, XPage* P)
 {
 	pstring s;
-	XItemPtr x = nullptr;
+	XItem* x = nullptr;
 	s = P->StrI(P->NItems);
-	Insert(I, &s, x);
+	Insert(I, &s, &x);
 	x->PutN(P->SumN());
 	*(x->DownPage) = Page;
 }
@@ -2774,7 +2777,11 @@ void XPage::SplitPage(XPage* P, longint ThisPage)
 	WORD o, oA, oE, n;
 	pstring* s;
 
-	x = XItemPtr(&A); x1 = x; o = Off(); oA = *xofs; oE = EndOff(); n = 0;
+	x = XItemPtr(&A);
+	x1 = x; o = Off();
+	oA = *xofs;
+	oE = EndOff();
+	n = 0;
 	while (*xofs - oA < oE - *xofs + x->GetM(o)) { x = x->Next(o, IsLeaf); n++; }
 	FillChar(P, XPageSize, 0);
 	Move(x1, P->A, *xofs - oA);
@@ -2782,9 +2789,14 @@ void XPage::SplitPage(XPage* P, longint ThisPage)
 	//s = &StrI(n + 1);
 	Move(x, x1, o);
 	x1->PutM(o, 0);
-	x1 = x1->Next(o, IsLeaf); x = x->Next(o, IsLeaf); Move(x, x1, oE - *xofs);
-	P->NItems = n; NItems -= n; *xofs = EndOff(); FillChar(x, oE - *xofs, 0);
-	if (IsLeaf) P->GreaterPage = ThisPage; else P->GreaterPage = 0;
+	x1 = x1->Next(o, IsLeaf);
+	x = x->Next(o, IsLeaf);
+	Move(x, x1, oE - *xofs);
+	P->NItems = n; NItems -= n;
+	*xofs = EndOff();
+	FillChar(x, oE - *xofs, 0);
+	if (IsLeaf) P->GreaterPage = ThisPage;
+	else P->GreaterPage = 0;
 	P->IsLeaf = IsLeaf;
 }
 
@@ -3080,12 +3092,12 @@ void XKey::InsertOnPath(XString& XX, longint RecNr)
 	XPage* p = new XPage(); // (XPage*)GetStore(2 * XPageSize);
 	XPage* p1 = new XPage(); // (XPage*)GetStore(2 * XPageSize);
 	XPage* upp = new XPage(); // (XPage*)GetStore(2 * XPageSize);
-	for (j = XPathN; j > 1; j--) {
+	for (j = XPathN; j >= 1; j--) {
 		page = XPath[j].Page;
 		XF()->RdPage(p, page);
 		i = XPath[j].I;
 		if (p->IsLeaf) {
-			InsertItem(XX, p, upp, page, i, x, uppage);
+			InsertItem(XX, p, upp, page, i, &x, uppage);
 			x->PutN(RecNr);
 		}
 		else {
@@ -3097,7 +3109,7 @@ void XKey::InsertOnPath(XString& XX, longint RecNr)
 			}
 			if (uppage != 0) {
 				downpage = uppage;
-				InsertItem(XX, p, upp, page, i, x, uppage);
+				InsertItem(XX, p, upp, page, i, &x, uppage);
 				*(x->DownPage) = downpage;
 				x->PutN(upsum);
 			}
@@ -3123,15 +3135,15 @@ void XKey::InsertOnPath(XString& XX, longint RecNr)
 	ReleaseStore(p);
 }
 
-void XKey::InsertItem(XString& XX, XPage* P, XPage* UpP, longint Page, WORD I, XItemPtr& X, longint& UpPage)
+void XKey::InsertItem(XString& XX, XPage* P, XPage* UpP, longint Page, WORD I, XItem** X, longint& UpPage)
 {
 	P->Insert(I, &XX.S, X);
 	UpPage = 0;
 	if (P->Overflow()) {
 		UpPage = XF()->NewPage(UpP);
 		P->SplitPage(UpP, Page);
-		if (I <= UpP->NItems) X = UpP->XI(I, P->IsLeaf);
-		else X = P->XI(I - UpP->NItems, P->IsLeaf);
+		if (I <= UpP->NItems) *X = UpP->XI(I, P->IsLeaf);
+		else *X = P->XI(I - UpP->NItems, P->IsLeaf);
 		XX.S = UpP->StrI(UpP->NItems);
 	}
 }

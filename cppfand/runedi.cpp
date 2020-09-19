@@ -408,8 +408,12 @@ label2:
 	case 'N': {
 		cc = '0';
 	label3:
-		if (M == LeftJust) while (Txt->length() < L) Txt = Txt + cc;
-		else while (Txt->length() < L) Txt = cc + Txt;
+		if (M == LeftJust) {
+			while (Txt->length() < L) Txt->Append(cc);
+		}
+		else {
+			while (Txt->length() < L) Txt = cc + Txt;
+		}
 		if ((Msk != nullptr) && !TestMask(Txt, Msk, true)) goto label4;
 		break;
 	}
