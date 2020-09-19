@@ -488,8 +488,11 @@ void* RdFileD(std::string FileName, char FDTyp, pstring Ext)
 	if ((CFile->OrigFD == nullptr) || !(Lexem == 0x1A || Lexem == '#' || Lexem == ']'))	RdFieldDList(true);
 	GetTFileD(FDTyp);
 	LDOld = LinkDRoot;
-	ChPos = OrigInp();
-	if (ChPos != nullptr) CFile->ChptPos = ChPos->InpRdbPos;
+
+	// TODO: v originale je to jinak, saha si to na nasl. promenne za PrevCompInp
+	// a bere posledni ChainBack
+	CFile->ChptPos = InpRdbPos;
+
 	if (isHlp) {
 		F = CFile->FldD;
 		F2 = (FieldDescr*)F->Chain;

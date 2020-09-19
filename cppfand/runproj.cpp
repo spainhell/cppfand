@@ -1096,8 +1096,7 @@ label2:
 	if (!create || (top && !IsTestRun)) RunError(631);
 	OpenCreateF(Exclusive); SetCompileAll();
 label3:
-	bool encrypted = ww->HasPassWord(Chpt, 1, "");
-	if (!encrypted) CRdb->Encrypted = false;
+	if (ww->HasPassWord(Chpt, 1, "")) CRdb->Encrypted = false;
 	else CRdb->Encrypted = true;
 }
 
