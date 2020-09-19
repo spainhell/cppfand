@@ -24,3 +24,25 @@ std::vector<std::string> GetAllRows(std::string input)
 	vStr.push_back(nStr);
 	return vStr;
 }
+
+/// odstrani znaky na konci retezce
+std::string TrailChar(std::string& input, char c)
+{
+	size_t Count = 0;
+	for (int i = (int)input.length() - 1; i >= 0; i--) {
+		if (input[i] == c) Count++;
+		else break;
+	}
+	return input.substr(0, input.length() - Count);
+}
+
+/// odstrani znaky na zacatku retezce
+std::string LeadChar(std::string& input, char c)
+{
+	size_t startIndex = 0;
+	for (size_t i = 0; i < input.length(); i++) {
+		if (input[i] == c) startIndex++;
+		else break;
+	}
+	return input.substr(startIndex);
+}

@@ -101,9 +101,10 @@ label1:
 
 	switch (Event.What) {
 	case evMouseDown: {
-		if (MouseInRect(cx1, cy1, maxcol, 1))
-		{
-			ClrEvent(); KbdChar = VK_RETURN; goto label6;
+		if (MouseInRect(cx1, cy1, maxcol, 1)) {
+			ClrEvent();
+			KbdChar = 
+				VK_RETURN; goto label6;
 		}
 		break;
 	}
@@ -212,6 +213,15 @@ label8:
 
 }
 
+WORD EditTxt(std::string& s, WORD pos, WORD maxlen, WORD maxcol, char typ, bool del, bool star, bool upd, bool ret,
+	WORD Delta)
+{
+	pstring tmp;
+	auto result = EditTxt(&tmp, pos, maxlen, maxcol, typ, del, star, upd, ret, Delta);
+	s = tmp;
+	return result;
+}
+
 bool TestMask(pstring* S, pstring* Mask, bool TypeN)
 {
 	WORD ii; char c;
@@ -275,6 +285,12 @@ label4:
 	return result;
 }
 
+bool TestMask(std::string& S, pstring* Mask, bool TypeN)
+{
+	pstring tmp = S;
+	return TestMask(&tmp, Mask, TypeN);
+}
+
 void SetWasUpdated()
 {
 	if (!WasUpdated) {
@@ -290,7 +306,7 @@ void AssignFld(FieldDescr* F, FrmlElem* Z)
 	AssgnFrml(F, Z, false, false);
 }
 
-WORD FieldEdit(FieldDescr* F, FrmlElem* Impl, WORD LWw, WORD iPos, pstring* Txt, double& RR, bool del, bool upd, bool ret,
+WORD FieldEdit(FieldDescr* F, FrmlElem* Impl, WORD LWw, WORD iPos, std::string& Txt, double& RR, bool del, bool upd, bool ret,
 	WORD Delta)
 {
 	WORD I = 0, N = 0, L = 0, M = 0;
@@ -307,8 +323,8 @@ WORD FieldEdit(FieldDescr* F, FrmlElem* Impl, WORD LWw, WORD iPos, pstring* Txt,
 	Col = screen.WhereX();
 	Row = screen.WhereY();
 	if (F->Typ == 'B') {
-		if (*Txt == "") screen.ScrFormatWrText(Col, Row, " ");
-		else screen.ScrFormatWrText(Col, Row, "%s", Txt->c_str()); //printf("%s", Txt->c_str());
+		if (Txt.empty()) screen.ScrFormatWrText(Col, Row, " ");
+		else screen.ScrFormatWrText(Col, Row, "%s", Txt.c_str()); //printf("%s", Txt->c_str());
 		screen.GotoXY(Col, Row);
 		screen.CrsNorm();
 	label0:
@@ -323,7 +339,7 @@ WORD FieldEdit(FieldDescr* F, FrmlElem* Impl, WORD LWw, WORD iPos, pstring* Txt,
 			}
 			if (KbdChar == _M_) {
 			label11:
-				if ((Txt->length() > 0) && ((*Txt)[1] == AbbrYes)) cc = AbbrYes;
+				if ((Txt.length() > 0) && (Txt[0] == AbbrYes)) cc = AbbrYes;
 				else cc = AbbrNo;
 				goto label1;
 			}
@@ -344,7 +360,7 @@ WORD FieldEdit(FieldDescr* F, FrmlElem* Impl, WORD LWw, WORD iPos, pstring* Txt,
 	label1:
 		//printf("%c", cc);
 		screen.ScrFormatWrText(Col, Row, "%c", cc);
-		Txt->Append(cc);
+		Txt = Txt + cc;
 		screen.CrsHide();
 		return 0;
 	}
@@ -362,14 +378,14 @@ label2:
 	del = true;
 	iPos = 1;
 	r = 0;
-	if ((Txt->length() == 0) && (Impl != nullptr)) {
+	if ((Txt.length() == 0) && (Impl != nullptr)) {
 		AssignFld(F, Impl);
-		DecodeField(F, L, *Txt);
+		Txt = DecodeField(F, L);
 	}
 	switch (F->Typ) {
 	case 'F':
 	case 'R': {
-		T = LeadChar(' ', TrailChar(' ', *Txt));
+		T = LeadChar(' ', TrailChar(' ', Txt));
 		I = T.first(',');
 		if (I > 0) { T = copy(T, 1, I - 1) + "." + copy(T, I + 1, 255); }
 		if (T.length() == 0) r = 0.0;
@@ -388,7 +404,7 @@ label2:
 			else /*'R'*/ if (I != 0) { WrLLF10Msg(639); goto label4; }
 		}
 		if (F->Typ == 'F') {
-			str(r, L, M, *Txt);
+			str(r, L, M, Txt);
 			if ((F->Flg & f_Comma) != 0) {
 				r = r * Power10[M];
 				if (r >= 0) r = r + 0.5;
@@ -396,7 +412,7 @@ label2:
 				r = (int)r;
 			}
 		}
-		else /*'R'*/ str(r, L, 0, *Txt);
+		else /*'R'*/ str(r, L, 0, Txt);
 		RR = r;
 		break;
 	}
@@ -409,16 +425,16 @@ label2:
 		cc = '0';
 	label3:
 		if (M == LeftJust) {
-			while (Txt->length() < L) Txt->Append(cc);
+			while (Txt.length() < L) Txt += cc;
 		}
 		else {
-			while (Txt->length() < L) Txt = cc + Txt;
+			while (Txt.length() < L) Txt = cc + Txt;
 		}
 		if ((Msk != nullptr) && !TestMask(Txt, Msk, true)) goto label4;
 		break;
 	}
 	case 'D': {
-		T = LeadChar(' ', TrailChar(' ', *Txt));
+		T = LeadChar(' ', TrailChar(' ', Txt));
 		if (T == "") r = 0;
 		else {
 			r = ValDate(T, *Mask);
@@ -431,7 +447,7 @@ label2:
 				goto label2;
 			}
 		}
-		*Txt = StrDate(r, *Mask);
+		Txt = StrDate(r, *Mask);
 		RR = r;
 		break;
 	}
@@ -443,11 +459,11 @@ label2:
 void WrPromptTxt(std::string& S, FrmlElem* Impl, FieldDescr* F, pstring* Txt, double& R)
 {
 	WORD x = 0, y = 0, d = 0, LWw = 0;
-	pstring SS, T;
+	std::string SS;
+	std::string T;
 	double RR = 0.0;
 	bool BB = false;
 	screen.WriteStyledStringToWindow(S, ProcAttr);
-	T = "";
 	x = screen.WhereX();
 	y = screen.WhereY();
 	d = WindMax.X - WindMin.X + 1;
@@ -460,10 +476,10 @@ void WrPromptTxt(std::string& S, FrmlElem* Impl, FieldDescr* F, pstring* Txt, do
 		case 'S': SS = RunShortStr(Impl); break;
 		default: BB = RunBool(Impl); break;
 		}
-		DecodeFieldRSB(F, F->L, RR, SS, BB, T);
+		T = DecodeFieldRSB(F, F->L, RR, SS, BB);
 	}
 	screen.GotoXY(x, y);
-	FieldEdit(F, nullptr, LWw, 1, &T, R, true, true, false, 0);
+	FieldEdit(F, nullptr, LWw, 1, T, R, true, true, false, 0);
 	TextAttr = ProcAttr;
 	if (KbdChar == VK_ESCAPE) {
 		EscPrompt = true;
@@ -754,13 +770,12 @@ void Wr1Line(FieldDescr* F)
 
 void DisplFld(EFldD* D, WORD I)
 {
-	pstring Txt;
 	WORD r = FldRow(D, I);
 	screen.GotoXY(D->Col, r);
 	auto F = D->FldD;
-	DecodeField(F, D->L, Txt);
-	for (WORD j = 1; j <= Txt.length(); j++)
-		if (Txt[j] < ' ') Txt[j] = Txt[j] + 0x40;
+	std::string Txt = DecodeField(F, D->L);
+	for (size_t j = 0; j < Txt.length(); j++)
+		if ((unsigned char)Txt[j] < ' ') Txt[j] = Txt[j] + 0x40;
 	printf("%s", Txt.c_str());
 	if (HasTTWw(F)) {
 		screen.GotoXY(D->Col + 2, r);
@@ -2288,7 +2303,7 @@ bool PromptSearch(bool Create)
 {
 	auto result = false;
 	FieldDPtr F, F2; FileDPtr FD, FD2; void* RP; void* RP2; KeyFldDPtr KF, KF2;
-	longint n; pstring s; double r; bool b, li, found; LockMode md;
+	longint n; std::string s; double r; bool b, li, found; LockMode md;
 	XString x, xOld; KeyDPtr K; longint w; WORD Col, LWw, pos; EFldD* D;
 	FD = CFile; K = VK; if (Subset) K = WK; KF = K->KFlds;
 	RP = GetRecSpace(); CRecPtr = RP; ZeroAllFlds(); x.Clear();
@@ -2308,12 +2323,14 @@ bool PromptSearch(bool Create)
 			case 'B': { b = _B(F2); x.StoreBool(b, KF);
 				CFile = FD; CRecPtr = RP; B_(F, b); break; }
 			}
-			KF2 = (KeyFldD*)KF2->Chain; KF = (KeyFldD*)KF->Chain;
+			KF2 = (KeyFldD*)KF2->Chain;
+			KF = (KeyFldD*)KF->Chain;
 		}
 	}
 	if (KF == nullptr) {
 	label1:
-		result = true; CRecPtr = E->NewRecPtr; goto label3;
+		result = true; CRecPtr = E->NewRecPtr;
+		goto label3;
 	}
 	while (KF != nullptr) {
 		F = KF->FldD; if (li) {
@@ -2330,7 +2347,7 @@ bool PromptSearch(bool Create)
 	label2:
 		TextAttr = screen.colors.pNorm;
 		screen.GotoXY(Col, TxtRows);
-		pos = FieldEdit(F, nullptr, LWw, pos, &s, r, false, true, li, E->WatchDelay);
+		pos = FieldEdit(F, nullptr, LWw, pos, s, r, false, true, li, E->WatchDelay);
 		xOld = x;
 		if ((KbdChar == _ESC_) || (Event.What == evKeyDown)) {
 			CRecPtr = E->NewRecPtr; goto label3;
@@ -2338,7 +2355,7 @@ bool PromptSearch(bool Create)
 		switch (F->FrmlTyp) {
 		case 'S': { x.StoreStr(s, KF); S_(F, s); break; }
 		case 'R': { x.StoreReal(r, KF); R_(F, r); break; }
-		case 'B': { b = s[1] = AbbrYes; x.StoreBool(b, KF); B_(F, b); break; }
+		case 'B': { b = s[0] = AbbrYes; x.StoreBool(b, KF); B_(F, b); break; }
 		}
 		if (li) {
 			CRecPtr = E->NewRecPtr; found = GotoXRec(&x, n);
@@ -2858,7 +2875,7 @@ label6:
 
 bool EditItemProc(bool del, bool ed, WORD& Brk)
 {
-	pstring Txt; double R = 0; bool b = false; ChkD* C = nullptr; WORD wd = 0;
+	std::string Txt; double R = 0; bool b = false; ChkD* C = nullptr; WORD wd = 0;
 	FieldDescr* F = CFld->FldD;
 	auto result = true;
 	if (F->Typ == 'T') {
@@ -2868,11 +2885,11 @@ bool EditItemProc(bool del, bool ed, WORD& Brk)
 	}
 	else {
 		TextAttr = E->dHiLi;
-		DecodeField(F, CFld->FldD->L, Txt);
+		Txt = DecodeField(F, CFld->FldD->L);
 		screen.GotoXY(CFld->Col, FldRow(CFld, IRec));
 		wd = 0;
 		if (CFile->NotCached()) wd = E->WatchDelay;
-		FieldEdit(F, CFld->Impl, CFld->L, 1, &Txt, R, del, ed, false, wd);
+		FieldEdit(F, CFld->Impl, CFld->L, 1, Txt, R, del, ed, false, wd);
 		if ((KbdChar == _ESC_) || !ed) {
 			DisplFld(CFld, IRec);
 			if (ed && !WasUpdated) UnLockRec(E);
@@ -2880,7 +2897,7 @@ bool EditItemProc(bool del, bool ed, WORD& Brk)
 		}
 		SetWasUpdated();
 		switch (F->FrmlTyp) {
-		case 'B': B_(F, toupper(Txt[1]) == AbbrYes); break;
+		case 'B': B_(F, toupper(Txt[0]) == AbbrYes); break;
 		case 'S': S_(F, Txt); break;
 		case 'R': R_(F, R); break;
 		}

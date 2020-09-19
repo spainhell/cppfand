@@ -1235,18 +1235,25 @@ void LVAssignFrml(LocVar* LV, void* OldBP, bool Add, FrmlElem* X)
 	}
 }
 
-void DecodeFieldRSB(FieldDescr* F, WORD LWw, double R, pstring T, bool B, pstring& Txt)
+std::string DecodeFieldRSB(FieldDescr* F, WORD LWw, double R, std::string& T, bool B)
 {
 	WORD L = 0, M = 0; char C = 0;
 	L = F->L; M = F->M;
 	switch (F->Typ) {
-	case 'D':T = StrDate(R, FieldDMask(F)); break;
-	case 'N': { C = '0'; goto label1; break; }
+	case 'D': {
+		T = StrDate(R, FieldDMask(F));
+		break;
+	}
+	case 'N': {
+		C = '0';
+		goto label1;
+		break;
+	}
 	case 'A': {
 		C = ' ';
 	label1:
 		if (M == LeftJust)
-			while (T.length() < L) T.Append(C);
+			while (T.length() < L) T += C;
 		else {
 			if (T.length() < L) {
 				char buf[256]{ 0 };
@@ -1262,40 +1269,58 @@ void DecodeFieldRSB(FieldDescr* F, WORD LWw, double R, pstring T, bool B, pstrin
 		else T = AbbrNo;
 		break;
 	}
-	case 'R': str(R, L, T); break;
+	case 'R': {
+		str(R, L, T);
+		break;
+	}
 	default: /*"F"*/ {
 		if ((F->Flg & f_Comma) != 0) R = R / Power10[M];
 		str(RoundReal(R, M), L, M, T);
 		break;
 	}
 	}
-	if (T.length() > L) { T[0] = (char)L; T[L] = '>'; }
-	if (T.length() > LWw) {
-		if (M == LeftJust) { T[0] = (unsigned char)LWw; }
-		else { T = copy(T, T.length() - LWw + 1, LWw); }
+	if (T.length() > L) {
+		T = T.substr(0, L);
+		T[L - 1] = '>';
 	}
-	Txt = T;
+	if (T.length() > LWw) {
+		if (M == LeftJust) {
+			T = T.substr(0, LWw);
+		}
+		else {
+			// T = copy(T, T.length() - LWw + 1, LWw);
+			T = T.substr(T.length() - LWw + 1, LWw);
+		}
+	}
+	return T;
 }
 
-void DecodeField(FieldDescr* F, WORD LWw, pstring& Txt)
+
+std::string DecodeField(FieldDescr* F, WORD LWw)
 {
 	double r = 0;
-	pstring s;
+	std::string s, Txt;
 	bool b = false;
 	switch (F->FrmlTyp) {
-	case 'R': r = _R(F); break;
+	case 'R': {
+		r = _R(F);
+			break;
+	}
 	case 'S': {
 		if (F->Typ == 'T') {
 			if (((F->Flg & f_Stored) != 0) && (_R(F) == 0)) Txt = ".";
 			else Txt = "*";
-			return;
+			return Txt;
 		}
 		else s = _ShortS(F);
 		break;
 	}
-	default: b = _B(F); break;
+	default: {
+		b = _B(F);
+		break;
 	}
-	DecodeFieldRSB(F, LWw, r, s, b, Txt);
+	}
+	return DecodeFieldRSB(F, LWw, r, s, b);
 }
 
 void RunWFrml(WRectFrml& X, BYTE WFlags, WRect& W)

@@ -92,7 +92,21 @@ void str(double input, int total, int right, pstring& output)
 	output = buffer;
 }
 
+void str(double input, int total, int right, std::string& output)
+{
+	char buffer[255];
+	snprintf(buffer, sizeof(buffer), "%*.*f", total, right, input);
+	output = buffer;
+}
+
 void str(double input, int right, pstring& output)
+{
+	char buffer[255];
+	snprintf(buffer, sizeof(buffer), "%.*f", right, input);
+	output = buffer;
+}
+
+void str(double input, int right, std::string& output)
 {
 	char buffer[255];
 	snprintf(buffer, sizeof(buffer), "%.*f", right, input);

@@ -3140,11 +3140,12 @@ void XKey::InsertItem(XString& XX, XPage* P, XPage* UpP, longint Page, WORD I, X
 	P->Insert(I, &XX.S, X);
 	UpPage = 0;
 	if (P->Overflow()) {
-		UpPage = XF()->NewPage(UpP);
+		printf("");
+		/*UpPage = XF()->NewPage(UpP);
 		P->SplitPage(UpP, Page);
 		if (I <= UpP->NItems) *X = UpP->XI(I, P->IsLeaf);
 		else *X = P->XI(I - UpP->NItems, P->IsLeaf);
-		XX.S = UpP->StrI(UpP->NItems);
+		XX.S = UpP->StrI(UpP->NItems);*/
 	}
 }
 

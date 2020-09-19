@@ -18,7 +18,9 @@ void val(pstring s, longint& b, WORD& err);
 pstring copy(pstring source, size_t index, size_t count);
 void str(int input, pstring& output);
 void str(double input, int total, int right, pstring& output);
+void str(double input, int total, int right, std::string& output);
 void str(double input, int right, pstring& output);
+void str(double input, int right, std::string& output);
 
 WORD pred(WORD input);
 WORD succ(WORD input);
