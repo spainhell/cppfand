@@ -447,8 +447,8 @@ void InitRunFand()
 		case 16: {if (Fonts.VFont == foKamen) NrVFont = Vga8x16K; else NrVFont = Vga8x16L; break; }
 		}*/
 
-		// Access
-		// GetIntVec(0x3f, FandInt3f); // toto je vektor pøerušení INT 3fH - Overlay a DLL
+	// Access
+	// GetIntVec(0x3f, FandInt3f); // toto je vektor pøerušení INT 3fH - Overlay a DLL
 	//FillChar(&XWork, sizeof(XWork), 0); // celý objekt nulovat nemusíme, snad ...
 	//FillChar(&TWork, sizeof(TWork), 0); //  -"-
 	CRdb = nullptr;

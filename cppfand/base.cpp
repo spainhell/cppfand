@@ -1646,8 +1646,10 @@ label1: if (WasInitDrivers) {
 
 void OpenResFile()
 {
-	CPath = FandResName; CVol = "";
+	CPath = FandResName; 
+	CVol = "";
 	ResFile.Handle = OpenH(_isoldfile, RdOnly);
+	ResFile.FullName = CPath;
 	if (HandleError != 0)
 	{
 		printf("can't open %s", FandResName.c_str());

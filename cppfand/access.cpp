@@ -2814,7 +2814,6 @@ void XPage::InsertLeaf(unsigned int RecNr, size_t I, pstring& SS)
 {
 	genItems();
 	NItems++;
-	auto x = &_leafItems[I - 1]; // vytahneme predchozi zaznam
 	WORD m = 0;
 	// zjistime spolecne casti s predchozim zaznamem
 	if (I > 1) m = SLeadEqu(StrI(I - 1), SS);

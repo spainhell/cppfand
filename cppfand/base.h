@@ -297,9 +297,10 @@ extern wdaystt* WDaysTab;
 extern char AbbrYes;
 extern char AbbrNo;
 
-class TResFile // ø. 440
+class TResFile // r. 440
 {
 public:
+	std::string FullName;
 	FILE* Handle;
 	struct st
 	{

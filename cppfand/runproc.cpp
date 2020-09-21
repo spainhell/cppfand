@@ -396,7 +396,7 @@ void EditProc(Instr_edit* PD)
 	//EditOpt* EO = (EditOpt*)GetStore(sizeof(*EO));
 	EditOpt* EO = new EditOpt();
 	//Move(PD->EO, EO, sizeof(*EO));
-	EO = PD->EO;
+	*EO = *PD->EO;
 	if (!EO->UserSelFlds || SelFldsForEO(EO, nullptr)) EditDataFile(CFile, EO);
 	SaveFiles();
 	//ReleaseStore(EO);
