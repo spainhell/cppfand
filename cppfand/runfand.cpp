@@ -365,6 +365,11 @@ void InitRunFand()
 	//WasInitDrivers = true;
 	InitAccess();
 
+	const unsigned long maxDir = 260;
+	char currentDir[maxDir];
+	GetCurrentDirectory(maxDir, currentDir);
+	printf("Current DIR: %s\n", currentDir);
+
 	NonameStartFunction();
 #ifdef FandDML
 	InitDML();

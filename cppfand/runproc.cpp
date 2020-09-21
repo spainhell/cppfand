@@ -276,7 +276,7 @@ label2:
 
 void DisplayProc(RdbD* R, WORD IRec)
 {
-	LongStr* S = nullptr; void* p = nullptr; WORD i;
+	LongStr* S = nullptr; void* p = nullptr; WORD i = 0;
 	std::string str;
 	MarkStore(p);
 	if (IRec == 0) {
@@ -313,12 +313,11 @@ void ClrWwProc(Instr_clrww* PD)
 
 void ExecPgm(Instr_exec* PD)
 {
-	pstring s; pstring Prog; WORD i; BYTE x = 0, y = 0; bool b = false;
-	Wind wmin, wmax; longint w;
-	wmin = WindMin;
-	wmax = WindMax;
+	pstring s; pstring Prog; WORD i = 0; BYTE x = 0, y = 0; bool b = false;
+	Wind wmin = WindMin;
+	Wind wmax = WindMax;
 	TCrs crs = screen.CrsGet();
-	w = PushW(1, 1, TxtCols, 1);
+	longint w = PushW(1, 1, TxtCols, 1);
 	WindMin = wmin;
 	WindMax = wmax;
 	screen.CrsSet(crs);
@@ -337,7 +336,7 @@ void ExecPgm(Instr_exec* PD)
 
 void CallRdbProc(Instr_call* PD)
 {
-	bool b = false; void* p = nullptr; ProcStkPtr bp = nullptr;
+	bool b = false; void* p = nullptr; ProcStkD* bp = nullptr;
 	wwmix ww;
 	MarkStore(p);
 	bp = MyBP;
@@ -349,11 +348,16 @@ void CallRdbProc(Instr_call* PD)
 
 void IndexfileProc(FileDPtr FD, bool Compress)
 {
-	FileDPtr FD2, cf; longint I; LockMode md;
-	cf = CFile; CFile = FD; md = NewLMode(ExclMode);
-	XFNotValid(); CRecPtr = GetRecSpace();
+	FileD* FD2 = nullptr;
+	LockMode md;
+	FileD* cf = CFile;
+	CFile = FD;
+	md = NewLMode(ExclMode);
+	XFNotValid();
+	CRecPtr = GetRecSpace();
 	if (Compress) {
-		FD2 = OpenDuplF(false); for (I = 1; I < FD->NRecs; I++)
+		FD2 = OpenDuplF(false);
+		for (longint I = 1; I < FD->NRecs; I++)
 		{
 			CFile = FD;
 			ReadRec(CFile, I, CRecPtr);
@@ -371,7 +375,8 @@ void IndexfileProc(FileDPtr FD, bool Compress)
 	TestXFExist();
 	OldLMode(md);
 	SaveFiles();
-	ReleaseStore(CRecPtr); CFile = cf;
+	ReleaseStore(CRecPtr);
+	CFile = cf;
 }
 
 void MountProc(WORD CatIRec, bool NoCancel)
@@ -380,8 +385,11 @@ void MountProc(WORD CatIRec, bool NoCancel)
 	//NewExit(Ovr, er);
 	goto label1;
 	SaveFiles();
-	RdCatPathVol(CatIRec); TestMountVol(CPath[1]);
-	LastExitCode = 0; RestoreExit(er); return;
+	RdCatPathVol(CatIRec);
+	TestMountVol(CPath[1]);
+	LastExitCode = 0;
+	RestoreExit(er);
+	return;
 label1:
 	RestoreExit(er);
 	if (NoCancel) LastExitCode = 1;
@@ -422,7 +430,10 @@ void EditTxtProc(Instr_edittxt* PD)
 	MsgS.AltLast = (PD->AltLast == nullptr) ? "" : *GetStr(PD->AltLast);
 
 	if (PD->TxtLV != nullptr) lp = (longint*)(uintptr_t(MyBP) + PD->TxtLV->BPOfs);
-	else { SetTxtPathVol(PD->TxtPath, PD->TxtCatIRec); lp = nullptr; }
+	else {
+		SetTxtPathVol(PD->TxtPath, PD->TxtCatIRec);
+		lp = nullptr;
+	}
 	msg = "";
 	if (PD->ErrMsg != nullptr) msg = RunShortStr(PD->ErrMsg);
 	EditTxtFile(lp, PD->EdTxtMode, msg, PD->ExD, i, RunInt(PD->TxtXY), pv, a, RunShortStr(PD->Hd), PD->WFlags, &MsgS);
@@ -460,7 +471,8 @@ bool SrchXKey(KeyDPtr K, XString& X, longint& N)
 		return K->SearchIntvl(X, false, N);
 	}
 	else {
-		cr = CRecPtr; CRecPtr = GetRecSpace();
+		cr = CRecPtr;
+		CRecPtr = GetRecSpace();
 		auto result = SearchKey(X, K, N);
 		ReleaseStore(CRecPtr);
 		CRecPtr = cr;
@@ -471,7 +483,8 @@ bool SrchXKey(KeyDPtr K, XString& X, longint& N)
 void DeleteRecProc(Instr_recs* PD)
 {
 	LockMode md; longint n; XString x;
-	CFile = PD->RecFD; CRecPtr = GetRecSpace();
+	CFile = PD->RecFD;
+	CRecPtr = GetRecSpace();
 	if (PD->ByKey) {
 		x.S = RunShortStr(PD->RecNr);
 #ifdef FandSQL
@@ -490,7 +503,9 @@ void DeleteRecProc(Instr_recs* PD)
 	}
 	ReadRec(CFile, n, CRecPtr);
 	if (PD->AdUpd && !DeletedFlag()) LastExitCode = (!RunAddUpdte('-', nullptr, nullptr));
-	if (CFile->Typ == 'X') { if (!DeletedFlag()) DeleteXRec(n, true); }
+	if (CFile->Typ == 'X') {
+		if (!DeletedFlag()) DeleteXRec(n, true);
+	}
 	else DeleteRec(n);
 label1:
 	OldLMode(md);
@@ -520,7 +535,8 @@ void UpdRec(void* CR, longint N, bool AdUpd)
 	if (AdUpd)
 		if (del) LastExitCode = !RunAddUpdte('+', nullptr, nullptr);
 		else LastExitCode = !RunAddUpdte('d', cr2, nullptr);
-	if (CFile->Typ == 'X') OverWrXRec(N, cr2, CR); else WriteRec(N);
+	if (CFile->Typ == 'X') OverWrXRec(N, cr2, CR);
+	else WriteRec(N);
 	if (!del) DelAllDifTFlds(cr2, nullptr);
 	ReleaseStore(cr2);
 }
@@ -625,7 +641,7 @@ label4:
 void LinkRecProc(Instr_assign* PD)
 {
 	void* p = nullptr; void* r2 = nullptr; void* lr2 = nullptr;
-	FileDPtr cf = nullptr; void* cr = nullptr; LinkDPtr ld = nullptr; longint n;
+	FileD* cf = nullptr; void* cr = nullptr; LinkD* ld = nullptr; longint n = 0;
 	cf = CFile; cr = CRecPtr; MarkStore(p);
 	ld = PD->LinkLD; CRecPtr = PD->RecLV1->RecPtr;
 	lr2 = PD->RecLV2->RecPtr;
@@ -638,8 +654,8 @@ void LinkRecProc(Instr_assign* PD)
 
 void ForAllProc(Instr_forall* PD)
 {
-	FileDPtr FD = nullptr; KeyDPtr Key = nullptr, k = nullptr; FrmlPtr Bool = nullptr;
-	LinkDPtr LD = nullptr; KeyInD* KI = nullptr;
+	FileD* FD = nullptr; KeyD* Key = nullptr; KeyD* k = nullptr; FrmlElem* Bool = nullptr;
+	LinkD* LD = nullptr; KeyInD* KI = nullptr;
 	void* cr = nullptr; void* p = nullptr; void* lr = nullptr;
 	XScan* Scan = nullptr; LockMode md, md1; XString xx;
 	KeyFldDPtr KF = nullptr; LocVar* LVi = nullptr; LocVar* LVr = nullptr;
@@ -937,7 +953,8 @@ void ReleaseDriveProc(FrmlPtr Z)
 	SaveFiles;
 	s = RunShortStr(Z);
 	c = toupper((char)s[1]);
-	if (c == spec.CPMdrive) ReleaseDrive(FloppyDrives); else
+	if (c == spec.CPMdrive) ReleaseDrive(FloppyDrives);
+	else
 		if ((c == 'A') || (c == 'B')) ReleaseDrive(c - '@');
 }
 
@@ -1149,7 +1166,12 @@ void RunInstr(Instr* PD)
 		case _printtxt: PrintTxtProc((Instr_edittxt*)PD); break;
 		case _puttxt: PutTxt((Instr_puttxt*)PD); break;
 		case _asgncatfield: AssgnCatFld((Instr_assign*)PD); break;
-		case _asgnusercode: { UserCode = RunInt(((Instr_assign*)PD)->Frml); AccRight[0] = 0x01; AccRight[1] = char(UserCode); break; }
+		case _asgnusercode: {
+			UserCode = RunInt(((Instr_assign*)PD)->Frml);
+			AccRight[0] = 0x01;
+			AccRight[1] = char(UserCode);
+			break;
+		}
 		case _asgnaccright: AssgnAccRight((Instr_assign*)PD); break;
 		case _asgnusername: AssgnUserName((Instr_assign*)PD); break;
 		case _asgnusertoday: userToday = RunReal(((Instr_assign*)PD)->Frml); break;
@@ -1246,10 +1268,10 @@ void RunInstr(Instr* PD)
 				WORD(RunInt(iPD->PortWhat)));
 			break;
 		}
-		}
-		PD = (Instr*)PD->Chain;
-		}
 	}
+		PD = (Instr*)PD->Chain;
+}
+}
 
 void RunProcedure(Instr* PDRoot)
 {
@@ -1424,8 +1446,16 @@ void CallProcedure(Instr_proc* PD)
 		}
 		if (i > n)
 			switch ((*it0)->FTyp) {
-			case 'r': { CFile = (*it0)->FD; ClearRecSpace((*it0)->RecPtr); break; }
-			case 'i': { CFile = (*it0)->FD; ((XWKey*)(*it0)->RecPtr)->Close(); break; };
+			case 'r': {
+				CFile = (*it0)->FD;
+				ClearRecSpace((*it0)->RecPtr);
+				break;
+			}
+			case 'i': {
+				CFile = (*it0)->FD;
+				((XWKey*)(*it0)->RecPtr)->Close();
+				break;
+			}
 			}
 		i++;
 		it0++; // (LocVar*)lv0->Chain;
