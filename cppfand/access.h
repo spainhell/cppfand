@@ -434,6 +434,7 @@ class XPage // r289
 {
 public:
 	XPage() {}
+	~XPage();
 	bool IsLeaf = false;
 	longint GreaterPage = 0;  // or free pages chaining
 	WORD NItems = 0;
@@ -453,11 +454,12 @@ public:
 	void SplitPage(XPage* P, longint ThisPage);
 	void Clean();
 	size_t ItemsSize();
+	void GenArrayFromVectorItems();
 private:
 	XItem* _xItem = nullptr;
 	void genItems();
-	std::vector<XItemLeaf>::iterator _addToItems(XItemLeaf xi, size_t pos);
-	std::vector<XItemLeaf> _leafItems;
+	std::vector<XItemLeaf*>::iterator _addToItems(XItemLeaf* xi, size_t pos);
+	std::vector<XItemLeaf*> _leafItems;
 };
 typedef XPage* XPagePtr;
 

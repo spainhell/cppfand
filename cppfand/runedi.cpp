@@ -3141,7 +3141,9 @@ bool SelFldsForEO(EditOpt* EO, LinkD* LD)
 		if ((LD == nullptr) || !FinArgs(LD, F)) {
 			pstring s = F->Name;
 			if ((F->Flg & f_Stored) == 0) {
-				pstring olds = s; s = SelMark; s += olds;
+				pstring olds = s;
+				s = SelMark;
+				s += olds;
 			}
 			ww.PutSelect(s);
 		}

@@ -2639,6 +2639,7 @@ XItemLeaf::XItemLeaf(unsigned RecNr, BYTE M, BYTE L, pstring& s)
 XItemLeaf::~XItemLeaf()
 {
 	delete[] data;
+	data = nullptr;
 }
 
 size_t XItemLeaf::size()
@@ -2663,6 +2664,13 @@ size_t XItemLeaf::Serialize(BYTE* buffer, size_t bufferSize)
 	offset += L;
 	memset(&buffer[offset], 0, bufferSize - offset);
 	return offset; // pocet zapsanych Bytu
+}
+
+XPage::~XPage()
+{
+	for (size_t i = 0; i < _leafItems.size(); i++) {
+		delete _leafItems[i];
+	}
 }
 
 WORD XPage::Off()
@@ -2813,14 +2821,14 @@ void XPage::InsertLeaf(unsigned int RecNr, size_t I, pstring& SS)
 	WORD l = SS.length() - m;
 	// vytvorime novou polozku s novym zaznamem a vlozime ji do vektoru
 	
-	auto newXi = XItemLeaf(RecNr, m, l, SS);
-	_addToItems(newXi, I);
+	auto newXi = new XItemLeaf(RecNr, m, l, SS);
+	_addToItems(newXi, I - 1);
 
 	if (I < NItems) {
 		// vkladany zaznam nebude posledni (nebude na konci)
 		// zjistime spolecne casti s nasledujicim zaznamem
 		WORD m2 = SLeadEqu(StrI(I), SS);
-		integer d = m2 - newXi.M;
+		integer d = m2 - newXi->M;
 		if (d > 0) {
 			printf("XPage::Insert() - Nutno doimplementovat!");
 		}
@@ -2930,8 +2938,8 @@ void XPage::Clean()
 size_t XPage::ItemsSize()
 {
 	size_t count = 0;
-	for (auto& xi : _leafItems) {
-		count += xi.size();
+	for (auto xi : _leafItems) {
+		count += xi->size();
 	}
 	return count;
 }
@@ -2941,17 +2949,29 @@ void XPage::genItems()
 	size_t offset = 0;
 	for (WORD i = 0; i < NItems; i++)
 	{
-		auto x = XItemLeaf(&A[offset]);
-		offset += x.size();
-		_leafItems.push_back(x);
+		auto x = new XItemLeaf(&A[offset]);
+		offset += x->size();
+		_leafItems.push_back(std::move(x));
 	}
-
-	auto it = _leafItems.insert(_leafItems.begin() + 1, XItemLeaf(&A[offset]));
 }
 
-std::vector<XItemLeaf>::iterator XPage::_addToItems(XItemLeaf xi, size_t pos)
+void XPage::GenArrayFromVectorItems()
 {
-	return _leafItems.insert(_leafItems.begin() + pos, xi);
+	memset(A, 0, sizeof(A));
+	size_t offset = 0;
+	BYTE buffer[256];
+	for (auto && item : _leafItems)
+	{
+		size_t len = item->Serialize(buffer, sizeof(buffer));
+		memcpy(&A[offset], buffer, len);
+		offset += len;
+	}
+	NItems = _leafItems.size();
+}
+
+std::vector<XItemLeaf*>::iterator XPage::_addToItems(XItemLeaf* xi, size_t pos)
+{
+	return _leafItems.insert(_leafItems.begin() + pos, std::move(xi));
 }
 
 XKey::XKey()
@@ -3245,7 +3265,7 @@ void XKey::InsertOnPath(XString& XX, longint RecNr)
 		i = XPath[j].I;
 		if (p->IsLeaf) {
 			InsertLeafItem(XX, p, upp, page, i, RecNr, uppage);
-			x->PutN(RecNr);
+			// x->PutN(RecNr); // zapisuje se primo o radek vys!
 		}
 		else {
 			if (i <= p->NItems) {
@@ -3300,13 +3320,18 @@ void XKey::InsertLeafItem(XString& XX, XPage* P, XPage* UpP, longint Page, WORD 
 {
 	P->InsertLeaf(RecNr, I, XX.S);
 	UpPage = 0;
-	if (P->Overflow()) {
-		printf("");
-		/*UpPage = XF()->NewPage(UpP);
-		P->SplitPage(UpP, Page);
-		if (I <= UpP->NItems) *X = UpP->XI(I, P->IsLeaf);
-		else *X = P->XI(I - UpP->NItems, P->IsLeaf);
-		XX.S = UpP->StrI(UpP->NItems);*/
+	if (P->ItemsSize() > sizeof(P->A)) {
+		printf("XKey::InsertLeafItem() PREKROCENA VELIKOST STRANKY");
+		
+		//UpPage = XF()->NewPage(UpP);
+		//P->SplitPage(UpP, Page);
+		//if (I <= UpP->NItems) *X = UpP->XI(I, P->IsLeaf);
+		//else *X = P->XI(I - UpP->NItems, P->IsLeaf);
+		//XX.S = UpP->StrI(UpP->NItems);
+	}
+	else {
+		// pregenerujeme z vektoru P->A
+		P->GenArrayFromVectorItems();
 	}
 }
 
