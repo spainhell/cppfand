@@ -409,13 +409,32 @@ public:
 	void PutL(WORD O, WORD L); // index.pas r145 ASM
 	XItem* Next(WORD O, bool isLeaf); // index.pas r148 ASM
 	WORD UpdStr(WORD O, pstring* S); // index.pas r152 ASM
+	size_t size(bool isLeaf); // vrati delku zaznamu
 };
 typedef XItem* XItemPtr;
+
+/// implementace XItem pro kratky zaznam
+class XItemLeaf
+{
+public:
+	XItemLeaf(BYTE* data);
+	XItemLeaf(const XItemLeaf& orig);
+	XItemLeaf(unsigned int RecNr, BYTE M, BYTE L, pstring& s); // kompletni 's', zpracuje se jen pozadovana cast
+	~XItemLeaf();
+	unsigned int RecNr;
+	BYTE M;
+	BYTE L;
+	BYTE* data;
+	size_t size();
+	size_t dataLen(); // bez 2B L + M
+	size_t Serialize(BYTE* buffer, size_t bufferSize);
+};
 
 class XPage // r289
 {
 public:
 	XPage() {}
+	~XPage();
 	bool IsLeaf = false;
 	longint GreaterPage = 0;  // or free pages chaining
 	WORD NItems = 0;
@@ -428,13 +447,19 @@ public:
 	pstring StrI(WORD I);
 	longint SumN();
 	void Insert(WORD I, void* SS, XItem** XX);
+	void InsertLeaf(unsigned int RecNr, size_t I, pstring& SS);
 	void InsDownIndex(WORD I, longint Page, XPage* P);
 	void Delete(WORD I);
 	void AddPage(XPage* P);
 	void SplitPage(XPage* P, longint ThisPage);
 	void Clean();
+	size_t ItemsSize();
+	void GenArrayFromVectorItems();
 private:
 	XItem* _xItem = nullptr;
+	void genItems();
+	std::vector<XItemLeaf*>::iterator _addToItems(XItemLeaf* xi, size_t pos);
+	std::vector<XItemLeaf*> _leafItems;
 };
 typedef XPage* XPagePtr;
 
@@ -465,6 +490,7 @@ public:
 	bool FindNr(XString& X, longint& IndexNr);
 	void InsertOnPath(XString& XX, longint RecNr);
 	void InsertItem(XString& XX, XPage* P, XPage* UpP, longint Page, WORD I, XItem** X, longint& UpPage);
+	void InsertLeafItem(XString& XX, XPage* P, XPage* UpP, longint Page, WORD I, int RecNr, longint& UpPage);
 	void ChainPrevLeaf(XPagePtr P, longint N);
 	bool Insert(longint RecNr, bool Try);
 	void DeleteOnPath();

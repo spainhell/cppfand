@@ -2559,7 +2559,7 @@ void XItem::PutN(longint N)
 WORD XItem::GetM(WORD O)
 {
 	// asm les bx,Self; add bx,O; xor ah,ah; mov al,es:[bx]
-	return 0;
+	return Nr[O];
 }
 
 void XItem::PutM(WORD O, WORD M)
@@ -2594,16 +2594,83 @@ WORD XItem::UpdStr(WORD O, pstring* S)
 	 mov al,[bx]; xor ah,ah; add di,ax; lea si,[bx+2];
 	 xor ch,ch; mov cl,[bx+1]; rep movsb; mov ax,si; pop ds;*/
 
-	 // 'O' je index
-	 // delka S bude M + L
-	S[0] = Nr[O] + Nr[O + 1];
-	BYTE NrO1 = Nr[O + 1];
-	BYTE NrO2 = Nr[O + 2];
-	for (BYTE i = 0; i < NrO1; i++) {
-		S[NrO1 + i] = Nr[NrO2 + i];
-	}
+	// Nr[0] je ukazatel i na vsechno dalsi
+	// 'O' je index - offset
+	// delka S bude M + L
+	BYTE M = Nr[O];
+	BYTE L = Nr[O + 1];
+	(*S)[0] = M + L; // nova delka retezce
+	memcpy(&(*S)[M + 1], &Nr[O + 2], L);
+	return O + L + 2;
+}
 
-	return NrO2 + NrO1;
+size_t XItem::size(bool isLeaf)
+{
+	return (isLeaf ? 3 : 7) + 2 + XPageData[0]; // 2 - L + M
+}
+
+XItemLeaf::XItemLeaf(BYTE* data)
+{
+	RecNr = *(int*)data & 0x00FFFFFF;
+	M = data[3];
+	L = data[4];
+	this->data = new BYTE[L];
+	memcpy(this->data, &data[5], L);
+}
+
+XItemLeaf::XItemLeaf(const XItemLeaf& orig)
+{
+	RecNr = orig.RecNr;
+	M = orig.M;
+	L = orig.L;
+	this->data = new BYTE[L];
+	memcpy(this->data, orig.data, L);
+}
+
+XItemLeaf::XItemLeaf(unsigned RecNr, BYTE M, BYTE L, pstring& s)
+{
+	this->RecNr = RecNr;
+	this->M = M;
+	this->L = L;
+	this->data = new BYTE[L];
+	memcpy(this->data, &s[1 + M], L);
+}
+
+XItemLeaf::~XItemLeaf()
+{
+	delete[] data;
+	data = nullptr;
+}
+
+size_t XItemLeaf::size()
+{
+	return 3 + 2 + L; // 3 cislo zaznamu, 2 L+M, delka zaznamu
+}
+
+size_t XItemLeaf::dataLen()
+{
+	return L;
+}
+
+size_t XItemLeaf::Serialize(BYTE* buffer, size_t bufferSize)
+{
+	if (bufferSize < size()) return -1;
+	size_t offset = 0;
+	memcpy(&buffer[offset], &RecNr, 3);
+	offset += 3;
+	buffer[offset++] = M;
+	buffer[offset++] = L;
+	memcpy(&buffer[offset], data, L);
+	offset += L;
+	memset(&buffer[offset], 0, bufferSize - offset);
+	return offset; // pocet zapsanych Bytu
+}
+
+XPage::~XPage()
+{
+	for (size_t i = 0; i < _leafItems.size(); i++) {
+		delete _leafItems[i];
+	}
 }
 
 WORD XPage::Off()
@@ -2645,26 +2712,22 @@ bool XPage::Overflow()
 
 pstring XPage::StrI(WORD I)
 {
-	return ""; // netusim, co to ma delat ...
-	
+	pstring s; // toto bude vystup
 	XItem* x = new XItem(A, IsLeaf);
-	WORD* xofs = (WORD*)x->Nr[0]; // absolute x
-	WORD o = 0;
-	pstring s;
-
-	o = Off();
-	//TODO: asm les di, @result; mov s.WORD, di; mov s[2].WORD, es;
-	pstring es_di;
-
+	WORD xofs = 0;
+	WORD o = Off();
 
 	if (I > NItems) s[0] = 0;
 	else {
 		for (WORD j = 1; j <= I; j++) {
-			*xofs = x->UpdStr(o, &s);
+			xofs += x->UpdStr(o, &s);
+			auto oldX = x;
+			x = new XItem(&A[xofs], IsLeaf);
+			delete oldX; oldX = nullptr;
 		}
 	}
-	//TODO: co a jak to vrací?
-	return "";
+	delete x; x = nullptr;
+	return s;
 }
 
 longint XPage::SumN()
@@ -2682,38 +2745,95 @@ longint XPage::SumN()
 
 void XPage::Insert(WORD I, void* SS, XItem** XX)
 {
+	genItems();
 	pstring* S = (pstring*)SS;
-	XItemPtr x = nullptr, x2 = nullptr;
-	WORD* xofs = (WORD*)x;
-	WORD* x2ofs = (WORD*)x2;
-	WORD m, m2, l, l2, sz;
-	integer d;
-
-	WORD o = Off();
-	WORD oE = EndOff();
 	NItems++;
-	x = XI(I, IsLeaf);
-	m = 0;
+	auto x = &_leafItems[I - 1]; // vytahneme predchozi zaznam
+	WORD m = 0;
+	// zjistime spolecne casti s predchozim zaznamem
 	if (I > 1) m = SLeadEqu(StrI(I - 1), *S);
-	l = S->length() - m;
-	sz = o + 2 + l;
+	WORD l = S->length() - m;
+	// vytvorime novou polozku s novym zaznamem
+	auto newXi = XItemLeaf((unsigned int)I, m, l, *S);
+
 	if (I < NItems) {
-		x2 = x;
-		m2 = SLeadEqu(StrI(I), *S);
-		d = m2 - x->GetM(o);
+		// vkladany zaznam nebude posledni (nebude na konci)
+		// zjistime spolecne casti s nasledujicim zaznamem
+		WORD m2 = SLeadEqu(StrI(I), *S);
+		integer d = m2 - newXi.M;
 		if (d > 0) {
-			l2 = x->GetL(o); x2ofs += d;
-			Move(x, x2, o);
-			x2->PutM(o, m2);
-			x2->PutL(o, l2 - d);
-			sz -= d;
+			printf("XPage::Insert() - Nutno doimplementovat!");
 		}
-		Move(x2, uintptr_t(x2) + x2ofs + sz, oE - *x2ofs);
 	}
-	*XX = x;
-	x->PutM(o, m); x->PutL(o, l);
-	//xofs += (o + 2);
-	memcpy(x, &S[m + 1], l);
+
+	size_t bufLen = newXi.size();
+	BYTE* buf = new BYTE[bufLen];
+	newXi.Serialize(buf, bufLen);
+	
+	// vratime tuto novou polozku
+	*XX = new XItem(buf, IsLeaf);
+		
+	//pstring* S = (pstring*)SS;
+	//
+	//WORD xofs = 0; // posun pro x
+	//WORD x2ofs = 0; // posun pro x2
+	//
+	//WORD o = Off();
+	//WORD oE = EndOff();
+	//NItems++;
+	//XItem* x = XI(I, IsLeaf);
+	//WORD m = 0;
+	//// zjistime spolecne casti s predchozim zaznamem
+	//if (I > 1) m = SLeadEqu(StrI(I - 1), *S);
+	//WORD l = S->length() - m;
+	//WORD sz = o + 2 + l;
+	//if (I < NItems) {
+	//	// vkladany zaznam nebude posledni (nebude na konci)
+	//	XItem* x2 = x;
+	//	// zjistime spolecne casti s nasledujicim zaznamem
+	//	WORD m2 = SLeadEqu(StrI(I), *S);
+	//	integer d = m2 - x->GetM(o);
+	//	if (d > 0) {
+	//		WORD l2 = x->GetL(o);
+	//		x2ofs += d;
+	//		Move(x, x2, o);
+	//		x2->PutM(o, m2);
+	//		x2->PutL(o, l2 - d);
+	//		sz -= d;
+	//	}
+	//	// Move(x2, uintptr_t(x2) + x2ofs + sz, oE - *x2ofs);
+	//}
+	//*XX = x;
+	//x->PutM(o, m);
+	//x->PutL(o, l);
+	////xofs += (o + 2);
+	//memcpy(&x->Nr[0], &(*S)[m + 1], l);
+}
+
+void XPage::InsertLeaf(unsigned int RecNr, size_t I, pstring& SS)
+{
+	genItems();
+	NItems++;
+	auto x = &_leafItems[I - 1]; // vytahneme predchozi zaznam
+	WORD m = 0;
+	// zjistime spolecne casti s predchozim zaznamem
+	if (I > 1) m = SLeadEqu(StrI(I - 1), SS);
+	WORD l = SS.length() - m;
+	// vytvorime novou polozku s novym zaznamem a vlozime ji do vektoru
+	
+	auto newXi = new XItemLeaf(RecNr, m, l, SS);
+	_addToItems(newXi, I - 1);
+
+	if (I < NItems) {
+		// vkladany zaznam nebude posledni (nebude na konci)
+		// zjistime spolecne casti s nasledujicim zaznamem
+		WORD m2 = SLeadEqu(StrI(I), SS);
+		integer d = m2 - newXi->M;
+		if (d > 0) {
+			printf("XPage::Insert() - Nutno doimplementovat!");
+		}
+	}
+	
 }
 
 void XPage::InsDownIndex(WORD I, longint Page, XPage* P)
@@ -2813,6 +2933,45 @@ void XPage::Clean()
 	GreaterPage = 0;
 	WORD NItems = 0;
 	memset(A, 0, XPageSize - 4);
+}
+
+size_t XPage::ItemsSize()
+{
+	size_t count = 0;
+	for (auto xi : _leafItems) {
+		count += xi->size();
+	}
+	return count;
+}
+
+void XPage::genItems()
+{
+	size_t offset = 0;
+	for (WORD i = 0; i < NItems; i++)
+	{
+		auto x = new XItemLeaf(&A[offset]);
+		offset += x->size();
+		_leafItems.push_back(std::move(x));
+	}
+}
+
+void XPage::GenArrayFromVectorItems()
+{
+	memset(A, 0, sizeof(A));
+	size_t offset = 0;
+	BYTE buffer[256];
+	for (auto && item : _leafItems)
+	{
+		size_t len = item->Serialize(buffer, sizeof(buffer));
+		memcpy(&A[offset], buffer, len);
+		offset += len;
+	}
+	NItems = _leafItems.size();
+}
+
+std::vector<XItemLeaf*>::iterator XPage::_addToItems(XItemLeaf* xi, size_t pos)
+{
+	return _leafItems.insert(_leafItems.begin() + pos, std::move(xi));
 }
 
 XKey::XKey()
@@ -3105,8 +3264,8 @@ void XKey::InsertOnPath(XString& XX, longint RecNr)
 		XF()->RdPage(p, page);
 		i = XPath[j].I;
 		if (p->IsLeaf) {
-			InsertItem(XX, p, upp, page, i, &x, uppage);
-			x->PutN(RecNr);
+			InsertLeafItem(XX, p, upp, page, i, RecNr, uppage);
+			// x->PutN(RecNr); // zapisuje se primo o radek vys!
 		}
 		else {
 			if (i <= p->NItems) {
@@ -3154,6 +3313,25 @@ void XKey::InsertItem(XString& XX, XPage* P, XPage* UpP, longint Page, WORD I, X
 		if (I <= UpP->NItems) *X = UpP->XI(I, P->IsLeaf);
 		else *X = P->XI(I - UpP->NItems, P->IsLeaf);
 		XX.S = UpP->StrI(UpP->NItems);*/
+	}
+}
+
+void XKey::InsertLeafItem(XString& XX, XPage* P, XPage* UpP, longint Page, WORD I, int RecNr, longint& UpPage)
+{
+	P->InsertLeaf(RecNr, I, XX.S);
+	UpPage = 0;
+	if (P->ItemsSize() > sizeof(P->A)) {
+		printf("XKey::InsertLeafItem() PREKROCENA VELIKOST STRANKY");
+		
+		//UpPage = XF()->NewPage(UpP);
+		//P->SplitPage(UpP, Page);
+		//if (I <= UpP->NItems) *X = UpP->XI(I, P->IsLeaf);
+		//else *X = P->XI(I - UpP->NItems, P->IsLeaf);
+		//XX.S = UpP->StrI(UpP->NItems);
+	}
+	else {
+		// pregenerujeme z vektoru P->A
+		P->GenArrayFromVectorItems();
 	}
 }
 
