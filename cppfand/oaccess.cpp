@@ -39,9 +39,13 @@ void SaveFiles()
 {
 	bool b = false; WORD i = 0; FileD* cf = nullptr;
 	if (!CacheExist()) return;
-	cf = CFile; CFile = CatFD; WrPrefixes();
-	ForAllFDs(SaveFD); b = SaveCache(0, CFile->Handle); FlushHandles();
-	CFile = cf; if (!b) GoExit();
+	cf = CFile; CFile = CatFD;
+	WrPrefixes();
+	ForAllFDs(SaveFD);
+	b = SaveCache(0, CFile->Handle);
+	FlushHandles();
+	CFile = cf;
+	if (!b) GoExit();
 }
 
 void ClosePassiveFD()
@@ -409,6 +413,10 @@ void CloseFile()
 void CloseFAfter(FileD* FD)
 {
 	CFile = FD;
+
+	// timto preskocime aktualizaci RDB a TTT
+	CFile = (FileD*)CFile->Chain;
+
 	while (CFile != nullptr) {
 		CloseFile();
 		CFile = (FileD*)CFile->Chain;

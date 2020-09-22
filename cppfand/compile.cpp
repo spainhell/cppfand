@@ -407,7 +407,8 @@ void RdLex()
 		WORD i = 1;
 		while (IsLetter(ForwChar) || isdigit(ForwChar))
 		{
-			i++; if (i > 32) Error(2);
+			i++;
+			if (i > 32) Error(2);
 			ReadChar();
 			LexWord[i] = CurrChar;
 		}

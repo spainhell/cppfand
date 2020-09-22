@@ -460,6 +460,8 @@ private:
 	void genItems();
 	std::vector<XItemLeaf*>::iterator _addToItems(XItemLeaf* xi, size_t pos);
 	std::vector<XItemLeaf*> _leafItems;
+	bool _cutLeafItem(size_t iIndex, BYTE length); // zkrati polozku o X Bytu, zaktualizuje M i L
+	bool _enhLeafItem(size_t iIndex, BYTE length); // prodlouzi polozku o X Bytu z predchozi polozky, zaktualizuje M i L
 };
 typedef XPage* XPagePtr;
 

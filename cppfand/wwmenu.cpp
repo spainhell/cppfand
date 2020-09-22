@@ -241,7 +241,7 @@ label1:
 			WrText(i);
 			break;
 		}
-		case  VK_F1: {
+		case VK_F1: {
 		label2:
 			ClrEvent();
 			if (HlpRdb != nullptr) Help(HlpRdb, hlp, false);

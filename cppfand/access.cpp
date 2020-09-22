@@ -2707,7 +2707,9 @@ bool XPage::Underflow()
 
 bool XPage::Overflow()
 {
-	return EndOff() - uintptr_t(this) > XPageSize;
+	genItems();
+	auto size = ItemsSize();
+	return size > XPageSize;
 }
 
 pstring XPage::StrI(WORD I)
@@ -2827,12 +2829,12 @@ void XPage::InsertLeaf(unsigned int RecNr, size_t I, pstring& SS)
 		// vkladany zaznam nebude posledni (nebude na konci)
 		// zjistime spolecne casti s nasledujicim zaznamem
 		WORD m2 = SLeadEqu(StrI(I), SS);
-		integer d = m2 - newXi->M;
+		BYTE d = m2 - newXi->M;
 		if (d > 0) {
-			printf("XPage::Insert() - Nutno doimplementovat!");
+			// puvodni polozka je ted na pozici I (nova je na I - 1)
+			_cutLeafItem(I, d);
 		}
 	}
-	
 }
 
 void XPage::InsDownIndex(WORD I, longint Page, XPage* P)
@@ -2847,26 +2849,45 @@ void XPage::InsDownIndex(WORD I, longint Page, XPage* P)
 
 void XPage::Delete(WORD I)
 {
-	XItemPtr x = nullptr, x1 = nullptr, x2 = nullptr;
-	WORD* xofs = (WORD*)x;
-	WORD* x1ofs = (WORD*)x1;
-	WORD* x2ofs = (WORD*)x2;
-	WORD o = Off(); WORD oE = EndOff(); x = XI(I, IsLeaf);
+	genItems();
 	if (I < NItems) {
-		x2 = x->Next(o, IsLeaf);
-		integer d = x2->GetM(o) - x->GetM(o);
-		if (d <= 0) Move(x2, x, oE - *x2ofs);
-		else {
-			Move(x2, x, o);
-			x->PutL(o, x2->GetL(o) + d); x1 = x;
-			*x1ofs = *x1ofs + o + 2 + d;
-			*x2ofs = *x2ofs + o + 2;
-			Move(x2, x1, oE - *x2ofs);
+		// tato polozka (I - 1) neni posledni, bude se asi muset upravovat polozka za ni (I)
+		auto Xi = _leafItems[I - 1];
+		auto nextXi = _leafItems[I];
+		integer d = nextXi->M - Xi->M;
+		if (d > 0) {
+			// nasledujici polozku je nutne upravit
+			_enhLeafItem(I, d);
 		}
-		x = XI(NItems, IsLeaf);
 	}
-	FillChar(x, oE - *xofs, 0);
+
+	// polozku smazeme
+	_leafItems.erase(_leafItems.begin() + (I - 1));
+
+	// pregenerujeme pole
 	NItems--;
+	GenArrayFromVectorItems();
+
+	//XItemPtr x = nullptr, x1 = nullptr, x2 = nullptr;
+	//WORD* xofs = (WORD*)x;
+	//WORD* x1ofs = (WORD*)x1;
+	//WORD* x2ofs = (WORD*)x2;
+	//WORD o = Off(); WORD oE = EndOff(); x = XI(I, IsLeaf);
+	//if (I < NItems) {
+	//	x2 = x->Next(o, IsLeaf);
+	//	integer d = x2->GetM(o) - x->GetM(o);
+	//	if (d <= 0) Move(x2, x, oE - *x2ofs);
+	//	else {
+	//		Move(x2, x, o);
+	//		x->PutL(o, x2->GetL(o) + d); x1 = x;
+	//		*x1ofs = *x1ofs + o + 2 + d;
+	//		*x2ofs = *x2ofs + o + 2;
+	//		Move(x2, x1, oE - *x2ofs);
+	//	}
+	//	x = XI(NItems, IsLeaf);
+	//}
+	//FillChar(x, oE - *xofs, 0);
+	//NItems--;
 }
 
 void XPage::AddPage(XPage* P)
@@ -2945,6 +2966,7 @@ size_t XPage::ItemsSize()
 
 void XPage::genItems()
 {
+	_leafItems.clear();
 	size_t offset = 0;
 	for (WORD i = 0; i < NItems; i++)
 	{
@@ -2971,6 +2993,35 @@ void XPage::GenArrayFromVectorItems()
 std::vector<XItemLeaf*>::iterator XPage::_addToItems(XItemLeaf* xi, size_t pos)
 {
 	return _leafItems.insert(_leafItems.begin() + pos, std::move(xi));
+}
+
+bool XPage::_cutLeafItem(size_t iIndex, BYTE length)
+{
+	if (_leafItems.size() < iIndex + 1) return false; // polozka neexistuje
+	auto Xi = _leafItems[iIndex];
+	if (length > Xi->L) return false; // polozka neni tak dlouha, delka by byla zaporna
+	Xi->M += length;
+	Xi->L -= length;
+	auto origData = Xi->data;
+	Xi->data = new BYTE[Xi->L];
+	memcpy(Xi->data, &origData[length], Xi->L);
+	delete origData; origData = nullptr;
+	return true;
+}
+
+bool XPage::_enhLeafItem(size_t iIndex, BYTE length)
+{
+	if (_leafItems.size() < iIndex + 1) return false; // polozka neexistuje
+	auto prevXi = _leafItems[iIndex - 1]; // mazana polozka, z teto budeme brat data
+	auto Xi = _leafItems[iIndex]; // aktualizovana (rozsirovana) polozka	
+	Xi->M -= length;
+	Xi->L += length;
+	auto origData = Xi->data;
+	Xi->data = new BYTE[Xi->L];
+	memcpy(Xi->data, &prevXi->data[prevXi->L - length - 1], length); // z predchoziho zaznamu zkopirujeme X poslednich Bytu
+	memcpy(&Xi->data[length], origData, Xi->L - length); // a doplnime je puvodnimi daty
+	delete origData; origData = nullptr;
+	return true;
 }
 
 XKey::XKey()
@@ -3306,7 +3357,7 @@ void XKey::InsertItem(XString& XX, XPage* P, XPage* UpP, longint Page, WORD I, X
 	P->Insert(I, &XX.S, X);
 	UpPage = 0;
 	if (P->Overflow()) {
-		printf("");
+		printf("XKey::InsertItem overflow");
 		/*UpPage = XF()->NewPage(UpP);
 		P->SplitPage(UpP, Page);
 		if (I <= UpP->NItems) *X = UpP->XI(I, P->IsLeaf);
@@ -3321,15 +3372,16 @@ void XKey::InsertLeafItem(XString& XX, XPage* P, XPage* UpP, longint Page, WORD 
 	UpPage = 0;
 	if (P->ItemsSize() > sizeof(P->A)) {
 		printf("XKey::InsertLeafItem() PREKROCENA VELIKOST STRANKY");
-		
-		//UpPage = XF()->NewPage(UpP);
-		//P->SplitPage(UpP, Page);
-		//if (I <= UpP->NItems) *X = UpP->XI(I, P->IsLeaf);
-		//else *X = P->XI(I - UpP->NItems, P->IsLeaf);
-		//XX.S = UpP->StrI(UpP->NItems);
+		UpPage = XF()->NewPage(UpP);
+		P->SplitPage(UpP, Page);
+		// TODO: NUTNO DORESIT, CO SE TADY DEJE
+		// *X byl puvodne parametr metody
+		// if (I <= UpP->NItems) *X = UpP->XI(I, P->IsLeaf);
+		// else *X = P->XI(I - UpP->NItems, P->IsLeaf);
+		XX.S = UpP->StrI(UpP->NItems);
 	}
 	else {
-		// pregenerujeme z vektoru P->A
+		// pregenerujeme data z vektoru do P->A
 		P->GenArrayFromVectorItems();
 	}
 }
@@ -3373,49 +3425,63 @@ bool XKey::Insert(longint RecNr, bool Try)
 
 void XKey::DeleteOnPath()
 {
-	longint page, page1, page2;
+	longint page = 0;
+	longint page1 = 0;
+	longint page2 = 0;
 	longint uppage = 0;
 	void* pp = nullptr;
 	XItem* x = nullptr;
-	bool released;
-	longint n;
+	bool released = false;
+	longint n = 0;
 
 	MarkStore(pp);
-	XPage* p = (XPage*)GetStore(2 * XPageSize);
-	XPage* p1 = (XPage*)GetStore(2 * XPageSize);
-	XPage* p2 = (XPage*)GetStore(2 * XPageSize);
+	XPage* p = new XPage(); // (XPage*)GetStore(2 * XPageSize);
+	XPage* p1 = new XPage(); // (XPage*)GetStore(2 * XPageSize);
+	XPage* p2 = new XPage(); // (XPage*)GetStore(2 * XPageSize);
 	XPage* upp = p2;
-	for (WORD j = XPathN; j > 1; j--) {
-		page = XPath[j].Page; XF()->RdPage(p, page); WORD i = XPath[j].I;
+	for (WORD j = XPathN; j >= 1; j--) {
+		page = XPath[j].Page;
+		XF()->RdPage(p, page);
+		WORD i = XPath[j].I;
 		if (p->IsLeaf) p->Delete(i);
 		else if (upp->Underflow()) {
 			XF()->WrPage(upp, uppage);
 			WORD i1 = i - 1;
 			WORD i2 = i;
 			if (i1 == 0) { i1 = 1; i2 = 2; }
-			XIDown(p, p1, i1, page1); XIDown(p, p2, i2, page2);
+			XIDown(p, p1, i1, page1);
+			XIDown(p, p2, i2, page2);
 			BalancePages(p1, p2, released);
-			XF()->WrPage(p1, page1); p->Delete(i1);
+			XF()->WrPage(p1, page1);
+			p->Delete(i1);
 			if (released) {
 				XF()->ReleasePage(p2, page2);
 				if (i1 > p->NItems) p->GreaterPage = page1;
-				else { p->InsDownIndex(i1, page1, p1); p->Delete(i2); }
+				else {
+					p->InsDownIndex(i1, page1, p1);
+					p->Delete(i2);
+				}
 			}
 			else {
-				XF()->WrPage(p2, page2); p->InsDownIndex(i1, page1, p1);
+				XF()->WrPage(p2, page2);
+				p->InsDownIndex(i1, page1, p1);
 				if (i2 <= p->NItems) {
-					p->Delete(i2); p->InsDownIndex(i2, page2, p2);
+					p->Delete(i2);
+					p->InsDownIndex(i2, page2, p2);
 				}
 			}
 		}
 		else {
 			if (upp->Overflow()) {
-				page1 = XF()->NewPage(p1); upp->SplitPage(p1, uppage);
-				XF()->WrPage(p1, page1); p->InsDownIndex(i, page1, p1); i++;
+				page1 = XF()->NewPage(p1);
+				upp->SplitPage(p1, uppage);
+				XF()->WrPage(p1, page1);
+				p->InsDownIndex(i, page1, p1); i++;
 			}
 			XF()->WrPage(upp, uppage);
 			if (i <= p->NItems) {
-				p->Delete(i); p->InsDownIndex(i, uppage, upp);
+				p->Delete(i);
+				p->InsDownIndex(i, uppage, upp);
 			}
 		}
 		uppage = page;
@@ -3424,14 +3490,20 @@ void XKey::DeleteOnPath()
 		p = px;
 	}
 	if (upp->Overflow()) {
-		page1 = XF()->NewPage(p1); upp->SplitPage(p1, uppage); page = XF()->NewPage(p);
-		p->GreaterPage = page; p->InsDownIndex(1, page1, p1);
-		XF()->WrPage(p1, page1); XF()->WrPage(p, uppage); XF()->WrPage(upp, page);
+		page1 = XF()->NewPage(p1);
+		upp->SplitPage(p1, uppage);
+		page = XF()->NewPage(p);
+		p->GreaterPage = page;
+		p->InsDownIndex(1, page1, p1);
+		XF()->WrPage(p1, page1);
+		XF()->WrPage(p, uppage);
+		XF()->WrPage(upp, page);
 	}
 	else {
 		page1 = upp->GreaterPage;
 		if ((upp->NItems == 0) && (page1 > 0)) {
-			XF()->RdPage(p1, page1); Move(p1, upp, XPageSize);
+			XF()->RdPage(p1, page1);
+			Move(p1, upp, XPageSize);
 			XF()->ReleasePage(p1, page1);
 		}
 		XF()->WrPage(upp, uppage);
@@ -3441,13 +3513,13 @@ void XKey::DeleteOnPath()
 
 void XKey::BalancePages(XPage* P1, XPage* P2, bool& Released)
 {
-	longint n; WORD sz;
-	n = P1->GreaterPage;
+	longint n = P1->GreaterPage;
 	P1->AddPage(P2);
-	sz = P1->EndOff() - uintptr_t(P1);
+	WORD sz = P1->EndOff() - uintptr_t(P1);
 	if (sz <= XPageSize) Released = true;
 	else {
-		Released = false; Move(P1, P2, sz);
+		Released = false;
+		Move(P1, P2, sz);
 		P2->SplitPage(P1, n);
 	}
 }

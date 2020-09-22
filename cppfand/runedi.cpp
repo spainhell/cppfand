@@ -17,8 +17,8 @@ EFldD* CFld;
 
 //EditD* E = EditDRoot;
 EFldD* FirstEmptyFld;
-KeyDPtr VK;
-WKeyDPtr WK;
+KeyD* VK;
+XWKey* WK;
 longint BaseRec;
 BYTE IRec;
 bool IsNewRec, Append, Select, WasUpdated, EdRecVar;
@@ -3882,7 +3882,7 @@ label81:
 				GotoRecFld(CRec(), FirstEmptyFld);
 			else GotoRecFld(CRec(), E->LastFld);
 			break;
-		case 'M':
+		case VK_RETURN: // puvodne _M_
 			if (SelMode && (E->SelKey != nullptr) && !IsNewRec) {
 				if (WriteCRec(true, Displ)) {
 					if ((E->SelKey != nullptr) && (E->SelKey->NRecs() == 0)) ToggleSelectRec();

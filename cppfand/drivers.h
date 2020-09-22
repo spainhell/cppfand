@@ -28,11 +28,15 @@ const WORD mbDoubleClick = 0x0100;
 struct TEvent
 {
 	WORD What = 0;
+	KEY_EVENT_RECORD Pressed;
 	WORD KeyCode = 0;
 	WORD Buttons = 0;
 	TPoint Where;
 	TPoint WhereG;
 	TPoint From;
+	bool shift() { return Pressed.dwControlKeyState & SHIFT_PRESSED; }
+	bool alt() { return Pressed.dwControlKeyState & (LEFT_ALT_PRESSED | RIGHT_ALT_PRESSED); }
+	bool ctrl() { return Pressed.dwControlKeyState & (LEFT_CTRL_PRESSED | RIGHT_CTRL_PRESSED); }
 };
 
 extern TEvent Event; // r39
