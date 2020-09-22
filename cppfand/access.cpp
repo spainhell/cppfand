@@ -2850,9 +2850,10 @@ void XPage::InsDownIndex(WORD I, longint Page, XPage* P)
 void XPage::Delete(WORD I)
 {
 	genItems();
+	// polozka ke smazani
+	auto Xi = _leafItems[I - 1];
 	if (I < NItems) {
 		// tato polozka (I - 1) neni posledni, bude se asi muset upravovat polozka za ni (I)
-		auto Xi = _leafItems[I - 1];
 		auto nextXi = _leafItems[I];
 		integer d = nextXi->M - Xi->M;
 		if (d > 0) {
@@ -2861,8 +2862,11 @@ void XPage::Delete(WORD I)
 		}
 	}
 
-	// polozku smazeme
+	// polozku smazeme z vektoru
 	_leafItems.erase(_leafItems.begin() + (I - 1));
+	
+	// polozku smazeme z pameti
+	delete Xi; Xi = nullptr;
 
 	// pregenerujeme pole
 	NItems--;

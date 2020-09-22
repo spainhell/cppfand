@@ -22,3 +22,26 @@ private:
 	void _read();
 };
 
+class PressedKey
+{
+public:
+	PressedKey() = default;
+	PressedKey(KEY_EVENT_RECORD& key);
+	char Char();
+	unsigned __int32 KeyDescr();
+	unsigned __int32 SimpleKeyDescr();
+	bool Shift();
+	bool Alt();
+	bool Ctrl();
+	bool Enhanced();
+	bool CapsLock();
+	bool ScrollLock();
+	bool NumLock();
+	bool LeftAlt();
+	bool RightAlt();
+	bool LeftCtrl();
+	bool RightCtrl();
+private:
+	KEY_EVENT_RECORD _key;
+};
+

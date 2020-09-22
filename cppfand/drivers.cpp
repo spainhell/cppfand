@@ -12,7 +12,6 @@
 #include "../pascal/random.h"
 #include "base.h"
 #include "editor.h"
-#include "keyboard.h"
 #include "legacy.h"
 #include "obaseww.h"
 #include "screen.h"
@@ -63,7 +62,7 @@ bool BreakFlag = false;
 BYTE diHacek = 1; const BYTE diCarka = 2; const BYTE diUmlaut = 3;
 char Diak = 0; /*diHacek, diCarka*/
 
-BYTE TabKtL[256] = {  /* unsigned charicky to Latin2 */
+BYTE TabKtL[256] = {  /* Kamenicky to Latin2 */
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 	0xac,0x81,0x82,0xd4,0x84,0xd2,0x9b,0x9f,0xd8,0xb7,0x91,0xd6,0x96,0x92,0x8e,0xb5,
@@ -75,7 +74,7 @@ BYTE TabKtL[256] = {  /* unsigned charicky to Latin2 */
 	0xe0,0xe1,0xe2,0xe3,0xe4,0xe5,0xe6,0xe7,0xe8,0xe9,0xea,0xeb,0xec,0xed,0xee,0xef,
 	0xf0,0xf1,0xf2,0xf3,0xf4,0xf5,0xf6,0xf7,0xf8,0xf9,0xfa,0xfb,0xfc,0xfd,0xfe,0xff };
 
-BYTE TabLtK[256] = {  /*Latin2 to Kamenicky */
+BYTE TabLtK[256] = {  /* Latin2 to Kamenicky */
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 	0x80,0x81,0x82,0x83,0x84,0x96,0x86,0x87,0x88,0x89,0xb6,0xb5,0x8c,0x8d,0x8e,0x8f,
@@ -181,18 +180,15 @@ void GetKeyEvent()
 	KEY_EVENT_RECORD key;
 	bool exists = false;
 	bool pressed = false;
-	WORD code = 0;
 
 	do {
 		exists = keyboard.Get(key);
 		if (exists && key.bKeyDown)
 		{
-			code = key.wVirtualKeyCode;
-			if (code == 0) continue;
-			Event.Pressed = key;
+			Event.Pressed = PressedKey(key);
 			Event.What = evKeyDown;
-			Event.KeyCode = code;
-			KbdChar = key.uChar.AsciiChar & 0x00FF; // èeské znaky jsou 0xFFxx
+			Event.KeyCode = key.wVirtualKeyCode;
+			KbdChar = key.uChar.AsciiChar; // èeské znaky jsou 0x80 - 0xFF
 			return;
 		}
 	} while (exists);
