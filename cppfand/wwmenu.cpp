@@ -226,44 +226,53 @@ label1:
 		else if (MouseInRect(0, TxtRows - 1, TxtCols, 1)) goto label2;
 		else if (ParentsContain(&Event.Where)) { KbdChar = _ESC_; return; }}
 	case evKeyDown: {
-		switch (Event.KeyCode) {
-		case VK_HOME:
-		case VK_PRIOR: {
-			iTxt = 0;
-			Next();
-			WrText(i);
-			break;
-		}
-		case VK_END:
-		case VK_NEXT: {
-			iTxt = nTxt + 1;
-			Prev();
-			WrText(i);
-			break;
-		}
-		case VK_F1: {
-		label2:
-			ClrEvent();
-			if (HlpRdb != nullptr) Help(HlpRdb, hlp, false);
-			KbdChar = 0;
-			break;
-		}
-		case _AltF10_: {
-			ClrEvent();
-			Help(nullptr, "", false);
-			KbdChar = 0;
-			break;
-		}
-		case _AltF2_: {
-			if (IsTestRun && !IsBoxS) {
-				ClrEvent();
-				EditHelpOrCat(_AltF2_, 2, hlp);
-				KbdChar = 0;
+		if (Event.Pressed.Char() == '\0') {
+			switch (Event.KeyCode) {
+			case VK_HOME:
+			case VK_PRIOR: {
+				iTxt = 0;
+				Next();
+				WrText(i);
+				break;
 			}
-			break;
+			case VK_END:
+			case VK_NEXT: {
+				iTxt = nTxt + 1;
+				Prev();
+				WrText(i);
+				break;
+			}
+			case VK_F1: {
+			label2:
+				ClrEvent();
+				if (HlpRdb != nullptr) Help(HlpRdb, hlp, false);
+				KbdChar = 0;
+				break;
+			}
+			case VK_F10: {
+				if (Event.Pressed.Alt()) {
+					ClrEvent();
+					Help(nullptr, "", false);
+					KbdChar = 0;
+				}
+				break;
+			}
+			case VK_F2: {
+				if (Event.Pressed.Alt() && IsTestRun && !IsBoxS) {
+					ClrEvent();
+					EditHelpOrCat(_AltF2_, 2, hlp);
+					KbdChar = 0;
+				}
+				break;
+			}
+			default: {
+				KbdChar = Event.KeyCode;
+				break;
+			}
+			}
 		}
-		default:
-			KbdChar = Event.KeyCode; break;
+		else {
+			KbdChar = Event.KeyCode;
 		}
 		break;
 	}
@@ -278,7 +287,6 @@ label1:
 	}
 	}
 	ClrEvent();
-	//if (frst) { DisplLLHelp(HlpRdb, hlp, false); frst = false; }
 }
 
 bool TMenu::IsMenuBar()
