@@ -1317,7 +1317,7 @@ void MoveFromXMS(WORD NPage, void* Dest)
 
 bool CacheExist()
 {
-	return NCachePages > 0;
+	return !cache.Empty();
 }
 
 void SetMyHeapEnd()

@@ -32,17 +32,17 @@ void OpenTWorkH()
 
 void SaveFD()
 {
-	WrPrefixes(); if (CFile->Typ == 'X') CFile->XF->NoCreate = false;
+	WrPrefixes(); 
+	if (CFile->Typ == 'X') CFile->XF->NoCreate = false;
 }
 
 void SaveFiles()
-{
-	bool b = false; WORD i = 0; FileD* cf = nullptr;
+{ 
 	if (!CacheExist()) return;
-	cf = CFile; CFile = CatFD;
+	FileD* cf = CFile; CFile = CatFD;
 	WrPrefixes();
 	ForAllFDs(SaveFD);
-	b = SaveCache(0, CFile->Handle);
+	bool b = SaveCache(0, CFile->Handle);
 	FlushHandles();
 	CFile = cf;
 	if (!b) GoExit();

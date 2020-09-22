@@ -188,7 +188,7 @@ void GetKeyEvent()
 			Event.Pressed = PressedKey(key);
 			Event.What = evKeyDown;
 			Event.KeyCode = key.wVirtualKeyCode;
-			KbdChar = key.uChar.AsciiChar; // èeské znaky jsou 0x80 - 0xFF
+			KbdChar = (BYTE)key.uChar.AsciiChar; // èeské znaky jsou 0x80 - 0xFF
 			return;
 		}
 	} while (exists);

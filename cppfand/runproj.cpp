@@ -1052,7 +1052,9 @@ void CreateOpenChpt(pstring* Nm, bool create, wwmix* ww)
 	//R = (RdbD*)GetZStore(sizeof(*R));
 	RdbD* R = new RdbD();
 	TFile* oldChptTF = ChptTF;
-	R->ChainBack = CRdb; R->OldLDRoot = LinkDRoot; R->OldFCRoot = FuncDRoot;
+	R->ChainBack = CRdb;
+	R->OldLDRoot = LinkDRoot;
+	R->OldFCRoot = FuncDRoot;
 	MarkStore2(R->Mark2);
 	RdMsg(51); s = MsgLine; RdMsg(48);
 	val(MsgLine, n, i);
@@ -1071,7 +1073,12 @@ void CreateOpenChpt(pstring* Nm, bool create, wwmix* ww)
 	SetChptFldDPtr();
 	if (!spec.RDBcomment) ChptTxt->L = 1;
 	SetMsgPar(p);
-	if (top) { UserName = ""; UserCode = 0; AccRight[0] = 0; goto label2; }
+	if (top) { 
+		UserName = ""; 
+		UserCode = 0; 
+		AccRight[0] = 0; 
+		goto label2; 
+	}
 	if (CRdb->ChainBack != nullptr)	CRdb->HelpFD = CRdb->ChainBack->HelpFD;
 label1:
 	ChDir(R->RdbDir);
@@ -1089,12 +1096,14 @@ label2:
 		if (ChptTF->CompileAll) ResetRdOnly();
 		else if (!top && oldChptTF != nullptr && (ChptTF->TimeStmp < oldChptTF->TimeStmp)) {
 			// TODO: oldChptTF != nullptr je v podmínce navíc, protože další podmínka vždy vyhoøela 
-			ResetRdOnly(); SetCompileAll();
+			ResetRdOnly(); 
+			SetCompileAll();
 		}
 		goto label3;
 	}
 	if (!create || (top && !IsTestRun)) RunError(631);
-	OpenCreateF(Exclusive); SetCompileAll();
+	OpenCreateF(Exclusive); 
+	SetCompileAll();
 label3:
 	if (ww->HasPassWord(Chpt, 1, "")) CRdb->Encrypted = false;
 	else CRdb->Encrypted = true;
