@@ -73,3 +73,16 @@ std::string RegexFromString(std::string Mask)
 	
 	return Mask;
 }
+
+bool FindShiftCtrlAltFxx(std::string input, std::string& key, unsigned char& fnKeyNr)
+{
+	std::regex self_regex("^(shift|ctrl|alt|)f(\\d{1,2})$", std::regex_constants::icase);
+	std::smatch sm;
+	if (std::regex_search(input, sm, self_regex)) {
+		key = sm[1];
+		for (size_t i = 0; i < key.length(); i++) key[i] = (char)tolower(key[i]);
+		fnKeyNr = (unsigned char)std::stoi(sm[2]);
+		return true;
+	}
+	return false;
+}

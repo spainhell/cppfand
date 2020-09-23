@@ -38,10 +38,9 @@ Instr_forall* RdForAll();
 Instr* RdBeginEnd();
 Instr_proc* RdProcArg(char Caller);
 void RdKeyCode(EdExitD* X);
-bool NotCode(pstring Nm, WORD CodeBase, WORD BrkBase, EdExKeyD* E);
 
 const BYTE NKeyNames = 21;
-struct kNames { pstring Nm; BYTE Brk; WORD Code; };
+struct kNames { pstring Nm; BYTE Brk; unsigned __int32 Code; };
 extern kNames KeyNames[NKeyNames];
 bool RdHeadLast(EditOpt* EO);
 bool RdHeadLast(Instr_edittxt* IE);

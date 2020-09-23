@@ -4300,7 +4300,7 @@ void* GetRecSpace2()
 
 WORD CFileRecSize()
 {
-	return 0;
+	return CFile->RecLen;
 }
 
 void SetTWorkFlag()

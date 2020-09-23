@@ -5,31 +5,32 @@
 #include "rdfildcl.h"
 #include "rdrun.h"
 #include "runfrml.h"
+#include "../exprcmp/exprcmp.h"
 #include "models/Instr.h"
 
 bool IsRdUserFunc;
 kNames KeyNames[NKeyNames] = {
-	{"HOME", 51, _Home_},
-	{"UP", 52, _up_},
-	{"PGUP", 53, _PgUp_},
-	{"LEFT", 55, _left_},
-	{"RIGHT", 57, _right_},
-	{"END", 59, _End_},
-	{"DOWN", 60, _down_},
-	{"PGDN", 61, _PgDn_},
-	{"INS", 62, _Ins_},
-	{"CTRLLEFT", 71, _CtrlLeft_},
-	{"CTRLRIGHT", 72, _CtrlRight_},
-	{"CTRLEND", 73, _CtrlEnd_},
-	{"CTRLPGDN", 74, _CtrlPgDn_},
-	{"CTRLHOME", 75, _CtrlHome_},
-	{"CTRLPGUP", 76, _CtrlPgUp_},
-	{"TAB", 77, _Tab_},
-	{"SHIFTTAB", 78, _ShiftTab_},
-	{"CTRLN", 79, _N_},
-	{"CTRLY", 80, _Y_},
-	{"ESC", 81, _ESC_},
-	{"CTRLP", 82, _P_} };
+	{"HOME", 51, VK_HOME},
+	{"UP", 52, VK_UP},
+	{"PGUP", 53, VK_NEXT},
+	{"LEFT", 55, VK_LEFT},
+	{"RIGHT", 57, VK_RIGHT},
+	{"END", 59, VK_END},
+	{"DOWN", 60, VK_DOWN},
+	{"PGDN", 61, VK_NEXT},
+	{"INS", 62, VK_INSERT},
+	{"CTRLLEFT", 71, CTRL + VK_LEFT},
+	{"CTRLRIGHT", 72, CTRL + VK_RIGHT},
+	{"CTRLEND", 73, CTRL + VK_END},
+	{"CTRLPGDN", 74, CTRL + VK_NEXT},
+	{"CTRLHOME", 75, CTRL + VK_HOME},
+	{"CTRLPGUP", 76, CTRL + VK_PRIOR},
+	{"TAB", 77, VK_TAB},
+	{"SHIFTTAB", 78, SHIFT + VK_TAB},
+	{"CTRLN", 79, CTRL + 'N'},
+	{"CTRLY", 80, CTRL + 'Y'},
+	{"ESC", 81, VK_ESCAPE},
+	{"CTRLP", 82, CTRL + 'P'} };
 
 Instr* RdPInstr();
 
@@ -933,18 +934,46 @@ Instr_proc* RdProcArg(char Caller)
 	return PD;
 }
 
+void SetCode(std::string keyName, BYTE fnNr, EdExKeyD* E)
+{
+	if (keyName.empty()) {
+		// pouze F1-F12
+		E->KeyCode = VK_F1 + fnNr - 1;
+		E->Break = 20 + fnNr;
+	}
+	else if (keyName == "shift") {
+		// Shift F1-F12
+		E->KeyCode = SHIFT + VK_F1 + fnNr - 1;
+		E->Break = 0 + fnNr;
+	}
+	else if (keyName == "ctrl") {
+		// Ctrl F1-F12
+		E->KeyCode = CTRL + VK_F1 + fnNr - 1;
+		E->Break = 30 + fnNr;
+	}
+	else if (keyName == "shift") {
+		// Alt F1-F12
+		E->KeyCode = ALT + VK_F1 + fnNr - 1;
+		E->Break = 40 + fnNr;
+	}
+}
+
 void RdKeyCode(EdExitD* X)
 {
 	WORD i = 0;
 	EdExKeyD* E = new EdExKeyD();
-	//E = (EdExKeyD*)GetStore(sizeof(EdExKeyD));
 	E->Chain = X->Keys;
 	X->Keys = E;
-	if (NotCode("F", _F1_, 21, E)
-		&& NotCode("ShiftF", _ShiftF1_, 1, E)
-		&& NotCode("CtrlF", _CtrlF1_, 31, E)
-		&& NotCode("AltF", _AltF1_, 41, E))
+
+	std::string key; // tady bude "shift" | "ctrl" | "alt"
+	BYTE fnNr; // tady bude cislo funkci klavesy
+
+	if (FindShiftCtrlAltFxx(LexWord, key, fnNr))
 	{
+		SetCode(key, fnNr, E);
+		RdLex();
+	}
+	else {
 		for (i = 0; i < NKeyNames; i++)
 		{
 			/* !!! with KeyNames[i] do!!! */
@@ -957,20 +986,6 @@ void RdKeyCode(EdExitD* X)
 		}
 		Error(129);
 	}
-}
-
-bool NotCode(pstring Nm, WORD CodeBase, WORD BrkBase, EdExKeyD* E)
-{
-	WORD i = 0, k = 0;
-	if (Lexem != _identifier) return true;
-	if (!SEquUpcase(copy(LexWord, 1, Nm.length()), Nm)) return true;
-	val(copy(LexWord, Nm.length() + 1, 2), i, k);
-	if ((k != 0) || (i <= 0) || (i > 10)) return true;
-	i--;
-	RdLex();
-	E->KeyCode = CodeBase + (i << 8);
-	E->Break = BrkBase + i;
-	return false;
 }
 
 bool RdHeadLast(EditOpt* EO)

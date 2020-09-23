@@ -897,7 +897,21 @@ void AdjustCRec()
 void WrEStatus()
 {
 	E->CFld = CFld;
-	Move(FirstEmptyFld, &E->FirstEmptyFld, uintptr_t(SelMode) - uintptr_t(FirstEmptyFld) + 1);
+	// Move(FirstEmptyFld, &E->FirstEmptyFld, uintptr_t(SelMode) - uintptr_t(FirstEmptyFld) + 1);
+	E->FirstEmptyFld = FirstEmptyFld;
+	E->VK = VK;	E->WK = WK; E->BaseRec = BaseRec; E->IRec = IRec;
+	E->IsNewRec = IsNewRec; E->Append = Append; E->Select = Select;
+	E->WasUpdated = WasUpdated; E->EdRecVar = EdRecVar;	E->AddSwitch = AddSwitch;
+	E->ChkSwitch = ChkSwitch; E->WarnSwitch = WarnSwitch; E->SubSet = Subset;
+	E->NoDelTFlds = NoDelTFlds; E->WasWK = WasWK; E->NoDelete = NoDelete;
+	E->VerifyDelete = VerifyDelete; E->NoCreate = NoCreate; E->F1Mode = F1Mode;
+	E->OnlyAppend = OnlyAppend; E->OnlySearch = OnlySearch;	E->Only1Record = Only1Record;
+	E->OnlyTabs = OnlyTabs; E->NoESCPrompt = NoESCPrompt; E->MustESCPrompt = MustESCPrompt;
+	E->Prompt158 = Prompt158; E->NoSrchMsg = NoSrchMsg; E->WithBoolDispl = WithBoolDispl;
+	E->Mode24 = Mode24; E->NoCondCheck = NoCondCheck; E->F3LeadIn = F3LeadIn;
+	E->LUpRDown = LUpRDown; E->MouseEnter = MouseEnter; E->TTExit = TTExit;
+	E->MakeWorkX = MakeWorkX; E->NoShiftF7Msg = NoShiftF7Msg; E->MustAdd = MustAdd;
+	E->MustCheck = MustCheck; E->SelMode = SelMode;
 }
 
 void RdEStatus()
@@ -3437,23 +3451,34 @@ void F6Proc()
 longint GetEdRecNo()
 {
 	if (IsNewRec) return 0;
-	else if (E->IsLocked) return E->LockedRec;
-	else return AbsRecNr(CRec());
+	if (E->IsLocked) return E->LockedRec;
+	return AbsRecNr(CRec());
 }
 
 void SetEdRecNoEtc(longint RNr)
 {
-	XString* x = (XString*)&EdRecKey; void* cr; KeyD* k;
-	EdField = CFld->FldD->Name; EdIRec = IRec; EdRecKey = ""; EdKey = "";
-	EdRecNo = RNr; if (RNr == 0) EdRecNo = GetEdRecNo(); if (VK == nullptr) return;
+	XString x;
+	x.S = EdRecKey;
+	EdField = CFld->FldD->Name;
+	EdIRec = IRec;
+	EdRecKey = "";
+	EdKey = "";
+	EdRecNo = RNr;
+	if (RNr == 0) EdRecNo = GetEdRecNo();
+	if (VK == nullptr) return;
 	if (!WasWK && (VK->Alias != nullptr)) {
-		EdKey = *VK->Alias; if (EdKey == "") EdKey = '@';
+		EdKey = *VK->Alias;
+		if (EdKey == "") EdKey = "@";
 	}
 	if (!IsNewRec) {
-		cr = CRecPtr; if (WasUpdated) CRecPtr = E->OldRecPtr;
-		k = VK; if (Subset) k = WK;
-		x->PackKF(k->KFlds); CRecPtr = cr;
+		void* cr = CRecPtr;
+		if (WasUpdated) CRecPtr = E->OldRecPtr;
+		KeyD* k = VK;
+		if (Subset) k = WK;
+		x.PackKF(k->KFlds);
+		CRecPtr = cr;
 	}
+	EdRecKey = x.S;
 }
 
 bool StartProc(Instr_proc* ExitProc, bool Displ)
@@ -3478,12 +3503,11 @@ bool StartProc(Instr_proc* ExitProc, bool Displ)
 	b2 = HasUpdFlag();
 	SetWasUpdated();
 	ClearUpdFlag();
-	/* !!! with ExitProc->TArg[ExitProc->N] do!!! */
-	{
-		auto tempX = ExitProc->TArg[ExitProc->N - 1];
-		tempX.FD = CFile;
-		tempX.RecPtr = CRecPtr;
-	}
+
+	// upravime argumenty exit procedury
+	ExitProc->TArg[ExitProc->N - 1].FD = CFile;
+	ExitProc->TArg[ExitProc->N - 1].RecPtr = CRecPtr;
+
 	md = CFile->LMode;
 	WrEStatus();                            /*t = currtime;*/
 	CallProcedure(ExitProc);

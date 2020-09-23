@@ -154,13 +154,13 @@ struct EdExKeyD
 {
 	EdExKeyD* Chain = nullptr;
 	BYTE Break = 0;
-	WORD KeyCode = 0;
+	unsigned __int32 KeyCode = 0;
 };
 
 struct EdExitD : Chained
 {
-	//EdExitD* Chain = nullptr;
-	EdExKeyD* Keys = nullptr;;
+	//EdExKeyD* Keys = nullptr;
+	std::vector<EdExKeyD> Keys;
 	bool AtWrRec = false, AtNewRec = false, NegFlds = false;
 	FieldList Flds = nullptr;    /*in edittxt !used*/
 	char Typ = 0;
