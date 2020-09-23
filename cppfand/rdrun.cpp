@@ -331,7 +331,16 @@ bool RunAddUpdte(char Kind, void* CRold, LinkD* notLD)
 
 bool TestExitKey(WORD KeyCode, EdExitD* X)
 {
-	EdExKeyD* E = X->Keys;
+	for (auto& key : X->Keys)
+	{
+		if (KeyCode == key.KeyCode) {
+			EdBreak = key.Break;
+			return true;
+		}
+	}
+	return false;
+	
+	/*EdExKeyD* E = X->Keys;
 	while (E != nullptr) {
 		if (KeyCode == E->KeyCode) {
 			EdBreak = E->Break;
@@ -339,7 +348,7 @@ bool TestExitKey(WORD KeyCode, EdExitD* X)
 		}
 		E = E->Chain;
 	}
-	return false;
+	return false;*/
 }
 
 void SetCompileAll()

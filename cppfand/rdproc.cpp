@@ -961,16 +961,16 @@ void SetCode(std::string keyName, BYTE fnNr, EdExKeyD* E)
 void RdKeyCode(EdExitD* X)
 {
 	WORD i = 0;
-	EdExKeyD* E = new EdExKeyD();
-	E->Chain = X->Keys;
-	X->Keys = E;
+	X->Keys.push_back(EdExKeyD());
+	EdExKeyD* lastKey = &X->Keys.back();
 
 	std::string key; // tady bude "shift" | "ctrl" | "alt"
 	BYTE fnNr; // tady bude cislo funkci klavesy
 
+	lastKey->KeyName = LexWord;
 	if (FindShiftCtrlAltFxx(LexWord, key, fnNr))
 	{
-		SetCode(key, fnNr, E);
+		SetCode(key, fnNr, lastKey);
 		RdLex();
 	}
 	else {
@@ -978,8 +978,8 @@ void RdKeyCode(EdExitD* X)
 		{
 			/* !!! with KeyNames[i] do!!! */
 			if (EquUpcase(KeyNames[i].Nm, LexWord)) {
-				E->KeyCode = KeyNames[i].Code;
-				E->Break = KeyNames[i].Brk;
+				lastKey->KeyCode = KeyNames[i].Code;
+				lastKey->Break = KeyNames[i].Brk;
 				RdLex();
 				return;
 			}

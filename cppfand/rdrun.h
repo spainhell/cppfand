@@ -152,7 +152,7 @@ struct LvDescr {
 
 struct EdExKeyD
 {
-	EdExKeyD* Chain = nullptr;
+	std::string KeyName;
 	BYTE Break = 0;
 	unsigned __int32 KeyCode = 0;
 };
