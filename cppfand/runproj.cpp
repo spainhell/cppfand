@@ -1635,8 +1635,9 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 					if (OldTxt > 0) MergeOldNew(Verif, OldTxt);
 					ReleaseStore(p1);
 					CFile = Chpt;
-					if (ChptTF->LicenseNr == 0) ChptTF->Delete(OldTxt);
-					else if (OldTxt != 0) ChptTF->Delete(OldTxt - ChptTF->LicenseNr);
+					// Odmazani dat z TTT souboru nebudeme provadet!
+					/*if (ChptTF->LicenseNr == 0) ChptTF->Delete(OldTxt);
+					else if (OldTxt != 0) ChptTF->Delete(OldTxt - ChptTF->LicenseNr);*/
 				}
 				else if (!RdFDSegment(I, OldTxt)) {
 					LinkDRoot = ld;

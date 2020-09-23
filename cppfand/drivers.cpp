@@ -264,8 +264,9 @@ void TestGlobalKey()
 	WORD i;
 	bool InMenu6 = false; bool InMenu8 = false;
 	if (Event.What != evKeyDown) return;
-	switch (Event.KeyCode) {
-	case _AltF8_:
+	if (Event.Pressed.isChar()) return;
+	switch (Event.Pressed.Function()) {
+	case VK_F8 + ALT:
 	{
 		if (!InMenu8)
 		{
@@ -275,7 +276,7 @@ void TestGlobalKey()
 		}
 		break;
 	}
-	case _AltF6_:
+	case VK_F6 + ALT:
 	{
 		if (!InMenu6)
 		{
@@ -283,7 +284,7 @@ void TestGlobalKey()
 		}
 		break;
 	}
-	case _ESC_:
+	case VK_ESCAPE:
 	{
 		if (LLKeyFlags != 0) { LLKeyFlags = 0; ClrEvent(); }
 		break;

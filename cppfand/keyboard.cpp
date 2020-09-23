@@ -106,14 +106,31 @@ unsigned __int32 PressedKey::KeyDescr()
 unsigned __int32 PressedKey::SimpleKeyDescr()
 {
 	// zjednodusena varianta bez rozliseni leve a prave strany
-	// 3. B (0x00000SCA) - SHIFT, CONTROL, ALT
+	// 3. B (0x00000ACS) - SHIFT, CONTROL, ALT
 	// 2. B Virtual Key Code
 	// 1. B znak CHAR
 	unsigned char ControlKey = 0;
-	if (Alt()) ControlKey += 1;
+	if (Alt()) ControlKey += 4;
 	if (Ctrl()) ControlKey += 2;
-	if (Shift()) ControlKey += 4;
+	if (Shift()) ControlKey += 1;
 	return (ControlKey << 16) + ((_key.wVirtualKeyCode & 0xFF) << 8) + _key.uChar.AsciiChar;
+}
+
+unsigned __int32 PressedKey::Function()
+{
+	unsigned __int32 result = _key.wVirtualKeyCode;
+	if (Shift()) result += SHIFT;
+	if (Alt()) result += ALT;
+	if (Ctrl()) result += CTRL;
+	return result;
+}
+
+/// jedna se tisknutelny znak?
+bool PressedKey::isChar()
+{
+	BYTE c = (BYTE)Char();
+	// muze byt se SHIFT, to znaci velke pismeno ...
+	return c >= 0x20 && c <= 0xFE && !Alt() && !Ctrl();
 }
 
 bool PressedKey::Shift()

@@ -47,25 +47,25 @@ void SetSelectFalse()
 	Select = false;
 }
 
-void DelBlk(BYTE* sLen, pstring* s, WORD pos)
+void DelBlk(BYTE& sLen, std::string s, WORD pos)
 {
-	while ((*sLen > 0) && ((*s)[*sLen] == ' ') && (pos <= *sLen)) sLen--;
+	while ((sLen > 0) && (s[sLen - 1] == ' ') && (pos <= sLen)) sLen--;
 }
 
-void WriteStr(WORD& pos, WORD& base, WORD& maxLen, WORD& maxCol, BYTE sLen, pstring* s, bool star,
+void WriteStr(WORD& pos, WORD& base, WORD& maxLen, WORD& maxCol, BYTE sLen, std::string s, bool star,
 	WORD cx, WORD cy, WORD cx1, WORD cy1)
 {
 	CHAR_INFO Buffer[MaxTxtCols];
 	if (pos <= base) base = pos - 1;
 	else if (pos > base + maxCol) { base = pos - maxCol; if (pos > maxLen) base--; }
 	if ((pos == base + 1) && (base > 0)) base--;
-	DelBlk(&sLen, s, pos);
+	DelBlk(sLen, s, pos);
 
 	for (WORD i = 0; i < maxCol; i++) {
 		Buffer[i].Attributes = TextAttr;
 		if (base + i + 1 <= sLen) {
 			if (star) Buffer[i].Char.AsciiChar = '*';
-			else Buffer[i].Char.AsciiChar = (*s)[base + i + 1];
+			else Buffer[i].Char.AsciiChar = s[base + i];
 			if (Buffer[i].Char.AsciiChar >= '\0' && Buffer[i].Char.AsciiChar < ' ')
 			{	// jedná se o netisknutelný znak ...
 				Buffer[i].Char.AsciiChar = Buffer[i].Char.AsciiChar + 64;
@@ -92,7 +92,7 @@ WORD EditTxt(pstring* s, WORD pos, WORD maxlen, WORD maxcol, char typ, bool del,
 	cy = screen.WhereY();
 	cy1 = cy + WindMin.Y - 1;
 	screen.CrsNorm();
-	WriteStr(pos, base, maxlen, maxcol, *sLen, s, star, cx, cy, cx1, cy1);
+	WriteStr(pos, base, maxlen, maxcol, *sLen, *s, star, cx, cy, cx1, cy1);
 label1:
 	switch (WaitEvent(Delta)) {
 	case 1/*flags*/: goto label1; break;
@@ -115,7 +115,7 @@ label1:
 			if (KbdChar >= 0x20 && KbdChar <= 0xFE)
 			{
 				pos = 1; *sLen = 0;
-				WriteStr(pos, base, maxlen, maxcol, *sLen, s, star, cx, cy, cx1, cy1);
+				WriteStr(pos, base, maxlen, maxcol, *sLen, *s, star, cx, cy, cx1, cy1);
 			}
 			del = false;
 		}
@@ -162,7 +162,7 @@ label1:
 		case VK_ESCAPE:
 		case VK_RETURN: {
 		label6:
-			DelBlk(sLen, s, pos);
+			DelBlk(*sLen, *s, pos);
 			screen.CrsHide(); TxtEdCtrlUBrk = false; TxtEdCtrlF4Brk = false;
 			return 0;
 		}
@@ -205,7 +205,7 @@ label1:
 		}
 	}
 	}
-	WriteStr(pos, base, maxlen, maxcol, *sLen, s, star, cx, cy, cx1, cy1);
+	WriteStr(pos, base, maxlen, maxcol, *sLen, *s, star, cx, cy, cx1, cy1);
 	ClrEvent();
 	if (!ret) goto label1;
 label8:
@@ -216,7 +216,7 @@ label8:
 WORD EditTxt(std::string& s, WORD pos, WORD maxlen, WORD maxcol, char typ, bool del, bool star, bool upd, bool ret,
 	WORD Delta)
 {
-	pstring tmp;
+	pstring tmp = s;
 	auto result = EditTxt(&tmp, pos, maxlen, maxcol, typ, del, star, upd, ret, Delta);
 	s = tmp;
 	return result;
@@ -1869,13 +1869,13 @@ bool ForNavigate(FileD* FD)
 	return result;
 }
 
-std::string GetFileViewName(FileD* FD, StringListEl* SL)
+std::string GetFileViewName(FileD* FD, StringListEl** SL)
 {
 	if (SL == nullptr) { return FD->Name; }
-	while (!TestAccRight(SL)) SL = (StringListEl*)SL->Chain;
 	std::string result = "\x1"; // ^A
-	result += SL->S;
-	do { SL = (StringListEl*)SL->Chain; } while (!(SL == nullptr) || TestAccRight(SL));
+	while (!TestAccRight(*SL)) *SL = (StringListEl*)(*SL)->Chain;
+	result += (*SL)->S;
+	do { *SL = (StringListEl*)(*SL)->Chain; } while (!(SL == nullptr || TestAccRight(*SL)));
 	return result;
 }
 
@@ -1952,7 +1952,8 @@ void UpwEdit(LinkDPtr LkD)
 	CFile->IRec = AbsRecNr(CRec());
 	WrEStatus();
 	if (LkD == nullptr) {
-		LD = LinkDRoot; while (LD != nullptr) {
+		LD = LinkDRoot;
+		while (LD != nullptr) {
 			ToFD = LD->ToFD;
 			if ((LD->FromFD == CFile) && ForNavigate(ToFD))
 			{
@@ -1960,18 +1961,19 @@ void UpwEdit(LinkDPtr LkD)
 				if (ToFD->Name != LD->RoleName) { s = "." + (std::string)LD->RoleName; }
 				SL = ToFD->ViewNames;
 				do {
-					s1 = GetFileViewName(ToFD, SL) + s;
-					ww.PutSelect(s1); SetPointTo(LD, &s1, &s2);
+					s1 = GetFileViewName(ToFD, &SL) + s;
+					ww.PutSelect(s1);
+					SetPointTo(LD, &s1, &s2);
 				} while (SL != nullptr);
 			}
 			LD = LD->Chain;
 		}
 		ss.Abcd = true;
 		ww.SelectStr(0, 0, 35, "");
-		if (KbdChar == _ESC_) goto label1;
+		if (KbdChar == VK_ESCAPE) goto label1;
 		GetSel2S(&s1, &s2, '.', 2); LD = LinkDRoot;
-		while (!((LD->FromFD == CFile) && EquRoleName(s2, LD)
-			&& EquFileViewName(LD->ToFD, s1, EO))) LD = LD->Chain;
+		while (!((LD->FromFD == CFile) && EquRoleName(s2, LD) && EquFileViewName(LD->ToFD, s1, EO))) 
+			LD = LD->Chain;
 	}
 	else {
 		LD = LkD; EO = GetEditOpt(); EO->UserSelFlds = false; CFile = LD->ToFD;
@@ -2076,7 +2078,7 @@ longint UpdateIndexes()
 	XString x;
 	longint NNew = E->LockedRec;
 	XWKey* KSel = E->SelKey;
-	
+
 	if (IsNewRec) {
 		NNew = CFile->NRecs + 1;
 		CFile->XF->NRecs++;
@@ -2090,7 +2092,7 @@ longint UpdateIndexes()
 		}
 		CRecPtr = E->NewRecPtr;
 	}
-	
+
 	if (VK->RecNrToPath(x, E->LockedRec) && !WasWK) {
 		if (IsNewRec) {
 			VK->InsertOnPath(x, NNew);
@@ -2112,7 +2114,7 @@ longint UpdateIndexes()
 		if (VK->InWork) VK->NR++;
 		if (Subset) N = WK->InsertGetNr(NNew);
 	}
-	
+
 	WORD result = N;
 	K = CFile->Keys;
 	while (K != nullptr) {
@@ -2182,8 +2184,8 @@ bool WriteCRec(bool MayDispl, bool& Displ)
 			DisplRec(CRec());
 			IVon();
 			return result;
+		}
 	}
-}
 	if (Subset && !(NoCondCheck || RunBool(E->Cond) && CheckKeyIn(E))) {
 		UnLockWithDep(OldMd);
 		WrLLF10Msg(823);
@@ -2263,7 +2265,7 @@ bool WriteCRec(bool MayDispl, bool& Displ)
 				ReleaseStore(s);
 			}
 			UndoRecord();
-				goto label1;
+			goto label1;
 		}
 		}
 		WriteRec(E->LockedRec);
@@ -3058,7 +3060,7 @@ label1:
 	}
 	case 6: { WarnSwitch = !WarnSwitch; NewDisplLL = true;  break; }
 	}
-	}
+}
 
 void PromptSelect()
 {
@@ -3178,7 +3180,7 @@ void ImbeddEdit()
 			if (ForNavigate(FD)) {
 				SL = FD->ViewNames;
 				do {
-					s = GetFileViewName(FD, SL);
+					s = GetFileViewName(FD, &SL);
 					if (R != CRdb) s = R->FD->Name + "." + s;
 					ww.PutSelect(s);
 				} while (SL != nullptr);
@@ -3228,7 +3230,7 @@ void DownEdit()
 			SL = FD->ViewNames;
 			K = GetFromKey(LD);
 			do {
-				s = GetFileViewName(FD, SL);
+				s = GetFileViewName(FD, &SL);
 				if (*K->Alias != "") s = s + '/' + *K->Alias;
 				ww.PutSelect(s);
 			} while (SL != nullptr);
@@ -3800,132 +3802,195 @@ label81:
 		case 1:/*quit*/ goto label7; break;
 		case 2:/*exit*/ goto label1; break;
 		}
-		switch (KbdChar) {
-		case VK_F1: {
-			RdMsg(7);
-			Help((RdbD*)&HelpFD, MsgLine, false);
-			break;
-		}
-		case _CtrlF1_: FieldHelp(); break;
-		case _AltF10_: Help(nullptr, "", false); break;
-		case VK_ESCAPE: {
-			if (OnlySearch) {
-				if (IsNewRec) { if (CNRecs() > 1) DelNewRec(); else goto label9; }
-				else if (!WriteCRec(true, Displ)) goto label1;
-			label2:
-				if (PromptAndSearch(!NoCreate)) goto label0;
+		if (Event.Pressed.isChar()) {
+			// jedna se o tisknutelny znak
+			if (CFld->Ed(IsNewRec) && ((CFld->FldD->Typ != 'T') || (_T(CFld->FldD) == 0))
+				&& LockRec(true)) {
+				pstring oldKbdBuffer = KbdBuffer;
+				KbdBuffer = (char)KbdChar;
+				KbdBuffer += oldKbdBuffer;
+				if (!EditItemProc(true, true, Brk)) goto label7;
+				if (Brk != 0) goto fin;
 			}
-		label9:
-			EdBreak = 0;
-		label7:
-			if (IsNewRec && !EquOldNewRec())
-				if (!Prompt158 || PromptYN(158)) goto fin;
-				else goto label1;
-			EdBr = EdBreak; n = GetEdRecNo();
-			if ((IsNewRec || WriteCRec(true, Displ)) and
-				((EdBreak == 11) || NoESCPrompt or
-					!spec.ESCverify && !MustESCPrompt
-					|| PromptYN(137))) {
-				EdBreak = EdBr; SetEdRecNoEtc(n); goto label71;
-			fin:
-				SetEdRecNoEtc(0);
-			label71:
-				if (IsNewRec && !EdRecVar) DelNewRec();
-				IVoff(); EdUpdated = E->EdUpdated;
-				if (!EdRecVar) ClearRecSpace(E->NewRecPtr);
-				if (Subset && !WasWK) WK->Close();
-				if (!EdRecVar) {
+		}
+		else {
+			// klavesa je funkci
+			switch (Event.Pressed.Function()) {
+			case VK_F1: {
+				// index napovedy
+				RdMsg(7);
+				Help((RdbD*)&HelpFD, MsgLine, false);
+				break;
+			}
+			case VK_F1 + CTRL: {
+				// napoveda k aktualnimu udaji
+				FieldHelp();
+				break;
+			}
+			case VK_F10 + ALT: {
+				// posledne vyvolana napoveda
+				Help(nullptr, "", false);
+				break;
+			}
+			case VK_ESCAPE: {
+				// ukonceni editace bez ulozeni zmen
+				if (OnlySearch) {
+					if (IsNewRec) {
+						if (CNRecs() > 1) DelNewRec();
+						else goto label9;
+					}
+					else
+						if (!WriteCRec(true, Displ)) goto label1;
+				label2:
+					if (PromptAndSearch(!NoCreate)) goto label0;
+				}
+			label9:
+				EdBreak = 0;
+			label7:
+				if (IsNewRec && !EquOldNewRec()) {
+					if (!Prompt158 || PromptYN(158)) goto fin;
+					else goto label1;
+				}
+				EdBr = EdBreak;
+				n = GetEdRecNo();
+				if ((IsNewRec || WriteCRec(true, Displ)) && ((EdBreak == 11) || NoESCPrompt || !spec.ESCverify && !MustESCPrompt || PromptYN(137))) {
+					EdBreak = EdBr;
+					SetEdRecNoEtc(n);
+					goto label71;
+				fin:
+					SetEdRecNoEtc(0);
+				label71:
+					if (IsNewRec && !EdRecVar) DelNewRec();
+					IVoff();
+					EdUpdated = E->EdUpdated;
+					if (!EdRecVar) ClearRecSpace(E->NewRecPtr);
+					if (Subset && !WasWK) WK->Close();
+					if (!EdRecVar) {
 #ifdef FandSQL
-					if (CFile->IsSQLFile) Strm1->EndKeyAcc(WK);
+						if (CFile->IsSQLFile) Strm1->EndKeyAcc(WK);
 #endif
-					OldLMode(E->OldMd);
+						OldLMode(E->OldMd);
+					}
+					return;
 				}
-				return;
+				break;
 			}
-			break;
-		}
-		case _AltEqual_: { UndoRecord(); EdBreak = 0; goto fin; }
-		case 'U': if (PromptYN(108)) UndoRecord(); break;
-		case 0x1C /*^\*/: if (!CtrlMProc(2)) goto label7;
-		case VK_F2: { // F2 - novy zaznam, porizeni nove vety
-			if (!EdRecVar)
-				if (IsNewRec) {
-					if ((CNRecs() > 1) && (!Prompt158 || EquOldNewRec() || PromptYN(158))) DelNewRec();
-				}
-				else if (!NoCreate && !Only1Record && WriteCRec(true, Displ))
-				{
-					if (Displ) DisplAllWwRecs();
-					SwitchToAppend();
-				}
-			goto label0;
-			break;
-		}
-		case VK_UP: if (LUpRDown) goto label11; else goto label13;
-		case VK_DOWN: if (LUpRDown) goto label12; else goto label13;
-		case VK_LEFT:
-		case 'S':
-		label11:
-			if (CFld->ChainBack != nullptr) GotoRecFld(CRec(), CFld->ChainBack);
-			break;
-		case VK_RIGHT:
-		case 'D':
-		label12:
-			if ((CFld->Chain != nullptr) && !IsFirstEmptyFld())
-				GotoRecFld(CRec(), (EFldD*)CFld->Chain);
-			break;
-		case VK_HOME:
-		label3:
-			GotoRecFld(CRec(), E->FirstFld); break;
-		case VK_END:
-		label4:
-			if (IsNewRec && (FirstEmptyFld != nullptr))
-				GotoRecFld(CRec(), FirstEmptyFld);
-			else GotoRecFld(CRec(), E->LastFld);
-			break;
-		case VK_RETURN: // puvodne _M_
-			if (SelMode && (E->SelKey != nullptr) && !IsNewRec) {
-				if (WriteCRec(true, Displ)) {
-					if ((E->SelKey != nullptr) && (E->SelKey->NRecs() == 0)) ToggleSelectRec();
-					EdBreak = 12; goto fin;
-				}
+			case '=' + ALT: {
+				// ukonceni editace bez ulozeni zmen
+				UndoRecord();
+				EdBreak = 0;
+				goto fin;
 			}
-			else
-				if ((E->ShiftF7LD != nullptr) && !IsNewRec) {
-					if (ShiftF7Duplicate()) goto label9;
+			case 'U' + CTRL: {
+				// obnoveni puvodniho stavu
+				if (PromptYN(108)) UndoRecord();
+				break;
+			}
+			case VK_OEM_102 + CTRL: // klavesa '\' na RT 102 keyb
+			case VK_OEM_5 + CTRL: { // klavesa '\|' na US keyb
+				// na zacatek dalsi vety
+				if (!CtrlMProc(2)) goto label7;
+				break;
+			}
+			case VK_F2: {
+				// F2 - novy zaznam, porizeni nove vety
+				if (!EdRecVar)
+					if (IsNewRec) {
+						if ((CNRecs() > 1) && (!Prompt158 || EquOldNewRec() || PromptYN(158))) DelNewRec();
+					}
+					else if (!NoCreate && !Only1Record && WriteCRec(true, Displ))
+					{
+						if (Displ) DisplAllWwRecs();
+						SwitchToAppend();
+					}
+				goto label0;
+				break;
+			}
+			case VK_UP: {
+				if (LUpRDown) goto label11;
+				else goto label13;
+				break;
+			}
+			case VK_DOWN: {
+				if (LUpRDown) goto label12;
+				else goto label13;
+				break;
+			}
+			case VK_LEFT:
+			case 'S' + CTRL:
+			{
+			label11:
+				if (CFld->ChainBack != nullptr) GotoRecFld(CRec(), CFld->ChainBack);
+				break;
+			}
+			case VK_RIGHT:
+			case 'D' + CTRL: {
+			label12:
+				if ((CFld->Chain != nullptr) && !IsFirstEmptyFld())
+					GotoRecFld(CRec(), (EFldD*)CFld->Chain);
+				break;
+			}
+			case VK_HOME:
+			label3:
+				GotoRecFld(CRec(), E->FirstFld); break;
+			case VK_END: {
+			label4:
+				if (IsNewRec && (FirstEmptyFld != nullptr))
+					GotoRecFld(CRec(), FirstEmptyFld);
+				else GotoRecFld(CRec(), E->LastFld);
+				break;
+			}
+			case VK_RETURN: {
+				// puvodne _M_
+				if (SelMode && (E->SelKey != nullptr) && !IsNewRec) {
+					if (WriteCRec(true, Displ)) {
+						if ((E->SelKey != nullptr) && (E->SelKey->NRecs() == 0)) ToggleSelectRec();
+						EdBreak = 12; goto fin;
+					}
 				}
 				else
-					if (!CtrlMProc(3)) goto label7;
-			break;
-		case VK_INSERT: {
-			b = false;
-			if (CFld->Ed(IsNewRec) && LockRec(true)) b = true;
-			if (!EditItemProc(false, b, Brk)) goto label7;
-			if (Brk != 0) goto fin;
-			break;
-		}
-		case VK_F4:
-			if ((CRec() > 1) && (IsFirstEmptyFld() || PromptYN(121)) && LockRec(true))
-			{
-				DuplFromPrevRec(); if (!CtrlMProc(1)) goto label7;
+					if ((E->ShiftF7LD != nullptr) && !IsNewRec) {
+						if (ShiftF7Duplicate()) goto label9;
+					}
+					else
+						if (!CtrlMProc(3)) goto label7;
+				break;
 			}
-		case VK_F5: SetSwitchProc(); break;
-		case VK_F7: UpwEdit(nullptr); break;
-		case _CtrlF5_: Calculate2(); break;
-		default: {
-			if (KbdChar >= 0x20 && KbdChar <= 0xFE)
-			{
-				if (CFld->Ed(IsNewRec) && ((CFld->FldD->Typ != 'T') || (_T(CFld->FldD) == 0))
-					&& LockRec(true)) {
-					pstring oldKbdBuffer = KbdBuffer;
-					KbdBuffer = (char)KbdChar;
-					KbdBuffer += oldKbdBuffer;
-					if (!EditItemProc(true, true, Brk)) goto label7;
-					if (Brk != 0) goto fin;
+			case VK_INSERT: {
+				// zahajeni opravy udaje
+				b = false;
+				if (CFld->Ed(IsNewRec) && LockRec(true)) b = true;
+				if (!EditItemProc(false, b, Brk)) goto label7;
+				if (Brk != 0) goto fin;
+				break;
+			}
+			case VK_F4: {
+				// dopln diakriticke znamenko
+				if ((CRec() > 1) && (IsFirstEmptyFld() || PromptYN(121)) && LockRec(true))
+				{
+					DuplFromPrevRec(); if (!CtrlMProc(1)) goto label7;
 				}
+				break;
+			}
+			case VK_F5: {
+				// zapni / vypni prepinace
+				SetSwitchProc(); break;
+			}
+			case VK_F7: {
+				// navigace nahoru (nadrizeny soubor)
+				UpwEdit(nullptr); break;
+			}
+			case VK_F5 + CTRL: {
+				// kalkulacka na poslednim radku
+				Calculate2(); break;
+			}
+			default: {
+				//if (KbdChar >= 0x20 && KbdChar <= 0xFE)
+				//{
 			label13:
 				if (!IsNewRec) {
 					w = KbdChar;
-					if (w == 'Y') {
+					if (Event.Pressed.Function() == 'Y' + CTRL) {
 						if (!NoDelete) if (DeleteRecProc()) {
 							ClearKeyBuf();
 							b = true;
@@ -3941,38 +4006,61 @@ label81:
 					else if (WriteCRec(true, Displ)) {
 						if (Displ) DisplAllWwRecs();
 						KbdChar = w;       /*only in edit mode*/
-						switch (w) {
-						case VK_F9: { SaveFiles; UpdCount = 0; break; }
-						case 'N':
+						switch (Event.Pressed.Function()) {
+						case VK_F9: {
+							// uloz
+							SaveFiles();
+							UpdCount = 0;
+							break;
+						}
+						case 'N' + CTRL: {
+							// vloz novou vetu pred aktualni
 							if (!NoCreate && !Only1Record)
 							{
-								InsertRecProc(nullptr); goto label0;
+								InsertRecProc(nullptr);
+								goto label0;
 							}
 							break;
+						}
 						case VK_UP:
-						case 'E':
-							if (E->NRecs > 1) GoPrevNextRec(-1, true); break;
-						case _CtrlHome_:
-							GoPrevNextRec(-1, true); break;
+						case 'E': {
+							// predchozi radek
+							if (E->NRecs > 1) GoPrevNextRec(-1, true);
+							break;
+						}
+						case VK_HOME + CTRL: {
+							// predchozi volny text
+							GoPrevNextRec(-1, true);
+							break;
+						}
 						case VK_DOWN:
-						case 'X':
+						case 'X': {
+							// nasledujici radek
 							if (E->NRecs > 1) GoPrevNextRec(+1, true); break;
-						case _CtrlEnd_:
-							GoPrevNextRec(+1, true); break;
+						}
+						case VK_END + CTRL: {
+							// nasledujici veta
+							GoPrevNextRec(+1, true);
+							break;
+						}
 						case VK_PRIOR:
-						case _R_:
+						case _R_: {
+							// o obrazovku vzad
 							if (E->NPages == 1)
 								if (E->NRecs == 1) GoPrevNextRec(-1, true);
 								else GotoRecFld(CRec() - E->NRecs, CFld);
 							else if (CPage > 1) GotoRecFld(CRec(), FrstFldOnPage(CPage - 1));
 							break;
+						}
 						case VK_NEXT:
-						case _C_:
+						case _C_: {
+							// o obrazovku vpred
 							if (E->NPages == 1)
 								if (E->NRecs == 1) GoPrevNextRec(+1, true);
 								else GotoRecFld(CRec() + E->NRecs, CFld);
 							else if (CPage < E->NPages) GotoRecFld(CRec(), FrstFldOnPage(CPage + 1));
 							break;
+						}
 						case _Q_:
 							switch (ReadKbd())
 							{
@@ -3982,28 +4070,24 @@ label81:
 							case _C_: goto label6;
 							}
 							break;
-						case _CtrlPgUp_:
+						case VK_PRIOR + CTRL:
 						label5:
 							GotoRecFld(1, E->FirstFld); break;
-						case _CtrlPgDn_:
+						case VK_NEXT + CTRL:
 						label6:
 							GotoRecFld(CNRecs(), E->LastFld); break;
-						case _CtrlLeft_:
+						case VK_LEFT + CTRL:
 							if (CRec() > 1) SwitchRecs(-1); break;
-						case _CtrlRight_:
+						case VK_RIGHT + CTRL:
 							if (CRec < CNRecs) SwitchRecs(+1); break;
-						case _F3_: {
-							if (!EdRecVar)
-								if (CFile == CRdb->HelpFD) {
-									if (PromptHelpName(i)) { GotoRecFld(i, CFld); goto label1; }
-								}
-								else { PromptAndSearch(false); goto label0; }
-							break;
-						}
-						case _CtrlF2_:
-						{ if (!EdRecVar) RefreshSubset(); b = false; goto label14; break; }
-						case _AltF2_:
-						case _AltF3_:
+						case VK_F2 + CTRL: {
+								if (!EdRecVar) RefreshSubset();
+								b = false;
+								goto label14;
+								break;
+							}
+						case VK_F2 + ALT:
+						case VK_F3 + ALT:
 							if (IsCurrChpt())
 								if (w == _AltF3_) {
 									ForAllFDs(ClosePassiveFD); EditHelpOrCat(w, 0, "");
@@ -4012,38 +4096,63 @@ label81:
 							else if (IsTestRun && (CFile != CatFD) && (w == _AltF2_))
 								EditHelpOrCat(w, 1, CFile->Name + '.' + CFld->FldD->Name);
 							break;
-						case _CtrlF3_:
-							if (!EdRecVar) PromptGotoRecNr(); break;
 						case VK_F6: if (!EdRecVar) F6Proc(); break;
-						case _CtrlF4_: if (DuplToPrevEdit()) { EdBreak = 14; goto fin; } break;
-						case _CtrlF7_: DownEdit(); break;
-						case _F8_: {
+						case VK_F4: if (DuplToPrevEdit()) { EdBreak = 14; goto fin; } break;
+						case VK_F7 + CTRL: DownEdit(); break;
+						case VK_F8: {
 							if (E->SelKey != nullptr) {
 								ToggleSelectRec(); GoPrevNextRec(+1, true);
 							}
 							break;
 						}
-						case _ShiftF8_: ToggleSelectAll(); break;
-						case _CtrlF8_:
-						case _CtrlF9_:
-						case _CtrlF10_:
-						case _AltF9_:
+						case VK_F3: {
+							// najdi vetu podle klic. udaje
+							if (!EdRecVar)
+								if (CFile == CRdb->HelpFD) {
+									if (PromptHelpName(i)) {
+										GotoRecFld(i, CFld);
+										goto label1;
+									}
+								}
+								else {
+									PromptAndSearch(false);
+									goto label0;
+								}
+							break;
+						}
+						case VK_F3 + CTRL: {
+							// najdi vetu podle jejiho cisla
+							if (!EdRecVar) PromptGotoRecNr();
+							break;
+						}
+						case VK_F8 + SHIFT: ToggleSelectAll(); break;
+						case VK_F8 + CTRL:
+						case VK_F9 + CTRL :
+						case VK_F10 + CTRL:
+						case VK_F9 + ALT:
 							if (IsCurrChpt()) { Brk = 2; goto fin; }
 							break;
-						case _AltF7_:
+						case VK_F7 + ALT:
 							ImbeddEdit();
 							break;
 						}
 					}
 				}
+				//}
 			}
+			}
+			break;
 		}
+		break;
+	}
+	default: {
+		// nejedna se o udalost z klavesnice ani mysi
+		ClrEvent();
+		break;
 	}
 	}
-	default: ClrEvent(); break;
-}
 	goto label1;
-	}
+}
 
 void EditDataFile(FileDPtr FD, EditOpt* EO)
 {

@@ -21,5 +21,6 @@ int main(int argc, char* argv[])
 	
 	
 	InitRunFand();
+	system("cls");
 }
 

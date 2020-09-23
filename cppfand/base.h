@@ -12,8 +12,13 @@ typedef CharArr* CharArrPtr; // ø23
 class LongStr // ø24
 {
 public:
-	LongStr() { A = new char[50]{ 0 }; allocated = 50; }
-	LongStr(WORD size) { if (size == 0) size = 50; A = new char[size] {0}; allocated = size; }
+	LongStr() { A = new char[50]{ 0 }; allocated = 50; LL = 0; }
+	LongStr(WORD size) {
+		if (size == 0) size = 50;
+		A = new char[size] {0};
+		allocated = size;
+		LL = 0;
+	}
 	~LongStr() { delete[] A; }
 	WORD LL;
 	char* A;

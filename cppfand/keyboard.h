@@ -1,6 +1,10 @@
 #pragma once
 #include <windows.h>
 
+const __int32 SHIFT = 0x00010000;
+const __int32  CTRL = 0x00020000;
+const __int32   ALT = 0x00040000;
+
 class Keyboard
 {
 public:
@@ -30,6 +34,8 @@ public:
 	char Char();
 	unsigned __int32 KeyDescr();
 	unsigned __int32 SimpleKeyDescr();
+	unsigned __int32 Function();
+	bool isChar();
 	bool Shift();
 	bool Alt();
 	bool Ctrl();
