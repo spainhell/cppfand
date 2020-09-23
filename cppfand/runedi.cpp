@@ -2985,7 +2985,7 @@ label2:
 		label4:
 			if (!Ed || LockRec(false)) goto label1; else goto label5;
 		}
-		WrEStatus; Brk = 1; KbdChar = C; goto label6;
+		WrEStatus(); Brk = 1; KbdChar = C; goto label6;
 	}
 label5:
 	ReleaseStore(p);
@@ -3558,7 +3558,8 @@ WORD ExitKeyProc()
 		X = (EdExitD*)X->Chain;
 	}
 	if (((w == 0) || (w == 3)) && (c == _ShiftF7_) && CFld->Ed(IsNewRec)) {
-		ShiftF7Proc(); w = 2;
+		ShiftF7Proc();
+		w = 2;
 	}
 	KbdChar = c;
 	return w;
@@ -3781,7 +3782,11 @@ label81:
 					LongBeep++;
 					goto label8;
 				}
-				else { UndoRecord(); EdBreak = 11; goto label7; }
+				else {
+					UndoRecord();
+					EdBreak = 11;
+					goto label7;
+				}
 			else goto label81;
 	}
 	switch (Event.What) {
@@ -3917,14 +3922,14 @@ label81:
 				break;
 			}
 			case VK_LEFT:
-			case 'S' + CTRL:
+			case 'S':
 			{
 			label11:
 				if (CFld->ChainBack != nullptr) GotoRecFld(CRec(), CFld->ChainBack);
 				break;
 			}
 			case VK_RIGHT:
-			case 'D' + CTRL: {
+			case 'D': {
 			label12:
 				if ((CFld->Chain != nullptr) && !IsFirstEmptyFld())
 					GotoRecFld(CRec(), (EFldD*)CFld->Chain);

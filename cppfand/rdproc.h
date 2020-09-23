@@ -43,7 +43,8 @@ bool NotCode(pstring Nm, WORD CodeBase, WORD BrkBase, EdExKeyD* E);
 const BYTE NKeyNames = 21;
 struct kNames { pstring Nm; BYTE Brk; WORD Code; };
 extern kNames KeyNames[NKeyNames];
-bool RdHeadLast(void* AA);
+bool RdHeadLast(EditOpt* EO);
+bool RdHeadLast(Instr_edittxt* IE);
 bool RdViewOpt(EditOpt* EO);
 void RdKeyList(EdExitD* X);
 //extern Instr* RdPInstr; // toto bude ukazatel na pozdìji pøiøazenou funkci

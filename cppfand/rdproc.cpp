@@ -962,29 +962,37 @@ void RdKeyCode(EdExitD* X)
 bool NotCode(pstring Nm, WORD CodeBase, WORD BrkBase, EdExKeyD* E)
 {
 	WORD i = 0, k = 0;
-	auto result = true;
-	if (Lexem != _identifier) return result;
-	if (!SEquUpcase(copy(LexWord, 1, Nm.length()), Nm)) return result;
+	if (Lexem != _identifier) return true;
+	if (!SEquUpcase(copy(LexWord, 1, Nm.length()), Nm)) return true;
 	val(copy(LexWord, Nm.length() + 1, 2), i, k);
-	if ((k != 0) || (i <= 0) || (i > 10)) return result;
+	if ((k != 0) || (i <= 0) || (i > 10)) return true;
 	i--;
 	RdLex();
 	E->KeyCode = CodeBase + (i << 8);
 	E->Break = BrkBase + i;
-	result = false;
+	return false;
+}
+
+bool RdHeadLast(EditOpt* EO)
+{
+	auto result = true;
+	if (IsOpt("HEAD")) EO->Head = RdStrFrml();
+	else if (IsOpt("LAST")) EO->Last = RdStrFrml();
+	else if (IsOpt("CTRL")) EO->CtrlLast = RdStrFrml();
+	else if (IsOpt("ALT")) EO->AltLast = RdStrFrml();
+	else if (IsOpt("SHIFT")) EO->ShiftLast = RdStrFrml();
+	else result = false;
 	return result;
 }
 
-bool RdHeadLast(void* AA)
+bool RdHeadLast(Instr_edittxt* IE)
 {
-	struct structA { FrmlPtr Head; FrmlPtr Last; FrmlPtr CtrlLast; FrmlPtr AltLast; FrmlPtr ShiftLast; };
-	structA* A = (structA*)&AA;
 	auto result = true;
-	if (IsOpt("HEAD")) A->Head = RdStrFrml();
-	else if (IsOpt("LAST")) A->Last = RdStrFrml();
-	else if (IsOpt("CTRL")) A->CtrlLast = RdStrFrml();
-	else if (IsOpt("ALT")) A->AltLast = RdStrFrml();
-	else if (IsOpt("SHIFT")) A->ShiftLast = RdStrFrml();
+	if (IsOpt("HEAD")) IE->Head = RdStrFrml();
+	else if (IsOpt("LAST")) IE->Last = RdStrFrml();
+	else if (IsOpt("CTRL")) IE->CtrlLast = RdStrFrml();
+	else if (IsOpt("ALT")) IE->AltLast = RdStrFrml();
+	else if (IsOpt("SHIFT")) IE->ShiftLast = RdStrFrml();
 	else result = false;
 	return result;
 }
@@ -1011,7 +1019,7 @@ bool RdViewOpt(EditOpt* EO)
 		}
 		else EO->Mode = RdStrFrml();
 	}
-	else if (RdHeadLast(EO->Head)) return result;
+	else if (RdHeadLast(EO)) return result;
 	else if (IsOpt("WATCH")) EO->WatchDelayZ = RdRealFrml();
 	else if (IsOpt("WW")) {
 		Accept('('); EO->WFlags = 0;
@@ -1756,7 +1764,7 @@ Instr* RdEditTxt()
 				Accept(')');
 			}
 			else
-				if (RdHeadLast(PD->Head)) {}
+				if (RdHeadLast(PD)) {}
 				else if (IsKeyWord("NOEDIT")) PD->EdTxtMode = 'V';
 				else Error(161);
 	}
