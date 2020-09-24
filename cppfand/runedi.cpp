@@ -2042,9 +2042,9 @@ void DisplChkErr(ChkD* C)
 
 bool OldRecDiffers()
 {
-	XString x; FieldDPtr f;
+	XString x; FieldDescr* f = nullptr;
 	auto result = false;
-	if (IsCurrChpt || (
+	if (IsCurrChpt() || (
 #ifdef FandSQL
 		!CFile->IsSQLFile &&
 #endif 
@@ -2078,7 +2078,8 @@ label2:
 bool ExitCheck(bool MayDispl)
 {
 	EdExitD* X; bool ok;
-	auto result = false; X = E->ExD; while (X != nullptr) {
+	auto result = false; X = E->ExD;
+	while (X != nullptr) {
 		if (X->AtWrRec) {
 			EdBreak = 16; ok = EdOk; EdOk = true; LastTxtPos = -1;
 			if (StartExit(X, MayDispl) && EdOk) EdOk = ok;
