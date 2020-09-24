@@ -4276,7 +4276,13 @@ void XScan::NextIntvl()
 
 pstring FieldDMask(FieldDescr* F)
 {
-	BYTE startIndex = F->Name[0] + 1;
+	// toto je takova specialita, ze maska byla ulozena "za" F->Name jako dalsi Byty
+	// TODO: najit jiny zpusob predavani masky pro datum
+
+	return "DD.MM.YY";
+
+	// puvodni kod:
+	/*BYTE startIndex = F->Name[0] + 1;
 	BYTE newLen = F->Name[startIndex];
 
 	pstring result;
@@ -4284,7 +4290,7 @@ pstring FieldDMask(FieldDescr* F)
 	memcpy(&result[1], &F[startIndex], newLen);
 
 	if (result.empty()) return "DD.MM.YY";
-	return result;
+	return result;*/
 }
 
 void* GetRecSpace()

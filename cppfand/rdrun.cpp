@@ -31,7 +31,7 @@ MergOpSt MergOpGroup = { _const, 0.0 };
 
 bool EFldD::Ed(bool IsNewRec)
 {
-	return (FldD->Flg && f_Stored != 0) && (EdU || IsNewRec && EdN);
+	return ((FldD->Flg & f_Stored) != 0) && (EdU || IsNewRec && EdN);
 }
 
 Instr::Instr(PInstrCode kind)

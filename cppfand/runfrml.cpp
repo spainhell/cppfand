@@ -2043,7 +2043,7 @@ LongStr* RunS(FrmlElem* Z)
 		break;
 	}
 	case _edkey: s = EdKey; break;
-	case _edreckey: s = EdRecKey;;
+	case _edreckey: s = EdRecKey; break;
 	case _getenv: {
 		s = RunShortStr(iZ0->P1);
 		if (s == "") s = paramstr[0];

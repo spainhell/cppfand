@@ -2013,22 +2013,27 @@ label1:
 	PopW(w); ReleaseStore(p); RdEStatus(); DisplEditWw();
 }
 
-void DisplChkErr(ChkDPtr C)
+void DisplChkErr(ChkD* C)
 {
-	LinkD* LD = nullptr; FileDPtr cf = nullptr; void* cr = nullptr; bool b; longint n;
+	LinkD* LD = nullptr; FileD* cf = nullptr; void* cr = nullptr;
+	longint n = 0;
 
 	FindExistTest(C->Bool, &LD);
-	if (!C->Warning && (LD != nullptr) && ForNavigate(LD->ToFD)
-		&& CFld->Ed(IsNewRec)) {
-		cf = CFile; cr = CRecPtr; b = LinkUpw(LD, n, false); ReleaseStore(CRecPtr);
+	if (!C->Warning && (LD != nullptr) && ForNavigate(LD->ToFD)	&& CFld->Ed(IsNewRec)) {
+		cf = CFile; cr = CRecPtr;
+		bool b = LinkUpw(LD, n, false);
+		ReleaseStore(CRecPtr);
 		CFile = cf; CRecPtr = cr;
 		if (!b)
 			if (NoShiftF7Msg) goto label1;
 			else F10SpecKey = _ShiftF7_;
 	}
-	if (C->HelpName != nullptr)
-		if (F10SpecKey == _ShiftF7_) F10SpecKey = 0xfffe; else F10SpecKey = _F1_;
-	SetMsgPar(RunShortStr(C->TxtZ)); WrLLF10Msg(110);
+	if (C->HelpName != nullptr) {
+		if (F10SpecKey == _ShiftF7_) F10SpecKey = 0xfffe;
+		else F10SpecKey = _F1_;
+	}
+	SetMsgPar(RunShortStr(C->TxtZ));
+	WrLLF10Msg(110);
 	if (KbdChar == _F1_) Help(CFile->ChptPos.R, *C->HelpName, false);
 	else if (KbdChar == _ShiftF7_)
 		label1:

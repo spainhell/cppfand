@@ -181,7 +181,15 @@ pstring& pstring::operator=(const char* a)
 
 pstring& pstring::operator=(std::basic_string<char> newvalue)
 {
-	return pstring::operator=(newvalue.c_str());
+	// std::string muze obsahovat i '\0' znaky a ty se normalne nezkopirovaly
+	// budeme tedy kopirovat celou delku std::stringu, ne jeho c_str()
+
+	int newLen = newvalue.length();
+	if (newLen > initLen - 1) { throw std::exception("Index out of range."); }
+	arr[0] = newLen;
+	memcpy(&arr[1], &newvalue[0], newLen);
+	return *this;
+
 }
 
 pstring& pstring::operator=(const pstring& newvalue)
