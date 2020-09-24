@@ -476,7 +476,7 @@ void RdLex()
 		break;
 	default: break;
 	}
-	//if (LexWord == "EdDok")
+	//if (LexWord == "ICislo")
 	//{
 	//	printf("RdLex() r. 437 - %s\n", LexWord.c_str());
 	//}
@@ -2370,7 +2370,8 @@ FieldDescr* FindFldName(FileD* FD)
 	FieldDescr* F = FD->FldD;
 	while (F != nullptr) {
 		{
-			if (EquUpcase(F->Name, LexWord)) goto label1;
+			std::string tmp = LexWord;
+			if (EquUpcase(F->Name, tmp)) goto label1;
 			F = (FieldDescr*)F->Chain;
 		}
 	}

@@ -1342,7 +1342,8 @@ label1:
 		FL1 = InFL;
 		while (FL1 != nullptr)
 		{
-			if (EquUpcase(FL1->FldD->Name, LexWord)) goto label2;
+			std::string tmp = LexWord;
+			if (EquUpcase(FL1->FldD->Name, tmp)) goto label2;
 			FL1 = (FieldList)FL1->Chain;
 		}
 		Error(43);

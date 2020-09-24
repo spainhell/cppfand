@@ -22,7 +22,8 @@ FieldDPtr RdFldDescr(pstring Name, bool Stored)
 	//F = (FieldDescr*)GetZStore(pred(sizeof(*F)) + Name.length());
 	F = new FieldDescr();
 	FieldDPtr result = F;
-	Move(&Name[0], &F->Name[0], Name.length() + 1);
+	//Move(&Name[0], &F->Name[0], Name.length() + 1);
+	F->Name = Name;
 	if (Stored) Flg = f_Stored;
 	else Flg = 0; Accept(':');
 	if ((Lexem != _identifier) || (LexWord.length() > 1)) Error(10);

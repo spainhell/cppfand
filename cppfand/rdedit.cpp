@@ -403,7 +403,8 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 		s = TrailChar(' ', RunShortStr(EO->StartFieldZ));
 		D = E->FirstFld;
 		while (D != nullptr) {
-			if (SEquUpcase(D->FldD->Name, s)) E->StartFld = D;
+			std::string tmpS = s;
+			if (SEquUpcase(D->FldD->Name, tmpS)) E->StartFld = D;
 			D = (EFldD*)D->Chain;
 		}
 	}

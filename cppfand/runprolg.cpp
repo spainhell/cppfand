@@ -3215,7 +3215,8 @@ bool RunBuildIn()
 				f = fd->FldD;
 			}
 			if (w == 3/*ii*/) {
-				while ((f != nullptr) && !SEquUpcase(f->Name, CurrInst->Vars[1]->SS)) f = (FieldDescr*)f->Chain;
+				std::string tmpSS = CurrInst->Vars[1]->SS;
+				while ((f != nullptr) && !SEquUpcase(f->Name, tmpSS)) f = (FieldDescr*)f->Chain;
 				if (f == nullptr) goto label1;
 			}
 			else CurrInst->Vars[1] = GetStringTerm(f->Name);

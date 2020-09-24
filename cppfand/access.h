@@ -117,7 +117,7 @@ public:
 	// case boolean {Stored} of True:(Displ:integer); False:(Frml:FrmlPtr; Name:string[1]{ curr.length });
 	integer Displ = 0;
 	FrmlElem* Frml = nullptr;
-	pstring Name;
+	std::string Name;
 };
 typedef FieldDescr* FieldDPtr;
 
