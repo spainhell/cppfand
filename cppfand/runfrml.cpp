@@ -960,7 +960,21 @@ label1:
 		CFile = cf; CRecPtr = cr;
 		break;
 	}
-	case _getWORDvar: result = (int)WordVarArr[((FrmlElem1*)X)->N01]; break;
+	case _getWORDvar: {
+		auto i = ((FrmlElem1*)X)->N01;
+		switch (i) {
+		case 0: return RprtLine;
+		case 1: return RprtPage;
+		case 2: return PgeLimit;
+		case 3: return EdBreak;
+		case 4: return EdIRec;
+		case 5: return MenuX;
+		case 6: return MenuY;
+		case 7: return UserCode;
+		default: throw std::exception("RunFrml.cpp, RunReal(), case _getWORDvar: index out");
+		}
+		break;
+	}
 	case _div: result = (int)(RunReal(iX0->P1) / RunReal(iX0->P2)); break;
 	case _mod: result = RMod((FrmlElem0*)X); break;
 	case _unminus: result = -RunReal(iX0->P1); break;
@@ -1109,7 +1123,7 @@ label1:
 	default: { result = RunRealStr(X); break; }
 	}
 	return result;
-}
+	}
 
 longint RunInt(FrmlPtr X)
 {
@@ -1307,7 +1321,7 @@ std::string DecodeField(FieldDescr* F, WORD LWw)
 	switch (F->FrmlTyp) {
 	case 'R': {
 		r = _R(F);
-			break;
+		break;
 	}
 	case 'S': {
 		if (F->Typ == 'T') {

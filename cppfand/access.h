@@ -715,7 +715,7 @@ extern WORD MenuX; extern WORD MenuY;
 extern WORD UserCode;
 // **********
 
-extern WORD* WordVarArr;
+// extern WORD* WordVarArr;
 extern FieldDPtr CatRdbName, CatFileName, CatArchiv, CatPathName, CatVolume;
 extern pstring MountedVol[FloppyDrives];
 

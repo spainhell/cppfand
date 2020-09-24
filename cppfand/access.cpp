@@ -58,7 +58,7 @@ WORD RprtLine = 0; WORD RprtPage = 0; WORD PgeLimit = 0; // {report}
 WORD EdBreak = 0; WORD EdIRec = 1; // {common - alphabetical order}
 WORD MenuX = 1; WORD MenuY = 1;
 WORD UserCode = 0;
-WORD* WordVarArr = &RprtLine;
+// WORD* WordVarArr = &RprtLine;
 pstring MountedVol[FloppyDrives] = { pstring(11), pstring(11), pstring(11) };
 pstring SQLDateMask = "DD.MM.YYYY hh:mm:ss";
 double Power10[21] = { 1E0, 1E1, 1E2, 1E3, 1E4, 1E5, 1E6, 1E7, 1E8, 1E9, 1E10,
