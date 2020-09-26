@@ -397,15 +397,16 @@ double DiskFree(char disk)
 
 const char* TextFile::c_str()
 {
-	return nullptr;
+	return (const char*)buffer;
 }
 
 void TextFile::Close()
 {
 }
 
-void TextFile::Assign(const char*)
+void TextFile::Assign(std::string FullPath)
 {
+	this->FullPath = FullPath;
 }
 
 void TextFile::Reset()
@@ -414,6 +415,7 @@ void TextFile::Reset()
 
 void TextFile::Rewrite()
 {
+	// otevre soubor pro zapis
 }
 
 bool TextFile::ResetTxt()

@@ -22,9 +22,10 @@ longint NLinesOutp;
 
 void RunReport(RprtOpt* RO)
 {
+	//return;
 	wwmix ww;
 	ExitRecord er;
-	LvDescr* L = nullptr; 
+	LvDescr* L = nullptr;
 	pstring* s = nullptr;
 	WORD i = 0;
 	bool frst = false, isLPT1 = false;
@@ -64,7 +65,7 @@ label0:
 	RprtPage = 1; RprtLine = 1; SetPage = false; FirstLines = true; WasDot = false;
 	WasFF2 = false; NoFF = false; LineLenLst = 0; FrstBlk = true;
 	ResetY();
-	L = LstLvM; 
+	L = LstLvM;
 	RFb = LstLvM->Ft;
 	ZeroSumFlds(L);
 	GetMinKey();
@@ -115,27 +116,34 @@ label1:
 		}
 		Rprt.Close();
 		// if (isLPT1) ClosePrinter(0);
-		CloseInp(); 
+		CloseInp();
 		PopProcStk();
 		if (ex) {
-			RunMsgOff(); 
+			RunMsgOff();
 			if (!WasLPTCancel) GoExit();
 		}
 		return;
 	}
 	L = GetDifLevel();
-	Footings(FrstLvM, L); 
+	Footings(FrstLvM, L);
 	if (WasFF2) PrintPageFt();
-	ZeroSumFlds(L); 
+	ZeroSumFlds(L);
 	ZeroCount();
-	MoveFrstRecs(); 
+	MoveFrstRecs();
 	MergOpGroup.Group = MergOpGroup.Group + 1.0;
 	goto label1;
 }
 
 void ResetY()
 {
-	FillChar(&Y, sizeof(Y), 0);
+	Y.Blk = nullptr;
+	Y.ChkPg = false;
+	Y.I = 0;
+	Y.Ln = 0;
+	Y.P = nullptr;
+	Y.Sz = 0;
+	Y.TD = nullptr;
+	Y.TLn = 0;
 }
 
 void IncPage()
@@ -205,96 +213,147 @@ void WriteNBlks(integer N)
 
 void NewTxtCol(LongStrPtr S, WORD Col, WORD Width, bool Wrap)
 {
-	bool Absatz;
-	CharArrPtr TA = nullptr; WORD i, LL, Ln; TTD* TD = nullptr;
-	pstring ss; StringList SL;
-	LL = S->LL; TA = (CharArrPtr)(&S->A); Ln = 0; Absatz = true;
+	char* TA = nullptr;
+	WORD i = 0, LL = 0, Ln = 0;
+	TTD* TD = nullptr;
+	pstring ss;
+	StringListEl* SL = nullptr;
+	LL = S->LL;
+	TA = S->A;
+	Ln = 0;
+	bool Absatz = true;
 	if (Wrap) for (i = 1; i < LL; i++)
-		if ((*TA[i] == 0x0D) && ((i == LL) || (*TA[i + 1] != 0x0A))) *TA[i] = ' ';
+		if ((TA[i] == 0x0D) && ((i == LL) || (TA[i + 1] != 0x0A))) TA[i] = ' ';
 	ss = GetLine(TA, LL, Width, Wrap, Absatz);
 	printf("%s%s", Rprt.c_str(), ss.c_str());
 	while (LL > 0) {
-		ss = GetLine(TA, LL, Width, Wrap, Absatz); Ln++;
+		ss = GetLine(TA, LL, Width, Wrap, Absatz);
+		Ln++;
 		if (Ln == 1) {
-			TD = (TTD*)GetStore2(sizeof(*TD)); TD->SL = nullptr;
-			TD->Col = Col; TD->Width = Width;
+			TD = new TTD(); // (TTD*)GetStore2(sizeof(*TD));
+			TD->SL = nullptr;
+			TD->Col = Col;
+			TD->Width = Width;
 		}
-		SL = (StringListEl*)GetStore2(ss.length() + 5); SL->S = ss;
-		ChainLast(TD->SL, SL);
+		SL = new StringListEl(); // (StringListEl*)GetStore2(ss.length() + 5);
+		SL->S = ss;
+		if (TD->SL == nullptr) TD->SL = SL;
+		else ChainLast(TD->SL, SL);
 	}
 	if (Ln > 0) {
-		TD->Ln = Ln; ChainLast(Y.TD, TD); if (Ln > Y.TLn) Y.TLn = Ln;
+		TD->Ln = Ln;
+		ChainLast(Y.TD, TD);
+		if (Ln > Y.TLn) Y.TLn = Ln;
 	}
 
 }
 
-pstring GetLine(CharArr* TA, WORD& TLen, WORD Width, bool Wrap, bool Absatz)
+pstring GetLine(char* TA, WORD& TLen, WORD Width, bool Wrap, bool &Absatz)
 {
-	char CharArr0[11];
-	char* T = nullptr;
-	WORD* TAOff = (WORD*)TA;
-	integer i, i2, j, l2, w, n, n1, n2, nWords, iWrdEnd, i2WrdEnd, wWrdEnd, nWrdEnd;
-	bool WasWrd, Fill; pstring s; pstring s1; char c;
-	i = 0;  i2 = 0; w = 0;
+	WORD TAOff = 0;
+	integer j = 0, iWrdEnd = 0, i2WrdEnd = 0, wWrdEnd = 0, nWrdEnd = 0;
+	pstring s;
+	pstring s1;
+	char c = '\0';
+	integer i = 0; integer i2 = 0; integer w = 0;
 
-	T = (char*)TA;  WasWrd = false;  nWords = 0; Fill = false;
+	char* T = TA;
+	bool WasWrd = false;
+	integer nWords = 0;
+	bool Fill = false;
 	while ((i < TLen) && (i2 < 255)) {
 		c = T[i];
-		if (c == 0x0D) { Absatz = true; goto label1; }
+		if (c == 0x0D) {
+			Absatz = true;
+			goto label1;
+		}
 		if ((w >= Width) && (c == ' ') && Wrap) goto label1;
-		if ((c != ' ') || WasWrd || !Wrap || Absatz)
-		{
-			i2++; s[i2] = c;  if (!IsPrintCtrl(c)) w++;
+		if ((c != ' ') || WasWrd || !Wrap || Absatz) {
+			i2++;
+			s[i2] = c;
+			if (!IsPrintCtrl(c)) w++;
 		}
 		if (c == ' ') {
 			if (WasWrd)
 			{
-				WasWrd = false; i2WrdEnd = i2 - 1; iWrdEnd = i;
-				wWrdEnd = w - 1; nWrdEnd = nWords;
+				WasWrd = false;
+				i2WrdEnd = i2 - 1;
+				iWrdEnd = i;
+				wWrdEnd = w - 1;
+				nWrdEnd = nWords;
 			}
 		}
-		else if (!WasWrd) { WasWrd = true; Absatz = false; nWords++; }
+		else if (!WasWrd) {
+			WasWrd = true;
+			Absatz = false;
+			nWords++;
+		}
 		i++;
 	}
 label1:
-	if (Wrap && (nWords >= 2) && (w > Width))
-	{
-		i2 = i2WrdEnd; i = iWrdEnd;
-		w = wWrdEnd; nWords = nWrdEnd; Fill = true; Absatz = false;
+	if (Wrap && (nWords >= 2) && (w > Width)) {
+		i2 = i2WrdEnd;
+		i = iWrdEnd;
+		w = wWrdEnd;
+		nWords = nWrdEnd;
+		Fill = true;
+		Absatz = false;
 	}
-	if ((i < TLen) && (T[i] == 0x0D))
-	{
-		i++;  if ((i < TLen) && (T[i] == 0x0A)) i++;
+	if ((i < TLen) && (T[TAOff + i] == 0x0D)) {
+		i++;
+		if ((i < TLen) && (T[TAOff + i] == 0x0A)) i++;
 	}
-	TAOff += i; TLen -= i;
-	l2 = i2; if (w < Width) l2 += (Width - w); n = l2 - i2;
+	TAOff += i;
+	TLen -= i;
+	integer l2 = i2;
+	if (w < Width) l2 += (Width - w);
+	integer n = l2 - i2;
 	if ((nWords <= 1) || (n == 0) || !Fill)
 	{
-		FillChar(&s[i2 + 1], n, ' '); s[0] = char(l2);
+		FillChar(&s[i2 + 1], n, ' ');
+		s[0] = (char)l2;
 	}
 	else {
-		n1 = n / (nWords - 1); n2 = n % (nWords - 1);
-		s[0] = char(i2); s1 = s; s[0] = char(l2); i2 = 1; WasWrd = false;
-		for (i = 1; i < s1.length(); i++) {
+		integer n1 = n / (nWords - 1);
+		integer n2 = n % (nWords - 1);
+		s[0] = (char)i2;
+		s1 = s;
+		s[0] = (char)l2;
+		i2 = 1;
+		WasWrd = false;
+		for (i = 1; i <= s1.length(); i++) {
 			s[i2] = s1[i];
 			if (s[i2] != ' ') WasWrd = true;
 			else if (WasWrd) {
-				WasWrd = false; for (j = 1; j < n1; j++) { i2++; s[i2] = ' '; }
-				if (n2 > 0) { n2--; i2++; s[i2] = ' '; };
+				WasWrd = false;
+				for (j = 1; j <= n1; j++) {
+					i2++;
+					s[i2] = ' ';
+				}
+				if (n2 > 0) {
+					n2--;
+					i2++;
+					s[i2] = ' ';
+				}
 			}
 			i2++;
 		}
-		;
 	}
 	return s;
 }
 
 void CheckPgeLimit()
 {
-	void* p2; YRec YY;
+	void* p2;
+	YRec YY;
 	if (Y.ChkPg && (RprtLine > PgeLimit) && (PgeLimit < PgeSize)) {
-		p2 = Store2Ptr; MarkStore2(Store2Ptr);
-		YY = Y; ResetY(); NewPage(); Y = YY; Store2Ptr = p2;
+		p2 = Store2Ptr;
+		MarkStore2(Store2Ptr);
+		YY = Y;
+		ResetY();
+		NewPage();
+		Y = YY;
+		Store2Ptr = p2;
 	}
 }
 
@@ -322,19 +381,22 @@ void PendingTT()
 
 void Print1NTupel(bool Skip)
 {
-	struct REditD { BYTE Char = 0; BYTE L = 0; BYTE M = 0; };
-	REditD* RE;
-	RFldD* RF;
-	WORD L, M, i; BYTE C; double R; pstring Mask; LongStr* S;
-	if (Y.Ln == 0) return; RF = (RFldD*)(&Y.Blk->RFD);
+	RFldD* RF = nullptr;
+	WORD L;
+	double R = 0.0;
+	pstring Mask;
+	LongStr* S = nullptr;
+	if (Y.Ln == 0) return;
+	RF = Y.Blk->RFD;
 label1:
 	WasOutput = true;
 	while (Y.I < Y.Sz) {
-		RE = (REditD*)(&Y.P[Y.I]); C = RE->Char;
+		BYTE C = (BYTE)Y.P[Y.I];
 		if (C == 0xFF) {
-			RF = (RFldD*)RF->Chain; 
-			if (RF == nullptr) return; 
-			L = RE->L; M = RE->M;
+			RF = (RFldD*)RF->Chain;
+			if (RF == nullptr) return;
+			L = (BYTE)Y.P[Y.I + 1];
+			WORD M = (BYTE)Y.P[Y.I + 2];
 			if (RF->FrmlTyp == 'R') {
 				if (!Skip) R = RunReal(RF->Frml);
 				switch (RF->Typ) {
@@ -353,7 +415,9 @@ label1:
 				}
 				case 'D': {
 					if (RF->BlankOrWrap) Mask = "DD.MM.YYYY";
-					else Mask = "DD.MM.YY"; goto label2; break;
+					else Mask = "DD.MM.YY";
+					goto label2;
+					break;
 				}
 				case 'T': {
 					Mask = copy("hhhhhh", 1, L) + copy(":ss mm.tt", 1, M);
@@ -367,24 +431,28 @@ label1:
 			}
 			else {
 				if (RF->Typ == 'P') {
-					S = RunLongStr(RF->Frml); printf("%s%c", Rprt.c_str(), 0x10);
-					for (i = 0; i < S->LL + 1; i++)
+					S = RunLongStr(RF->Frml);
+					printf("%s%c", Rprt.c_str(), 0x10);
+					for (WORD i = 0; i <= S->LL + 1; i++)
 						printf("%s%c", Rprt.c_str(), *(char*)(S->A[i]));
 					ReleaseStore(S);
 					goto label3;
 				}
 				Y.I += 2;
 				if (Skip) printf("%s%*c", Rprt.c_str(), L, ' ');
-				else switch (RF->FrmlTyp) {
-				case 'S': {
-					S = RunLongStr(RF->Frml);
-					while ((S->LL > 0) && (S->A[S->LL] == ' ')) S->LL--;
-					NewTxtCol(S, M, L, RF->BlankOrWrap); ReleaseStore(S); break;
-				}
-				case 'B':
-					if (RunBool(RF->Frml)) printf("%s%c", Rprt.c_str(), AbbrYes);
-					else printf("%s%c", Rprt.c_str(), AbbrNo);
-				}
+				else
+					switch (RF->FrmlTyp) {
+					case 'S': {
+						S = RunLongStr(RF->Frml);
+						while ((S->LL > 0) && (S->A[S->LL] == ' ')) S->LL--;
+						NewTxtCol(S, M, L, RF->BlankOrWrap);
+						ReleaseStore(S);
+						break;
+					}
+					case 'B':
+						if (RunBool(RF->Frml)) printf("%s%c", Rprt.c_str(), AbbrYes);
+						else printf("%s%c", Rprt.c_str(), AbbrNo);
+					}
 			}
 		}
 		else {
@@ -394,10 +462,18 @@ label1:
 	label3:
 		Y.I++;
 	}
-	PendingTT(); Y.Ln--; if (Y.Ln > 0) {
+	PendingTT();
+	Y.Ln--;
+	if (Y.Ln > 0) {
 		Y.P += Y.Sz; NewLine();
-		L = *(Y.P); *(Y.P)++; Y.Sz = *(WORD*)(Y.P); *Y.P += 2; Y.I = 0;
-		CheckPgeLimit(); LineLenLst = L; goto label1;
+		L = *(Y.P);
+		*(Y.P)++;
+		Y.Sz = *(WORD*)(Y.P);
+		*Y.P += 2;
+		Y.I = 0;
+		CheckPgeLimit();
+		LineLenLst = L;
+		goto label1;
 	}
 	Y.Blk = nullptr;
 }
@@ -429,26 +505,37 @@ void PrintTxt(BlkD* B, bool ChkPg)
 	integer I;
 	if (B == nullptr) return;
 	if (B->SetPage) {
-		PageNo = RunInt(B->PageNo); SetPage = true;
+		PageNo = RunInt(B->PageNo);
+		SetPage = true;
 	}
 	if (B != Y.Blk) {
 		FinishTuple();
-		if (B->AbsLine) for (I = RprtLine; I < RunInt(B->LineNo) - 1; I++) NewLine();
+		if (B->AbsLine)
+			for (I = RprtLine; I <= RunInt(B->LineNo) - 1; I++) NewLine();
 		if (B->NTxtLines > 0) {
 			if (B->NBlksFrst < LineLenLst) NewLine();
-			for (I = 1; I < B->NBlksFrst - LineLenLst; I++) printf("%s%c", Rprt.c_str(), ' ');
+			for (I = 1; I <= B->NBlksFrst - LineLenLst; I++) printf("%s%c", Rprt.c_str(), ' ');
 		}
-		ResetY(); Y.Ln = B->NTxtLines; if (Y.Ln != 0) {
-			Y.Blk = B; Y.P = B->Txt; Y.ChkPg = ChkPg;
-			LineLenLst = *(Y.P); Y.P++; Y.Sz = *(WORD*)(Y.P); Y.P += 2;
+		ResetY();
+		Y.Ln = B->NTxtLines;
+		if (Y.Ln != 0) {
+			Y.Blk = B; Y.P = B->Txt;
+			Y.ChkPg = ChkPg;
+			LineLenLst = *(Y.P);
+			Y.P++;
+			Y.Sz = *(WORD*)(Y.P);
+			Y.P += 2;
 		}
 	}
-	RunAProc(B->BeforeProc); Print1NTupel(false); RunAProc(B->AfterProc);
+	RunAProc(B->BeforeProc);
+	Print1NTupel(false);
+	RunAProc(B->AfterProc);
 }
 
 void TruncLine()
 {
-	FinishTuple(); if (LineLenLst > 0) NewLine();
+	FinishTuple();
+	if (LineLenLst > 0) NewLine();
 }
 
 void PrintBlkChn(BlkD* B, bool ChkPg, bool ChkLine)
@@ -477,8 +564,9 @@ void PrintPageFt()
 
 void PrintPageHd()
 {
-	bool b;
-	b = FrstBlk; if (!b) FormFeed(); PrintBlkChn(PageHd, false, false);
+	bool b = FrstBlk;
+	if (!b) FormFeed();
+	PrintBlkChn(PageHd, false, false);
 	if (!b) PrintDH = 2;
 }
 
@@ -491,8 +579,8 @@ void SumUp(SumElem* S)
 
 void PrintBlock(BlkD* B, BlkD* DH)
 {
-	WORD LAfter; BlkD* B1; bool pdh;
-	pdh = false;
+	WORD LAfter = 0; BlkD* B1 = nullptr;
+	bool pdh = false;
 	while (B != nullptr) {
 		if (RunBool(B->Bool)) {
 			if (B != Y.Blk) {
@@ -500,15 +588,18 @@ void PrintBlock(BlkD* B, BlkD* DH)
 				if (OutOfLineBound(B)) WasFF2 = true;
 				LAfter = RprtLine + MaxI(0, B->NTxtLines - 1);
 				if ((DH != nullptr) && (PrintDH >= DH->DHLevel + 1)) {
-					B1 = DH; while (B1 != nullptr) {
-						if (RunBool(B1->Bool)) LAfter += B1->NTxtLines; 
+					B1 = DH;
+					while (B1 != nullptr) {
+						if (RunBool(B1->Bool)) LAfter += B1->NTxtLines;
 						B1 = (BlkD*)B1->Chain;
 					}
 				}
 				if (B->FF1 || WasFF2 || FrstBlk && (B->NTxtLines > 0) ||
-					(PgeLimit < PgeSize) && (LAfter > PgeLimit)) NewPage();
+					(PgeLimit < PgeSize) && (LAfter > PgeLimit))
+					NewPage();
 				if ((DH != nullptr) && (PrintDH >= DH->DHLevel + 1)) {
-					PrintBlkChn(DH, true, false); PrintDH = 0;
+					PrintBlkChn(DH, true, false);
+					PrintDH = 0;
 				}
 			}
 			WasOutput = false;
@@ -542,18 +633,21 @@ void ReadInpFile(InpD* ID)
 	/* !!! with ID^ do!!! */
 	CRecPtr = ID->ForwRecPtr;
 label1:
-	ID->Scan->GetRec(); if (ID->Scan->eof) return;
+	ID->Scan->GetRec();
+	if (ID->Scan->eof) return;
 	if (ESCPressed() && PromptYN(24)) {
-		WasLPTCancel = true; GoExit();
+		WasLPTCancel = true;
+		GoExit();
 	}
-	RecCount++; RunMsgN(RecCount);
+	RecCount++;
+	RunMsgN(RecCount);
 	if (!RunBool(ID->Bool)) goto label1;
 }
 
 void OpenInp()
 {
 	NRecsAll = 0;
-	for (integer i = 1; i < MaxIi; i++) {
+	for (integer i = 1; i <= MaxIi; i++) {
 		/* !!! with IDA[i]^ do!!! */
 		CFile = IDA[i]->Scan->FD;
 		if (IDA[i]->Scan->Kind == 5) IDA[i]->Scan->SeekRec(0);
@@ -593,9 +687,9 @@ void GetMFlds(ConstListEl* C, KeyFldD* M)
 {
 	XString* x;
 	while (C != nullptr) {
-		x = (XString*)(&C->S); 
-		x->Clear(); x->StoreKF(M); 
-		C = (ConstListEl*)C->Chain; 
+		x = (XString*)(&C->S);
+		x->Clear(); x->StoreKF(M);
+		C = (ConstListEl*)C->Chain;
 		M = (KeyFldD*)M->Chain;
 	}
 }
@@ -631,10 +725,12 @@ void GetMinKey()
 	mini = 0; NEof = 0;
 	for (i = 1; i <= MaxIi; i++) {
 		/* !!! with IDA[i]^ do!!! */
-		CFile = IDA[i]->Scan->FD; if (IDA[i]->Scan->eof) NEof++;
+		CFile = IDA[i]->Scan->FD;
+		if (IDA[i]->Scan->eof) NEof++;
 		if (OldMFlds == nullptr) { IDA[i]->Exist = !IDA[i]->Scan->eof; mini = 1; }
 		else {
-			CRecPtr = IDA[i]->ForwRecPtr; IDA[i]->Exist = false;
+			CRecPtr = IDA[i]->ForwRecPtr;
+			IDA[i]->Exist = false;
 			if (!IDA[i]->Scan->eof) {
 				if (mini == 0) goto label1;
 				res = CompMFlds(NewMFlds, IDA[i]->MFld, nlv);
@@ -642,7 +738,8 @@ void GetMinKey()
 					if (res == _lt)
 					{
 					label1:
-						GetMFlds(NewMFlds, IDA[i]->MFld); mini = i;
+						GetMFlds(NewMFlds, IDA[i]->MFld);
+						mini = i;
 					}
 					IDA[i]->Exist = true;
 				}
@@ -650,7 +747,7 @@ void GetMinKey()
 		}
 	}
 	if (mini > 0) {
-		for (i = 1; i < mini - 1; i++) IDA[i]->Exist = false;
+		for (i = 1; i <= mini - 1; i++) IDA[i]->Exist = false;
 		MinID = IDA[mini];
 	}
 	else MinID = nullptr;
@@ -668,7 +765,7 @@ LvDescr* GetDifLevel()
 	C1 = NewMFlds; C2 = OldMFlds; M = IDA[1]->MFld; L = LstLvM->ChainBack;
 	while (M != nullptr) {
 		if (C1->S != C2->S) { return L; }
-		C1 = (ConstListEl*)C1->Chain; C2 = (ConstListEl*)C2->Chain; 
+		C1 = (ConstListEl*)C1->Chain; C2 = (ConstListEl*)C2->Chain;
 		M = (KeyFldD*)M->Chain; L = L->ChainBack;
 	}
 	return nullptr;
@@ -681,7 +778,8 @@ void MoveForwToRec(InpD* ID)
 	CFile = ID->Scan->FD; CRecPtr = CFile->RecPtr;
 	Move(ID->ForwRecPtr, CRecPtr, CFile->RecLen + 1);
 	ID->Count = ID->Count + 1;
-	C = ID->Chk; if (C != nullptr) {
+	C = ID->Chk;
+	if (C != nullptr) {
 		ID->Error = false; ID->Warning = false; ID->ErrTxtFrml->S[0] = 0;
 		while (C != nullptr) {
 			if (!RunBool(C->Bool)) {
@@ -696,7 +794,7 @@ void MoveForwToRec(InpD* ID)
 void MoveFrstRecs()
 {
 	integer i;
-	for (i = 1; i < MaxIi; i++) {
+	for (i = 1; i <= MaxIi; i++) {
 		/* !!! with IDA[i]^ do!!! */
 		if (IDA[i]->Exist) MoveForwToRec(IDA[i]);
 		else {
@@ -708,15 +806,19 @@ void MoveFrstRecs()
 
 void MergeProc()
 {
-	integer i, res, nlv; LvDescr* L;
-	for (i = 1; i < MaxIi; i++) {
+	integer nlv = 0;
+	integer res = 0;
+	for (integer i = 1; i <= MaxIi; i++) {
 		InpD* ID = IDA[i];
 		/* !!! with ID^ do!!! */
 		{ if (ID->Exist) {
-			CFile = ID->Scan->FD; CRecPtr = CFile->RecPtr; L = ID->LstLvS;
+			CFile = ID->Scan->FD; CRecPtr = CFile->RecPtr;
+			LvDescr* L = ID->LstLvS;
 		label1:
-			ZeroSumFlds(L); GetMFlds(ID->OldSFlds, ID->SFld);
-			if (WasFF2) PrintPageHd(); Headings(L, ID->FrstLvS);
+			ZeroSumFlds(L);
+			GetMFlds(ID->OldSFlds, ID->SFld);
+			if (WasFF2) PrintPageHd();
+			Headings(L, ID->FrstLvS);
 			if (PrintDH == 0) PrintDH = 1;
 		label2:
 			PrintBlock(ID->FrstLvS->Ft, ID->FrstLvS->Hd); /*DE*/
@@ -725,13 +827,20 @@ void MergeProc()
 			if (ID->Scan->eof) goto label4;
 			res = CompMFlds(NewMFlds, ID->MFld, nlv);
 			if ((res == _lt) && (MaxIi > 1)) {
-				SetMsgPar(ID->Scan->FD->Name); RunError(607);
+				SetMsgPar(ID->Scan->FD->Name);
+				RunError(607);
 			}
 			if (res != _equ) goto label4;
 			res = CompMFlds(ID->OldSFlds, ID->SFld, nlv);
-			if (res == _equ) { MoveForwToRec(ID); goto label2; }
+			if (res == _equ) {
+				MoveForwToRec(ID);
+				goto label2;
+			}
 			L = ID->LstLvS;
-			while (nlv > 1) { L = L->ChainBack; nlv--; }
+			while (nlv > 1) {
+				L = L->ChainBack;
+				nlv--;
+			}
 			Footings(ID->FrstLvS->Chain, L);
 			if (WasFF2) PrintPageFt();
 			MoveForwToRec(ID);
@@ -745,32 +854,39 @@ void MergeProc()
 
 bool RewriteRprt(RprtOpt* RO, WORD Pl, WORD& Times, bool& IsLPT1)
 {
-	bool PrintCtrl;
 	auto result = false;
-	result = false; WasLPTCancel = false; IsLPT1 = false; result = false;
-	Times = 1; PrintCtrl = RO->PrintCtrl;
-	if ((RO != nullptr) && (RO->Times != nullptr)) Times = RunInt(RO->Times);
+	WasLPTCancel = false;
+	IsLPT1 = false;
+	Times = 1;
+	bool PrintCtrl = RO->PrintCtrl;
+	if ((RO != nullptr) && (RO->Times != nullptr)) Times = (WORD)RunInt(RO->Times);
 	if ((RO == nullptr) || (RO->Path == nullptr) && (RO->CatIRec == 0))
 	{
-		SetPrintTxtPath(); PrintView = true; PrintCtrl = false;
+		SetPrintTxtPath();
+		PrintView = true; PrintCtrl = false;
 	}
 	else {
 		if (RO->Path != nullptr && SEquUpcase(*RO->Path, "LPT1"))
 		{
 			CPath = "LPT1";
-			CVol = ""; IsLPT1 = true;
-			result = ResetPrinter(Pl, 0, true, true) && RewriteTxt(&Rprt, false);
-			return result;
+			CVol = "";
+			IsLPT1 = true;
+			return ResetPrinter(Pl, 0, true, true) && RewriteTxt(&Rprt, false);
 		}
 		SetTxtPathVol(RO->Path, RO->CatIRec);
 	}
 	TestMountVol(CPath[1]);
 	if (!RewriteTxt(&Rprt, PrintCtrl))
 	{
-		SetMsgPar(CPath); WrLLF10Msg(700 + HandleError);
-		PrintView = false; return result;
+		SetMsgPar(CPath);
+		WrLLF10Msg(700 + HandleError);
+		PrintView = false;
+		return result;
 	}
-	if (Times > 1) { printf("%s.ti %1i\n", Rprt.c_str(), Times); Times = 1; }
+	if (Times > 1) {
+		printf("%s.ti %1i\n", Rprt.c_str(), Times);
+		Times = 1;
+	}
 	if (Pl != 72) printf("%s.pl %i\n", Rprt.c_str(), Pl);
 	result = true;
 	return result;

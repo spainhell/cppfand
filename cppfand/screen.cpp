@@ -93,11 +93,26 @@ void Screen::ScrWrFrameLn(WORD X, WORD Y, BYTE Typ, BYTE Width, BYTE Color)
 
 void Screen::ScrWrText(WORD X, WORD Y, const char* S)
 {
+	// tady se spatne tisknuly "systemove" znaky v metode "WriteConsoleOutputCharacterA"
+	// proto se vyctou udaje o radku (barva pozadi a textu), doplni se do nich novy text
+	// pak se poslou metodou "WriteConsoleOutputA" na konzoli
 	X += WindMin->X - 1;
 	Y += WindMin->Y - 1;
 	DWORD written = 0;
 	size_t len = strlen(S);
-	WriteConsoleOutputCharacterA(_handle, S, len, { (short)X - 1, (short)Y - 1 }, &written);
+
+	// vycteme oblast do bufferu
+	auto buff = new CHAR_INFO[len];
+	SMALL_RECT XY = { (short)X - 1, (short)Y - 1, (short)X + len - 1, (short)Y -1 };
+	ReadConsoleOutput(_handle, buff, { (short)len, 1 }, { 0, 0 }, &XY);
+	// vezme jednotlive znaky a "opravime je" ve vyctenem bufferu
+	for (size_t i = 0; i < len; i++) {
+		buff[i].Char.AsciiChar = S[i];
+	}
+	// vypisem buffer na obrazovku
+	WriteConsoleOutputA(_handle, buff, { (short)len, 1 }, { 0, 0 }, &XY);
+	//WriteConsoleOutputCharacterA(_handle, S, len, { (short)X - 1, (short)Y - 1 }, &written);
+	delete[] buff;
 	GotoXY(X + len, Y, absolute);
 }
 
@@ -105,7 +120,7 @@ void Screen::ScrFormatWrText(WORD X, WORD Y, char const* const _Format, ...)
 {
 	va_list args;
 	va_start(args, _Format);
-	char buffer[255];
+	char buffer[255]{ 0 };
 	vsnprintf(buffer, sizeof(buffer), _Format, args);
 	Screen::ScrWrText(X, Y, buffer);
 	va_end(args);
@@ -113,14 +128,24 @@ void Screen::ScrFormatWrText(WORD X, WORD Y, char const* const _Format, ...)
 
 void Screen::ScrFormatWrStyledText(WORD X, WORD Y, BYTE Color, char const* const _Format, ...)
 {
+	// souradnice jsou relativni, tiskneme do aktualniho okna
+	X += WindMin->X - 1;
+	Y += WindMin->Y - 1;
+	
 	va_list args;
 	va_start(args, _Format);
 	char buffer[255];
 	vsnprintf(buffer, sizeof(buffer), _Format, args);
-	for (size_t i = 0; i < strlen(buffer); i++) {
-		char c = buffer[i];
-		WriteChar(X++, Y, c, Color, relative);
+	size_t len = strlen(buffer);
+	auto buff = new CHAR_INFO[len];
+	SMALL_RECT XY = { (short)X - 1, (short)Y - 1, (short)X + len - 1, (short)Y - 1 };
+	
+	for (size_t i = 0; i < len; i++) {
+		buff[i].Attributes = Color;
+		buff[i].Char.AsciiChar = buffer[i];
 	}
+	WriteConsoleOutputA(_handle, buff, { (short)len, 1 }, { 0, 0 }, &XY);
+	delete[] buff;
 	va_end(args);
 }
 

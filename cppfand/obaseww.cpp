@@ -153,6 +153,7 @@ longint PushWrLLMsg(WORD N, bool WithESC)
 	return result;
 }
 
+// nacteni a zapis posledniho radku s klavesovymi zkratkami
 void WrLLMsg(WORD N)
 {
 	RdMsg(N); 
@@ -315,9 +316,9 @@ void RunMsgOn(char C, longint N)
 	CM->W = PushW1(1, TxtRows, 8, TxtRows, true, true);
 	TextAttr = screen.colors.zNorm;
 
-	screen.ScrFormatWrStyledText(1, 1, TextAttr, "%c%c", 0xAF, C);
-	if (N == 0) screen.ScrFormatWrStyledText(3, 1, TextAttr, "    %c", 0xAE /*0x11*/);
-	else screen.ScrFormatWrStyledText(3, 1, TextAttr, "  0%c%c", '%', 0xAE /*0x11*/);
+	screen.ScrFormatWrStyledText(1, 1, TextAttr, "%c%c", /*0xAF*/ 0x10, C);
+	if (N == 0) screen.ScrFormatWrStyledText(3, 1, TextAttr, "    %c", /*0xAE*/ 0x11);
+	else screen.ScrFormatWrStyledText(3, 1, TextAttr, "  0%c%c", '%', /*0xAE*/ 0x11);
 
 	/*printf("%c%c", 0x10, C);
 	if (N == 0) printf("    %c", 0x11);
@@ -332,8 +333,9 @@ void RunMsgN(longint N)
 	if (N < CM->MsgKum) return;
 	while (N >= CM->MsgKum) CM->MsgKum += CM->MsgStep;
 	Perc = (N * 100) / (CM->MsgNN + 1); // tady je pridane navic 1
-	screen.GotoXY(3, 1);
-	printf("%*i", 3, Perc);
+	//screen.GotoXY(3, 1);
+	screen.ScrFormatWrText(3, 1, "%*i", 3, Perc);
+	//printf("%*i", 3, Perc);
 #endif
 }
 

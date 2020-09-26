@@ -1305,7 +1305,7 @@ void CallProcedure(Instr_proc* PD)
 	//#ifdef _DEBUG
 	std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
 
-	if (srcCode.find("PromptObdobi") != std::string::npos) {
+	if (srcCode.find("Tisk jednoho dokladu") != std::string::npos) {
 		//|| srcCode.find("STAT.Start") != std::string::npos) {
 		printf("");
 		//FuncD* f = FuncDRoot;

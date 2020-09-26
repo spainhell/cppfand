@@ -95,12 +95,13 @@ public:
 	BYTE UserData[32] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 	std::string name;
 	std::string LineEnd;
+	std::string FullPath;
 	BYTE* buffer = nullptr;
 	bool eof;
 
 	const char* c_str();
 	void Close();
-	void Assign(const char *);
+	void Assign(std::string FullPath);
 	void Reset();
 	void Rewrite();
 	bool ResetTxt();

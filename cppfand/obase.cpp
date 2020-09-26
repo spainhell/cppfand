@@ -191,7 +191,9 @@ void TestTxtHError(TextFile* F)
 {
 	pstring s;
 	if (HandleError != 0) {
-		SetMsgPar(StrPas(F->name.c_str())); WrLLF10Msg(700 + HandleError); GoExit();
+		SetMsgPar(StrPas(F->name.c_str()));
+		WrLLF10Msg(700 + HandleError);
+		GoExit();
 	}
 }
 
@@ -256,8 +258,10 @@ integer OpenTxt(TextFile* F)
 {
 	/* !!! with F do!!! */
 	if (F->Mode == "rb" /*append*/) SeekH(F->Handle, FileSizeH(F->Handle));
-	if (F->Mode == "rb") F->inoutfunc = &InputTxt; else F->inoutfunc = &OutputTxt;
-	F->flushfunc = &FlushTxt; F->closefunc = &CloseTxt;
+	if (F->Mode == "rb") F->inoutfunc = &InputTxt;
+	else F->inoutfunc = &OutputTxt;
+	F->flushfunc = &FlushTxt;
+	F->closefunc = &CloseTxt;
 	
 	if (PrintCtrlFlag) ResetCtrlFlags();
 	return 0;
@@ -295,9 +299,10 @@ bool RewriteTxt(TextFile* F, bool PrintCtrl)
 	F->Assign(CPath.c_str());
 	if (CPath == "LPT1") F->openfunc = &OpenLPT1;
 	else {
-		PrintCtrlFlag = PrintCtrl; F->openfunc = &OpenTxt;
+		PrintCtrlFlag = PrintCtrl;
+		F->openfunc = &OpenTxt;
 		F->Handle = OpenH(_isoverwritefile, Exclusive);
-		if (HandleError != 0) { return false; };
+		if (HandleError != 0) { return false; }
 	}
 	F->Rewrite();
 	return true;

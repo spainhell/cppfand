@@ -348,7 +348,8 @@ void DelBackSlash(pstring& s)
 
 pstring StrPas(const char* Src)
 {
-	WORD n = 0; pstring s;
+	WORD n = 0;
+	pstring s;
 	while ((n < 255) && (Src[n] != '\0')) { s[n + 1] = Src[n]; n++; }
 	s[0] = (char)n;
 	return s;

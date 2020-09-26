@@ -45,7 +45,7 @@ bool OutOfLineBound(BlkD* B);
 void Zero(FloatPtrList Z);
 void WriteNBlks(integer N);
 void NewTxtCol(LongStrPtr S, WORD Col, WORD Width, bool Wrap);
-pstring GetLine(CharArr* TA, WORD& TLen, WORD Width, bool Wrap, bool Absatz);
+pstring GetLine(char* TA, WORD& TLen, WORD Width, bool Wrap, bool &Absatz);
 void CheckPgeLimit();
 void PendingTT();
 void Print1NTupel(bool Skip);
