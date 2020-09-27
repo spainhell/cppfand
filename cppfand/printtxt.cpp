@@ -14,6 +14,41 @@ bool printBlk, outpsw;
 WORD prFileNr;
 pstring Ln;
 
+void NewLine()
+{
+	
+}
+
+void PrintHeFo(pstring T)
+{
+	WORD i = 1; pstring m, s; bool point = false;
+	while (i <= T.length())
+		if (T[i] == '_')
+		{
+			m = "";
+			point = false;
+			while ((i <= T.length()) && (T[i] == '_' || T[i] == '.' || T[i] == ':')) {
+				if (T[i] != '_') point = true;
+				m = m + T[i];
+				i++;
+			}
+			if (point)
+				if (m == "__.__.__") PrintStr(StrDate(Today(), "DD.MM.YY"));
+				else if (m == "__.__.____") PrintStr(StrDate(Today(), "DD.MM.YYYY"));
+				else if (m == "__:__") PrintStr(StrDate(CurrTime(), "mm hh"));
+				else PrintStr(m);
+			else {
+				str(RprtPage, m.length(), m);
+				PrintStr(m);
+			}
+		}
+		else {
+			PrintChar_T(T[i]);
+			i++;
+		}
+	NewLine();
+}
+
 pstring replaceNo(pstring s, pstring sNew)
 {
 	integer i = s.first('#');
@@ -237,36 +272,6 @@ void PrintChar_T(char c)
 void PrintStr(pstring s)
 {
 	for (WORD i = 1; i <= s.length(); i++) PrintChar_T(s[i]);
-}
-
-void PrintHeFo(pstring T)
-{
-	WORD i = 1; pstring m, s; bool point = false;
-	while (i <= T.length())
-		if (T[i] == '_')
-		{
-			m = "";
-			point = false;
-			while ((i <= T.length()) && (T[i] == '_' || T[i] == '.' || T[i] == ':')) {
-				if (T[i] != '_') point = true;
-				m = m + T[i];
-				i++;
-			}
-			if (point)
-				if (m == "__.__.__") PrintStr(StrDate(Today(), "DD.MM.YY"));
-				else if (m == "__.__.____") PrintStr(StrDate(Today(), "DD.MM.YYYY"));
-				else if (m == "__:__") PrintStr(StrDate(CurrTime(), "mm hh"));
-				else PrintStr(m);
-			else {
-				str(RprtPage, m.length(), m);
-				PrintStr(m);
-			}
-		}
-		else {
-			PrintChar_T(T[i]);
-			i++;
-		}
-	NewLine();
 }
 
 void GetNum(WORD& NN)

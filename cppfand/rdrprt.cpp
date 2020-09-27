@@ -594,6 +594,9 @@ LvDescr* NewLvS(LvDescr* L, InpD* ID)
 
 void RdBlock(BlkD** BB)
 {
+	BYTE rep[256]{ 0 };
+	size_t offset = 0;
+	
 	integer LineLen = 0;
 	integer NBytesStored = 0;
 	BYTE* LnL = nullptr;
@@ -695,6 +698,7 @@ label3:
 		case 0x10: {
 			UC = ForwChar;
 			StoreCh(0xFF, NBytesStored);
+			rep[offset++] = 0xFF;
 			if (RF == nullptr) {
 				RF = CBlk->RFD;
 				if (RF == nullptr) Error(30);
@@ -715,7 +719,9 @@ label3:
 				M = NUnderscores(UC, LineLen);
 				L = L + M + 1;
 				StoreCh((char)L, NBytesStored);
+				rep[offset++] = L;
 				StoreCh((char)M, NBytesStored);
+				rep[offset++] = M;
 				TestSetRFTyp('F', RepeatedGrp, RF);
 				break;
 			}
@@ -734,7 +740,9 @@ label3:
 				else {
 					L = L + M + 1;
 					StoreCh((char)L, NBytesStored);
+					rep[offset++] = L;
 					StoreCh((char)M, NBytesStored);
+					rep[offset++] = M;
 					TestSetRFTyp('R', RepeatedGrp, RF);
 				}
 				break;
@@ -758,16 +766,20 @@ label3:
 					}
 				}
 				StoreCh((char)L, NBytesStored);
+				rep[offset++] = L;
 				StoreCh((char)M, NBytesStored);
+				rep[offset++] = M;
 				TestSetRFTyp('T', RepeatedGrp, RF);
 				break;
 			}
 			default: {
 				StoreCh(char(L), NBytesStored);
+				rep[offset++] = L;
 				TestSetRFTyp(RF->FrmlTyp, RepeatedGrp, RF);
 				M = 0;
 				if (RF->Typ == 'S') M = LineLen - L + 1; /*current column*/
 				StoreCh((char)M, NBytesStored);
+				rep[offset++] = M;
 				break;
 			}
 			}
@@ -778,7 +790,8 @@ label3:
 		}
 		case '\\': {
 			CBlk->FF2 = true;
-			EndString(LineLen, NBytesStored, LnL, StrL);
+			EndString(CBlk, rep, LineLen, NBytesStored, LnL, StrL);
+			offset = 0;
 			ReadChar();
 			goto label4;
 			break;
@@ -790,13 +803,20 @@ label3:
 			break;
 		}
 		default: {
-			if (ForwChar == 0xff) StoreCh(' ', NBytesStored);
-			else StoreCh(ForwChar, NBytesStored);
+			if (ForwChar == 0xff) {
+				StoreCh(' ', NBytesStored);
+				rep[offset++] = ' ';
+			}
+			else {
+				StoreCh(ForwChar, NBytesStored);
+				rep[offset++] = ForwChar;
+			}
 			RdCh(LineLen);
 			break;
 		}
 		}
-	EndString(LineLen, NBytesStored, LnL, StrL);
+	EndString(CBlk, rep, LineLen, NBytesStored, LnL, StrL);
+	offset = 0;
 	SkipBlank(true);
 	if (ForwChar != 0x1A) goto label3;
 label4:
@@ -825,16 +845,22 @@ void StoreCh(BYTE C, integer& NBytesStored)
 
 integer NUnderscores(char C, integer& LineLen)
 {
-	integer N;
-	N = 0;
-	while (ForwChar == C) { N++; RdCh(LineLen); }
+	integer N = 0;
+	while (ForwChar == C) {
+		N++;
+		RdCh(LineLen);
+	}
 	return N;
 }
 
-void EndString(integer LineLen, integer NBytesStored, BYTE* LnL, WORD* StrL)
+void EndString(BlkD* block, BYTE* buffer, integer LineLen, integer NBytesStored, BYTE* LnL, WORD* StrL)
 {
+	// vlozime buffer do vectoru stringu
+	block->lines.push_back(std::string((char*)buffer, NBytesStored));
+	
 	*StrL = NBytesStored;
-	CBlk->NTxtLines++; if (LineLen == 0) *LnL = 255;
+	CBlk->NTxtLines++;
+	if (LineLen == 0) *LnL = 255;
 	else *LnL = LineLen;
 }
 

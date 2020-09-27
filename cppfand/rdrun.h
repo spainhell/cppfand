@@ -139,6 +139,7 @@ struct BlkD : public Chained
 	RFldD* RFD = nullptr;
 	AssignD* BeforeProc = nullptr; 
 	AssignD* AfterProc = nullptr;
+	std::vector<std::string> lines; // vektor jednotlivych radku
 };
 
 struct LvDescr {

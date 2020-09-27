@@ -12,7 +12,7 @@ struct TTD : public Chained
 
 struct YRec
 {
-    char* P = nullptr; // pchar
+    const char* P = nullptr; // pchar
     WORD I = 0, Ln = 0, TLn = 0, Sz = 0;
     BlkD* Blk = nullptr;
     bool ChkPg = false;
@@ -38,28 +38,30 @@ void RunReport(RprtOpt* RO);
 //void TruncLine; forward;
 void ResetY();
 void IncPage();
-void NewLine();
+void NewLine(std::string& text);
 void FormFeed();
-void NewPage();
+void NewPage(std::string& text);
 bool OutOfLineBound(BlkD* B);
 void Zero(FloatPtrList Z);
 void WriteNBlks(integer N);
 void NewTxtCol(LongStrPtr S, WORD Col, WORD Width, bool Wrap);
 pstring GetLine(char* TA, WORD& TLen, WORD Width, bool Wrap, bool &Absatz);
-void CheckPgeLimit();
-void PendingTT();
-void Print1NTupel(bool Skip);
-void FinishTuple();
+void CheckPgeLimit(std::string& text);
+void PendingTT(std::string& text);
+void FinishTuple(std::string& text);
 void RunAProc(AssignD* A);
-void PrintTxt(BlkD* B, bool ChkPg);
-void TruncLine();
-void PrintBlkChn(BlkD* B, bool ChkPg, bool ChkLine);
-void PrintPageFt();
-void PrintPageHd();
+
+void PrintBlock(BlkD* B, std::string& text, BlkD* DH);
+void PrintTxt(BlkD* B, std::string& text, bool ChkPg);
+void Print1NTupel(std::string& text, bool Skip);
+
+void TruncLine(std::string& text);
+void PrintBlkChn(BlkD* B, std::string& text, bool ChkPg, bool ChkLine);
+void PrintPageFt(std::string& text);
+void PrintPageHd(std::string& text);
 void SumUp(SumElem* S);
-void PrintBlock(BlkD* B, BlkD* DH);
-void Footings(LvDescr* L, LvDescr* L2);
-void Headings(LvDescr* L, LvDescr* L2);
+void Footings(LvDescr* L, LvDescr* L2, std::string& text);
+void Headings(LvDescr* L, LvDescr* L2, std::string& text);
 void ZeroSumFlds(LvDescr* L);
 void ReadInpFile(InpD* ID);
 void OpenInp();
@@ -73,5 +75,5 @@ void ZeroCount();
 LvDescr* GetDifLevel();
 void MoveForwToRec(InpD* ID);
 void MoveFrstRecs();
-void MergeProc();
+void MergeProc(std::string& text);
 bool RewriteRprt(RprtOpt* RO, WORD Pl, WORD& Times, bool& IsLPT1);

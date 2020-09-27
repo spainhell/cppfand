@@ -18,7 +18,7 @@ void PrintTxtFBlk(longint BegPos, bool CtrlL);
 void PrintChar_T(char c); // definován v obase -> pøidáno *_T
 void PrintStr(pstring s);
 void NewLine();
-void PrintHeFo(pstring T);
+//void PrintHeFo(pstring T);
 void GetNum(WORD& NN);
 bool EofInp();
 void RdLnInp();

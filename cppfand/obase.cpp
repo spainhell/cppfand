@@ -19,7 +19,7 @@ bool IsPrintCtrl(char C)
 {
 	// ^S ^Q ^W ^B ^D ^E ^A ^X ^V ^T
 	std::set<char> pc = { 0x13, 0x11, 0x17, 0x02, 0x04, 0x05, 0x01, 0x18, 0x16, 0x14 };
-	return pc.count(C) == 0;
+	return pc.count(C) > 0;
 }
 
 void PrintByte(BYTE B)
