@@ -22,7 +22,7 @@ FloatPtrListEl* PFZeroLst;
 LvDescr* FrstLvM;
 LvDescr* LstLvM; /* LstLvM->Ft=RF */
 bool SelQuest;
-FrmlElem* PgeSizeZ, *PgeLimitZ;
+FrmlElem* PgeSizeZ, * PgeLimitZ;
 EditD* EditDRoot;
 bool CompileFD, EditRdbMode;
 LocVarBlkD LVBD;
@@ -268,7 +268,7 @@ bool Assign(AddDPtr AD)
 	switch (F->FrmlTyp) {
 	case 'R': R = RunReal(Z); break;
 	case 'S': if (F->Typ == 'T') S = RunLongStr(Z);
-		else ss = RunShortStr(Z); break;
+			else ss = RunShortStr(Z); break;
 	default: B = RunBool(Z); break;
 	}
 	if (!Link(AD, N2, Kind2)) { return false; }
@@ -281,10 +281,12 @@ bool Assign(AddDPtr AD)
 	return true;
 }
 
-bool LockForAdd(FileDPtr FD, WORD Kind, bool Ta, LockMode& md)
+bool LockForAdd(FileD* FD, WORD Kind, bool Ta, LockMode& md)
 {
-	AddD* AD; LockMode md1; /*0-ExLMode,1-lock,2-unlock*/
-	auto result = false; CFile = FD; AD = FD->Add;
+	AddD* AD = nullptr; LockMode md1; /*0-ExLMode,1-lock,2-unlock*/
+	auto result = false;
+	CFile = FD;
+	AD = FD->Add;
 	while (AD != nullptr) {
 		/* !!! with AD^ do!!! */
 		if (CFile != AD->File2) {
@@ -296,12 +298,15 @@ bool LockForAdd(FileDPtr FD, WORD Kind, bool Ta, LockMode& md)
 				break;
 			}
 			case 1: {
-				md = WrMode; if (AD->Create > 0) md = CrMode;
-				if (TryLMode(md, md1, 2)) return result; break;
+				md = WrMode;
+				if (AD->Create > 0) md = CrMode;
+				if (!TryLMode(md, md1, 2)) return result;
+				break;
 			}
 			case 2: {
 				if (Ta)OldLMode(CFile->TaLMode);
-				else OldLMode(CFile->ExLMode); break;
+				else OldLMode(CFile->ExLMode);
+				break;
 			}
 			}
 			if (!LockForAdd(CFile, Kind, Ta, md)) return result;
@@ -339,7 +344,7 @@ bool TestExitKey(WORD KeyCode, EdExitD* X)
 		}
 	}
 	return false;
-	
+
 	/*EdExKeyD* E = X->Keys;
 	while (E != nullptr) {
 		if (KeyCode == E->KeyCode) {

@@ -142,14 +142,18 @@ longint PushWrLLMsg(WORD N, bool WithESC)
 {
 	WORD l;
 	auto result = PushW(1, TxtRows, TxtCols, TxtRows);
-	TextAttr = screen.colors.zNorm; ClrEol();
-	TextAttr = screen.colors.zNorm | 0x80; printf("  ");
 	TextAttr = screen.colors.zNorm;
-	if (WithESC) printf("(ESC) ");
+	ClrEol();
+	TextAttr = screen.colors.zNorm | 0x80;
+	//printf("  ");
+	screen.ScrWrText(1, 1, "  ");
+	TextAttr = screen.colors.zNorm;
+	if (WithESC) screen.ScrWrText(6, 1, "(ESC) ");  //printf("(ESC) ");
 	RdMsg(N);
 	l = TxtCols - screen.WhereX();
-	if (MsgLine.length() > l) MsgLine[0] = char(l);
-	printf("%s", MsgLine.c_str());
+	if (MsgLine.length() > l) MsgLine[0] = (char)l;
+	//printf("%s", MsgLine.c_str());
+	screen.ScrWrText(WithESC ? 12 : 6, 1, MsgLine.c_str());
 	return result;
 }
 
@@ -246,7 +250,7 @@ label1:
 	goto label1;
 label3:
 	F10SpecKey = 0;
-	screen.ScrWrCharInfoBuf(0, row, Buf, TxtCols);
+	screen.ScrWrCharInfoBuf(1, row + 1, Buf, TxtCols);
 	delete[] Buf;
 }
 

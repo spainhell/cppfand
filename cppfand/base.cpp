@@ -1529,7 +1529,8 @@ void NewExit(PProcedure POvr, ExitRecord* Buf)
 void GoExit()
 {
 #ifdef _DEBUG
-	printf("%s ", MsgLine.c_str());
+	//printf("%s ", MsgLine.c_str());
+	screen.ScrWrText(1, 1, MsgLine.c_str());
 	//throw std::exception("GoExit()");
 #endif
 }

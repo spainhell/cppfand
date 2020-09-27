@@ -522,8 +522,8 @@ void ClrScr()
 
 void ClrEol()
 {
-	auto X = screen.WhereX();
-	auto Y = screen.WhereY();
+	auto X = screen.WhereXabs();
+	auto Y = screen.WhereYabs();
 	screen.ScrClr(X, Y, WindMax.X - X + 1, 1, ' ', TextAttr);
 }
 
