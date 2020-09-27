@@ -105,7 +105,8 @@ void CopyToMgr()
 	h2 = OpenMgrOutput(); if (h2 == nullptr) return; cf = CFile; cr = CRecPtr;
 	if (printBlk) WriteH(h2, nBlk, *pBlk);
 	else { /* !!! with TextRec(Rprt) do!!! */
-		h1 = Rprt.Handle; SeekH(h1, 0);
+		h1 = Rprt.Handle;
+		SeekH(h1, 0);
 		lbuf = 1000; buf = GetStore(lbuf); sz = FileSizeH(h1);
 		while (sz > 0) {
 			if (sz > lbuf) n = lbuf;
@@ -237,7 +238,7 @@ void PrintTxtFile(longint BegPos)
 	PrintTxtFBlk(BegPos, true);
 	/* !!! with TextRec(Rprt) do!!! */
 	if (Rprt.Handle == nullptr) return;
-	Rprt.Close();
+	Rprt.Close(nullptr); // nullptr je tady navic po uprave metody Close()
 }
 
 void PrintArray(void* P, WORD N, bool CtrlL)

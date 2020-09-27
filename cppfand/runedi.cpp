@@ -333,7 +333,7 @@ WORD FieldEdit(FieldDescr* F, FrmlElem* Impl, WORD LWw, WORD iPos, std::string& 
 		case evKeyDown: {
 			KbdChar = Event.KeyCode;
 			ClrEvent();
-			if (KbdChar == _ESC_) {
+			if (KbdChar == VK_ESCAPE) {
 				screen.CrsHide();
 				return result;
 			}
@@ -360,7 +360,7 @@ WORD FieldEdit(FieldDescr* F, FrmlElem* Impl, WORD LWw, WORD iPos, std::string& 
 	label1:
 		//printf("%c", cc);
 		screen.ScrFormatWrText(Col, Row, "%c", cc);
-		Txt = Txt + cc;
+		Txt = cc;
 		screen.CrsHide();
 		return 0;
 	}
@@ -488,7 +488,7 @@ void WrPromptTxt(std::string& S, FrmlElem* Impl, FieldDescr* F, pstring* Txt, do
 	else {
 		EscPrompt = false;
 		*Txt = T;
-		T[0] = (char)LWw;
+		(*Txt)[0] = (char)LWw;
 		screen.GotoXY(x, y);
 		// printf("%s", T.c_str());
 		screen.ScrFormatWrText(x, y, "%s", T.c_str());
@@ -501,7 +501,7 @@ bool PromptB(std::string& S, FrmlElem* Impl, FieldDescr* F)
 	double R = 0.0;
 	WrPromptTxt(S, Impl, F, &Txt, R);
 	bool result = Txt[1] == AbbrYes;
-	if (KbdChar == _ESC_) {
+	if (KbdChar == VK_ESCAPE) {
 		if (Impl != nullptr) result = RunBool(Impl);
 		else result = false;
 	}

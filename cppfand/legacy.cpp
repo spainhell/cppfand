@@ -4,6 +4,8 @@
 #include <ctime>
 #include <direct.h>
 #include "base.h"
+#include <iostream>
+#include <fstream>
 
 std::vector<std::string> paramstr;
 longint ExitCode = 0; // exit kód -> OS
@@ -400,8 +402,14 @@ const char* TextFile::c_str()
 	return (const char*)buffer;
 }
 
-void TextFile::Close()
+void TextFile::Close(const char* data)
 {
+	std::ofstream myFile(FullPath.c_str());
+	if (myFile.is_open()) {
+		myFile << data;
+		myFile.close();
+	}
+	else printf("ERROR saving text file.");
 }
 
 void TextFile::Assign(std::string FullPath)

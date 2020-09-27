@@ -35,10 +35,10 @@ integer NUnderscores(char C, integer& LineLen);
 void EndString(BlkD* block, BYTE* buffer, integer LineLen, integer NBytesStored, BYTE* LnL, WORD* StrL);
 void TestSetRFTyp(char Typ, bool RepeatedGrp, RFldD* RF);
 void TestSetBlankOrWrap(bool RepeatedGrp, char UC, RFldD* RF);
-void RdBeginEnd(AssignD* ARoot);
+//void RdBeginEnd(AssignD* ARoot);
 AssignD* RdAssign2();
-void RdAssignBlk(AssignD* ARoot);
+//void RdAssignBlk(AssignD* ARoot);
 void RdCond();
 LvDescr* RdKeyName();
-void Rd_Oi();
+//void Rd_Oi();
 

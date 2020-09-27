@@ -47,7 +47,7 @@ label1:
 	return result;
 }
 
-FrmlPtr RdFldNameFrmlR(char& FTyp)
+FrmlElem* RdFldNameFrmlR(char& FTyp)
 {
 	LinkD* LD = nullptr; FileD* FD = nullptr; RFldD* RF = nullptr; LocVar* LV = nullptr;
 	WORD n = 0;
@@ -57,10 +57,16 @@ FrmlPtr RdFldNameFrmlR(char& FTyp)
 	if ((FrmlSumEl != nullptr) && FrstSumVar && (CBlk != nullptr)) {
 		SumIi = 0; CBlkSave = CBlk; CBlk = nullptr;
 	}
-	if (IsForwPoint()) { RdDirFilVar(FTyp, &result); return result; }
+	if (IsForwPoint()) {
+		RdDirFilVar(FTyp, &result);
+		return result;
+	}
 	if (!WasIiPrefix && FindLocVar(&LVBD, &LV)) {
-		RdLex(); TestNotSum();
-		result = (FrmlElem*)(&LV->Op); FTyp = LV->FTyp; return result;
+		RdLex();
+		TestNotSum();
+		result = new FrmlElem18(_getlocvar, LV);
+		FTyp = LV->FTyp;
+		return result;
 	}
 	if (IsKeyWord("COUNT")) {
 		TestNotSum();
@@ -70,8 +76,11 @@ FrmlPtr RdFldNameFrmlR(char& FTyp)
 		return result;
 	}
 	if (IsKeyWord("GROUP")) {
-		TestNotSum(); if (WasIiPrefix) OldError(41);
-		result = (FrmlElem*)(&MergOpGroup); FTyp = 'R'; return result;
+		TestNotSum();
+		if (WasIiPrefix) OldError(41);
+		result = (FrmlElem*)(&MergOpGroup);
+		FTyp = 'R';
+		return result;
 	}
 	if (IsKeyWord("LINE")) { n = 0; goto label1; }
 	if (IsKeyWord("PAGE")) { n = 1; goto label1; }
@@ -279,6 +288,17 @@ void ChainSumElR()
 	if (CZeroLst != nullptr) {
 		Z->Chain = CZeroLst->Chain;
 		CZeroLst->Chain = Z;
+	}
+}
+
+void Rd_Oi()
+{
+	Oi = 1;
+	if (isdigit(ForwChar)) {
+		ReadChar();
+		Oi = CurrChar - '0';
+		if ((Oi == 0) || (Oi > MaxIi)) Error(62);
+		WhatToRd = 'i';
 	}
 }
 
@@ -592,6 +612,28 @@ LvDescr* NewLvS(LvDescr* L, InpD* ID)
 	return L1;
 }
 
+void RdBeginEnd(AssignD** ARoot);
+
+void RdAssignBlk(AssignD** ARoot)
+{
+	AssignD* A = nullptr;
+	if (IsKeyWord("BEGIN")) RdBeginEnd(ARoot);
+	else {
+		A = RdAssign2();
+		if (*ARoot == nullptr) { *ARoot = A; A->Chain = nullptr; }
+		else ChainLast(*ARoot, A);
+	}
+}
+
+void RdBeginEnd(AssignD** ARoot)
+{
+label1:
+	if (IsKeyWord("END")) return;
+	RdAssignBlk(ARoot);
+	if (Lexem == ';') { RdLex(); goto label1; }
+	AcceptKeyWord("END");
+}
+
 void RdBlock(BlkD** BB)
 {
 	BYTE rep[256]{ 0 };
@@ -614,13 +656,13 @@ void RdBlock(BlkD** BB)
 	else ChainLast(*BB, CBlk);
 	RdCond();
 	if (IsKeyWord("BEGIN")) {
-		RdBeginEnd(CBlk->BeforeProc);
+		RdBeginEnd(&CBlk->BeforeProc);
 		goto label1;
 	}
 	if (Lexem == ';') goto label2;     /*read var decl.*/
 label0:
 	if (IsKeyWord("BEGIN")) {
-		RdBeginEnd(CBlk->AfterProc);
+		RdBeginEnd(&CBlk->AfterProc);
 		goto label2;
 	}
 	if (Lexem == '.') {
@@ -879,15 +921,6 @@ void TestSetBlankOrWrap(bool RepeatedGrp, char UC, RFldD* RF)
 	else if (UC == '@') Error(80);
 }
 
-void RdBeginEnd(AssignD* ARoot)
-{
-label1:
-	if (IsKeyWord("END")) return;
-	RdAssignBlk(ARoot);
-	if (Lexem == ';') { RdLex(); goto label1; }
-	AcceptKeyWord("END");
-}
-
 AssignD* RdAssign2()
 {
 	AssignD* A = nullptr; LocVar* LV = nullptr; char FTyp = 0;
@@ -899,8 +932,8 @@ AssignD* RdAssign2()
 		A->Kind = _ifthenelseM;
 		A->Bool = RdBool();
 		AcceptKeyWord("THEN");
-		RdAssignBlk(A->Instr);
-		if (IsKeyWord("ELSE")) RdAssignBlk(A->ElseInstr);
+		RdAssignBlk(&A->Instr);
+		if (IsKeyWord("ELSE")) RdAssignBlk(&A->ElseInstr);
 	}
 	else if (ForwChar == '.') {
 		A->Kind = _parfile;
@@ -921,17 +954,6 @@ AssignD* RdAssign2()
 	}
 	else Error(147);
 	return result;
-}
-
-void RdAssignBlk(AssignD* ARoot)
-{
-	AssignD* A = nullptr;
-	if (IsKeyWord("BEGIN")) RdBeginEnd(ARoot);
-	else {
-		A = RdAssign2();
-		if (ARoot == nullptr) { ARoot = A; A->Chain = nullptr; }
-		else ChainLast(ARoot, A);
-	}
 }
 
 void RdCond()
@@ -959,16 +981,5 @@ LvDescr* RdKeyName()
 	}
 	OldError(46);
 	return nullptr;
-}
-
-void Rd_Oi()
-{
-	Oi = 1;
-	if (isdigit(ForwChar)) {
-		ReadChar();
-		Oi = CurrChar - '0';
-		if ((Oi == 0) || (Oi > MaxIi)) Error(62);
-		WhatToRd = 'i';
-	}
 }
 

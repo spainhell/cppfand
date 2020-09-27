@@ -119,9 +119,9 @@ struct RprtOpt
 struct RFldD : public Chained
 {
 	//RFldD* Chain;
-	char FrmlTyp, Typ;    /*R,F,D,T*/
-	bool BlankOrWrap; /*long date "DD.MM.YYYY"*/
-	FrmlPtr Frml;
+	char FrmlTyp = '\0', Typ = '\0';    /*R,F,D,T*/
+	bool BlankOrWrap = false; /*long date "DD.MM.YYYY"*/
+	FrmlElem* Frml = nullptr;
 	pstring Name = pstring(1); /*curr. length*/
 };
 

@@ -116,7 +116,7 @@ label1:
 			printf("%s\n", Rprt.c_str());
 			printf("%s%s", Rprt.c_str(), MsgLine.c_str());
 		}
-		Rprt.Close();
+		Rprt.Close(ReportString.c_str());
 		// if (isLPT1) ClosePrinter(0);
 		CloseInp();
 		PopProcStk();
@@ -209,26 +209,33 @@ void Zero(FloatPtrList Z)
 	}
 }
 
-void WriteNBlks(integer N)
+void WriteNBlks(std::string& text, integer N)
 {
-	if (N > 0) printf("%s%*c", Rprt.c_str(), N, ' ');
+	if (N > 0) {
+		char buffer[256]{ '\0' };
+		snprintf(buffer, sizeof(buffer), "%*c", N, ' ');
+		//printf("%s%*c", Rprt.c_str(), N, ' ');
+		text += buffer;
+	}
 }
 
-void NewTxtCol(LongStrPtr S, WORD Col, WORD Width, bool Wrap)
+std::string NewTxtCol(LongStr* S, WORD Col, WORD Width, bool Wrap)
 {
 	char* TA = nullptr;
 	WORD i = 0, LL = 0, Ln = 0;
 	TTD* TD = nullptr;
-	pstring ss;
+	std::string ss;
 	StringListEl* SL = nullptr;
 	LL = S->LL;
 	TA = S->A;
 	Ln = 0;
 	bool Absatz = true;
-	if (Wrap) for (i = 1; i < LL; i++)
+	if (Wrap) for (i = 1; i <= LL; i++)
 		if ((TA[i] == 0x0D) && ((i == LL) || (TA[i + 1] != 0x0A))) TA[i] = ' ';
+
 	ss = GetLine(TA, LL, Width, Wrap, Absatz);
-	printf("%s%s", Rprt.c_str(), ss.c_str());
+	//printf("%s%s", Rprt.c_str(), ss.c_str());
+
 	while (LL > 0) {
 		ss = GetLine(TA, LL, Width, Wrap, Absatz);
 		Ln++;
@@ -245,13 +252,14 @@ void NewTxtCol(LongStrPtr S, WORD Col, WORD Width, bool Wrap)
 	}
 	if (Ln > 0) {
 		TD->Ln = Ln;
-		ChainLast(Y.TD, TD);
+		if (Y.TD == nullptr) Y.TD = TD;
+		else ChainLast(Y.TD, TD);
 		if (Ln > Y.TLn) Y.TLn = Ln;
 	}
-
+	return ss;
 }
 
-pstring GetLine(char* TA, WORD& TLen, WORD Width, bool Wrap, bool &Absatz)
+pstring GetLine(char* TA, WORD& TLen, WORD Width, bool Wrap, bool& Absatz)
 {
 	WORD TAOff = 0;
 	integer j = 0, iWrdEnd = 0, i2WrdEnd = 0, wWrdEnd = 0, nWrdEnd = 0;
@@ -372,9 +380,12 @@ void PendingTT(std::string& text)
 		Col = 1;
 		while (TD != nullptr) {
 			if (TD->Ln > 0) {
-				WriteNBlks(TD->Col - Col);
+				WriteNBlks(text, TD->Col - Col);
 				SL = TD->SL;
-				printf("%s%s", Rprt.c_str(), SL->S.c_str());
+				char buffer[256];
+				snprintf(buffer, sizeof(buffer), "%s", SL->S.c_str());
+				//printf("%s%s", Rprt.c_str(), SL->S.c_str());
+				text += buffer;
 				WORD l = LenStyleStr(SL->S);
 				Col = TD->Col + l;
 				TD->Ln--;
@@ -385,7 +396,7 @@ void PendingTT(std::string& text)
 		Y.TLn--;
 		LineLenLst = lll;
 	}
-	WriteNBlks(LineLenLst + 1 - Col);
+	WriteNBlks(text, LineLenLst + 1 - Col);
 	if (Y.TD != nullptr) {
 		ReleaseStore2(Store2Ptr);
 		Y.TD = nullptr;
@@ -464,16 +475,16 @@ void PrintTxt(BlkD* B, std::string& text, bool ChkPg)
 			for (int i = RprtLine; i <= RunInt(B->LineNo) - 1; i++) NewLine(text);
 		if (B->NTxtLines > 0) {
 			if (B->NBlksFrst < LineLenLst) NewLine(text);
-			for (int i = 1; i <= B->NBlksFrst - LineLenLst; i++) printf("%s%c", Rprt.c_str(), ' ');
+			for (int i = 1; i <= B->NBlksFrst - LineLenLst; i++) text += ' ';
 		}
 		ResetY();
 		Y.Ln = B->NTxtLines;
 		if (Y.Ln != 0) {
 			Y.Blk = B;
-			Y.P = B->lines[RprtLine - 1].c_str(); 
+			Y.P = B->lines[0].c_str();
 			Y.ChkPg = ChkPg;
-			LineLenLst = B->lines[RprtLine - 1].length();
-			Y.Sz = B->lines[RprtLine - 1].length();
+			LineLenLst = B->lines[0].length();
+			Y.Sz = B->lines[0].length();
 		}
 	}
 	RunAProc(B->BeforeProc);
@@ -483,19 +494,20 @@ void PrintTxt(BlkD* B, std::string& text, bool ChkPg)
 
 void Print1NTupel(std::string& text, bool Skip)
 {
-	RFldD* RF = nullptr;
 	WORD L;
 	double R = 0.0;
 	pstring Mask;
 	LongStr* S = nullptr;
 	if (Y.Ln == 0) return;
-	RF = Y.Blk->RFD;
+	RFldD* RF = nullptr;
 label1:
 	WasOutput = true;
 	while (Y.I < Y.Sz) {
+		char buffer[256]{ '\0' };
 		BYTE C = (BYTE)Y.P[Y.I];
 		if (C == 0xFF) {
-			RF = (RFldD*)RF->Chain;
+			if (RF == nullptr) RF = Y.Blk->RFD;
+			else RF = (RFldD*)RF->Chain;
 			if (RF == nullptr) return;
 			L = (BYTE)Y.P[Y.I + 1];
 			WORD M = (BYTE)Y.P[Y.I + 2];
@@ -504,13 +516,29 @@ label1:
 				switch (RF->Typ) {
 				case 'R':
 				case 'F': {
-					if (Skip) printf("%s%*c", Rprt.c_str(), L, ' ');
+					if (Skip) {
+						snprintf(buffer, sizeof(buffer), "%*c", L, ' ');
+						//printf("%s%*c", Rprt.c_str(), L, ' ');
+						text += buffer;
+					}
 					else {
 						if (RF->Typ == 'F') R = R / Power10[M];
-						if (RF->BlankOrWrap && (R == 0))
-							if (M == 0) printf("%s%*c", Rprt.c_str(), L, ' ');
-							else printf("%s%*c.%*c", Rprt.c_str(), L - M - 1, ' ', M, ' ');
-						else printf("%s%*.*f", Rprt.c_str(), L, M, R);
+						if (RF->BlankOrWrap && (R == 0)) {
+							if (M == 0) {
+								snprintf(buffer, sizeof(buffer), "%*c", L, ' ');
+								//printf("%s%*c", Rprt.c_str(), L, ' ');
+							}
+							else {
+								snprintf(buffer, sizeof(buffer), "%*c.%*c", L - M - 1, ' ', M, ' ');
+								//printf("%s%*c.%*c", Rprt.c_str(), L - M - 1, ' ', M, ' ');
+							}
+							text += buffer;
+						}
+						else {
+							snprintf(buffer, sizeof(buffer), "%*.*f", L, M, R);
+							text += buffer;
+							//printf("%s%*.*f", Rprt.c_str(), L, M, R);
+						}
 					}
 					Y.I += 2;
 					break;
@@ -525,8 +553,16 @@ label1:
 					Mask = copy("hhhhhh", 1, L) + copy(":ss mm.tt", 1, M);
 					Y.I += 2;
 				label2:
-					if (Skip) printf("%s%*c", Rprt.c_str(), Mask.length(), ' ');
-					else printf("%s%s", Rprt.c_str(), StrDate(R, Mask).c_str());
+					if (Skip) {
+						snprintf(buffer, sizeof(buffer), "%*c", Mask.length(), ' ');
+						//printf("%s%*c", Rprt.c_str(), Mask.length(), ' ');
+						text += buffer;
+					}
+					else {
+						snprintf(buffer, sizeof(buffer), "%s", StrDate(R, Mask).c_str());
+						//printf("%s%s", Rprt.c_str(), StrDate(R, Mask).c_str());
+						text += buffer;
+					}
 					break;
 				}
 				}
@@ -544,13 +580,18 @@ label1:
 					goto label3;
 				}
 				Y.I += 2;
-				if (Skip) printf("%s%*c", Rprt.c_str(), L, ' ');
+				if (Skip) {
+					snprintf(buffer, sizeof(buffer), "%*c", L, ' ');
+					//printf("%s%*c", Rprt.c_str(), L, ' ');
+					text += buffer;
+				}
 				else
 					switch (RF->FrmlTyp) {
 					case 'S': {
 						S = RunLongStr(RF->Frml);
-						while ((S->LL > 0) && (S->A[S->LL] == ' ')) S->LL--;
-						NewTxtCol(S, M, L, RF->BlankOrWrap);
+						while ((S->LL > 0) && (S->A[S->LL - 1] == ' ')) S->LL--;
+						auto sText = NewTxtCol(S, M, L, RF->BlankOrWrap);
+						text += sText;
 						ReleaseStore(S);
 						break;
 					}
@@ -588,6 +629,10 @@ label1:
 		Y.I = 0;
 		CheckPgeLimit(text);
 		LineLenLst = L;
+		// jedna se o posledni radek a je prazdny? -> pridame prazdny radek
+		if (Y.Blk->NTxtLines - Y.Ln + 1 == Y.Blk->lines.size()) {
+			if (Y.Blk->lines[Y.Blk->NTxtLines - Y.Ln].empty()) NewLine(text);
+		}
 		goto label1;
 	}
 	Y.Blk = nullptr;

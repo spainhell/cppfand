@@ -301,7 +301,7 @@ bool RewriteTxt(TextFile* F, bool PrintCtrl)
 	else {
 		PrintCtrlFlag = PrintCtrl;
 		F->openfunc = &OpenTxt;
-		F->Handle = OpenH(_isoverwritefile, Exclusive);
+		// F->Handle = OpenH(_isoverwritefile, Exclusive); // ted nebudeme otvirat
 		if (HandleError != 0) { return false; }
 	}
 	F->Rewrite();

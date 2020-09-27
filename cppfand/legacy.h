@@ -100,7 +100,7 @@ public:
 	bool eof;
 
 	const char* c_str();
-	void Close();
+	void Close(const char* data);
 	void Assign(std::string FullPath);
 	void Reset();
 	void Rewrite();

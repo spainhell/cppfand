@@ -3554,7 +3554,7 @@ void HandleEvent() {
 					{
 						TestKod(); KbdChar = ww; Konec = true; EdBreak = 0xFFFF;
 					}
-					else if (ww == _ESC_)
+					else if (ww == VK_ESCAPE)
 					{
 						TestKod(); KbdChar = ww; Konec = true; EdBreak = 0;
 					}
