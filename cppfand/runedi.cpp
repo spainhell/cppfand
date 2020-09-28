@@ -765,7 +765,7 @@ void Wr1Line(FieldDescr* F)
 	if (l > max)
 	{
 		l = max;
-		Txt[0] = char(LogToAbsLenStyleStr(Txt, l));
+		Txt[0] = (char)LogToAbsLenStyleStr(Txt, l);
 	}
 	//WrStyleStr(Txt, E->dNorm);
 	screen.WriteStyledStringToWindow(Txt, E->dNorm);

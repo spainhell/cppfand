@@ -1,9 +1,6 @@
 #pragma once
 #include "../rdrun.h"
-
-#ifdef FandGraph
 #include "../Graph.h"
-#endif
 
 //class Chained;
 //class FrmlElem;
@@ -302,14 +299,12 @@ public:
 	LockD WLD;
 };
 
-#ifdef FandGraph
 class Instr_graph : public Instr
 {
 public:
 	Instr_graph();
 	GraphD* GD = nullptr;
 };
-#endif
 
 class Instr_putpixel : public Instr
 {

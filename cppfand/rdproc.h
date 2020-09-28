@@ -75,7 +75,9 @@ Instr* RdGotoXY();
 Instr* RdClrWw();
 Instr* RdMount();
 Instr* RdDisplay();
+#ifdef FandGraph
 Instr_graph* RdGraphP();
+#endif
 Instr_recs* RdMixRecAcc(PInstrCode Op);
 Instr* RdLinkRec();
 Instr* RdBackup(char MTyp, bool IsBackup);
