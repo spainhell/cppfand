@@ -49,7 +49,9 @@ void SetSelectFalse()
 
 void DelBlk(BYTE& sLen, std::string s, WORD pos)
 {
-	while ((sLen > 0) && (s[sLen - 1] == ' ') && (pos <= sLen)) sLen--;
+	while ((sLen > 0) && (s[sLen - 1] == ' ') && (pos <= sLen)) {
+		sLen--;
+	}
 }
 
 void WriteStr(WORD& pos, WORD& base, WORD& maxLen, WORD& maxCol, BYTE sLen, std::string s, bool star,
@@ -57,7 +59,10 @@ void WriteStr(WORD& pos, WORD& base, WORD& maxLen, WORD& maxCol, BYTE sLen, std:
 {
 	CHAR_INFO Buffer[MaxTxtCols];
 	if (pos <= base) base = pos - 1;
-	else if (pos > base + maxCol) { base = pos - maxCol; if (pos > maxLen) base--; }
+	else if (pos > base + maxCol) {
+		base = pos - maxCol;
+		if (pos > maxLen) base--;
+	}
 	if ((pos == base + 1) && (base > 0)) base--;
 	DelBlk(sLen, s, pos);
 

@@ -42,7 +42,8 @@ pstring::pstring(const pstring& ps) : initLen(256)
 pstring::pstring(std::string cs) : initLen(256)
 {
 	size_t origLen = cs.length();
-	arr = new unsigned char[origLen + 1]{ '\0' };
+	//arr = new unsigned char[origLen + 1]{ '\0' };
+	arr = new unsigned char[256]{ '\0' };
 	arr[0] = origLen;
 	memcpy(&arr[1], cs.c_str(), origLen);
 	strcount++;

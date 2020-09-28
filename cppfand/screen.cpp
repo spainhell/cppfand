@@ -54,10 +54,9 @@ void Screen::ScrClr(WORD X, WORD Y, WORD SizeX, WORD SizeY, char C, BYTE Color)
 
 void Screen::ScrWrChar(WORD X, WORD Y, char C, BYTE Color)
 {
-	DWORD written = 0;
-	WORD attr = Color;
-	WriteConsoleOutputCharacterA(_handle, &C, 1, { (short)X - 1, (short)Y - 1 }, &written);
-	WriteConsoleOutputAttribute(_handle, &attr, 1, { (short)X - 1, (short)Y - 1 }, &written);
+	SMALL_RECT rect = { X - 1, Y - 1, X, Y };
+	CHAR_INFO ci; ci.Char.AsciiChar = C; ci.Attributes = Color;
+	WriteConsoleOutput(_handle, &ci, { 1, 1 }, { 0, 0 }, &rect);
 }
 
 

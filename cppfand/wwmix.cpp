@@ -78,7 +78,7 @@ void wwmix::SelectStr(integer C1, integer R1, WORD NMsg, std::string LowTxt)
 	if (R1 != 0) r2 = R1 + rows + 1;
 	TextAttr = screen.colors.sNorm;
 	longint w2 = PushWFramed(C1, R1, c2, r2, TextAttr, MsgLine, LowTxt,
-	                         WHasFrame + WDoubleFrame + WShadow + WPushPixel);
+		WHasFrame + WDoubleFrame + WShadow + WPushPixel);
 	if (ss.Empty)
 	{
 		do { ReadKbd(); } while (KbdChar != VK_ESCAPE);
@@ -136,18 +136,18 @@ label1:
 	case evKeyDown: {
 		KbdChar = Event.KeyCode;
 		switch (KbdChar) {
-		case _M_:
+		case VK_RETURN:
 		case VK_ESCAPE: {
 		label3:
 			ClrEvent();
-				PopW(w2);
+			PopW(w2);
 			PopScr(pw, true);
-				ReleaseStore(pw);
+			ReleaseStore(pw);
 			if (ss.Empty) return;
 			ss.Empty = true;
-				ss.Pointto = nullptr;
+			ss.Pointto = nullptr;
 			ss.Size = 0;
-				p = (Item*)sv.Chain;
+			p = (Item*)sv.Chain;
 			while (p != nullptr) {
 				if (p->Tag != ' ') ss.Size++;
 				p = (Item*)p->Chain;
@@ -155,7 +155,7 @@ label1:
 			if (ss.Subset && ss.ImplAll && (ss.Size == 0)) {
 				p = (Item*)sv.Chain;
 				while (p != nullptr) {
-					if (p->S[1] != SelMark)	{
+					if (p->S[1] != SelMark) {
 						p->Tag = schar;
 						ss.Size++;
 					}
@@ -279,7 +279,7 @@ void wwmix::WriteItem(WORD N)
 		//printf("%s", p->S.c_str());
 		l = sv.MaxItemLen - p->S.length();
 	}
-	if (l > 0) screen.ScrFormatWrStyledText(screen.WhereX(), screen.WhereY(), TextAttr, " "); // printf(" ");
+	if (l > 0) screen.ScrFormatWrStyledText(screen.WhereX(), screen.WhereY(), TextAttr, "%*c", l, ' '); // printf(" ");
 }
 
 void wwmix::SetAttr(WORD Attr)
@@ -296,7 +296,8 @@ void wwmix::IVOn()
 
 void wwmix::IVOff()
 {
-	TextAttr = screen.colors.sNorm; WriteItem(sv.iItem);
+	TextAttr = screen.colors.sNorm;
+	WriteItem(sv.iItem);
 }
 
 void wwmix::DisplWw()
@@ -309,7 +310,7 @@ void wwmix::DisplWw()
 	screen.ScrWrChar(WindMin.X, WindMin.Y, c, TextAttr);
 	if (max >= sv.NItems) c = ' '; else c = '';
 	screen.ScrWrChar(WindMax.X, WindMax.Y, c, TextAttr);
-	for (WORD i = sv.Base; i < max; i++) WriteItem(i);
+	for (WORD i = sv.Base; i <= max; i++) WriteItem(i);
 	SetAttr(screen.colors.sHili);
 }
 
@@ -591,7 +592,17 @@ label2:
 	}
 label3:
 	p = d + ne;
-	auto dirItems = directoryItems(Path);
+	bool dirExists = directoryExists(d);
+	if (!dirExists) {
+		SetMsgPar(p);
+		mask = p;
+		WrLLF10Msg(811);
+		goto label1;
+	}
+
+	auto dirItems = directoryItems(d, ne);
+	for (auto& item : dirItems) PutSelect(item);
+
 	//FindFirst(p + 00, 0, SR);
 	/*if (!(DosError() == 0 || DosError() == 18)) {
 		SetMsgPar(p);
@@ -616,9 +627,11 @@ label3:
 	SelectStr(c11, r11, HdMsg, p);
 	if (KbdChar == _ESC_) return result;
 	s = GetSelect();
-	if (s[1] == '\\') {
+	if (s[0] == '\\') {
 		s.erase(0, 1);
-		if (s == "..") do { d[0]--; } while (!(d[d.length()] == '\\'));
+		if (s == "..") {
+			d = parentDirectory(d);
+		}
 		else d = d + s + '\\';
 		goto label3;
 	}
