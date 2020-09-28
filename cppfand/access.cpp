@@ -14,7 +14,7 @@
 WORD randIndex = 0;
 
 FileD* CFile;
-FieldDPtr CatRdbName, CatFileName, CatArchiv, CatPathName, CatVolume;
+FieldDescr* CatRdbName, *CatFileName, *CatArchiv, *CatPathName, *CatVolume;
 FileD* FileDRoot; // { only current RDB }
 LinkD* LinkDRoot; // { for all RDBs     }
 FuncD* FuncDRoot;
@@ -126,7 +126,40 @@ integer CompArea(void* A, void* B, integer L)
 	return 4;
 }
 
+void ResetCFileUpdH()
+{
+	/* !!! with CFile^ do!!! */
+	ResetUpdHandle(CFile->Handle);
+	if (CFile->Typ == 'X') ResetUpdHandle(CFile->XF->Handle);
+	if (CFile->TF != nullptr) ResetUpdHandle(CFile->TF->Handle);
+}
+
+void ClearCacheCFile()
+{
+	// chache nepouzivame
+	return;
+	/* !!! with CFile^ do!!! */
+	/*ClearCacheH(CFile->Handle);
+	if (CFile->Typ == 'X') ClearCacheH(CFile->XF->Handle);
+	if (CFile->TF != nullptr) ClearCacheH(CFile->TF->Handle);*/
+}
+
 #ifdef FandNetV
+const longint TransLock = 0x0A000501;  /* locked while state transition */
+const longint ModeLock = 0x0A000000;  /* base for mode locking */
+const longint RecLock = 0x0B000000;  /* base for record locking */
+
+
+bool TryLockH(FILE* Handle, longint Pos, WORD Len)
+{
+	return false;
+}
+
+bool UnLockH(FILE* Handle, longint Pos, WORD Len)
+{
+	return false;
+}
+
 void ModeLockBnds(LockMode Mode, longint& Pos, WORD& Len)
 {
 	longint n = 0;
@@ -150,12 +183,19 @@ bool ChangeLMode(LockMode Mode, WORD Kind, bool RdPref)
 	longint pos, oldpos; WORD len, oldlen, count, d; longint w, w1; LockMode oldmode;
 	bool result = false;
 	if (!CFile->IsShared()) {         /*neu!!*/
-		result = true; CFile->LMode = Mode; return result;
+		result = true;
+		CFile->LMode = Mode;
+		return result;
 	}
-	result = false; oldmode = CFile->LMode; h = CFile->Handle;
+	result = false;
+	oldmode = CFile->LMode;
+	h = CFile->Handle;
 	if (oldmode >= WrMode) {
 		if (Mode < WrMode) WrPrefixes();
-		if (oldmode == ExclMode) { SaveCache(0); ClearCacheCFile(); }
+		if (oldmode == ExclMode) {
+			SaveCache(0, CFile->Handle);
+			ClearCacheCFile();
+		}
 		if (Mode < WrMode) ResetCFileUpdH();
 	}
 	w = 0; count = 0;
@@ -167,21 +207,28 @@ label1:
 			count++;
 			if (count <= spec.LockRetries) d = spec.LockDelay;
 			else {
-				d = spec.NetDelay; SetCPathVol();
+				d = spec.NetDelay;
+				SetCPathVol();
 				Set2MsgPar(CPath, LockModeTxt[Mode]);
 				w1 = PushWrLLMsg(825, Kind = 1);
-				if (w == 0) w = w1; else TWork.Delete(w1); LockBeep();
+				if (w == 0) w = w1;
+				else TWork.Delete(w1);
+				LockBeep();
 			}
 			if (KbdTimer(spec.NetDelay, Kind)) goto label1;
-			if (w != 0) PopW(w); return result;
+			if (w != 0) PopW(w);
+			return result;
 		}
 	if (oldmode != NullMode) {
-		ModeLockBnds(oldmode, oldpos, oldlen); UnLockH(h, oldpos, oldlen);
+		ModeLockBnds(oldmode, oldpos, oldlen);
+		UnLockH(h, oldpos, oldlen);
 	}
 	if (Mode != NullMode) {
-		ModeLockBnds(Mode, pos, len); if (!TryLockH(h, pos, len)) {
+		ModeLockBnds(Mode, pos, len);
+		if (!TryLockH(h, pos, len)) {
 			if (oldmode != NullMode) TryLockH(h, oldpos, oldlen);
-			UnLockH(h, TransLock, 1); goto label2;
+			UnLockH(h, TransLock, 1);
+			goto label2;
 		}
 		UnLockH(h, TransLock, 1);
 	}
@@ -391,12 +438,6 @@ void FixFromReal(double r, void* FixNo, WORD FLen)
 	memcpy(FixNo, &ff[1], FLen);
 }
 
-#ifdef FandNetV
-const longint TransLock = 0x0A000501;  /* locked while state transition */
-const longint ModeLock = 0x0A000000;  /* base for mode locking */
-const longint RecLock = 0x0B000000;  /* base for record locking */
-#endif
-
 struct TT1Page
 {
 	WORD Signum = 0;
@@ -481,24 +522,6 @@ void TT1Page::Save(BYTE* output512)
 	if (index != 512) throw std::exception("Error in TT1Page::Load");
 }
 
-void ResetCFileUpdH()
-{
-	/* !!! with CFile^ do!!! */
-	ResetUpdHandle(CFile->Handle);
-	if (CFile->Typ == 'X') ResetUpdHandle(CFile->XF->Handle);
-	if (CFile->TF != nullptr) ResetUpdHandle(CFile->TF->Handle);
-}
-
-void ClearCacheCFile()
-{
-	// chache nepouzivame
-	return;
-	/* !!! with CFile^ do!!! */
-	/*ClearCacheH(CFile->Handle);
-	if (CFile->Typ == 'X') ClearCacheH(CFile->XF->Handle);
-	if (CFile->TF != nullptr) ClearCacheH(CFile->TF->Handle);*/
-}
-
 bool TryLMode(LockMode Mode, LockMode& OldMode, WORD Kind)
 {
 	/* !!! with CFile^ do!!! */
@@ -534,7 +557,7 @@ bool TryLockN(longint N, WORD Kind)
 #endif
 #ifdef FandNetV
 
-	if (!CFile->IsShared) return result; w = 0;
+	if (!CFile->IsShared()) return result; w = 0;
 label1:
 	if (!TryLockH(CFile->Handle, RecLock + N, 1)) {
 		if (Kind != 2) {   /*0 Kind-wait, 1-wait until ESC, 2-no wait*/
@@ -560,12 +583,10 @@ void UnLockN(longint N)
 	if (CFile->IsSQLFile) return;
 #endif
 #ifdef FandNetV
-
-	if ((CFile->Handle == nullptr) || !CFile->IsShared) return;
+	if ((CFile->Handle == nullptr) || !CFile->IsShared()) return;
 	UnLockH(CFile->Handle, RecLock + N, 1);
 #endif
 }
-
 
 WORD RdPrefix()
 {

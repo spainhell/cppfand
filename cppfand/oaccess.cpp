@@ -136,10 +136,17 @@ bool OpenF1(FileUseMode UM)
 label1:
 	CFile->Handle = OpenH(_isoldfile, CFile->UMode);
 	if ((HandleError != 0) && CFile->WasRdOnly) {
-		SetFileAttr((GetFileAttr() & 0x27) | 0x1/*RdONly*/); TestCFileError();
+		SetFileAttr((GetFileAttr() & 0x27) | 0x1/*RdONly*/);
+		TestCFileError();
 	}
-	if ((HandleError == 5) && (CFile->UMode == Exclusive)) { CFile->UMode = RdOnly; goto label1; }
-	if (HandleError == 2) { result = false; return result; }
+	if ((HandleError == 5) && (CFile->UMode == Exclusive)) {
+		CFile->UMode = RdOnly;
+		goto label1;
+	}
+	if (HandleError == 2) {
+		result = false;
+		return result;
+	}
 #ifndef FandNetV
 	if ((HandleError == 5 || HandleError == 0x21) &&
 		((CVol == '#') || (CVol == "##") || SEquUpcase(CVol, "#R"))) CFileError(842);
@@ -159,7 +166,8 @@ label1:
 			}
 			if (CFile->IsDynFile) {
 				CloseClearH(CFile->Handle);
-				result = false; return result;
+				result = false;
+				return result;
 			}
 		}
 		if (HandleError != 0) goto label4;

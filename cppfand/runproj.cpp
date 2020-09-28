@@ -1111,18 +1111,16 @@ label3:
 
 void CloseChpt()
 {
-	void* p; void* p2;
-	bool del; pstring d; WORD i;
 	if (CRdb == nullptr) return;
 	ClearHelpStkForCRdb();
 	SaveFiles();
-	del = Chpt->NRecs = 0;
-	d = CRdb->RdbDir;
+	bool del = Chpt->NRecs = 0;
+	pstring d = CRdb->RdbDir;
 	CloseFAfter(FileDRoot);
 	LinkDRoot = CRdb->OldLDRoot;
 	FuncDRoot = CRdb->OldFCRoot;
-	p = CRdb;
-	p2 = CRdb->Mark2;
+	void* p = CRdb;
+	void* p2 = CRdb->Mark2;
 	CRdb = CRdb->ChainBack;
 	ReleaseBoth(p, p2);
 	if (CRdb != nullptr) {
@@ -1140,7 +1138,7 @@ void CloseChpt()
 	}
 	else {
 		ChDir(OldDir);
-		for (i = 1; i < FloppyDrives; i++) ReleaseDrive(i);
+		for (WORD i = 1; i < FloppyDrives; i++) ReleaseDrive(i);
 	}
 }
 
@@ -1477,7 +1475,9 @@ bool MergAndReplace(FileD* FDOld, FileD* FDNew)
 	CFile = FDNew;
 	/*TF->Format used*/
 	CExtToT(); p = CPath;
-	SetCPathVol(); CExtToT(); RenameFile56(CPath, p, false);
+	SetCPathVol();
+	CExtToT();
+	RenameFile56(CPath, p, false);
 	result = true;
 	return result;
 label1:

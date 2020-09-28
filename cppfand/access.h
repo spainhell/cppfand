@@ -2,6 +2,7 @@
 
 #include "base.h"
 #include "constants.h"
+#include "switches.h"
 #ifdef FandSQL
 #include "channel.h"
 #endif

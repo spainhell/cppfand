@@ -828,7 +828,7 @@ void ClearFlshHandles()
 bool IsNetCVol()
 {
 #ifdef FandNetV
-	return CVol == "#" || CVol = "##" || SEquUpcase(CVol, "#R");
+	return CVol == "#" || CVol == "##" || SEquUpcase(CVol, "#R");
 #else
 	return false;
 #endif
@@ -972,16 +972,6 @@ longint FileSizeH(FILE* handle)
 longint SwapLong(longint N)
 {
 	return 0;
-}
-
-bool TryLockH(filePtr Handle, longint Pos, WORD Len)
-{
-	return false;
-}
-
-bool UnLockH(filePtr Handle, longint Pos, WORD Len)
-{
-	return false;
 }
 
 void TruncH(FILE* handle, longint N)
