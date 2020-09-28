@@ -873,7 +873,7 @@ double RunReal(FrmlElem* X)
 	double R = 0.0; FileD* cf = nullptr; LockMode md; bool b = false;
 	longint RecNo = 0; void* p = &RecNo; void* cr = nullptr;
 #ifdef FandGraph
-	ViewPortType vp/*9 BYTE*/ absolute R;
+	ViewPortType vp; // absolute R; /*9 BYTE*/
 #endif
 	FILE* h = (FILE*)&R;
 	WORD* n = (WORD*)cf;
@@ -1065,14 +1065,22 @@ label1:
 	case _maxcol: result = TxtCols; break;
 	case _maxrow: result = TxtRows; break;
 #ifdef FandGraph
-	case _getmaxx: if (IsGraphMode) {
-		GetViewSettings(vp); result = vp.x2 - vp.x1;
-				 else result = 0;
+	case _getmaxx: {
+		if (IsGraphMode) {
+			GetViewSettings(vp);
+			result = vp.x2 - vp.x1;
+		}
+		else result = 0;
 		break;
 	}
-	case _getmaxy: if (IsGraphMode) { GetViewSettings(vp); result = vp.y2 - vp.y1; }
-				 else result = 0;
+	case _getmaxy: {
+		if (IsGraphMode) {
+			GetViewSettings(vp);
+			result = vp.y2 - vp.y1;
+		}
+		else result = 0;
 		break;
+	}
 #endif
 	case _exitcode: result = LastExitCode; break;
 	case _edrecno: result = EdRecNo; break;
@@ -1123,7 +1131,7 @@ label1:
 	default: { result = RunRealStr(X); break; }
 	}
 	return result;
-	}
+}
 
 longint RunInt(FrmlPtr X)
 {

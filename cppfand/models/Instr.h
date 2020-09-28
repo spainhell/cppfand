@@ -1,6 +1,10 @@
 #pragma once
 #include "../rdrun.h"
 
+#ifdef FandGraph
+#include "../Graph.h"
+#endif
+
 //class Chained;
 //class FrmlElem;
 //struct RdbD;
@@ -8,7 +12,7 @@
 //struct RdbPos;
 
 
-class Instr_menu : public Instr 
+class Instr_menu : public Instr
 {
 public:
 	Instr_menu(PInstrCode Kind);
@@ -298,12 +302,14 @@ public:
 	LockD WLD;
 };
 
+#ifdef FandGraph
 class Instr_graph : public Instr
 {
 public:
 	Instr_graph();
 	GraphD* GD = nullptr;
 };
+#endif
 
 class Instr_putpixel : public Instr
 {

@@ -973,6 +973,13 @@ void WithGraphicsProc(Instr* PD)
 	//ReleaseStore(p);
 }
 
+#ifdef FandGraph
+void DrawProc(Instr_graph* PD)
+{
+}
+#endif
+
+
 void ResetCatalog()
 {
 	FileD* cf = CFile;
@@ -1211,17 +1218,21 @@ void RunInstr(Instr* PD)
 		case _help: HelpProc((Instr_help*)PD); break;
 		case _wait: WaitProc(); break;
 		case _beepP: beep(); break;
-		case _delay: Delay((RunInt(((Instr_assign*)PD)->Frml) + 27) / 55); break;
-		case _sound: Sound(RunInt(((Instr_assign*)PD)->Frml)); break;
-		case _nosound: NoSound(); break;
+		case _delay: { Delay((RunInt(((Instr_assign*)PD)->Frml) + 27) / 55); break; }
+		case _sound: { Sound(RunInt(((Instr_assign*)PD)->Frml)); break; }
+		case _nosound: { NoSound(); break; }
 #ifdef FandGraph
-		case _graph: RunBGraph(PD->GD, false); break;
-		case _putpixel: case _line: case _rectangle: case _ellipse:
-		case _floodfill: {DrawProc outtextxy(PD); break; }
+		case _graph: { RunBGraph(((Instr_graph*)PD)->GD, false); break; }
+		case _putpixel:
+		case _line:
+		case _rectangle:
+		case _ellipse:
+		case _floodfill:
+		case _outtextxy: { DrawProc((Instr_graph*)PD); break; }
 #endif
-		case _withgraphics: WithGraphicsProc(((Instr_withshared*)PD)->WDoInstr); break;
+		case _withgraphics: { WithGraphicsProc(((Instr_withshared*)PD)->WDoInstr); break; }
 #ifndef FandRunV
-		case _memdiag: MemDiagProc(); break;
+		case _memdiag: { MemDiagProc(); break; }
 #endif 
 		case _closefds: {
 			// zavre soubor
@@ -1268,10 +1279,10 @@ void RunInstr(Instr* PD)
 				WORD(RunInt(iPD->PortWhat)));
 			break;
 		}
-	}
+		}
 		PD = (Instr*)PD->Chain;
-}
-}
+		}
+	}
 
 void RunProcedure(Instr* PDRoot)
 {

@@ -296,7 +296,7 @@ FrmlPtr RdFunctionP(char& FFTyp)
 	/*if (InpArrLen == 0x257)	{
 		printf("RdFunctionP");
 	}*/
-	
+
 	FrmlElem* Z = nullptr;
 	char Typ = '\0', FTyp = '\0';
 	FileD* cf = nullptr;
@@ -897,8 +897,8 @@ Instr_proc* RdProcArg(char Caller)
 		if ((ForwChar != '.') && FindLocVar(&LVBD, &LV) && (LV->FTyp == 'i' || LV->FTyp == 'r'))
 		{
 			RdLex();
-			TArg[N].FTyp = LV->FTyp; 
-			TArg[N].FD = LV->FD; 
+			TArg[N].FTyp = LV->FTyp;
+			TArg[N].FD = LV->FD;
 			TArg[N].RecPtr = LV->RecPtr;
 		}
 		else if (Lexem == '@')
@@ -1219,39 +1219,70 @@ void RdProcCall(Instr** pinstr)
 #endif
 
 #ifdef FandGraph
-	else if (IsKeyWord("GRAPH")) RdGraphP;
-	else if (IsKeyWord("PUTPIXEL")) { PD = GetPD(_putpixel, 3 * 4); goto label3; }
-	else if (IsKeyWord("LINE")) { PD = GetPD(_line, 5 * 4); goto label3; }
-	else if (IsKeyWord("RECTANGLE")) { PD = GetPD(_rectangle, 5 * 4); goto label3; }
-	else if (IsKeyWord("ELLIPSE")) { PD = GetPD(_ellipse, 7 * 4); goto label3; }
-	else if (IsKeyWord("FLOODFILL")) { PD = GetPD(_floodfill, 5 * 4); goto label3; }
+	else if (IsKeyWord("GRAPH")) *pinstr = RdGraphP();
+	else if (IsKeyWord("PUTPIXEL")) {
+		*pinstr = new Instr_putpixel(_putpixel); // GetPD(_putpixel, 3 * 4);
+		goto label3;
+	}
+	else if (IsKeyWord("LINE")) {
+		*pinstr = new Instr_putpixel(_line); // GetPD(_line, 5 * 4);
+		goto label3;
+	}
+	else if (IsKeyWord("RECTANGLE")) {
+		*pinstr = new Instr_putpixel(_rectangle); // GetPD(_rectangle, 5 * 4);
+		goto label3;
+	}
+	else if (IsKeyWord("ELLIPSE")) {
+		*pinstr = new Instr_putpixel(_ellipse);  // GetPD(_ellipse, 7 * 4);
+		goto label3;
+	}
+	else if (IsKeyWord("FLOODFILL")) {
+		*pinstr = new Instr_putpixel(_floodfill); // GetPD(_floodfill, 5 * 4);
+		goto label3;
+	}
 	else if (IsKeyWord("OUTTEXTXY")) {
-		PD = GetPD(_outtextxy, 11 * 4);
+		*pinstr = new Instr_putpixel(_outtextxy); // GetPD(_outtextxy, 11 * 4);
 	label3:
-		PD->Par1 = RdRealFrml(); Accept(','); PD->Par2 = RdRealFrml(); Accept(',');
-		if (PD->Kind == _outtextxy) {
-			PD->Par3 = RdStrFrml(); Accept(',');
-			PD->Par4 = RdRealFrml(); Accept(','); PD->Par5 = RdAttr();
+		auto iPutPixel = (Instr_putpixel*)(*pinstr);
+		iPutPixel->Par1 = RdRealFrml();
+		Accept(',');
+		iPutPixel->Par2 = RdRealFrml();
+		Accept(',');
+		if (iPutPixel->Kind == _outtextxy) {
+			iPutPixel->Par3 = RdStrFrml();
+			Accept(',');
+			iPutPixel->Par4 = RdRealFrml();
+			Accept(',');
+			iPutPixel->Par5 = RdAttr();
 			if (Lexem == ',') {
-				RdLex(); PD->Par6 = RdRealFrml();
+				RdLex();
+				iPutPixel->Par6 = RdRealFrml();
 				if (Lexem == ',') {
-					RdLex(); PD->Par7 = RdRealFrml();
+					RdLex();
+					iPutPixel->Par7 = RdRealFrml();
 					if (Lexem == ',') {
 						RdLex();
-						PD->Par8 = RdRealFrml(); Accept(',');
-						PD->Par9 = RdRealFrml(); Accept(',');
-						PD->Par10 = RdRealFrml(); Accept(',');
-						PD->Par11 = RdRealFrml();
+						iPutPixel->Par8 = RdRealFrml(); Accept(',');
+						iPutPixel->Par9 = RdRealFrml(); Accept(',');
+						iPutPixel->Par10 = RdRealFrml(); Accept(',');
+						iPutPixel->Par11 = RdRealFrml();
 					}
 				}
 			}
 		}
-		else if (PD->Kind == _putpixel) PD->Par3 = RdAttr(); else {
-			PD->Par3 = RdRealFrml(); Accept(',');
-			if (PD->Kind == _floodfill) PD->Par4 = RdAttr(); else PD->Par4 = RdRealFrml();
-			Accept(','); PD->Par5 = RdAttr();
-			if ((PD->Kind == _ellipse) && (Lexem == ',')) {
-				RdLex(); PD->Par6 = RdRealFrml(); Accept(','); PD->Par7 = RdRealFrml();
+		else if (iPutPixel->Kind == _putpixel) iPutPixel->Par3 = RdAttr();
+		else {
+			iPutPixel->Par3 = RdRealFrml();
+			Accept(',');
+			if (iPutPixel->Kind == _floodfill) iPutPixel->Par4 = RdAttr();
+			else iPutPixel->Par4 = RdRealFrml();
+			Accept(',');
+			iPutPixel->Par5 = RdAttr();
+			if ((iPutPixel->Kind == _ellipse) && (Lexem == ',')) {
+				RdLex();
+				iPutPixel->Par6 = RdRealFrml();
+				Accept(',');
+				iPutPixel->Par7 = RdRealFrml();
 			}
 		}
 	}
@@ -1874,9 +1905,9 @@ label1:
 	/* !!! with pd^ do!!! */
 	pd->LF = OpKind;
 	pd->WD = *d;
-	if (OpKind == WriteType::msgAndHelp) { 
-		pd->mHlpRdb = CRdb; 
-		pd->mHlpFrml = z; 
+	if (OpKind == WriteType::msgAndHelp) {
+		pd->mHlpRdb = CRdb;
+		pd->mHlpFrml = z;
 	}
 	*pinstr = pd;
 }
@@ -2006,10 +2037,10 @@ Instr* RdDisplay()
 	return PD;
 }
 
-void RdGraphP()
+Instr_graph* RdGraphP()
 {
 	Instr_graph* PD;
-	FrmlPtr FrmlArr[15];
+	FrmlElem* FrmlArr[15];
 	WORD i;
 	GraphVD* VD; GraphWD* WD; GraphRGBD* RGBD; WinG* Ww;
 
@@ -2031,7 +2062,11 @@ void RdGraphP()
 		Accept('(');
 		PDGD->X = RdFldName(PDGD->FD);
 		i = 0;
-		do { Accept(','); PDGD->ZA[i] = RdFldName(PDGD->FD); i++; } while (!((i > 9) || (Lexem != ',')));
+		do {
+			Accept(',');
+			PDGD->ZA[i] = RdFldName(PDGD->FD);
+			i++;
+		} while (!((i > 9) || (Lexem != ',')));
 		Accept(')');
 	}
 	while (Lexem == ',') {
@@ -2108,6 +2143,7 @@ void RdGraphP()
 		else Error(44);
 	label1: {}
 	}
+	return PD;
 }
 
 Instr_recs* RdMixRecAcc(PInstrCode Op)
@@ -2149,7 +2185,7 @@ Instr_recs* RdMixRecAcc(PInstrCode Op)
 			&& (Lexem == _equ || Lexem == _le || Lexem == _gt || Lexem == _lt || Lexem == _ge))
 		{
 			PD->CompOp = Lexem; RdLex();
-		}
+	}
 #endif
 		Z = RdFrml(FTyp);
 		PD->RecNr = Z;
@@ -2173,7 +2209,7 @@ Instr_recs* RdMixRecAcc(PInstrCode Op)
 		}
 #endif
 		}
-	}
+}
 	if ((Lexem == ',') && (Op == _writerec || Op == _deleterec || Op == _recallrec)) {
 		RdLex();
 		Accept('+');
@@ -2181,7 +2217,7 @@ Instr_recs* RdMixRecAcc(PInstrCode Op)
 	}
 	CFile = cf;
 	return PD;
-}
+		}
 
 Instr* RdLinkRec()
 {

@@ -51,7 +51,7 @@ void ReleaseDriveProc(FrmlPtr Z);
 void WithGraphicsProc(Instr* PD);
 
 #ifdef FandGraph
-void DrawProc(Instr* PD);
+void DrawProc(Instr_graph* PD);
 #endif
 
 void ResetCatalog();

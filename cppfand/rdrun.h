@@ -375,55 +375,6 @@ struct LockD
 	longint N = 0;
 };
 
-struct GraphVD : public Chained
-{
-	//GraphVD* Chain;
-	FrmlPtr XZ, YZ, Velikost; /*float*/
-	FrmlPtr BarPis, Text; /*pstring*/
-};
-
-struct GraphWD : public Chained
-{
-	//GraphWD* Chain;
-	FrmlPtr XZ, YZ, XK, YK; /*float*/
-	FrmlPtr BarPoz, BarPis, Text; /*pstring*/
-};
-
-struct GraphRGBD : public Chained
-{
-	// GraphRGBD* Chain;
-	FrmlPtr Barva; /*pstring*/
-	FrmlPtr R, G, B; /*float*/
-};
-
-struct WinG
-{
-	WRectFrml W;
-	WRect WR;
-	FrmlPtr ColFrame, ColBack, ColFor;  /*pstring*/
-	FrmlPtr Top;
-	BYTE WFlags;
-};
-
-struct GraphD
-{
-	FileDPtr FD;
-	FrmlPtr GF;
-	FieldDPtr X, Y, Z;
-	FieldDPtr ZA[10];
-	FrmlPtr HZA[10];
-	FrmlPtr T, H, HX, HY, HZ, C, D, R, P, CO, Assign, Cond; /*pstring*/
-	FrmlPtr S, RS, RN, Max, Min, SP; /*float*/
-	bool Interact;
-	GraphVD* V;
-	GraphWD* W;
-	GraphRGBD* RGB;
-	KeyInD* KeyIn;
-	bool SQLFilter;
-	KeyDPtr ViewKey;
-	WinG* WW;
-};
-
 struct TypAndFrml
 {
 	char FTyp = '\0';

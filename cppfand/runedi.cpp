@@ -2580,13 +2580,16 @@ void AutoReport()
 
 void AutoGraph()
 {
-	FrmlPtr Bool; KeyD* K;
 #ifdef FandGraph
-	Bool = nullptr; if (Select) Bool = E->Bool;
-	K = nullptr; if (Subset) K = WK; else if (HasIndex) K = VK;
+	 FrmlElem* Bool = nullptr;
+	if (Select) Bool = E->Bool;
+	KeyD* K = nullptr;
+	if (Subset) K = WK;
+	else if (HasIndex) K = VK;
 	RunAutoGraph(E->Flds, K, Bool);
 #endif
-	CFile = E->FD; CRecPtr = E->NewRecPtr;
+	CFile = E->FD;
+	CRecPtr = E->NewRecPtr;
 }
 
 bool IsDependItem()

@@ -10,7 +10,6 @@
 #include "channel.h"
 #endif
 
-
 extern FileDPtr TFD02;
 extern TFilePtr TF02;
 extern longint TF02Pos; // r33

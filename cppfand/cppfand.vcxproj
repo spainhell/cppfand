@@ -160,6 +160,7 @@
     <ClCompile Include="editor.cpp" />
     <ClCompile Include="expimp.cpp" />
     <ClCompile Include="genrprt.cpp" />
+    <ClCompile Include="Graph.cpp" />
     <ClCompile Include="keyboard.cpp" />
     <ClCompile Include="legacy.cpp" />
     <ClCompile Include="models\FrmlElem.cpp" />
@@ -199,6 +200,7 @@
     <ClInclude Include="expimp.h" />
     <ClInclude Include="fanddml.h" />
     <ClInclude Include="genrprt.h" />
+    <ClInclude Include="Graph.h" />
     <ClInclude Include="keyboard.h" />
     <ClInclude Include="legacy.h" />
     <ClInclude Include="models\FrmlElem.h" />
