@@ -4,6 +4,7 @@
 #include "obaseww.h"
 #include "rdedit.h"
 #include "runedi.h"
+#include "../FileSystem/directory.h"
 
 SS ss;
 
@@ -34,13 +35,13 @@ wwmix::wwmix()
 {
 }
 
-void wwmix::PutSelect(pstring s)
+void wwmix::PutSelect(std::string s)
 {
 	Item* p = new Item(); // (Item*)GetStore(sizeof(*p) - 1 + l);
 	WORD l = MinW(s.length(), 46);
 	p->Tag = ' ';
-	Move(&s[1], &p->S[1], l);
-	p->S[0] = char(l);
+	Move(&s[0], &p->S[1], l);
+	p->S[0] = (char)l;
 	if (ss.Empty) {
 		FillChar(&sv, sizeof(sv), '\0');
 		FillChar(&ss.Abcd, sizeof(ss) - 5, 0);
@@ -52,29 +53,43 @@ void wwmix::PutSelect(pstring s)
 	sv.MaxItemLen = MaxW(l, sv.MaxItemLen);
 }
 
-void wwmix::SelectStr(integer C1, integer R1, WORD NMsg, pstring LowTxt)
+void wwmix::SelectStr(integer C1, integer R1, WORD NMsg, std::string LowTxt)
 {
-	void* pw; WORD cols, rows, c2, r2, MaxBase; longint w2;
-	char schar; integer b; Item* p = nullptr; integer i, iOld;
+	WORD cols = 0, MaxBase = 0;
+	char schar = '\0';
+	integer b = 0;
+	Item* p = nullptr;
+	integer i = 0, iOld = 0;
 	/* !!! with sv do!!! */
-	pw = PushScr(1, TxtRows, TxtCols, TxtRows);
+	void* pw = PushScr(1, TxtRows, TxtCols, TxtRows);
 	if (ss.Subset)
 	{
-		if (ss.AscDesc) WrLLMsg(135); else WrLLMsg(134);
+		if (ss.AscDesc) WrLLMsg(135);
+		else WrLLMsg(134);
 	}
 	else WrLLMsg(152);
-	rows = 5; if (TxtCols > 52) cols = 50; else cols = TxtCols - 2; RdMsg(NMsg);
-	c2 = cols; if (C1 != 0) c2 = C1 + cols + 1;
-	r2 = rows; if (R1 != 0) r2 = R1 + rows + 1; TextAttr = screen.colors.sNorm;
-	w2 = PushWFramed(C1, R1, c2, r2, TextAttr, MsgLine, LowTxt, WHasFrame + WDoubleFrame + WShadow + WPushPixel);
+	WORD rows = 5;
+	if (TxtCols > 52) cols = 50;
+	else cols = TxtCols - 2;
+	RdMsg(NMsg);
+	WORD c2 = cols;
+	if (C1 != 0) c2 = C1 + cols + 1;
+	WORD r2 = rows;
+	if (R1 != 0) r2 = R1 + rows + 1;
+	TextAttr = screen.colors.sNorm;
+	longint w2 = PushWFramed(C1, R1, c2, r2, TextAttr, MsgLine, LowTxt,
+	                         WHasFrame + WDoubleFrame + WShadow + WPushPixel);
 	if (ss.Empty)
 	{
-		do { ReadKbd(); } while (KbdChar != _ESC_);
+		do { ReadKbd(); } while (KbdChar != VK_ESCAPE);
 		goto label3;
 	}
-	sv.TabSize = sv.MaxItemLen + 2; if (ss.Subset) sv.TabSize++;
-	sv.Tabs = cols / sv.TabSize; sv.WwSize = sv.Tabs * rows;
-	MaxBase = 1; while (MaxBase + sv.WwSize <= sv.NItems) MaxBase += sv.Tabs;
+	sv.TabSize = sv.MaxItemLen + 2;
+	if (ss.Subset) sv.TabSize++;
+	sv.Tabs = cols / sv.TabSize;
+	sv.WwSize = sv.Tabs * rows;
+	MaxBase = 1;
+	while (MaxBase + sv.WwSize <= sv.NItems) MaxBase += sv.Tabs;
 	if (ss.Abcd) AbcdSort();
 	if (ss.AscDesc) schar = '<';
 	else schar = (char)p;
@@ -87,22 +102,31 @@ label1:
 	switch (Event.What) {
 	case evMouseMove: {
 		if ((iOld != 0) && MouseInItem(i) && (i != iOld)) {
-			Switch(i, iOld); sv.iItem = i; DisplWw(); iOld = i;
+			Switch(i, iOld);
+			sv.iItem = i;
+			DisplWw();
+			iOld = i;
 		}
 		break;
 	}
 	case evMouseDown: {
 		if (MouseInItem(i)) {
 			if (ss.Subset) {
-				p = GetItem(i); if (p->Tag == ' ') p->Tag = schar; else p->Tag = ' ';
-				sv.iItem = i; iOld = i; DisplWw();
+				p = GetItem(i);
+				if (p->Tag == ' ') p->Tag = schar;
+				else p->Tag = ' ';
+				sv.iItem = i;
+				iOld = i;
+				DisplWw();
 			}
 			else goto label2;
 		}
 		else {
-			if (ss.Subset && ((Event.Buttons && mbDoubleClick) != 0)) {
+			if (ss.Subset && ((Event.Buttons & mbDoubleClick) != 0)) {
 			label2:
-				KbdChar = _M_; sv.iItem = i; goto label3;
+				KbdChar = _M_;
+				sv.iItem = i;
+				goto label3;
 			}
 		}
 		break;
@@ -113,13 +137,17 @@ label1:
 		KbdChar = Event.KeyCode;
 		switch (KbdChar) {
 		case _M_:
-		case _ESC_: {
+		case VK_ESCAPE: {
 		label3:
-			ClrEvent(); PopW(w2);
-			PopScr(pw, true); ReleaseStore(pw);
+			ClrEvent();
+				PopW(w2);
+			PopScr(pw, true);
+				ReleaseStore(pw);
 			if (ss.Empty) return;
-			ss.Empty = true; ss.Pointto = nullptr;
-			ss.Size = 0; p = (Item*)sv.Chain;
+			ss.Empty = true;
+				ss.Pointto = nullptr;
+			ss.Size = 0;
+				p = (Item*)sv.Chain;
 			while (p != nullptr) {
 				if (p->Tag != ' ') ss.Size++;
 				p = (Item*)p->Chain;
@@ -127,29 +155,35 @@ label1:
 			if (ss.Subset && ss.ImplAll && (ss.Size == 0)) {
 				p = (Item*)sv.Chain;
 				while (p != nullptr) {
-					if (p->S[1] != SelMark) { p->Tag = schar; ss.Size++; }
+					if (p->S[1] != SelMark)	{
+						p->Tag = schar;
+						ss.Size++;
+					}
 					p = (Item*)p->Chain;
 				}
 			}
-			if (KbdChar == _ESC_) ReleaseStore(sv.markp);
+			if (KbdChar == VK_ESCAPE) ReleaseStore(sv.markp);
 			return;
 			break;
 		}
-		case _left_: Left(); break;
-		case _right_: Right(); break;
-		case _up_: Up(); break;
-		case _down_: Down(); break;
-		case _PgUp_: {
+		case VK_LEFT: Left(); break;
+		case VK_RIGHT: Right(); break;
+		case VK_UP: Up(); break;
+		case VK_DOWN: Down(); break;
+		case VK_PRIOR: {
 			if (sv.Base > 1)
 			{
-				IVOff(); b = sv.Base - sv.WwSize;
+				IVOff();
+				b = sv.Base - sv.WwSize;
 				if (b < 1) b = 1;
 				sv.iItem -= sv.Base - b;
-				sv.Base = b; DisplWw(); IVOn();
+				sv.Base = b;
+				DisplWw();
+				IVOn();
 			}
 			break;
 		}
-		case _PgDn_: {
+		case VK_NEXT: {
 			if (sv.Base < MaxBase)
 			{
 				IVOff();
@@ -158,7 +192,8 @@ label1:
 				sv.iItem += b - sv.Base;
 				if (sv.iItem > sv.NItems) sv.iItem -= sv.Tabs;
 				sv.Base = b;
-				DisplWw(); IVOn();
+				DisplWw();
+				IVOn();
 			}
 			break;
 		}
@@ -168,15 +203,18 @@ label1:
 				sv.Base = sv.Base + sv.Tabs;
 				if (sv.iItem < sv.Base) sv.iItem = sv.iItem + sv.Tabs;
 				if (sv.iItem > sv.NItems) sv.iItem = sv.NItems;
-				DisplWw(); IVOn();
+				DisplWw();
+				IVOn();
 			}
 			break;
 		}
 		case _W_: {
 			if (sv.Base > 1) {
-				IVOff(); sv.Base = sv.Base - sv.Tabs;
+				IVOff();
+				sv.Base = sv.Base - sv.Tabs;
 				if (sv.iItem >= sv.Base + sv.WwSize) sv.iItem = sv.iItem - sv.Tabs;
-				DisplWw(); IVOn();
+				DisplWw();
+				IVOn();
 			}
 			break;
 		}
@@ -184,7 +222,8 @@ label1:
 		case _Home_: {
 			if (sv.iItem > 1) {
 				IVOff();
-				sv.iItem = 1; if (sv.Base > 1) { sv.Base = 1; DisplWw(); }
+				sv.iItem = 1;
+				if (sv.Base > 1) { sv.Base = 1; DisplWw(); }
 				IVOn();
 			}
 			break;
@@ -192,8 +231,12 @@ label1:
 		case _CtrlPgDn_:
 		case _End_: {
 			if (sv.iItem < sv.NItems) {
-				IVOff(); sv.iItem = sv.NItems;
-				if (sv.Base < MaxBase) { sv.Base = MaxBase; DisplWw(); }
+				IVOff();
+				sv.iItem = sv.NItems;
+				if (sv.Base < MaxBase) {
+					sv.Base = MaxBase;
+					DisplWw();
+				}
 				IVOn();
 			}
 			break;
@@ -221,28 +264,34 @@ label1:
 
 void wwmix::WriteItem(WORD N)
 {
-	WORD i, l; Item* p;
+	WORD l = 0;
 	/* !!! with sv do!!! */
-	i = N - sv.Base;
+	WORD i = N - sv.Base;
 	screen.GotoXY((i % sv.Tabs) * sv.TabSize + 2, i / sv.Tabs + 1);
 	if (N > sv.NItems) l = sv.TabSize - 2;
 	else {
-		p = GetItem(N);
-		if (ss.Subset) printf("%c", p->Tag);
-		printf("%s", p->S.c_str());
+		Item* p = GetItem(N);
+		if (ss.Subset) {
+			screen.ScrFormatWrStyledText(screen.WhereX(), screen.WhereY(), TextAttr, "%c", p->Tag);
+			//printf("%c", p->Tag);
+		}
+		screen.ScrFormatWrStyledText(screen.WhereX(), screen.WhereY(), TextAttr, "%s", p->S.c_str());
+		//printf("%s", p->S.c_str());
 		l = sv.MaxItemLen - p->S.length();
 	}
-	if (l > 0) printf(" ");
+	if (l > 0) screen.ScrFormatWrStyledText(screen.WhereX(), screen.WhereY(), TextAttr, " "); // printf(" ");
 }
 
 void wwmix::SetAttr(WORD Attr)
 {
-	TextAttr = Attr; WriteItem(sv.iItem);
+	TextAttr = Attr;
+	WriteItem(sv.iItem);
 }
 
 void wwmix::IVOn()
 {
-	TextAttr = screen.colors.sHili; WriteItem(sv.iItem);
+	TextAttr = screen.colors.sHili;
+	WriteItem(sv.iItem);
 }
 
 void wwmix::IVOff()
@@ -494,19 +543,20 @@ label1:
 	return result;
 }
 
-pstring wwmix::SelectDiskFile(pstring Path, WORD HdMsg, bool OnFace)
+std::string wwmix::SelectDiskFile(std::string Path, WORD HdMsg, bool OnFace)
 {
-	pstring mask, s; longint w; //SearchRec SR;
+	std::string mask, s;
+	longint w = 0; //SearchRec SR;
 	BYTE sizeOfMask = 255;
-	pstring p; pstring d; pstring n; pstring ext, e; pstring ne;
-	WORD c1, c2, r1, r2, c11, r11;
+	std::string p, d, n, ext, e, ne;
 
-	pstring result = ""; c1 = 0; r1 = 0; c2 = 22; r2 = 1; c11 = 0; r11 = 0;
+	std::string result;
+	WORD c1 = 0; WORD r1 = 0; WORD c2 = 22; WORD r2 = 1; WORD c11 = 0; WORD r11 = 0;
 	if (OnFace) {
 		c1 = 43; r1 = 6; c2 = 67; r2 = 8; c11 = 28; r11 = 4;
 	}
-	if (Path == "") ext = ".*";
-	else if (Path[1] == '.') ext = Path;
+	if (Path.empty()) ext = ".*";
+	else if (Path[0] == '.') ext = Path;
 	else {
 		FSplit(FExpand(Path), d, n, e);
 		ne = n + e;
@@ -520,21 +570,28 @@ label1:
 label2:
 	screen.GotoXY(1, 1);
 	//EditTxt(&mask, 1, sizeof(mask) - 1, 22, 'A', true, false, true, false, 0);
-	EditTxt(&mask, 1, sizeOfMask, 22, 'A', true, false, true, false, 0);
-	if (KbdChar == _ESC_) { PopW(w); return result; }
-	if (mask.first(' ') != 0) { WrLLF10Msg(60); goto label2; }
+	EditTxt(mask, 1, sizeOfMask, 22, 'A', true, false, true, false, 0);
+	if (KbdChar == VK_ESCAPE) { PopW(w); return result; }
+	if (mask.find(' ') != std::string::npos) {
+		WrLLF10Msg(60);
+		goto label2;
+	}
 	FSplit(FExpand(mask), d, n, e);
-	if (e == "") e = ext;
+	if (e.empty()) e = ext;
 	else if ((ext == ".RDB") && (e != ".RDB")) {
-		WrLLF10Msg(005); goto label2;
+		WrLLF10Msg(005);
+		goto label2;
 	}
 	PopW(w);
-	if (n == "") n = '*'; ne = n + e;
-	if (ne.first('*') == 0 && ne.first('?') == 0) {
-		result = d + ne; return result;
+	if (n.empty()) n = "*";
+	ne = n + e;
+	if (ne.find('*') == std::string::npos && ne.find('?') == std::string::npos) {
+		result = d + ne;
+		return result;
 	}
 label3:
 	p = d + ne;
+	auto dirItems = directoryItems(Path);
 	//FindFirst(p + 00, 0, SR);
 	/*if (!(DosError() == 0 || DosError() == 18)) {
 		SetMsgPar(p);
@@ -543,7 +600,8 @@ label3:
 		goto label1;
 	}
 	while (DosError() == 0) {
-		PutSelect(SR.name); FindNext(SR);
+		PutSelect(SR.name);
+		FindNext(SR);
 	}
 	FindFirst(d + "*.*" + 00, Directory, SR);
 	while (DosError() == 0) {
@@ -559,13 +617,12 @@ label3:
 	if (KbdChar == _ESC_) return result;
 	s = GetSelect();
 	if (s[1] == '\\') {
-		s.Delete(1, 1);
+		s.erase(0, 1);
 		if (s == "..") do { d[0]--; } while (!(d[d.length()] == '\\'));
 		else d = d + s + '\\';
 		goto label3;
 	}
 	return d + s;
-	return "";
 }
 
 bool wwmix::PromptFilter(pstring Txt, FrmlPtr Bool, pstring* BoolTxt)

@@ -23,11 +23,11 @@ class wwmix
 {
 public :
 	wwmix();
-	void PutSelect(pstring s); // r57
-	void SelectStr(integer C1, integer R1, WORD NMsg, pstring LowTxt);
+	void PutSelect(std::string s); // r57
+	void SelectStr(integer C1, integer R1, WORD NMsg, std::string LowTxt);
 	pstring GetSelect();
 	bool SelFieldList(WORD Nmsg, bool ImplAll, FieldList FLRoot);
-	pstring SelectDiskFile(pstring Path, WORD HdMsg, bool OnFace);
+	std::string SelectDiskFile(std::string Path, WORD HdMsg, bool OnFace);
 	bool PromptFilter(pstring Txt, FrmlPtr Bool, pstring* BoolTxt);
 	void PromptLL(WORD N, pstring* Txt, WORD I, bool Del);
 	pstring PassWord(bool TwoTimes);

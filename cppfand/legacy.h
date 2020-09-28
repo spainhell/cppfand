@@ -27,6 +27,7 @@ WORD pred(WORD input);
 WORD succ(WORD input);
 
 void FSplit(pstring fullname, pstring& dir, pstring& name, pstring& ext);
+void FSplit(const std::string& fullname, std::string& dir, std::string& name, std::string& ext);
 pstring FSearch(pstring& path, pstring& dirlist);
 pstring FExpand(pstring path);
 

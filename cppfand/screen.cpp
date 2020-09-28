@@ -145,6 +145,8 @@ void Screen::ScrFormatWrStyledText(WORD X, WORD Y, BYTE Color, char const* const
 		buff[i].Char.AsciiChar = buffer[i];
 	}
 	WriteConsoleOutputA(_handle, buff, { (short)len, 1 }, { 0, 0 }, &XY);
+	// posuneme souradnici X o vytistene znaky
+	GotoXY(WhereXabs() + (WORD)len, WhereYabs(), absolute);
 	delete[] buff;
 	va_end(args);
 }
