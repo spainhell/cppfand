@@ -10,6 +10,7 @@
 #include "runproj.h"
 #include "wwmenu.h"
 #include "wwmix.h"
+#include "../textfunc/textfunc.h"
 
 int TimerRE = 0;
 bool TxtEdCtrlUBrk, TxtEdCtrlF4Brk;
@@ -754,13 +755,23 @@ void DisplEmptyFld(EFldD* D, WORD I)
 
 void Wr1Line(FieldDescr* F)
 {
-	pstring Txt;
+	auto X = screen.WhereX();
+	auto Y = screen.WhereY();
+	std::string ls = _StdS(F);
+	ls = GetNthLine(ls, 1, 1);
+	WORD max = F->L - 2;
+	ls = GetStyledStringOfLength(ls, max);
+	size_t chars = screen.WriteStyledStringToWindow(ls, E->dNorm);
+	TextAttr = E->dNorm;
+	if (chars < max) screen.ScrFormatWrStyledText(X + chars, Y, E->dNorm, "%*c", max - chars, ' ');
+
+	/*pstring Txt;
 	LongStr* s = CopyLine(_LongS(F), 1, 1);
 	WORD max = F->L - 2;
 	WORD l = s->LL;
 	if (l > 255) l = 255;
 	Move(s->A, &Txt[1], l);
-	Txt[0] = char(l);
+	Txt[0] = (char)l;
 	l = LenStyleStr(Txt);
 	if (l > max)
 	{
@@ -771,7 +782,7 @@ void Wr1Line(FieldDescr* F)
 	screen.WriteStyledStringToWindow(Txt, E->dNorm);
 	ReleaseStore(s);
 	TextAttr = E->dNorm;
-	if (l < max) printf("%*c", max - l, ' ');
+	if (l < max) printf("%*c", max - l, ' ');*/
 }
 
 void DisplFld(EFldD* D, WORD I)
@@ -1127,19 +1138,24 @@ void SetNewWwRecAttr()
 
 void MoveDispl(WORD From, WORD Where, WORD Number)
 {
-	EFldD* D; WORD i, r1, r2;
-	for (i = 1; i <= Number; i++) {
-		D = E->FirstFld;
+	for (WORD i = 1; i <= Number; i++) {
+		EFldD* D = E->FirstFld;
 		while (D != nullptr) {
-			r1 = FldRow(D, From) - 1;
-			r2 = FldRow(D, Where) - 1;
+			WORD r1 = FldRow(D, From) - 1;
+			WORD r2 = FldRow(D, Where) - 1;
 			screen.ScrMove(D->Col - 1, r1, D->Col - 1, r2, D->L);
 			if (HasTTWw(D->FldD))
 				screen.ScrMove(D->Col + 1, r1, D->Col + 1, r2, D->FldD->L - 2);
 			D = (EFldD*)D->Chain;
 		}
-		if (From < Where) { From--; Where--; }
-		else { From++; Where++; }
+		if (From < Where) {
+			From--;
+			Where--;
+		}
+		else {
+			From++;
+			Where++;
+		}
 	}
 }
 
@@ -1485,8 +1501,10 @@ void GotoRecFld(longint NewRec, EFldD* NewFld)
 	if (NewRec > CNRecs()) NewRec = CNRecs();
 	if (NewRec <= 0) NewRec = 1;
 	if (Select) SetRecAttr(IRec);
-	CFld = NewFld; Max = E->NRecs;
-	Delta = NewRec - CRec(); NewIRec = IRec + Delta;
+	CFld = NewFld;
+	Max = E->NRecs;
+	Delta = NewRec - CRec();
+	NewIRec = IRec + Delta;
 	if ((NewIRec > 0) && (NewIRec <= Max)) {
 		IRec = NewIRec;
 		RdRec(CRec());
@@ -1505,12 +1523,12 @@ void GotoRecFld(longint NewRec, EFldD* NewFld)
 	}
 	if (D > 0) {
 		MoveDispl(D + 1, 1, Max - D);
-		for (i = Max - D + 1; i < Max; i++) DisplRec(i);
+		for (i = Max - D + 1; i <= Max; i++) DisplRec(i);
 	}
 	else {
 		D = -D;
 		MoveDispl(Max - D, Max, Max - D);
-		for (i = 1; i < D; i++) DisplRec(i);
+		for (i = 1; i <= D; i++) DisplRec(i);
 	}
 label1:
 	DisplRecNr(CRec());

@@ -5,8 +5,8 @@
 struct GraphVD : public Chained
 {
 	//GraphVD* Chain;
-	FrmlPtr XZ, YZ, Velikost; /*float*/
-	FrmlPtr BarPis, Text; /*pstring*/
+	FrmlElem* XZ, *YZ, *Velikost; /*float*/
+	FrmlElem* BarPis, *Text; /*pstring*/
 };
 
 struct GraphWD : public Chained

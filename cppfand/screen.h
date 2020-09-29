@@ -67,10 +67,10 @@ public:
 	void ScrWrBuf(WORD X, WORD Y, void* Buf, WORD L);
 	void ScrWrCharInfoBuf(short X, short Y, CHAR_INFO* Buf, short L);
 	bool ScrRdBuf(WORD X, WORD Y, CHAR_INFO* Buf, WORD L);
-	void ScrMove(WORD X, WORD Y, WORD ToX, WORD ToY, WORD L);
+	void ScrMove(short X, short Y, short ToX, short ToY, short L);
 	void ScrColor(WORD X, WORD Y, WORD L, BYTE Color);
 	void WriteChar(short X, short Y, char C, BYTE attr, Position pos = relative);
-	void WriteStyledStringToWindow(std::string text, BYTE Attr);
+	size_t WriteStyledStringToWindow(std::string text, BYTE Attr);
 	void LF();
 	bool SetStyleAttr(char C, BYTE& a);
 	TCrs CrsGet();
@@ -92,7 +92,7 @@ public:
 	void CrsGotoXY(WORD aX, WORD aY);
 
 	int ScrPush1(WORD X, WORD Y, WORD SizeX, WORD SizeY, void* P);
-	void ScrGetPtr(WORD X, WORD Y, WORD& DX, WORD& DI);
+	// void ScrGetPtr(WORD X, WORD Y, WORD& DX, WORD& DI);
 
 	void pushScreen(storeWindow sw);
 	storeWindow popScreen();
@@ -101,8 +101,10 @@ public:
 	Colors colors;
 
 private:
-	WORD* TxtCols;
-	WORD* TxtRows;
+	short TxtCols;
+	short TxtRows;
+	short MaxColsIndex;
+	short MaxRowsIndex;
 	Wind* WindMin;
 	Wind* WindMax;
 	TCrs* Crs;

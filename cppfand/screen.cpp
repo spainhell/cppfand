@@ -9,8 +9,10 @@ const unsigned int BUFFSIZE = 128 * 1024;
 
 Screen::Screen(WORD* TxtCols, WORD* TxtRows, Wind* WindMin, Wind* WindMax, TCrs* Crs)
 {
-	this->TxtCols = TxtCols;
-	this->TxtRows = TxtRows;
+	this->TxtCols = *TxtCols;
+	this->TxtRows = *TxtRows;
+	this->MaxColsIndex = (short)(*TxtCols - 1);
+	this->MaxRowsIndex = (short)(*TxtRows - 1);
 	this->WindMin = WindMin;
 	this->WindMax = WindMax;
 	this->Crs = Crs;
@@ -189,8 +191,24 @@ bool Screen::ScrRdBuf(WORD X, WORD Y, CHAR_INFO* Buf, WORD L)
 	return result;
 }
 
-void Screen::ScrMove(WORD X, WORD Y, WORD ToX, WORD ToY, WORD L)
+void Screen::ScrMove(short X, short Y, short ToX, short ToY, short L)
 {
+	// souradnice chodi kupodivu od 0 ..
+	if (L < 1) return;
+	// ulozime obsah obrazovky a "pretiskneme" na jine misto
+	CrsHide();
+	// cislovani radku a sloupcu prichazi od 1 .. X
+	if ((X < 0) || (X > MaxColsIndex) || (Y < 0) || (Y > MaxRowsIndex)) 
+		throw std::exception("Bad ScrMove index.");
+	if ((ToX < 0) || (ToX > MaxColsIndex) || (ToY < 0) || (ToY > MaxRowsIndex))
+		throw std::exception("Bad ScrMove index.");
+	SMALL_RECT rectFrom{ (short)X, (short)Y, (short)X + L, (short)Y };
+	SMALL_RECT rectTo{ (short)ToX, (short)ToY, (short)ToX + L, (short)ToY };
+	COORD bufSize{ (short)L, 1 };
+	CHAR_INFO* buf = new CHAR_INFO[L * 1];
+	ReadConsoleOutput(_handle, buf, bufSize, { 0, 0 }, &rectFrom);
+	WriteConsoleOutputA(_handle, buf, bufSize, { 0, 0 }, &rectTo);
+	CrsShow();
 }
 
 void Screen::ScrColor(WORD X, WORD Y, WORD L, BYTE Color)
@@ -225,14 +243,17 @@ void Screen::WriteChar(short X, short Y, char C, BYTE attr, Position pos)
 	GotoXY(WhereXabs() + 1, WhereYabs(), absolute); // po zapisu poseneme kurzor
 }
 
-// vypise stylizovany text do aktualniho okna
-void Screen::WriteStyledStringToWindow(std::string text, BYTE Attr)
+// vypise stylizovany text do aktualniho okna a vrati pocet vypsanych znaku
+size_t Screen::WriteStyledStringToWindow(std::string text, BYTE Attr)
 {
-	if (text.length() == 0) return;
+	if (text.length() == 0) return 0;
 
 	std::string CStyle;
 	std::string CColor;
 	CColor = (char)Attr;
+
+	// celkovy pocet vytistenych znaku
+	size_t totalChars = 0;
 
 	// ziskame jendotlive radky textu
 	auto vStr = GetAllRows(text);
@@ -300,6 +321,7 @@ void Screen::WriteStyledStringToWindow(std::string text, BYTE Attr)
 		}
 		COORD BufferSize = { strLen - ctrlCharsCount, 1 }; // pocet tisknutelnych znaku, 1 radek
 		WriteConsoleOutputA(_handle, _buf, BufferSize, { 0, 0 }, &rect);
+		totalChars += strLen - ctrlCharsCount;
 		// nastavime zacatek dalsiho radku, pokud se nejedna o posledni radek
 		if (i < rowsToPrint - 1) {
 			actualWindowRow++;
@@ -317,6 +339,7 @@ void Screen::WriteStyledStringToWindow(std::string text, BYTE Attr)
 		}
 	}
 	delete[] _buf;
+	return totalChars;
 }
 
 void Screen::LF()
@@ -447,8 +470,8 @@ void Screen::Window(BYTE X1, BYTE Y1, BYTE X2, BYTE Y2)
 	// pùvodní kód z ASM
 	if (X2 < X1) return;
 	if (Y2 < Y1) return;
-	if (X2 > * TxtCols) return;
-	if (Y2 > * TxtRows) return;
+	if (X2 > TxtCols) return;
+	if (Y2 > TxtRows) return;
 	WindMin->X = X1;
 	WindMin->Y = Y1;
 	WindMax->X = X2;
@@ -460,14 +483,17 @@ void Screen::Window(BYTE X1, BYTE Y1, BYTE X2, BYTE Y2)
 
 void Screen::ScrWr()
 {
+	throw std::exception("Screen::ScrWr() not implemented");
 }
 
 void Screen::CrsDark()
 {
+	throw std::exception("Screen::CrsDark() not implemented");
 }
 
 void Screen::CrsBlink()
 {
+	throw std::exception("Screen::CrsBlink() not implemented");
 }
 
 void Screen::CrsGotoXY(WORD aX, WORD aY)
@@ -488,11 +514,11 @@ int Screen::ScrPush1(WORD X, WORD Y, WORD SizeX, WORD SizeY, void* P)
 	return SizeX * SizeY;
 }
 
-void Screen::ScrGetPtr(WORD X, WORD Y, WORD& DX, WORD& DI)
+/*void Screen::ScrGetPtr(WORD X, WORD Y, WORD& DX, WORD& DI)
 {
 	// v AX je Y, v DI je X
 	DI = X;
-	int DXAX = Y * *TxtCols;
+	int DXAX = Y * TxtCols;
 	WORD AX = DXAX & 0x0000FFFF; // dolní WORD z int. DXAX
 	DX = DXAX >> 16; // horní WORD z int. DXAX
 	AX = AX < 1;
@@ -500,7 +526,7 @@ void Screen::ScrGetPtr(WORD X, WORD Y, WORD& DX, WORD& DI)
 	DI += AX;
 	// v ES i AX se vrací video adresa B800H - ignorujeme
 	// dále se vrací hodnoty DX a DI(tady X)
-}
+}*/
 
 void Screen::pushScreen(storeWindow sw)
 {
