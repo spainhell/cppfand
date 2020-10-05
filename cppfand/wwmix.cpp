@@ -625,14 +625,14 @@ label3:
 	}*/
 	ss.Abcd = true;
 	SelectStr(c11, r11, HdMsg, p);
-	if (KbdChar == _ESC_) return result;
+	if (KbdChar == VK_ESCAPE) return result;
 	s = GetSelect();
 	if (s[0] == '\\') {
 		s.erase(0, 1);
 		if (s == "..") {
 			d = parentDirectory(d);
 		}
-		else d = d + s + '\\';
+		else d = d + '\\' + s + '\\';
 		goto label3;
 	}
 	return d + s;
@@ -656,7 +656,7 @@ label1:
 	PromptLL(113, &Txt, I, Del);
 	Bool = nullptr;
 	BoolTxt = nullptr;
-	if (KbdChar == _ESC_) { result = false; goto label2; }
+	if (KbdChar == VK_ESCAPE) { result = false; goto label2; }
 	if (Txt.length() == 0) goto label2;
 	SetInpStr(Txt);
 	RdLex();
