@@ -471,7 +471,7 @@ void WrFDSegment(longint RecNr)
 			s = (StringList)s->Chain;
 		}
 	}
-	f = CFile->FldD;
+	f = CFile->FldD.front();
 	if (f != nullptr) {
 		while (f->Chain != nullptr) {
 			f->Chain = (FieldDescr*)O(f->Chain);
@@ -591,7 +591,7 @@ FileD* FileD_FromSegment(LongStr* ss) {
 	f->OrigFD = reinterpret_cast<FileD*>(*(unsigned int*)&A[index]); index += 4;
 	f->Drive = *(BYTE*)&A[index]; index++;
 	f->CatIRec = *(WORD*)&A[index]; index += 2;
-	f->FldD = reinterpret_cast<FieldDescr*>(*(unsigned int*)&A[index]); index += 4;
+	/*f->FldD = reinterpret_cast<FieldDescr*>(*(unsigned int*)&A[index]);*/ index += 4;
 	f->IsParFile = *(boolean*)&A[index]; index++;
 	f->IsJournal = *(boolean*)&A[index]; index++;
 	f->IsHlpFile = *(boolean*)&A[index]; index++;
@@ -692,12 +692,12 @@ void createFieldDescrFromStr(FileD* F, uintptr_t firstAddress, BYTE* str)
 {
 	// nacte vsechny zretezene FieldDescr z predaneho retezce, vytvori mapu, kde klicem je puvodni adresa prvku
 	// nactene polozky vzajemne zretezi, posledni ma jako Chain NULL
-	WORD nextItemIndex = (uintptr_t)CFile->FldD & 0x0000FFFF;
+	WORD nextItemIndex = (uintptr_t)CFile->FldD.front() & 0x0000FFFF;
 	std::map<uintptr_t, FieldDescr*> mFieldD;
 	FieldDescr* lastFieldD = new FieldDescr(&str[nextItemIndex]);
 	nextItemIndex = (uintptr_t(lastFieldD->Chain) & 0x0000FFFF);
 	mFieldD.insert(std::pair<uintptr_t, FieldDescr*>(firstAddress, lastFieldD));
-	F->FldD = lastFieldD;
+	F->FldD.push_back(lastFieldD);
 
 	while (nextItemIndex != 0) {
 		FieldDescr* nFieldD = new FieldDescr(&str[nextItemIndex]);
@@ -798,7 +798,7 @@ bool RdFDSegment(WORD FromI, longint Pos)
 
 	//WORD offset = uintptr_t(CFile->FldD) & 0x0000FFFF;
 	//WORD ssDataLen = ss->LL - offset;
-	createFieldDescrFromStr(CFile, uintptr_t(CFile->FldD), (BYTE*)&ss->A[0]);
+	createFieldDescrFromStr(CFile, uintptr_t(CFile->FldD.front()), (BYTE*)&ss->A[0]);
 	createKeysFromStr(CFile, uintptr_t(CFile->Keys), (BYTE*)&ss->A[0]);
 
 	//FieldDescr* f = CFile->FldD;
@@ -898,7 +898,8 @@ WORD FindHelpRecNr(FileDPtr FD, pstring txt)
 	CRecPtr = GetRecSpace();
 	md = NewLMode(RdMode);
 	if (CFile->Handle == nullptr) goto label1;
-	NmF = CFile->FldD; TxtF = (FieldDescr*)NmF->Chain;
+	NmF = CFile->FldD.front();
+	TxtF = (FieldDescr*)NmF->Chain;
 	for (i = 1; i < CFile->NRecs; i++) {
 		ReadRec(CFile, i, CRecPtr); nm = TrailChar(' ', _ShortS(NmF));
 		ConvToNoDiakr((WORD*)nm[1], nm.length(), fonts.VFont);
@@ -981,7 +982,7 @@ void SetChptFldDPtr()
 	if (Chpt == nullptr) /*ChptTF = nullptr;*/ throw std::exception("SetChptFldDPtr: Chpt is NULL.");
 	else {
 		ChptTF = Chpt->TF;
-		ChptTxtPos = Chpt->FldD;
+		ChptTxtPos = Chpt->FldD.front();
 		ChptVerif = (FieldDescr*)ChptTxtPos->Chain;
 		ChptOldTxt = (FieldDescr*)ChptVerif->Chain;
 		ChptTyp = (FieldDescr*)ChptOldTxt->Chain;
@@ -1522,7 +1523,7 @@ bool MergeOldNew(bool Veriflongint, longint Pos)
 	if (!RdFDSegment(0, Pos)) goto label1;
 	ChainLast(FileDRoot, CFile);
 	FDOld = CFile; FDOld->Name = Name;
-	if ((FDNew->Typ != FDOld->Typ) || !EquStoredF(FDNew->FldD, FDOld->FldD)
+	if ((FDNew->Typ != FDOld->Typ) || !EquStoredF(FDNew->FldD.front(), FDOld->FldD.front())
 #ifdef FandSQL
 		&& !FDNew->IsSQLFile && !FDOld->IsSQLFile
 #endif

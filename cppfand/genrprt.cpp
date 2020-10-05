@@ -352,7 +352,8 @@ LongStr* SelGenRprt(pstring RprtName)
 	fd = r->FD;
 	do { fd = (FileD*)fd->Chain; } while (fd->Name != s);
 	ro = GetRprtOpt(); ro->FDL.FD = fd;
-	f = fd->FldD; while (f != nullptr) {
+	f = fd->FldD.front();
+	while (f != nullptr) {
 		s = f->Name;
 		if ((f->Flg & f_Stored) == 0)
 		{

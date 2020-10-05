@@ -207,7 +207,7 @@ label1:
 	Accept(')');
 	if (!neg) { EO->Flds = fl1; return; }
 	EO->Flds = nullptr;
-	f = CFile->FldD;
+	f = CFile->FldD.front();
 	while (f != nullptr) {
 		if ((((f->Flg & f_Stored) != 0) || all) && !FieldInList(f, fl1)) {
 			fl = new FieldListEl(); // (FieldListEl*)GetStore(sizeof(*fl));
@@ -368,8 +368,8 @@ label1:
 	F = RdFldDescr(Name, Stored);
 	if ((CFile->Typ == 'D') && Stored && (F->Typ == 'R' || F->Typ == 'N')) OldError(86);
 
-	if (CFile->FldD == nullptr) CFile->FldD = F;
-	else ChainLast(CFile->FldD, F);
+	CFile->FldD.push_back(F);
+	ChainLast(CFile->FldD.front(), F);
 
 	if (Stored) {
 		if (CFile->Typ == '8') { if ((F->Typ == 'R' || F->Typ == 'B' || F->Typ == 'T')) OldError(35); }
@@ -419,15 +419,16 @@ void* RdFileD(std::string FileName, char FDTyp, pstring Ext)
 		LDOld = LinkDRoot;
 		CallRdFDSegment(FD);
 		LinkDRoot = LDOld;
-		F = CFile->FldD;
-		FillChar(CFile, sizeof(FileD), 0); CFile->Name = FileName;
+		F = CFile->FldD.front();
+		FillChar(CFile, sizeof(FileD), 0);
+		CFile->Name = FileName;
 		CFile->IsJournal = true;
 		SetHCatTyp(FDTyp);
 		CFile->ChptPos = OrigInp()->InpRdbPos;
 		SetInpStr(JournalFlds);
 		RdLex();
 		RdFieldDList(true);
-		F2 = (FieldDescr*)LastInChain(CFile->FldD);
+		F2 = (FieldDescr*)LastInChain(CFile->FldD.front());
 		while (F != nullptr) {
 			if ((F->Flg & f_Stored) != 0) {
 				F2->Chain = F;
@@ -496,7 +497,7 @@ void* RdFileD(std::string FileName, char FDTyp, pstring Ext)
 	CFile->ChptPos = InpRdbPos;
 
 	if (isHlp) {
-		F = CFile->FldD;
+		F = CFile->FldD.front();
 		F2 = (FieldDescr*)F->Chain;
 		if ((F->Typ != 'A') || (F2 == nullptr) || (F2->Typ != 'T') || (F2->Chain != nullptr)) OldError(128);
 		CFile->IsHlpFile = true;

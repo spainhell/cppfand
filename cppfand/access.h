@@ -250,7 +250,8 @@ public:
 	FileD* OrigFD = nullptr;    // like orig. or nil
 	BYTE Drive = 0;         // 1=A, 2=B, else 0
 	WORD CatIRec = 0;
-	FieldDescr* FldD = nullptr;
+	std::vector<FieldDescr*> FldD;
+	//FieldDescr* FldD = nullptr;
 	bool IsParFile = false, IsJournal = false, IsHlpFile = false;
 	bool typSQLFile = false, IsSQLFile = false, IsDynFile = false;
 	FileUseMode UMode = FileUseMode::Closed;

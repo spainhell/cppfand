@@ -884,7 +884,7 @@ label2:
 			if ((o & _FandCallOpt) != 0) {
 				f = RdFldName(CFile);
 				flofs = new TFldList(); // GetZStor(sizeof(TFldList));
-				fl->FldD = CFile->FldD; // OPtr(PtrRec(CFile).Seg, f);
+				fl->FldD = CFile->FldD.front(); // OPtr(PtrRec(CFile).Seg, f);
 				ChainLst(si->FL, flofs);
 				dofs = nullptr;
 				AcceptP('/');
@@ -3212,7 +3212,7 @@ bool RunBuildIn()
 			if (f == nullptr) {
 				fd = FindFD(CurrInst->Vars[0]->SS);
 				if (fd == nullptr) goto label1;
-				f = fd->FldD;
+				f = fd->FldD.front();
 			}
 			if (w == 3/*ii*/) {
 				std::string tmpSS = CurrInst->Vars[1]->SS;

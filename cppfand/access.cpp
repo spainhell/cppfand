@@ -648,7 +648,7 @@ void WrDBaseHd()
 
 	P = (DBaseHd*)GetZStore(CFile->FrstDispl);
 	char* PA = (char*)&P; // PA:CharArrPtr absolute P;
-	F = CFile->FldD;
+	F = CFile->FldD.front();
 	n = 0;
 	while (F != nullptr) {
 		if ((F->Flg & f_Stored) != 0) {
@@ -968,7 +968,7 @@ void DelDifTFld(void* Rec, void* CompRec, FieldDPtr F)
 
 void DelAllDifTFlds(void* Rec, void* CompRec)
 {
-	FieldDescr* F = CFile->FldD;
+	FieldDescr* F = CFile->FldD.front();
 	while (F != nullptr)
 	{
 		if (F->Typ == 'T' && ((F->Flg & f_Stored) != 0)) DelDifTFld(Rec, CompRec, F);
@@ -1188,7 +1188,7 @@ void S_(FieldDescr* F, std::string S, void* record)
 void ZeroAllFlds()
 {
 	FillChar(CRecPtr, CFile->RecLen, 0);
-	FieldDPtr F = CFile->FldD;
+	FieldDPtr F = CFile->FldD.front();
 	while (F != nullptr) {
 		if (((F->Flg & f_Stored) != 0) && (F->Typ == 'A')) S_(F, "");
 		F = (FieldDescr*)F->Chain;
@@ -1722,7 +1722,7 @@ void ClearRecSpace(void* p)
 		cr = CRecPtr;
 		CRecPtr = p;
 		if (HasTWorkFlag()) {
-			f = CFile->FldD;
+			f = CFile->FldD.front();
 			while (f != nullptr) {
 				if (((f->Flg & f_Stored) != 0) && (f->Typ == 'T')) {
 					TWork.Delete(_T(f));
@@ -1737,7 +1737,7 @@ void ClearRecSpace(void* p)
 
 void DelTFlds()
 {
-	FieldDescr* F = CFile->FldD;
+	FieldDescr* F = CFile->FldD.front();
 	while (F != nullptr) {
 		if (((F->Flg & f_Stored) != 0) && (F->Typ == 'T')) DelTFld(F);
 		F = (FieldDescr*)F->Chain;
@@ -1747,7 +1747,7 @@ void DelTFlds()
 void CopyRecWithT(void* p1, void* p2)
 {
 	Move(p1, p2, CFile->RecLen);
-	FieldDescr* F = CFile->FldD;
+	FieldDescr* F = CFile->FldD.front();
 	while (F != nullptr) {
 		if ((F->Typ == 'T') && ((F->Flg & f_Stored) != 0)) {
 			TFilePtr tf1 = CFile->TF; TFilePtr tf2 = tf1; CRecPtr = p1;
@@ -2298,7 +2298,7 @@ FileD::FileD(const FileD& orig)
 	ChptPos = orig.ChptPos;
 	//*OrigFD = orig;
 	Drive = orig.Drive;
-	if (orig.FldD != nullptr) FldD = new FieldDescr(*orig.FldD);
+	FldD = orig.FldD;
 	IsParFile = orig.IsParFile;
 	IsJournal = orig.IsJournal;
 	IsHlpFile = orig.IsHlpFile;
@@ -2308,7 +2308,7 @@ FileD::FileD(const FileD& orig)
 	if (orig.XF != nullptr) XF = new XFile(*orig.XF);
 	if (orig.Keys != nullptr) {
 		Keys = new XKey(*orig.Keys, false); // nebudeme kopirovat Keys->KFlds->FldD
-		Keys->KFlds->FldD = FldD; // pripojime stavajici FldD
+		Keys->KFlds->FldD = FldD.front(); // pripojime stavajici FldD
 	}
 	if (orig.Add != nullptr) Add = new AddD(*orig.Add);
 	nLDs = orig.nLDs;

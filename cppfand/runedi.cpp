@@ -1337,7 +1337,8 @@ void BuildWork()
 	ok = true;
 label1:
 	if (f != nullptr) {
-		CFile->FldD = f;
+		CFile->FldD.clear();
+		CFile->FldD.push_back(f);
 		WK->KFlds = KF;
 		CFile->RecLen = l;
 	}
@@ -1621,7 +1622,7 @@ void WrJournal(char Upd, void* RP, double Time)
 		if ((CFile->XF != nullptr)) { RPOfs++; l--; }
 		CFile = E->Journal;
 		CRecPtr = GetRecSpace();
-		F = CFile->FldD;
+		F = CFile->FldD.front();
 		std::string UpdStr = std::string(Upd, 1);
 		S_(F, UpdStr);
 		F = (FieldDescr*)F->Chain;
@@ -1735,7 +1736,7 @@ void UndoRecord()
 	LockMode md; FieldDPtr f;
 	if (!IsNewRec && WasUpdated) {
 		if (HasTF) if (NoDelTFlds) {
-			f = CFile->FldD;
+			f = CFile->FldD.front();
 			while (f != nullptr) {
 				if (((f->Flg & f_Stored) != 0) && (f->Typ == 'T'))
 					*(longint*)((char*)(E->OldRecPtr) + f->Displ) = *(longint*)(((char*)(CRecPtr)+f->Displ));
@@ -2899,7 +2900,7 @@ bool GetChpt(pstring Heslo, longint& NN)
 			if (SEquUpcase(Heslo, s)) goto label1;
 		}
 		else {
-			s = TrailChar(' ', _ShortS(CFile->FldD));
+			s = TrailChar(' ', _ShortS(CFile->FldD.front()));
 			ConvToNoDiakr((WORD*)s[1], s.length(), fonts.VFont);
 			if (EqualsMask(&Heslo[1], Heslo.length(), s))
 				label1:
@@ -3596,7 +3597,7 @@ bool StartProc(Instr_proc* ExitProc, bool Displ)
 	if (Displ) NewDisplLL = true;
 	result = true;
 	if (HasTF) {
-		f = CFile->FldD;
+		f = CFile->FldD.front();
 		while (f != nullptr) {
 			if ((f->Typ == 'T') && ((f->Flg & f_Stored) != 0) &&
 				(*(longint*)(p + f->Displ) == *(longint*)(E->OldRecPtr) + f->Displ))

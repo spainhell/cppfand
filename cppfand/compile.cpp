@@ -1096,7 +1096,7 @@ FieldListEl* AllFldsList(FileD* FD, bool OnlyStored)
 {
 	FieldListEl* FLRoot = nullptr;
 	FieldListEl* FL = nullptr;
-	FieldDescr* F = FD->FldD;
+	FieldDescr* F = FD->FldD.front();
 	while (F != nullptr) {
 		if (((F->Flg & f_Stored) != 0) || !OnlyStored)
 		{
@@ -1429,7 +1429,7 @@ bool IsKeyArg(FieldDescr* F, FileD* FD)
 void CompileRecLen()
 {
 	/* !!! with CFile^ do!!! */
-	FieldDPtr F = CFile->FldD;
+	FieldDescr* F = CFile->FldD.front();
 	WORD l = 0;
 	WORD n = 0;
 	if ((CFile->Typ == 'X' || CFile->Typ == 'D')) l = 1;
@@ -2367,16 +2367,12 @@ FrmlElem* RdStrFrml()
 
 FieldDescr* FindFldName(FileD* FD)
 {
-	FieldDescr* F = FD->FldD;
-	while (F != nullptr) {
-		{
-			std::string tmp = LexWord;
-			if (EquUpcase(F->Name, tmp)) goto label1;
-			F = (FieldDescr*)F->Chain;
-		}
+	std::string tmp = LexWord;
+	for (auto& i : FD->FldD)
+	{
+		if (EquUpcase(i->Name, tmp)) return i;
 	}
-label1:
-	return F;
+	return nullptr;
 }
 
 FieldDescr* RdFldName(FileD* FD)

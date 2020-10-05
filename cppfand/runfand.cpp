@@ -267,7 +267,7 @@ void CompileHelpCatDcl()
 	SetInpStr(s);
 	RdFileD("Catalog", 'C', "");
 	CatFD = CFile; FileDRoot = nullptr; Chpt = FileDRoot;
-	CatRdbName = CatFD->FldD;
+	CatRdbName = CatFD->FldD.front();
 	if (CatRdbName == nullptr) throw std::exception("CompileHelpCatDcl: CarRdbName is NULL");
 	CatFileName = (FieldDescr*)CatRdbName->Chain;
 	CatArchiv = (FieldDescr*)CatFileName->Chain;

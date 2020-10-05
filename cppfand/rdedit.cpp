@@ -499,7 +499,7 @@ void RdDepChkImpl()
 
 void TestedFlagOff()
 {
-	FieldDescr* F = CFile->FldD;
+	FieldDescr* F = CFile->FldD.front();
 	while (F != nullptr)
 	{
 		F->Typ = char(F->Typ & 0x7F);

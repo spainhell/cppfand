@@ -519,7 +519,7 @@ pstring wwmix::GetSelect()
 
 bool wwmix::SelFieldList(WORD Nmsg, bool ImplAll, FieldList FLRoot)
 {
-	FieldDPtr F; FieldList FL; pstring s;
+	FieldDescr* F; FieldList FL; pstring s;
 	FLRoot = nullptr;
 	auto result = true;
 	if (ss.Empty) return true;
@@ -529,7 +529,9 @@ label1:
 	s = GetSelect();
 	if (s != "")
 	{
-		F = CFile->FldD; if (s[1] = SelMark) s = copy(s, 2, 255);
+		F = CFile->FldD.front();
+		//F = CFile->FldD[0];
+		if (s[1] == SelMark) s = copy(s, 2, 255);
 		while (F != nullptr)
 			if (s == F->Name)
 			{

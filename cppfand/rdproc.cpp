@@ -2288,7 +2288,7 @@ AssignD* MakeImplAssign(FileD* FD1, FileD* FD2)
 	char FTyp;
 	pstring S = LexWord;
 	ARoot = nullptr;
-	FieldDPtr F1 = FD1->FldD;
+	FieldDPtr F1 = FD1->FldD.front();
 	while (F1 != nullptr) {
 		if ((F1->Flg & f_Stored) != 0) {
 			LexWord = F1->Name;
