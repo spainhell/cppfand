@@ -397,14 +397,15 @@ void* RdFileD(std::string FileName, char FDTyp, std::string Ext)
 	FieldDescr* F = nullptr; FieldDescr* F2 = nullptr;
 	void* p = nullptr;
 	ChkD* C = nullptr; LinkD* LDOld = nullptr;
-	integer n = 0, i = 0; bool isHlp = false;
+	size_t n = 0, i = 0; bool isHlp = false;
 	std::string Prefix, s;
 	LiRoots* li = nullptr;
 	CompInpD* ChPos = nullptr;
 
 	ResetCompilePars();
 	RdLex();
-	issql = SEquUpcase(Ext, ".SQL"); isHlp = SEquUpcase(Ext, ".HLP");
+	issql = SEquUpcase(Ext, ".SQL");
+	isHlp = SEquUpcase(Ext, ".HLP");
 	if (IsKeyWord("JOURNALOF")) {
 		FD = RdFileName();
 		if (Lexem == ';') RdLex();
@@ -953,12 +954,13 @@ void GetXFileD()
 	}
 }
 
-void CallRdFDSegment(FileDPtr FD)
+void CallRdFDSegment(FileD* FD)
 {
 	RdbD* rdb = nullptr;
 	void* cr = nullptr;
 	FileD* cf = nullptr;
-	bool b = false; WORD i = 0; longint pos = 0;;
+	bool b = false;
+	WORD i = 0; longint pos = 0;
 	if (Lexem != 0x1A) Accept(';');
 	rdb = CRdb; cr = CRecPtr;
 	RdbD* r = FD->ChptPos.R;

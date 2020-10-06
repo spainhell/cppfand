@@ -693,15 +693,15 @@ void GetCPathForCat(WORD I)
 
 	CVol = RdCatField(I, CatVolume);
 	CPath = RdCatField(I, CatPathName);
-	bool setContentDir = SetContextDir(d, isRdb);
-	if (CPath[2] != ':' && setContentDir) {
+	const bool setContentDir = SetContextDir(d, isRdb);
+	if (setContentDir && CPath.length() > 1 && CPath[1] != ':') {
 		if (isRdb) {
 			FSplit(CPath, CDir, CName, CExt);
 			AddBackSlash(d);
 			CDir = d;
 			CPath = CDir + CName + CExt; return;
 		}
-		if (CPath[1] == '\\') CPath = copy(d, 1, 2) + CPath;
+		if (CPath[0] == '\\') CPath = copy(d, 1, 2) + CPath;
 		else {
 			AddBackSlash(d);
 			CPath = d + CPath;

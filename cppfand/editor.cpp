@@ -3752,7 +3752,7 @@ void GetEditTxt(bool& pInsert, bool& pIndent, bool& pWrap, bool& pJust, bool& pC
 
 bool EditText(char pMode, char pTxtType, pstring pName, pstring pErrMsg, char* pTxtPtr, WORD pMaxLen, WORD& pLen,
 	WORD& pInd, longint pScr, pstring pBreaks, EdExitD* pExD, bool& pSrch, bool& pUpdat, WORD pLastNr,
-	WORD pCtrlLastNr, MsgStrPtr pMsgS)
+	WORD pCtrlLastNr, MsgStr* pMsgS)
 {
 	bool oldEdOK = EdOk; EditT = true;
 	Mode = pMode;
@@ -3769,11 +3769,11 @@ bool EditText(char pMode, char pTxtType, pstring pName, pstring pErrMsg, char* p
 	LastNr = pLastNr; CtrlLastNr = pCtrlLastNr;
 	if (pMsgS != nullptr)
 	{
-		LastS = *pMsgS->Last;
-		CtrlLastS = *pMsgS->CtrlLast;
-		ShiftLastS = *pMsgS->ShiftLast;
-		AltLastS = *pMsgS->AltLast;
-		HeadS = (pMsgS->Head == nullptr) ? "" : *pMsgS->Head;
+		LastS = pMsgS->Last;
+		CtrlLastS = pMsgS->CtrlLast;
+		ShiftLastS = pMsgS->ShiftLast;
+		AltLastS = pMsgS->AltLast;
+		HeadS = pMsgS->Head;
 	}
 	else
 	{
@@ -3825,7 +3825,7 @@ WORD FindTextE(const pstring& Pstr, pstring Popt, char* PTxtPtr, WORD PLen)
 }
 
 void EditTxtFile(longint* LP, char Mode, pstring& ErrMsg, EdExitD* ExD, longint TxtPos,
-	longint Txtxy, WRect* V, WORD Atr, const pstring Hd, BYTE WFlags, MsgStrPtr MsgS)
+	longint Txtxy, WRect* V, WORD Atr, const pstring Hd, BYTE WFlags, MsgStr* MsgS)
 {
 	bool Srch = false, Upd = false;
 	longint Size = 0, L = 0;

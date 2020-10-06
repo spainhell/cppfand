@@ -2985,10 +2985,10 @@ bool EditFreeTxt(FieldDescr* F, std::string ErrMsg, bool Ed, WORD& Brk)
 	if (E->TTExit)
 		/* !!! with TxtMsgS do!!! */ {
 		TxtMsgS.Head = nullptr;
-		TxtMsgS.Last = &E->Last;
-		TxtMsgS.CtrlLast = &E->CtrlLast;
-		TxtMsgS.AltLast = &E->AltLast;
-		TxtMsgS.ShiftLast = &E->ShiftLast;
+		TxtMsgS.Last = E->Last;
+		TxtMsgS.CtrlLast = E->CtrlLast;
+		TxtMsgS.AltLast = E->AltLast;
+		TxtMsgS.ShiftLast = E->ShiftLast;
 		PTxtMsgS = &TxtMsgS;
 	}
 	else PTxtMsgS = nullptr;

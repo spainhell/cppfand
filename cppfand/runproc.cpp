@@ -423,11 +423,11 @@ void EditTxtProc(Instr_edittxt* PD)
 	a = RunWordImpl(PD->Atr, 0);
 	pv = nullptr;
 	if (PD->Ww.C1 != nullptr) { RunWFrml(PD->Ww, PD->WFlags, v); pv = &v; }
-	MsgS.Head = GetStr(PD->Head);
-	MsgS.Last = (PD->Last == nullptr) ? nullptr : GetStr(PD->Last);
-	MsgS.CtrlLast = (PD->CtrlLast == nullptr) ? nullptr : GetStr(PD->CtrlLast);
-	MsgS.ShiftLast = (PD->ShiftLast == nullptr) ? nullptr : GetStr(PD->ShiftLast);
-	MsgS.AltLast = (PD->AltLast == nullptr) ? nullptr : GetStr(PD->AltLast);
+	MsgS.Head = (PD->Head == nullptr) ? "" : *GetStr(PD->Head);
+	MsgS.Last = (PD->Last == nullptr) ? "" : *GetStr(PD->Last);
+	MsgS.CtrlLast = (PD->CtrlLast == nullptr) ? "" : *GetStr(PD->CtrlLast);
+	MsgS.ShiftLast = (PD->ShiftLast == nullptr) ? "" : *GetStr(PD->ShiftLast);
+	MsgS.AltLast = (PD->AltLast == nullptr) ? "" : *GetStr(PD->AltLast);
 
 	if (PD->TxtLV != nullptr) lp = (longint*)(uintptr_t(MyBP) + PD->TxtLV->BPOfs);
 	else {
