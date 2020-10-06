@@ -1095,17 +1095,14 @@ void RdChptName(char C, RdbPos* Pos, bool TxtExpr)
 FieldListEl* AllFldsList(FileD* FD, bool OnlyStored)
 {
 	FieldListEl* FLRoot = nullptr;
-	FieldListEl* FL = nullptr;
-	FieldDescr* F = FD->FldD.front();
-	while (F != nullptr) {
+	for (auto& F : FD->FldD) {
 		if (((F->Flg & f_Stored) != 0) || !OnlyStored)
 		{
-			FL = new FieldListEl(); // (FieldListEl*)GetStore(sizeof(*FL));
+			auto* const FL = new FieldListEl(); // (FieldListEl*)GetStore(sizeof(*FL));
 			FL->FldD = F;
 			if (FLRoot == nullptr) { FLRoot = FL; FL->Chain = nullptr; }
 			else ChainLast(FLRoot, FL);
 		}
-		F = (FieldDescr*)F->Chain;
 	}
 	return FLRoot;
 }
@@ -1429,11 +1426,10 @@ bool IsKeyArg(FieldDescr* F, FileD* FD)
 void CompileRecLen()
 {
 	/* !!! with CFile^ do!!! */
-	FieldDescr* F = CFile->FldD.front();
 	WORD l = 0;
 	WORD n = 0;
 	if ((CFile->Typ == 'X' || CFile->Typ == 'D')) l = 1;
-	while (F != nullptr) {
+	for (auto &F : CFile->FldD) {
 		switch (CFile->Typ) {
 		case '8': if (F->Typ == 'D') F->NBytes = 2; break;
 		case 'D': {
@@ -1446,7 +1442,6 @@ void CompileRecLen()
 		}
 		}
 		if ((F->Flg & f_Stored) != 0) { F->Displ = l; l += F->NBytes; n++; }
-		F = (FieldDescr*)F->Chain;
 	}
 	CFile->RecLen = l;
 	switch (CFile->Typ) {

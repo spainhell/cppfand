@@ -100,7 +100,10 @@ void Screen::ScrWrText(WORD X, WORD Y, const char* S)
 	X += WindMin->X - 1;
 	Y += WindMin->Y - 1;
 	DWORD written = 0;
-	size_t len = strlen(S);
+
+	// budeme predpokladat, ze se muze zobrazit jen 1 radek
+	// jeho delka bude dle nastaveneho okna:
+	size_t len = min(WindMax->X - WindMin->X + 1, strlen(S));
 
 	// vycteme oblast do bufferu
 	auto buff = new CHAR_INFO[len];

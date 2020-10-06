@@ -1394,7 +1394,7 @@ bool OpenEditWw()
 	if (EdRecVar) {
 		if (OnlyAppend) goto label2;
 		else goto label3;
-}
+	}
 #ifdef FandSQL
 	if (!CFile->IsSQLFile)
 #endif
@@ -1606,12 +1606,12 @@ void UpdMemberRef(void* POld, void* PNew)
 			Scan->Close();
 			ClearRecSpace(p);
 			ReleaseStore(p);
-			}
+		}
 	label2:
 		LD = LD->Chain;
-		}
-	CFile = cf; CRecPtr = cr;
 	}
+	CFile = cf; CRecPtr = cr;
+}
 
 void WrJournal(char Upd, void* RP, double Time)
 {
@@ -1778,7 +1778,7 @@ bool CleanUp()
 	WrJournal('-', CRecPtr, Today() + CurrTime());
 	result = true;
 	return result;
-	}
+}
 
 bool DelIndRec(longint I, longint N)
 {
@@ -2139,7 +2139,7 @@ bool OldRecDiffers()
 label2:
 	ClearRecSpace(CRecPtr); ReleaseStore(CRecPtr); CRecPtr = E->NewRecPtr;
 	return result;
-	}
+}
 
 bool ExitCheck(bool MayDispl)
 {
@@ -2276,7 +2276,7 @@ bool WriteCRec(bool MayDispl, bool& Displ)
 		UnLockWithDep(OldMd);
 		WrLLF10Msg(823);
 		return result;
-		}
+	}
 	if (E->DownSet) {
 		DuplOwnerKey();
 		Displ = true;
@@ -2373,7 +2373,7 @@ label2:
 label1:
 	UnLockWithDep(OldMd);
 	return result;
-	}
+}
 
 void DuplFromPrevRec()
 {
@@ -2598,14 +2598,14 @@ void AutoReport()
 		SpecFDNameAllowed = IsCurrChpt();
 		RunAutoReport(RO);
 		SpecFDNameAllowed = false;
-}
+	}
 	ReleaseStore(p); ViewPrinterTxt(); CRecPtr = E->NewRecPtr;
 }
 
 void AutoGraph()
 {
 #ifdef FandGraph
-	 FrmlElem* Bool = nullptr;
+	FrmlElem* Bool = nullptr;
 	if (Select) Bool = E->Bool;
 	KeyD* K = nullptr;
 	if (Subset) K = WK;
@@ -3351,11 +3351,10 @@ label1:
 
 void ShiftF7Proc()
 {
-	FieldDPtr F; KeyFldDPtr KF; LinkDPtr LD, LD1;
 	/* find last (first decl.) foreign key link with CFld as an argument */
-	F = CFld->FldD; LD = LinkDRoot; LD1 = nullptr;
+	FieldDescr* F = CFld->FldD; LinkD* LD = LinkDRoot; LinkD* LD1 = nullptr;
 	while (LD != nullptr) {
-		KF = LD->Args;
+		KeyFldD* KF = LD->Args;
 		while (KF != nullptr) {
 			if ((KF->FldD == F) && ForNavigate(LD->ToFD)) LD1 = LD;
 			KF = (KeyFldD*)KF->Chain;
@@ -3400,21 +3399,27 @@ bool DuplToPrevEdit()
 {
 	LockMode md;
 	auto result = false; EditD* ee = (EditD*)E->Chain; if (ee == nullptr) return result;
-	FieldDPtr f1 = CFld->FldD;
+	FieldDescr* f1 = CFld->FldD;
 	/* !!! with ee^ do!!! */
 	{
-		FieldDPtr f2 = CFld->FldD;
+		FieldDescr* f2 = CFld->FldD;
 		if ((f2->Flg && f_Stored == 0) || (f1->Typ != f2->Typ) || (f1->L != f2->L)
 			|| (f1->M != f2->M) || !CFld->Ed(IsNewRec)) {
-			WrLLF10Msg(140); return result;
+			WrLLF10Msg(140);
+			return result;
 		}
-		CFile = ee->FD; CRecPtr = ee->NewRecPtr;
+		CFile = ee->FD;
+		CRecPtr = ee->NewRecPtr;
 		if (!ELockRec(ee, CFile->IRec, ee->IsNewRec, ee->SubSet)) return result;
-		if (!WasUpdated) { {}
-		Move(CRecPtr, ee->OldRecPtr, CFile->RecLen); WasUpdated = true;
+		if (!WasUpdated) {
+			Move(CRecPtr, ee->OldRecPtr, CFile->RecLen);
+			WasUpdated = true;
 		}
-		DuplFld(E->FD, CFile, E->NewRecPtr, CRecPtr, ee->OldRecPtr, f1, f2); SetUpdFlag(); }
-	CFile = E->FD; CRecPtr = E->NewRecPtr; result = true;
+		DuplFld(E->FD, CFile, E->NewRecPtr, CRecPtr, ee->OldRecPtr, f1, f2);
+		SetUpdFlag();
+	}
+	CFile = E->FD; CRecPtr = E->NewRecPtr;
+	result = true;
 	pstring oldKbdBuffer = KbdBuffer;
 	KbdBuffer = 0x0D; // ^M
 	KbdBuffer += oldKbdBuffer;
@@ -3561,7 +3566,6 @@ bool StartProc(Instr_proc* ExitProc, bool Displ)
 	bool upd = false;
 	bool b = false, b2 = false, lkd = false;
 	char* p = nullptr;
-	FieldDescr* f = nullptr;
 	WORD d = 0; LockMode md; /*float t;*/
 
 	auto result = false;
@@ -3597,12 +3601,10 @@ bool StartProc(Instr_proc* ExitProc, bool Displ)
 	if (Displ) NewDisplLL = true;
 	result = true;
 	if (HasTF) {
-		f = CFile->FldD.front();
-		while (f != nullptr) {
+		for (auto& f : CFile->FldD) {
 			if ((f->Typ == 'T') && ((f->Flg & f_Stored) != 0) &&
 				(*(longint*)(p + f->Displ) == *(longint*)(E->OldRecPtr) + f->Displ))
 				NoDelTFlds = true;
-			f = (FieldDescr*)f->Chain;
 		}
 		ReleaseStore(p);
 	}
@@ -3709,22 +3711,24 @@ void DisplCtrlAltLL(WORD Flags)
 			MsgLine = E->CtrlLast;
 			WrLLMsgTxt();
 		}
-		else if (IsCurrChpt) WrLLMsg(125);
+		else if (IsCurrChpt()) WrLLMsg(125);
 		else if (EdRecVar) WrLLMsg(154);
 		else WrLLMsg(127);
 	}
-	else if ((Flags & 0x03) != 0)         /* Shift */
+	else if ((Flags & 0x03) != 0) {         /* Shift */
 		if (!E->ShiftLast.empty()) {
 			MsgLine = E->ShiftLast;
 			WrLLMsgTxt();
 		}
 		else DisplLL();
-	else if ((Flags & 0x08) != 0)          /* Alt */
+	}
+	else if ((Flags & 0x08) != 0) {         /* Alt */
 		if (!E->AltLast.empty()) {
 			MsgLine = E->AltLast;
 			WrLLMsgTxt();
 		}
 		else DisplLL();
+	}
 }
 
 void DisplLLHlp()
@@ -3958,7 +3962,7 @@ label81:
 				EdBr = EdBreak;
 				n = GetEdRecNo();
 				if (((IsNewRec || WriteCRec(true, Displ)) && ((EdBreak == 11)) || NoESCPrompt || (!spec.ESCverify && !MustESCPrompt) || PromptYN(137))) {
-			  //if ((IsNewRec || WriteCRec(true, Displ)) && ((EdBreak == 11) || NoESCPrompt || !spec.ESCverify && !MustESCPrompt || PromptYN(137))) {
+					//if ((IsNewRec || WriteCRec(true, Displ)) && ((EdBreak == 11) || NoESCPrompt || !spec.ESCverify && !MustESCPrompt || PromptYN(137))) {
 					EdBreak = EdBr;
 					SetEdRecNoEtc(n);
 					goto label71;
@@ -3977,7 +3981,7 @@ label81:
 						OldLMode(E->OldMd);
 					}
 					return;
-			}
+				}
 				break;
 			}
 			case '=' + ALT: {
@@ -4245,9 +4249,9 @@ label81:
 				}
 				//}
 			}
-		}
+			}
 			break;
-	}
+		}
 		break;
 	}
 	default: {
@@ -4255,7 +4259,7 @@ label81:
 		ClrEvent();
 		break;
 	}
-}
+	}
 	goto label1;
 }
 

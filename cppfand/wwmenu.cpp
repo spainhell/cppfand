@@ -917,7 +917,7 @@ label1:
 		ReadRec(CFile, i, CRecPtr);
 		goto label2;
 	}
-	for (i = 1; i < CFile->NRecs; i++) {
+	for (i = 1; i <= CFile->NRecs; i++) {
 		ReadRec(CFile, i, CRecPtr);
 		Nm = TrailChar(' ', _ShortS(NmF));
 		if (CFile == &HelpFD) fo = TVideoFont::foKamen;

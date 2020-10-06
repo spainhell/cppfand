@@ -968,11 +968,8 @@ void DelDifTFld(void* Rec, void* CompRec, FieldDPtr F)
 
 void DelAllDifTFlds(void* Rec, void* CompRec)
 {
-	FieldDescr* F = CFile->FldD.front();
-	while (F != nullptr)
-	{
+	for (auto& F : CFile->FldD)	{
 		if (F->Typ == 'T' && ((F->Flg & f_Stored) != 0)) DelDifTFld(Rec, CompRec, F);
-		F = (FieldDescr*)F->Chain;
 	}
 }
 
@@ -1188,10 +1185,8 @@ void S_(FieldDescr* F, std::string S, void* record)
 void ZeroAllFlds()
 {
 	FillChar(CRecPtr, CFile->RecLen, 0);
-	FieldDPtr F = CFile->FldD.front();
-	while (F != nullptr) {
+	for (auto& F : CFile->FldD) {
 		if (((F->Flg & f_Stored) != 0) && (F->Typ == 'A')) S_(F, "");
-		F = (FieldDescr*)F->Chain;
 	}
 }
 
@@ -1716,19 +1711,16 @@ label1:
 
 void ClearRecSpace(void* p)
 {
-	FieldDescr* f = nullptr;
 	void* cr = nullptr;
 	if (CFile->TF != nullptr) {
 		cr = CRecPtr;
 		CRecPtr = p;
 		if (HasTWorkFlag()) {
-			f = CFile->FldD.front();
-			while (f != nullptr) {
+			for (auto& f : CFile->FldD) {
 				if (((f->Flg & f_Stored) != 0) && (f->Typ == 'T')) {
 					TWork.Delete(_T(f));
 					T_(f, 0);
 				}
-				f = (FieldDescr*)f->Chain;
 			}
 		}
 		CRecPtr = cr;
@@ -1737,23 +1729,23 @@ void ClearRecSpace(void* p)
 
 void DelTFlds()
 {
-	FieldDescr* F = CFile->FldD.front();
-	while (F != nullptr) {
+	for (auto& F : CFile->FldD) {
 		if (((F->Flg & f_Stored) != 0) && (F->Typ == 'T')) DelTFld(F);
-		F = (FieldDescr*)F->Chain;
 	}
 }
 
 void CopyRecWithT(void* p1, void* p2)
 {
-	Move(p1, p2, CFile->RecLen);
-	FieldDescr* F = CFile->FldD.front();
-	while (F != nullptr) {
+	memcpy(p2, p1, CFile->RecLen);
+	for (auto& F : CFile->FldD) {
 		if ((F->Typ == 'T') && ((F->Flg & f_Stored) != 0)) {
-			TFilePtr tf1 = CFile->TF; TFilePtr tf2 = tf1; CRecPtr = p1;
+			TFile* tf1 = CFile->TF;
+			TFilePtr tf2 = tf1;
+			CRecPtr = p1;
 			if ((tf1->Format != TFile::T00Format)) {
 				LongStrPtr s = _LongS(F);
-				CRecPtr = p2; LongS_(F, s);
+				CRecPtr = p2;
+				LongS_(F, s);
 				ReleaseStore(s);
 			}
 			else {
@@ -1765,23 +1757,20 @@ void CopyRecWithT(void* p1, void* p2)
 				T_(F, pos);
 			}
 		}
-		F = (FieldDescr*)F->Chain;
 	}
 }
 
 void Code(std::string& data)
 {
-	for (size_t i = 0; i < data.length(); i++)
-	{
-		data[i] = data[i] ^ 0xAA;
+	for (char& i : data) {
+		i = (char)(i ^ 0xAA);
 	}
 }
 
 void Code(void* A, WORD L)
 {
 	BYTE* pb = (BYTE*)A;
-	for (int i = 0; i < L; i++)
-	{
+	for (int i = 0; i < L; i++)	{
 		pb[i] = pb[i] ^ 0xAA;
 	}
 }
@@ -1838,7 +1827,9 @@ void TFile::RdPrefix(bool Chk)
 	longint* TNxtAvailPage = (longint*)&T; /* .DBT */
 	struct stFptHd { longint FreePart = 0; WORD X = 0, BlockSize = 0; }; /* .FPT */
 	stFptHd* FptHd = (stFptHd*)&T;
-	BYTE sum = 0; longint FS = 0, ML = 0, RS = 0; WORD i = 0, n = 0;
+	BYTE sum = 0;
+	longint FS = 0, ML = 0, RS = 0;
+	WORD i = 0, n = 0;
 	if (Chk) {
 		FS = FileSizeH(Handle);
 		if (FS <= 512) {

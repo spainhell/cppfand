@@ -188,7 +188,6 @@ void RdBegViewDcl(EditOpt* EO)
 {
 	bool neg = false, all = false;
 	FieldListEl* fl = nullptr;
-	FieldDescr* f = nullptr;
 	if ((Lexem == _identifier || Lexem == '[')) {
 		RdChptName('E', &EO->FormPos, true);
 		return;
@@ -207,15 +206,13 @@ label1:
 	Accept(')');
 	if (!neg) { EO->Flds = fl1; return; }
 	EO->Flds = nullptr;
-	f = CFile->FldD.front();
-	while (f != nullptr) {
+	for (auto& f : CFile->FldD) {
 		if ((((f->Flg & f_Stored) != 0) || all) && !FieldInList(f, fl1)) {
 			fl = new FieldListEl(); // (FieldListEl*)GetStore(sizeof(*fl));
 			fl->FldD = f;
 			if (EO->Flds == nullptr) { EO->Flds = fl; fl->Chain = nullptr; }
 			else ChainLast(EO->Flds, fl);
 		}
-		f = (FieldDescr*)f->Chain;
 	}
 	if (EO->Flds == nullptr) OldError(117);
 }

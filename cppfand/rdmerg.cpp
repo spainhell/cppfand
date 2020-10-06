@@ -506,13 +506,10 @@ bool FindAssignToF(AssignD* A, FieldDescr* F)
 
 void MakeImplAssign()
 {
-	FieldDescr* FNew = nullptr;
 	AssignD* AD = nullptr;
 	if (RD->OD == nullptr) return;
-	FNew = RD->OD->FD->FldD.front();
-	while (FNew != nullptr) {                 /*implic.assign   name = name*/
+	for (auto& FNew : RD->OD->FD->FldD) { /*implic.assign   name = name*/
 		if (((FNew->Flg & f_Stored) != 0) && !FindAssignToF(RD->Ass, FNew)) ImplAssign(RD, FNew);
-		FNew = (FieldDescr*)FNew->Chain;
 	}
 }
 
