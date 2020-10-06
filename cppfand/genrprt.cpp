@@ -326,7 +326,7 @@ LongStr* SelGenRprt(pstring RprtName)
 	wwmix ww;
 
 	RdbD* r; FileD* fd; FieldDescr* f; RprtOpt* ro;
-	pstring s; integer i;
+	std::string s; size_t i;
 	FieldListEl* fl;
 	LongStr* result = nullptr;
 	r = CRdb; 
@@ -344,9 +344,10 @@ LongStr* SelGenRprt(pstring RprtName)
 	ww.SelectStr(0, 0, 19, tmpP + RprtName + '\"');
 	if (KbdChar == _ESC_) return result;
 	s = ww.GetSelect();
-	i = s.first('.'); r = CRdb;
-	if (i != 0) {
-		do { r = r->ChainBack; } while (r->FD->Name != s.substr(1, i - 1));
+	i = s.find('.'); r = CRdb;
+	if (i != std::string::npos) {
+		do { r = r->ChainBack; }
+		while (r->FD->Name != s.substr(1, i - 1));
 		s = s.substr(i + 1, 255);
 	}
 	fd = r->FD;

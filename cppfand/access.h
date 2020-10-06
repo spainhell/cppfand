@@ -234,7 +234,7 @@ public:
 	FileD();
 	FileD(const FileD& orig);
 	// FileD* Chain = nullptr;
-	pstring Name;
+	std::string Name;
 	std::string FullName;
 	WORD RecLen = 0;
 	void* RecPtr = nullptr;
@@ -674,7 +674,7 @@ extern FuncD* FuncDRoot;
 extern FileD* CFile;
 extern void* CRecPtr;
 extern KeyD* CViewKey;
-extern pstring TopRdbDir, TopDataDir;
+extern std::string TopRdbDir, TopDataDir;
 extern pstring CatFDName;
 extern RdbD* CRdb, TopRdb;
 extern FileD* CatFD, HelpFD;

@@ -6,7 +6,7 @@
 
 struct SS
 {
-	pstring* Pointto = nullptr; /*(nullptr)  at {ning point to this item*/
+	std::string* Pointto = nullptr; /*(nullptr)  at {ning point to this item*/
 	bool Abcd = false; /*(false) alphabetical order in window*/
 	bool AscDesc = false; /*(false) > ascending, < descending */
 	bool Subset = false; /*(false)*/

@@ -52,7 +52,7 @@ bool IsKeyWord(pstring S); // r284 ASM
 bool TestKeyWord(pstring S); // r282
 bool IsOpt(pstring S); // r296 ASM
 bool IsDigitOpt(pstring S, WORD& N); // r305
-bool IsIdentifStr(pstring& S); //r323
+bool IsIdentifStr(std::string& S); //r323
 pstring* RdStrConst(); // r314
 char Rd1Char(); // r317
 char RdQuotedChar(); // r320

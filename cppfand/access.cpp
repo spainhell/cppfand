@@ -20,7 +20,7 @@ LinkD* LinkDRoot; // { for all RDBs     }
 FuncD* FuncDRoot;
 void* CRecPtr;
 KeyD* CViewKey;
-pstring TopRdbDir, TopDataDir;
+std::string TopRdbDir, TopDataDir;
 pstring CatFDName;
 RdbD* CRdb, TopRdb;
 FileD* CatFD, HelpFD;

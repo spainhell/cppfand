@@ -633,8 +633,10 @@ label3:
 		s.erase(0, 1);
 		if (s == "..") {
 			d = parentDirectory(d);
+			// pokud jsme v korenovem adresari, vrati se s '\'
+			if (d[d.length() - 1] != '\\') d += '\\';
 		}
-		else d = d + '\\' + s + '\\';
+		else d = d + s + '\\';
 		goto label3;
 	}
 	return d + s;

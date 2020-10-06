@@ -1956,28 +1956,37 @@ std::string GetFileViewName(FileD* FD, StringListEl** SL)
 	return result;
 }
 
-void SetPointTo(LinkDPtr LD, pstring* s1, pstring* s2)
+void SetPointTo(LinkD* LD, std::string* s1, std::string* s2)
 {
 	KeyFldDPtr KF;
 	KF = LD->Args;
 	while (KF != nullptr) {
-		if (KF->FldD == CFld->FldD) { s2 = s1; ss.Pointto = s2; }
+		if (KF->FldD == CFld->FldD) {
+			s2 = s1;
+			ss.Pointto = s2;
+		}
 		KF = (KeyFldD*)KF->Chain;
 	}
 }
 
-void GetSel2S(pstring* s, pstring* s2, char C, WORD wh)
+void GetSel2S(std::string* s, std::string* s2, char C, WORD wh)
 {
 	wwmix ww;
 
-	WORD i; pstring s1;
-	*s = ww.GetSelect(); *s2 = ""; i = s->first(C);
-	if (i > 0)
+	size_t i; pstring s1;
+	*s = ww.GetSelect();
+	*s2 = "";
+	i = s->find(C);
+	if (i != std::string::npos)
 		if (wh == 1) {
-			s1 = s->substr(i + 1, 255); *s2 = s->substr(1, i - 1); *s = s1;
+			s1 = s->substr(i + 1, 255);
+			*s2 = s->substr(1, i - 1);
+			*s = s1;
 		}
-		else { *s2 = s->substr(i + 1, 255); *s = s->substr(1, i - 1); }
-
+		else {
+			*s2 = s->substr(i + 1, 255);
+			*s = s->substr(1, i - 1);
+		}
 }
 
 bool EquRoleName(pstring S, LinkD* LD)
@@ -2019,7 +2028,7 @@ void UpwEdit(LinkDPtr LkD)
 
 	void* p = nullptr;
 	std::string s;
-	pstring s1, s2; XString x; XString* px = nullptr;
+	std::string s1, s2; XString x; XString* px = nullptr;
 	FieldDPtr F = nullptr; KeyFldDPtr KF = nullptr;
 	KeyDPtr K = nullptr; EditOpt* EO = nullptr;
 	WORD Brk; FileDPtr ToFD = nullptr; StringList SL, SL1; LinkDPtr LD = nullptr;
@@ -2032,10 +2041,10 @@ void UpwEdit(LinkDPtr LkD)
 		LD = LinkDRoot;
 		while (LD != nullptr) {
 			ToFD = LD->ToFD;
-			if ((LD->FromFD == CFile) && ForNavigate(ToFD))
-			{
+			if ((LD->FromFD == CFile) && ForNavigate(ToFD)) {
 				s = "";
-				if (ToFD->Name != LD->RoleName) { s = "." + (std::string)LD->RoleName; }
+				std::string rn = LD->RoleName;
+				if (ToFD->Name != rn) { s = "." + (std::string)LD->RoleName; }
 				SL = ToFD->ViewNames;
 				do {
 					s1 = GetFileViewName(ToFD, &SL) + s;
@@ -3255,8 +3264,12 @@ void ImbeddEdit()
 {
 	wwmix ww;
 
-	void* p = nullptr; pstring s, s1, s2; WORD Brk; StringListEl* SL = nullptr;
-	EditOpt* EO = nullptr; FileD* FD = nullptr; RdbD* R = nullptr; longint w = 0;
+	void* p = nullptr;
+	std::string s, s1, s2;
+	WORD Brk; StringListEl* SL = nullptr;
+	EditOpt* EO = nullptr;
+	FileD* FD = nullptr;
+	RdbD* R = nullptr; longint w = 0;
 
 	MarkStore(p);
 	w = PushW1(1, 1, TxtCols, TxtRows, true, true);
@@ -3283,7 +3296,8 @@ void ImbeddEdit()
 	GetSel2S(&s1, &s2, '.', 1);
 	R = CRdb;
 	if (s2 != "") {
-		do { R = R->ChainBack; } while (R->FD->Name != s2);
+		std::string ss2 = s2;
+		do { R = R->ChainBack; } while (R->FD->Name != ss2);
 	}
 	CFile = R->FD;
 	while (!EquFileViewName(CFile, s1, EO)) CFile = (FileD*)CFile->Chain;
@@ -3305,7 +3319,9 @@ void DownEdit()
 	wwmix ww;
 
 	LinkDPtr LD = nullptr; FileDPtr FD = nullptr; StringList SL = nullptr; KeyDPtr K = nullptr;
-	EditOpt* EO = nullptr; WORD Brk, i; void* p = nullptr; pstring s, s1, s2; longint w;
+	EditOpt* EO = nullptr; WORD Brk, i; void* p = nullptr;
+	std::string s, s1, s2; longint w;
+	std::string ali;
 	MarkStore(p);
 	w = PushW1(1, 1, TxtCols, TxtRows, true, true);
 	CFile->IRec = AbsRecNr(CRec());
@@ -3320,7 +3336,8 @@ void DownEdit()
 			K = GetFromKey(LD);
 			do {
 				s = GetFileViewName(FD, &SL);
-				if (*K->Alias != "") s = s + '/' + *K->Alias;
+				std::string kali = *K->Alias;
+				if (*K->Alias != "") s = s + '/' + kali;
 				ww.PutSelect(s);
 			} while (SL != nullptr);
 		}
@@ -3331,7 +3348,8 @@ void DownEdit()
 	if (KbdChar == _ESC_) goto label1;
 	GetSel2S(&s1, &s2, '/', 2);
 	LD = LinkDRoot;
-	while ((LD->ToFD != E->FD) || (LD->IndexRoot == 0) || (s2 != *GetFromKey(LD)->Alias)
+	ali = *GetFromKey(LD)->Alias;
+	while ((LD->ToFD != E->FD) || (LD->IndexRoot == 0) || (s2 != ali)
 		|| !EquFileViewName(LD->FromFD, s1, EO)) LD = LD->Chain;
 	CFile = LD->FromFD;
 	if (SelFldsForEO(EO, LD)) {

@@ -66,8 +66,8 @@ WORD CountDLines(void* Buf, WORD L, char C); // r139 ASM
 pstring GetDLine(void* Buf, WORD L, char C, WORD I); // r144 ASM
 WORD FindCtrlM(LongStr* s, WORD i, WORD n); // r152
 WORD SkipCtrlMJ(LongStrPtr s, WORD i); // r158
-void AddBackSlash(pstring& s);
-void DelBackSlash(pstring& s);
+void AddBackSlash(std::string& s);
+void DelBackSlash(std::string& s);
 bool MouseInRect(WORD X, WORD Y, WORD XSize, WORD Size); // r175 ASM
 bool MouseInRectProc(WORD X, WORD Y, WORD XSize, WORD Size); // r182 ASM - rozdìleno na txt a graph režim
 
@@ -140,17 +140,17 @@ enum FileUseMode { Closed = 0, RdOnly = 1, RdShared = 2, Shared = 3, Exclusive =
 extern WORD HandleError; // r229
 extern pstring OldDir;
 extern pstring FandDir;
-extern pstring WrkDir;
+extern std::string WrkDir;
 extern pstring FandOvrName;
 extern pstring FandResName;
 extern pstring FandWorkName;
 extern pstring FandWorkXName;
 extern pstring FandWorkTName;
-extern pstring CPath;
-extern pstring CDir;
-extern pstring CName;
-extern pstring CExt;
-extern pstring CVol;
+extern std::string CPath;
+extern std::string CDir;
+extern std::string CName;
+extern std::string CExt;
+extern std::string CVol;
 
 extern bool WasLPTCancel;
 extern FILE* WorkHandle;
@@ -179,7 +179,7 @@ WORD GetFileAttr();
 void RdWrCache(bool ReadOp, FILE* Handle, bool NotCached, longint Pos, WORD N, void* Buf);
 void MyDeleteFile(pstring path);
 void RenameFile56(pstring OldPath, pstring NewPath, bool Msg);
-pstring MyFExpand(pstring Nm, pstring EnvName);
+std::string MyFExpand(pstring Nm, pstring EnvName);
 
 // *** DISPLAY ***
 

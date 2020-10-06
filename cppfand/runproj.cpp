@@ -34,7 +34,9 @@ longint UserW = 0;
 
 struct RdbRecVars
 {
-	char Typ = 0; pstring Name = pstring(12); pstring Ext;
+	char Typ = 0;
+	std::string Name;
+	pstring Ext;
 	longint Txt = 0; longint OldTxt = 0;
 	char FTyp = 0; WORD CatIRec = 0; bool isSQL = false;
 };
@@ -88,13 +90,12 @@ bool NetFileTest(RdbRecVars* X)
 	return false;
 }
 
-void GetSplitChptName(pstring* Name, pstring* Ext)
+void GetSplitChptName(std::string* Name, pstring* Ext)
 {
-	WORD i;
 	*Ext = "";
 	*Name = TrailChar(' ', _ShortS(ChptName));
-	i = Name->first('.');
-	if (i == 0) return;
+	WORD i = Name->find('.');
+	if (i == std::string::npos) return;
 	*Ext = Name->substr(i, 255);
 	*Name = Name->substr(1, i - 1);
 }
@@ -184,14 +185,15 @@ bool ChptDel()
 	return ChptDelFor(&New);
 }
 
-bool IsDuplFileName(pstring name)
+bool IsDuplFileName(std::string name)
 {
-	WORD I; pstring n; pstring e; void* cr;
+	WORD I;
+	std::string n; pstring e; void* cr;
 	auto result = true;
 	if (SEquUpcase(name, Chpt->Name)) return result;
 	cr = CRecPtr;
 	CRecPtr = GetRecSpace();
-	for (I = 1; I < Chpt->NRecs; I++)
+	for (I = 1; I <= Chpt->NRecs; I++)
 		if (I != CRec()) {
 			ReadRec(CFile, I, CRecPtr);
 			if (_ShortS(ChptTyp) == 'F') {
@@ -366,7 +368,8 @@ FileD* GetFD(void* p, bool WithSelf, WORD Sg)
 {
 	if (p != nullptr) {
 		LexWord = *(pstring*)(p);
-		if (WithSelf && EquUpcase(CFile->Name, LexWord)) p = CFile;
+		std::string lw = LexWord;
+		if (WithSelf && EquUpcase(CFile->Name, lw)) p = CFile;
 		else p = FindFileD();
 	}
 	return (FileD*)p;
@@ -991,9 +994,10 @@ void SetChptFldDPtr()
 	}
 }
 
-void SetRdbDir(char Typ, pstring* Nm)
+void SetRdbDir(char Typ, std::string* Nm)
 {
-	RdbD* r = nullptr; RdbD* rb = nullptr; pstring d;
+	RdbD* r = nullptr; RdbD* rb = nullptr;
+	std::string d;
 	r = CRdb;
 	rb = r->ChainBack;
 	if (rb == nullptr) TopRdb = *r; CVol = "";
@@ -1011,7 +1015,8 @@ void SetRdbDir(char Typ, pstring* Nm)
 				AddBackSlash(d); CPath = d + CPath;
 			}
 		}
-		FSplit(CPath, CDir, CName, CExt); DelBackSlash(CDir);
+		FSplit(CPath, CDir, CName, CExt);
+		DelBackSlash(CDir);
 	}
 	else if (rb == nullptr) CDir = TopRdbDir;
 	else {
@@ -1041,10 +1046,11 @@ void ResetRdOnly()
 	}
 }
 
-void CreateOpenChpt(pstring* Nm, bool create, wwmix* ww)
+void CreateOpenChpt(std::string Nm, bool create, wwmix* ww)
 {
 	pstring p; pstring s;
-	integer i = 0, n = 0; pstring nr(10); pstring Nm1(8);
+	integer i = 0, n = 0;
+	std::string nr; std::string Nm1;
 	FileUseMode um = Closed;
 
 	bool top = (CRdb == nullptr);
@@ -1057,18 +1063,20 @@ void CreateOpenChpt(pstring* Nm, bool create, wwmix* ww)
 	R->OldLDRoot = LinkDRoot;
 	R->OldFCRoot = FuncDRoot;
 	MarkStore2(R->Mark2);
-	RdMsg(51); s = MsgLine; RdMsg(48);
+	RdMsg(51);
+	s = MsgLine;
+	RdMsg(48);
 	val(MsgLine, n, i);
-	str(TxtCols - n, nr);
+	nr = std::to_string((TxtCols - n));
 	s = s + nr;
 	SetInpStr(s);
-	if (((*Nm)[1] == '\\')) Nm1 = Nm->substr(2, 8);
-	else Nm1 = *Nm;
+	if ((Nm[0] == '\\')) Nm1 = Nm.substr(2, 8);
+	else Nm1 = Nm;
 	RdFileD(Nm1, '0', ""); /*old CRdb for GetCatIRec*/
 	R->FD = CFile;
 	CRdb = R;
 	CFile->RecPtr = GetRecSpace();
-	SetRdbDir((*Nm)[1], &Nm1);
+	SetRdbDir(Nm[0], &Nm1);
 	p = CDir + Nm1 + ".RDB";
 	CFile->Drive = TestMountVol(CPath[1]);
 	SetChptFldDPtr();
@@ -1115,7 +1123,7 @@ void CloseChpt()
 	if (CRdb == nullptr) return;
 	ClearHelpStkForCRdb();
 	SaveFiles();
-	bool del = Chpt->NRecs = 0;
+	bool del = Chpt->NRecs == 0;
 	pstring d = CRdb->RdbDir;
 	CloseFAfter(FileDRoot);
 	LinkDRoot = CRdb->OldLDRoot;
@@ -1160,7 +1168,8 @@ void ClearXFUpdLock()
 
 FileD* FindFD()
 {
-	FileD* FD = nullptr; pstring FName(12); pstring d; pstring name; pstring ext;
+	FileD* FD = nullptr; std::string FName; std::string d;
+	std::string name; std::string ext;
 	FName = TrailChar(' ', _ShortS(ChptName));
 	FSplit(FName, d, name, ext);
 	FD = FileDRoot;
@@ -1761,13 +1770,14 @@ void GotoErrPos(WORD& Brk)
 	EditFreeTxt(ChptTxt, s, true, Brk);
 }
 
-void WrErrMsg630(pstring* Nm)
+void WrErrMsg630(std::string Nm)
 {
-	IsCompileErr = false; SetMsgPar(MsgLine); WrLLF10Msg(110);
-	SetMsgPar(*Nm); WrLLF10Msg(630);
+	IsCompileErr = false;
+	SetMsgPar(MsgLine); WrLLF10Msg(110);
+	SetMsgPar(Nm); WrLLF10Msg(630);
 }
 
-bool EditExecRdb(pstring* Nm, pstring* ProcNm, Instr_proc* ProcCall, wwmix* ww)
+bool EditExecRdb(std::string Nm, std::string ProcNm, Instr_proc* ProcCall, wwmix* ww)
 {
 	WORD Brk = 0, cc = 0;
 	void* p = nullptr;
@@ -1797,7 +1807,7 @@ bool EditExecRdb(pstring* Nm, pstring* ProcNm, Instr_proc* ProcCall, wwmix* ww)
 		EditRdbMode = false;
 			bool hasToCompileRdb = CompileRdb(false, true, false);
 			if (hasToCompileRdb) {
-				bool procedureFound = FindChpt('P', *ProcNm, true, &RP);
+				bool procedureFound = FindChpt('P', ProcNm, true, &RP);
 					if (procedureFound)
 					{
 						//NewExit(Ovr(), er2);
@@ -1814,7 +1824,7 @@ bool EditExecRdb(pstring* Nm, pstring* ProcNm, Instr_proc* ProcCall, wwmix* ww)
 						goto label9;
 					}
 					else {
-						Set2MsgPar(*Nm, *ProcNm);
+						Set2MsgPar(Nm, ProcNm);
 						WrLLF10Msg(632);
 					}
 			}
@@ -1850,7 +1860,7 @@ bool EditExecRdb(pstring* Nm, pstring* ProcNm, Instr_proc* ProcCall, wwmix* ww)
 	Chpt->WasRdOnly = false;
 	if (!top && (Chpt->NRecs > 0))
 		if (CompileRdb(true, false, false)) {
-			if (FindChpt('P', *ProcNm, true, &RP)) GotoRecFld(RP.IRec, CFld);
+			if (FindChpt('P', ProcNm, true, &RP)) GotoRecFld(RP.IRec, CFld);
 		}
 		else goto label4;
 	else if (ChptTF->IRec <= Chpt->NRecs) GotoRecFld(ChptTF->IRec, CFld);
@@ -1868,7 +1878,7 @@ label2:
 	if (cc == _CtrlF10_) {
 		SetUpdHandle(ChptTF->Handle);
 		if (!CompileRdb(true, false, true)) goto label3;
-		if (!PromptCodeRdb) goto label6;
+		if (!PromptCodeRdb()) goto label6;
 		Chpt->WasRdOnly = true;
 		goto label8;
 	}
@@ -1989,7 +1999,7 @@ label4:
 	goto label3;
 }
 
-void InstallRdb(pstring n)
+void InstallRdb(std::string n)
 {
 	wwmix ww;
 
@@ -2000,7 +2010,7 @@ void InstallRdb(pstring n)
 
 	//NewExit(Ovr(), er);
 	goto label1;
-	CreateOpenChpt(&n, false, &ww);
+	CreateOpenChpt(n, false, &ww);
 	if (!ww.HasPassWord(Chpt, 1, "") && !ww.HasPassWord(Chpt, 2, "")) {
 		passw = ww.PassWord(false);
 		if (!ww.HasPassWord(Chpt, 2, passw)) {

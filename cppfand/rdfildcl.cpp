@@ -689,7 +689,8 @@ void CheckDuplAlias(pstring Name)
 void LookForK(pstring* Name, FileD* F)
 {
 	KeyD* K = nullptr;
-	if (SEquUpcase(F->Name, *Name)) Error(26);
+	std::string name = *Name;
+	if (SEquUpcase(F->Name, name)) Error(26);
 	K = F->Keys;
 	while (K != nullptr) {
 		if (SEquUpcase(*K->Alias, *Name)) Error(26);
@@ -700,7 +701,8 @@ void LookForK(pstring* Name, FileD* F)
 KeyD* RdFileOrAlias1(FileD* F)
 {
 	KeyD* k = F->Keys;
-	if (!EquUpcase(F->Name, LexWord))
+	std::string lw = LexWord;
+	if (!EquUpcase(F->Name, lw))
 		while (k != nullptr) {
 			if (EquUpcase(*k->Alias, LexWord)) goto label1;
 			k = k->Chain;

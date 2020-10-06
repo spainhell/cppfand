@@ -259,17 +259,16 @@ pstring FSearch(pstring& path, pstring& dirlist)
 	return path;
 }
 
-pstring FExpand(pstring path)
+std::string FExpand(std::string path)
 {
-	pstring dir, name, ext;
+	std::string dir, name, ext;
 	FSplit(path, dir, name, ext);
 
 	// je cesta kompletni?
 	if (dir.length() > 0 && name.length() > 0 && ext.length() > 0) return path; // je to kompletni soubor
 	if (dir.length() > 0) { return dir; } // je to jen adresar
 
-	pstring fullpath = pstring(255);
-	GetDir(0, &fullpath);
+	std::string fullpath = GetDir(0);
 	
 	if (name.length() > 0 || ext.length() > 0) {
 		fullpath += "\\";
