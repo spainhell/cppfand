@@ -67,8 +67,8 @@ class Instr_call : public Instr
 {
 public:
 	Instr_call();
-	pstring* RdbNm = nullptr;
-	pstring* ProcNm = nullptr;
+	std::string RdbNm;
+	std::string ProcNm;
 	Instr_proc* ProcCall = nullptr;
 };
 

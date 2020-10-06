@@ -277,70 +277,83 @@ void CompileHelpCatDcl()
 	MarkStore(AfterCatFD); ReleaseStore2(p2);
 }
 
-bool SetTopDir(pstring& p, pstring& n)
+bool SetTopDir(std::string& p, std::string& n)
 {
-	pstring e; ExitRecord er;
-	auto result = false; FSplit(FExpand(p), TopRdbDir, n, e);
-	if (!IsIdentifStr(n)) { WrLLF10Msg(881); return result; }
+	std::string e;
+	ExitRecord er;
+	auto result = false;
+	FSplit(FExpand(p), TopRdbDir, n, e);
+	if (!IsIdentifStr(n)) {
+		WrLLF10Msg(881);
+		return result;
+	}
 	EditDRoot = nullptr; LinkDRoot = nullptr; FuncDRoot = nullptr;
 	TopDataDir = GetEnv("FANDDATA");
-	DelBackSlash(TopRdbDir); DelBackSlash(TopDataDir);
+	DelBackSlash(TopRdbDir);
+	DelBackSlash(TopDataDir);
 	if (TopDataDir != "") TopDataDir = FExpand(TopDataDir);
 	ChDir(TopRdbDir);
-	if (IOResult() != 0) { SetMsgPar(p); WrLLF10Msg(703); return result; }
+	if (IOResult() != 0) {
+		SetMsgPar(p);
+		WrLLF10Msg(703);
+		return result;
+	}
 	CatFDName = n;
 	//NewExit(Ovr(), er);
 	//goto label1;
-	CFile = CatFD; OpenF(Exclusive); result = true;
+	CFile = CatFD;
+	OpenF(Exclusive);
+	result = true;
 label1:
 	RestoreExit(er);
 	return result;
 }
 
-void RunRdb(pstring p)
+void RunRdb(std::string p)
 {
-	pstring n;
-	if ((p != "") && SetTopDir(p, n))
+	std::string n;
+	if ((!p.empty()) && SetTopDir(p, n))
 	{
 		pstring main = "main";
 		wwmix ww;
-		EditExecRdb(&n, &main, nullptr, &ww);
+		EditExecRdb(n, &main, nullptr, &ww);
 		CFile = CatFD;
 		CloseFile();
 	}
-
 }
 
 void SelectRunRdb(bool OnFace)
 {
 	wwmix ww;
-	pstring p;
-	p = ww.SelectDiskFile(".RDB", 34, OnFace);
+	auto p = ww.SelectDiskFile(".RDB", 34, OnFace);
 	RunRdb(p);
 }
 
 void CallInstallRdb()
 {
 	wwmix ww;
-	pstring p; pstring n;
+	std::string p; std::string n;
 	p = ww.SelectDiskFile(".RDB", 35, true);
 	if ((p != "") && SetTopDir(p, n))
 	{
-		InstallRdb(n); CFile = CatFD; CloseFile();
+		InstallRdb(n);
+		CFile = CatFD;
+		CloseFile();
 	}
 }
 
 void CallEditTxt()
 {
-	CPath = FExpand(CPath); CVol = "";
+	CPath = FExpand(CPath);
+	CVol = "";
 	pstring errmsg = "";
 	EditTxtFile(nullptr, 'T', errmsg, nullptr, 1, 0, nullptr, 0, "", 0, nullptr);
 }
 
-void SelectEditTxt(pstring E, bool OnFace)
+void SelectEditTxt(pstring e, bool OnFace)
 {
 	wwmix ww;
-	CPath = ww.SelectDiskFile(E, 35, OnFace); 
+	CPath = ww.SelectDiskFile(e, 35, OnFace); 
 	if (CPath == "") return;
 	CallEditTxt();
 }

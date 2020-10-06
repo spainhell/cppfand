@@ -121,6 +121,16 @@ pstring TrailChar(char C, pstring S)
 	return S;
 }
 
+std::string TrailChar(char C, std::string s)
+{
+	size_t newLength = s.length();
+	for (size_t i = s.length(); i >= 1; i--) {
+		if (s[i - 1] == C) newLength--;
+		else break;
+	}
+	return s.substr(0, newLength);
+}
+
 double RunRealStr(FrmlElem* X)
 {
 	WORD N;
@@ -2021,12 +2031,13 @@ LongStr* RunS(FrmlElem* Z)
 	}
 	case _catfield: {
 		auto iZ = (FrmlElem10*)Z;
-		s = RdCatField(iZ->CatIRec, iZ->CatFld);
-		bool empty = s.empty(); // bude se jednat jen o cestu, bez nazvu souboru
+		std::string stdS = RdCatField(iZ->CatIRec, iZ->CatFld);
+		bool empty = stdS.empty(); // bude se jednat jen o cestu, bez nazvu souboru
 		if (iZ->CatFld == CatPathName) {
-			s = FExpand(s);
-			if (empty) AddBackSlash(s); // za cestu pridame '\'
+			stdS = FExpand(stdS);
+			if (empty) AddBackSlash(stdS); // za cestu pridame '\'
 		}
+		s = stdS;
 		break;
 	}
 	case _password: s = ww.PassWord(false); break;

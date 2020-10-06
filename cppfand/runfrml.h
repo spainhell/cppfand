@@ -21,6 +21,7 @@ LongStr* CopyToLongStr(pstring& SS);
 LongStr* CopyToLongStr(std::string& SS);
 pstring LeadChar(char C, pstring S); // r69
 pstring TrailChar(char C, pstring s); // r73
+std::string TrailChar(char C, std::string s);
 std::string CopyLine(std::string& S, WORD N, WORD M);
 LongStr* CopyLine(LongStr* S, WORD N, WORD M);
 bool RunBool(FrmlPtr X);

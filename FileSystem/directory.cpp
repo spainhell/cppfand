@@ -16,7 +16,9 @@ string parentDirectory(string path)
     if (path[path.length() - 1] == '\\') path.erase(path.length() - 1, 1);
     fs::path p = path;
     fs::path pp = p.parent_path();
-    return pp.string();
+    auto result = pp.string();
+    if (result[result.length() - 1] == '\\') return result;
+    return result + '\\';
 }
 
 vector<string> directoryItems(const string& path, string mask)

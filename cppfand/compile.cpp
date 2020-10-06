@@ -707,11 +707,10 @@ char RdQuotedChar()
 	return result;
 }
 
-bool IsIdentifStr(pstring& S)
+bool IsIdentifStr(std::string& S)
 {
-	WORD i;
-	if ((S.length() == 0) || !IsLetter(S[1])) return false;
-	for (i = 2; i < S.length(); i++) {
+	if ((S.length() == 0) || !IsLetter(S[0])) return false;
+	for (size_t i = 1; i < S.length(); i++) {
 		if (!(IsLetter(S[i]) || isdigit(S[i]))) return false;
 	}
 	return true;
@@ -1277,10 +1276,12 @@ void EditModeToFlags(pstring Mode, void* Flgs, bool Err)
 
 KeyDPtr RdViewKey()
 {
-	KeyDPtr k = nullptr; LocVar* lv = nullptr; pstring s; integer i = 0;
+	KeyDPtr k = nullptr; LocVar* lv = nullptr;
+	std::string s;
 	KeyDPtr result = nullptr;
 	if (Lexem != '/') return result;
 	RdLex();
+	size_t i = 0;
 	k = CFile->Keys;
 	if (Lexem == '@') goto label1;
 	TestIdentif();
@@ -1289,12 +1290,13 @@ KeyDPtr RdViewKey()
 		k = k->Chain;
 	}
 	s = LexWord;
-	i = s.first('_');
-	if (i != 0) s = copy(s, i + 1, 255);
+	i = s.find('_');
+	if (i != std::string::npos) s = copy(s, i + 1, 255);
 	s = CFile->Name + "_" + s;
 	k = CFile->Keys;
 	while (k != nullptr) {
-		if (SEquUpcase(s, *k->Alias)) goto label1;
+		std::string kAl = *k->Alias;
+		if (SEquUpcase(s, kAl)) goto label1;
 		k = k->Chain;
 	}
 	if (IdxLocVarAllowed && FindLocVar(&LVBD, &lv) && (lv->FTyp == 'i'))
@@ -2393,7 +2395,8 @@ FileDPtr FindFileD()
 	while (R != nullptr) {
 		FD = R->FD;
 		while (FD != nullptr) {
-			if (EquUpcase(FD->Name, LexWord)) { return FD; }
+			std::string lw = LexWord;
+			if (EquUpcase(FD->Name, lw)) { return FD; }
 			FD = (FileD*)FD->Chain;
 		}
 		R = R->ChainBack;
@@ -2405,9 +2408,9 @@ FileDPtr FindFileD()
 FileD* RdFileName()
 {
 	FileD* FD = nullptr;
-	if (SpecFDNameAllowed && (Lexem == '@'))
-	{
-		LexWord = "@"; Lexem = _identifier;
+	if (SpecFDNameAllowed && (Lexem == '@')) {
+		LexWord = "@";
+		Lexem = _identifier;
 	}
 	TestIdentif();
 	FD = FindFileD();
@@ -2487,13 +2490,14 @@ FrmlPtr MakeFldFrml(FieldDPtr F, char& FTyp)
 	return Z;
 }
 
-LinkD* FindOwnLD(FileDPtr FD, pstring RoleName)
+LinkD* FindOwnLD(FileD* FD, pstring RoleName)
 {
 	LinkD* ld = LinkDRoot;
 	LinkD* result = nullptr;
 	while (ld != nullptr) {
+		std::string lw = LexWord;
 		if ((ld->ToFD == FD)
-			&& EquUpcase(ld->FromFD->Name, LexWord)
+			&& EquUpcase(ld->FromFD->Name, lw)
 			&& (ld->IndexRoot != 0)
 			&& SEquUpcase(ld->RoleName, RoleName))
 			goto label1;

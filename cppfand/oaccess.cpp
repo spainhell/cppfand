@@ -660,7 +660,7 @@ void RdCatPathVol(WORD CatIRec)
 	CVol = RdCatField(CatIRec, CatVolume);
 }
 
-bool SetContextDir(pstring& D, bool& IsRdb)
+bool SetContextDir(std::string& D, bool& IsRdb)
 {
 	bool result = true;;
 	RdbDPtr R = CRdb;
@@ -688,7 +688,7 @@ bool SetContextDir(pstring& D, bool& IsRdb)
 
 void GetCPathForCat(WORD I)
 {
-	pstring d;
+	std::string d;
 	bool isRdb;
 
 	CVol = RdCatField(I, CatVolume);

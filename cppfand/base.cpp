@@ -43,17 +43,17 @@ char AbbrNo = 'N';
 WORD HandleError;
 pstring OldDir;
 pstring FandDir;
-pstring WrkDir;
+std::string WrkDir;
 pstring FandOvrName;
 pstring FandResName;
 pstring FandWorkName;
 pstring FandWorkXName;
 pstring FandWorkTName;
-pstring CPath;
-pstring CDir;
-pstring CName;
-pstring CExt;
-pstring CVol;
+std::string CPath;
+std::string CDir;
+std::string CName;
+std::string CExt;
+std::string CVol;
 
 TResFile ResFile;
 TMsgIdxItem* MsgIdx;// = TMsgIdx;
@@ -331,19 +331,19 @@ void NoOvr()
 
 bool CacheLocked = false; // r510
 
-void AddBackSlash(pstring& s)
+void AddBackSlash(std::string& s)
 {
 	if (s.empty()) { return; }
 	if (s[s.length()] == '\\') return;
-	s.Append('\\');
+	s += '\\';
 }
 
-void DelBackSlash(pstring& s)
+void DelBackSlash(std::string& s)
 {
 	if (s.empty()) return;
 	if (s[s.length() - 1] != '\\') return;
-	s[s.length() - 1] = '\0';
-	s[0] = s.length() - 1;
+	s.erase(s.length() - 1, 1);
+	//s[0] = s.length() - 1;
 }
 
 pstring StrPas(const char* Src)
@@ -1193,14 +1193,14 @@ void RenameFile56(pstring OldPath, pstring NewPath, bool Msg)
 	}
 }
 
-pstring MyFExpand(pstring Nm, pstring EnvName)
+std::string MyFExpand(pstring Nm, pstring EnvName)
 {
 	pstring d;
 	GetDir(0, &d);
-	pstring f = FandDir;
+	std::string f = FandDir;
 	DelBackSlash(f);
 	ChDir(f);
-	pstring p = GetEnv(EnvName.c_str());
+	std::string p = GetEnv(EnvName.c_str());
 	AddBackSlash(p);
 	if (!p.empty()) p += Nm;
 	else {
