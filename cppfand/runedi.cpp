@@ -3368,24 +3368,24 @@ bool ShiftF7Duplicate()
 {
 	auto result = false;
 	EditD* ee = (EditD*)E->Chain;
-	{ /* !!! with ee^ do!!! */
-		CFile = ee->FD;
-		CRecPtr = ee->NewRecPtr;
-		if (!ELockRec(ee, CFile->IRec, ee->IsNewRec, ee->SubSet)) return result;
-		if (!WasUpdated) {
-			Move(CRecPtr, ee->OldRecPtr, CFile->RecLen);
-			WasUpdated = true;
-		}
-		KeyFldD* kf = E->ShiftF7LD->Args;
-		KeyFldD* kf2 = E->ShiftF7LD->ToKey->KFlds;
-		while (kf != nullptr) {
-			DuplFld(E->FD, CFile, E->NewRecPtr, CRecPtr, ee->OldRecPtr, kf2->FldD, kf->FldD);
-			kf = (KeyFldD*)kf->Chain;
-			kf2 = (KeyFldD*)kf2->Chain;
-		}
-		SetUpdFlag();
+
+	/* !!! with ee^ do!!! */
+	CFile = ee->FD;
+	CRecPtr = ee->NewRecPtr;
+	if (!ELockRec(ee, CFile->IRec, ee->IsNewRec, ee->SubSet)) return result;
+	if (!WasUpdated) {
+		Move(CRecPtr, ee->OldRecPtr, CFile->RecLen);
+		WasUpdated = true;
+	}
+	KeyFldD* kf = E->ShiftF7LD->Args;
+	KeyFldD* kf2 = E->ShiftF7LD->ToKey->KFlds;
+	while (kf != nullptr) {
+		DuplFld(E->FD, CFile, E->NewRecPtr, CRecPtr, ee->OldRecPtr, kf2->FldD, kf->FldD);
+		kf = (KeyFldD*)kf->Chain;
+		kf2 = (KeyFldD*)kf2->Chain;
 	}
 
+	SetUpdFlag();
 	CFile = E->FD;
 	CRecPtr = E->NewRecPtr;
 	result = true;
@@ -3398,26 +3398,27 @@ bool ShiftF7Duplicate()
 bool DuplToPrevEdit()
 {
 	LockMode md;
-	auto result = false; EditD* ee = (EditD*)E->Chain; if (ee == nullptr) return result;
+	auto result = false; EditD* ee = (EditD*)E->Chain;
+	if (ee == nullptr) return result;
 	FieldDescr* f1 = CFld->FldD;
+
 	/* !!! with ee^ do!!! */
-	{
-		FieldDescr* f2 = CFld->FldD;
-		if ((f2->Flg && f_Stored == 0) || (f1->Typ != f2->Typ) || (f1->L != f2->L)
-			|| (f1->M != f2->M) || !CFld->Ed(IsNewRec)) {
-			WrLLF10Msg(140);
-			return result;
-		}
-		CFile = ee->FD;
-		CRecPtr = ee->NewRecPtr;
-		if (!ELockRec(ee, CFile->IRec, ee->IsNewRec, ee->SubSet)) return result;
-		if (!WasUpdated) {
-			Move(CRecPtr, ee->OldRecPtr, CFile->RecLen);
-			WasUpdated = true;
-		}
-		DuplFld(E->FD, CFile, E->NewRecPtr, CRecPtr, ee->OldRecPtr, f1, f2);
-		SetUpdFlag();
+	FieldDescr* f2 = CFld->FldD;
+	if ((f2->Flg && f_Stored == 0) || (f1->Typ != f2->Typ) || (f1->L != f2->L)
+		|| (f1->M != f2->M) || !CFld->Ed(IsNewRec)) {
+		WrLLF10Msg(140);
+		return result;
 	}
+	CFile = ee->FD;
+	CRecPtr = ee->NewRecPtr;
+	if (!ELockRec(ee, CFile->IRec, ee->IsNewRec, ee->SubSet)) return result;
+	if (!WasUpdated) {
+		Move(CRecPtr, ee->OldRecPtr, CFile->RecLen);
+		WasUpdated = true;
+	}
+	DuplFld(E->FD, CFile, E->NewRecPtr, CRecPtr, ee->OldRecPtr, f1, f2);
+	SetUpdFlag();
+
 	CFile = E->FD; CRecPtr = E->NewRecPtr;
 	result = true;
 	pstring oldKbdBuffer = KbdBuffer;
@@ -3979,9 +3980,9 @@ label81:
 						if (CFile->IsSQLFile) Strm1->EndKeyAcc(WK);
 #endif
 						OldLMode(E->OldMd);
-					}
-					return;
 				}
+					return;
+			}
 				break;
 			}
 			case '=' + ALT: {
@@ -4249,9 +4250,9 @@ label81:
 				}
 				//}
 			}
-			}
-			break;
 		}
+			break;
+	}
 		break;
 	}
 	default: {
@@ -4259,7 +4260,7 @@ label81:
 		ClrEvent();
 		break;
 	}
-	}
+}
 	goto label1;
 }
 
