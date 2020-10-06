@@ -28,8 +28,8 @@ public :
 	pstring GetSelect();
 	bool SelFieldList(WORD Nmsg, bool ImplAll, FieldList FLRoot);
 	std::string SelectDiskFile(std::string Path, WORD HdMsg, bool OnFace);
-	bool PromptFilter(pstring Txt, FrmlPtr Bool, pstring* BoolTxt);
-	void PromptLL(WORD N, pstring* Txt, WORD I, bool Del);
+	bool PromptFilter(std::string Txt, FrmlElem* Bool, std::string* BoolTxt);
+	void PromptLL(WORD N, std::string* Txt, WORD I, bool Del);
 	pstring PassWord(bool TwoTimes);
 	void SetPassWord(FileDPtr FD, WORD Nr, pstring Pw);
 	bool HasPassWord(FileDPtr FD, WORD Nr, pstring Pw);

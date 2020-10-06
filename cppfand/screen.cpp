@@ -369,8 +369,8 @@ bool Screen::SetStyleAttr(char C, BYTE& a)
 TCrs Screen::CrsGet()
 {
 	TCrs crs;
-	crs.X = Crs->X;
-	crs.Y = Crs->Y;
+	crs.X = WhereXabs();
+	crs.Y = WhereYabs();
 	crs.Big = Crs->Big;
 	crs.Enabled = Crs->Enabled;
 	crs.Ticks = 0;
@@ -384,7 +384,7 @@ void Screen::CrsSet(TCrs S)
 	Crs->Y = S.Y;
 	Crs->Big = S.Big;
 	Crs->Enabled = S.Enabled;
-	CrsGotoXY(Crs->X, Crs->Y);
+	GotoXY(Crs->X, Crs->Y, absolute);
 	if (Crs->Enabled) CrsShow();
 }
 
@@ -517,20 +517,6 @@ int Screen::ScrPush1(WORD X, WORD Y, WORD SizeX, WORD SizeY, void* P)
 	return SizeX * SizeY;
 }
 
-/*void Screen::ScrGetPtr(WORD X, WORD Y, WORD& DX, WORD& DI)
-{
-	// v AX je Y, v DI je X
-	DI = X;
-	int DXAX = Y * TxtCols;
-	WORD AX = DXAX & 0x0000FFFF; // dolní WORD z int. DXAX
-	DX = DXAX >> 16; // horní WORD z int. DXAX
-	AX = AX < 1;
-	DI = DI < 2; // (v reg. DI je X)
-	DI += AX;
-	// v ES i AX se vrací video adresa B800H - ignorujeme
-	// dále se vrací hodnoty DX a DI(tady X)
-}*/
-
 void Screen::pushScreen(storeWindow sw)
 {
 	_windowStack.push(sw);
@@ -559,17 +545,17 @@ int Screen::SaveScreen(WParam* wp, short c1, short r1, short c2, short r2)
 	return _windowStack.size();
 }
 
-void Screen::LoadScreen(bool draw, WParam* wp)
+WParam* Screen::LoadScreen(bool draw)
 {
-	if (_windowStack.size() == 0) {
+	if (_windowStack.empty()) {
 			printf("Screen::LoadScreen() zasobnik je prazdny!!!\n");
-		return;
+		return nullptr;
 	}
 	auto scr = _windowStack.top();
 	_windowStack.pop();
-	wp = scr.wp;
 	if (draw) {
 		WriteConsoleOutput(_handle, scr.content, scr.coord, { 0, 0 }, &scr.rect);
 	}
 	delete[] scr.content;
+	return scr.wp;
 }

@@ -1948,7 +1948,7 @@ struct TTerm {
 	TTerm* Arg[3];
 	integer II = 0;
 	double RR = 0.0;
-	pstring SS;
+	std::string SS;
 	longint Pos = 0;
 	TTerm* Elem = nullptr;
 	TTerm* Next = nullptr;
@@ -2212,7 +2212,7 @@ void ChainList(void* Frst, void* New)
 	*/
 }
 
-pstring XXS;
+std::string XXS;
 LongStr* RdLongStr(longint Pos)
 {
 	LongStr* p = new LongStr(2); // GetStore(2);
@@ -2240,12 +2240,12 @@ longint WrLongStr(LongStr* S)
 }
 
 LongStr* RunLSExpr(TPTerm* TOfs);
-void RunSExpr(TPTerm* t, pstring* s);
+void RunSExpr(TPTerm* t, std::string* s);
 double RunRExpr(TPTerm* TOfs);
 
 integer RunIExpr1(TPTerm* t)
 {
-	pstring s, s2;
+	std::string s, s2;
 	integer i = 0, err = 0, l = 0;
 	LongStr* ss = nullptr;
 	switch (t->Op) {
@@ -2301,9 +2301,9 @@ double RunRExpr(TPTerm* t/*PPTerm*/)
 	return 0.0;
 }
 
-void RunSExpr1(TPTerm* t, pstring* s)
+void RunSExpr1(TPTerm* t, std::string* s)
 {
-	pstring s2;
+	std::string s2;
 	TPTerm* tofs = nullptr; // absolute T
 	TPTerm* t1ofs = nullptr;
 	WORD l = 0, l2 = 0;
@@ -2318,15 +2318,15 @@ void RunSExpr1(TPTerm* t, pstring* s)
 		l += l2;
 		if (b) tofs = t->E2;
 	} while (b);
-	s[0] = char(l);
+	s[0] = (char)l;
 }
 
-void RunSExpr(TPTerm* t, pstring* s)
+void RunSExpr(TPTerm* t, std::string* s)
 {
 	//TPTerm* t = nullptr;
 	WORD i = 0, n = 0, l = 0;
 	LongStr* p = nullptr;
-	pstring* q = nullptr;
+	std::string* q = nullptr;
 	//t = ptr(_Sg, TOfs);
 	if (t->Fun == _VarT) { q = &CurrInst->Vars[t->Idx]->SS; goto label1; }
 	else {
@@ -2341,7 +2341,7 @@ void RunSExpr(TPTerm* t, pstring* s)
 		case _conv: {
 			p = RunLSExpr(t->E1);
 			l = MinW(p->LL, 255);
-			s[0] = char(l);
+			s[0] = (char)l;
 			Move(p->A, &s[1], l);
 			ReleaseStore(p);
 			break;
@@ -2363,15 +2363,15 @@ void RunSExpr(TPTerm* t, pstring* s)
 			i = 1;
 			l = s->length();
 			n = l;
-			while ((i <= l) && (s[i] == char(t->E1))) i++;
+			while ((i <= l) && ((*s)[i] == (char)(t->E1))) i++;
 			goto label2;
 			break;
 		}
 		case _trailchar: {
 			RunSExpr(t->E2, s);
 			l = s->length();
-			while ((l > 0) && (s[l] == char(t->E1))) l--;
-			s[0] = char(l);
+			while ((l > 0) && ((*s)[l] == (char)(t->E1))) l--;
+			s[0] = (char)l;
 			break;
 		}
 		case _repeatstr: {
@@ -2387,7 +2387,7 @@ void RunSExpr(TPTerm* t, pstring* s)
 			s[0] = char(i);
 			break;
 		}
-		case _str: str(RunIExpr(t->E1), *s); break;
+		case _str: *s = std::to_string(RunIExpr(t->E1)); break;
 		}
 	}
 }
@@ -2398,7 +2398,7 @@ LongStr* RunLSExpr(TPTerm* t)
 	LongStr* p = nullptr;
 	LongStr* p2 = nullptr;
 	WORD l = 0;
-	pstring* s = nullptr;
+	std::string* s = nullptr;
 
 	if (t->Fun == _VarT) p = RdLongStr(CurrInst->Vars[t->Idx]->Pos);
 	else {
@@ -3133,14 +3133,14 @@ bool RunBuildIn()
 			case 3/*iio*/: { CurrInst->Vars[2] = GetStringTerm(CurrInst->Vars[0]->SS + CurrInst->Vars[1]->SS); break; }
 			case 5/*ioi*/: {
 				l = CurrInst->Vars[0]->SS.length();
-				if (CurrInst->Vars[0]->SS != copy(CurrInst->Vars[2]->SS, 1, l)) goto label1;
+				if (CurrInst->Vars[0]->SS != CurrInst->Vars[2]->SS.substr( 1, l)) goto label1;
 				CurrInst->Vars[1] = GetStringTerm(copy(CurrInst->Vars[2]->SS, l + 1, 255));
 				break;
 			}
 			case 6/*oii*/: {
 				l = CurrInst->Vars[1]->SS.length();
 				l2 = CurrInst->Vars[2]->SS.length();
-				if (CurrInst->Vars[1]->SS != copy(CurrInst->Vars[2]->SS, l2 - l + 1, l)) {
+				if (CurrInst->Vars[1]->SS != CurrInst->Vars[2]->SS.substr( l2 - l + 1, l)) {
 				label1:
 					CurrInst->NextBranch = nullptr;
 					return false;
@@ -3934,7 +3934,7 @@ label1:
 	return fs;
 }
 
-pstring _MyS(FieldDescr* F)
+std::string _MyS(FieldDescr* F)
 {
 	if (F->Typ == 'A') {
 		if (F->M == LeftJust) return TrailChar(' ', _ShortS(F));
@@ -4256,7 +4256,7 @@ label3:
 	return false;
 }
 
-void RunProlog(RdbPos* Pos, pstring* PredName)
+void RunProlog(RdbPos* Pos, std::string* PredName)
 {
 	TInstance* q = nullptr; TInstance* q1 = nullptr; TInstance* TopInst = nullptr;
 	TDbBranch* b1 = nullptr;

@@ -16,7 +16,7 @@ extern bool issql;
 void TestUserView();
 void TestDupl(FileD* FD);
 void RdFieldDList(bool Stored);
-void* RdFileD(std::string FileName, char FDTyp, pstring Ext); // r220
+void* RdFileD(std::string FileName, char FDTyp, std::string Ext); // r220
 void RdKeyD();
 void CheckDuplAlias(pstring Name);
 void LookForK(pstring* Name, FileD* F);

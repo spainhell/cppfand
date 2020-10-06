@@ -295,19 +295,21 @@ void OKF(KeyFldDPtr kf)
 
 void* OTb(pstring Nm)
 {
-	pstring* s = nullptr;
-	WORD* sofs = (WORD*)s;
-	WORD i;
-	s = (pstring*)Tb;
-	for (i = 1; i < nTb; i++) {
-		if (SEquUpcase(*s, Nm)) goto label1;
-		sofs += s->length() + 1;
-	}
-	nTb++; sz += Nm.length() + 1;
-	if (sz > MaxLStrLen) RunError(664);
-	s = StoreStr(Nm);
-label1:
-	return O(s);
+	return nullptr;
+	
+//	pstring* s = nullptr;
+//	WORD* sofs = (WORD*)s;
+//	WORD i;
+//	//s = (pstring*)Tb;
+//	for (i = 1; i <= nTb; i++) {
+//		if (SEquUpcase(*s, Nm)) goto label1;
+//		sofs += s->length() + 1;
+//	}
+//	nTb++; sz += Nm.length() + 1;
+//	if (sz > MaxLStrLen) RunError(664);
+//	s = StoreStr(Nm);
+//label1:
+//	return O(s);
 }
 
 void* OLinkD(LinkD* Ld)
@@ -487,7 +489,7 @@ void WrFDSegment(longint RecNr)
 		while (k->Chain != nullptr) {
 			k->Chain = (XKey*)O(k->Chain);
 			k = k->Chain;
-			k->Alias = (pstring*)O(k->Alias);
+			//k->Alias = (pstring*)O(k->Alias);
 			OKF((KeyFldD*)(&k->KFlds));
 		}
 	}
@@ -503,7 +505,7 @@ void WrFDSegment(longint RecNr)
 				c = ad->Chk;
 				if (c != nullptr) {
 					ad->Chk = (ChkD*)O(c);
-					c->HelpName = (pstring*)O(c->HelpName);
+					//c->HelpName = (pstring*)O(c->HelpName);
 				}
 			}
 			cf = CFileF;
@@ -921,10 +923,10 @@ label2:
 bool PromptHelpName(WORD& N)
 {
 	wwmix ww;
-	pstring txt;
+	std::string txt;
 	auto result = false; txt = "";
 	ww.PromptLL(153, &txt, 1, true);
-	if ((txt.length() == 0) || (KbdChar == _ESC_)) return result;
+	if ((txt.length() == 0) || (KbdChar == VK_ESCAPE)) return result;
 	N = FindHelpRecNr(CFile, txt);
 	if (N != 0) result = true;
 	return result;
@@ -1048,7 +1050,7 @@ void ResetRdOnly()
 
 void CreateOpenChpt(std::string Nm, bool create, wwmix* ww)
 {
-	pstring p; pstring s;
+	std::string p; std::string s;
 	integer i = 0, n = 0;
 	std::string nr; std::string Nm1;
 	FileUseMode um = Closed;
@@ -1419,20 +1421,23 @@ longint MakeDbfDcl(pstring Nm)
 	return 0;
 }
 
-void* RdF(pstring* FileName)
+void* RdF(std::string FileName)
 {
-	pstring d; pstring name; pstring ext;
+	std::string d, name, ext;
 	char FDTyp = '\0';
-	pstring s;
+	std::string s;
 	FieldDescr* IdF = nullptr; FieldDescr* TxtF = nullptr;
 	integer i = 0, n = 0;
-	pstring nr(10);
-	FSplit(*FileName, d, name, ext);
+	std::string nr;
+	FSplit(FileName, d, name, ext);
 
 	FDTyp = ExtToTyp(ext);
 	if (FDTyp == '0') {
-		RdMsg(51); s = MsgLine; RdMsg(49); val(MsgLine, n, i);
-		str(TxtCols - n, nr);
+		RdMsg(51);
+		s = MsgLine;
+		RdMsg(49);
+		val(MsgLine, n, i);
+		nr = std::to_string(TxtCols - n);
 		s = s + nr;
 		SetInpStr(s);
 	}
@@ -1470,7 +1475,7 @@ void DeleteF()
 
 bool MergAndReplace(FileD* FDOld, FileD* FDNew)
 {
-	pstring s; ExitRecord er; pstring p;
+	std::string s; ExitRecord er; std::string p;
 	auto result = false;
 	//NewExit(Ovr(), er);
 	//goto label1;
@@ -1520,7 +1525,7 @@ bool EquKeys(KeyD* K1, KeyD* K2)
 
 bool MergeOldNew(bool Veriflongint, longint Pos)
 {
-	pstring Name(20);
+	std::string Name;
 	LinkD* ld = LinkDRoot;
 	auto result = false;
 	FileD* FDOld = nullptr;
@@ -1548,7 +1553,7 @@ bool MergeOldNew(bool Veriflongint, longint Pos)
 label1:
 	FDNew->Chain = nullptr;
 	LinkDRoot = ld;
-	Move(&Name[0], &FDNew->Name[0], Name.length() + 1);
+	FDNew->Name = Name;
 	FDNew->FullName = CPath;
 	CFile = FDNew;
 	CRecPtr = Chpt->RecPtr;
@@ -1560,8 +1565,9 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 	CHAR_INFO Buf[40];
 	longint w = 0;
 	longint I = 0, J = 0, OldTxt = 0, Txt = 0, OldCRec = 0;
-	pstring STyp(1); char Typ = '\0';
-	pstring Name(12); pstring dir; pstring nm; pstring ext;
+	pstring STyp(1);
+	char Typ = '\0';
+	std::string Name, dir, nm, ext;
 	bool Verif = false, FDCompiled = false, Encryp = false;
 	char Mode = '\0'; RdbPos RP;
 	void* p = nullptr; void* p1 = nullptr; void* p2 = nullptr;
@@ -1638,7 +1644,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 #endif
 				if (Verif || ChptTF->CompileAll || (OldTxt == 0)) {
 				label2:
-					p1 = RdF(&Name);
+					p1 = RdF(Name);
 					// TODO: toto se asi zase musí povolit !!! 
 					//WrFDSegment(I);
 					if (CFile->IsHlpFile) CRdb->HelpFD = CFile;

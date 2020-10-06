@@ -144,7 +144,8 @@ ChkD* RdChkD(WORD Low)
 		Move(&InpArrPtr[Low], &iZ->S[1], N);
 	}
 	if (Lexem == ',') {
-		RdLex(); C->HelpName = RdHelpName();
+		RdLex();
+		C->HelpName = RdHelpName();
 	}
 	return result;
 }
@@ -389,15 +390,15 @@ void FakeRdFDSegment(FileD* FD)
 }
 
 // ze souboru .000 vycte data
-void* RdFileD(std::string FileName, char FDTyp, pstring Ext)
+void* RdFileD(std::string FileName, char FDTyp, std::string Ext)
 {
-	pstring JournalFlds = "A Upd,1;F RecNr,8.0;F User,4.0;D TimeStamp,'DD.MM.YYYY mm hh:ss'";
+	std::string JournalFlds = "A Upd,1;F RecNr,8.0;F User,4.0;D TimeStamp,'DD.MM.YYYY mm hh:ss'";
 	FileD* FD = nullptr; KeyD* K = nullptr;
 	FieldDescr* F = nullptr; FieldDescr* F2 = nullptr;
 	void* p = nullptr;
 	ChkD* C = nullptr; LinkD* LDOld = nullptr;
 	integer n = 0, i = 0; bool isHlp = false;
-	pstring Prefix; pstring s;
+	std::string Prefix, s;
 	LiRoots* li = nullptr;
 	CompInpD* ChPos = nullptr;
 
@@ -463,10 +464,10 @@ void* RdFileD(std::string FileName, char FDTyp, pstring Ext)
 		if (!(FDTyp == '6' || FDTyp == 'X') || !(CFile->Typ == '6' || CFile->Typ == 'X')) OldError(106);
 		K = CFile->Keys;
 		while (K != nullptr) {
-			if (*K->Alias != "") {
+			if (!K->Alias->empty()) {
 				s = *K->Alias;
-				i = s.first('_');
-				if (i != 0) s = copy(s, i + 1, 255);
+				i = s.find('_');
+				if (i != std::string::npos) s = s.substr(i + 1, 255);
 				s = Prefix + "_" + s;
 				K->Alias = StoreStr(s);
 			}
@@ -704,7 +705,8 @@ KeyD* RdFileOrAlias1(FileD* F)
 	std::string lw = LexWord;
 	if (!EquUpcase(F->Name, lw))
 		while (k != nullptr) {
-			if (EquUpcase(*k->Alias, LexWord)) goto label1;
+			std::string lw = LexWord;
+			if (EquUpcase(*k->Alias, lw)) goto label1;
 			k = k->Chain;
 		}
 label1:

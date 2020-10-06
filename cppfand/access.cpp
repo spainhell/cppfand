@@ -24,7 +24,7 @@ std::string TopRdbDir, TopDataDir;
 pstring CatFDName;
 RdbD* CRdb, TopRdb;
 FileD* CatFD, HelpFD;
-WORD InpArrLen, CurrPos, OldErrPos;
+size_t InpArrLen, CurrPos, OldErrPos;
 
 pstring LockModeTxt[9] = { "NULL", "NOEXCL","NODEL","NOCR","RD","WR","CR","DEL","EXCL" };
 
@@ -59,7 +59,7 @@ WORD EdBreak = 0; WORD EdIRec = 1; // {common - alphabetical order}
 WORD MenuX = 1; WORD MenuY = 1;
 WORD UserCode = 0;
 // WORD* WordVarArr = &RprtLine;
-pstring MountedVol[FloppyDrives] = { pstring(11), pstring(11), pstring(11) };
+std::string MountedVol[FloppyDrives];
 pstring SQLDateMask = "DD.MM.YYYY hh:mm:ss";
 double Power10[21] = { 1E0, 1E1, 1E2, 1E3, 1E4, 1E5, 1E6, 1E7, 1E8, 1E9, 1E10,
 	1E11, 1E12, 1E13, 1E14, 1E15, 1E16, 1E17, 1E18, 1E19, 1E20 };
@@ -751,10 +751,10 @@ void WrPrefixes()
 		CFile->XF->WrPrefix();
 }
 
-// zmeni priponu na ._X_ a nastavi CPath
+// zmeni priponu na .X__ a nastavi CPath
 void CExtToX()
 {
-	CExt[2] = 'X';
+	CExt[1] = 'X';
 	CPath = CDir + CName + CExt;
 }
 
@@ -782,7 +782,7 @@ void CExtToT()
 		if (SEquUpcase(CExt, ".DBF"))
 			if (CFile->TF->Format == TFile::FptFormat) CExt = ".FPT";
 			else CExt = ".DBT";
-		else CExt[2] = 'T';
+		else CExt[1] = 'T';
 	CPath = CDir + CName + CExt;
 }
 
@@ -3068,7 +3068,7 @@ XKey::XKey(BYTE* inputStr)
 	IndexRoot = *(unsigned short*)&inputStr[index]; index += 2;
 	IndexLen = *(unsigned char*)&inputStr[index]; index++;
 	NR = *(longint*)&inputStr[index]; index += 4;
-	Alias = reinterpret_cast<pstring*>(*(unsigned int*)&inputStr[index]); index += 4;
+	Alias = reinterpret_cast<std::string*>(*(unsigned int*)&inputStr[index + 1]); index += 4;
 
 	//unsigned int DisplOrFrml = *(unsigned int*)&inputStr[index]; index += 4;
 	//if (DisplOrFrml > MaxTxtCols) {
@@ -3121,6 +3121,60 @@ label1:
 
 	// * PUVODNI ASM
 	result = XKeySearch2(p->A, &XX.S[0], iItem, iItemIndex, nItems, o, AfterEqu);
+	// * KONEC PUVODNIHO ASM
+
+	XPath[XPathN].I = iItem;
+	x = new XItem(&p->A[iItemIndex], p->IsLeaf);
+	if (p->IsLeaf) {
+		if (iItem > nItems) RecNr = CFile->NRecs + 1;
+		else RecNr = x->GetN();
+		if (result == _equ)
+			if
+#ifdef FandSQL
+				!CFile->IsSQLFile&&
+#endif
+				(((RecNr == 0) || (RecNr > CFile->NRecs))) XF()->Err(833);
+			else searchResult = true;
+		else
+			label2:
+		searchResult = false;
+		ReleaseStore(p);
+		delete x;
+		return searchResult;
+	}
+	if (iItem > nItems) page = p->GreaterPage;
+	else page = *(x->DownPage);
+	XPathN++;
+	delete x;
+	goto label1;
+}
+
+bool XKey::Search(std::string const X, bool AfterEqu, longint& RecNr)
+{
+	bool searchResult = false;
+	XPage* p = nullptr;
+	WORD iItem = 0;
+	XItem* x = nullptr;
+	size_t iItemIndex = 0;
+	char result = '\0';
+	p = new XPage(); // (XPage*)GetStore(XPageSize);
+	XPathN = 1;
+	longint page = IndexRoot;
+	AfterEqu = AfterEqu && Duplic;
+label1:
+	XPath[XPathN].Page = page;
+	XF()->RdPage(p, page); // je nactena asi cela stranka indexu
+
+	WORD o = p->Off();
+	WORD nItems = p->NItems;
+	if (nItems == 0) {
+		RecNr = CFile->NRecs + 1;
+		XPath[1].I = 1;
+		goto label2;
+	}
+
+	// * PUVODNI ASM
+	result = XKeySearch2(p->A, X, iItem, iItemIndex, nItems, o, AfterEqu);
 	// * KONEC PUVODNIHO ASM
 
 	XPath[XPathN].I = iItem;
@@ -3307,6 +3361,14 @@ longint XKey::RecNrToNr(longint RecNr)
 }
 
 bool XKey::FindNr(XString& X, longint& IndexNr)
+{
+	longint n;
+	auto result = Search(X, false, n);
+	IndexNr = PathToNr();
+	return result;
+}
+
+bool XKey::FindNr(std::string const X, longint& IndexNr)
 {
 	longint n;
 	auto result = Search(X, false, n);

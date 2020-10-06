@@ -60,7 +60,7 @@ class Instr_lproc : public Instr
 public:
 	Instr_lproc();
 	RdbPos lpPos;
-	pstring* lpName = nullptr;
+	std::string* lpName = nullptr;
 };
 
 class Instr_call : public Instr

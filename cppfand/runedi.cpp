@@ -788,8 +788,8 @@ void Wr1Line(FieldDescr* F)
 void DisplFld(EFldD* D, WORD I)
 {
 	WORD r = FldRow(D, I);
-	screen.GotoXY(D->Col, r);
 	auto F = D->FldD;
+	screen.GotoXY(D->Col, r);
 	std::string Txt = DecodeField(F, D->L);
 	for (size_t j = 0; j < Txt.length(); j++)
 		if ((unsigned char)Txt[j] < ' ') Txt[j] = Txt[j] + 0x40;
@@ -1355,7 +1355,7 @@ void SetStartRec()
 	if (Subset) k = WK;
 	if (k != nullptr) kf = k->KFlds;
 	if ((E->StartRecKey != nullptr) && (k != nullptr)) {
-		if (k->FindNr(*(XString*)(E->StartRecKey), n)) goto label1;
+		if (k->FindNr(*E->StartRecKey, n)) goto label1;
 	}
 	else if (E->StartRecNo > 0) {
 		n = LogRecNo(E->StartRecNo);
@@ -2547,7 +2547,7 @@ void PromptGotoRecNr()
 {
 	wwmix ww;
 
-	WORD I; pstring Txt; longint N; bool Del;
+	WORD I; std::string Txt; longint N; bool Del;
 	I = 1; Txt = ""; Del = true;
 	do {
 		ww.PromptLL(122, &Txt, I, Del);
@@ -2600,7 +2600,10 @@ void AutoReport()
 {
 	void* p = nullptr; RprtOpt* RO = nullptr; FileUseMode UM = Closed;
 	MarkStore(p); RO = GetRprtOpt(); RO->FDL.FD = CFile; RO->Flds = E->Flds;
-	if (Select) { RO->FDL.Cond = E->Bool; RO->CondTxt = E->BoolTxt; }
+	if (Select) {
+		RO->FDL.Cond = E->Bool;
+		RO->CondTxt = *E->BoolTxt;
+	}
 	if (Subset) RO->FDL.ViewKey = WK; else if (HasIndex) RO->FDL.ViewKey = VK;
 	PrintView = false;
 	if (SelForAutoRprt(RO)) {
@@ -2978,11 +2981,14 @@ bool EditFreeTxt(FieldDescr* F, std::string ErrMsg, bool Ed, WORD& Brk)
 	Srch = false; Brk = 0; TxtPos = 1; iStk = 0; TxtXY = 0;
 	auto result = true;
 	w = 0;
-	if (E->Head == "") w = PushW(1, 1, TxtCols, 1);
+	if (E->Head.empty()) w = PushW(1, 1, TxtCols, 1);
 	if (E->TTExit)
 		/* !!! with TxtMsgS do!!! */ {
-		TxtMsgS.Head = nullptr; TxtMsgS.Last = E->Last; TxtMsgS.CtrlLast = E->CtrlLast;
-		TxtMsgS.AltLast = E->AltLast; TxtMsgS.ShiftLast = E->ShiftLast;
+		TxtMsgS.Head = nullptr;
+		TxtMsgS.Last = &E->Last;
+		TxtMsgS.CtrlLast = &E->CtrlLast;
+		TxtMsgS.AltLast = &E->AltLast;
+		TxtMsgS.ShiftLast = &E->ShiftLast;
 		PTxtMsgS = &TxtMsgS;
 	}
 	else PTxtMsgS = nullptr;
@@ -3164,8 +3170,9 @@ void PromptSelect()
 {
 	wwmix ww;
 
-	pstring Txt;
-	if (Select) Txt = *E->BoolTxt; else Txt = "";
+	std::string Txt;
+	if (Select) Txt = *E->BoolTxt;
+	else Txt = "";
 	if (IsCurrChpt()) ReleaseFDLDAfterChpt();
 	ReleaseStore(E->AfterE);
 	ww.PromptFilter(Txt, E->Bool, E->BoolTxt);
@@ -3449,8 +3456,8 @@ void Calculate2()
 {
 	wwmix ww;
 
-	FrmlPtr Z; pstring Txt; ExitRecord er; WORD I; pstring Msg;
-	void* p = nullptr; char FTyp; double R; FieldDPtr F; bool Del;
+	FrmlElem* Z; std::string Txt; ExitRecord er; WORD I; pstring Msg;
+	void* p = nullptr; char FTyp; double R; FieldDescr* F; bool Del;
 	MarkStore(p);
 	//NewExit(Ovr(), er);
 	goto label2; ResetCompilePars();
@@ -3496,7 +3503,11 @@ label1:
 		if (Txt[Txt.length()] == '.') Txt[0]--;
 		break; }
 	case 'S': Txt = RunShortStr(Z); break;  /* wie RdMode fuer T ??*/
-	case 'B': if (RunBool(Z)) Txt = AbbrYes; else Txt = AbbrNo; break;
+	case 'B': {
+		if (RunBool(Z)) Txt = AbbrYes;
+		else Txt = AbbrNo;
+		break;
+	}
 	}
 	goto label4;
 label2:
@@ -3998,9 +4009,9 @@ label81:
 						if (CFile->IsSQLFile) Strm1->EndKeyAcc(WK);
 #endif
 						OldLMode(E->OldMd);
-				}
+					}
 					return;
-			}
+				}
 				break;
 			}
 			case '=' + ALT: {
@@ -4268,9 +4279,9 @@ label81:
 				}
 				//}
 			}
-		}
+			}
 			break;
-	}
+		}
 		break;
 	}
 	default: {
@@ -4278,7 +4289,7 @@ label81:
 		ClrEvent();
 		break;
 	}
-}
+	}
 	goto label1;
 }
 

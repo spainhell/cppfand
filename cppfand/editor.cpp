@@ -92,7 +92,7 @@ bool SrchT, UpdatT;
 WORD LastNr, CtrlLastNr;
 integer LeftMarg, RightMarg;
 bool TypeB;
-pstring LastS, CtrlLastS, ShiftLastS, AltLastS, HeadS;
+std::string LastS, CtrlLastS, ShiftLastS, AltLastS, HeadS;
 longint* LocalPPtr;
 bool EditT;
 
@@ -106,7 +106,7 @@ bool InsPg = false;
 longint BegBLn = 0, EndBLn = 0;
 WORD BegBPos = 0, EndBPos = 0;
 WORD ScrI = 0, LineI = 0, Posi = 0, BPos = 0; // {screen status}
-pstring FindStr, ReplaceStr;
+std::string FindStr, ReplaceStr;
 bool Replace = false;
 pstring OptionStr;
 bool FirstEvent = false;
@@ -596,7 +596,7 @@ void WriteMargins()
 	}
 }
 
-void WrLLMargMsg(pstring* s, WORD n)
+void WrLLMargMsg(std::string* s, WORD n)
 {
 	if (s != nullptr) {
 		MsgLine = *s;
@@ -605,7 +605,7 @@ void WrLLMargMsg(pstring* s, WORD n)
 	else {
 		if (n != 0) WrLLMsg(n);
 		else {
-			if (LastS != nullptr) {
+			if (!LastS.empty()) {
 				MsgLine = LastS;
 				WrLLMsgTxt();
 			}
@@ -673,8 +673,10 @@ void UpdStatLine(int Row, int Col)
 		}
 		i = 1;
 		if (HeadS.length() > 0) {
-			i = MaxW(1, HeadS.first('_'));
-			if (i > TxtCols - TStatL) i = MaxI(integer(TxtCols) - TStatL, 1);
+			size_t find = HeadS.find('_');
+			if (find == std::string::npos) find = 0;
+			i = MaxW(1, find);
+			if (i > TxtCols - TStatL) i = MaxI((integer)(TxtCols) - TStatL, 1);
 		}
 		screen.ScrWrStr(i, 1, StatLine, SysLColor);
 	}
@@ -2180,7 +2182,8 @@ void Format(WORD& i, longint First, longint Last, WORD Posit, bool Rep)
 void Calculate()
 {
 	wwmix ww;
-	FrmlPtr Z = nullptr; pstring Txt; ExitRecord er; WORD I; pstring Msg;
+	FrmlPtr Z = nullptr; std::string Txt;
+	ExitRecord er; WORD I; pstring Msg;
 	void* p = nullptr; char FTyp; double R; bool Del;
 	MarkStore(p); //NewExit(Ovr(), er);
 	goto label2; ResetCompilePars();
@@ -2633,11 +2636,11 @@ void BlockUDShift(longint L1)
 	}
 }
 
-bool MyPromptLL(WORD n, pstring* s)
+bool MyPromptLL(WORD n, std::string* s)
 {
 	wwmix ww;
 	ww.PromptLL(n, s, 1, true);
-	return KbdChar == _ESC_;
+	return KbdChar == VK_ESCAPE;
 }
 
 void ChangeP(WORD& fst)
@@ -2885,7 +2888,7 @@ void HandleEvent() {
 	FILE* F1 = nullptr;
 	WORD W1 = 0, W2 = 0, ww = 0;
 	longint L1 = 0, L2 = 0, fs = 0;
-	pstring ss;
+	std::string ss;
 	int j = 0;
 	CHAR_INFO LastL[161];
 	LongStr* sp = nullptr;
@@ -3450,7 +3453,7 @@ void HandleEvent() {
 				}
 				case _OL_: {       // LeftMarg
 					do {
-						str(Posi, ss);
+						ss = std::to_string(Posi);
 						if (MyPromptLL(410, &ss)) goto Nic;
 						val(ss, I1, I);
 					} while (!((I1 < RightMarg) && (I1 > 0)));
@@ -3459,7 +3462,7 @@ void HandleEvent() {
 				}
 				case _OR_: {       //RightMarg
 					do {
-						str(Posi, ss);
+						ss = std::to_string(Posi);
 						if (MyPromptLL(409, &ss)) goto Nic;
 						val(ss, I1, I); // inc(I1);
 					} while (!((I1 <= 255) && (LeftMarg < I1)));
@@ -3766,10 +3769,10 @@ bool EditText(char pMode, char pTxtType, pstring pName, pstring pErrMsg, char* p
 	LastNr = pLastNr; CtrlLastNr = pCtrlLastNr;
 	if (pMsgS != nullptr)
 	{
-		LastS = pMsgS->Last;
-		CtrlLastS = pMsgS->CtrlLast;
-		ShiftLastS = pMsgS->ShiftLast;
-		AltLastS = pMsgS->AltLast;
+		LastS = *pMsgS->Last;
+		CtrlLastS = *pMsgS->CtrlLast;
+		ShiftLastS = *pMsgS->ShiftLast;
+		AltLastS = *pMsgS->AltLast;
 		HeadS = (pMsgS->Head == nullptr) ? "" : *pMsgS->Head;
 	}
 	else

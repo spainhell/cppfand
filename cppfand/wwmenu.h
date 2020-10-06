@@ -128,7 +128,7 @@ class TMenuBarS : public TMenuBar
 public:
 	TMenuBarS();
 	TMenuBarS(WORD MsgNr);
-	pstring* MsgTxt;
+	std::string* MsgTxt;
 	bool GetDownMenu(TMenuBox** W) override;
 	std::string GetHlpName() override;
 	std::string GetText(integer I) override;

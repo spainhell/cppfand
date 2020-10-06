@@ -23,7 +23,7 @@ void IndexfileProc(FileDPtr FD, bool Compress);
 void MountProc(WORD CatIRec, bool NoCancel);
 void EditProc(Instr_edit* PD);
 void EditTxtProc(Instr_edittxt* PD);
-pstring* GetStr(FrmlPtr Z);
+std::string* GetStr(FrmlPtr Z);
 
 void PrintTxtProc(Instr_edittxt* PD);
 bool SrchXKey(KeyDPtr K, XString& X, longint& N);

@@ -150,7 +150,8 @@ void WrLevel(integer Level)
 LongStr* GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 {
 	PFldD* d; FieldDescr* f; FieldListEl* fl; FieldListEl* fl1; KeyFldD* kf;
-	integer i, l, col; char* p; bool first, point; pstring s;
+	integer i, l, col; char* p; bool first, point;
+	std::string s;
 
 	CFile = RO->FDL.FD; ARMode = RO->Mode;
 	NLevels = ListLength(RO->Ctrl); PFldDs = nullptr;
@@ -235,8 +236,9 @@ LongStr* GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 		RdMsg(18); WrStr("\r\n\x17"); WrBlks((38 - MsgLine.length()) / 2);
 		WrStr(MsgLine); WrChar(0x17);
 	}
-	if (RO->CondTxt != nullptr) {
-		WrStr("\r\n\x17"); s = *RO->CondTxt;
+	if (!RO->CondTxt.empty()) {
+		WrStr("\r\n\x17");
+		s = RO->CondTxt;
 		SubstChar(s, '{', '%'); SubstChar(s, '}', '%');
 		SubstChar(s, '_', '-'); SubstChar(s, '@', '*');
 		SubstChar(s, '#', '='); SubstChar(s, '\\', '|');

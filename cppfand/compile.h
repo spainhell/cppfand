@@ -27,7 +27,7 @@ bool EquUpcase(pstring& S1, pstring& S2); // r274 ASM
 bool EquUpcase(std::string& S1, std::string& S2);
 bool EquUpcase(const char* S);
 void Error(integer N); // r1
-void SetInpStr(pstring& S); //r31
+void SetInpStr(std::string& S); //r31
 void SetInpStdStr(std::string& s, bool ShowErr);
 void SetInpLongStr(LongStr* S, bool ShowErr); // r37
 void SetInpTTPos(longint Pos, bool Decode); // r46
@@ -92,7 +92,7 @@ void CompileRecLen();
 stSaveState* SaveCompState(); // r104
 void RestoreCompState(stSaveState* p); // 109
 void CFileLikeFD(FileD* FD, WORD MsgNr);
-pstring* RdHelpName(); // r144
+std::string* RdHelpName(); // r144
 FrmlPtr RdAttr(); // r152
 void RdW(WRectFrml& W); // r161
 void RdFrame(FrmlElem** Z, BYTE& WFlags); // r166

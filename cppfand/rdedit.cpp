@@ -473,7 +473,7 @@ label1:
 
 void RdDepChkImpl()
 {
-	pstring s;
+	std::string s;
 	CFile = E->FD;
 	switch (CFile->Typ) {
 	case '0': { RdMsg(53); s = MsgLine; goto label1; break; }
@@ -674,8 +674,8 @@ pstring StandardHead()
 		s = E->FD->Name;
 		switch (E->FD->Typ) {
 		case 'X': {
-			pstring* p = E->VK->Alias;
-			if ((p != nullptr) && (*p != "")) s = s + "/" + *E->VK->Alias;
+			std::string* p = E->VK->Alias;
+			if ((p != nullptr) && (!p->empty())) s = s + "/" + *E->VK->Alias;
 			break; }
 		case '0': s = s + ".RDB"; break;
 		case '8': s = s + ".DTA"; break;

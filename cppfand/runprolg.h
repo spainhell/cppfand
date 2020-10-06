@@ -53,7 +53,7 @@ struct TPTerm {
 	char Op0 = '\0'; WORD E[4]{ 0 }; // puvodne 1..3
 	char Op1 = '\0'; integer II = 0;
 	char Op2 = '\0'; double RR = 0.0;
-	char Op3 = '\0'; pstring SS;
+	char Op3 = '\0'; std::string SS;
 	char Op4 = '\0'; TPTerm* Elem = nullptr; TPTerm* Next = nullptr; /*PPTerm*/
 	WORD Idx = 0; bool Bound = false;
 };
@@ -183,4 +183,4 @@ public:
 
 LongStr* SaveDb(WORD DbOfs/*PDatabase*/, longint AA);
 WORD ReadProlog(WORD RecNr);
-void RunProlog(RdbPos* Pos, pstring* PredName);
+void RunProlog(RdbPos* Pos, std::string* PredName);

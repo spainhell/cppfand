@@ -27,7 +27,7 @@ void RunReport(RprtOpt* RO)
 	wwmix ww;
 	ExitRecord er;
 	LvDescr* L = nullptr;
-	pstring* s = nullptr;
+	std::string* s = nullptr;
 	WORD i = 0;
 	bool frst = false, isLPT1 = false;
 	WORD Times = 0;

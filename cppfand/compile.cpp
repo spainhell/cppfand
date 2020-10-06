@@ -71,10 +71,10 @@ void Error(integer N)
 	GoExit();
 }
 
-void SetInpStr(pstring& S)
+void SetInpStr(std::string& S)
 {
 	InpArrLen = S.length();
-	InpArrPtr = &S[1];
+	InpArrPtr = (BYTE*)S.data();
 	if (InpArrLen == 0) ForwChar = 0x1A;
 	else ForwChar = InpArrPtr[0];
 	CurrPos = 0;
@@ -476,7 +476,7 @@ void RdLex()
 		break;
 	default: break;
 	}
-	//if (LexWord == "ICislo")
+	//if (LexWord == "PARCEST")
 	//{
 	//	printf("RdLex() r. 437 - %s\n", LexWord.c_str());
 	//}
@@ -948,7 +948,7 @@ label1:
 				}
 				TestLex('[');
 				p = SaveCompState();
-				RdFileD(lv->Name, FDTyp, '$');
+				RdFileD(lv->Name, FDTyp, "$");
 				TestLex(']');
 				lv->FD = CFile;
 				n = CurrPos; lx = Lexem; fc = ForwChar;
@@ -1117,9 +1117,8 @@ EditOpt* GetEditOpt()
 
 RprtOpt* GetRprtOpt()
 {
-	RprtOpt* RO;
 	//RO = (RprtOpt*)GetZStore(sizeof(*RO));
-	RO = new RprtOpt();
+	auto RO = new RprtOpt();
 	auto result = RO;
 	RO->Mode = _ALstg;
 	RO->Style = '?';
@@ -1135,9 +1134,9 @@ void CFileLikeFD(FileD* FD, WORD MsgNr)
 	RunError(MsgNr);
 }
 
-pstring* RdHelpName()
+std::string* RdHelpName()
 {
-	pstring* s;
+	std::string* s;
 	if (CRdb->HelpFD == nullptr) Error(132);
 	if (Lexem != _identifier) TestLex(_quotedstr);
 	s = StoreStr(LexWord);
@@ -1145,9 +1144,9 @@ pstring* RdHelpName()
 	return s;
 }
 
-FrmlPtr RdAttr()
+FrmlElem* RdAttr()
 {
-	char c; BYTE n; FrmlPtr z;
+	char c; BYTE n; FrmlElem* z;
 	if (Lexem == '^') {
 		RdLex();
 		c = (char)toupper(Rd1Char()) - 64;
@@ -1286,7 +1285,8 @@ KeyDPtr RdViewKey()
 	if (Lexem == '@') goto label1;
 	TestIdentif();
 	while (k != nullptr) {
-		if (EquUpcase(*k->Alias, LexWord)) goto label1;
+		std::string lw = LexWord;
+		if (EquUpcase(*k->Alias, lw)) goto label1;
 		k = k->Chain;
 	}
 	s = LexWord;
@@ -2386,7 +2386,9 @@ FieldDescr* RdFldName(FileD* FD)
 
 FileDPtr FindFileD()
 {
-	FileD* FD = nullptr; RdbD* R = nullptr; LocVar* LV = nullptr;
+	FileD* FD = nullptr;
+	RdbD* R = nullptr;
+	LocVar* LV = nullptr;
 	if (FDLocVarAllowed && FindLocVar(&LVBD, &LV) && (LV->FTyp == 'f'))
 	{
 		return LV->FD;

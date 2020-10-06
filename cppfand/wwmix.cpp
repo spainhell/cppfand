@@ -642,14 +642,14 @@ label3:
 	return d + s;
 }
 
-bool wwmix::PromptFilter(pstring Txt, FrmlPtr Bool, pstring* BoolTxt)
+bool wwmix::PromptFilter(std::string Txt, FrmlElem* Bool, std::string* BoolTxt)
 {
 	void* p = nullptr;
 	ExitRecord er = {};
 	bool Del;
 	FileDPtr cf = nullptr;
 	MarkStore(p);
-	WORD I = 1;
+	size_t I = 1;
 	auto result = true;
 	//NewExit(Ovr(), er);
 	goto label3;
@@ -666,8 +666,8 @@ label1:
 	RdLex();
 	Bool = RdBool();
 	if (Lexem != 0x1A) Error(21);
-	BoolTxt = (pstring*)GetStore(Txt.length() + 1);
-	Move(&Txt, BoolTxt, Txt.length() + 1);
+	BoolTxt = new std::string(); // (pstring*)GetStore(Txt.length() + 1);
+	*BoolTxt = Txt;
 label2:
 	RestoreExit(er);
 	return result;
@@ -683,7 +683,7 @@ label3:
 	goto label1;
 }
 
-void wwmix::PromptLL(WORD N, pstring* Txt, WORD I, bool Del)
+void wwmix::PromptLL(WORD N, std::string* Txt, WORD I, bool Del)
 {
 	longint w = PushW(1, TxtRows, TxtCols, TxtRows);
 	screen.GotoXY(1, TxtRows);
@@ -692,7 +692,7 @@ void wwmix::PromptLL(WORD N, pstring* Txt, WORD I, bool Del)
 	RdMsg(N);
 	printf("%s", MsgLine.c_str());
 	TextAttr = screen.colors.pNorm;
-	EditTxt(Txt, I, 255, TxtCols - screen.WhereX(), 'A', Del, false, true, false, 0);
+	EditTxt(*Txt, I, 255, TxtCols - screen.WhereX(), 'A', Del, false, true, false, 0);
 	PopW(w);
 }
 

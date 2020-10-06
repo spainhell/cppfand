@@ -98,22 +98,22 @@ struct RprtFDListEl
 struct RprtOpt
 {
 	RprtFDListEl FDL;
-	pstring* Path;
-	WORD CatIRec;
-	bool UserSelFlds, UserCondQuest, FromStr, SyntxChk;
-	FrmlPtr Times;
+	pstring* Path = nullptr;
+	WORD CatIRec = 0;
+	bool UserSelFlds = false, UserCondQuest = false, FromStr = false, SyntxChk = false;
+	FrmlElem* Times = nullptr;
 	AutoRprtMode Mode;
 	RdbPos RprtPos;
-	FieldList Flds;		 /* != nullptr => autoreport*/
-	FieldList Ctrl;
-	FieldList Sum;
-	KeyFldDPtr SK;
-	FrmlPtr WidthFrml, Head;
-	WORD Width;
-	pstring* CondTxt;
-	LongStr* HeadTxt;
-	char Style;
-	bool Edit, PrintCtrl;
+	FieldListEl* Flds = nullptr;		 /* != nullptr => autoreport*/
+	FieldListEl* Ctrl = nullptr;
+	FieldListEl* Sum = nullptr;
+	KeyFldD* SK = nullptr;
+	FrmlElem* WidthFrml = nullptr, *Head = nullptr;
+	WORD Width = 0;
+	std::string CondTxt;
+	LongStr* HeadTxt = nullptr;
+	char Style = '\0';
+	bool Edit = false, PrintCtrl = false;
 };
 
 struct RFldD : public Chained
@@ -197,7 +197,7 @@ struct EditOpt
 	BYTE WFlags = 0;
 	EdExitD* ExD = nullptr;
 	FileD* Journal = nullptr;
-	pstring* ViewName = nullptr;
+	std::string* ViewName = nullptr;
 	char OwnerTyp= '\0';
 	LinkD* DownLD = nullptr;
 	LocVar* DownLV = nullptr;
@@ -241,11 +241,11 @@ struct EditD : Chained
 	WRect V; BYTE ShdwX = 0, ShdwY = 0;
 	BYTE Attr = 0, dNorm = 0, dHiLi = 0, dSubSet = 0;
 	BYTE dDel = 0, dTab = 0, dSelect = 0;
-	pstring* Top = nullptr;
+	std::string* Top = nullptr;
 	BYTE WFlags = 0;                             /* copied from EO */
 	EdExitD* ExD = nullptr;                      /*      "         */
 	FileD* Journal = nullptr;                    /*      "         */
-	pstring* ViewName = nullptr;                 /*      "         */
+	std::string* ViewName = nullptr;             /*      "         */
 	char OwnerTyp = '\0'; /* #0=CtrlF7 */        /*      "         */
 	LinkD* DownLD = nullptr;                     /*      "         */
 	LocVar* DownLV = nullptr;                    /*      "         */
@@ -288,13 +288,14 @@ struct EditD : Chained
 	KeyD* DownKey = nullptr;
 	longint LockedRec = 0;
 	FrmlElem* Cond = nullptr; FrmlElem* Bool = nullptr;
-	pstring* BoolTxt = nullptr; std::string Head; std::string Last;
+	std::string* BoolTxt = nullptr;
+	std::string Head; std::string Last;
 	std::string CtrlLast; std::string AltLast; std::string ShiftLast;
 	WORD NFlds = 0, NTabsSet = 0, NDuplSet = 0, NEdSet = 0;
 	bool EdUpdated = false;
 	ImplD* Impl = nullptr;
 	longint StartRecNo = 0;
-	pstring* StartRecKey = nullptr;
+	std::string* StartRecKey = nullptr;
 	integer StartIRec = 0;
 	longint OwnerRecNo = 0;
 	LinkD* ShiftF7LD = nullptr;
@@ -349,7 +350,7 @@ struct CopyD
 struct ChoiceD : Chained
 {
 	//ChoiceD* Chain = nullptr;
-	pstring* HelpName = nullptr;
+	std::string* HelpName = nullptr;
 	bool Displ = false, DisplEver = false, Enabled = false, TxtConst = false;
 	FrmlElem* Bool = nullptr;
 	Instr* Instr = nullptr;
@@ -363,7 +364,7 @@ struct WrLnD : public Chained
 	FrmlElem* Frml = nullptr;
 	char Typ = '\0'; /* S, B, F, D */
 	BYTE N = 0, M = 0;
-	pstring* Mask = nullptr;
+	std::string* Mask = nullptr;
 };
 
 struct LockD

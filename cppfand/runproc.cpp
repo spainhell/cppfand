@@ -120,7 +120,7 @@ void PromptAutoRprt(RprtOpt* RO)
 	}
 	CFile = RO->FDL.FD; if (!ww.SelFieldList(36, true, RO2->Flds)) return;
 	if ((RO->FDL.Cond == nullptr) &&
-		!ww.PromptFilter("", RO2->FDL.Cond, RO2->CondTxt)) return;
+		!ww.PromptFilter("", RO2->FDL.Cond, &RO2->CondTxt)) return;
 	if (SelForAutoRprt(RO2)) RunAutoReport(RO2);
 }
 
@@ -424,10 +424,10 @@ void EditTxtProc(Instr_edittxt* PD)
 	pv = nullptr;
 	if (PD->Ww.C1 != nullptr) { RunWFrml(PD->Ww, PD->WFlags, v); pv = &v; }
 	MsgS.Head = GetStr(PD->Head);
-	MsgS.Last = (PD->Last == nullptr) ? "" : *GetStr(PD->Last);
-	MsgS.CtrlLast = (PD->CtrlLast == nullptr) ? "" : *GetStr(PD->CtrlLast);
-	MsgS.ShiftLast = (PD->ShiftLast == nullptr) ? "" : *GetStr(PD->ShiftLast);
-	MsgS.AltLast = (PD->AltLast == nullptr) ? "" : *GetStr(PD->AltLast);
+	MsgS.Last = (PD->Last == nullptr) ? nullptr : GetStr(PD->Last);
+	MsgS.CtrlLast = (PD->CtrlLast == nullptr) ? nullptr : GetStr(PD->CtrlLast);
+	MsgS.ShiftLast = (PD->ShiftLast == nullptr) ? nullptr : GetStr(PD->ShiftLast);
+	MsgS.AltLast = (PD->AltLast == nullptr) ? nullptr : GetStr(PD->AltLast);
 
 	if (PD->TxtLV != nullptr) lp = (longint*)(uintptr_t(MyBP) + PD->TxtLV->BPOfs);
 	else {
@@ -440,11 +440,10 @@ void EditTxtProc(Instr_edittxt* PD)
 	ReleaseStore(p);
 }
 
-pstring* GetStr(FrmlPtr Z)
+std::string* GetStr(FrmlElem* Z)
 {
-	pstring s;
 	if (Z == nullptr) return nullptr;
-	s = RunShortStr(Z);
+	std::string s = RunShortStr(Z);
 	return StoreStr(s);
 }
 
@@ -1357,7 +1356,7 @@ void CallProcedure(Instr_proc* PD)
 			if (PD->TArg[i].RecPtr != nullptr) {
 				p = SaveCompState();
 				SetInpLongStr(RunLongStr(PD->TArg[i].TxtFrml), true);
-				RdFileD(PD->TArg[i].Name, '6', '$');
+				RdFileD(PD->TArg[i].Name, '6', "$");
 				RestoreCompState(p);
 			}
 			else CFile = PD->TArg[i].FD;

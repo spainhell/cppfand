@@ -252,7 +252,7 @@ void RdCFG()
 
 void CompileHelpCatDcl()
 {
-	pstring s; void* p2 = nullptr;
+	std::string s; void* p2 = nullptr;
 	FileDRoot = nullptr; Chpt = FileDRoot;
 	CRdb = nullptr; MarkStore2(p2);
 	RdMsg(56); s = MsgLine; SetInpStr(s);
@@ -312,11 +312,10 @@ label1:
 void RunRdb(std::string p)
 {
 	std::string n;
-	if ((!p.empty()) && SetTopDir(p, n))
+	if (!p.empty() && SetTopDir(p, n))
 	{
-		pstring main = "main";
 		wwmix ww;
-		EditExecRdb(n, &main, nullptr, &ww);
+		EditExecRdb(n, "main", nullptr, &ww);
 		CFile = CatFD;
 		CloseFile();
 	}
@@ -334,7 +333,7 @@ void CallInstallRdb()
 	wwmix ww;
 	std::string p; std::string n;
 	p = ww.SelectDiskFile(".RDB", 35, true);
-	if ((p != "") && SetTopDir(p, n))
+	if ((!p.empty()) && SetTopDir(p, n))
 	{
 		InstallRdb(n);
 		CFile = CatFD;
@@ -362,7 +361,7 @@ void InitRunFand()
 {
 	WORD n = 0, l = 0, err = 0, hourmin = 0;
 	FILE* h = nullptr;
-	pstring s;
+	std::string s;
 	BYTE nb, sec = 0;
 	ExitRecord* er = new ExitRecord();
 	integer i, j, MsgNr;
@@ -370,7 +369,7 @@ void InitRunFand()
 	longint w = 0;
 	void* p = nullptr;
 	WORD xofs = 1;
-	pstring txt;
+	std::string txt;
 	double r;
 
 	InitDrivers();
@@ -450,8 +449,8 @@ void InitRunFand()
 
 	// NAÈTENÍ ZNAKÙ PRO 'ANO' A 'NE' - originál je Y a N
 	RdMsg(50);
-	AbbrYes = MsgLine[1];
-	AbbrNo = MsgLine[2];
+	AbbrYes = MsgLine[0];
+	AbbrNo = MsgLine[1];
 
 	RdCFG();
 	ProcAttr = screen.colors.uNorm;
@@ -583,7 +582,7 @@ void InitRunFand()
 		txt += ")";
 		MsgLine = MsgLine + "x (" + txt;
 	}
-	else MsgLine.Append('x');
+	else MsgLine += 'x';
 
 	screen.ScrWrText(5, TxtRows - 3, MsgLine.c_str());
 

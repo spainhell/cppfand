@@ -20,6 +20,7 @@ WParam* PushWParam(WORD C1, WORD R1, WORD C2, WORD R2, bool WW)
 
 void PopWParam(WParam* wp)
 {
+	if (wp == nullptr) return;
 	WindMin = wp->Min;
 	WindMax = wp->Max;
 	TextAttr = wp->Attr;
@@ -47,10 +48,9 @@ longint PushW(WORD C1, WORD R1, WORD C2, WORD R2)
 
 void PopScr(void* p, bool draw)
 {
-	WParam* wp = nullptr;
-	screen.LoadScreen(draw, wp);
-	//PopWParam(wp);
-	//delete wp;
+	WParam* wp = screen.LoadScreen(draw);
+	PopWParam(wp);
+	delete wp;
 }
 
 void PopW2(longint pos, bool draw)

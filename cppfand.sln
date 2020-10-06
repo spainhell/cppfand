@@ -9,6 +9,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cppfand", "cppfand\cppfand.
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pascal", "pascal\pascal.vcxproj", "{1DCA247B-35EC-434D-9E3B-66C507E4AC95}"
+	ProjectSection(ProjectDependencies) = postProject
+		{4CE9C1C6-998B-48AE-B5A1-3403B2E02FBE} = {4CE9C1C6-998B-48AE-B5A1-3403B2E02FBE}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "textfunc", "textfunc\textfunc.vcxproj", "{4CE9C1C6-998B-48AE-B5A1-3403B2E02FBE}"
 EndProject

@@ -63,8 +63,8 @@ longint FrstMsgPos;
 WORD F10SpecKey; // ø. 293
 BYTE ProcAttr;
 // bool SetStyleAttr(char c, BYTE& a); // je v KBDWW
-pstring MsgLine;
-pstring MsgPar[4];
+std::string MsgLine;
+std::string MsgPar[4];
 
 WORD OldNumH; // r1 
 void* OldHTPtr = nullptr;
@@ -237,7 +237,7 @@ label1:
 		}
 		else
 		{
-			MsgLine.Append(s[i]);
+			MsgLine += s[i];
 			if (s[i] == '$') i++;
 		}
 	}
@@ -909,7 +909,7 @@ label1:
 	else if (HandleError == ENOENT) // No such file or directory
 	{
 
-		if (Mode == _isoldfile || Mode == _isoldnewfile)
+		if (/*Mode == _isoldfile ||*/ Mode == _isoldnewfile)
 		{
 			Mode = _isnewfile;
 			goto label1;
@@ -917,7 +917,7 @@ label1:
 	}
 	if (w != 0) PopW(w);
 
-	// pøidání FILE* od vektoru kvùli 'WORD OvrHandle = h - 1;'
+	// pridani FILE* do vektoru kvuli 'WORD OvrHandle = h - 1;'
 	vOverHandle.push_back(nFile);
 //#ifdef _DEBUG
 	filesMap.insert(std::pair<std::string, DataFile>(CPath, DataFile(CPath, CFile, nFile)));
@@ -1389,9 +1389,9 @@ void* GetZStore2(WORD Size)
 	return nullptr;
 }
 
-pstring* StoreStr(pstring S)
+std::string* StoreStr(std::string S)
 {
-	auto nss = new pstring(S);
+	auto nss = new std::string(S);
 	return nss;
 }
 
@@ -1689,24 +1689,22 @@ void OpenWorkH()
 	}
 }
 
-
-
-bool SEquUpcase(pstring S1, pstring S2)
-{
-	size_t s1_len = S1.length();
-	size_t s2_len = S2.length();
-	if (s1_len != s2_len) return false;
-	if (s1_len == 0) return true;
-
-	const char* s1_c = S1.c_str();
-	const char* s2_c = S2.c_str();
-
-	for (size_t i = 0; i < s1_len; i++)
-	{
-		if (toupper(s1_c[i]) != toupper(s2_c[i])) return false;
-	}
-	return true;
-}
+//bool SEquUpcase(pstring S1, pstring S2)
+//{
+//	size_t s1_len = S1.length();
+//	size_t s2_len = S2.length();
+//	if (s1_len != s2_len) return false;
+//	if (s1_len == 0) return true;
+//
+//	const char* s1_c = S1.c_str();
+//	const char* s2_c = S2.c_str();
+//
+//	for (size_t i = 0; i < s1_len; i++)
+//	{
+//		if (toupper(s1_c[i]) != toupper(s2_c[i])) return false;
+//	}
+//	return true;
+//}
 
 //void OpenOvrFile()
 //{

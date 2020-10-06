@@ -1,5 +1,5 @@
-#include "pch.h"
 #include "textfunc.h"
+
 
 std::vector<std::string> GetAllRows(std::string input)
 {
@@ -50,7 +50,7 @@ std::string LeadChar(std::string& input, char c)
 /// cislo radku zacina 1 .. N, pocet 1 .. N
 std::string GetNthLine(std::string& input, size_t from, size_t count)
 {
-	if (from < 1 || count < 1) return "";
+	if (input.empty() || from < 1 || count < 1) return "";
 	size_t startIndex = 0;
 	size_t stopIndex = input.find('\n');
 	for (size_t i = 1; i < from; i++) {
@@ -61,8 +61,10 @@ std::string GetNthLine(std::string& input, size_t from, size_t count)
 		// je pozadovano vice radku, budeme navysovat stop index
 		stopIndex = input.find('\n', stopIndex + 1);
 	}
-
-	return input.substr(startIndex, stopIndex - startIndex - 1);
+	auto result = input.substr(startIndex, stopIndex - startIndex - 1);
+	if (!result.empty() && result[result.length() - 1] == '\r') 
+		result.erase(result.length() - 1, 1);
+	return result;
 }
 
 /// vytvori ze vstupu formatovany retez o maximalni delce znaku

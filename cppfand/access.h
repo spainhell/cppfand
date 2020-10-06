@@ -146,7 +146,7 @@ public:
 	ChkD(const ChkD& orig);
 	// ChkD* Chain = nullptr;
 	FrmlElem* Bool = nullptr;
-	pstring* HelpName = nullptr;
+	std::string* HelpName = nullptr;
 	FrmlElem* TxtZ = nullptr;
 	bool Warning = false;
 };
@@ -478,10 +478,11 @@ public:
 	bool Intervaltest = false, Duplic = false, InWork = false;
 	WORD IndexRoot = 0; BYTE IndexLen = 0;
 	longint NR = 0; // {used only by XWKey}
-	pstring* Alias = nullptr;
+	std::string* Alias = nullptr;
 	XWFile* XF();
 	longint NRecs();
 	bool Search(XString& XX, bool AfterEqu, longint& RecNr);
+	bool Search(std::string X, bool AfterEqu, longint& RecNr);
 	bool SearchIntvl(XString& XX, bool AfterEqu, longint& RecNr);
 	longint PathToNr();
 	void NrToPath(longint I);
@@ -492,6 +493,7 @@ public:
 	pstring NrToStr(longint I);
 	longint RecNrToNr(longint RecNr);
 	bool FindNr(XString& X, longint& IndexNr);
+	bool FindNr(std::string X, longint& IndexNr);
 	void InsertOnPath(XString& XX, longint RecNr);
 	void InsertItem(XString& XX, XPage* P, XPage* UpP, longint Page, WORD I, XItem** X, longint& UpPage);
 	void InsertLeafItem(XString& XX, XPage* P, XPage* UpP, longint Page, WORD I, int RecNr, longint& UpPage);
@@ -719,7 +721,7 @@ extern WORD UserCode;
 
 // extern WORD* WordVarArr;
 extern FieldDPtr CatRdbName, CatFileName, CatArchiv, CatPathName, CatVolume;
-extern pstring MountedVol[FloppyDrives];
+extern std::string MountedVol[FloppyDrives];
 
 extern pstring SQLDateMask;
 
@@ -741,9 +743,9 @@ extern pstring LexWord;
 extern bool SpecFDNameAllowed, IdxLocVarAllowed, FDLocVarAllowed, IsCompileErr;
 extern CompInpD* PrevCompInp;						// { saved at "include" }
 extern BYTE* InpArrPtr; extern RdbPos InpRdbPos;		// { "  "  }
-extern WORD InpArrLen;
-extern WORD CurrPos;
-extern WORD OldErrPos;			// { "  "  }
+extern size_t InpArrLen;
+extern size_t CurrPos;
+extern size_t OldErrPos;			// { "  "  }
 extern SumElPtr FrmlSumEl;				//{ set while reading sum / count argument }
 extern bool FrstSumVar, FileVarsAllowed;
 // FrmlPtr RdFldNameFrml() = FrmlPtr(char& FTyp);

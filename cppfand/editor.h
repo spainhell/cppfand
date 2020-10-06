@@ -10,7 +10,7 @@ class Instr_setedittxt;
 
 struct MsgStr
 {
-	pstring* Head, Last, CtrlLast, AltLast, ShiftLast;
+	std::string* Head, *Last, *CtrlLast, *AltLast, *ShiftLast;
 };
 typedef MsgStr* MsgStrPtr;
 

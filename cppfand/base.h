@@ -46,7 +46,7 @@ Chained* LastInChain(Chained* Frst); // r18 ASM
 WORD ListLength(void* P); // r22 ASM
 void ReplaceChar(pstring S, char C1, char C2); // r30 ASM
 bool SEquUpcase(std::string S1, std::string S2);
-bool SEquUpcase(pstring S1, pstring S2);
+//bool SEquUpcase(pstring S1, pstring S2);
 pstring StrPas(const char* Src);
 void StrLPCopy(char* Dest, pstring s, WORD MaxL);
 WORD SLeadEqu(pstring S1, pstring S2);
@@ -120,7 +120,7 @@ void ReleaseAfterLongStr(void* p);
 int StoreAvail();
 void* GetStore2(WORD Size);
 void* GetZStore2(WORD Size);
-pstring* StoreStr(pstring S);
+std::string* StoreStr(std::string S);
 void MarkStore2(void* p);
 void ReleaseStore2(void* p);
 void MarkBoth(void* p, void* p2);
@@ -192,8 +192,8 @@ WORD LogToAbsLenStyleStr(pstring s, WORD l);
 extern WORD F10SpecKey; // ø. 293
 extern BYTE ProcAttr;
 // extern bool SetStyleAttr(char c, BYTE& a); // je v KBDWW
-extern pstring MsgLine;
-extern pstring MsgPar[4];
+extern std::string MsgLine;
+extern std::string MsgPar[4];
 void SetMsgPar(pstring s);
 void Set2MsgPar(pstring s1, pstring s2);
 void Set3MsgPar(pstring s1, pstring s2, pstring s3);

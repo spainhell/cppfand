@@ -5,6 +5,7 @@
 #include "runfrml.h"
 #include "runproc.h"
 #include "runproj.h"
+#include "../textfunc/textfunc.h"
 
 
 WORD CountNTxt(ChoiceD* C, bool IsMenuBar)
@@ -577,8 +578,7 @@ bool TMenuBoxP::ExecItem(WORD& I)
 
 std::string TMenuBoxP::GetHlpName()
 {
-	pstring* S;
-	S = CI(CRoot, iTxt)->HelpName;
+	std::string* S = CI(CRoot, iTxt)->HelpName;
 	if (S != nullptr) return *S;
 	return "";
 }
@@ -797,8 +797,7 @@ bool TMenuBarP::GetDownMenu(TMenuBox** W)
 
 std::string TMenuBarP::GetHlpName()
 {
-	pstring* S;
-	S = CI(CRoot, iTxt)->HelpName;
+	std::string* S = CI(CRoot, iTxt)->HelpName;
 	if (S != nullptr) return *S;
 	else return "";
 }
@@ -827,20 +826,20 @@ bool PrinterMenu(WORD Msg)
 {
 	TMenuBoxS* w = nullptr; WORD i, j;
 	void* p = nullptr;
-	pstring nr(3);
-	pstring nm, lpt;
+	std::string nr;
+	std::string nm, lpt;
 
 	MarkStore(p); RdMsg(Msg); j = prCurr;
 	for (prCurr = 0; prCurr <= prMax - 1; prCurr++) {
 		i = printer[prCurr].Lpti;
-		str(i, nr);
+		nr = std::to_string(i);
 		nm = PrTab(prName);
 		ReplaceChar(nm, '/', '-');
-		lpt = "(LPT";
-		lpt += nr;
-		lpt += ")";
+		lpt = "(LPT" + nr + ")";
 		if (printer[prCurr].ToMgr) lpt = "";
-		MsgLine = MsgLine + '/' + nm + copy("      ", 1, MaxI(0, 9 - nm.length())) + lpt;
+		char buffer[10]{ 0 };
+		snprintf(buffer, sizeof(buffer), "%*c", MaxI(0, 9 - nm.length()), ' ');
+		MsgLine = MsgLine + '/' + nm + buffer + lpt;
 	}
 	prCurr = j;
 	//New(w, Init(0, 0, (pstring*)&MsgLine));
@@ -959,26 +958,27 @@ label5:
 
 void DisplLLHelp(RdbD* R, std::string Name, bool R24)
 {
-	LongStr* s = nullptr; void* p = nullptr;
-	WORD i = 0, y = 0; WORD iRec = 0; FileD* cf = nullptr;
+	LongStr* s = nullptr;
+	void* p = nullptr;
+	size_t i = 0, y = 0; WORD iRec = 0; FileD* cf = nullptr;
 	if ((R == nullptr) || (R != (RdbD*)&HelpFD) && (R->HelpFD == nullptr)) return;
 	MarkStore(p);
 	cf = CFile;
-	if (Name != "") {
+	if (!Name.empty()) {
 		iRec = 0;
 		s = GetHlpText(R, Name, true, iRec);
 		if (s != nullptr) {
-			s = CopyLine(s, 1, 1);
-			MsgLine[0] = (char)min(s->LL, MsgLine.initLength() - 1);
-			Move(s->A, &MsgLine[1], MsgLine[0]);
-			if (MsgLine[1] == '{') {
-				MsgLine = copy(MsgLine, 2, 255);
-				i = MsgLine.first('}');
-				if (i > 0) MsgLine.Delete(i, 255);
+			std::string ss = std::string(s->A, s->LL);
+			ss = GetNthLine(ss, 1, 1);
+			MsgLine = ss;
+			if (MsgLine[0] == '{') {
+				MsgLine = MsgLine.substr(1, 255);
+				i = MsgLine.find('}');
+				if (i != std::string::npos) MsgLine.erase(i, 255);
 			}
-			MsgLine[0] = (char)min(TxtCols, MsgLine[0]);
+			MsgLine = MsgLine.substr(0, min(TxtCols, MsgLine.length()));
 			goto label1;
-		};
+		}
 	}
 	MsgLine = "";
 label1:

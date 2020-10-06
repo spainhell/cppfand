@@ -1478,12 +1478,11 @@ Instr* RdReportCall()
 	LocVar* lv = nullptr;
 	RprtFDListEl* FDL = nullptr;
 	bool b = false;
-	bool hasfrst;
 	PD = new Instr_report(); // GetPD(_report, 4);
 	RdLex();
 	RO = GetRprtOpt();
 	PD->RO = RO;
-	hasfrst = false;
+	bool hasfrst = false;
 	if (Lexem == ',') goto label2;
 	hasfrst = true;
 	FDL = &RO->FDL;
@@ -1569,9 +1568,9 @@ void RdRprtOpt(RprtOpt* RO, bool HasFrst)
 		}
 		RO->FDL.Cond = RdKeyInBool(&RO->FDL.KeyIn, true, true, RO->FDL.SQLFilter);
 		N = OldErrPos - Low;
-		RO->CondTxt = new pstring(); // (pstring*)GetStore(N + 1);
-		Move(&InpArrPtr[Low], &(*RO->CondTxt)[1], N);
-		(*RO->CondTxt)[0] = N;
+		RO->CondTxt = std::string(InpArrPtr[Low], N); // (pstring*)GetStore(N + 1);
+		//Move(&InpArrPtr[Low], &(*RO->CondTxt)[1], N);
+		//(*RO->CondTxt)[0] = N;
 	label1:
 		if (br) Accept(')');
 	}
@@ -1611,17 +1610,17 @@ Instr* RdRDBCall()
 	if (Lexem == '\\') { s = Lexem; RdLex(); }
 	TestIdentif();
 	if (LexWord.length() > 8) Error(2);
-	PD->RdbNm = StoreStr(s + LexWord);
+	PD->RdbNm = s + LexWord;
 	RdLex();
 	if (Lexem == ',') {
 		RdLex();
 		TestIdentif();
 		if (LexWord.length() > 12) Error(2);
-		PD->ProcNm = StoreStr(LexWord);
+		PD->ProcNm = LexWord;
 		RdLex();
 		PD->ProcCall = RdProcArg('C');
 	}
-	else PD->ProcNm = StoreStr("main");
+	else PD->ProcNm = "main";
 	return PD;
 }
 
