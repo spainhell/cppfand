@@ -248,9 +248,6 @@
     <ProjectReference Include="..\FileSystem\FileSystem.vcxproj">
       <Project>{0071ff96-1112-4351-bda4-7c419d354789}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\Logging\Logging.vcxproj">
-      <Project>{377f8377-8901-4ab8-bb51-e0b4155440c5}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\pascal\pascal.vcxproj">
       <Project>{1dca247b-35ec-434d-9e3b-66c507e4ac95}</Project>
     </ProjectReference>

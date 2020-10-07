@@ -2,17 +2,16 @@
 #include "base.h"
 #include "drivers.h"
 #include "runfand.h"
-#include "../Logging/spdlog.h"
 #include <memory>
-
-using namespace ::std;
-namespace spd = spdlog;
+//#include "../spdlog/spdlog.h"
+//#include "../spdlog/spdlog-inl.h"
 
 int main(int argc, char* argv[])
 {
-	std::shared_ptr<spd::logger> logger;
-	
-	logger->debug("STARTING APPLICATION");
+	//auto logger = spdlog::rotating_logger_mt("file_logger", "LOG.log", 1024 * 1024 * 5, 3);
+	//logger->set_level(spdlog::level::debug);
+	//logger->debug("APP STARTING");
+	//spdlog::register_logger(logger);
 	
 	for (int i = 0; i < argc; i++)
 	{
