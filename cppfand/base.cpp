@@ -856,11 +856,8 @@ FILE* OpenH(FileOpenMode Mode, FileUseMode UM)
 	// pøi 'IsNetCVol' se chová jinak
 	// RdOnly $20, RdShared $40, Shared $42, Exclusive $12
 
-	pstring s;
-
 	pstring txt[] = { "Clos", "OpRd", "OpRs", "OpSh", "OpEx" };
 
-	pstring path = CPath;
 	if (CardHandles == files) RunError(884);
 	longint w = 0;
 	std::string openFlags;
@@ -885,14 +882,14 @@ label1:
 	}
 
 	FILE* nFile = nullptr;
-	HandleError = fopen_s(&nFile, path.c_str(), openFlags.c_str());
+	HandleError = (WORD)fopen_s(&nFile, CPath.c_str(), openFlags.c_str());
 
 	// https://docs.microsoft.com/en-us/cpp/c-runtime-library/errno-doserrno-sys-errlist-and-sys-nerr?view=vs-2019
 	if (IsNetCVol() && (HandleError == EACCES || HandleError == ENOLCK))
 	{
 		if (w == 0)
 		{
-			Set2MsgPar(path, txt[UM]);
+			Set2MsgPar(CPath, txt[UM]);
 			w = PushWrLLMsg(825, false);
 		}
 		LockBeep();
@@ -919,9 +916,15 @@ label1:
 
 	// pridani FILE* do vektoru kvuli 'WORD OvrHandle = h - 1;'
 	vOverHandle.push_back(nFile);
-//#ifdef _DEBUG
-	filesMap.insert(std::pair<std::string, DataFile>(CPath, DataFile(CPath, CFile, nFile)));
-//#endif
+	//#ifdef _DEBUG
+	if (filesMap.find(CPath) != filesMap.end()) {
+		// soubor uz v mape je, budeme aktualizovat
+		filesMap[CPath] = DataFile(CPath, CFile, nFile);
+	}
+	else {
+		filesMap.insert(std::pair<std::string, DataFile>(CPath, DataFile(CPath, CFile, nFile)));
+	}
+	//#endif
 	return nFile;
 }
 
@@ -1041,7 +1044,7 @@ void RdWrCache(bool ReadOp, FILE* Handle, bool NotCached, longint Pos, WORD N, v
 	{
 		printf("");
 	}
-	
+
 	bool Cached = !NotCached;
 	integer PgeIdx = 0, PgeRest = 0; WORD err = 0; longint PgeNo = 0;
 	//CachePage* Z = nullptr;
@@ -1062,10 +1065,10 @@ void RdWrCache(bool ReadOp, FILE* Handle, bool NotCached, longint Pos, WORD N, v
 		if (ReadOp) {
 			auto src = c1->Load(Pos);
 			if (src == nullptr) return;
-			memcpy(Buf, src, N); 
+			memcpy(Buf, src, N);
 		}
-		else { 
-			c1->Save(Pos, N, (unsigned char*)Buf); 
+		else {
+			c1->Save(Pos, N, (unsigned char*)Buf);
 		}
 	}
 	else {
@@ -1534,7 +1537,7 @@ bool OSshell(std::string Path, std::string CmdLine, bool NoCancel, bool FreeMm, 
 	FILE* pPipe;
 
 	std::string cmd = Path.empty() ? CmdLine : Path + " " + CmdLine;
-	
+
 	if ((pPipe = _popen(cmd.c_str(), "rt")) == nullptr)
 		return false;
 
@@ -1638,7 +1641,7 @@ label1: if (WasInitDrivers) {
 
 void OpenResFile()
 {
-	CPath = FandResName; 
+	CPath = FandResName;
 	CVol = "";
 	ResFile.Handle = OpenH(_isoldfile, RdOnly);
 	ResFile.FullName = CPath;

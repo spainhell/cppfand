@@ -1,14 +1,11 @@
 #pragma once
-
 #include "drivers.h"
-
-#include <windows.h>
+#include <Windows.h>
 #include <stdio.h>
 #include <consoleapi.h>
 #include <handleapi.h>
 #include <iostream>
-#include <winbase.h>
-
+#include <WinBase.h>
 #include "../pascal/random.h"
 #include "base.h"
 #include "editor.h"

@@ -1733,19 +1733,26 @@ void UnLockWithDep(LockMode OldMd)
 
 void UndoRecord()
 {
-	LockMode md; FieldDPtr f;
+	LockMode md;
 	if (!IsNewRec && WasUpdated) {
-		if (HasTF) if (NoDelTFlds) {
-			f = CFile->FldD.front();
-			while (f != nullptr) {
-				if (((f->Flg & f_Stored) != 0) && (f->Typ == 'T'))
-					*(longint*)((char*)(E->OldRecPtr) + f->Displ) = *(longint*)(((char*)(CRecPtr)+f->Displ));
-				f = (FieldDescr*)f->Chain;
+		if (HasTF) {
+			if (NoDelTFlds) {
+				FieldDescr* f = CFile->FldD.front();
+				while (f != nullptr) {
+					if (((f->Flg & f_Stored) != 0) && (f->Typ == 'T'))
+						*(longint*)((char*)(E->OldRecPtr) + f->Displ) = *(longint*)(((char*)(CRecPtr)+f->Displ));
+					f = (FieldDescr*)f->Chain;
+				}
+			}
+			else {
+				DelAllDifTFlds(E->NewRecPtr, E->OldRecPtr);
 			}
 		}
-		else DelAllDifTFlds(E->NewRecPtr, E->OldRecPtr);
 		Move(E->OldRecPtr, E->NewRecPtr, CFile->RecLen);
-		WasUpdated = false; NoDelTFlds = false; UnLockRec(E); DisplRec(IRec); IVon();
+		WasUpdated = false; NoDelTFlds = false;
+		UnLockRec(E);
+		DisplRec(IRec);
+		IVon();
 	}
 }
 
@@ -1800,43 +1807,60 @@ bool DelIndRec(longint I, longint N)
 
 bool DeleteRecProc()
 {
-	longint I, J, N, oBaseRec; WORD oIRec; bool Group, fail; LockMode OldMd;
-	bool b;
+	longint I = 0, J = 0, N = 0, oBaseRec = 0;
+	WORD oIRec = 0;
+	bool Group = false, fail = false; LockMode OldMd;
+	bool b = false;
 	auto result = false; Group = false;
 	if (Select) {
-		F10SpecKey = _ESC_; Group = PromptYN(116);
-		if (KbdChar == _ESC_) return result;
+		F10SpecKey = VK_ESCAPE;
+		Group = PromptYN(116);
+		if (KbdChar == VK_ESCAPE) return result;
 	}
 	if (!Group) if (VerifyDelete && !PromptYN(109)) return result;
 	if (!LockWithDep(DelMode, DelMode, OldMd)) return result;
-	UndoRecord(); N = AbsRecNr(CRec()); RdRec(CRec());
-	oIRec = IRec; oBaseRec = BaseRec;    /* exit proc uses CRec for locking etc.*/
+	UndoRecord();
+	N = AbsRecNr(CRec());
+	RdRec(CRec());
+	oIRec = IRec;
+	oBaseRec = BaseRec;    /* exit proc uses CRec for locking etc.*/
 	if (HasIndex
 #ifdef FandSQL
 		|| CFile->IsSQLFile
 #endif
 		) {
-		TestXFExist(); if (Group) {
+		TestXFExist();
+		if (Group) {
 			IRec = 1; BaseRec = 1;
 			while (BaseRec <= CNRecs()) {
-				N = AbsRecNr(BaseRec); ClearDeletedFlag();/*prevent err msg 148*/
+				N = AbsRecNr(BaseRec);
+				ClearDeletedFlag();/*prevent err msg 148*/
 				if (!ELockRec(E, N, false, Subset)) goto label1;
 				RdRec(BaseRec);
 				if (RunBool(E->Bool)) b = DelIndRec(BaseRec, N);
-				else { b = true; BaseRec++; }
-				UnLockRec(E); if (!b) goto label1;
+				else {
+					b = true;
+					BaseRec++;
+				}
+				UnLockRec(E);
+				if (!b) goto label1;
 			}
 		label1:
 			{}
 		}
 		else {
 			if (!ELockRec(E, N, false, Subset)) goto label1;
-			DelIndRec(CRec(), N); UnLockRec(E);
+			DelIndRec(CRec(), N);
+			UnLockRec(E);
 		}
 	}
 	else if (Group) {
-		J = 0; fail = false; BaseRec = 1; IRec = 1; E->EdUpdated = true;
-		for (I = 1; I < CFile->NRecs; I++) {
+		J = 0;
+		fail = false;
+		BaseRec = 1;
+		IRec = 1;
+		E->EdUpdated = true;
+		for (I = 1; I <= CFile->NRecs; I++) {
 			ReadRec(CFile, I, CRecPtr);
 			if (fail) goto label2;
 			if (Subset) /* !!! with WK^ do!!! */ {
@@ -1844,32 +1868,40 @@ bool DeleteRecProc()
 			}
 			else BaseRec = I;
 			if (RunBool(E->Bool)) {
-				if (!CleanUp()) { fail = true; goto label2; }
+				if (!CleanUp()) {
+					fail = true;
+					goto label2;
+				}
 				if (Subset) /* !!! with WK^ do!!! */ {
-					WK->DeleteAtNr(BaseRec); WK->AddToRecNr(J + 1, -1);
+					WK->DeleteAtNr(BaseRec);
+					WK->AddToRecNr(J + 1, -1);
 				}
 				DelAllDifTFlds(CRecPtr, nullptr);
 			}
 			else {
 				if (Subset) BaseRec++;
 			label2:
-				J++; WriteRec(J);
+				J++;
+				WriteRec(J);
 			}
 		}
 		DecNRecs(CFile->NRecs - J);
 	}
 	else if (CleanUp()) {
 		E->EdUpdated = true;
-		if (Subset) /* !!! with WK^ do!!! */ { WK->DeleteAtNr(CRec()); WK->AddToRecNr(N, -1); }
+		if (Subset) /* !!! with WK^ do!!! */ {
+			WK->DeleteAtNr(CRec());
+			WK->AddToRecNr(N, -1);
+		}
 		DeleteRec(N);
 	}
 	CFld = E->FirstFld;
-	IRec = oIRec;
+	IRec = (BYTE)oIRec;
 	BaseRec = oBaseRec;
 	ClearDeletedFlag();
 	AdjustCRec();
-	if (IsNewRec) DuplOwnerKey();
-	else RdRec(CRec());
+	if (IsNewRec) { DuplOwnerKey(); }
+	else { RdRec(CRec()); }
 	DisplWwRecsOrPage();
 	UnLockWithDep(OldMd);
 	result = true;
