@@ -18,6 +18,7 @@
 #include "wwmenu.h"
 #include "wwmix.h"
 
+
 void ScrGraphMode(bool Redraw, WORD OldScrSeg)
 {
 	// graf. mód není podporován
@@ -358,8 +359,6 @@ void SelectEditTxt(pstring e, bool OnFace)
 
 void InitRunFand()
 {
-	//auto logger = spdlog::get("logger");
-	//logger->debug("InitRunFand()");
 	WORD n = 0, l = 0, err = 0, hourmin = 0;
 	FILE* h = nullptr;
 	std::string s;
