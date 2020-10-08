@@ -18,6 +18,7 @@
 #include "wwmenu.h"
 #include <map>
 #include "runprolg.h"
+#include "../Logging/Logging.h"
 
 
 void* O(void* p) // ASM
@@ -1562,6 +1563,8 @@ label1:
 
 bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 {
+	Logging* log = Logging::getInstance();
+	log->log(loglevel::DEBUG, "starting CompileRdb()");
 	CHAR_INFO Buf[40];
 	longint w = 0;
 	longint I = 0, J = 0, OldTxt = 0, Txt = 0, OldCRec = 0;
@@ -1746,6 +1749,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 #ifdef FandSQL
 	if (top && (Strm1 != nullptr)) Strm1->Login(UserName, UserPassWORD);
 #endif
+	log->log(loglevel::DEBUG, "finish CompileRdb()");
 	return result;
 label1:
 	RestoreExit(er); result = false; CompileMsgOff(Buf, w);

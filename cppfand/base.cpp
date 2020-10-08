@@ -15,6 +15,7 @@
 #include "../datafiles/datafiles.h"
 #include "../exprcmp/exprcmp.h"
 #include "../fandio/cache.h"
+#include "../Logging/Logging.h"
 
 /*const*/
 char Version[] = { '4', '.', '2', '0', '\0' };
@@ -914,6 +915,9 @@ label1:
 	}
 	if (w != 0) PopW(w);
 
+	Logging* log = Logging::getInstance();
+	log->log(loglevel::DEBUG, "opening file 0x%p '%s', error %i", nFile, CPath.c_str(), HandleError);
+	
 	// pridani FILE* do vektoru kvuli 'WORD OvrHandle = h - 1;'
 	vOverHandle.push_back(nFile);
 	//#ifdef _DEBUG
@@ -989,25 +993,41 @@ void TruncH(FILE* handle, longint N)
 
 void CloseH(FILE* handle)
 {
-	auto it = filesMap.find(CPath);
-	if (it != filesMap.end()) {
-		it->second.SetClose();
+	Logging* log = Logging::getInstance();
+	DataFile* fileForClose = nullptr;
+	// oznaci za uzavreny ve filesMap
+	for (auto& f : filesMap)
+	{
+		if (f.second.Handler == handle) {
+			fileForClose = &f.second;
+			f.second.SetClose();
+			break;
+		}
+	}
+	if (fileForClose == nullptr) {
+		// soubor ve filesMap nebyl
+		log->log(loglevel::WARN, "closing file 0x%p, but file wasn't in filesMap!", handle);
 	}
 	if (handle == nullptr) return;
-	// uzavøe soubor
+	// uzavre soubor
 	auto res = fclose(handle);
 	WORD HandleError = res;
+	log->log(loglevel::DEBUG, "closing file 0x%p '%s', error %i", handle, fileForClose->Name.c_str(), res);
 	//if (CFile != nullptr) CFile->Handle = nullptr;
 }
 
 void ClearCacheH(FILE* h)
 {
+	Logging* log = Logging::getInstance();
+	log->log(loglevel::DEBUG, "ClearCacheH (0x%p)", h);
 	// smazeme cache
 	cache.SaveRemoveCache(h);
 }
 
 void CloseClearH(FILE* h)
 {
+	Logging* log = Logging::getInstance();
+	log->log(loglevel::DEBUG, "CloseClearH (0x%p)", h);
 	if (h == nullptr) return;
 	ClearCacheH(h);
 	CloseH(h);
@@ -1482,8 +1502,8 @@ bool EquLongStr(LongStr* S1, LongStr* S2)
 
 bool EquArea(void* P1, void* P2, WORD L)
 {
-	unsigned char* c1 = (unsigned char*)P1;
-	unsigned char* c2 = (unsigned char*)P2;
+	auto* c1 = static_cast<unsigned char*>(P1);
+	auto* c2 = static_cast<unsigned char*>(P2);
 	for (size_t i = 0; i < L; i++)
 	{
 		if (c1[i] != c2[i]) return false;
