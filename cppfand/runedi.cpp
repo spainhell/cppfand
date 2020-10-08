@@ -563,6 +563,8 @@ longint CNRecs()
 
 longint AbsRecNr(longint N)
 {
+	Logging* log = Logging::getInstance();
+	log->log(loglevel::DEBUG, "AbsRecNr(%i), CFile 0x%p", N, CFile->Handle);
 	LockMode md;
 	longint result = 0;
 	if (EdRecVar
@@ -1913,23 +1915,23 @@ bool DeleteRecProc()
 	return result;
 }
 
-ChkDPtr CompChk(EFldD* D, char Typ)
+ChkD* CompChk(EFldD* D, char Typ)
 {
-	ChkDPtr C; bool w, f;
-	w = WarnSwitch && (Typ == 'W' || Typ == '?');
-	f = (Typ == 'F' || Typ == '?');
-	C = D->Chk;
+	bool w = WarnSwitch && (Typ == 'W' || Typ == '?');
+	bool f = (Typ == 'F' || Typ == '?');
+	ChkD* C = D->Chk;
 	ChkD* result = nullptr;
 	while (C != nullptr) {
 		if ((w && C->Warning || f && !C->Warning) && !RunBool(C->Bool)) {
-			result = C; return result;
+			result = C;
+			return result;
 		}
 		C = (ChkD*)C->Chain;
 	}
 	return result;
 }
 
-void FindExistTest(FrmlPtr Z, LinkD** LD)
+void FindExistTest(FrmlElem* Z, LinkD** LD)
 {
 	*LD = nullptr;
 	if (Z == nullptr) return;

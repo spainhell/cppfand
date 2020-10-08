@@ -829,6 +829,8 @@ longint XNRecs(KeyDPtr K)
 
 void ReadRec(FileD* file, longint N, void* record)
 {
+	Logging* log = Logging::getInstance();
+	log->log(loglevel::DEBUG, "ReadRec(), file 0x%p, RecNr %i", N, file, N);
 	RdWrCache(true, file->Handle, file->NotCached(),
 		(N - 1) * file->RecLen + file->FrstDispl, file->RecLen, record);
 }
@@ -3245,6 +3247,9 @@ longint XKey::PathToNr()
 
 void XKey::NrToPath(longint I)
 {
+	auto log = Logging::getInstance();
+	log->log(loglevel::DEBUG, "XKey::NrToPath(%i)", I);
+	
 	XPage* p = new XPage(); // (XPage*)GetStore(XPageSize);
 	longint page = IndexRoot;
 	XPathN = 0;
@@ -3350,6 +3355,8 @@ label2:
 
 longint XKey::NrToRecNr(longint I)
 {
+	auto log = Logging::getInstance();
+	log->log(loglevel::DEBUG, "XKey::NrToRecNr(%i)", I);
 	NrToPath(I);
 	return PathToRecNr();
 }
