@@ -5,6 +5,7 @@
 #include "oaccess.h"
 #include "obaseww.h"
 #include "runfrml.h"
+#include "../Logging/Logging.h"
 #include "models/Instr.h"
 
 
@@ -701,6 +702,8 @@ label1:
 
 void CreateIndexFile()
 {
+	Logging* log = Logging::getInstance();
+	
 	ExitRecord er;
 	void* cr = nullptr; //void* p = nullptr;
 	LockMode md = NullMode;
@@ -718,6 +721,7 @@ void CreateIndexFile()
 	md = NewLMode(RdMode);
 	TryLockN(0, 0); /*ClearCacheCFile;*/
 	if (XF->Handle == nullptr) RunError(903);
+	log->log(loglevel::DEBUG, "CreateIndexFile() file 0x%p name '%s'", XF->Handle, CFile->Name.c_str());
 	XF->RdPrefix();
 	if (XF->NotValid) {
 		XF->SetEmpty();

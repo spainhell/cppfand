@@ -10,6 +10,7 @@
 #include "olongstr.h"
 #include "runfrml.h"
 #include "sort.h"
+#include "../Logging/Logging.h"
 
 WORD randIndex = 0;
 
@@ -834,6 +835,9 @@ void ReadRec(FileD* file, longint N, void* record)
 
 void WriteRec(longint N)
 {
+	Logging* log = Logging::getInstance();
+	log->log(loglevel::DEBUG, "WriteRec(%i), CFile 0x%p, %s", N, CFile->Handle, CFile->Name.c_str());
+
 	RdWrCache(false, CFile->Handle, CFile->NotCached(),
 		(N - 1) * CFile->RecLen + CFile->FrstDispl, CFile->RecLen, CRecPtr);
 	CFile->WasWrRec = true;
@@ -841,6 +845,9 @@ void WriteRec(longint N)
 
 void WriteRec(FileD* file, longint N, void* record)
 {
+	Logging* log = Logging::getInstance();
+	log->log(loglevel::DEBUG, "WriteRec(%i), CFile 0x%p", N, CFile->Handle);
+	
 	RdWrCache(false, file->Handle, file->NotCached(),
 		(N - 1) * file->RecLen + file->FrstDispl, file->RecLen, record);
 	file->WasWrRec = true;
@@ -885,8 +892,10 @@ label1:
 
 void DeleteAllIndexes(longint RecNr)
 {
-	KeyDPtr K;
-	K = CFile->Keys;
+	Logging* log = Logging::getInstance();
+	log->log(loglevel::DEBUG, "DeleteAllIndexes(%i)", RecNr);
+	
+	KeyDPtr K = CFile->Keys;
 	while (K != nullptr) {
 		K->Delete(RecNr);
 		K = K->Chain;
@@ -975,6 +984,8 @@ void DelAllDifTFlds(void* Rec, void* CompRec)
 
 void DeleteXRec(longint RecNr, bool DelT)
 {
+	Logging* log = Logging::getInstance();
+	log->log(loglevel::DEBUG, "DeleteXRec(%i, %s)", RecNr, DelT ? "true" : "false");
 	TestXFExist();
 	DeleteAllIndexes(RecNr);
 	if (DelT) DelAllDifTFlds(CRecPtr, nullptr);
@@ -2249,6 +2260,8 @@ label1:
 
 void TFile::RdWr(bool ReadOp, longint Pos, WORD N, void* X)
 {
+	Logging* log = Logging::getInstance();
+	log->log(loglevel::DEBUG, "TFile::RdWr() 0x%p %s pos: %i, len: %i", Handle, ReadOp ? "read" : "write", Pos, N);
 	WORD Rest = 0, L = 0;
 	longint NxtPg = 0;
 	char* source = (char*)X;
@@ -3841,6 +3854,8 @@ void XFile::SetEmpty()
 
 void XFile::RdPrefix()
 {
+	Logging* log = Logging::getInstance();
+	log->log(loglevel::DEBUG, "XFile::RdPrefix() 0x%p reading 18 Bytes", Handle);
 	RdWrCache(true, Handle, NotCached(), 2, 4, &FreeRoot);
 	RdWrCache(true, Handle, NotCached(), 6, 4, &MaxPage);
 	RdWrCache(true, Handle, NotCached(), 10, 4, &NRecs);
@@ -3851,6 +3866,9 @@ void XFile::RdPrefix()
 
 void XFile::WrPrefix()
 {
+	Logging* log = Logging::getInstance();
+	log->log(loglevel::DEBUG, "XFile::WrPrefix() 0x%p writing 20 Bytes, NRecsAbs = %i, NrKeys = %i", 
+		Handle, CFile->NRecs, CFile->GetNrKeys());
 	WORD Signum = 0x04FF;
 	RdWrCache(false, Handle, NotCached(), 0, 2, &Signum);
 	NRecsAbs = CFile->NRecs;
@@ -3861,6 +3879,7 @@ void XFile::WrPrefix()
 	RdWrCache(false, Handle, NotCached(), 14, 4, &NRecsAbs);
 	RdWrCache(false, Handle, NotCached(), 18, 1, &NotValid);
 	RdWrCache(false, Handle, NotCached(), 19, 1, &NrKeys);
+	
 }
 
 void XFile::SetNotValid()

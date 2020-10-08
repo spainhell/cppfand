@@ -916,7 +916,7 @@ label1:
 	if (w != 0) PopW(w);
 
 	Logging* log = Logging::getInstance();
-	log->log(loglevel::DEBUG, "opening file 0x%p '%s', error %i", nFile, CPath.c_str(), HandleError);
+	log->log(loglevel::DEBUG, "opening file  0x%p '%s', error %i", nFile, CPath.c_str(), HandleError);
 	
 	// pridani FILE* do vektoru kvuli 'WORD OvrHandle = h - 1;'
 	vOverHandle.push_back(nFile);
@@ -1012,14 +1012,15 @@ void CloseH(FILE* handle)
 	// uzavre soubor
 	auto res = fclose(handle);
 	WORD HandleError = res;
-	log->log(loglevel::DEBUG, "closing file 0x%p '%s', error %i", handle, fileForClose->Name.c_str(), res);
+	log->log(loglevel::DEBUG, "closing file 0x%p '%s', error %i", 
+		handle, fileForClose == nullptr ? "nullptr" : fileForClose->Name.c_str(), res);
 	//if (CFile != nullptr) CFile->Handle = nullptr;
 }
 
 void ClearCacheH(FILE* h)
 {
 	Logging* log = Logging::getInstance();
-	log->log(loglevel::DEBUG, "ClearCacheH (0x%p)", h);
+	log->log(loglevel::DEBUG, "ClearCacheH() 0x%p", h);
 	// smazeme cache
 	cache.SaveRemoveCache(h);
 }
@@ -1027,7 +1028,7 @@ void ClearCacheH(FILE* h)
 void CloseClearH(FILE* h)
 {
 	Logging* log = Logging::getInstance();
-	log->log(loglevel::DEBUG, "CloseClearH (0x%p)", h);
+	log->log(loglevel::DEBUG, "CloseClearH() 0x%p", h);
 	if (h == nullptr) return;
 	ClearCacheH(h);
 	CloseH(h);
@@ -1060,11 +1061,8 @@ WORD GetFileAttr()
 
 void RdWrCache(bool ReadOp, FILE* Handle, bool NotCached, longint Pos, WORD N, void* Buf)
 {
-	if (Pos >= 0x4400 && ReadOp == false)
-	{
-		printf("");
-	}
-
+	Logging* log = Logging::getInstance();
+	
 	bool Cached = !NotCached;
 	integer PgeIdx = 0, PgeRest = 0; WORD err = 0; longint PgeNo = 0;
 	//CachePage* Z = nullptr;
@@ -1075,12 +1073,14 @@ void RdWrCache(bool ReadOp, FILE* Handle, bool NotCached, longint Pos, WORD N, v
 		// snazime se zapsat do RdOnly souboru
 		// zapisem pouze do cache
 		// TODO: nutno doresit, co s tim dal ...
+		log->log(loglevel::ERR, "RdWrCache() trying to write to RdOnly file 0x%p!", Handle);
 		FileCache* c1 = cache.GetCache(Handle);
 		c1->Save(Pos, N, (unsigned char*)Buf);
 		return;
 	}
 
 	if (Cached) {
+		//log->log(loglevel::DEBUG, "RdWrCache() 0x%p cached file operation.", Handle);
 		FileCache* c1 = cache.GetCache(Handle);
 		if (ReadOp) {
 			auto src = c1->Load(Pos);
@@ -1093,6 +1093,7 @@ void RdWrCache(bool ReadOp, FILE* Handle, bool NotCached, longint Pos, WORD N, v
 	}
 	else {
 		// soubor nema cache, cteme (zapisujeme) primo z disku (na disk)
+		//log->log(loglevel::DEBUG, "RdWrCache() non cached file 0x%p operation.", Handle);
 		SeekH(Handle, Pos);
 		if (ReadOp) ReadH(Handle, N, Buf);
 		else WriteH(Handle, N, Buf);
@@ -1102,39 +1103,13 @@ void RdWrCache(bool ReadOp, FILE* Handle, bool NotCached, longint Pos, WORD N, v
 		SetMsgPar(CPath);
 		RunError(700 + err);
 	}
-
-	/*FileCache* c1 = Cache::GetCache(Handle);
-	if (ReadOp) memcpy(Buf, c1->Load(Pos), N);
-	else c1->Save(Pos, N, (unsigned char*)Buf);*/
-
-	//PgeIdx = Pos + CachePageSize - 1;
-	//PgeRest = CachePageSize - PgeIdx;
-	//PgeNo = Pos >> CachePageShft;
-	//Z = Cache(Handle, PgeNo);
-	//while (N > PgeRest) {
-	//	if (ReadOp) Move(&Z->Arr[PgeIdx], Buf, PgeRest);
-	//	else { Move(Buf, &Z->Arr[PgeIdx], PgeRest); Z->Upd = true; }
-
-	//	WORD* bp = (WORD*)Buf;
-	//	bp[0] += PgeRest;
-
-	//	N -= PgeRest; PgeNo++;
-	//	Z = Cache(Handle, PgeNo);
-	//	PgeRest = CachePageSize;
-	//	PgeIdx = 0;
-	//}
-	//if (ReadOp) Move(&Z->Arr[PgeIdx], Buf, N);
-	//else {
-	//	Move(Buf, &Z->Arr[PgeIdx], N);
-	//	Z->Upd = true;
-	//	SetUpdHandle(Handle);
-	//}
 }
 
 void FlushH(FILE* handle)
 {
+	Logging* log = Logging::getInstance();
+	log->log(loglevel::DEBUG, "FlushH()      0x%p", handle);
 	if (handle == nullptr) return;
-
 	auto result = fflush(handle);
 	if (result == EOF) { HandleError = result; }
 	//SetHandle(handle);
@@ -1540,10 +1515,10 @@ void NewExit(PProcedure POvr, ExitRecord* Buf)
 
 void GoExit()
 {
+	Logging* log = Logging::getInstance();
+	log->log(loglevel::ERR, "GoExit(): '%s'", MsgLine.c_str());
 #ifdef _DEBUG
-	//printf("%s ", MsgLine.c_str());
 	screen.ScrWrText(1, 1, MsgLine.c_str());
-	//throw std::exception("GoExit()");
 #endif
 }
 
@@ -1553,10 +1528,13 @@ void RestoreExit(ExitRecord& Buf)
 
 bool OSshell(std::string Path, std::string CmdLine, bool NoCancel, bool FreeMm, bool LdFont, bool TextMd)
 {
+	Logging* log = Logging::getInstance();
+	
 	char psBuffer[128];
 	FILE* pPipe;
 
 	std::string cmd = Path.empty() ? CmdLine : Path + " " + CmdLine;
+	log->log(loglevel::INFO, "OSshell() calling command '%s'", cmd.c_str());
 
 	if ((pPipe = _popen(cmd.c_str(), "rt")) == nullptr)
 		return false;
