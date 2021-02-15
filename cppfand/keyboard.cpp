@@ -55,10 +55,10 @@ size_t Keyboard::FreeSpace()
 
 bool Keyboard::Get(KEY_EVENT_RECORD& key)
 {
-	// pokud jsme na konci bufferu, naèteme jej znovu
+	// pokud jsme na konci bufferu, nacteme jej znovu
 	if (_inBuffer == 0 || _actualIndex >= _inBuffer)
 	{
-		// pokud nic nepøišlo, vrátíme false
+		// pokud nic neprislo, vratime false
 		_read();
 		if (_inBuffer == 0) return false;
 	}
@@ -68,7 +68,7 @@ bool Keyboard::Get(KEY_EVENT_RECORD& key)
 		_actualIndex++;
 	}
 
-	// narazili jsme na událost z klávesnice, nebo tam žádná taková není a jsme na konci?
+	// narazili jsme na událost z klávesnice, nebo tam zádná taková není a jsme na konci?
 	if (_actualIndex == _inBuffer) return false;
 		
 	key = _kbdBuf[_actualIndex++].Event.KeyEvent;

@@ -891,8 +891,8 @@ void DisplRecNr(longint N)
 
 void AdjustCRec()
 {
-	if (CRec <= CNRecs) return;
-	while (CRec > CNRecs) {
+	if (CRec() <= CNRecs()) return;
+	while (CRec() > CNRecs()) {
 		if (IRec > 1) IRec--;
 		else BaseRec--;
 	}

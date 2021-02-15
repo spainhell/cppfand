@@ -228,7 +228,7 @@ label1:
 	}
 	ConvKamenToCurr(&s[1], s.length());
 	MsgLine = "";
-	j = 1;
+	j = 0;
 	s[s.length() + 1] = 0x00;
 	for (int i = 1; i <= s.length(); i++) {
 		if (s[i] == '$' && s[i + 1] != '$')
