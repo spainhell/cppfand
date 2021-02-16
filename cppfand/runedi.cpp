@@ -2824,7 +2824,7 @@ label1:
 		if (Append) AppendRecord(nullptr);
 		else {
 			if (WasNewRec) NewDisplLL = true;
-			if (CRec < CNRecs)
+			if (CRec() < CNRecs())
 				if (Select) {
 					for (i = CRec() + 1; i < CNRecs(); i++) {
 						if (KeyPressed() && (ReadKey() != _M_) && PromptYN(23)) goto label4;
@@ -3035,7 +3035,7 @@ label1:
 	HdTxt = "    ";
 	WasUpd = false;
 	if (CRec() > 1) HdTxt[3] = 0x18; // ^X
-	if (CRec < CNRecs) HdTxt[4] = 0x19; // ^Y
+	if (CRec() < CNRecs()) HdTxt[4] = 0x19; // ^Y
 	if (IsCurrChpt()) {
 		HdTxt = _ShortS(ChptTyp) + ':' + _ShortS(ChptName) + HdTxt;
 		TxtPos = trunc(_R(ChptTxtPos));
@@ -3563,7 +3563,7 @@ void DelNewRec()
 	if (CNRecs() == 1) return;
 	IsNewRec = false; Append = false;
 	WasUpdated = false; CFld = E->FirstFld;
-	if (CRec > CNRecs) { // pozor! uspodarani IF a ELSE neni jasne !!!
+	if (CRec() > CNRecs()) { // pozor! uspodarani IF a ELSE neni jasne !!!
 		if (IRec > 1) IRec--;
 		else BaseRec--;
 	}
@@ -4257,7 +4257,7 @@ label81:
 						case VK_LEFT + CTRL:
 							if (CRec() > 1) SwitchRecs(-1); break;
 						case VK_RIGHT + CTRL:
-							if (CRec < CNRecs) SwitchRecs(+1); break;
+							if (CRec() < CNRecs()) SwitchRecs(+1); break;
 						case VK_F2 + CTRL: {
 							if (!EdRecVar) RefreshSubset();
 							b = false;
@@ -4268,7 +4268,8 @@ label81:
 						case VK_F3 + ALT:
 							if (IsCurrChpt())
 								if (w == _AltF3_) {
-									ForAllFDs(ClosePassiveFD); EditHelpOrCat(w, 0, "");
+									ForAllFDs(ClosePassiveFD);
+									EditHelpOrCat(w, 0, "");
 								}
 								else { Brk = 2; goto fin; }
 							else if (IsTestRun && (CFile != CatFD) && (w == _AltF2_))
