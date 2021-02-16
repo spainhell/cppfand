@@ -4371,8 +4371,8 @@ void EditDataFile(FileDPtr FD, EditOpt* EO)
 	else w1 = PushW1(1, 1, TxtCols, TxtRows, pix, true);
 	if (OpenEditWw()) {
 		if (OnlyAppend && !Append) SwitchToAppend();
+		RunEdit(nullptr, Brk);
 	}
-	RunEdit(nullptr, Brk);
 	if (w3 != 0) PopW(w3);
 	if (w2 != 0) PopW(w2);
 	PopW(w1);
