@@ -820,13 +820,12 @@ longint XNRecs(KeyDPtr K)
 	return CFile->NRecs;
 }
 
-//void ReadRec(longint N)
-//{
-//	/* with CFile^ do */
-//	RdWrCache(true, CFile->Handle, CFile->NotCached(),
-//		(N - 1) * CFile->RecLen + CFile->FrstDispl, CFile->RecLen, CRecPtr);
-//}
-
+/// <summary>
+/// Vycte zaznam z datoveho souboru (.000)
+/// </summary>
+/// <param name="file">ukazatel na soubor</param>
+/// <param name="N">kolikaty zaznam</param>
+/// <param name="record">ukazatel na buffer</param>
 void ReadRec(FileD* file, longint N, void* record)
 {
 	Logging* log = Logging::getInstance();

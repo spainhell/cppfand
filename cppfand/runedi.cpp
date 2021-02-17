@@ -148,7 +148,7 @@ label1:
 						else { beep(); goto label7; }
 					Move(&(*s)[pos], &(*s)[pos + 1], *sLen - pos + 1); (*sLen)++;
 				}
-				else if (pos > * sLen) (*sLen)++;
+				else if (pos > *sLen) (*sLen)++;
 				(*s)[pos] = (char)KbdChar;
 				pos++;
 			label7: {}
@@ -180,7 +180,7 @@ label1:
 		case _D_: {
 			if (pos <= maxlen)
 			{
-				if ((pos > * sLen) && (*sLen < maxlen)) s = s + ' ';
+				if ((pos > *sLen) && (*sLen < maxlen)) s = s + ' ';
 				pos++;
 			}
 			break;
@@ -561,6 +561,11 @@ longint CNRecs()
 	return n;
 }
 
+/// <summary>
+/// Vraci poradi zaznamu v datovem souboru podle cisla indexu
+/// </summary>
+/// <param name="N">Cislo polozky v indexovem souboru (poradi)</param>
+/// <returns>Cislo polozky v datovem souboru (poradi)</returns>
 longint AbsRecNr(longint N)
 {
 	Logging* log = Logging::getInstance();
@@ -631,6 +636,11 @@ bool EquOldNewRec()
 	return (CompArea(CRecPtr, E->OldRecPtr, CFile->RecLen) == _equ);
 }
 
+/// <summary>
+/// Vycte X-ty zaznam (z DB nebo ze souboru)
+/// Nejedna se o fyzicke cislo zaznamu v souboru
+/// </summary>
+/// <param name="N">kolikaty zaznam</param>
 void RdRec(longint N)
 {
 	LockMode md; XString x;
@@ -1543,14 +1553,18 @@ label2:
 
 void UpdMemberRef(void* POld, void* PNew)
 {
-	LinkDPtr LD = nullptr; XString x, xnew, xold; XScan* Scan = nullptr; FileDPtr cf = nullptr;
-	void* cr = nullptr; void* p = nullptr; void* p2 = nullptr; bool sql;
-	KeyDPtr k = nullptr; KeyFldDPtr kf = nullptr, kf1 = nullptr, kf2 = nullptr, Arg = nullptr;
-	cf = CFile; cr = CRecPtr; LD = LinkDRoot;
+	LinkD* LD = LinkDRoot;
+	XString x, xnew, xold;
+	XScan* Scan = nullptr;
+	FileD* cf = CFile;
+	void* cr = CRecPtr; void* p = nullptr; void* p2 = nullptr;
+	XKey* k = nullptr;
+	KeyFldD* kf = nullptr, *kf1 = nullptr, *kf2 = nullptr, *Arg = nullptr;
+		
 	while (LD != nullptr) {
-		if ((LD->MemberRef != 0) && (LD->ToFD == cf) &&
-			((PNew != nullptr) || (LD->MemberRef != 2))) {
-			CFile = cf; kf2 = LD->ToKey->KFlds;
+		if ((LD->MemberRef != 0) && (LD->ToFD == cf) &&	((PNew != nullptr) || (LD->MemberRef != 2))) {
+			CFile = cf;
+			kf2 = LD->ToKey->KFlds;
 			CRecPtr = POld;
 			xold.PackKF(kf2);
 			if (PNew != nullptr) {
@@ -1567,7 +1581,6 @@ void UpdMemberRef(void* POld, void* PNew)
 			p = GetRecSpace();
 			CRecPtr = p;
 			if (PNew != nullptr) p2 = GetRecSpace();
-			// New(Scan, Init(CFile, k, nullptr, true));
 			Scan = new XScan(CFile, k, nullptr, true);
 			Scan->ResetOwner(&xold, nullptr);
 #ifdef FandSQL
@@ -1582,16 +1595,19 @@ void UpdMemberRef(void* POld, void* PNew)
 				if (sql) x.PackKF(kf1);
 #endif
 				if (PNew == nullptr) {
-					RunAddUpdte1('-', nullptr, false, nullptr, LD); UpdMemberRef(p, nullptr);
+					RunAddUpdte1('-', nullptr, false, nullptr, LD);
+					UpdMemberRef(p, nullptr);
 #ifdef FandSQL
-					if (sql) Strm1->DeleteXRec(k, @x, false); else
+					if (sql) Strm1->DeleteXRec(k, @x, false);
+					else
 #endif
-
 						DeleteXRec(Scan->RecNr, true);
 				}
 				else {
 					Move(CRecPtr, p2, CFile->RecLen);
-					CRecPtr = p2; kf = kf2; Arg = LD->Args;
+					CRecPtr = p2;
+					kf = kf2;
+					Arg = LD->Args;
 					while (kf != nullptr) {
 						DuplFld(cf, CFile, PNew, p2, nullptr, kf->FldD, Arg->FldD);
 						Arg = (KeyFldD*)Arg->Chain;
@@ -1728,10 +1744,13 @@ label4:
 
 void UnLockWithDep(LockMode OldMd)
 {
-	FileDPtr cf; LockMode md;
+	LockMode md;
 	if (EdRecVar) return;
-	cf = CFile; OldLMode(OldMd); LockForAdd(cf, 2, true, md);
-	LockForMemb(cf, 2, md, md); CFile = cf;
+	FileD* cf = CFile;
+	OldLMode(OldMd);
+	LockForAdd(cf, 2, true, md);
+	LockForMemb(cf, 2, md, md);
+	CFile = cf;
 }
 
 void UndoRecord()
@@ -1747,10 +1766,11 @@ void UndoRecord()
 					f = (FieldDescr*)f->Chain;
 				}
 			}
-			else {
-				DelAllDifTFlds(E->NewRecPtr, E->OldRecPtr);
-			}
 		}
+		else { // je toto spravne zanorene???
+			DelAllDifTFlds(E->NewRecPtr, E->OldRecPtr);
+		}
+
 		Move(E->OldRecPtr, E->NewRecPtr, CFile->RecLen);
 		WasUpdated = false; NoDelTFlds = false;
 		UnLockRec(E);
@@ -1761,41 +1781,46 @@ void UndoRecord()
 
 bool CleanUp()
 {
-	EdExitD* X; bool ok, b; LinkDPtr ld;
-	auto result = false;
-	if (HasIndex && DeletedFlag()) return result;
-	X = E->ExD; while (X != nullptr) {
+	if (HasIndex && DeletedFlag()) return false;
+	EdExitD* X = E->ExD;
+	while (X != nullptr) {
 		if (X->AtWrRec) {
-			EdBreak = 17; ok = EdOk; EdOk = true; LastTxtPos = -1;
-			if (!StartExit(X, false) || !EdOk) { EdOk = ok; return result; }
-			EdOk = ok; WasUpdated = false;
+			EdBreak = 17;
+			bool ok = EdOk;
+			EdOk = true;
+			LastTxtPos = -1;
+			if (!StartExit(X, false) || !EdOk)	{
+				EdOk = ok;
+				return false;
+			}
+			EdOk = ok;
+			WasUpdated = false;
 		}
 		X = (EdExitD*)X->Chain;
 	}
 	if (AddSwitch) {
-		ld = LinkDRoot;
+		LinkD* ld = LinkDRoot;
 		while (ld != nullptr) {
-			if ((ld->MemberRef == 2) && (ld->ToFD == CFile) &&
-				(Owned(nullptr, nullptr, ld) > 0)) {
-				WrLLF10Msg(662); return result;
+			if ((ld->MemberRef == 2) && (ld->ToFD == CFile) && Owned(nullptr, nullptr, ld) > 0) {
+				WrLLF10Msg(662);
+				return false;
 			}
 			ld = ld->Chain;
 		}
-		if (!RunAddUpdte1('-', nullptr, false, nullptr, nullptr)) return result;
+		if (!RunAddUpdte1('-', nullptr, false, nullptr, nullptr)) return false;
 		UpdMemberRef(CRecPtr, nullptr);
 	}
-	if (!ChptDel) return result;
+	if (!ChptDel()) return false;
 	WrJournal('-', CRecPtr, Today() + CurrTime());
-	result = true;
-	return result;
+	return true;
 }
 
 bool DelIndRec(longint I, longint N)
 {
-	XString x;
 	auto result = false;
 	if (CleanUp()) {
 #ifdef FandSQL
+		XString x;
 		if (CFile->IsSQLFile) {
 			x.PackKF(VK->KFlds); Strm1->DeleteXRec(VK, @x, false);
 		}
@@ -1803,7 +1828,9 @@ bool DelIndRec(longint I, longint N)
 #endif
 			DeleteXRec(N, true);
 		if ((E->SelKey != nullptr) && E->SelKey->Delete(N)) E->SelKey->NR--;
-		if (Subset) WK->DeleteAtNr(I); result = true; E->EdUpdated = true;
+		if (Subset) WK->DeleteAtNr(I);
+		result = true;
+		E->EdUpdated = true;
 	}
 	return result;
 }
@@ -1812,7 +1839,7 @@ bool DeleteRecProc()
 {
 	Logging* log = Logging::getInstance();
 	log->log(loglevel::DEBUG, "DeleteRecProc() deleting item (CFile '%c')", CFile->Name.c_str());
-	
+
 	longint I = 0, J = 0, N = 0, oBaseRec = 0;
 	WORD oIRec = 0;
 	bool Group = false, fail = false; LockMode OldMd;
