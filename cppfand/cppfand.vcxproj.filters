@@ -144,6 +144,9 @@
     <ClCompile Include="XKey.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="XPage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base.h">
@@ -282,6 +285,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="XKey.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="XPage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

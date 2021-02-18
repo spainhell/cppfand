@@ -7,6 +7,7 @@
 #include "rdproc.h"
 #include "runfrml.h"
 #include "runproj.h"
+#include "XPage.h"
 
 bool HasTT;
 bool issql;

@@ -3,7 +3,7 @@
 #include "pstring.h"
 
 class KeyFldD;
-class FrmlListEl;
+struct FrmlListEl;
 
 class XString // ø. 254
 {

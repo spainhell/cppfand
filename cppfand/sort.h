@@ -1,6 +1,7 @@
 #pragma once
 #include "access.h"
 #include "rdrun.h"
+#include "XPage.h"
 
 class XXPage;
 class Instr_getindex;

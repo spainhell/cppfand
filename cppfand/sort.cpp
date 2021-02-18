@@ -1,8 +1,5 @@
 #include "sort.h"
-
 #include <queue>
-
-
 #include "GlobalVariables.h"
 #include "oaccess.h"
 #include "obaseww.h"

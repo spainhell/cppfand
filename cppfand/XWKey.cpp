@@ -3,6 +3,7 @@
 #include "base.h"
 #include "GlobalVariables.h"
 #include "legacy.h"
+#include "XPage.h"
 
 
 void XWKey::Open(KeyFldD* KF, bool Dupl, bool Intvl)
