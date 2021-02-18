@@ -6,6 +6,7 @@
 #include "XItem.h"
 #include "XItemLeaf.h"
 #include "XString.h"
+#include "XWKey.h"
 #ifdef FandSQL
 #include "channel.h"
 #endif
@@ -37,9 +38,6 @@ const BYTE XPageShft = 10;
 const BYTE MPageShft = 9;
 
 typedef char PwCodeArr[20];
-
-typedef XKey* KeyDPtr;
-typedef XKey KeyD;
 typedef FuncD* FuncDPtr;
 typedef XWKey* WKeyDPtr;
 
@@ -402,58 +400,6 @@ private:
 	bool _enhLeafItem(size_t iIndex, BYTE length); // prodlouzi polozku o X Bytu z predchozi polozky, zaktualizuje M i L
 };
 typedef XPage* XPagePtr;
-
-class XKey // r309
-{
-public:
-	XKey();
-	XKey(const XKey& orig, bool copyFlds);
-	XKey(BYTE* inputStr);
-	XKey* Chain = nullptr;
-	KeyFldD* KFlds = nullptr;
-	bool Intervaltest = false, Duplic = false, InWork = false;
-	WORD IndexRoot = 0; BYTE IndexLen = 0;
-	longint NR = 0; // {used only by XWKey}
-	std::string* Alias = nullptr;
-	XWFile* XF();
-	longint NRecs();
-	bool Search(XString& XX, bool AfterEqu, longint& RecNr);
-	bool Search(std::string X, bool AfterEqu, longint& RecNr);
-	bool SearchIntvl(XString& XX, bool AfterEqu, longint& RecNr);
-	longint PathToNr();
-	void NrToPath(longint I);
-	longint PathToRecNr();
-	bool RecNrToPath(XString& XX, longint RecNr);
-	bool IncPath(WORD J, longint& Pg);
-	longint NrToRecNr(longint I);
-	pstring NrToStr(longint I);
-	longint RecNrToNr(longint RecNr);
-	bool FindNr(XString& X, longint& IndexNr);
-	bool FindNr(std::string X, longint& IndexNr);
-	void InsertOnPath(XString& XX, longint RecNr);
-	void InsertItem(XString& XX, XPage* P, XPage* UpP, longint Page, WORD I, XItem** X, longint& UpPage);
-	void InsertLeafItem(XString& XX, XPage* P, XPage* UpP, longint Page, WORD I, int RecNr, longint& UpPage);
-	void ChainPrevLeaf(XPagePtr P, longint N);
-	bool Insert(longint RecNr, bool Try);
-	void DeleteOnPath();
-	void BalancePages(XPage* P1, XPage* P2, bool& Released);
-	void XIDown(XPage* P, XPage* P1, WORD I, longint& Page1);
-	bool Delete(longint RecNr);
-};
-
-class XWKey : public XKey // r334
-{
-public:
-	void Open(KeyFldD* KF, bool Dupl, bool Intvl);
-	void Close();
-	void Release();
-	void ReleaseTree(longint Page, bool IsClose);
-	void OneRecIdx(KeyFldD* KF, longint N);
-	void InsertAtNr(longint I, longint RecNr);
-	longint InsertGetNr(longint RecNr);
-	void DeleteAtNr(longint I);
-	void AddToRecNr(longint RecNr, integer Dif);
-};
 
 class XWFile // r345
 {

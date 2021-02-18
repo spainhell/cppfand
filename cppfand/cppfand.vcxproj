@@ -195,7 +195,9 @@
     <ClCompile Include="wwmix.cpp" />
     <ClCompile Include="XItem.cpp" />
     <ClCompile Include="XItemLeaf.cpp" />
+    <ClCompile Include="XKey.cpp" />
     <ClCompile Include="XString.cpp" />
+    <ClCompile Include="XWKey.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="access.h" />
@@ -241,7 +243,9 @@
     <ClInclude Include="wwmix.h" />
     <ClInclude Include="XItem.h" />
     <ClInclude Include="XItemLeaf.h" />
+    <ClInclude Include="XKey.h" />
     <ClInclude Include="XString.h" />
+    <ClInclude Include="XWKey.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="cppfand.rc" />
