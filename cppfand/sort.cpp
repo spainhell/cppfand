@@ -2,6 +2,8 @@
 
 #include <queue>
 
+
+#include "GlobalVariables.h"
 #include "oaccess.h"
 #include "obaseww.h"
 #include "runfrml.h"

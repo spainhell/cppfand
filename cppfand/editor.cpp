@@ -13,6 +13,7 @@
 #include "wwmix.h"
 #include <set>
 #include "compile.h"
+#include "GlobalVariables.h"
 #include "obaseww.h"
 #include "runfrml.h"
 

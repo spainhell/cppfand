@@ -1,5 +1,7 @@
 #include "printtxt.h"
 
+
+#include "GlobalVariables.h"
 #include "legacy.h"
 #include "oaccess.h"
 #include "obase.h"

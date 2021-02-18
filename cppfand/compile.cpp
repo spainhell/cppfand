@@ -3,6 +3,7 @@
 #include <map>
 
 #include "editor.h"
+#include "GlobalVariables.h"
 #include "obaseww.h"
 #include "rdfildcl.h"
 #include "runfrml.h"

@@ -1,5 +1,7 @@
 #include "rdedit.h"
 
+
+#include "GlobalVariables.h"
 #include "legacy.h"
 #include "obaseww.h"
 #include "rdfildcl.h"

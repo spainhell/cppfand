@@ -1,6 +1,7 @@
 #include "rdmerg.h"
 
 #include "compile.h"
+#include "GlobalVariables.h"
 #include "legacy.h"
 #include "rdfildcl.h"
 #include "rdrprt.h"

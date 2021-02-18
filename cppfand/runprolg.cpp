@@ -4,6 +4,7 @@
 
 #include "runproj.h"
 #include "compile.h"
+#include "GlobalVariables.h"
 #include "oaccess.h"
 #include "obaseww.h"
 #include "runproc.h"

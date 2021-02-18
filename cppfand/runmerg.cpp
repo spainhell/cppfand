@@ -1,4 +1,6 @@
 #include "runmerg.h"
+
+#include "GlobalVariables.h"
 #include "legacy.h"
 #include "oaccess.h"
 #include "obaseww.h"

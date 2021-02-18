@@ -1,4 +1,6 @@
 #include "expimp.h"
+
+#include "GlobalVariables.h"
 #include "oaccess.h"
 
 enum InOutMode { _inp, _outp, _append };

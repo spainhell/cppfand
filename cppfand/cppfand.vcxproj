@@ -163,6 +163,7 @@
     <ClCompile Include="editor.cpp" />
     <ClCompile Include="expimp.cpp" />
     <ClCompile Include="genrprt.cpp" />
+    <ClCompile Include="GlobalVariables.cpp" />
     <ClCompile Include="Graph.cpp" />
     <ClCompile Include="keyboard.cpp" />
     <ClCompile Include="legacy.cpp" />
@@ -203,6 +204,7 @@
     <ClInclude Include="expimp.h" />
     <ClInclude Include="fanddml.h" />
     <ClInclude Include="genrprt.h" />
+    <ClInclude Include="GlobalVariables.h" />
     <ClInclude Include="Graph.h" />
     <ClInclude Include="keyboard.h" />
     <ClInclude Include="legacy.h" />

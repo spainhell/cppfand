@@ -1,5 +1,7 @@
 #include "wwmenu.h"
 
+
+#include "GlobalVariables.h"
 #include "legacy.h"
 #include "obaseww.h"
 #include "runfrml.h"

@@ -6,6 +6,7 @@
 #include "drivers.h"
 #include "expimp.h"
 #include "genrprt.h"
+#include "GlobalVariables.h"
 #include "legacy.h"
 #include "oaccess.h"
 #include "obase.h"

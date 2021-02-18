@@ -1,6 +1,7 @@
 #include "runedi.h"
 
 #include "genrprt.h"
+#include "GlobalVariables.h"
 #include "legacy.h"
 #include "oaccess.h"
 #include "obaseww.h"

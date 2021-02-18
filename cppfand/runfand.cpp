@@ -8,6 +8,7 @@
 #include "drivers.h"
 #include "access.h"
 #include "editor.h"
+#include "GlobalVariables.h"
 #include "oaccess.h"
 #include "obaseww.h"
 #include "rdedit.h"

@@ -1,5 +1,7 @@
 #include "genrprt.h"
 
+
+#include "GlobalVariables.h"
 #include "rdedit.h"
 #include "rdrprt.h"
 #include "runrprt.h"
@@ -115,8 +117,11 @@ void WrLevel(integer Level)
 		if (!first) WrChar(',');
 		WrStr("errortext+cond(^error:' ??')");
 	}
-	WrStr(";\r\n"); col = 1; if (CFile->Typ == '0'/*RDB*/) WrChar(0x11);
-	d = PFldDs; while (d != nullptr) {
+	WrStr(";\r\n");
+	col = 1;
+	if (CFile->Typ == '0'/*RDB*/) WrChar(0x11);
+	d = PFldDs;
+	while (d != nullptr) {
 		if ((CFile->Typ == '0') && (d->Chain == nullptr)) WrChar(0x11);
 		if (d->NxtLine) { WrStr("\r\n"); col = 1; }
 		f = d->FldD; l = f->L; n = d->ColItem - col; col = d->ColItem + l;

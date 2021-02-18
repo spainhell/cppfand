@@ -12,6 +12,8 @@
 #include "oaccess.h"
 #include <ctime>
 #include <iostream>
+
+#include "GlobalVariables.h"
 #include "../datafiles/datafiles.h"
 #include "../exprcmp/exprcmp.h"
 #include "../fandio/cache.h"

@@ -1,4 +1,6 @@
 #include "olongstr.h"
+
+#include "GlobalVariables.h"
 #include "oaccess.h"
 
 void GetTxtPrepare(FrmlElem* Z, FILE** h, longint& off, longint& len)

@@ -17,6 +17,8 @@
 #include "runrprt.h"
 #include "wwmenu.h"
 #include <map>
+
+#include "GlobalVariables.h"
 #include "runprolg.h"
 #include "../Logging/Logging.h"
 

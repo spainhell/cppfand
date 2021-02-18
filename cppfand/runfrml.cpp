@@ -4,6 +4,8 @@
 #include "rdrun.h"
 #include <math.h>
 
+
+#include "GlobalVariables.h"
 #include "../pascal/random.h"
 #include "oaccess.h"
 #include "obaseww.h"
