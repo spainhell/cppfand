@@ -1,6 +1,7 @@
 #include "XString.h"
 #include "access.h"
 #include "GlobalVariables.h"
+#include "KeyFldD.h"
 #include "runfrml.h"
 #include "../pascal/real48.h"
 

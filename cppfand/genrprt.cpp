@@ -1,7 +1,10 @@
 #include "genrprt.h"
 
 
+
+#include "FileD.h"
 #include "GlobalVariables.h"
+#include "KeyFldD.h"
 #include "rdedit.h"
 #include "rdrprt.h"
 #include "runrprt.h"
@@ -179,7 +182,8 @@ LongStr* GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 	Txt = (LongStr*)GetZStore(2);
 
 	if ((ARMode = _AErrRecs)) WrStr("var noErrRecs:real;\r\n");
-	WrStr("#I1_"); WrStr(CFile->Name);
+	WrStr("#I1_");
+	WrStr(CFile->Name);
 	if (RO->SK != nullptr) WrChar('!');
 	WrBlks(2);
 	first = true; fl = RO->Ctrl; kf = RO->SK;

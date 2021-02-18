@@ -2,6 +2,7 @@
 #include "access.h"
 #include "base.h"
 #include "GlobalVariables.h"
+#include "KeyFldD.h"
 #include "legacy.h"
 #include "XPage.h"
 

@@ -1,7 +1,10 @@
 #include "runedi.h"
 
+
+#include "FileD.h"
 #include "genrprt.h"
 #include "GlobalVariables.h"
+#include "KeyFldD.h"
 #include "legacy.h"
 #include "oaccess.h"
 #include "obaseww.h"
@@ -2026,8 +2029,7 @@ std::string GetFileViewName(FileD* FD, StringListEl** SL)
 
 void SetPointTo(LinkD* LD, std::string* s1, std::string* s2)
 {
-	KeyFldDPtr KF;
-	KF = LD->Args;
+	KeyFldD* KF = LD->Args;
 	while (KF != nullptr) {
 		if (KF->FldD == CFld->FldD) {
 			s2 = s1;

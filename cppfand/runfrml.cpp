@@ -5,7 +5,10 @@
 #include <math.h>
 
 
+
+#include "FileD.h"
 #include "GlobalVariables.h"
+#include "KeyFldD.h"
 #include "../pascal/random.h"
 #include "oaccess.h"
 #include "obaseww.h"
@@ -13,10 +16,11 @@
 #include "rdproc.h"
 #include "runedi.h"
 #include "runproc.h"
+#include "TFile.h"
 #include "wwmix.h"
 
 FileDPtr TFD02;
-TFilePtr TF02;
+TFile* TF02;
 longint TF02Pos; // r33
 
 double Owned(FrmlPtr Bool, FrmlPtr Sum, LinkDPtr LD)

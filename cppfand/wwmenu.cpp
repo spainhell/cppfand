@@ -1,6 +1,8 @@
 #include "wwmenu.h"
 
 
+
+#include "FileD.h"
 #include "GlobalVariables.h"
 #include "legacy.h"
 #include "obaseww.h"
@@ -898,7 +900,7 @@ LongStr* GetHlpText(RdbD* R, std::string S, bool ByName, WORD& IRec)
 	if (ByName) {
 		if (R == nullptr) goto label5;
 		CFile = (FileD*)R;
-		if (CFile == &HelpFD) {
+		if (CFile == HelpFD) {
 			if (CFile->Handle == nullptr) goto label5;
 		}
 		else {
@@ -921,7 +923,7 @@ label1:
 	for (i = 1; i <= CFile->NRecs; i++) {
 		ReadRec(CFile, i, CRecPtr);
 		Nm = TrailChar(' ', _ShortS(NmF));
-		if (CFile == &HelpFD) fo = TVideoFont::foKamen;
+		if (CFile == HelpFD) fo = TVideoFont::foKamen;
 		else fo = fonts.VFont;
 		ConvToNoDiakr(&Nm[0], Nm.length(), fo);
 		//printf("comp: %s <=> %s\n", S.c_str(), Nm.c_str());
@@ -929,7 +931,7 @@ label1:
 		label2:
 			T = _LongS(TxtF);
 			if (!ByName || (T->LL > 0) || (i == CFile->NRecs)) {
-				if (CFile == &HelpFD) ConvKamenToCurr(T->A, T->LL);
+				if (CFile == HelpFD) ConvKamenToCurr(T->A, T->LL);
 				IRec = i;
 				goto label3;
 			}
@@ -942,7 +944,7 @@ label1:
 label3:
 	OldLMode(md);
 	ReleaseStore2(p);
-	if ((T == nullptr) && (CFile != &HelpFD)) {
+	if ((T == nullptr) && (CFile != HelpFD)) {
 	label4:
 		R = R->ChainBack;
 		if (R != nullptr)

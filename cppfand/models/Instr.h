@@ -182,7 +182,7 @@ class Instr_edit : public Instr
 {
 public:
 	Instr_edit();
-	FileDPtr EditFD = nullptr;
+	FileD* EditFD = nullptr;
 	EditOpt* EO = nullptr;
 };
 
@@ -381,8 +381,8 @@ public:
 	pstring* TxtPath2 = nullptr;
 	WORD TxtCatIRec2 = 0;
 	bool IsRead = false;
-	FileDPtr sqlFD = nullptr; KeyD* sqlKey = nullptr;
-	FieldDPtr sqlFldD = nullptr; FrmlElem* sqlXStr = nullptr;
+	FileD* sqlFD = nullptr; KeyD* sqlKey = nullptr;
+	FieldDescr* sqlFldD = nullptr; FrmlElem* sqlXStr = nullptr;
 };
 
 class Instr_portout : public Instr

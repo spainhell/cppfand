@@ -1,6 +1,8 @@
 #include "GlobalVariables.h"
 //#include "access.h"
 
+class FileD;
+
 WORD randIndex = 0;
 
 FileD* CFile;
@@ -13,7 +15,7 @@ KeyD* CViewKey;
 std::string TopRdbDir, TopDataDir;
 pstring CatFDName;
 RdbD* CRdb, TopRdb;
-FileD* CatFD, HelpFD;
+FileD* CatFD, *HelpFD;
 size_t InpArrLen, CurrPos, OldErrPos;
 
 pstring LockModeTxt[9] = { "NULL", "NOEXCL","NODEL","NOCR","RD","WR","CR","DEL","EXCL" };

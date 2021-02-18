@@ -1,7 +1,10 @@
 #include "runrprt.h"
 
 
+
+#include "FileD.h"
 #include "GlobalVariables.h"
+#include "KeyFldD.h"
 #include "legacy.h"
 #include "oaccess.h"
 #include "obase.h"
@@ -841,8 +844,10 @@ void ZeroCount()
 
 LvDescr* GetDifLevel()
 {
-	ConstListEl* C1; ConstListEl* C2; KeyFldDPtr M; LvDescr* L;
-	C1 = NewMFlds; C2 = OldMFlds; M = IDA[1]->MFld; L = LstLvM->ChainBack;
+	ConstListEl* C1 = NewMFlds;
+	ConstListEl* C2 = OldMFlds;
+	KeyFldD* M = IDA[1]->MFld;
+	LvDescr* L = LstLvM->ChainBack;
 	while (M != nullptr) {
 		if (C1->S != C2->S) { return L; }
 		C1 = (ConstListEl*)C1->Chain; C2 = (ConstListEl*)C2->Chain;

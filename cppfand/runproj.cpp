@@ -18,8 +18,12 @@
 #include "wwmenu.h"
 #include <map>
 
+
+#include "FileD.h"
 #include "GlobalVariables.h"
+#include "KeyFldD.h"
 #include "runprolg.h"
+#include "TFile.h"
 #include "XFile.h"
 #include "../Logging/Logging.h"
 
@@ -567,7 +571,7 @@ void WrFDSegment(longint RecNr)
 	ReleaseStore2(p2);
 }
 
-void SgKF(KeyFldDPtr kf, WORD Sg)
+void SgKF(KeyFldD* kf, WORD Sg)
 {
 	if (kf == nullptr) return;
 	while (kf->Chain != nullptr) {

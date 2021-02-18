@@ -3,6 +3,8 @@
 #include "constants.h"
 #include "rdrun.h"
 
+class KeyFldD;
+
 struct TTD : public Chained
 {
     //TTD* Chain = nullptr;
@@ -68,7 +70,7 @@ void CloseInp();
 WORD CompMFlds(ConstListEl* C, KeyFldD* M, integer& NLv);
 void GetMFlds(ConstListEl* C, KeyFldD* M);
 void MoveMFlds(ConstListEl* C1, ConstListEl* C2);
-void PutMFlds(KeyFldDPtr M);
+void PutMFlds(KeyFldD* M);
 void GetMinKey();
 void ZeroCount();
 LvDescr* GetDifLevel();

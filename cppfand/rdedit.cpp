@@ -1,7 +1,10 @@
 #include "rdedit.h"
 
 
+
+#include "FileD.h"
 #include "GlobalVariables.h"
+#include "KeyFldD.h"
 #include "legacy.h"
 #include "obaseww.h"
 #include "rdfildcl.h"
@@ -508,7 +511,7 @@ void TestedFlagOff()
 
 void SetFrmlFlags(FrmlPtr Z)
 {
-	KeyFldDPtr Arg; FrmlList fl;
+	KeyFldD* Arg; FrmlList fl;
 	auto iZ0 = (FrmlElem0*)Z;
 	auto iZ7 = (FrmlElem7*)Z;
 	if (Z == nullptr) return;

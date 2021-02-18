@@ -1,7 +1,9 @@
 #include "rdrprt.h"
 
 #include "compile.h"
+#include "FileD.h"
 #include "GlobalVariables.h"
+#include "KeyFldD.h"
 #include "legacy.h"
 #include "obase.h"
 #include "rdfildcl.h"

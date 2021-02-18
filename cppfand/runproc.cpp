@@ -5,6 +5,7 @@
 #include "compile.h"
 #include "drivers.h"
 #include "expimp.h"
+#include "FileD.h"
 #include "genrprt.h"
 #include "GlobalVariables.h"
 #include "legacy.h"
@@ -659,7 +660,7 @@ void ForAllProc(Instr_forall* PD)
 	LinkD* LD = nullptr; KeyInD* KI = nullptr;
 	void* cr = nullptr; void* p = nullptr; void* lr = nullptr;
 	XScan* Scan = nullptr; LockMode md, md1; XString xx;
-	KeyFldDPtr KF = nullptr; LocVar* LVi = nullptr; LocVar* LVr = nullptr;
+	KeyFldD* KF = nullptr; LocVar* LVi = nullptr; LocVar* LVr = nullptr;
 	bool lk = false, b = false;
 #ifdef FandSQL
 	bool sql;

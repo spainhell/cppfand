@@ -1,5 +1,6 @@
 #include "XFile.h"
 #include "base.h"
+#include "FileD.h"
 #include "GlobalVariables.h"
 #include "../Logging/Logging.h"
 

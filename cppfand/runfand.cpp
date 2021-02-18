@@ -8,6 +8,7 @@
 #include "drivers.h"
 #include "access.h"
 #include "editor.h"
+#include "FileD.h"
 #include "GlobalVariables.h"
 #include "oaccess.h"
 #include "obaseww.h"
@@ -263,7 +264,7 @@ void CompileHelpCatDcl()
 	RdFileD("FANDHLP", '6', "");
 #endif
 
-	HelpFD = *CFile;
+	HelpFD = CFile;
 	RdMsg(52); s = MsgLine;
 	SetInpStr(s);
 	RdFileD("Catalog", 'C', "");

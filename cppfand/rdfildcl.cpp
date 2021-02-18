@@ -1,7 +1,9 @@
 #include "rdfildcl.h"
 
 #include "compile.h"
+#include "FileD.h"
 #include "GlobalVariables.h"
+#include "KeyFldD.h"
 #include "legacy.h"
 #include "oaccess.h"
 #include "rdproc.h"

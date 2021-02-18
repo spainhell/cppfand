@@ -2,6 +2,7 @@
 #include "access.h"
 #include "constants.h"
 #include "pstring.h"
+#include "TFile.h"
 
 extern pstring LockModeTxt[9];
 
@@ -15,7 +16,7 @@ extern KeyD* CViewKey;
 extern std::string TopRdbDir, TopDataDir;
 extern pstring CatFDName;
 extern RdbD* CRdb, TopRdb;
-extern FileD* CatFD, HelpFD;
+extern FileD* CatFD, *HelpFD;
 
 // r483
 extern structXPath XPath[10];

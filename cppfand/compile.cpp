@@ -3,10 +3,13 @@
 #include <map>
 
 #include "editor.h"
+#include "FileD.h"
 #include "GlobalVariables.h"
+#include "KeyFldD.h"
 #include "obaseww.h"
 #include "rdfildcl.h"
 #include "runfrml.h"
+#include "TFile.h"
 #include "wwmix.h"
 
 const BYTE MaxLen = 9;

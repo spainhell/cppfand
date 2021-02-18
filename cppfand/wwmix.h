@@ -31,8 +31,8 @@ public :
 	bool PromptFilter(std::string Txt, FrmlElem* Bool, std::string* BoolTxt);
 	void PromptLL(WORD N, std::string* Txt, WORD I, bool Del);
 	pstring PassWord(bool TwoTimes);
-	void SetPassWord(FileDPtr FD, WORD Nr, pstring Pw);
-	bool HasPassWord(FileDPtr FD, WORD Nr, pstring Pw);
+	void SetPassWord(FileD* FD, WORD Nr, pstring Pw);
+	bool HasPassWord(FileD* FD, WORD Nr, pstring Pw);
 
 private:
 	void WriteItem(WORD N);

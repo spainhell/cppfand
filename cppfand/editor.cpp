@@ -13,9 +13,11 @@
 #include "wwmix.h"
 #include <set>
 #include "compile.h"
+#include "FileD.h"
 #include "GlobalVariables.h"
 #include "obaseww.h"
 #include "runfrml.h"
+#include "TFile.h"
 
 const int TXTCOLS = 80;
 const int SuccLineSize = 256;
@@ -131,7 +133,7 @@ void RestorePar(longint l);
 
 // ***********HELP**********  // r351
 const BYTE maxStk = 15; WORD iStk = 0;
-struct structStk { RdbDPtr Rdb; FileDPtr FD; WORD iR, iT; } Stk[maxStk];
+struct structStk { RdbDPtr Rdb; FileD* FD; WORD iR, iT; } Stk[maxStk];
 void ViewHelpText(LongStr* S, WORD& TxtPos);
 
 
@@ -3939,19 +3941,20 @@ void ViewPrinterTxt()
 
 void Help(RdbDPtr R, pstring Name, bool InCWw)
 {
-	void* p = nullptr; ExitRecord er; FileDPtr fd = nullptr;
+	void* p = nullptr; ExitRecord er; FileD* fd = nullptr;
 	WORD c1, c2, r1, r2; longint w, w2; WORD i, l, l2; WORD iRec, oldIRec;
 	LongStr* s = nullptr; LongStr* s2 = nullptr;
 	WORD* os = (WORD*)s; WORD* os2 = (WORD*)s2;
 	integer delta; bool frst, byName, backw;
-	FileDPtr cf, cf2;
+	FileD* cf, *cf2;
 
 	if (R == nullptr) {
 		if (iStk == 0) return; R = Stk[iStk].Rdb; backw = true;
 	}
 	else { if (Name == "") return; backw = false; }
-	if (R == (RdbD*)&HelpFD) {
-		fd = &HelpFD; if (HelpFD.Handle == nullptr) { WrLLF10Msg(57); return; }
+	if (R == (RdbD*)HelpFD) {
+		fd = HelpFD;
+		if (HelpFD->Handle == nullptr) { WrLLF10Msg(57); return; }
 	}
 	else { fd = R->HelpFD; if (fd == nullptr) return; }
 	MarkStore(p); cf = CFile; w = 0; w2 = 0;

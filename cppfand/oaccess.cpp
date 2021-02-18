@@ -2,10 +2,12 @@
 
 #include "base.h"
 #include "expimp.h"
+#include "FileD.h"
 #include "GlobalVariables.h"
 #include "legacy.h"
 #include "obaseww.h"
 #include "runfrml.h"
+#include "TFile.h"
 #include "wwmix.h"
 #include "XFile.h"
 
@@ -68,7 +70,7 @@ void CloseFANDFiles(bool FromDML)
 		RD = RD->ChainBack;
 	}
 	if (CRdb != nullptr) { CFile = CatFD; CloseFile(); }
-	CFile = &HelpFD;
+	CFile = HelpFD;
 	CloseFile();
 	CloseH(TWork.Handle);
 	CloseH(XWork.Handle);
@@ -81,7 +83,7 @@ void OpenFANDFiles(bool FromDML)
 
 	OpenXWorkH();
 	OpenTWorkH();
-	CFile = &HelpFD;
+	CFile = HelpFD;
 	OpenF(RdOnly);
 	if (CRdb == nullptr) return;
 	CFile = CatFD;
@@ -746,7 +748,7 @@ void SetCPathVol()
 	default: CExt = ".000";
 	}
 	if (SetContextDir(CDir, isRdb)) goto label2;
-	if (CFile == &HelpFD) {
+	if (CFile == HelpFD) {
 		CDir = FandDir;
 		CName =
 #ifdef FandRunV

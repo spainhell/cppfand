@@ -4,7 +4,9 @@
 
 #include "runproj.h"
 #include "compile.h"
+#include "FileD.h"
 #include "GlobalVariables.h"
+#include "KeyFldD.h"
 #include "oaccess.h"
 #include "obaseww.h"
 #include "runproc.h"
@@ -3324,7 +3326,8 @@ bool RunBuildIn()
 				if (ld == nullptr) goto label1;
 				kf = ld->Args;
 			}
-			CurrInst->Vars[2] = GetStringTerm(kf->FldD->Name); CurrInst->NextBranch = (TBranch*)kf->Chain;
+			CurrInst->Vars[2] = GetStringTerm(kf->FldD->Name);
+				CurrInst->NextBranch = (TBranch*)kf->Chain;
 			break;
 		}
 		case _LenP: {

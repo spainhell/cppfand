@@ -1,11 +1,14 @@
 #include "wwmix.h"
 
 
+
+#include "FileD.h"
 #include "GlobalVariables.h"
 #include "legacy.h"
 #include "obaseww.h"
 #include "rdedit.h"
 #include "runedi.h"
+#include "TFile.h"
 #include "../FileSystem/directory.h"
 
 SS ss;
@@ -723,7 +726,7 @@ label2:
 	return Txt;
 }
 
-void wwmix::SetPassWord(FileDPtr FD, WORD Nr, pstring Pw)
+void wwmix::SetPassWord(FileD* FD, WORD Nr, pstring Pw)
 {
 	void* p;
 	if (Nr == 1) p = FD->TF->PwCode;
@@ -733,7 +736,7 @@ void wwmix::SetPassWord(FileDPtr FD, WORD Nr, pstring Pw)
 	Code(p, 20);
 }
 
-bool wwmix::HasPassWord(FileDPtr FD, WORD Nr, pstring Pw)
+bool wwmix::HasPassWord(FileD* FD, WORD Nr, pstring Pw)
 {
 	PwCodeArr* X = nullptr;
 	/* !!! with FD->TF^ do!!! */

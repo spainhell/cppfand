@@ -32,10 +32,10 @@ struct AssignD : public Chained
 struct OutpFD : public Chained
 {
 	//OutpFD* Chain;
-	FileDPtr FD;
+	FileD* FD;
 	LockMode Md;
 	void* RecPtr;
-	FileDPtr InplFD;
+	FileD* InplFD;
 	bool Append;
 #ifdef FandSQL
 	SQLStreamPtr Strm;
@@ -91,7 +91,7 @@ struct InpD
 enum AutoRprtMode { _ALstg, _ARprt, _ATotal, _AErrRecs };
 struct RprtFDListEl
 {
-	RprtFDListEl* Chain; FileDPtr FD; KeyDPtr ViewKey;
+	RprtFDListEl* Chain; FileD* FD; KeyDPtr ViewKey;
 	FrmlPtr Cond; KeyInD* KeyIn; bool SQLFilter;
 	void* LVRecPtr;
 };
@@ -333,17 +333,17 @@ struct CopyD
 {
 	pstring* Path1; /*FrmlPtr if cpList*/
 	WORD CatIRec1;
-	FileDPtr FD1;
+	FileD* FD1;
 	KeyDPtr ViewKey;
 	bool WithX1;
 	CpOption Opt1;
 	pstring* Path2; /*  "  */
 	WORD CatIRec2;
-	FileDPtr FD2;
+	FileD* FD2;
 	bool WithX2;
 	CpOption Opt2;
-	FileDPtr HdFD;
-	FieldDPtr HdF;
+	FileD* HdFD;
+	FieldDescr* HdF;
 	bool Append, NoCancel;
 	BYTE Mode;
 };
@@ -439,7 +439,7 @@ bool TransAdd(AddD* AD, FileD* FD, void* RP, void* CRnew, longint N, char Kind2,
 bool Add(AddD* AD, void* RP, double R);
 void WrUpdRec(AddD* AD, FileD* FD, void* RP, void* CRnew, longint N);
 bool Assign(AddDPtr AD);
-bool LockForAdd(FileDPtr FD, WORD Kind, bool Ta, LockMode& md);
+bool LockForAdd(FileD* FD, WORD Kind, bool Ta, LockMode& md);
 bool RunAddUpdte(char Kind, void* CRold, LinkD* notLD);
 bool TestExitKey(WORD KeyCode, EdExitD* X);
 void SetCompileAll();

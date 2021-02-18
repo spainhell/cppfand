@@ -28,7 +28,7 @@ bool PromptB(std::string& S, FrmlPtr Impl, FieldDPtr F);
 pstring PromptS(std::string& S, FrmlPtr Impl, FieldDPtr F);
 double PromptR(std::string& S, FrmlElem* Impl, FieldDPtr F);
 /*called from Proc && Projmgr */
-void EditDataFile(FileDPtr FD, EditOpt* EO);
+void EditDataFile(FileD* FD, EditOpt* EO);
 bool SelFldsForEO(EditOpt* EO, LinkD* LD);
 void UpdateEdTFld(LongStr* S);
 bool StartExit(EdExitD* X, bool Displ);

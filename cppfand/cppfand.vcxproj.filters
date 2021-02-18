@@ -156,6 +156,18 @@
     <ClCompile Include="XFile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TFile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="KeyFldD.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FileD.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Rdb.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base.h">
@@ -306,6 +318,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="XFile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TFile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="KeyFldD.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FileD.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Rdb.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

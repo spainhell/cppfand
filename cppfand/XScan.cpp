@@ -1,7 +1,8 @@
 #include "XScan.h"
 
-
+#include "FileD.h"
 #include "GlobalVariables.h"
+#include "KeyFldD.h"
 #include "obaseww.h"
 #include "runfrml.h"
 #include "sort.h"

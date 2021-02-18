@@ -34,7 +34,7 @@ struct WinG
 
 struct GraphD
 {
-	FileDPtr FD;
+	FileD* FD;
 	FrmlPtr GF;
 	FieldDPtr X, Y, Z;
 	FieldDPtr ZA[10];

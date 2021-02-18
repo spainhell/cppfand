@@ -2,6 +2,7 @@
 
 #include "GlobalVariables.h"
 #include "oaccess.h"
+#include "TFile.h"
 
 void GetTxtPrepare(FrmlElem* Z, FILE** h, longint& off, longint& len)
 {
@@ -134,7 +135,7 @@ label4:
 	return result;
 }
 
-longint CopyTFString(TFilePtr TF, FileDPtr FD2, TFilePtr TF2, longint Pos2)
+longint CopyTFString(TFilePtr TF, FileD* FD2, TFilePtr TF2, longint Pos2)
 {
 	FileD* cf = nullptr;
 	WORD l = 0; integer rest = 0; bool isLongTxt = false, frst = false;

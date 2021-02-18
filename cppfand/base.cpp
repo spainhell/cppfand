@@ -13,6 +13,8 @@
 #include <ctime>
 #include <iostream>
 
+
+#include "FileD.h"
 #include "GlobalVariables.h"
 #include "../datafiles/datafiles.h"
 #include "../exprcmp/exprcmp.h"

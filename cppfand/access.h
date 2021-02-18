@@ -2,9 +2,8 @@
 
 #include "base.h"
 #include "constants.h"
+#include "Rdb.h"
 #include "switches.h"
-#include "XItem.h"
-#include "XItemLeaf.h"
 #include "XString.h"
 #include "XWFile.h"
 #include "XWKey.h"
@@ -12,7 +11,9 @@
 #include "channel.h"
 #endif
 
-
+class FileD;
+class KeyFldD;
+class TFile;
 class XFile;
 struct FrmlListEl;
 class FrmlElem;
@@ -22,8 +23,6 @@ class XWKey;
 class XWFile;
 class XKey;
 struct LinkD;
-class FileD;
-struct RdbD;
 class FieldDescr;
 
 // ********** CONST **********
@@ -36,7 +35,6 @@ const WORD MPageSize = 512;
 const BYTE XPageShft = 10;
 const BYTE MPageShft = 9;
 
-typedef char PwCodeArr[20];
 typedef FuncD* FuncDPtr;
 typedef XWKey* WKeyDPtr;
 
@@ -118,23 +116,6 @@ public:
 };
 typedef FieldDescr* FieldDPtr;
 
-class KeyFldD : public Chained // ø. 108
-{
-public:
-	KeyFldD() {};
-	KeyFldD(const KeyFldD& orig, bool copyFlds);
-	KeyFldD(BYTE* inputStr);
-	FieldDescr* FldD = nullptr;
-	bool CompLex = false, Descend = false;
-};
-typedef KeyFldD* KeyFldDPtr;
-
-struct RdbPos // ø. 113
-{
-	RdbD* R = nullptr;
-	WORD IRec = 0;
-};
-
 class ChkD : public Chained // ø. 115
 {
 public:
@@ -185,85 +166,6 @@ public:
 	ChkD* Chk = nullptr;
 };
 typedef AddD* AddDPtr;
-
-class TFile // ø. 147
-{
-public:
-	TFile() {};
-	TFile(const TFile& orig);
-	FILE* Handle = nullptr;
-	longint FreePart = 0;
-	bool Reserved = false, CompileProc = false, CompileAll = false;
-	WORD IRec = 0;
-	longint FreeRoot = 0, MaxPage = 0;
-	double TimeStmp = 0.0;
-	integer LicenseNr = 0;
-	longint MLen = 0;
-	PwCodeArr PwCode{ 0 };
-	PwCodeArr Pw2Code{ 0 };
-	enum eFormat { T00Format, DbtFormat, FptFormat } Format = T00Format;
-	WORD BlockSize = 0; // FptFormat
-	bool IsWork = false;
-	void Err(WORD n, bool ex);
-	void TestErr();
-	longint UsedFileSize();
-	bool NotCached();
-	bool Cached();
-	void RdPrefix(bool Chk);
-	void WrPrefix();
-	void SetEmpty();
-	void Create();
-	longint NewPage(bool NegL);
-	void ReleasePage(longint PosPg);
-	void Delete(longint Pos);
-	LongStr* Read(WORD StackNr, longint Pos);
-	longint Store(LongStrPtr S);
-private:
-	void RdWr(bool ReadOp, longint Pos, WORD N, void* X);
-	void GetMLen();
-};
-typedef TFile* TFilePtr;
-
-class FileD : public Chained // ø. 177
-{
-public:
-	FileD();
-	FileD(const FileD& orig);
-	// FileD* Chain = nullptr;
-	std::string Name;
-	std::string FullName;
-	WORD RecLen = 0;
-	void* RecPtr = nullptr;
-	longint NRecs = 0;
-	bool WasWrRec = false, WasRdOnly = false, Eof = false;
-	char Typ = 0;        // 8=Fand 8;6=Fand 16;X= .X; 0=RDB; C=CAT 
-	FILE* Handle = nullptr;
-	longint IRec = 0;
-	WORD FrstDispl = 0;
-	TFile* TF = nullptr;
-	RdbPos ChptPos;     // zero for Rdb and FD translated from string 
-	WORD TxtPosUDLI = 0;    // =0 if not present; urcuje zacatek odstavcu #U #D #L #I
-	FileD* OrigFD = nullptr;    // like orig. or nil
-	BYTE Drive = 0;         // 1=A, 2=B, else 0
-	WORD CatIRec = 0;
-	std::vector<FieldDescr*> FldD;
-	//FieldDescr* FldD = nullptr;
-	bool IsParFile = false, IsJournal = false, IsHlpFile = false;
-	bool typSQLFile = false, IsSQLFile = false, IsDynFile = false;
-	FileUseMode UMode = FileUseMode::Closed;
-	LockMode LMode = LockMode::NullMode, ExLMode = LockMode::NullMode, TaLMode = LockMode::NullMode;
-	StringListEl* ViewNames = nullptr;  //after each string BYTE string with user codes 
-	XFile* XF = nullptr;
-	KeyD* Keys = nullptr;
-	AddD* Add = nullptr;
-	uintptr_t nLDs = 0, LiOfs = 0;
-	longint UsedFileSize();
-	bool IsShared();
-	bool NotCached();
-	bool Cached();
-	WORD GetNrKeys();
-};
-typedef FileD* FileDPtr;
 
 struct DBaseFld // ø. 208
 {
@@ -343,20 +245,6 @@ public:
 	WORD orig_S_length = 0;
 };
 
-struct RdbD // ø. 243
-{
-	RdbD* ChainBack = nullptr;
-	FileD* FD = nullptr;
-	FileD* HelpFD = nullptr; // { FD=FileDRoot and = Chpt for this RDB }
-	LinkD* OldLDRoot = nullptr;
-	FuncD* OldFCRoot = nullptr;
-	void* Mark2 = nullptr; // { markstore2 at beginning }
-	bool Encrypted = false;
-	std::string RdbDir;
-	std::string DataDir;
-};
-typedef RdbD* RdbDPtr;
-
 struct WRectFrml // r251
 {
 	FrmlElem* C1 = nullptr;
@@ -398,14 +286,14 @@ WORD CompLexLongStr(LongStrPtr S1, LongStrPtr S2); // r854 ASM
 WORD CompLexLongShortStr(LongStrPtr S1, pstring& S2); // r863 ASM
 WORD CompLexStr(pstring& S1, pstring& S2); // r871 ASM
 WORD CompLexStrings(const std::string& S1, const std::string& S2);
-bool EquKFlds(KeyFldDPtr KF1, KeyFldDPtr KF2); // r881
+bool EquKFlds(KeyFldD* KF1, KeyFldD* KF2); // r881
 void Code(std::string& data);
 void Code(void* A, WORD L); // r897 ASM
 void CodingLongStr(LongStrPtr S);
 longint StoreInTWork(LongStr* S);
 LongStrPtr ReadDelInTWork(longint Pos);
 void ForAllFDs(void(*procedure)()); // r935
-bool IsActiveRdb(FileDPtr FD);
+bool IsActiveRdb(FileD* FD);
 void ResetCompilePars(); // r953 - posledni fce
 
 // ********** IMPLEMENTATION **********
@@ -417,12 +305,6 @@ std::string TranslateOrd(std::string text); // r804 ASM
 //WORD TranslateOrdBack(); // r834 ASM
 //void XDecode(LongStrPtr S); // r903 ASM
 //void DirMinusBackslash(pstring& D);
-
-// * CTENI A ZAPISOVANI SOUBORU *
-//void ReadRec(longint N);
-void ReadRec(FileD* file, longint N, void* record);
-void WriteRec(longint N);
-void WriteRec(FileD* file, longint N, void* record);
 
 // * NACITANI ZE SOUBORU / Z FRMLELEM *
 bool _B(FieldDescr* F);

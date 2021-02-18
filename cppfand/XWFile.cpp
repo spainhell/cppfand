@@ -1,4 +1,6 @@
 #include "XWFile.h"
+
+#include "FileD.h"
 #include "GlobalVariables.h"
 #include "obaseww.h"
 #include "XFile.h"

@@ -1,5 +1,8 @@
 #include "XKey.h"
+
+#include "FileD.h"
 #include "GlobalVariables.h"
+#include "KeyFldD.h"
 #include "obaseww.h"
 #include "XFile.h"
 #include "XPage.h"

@@ -162,10 +162,12 @@
     <ClCompile Include="drivers.cpp" />
     <ClCompile Include="editor.cpp" />
     <ClCompile Include="expimp.cpp" />
+    <ClCompile Include="FileD.cpp" />
     <ClCompile Include="genrprt.cpp" />
     <ClCompile Include="GlobalVariables.cpp" />
     <ClCompile Include="Graph.cpp" />
     <ClCompile Include="keyboard.cpp" />
+    <ClCompile Include="KeyFldD.cpp" />
     <ClCompile Include="legacy.cpp" />
     <ClCompile Include="models\FrmlElem.cpp" />
     <ClCompile Include="models\Instr.cpp" />
@@ -174,6 +176,7 @@
     <ClCompile Include="obaseww.cpp" />
     <ClCompile Include="olongstr.cpp" />
     <ClCompile Include="printtxt.cpp" />
+    <ClCompile Include="Rdb.cpp" />
     <ClCompile Include="rdedit.cpp" />
     <ClCompile Include="rdfildcl.cpp" />
     <ClCompile Include="rdmerg.cpp" />
@@ -191,6 +194,7 @@
     <ClCompile Include="runrprt.cpp" />
     <ClCompile Include="screen.cpp" />
     <ClCompile Include="sort.cpp" />
+    <ClCompile Include="TFile.cpp" />
     <ClCompile Include="wwmenu.cpp" />
     <ClCompile Include="wwmix.cpp" />
     <ClCompile Include="XFile.cpp" />
@@ -212,10 +216,12 @@
     <ClInclude Include="editor.h" />
     <ClInclude Include="expimp.h" />
     <ClInclude Include="fanddml.h" />
+    <ClInclude Include="FileD.h" />
     <ClInclude Include="genrprt.h" />
     <ClInclude Include="GlobalVariables.h" />
     <ClInclude Include="Graph.h" />
     <ClInclude Include="keyboard.h" />
+    <ClInclude Include="KeyFldD.h" />
     <ClInclude Include="legacy.h" />
     <ClInclude Include="models\FrmlElem.h" />
     <ClInclude Include="models\Instr.h" />
@@ -224,6 +230,7 @@
     <ClInclude Include="obaseww.h" />
     <ClInclude Include="olongstr.h" />
     <ClInclude Include="printtxt.h" />
+    <ClInclude Include="Rdb.h" />
     <ClInclude Include="rdmerg.h" />
     <ClInclude Include="rdrprt.h" />
     <ClInclude Include="runmerg.h" />
@@ -243,6 +250,7 @@
     <ClInclude Include="screen.h" />
     <ClInclude Include="sort.h" />
     <ClInclude Include="switches.h" />
+    <ClInclude Include="TFile.h" />
     <ClInclude Include="wwmenu.h" />
     <ClInclude Include="wwmix.h" />
     <ClInclude Include="XFile.h" />

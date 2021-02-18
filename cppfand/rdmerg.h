@@ -27,7 +27,7 @@ FrmlElem* AdjustComma_M(FrmlElem* Z1, FieldDescr* F, char Op);// exituje -> pøej
 void FindIiandFldD(FieldDescr* F);
 bool FindAssignToF(AssignD* A, FieldDescr* F);
 void MakeImplAssign();
-void TestIsOutpFile(FileDPtr FD);
+void TestIsOutpFile(FileD* FD);
 AssignD* RdAssign_M();
 AssignD* RdAssSequ();
 void RdOutpRD(OutpRD** RDRoot);

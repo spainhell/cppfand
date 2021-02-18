@@ -1,6 +1,8 @@
 #include "rdproc.h"
 #include "compile.h"
+#include "FileD.h"
 #include "GlobalVariables.h"
+#include "KeyFldD.h"
 #include "legacy.h"
 #include "oaccess.h"
 #include "rdfildcl.h"
@@ -2758,7 +2760,7 @@ Instr* RdBackup(char MTyp, bool IsBackup)
 	RdLex();
 	PD->IsBackup = IsBackup;
 	TestIdentif();
-	FileDPtr cf = CFile;
+	FileD* cf = CFile;
 	void* cr = CRecPtr;
 	CFile = CatFD;
 	CRecPtr = GetRecSpace();

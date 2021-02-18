@@ -33,7 +33,7 @@ void SetInpLongStr(LongStr* S, bool ShowErr); // r37
 void SetInpTTPos(longint Pos, bool Decode); // r46
 void SetInpTTPos(FileD* file, longint Pos, bool Decode);
 void SetInpTT(RdbPos* RP, bool FromTxt); // r53
-void SetInpTTxtPos(FileDPtr FD);
+void SetInpTTxtPos(FileD* FD);
 void ReadChar(); // r73
 WORD RdDirective(bool& b); // r81
 void RdForwName(pstring& s); // r82
@@ -68,14 +68,14 @@ RprtOpt* GetRprtOpt(); // r132
 //FrmlPtr GetOp(BYTE Op, integer BytesAfter); // r1
 FieldDescr* FindFldName(FileD* FD); // r7
 FieldDescr* RdFldName(FileD* FD); // r17
-FileDPtr FindFileD(); // r22
+FileD* FindFileD(); // r22
 FileD* RdFileName(); // r34
 LinkDPtr FindLD(pstring RoleName); // r41
 bool IsRoleName(bool Both, FileD** FD, LinkD** LD); // r49
 FrmlElem* RdFAccess(FileD* FD, LinkD* LD, char& FTyp); // r58
-FrmlPtr TryRdFldFrml(FileDPtr FD, char& FTyp); // r76
+FrmlPtr TryRdFldFrml(FileD* FD, char& FTyp); // r76
 FrmlElem* RdFldNameFrmlF(char& FTyp); // r111
-FrmlPtr FrmlContxt(FrmlPtr Z, FileDPtr FD, void* RP); // r68
+FrmlPtr FrmlContxt(FrmlPtr Z, FileD* FD, void* RP); // r68
 FrmlPtr MakeFldFrml(FieldDPtr F, char& FTyp); // r72
 void TestString(char FTyp);
 void TestReal(char FTyp);

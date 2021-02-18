@@ -10,8 +10,8 @@
 #include "channel.h"
 #endif
 
-extern FileDPtr TFD02;
-extern TFilePtr TF02;
+extern FileD* TFD02;
+extern TFile* TF02;
 extern longint TF02Pos; // r33
 
 double Owned(FrmlPtr Bool, FrmlPtr Sum, LinkDPtr LD);
@@ -34,7 +34,7 @@ double RunReal(FrmlElem* X);
 longint RunInt(FrmlPtr X);
 void TestTFrml(FieldDescr* F, FrmlElem* Z);
 bool CanCopyT(FieldDescr* F, FrmlElem* Z);
-bool TryCopyT(FieldDPtr F, TFilePtr TF, longint& pos, FrmlPtr Z);
+bool TryCopyT(FieldDPtr F, TFile* TF, longint& pos, FrmlPtr Z);
 void AssgnFrml(FieldDescr* F, FrmlElem* X, bool Delete, bool Add);
 void LVAssignFrml(LocVar* LV, void* OldBP, bool Add, FrmlElem* X);
 //void DecodeFieldRSB(FieldDescr* F, WORD LWw, double R, pstring T, bool B, pstring& Txt);
