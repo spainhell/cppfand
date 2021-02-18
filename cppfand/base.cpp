@@ -19,8 +19,6 @@
 #include "../fandio/cache.h"
 #include "../Logging/Logging.h"
 
-/*const*/
-char Version[] = { '4', '.', '2', '0', '\0' };
 
 Video video;
 Spec spec;

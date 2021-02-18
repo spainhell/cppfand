@@ -7,6 +7,8 @@
 #include <iostream>
 #include <fstream>
 
+#include "GlobalVariables.h"
+
 std::vector<std::string> paramstr;
 longint ExitCode = 0; // exit kód -> OS
 void* ErrorAddr = nullptr; // adresa chyby

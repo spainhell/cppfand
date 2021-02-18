@@ -67,3 +67,5 @@ BYTE LstCompileVar; // { boundary }
 
 pstring Switches = "";
 WORD SwitchLevel = 0;
+
+char Version[] = { '4', '.', '2', '0', '\0' };

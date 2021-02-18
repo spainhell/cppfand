@@ -4,8 +4,6 @@
 #include "drivers.h"
 #include "pstring.h"
 
-extern char Version[5];
-
 typedef char CharArr[50];
 typedef CharArr* CharArrPtr; // ø23
 
@@ -92,8 +90,7 @@ void DispH(void* ad, integer NoBytes);
 #endif
 
 // *** MEMORY MANAGEMENT ***
-extern WORD CachePageSize;
-extern void* AfterCatFD; // r108
+
 struct CachePage { BYTE Pg3[3]{ 0 }; BYTE Handle = 0; longint HPage = 0; bool Upd = false; BYTE Arr[4096]{ 0 }; };
 struct ProcStkD { ProcStkD* ChainBack; void* LVRoot; }; // r199
 typedef ProcStkD* ProcStkPtr;
@@ -103,12 +100,6 @@ struct ExitRecord {
 	WORD rBP = 0, rIP = 0, rCS = 0, rSP = 0, rDS = 0;
 	bool ExP = false, BrkP = false;
 };
-extern ExitRecord ExitBuf; // r202 - r210
-extern ProcStkD* MyBP;
-extern ProcStkD* ProcMyBP;
-extern WORD BPBound; // r212
-extern bool ExitP, BreakP;
-extern longint LastExitCode; // r215
 
 void* Normalize(longint L);
 longint AbsAdr(void* P);
@@ -137,24 +128,6 @@ bool OSshell(std::string Path, std::string CmdLine, bool NoCancel, bool FreeMm, 
 // ***  VIRTUAL HANDLES  ***
 enum FileOpenMode { _isnewfile = 0, _isoldfile = 1, _isoverwritefile = 2, _isoldnewfile = 3 }; // poradi se nesmi zmenit!!!
 enum FileUseMode { Closed = 0, RdOnly = 1, RdShared = 2, Shared = 3, Exclusive = 4 }; // poradi se nesmi zmenit!!!
-extern WORD HandleError; // r229
-extern pstring OldDir;
-extern pstring FandDir;
-extern std::string WrkDir;
-extern pstring FandOvrName;
-extern pstring FandResName;
-extern pstring FandWorkName;
-extern pstring FandWorkXName;
-extern pstring FandWorkTName;
-extern std::string CPath;
-extern std::string CDir;
-extern std::string CName;
-extern std::string CExt;
-extern std::string CVol;
-
-extern bool WasLPTCancel;
-extern FILE* WorkHandle;
-extern longint MaxWSize; // {currently occupied in FANDWORK.$$$}
 
 bool IsNetCVol();
 bool CacheExist();
@@ -188,12 +161,7 @@ WORD LogToAbsLenStyleStr(pstring s, WORD l);
 //void WrStyleStr(pstring s, WORD Attr);
 //void WrLongStyleStr(LongStr* S, WORD Attr);
 
-// *** MESSAGES ***
-extern WORD F10SpecKey; // ø. 293
-extern BYTE ProcAttr;
-// extern bool SetStyleAttr(char c, BYTE& a); // je v KBDWW
-extern std::string MsgLine;
-extern std::string MsgPar[4];
+
 void SetMsgPar(pstring s);
 void Set2MsgPar(pstring s1, pstring s2);
 void Set3MsgPar(pstring s1, pstring s2, pstring s3);
@@ -202,11 +170,7 @@ void RdMsg(integer N);
 void WriteMsg(WORD N);
 void ClearLL(BYTE attr);
 
-// ********** DML **********
-extern void* FandInt3f; // ø. 311
-extern FILE* OvrHandle;
-extern WORD Fand_ss, Fand_sp, Fand_bp, DML_ss, DML_sp, DML_bp;
-extern longint _CallDMLAddr; // {passed to FANDDML by setting "DMLADDR="in env.}
+
 enum TKbdConv { OrigKbd, CsKbd, CaKbd, SlKbd, DtKbd };
 
 struct Spec // r.319
@@ -262,29 +226,15 @@ struct Fonts // r350
 };
 extern Fonts fonts;
 
-extern char CharOrdTab[256]; // after Colors /FANDDML/ // ø. 370
-extern char UpcCharTab[256]; // TODO: v obou øádcích bylo 'array[char] of char;' - WTF?
-extern WORD TxtCols, TxtRows;
-
 pstring PrTab(WORD N);
 void SetCurrPrinter(integer NewPr);
 
-extern integer prCurr, prMax;
 struct Printer {
 	void* Strg; char Typ, Kod; BYTE Lpti, TmOut;
 	bool OpCls, ToHandle, ToMgr; WORD Handle;
 };
-extern Printer printer[10];
-typedef std::array<BYTE, 4> TPrTimeOut; // ø. 418
-extern TPrTimeOut OldPrTimeOut;
-extern TPrTimeOut PrTimeOut;  // absolute 0:$478;
-extern bool WasInitDrivers;
-extern bool WasInitPgm;
-extern WORD LANNode; // ø. 431
-extern void (*CallOpenFandFiles)(); // r453
-extern void (*CallCloseFandFiles)(); // r454
 
-extern double userToday;
+typedef std::array<BYTE, 4> TPrTimeOut; // ø. 418
 
 void OpenWorkH();
 
@@ -292,15 +242,6 @@ void OpenWorkH();
 void NonameStartFunction(); // r639 BASE.PAS - kam to patøí?
 
 struct wdaystt { BYTE Typ = 0; WORD Nr = 0; };
-
-extern wdaystt WDaysTabType;
-extern WORD NWDaysTab;
-extern double WDaysFirst;
-extern double WDaysLast;
-extern wdaystt* WDaysTab;
-
-extern char AbbrYes;
-extern char AbbrNo;
 
 class TResFile // r. 440
 {
@@ -318,9 +259,3 @@ public:
 };
 
 struct TMsgIdxItem { WORD Nr; WORD Ofs; BYTE Count; };
-
-//TMsgIdxItem TMsgIdx[100];
-extern TResFile ResFile;
-extern TMsgIdxItem* MsgIdx;// = TMsgIdx;
-extern WORD MsgIdxN;
-extern longint FrstMsgPos;

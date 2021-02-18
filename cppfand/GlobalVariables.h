@@ -84,3 +84,74 @@ extern pstring Switches;
 extern WORD SwitchLevel;
 
 extern pstring LockModeTxt[9];
+
+// ***** BASE.H *****
+extern char Version[5];
+extern WORD CachePageSize;
+extern void* AfterCatFD; // r108
+extern ExitRecord ExitBuf; // r202 - r210
+extern ProcStkD* MyBP;
+extern ProcStkD* ProcMyBP;
+extern WORD BPBound; // r212
+extern bool ExitP, BreakP;
+extern longint LastExitCode; // r215
+extern WORD HandleError; // r229
+extern pstring OldDir;
+extern pstring FandDir;
+extern std::string WrkDir;
+extern pstring FandOvrName;
+extern pstring FandResName;
+extern pstring FandWorkName;
+extern pstring FandWorkXName;
+extern pstring FandWorkTName;
+extern std::string CPath;
+extern std::string CDir;
+extern std::string CName;
+extern std::string CExt;
+extern std::string CVol;
+extern bool WasLPTCancel;
+extern FILE* WorkHandle;
+extern longint MaxWSize; // {currently occupied in FANDWORK.$$$}
+// *** MESSAGES ***
+extern WORD F10SpecKey; // ø. 293
+extern BYTE ProcAttr;
+// extern bool SetStyleAttr(char c, BYTE& a); // je v KBDWW
+extern std::string MsgLine;
+extern std::string MsgPar[4];
+// ********** DML **********
+extern void* FandInt3f; // ø. 311
+extern FILE* OvrHandle;
+extern WORD Fand_ss, Fand_sp, Fand_bp, DML_ss, DML_sp, DML_bp;
+extern longint _CallDMLAddr; // {passed to FANDDML by setting "DMLADDR="in env.}
+
+extern wdaystt WDaysTabType;
+extern WORD NWDaysTab;
+extern double WDaysFirst;
+extern double WDaysLast;
+extern wdaystt* WDaysTab;
+
+extern char AbbrYes;
+extern char AbbrNo;
+
+extern char CharOrdTab[256]; // after Colors /FANDDML/ // ø. 370
+extern char UpcCharTab[256]; // TODO: v obou øádcích bylo 'array[char] of char;' - WTF?
+extern WORD TxtCols, TxtRows;
+
+extern integer prCurr, prMax;
+extern Printer printer[10];
+
+extern TPrTimeOut OldPrTimeOut;
+extern TPrTimeOut PrTimeOut;  // absolute 0:$478;
+extern bool WasInitDrivers;
+extern bool WasInitPgm;
+extern WORD LANNode; // ø. 431
+extern void (*CallOpenFandFiles)(); // r453
+extern void (*CallCloseFandFiles)(); // r454
+
+extern double userToday;
+
+//TMsgIdxItem TMsgIdx[100];
+extern TResFile ResFile;
+extern TMsgIdxItem* MsgIdx;// = TMsgIdx;
+extern WORD MsgIdxN;
+extern longint FrstMsgPos;

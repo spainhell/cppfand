@@ -2,6 +2,7 @@
 
 #include <set>
 #include "editor.h"
+#include "GlobalVariables.h"
 #include "obaseww.h"
 
 bool SFlag, QFlag, WFlag, BFlag, DFlag, EFlag, AFlag, XFlag, VFlag, TFlag;

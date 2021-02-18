@@ -2,6 +2,7 @@
 
 #include "base.h"
 #include "drivers.h"
+#include "GlobalVariables.h"
 #include "oaccess.h"
 
 WORD RunErrNr = 0;
