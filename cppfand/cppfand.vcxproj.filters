@@ -147,6 +147,9 @@
     <ClCompile Include="XPage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="XScan.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base.h">
@@ -288,6 +291,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="XPage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="XScan.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

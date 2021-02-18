@@ -197,6 +197,7 @@
     <ClCompile Include="XItemLeaf.cpp" />
     <ClCompile Include="XKey.cpp" />
     <ClCompile Include="XPage.cpp" />
+    <ClCompile Include="XScan.cpp" />
     <ClCompile Include="XString.cpp" />
     <ClCompile Include="XWKey.cpp" />
   </ItemGroup>
@@ -246,6 +247,7 @@
     <ClInclude Include="XItemLeaf.h" />
     <ClInclude Include="XKey.h" />
     <ClInclude Include="XPage.h" />
+    <ClInclude Include="XScan.h" />
     <ClInclude Include="XString.h" />
     <ClInclude Include="XWKey.h" />
   </ItemGroup>

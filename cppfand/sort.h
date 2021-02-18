@@ -2,6 +2,7 @@
 #include "access.h"
 #include "rdrun.h"
 #include "XPage.h"
+#include "XScan.h"
 
 class XXPage;
 class Instr_getindex;

@@ -3,6 +3,7 @@
 #include "editor.h"
 #include "legacy.h"
 #include "models/FrmlElem.h"
+#include "XScan.h"
 //#include "models/Instr.h"
 
 struct LvDescr;
