@@ -1,6 +1,7 @@
 #include "XKey.h"
 #include "GlobalVariables.h"
 #include "obaseww.h"
+#include "XFile.h"
 #include "XPage.h"
 #include "../Logging/Logging.h"
 #include "../pascal/asm.h"

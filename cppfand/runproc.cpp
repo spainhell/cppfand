@@ -25,6 +25,7 @@
 #include "wwmenu.h"
 #include "wwmix.h"
 #include "runprolg.h"
+#include "XFile.h"
 
 
 void UserHeadLine(pstring UserHeader)

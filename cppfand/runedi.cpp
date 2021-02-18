@@ -11,6 +11,7 @@
 #include "runproj.h"
 #include "wwmenu.h"
 #include "wwmix.h"
+#include "XFile.h"
 #include "../Logging/Logging.h"
 #include "../textfunc/textfunc.h"
 

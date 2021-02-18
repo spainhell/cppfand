@@ -20,6 +20,7 @@
 
 #include "GlobalVariables.h"
 #include "runprolg.h"
+#include "XFile.h"
 #include "../Logging/Logging.h"
 
 

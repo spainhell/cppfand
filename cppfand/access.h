@@ -6,14 +6,15 @@
 #include "XItem.h"
 #include "XItemLeaf.h"
 #include "XString.h"
+#include "XWFile.h"
 #include "XWKey.h"
 #ifdef FandSQL
 #include "channel.h"
 #endif
 
 
-struct FrmlListEl;
 class XFile;
+struct FrmlListEl;
 class FrmlElem;
 class LocVar;
 struct FuncD;
@@ -362,39 +363,6 @@ struct WRectFrml // r251
 	FrmlElem* R1 = nullptr;
 	FrmlElem* C2 = nullptr;
 	FrmlElem* R2 = nullptr;
-};
-
-class XWFile // r345
-{
-public:
-	//XWFile();
-	WORD UpdLockCnt = 0;
-	FILE* Handle = nullptr;
-	longint FreeRoot = 0, MaxPage = 0;
-	void Err(WORD N);
-	void TestErr();
-	longint UsedFileSize();
-	bool NotCached();
-	void RdPage(XPage* P, longint N);
-	void WrPage(XPage* P, longint N);
-	longint NewPage(XPage* P);
-	void ReleasePage(XPage* P, longint N);
-};
-typedef XWFile* XWFilePtr;
-
-class XFile : public XWFile // r357
-{
-public:
-	XFile() {};
-	XFile(const XFile& orig);
-	longint NRecs = 0, NRecsAbs = 0; // {FreeRoot..NrKeys read / written by 1 instr.}
-	bool NotValid = false;
-	BYTE NrKeys = 0;
-	bool NoCreate = false, FirstDupl = false;
-	void SetEmpty();
-	void RdPrefix();
-	void WrPrefix();
-	void SetNotValid();
 };
 
 struct CompInpD // r402

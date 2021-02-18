@@ -150,6 +150,12 @@
     <ClCompile Include="XScan.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="XWFile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="XFile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base.h">
@@ -294,6 +300,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="XScan.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="XWFile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="XFile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

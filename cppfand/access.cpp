@@ -10,9 +10,9 @@
 #include "olongstr.h"
 #include "runfrml.h"
 #include "sort.h"
+#include "XFile.h"
 #include "XKey.h"
 #include "XPage.h"
-#include "XWKey.h"
 #include "../Logging/Logging.h"
 
 integer CompLongStr(LongStr* S1, LongStr* S2)
@@ -947,28 +947,6 @@ void OverWrXRec(longint RecNr, void* P2, void* P)
 	CRecPtr = P;
 	WriteRec(RecNr);
 }
-
-//void AddFFs(KeyDPtr K, pstring& s)
-//{
-//	WORD l = MinW(K->IndexLen + 1, 255);
-//	for (WORD i = s.length() + 1; i <= l; i++) s[i] = 0xff;
-//	s[0] = (char)l;
-//}
-//
-///// asi vytvori XStringy pro zacatek a konec (rozsah) vyhledavani
-///// pokud se hleda interval v klici
-//void CompKIFrml(XKey* K, KeyInD* KI, bool AddFF)
-//{
-//	XString x;
-//	while (KI != nullptr) {
-//		bool b = x.PackFrml(KI->FL1, K->KFlds);
-//		KI->X1 = x.S;
-//		if (KI->FL2 != nullptr) x.PackFrml(KI->FL2, K->KFlds);
-//		if (AddFF) AddFFs(K, x.S);
-//		KI->X2 = x.S;
-//		KI = (KeyInD*)KI->Chain;
-//	}
-//}
 
 const WORD Alloc = 2048;
 const double FirstDate = 6.97248E+5;
@@ -2304,164 +2282,6 @@ LocVar* LocVarBlkD::FindByName(std::string Name)
 	}
 	return nullptr;
 }
-
-void XWFile::Err(WORD N)
-{
-	if (this == &XWork) {
-		SetMsgPar(FandWorkXName);
-		RunError(N);
-	}
-	else {
-		CFile->XF->SetNotValid();
-		CFileMsg(N, 'X');
-		CloseGoExit();
-	}
-}
-
-void XWFile::TestErr()
-{
-	if (HandleError != 0) Err(700 + HandleError);
-}
-
-longint XWFile::UsedFileSize()
-{
-	return longint(MaxPage + 1) << XPageShft;
-}
-
-bool XWFile::NotCached()
-{
-	return (this != &XWork) && CFile->NotCached();
-}
-
-void XWFile::RdPage(XPage* P, longint N)
-{
-	if ((N == 0) || (N > MaxPage)) Err(831);
-	// puvodne se nacitalo celych XPageSize z P, bylo nutno to rozhodit na jednotlive tridni promenne
-	RdWrCache(true, Handle, NotCached(), N << XPageShft, 1, &P->IsLeaf);
-	RdWrCache(true, Handle, NotCached(), (N << XPageShft) + 1, 4, &P->GreaterPage);
-	RdWrCache(true, Handle, NotCached(), (N << XPageShft) + 5, 2, &P->NItems);
-	RdWrCache(true, Handle, NotCached(), (N << XPageShft) + 7, XPageSize - 7, P->A);
-}
-
-void XWFile::WrPage(XPage* P, longint N)
-{
-	if (UpdLockCnt > 0) Err(645);
-	// puvodne se zapisovalo celych XPageSize z P, bylo nutno to rozhodit na jednotlive tridni promenne
-	RdWrCache(false, Handle, NotCached(), N << XPageShft, 1, &P->IsLeaf);
-	RdWrCache(false, Handle, NotCached(), (N << XPageShft) + 1, 4, &P->GreaterPage);
-	RdWrCache(false, Handle, NotCached(), (N << XPageShft) + 5, 2, &P->NItems);
-	RdWrCache(false, Handle, NotCached(), (N << XPageShft) + 7, XPageSize - 7, P->A);
-}
-
-longint XWFile::NewPage(XPage* P)
-{
-	longint result = 0;
-	if (FreeRoot != 0) {
-		result = FreeRoot;
-		RdPage(P, FreeRoot);
-		FreeRoot = P->GreaterPage;
-	}
-	else {
-		MaxPage++;
-		if (MaxPage > 0x1fffff) Err(887);
-		result = MaxPage;
-	}
-	P->IsLeaf = false;
-	P->GreaterPage = 0;
-	P->NItems = 0;
-	memset(P->A, 0, sizeof(P->A));
-	return result;
-}
-
-void XWFile::ReleasePage(XPage* P, longint N)
-{
-	P->IsLeaf = false;
-	P->NItems = 0;
-	//FillChar(P, XPageSize, 0);
-	memset(P->A, 0, sizeof(P->A));
-	P->GreaterPage = FreeRoot;
-	FreeRoot = N;
-	WrPage(P, N);
-}
-
-XFile::XFile(const XFile& orig)
-{
-	NRecs = orig.NRecs;
-	NRecsAbs = orig.NRecsAbs;
-	NotValid = orig.NotValid;
-	NrKeys = orig.NrKeys;
-	NoCreate = orig.NoCreate;
-	FirstDupl = orig.FirstDupl;
-}
-
-void XFile::SetEmpty()
-{
-	auto p = new XPage(); // (XPage*)GetZStore(XPageSize);
-	WrPage(p, 0);
-	p->IsLeaf = true;
-	FreeRoot = 0;
-	NRecs = 0;
-	KeyD* k = CFile->Keys;
-	while (k != nullptr) {
-		longint n = k->IndexRoot;
-		MaxPage = n;
-		WrPage(p, n);
-		k = k->Chain;
-	}
-	ReleaseStore(p);
-	WrPrefix();
-}
-
-void XFile::RdPrefix()
-{
-	Logging* log = Logging::getInstance();
-	log->log(loglevel::DEBUG, "XFile::RdPrefix() 0x%p reading 18 Bytes", Handle);
-	RdWrCache(true, Handle, NotCached(), 2, 4, &FreeRoot);
-	RdWrCache(true, Handle, NotCached(), 6, 4, &MaxPage);
-	RdWrCache(true, Handle, NotCached(), 10, 4, &NRecs);
-	RdWrCache(true, Handle, NotCached(), 14, 4, &NRecsAbs);
-	RdWrCache(true, Handle, NotCached(), 18, 1, &NotValid);
-	RdWrCache(true, Handle, NotCached(), 19, 1, &NrKeys);
-}
-
-void XFile::WrPrefix()
-{
-	Logging* log = Logging::getInstance();
-	log->log(loglevel::DEBUG, "XFile::WrPrefix() 0x%p writing 20 Bytes, NRecsAbs = %i, NrKeys = %i", 
-		Handle, CFile->NRecs, CFile->GetNrKeys());
-	WORD Signum = 0x04FF;
-	RdWrCache(false, Handle, NotCached(), 0, 2, &Signum);
-	NRecsAbs = CFile->NRecs;
-	NrKeys = CFile->GetNrKeys();
-	RdWrCache(false, Handle, NotCached(), 2, 4, &FreeRoot);
-	RdWrCache(false, Handle, NotCached(), 6, 4, &MaxPage);
-	RdWrCache(false, Handle, NotCached(), 10, 4, &NRecs);
-	RdWrCache(false, Handle, NotCached(), 14, 4, &NRecsAbs);
-	RdWrCache(false, Handle, NotCached(), 18, 1, &NotValid);
-	RdWrCache(false, Handle, NotCached(), 19, 1, &NrKeys);
-	
-}
-
-void XFile::SetNotValid()
-{
-	NotValid = true;
-	MaxPage = 0;
-	WrPrefix();
-	SaveCache(0, CFile->Handle);
-}
-
-//bool EquKFlds(KeyFldD* KF1, KeyFldD* KF2)
-//{
-//	bool result = false;
-//	while (KF1 != nullptr) {
-//		if ((KF2 == nullptr) || (KF1->CompLex != KF2->CompLex) || (KF1->Descend != KF2->Descend)
-//			|| (KF1->FldD->Name != KF2->FldD->Name)) return result;
-//		KF1 = (KeyFldD*)KF1->Chain;
-//		KF2 = (KeyFldD*)KF2->Chain;
-//	}
-//	if (KF2 != nullptr) return false;
-//	return true;
-//}
 
 bool DeletedFlag()  // r771 ASM
 {

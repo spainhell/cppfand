@@ -7,6 +7,7 @@
 #include "obaseww.h"
 #include "runfrml.h"
 #include "wwmix.h"
+#include "XFile.h"
 
 void OpenXWorkH()
 {

@@ -193,12 +193,14 @@
     <ClCompile Include="sort.cpp" />
     <ClCompile Include="wwmenu.cpp" />
     <ClCompile Include="wwmix.cpp" />
+    <ClCompile Include="XFile.cpp" />
     <ClCompile Include="XItem.cpp" />
     <ClCompile Include="XItemLeaf.cpp" />
     <ClCompile Include="XKey.cpp" />
     <ClCompile Include="XPage.cpp" />
     <ClCompile Include="XScan.cpp" />
     <ClCompile Include="XString.cpp" />
+    <ClCompile Include="XWFile.cpp" />
     <ClCompile Include="XWKey.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -243,12 +245,14 @@
     <ClInclude Include="switches.h" />
     <ClInclude Include="wwmenu.h" />
     <ClInclude Include="wwmix.h" />
+    <ClInclude Include="XFile.h" />
     <ClInclude Include="XItem.h" />
     <ClInclude Include="XItemLeaf.h" />
     <ClInclude Include="XKey.h" />
     <ClInclude Include="XPage.h" />
     <ClInclude Include="XScan.h" />
     <ClInclude Include="XString.h" />
+    <ClInclude Include="XWFile.h" />
     <ClInclude Include="XWKey.h" />
   </ItemGroup>
   <ItemGroup>

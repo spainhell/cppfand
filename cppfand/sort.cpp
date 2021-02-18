@@ -4,6 +4,7 @@
 #include "oaccess.h"
 #include "obaseww.h"
 #include "runfrml.h"
+#include "XFile.h"
 #include "../Logging/Logging.h"
 #include "models/Instr.h"
 
