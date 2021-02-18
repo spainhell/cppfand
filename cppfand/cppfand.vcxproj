@@ -193,6 +193,7 @@
     <ClCompile Include="sort.cpp" />
     <ClCompile Include="wwmenu.cpp" />
     <ClCompile Include="wwmix.cpp" />
+    <ClCompile Include="XString.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="access.h" />
@@ -236,6 +237,7 @@
     <ClInclude Include="switches.h" />
     <ClInclude Include="wwmenu.h" />
     <ClInclude Include="wwmix.h" />
+    <ClInclude Include="XString.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="cppfand.rc" />
