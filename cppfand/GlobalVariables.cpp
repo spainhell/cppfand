@@ -26,7 +26,7 @@ longint ClpBdPos = 0;
 bool IsTestRun = false;
 bool IsInstallRun = false;
 FileD* Chpt = FileDRoot; // absolute FileDRoot;
-TFilePtr ChptTF;
+TFile* ChptTF;
 FieldDescr* ChptTxtPos;
 FieldDescr* ChptVerif; // { updated record }
 FieldDescr* ChptOldTxt; // { ChptTyp = 'F' : -1 = new unchecked record, else = old declaration }

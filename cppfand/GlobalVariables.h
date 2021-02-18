@@ -3,9 +3,7 @@
 #include "constants.h"
 #include "pstring.h"
 
-struct FuncD;
-struct LinkD;
-class FileD;
+extern pstring LockModeTxt[9];
 
 // r474
 extern FileD* FileDRoot; // { only current RDB }
@@ -30,10 +28,10 @@ extern bool IsInstallRun;
 
 extern FileD* Chpt; // absolute FileDRoot;
 extern TFile* ChptTF;
-extern FieldDPtr ChptTxtPos;
-extern FieldDPtr ChptVerif; // { updated record }
-extern FieldDPtr ChptOldTxt; // { ChptTyp = 'F' : -1 = new unchecked record, else = old declaration }
-extern FieldDPtr ChptTyp, ChptName, ChptTxt;
+extern FieldDescr* ChptTxtPos;
+extern FieldDescr* ChptVerif; // { updated record }
+extern FieldDescr* ChptOldTxt; // { ChptTyp = 'F' : -1 = new unchecked record, else = old declaration }
+extern FieldDescr* ChptTyp, *ChptName, *ChptTxt;
 
 
 // ********** konstanty ********** // r496
