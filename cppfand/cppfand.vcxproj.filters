@@ -132,6 +132,12 @@
     <ClCompile Include="XString.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="XItem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="XItemLeaf.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base.h">
@@ -258,6 +264,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="XString.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="XItem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="XItemLeaf.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

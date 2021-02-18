@@ -193,6 +193,8 @@
     <ClCompile Include="sort.cpp" />
     <ClCompile Include="wwmenu.cpp" />
     <ClCompile Include="wwmix.cpp" />
+    <ClCompile Include="XItem.cpp" />
+    <ClCompile Include="XItemLeaf.cpp" />
     <ClCompile Include="XString.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -237,6 +239,8 @@
     <ClInclude Include="switches.h" />
     <ClInclude Include="wwmenu.h" />
     <ClInclude Include="wwmix.h" />
+    <ClInclude Include="XItem.h" />
+    <ClInclude Include="XItemLeaf.h" />
     <ClInclude Include="XString.h" />
   </ItemGroup>
   <ItemGroup>

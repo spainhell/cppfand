@@ -3,6 +3,8 @@
 #include "base.h"
 #include "constants.h"
 #include "switches.h"
+#include "XItem.h"
+#include "XItemLeaf.h"
 #include "XString.h"
 #ifdef FandSQL
 #include "channel.h"
@@ -364,44 +366,6 @@ struct WRectFrml // r251
 	FrmlElem* R1 = nullptr;
 	FrmlElem* C2 = nullptr;
 	FrmlElem* R2 = nullptr;
-};
-
-class XItem // r274
-{
-public:
-	XItem(BYTE* data, bool isLeaf);
-	BYTE* Nr; // NN  RecNr /on leaf/ or NumberofRecordsBelow
-	longint* DownPage; // not on leaf
-	// M byte  number of equal bytes /not stored bytes/ 
-	// Index string  /L=length, A area ptr/
-	BYTE* XPageData;
-	longint GetN(); // index.pas r129 ASM
-	void PutN(longint N); // index.pas r132 ASM
-	WORD GetM(WORD O); // index.pas r136 ASM
-	void PutM(WORD O, WORD M); // index.pas r139 ASM
-	WORD GetL(WORD O); // index.pas r142 ASM
-	void PutL(WORD O, WORD L); // index.pas r145 ASM
-	XItem* Next(WORD O, bool isLeaf); // index.pas r148 ASM
-	WORD UpdStr(WORD O, pstring* S); // index.pas r152 ASM
-	size_t size(bool isLeaf); // vrati delku zaznamu
-};
-typedef XItem* XItemPtr;
-
-/// implementace XItem pro kratky zaznam
-class XItemLeaf
-{
-public:
-	XItemLeaf(BYTE* data);
-	XItemLeaf(const XItemLeaf& orig);
-	XItemLeaf(unsigned int RecNr, BYTE M, BYTE L, pstring& s); // kompletni 's', zpracuje se jen pozadovana cast
-	~XItemLeaf();
-	unsigned int RecNr;
-	BYTE M;
-	BYTE L;
-	BYTE* data;
-	size_t size();
-	size_t dataLen(); // bez 2B L + M
-	size_t Serialize(BYTE* buffer, size_t bufferSize);
 };
 
 class XPage // r289
