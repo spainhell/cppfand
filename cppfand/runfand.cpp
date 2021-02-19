@@ -254,29 +254,35 @@ void RdCFG()
 
 void CompileHelpCatDcl()
 {
-	std::string s; void* p2 = nullptr;
-	FileDRoot = nullptr; Chpt = FileDRoot;
-	CRdb = nullptr; MarkStore2(p2);
-	RdMsg(56); s = MsgLine; SetInpStr(s);
+	void* p2 = nullptr;
+	FileDRoot = nullptr;
+	Chpt = FileDRoot;
+	CRdb = nullptr;
+	MarkStore2(p2);
+	RdMsg(56);
+	std::string s = MsgLine;
+	SetInpStr(s);
 #if defined (FandRunV)
 	RdFileD("UFANDHLP", '6', "");
 #else
 	RdFileD("FANDHLP", '6', "");
 #endif
-
 	HelpFD = CFile;
-	RdMsg(52); s = MsgLine;
+	RdMsg(52);
+	s = MsgLine;
 	SetInpStr(s);
 	RdFileD("Catalog", 'C', "");
-	CatFD = CFile; FileDRoot = nullptr; Chpt = FileDRoot;
+	CatFD = CFile;
+	FileDRoot = nullptr;
+	Chpt = FileDRoot;
 	CatRdbName = CatFD->FldD.front();
 	if (CatRdbName == nullptr) throw std::exception("CompileHelpCatDcl: CarRdbName is NULL");
 	CatFileName = (FieldDescr*)CatRdbName->Chain;
 	CatArchiv = (FieldDescr*)CatFileName->Chain;
 	CatPathName = (FieldDescr*)CatArchiv->Chain;
 	CatVolume = (FieldDescr*)CatPathName->Chain;
-
-	MarkStore(AfterCatFD); ReleaseStore2(p2);
+	MarkStore(AfterCatFD);
+	ReleaseStore2(p2);
 }
 
 bool SetTopDir(std::string& p, std::string& n)

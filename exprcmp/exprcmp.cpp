@@ -71,7 +71,7 @@ std::string RegexFromString(std::string Mask)
 		index = Mask.find('*', index + 2);
 	}
 	
-	return Mask;
+	return "^" + Mask + "$";
 }
 
 bool FindShiftCtrlAltFxx(std::string input, std::string& key, unsigned char& fnKeyNr)

@@ -36,12 +36,12 @@ void OpenTWorkH()
 
 void SaveFD()
 {
-	WrPrefixes(); 
+	WrPrefixes();
 	if (CFile->Typ == 'X') CFile->XF->NoCreate = false;
 }
 
 void SaveFiles()
-{ 
+{
 	if (!CacheExist()) return;
 	FileD* cf = CFile; CFile = CatFD;
 	WrPrefixes();
@@ -59,8 +59,8 @@ void ClosePassiveFD()
 
 void CloseFANDFiles(bool FromDML)
 {
-	RdbDPtr RD;
-	RD = CRdb; while (RD != nullptr) {
+	RdbD* RD = CRdb;
+	while (RD != nullptr) {
 		CFile = RD->FD;
 		while (CFile != nullptr) {
 			if (!FromDML) CFile->ExLMode = CFile->LMode;
@@ -69,7 +69,10 @@ void CloseFANDFiles(bool FromDML)
 		}
 		RD = RD->ChainBack;
 	}
-	if (CRdb != nullptr) { CFile = CatFD; CloseFile(); }
+	if (CRdb != nullptr) {
+		CFile = CatFD;
+		CloseFile();
+	}
 	CFile = HelpFD;
 	CloseFile();
 	CloseH(TWork.Handle);
@@ -666,8 +669,8 @@ void RdCatPathVol(WORD CatIRec)
 
 bool SetContextDir(std::string& D, bool& IsRdb)
 {
-	bool result = true;;
-	RdbDPtr R = CRdb;
+	bool result = true;
+	RdbD* R = CRdb;
 	IsRdb = false;
 	while (R != nullptr) {
 		FileDPtr F = R->FD;
@@ -675,7 +678,7 @@ bool SetContextDir(std::string& D, bool& IsRdb)
 			D = R->RdbDir;
 			IsRdb = true;
 			return result;
-		};
+		}
 		while (F != nullptr) {
 			if (CFile == F) {
 				if ((CFile == R->HelpFD) || (CFile->Typ == '0'))  //.RDB

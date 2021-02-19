@@ -10,7 +10,7 @@
 /// Vycte zaznam z datoveho souboru (.000)
 /// </summary>
 /// <param name="file">ukazatel na soubor</param>
-/// <param name="N">kolikaty zaznam</param>
+/// <param name="N">kolikaty zaznam (1 .. N)</param>
 /// <param name="record">ukazatel na buffer</param>
 void ReadRec(FileD* file, longint N, void* record)
 {

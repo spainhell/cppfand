@@ -489,7 +489,7 @@ void TMenuBox::GetItemRect(WORD I, TRect* R)
 TMenuBoxS::TMenuBoxS(WORD C1, WORD R1, pstring Msg)
 {
 	MsgTxt = Msg;
-	HlpRdb = (RdbDPtr)&HelpFD;
+	HlpRdb = (RdbD*)HelpFD;
 	IsBoxS = true;
 	nTxt = CountDLines(&MsgTxt[1], MsgTxt.length(), '/') - 2;
 	Move(&screen.colors.mNorm, Palette, 3);
@@ -707,7 +707,7 @@ TMenuBarS::TMenuBarS(WORD MsgNr)
 {
 	RdMsg(MsgNr);
 	MsgTxt = StoreStr(MsgLine);
-	HlpRdb = (RdbD*)&HelpFD;
+	HlpRdb = (RdbD*)HelpFD;
 	nTxt = (CountDLines(&MsgTxt[1], MsgTxt->length(), '/') - 1) / 2;
 	Move(&screen.colors.mNorm, Palette, 3);
 	InitTMenuBar(1, 1, TxtCols);
@@ -899,7 +899,7 @@ LongStr* GetHlpText(RdbD* R, std::string S, bool ByName, WORD& IRec)
 	MarkStore2(p);
 	if (ByName) {
 		if (R == nullptr) goto label5;
-		CFile = (FileD*)R;
+		CFile = (FileD*)R;  // toto je nesmysl
 		if (CFile == HelpFD) {
 			if (CFile->Handle == nullptr) goto label5;
 		}
@@ -936,7 +936,7 @@ label1:
 				goto label3;
 			}
 			ReleaseStore(T);
-			i++;
+			i++; i++;
 			ReadRec(CFile, i, CRecPtr);
 			goto label2;
 		}
@@ -957,7 +957,6 @@ label3:
 label5:
 	CRecPtr = cr;
 	return T;
-
 }
 
 void DisplLLHelp(RdbD* R, std::string Name, bool R24)
@@ -965,7 +964,8 @@ void DisplLLHelp(RdbD* R, std::string Name, bool R24)
 	LongStr* s = nullptr;
 	void* p = nullptr;
 	size_t i = 0, y = 0; WORD iRec = 0; FileD* cf = nullptr;
-	if ((R == nullptr) || (R != (RdbD*)&HelpFD) && (R->HelpFD == nullptr)) return;
+	//if ((R == nullptr) || (R != (RdbD*)HelpFD) && (R->HelpFD == nullptr)) return;
+	if ((R == nullptr) || (R->HelpFD != HelpFD) && (R->HelpFD == nullptr)) return;
 	MarkStore(p);
 	cf = CFile;
 	if (!Name.empty()) {

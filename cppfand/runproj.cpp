@@ -946,7 +946,8 @@ void EditHelpOrCat(WORD cc, WORD kind, pstring txt)
 	WORD nCat = 1; WORD iCat = 1; WORD nHelp = 1; WORD iHelp = 1;
 	struct niFrml { char Op; double R; } nFrml{ 0,0 }, iFrml{ 0,0 };
 	if (cc == _AltF2_) {
-		FD = CRdb->HelpFD; if (kind == 1) FD = CFile->ChptPos.R->HelpFD;
+		FD = CRdb->HelpFD;
+		if (kind == 1) FD = CFile->ChptPos.R->HelpFD;
 		if (FD == nullptr) return;
 		if (kind == 0) { i = iHelp; n = nHelp; }
 		else {
@@ -1655,7 +1656,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 				if (Verif || ChptTF->CompileAll || (OldTxt == 0)) {
 				label2:
 					p1 = RdF(Name);
-					// TODO: toto se asi zase musí povolit !!! 
+					// TODO: toto se asi zase musi povolit !!! 
 					//WrFDSegment(I);
 					if (CFile->IsHlpFile) CRdb->HelpFD = CFile;
 					if (OldTxt > 0) MergeOldNew(Verif, OldTxt);

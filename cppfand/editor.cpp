@@ -679,7 +679,7 @@ void UpdStatLine(int Row, int Col)
 			size_t find = HeadS.find('_');
 			if (find == std::string::npos) find = 0;
 			i = MaxW(1, find);
-			if (i > TxtCols - TStatL) i = MaxI((integer)(TxtCols) - TStatL, 1);
+			if (i > TxtCols - TStatL) i = MaxI((integer)(TxtCols)-TStatL, 1);
 		}
 		screen.ScrWrStr(i, 1, StatLine, SysLColor);
 	}
@@ -778,7 +778,7 @@ BYTE Color(ColorOrd CO)
 void ScrollWrline(char* P, int Row, ColorOrd CO)
 {
 	return;
-	
+
 	//pstring GrafCtrl(15);
 	BYTE* len = (BYTE*)&CO;
 	std::string GrafCtrl = "\x03\x06\x09\x11\x15\x16\x18\x21\x22\x24\x25\x26\x29\x30\x31";
@@ -3898,7 +3898,8 @@ label1:
 		}
 		case _AltF10_: { Help(nullptr, "", false); goto label2; }
 		case _F1_: {
-			RdMsg(6); Help((RdbDPtr)&HelpFD, MsgLine, false);
+			RdMsg(6);
+			Help((RdbD*)HelpFD, MsgLine, false);
 		label2:
 			if (!Loc) RdPart(); goto label1; }
 		}
@@ -3939,14 +3940,14 @@ void ViewPrinterTxt()
 	EditTxtFile(nullptr, 'T', temp, nullptr, 1, 0, &V, 0, "", WPushPixel, nullptr);
 }
 
-void Help(RdbDPtr R, pstring Name, bool InCWw)
+void Help(RdbD* R, pstring Name, bool InCWw)
 {
 	void* p = nullptr; ExitRecord er; FileD* fd = nullptr;
 	WORD c1, c2, r1, r2; longint w, w2; WORD i, l, l2; WORD iRec, oldIRec;
 	LongStr* s = nullptr; LongStr* s2 = nullptr;
 	WORD* os = (WORD*)s; WORD* os2 = (WORD*)s2;
 	integer delta; bool frst, byName, backw;
-	FileD* cf, *cf2;
+	FileD* cf, * cf2;
 
 	if (R == nullptr) {
 		if (iStk == 0) return; R = Stk[iStk].Rdb; backw = true;
@@ -4017,9 +4018,9 @@ label2:
 		}
 	label4:
 		RestoreExit(er);
-		if (w2 != 0) PopW(w2); 
+		if (w2 != 0) PopW(w2);
 		if (w != 0) PopW(w);
-		ReleaseStore(p); 
+		ReleaseStore(p);
 		CFile = cf;
 	}
 }
