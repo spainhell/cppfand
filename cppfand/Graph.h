@@ -2,6 +2,8 @@
 #include "constants.h"
 #include "access.h"
 
+class FieldDescr;
+
 struct GraphVD : public Chained
 {
 	//GraphVD* Chain;
@@ -36,8 +38,8 @@ struct GraphD
 {
 	FileD* FD;
 	FrmlPtr GF;
-	FieldDPtr X, Y, Z;
-	FieldDPtr ZA[10];
+	FieldDescr* X, *Y, *Z;
+	FieldDescr* ZA[10];
 	FrmlPtr HZA[10];
 	FrmlPtr T, H, HX, HY, HZ, C, D, R, P, CO, Assign, Cond; /*pstring*/
 	FrmlPtr S, RS, RN, Max, Min, SP; /*float*/

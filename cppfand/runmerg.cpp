@@ -1,6 +1,8 @@
 #include "runmerg.h"
 
 
+
+#include "FieldDescr.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
 #include "KeyFldD.h"

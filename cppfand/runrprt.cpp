@@ -2,6 +2,7 @@
 
 
 
+#include "FieldDescr.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
 #include "KeyFldD.h"
@@ -786,7 +787,7 @@ void MoveMFlds(ConstListEl* C1, ConstListEl* C2)
 
 void PutMFlds(KeyFldDPtr M)
 {
-	FieldDPtr f, f1; FileD* cf; FileD* cf1; void* cr; void* cr1; KeyFldD* m1;
+	FieldDescr* f, *f1; FileD* cf; FileD* cf1; void* cr; void* cr1; KeyFldD* m1;
 	pstring s; double r; bool b;
 	if (MinID == nullptr) return;
 	cf = CFile; cf1 = MinID->Scan->FD; cr = CRecPtr; cr1 = MinID->ForwRecPtr;

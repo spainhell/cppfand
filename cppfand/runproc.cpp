@@ -5,6 +5,7 @@
 #include "compile.h"
 #include "drivers.h"
 #include "expimp.h"
+#include "FieldDescr.h"
 #include "FileD.h"
 #include "genrprt.h"
 #include "GlobalVariables.h"
@@ -107,7 +108,7 @@ void PromptAutoRprt(RprtOpt* RO)
 {
 	wwmix ww;
 
-	FieldList FL; FieldDPtr F; RprtOpt* RO2;
+	FieldList FL; FieldDescr* F; RprtOpt* RO2;
 	RO2 = (RprtOpt*)GetStore(sizeof(*RO)); Move(RO, RO2, sizeof(*RO));
 	FL = RO->Flds;
 	while (FL != nullptr)

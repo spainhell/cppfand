@@ -8,6 +8,7 @@
 #include "drivers.h"
 #include "access.h"
 #include "editor.h"
+#include "FieldDescr.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
 #include "oaccess.h"

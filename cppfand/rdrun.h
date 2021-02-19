@@ -10,6 +10,7 @@ struct LvDescr;
 class Instr;
 class Instr_proc;
 struct EdExitD;
+class FieldDescr;
 
 enum MInstrCode { _zero, _move, _output, _locvar, _parfile, _ifthenelseM };
 struct AssignD : public Chained
@@ -213,7 +214,7 @@ struct EFldD : public Chained
 {
 	//EFldD* Chain;
 	EFldD* ChainBack;
-	FieldDPtr FldD;
+	FieldDescr* FldD;
 	ChkDPtr Chk;
 	FrmlPtr Impl;
 	DepDPtr Dep;

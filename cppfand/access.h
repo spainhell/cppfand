@@ -101,21 +101,6 @@ typedef SumElem* SumElPtr;
 
 struct structXPath { longint Page; WORD I; };
 
-class FieldDescr : public Chained // ø. 100
-{
-public:
-	FieldDescr();
-	FieldDescr(BYTE* inputStr);
-	FieldDescr(const FieldDescr& orig);
-	char Typ = 0, FrmlTyp = 0;
-	BYTE L = 0, M = 0, NBytes = 0, Flg = 0;
-	// case boolean {Stored} of True:(Displ:integer); False:(Frml:FrmlPtr; Name:string[1]{ curr.length });
-	integer Displ = 0;
-	FrmlElem* Frml = nullptr;
-	std::string Name;
-};
-typedef FieldDescr* FieldDPtr;
-
 class ChkD : public Chained // ø. 115
 {
 public:
@@ -139,7 +124,7 @@ typedef DepD* DepDPtr;
 struct ImplD : public Chained
 {
 	//ImplD* Chain; 
-	FieldDPtr FldD;
+	FieldDescr* FldD;
 	FrmlPtr Frml;
 };
 typedef ImplD* ImplDPtr;
@@ -334,8 +319,8 @@ bool TryLockN(longint N, WORD Kind);
 void UnLockN(longint N);
 void ClearRecSpace(void* p);
 void ZeroAllFlds();
-void DelTFld(FieldDPtr F);
-void DelDifTFld(void* Rec, void* CompRec, FieldDPtr F);
+void DelTFld(FieldDescr* F);
+void DelDifTFld(void* Rec, void* CompRec, FieldDescr* F);
 void DeleteXRec(longint RecNr, bool DelT);
 void OverWrXRec(longint RecNr, void* P2, void* P);
 void DelAllDifTFlds(void* Rec, void* CompRec);

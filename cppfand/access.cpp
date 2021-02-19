@@ -2,6 +2,7 @@
 #include "../pascal/real48.h"
 #include "../pascal/asm.h"
 #include "compile.h"
+#include "FieldDescr.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
 #include "KeyFldD.h"
@@ -735,7 +736,7 @@ void T_(FieldDescr* F, longint Pos)
 	else RunError(906);
 }
 
-void DelTFld(FieldDPtr F)
+void DelTFld(FieldDescr* F)
 {
 	longint n; LockMode md;
 	n = _T(F);
@@ -746,7 +747,7 @@ void DelTFld(FieldDPtr F)
 	T_(F, 0);
 }
 
-void DelDifTFld(void* Rec, void* CompRec, FieldDPtr F)
+void DelDifTFld(void* Rec, void* CompRec, FieldDescr* F)
 {
 	void* cr = CRecPtr;
 	CRecPtr = CompRec;
@@ -1944,45 +1945,6 @@ std::string TranslateOrd(std::string text)
 		trans += c;
 	}
 	return trans;
-}
-
-FieldDescr::FieldDescr()
-{
-}
-
-FieldDescr::FieldDescr(BYTE* inputStr)
-{
-	size_t index = 0;
-	Chain = reinterpret_cast<FieldDescr*>(*(unsigned int*)&inputStr[index]); index += 4;
-	Typ = *(char*)&inputStr[index]; index++;
-	FrmlTyp = *(char*)&inputStr[index]; index++;
-	L = *(char*)&inputStr[index]; index++;
-	M = *(char*)&inputStr[index]; index++;
-	NBytes = *(char*)&inputStr[index]; index++;
-	Flg = *(char*)&inputStr[index]; index++;
-
-	unsigned int DisplOrFrml = *(unsigned int*)&inputStr[index]; index += 4;
-	if (DisplOrFrml > MaxTxtCols) {
-		// jedna se o ukazatel
-		Frml = reinterpret_cast<FrmlElem*>(DisplOrFrml);
-	}
-	else {
-		// jedna se o delku
-		Displ = DisplOrFrml;
-	}
-	Name[0] = inputStr[index]; index++;
-	memcpy(&Name[1], &inputStr[index], Name[0]); index += Name[0];
-}
-
-FieldDescr::FieldDescr(const FieldDescr& orig)
-{
-	if (orig.Chain != nullptr) Chain = new FieldDescr(*(FieldDescr*)orig.Chain);
-	Typ = orig.Typ;
-	FrmlTyp = orig.FrmlTyp;
-	L = orig.L; M = orig.M; NBytes = orig.NBytes; Flg = orig.Flg;
-	Displ = orig.Displ;
-	Frml = CopyFrmlElem(orig.Frml);
-	Name = orig.Name;
 }
 
 AddD::AddD(const AddD& orig)

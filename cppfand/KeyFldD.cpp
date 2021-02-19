@@ -1,5 +1,6 @@
 #include "KeyFldD.h"
 #include "access.h"
+#include "FieldDescr.h"
 
 KeyFldD::KeyFldD(const KeyFldD& orig, bool copyFlds)
 {

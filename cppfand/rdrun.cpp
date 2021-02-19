@@ -2,6 +2,7 @@
 
 
 
+#include "FieldDescr.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
 #include "legacy.h"
@@ -268,7 +269,8 @@ bool Assign(AddDPtr AD)
 	double R; LongStr* S = nullptr; pstring ss; bool B;
 	longint Pos, N2; char Kind2;
 	if (!RunBool(AD->Bool)) return true;
-	FieldDPtr F = AD->Field; FrmlPtr Z = AD->Frml;
+	FieldDescr* F = AD->Field;
+	FrmlPtr Z = AD->Frml;
 	switch (F->FrmlTyp) {
 	case 'R': R = RunReal(Z); break;
 	case 'S': if (F->Typ == 'T') S = RunLongStr(Z);

@@ -1,6 +1,7 @@
 #include "rdfildcl.h"
 
 #include "compile.h"
+#include "FieldDescr.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
 #include "KeyFldD.h"
@@ -15,7 +16,7 @@
 bool HasTT;
 bool issql;
 
-FieldDPtr RdFldDescr(pstring Name, bool Stored)
+FieldDescr* RdFldDescr(pstring Name, bool Stored)
 {
 	const BYTE TabF[19] = { 0, 1, 1, 2, 2, 3, 3, 4, 4, 4, 5, 5, 6, 6, 6, 7, 7, 8, 8 };
 	FieldDPtr F = nullptr; pstring* S = nullptr;

@@ -76,7 +76,7 @@ FrmlElem* RdFAccess(FileD* FD, LinkD* LD, char& FTyp); // r58
 FrmlPtr TryRdFldFrml(FileD* FD, char& FTyp); // r76
 FrmlElem* RdFldNameFrmlF(char& FTyp); // r111
 FrmlPtr FrmlContxt(FrmlPtr Z, FileD* FD, void* RP); // r68
-FrmlPtr MakeFldFrml(FieldDPtr F, char& FTyp); // r72
+FrmlPtr MakeFldFrml(FieldDescr* F, char& FTyp); // r72
 void TestString(char FTyp);
 void TestReal(char FTyp);
 FrmlPtr RdFrml(char& FTyp);

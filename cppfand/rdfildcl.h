@@ -2,7 +2,7 @@
 #include "editor.h"
 
 extern bool HasTT;
-FieldDPtr RdFldDescr(pstring Name, bool Stored); // r25
+FieldDescr* RdFldDescr(pstring Name, bool Stored); // r25
 ChkD* RdChkD(WORD Low);
 void RdChkDChain(ChkD** CRoot);
 void RdChkDsFromPos(FileD* FD, ChkD* C); // r98

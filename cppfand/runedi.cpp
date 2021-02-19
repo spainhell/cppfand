@@ -1,6 +1,8 @@
 #include "runedi.h"
 
 
+
+#include "FieldDescr.h"
 #include "FileD.h"
 #include "genrprt.h"
 #include "GlobalVariables.h"

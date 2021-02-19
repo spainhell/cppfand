@@ -1,6 +1,7 @@
 #include "XWKey.h"
 #include "access.h"
 #include "base.h"
+#include "FieldDescr.h"
 #include "GlobalVariables.h"
 #include "KeyFldD.h"
 #include "legacy.h"

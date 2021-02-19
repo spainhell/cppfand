@@ -6,6 +6,7 @@
 
 
 
+#include "FieldDescr.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
 #include "KeyFldD.h"
@@ -1210,7 +1211,7 @@ bool CanCopyT(FieldDescr* F, FrmlElem* Z)
 	return result;
 }
 
-bool TryCopyT(FieldDPtr F, TFilePtr TF, longint& pos, FrmlPtr Z)
+bool TryCopyT(FieldDescr* F, TFilePtr TF, longint& pos, FrmlPtr Z)
 {
 	LockMode md, md2;
 	bool result = false;
@@ -1380,7 +1381,7 @@ WORD RunWordImpl(FrmlElem* Z, WORD Impl)
 	return n;
 }
 
-bool FieldInList(FieldDPtr F, FieldListEl* FL)
+bool FieldInList(FieldDescr* F, FieldListEl* FL)
 {
 	auto result = false;
 	while (FL != nullptr) {

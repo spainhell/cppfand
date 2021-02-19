@@ -623,7 +623,7 @@ void TurnCat(WORD Frst, WORD N, integer I)
 	ReleaseStore(p);
 }
 
-pstring RdCatField(WORD CatIRec, FieldDPtr CatF)
+pstring RdCatField(WORD CatIRec, FieldDescr* CatF)
 {
 	FileD* CF = CFile;
 	void* CR = CRecPtr;

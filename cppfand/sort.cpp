@@ -1,6 +1,8 @@
 #include "sort.h"
 #include <queue>
 
+
+#include "FieldDescr.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
 #include "KeyFldD.h"

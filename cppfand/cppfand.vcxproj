@@ -162,6 +162,7 @@
     <ClCompile Include="drivers.cpp" />
     <ClCompile Include="editor.cpp" />
     <ClCompile Include="expimp.cpp" />
+    <ClCompile Include="FieldDescr.cpp" />
     <ClCompile Include="FileD.cpp" />
     <ClCompile Include="genrprt.cpp" />
     <ClCompile Include="GlobalVariables.cpp" />
@@ -216,6 +217,7 @@
     <ClInclude Include="editor.h" />
     <ClInclude Include="expimp.h" />
     <ClInclude Include="fanddml.h" />
+    <ClInclude Include="FieldDescr.h" />
     <ClInclude Include="FileD.h" />
     <ClInclude Include="genrprt.h" />
     <ClInclude Include="GlobalVariables.h" />

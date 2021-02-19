@@ -1,8 +1,7 @@
 #include "compile.h"
-
 #include <map>
-
 #include "editor.h"
+#include "FieldDescr.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
 #include "KeyFldD.h"
@@ -16,7 +15,7 @@ const BYTE MaxLen = 9;
 RdbPos ChptIPos; // usen in LexAnal & ProjMgr
 
 bool KeyArgFound;
-FieldDPtr KeyArgFld;
+FieldDescr* KeyArgFld;
 
 pstring QQdiv = "div";
 pstring QQmod = "mod";
@@ -2489,7 +2488,7 @@ FrmlPtr FrmlContxt(FrmlPtr Z, FileDPtr FD, void* RP)
 	return Z1;
 }
 
-FrmlPtr MakeFldFrml(FieldDPtr F, char& FTyp)
+FrmlPtr MakeFldFrml(FieldDescr* F, char& FTyp)
 {
 	auto Z = new FrmlElem7(_field, 4); // GetOp(_field, 4);
 	Z->Field = F;

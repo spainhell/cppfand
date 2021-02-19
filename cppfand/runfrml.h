@@ -34,7 +34,7 @@ double RunReal(FrmlElem* X);
 longint RunInt(FrmlPtr X);
 void TestTFrml(FieldDescr* F, FrmlElem* Z);
 bool CanCopyT(FieldDescr* F, FrmlElem* Z);
-bool TryCopyT(FieldDPtr F, TFile* TF, longint& pos, FrmlPtr Z);
+bool TryCopyT(FieldDescr* F, TFile* TF, longint& pos, FrmlPtr Z);
 void AssgnFrml(FieldDescr* F, FrmlElem* X, bool Delete, bool Add);
 void LVAssignFrml(LocVar* LV, void* OldBP, bool Add, FrmlElem* X);
 //void DecodeFieldRSB(FieldDescr* F, WORD LWw, double R, pstring T, bool B, pstring& Txt);
@@ -43,7 +43,7 @@ std::string DecodeFieldRSB(FieldDescr* F, WORD LWw, double R, std::string& T, bo
 std::string DecodeField(FieldDescr* F, WORD LWw);
 void RunWFrml(WRectFrml& X, BYTE WFlags, WRect& W);
 WORD RunWordImpl(FrmlElem* Z, WORD Impl);
-bool FieldInList(FieldDPtr F, FieldListEl* FL);
+bool FieldInList(FieldDescr* F, FieldListEl* FL);
 KeyDPtr GetFromKey(LinkDPtr LD);
 FrmlPtr RunEvalFrml(FrmlPtr Z);
 LongStr* RunLongStr(FrmlElem* X);  // r417 zacina od 555

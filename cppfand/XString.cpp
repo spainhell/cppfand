@@ -1,5 +1,6 @@
 #include "XString.h"
 #include "access.h"
+#include "FieldDescr.h"
 #include "GlobalVariables.h"
 #include "KeyFldD.h"
 #include "runfrml.h"

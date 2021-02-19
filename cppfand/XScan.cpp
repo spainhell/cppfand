@@ -1,5 +1,5 @@
 #include "XScan.h"
-
+#include "FieldDescr.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
 #include "KeyFldD.h"
