@@ -1622,7 +1622,7 @@ WORD CmpLxStr(char* p1, WORD len1, char* p2, WORD len2)
 	return _equ;
 }
 
-WORD CompLexLongStr(LongStrPtr S1, LongStrPtr S2)
+WORD CompLexLongStr(LongStr* S1, LongStr* S2)
 {
 	WORD l1 = min(S1->LL, 256);
 	char* b1 = new char[l1];
@@ -1643,7 +1643,7 @@ WORD CompLexLongStr(LongStrPtr S1, LongStrPtr S2)
 	return result;
 }
 
-WORD CompLexLongShortStr(LongStrPtr S1, pstring& S2)
+WORD CompLexLongShortStr(LongStr* S1, pstring& S2)
 {
 	WORD l1 = min(S1->LL, 256);
 	char* b1 = new char[l1];
@@ -1888,7 +1888,7 @@ longint StoreInTWork(LongStr* S)
 	return TWork.Store(S);
 }
 
-LongStrPtr ReadDelInTWork(longint Pos)
+LongStr* ReadDelInTWork(longint Pos)
 {
 	auto result = TWork.Read(1, Pos);
 	TWork.Delete(Pos);
