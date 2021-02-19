@@ -889,14 +889,16 @@ void MenuBarProc(Instr_menu* PD)
 
 LongStr* GetHlpText(RdbD* R, std::string S, bool ByName, WORD& IRec)
 {
-	FieldDescr* NmF = nullptr; FieldDescr* TxtF = nullptr;
-	LongStr* T = nullptr; std::string Nm;
+	FieldDescr* NmF = nullptr;
+	FieldDescr* TxtF = nullptr;
+	LongStr* T = nullptr;
+	std::string Nm;
 	longint i = 0;
-	TVideoFont fo; FileD* cf = nullptr;
+	TVideoFont fo;
+	FileD* cf = nullptr;
 	void* p = nullptr;
 	LockMode md = NullMode;
 	void* cr = CRecPtr;
-	MarkStore2(p);
 	if (ByName) {
 		if (R == nullptr) goto label5;
 		CFile = (FileD*)R;  // toto je nesmysl
@@ -935,15 +937,14 @@ label1:
 				IRec = i;
 				goto label3;
 			}
-			ReleaseStore(T);
-			i++; i++;
+			delete T;
+			i++;
 			ReadRec(CFile, i, CRecPtr);
 			goto label2;
 		}
 	}
 label3:
 	OldLMode(md);
-	ReleaseStore2(p);
 	if ((T == nullptr) && (CFile != HelpFD)) {
 	label4:
 		R = R->ChainBack;
