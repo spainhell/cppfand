@@ -128,7 +128,7 @@ void CheckFile(FileD* FD)
 	ReadH(h, 4, &Prfx.NRecs);
 	ReadH(h, 2, &Prfx.RecLen);
 	fs = FileSizeH(h);
-	CloseH(h);
+	CloseH(&h);
 	if ((FD->RecLen != Prfx.RecLen) || (Prfx.NRecs < 0) && (FD->Typ != 'X') ||
 		((fs - FD->FrstDispl) / Prfx.RecLen < Prfx.NRecs) ||
 		(Prfx.NRecs > 0) && (FD->Typ == 'X')) {
@@ -141,7 +141,7 @@ void CheckFile(FileD* FD)
 	else e[2] = 'T';
 	CPath = d + n + e;
 	h = OpenH(_isoldfile, RdShared);
-	if (HandleError == 0) CloseH(h);
+	if (HandleError == 0) CloseH(&h);
 	else LastExitCode = 4;
 }
 

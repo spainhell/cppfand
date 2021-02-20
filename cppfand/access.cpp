@@ -205,9 +205,9 @@ void RunErrorM(LockMode Md, WORD N)
 void CloseClearHCFile()
 {
 	/* !!! with CFile^ do!!! */
-	CloseClearH(CFile->Handle);
-	if (CFile->Typ == 'X') CloseClearH(CFile->XF->Handle);
-	if (CFile->TF != nullptr) CloseClearH(CFile->TF->Handle);
+	CloseClearH(&CFile->Handle);
+	if (CFile->Typ == 'X') CloseClearH(&CFile->XF->Handle);
+	if (CFile->TF != nullptr) CloseClearH(&CFile->TF->Handle);
 }
 
 void CloseGoExit()

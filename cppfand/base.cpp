@@ -1005,14 +1005,14 @@ void TruncH(FILE* handle, longint N)
 	}
 }
 
-void CloseH(FILE* handle)
+void CloseH(FILE** handle)
 {
 	Logging* log = Logging::getInstance();
 	DataFile* fileForClose = nullptr;
 	// oznaci za uzavreny ve filesMap
 	for (auto& f : filesMap)
 	{
-		if (f.second.Handler == handle) {
+		if (f.second.Handler == *handle) {
 			fileForClose = &f.second;
 			f.second.SetClose();
 			break;
@@ -1020,15 +1020,16 @@ void CloseH(FILE* handle)
 	}
 	if (fileForClose == nullptr) {
 		// soubor ve filesMap nebyl
-		log->log(loglevel::WARN, "closing file 0x%p, but file wasn't in filesMap!", handle);
+		log->log(loglevel::WARN, "closing file 0x%p, but file wasn't in filesMap!", *handle);
 	}
-	if (handle == nullptr) return;
+	if (*handle == nullptr) return;
 	// uzavre soubor
-	auto res = fclose(handle);
+	auto res = fclose(*handle);
 	WORD HandleError = res;
 	log->log(loglevel::DEBUG, "closing file 0x%p '%s', error %i", 
-		handle, fileForClose == nullptr ? "nullptr" : fileForClose->Name.c_str(), res);
+		*handle, fileForClose == nullptr ? "nullptr" : fileForClose->Name.c_str(), res);
 	//if (CFile != nullptr) CFile->Handle = nullptr;
+	*handle = nullptr;
 }
 
 void ClearCacheH(FILE* h)
@@ -1039,14 +1040,13 @@ void ClearCacheH(FILE* h)
 	cache.SaveRemoveCache(h);
 }
 
-void CloseClearH(FILE* h)
+void CloseClearH(FILE** h)
 {
 	Logging* log = Logging::getInstance();
 	log->log(loglevel::DEBUG, "CloseClearH() 0x%p", h);
 	if (h == nullptr) return;
-	ClearCacheH(h);
+	ClearCacheH(*h);
 	CloseH(h);
-	h = nullptr;
 }
 
 void SetFileAttr(WORD Attr)

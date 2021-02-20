@@ -4372,7 +4372,7 @@ label81:
 	goto label1;
 }
 
-void EditDataFile(FileDPtr FD, EditOpt* EO)
+void EditDataFile(FileD* FD, EditOpt* EO)
 {
 	void* p = nullptr;
 	longint w1 = 0, w2 = 0, w3 = 0;

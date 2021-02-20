@@ -318,7 +318,7 @@ longint GetFileSize()
 		return -1;
 	}
 	auto result = FileSizeH(h);
-	CloseH(h);
+	CloseH(&h);
 	return result;
 }
 
@@ -1050,7 +1050,7 @@ label1:
 		TestMountVol(CPath[1]);
 		h = OpenH(_isoldfile, RdOnly);
 		result = LastUpdate(h);
-		CloseH(h);
+		CloseH(&h);
 		break;
 	}
 	case _currtime: {

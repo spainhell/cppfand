@@ -275,7 +275,7 @@ bool PromptYN(WORD NMsg)
 	TextAttr = screen.colors.pTxt;
 	ClrEol();
 	RdMsg(NMsg);
-	pstring tmp = MsgLine.substr(MaxI(MsgLine.length() - TxtCols + 3, 1), 255);
+	pstring tmp = MsgLine.substr(MaxI(MsgLine.length() - TxtCols + 3, 0), 255);
 	// printf("%s", tmp.c_str());
 	screen.ScrFormatWrText(screen.WhereX(), screen.WhereY(), "%s", tmp.c_str());
 	WORD col = screen.WhereX(); 

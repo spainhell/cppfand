@@ -1421,7 +1421,7 @@ longint MakeDbfDcl(pstring Nm)
 		t->LL += s.length();
 	}
 	LongS_(ChptTxt, t);
-	CloseH(h);
+	CloseH(&h);
 	return 0;
 }
 

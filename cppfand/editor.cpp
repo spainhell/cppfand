@@ -2922,7 +2922,7 @@ void HandleEvent() {
 					goto Nic;
 				}
 				switch (TypeT) {
-				case FileT: { TestUpdFile(); ReleaseStore(T); CloseH(TxtFH); break; }
+				case FileT: { TestUpdFile(); ReleaseStore(T); CloseH(&TxtFH); break; }
 				case LocalT:
 				case MemoT: {
 					DelEndT(); GetStore(2); Move(T, &T[3], LenT);
@@ -3362,7 +3362,7 @@ void HandleEvent() {
 					fs = 0; // {L1 =LineAbs(LineL);I =Posi;}
 					if (BlockHandle(fs, F1, 'W'))
 					{
-						WriteH(F1, 0, T); /*truncH*/ CloseH(F1); HMsgExit(CPath);
+						WriteH(F1, 0, T); /*truncH*/ CloseH(&F1); HMsgExit(CPath);
 					}
 					// { PosDekFindLine(L1,I,true); }
 					BegBLn = I1; BegBPos = I2; EndBLn = I3; EndBPos = I; TypeB = bb;
@@ -3414,7 +3414,7 @@ void HandleEvent() {
 						EndBLn = Part.LineP + LineL - 1; ReleaseStore2(P1);
 					}
 					}
-					CloseH(F1); HMsgExit("");
+					CloseH(&F1); HMsgExit("");
 					SetPartLine(BegBLn); SetDekLnCurrI(L1 - Part.PosP); UpdatedL = true;
 					break;
 				} // end case _KR_
@@ -3903,7 +3903,7 @@ label1:
 		label2:
 			if (!Loc) RdPart(); goto label1; }
 		}
-	if (!Loc) { Size = FileSizeH(TxtFH); CloseH(TxtFH); }
+	if (!Loc) { Size = FileSizeH(TxtFH); CloseH(&TxtFH); }
 	if ((EdBreak == 0xFFFF) && (KbdChar == _F6_))
 		if (Loc) { PrintArray(T, LenT, false); goto label1; }
 		else {

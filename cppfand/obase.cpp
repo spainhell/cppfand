@@ -245,7 +245,8 @@ integer FlushTxt(TextFile* F)
 
 integer CloseTxt(TextFile* F)
 {
-	CloseH(F->Handle); TestTxtHError(F);
+	CloseH(&F->Handle);
+	TestTxtHError(F);
 	return 0;
 }
 

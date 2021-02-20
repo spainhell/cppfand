@@ -52,7 +52,7 @@ LongStr* GetTxt(FrmlPtr Z)
 	LastTxtPos = off + len;
 	if (len > 0) ReadH(h, len, s->A);
 	s->LL = len;
-	CloseH(h);
+	CloseH(&h);
 	return s;
 }
 
@@ -72,7 +72,7 @@ longint CopyTFFromGetTxt(TFile* TF, FrmlElem* Z)
 	LastTxtPos = off + len;
 	if (len == 0) {
 		result = 0;
-		CloseH(h);
+		CloseH(&h);
 		exit;
 	}
 	if (!TF->IsWork) md = NewLMode(WrMode);
@@ -131,7 +131,7 @@ label3:
 	RdWrCache(false, TF->Handle, TF->NotCached(), pos, MPageSize, X);
 label4:
 	if (!TF->IsWork) OldLMode(md); 
-	CloseH(h);
+	CloseH(&h);
 	return result;
 }
 

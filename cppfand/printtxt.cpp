@@ -117,12 +117,13 @@ void CopyToMgr()
 			ReadH(h1, n, buf);
 			WriteH(h2, n, buf);
 		}
-		ReleaseStore(buf); CloseH(h1);
+		ReleaseStore(buf);
+		CloseH(&h1);
 		if (h1 == WorkHandle) WorkHandle = nullptr;
 		/* !!! with TextRec(Rprt) do!!! */
 		Rprt.Handle = nullptr;
 	}
-	CloseH(h2);
+	CloseH(&h2);
 	ExecMgrPgm();
 	CFile = (FileD*)cf;
 	CRecPtr = cr;
@@ -253,7 +254,7 @@ void PrintArray(void* P, WORD N, bool CtrlL)
 
 void PrintFandWork()
 {
-	CloseH(WorkHandle);
+	CloseH(&WorkHandle);
 	Rprt.Assign(FandWorkName.c_str());
 	/* !!! with TextRec(Rprt) do!!! */
 	{

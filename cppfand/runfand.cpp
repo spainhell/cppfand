@@ -250,7 +250,7 @@ void RdCFG()
 
 	RdWDaysTab(CfgHandle);
 
-	CloseH(CfgHandle);
+	CloseH(&CfgHandle);
 }
 
 void CompileHelpCatDcl()
@@ -644,7 +644,7 @@ label1:
 		//case 5: OSshell("", "", false, true, true, true); break;
 	case 5: OpenFileDialog(); break;
 	case 0:
-	case 6: { CloseH(WorkHandle); CloseFANDFiles(false); return; break; }
+	case 6: { CloseH(&WorkHandle); CloseFANDFiles(false); return; break; }
 	default:;
 	}
 	PopW(w);

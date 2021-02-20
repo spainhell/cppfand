@@ -75,8 +75,8 @@ void CloseFANDFiles(bool FromDML)
 	}
 	CFile = HelpFD;
 	CloseFile();
-	CloseH(TWork.Handle);
-	CloseH(XWork.Handle);
+	CloseH(&TWork.Handle);
+	CloseH(&XWork.Handle);
 }
 
 void OpenFANDFiles(bool FromDML)
@@ -177,7 +177,7 @@ label1:
 				goto label2;
 			}
 			if (CFile->IsDynFile) {
-				CloseClearH(CFile->Handle);
+				CloseClearH(&CFile->Handle);
 				result = false;
 				return result;
 			}
@@ -192,7 +192,7 @@ label1:
 			CFile->XF->Handle = OpenH(_isoverwritefile, Exclusive);
 			if (HandleError != 0) goto label4;
 			CFile->XF->SetNotValid();
-			CloseH(CFile->XF->Handle);
+			CloseH(&CFile->XF->Handle);
 			goto label3;
 		}
 		if (HandleError != 0) {
@@ -326,9 +326,9 @@ bool OpenCreateF(FileUseMode UM)
 		if ((UM == Shared) || (UM == RdShared)) {
 			WrPrefixes();
 			SaveCache(0, CFile->Handle);
-			CloseClearH(CFile->Handle);
-			if (CFile->Typ == 'X') CloseClearH(CFile->XF->Handle);
-			if (CFile->TF != nullptr) CloseClearH(CFile->TF->Handle);
+			CloseClearH(&CFile->Handle);
+			if (CFile->Typ == 'X') CloseClearH(&CFile->XF->Handle);
+			if (CFile->TF != nullptr) CloseClearH(&CFile->TF->Handle);
 			OpenF(UM);
 		}
 	}
@@ -387,7 +387,7 @@ void CloseFile()
 	TruncF();
 	if (CFile->Typ == 'X') { /*with XF^*/
 		if (CFile->XF->Handle != nullptr) {
-			CloseClearH(CFile->XF->Handle);
+			CloseClearH(&CFile->XF->Handle);
 			if (!CFile->IsShared())
 			{
 				if (CFile->XF->NotValid) goto label1;
@@ -404,7 +404,7 @@ void CloseFile()
 	// zavreni souboru volnych textu .T00
 	if (CFile->TF != nullptr) { /*with TF^*/
 		if (CFile->TF->Handle != nullptr) {
-			CloseClearH(CFile->TF->Handle);
+			CloseClearH(&CFile->TF->Handle);
 			if (HandleError == 0) CFile->TF->Handle = nullptr; // soubor byl uspesne uzavren
 			if ((!CFile->IsShared()) && (CFile->NRecs == 0) && (CFile->Typ != 'D')) {
 				SetCPathVol();
@@ -413,7 +413,7 @@ void CloseFile()
 			}
 		}
 	}
-	CloseClearH(CFile->Handle);
+	CloseClearH(&CFile->Handle);
 	if (HandleError == 0) CFile->Handle = nullptr;
 	CFile->LMode = NullMode;
 	if (!CFile->IsShared() && (CFile->NRecs == 0) && (CFile->Typ != 'D')) {
@@ -884,7 +884,7 @@ void CopyH(FILE* h1, FILE* h2)
 	}
 	ReadH(h1, sz, p);
 	WriteH(h2, sz, p);
-	CloseH(h1);
+	CloseH(&h1);
 	MyDeleteFile(CPath);
 	ReleaseStore(p);
 }
@@ -904,7 +904,7 @@ void SubstDuplF(FileD* TempFD, bool DelTF)
 	CExtToT();
 	pstring pt = CPath;
 	/* !!! with PrimFD^ do!!! */ {
-		CloseClearH(PrimFD->Handle);
+		CloseClearH(&PrimFD->Handle);
 		MyDeleteFile(p);
 		TestDelErr(&p);
 		FileD* FD = (FileD*)PrimFD->Chain;
@@ -916,7 +916,7 @@ void SubstDuplF(FileD* TempFD, bool DelTF)
 		PrimFD->Chain = FD;
 		PrimFD->XF = xf2;
 		PrimFD->UMode = um;
-		CloseClearH(PrimFD->Handle);
+		CloseClearH(&PrimFD->Handle);
 		SetTempCExt('0', false);
 		pstring ptmp = CPath;
 		RenameFile56(ptmp, p, true);
@@ -924,13 +924,13 @@ void SubstDuplF(FileD* TempFD, bool DelTF)
 		PrimFD->Handle = OpenH(_isoldfile, PrimFD->UMode);
 		SetUpdHandle(PrimFD->Handle);
 		if ((MD != nullptr) && DelTF) {
-			CloseClearH(MD->Handle);
+			CloseClearH(&MD->Handle);
 			MyDeleteFile(pt);
 			TestDelErr(&pt);
 			//Move(PrimFD->TF, MD, sizeof(TFile));
 			*MD = *PrimFD->TF;
 			PrimFD->TF = MD;
-			CloseClearH(MD->Handle);
+			CloseClearH(&MD->Handle);
 			CPath = ptmp;
 			SetTempCExt('T', false);
 			RenameFile56(CPath, pt, true);
@@ -952,7 +952,7 @@ void TestDelErr(pstring* P)
 
 void DelDuplF(FileD* TempFD)
 {
-	CloseClearH(TempFD->Handle);
+	CloseClearH(&TempFD->Handle);
 	SetCPathVol();
 	SetTempCExt('0', CFile->IsShared());
 	MyDeleteFile(CPath);

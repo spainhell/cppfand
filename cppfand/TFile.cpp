@@ -645,23 +645,31 @@ WORD RdPrefix()
 	} XD;
 	auto result = 0xffff;
 	/* !!! with CFile^ do!!! */
-	bool cached = CFile->NotCached();
+	const bool not_cached = CFile->NotCached();
 	switch (CFile->Typ) {
 	case '8': {
-		RdWrCache(true, CFile->Handle, cached, 0, 4, &X8);
+		RdWrCache(true, CFile->Handle, not_cached, 0, 2, &X8.NRs);
+		RdWrCache(true, CFile->Handle, not_cached, 2, 2, &X8.RLen);
 		CFile->NRecs = X8.NRs;
 		if (CFile->RecLen != X8.RLen) { return X8.RLen; }
 		break;
 	}
 	case 'D': {
-		RdWrCache(true, CFile->Handle, cached, 0, 12, &XD);
+		RdWrCache(true, CFile->Handle, not_cached, 0, 1, &XD.Ver);
+		RdWrCache(true, CFile->Handle, not_cached, 1, 1, &XD.Date[0]);
+		RdWrCache(true, CFile->Handle, not_cached, 2, 1, &XD.Date[1]);
+		RdWrCache(true, CFile->Handle, not_cached, 3, 1, &XD.Date[2]);
+		RdWrCache(true, CFile->Handle, not_cached, 4, 4, &XD.NRecs);
+		RdWrCache(true, CFile->Handle, not_cached, 8, 2, &XD.HdLen);
+		RdWrCache(true, CFile->Handle, not_cached, 10, 2, &XD.RecLen);
 		CFile->NRecs = XD.NRecs;
 		if ((CFile->RecLen != XD.RecLen)) { return XD.RecLen; }
 		CFile->FrstDispl = XD.HdLen;
 		break;
 	}
 	default: {
-		RdWrCache(true, CFile->Handle, cached, 0, 6, &X6);
+		RdWrCache(true, CFile->Handle, not_cached, 0, 4, &X6.NRs);
+		RdWrCache(true, CFile->Handle, not_cached, 4, 2, &X6.RLen);
 		CFile->NRecs = abs(X6.NRs);
 		if ((X6.NRs < 0) && (CFile->Typ != 'X') || (X6.NRs > 0) && (CFile->Typ == 'X')
 			|| (CFile->RecLen != X6.RLen)) {
@@ -676,22 +684,18 @@ WORD RdPrefix()
 void RdPrefixes()
 {
 	if (RdPrefix() != 0xffff) CFileError(883);
-	/* !!! with CFile^ do!!! */ {
-		if ((CFile->XF != nullptr) && (CFile->XF->Handle != nullptr)) CFile->XF->RdPrefix();
-		if ((CFile->TF != nullptr)) CFile->TF->RdPrefix(false); }
+	if ((CFile->XF != nullptr) && (CFile->XF->Handle != nullptr)) CFile->XF->RdPrefix();
+	if ((CFile->TF != nullptr)) CFile->TF->RdPrefix(false);
 }
 
 void WrDBaseHd()
 {
-	DBaseHd* P = nullptr;
-
 	FieldDescr* F;
 	WORD n, y, m, d, w;
 	pstring s;
-
 	const char CtrlZ = '\x1a';
 
-	P = (DBaseHd*)GetZStore(CFile->FrstDispl);
+	DBaseHd* P = (DBaseHd*)GetZStore(CFile->FrstDispl);
 	char* PA = (char*)&P; // PA:CharArrPtr absolute P;
 	F = CFile->FldD.front();
 	n = 0;
@@ -702,11 +706,11 @@ void WrDBaseHd()
 				auto actual = P->Flds[n];
 				switch (F->Typ) {
 				case 'F': { actual.Typ = 'N'; actual.Dec = F->M; break; }
-				case 'N': {actual.Typ = 'N'; break; }
-				case 'A': {actual.Typ = 'C'; break; }
-				case 'D': {actual.Typ = 'D'; break; }
-				case 'B': {actual.Typ = 'L'; break; }
-				case 'T': {actual.Typ = 'M'; break; }
+				case 'N': { actual.Typ = 'N'; break; }
+				case 'A': { actual.Typ = 'C'; break; }
+				case 'D': { actual.Typ = 'D'; break; }
+				case 'B': { actual.Typ = 'L'; break; }
+				case 'T': { actual.Typ = 'M'; break; }
 				default:;
 				}
 				actual.Len = F->NBytes;
@@ -749,27 +753,19 @@ void WrDBaseHd()
 
 void WrPrefix()
 {
-	struct
-	{
-		longint NRs;
-		WORD RLen;
-	} Pfx6 = { 0, 0 };
-
-	struct
-	{
-		WORD NRs;
-		WORD RLen;
-	} Pfx8 = { 0, 0 };
+	struct { longint NRs; WORD RLen; } Pfx6 = { 0, 0 };
+	struct { WORD NRs; WORD RLen; } Pfx8 = { 0, 0 };
 
 	if (IsUpdHandle(CFile->Handle))
 	{
-		bool cached = CFile->NotCached();
+		const bool not_cached = CFile->NotCached();
 		switch (CFile->Typ)
 		{
 		case '8': {
 			Pfx8.RLen = CFile->RecLen;
-			Pfx8.NRs = CFile->NRecs;
-			RdWrCache(false, CFile->Handle, cached, 0, 4, (void*)&Pfx8);
+			Pfx8.NRs = static_cast<WORD>(CFile->NRecs);
+			RdWrCache(false, CFile->Handle, not_cached, 0, 2, &Pfx8.NRs);
+			RdWrCache(false, CFile->Handle, not_cached, 2, 2, &Pfx8.RLen);
 			break;
 		}
 		case 'D': {
@@ -780,7 +776,8 @@ void WrPrefix()
 			Pfx6.RLen = CFile->RecLen;
 			if (CFile->Typ == 'X') Pfx6.NRs = -CFile->NRecs;
 			else Pfx6.NRs = CFile->NRecs;
-			RdWrCache(false, CFile->Handle, cached, 0, 6, (void*)&Pfx6);
+			RdWrCache(false, CFile->Handle, not_cached, 0, 4, &Pfx6.NRs);
+			RdWrCache(false, CFile->Handle, not_cached, 4, 2, &Pfx6.RLen);
 		}
 		}
 	}
@@ -791,7 +788,7 @@ void WrPrefixes()
 	WrPrefix(); /*with CFile^ do begin*/
 	if (CFile->TF != nullptr && IsUpdHandle(CFile->TF->Handle))
 		CFile->TF->WrPrefix();
-	if (CFile->Typ == 'X' && (CFile->XF)->Handle != nullptr
+	if (CFile->Typ == 'X' && CFile->XF->Handle != nullptr
 		&& /*{ call from CopyDuplF }*/ (IsUpdHandle(CFile->XF->Handle) || IsUpdHandle(CFile->Handle)))
 		CFile->XF->WrPrefix();
 }
