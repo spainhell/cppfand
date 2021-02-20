@@ -18,3 +18,5 @@ public:
 };
 
 void XFNotValid();
+void TestXFExist();
+void CreateIndexFile(); // r482

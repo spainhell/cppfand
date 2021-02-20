@@ -48,3 +48,6 @@ public:
 
 typedef XKey* KeyDPtr;
 typedef XKey KeyD;
+
+bool SearchKey(XString& XX, XKey* Key, longint& NN);
+longint XNRecs(XKey* K);

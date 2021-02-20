@@ -140,13 +140,12 @@ void T_(FieldDescr* F, longint Pos);
 
 void CreateRec(longint N);
 void RecallRec(longint RecNr);
-bool LinkUpw(LinkDPtr LD, longint& N, bool WithT);
+bool LinkUpw(LinkD* LD, longint& N, bool WithT);
 bool LinkLastRec(FileD* FD, longint& N, bool WithT);
 void IncNRecs(longint N);
 bool TryLMode(LockMode Mode, LockMode& OldMode, WORD Kind);
 void OldLMode(LockMode Mode);
 LockMode NewLMode(LockMode Mode);
-void TestXFExist();
 bool TryLockN(longint N, WORD Kind);
 void UnLockN(longint N);
 void ClearRecSpace(void* p);
@@ -158,8 +157,6 @@ void OverWrXRec(longint RecNr, void* P2, void* P);
 void DelAllDifTFlds(void* Rec, void* CompRec);
 void DecNRecs(longint N);
 void DeleteRec(longint N);
-bool SearchKey(XString& XX, KeyDPtr Key, longint& NN);
-longint XNRecs(KeyDPtr K);
 void AsgnParFldFrml(FileD* FD, FieldDescr* F, FrmlElem* Z, bool Ad);
 void PutRec();
 void TryInsertAllIndexes(longint RecNr);
@@ -172,12 +169,11 @@ void AssignNRecs(bool Add, longint N);
 void CExtToT();
 void CExtToX();
 void CloseGoExit();
-void WrPrefixes();
+
 void TestCFileError();
-WORD RdPrefix();
+
 bool ChangeLMode(LockMode Mode, WORD Kind, bool RdPref);
 void SeekRec(longint N);
-void WrPrefix();
-void RdPrefixes();
+
 
 void FixFromReal(double r, void* FixNo, WORD FLen);

@@ -3,7 +3,10 @@
 #include "FileD.h"
 #include "GlobalVariables.h"
 #include "obaseww.h"
+#include "sort.h"
+#include "XScan.h"
 #include "../Logging/Logging.h"
+
 
 XFile::XFile(const XFile& orig)
 {
@@ -77,4 +80,64 @@ void XFNotValid()
 	if (XF == nullptr) return;
 	if (XF->Handle == nullptr) RunError(903);
 	XF->SetNotValid();
+}
+
+void TestXFExist()
+{
+	XFile* xf = CFile->XF;
+	if ((xf != nullptr) && xf->NotValid)
+	{
+		if (xf->NoCreate) CFileError(819);
+		CreateIndexFile();
+	}
+}
+
+void CreateIndexFile()
+{
+	Logging* log = Logging::getInstance();
+
+	ExitRecord er;
+	void* cr = nullptr; //void* p = nullptr;
+	LockMode md = NullMode;
+	bool fail = false;
+	XWorkFile* XW = nullptr;
+	XScan* Scan = nullptr;
+	XFile* XF = nullptr;
+	//NewExit(Ovr(), er);
+	//goto label1;
+	//MarkStore(p);
+	fail = true;
+	XF = CFile->XF;
+	cr = CRecPtr;
+	CRecPtr = GetRecSpace();
+	md = NewLMode(RdMode);
+	TryLockN(0, 0); /*ClearCacheCFile;*/
+	if (XF->Handle == nullptr) RunError(903);
+	log->log(loglevel::DEBUG, "CreateIndexFile() file 0x%p name '%s'", XF->Handle, CFile->Name.c_str());
+	XF->RdPrefix();
+	if (XF->NotValid) {
+		XF->SetEmpty();
+		//New(Scan, Init(CFile, nullptr, nullptr, false));
+		Scan = new XScan(CFile, nullptr, nullptr, false);
+		Scan->Reset(nullptr, false);
+		//New(XW, Init(Scan, CFile->Keys));
+		XW = new XWorkFile(Scan, CFile->Keys);
+		XW->Main('X');
+		delete XW;
+		XF->NotValid = false;
+		XF->WrPrefix();
+		if (!SaveCache(0, CFile->Handle)) GoExit(); /*FlushHandles;*/;
+	}
+	fail = false;
+label1:
+	RestoreExit(er);
+	//ReleaseStore(p);
+	CRecPtr = cr;
+	if (fail) {
+		XF->SetNotValid();
+		XF->NoCreate = true;
+	}
+	UnLockN(0);
+	OldLMode(md);
+	if (fail) GoExit();
 }

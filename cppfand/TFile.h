@@ -45,3 +45,8 @@ private:
 	void GetMLen();
 };
 typedef TFile* TFilePtr;
+
+WORD RdPrefix();
+void RdPrefixes();
+void WrPrefix();
+void WrPrefixes();

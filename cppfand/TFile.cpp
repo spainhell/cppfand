@@ -1,5 +1,7 @@
 #include "TFile.h"
 
+
+#include "FieldDescr.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
 #include "obaseww.h"
@@ -629,4 +631,167 @@ void TFile::RdWr(bool ReadOp, longint Pos, WORD N, void* X)
 void TFile::GetMLen()
 {
 	MLen = (MaxPage + 1) << MPageShft;
+}
+
+WORD RdPrefix()
+{
+	// NRs - celkovy pocet zaznamu v souboru; RLen - delka 1 zaznamu
+	struct x6 { longint NRs = 0; WORD RLen = 0; } X6;
+	struct x8 { WORD NRs = 0, RLen = 0; } X8;
+	struct xD {
+		BYTE Ver = 0; BYTE Date[3] = { 0,0,0 };
+		longint NRecs = 0;
+		WORD HdLen = 0; WORD RecLen = 0;
+	} XD;
+	auto result = 0xffff;
+	/* !!! with CFile^ do!!! */
+	bool cached = CFile->NotCached();
+	switch (CFile->Typ) {
+	case '8': {
+		RdWrCache(true, CFile->Handle, cached, 0, 4, &X8);
+		CFile->NRecs = X8.NRs;
+		if (CFile->RecLen != X8.RLen) { return X8.RLen; }
+		break;
+	}
+	case 'D': {
+		RdWrCache(true, CFile->Handle, cached, 0, 12, &XD);
+		CFile->NRecs = XD.NRecs;
+		if ((CFile->RecLen != XD.RecLen)) { return XD.RecLen; }
+		CFile->FrstDispl = XD.HdLen;
+		break;
+	}
+	default: {
+		RdWrCache(true, CFile->Handle, cached, 0, 6, &X6);
+		CFile->NRecs = abs(X6.NRs);
+		if ((X6.NRs < 0) && (CFile->Typ != 'X') || (X6.NRs > 0) && (CFile->Typ == 'X')
+			|| (CFile->RecLen != X6.RLen)) {
+			return X6.RLen;
+		}
+		break;
+	}
+	}
+	return result;
+}
+
+void RdPrefixes()
+{
+	if (RdPrefix() != 0xffff) CFileError(883);
+	/* !!! with CFile^ do!!! */ {
+		if ((CFile->XF != nullptr) && (CFile->XF->Handle != nullptr)) CFile->XF->RdPrefix();
+		if ((CFile->TF != nullptr)) CFile->TF->RdPrefix(false); }
+}
+
+void WrDBaseHd()
+{
+	DBaseHd* P = nullptr;
+
+	FieldDescr* F;
+	WORD n, y, m, d, w;
+	pstring s;
+
+	const char CtrlZ = '\x1a';
+
+	P = (DBaseHd*)GetZStore(CFile->FrstDispl);
+	char* PA = (char*)&P; // PA:CharArrPtr absolute P;
+	F = CFile->FldD.front();
+	n = 0;
+	while (F != nullptr) {
+		if ((F->Flg & f_Stored) != 0) {
+			n++;
+			{ // with P^.Flds[n]
+				auto actual = P->Flds[n];
+				switch (F->Typ) {
+				case 'F': { actual.Typ = 'N'; actual.Dec = F->M; break; }
+				case 'N': {actual.Typ = 'N'; break; }
+				case 'A': {actual.Typ = 'C'; break; }
+				case 'D': {actual.Typ = 'D'; break; }
+				case 'B': {actual.Typ = 'L'; break; }
+				case 'T': {actual.Typ = 'M'; break; }
+				default:;
+				}
+				actual.Len = F->NBytes;
+				actual.Displ = F->Displ;
+				s = F->Name;
+				for (size_t i = 1; i < s.length(); i++) s[i] = toupper(s[i]);
+				StrLPCopy((char*)&actual.Name[1], s, 11);
+			}
+		}
+		F = (FieldDescr*)F->Chain;
+	}
+
+	{ //with P^ do 
+		if (CFile->TF != nullptr) {
+			if (CFile->TF->Format == TFile::FptFormat) P->Ver = 0xf5;
+			else P->Ver = 0x83;
+		}
+		else P->Ver = 0x03;
+
+		P->RecLen = CFile->RecLen;
+		SplitDate(Today(), d, m, y);
+		P->Date[1] = BYTE(y - 1900);
+		P->Date[2] = (BYTE)m;
+		P->Date[3] = (BYTE)d;
+		P->NRecs = CFile->NRecs;
+		P->HdLen = CFile->FrstDispl;
+		PA[(P->HdLen / 32) * 32 + 1] = m;
+	}
+
+	// with CFile^
+	{
+		bool cached = CFile->NotCached();
+		RdWrCache(false, CFile->Handle, cached, 0, CFile->FrstDispl, (void*)&P);
+		RdWrCache(false, CFile->Handle, cached,
+			longint(CFile->NRecs) * CFile->RecLen + CFile->FrstDispl, 1, (void*)&CtrlZ);
+	}
+
+	ReleaseStore(P);
+}
+
+void WrPrefix()
+{
+	struct
+	{
+		longint NRs;
+		WORD RLen;
+	} Pfx6 = { 0, 0 };
+
+	struct
+	{
+		WORD NRs;
+		WORD RLen;
+	} Pfx8 = { 0, 0 };
+
+	if (IsUpdHandle(CFile->Handle))
+	{
+		bool cached = CFile->NotCached();
+		switch (CFile->Typ)
+		{
+		case '8': {
+			Pfx8.RLen = CFile->RecLen;
+			Pfx8.NRs = CFile->NRecs;
+			RdWrCache(false, CFile->Handle, cached, 0, 4, (void*)&Pfx8);
+			break;
+		}
+		case 'D': {
+			WrDBaseHd();
+			break;
+		}
+		default: {
+			Pfx6.RLen = CFile->RecLen;
+			if (CFile->Typ == 'X') Pfx6.NRs = -CFile->NRecs;
+			else Pfx6.NRs = CFile->NRecs;
+			RdWrCache(false, CFile->Handle, cached, 0, 6, (void*)&Pfx6);
+		}
+		}
+	}
+}
+
+void WrPrefixes()
+{
+	WrPrefix(); /*with CFile^ do begin*/
+	if (CFile->TF != nullptr && IsUpdHandle(CFile->TF->Handle))
+		CFile->TF->WrPrefix();
+	if (CFile->Typ == 'X' && (CFile->XF)->Handle != nullptr
+		&& /*{ call from CopyDuplF }*/ (IsUpdHandle(CFile->XF->Handle) || IsUpdHandle(CFile->Handle)))
+		CFile->XF->WrPrefix();
 }

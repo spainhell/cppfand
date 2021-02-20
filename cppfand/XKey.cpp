@@ -590,3 +590,53 @@ bool XKey::Delete(longint RecNr)
 	if (b) DeleteOnPath();
 	return b;
 }
+
+bool SearchKey(XString& XX, XKey* Key, longint& NN)
+{
+	longint R = 0;
+	XString x;
+
+	auto bResult = false;
+	longint L = 1;
+	integer Result = _gt;
+	NN = CFile->NRecs;
+	longint N = NN;
+	if (N == 0) return bResult;
+	KeyFldD* KF = Key->KFlds;
+	do {
+		if (Result == _gt) R = N;
+		else L = N + 1;
+		N = (L + R) / 2;
+		ReadRec(CFile, N, CRecPtr);
+		x.PackKF(KF);
+		Result = CompStr(x.S, XX.S);
+	} while (!((L >= R) || (Result == _equ)));
+	if ((N == NN) && (Result == _lt)) NN++;
+	else {
+		if (Key->Duplic && (Result == _equ))
+			while (N > 1) {
+				N--;
+				ReadRec(CFile, N, CRecPtr);
+				x.PackKF(KF);
+				if (CompStr(x.S, XX.S) != _equ) {
+					N++;
+					ReadRec(CFile, N, CRecPtr);
+					goto label1;
+				}
+			}
+	label1:  NN = N;
+	}
+	if ((Result == _equ) || Key->Intervaltest && (Result == _gt))
+		bResult = true;
+	return bResult;
+}
+
+longint XNRecs(XKey* K)
+{
+	if ((CFile->Typ == 'X') && (K != nullptr))
+	{
+		TestXFExist();
+		return CFile->XF->NRecs;
+	}
+	return CFile->NRecs;
+}
