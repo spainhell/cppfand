@@ -1,5 +1,26 @@
 #pragma once
-#include "../access.h"
+#include <vector>
+
+#include "../constants.h"
+#include "../pstring.h"
+#include "../XKey.h"
+
+class XWKey;
+struct FuncD;
+struct LinkD;
+class FileD;
+class FieldDescr;
+class LocVar;
+
+class FrmlElem // ø. 51
+{
+public:
+	FrmlElem(BYTE Op, size_t buff_size) { this->Op = Op; /*buffer = new BYTE[buff_size]{ 0 };*/ }
+	//~FrmlElem() { delete[] buffer; }
+	BYTE Op = 0;
+	//BYTE* buffer = nullptr;
+};
+typedef FrmlElem* FrmlPtr;
 
 class FrmlElem0 : public FrmlElem
 {

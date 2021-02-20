@@ -4,6 +4,10 @@
 
 typedef char PwCodeArr[20];
 
+const WORD MPageSize = 512;
+const BYTE XPageShft = 10;
+const BYTE MPageShft = 9;
+
 class TFile // ø. 147
 {
 public:

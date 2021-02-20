@@ -338,6 +338,12 @@
     <ClInclude Include="FieldDescr.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="access-structs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LocVar.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="cppfand.rc">

@@ -6,7 +6,6 @@
 #include "obaseww.h"
 #include "runfrml.h"
 #include "sort.h"
-#include "XWKey.h"
 
 void AddFFs(KeyDPtr K, pstring& s)
 {

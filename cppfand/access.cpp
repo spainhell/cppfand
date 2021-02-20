@@ -602,14 +602,6 @@ void CExtToT()
 	CPath = CDir + CName + CExt;
 }
 
-void XFNotValid()
-{
-	XFile* XF = CFile->XF;
-	if (XF == nullptr) return;
-	if (XF->Handle == nullptr) RunError(903);
-	XF->SetNotValid();
-}
-
 void NegateESDI()
 {
 	// asm  jcxz @2; @1:not es:[di].byte; inc di; loop @1; @2:

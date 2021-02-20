@@ -16,3 +16,5 @@ public:
 	void WrPrefix();
 	void SetNotValid();
 };
+
+void XFNotValid();

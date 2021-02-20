@@ -2,6 +2,7 @@
 #include "base.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
+#include "obaseww.h"
 #include "../Logging/Logging.h"
 
 XFile::XFile(const XFile& orig)
@@ -68,4 +69,12 @@ void XFile::SetNotValid()
 	MaxPage = 0;
 	WrPrefix();
 	SaveCache(0, CFile->Handle);
+}
+
+void XFNotValid()
+{
+	XFile* XF = CFile->XF;
+	if (XF == nullptr) return;
+	if (XF->Handle == nullptr) RunError(903);
+	XF->SetNotValid();
 }

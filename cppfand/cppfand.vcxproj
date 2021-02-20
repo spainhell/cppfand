@@ -209,6 +209,7 @@
     <ClCompile Include="XWKey.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="access-structs.h" />
     <ClInclude Include="access.h" />
     <ClInclude Include="base.h" />
     <ClInclude Include="compile.h" />
@@ -225,6 +226,7 @@
     <ClInclude Include="keyboard.h" />
     <ClInclude Include="KeyFldD.h" />
     <ClInclude Include="legacy.h" />
+    <ClInclude Include="LocVar.h" />
     <ClInclude Include="models\FrmlElem.h" />
     <ClInclude Include="models\Instr.h" />
     <ClInclude Include="oaccess.h" />

@@ -33,7 +33,7 @@ void WriteRec(longint N)
 void WriteRec(FileD* file, longint N, void* record)
 {
 	Logging* log = Logging::getInstance();
-	log->log(loglevel::DEBUG, "WriteRec(%i), CFile 0x%p", N, CFile->Handle);
+	log->log(loglevel::DEBUG, "WriteRec(%i), CFile 0x%p", N, file->Handle);
 
 	RdWrCache(false, file->Handle, file->NotCached(),
 		(N - 1) * file->RecLen + file->FrstDispl, file->RecLen, record);

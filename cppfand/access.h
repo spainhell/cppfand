@@ -1,7 +1,8 @@
 #pragma once
-
+#include "access-structs.h"
 #include "base.h"
 #include "constants.h"
+#include "LocVar.h"
 #include "Rdb.h"
 #include "switches.h"
 #include "XString.h"
@@ -31,75 +32,9 @@ const BYTE Ascend = 0; const BYTE Descend = 6; // {used in SortKey}
 const BYTE f_Stored = 1; const BYTE f_Encryp = 2; // {FieldD flags}
 const BYTE f_Mask = 4; const BYTE f_Comma = 8; // {FieldD flags}
 
-const WORD MPageSize = 512;
-const BYTE XPageShft = 10;
-const BYTE MPageShft = 9;
+//typedef FuncD* FuncDPtr;
+//typedef XWKey* WKeyDPtr;
 
-typedef FuncD* FuncDPtr;
-typedef XWKey* WKeyDPtr;
-
-
-struct FieldListEl : public Chained // r32
-{
-	FieldDescr* FldD;
-};
-typedef FieldListEl* FieldList;
-
-struct FrmlListEl : public Chained // ø. 34
-{
-	FrmlElem* Frml;
-};
-typedef FrmlListEl* FrmlList;
-
-struct StringListEl : public Chained // ø. 38
-{
-	std::string S;
-};
-typedef StringListEl* StringList;
-
-struct FloatPtrListEl // r42
-{
-	FloatPtrListEl* Chain;
-	double* RPtr;
-};
-typedef FloatPtrListEl* FloatPtrList;
-
-struct KeyListEl : public Chained // ø. 49
-{
-	//KeyListEl* Chain;
-	KeyD* Key = nullptr;
-};
-typedef KeyListEl* KeyList;
-
-class FrmlElem // ø. 51
-{
-public:
-	FrmlElem(BYTE Op, size_t buff_size) { this->Op = Op; /*buffer = new BYTE[buff_size]{ 0 };*/ }
-	//~FrmlElem() { delete[] buffer; }
-	BYTE Op = 0;
-	//BYTE* buffer = nullptr;
-};
-typedef FrmlElem* FrmlPtr;
-
-struct KeyInD : public Chained // r89
-{
-	FrmlListEl* FL1 = nullptr;
-	FrmlListEl* FL2 = nullptr;
-	longint XNrBeg = 0, N = 0;
-	std::string X1;
-	std::string X2;
-};
-
-struct SumElem // r95
-{
-	SumElem* Chain = nullptr;
-	char Op = '\0';
-	double R = 0.0;
-	FrmlElem* Frml = nullptr;
-};
-typedef SumElem* SumElPtr;
-
-struct structXPath { longint Page; WORD I; };
 
 class ChkD : public Chained // ø. 115
 {
@@ -117,28 +52,17 @@ typedef ChkD* ChkDPtr;
 struct DepD : Chained // r122
 {
 	//DepD* Chain; 
-	FrmlPtr Bool, Frml;
+	FrmlElem* Bool = nullptr;
+	FrmlElem* Frml = nullptr;
 };
 typedef DepD* DepDPtr;
 
-struct ImplD : public Chained
-{
-	//ImplD* Chain; 
-	FieldDescr* FldD;
-	FrmlPtr Frml;
-};
-typedef ImplD* ImplDPtr;
 
-struct LiRoots
-{
-	ChkD* Chks; ImplD* Impls;
-};
-typedef LiRoots* LiRootsPtr;
 
-class AddD // ø. 135
+class AddD // r135
 {
 public:
-	AddD() {};
+	AddD() {}
 	AddD(const AddD& orig);
 	AddD* Chain = nullptr;
 	FieldDescr* Field = nullptr;
@@ -152,53 +76,6 @@ public:
 };
 typedef AddD* AddDPtr;
 
-struct DBaseFld // ø. 208
-{
-	pstring Name;
-	char Typ = 0;
-	longint Displ = 0;
-	BYTE Len = 0, Dec = 0;
-	BYTE x2[14];
-};
-
-struct DBaseHd // ø. 213
-{
-	BYTE Ver = 0;
-	BYTE Date[4]{ 0,0,0,0 };
-	longint NRecs = 0;
-	WORD HdLen = 0, RecLen = 0;
-	DBaseFld Flds[1];
-};
-
-struct LinkD // ø. 220
-{
-	LinkD* Chain = nullptr;
-	WORD IndexRoot = 0;
-	BYTE MemberRef = 0; // { 0-no, 1-!, 2-!!(no delete)}
-	KeyFldD* Args = nullptr;
-	FileD* FromFD = nullptr; FileD* ToFD = nullptr;
-	KeyD* ToKey = nullptr;
-	pstring RoleName;
-};
-typedef LinkD* LinkDPtr;
-
-class LocVarBlkD : public Chained// ø. 228
-{
-public:
-	LocVarBlkD() {  }
-	//~LocVarBlkD() {
-	//	for (size_t i = 0; i < vLocVar.size(); i ++) { delete vLocVar[i]; }
-	//}
-	LocVar* GetRoot();
-	LocVar* FindByName(std::string Name);
-	std::string FceName;
-	std::vector<LocVar*> vLocVar;
-	//LocVar* Root = nullptr;
-	WORD NParam = 0;
-	WORD Size = 0;
-};
-
-class Instr;
 struct FuncD // ø. 233
 {
 	FuncD* Chain = nullptr;
@@ -206,44 +83,6 @@ struct FuncD // ø. 233
 	LocVarBlkD LVB; // {1.LV is result}
 	Instr* pInstr = nullptr; // {InstrPtr}
 	pstring Name;
-};
-
-class LocVar : public Chained // ø. 239
-{
-public:
-	LocVar() = default;
-	LocVar(std::string Name) { this->Name = Name; }
-	bool IsPar = false; // urcuje, zda se jedna o vstupni parametr
-	bool IsRetPar = false; // urcuje, zda jde o parametr predavany odkazem
-	bool IsRetValue = false; // pridano navic - urcuje navratovou hodnotu funkce
-	char FTyp = '\0';
-	FileD* FD = nullptr;
-	void* RecPtr = nullptr;
-	std::string Name;
-	char Op = '\0';
-	WORD BPOfs = 0;
-	FrmlElem* Init = nullptr;
-
-	bool B = false;
-	double R = 0.0;
-	std::string S;
-	WORD orig_S_length = 0;
-};
-
-struct WRectFrml // r251
-{
-	FrmlElem* C1 = nullptr;
-	FrmlElem* R1 = nullptr;
-	FrmlElem* C2 = nullptr;
-	FrmlElem* R2 = nullptr;
-};
-
-struct CompInpD // r402
-{
-	CompInpD* ChainBack = nullptr;
-	CharArr* InpArrPtr = nullptr;
-	RdbPos InpRdbPos;
-	WORD InpArrLen = 0, CurrPos = 0, OldErrPos = 0;
 };
 
 //void RunErrorM(LockMode Md, WORD N); // r528
@@ -281,15 +120,8 @@ void ForAllFDs(void(*procedure)()); // r935
 bool IsActiveRdb(FileD* FD);
 void ResetCompilePars(); // r953 - posledni fce
 
-// ********** IMPLEMENTATION **********
-// od r. 705
-// 
 
-//void ClearTWorkFlag(); // r749 ASM
 std::string TranslateOrd(std::string text); // r804 ASM
-//WORD TranslateOrdBack(); // r834 ASM
-//void XDecode(LongStrPtr S); // r903 ASM
-//void DirMinusBackslash(pstring& D);
 
 // * NACITANI ZE SOUBORU / Z FRMLELEM *
 bool _B(FieldDescr* F);
@@ -331,7 +163,7 @@ longint XNRecs(KeyDPtr K);
 void AsgnParFldFrml(FileD* FD, FieldDescr* F, FrmlElem* Z, bool Ad);
 void PutRec();
 void TryInsertAllIndexes(longint RecNr);
-void XFNotValid();
+
 void DelTFlds();
 void CopyRecWithT(void* p1, void* p2);
 void CloseClearHCFile();

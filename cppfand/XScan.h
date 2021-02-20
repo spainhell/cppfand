@@ -1,7 +1,10 @@
 #pragma once
+#include "access-structs.h"
 #include "constants.h"
+#include "XWKey.h"
 #include "models/FrmlElem.h"
 
+struct KeyInD;
 /// trida ma dedit TObject z Pascalu
 /// DOC: https://www.freepascal.org/docs-html/rtl/system/tobject.html
 class XScan

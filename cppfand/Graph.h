@@ -1,6 +1,7 @@
 #pragma once
 #include "constants.h"
 #include "access.h"
+#include "models/FrmlElem.h"
 
 class FieldDescr;
 
@@ -37,19 +38,19 @@ struct WinG
 struct GraphD
 {
 	FileD* FD;
-	FrmlPtr GF;
+	FrmlElem* GF;
 	FieldDescr* X, *Y, *Z;
 	FieldDescr* ZA[10];
-	FrmlPtr HZA[10];
-	FrmlPtr T, H, HX, HY, HZ, C, D, R, P, CO, Assign, Cond; /*pstring*/
-	FrmlPtr S, RS, RN, Max, Min, SP; /*float*/
+	FrmlElem* HZA[10];
+	FrmlElem* T, *H, *HX, *HY, *HZ, *C, *D, *R, *P, *CO, *Assign, *Cond; /*pstring*/
+	FrmlElem* S, *RS, *RN, *Max, *Min, *SP; /*float*/
 	bool Interact;
 	GraphVD* V;
 	GraphWD* W;
 	GraphRGBD* RGB;
 	KeyInD* KeyIn;
 	bool SQLFilter;
-	KeyDPtr ViewKey;
+	XKey* ViewKey;
 	WinG* WW;
 };
 

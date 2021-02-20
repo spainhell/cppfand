@@ -1691,10 +1691,10 @@ FrmlPtr RdFormula(char& FTyp)
 	return Z;
 }
 
-bool FindFuncD(FrmlPtr* ZZ)
+bool FindFuncD(FrmlElem** ZZ)
 {
 	char typ = '\0';
-	FuncDPtr fc = FuncDRoot;
+	FuncD* fc = FuncDRoot;
 	while (fc != nullptr) {
 		if (EquUpcase(fc->Name, LexWord)) {
 			RdLex(); RdLex();
