@@ -1,8 +1,13 @@
-#include "runproj.h"
 #include "access.h"
+#include "ChkD.h"
 #include "expimp.h"
+#include "FieldDescr.h"
+#include "FileD.h"
 #include "genrprt.h"
+#include "GlobalVariables.h"
+#include "KeyFldD.h"
 #include "legacy.h"
+#include "../Logging/Logging.h"
 #include "oaccess.h"
 #include "obaseww.h"
 #include "rdedit.h"
@@ -14,20 +19,13 @@
 #include "runedi.h"
 #include "runmerg.h"
 #include "runproc.h"
-#include "runrprt.h"
-#include "wwmenu.h"
-#include <map>
-
-
-
-#include "FieldDescr.h"
-#include "FileD.h"
-#include "GlobalVariables.h"
-#include "KeyFldD.h"
+#include "runproj.h"
 #include "runprolg.h"
+#include "runrprt.h"
 #include "TFile.h"
+#include "wwmenu.h"
 #include "XFile.h"
-#include "../Logging/Logging.h"
+#include <map>
 
 
 void* O(void* p) // ASM
@@ -231,8 +229,6 @@ void RenameWithOldExt(RdbRecVars New, RdbRecVars Old)
 WORD ChptWriteCRec()
 {
 	RdbRecVars New, Old;
-	FileDPtr FD1, FD2; void* p; void* p2;
-	LongStr* s; longint pos; bool b;
 	integer eq;
 	WORD result = 0;
 	if (!IsCurrChpt()) return result;
@@ -1174,11 +1170,6 @@ void GoCompileErr(WORD IRec, WORD N)
 	GoExit();
 }
 
-void ClearXFUpdLock()
-{
-	if (CFile->XF != nullptr) CFile->XF->UpdLockCnt = 0;
-}
-
 FileD* FindFD()
 {
 	FileD* FD = nullptr; std::string FName; std::string d;
@@ -1206,7 +1197,9 @@ void Diagnostics(void* MaxHp, longint Free, FileD* FD)
 		if (p == nullptr) p = 0 /*HeapPtr*/; str(AbsAdr(p) - AbsAdr(FD), s3);
 	}
 	else str(AbsAdr(MaxHp) - AbsAdr(0 /*HeapPtr*/), s3);  /* BYTEs of this chapter */
-	str(Free, s4); Set4MsgPar(s1, s2, s3, s4); WrLLF10Msg(136);
+	str(Free, s4);
+	SetMsgPar(s1, s2, s3, s4);
+	WrLLF10Msg(136);
 }
 
 bool CompRunChptRec(WORD CC)
@@ -1844,7 +1837,7 @@ bool EditExecRdb(std::string Nm, std::string ProcNm, Instr_proc* ProcCall, wwmix
 						goto label9;
 					}
 					else {
-						Set2MsgPar(Nm, ProcNm);
+						SetMsgPar(Nm, ProcNm);
 						WrLLF10Msg(632);
 					}
 			}
@@ -2026,10 +2019,10 @@ void InstallRdb(std::string n)
 	ExitRecord er;
 	pstring passw(20);
 	TMenuBoxS* w = nullptr;
-	WORD i;
+	WORD i = 0;
 
 	//NewExit(Ovr(), er);
-	goto label1;
+	//goto label1;
 	CreateOpenChpt(n, false, &ww);
 	if (!ww.HasPassWord(Chpt, 1, "") && !ww.HasPassWord(Chpt, 2, "")) {
 		passw = ww.PassWord(false);
@@ -2053,7 +2046,8 @@ label0:
 	case 2: UpdateUTxt(); break;
 	case 3: ww.SetPassWord(Chpt, 2, ww.PassWord(true)); break;
 	}
-	SetUpdHandle(ChptTF->Handle); goto label0;
+	SetUpdHandle(ChptTF->Handle);
+	goto label0;
 label1:
 	RestoreExit(er);
 	CloseChpt();

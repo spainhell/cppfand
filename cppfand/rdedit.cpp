@@ -2,6 +2,7 @@
 
 
 
+#include "ChkD.h"
 #include "FieldDescr.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
@@ -130,7 +131,7 @@ label5:
 			if ((F->Typ == 'A') && (M < F->L)) D->L = M;
 			else if (M != D->L) {
 				str(D->L, 2, s);
-				Set2MsgPar(s, F->Name);
+				SetMsgPar(s, F->Name);
 				Error(79);
 			}
 			if (Col > E->LastCol) Error(102);

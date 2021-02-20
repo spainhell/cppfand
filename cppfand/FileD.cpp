@@ -1,5 +1,6 @@
 #include "FileD.h"
 #include "access.h"
+#include "AddD.h"
 #include "GlobalVariables.h"
 #include "KeyFldD.h"
 #include "XFile.h"
@@ -15,7 +16,7 @@
 void ReadRec(FileD* file, longint N, void* record)
 {
 	Logging* log = Logging::getInstance();
-	log->log(loglevel::DEBUG, "ReadRec(), file 0x%p, RecNr %i", N, file, N);
+	log->log(loglevel::DEBUG, "ReadRec(), file 0x%p, RecNr %i", file, N);
 	RdWrCache(true, file->Handle, file->NotCached(),
 		(N - 1) * file->RecLen + file->FrstDispl, file->RecLen, record);
 }

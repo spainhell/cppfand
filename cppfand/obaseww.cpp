@@ -286,7 +286,7 @@ bool PromptYN(WORD NMsg)
 	screen.GotoXY(col, row); 
 	screen.CrsShow();
 	label1:
-	char cc = toupper((char)ReadKbd);
+	char cc = toupper((char)ReadKbd());
 	if ((KbdChar != F10SpecKey) && (cc != AbbrYes) && (cc != AbbrNo)) goto label1;
 	F10SpecKey = 0; 
 	PopW(w);

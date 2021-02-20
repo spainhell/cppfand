@@ -20,3 +20,4 @@ public:
 void XFNotValid();
 void TestXFExist();
 void CreateIndexFile(); // r482
+void ClearXFUpdLock();

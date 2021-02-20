@@ -2,6 +2,8 @@
 
 
 
+#include "AddD.h"
+#include "ChkD.h"
 #include "FieldDescr.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
@@ -94,7 +96,7 @@ void PopProcStk()
 	//SetMyBP(MyBP->ChainBack);
 }
 
-bool RunAddUpdte1(char Kind, void* CRold, bool Back, AddDPtr StopAD, LinkDPtr notLD)
+bool RunAddUpdte1(char Kind, void* CRold, bool Back, AddD* StopAD, LinkDPtr notLD)
 {
 	AddD* AD; AddD* ADback;
 	longint N2, N2old;
@@ -329,7 +331,7 @@ bool RunAddUpdte(char Kind, void* CRold, LinkD* notLD)
 	FileDPtr CF = CFile; LockForAdd(CF, 0, false, md);
 	while (!LockForAdd(CF, 1, false, md)) {
 		SetCPathVol();
-		Set2MsgPar(CPath, LockModeTxt[md]);
+		SetMsgPar(CPath, LockModeTxt[md]);
 		LockForAdd(CF, 2, false, md); longint w = PushWrLLMsg(825, false);
 		KbdTimer(spec.NetDelay, 0); if (w != 0) PopW(w);
 	}

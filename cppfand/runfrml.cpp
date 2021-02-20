@@ -394,7 +394,7 @@ double LinkProc(FrmlElem15* X)
 		N = RunInt(X->LinkRecFrml);
 		LockMode md = NewLMode(RdMode);
 		if ((N <= 0) || (N > CFile->NRecs)) {
-			Set2MsgPar(CFile->Name, LD->RoleName);
+			SetMsgPar(CFile->Name, LD->RoleName);
 			RunErrorM(md, 609);
 		}
 		CRecPtr = GetRecSpace(); ReadRec(CFile, N, CRecPtr); OldLMode(md);
@@ -2227,7 +2227,8 @@ void AccRecNoProc(FrmlElem14* X, WORD Msg)
 	N = RunInt(X->PPPPP1);
 	if ((N <= 0) || (N > CFile->NRecs))
 	{
-		Set2MsgPar(CFile->Name, X->RecFldD->Name); RunErrorM(md, Msg);
+		SetMsgPar(CFile->Name, X->RecFldD->Name);
+		RunErrorM(md, Msg);
 	}
 	ReadRec(CFile, N, CRecPtr);
 	OldLMode(md);

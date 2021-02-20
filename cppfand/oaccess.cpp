@@ -241,7 +241,8 @@ bool OpenF2()
 			if (CFile->IsShared() && (CFile->LMode < ExclMode)) ChangeLMode(ExclMode, 0, false);
 			CFile->LMode = ExclMode;
 		label2:
-			SetUpdHandle(CFile->Handle); WrPrefix();
+			SetUpdHandle(CFile->Handle);
+			WrPrefix();
 		}
 		else CloseGoExit();
 	}
@@ -312,7 +313,8 @@ void CreateF()
 			CFile->XF->TestErr(); /*SetNotValid*/
 			CFile->XF->SetEmpty();
 		}
-		SeekRec(0); SetUpdHandle(CFile->Handle);
+		SeekRec(0);
+		SetUpdHandle(CFile->Handle);
 	}
 }
 
@@ -488,7 +490,7 @@ WORD TestMountVol(char DriveC)
 	Drive[1] = DriveC;
 	if (ActiveRdbOnDrive(D))
 	{
-		Set3MsgPar(Drive, CVol, MountedVol[D]);
+		SetMsgPar(Drive, CVol, MountedVol[D]);
 		RunError(812);
 	}
 	Vol = CVol;
@@ -496,7 +498,7 @@ WORD TestMountVol(char DriveC)
 	CVol = Vol;
 label1:
 	F10SpecKey = _ESC_;
-	Set2MsgPar(Drive, CVol);
+	SetMsgPar(Drive, CVol);
 	WrLLF10Msg(808);
 	if (KbdChar == _ESC_) if (PromptYN(21)) GoExit();
 	else goto label1;
@@ -531,7 +533,7 @@ void ReleaseDrive(WORD D)
 		RunError(813);
 	}
 	CloseFilesOnDrive(D);
-	Set2MsgPar(MountedVol[D], Drive);
+	SetMsgPar(MountedVol[D], Drive);
 	WrLLF10Msg(818);
 	MountedVol[D] = "";
 }

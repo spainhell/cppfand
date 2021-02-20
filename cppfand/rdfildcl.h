@@ -1,4 +1,5 @@
 #pragma once
+#include "AddD.h"
 #include "editor.h"
 
 extern bool HasTT;

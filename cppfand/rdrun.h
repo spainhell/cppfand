@@ -1,5 +1,6 @@
 #pragma once
 #include "access.h"
+#include "AddD.h"
 #include "editor.h"
 #include "legacy.h"
 #include "models/FrmlElem.h"
@@ -215,7 +216,7 @@ struct EFldD : public Chained
 	//EFldD* Chain;
 	EFldD* ChainBack;
 	FieldDescr* FldD;
-	ChkDPtr Chk;
+	ChkD* Chk;
 	FrmlPtr Impl;
 	DepDPtr Dep;
 	KeyList KL;

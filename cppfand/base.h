@@ -42,7 +42,7 @@ void MyMove(void* A1, void* A2, WORD N);
 void ChainLast(Chained* Frst, Chained* New); // r13 ASM
 Chained* LastInChain(Chained* Frst); // r18 ASM
 WORD ListLength(void* P); // r22 ASM
-void ReplaceChar(pstring S, char C1, char C2); // r30 ASM
+void ReplaceChar(std::string& S, char C1, char C2); // r30 ASM
 bool SEquUpcase(std::string S1, std::string S2);
 //bool SEquUpcase(pstring S1, pstring S2);
 pstring StrPas(const char* Src);
@@ -140,7 +140,7 @@ longint PosH(FILE* handle);
 int SeekH(FILE* handle, longint pos);
 longint FileSizeH(FILE* handle);
 FILE* OpenH(FileOpenMode Mode, FileUseMode UM);
-WORD ReadH(FILE* handle, WORD bytes, void* buffer);
+size_t ReadH(FILE* handle, WORD bytes, void* buffer);
 void WriteH(FILE* handle, WORD bytes, void* buffer);
 void TruncH(FILE* handle, longint N);
 void FlushH(FILE* handle);
@@ -163,9 +163,9 @@ WORD LogToAbsLenStyleStr(pstring s, WORD l);
 
 
 void SetMsgPar(pstring s);
-void Set2MsgPar(pstring s1, pstring s2);
-void Set3MsgPar(pstring s1, pstring s2, pstring s3);
-void Set4MsgPar(pstring s1, pstring s2, pstring s3, pstring s4);
+void SetMsgPar(pstring s1, pstring s2);
+void SetMsgPar(pstring s1, pstring s2, pstring s3);
+void SetMsgPar(pstring s1, pstring s2, pstring s3, pstring s4);
 void RdMsg(integer N);
 void WriteMsg(WORD N);
 void ClearLL(BYTE attr);

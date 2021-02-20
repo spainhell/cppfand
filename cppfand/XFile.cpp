@@ -141,3 +141,8 @@ label1:
 	OldLMode(md);
 	if (fail) GoExit();
 }
+
+void ClearXFUpdLock()
+{
+	if (CFile->XF != nullptr) CFile->XF->UpdLockCnt = 0;
+}

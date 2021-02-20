@@ -171,6 +171,12 @@
     <ClCompile Include="FieldDescr.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="AddD.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ChkD.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base.h">
@@ -342,6 +348,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="LocVar.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ChkD.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AddD.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

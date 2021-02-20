@@ -1134,7 +1134,7 @@ void CFileLikeFD(FileD* FD, WORD MsgNr)
 {
 	FileD* FD1;
 	if (!CFile->IsJournal && ((CFile == FD) || (CFile->OrigFD == FD))) return;
-	Set2MsgPar(CFile->Name, FD->Name);
+	SetMsgPar(CFile->Name, FD->Name);
 	RunError(MsgNr);
 }
 
@@ -2381,7 +2381,7 @@ FieldDescr* RdFldName(FileD* FD)
 	FieldDescr* F = FindFldName(FD);
 	TestIdentif();
 	if (F == nullptr) {
-		Set2MsgPar(LexWord, FD->Name);
+		SetMsgPar(LexWord, FD->Name);
 		Error(87);
 	}
 	RdLex();

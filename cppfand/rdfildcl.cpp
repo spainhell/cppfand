@@ -1,5 +1,5 @@
 #include "rdfildcl.h"
-
+#include "ChkD.h"
 #include "compile.h"
 #include "FieldDescr.h"
 #include "FileD.h"
@@ -847,8 +847,14 @@ void RdKumul()
 	AD = CFile->Add;
 label1:
 	//AD->Chain = (AddD*)GetZStore(sizeof(AddD)); 
-	if (AD == nullptr) { CFile->Add = new AddD(); AD = CFile->Add; }
-	else { AD->Chain = new AddD(); AD = AD->Chain; }
+	if (AD == nullptr) {
+		CFile->Add = new AddD();
+		AD = CFile->Add;
+	}
+	else {
+		AD->Chain = new AddD();
+		AD = AD->Chain;
+	}
 	
 	if (IsKeyWord("IF"))
 	{

@@ -139,7 +139,8 @@ void AssignField(Instr_assign* PD)
 	if (PD->Indexarg && !DeletedFlag()) {
 		msg = 627;
 	label1:
-		Set2MsgPar(CFile->Name, F->Name); RunErrorM(md, msg);
+		SetMsgPar(CFile->Name, F->Name);
+		RunErrorM(md, msg);
 	}
 	AssgnFrml(F, PD->Frml, true, PD->Add); WriteRec(N);
 	ReleaseStore(CRecPtr); OldLMode(md);
@@ -868,11 +869,11 @@ label1:
 			if (op == _withlocked) {
 				msg = 839;
 				str(ld->N, ntxt);
-				Set2MsgPar(ntxt, CPath);
+				SetMsgPar(ntxt, CPath);
 			}
 			else {
 				msg = 825;
-				Set2MsgPar(CPath, LockModeTxt[ld->Md]);
+				SetMsgPar(CPath, LockModeTxt[ld->Md]);
 			}
 			w1 = PushWrLLMsg(msg, false);
 			if (w == 0) w = w1;
@@ -1319,7 +1320,7 @@ void CallProcedure(Instr_proc* PD)
 	//#ifdef _DEBUG
 	std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
 
-	if (srcCode.find("p,s,l,f,dot:string; i,fi:real; AN:boolean;") != std::string::npos) {
+	if (srcCode.find("'begin '+ 'edit(DENIK,'+ cond(dph:'DphFinO', pohl | z v:'") != std::string::npos) {
 		//|| srcCode.find("STAT.Start") != std::string::npos) {
 		printf("");
 		//FuncD* f = FuncDRoot;

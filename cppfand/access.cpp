@@ -148,7 +148,7 @@ label1:
 			else {
 				d = spec.NetDelay;
 				SetCPathVol();
-				Set2MsgPar(CPath, LockModeTxt[Mode]);
+				SetMsgPar(CPath, LockModeTxt[Mode]);
 				w1 = PushWrLLMsg(825, Kind = 1);
 				if (w == 0) w = w1;
 				else TWork.Delete(w1);
@@ -378,7 +378,7 @@ label1:
 	if (!TryLockH(CFile->Handle, RecLock + N, 1)) {
 		if (Kind != 2) {   /*0 Kind-wait, 1-wait until ESC, 2-no wait*/
 			m = 826;
-			if (N == 0) { SetCPathVol(); Set2MsgPar(CPath, XTxt); m = 825; }
+			if (N == 0) { SetCPathVol(); SetMsgPar(CPath, XTxt); m = 825; }
 			w1 = PushWrLLMsg(m, Kind = 1);
 			if (w == 0) w = w1;
 			else TWork.Delete(w1);
@@ -524,7 +524,7 @@ void DelDifTFld(void* Rec, void* CompRec, FieldDescr* F)
 
 void DelAllDifTFlds(void* Rec, void* CompRec)
 {
-	for (auto& F : CFile->FldD)	{
+	for (auto& F : CFile->FldD) {
 		if (F->Typ == 'T' && ((F->Flg & f_Stored) != 0)) DelDifTFld(Rec, CompRec, F);
 	}
 }
@@ -726,10 +726,10 @@ bool LinkLastRec(FileD* FD, longint& N, bool WithT)
 // ulozi hodnotu parametru do souboru
 void AsgnParFldFrml(FileD* FD, FieldDescr* F, FrmlElem* Z, bool Ad)
 {
-//#ifdef _DEBUG
+	//#ifdef _DEBUG
 	std::string FileName = FD->FullName;
 	std::string Varible = F->Name;
-//#endif
+	//#endif
 	void* p = nullptr; longint N = 0; LockMode md; bool b = false;
 	FileD* cf = CFile; void* cr = CRecPtr; CFile = FD;
 #ifdef FandSQL
@@ -918,14 +918,17 @@ std::string _StdS(FieldDescr* F)
 
 double _RforD(FieldDPtr F, void* P)
 {
-	pstring s; integer err;
-	double r = 0; s[0] = F->NBytes;
+	std::string s;
+	integer err;
+	double r = 0;
+	s[0] = F->NBytes;
 	Move(P, &s[1], s.length());
 	switch (F->Typ) {
-	case 'F': { ReplaceChar(s, ',', '.');
+	case 'F': {
+		ReplaceChar(s, ',', '.');
 		if ((F->Flg & f_Comma) != 0) {
-			integer i = s.first('.');
-			if (i > 0) s.Delete(i, 1);
+			size_t i = s.find('.');
+			if (i != std::string::npos) s.erase(i, 1);
 		}
 		val(LeadChar(' ', TrailChar(' ', s)), r, err);
 		break;
@@ -1085,7 +1088,7 @@ bool LinkUpw(LinkDPtr LD, longint& N, bool WithT)
 	if (CFile->IsSQLFile) {
 		LU = Strm1->SelectXRec(K, @X, _equ, WithT); N = 1;
 		if (LU) goto label2; else goto label1;
-	}
+}
 #endif
 	md = NewLMode(RdMode);
 	if (ToFD->Typ == 'X') {
@@ -1144,7 +1147,7 @@ void AssignNRecs(bool Add, longint N)
 #ifdef FandSQL
 	if (CFile->IsSQLFile) {
 		if ((N = 0) && !Add) Strm1->DeleteXRec(nullptr, nullptr, false); return;
-	}
+}
 #endif
 	md = NewLMode(DelMode); OldNRecs = CFile->NRecs;
 	if (Add) N = N + OldNRecs;
@@ -1236,7 +1239,7 @@ void Code(std::string& data)
 void Code(void* A, WORD L)
 {
 	BYTE* pb = (BYTE*)A;
-	for (int i = 0; i < L; i++)	{
+	for (int i = 0; i < L; i++) {
 		pb[i] = pb[i] ^ 0xAA;
 	}
 }
@@ -1640,25 +1643,4 @@ std::string TranslateOrd(std::string text)
 		trans += c;
 	}
 	return trans;
-}
-
-AddD::AddD(const AddD& orig)
-{
-	if (orig.Chain != nullptr) Chain = new AddD(*orig.Chain);
-	if (orig.Chain != nullptr) Field = new FieldDescr(*orig.Field);
-	if (orig.Chain != nullptr) File2 = new FileD(*orig.File2);
-	if (orig.Chain != nullptr) LD = new LinkD(*orig.LD);
-	Create = orig.Create;
-	if (orig.Chain != nullptr) Frml = CopyFrmlElem(orig.Frml);
-	Assign = orig.Assign;
-	if (orig.Chain != nullptr) Bool = CopyFrmlElem(orig.Bool);
-	if (orig.Chain != nullptr) Chk = new ChkD(*orig.Chk);
-}
-
-ChkD::ChkD(const ChkD& orig)
-{
-	if (orig.Bool != nullptr) Bool = CopyFrmlElem(orig.Bool);
-	HelpName = orig.HelpName;
-	if (orig.TxtZ != nullptr) TxtZ = CopyFrmlElem(orig.TxtZ);
-	Warning = orig.Warning;
 }

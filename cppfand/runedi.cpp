@@ -2,6 +2,7 @@
 
 
 
+#include "ChkD.h"
 #include "FieldDescr.h"
 #include "FileD.h"
 #include "genrprt.h"
@@ -411,7 +412,7 @@ label2:
 				if (M == 0) N++;
 				if ((I != 0) || (abs(r) >= Power10[N])) {
 					s = copy(C999, 1, N) + "." + copy(C999, 1, M);
-					Set2MsgPar(s, s);
+					SetMsgPar(s, s);
 					WrLLF10Msg(617);
 					goto label4;
 				}
@@ -644,7 +645,8 @@ bool EquOldNewRec()
 }
 
 /// <summary>
-/// Vycte X-ty zaznam (z DB nebo ze souboru)
+/// Vycte X-ty zaznam (z DB nebo ze souboru v CFile)
+/// Ulozi jej do CRecPtr
 /// Nejedna se o fyzicke cislo zaznamu v souboru
 /// </summary>
 /// <param name="N">kolikaty zaznam</param>
@@ -1735,7 +1737,7 @@ label1:
 		CFile = cf2;
 	label3:
 		SetCPathVol();
-		Set2MsgPar(CPath, LockModeTxt[md]);
+		SetMsgPar(CPath, LockModeTxt[md]);
 		w1 = PushWrLLMsg(825, true);
 		if (w == 0) w = w1;
 		else TWork.Delete(w1);
@@ -1834,6 +1836,8 @@ bool DelIndRec(longint I, longint N)
 		else
 #endif
 			DeleteXRec(N, true);
+		SetUpdHandle(CFile->Handle); // navic
+		SetUpdHandle(CFile->XF->Handle); // navic
 		if ((E->SelKey != nullptr) && E->SelKey->Delete(N)) E->SelKey->NR--;
 		if (Subset) WK->DeleteAtNr(I);
 		result = true;
@@ -1857,7 +1861,9 @@ bool DeleteRecProc()
 		Group = PromptYN(116);
 		if (KbdChar == VK_ESCAPE) return result;
 	}
-	if (!Group) if (VerifyDelete && !PromptYN(109)) return result;
+	if (!Group) {
+		if (VerifyDelete && !PromptYN(109)) return result;
+	}
 	if (!LockWithDep(DelMode, DelMode, OldMd)) return result;
 	UndoRecord();
 	N = AbsRecNr(CRec());

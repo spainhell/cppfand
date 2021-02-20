@@ -3978,7 +3978,7 @@ label2:
 		if (frst && (R == (RdbD*)(&HelpFD)) && (KbdChar == _CtrlF1_)) {
 			KbdChar = 0; Name = "Ctrl-F1 error"; goto label1;
 		}
-		else { Set2MsgPar(Name, fd->Name); WrLLF10Msg(146); }
+		else { SetMsgPar(Name, fd->Name); WrLLF10Msg(146); }
 	else {
 		frst = false; byName = false;
 		s2 = s;

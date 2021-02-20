@@ -2,6 +2,7 @@
 
 
 
+#include "ChkD.h"
 #include "FieldDescr.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
@@ -859,13 +860,12 @@ LvDescr* GetDifLevel()
 
 void MoveForwToRec(InpD* ID)
 {
-	ChkDPtr C;
 	/* !!! with ID^ do!!! */
 	CFile = ID->Scan->FD;
 	CRecPtr = CFile->RecPtr;
 	Move(ID->ForwRecPtr, CRecPtr, CFile->RecLen + 1);
 	ID->Count = ID->Count + 1;
-	C = ID->Chk;
+	ChkD* C = ID->Chk;
 	if (C != nullptr) {
 		ID->Error = false;
 		ID->Warning = false;

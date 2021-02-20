@@ -834,7 +834,9 @@ bool PrinterMenu(WORD Msg)
 	std::string nr;
 	std::string nm, lpt;
 
-	MarkStore(p); RdMsg(Msg); j = prCurr;
+	MarkStore(p);
+	RdMsg(Msg);
+	j = prCurr;
 	for (prCurr = 0; prCurr <= prMax - 1; prCurr++) {
 		i = printer[prCurr].Lpti;
 		nr = std::to_string(i);

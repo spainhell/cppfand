@@ -291,7 +291,7 @@ bool RdVar(TDomain* D, integer Kind, integer Idx, TPTerm* RT) /*PTerm || idx*/
 		!((v->Dom == RealDom) && (D == IntDom))) {
 		RdLexP();
 	label1:
-		Set2MsgPar(v->Dom->Name, D->Name);
+		SetMsgPar(v->Dom->Name, D->Name);
 		OldError(507);
 	}
 	RdLexP();
@@ -4337,7 +4337,7 @@ void RunProlog(RdbPos* Pos, std::string* PredName)
 	if (PredName != nullptr) {
 		while ((pofs != nullptr) && (p->Name != *PredName)) pofs = (TPredicate*)p->Chain;
 		if ((pofs == nullptr) || (p->Arity != 0)) {
-			Set2MsgPar(Pos->R->FD->Name, *PredName);
+			SetMsgPar(Pos->R->FD->Name, *PredName);
 			RunError(1545);
 		}
 	}

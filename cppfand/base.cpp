@@ -121,21 +121,21 @@ void SetMsgPar(pstring s)
 	MsgPar[0] = s;
 }
 
-void Set2MsgPar(pstring s1, pstring s2)
+void SetMsgPar(pstring s1, pstring s2)
 {
 	MsgPar[0] = s1;
 	MsgPar[1] = s2;
 }
 
-void Set3MsgPar(pstring s1, pstring s2, pstring s3)
+void SetMsgPar(pstring s1, pstring s2, pstring s3)
 {
-	Set2MsgPar(s1, s2);
+	SetMsgPar(s1, s2);
 	MsgPar[2] = s3;
 }
 
-void Set4MsgPar(pstring s1, pstring s2, pstring s3, pstring s4)
+void SetMsgPar(pstring s1, pstring s2, pstring s3, pstring s4)
 {
-	Set3MsgPar(s1, s2, s3);
+	SetMsgPar(s1, s2, s3);
 	MsgPar[3] = s4;
 }
 
@@ -186,7 +186,7 @@ int SeekH(FILE* handle, longint pos)
 	return MoveH(pos, 0, handle);
 }
 
-WORD ReadH(FILE* handle, WORD bytes, void* buffer)
+size_t ReadH(FILE* handle, WORD bytes, void* buffer)
 {
 	//if (CFile != nullptr && CFile->Name == "DEALER")
 	//{
@@ -225,7 +225,7 @@ label1:
 
 	for (int i = 1; i <= j; i++)
 	{
-		ReadH(h, 1, &s[0]); // tady se má zøejmì jen vyèíst délka
+		ReadH(h, 1, &s[0]); // tady se ma zrejme jen vycist delka
 		ReadH(h, s.length(), &s[1]);
 	}
 	ConvKamenToCurr(&s[1], s.length());
@@ -280,6 +280,17 @@ std::string TResFile::Get(WORD Kod)
 	return result;
 }
 
+LongStrPtr TResFile::GetStr(WORD Kod)
+{
+	LongStrPtr s;
+	/* !!! with A[Kod] do!!! */
+	s = (LongStrPtr)GetStore(A[Kod].Size + 2);
+	s->LL = A[Kod].Size;
+	SeekH(Handle, A[Kod].Pos);
+	ReadH(Handle, A[Kod].Size, s->A);
+	return s;
+}
+
 void* GetStore(WORD Size)
 {
 	return nullptr;
@@ -288,15 +299,6 @@ void* GetStore(WORD Size)
 void* GetZStore(WORD Size)
 {
 	return nullptr;
-}
-
-LongStrPtr TResFile::GetStr(WORD Kod)
-{
-	LongStrPtr s;
-	/* !!! with A[Kod] do!!! */
-	s = (LongStrPtr)GetStore(A[Kod].Size + 2); s->LL = A[Kod].Size;
-	SeekH(Handle, A[Kod].Pos); ReadH(Handle, A[Kod].Size, s->A);
-	return s;
 }
 
 WORD StackOvr()
@@ -382,6 +384,7 @@ Chained* LastInChain(Chained* Frst)
 		if (last->Chain == nullptr) return last;
 		last = last->Chain;
 	}
+	return last;
 }
 
 void StrLPCopy(char* Dest, pstring s, WORD MaxL)
@@ -442,7 +445,6 @@ WORD OlympYears(WORD year)
 void SplitDate(double R, WORD& d, WORD& m, WORD& y)
 {
 	WORD i, j;
-
 	longint l = (longint)trunc(R);
 
 	if (l == 0) { y = 1; m = 1; d = 1; }
@@ -636,7 +638,7 @@ pstring StrDate(double R, pstring Mask)
 	s = "";
 	EncodeMask(Mask, min, max);
 	WasMinus = false;
-	if ((R == 0) || (R < 0) && (min < 3)) {
+	if ((R == 0.0) || (R < 0) && (min < 3)) {
 		for (i = 1; i <= Mask.length(); i++) {
 			if (Mask[i] <= 6) s.Append(' ');
 			else s.Append(Mask[i]);
@@ -710,7 +712,17 @@ label1:
 
 double AddMonth(double R, double RM)
 {
-	return 0.0;
+	WORD d, m, y;
+	SplitDate(R, d, m, y);
+	longint l = y * 12 + m - 1 + trunc(RM);
+	double intpart;
+	double RTime = modf(R, &intpart);
+	y = l / 12; m = (l % 12) + 1;
+	if (d > NoDayInMonth[m]) {
+		d = NoDayInMonth[m];
+		if (m == 2 && OlympYear(y)) d = 29;
+	}
+	return RDate(y, m, d, 0, 0, 0, 0) + RTime;
 }
 
 double DifMonth(double R1, double R2)
@@ -892,7 +904,7 @@ label1:
 	{
 		if (w == 0)
 		{
-			Set2MsgPar(CPath, txt[UM]);
+			SetMsgPar(CPath, txt[UM]);
 			w = PushWrLLMsg(825, false);
 		}
 		LockBeep();
@@ -934,7 +946,7 @@ label1:
 	return nFile;
 }
 
-WORD ReadLongH(filePtr handle, longint bytes, void* buffer)
+WORD ReadLongH(FILE* handle, longint bytes, void* buffer)
 {
 	if (handle == nullptr) RunError(706);
 	if (bytes <= 0) return 0;
@@ -948,7 +960,7 @@ WORD ReadLongH(filePtr handle, longint bytes, void* buffer)
 	return WORD(readed);
 }
 
-void WriteLongH(filePtr handle, longint bytes, void* buffer)
+void WriteLongH(FILE* handle, longint bytes, void* buffer)
 {
 	//if (CFile != nullptr && CFile->Name == "PARAM3")
 	//{
@@ -1162,7 +1174,7 @@ void FlushHandles()
 	ClearFlshHandles();
 }
 
-longint GetDateTimeH(filePtr handle)
+longint GetDateTimeH(FILE* handle)
 {
 	if (handle == nullptr) return -1;
 	// vrátí èas posledního zápisu souboru + datum posledního zápisu souboru
@@ -1182,13 +1194,13 @@ void MyDeleteFile(pstring path)
 
 void RenameFile56(pstring OldPath, pstring NewPath, bool Msg)
 {
-	// pøesouvá nebo pøejmenovává soubor
+	// presouva nebo prejmenovava soubor
 	// potom:
 	auto result = rename(OldPath.c_str(), NewPath.c_str());
 	if (result != 0) HandleError = result;
 	if (Msg && HandleError != 0)
 	{
-		Set2MsgPar(OldPath, NewPath);
+		SetMsgPar(OldPath, NewPath);
 		RunError(829);
 	}
 }
@@ -1222,8 +1234,11 @@ longint AbsAdr(void* P)
 	return 0;
 }
 
-void ReplaceChar(pstring S, char C1, char C2)
+void ReplaceChar(std::string& S, char C1, char C2)
 {
+	for (size_t i =0 ; i < S.length(); i++)	{
+		if (S[i] == C1) S[i] = C2;
+	}
 }
 
 bool SEquUpcase(std::string S1, std::string S2)
@@ -1457,13 +1472,14 @@ bool EqualsMask(void* p, WORD l, pstring Mask)
 	std::string Value = std::string((char*)p, l);
 	return CmpStringWithMask(Value, Mask);
 
-	if (Mask.length() < l) return false;
-	BYTE* inp = (BYTE*)p;
-	for (size_t i = 0; i < l; i++)
-	{
-		if (inp[i] != Mask[i + 1]) return false;
-	}
-	return true;
+	// puvodni implementace pred pouzitim regexu
+	//if (Mask.length() < l) return false;
+	//BYTE* inp = (BYTE*)p;
+	//for (size_t i = 0; i < l; i++)
+	//{
+	//	if (inp[i] != Mask[i + 1]) return false;
+	//}
+	//return true;
 }
 
 bool EquLongStr(LongStr* S1, LongStr* S2)
@@ -1499,7 +1515,8 @@ void ReleaseStore2(void* p)
 
 void ReleaseBoth(void* p, void* p2)
 {
-	ReleaseStore(p); ReleaseStore2(p2);
+	ReleaseStore(p);
+	ReleaseStore2(p2);
 }
 
 int StoreAvail()
