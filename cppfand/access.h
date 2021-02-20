@@ -57,8 +57,6 @@ struct DepD : Chained // r122
 };
 typedef DepD* DepDPtr;
 
-
-
 class AddD // r135
 {
 public:
@@ -152,14 +150,13 @@ void ClearRecSpace(void* p);
 void ZeroAllFlds();
 void DelTFld(FieldDescr* F);
 void DelDifTFld(void* Rec, void* CompRec, FieldDescr* F);
-void DeleteXRec(longint RecNr, bool DelT);
-void OverWrXRec(longint RecNr, void* P2, void* P);
+
 void DelAllDifTFlds(void* Rec, void* CompRec);
 void DecNRecs(longint N);
 void DeleteRec(longint N);
 void AsgnParFldFrml(FileD* FD, FieldDescr* F, FrmlElem* Z, bool Ad);
 void PutRec();
-void TryInsertAllIndexes(longint RecNr);
+
 
 void DelTFlds();
 void CopyRecWithT(void* p1, void* p2);
@@ -170,10 +167,7 @@ void CExtToT();
 void CExtToX();
 void CloseGoExit();
 
-void TestCFileError();
-
 bool ChangeLMode(LockMode Mode, WORD Kind, bool RdPref);
 void SeekRec(longint N);
-
 
 void FixFromReal(double r, void* FixNo, WORD FLen);

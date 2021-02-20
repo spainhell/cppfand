@@ -125,6 +125,11 @@ void SetCPathMountVolSetNet(FileUseMode UM)
 	else if ((UM == Shared) && SEquUpcase(CVol, "#R")) CFile->UMode = RdShared;
 }
 
+void TestCFileError()
+{
+	if (HandleError != 0) CFileError(700 + HandleError);
+}
+
 bool OpenF1(FileUseMode UM)
 {
 	bool b; WORD n;

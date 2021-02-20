@@ -411,11 +411,6 @@ void CExtToX()
 	CPath = CDir + CName + CExt;
 }
 
-void TestCFileError()
-{
-	if (HandleError != 0) CFileError(700 + HandleError);
-}
-
 void TestCPathError()
 {
 	WORD n;
@@ -452,45 +447,6 @@ void RecallRec(longint RecNr)
 	while (K != nullptr) { K->Insert(RecNr, false); K = K->Chain; }
 	ClearDeletedFlag();
 	WriteRec(RecNr);
-}
-
-void TryInsertAllIndexes(longint RecNr)
-{
-	void* p = nullptr;
-	TestXFExist();
-	MarkStore(p);
-	KeyDPtr K = CFile->Keys;
-	while (K != nullptr) {
-		if (!K->Insert(RecNr, true)) goto label1; K = K->Chain;
-	}
-	CFile->XF->NRecs++;
-	return;
-label1:
-	ReleaseStore(p);
-	KeyDPtr K1 = CFile->Keys;
-	while ((K1 != nullptr) && (K1 != K)) {
-		K1->Delete(RecNr); K1 = K1->Chain;
-	}
-	SetDeletedFlag();
-	WriteRec(RecNr);
-	/* !!! with CFile->XF^ do!!! */
-	if (CFile->XF->FirstDupl) {
-		SetMsgPar(CFile->Name);
-		WrLLF10Msg(828);
-		CFile->XF->FirstDupl = false;
-	}
-}
-
-void DeleteAllIndexes(longint RecNr)
-{
-	Logging* log = Logging::getInstance();
-	log->log(loglevel::DEBUG, "DeleteAllIndexes(%i)", RecNr);
-	
-	KeyDPtr K = CFile->Keys;
-	while (K != nullptr) {
-		K->Delete(RecNr);
-		K = K->Chain;
-	}
 }
 
 bool IsNullValue(void* p, WORD l)
@@ -571,36 +527,6 @@ void DelAllDifTFlds(void* Rec, void* CompRec)
 	for (auto& F : CFile->FldD)	{
 		if (F->Typ == 'T' && ((F->Flg & f_Stored) != 0)) DelDifTFld(Rec, CompRec, F);
 	}
-}
-
-void DeleteXRec(longint RecNr, bool DelT)
-{
-	Logging* log = Logging::getInstance();
-	log->log(loglevel::DEBUG, "DeleteXRec(%i, %s)", RecNr, DelT ? "true" : "false");
-	TestXFExist();
-	DeleteAllIndexes(RecNr);
-	if (DelT) DelAllDifTFlds(CRecPtr, nullptr);
-	SetDeletedFlag();
-	WriteRec(RecNr);
-	CFile->XF->NRecs--;
-}
-
-void OverWrXRec(longint RecNr, void* P2, void* P)
-{
-	XString x, x2; KeyDPtr K;
-	CRecPtr = P2;
-	if (DeletedFlag()) { CRecPtr = P; RecallRec(RecNr); return; }
-	TestXFExist();
-	K = CFile->Keys;
-	while (K != nullptr) {
-		CRecPtr = P; x.PackKF(K->KFlds); CRecPtr = P2; x2.PackKF(K->KFlds);
-		if (x.S != x2.S) {
-			K->Delete(RecNr); CRecPtr = P; K->Insert(RecNr, false);
-		}
-		K = K->Chain;
-	}
-	CRecPtr = P;
-	WriteRec(RecNr);
 }
 
 const WORD Alloc = 2048;

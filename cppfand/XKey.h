@@ -51,3 +51,6 @@ typedef XKey KeyD;
 
 bool SearchKey(XString& XX, XKey* Key, longint& NN);
 longint XNRecs(XKey* K);
+void TryInsertAllIndexes(longint RecNr);
+void DeleteXRec(longint RecNr, bool DelT);
+void OverWrXRec(longint RecNr, void* P2, void* P);
