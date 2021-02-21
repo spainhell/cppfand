@@ -1283,7 +1283,8 @@ std::string DecodeFieldRSB(FieldDescr* F, WORD LWw, double R, std::string& T, bo
 	L = F->L; M = F->M;
 	switch (F->Typ) {
 	case 'D': {
-		T = StrDate(R, FieldDMask(F));
+		//T = StrDate(R, FieldDMask(F));
+		T = StrDate(R, F->Mask);
 		break;
 	}
 	case 'N': {
@@ -1818,7 +1819,7 @@ label1:
 	case _nodiakr: {
 		auto iX0 = (FrmlElem0*)X;
 		auto s = RunLongStr(iX0->P1);
-		ConvToNoDiakr((WORD*)s->A[0], s->LL, fonts.VFont);
+		ConvToNoDiakr((WORD*)&s->A[0], s->LL, fonts.VFont);
 		result = std::string(s->A, s->LL);
 		delete s;
 		return result;

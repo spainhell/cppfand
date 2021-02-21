@@ -728,7 +728,12 @@ double AddMonth(double R, double RM)
 
 double DifMonth(double R1, double R2)
 {
-	return 0.0;
+	WORD d1, m1, y1, d2, m2, y2;
+	SplitDate(R1, d1, m1, y1);
+	SplitDate(R2, d2, m2, y2);
+	const int y = y2 - y1;
+	const int m = m2 - m1;
+	return y * 12 + m;
 }
 
 bool IsLetter(char C)
@@ -1082,7 +1087,10 @@ void RdWrCache(bool ReadOp, FILE* Handle, bool NotCached, longint Pos, WORD N, v
 	integer PgeIdx = 0, PgeRest = 0; WORD err = 0; longint PgeNo = 0;
 	//CachePage* Z = nullptr;
 
-	if (Handle == nullptr) RunError(706);
+	if (Handle == nullptr) {
+		RunError(706);
+		return;
+	}
 
 	if (!ReadOp && (CFile != nullptr) && (CFile->UMode == RdOnly)) {
 		// snazime se zapsat do RdOnly souboru

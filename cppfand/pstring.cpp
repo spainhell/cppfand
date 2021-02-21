@@ -205,7 +205,7 @@ pstring& pstring::operator=(const pstring& newvalue)
 	}
 	//memset(arr, 0, initLen);
 	//memcpy(arr, newvalue.arr, newvalue.arr[0] + 1);
-	// musí se zkopírovat i data za retezcem - nekter funkce je vyuzivaji
+	// musí se zkopírovat i data za retezcem - nektere funkce je vyuzivaji
 	memcpy(arr, newvalue.arr, newvalue.initLen); 
 	return *this;
 }

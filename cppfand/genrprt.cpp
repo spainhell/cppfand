@@ -102,15 +102,18 @@ void WrLevel(integer Level)
 	bool b; pstring x;
 	b = (Level == 0) && (ARMode == _AErrRecs);
 	if (b) WrStr("(warning) { noErrRecs+=1},");
-	first = true; d = PFldDs; while (d != nullptr) {
+	first = true; d = PFldDs;
+	while (d != nullptr) {
 		if ((Level == 0) || d->IsSum || d->IsCtrl && (d->Level >= Level)) {
 			if (!first) WrChar(',');
 			f = d->FldD; s = f->Name;
 			if ((Level != 0) && d->IsSum) { s = "sum("; s += (s + ')'); }
 			if (f->Typ == 'D') {
 				WrStr("strdate("); WrStr(s); WrStr(",'");
-				x = FieldDMask(f);
-				SubstChar(x, '\'', '\"'); WrStr(x); WrStr("')");
+				//x = FieldDMask(f);
+				x = f->Mask;
+				SubstChar(x, '\'', '\"');
+				WrStr(x); WrStr("')");
 			}
 			else WrStr(s);
 			first = false;

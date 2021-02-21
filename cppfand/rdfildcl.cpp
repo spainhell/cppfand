@@ -19,35 +19,44 @@ bool issql;
 FieldDescr* RdFldDescr(pstring Name, bool Stored)
 {
 	const BYTE TabF[19] = { 0, 1, 1, 2, 2, 3, 3, 4, 4, 4, 5, 5, 6, 6, 6, 7, 7, 8, 8 };
-	FieldDPtr F = nullptr; pstring* S = nullptr;
+	FieldDPtr F = new FieldDescr();
+	pstring* S = nullptr;
 	WORD L = 0, M = 0, NBytes = 0;
 	BYTE Flg = 0;
 	char Typ = 0, FrmlTyp = 0, c = 0;
-	WORD i = 0, n = 0, n1 = 0; pstring ss;
+	WORD i = 0, n = 0, n1 = 0;
+	pstring ss;
+	std::string sstr;
 
-	//F = (FieldDescr*)GetZStore(pred(sizeof(*F)) + Name.length());
-	F = new FieldDescr();
-	FieldDPtr result = F;
-	//Move(&Name[0], &F->Name[0], Name.length() + 1);
 	F->Name = Name;
 	if (Stored) Flg = f_Stored;
-	else Flg = 0; Accept(':');
+	else Flg = 0;
+	Accept(':');
 	if ((Lexem != _identifier) || (LexWord.length() > 1)) Error(10);
-	Typ = (char)LexWord[1];
+	Typ = static_cast<char>(LexWord[1]);
 	RdLex();
 	FrmlTyp = 'S'; M = 0;
-	if (Typ == 'N' || Typ == 'F') { Accept(','); L = RdInteger(); }
+	if (Typ == 'N' || Typ == 'F') {
+		Accept(',');
+		L = RdInteger();
+	}
 	switch (Typ) {
 	case 'N': {
 		NBytes = (L + 1) / 2;
-		if (CurrChar == 'L') { RdLex(); M = LeftJust; }
+		if (CurrChar == 'L') {
+			RdLex();
+			M = LeftJust;
+		}
 		break;
 	}
 	case 'F': {
 		if (Lexem == ',') { Flg += f_Comma; RdLex(); }
 		else Accept('.');
-		M = RdInteger(); if ((M > 15) || (L + M > 18)) OldError(3);
-		NBytes = TabF[L + M]; if (M == 0) L++; else L += (M + 2);
+		M = RdInteger();
+		if ((M > 15) || (L + M > 18)) OldError(3);
+		NBytes = TabF[L + M];
+		if (M == 0) L++;
+		else L += (M + 2);
 		FrmlTyp = 'R';
 		break;
 	}
@@ -55,17 +64,19 @@ FieldDescr* RdFldDescr(pstring Name, bool Stored)
 	case 'A': {
 		Accept(',');
 		if (!Stored || (Lexem != _quotedstr)) {
-			L = RdInteger(); if (L > 255) Error(3);
+			L = RdInteger();
+			if (L > 255) Error(3);
 			if (CurrChar == 'R') RdLex();
 			else M = LeftJust;
 		}
 		else {
 			S = RdStrConst();
+			sstr = *S;
 			L = 0; c = '?'; n = 0;
 			for (i = 1; i <= S->length(); i++) {
 				switch ((*S)[i]) {
-				case '[': if (c == '?') c = '['; else goto label1; break;
-				case ']': if (c == '[') c = '?'; else goto label1; break;
+				case '[': { if (c == '?') c = '['; else goto label1; break; }
+				case ']': { if (c == '[') c = '?'; else goto label1; break; }
 				case '(': {
 					if (c == '?') { c = '('; n1 = 0; n = 0; }
 					else goto label1;
@@ -83,7 +94,7 @@ FieldDescr* RdFldDescr(pstring Name, bool Stored)
 					else goto label1;
 					break;
 				}
-				default: if (c == '(') n1++; else L++; break;
+				default: { if (c == '(') n1++; else L++; break; }
 				}
 			}
 			Flg += f_Mask;
@@ -98,35 +109,48 @@ FieldDescr* RdFldDescr(pstring Name, bool Stored)
 	}
 	case 'D': {
 		ss[0] = 0;
-		if (Lexem == ',') { RdLex(); ss = LexWord; Accept(_quotedstr); }
-		if (ss[0] == 0) ss = "DD.MM.YY";
-		S = new pstring(ss);
-		// jedna se o datum a nazev polozky musi byt nasledovat retezcem DD.MM.YY
+		sstr = "";
+		if (Lexem == ',') {
+			RdLex();
+			sstr = LexWord;
+			Accept(_quotedstr);
+		}
+		if (sstr.empty()) sstr = "DD.MM.YY";
 		// UPDATE: stejne to nefunguje, pri spusteni ulohy se to odnekud nacita znovu, tezko rict odkud
-		BYTE nameLen = Name.length();
-		Name[nameLen + 1] = S->length();
-		memcpy(&Name[nameLen + 2], &(*S)[1], S->length());
 		// nazev se pak zpetne vytahne pomoci funkce FieldDMask()
 		FrmlTyp = 'R'; NBytes = 6; // sizeof(float); // v Pascalu je to 6B
-		L = S->length(); Flg += f_Mask;
+		L = sstr.length(); Flg += f_Mask;
 		break;
 	}
-	case 'B': { L = 1; NBytes = 1; FrmlTyp = 'B'; break; }
+	case 'B': {
+		L = 1; NBytes = 1; FrmlTyp = 'B';
+		break;
+	}
 	case 'T': {
-		if (Lexem == ',') { RdLex(); L = RdInteger() + 2; }
+		if (Lexem == ',') {
+			RdLex();
+			L = RdInteger() + 2;
+		}
 		else L = 1;
-		NBytes = sizeof(longint); HasTT = true;
+		NBytes = sizeof(longint);
+		HasTT = true;
 	label2:
-		if (Stored && (Lexem == '!')) { RdLex(); Flg += f_Encryp; }
+		if (Stored && (Lexem == '!')) {
+			RdLex();
+			Flg += f_Encryp;
+		}
 		break;
 	}
-	default: OldError(10); break;
+	default: {
+		OldError(10);
+		break;
+	}
 	}
 	if (NBytes == 0) OldError(113);
 	if ((L > TxtCols - 1) && (Typ != 'A')) OldError(3);
-	F->Typ = Typ; F->FrmlTyp = FrmlTyp; F->L = L; F->M = M; F->NBytes = NBytes;
-	F->Flg = Flg;
-	return result;
+	F->Typ = Typ; F->FrmlTyp = FrmlTyp; F->L = L; F->M = M;
+	F->NBytes = NBytes;	F->Flg = Flg; F->Mask = sstr;
+	return F;
 }
 
 ChkD* RdChkD(WORD Low)
@@ -176,12 +200,11 @@ void RdChkDsFromPos(FileD* FD, ChkD* C)
 	if (FD->OrigFD != nullptr) RdChkDsFromPos(FD->OrigFD, C);
 	if (FD->ChptPos.R == nullptr) return;
 	if (FD->TxtPosUDLI == 0) return;
-	ResetCompilePars(); 
-	SetInpTTxtPos(FD); 
+	ResetCompilePars();
+	SetInpTTxtPos(FD);
 	RdLex();
 	while (!(ForwChar == 'L' || ForwChar == 0x1A)) {
-		do { RdLex(); } 
-		while (!(Lexem == 0x1A || Lexem == '#'));
+		do { RdLex(); } while (!(Lexem == 0x1A || Lexem == '#'));
 	}
 	if (Lexem == 0x1A) return;
 	RdLex();
@@ -257,50 +280,50 @@ void RdByteListInStore()
 bool RdUserView(pstring ViewName, EditOpt* EO)
 {
 	bool found = false, Fin = false, FVA = false;
-	void* p = nullptr; void* p2 = nullptr; 
-	KeyD* K = nullptr; EditOpt EOD; 
+	void* p = nullptr; void* p2 = nullptr;
+	KeyD* K = nullptr; EditOpt EOD;
 	FileD* fd = CFile;
-	MarkStore(p); 
-	MarkStore2(p2); 
+	MarkStore(p);
+	MarkStore2(p2);
 	Move(EO, &EOD, sizeof(EOD));
 label1:
 	if (fd->TxtPosUDLI == 0) goto label3;
-	ResetCompilePars(); 
-	SetInpTTxtPos(fd); 
+	ResetCompilePars();
+	SetInpTTxtPos(fd);
 	RdLex();
 	if ((Lexem != '#') || (ForwChar != 'U')) goto label3;
-	RdLex();/*#*/ 
+	RdLex();/*#*/
 	RdLex();/*U*/
 label2:
-	ReleaseStore(p); 
+	ReleaseStore(p);
 	Move(&EOD, EO, sizeof(*EO));
 	if (EquUpcase(ViewName, LexWord)) found = true;
-	EO->ViewName = StoreStr(LexWord); 
+	EO->ViewName = StoreStr(LexWord);
 	RdLex(); /*'('*/
 	do {
 		RdLex();
 	} while (!(Lexem == ')' || Lexem == 0x1A));
-	RdLex(); 
+	RdLex();
 	RdLex();/*"):"*/
 	K = RdViewKey();
-	if (K != nullptr) { 
-		RdLex();/*','*/ 
-		EO->ViewKey = K; 
+	if (K != nullptr) {
+		RdLex();/*','*/
+		EO->ViewKey = K;
 	}
 	RdBegViewDcl(EO);
 	while (Lexem == ',') {
-		FVA = FileVarsAllowed; 
+		FVA = FileVarsAllowed;
 		FileVarsAllowed = false;
 		if (!RdViewOpt(EO)) Error(44);
 		FileVarsAllowed = FVA;
 	}
 	if (!found && (Lexem == ';')) {
-		RdLex(); 
+		RdLex();
 		if (!(Lexem == '#' || Lexem == 0x1A)) goto label2;
 	}
 label3:
 	ReleaseStore2(p2);
-	fd = fd->OrigFD; 
+	fd = fd->OrigFD;
 	if ((fd != nullptr) && !found) goto label1;
 	return found;
 }
@@ -308,9 +331,9 @@ label3:
 void TestUserView()
 {
 	void* p = nullptr;
-	KeyD* K = nullptr; 
+	KeyD* K = nullptr;
 	EditOpt* EO = nullptr;
-	StringListEl* S = nullptr; 
+	StringListEl* S = nullptr;
 	FileD* FD = nullptr;
 	RdLex();
 label1:
@@ -351,7 +374,7 @@ void TestDupl(FileD* FD)
 	S = FD->ViewNames;
 	while (S != nullptr) {
 		std::string tmp = LexWord;
-		if (EquUpcase(S->S, tmp)) Error(26); 
+		if (EquUpcase(S->S, tmp)) Error(26);
 		S = (StringList)S->Chain;
 	}
 }
@@ -453,7 +476,7 @@ void* RdFileD(std::string FileName, char FDTyp, std::string Ext)
 		ChainLast(FileDRoot, CFile);
 		MarkStore(p);
 		goto label1;
-	}
+}
 	if (IsKeyWord("LIKE")) {
 		Prefix = FileName;
 		FD = RdFileName();
@@ -539,8 +562,8 @@ label2:
 		MarkStore(p);
 		goto label1;
 	}
-	if (Lexem != 0x1A) { 
-		CFile->TxtPosUDLI = /*OrigInp()->*/CurrPos - 1; 
+	if (Lexem != 0x1A) {
+		CFile->TxtPosUDLI = /*OrigInp()->*/CurrPos - 1;
 	}
 	if ((Lexem == '#') && (ForwChar == 'U'))
 	{
@@ -855,7 +878,7 @@ label1:
 		AD->Chain = new AddD();
 		AD = AD->Chain;
 	}
-	
+
 	if (IsKeyWord("IF"))
 	{
 		AD->Bool = RdBool();
@@ -915,7 +938,7 @@ void RdImper(AddD* AD)
 		}
 		if (Lexem == '!') { RdLex(); AD->Create = 2; }
 	}
-}
+	}
 
 void RdAssign(AddD* AD)
 {
@@ -923,8 +946,8 @@ void RdAssign(AddD* AD)
 #ifdef FandSQL
 	if (AD->File2->typSQLFile) Error(155);
 #endif
-	Accept(_assign); 
-	AD->Assign = true; 
+	Accept(_assign);
+	AD->Assign = true;
 	AD->Frml = RdFrml(FTyp);
 	if (FTyp != AD->Field->FrmlTyp) OldError(12);
 }

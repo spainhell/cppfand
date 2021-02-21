@@ -59,7 +59,7 @@ integer CompLongShortStr(LongStr* S1, pstring* S2); // r551 ASM
 integer CompArea(void* A, void* B, integer L); // r575 ASM
 
 void RunErrorM(LockMode Md, WORD N); // r729
-pstring FieldDMask(FieldDescr* F); // r734 ASM
+// pstring FieldDMask(FieldDescr* F); // r734 ASM
 void* GetRecSpace(); // r739
 void* GetRecSpace2(); // r742
 WORD CFileRecSize(); // r744

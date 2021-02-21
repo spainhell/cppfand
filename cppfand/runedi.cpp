@@ -238,34 +238,33 @@ WORD EditTxt(std::string& s, WORD pos, WORD maxlen, WORD maxcol, char typ, bool 
 	return result;
 }
 
-bool TestMask(pstring* S, pstring* Mask, bool TypeN)
+bool TestMask(std::string& S, std::string Mask, bool TypeN)
 {
 	WORD ii; char c;
 	auto result = true;
-	if (Mask == nullptr) return result;
+	if (Mask.empty()) return result;
 	WORD v = 0; WORD i = 0;
-	WORD ls = S->length();
+	WORD ls = S.length();
 	WORD j = 0;
-	WORD lm = Mask->length();
+	WORD lm = Mask.length();
 label1:
 	if (j == lm) {
 		while (i < ls) {
-			i++;
 			if (S[i] != ' ') goto label4;
+			i++;
 		}
 		return result;
 	}
-	j++;
-	switch ((*Mask)[j]) {
+	switch (Mask[j]) {
 	case ']':
 	case ')': { v = 0; break; }
 	case '[': { v = 1; ii = i; break; }
 	case '(': { v = 2; ii = i; break; }
-	case '|': { do { j++; } while ((*Mask)[j] != ')'); break; }
+	case '|': { do { j++; } while (Mask[j] != ')'); break; }
 	default: {
 		if (i == ls) goto label4; i++;
-		c = (*S)[i];
-		switch ((*Mask)[j]) {
+		c = S[i];
+		switch (Mask[j]) {
 		case '#':
 		case '9': if (!isdigit(c)) goto label3; break;
 		case '@': if (!IsLetter(c)) goto label3; break;
@@ -275,36 +274,31 @@ label1:
 		case '!':
 		label2:
 			S[i] = UpcCharTab[c]; break;
-		default: { if (c != (*Mask)[j]) goto label3; break; }
+		default: { if (c != Mask[j]) goto label3; break; }
 		}
 	}
 	}
+	j++;
 	goto label1;
 label3:
 	switch (v) {
 	case 1: {
-		do { j++; } while ((*Mask)[j] != ']');
+		do { j++; } while (Mask[j] != ']');
 		v = 0; i = ii;
 		goto label1;
 		break;
 	}
 	case 2: {
-		do { j++; } while (!((*Mask)[j] == '|' || (*Mask)[j] == ')'));
+		do { j++; } while (!(Mask[j] == '|' || Mask[j] == ')'));
 		i = ii;
-		if ((*Mask)[j] == '|') goto label1;
+		if (Mask[j] == '|') goto label1;
 		break; }
 	}
 label4:
 	result = false;
-	SetMsgPar(*Mask);
+	SetMsgPar(Mask);
 	WrLLF10Msg(653);
 	return result;
-}
-
-bool TestMask(std::string& S, pstring* Mask, bool TypeN)
-{
-	pstring tmp = S;
-	return TestMask(&tmp, Mask, TypeN);
 }
 
 void SetWasUpdated()
@@ -382,9 +376,14 @@ WORD FieldEdit(FieldDescr* F, FrmlElem* Impl, WORD LWw, WORD iPos, std::string& 
 	}
 	L = F->L;
 	M = F->M;
-	Mask = new pstring(FieldDMask(F));
-	if (((F->Flg & f_Mask) != 0) && (F->Typ == 'A')) Msk = Mask;
-	else Msk = nullptr;      /*!!!!*/
+	//Mask = new pstring(FieldDMask(F));
+	Mask = new pstring(F->Mask.c_str());
+	if (((F->Flg & f_Mask) != 0) && (F->Typ == 'A')) {
+		Msk = Mask;
+	}
+	else {
+		Msk = nullptr;      /*!!!!*/
+	}
 label2:
 	iPos = EditTxt(Txt, iPos, L, LWw, F->Typ, del, false, upd, (F->FrmlTyp == 'S')
 		&& ret, Delta);
@@ -2314,7 +2313,7 @@ bool WriteCRec(bool MayDispl, bool& Displ)
 	LongStr* s = nullptr;
 	EFldD* D = nullptr;
 	ChkD* C = nullptr;
-	LockMode OldMd;
+	LockMode OldMd = LockMode::NullMode;
 	KeyD* K = nullptr;
 	Displ = false;
 	auto result = false;

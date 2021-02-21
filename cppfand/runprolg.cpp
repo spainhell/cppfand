@@ -3236,7 +3236,8 @@ bool RunBuildIn()
 			m = f->Flg;
 			if ((f->Typ == 'N' || f->Typ == 'A')) m = m | (f->M << 4);
 			CurrInst->Vars[5] = GetIntTerm(m);
-			if ((f->Flg & f_Mask) != 0) mask = FieldDMask(f);
+			//if ((f->Flg & f_Mask) != 0) mask = FieldDMask(f);
+			if ((f->Flg & f_Mask) != 0) mask = f->Mask;
 			else mask = "";
 			CurrInst->Vars[6] = GetStringTerm(mask);
 			if (w == 3) CurrInst->NextBranch = nullptr;

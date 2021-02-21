@@ -1405,24 +1405,24 @@ WORD CompLexStrings(const std::string& S1, const std::string& S2)
 	return result;
 }
 
-pstring FieldDMask(FieldDescr* F)
-{
-	// toto je takova specialita, ze maska byla ulozena "za" F->Name jako dalsi Byty
-	// TODO: najit jiny zpusob predavani masky pro datum
-
-	return "DD.MM.YY";
-
-	// puvodni kod:
-	/*BYTE startIndex = F->Name[0] + 1;
-	BYTE newLen = F->Name[startIndex];
-
-	pstring result;
-	result[0] = newLen;
-	memcpy(&result[1], &F[startIndex], newLen);
-
-	if (result.empty()) return "DD.MM.YY";
-	return result;*/
-}
+//pstring FieldDMask(FieldDescr* F)
+//{
+//	// toto je takova specialita, ze maska byla ulozena "za" F->Name jako dalsi Byty
+//	// TODO: najit jiny zpusob predavani masky pro datum
+//
+//	return "DD.MM.YY";
+//
+//	// puvodni kod:
+//	/*BYTE startIndex = F->Name[0] + 1;
+//	BYTE newLen = F->Name[startIndex];
+//
+//	pstring result;
+//	result[0] = newLen;
+//	memcpy(&result[1], &F[startIndex], newLen);
+//
+//	if (result.empty()) return "DD.MM.YY";
+//	return result;*/
+//}
 
 void* GetRecSpace()
 {

@@ -18,5 +18,6 @@ public:
 	integer Displ = 0;
 	FrmlElem* Frml = nullptr;
 	std::string Name;
+	std::string Mask; // added! mask for item 'A' or 'D'
 };
 typedef FieldDescr* FieldDPtr;
