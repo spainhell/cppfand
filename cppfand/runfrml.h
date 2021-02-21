@@ -22,8 +22,8 @@ LongStr* CopyToLongStr(std::string& SS);
 pstring LeadChar(char C, pstring S); // r69
 pstring TrailChar(char C, pstring s); // r73
 std::string TrailChar(char C, std::string s);
-std::string CopyLine(std::string& S, WORD N, WORD M);
-LongStr* CopyLine(LongStr* S, WORD N, WORD M);
+//std::string CopyLine(std::string& S, WORD N, WORD M);
+//LongStr* CopyLine(LongStr* S, WORD N, WORD M);
 bool RunBool(FrmlPtr X);
 bool InReal(FrmlElemIn* frml);
 bool LexInStr(LongStr* S, FrmlElemIn* X);
@@ -56,6 +56,7 @@ void StrMask(double R, pstring& Mask); // r438
 LongStr* RunS(FrmlElem* Z); // r469
 LongStr* RunSelectStr(FrmlElem0* Z); // r522
 void LowCase(LongStr* S); //543 ASM
+void LowCase(std::string& text);
 double RoundReal(double RR, integer M);
 LongStr* LongLeadChar(char C, char CNew, LongStr* S);
 LongStr* LongTrailChar(char C, char CNew, LongStr* S);

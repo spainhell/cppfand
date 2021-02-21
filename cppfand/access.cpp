@@ -887,9 +887,11 @@ std::string _StdS(FieldDescr* F)
 			{
 				// jedna je o typ N - prevedeme cislo na znaky
 				// UnPack(P, S->A, l);
-				for (size_t i = 0; i < F->NBytes; i++) {
-					S += ((BYTE)source[i] >> 4) + 0x30;
-					S += ((BYTE)source[i] & 0x0F) + 0x30;
+				for (BYTE i = 0; i < F->L; i++) {
+					bool upper = (i % 2) == 0; // jde o "levou" cislici
+					BYTE j = i / 2;
+					if (upper) { S += ((BYTE)source[j] >> 4) + 0x30; }
+					else { S += ((BYTE)source[j] & 0x0F) + 0x30; }
 				}
 			}
 			break;

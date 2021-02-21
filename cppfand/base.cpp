@@ -628,14 +628,14 @@ pstring StrDate(double R, pstring Mask)
 {
 	struct stD { WORD Y = 0; WORD M = 0; WORD D = 0; } d;
 	struct stT { longint hh = 0, mm = 0, ss = 0, tt = 0; } t;
-	pstring s; pstring x;
+	pstring x;
 	WORD i = 0, iDate = 0, n = 0, m = 0, min = 0, max = 0;
 	longint f = 0, l = 0; bool First = false, WasMinus = false; char c = 0;
 
 	double MultX[7]{ 0, 0, 0, 24, 1440, 86400, 8640000 };
 	longint DivX[12]{ 0, 0, 0, 1, 60, 3600, 360000, 1, 60, 6000, 1, 100 };
 
-	s = "";
+	pstring s = "";
 	EncodeMask(Mask, min, max);
 	WasMinus = false;
 	if ((R == 0.0) || (R < 0) && (min < 3)) {
@@ -686,7 +686,7 @@ pstring StrDate(double R, pstring Mask)
 				if (iDate == 4) str(t.mm, x);
 				if (iDate == 5) str(t.ss, x);
 				if (iDate == 6) str(t.tt, x);
-				if ((iDate = min) && WasMinus)
+				if ((iDate == min) && WasMinus)
 				{
 					pstring oldX = x;
 					x = "-";
@@ -698,7 +698,8 @@ pstring StrDate(double R, pstring Mask)
 			First = false;
 			while (x.length() < n) {
 				pstring oldX = x;
-				x = ""; x.Append(c);
+				x = "";
+				x.Append(c);
 				x += oldX;
 			}
 			if (iDate < 3) x = copy(x, x.length() - n + 1, n);
@@ -707,7 +708,6 @@ pstring StrDate(double R, pstring Mask)
 	}
 label1:
 	return s;
-
 }
 
 double AddMonth(double R, double RM)

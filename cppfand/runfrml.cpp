@@ -19,6 +19,7 @@
 #include "runproc.h"
 #include "TFile.h"
 #include "wwmix.h"
+#include "../textfunc/textfunc.h"
 
 FileDPtr TFD02;
 TFile* TF02;
@@ -452,43 +453,44 @@ WORD PortIn(bool IsWord, WORD Port)
 	return 0;
 }
 
-std::string CopyLine(std::string& S, WORD N, WORD M)
-{
-	size_t begin = 0;
-	size_t end = 0;
-	size_t LFcount = 0;
-	for (size_t i = 0; i < S.length(); i++) {
-		if (S[i] == '\r') LFcount++;
-		if (LFcount + 1 == N) {
-			if (N != 1) i++; // 1. radek pred sebou nema \r
-			begin = i; // nastavujeme jen pri prvnim nalezu
-			break;
-		}
-	}
-	LFcount = 0;
-	for (size_t i = begin + 1; i < S.length(); i++) {
-		if (S[i] == '\r') LFcount++;
-		if (LFcount == M) {
-			end = i;
-			break;
-		}
-	}
-	return S.substr(begin, end - begin);
-}
+//std::string CopyLine(std::string& S, WORD N, WORD M)
+//{
+//	size_t begin = 0;
+//	size_t end = 0;
+//	size_t LFcount = 0;
+//	for (size_t i = 0; i < S.length(); i++) {
+//		if (S[i] == '\r') LFcount++;
+//		if (LFcount + 1 == N) {
+//			if (N != 1) i++; // 1. radek pred sebou nema \r
+//			begin = i; // nastavujeme jen pri prvnim nalezu
+//			break;
+//		}
+//	}
+//	LFcount = 0;
+//	for (size_t i = begin + 1; i < S.length(); i++) {
+//		if (S[i] == '\r') LFcount++;
+//		if (LFcount == M) {
+//			end = i;
+//			break;
+//		}
+//	}
+//	std::string line = S.substr(begin, end - begin);
+//	return line;
+//}
 
-LongStr* CopyLine(LongStr* S, WORD N, WORD M) {
-	WORD i = 1;
-	if (N > 1) {
-		i = FindCtrlM(S, 1, N - 1);
-		i = SkipCtrlMJ(S, i);
-	}
-	WORD j = FindCtrlM(S, i, M);
-	WORD l = j - i;
-	if ((i > 1) && (l > 0)) Move(&S->A[i], &S->A[1], l);
-	S->LL = l;
-	//ReleaseAfterLongStr(S);
-	return S;
-}
+//LongStr* CopyLine(LongStr* S, WORD N, WORD M) {
+//	WORD i = 1;
+//	if (N > 1) {
+//		i = FindCtrlM(S, 1, N - 1);
+//		i = SkipCtrlMJ(S, i);
+//	}
+//	WORD j = FindCtrlM(S, i, M);
+//	WORD l = j - i;
+//	if ((i > 1) && (l > 0)) Move(&S->A[i], &S->A[1], l);
+//	S->LL = l;
+//	//ReleaseAfterLongStr(S);
+//	return S;
+//}
 
 LocVar* RunUserFunc(FrmlElem19* X)
 {
@@ -1579,7 +1581,7 @@ label1:
 		auto* lstr = RunLongStr(iX0->P1);
 		std::string text = std::string(lstr->A, lstr->LL);
 		WORD start = RunInt(iX0->P2);
-		auto r = CopyLine(text, start, I);
+		auto r = GetNthLine(text, start, I);
 		result = new LongStr(r.length());
 		result->LL = r.length();
 		memcpy(result->A, r.c_str(), r.length());
@@ -1673,7 +1675,6 @@ label1:
 		ClearRecSpace(CRecPtr);
 		ReleaseAfterLongStr(CRecPtr);
 		CFile = cf; CRecPtr = cr;
-		return result;
 		break;
 	}
 	case _recvarfld: {
@@ -1682,7 +1683,6 @@ label1:
 		CFile = iX7->File2; CRecPtr = iX7->LD;
 		result = RunStdStr(iX7->P011);
 		CFile = cf; CRecPtr = cr;
-		return result;
 		break;
 	}
 	case _eval: {
@@ -1695,7 +1695,6 @@ label1:
 		CFile = iX8->NewFile; CRecPtr = iX8->NewRP;
 		result = RunStdStr(iX8->Frml);
 		CFile = cf; CRecPtr = cr;
-		return result;
 		break;
 	}
 	case _cond: {
@@ -1739,7 +1738,6 @@ label1:
 		auto s = CopyToLongStr(((FrmlElem4*)X)->S);
 		result = std::string(s->A, s->LL);
 		delete s;
-		return result;
 		break;
 	}
 	case _leadchar: {
@@ -1748,7 +1746,6 @@ label1:
 		auto s = LongLeadChar((char)iX0->N11, (char)iX0->N12, s0);
 		result = std::string(s->A, s->LL);
 		delete s;
-		return result;
 		break;
 	}
 	case _trailchar: {
@@ -1763,20 +1760,16 @@ label1:
 	}
 	case _upcase: {
 		auto iX0 = (FrmlElem0*)X;
-		auto s = RunStdStr(iX0->P1);
-		for (WORD i = 0; i < s.length(); i++) {
-			s[i] = UpcCharTab[(BYTE)s[i]];
+		result = RunStdStr(iX0->P1);
+		for (WORD i = 0; i < result.length(); i++) {
+			result[i] = UpcCharTab[(BYTE)result[i]];
 		}
-		return s;
 		break;
 	}
 	case _lowcase: {
 		auto iX0 = (FrmlElem0*)X;
-		auto s = RunLongStr(iX0->P1);
-		LowCase(s);
-		result = std::string(s->A, s->LL);
-		delete s;
-		return result;
+		result = RunStdStr(iX0->P1);
+		LowCase(result);
 		break;
 	}
 	case _copyline: {
@@ -1786,7 +1779,7 @@ label1:
 		auto* lstr = RunLongStr(iX0->P1);
 		std::string text = std::string(lstr->A, lstr->LL);
 		WORD start = RunInt(iX0->P2);
-		return CopyLine(text, start, I);
+		result = GetNthLine(text, start, I);
 		break;
 	}
 	case _repeatstr: {
@@ -1794,7 +1787,6 @@ label1:
 		auto s = RepeatStr(RunLongStr(iX0->P1), RunInt(iX0->P2));
 		result = std::string(s->A, s->LL);
 		delete s;
-		return result;
 		break;
 	}
 	case _accrecno: {
@@ -1806,14 +1798,12 @@ label1:
 		CFile = cf; CRecPtr = cr;
 		result = std::string(s->A, s->LL);
 		delete s;
-		return result;
 		break;
 	}
 	case _gettxt: {
 		auto s = GetTxt(X);
 		result = std::string(s->A, s->LL);
 		delete s;
-		return result;
 		break;
 	}
 	case _nodiakr: {
@@ -1822,38 +1812,34 @@ label1:
 		ConvToNoDiakr((WORD*)&s->A[0], s->LL, fonts.VFont);
 		result = std::string(s->A, s->LL);
 		delete s;
-		return result;
 		break;
 	}
 	case _userfunc: {
 		LocVar* lv = RunUserFunc((FrmlElem19*)X);
-		return lv->S;
+		result = lv->S;
 		break;
 	}
 	case _setmybp: {
 		auto iX0 = (FrmlElem0*)X;
-		return RunStdStr(iX0->P1);
+		result = RunStdStr(iX0->P1);
 		break;
 	}
 	case _selectstr: {
 		auto s = RunSelectStr((FrmlElem0*)X);
 		result = std::string(s->A, s->LL);
 		delete s;
-		return result;
 		break;
 	}
 	case _clipbd: {
 		auto s = TWork.Read(1, ClpBdPos);
 		result = std::string(s->A, s->LL);
 		delete s;
-		return result;
 		break;
 	}
 	default: {
 		auto s = RunS(X);
 		result = std::string(s->A, s->LL);
 		delete s;
-		return result;
 	}
 	}
 	return result;
@@ -2154,6 +2140,12 @@ LongStr* RunSelectStr(FrmlElem0* Z)
 
 void LowCase(LongStr* S)
 {
+	for (WORD i = 0; i < S->LL; i++) { S->A[i] = static_cast<char>(tolower(S->A[i])); }
+}
+
+void LowCase(std::string& text)
+{
+	for (auto& c : text) { c = static_cast<char>(tolower(c)); }
 }
 
 double RoundReal(double RR, integer M)

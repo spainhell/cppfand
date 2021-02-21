@@ -238,9 +238,19 @@ WORD EditTxt(std::string& s, WORD pos, WORD maxlen, WORD maxcol, char typ, bool 
 	return result;
 }
 
-bool TestMask(std::string& S, std::string Mask, bool TypeN)
+/// <summary>
+/// Maska pro alfanum. retezec
+/// # cislice, 9 cislice, @ pismeno, ? libovolny znak, $ pismeno s automatickou zmenou na velke (upcase)
+/// ! libovolny znak s automatickou zmenou ve velke (upcase)
+/// [....] volitelna skupina znaku
+/// (...|...|...) alternativni skupiny znaku prip. ruzne delky
+/// </summary>
+/// <param name="S">vstupni retezec k overeni</param>
+/// <param name="Mask">maska k porovnani</param>
+/// <returns></returns>
+bool TestMask(std::string& S, std::string Mask)
 {
-	WORD ii; char c;
+	WORD ii;
 	auto result = true;
 	if (Mask.empty()) return result;
 	WORD v = 0; WORD i = 0;
@@ -264,7 +274,7 @@ label1:
 	case '|': { do { j++; } while (Mask[j - 1] != ')'); break; }
 	default: {
 		if (i == ls) goto label4; i++;
-		c = S[i - 1];
+		char c = S[i - 1];
 		switch (Mask[j - 1]) {
 		case '#':
 		case '9': if (!isdigit(c)) goto label3; break;
@@ -440,12 +450,12 @@ label2:
 		cc = '0';
 	label3:
 		if (M == LeftJust) {
-			while (Txt.length() < L) Txt += cc;
+			while (Txt.length() < L) { Txt += cc; }
 		}
 		else {
-			while (Txt.length() < L) Txt = cc + Txt;
+			while (Txt.length() < L) { Txt = cc + Txt; }
 		}
-		if ((!Msk.empty()) && !TestMask(Txt, Msk, true)) goto label4;
+		if ((!Msk.empty()) && !TestMask(Txt, Msk)) goto label4;
 		break;
 	}
 	case 'D': {

@@ -1285,8 +1285,8 @@ void RunInstr(Instr* PD)
 		}
 		}
 		PD = (Instr*)PD->Chain;
-		}
 	}
+}
 
 void RunProcedure(Instr* PDRoot)
 {
@@ -1317,21 +1317,14 @@ void CallProcedure(Instr_proc* PD)
 	ld = LinkDRoot;
 	lstFD = (FileD*)LastInChain(FileDRoot);
 	SetInpTT(&PD->PPos, true);
+
 #ifdef _DEBUG
 	std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
-	if (srcCode.find("var VetaD:record of SAZDPH; begin PARAM3.Param:=''; PARAM3.ShiftF6:=false; PARAM3.Cond:=''; PARAM3.Filtr:=''; PARAM3.Shift2:=false; PARAM3.ShiftF3:=false; PARAM3.Menu00:=false; PARAM3.VlSest:=false; PARAM3.SumA:=''; if PARAM3.PodmnCY<>'V' then PARAM3.PodmnCY:='N'; if ^(PARAM3.PageLimit in [9..90]) then PARAM3.PageLimit:=62; PARAM3.TxtEd:=false; PARAM3.TxtHd:='';") != std::string::npos) {
-		//|| srcCode.find("STAT.Start") != std::string::npos) {
+	if (srcCode.find("var r,r1,r2,poüet,t:real; ix:index of TIPY(K1); begin getindex(ix,TIPY/TIP,cond=(key in ['t'] & Vyb));   poüet:=ix.nrecs; if poüet<1 then begin") != std::string::npos) {
 		printf("");
-		//FuncD* f = FuncDRoot;
-		//std::ofstream myfile;
-		//myfile.open("functions.txt");
-		//while (f != nullptr) {
-		//	myfile << f->Name.c_str() << "\n";
-		//	f = f->Chain;
-		//}
-		//myfile.close();
 	}
 #endif
+
 	ReadProcHead("");
 	PD->variables = LVBD;
 	n = PD->variables.NParam;
