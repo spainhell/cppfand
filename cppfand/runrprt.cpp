@@ -969,7 +969,7 @@ bool RewriteRprt(RprtOpt* RO, WORD Pl, WORD& Times, bool& IsLPT1)
 		}
 		SetTxtPathVol(RO->Path, RO->CatIRec);
 	}
-	TestMountVol(CPath[1]);
+	TestMountVol(CPath[0]);
 	if (!RewriteTxt(&Rprt, PrintCtrl))
 	{
 		SetMsgPar(CPath);

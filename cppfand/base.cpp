@@ -714,10 +714,11 @@ double AddMonth(double R, double RM)
 {
 	WORD d, m, y;
 	SplitDate(R, d, m, y);
-	longint l = y * 12 + m - 1 + trunc(RM);
+	const longint l = y * 12 + m - 1 + static_cast<longint>(trunc(RM));
 	double intpart;
-	double RTime = modf(R, &intpart);
-	y = l / 12; m = (l % 12) + 1;
+	const double RTime = modf(R, &intpart);
+	y = static_cast<WORD>(l / 12);
+	m = (l % 12) + 1;
 	if (d > NoDayInMonth[m]) {
 		d = NoDayInMonth[m];
 		if (m == 2 && OlympYear(y)) d = 29;
@@ -934,7 +935,7 @@ label1:
 	
 	// pridani FILE* do vektoru kvuli 'WORD OvrHandle = h - 1;'
 	vOverHandle.push_back(nFile);
-	//#ifdef _DEBUG
+#ifdef _DEBUG
 	if (filesMap.find(CPath) != filesMap.end()) {
 		// soubor uz v mape je, budeme aktualizovat
 		filesMap[CPath] = DataFile(CPath, CFile, nFile);
@@ -942,7 +943,7 @@ label1:
 	else {
 		filesMap.insert(std::pair<std::string, DataFile>(CPath, DataFile(CPath, CFile, nFile)));
 	}
-	//#endif
+#endif
 	return nFile;
 }
 
@@ -953,7 +954,7 @@ WORD ReadLongH(FILE* handle, longint bytes, void* buffer)
 	auto readed = fread_s(buffer, bytes, 1, bytes, handle);
 	if (readed != static_cast<unsigned int>(bytes))
 	{
-		// nebyl naèten požadovaný poèet B
+		// nebyl nacten pozadovany pocet B
 		auto eofReached = feof(handle);
 		HandleError = ferror(handle);
 	}

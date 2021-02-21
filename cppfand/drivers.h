@@ -132,9 +132,9 @@ void WrDirect();
 void ScrollUp();
 void LineFeed();
 
-WORD WrOutput(TextFile* F);
-WORD DummyCrt(TextFile* F);
-WORD OpenCrt(TextFile* F);
+integer WrOutput(TextFile* F);
+integer DummyCrt(TextFile* F);
+integer OpenCrt(TextFile* F);
 
 void BreakIntrDone();
 bool KbdTimer(WORD Delta, BYTE Kind);

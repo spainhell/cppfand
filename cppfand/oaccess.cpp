@@ -122,12 +122,16 @@ void SetCPathMountVolSetNet(FileUseMode UM)
 		case RdShared: CFile->UMode = RdOnly; break;
 		case Shared: CFile->UMode = Exclusive; break;
 		}
-	else if ((UM == Shared) && SEquUpcase(CVol, "#R")) CFile->UMode = RdShared;
+	else if ((UM == Shared) && SEquUpcase(CVol, "#R")) {
+		CFile->UMode = RdShared;
+	}
 }
 
 void TestCFileError()
 {
-	if (HandleError != 0) CFileError(700 + HandleError);
+	if (HandleError != 0) {
+		CFileError(700 + HandleError);
+	}
 }
 
 bool OpenF1(FileUseMode UM)
@@ -202,7 +206,7 @@ label1:
 			HandleError = n;
 			TestCPathError();
 		}
-		if (FileSizeH(CFile->XF->Handle) < 512) CFile->XF->SetNotValid();
+		if (CFile->XF != nullptr && FileSizeH(CFile->XF->Handle) < 512) CFile->XF->SetNotValid();
 	}
 	return result;
 }
@@ -781,8 +785,13 @@ label4:
 
 void SetTxtPathVol(pstring* Path, WORD CatIRec)
 {
-	if (CatIRec != 0) RdCatPathVol(CatIRec);
-	else { CPath = FExpand(*Path); CVol = ""; }
+	if (CatIRec != 0) {
+		RdCatPathVol(CatIRec);
+	}
+	else {
+		CPath = FExpand(*Path);
+		CVol = "";
+	}
 }
 
 void SetTempCExt(char Typ, bool IsNet)

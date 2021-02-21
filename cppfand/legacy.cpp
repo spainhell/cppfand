@@ -449,12 +449,11 @@ const char* TextFile::c_str()
 
 void TextFile::Close(const char* data)
 {
-	std::ofstream myFile(FullPath.c_str());
-	if (myFile.is_open()) {
-		myFile << data;
-		myFile.close();
-	}
-	else printf("ERROR saving text file.");
+	// ulozi data do souboru a zavre jej
+	fwrite(data, 1, strlen(data), Handle);
+	HandleError = ferror(Handle);
+	fclose(Handle);
+	Handle = nullptr;
 }
 
 void TextFile::Assign(std::string FullPath)

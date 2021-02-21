@@ -258,7 +258,7 @@ void PrintFandWork()
 	Rprt.Assign(FandWorkName.c_str());
 	/* !!! with TextRec(Rprt) do!!! */
 	{
-		Rprt.openfunc = &Rprt.opentxt;
+		Rprt.openfunc = Rprt.opentxt;
 		OpenWorkH();
 		Rprt.Handle = WorkHandle;
 	}

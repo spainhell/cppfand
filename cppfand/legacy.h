@@ -88,17 +88,17 @@ public:
 	size_t _private = 0;
 	size_t bufpos = 0;
 	size_t bufend = 0;
-	void* openfunc = nullptr;
-	void* inoutfunc = nullptr;
-	void* flushfunc = nullptr;
-	void* closefunc = nullptr;
-	void* opentxt = nullptr;
+	integer (*openfunc)(TextFile* F) = nullptr; // function pointer
+	integer (*inoutfunc)(TextFile* F) = nullptr; // function pointer
+	integer (*flushfunc)(TextFile* F) = nullptr; // function pointer
+	integer (*closefunc)(TextFile* F) = nullptr; // function pointer
+	integer (*opentxt)(TextFile* F) = nullptr; // function pointer
 	BYTE UserData[32] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 	std::string name;
 	std::string LineEnd;
 	std::string FullPath;
 	BYTE* buffer = nullptr;
-	bool eof;
+	bool eof = false;
 
 	const char* c_str();
 	void Close(const char* data);

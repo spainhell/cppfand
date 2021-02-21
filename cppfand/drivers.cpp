@@ -679,19 +679,21 @@ void LineFeed()
 {
 }
 
-WORD WrOutput(TextFile* F)
+integer WrOutput(TextFile* F)
 {
 	return 0;
 }
 
-WORD DummyCrt(TextFile* F)
+integer DummyCrt(TextFile* F)
 {
 	return 0;
 }
 
-WORD OpenCrt(TextFile* F)
+integer OpenCrt(TextFile* F)
 {
 	/* !!! with F do!!! */
-	F->inoutfunc = WrOutput; F->flushfunc = WrOutput; F->closefunc = DummyCrt;
+	F->inoutfunc = WrOutput;
+	F->flushfunc = WrOutput;
+	F->closefunc = DummyCrt;
 	return 0;
 }

@@ -510,7 +510,8 @@ void RdFirstPart()
 {
 	NullChangePart();
 	Part.PosP = 0; Part.LineP = 0; Part.LenP = 0; Part.ColorP = "";
-	AllRd = false; ChangePart = RdNextPart();
+	AllRd = false;
+	ChangePart = RdNextPart();
 }
 
 void OpenTxtFh(char Mode)
@@ -3160,7 +3161,7 @@ void HandleEvent() {
 					break;
 				}
 							 // *****************************************
-							 // tady byly pùvodnì *********CHAR**********
+							 // tady byly puvodne *********CHAR**********
 							 // *****************************************
 				case _M_: {
 					if (Mode == HelpM) { Konec = WordExist(); KbdChar = ww; }
@@ -3860,7 +3861,7 @@ void EditTxtFile(longint* LP, char Mode, pstring& ErrMsg, EdExitD* ExD, longint 
 	{
 		MaxLenT = 0xFFF0; LenT = 0; Part.UpdP = false;
 		TxtPath = CPath; TxtVol = CVol;
-		// zaèátek práce se souborem
+		// zacatek prace se souborem
 		OpenTxtFh(Mode);
 		RdFirstPart();
 		SimplePrintHead();

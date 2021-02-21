@@ -5,9 +5,10 @@
 #include "GlobalVariables.h"
 #include "obaseww.h"
 
-bool SFlag, QFlag, WFlag, BFlag, DFlag, EFlag, AFlag, XFlag, VFlag, TFlag;
-WORD CPState, CPCount;
-bool PrintCtrlFlag;
+bool SFlag = false, QFlag = false, WFlag = false, BFlag = false, DFlag = false;
+bool EFlag = false, AFlag = false, XFlag = false, VFlag = false, TFlag = false;
+WORD CPState = 0, CPCount = 0;
+bool PrintCtrlFlag = false;
 
 void ResetCtrlFlags()
 {
@@ -32,7 +33,7 @@ void PrintByte(BYTE B)
 	const BYTE acknowledge = 0x40;
 	const BYTE notbusy = 0x80;
 
-	// PØÍMÝ TISK NA PORT NEBO DO HANDLE -> NEUMÍME :-)
+	// PRIMY TISK NA PORT NEBO DO HANDLE -> NEUMIME :-)
 
 //	registers r;
 //	WORD N, LptNr;
@@ -62,8 +63,9 @@ void PrintByte(BYTE B)
 
 void PrintByteStr(pstring S)
 {
-	WORD i;
-	for (i = 1; i < S.length(); i++) PrintByte(S[i]);
+	for (size_t i = 1; i < S.length(); i++) {
+		PrintByte(S[i]);
+	}
 }
 
 pstring CtrlToESC(char C)
@@ -153,7 +155,7 @@ WORD CPTest(char c)
 
 void TranslateCodePage(WORD& c)
 {
-	// pøeklady nejsou podporovány - bude jen Latin2
+	// preklady nejsou podporovany - bude jen Latin2
 	if (c >= 0x80)
 		switch (printer[prCurr].Kod) {
 		case 'K': ConvKamenLatin(&c, 1, true);
@@ -261,9 +263,9 @@ integer OpenTxt(TextFile* F)
 	/* !!! with F do!!! */
 	if (F->Mode == "rb" /*append*/) SeekH(F->Handle, FileSizeH(F->Handle));
 	if (F->Mode == "rb") F->inoutfunc = &InputTxt;
-	else F->inoutfunc = &OutputTxt;
-	F->flushfunc = &FlushTxt;
-	F->closefunc = &CloseTxt;
+	else F->inoutfunc = OutputTxt;
+	F->flushfunc = FlushTxt;
+	F->closefunc = CloseTxt;
 	
 	if (PrintCtrlFlag) ResetCtrlFlags();
 	return 0;
@@ -288,7 +290,8 @@ bool ResetTxt(TextFile* F)
 	F->Assign(CPath.c_str());
 	/* !!! with TextRec(F) do!!! */
 	{
-		F->openfunc = &OpenTxt; F->Handle = nullptr; /* for error detection in OpenH */
+		F->openfunc = OpenTxt;
+		F->Handle = nullptr; /* for error detection in OpenH */
 		F->Handle = OpenH(_isoldfile, RdOnly);
 	}
 	if (HandleError != 0) { return false; }
@@ -302,8 +305,8 @@ bool RewriteTxt(TextFile* F, bool PrintCtrl)
 	if (CPath == "LPT1") F->openfunc = &OpenLPT1;
 	else {
 		PrintCtrlFlag = PrintCtrl;
-		F->openfunc = &OpenTxt;
-		// F->Handle = OpenH(_isoverwritefile, Exclusive); // ted nebudeme otvirat
+		F->openfunc = OpenTxt;
+		F->Handle = OpenH(_isoverwritefile, Exclusive);
 		if (HandleError != 0) { return false; }
 	}
 	F->Rewrite();
