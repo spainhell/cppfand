@@ -250,21 +250,22 @@ bool TestMask(std::string& S, std::string Mask, bool TypeN)
 label1:
 	if (j == lm) {
 		while (i < ls) {
-			if (S[i] != ' ') goto label4;
 			i++;
+			if (S[i - 1] != ' ') goto label4;
 		}
 		return result;
 	}
-	switch (Mask[j]) {
+	j++;
+	switch (Mask[j - 1]) {
 	case ']':
 	case ')': { v = 0; break; }
 	case '[': { v = 1; ii = i; break; }
 	case '(': { v = 2; ii = i; break; }
-	case '|': { do { j++; } while (Mask[j] != ')'); break; }
+	case '|': { do { j++; } while (Mask[j - 1] != ')'); break; }
 	default: {
 		if (i == ls) goto label4; i++;
-		c = S[i];
-		switch (Mask[j]) {
+		c = S[i - 1];
+		switch (Mask[j - 1]) {
 		case '#':
 		case '9': if (!isdigit(c)) goto label3; break;
 		case '@': if (!IsLetter(c)) goto label3; break;
@@ -273,25 +274,24 @@ label1:
 				else goto label2; break; }
 		case '!':
 		label2:
-			S[i] = UpcCharTab[c]; break;
-		default: { if (c != Mask[j]) goto label3; break; }
+			S[i - 1] = UpcCharTab[c]; break;
+		default: { if (c != Mask[j - 1]) goto label3; break; }
 		}
 	}
 	}
-	j++;
 	goto label1;
 label3:
 	switch (v) {
 	case 1: {
-		do { j++; } while (Mask[j] != ']');
+		do { j++; } while (Mask[j - 1] != ']');
 		v = 0; i = ii;
 		goto label1;
 		break;
 	}
 	case 2: {
-		do { j++; } while (!(Mask[j] == '|' || Mask[j] == ')'));
+		do { j++; } while (!(Mask[j - 1] == '|' || Mask[j - 1] == ')'));
 		i = ii;
-		if (Mask[j] == '|') goto label1;
+		if (Mask[j - 1] == '|') goto label1;
 		break; }
 	}
 label4:
@@ -319,11 +319,11 @@ void AssignFld(FieldDescr* F, FrmlElem* Z)
 WORD FieldEdit(FieldDescr* F, FrmlElem* Impl, WORD LWw, WORD iPos, std::string& Txt, double& RR, bool del, bool upd, bool ret,
 	WORD Delta)
 {
-	WORD I = 0, N = 0, L = 0, M = 0;
+	//WORD N = 0, L = 0, M = 0;
 	short Col = 0, Row = 0;
 	char cc = '\0';
 	pstring* Mask = nullptr;
-	pstring* Msk = nullptr;
+	std::string Msk;
 	pstring s;
 	double r = 0;
 	pstring T;
@@ -374,15 +374,15 @@ WORD FieldEdit(FieldDescr* F, FrmlElem* Impl, WORD LWw, WORD iPos, std::string& 
 		screen.CrsHide();
 		return 0;
 	}
-	L = F->L;
-	M = F->M;
+	WORD L = F->L;
+	WORD M = F->M;
 	//Mask = new pstring(FieldDMask(F));
 	Mask = new pstring(F->Mask.c_str());
 	if (((F->Flg & f_Mask) != 0) && (F->Typ == 'A')) {
-		Msk = Mask;
+		Msk = *Mask;
 	}
 	else {
-		Msk = nullptr;      /*!!!!*/
+		Msk = "";      /*!!!!*/
 	}
 label2:
 	iPos = EditTxt(Txt, iPos, L, LWw, F->Typ, del, false, upd, (F->FrmlTyp == 'S')
@@ -401,13 +401,13 @@ label2:
 	case 'F':
 	case 'R': {
 		T = LeadChar(' ', TrailChar(' ', Txt));
-		I = T.first(',');
+		WORD I = T.first(',');
 		if (I > 0) { T = copy(T, 1, I - 1) + "." + copy(T, I + 1, 255); }
 		if (T.length() == 0) r = 0.0;
 		else {
 			val(T, r, I);
 			if (F->Typ == 'F') {
-				N = L - 2 - M;
+				WORD N = L - 2 - M;
 				if (M == 0) N++;
 				if ((I != 0) || (abs(r) >= Power10[N])) {
 					s = copy(C999, 1, N) + "." + copy(C999, 1, M);
@@ -445,7 +445,7 @@ label2:
 		else {
 			while (Txt.length() < L) Txt = cc + Txt;
 		}
-		if ((Msk != nullptr) && !TestMask(Txt, Msk, true)) goto label4;
+		if ((!Msk.empty()) && !TestMask(Txt, Msk, true)) goto label4;
 		break;
 	}
 	case 'D': {
@@ -453,7 +453,7 @@ label2:
 		if (T == "") r = 0;
 		else {
 			r = ValDate(T, *Mask);
-			if ((r == 0) && (T != LeadChar(' ', TrailChar(' ', StrDate(r, *Mask)))))
+			if ((r == 0.0) && (T != LeadChar(' ', TrailChar(' ', StrDate(r, *Mask)))))
 			{
 				SetMsgPar(*Mask);
 				WrLLF10Msg(618);
@@ -586,8 +586,8 @@ longint AbsRecNr(longint N)
 		) {
 		if (IsNewRec) result = 0;
 		else result = 1;
-		return result;
-	}
+			return result;
+}
 	if (IsNewRec) {
 		if ((N == CRec()) && (N == CNRecs())) {
 			result = 0;
@@ -724,14 +724,14 @@ bool ELockRec(EditD* E, longint N, bool IsNewRec, bool Subset)
 		if (CFile->NotCached()) {
 			if (!TryLockN(N, 1/*withESC*/)) {
 				result = false;
-				return result;
+					return result;
 			}
 			md = NewLMode(RdMode); ReadRec(CFile, N, CRecPtr); OldLMode(md);
-			if (Subset && !
-				((NoCondCheck || RunBool(E->Cond) && CheckKeyIn(E)) && CheckOwner(E))) {
-				WrLLF10Msg(150); goto label1;
-			}
-		}
+				if (Subset && !
+					((NoCondCheck || RunBool(E->Cond) && CheckKeyIn(E)) && CheckOwner(E))) {
+					WrLLF10Msg(150); goto label1;
+				}
+}
 		else if (DeletedFlag()) {
 			WrLLF10Msg(148);
 		label1:
@@ -1351,7 +1351,7 @@ void BuildWork()
 		//New(Scan, Init(CFile, K, ki, false));
 		Scan = new XScan(CFile, K, ki, false);
 		Scan->Reset(boolP, E->SQLFilter);
-	}
+		}
 	CreateWIndex(Scan, WK, 'W');
 	Scan->Close();
 	if (wk2 != nullptr) wk2->Close();
@@ -1366,7 +1366,7 @@ label1:
 	RestoreExit(er);
 	if (!ok) GoExit();
 	ReleaseStore(p);
-}
+	}
 
 void SetStartRec()
 {
@@ -1567,10 +1567,10 @@ void UpdMemberRef(void* POld, void* PNew)
 	FileD* cf = CFile;
 	void* cr = CRecPtr; void* p = nullptr; void* p2 = nullptr;
 	XKey* k = nullptr;
-	KeyFldD* kf = nullptr, *kf1 = nullptr, *kf2 = nullptr, *Arg = nullptr;
-		
+	KeyFldD* kf = nullptr, * kf1 = nullptr, * kf2 = nullptr, * Arg = nullptr;
+
 	while (LD != nullptr) {
-		if ((LD->MemberRef != 0) && (LD->ToFD == cf) &&	((PNew != nullptr) || (LD->MemberRef != 2))) {
+		if ((LD->MemberRef != 0) && (LD->ToFD == cf) && ((PNew != nullptr) || (LD->MemberRef != 2))) {
 			CFile = cf;
 			kf2 = LD->ToKey->KFlds;
 			CRecPtr = POld;
@@ -1629,16 +1629,16 @@ void UpdMemberRef(void* POld, void* PNew)
 						OverWrXRec(Scan->RecNr, p, p2);
 				}
 				goto label1;
-			}
+				}
 			Scan->Close();
 			ClearRecSpace(p);
 			ReleaseStore(p);
-		}
+			}
 	label2:
 		LD = LD->Chain;
-	}
+		}
 	CFile = cf; CRecPtr = cr;
-}
+	}
 
 void WrJournal(char Upd, void* RP, double Time)
 {
@@ -1797,7 +1797,7 @@ bool CleanUp()
 			bool ok = EdOk;
 			EdOk = true;
 			LastTxtPos = -1;
-			if (!StartExit(X, false) || !EdOk)	{
+			if (!StartExit(X, false) || !EdOk) {
 				EdOk = ok;
 				return false;
 			}
@@ -1841,9 +1841,9 @@ bool DelIndRec(longint I, longint N)
 		if (Subset) WK->DeleteAtNr(I);
 		result = true;
 		E->EdUpdated = true;
-	}
+		}
 	return result;
-}
+	}
 
 bool DeleteRecProc()
 {
@@ -1876,30 +1876,30 @@ bool DeleteRecProc()
 		) {
 		log->log(loglevel::DEBUG, "... from file with index ...");
 		TestXFExist();
-		if (Group) {
-			IRec = 1; BaseRec = 1;
-			while (BaseRec <= CNRecs()) {
-				N = AbsRecNr(BaseRec);
-				ClearDeletedFlag();/*prevent err msg 148*/
-				if (!ELockRec(E, N, false, Subset)) goto label1;
-				RdRec(BaseRec);
-				if (RunBool(E->Bool)) b = DelIndRec(BaseRec, N);
-				else {
-					b = true;
-					BaseRec++;
-				}
-				UnLockRec(E);
-				if (!b) goto label1;
+			if (Group) {
+				IRec = 1; BaseRec = 1;
+					while (BaseRec <= CNRecs()) {
+						N = AbsRecNr(BaseRec);
+							ClearDeletedFlag();/*prevent err msg 148*/
+						if (!ELockRec(E, N, false, Subset)) goto label1;
+						RdRec(BaseRec);
+						if (RunBool(E->Bool)) b = DelIndRec(BaseRec, N);
+						else {
+							b = true;
+							BaseRec++;
+						}
+						UnLockRec(E);
+						if (!b) goto label1;
+					}
+			label1:
+				{}
 			}
-		label1:
-			{}
-		}
-		else {
-			if (!ELockRec(E, N, false, Subset)) goto label1;
-			DelIndRec(CRec(), N);
-			UnLockRec(E);
-		}
-	}
+			else {
+				if (!ELockRec(E, N, false, Subset)) goto label1;
+				DelIndRec(CRec(), N);
+				UnLockRec(E);
+			}
+}
 	else if (Group) {
 		J = 0;
 		fail = false;
@@ -3632,7 +3632,7 @@ void F6Proc()
 	case 3: PromptSelect(); break;
 	case 4: AutoGraph(); break;
 	case 5: Sorting(); break;
-	}
+}
 }
 
 longint GetEdRecNo()
@@ -4088,9 +4088,9 @@ label81:
 						OldLMode(E->OldMd);
 					}
 					return;
-				}
+					}
 				break;
-			}
+				}
 			case '=' + ALT: {
 				// ukonceni editace bez ulozeni zmen
 				UndoRecord();
@@ -4359,9 +4359,9 @@ label81:
 			}
 			}
 			break;
-		}
+			}
 		break;
-	}
+		}
 	default: {
 		// nejedna se o udalost z klavesnice ani mysi
 		ClrEvent();
@@ -4369,7 +4369,7 @@ label81:
 	}
 	}
 	goto label1;
-}
+	}
 
 void EditDataFile(FileD* FD, EditOpt* EO)
 {
