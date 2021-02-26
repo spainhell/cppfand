@@ -488,7 +488,7 @@ WORD TestMountVol(char DriveC)
 	if (IsNetCVol()) return 0;
 	D = toupper(DriveC) - '@';
 	if (D >= FloppyDrives)
-		if (toupper(CDir[1]) == spec.CPMdrive) D = FloppyDrives;
+		if (!CDir.empty() && toupper(CDir[0]) == spec.CPMdrive) D = FloppyDrives;
 		else return 0;
 	if ((CVol == "") || SEquUpcase(MountedVol[D], CVol)) goto label3;
 	Drive[1] = DriveC;

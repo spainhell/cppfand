@@ -518,7 +518,7 @@ void OpenTxtFh(char Mode)
 {
 	FileUseMode UM;
 	CPath = TxtPath; CVol = TxtVol;
-	TestMountVol(CPath[1]);
+	TestMountVol(CPath[0]);
 	if (Mode == ViewM) UM = RdOnly;
 	else UM = Exclusive;
 	TxtFH = OpenH(_isoldnewfile, UM);
