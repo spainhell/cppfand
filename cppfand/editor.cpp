@@ -34,7 +34,7 @@ struct Character {
 };
 
 // *** Promenne metody EDIT
-char Arr[SuccLineSize];
+char Arr[SuccLineSize]{ '\0' };
 WORD NextI = 0;
 integer LineL = 0, ScrL = 0;
 longint RScrL = 0;
@@ -883,8 +883,8 @@ void TestUpdFile()
 void WrEndT()
 {
 	LenT++;
-	T = new char(LenT);
-	T[LenT] = _CR;
+	T = new char[LenT] {'\0'};
+	T[LenT - 1] = _CR;
 }
 
 void MoveIdx(int dir)
