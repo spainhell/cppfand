@@ -311,14 +311,13 @@ void SimplePrintHead()
 void LastLine(char* input, WORD from, WORD num, WORD& Ind, WORD& Count)
 {
 	WORD length = Count;
-	WORD lastCR = 0;
 	Count = 0;
+	Ind = from;
 	for (int i = from; i < length; i++)
 	{
-		if (input[i] == _CR) { lastCR = i; Count++; }
+		if (input[i] == _CR) { Ind = from + i; Count++; }
 	}
-	Count++;
-	Ind = lastCR + 1;
+	if (Count > 0 && input[Ind] == 0x0A) Ind++;// LF
 }
 
 bool RdNextPart()
@@ -376,7 +375,7 @@ bool RdNextPart()
 	if ((iL < LenT)) { LenT = iL; AllRd = false; }
 	Part.LenP = LenT;
 	Part.UpdP = false;
-	if ((T[LenT] == 0x1A) && AllRd) LenT--;
+	if ((T[LenT - 1] == 0x1A) && AllRd) LenT--;
 	if ((LenT <= 1)) return result;  /*????????*/
 	if (LenT < 49) ReleaseStore(&T[LenT + 1]); // TODO: pùvodnì ReleaseStore(@T^[succ(LenT)]);
 	result = true;
@@ -633,8 +632,8 @@ void InitScr()
 	LastR = WindMax.Y; // +1;
 	LastC = WindMax.X; // +1;
 
-	if ((FirstR == 0) && (Mode != HelpM)) FirstR++;
-	if (LastR + 1 == TxtRows) LastR--;
+	if ((FirstR == 1) && (Mode != HelpM)) FirstR++;
+	if (LastR == TxtRows) LastR--;
 	MinC = FirstC; MinR = FirstR; MaxC = LastC; MaxR = LastR;
 	screen.Window(FirstC, FirstR, LastC, LastR);
 	FirstR--;
@@ -724,8 +723,8 @@ void EditWrline(char* P, int Row)
 	Line = pred(ScrL + Row);
 	if (LineInBlock(Line) && (TypeB == TextBlock)) nv2 = BlockColor;
 	else nv2 = TxtColor;
-	I = 1;
-	while ((P[I] != _CR) && (I < LineSize)) {
+	I = 0;
+	while (P[I] != _CR && I < LineSize - 1) {
 		nv1 = P[I];
 		if (I < 0 || I > 254) throw std::exception("Index");
 		BuffLine[I] = (nv2 << 8) + nv1;
@@ -760,7 +759,7 @@ void EditWrline(char* P, int Row)
 	}
 	if (IsCtrl) {
 		for (I = succ(BPos); I < LP; I++) {
-			if (P[I] < 32) {
+			if ((unsigned char)P[I] < 32) {
 				if (I < 0 || I > 254) throw std::exception("Index");
 				BuffLine[I] = ((P[I] + 64) & 0x00FF) + (ColKey[CtrlKey.first(P[I])] << 8);
 			}
@@ -882,9 +881,14 @@ void TestUpdFile()
 
 void WrEndT()
 {
+	// vytvori nove pole o delce puvodniho + 1,
+	// puvodni pole se do nej prekopiruje a na konec se vlozi CR
 	LenT++;
-	T = new char[LenT] {'\0'};
-	T[LenT - 1] = _CR;
+	char* T2 = new char[LenT];
+	memcpy(T2, T, LenT - 1);
+	T2[LenT - 1] = _CR;
+	delete[] T;
+	T = T2;
 }
 
 void MoveIdx(int dir)
@@ -1224,16 +1228,14 @@ void UpdScreen()
 	pstring PgStr;
 
 	oldSI = ScrI; InsPage = false;
-	if (ChangeScr)
-	{
+	if (ChangeScr) {
 		if (ChangePart) DekodLine();
 		ChangeScr = false;
 
 		if (bScroll) ScrI = LineI;
 		else ScrI = FindLine(ScrL);
 
-		if (HelpScroll)
-		{
+		if (HelpScroll)	{
 			ColScr = Part.ColorP;
 			SetColorOrd(ColScr, 1, ScrI);
 		}
@@ -1246,12 +1248,13 @@ void UpdScreen()
 		while (Arr[r] == 0x0C) { r++; }
 		ScrollWrline(&Arr[r], 1, co1);
 	}
-	else if (Mode == HelpM)
-	{
+	else if (Mode == HelpM)	{
 		co1 = Part.ColorP; SetColorOrd(co1, 1, LineI);
 		ScrollWrline(Arr, LineL - ScrL + 1, co1);
 	}
-	else EditWrline(Arr, LineL - ScrL + 1);
+	else {
+		EditWrline(Arr, LineL - ScrL + 1);
+	}
 	WrEndL(HardL, LineL - ScrL + 1);
 	if (MyTestEvent()) return;
 	Ind = ScrI; r = 1; rr = 0; w = 1; InsPage = false; co2 = ColScr;
@@ -2683,7 +2686,8 @@ void SetScreen(WORD Ind, WORD ScrXY, WORD Pos)
 			else RScrL = 1;
 			ChangeScr = true; ScrL = NewL(RScrL);
 		}
-		LineL = ScrL; DekFindLine(LineAbs(LineL));
+		LineL = ScrL;
+		DekFindLine(LineAbs(LineL));
 	}
 	else {
 		if ((LineL >= ScrL + PageS) || (LineL < ScrL)) {
