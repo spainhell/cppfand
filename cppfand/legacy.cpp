@@ -450,7 +450,15 @@ const char* TextFile::c_str()
 void TextFile::Close(const char* data)
 {
 	// ulozi data do souboru a zavre jej
-	fwrite(data, 1, strlen(data), Handle);
+	// ukladame po 1 znaku, aby bylo mozno ukladat misto '\n' cely '\r\n'
+	char charCR = '\r';
+	for (size_t i = 0; i < strlen(data); i++)
+	{
+		if (data[i] == '\n') fwrite(&charCR, 1, 1, Handle);
+		fwrite(&data[i], 1, 1, Handle);
+	}
+	
+	//fwrite(data, 1, strlen(data), Handle);
 	HandleError = ferror(Handle);
 	fclose(Handle);
 	Handle = nullptr;

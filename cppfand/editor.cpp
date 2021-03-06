@@ -705,12 +705,17 @@ bool LineBndBlock(int Ln)
 	else { return false; }
 }
 
+BYTE Color(char c)
+{
+	const size_t indexOfKey = CtrlKey.find(c);
+	return ColKey[indexOfKey + 1];
+}
+
 BYTE Color(ColorOrd CO)
 {
 	if (CO.length() == 0) return TxtColor;
 	const char lastColor = CO[CO.length() - 1];
-	const size_t indexOfKey = CtrlKey.find(lastColor);
-	return ColKey[indexOfKey + 1];
+	return Color(lastColor);
 }
 
 void EditWrline(char* P, int Row)
@@ -721,8 +726,8 @@ void EditWrline(char* P, int Row)
 	bool IsCtrl = false;
 	
 	WORD Line = pred(ScrL + Row);
-	if (LineInBlock(Line) && (TypeB == TextBlock)) nv2 = BlockColor;
-	else nv2 = TxtColor;
+	if (LineInBlock(Line) && (TypeB == TextBlock)) { nv2 = BlockColor; }
+	else { nv2 = TxtColor; }
 	integer I = 0;
 	while (P[I] != _CR && I < LineSize - 1) {
 		nv1 = P[I];
@@ -765,7 +770,7 @@ void EditWrline(char* P, int Row)
 		for (I = BPos; I <= LP; I++) {
 			if ((unsigned char)P[I] < 32) {
 				if (I < 0 || I > 254) throw std::exception("Index");
-				BuffLine[I] = ((P[I] + 64) & 0x00FF) + (ColKey[CtrlKey.find(P[I])] << 8);
+				BuffLine[I] = ((P[I] + 64) & 0x00FF) + (Color(P[I]) << 8);
 			}
 		}
 	}

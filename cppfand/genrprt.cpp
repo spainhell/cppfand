@@ -1,7 +1,5 @@
 #include "genrprt.h"
 
-
-
 #include "FieldDescr.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
@@ -77,6 +75,7 @@ label1:
 
 void WrChar(char C)
 {
+	return; // TODO
 	char* p = (char*)GetStore(1);
 	*p = C;
 	Txt->LL++;
@@ -84,6 +83,7 @@ void WrChar(char C)
 
 void WrBlks(integer N)
 {
+	return; // TODO
 	void* p;
 	if (N <= 0) return;
 	p = GetStore(N); FillChar(p, N, ' '); Txt->LL += N;
@@ -91,6 +91,7 @@ void WrBlks(integer N)
 
 void WrStr(pstring S)
 {
+	return; // TODO
 	void* p;
 	p = GetStore(S.length()); Move(&S[1], p, S.length());
 	Txt->LL += S.length();
@@ -185,7 +186,7 @@ LongStr* GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 
 	Txt = (LongStr*)GetZStore(2);
 
-	if ((ARMode = _AErrRecs)) WrStr("var noErrRecs:real;\r\n");
+	if ((ARMode == _AErrRecs)) WrStr("var noErrRecs:real;\r\n");
 	WrStr("#I1_");
 	WrStr(CFile->Name);
 	if (RO->SK != nullptr) WrChar('!');
