@@ -26,7 +26,7 @@ bool Insert, Indent, Wrap, Just;
 
 // PROMENNE
 bool InsPage;
-typedef pstring ColorOrd;
+typedef std::string ColorOrd;
 
 struct Character {
 	char ch = 0;
@@ -79,7 +79,10 @@ const WORD _OR_ = 0x0F12; const WORD _OJ_ = 0x0F0A; const WORD _OC_ = 0x0F03;
 const WORD _KF_ = 0x0B06;
 
 const BYTE CountC = 7;
-pstring CtrlKey = "\x13\x17\x11\x04\x02\x05\x01";
+
+///  { ^s - underline, ^w - italic, ^q - expanded, ^d - double, ^b - bold, ^e - compressed, ^a - ELITE }
+std::string CtrlKey = "\x13\x17\x11\x04\x02\x05\x01";
+
 const bool ColBlock = true;
 const bool TextBlock = false;
 
@@ -290,14 +293,17 @@ WORD FindCtrl(WORD F, WORD L)
 
 void SetColorOrd(ColorOrd CO, WORD First, WORD Last)
 {
-	WORD I, pp;
 	BYTE* len = (BYTE*)&CO;
-	I = FindCtrl(First, Last);
+	WORD I = FindCtrl(First, Last);
 	while (I < Last)
 	{
-		pp = CO.first(T[I]);
-		if (pp > 0) CO = CO.substr(1, pp - 1) + CO.substr(pp + 1, *len - pp);
-		else  CO = CO + T[I];
+		size_t pp = CO.find(T[I]);
+		if (pp != std::string::npos) {
+			CO = CO.substr(0, pp - 1) + CO.substr(pp, *len - pp);
+		}
+		else {
+			CO = CO + T[I];
+		}
 		I = FindCtrl(I + 1, Last);
 	}
 }
@@ -701,9 +707,10 @@ bool LineBndBlock(int Ln)
 
 BYTE Color(ColorOrd CO)
 {
-	BYTE* len = (BYTE*)&CO;
-	if (CO == "") return TxtColor;
-	return ColKey[CtrlKey.first(CO[*len])];
+	if (CO.length() == 0) return TxtColor;
+	const char lastColor = CO[CO.length() - 1];
+	const size_t indexOfKey = CtrlKey.find(lastColor);
+	return ColKey[indexOfKey + 1];
 }
 
 void EditWrline(char* P, int Row)
@@ -758,7 +765,7 @@ void EditWrline(char* P, int Row)
 		for (I = BPos; I <= LP; I++) {
 			if ((unsigned char)P[I] < 32) {
 				if (I < 0 || I > 254) throw std::exception("Index");
-				BuffLine[I] = ((P[I] + 64) & 0x00FF) + (ColKey[CtrlKey.first(P[I])] << 8);
+				BuffLine[I] = ((P[I] + 64) & 0x00FF) + (ColKey[CtrlKey.find(P[I])] << 8);
 			}
 		}
 	}
@@ -766,31 +773,29 @@ void EditWrline(char* P, int Row)
 	screen.ScrWrBuf(WindMin.X - 1, WindMin.Y + Row - 2, &BuffLine[BPos], LineS);
 }
 
-void ScrollWrline(char* P, int Row, ColorOrd CO)
+void ScrollWrline(char* P, int Row, ColorOrd& CO)
 {
-	//pstring GrafCtrl(15);
-	BYTE* len = (BYTE*)&CO;
-	std::string GrafCtrl = "\x03\x06\x09\x11\x15\x16\x18\x21\x22\x24\x25\x26\x29\x30\x31";
-	WORD BuffLine[255];
-	integer I = 0, J = 0, LP = 0, pp = 0;
-	integer Newvalue = 0;
-	// Nv : array [1..2] of byte absolute Newvalue;
-	BYTE* Nv = (BYTE*)&Newvalue;
-	bool IsCtrl = false;
-	BYTE Col = 0;
+	std::set<char> GrafCtrl = { 3,6,9,11,15,16,18,21,22,24,25,26,29,30,31 };
+	BYTE len = 15; // GrafCtrl has 15 members
+	
+	WORD BuffLine[255]{ 0 };
+	BYTE nv1;
+	BYTE nv2;
 
-	Col = Color(CO);
-	Nv[2] = Col;
-	I = 1; J = 1;
+	bool IsCtrl = false;
+	BYTE Col = Color(CO);
+	nv2 = Col;
+	
+	integer I = 0; integer J = 0;
 	char cc = P[I];
 	while (cc != _CR && I <= LineSize && !InsPage) {
-		if ((cc >= 32) || (GrafCtrl.find(cc) != std::string::npos)) {
-			Nv[1] = cc;
-			BuffLine[J] = Newvalue;
+		if (((unsigned char)cc >= 32) || (GrafCtrl.count(cc) > 0)) {
+			nv1 = cc;
+			BuffLine[J] = (nv2 << 8) + nv1;
 			J++;
 		}
 		else {
-			if (CtrlKey.first(cc) > 0) IsCtrl = true;
+			if (CtrlKey.find(cc) != std::string::npos) IsCtrl = true;
 			else {
 				if (bScroll && (cc == 0x0C)) { InsPage = InsPg; I++; }
 			}
@@ -799,27 +804,36 @@ void ScrollWrline(char* P, int Row, ColorOrd CO)
 		cc = P[I];
 	}
 
-	LP = I - 1;
-	Nv[1] = 32;
+	integer LP = I - 1;   // index of last character (before CR)
+	nv1 = ' ';
 
-	while (J <= BCol + LineS) { BuffLine[J] = Newvalue; J++; }
+	while (J < BCol + LineS) {
+		BuffLine[J] = (nv2 << 8) + nv1;
+		J++;
+	}
 	if (IsCtrl) {
-		I = 1; J = 1;
+		I = 0; J = 0;
 		while (I <= LP) {
 			cc = P[I];
-			if ((cc >= 32) || (GrafCtrl.find(cc)) != std::string::npos)
-			{
+			if (((unsigned char)cc >= 32) || (GrafCtrl.count(cc) > 0)) {
 				BuffLine[J] = (BuffLine[J] & 0x00FF) + (Col << 8);
 				J++;
 			}
-			else if (CtrlKey.first(cc) > 0)
-			{
-				pp = CO.first(cc);
-				if (pp > 0) CO = CO.substr(1, pp - 1) + CO.substr(pp + 1, *len - pp);
-				else CO = CO + cc;
+			else if (CtrlKey.find(cc) != std::string::npos) {
+				size_t pp = CO.find(cc);
+				if (pp != std::string::npos) {
+					// TODO: nevim, jak to ma presne fungovat
+					// original: if pp>0 then CO:=copy(CO,1,pp-1)+copy(CO,pp+1,len-pp)
+					CO = CO.substr(0, pp) + CO.substr(pp + 1, len - pp + 1);
+				}
+				else {
+					CO += cc;
+				}
 				Col = Color(CO);
 			}
-			else if (cc == 0x0C) BuffLine[J] = 219 + (Col << 8);
+			else if (cc == 0x0C) {
+				BuffLine[J] = 219 + (Col << 8);
+			}
 			I++;
 		}
 		while (J <= BCol + LineS) {
@@ -827,7 +841,8 @@ void ScrollWrline(char* P, int Row, ColorOrd CO)
 			J++;
 		}
 	}
-	screen.ScrWrBuf(WindMin.X, WindMin.Y + Row - 1, &BuffLine[BCol + 1], LineS);
+	// both 'WindMin.Y' and 'Row' are counted from 1 -> that's why -2 
+	screen.ScrWrBuf(WindMin.X - 1, WindMin.Y + Row - 2, &BuffLine[BCol], LineS);
 }
 
 WORD PColumn(WORD w, char* P)
@@ -1148,7 +1163,7 @@ label1:
 		}
 		else { result = I; }
 	}
-	return result;
+	return result - 1;
 }
 
 void SetPart(longint Idx)
@@ -1220,7 +1235,7 @@ void UpdScreen()
 		if (ChangePart) DekodLine();
 		ChangeScr = false;
 
-		if (bScroll) ScrI = LineI;
+		if (bScroll) ScrI = LineI + 1;
 		else ScrI = FindLine(ScrL);
 
 		if (HelpScroll)	{
@@ -1233,7 +1248,7 @@ void UpdScreen()
 		FillChar(&PgStr[0], 255, CharPg);
 		PgStr[0] = 255;
 		co1 = ColScr;
-		r = 1;
+		r = 0;
 		while (Arr[r] == 0x0C) { r++; }
 		ScrollWrline(&Arr[r], 1, co1);
 	}
@@ -1253,7 +1268,12 @@ void UpdScreen()
 	WORD w = 1;
 	InsPage = false;
 	ColorOrd co2 = ColScr;
-	if (bScroll) { while (T[index] == 0x0C) { index++; } }
+	if (bScroll)
+	{
+		while (T[index] == 0x0C) {
+			index++;
+		}
+	}
 	do {
 		if (MyTestEvent()) return;                   // {tisk celeho okna}
 		if ((index >= LenT) && !AllRd)
@@ -2095,7 +2115,7 @@ void Format(WORD& i, longint First, longint Last, WORD Posit, bool Rep)
 			Move(&T[i], A, Posit);
 			for (ii = 1; ii < Posit - 1; i++)
 			{
-				if (CtrlKey.first(T[i]) == 0) RelPos++;
+				if (CtrlKey.find(T[i]) == std::string::npos) RelPos++;
 				if (T[i] == _CR) A[ii] = ' ';
 				else i++;
 			}
@@ -2116,7 +2136,7 @@ void Format(WORD& i, longint First, longint Last, WORD Posit, bool Rep)
 				else while (RelPos < LeftMarg)
 				{
 					Posit++;
-					if (CtrlKey.first(T[i]) == 0) RelPos++;
+					if (CtrlKey.find(T[i]) == std::string::npos) RelPos++;
 					if (T[i] != _CR) i++;
 					if (T[i] == _CR) A[Posit] = ' ';
 					else A[Posit] = T[i];
@@ -2134,18 +2154,18 @@ void Format(WORD& i, longint First, longint Last, WORD Posit, bool Rep)
 				{
 					bBool = false;
 					A[Posit] = T[i];
-					if (CtrlKey.first(A[Posit]) == 0) RelPos++;
+					if (CtrlKey.find(A[Posit]) == std::string::npos) RelPos++;
 					i++; Posit++;
 				}
 			}
 			if ((i < lst) && (T[i] != ' ') && (T[i] != _CR))
 			{
 				ii = Posit - 1;
-				if (CtrlKey.first(A[ii]) != 0) ii--;
+				if (CtrlKey.find(A[ii]) != std::string::npos) ii--;
 				rp = RelPos; RelPos--;
 				while ((A[ii] != ' ') && (ii > LeftMarg))
 				{
-					if (CtrlKey.first(A[ii]) == 0) RelPos--; ii--;
+					if (CtrlKey.find(A[ii]) == std::string::npos) RelPos--; ii--;
 				}
 				if (RelPos > LeftMarg)
 				{
