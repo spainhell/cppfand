@@ -712,8 +712,7 @@ label1:
 	TextAttr = screen.colors.pNorm | 0x80;
 	screen.GotoXY(1, 1); ClrEol(); RdMsg(MsgNr);
 	printf("%*s", (MsgLine.length() + 22) / 2, MsgLine.c_str());
-	pstring tmpStr = char(ReadKbd);
-	KbdBuffer = tmpStr + KbdBuffer;
+	keyboard.AddToFrontKeyBuf((char)ReadKbd);
 	TextAttr = screen.colors.pNorm;
 	screen.GotoXY(2, 1);
 	Txt = "";

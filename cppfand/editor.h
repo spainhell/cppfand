@@ -4,7 +4,7 @@
 #include "pstring.h"
 #include "sort.h"
 
-struct Instr;
+class Instr;
 struct EdExitD;
 class Instr_setedittxt;
 

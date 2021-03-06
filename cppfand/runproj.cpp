@@ -950,7 +950,9 @@ void EditHelpOrCat(WORD cc, WORD kind, pstring txt)
 		if (kind == 0) { i = iHelp; n = nHelp; }
 		else {
 			i = 3; n = FindHelpRecNr(FD, txt);
-			if (n == 0) KbdBuffer = txt; // TODO: tady má být KbdBuffer:=#0#60+txt
+			if (n == 0) {
+				keyboard.SetKeyBuf("\0\60" + std::string(txt)); // TODO: tady ma byt KbdBuffer:=#0#60+txt
+			}
 		}
 	}
 	else { FD = CatFD; i = iCat; n = nCat; }

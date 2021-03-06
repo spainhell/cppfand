@@ -784,14 +784,16 @@ label1:
 	BreakP = false;
 }
 
-void HeadLineProc(FrmlPtr Z)
+void HeadLineProc(FrmlElem* Z)
 {
 	UserHeadLine(RunShortStr(Z));
 }
 
-void SetKeyBufProc(FrmlPtr Z)
+void SetKeyBufProc(FrmlElem* Z)
 {
-	KbdBuffer = RunShortStr(Z);
+	//KbdBuffer = RunShortStr(Z);
+	std::string keyBuf = RunShortStr(Z);
+	keyboard.SetKeyBuf(keyBuf);
 }
 
 void SetWwViewPort()

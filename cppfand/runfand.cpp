@@ -402,7 +402,7 @@ void InitRunFand()
 	//CallOpenFandFiles = OpenFandFiles;  // TODO: CallOpenFandFiles: procedure(FromDML:boolean);
 	//CallCloseFandFiles = CloseFandFiles;  // TODO: CallCloseFandFiles: procedure(FromDML:boolean);
 	video.CursOn = 0x0607; // {if exit before reading.CFG}
-	KbdBuffer[0] = 0x0;
+	keyboard.DeleteKeyBuf(); // KbdBuffer[0] = 0x0;
 	F10SpecKey = 0;
 	if (!GetEnv("DMLADDR").empty()) {
 		printf("type 'exit' to return to FAND");

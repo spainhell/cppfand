@@ -43,7 +43,8 @@ extern BYTE KbdFlgs; // TODO: absolute $417
 
 // ******** Konstanty *********
 const bool DemoAutoRd = false; // ř. 82
-extern pstring KbdBuffer; // ř. 83
+//extern pstring KbdBuffer; // ř. 83
+extern Keyboard keyboard;
 extern BYTE LLKeyFlags; // ř. 84
 
 enum class enVideoCard { viCga = 0, viHercules = 1, viEga = 2, viVga = 3 };

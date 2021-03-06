@@ -2076,7 +2076,7 @@ LongStr* RunS(FrmlElem* Z)
 	}
 	case _keybuf: {
 		while (KeyPressed()) AddToKbdBuf(ReadKey());
-		s = KbdBuffer;
+		s = keyboard.GetKeyBufAsString(); // KbdBuffer;
 		break;
 	}
 	case _recno: {

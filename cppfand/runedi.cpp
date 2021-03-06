@@ -3501,9 +3501,11 @@ bool ShiftF7Duplicate()
 	CFile = E->FD;
 	CRecPtr = E->NewRecPtr;
 	result = true;
-	pstring oldKbdBuffer = KbdBuffer;
-	KbdBuffer = 0x0D; // ^M
-	KbdBuffer += oldKbdBuffer;
+
+	keyboard.AddToFrontKeyBuf(0x0D); // ^M .. \r .. #13
+	//pstring oldKbdBuffer = KbdBuffer;
+	//KbdBuffer = 0x0D; // ^M
+	//KbdBuffer += oldKbdBuffer;
 	return result;
 }
 
@@ -3533,9 +3535,11 @@ bool DuplToPrevEdit()
 
 	CFile = E->FD; CRecPtr = E->NewRecPtr;
 	result = true;
-	pstring oldKbdBuffer = KbdBuffer;
-	KbdBuffer = 0x0D; // ^M
-	KbdBuffer += oldKbdBuffer;
+
+	keyboard.AddToFrontKeyBuf(0x0D); // ^M .. \r .. #13
+	//pstring oldKbdBuffer = KbdBuffer;
+	//KbdBuffer = 0x0D; // ^M
+	//KbdBuffer += oldKbdBuffer;
 	return result;
 }
 
@@ -4031,9 +4035,10 @@ label81:
 			// jedna se o tisknutelny znak
 			if (CFld->Ed(IsNewRec) && ((CFld->FldD->Typ != 'T') || (_T(CFld->FldD) == 0))
 				&& LockRec(true)) {
-				pstring oldKbdBuffer = KbdBuffer;
+				keyboard.AddToFrontKeyBuf(KbdChar); // vrati znak znovu do bufferu
+				/*pstring oldKbdBuffer = KbdBuffer;
 				KbdBuffer = (char)KbdChar;
-				KbdBuffer += oldKbdBuffer;
+				KbdBuffer += oldKbdBuffer;*/
 				if (!EditItemProc(true, true, Brk)) goto label7;
 				if (Brk != 0) goto fin;
 			}

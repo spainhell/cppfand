@@ -27,8 +27,8 @@ DWORD cNumRead = 0;
 TEvent Event; // r39
 WORD KbdChar;
 BYTE KbdFlgs; // TODO: absolute $417
-pstring KbdBuffer; // ø. 83
-BYTE LLKeyFlags = 0; // ø. 84
+//pstring KbdBuffer; // r. 83
+BYTE LLKeyFlags = 0; // r. 84
 integer GraphDriver, GraphMode;
 WORD ScrSeg, ScrGrSeg;
 BYTE NrVFont, BytesPerChar;

@@ -3837,9 +3837,10 @@ bool EditText(char pMode, char pTxtType, pstring pName, pstring pErrMsg, char* p
 	if (SrchT)
 	{
 		SrchT = false;
-		pstring OldKbdBuffer = KbdBuffer;
+		keyboard.AddToFrontKeyBuf(0x0C); // '^L' .. '\f' .. #12
+		/*pstring OldKbdBuffer = KbdBuffer;
 		KbdBuffer = 0x0C;
-		KbdBuffer += OldKbdBuffer;
+		KbdBuffer += OldKbdBuffer;*/
 		KbdChar = _L_;
 		IndT = 0;
 	}

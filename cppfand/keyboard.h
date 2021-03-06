@@ -1,4 +1,6 @@
 #pragma once
+#include <queue>
+#include <string>
 #include <windows.h>
 
 const __int32 SHIFT = 0x00010000;
@@ -17,12 +19,22 @@ public:
 	size_t ActualIndex();
 	size_t FreeSpace();
 	bool Get(KEY_EVENT_RECORD& key);
+	void DeleteKeyBuf(); // erase all items in Prior Key Buffer and System Buffer
+	// methods for priority buffer
+	std::vector<KEY_EVENT_RECORD> GetKeyBuf(); // return all items form Prior Key Buffer
+	std::string GetKeyBufAsString(); // return all items form Prior Key Buffer
+	void SetKeyBuf(std::string input); // erase all items in Prior Key Buffer and new from input
+	void AddToKeyBuf(std::string input); // add items to the end of Prior Key Buffer
+	void AddToKeyBuf(char c); // add items to the end of Prior Key Buffer
+	void AddToFrontKeyBuf(std::string input); // add items to the front of Prior Key Buffer
+	void AddToFrontKeyBuf(char c); // add items to the front of Prior Key Buffer 
 	
 private:
 	HANDLE _handle;
 	PINPUT_RECORD _kbdBuf;
 	size_t _actualIndex;
 	DWORD _inBuffer;
+	std::queue<KEY_EVENT_RECORD> _priorBuffer; // used by SetKeyBuf() method
 	void _read();
 };
 
