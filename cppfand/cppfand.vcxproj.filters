@@ -45,9 +45,6 @@
     <ClCompile Include="runfrml.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="editor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="rdrun.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -237,9 +234,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="editor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="rdproc.h">

@@ -10,6 +10,7 @@
 #include "runfrml.h"
 #include "runproc.h"
 #include "runproj.h"
+#include "../Editor/editor.h"
 #include "../textfunc/textfunc.h"
 
 

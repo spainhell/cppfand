@@ -77,4 +77,4 @@ LvDescr* GetDifLevel();
 void MoveForwToRec(InpD* ID);
 void MoveFrstRecs();
 void MergeProc(std::string& text);
-bool RewriteRprt(RprtOpt* RO, WORD Pl, WORD& Times, bool& IsLPT1);
+bool RewriteRprt(RprtOpt* RO, WORD pageLimit, WORD& Times, bool& IsLPT1);

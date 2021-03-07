@@ -27,7 +27,9 @@
 #include "wwmenu.h"
 #include "wwmix.h"
 #include "runprolg.h"
+#include "sort.h"
 #include "XFile.h"
+#include "../Editor/editor.h"
 
 
 void UserHeadLine(pstring UserHeader)

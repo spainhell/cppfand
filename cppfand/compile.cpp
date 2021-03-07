@@ -1,6 +1,5 @@
 #include "compile.h"
 #include <map>
-#include "editor.h"
 #include "FieldDescr.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
@@ -10,6 +9,7 @@
 #include "runfrml.h"
 #include "TFile.h"
 #include "wwmix.h"
+#include "../Editor/editor.h"
 
 const BYTE MaxLen = 9;
 RdbPos ChptIPos; // usen in LexAnal & ProjMgr

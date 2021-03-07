@@ -1,7 +1,6 @@
 #include "obase.h"
 
 #include <set>
-#include "editor.h"
 #include "GlobalVariables.h"
 #include "obaseww.h"
 

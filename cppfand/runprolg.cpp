@@ -11,6 +11,7 @@
 #include "oaccess.h"
 #include "obaseww.h"
 #include "runproc.h"
+#include "../Editor/editor.h"
 
 TMemBlkHd* FreeMemList = nullptr;
 TMemory Mem1;

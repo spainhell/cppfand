@@ -1,6 +1,7 @@
 #pragma once
 #include "AddD.h"
-#include "editor.h"
+#include "pstring.h"
+#include "rdrun.h"
 
 extern bool HasTT;
 FieldDescr* RdFldDescr(pstring Name, bool Stored); // r25

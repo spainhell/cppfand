@@ -1,23 +1,21 @@
 #pragma once
 
 #include "editor.h"
-#include "legacy.h"
-#include "printtxt.h"
-#include "genrprt.h"
-#include "oaccess.h"
-#include "obase.h"
-#include "rdrun.h"
-#include "runedi.h"
-#include "runproc.h"
-#include "wwmenu.h"
-#include "wwmix.h"
 #include <set>
-#include "compile.h"
-#include "FileD.h"
-#include "GlobalVariables.h"
-#include "obaseww.h"
-#include "runfrml.h"
-#include "TFile.h"
+
+#include "../cppfand/compile.h"
+#include "../cppfand/FileD.h"
+#include "../cppfand/genrprt.h"
+#include "../cppfand/GlobalVariables.h"
+#include "../cppfand/oaccess.h"
+#include "../cppfand/obase.h"
+#include "../cppfand/obaseww.h"
+#include "../cppfand/printtxt.h"
+#include "../cppfand/runedi.h"
+#include "../cppfand/runproc.h"
+#include "../cppfand/wwmenu.h"
+#include "../cppfand/wwmix.h"
+#include "../cppfand/models/FrmlElem.h"
 
 const int TXTCOLS = 80;
 const int SuccLineSize = 256;
@@ -651,7 +649,7 @@ void UpdStatLine(int Row, int Col, char mode)
 {
 	char RowCol[] = "RRRRR:CCCCC";
 	char StatLine[] = "                                   ";
-	
+
 	if (!HelpScroll) {
 		longint lRow = Row + Part.LineP;
 		snprintf(RowCol, sizeof(RowCol), "%5i:%-5i", lRow, Col);
@@ -724,7 +722,7 @@ void EditWrline(char* P, int Row)
 	BYTE nv1;
 	BYTE nv2;
 	bool IsCtrl = false;
-	
+
 	WORD Line = pred(ScrL + Row);
 	if (LineInBlock(Line) && (TypeB == TextBlock)) { nv2 = BlockColor; }
 	else { nv2 = TxtColor; }
@@ -782,7 +780,7 @@ void ScrollWrline(char* P, int Row, ColorOrd& CO)
 {
 	std::set<char> GrafCtrl = { 3,6,9,11,15,16,18,21,22,24,25,26,29,30,31 };
 	BYTE len = 15; // GrafCtrl has 15 members
-	
+
 	WORD BuffLine[255]{ 0 };
 	BYTE nv1;
 	BYTE nv2;
@@ -790,7 +788,7 @@ void ScrollWrline(char* P, int Row, ColorOrd& CO)
 	bool IsCtrl = false;
 	BYTE Col = Color(CO);
 	nv2 = Col;
-	
+
 	integer I = 0; integer J = 0;
 	char cc = P[I];
 	while (cc != _CR && I <= LineSize && !InsPage) {
@@ -1243,7 +1241,7 @@ void UpdScreen()
 		if (bScroll) ScrI = LineI + 1;
 		else ScrI = FindLine(ScrL);
 
-		if (HelpScroll)	{
+		if (HelpScroll) {
 			ColScr = Part.ColorP;
 			SetColorOrd(ColScr, 1, ScrI);
 		}
@@ -1257,7 +1255,7 @@ void UpdScreen()
 		while (Arr[r] == 0x0C) { r++; }
 		ScrollWrline(&Arr[r], 1, co1);
 	}
-	else if (Mode == HelpM)	{
+	else if (Mode == HelpM) {
 		co1 = Part.ColorP;
 		SetColorOrd(co1, 1, LineI);
 		ScrollWrline(Arr, LineL - ScrL + 1, co1);
@@ -3538,14 +3536,14 @@ void HandleEvent() {
 				break;
 			}
 			case _framesingle_: {
-					Mode = SinFM; screen.CrsBig(); FrameDir = 0; break;
-				}
-			case _framedouble_:	{
-					Mode = DouFM; screen.CrsBig(); FrameDir = 0; break;
-				}
+				Mode = SinFM; screen.CrsBig(); FrameDir = 0; break;
+			}
+			case _framedouble_: {
+				Mode = DouFM; screen.CrsBig(); FrameDir = 0; break;
+			}
 			case _delframe_: {
-					Mode = DelFM; screen.CrsBig(); FrameDir = 0; break;
-				}
+				Mode = DelFM; screen.CrsBig(); FrameDir = 0; break;
+			}
 			case _F4_: {
 				W1 = ToggleCS(Arr[Posi]);
 				UpdatedL = W1 != Arr[Posi];

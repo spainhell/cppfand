@@ -7,7 +7,6 @@
 #include "../pascal/real48.h"
 #include "drivers.h"
 #include "access.h"
-#include "editor.h"
 #include "FieldDescr.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
@@ -20,6 +19,7 @@
 #include "runproj.h"
 #include "wwmenu.h"
 #include "wwmix.h"
+#include "../Editor/editor.h"
 
 
 void ScrGraphMode(bool Redraw, WORD OldScrSeg)

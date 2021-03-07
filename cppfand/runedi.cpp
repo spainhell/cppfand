@@ -1,7 +1,5 @@
 #include "runedi.h"
 
-
-
 #include "ChkD.h"
 #include "FieldDescr.h"
 #include "FileD.h"
@@ -15,9 +13,11 @@
 #include "rdfildcl.h"
 #include "runproc.h"
 #include "runproj.h"
+#include "sort.h"
 #include "wwmenu.h"
 #include "wwmix.h"
 #include "XFile.h"
+#include "../Editor/editor.h"
 #include "../Logging/Logging.h"
 #include "../textfunc/textfunc.h"
 

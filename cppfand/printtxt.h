@@ -1,6 +1,6 @@
 #pragma once
+#include "base.h"
 #include "constants.h"
-#include "editor.h"
 #include "pstring.h"
 
 extern CharArr* pBlk;

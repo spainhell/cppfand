@@ -1,8 +1,10 @@
 #pragma once
 
-#include "constants.h"
-#include "pstring.h"
-#include "sort.h"
+#include <string>
+#include "../cppfand/base.h"
+#include "../cppfand/constants.h"
+#include "../cppfand/pstring.h"
+#include "../cppfand/Rdb.h"
 
 class Instr;
 struct EdExitD;

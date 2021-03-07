@@ -8,7 +8,6 @@
 #include <WinBase.h>
 #include "../pascal/random.h"
 #include "base.h"
-#include "editor.h"
 #include "GlobalVariables.h"
 #include "legacy.h"
 #include "obaseww.h"

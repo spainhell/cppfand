@@ -946,7 +946,7 @@ void MergeProc(std::string& text)
 	}
 }
 
-bool RewriteRprt(RprtOpt* RO, WORD Pl, WORD& Times, bool& IsLPT1)
+bool RewriteRprt(RprtOpt* RO, WORD pageLimit, WORD& Times, bool& IsLPT1)
 {
 	auto result = false;
 	WasLPTCancel = false;
@@ -965,7 +965,7 @@ bool RewriteRprt(RprtOpt* RO, WORD Pl, WORD& Times, bool& IsLPT1)
 			CPath = "LPT1";
 			CVol = "";
 			IsLPT1 = true;
-			return ResetPrinter(Pl, 0, true, true) && RewriteTxt(&Rprt, false);
+			return ResetPrinter(pageLimit, 0, true, true) && RewriteTxt(&Rprt, false);
 		}
 		SetTxtPathVol(RO->Path, RO->CatIRec);
 	}
@@ -981,7 +981,7 @@ bool RewriteRprt(RprtOpt* RO, WORD Pl, WORD& Times, bool& IsLPT1)
 		printf("%s.ti %1i\n", Rprt.c_str(), Times);
 		Times = 1;
 	}
-	if (Pl != 72) printf("%s.pl %i\n", Rprt.c_str(), Pl);
+	if (pageLimit != 72) printf("%s.pl %i\n", Rprt.c_str(), pageLimit);
 	result = true;
 	return result;
 }

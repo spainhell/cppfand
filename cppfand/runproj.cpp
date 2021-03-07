@@ -27,6 +27,8 @@
 #include "XFile.h"
 #include <map>
 
+#include "../Editor/editor.h"
+
 
 void* O(void* p) // ASM
 {

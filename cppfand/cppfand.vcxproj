@@ -162,7 +162,6 @@
     <ClCompile Include="compile.cpp" />
     <ClCompile Include="cppfand.cpp" />
     <ClCompile Include="drivers.cpp" />
-    <ClCompile Include="editor.cpp" />
     <ClCompile Include="expimp.cpp" />
     <ClCompile Include="FieldDescr.cpp" />
     <ClCompile Include="FileD.cpp" />
@@ -219,7 +218,6 @@
     <ClInclude Include="compile.h" />
     <ClInclude Include="constants.h" />
     <ClInclude Include="drivers.h" />
-    <ClInclude Include="editor.h" />
     <ClInclude Include="expimp.h" />
     <ClInclude Include="fanddml.h" />
     <ClInclude Include="FieldDescr.h" />
@@ -277,6 +275,9 @@
   <ItemGroup>
     <ProjectReference Include="..\datafiles\datafiles.vcxproj">
       <Project>{4175a73a-df08-4f11-b715-cbe5408af874}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\Editor\Editor.vcxproj">
+      <Project>{a08457d5-2848-4fb1-ae40-ec55ef69b5da}</Project>
     </ProjectReference>
     <ProjectReference Include="..\exprcmp\exprcmp.vcxproj">
       <Project>{f5de7ca0-3e83-42c1-9602-54cfea2e5378}</Project>

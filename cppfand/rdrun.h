@@ -1,7 +1,6 @@
 #pragma once
 #include "access.h"
 #include "AddD.h"
-#include "editor.h"
 #include "legacy.h"
 #include "models/FrmlElem.h"
 #include "XScan.h"
