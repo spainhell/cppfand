@@ -641,7 +641,7 @@ label1:
 	case 2: { SelectRunRdb(true); IsTestRun = false; break; }
 	case 3: { IsInstallRun = true; CallInstallRdb(); IsInstallRun = false; break; }
 	case 4: SelectEditTxt(".TXT", true); break;
-		//case 5: OSshell("", "", false, true, true, true); break;
+	//case 5: OSshell("", "", false, true, true, true); break;
 	case 5: OpenFileDialog(); break;
 	case 0:
 	case 6: { CloseH(&WorkHandle); CloseFANDFiles(false); return; break; }

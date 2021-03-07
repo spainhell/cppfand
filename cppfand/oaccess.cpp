@@ -142,8 +142,7 @@ bool OpenF1(FileUseMode UM)
 	CFile->LMode = NullMode;
 	SetCPathMountVolSetNet(UM);
 	b = (CFile == Chpt) || (CFile == CatFD);
-	if (b && (IsTestRun || IsInstallRun)
-		&& ((GetFileAttr() & 1/*RdOnly*/) != 0)) {
+	if (b && (IsTestRun || IsInstallRun) && ((GetFileAttr() & 1/*RdOnly*/) != 0)) {
 		SetFileAttr(GetFileAttr() & 0x26);
 		if (HandleError == 5) HandleError = 79;
 		TestCFileError();
@@ -230,7 +229,7 @@ bool OpenF2()
 		else {
 			if (OldToNewCat(FS)) goto label3;
 			CFileMsg(883, ' ');
-			l = longint(CFile->NRecs) * rLen + CFile->FrstDispl;
+			l = (longint)CFile->NRecs * rLen + CFile->FrstDispl;
 			if ((l == FS) || !PromptYN(885)) CloseGoExit();
 			if ((CFile->NRecs == 0) || (l >> CachePageShft != FS >> CachePageShft)) {
 				WrLLF10Msg(886); CFile->NRecs = n;

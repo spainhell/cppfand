@@ -3760,8 +3760,8 @@ void Edit(WORD SuccLineSize)
 	do {
 		if (TypeT == FileT) {
 			NullChangePart();
-			HandleEvent();
 		}
+		HandleEvent();
 		if (!(Konec || IsWrScreen)) {
 			Background();
 		}
@@ -3810,7 +3810,8 @@ bool EditText(char pMode, char pTxtType, pstring pName, pstring pErrMsg, char* p
 	TypeT = pTxtType;
 	NameT = pName;
 	ErrMsg = pErrMsg;
-	/*T = pTxtPtr;*/ MaxLenT = pMaxLen;
+	T = pTxtPtr;
+	MaxLenT = pMaxLen;
 	LenT = pLen; IndT = pInd;
 	ScrT = pScr & 0xFFFF;
 	Posi = pScr >> 16;

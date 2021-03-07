@@ -1015,6 +1015,7 @@ void CloseH(FILE** handle)
 {
 	Logging* log = Logging::getInstance();
 	DataFile* fileForClose = nullptr;
+#ifdef _DEBUG
 	// oznaci za uzavreny ve filesMap
 	for (auto& f : filesMap)
 	{
@@ -1028,6 +1029,7 @@ void CloseH(FILE** handle)
 		// soubor ve filesMap nebyl
 		log->log(loglevel::WARN, "closing file 0x%p, but file wasn't in filesMap!", *handle);
 	}
+#endif
 	if (*handle == nullptr) return;
 	// uzavre soubor
 	auto res = fclose(*handle);
@@ -1068,10 +1070,17 @@ void SetFileAttr(WORD Attr)
 
 WORD GetFileAttr()
 {
-	// získá atributy souboru/adresáøe
+	// ziska atributy souboru / adresare
 	auto result = GetFileAttributesA(CPath.c_str());
-	if (result == INVALID_FILE_ATTRIBUTES) HandleError = GetLastError();
-	return result;
+	if (result == INVALID_FILE_ATTRIBUTES) {
+		HandleError = GetLastError();
+		return 0;
+	}
+	else
+	{
+		HandleError = 0;
+		return result;
+	}
 }
 
 //CachePage* Cache(FILE* Handle, longint Page)

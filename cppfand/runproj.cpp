@@ -1115,7 +1115,7 @@ label2:
 	if (OpenF(um)) {
 		if (ChptTF->CompileAll) ResetRdOnly();
 		else if (!top && oldChptTF != nullptr && (ChptTF->TimeStmp < oldChptTF->TimeStmp)) {
-			// TODO: oldChptTF != nullptr je v podmínce navíc, protože další podmínka vždy vyhoøela 
+			// TODO: oldChptTF != nullptr je v podmince navic, protoze dalsi podminka vzdy vyhorela 
 			ResetRdOnly(); 
 			SetCompileAll();
 		}
