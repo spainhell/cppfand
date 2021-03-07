@@ -749,6 +749,6 @@ bool wwmix::HasPassWord(FileD* FD, WORD Nr, pstring Pw)
 	}
 	return false;*/
 	pstring tmp(*X, 20);
-	return Pw == TrailChar('@', tmp);
+	return Pw == OldTrailChar('@', tmp);
 }
 

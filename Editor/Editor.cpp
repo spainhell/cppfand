@@ -16,6 +16,7 @@
 #include "../cppfand/wwmenu.h"
 #include "../cppfand/wwmix.h"
 #include "../cppfand/models/FrmlElem.h"
+#include "../textfunc/textfunc.h"
 
 const int TXTCOLS = 80;
 const int SuccLineSize = 256;
@@ -2250,7 +2251,7 @@ label1:
 	switch (FTyp) {
 	case 'R': {
 		R = RunReal(Z); str(R, 30, 10, Txt);
-		Txt = LeadChar(' ', TrailChar('0', Txt));
+		Txt = LeadChar(' ', TrailChar(Txt, '0'));
 		if (Txt[Txt.length()] == '.') Txt[0]--;
 		break;
 	}

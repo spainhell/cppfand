@@ -118,27 +118,6 @@ pstring LeadChar(char C, pstring S)
 	return S;
 }
 
-/// funkce má asi oøíznout všechny C na konci øetìzce?
-pstring TrailChar(char C, pstring S)
-{
-	while ((S.length() > 0) && (S[S.length()] == C))
-	{
-		S[S.length()] = '\0';
-		S[0] -= 1;
-	}
-	return S;
-}
-
-std::string TrailChar(char C, std::string s)
-{
-	size_t newLength = s.length();
-	for (size_t i = s.length(); i >= 1; i--) {
-		if (s[i - 1] == C) newLength--;
-		else break;
-	}
-	return s.substr(0, newLength);
-}
-
 double RunRealStr(FrmlElem* X)
 {
 	WORD N;
@@ -156,8 +135,8 @@ double RunRealStr(FrmlElem* X)
 	case _val: {
 		auto iX = (FrmlElem6*)X;
 		auto valS = RunShortStr(iX->PP1);
-		valS = TrailChar(' ', valS);
-		valS = LeadChar(' ', valS);
+		valS = TrailChar(valS, ' ');
+		valS = LeadChar(valS, ' ');
 		integer i;
 		result = valDouble(valS, i);
 		break;
@@ -503,7 +482,7 @@ LocVar* RunUserFunc(FrmlElem19* X)
 	//size_t i = 0;
 	LocVar* lv = nullptr; // tady je pak ulozena posledni promenna, ktera je pak navratovou hodnotou
 	auto itr = X->FC->LVB.vLocVar.begin();
-	auto fl = X->FrmlL;
+	FrmlListEl* fl = X->FrmlL;
 	while (itr != X->FC->LVB.vLocVar.end()) {
 		if ((*itr)->IsPar || (*itr)->IsRetPar) {
 			LVAssignFrml(*itr, nullptr, false, fl->Frml);
@@ -1613,7 +1592,7 @@ label1:
 	}
 	case _userfunc: {
 		LocVar* lv = RunUserFunc((FrmlElem19*)X);
-		auto ls = new LongStr(lv->orig_S_length);
+		auto ls = new LongStr(lv->S.length());
 		ls->LL = lv->S.length();
 		memcpy(ls->A, lv->S.c_str(), lv->S.length());
 		result = ls;

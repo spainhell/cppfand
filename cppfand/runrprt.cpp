@@ -14,6 +14,7 @@
 #include "runfrml.h"
 #include "runmerg.h"
 #include "wwmix.h"
+#include "../textfunc/textfunc.h"
 
 WORD PrintDH;
 YRec Y;
@@ -55,7 +56,7 @@ void RunReport(RprtOpt* RO)
 	else PgeSize = spec.AutoRprtLimit + spec.CpLines;
 	if (PgeSize < 2) PgeSize = 2;
 	if ((PgeLimit > PgeSize) || (PgeLimit == 0)) PgeLimit = PgeSize - 1;
-	if (!RewriteRprt(RO, PgeSize, Times, isLPT1)) return;
+	if (!RewriteRprt(RO, PgeSize, Times, isLPT1)) return;  // pouze zajisti otevreni souboru
 	MarkStore2(Store2Ptr);
 	ex = true;
 	PushProcStk();
@@ -226,25 +227,32 @@ void WriteNBlks(std::string& text, integer N)
 	}
 }
 
-std::string NewTxtCol(LongStr* S, WORD Col, WORD Width, bool Wrap)
+/// <summary>
+/// Vlozi text na dany radek na dane misto o max. definovane delce
+/// </summary>
+/// <param name="S">Vstupni text</param>
+/// <param name="Col">Pozice, kam text vlozit</param>
+/// <param name="Width">Delka textu</param>
+/// <param name="Wrap">IDK</param>
+/// <returns></returns>
+std::string NewTxtCol(std::string S, WORD Col, WORD Width, bool Wrap)
 {
-	char* TA = nullptr;
-	WORD i = 0, LL = 0, Ln = 0;
+	WORD i = 0, Ln = 0;
 	TTD* TD = nullptr;
 	std::string ss;
 	StringListEl* SL = nullptr;
-	LL = S->LL;
-	TA = S->A;
+
 	Ln = 0;
 	bool Absatz = true;
-	if (Wrap) for (i = 1; i <= LL; i++)
-		if ((TA[i] == 0x0D) && ((i == LL) || (TA[i + 1] != 0x0A))) TA[i] = ' ';
+	if (Wrap) for (i = 0; i < S.length(); i++) {
+		if ((S[i] == 0x0D) && ((i == S.length()) || (S[i + 1] != 0x0A))) S[i] = ' ';
+	}
 
-	ss = GetLine(TA, LL, Width, Wrap, Absatz);
+	ss = GetLine(S, Width, Wrap, Absatz);
 	//printf("%s%s", Rprt.c_str(), ss.c_str());
 
-	while (LL > 0) {
-		ss = GetLine(TA, LL, Width, Wrap, Absatz);
+	while (S.length() > 0) {
+		ss = GetLine(S, Width, Wrap, Absatz);
 		Ln++;
 		if (Ln == 1) {
 			TD = new TTD(); // (TTD*)GetStore2(sizeof(*TD));
@@ -266,7 +274,15 @@ std::string NewTxtCol(LongStr* S, WORD Col, WORD Width, bool Wrap)
 	return ss;
 }
 
-pstring GetLine(char* TA, WORD& TLen, WORD Width, bool Wrap, bool& Absatz)
+/// <summary>
+/// 
+/// </summary>
+/// <param name="S"></param>
+/// <param name="Width"></param>
+/// <param name="Wrap"></param>
+/// <param name="paragraph">odstavec (v originale Absatz)</param>
+/// <returns></returns>
+std::string GetLine(std::string& S, WORD Width, bool Wrap, bool& paragraph)
 {
 	WORD TAOff = 0;
 	integer j = 0, iWrdEnd = 0, i2WrdEnd = 0, wWrdEnd = 0, nWrdEnd = 0;
@@ -275,18 +291,17 @@ pstring GetLine(char* TA, WORD& TLen, WORD Width, bool Wrap, bool& Absatz)
 	char c = '\0';
 	integer i = 0; integer i2 = 0; integer w = 0;
 
-	char* T = TA;
 	bool WasWrd = false;
 	integer nWords = 0;
 	bool Fill = false;
-	while ((i < TLen) && (i2 < 255)) {
-		c = T[i];
+	while ((i < S.length()) && (i2 < 255)) {
+		c = S[i];
 		if (c == 0x0D) {
-			Absatz = true;
+			paragraph = true;
 			goto label1;
 		}
 		if ((w >= Width) && (c == ' ') && Wrap) goto label1;
-		if ((c != ' ') || WasWrd || !Wrap || Absatz) {
+		if ((c != ' ') || WasWrd || !Wrap || paragraph) {
 			i2++;
 			s[i2] = c;
 			if (!IsPrintCtrl(c)) w++;
@@ -303,7 +318,7 @@ pstring GetLine(char* TA, WORD& TLen, WORD Width, bool Wrap, bool& Absatz)
 		}
 		else if (!WasWrd) {
 			WasWrd = true;
-			Absatz = false;
+			paragraph = false;
 			nWords++;
 		}
 		i++;
@@ -315,14 +330,14 @@ label1:
 		w = wWrdEnd;
 		nWords = nWrdEnd;
 		Fill = true;
-		Absatz = false;
+		paragraph = false;
 	}
-	if ((i < TLen) && (T[TAOff + i] == 0x0D)) {
+	if ((i < S.length()) && (S[TAOff + i] == 0x0D)) {
 		i++;
-		if ((i < TLen) && (T[TAOff + i] == 0x0A)) i++;
+		if ((i < S.length()) && (S[TAOff + i] == 0x0A)) i++;
 	}
 	TAOff += i;
-	TLen -= i;
+	S = S.erase(0, i); // TLen -= i;
 	integer l2 = i2;
 	if (w < Width) l2 += (Width - w);
 	integer n = l2 - i2;
@@ -595,11 +610,9 @@ label1:
 				else
 					switch (RF->FrmlTyp) {
 					case 'S': {
-						S = RunLongStr(RF->Frml);
-						while ((S->LL > 0) && (S->A[S->LL - 1] == ' ')) S->LL--;
-						auto sText = NewTxtCol(S, M, L, RF->BlankOrWrap);
-						text += sText;
-						ReleaseStore(S);
+						std::string S = RunStdStr(RF->Frml);
+						S = TrailChar(S, ' ');
+						text += NewTxtCol(S, M, L, RF->BlankOrWrap);
 						break;
 					}
 					case 'B':

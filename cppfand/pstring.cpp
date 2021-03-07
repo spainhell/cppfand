@@ -263,3 +263,12 @@ void pstring::Append(unsigned char c)
 	arr[0] = newLen;
 }
 
+pstring OldTrailChar(char C, pstring S)
+{
+	while ((S.length() > 0) && (S[S.length()] == C))
+	{
+		S[S.length()] = '\0';
+		S[0] -= 1;
+	}
+	return S;
+}

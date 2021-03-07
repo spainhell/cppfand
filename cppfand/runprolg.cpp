@@ -3944,7 +3944,7 @@ label1:
 std::string _MyS(FieldDescr* F)
 {
 	if (F->Typ == 'A') {
-		if (F->M == LeftJust) return TrailChar(' ', _ShortS(F));
+		if (F->M == LeftJust) return OldTrailChar(' ', _ShortS(F));
 		else return LeadChar(' ', _ShortS(F));
 	}
 	return _ShortS(F);

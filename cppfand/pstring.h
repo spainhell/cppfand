@@ -48,3 +48,4 @@ private:
     unsigned char* arr;
 };
 
+pstring OldTrailChar(char C, pstring S);

@@ -10,6 +10,7 @@
 #include "TFile.h"
 #include "wwmix.h"
 #include "../Editor/editor.h"
+#include "../textfunc/textfunc.h"
 
 const BYTE MaxLen = 9;
 RdbPos ChptIPos; // usen in LexAnal & ProjMgr
@@ -1060,7 +1061,7 @@ bool FindChpt(char Typ, const pstring& name, bool local, RdbPos* RP)
 		for (WORD i = 1; i <= CFile->NRecs; i++) {
 			ReadRec(CFile, i, CRecPtr);
 			pstring chapterType = _ShortS(ChptTyp);
-			pstring chapterName = TrailChar(' ', _ShortS(ChptName));
+			pstring chapterName = OldTrailChar(' ', _ShortS(ChptName));
 
 			//if ((_ShortS(ChptTyp) == Typ)
 				//&& SEquUpcase(TrailChar(' ', _ShortS(ChptName)), name))
@@ -1564,7 +1565,7 @@ WORD RdTilde()
 void RdInConst(FrmlElemIn* Z, char& FTyp, std::string& str, double& R)
 {
 	if (FTyp == 'S') {
-		if (Z->param1 == 1/*tilde*/) str = TrailChar(' ', LexWord);
+		if (Z->param1 == 1/*tilde*/) str = OldTrailChar(' ', LexWord);
 		else str = LexWord;
 		Accept(_quotedstr);
 	}

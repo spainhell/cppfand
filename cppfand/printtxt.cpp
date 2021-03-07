@@ -281,7 +281,7 @@ void PrintStr(pstring s)
 void GetNum(WORD& NN)
 {
 	WORD i = 0, n = 0;
-	val(LeadChar(' ', TrailChar(' ', copy(Ln, 4, 255))), n, i);
+	val(LeadChar(' ', OldTrailChar(' ', copy(Ln, 4, 255))), n, i);
 	if (i == 0) NN = n;
 }
 

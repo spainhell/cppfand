@@ -410,7 +410,7 @@ label2:
 	switch (F->Typ) {
 	case 'F':
 	case 'R': {
-		T = LeadChar(' ', TrailChar(' ', Txt));
+		T = LeadChar(' ', TrailChar(Txt, ' '));
 		WORD I = T.first(',');
 		if (I > 0) { T = copy(T, 1, I - 1) + "." + copy(T, I + 1, 255); }
 		if (T.length() == 0) r = 0.0;
@@ -459,11 +459,11 @@ label2:
 		break;
 	}
 	case 'D': {
-		T = LeadChar(' ', TrailChar(' ', Txt));
+		T = LeadChar(' ', TrailChar(Txt, ' '));
 		if (T == "") r = 0;
 		else {
 			r = ValDate(T, *Mask);
-			if ((r == 0.0) && (T != LeadChar(' ', TrailChar(' ', StrDate(r, *Mask)))))
+			if ((r == 0.0) && (T != LeadChar(' ', OldTrailChar(' ', StrDate(r, *Mask)))))
 			{
 				SetMsgPar(*Mask);
 				WrLLF10Msg(618);
@@ -2989,17 +2989,18 @@ label4:
 
 bool GetChpt(pstring Heslo, longint& NN)
 {
-	longint j; pstring s(12); integer i;
+	pstring s(12);
 	auto result = true;
-	for (j = 1; j < CFile->NRecs; j++) {
+	for (longint j = 1; j <= CFile->NRecs; j++) {
 		ReadRec(CFile, j, CRecPtr);
 		if (IsCurrChpt()) {
-			s = TrailChar(' ', _ShortS(ChptName)); i = s.first('.');
+			s = OldTrailChar(' ', _ShortS(ChptName));
+			integer i = s.first('.');
 			if (i > 0) s.Delete(i, 255);
 			if (SEquUpcase(Heslo, s)) goto label1;
 		}
 		else {
-			s = TrailChar(' ', _ShortS(CFile->FldD.front()));
+			s = OldTrailChar(' ', _ShortS(CFile->FldD.front()));
 			ConvToNoDiakr((WORD*)s[1], s.length(), fonts.VFont);
 			if (EqualsMask(&Heslo[1], Heslo.length(), s))
 				label1:
@@ -3590,7 +3591,7 @@ label1:
 	switch (FTyp) {
 	case 'R': {
 		R = RunReal(Z); str(R, 30, 10, Txt);
-		Txt = LeadChar(' ', TrailChar('0', Txt));
+		Txt = LeadChar(' ', TrailChar(Txt, '0'));
 		if (Txt[Txt.length()] == '.') Txt[0]--;
 		break; }
 	case 'S': Txt = RunShortStr(Z); break;  /* wie RdMode fuer T ??*/

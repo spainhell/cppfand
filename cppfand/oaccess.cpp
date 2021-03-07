@@ -586,8 +586,8 @@ label1:
 	for (i = 1; i <= CatFD->NRecs; i++)
 	{
 		ReadRec(CFile, i, CRecPtr);
-		if (SEquUpcase(TrailChar(' ', _ShortS(CatRdbName)), R->FD->Name) &&
-			SEquUpcase(TrailChar(' ', _ShortS(CatFileName)), Name))
+		if (SEquUpcase(OldTrailChar(' ', _ShortS(CatRdbName)), R->FD->Name) &&
+			SEquUpcase(OldTrailChar(' ', _ShortS(CatFileName)), Name))
 		{
 			result = i; goto label2;
 		}
@@ -640,7 +640,7 @@ pstring RdCatField(WORD CatIRec, FieldDescr* CatF)
 	CFile = CatFD;
 	CRecPtr = GetRecSpace();
 	ReadRec(CFile, CatIRec, CRecPtr);
-	auto result = TrailChar(' ', _ShortS(CatF));
+	auto result = OldTrailChar(' ', _ShortS(CatF));
 	ReleaseStore(CRecPtr);
 	CFile = CF;
 	CRecPtr = CR;

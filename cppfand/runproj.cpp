@@ -103,7 +103,7 @@ bool NetFileTest(RdbRecVars* X)
 void GetSplitChptName(std::string* Name, pstring* Ext)
 {
 	*Ext = "";
-	*Name = TrailChar(' ', _ShortS(ChptName));
+	*Name = OldTrailChar(' ', _ShortS(ChptName));
 	WORD i = Name->find('.');
 	if (i == std::string::npos) return;
 	*Ext = Name->substr(i, 255);
@@ -914,7 +914,7 @@ WORD FindHelpRecNr(FileDPtr FD, pstring txt)
 	NmF = CFile->FldD.front();
 	TxtF = (FieldDescr*)NmF->Chain;
 	for (i = 1; i < CFile->NRecs; i++) {
-		ReadRec(CFile, i, CRecPtr); nm = TrailChar(' ', _ShortS(NmF));
+		ReadRec(CFile, i, CRecPtr); nm = OldTrailChar(' ', _ShortS(NmF));
 		ConvToNoDiakr((WORD*)nm[1], nm.length(), fonts.VFont);
 		if (EqualsMask(&txt[1], txt.length(), nm)) {
 			while ((i < CFile->NRecs) && (_T(TxtF) == 0)) { i++; ReadRec(CFile, i, CRecPtr); }
@@ -1178,7 +1178,7 @@ FileD* FindFD()
 {
 	FileD* FD = nullptr; std::string FName; std::string d;
 	std::string name; std::string ext;
-	FName = TrailChar(' ', _ShortS(ChptName));
+	FName = OldTrailChar(' ', _ShortS(ChptName));
 	FSplit(FName, d, name, ext);
 	FD = FileDRoot;
 	while (FD != nullptr) {
@@ -1611,7 +1611,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 		Verif = _B(ChptVerif);
 		STyp = _ShortS(ChptTyp);
 		Typ = STyp[1];
-		Name = TrailChar(' ', _ShortS(ChptName));
+		Name = OldTrailChar(' ', _ShortS(ChptName));
 		Txt = _T(ChptTxt);
 		if (Verif && ((ChptTF->LicenseNr != 0) || Encryp || (Chpt->UMode == RdOnly))) GoCompileErr(I, 647);
 		if (Verif || ChptTF->CompileAll || FromCtrlF10 || (Typ == 'U') ||
@@ -1628,7 +1628,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 				if (!(Typ == ' ' || Typ == 'D' || Typ == 'U')) { /* dupclicate name checking */
 					for (J = 1; J < I - 1; J++) {
 						ReadRec(CFile, J, CRecPtr);
-						if ((STyp == _ShortS(ChptTyp)) && SEquUpcase(Name, TrailChar(' ', _ShortS(ChptName)))) GoCompileErr(I, 649);
+						if ((STyp == _ShortS(ChptTyp)) && SEquUpcase(Name, OldTrailChar(' ', _ShortS(ChptName)))) GoCompileErr(I, 649);
 					}
 					ReadRec(CFile, I, CRecPtr);
 				}

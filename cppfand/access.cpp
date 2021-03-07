@@ -15,8 +15,8 @@
 #include "TFile.h"
 #include "XFile.h"
 #include "XKey.h"
-#include "XPage.h"
 #include "../Logging/Logging.h"
+#include "../textfunc/textfunc.h"
 
 integer CompLongStr(LongStr* S1, LongStr* S2)
 {
@@ -932,7 +932,7 @@ double _RforD(FieldDPtr F, void* P)
 			size_t i = s.find('.');
 			if (i != std::string::npos) s.erase(i, 1);
 		}
-		val(LeadChar(' ', TrailChar(' ', s)), r, err);
+		val(LeadChar(' ', TrailChar(s, ' ')), r, err);
 		break;
 	}
 	case 'D': r = ValDate(s, "YYYYMMDD"); break;

@@ -20,6 +20,7 @@
 #include "wwmenu.h"
 #include "wwmix.h"
 #include "../Editor/editor.h"
+#include "../textfunc/textfunc.h"
 
 
 void ScrGraphMode(bool Redraw, WORD OldScrSeg)
@@ -418,7 +419,7 @@ void InitRunFand()
 	FandWorkTName = s + ".T$$";
 	LANNode = 0;
 	s = GetEnv("LANNODE");
-	s = TrailChar(' ', s);
+	s = TrailChar(s, ' ');
 	if (!s.empty()) {
 		val(s, nb, err);
 #ifndef FandRunV

@@ -12,6 +12,7 @@
 #include "rdfildcl.h"
 #include "runedi.h"
 #include "runfrml.h"
+#include "../textfunc/textfunc.h"
 
 EditD* E = EditDRoot;
 
@@ -407,7 +408,8 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 			else if (!EquKFlds(E->SelKey->KFlds, E->VK->KFlds)) RunError(663);
 	}
 	if (EO->StartFieldZ != nullptr) {
-		s = TrailChar(' ', RunShortStr(EO->StartFieldZ));
+		std::string rss = RunShortStr(EO->StartFieldZ);
+		s = TrailChar(rss, ' ');
 		D = E->FirstFld;
 		while (D != nullptr) {
 			std::string tmpS = s;

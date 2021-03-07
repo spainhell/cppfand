@@ -2767,8 +2767,8 @@ Instr* RdBackup(char MTyp, bool IsBackup)
 	CRecPtr = GetRecSpace();
 	for (WORD i = 1; i <= CatFD->NRecs; i++) {
 		ReadRec(CFile, i, CRecPtr);
-		if (SEquUpcase(TrailChar(' ', _ShortS(CatRdbName)), "ARCHIVES") &&
-			SEquUpcase(TrailChar(' ', _ShortS(CatFileName)), LexWord)) {
+		if (SEquUpcase(OldTrailChar(' ', _ShortS(CatRdbName)), "ARCHIVES") &&
+			SEquUpcase(OldTrailChar(' ', _ShortS(CatFileName)), LexWord)) {
 			RdLex(); PD->BrCatIRec = i; ReleaseStore(CRecPtr);
 			CFile = cf; CRecPtr = cr;
 			goto label1;
