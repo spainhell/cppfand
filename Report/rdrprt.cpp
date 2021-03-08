@@ -642,11 +642,14 @@ label1:
 
 void RdBlock(BlkD** BB)
 {
+	// metoda pouzivala metodu StoreCh, ta byla nahrazena promennou storedCh, ktera slouzi k ukladani nactenych dat
+	
+	std::string storedCh; // pridano pro zprovozneni StoreCh(char, &integer)
+		
 	BYTE rep[256]{ 0 };
 	size_t offset = 0;
 	
 	integer LineLen = 0;
-	integer NBytesStored = 0;
 	BYTE* LnL = nullptr;
 	WORD* StrL = nullptr;
 	integer I = 0, N = 0, L = 0, M = 0;
@@ -733,7 +736,7 @@ label3:
 	//StrL = (WORD*)GetZStore(2);
 	StrL = new WORD;
 	LineLen = 0;
-	NBytesStored = 0;
+	storedCh = "";
 	if (CBlk->NTxtLines == 0) {
 		CBlk->Txt = (char*)(LnL);
 		while (ForwChar == ' ') RdCh(LineLen);
@@ -745,7 +748,7 @@ label3:
 		case '@':
 		case 0x10: {
 			UC = ForwChar;
-			StoreCh(0xFF, NBytesStored);
+			storedCh += static_cast<char>(0xFF);
 			rep[offset++] = 0xFF;
 			if (RF == nullptr) {
 				RF = CBlk->RFD;
@@ -766,9 +769,9 @@ label3:
 				if (RF->FrmlTyp != 'R') Error(12);
 				M = NUnderscores(UC, LineLen);
 				L = L + M + 1;
-				StoreCh((char)L, NBytesStored);
+				storedCh += static_cast<char>(L);
 				rep[offset++] = L;
-				StoreCh((char)M, NBytesStored);
+				storedCh += static_cast<char>(M);
 				rep[offset++] = M;
 				TestSetRFTyp('F', RepeatedGrp, RF);
 				break;
@@ -787,9 +790,9 @@ label3:
 				}
 				else {
 					L = L + M + 1;
-					StoreCh((char)L, NBytesStored);
+					storedCh += static_cast<char>(L);
 					rep[offset++] = L;
-					StoreCh((char)M, NBytesStored);
+					storedCh += static_cast<char>(M);
 					rep[offset++] = M;
 					TestSetRFTyp('R', RepeatedGrp, RF);
 				}
@@ -813,20 +816,20 @@ label3:
 						M = 9;
 					}
 				}
-				StoreCh((char)L, NBytesStored);
+				storedCh += static_cast<char>(L);
 				rep[offset++] = L;
-				StoreCh((char)M, NBytesStored);
+				storedCh += static_cast<char>(M);
 				rep[offset++] = M;
 				TestSetRFTyp('T', RepeatedGrp, RF);
 				break;
 			}
 			default: {
-				StoreCh(char(L), NBytesStored);
+				storedCh += (char)L;
 				rep[offset++] = L;
 				TestSetRFTyp(RF->FrmlTyp, RepeatedGrp, RF);
 				M = 0;
 				if (RF->Typ == 'S') M = LineLen - L + 1; /*current column*/
-				StoreCh((char)M, NBytesStored);
+				storedCh += static_cast<char>(M);
 				rep[offset++] = M;
 				break;
 			}
@@ -838,7 +841,7 @@ label3:
 		}
 		case '\\': {
 			CBlk->FF2 = true;
-			EndString(CBlk, rep, LineLen, NBytesStored, LnL, StrL);
+			EndString(CBlk, rep, LineLen, storedCh.length(), LnL, StrL);
 			offset = 0;
 			ReadChar();
 			goto label4;
@@ -852,18 +855,18 @@ label3:
 		}
 		default: {
 			if (ForwChar == 0xff) {
-				StoreCh(' ', NBytesStored);
+				storedCh += ' ';
 				rep[offset++] = ' ';
 			}
 			else {
-				StoreCh(ForwChar, NBytesStored);
+				storedCh += ForwChar;
 				rep[offset++] = ForwChar;
 			}
 			RdCh(LineLen);
 			break;
 		}
 		}
-	EndString(CBlk, rep, LineLen, NBytesStored, LnL, StrL);
+	EndString(CBlk, rep, LineLen, storedCh.length(), LnL, StrL);
 	offset = 0;
 	SkipBlank(true);
 	if (ForwChar != 0x1A) goto label3;
@@ -875,6 +878,9 @@ label4:
 	}
 	if (RF != nullptr) Error(30);
 	RdLex();
+
+	// TODO: co bude se storedCh? ulozi se nekam?
+	// vypada to, ze v EndString se se vstupem pracuje, string je mozna zbytecny
 }
 
 void RdCh(integer& LineLen)
@@ -883,18 +889,10 @@ void RdCh(integer& LineLen)
 	ReadChar();
 }
 
-void StoreCh(BYTE C, integer& NBytesStored)
-{
-	char* P = new char();
-	//P = (char*)GetStore(1); 
-	*P = C;
-	NBytesStored++;
-}
-
 integer NUnderscores(char C, integer& LineLen)
 {
 	integer N = 0;
-	while (ForwChar == C) {
+	while (ForwChar == static_cast<BYTE>(C)) {
 		N++;
 		RdCh(LineLen);
 	}

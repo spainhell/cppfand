@@ -34,7 +34,7 @@ void RdAutoSortSK(InpD* ID);
 LvDescr* NewLvS(LvDescr* L, InpD* ID);
 void RdBlock(BlkD** BB);
 void RdCh(integer& LineLen);
-void StoreCh(BYTE C, integer& NBytesStored);
+//void StoreCh(BYTE C, integer& NBytesStored);
 integer NUnderscores(char C, integer& LineLen);
 void EndString(BlkD* block, BYTE* buffer, integer LineLen, integer NBytesStored, BYTE* LnL, WORD* StrL);
 void TestSetRFTyp(char Typ, bool RepeatedGrp, RFldD* RF);
