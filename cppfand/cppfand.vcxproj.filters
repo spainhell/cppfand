@@ -60,22 +60,13 @@
     <ClCompile Include="runproc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="runedi.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="runproj.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="sort.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="runrprt.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="runmerg.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="rdrprt.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="rdmerg.cpp">
@@ -84,16 +75,10 @@
     <ClCompile Include="rdfildcl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="rdedit.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="printtxt.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="obase.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="genrprt.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="compile.cpp">
@@ -206,9 +191,6 @@
     <ClInclude Include="rdrun.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="runedi.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="runfrml.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -245,22 +227,10 @@
     <ClInclude Include="printtxt.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="genrprt.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="rdedit.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="runproj.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="runrprt.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="runmerg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="rdrprt.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="obase.h">

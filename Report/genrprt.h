@@ -1,5 +1,8 @@
 #pragma once
-#include "rdrun.h"
+#include "../cppfand/base.h"
+#include "../cppfand/rdrun.h"
+
+class FieldDescr;
 
 struct PFldD : public Chained
 {

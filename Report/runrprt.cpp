@@ -1,19 +1,15 @@
 #include "runrprt.h"
 
-
-
-#include "ChkD.h"
-#include "FieldDescr.h"
-#include "FileD.h"
-#include "GlobalVariables.h"
-#include "KeyFldD.h"
-#include "legacy.h"
-#include "oaccess.h"
-#include "obase.h"
-#include "obaseww.h"
-#include "runfrml.h"
-#include "runmerg.h"
-#include "wwmix.h"
+#include "../cppfand/ChkD.h"
+#include "../cppfand/FieldDescr.h"
+#include "../cppfand/FileD.h"
+#include "../cppfand/GlobalVariables.h"
+#include "../cppfand/KeyFldD.h"
+#include "../cppfand/oaccess.h"
+#include "../cppfand/obase.h"
+#include "../cppfand/obaseww.h"
+#include "../cppfand/runmerg.h"
+#include "../cppfand/wwmix.h"
 #include "../textfunc/textfunc.h"
 
 WORD PrintDH;
@@ -52,8 +48,10 @@ void RunReport(RprtOpt* RO)
 	}
 	if (PgeLimitZ != nullptr) PgeLimit = RunInt(PgeLimitZ);
 	else PgeLimit = spec.AutoRprtLimit;
+	
 	if (PgeSizeZ != nullptr) PgeSize = RunInt(PgeSizeZ);
 	else PgeSize = spec.AutoRprtLimit + spec.CpLines;
+	
 	if (PgeSize < 2) PgeSize = 2;
 	if ((PgeLimit > PgeSize) || (PgeLimit == 0)) PgeLimit = PgeSize - 1;
 	if (!RewriteRprt(RO, PgeSize, Times, isLPT1)) return;  // pouze zajisti otevreni souboru

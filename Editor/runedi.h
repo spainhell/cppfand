@@ -1,8 +1,12 @@
 #pragma once
-#include "constants.h"
-#include "pstring.h"
-#include "rdrun.h"
+#include "../cppfand/constants.h"
+#include "../cppfand/pstring.h"
+#include "../cppfand/rdrun.h"
+#include "../cppfand/XString.h"
+#include "../cppfand/models/FrmlElem.h"
 
+class FieldDescr;
+struct EFldD;
 extern bool TxtEdCtrlUBrk, TxtEdCtrlF4Brk;
 extern EFldD* CFld;
 

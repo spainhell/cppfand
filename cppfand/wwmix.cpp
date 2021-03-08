@@ -1,15 +1,13 @@
 #include "wwmix.h"
 
-
-
+#include "compile.h"
 #include "FieldDescr.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
 #include "legacy.h"
 #include "obaseww.h"
-#include "rdedit.h"
-#include "runedi.h"
 #include "TFile.h"
+#include "../Editor/runedi.h"
 #include "../FileSystem/directory.h"
 
 SS ss;

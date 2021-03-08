@@ -18,11 +18,21 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="genrprt.h" />
+    <ClInclude Include="rdrprt.h" />
+    <ClInclude Include="runrprt.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="genrprt.cpp" />
+    <ClCompile Include="rdrprt.cpp" />
+    <ClCompile Include="runrprt.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{a08457d5-2848-4fb1-ae40-ec55ef69b5da}</ProjectGuid>
-    <RootNamespace>Editor</RootNamespace>
+    <ProjectGuid>{b945b1f8-eb80-4bcf-a75f-58aea36353ed}</ProjectGuid>
+    <RootNamespace>Report</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -152,16 +162,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="rdedit.cpp" />
-    <ClCompile Include="runedi.cpp" />
-    <ClCompile Include="Editor.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="rdedit.h" />
-    <ClInclude Include="runedi.h" />
-    <ClInclude Include="Editor.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

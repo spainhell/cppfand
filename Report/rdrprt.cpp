@@ -1,22 +1,20 @@
 #include "rdrprt.h"
 
-#include "compile.h"
-#include "FieldDescr.h"
-#include "FileD.h"
-#include "GlobalVariables.h"
-#include "KeyFldD.h"
-#include "legacy.h"
-#include "obase.h"
-#include "rdfildcl.h"
-#include "rdmerg.h"
-#include "runfrml.h"
+#include "../cppfand/compile.h"
+#include "../cppfand/FieldDescr.h"
+#include "../cppfand/FileD.h"
+#include "../cppfand/GlobalVariables.h"
+#include "../cppfand/KeyFldD.h"
+#include "../cppfand/obase.h"
+#include "../cppfand/rdfildcl.h"
+#include "../cppfand/rdmerg.h"
+
 
 BlkD* CBlk;
 FloatPtrList CZeroLst;
 LvDescr* LvToRd;           /*all used while translating frml*/
 bool WasIiPrefix;
 BlkD* CBlkSave;
-
 
 FileD* InpFD(WORD I)
 {
@@ -314,7 +312,8 @@ void ReadReport(RprtOpt* RO)
 
 	ResetCompilePars();
 	RdLex();
-	CBlkSave = nullptr; PgeSizeZ = nullptr; PgeLimitZ = nullptr;
+	CBlkSave = nullptr;
+	PgeSizeZ = nullptr; PgeLimitZ = nullptr;
 	FDL = nullptr;
 	if ((RO != nullptr) && (RO->FDL.FD != nullptr)) FDL = &RO->FDL;
 	ResetLVBD();
@@ -426,52 +425,52 @@ label3:
 	ChainSumEl = nullptr;
 	RdFldNameFrml = RdFldNameFrmlR;
 	WhatToRd = 'O';
-	if (s == "DE") {
+	if (s == "DE") { // detailni vystup
 		Rd_Oi();
 		RdLex();
 		WhatToRd = 'i';
 		RdBlock(&IDA[Oi]->FrstLvS->Ft);
 		goto label4;
 	}
-	if (s == "RH") {
+	if (s == "RH") { // hlavicka sestavy
 		RdLex();
 		RdBlock(&RprtHd);
 		goto label4;
 	}
-	if (s == "PH") {
+	if (s == "PH") { // hlavicka stranky
 		RdLex();
 		RdBlock(&PageHd);
 		goto label4;
 	}
-	if (s == "DH") {
+	if (s == "DH") { // hlavicka detailu
 		Rd_Oi();
 		RdLex();
 		WhatToRd = 'i';
 		RdBlock(&IDA[Oi]->FrstLvS->Hd);
 		goto label4;
 	}
-	if (s == "CH") {
+	if (s == "CH") { // hlavicka skupiny
 		Rd_Oi();
 		L = RdKeyName();
 		RdBlock(&L->Hd);
 		goto label4;
 	}
 	ChainSumEl = ChainSumElR;
-	if (s == "RF") {
+	if (s == "RF") { // paticka sestavy
 		RdLex();
 		LvToRd = LstLvM;
 		CZeroLst = LvToRd->ZeroLst;
 		RdBlock(&LvToRd->Ft);
 		goto label4;
 	}
-	if (s == "CF") {
+	if (s == "CF") { // paticka skupiny
 		Rd_Oi();
 		LvToRd = RdKeyName();
 		CZeroLst = LvToRd->ZeroLst;
 		RdBlock(&LvToRd->Ft);
 		goto label4;
 	}
-	if (s == "PF") {
+	if (s == "PF") { // paticka stranky
 		RdLex();
 		LvToRd = LstLvM;
 		CZeroLst = PFZeroLst;
@@ -480,11 +479,14 @@ label3:
 	}
 	Error(57);
 label4:
-	if (Lexem != 0x1A) { TestLex('#'); goto label3; }
+	if (Lexem != 0x1A) {
+		TestLex('#');
+		goto label3;
+	}
 
 	for (i = 1; i <= MaxIi; i++) {
 		ID = IDA[i];
-		if (ID->ErrTxtFrml != nullptr) RdChkDsFromPos(ID->Scan->FD, ID->Chk);
+		if (ID->ErrTxtFrml != nullptr) { RdChkDsFromPos(ID->Scan->FD, ID->Chk); }
 	}
 }
 

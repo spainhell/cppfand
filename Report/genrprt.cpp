@@ -1,14 +1,16 @@
 #include "genrprt.h"
 
-#include "FieldDescr.h"
-#include "FileD.h"
-#include "GlobalVariables.h"
-#include "KeyFldD.h"
-#include "rdedit.h"
 #include "rdrprt.h"
 #include "runrprt.h"
-#include "wwmenu.h"
-#include "wwmix.h"
+#include "../cppfand/compile.h"
+#include "../cppfand/FieldDescr.h"
+#include "../cppfand/FileD.h"
+#include "../cppfand/GlobalVariables.h"
+#include "../cppfand/KeyFldD.h"
+#include "../cppfand/runfrml.h"
+#include "../cppfand/wwmenu.h"
+#include "../cppfand/wwmix.h"
+
 
 PFldD* PFldDs = nullptr;
 bool KpLetter = false;
@@ -93,15 +95,17 @@ void WrStr(pstring S)
 {
 	return; // TODO
 	void* p;
-	p = GetStore(S.length()); Move(&S[1], p, S.length());
+	p = GetStore(S.length());
+	Move(&S[1], p, S.length());
 	Txt->LL += S.length();
 }
 
 void WrLevel(integer Level)
 {
-	bool first; PFldD* d; FieldDescr* f; pstring s(50); integer col, i, l, n, m;
-	bool b; pstring x;
-	b = (Level == 0) && (ARMode == _AErrRecs);
+	bool first; PFldD* d; FieldDescr* f;
+	pstring s(50); integer col, i, l, n, m;
+	pstring x;
+	bool b = (Level == 0) && (ARMode == _AErrRecs);
 	if (b) WrStr("(warning) { noErrRecs+=1},");
 	first = true; d = PFldDs;
 	while (d != nullptr) {
@@ -272,24 +276,30 @@ LongStr* GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 
 	WrStr("\r\n#DH .notsolo;\r\n");
 	if (ARMode != _ATotal) { WrStr("\r\n#DE "); WrLevel(0); }
-	for (i = 1; i < NLevels; i++) {
+	for (i = 1; i <= NLevels; i++) {
 		WrStr("\r\n#CF_"); d = PFldDs;
 		while (d != nullptr) {
 			if (d->IsCtrl && (d->Level == i)) WrStr(d->FldD->Name);
 			d = d->Chain;
 		}
-		WrChar(' '); WrLevel(i);
+		WrChar(' ');
+		WrLevel(i);
 	}
 	if ((RO->Ctrl != nullptr) || (RO->Sum != nullptr)) {
 		WrStr("\r\n#RF (sum(1)>0) "); WrLevel(NLevels + 1);
 	}
 	if (WithNRecs) {
-		WrStr("\r\n#RF "); if (ARMode == _AErrRecs) WrStr("noErrRecs,");
+		WrStr("\r\n#RF ");
+		if (ARMode == _AErrRecs) WrStr("noErrRecs,");
 		WrStr("sum(1);\r\n\r\n");
 		if (ARMode == _AErrRecs) {
-			RdMsg(18); WrStr(MsgLine); WrStr(":_____\r\n");
+			RdMsg(18);
+			WrStr(MsgLine);
+			WrStr(":_____\r\n");
 		}
-		RdMsg(20); WrStr(MsgLine); WrStr("_______");
+		RdMsg(20);
+		WrStr(MsgLine);
+		WrStr("_______");
 	}
 	return Txt;
 	/* for i = 1 to Txt->LL do write(Txt->A[i]); writeln; wait; */
@@ -316,8 +326,10 @@ bool SelForAutoRprt(RprtOpt* RO)
 	FieldListEl* FL; WORD N;
 	auto result = false;
 	if ((RO->SK == nullptr) && !PromptSortKeys(RO->Flds, RO->SK)) return result;
-	N = Menu(4, 1); if (N == 0) return result;
-	RO->Mode = AutoRprtMode(N - 1); CFile = RO->FDL.FD;
+	N = Menu(4, 1);
+	if (N == 0) return result;
+	RO->Mode = AutoRprtMode(N - 1);
+	CFile = RO->FDL.FD;
 	if (RO->Mode == _ARprt || RO->Mode == _ATotal) {
 		FL = RO->Flds;
 		while (FL != nullptr) {
@@ -340,7 +352,6 @@ bool SelForAutoRprt(RprtOpt* RO)
 LongStr* SelGenRprt(pstring RprtName)
 {
 	wwmix ww;
-
 	RdbD* r; FileD* fd; FieldDescr* f; RprtOpt* ro;
 	std::string s; size_t i;
 	FieldListEl* fl;
@@ -380,12 +391,14 @@ LongStr* SelGenRprt(pstring RprtName)
 		ww.PutSelect(s);
 		f = (FieldDescr*)f->Chain;
 	}
-	CFile = fd; ww.SelFieldList(36, true, ro->Flds);
+	CFile = fd;
+	ww.SelFieldList(36, true, ro->Flds);
 	if (ro->Flds == nullptr) return result;
 	ro->Mode = _ARprt;
 	fl = ro->Flds;
 	while (fl != nullptr) {
-		ww.PutSelect(fl->FldD->Name); fl = (FieldListEl*)fl->Chain;
+		ww.PutSelect(fl->FldD->Name);
+		fl = (FieldListEl*)fl->Chain;
 	}
 	if (!ww.SelFieldList(37, false, ro->Ctrl)) return result;
 	fl = ro->Flds;
@@ -397,4 +410,3 @@ LongStr* SelGenRprt(pstring RprtName)
 	result = GenAutoRprt(ro, false);
 	return result;
 }
-

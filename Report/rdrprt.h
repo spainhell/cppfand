@@ -1,6 +1,9 @@
 #pragma once
-#include "rdrun.h"
+#include "../cppfand/access-structs.h"
+#include "../cppfand/rdrun.h"
 
+struct LvDescr;
+struct BlkD;
 extern BlkD* CBlk;
 extern FloatPtrList CZeroLst;
 extern LvDescr* LvToRd;           /*all used while translating frml*/
@@ -8,6 +11,7 @@ extern LvDescr* LvToRd;           /*all used while translating frml*/
 //char WhatToRd; /*'i'=#XXi 'O'=#XX */
 extern bool WasIiPrefix;
 extern BlkD* CBlkSave;
+
 
 FileD* InpFD(WORD I);
 bool FindInLvBlk(LvDescr* L, BlkD* B, RFldD* RF);

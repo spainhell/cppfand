@@ -2,20 +2,22 @@
 
 #include "editor.h"
 #include <set>
+#include <stdexcept>
 
+
+#include "runedi.h"
 #include "../cppfand/compile.h"
 #include "../cppfand/FileD.h"
-#include "../cppfand/genrprt.h"
 #include "../cppfand/GlobalVariables.h"
 #include "../cppfand/oaccess.h"
 #include "../cppfand/obase.h"
 #include "../cppfand/obaseww.h"
 #include "../cppfand/printtxt.h"
-#include "../cppfand/runedi.h"
 #include "../cppfand/runproc.h"
 #include "../cppfand/wwmenu.h"
 #include "../cppfand/wwmix.h"
 #include "../cppfand/models/FrmlElem.h"
+#include "../Report/genrprt.h"
 #include "../textfunc/textfunc.h"
 
 const int TXTCOLS = 80;
@@ -4009,69 +4011,73 @@ void Help(RdbD* R, pstring Name, bool InCWw)
 	else { fd = R->HelpFD; if (fd == nullptr) return; }
 	MarkStore(p); cf = CFile; w = 0; w2 = 0;
 	//NewExit(Ovr(), er);
-	goto label4;
-	if (InCWw) {
-		c1 = WindMin.X + 1; c2 = WindMax.X + 1; r1 = WindMin.Y + 1; r2 = WindMax.Y + 1;
-		if ((c1 == 1) && (c2 == TxtCols) && (r1 == 2) && (r2 == TxtRows)) r1 = 1;
-		w = PushW(1, TxtRows, TxtCols, TxtRows);
-		w2 = PushW1(c1, r1, c2, r2, true, true);
-	}
-	else w = PushW1(1, 1, TxtCols, TxtRows, true, true);
-	i = 1; frst = true; delta = 0;
-	if (backw) { byName = false; goto label3; }
-label1:
-	byName = true;
-label2:
-	s = GetHlpText(R, Name, byName, iRec); cf2 = CFile;
-	if (s == nullptr)
-		if (frst && (R == (RdbD*)(&HelpFD)) && (KbdChar == _CtrlF1_)) {
-			KbdChar = 0; Name = "Ctrl-F1 error"; goto label1;
+	//goto label4;
+	try {
+		if (InCWw) {
+			c1 = WindMin.X + 1; c2 = WindMax.X + 1; r1 = WindMin.Y + 1; r2 = WindMax.Y + 1;
+			if ((c1 == 1) && (c2 == TxtCols) && (r1 == 2) && (r2 == TxtRows)) r1 = 1;
+			w = PushW(1, TxtRows, TxtCols, TxtRows);
+			w2 = PushW1(c1, r1, c2, r2, true, true);
 		}
-		else { SetMsgPar(Name, fd->Name); WrLLF10Msg(146); }
-	else {
-		frst = false; byName = false;
-		s2 = s;
-		if ((s->LL > 0) && (s->A[1] == '{')) {
-			{ //view after 1. line
-				l = FindCtrlM(s, 1, 1);
-				l = SkipCtrlMJ(s, l) - 1;
-				os2 += l; s2->LL = s->LL - l;
+		else w = PushW1(1, 1, TxtCols, TxtRows, true, true);
+		i = 1; frst = true; delta = 0;
+		if (backw) { byName = false; goto label3; }
+	label1:
+		byName = true;
+	label2:
+		s = GetHlpText(R, Name, byName, iRec); cf2 = CFile;
+		if (s == nullptr)
+			if (frst && (R == (RdbD*)(&HelpFD)) && (KbdChar == _CtrlF1_)) {
+				KbdChar = 0; Name = "Ctrl-F1 error"; goto label1;
 			}
-			if (s2->LL == 0) { if (delta == 0) goto label4; }
-			else if (iRec != oldIRec) {
-				oldIRec = iRec; iRec += delta; goto label2;
-			}
-			ViewHelpText(s2, i);
-			if (iStk < maxStk) iStk++;
-			else Move(&Stk[2], Stk, sizeof(Stk) - 4);
-			/* !!! with Stk[iStk] do!!! */
-			Stk[iStk].Rdb = R; Stk[iStk].FD = cf2; Stk[iStk].iR = iRec; Stk[iStk].iT = i;
-			oldIRec = iRec; i = 1; delta = 0; ReleaseStore(s); CFile = cf2;
-			switch (KbdChar) {
-			case VK_ESCAPE: break;
-			case VK_F10: {
-				iStk--;
-			label3:
-				if (iStk > 0) {
-					/* !!! with Stk[iStk] do!!! */
-					R = Stk[iStk].Rdb; CFile = Stk[iStk].FD; iRec = Stk[iStk].iR; i = Stk[iStk].iT;
+			else { SetMsgPar(Name, fd->Name); WrLLF10Msg(146); }
+		else {
+			frst = false; byName = false;
+			s2 = s;
+			if ((s->LL > 0) && (s->A[1] == '{')) {
+				{ //view after 1. line
+					l = FindCtrlM(s, 1, 1);
+					l = SkipCtrlMJ(s, l) - 1;
+					os2 += l; s2->LL = s->LL - l;
+				}
+				if (s2->LL == 0) { if (delta == 0) /*goto label4*/ throw std::invalid_argument("Editor::Help - delta is equal 0"); }
+				else if (iRec != oldIRec) {
+					oldIRec = iRec; iRec += delta; goto label2;
+				}
+				ViewHelpText(s2, i);
+				if (iStk < maxStk) iStk++;
+				else Move(&Stk[2], Stk, sizeof(Stk) - 4);
+				/* !!! with Stk[iStk] do!!! */
+				Stk[iStk].Rdb = R; Stk[iStk].FD = cf2; Stk[iStk].iR = iRec; Stk[iStk].iT = i;
+				oldIRec = iRec; i = 1; delta = 0; ReleaseStore(s); CFile = cf2;
+				switch (KbdChar) {
+				case VK_ESCAPE: break;
+				case VK_F10: {
 					iStk--;
-					goto label2;
+				label3:
+					if (iStk > 0) {
+						/* !!! with Stk[iStk] do!!! */
+						R = Stk[iStk].Rdb; CFile = Stk[iStk].FD; iRec = Stk[iStk].iR; i = Stk[iStk].iT;
+						iStk--;
+						goto label2;
+					}
+				}
+				case _CtrlHome_: { iRec--; delta = -1; goto label2; }
+				case _CtrlEnd_: { iRec++; delta = 1; goto label2; }
+				default:
+					if (KbdChar == _F1_) Name = "root"; else Name = LexWord; goto label1;
 				}
 			}
-			case _CtrlHome_: { iRec--; delta = -1; goto label2; }
-			case _CtrlEnd_: { iRec++; delta = 1; goto label2; }
-			default:
-				if (KbdChar == _F1_) Name = "root"; else Name = LexWord; goto label1;
-			}
 		}
-	label4:
-		RestoreExit(er);
-		if (w2 != 0) PopW(w2);
-		if (w != 0) PopW(w);
-		ReleaseStore(p);
-		CFile = cf;
 	}
+	catch (std::exception e) {
+		//label4:
+		RestoreExit(er);
+	}
+	if (w2 != 0) PopW(w2);
+	if (w != 0) PopW(w);
+	ReleaseStore(p);
+	CFile = cf;
 }
 
 void ViewHelpText(LongStr* S, WORD& TxtPos)

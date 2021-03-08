@@ -7,7 +7,7 @@
 #include "KeyFldD.h"
 #include "legacy.h"
 #include "rdfildcl.h"
-#include "rdrprt.h"
+#include "../Report/rdrprt.h"
 
 char WhatToRd = '\0'; /*i=Oi output FDs;O=O outp.FDs*/
 bool ReadingOutpBool = false;

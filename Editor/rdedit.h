@@ -1,8 +1,13 @@
 #pragma once
-#include "compile.h"
-#include "rdrun.h"
 
-// TODO - už je deklarované jinde
+#include "../cppfand/access-structs.h"
+#include "../cppfand/FieldDescr.h"
+#include "../cppfand/rdrun.h"
+
+struct EFldD;
+struct StringListEl;
+struct EditD;
+// TODO - uz je deklarovane jinde
 extern EditD* E;
 
 void PushEdit();
@@ -18,7 +23,7 @@ void ZeroUsed();
 EFldD* LstUsedFld();
 void RdDepChkImpl();
 void TestedFlagOff();
-void SetFrmlFlags(FrmlPtr Z);
+void SetFrmlFlags(FrmlElem* Z);
 void SetFlag(FieldDescr* F);
 void RdDep();
 void RdCheck();
@@ -28,4 +33,3 @@ void RdAllUDLIs(FileD* FD);
 pstring StandardHead();
 pstring GetStr_E(FrmlPtr Z); // existuje -> *_E
 void NewChkKey();
-

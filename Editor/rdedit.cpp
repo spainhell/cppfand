@@ -1,17 +1,13 @@
 #include "rdedit.h"
 
-
-
-#include "ChkD.h"
-#include "FieldDescr.h"
-#include "FileD.h"
-#include "GlobalVariables.h"
-#include "KeyFldD.h"
-#include "legacy.h"
-#include "obaseww.h"
-#include "rdfildcl.h"
-#include "runedi.h"
-#include "runfrml.h"
+#include "../cppfand/ChkD.h"
+#include "../cppfand/compile.h"
+#include "../cppfand/FileD.h"
+#include "../cppfand/GlobalVariables.h"
+#include "../cppfand/KeyFldD.h"
+#include "../cppfand/obaseww.h"
+#include "../cppfand/rdfildcl.h"
+#include "../cppfand/rdrun.h"
 #include "../textfunc/textfunc.h"
 
 EditD* E = EditDRoot;

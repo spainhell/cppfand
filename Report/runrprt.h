@@ -1,8 +1,10 @@
 #pragma once
-#include "access.h"
-#include "constants.h"
-#include "rdrun.h"
+#include "../cppfand/access-structs.h"
+#include "../cppfand/base.h"
+#include "../cppfand/rdrun.h"
 
+struct InpD;
+struct BlkD;
 class KeyFldD;
 
 struct TTD : public Chained

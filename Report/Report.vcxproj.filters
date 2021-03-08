@@ -15,25 +15,25 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Editor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="runedi.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="rdedit.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
+    <ClInclude Include="runrprt.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="genrprt.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="rdrprt.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Editor.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="runedi.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="rdedit.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
+    <ClCompile Include="runrprt.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="genrprt.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="rdrprt.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

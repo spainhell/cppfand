@@ -3,31 +3,33 @@
 #include "expimp.h"
 #include "FieldDescr.h"
 #include "FileD.h"
-#include "genrprt.h"
 #include "GlobalVariables.h"
 #include "KeyFldD.h"
 #include "legacy.h"
 #include "../Logging/Logging.h"
 #include "oaccess.h"
 #include "obaseww.h"
-#include "rdedit.h"
 #include "rdfildcl.h"
 #include "rdmerg.h"
 #include "rdproc.h"
-#include "rdrprt.h"
 #include "rdrun.h"
-#include "runedi.h"
 #include "runmerg.h"
 #include "runproc.h"
 #include "runproj.h"
 #include "runprolg.h"
-#include "runrprt.h"
 #include "TFile.h"
 #include "wwmenu.h"
 #include "XFile.h"
 #include <map>
 
-#include "../Editor/editor.h"
+
+#include "compile.h"
+#include "../Editor/Editor.h"
+#include "../Editor/rdedit.h"
+#include "../Editor/runedi.h"
+#include "../Report/genrprt.h"
+#include "../Report/rdrprt.h"
+#include "../Report/runrprt.h"
 
 
 void* O(void* p) // ASM
@@ -245,7 +247,10 @@ WORD ChptWriteCRec()
 	if (New.Typ == 'L') { WrLLF10Msg(659); return result; }
 #endif 
 	if (New.Typ == 'D' || New.Typ == 'U') {
-		if (New.Name != "") { WrLLF10Msg(623); return result; }
+		if (!New.Name.empty()) {
+			WrLLF10Msg(623);
+			return result;
+		}
 	}
 	else if (New.Typ != ' ')
 		if (!IsIdentifStr(New.Name) || (New.Typ != 'F') && (New.Ext != "")) {
@@ -304,20 +309,20 @@ void OKF(KeyFldDPtr kf)
 void* OTb(pstring Nm)
 {
 	return nullptr;
-	
-//	pstring* s = nullptr;
-//	WORD* sofs = (WORD*)s;
-//	WORD i;
-//	//s = (pstring*)Tb;
-//	for (i = 1; i <= nTb; i++) {
-//		if (SEquUpcase(*s, Nm)) goto label1;
-//		sofs += s->length() + 1;
-//	}
-//	nTb++; sz += Nm.length() + 1;
-//	if (sz > MaxLStrLen) RunError(664);
-//	s = StoreStr(Nm);
-//label1:
-//	return O(s);
+
+	//	pstring* s = nullptr;
+	//	WORD* sofs = (WORD*)s;
+	//	WORD i;
+	//	//s = (pstring*)Tb;
+	//	for (i = 1; i <= nTb; i++) {
+	//		if (SEquUpcase(*s, Nm)) goto label1;
+	//		sofs += s->length() + 1;
+	//	}
+	//	nTb++; sz += Nm.length() + 1;
+	//	if (sz > MaxLStrLen) RunError(664);
+	//	s = StoreStr(Nm);
+	//label1:
+	//	return O(s);
 }
 
 void* OLinkD(LinkD* Ld)
@@ -644,7 +649,7 @@ FrmlElem* createFrmlElemFromStr(BYTE* str, uintptr_t address, std::map<uintptr_t
 		frml = new FrmlElemIn(_instr);
 		break;
 	}
-	
+
 	}
 
 
@@ -831,8 +836,8 @@ bool RdFDSegment(WORD FromI, longint Pos)
 	//	s = (StringList)s->Chain;
 	//}
 
-	if (CFile->Keys != nullptr) { 
-		throw std::exception("Not implemented."); 
+	if (CFile->Keys != nullptr) {
+		throw std::exception("Not implemented.");
 	}
 	//KeyD* k = CFile->Keys;
 	//while (k->Chain != nullptr) {
@@ -1095,11 +1100,11 @@ void CreateOpenChpt(std::string Nm, bool create, wwmix* ww)
 	SetChptFldDPtr();
 	if (!spec.RDBcomment) ChptTxt->L = 1;
 	SetMsgPar(p);
-	if (top) { 
-		UserName = ""; 
-		UserCode = 0; 
-		AccRight[0] = 0; 
-		goto label2; 
+	if (top) {
+		UserName = "";
+		UserCode = 0;
+		AccRight[0] = 0;
+		goto label2;
 	}
 	if (CRdb->ChainBack != nullptr)	CRdb->HelpFD = CRdb->ChainBack->HelpFD;
 label1:
@@ -1118,13 +1123,13 @@ label2:
 		if (ChptTF->CompileAll) ResetRdOnly();
 		else if (!top && oldChptTF != nullptr && (ChptTF->TimeStmp < oldChptTF->TimeStmp)) {
 			// TODO: oldChptTF != nullptr je v podmince navic, protoze dalsi podminka vzdy vyhorela 
-			ResetRdOnly(); 
+			ResetRdOnly();
 			SetCompileAll();
 		}
 		goto label3;
 	}
 	if (!create || (top && !IsTestRun)) RunError(631);
-	OpenCreateF(Exclusive); 
+	OpenCreateF(Exclusive);
 	SetCompileAll();
 label3:
 	if (ww->HasPassWord(Chpt, 1, "")) CRdb->Encrypted = false;
@@ -1253,8 +1258,13 @@ bool CompRunChptRec(WORD CC)
 			break;
 		}
 		case 'R': {
-			SetInpTT(&RP, true); ReadReport(nullptr);
-			if (CC == _CtrlF9_) { RunReport(nullptr); SaveFiles(); ViewPrinterTxt(); }
+			SetInpTT(&RP, true);
+			ReadReport(nullptr);
+			if (CC == _CtrlF9_) {
+				RunReport(nullptr);
+				SaveFiles();
+				ViewPrinterTxt();
+			}
 			break;
 		}
 		case 'P': {
@@ -1372,7 +1382,7 @@ WORD CompileMsgOn(CHAR_INFO* Buf, longint& w)
 		printf("%s", GetDLine(&MsgLine[1], MsgLine.length(), '/', 2).c_str());
 	}
 	else {
-		screen.ScrRdBuf(0, TxtRows - 1, Buf, 40); 
+		screen.ScrRdBuf(0, TxtRows - 1, Buf, 40);
 		w = 0;
 		result = 0;
 		screen.ScrClr(1, TxtRows, MsgLine.length() + 2, 1, ' ', screen.colors.zNorm);
@@ -1511,7 +1521,7 @@ label1:
 
 bool EquKeys(KeyD* K1, KeyD* K2)
 {
-	auto result = false; 
+	auto result = false;
 	while (K1 != nullptr) {
 		if ((K2 == nullptr) || (K1->Duplic != K2->Duplic)) return result;
 		KeyFldD* KF1 = K1->KFlds;
@@ -1519,11 +1529,11 @@ bool EquKeys(KeyD* K1, KeyD* K2)
 		while (KF1 != nullptr) {
 			if ((KF2 == nullptr) || (KF1->CompLex != KF2->CompLex) || (KF1->Descend != KF2->Descend)
 				|| (KF1->FldD->Name != KF2->FldD->Name)) return result;
-			KF1 = (KeyFldD*)KF1->Chain; 
+			KF1 = (KeyFldD*)KF1->Chain;
 			KF2 = (KeyFldD*)KF2->Chain;
 		}
 		if (KF2 != nullptr) return result;
-		K1 = K1->Chain; 
+		K1 = K1->Chain;
 		K2 = K2->Chain;
 	}
 	if (K2 != nullptr) return result;
@@ -1617,11 +1627,11 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 		if (Verif || ChptTF->CompileAll || FromCtrlF10 || (Typ == 'U') ||
 			(Typ == 'F' || Typ == 'D') && CompileFD ||
 			(Typ == 'P') && ChptTF->CompileProc) {
-			OldTxt = _T(ChptOldTxt); 
+			OldTxt = _T(ChptOldTxt);
 			InpRdbPos = RP;
 			if (IsTestRun) {
-				ClrScr(); 
-				screen.GotoXY(3 + lmsg, 2); 
+				ClrScr();
+				screen.GotoXY(3 + lmsg, 2);
 				printf("%*i", 4, I);
 				screen.GotoXY(3 + lmsg, 3);
 				printf("%*s%*s", 4, STyp.c_str(), 14, _ShortS(ChptName).c_str());
@@ -1635,14 +1645,14 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 			}
 			switch (Typ) {
 			case 'F': {
-				FDCompiled = true; 
-				ld = LinkDRoot; 
+				FDCompiled = true;
+				ld = LinkDRoot;
 				MarkStore(p1);
 				FSplit(Name, dir, nm, ext);
 				if ((Txt == 0) && IsTestRun) {
 					SetMsgPar(Name);
 					if (SEquUpcase(ext, ".DBF") && PromptYN(39)) {
-						T_(ChptOldTxt, 0); 
+						T_(ChptOldTxt, 0);
 						OldTxt = 0;
 						MakeDbfDcl(nm);
 						Txt = _T(ChptTxt);
@@ -1677,10 +1687,10 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 				}
 				break;
 			}
-			case 'M': { 
-				SetInpTTPos(Txt, Encryp); 
-				ReadMerge(); 
-				break; 
+			case 'M': {
+				SetInpTTPos(Txt, Encryp);
+				ReadMerge();
+				break;
 			}
 			case 'R': {
 				if ((Txt == 0) && IsTestRun) {
@@ -1822,30 +1832,30 @@ bool EditExecRdb(std::string Nm, std::string ProcNm, Instr_proc* ProcCall, wwmix
 #endif
 		MarkStore(p);
 		EditRdbMode = false;
-			bool hasToCompileRdb = CompileRdb(false, true, false);
-			if (hasToCompileRdb) {
-				bool procedureFound = FindChpt('P', ProcNm, true, &RP);
-					if (procedureFound)
-					{
-						//NewExit(Ovr(), er2);
-						//goto label0;
-						IsCompileErr = false;
-						if (ProcCall != nullptr) {
-							ProcCall->PPos = RP;
-							CallProcedure(ProcCall);
-						}
-						else RunMainProc(RP, top);
-						result = true; goto label9;
-					label0:
-						if (IsCompileErr) WrErrMsg630(Nm);
-						goto label9;
-					}
-					else {
-						SetMsgPar(Nm, ProcNm);
-						WrLLF10Msg(632);
-					}
+		bool hasToCompileRdb = CompileRdb(false, true, false);
+		if (hasToCompileRdb) {
+			bool procedureFound = FindChpt('P', ProcNm, true, &RP);
+			if (procedureFound)
+			{
+				//NewExit(Ovr(), er2);
+				//goto label0;
+				IsCompileErr = false;
+				if (ProcCall != nullptr) {
+					ProcCall->PPos = RP;
+					CallProcedure(ProcCall);
+				}
+				else RunMainProc(RP, top);
+				result = true; goto label9;
+			label0:
+				if (IsCompileErr) WrErrMsg630(Nm);
+				goto label9;
 			}
-			else if (IsCompileErr) WrErrMsg630(Nm);
+			else {
+				SetMsgPar(Nm, ProcNm);
+				WrLLF10Msg(632);
+			}
+		}
+		else if (IsCompileErr) WrErrMsg630(Nm);
 #ifndef FandRunV
 		if ((ChptTF->LicenseNr != 0) || CRdb->Encrypted
 			|| (Chpt->UMode == RdOnly)) goto label9;

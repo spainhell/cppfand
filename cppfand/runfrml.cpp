@@ -3,9 +3,6 @@
 #include "legacy.h"
 #include "rdrun.h"
 #include <math.h>
-
-
-
 #include "FieldDescr.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
@@ -15,10 +12,10 @@
 #include "obaseww.h"
 #include "olongstr.h"
 #include "rdproc.h"
-#include "runedi.h"
 #include "runproc.h"
 #include "TFile.h"
 #include "wwmix.h"
+#include "../Editor/runedi.h"
 #include "../textfunc/textfunc.h"
 
 FileDPtr TFD02;
@@ -168,7 +165,8 @@ double RunRealStr(FrmlElem* X)
 		auto iX = (FrmlElem11*)X;
 		auto s = RunShortStr(iX->PPP1);
 		result = PromptR(s, iX->PP2, iX->FldD);
-		break; }
+		break;
+	}
 	case _pos: {
 		auto iX = (FrmlElem12*)X;
 		S = RunLongStr(iX->PPP2);

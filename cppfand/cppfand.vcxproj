@@ -165,7 +165,6 @@
     <ClCompile Include="expimp.cpp" />
     <ClCompile Include="FieldDescr.cpp" />
     <ClCompile Include="FileD.cpp" />
-    <ClCompile Include="genrprt.cpp" />
     <ClCompile Include="GlobalVariables.cpp" />
     <ClCompile Include="Graph.cpp" />
     <ClCompile Include="keyboard.cpp" />
@@ -179,21 +178,17 @@
     <ClCompile Include="olongstr.cpp" />
     <ClCompile Include="printtxt.cpp" />
     <ClCompile Include="Rdb.cpp" />
-    <ClCompile Include="rdedit.cpp" />
     <ClCompile Include="rdfildcl.cpp" />
     <ClCompile Include="rdmerg.cpp" />
-    <ClCompile Include="rdrprt.cpp" />
     <ClCompile Include="runmerg.cpp" />
     <ClCompile Include="runproj.cpp" />
     <ClCompile Include="pstring.cpp" />
     <ClCompile Include="rdproc.cpp" />
     <ClCompile Include="rdrun.cpp" />
-    <ClCompile Include="runedi.cpp" />
     <ClCompile Include="runfand.cpp" />
     <ClCompile Include="runfrml.cpp" />
     <ClCompile Include="runproc.cpp" />
     <ClCompile Include="runprolg.cpp" />
-    <ClCompile Include="runrprt.cpp" />
     <ClCompile Include="screen.cpp" />
     <ClCompile Include="sort.cpp" />
     <ClCompile Include="TFile.cpp" />
@@ -222,7 +217,6 @@
     <ClInclude Include="fanddml.h" />
     <ClInclude Include="FieldDescr.h" />
     <ClInclude Include="FileD.h" />
-    <ClInclude Include="genrprt.h" />
     <ClInclude Include="GlobalVariables.h" />
     <ClInclude Include="Graph.h" />
     <ClInclude Include="keyboard.h" />
@@ -238,21 +232,17 @@
     <ClInclude Include="printtxt.h" />
     <ClInclude Include="Rdb.h" />
     <ClInclude Include="rdmerg.h" />
-    <ClInclude Include="rdrprt.h" />
     <ClInclude Include="runmerg.h" />
     <ClInclude Include="runproj.h" />
     <ClInclude Include="pstring.h" />
-    <ClInclude Include="rdedit.h" />
     <ClInclude Include="rdfildcl.h" />
     <ClInclude Include="rdproc.h" />
     <ClInclude Include="rdrun.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="runedi.h" />
     <ClInclude Include="runfand.h" />
     <ClInclude Include="runfrml.h" />
     <ClInclude Include="runproc.h" />
     <ClInclude Include="runprolg.h" />
-    <ClInclude Include="runrprt.h" />
     <ClInclude Include="screen.h" />
     <ClInclude Include="sort.h" />
     <ClInclude Include="switches.h" />
@@ -293,6 +283,9 @@
     </ProjectReference>
     <ProjectReference Include="..\pascal\pascal.vcxproj">
       <Project>{1dca247b-35ec-434d-9e3b-66c507e4ac95}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\Report\Report.vcxproj">
+      <Project>{b945b1f8-eb80-4bcf-a75f-58aea36353ed}</Project>
     </ProjectReference>
     <ProjectReference Include="..\textfunc\textfunc.vcxproj">
       <Project>{4ce9c1c6-998b-48ae-b5a1-3403b2e02fbe}</Project>

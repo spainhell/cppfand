@@ -1,7 +1,5 @@
 #include "runmerg.h"
 
-
-
 #include "ChkD.h"
 #include "FieldDescr.h"
 #include "FileD.h"
@@ -10,7 +8,6 @@
 #include "legacy.h"
 #include "oaccess.h"
 #include "obaseww.h"
-#include "runedi.h"
 #include "runfrml.h"
 
 longint NRecsAll;

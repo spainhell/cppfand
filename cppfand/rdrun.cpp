@@ -1,7 +1,5 @@
 #include "rdrun.h"
 
-
-
 #include "AddD.h"
 #include "ChkD.h"
 #include "FieldDescr.h"
@@ -29,8 +27,8 @@ FloatPtrListEl* PFZeroLst;
 LvDescr* FrstLvM;
 LvDescr* LstLvM; /* LstLvM->Ft=RF */
 bool SelQuest;
-FrmlElem* PgeSizeZ, * PgeLimitZ;
 EditD* EditDRoot;
+FrmlElem* PgeSizeZ = nullptr, * PgeLimitZ = nullptr;
 bool CompileFD, EditRdbMode;
 LocVarBlkD LVBD;
 pstring CalcTxt = "";

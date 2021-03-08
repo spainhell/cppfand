@@ -415,8 +415,8 @@ extern FloatPtrListEl* PFZeroLst;
 extern LvDescr* FrstLvM;
 extern LvDescr* LstLvM; /* LstLvM->Ft=RF */
 extern bool SelQuest;
-extern FrmlPtr PgeSizeZ, PgeLimitZ;
 	/* Edit */
+extern FrmlElem* PgeSizeZ, *PgeLimitZ;
 extern EditD* EditDRoot;
 extern bool CompileFD, EditRdbMode;
 extern LocVarBlkD LVBD;
