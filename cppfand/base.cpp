@@ -1450,30 +1450,6 @@ void ReleaseAfterLongStr(void* pointer)
 	delete[] pointer;
 }
 
-WORD CountDLines(void* Buf, WORD L, char C)
-{
-	WORD count = 0;
-	for (int i = 0; i < L; i++) {
-		if (((char*)Buf)[i] == C) count++;
-	}
-	return count + 1; // za posledni polozkou neni '/'
-}
-
-pstring GetDLine(void* Buf, WORD L, char C, WORD I) // I = 1 .. N
-{
-	std::string input((const char*)Buf, L);
-	std::vector<std::string> lines;
-	size_t pos = 0;
-	while ((pos = input.find(C)) != std::string::npos) {
-		std::string token = input.substr(0, pos);
-		lines.push_back(token);
-		input.erase(0, pos + 1); // smazani vc. oddelovace
-	}
-	lines.push_back(input); // pridame zbyvajici cast retezce
-	if (I <= lines.size()) return lines[I - 1]; // Pascal cislovani od 1
-	return "";
-}
-
 bool OverlapByteStr(void* p1, void* p2)
 {
 	return false;

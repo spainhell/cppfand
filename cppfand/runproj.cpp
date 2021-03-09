@@ -30,6 +30,7 @@
 #include "../Report/genrprt.h"
 #include "../Report/rdrprt.h"
 #include "../Report/runrprt.h"
+#include "../textfunc/textfunc.h"
 
 
 void* O(void* p) // ASM
@@ -1374,12 +1375,13 @@ WORD CompileMsgOn(CHAR_INFO* Buf, longint& w)
 	if (IsTestRun) {
 		w = PushWFramed(0, 0, 30, 4, screen.colors.sNorm, MsgLine, "", WHasFrame + WDoubleFrame + WShadow);
 		RdMsg(117);
-		s = GetDLine(&MsgLine[1], MsgLine.length(), '/', 1);
+		std::string ss = MsgLine;
+		s = GetNthLine(ss, 1, 1, '/');
 		screen.GotoXY(3, 2);
 		printf("%s", s.c_str());
 		result = s.length();
 		screen.GotoXY(3, 3);
-		printf("%s", GetDLine(&MsgLine[1], MsgLine.length(), '/', 2).c_str());
+		printf("%s", GetNthLine(ss, 2, 1, '/').c_str());
 	}
 	else {
 		screen.ScrRdBuf(0, TxtRows - 1, Buf, 40);

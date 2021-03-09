@@ -60,8 +60,6 @@ longint MaxL(longint X, longint Y);
 longint SwapLong(longint N);
 void ExChange(void* X, void* Y, WORD L);
 bool OverlapByteStr(void* p1, void* p2); // ASM
-WORD CountDLines(void* Buf, WORD L, char C); // r139 ASM
-pstring GetDLine(void* Buf, WORD L, char C, WORD I); // r144 ASM
 WORD FindCtrlM(LongStr* s, WORD i, WORD n); // r152
 WORD SkipCtrlMJ(LongStrPtr s, WORD i); // r158
 void AddBackSlash(std::string& s);

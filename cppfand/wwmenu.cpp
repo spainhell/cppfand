@@ -519,7 +519,9 @@ std::string TMenuBoxS::GetHlpName()
 std::string TMenuBoxS::GetText(integer I)
 {
 	/*helpname/head/text1/text2/...*/
-	return GetDLine(&MsgTxt[1], MsgTxt.length(), '/', I + 2);
+	std::string s = MsgTxt;
+	return GetNthLine(s, I + 2, 1, '/');
+	//return GetDLine(&MsgTxt[1], MsgTxt.length(), '/', I + 2);
 }
 
 TMenuBoxP::TMenuBoxP(WORD C1, WORD R1, TMenu* aParent, Instr_menu* aPD)
@@ -740,7 +742,9 @@ std::string TMenuBarS::GetHlpName()
 
 std::string TMenuBarS::GetText(integer I)
 {
-	return GetDLine(&MsgTxt[1], MsgTxt->length(), '/', I + 1);
+	std::string s = *MsgTxt;
+	return GetNthLine(s, I + 1, 1, '/');
+	//return GetDLine(&MsgTxt[1], MsgTxt->length(), '/', I + 1);
 }
 
 TMenuBarP::TMenuBarP()

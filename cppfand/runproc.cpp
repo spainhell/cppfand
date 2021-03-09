@@ -229,11 +229,8 @@ void WritelnProc(Instr_writeln* PD)
 				t = t + RunShortStr(W->Frml);
 			}
 			else {
-				S = RunLongStr(W->Frml);
-				//WrLongStyleStr(S, ProcAttr);
-				std::string str = std::string(S->A, S->LL);
-				printS.append(str);
-				ReleaseStore(S);
+				std::string str = RunStdStr(W->Frml);
+				printS += str;
 			}
 			goto label1;
 			break;
@@ -1324,7 +1321,7 @@ void CallProcedure(Instr_proc* PD)
 
 #ifdef _DEBUG
 	std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
-	if (srcCode.find("var r,r1,r2,poüet,t:real; ix:index of TIPY(K1); begin getindex(ix,TIPY/TIP,cond=(key in ['t'] & Vyb));   poüet:=ix.nrecs; if poüet<1 then begin") != std::string::npos) {
+	if (srcCode.find("(copy(Path,length(Path)-5,2)); sestp:=copy(Path,1,length(Path)-6)+'??.TXT'; end; h:=PARAM3.TxtHd; ww:=PARAM3.TxtWw; PARAM3.InTxt:=true; repeat if PARAM3.TxtLl=~'' then if PARAM3.Prohl then lp:='") != std::string::npos) {
 		printf("");
 	}
 #endif

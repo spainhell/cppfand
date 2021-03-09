@@ -563,7 +563,7 @@ void WrStatusLine()
 				FillChar(&Blanks[1], TStatL + 2, 32);
 			}
 			else {
-				while ((i <= Blanks.length()) && (Blanks[i] == ' ')) {
+				while ((i <= Blanks.length()) && (Blanks[i] == '_')) {
 					Blanks[i] = ' ';
 					i++;
 				}

@@ -258,13 +258,13 @@ size_t Screen::WriteStyledStringToWindow(std::string text, BYTE Attr)
 	// celkovy pocet vytistenych znaku
 	size_t totalChars = 0;
 
-	// ziskame jendotlive radky textu
-	auto vStr = GetAllRows(text);
-
 	CHAR_INFO ci;
 
-	short cols = 200;
+	short cols = WindMax->X - WindMin->X + 1;
 	short rows = WindMax->Y - WindMin->Y + 1;
+
+	// ziskame jendotlive radky textu
+	auto vStr = GetAllRows(text, cols);
 
 	// buffer bude mit delku jednoho radku okna
 	CHAR_INFO* _buf = new CHAR_INFO[cols];

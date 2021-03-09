@@ -792,7 +792,7 @@ void Wr1Line(FieldDescr* F)
 	std::string ls = _StdS(F);
 	ls = GetNthLine(ls, 1, 1);
 	WORD max = F->L - 2;
-	ls = GetStyledStringOfLength(ls, max);
+	ls = GetStyledStringOfLength(ls, 0, max);
 	size_t chars = screen.WriteStyledStringToWindow(ls, E->dNorm);
 	TextAttr = E->dNorm;
 	if (chars < max) screen.ScrFormatWrStyledText(X + chars, Y, E->dNorm, "%*c", max - chars, ' ');

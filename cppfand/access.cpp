@@ -755,60 +755,68 @@ void AsgnParFldFrml(FileD* FD, FieldDescr* F, FrmlElem* Z, bool Ad)
 
 LongStr* _LongS(FieldDescr* F)
 {
-	void* P = CRecPtr;
-	char* source = (char*)P + F->Displ;
-	LongStr* S = nullptr; longint Pos = 0; integer err = 0;
-	LockMode md; WORD l = 0;
-	if ((F->Flg & f_Stored) != 0) {
-		l = F->L;
-		switch (F->Typ)
-		{
-		case 'A':		// znakovy retezec max. 255 znaku
-		case 'N': {		// ciselny retezec max. 79 znaku
-			S = new LongStr(l);
-			S->LL = l;
-			if (F->Typ == 'A') {
-				Move(source, &S->A[0], l);
-				if ((F->Flg & f_Encryp) != 0) Code(S->A, l);
-				if (IsNullValue(S, l)) {
-					S->LL = 0;
-					//ReleaseAfterLongStr(S);
-				}
-			}
-			else if (IsNullValue(source, F->NBytes)) {
-				S->LL = 0;
-				//ReleaseAfterLongStr(S);
-			}
-			else
-			{
-				// jedna je o typ N - prevedeme cislo na znaky
-				// UnPack(P, S->A, l);
-				for (size_t i = 0; i < F->NBytes; i++) {
-					S->A[2 * i] = ((BYTE)source[i] >> 4) + 0x30;
-					S->A[2 * i + 1] = ((BYTE)source[i] & 0x0F) + 0x30;
-				}
-			}
-			break;
-		}
-		case 'T': {		// volny text max. 65k
-			if (HasTWorkFlag()) S = TWork.Read(1, _T(F));
-			else {
-				md = NewLMode(RdMode);
-				S = CFile->TF->Read(1, _T(F));
-				OldLMode(md);
-			}
-			if ((F->Flg & f_Encryp) != 0) Code(S->A, S->LL);
-			if (IsNullValue(S->A, S->LL))
-			{
-				S->LL = 0;
-				// ReleaseAfterLongStr(S);
-			}
-			break;
-		}
-		}
-		return S;
-	}
-	return RunLongStr(F->Frml);
+	std::string s = _StdS(F);
+
+	LongStr* result = new LongStr(s.length());
+	result->LL = s.length();
+	memcpy(result->A, s.c_str(), s.length());
+
+	return result;
+	
+	//void* P = CRecPtr;
+	//char* source = (char*)P + F->Displ;
+	//LongStr* S = nullptr; longint Pos = 0; integer err = 0;
+	//LockMode md; WORD l = 0;
+	//if ((F->Flg & f_Stored) != 0) {
+	//	l = F->L;
+	//	switch (F->Typ)
+	//	{
+	//	case 'A':		// znakovy retezec max. 255 znaku
+	//	case 'N': {		// ciselny retezec max. 79 znaku
+	//		S = new LongStr(l);
+	//		S->LL = l;
+	//		if (F->Typ == 'A') {
+	//			Move(source, &S->A[0], l);
+	//			if ((F->Flg & f_Encryp) != 0) Code(S->A, l);
+	//			if (IsNullValue(S, l)) {
+	//				S->LL = 0;
+	//				//ReleaseAfterLongStr(S);
+	//			}
+	//		}
+	//		else if (IsNullValue(source, F->NBytes)) {
+	//			S->LL = 0;
+	//			//ReleaseAfterLongStr(S);
+	//		}
+	//		else
+	//		{
+	//			// jedna je o typ N - prevedeme cislo na znaky
+	//			// UnPack(P, S->A, l);
+	//			for (size_t i = 0; i < F->NBytes; i++) {
+	//				S->A[2 * i] = ((BYTE)source[i] >> 4) + 0x30;
+	//				S->A[2 * i + 1] = ((BYTE)source[i] & 0x0F) + 0x30;
+	//			}
+	//		}
+	//		break;
+	//	}
+	//	case 'T': {		// volny text max. 65k
+	//		if (HasTWorkFlag()) S = TWork.Read(1, _T(F));
+	//		else {
+	//			md = NewLMode(RdMode);
+	//			S = CFile->TF->Read(1, _T(F));
+	//			OldLMode(md);
+	//		}
+	//		if ((F->Flg & f_Encryp) != 0) Code(S->A, S->LL);
+	//		if (IsNullValue(S->A, S->LL))
+	//		{
+	//			S->LL = 0;
+	//			// ReleaseAfterLongStr(S);
+	//		}
+	//		break;
+	//	}
+	//	}
+	//	return S;
+	//}
+	//return RunLongStr(F->Frml);
 }
 
 // z CRecPtr vyète øetìzec o délce F->L z pozice F->Displ

@@ -140,16 +140,15 @@ double RunRealStr(FrmlElem* X)
 	}
 	case _length: {
 		auto iX = (FrmlElem6*)X;
-		S = RunLongStr(iX->PP1);
-		result = S->LL;
-		ReleaseStore(S);
+		std::string s = RunStdStr(iX->PP1);
+		result = s.length();
 		break;
 	}
 	case _linecnt: {
+		// get line counts of input text
 		auto iX = (FrmlElem6*)X;
-		S = RunLongStr(iX->PP1);
-		result = CountDLines(S->A, S->LL, 0x0D);
-		ReleaseStore(S);
+		std::string s = RunStdStr(iX->PP1);
+		result = CountLines(s, '\r'); // 0x0D, #13
 		break;
 	}
 	case _ord: {
@@ -168,12 +167,9 @@ double RunRealStr(FrmlElem* X)
 		break;
 	}
 	case _pos: {
-		auto iX = (FrmlElem12*)X;
-		S = RunLongStr(iX->PPP2);
-		auto strS = std::string(S->A, S->LL);
-		delete S;
-		Mask = RunShortStr(iX->PPPP1);
-		std::string strMask = Mask;
+		FrmlElem12* iX = (FrmlElem12*)X;
+		const std::string strS = RunStdStr(iX->PPP2);
+		const std::string strMask = RunShortStr(iX->PPPP1);
 		size_t n = 1; // kolikaty vyskyt najit
 		if (iX->PP3 != nullptr) {
 			n = RunInt(iX->PP3);
@@ -181,7 +177,7 @@ double RunRealStr(FrmlElem* X)
 		}
 		size_t offset = 0;
 		while (n > 0) {
-			size_t found = strS.find(strMask, offset);
+			const size_t found = strS.find(strMask, offset);
 			if (found == std::string::npos) {
 				// n-ty vyskyt nenalezen
 				return 0; // 0 - nenalezeno
@@ -579,14 +575,16 @@ bool RunBool(FrmlElem* X)
 	}
 	case _compstr: {
 		auto iX0 = (FrmlElem0*)X;
-		S = RunLongStr(iX0->P1);
-		S2 = RunLongStr(iX0->P2);
+		std::string s1 = RunStdStr(iX0->P1);
+		std::string s2 = RunStdStr(iX0->P2);
 		WORD cmpRes = 0;
-		if (iX0->N22 == 1)
-			cmpRes = CompLexLongStr(LongTrailChar(' ', 0, S), LongTrailChar(' ', 0, S2));
-		else cmpRes = CompLongStr(S, S2);
+		if (iX0->N22 == 1) {
+			cmpRes = CompLexStrings(TrailChar(s1, ' '), TrailChar(s2, ' '));
+		}
+		else {
+			cmpRes = CompLexStrings(s1, s2);
+		}
 		result = (cmpRes & iX0->N21) != 0;
-		ReleaseStore(S);
 		break;
 	}
 	case _const: result = ((FrmlElem5*)X)->B; break;
@@ -1566,7 +1564,13 @@ label1:
 	}
 	case _repeatstr: {
 		auto iX0 = (FrmlElem0*)X;
-		result = RepeatStr(RunLongStr(iX0->P1), RunInt(iX0->P2));
+		size_t i = RunInt(iX0->P2);
+		std::string input = RunStdStr(iX0->P1);
+		std::string output = RepeatString(input, i);
+
+		result = new LongStr(output.length());
+		result->LL = output.length();
+		memcpy(result->A, output.c_str(), output.length());
 		break;
 	}
 	case _accrecno: {
@@ -1712,9 +1716,7 @@ label1:
 		break;
 	}
 	case _const: {
-		auto s = CopyToLongStr(((FrmlElem4*)X)->S);
-		result = std::string(s->A, s->LL);
-		delete s;
+		result = ((FrmlElem4*)X)->S;
 		break;
 	}
 	case _leadchar: {
@@ -1751,19 +1753,18 @@ label1:
 	}
 	case _copyline: {
 		auto iX0 = (FrmlElem0*)X;
-		I = 1;
-		if (iX0->P3 != nullptr) I = (WORD)RunInt(iX0->P3);
-		auto* lstr = RunLongStr(iX0->P1);
-		std::string text = std::string(lstr->A, lstr->LL);
-		WORD start = RunInt(iX0->P2);
-		result = GetNthLine(text, start, I);
+		size_t i = 1;
+		if (iX0->P3 != nullptr) i = RunInt(iX0->P3);
+		std::string s = RunStdStr(iX0->P1);
+		size_t start = RunInt(iX0->P2);
+		result = GetNthLine(s, start, i);
 		break;
 	}
 	case _repeatstr: {
 		auto iX0 = (FrmlElem0*)X;
-		auto s = RepeatStr(RunLongStr(iX0->P1), RunInt(iX0->P2));
-		result = std::string(s->A, s->LL);
-		delete s;
+		size_t i = RunInt(iX0->P2);
+		std::string input = RunStdStr(iX0->P1);
+		result = RepeatString(input, i);
 		break;
 	}
 	case _accrecno: {
@@ -2082,7 +2083,9 @@ LongStr* RunSelectStr(FrmlElem0* Z)
 	s = RunLongStr(Z->P3);
 	n = CountDLines(s->A, s->LL, Z->Delim);
 	for (i = 1; i < n; i++) {
-		x = GetDLine(s->A, s->LL, Z->Delim, i);
+		//x = GetDLine(s->A, s->LL, Z->Delim, i);
+		std::string std_s = std::string(s->A, s->LL);
+		x = GetNthLine(std_s, i, 1, Z->Delim);
 		if (x != "") ww.PutSelect(x);
 	}
 	mode = RunShortStr(Z->P6);
