@@ -231,7 +231,7 @@ void WriteNBlks(std::string& text, integer N)
 /// <param name="S">Vstupni text</param>
 /// <param name="Col">Pozice, kam text vlozit</param>
 /// <param name="Width">Delka textu</param>
-/// <param name="Wrap">IDK</param>
+/// <param name="Wrap"></param>
 /// <returns></returns>
 std::string NewTxtCol(std::string S, WORD Col, WORD Width, bool Wrap)
 {
@@ -293,7 +293,7 @@ std::string GetLine(std::string& S, WORD Width, bool Wrap, bool& paragraph)
 	integer nWords = 0;
 	bool Fill = false;
 	while ((i < S.length()) && (i2 < 255)) {
-		c = S[i];
+		c = S[TAOff + i];
 		if (c == 0x0D) {
 			paragraph = true;
 			goto label1;
@@ -301,7 +301,7 @@ std::string GetLine(std::string& S, WORD Width, bool Wrap, bool& paragraph)
 		if ((w >= Width) && (c == ' ') && Wrap) goto label1;
 		if ((c != ' ') || WasWrd || !Wrap || paragraph) {
 			i2++;
-			s[i2] = c;
+			s[TAOff + i2] = c;
 			if (!IsPrintCtrl(c)) w++;
 		}
 		if (c == ' ') {
@@ -718,7 +718,10 @@ void Headings(LvDescr* L, LvDescr* L2, std::string& text)
 
 void ZeroSumFlds(LvDescr* L)
 {
-	while (L != nullptr) { Zero(L->ZeroLst); L = L->ChainBack; }
+	while (L != nullptr) {
+		Zero(L->ZeroLst);
+		L = L->ChainBack;
+	}
 }
 
 void ReadInpFile(InpD* ID)

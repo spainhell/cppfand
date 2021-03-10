@@ -137,7 +137,9 @@ struct BlkD : public Chained
 	FrmlElem* LineBound = nullptr;
 	FrmlElem* LineNo = nullptr;
 	FrmlElem* PageNo = nullptr;
-	WORD NTxtLines = 0, NBlksFrst = 0, DHLevel = 0;
+	WORD NTxtLines = 0;
+	WORD NBlksFrst = 0; // pozice 1. bloku na radku; pred nim jsou mezery
+	WORD DHLevel = 0;
 	RFldD* RFD = nullptr;
 	AssignD* BeforeProc = nullptr; 
 	AssignD* AfterProc = nullptr;

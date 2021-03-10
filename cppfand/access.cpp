@@ -488,6 +488,7 @@ longint _T(FieldDescr* F, unsigned char* data, char Typ)
 
 void T_(FieldDescr* F, longint Pos)
 {
+	// asi uklada data do CRecPtr
 	pstring s;
 	void* p = CRecPtr;
 	char* source = (char*)p + F->Displ;
@@ -503,11 +504,14 @@ void T_(FieldDescr* F, longint Pos)
 
 void DelTFld(FieldDescr* F)
 {
-	longint n; LockMode md;
-	n = _T(F);
-	if (HasTWorkFlag()) TWork.Delete(n);
+	longint n = _T(F);
+	if (HasTWorkFlag()) {
+		TWork.Delete(n);
+	}
 	else {
-		md = NewLMode(WrMode); CFile->TF->Delete(n); OldLMode(md);
+		LockMode md = NewLMode(WrMode);
+		CFile->TF->Delete(n);
+		OldLMode(md);
 	}
 	T_(F, 0);
 }
@@ -594,6 +598,8 @@ void DeleteRec(longint N)
 
 void LongS_(FieldDescr* F, LongStr* S)
 {
+	// asi se vzdy uklada do souboru (nebo pracovniho souboru)
+	// nakonec vola T_
 	longint Pos; LockMode md;
 
 	if ((F->Flg & f_Stored) != 0) {
