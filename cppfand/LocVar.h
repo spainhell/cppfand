@@ -5,7 +5,7 @@
 class FrmlElem;
 class FileD;
 
-class LocVar : public Chained // ø. 239
+class LocVar : public Chained // r. 239
 {
 public:
 	LocVar() = default;
@@ -24,7 +24,6 @@ public:
 	bool B = false;
 	double R = 0.0;
 	std::string S;
-	WORD orig_S_length = 0;
 };
 
 class LocVarBlkD : public Chained // r228
