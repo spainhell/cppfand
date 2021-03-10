@@ -207,14 +207,6 @@ bool OutOfLineBound(BlkD* B)
 		|| B->AbsLine && (RunInt(B->LineNo) < RprtLine));
 }
 
-void Zero(FloatPtrList Z)
-{
-	while (Z != nullptr) {
-		*Z->RPtr = 0;
-		Z = Z->Chain;
-	}
-}
-
 void WriteNBlks(std::string& text, integer N)
 {
 	if (N > 0) {
@@ -250,7 +242,7 @@ std::string NewTxtCol(std::string S, WORD Col, WORD Width, bool Wrap)
 	//printf("%s%s", Rprt.c_str(), ss.c_str());
 
 	while (S.length() > 0) {
-		ss = GetLine(S, Width, Wrap, Absatz);
+		ss += GetLine(S, Width, Wrap, Absatz);
 		Ln++;
 		if (Ln == 1) {
 			TD = new TTD(); // (TTD*)GetStore2(sizeof(*TD));
@@ -686,7 +678,7 @@ void PrintPageFt(std::string& text)
 		PrintBlkChn(PageFt, text, false, false);
 		TruncLine(text);
 		NoFF = RprtLine < Ln;
-		Zero(PFZeroLst);
+		PFZeroLst.clear();
 		WasFF2 = b;
 	}
 }
@@ -719,7 +711,7 @@ void Headings(LvDescr* L, LvDescr* L2, std::string& text)
 void ZeroSumFlds(LvDescr* L)
 {
 	while (L != nullptr) {
-		Zero(L->ZeroLst);
+		L->ZeroLst.clear();
 		L = L->ChainBack;
 	}
 }

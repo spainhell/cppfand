@@ -149,7 +149,7 @@ struct BlkD : public Chained
 struct LvDescr {
 	LvDescr* Chain = nullptr;
 	LvDescr* ChainBack = nullptr;
-	FloatPtrListEl* ZeroLst = nullptr;
+	std::vector<double*> ZeroLst;
 	BlkD* Hd = nullptr; 
 	BlkD* Ft = nullptr;
 	FieldDescr* Fld = nullptr;
@@ -413,7 +413,7 @@ extern TextFile Rprt;		// pùvodnì text - souvisí s text. souborem
 extern BlkD* RprtHd;
 extern BlkD* PageHd;
 extern BlkD* PageFt;
-extern FloatPtrListEl* PFZeroLst;
+extern std::vector<double*> PFZeroLst;
 extern LvDescr* FrstLvM;
 extern LvDescr* LstLvM; /* LstLvM->Ft=RF */
 extern bool SelQuest;

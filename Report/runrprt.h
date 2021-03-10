@@ -46,7 +46,6 @@ void NewLine(std::string& text);
 void FormFeed();
 void NewPage(std::string& text);
 bool OutOfLineBound(BlkD* B);
-void Zero(FloatPtrList Z);
 std::string NewTxtCol(std::string S, WORD Col, WORD Width, bool Wrap);
 std::string GetLine(std::string& S, WORD Width, bool Wrap, bool &paragraph);
 void CheckPgeLimit(std::string& text);

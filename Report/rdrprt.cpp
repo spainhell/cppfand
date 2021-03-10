@@ -11,7 +11,7 @@
 
 
 BlkD* CBlk;
-FloatPtrList CZeroLst;
+std::vector<double*> CZeroLst;
 LvDescr* LvToRd;           /*all used while translating frml*/
 bool WasIiPrefix;
 BlkD* CBlkSave;
@@ -282,15 +282,8 @@ void ChainSumElR()
 	}
 
 	if (CBlkSave != nullptr) { CBlk = CBlkSave; CBlkSave = nullptr; }
-	//Z = (FloatPtrListEl*)GetStore(sizeof(*Z));
-	FloatPtrListEl* Z = new FloatPtrListEl();
-	Z->RPtr = &FrmlSumEl->R;
 
-	// TODO: byla pridana kontrola CZeroLst, tady to padalo ...
-	if (CZeroLst != nullptr) {
-		Z->Chain = CZeroLst->Chain;
-		CZeroLst->Chain = Z;
-	}
+	CZeroLst.push_back(&FrmlSumEl->R);
 }
 
 void Rd_Oi()
@@ -415,7 +408,8 @@ label1:
 	MaxIi = Ii;
 	FrstLvM = MakeOldMLvD();
 
-	PageHd = nullptr; RprtHd = nullptr; PageFt = nullptr; PFZeroLst = nullptr;
+	PageHd = nullptr; RprtHd = nullptr; PageFt = nullptr;
+	PFZeroLst.clear();
 label3:
 	s[0] = 2;
 	ReadChar();

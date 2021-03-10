@@ -23,7 +23,7 @@ TextFile Rprt;		// pùvodnì text - souvisí s text. souborem
 BlkD* RprtHd;
 BlkD* PageHd;
 BlkD* PageFt;
-FloatPtrListEl* PFZeroLst;
+std::vector<double*> PFZeroLst;
 LvDescr* FrstLvM;
 LvDescr* LstLvM; /* LstLvM->Ft=RF */
 bool SelQuest;

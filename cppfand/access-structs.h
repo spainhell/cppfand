@@ -29,12 +29,12 @@ struct StringListEl : public Chained // ø. 38
 };
 typedef StringListEl* StringList;
 
-struct FloatPtrListEl // r42
-{
-	FloatPtrListEl* Chain = nullptr;
-	double* RPtr = nullptr;
-};
-typedef FloatPtrListEl* FloatPtrList;
+//struct FloatPtrListEl // r42
+//{
+//	FloatPtrListEl* Chain = nullptr;
+//	double* RPtr = nullptr;
+//};
+//typedef FloatPtrListEl* FloatPtrList;
 
 struct KeyListEl : public Chained // ø. 49
 {
