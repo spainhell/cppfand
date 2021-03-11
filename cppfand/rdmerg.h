@@ -23,7 +23,7 @@ void CheckMFlds_M(KeyFldD* M1, KeyFldD* M2); // exituje i v rdrprt.cpp -> pøejme
 void MakeOldMFlds();
 void RdAutoSortSK_M(InpD* ID); // exituje i v rdrprt.cpp -> pøejmenováno na *_M
 void ImplAssign(OutpRD* RD, FieldDescr* FNew);
-FrmlElem* AdjustComma_M(FrmlElem* Z1, FieldDescr* F, char Op);// exituje -> pøejmenováno na *_M
+FrmlElem* AdjustComma_M(FrmlElem* Z1, FieldDescr* F, instr_type Op);// exituje -> pøejmenováno na *_M
 void FindIiandFldD(FieldDescr* F);
 bool FindAssignToF(AssignD* A, FieldDescr* F);
 void MakeImplAssign();

@@ -471,7 +471,7 @@ label1:
 	LexWord = S;
 }
 
-FrmlElem* AdjustComma_M(FrmlElem* Z1, FieldDescr* F, char Op)
+FrmlElem* AdjustComma_M(FrmlElem* Z1, FieldDescr* F, instr_type Op)
 {
 	FrmlElem0* Z = nullptr;
 	FrmlElem2* Z2 = nullptr;

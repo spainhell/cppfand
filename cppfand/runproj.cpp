@@ -643,7 +643,7 @@ FrmlElem* createFrmlElemFromStr(BYTE* str, uintptr_t address, std::map<uintptr_t
 {
 	FrmlElem* frml = nullptr;
 	WORD nextItemIndex = address & 0x0000FFFF;
-	BYTE Op = str[nextItemIndex];
+	instr_type Op = (instr_type)str[nextItemIndex];
 	//frml->Op = Op;
 	switch (Op) {
 	case _instr: {

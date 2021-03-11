@@ -17,7 +17,7 @@ public:
 	FileD* FD = nullptr;
 	void* RecPtr = nullptr;
 	std::string Name;
-	char Op = '\0';
+	instr_type Op = _notdefined;
 	WORD BPOfs = 0;
 	FrmlElem* Init = nullptr;
 

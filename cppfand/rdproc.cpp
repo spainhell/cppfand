@@ -170,7 +170,8 @@ char RdOwner(LinkD** LLD, LocVar** LLV)
 FrmlPtr RdFldNameFrmlP(char& FTyp)
 {
 	FileD* FD = nullptr; FrmlPtr Z = nullptr; LocVar* LV = nullptr;
-	char Op = 0; LinkD* LD = nullptr; FieldDescr* F = nullptr;
+	instr_type Op = _notdefined;
+	LinkD* LD = nullptr; FieldDescr* F = nullptr;
 	KeyD* K = nullptr;
 
 	FrmlPtr result = nullptr;
@@ -308,7 +309,7 @@ FrmlPtr RdFunctionP(char& FFTyp)
 	bool b = false;
 	WORD N = 0;
 	FrmlElem* Arg[30];
-	char Op = '\0';
+	instr_type Op = _notdefined;
 	LocVar* LV = nullptr;
 	LinkD* LD = nullptr;
 	void* p = nullptr;
@@ -2268,7 +2269,7 @@ label1:
 	return PD;
 }
 
-FrmlElem* AdjustComma(FrmlElem* Z1, FieldDescr* F, char Op)
+FrmlElem* AdjustComma(FrmlElem* Z1, FieldDescr* F, instr_type Op)
 {
 	FrmlElem0* Z = nullptr;
 	FrmlElem2* Z2 = nullptr;

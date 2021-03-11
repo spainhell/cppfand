@@ -1381,7 +1381,7 @@ void SrchZ(FrmlElem* Z)
 	}
 }
 
-bool IsFun(std::map<std::string, int>& strs, std::string input, char& FunCode)
+bool IsFun(std::map<std::string, int>& strs, std::string input, instr_type& FunCode)
 {
 	// prevedeme vse ze vstupu na mala pismena
 	for (auto&& c : input)
@@ -1391,7 +1391,7 @@ bool IsFun(std::map<std::string, int>& strs, std::string input, char& FunCode)
 	auto it = strs.find(input);
 	if (it != strs.end())
 	{
-		FunCode = (char)it->second;
+		FunCode = (instr_type)it->second;
 		RdLex();
 		return true;
 	}
@@ -1473,7 +1473,7 @@ void TestReal(char FTyp)
 	if (FTyp != 'R') OldError(20);
 }
 
-FrmlElem* BOperation(char Typ, char Fun, FrmlElem* Frml)
+FrmlElem* BOperation(char Typ, instr_type Fun, FrmlElem* Frml)
 {
 	TestBool(Typ);
 	FrmlElem0* Z = new FrmlElem0(Fun, 0); // GetOp(Fun, 0);
@@ -1685,7 +1685,7 @@ FrmlPtr RdFormula(char& FTyp)
 	FrmlPtr Z = RdBOr(FTyp);
 	while ((BYTE)Lexem == _limpl || (BYTE)Lexem == _lequ)
 	{
-		Z = BOperation(FTyp, Lexem, Z);
+		Z = BOperation(FTyp, (instr_type)Lexem, Z);
 		((FrmlElem0*)Z)->P2 = RdBOr(FTyp);
 		TestBool(FTyp);
 	}
@@ -1816,7 +1816,7 @@ std::map<std::string, int> S3Fun = {
 
 FrmlElem* RdPrim(char& FTyp)
 {
-	char FunCode = '\0';
+	instr_type FunCode = _notdefined;
 	FrmlElem* Z = nullptr; FrmlElem* Z1 = nullptr; FrmlElem* Z2 = nullptr; FrmlElem* Z3 = nullptr;
 	char Typ = '\0';
 	integer I = 0, N = 0; BYTE* B = nullptr;

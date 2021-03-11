@@ -88,7 +88,7 @@ void RdSqlRdWrTxt(bool Rd);
 #ifdef FandProlog
 Instr* RdCallLProc();
 #endif
-FrmlElem* AdjustComma(FrmlElem* Z1, FieldDescr* F, char Op);
+FrmlElem* AdjustComma(FrmlElem* Z1, FieldDescr* F, instr_type Op);
 AssignD* MakeImplAssign(FileD* FD1, FileD* FD2);
 Instr_assign* RdAssign();
 Instr* RdWith();
