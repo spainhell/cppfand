@@ -193,17 +193,16 @@ void HMsgExit(pstring s)
 	}
 }
 
-WORD FindChar(WORD& Num, char C, WORD Pos, WORD Len)
+/// Find index of 1st character in C-string, if not found then LENGTH is returned!
+/// Works with values 1 .. N (Pascal style)
+size_t FindChar(char* text, size_t length, char c, size_t from)
 {
-	for (WORD i = Pos; i < Len; i++)
-	{
-		if (T[i] == C)
-		{
-			Num = i;
+	for (size_t i = from; i < length; i++) {
+		if (text[i] == c) {
 			return i;
 		}
 	}
-	return 0;
+	return length; // return index after string
 }
 
 bool TestOptStr(char c)
@@ -238,19 +237,18 @@ bool SEquOrder(pstring S1, pstring S2)
 
 bool FindString(WORD& I, WORD Len)
 {
-	WORD j = 0, i1 = 0;
+	WORD i1 = 0;
 	pstring s1, s2;
 	char c = '\0';
 	auto result = false;
 	c = FindStr[1];
-	if (FindStr != "")
+	if (!FindStr.empty())
 	{
 	label1:
 		if (TestOptStr('~')) i1 = FindOrdChar(c, I, Len);
 		else if (TestOptStr('u')) i1 = FindUpcChar(c, I, Len);
 		else {
-			j = 1;
-			i1 = FindChar(j, c, I, Len);
+			i1 = FindChar(T, Len, c, I);
 		}
 		I = i1;
 		if (I + FindStr.length() > Len) return result;
@@ -922,15 +920,15 @@ void PredPart()
 WORD CountChar(char C, WORD First, WORD Last)
 {
 	return 1;
-	WORD I, j, n;
-	j = 1;
-	I = FindChar(j, C, First, LenT);
-	n = 0;
-	while (I < Last) {
-		n++;
-		I = FindChar(j, C, I + 1, LenT);
-	}
-	return n;
+
+	//WORD j = 1;
+	//WORD I = FindChar(j, C, First, LenT);
+	//WORD n = 0;
+	//while (I < Last) {
+	//	n++;
+	//	I = FindChar(j, C, I + 1, LenT);
+	//}
+	//return n;
 }
 
 WORD SetLine(WORD Ind)
@@ -1026,8 +1024,8 @@ void SetUpdat()
 
 void TestLenText(WORD F, longint LL)
 {
-	WORD* L = (WORD*)&LL; longint _size;
-	_size = LL - F;
+	WORD* L = (WORD*)&LL;
+	longint _size = LL - F;
 	if (F < LL) {
 		if (TypeT == FileT)
 		{
@@ -1039,16 +1037,15 @@ void TestLenText(WORD F, longint LL)
 		else { GetStore(_size); }
 	}
 	if (LenT >= F) { Move(&T[F], &T[*L], succ(LenT - F)); }
-	if (F >= LL) { ReleaseStore(&T[LenT + _size + 1]); };
+	if (F >= LL) { ReleaseStore(&T[LenT + _size + 1]); }
 	LenT += _size;
 	SetUpdat();
 }
 
 void DekodLine()
 {
-	WORD LP, LL;
-	LL = 1;
-	LP = FindChar(LL, _CR, LineI, LenT) - LineI;
+	WORD LL = 1;
+	WORD LP = FindChar(T, LenT, _CR, LineI) - LineI;
 	HardL = true;
 	FillChar(Arr, LineSize, 32);
 	NextI = LineI + LP + 1;
@@ -1073,12 +1070,14 @@ void DekodLine()
 	UpdatedL = false;
 }
 
+/// nastavuje LineI, vola DekodLine()
 void SetDekCurrI(WORD Ind)
 {
 	LineI = SetCurrI(Ind);
 	DekodLine();
 }
 
+/// nastavuje LineL, vola SetDekCurrI(i)
 void SetDekLnCurrI(WORD Ind)
 {
 	SetDekCurrI(Ind);
@@ -1153,7 +1152,10 @@ label1:
 	}
 	if (Num == 1) { result = 1; }
 	else {
-		J = pred(Num); I = FindChar(J, _CR, 1, LenT) + 1;
+		J = pred(Num);
+		// TODO: tady se vyuziva jinak puvodni kod -> k cemu je to 'J'?
+		// J = pred(Num); I = FindChar(J, _CR, 1, LenT) + 1;
+		I = FindChar(T, LenT, _CR, 1) + 1;
 		if (T[I] == _LF) { I++; }
 		if (I > LenT)
 		{
@@ -1210,10 +1212,14 @@ void PosDekFindLine(longint Num, WORD Pos, bool ChScr)
 
 void WrEndL(bool Hard, int Row)
 {
-	WORD w;
 	if ((Mode != HelpM) && (Mode != ViewM) && Wrap) {
-		if (Hard) w = 0x11 + (TxtColor << 8);
-		else w = 32 + (TxtColor << 8);
+		WORD w;
+		if (Hard) {
+			w = 0x11 + static_cast<WORD>(TxtColor << 8);
+		}
+		else {
+			w = ' ' + static_cast<WORD>(TxtColor << 8);
+		}
 		screen.ScrWrBuf(WindMin.X + LineS, WindMin.Y + Row - 1, &w, 1);
 	}
 }
@@ -1310,10 +1316,10 @@ void UpdScreen()
 				EditWrline((char*)&T[index], r);
 			}
 			if (InsPage) {
-				index = FindChar(w, 0x0C, index, LenT) + 1;
+				index = FindChar(T, LenT, 0x0C, index) + 1;
 			}
 			else {
-				index = FindChar(w, _CR, index, LenT) + 1;
+				index = FindChar(T, LenT, _CR, index) + 1;
 			}
 			WrEndL((index < LenT) && (T[index] == _LF), r);
 			if (T[index] == _LF) {
@@ -1364,7 +1370,7 @@ void Background()
 	}
 	UpdScreen(); // {tisk obrazovky}
 	WriteMargins();
-	screen.GotoXY(Posi - BPos - 1, succ(LineL - ScrL));
+	screen.GotoXY(Posi - BPos, succ(LineL - ScrL));
 	IsWrScreen = true;
 }
 
@@ -2789,10 +2795,13 @@ label1:
 		{
 			if (TestOptStr('n'))
 			{
-				ReplaceString(fst, fst, lst, Last); UpdStatLine(LineL, Posi, Mode);/*BackGround*/
+				ReplaceString(fst, fst, lst, Last);
+				UpdStatLine(LineL, Posi, Mode);/*BackGround*/
 			}
 			else {
-				FirstEvent = true; Background(); FirstEvent = false;
+				FirstEvent = true;
+				Background();
+				FirstEvent = false;
 				c = MyVerifyLL(408, "");
 				if (c == AbbrYes) ReplaceString(fst, fst, lst, Last);
 				else if (c == _ESC) return;
@@ -2836,11 +2845,11 @@ void ClrWord()
 	WORD k, m;
 	m = 1;
 	k = 1;
-	k = FindChar(m, 0x11, k, LenT);
+	k = FindChar(T, LenT, 0x11, k);
 	while (k < LenT) {
 		T[k] = 0x13;
 		m = 1;
-		k = FindChar(m, 0x11, k, LenT);
+		k = FindChar(T, LenT, 0x11, k);
 	}
 }
 
@@ -2850,7 +2859,8 @@ bool WordFind(WORD i, WORD WB, WORD WE, WORD LI)
 	bool result = false;
 	if (i == 0) return result;
 	i = i * 2 - 1;
-	k = FindChar(i, 0x13, 1, LenT);
+	// TODO: tady puvodne pouzite 'i'
+	k = FindChar(T, LenT, 0x13, 1);
 	if (k >= LenT) return result;
 	WB = k;
 	k++;
@@ -3601,7 +3611,9 @@ void HandleEvent() {
 						L1 = Part.PosP + LineI;
 						Format(I, L1, AbsLenT + LenT - Part.LenP, I1, false);
 						SetPart(L1); I = 1;
-						I = FindChar(I, 0xFF, 1, LenT); T[I] = W1;
+						// TODO: tady se pouzivalo 'I' ve FindChar, ale k cemu je???
+						I = FindChar(T, LenT, 0xFF, 1);
+						T[I] = W1;
 						SetDekLnCurrI(I); Posi = I - LineI + 1;
 					}
 				}

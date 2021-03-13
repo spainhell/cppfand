@@ -693,11 +693,10 @@ pstring StandardHead()
 
 pstring GetStr_E(FrmlPtr Z)
 {
-	pstring s;
 	if (Z == nullptr) return "";
 	else {
-		s = RunShortStr(Z);
-		while (LenStyleStr(s) > TxtCols) s[0]--;
+		std::string s = RunShortStr(Z);
+		while (GetLengthOfStyledString(s) > TxtCols) s[0]--;
 		return s;
 	}
 }

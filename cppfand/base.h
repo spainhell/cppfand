@@ -154,7 +154,7 @@ std::string MyFExpand(pstring Nm, pstring EnvName);
 
 // *** DISPLAY ***
 
-WORD LenStyleStr(pstring s);
+//WORD LenStyleStr(pstring s);
 WORD LogToAbsLenStyleStr(pstring s, WORD l);
 //void WrStyleStr(pstring s, WORD Attr);
 //void WrLongStyleStr(LongStr* S, WORD Attr);

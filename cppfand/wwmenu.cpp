@@ -412,7 +412,8 @@ void TMenuBox::InitTMenuBox(WORD C1, WORD R1)
 	std::string hd = GetText(0);
 	cols = hd.length();
 	for (i = 1; i <= nTxt; i++) {
-		l = LenStyleStr(GetText(i));
+		std::string s = GetText(i);
+		l = GetLengthOfStyledString(s);
 		if (l > cols) cols = l;
 	}
 	cols += 4;
@@ -615,7 +616,8 @@ void TMenuBar::InitTMenuBar(WORD C1, WORD R1, WORD Cols)
 	InitTMenu();
 	WORD l = 0;
 	for (WORD i = 1; i <= nTxt; i++) {
-		l = l + LenStyleStr(GetText(i)) + 2;
+		std::string s = GetText(i);
+		l = l + GetLengthOfStyledString(s) + 2;
 	}
 	if (l > TxtCols) RunError(636);
 	Cols = MaxW(l, Cols);
@@ -711,11 +713,13 @@ void TMenuBar::GetItemRect(WORD I, TRect* R)
 {
 	short x = Orig.X + nBlks;
 	for (short j = 1; j <= I - 1; j++) {
-		x += LenStyleStr(GetText(j)) + 2 + nBlks;
+		std::string s = GetText(j);
+		x += GetLengthOfStyledString(s) + 2 + nBlks;
 	}
 	R->A.X = x + 1;
 	R->A.Y = Orig.Y + 1;
-	R->Size.X = LenStyleStr(GetText(I)) + 2;
+	std::string s = GetText(I);
+	R->Size.X = GetLengthOfStyledString(s) + 2;
 	R->Size.Y = 1;
 }
 

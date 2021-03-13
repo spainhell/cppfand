@@ -30,18 +30,19 @@
 #include "../Report/genrprt.h"
 #include "../Report/rdrprt.h"
 #include "../Report/runrprt.h"
+#include "../textfunc/textfunc.h"
 
 
-void UserHeadLine(pstring UserHeader)
+void UserHeadLine(std::string UserHeader)
 {
 	WParam* p = PushWParam(1, 1, TxtCols, 1, true);
 	TextAttr = screen.colors.fNorm;
 	ClrEol();
 	WORD maxlen = TxtCols - 10;
-	WORD l = LenStyleStr(UserHeader);
+	WORD l = GetLengthOfStyledString(UserHeader);
 	if (l >= maxlen) {
 		UserHeader[0] = (BYTE)maxlen;
-		l = LenStyleStr(UserHeader);
+		l = GetLengthOfStyledString(UserHeader);
 	}
 	WORD n = (TxtCols - l) / 2;
 
@@ -249,7 +250,7 @@ void WritelnProc(Instr_writeln* PD)
 		case 'D': x = StrDate(RunReal(W->Frml), *W->Mask); break;
 		}
 		if (LF == WriteType::message || LF == WriteType::msgAndHelp) t = t + x;
-		else printf("%s", x.c_str());
+		else printS += x;
 	label1:
 		W = (WrLnD*)W->Chain;
 	}
@@ -1321,7 +1322,7 @@ void CallProcedure(Instr_proc* PD)
 
 #ifdef _DEBUG
 	std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
-	if (srcCode.find("(copy(Path,length(Path)-5,2)); sestp:=copy(Path,1,length(Path)-6)+'??.TXT'; end; h:=PARAM3.TxtHd; ww:=PARAM3.TxtWw; PARAM3.InTxt:=true; repeat if PARAM3.TxtLl=~'' then if PARAM3.Prohl then lp:='") != std::string::npos) {
+	if (srcCode.find("  begin proc(Clr); with window((0,maxrow-2,40,maxrow-2,,^Q)) do write(' Obdob¡: ',DenTxt(PARAM4.DatumOd),PARAM4.DatumOd:' DD.MM.YYYY a§ ', DenTxt(PARAM4.DatumDo),PARAM4.DatumDo:' DD.MM.YYYY'); end; ") != std::string::npos) {
 		printf("");
 	}
 #endif
@@ -1399,14 +1400,14 @@ void CallProcedure(Instr_proc* PD)
 	pd1 = ReadProcBody();
 
 	// vytvorime vektor instrukci pro snadny prehled
-//#ifdef _DEBUG
+#ifdef _DEBUG
 	std::vector<Instr*> vI;
 	Instr* next = pd1;
 	while (next != nullptr) {
 		vI.push_back(next);
 		next = (Instr*)next->Chain;
 	}
-	//#endif
+#endif
 	FDLocVarAllowed = false;
 	//lv0 = lv1;
 	it0 = it1;

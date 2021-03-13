@@ -48,10 +48,10 @@ void RunReport(RprtOpt* RO)
 	}
 	if (PgeLimitZ != nullptr) PgeLimit = RunInt(PgeLimitZ);
 	else PgeLimit = spec.AutoRprtLimit;
-	
+
 	if (PgeSizeZ != nullptr) PgeSize = RunInt(PgeSizeZ);
 	else PgeSize = spec.AutoRprtLimit + spec.CpLines;
-	
+
 	if (PgeSize < 2) PgeSize = 2;
 	if ((PgeLimit > PgeSize) || (PgeLimit == 0)) PgeLimit = PgeSize - 1;
 	if (!RewriteRprt(RO, PgeSize, Times, isLPT1)) return;  // pouze zajisti otevreni souboru
@@ -242,7 +242,7 @@ std::string NewTxtCol(std::string S, WORD Col, WORD Width, bool Wrap)
 	//printf("%s%s", Rprt.c_str(), ss.c_str());
 
 	while (S.length() > 0) {
-		ss += GetLine(S, Width, Wrap, Absatz);
+		std::string strLine = GetLine(S, Width, Wrap, Absatz);
 		Ln++;
 		if (Ln == 1) {
 			TD = new TTD(); // (TTD*)GetStore2(sizeof(*TD));
@@ -251,7 +251,7 @@ std::string NewTxtCol(std::string S, WORD Col, WORD Width, bool Wrap)
 			TD->Width = Width;
 		}
 		SL = new StringListEl(); // (StringListEl*)GetStore2(ss.length() + 5);
-		SL->S = ss;
+		SL->S = strLine;
 		if (TD->SL == nullptr) TD->SL = SL;
 		else ChainLast(TD->SL, SL);
 	}
@@ -394,12 +394,8 @@ void PendingTT(std::string& text)
 			if (TD->Ln > 0) {
 				WriteNBlks(text, TD->Col - Col);
 				SL = TD->SL;
-				char buffer[256];
-				snprintf(buffer, sizeof(buffer), "%s", SL->S.c_str());
-				//printf("%s%s", Rprt.c_str(), SL->S.c_str());
-				text += buffer;
-				WORD l = LenStyleStr(SL->S);
-				Col = TD->Col + l;
+				text += SL->S;
+				Col = TD->Col + GetLengthOfStyledString(SL->S);
 				TD->Ln--;
 				TD->SL = (StringList)SL->Chain;
 			}
@@ -794,7 +790,7 @@ void MoveMFlds(ConstListEl* C1, ConstListEl* C2)
 
 void PutMFlds(KeyFldDPtr M)
 {
-	FieldDescr* f, *f1; FileD* cf; FileD* cf1; void* cr; void* cr1; KeyFldD* m1;
+	FieldDescr* f, * f1; FileD* cf; FileD* cf1; void* cr; void* cr1; KeyFldD* m1;
 	pstring s; double r; bool b;
 	if (MinID == nullptr) return;
 	cf = CFile; cf1 = MinID->Scan->FD; cr = CRecPtr; cr1 = MinID->ForwRecPtr;

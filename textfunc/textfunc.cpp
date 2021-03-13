@@ -126,6 +126,17 @@ std::string GetStyledStringOfLength(std::string& input, size_t from, size_t leng
 	return result;
 }
 
+size_t GetLengthOfStyledString(std::string& input)
+{
+	size_t count = 0;
+	for (char c : input)
+	{
+		if (!(c == 0x13 || c == 0x17 || c == 0x11 || c == 0x04
+			|| c == 0x02 || c == 0x05 || c == 0x01)) count++;
+	}
+	return count;
+}
+
 std::string RepeatString(std::string& input, size_t count)
 {
 	std::string result;

@@ -597,8 +597,8 @@ longint AbsRecNr(longint N)
 		) {
 		if (IsNewRec) result = 0;
 		else result = 1;
-			return result;
-}
+		return result;
+	}
 	if (IsNewRec) {
 		if ((N == CRec()) && (N == CNRecs())) {
 			result = 0;
@@ -735,14 +735,14 @@ bool ELockRec(EditD* E, longint N, bool IsNewRec, bool Subset)
 		if (CFile->NotCached()) {
 			if (!TryLockN(N, 1/*withESC*/)) {
 				result = false;
-					return result;
+				return result;
 			}
 			md = NewLMode(RdMode); ReadRec(CFile, N, CRecPtr); OldLMode(md);
-				if (Subset && !
-					((NoCondCheck || RunBool(E->Cond) && CheckKeyIn(E)) && CheckOwner(E))) {
-					WrLLF10Msg(150); goto label1;
-				}
-}
+			if (Subset && !
+				((NoCondCheck || RunBool(E->Cond) && CheckKeyIn(E)) && CheckOwner(E))) {
+				WrLLF10Msg(150); goto label1;
+			}
+		}
 		else if (DeletedFlag()) {
 			WrLLF10Msg(148);
 		label1:
@@ -1062,10 +1062,12 @@ void IVon()
 
 void SetRecAttr(WORD I)
 {
-	WORD TA; EFldD* D;
-	TA = RecAttr(I); D = E->FirstFld;
+	WORD TA = RecAttr(I);
+	EFldD* D = E->FirstFld;
 	while (D != nullptr) {
-		if (D->Page == CPage) SetFldAttr(D, I, TA);
+		if (D->Page == CPage) {
+			SetFldAttr(D, I, TA);
+		}
 		D = (EFldD*)D->Chain;
 	}
 }
@@ -1076,9 +1078,18 @@ void DisplTabDupl()
 	TextAttr = E->dTab;
 	while (D != nullptr) {
 		if (D->Page == CPage) {
-			screen.GotoXY(D->Col + D->L, FldRow(D, 1));
-			if (D->Tab) if (D->Dupl) printf("%c", 0x1F); else printf("%c", 0x11);
-			else if (D->Dupl) printf("%c", 0x19); else printf(" ");
+			const short Col = D->Col + D->L;
+			const short Row = FldRow(D, 1);
+			if (D->Tab) {
+				if (D->Dupl) screen.ScrFormatWrText(Col, Row, "%c", 0x1F); // printf("%c", 0x1F);
+				else screen.ScrFormatWrText(Col, Row, "%c", 0x11); // printf("%c", 0x11);
+			}
+			else if (D->Dupl) {
+				screen.ScrFormatWrText(Col, Row, "%c", 0x19); // printf("%c", 0x19);
+				}
+			else {
+				screen.ScrFormatWrText(Col, Row, "%c", ' '); // printf(" ");
+			}
 		}
 		D = (EFldD*)D->Chain;
 	}
@@ -1377,7 +1388,7 @@ label1:
 	RestoreExit(er);
 	if (!ok) GoExit();
 	ReleaseStore(p);
-	}
+		}
 
 void SetStartRec()
 {
@@ -1436,7 +1447,7 @@ bool OpenEditWw()
 #ifdef FandSQL
 	if (CFile->IsSQLFile) {
 		if ((VK = nullptr) || !VK->InWork) Subset = true
-	}
+}
 	else
 #endif
 	{
@@ -1506,7 +1517,7 @@ label3:
 	if (!EdRecVar) OldLMode(md2);
 	if (IsNewRec) NewRecExit();
 	return result;
-}
+	}
 
 void RefreshSubset()
 {
@@ -1621,7 +1632,7 @@ void UpdMemberRef(void* POld, void* PNew)
 					else
 #endif
 						DeleteXRec(Scan->RecNr, true);
-				}
+			}
 				else {
 					Move(CRecPtr, p2, CFile->RecLen);
 					CRecPtr = p2;
@@ -1638,7 +1649,7 @@ void UpdMemberRef(void* POld, void* PNew)
 					if (sql) Strm1->UpdateXRec(k, @x, false) else
 #endif
 						OverWrXRec(Scan->RecNr, p, p2);
-				}
+					}
 				goto label1;
 				}
 			Scan->Close();
@@ -1842,7 +1853,7 @@ bool DelIndRec(longint I, longint N)
 		XString x;
 		if (CFile->IsSQLFile) {
 			x.PackKF(VK->KFlds); Strm1->DeleteXRec(VK, @x, false);
-		}
+}
 		else
 #endif
 			DeleteXRec(N, true);
@@ -1852,7 +1863,7 @@ bool DelIndRec(longint I, longint N)
 		if (Subset) WK->DeleteAtNr(I);
 		result = true;
 		E->EdUpdated = true;
-		}
+}
 	return result;
 	}
 
@@ -1887,30 +1898,30 @@ bool DeleteRecProc()
 		) {
 		log->log(loglevel::DEBUG, "... from file with index ...");
 		TestXFExist();
-			if (Group) {
-				IRec = 1; BaseRec = 1;
-					while (BaseRec <= CNRecs()) {
-						N = AbsRecNr(BaseRec);
-							ClearDeletedFlag();/*prevent err msg 148*/
-						if (!ELockRec(E, N, false, Subset)) goto label1;
-						RdRec(BaseRec);
-						if (RunBool(E->Bool)) b = DelIndRec(BaseRec, N);
-						else {
-							b = true;
-							BaseRec++;
-						}
-						UnLockRec(E);
-						if (!b) goto label1;
-					}
-			label1:
-				{}
-			}
-			else {
+		if (Group) {
+			IRec = 1; BaseRec = 1;
+			while (BaseRec <= CNRecs()) {
+				N = AbsRecNr(BaseRec);
+				ClearDeletedFlag();/*prevent err msg 148*/
 				if (!ELockRec(E, N, false, Subset)) goto label1;
-				DelIndRec(CRec(), N);
+				RdRec(BaseRec);
+				if (RunBool(E->Bool)) b = DelIndRec(BaseRec, N);
+				else {
+					b = true;
+					BaseRec++;
+				}
 				UnLockRec(E);
+				if (!b) goto label1;
 			}
-}
+		label1:
+			{}
+		}
+		else {
+			if (!ELockRec(E, N, false, Subset)) goto label1;
+			DelIndRec(CRec(), N);
+			UnLockRec(E);
+		}
+	}
 	else if (Group) {
 		J = 0;
 		fail = false;
@@ -2223,7 +2234,7 @@ bool OldRecDiffers()
 			f = f->Chain;
 		}
 		goto label2;
-	}
+}
 	else
 #endif
 		ReadRec(CFile, E->LockedRec, CRecPtr);
@@ -2470,7 +2481,7 @@ label2:
 label1:
 	UnLockWithDep(OldMd);
 	return result;
-}
+	}
 
 void DuplFromPrevRec()
 {
@@ -3648,7 +3659,7 @@ void F6Proc()
 	case 3: PromptSelect(); break;
 	case 4: AutoGraph(); break;
 	case 5: Sorting(); break;
-}
+	}
 }
 
 longint GetEdRecNo()
@@ -4105,9 +4116,9 @@ label81:
 						OldLMode(E->OldMd);
 					}
 					return;
-					}
-				break;
 				}
+				break;
+			}
 			case '=' + ALT: {
 				// ukonceni editace bez ulozeni zmen
 				UndoRecord();
@@ -4376,9 +4387,9 @@ label81:
 			}
 			}
 			break;
-			}
-		break;
 		}
+		break;
+	}
 	default: {
 		// nejedna se o udalost z klavesnice ani mysi
 		ClrEvent();
@@ -4386,7 +4397,7 @@ label81:
 	}
 	}
 	goto label1;
-	}
+}
 
 void EditDataFile(FileD* FD, EditOpt* EO)
 {

@@ -1276,16 +1276,16 @@ bool SEquUpcase(std::string S1, std::string S2)
 	return true;
 }
 
-WORD LenStyleStr(pstring s)
-{
-	WORD l = s.length();
-	for (WORD i = 1; i <= s.length(); i++) {
-		if (s[i] == 0x13 || s[i] == 0x17 || s[i] == 0x11 || s[i] == 0x04
-			|| s[i] == 0x02 || s[i] == 0x05 || s[i] == 0x01)
-			l--;
-	}
-	return l;
-}
+//WORD LenStyleStr(pstring s)
+//{
+//	WORD l = s.length();
+//	for (WORD i = 1; i <= s.length(); i++) {
+//		if (s[i] == 0x13 || s[i] == 0x17 || s[i] == 0x11 || s[i] == 0x04
+//			|| s[i] == 0x02 || s[i] == 0x05 || s[i] == 0x01)
+//			l--;
+//	}
+//	return l;
+//}
 
 //void WrStyleChar(char C)
 //{

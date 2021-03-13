@@ -7,7 +7,7 @@
 
 class KeyFldD;
 
-void UserHeadLine(pstring UserHeader);
+void UserHeadLine(std::string UserHeader);
 
 void ReportProc(RprtOpt* RO, bool save);
 void PromptAutoRprt(RprtOpt* RO);
