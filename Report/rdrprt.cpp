@@ -270,26 +270,34 @@ void Err()
 
 void ChainSumElR()
 {
-	SumElem* S = nullptr;
 	if (FrstSumVar || (SumIi == 0)) SumIi = 1;
+	
 	if (FrstSumVar || (CBlk == nullptr)) {
-		S = IDA[SumIi]->Sum;
-		FrmlSumEl->Chain = (S == nullptr) ? nullptr : S->Chain;
-		if (S == nullptr) {
+		if (IDA[SumIi]->Sum == nullptr) {
 			IDA[SumIi]->Sum = FrmlSumEl;
 		}
 		else {
-			S->Chain = FrmlSumEl;
+			for (size_t i = 0; i < FrmlSumEl->size(); i++) {
+				auto *el = FrmlSumEl->at(i);
+				IDA[SumIi]->Sum->push_back(el);
+			}
+			FrmlSumEl->clear();
 		}
 	}
 	else {
-		S = CBlk->Sum;
-		FrmlSumEl->Chain = S->Chain;
-		S->Chain = FrmlSumEl;
+		std::vector<FrmlElemSum*> *S = CBlk->Sum;
+		for (size_t i = 0; i < CBlk->Sum->size(); i++) {
+			auto* el = CBlk->Sum->at(i);
+			FrmlSumEl->push_back(el);
+			CBlk->Sum->clear();
+		}
 	}
 
-	if (CBlkSave != nullptr) { CBlk = CBlkSave; CBlkSave = nullptr; }
-	CZeroLst.push_back(&FrmlSumEl->R);
+	if (CBlkSave != nullptr) {
+		CBlk = CBlkSave;
+		CBlkSave = nullptr;
+	}
+	// TODO: CZeroLst.push_back(&FrmlSumEl->R);
 }
 
 void Rd_Oi()

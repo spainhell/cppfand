@@ -15,7 +15,7 @@ struct stSaveState
 	CompInpD* PrevCompInp = nullptr;
 	BYTE* InpArrPtr = nullptr; RdbPos InpRdbPos;
 	WORD InpArrLen = 0, CurrPos = 0, OldErrPos = 0;
-	SumElem* FrmlSumEl = nullptr;
+	std::vector<FrmlElemSum*> *FrmlSumEl = nullptr;
 	bool FrstSumVar = false, FileVarsAllowed = false;
 	FrmlElem* (*RdFldNameFrml)(char&) = nullptr; // ukazatel na funkci
 	FrmlElem* (*RdFunction)(char&) = nullptr; // ukazatel na funkci

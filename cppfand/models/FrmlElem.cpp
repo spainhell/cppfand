@@ -126,6 +126,18 @@ FrmlElemIn::FrmlElemIn(instr_type Op) : FrmlElem(Op, 0)
 {
 }
 
+FrmlElemSum::FrmlElemSum(instr_type Op) : FrmlElem(Op, 0)
+{
+	
+}
+
+FrmlElemSum::FrmlElemSum(instr_type op, double r, FrmlElem* frml) : FrmlElem(op, 0)
+{
+	R = r;
+	Frml = frml;
+}
+
+
 FrmlElem* CopyFrmlElem(const FrmlElem* orig)
 {
 	if (orig == nullptr) return nullptr;

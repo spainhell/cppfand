@@ -9,8 +9,8 @@ WORD CompMFlds(KeyFldD* M);
 void SetOldMFlds(KeyFldD* M);
 void SetMFlds(KeyFldD* M);
 void ReadInpFileM(InpD* ID); // stejná implementace v runrprt.cpp -> pøidáno M na konci
-void ZeroSumFlds(SumElem* Z);
-void SumUpM(SumElem* Z); // stejná implementace v runrprt.cpp -> pøidáno M na konci
+void ZeroSumFlds(std::vector<FrmlElemSum*>* Z);
+void SumUpM(std::vector<FrmlElemSum*>* Z); // stejná implementace v runrprt.cpp -> pøidáno M na konci
 void RunAssign(AssignD* A);
 
 void WriteOutp(OutpRD* RD);

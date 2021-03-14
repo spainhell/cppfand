@@ -69,7 +69,7 @@ struct InpD
 	FrmlElem* Bool = nullptr;
 	bool SQLFilter = false;
 	KeyFldD* MFld = nullptr;
-	SumElem* Sum = nullptr;
+	std::vector<FrmlElemSum*> *Sum = nullptr;
 	bool Exist = false;
 	char Op = '\0';
 	double Count = 0.0;
@@ -131,7 +131,7 @@ struct BlkD : public Chained
 {
 	// BlkD* Chain;
 	FrmlElem* Bool = nullptr;
-	SumElem* Sum = nullptr;
+	std::vector<FrmlElemSum*> *Sum = nullptr;
 	char* Txt = nullptr;          /*sequence of pstrings*/
 	bool AbsLine = false, SetPage = false, NotAtEnd = false, FF1 = false, FF2 = false;
 	FrmlElem* LineBound = nullptr;

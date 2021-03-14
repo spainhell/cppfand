@@ -1940,16 +1940,15 @@ FrmlElem* RdPrim(char& FTyp)
 				if (FrmlSumEl != nullptr) OldError(74);
 				if (ChainSumEl == nullptr) Error(28);
 				//FrmlSumEl = (SumElem*)GetStore(sizeof(SumElem));
-				FrmlSumEl = new SumElem();
+				FrmlSumEl = new std::vector<FrmlElemSum*>();
 				FrstSumVar = true;
-				FrmlSumEl->Op = _const;
-				FrmlSumEl->R = 0;
-				FrmlSumEl->Frml = RdAdd(FTyp);
+				auto f = new FrmlElemSum(_const, 0.0, RdAdd(FTyp));
+				FrmlSumEl->push_back(f);
 				TestReal(FTyp);
 				Accept(')');
-				Z = (FrmlElem*)&FrmlSumEl->Op;
+				Z = (FrmlElem*)f;
 				ChainSumEl();
-				FrmlSumEl = nullptr;
+				FrmlSumEl = nullptr; // TODO: toto by se melo smazat, ale vyuziva ho v urcitych pripadech ChainSumEl() -> nutno upravit
 			}
 			else if (IsKeyWord("DTEXT"))
 			{

@@ -74,7 +74,7 @@ extern BYTE* InpArrPtr; extern RdbPos InpRdbPos;		// { "  "  }
 extern size_t InpArrLen;
 extern size_t CurrPos;
 extern size_t OldErrPos;			// { "  "  }
-extern SumElem* FrmlSumEl;				//{ set while reading sum / count argument }
+extern std::vector<FrmlElemSum*> *FrmlSumEl;				//{ set while reading sum / count argument }
 extern bool FrstSumVar, FileVarsAllowed;
 extern FrmlElem* (*RdFldNameFrml)(char&); // ukazatel na funkci
 extern FrmlElem* (*RdFunction)(char&); // ukazatel na funkci

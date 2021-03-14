@@ -8,6 +8,7 @@ class Instr;
 class FileD;
 class ChkD;
 class FrmlElem;
+class FrmlElemSum;
 class FieldDescr;
 class LocVarBlkD;
 
@@ -52,13 +53,18 @@ struct KeyInD : public Chained // r89
 	std::string X2;
 };
 
-struct SumElem // r95
-{
-	SumElem* Chain = nullptr;
-	char Op = '\0';
-	double R = 0.0;
-	FrmlElem* Frml = nullptr;
-};
+//class SumElem // r95
+//{
+//public:
+//	SumElem() {}
+//	SumElem(instr_type instr, double r, FrmlElem* frml)	{
+//		
+//	}
+//private:
+//	std::stack<FrmlElemSum*> *frmlStack = new std::stack<FrmlElemSum*>();
+//	// SumElem* Chain = nullptr;
+//	// FrmlElemSum* Frml = nullptr;
+//};
 
 struct structXPath
 {

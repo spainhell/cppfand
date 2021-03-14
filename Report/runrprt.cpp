@@ -104,7 +104,7 @@ label1:
 	if (WasFF2) PrintPageHd(ReportString);
 	Headings(L, nullptr, ReportString);
 	MergeProc(ReportString);
-	MoveMFlds(&NewMFlds, &OldMFlds);
+	MoveMFlds(NewMFlds, OldMFlds);
 	GetMinKey();
 	if (NEof == MaxIi) {
 		if (FrstLvM != LstLvM) Footings(FrstLvM, LstLvM->ChainBack, ReportString);
@@ -695,11 +695,11 @@ void PrintPageHd(std::string& text)
 	if (!b) PrintDH = 2;
 }
 
-void SumUp(SumElem* S)
+void SumUp(std::vector<FrmlElemSum*>* S)
 {
-	while (S != nullptr) {
-		S->R = S->R + RunReal(S->Frml);
-		S = S->Chain;
+	if (S == nullptr) return;
+	for (size_t i = 0; i < S->size(); i++) {
+		S->at(i)->R += RunReal(S->at(i)->Frml);
 	}
 }
 
@@ -770,40 +770,40 @@ void CloseInp()
 	}
 }
 
-WORD CompMFlds(ConstListEl** C, KeyFldD** M, integer& NLv)
+WORD CompMFlds(ConstListEl* C, KeyFldD* M, integer& NLv)
 {
 	integer res = 0; XString x;
 	NLv = 0;
-	while (*C != nullptr) {
+	while (C != nullptr) {
 		NLv++;
 		x.Clear();
-		x.StoreKF(*M);
-		res = CompStr(x.S, (*C)->S);
+		x.StoreKF(M);
+		res = CompStr(x.S, C->S);
 		if (res != _equ) { return res; }
-		*C = (ConstListEl*)(*C)->Chain;
-		*M = (KeyFldD*)(*M)->Chain;
+		C = (ConstListEl*)C->Chain;
+		M = (KeyFldD*)M->Chain;
 	}
 	return _equ;
 }
 
-void GetMFlds(ConstListEl** C, KeyFldD** M)
+void GetMFlds(ConstListEl* C, KeyFldD* M)
 {
-	while (*C != nullptr) {
-		pstring* s = &(*C)->S;
+	while (C != nullptr) {
+		pstring* s = &C->S;
 		XString* x = (XString*)s;
 		x->Clear();
-		x->StoreKF(*M);
-		*C = (ConstListEl*)(*C)->Chain;
-		*M = (KeyFldD*)(*M)->Chain;
+		x->StoreKF(M);
+		C = (ConstListEl*)C->Chain;
+		M = (KeyFldD*)M->Chain;
 	}
 }
 
-void MoveMFlds(ConstListEl** C1, ConstListEl** C2)
+void MoveMFlds(ConstListEl* C1, ConstListEl* C2)
 {
-	while (*C2 != nullptr && *C1 != nullptr) {
-		(*C2)->S = (*C1)->S;
-		*C1 = (ConstListEl*)(*C1)->Chain;
-		*C2 = (ConstListEl*)(*C2)->Chain;
+	while (C2 != nullptr) {
+		C2->S = C1->S;
+		C1 = (ConstListEl*)C1->Chain;
+		C2 = (ConstListEl*)C2->Chain;
 	}
 }
 
@@ -863,12 +863,12 @@ void GetMinKey()
 			if (!IDA[i]->Scan->eof) {
 				WORD res;
 				if (mini == 0) goto label1;
-				res = CompMFlds(&NewMFlds, &IDA[i]->MFld, nlv);
+				res = CompMFlds(NewMFlds, IDA[i]->MFld, nlv);
 				if (res != _gt) {
 					if (res == _lt)
 					{
 					label1:
-						GetMFlds(&NewMFlds, &IDA[i]->MFld);
+						GetMFlds(NewMFlds, IDA[i]->MFld);
 						mini = i;
 					}
 					IDA[i]->Exist = true;
@@ -961,7 +961,7 @@ void MergeProc(std::string& text)
 			LvDescr* L = ID->LstLvS;
 		label1:
 			ZeroSumFlds(L);
-			GetMFlds(&ID->OldSFlds, &ID->SFld);
+			GetMFlds(ID->OldSFlds, ID->SFld);
 			if (WasFF2) PrintPageHd(text);
 			Headings(L, ID->FrstLvS, text);
 			if (PrintDH == 0) PrintDH = 1;
@@ -970,13 +970,13 @@ void MergeProc(std::string& text)
 			SumUp(ID->Sum);
 			ReadInpFile(ID);
 			if (ID->Scan->eof) goto label4;
-			res = CompMFlds(&NewMFlds, &ID->MFld, nlv);
+			res = CompMFlds(NewMFlds, ID->MFld, nlv);
 			if ((res == _lt) && (MaxIi > 1)) {
 				SetMsgPar(ID->Scan->FD->Name);
 				RunError(607);
 			}
 			if (res != _equ) goto label4;
-			res = CompMFlds(&ID->OldSFlds, &ID->SFld, nlv);
+			res = CompMFlds(ID->OldSFlds, ID->SFld, nlv);
 			if (res == _equ) {
 				MoveForwToRec(ID);
 				goto label2;

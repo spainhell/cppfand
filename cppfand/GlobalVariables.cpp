@@ -58,7 +58,7 @@ double Power10[21] = { 1E0, 1E1, 1E2, 1E3, 1E4, 1E5, 1E6, 1E7, 1E8, 1E9, 1E10,
 bool SpecFDNameAllowed, IdxLocVarAllowed, FDLocVarAllowed, IsCompileErr;
 CompInpD* PrevCompInp = nullptr;			// { saved at "include" }
 BYTE* InpArrPtr; RdbPos InpRdbPos;		// { "  "  }
-SumElem* FrmlSumEl;				//{ set while reading sum / count argument }
+std::vector<FrmlElemSum*> *FrmlSumEl;				//{ set while reading sum / count argument }
 bool FrstSumVar, FileVarsAllowed;
 // FrmlPtr RdFldNameFrml() = FrmlPtr(char& FTyp);
 // FrmlPtr RdFunction() = FrmlPtr(char& FTyp);

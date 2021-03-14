@@ -1308,7 +1308,15 @@ void SetDeletedFlag()
 
 integer CompStr(pstring& S1, pstring& S2)
 {
-	return 0;
+	BYTE cmpLen = min(S1.length(), S2.length());
+	for (BYTE i = 1; i <= cmpLen; i++) {
+		if (S1[i] == S2[i]) { continue; }
+		else {
+			if (S1[i] < S2[i]) return 2; // _lt
+			else return 4; // _gt
+		}
+	}
+	return 1; // _equ
 }
 
 WORD CmpLxStr(char* p1, WORD len1, char* p2, WORD len2)

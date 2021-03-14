@@ -231,4 +231,14 @@ public:
 	std::vector<std::pair<double, double>> reals_range;
 };
 
+/// Trida pro souctove vypocty
+class FrmlElemSum : public FrmlElem
+{
+public:
+	FrmlElemSum(instr_type Op);
+	FrmlElemSum(instr_type op, double r, FrmlElem* frml);
+	double R = 0;
+	FrmlElem* Frml = nullptr;
+};
+
 FrmlElem* CopyFrmlElem(const FrmlElem* orig);

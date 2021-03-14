@@ -131,14 +131,20 @@ label1:
 	if (!RunBool(ID->Bool)) goto label1;
 }
 
-void ZeroSumFlds(SumElem* Z)
+void ZeroSumFlds(std::vector<FrmlElemSum*> *Z)
 {
-	while (Z != nullptr) { Z->R = 0.0; Z = Z->Chain; };
+	while (Z != nullptr) {
+		//Z->Frml->R = 0.0;
+		//Z = Z->Chain;
+	}
 }
 
-void SumUpM(SumElem* Z)
+void SumUpM(std::vector<FrmlElemSum*> *Z)
 {
-	while (Z != nullptr) { Z->R = Z->R + RunReal(Z->Frml); Z = Z->Chain; };
+	while (Z != nullptr) {
+		//Z->Frml->R = Z->Frml->R + RunReal(Z->Frml);
+		//Z = Z->Chain;
+	}
 }
 
 void RunAssign(AssignD* A)

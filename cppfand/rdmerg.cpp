@@ -210,8 +210,18 @@ void Err_M()
 void ChainSumElM()
 {
 	if (FrstSumVar || (SumIi == 0)) SumIi = 1;
-	FrmlSumEl->Chain = IDA[SumIi]->Sum;
-	IDA[SumIi]->Sum = FrmlSumEl;
+	if (IDA[SumIi]->Sum == nullptr) {
+		IDA[SumIi]->Sum = FrmlSumEl;
+	}
+	else {
+		for (size_t i = 0; i < FrmlSumEl->size(); i++) {
+			auto* el = FrmlSumEl->at(i);
+			IDA[SumIi]->Sum->push_back(el);
+			FrmlSumEl->clear();
+		}
+	}
+	//FrmlSumEl->Chain = IDA[SumIi]->Sum;
+	//IDA[SumIi]->Sum = FrmlSumEl;
 }
 
 void ReadMerge()
