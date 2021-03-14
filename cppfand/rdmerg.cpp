@@ -199,7 +199,8 @@ void TestNotSum_M()
 
 void Err_M()
 {
-	TestNotSum_M(); SetIi_M();
+	TestNotSum_M();
+	SetIi_M();
 	if (IDA[Ii]->ErrTxtFrml == nullptr)
 	{
 		IDA[Ii]->ErrTxtFrml = new FrmlElem4(_const, 0); // GetOp(_const, 256);
@@ -209,7 +210,8 @@ void Err_M()
 void ChainSumElM()
 {
 	if (FrstSumVar || (SumIi == 0)) SumIi = 1;
-	FrmlSumEl->Chain = IDA[SumIi]->Sum; IDA[SumIi]->Sum = FrmlSumEl;
+	FrmlSumEl->Chain = IDA[SumIi]->Sum;
+	IDA[SumIi]->Sum = FrmlSumEl;
 }
 
 void ReadMerge()
@@ -255,7 +257,9 @@ void ReadMerge()
 #ifdef FandSQL
 		if (CFile->typSQLFile) WasSqlFile = true;
 #endif 
-		for (I = 1; I <= Ii - 1; I++) if (InpFD_M(I) == FD) OldError(26);
+		for (I = 1; I <= Ii - 1; I++) {
+			if (InpFD_M(I) == FD) OldError(26);
+		}
 		CViewKey = RdViewKey();
 		if (Lexem == '!') {
 			RdLex();
@@ -274,7 +278,9 @@ void ReadMerge()
 		}
 		//New(ID->Scan, Init(FD, CViewKey, KI, true));
 		ID->Scan = new XScan(FD, CViewKey, KI, true);
-		if (!(Lexem == ';' || Lexem == '#' || Lexem == 0x1A)) RdKFList(&ID->MFld, FD);
+		if (!(Lexem == ';' || Lexem == '#' || Lexem == 0x1A)) {
+			RdKFList(&ID->MFld, FD);
+		}
 		if (Ii > 1) {
 			if (IDA[Ii - 1]->MFld == nullptr) {
 				if (ID->MFld != nullptr) OldError(22);
@@ -331,7 +337,9 @@ label3:
 	}
 	for (I = 1; I <= MaxIi; I++) {
 		ID = IDA[I];
-		if (ID->ErrTxtFrml != nullptr) RdChkDsFromPos(ID->Scan->FD, ID->Chk);
+		if (ID->ErrTxtFrml != nullptr) {
+			RdChkDsFromPos(ID->Scan->FD, ID->Chk);
+		}
 	}
 }
 

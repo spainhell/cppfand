@@ -272,17 +272,23 @@ void ChainSumElR()
 {
 	SumElem* S = nullptr;
 	if (FrstSumVar || (SumIi == 0)) SumIi = 1;
-	if (FrstSumVar || (CBlk == nullptr)) S = IDA[SumIi]->Sum;
-	else S = CBlk->Sum;
-
-	// TODO: byla pridana kontrola S, tady to padalo ...
-	if (S != nullptr) {
+	if (FrstSumVar || (CBlk == nullptr)) {
+		S = IDA[SumIi]->Sum;
+		FrmlSumEl->Chain = (S == nullptr) ? nullptr : S->Chain;
+		if (S == nullptr) {
+			IDA[SumIi]->Sum = FrmlSumEl;
+		}
+		else {
+			S->Chain = FrmlSumEl;
+		}
+	}
+	else {
+		S = CBlk->Sum;
 		FrmlSumEl->Chain = S->Chain;
 		S->Chain = FrmlSumEl;
 	}
 
 	if (CBlkSave != nullptr) { CBlk = CBlkSave; CBlkSave = nullptr; }
-
 	CZeroLst.push_back(&FrmlSumEl->R);
 }
 

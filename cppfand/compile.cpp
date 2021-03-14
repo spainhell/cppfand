@@ -1935,8 +1935,7 @@ FrmlElem* RdPrim(char& FTyp)
 				((FrmlElem0*)Z)->W11 = N;
 				FTyp = 'B';
 			}
-			else if (IsKeyWord("SUM"))
-			{
+			else if (IsKeyWord("SUM")) {
 				RdLex();
 				if (FrmlSumEl != nullptr) OldError(74);
 				if (ChainSumEl == nullptr) Error(28);

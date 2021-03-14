@@ -53,7 +53,9 @@ label1:
 			}
 		}
 	}
-	for (I = 1; I <= MinIi - 1; I++) IDA[I]->Exist = false;
+	for (I = 1; I <= MinIi - 1; I++) {
+		IDA[I]->Exist = false;
+	}
 	if (NEof == MaxIi) {
 		b = SaveCache(0, CFile->Handle);
 		RunMsgOff();
@@ -63,8 +65,12 @@ label1:
 		return;
 	}
 	EmptyGroup = false;
-	if (Join) JoinProc(1, EmptyGroup);
-	else MergeProcM();
+	if (Join) {
+		JoinProc(1, EmptyGroup);
+	}
+	else {
+		MergeProcM();
+	}
 	if (!EmptyGroup) {
 		WriteOutp(OutpRDs);
 		MergOpGroup.Group = MergOpGroup.Group + 1.0;

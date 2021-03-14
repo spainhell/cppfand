@@ -46,11 +46,19 @@ void RunReport(RprtOpt* RO)
 			return;
 		}
 	}
-	if (PgeLimitZ != nullptr) PgeLimit = RunInt(PgeLimitZ);
-	else PgeLimit = spec.AutoRprtLimit;
+	if (PgeLimitZ != nullptr) {
+		PgeLimit = RunInt(PgeLimitZ);
+	}
+	else {
+		PgeLimit = spec.AutoRprtLimit;
+	}
 
-	if (PgeSizeZ != nullptr) PgeSize = RunInt(PgeSizeZ);
-	else PgeSize = spec.AutoRprtLimit + spec.CpLines;
+	if (PgeSizeZ != nullptr) {
+		PgeSize = RunInt(PgeSizeZ);
+	}
+	else {
+		PgeSize = spec.AutoRprtLimit + spec.CpLines;
+	}
 
 	if (PgeSize < 2) PgeSize = 2;
 	if ((PgeLimit > PgeSize) || (PgeLimit == 0)) PgeLimit = PgeSize - 1;
@@ -96,7 +104,7 @@ label1:
 	if (WasFF2) PrintPageHd(ReportString);
 	Headings(L, nullptr, ReportString);
 	MergeProc(ReportString);
-	MoveMFlds(NewMFlds, OldMFlds);
+	MoveMFlds(&NewMFlds, &OldMFlds);
 	GetMinKey();
 	if (NEof == MaxIi) {
 		if (FrstLvM != LstLvM) Footings(FrstLvM, LstLvM->ChainBack, ReportString);
@@ -690,18 +698,26 @@ void PrintPageHd(std::string& text)
 void SumUp(SumElem* S)
 {
 	while (S != nullptr) {
-		S->R = S->R + RunReal(S->Frml); S = S->Chain;
+		S->R = S->R + RunReal(S->Frml);
+		S = S->Chain;
 	}
 }
 
 void Footings(LvDescr* L, LvDescr* L2, std::string& text)
 {
-	while (L != nullptr) { PrintBlock(L->Ft, text, nullptr); if (L == L2) return; L = L->Chain; }
+	while (L != nullptr) {
+		PrintBlock(L->Ft, text, nullptr);
+		if (L == L2) return;
+		L = L->Chain;
+	}
 }
 
 void Headings(LvDescr* L, LvDescr* L2, std::string& text)
 {
-	while ((L != nullptr) && (L != L2)) { PrintBlock(L->Hd, text, nullptr); L = L->ChainBack; }
+	while ((L != nullptr) && (L != L2)) {
+		PrintBlock(L->Hd, text, nullptr);
+		L = L->ChainBack;
+	}
 }
 
 void ZeroSumFlds(LvDescr* L)
@@ -754,57 +770,77 @@ void CloseInp()
 	}
 }
 
-WORD CompMFlds(ConstListEl* C, KeyFldD* M, integer& NLv)
+WORD CompMFlds(ConstListEl** C, KeyFldD** M, integer& NLv)
 {
 	integer res = 0; XString x;
 	NLv = 0;
-	while (C != nullptr) {
+	while (*C != nullptr) {
 		NLv++;
 		x.Clear();
-		x.StoreKF(M);
-		res = CompStr(x.S, C->S);
+		x.StoreKF(*M);
+		res = CompStr(x.S, (*C)->S);
 		if (res != _equ) { return res; }
-		C = (ConstListEl*)C->Chain;
-		M = (KeyFldD*)M->Chain;
+		*C = (ConstListEl*)(*C)->Chain;
+		*M = (KeyFldD*)(*M)->Chain;
 	}
 	return _equ;
 }
 
-void GetMFlds(ConstListEl* C, KeyFldD* M)
+void GetMFlds(ConstListEl** C, KeyFldD** M)
 {
-	while (C != nullptr) {
-		XString* x = (XString*)(&C->S);
+	while (*C != nullptr) {
+		pstring* s = &(*C)->S;
+		XString* x = (XString*)s;
 		x->Clear();
-		x->StoreKF(M);
-		C = (ConstListEl*)C->Chain;
-		M = (KeyFldD*)M->Chain;
+		x->StoreKF(*M);
+		*C = (ConstListEl*)(*C)->Chain;
+		*M = (KeyFldD*)(*M)->Chain;
 	}
 }
 
-void MoveMFlds(ConstListEl* C1, ConstListEl* C2)
+void MoveMFlds(ConstListEl** C1, ConstListEl** C2)
 {
-	while (C2 != nullptr) {
-		C2->S = C1->S;
-		C1 = (ConstListEl*)C1->Chain;
-		C2 = (ConstListEl*)C2->Chain;
+	while (*C2 != nullptr && *C1 != nullptr) {
+		(*C2)->S = (*C1)->S;
+		*C1 = (ConstListEl*)(*C1)->Chain;
+		*C2 = (ConstListEl*)(*C2)->Chain;
 	}
 }
 
-void PutMFlds(KeyFldD* M)
+void PutMFlds(KeyFldD** M)
 {
-	FieldDescr* f, * f1; FileD* cf; FileD* cf1; void* cr; void* cr1; KeyFldD* m1;
-	pstring s; double r; bool b;
 	if (MinID == nullptr) return;
-	cf = CFile; cf1 = MinID->Scan->FD; cr = CRecPtr; cr1 = MinID->ForwRecPtr;
-	m1 = MinID->MFld;
-	while (M != nullptr) {
-		f = M->FldD; f1 = m1->FldD; CFile = cf1; CRecPtr = cr1;
+	FileD* cf = CFile;
+	FileD* cf1 = MinID->Scan->FD;
+	void* cr = CRecPtr;
+	void* cr1 = MinID->ForwRecPtr;
+	KeyFldD* m1 = MinID->MFld;
+	while (*M != nullptr) {
+		FieldDescr* f = (*M)->FldD;
+		FieldDescr* f1 = m1->FldD;
+		CFile = cf1;
+		CRecPtr = cr1;
 		switch (f->FrmlTyp) {
-		case 'S': { s = _ShortS(f1); CFile = cf; CRecPtr = cr; S_(f, s); break; }
-		case 'R': { r = _R(f1); CFile = cf; CRecPtr = cr; R_(f, r); break; }
-		default: b = _B(f1); CFile = cf; CRecPtr = cr; B_(f, b); break;
+		case 'S': {
+				pstring s = _ShortS(f1);
+				CFile = cf; CRecPtr = cr;
+				S_(f, s);
+				break;
+			}
+		case 'R': {
+				double r = _R(f1);
+				CFile = cf; CRecPtr = cr;
+				R_(f, r);
+				break;
+			}
+		default: {
+				bool b = _B(f1);
+				CFile = cf; CRecPtr = cr;
+				B_(f, b);
+				break;
+			}
 		}
-		M = (KeyFldD*)M->Chain;
+		*M = (KeyFldD*)(*M)->Chain;
 		m1 = (KeyFldD*)m1->Chain;
 	}
 }
@@ -825,13 +861,14 @@ void GetMinKey()
 			CRecPtr = IDA[i]->ForwRecPtr;
 			IDA[i]->Exist = false;
 			if (!IDA[i]->Scan->eof) {
+				WORD res;
 				if (mini == 0) goto label1;
-				WORD res = CompMFlds(NewMFlds, IDA[i]->MFld, nlv);
+				res = CompMFlds(&NewMFlds, &IDA[i]->MFld, nlv);
 				if (res != _gt) {
 					if (res == _lt)
 					{
 					label1:
-						GetMFlds(NewMFlds, IDA[i]->MFld);
+						GetMFlds(&NewMFlds, &IDA[i]->MFld);
 						mini = i;
 					}
 					IDA[i]->Exist = true;
@@ -906,7 +943,7 @@ void MoveFrstRecs()
 		if (IDA[i]->Exist) MoveForwToRec(IDA[i]);
 		else {
 			CFile = IDA[i]->Scan->FD; CRecPtr = CFile->RecPtr; ZeroAllFlds();
-			PutMFlds(IDA[i]->MFld);
+			PutMFlds(&IDA[i]->MFld);
 		}
 	}
 }
@@ -924,7 +961,7 @@ void MergeProc(std::string& text)
 			LvDescr* L = ID->LstLvS;
 		label1:
 			ZeroSumFlds(L);
-			GetMFlds(ID->OldSFlds, ID->SFld);
+			GetMFlds(&ID->OldSFlds, &ID->SFld);
 			if (WasFF2) PrintPageHd(text);
 			Headings(L, ID->FrstLvS, text);
 			if (PrintDH == 0) PrintDH = 1;
@@ -933,13 +970,13 @@ void MergeProc(std::string& text)
 			SumUp(ID->Sum);
 			ReadInpFile(ID);
 			if (ID->Scan->eof) goto label4;
-			res = CompMFlds(NewMFlds, ID->MFld, nlv);
+			res = CompMFlds(&NewMFlds, &ID->MFld, nlv);
 			if ((res == _lt) && (MaxIi > 1)) {
 				SetMsgPar(ID->Scan->FD->Name);
 				RunError(607);
 			}
 			if (res != _equ) goto label4;
-			res = CompMFlds(ID->OldSFlds, ID->SFld, nlv);
+			res = CompMFlds(&ID->OldSFlds, &ID->SFld, nlv);
 			if (res == _equ) {
 				MoveForwToRec(ID);
 				goto label2;

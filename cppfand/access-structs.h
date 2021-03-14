@@ -59,7 +59,6 @@ struct SumElem // r95
 	double R = 0.0;
 	FrmlElem* Frml = nullptr;
 };
-typedef SumElem* SumElPtr;
 
 struct structXPath
 {
