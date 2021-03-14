@@ -784,11 +784,13 @@ void GetMFlds(ConstListEl* C, KeyFldD* M)
 void MoveMFlds(ConstListEl* C1, ConstListEl* C2)
 {
 	while (C2 != nullptr) {
-		C2->S = C1->S; C1 = (ConstListEl*)C1->Chain; C2 = (ConstListEl*)C2->Chain;
+		C2->S = C1->S;
+		C1 = (ConstListEl*)C1->Chain;
+		C2 = (ConstListEl*)C2->Chain;
 	}
 }
 
-void PutMFlds(KeyFldDPtr M)
+void PutMFlds(KeyFldD* M)
 {
 	FieldDescr* f, * f1; FileD* cf; FileD* cf1; void* cr; void* cr1; KeyFldD* m1;
 	pstring s; double r; bool b;
@@ -802,25 +804,29 @@ void PutMFlds(KeyFldDPtr M)
 		case 'R': { r = _R(f1); CFile = cf; CRecPtr = cr; R_(f, r); break; }
 		default: b = _B(f1); CFile = cf; CRecPtr = cr; B_(f, b); break;
 		}
-		M = (KeyFldD*)M->Chain; m1 = (KeyFldD*)m1->Chain;
+		M = (KeyFldD*)M->Chain;
+		m1 = (KeyFldD*)m1->Chain;
 	}
 }
 
 void GetMinKey()
 {
-	integer i, nlv, mini, res;
-	mini = 0; NEof = 0;
+	integer i, nlv;
+	integer mini = 0; NEof = 0;
 	for (i = 1; i <= MaxIi; i++) {
 		/* !!! with IDA[i]^ do!!! */
 		CFile = IDA[i]->Scan->FD;
 		if (IDA[i]->Scan->eof) NEof++;
-		if (OldMFlds == nullptr) { IDA[i]->Exist = !IDA[i]->Scan->eof; mini = 1; }
+		if (OldMFlds == nullptr) {
+			IDA[i]->Exist = !IDA[i]->Scan->eof;
+			mini = 1;
+		}
 		else {
 			CRecPtr = IDA[i]->ForwRecPtr;
 			IDA[i]->Exist = false;
 			if (!IDA[i]->Scan->eof) {
 				if (mini == 0) goto label1;
-				res = CompMFlds(NewMFlds, IDA[i]->MFld, nlv);
+				WORD res = CompMFlds(NewMFlds, IDA[i]->MFld, nlv);
 				if (res != _gt) {
 					if (res == _lt)
 					{
@@ -834,7 +840,9 @@ void GetMinKey()
 		}
 	}
 	if (mini > 0) {
-		for (i = 1; i <= mini - 1; i++) IDA[i]->Exist = false;
+		for (i = 1; i <= mini - 1; i++) {
+			IDA[i]->Exist = false;
+		}
 		MinID = IDA[mini];
 	}
 	else MinID = nullptr;
@@ -842,8 +850,9 @@ void GetMinKey()
 
 void ZeroCount()
 {
-	integer i;
-	for (i = 1; i < MaxIi; i++) IDA[i]->Count = 0.0;
+	for (integer i = 1; i < MaxIi; i++) {
+		IDA[i]->Count = 0.0;
+	}
 }
 
 LvDescr* GetDifLevel()
@@ -853,9 +862,13 @@ LvDescr* GetDifLevel()
 	KeyFldD* M = IDA[1]->MFld;
 	LvDescr* L = LstLvM->ChainBack;
 	while (M != nullptr) {
-		if (C1->S != C2->S) { return L; }
-		C1 = (ConstListEl*)C1->Chain; C2 = (ConstListEl*)C2->Chain;
-		M = (KeyFldD*)M->Chain; L = L->ChainBack;
+		if (C1->S != C2->S) {
+			return L;
+		}
+		C1 = (ConstListEl*)C1->Chain;
+		C2 = (ConstListEl*)C2->Chain;
+		M = (KeyFldD*)M->Chain;
+		L = L->ChainBack;
 	}
 	return nullptr;
 }
@@ -888,8 +901,7 @@ void MoveForwToRec(InpD* ID)
 
 void MoveFrstRecs()
 {
-	integer i;
-	for (i = 1; i <= MaxIi; i++) {
+	for (integer i = 1; i <= MaxIi; i++) {
 		/* !!! with IDA[i]^ do!!! */
 		if (IDA[i]->Exist) MoveForwToRec(IDA[i]);
 		else {

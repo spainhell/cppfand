@@ -172,9 +172,9 @@ void WrLLMsgTxt()
 	WParam* p = PushWParam(1, TxtRows, TxtCols, TxtRows, true);
 	w.Hi = screen.colors.lNorm;
 	On = false;
-	WORD i = 1;
+	WORD i = 0;
 	WORD j = 0;
-	while ((i <= MsgLine.length()) && (j < TxtCols)) {
+	while ((i < MsgLine.length()) && (j < TxtCols)) {
 		if (MsgLine[i] == 0x17)
 		{
 			if (On) { w.Hi = screen.colors.lNorm; On = false; }

@@ -73,6 +73,18 @@ std::string LeadChar(std::string& input, char c)
 	return input.substr(startIndex);
 }
 
+std::string AddTrailChars(std::string& input, char c, size_t totalLength)
+{
+	if (input.length() >= totalLength) return input;
+	std::string result;
+	result.reserve(totalLength);
+	result.append(input);
+	for (size_t i = result.length(); i < totalLength; i++) {
+		result += c;
+	}
+	return result;
+}
+
 std::string GetNthLine(std::string& input, size_t from, size_t count, char delimiter)
 {
 	if (delimiter == '\n') delimiter = '\r'; // pokud bude pozadavek na hledani LF, budeme hledat CR

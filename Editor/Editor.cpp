@@ -546,32 +546,38 @@ pstring ShortName(pstring Name)
 
 void WrStatusLine()
 {
-	pstring Blanks;
-	pstring s;
-	integer i;
-
+	std::string Blanks;
 	if (Mode != HelpM) {
-		FillChar(&Blanks[1], TxtCols, 32);
-		Blanks[0] = TXTCOLS;
+		//FillChar(&Blanks[1], TxtCols, 32);
+		//Blanks[0] = TXTCOLS;
 		if (HeadS.length() > 0) {
-			Move(&HeadS[1], &Blanks[1], HeadS.length());
-			i = Blanks.first('_');
-			if (i == 0) {
-				Move(&Blanks[1], &Blanks[TStatL + 3], 252 - TStatL);
-				FillChar(&Blanks[1], TStatL + 2, 32);
+			//Move(&HeadS[1], &Blanks[1], HeadS.length());
+			Blanks = AddTrailChars(HeadS, ' ', TXTCOLS);
+			size_t i = Blanks.find('_');
+			if (i == std::string::npos) {
+				//Move(&Blanks[1], &Blanks[TStatL + 3], 252 - TStatL);
+				Blanks = Blanks.substr(0, TStatL + 3) + Blanks.substr(TStatL + 3 - 1, 252 - TStatL);
+				//FillChar(&Blanks[1], TStatL + 2, 32);
+				for (size_t j = 0; j < TStatL + 2; j++) {
+					Blanks[j] = ' ';
+				}
 			}
 			else {
-				while ((i <= Blanks.length()) && (Blanks[i] == '_')) {
+				while ((i < Blanks.length()) && (Blanks[i] == '_')) {
 					Blanks[i] = ' ';
 					i++;
 				}
 			}
 		}
 		else {
-			s = ShortName(NameT);
-			i = TStatL + 3;
+			Blanks = RepeatString(' ', TxtCols);
+			std::string s = ShortName(NameT);
+			size_t i = TStatL + 3;
 			if (s.length() + i >= TXTCOLS) i = TXTCOLS - s.length() - 2;
-			Move(&s[1], &Blanks[i], s.length());
+			//Move(&s[1], &Blanks[i], s.length());
+			for (size_t j = 0; j < s.length(); j++) {
+				Blanks[j] = s[j];
+			}
 		}
 		screen.ScrWrStr(1, 1, Blanks, SysLColor);
 	}
@@ -725,8 +731,12 @@ void EditWrline(char* P, int Row)
 	bool IsCtrl = false;
 
 	WORD Line = pred(ScrL + Row);
-	if (LineInBlock(Line) && (TypeB == TextBlock)) { nv2 = BlockColor; }
-	else { nv2 = TxtColor; }
+	if (LineInBlock(Line) && (TypeB == TextBlock)) {
+		nv2 = BlockColor;
+	}
+	else {
+		nv2 = TxtColor;
+	}
 	integer I = 0;
 	while (P[I] != _CR && I < LineSize - 1) {
 		nv1 = P[I];
@@ -737,10 +747,9 @@ void EditWrline(char* P, int Row)
 	}
 
 	integer LP = I - 1;  // index of last character (before CR)
-	nv1 = 32;
+	nv1 = ' ';
 
-	for (I = LP + 1; I < BPos + LineS; I++)
-	{
+	for (I = LP + 1; I < BPos + LineS; I++) {
 		// all characters after last char will be spaces (to the end of screen)
 		if (I < 0 || I > 254) throw std::exception("Index");
 		BuffLine[I] = (nv2 << 8) + nv1;
@@ -1327,7 +1336,7 @@ void UpdScreen()
 			}
 		}
 		else {
-			EditWrline((char*)&T[LenT], r);
+			EditWrline((char*)&T[LenT - 1], r);
 			WrEndL(false, r);
 		}
 

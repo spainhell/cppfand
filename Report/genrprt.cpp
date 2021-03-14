@@ -171,7 +171,8 @@ LongStr* GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 	std::string s;
 
 	CFile = RO->FDL.FD; ARMode = RO->Mode;
-	NLevels = ListLength(RO->Ctrl); PFldDs = nullptr;
+	NLevels = ListLength(RO->Ctrl);
+	PFldDs = nullptr;
 	fl = RO->Flds;
 	while (fl != nullptr) {
 		d = (PFldD*)GetZStore(sizeof(PFldD));
@@ -180,7 +181,8 @@ LongStr* GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 		fl1 = RO->Ctrl; i = NLevels;
 		while (fl1 != nullptr) {
 			if (fl1->FldD == f) { d->IsCtrl = true; d->Level = i; }
-			i--; fl1 = (FieldListEl*)fl1->Chain;
+			i--;
+			fl1 = (FieldListEl*)fl1->Chain;
 		}
 		if ((ARMode == _ATotal) && !d->IsSum && !d->IsCtrl) ReleaseStore(d);
 		else ChainLast(PFldDs, d);
