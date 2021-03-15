@@ -1114,7 +1114,10 @@ label1:
 		result = AColors[min(colorFromFrml, 53)];
 		break;
 	}
-	case _portin: result = PortIn(RunBool(iX0->P1), WORD(RunInt(iX0->P2))); break;
+	case _portin: {
+		result = PortIn(RunBool(iX0->P1), WORD(RunInt(iX0->P2)));
+		break;
+	}
 	case _setmybp: {
 		cr = MyBP;
 		SetMyBP(ProcMyBP);
@@ -1122,6 +1125,10 @@ label1:
 		SetMyBP((ProcStkD*)cr);
 		break;
 	}
+	case _count: {
+		result = ((FrmlElemInp*)X)->inp->Count;
+		break;
+		}
 	default: { result = RunRealStr(X); break; }
 	}
 	return result;

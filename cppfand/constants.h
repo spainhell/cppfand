@@ -451,6 +451,7 @@ enum instr_type
 	_userfunc = 0x49,
 	_isnewrec = 0x4a, _mouseevent = 0x4b, _ismouse = 0x4c,
 	_testmode = 0x4d,
+	_count = 0x4f, // count of records in file in IDA (FrmlElemInp)
 	_newfile = 0x60,  // {newfile,newRP},                      // {1-ary instructions}
 	_lneg = 0x61,
 	_inreal = 0x62, _instr = 0x63,  // {precision,constlst}, {tilda,constlst},
@@ -488,4 +489,5 @@ enum instr_type
 	_selectstr = 0xf3, _copyline = 0xf4,  // {SSRR}
 	_pos = 0xf5, _replace = 0xf6, // {options}, // {options},   // {RSSR}
 	_mousein = 0xf7,  // {P4},
+	
 };

@@ -5,7 +5,7 @@
 struct LvDescr;
 struct BlkD;
 extern BlkD* CBlk;
-extern std::vector<double*> CZeroLst;
+extern std::vector<FrmlElemSum*>* CZeroLst;
 extern LvDescr* LvToRd;           /*all used while translating frml*/
 //WORD Ii, Oi, SumIi;
 //char WhatToRd; /*'i'=#XXi 'O'=#XX */

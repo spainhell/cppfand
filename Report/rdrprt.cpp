@@ -11,7 +11,7 @@
 
 
 BlkD* CBlk;
-std::vector<double*> CZeroLst;
+std::vector<FrmlElemSum*>* CZeroLst = nullptr;
 LvDescr* LvToRd;           /*all used while translating frml*/
 bool WasIiPrefix;
 BlkD* CBlkSave;
@@ -73,14 +73,14 @@ FrmlElem* RdFldNameFrmlR(char& FTyp)
 	if (IsKeyWord("COUNT")) {
 		TestNotSum();
 		SetIi();
-		result = (FrmlElem*)(&IDA[Ii]->Op);
+		result = new FrmlElemInp(_count, IDA[Ii]);
 		FTyp = 'R';
 		return result;
 	}
 	if (IsKeyWord("GROUP")) {
 		TestNotSum();
 		if (WasIiPrefix) OldError(41);
-		result = (FrmlElem*)(&MergOpGroup);
+		result = (FrmlElem2*)(&MergOpGroup);
 		FTyp = 'R';
 		return result;
 	}
@@ -270,8 +270,9 @@ void Err()
 
 void ChainSumElR()
 {
-	if (FrstSumVar || (SumIi == 0)) SumIi = 1;
+	CZeroLst->push_back(FrmlSumEl->at(0));
 	
+	if (FrstSumVar || (SumIi == 0)) SumIi = 1;
 	if (FrstSumVar || (CBlk == nullptr)) {
 		if (IDA[SumIi]->Sum == nullptr) {
 			IDA[SumIi]->Sum = FrmlSumEl;
@@ -297,7 +298,6 @@ void ChainSumElR()
 		CBlk = CBlkSave;
 		CBlkSave = nullptr;
 	}
-	// TODO: CZeroLst.push_back(&FrmlSumEl->R);
 }
 
 void Rd_Oi()
@@ -467,21 +467,21 @@ label3:
 	if (s == "RF") { // paticka sestavy
 		RdLex();
 		LvToRd = LstLvM;
-		CZeroLst = LvToRd->ZeroLst;
+		CZeroLst = &LvToRd->ZeroLst;
 		RdBlock(&LvToRd->Ft);
 		goto label4;
 	}
 	if (s == "CF") { // paticka skupiny
 		Rd_Oi();
 		LvToRd = RdKeyName();
-		CZeroLst = LvToRd->ZeroLst;
+		CZeroLst = &LvToRd->ZeroLst;
 		RdBlock(&LvToRd->Ft);
 		goto label4;
 	}
 	if (s == "PF") { // paticka stranky
 		RdLex();
 		LvToRd = LstLvM;
-		CZeroLst = PFZeroLst;
+		CZeroLst = &PFZeroLst;
 		RdBlock(&PageFt);
 		goto label4;
 	}
@@ -994,4 +994,3 @@ LvDescr* RdKeyName()
 	OldError(46);
 	return nullptr;
 }
-

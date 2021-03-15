@@ -723,7 +723,9 @@ void Headings(LvDescr* L, LvDescr* L2, std::string& text)
 void ZeroSumFlds(LvDescr* L)
 {
 	while (L != nullptr) {
-		L->ZeroLst.clear();
+		for (FrmlElemSum* el : L->ZeroLst) {
+			el->R = 0;
+		}
 		L = L->ChainBack;
 	}
 }
@@ -887,7 +889,7 @@ void GetMinKey()
 
 void ZeroCount()
 {
-	for (integer i = 1; i < MaxIi; i++) {
+	for (integer i = 1; i <= MaxIi; i++) {
 		IDA[i]->Count = 0.0;
 	}
 }

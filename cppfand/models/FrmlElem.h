@@ -5,6 +5,7 @@
 #include "../pstring.h"
 #include "../XKey.h"
 
+struct InpD;
 class XWKey;
 struct FuncD;
 struct LinkD;
@@ -239,6 +240,14 @@ public:
 	FrmlElemSum(instr_type op, double r, FrmlElem* frml);
 	double R = 0;
 	FrmlElem* Frml = nullptr;
+};
+
+/// Trida pro COUNT v IDA
+class FrmlElemInp : public FrmlElem
+{
+public:
+	FrmlElemInp(instr_type op, InpD* inp);
+	InpD* inp = nullptr;
 };
 
 FrmlElem* CopyFrmlElem(const FrmlElem* orig);
