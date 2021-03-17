@@ -544,7 +544,7 @@ bool RunBool(FrmlElem* X)
 	}
 	case _instr: {
 		auto iX0 = (FrmlElemIn*)X;
-		S = RunLongStr(iX0->P1);
+		std::string S = RunStdStr(iX0->P1);
 		//if (iX0->param1 == 1) { 
 		//	// ~
 		//	result = LexInStr(LongTrailChar(' ', 0, S), &iX0->param2);
@@ -978,7 +978,11 @@ label1:
 	case _round: result = RoundReal(RunReal(iX0->P1), RunInt(iX0->P2)); break;
 	case _abs: result = abs(RunReal(iX0->P1)); break;
 	case _int: result = (int)(RunReal(iX0->P1)); break;
-	case _frac: result = modf(RunReal(iX0->P1), nullptr); break;
+	case _frac: {
+		double dx;
+		result = modf(RunReal(iX0->P1), &dx);
+		break;
+	}
 	case _sqr: result = pow(RunReal(iX0->P1), 2); break;
 	case _sqrt: result = sqrt(RunReal(iX0->P1)); break;
 	case _sin: result = sin(RunReal(iX0->P1)); break;
@@ -1128,7 +1132,11 @@ label1:
 	case _count: {
 		result = ((FrmlElemInp*)X)->inp->Count;
 		break;
-		}
+	}
+	case _mergegroup: {
+		result = ((FrmlElemMerge*)X)->merge->Group;
+		break;
+	}
 	default: { result = RunRealStr(X); break; }
 	}
 	return result;

@@ -5,6 +5,7 @@
 #include "../pstring.h"
 #include "../XKey.h"
 
+struct MergOpSt;
 struct InpD;
 class XWKey;
 struct FuncD;
@@ -248,6 +249,14 @@ class FrmlElemInp : public FrmlElem
 public:
 	FrmlElemInp(instr_type op, InpD* inp);
 	InpD* inp = nullptr;
+};
+
+/// Trida pro GROUP v Merge
+class FrmlElemMerge : public FrmlElem
+{
+public:
+	FrmlElemMerge(instr_type op, MergOpSt* merge);
+	MergOpSt* merge = nullptr;
 };
 
 FrmlElem* CopyFrmlElem(const FrmlElem* orig);

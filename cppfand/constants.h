@@ -452,6 +452,7 @@ enum instr_type
 	_isnewrec = 0x4a, _mouseevent = 0x4b, _ismouse = 0x4c,
 	_testmode = 0x4d,
 	_count = 0x4f, // count of records in file in IDA (FrmlElemInp)
+	_mergegroup = 0x50, // for (FrmlElemMerge)
 	_newfile = 0x60,  // {newfile,newRP},                      // {1-ary instructions}
 	_lneg = 0x61,
 	_inreal = 0x62, _instr = 0x63,  // {precision,constlst}, {tilda,constlst},

@@ -1322,7 +1322,7 @@ void CallProcedure(Instr_proc* PD)
 
 #ifdef _DEBUG
 	std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
-	if (srcCode.find("  begin proc(Clr); with window((0,maxrow-2,40,maxrow-2,,^Q)) do write(' Obdob¡: ',DenTxt(PARAM4.DatumOd),PARAM4.DatumOd:' DD.MM.YYYY a§ ', DenTxt(PARAM4.DatumDo),PARAM4.DatumDo:' DD.MM.YYYY'); end; ") != std::string::npos) {
+	if (srcCode.find("begin call(MODUL09,DokladyB) end;") != std::string::npos) {
 		printf("");
 	}
 #endif

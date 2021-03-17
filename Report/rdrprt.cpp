@@ -80,7 +80,7 @@ FrmlElem* RdFldNameFrmlR(char& FTyp)
 	if (IsKeyWord("GROUP")) {
 		TestNotSum();
 		if (WasIiPrefix) OldError(41);
-		result = (FrmlElem2*)(&MergOpGroup);
+		result = new FrmlElemMerge(_mergegroup, &MergOpGroup);
 		FTyp = 'R';
 		return result;
 	}

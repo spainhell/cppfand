@@ -219,7 +219,7 @@ void WrLLF10MsgLine()
 		MsgLine = MsgLine + " " + "ShiftF7"; len += 7;
 	}
 	if (MsgLine.length() > TxtCols - 5) {
-		MsgLine[0] = char(TxtCols - 5);
+		MsgLine = MsgLine.substr(0, TxtCols - 5);
 		len = 0;
 	}
 	screen.ScrWrStr(6, row + 1, MsgLine, screen.colors.zNorm);

@@ -143,6 +143,11 @@ FrmlElemInp::FrmlElemInp(instr_type op, InpD* inp) : FrmlElem(op, 0)
 	this->inp = inp;
 }
 
+FrmlElemMerge::FrmlElemMerge(instr_type op, MergOpSt* merge) : FrmlElem(op, 0)
+{
+	this->merge = merge;
+}
+
 FrmlElem* CopyFrmlElem(const FrmlElem* orig)
 {
 	if (orig == nullptr) return nullptr;
