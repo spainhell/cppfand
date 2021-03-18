@@ -290,18 +290,21 @@ bool FindString(WORD& I, WORD Len)
 	return result;
 }
 
-WORD FindCtrl(WORD F, WORD L)
+/// pracuje s Pascal indexem 1 .. N
+WORD FindCtrl(char* t, size_t start, size_t length)
 {
-	WORD I, K;
-	I = L; K = F - 1;
-	// ASM
-	return L - I + 1;
+	// ^A ^B ^D ^E ^Q ^S ^W
+	std::set<char> pc = { 0x01, 0x02, 0x04, 0x05, 0x11, 0x13, 0x17 };
+	for (size_t i = start - 1; i < length; i++) {
+		if (pc.count(t[i]) > 0) return i + 1;
+	}
+	return 0; // nenalezeno
 }
 
 void SetColorOrd(ColorOrd CO, WORD First, WORD Last)
 {
 	BYTE* len = (BYTE*)&CO;
-	WORD I = FindCtrl(First, Last);
+	WORD I = FindCtrl(T, First, Last);
 	while (I < Last)
 	{
 		size_t pp = CO.find(T[I]);
@@ -311,7 +314,7 @@ void SetColorOrd(ColorOrd CO, WORD First, WORD Last)
 		else {
 			CO = CO + T[I];
 		}
-		I = FindCtrl(I + 1, Last);
+		I = FindCtrl(T, I + 1, Last);
 	}
 }
 
