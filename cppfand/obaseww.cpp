@@ -200,23 +200,26 @@ void WrLLMsgTxt()
 
 void WrLLF10MsgLine()
 {
-	WORD col = 0, row = 0, len = 0;
-
-	row = TxtRows - 1;
+	WORD row = TxtRows - 1;
 	CHAR_INFO* Buf = new CHAR_INFO[TxtCols];
 	screen.ScrRdBuf(0, row, Buf, TxtCols);
 	Beep();
 	screen.ScrClr(1, row + 1, TxtCols, 1, ' ', screen.colors.zNorm);
-	if (F10SpecKey == 0xffff) screen.ScrWrStr(1, row + 1, "...!", screen.colors.zNorm | 0x80);
-	else screen.ScrWrStr(1, row + 1, "F10!", screen.colors.zNorm | 0x80);
-	col = MsgLine.length() + 5;
-	len = 0;
+	if (F10SpecKey == 0xffff) {
+		screen.ScrWrStr(1, row + 1, "...!", screen.colors.zNorm | 0x80);
+	}
+	else {
+		screen.ScrWrStr(1, row + 1, "F10!", screen.colors.zNorm | 0x80);
+	}
+	WORD col = MsgLine.length() + 5;
+	WORD len = 0;
 	if ((F10SpecKey == 0xfffe) || (F10SpecKey == _F1_)) {
 		MsgLine = MsgLine + " " + "F1";
 		len = 2;
 	}
 	if ((F10SpecKey == 0xfffe) || (F10SpecKey == _ShiftF7_)) {
-		MsgLine = MsgLine + " " + "ShiftF7"; len += 7;
+		MsgLine = MsgLine + " " + "ShiftF7";
+		len += 7;
 	}
 	if (MsgLine.length() > TxtCols - 5) {
 		MsgLine = MsgLine.substr(0, TxtCols - 5);
@@ -275,8 +278,7 @@ bool PromptYN(WORD NMsg)
 	TextAttr = screen.colors.pTxt;
 	ClrEol();
 	RdMsg(NMsg);
-	pstring tmp = MsgLine.substr(MaxI(MsgLine.length() - TxtCols + 3, 0), 255);
-	// printf("%s", tmp.c_str());
+	std::string tmp = MsgLine.substr(MaxI(MsgLine.length() - TxtCols + 3, 0), 255);
 	screen.ScrFormatWrText(screen.WhereX(), screen.WhereY(), "%s", tmp.c_str());
 	WORD col = screen.WhereX(); 
 	WORD row = screen.WhereY();
@@ -286,7 +288,7 @@ bool PromptYN(WORD NMsg)
 	screen.GotoXY(col, row); 
 	screen.CrsShow();
 	label1:
-	char cc = toupper((char)ReadKbd());
+	char cc = (char)toupper(ReadKbd());
 	if ((KbdChar != F10SpecKey) && (cc != AbbrYes) && (cc != AbbrNo)) goto label1;
 	F10SpecKey = 0; 
 	PopW(w);
@@ -333,13 +335,14 @@ void RunMsgOn(char C, longint N)
 
 void RunMsgN(longint N)
 {
-	WORD Perc;
 #ifndef norunmsg
 	if (N < CM->MsgKum) return;
-	while (N >= CM->MsgKum) CM->MsgKum += CM->MsgStep;
-	Perc = (N * 100) / (CM->MsgNN + 1); // tady je pridane navic 1
+	while (N >= CM->MsgKum) {
+		CM->MsgKum += CM->MsgStep;
+	}
+	const WORD perc = (N * 100) / (CM->MsgNN + 1); // tady je pridane navic 1
 	//screen.GotoXY(3, 1);
-	screen.ScrFormatWrText(3, 1, "%*i", 3, Perc);
+	screen.ScrFormatWrText(3, 1, "%*i", 3, perc);
 	//printf("%*i", 3, Perc);
 #endif
 }
@@ -356,5 +359,6 @@ void RunMsgOff()
 
 void RunMsgClear()
 {
+	delete CM;
 	CM = nullptr;
 }

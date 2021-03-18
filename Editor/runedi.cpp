@@ -1123,7 +1123,7 @@ void DisplSysLine()
 			else {
 				E->RecNrLen = m.length();
 				E->RecNrPos = i - m.length();
-				for (j = 1; j < m.length(); j++) x.Append(' ');
+				for (j = 1; j <= m.length(); j++) x.Append(' ');
 			}
 		}
 		else { x.Append(s[i]); i++; }

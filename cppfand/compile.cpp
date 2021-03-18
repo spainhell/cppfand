@@ -1436,7 +1436,7 @@ void CompileRecLen()
 	WORD l = 0;
 	WORD n = 0;
 	if ((CFile->Typ == 'X' || CFile->Typ == 'D')) l = 1;
-	for (auto &F : CFile->FldD) {
+	for (auto& F : CFile->FldD) {
 		switch (CFile->Typ) {
 		case '8': if (F->Typ == 'D') F->NBytes = 2; break;
 		case 'D': {
@@ -1526,8 +1526,12 @@ FrmlElem* RdAdd(char& FTyp)
 	FrmlElem0* Z1 = nullptr;
 label1:
 	switch (Lexem) {
-	case '+': { Z1 = Z;
-		if (FTyp == 'R') { Z = new FrmlElem0(_plus, 0); /*GetOp(_plus, 0);*/ goto label2; }
+	case '+': {
+		Z1 = Z;
+		if (FTyp == 'R') {
+			Z = new FrmlElem0(_plus, 0); /*GetOp(_plus, 0);*/
+			goto label2;
+		}
 		else {
 			Z = new FrmlElem0(_concat, 0); // GetOp(_concat, 0);
 			TestString(FTyp);

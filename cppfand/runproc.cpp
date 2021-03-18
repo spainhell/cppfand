@@ -1322,7 +1322,7 @@ void CallProcedure(Instr_proc* PD)
 
 #ifdef _DEBUG
 	std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
-	if (srcCode.find("begin call(MODUL09,DokladyB) end;") != std::string::npos) {
+	if (srcCode.find("var _Penize,_Uvery,_ZP,_Zasoby:real; #I1_DENIK ! (^CISDRUH.Pmo | Datum<PARAM3.DDD) Mesic #I2_ZP ! #I3_ODPISY !   #I4_POHYBZ !") != std::string::npos) {
 		printf("");
 	}
 #endif

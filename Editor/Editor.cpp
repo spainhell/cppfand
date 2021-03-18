@@ -132,7 +132,6 @@ bool AllRd = false;
 longint AbsLenT = 0;
 bool ChangePart, UpdPHead;
 char* T = nullptr;
-longint SavePar(); // r133
 void RestorePar(longint l);
 
 // ***********HELP**********  // r351
@@ -144,11 +143,10 @@ void ViewHelpText(LongStr* S, WORD& TxtPos);
 
 longint SavePar()
 {
-	LongStr* sp; WORD len = 0;
-	// len = InterfL + ofs(T) - ofs(Mode) + 4;
-	sp = (LongStr*)GetStore(len + 2);
+	WORD len = InterfL + 4;
+	LongStr* sp = new LongStr(len); // (LongStr*)GetStore(len + 2);
 	sp->LL = len;
-	Move(&Insert, &sp->A, InterfL);
+	Move(&Insert, &sp->A[0], InterfL);
 	Move(&Mode, &sp->A[InterfL + 1], len - InterfL);
 	auto result = StoreInTWork(sp);
 	ReleaseStore(sp);
@@ -179,16 +177,26 @@ void MyWrLLMsg(pstring s)
 
 void MyRunError(pstring s, WORD n)
 {
-	SetMsgPar(s); RunError(n);
+	SetMsgPar(s);
+	RunError(n);
 }
 
 void HMsgExit(pstring s)
 {
 	switch (HandleError) {
 	case 0: return;
-	case 1: { s = s[1]; SetMsgPar(s); RunError(700 + HandleError); break; }
+	case 1:	{
+			s = s[1];
+			SetMsgPar(s);
+			RunError(700 + HandleError);
+			break;
+		}
 	case 2:
-	case 3: { SetMsgPar(s); RunError(700 + HandleError); break; }
+	case 3: {
+			SetMsgPar(s);
+			RunError(700 + HandleError);
+			break;
+		}
 	case 4: RunError(704); break;
 	}
 }
@@ -309,8 +317,9 @@ void SetColorOrd(ColorOrd CO, WORD First, WORD Last)
 
 void SimplePrintHead()
 {
-	pstring ln;
-	PHNum = 0; PPageS = 0x7FFF;
+	//pstring ln;
+	PHNum = 0;
+	PPageS = 0x7FFF;
 }
 
 void LastLine(char* input, WORD from, WORD num, WORD& Ind, WORD& Count)
@@ -322,7 +331,7 @@ void LastLine(char* input, WORD from, WORD num, WORD& Ind, WORD& Count)
 	{
 		if (input[i] == _CR) { Ind = from + i; Count++; }
 	}
-	if (Count > 0 && input[Ind] == 0x0A) Ind++;// LF
+	if (Count > 0 && input[Ind] == 0x0A) Ind++; // LF
 }
 
 bool RdNextPart()
@@ -414,9 +423,10 @@ bool RdPredPart()
 	Pos = Part.PosP; BL = Part.LineP;
 	if (LenT <= (Pass >> 1)) goto label1;
 	FirstLine(LenT + 1, LenT - (Pass >> 1), L1, L11);
-	if (L1 < LenT)
-	{
-		AllRd = false; LenT = L1; ReleaseStore(&T[LenT + 1]);
+	if (L1 < LenT) {
+		AllRd = false;
+		LenT = L1;
+		ReleaseStore(&T[LenT + 1]);
 	}
 
 label1:
@@ -535,12 +545,14 @@ void OpenTxtFh(char Mode)
 
 pstring ShortName(pstring Name)
 {
-	WORD J;
-	pstring s;
-	J = Name.length();
-	while (!(Name[J] == '\\' || Name[J] == ':') && (J > 0)) J--;
-	s = Name.substr(J, Name.length() - J);
-	if (Name[2] == ':') { s = Name.substr(0, 2) + s; }
+	WORD J = Name.length();
+	while (!(Name[J] == '\\' || Name[J] == ':') && (J > 0)) {
+		J--;
+	}
+	pstring s = Name.substr(J, Name.length() - J);
+	if (Name[2] == ':') {
+		s = Name.substr(0, 2) + s;
+	}
 	return s;
 }
 
@@ -635,8 +647,8 @@ void InitScr()
 {
 	// TODO: 
 	// tyto 2 radky jsou navic, editor se otviral prilis maly, nutno doresit proc
-	WindMin = { 1, 2 };
-	WindMax = { 80, 24 };
+	//WindMin = { 1, 2 };
+	//WindMax = { 80, 24 };
 
 	FirstR = WindMin.Y; // +1;
 	FirstC = WindMin.X; // +1;
@@ -2984,24 +2996,34 @@ void HandleEvent() {
 					goto Nic;
 				}
 				switch (TypeT) {
-				case FileT: { TestUpdFile(); ReleaseStore(T); CloseH(&TxtFH); break; }
+				case FileT: {
+					TestUpdFile();
+					ReleaseStore(T);
+					CloseH(&TxtFH);
+					break;
+				}
 				case LocalT:
 				case MemoT: {
-					DelEndT(); GetStore(2); Move(T, &T[3], LenT);
-					sp = (LongStr*)(T); sp->LL = LenT;
+					DelEndT();
+					GetStore(2);
+					Move(T, &T[3], LenT);
+					sp = (LongStr*)(T);
+					sp->LL = LenT;
 					if (TypeT == LocalT) {
 						TWork.Delete(*LocalPPtr);
 						LocalPPtr = (longint*)StoreInTWork(sp);
 					}
 					else if (UpdatT)
 					{
-						UpdateEdTFld(sp); UpdatT = false;
+						UpdateEdTFld(sp);
+						UpdatT = false;
 					}
 					ReleaseStore(sp);
 					break;
 				}
 				}
-				L2 = SavePar(); screen.CrsHide();
+				L2 = SavePar();
+				screen.CrsHide();
 				RestoreExit(er);
 				if (TypeT == MemoT) StartExit(X, false);
 				else CallProcedure(X->Proc);

@@ -117,7 +117,8 @@ void Screen::ScrWrText(WORD X, WORD Y, const char* S)
 	WriteConsoleOutputA(_handle, buff, { (short)len, 1 }, { 0, 0 }, &XY);
 	//WriteConsoleOutputCharacterA(_handle, S, len, { (short)X - 1, (short)Y - 1 }, &written);
 	delete[] buff;
-	GotoXY(X + len, Y, absolute);
+	if (X + len > TxtCols) { GotoXY(1, Y + 1, absolute); }
+	else { GotoXY(X + len, Y, absolute); }
 }
 
 void Screen::ScrFormatWrText(WORD X, WORD Y, char const* const _Format, ...)

@@ -544,16 +544,17 @@ bool RunBool(FrmlElem* X)
 	}
 	case _instr: {
 		auto iX0 = (FrmlElemIn*)X;
-		std::string S = RunStdStr(iX0->P1);
-		//if (iX0->param1 == 1) { 
-		//	// ~
-		//	result = LexInStr(LongTrailChar(' ', 0, S), &iX0->param2);
-		//}
-		//else {
-		//	//result = InStr(S, &iX0->param2);
-		//	result = InStr(S, iX0);
-		//}
-		result = InStr(S, iX0);
+		S = RunLongStr(iX0->P1);
+		switch (iX0->param1)
+		{
+		case 0:
+			result = InStr(S, iX0); break;
+		case 1:
+			// '~' lexikalni porovnani
+			result = LexInStr(S, iX0); break;
+		default:
+			throw std::exception("_instr iX0->param1 for value %i not implemented.", iX0->param1);
+		}
 		ReleaseStore(S);
 		break;
 	}
@@ -731,7 +732,6 @@ bool InReal(FrmlElemIn* frml)
 
 bool LexInStr(LongStr* S, FrmlElemIn* X)
 {
-	BYTE param = X->param1;
 	std::string s = std::string(S->A, S->LL);
 
 	for (auto& pat : X->strings) {
@@ -777,13 +777,6 @@ bool LexInStr(LongStr* S, FrmlElemIn* X)
 
 bool InStr(LongStr* S, FrmlElemIn* X)
 {
-	BYTE param = X->param1;
-	if (param == 1) {
-		// '~' lexikalni porovnani
-		return LexInStr(LongTrailChar(' ', 0, S), X);
-	}
-	if (param > 0) throw std::exception("InStr() not implemented.");
-
 	std::string s = std::string(S->A, S->LL);
 
 	for (auto& pat : X->strings) {
@@ -792,18 +785,12 @@ bool InStr(LongStr* S, FrmlElemIn* X)
 
 	for (auto& ran : X->strings_range) {
 		bool success = false;
-		auto s1 = ran.first;
-		auto s2 = ran.second;
-		if (s.length() != s1.length()) break;
-		for (size_t i = 0; i < s.length(); i++) {
-			if (s1[i] <= s[i] && s[i] <= s2[i]) {
-				if (i == s.length() - 1) {
-					// posledni znak je take shodny, nasli jsme
-					return true;
-				}
-				continue;
-			}
-		}
+		pstring s1 = ran.first;
+		pstring s2 = ran.second;
+		WORD res1 = CompLongShortStr(S, &s1);
+		WORD res2 = CompLongShortStr(S, &s2);
+		if (res1 == _equ || res2 == _equ) return true;
+		if (res1 == _gt && res2 == _lt) return true;
 	}
 
 	return false;

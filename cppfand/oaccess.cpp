@@ -739,9 +739,8 @@ void SetCPathVol()
 	CVol = "";
 	if (CFile->Typ == 'C') {
 		CDir = GetEnv("FANDCAT");
-		if (CDir == "") {
-			if (TopDataDir == "") CDir = TopRdbDir;
-			else CDir = TopDataDir;
+		if (CDir.empty()) {
+			CDir = TopDataDir.empty() ? TopRdbDir : TopDataDir;
 		}
 		AddBackSlash(CDir);
 		CName = CatFDName;

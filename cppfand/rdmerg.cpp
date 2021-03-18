@@ -58,7 +58,6 @@ label1:
 
 FrmlPtr RdFldNameFrmlM(char& FTyp)
 {
-	bool WasIiPrefix = false;
 	FieldDescr* F = nullptr;                         /*RdFldNameFrml - body*/
 	FrmlPtr Z = nullptr;
 	LocVar* LV = nullptr; FileD* FD = nullptr;
@@ -226,6 +225,11 @@ void ChainSumElM()
 
 void ReadMerge()
 {
+
+	if (InpArrLen == 2184)
+	{
+		printf("");
+	}
 	InpD* ID = nullptr;
 	FieldDescr* F = nullptr;
 	FileD* FD = nullptr;
@@ -378,8 +382,7 @@ void CopyPrevMFlds_M()
 
 void CheckMFlds_M(KeyFldD* M1, KeyFldD* M2)
 {
-	while (M1 != nullptr)
-	{
+	while (M1 != nullptr) {
 		if (M2 == nullptr) OldError(30);
 		if (!FldTypIdentity(M1->FldD, M2->FldD)
 			|| (M1->Descend != M2->Descend)

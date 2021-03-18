@@ -1027,7 +1027,7 @@ void SetRdbDir(char Typ, std::string* Nm)
 	}
 	if (CFile->CatIRec != 0) {
 		CPath = RdCatField(CFile->CatIRec, CatPathName);
-		if (CPath[2] != ':') {
+		if (CPath[1] != ':') {
 			d = rb->RdbDir;
 			if (CPath[1] == '\\') CPath = copy(d, 1, 2) + CPath;
 			else {
@@ -1044,7 +1044,8 @@ void SetRdbDir(char Typ, std::string* Nm)
 		CDir = CDir + CFile->Name;
 	}
 	/* !!! with r^ do!!! */ {
-		r->RdbDir = CDir; if (TopDataDir == "") r->DataDir = CDir;
+		r->RdbDir = CDir;
+		if (TopDataDir.empty()) r->DataDir = CDir;
 		else if (rb == nullptr) r->DataDir = TopDataDir;
 		else {
 			d = rb->DataDir;

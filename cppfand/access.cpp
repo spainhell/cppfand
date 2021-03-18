@@ -39,17 +39,17 @@ integer CompLongShortStr(LongStr* S1, pstring* S2)
 {
 	integer result = 0;
 	if (S1->LL != (*S2)[0]) {
-		if (S1->LL < (*S2)[0]) result = 2;
-		else result = 4;
+		if (S1->LL < (*S2)[0]) result = _lt;
+		else result = _gt;
 	}
 	if ((*S2)[0] == 0) return result;
 	for (size_t i = 0; i < (*S2)[0]; i++)
 	{
 		if (S1->A[i] == (*S2)[i + 1]) continue;
-		if (S1->A[i] < (*S2)[i + 1]) return 2;
-		return 4;
+		if (S1->A[i] < (*S2)[i + 1]) return _lt;
+		return _gt;
 	}
-	return 0;
+	return _equ;
 }
 
 integer CompArea(void* A, void* B, integer L)
@@ -626,11 +626,11 @@ void LongS_(FieldDescr* F, LongStr* S)
 
 void S_(FieldDescr* F, std::string S, void* record)
 {
+	S = S.substr(0, F->L); // delka retezce je max. F->L
 	const BYTE LeftJust = 1;
 	BYTE* pRec = nullptr;
 
-	if ((F->Flg & f_Stored) != 0)
-	{
+	if ((F->Flg & f_Stored) != 0) {
 		if (record == nullptr) { pRec = (BYTE*)CRecPtr + F->Displ; }
 		else { pRec = (BYTE*)record + F->Displ; }
 		integer L = F->L;
@@ -639,7 +639,7 @@ void S_(FieldDescr* F, std::string S, void* record)
 		case 'A': {
 			if (M == LeftJust) {
 				// doplnime mezery zprava
-				memcpy(pRec, S.c_str(), S.length());
+				memcpy(pRec, S.c_str(), S.length()); // probiha kontrola max. delky retezce
 				memset(&pRec[S.length()], ' ', F->L - S.length());
 			}
 			else {
@@ -670,18 +670,6 @@ void S_(FieldDescr* F, std::string S, void* record)
 					pRec[i] = ((tmpArr[2 * i] - 0x30) << 4) + (tmpArr[2 * i + 1] - 0x30);
 				}
 			}
-
-			//while (S.length() < L)
-			//	if (M == LeftJust) S = S + "0";
-			//	else
-			//	{
-			//		pstring oldS = S;
-			//		S = " ";
-			//		S += oldS;
-			//	}
-			//integer i = 1;
-			//if ((S.length() > L) && (M != LeftJust)) i = S.length() + 1 - L;
-			////Pack(&S[i], p, L);
 			break;
 		}
 		case 'T': {
