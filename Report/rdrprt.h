@@ -9,7 +9,7 @@ extern std::vector<FrmlElemSum*>* CZeroLst;
 extern LvDescr* LvToRd;           /*all used while translating frml*/
 //WORD Ii, Oi, SumIi;
 //char WhatToRd; /*'i'=#XXi 'O'=#XX */
-extern bool WasIiPrefix;
+//extern bool WasIiPrefix;
 extern BlkD* CBlkSave;
 
 
@@ -19,12 +19,12 @@ FrmlPtr RdFldNameFrmlR(char& FTyp);
 bool RdIiPrefix();
 void TestSetSumIi();
 FrmlPtr FindIiandFldFrml(FileD** FD, char& FTyp);
-void RdDirFilVar(char& FTyp, FrmlElem** res);
+void RdDirFilVar(char& FTyp, FrmlElem** res, bool wasIiPrefix);
 bool OwnInBlock(char& FTyp, FrmlElem** res);
-void FindInRec(char& FTyp, FrmlElem** res);
-void SetIi();
+void FindInRec(char& FTyp, FrmlElem** res, bool wasIiPrefix);
+void SetIi(bool wasIiPrefix);
 void TestNotSum();
-void Err();
+void Err(bool wasIiPrefix);
 void ChainSumElR();
 void ReadReport(RprtOpt* RO); 
 void CopyPrevMFlds();

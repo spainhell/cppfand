@@ -1,5 +1,4 @@
 #include "rdmerg.h"
-
 #include "compile.h"
 #include "FieldDescr.h"
 #include "FileD.h"
@@ -63,7 +62,7 @@ FrmlPtr RdFldNameFrmlM(char& FTyp)
 	LocVar* LV = nullptr; FileD* FD = nullptr;
 	FrmlElem* result = nullptr;
 
-	WasIiPrefix = RdIiPrefix_M();
+	bool WasIiPrefix = RdIiPrefix_M();
 	if ((FrmlSumEl != nullptr) && FrstSumVar) SumIi = 0;
 	TestIdentif();
 	if ((LexWord == "O") && IsForwPoint() && !WasIiPrefix) {
@@ -73,7 +72,7 @@ FrmlPtr RdFldNameFrmlM(char& FTyp)
 		return result;
 	}
 	if (IsForwPoint()) {
-		RdDirFilVar_M(FTyp, &result); 
+		RdDirFilVar_M(FTyp, &result, WasIiPrefix);
 		TestSetSumIi_M(); 
 		return result;
 	}
@@ -87,7 +86,7 @@ FrmlPtr RdFldNameFrmlM(char& FTyp)
 	if (IsKeyWord("COUNT")) {
 	label1:
 		TestNotSum_M(); 
-		SetIi_M(); 
+		SetIi_M(WasIiPrefix);
 		result = (FrmlPtr)(&IDA[Ii]->Op); 
 		FTyp = 'R'; 
 		return result;
@@ -101,19 +100,19 @@ FrmlPtr RdFldNameFrmlM(char& FTyp)
 		return result;
 	}
 	if (IsKeyWord("ERROR")) {
-		Err_M(); 
+		Err_M(WasIiPrefix);
 		result = (FrmlPtr)(&IDA[Ii]->OpErr); 
 		FTyp = 'B'; 
 		return result;
 	}
 	if (IsKeyWord("WARNING")) {
-		Err_M(); 
+		Err_M(WasIiPrefix);
 		result = (FrmlPtr)(&IDA[Ii]->OpWarn); 
 		FTyp = 'B'; 
 		return result;
 	}
 	if (IsKeyWord("ERRORTEXT")) {
-		Err_M(); 
+		Err_M(WasIiPrefix);
 		result = IDA[Ii]->ErrTxtFrml; 
 		FTyp = 'S'; 
 		return result;
@@ -133,12 +132,12 @@ FrmlPtr RdFldNameFrmlM(char& FTyp)
 	return result;
 }
 
-void RdDirFilVar_M(char& FTyp, FrmlElem** res)
+void RdDirFilVar_M(char& FTyp, FrmlElem** res, bool wasIiPrefix)
 {
 	LinkD* LD = nullptr; FileD* FD = nullptr;
 	integer I = 0;
 	FrmlPtr Z = nullptr;
-	if (WasIiPrefix)
+	if (wasIiPrefix)
 	{
 		CFile = InpFD_M(Ii);
 		if (!IsRoleName(true, &FD, &LD)) Error(9);
@@ -183,9 +182,9 @@ void RdOutpFldName(char& FTyp, FrmlElem** res)
 		RD->OD->FD, RD->OD->RecPtr);
 }
 
-void SetIi_M()
+void SetIi_M(bool wasIiPrefix)
 {
-	if (!WasIiPrefix) {
+	if (!wasIiPrefix) {
 		if (!Join && (WhatToRd == 'i')) Ii = Oi;
 		else Ii = 1;
 	}
@@ -196,10 +195,10 @@ void TestNotSum_M()
 	if (FrmlSumEl != nullptr) OldError(41);
 }
 
-void Err_M()
+void Err_M(bool wasIiPrefix)
 {
 	TestNotSum_M();
-	SetIi_M();
+	SetIi_M(wasIiPrefix);
 	if (IDA[Ii]->ErrTxtFrml == nullptr)
 	{
 		IDA[Ii]->ErrTxtFrml = new FrmlElem4(_const, 0); // GetOp(_const, 256);
@@ -225,11 +224,6 @@ void ChainSumElM()
 
 void ReadMerge()
 {
-
-	if (InpArrLen == 2184)
-	{
-		printf("");
-	}
 	InpD* ID = nullptr;
 	FieldDescr* F = nullptr;
 	FileD* FD = nullptr;

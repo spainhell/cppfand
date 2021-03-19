@@ -13,7 +13,7 @@
 BlkD* CBlk;
 std::vector<FrmlElemSum*>* CZeroLst = nullptr;
 LvDescr* LvToRd;           /*all used while translating frml*/
-bool WasIiPrefix;
+// bool WasIiPrefix;
 BlkD* CBlkSave;
 
 FileD* InpFD(WORD I)
@@ -55,12 +55,12 @@ FrmlElem* RdFldNameFrmlR(char& FTyp)
 	WORD n = 0;
 	FrmlElem* Z = nullptr;
 	FrmlElem* result = nullptr;
-	WasIiPrefix = RdIiPrefix();
+	bool WasIiPrefix = RdIiPrefix();
 	if ((FrmlSumEl != nullptr) && FrstSumVar && (CBlk != nullptr)) {
 		SumIi = 0; CBlkSave = CBlk; CBlk = nullptr;
 	}
 	if (IsForwPoint()) {
-		RdDirFilVar(FTyp, &result);
+		RdDirFilVar(FTyp, &result, WasIiPrefix);
 		return result;
 	}
 	if (!WasIiPrefix && FindLocVar(&LVBD, &LV)) {
@@ -72,7 +72,7 @@ FrmlElem* RdFldNameFrmlR(char& FTyp)
 	}
 	if (IsKeyWord("COUNT")) {
 		TestNotSum();
-		SetIi();
+		SetIi(WasIiPrefix);
 		result = new FrmlElemInp(_count, IDA[Ii]);
 		FTyp = 'R';
 		return result;
@@ -98,13 +98,22 @@ FrmlElem* RdFldNameFrmlR(char& FTyp)
 		}
 	}
 	if (IsKeyWord("ERROR")) {
-		Err(); result = (FrmlElem*)(&IDA[Ii]->OpErr); FTyp = 'B'; return result;
+		Err(WasIiPrefix);
+		result = (FrmlElem*)(&IDA[Ii]->OpErr);
+		FTyp = 'B';
+		return result;
 	}
 	if (IsKeyWord("WARNING")) {
-		Err(); result = (FrmlElem*)(&IDA[Ii]->OpWarn); FTyp = 'B'; return result;
+		Err(WasIiPrefix);
+		result = (FrmlElem*)(&IDA[Ii]->OpWarn);
+		FTyp = 'B';
+		return result;
 	}
 	if (IsKeyWord("ERRORTEXT")) {
-		Err(); result = IDA[Ii]->ErrTxtFrml; FTyp = 'S'; return result;
+		Err(WasIiPrefix);
+		result = IDA[Ii]->ErrTxtFrml;
+		FTyp = 'S';
+		return result;
 	}
 	if (FrmlSumEl != nullptr) {
 		if (FrstSumVar) {
@@ -113,15 +122,15 @@ FrmlElem* RdFldNameFrmlR(char& FTyp)
 				result = RF->Frml;
 				return result;
 			}
-			FindInRec(FTyp, &result);
+			FindInRec(FTyp, &result, WasIiPrefix);
 			return result;
 		}
-		else if (CBlk == nullptr) { FindInRec(FTyp, &result); return result; }
+		else if (CBlk == nullptr) { FindInRec(FTyp, &result, WasIiPrefix); return result; }
 		else if (OwnInBlock(FTyp, &result)) return result;
 		else OldError(8);
 	}
 	if (OwnInBlock(FTyp, &result)) return result;
-	FindInRec(FTyp, &result);
+	FindInRec(FTyp, &result, WasIiPrefix);
 	return result;
 }
 
@@ -172,13 +181,13 @@ label1:
 	return z;
 }
 
-void RdDirFilVar(char& FTyp, FrmlElem** res)
+void RdDirFilVar(char& FTyp, FrmlElem** res, bool wasIiPrefix)
 {
 	LinkD* LD = nullptr;
 	FileD* FD = nullptr;
 	integer I = 0;
 	FrmlPtr Z = nullptr;
-	if (WasIiPrefix) {
+	if (wasIiPrefix) {
 		CFile = InpFD(Ii);
 		if (!IsRoleName(true, &FD, &LD)) Error(9);
 	}
@@ -230,12 +239,12 @@ bool OwnInBlock(char& FTyp, FrmlElem** res)
 	return result;
 }
 
-void FindInRec(char& FTyp, FrmlElem** res)
+void FindInRec(char& FTyp, FrmlElem** res, bool wasIiPrefix)
 {
 	FileD* FD = nullptr;
 	FieldDescr* F = nullptr;
 	FrmlElem* Z = nullptr;
-	if (WasIiPrefix) {
+	if (wasIiPrefix) {
 		FD = InpFD(Ii);
 		Z = TryRdFldFrml(FD, FTyp);
 	}
@@ -245,9 +254,9 @@ void FindInRec(char& FTyp, FrmlElem** res)
 	*res = FrmlContxt(Z, FD, FD->RecPtr);
 }
 
-void SetIi()
+void SetIi(bool wasIiPrefix)
 {
-	if (!WasIiPrefix) {
+	if (!wasIiPrefix) {
 		if (WhatToRd == 'i') Ii = Oi;
 		else Ii = 1;
 	}
@@ -258,10 +267,10 @@ void TestNotSum()
 	if (FrmlSumEl != nullptr) OldError(41);
 }
 
-void Err()
+void Err(bool wasIiPrefix)
 {
 	TestNotSum();
-	SetIi();
+	SetIi(wasIiPrefix);
 	if (IDA[Ii]->ErrTxtFrml == nullptr)
 	{
 		IDA[Ii]->ErrTxtFrml = new FrmlElem4(_const, 0); // GetOp(_const, 256);

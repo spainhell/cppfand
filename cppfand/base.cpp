@@ -480,7 +480,7 @@ void EncodeMask(pstring& Mask, WORD& Min, WORD& Max)
 	for (i = 1; i <= Mask.length(); i++)
 	{
 		for (j = 0; j < 7; j++) {
-			if (Mask[i] == Code[j])
+			if ((char)Mask[i] == Code[j])
 			{
 				Mask[i] = (char)j;
 				if (Min > j) Min = j;
