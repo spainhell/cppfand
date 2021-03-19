@@ -179,8 +179,6 @@
     <ClCompile Include="printtxt.cpp" />
     <ClCompile Include="Rdb.cpp" />
     <ClCompile Include="rdfildcl.cpp" />
-    <ClCompile Include="rdmerg.cpp" />
-    <ClCompile Include="runmerg.cpp" />
     <ClCompile Include="runproj.cpp" />
     <ClCompile Include="pstring.cpp" />
     <ClCompile Include="rdproc.cpp" />
@@ -231,8 +229,6 @@
     <ClInclude Include="olongstr.h" />
     <ClInclude Include="printtxt.h" />
     <ClInclude Include="Rdb.h" />
-    <ClInclude Include="rdmerg.h" />
-    <ClInclude Include="runmerg.h" />
     <ClInclude Include="runproj.h" />
     <ClInclude Include="pstring.h" />
     <ClInclude Include="rdfildcl.h" />
@@ -281,11 +277,11 @@
     <ProjectReference Include="..\Logging\Logging.vcxproj">
       <Project>{431ccfda-764c-498c-ae07-276fb41ebbf9}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\MergeReport\MergeReport.vcxproj">
+      <Project>{b945b1f8-eb80-4bcf-a75f-58aea36353ed}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\pascal\pascal.vcxproj">
       <Project>{1dca247b-35ec-434d-9e3b-66c507e4ac95}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\Report\Report.vcxproj">
-      <Project>{b945b1f8-eb80-4bcf-a75f-58aea36353ed}</Project>
     </ProjectReference>
     <ProjectReference Include="..\textfunc\textfunc.vcxproj">
       <Project>{4ce9c1c6-998b-48ae-b5a1-3403b2e02fbe}</Project>

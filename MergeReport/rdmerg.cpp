@@ -1,12 +1,14 @@
 #include "rdmerg.h"
-#include "compile.h"
-#include "FieldDescr.h"
-#include "FileD.h"
-#include "GlobalVariables.h"
-#include "KeyFldD.h"
-#include "legacy.h"
-#include "rdfildcl.h"
-#include "../Report/rdrprt.h"
+
+#include "shared.h"
+#include "../cppfand/compile.h"
+#include "../cppfand/FieldDescr.h"
+#include "../cppfand/FileD.h"
+#include "../cppfand/GlobalVariables.h"
+#include "../cppfand/KeyFldD.h"
+#include "../cppfand/legacy.h"
+#include "../cppfand/rdfildcl.h"
+#include "../MergeReport/rdrprt.h"
 
 char WhatToRd = '\0'; /*i=Oi output FDs;O=O outp.FDs*/
 bool ReadingOutpBool = false;
@@ -78,41 +80,41 @@ FrmlPtr RdFldNameFrmlM(char& FTyp)
 	}
 	if (!WasIiPrefix) if (FindLocVar(&LVBD, &LV)) {
 		RdLex(); 
-		TestNotSum_M(); 
+		TestNotSum(); 
 		result = (FrmlPtr)(&LV->Op); 
 		FTyp = LV->FTyp; 
 		return result;
 	}
 	if (IsKeyWord("COUNT")) {
 	label1:
-		TestNotSum_M(); 
-		SetIi_M(WasIiPrefix);
+		TestNotSum(); 
+		SetIi_Merge(WasIiPrefix);
 		result = (FrmlPtr)(&IDA[Ii]->Op); 
 		FTyp = 'R'; 
 		return result;
 	}
 	if (IsKeyWord("GROUP")) {
 	label2:
-		TestNotSum_M(); 
+		TestNotSum(); 
 		if (WasIiPrefix) OldError(41);
 		result = (FrmlPtr)(&MergOpGroup); 
 		FTyp = 'R'; 
 		return result;
 	}
 	if (IsKeyWord("ERROR")) {
-		Err_M(WasIiPrefix);
+		Err('m', WasIiPrefix);
 		result = (FrmlPtr)(&IDA[Ii]->OpErr); 
 		FTyp = 'B'; 
 		return result;
 	}
 	if (IsKeyWord("WARNING")) {
-		Err_M(WasIiPrefix);
+		Err('m', WasIiPrefix);
 		result = (FrmlPtr)(&IDA[Ii]->OpWarn); 
 		FTyp = 'B'; 
 		return result;
 	}
 	if (IsKeyWord("ERRORTEXT")) {
-		Err_M(WasIiPrefix);
+		Err('m', WasIiPrefix);
 		result = IDA[Ii]->ErrTxtFrml; 
 		FTyp = 'S'; 
 		return result;
@@ -180,29 +182,6 @@ void RdOutpFldName(char& FTyp, FrmlElem** res)
 	/* !!! with RD->OD^ do!!! */
 	*res = FrmlContxt(MakeFldFrml(RdFldName(RD->OD->FD), FTyp),
 		RD->OD->FD, RD->OD->RecPtr);
-}
-
-void SetIi_M(bool wasIiPrefix)
-{
-	if (!wasIiPrefix) {
-		if (!Join && (WhatToRd == 'i')) Ii = Oi;
-		else Ii = 1;
-	}
-}
-
-void TestNotSum_M()
-{
-	if (FrmlSumEl != nullptr) OldError(41);
-}
-
-void Err_M(bool wasIiPrefix)
-{
-	TestNotSum_M();
-	SetIi_M(wasIiPrefix);
-	if (IDA[Ii]->ErrTxtFrml == nullptr)
-	{
-		IDA[Ii]->ErrTxtFrml = new FrmlElem4(_const, 0); // GetOp(_const, 256);
-	}
 }
 
 void ChainSumElM()

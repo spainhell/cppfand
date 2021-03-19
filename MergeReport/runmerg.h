@@ -1,7 +1,7 @@
 #pragma once
-#include "access.h"
-#include "constants.h"
-#include "rdrun.h"
+#include "../cppfand/access.h"
+#include "../cppfand/constants.h"
+#include "../cppfand/rdrun.h"
 
 extern longint NRecsAll;
 void RunMerge();

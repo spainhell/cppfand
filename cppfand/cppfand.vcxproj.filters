@@ -66,12 +66,6 @@
     <ClCompile Include="sort.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="runmerg.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="rdmerg.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="rdfildcl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -230,13 +224,7 @@
     <ClInclude Include="runproj.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="runmerg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="obase.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="rdmerg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="expimp.h">

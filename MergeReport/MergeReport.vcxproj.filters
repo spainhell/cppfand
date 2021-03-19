@@ -24,6 +24,15 @@
     <ClInclude Include="rdrprt.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="rdmerg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="runmerg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="shared.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="runrprt.cpp">
@@ -33,6 +42,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="rdrprt.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="rdmerg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="runmerg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="shared.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

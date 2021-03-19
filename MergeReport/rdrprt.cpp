@@ -1,5 +1,6 @@
 #include "rdrprt.h"
-
+#include "rdmerg.h"
+#include "shared.h"
 #include "../cppfand/compile.h"
 #include "../cppfand/FieldDescr.h"
 #include "../cppfand/FileD.h"
@@ -7,13 +8,11 @@
 #include "../cppfand/KeyFldD.h"
 #include "../cppfand/obase.h"
 #include "../cppfand/rdfildcl.h"
-#include "../cppfand/rdmerg.h"
 
 
 BlkD* CBlk;
 std::vector<FrmlElemSum*>* CZeroLst = nullptr;
 LvDescr* LvToRd;           /*all used while translating frml*/
-// bool WasIiPrefix;
 BlkD* CBlkSave;
 
 FileD* InpFD(WORD I)
@@ -72,7 +71,7 @@ FrmlElem* RdFldNameFrmlR(char& FTyp)
 	}
 	if (IsKeyWord("COUNT")) {
 		TestNotSum();
-		SetIi(WasIiPrefix);
+		SetIi_Report(WasIiPrefix);
 		result = new FrmlElemInp(_count, IDA[Ii]);
 		FTyp = 'R';
 		return result;
@@ -98,19 +97,19 @@ FrmlElem* RdFldNameFrmlR(char& FTyp)
 		}
 	}
 	if (IsKeyWord("ERROR")) {
-		Err(WasIiPrefix);
+		Err('r', WasIiPrefix);
 		result = (FrmlElem*)(&IDA[Ii]->OpErr);
 		FTyp = 'B';
 		return result;
 	}
 	if (IsKeyWord("WARNING")) {
-		Err(WasIiPrefix);
+		Err('r', WasIiPrefix);
 		result = (FrmlElem*)(&IDA[Ii]->OpWarn);
 		FTyp = 'B';
 		return result;
 	}
 	if (IsKeyWord("ERRORTEXT")) {
-		Err(WasIiPrefix);
+		Err('r', WasIiPrefix);
 		result = IDA[Ii]->ErrTxtFrml;
 		FTyp = 'S';
 		return result;
@@ -252,29 +251,6 @@ void FindInRec(char& FTyp, FrmlElem** res, bool wasIiPrefix)
 	if (Z == nullptr) Error(8);
 	TestSetSumIi();
 	*res = FrmlContxt(Z, FD, FD->RecPtr);
-}
-
-void SetIi(bool wasIiPrefix)
-{
-	if (!wasIiPrefix) {
-		if (WhatToRd == 'i') Ii = Oi;
-		else Ii = 1;
-	}
-}
-
-void TestNotSum()
-{
-	if (FrmlSumEl != nullptr) OldError(41);
-}
-
-void Err(bool wasIiPrefix)
-{
-	TestNotSum();
-	SetIi(wasIiPrefix);
-	if (IDA[Ii]->ErrTxtFrml == nullptr)
-	{
-		IDA[Ii]->ErrTxtFrml = new FrmlElem4(_const, 0); // GetOp(_const, 256);
-	}
 }
 
 void ChainSumElR()

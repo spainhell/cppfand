@@ -1,5 +1,5 @@
 #pragma once
-#include "rdrun.h"
+#include "../cppfand/rdrun.h"
 
 extern char WhatToRd; /*i=Oi output FDs;O=O outp.FDs*/
 extern bool ReadingOutpBool;
@@ -13,9 +13,6 @@ FrmlPtr RdFldNameFrmlM(char& FTyp);
 void RdDirFilVar_M(char& FTyp, FrmlElem** res, bool wasIiPrefix); // exituje i v rdrprt.cpp -> pøejmenováno na *_M
 void TestSetSumIi_M(); // exituje i v rdrprt.cpp -> pøejmenováno na *_M
 void RdOutpFldName(char& FTyp, FrmlElem** res);
-void SetIi_M(bool wasIiPrefix); // exituje i v rdrprt.cpp -> pøejmenováno na *_M
-void TestNotSum_M(); // exituje i v rdrprt.cpp -> pøejmenováno na *_M
-void Err_M(bool wasIiPrefix); // exituje i v rdrprt.cpp -> pøejmenováno na *_M
 void ChainSumElM();
 void ReadMerge();
 void CopyPrevMFlds_M(); // exituje i v rdrprt.cpp -> pøejmenováno na *_M

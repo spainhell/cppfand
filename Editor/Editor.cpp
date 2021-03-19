@@ -1,11 +1,10 @@
 #pragma once
 
-#include "editor.h"
+#include "Editor.h"
 #include <set>
 #include <stdexcept>
-
-
 #include "runedi.h"
+
 #include "../cppfand/compile.h"
 #include "../cppfand/FileD.h"
 #include "../cppfand/GlobalVariables.h"
@@ -17,7 +16,7 @@
 #include "../cppfand/wwmenu.h"
 #include "../cppfand/wwmix.h"
 #include "../cppfand/models/FrmlElem.h"
-#include "../Report/genrprt.h"
+#include "../MergeReport/genrprt.h"
 #include "../textfunc/textfunc.h"
 
 const int TXTCOLS = 80;

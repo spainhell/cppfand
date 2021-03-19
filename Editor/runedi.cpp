@@ -19,7 +19,7 @@
 #include "../cppfand/wwmenu.h"
 #include "../cppfand/XKey.h"
 #include "../Logging/Logging.h"
-#include "../Report/genrprt.h"
+#include "../MergeReport/genrprt.h"
 #include "../textfunc/textfunc.h"
 
 int TimerRE = 0;

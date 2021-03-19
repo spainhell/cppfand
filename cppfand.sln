@@ -27,7 +27,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Logging", "Logging\Logging.
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Editor", "Editor\Editor.vcxproj", "{A08457D5-2848-4FB1-AE40-EC55EF69B5DA}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Report", "Report\Report.vcxproj", "{B945B1F8-EB80-4BCF-A75F-58AEA36353ED}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MergeReport", "MergeReport\MergeReport.vcxproj", "{B945B1F8-EB80-4BCF-A75F-58AEA36353ED}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
