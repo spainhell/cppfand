@@ -48,7 +48,16 @@ void wwmix::PutSelect(std::string s)
 	p->S[0] = (char)l;
 	if (ss.Empty) {
 		FillChar(&sv, sizeof(sv), '\0');
-		FillChar(&ss.Abcd, sizeof(ss) - 5, 0);
+		//FillChar(&ss.Abcd, sizeof(ss) - 5, 0);
+		//
+		ss.Abcd = false;
+		ss.AscDesc = false;
+		ss.Subset = false;
+		ss.ImplAll = false;
+		ss.Empty = false;
+		ss.Size = 0;
+		ss.Tag = '\0';
+		//
 		sv.markp = p;
 	}
 	if (sv.Chain == nullptr) sv.Chain = p;

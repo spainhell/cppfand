@@ -26,21 +26,6 @@ FileD* InpFD_M(WORD I)
 	return nullptr;
 }
 
-bool RdIiPrefix_M()
-{
-	auto result = false;
-	if ((ForwChar == '.') && (LexWord.length() == 2) && (LexWord[1] == 'I') &&
-		(isdigit(LexWord[2]) && LexWord[2] != '0')) {
-		Ii = LexWord[2] - '0';
-		if ((Ii > MaxIi) || (WhatToRd == 'i') && (Ii > Oi)) Error(9);
-		RdLex(); RdLex(); result = true;
-	}
-	else {
-		Ii = 0; result = false;
-	}
-	return result;
-}
-
 FrmlElem* FindIiandFldFrml_M(FileD** FD, char& FTyp)
 {
 	integer i = 0; FrmlPtr z = nullptr;
@@ -64,7 +49,7 @@ FrmlPtr RdFldNameFrmlM(char& FTyp)
 	LocVar* LV = nullptr; FileD* FD = nullptr;
 	FrmlElem* result = nullptr;
 
-	bool WasIiPrefix = RdIiPrefix_M();
+	bool WasIiPrefix = RdIiPrefix();
 	if ((FrmlSumEl != nullptr) && FrstSumVar) SumIi = 0;
 	TestIdentif();
 	if ((LexWord == "O") && IsForwPoint() && !WasIiPrefix) {
@@ -272,7 +257,7 @@ void ReadMerge()
 			if (IDA[Ii - 1]->MFld == nullptr) {
 				if (ID->MFld != nullptr) OldError(22);
 			}
-			else if (ID->MFld == nullptr) CopyPrevMFlds_M();
+			else if (ID->MFld == nullptr) CopyPrevMFlds();
 			else CheckMFlds_M(IDA[Ii - 1]->MFld, ID->MFld);
 		}
 		RdAutoSortSK_M(ID);
@@ -328,29 +313,6 @@ label3:
 			RdChkDsFromPos(ID->Scan->FD, ID->Chk);
 		}
 	}
-}
-
-void CopyPrevMFlds_M()
-{
-	KeyFldD* M; KeyFldD* MNew;
-	FieldDescr* F;
-	pstring S;
-	M = IDA[Ii - 1]->MFld;
-	S = LexWord;
-	while (M != nullptr)
-	{
-		LexWord = M->FldD->Name; 
-		F = FindFldName(InpFD_M(Ii));
-		if (F == nullptr) OldError(8);
-		if (!FldTypIdentity(M->FldD, F)) OldError(12);
-		MNew = new KeyFldD(); // (KeyFldD*)GetStore(sizeof(*MNew));
-		Move(M, MNew, sizeof(*MNew));
-		MNew->FldD = F; 
-		if (IDA[Ii]->MFld == nullptr) IDA[Ii]->MFld = MNew;
-		else ChainLast(IDA[Ii]->MFld, MNew);
-		M = (KeyFldD*)M->Chain;
-	}
-	LexWord = S;
 }
 
 void CheckMFlds_M(KeyFldD* M1, KeyFldD* M2)

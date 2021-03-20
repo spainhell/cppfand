@@ -8,7 +8,7 @@
 #include "../cppfand/oaccess.h"
 #include "../cppfand/obase.h"
 #include "../cppfand/obaseww.h"
-#include "../cppfand/runmerg.h"
+#include "runmerg.h"
 #include "../cppfand/wwmix.h"
 #include "../textfunc/textfunc.h"
 
