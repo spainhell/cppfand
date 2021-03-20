@@ -1,6 +1,6 @@
 #include "runfand.h"
 
-#include <windows.h>
+#include <Windows.h>
 #include "base.h"
 #include "legacy.h"
 #include "pstring.h"
@@ -17,7 +17,7 @@
 #include "runproj.h"
 #include "wwmenu.h"
 #include "wwmix.h"
-#include "../Editor/editor.h"
+#include "../Editor/Editor.h"
 #include "../Editor/runedi.h"
 #include "../textfunc/textfunc.h"
 
@@ -362,7 +362,7 @@ void SelectEditTxt(pstring e, bool OnFace)
 {
 	wwmix ww;
 	CPath = ww.SelectDiskFile(e, 35, OnFace); 
-	if (CPath == "") return;
+	if (CPath.empty()) return;
 	CallEditTxt();
 }
 
@@ -410,13 +410,14 @@ void InitRunFand()
 		return; // pùvodnì wait;
 	}
 	WrkDir = GetEnv("FANDWORK");
-	if (WrkDir == "") WrkDir = FandDir;
+	if (WrkDir.empty()) WrkDir = FandDir;
 	AddBackSlash(WrkDir);
 	s = WrkDir + "FANDWORK";
 	FandWorkName = s + ".$$$";
 	FandWorkXName = s + ".X$$";
 	FandWorkTName = s + ".T$$";
 	LANNode = 0;
+	printf("FANDWORK DIR: %s\n", s.c_str());
 	s = GetEnv("LANNODE");
 	s = TrailChar(s, ' ');
 	if (!s.empty()) {
@@ -429,6 +430,7 @@ void InitRunFand()
 		}
 #endif 
 	}
+	printf("LANNODE: %s\n", s.c_str());
 	h = ResFile.Handle;
 	ReadH(h, 2, &n);
 	if (n != ResVersion) {
@@ -442,7 +444,7 @@ void InitRunFand()
 		ReadH(h, sizeof(ResFile.A->Size), &ResFile.A[readindexes].Size);
 	}
 
-	// *** NAÈTENÍ INFORMACÍ O ZPRÁVÁCH Z FAND.RES
+	// *** NACTENI INFORMACI O ZPRaVaCH Z FAND.RES
 	ReadH(h, 2, &MsgIdxN);
 	l = MsgIdxN;
 	MsgIdx = new TMsgIdxItem[l]; // GetMem(MsgIdx, l);

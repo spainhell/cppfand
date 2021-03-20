@@ -103,7 +103,7 @@ WORD LANNode; // ø. 431
 void (*CallOpenFandFiles)(); // r453
 void (*CallCloseFandFiles)(); // r454
 
-double userToday;
+double userToday = 0;
 ExitRecord ExitBuf;
 
 typedef FILE* filePtr;
@@ -1015,6 +1015,17 @@ void CloseH(FILE** handle)
 {
 	Logging* log = Logging::getInstance();
 	DataFile* fileForClose = nullptr;
+	if (*handle == nullptr) return;
+	// uzavre soubor
+	auto res = fclose(*handle);
+	WORD HandleError = res;
+	log->log(loglevel::DEBUG, "closing file 0x%p '%s', error %i", 
+		*handle, fileForClose == nullptr ? "nullptr" : fileForClose->Name.c_str(), res);
+
+	if (res != 0) {
+		throw std::exception("Cannot close file!");
+	}
+	
 #ifdef _DEBUG
 	// oznaci za uzavreny ve filesMap
 	for (auto& f : filesMap)
@@ -1030,14 +1041,8 @@ void CloseH(FILE** handle)
 		log->log(loglevel::WARN, "closing file 0x%p, but file wasn't in filesMap!", *handle);
 	}
 #endif
-	if (*handle == nullptr) return;
-	// uzavre soubor
-	auto res = fclose(*handle);
-	WORD HandleError = res;
-	log->log(loglevel::DEBUG, "closing file 0x%p '%s', error %i", 
-		*handle, fileForClose == nullptr ? "nullptr" : fileForClose->Name.c_str(), res);
-	//if (CFile != nullptr) CFile->Handle = nullptr;
-	*handle = nullptr;
+
+	* handle = nullptr;
 }
 
 void ClearCacheH(FILE* h)
@@ -1529,10 +1534,12 @@ void NewExit(PProcedure POvr, ExitRecord* Buf)
 void GoExit()
 {
 	Logging* log = Logging::getInstance();
-	log->log(loglevel::ERR, "GoExit(): '%s'", MsgLine.c_str());
+	log->log(loglevel::WARN, "GoExit(): '%s'", MsgLine.c_str());
 #ifdef _DEBUG
 	screen.ScrWrText(1, 1, MsgLine.c_str());
 #endif
+	BreakP = true;
+	log->log(loglevel::WARN, "GoExit(): Setting 'BreakP = true'", MsgLine.c_str());
 }
 
 void RestoreExit(ExitRecord& Buf)
@@ -1664,90 +1671,29 @@ void OpenResFile()
 	}
 }
 
-void InitOverlays()
-{
-	pstring name; pstring ext; integer sz, err; longint l; pstring s;
-	const BYTE OvrlSz = 124;
-
-	GetDir(0, &OldDir);
-	//OldDir = GetDir(0);
-	FSplit(FExpand(ParamStr(1)), FandDir, name, ext);
-	FandOvrName = MyFExpand(name + ".OVR", "FANDOVR");
-	//OvrInit(FandOvrName);
-	//if (OvrResult != 0) {          /*reshandle-1*/
-	//	FandOvrName = ParamStr(0);
-	//	OvrInit(FandOvrName);
-	//	if (OvrResult != 0) {
-	//		printf("can't open FAND.OVR"); wait(); Halt(-1);
-	//	}
-	//}
-	//OvrInitEMS();
-	s = GetEnv("FANDOVRB");
-	while ((s.length() > 0) && (s[s.length()] == ' ')) s[0] = s.length() - 1;
-	val(s, sz, err);
-	if ((err != 0) || (sz < 80) || (sz > OvrlSz + 10)) sz = OvrlSz; l = longint(sz) * 1024;
-	//OvrSetBuf(l);
-	//OvrSetRetry(l / 2);
-	//TODO: FreeList = nullptr;
-}
-
 void OpenWorkH()
 {
 	CPath = FandWorkName;
 	CVol = "";
 	WorkHandle = OpenH(_isoldnewfile, Exclusive);
 	if (HandleError != 0) {
-		printf("cant't open %s", FandWorkName.c_str());
+		printf("can't open %s", FandWorkName.c_str());
 		wait();
 		Halt(-1);
 	}
 }
 
-//bool SEquUpcase(pstring S1, pstring S2)
-//{
-//	size_t s1_len = S1.length();
-//	size_t s2_len = S2.length();
-//	if (s1_len != s2_len) return false;
-//	if (s1_len == 0) return true;
-//
-//	const char* s1_c = S1.c_str();
-//	const char* s2_c = S2.c_str();
-//
-//	for (size_t i = 0; i < s1_len; i++)
-//	{
-//		if (toupper(s1_c[i]) != toupper(s2_c[i])) return false;
-//	}
-//	return true;
-//}
-
-//void OpenOvrFile()
-//{
-//	FILE* h;
-//	CPath = FandOvrName;
-//	CVol = "";
-//	h = OpenH(_isoldfile, RdOnly);
-//		if (h != OvrHandle)
-//		{
-//			printf("can't open FAND.OVR");
-//			wait();
-//			Halt(-1);
-//		}
-//}
-
 void NonameStartFunction()
 {
-	integer UserLicNr;
-	double userToday;
 	// TODO:
 	// CurPSP = ptr(PrefixSeg, 0);
 	// MyHeapEnd = HeapEnd;
 	ExtendHandles();
 	prCurr = -1;
-	// InitOverlays();
 	ExitSave = ExitProc;
 	ExitProc = MyExit;
 	MyBP = nullptr;
-	UserLicNr = WORD(UserLicNrShow) & 0x7FFF;
+	// integer UserLicNr = WORD(UserLicNrShow) & 0x7FFF;
 	FandResName = MyFExpand("Fand.Res", "FANDRES");
 	OpenResFile();
 }

@@ -440,7 +440,7 @@ void CloseFAfter(FileD* FD)
 	CFile = FD;
 
 	// timto preskocime aktualizaci RDB a TTT
-	CFile = (FileD*)CFile->Chain;
+	//CFile = (FileD*)CFile->Chain;
 
 	while (CFile != nullptr) {
 		CloseFile();

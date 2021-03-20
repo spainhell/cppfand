@@ -22,14 +22,13 @@ FileD* InpFD(WORD I)
 
 bool FindInLvBlk(LvDescr* L, BlkD* B, RFldD* RF)
 {
-	RFldD* RF1; BlkD* B1; LvDescr* L1; bool first;
-	first = true;
+	bool first = true;
 	auto result = false;
 label1:
 	while (L != nullptr) {
-		B1 = L->Ft;
+		BlkD* B1 = L->Ft;
 		while (B1 != nullptr) {
-			RF1 = B1->RFD;
+			RFldD* RF1 = B1->RFD;
 			while (RF1 != nullptr) {
 				if ((Lexem == _identifier) && EquUpcase(RF1->Name, LexWord)) {
 					RdLex();
@@ -44,7 +43,11 @@ label1:
 		}
 		L = L->ChainBack;
 	}
-	if (first) { first = false; L = IDA[1]->FrstLvS;/*DE*/ goto label1; }
+	if (first) {
+		first = false;
+		L = IDA[1]->FrstLvS;/*DE*/
+		goto label1;
+	}
 	return result;
 }
 
@@ -131,13 +134,6 @@ FrmlElem* RdFldNameFrmlR(char& FTyp)
 	if (OwnInBlock(FTyp, &result)) return result;
 	FindInRec(FTyp, &result, WasIiPrefix);
 	return result;
-}
-
-void TestSetSumIi()
-{
-	if ((FrmlSumEl != nullptr) && (Ii != 0))
-		if (FrstSumVar || (SumIi == 0)) SumIi = Ii;
-		else if (SumIi != Ii) OldError(27);
 }
 
 FrmlPtr FindIiandFldFrml(FileD** FD, char& FTyp)
@@ -466,20 +462,6 @@ label4:
 		ID = IDA[i];
 		if (ID->ErrTxtFrml != nullptr) { RdChkDsFromPos(ID->Scan->FD, ID->Chk); }
 	}
-}
-
-void CheckMFlds(KeyFldD* M1, KeyFldD* M2)
-{
-	while (M1 != nullptr) {
-		if (M2 == nullptr) OldError(30);
-		if (!FldTypIdentity(M1->FldD, M2->FldD) 
-			|| (M1->Descend != M2->Descend)
-			|| (M1->CompLex != M2->CompLex)) 
-			OldError(12);
-		M1 = (KeyFldD*)M1->Chain;
-		M2 = (KeyFldD*)M2->Chain;
-	}
-	if (M2 != nullptr) OldError(30);
 }
 
 LvDescr* MakeOldMLvD()

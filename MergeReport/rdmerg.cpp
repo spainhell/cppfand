@@ -60,13 +60,13 @@ FrmlPtr RdFldNameFrmlM(char& FTyp)
 	}
 	if (IsForwPoint()) {
 		RdDirFilVar_M(FTyp, &result, WasIiPrefix);
-		TestSetSumIi_M(); 
+		TestSetSumIi(); 
 		return result;
 	}
 	if (!WasIiPrefix) if (FindLocVar(&LVBD, &LV)) {
 		RdLex(); 
 		TestNotSum(); 
-		result = (FrmlPtr)(&LV->Op); 
+		result = (FrmlElem*)(&LV->Op); 
 		FTyp = LV->FTyp; 
 		return result;
 	}
@@ -74,7 +74,7 @@ FrmlPtr RdFldNameFrmlM(char& FTyp)
 	label1:
 		TestNotSum(); 
 		SetIi_Merge(WasIiPrefix);
-		result = (FrmlPtr)(&IDA[Ii]->Op); 
+		result = (FrmlElem*)(&IDA[Ii]->Op);
 		FTyp = 'R'; 
 		return result;
 	}
@@ -88,13 +88,13 @@ FrmlPtr RdFldNameFrmlM(char& FTyp)
 	}
 	if (IsKeyWord("ERROR")) {
 		Err('m', WasIiPrefix);
-		result = (FrmlPtr)(&IDA[Ii]->OpErr); 
+		result = (FrmlElem*)(&IDA[Ii]->OpErr);
 		FTyp = 'B'; 
 		return result;
 	}
 	if (IsKeyWord("WARNING")) {
 		Err('m', WasIiPrefix);
-		result = (FrmlPtr)(&IDA[Ii]->OpWarn); 
+		result = (FrmlElem*)(&IDA[Ii]->OpWarn);
 		FTyp = 'B'; 
 		return result;
 	}
@@ -114,7 +114,7 @@ FrmlPtr RdFldNameFrmlM(char& FTyp)
 		if (IsKeyWord('M')) goto label2; 
 		Error(8);
 	}
-	TestSetSumIi_M();
+	TestSetSumIi();
 	result = FrmlContxt(Z, FD, FD->RecPtr);
 	return result;
 }
@@ -151,14 +151,6 @@ label2:
 	if (LD == nullptr) Ii = 0; 
 	else Z = FrmlContxt(Z, CFile, CFile->RecPtr);
 	*res = Z;
-}
-
-void TestSetSumIi_M()
-{
-	if ((FrmlSumEl != nullptr) && (Ii != 0)) {
-		if (FrstSumVar || (SumIi == 0)) SumIi = Ii;
-		else if (SumIi != Ii) OldError(27);
-	}
 }
 
 void RdOutpFldName(char& FTyp, FrmlElem** res)
@@ -258,7 +250,7 @@ void ReadMerge()
 				if (ID->MFld != nullptr) OldError(22);
 			}
 			else if (ID->MFld == nullptr) CopyPrevMFlds();
-			else CheckMFlds_M(IDA[Ii - 1]->MFld, ID->MFld);
+			else CheckMFlds(IDA[Ii - 1]->MFld, ID->MFld);
 		}
 		RdAutoSortSK_M(ID);
 		TestLex('#');
@@ -313,20 +305,6 @@ label3:
 			RdChkDsFromPos(ID->Scan->FD, ID->Chk);
 		}
 	}
-}
-
-void CheckMFlds_M(KeyFldD* M1, KeyFldD* M2)
-{
-	while (M1 != nullptr) {
-		if (M2 == nullptr) OldError(30);
-		if (!FldTypIdentity(M1->FldD, M2->FldD)
-			|| (M1->Descend != M2->Descend)
-			|| (M1->CompLex != M2->CompLex))
-			OldError(12);
-		M1 = (KeyFldD*)M1->Chain;
-		M2 = (KeyFldD*)M2->Chain;
-	}
-	if (M2 != nullptr) OldError(30);
 }
 
 void MakeOldMFlds()

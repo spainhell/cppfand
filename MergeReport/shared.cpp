@@ -1,12 +1,11 @@
 #include "shared.h"
 
-
 #include "rdmerg.h"
 #include "rdrprt.h"
 #include "../cppfand/compile.h"
 #include "../cppfand/FieldDescr.h"
 #include "../cppfand/GlobalVariables.h"
-#include "../cppfand/KeyFldD.h"
+
 
 void TestNotSum()
 {
@@ -92,5 +91,26 @@ void CopyPrevMFlds()
 		M = (KeyFldD*)M->Chain;
 	}
 	LexWord = s;
+}
+
+void CheckMFlds(KeyFldD* M1, KeyFldD* M2)
+{
+	while (M1 != nullptr) {
+		if (M2 == nullptr) OldError(30);
+		if (!FldTypIdentity(M1->FldD, M2->FldD)
+			|| (M1->Descend != M2->Descend)
+			|| (M1->CompLex != M2->CompLex))
+			OldError(12);
+		M1 = (KeyFldD*)M1->Chain;
+		M2 = (KeyFldD*)M2->Chain;
+	}
+	if (M2 != nullptr) OldError(30);
+}
+
+void TestSetSumIi()
+{
+	if ((FrmlSumEl != nullptr) && (Ii != 0))
+		if (FrstSumVar || (SumIi == 0)) SumIi = Ii;
+		else if (SumIi != Ii) OldError(27);
 }
 
