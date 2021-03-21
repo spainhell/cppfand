@@ -663,7 +663,7 @@ label1:
 					k = k->Chain;
 				}
 				SetDeletedFlag();
-				WriteRec(n);
+				WriteRec(CFile, n, CRecPtr);
 				return;
 			}
 		}

@@ -1937,7 +1937,7 @@ WORD ReadProlog(WORD RecNr)
 	if (RecNr != 0) {
 		CFile = Chpt; CRecPtr = cr;
 		StoreChptTxt(ChptOldTxt, ss, true);
-		WriteRec(RecNr);
+		WriteRec(CFile, RecNr, CRecPtr);
 		ReleaseStore(p1);
 	}
 	return result;
@@ -3653,7 +3653,7 @@ bool RunCommand(TCommand* COff/*PCommand*/)
 			DelTFld(c->FldD);
 			s = SaveDb(c->DbPred, 0);
 			LongS_(c->FldD, s);
-			WriteRec(CFile->NRecs);
+			WriteRec(CFile, CFile->NRecs, CRecPtr);
 		}
 		else {
 			md = NewLMode(RdMode);
@@ -3871,7 +3871,7 @@ void AssertFand(TPredicate* P, TCommand* C)
 		TestXFExist();
 		IncNRecs(1);
 		if (CFile->Typ == 'X') RecallRec(CFile->NRecs);
-		else WriteRec(CFile->NRecs);
+		else WriteRec(CFile, CFile->NRecs, CRecPtr);
 	}
 	OldLMode(md);
 	ReleaseStore(CRecPtr);

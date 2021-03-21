@@ -659,7 +659,7 @@ label1:
 		K1->Delete(RecNr); K1 = K1->Chain;
 	}
 	SetDeletedFlag();
-	WriteRec(RecNr);
+	WriteRec(CFile, RecNr, CRecPtr);
 	/* !!! with CFile->XF^ do!!! */
 	if (CFile->XF->FirstDupl) {
 		SetMsgPar(CFile->Name);
@@ -688,7 +688,7 @@ void DeleteXRec(longint RecNr, bool DelT)
 	DeleteAllIndexes(RecNr);
 	if (DelT) DelAllDifTFlds(CRecPtr, nullptr);
 	SetDeletedFlag();
-	WriteRec(RecNr);
+	WriteRec(CFile, RecNr, CRecPtr);
 	CFile->XF->NRecs--;
 }
 
@@ -707,5 +707,5 @@ void OverWrXRec(longint RecNr, void* P2, void* P)
 		K = K->Chain;
 	}
 	CRecPtr = P;
-	WriteRec(RecNr);
+	WriteRec(CFile, RecNr, CRecPtr);
 }

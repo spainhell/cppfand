@@ -74,7 +74,8 @@ FrmlPtr RdFldNameFrmlM(char& FTyp)
 	label1:
 		TestNotSum(); 
 		SetIi_Merge(WasIiPrefix);
-		result = (FrmlElem*)(&IDA[Ii]->Op);
+		//result = (FrmlElem*)(&IDA[Ii]->Op);
+		result = new FrmlElemInp(_count, IDA[Ii]);
 		FTyp = 'R'; 
 		return result;
 	}
@@ -82,7 +83,8 @@ FrmlPtr RdFldNameFrmlM(char& FTyp)
 	label2:
 		TestNotSum(); 
 		if (WasIiPrefix) OldError(41);
-		result = (FrmlPtr)(&MergOpGroup); 
+		//result = (FrmlPtr)(&MergOpGroup);
+		result = new FrmlElemMerge(_mergegroup, &MergOpGroup);
 		FTyp = 'R'; 
 		return result;
 	}

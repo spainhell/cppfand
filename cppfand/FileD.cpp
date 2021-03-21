@@ -21,15 +21,6 @@ void ReadRec(FileD* file, longint N, void* record)
 		(N - 1) * file->RecLen + file->FrstDispl, file->RecLen, record);
 }
 
-void WriteRec(longint N)
-{
-	Logging* log = Logging::getInstance();
-	//log->log(loglevel::DEBUG, "WriteRec(%i), CFile 0x%p, %s", N, CFile->Handle, CFile->Name.c_str());
-	RdWrCache(false, CFile->Handle, CFile->NotCached(),
-		(N - 1) * CFile->RecLen + CFile->FrstDispl, CFile->RecLen, CRecPtr);
-	CFile->WasWrRec = true;
-}
-
 void WriteRec(FileD* file, longint N, void* record)
 {
 	Logging* log = Logging::getInstance();

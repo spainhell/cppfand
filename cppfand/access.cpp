@@ -446,7 +446,7 @@ void RecallRec(longint RecNr)
 	KeyDPtr K = CFile->Keys;
 	while (K != nullptr) { K->Insert(RecNr, false); K = K->Chain; }
 	ClearDeletedFlag();
-	WriteRec(RecNr);
+	WriteRec(CFile, RecNr, CRecPtr);
 }
 
 bool IsNullValue(void* p, WORD l)
@@ -562,14 +562,14 @@ void SeekRec(longint N)
 	else CFile->Eof = N >= CFile->XF->NRecs;
 }
 
-void PutRec()
+void PutRec(FileD* dataFile, void* recordData)
 {
 	/* !!! with CFile^ do!!! */
-	CFile->NRecs++;
-	RdWrCache(false, CFile->Handle, CFile->NotCached(),
-		longint(CFile->IRec) * CFile->RecLen + CFile->FrstDispl, CFile->RecLen, CRecPtr);
-	CFile->IRec++;
-	CFile->Eof = true;
+	dataFile->NRecs++;
+	RdWrCache(false, dataFile->Handle, dataFile->NotCached(),
+		longint(dataFile->IRec) * dataFile->RecLen + dataFile->FrstDispl, dataFile->RecLen, recordData);
+	dataFile->IRec++;
+	dataFile->Eof = true;
 }
 
 void CreateRec(longint N)
@@ -579,11 +579,11 @@ void CreateRec(longint N)
 	CRecPtr = GetRecSpace();
 	for (longint i = CFile->NRecs - 1; i > N; i--) {
 		ReadRec(CFile, i, CRecPtr);
-		WriteRec(i + 1);
+		WriteRec(CFile, i + 1, CRecPtr);
 	}
 	ReleaseStore(CRecPtr);
 	CRecPtr = cr;
-	WriteRec(N);
+	WriteRec(CFile, N, CRecPtr);
 }
 
 void DeleteRec(longint N)
@@ -591,7 +591,7 @@ void DeleteRec(longint N)
 	DelAllDifTFlds(CRecPtr, nullptr);
 	for (longint i = N; i < CFile->NRecs - 1; i++) {
 		ReadRec(CFile, i + 1, CRecPtr);
-		WriteRec(i);
+		WriteRec(CFile, i, CRecPtr);
 	}
 	DecNRecs(1);
 }
@@ -1176,7 +1176,9 @@ void AssignNRecs(bool Add, longint N)
 	ZeroAllFlds();
 	SetDeletedFlag();
 	IncNRecs(N - OldNRecs);
-	for (longint i = OldNRecs + 1; i < N; i++) WriteRec(i);
+	for (longint i = OldNRecs + 1; i < N; i++) {
+		WriteRec(CFile, i, CRecPtr);
+	}
 	ReleaseStore(CRecPtr);
 label1:
 	OldLMode(md);

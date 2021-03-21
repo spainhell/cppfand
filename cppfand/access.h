@@ -124,8 +124,7 @@ void DelAllDifTFlds(void* Rec, void* CompRec);
 void DecNRecs(longint N);
 void DeleteRec(longint N);
 void AsgnParFldFrml(FileD* FD, FieldDescr* F, FrmlElem* Z, bool Ad);
-void PutRec();
-
+void PutRec(FileD* dataFile, void* recordData);
 
 void DelTFlds();
 void CopyRecWithT(void* p1, void* p2);

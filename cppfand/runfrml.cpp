@@ -873,7 +873,9 @@ label1:
 		result = iX->locvar->R;
 		break;
 	}
-	case _const: result = ((FrmlElem2*)X)->R; break;
+	case _const: {
+		result = ((FrmlElem2*)X)->R; break;
+	}
 	case _plus: {
 		result = RunReal(iX0->P1) + RunReal(iX0->P2); break;
 	}
@@ -1944,11 +1946,10 @@ LongStr* RunS(FrmlElem* Z)
 {
 	wwmix ww;
 
-	pstring s, snew; WORD w = 0;
+	pstring s;
 	FileD* cf = nullptr; void* cr = nullptr;
 	XString* x = (XString*)&s;
-	LongStr* t = nullptr; LongStr* tnew = nullptr;
-	WORD l = 0, i = 0, j = 0;
+	WORD l = 0;
 	double r = 0; BYTE m = 0;
 
 	auto iZ0 = (FrmlElem0*)Z;
@@ -1990,8 +1991,7 @@ LongStr* RunS(FrmlElem* Z)
 		memcpy(result->A, res.c_str(), res.length());
 		return result;
 	}
-	case _prompt:
-	{
+	case _prompt: {
 		auto iZ = (FrmlElem11*)Z;
 		auto s0 = RunShortStr(iZ->PPP1);
 		s = PromptS(s0, iZ->PP2, iZ->FldD);
@@ -2014,7 +2014,9 @@ LongStr* RunS(FrmlElem* Z)
 		s = stdS;
 		break;
 	}
-	case _password: s = ww.PassWord(false); break;
+	case _password: {
+		s = ww.PassWord(false); break;
+	}
 	case _readkey: {
 		ReadKbd();
 		s[1] = char(Lo(KbdChar));
@@ -2132,9 +2134,8 @@ void LowCase(std::string& text)
 
 double RoundReal(double RR, integer M)
 {
-	double R;
 	M = MaxI(0, MinI(M, 10));
-	R = RR * Power10[M];
+	double R = RR * Power10[M];
 	if (R < 0) R = R - 0.50001;
 	else R = R + 0.50001;
 	return int(R) / Power10[M];
@@ -2160,8 +2161,7 @@ label1:
 
 LongStr* LongTrailChar(char C, char CNew, LongStr* S)
 {
-	WORD l;
-	l = S->LL;
+	WORD l = S->LL;
 	while (l > 0) {
 		if (S->A[l - 1] != C) goto label1;
 		if (CNew != 0) S->A[l - 1] = CNew;
@@ -2184,8 +2184,7 @@ LongStr* RepeatStr(LongStr* S, integer N)
 	auto newS = new LongStr(S->LL * N);
 	newS->LL = 0;
 
-	while ((N > 1) && (S->LL + l <= MaxLStrLen))
-	{
+	while ((N > 1) && (S->LL + l <= MaxLStrLen)) {
 		memcpy(&newS->A[newS->LL], S->A, l);
 		newS->LL += l;
 		N--;
@@ -2195,13 +2194,11 @@ LongStr* RepeatStr(LongStr* S, integer N)
 
 void AccRecNoProc(FrmlElem14* X, WORD Msg)
 {
-	longint N; LockMode md;
 	CFile = X->RecFD;
-	md = NewLMode(RdMode);
+	LockMode md = NewLMode(RdMode);
 	CRecPtr = GetRecSpace();
-	N = RunInt(X->PPPPP1);
-	if ((N <= 0) || (N > CFile->NRecs))
-	{
+	longint N = RunInt(X->PPPPP1);
+	if ((N <= 0) || (N > CFile->NRecs))	{
 		SetMsgPar(CFile->Name, X->RecFldD->Name);
 		RunErrorM(md, Msg);
 	}

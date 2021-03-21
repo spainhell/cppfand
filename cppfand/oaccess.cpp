@@ -621,14 +621,24 @@ void TurnCat(WORD Frst, WORD N, integer I)
 	if (I > 0)
 		while (I > 0) {
 			ReadRec(CFile, Frst, CRecPtr); CRecPtr = p;
-			for (j = 1; j < N - 1; j++) { ReadRec(CFile, Frst + j, CRecPtr); WriteRec(Frst + j - 1); }
-			CRecPtr = q; WriteRec(last); I--;
+			for (j = 1; j < N - 1; j++) {
+				ReadRec(CFile, Frst + j, CRecPtr);
+				WriteRec(CFile, Frst + j - 1, CRecPtr);
+			}
+			CRecPtr = q;
+			WriteRec(CFile, last, CRecPtr);
+			I--;
 		}
 	else
 		while (I < 0) {
 			ReadRec(CFile, last, CRecPtr); CRecPtr = p;
-			for (j = 1; j < N - 1; j++) { ReadRec(CFile, last - j, CRecPtr); WriteRec(last - j + 1); }
-			CRecPtr = q; WriteRec(Frst); I++;
+			for (j = 1; j < N - 1; j++) {
+				ReadRec(CFile, last - j, CRecPtr);
+				WriteRec(CFile, last - j + 1, CRecPtr);
+			}
+			CRecPtr = q;
+			WriteRec(CFile, Frst, CRecPtr);
+			I++;
 		}
 	ReleaseStore(p);
 }
@@ -655,7 +665,7 @@ void WrCatField(WORD CatIRec, FieldDescr* CatF, pstring Txt)
 	CRecPtr = GetRecSpace();
 	ReadRec(CFile, CatIRec, CRecPtr);
 	S_(CatF, Txt);
-	WriteRec(CatIRec);
+	WriteRec(CFile, CatIRec, CRecPtr);
 	ReleaseStore(CRecPtr);
 	CFile = CF;
 	CRecPtr = CR;

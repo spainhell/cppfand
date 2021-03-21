@@ -51,5 +51,4 @@ public:
 typedef FileD* FileDPtr;
 
 void ReadRec(FileD* file, longint N, void* record);
-void WriteRec(longint N);
 void WriteRec(FileD* file, longint N, void* record);

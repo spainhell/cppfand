@@ -571,7 +571,7 @@ void WrFDSegment(longint RecNr)
 	ss->LL = sz;
 	cf = CFile; CFile = Chpt;
 	StoreChptTxt(ChptOldTxt, ss, false);
-	WriteRec(RecNr);
+	WriteRec(CFile, RecNr, CRecPtr);
 	CFile = cf;
 	Move(fdsaved, CFile, oldsz);
 	ReleaseStore2(p2);
@@ -1333,7 +1333,7 @@ label2:
 		result = true;
 		if (WasError) return result;
 		B_(ChptVerif, false);
-		WriteRec(CRec());
+		WriteRec(CFile, CRec(), CRecPtr);
 		if (CC == _CtrlF8_) Diagnostics(MaxHp, Free, FD);
 	}
 	return result;
@@ -1659,7 +1659,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 						OldTxt = 0;
 						MakeDbfDcl(nm);
 						Txt = _T(ChptTxt);
-						WriteRec(I);
+						WriteRec(CFile, I, CRecPtr);
 					}
 				}
 #ifndef FandSQL
@@ -1701,7 +1701,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 					CFile = Chpt;
 					if (RprtTxt == nullptr) GoCompileErr(I, 1145);
 					LongS_(ChptTxt, RprtTxt);
-					WriteRec(I);
+					WriteRec(CFile, I, CRecPtr);
 				}
 				else {
 					SetInpTTPos(Txt, Encryp);
@@ -1753,7 +1753,11 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 			}
 		}
 		ReleaseBoth(p1, p2); CFile = Chpt; CRecPtr = Chpt->RecPtr;
-		if (Verif) { ReadRec(CFile, I, CRecPtr); B_(ChptVerif, false); WriteRec(I); }
+		if (Verif) {
+			ReadRec(CFile, I, CRecPtr);
+			B_(ChptVerif, false);
+			WriteRec(CFile, I, CRecPtr);
+		}
 	}
 	/* !!! with ChptTF^ do!!! */
 	if (ChptTF->CompileAll || ChptTF->CompileProc) {
@@ -1796,7 +1800,8 @@ void GotoErrPos(WORD& Brk)
 	}
 	CFld = E->LastFld;
 	SetNewCRec(InpRdbPos.IRec, true);
-	R_(ChptTxtPos, integer(CurrPos)); WriteRec(CRec());
+	R_(ChptTxtPos, integer(CurrPos));
+	WriteRec(CFile, CRec(), CRecPtr);
 	EditFreeTxt(ChptTxt, s, true, Brk);
 }
 
@@ -2012,7 +2017,7 @@ label2:
 	b = false;
 	if (Upd) {
 		StoreChptTxt(ChptTxt, S, true);
-		WriteRec(1);
+		WriteRec(CFile, 1, CRecPtr);
 	}
 label3:
 	PopW(w);

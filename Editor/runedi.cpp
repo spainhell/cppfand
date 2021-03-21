@@ -1664,14 +1664,14 @@ void UpdMemberRef(void* POld, void* PNew)
 
 void WrJournal(char Upd, void* RP, double Time)
 {
-	WORD* RPOfs = (WORD*)RP; WORD l; FieldDPtr F; longint n; LockMode md;
+	WORD* RPOfs = (WORD*)RP;
 	if (E->Journal != nullptr) {
-		l = CFile->RecLen;
-		n = AbsRecNr(CRec());
+		WORD l = CFile->RecLen;
+		longint n = AbsRecNr(CRec());
 		if ((CFile->XF != nullptr)) { RPOfs++; l--; }
 		CFile = E->Journal;
 		CRecPtr = GetRecSpace();
-		F = CFile->FldD.front();
+		FieldDPtr F = CFile->FldD.front();
 		std::string UpdStr = std::string(Upd, 1);
 		S_(F, UpdStr);
 		F = (FieldDescr*)F->Chain;
@@ -1681,12 +1681,13 @@ void WrJournal(char Upd, void* RP, double Time)
 		F = (FieldDescr*)F->Chain; R_(F, Time);
 		F = (FieldDescr*)F->Chain;
 		Move(RP, &CRecPtr + F->Displ, l);
-		md = NewLMode(CrMode);
+		LockMode md = NewLMode(CrMode);
 		IncNRecs(1);
-		WriteRec(CFile->NRecs);
+		WriteRec(CFile, CFile->NRecs, CRecPtr);
 		OldLMode(md);
 		ReleaseStore(CRecPtr);
-		CFile = E->FD; CRecPtr = E->NewRecPtr;
+		CFile = E->FD;
+		CRecPtr = E->NewRecPtr;
 	}
 	UpdCount++;
 	if (UpdCount == E->SaveAfter) { SaveFiles(); UpdCount = 0; }
@@ -1950,7 +1951,7 @@ bool DeleteRecProc()
 				if (Subset) BaseRec++;
 			label2:
 				J++;
-				WriteRec(J);
+				WriteRec(CFile, J, CRecPtr);
 			}
 		}
 		DecNRecs(CFile->NRecs - J);
@@ -2421,7 +2422,7 @@ bool WriteCRec(bool MayDispl, bool& Displ)
 				UpdMemberRef(E->OldRecPtr, CRecPtr);
 			}
 			CNew = UpdateIndexes();
-			WriteRec(E->LockedRec);
+			WriteRec(CFile, E->LockedRec, CRecPtr);
 		}
 		if (CNew != CRec()) {
 			SetNewCRec(CNew, true);
@@ -2462,7 +2463,7 @@ bool WriteCRec(bool MayDispl, bool& Displ)
 			goto label1;
 		}
 		}
-		WriteRec(E->LockedRec);
+		WriteRec(CFile, E->LockedRec, CRecPtr);
 	}
 	time = Today() + CurrTime();
 	if (IsNewRec) WrJournal('+', CRecPtr, time);
@@ -3293,28 +3294,39 @@ void SwitchRecs(integer Delta)
 	if (HasIndex) x1.PackKF(VK->KFlds);
 	CRecPtr = p2; n2 = AbsRecNr(CRec() + Delta); ReadRec(CFile, n2, CRecPtr);
 	if (HasIndex) { x2.PackKF(VK->KFlds); if (x1.S != x2.S) goto label1; }
-	WriteRec(n1); CRecPtr = p1; WriteRec(n2);
+	WriteRec(CFile, n1, CRecPtr);
+	CRecPtr = p1;
+	WriteRec(CFile, n2, CRecPtr);
 	if (HasIndex) {
-		k = CFile->Keys; while (k != nullptr) {
+		k = CFile->Keys;
+		while (k != nullptr) {
 			if (k != VK) {
-				CRecPtr = p1; k->Delete(n1); CRecPtr = p2; k->Delete(n2);
-				CRecPtr = p1; k->Insert(n2, true); CRecPtr = p2; k->Insert(n1, true);
+				CRecPtr = p1; k->Delete(n1);
+				CRecPtr = p2; k->Delete(n2);
+				CRecPtr = p1; k->Insert(n2, true);
+				CRecPtr = p2; k->Insert(n1, true);
 			}
 			k = k->Chain;
 		}
 	}
-	SetNewCRec(CRec() + Delta, true); DisplAllWwRecs();
-	DisplRecNr(CRec()); E->EdUpdated = true;
+	SetNewCRec(CRec() + Delta, true);
+	DisplAllWwRecs();
+	DisplRecNr(CRec());
+	E->EdUpdated = true;
 	if (IsCurrChpt()) SetCompileAll();
 label1:
-	OldLMode(md); ReleaseStore(p1); CRecPtr = E->NewRecPtr;
+	OldLMode(md);
+	ReleaseStore(p1);
+	CRecPtr = E->NewRecPtr;
 }
 
 bool FinArgs(LinkD* LD, FieldDPtr F)
 {
-	KeyFldDPtr KF;
-	auto result = true; KF = LD->Args; while (KF != nullptr) {
-		if (KF->FldD == F) return result; KF = (KeyFldD*)KF->Chain;
+	auto result = true;
+	KeyFldDPtr KF = LD->Args;
+	while (KF != nullptr) {
+		if (KF->FldD == F) return result;
+		KF = (KeyFldD*)KF->Chain;
 	}
 	result = false;
 	return result;

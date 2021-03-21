@@ -180,7 +180,8 @@ bool Link(AddD* AD, longint& N, char& Kind2)
 			&& !CFile->IsSQLFile
 #endif
 			) {
-			IncNRecs(1); WriteRec(1);
+			IncNRecs(1);
+			WriteRec(CFile, 1, CRecPtr);
 		}
 		return result;
 	}
@@ -261,7 +262,7 @@ void WrUpdRec(AddD* AD, FileD* FD, void* RP, void* CRnew, longint N)
 	}
 	else
 #endif
-		WriteRec(N);
+		WriteRec(CFile, N, CRecPtr);
 }
 
 bool Assign(AddDPtr AD)
@@ -283,7 +284,7 @@ bool Assign(AddDPtr AD)
 	case 'S': { if (F->Typ == 'T') LongS_(F, S); else S_(F, ss); break; }
 	default: { B_(F, B); break; }
 	}
-	WriteRec(N2);
+	WriteRec(CFile, N2, CRecPtr);
 	return true;
 }
 

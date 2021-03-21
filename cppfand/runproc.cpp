@@ -133,10 +133,15 @@ void PromptAutoRprt(RprtOpt* RO)
 
 void AssignField(Instr_assign* PD)
 {
-	longint N = 0; LockMode md; WORD msg = 0; FieldDPtr F = nullptr;
-	CFile = PD->FD; md = NewLMode(WrMode); F = PD->FldD;
-	N = RunInt(PD->RecFrml);
-	if ((N <= 0) || (N > CFile->NRecs)) { msg = 640; goto label1; }
+	WORD msg = 0;
+	CFile = PD->FD;
+	LockMode md = NewLMode(WrMode);
+	FieldDPtr F = PD->FldD;
+	longint N = RunInt(PD->RecFrml);
+	if ((N <= 0) || (N > CFile->NRecs)) {
+		msg = 640;
+		goto label1;
+	}
 	CRecPtr = GetRecSpace();
 	ReadRec(CFile, N, CRecPtr);
 	if (PD->Indexarg && !DeletedFlag()) {
@@ -145,8 +150,10 @@ void AssignField(Instr_assign* PD)
 		SetMsgPar(CFile->Name, F->Name);
 		RunErrorM(md, msg);
 	}
-	AssgnFrml(F, PD->Frml, true, PD->Add); WriteRec(N);
-	ReleaseStore(CRecPtr); OldLMode(md);
+	AssgnFrml(F, PD->Frml, true, PD->Add);
+	WriteRec(CFile, N, CRecPtr);
+	ReleaseStore(CRecPtr);
+	OldLMode(md);
 }
 
 void AssignRecVar(LocVar* LV1, LocVar* LV2, AssignD* A)
@@ -369,7 +376,7 @@ void IndexfileProc(FileDPtr FD, bool Compress)
 			if (!DeletedFlag())
 			{
 				CFile = FD2;
-				PutRec();
+				PutRec(CFile, CRecPtr);
 			}
 		}
 		if (!SaveCache(0, CFile->Handle)) GoExit();
@@ -536,11 +543,12 @@ void UpdRec(void* CR, longint N, bool AdUpd)
 	ReadRec(CFile, N, CRecPtr);
 	bool del = DeletedFlag();
 	CRecPtr = CR;
-	if (AdUpd)
+	if (AdUpd) {
 		if (del) LastExitCode = !RunAddUpdte('+', nullptr, nullptr);
 		else LastExitCode = !RunAddUpdte('d', cr2, nullptr);
+	}
 	if (CFile->Typ == 'X') OverWrXRec(N, cr2, CR);
-	else WriteRec(N);
+	else WriteRec(CFile, N, CRecPtr);
 	if (!del) DelAllDifTFlds(cr2, nullptr);
 	ReleaseStore(cr2);
 }
@@ -632,7 +640,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 			if (CFile->Typ == 'X') {
 				RecallRec(N);
 			}
-			else WriteRec(N);
+			else WriteRec(CFile, N, CRecPtr);
 			if (ad) LastExitCode = !RunAddUpdte('+', nullptr, nullptr);
 		}
 		else UpdRec(cr, N, ad);
@@ -709,7 +717,9 @@ void ForAllProc(Instr_forall* PD)
 			if (PD->COwnerTyp == 'i') Scan->ResetOwnerIndex(LD, PD->CLV, Bool);
 			else Scan->ResetOwner(&xx, Bool);
 		}
-		else Scan->Reset(Bool, PD->CSQLFilter);
+		else {
+			Scan->Reset(Bool, PD->CSQLFilter);
+		}
 #ifdef FandSQL
 	if (!CFile->IsSQLFile)
 #endif
