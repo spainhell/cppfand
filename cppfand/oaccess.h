@@ -44,5 +44,5 @@ FileD* OpenDuplF(bool CrTF);
 void CopyDuplF(FileD* TempFD, bool DelTF);
 void CopyH(FILE* h1, FILE* h2);
 void SubstDuplF(FileD* TempFD, bool DelTF);
-void TestDelErr(pstring* P);
+void TestDelErr(std::string& P);
 void DelDuplF(FileD* TempFD);

@@ -19,6 +19,8 @@ Screen::Screen(WORD* TxtCols, WORD* TxtRows, Wind* WindMin, Wind* WindMax, TCrs*
 
 	_handle = GetStdHandle(STD_OUTPUT_HANDLE);
 	if (_handle == INVALID_HANDLE_VALUE) { throw std::exception("Cannot open console output handle."); }
+	SMALL_RECT rect{ 0, 0, 79, 24 };
+	SetConsoleWindowInfo(_handle, true, &rect);
 	SetConsoleScreenBufferSize(_handle, { (short)*TxtCols, (short)*TxtRows });
 	SetConsoleTitle("C++ FAND");
 	//DWORD consoleMode = ENABLE_VIRTUAL_TERMINAL_PROCESSING; // | ENABLE_LVB_GRID_WORLDWIDE;

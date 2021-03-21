@@ -14,7 +14,7 @@
 #include "rdrun.h"
 #include "runproc.h"
 #include "runproj.h"
-#include "runprolg.h"
+#include "../Prolog/RunProlog.h"
 #include "TFile.h"
 #include "wwmenu.h"
 #include "XFile.h"

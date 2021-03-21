@@ -1,7 +1,10 @@
 #pragma once
-#include "constants.h"
-#include "pstring.h"
-#include "access.h"
+
+#include "../cppfand/base.h"
+#include "../cppfand/constants.h"
+#include "../cppfand/FieldDescr.h"
+#include "../cppfand/FileD.h"
+#include "../cppfand/XKey.h"
 
 const BYTE _IntT = 249; const BYTE _RealT = 250; const BYTE _StrT = 251;
 const BYTE _LongStrT = 252; const BYTE _ListT = 253; const BYTE _VarT = 254;

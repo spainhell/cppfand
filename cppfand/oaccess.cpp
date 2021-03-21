@@ -797,13 +797,20 @@ void SetTempCExt(char Typ, bool IsNet)
 	char Nr;
 	if (Typ == 'T') {
 		Nr = '2';
-	switch (CFile->Typ) { case '0': CExt = ".TTT"; break; case 'D': CExt = ".DBT"; break; }
+		switch (CFile->Typ) {
+		case '0': CExt = ".TTT"; break;
+		case 'D': CExt = ".DBT"; break;
+		}
 	}
 	else {
 		Nr = '1';
-	switch (CFile->Typ) { case '0': CExt = ".RDB"; break; case 'D': CExt = ".DBF"; break; };
+		switch (CFile->Typ) {
+		case '0': CExt = ".RDB"; break;
+		case 'D': CExt = ".DBF"; break;
+		}
 	}
-	if (CExt.length() < 2) CExt = ".0"; CExt[2] = Nr;
+	if (CExt.length() < 2) CExt = ".0";
+	CExt[1] = Nr;
 	if (IsNet) CPath = WrkDir + CName + CExt; /* work files are local */
 	else CPath = CDir + CName + CExt;
 }
@@ -907,13 +914,13 @@ void SubstDuplF(FileD* TempFD, bool DelTF)
 	}
 	SaveCache(0, CFile->Handle);
 	FileD* PrimFD = CFile;
-	pstring p = CPath;
+	std::string p = CPath;
 	CExtToT();
-	pstring pt = CPath;
+	std::string pt = CPath;
 	/* !!! with PrimFD^ do!!! */ {
 		CloseClearH(&PrimFD->Handle);
 		MyDeleteFile(p);
-		TestDelErr(&p);
+		TestDelErr(p);
 		FileD* FD = (FileD*)PrimFD->Chain;
 		TFile* MD = PrimFD->TF;
 		XFile* xf2 = PrimFD->XF;
@@ -933,7 +940,7 @@ void SubstDuplF(FileD* TempFD, bool DelTF)
 		if ((MD != nullptr) && DelTF) {
 			CloseClearH(&MD->Handle);
 			MyDeleteFile(pt);
-			TestDelErr(&pt);
+			TestDelErr(pt);
 			//Move(PrimFD->TF, MD, sizeof(TFile));
 			*MD = *PrimFD->TF;
 			PrimFD->TF = MD;
@@ -949,10 +956,10 @@ void SubstDuplF(FileD* TempFD, bool DelTF)
 	}
 }
 
-void TestDelErr(pstring* P)
+void TestDelErr(std::string& P)
 {
 	if (HandleError != 0) {
-		SetMsgPar(*P);
+		SetMsgPar(P);
 		RunError(827);
 	}
 }

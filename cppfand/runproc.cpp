@@ -20,7 +20,7 @@
 #include "runproj.h"
 #include "wwmenu.h"
 #include "wwmix.h"
-#include "runprolg.h"
+#include "../Prolog/RunProlog.h"
 #include "sort.h"
 #include "XFile.h"
 #include "../Editor/Editor.h"
@@ -1113,8 +1113,8 @@ void RunInstr(Instr* PD)
 			auto iPD = (Instr_gotoxy*)PD;
 			WORD x = RunInt(iPD->GoX);
 			WORD y = RunInt(iPD->GoX);
-			screen.Window(1, 1, TxtCols, TxtRows);
-			screen.GotoXY(x, y, absolute);
+			//screen.Window(1, 1, TxtCols, TxtRows);
+			screen.GotoXY(x + WindMin.X - 1, y + WindMin.Y - 1, absolute);
 			break;
 		}
 		case _merge: MergeProc((Instr_merge_display*)PD); break;
@@ -1322,7 +1322,7 @@ void CallProcedure(Instr_proc* PD)
 
 #ifdef _DEBUG
 	std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
-	if (srcCode.find("var _Penize,_Uvery,_ZP,_Zasoby:real; #I1_DENIK ! (^CISDRUH.Pmo | Datum<PARAM3.DDD) Mesic #I2_ZP ! #I3_ODPISY !   #I4_POHYBZ !") != std::string::npos) {
+	if (srcCode.find("(Taspol:boolean; Mod:string) var i,r:real; v,v2,s:string; begin clrscr(1,2,maxcol,maxrow-1,,PARAM3.Obr);   gotoxy(1,1); if") != std::string::npos) {
 		printf("");
 	}
 #endif
