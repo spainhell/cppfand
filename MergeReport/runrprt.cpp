@@ -9,6 +9,7 @@
 #include "../cppfand/obase.h"
 #include "../cppfand/obaseww.h"
 #include "runmerg.h"
+#include "shared.h"
 #include "../cppfand/wwmix.h"
 #include "../textfunc/textfunc.h"
 
@@ -695,14 +696,6 @@ void PrintPageHd(std::string& text)
 	if (!b) PrintDH = 2;
 }
 
-void SumUp(std::vector<FrmlElemSum*>* S)
-{
-	if (S == nullptr) return;
-	for (size_t i = 0; i < S->size(); i++) {
-		S->at(i)->R += RunReal(S->at(i)->Frml);
-	}
-}
-
 void Footings(LvDescr* L, LvDescr* L2, std::string& text)
 {
 	while (L != nullptr) {
@@ -716,16 +709,6 @@ void Headings(LvDescr* L, LvDescr* L2, std::string& text)
 {
 	while ((L != nullptr) && (L != L2)) {
 		PrintBlock(L->Hd, text, nullptr);
-		L = L->ChainBack;
-	}
-}
-
-void ZeroSumFlds(LvDescr* L)
-{
-	while (L != nullptr) {
-		for (FrmlElemSum* el : L->ZeroLst) {
-			el->R = 0;
-		}
 		L = L->ChainBack;
 	}
 }

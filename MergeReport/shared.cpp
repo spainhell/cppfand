@@ -114,3 +114,29 @@ void TestSetSumIi()
 		else if (SumIi != Ii) OldError(27);
 }
 
+void ZeroSumFlds(LvDescr* L)
+{
+	while (L != nullptr) {
+		for (FrmlElemSum* el : L->ZeroLst) {
+			el->R = 0;
+		}
+		L = L->ChainBack;
+	}
+}
+
+void ZeroSumFlds(std::vector<FrmlElemSum*>* sum)
+{
+	if (sum != nullptr) {
+		for (FrmlElemSum* el : *sum) {
+			el->R = 0;
+		}
+	}
+}
+
+void SumUp(std::vector<FrmlElemSum*>* S)
+{
+	if (S == nullptr) return;
+	for (size_t i = 0; i < S->size(); i++) {
+		S->at(i)->R += RunReal(S->at(i)->Frml);
+	}
+}

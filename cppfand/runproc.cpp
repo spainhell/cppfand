@@ -221,7 +221,7 @@ void MergeProc(Instr_merge_display* PD)
 
 void WritelnProc(Instr_writeln* PD)
 {
-	LongStr* S = nullptr; WORD i = 0; char c = '\0';
+	WORD i = 0; char c = '\0';
 	WriteType LF = WriteType::write;
 	WrLnD* W = nullptr;
 	pstring t, x; double r = 0.0;

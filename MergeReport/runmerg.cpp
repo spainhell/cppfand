@@ -1,5 +1,7 @@
 #include "runmerg.h"
 
+
+#include "shared.h"
 #include "../cppfand/ChkD.h"
 #include "../cppfand/FieldDescr.h"
 #include "../cppfand/FileD.h"
@@ -94,28 +96,41 @@ void SetOldMFlds(KeyFldD* M)
 	while (C != nullptr) {
 		F = M->FldD;
 		switch (F->FrmlTyp) {
-		case 'S': { C->S = _ShortS(F); OldMXStr.StoreStr(C->S, M); break; }
-		case 'R': { C->R = _R(F); OldMXStr.StoreReal(C->R, M); break; }
-		default: C->B = _B(F); OldMXStr.StoreBool(C->B, M); break;
+		case 'S': {
+			C->S = _ShortS(F);
+			OldMXStr.StoreStr(C->S, M);
+			break;
 		}
-		C = (ConstListEl*)C->Chain; M = (KeyFldD*)M->Chain;
+		case 'R': {
+			C->R = _R(F);
+			OldMXStr.StoreReal(C->R, M);
+			break;
+		}
+		default: {
+			C->B = _B(F);
+			OldMXStr.StoreBool(C->B, M);
+			break;
+		}
+		}
+		C = (ConstListEl*)C->Chain;
+		M = (KeyFldD*)M->Chain;
 	}
 }
 
 void SetMFlds(KeyFldD* M)
 {
-	ConstListEl* C = nullptr;
 	FieldDescr* F = nullptr;
-	*C = *OldMFlds;
+	ConstListEl* C = OldMFlds;
 	while (M != nullptr)
 	{
 		F = M->FldD;
 		switch (F->FrmlTyp) {
-		case 'S': S_(F, C->S); break;
-		case 'R': R_(F, C->R); break;
-		default: B_(F, C->B); break;
+		case 'S': { S_(F, C->S); break; }
+		case 'R': { R_(F, C->R); break; }
+		default: { B_(F, C->B); break; }
 		}
-		M = (KeyFldD*)M->Chain; C = (ConstListEl*)C->Chain;
+		M = (KeyFldD*)M->Chain;
+		C = (ConstListEl*)C->Chain;
 	}
 }
 
@@ -131,28 +146,17 @@ label1:
 	if (!RunBool(ID->Bool)) goto label1;
 }
 
-void ZeroSumFlds(std::vector<FrmlElemSum*> *Z)
-{
-	while (Z != nullptr) {
-		//Z->Frml->R = 0.0;
-		//Z = Z->Chain;
-	}
-}
-
-void SumUpM(std::vector<FrmlElemSum*> *Z)
-{
-	while (Z != nullptr) {
-		//Z->Frml->R = Z->Frml->R + RunReal(Z->Frml);
-		//Z = Z->Chain;
-	}
-}
-
 void RunAssign(AssignD* A)
 {
 	while (A != nullptr) {
 		/* !!! with A^ do!!! */
 		switch (A->Kind) {
-		case _move: Move(&A->FromPtr, &A->ToPtr, A->L); break;
+		case _move: {
+			if (A != nullptr && A->FromPtr != nullptr && A->ToPtr != nullptr) {
+				Move(&A->FromPtr, &A->ToPtr, A->L);
+			}
+			break;
+		}
 		case _zero: {
 			switch (A->FldD->FrmlTyp) {
 			case 'S': S_(A->FldD, ""); break;
@@ -225,7 +229,8 @@ void OpenOutp()
 			Strm->OutpRewrite(OD->Append);
 			CRecPtr = OD->RecPtr;
 			SetTWorkFlag();
-		} else
+		}
+		else
 #endif
 		{
 			if (OD->InplFD != nullptr) OD->FD = OpenDuplF(true);
@@ -295,7 +300,7 @@ void MergeProcM()
 		if (ID->Exist)
 			do {
 				MoveForwToRecM(ID);
-				SumUpM(ID->Sum);
+				SumUp(ID->Sum);
 				WriteOutp(ID->RD);
 				ReadInpFileM(ID);
 				if (ID->Scan->eof) res = _gt;
@@ -315,32 +320,42 @@ void MergeProcM()
 
 void JoinProc(WORD Ii, bool& EmptyGroup)
 {
-	WORD res;
 	if (Ii > MaxIi) {
 		if (!EmptyGroup) {
-			for (WORD I = 1; I <= MaxIi; I++) SumUpM(IDA[I]->Sum);
+			for (WORD I = 1; I <= MaxIi; I++) {
+				SumUp(IDA[I]->Sum);
+			}
 			WriteOutp(IDA[MaxIi]->RD);
 		}
 	}
 	else {
 		InpD* ID = IDA[Ii]; /* !!! with ID^ do!!! */
 		if (ID->Exist) {
-			ID->Scan->SeekRec(ID->IRec - 1); ID->Count = 0.0;
-			CRecPtr = ID->ForwRecPtr; ID->Scan->GetRec();
+			ID->Scan->SeekRec(ID->IRec - 1);
+			ID->Count = 0.0;
+			CRecPtr = ID->ForwRecPtr;
+			ID->Scan->GetRec();
+			WORD res;
 			do {
-				MoveForwToRecM(ID); JoinProc(Ii + 1, EmptyGroup);
+				MoveForwToRecM(ID);
+				JoinProc(Ii + 1, EmptyGroup);
 				ReadInpFileM(ID);
-				if (ID->Scan->eof) res = _gt;
+				if (ID->Scan->eof) {
+					res = _gt;
+				}
 				else {
-					res = CompMFlds(ID->MFld); if (res == _lt) CFileError(607);
+					res = CompMFlds(ID->MFld);
+					if (res == _lt) CFileError(607);
 				}
 			} while (res == _gt);
 		}
 		else {
-			CFile = ID->Scan->FD; CRecPtr = CFile->RecPtr; EmptyGroup = true;
-			ZeroAllFlds(); SetMFlds(ID->MFld);
+			CFile = ID->Scan->FD;
+			CRecPtr = CFile->RecPtr;
+			EmptyGroup = true;
+			ZeroAllFlds();
+			SetMFlds(ID->MFld);
 			JoinProc(Ii + 1, EmptyGroup);
 		}
 	}
 }
-

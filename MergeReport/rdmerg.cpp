@@ -355,38 +355,34 @@ void RdAutoSortSK_M(InpD* ID)
 
 void ImplAssign(OutpRD* RD, FieldDescr* FNew)
 {
-	FileD* FDNew = nullptr; FileD* FD = nullptr;
-	FieldDescr* F = nullptr; AssignD* A = nullptr;
-	AssignD* A1 = nullptr;
-	void* RPNew = nullptr; void* RP = nullptr;
-	FrmlPtr Z = nullptr; char FTyp = 0; pstring S;
-
-	FDNew = RD->OD->FD;
-	RPNew = RD->OD->RecPtr;
-	S = LexWord;
+	char FTyp = 0;
+	FileD* FDNew = RD->OD->FD;
+	void* RPNew = RD->OD->RecPtr;
+	pstring S = LexWord;
 	//A = (AssignD*)GetZStore(sizeof(*A)); 
-	A = new AssignD();
-	A1 = RD->Ass;
+	AssignD* A = new AssignD();
+	AssignD* A1 = RD->Ass;
 	LexWord = FNew->Name;
-	FindIiandFldD(F);
+	FieldDescr* F = nullptr;
+	FindIiandFldD(&F);
 	if ((F == nullptr) || (F->FrmlTyp != FNew->FrmlTyp) ||
 		(F->FrmlTyp == 'R') && (F->Typ != FNew->Typ)) {
-		A->Kind = _zero;
+		A->Kind = MInstrCode::_zero;
 		A->FldD = FNew;
 	}
 	else {
-		FD = InpFD_M(Ii);
-		RP = FD->RecPtr;
+		FileD* FD = InpFD_M(Ii);
+		void* RP = FD->RecPtr;
 		if ((FD->Typ == FDNew->Typ) && FldTypIdentity(F, FNew) &&
 			(F->Typ != 'T') && ((F->Flg & f_Stored) != 0) && (FNew->Flg == F->Flg)) {
 			A->Kind = _move;
 			A->L = FNew->NBytes;
-			// TODO: nutno doresit ToPtr a FromPtr
-			//A->ToPtr = uintptr_t(RPNew) + FNew->Displ;
-			//A->FromPtr = (uintptr_t(RP) + F->Displ);
-			if ((A1 != nullptr) && (A1->Kind == _move) &&
-				(uintptr_t(A1->FromPtr) + A1->L == uintptr_t(A->FromPtr)) &&
-				(uintptr_t(A1->ToPtr) + A1->L == uintptr_t(A->ToPtr))) {
+			A->ToPtr = (BYTE*)RD->OD->RecPtr + FNew->Displ;
+			A->FromPtr = (BYTE*)RP + F->Displ;
+			if (A1 != nullptr 
+				&& A1->Kind == _move 
+				&& (uintptr_t)(A1->FromPtr + A1->L) == (uintptr_t)A->FromPtr
+				&& (uintptr_t)(A1->ToPtr + A1->L) == (uintptr_t)A->ToPtr) {
 				A1->L = A1->L + A->L;
 				ReleaseStore(A);
 				goto label1;
@@ -395,7 +391,7 @@ void ImplAssign(OutpRD* RD, FieldDescr* FNew)
 		else {
 			A->Kind = _output;
 			A->OFldD = FNew;
-			Z = MakeFldFrml(F, FTyp);
+			FrmlElem* Z = MakeFldFrml(F, FTyp);
 			Z = AdjustComma_M(Z, F, _divide);
 			Z = AdjustComma_M(Z, FNew, _times);
 			A->Frml = FrmlContxt(Z, FD, FD->RecPtr);
@@ -423,14 +419,20 @@ FrmlElem* AdjustComma_M(FrmlElem* Z1, FieldDescr* F, instr_type Op)
 	return result;
 }
 
-void FindIiandFldD(FieldDescr* F)
+void FindIiandFldD(FieldDescr** F)
 {
-	integer i;
 	if (!Join && (WhatToRd == 'i')) {   /* for Oi search first in Ii*/
-		F = FindFldName(InpFD_M(Oi)); if (F != nullptr) { Ii = Oi; return; }
+		*F = FindFldName(InpFD_M(Oi));
+		if (*F != nullptr) {
+			Ii = Oi;
+			return;
+		}
 	}
-	for (i = 1; i < MaxIi; i++) {    /* search in  I1 .. In, for Oi only I1 .. Ii*/
-		F = FindFldName(InpFD_M(i)); if (F != nullptr) { Ii = i; return; }
+	for (integer i = 1; i < MaxIi; i++) {    /* search in  I1 .. In, for Oi only I1 .. Ii*/
+		*F = FindFldName(InpFD_M(i));
+		if (*F != nullptr) {
+			Ii = i; return;
+		}
 		if ((WhatToRd == 'i') && (i == Oi)) return;
 	}
 }
