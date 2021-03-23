@@ -9,7 +9,7 @@ WORD CompMFlds(KeyFldD* M);
 void SetOldMFlds(KeyFldD* M);
 void SetMFlds(KeyFldD* M);
 void ReadInpFileM(InpD* ID); // stejná implementace v runrprt.cpp -> pøidáno M na konci
-void RunAssign(AssignD* A);
+void RunAssign(std::vector<AssignD*> A);
 void WriteOutp(OutpRD* RD);
 void OpenInpM(); // JINÁ implementace v runrprt.cpp -> pøidáno M na konci
 void OpenOutp();

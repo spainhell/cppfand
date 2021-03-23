@@ -426,20 +426,25 @@ void FinishTuple(std::string& text)
 	while (Y.Blk != nullptr) Print1NTupel(text, true);
 }
 
-void RunAProc(AssignD* A)
+void RunAProc(std::vector<AssignD*> vAssign)
 {
-	while (A != nullptr) {
-		/* !!! with A^ do!!! */
+	for (auto* A : vAssign) {
 		switch (A->Kind) {
-		case _locvar: LVAssignFrml(A->LV, MyBP, A->Add, A->Frml); break;
-		case _parfile: AsgnParFldFrml(A->FD, A->PFldD, A->Frml, A->Add); break;
+		case _locvar: { LVAssignFrml(A->LV, MyBP, A->Add, A->Frml); break; }
+		case _parfile: { AsgnParFldFrml(A->FD, A->PFldD, A->Frml, A->Add); break; }
 		case _ifthenelseM: {
-			if (RunBool(A->Bool)) RunAProc(A->Instr);
-			else RunAProc(A->ElseInstr);
+			if (RunBool(A->Bool)) {
+				RunAProc(A->Instr);
+			}
+			else {
+				RunAProc(A->ElseInstr);
+			}
 			break;
 		}
+		default: 
+			break;
 		}
-		A = (AssignD*)A->Chain;
+		//A = (AssignD*)A->Chain;
 	}
 }
 

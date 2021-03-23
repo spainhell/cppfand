@@ -146,35 +146,47 @@ label1:
 	if (!RunBool(ID->Bool)) goto label1;
 }
 
-void RunAssign(AssignD* A)
+void RunAssign(std::vector<AssignD*> Assigns)
 {
-	while (A != nullptr) {
+	for (auto* A : Assigns) {
 		/* !!! with A^ do!!! */
 		switch (A->Kind) {
 		case _move: {
 			if (A != nullptr && A->FromPtr != nullptr && A->ToPtr != nullptr) {
-				Move(&A->FromPtr, &A->ToPtr, A->L);
+				memcpy(A->ToPtr, A->FromPtr, A->L);
 			}
 			break;
 		}
 		case _zero: {
-			switch (A->FldD->FrmlTyp) {
-			case 'S': S_(A->FldD, ""); break;
-			case 'R': R_(A->FldD, 0); break;
-			default: B_(A->FldD, false); break;
+			switch (A->outputFldD->FrmlTyp) {
+			case 'S': { S_(A->outputFldD, ""); break; }
+			case 'R': { R_(A->outputFldD, 0); break; }
+			default: { B_(A->outputFldD, false); break; }
 			}
 			break;
 		}
-		case _output: AssgnFrml(A->OFldD, A->Frml, false, A->Add); break;
-		case _locvar: LVAssignFrml(A->LV, MyBP, A->Add, A->Frml); break;
-		case _parfile: AsgnParFldFrml(A->FD, A->PFldD, A->Frml, A->Add); break;
+		case _output: {
+			AssgnFrml(A->OFldD, A->Frml, false, A->Add);
+			break;
+		}
+		case _locvar: {
+			LVAssignFrml(A->LV, MyBP, A->Add, A->Frml);
+			break;
+		}
+		case _parfile: {
+			AsgnParFldFrml(A->FD, A->PFldD, A->Frml, A->Add);
+			break;
+		}
 		case _ifthenelseM: {
-			if (RunBool(A->Bool)) RunAssign(A->Instr);
-			else RunAssign(A->ElseInstr);
+			if (RunBool(A->Bool)) {
+				RunAssign(A->Instr);
+			}
+			else {
+				RunAssign(A->ElseInstr);
+			}
 			break;
 		}
 		}
-		A = (AssignD*)A->Chain;
 	}
 }
 
@@ -199,7 +211,7 @@ void WriteOutp(OutpRD* RD)
 					if (OD->Append && (CFile->Typ == 'X')) TryInsertAllIndexes(CFile->IRec);
 				}
 			}
-		}
+}
 		RD = (OutpRD*)RD->Chain;
 	}
 }
@@ -266,7 +278,7 @@ void CloseInpOutp()
 		ClearRecSpace(IDA[i]->ForwRecPtr);
 		OldLMode(IDA[i]->Md);
 	}
-}
+	}
 
 void MoveForwToRecM(InpD* ID)
 {

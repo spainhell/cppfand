@@ -13,11 +13,13 @@ struct EdExitD;
 class FieldDescr;
 
 enum MInstrCode { _zero, _move, _output, _locvar, _parfile, _ifthenelseM };
+
 struct AssignD : public Chained
 {
 	//AssignD* Chain;
 	MInstrCode Kind = _zero;
-	FieldDescr* FldD = nullptr;
+	FieldDescr* inputFldD = nullptr;
+	FieldDescr* outputFldD = nullptr;
 	BYTE* ToPtr = nullptr;
 	BYTE* FromPtr = nullptr; 
 	WORD L = 0;
@@ -26,18 +28,18 @@ struct AssignD : public Chained
 	bool Add2 = false; FrmlElem* Frml2 = nullptr;
 	FileD* FD = nullptr; FieldDescr* PFldD = nullptr;
 	FrmlElem* Bool = nullptr;
-	AssignD* Instr = nullptr;
-	AssignD* ElseInstr = nullptr;
+	std::vector<AssignD*> Instr;
+	std::vector<AssignD*> ElseInstr;
 };
 
 struct OutpFD : public Chained
 {
 	//OutpFD* Chain;
-	FileD* FD;
-	LockMode Md;
-	void* RecPtr;
-	FileD* InplFD;
-	bool Append;
+	FileD* FD = nullptr;
+	LockMode Md = NullMode;
+	void* RecPtr = nullptr;
+	FileD* InplFD = nullptr;
+	bool Append = false;
 #ifdef FandSQL
 	SQLStreamPtr Strm;
 #endif
@@ -45,10 +47,9 @@ struct OutpFD : public Chained
 
 struct OutpRD : public Chained
 {
-	//OutpRD* Chain;
-	OutpFD* OD; /*nullptr=dummy*/
-	FrmlPtr Bool;
-	AssignD* Ass;
+	OutpFD* OD = nullptr; /*nullptr=dummy*/
+	FrmlElem* Bool = nullptr;
+	std::vector<AssignD*> Ass;
 };
 
 struct ConstListEl : public Chained
@@ -141,8 +142,8 @@ struct BlkD : public Chained
 	WORD NBlksFrst = 0; // pozice 1. bloku na radku; pred nim jsou mezery
 	WORD DHLevel = 0;
 	RFldD* RFD = nullptr;
-	AssignD* BeforeProc = nullptr; 
-	AssignD* AfterProc = nullptr;
+	std::vector<AssignD*> BeforeProc; 
+	std::vector<AssignD*> AfterProc;
 	std::vector<std::string> lines; // vektor jednotlivych radku
 };
 

@@ -22,7 +22,10 @@ FileD* InpFD_M(WORD I)
 	// velikost IDA je 9, z toho [0] se nepoužívá, max. index je tedy 8
 	// if (I > 8) return nullptr;
 	if (IDA[I] != nullptr) return IDA[I]->Scan->FD;
-	if (IDA[I + 1] != nullptr) { Ii++; return IDA[I + 1]->Scan->FD; }
+	if (IDA[I + 1] != nullptr) {
+		Ii++;
+		return IDA[I + 1]->Scan->FD;
+	}
 	return nullptr;
 }
 
@@ -53,67 +56,67 @@ FrmlPtr RdFldNameFrmlM(char& FTyp)
 	if ((FrmlSumEl != nullptr) && FrstSumVar) SumIi = 0;
 	TestIdentif();
 	if ((LexWord == "O") && IsForwPoint() && !WasIiPrefix) {
-		RdLex(); RdLex(); 
+		RdLex(); RdLex();
 		if ((FrmlSumEl != nullptr) || ReadingOutpBool) Error(99);
-		RdOutpFldName(FTyp, &result); 
+		RdOutpFldName(FTyp, &result);
 		return result;
 	}
 	if (IsForwPoint()) {
 		RdDirFilVar_M(FTyp, &result, WasIiPrefix);
-		TestSetSumIi(); 
+		TestSetSumIi();
 		return result;
 	}
 	if (!WasIiPrefix) if (FindLocVar(&LVBD, &LV)) {
-		RdLex(); 
-		TestNotSum(); 
-		result = (FrmlElem*)(&LV->Op); 
-		FTyp = LV->FTyp; 
+		RdLex();
+		TestNotSum();
+		result = (FrmlElem*)(&LV->Op);
+		FTyp = LV->FTyp;
 		return result;
 	}
 	if (IsKeyWord("COUNT")) {
 	label1:
-		TestNotSum(); 
+		TestNotSum();
 		SetIi_Merge(WasIiPrefix);
 		//result = (FrmlElem*)(&IDA[Ii]->Op);
 		result = new FrmlElemInp(_count, IDA[Ii]);
-		FTyp = 'R'; 
+		FTyp = 'R';
 		return result;
 	}
 	if (IsKeyWord("GROUP")) {
 	label2:
-		TestNotSum(); 
+		TestNotSum();
 		if (WasIiPrefix) OldError(41);
 		//result = (FrmlPtr)(&MergOpGroup);
 		result = new FrmlElemMerge(_mergegroup, &MergOpGroup);
-		FTyp = 'R'; 
+		FTyp = 'R';
 		return result;
 	}
 	if (IsKeyWord("ERROR")) {
 		Err('m', WasIiPrefix);
 		result = (FrmlElem*)(&IDA[Ii]->OpErr);
-		FTyp = 'B'; 
+		FTyp = 'B';
 		return result;
 	}
 	if (IsKeyWord("WARNING")) {
 		Err('m', WasIiPrefix);
 		result = (FrmlElem*)(&IDA[Ii]->OpWarn);
-		FTyp = 'B'; 
+		FTyp = 'B';
 		return result;
 	}
 	if (IsKeyWord("ERRORTEXT")) {
 		Err('m', WasIiPrefix);
-		result = IDA[Ii]->ErrTxtFrml; 
-		FTyp = 'S'; 
+		result = IDA[Ii]->ErrTxtFrml;
+		FTyp = 'S';
 		return result;
 	}
-	if (WasIiPrefix) { 
-		FD = InpFD_M(Ii); 
-		Z = TryRdFldFrml(FD, FTyp); 
+	if (WasIiPrefix) {
+		FD = InpFD_M(Ii);
+		Z = TryRdFldFrml(FD, FTyp);
 	}
 	else Z = FindIiandFldFrml_M(&FD, FTyp);
 	if (Z == nullptr) {
-		if (IsKeyWord('N')) goto label1; 
-		if (IsKeyWord('M')) goto label2; 
+		if (IsKeyWord('N')) goto label1;
+		if (IsKeyWord('M')) goto label2;
 		Error(8);
 	}
 	TestSetSumIi();
@@ -134,7 +137,7 @@ void RdDirFilVar_M(char& FTyp, FrmlElem** res, bool wasIiPrefix)
 	else {
 		if (!Join && (WhatToRd == 'i'))
 		{
-			Ii = Oi; 
+			Ii = Oi;
 			CFile = InpFD_M(Ii);
 			if (IsRoleName(true, &FD, &LD)) goto label2;
 		}
@@ -150,7 +153,7 @@ void RdDirFilVar_M(char& FTyp, FrmlElem** res, bool wasIiPrefix)
 label2:
 	Accept('.');
 	Z = RdFAccess(FD, LD, FTyp);
-	if (LD == nullptr) Ii = 0; 
+	if (LD == nullptr) Ii = 0;
 	else Z = FrmlContxt(Z, CFile, CFile->RecPtr);
 	*res = Z;
 }
@@ -289,8 +292,8 @@ label3:
 			RdOutpRD(&(IDA[Oi]->RD));
 		}
 		else if (CurrChar == '_') {
-			RdLex(); 
-			WhatToRd = 'O'; 
+			RdLex();
+			WhatToRd = 'O';
 			ChainSumEl = ChainSumElM;
 			RdOutpRD(&OutpRDs);
 		}
@@ -353,54 +356,54 @@ void RdAutoSortSK_M(InpD* ID)
 	if (ID->SK == nullptr) OldError(60);
 }
 
-void ImplAssign(OutpRD* RD, FieldDescr* FNew)
+void ImplAssign(OutpRD* outputRD, FieldDescr* outputField)
 {
 	char FTyp = 0;
-	FileD* FDNew = RD->OD->FD;
-	void* RPNew = RD->OD->RecPtr;
-	pstring S = LexWord;
-	//A = (AssignD*)GetZStore(sizeof(*A)); 
-	AssignD* A = new AssignD();
-	AssignD* A1 = RD->Ass;
-	LexWord = FNew->Name;
-	FieldDescr* F = nullptr;
-	FindIiandFldD(&F);
-	if ((F == nullptr) || (F->FrmlTyp != FNew->FrmlTyp) ||
-		(F->FrmlTyp == 'R') && (F->Typ != FNew->Typ)) {
-		A->Kind = MInstrCode::_zero;
-		A->FldD = FNew;
+	FileD* outputFile = outputRD->OD->FD;
+	void* outputRecPointer = outputRD->OD->RecPtr;
+
+	AssignD* newAssign = new AssignD();
+	FieldDescr* inputField = FindIiandFldD(outputField->Name);
+	newAssign->inputFldD = inputField;
+	
+	if ((inputField == nullptr) || (inputField->FrmlTyp != outputField->FrmlTyp) ||
+		(inputField->FrmlTyp == 'R') && (inputField->Typ != outputField->Typ))
+	{
+		newAssign->Kind = MInstrCode::_zero;
+		newAssign->outputFldD = outputField;
 	}
 	else {
-		FileD* FD = InpFD_M(Ii);
-		void* RP = FD->RecPtr;
-		if ((FD->Typ == FDNew->Typ) && FldTypIdentity(F, FNew) &&
-			(F->Typ != 'T') && ((F->Flg & f_Stored) != 0) && (FNew->Flg == F->Flg)) {
-			A->Kind = _move;
-			A->L = FNew->NBytes;
-			A->ToPtr = (BYTE*)RD->OD->RecPtr + FNew->Displ;
-			A->FromPtr = (BYTE*)RP + F->Displ;
-			if (A1 != nullptr 
-				&& A1->Kind == _move 
-				&& (uintptr_t)(A1->FromPtr + A1->L) == (uintptr_t)A->FromPtr
-				&& (uintptr_t)(A1->ToPtr + A1->L) == (uintptr_t)A->ToPtr) {
-				A1->L = A1->L + A->L;
-				ReleaseStore(A);
-				goto label1;
-			}
+		FileD* inputFile = InpFD_M(Ii);
+		void* inputRecPointer = inputFile->RecPtr;
+		if ((inputFile->Typ == outputFile->Typ) && FldTypIdentity(inputField, outputField) && (inputField->Typ != 'T')
+			&& ((inputField->Flg & f_Stored) != 0) && (outputField->Flg == inputField->Flg))
+		{
+			newAssign->Kind = _move;
+			newAssign->L = outputField->NBytes;
+			newAssign->ToPtr = (BYTE*)outputRecPointer + outputField->Displ;
+			newAssign->FromPtr = (BYTE*)inputRecPointer + inputField->Displ;
+			//if (RD_Ass != nullptr
+			//	&& RD_Ass->Kind == _move
+			//	&& (uintptr_t)(RD_Ass->FromPtr + RD_Ass->L) == (uintptr_t)newAssign->FromPtr
+			//	&& (uintptr_t)(RD_Ass->ToPtr + RD_Ass->L) == (uintptr_t)newAssign->ToPtr)
+			//{
+			//	RD_Ass->L += newAssign->L;
+			//	ReleaseStore(newAssign);
+			//	goto label1;
+			//}
 		}
 		else {
-			A->Kind = _output;
-			A->OFldD = FNew;
-			FrmlElem* Z = MakeFldFrml(F, FTyp);
-			Z = AdjustComma_M(Z, F, _divide);
-			Z = AdjustComma_M(Z, FNew, _times);
-			A->Frml = FrmlContxt(Z, FD, FD->RecPtr);
+			newAssign->Kind = _output;
+			newAssign->OFldD = outputField;
+			FrmlElem* Z = MakeFldFrml(inputField, FTyp);
+			Z = AdjustComma_M(Z, inputField, _divide);
+			Z = AdjustComma_M(Z, outputField, _times);
+			newAssign->Frml = FrmlContxt(Z, inputFile, inputFile->RecPtr);
 		}
 	}
-	A->Chain = A1;
-	RD->Ass = A;
-label1:
-	LexWord = S;
+	//newAssign->Chain = RD_Ass;
+	outputRD->Ass.push_back(newAssign);
+//label1:
 }
 
 FrmlElem* AdjustComma_M(FrmlElem* Z1, FieldDescr* F, instr_type Op)
@@ -419,29 +422,36 @@ FrmlElem* AdjustComma_M(FrmlElem* Z1, FieldDescr* F, instr_type Op)
 	return result;
 }
 
-void FindIiandFldD(FieldDescr** F)
+FieldDescr* FindIiandFldD(std::string fieldName)
 {
+	FieldDescr* result = nullptr;
 	if (!Join && (WhatToRd == 'i')) {   /* for Oi search first in Ii*/
-		*F = FindFldName(InpFD_M(Oi));
-		if (*F != nullptr) {
+		FileD* pFile = InpFD_M(Oi);
+		result = FindFldName(pFile, fieldName);
+		if (result != nullptr) {
 			Ii = Oi;
-			return;
+			return result;
 		}
 	}
-	for (integer i = 1; i < MaxIi; i++) {    /* search in  I1 .. In, for Oi only I1 .. Ii*/
-		*F = FindFldName(InpFD_M(i));
-		if (*F != nullptr) {
-			Ii = i; return;
+	for (integer i = 1; i <= MaxIi; i++) {    /* search in  I1 .. In, for Oi only I1 .. Ii*/
+		FileD* pFile = InpFD_M(i);
+		result = FindFldName(pFile, fieldName);
+		if (result != nullptr) {
+			Ii = i;
+			return result;
 		}
-		if ((WhatToRd == 'i') && (i == Oi)) return;
+		if ((WhatToRd == 'i') && (i == Oi)) return result;
 	}
+	return result;
 }
 
-bool FindAssignToF(AssignD* A, FieldDescr* F)
+bool FindAssignToF(std::vector<AssignD*> A, FieldDescr* F)
 {
-	while (A != nullptr) {
-		if ((A->Kind == _output) && (A->OFldD == F) && !A->Add) return true;
-		A = (AssignD*)A->Chain;
+	for (auto* assign : A) {
+		if ((assign->Kind == _output) && (assign->OFldD == F) && !assign->Add) {
+			return true;
+		}
+		//A = (AssignD*)A->Chain;
 	}
 	return false;
 }
@@ -451,7 +461,9 @@ void MakeImplAssign()
 	AssignD* AD = nullptr;
 	if (RD->OD == nullptr) return;
 	for (auto& FNew : RD->OD->FD->FldD) { /*implic.assign   name = name*/
-		if (((FNew->Flg & f_Stored) != 0) && !FindAssignToF(RD->Ass, FNew)) ImplAssign(RD, FNew);
+		if (((FNew->Flg & f_Stored) != 0) && !FindAssignToF(RD->Ass, FNew)) {
+			ImplAssign(RD, FNew);
+		}
 	}
 }
 
@@ -463,19 +475,19 @@ void TestIsOutpFile(FileDPtr FD)
 	}
 }
 
-AssignD* RdAssign_M()
+std::vector<AssignD*> RdAssign_M()
 {
 	FieldDescr* F = nullptr; FileD* FD = nullptr;
 	LocVar* LV = nullptr; AssignD* AD = nullptr;
-	AssignD* result = nullptr;
+
+	std::vector<AssignD*> result;
 	if (IsKeyWord("BEGIN")) {
 		result = RdAssSequ();
 		AcceptKeyWord("END");
 		return result;
 	}
-	//AD = (AssignD*)GetZStore(sizeof(*AD)); 
+	 
 	AD = new AssignD();
-	result = AD;
 	TestIdentif();
 	if (IsKeyWord("IF")) {
 		AD->Kind = _ifthenelseM;
@@ -512,28 +524,33 @@ AssignD* RdAssign_M()
 			RdAssignFrml(F->FrmlTyp, AD->Add, &AD->Frml);
 		}
 	}
+	result.push_back(AD);
 	return result;
 }
 
-AssignD* RdAssSequ()
+std::vector<AssignD*> RdAssSequ()
 {
-	AssignD* A = nullptr;
-	AssignD* ARoot = nullptr;
+	std::vector<AssignD*> A;
 label1:
-	if (ARoot == nullptr) {
-		ARoot = RdAssign_M();
+	//if (ARoot == nullptr) {
+	//	ARoot = RdAssign_M();
+	//}
+	//else {
+	//	A = ARoot;
+	//	while (A->Chain != nullptr) A = (AssignD*)A->Chain;
+	//	A->Chain = RdAssign_M();
+	//}
+	auto rd_assign = RdAssign_M();
+	for (AssignD* a : rd_assign) {
+		A.push_back(a);
 	}
-	else {
-		A = ARoot;
-		while (A->Chain != nullptr) A = (AssignD*)A->Chain;
-		A->Chain = RdAssign_M();
-	}
+	
 	if (Lexem == ';')
 	{
 		RdLex();
 		if (!(Lexem == 0x1A || Lexem == '#') && !TestKeyWord("END")) goto label1;
 	}
-	return ARoot;
+	return A;
 }
 
 void RdOutpRD(OutpRD** RDRoot)
@@ -545,8 +562,8 @@ void RdOutpRD(OutpRD** RDRoot)
 	RD = new OutpRD();
 	if (*RDRoot == nullptr) *RDRoot = RD;
 	else ChainLast(*RDRoot, RD);
-	RD->Ass = nullptr;
-	RD->Bool = nullptr;
+	//RD->Ass = nullptr;
+	//RD->Bool = nullptr;
 	if (IsKeyWord("DUMMY")) RD->OD = nullptr;
 	else {
 		FD = RdFileName();

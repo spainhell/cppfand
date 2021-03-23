@@ -51,7 +51,7 @@ std::string GetLine(std::string& S, WORD Width, bool Wrap, bool &paragraph);
 void CheckPgeLimit(std::string& text);
 void PendingTT(std::string& text);
 void FinishTuple(std::string& text);
-void RunAProc(AssignD* A);
+void RunAProc(std::vector<AssignD*> A);
 
 void PrintBlock(BlkD* B, std::string& text, BlkD* DH);
 void PrintTxt(BlkD* B, std::string& text, bool ChkPg);

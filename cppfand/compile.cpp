@@ -2369,12 +2369,13 @@ FrmlElem* RdStrFrml()
 //	return Z;
 //}
 
-FieldDescr* FindFldName(FileD* FD)
+FieldDescr* FindFldName(FileD* FD, std::string fieldName)
 {
-	std::string tmp = LexWord;
+	if (fieldName == "") fieldName = LexWord;
+	//std::string tmp = LexWord;
 	for (auto& i : FD->FldD)
 	{
-		if (EquUpcase(i->Name, tmp)) return i;
+		if (EquUpcase(i->Name, fieldName)) return i;
 	}
 	return nullptr;
 }

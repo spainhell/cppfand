@@ -2305,7 +2305,7 @@ AssignD* MakeImplAssign(FileD* FD1, FileD* FD2)
 					|| (F1->FrmlTyp == 'R')
 					&& (F1->Typ != F2->Typ)) {
 					A->Kind = _zero;
-					A->FldD = F1;
+					A->outputFldD = F1;
 				}
 				else {
 					A->Kind = _output;

@@ -544,25 +544,28 @@ LvDescr* NewLvS(LvDescr* L, InpD* ID)
 	return L1;
 }
 
-void RdBeginEnd(AssignD** ARoot);
+void RdBeginEnd(std::vector<AssignD*>* ARoot);
 
-void RdAssignBlk(AssignD** ARoot)
+void RdAssignBlk(std::vector<AssignD*> *ARoot)
 {
-	AssignD* A = nullptr;
 	if (IsKeyWord("BEGIN")) RdBeginEnd(ARoot);
 	else {
-		A = RdAssign2();
-		if (*ARoot == nullptr) { *ARoot = A; A->Chain = nullptr; }
-		else ChainLast(*ARoot, A);
+		auto A = RdAssign2();
+		for (auto assign : A) {
+			ARoot->push_back(assign);
+		}
 	}
 }
 
-void RdBeginEnd(AssignD** ARoot)
+void RdBeginEnd(std::vector<AssignD*>* ARoot)
 {
 label1:
 	if (IsKeyWord("END")) return;
 	RdAssignBlk(ARoot);
-	if (Lexem == ';') { RdLex(); goto label1; }
+	if (Lexem == ';') {
+		RdLex();
+		goto label1;
+	}
 	AcceptKeyWord("END");
 }
 
@@ -851,19 +854,22 @@ void TestSetBlankOrWrap(bool RepeatedGrp, char UC, RFldD* RF)
 	else if (UC == '@') Error(80);
 }
 
-AssignD* RdAssign2()
+std::vector<AssignD*> RdAssign2()
 {
-	AssignD* A = nullptr; LocVar* LV = nullptr; char FTyp = 0;
+	LocVar* LV = nullptr; char FTyp = 0;
 	FileD* FD = nullptr; FieldDescr* F = nullptr;
-	AssignD* result = nullptr;
-	A = new AssignD(); // (AssignD*)GetZStore(sizeof(*A));
-	result = A;
+
+	std::vector<AssignD*> result;
+	AssignD* A = new AssignD();
+	
 	if (IsKeyWord("IF")) {
 		A->Kind = _ifthenelseM;
 		A->Bool = RdBool();
 		AcceptKeyWord("THEN");
 		RdAssignBlk(&A->Instr);
-		if (IsKeyWord("ELSE")) RdAssignBlk(&A->ElseInstr);
+		if (IsKeyWord("ELSE")) {
+			RdAssignBlk(&A->ElseInstr);
+		}
 	}
 	else if (ForwChar == '.') {
 		A->Kind = _parfile;
@@ -883,6 +889,8 @@ AssignD* RdAssign2()
 		RdAssignFrml(LV->FTyp, A->Add, &A->Frml);
 	}
 	else Error(147);
+
+	result.push_back(A);
 	return result;
 }
 

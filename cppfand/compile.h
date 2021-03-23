@@ -66,7 +66,7 @@ FieldListEl* AllFldsList(FileD* FD, bool OnlyStored); // r118
 EditOpt* GetEditOpt(); // r129
 RprtOpt* GetRprtOpt(); // r132
 //FrmlPtr GetOp(BYTE Op, integer BytesAfter); // r1
-FieldDescr* FindFldName(FileD* FD); // r7
+FieldDescr* FindFldName(FileD* FD, std::string fieldName = ""); // r7
 FieldDescr* RdFldName(FileD* FD); // r17
 FileD* FindFileD(); // r22
 FileD* RdFileName(); // r34

@@ -160,19 +160,22 @@ void AssignRecVar(LocVar* LV1, LocVar* LV2, AssignD* A)
 {
 	pstring EmptyStr(1);
 	EmptyStr = "";
-	FieldDPtr F; FrmlPtr Z; LongStr* S; pstring ss; bool b; double r;
-	FileDPtr FD1, FD2; void* RP1; void* RP2;
-	FD1 = LV1->FD; FD2 = LV2->FD; RP1 = LV1->RecPtr; RP2 = LV2->RecPtr;
+	pstring ss;
+	FileD* FD1 = LV1->FD;
+	FileD* FD2 = LV2->FD;
+	void* RP1 = LV1->RecPtr;
+	void* RP2 = LV2->RecPtr;
+
 	while (A != nullptr) {
 		switch (A->Kind) {
 		case _zero: {
-			F = A->FldD;
+			FieldDescr* F = A->outputFldD;
 			CFile = FD1;
 			CRecPtr = RP1;
 			switch (F->FrmlTyp) {
-			case 'S': S_(F, EmptyStr); break;
-			case 'R': R_(F, 0.0); break;
-			default: B_(F, false); break;
+			case 'S': { S_(F, EmptyStr); break; }
+			case 'R': { R_(F, 0.0); break; }
+			default: { B_(F, false); break; }
 			}
 			break;
 		}

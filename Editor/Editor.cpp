@@ -302,16 +302,15 @@ WORD FindCtrl(char* t, size_t start, size_t length)
 
 void SetColorOrd(ColorOrd CO, WORD First, WORD Last)
 {
-	BYTE* len = (BYTE*)&CO;
 	WORD I = FindCtrl(T, First, Last);
 	while (I < Last)
 	{
 		size_t pp = CO.find(T[I]);
 		if (pp != std::string::npos) {
-			CO = CO.substr(0, pp - 1) + CO.substr(pp, *len - pp);
+			CO = CO.substr(0, pp - 1) + CO.substr(pp, CO.length() - pp);
 		}
 		else {
-			CO = CO + T[I];
+			CO += T[I];
 		}
 		I = FindCtrl(T, I + 1, Last);
 	}

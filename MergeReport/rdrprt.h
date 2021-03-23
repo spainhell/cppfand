@@ -30,6 +30,6 @@ integer NUnderscores(char C, integer& LineLen);
 void EndString(BlkD* block, BYTE* buffer, integer LineLen, integer NBytesStored, BYTE* LnL, WORD* StrL);
 void TestSetRFTyp(char Typ, bool RepeatedGrp, RFldD* RF);
 void TestSetBlankOrWrap(bool RepeatedGrp, char UC, RFldD* RF);
-AssignD* RdAssign2();
+std::vector<AssignD*> RdAssign2();
 void RdCond();
 LvDescr* RdKeyName();
