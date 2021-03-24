@@ -300,7 +300,7 @@ WORD FindCtrl(char* t, size_t start, size_t length)
 	return 0; // nenalezeno
 }
 
-void SetColorOrd(ColorOrd CO, WORD First, WORD Last)
+void SetColorOrd(ColorOrd& CO, WORD First, WORD Last)
 {
 	WORD I = FindCtrl(T, First, Last);
 	while (I < Last)
