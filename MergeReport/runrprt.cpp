@@ -89,11 +89,11 @@ label0:
 	ZeroCount();
 	MoveFrstRecs();
 	if (RprtHd != nullptr) {
-		if (RprtHd->FF1) FormFeed();
+		if (RprtHd->FF1) FormFeed(ReportString);
 		RprtPage = 1;
 		PrintBlkChn(RprtHd, ReportString, false, false);
 		TruncLine(ReportString);
-		if (WasFF2) FormFeed();
+		if (WasFF2) FormFeed(ReportString);
 		if (SetPage) {
 			SetPage = false;
 			RprtPage = PageNo;
@@ -122,7 +122,7 @@ label1:
 			printf("%s%c", Rprt.c_str(), 0x0C);
 			goto label0;
 		}
-		if (b) FormFeed();
+		if (b) FormFeed(ReportString);
 		ex = false;
 	label3:
 		RestoreExit(er);
@@ -189,12 +189,13 @@ void NewLine(std::string& text)
 	}
 }
 
-void FormFeed()
+void FormFeed(std::string& text)
 {
 	integer I = 0;
 	if (NoFF) NoFF = false;
 	else {
-		printf("%s%c", Rprt.c_str(), 0x0C);
+		//printf("%s%c", Rprt.c_str(), 0x0C);
+		text += '\r';
 		RprtLine = 1;
 		IncPage();
 	}
@@ -696,7 +697,7 @@ void PrintPageFt(std::string& text)
 void PrintPageHd(std::string& text)
 {
 	bool b = FrstBlk;
-	if (!b) FormFeed();
+	if (!b) FormFeed(text);
 	PrintBlkChn(PageHd, text, false, false);
 	if (!b) PrintDH = 2;
 }

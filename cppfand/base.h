@@ -138,7 +138,7 @@ longint PosH(FILE* handle);
 int SeekH(FILE* handle, longint pos);
 longint FileSizeH(FILE* handle);
 FILE* OpenH(FileOpenMode Mode, FileUseMode UM);
-size_t ReadH(FILE* handle, WORD bytes, void* buffer);
+size_t ReadH(FILE* handle, size_t bytes, void* buffer);
 void WriteH(FILE* handle, WORD bytes, void* buffer);
 void TruncH(FILE* handle, longint N);
 void FlushH(FILE* handle);

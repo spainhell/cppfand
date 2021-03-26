@@ -43,7 +43,7 @@ void RunReport(RprtOpt* RO);
 void ResetY();
 void IncPage();
 void NewLine(std::string& text);
-void FormFeed();
+void FormFeed(std::string& text);
 void NewPage(std::string& text);
 bool OutOfLineBound(BlkD* B);
 std::string NewTxtCol(std::string S, WORD Col, WORD Width, bool Wrap);

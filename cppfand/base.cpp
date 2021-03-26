@@ -186,7 +186,7 @@ int SeekH(FILE* handle, longint pos)
 	return MoveH(pos, 0, handle);
 }
 
-size_t ReadH(FILE* handle, WORD bytes, void* buffer)
+size_t ReadH(FILE* handle, size_t bytes, void* buffer)
 {
 	//if (CFile != nullptr && CFile->Name == "DEALER")
 	//{
@@ -196,8 +196,7 @@ size_t ReadH(FILE* handle, WORD bytes, void* buffer)
 	//{
 	//	printf("");
 	//}
-	size_t bufferSize = bytes; // sizeof(buffer);
-	return fread_s(buffer, bufferSize, 1, bytes, handle);
+	return fread_s(buffer, bytes, 1, bytes, handle);
 }
 
 void RdMsg(integer N)

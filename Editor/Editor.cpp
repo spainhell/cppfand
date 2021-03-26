@@ -289,30 +289,30 @@ bool FindString(WORD& I, WORD Len)
 	return result;
 }
 
-/// pracuje s Pascal indexem 1 .. N
-WORD FindCtrl(char* t, size_t start, size_t length)
+/// pracuje s C++ indexem 0 .. N-1
+size_t FindCtrl(char* t, size_t first, size_t last)
 {
 	// ^A ^B ^D ^E ^Q ^S ^W
 	std::set<char> pc = { 0x01, 0x02, 0x04, 0x05, 0x11, 0x13, 0x17 };
-	for (size_t i = start - 1; i < length; i++) {
-		if (pc.count(t[i]) > 0) return i + 1;
+	for (size_t i = first; i <= last; i++) {
+		if (pc.count(t[i]) > 0) return i;
 	}
-	return 0; // nenalezeno
+	return std::string::npos; // nenalezeno
 }
 
 void SetColorOrd(ColorOrd& CO, WORD First, WORD Last)
 {
-	WORD I = FindCtrl(T, First, Last);
-	while (I < Last)
+	WORD I = FindCtrl(T, First - 1, Last - 1); // -1 to convert Pascal to C++
+	while (I < Last - 1) // if not found I = std::string::npos
 	{
 		size_t pp = CO.find(T[I]);
 		if (pp != std::string::npos) {
-			CO = CO.substr(0, pp - 1) + CO.substr(pp, CO.length() - pp);
+			CO = CO.substr(0, pp - 1) + CO.substr(pp + 1, CO.length() - pp + 1);
 		}
 		else {
 			CO += T[I];
 		}
-		I = FindCtrl(T, I + 1, Last);
+		I = FindCtrl(T, I + 1, Last - 1);
 	}
 }
 
@@ -337,64 +337,73 @@ void LastLine(char* input, WORD from, WORD num, WORD& Ind, WORD& Count)
 
 bool RdNextPart()
 {
-	char* ppa = nullptr;
-	WORD L11 = 0, L1 = 0;
-	longint Max = MinL(MaxLenT, StoreAvail() + LenT);
-	WORD Pass = Max - (Max >> 3);
-	Part.MovL = 0;
-	Part.MovI = 0;
-	WORD MI = 0;
-	auto result = false;
-	if (AllRd) return result;
-	if (Part.LenP == 0) {
-		LenT = 0; /*T = (CharArr*)GetStore(0);*/
-		T = new char[0xFFFF];
-	}
-	longint Pos = Part.PosP;
-	longint BL = Part.LineP;
+	// kompletne prepsano -> vycte cely soubor do promenne T
+	auto fileSize = FileSizeH(TxtFH);
+	T = new char[fileSize];
+	SeekH(TxtFH, 0);
+	ReadH(TxtFH, fileSize, T);
+	LenT = fileSize;
+	AllRd = true;
+	return false; // return ChangePart
+	
+	//char* ppa = nullptr;
+	//WORD L11 = 0, L1 = 0;
+	//longint Max = MinL(MaxLenT, StoreAvail() + LenT);
+	//WORD Pass = Max - (Max >> 3);
+	//Part.MovL = 0;
+	//Part.MovI = 0;
+	//WORD MI = 0;
+	//auto result = false;
+	//if (AllRd) return result;
+	//if (Part.LenP == 0) {
+	//	LenT = 0; /*T = (CharArr*)GetStore(0);*/
+	//	T = new char[0xFFFF];
+	//}
+	//longint Pos = Part.PosP;
+	//longint BL = Part.LineP;
 
-	if (LenT > (Pass >> 1)) {
-		LastLine(ppa, 0, LenT - (Pass >> 1), MI, Part.MovL);     /* 28kB+1 radek*/
-		SetColorOrd(Part.ColorP, 1, MI + 1);
-		Pos += MI;
-		LenT -= MI;
-		Move(&T[MI + 1], &T[1], LenT);
-		ReleaseStore(&T[LenT + 1]);
-		Part.LineP = BL + Part.MovL;
-		Part.PosP = Pos;
-		Part.MovI = MI;
-	}
-	Pos += LenT;
-	longint FSize = FileSizeH(TxtFH);
-	AllRd = false;
-	WORD iL = LenT;
+	//if (LenT > (Pass >> 1)) {
+	//	LastLine(ppa, 0, LenT - (Pass >> 1), MI, Part.MovL);     /* 28kB+1 radek*/
+	//	SetColorOrd(Part.ColorP, 1, MI + 1);
+	//	Pos += MI;
+	//	LenT -= MI;
+	//	Move(&T[MI + 1], &T[1], LenT);
+	//	ReleaseStore(&T[LenT + 1]);
+	//	Part.LineP = BL + Part.MovL;
+	//	Part.PosP = Pos;
+	//	Part.MovI = MI;
+	//}
+	//Pos += LenT;
+	//longint FSize = FileSizeH(TxtFH);
+	//AllRd = false;
+	//WORD iL = LenT;
 
-	do {
-		longint Rest = FSize - Pos;
-		if (Rest > 0x1000) L11 = 0x1000;
-		else L11 = Rest;
-		Max = StoreAvail();
-		if (Max > 0x400) Max -= 0x400;
-		if (L11 > Max) L11 = Max;
-		//ppa = new char[L11];
-		ppa = T;
-		L1 = L11;
-		if (L1 > 0) { SeekH(TxtFH, Pos); ReadH(TxtFH, L1, ppa); }
-		AllRd = Pos + L11 >= FSize;
-		LenT += L1;
-		Pos += L1;
-	} while (!((LenT > Pass) || AllRd || (L11 == Max)));
+	//do {
+	//	longint Rest = FSize - Pos;
+	//	if (Rest > 0x1000) L11 = 0x1000;
+	//	else L11 = Rest;
+	//	Max = StoreAvail();
+	//	if (Max > 0x400) Max -= 0x400;
+	//	if (L11 > Max) L11 = Max;
+	//	//ppa = new char[L11];
+	//	ppa = T;
+	//	L1 = L11;
+	//	if (L1 > 0) { SeekH(TxtFH, Pos); ReadH(TxtFH, L1, ppa); }
+	//	AllRd = Pos + L11 >= FSize;
+	//	LenT += L1;
+	//	Pos += L1;
+	//} while (!((LenT > Pass) || AllRd || (L11 == Max)));
 
-	LastLine(T, iL, LenT - iL - 1, iL, L1);
-	if (AllRd) iL = LenT;
-	if ((iL < LenT)) { LenT = iL; AllRd = false; }
-	Part.LenP = LenT;
-	Part.UpdP = false;
-	if ((T[LenT - 1] == 0x1A) && AllRd) LenT--;
-	if ((LenT <= 1)) return result;  /*????????*/
-	if (LenT < 49) ReleaseStore(&T[LenT + 1]); // TODO: pùvodnì ReleaseStore(@T^[succ(LenT)]);
-	result = true;
-	return result;
+	//LastLine(T, iL, LenT - iL - 1, iL, L1);
+	//if (AllRd) iL = LenT;
+	//if ((iL < LenT)) { LenT = iL; AllRd = false; }
+	//Part.LenP = LenT;
+	//Part.UpdP = false;
+	//if ((T[LenT - 1] == 0x1A) && AllRd) LenT--;
+	//if ((LenT <= 1)) return result;  /*????????*/
+	//if (LenT < 49) ReleaseStore(&T[LenT + 1]); // TODO: pùvodnì ReleaseStore(@T^[succ(LenT)]);
+	//result = true;
+	//return result;
 }
 
 void FirstLine(WORD from, WORD num, WORD& Ind, WORD& Count)
@@ -561,16 +570,11 @@ void WrStatusLine()
 {
 	std::string Blanks;
 	if (Mode != HelpM) {
-		//FillChar(&Blanks[1], TxtCols, 32);
-		//Blanks[0] = TXTCOLS;
 		if (HeadS.length() > 0) {
-			//Move(&HeadS[1], &Blanks[1], HeadS.length());
 			Blanks = AddTrailChars(HeadS, ' ', TXTCOLS);
 			size_t i = Blanks.find('_');
 			if (i == std::string::npos) {
-				//Move(&Blanks[1], &Blanks[TStatL + 3], 252 - TStatL);
 				Blanks = Blanks.substr(0, TStatL + 3) + Blanks.substr(TStatL + 3 - 1, 252 - TStatL);
-				//FillChar(&Blanks[1], TStatL + 2, 32);
 				for (size_t j = 0; j < TStatL + 2; j++) {
 					Blanks[j] = ' ';
 				}
@@ -814,7 +818,7 @@ void ScrollWrline(char* P, int Row, ColorOrd& CO)
 
 	integer I = 0; integer J = 0;
 	char cc = P[I];
-	while (cc != _CR && I <= LineSize && !InsPage) {
+	while (cc != _CR && I < LineSize && !InsPage) {
 		if (((unsigned char)cc >= 32) || (GrafCtrl.count(cc) > 0)) {
 			nv1 = cc;
 			BuffLine[J] = (nv2 << 8) + nv1;
@@ -2320,16 +2324,19 @@ void SetBlockBound(longint& BBPos, longint& EBPos)
 
 void ResetPrint(char Oper, longint& fs, FILE* W1, longint LenPrint, ColorOrd* co, WORD& I1, bool isPrintFile, CharArr* p)
 {
-	*co = Part.ColorP; SetColorOrd(*co, 1, I1); isPrintFile = false;
+	*co = Part.ColorP;
+	SetColorOrd(*co, 1, I1);
+	isPrintFile = false;
 	fs = co->length(); LenPrint += fs;
 	if (Oper == 'p') LenPrint++;
-	if ((StoreAvail() > LenPrint) && (LenPrint < 0xFFF0))
-	{
-		p = (CharArr*)GetStore2(LenPrint); Move(&co[1], p, co->length());
+	if ((StoreAvail() > LenPrint) && (LenPrint < 0xFFF0)) {
+		p = (CharArr*)GetStore2(LenPrint);
+		Move(&co[1], p, co->length());
 	}
-	else
-	{
-		isPrintFile = true; W1 = WorkHandle; SeekH(W1, 0);
+	else {
+		isPrintFile = true;
+		W1 = WorkHandle;
+		SeekH(W1, 0);
 		WriteH(W1, co->length(), &co[1]); HMsgExit(CPath);
 	}
 }
@@ -3091,7 +3098,8 @@ void HandleEvent() {
 						Colu = Column(Posi);
 					}
 					else {
-						I1 = Posi; if (Posi < LineSize) Posi++;
+						I1 = Posi;
+						if (Posi < LineSize) Posi++;
 						BlockLRShift(I1);
 					}
 				}
