@@ -28,16 +28,18 @@ label1:
 	while (L != nullptr) {
 		BlkD* B1 = L->Ft;
 		while (B1 != nullptr) {
-			RFldD* RF1 = B1->RFD;
-			while (RF1 != nullptr) {
-				if ((Lexem == _identifier) && EquUpcase(RF1->Name, LexWord)) {
+			//RFldD* RF1 = B1->RFD;
+			//while (RF1 != nullptr) {
+			for (auto rf : B1->ReportFields) {
+				std::string sLexWord = LexWord;
+				if ((Lexem == _identifier) && EquUpcase(rf->Name, sLexWord)) {
 					RdLex();
 					result = true;
-					RF = RF1;
+					RF = rf;
 					B = B1;
 					return result;
 				}
-				RF1 = (RFldD*)RF1->Chain;
+				//RF1 = (RFldD*)RF1->Chain;
 			}
 			B1 = (BlkD*)B1->Chain;
 		}
@@ -201,20 +203,21 @@ label2:
 
 bool OwnInBlock(char& FTyp, FrmlElem** res)
 {
-	RFldD* RF;
+	// RFldD* RF;
 	auto result = false;
-	RF = CBlk->RFD;
-	while (RF != nullptr)
-	{
-		if (EquUpcase(RF->Name, LexWord))
+	// RF = CBlk->RFD;
+	// while (RF != nullptr) {
+	for (auto rf : CBlk->ReportFields) {
+		std::string sLexWord = LexWord;
+		if (EquUpcase(rf->Name, sLexWord))
 		{
 			RdLex();
-			FTyp = RF->FrmlTyp;
-			*res = RF->Frml;
+			FTyp = rf->FrmlTyp;
+			*res = rf->Frml;
 			result = true;
 			return result;
 		}
-		RF = (RFldD*)RF->Chain;
+		// RF = (RFldD*)RF->Chain;
 	}
 	return result;
 }
@@ -237,7 +240,7 @@ void FindInRec(char& FTyp, FrmlElem** res, bool wasIiPrefix)
 void ChainSumElR()
 {
 	CZeroLst->push_back(FrmlSumEl->at(0));
-	
+
 	if (FrstSumVar || (SumIi == 0)) SumIi = 1;
 	if (FrstSumVar || (CBlk == nullptr)) {
 		if (IDA[SumIi]->Sum == nullptr) {
@@ -245,14 +248,14 @@ void ChainSumElR()
 		}
 		else {
 			for (size_t i = 0; i < FrmlSumEl->size(); i++) {
-				auto *el = FrmlSumEl->at(i);
+				auto* el = FrmlSumEl->at(i);
 				IDA[SumIi]->Sum->push_back(el);
 			}
 			FrmlSumEl->clear();
 		}
 	}
 	else {
-		std::vector<FrmlElemSum*> *S = CBlk->Sum;
+		std::vector<FrmlElemSum*>* S = CBlk->Sum;
 		for (size_t i = 0; i < CBlk->Sum->size(); i++) {
 			auto* el = CBlk->Sum->at(i);
 			FrmlSumEl->push_back(el);
@@ -280,14 +283,14 @@ void Rd_Oi()
 void ReadReport(RprtOpt* RO)
 {
 	FileD* FD = nullptr; KeyInD* KI = nullptr; BlkD* B = nullptr; WORD i = 0;
-	InpD* ID = nullptr; LvDescr* L = nullptr; pstring s;
-	RprtFDListEl* FDL = nullptr;
+	InpD* ID = nullptr; LvDescr* L = nullptr;
+	std::string s;
 
 	ResetCompilePars();
 	RdLex();
 	CBlkSave = nullptr;
 	PgeSizeZ = nullptr; PgeLimitZ = nullptr;
-	FDL = nullptr;
+	RprtFDListEl* FDL = nullptr;
 	if ((RO != nullptr) && (RO->FDL.FD != nullptr)) FDL = &RO->FDL;
 	ResetLVBD();
 	if (IsKeyWord("VAR")) RdLocDcl(&LVBD, false, false, 'R');
@@ -391,11 +394,10 @@ label1:
 	PageHd = nullptr; RprtHd = nullptr; PageFt = nullptr;
 	PFZeroLst.clear();
 label3:
-	s[0] = 2;
 	ReadChar();
-	s[1] = toupper(CurrChar);
+	s = toupper(CurrChar);
 	ReadChar();
-	s[2] = toupper(CurrChar);
+	s += toupper(CurrChar);
 	ChainSumEl = nullptr;
 	RdFldNameFrml = RdFldNameFrmlR;
 	WhatToRd = 'O';
@@ -460,7 +462,9 @@ label4:
 
 	for (i = 1; i <= MaxIi; i++) {
 		ID = IDA[i];
-		if (ID->ErrTxtFrml != nullptr) { RdChkDsFromPos(ID->Scan->FD, ID->Chk); }
+		if (ID->ErrTxtFrml != nullptr) {
+			RdChkDsFromPos(ID->Scan->FD, ID->Chk);
+		}
 	}
 }
 
@@ -546,7 +550,7 @@ LvDescr* NewLvS(LvDescr* L, InpD* ID)
 
 void RdBeginEnd(std::vector<AssignD*>* ARoot);
 
-void RdAssignBlk(std::vector<AssignD*> *ARoot)
+void RdAssignBlk(std::vector<AssignD*>* ARoot)
 {
 	if (IsKeyWord("BEGIN")) RdBeginEnd(ARoot);
 	else {
@@ -572,15 +576,14 @@ label1:
 void RdBlock(BlkD** BB)
 {
 	// metoda pouzivala metodu StoreCh, ta byla nahrazena promennou storedCh, ktera slouzi k ukladani nactenych dat
-	
+
 	std::string storedCh; // pridano pro zprovozneni StoreCh(char, &integer)
-		
+
 	BYTE rep[256]{ 0 };
 	size_t offset = 0;
-	
+
 	integer LineLen = 0;
-	BYTE* LnL = nullptr;
-	WORD* StrL = nullptr;
+	//WORD* StrL = nullptr;
 	integer I = 0, N = 0, L = 0, M = 0;
 	bool RepeatedGrp = false;        /*RdBlock - body*/
 	RFldD* RF = nullptr;
@@ -592,6 +595,7 @@ void RdBlock(BlkD** BB)
 	CBlk = new BlkD();
 	if (*BB == nullptr) *BB = CBlk;
 	else ChainLast(*BB, CBlk);
+	size_t reportFieldsVectorIndex = 0;
 	RdCond();
 	if (IsKeyWord("BEGIN")) {
 		RdBeginEnd(&CBlk->BeforeProc);
@@ -639,8 +643,9 @@ label0:
 		else RF->Name = "";
 		RF->Frml = RdFrml(RF->FrmlTyp);
 		RF->BlankOrWrap = false;
-		if (CBlk->RFD == nullptr) CBlk->RFD = RF;
-		else ChainLast(CBlk->RFD, RF);
+		//if (CBlk->RFD == nullptr) CBlk->RFD = RF;
+		//else ChainLast(CBlk->RFD, RF);
+		CBlk->ReportFields.push_back(RF);
 	}
 label1:
 	if (Lexem != ';') {
@@ -648,7 +653,13 @@ label1:
 		goto label0;
 	}
 label2:
-	RF = CBlk->RFD;
+	//RF = CBlk->RFD;
+	if (reportFieldsVectorIndex < CBlk->ReportFields.size()) {
+		RF = CBlk->ReportFields.at(reportFieldsVectorIndex);
+	}
+	else {
+		RF = nullptr;
+	}
 	RepeatedGrp = false;
 	SkipBlank(true);
 	switch (ForwChar) {
@@ -661,13 +672,13 @@ label2:
 	}
 label3:
 	//LnL = (BYTE*)GetZStore(1);
-	LnL = new BYTE;
+	//LnL = new BYTE;
 	//StrL = (WORD*)GetZStore(2);
-	StrL = new WORD;
+	//StrL = new WORD;
 	LineLen = 0;
 	storedCh = "";
 	if (CBlk->NTxtLines == 0) {
-		CBlk->Txt = (char*)(LnL);
+		CBlk->lineLength = 0;
 		while (ForwChar == ' ') RdCh(LineLen);
 		CBlk->NBlksFrst = LineLen;
 	}
@@ -680,7 +691,8 @@ label3:
 			storedCh += static_cast<char>(0xFF);
 			rep[offset++] = 0xFF;
 			if (RF == nullptr) {
-				RF = CBlk->RFD;
+				//RF = CBlk->RFD;
+				RF = CBlk->ReportFields.at(reportFieldsVectorIndex);
 				if (RF == nullptr) Error(30);
 				RepeatedGrp = true;
 			}
@@ -765,12 +777,19 @@ label3:
 			}
 			TestSetBlankOrWrap(RepeatedGrp, UC, RF);
 		label5:
-			RF = (RFldD*)RF->Chain;
+			//RF = (RFldD*)RF->Chain;
+			if (reportFieldsVectorIndex < CBlk->ReportFields.size() - 1) {
+				RF = CBlk->ReportFields.at(++reportFieldsVectorIndex);
+			}
+			else {
+				RF = nullptr;
+			}
+
 			break;
 		}
 		case '\\': {
 			CBlk->FF2 = true;
-			EndString(CBlk, rep, LineLen, storedCh.length(), LnL, StrL);
+			EndString(CBlk, rep, LineLen, storedCh.length());
 			offset = 0;
 			ReadChar();
 			goto label4;
@@ -778,7 +797,7 @@ label3:
 		}
 		case '{':
 		case '#': {
-			ReleaseStore(LnL);
+			//ReleaseStore(LnL);
 			goto label4;
 			break;
 		}
@@ -795,12 +814,12 @@ label3:
 			break;
 		}
 		}
-	EndString(CBlk, rep, LineLen, storedCh.length(), LnL, StrL);
+	EndString(CBlk, rep, LineLen, storedCh.length());
 	offset = 0;
 	SkipBlank(true);
 	if (ForwChar != 0x1A) goto label3;
 label4:
-	if ((CBlk->NTxtLines == 1) && (CBlk->Txt[1] == 0) && CBlk->FF1) {
+	if ((CBlk->NTxtLines == 1) && (CBlk->lineLength == 0) && CBlk->FF1) {
 		CBlk->NTxtLines = 0;
 		CBlk->FF1 = false;
 		CBlk->FF2 = true;
@@ -828,15 +847,19 @@ integer NUnderscores(char C, integer& LineLen)
 	return N;
 }
 
-void EndString(BlkD* block, BYTE* buffer, integer LineLen, integer NBytesStored, BYTE* LnL, WORD* StrL)
+void EndString(BlkD* block, BYTE* buffer, size_t LineLen, size_t NBytesStored)
 {
 	// vlozime buffer do vectoru stringu
 	block->lines.push_back(std::string((char*)buffer, NBytesStored));
-	
-	*StrL = NBytesStored;
+
+	//*StrL = NBytesStored;
 	CBlk->NTxtLines++;
-	if (LineLen == 0) *LnL = 255;
-	else *LnL = LineLen;
+	if (LineLen == 0) {
+		block->lineLength = 255;
+	}
+	else {
+		block->lineLength = LineLen;
+	}
 }
 
 void TestSetRFTyp(char Typ, bool RepeatedGrp, RFldD* RF)
@@ -861,7 +884,7 @@ std::vector<AssignD*> RdAssign2()
 
 	std::vector<AssignD*> result;
 	AssignD* A = new AssignD();
-	
+
 	if (IsKeyWord("IF")) {
 		A->Kind = _ifthenelseM;
 		A->Bool = RdBool();

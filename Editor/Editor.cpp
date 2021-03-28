@@ -712,11 +712,12 @@ longint LineAbs(int Ln)
 
 bool LineInBlock(int Ln)
 {
-	if ((LineAbs(Ln) > BegBLn) && (LineAbs(Ln) < EndBLn))
-	{
+	if ((LineAbs(Ln) > BegBLn) && (LineAbs(Ln) < EndBLn)) {
 		return true;
 	}
-	else { return false; }
+	else {
+		return false;
+	}
 }
 
 bool LineBndBlock(int Ln)
@@ -724,7 +725,9 @@ bool LineBndBlock(int Ln)
 	if ((LineAbs(Ln) == BegBLn) || (LineAbs(Ln) == EndBLn)) {
 		return true;
 	}
-	else { return false; }
+	else {
+		return false;
+	}
 }
 
 BYTE Color(char c)
@@ -742,7 +745,7 @@ BYTE Color(ColorOrd CO)
 
 void EditWrline(char* P, int Row)
 {
-	WORD BuffLine[255]{ 0 };
+	WORD BuffLine[256]{ 0 };
 	BYTE nv1;
 	BYTE nv2;
 	bool IsCtrl = false;
@@ -757,7 +760,7 @@ void EditWrline(char* P, int Row)
 	integer I = 0;
 	while (P[I] != _CR && I < LineSize - 1) {
 		nv1 = P[I];
-		if (I < 0 || I > 254) throw std::exception("Index");
+		if (I < 0 || I > 255) throw std::exception("Index");
 		BuffLine[I] = (nv2 << 8) + nv1;
 		if (nv1 < 32) IsCtrl = true;
 		I++;
@@ -768,7 +771,7 @@ void EditWrline(char* P, int Row)
 
 	for (I = LP + 1; I < BPos + LineS; I++) {
 		// all characters after last char will be spaces (to the end of screen)
-		if (I < 0 || I > 254) throw std::exception("Index");
+		if (I < 0 || I > 255) throw std::exception("Index");
 		BuffLine[I] = (nv2 << 8) + nv1;
 	}
 
@@ -784,7 +787,7 @@ void EditWrline(char* P, int Row)
 			}
 			else { E = LineS + BPos + 1; }
 			for (I = B; I < pred(E); I++) {
-				if (I < 0 || I > 254) throw std::exception("Index");
+				if (I < 0 || I > 255) throw std::exception("Index");
 				BuffLine[I] = (BuffLine[I] & 0x00FF) + (BlockColor << 8);
 			}
 		}
@@ -808,7 +811,7 @@ void ScrollWrline(char* P, int Row, ColorOrd& CO)
 	std::set<char> GrafCtrl = { 3,6,9,11,15,16,18,21,22,24,25,26,29,30,31 };
 	BYTE len = 15; // GrafCtrl has 15 members
 
-	WORD BuffLine[255]{ 0 };
+	WORD BuffLine[256]{ 0 };
 	BYTE nv1;
 	BYTE nv2;
 
@@ -928,9 +931,8 @@ void WrEndT()
 
 void MoveIdx(int dir)
 {
-	WORD mi, ml;
-	mi = -dir * Part.MovI;
-	ml = -dir * Part.MovL;
+	WORD mi = -dir * Part.MovI;
+	WORD ml = -dir * Part.MovL;
 	ScrI += mi; LineI += mi; // {****GLOBAL***}
 	NextI += mi; LineL += ml; ScrL += ml; // {****Edit***}
 }

@@ -121,11 +121,10 @@ struct RprtOpt
 
 struct RFldD : public Chained
 {
-	//RFldD* Chain;
 	char FrmlTyp = '\0', Typ = '\0';    /*R,F,D,T*/
 	bool BlankOrWrap = false; /*long date "DD.MM.YYYY"*/
 	FrmlElem* Frml = nullptr;
-	pstring Name = pstring(1); /*curr. length*/
+	std::string Name; /*curr. length*/
 };
 
 struct BlkD : public Chained
@@ -133,7 +132,8 @@ struct BlkD : public Chained
 	// BlkD* Chain;
 	FrmlElem* Bool = nullptr;
 	std::vector<FrmlElemSum*> *Sum = nullptr;
-	char* Txt = nullptr;          /*sequence of pstrings*/
+	//char* Txt = nullptr;          /*sequence of pstrings*/
+	size_t lineLength = 0; // total length of line after printing this block
 	bool AbsLine = false, SetPage = false, NotAtEnd = false, FF1 = false, FF2 = false;
 	FrmlElem* LineBound = nullptr;
 	FrmlElem* LineNo = nullptr;
@@ -141,9 +141,9 @@ struct BlkD : public Chained
 	WORD NTxtLines = 0;
 	WORD NBlksFrst = 0; // pozice 1. bloku na radku; pred nim jsou mezery
 	WORD DHLevel = 0;
-	RFldD* RFD = nullptr;
-	std::vector<AssignD*> BeforeProc; 
-	std::vector<AssignD*> AfterProc;
+	std::vector<RFldD*> ReportFields; // vektor jednotlivych poli formulare
+	std::vector<AssignD*> BeforeProc; // prikazy provedene pred blokem
+	std::vector<AssignD*> AfterProc; // prikazy provedene po bloku
 	std::vector<std::string> lines; // vektor jednotlivych radku
 };
 

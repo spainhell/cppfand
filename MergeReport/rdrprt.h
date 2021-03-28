@@ -27,7 +27,7 @@ LvDescr* NewLvS(LvDescr* L, InpD* ID);
 void RdBlock(BlkD** BB);
 void RdCh(integer& LineLen);
 integer NUnderscores(char C, integer& LineLen);
-void EndString(BlkD* block, BYTE* buffer, integer LineLen, integer NBytesStored, BYTE* LnL, WORD* StrL);
+void EndString(BlkD* block, BYTE* buffer, size_t LineLen, size_t NBytesStored);
 void TestSetRFTyp(char Typ, bool RepeatedGrp, RFldD* RF);
 void TestSetBlankOrWrap(bool RepeatedGrp, char UC, RFldD* RF);
 std::vector<AssignD*> RdAssign2();

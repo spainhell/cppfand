@@ -424,7 +424,9 @@ void PendingTT(std::string& text)
 
 void FinishTuple(std::string& text)
 {
-	while (Y.Blk != nullptr) Print1NTupel(text, true);
+	while (Y.Blk != nullptr) {
+		Print1NTupel(text, true);
+	}
 }
 
 void RunAProc(std::vector<AssignD*> vAssign)
@@ -494,11 +496,21 @@ void PrintTxt(BlkD* B, std::string& text, bool ChkPg)
 	}
 	if (B != Y.Blk) {
 		FinishTuple(text);
-		if (B->AbsLine)
-			for (int i = RprtLine; i <= RunInt(B->LineNo) - 1; i++) NewLine(text);
+		if (B->AbsLine) {
+			for (int i = RprtLine; i <= RunInt(B->LineNo) - 1; i++) {
+				NewLine(text);
+			}
+		}
 		if (B->NTxtLines > 0) {
 			if (B->NBlksFrst < LineLenLst) NewLine(text);
-			for (int i = 1; i <= B->NBlksFrst - LineLenLst; i++) text += ' ';
+			if (B->NBlksFrst - LineLenLst > 0) {
+				char buffer[256]{ '\0' };
+				snprintf(buffer, sizeof(buffer), "%*c", B->NBlksFrst - LineLenLst, ' ');
+				text += buffer;
+			}
+			//for (int i = 1; i <= B->NBlksFrst - LineLenLst; i++) {
+			//	text += ' ';
+			//}
 		}
 		ResetY();
 		Y.Ln = B->NTxtLines;
@@ -506,7 +518,7 @@ void PrintTxt(BlkD* B, std::string& text, bool ChkPg)
 			Y.Blk = B;
 			Y.P = B->lines[0].c_str();
 			Y.ChkPg = ChkPg;
-			LineLenLst = B->lines[0].length();
+			LineLenLst = B->lineLength;
 			Y.Sz = B->lines[0].length();
 		}
 	}
@@ -523,15 +535,25 @@ void Print1NTupel(std::string& text, bool Skip)
 	LongStr* S = nullptr;
 	if (Y.Ln == 0) return;
 	RFldD* RF = nullptr;
+	auto reportFieldsIt = Y.Blk->ReportFields.begin();
 label1:
 	WasOutput = true;
 	while (Y.I < Y.Sz) {
 		char buffer[256]{ '\0' };
 		BYTE C = (BYTE)Y.P[Y.I];
 		if (C == 0xFF) {
-			if (RF == nullptr) RF = Y.Blk->RFD;
-			else RF = (RFldD*)RF->Chain;
-			if (RF == nullptr) return;
+			//if (RF == nullptr) RF = Y.Blk->RFD;
+			//else RF = (RFldD*)RF->Chain;
+			//if (RF == nullptr) return;
+			if (RF == nullptr) {
+				RF = *reportFieldsIt; // 1st time
+			}
+			else {
+				++reportFieldsIt;
+				if (reportFieldsIt == Y.Blk->ReportFields.end()) return;
+				RF = *reportFieldsIt;
+			}
+			
 			L = (BYTE)Y.P[Y.I + 1];
 			WORD M = (BYTE)Y.P[Y.I + 2];
 			if (RF->FrmlTyp == 'R') {
