@@ -444,7 +444,9 @@ void EditTxtProc(Instr_edittxt* PD)
 	MsgS.ShiftLast = (PD->ShiftLast == nullptr) ? "" : *GetStr(PD->ShiftLast);
 	MsgS.AltLast = (PD->AltLast == nullptr) ? "" : *GetStr(PD->AltLast);
 
-	if (PD->TxtLV != nullptr) lp = (longint*)(uintptr_t(MyBP) + PD->TxtLV->BPOfs);
+	if (PD->TxtLV != nullptr) {
+		lp = (longint*)(uintptr_t(MyBP) + PD->TxtLV->BPOfs);
+	}
 	else {
 		SetTxtPathVol(PD->TxtPath, PD->TxtCatIRec);
 		lp = nullptr;

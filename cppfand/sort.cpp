@@ -93,15 +93,15 @@ WORD WRec::Compare(const WRec& w) const
 	BYTE lenR = w.X.S.length(); // AH
 	if (lenThis != 0 && lenR != 0) {
 		// porovnani retezcu VETSI delkou - nechapu ale proc ...
-		for (unsigned char i = 0; i < max(lenThis, lenR); i++) {
+		for (unsigned char i = 0; i < min(lenThis, lenR); i++) {
 			if (X.S.at(i + 1) == w.X.S.at(i + 1)) continue;
 			if (X.S.at(i + 1) < w.X.S.at(i + 1)) return _lt;
-			else return _gt;
+			return _gt;
 		}
 	}
 	if (lenThis != lenR) { // compare X
 		if (lenThis < lenR) return _lt;
-		else return _gt;
+		return _gt;
 	}
 
 	int irThis = IR[0] + (IR[1] << 8) + (IR[2] << 16);

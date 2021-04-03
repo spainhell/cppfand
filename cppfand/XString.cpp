@@ -117,20 +117,25 @@ void XString::StoreD(void* R, bool Descend)
 	S[0] = origLen + 6; // nova delka
 	unsigned char D0 = data[0]; // AL
 	unsigned char D5 = data[5]; // AH
-	unsigned char b5 = (D5 <= 0xF0) ? 0x80 : 0; // nevyssi bit z d5 (AH) - negovany		
-	D5 = D5 << 1;
-	unsigned char b0 = (D0 & 0x01) << 7; // tento nejnizsi bit z d0 (AL) pujde na nejvyssi v d5
-	D0 = (D0 >> 1) + b5; // rcr d0 (AL) + stav neg. CF
-	D5 = (D5 >> 1) + b0;
 
+	unsigned char b5 = (D5 >= 0x80) ? 0 : 0x80; // nevyssi bit z d5 (AH) - NEGOVANY		
+
+	unsigned char b0 = (D0 & 0b00000001) << 7; // posledni bit pred posunem D0 doprava, budeme potrebovat jako nejvyssi bit pozdeji
+	D0 = D0 >> 1; // rotace R[0] doprava, nejvyssi bit je 0
+	D0 += b5; // nejvyssi bit bude b5 (bud pricteme 0b0000000 nebo 0b10000000)
+
+	D5 = D5 >> 1; // rotace R[0] doprava, nejvyssi bit je 0
+	D5 += b0; // nejvyssi bit bude b0 (bud pricteme 0b0000000 nebo 0b10000000)
+	
+	
 	S[origLen + 1] = D0; // data zacinaji za origLen (jeste je tam 1B delka retezce)
 	S[origLen + 2] = D5;
 
-	S[origLen + 3] = data[3];
-	S[origLen + 4] = data[4];
+	S[origLen + 3] = data[4];
+	S[origLen + 4] = data[3];
 
-	S[origLen + 5] = data[1];
-	S[origLen + 6] = data[2];
+	S[origLen + 5] = data[2];
+	S[origLen + 6] = data[1];
 
 	if (Descend) {
 		// neguj vsechny bity v datech
