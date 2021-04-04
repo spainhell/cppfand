@@ -42,7 +42,9 @@ void XString::StoreStr(std::string V, KeyFldD* KF)
 	WORD n = 0;
 	auto X = KF->FldD;
 	while (V.length() < X->L) {
-		if (X->M == LeftJust) V += ' ';
+		if (X->M == LeftJust) {
+			V += ' ';
+		}
 		else {
 			V = " " + V;
 		}
@@ -53,7 +55,7 @@ void XString::StoreStr(std::string V, KeyFldD* KF)
 			size_t iB = i / 2;
 			// zapisujeme levou nebo pravou cast?
 			if (i % 2 == 0) {
-				V[iB] = (V[i] - 0x30) << 4;
+				V[iB] = static_cast<char>((V[i] - 0x30) << 4);
 			}
 			else {
 				V[iB] += V[i] - 0x30;
@@ -77,9 +79,18 @@ void XString::StoreKF(KeyFldD* KF)
 {
 	FieldDescr* F = KF->FldD;
 	switch (F->FrmlTyp) {
-	case 'S': StoreStr(_ShortS(F), KF); break;
-	case 'R': StoreReal(_R(F), KF); break;
-	case 'B': StoreBool(_B(F), KF); break;
+	case 'S': {
+		StoreStr(_ShortS(F), KF);
+		break;
+	}
+	case 'R': {
+		StoreReal(_R(F), KF);
+		break;
+	}
+	case 'B': {
+		StoreBool(_B(F), KF);
+		break;
+	}
 	}
 }
 
@@ -94,14 +105,22 @@ void XString::PackKF(KeyFldD* KF)
 
 bool XString::PackFrml(FrmlListEl* FL, KeyFldD* KF)
 {
-	FrmlElem* Z;
 	Clear();
 	while (FL != nullptr) {
-		Z = FL->Frml;
+		FrmlElem* Z = FL->Frml;
 		switch (KF->FldD->FrmlTyp) {
-		case 'S':StoreStr(RunShortStr(Z), KF); break;
-		case 'R':StoreReal(RunReal(Z), KF); break;
-		case 'B':StoreBool(RunBool(Z), KF); break;
+		case 'S': {
+			StoreStr(RunShortStr(Z), KF);
+			break;
+		}
+		case 'R': {
+			StoreReal(RunReal(Z), KF);
+			break;
+		}
+		case 'B': {
+			StoreBool(RunBool(Z), KF);
+			break;
+		}
 		}
 		KF = (KeyFldD*)KF->Chain;
 		FL = (FrmlListEl*)FL->Chain;
@@ -109,7 +128,7 @@ bool XString::PackFrml(FrmlListEl* FL, KeyFldD* KF)
 	return KF != nullptr;
 }
 
-void XString::StoreD(void* R, bool Descend)
+void XString::StoreD(void* R, bool descend)
 {
 	unsigned char* data = (unsigned char*)R;
 	unsigned char origLen = S[0];
@@ -126,8 +145,8 @@ void XString::StoreD(void* R, bool Descend)
 
 	D5 = D5 >> 1; // rotace R[0] doprava, nejvyssi bit je 0
 	D5 += b0; // nejvyssi bit bude b0 (bud pricteme 0b0000000 nebo 0b10000000)
-	
-	
+
+
 	S[origLen + 1] = D0; // data zacinaji za origLen (jeste je tam 1B delka retezce)
 	S[origLen + 2] = D5;
 
@@ -137,47 +156,57 @@ void XString::StoreD(void* R, bool Descend)
 	S[origLen + 5] = data[2];
 	S[origLen + 6] = data[1];
 
-	if (Descend) {
-		// neguj vsechny bity v datech
-		for (size_t i = 0; i < 6; i++) {
-			S[origLen + 1 + i] = ~S[origLen + 1 + i];
-		}
+	if (descend) {
+		negate_esdi(&S[origLen + 1], 6);
 	}
 }
 
-void XString::StoreN(void* N, WORD Len, bool Descend)
+void XString::StoreN(void* N, WORD len, bool descend)
 {
-	std::string inpStr((char*)N, Len);
+	std::string inpStr((char*)N, len);
 	pstring inpPStr = inpStr;
+
+	if (descend) {
+		negate_esdi(&inpPStr[1], inpPStr[0]);
+	}
+	
 	S += inpPStr;
 }
 
-void XString::StoreF(void* F, WORD Len, bool Descend)
+void XString::StoreF(void* F, WORD len, bool descend)
 {
 	unsigned char* data = (unsigned char*)F;
 	unsigned char origLen = S[0];
-	if (origLen + Len < Len) return; // proc to v ASM je? kvuli preteceni?
-	S[0] = origLen + Len;
-	if (data[0] <= 0x0F) S[origLen + 1] = data[0] | 0x80; // 1. bit bude '1'
-	else S[origLen + 1] = data[0] & 0x7F; // 1. bit bude '0'
+	if (origLen + len < len) return; // proc to v ASM je? kvuli preteceni?
+	S[0] = origLen + len;
+	if (data[0] <= 0x0F) {
+		S[origLen + 1] = data[0] | 0x80; // 1. bit bude '1'
+	}
+	else {
+		S[origLen + 1] = data[0] & 0x7F; // 1. bit bude '0'
+	}
 	unsigned char newIndex = origLen + 2; // zacneme zapisovat do S za puvodni data
 	// dokopirujeme zbytek dat (1. Byte uz mame, pokracujeme od 2.)
-	for (size_t i = 1; i < Len; i++) {
+	for (size_t i = 1; i < len; i++) {
 		S[newIndex++] = data[i];
+	}
+
+	if (descend) {
+		negate_esdi(&S[origLen + 1], len);
 	}
 }
 
-void XString::StoreA(void* A, WORD Len, bool CompLex, bool Descend)
+void XString::StoreA(void* A, WORD len, bool compLex, bool descend)
 {
 	int endSpaces = 0; // pocet mezer na konci retezce
 	char* p = (char*)A;
-	if (CompLex) {
+	if (compLex) {
 		std::string cplx = TranslateOrd(p);
-		Len = cplx.length();
-		memcpy(p, cplx.c_str(), Len);
+		len = cplx.length();
+		memcpy(p, cplx.c_str(), len);
 	}
 	// nahradi mezery na konci retezce za '0x1F'
-	for (int i = Len - 1; i >= 0; i--) {
+	for (int i = len - 1; i >= 0; i--) {
 		if (p[i] == ' ') {
 			p[i] = 0x1F;
 			endSpaces++;
@@ -187,12 +216,22 @@ void XString::StoreA(void* A, WORD Len, bool CompLex, bool Descend)
 	}
 	// pokud je koncovych mezer vic, kopirujeme jen jednu
 	if (endSpaces > 1) {
-		Len = Len - (endSpaces - 1);
+		len = len - (endSpaces - 1);
 	}
 	auto oldLen = S[0];
-	S[0] = oldLen + Len;
-	memcpy(&S[oldLen + 1], p, Len);
-	if (Descend) {
-		// call NegateESDI;
+	S[0] = oldLen + len;
+	memcpy(&S[oldLen + 1], p, len);
+	
+	if (descend) {
+		negate_esdi(&S[oldLen + 1], len);
+	}
+}
+
+void XString::negate_esdi(void* data, size_t len)
+{
+	unsigned char* src = (unsigned char*)data;
+	// neguj vsechny bity v datech
+	for (size_t i = 0; i < len; i++) {
+		src[i] = ~src[i];
 	}
 }

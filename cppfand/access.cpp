@@ -920,7 +920,7 @@ std::string _StdS(FieldDescr* F)
 	return RunStdStr(F->Frml);
 }
 
-double _RforD(FieldDPtr F, void* P)
+double _RforD(FieldDescr* F, void* P)
 {
 	std::string s;
 	integer err;
@@ -985,7 +985,7 @@ double _R(FieldDescr* F)
 	return result;
 }
 
-// vrací BOOL ze záznamu CRecPtr na pozici F->Displ
+// vraci BOOL ze zaznamu CRecPtr na pozici F->Displ
 bool _B(FieldDescr* F)
 {
 	bool result = false;
@@ -1103,13 +1103,14 @@ bool LinkUpw(LinkDPtr LD, longint& N, bool WithT)
 	else LU = SearchKey(x, K, N);
 	if (LU) ReadRec(CFile, N, CRecPtr);
 	else {
-	label1:
+	// label1:
 		ZeroAllFlds();
 		KF = K->KFlds;
 		while (Arg != nullptr) {
 			F = Arg->FldD;
 			F2 = KF->FldD;
-			CFile = CF; CRecPtr = CP;
+			CFile = CF;
+			CRecPtr = CP;
 			if ((F2->Flg & f_Stored) != 0)
 				switch (F->FrmlTyp) {
 				case 'S': {
@@ -1131,7 +1132,8 @@ bool LinkUpw(LinkDPtr LD, longint& N, bool WithT)
 					break;
 				}
 				}
-			Arg = (KeyFldD*)Arg->Chain; KF = (KeyFldD*)KF->Chain;
+			Arg = (KeyFldD*)Arg->Chain;
+			KF = (KeyFldD*)KF->Chain;
 		}
 		CFile = ToFD;
 		CRecPtr = RecPtr;

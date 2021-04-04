@@ -184,18 +184,18 @@ void HMsgExit(pstring s)
 {
 	switch (HandleError) {
 	case 0: return;
-	case 1:	{
-			s = s[1];
-			SetMsgPar(s);
-			RunError(700 + HandleError);
-			break;
-		}
+	case 1: {
+		s = s[1];
+		SetMsgPar(s);
+		RunError(700 + HandleError);
+		break;
+	}
 	case 2:
 	case 3: {
-			SetMsgPar(s);
-			RunError(700 + HandleError);
-			break;
-		}
+		SetMsgPar(s);
+		RunError(700 + HandleError);
+		break;
+	}
 	case 4: RunError(704); break;
 	}
 }
@@ -345,7 +345,7 @@ bool RdNextPart()
 	LenT = fileSize;
 	AllRd = true;
 	return false; // return ChangePart
-	
+
 	//char* ppa = nullptr;
 	//WORD L11 = 0, L1 = 0;
 	//longint Max = MinL(MaxLenT, StoreAvail() + LenT);
@@ -1574,30 +1574,37 @@ bool My2GetEvent()
 }
 
 bool ScrollEvent() {
-	EdExitD* X;
 	bool result = false;
-
 	if (Event.What != evKeyDown) return result;
 	// with Event do case KeyCode of
 	switch (Event.KeyCode) {
-	case _ESC_:
-	case _left_: case _right_:
-	case _up_: case _down_: case _PgUp_: case _PgDn_:
-	case _CtrlPgUp_: case _CtrlPgDn_: case _CtrlF5_: case _AltF8_:
+	case VK_ESCAPE:
+	case VK_LEFT:
+	case VK_RIGHT:
+	case VK_UP:
+	case VK_DOWN:
+	case VK_PRIOR:
+	case VK_NEXT:
+	case _CtrlPgUp_:
+	case _CtrlPgDn_:
+	case _CtrlF5_:
+	case _AltF8_:
 		result = true;
 		break;
 	default: {
-		if ((Lo(Event.KeyCode) == 0x00) && (Breaks.first(Hi(Event.KeyCode)) != 0)) result = true;
-		else
-		{
-			X = ExitD;
+		if ((Lo(Event.KeyCode) == 0x00) && (Breaks.first(Hi(Event.KeyCode)) != 0)) {
+			result = true;
+		}
+		else {
+			EdExitD* X = ExitD;
 			while (X != nullptr) {
-				if (TestExitKey(Event.KeyCode, X))
-				{
+				if (TestExitKey(Event.KeyCode, X)) {
 					result = true;
-					return result;
+					break;
 				}
-				else X = (EdExitD*)X->Chain;
+				else {
+					X = (EdExitD*)X->Chain;
+				}
 			}
 		}
 	}
@@ -3857,7 +3864,7 @@ void GetEditTxt(bool& pInsert, bool& pIndent, bool& pWrap, bool& pJust, bool& pC
 }
 
 bool EditText(char pMode, char pTxtType, pstring pName, pstring pErrMsg, char* pTxtPtr, WORD pMaxLen, WORD& pLen,
-	WORD& pInd, longint pScr, pstring pBreaks, EdExitD* pExD, bool& pSrch, bool& pUpdat, WORD pLastNr,
+	WORD& pInd, longint& pScr, pstring pBreaks, EdExitD* pExD, bool& pSrch, bool& pUpdat, WORD pLastNr,
 	WORD pCtrlLastNr, MsgStr* pMsgS)
 {
 	bool oldEdOK = EdOk; EditT = true;
@@ -3874,24 +3881,20 @@ bool EditText(char pMode, char pTxtType, pstring pName, pstring pErrMsg, char* p
 	ExitD = pExD;
 	SrchT = pSrch; UpdatT = pUpdat;
 	LastNr = pLastNr; CtrlLastNr = pCtrlLastNr;
-	if (pMsgS != nullptr)
-	{
+	if (pMsgS != nullptr) {
 		LastS = pMsgS->Last;
 		CtrlLastS = pMsgS->CtrlLast;
 		ShiftLastS = pMsgS->ShiftLast;
 		AltLastS = pMsgS->AltLast;
 		HeadS = pMsgS->Head;
 	}
-	else
-	{
-		/*LastS = nullptr; CtrlLastS = nullptr; ShiftLastS = nullptr; AltLastS = nullptr;
-		HeadS = nullptr;*/
+	else {
+		/*LastS = nullptr; CtrlLastS = nullptr; ShiftLastS = nullptr; AltLastS = nullptr; HeadS = nullptr;*/
 		LastS = ""; CtrlLastS = ""; ShiftLastS = ""; AltLastS = ""; HeadS = "";
 	}
 	if (Mode != HelpM) TxtColor = TextAttr;
 	FirstEvent = !SrchT;
-	if (SrchT)
-	{
+	if (SrchT) {
 		SrchT = false;
 		keyboard.AddToFrontKeyBuf(0x0C); // '^L' .. '\f' .. #12
 		/*pstring OldKbdBuffer = KbdBuffer;
@@ -3903,14 +3906,16 @@ bool EditText(char pMode, char pTxtType, pstring pName, pstring pErrMsg, char* p
 
 	Edit(0);
 	if (Mode != HelpM) TextAttr = TxtColor;
-	pUpdat = UpdatT; pSrch = SrchT; pLen = LenT;
-	pInd = IndT; pScr = ScrT + (longint(Posi) << 16);
+	pUpdat = UpdatT;
+	pSrch = SrchT;
+	pLen = LenT;
+	pInd = IndT;
+	pScr = ScrT + (longint(Posi) << 16);
 	EdOk = oldEdOK;
 	return EditT;
 }
 
-void SimpleEditText(char pMode, pstring pErrMsg, pstring pName, char* TxtPtr, WORD MaxLen, WORD& Len, WORD& Ind,
-	bool& Updat)
+void SimpleEditText(char pMode, pstring pErrMsg, pstring pName, char* TxtPtr, WORD MaxLen, WORD& Len, WORD& Ind, bool& Updat)
 {
 	bool Srch; longint Scr;
 	Srch = false; Scr = 0;
@@ -3932,8 +3937,7 @@ WORD FindTextE(const pstring& Pstr, pstring Popt, char* PTxtPtr, WORD PLen)
 	return result;
 }
 
-void EditTxtFile(longint* LP, char Mode, pstring& ErrMsg, EdExitD* ExD, longint TxtPos,
-	longint Txtxy, WRect* V, WORD Atr, const pstring Hd, BYTE WFlags, MsgStr* MsgS)
+void EditTxtFile(longint* LP, char Mode, pstring& ErrMsg, EdExitD* ExD, longint TxtPos, longint Txtxy, WRect* V, WORD Atr, const pstring Hd, BYTE WFlags, MsgStr* MsgS)
 {
 	bool Srch = false, Upd = false;
 	longint Size = 0, L = 0;
@@ -3974,17 +3978,21 @@ void EditTxtFile(longint* LP, char Mode, pstring& ErrMsg, EdExitD* ExD, longint 
 	}
 	else {
 		LS = TWork.Read(1, *LP);
-		Ind = TxtPos; L = StoreInTWork(LS);
+		Ind = TxtPos;
+		L = StoreInTWork(LS);
 	}
 	oldInd = Ind; oldTxtxy = Txtxy;
 
 label1:
 	Srch = false; Upd = false;
-	if (!Loc)
+	if (!Loc) {
 		EditText(Mode, FileT, TxtPath, ErrMsg, T, 0xFFF0, LenT, Ind, Txtxy,
 			_F1 + _F6 + _F9 + _AltF10, ExD, Srch, Upd, 126, 143, MsgS);
-	else EditText(Mode, LocalT, "", ErrMsg, (char*)&LS->A, MaxLStrLen, LS->LL, Ind, Txtxy,
-		_F1 + _F6, ExD, Srch, Upd, 126, 143, MsgS);
+	}
+	else {
+		EditText(Mode, LocalT, "", ErrMsg, (char*)&LS->A, MaxLStrLen, LS->LL, Ind, Txtxy,
+			_F1 + _F6, ExD, Srch, Upd, 126, 143, MsgS);
+	}
 	TxtPos = Ind + Part.PosP;
 	if (Upd) EdUpdated = true;
 	if ((KbdChar == _AltEqual_) || (KbdChar == _U_))
@@ -4137,13 +4145,23 @@ void Help(RdbD* R, pstring Name, bool InCWw)
 void ViewHelpText(LongStr* S, WORD& TxtPos)
 {
 	longint L = SavePar();
-	TxtColor = screen.colors.hNorm; FillChar(ColKey, 8, screen.colors.tCtrl);
-	ColKey[5] = screen.colors.hSpec; ColKey[3] = screen.colors.hHili; ColKey[1] = screen.colors.hMenu;
-	bool Srch = false; bool Upd = false; longint Scr = 0;
-label1:
-	EditText(HelpM, MemoT, "", "", (char*)&S->A, 0xFFF0, S->LL, TxtPos, Scr,
-		_F1 + _F10 + _F6 + _CtrlHome + _CtrlEnd, nullptr, Srch, Upd, 142, 145, nullptr);
-	if (KbdChar == VK_F6) { PrintArray(&S->A, S->LL, true); goto label1; }
+	TxtColor = screen.colors.hNorm;
+	FillChar(ColKey, 8, screen.colors.tCtrl);
+	ColKey[5] = screen.colors.hSpec;
+	ColKey[3] = screen.colors.hHili;
+	ColKey[1] = screen.colors.hMenu;
+	bool Srch = false;
+	bool Upd = false;
+	longint Scr = 0;
+	while (true) {
+		EditText(HelpM, MemoT, "", "", (char*)&S->A, 0xFFF0, S->LL, TxtPos, Scr,
+			_F1 + _F10 + _F6 + _CtrlHome + _CtrlEnd, nullptr, Srch, Upd, 142, 145, nullptr);
+		if (KbdChar == VK_F6) {
+			PrintArray(&S->A, S->LL, true);
+			continue;
+		}
+		break;
+	}
 	RestorePar(L);
 }
 
@@ -4157,7 +4175,8 @@ void ClearHelpStkForCRdb()
 
 void InitTxtEditor()
 {
-	FindStr[0] = 0; ReplaceStr[0] = 0; OptionStr[0] = 0; Replace = false;
+	FindStr = ""; ReplaceStr = "";
+	OptionStr[0] = 0; Replace = false;
 	TxtColor = screen.colors.tNorm;
 	BlockColor = screen.colors.tBlock;
 	SysLColor = screen.colors.fNorm;

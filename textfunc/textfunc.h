@@ -25,7 +25,7 @@ size_t CountLines(std::string& input, char delimiter);
 /// vytvori ze vstupu formatovany retez o maximalnim poctu zobrazitelnych znaku; vstup prochazi od pozice 'from'
 std::string GetStyledStringOfLength(std::string& input, size_t from, size_t length);
 
-/// vrati delku v formatovaneho retezce (pocet zobrazitelnych znaku)
+/// vrati delku formatovaneho retezce (pocet zobrazitelnych znaku)
 size_t GetLengthOfStyledString(std::string& input);
 
 std::string RepeatString(std::string& input, size_t count);

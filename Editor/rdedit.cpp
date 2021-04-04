@@ -14,14 +14,15 @@ EditD* E = EditDRoot;
 
 void PushEdit()
 {
-	//EditD* E1 = (EditD*)GetZStore(sizeof(*E));
-	EditD* E1 = new EditD();
-	/* !!! with E1->V do!!! */
+	auto* const e1 = new EditD();
 	{
-		E1->V.C1 = 1; E1->V.R1 = 2; E1->V.C2 = TxtCols; E1->V.R2 = TxtRows - 1;
+		e1->V.C1 = 1;
+		e1->V.R1 = 2;
+		e1->V.C2 = TxtCols;
+		e1->V.R2 = TxtRows - 1;
 	}
-	E1->Chain = E;
-	E = E1;
+	e1->Chain = E;
+	E = e1;
 }
 
 void SToSL(StringListEl** SLRoot, pstring s)
@@ -186,19 +187,18 @@ EFldD* FindScanNr(WORD N)
 	return D1;
 }
 
-void AutoDesign(FieldList FL)
+void AutoDesign(FieldListEl* FL)
 {
-	WORD NPages = 0, Col = 0, Ln = 0, L = 0, i = 0, m = 0, FldLen = 0, maxcol = 0;
-	pstring s;
+	WORD L = 0, i = 0, m = 0, FldLen = 0;
+	pstring s = "";
 	StringListEl* SLRoot = nullptr;
-	EFldD* D = nullptr; EFldD* PrevD = nullptr; FieldDescr* F = nullptr;
-	D = (EFldD*)(&E->FirstFld);
-	PrevD = nullptr;
-	NPages = 1; s = ""; Ln = 0; SLRoot = nullptr;
-	Col = E->FrstCol;
-	maxcol = E->LastCol - E->FrstCol;
+	EFldD* D = (EFldD*)(&E->FirstFld);
+	EFldD* PrevD = nullptr;
+	WORD NPages = 1; WORD Ln = 0;
+	WORD Col = E->FrstCol;
+	WORD maxcol = E->LastCol - E->FrstCol;
 	while (FL != nullptr) {
-		F = FL->FldD;
+		FieldDescr* F = FL->FldD;
 		FL = (FieldListEl*)FL->Chain;
 		if (F == nullptr) continue; // tady to padalo na 1. polozce, protoze ta ma FldD = nullptr
 		//D->Chain = (EFldD*)GetZStore(sizeof(*D)); 
@@ -387,7 +387,7 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 			switch (E->OwnerTyp) {
 			case 'r': E->DownRecPtr = E->DownLV->RecPtr; break;
 			case 'F': {
-				E->OwnerRecNo = RunInt(FrmlPtr(EO->DownLV));
+				E->OwnerRecNo = RunInt((FrmlElem*)EO->DownLV);
 				CFile = E->DownLD->ToFD;
 				E->DownRecPtr = GetRecSpace();
 				CFile = E->FD;
@@ -453,15 +453,20 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 EFldD* FindEFld_E(FieldDescr* F)
 {
 	EFldD* D = E->FirstFld;
-	while (D != nullptr) { if (D->FldD == F) goto label1; D = (EFldD*)D->Chain; }
-label1:
+	while (D != nullptr) {
+		if (D->FldD == F) break;
+		D = (EFldD*)D->Chain;
+	}
 	return D;
 }
 
 void ZeroUsed()
 {
 	EFldD* D = E->FirstFld;
-	while (D != nullptr) { D->Used = false; D = (EFldD*)D->Chain; };
+	while (D != nullptr) {
+		D->Used = false;
+		D = (EFldD*)D->Chain;
+	}
 }
 
 EFldD* LstUsedFld()
@@ -469,10 +474,9 @@ EFldD* LstUsedFld()
 	EFldD* D = E->LastFld;
 	while (D != nullptr)
 	{
-		if (D->Used) goto label1;
+		if (D->Used) break;
 		D = D->ChainBack;
 	}
-label1:
 	return D;
 }
 
@@ -481,18 +485,23 @@ void RdDepChkImpl()
 	std::string s;
 	CFile = E->FD;
 	switch (CFile->Typ) {
-	case '0': { RdMsg(53); s = MsgLine; goto label1; break; }
+	case '0': {
+		RdMsg(53);
+		s = MsgLine;
+		ResetCompilePars();
+		SetInpStr(s);
+		RdUDLI();
+		break;
+	}
 	case 'C': {
 		RdMsg(54); s = MsgLine;
 		if (spec.CPMdrive != ' ') s = s + ',' + spec.CPMdrive + ':';
 		RdMsg(55); s = s + MsgLine;
 		if (spec.CPMdrive != ' ') s = s + ',' + spec.CPMdrive + ':';
 		s = s + "''";
-	label1:
 		ResetCompilePars();
 		SetInpStr(s);
 		RdUDLI();
-		return;
 		break;
 	}
 	default: {
@@ -505,28 +514,33 @@ void RdDepChkImpl()
 void TestedFlagOff()
 {
 	for (auto& F : CFile->FldD) {
-		F->Typ = (char)(F->Typ & 0x7F);
+		F->Typ = static_cast<char>(F->Typ & 0x7F);
 	}
 }
 
-void SetFrmlFlags(FrmlPtr Z)
+void SetFrmlFlags(FrmlElem* Z)
 {
-	KeyFldD* Arg; FrmlList fl;
 	auto iZ0 = (FrmlElem0*)Z;
 	auto iZ7 = (FrmlElem7*)Z;
 	if (Z == nullptr) return;
+
 	switch (Z->Op) {
-	case _field: SetFlag(iZ7->Field); break;
+	case _field: {
+		SetFlag(iZ7->Field);
+		break;
+	}
 	case _access: {
-		if (iZ7->LD != nullptr)
-		{
-			Arg = iZ7->LD->Args;
-			while (Arg != nullptr) { SetFlag(Arg->FldD); Arg = (KeyFldD*)Arg->Chain; }
+		if (iZ7->LD != nullptr) {
+			KeyFldD* Arg = iZ7->LD->Args;
+			while (Arg != nullptr) {
+				SetFlag(Arg->FldD);
+				Arg = (KeyFldD*)Arg->Chain;
+			}
 		}
 		break;
 	}
 	case _userfunc: {
-		fl = ((FrmlElem19*)Z)->FrmlL;
+		FrmlList fl = ((FrmlElem19*)Z)->FrmlL;
 		while (fl != nullptr) {
 			SetFrmlFlags(fl->Frml);
 			fl = (FrmlListEl*)fl->Chain;
@@ -534,13 +548,19 @@ void SetFrmlFlags(FrmlPtr Z)
 		break;
 	}
 	default: {
-		if (Z->Op >= 0x60 && Z->Op <= 0xaf) /*1-ary*/ SetFrmlFlags(iZ0->P1);
-		if (Z->Op >= 0xB0 && Z->Op <= 0xEf) /*2-ary*/
-		{
-			SetFrmlFlags(iZ0->P1); SetFrmlFlags(iZ0->P2);
+		if (Z->Op >= 0x60 && Z->Op <= 0xAF) {
+			/*1-ary*/
+			SetFrmlFlags(iZ0->P1);
 		}
-		if (Z->Op >= 0xF0 && Z->Op <= 0xFf) /*3-ary*/ {
-			SetFrmlFlags(iZ0->P1); SetFrmlFlags(iZ0->P2);
+		else if (Z->Op >= 0xB0 && Z->Op <= 0xEF) {
+			/*2-ary*/
+			SetFrmlFlags(iZ0->P1);
+			SetFrmlFlags(iZ0->P2);
+		}
+		else if (Z->Op >= 0xF0 /*&& Z->Op <= 0xFF*/) {
+			/*3-ary*/
+			SetFrmlFlags(iZ0->P1);
+			SetFrmlFlags(iZ0->P2);
 			SetFrmlFlags(iZ0->P3);
 		}
 		break;
@@ -550,21 +570,24 @@ void SetFrmlFlags(FrmlPtr Z)
 
 void SetFlag(FieldDescr* F)
 {
-	EFldD* D = nullptr;
 	if ((F->Typ & 0x80) != 0) return;
-	F->Typ = F->Typ | 0x80;
+	F->Typ = static_cast<char>(F->Typ | 0x80);
 	if ((F->Flg & f_Stored) != 0) {
-		D = FindEFld_E(F);
-		if (D != nullptr) D->Used = true;
+		EFldD* D = FindEFld_E(F);
+		if (D != nullptr) {
+			D->Used = true;
+		}
 	}
-	else SetFrmlFlags(F->Frml);
+	else {
+		SetFrmlFlags(F->Frml);
+	}
 }
 
 void RdDep()
 {
 	FrmlElem* Bool = nullptr; FrmlElem* Z = nullptr;
 	EFldD* D = nullptr; char FTyp = '\0'; DepD* Dp = nullptr;
-	
+
 	RdLex();
 label1:
 	Accept('(');
@@ -595,63 +618,72 @@ label2:
 
 void RdCheck()
 {
-	WORD Low = 0; ChkD* C = nullptr; EFldD* D = nullptr;
-	SkipBlank(false); 
-	Low = CurrPos; 
+	SkipBlank(false);
+	size_t Low = CurrPos;
 	RdLex();
-label1:
-	C = RdChkD(Low);
-	ZeroUsed(); 
-	SetFrmlFlags(C->Bool); 
-	TestedFlagOff();
-	D = LstUsedFld();
-	if (D != nullptr) {
-		if (D->Chk == nullptr) D->Chk = C;
-		else ChainLast(D->Chk, C);
-	}
-	else ReleaseStore(C);
-	if (Lexem == ';')
-	{
-		SkipBlank(false); 
-		Low = CurrPos; 
-		RdLex();
-		if (!(Lexem == '#' || Lexem == 0x1A)) goto label1;
+	while (true) {
+		ChkD* C = RdChkD(Low);
+		ZeroUsed();
+		SetFrmlFlags(C->Bool);
+		TestedFlagOff();
+		EFldD* D = LstUsedFld();
+		if (D != nullptr) {
+			if (D->Chk == nullptr) D->Chk = C;
+			else ChainLast(D->Chk, C);
+		}
+		else ReleaseStore(C);
+		if (Lexem == ';')
+		{
+			SkipBlank(false);
+			Low = CurrPos;
+			RdLex();
+			if (!(Lexem == '#' || Lexem == 0x1A)) continue;
+		}
+		break;
 	}
 }
 
 void RdImpl()
 {
-	EFldD* D = nullptr; FrmlElem* Z = nullptr; char FTyp = '\0';
-	FieldDescr* F = nullptr; ImplD* ID = nullptr;
+	// TODO: nema byt FTyp vstupnim parametrem?
+	char FTyp = '\0';
 	RdLex();
-label1:
-	F = RdFldName(CFile);
-	Accept(_assign);
-	Z = RdFrml(FTyp);
-	D = FindEFld_E(F);
-	if (D != nullptr) D->Impl = Z;
-	else {
-		ID = new ImplD(); // (ImplD*)GetStore(sizeof(*ID));
-		ID->FldD = F;
-		ID->Frml = Z;
-		if (E->Impl == nullptr) E->Impl = ID;
-		else ChainLast(E->Impl, ID);
-	}
-	if (Lexem == ';')
-	{
-		RdLex();
-		if (!(Lexem == '#' || Lexem == 0x1A)) goto label1;
+	while (true) {
+		FieldDescr* F = RdFldName(CFile);
+		Accept(_assign);
+		FrmlElem* Z = RdFrml(FTyp);
+		EFldD* D = FindEFld_E(F);
+		if (D != nullptr) D->Impl = Z;
+		else {
+			ImplD* ID = new ImplD(); // (ImplD*)GetStore(sizeof(*ID));
+			ID->FldD = F;
+			ID->Frml = Z;
+			if (E->Impl == nullptr) E->Impl = ID;
+			else ChainLast(E->Impl, ID);
+		}
+		if (Lexem == ';') {
+			RdLex();
+			if (!(Lexem == '#' || Lexem == 0x1A)) continue;
+		}
+		break;
 	}
 }
 
 void RdUDLI()
 {
 	RdLex();
-	if ((Lexem == '#') && (ForwChar == 'U'))
+	if ((Lexem == '#') && (ForwChar == 'U')) {
 		do { RdLex(); } while (!(Lexem == '#' || Lexem == 0x1A));
-	if ((Lexem == '#') && (ForwChar == 'D')) { RdLex(); RdDep(); }
-	if ((Lexem == '#') && (ForwChar == 'L')) { RdLex(); RdCheck(); }
-	if ((Lexem == '#') && (ForwChar == 'I')) { RdLex(); RdImpl(); }
+	}
+	if ((Lexem == '#') && (ForwChar == 'D')) {
+		RdLex(); RdDep();
+	}
+	if ((Lexem == '#') && (ForwChar == 'L')) {
+		RdLex(); RdCheck();
+	}
+	if ((Lexem == '#') && (ForwChar == 'I')) {
+		RdLex(); RdImpl();
+	}
 }
 
 void RdAllUDLIs(FileD* FD)
@@ -681,7 +713,8 @@ pstring StandardHead()
 		case 'X': {
 			std::string* p = E->VK->Alias;
 			if ((p != nullptr) && (!p->empty())) s = s + "/" + *E->VK->Alias;
-			break; }
+			break;
+		}
 		case '0': s = s + ".RDB"; break;
 		case '8': s = s + ".DTA"; break;
 		}
@@ -691,29 +724,34 @@ pstring StandardHead()
 	return str;
 }
 
-pstring GetStr_E(FrmlPtr Z)
+pstring GetStr_E(FrmlElem* Z)
 {
 	if (Z == nullptr) return "";
 	else {
 		std::string s = RunShortStr(Z);
-		while (GetLengthOfStyledString(s) > TxtCols) s[0]--;
+		//while (GetLengthOfStyledString(s) > TxtCols) {
+		//	// smaz posledni znak z retezce
+		//	s.erase(s.length() - 1);
+		//}
+		s = GetStyledStringOfLength(s, 0, TxtCols);
 		return s;
 	}
 }
 
 void NewChkKey()
 {
-	KeyD* K = CFile->Keys; KeyFldD* KF = nullptr; EFldD* D = nullptr; KeyListEl* KL = nullptr;
+	KeyD* K = CFile->Keys; KeyFldD* KF = nullptr;
+	EFldD* D = nullptr; KeyListEl* KL = nullptr;
 	while (K != nullptr) {
 		if (!K->Duplic) {
-			ZeroUsed(); 
+			ZeroUsed();
 			KF = K->KFlds;
 			while (KF != nullptr) {
 				D = FindEFld_E(KF->FldD);
 				if (D != nullptr) D->Used = true;
 				KF = (KeyFldD*)KF->Chain;
 			}
-			D = LstUsedFld(); 
+			D = LstUsedFld();
 			if (D != nullptr) {
 				KL = new KeyListEl(); // (KeyListEl*)GetStore(sizeof(*KL));
 				if (D->KL == nullptr) D->KL = KL;

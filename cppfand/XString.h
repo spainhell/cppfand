@@ -24,8 +24,9 @@ public:
 	WORD GetA(WORD Off, WORD Len, bool CompLex, bool Descend, void* Buf);
 #endif
 private:
-	void StoreD(void* R, bool Descend); // index.pas r53 ASM
-	void StoreN(void* N, WORD Len, bool Descend); // index.pas r62 ASM
-	void StoreF(void* F, WORD Len, bool Descend); // index.pas r68 ASM
-	void StoreA(void* A, WORD Len, bool CompLex, bool Descend); // index.pas r76 ASM
+	void StoreD(void* R, bool descend); // index.pas r53 ASM
+	void StoreN(void* N, WORD len, bool descend); // index.pas r62 ASM
+	void StoreF(void* F, WORD len, bool descend); // index.pas r68 ASM
+	void StoreA(void* A, WORD len, bool compLex, bool descend); // index.pas r76 ASM
+	void negate_esdi(void* data, size_t len);
 };

@@ -16,7 +16,7 @@ struct MsgStr
 };
 
 bool EditText(char pMode, char pTxtType, pstring pName, pstring pErrMsg,
-	char* pTxtPtr, WORD pMaxLen, WORD& pLen, WORD& pInd, longint pScr,
+	char* pTxtPtr, WORD pMaxLen, WORD& pLen, WORD& pInd, longint& pScr,
 	pstring pBreaks, EdExitD* pExD, bool& pSrch, bool& pUpdat,
 	WORD pLastNr, WORD pCtrlLastNr, MsgStr* pMsgS); // r169
 void SimpleEditText(char pMode, pstring pErrMsg, pstring pName, char* TxtPtr,
