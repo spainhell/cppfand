@@ -700,11 +700,10 @@ void RdAllUDLIs(FileD* FD)
 	}
 }
 
-pstring StandardHead()
+std::string StandardHead()
 {
-	pstring s;
-	pstring c(59);
-	c = "          ______                                 __.__.____";
+	std::string s;
+	std::string c = "          ______                                 __.__.____";
 	if (E->ViewName != nullptr) s = *E->ViewName;
 	else if (E->EdRecVar) s = "";
 	else {
@@ -715,13 +714,15 @@ pstring StandardHead()
 			if ((p != nullptr) && (!p->empty())) s = s + "/" + *E->VK->Alias;
 			break;
 		}
-		case '0': s = s + ".RDB"; break;
-		case '8': s = s + ".DTA"; break;
+		case '0': s += ".RDB"; break;
+		case '8': s += ".DTA"; break;
 		}
 	}
-	if (s.length() > 16) s[0] = 16;
-	auto str = copy(c, 17, 20 - s.length()) + s + c;
-	return str;
+	//if (s.length() > 16) s[0] = 16;
+	s = s.substr(0, 16); // max. length is 16 chars
+	//auto str = copy(c, 17, 20 - s.length()) + s + c;
+	s = c.substr(16, 20 - s.length()) + s + c;
+	return s;
 }
 
 pstring GetStr_E(FrmlElem* Z)

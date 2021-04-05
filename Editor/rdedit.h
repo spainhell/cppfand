@@ -30,6 +30,6 @@ void RdCheck();
 void RdImpl();
 void RdUDLI();
 void RdAllUDLIs(FileD* FD);
-pstring StandardHead();
+std::string StandardHead();
 pstring GetStr_E(FrmlPtr Z); // existuje -> *_E
 void NewChkKey();
