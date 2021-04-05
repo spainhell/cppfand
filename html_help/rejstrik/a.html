@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <title>A</title>
+</head>
+<body style="font-family:'Courier New'">
+<div>
+    <h4>#A</h4>
+    <h4>Aditivní změny</h4>
+    <span style="color:red">ADITIVNÍ ZMĚNY - odstavec #A</span>
+    <hr>
+    <span style="color:red">Aditivní změny</span> umožňují aktualizovat během editace <span style="color:red">podřízeného souboru</span><br>
+    číselné údaje <span style="color:red">nadřízeného souboru</span> podle zadaného číselného výrazu. Výraz<br>
+    se vyhodnotí před a po editaci věty, pokud se změnila jeho hodnota, rozdíl<br>
+    se přičte k aktualizovanému údaji <span style="color:red">viditelné věty</span> nadřízeného souboru (pro<br>
+    nové věty se výraz přičte, pro zrušené věty se odečte). Soubory samozřejmě<br>
+    musejí být spojeny <span style="color:red">klíčem</span>. Změny se provedou tranzitivně přes více úrovní<br>
+    nadřízených souborů.<br>
+    <br>
+    ██ Syntaxe: #A { ViditelnýÚdaj [ ( LogVýraz [ :'ChybovéHlášení' ] ) ]<br>
+    &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp[ ! | !! ] [ += | := ] ČísVýraz ; }
+    <br><br>
+    ■ při použití += se provede aditivní změna tak, jak byla výše popsána<br>
+    ■ při použití := se provede prosté přiřazení nové hodnoty (nikoliv rozdíl)<br>
+    ■ <span style="color:red">Viditelný údaj</span> může být údaj nadřízeného souboru nebo globální proměnná<br>
+    &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp(tj. údaj parametrického
+    souboru)
+    <br><br>
+    █ <span style="color:red">NázevSpojení.NázevÚdaje+=ČísVýraz;</span> ... <span
+        style="color:red">aditivní změna</span> do
+    nadřízeného<br>
+    &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+    &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
+    souboru (minimální varianta)<br>
+    ■ <span style="color:red">(LogVýraz)</span> ........ před aditivní změnou se provede logická kontrola<br>
+    ■ <span style="color:red">'ChybovéHlášení'</span>... chyba vyvolá toto hlášení<br>
+    ■ <span style="color:red">!</span> &nbsp................ dotaz na vytvoření viditelné věty, když neexistuje<br>
+    ■ <span style="color:red">!!</span> ................ automatické vytvoření viditelné věty bez dotazu<br>
+    (naplní se hodnoty klíčových údajů podle podřízené věty)<br>
+    <br>
+    Aditivní změna předpokládá existenci viditelné věty , jinak hlásí editor<br>
+    chybu "není věta pro kumulaci". Pomocí navigace lze chybějící větu doplnit<br>
+    ručně, uvedení znaku ! v deklaraci toto zajistí automaticky. Pokud logická<br>
+    kontrola v nadřízeném souboru spuštěná před provedením aditivní změny<br>
+    skončí chybou, aditivní změna se neprovede a uživatel musí opravit edito-<br>
+    vanou větu nebo anulovat změny, případně přepínačem vypnout aditivní změny.<br>
+    Logické kontroly v podřízeném souboru lze simulovat konstrukcí cond v<br>
+    číselném výrazu.<br>
+    <br>
+    ■ Při editaci souboru může obsluha provádění aditivních změn vypnout.<br>
+    &nbsp Viz. <a href="">přepínače datového editoru</a>.<br>
+    ■ Programátor může toto obsluze zakázat pomocí parametru editace mode='<span style="color:red">#A</span>'.<br>
+    &nbsp Viz. <a href="">mody datového editoru</a>.<br>
+    <br>
+    <br>
+    <span style="color:red">
+░░░░░░░░░░░░<br>
+░░příklady░░<br>
+░░░░░░░░░░░░<br>
+</span>
+    <br>
+    #A SKLAD.Stav += Množství; {příklady deklarace aditivních změn}<br>
+    &nbsp&nbsp&nbspSKLAD.Stav += cond(Zaevidováno:Množství);<br>
+    &nbsp&nbsp&nbspSKLAD.Stav (Stav>=PARAM.Min) += Množství; {s logickou kontrolou}<br>
+    &nbsp&nbsp&nbspSKLAD.Stav (Stav>0:'Není na skladě') += Množství; {s chybovým hlášením}<br>
+    &nbsp&nbsp&nbspSKLAD.Stav ! += Množství; {s vytvořením chybějící věty pro kumulaci}<br>
+    &nbsp&nbsp&nbspSKLAD.Stav !! += Množství; {totéž bez dotazu}<br>
+    <br>
+    #A PARAM.Počet += 1; {kumulace do parametrického souboru}<br>
+    <br>
+    #A KUMUL.Zisk !! += cond(Příjmy&gtVýdaje:Příjmy-Výdaje);<br>
+    &nbsp&nbsp&nbspKUMUL.Ztráta !! += cond(Příjmy&ltVýdaje:Výdaje-Příjmy);<br>
+</div>
+<div>
+    <h4>Abs</h4>
+    <span style="color:red">ARITMETICKÉ FUNKCE</span>
+    <hr>
+    Uvedené funkce jsou typu real, jejich výsledkem je tedy číselná hodnota.<br>
+    <br>
+    █ abs(ČísVýraz) ...... absolutní hodnota<br>
+    █ int(ČísVýraz) ...... celá část čísla (před desetinnou tečkou)<br>
+    █ frac(ČísVýraz) ..... desetinná část čísla (za desetinnou tečkou)<br>
+    █ sqr(ČísVýraz) ...... druhá mocnina<br>
+    █ sqrt(ČísVýraz) ..... druhá odmocnina<br>
+    █ <a href="">random</a> ............. <a href="">náhodné číslo</a> z intervalu <0,1)<br>
+    <br>
+    █ ln(ČísVýraz) ....... přirozený logaritmus<br>
+    █ exp(ČísVýraz) ...... exponenciální funkce<br>
+    <br>
+    █ pi ................. Ludolfovo číslo<br>
+    █ sin(ČísVýraz) ...... sinus<br>
+    █ cos(ČísVýraz) ...... cosinus<br>
+    █ arctan(ČísVýraz) ... arcus tangens<br>
+</div>
+<div>
+    <h4>AccRight</h4>
+    <span style="color:red">PRÁVA PŘÍSTUPU K DATŮM</span>
+    <hr>
+    Následujícími funkcemi se lze dotázat na jméno, kód a přístupová práva<br>
+    aktuálního uživatele podle kapitoly U (závisí na heslu, kterým se uživatel<br>
+    přihlásil) a podle nich měnit chování úlohy pro různé uživatele. Během<br>
+    zpracování lze všechny hodnoty měnit přiřazovacím příkazem bez nutnosti<br>
+    nového nastartování úlohy a přihlášení se pod novým heslem.<br>
+    <br>
+    █ USERNAME: string ... interní proměnná, jméno aktuálního uživatele,<br>
+    (lze i přiřadit username:=TextVýraz)<br>
+    <br>
+    █ USERCODE: real ..... interní proměnná, kód aktuálního uživatele<br>
+    (lze i přiřadit usercode:=ČísVýraz)<br>
+    POZOR: při usercode:=číslo se naplní stejnou<br>
+    hodnotou i accright (accright:='\číslo')<br>
+    <br>
+    █ ACCRIGHT: string ... interní proměnná, přístupová práva kódovaná do textu<br>
+    Seznam čísel je kódován jako ordinální hodnoty<br>
+    jednotlivých bytů stringu, maxim. délka je 255 znaků<br>
+    (lze i přiřadit accright:=TextVýraz)<br>
+    <br>
+    █ TRUST(SeznamČísel): boolean ... test práva přístupu<br>
+    funkce vrátí true, když aktuální seznam přístupových<br>
+    práv a množina čísel v parametru nejsou disjunktní.<br>
+    V parametru SeznamČísel lze použít i interval.<br>
+    <br>
+    ░░░░░░░░░░░░<br>
+    ░░příklady░░<br>
+    ░░░░░░░░░░░░<br>
+    <br>
+    ██ Použitím kapitoly U se inicializuje implicitní mechanismus přístupových<br>
+    práv, který lze ovlivnit výše uvedenými funkcemi a proměnnými. Kapitolu<br>
+    U je možné i úplně vypustit a přesto pomocí těchto funkcí používat<br>
+    přístupová práva.<br>
+    <br>
+    Kapitolu U s obsahem :<br>
+    'Jana' , (2) , 'obsluha' , ( 1, 5, 20, 100, 221 ) ;<br>
+    <br>
+    lze rovnocenně nahradit příkazy procedury (spustíme při startu úlohy):<br>
+    <br>
+    if password = 'obsluha' then begin<br>
+    usercode := 2 ;<br>
+    username := 'Jana' ;<br>
+    accright := '\001\005\020\100\221' ;<br>
+    end ;<br>
+    <br>
+    Poznámka: Pokud umístíme údaje z kapitoly U např. do datového souboru,<br>
+    přináší nám to zhruba tyto výhody:<br>
+    ■ změna uživatele za běhu úlohy<br>
+    ■ privilegovaný uživatel má z úlohy přístup k údajům<br>
+    &nbsp o ostatních uživatelích (různé statistiky jejich práce)<br>
+    ■ možnost práce se seznamem uživatelů "zevnitř" úlohy<br>
+</div>
+<div>
+    <h4>add</h4>
+    <span style="color:red">Vyhledání, případně doplnění prvku do seznamu</span>
+    <hr>
+    add_NázevTypu(Prvek,Seznam_Vstup,&Seznam_Výstup)
+    <br>
+    Prvek Hledaný prvek v seznamu typu NázevTypu.<br>
+    Seznam_Vstup Vstupní seznam prvků typu L_NázevTypu.<br>
+    Seznam_Výstup Výstupní seznam obsahující zařazený prvek.<br>
+    <br>
+    <br>
+    Predikát vyhledává term v seznamu. Při nalezení je výstupní seznam<br>
+    kopie vstupního seznamu. Pokud není nalezen je prvek doplněn na začátek<br>
+    seznamu.<br>
+    <br>
+    Příklad:<br>
+    <br>
+    hl_prvek:-add_String('A',['A','B'],X),add_String('A',['B'],Y),<br>
+    write('X:',X,' Y:',Y).<br>
+    <br>
+    V prvním volání je prvek 'A' v seznamu nalezen (X=['A','B']) , ve<br>
+    druhém případě nalezen není a je do seznamu doplněn (Y=['A','B']) .<br>
+</div>
+<div>
+    <h4>AddMonth</h4>
+    <h4>AddWDays</h4>
+    <span style="color:red">PŘIČTENÍ ČASU</span>
+    <hr>
+    Funkce addwdays přičte ( resp. odečte ) k počátečnímu datumu zadaný počet<br>
+    dní daného typu. Obdobně funkce addmonth přičte zadaný počet měsíců.<br>
+    Návratové hodnoty jsou v interním datovém formátu PC FANDu.<br>
+    <br>
+    ██ Syntaxe: ADDWDAYS ( PočDatum , OKolikDní [,Typ] ) : real<br>
+    ADDMONTH ( PočDatum , OKolikMěsíců ) : real<br>
+    <br>
+    ■ PočDatum ..... Číselný výraz, počáteční datum v interním formátu.<br>
+    ■ OkolikDní .... Číselný výraz, o kolik dní (zadaného typu) se má datum<br>
+    posunout. Když je záporný, provede se odečtení.<br>
+    ■ OKolikMěsíců.. obdobně<br>
+    ■ Typ .......... <a href="">Typ dne</a>, o který se má datum posunout, pokud není zadán,<br>
+    použije se typ 0 (pracovní den). Na výsledek funkce<br>
+    addwdays má tedy vliv i instalovaná tabulka pracovních<br>
+    dní viz. Instalační program.<br>
+    ■ Omezení ...... AddWDays má horní hranici 2020 (obrana proti zacyklení)<br>
+    <br>
+    Inverzní funkce : <a href="">difwdays</a>, <a href="">difmonth</a><br>
+</div>
+
+<div>
+    <h4>Aditivní změny</h4>
+    <span style="color:red">ADITIVNÍ ZMĚNY - odstavec #A</span>
+    <hr>
+    Aditivní změny umožňují aktualizovat během editace podřízeného souboru<br>
+    číselné údaje nadřízeného souboru podle zadaného číselného výrazu. Výraz<br>
+    se vyhodnotí před a po editaci věty, pokud se změnila jeho hodnota, rozdíl<br>
+    se přičte k aktualizovanému údaji viditelné věty nadřízeného souboru (pro<br>
+    nové věty se výraz přičte, pro zrušené věty se odečte). Soubory samozřejmě<br>
+    musejí být spojeny klíčem. Změny se provedou tranzitivně přes více úrovní<br>
+    nadřízených souborů.<br>
+    <br>
+    ██ Syntaxe: #A { ViditelnýÚdaj [ ( LogVýraz [ :'ChybovéHlášení' ] ) ]<br>
+    [ ! | !! ] [ += | := ] ČísVýraz ; }<br>
+    <br>
+    ■ při použití += se provede aditivní změna tak, jak byla výše popsána<br>
+    ■ při použití := se provede prosté přiřazení nové hodnoty (nikoliv rozdíl)<br>
+    ■ Viditelný údaj může být údaj nadřízeného souboru nebo globální proměnná<br>
+    (tj. údaj parametrického souboru)<br>
+    <br>
+    █ NázevSpojení.NázevÚdaje+=ČísVýraz; ... aditivní změna do nadřízeného<br>
+    souboru (minimální varianta)<br>
+    ■ (LogVýraz) ........ před aditivní změnou se provede logická kontrola<br>
+    ■ 'ChybovéHlášení'... chyba vyvolá toto hlášení<br>
+    ■ ! ................ dotaz na vytvoření viditelné věty, když neexistuje<br>
+    ■ !! ................ automatické vytvoření viditelné věty bez dotazu<br>
+    (naplní se hodnoty klíčových údajů podle podřízené věty)<br>
+    <br>
+    Aditivní změna předpokládá existenci viditelné věty , jinak hlásí editor<br>
+    chybu "není věta pro kumulaci". Pomocí navigace lze chybějící větu doplnit<br>
+    ručně, uvedení znaku ! v deklaraci toto zajistí automaticky. Pokud logická<br>
+    kontrola v nadřízeném souboru spuštěná před provedením aditivní změny<br>
+    skončí chybou, aditivní změna se neprovede a uživatel musí opravit edito-<br>
+    vanou větu nebo anulovat změny, případně přepínačem vypnout aditivní změny.<br>
+    Logické kontroly v podřízeném souboru lze simulovat konstrukcí cond v<br>
+    číselném výrazu.<br>
+    <br>
+    ■ Při editaci souboru může obsluha provádění aditivních změn vypnout.<br>
+    Viz. přepínače datového editoru.<br>
+    ■ Programátor může toto obsluze zakázat pomocí parametru editace mode='#A'.<br>
+    Viz. mody datového editoru<br>
+    <br>
+    <br>
+    ░░░░░░░░░░░░<br>
+    ░░příklady░░<br>
+    ░░░░░░░░░░░░<br>
+    <br>
+    #A SKLAD.Stav += Množství; {příklady deklarace aditivních změn}<br>
+    SKLAD.Stav += cond(Zaevidováno:Množství);<br>
+    SKLAD.Stav (Stav>=PARAM.Min) += Množství; {s logickou kontrolou}<br>
+    SKLAD.Stav (Stav>0:'Není na skladě') += Množství; {s chybovým hlášením}<br>
+    SKLAD.Stav ! += Množství; {s vytvořením chybějící věty pro kumulaci}<br>
+    SKLAD.Stav !! += Množství; {totéž bez dotazu}<br>
+    <br>
+    #A PARAM.Počet += 1; {kumulace do parametrického souboru}<br>
+    <br>
+    #A KUMUL.Zisk !! += cond(Příjmy&gtVýdaje:Příjmy-Výdaje);<br>
+    KUMUL.Ztráta !! += cond(Příjmy&ltVýdaje:Výdaje-Příjmy);<br>
+</div>
+
+
+<div>
+    <h4>Akce</h4>
+    <span style="color:red">F6 - AKCE DATOVÉHO EDITORU</span>
+    <hr>
+    F6 vyvolá akce pro právě editovaný soubor.<br>
+    <br>
+    ┌─────────────────┐<br>
+    │ Opis &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp│ generátor automatických sestav<br>
+    │ Kontroly&nbsp &nbsp &nbsp &nbsp │ od pozice kurzoru až do konce souboru provede kontroly<br>
+    │ Nová podmnožina │ zadání logického výrazu pro vybranou podmnožinu<br>
+    │ Graf &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp│ grafické zobrazení dat souboru (interaktivní režim)<br>
+    │ Třídit &nbsp &nbsp &nbsp &nbsp &nbsp│ setřídí soubor podle vybraných údajů<br>
+    └─────────────────┘<br>
+    <br>
+    <br>
+    ░░░░░░░░░░░░<br>
+    ░░příklady░░<br>
+    ░░░░░░░░░░░░<br>
+    <br>
+    Datum>=1.1.92                {příklady zadání výrazu pro novou podmnožinu}<br>
+    Ucet in ['300'..'599','999']<br>
+    Mzda>5000<br>
+    Místo=~'Praha'<br>
+</div>
+
+<div>
+    <h4>Align</h4>
+    <span style="color:red">SETEDITTXT</span>
+    <hr>
+    Způsob práce  textového editoru lze  ovlivnit nastavením  přepínačů, které<br>
+    se nastavují interaktivně při editaci ( viz. přepínače ) nebo před startem<br>
+    textového editoru příkazem procedury SetEditTxt.<br>
+    <br>
+    Přepínače  jsou  globální v rámci PC FANDu.  Tj. jednou  nastavená hodnota<br>
+    platí i po opuštění textového editoru a startu editoru s jiným textem nebo<br>
+    i v rámci jiné úlohy, dokud není explicitně nastavena jiná hodnota.<br>
+    Při startu PC FANDu jsou přepínače resetovány na implicitní hodnoty.<br>
+    <br>
+    ██ syntaxe:   SETEDITTXT ( [ Overwr=LogVýraz, ] [ Indent=LogVýraz,]<br>
+    [ Align=LogVýraz,  ] [ Wrap=LogVýraz,]<br>
+    [ ColBlk=LogVýraz, ]<br>
+    [ Left=ČísVýraz,   ] [ Right=ČísVýraz,] )<br>
+    <br>
+    ■  Overwr .... vkládání/přepis         ■ Align ... zarovnání<br>
+    ■  Indent..... odsazení                ■ ColBlk... režim sloupcových bloků<br>
+    ■  Left ...... levý okraj textu        ■ Wrap .... automat.formátování<br>
+    ■  Right ..... pravý okraj textu<br>
+    <br>
+    Příkaz nastaví jen uvedené přepínače, ostatním  ponechá dosavadní hodnoty.<br>
+</div>
+
+<div>
+    <h4>all</h4>
+    <span style="color:red">Cyklické volání predikátu</span>
+    <hr>
+    all_NázevTypu(Predik([&]Term{,[&]Term}),<br>
+    Výsl, &Seznam_Výsl)<br>
+
+    Predik(Term{,Term}) Vyvolávaný predikát.<br>
+    Výsl                Term zapisovaný do seznamu.<br>
+    Seznam_Výsl         Výstupní seznam tvořený z termů Výsl.<br>
+    <br>
+    Umožňuje   cyklické  volání   predikátů  a   sestavení  seznamu  z<br>
+    výstupních parametrů.<br>
+    Predikát Predik je opakovaně vyvoláván až do okamžiku nesplnění  -<br>
+    fail. Po úspěšném návratu  predikátu Predik  je vyhodnocen term Výsl  a<br>
+    zařazen do seznamu Seznam_Výsl.<br>
+    <br>
+    Opakované volání lze naprogramovat i pomocí implicitního predikátu<br>
+    fail.  Záporem naprogramovaného  cyklu je  nemožnost předat  přiřazenou<br>
+    proměnnou. Při zpětném chodu je výsledek predikátů mimo efektu  assert,<br>
+    retract a procedur FANDu anulován.<br>
+    <br>
+    Příklad:<br>
+    <br>
+    cykl:- all_String(fandfile(X,_,_,_),X+' <--' ,Y),writeln(Y).<br>
+    <br>
+    Cyklické   vyvolávání  predikátu  fandfile.  K  jménu  souboru  je<br>
+    připojen  ukazatel a výsledek je zařazen do seznamu, který je na  závěr<br>
+    vypsán.<br>
+</div>
+
+<div>
+    <h4>Alt</h4>
+    Ctrl-Home <span style="color:red">ALTERNATIVNÍ NÁPOVĚDA</span>
+    <hr>
+    Pomocí těchto parametrů lze ovládat nápovědní (25.) řádek datového editoru<br>
+    Symboly funkčních kláves  (Ctrl,Alt,Shift,*F1..*F10) a dalších kurzorových<br>
+    kláves, zvýrazněné pomocí ^W generují při stisku (click) myši odpovídající<br>
+    akci.<br>
+    <br>
+    ██  last=TextVýraz .... nahradí standardní poslední (25.) řádek editoru<br>
+    <br>
+    ██  ctrl=TextVýraz .... alternativní text nápovědy po delším stisku Ctrl<br>
+    ██  alt=TextVýraz &nbsp....                 -    "    -                 Alt<br>
+    ██  shift=TextVýraz ...                 -    "    -                 Shift<br>
+    <br>
+    V textu alternativní nápovědy není třeba zadávat celou "ikonu" ale stačí<br>
+    uvést jen vlastní funkční klávesa. Např. v nápovědě Ctrl se bere ikona F8<br>
+    jako Ctrl-F8.<br>
+    <br>
+    Nápověda kláves v 25. řádku může být "překryta" nápovědou datového editoru<br>
+    viz. mode='F1' (módy datového editoru). Lepší řešení je použít mode='F124'.<br>
+    <br>
+    ─── Ctrl-End ─────────────────────────────────────────────────────────────<br>
+</div>
+
+
+
+Alternativní nápověda
+Append
+AppendRec
+ArcTan
+Archivace
+Archives
+Aritmetické funkce
+assert
+Assign
+Automatická sestava
+</body>
+</html>
