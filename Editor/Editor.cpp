@@ -34,7 +34,8 @@ struct Character {
 };
 
 // *** Promenne metody EDIT
-char Arr[SuccLineSize]{ '\0' };
+char Arr[SuccLineSize]{ '\0' }; // znaky pro 1 radek
+char* T = nullptr; // ukazatel na vstupni retezec
 WORD NextI = 0;
 integer LineL = 0, ScrL = 0;
 longint RScrL = 0;
@@ -130,7 +131,6 @@ pstring TxtVol;
 bool AllRd = false;
 longint AbsLenT = 0;
 bool ChangePart, UpdPHead;
-char* T = nullptr;
 void RestorePar(longint l);
 
 // ***********HELP**********  // r351
@@ -647,7 +647,6 @@ void WrLLMargMsg(std::string* s, WORD n)
 		}
 	}
 }
-
 
 /// Inicializuje obrazovku - sirku, vysku editoru
 void InitScr()
@@ -1459,23 +1458,19 @@ void ScrollPress()
 	bScroll = (fyz || FirstScroll) && (Mode != HelpM);
 	HelpScroll = bScroll || (Mode == HelpM);
 	L1 = LineAbs(ScrL);
-	if (old != bScroll)
-	{
-		if (bScroll)
-		{
+	if (old != bScroll) {
+		if (bScroll) {
 			WrStatusLine();
 			TestKod();
 			screen.CrsHide();
 			PredScLn = LineAbs(LineL);
 			PredScPos = Posi;
-			if (UpdPHead)
-			{
+			if (UpdPHead) {
 				SetPart(1);
 				SimplePrintHead();
 				DekFindLine(MaxL(L1, PHNum + 1));
 			}
-			else
-			{
+			else {
 				DekFindLine(MaxL(L1, PHNum + 1));
 			}
 			ScrL = LineL;
@@ -1486,8 +1481,7 @@ void ScrollPress()
 			ColScr = Part.ColorP;
 			SetColorOrd(ColScr, 1, ScrI);
 		}
-		else
-		{
+		else {
 			if ((PredScLn < L1) || (PredScLn >= L1 + PageS)) PredScLn = L1;
 			if (!(PredScPos >= BPos + 1 && PredScPos <= BPos + LineS)) PredScPos = BPos + 1;
 			PosDekFindLine(PredScLn, PredScPos, false);
@@ -1511,8 +1505,7 @@ void DisplLL(WORD Flags)
 
 void CtrlShiftAlt()
 {
-	bool Ctrl; WORD Delta, flgs;
-	Ctrl = false;  Delta = 0; flgs = 0;
+	bool Ctrl = false;  WORD Delta = 0; WORD flgs = 0;
 	//(*MyTestEvent 1; *)
 label1:
 	WaitEvent(Delta);
@@ -1545,8 +1538,7 @@ label1:
 void Wr(pstring s, pstring OrigS)
 {
 	CHAR_INFO ci2[2];
-	if (Mode != HelpM)
-	{
+	if (Mode != HelpM) {
 		if (s.empty()) s = OrigS;
 		else {
 			screen.ScrRdBuf(0, 0, ci2, 2);
@@ -1564,19 +1556,16 @@ bool My2GetEvent()
 {
 	ClrEvent();
 	GetEvent();
-	if (Event.What != evKeyDown)
-	{
+	if (Event.What != evKeyDown) {
 		ClrEvent();
 		return false;
 	}
-	auto ek = &Event.KeyCode;
+	auto* ek = &Event.KeyCode;
 	if (*ek >= 'A' && *ek <= 'Z') // with Event do if upcase(chr(KeyCode)) in ['A'..'Z'] then
 	{
 		*ek = toupper(*ek) - '@';
-		if ((*ek == _Y_ || *ek == _Z_) && (spec.KbdTyp == CsKbd || spec.KbdTyp == SlKbd))
-		{
-			switch (*ek)
-			{
+		if ((*ek == _Y_ || *ek == _Z_) && (spec.KbdTyp == CsKbd || spec.KbdTyp == SlKbd)) {
+			switch (*ek) {
 			case _Z_: *ek = _Y_; break;
 			case _Y_: *ek = _Z_; break;
 			default: break;
@@ -1629,17 +1618,33 @@ bool ViewEvent()
 {
 	bool result = ScrollEvent();
 	if (Event.What != evKeyDown) return result;
-	switch (Event.KeyCode)
-	{
+	switch (Event.KeyCode) {
 	case _QF_:
-	case _L_: case _F7_: case _F8_: case _KP_: case _QB_:
-	case _QK_: case _CtrlF5_: case _AltF8_: case _CtrlF3_:
-	case _Home_: case _End_:
-	case _CtrlLeft_: case _CtrlRight_:
-	case _QX_: case _QE_: case _Z_: case _W_:
+	case _L_:
+	case _F7_:
+	case _F8_:
+	case _KP_:
+	case _QB_:
+	case _QK_:
+	case _CtrlF5_:
+	case _AltF8_:
+	case _CtrlF3_:
+	case _Home_:
+	case _End_:
+	case _CtrlLeft_:
+	case _CtrlRight_:
+	case _QX_:
+	case _QE_:
+	case _Z_:
+	case _W_:
 	case _CtrlF6_:
-	case _KW_: case _KB_:
-	case _KK_: { result = true; break; }
+	case _KW_:
+	case _KB_:
+	case _KK_:
+	{
+		result = true;
+		break;
+	}
 	default:;
 	}
 	return result;
@@ -1651,9 +1656,16 @@ bool HelpEvent()
 	if (Event.What == evKeyDown)
 		switch (Event.KeyCode) {
 		case _ESC_:
-		case _left_: case _right_: case _up_: case _down_:
-		case _PgDn_: case _PgUp_: case _M_:
-		{ result = true; break; }
+		case _left_:
+		case _right_:
+		case _up_:
+		case _down_:
+		case _PgDn_:
+		case _PgUp_:
+		case _M_: {
+			result = true;
+			break;
+		}
 		default:;
 		}
 
@@ -2944,19 +2956,20 @@ void HelpLU(char dir)
 		Posi = Position(Colu);
 		h2 = MinW(h1, WordNo2() + 1);
 	}
-	else h2 = h1;
+	else {
+		h2 = h1;
+	}
 	if (WordFind(h2, I1, I2, I) && (I >= ScrL - 1)) {
 		SetWord(I1, I2);
 	}
-	else
-	{
+	else {
 		if (WordFind(h1 + 1, I1, I2, I) && (I >= ScrL)) SetWord(I1, I2);
 		else { I1 = SetInd(LineI, Posi); WordL = 0; }
 		I = ScrL - 1;
 	}
-	if (I <= ScrL - 1)
-	{
-		DekFindLine(ScrL); RollPred();
+	if (I <= ScrL - 1) {
+		DekFindLine(ScrL);
+		RollPred();
 	}
 	if (WordExist()) SetDekLnCurrI(I1);
 }
@@ -2964,28 +2977,42 @@ void HelpLU(char dir)
 void HelpRD(char dir)
 {
 	WORD I = 0, I1 = 0, I2 = 0, h1 = 0, h2 = 0;
-	ClrWord(); h1 = WordNo2(); if (WordExist()) h1++;
-	if (dir == 'D')
-	{
+	ClrWord();
+	h1 = WordNo2();
+	if (WordExist()) {
+		h1++;
+	}
+	if (dir == 'D') {
 		NextLine(false); Posi = Position(Colu);
 		while ((Posi > 0) && (Arr[Posi] != 0x13)) Posi--;
 		Posi++;
 		h2 = MaxW(h1 + 1, WordNo2() + 1);
 	}
-	else h2 = h1 + 1;
-	if (WordFind(h2, I1, I2, I) and (I <= ScrL + PageS)) SetWord(I1, I2);
-	else
-	{
-		if (WordNo2() > h1) h1++;
-		if (WordFind(h1, I1, I2, I) && (I <= ScrL + PageS)) SetWord(I1, I2);
-		else { I1 = SetInd(LineI, Posi); WordL = 0; }
+	else {
+		h2 = h1 + 1;
+	}
+	if (WordFind(h2, I1, I2, I) and (I <= ScrL + PageS)) {
+		SetWord(I1, I2);
+	}
+	else {
+		if (WordNo2() > h1) {
+			h1++;
+		}
+		if (WordFind(h1, I1, I2, I) && (I <= ScrL + PageS)) {
+			SetWord(I1, I2);
+		}
+		else {
+			I1 = SetInd(LineI, Posi); WordL = 0;
+		}
 		I = ScrL + PageS;
 	}
-	if (I >= ScrL + PageS)
-	{
-		DekFindLine(ScrL + PageS - 1); RollNext();
+	if (I >= ScrL + PageS) {
+		DekFindLine(ScrL + PageS - 1);
+		RollNext();
 	}
-	if (WordExist()) SetDekLnCurrI(I1);
+	if (WordExist()) {
+		SetDekLnCurrI(I1);
+	}
 }
 
 void HandleEvent() {
@@ -3041,7 +3068,7 @@ void HandleEvent() {
 					DelEndT();
 					GetStore(2);
 					Move(T, &T[3], LenT);
-					sp = (LongStr*)(T);
+					sp->A = T;
 					sp->LL = LenT;
 					if (TypeT == LocalT) {
 						TWork.Delete(*LocalPPtr);
@@ -3089,7 +3116,9 @@ void HandleEvent() {
 						CRecPtr = EditDRoot->NewRecPtr;
 						sp = _LongS(CFld->FldD);
 					}
-					LenT = sp->LL; /*T = (CharArr*)(sp)*/; Move(&T[3], &T[1], LenT);
+					LenT = sp->LL;
+					// T = (CharArr*)(sp)
+					Move(&T[3], &T[1], LenT);
 					break;
 				}
 				}
@@ -3098,7 +3127,9 @@ void HandleEvent() {
 				IndT = MinW(IndT, LenT);
 				if (TypeT != FileT)  // !!! with Part do
 				{
-					AbsLenT = LenT - 1; Part.LenP = AbsLenT; SimplePrintHead();
+					AbsLenT = LenT - 1;
+					Part.LenP = AbsLenT;
+					SimplePrintHead();
 				}
 				SetScreen(IndT, ScrT, Posi);
 				if (!bScroll) { screen.CrsShow(); }
@@ -3107,9 +3138,10 @@ void HandleEvent() {
 			X = (EdExitD*)X->Chain;
 		}  // while
 
-		if (((Mode == SinFM) || (Mode == DouFM) || (Mode == DelFM) || (Mode == NotFM)) && !bScroll)
+		if (((Mode == SinFM) || (Mode == DouFM) || (Mode == DelFM) || (Mode == NotFM)) && !bScroll) {
 			FrameStep(FrameDir, ww);
-		else
+		}
+		else {
 			switch (ww) {
 			case VK_LEFT: {
 				if (Mode == HelpM) HelpLU('L');
@@ -3439,8 +3471,7 @@ void HandleEvent() {
 				PosDekFindLine(EndBLn, MinW(LastPosLine() + 1, EndBPos), false); break; }
 			case _KB_:
 			case _F7_:
-			case _KH_:
-			{
+			case _KH_: {
 				BegBLn = LineAbs(LineL);
 				if (TypeB == TextBlock) BegBPos = MinI(LastPosLine() + 1, Posi);
 				else BegBPos = Posi;
@@ -3480,7 +3511,7 @@ void HandleEvent() {
 					BegBLn = 1; EndBLn = 0x7FFF; BegBPos = 1; EndBPos = 0xFF; TypeB = TextBlock;
 				}
 				CPath = wwmix1.SelectDiskFile(".TXT", 401, false);
-				if (CPath == "")  goto Nic;
+				if (CPath.empty()) goto Nic;
 				CVol = "";
 				F1 = OpenH(_isnewfile, Exclusive);
 				if (HandleError == 80)
@@ -3641,7 +3672,8 @@ void HandleEvent() {
 				break;
 			}
 			case _CtrlF5_:
-				Calculate(); break;
+				Calculate();
+				break;
 			case _AltF8_: {
 				L2 = SavePar();
 				W1 = Menu(45, spec.KbdTyp + 1);
@@ -3707,6 +3739,7 @@ void HandleEvent() {
 			}
 			}
 			}
+		} // else
 	} // if (Event.What == evKeyDown)
 
 	else if ((Event.What == evMouseDown) && ((Mode == HelpM) || (Mode == TextM)))
