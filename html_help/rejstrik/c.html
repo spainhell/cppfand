@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <title>C</title>
+</head>
+<body style="font-family:'Courier New'">
+<div>
+    <h4>#C</h4>
+    <span style="color:red">VYPOČÍTANÉ ÚDAJE - odstavec #C</span>
+    <hr>
+    Vypočítané údaje jsou pojmenované výrazy.  Ve výrazech se mohou vyskytovat<br>
+    operátory  a  funkce,  ostatní  uložené i vypočítané  údaje téhož souboru,<br>
+    viditelné údaje  z nadřízených souborů a globální proměnné. Seznam vypočí-<br>
+    taných údajů je ve tvaru:<br>
+    <br>
+    ██ NázevÚdaje:=Výraz:TypÚdaje; ... vypočítaný údaj (pojmenování výrazu)<br>
+    <br>
+    Typ údaje udává pouze způsob  zobrazení  v datovém editoru a automatických<br>
+    sestavách , výrazy  se interně vyhodnocují a do dalších  výrazů vstupují v<br>
+    plném  rozsahu v typech real, string, boolean.  Zarovnání L u typu N resp.<br>
+    R u typu  A se uplatní pouze při  zadání  hodnoty údaje  pro hledání podle<br>
+    klíče (F3).<br>
+    <br>
+    <br>
+    ░░░░░░░░░░░░     #C    Cena:=JednCena*Množství:F,4.2;<br>
+    ░░příklady░░           Jméno:=Křest+' '+Příjm:A,20;<br>
+    ░░░░░░░░░░░░           Psč6:=copy(Psč,1,3)+' '+copy(Psč,4,2):A,6;<br>
+    Bezdětný:=Děti=0:B;<br>
+    Adresa:=Ulice+'\13\10'+Místo:T;<br>
+    Přídavky:=cond(Deti=1: 200,Deti=2: 580,Deti>=3: 1040+(Deti-3)*300):F,4.0;<br>
+</div>
+<div>
+    <h4>Cache</h4>
+    <span style="color:red">INSTALACE</span>
+    <hr>
+    Instalací rozumíme nastavení různých parametrů,  které mají vliv na práci<br>
+    PC FANDu a nastavují  se před jeho spuštěním.  V zásadě  lze rozlišit dvě<br>
+    skupiny : prostředky operačního systému (MS-DOSu) a vnitřní globální pro-<br>
+    měnné PC FANDu.<br>
+    <br>
+    ■  Vnitřní globální proměnné, se inicializují při startu PC FANDu<br>
+    a jejich inicializační hodnoty jsou uloženy v souboru FAND.CFG.<br>
+    Pro jejich nastavení lze použít instalační program FANDINST.EXE.<br>
+    <br>
+    ■  Prostředky oper.systému a jeho konfigurace ovlivňují činnost programů<br>
+    obecně. Sem patří:<br>
+    <br>
+    -  Parametr FILES= systémového souboru CONFIG.SYS<br>
+    kterým je nutno zajistit dostatek místa pro najednou otevřené soubory<br>
+    konkrétní úlohy. Při nedostatečném nastavení tohoto parametru není úloha<br>
+    provozovatelná a havaruje s chybovým hlášením "příliš mnoho otevřených<br>
+    souborů ...." . Toto je v běžných podmínkách jediný podmiňující<br>
+    parametr pro běh úloh. Další parametry mají význam především pro<br>
+    optimalizaci (většinou urychlení) práce.<br>
+    <br>
+    -  Proměnné prostředí MS-DOSu, tzv. SET-parametry<br>
+    <br>
+    -  EMS paměť lze použít pro umístění overlay modulu (FAND.OVR), což<br>
+    se děje automaticky, pokud je dostatek volné EMS paměti.<br>
+    Dle praktických zkušeností to nemá význam pro urychlení práce. Výhodnější<br>
+    je použít volnou paměť jako XMS pro cache či pro umístění rezidentních<br>
+    programů v horní paměti (viz. EMM386, loadhigh)<br>
+    <br>
+    -  XMS paměť (driver HIMEN.SYS v CONFIG.SYS) je možno s výhodou použít<br>
+    pro cache programy (SMARTDRIVE). Pozor - PC FAND obsahuje vlastní cache<br>
+    která standardně alokuje 200KB XMS-paměti (viz.instalace konstant).<br>
+    !!! doporučujeme nekombinovat FAND-cache s jinou (běžně SMARTDRIVE).<br>
+</div>
+<div>
+    <h4>Call</h4>
+    <span style="color:red">CALL - duplicitní klíčové slovo</span>
+    <hr>
+    <br>
+    ■ volání podřízené úlohy ..... viz. volání procedur a podprogramů<br>
+    <br>
+    ■ volání predikátu z jiné L-kapitoly.... viz.  call<br>
+</div>
+<div>
+    <h4>Cancel</h4>
+    <span style="color:red"></span>
+    <hr>
+</div>
+<div>
+    <h4>Case</h4>
+    <span style="color:red">VĚTVENÍ PROGRAMU</span>
+    <hr>
+    Pro větvení programu, jako jednu ze základních programátorských konstrukcí<br>
+    lze použít podmíněný příkaz pro jednoduché větvení if ... else nebo příkaz<br>
+    case pro vícenásobné větvení.<br>
+    <br>
+    ██ Syntaxe:        IF LogVýraz THEN Příkaz1 [ ELSE Příkaz2 ]<br>
+    <br>
+    ■  Jestliže je splněna podmínka LogVýraz (=TRUE), provede se Příkaz1. Pokud<br>
+    splněna není, provede se (je-li uvedena) větev else - tedy Příkaz2.<br>
+    <br>
+    ───────────────<br>
+    <br>
+    Vícenásobné větvení lze použít příkaz case. Postupně se vyhodnocují logické<br>
+    podmínky  a provede se příkaz u první splněné  podmínky. Pokud není splněná<br>
+    žádná podmínka, provede se příkaz ve větvi else, příp. žádný. Příkazy mohou<br>
+    být i složené (begin .. end).<br>
+    <br>
+    ██ Syntaxe:        CASE   LogVýraz : Příkaz;<br>
+    { LogVýraz : Příkaz; }<br>
+    [ ELSE   Příkaz; { Příkaz } ]<br>
+    END;<br>
+</div>
+<div>
+    <h4>Catalog</h4>
+    <span style="color:red">CATALOG</span>
+    <hr>
+    V každé úloze je  katalog úlohy  implicitně  deklarován jako  běžný datový<br>
+    soubor s názvem catalog.  Pokud tento název použijeme pro deklaraci jiného<br>
+    souboru (kapitoly F) bude implicitní deklarace lokálně překryta.<br>
+    <br>
+    ██ Struktura katalogu         NazUlohy : A,8 ;<br>
+    NazSouboru : A,8 ;<br>
+    Ar : N,2 ;<br>
+    Cesta : A,79 ;<br>
+    Navesti : A,11 ;<br>
+    <br>
+    Catalog lze v zásadě používat jako každý jiný soubor. Díky výsadnímu posta-<br>
+    vení katalogu je však třeba řešit důsledky některých akcí, které mají vliv<br>
+    na právě otevřené datové soubory. K tomu slouží příkaz resetcatalog.<br>
+    <br>
+    ██ Syntaxe:          RESETCATALOG<br>
+    <br>
+    Příkaz procedury, který je nutno použít vždy když:<br>
+    - jsou zrušeny věty katalogu<br>
+    - jsou doplněny nové věty jinde než za koncem katalogu.<br>
+    Resetcatalog zajistí korektní promítnutí změn katalogu do systému<br>
+    aktuálních (otevřených) souborů. Kromě aktivních .RDB uzavře všechny<br>
+    datové soubory. Ošetřeny jsou i SQL-soubory.<br>
+    <br>
+    POZOR - před jakýmikoliv změnami  katalogu je účelné  pomocí příkazu close<br>
+    uzavřít  soubor resp. soubory, kterých  se změna týká. Vyhneme  se<br>
+    tak určitým úskalím použití příkazu resetcatalog.<br>
+</div>
+<div>
+    <h4></h4>
+    <span style="color:red"></span>
+    <hr>
+</div>
+
+CF
+CH
+Char
+Check
+CheckFile
+Cizí klíč
+CLAUSES
+Clearkeybuf
+Clipbd
+Clipboard
+Close
+ClrEOL
+ClrScr
+ColBlk
+Color
+Compress
+concat
+Cond
+consult
+Copy
+CopyFile
+CopyLine
+Cos
+Count
+Cprinter
+Cr
+Ctrl
+Ctrl-F1 error
+CurrTime
+
+</body>
+</html>

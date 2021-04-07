@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <title>B</title>
+</head>
+<body style="font-family:'Courier New'">
+<div>
+    <h4>Backup</h4>
+    <span style="color:red">BACKUP</span>
+    <hr>
+    Příkaz procedury pro zálohování dat.<br>
+    <br>
+    ██ Syntaxe:           BACKUP( NázevArchivace [,nocancel] [,nocompress] )<br>
+    <br>
+    ■  NázevArchivace ... Označení úrovně archivace, která se má provést.<br>
+    Viz. zálohování, katalog<br>
+    <br>
+    ■  nocancel ......... Při chybě nedojde k ukončení programu, ale po návratu<br>
+    z archivace lze testovat úspěšné ukončení exitcode=0.<br>
+    ■  nocompress ....... Data jsou zálohována bez komprese, vede k urychlení<br>
+    a k snížení nároku na paměť při provedení příkazu.<br>
+    <br>
+    ■  LAN ... mód sdílení Rd - pro síťové datové soubory, deklarované v<br>
+    nějakém aktivním .RDB<br>
+    ReadOnly ( open-modus) - ostatní datové a textové soubory<br>
+    <br>
+    Při zálohování se rovněž kopírují ( s kompresí ) případné soubory  volných<br>
+    textů -  ale pozor  - jen pro aktivní datové soubory - tj. pro kapitoly  F<br>
+    aktuální a  nadřízené úlohy (resp.úloh). Soubory se kopírují v pořadí  dle<br>
+    čísel archivace  (nejdříve s  číslem Ar  a potom  další v  seznamu) a  dle<br>
+    pořadí výskytu v katalogu. Kopírují se i prázdné soubory.<br>
+</div>
+<div>
+    <h4>BackupM</h4>
+    <span style="color:red">FYZICKÉ ZÁLOHOVÁNÍ</span>
+    <hr>
+    Fyzické zálohování v PC FANDu probíhá podle podobného schématu jako u zná-<br>
+    mých  obecných utilit  typu ZIP, ARJ apod.  Příkazem backupm se komprimují<br>
+    soubory určitého adresáře, případně jeho podadresářů  do jednoho společného<br>
+    souboru, přičemž lze pomocí masky vybrat jen určité soubory. Příkazem<br>
+    restorem se zálohované soubory obnoví.<br>
+    <br>
+    ██ Syntaxe:    BACKUPM( NázevArchivace,adresář, SeznamMasek<br>
+    [,nocancel] [,nocompress] [,subdir] )<br>
+    <br>
+    RESTOREM(NázevArchivace,Adresář<br>
+    [,subdir][,overwrite][,nocancel][,nocompress])<br>
+    <br>
+    ■  Název archivace ... položka katalogu s názvem úlohy ARCHIVES a názvem<br>
+    archivace v údaji pro název souboru. Dále je zadána<br>
+    cesta a návěští, kam se zapisuje archivní soubor.<br>
+    Podporují se pokračovací diskety (jako při backup)<br>
+    <br>
+    ■  Adresář ........... textový výraz pro adresář, ve kterém se nacházejí<br>
+    archivované resp. obnovované soubory<br>
+    <br>
+    ■  Seznam masek ...... textový výraz, backupm vybere pro archivaci jen<br>
+    ty soubory, které vyhovují zadaným maskám. Jednotlivé<br>
+    masky jsou odděleny čárkou nebo mezerou.<br>
+    Jsou povoleny znaky * a ? s obvyklým významem.<br>
+    <br>
+    ■  subdir ............ příkaz backupm kopíruje i podadresáře<br>
+    příkaz restorem automaticky vytváří hlavní adresář<br>
+    i podadresáře<br>
+    <br>
+    ■  overwrite ......... příkaz restorem automaticky přepisuje případné<br>
+    existující soubory, jinak přepis existujícího<br>
+    souboru jen s dotazem<br>
+    <br>
+    ■  nocancel ......... Při chybě nedojde k ukončení programu, ale po návratu<br>
+    z obnovy dat lze testovat úspěšné ukončení exitcode=0.<br>
+    <br>
+    ■  nocompress ....... Data jsou zálohována bez komprese, vede k urychlení<br>
+    a k snížení nároku na paměť při provedení příkazu.<br>
+    <br>
+    <br>
+    LAN<br>
+    Při fyzickém zálohování jsou všechny zálohované soubory otevírány v režimu<br>
+    exclusive. To znamená, že se zálohovanými nebo obnovovanými soubory není<br>
+    možno z jiné stanice vůbec pracovat, ani je mít třeba jen otevřené.<br>
+</div>
+<div>
+    <h4>Barvy</h4>
+    <span style="color:red">BARVY</span>
+    <hr>
+    ╔═══════════════════════════════════════════════════════════════╦══════════╗<br>
+    ║ písmo   černá  modrá zelená  cyan  červená fialová hnědá šedá ║  pozadí  ║<br>
+    ╠═══════╦═══════════════════════════════════════════════════════╣          ║<br>
+    ║ jas  L║  ***    001    002    003    004    005    006    007 ║  černá   ║<br>
+    ║      H║  008    009  ^s010  ^w011  ^d012  ^b013  ^a014    015 ║          ║<br>
+    ║      L║  016    017    018    019    020    021    022    023 ║  modrá   ║<br>
+    ║      H║  024    025    026    027    028    029  ^q030    031 ║          ║<br>
+    ║      L║  032    033    034    035    036    037    038    039 ║  zelená  ║<br>
+    ║      H║  040    041    042    043    044    045    046    047 ║          ║<br>
+    ║      L║  048    049    050    051    052    053    054    055 ║  cyan    ║<br>
+    ║      H║  056    057    058    059    060    061    062    063 ║          ║<br>
+    ║      L║  064    065    066    067    068    069    070    071 ║  červená ║<br>
+    ║      H║  072    073    074    075    076    077  ^e078    079 ║          ║<br>
+    ║      L║  080    081    082    083    084    085    086    087 ║  fialová ║<br>
+    ║      H║  088    089    090    091    092    093    094    095 ║          ║<br>
+    ║      L║  096    097    098    099    100    101    102    103 ║  hnědá   ║<br>
+    ║      H║  104    105    106    107    108    109    110    111 ║          ║<br>
+    ║      L║  112    113    114    115    116    117    118    119 ║  šedá    ║<br>
+    ║      H║  120    121    122    123    124    125    126    127 ║          ║<br>
+    ╚═══════╩═══════════════════════════════════════════════════════╩══════════╝<br>
+    blikání = hodnota + 128<br>
+</div>
+<div>
+    <h4>Barvy a typy písma</h4>
+    <span style="color:red">BARVY A TYPY PÍSMA</span>
+    <hr>
+    Barvám na obrazovce  odpovídají  typy  písma  na tiskárně.  Do textu zadáte<br>
+    přepínač barvy/písma jako Ctrl-Znak příkazem Ctrl-P Ctrl-Znak v módu editace.<br>
+    V módu prohlížení ( Scroll-Lock ) řídící znaky  zmizí a text se obarví. Při<br>
+    prvním výskytu přepínače v textu se barva/písmo zapne, při druhém vypne atd.<br>
+    <br>
+    ■ Ctrl-S ... podtržení (underline) ... na barevných monitorech zelená<br>
+    ■ Ctrl-W ... kurzíva (italic) ........ světle modrá<br>
+    ■ Ctrl-B ... tučný tisk (bold) ....... fialová<br>
+    ■ Ctrl-D ... dvojitý tisk (double) ... červená<br>
+    <br>
+    ■ Ctrl-Q ... široký tisk (wide) ...... žlutá na modrém pozadí<br>
+    ■ Ctrl-E ... komprimovaný (compressed) žlutá na červeném pozadí<br>
+    ■ Ctrl-A ... užší písmo (elite) ...... žlutá<br>
+    původní nastavení<br>
+    ■ Ctrl-X ... uživatelem definovatelné kódy pro tisk   dvojité písmo<br>
+    ■ Ctrl-V ... (bez barevného odlišení)                 čtyřnásobné písmo<br>
+    ■ Ctrl-T ...                                          husté řádkování<br>
+    <br>
+    Ctrl-Znaky pro přepínání barev se zohledňují při formátování textu. Všechny<br>
+    barvy a řídící kódy pro tiskárnu je možné přeinstalovat programem FANDINST.<br>
+</div>
+<div>
+    <h4>Beep</h4>
+    <span style="color:red">OŠETŘENÍ KLÁVESNICE</span>
+    <hr>
+    Buffer klávesnice - kromě systémového  bufferu klávesnice obsahuje PC FAND<br>
+    i vlastní  buffer  klávesnice, ze kterého  čte znaky  přednostně. Pokud je<br>
+    buffer PC FANDu prázdný, čte znaky ze systémového bufferu.<br>
+    <br>
+    ██ SETKEYBUF(TextVýraz)... naplnění PC FAND-bufferu klávesnice<br>
+    ██ CLEARKEYBUF ........... vyprázdní oba buffery klávesnice<br>
+    ██ KEYBUF : string........ přečte znaky ze systémového bufferu a připojí<br>
+    je k bufferu PC FANDu, jehož spojený obsah<br>
+    vrátí jako hodnotu funkce. Bezprostředně po<br>
+    keybuf nebo clearkeybuf je keypressed=false.<br>
+    <br>
+    vstup z klávesnice<br>
+    <br>
+    ██ READKEY :string ...... vrací znak z klávesnice (příp. včetně prefixu'\0')<br>
+    ██ KEYPRESSED :boolean... stiskl uživatel klávesu ?<br>
+    ██ WAIT ................. čeká na stisk libovolné klávesy (nebo myši)<br>
+    <br>
+    zvuk<br>
+    <br>
+    ██ SOUND(ČísVýraz) ...... zapne zvukový signál (parametr=výška tónu v Hz)<br>
+    ██ NOSOUND .............. vypne zvuk<br>
+    ██ BEEP ................. pípne (totéž co write('\7')),<br>
+    lze vypnout - viz. Instalace konstant<br>
+    <br>
+    pauza<br>
+    ██ DELAY(ČísVýraz) ...... pauza v programu (parametr je v milisekundách),<br>
+    na některých typech procesorů však měří chybně a<br>
+    je třeba čas čekání upravit vhodnou konstantou.<br>
+</div>
+<div>
+    <h4>Begin</h4>
+    <span style="color:red">BEGIN, END - duplicitní klíčová slova</span>
+    <hr>
+    ■ begin end ... řídící příkazy: programové závorky (složený příkaz)<br>
+    ... PopisnáČástÚrovně: výpočetní část v tiskových sestavách<br>
+    ... PříkazováČástVýstupu: výstup transformace<br>
+</div>
+<div>
+    <h4>Bloky</h4>
+    <span style="color:red">BLOKY TEXTOVÉHO EDITORU</span>
+    <hr>
+    Blok je část textu. Blok je třeba  nejprve  označit (je barevně odlišen od<br>
+    ostatního textu)  a  potom  s  ním  lze  pracovat pomocí blokových operací.<br>
+    Clipboard je pomocný text (zásobník) pro přenášení bloků.<br>
+    <br>
+    ■ Ctrl-K Ctrl-N ...... přepínač režimu běžný <->sloupcový blok<br>
+    <br>
+    ■ Ctrl-K Ctrl-B nebo F7 ...... označení začátku bloku<br>
+    ■ Ctrl-K Ctrl-K nebo F8 ...... označení konce bloku<br>
+    ■ Shift-Down,Up,Left,Right ... definice bloku tažením meze bloku<br>
+    ■ Shift-PgDn,PgUp ............ posun meze bloku o stránku vpřed (zpět)<br>
+    ■ Shift-Home,End ............. posun meze bloku na začátek (konec) řádku<br>
+    <br>
+    ■ Ctrl-K Ctrl-C ........... kopie bloku (max.28KB) na místo kurzoru   copy<br>
+    ■ Ctrl-K Ctrl-V ....... přenesení bloku (max.28KB) na místo kurzoru   move<br>
+    ■ Ctrl-K Ctrl-Y ....... výmaz bloku<br>
+    <br>
+    ■ Ctrl-K Ctrl-R ... čtení bloku z disku (textový soubor)              read<br>
+    ■ Ctrl-K Ctrl-W ... zápis bloku na disk                              write<br>
+    <br>
+    ■ Ctrl-K Ctrl-U ... v celém bloku změní malá písmena na velká       upcase<br>
+    ■ Ctrl-K Ctrl-L ... v celém bloku změní velká písmena na malá      lowcase<br>
+    ■ Ctrl-K Ctrl-F ... formátování bloku                               format<br>
+    ■ Ctrl-K Ctrl-P ... tisk bloku                                       print<br>
+    <br>
+    ■ Ctrl-F7 ..... kopie označeného bloku z textu do Clipboardu<br>
+    ■ Shift-F7 .... kopie z Clipboardu do textu (přenosy bloků)<br>
+</div>
+<div>
+    <h4>Boolean</h4>
+    <span style="color:red">TYPY VÝRAZŮ</span>
+    <hr>
+    (vpravo kompatibilní typy údajů z deklarace souboru)<br>
+    <br>
+    ■ real ...... číselný - (pascalský 6-bytový real)-11 platných míst   F D R<br>
+    ve verzi pro koprocesor 15 platných míst<br>
+    ■ string .... textový - až 65 000 B (jako volný text)                A N T<br>
+    Od verze 4.1 v některých případech pracuje<br>
+    i s texty až 2GB. A to sice v případě přiřazení<br>
+    mezi proměnnými typu string a údaji souborů<br>
+    typu T (volný text). Nesmí jít o obecný<br>
+    textový výraz.<br>
+    <br>
+    ■ boolean ... logický - true/false (Ano/Ne)                          B<br>
+    <br>
+    Typy real, string, boolean  jsou tzv.  jednoduché typy  a odpovídají typům<br>
+    v deklaraci  lokálních proměnných  a parametrů procedur, kde lze ale navíc<br>
+    použít i tzv. strukturované typy.<br>
+    <br>
+    Strukturované typy:<br>
+    ■ record of Soubor      ─┐<br>
+    ■ index of Soubor        ├─  typ lokální proměnné nebo parametru procedury<br>
+    ■ file                  ─┘<br>
+</div>
+<div>
+    <h4>Break</h4>
+    <span style="color:red">PŘERUŠENÍ PROGRAMU</span>
+    <hr>
+    Tyto příkazy umožňují okamžité  ukončení cyklu nebo určité části programu.<br>
+    <br>
+    Příkaz  break  provede  ukončení provádění  příkazů cyklu ( repeat, while,<br>
+    forall, for) a cyklických nabídek (menuloop,menubar). Zpracování pokračuje<br>
+    za těmito příkazy. Jinde má stejný efekt jako exit.<br>
+    <br>
+    ██ Syntaxe:      BREAK<br>
+    ──────────────────────<br>
+    <br>
+    Příkaz exit  provede skok na konec právě prováděné procedury. Předá řízení<br>
+    volající proceduře - pokud existuje. Jinde má efekt příkazu cancel.<br>
+    <br>
+    ██ Syntaxe:      EXIT<br>
+    ─────────────────────<br>
+    <br>
+    Ukončení úlohy - tj. návrat do volající nadřízené úlohy nebo konec se<br>
+    provede příkazem cancel.<br>
+    <br>
+    ██ Syntaxe:      CANCEL<br>
+</div>
+
+</body>
+</html>

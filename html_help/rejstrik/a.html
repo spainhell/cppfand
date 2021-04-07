@@ -7,7 +7,6 @@
 <body style="font-family:'Courier New'">
 <div>
     <h4>#A</h4>
-    <h4>Aditivní změny</h4>
     <span style="color:red">ADITIVNÍ ZMĚNY - odstavec #A</span>
     <hr>
     <span style="color:red">Aditivní změny</span> umožňují aktualizovat během editace <span style="color:red">podřízeného souboru</span><br>
@@ -195,7 +194,6 @@
     <br>
     Inverzní funkce : <a href="">difwdays</a>, <a href="">difmonth</a><br>
 </div>
-
 <div>
     <h4>Aditivní změny</h4>
     <span style="color:red">ADITIVNÍ ZMĚNY - odstavec #A</span>
@@ -255,8 +253,6 @@
     #A KUMUL.Zisk !! += cond(Příjmy&gtVýdaje:Příjmy-Výdaje);<br>
     KUMUL.Ztráta !! += cond(Příjmy&ltVýdaje:Výdaje-Příjmy);<br>
 </div>
-
-
 <div>
     <h4>Akce</h4>
     <span style="color:red">F6 - AKCE DATOVÉHO EDITORU</span>
@@ -281,7 +277,6 @@
     Mzda>5000<br>
     Místo=~'Praha'<br>
 </div>
-
 <div>
     <h4>Align</h4>
     <span style="color:red">SETEDITTXT</span>
@@ -307,7 +302,6 @@
     <br>
     Příkaz nastaví jen uvedené přepínače, ostatním  ponechá dosavadní hodnoty.<br>
 </div>
-
 <div>
     <h4>all</h4>
     <span style="color:red">Cyklické volání predikátu</span>
@@ -338,7 +332,6 @@
     připojen  ukazatel a výsledek je zařazen do seznamu, který je na  závěr<br>
     vypsán.<br>
 </div>
-
 <div>
     <h4>Alt</h4>
     Ctrl-Home <span style="color:red">ALTERNATIVNÍ NÁPOVĚDA</span>
@@ -363,18 +356,210 @@
     <br>
     ─── Ctrl-End ─────────────────────────────────────────────────────────────<br>
 </div>
+<div>
+    <h4>Append</h4>
+    <span style="color:red">APPEND - duplicitní klíčové slovo</span>
+    <hr>
+    ■ PutTxt(...,append ...) .... připojení textu k souboru<br>
+    ■ CopyFile(...,append...) ... připojení jednoho souboru k jinému.<br>
+</div>
+<div>
+    <h4>AppendRec</h4>
+    <span style="color:red">ZALOŽENÍ, RUŠENÍ A OBNOVENÍ VĚTY SOUBORU</span>
+    <hr>
+    Příkaz pro zrušení věty souboru má dvě varianty podle způsobu identifikace<br>
+    věty: fyzickým číslem věty nebo hodnotou vlastního klíče. U neindexovaných<br>
+    souborů dojde k fyzickému zrušení věty v souboru ( věty za zrušenou se po-<br>
+    sunou "dopředu"). U indexovaných souborů se věta pouze označí jako neplatná<br>
+    a vyřadí se všechny její indexy.  Fyzicky bude věta vyloučena  při celkové<br>
+    reorganizaci (indexfile-compress,výstup merge). Odtud plyne možnost obnovy<br>
+    zrušené věty (recallrec).  Test platnosti věty indexového  souboru provede<br>
+    funkce isdeleted. Obnovu zrušené (zneplatněné) věty indexového souboru<br>
+    provede příkaz recallrec.<br>
+    <br>
+    ██ syntaxe:   DELETEREC (NázevSouboru ,ČísloVěty [,+] )<br>
+    DELETEREC (NázevSouboru [ /NázevKlíče ] ,HodnotaKlíče [,+] )<br>
+    <br>
+    funkce    ISDELETED (NázevSouboru ,ČísloVěty )  : boolean<br>
+    funkce    ISDELETED (RecordProměnná)            : boolean<br>
+    <br>
+    RECALLREC (NázevSouboru ,ČísloVěty [,+] )<br>
+    <br>
+    APPENDREC (NázevSouboru)<br>
+    <br>
+    ■  ČísloVěty ... Fyzické číslo věty, číselný výraz.<br>
+    ■  NázevKlíče .. Vlastní klíč souboru. Implicitně @.<br>
+    ■  HodnotaKlíče  Textový výraz, hodnota klíče v interní podobě.<br>
+    Viz. KeyOf, SQL<br>
+    ■  + ........... Provedení aditivních změn. V případě havárie se aditivní<br>
+    změny neprovedou a nastaví se exitcode=1.<br>
+    <br>
+    IsDeleted je funkce definovaná pro indexové soubory (soubor formátu .DBF)<br>
+    Vrací  true  pokud  je  věta neplatná.  Druhá  varianta  testuje výsledek<br>
+    příkazu readrec.  Vrací true když je přečtená věta  neplatná , respektive<br>
+    se hledaná hodnota klíče nenašla.<br>
+    U indexovaných souborů příznak IsDeleted udává, zda je věta platná (false)<br>
+    nebo neplatná (true). Přidávání (rušení) vět u neindexovaných souborů zna-<br>
+    mená reorganizaci celého souboru, zatímco u indexovaných pouze nastavení<br>
+    příznaku.<br>
+    <br>
+    RecallRec označí větu indexového souboru za platnou, nastaví prefix věty<br>
+    IsDeleted:=false, zkontroluje duplicitu a zařadí větu do indexů.<br>
+    <br>
+    AppendRec připojí prázdnou větu za konec souboru. U indexového souboru<br>
+    bude věta označena jako neplatná (isdeleted:=true). Příkaz je poněkud<br>
+    archaickým pozůstatkem ze starších verzí (kompatibilita).<br>
+    <br>
+    ░░░░░░░░░░░░<br>
+    ░░příklady░░<br>
+    ░░░░░░░░░░░░<br>
+    <br>
+    ██  SKLAD[x].ks+= -Mnozstvi;                    {přímý přístup do souboru}<br>
+    SKLAD[SKLAD.NRecs].Cena:=10.5;<br>
+    appendrec(DATA)                                      {připojování vět}<br>
+    deleterec(SKLAD,1)                                        {mazání vět}<br>
+    deleterec(SKLAD,SKLAD.nrecs)<br>
+    <br>
+    ██  appendrec(DATA);           { zařazení nové věty do indexového souboru}<br>
+    věta:=DATA.nrecsabs;       { Tento způsob ovšem silně voní nostalgií }<br>
+    DATA[věta].údaj1:=...      { po verzi 2.2 }<br>
+    DATA[věta].údaj2:=...<br>
+    ...<br>
+    recallrec(DATA,věta);<br>
+    <br>
+    { lepší způsob }<br>
+    VAR  rec : record of soubor ;<br>
+    ....<br>
+    rec.udaj1:= ... ;               { méně fyzických přístupů do souboru }<br>
+    rec.udaj2:= ... ;               { "měkčí" na blokování v LAN }<br>
+    writerec( rec,0) ;<br>
+    <br>
+    ██  i:=1;                     {obnovení zrušených vět v indexovém souboru}<br>
+    repeat if isdeleted(DATA,i) then recallrec(DATA,i)<br>
+    i:=i+1;<br>
+    until i=DATA.nrecsabs<br>
+</div>
+<div>
+    <h4>ArcTan</h4>
+    <span style="color:red"></span>
+    <hr>
+</div>
+<div>
+    <h4>Archivace</h4>
+    <span style="color:red">ZÁLOHOVÁNÍ</span>
+    <hr>
+    PC FAND zahrnuje podporu pro zálohování (archivaci) datových  souborů,<br>
+    přičemž existují dva možné přístupy:<br>
+    <br>
+    1.  logické zálohování souborů, jejichž seznam se uveden v katalogu<br>
+    příkazy backup a restore<br>
+    2.  fyzické zálohování souborů z adresáře podle masky (analogie ARJ,ZIP,....)<br>
+    příkazy backupm a restorem<br>
+    <br>
+    Zásady logické archivace:<br>
+    <br>
+    ■  Pro účely zálohování má základní význam katalog  úlohy. Pomocí katalogu<br>
+    lze definovat  určité úrovně archivace ( např. denní, měsíční,...)<br>
+    a rozdělení souborů do těchto úrovní.<br>
+    <br>
+    ■  Pro každý soubor, který chceme zálohovat musí v katalogu existovat<br>
+    položka s cestou k souboru a číslem archivace (Ar). Pomocí údaje kata-<br>
+    logu číslo archivace (ar) lze určit do které úrovně archivace patří.<br>
+    <br>
+    ■  Pro každou úroveň archivace lze speciální položkou katalogu určit<br>
+    název archivace a adresář pro zálohovaná data. Pod jeden název archivace<br>
+    lze spojit více úrovní archivace:<br>
+    <br>
+    NazUlohy   NazSouboru      Ar         Cesta                   Navesti<br>
+    ARCHIVES   NázevArchivace  ČísloArch. AdresářArchívu   Návěští 1.diskety<br>
+    <br>
+    ARCHIVES ......... povinné jméno úlohy<br>
+    NázevArchivace ... použije se v příkazech backup a restore.<br>
+    ČísloArchivace ... určení úrovně archivace, další úrovně mohou být<br>
+    zadány v položce cesta - viz. dále<br>
+    AdresářArchívu ... musí končit znakem '\', za alespoň jednou mezerou<br>
+    lze psát další ČíslaArchivace  (např. A:\  1,3,4 )<br>
+    <br>
+    ■  Na jednotlivé soubory se uplatní kompresní algoritmus.<br>
+    <br>
+    ■  Zálohování se provede příkazem backup, obnova dat příkazem restore.<br>
+    <br>
+    ■  Pokud je to nutné (nejsou čitelné), jsou při zálohování (volitelně)<br>
+    formátovány cílové diskety, včetně zápisu návěští.<br>
+    Zahrnuta je i podpora více disket dle konvencí příkazu copyfile.<br>
+    <br>
+    ■  Název zálohovaného souboru se rovná názvu originálu bez cesty.Rozlišení<br>
+    pomocí přípony :  .0xx resp. Txx       xx je pořadové číslo během<br>
+    kopírování x je 0..9,A..Z<br>
+    .5xx resp. Yxx       pokud pokračuje na další disketě<br>
+</div>
+<div>
+    <h4>Archives</h4>
+    <span style="color:red">ARCHIVES - duplicitní klíčové slovo</span>
+    <hr>
+    ■ NázevDleKatalogu.Archives ..... přímý přístup k údajům katalogu v<br>
+    proceduře ( archives)<br>
+    ■ spec. název úlohy v katalogu... speciální jméno úlohy archives v<br>
+    katalogu označuje položku pro definici<br>
+    názvu archivace - viz zálohování<br>
+</div>
+<div>
+    <h4>Aritmetické funkce</h4>
+    <span style="color:red"></span>
+    <hr>
+</div>
+<div>
+    <h4>assert</h4>
+    <span style="color:red">assert</span>
+    <hr>
+    assert(predikát[(Term[{,Term}])])<br>
+    <br>
+    predikát  Vkládaný databázový predikát.<br>
+    Term      Konstanta nebo vázaná proměnná.<br>
+    <br>
+    Predikát assert ukládá do databáze databázový predikát  definovaný<br>
+    jako  parametr. Termy smějí obsahovat jen konstanty a vázané  proměnné.<br>
+    Predikát se ukládá na konec databáze.<br>
+    <br>
+    Nelze  použít pro  predikáty definované  jako soubory  PC FANDu  s<br>
+    indexovou podporou  v cyklu čtení téhož predikátu.<br>
+    <br>
+    Příklad:<br>
+    <br>
+    uloz:- assert(a(1)), assert(a(2)), assert(b(2)).<br>
+</div>
+<div>
+    <h4>Assign</h4>
+    <span style="color:red">ASSIGN - duplicitní klíčové slovo</span>
+    <hr>
+    ■ Report(...,assign=TextVýraz ...) ... přesměrování tiskového výstupu<br>
+    parametry sestavy<br>
+    ■ Graph(...,assign=TextVýraz...) ..... přesměrování souboru .PCX pro zápis<br>
+</div>
+<div>
+    <h4>Automatická sestava</h4>
+    <span style="color:red">AUTOMATICKÁ SESTAVA</span>
+    <hr>
+    Umožňuje vytisknout obsah datového souboru  nebo jeho části s automatickým<br>
+    rozvrhem strany. Vyvolává se z datového editoru (F6-akce, Opis) nebo přímo<br>
+    v projektu procedurou report. Dovoluje výběr podmnožiny,  dočasné třídění,<br>
+    součtování a dělení souboru do skupin.<br>
+    ┌───────────────┐<br>
+    │ Opis vět      │ opis datového souboru nebo vybrané podmnožiny<br>
+    │ Součt.sestava │ opis doplněný součty vybraných údajů<br>
+    │ Totály        │ součtovaná sestava bez jednotlivých vět (jen součty)<br>
+    │ Chybné věty   │ opis chybných vět souboru (logické kontroly)<br>
+    └───────────────┘<br>
+    Postup komunikace v autoreportu: před generováním sestavy zadáváte údaje:<br>
+    <br>
+    ■ součtované údaje... číselné údaje, na konci sestavy budou sečteny<br>
+    ■ řídící údaje ...... rozdělují soubor do skupin se stejnými řídícími údaji<br>
+    součty jsou potom prováděny i po skupinách<br>
+    ■ třídící údaje ..... věty budou vystupovat v pořadí podle třídících údajů<br>
+    třídění je dočasné a nemá vliv na soubor<br>
+    ■ podmnožina ........ když zadáte logický výraz, do sestavy vystoupí pouze<br>
+    věty splňující tuto podmínku<br>
+</div>
 
-
-
-Alternativní nápověda
-Append
-AppendRec
-ArcTan
-Archivace
-Archives
-Aritmetické funkce
-assert
-Assign
-Automatická sestava
 </body>
 </html>
