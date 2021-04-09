@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <title>Č</title>
+</head>
+<body style="font-family:'Courier New'">
+
+<div>
+    <h4>#C</h4>
+    <span style="color:red">ČÍSLO VĚTY</span>
+    <hr>
+    Při hledání podle vlastního nebo cizího klíče se pracuje s čísly vět, které<br>
+    lze chápat v různém kontextu.<br>
+    <br>
+    ■ fyzické číslo ... Jednoznačná identifikace věty pořadovým číslem jejího<br>
+    fyzického uložení v souboru (na disku). Fyzickým číslem<br>
+    je možno "adresovat" věty i v souboru bez klíče,<br>
+    v indexovém souboru i zrušené (zneplatněné) věty.<br>
+    <br>
+    ■ logické číslo ... Vždy se vztahuje k určitému vlastnímu klíči souboru.<br>
+    Je to pořadové číslo věty od počátku v pořadí podle<br>
+    některého z vlastních klíčů. Pokud jsou v klíči povoleny<br>
+    duplicity nemusí být obecně logické číslo jednoznačné.<br>
+    <br>
+    ■ interní string klíče ... Kompatibilita s prostředím SQL vedla k podpoře<br>
+    manipulace s interními hodnotami klíčů ( aniž bychom<br>
+    se museli zabývat jejich přesnou interní strukturou).<br>
+    Nutnou podmínkou je indexová podpora souborů.<br>
+    Odkazy: keyof<br>
+    <br>
+    Převod logického na fyzické recnoabs a naopak recnolog. Fyzické číslo věty<br>
+    s určitou hodnotou klíče vrací funkce   recno. Funkce link vrátí fyzické<br>
+    číslo nadřízené věty.<br>
+    Kombinovaný přístup pomocí fyzického čísla i klíče : readrec, writerec,<br>
+    deleterec<br>
+</div>
+
+</body>
+</html>

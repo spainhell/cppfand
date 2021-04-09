@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <title>D</title>
+</head>
+<body style="font-family:'Courier New'">
+
+<div>
+    <h4>D</h4>
+    <span style="color:red">FUNKCE</span>
+    <hr>
+    Kromě předdefinovaných funkcí (viz. standardní funkce) je možno definovat<br>
+    vlastní, tzv.  uživatelské funkce.  Pro jejich  deklaraci slouží kapitola<br>
+    typu D, která nesmí mít název. Konstrukce funkcí je velice podobná proce-<br>
+    durám. Před použitím názvu funkce v úloze musí být tato funkce deklarována.<br>
+    Je povolena (přímá) rekurze.<br>
+    <br>
+    ██ Syntaxe:  [{ function NázevFunkce( [ DeklaraceParametrů ] ) : Typ ;<br>
+    [ DeklaraceLokálníchProměnných ]<br>
+    begin [{ Příkaz ; }] end ; }]<br>
+    <br>
+    ■ DeklaraceParametrů .. seznam parametrů  Název : Typ ;<br>
+    <br>
+    ■ Povolené typy ....... pro parametry, lokální proměnné a typ funkce<br>
+    jsou povoleny "pouze" typy  real, string, boolean<br>
+    <br>
+    ■ Název funkce ........ je implicitně deklarován jako lokální proměnná.<br>
+    Hodnota funkce se definuje tak, že v těle funkce<br>
+    je této proměnné přiřazen požadovaný výsledek.<br>
+    <br>
+    ■ Povolené příkazy .... v těle funkce jsou povoleny příkazy if, while,<br>
+    for, repeat, case, break, cancel, begin, end,<br>
+    přiřazovací příkaz (:=,+=)<br>
+    <br>
+    ■ Definiční obor ...... Uživatelské funkce lze použít v každém výrazu,<br>
+    jsou tedy přístupné i uživateli. Uživatelská<br>
+    funkce se stejným názvem jako standardní funkce<br>
+    tuto funkci znepřístupní. Podobně deklarace<br>
+    funkce v podúloze překryje stejnojmennou funkci<br>
+    z nadřízené úlohy.<br>
+    <br>
+    ■ Omezení ............. V jedné kapitole D je možno  deklarovat libovolný<br>
+    počet funkcí (omezeno jen rozsahem volného textu).<br>
+    Počet kapitol D není omezen. Celkový počet funkcí<br>
+    je omezen jen velikostí paměti (všechny uživatel-<br>
+    ské funkce jsou umístěny v paměti po celou dobu<br>
+    zpracování úlohy.<br>
+    V těle funkce nejsou povoleny vedlejší efekty,<br>
+    např. zápis do údajů souboru, práce s proměnnou<br>
+    record of soubor ...<br>
+    <br>
+    ■ Volání funkce ....... Analogicky jako standardní funkce, uvedením<br>
+    identifikátoru funkce ve výrazu. Při vyvolání<br>
+    musí souhlasit počet a typ parametrů z deklarace<br>
+    funkce.<br>
+    <br>
+    <br>
+    ░░░░░░░░░░░░<br>
+    ░░příklady░░<br>
+    ░░░░░░░░░░░░<br>
+    <br>
+    <br>
+    ██  funkce bez     function DatumACas() : real ;<br>
+    parametru               begin<br>
+    DatumACas := today + currtime ;<br>
+    end ;<br>
+    { vrátí v jedné hodnotě aktuální datum a čas }<br>
+    <br>
+    <br>
+    ██  funkce s       function MIN ( prvni : real ; druhy : real ) : real ;<br>
+    parametry               begin<br>
+    MIN := cond( prvni<=druhy : prvni ,<br>
+    else : druhy ) ;<br>
+    end ;<br>
+    { vrátí minimum ze dvou čísel }<br>
+    <br>
+    <br>
+    ██  rekurzivní     function faktorial (n:real) : real ;<br>
+    funkce                  var i : real ;<br>
+    begin<br>
+    if frac(n)>0 then faktorial:=0<br>
+    { faktorial pouze pro celá čísla }<br>
+    else if n>1 then faktorial:=n*faktorial(n-1)<br>
+    else faktorial:=1 ;<br>
+    end ;<br>
+    { faktorial n = 1 * 2 * ... * (n-1) * n ;<br>
+    je klasický příklad použití rekurzivní funkce }<br>
+</div>
+<div>
+    <h4>#D</h4>
+    <span style="color:red">ZÁVISLOSTI - odstavec #D</span>
+    <hr>
+    Pomocí závislostí může programátor řešit kontextové pořízení dat. Na základě<br>
+    některých již pořízených údajů (obecně logického výrazu) je možné jiné údaje<br>
+    dosadit automaticky nebo vůbec přeskočit,  protože  v  daném kontextu nemají<br>
+    význam.<br>
+    <br>
+    ██ Syntaxe:       #D { (LogVýraz) NázevÚdaje:=Výraz; }<br>
+    <br>
+    Pro  jeden  logický  výraz  (podmínku)   může   následovat  seznam  několika<br>
+    přiřazovacích  příkazů. V případě, že je splněn logický výraz, hodnota údaje<br>
+    se dosadí a datový kurzor  se posune na další údaj.  Při nesplnění logického<br>
+    výrazu je třeba údaj pořídit nebo editovat ručně.  Závislosti se vyhodnocují<br>
+    během pořízení i editace pouze při příchodu k údaji klávesou Enter.<br>
+    <br>
+    <br>
+    ░░░░░░░░░░░░<br>
+    ░░příklady░░        #D (ADRESY.exist)    Jméno:=ADRESY.Jméno;<br>
+    ░░░░░░░░░░░░                            Adresa:=ADRESY.Adresa;<br>
+    #D (DruhMzdy='03')   Třída:=''; Sazba:=0;<br>
+    (DruhMzdy='04')    Úkol:=0; Prémie:=Sazba*0.15;<br>
+</div>
+<div>
+    <h4>DATABASE</h4>
+    <span style="color:red">#DATABASE - Popis dat</span>
+    <hr>
+    #DATABASE [-JmDatabáze]<br>
+    <br>
+    <br>
+    NázevPredikátu[(NázevTypu{,NázevTypu})]<br>
+    <br>
+    @NázevPredikátu(NázevÚdaje/NázevTypu[{,NázevÚdaje/NázevTypu}])<br>
+    <br>
+    RDB projekt  může obsahovat  více databází. Shodné jméno  databáze<br>
+    může být  použito v  několika  "L"  kapitolách.  Pokud  se  bude  obsah<br>
+    databáze přenášet vzájemně z několika L kapitol pomocí uložení a obnovy<br>
+    databáze  do globální  proměnné musí  souhlasit popis použitých typů  v<br>
+    odstavci #DOMAINS.<br>
+    <br>
+    Kapitola "L" může obsahovat více odstavců #DATABASE.<br>
+    <br>
+    Znak  @ naznačuje,  že se jedná o pohled do datového souboru.  Typ<br>
+    údaje musí být určen explicitně. Ve FAND PROLOGU může být  zpřístupněna<br>
+    pouze část vyjmenovaných údajů datového souboru. Zpřístupněn může být i<br>
+    vypočítaný údaj.<br>
+    Při   vyhledávání    predikátu   je    vždy  prováděno   sekvenční<br>
+    prohledávání.  Hledání v datovém souboru s vhodným klíčem je  prováděno<br>
+    pomocí indexu.<br>
+</div>
+<div>
+    <h4>Databáze znalostí</h4>
+    <span style="color:red">#DATABASE - Popis dat</span>
+    <hr>
+    #DATABASE [-JmDatabáze]<br>
+    <br>
+    <br>
+    NázevPredikátu[(NázevTypu{,NázevTypu})]<br>
+    <br>
+    @NázevPredikátu(NázevÚdaje/NázevTypu[{,NázevÚdaje/NázevTypu}])<br>
+    <br>
+    RDB projekt  může obsahovat  více databází. Shodné jméno  databáze<br>
+    může být  použito v  několika  "L"  kapitolách.  Pokud  se  bude  obsah<br>
+    databáze přenášet vzájemně z několika L kapitol pomocí uložení a obnovy<br>
+    databáze  do globální  proměnné musí  souhlasit popis použitých typů  v<br>
+    odstavci #DOMAINS.<br>
+    <br>
+    Kapitola "L" může obsahovat více odstavců #DATABASE.<br>
+    <br>
+    Znak  @ naznačuje,  že se jedná o pohled do datového souboru.  Typ<br>
+    údaje musí být určen explicitně. Ve FAND PROLOGU může být  zpřístupněna<br>
+    pouze část vyjmenovaných údajů datového souboru. Zpřístupněn může být i<br>
+    vypočítaný údaj.<br>
+    Při   vyhledávání    predikátu   je    vždy  prováděno   sekvenční<br>
+    prohledávání.  Hledání v datovém souboru s vhodným klíčem je  prováděno<br>
+    pomocí indexu.<br>
+</div>
+<div>
+    <h4>Datové typy</h4>
+    <span style="color:red">#DOMAINS - Definice typů</span>
+    <hr>
+    Odstavec deklaruje  nové datové  typy. Název  datového  typu  musí<br>
+    začínat velkým  písmenem. Současně  lze  definovat  více  typů  (seznam<br>
+    oddělený znakem ","). Při definici lze použít i typ deklarovaný později<br>
+    v rámci téhož odstavce #DOMAINS a rekurzivní deklarování.<br>
+    <br>
+    Zápis deklarace má tvar:<br>
+    <br>
+    { NázevTypu{,NázevTypuX} = DeklaraceTypu }<br>
+    <br>
+    jde o zkrácený zápis:<br>
+    <br>
+    NázevTypu = DeklaraceTypu<br>
+    NázevTypuX = NázevTypu<br>
+    <br>
+    NázevTypu     Název nově deklarovaného typu.<br>
+    NázevTypuX    Název dalšího deklarovaného typu.<br>
+    DeklaraceTypu Deklarace nového typu.<br>
+    <br>
+    <br>
+    Implicitně deklarované typy jsou:<br>
+    <br>
+    ┌──────────────┬──────────────────────────┬──────────────────────┐<br>
+    │ název        │ min. -max. hodnota       │ popis                │<br>
+    ├──────────────┼──────────────────────────┼──────────────────────┤<br>
+    │ Integer      │ -32768   až +32767       │ celé číslo           │<br>
+    │ Real         │                          │ desetinné číslo      │<br>
+    │              │ -2.9e-39 až +1.7e8       │ standardní verze     │<br>
+    │              │ -5e-324  až +1.7e308     │ koprocesorová verze  │<br>
+    │ Boolean      │ false, true              │ logická hodnota      │<br>
+    │ String       │ 0 - 255 znaků            │ řetězec              │<br>
+    │ LongString   │ 0 - 65000 znaků          │ dlouhý řetězec       │<br>
+    └──────────────┴──────────────────────────┴──────────────────────┘<br>
+    <br>
+    Přesnost typu  Real se liší u verze bez koprocesoru (11 míst) a  u<br>
+    verze s  koprocesorem (15  míst). Term  typu  LongString  se  ukládá  v<br>
+    souboru  FANDWORK.$$$ a práce s  ním bude  pomalejší než u typu  String<br>
+    uloženého v operační paměti.<br>
+    Konstanty typu  Real a Integer lze zadat i v hexadecimálním  tvaru<br>
+    začínajícím znakem "$".<br>
+    <br>
+    <br>
+    Odvozený typ.<br>
+    <br>
+    NovýTyp = JinýTyp<br>
+    <br>
+    Predikáty  pracující s typem JinýTyp budou pracovat i s  odvozeným<br>
+    typem NovýTyp.<br>
+    <br>
+    Seznam.<br>
+    <br>
+    <br>
+    Automaticky pro každý typ Typ je deklarován seznam označený L_Typ.<br>
+    <br>
+    Seznam  označujeme pomocí  hranatých závorek  a  jednotlivé  prvky<br>
+    oddělujeme znakem  ",". Znakem  "|" se  odděluje hlava od těla  seznamu.<br>
+    Výraz na pravé straně je považován za tělo. Hlava obsahuje  vyjmenované<br>
+    prvky  seznamu a  tělo je  zbývající část  seznamu, který  může  být  i<br>
+    prázdný nebo obsahovat několik prvků. "[]" označuje prázdný seznam.<br>
+    <br>
+    Při zápisu lze použít tvaru [Prvek1{, Prvekx}|ZbytekSeznamu].<br>
+    <br>
+    Příklad seznamu:<br>
+    ['Alis','Derby','T7']     Seznam termů typu String<br>
+    [X|Y]                     Hlava  X, tělo   Y<br>
+    <br>
+    Svázání  [X|Y] s hodnotou ['Alis','Derby','T7'] sváže proměnné<br>
+    X   s hodnotou   'Alis'<br>
+    Y   s hodnotou   ['Derby','T7']<br>
+    <br>
+    <br>
+    Výčtový typ.<br>
+    <br>
+    VýčtovýTyp =  SeznamTypůOddělStředníkem<br>
+    <br>
+    Definujeme seznam hodnot, kterých může typ nabývat.<br>
+    <br>
+    <br>
+    Struktura.<br>
+    <br>
+    StrTyp[{,StrTyp}] = název(SeznamOddělČárkou)<br>
+    <br>
+    název               Název funktoru<br>
+    SeznamOddělČárkou   Seznam prvků.<br>
+    <br>
+    <br>
+    FAND  PROLOG umožňuje  definování  i  složitých  datových  útvarů.<br>
+    Struktura je obdobou recordu jazyka PASCAL. Prvkem struktury může být i<br>
+    další struktura.<br>
+    <br>
+    <br>
+    Příklad:<br>
+    <br>
+    Výčtový typ :  Organiz = alis; kibo<br>
+    Odvozený typ:  Firma,Zamestnanec = String<br>
+    Struktura   :  Strukt=sez(L_Firma,Real,Strukt)<br>
+    - rekurzivní odkaz na vlastní typ<br>
+</div>
+<div>
+    <h4>Datový editor</h4>
+    <span style="color:red">DATOVÝ EDITOR</span>
+    <hr>
+    pohyb po souboru                          pohyb uvnitř údaje<br>
+    ----------------                          ------------------<br>
+    ■ <- ..... na předchozí údaj ve větě     ■ Ins,CtrlV ......... vkládání/přepis<br>
+    ■ -> ..... na následující údaj           ■ <- .................. o znak doleva<br>
+    ■ Enter .. na další editovatelný údaj    ■ -> ................. o znak doprava<br>
+    ■ Home ... na první údaj ve větě         ■ Home ............. na začátek údaje<br>
+    ■ End .... na poslední údaj ve větě      ■ End ................ na konec údaje<br>
+    ■ Ins .... vstup do údaje bez přepsání   ■ Del ..... mazání znaku pod kurzorem<br>
+    ■ PageUp ......... na předchozí stranu   ■ BackSpace <- ........ před kurzorem<br>
+    ■ PageDown ....... na následující stranu ■ Enter ...... ukončení editace údaje<br>
+    ■ Ctrl-Home ...... na předchozí větu     ■ Esc ....... návrat bez uložení změn<br>
+    ■ Ctrl-End ....... na následující větu   ■ F4 ............ diakritika pro znak<br>
+    ■ Ctrl-PageUp .... na začátek souboru    ■ Alt-F8 ....... přepínání klávesnice<br>
+    ■ Ctrl-PageDown .. na konec souboru<br>
+    <br>
+    <br>
+    Editace volných textů ... Ins - dovnitř, Esc - zpět.  Samotný  text  editujete<br>
+    textovým editorem. Na obrazovce znamená * naplněný a . prázdný  text.  Editaci<br>
+    datového souboru ukončíte  klávesou  Esc.  Nápověda  popisuje  běžné  ovládání<br>
+    editoru, v úloze může programátor některé povely uživateli zakázat.<br>
+    <br>
+    Přepínače pro vkládací a přepisovací režim při editaci dat jsou dva. Jeden pro<br>
+    textový editor ( údaje typu T ) a jeden pro  ostatní typy údajů.  Přepínač pro<br>
+    textový editor je globální (nastavení platí i pro editaci dalších textů).<br>
+    Přepínač pro ostatní typy dat je naopak lokální, což znamená,že jeho nastavení<br>
+    je platné jen v rámci právě rozpracované editace údaje.  Po vstupu do údaje je<br>
+    vždy vkládací režim.<br>
+</div>
+<div>
+    <h4>DBF</h4>
+    <span style="color:red">SOUBOR FORMÁTU .DBF</span>
+    <hr>
+    Soubor s příponou .DBF v NázvuSouboru bude na disku uložen ve standardním<br>
+    formátu .DBF  (dBASE III,  včetně volných textů .DBT nebo .FPT) a může  být<br>
+    přímo  zpracováván databázemi  typu  XBase.  Kromě  formátu  uložení  se  z<br>
+    uživatelského hlediska  .DBF soubory neliší od ostatních datových  souborů.<br>
+    .DBF soubory však nemohou mít indexovou podporu a nelze je sdílet v lokální<br>
+    síti.<br>
+    Převodní vztah mezi typy údajů PC FANDu a XBase ukazuje tabulka:<br>
+    ┌──────────┬────────────┬───────────────────────────────────────────┐<br>
+    │ PC FAND  │  XBase     │  poznámky                                 │<br>
+    ├──────────┼────────────┼───────────────────────────────────────────┤<br>
+    │ F,n.m    │F,N n+m+1,m │ (totéž platí i pro F,n,m)                 │<br>
+    │ F,n.0    │F,N n       │                                           │<br>
+    │ A,n      │  C n       │                                           │<br>
+    │ D        │  D         │ (bez ohledu na masku zobrazení v PC FANDu)│<br>
+    │ T        │  M         │                                           │<br>
+    │ B        │  L         │                                           │<br>
+    └──────────┴────────────┴───────────────────────────────────────────┘<br>
+    Zrušené věty  v .DBF souboru budou zobrazeny jinou barvou a po sort nebo<br>
+    merge se ze souboru vypustí. Když  má  deklarace  souboru  .DBF  prázdný<br>
+    Text, při  překladu doplní PC FAND  deklaraci  automaticky  podle<br>
+    hlavičky existujícího  souboru na disku.<br>
+    <br>
+    Vypočtené údaje v souboru DBF mohou být i typů N a R, které však nelze použít<br>
+    jako typy uložených údajů.<br>
+</div>
+<div>
+    <h4>DE</h4>
+    <span style="color:red">VÝSTUP SESTAVY</span>
+    <hr>
+</div>
+<div>
+    <h4>DeadLock</h4>
+    <span style="color:red">LAN - PŘEHLED POUŽÍVANÝCH POJMŮ</span>
+    <hr>
+    Exclusive.. výlučné, výhradní otevření souboru jedním účastníkem, ostatní<br>
+    účastníci nemají povolen žádný přístup k tomuto souboru.<br>
+    POZOR - odlišovat od módu Excl<br>
+    <br>
+    Shared .... sdílený přístup k datovému souboru několika účastníky najednou<br>
+    <br>
+    Módy blokování souboru.. pro práci se  sdílenými soubory FAND používá řadu<br>
+    módů blokování souboru. Tyto módy umožňují postupný  přechod<br>
+    mezi režimem Shared a Exclusive.<br>
+    <br>
+    Lock ...... uzamčení, blokování  věty datového  souboru po dobu  provádění<br>
+    akce.  Automatické zamykání vět slouží  ke koordinaci datových<br>
+    editorů, v proceduře je k dispozici také příkaz with locked<br>
+    <br>
+    Deadlock... zablokování, uváznutí  programu  v síti je nežádoucí  situace,<br>
+    kdy si  účastníci v síti  navzájem  blokují  přístup k souboru<br>
+    (větě). K uváznutí nedochází často, ale nebezpečí jeho výskytu<br>
+    vzrůstá s časem, po který jsou soubory (věty) blokovány.<br>
+    Uváznutí je třeba na jedné za zablokovaných stanic uvolnit<br>
+    klávesami Ctrl-Break.<br>
+    <br>
+    Net delay.. perioda pro opakování  blokovaného přístupu (čas v CPU).<br>
+    Konstantu lze instalovat programem FANDINST.<br>
+    <br>
+    Refresh ... perioda obnovy obrazovky v datovém editoru při sdílené editaci<br>
+    (čas v sekund.). Konstantu lze  instalovat programem FANDINST.<br>
+    Okamžitou obnovu obrazovky je možné vyvolat ručně CTRL-F2.<br>
+</div>
+<div>
+    <h4>DEFINE</h4>
+    <span style="color:red">PODMÍNĚNÝ PŘEKLAD - direktivy kompilátoru</span>
+    <hr>
+    Často je nutno  udržovat několik  verzí programu,  např. pro několik typů<br>
+    uživatelů.  Tyto situace lze  řešit použitím direktiv kompilátoru, pomocí<br>
+    kterých lze při překladu vynechat  části  zdrojového textu  dle zvoleného<br>
+    kontextu.<br>
+    <br>
+    {$define}   |  {$define X ... X}              X je velké písmeno A ... Z<br>
+    {$ifdef X}  |  {$ifndef X}<br>
+    {$else}<br>
+    {$endif}<br>
+    <br>
+    Příkaz define  zneplatní  dosavadní definice a určí  množinu definovaných<br>
+    znaků. Maximálně lze definovat 20 znaků.Takto definované znaky lze použít<br>
+    v podmínce k označení bloku  zdrojového textu, který je vázán na definici<br>
+    daného znaku (ifdef), nebo naopak na to, že znak definován není (ifndef).<br>
+    <br>
+    Direktiva else uvozuje blok zdrojového textu, který se přeloží, pokud byl<br>
+    ignorován text za předchozí direktivou Ifxxx.<br>
+    Direktiva endif podmíněný blok zdrojového textu ukončí.<br>
+    Lze s výhodou použít analogii s příkazem procedury if - ale nezaměňovat !<br>
+    <br>
+    ■ Direktivy se mohou vyskytovat všude, kde jsou povoleny komentáře.<br>
+    ■ Direktivy mohou být vnořené jedna do druhé.<br>
+    ■ Při nenávratném zaheslení se vypustí větve programu, které nejsou podle<br>
+    nastavených přepínačů platné.<br>
+    ■ Časové zdržení překladu podmíněným textem je stejné jako komentářem<br>
+    této délky.<br>
+    ■ V kapitole F lze použít podmíněnou kompilaci za předpokladu, že je v<br>
+    první (uložené údaje,#K,#C,#A) a druhé části (#U,#D,#L,#I) použita<br>
+    samostatně. Druhá část kapitoly F nesmí začínat direktivou.<br>
+    Direktivy nelze použít uvnitř pohledu (#U).<br>
+    ■ Speciální direktiva {$include NázevKapitolyI} vloží do textu kapitoly<br>
+    text kapitoly typu I. (vkládané texty)<br>
+    <br>
+    ░░░░░░░░░░░░<br>
+    ░░příklady░░<br>
+    ░░░░░░░░░░░░<br>
+    <br>
+    ██  Program manipuluje s velkými částkami a chceme rozlišit standardní<br>
+    verzi a verzi pro koprocesor, která zpracuje větší čísla (ale při<br>
+    emulaci pomaleji). Podmíníme přímo strukturu datového souboru.<br>
+    <br>
+    F   Soubor       ČísloÚčtu : N,6 ;<br>
+    {$ifndef K}<br>
+    CelkemKc : F,8.2 ;           {standardní verze}<br>
+    {$else}<br>
+    CelkemKc : F,12.2 ;          {pro koprocesor}<br>
+    {$endif}<br>
+</div>
+<div>
+    <h4>Definice okna</h4>
+    <span style="color:red">DEFINICE OKNA</span>
+    <hr>
+    Kromě explicitního příkazu with window pro definici okna je možno ovlivnit<br>
+    i parametry  oken v dalších příkazech,  které používají okno ke komunikaci<br>
+    s uživatelem.<br>
+    <br>
+    V příkazech graph, edittxt, edit a v uživatelských pohledech #U lze použít<br>
+    pro definici okna parametr ww, který má téměř totožnou syntaxi jako příkaz<br>
+    with window. Liší  se pouze různým počtem atributů barev.  V příkazu graph<br>
+    se deklarují tři barvy, edittxt jedna a v datovém editoru ( a #U ) 7 barev.<br>
+    Vesměs platí, že pokud se atribut nedefinuje, použije se barva dle<br>
+    instalace barev pro daný objekt.<br>
+    <br>
+    Další skupina příkazů  pracujících s oknem již neumožňuje jeho plnou defi-<br>
+    nici ale dle kontextu je možno některé parametry okna  definovat a jiné se<br>
+    dosadí automaticky.<br>
+    Jde o příkazy a funkce menu, menuloop, menubar, clrscr, selectstr, getpath<br>
+    a interní okna PC FANDu (výběr údajů,...)<br>
+    <br>
+    ░░░░░░░░░░░░       clrscr(10,5,70,15,^Q)<br>
+    ░░příklady░░       edit(DATA,(),ww=(1,3,40,12,,^A,23,0,^S));<br>
+    ░░░░░░░░░░░░       menubar (3,10,60) of ... ;<br>
+</div>
+<div>
+    <h4>Deklarace souboru</h4>
+    <span style="color:red">DEKLARACE SOUBORU - kapitola F</span>
+    <hr>
+    Deklarace datového souboru obsahuje povinně uložené  údaje, další odstavce<br>
+    kapitoly (začínají speciálním znakem # a písmenem-zkratkou) jsou volitelné:<br>
+    <br>
+    ■ uložené údaje              definice fyzické struktury souboru na disku<br>
+    ■ vypočítané údaje      (#C) pojmenované výrazy pro další použití<br>
+    ■ klíče                 (#K) vyhledávání, spojení mezi soubory, integrita<br>
+    ■ aditivní změny        (#A) číselná aktualizace údajů nadřízeného souboru<br>
+    ■ uživatelské pohledy   (#U) navigace po databázi, přístupová práva<br>
+    ■ závislosti            (#D) kontextové pořízení a editace dat<br>
+    ■ logické kontroly      (#L) kontrola správnosti zadaných dat<br>
+    ■ implicitní hodnoty    (#I) pohodlnější pořizování nových vět<br>
+    <br>
+    Názvem kapitoly F (NázevSouboru) se na datový soubor odvoláváme v projektu,<br>
+    výjimečně se v názvu kapitoly F (ne v dalších odkazech) zadává přípona:<br>
+    <br>
+    ■ indexovaný soubor   (.X  ) automatická indexová podpora pro vlastní klíče<br>
+    ■ projektový soubor   (.RDB) údržba jiného projektu<br>
+    ■ soubor pro nápovědu (.HLP) nápověda k úloze (help-soubor)<br>
+    ■ soubor formátu .DBF (.DBF) datová kompatibilita s databázemi typu XBase<br>
+    ■ SQL - tabulka       (.SQL) možnost prezentace souboru jako tabulky na SQL<br>
+    serveru<br>
+    <br>
+    ■ speciální deklarace: like ...... zjednodušená deklarace stejných souborů<br>
+    (odkaz místo textu)  journalof ... žurnál pro sledování změn při editaci<br>
+</div>
+<div>
+    <h4>Deklarace Lokálních Proměnných</h4>
+    <span style="color:red">DEKLARACE LOKÁLNÍCH PROMĚNNÝCH</span>
+    <hr>
+    Lokální proměnné slouží pro  uchovávání mezivýsledků uvnitř jedné sestavy,<br>
+    transformace, procedury nebo funkce.  Jejich typy odpovídají typům výrazů.<br>
+    Pouze v proceduře lze navíc použít record proměnnou (věta souboru),<br>
+    proměnnou typu pracovní index nebo lokální soubor (typ file) .<br>
+    <br>
+    █ var SeznamProměnných:Typ .............. lokální proměnná<br>
+    █ var SeznamProměnných:Typ=PočHodnota ... s počáteční hodnotou (konstanta)<br>
+    <br>
+    ░ var i,j,k:real;                                    i:=j+k;<br>
+    ░     max:real=999999;                               max+=1;<br>
+    ░     s1,s2:string;                                  write(s1+s2);<br>
+    ░     Hlášení:string='Čekejte, probíhá výpočet !';   message(Hlášení);<br>
+    ░     OK:boolean;                                    if OK then exit;<br>
+    ░     x,y,z:boolean=true;                            x:=y<=>z;<br>
+</div>
+<div>
+    <h4>Del</h4>
+    <span style="color:red">DEL - duplicitní klíčové slovo</span>
+    <hr>
+
+    ■ with shared Soubor(Del) ... mód blokování souboru,<br>
+    viz. módy blokování vyšší<br>
+    <br>
+    ■ del_ ..... FAND - PROLOG, implicitní predikát pro rušení prvku v seznamu<br>
+</div>
+<div>
+    <h4>Delay</h4>
+    <span style="color:red">OŠETŘENÍ KLÁVESNICE</span>
+    <hr>
+</div>
+<div>
+    <h4>DeleteRec</h4>
+    <span style="color:red">ZALOŽENÍ, RUŠENÍ A OBNOVENÍ VĚTY SOUBORU</span>
+    <hr>
+</div>
+<div>
+    <h4>Delim</h4>
+    <span style="color:red">SELECTSTR</span>
+    <hr>
+    Funkce pro výběr z množiny znakových řetězců.  Vybrat lze jeden řetězec,<br>
+    podmnožinu řetězců nebo nic.  Pozici  výběrového okna  a třídění položek<br>
+    v okně  lze stanovit  pomocí parametrů.<br>
+    <br>
+    ██ syntaxe:  SELECTSTR( X, Y, Vstup<br>
+    [, head= ] [, foot=] [, delim=] [, mode=] )  : string<br>
+    <br>
+    ■  X,Y ..... Číselné výrazy, souřad.levého horního rohu okna (0 centruje)<br>
+    ■  Vstup ... Textový výraz, který obsahuje seznam vstupních textových<br>
+    řetězců, oddělených oddělovačem. Oddělovač je implicitně<br>
+    nový řádek, lze ho předefinovat pomocí parametru delim.<br>
+    Jednotlivé položky bere v maximální délce 46 znaků,<br>
+    u delších jen začátek.<br>
+    ■  head .... Textový výraz, obsahuje text pro horní hranu okna.<br>
+    ■  foot .... Textový výraz, obsahuje text pro spodní hranu okna.<br>
+    ■  delim ... Textová konstanta, znak v apostrofech.<br>
+    ■  mode .... Textový výraz, mohou se vyskytovat znaky ve významu :<br>
+    A   abecedně setřídit<br>
+    S   vybírá se množina řetězců (subset)<br>
+    I   implicitně vybrat všechny (při Enter bez výběru)<br>
+    Hodnotou funkce je seznam vybraných řetězců oddělených znakem nový řádek<br>
+    ( '\13' - vždy ). Pokud uživatel zadá ESC je seznam prázdný a exitcode=1.<br>
+</div>
+<div>
+    <h4>DH</h4>
+    <span style="color:red">VÝSTUP SESTAVY</span>
+    <hr>
+</div>
+<div>
+    <h4>DifMonth</h4>
+    <span style="color:red">ODEČTENÍ ČASU</span>
+    <hr>
+    Funkce difwdays  vrací počet pracovních dnů ( resp. dnů daného typu ) mezi<br>
+    dvěma daty. Analogicky difmonth  vrací rozdíl mezi daty v měsících. Funkce<br>
+    fungují v intervalu 1.1.1910 .. 31.12.2019, nezapočítává Datum1<br>
+    <br>
+    ██ Syntaxe:       DIFWDAYS ( PočDatum ,KoncDatum [,Typ] ) : real<br>
+    DIFMONTH ( PočDatum ,KoncDatum )        : real<br>
+    <br>
+    ■  PočDatum       Číselné výrazy, počáteční a koncové datum v interním<br>
+    ■  KoncDatum .... formátu. Lze i KoncDatum < PočDatum.<br>
+    ■  Typ .......... Typ dne o které se započítají do výsledku, pokud není<br>
+    zadán, použije se typ 0 (pracovní den). Na výsledek<br>
+    funkce difwdays má tedy vliv i instalovaná tabulka<br>
+    pracovních dní viz. Instalační program.<br>
+    <br>
+    Inverzní funkce:  addwdays, addmonth<br>
+</div>
+<div>
+    <h4>DifWDays</h4>
+    <span style="color:red">ODEČTENÍ ČASU</span>
+    <hr>
+</div>
+<div>
+    <h4>Direktivy</h4>
+    <span style="color:red">PODMÍNĚNÝ PŘEKLAD - direktivy kompilátoru</span>
+    <hr>
+</div>
+<div>
+    <h4>DirX</h4>
+    <span style="color:red">PARAMETRY GRAFU</span>
+    <hr>
+    ■ HEAD=TextVýraz ... hlavička grafu,centrována,velkými písmeny, v základní<br>
+    barvě (implic.bílá), v horní části grafu. head=''<br>
+    potlačí zobrazení hlavičky. Implicitně se použije<br>
+    název souboru (není-li head uvedeno).<br>
+    <br>
+    ■ HEADX=TextVýraz... popis (název) osy X, implicitně název 1.údaje<br>
+    ze seznamu. Směr výpisu viz. parametr DirX.<br>
+    <br>
+    ■ DIRX=TextVýraz ... směr popisu a názvu osy X, string délky 1 znak<br>
+    H - horizontální  (pro CIRCLE popis uvnitř grafu)<br>
+    V - vertikální    (pro CIRCLE popis v legendě)<br>
+    I - vertik. hlavička X, popis údajů uvnitř objektu<br>
+    platí pro 2DBAR a CIRCLE, pro ostatní jako V)<br>
+    <br>
+    ■ HEADY=TextVýraz... Popis osy Y. Pro (2DBAR | CIRCLE | APPROX | POLYREG)<br>
+    implicitně název 2.údaje ze seznamu.<br>
+    <br>
+    ■ HEADZn=TextVýraz.. Pro 3DBAR a 3DLINE popis osy Zn, nebo<br>
+    popis legendy pro GROUP, GROUPLINE.<br>
+</div>
+<div>
+    <h4>DiskFree</h4>
+    <span style="color:red">OBSAZENÍ DISKU A VELIKOST SOUBORU</span>
+    <hr>
+    Funkce diskfree vrací volné místo na disku v byte. Při chybě vrací -1.<br>
+    <br>
+    ██ Syntaxe:        DISKFREE ( Disk ) : real<br>
+    <br>
+    ■  Disk .......... Textový výraz, označení diskové jednotky (A,B,C,...),<br>
+    Rozhoduje první znak výrazu.<br>
+    <br>
+    <br>
+    <br>
+    Funkce filesize vrací délku souboru v bytech (-1 když neexistuje).<br>
+    Aktivní datový soubor (kapitola F) je nejprve nutno uzavřít pomocí close.<br>
+    <br>
+    ██ Syntaxe:        FILESIZE ( JménoSouboru ) : real<br>
+    <br>
+    ■  JménoSouboru... Buď fyzická cesta v apostrofech nebo název dle katalogu.<br>
+    <br>
+    ░░░░░░░░░░░░      edit( soubor,(),...) ;<br>
+    ░░příklady░░      close ;<br>
+    ░░░░░░░░░░░░      writeln('fyzická délka=', filesize('soubor.000')) ;<br>
+    { POZOR! - takto lze jen, není-li soubor katalogizován }<br>
+</div>
+<div>
+    <h4>Display</h4>
+    <span style="color:red">VÝSTUP NA OBRAZOVKU</span>
+    <hr>
+    Příkaz  display  zobrazí do  aktuálního okna  help  jako běžný text včetně<br>
+    interpretace  barev a formátování textu  podle  šířky  okna.  Příkaz  help<br>
+    zobrazí ( do aktuálního okna ) odpovídající  heslo v konvencích helpu, tj.<br>
+    včetně navigace na další hesla.<br>
+    <br>
+    ██ syntaxe :       DISPLAY( HesloHelpu )<br>
+    HELP( HesloHelpu )<br>
+    ────────────<br>
+    Zápis do prvního (systémového) řádku obrazovky, výpis je centrován.<br>
+    Zprava se doplní aktuální datum (od verze 4.2 ve formátu DD.MM.YYYY).<br>
+    <br>
+    ██ syntaxe :       HEADLINE( TextVýraz )<br>
+    ────────────<br>
+    <br>
+    Hlášení v posledním řádku potvrzované klávesou F10.<br>
+    <br>
+    ██ syntaxe:        MESSAGE( SeznamPrvků [,help=HesloHelpu] )<br>
+    <br>
+    ■  SeznamPrvků ... viz. příkaz write<br>
+    ■  HesloHelpu .... Textový výraz pro heslo help-souboru. Před potvrzením<br>
+    hlášky klávesou F10 může uživatel klávesou F1 vyvolat<br>
+    odpovídající text helpu.<br>
+</div>
+<div>
+    <h4>Div</h4>
+    <span style="color:red">SPECIÁLNÍ OPERÁTORY</span>
+    <hr>
+    █ ČísVýraz DIV ČísVýraz :real ..... celočíselné dělení<br>
+    █ ČísVýraz MOD ČísVýraz :real ..... zbytek po celočíselném dělení<br>
+    <br>
+    ░ 10 div 3 = 3<br>
+    ░ 10 mod 3 = 1<br>
+    <br>
+    █ ČísVýraz1 ROUND ČísVýraz2 :real ... zaokrouhlení ČísVýraz1 na určený počet<br>
+    míst dle hodnoty ČísVýraz2 (0..10)<br>
+    <br>
+    ░ pi round 2 = 3.14<br>
+    ░ 1.6 round 0 = 2<br>
+    <br>
+    █ Výraz IN [SeznamArgumentů] :boolean ... množinový test<br>
+    testuje, zda výraz je prvkem množiny konstant nebo intervalů konstant<br>
+    konstanty a výraz jsou stejného typu (real nebo string)<br>
+    ■ in.Číslo ...přesnost číselného srovnání (počet des.míst, implicitně 5)<br>
+    ■ in~ ....... lexikální textové srovnání v národní abecedě<br>
+    <br>
+    ░ Účet in ['300'..'399','520','800'..'999']<br>
+    ░ Rok in [1914..1918,1939..1945,1968,1989]<br>
+</div>
+<div>
+    <h4>Do</h4>
+    <span style="color:red">WITH, DO - duplicitní klíčová slova</span>
+    <hr>
+
+    ■ while do ......... while cyklus podle podmínky<br>
+    ■ forall do ........ forall cyklus přes věty souboru nebo podmnožinu<br>
+    ■ with window do ... definice okna pro výstup na obrazovku<br>
+    ■ with graphics do . přepnutí do grafického módu<br>
+    ■ with shared do ... určení režimu blokování (LAN)<br>
+    ■ with locked do ... uzamčení věty (LAN)<br>
+</div>
+<div>
+    <h4>DOMAINS</h4>
+    <span style="color:red">#DOMAINS - Definice typů</span>
+    <hr>
+</div>
+<div>
+    <h4>Doplňky editoru</h4>
+    <span style="color:red">DOPLŇKY EDITORU</span>
+    <hr>
+    kreslení čar a rámečků<br>
+    <br>
+    ■ Ctrl-Q - ........ jednoduchá čára                       ┌──┐<br>
+    ■ Ctrl-Q = ........ dvojitá čára                          │ ╔ě═╗<br>
+    ■ Ctrl-Q / ........ maže čáru ve směru pohybu kurzoru     └─Î┘ ║<br>
+    ■ šipky ........... kreslení čáry                           ╚══╝<br>
+    ■ Esc ............. konec kreslení<br>
+    v průběhu kresby rámečku lze použít:<br>
+    ■ - ............... přepnutí na jednoduchou čáru<br>
+    ■ = ............... přepnutí na dvojitou čáru<br>
+    ■ \ ............... přepnutí na mazání<br>
+    ■ ' ' ............. mezera - přepnutí na pohyb kurzoru bez kresby či mazání<br>
+    <br>
+    ■ F4 .............. přidání/odstranění diakritiky ke znaku pod kurzorem<br>
+    ■ Alt-F8 .......... vyvolá menu pro přepínání rozložení kláves<br>
+    ■ Ctrl-F5 ......... vyvolání kalkulačky (Ctrl-F4 - převzetí do textu)<br>
+</div>
+<div>
+    <h4>Dotaz uživateli</h4>
+    <span style="color:red">DOTAZ UŽIVATELI</span>
+    <hr>
+    Zadání hodnoty z klávesnice.<br>
+    <br>
+    ██ syntaxe:     PROMPT ( Dotaz : Typ1 [ := Implicitně ] ) :  Typ2<br>
+    <br>
+    ■  Dotaz ...... Textový výraz, který se vypíše na aktuální pozici obrazovky.<br>
+    ■  Typ1 ....... Použije se jeden z typů kapitoly F (F,A,N,B,D). Komunikace<br>
+    při editaci potom odpovídá editaci jednoho údaje tohoto<br>
+    typu datovým editorem. Tomuto typu odpovídá i typ vrácené<br>
+    hodnoty Typ2:   string  pro typ1=A,N<br>
+    real             F,D<br>
+    boolean          B<br>
+    ■  Implicitně.. Nepovinné zadání implicitní hodnoty odpovídajícího typu.<br>
+    ■  Kapitoly ... P,D<br>
+    ───────────────────<br>
+    <br>
+    Test na ukončení posledního PROMPTu klávesou Esc ?<br>
+    ██ syntaxe:     ESCPROMPT : boolean ...<br>
+    <br>
+    Dotaz typu A/N na 25. řádku obrazovky.<br>
+    ██ syntaxe:     PROMPTYN ( Dotaz ) : boolean<br>
+    <br>
+    komunikační příkazy      typy údajů     typy výrazů<br>
+    <br>
+    ░░░░░░░░░░░░<br>
+    ░░příklady░░<br>
+    ░░░░░░░░░░░░<br>
+    <br>
+    ██  BEGIN<br>
+    ....<br>
+    r:=prompt('Zadej datum a čas':D,'DD.MM.YY hh:mm':=today+currtime);<br>
+    if escprompt then<br>
+    if prompt('Ukončit program ? (A/N) ':B) then cancel<br>
+    else ...<br>
+    ...<br>
+    END ;<br>
+</div>
+<div>
+    <h4>Dupl</h4>
+    <span style="color:red">PARAMETRY EDITACE</span>
+    <hr>
+    Parametry příkazu edit, lze  je použít i v definici uživatelského pohledu.<br>
+    <br>
+    ██ tab=(SeznamÚdajů) .... nastavení tabelátorů , viz. seznam údajů<br>
+    ██ dupl=(SeznamÚdajů) ... nastavení automatické duplikace<br>
+    ██ noed=(SeznamÚdajů) ... zadané údaje nelze editovat (měnit), ani při<br>
+    pořízení<br>
+    <br>
+    ██ mode='SeznamMódů' .... mód editace (parametrizace některých funkcí<br>
+    datového editoru) viz. módy datového editoru<br>
+    <br>
+    ██ cond=(LogVýraz) ...... podmínka pro výběr vět k editaci, v podmínce<br>
+    lze použít key in - výběr podle indexu<br>
+    ██ journal=NázevSouboru . soubor pro uchování změn při editaci (journalof)<br>
+    ██ saveafter=ČísVýraz ... aut.uložení na disk po daném počtu změněných vět.<br>
+    Zajistí korektní stav editovaného souboru. Menší<br>
+    saveafter znamená vyšší bezpečnost při výpadku<br>
+    proudu či jiné havárii.<br>
+    ██ ww=(...) ............. editace v okně<br>
+    ██ exit=(...) .     ..... přerušení editace (volání vnořené procedury)<br>
+    <br>
+    ██ head=TextVýraz ... nestandardní první (systémový) řádek editoru, může<br>
+    obsahovat masku pro  číslo věty _____ , (a) nebo<br>
+    masku pro dnešní datum __.__.__)<br>
+    <br>
+    ██ watch=ČísVýraz ... časový interval (sek.), pokud tak dlouho není<br>
+    stisknuta klávesa,  zvukově varuje, čekání 3 x opakuje<br>
+    a potom ukončí automaticky editaci. Je to prevence<br>
+    proti zablokování sítě uživatelem (edbreak=11)<br>
+    Pouze pro sdílené soubory ( #, #R v katalogu ).<br>
+    <br>
+    ██ refresh=ČísVýraz.. časový interval (sek.) pro automatickou obnovu<br>
+    obrazovky při editaci sdílených souborů v LAN.<br>
+    <br>
+    ██ last,Ctrl,Shift,Alt ... alternativní nápověda<br>
+</div>
+<div>
+    <h4>Dummy</h4>
+    <span style="color:red">VÝSTUP TRANSFORMACE</span>
+    <hr>
+    Určuje  výstupní  soubory  transformace, způsob  naplnění výstupních dat a<br>
+    intervaly zápisu do  výstupních  souborů.  Druhy výstupu určují, ve kterém<br>
+    okamžiku čtení vstupu se provede výstup:<br>
+    <br>
+    █ #Oi_NázevSouboru ... detailní výstup (vystoupí za každou vstupní větu)<br>
+    i je pořadové číslo odpovídajícího vstupního souboru<br>
+    █ #O_NázevSouboru .... skupinový výstup (vystoupí jednou za skupinu)<br>
+    skupina vět se stejnými řídícími údaji<br>
+    █ #O*_NázevSouboru ... násobný výstup (vystoupí pro každou kombinaci vět)<br>
+    součin vstupních souborů po skupinách<br>
+    ■ klíčové slovo dummy místo NázvuSouboru ..... neprobíhá fyzický výstup do<br>
+    souboru, pouze přiřazení do proměnných<br>
+    Každý výstup může být doplněn:<br>
+    <br>
+    █ #O1_NázevSouboru + (LogVýraz) Přiřazení; ... rozšíření výstupu<br>
+    ■ + ........ nové věty (i indexy) připojí za konec souboru (jinak přepsání)<br>
+    připojovat nelze za soubor, který je zároveň vstupní<br>
+    ■ LogVýraz ... výstupní logická podmínka (výstup se provede, je-li splněna)<br>
+    ■ Přiřazení... přiřazovací příkazy pro naplnění výstupní věty<br>
+    (výpočetní část výstupu)<br>
+</div>
+<div>
+    <h4>Duplicitní klíčová slova</h4>
+    <span style="color:red">DUPLICITNÍ KLÍČOVÁ SLOVA</span>
+    <hr>
+    assign               end             mode               txtpos
+    append               else            nocancel           txtxy
+    archives             exit            nrecs              U
+    begin                group           recno              var
+    call                 head            save               width
+    cond                 I               sort               with
+    ctrl                 if              sum                write
+    del                  in              then               writeln
+    do                   line            txt                ww
+    edit
+</div>
+<div>
+    <h4>Dynamické deklarace</h4>
+    <span style="color:red">DYNAMICKÉ DEKLARACE</span>
+    <hr>
+    Klasickým přístupem k programování je spouštění předem odladěných úloh, tj.<br>
+    jednotlivých  kapitol.  Některé  konstrukce  PC FANDu  však lze  dynamicky<br>
+    sestavit až při běhu úlohy. Odpovídající zdrojový kód vložíme do textového<br>
+    výrazu, který se použije při vyvolání místo odpovídající kapitoly.<br>
+    V takovém případě však při provedení těchto konstrukcí může dojít<br>
+    k nepředvídatelným běhovým chybám.<br>
+    <br>
+    Syntaktická správnost je plně v moci programátora a proto lze tyto možnosti<br>
+    doporučit jen zkušeným programátorům.<br>
+    <br>
+    report( ...,[TextovýVýraz],...)  .......... dynamická deklarace sestavy<br>
+    merge([TextovýVýraz]) ..................... dynamická deklarace transformace<br>
+    proc([TextovýVýraz],...) .................. dynamická deklarace procedury<br>
+    proc(...,(@[NázevSouboru,TextVýraz],..))... dynamická deklarace pracovního<br>
+    souboru - viz. parametr FILE.<br>
+    <br>
+    edit(...,[TextovýVýraz]...) ....... dynamická deklarace formuláře editace<br>
+    #U NázevPohledu ...:[TextovýVýraz].. formulář pro uživatelský pohled<br>
+    exit=(..:[TextovýVýraz],...:report([TextovýVýraz],..))<br>
+    dynamická deklarace exit-procedury<br>
+    <br>
+    <br>
+    ██ CHECK - ověření syntaktické správnosti před spuštěním:<br>
+    edit(...,[TextovýVýraz],check,...)  ....... dynamická deklarace sestavy<br>
+    report(...,[TextovýVýraz],check,...) ...... dynamická deklarace formuláře<br>
+    <br>
+    S parametrem check se příkazy neprovedou ale zkontrolují syntaxi dynamicky<br>
+    deklarovaných kapitol E resp. R. Výsledek:<br>
+    exitcode .... = 0 když O.K.<br>
+    > 0 když chyba, = pozice chyby v textu<br>
+    edreckey .... text chybového hlášení<br>
+</div>
+</body>
+</html>

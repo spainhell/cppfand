@@ -138,40 +138,877 @@
     tak určitým úskalím použití příkazu resetcatalog.<br>
 </div>
 <div>
-    <h4></h4>
-    <span style="color:red"></span>
+    <h4>CF</h4>
+    <span style="color:red">VÝSTUP SESTAVY</span>
+    <hr>
+    Výstup sestavy je členěn do úrovní výstupu:<br>
+    ■ #RH ...(zkratka Report Heading) začátek celé sestavy (vystoupí v sestavě..)<br>
+    ■ #RF ...(Report Footing) ukončení celé sestavy           (..pouze jednou)<br>
+    ■ #PH ...(Page Heading) začátek tiskové strany            (vystoupí..)<br>
+    ■ #PF ...(Page Footing) ukončení tiskové strany, notatend (..na každé straně)<br>
+    ■ #CH_ŘídícíÚdaj ...(Control Heading) začátek skupiny     (stejné hodnoty..)<br>
+    ■ #CHi_TřídícíÚdaj... začátek skupiny pro individuální řídící úroveň daného<br>
+    vstupu s číslem i. Třídící údaje jsou v podstatě individuální řídící<br>
+    údaje pro dané číslo vstupního souboru. Pozor ! CH1 není to samé<br>
+    jako CH, pro srovnání viz. úroveň DE.<br>
+    ■ #CF_ŘídícíÚdaj ...(Control Footing) ukončení skupiny    (..řídícího údaje)<br>
+    ■ #CFi_TřídícíÚdaj... analogicky jako CHi.<br>
+    ■ #DH ...(Detail Heading) hlavička skupiny vět (po odstránkování, při změně<br>
+    řídících údajů nebo vstupního souboru pro DE) ... notsolo<br>
+    ■ #DEi...(DEtail) výstup jedné věty souboru (vystoupí pro každou větu) pro<br>
+    odpovídající vstupní soubor (i). Pokud i chybí, použije se i=1.<br>
+    <br>
+    Pořadí deklarace úrovní a jejich počet jsou libovolné. V sestavě  může  být  i<br>
+    několik úrovní stejného typu. Každá úroveň začíná znakem '#' a zkratkou (příp.<br>
+    pořadovým číslem) a má následující syntaxi:<br>
+    <br>
+    █ #Zkratka (LogVýraz) ..... označení úrovně, volitelně výstupní podmínka<br>
+    █ PopisnáČástÚrovně; ...... popis vystupujících dat (seznam výrazů), výpočty<br>
+    █ ZobrazovacíČástÚrovně ... textová předloha pro generování výstupu<br>
+</div>
+<div>
+    <h4>CH</h4>
+    <span style="color:red">VÝSTUP SESTAVY</span>
     <hr>
 </div>
-
-CF
-CH
-Char
-Check
-CheckFile
-Cizí klíč
-CLAUSES
-Clearkeybuf
-Clipbd
-Clipboard
-Close
-ClrEOL
-ClrScr
-ColBlk
-Color
-Compress
-concat
-Cond
-consult
-Copy
-CopyFile
-CopyLine
-Cos
-Count
-Cprinter
-Cr
-Ctrl
-Ctrl-F1 error
-CurrTime
+<div>
+    <h4>Char</h4>
+    <span style="color:red">TEXTOVÉ FUNKCE</span>
+    <hr>
+    <br>
+    Délka řetězce.<br>
+    <br>
+    ██ syntax:   LENGTH ( TextovýVýraz ) : real<br>
+    <br>
+    ■  Kapitoly ........ F,M,R,P,D  (Funkce v L kapitole)<br>
+    ──────────────────────────────<br>
+    <br>
+    Práce s ASCII kódem znaků. Funkce CHAR vrací znak s určitým kódem, zohlední<br>
+    aktuální tabulku znaků.  Funkce  ORD naopak vrací ASCII kód určeného znaku.<br>
+    Tyto funkce umožňují mimo jiné i vyhodnocení obecného BYTE-streamu.<br>
+    <br>
+    ██ syntax:   CHAR ( Kód )       : string<br>
+    ORD  ( TextVýraz ) : real<br>
+    <br>
+    ■  Kód ......... ASCII kód znaku. Přepočte se modulo 256.<br>
+    ■  TextVýraz ... Vezme se první znak řetězce a ORD vrátí jeho kód.<br>
+    ord('') = 0  viz. Tabulky znaků, instalace abecedy<br>
+    ■  Kapitoly .... F,M,R,P,D<br>
+    <br>
+    zpracování textu<br>
+    <br>
+    ░░░░░░░░░░░░<br>
+    ░░příklady░░<br>
+    ░░░░░░░░░░░░<br>
+    <br>
+    ██    char( 65 )  = A  ;          { = char ( 321 ) }<br>
+    ord('Jan')  = 74 ;<br>
+</div>
+<div>
+    <h4>Check</h4>
+    <span style="color:red">DYNAMICKÉ DEKLARACE</span>
+    <hr>
+    Klasickým přístupem k programování je spouštění předem odladěných úloh, tj.<br>
+    jednotlivých  kapitol.  Některé  konstrukce  PC FANDu  však lze  dynamicky<br>
+    sestavit až při běhu úlohy. Odpovídající zdrojový kód vložíme do textového<br>
+    výrazu, který se použije při vyvolání místo odpovídající kapitoly.<br>
+    V takovém případě však při provedení těchto konstrukcí může dojít<br>
+    k nepředvídatelným běhovým chybám.<br>
+    <br>
+    Syntaktická správnost je plně v moci programátora a proto lze tyto možnosti<br>
+    doporučit jen zkušeným programátorům.<br>
+    <br>
+    report( ...,[TextovýVýraz],...)  .......... dynamická deklarace sestavy<br>
+    merge([TextovýVýraz]) ..................... dynamická deklarace transformace<br>
+    proc([TextovýVýraz],...) .................. dynamická deklarace procedury<br>
+    proc(...,(@[NázevSouboru,TextVýraz],..))... dynamická deklarace pracovního<br>
+    souboru - viz. parametr FILE.<br>
+    <br>
+    edit(...,[TextovýVýraz]...) ....... dynamická deklarace formuláře editace<br>
+    #U NázevPohledu ...:[TextovýVýraz].. formulář pro uživatelský pohled<br>
+    exit=(..:[TextovýVýraz],...:report([TextovýVýraz],..))<br>
+    dynamická deklarace exit-procedury<br>
+    <br>
+    <br>
+    ██ CHECK - ověření syntaktické správnosti před spuštěním:<br>
+    edit(...,[TextovýVýraz],check,...)  ....... dynamická deklarace sestavy<br>
+    report(...,[TextovýVýraz],check,...) ...... dynamická deklarace formuláře<br>
+    <br>
+    S parametrem check se příkazy neprovedou ale zkontrolují syntaxi dynamicky<br>
+    deklarovaných kapitol E resp. R. Výsledek:<br>
+    exitcode .... = 0 když O.K.<br>
+    > 0 když chyba, = pozice chyby v textu<br>
+    edreckey .... text chybového hlášení<br>
+</div>
+<div>
+    <h4>CheckFile</h4>
+    <span style="color:red">CHECKFILE</span>
+    <hr>
+    <br>
+    Příkaz procedury checkfile provede test, zda zadaný fyzický soubor odpovídá<br>
+    deklaraci datového souboru PC FANDu.  Výsledek testu vrací prostřednictvím<br>
+    funkce exitcode. Nelze používat pro deklarace typu .SQL,.DBF,.DTA.<br>
+    <br>
+    ██ Syntaxe:         CHECKFILE ( NázevSouboru, Cesta )<br>
+    <br>
+    ■  NázevSouboru ... Název kapitoly F, identifikátor.<br>
+    ■  Cesta .......... Fyzická cesta k souboru (v apostrofech) nebo název<br>
+    dle katalogu (identifikátor).<br>
+    ■  ExitCode ....... 0 - O.K.<br>
+    1 - fyzický soubor neexistuje(prázdný)<br>
+    2 - chybná cesta a pod.<br>
+    3 - nesoulad délky věty (deklarace & hlavička)<br>
+    nebo fyz.délka souboru < dle hlavičky<br>
+    4 - pro volné texty neex. .T00<br>
+</div>
+<div>
+    <h4>Cizí klíč</h4>
+    <span style="color:red">CIZÍ KLÍČ</span>
+    <hr>
+    Cizí klíč definuje vazbu z podřízeného do nadřízeného souboru, resp.do sebe<br>
+    sama. V nadřízeném souboru musí existovat vlastní klíč , potom lze vybrat v<br>
+    podřízeném  souboru odpovídající klíčové údaje (musí souhlasit jejich počet<br>
+    a typy) a definovat je jako cizí klíč. Tato vazba  definuje viditelnou větu<br>
+    nadřízeného souboru, což je věta se stejnými hodnotami vlastního klíče,jako<br>
+    jsou hodnoty cizího klíče v podřízeném souboru. V kontextu věty podřízeného<br>
+    souboru  lze používat  údaje  z viditelné  věty ve výrazech  pomocí tečkové<br>
+    notace. Většinou  jde o vazbu 1:N a jedné nadřízené  větě odpovídá  skupina<br>
+    podřízených vět se stejným cizím klíčem.<br>
+    <br>
+    █ NázevSouboru SeznamÚdajů ... vazba do nadřízeného souboru podle vlastního<br>
+    klíče<br>
+    █ NázevKlíče   SeznamÚdajů ... vazba podle alternativního vlastního klíče<br>
+    █ NázevRole(NázevSouboru) SeznamÚdajů ... role: pojmenování cizího klíče<br>
+    █ NázevRole(NázevKlíče) SeznamÚdajů       při vícenásobném spojení souborů<br>
+    <br>
+    ■ prefix NázevSouboru, NázevKlíče nebo NázevRole nazveme NázevSpojení<br>
+    <br>
+    Role ............... Role se používá pro vytvoření vícenásobné vazby do<br>
+    jednoho souboru podle jednoho klíče v nadříz. souboru.<br>
+    <br>
+    Vazba typu owner ... speciální typ vazby mezi soubory, který vytváří<br>
+    podporu pro další konstrukce v PC FANDu. Většinou<br>
+    jde o urychlení výběru podmnožiny v podříz. souboru.<br>
+    <br>
+    █ NázevSpojení ! SeznamÚdajů ......... Referenční integrita<br>
+    Datový editor hlídá referenční integritu,i rekurzivně.<br>
+    Vazba musí být typu OWNER. Při vyřazení nadřízené věty<br>
+    se vyřadí i všechny podřízené. Při změně klíče nadř.<br>
+    věty se změní i odpovídající hodnoty podříz. souboru.<br>
+    Omezení: všechny položky cizího klíče musí být uložené<br>
+    údaje.<br>
+    Přepínač aditivních změn v datovém editoru vypne<br>
+    i referenční integritu.<br>
+    <br>
+    █ NázevSpojení !! SeznamÚdajů<br>
+    Varianta referenční integrity, která odmítne pokus o<br>
+    zrušení věty v datovém editoru, pokud pro tuto větu<br>
+    existují podřízené věty (podle definice vazby owner<br>
+    obdobně jako předchozí případ).<br>
+    <br>
+    <br>
+    █ NázevSpojení.exist : boolean .......... funkce pro test viditelné věty<br>
+    <br>
+    Cizí klíč umožňuje navigaci nahoru (F7 v podřízeném souboru). Pokud je<br>
+    podřízený soubor podporován indexy, a jeho vlastní klíč je rozšířením<br>
+    cizího klíče, funguje také navigace dolů (Ctrl-F7 z nadřízeného souboru).<br>
+    <br>
+    █ NázevSpojení.NázevÚdaje ... tzv. viditelný údaj, použitelný ve výrazech<br>
+    pro vypočítané údaje, a dále v kapitolách R<br>
+    a M. V proceduře pro record-proměnnou.<br>
+    Místo názvu údaje lze použít i funkci owned<br>
+    <br>
+    ■ Odkaz na viditelný údaj může být víceúrovňový.<br>
+    NázevSpojení1.NázevSpojení2. ... NázevSpojeníX.NázevÚdaje<br>
+    <br>
+    <br>
+    ░░░░░░░░░░░░<br>
+    ░░příklady░░<br>
+    ░░░░░░░░░░░░<br>
+    <br>
+    ██ Deklarace nadřízeného souboru<br>
+    F  MESTA.X    Mesto : A,30 ;<br>
+    PSC   : N,5  ;<br>
+    #K          @   PSC   ;                  { vlastní klíč }<br>
+    DleNazvu(@) ~Mesto ;     { alternativní vlastní klíč }<br>
+    <br>
+    <br>
+    Deklarace podřízeného souboru<br>
+    F  ADRESY.X   Jméno    : A,25 ;<br>
+    PSC      : N,5  ;<br>
+    MatkaPSC : N,5  ;      { směrovací číslo bydliště matky }<br>
+    MestoOtce: A,30 ;<br>
+    <br>
+    #K              @  *PSC  ; { vlastní klíč s duplicitami }<br>
+    MESTA ! PSC  ;                  { cizí klíč }<br>
+    NaMatku(MESTA)   MatkaPSC  ;         { definice role }<br>
+    NaOtce(DleNazvu) MestoOtce ;         { definice role }<br>
+    <br>
+    #C Mesto:=MESTA.Mesto : A,30 ;          { využití vazby }<br>
+    MestoMatky:=NaMatku.Mesto : A,30 ;<br>
+    PscOtce:=NaOtce.PSC : N,5 ;<br>
+    <br>
+    F  UCTY       JménoMajitele:A,25;<br>
+    Kolik:F,6.2;<br>
+    #K ADRESY JménoMajitele ;<br>
+    #C Mesto:=ADRESY.MESTA.Mesto:A,30 ; {víceúrovňový odkaz}<br>
+    <br>
+    KOMENTÁŘ : Cizí klíč je vazba typu owner s referenční integritou.<br>
+    Vazby NaOtce a NaMatku nejsou typu owner.<br>
+    Vazba NaMatku musí být formou role, neboť jde o druhou vazbu<br>
+    přes primární klíč souboru MĚSTA.<br>
+    <br>
+    <br>
+    ─────────────────────────────────────────────────────────<br>
+    <br>
+    ██ Vazby do vlastního souboru / evidence občanů (rekurze)<br>
+    <br>
+    F LIDI.x   rc : N,6 ;<br>
+    jmeno : A,20 ;<br>
+    rc_matka : N,6 ;<br>
+    rc_otec : N,6 ;<br>
+    PocetDeti : F,2.0;<br>
+    <br>
+    #K @ rc ;<br>
+    AlterM (@) * rc_matka;<br>
+    AlterO (@) * rc_otec ;<br>
+    NaMatku(lidi) ! rc_matka ;   {!!! referenční integrita}<br>
+    NaOtce(lidi) ! rc_otec ;     {!!! referenční integrita}<br>
+    <br>
+    { údaje z jiných vět toho samého souboru }<br>
+    #C JmenoMatky := cond( NaMatku.exist: NaMatku.Jmeno,<br>
+    else:'neuvedena') : A,20 ;<br>
+    ...<br>
+    JmenoBabiM  := cond( NaMatku.exist: NaMatku.JmenoMatky,<br>
+    {rekurzivní odkaz}   else:'neuvedena') : A,20 ;<br>
+    <br>
+    #A NaMatku.PocetDeti+= cond( IsNewRec: 1 );<br>
+</div>
+<div>
+    <h4>CLAUSES</h4>
+    <span style="color:red">#CLAUSES</span>
+    <hr>
+    Fakt:<br>
+    Predikát[(Term[{,Term})].<br>
+    <br>
+    Pravidlo:<br>
+    Predikát[(Term{,Term})] :- Instrukce [{,Instrukce}].<br>
+    <br>
+    <br>
+    Deklarace    predikátů.   Hlavička    programového  predikátu   je<br>
+    deklarovaná  v odstavci  #PREDICATES a  pro lokální predikáty může  být<br>
+    deklarovaná obdobně i v části CLAUSES následujícím tvarem:<br>
+    <br>
+    : DeklaracePredikátu<br>
+    <br>
+    Každý programový predikát včetně predikátu "main" musí mít uvedenu<br>
+    alespoň jednu větev, ale může jich být i více.<br>
+    <br>
+    Databázové predikáty  mohou být  zapsány  pouze  ve  tvaru  faktu.<br>
+    Deklarovány  jsou v  odstavci #DATABASE.  Při běhu programu lze  pomocí<br>
+    predikátů assert a retract fakt zrušit i doplnit nový.<br>
+    <br>
+    <br>
+    lad:<br>
+    <br>
+    sezn_prvku:- mem_Firma(X,[]), write(X,'  '),fail.<br>
+    sezn_prvku.<br>
+    <br>
+    :is_  is_:-X:Integer=10+12,write('Součet 10+12 = ',X),wait.<br>
+</div>
+<div>
+    <h4>Clearkeybuf</h4>
+    <span style="color:red">OŠETŘENÍ KLÁVESNICE</span>
+    <hr>
+    Buffer klávesnice - kromě systémového  bufferu klávesnice obsahuje PC FAND<br>
+    i vlastní  buffer  klávesnice, ze kterého  čte znaky  přednostně. Pokud je<br>
+    buffer PC FANDu prázdný, čte znaky ze systémového bufferu.<br>
+    <br>
+    ██ SETKEYBUF(TextVýraz)... naplnění PC FAND-bufferu klávesnice<br>
+    ██ CLEARKEYBUF ........... vyprázdní oba buffery klávesnice<br>
+    ██ KEYBUF : string........ přečte znaky ze systémového bufferu a připojí<br>
+    je k bufferu PC FANDu, jehož spojený obsah<br>
+    vrátí jako hodnotu funkce. Bezprostředně po<br>
+    keybuf nebo clearkeybuf je keypressed=false.<br>
+    <br>
+    vstup z klávesnice<br>
+    <br>
+    ██ READKEY :string ...... vrací znak z klávesnice (příp. včetně prefixu'\0')<br>
+    ██ KEYPRESSED :boolean... stiskl uživatel klávesu ?<br>
+    ██ WAIT ................. čeká na stisk libovolné klávesy (nebo myši)<br>
+    <br>
+    zvuk<br>
+    <br>
+    ██ SOUND(ČísVýraz) ...... zapne zvukový signál (parametr=výška tónu v Hz)<br>
+    ██ NOSOUND .............. vypne zvuk<br>
+    ██ BEEP ................. pípne (totéž co write('\7')),<br>
+    lze vypnout - viz. Instalace konstant<br>
+    <br>
+    pauza<br>
+    ██ DELAY(ČísVýraz) ...... pauza v programu (parametr je v milisekundách),<br>
+    na některých typech procesorů však měří chybně a<br>
+    je třeba čas čekání upravit vhodnou konstantou.<br>
+</div>
+<div>
+    <h4>Clipbd</h4>
+    <span style="color:red">FUNKCE DATOVÉHO EDITORU</span>
+    <hr>
+    Po ukončení  nebo přerušení  editace dat  se nastavují hodnoty ( přístupné<br>
+    přes následující funkce), které udávají stav při opuštění editoru.<br>
+    <br>
+    ██ CLIPBD : string ... Interní proměnná, která programátorsky zpřístupní<br>
+    obsah "clipboardu". Může býti rovněž na levé straně<br>
+    přiřazovacího příkazu clipbd:=TextVýraz.<br>
+    Dále viz. textový editor - bloky.<br>
+    <br>
+    ██ EDBOOL : string ... Vrátí text výrazu pro výběr podmnožiny v datovém<br>
+    editoru. Musí se použít v exit-proceduře a vztahuje<br>
+    se na právě přerušenou editaci. Pokud takový výběr<br>
+    není, vrátí ''.<br>
+    <br>
+    ██ EDBREAK  : real ...... Návratový kód editoru podle způsobu ukončení<br>
+    editace:<br>
+    0     ... běžné ukončení editace klávesou &ltEsc&gt<br>
+    11    ... přerušení při překročení času - watch (lokální sítě)<br>
+    12    ... přerušení na údaji klávesou &ltEnter&gt, &ltF4&gt (exit)<br>
+    13    ... opuštění editoru při prázdné množině vět a módu '^n'<br>
+    14    ... návrat z vložené editace klávesou &ltCtrlF4&gt s přenosem hodnoty<br>
+    15    ... ukončení klávesou &ltEsc&gt za stavu "soubor je blokován" (sítě)<br>
+    16,17 ... přerušení typu record před zápisem, změnou (16)<br>
+    nebo mazáním věty (17) (exit)<br>
+    18    ... vstup do pořízení nové věty (viz. newrec)<br>
+    <br>
+    Přerušení funkčními klávesami při definovaném exit:<br>
+    1 až 10 ... ShiftF1 až ShiftF10<br>
+    21 až 30 ... F1 až F10<br>
+    31 až 40 ... CtrlF1 až CtrlF10<br>
+    41 až 50 ... AltF1 až AltF10<br>
+    <br>
+    Přerušení kurzorovými klávesami při definovaném exit:<br>
+    51 ... Home     57 ... Right     71 ... CtrlLeft       77 ... Tab<br>
+    52 ... Up       59 ... End       72 ... CtrlRight      78 ... ShiftTab<br>
+    53 ... PgUp     60 ... Down      73 ... CtrlEnd        79 ... CtrlN<br>
+    55 ... Left     61 ... PgDn      74 ... CtrlPgDn       80 ... CtrlY<br>
+                    62 ... INS       75 ... CtrlHome       81 ... Esc<br>
+                                     76 ... CtrlPgUp       82 ... CtrlP<br>
+    <br>
+    <br>
+    ██ EDFIELD  : string .... Název údaje pod kurzorem při opuštění editoru.<br>
+    Souvislosti: parametr editace field<br>
+    <br>
+    ██ EDFILE : string ...... Název editovaného souboru. Má význam pro psaní<br>
+    obecné exit-procedury. Mimo datový editor má<br>
+    význam jen v ladícím režimu, kde vrací název<br>
+    zpracovávané úlohy.<br>
+    <br>
+    ██ EDIREC   : real ...... Pořadové číslo aktuální věty na obrazovce při<br>
+    opuštění editoru.<br>
+    Souvislosti: parametr editace irec.<br>
+    <br>
+    ██ EDKEY : string ....... Název klíče při editaci. Při editaci podle<br>
+    pracovního indexu nebo při editaci souboru bez<br>
+    indexů vrací '' (prázdný string). Tato funkce<br>
+    je korektně definována v exit-proceduře, tj.<br>
+    v průběhu editace.<br>
+    <br>
+    ██ EDRECKEY : string .... Interní hodnota klíče poslední editované věty.<br>
+    Vrací hodnotu před případnou změnou klíče věty.<br>
+    Souvislosti: parametr editace reckey,<br>
+    funkce keyof, SQL-server.<br>
+    Speciální použití - text chyby při kontrole<br>
+    syntaxe dynamické deklarace, viz. check<br>
+    <br>
+    ██ EDRECNO  : real ...... Fyzické číslo věty při opuštění editoru.<br>
+    Při opuštění v módu pořízení vrací 0 !<br>
+    Souvislosti: parametr editace a funkce recno<br>
+    <br>
+    ██ EDUPDATED: boolean ... Test provedení změn v souboru během editace<br>
+    udává, zda byl soubor (v exit procedurách věta)<br>
+    změněn. Je funkční pro datový i textový editor.<br>
+    Změnou může být i změna třídění souboru (F6).<br>
+    <br>
+    ██ ISNEWREC : boolean ... Vrací TRUE pokud je právě editovaná věta nově<br>
+    pořízenou. Má smysl jen v datovém editoru - tedy<br>
+    v kapitole F nebo při volání exit-procedury.<br>
+    <br>
+    <br>
+    <br>
+    ░░░░░░░░░░░░<br>
+    ░░příklady░░<br>
+    ░░░░░░░░░░░░<br>
+    <br>
+    ██ Pomocí funkcí edrecno,edirec,edfield a edreckey spolu s odpovídajícími<br>
+    parametry editace recno, irec, field a reckey lze po opuštění datového<br>
+    editoru  zajistit návrat na přesně  stejné místo. Tj. návrat na stejný<br>
+    údaj stejné věty včetně pozice v okně.<br>
+    <br>
+    ██ Funkce edbreak se nejčastěji použije pro rozhodnutí o následné akci<br>
+    po ukončení nebo přerušení datového editoru.<br>
+</div>
+<div>
+    <h4>Clipboard</h4>
+    <span style="color:red">BLOKY TEXTOVÉHO EDITORU</span>
+    <hr>
+</div>
+<div>
+    <h4>Close</h4>
+    <span style="color:red">ULOŽENÍ ZMĚN A UZAVŘENÍ SOUBORU</span>
+    <hr>
+    Během přímého přístupu k datům a práce s globálními proměnnými se výsledky<br>
+    kvůli rychlosti  uchovávají  ve vyrovnávací paměti ( cache ). Příkaz  save<br>
+    zajistí výpis  informací  z paměti  na disk  včetně  aktualizace  hlavičky<br>
+    souboru a adresářových záznamů (fyzická délka souboru).<br>
+    Po ukončení příkazů jako např. edit, merge se činnost příkazu save provede<br>
+    implicitně.<br>
+    <br>
+    ██ syntaxe:         SAVE<br>
+    <br>
+    ───────────<br>
+    Uzavírání souborů je (relativně) pomalá operace,  proto PC FAND implicitně<br>
+    uzavírá  datové  soubory  až při  ukončení  úlohy ( otevírá  je při prvním<br>
+    použití ). To znamená , že během  provádění  úlohy jsou  současně otevřeny<br>
+    všechny použité soubory.  Omezení počtu současně otevřených souborů zajistí<br>
+    příkaz close.<br>
+    <br>
+    ██ syntaxe:         CLOSE [ (NázevSouboru) ]<br>
+    <br>
+    ■  NázevSouboru ... Název kapitoly F. Příkaz uzavře uvedený soubor. Pokud<br>
+    není jméno  souboru uvedeno,  uzavře všechny otevřené<br>
+    datové soubory.<br>
+    Poznámka:<br>
+    Fyzické soubory se uzavřou ihned po použití. Uzavření všech souborů se<br>
+    provede také jako vedlejší efekt příkazu exec.<br>
+</div>
+<div>
+    <h4>ClrEOL</h4>
+    <span style="color:red">VYMAZÁNÍ OBRAZOVKY</span>
+    <hr>
+    <br>
+    Příkaz  clrscr  provede vymazání okna.  Pomocí parametrů lze ovlivnit, zda<br>
+    jde o aktuální nebo explicitně souřadnicemi zadané okno.  Místo výmazu lze<br>
+    vyplnit okno zadaným znakem.<br>
+    <br>
+    ██ Syntaxe:          CLRSCR [ ( souřadnice [ ,Atr [,Znak ] ] ) ]<br>
+    <br>
+    ■  Souřadnice ... Sloupec1,Řádek1,Sloupec2,Řádek2 ... souřadnice levého<br>
+    horního a pravého dolního rohu okna, které má být mazáno.<br>
+    Když nejsou zadány, převezmou se dle aktuálního okna.<br>
+    ■  Atr .......... atribut barvy nebo Ctrl-znak, pro mazání se bere<br>
+    složka pozadí. Když není zadán, převezme se dle<br>
+    1: nejsou-li souřadnice - dle aktuálního okna<br>
+    2:   jsou-li souřadnice - dle instalace barev -<br>
+    parametr "Uživatelská obrazovka"<br>
+    ■  Znak ......... textový výraz, okno se vyplní zadaným znakem<br>
+    ───────────────<br>
+    <br>
+    Mazání od pozice kurzoru do konce řádku.<br>
+    <br>
+    ██ Syntaxe:          CLREOL<br>
+    <br>
+    ░░░░░░░░░░░░<br>
+    ░░příklady░░<br>
+    ░░░░░░░░░░░░<br>
+    <br>
+    ██  clrscr;                     { mazání aktuálního okna, podle aktuálního }<br>
+    { okna převezme souřadnice i atribut       }<br>
+    clrscr(10,5,30,10);             { mazání stanoveného okna, atribut dle }<br>
+    { instalace "Uživatelská obrazovka"    }<br>
+    clrscr(10,5,30,10,32)                          { mazání zelenou barvou }<br>
+    clrscr(1,1,80,25,^e,'░')           { vyplnění obrazovky zadaným znakem }<br>
+</div>
+<div>
+    <h4>ClrScr</h4>
+    <span style="color:red">VYMAZÁNÍ OBRAZOVKY</span>
+    <hr>
+</div>
+<div>
+    <h4>ColBlk</h4>
+    <span style="color:red">SETEDITTXT</span>
+    <hr>
+</div>
+<div>
+    <h4>Color</h4>
+    <span style="color:red">INSTALOVANÉ BARVY</span>
+    <hr>
+    Pro všechny konstrukce  PC FANDu, které pracují s barvami na obrazovce, je<br>
+    možno tyto barvy instalovat programem FANDINST. Dále je v instalaci obsaže-<br>
+    no i 16 uživatelských barev pro volné použití programátorem. Všechny kódy<br>
+    barev z instalace jsou dostupné pomocí funkce color.<br>
+    <br>
+    ██ syntaxe :        COLOR ( PořadíBarvy ) : real<br>
+    <br>
+    Návratová hodnota je kódem barvy se složkou popředí i pozadí - viz. barvy<br>
+    <br>
+    ■  PořadíBarvy ... pořadí daného parametru v tabulce barev programu<br>
+    FANDINST. Celkem 54 barev:<br>
+    <br>
+    0-15  uživatelská barva č.0 až 15      34              kurzíva<br>
+    16  MENU normální text               35              široký text<br>
+    17       aktivní volba               36              dvojitý text<br>
+    18       první písmeno               37              mastný text<br>
+    19       nepovolená volba            38              zhuštěný text<br>
+    20  VÝBĚR normální text              39              písmo elite<br>
+    21        aktivní položka            40  EDITOR DAT data<br>
+    22        maska pro soubor           41             datový kurzor<br>
+    23  ZADÁNÍ zadávaný text             42             podmnožina<br>
+    24         nápověda                  43             ostatní text<br>
+    25  HLÁŠENÍ na posledním řádku       44             zrušené věty<br>
+    26  POSLEDNÍ ŘÁDEK nápověda          45             výběr (F8,ShiftF8)<br>
+    27                 symboly kláves    46  UŽIVATELSKÁ OBRAZOVKA<br>
+    28                 přepínače         47  NÁPOVĚDA text<br>
+    29  PRVNÍ ŘÁDEK systém.informace     48           vybrané téma<br>
+    30  EDITOR TEXTU text                49           ostatní témata<br>
+    31               ctrl-znaky          50           zvýrazněný text<br>
+    32               blok                51  KRÁTKÁ NÁPOVĚDA<br>
+    33  DRUHY PÍSMA podtržený text       52  OKNA  stíny<br>
+    53  DESKTOP<br>
+</div>
+<div>
+    <h4>Compress</h4>
+    <span style="color:red">EXPLICITNÍ INDEXOVÁNÍ</span>
+    <hr>
+    Indexy se vytvářejí a udržují automaticky. V některých situacích je však<br>
+    na vhodné "donutit" PC FAND k indexování souboru. Např. tehdy, když byly<br>
+    indexy zrušeny (výstup merge), a je lépe, když se indexuje ihned a ne až<br>
+    před použitím souboru ( třeba edit ). Indexování potom nezdržuje<br>
+    uživatele.<br>
+    <br>
+    ██ syntaxe:         INDEXFILE( NázevSouboru [,compress] )<br>
+    <br>
+    ■  NázevSouboru ... název kapitoly F<br>
+    ■  compress ....... nejprve odstraní neplatné věty<br>
+    <br>
+    <br>
+    Poznámka: Jiným způsobem lze donutit  PC FAND k novému indexování souborů<br>
+    tak, že prostě  zrušíme  indexové  soubory ( příkaz  del *.X00,<br>
+    manažer). Ty pak jsou obnoveny při prvním pokusu o práci s nimi<br>
+    v úloze.  Toto indexování však nemá efekt compress. Ale, což je<br>
+    důležité, jde použít i pro uzavřenou (zaheslenou) úlohu.<br>
+</div>
+<div>
+    <h4>concat</h4>
+    <span style="color:red">concat</span>
+    <hr>
+    concat([&]Term1,[&]Term2,[&]Term3)<br>
+    <br>
+    Term      Term typu String.<br>
+    <br>
+    Spojení  nebo porovnání textových termů. Porovnávání založeno  na<br>
+    výrazu  Term1+Term2=Term3.   Dle  kombinace   vstupních  a   výstupních<br>
+    proměnných lze použít pro porovnávání, spojení i výběr řetězce.<br>
+    <br>
+    Umožněny jsou následující kombinace parametrů (i=vstup o=vystup):<br>
+    (i,i,i)        - test<br>
+    (i,i,o)        - spojení<br>
+    (o,i,i)        - výběr řetězce<br>
+    (i,o,i)        - výběr řetězce<br>
+    <br>
+    Příklad:<br>
+    <br>
+    spoj:- trace(1),concat('A','B','AB'),<br>
+    concat('A','B',X), write(X),<br>
+    concat('A',Y,'AB'), write(Y),<br>
+    concat(Z,'B','AB'), write(Z).<br>
+</div>
+<div>
+    <h4>Cond</h4>
+    <span style="color:red">COND - duplicitní klíčové slovo</span>
+    <hr>
+    <br>
+    ■ cond ................. speciální funkce: speciální výběrová funkce<br>
+    ■ edit(...cond...) ..... parametry editace: editace vybrané podmnožiny<br>
+    ■ graph( ...cond...) ... grafické zobrazení dat, viz.  cond<br>
+    ■ report(...cond...) ... parametry sestavy: sestava z vybrané podmnožiny<br>
+</div>
+<div>
+    <h4>consult</h4>
+    <span style="color:red">consult</span>
+    <hr>
+    consult(NázevDatabáze,ParamSoub.UdajTypuT)<br>
+    <br>
+    NázevDatabáze       Jméno databáze. Uvedeno za klíčovým slovem #DATABASE.<br>
+    ParamSoub.UdajTypuT Globální proměnná.<br>
+    <br>
+    Připojení  obsahu databáze  uložené v  globální proměnné typu T  k<br>
+    současným     záznamům    databáze.      Obsah    globální     proměnné<br>
+    ParamSoub.UdajTypuT musí být uložen pomocí predikátu save.<br>
+    <br>
+    Deklarace  uložené  databáze a databáze,  k níž je obsah připojen,<br>
+    musí  být   totožná.  Není  prováděna  úplná  kontrola  shodnosti.  Při<br>
+    nesouladu může  dojít  k  zhroucení  systému.  Pokud  provádíte  přenos<br>
+    databáze z  jedné logické  procedury do  druhé  doporučujeme  deklaraci<br>
+    konstant, typů a databáze umístit do vkládané kapitoly {$Include ...}.<br>
+    <br>
+    Pozor - údaj může být chybně naplněn pomocí prostředků FANDu  (např.<br>
+    přímý přístup) nekorektní hodnotou !<br>
+    <br>
+    Příklad:<br>
+    <br>
+    obnov:-consult(FIRMA,PROLPAR.KapB).<br>
+</div>
+<div>
+    <h4>Copy</h4>
+    <span style="color:red">TEXTOVÉ FUNKCE</span>
+    <hr>
+    <br>
+    Výběr podřetězce z textu.Funkce vrátí podřetězec textu TextVýraz délky<br>
+    Délka, který se vybere od zadané pozice.<br>
+    <br>
+    ██ syntaxe:      COPY ( TextVýraz ,OdPozice ,Délka ) : string<br>
+    <br>
+    ■  Kapitoly .... F,M,R,P,D  (Funkce v L kapitole)<br>
+    <br>
+    ──────────────────────────<br>
+    <br>
+    Konstrukce řetězce opakováním.<br>
+    <br>
+    ██ syntaxe :     REPEATSTR ( TextVýraz ,PočetOpakování ) : string<br>
+    <br>
+    ■  Kapitoly .... F,M,R,P,D<br>
+    <br>
+    zpracování textu<br>
+    <br>
+    ░░░░░░░░░░░░<br>
+    ░░příklady░░           ██   copy('Jan Novák',5,5) = 'Novák'<br>
+    ░░░░░░░░░░░░<br>
+</div>
+<div>
+    <h4>CopyFile</h4>
+    <span style="color:red">KOPÍROVÁNÍ A PŘEVODY</span>
+    <hr>
+    Příkaz procedury CopyFile provádí kopírování souborů. Může jít jak o prosté<br>
+    kopírování , připojení tak i o převody - datové struktury , diakritiky nebo<br>
+    formátu. Vlastní proces kopírování  dat má buď charakter fyzického ( binár-<br>
+    ního ) přenosu, tak i strukturovaného přenosu definovaných dat - v podstatě<br>
+    merge včetně změny pořadí vět. Charakter operace se odvozuje od typu použi-<br>
+    tých souborů a dalších parametrů příkazu.<br>
+    <br>
+    ██ Syntaxe:    COPYFILE ( Soubor1[/Klíč | Formát | .X], Soubor2 [/Formát]<br>
+    [ ,head=TextovýVýraz ]<br>
+    [ ,nocancel ] [ ,append ] [ ,mode='Převod'] )<br>
+    <br>
+    ■  Soubor1,Soubor2 ... Vstupní a výstupní soubor. Lze zadat buď logické<br>
+    jméno - tj. název kapitoly F nebo jméno dle katalogu,<br>
+    nebo fyzické jméno ( v apostrofech, včetně cesty ).<br>
+    Použitý odkaz na vstupní a výstupní soubor má zásadní<br>
+    vliv na způsob kopírování - viz. níže varianty<br>
+    ■  Klíč .............. Název klíče indexového souboru, věty se kopírují v<br>
+    pořadí dle klíče. Pokud není použit, kopíruje se<br>
+    dle fyzického pořadí.<br>
+    ■  Formát ............ Definuje typ souboru při změně formátu. Lze použít:<br>
+    FIX  textový soubor v pevném formátu<br>
+    VAR  textový soubor ve volném formátu (viz.formát)<br>
+    TXT  jen pro vstupní soubor, převod textového souboru<br>
+    PC FANDu do standardního tvaru (^M -> ^M^J)<br>
+    POZOR !!!<br>
+    Při použití /FIX nebo /VAR pozor na převod údajů<br>
+    typu D, zvláště při implicitní masce DD.MM.YY.<br>
+    Implicitní století se dosadí podle obecných<br>
+    pravidel, viz. Posun implicitního století,<br>
+    Instalace konstant<br>
+    ■  .X ................ Kopíruje se včetně indexů (soubor .X00)<br>
+    !!! Při variantě copyfile(A.x,B), kde A i B jsou<br>
+    názvy kapitol F, se indexy nekopírují (interně<br>
+    jde o merge).<br>
+    ■  head=GlobProměnná.. Při převodech /fix a /var, vytvoří první řádek<br>
+    (hlavičku) textového souboru. Při importu textového<br>
+    souboru to musí být uložený údaj.<br>
+    ■  append ............ Soubor1 se připojí za konec Souboru2. Zde pozor na<br>
+    rozdíl mezi fyzickým a logickým připojením (viz.níže)<br>
+    ■  mode='Převod' ..... Převod mezi různými kódy diakritiky. Má význam pouze<br>
+    pro textové soubory. Jde o dvouznakovou konstantu.<br>
+    Kódy: K - Kamenických<br>
+    L - Latin2<br>
+    W - Windows (CP1250)<br>
+    N - bez diakritiky      ┌─────────────────────┐<br>
+    Povolené kombinace pro převod:│KL,LK,KN,LN,KW,LW,WL │<br>
+    └─────────────────────┘<br>
+    ■  nocancel ... Potlačí ukončení úlohy při chybě, nastaví kód chyby exitcode<br>
+    <br>
+    <br>
+    ██ POZNÁMKY<br>
+    Pokud použijeme jako Soubor1 nebo Soubor2 název identifikátoru, chápe se<br>
+    prioritně jako název kapitoly F. Pokud taková neexistuje, hledá se odpo-<br>
+    vídající název dle katalogu. Není-li nalezen, je to chyba syntaxe. Nelze<br>
+    použít lokální proměnnou typu string. Fyzickou cestu lze přímo v příkazu<br>
+    zadat jen jako konstantu ( v apostrofech ). Kopírování  s možností změny<br>
+    cesty lze realizovat přes katalog viz. příklad.<br>
+    <br>
+    <br>
+    ██ VARIANTY:<br>
+    <br>
+    Soubor1 i Soubor2 jsou kapitoly F<br>
+    V tomto případě se příkaz copyfile interně realizuje jako implicitní merge.<br>
+    #I1_Soubor1<br>
+    #O1_Soubor2 [+] { + se použije když je append }<br>
+    Z toho plynou tyto podstatné skutečnosti:<br>
+    - kopírování se provádí v kontextu logické struktury souborů. Pokud<br>
+    není deklarace souborů stejná, dojde ke konverzi "by-name" podle<br>
+    pravidel merge. Může se tedy i změnit fyzická velikost souboru.<br>
+    - jde o jediný případ, kdy lze kopírovat do sebe - inplace.<br>
+    POZOR - inplace nelze obecně syntakticky odhalit - jestliže<br>
+    v jiných případech "projde", nemusí být výsledek korektní.<br>
+    <br>
+    Jeden ze souborů je fyzický soubor<br>
+    Tj. název dle katalogu nebo konstanta v apostrofech. Pokud nejde o export<br>
+    nebo import (není VAR nebo FIX) kopíruje se fyzicky, i když je odkaz na<br>
+    ten druhý soubor proveden názvem kapitoly F.<br>
+    <br>
+    Append - připojení fyzické a logické<br>
+    Při fyzickém připojení se bez ohledu na vnitřní strukturu dva soubory<br>
+    prostě "srazí" k sobě. To znamená, že výsledek nemusí odpovídat požadavku<br>
+    na strukturu dat. A pro FANDovské datové soubory také neodpovídá.<br>
+    Oproti tomu při logickém spojení dochází navíc k aktualizaci prefixu<br>
+    souboru a k připojení jednotlivých vět. Zvláště zřejmé je to pro soubor<br>
+    volných textů (.T00).<br>
+</div>
+<div>
+    <h4>CopyLine</h4>
+    <span style="color:red">ZPRACOVÁNÍ ŘÁDKU TEXTU</span>
+    <hr>
+    Délka  volných textů  ( a lokálních proměnných typu string ) je omezena na<br>
+    65 000 B. Parametry funkcí jsou textové a číselné výrazy.<br>
+    <br>
+    Výběr jednoho nebo více řádků z textu od zadaného počátečního řádku.<br>
+    <br>
+    ██ syntaxe :        COPYLINE ( Text , ČísloŘádku [ ,Počet ] ) : string<br>
+    ■  Kapitoly ....... F,M,R,P,D<br>
+    ─────────────────────────────<br>
+    <br>
+    Počet řádků textu.<br>
+    <br>
+    ██ syntaxe :        LINECNT ( TextVýraz ) : real<br>
+    <br>
+    ■  Kapitoly ....... F,M,R,P,D<br>
+</div>
+<div>
+    <h4>Cos</h4>
+    <span style="color:red">ARITMETICKÉ FUNKCE</span>
+    <hr>
+</div>
+<div>
+    <h4>Count</h4>
+    <span style="color:red">GROUP, COUNT - duplicitní klíčová slova</span>
+    <hr>
+    <br>
+    ■ group ............ pořadí aktuální zpracovávané skupiny vět<br>
+    ■ Ii.count ......... pořadí věty vstupního souboru v aktuální skupině vět<br>
+    (rozdělení vstupů sestavy nebo transformace do skupin<br>
+    podle řídících údajů)<br>
+</div>
+<div>
+    <h4>Cprinter</h4>
+    <span style="color:red">PŘÍKAZY  PRO TISK TEXTU</span>
+    <hr>
+    Základním způsobem tisku v PC FANDu je  tisk textu  z prostředí  textového<br>
+    editoru. Tisk textu lze vyvolat i explicitně příkazem procedury printtxt.<br>
+    <br>
+    ██ syntaxe:       PRINTTXT  ( NázevTextSouboru | LokálníPromTypuString )<br>
+    <br>
+    ───────────<br>
+    <br>
+    V PC FANDu je možno instalovat až 10 tiskáren, ze kterých lze interaktivně<br>
+    vybrat jednu  aktivní tiskárnu.  Pro manipulaci  se seznamem instalovaných<br>
+    tiskáren je možno použít příkazy a funkce procedury:<br>
+    setprinter .... příkaz pro nastavení aktivní tiskárny,implic.první z .CFG<br>
+    cprinter ...... funkce typu real, vrací číslo aktivní tiskárny (0,1,..)<br>
+    <br>
+    ██ syntaxe:       SETPRINTER ( ČísVýraz )<br>
+    CPRINTER : real<br>
+</div>
+<div>
+    <h4>Cr</h4>
+    <span style="color:red">LAN - POUŽITÍ VYŠŠÍCH MÓDŮ BLOKOVÁNÍ</span>
+    <hr>
+    Wr     ■ zápis změněné věty v datovém editoru<br>
+    ■ #A += , provedení aditivní změny bez přidání vět<br>
+    ■ změna hodnot klíčů podříz. věty (referenční integrita)<br>
+    ■ writerec<br>
+    ■ Soubor.údaj:=, Soubor[Věta].údaj:=<br>
+    ■ RecordProměnná:= (pokud obsahuje volné texty)<br>
+    <br>
+    Cr     ■ zápis nové věty v datovém editoru (pořízení)<br>
+    ■ výstup merge s připojením vět (+)<br>
+    ■ #A !+=, #A !!+= provedení aditivní změny<br>
+    ■ writerec(,0) - přidání věty<br>
+    ■ recallrec<br>
+    ■ appendrec<br>
+    ■ zápis do journalu<br>
+    Del    ■ rušení vět editorem ( i podříz. souboru při refer. integritě)<br>
+    ■ deleterec<br>
+    ■ Soubor.nrecs:=,<br>
+    ■ starý formát (FAND verze 2.x) exit=(..proc())<br>
+    Excl   ■ merge výstup bez připojení vět<br>
+    ■ sort<br>
+    ■ indexfile<br>
+    ■ restore (obnova zálohovaných souborů)<br>
+</div>
+<div>
+    <h4>Ctrl</h4>
+    <span style="color:red">CTRL - duplicitní klíčové slovo</span>
+    <hr>
+    <br>
+    ■ edit(...ctrl) ..... volání editoru: alternativní nápověda<br>
+    ■ report(...ctrl) ... parametry automatické sestavy: řídící údaje součt.<br>
+    sestavy<br>
+</div>
+<div>
+    <h4>Ctrl-F1 error</h4>
+    <span style="color:red"></span>
+    ┌─────────────────────────────┐     ┌──────────────────────────────────────┐<br>
+    │  Navigace na rejstřík hesel │     │ PC FAND - programátorská verze v.4.2 │<br>
+    │    *Rok 2000* v PC FANDu    │     └──────────────────────────────────────┘<br>
+    │  A     F     L     R     V  │     Nápověda ................ práce s helpem<br>
+    │  B     G     M     Ř     W  │     ░ .................... označuje příklady<br>
+    │  C     H     N     S     X  │<br>
+    │  Č     I     O     Š     Y  │     Projektantské prostředí ... programování<br>
+    │  D     J     P     T     Z  │     Katalog ................. seznam souborů<br>
+    │  E     K     Q     U        │     Instalace<br>
+    └─────────────────────────────┘     Komunikace ........ uživatelské rozhraní<br>
+    ┌─────────────────────────────┐     Klávesnice, Myš ......... základní popis<br>
+    │     kapitoly projektu       │     Textový editor ........... práce s texty<br>
+    │ deklarace souboru - File    │     Datový editor ..............práce s daty<br>
+    │ formulář          - Edit    │     Lokální sítě<br>
+    │ sestava           - Report  │     Grafy ....... grafické možnosti PC FANDu<br>
+    │ transformace      - Merge   │     Tabulky znaků ...... aktuální sada znaků<br>
+    │ procedura         - Proc.   │     SQL .........  komunikace s SQL serverem<br>
+    │ funkce            - Dekl.   │     ODBC ......  datové rozhraní pro Windows<br>
+    │ seznam uživatelů  - User    │     Identifikátor        Interní proměnné<br>
+    │ vkládané texty    - Include │     Výrazy               Standardní funkce<br>
+    │ PROLOG            - Logic   │     Operátory            Příkazy procedury<br>
+    └─────────────────────────────┘                          Syntaktické diagramy<br>
+    (c)ALIS s.r.o. Česká Lípa  p.s. 79, tel. 0425/823806, 824800<br>
+    <hr>
+</div>
+<div>
+    <h4>CurrTime</h4>
+    <span style="color:red">AKTUÁLNÍ DATUM A ČAS, KONVERZE</span>
+    <hr>
+    <br>
+    Funkce today vrací aktuální (dnešní) datum podle systémových hodin.Podobně<br>
+    funkce  currtime vrací aktuální čas. Obě návratové hodnoty jsou ve formátu<br>
+    pro typ údaje D PC FANDu.<br>
+    <br>
+    ██ Syntaxe:             TODAY : real<br>
+    CURRTIME : real<br>
+    <br>
+    <br>
+    Rok 2000 !!!   Speciální přiřazení Today:=real;<br>
+    <br>
+    ─────────────────────<br>
+    <br>
+    Konverzní funkce strdate převede datum a čas v interním formátu na string.<br>
+    Funkce valdate provede pravý opak. Obě funkce provedou převod podle masky.<br>
+    Maska pro datum formátuje textové vyjádření datumu a času.<br>
+    <br>
+    ██ Syntaxe:     STRDATE ( ČísVýraz ,Maska )  : string<br>
+    VALDATE ( TextVýraz ,Maska ) : real<br>
+    <br>
+    ■  ČísVýraz .... Datum a čas v interním formátu PC FANDu (real)<br>
+    ■  TextVýraz ... Datum a čas v textové presentaci.<br>
+    ■  Maska ....... Uvedení dnů bez měsíce a roku se nechápe jako datum ale<br>
+    jako počet dní.<br>
+</div>
 
 </body>
 </html>
