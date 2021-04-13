@@ -11,6 +11,7 @@
 #include "runproc.h"
 #include "runproj.h"
 #include "../Editor/editor.h"
+#include "../Editor/EditorHelp.h"
 #include "../textfunc/textfunc.h"
 
 

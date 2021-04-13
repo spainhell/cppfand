@@ -23,6 +23,7 @@
 
 #include "compile.h"
 #include "../Editor/Editor.h"
+#include "../Editor/EditorHelp.h"
 #include "../Editor/rdedit.h"
 #include "../Editor/runedi.h"
 #include "../MergeReport/genrprt.h"

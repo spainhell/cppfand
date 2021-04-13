@@ -24,6 +24,7 @@
 #include "sort.h"
 #include "XFile.h"
 #include "../Editor/Editor.h"
+#include "../Editor/EditorHelp.h"
 #include "../Editor/runedi.h"
 #include "../MergeReport/genrprt.h"
 #include "../MergeReport/rdmerg.h"

@@ -22,7 +22,6 @@ bool EditText(char pMode, char pTxtType, pstring pName, pstring pErrMsg,
 void SimpleEditText(char pMode, pstring pErrMsg, pstring pName, char* TxtPtr,
 	WORD MaxLen, WORD& Len, WORD& Ind, bool& Updat); // r202
 WORD FindTextE(const pstring& PstrScreenStr, pstring Popt, char* PTxtPtr, WORD PLen); // r209
-void Help(RdbDPtr R, pstring Name, bool InCWw);
 void InitTxtEditor();
 void EditTxtFile(longint* LP, char Mode, pstring& ErrMsg, EdExitD* ExD, longint TxtPos,
 	longint Txtxy, WRect* V, WORD Atr, pstring Hd, BYTE WFlags, MsgStr* MsgS);
@@ -30,7 +29,6 @@ void ViewPrinterTxt(); // r353
 void SetEditTxt(Instr_setedittxt* PD);
 void GetEditTxt(bool& pInsert, bool& pIndent, bool& pWrap, bool& pJust, bool& pColBlk,
 	integer& pLeftMarg, integer& pRightMarg); // r162
-void ClearHelpStkForCRdb();
 
 const char TextM = 'T'; const char ViewM = 'V'; const char HelpM = 'H';
 const char SinFM = 'S'; const char DouFM = 'D'; const char DelFM = 'F';

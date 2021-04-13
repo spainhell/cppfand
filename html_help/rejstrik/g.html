@@ -7,6 +7,450 @@
 <body style="font-family:'Courier New'">
 
 <div>
+    <h4>Generační soubory</h4>
+    <span style="color:red">GENERAČNÍ SOUBORY</span>
+    <hr>
+    Generační soubory  slouží k fyzickému  rozdělení dat do více  souborů podle<br>
+    nějakého kritéria, nejčastěji časového - např. měsíce roku ( 12 generací ).<br>
+    Potom musí být v katalogu odpovídající počet zápisů se stejným názvem úlohy<br>
+    a souboru. Aktuálně se použije první zápis. Číslo generace je uloženo jako<br>
+    poslední dva znaky v příponě fyzické cesty k souboru (Path). (katalog)<br>
+    Cyklická změna pořadí generačních souborů -tzv. otočení katalogu-se provede<br>
+    příkazem turncat.<br>
+    <br>
+    ██ Syntaxe:     TURNCAT ( NázevDleKatalogu ,Číslo )<br>
+    <br>
+    ■  Číslo ...... Číselný výraz. Udává směr a počet generací posunu.<br>
+    <br>
+    S číslem generace lze v proceduře pracovat pomocí metod přímého přístupu<br>
+    do katalogu, viz. generation.<br>
+    <br>
+    ░░░░░░░░░░░░<br>
+    ░░příklady░░<br>
+    ░░░░░░░░░░░░<br>
+    <br>
+    ██  { obsah katalogu }<br>
+    <br>
+    NazUlohy NazSouboru  Ar   Cesta                      Navesti<br>
+    FAKTURY   DOKLADY    00  C:\ASR\DOKLADY.001<br>
+    FAKTURY   DOKLADY    00  C:\ASR\DOKLADY.002<br>
+    FAKTURY   DOKLADY    00  C:\ASR\DOKLADY.003<br>
+    FAKTURY   DOKLADY    00  C:\ASR\DOKLADY.004<br>
+    FAKTURY   DOKLADY    00  C:\ASR\DOKLADY.005<br>
+    ........  ........   ..  ........................... ...........<br>
+    <br>
+    { procedura }<br>
+    menuloop 'Generace' of<br>
+    'přejdi k další generaci':turncat(DOKLADY,1);<br>
+    'vrať se k minulé generaci':turncat(DOKLADY,-1);<br>
+    'vypiš číslo generace': writeln('generace: ',DOKLADY.generation:3);<br>
+    end;<br>
+</div>
+<div>
+    <h4>Generation</h4>
+    <span style="color:red">KATALOG V PROCEDUŘE</span>
+    <hr>
+    Z procedury lze korektně zpracovat údaje katalogu metodami přímého přístupu.<br>
+    Požadovaná věta  katalogu se  určí názvem souboru ( nikoliv fyzickým číslem<br>
+    věty jako u běžného datového souboru ).  Tyto výrazy se mohou vyskytovat na<br>
+    levé i pravé straně přiřazovacího příkazu, kromě odkazu .generation, který<br>
+    se může vyskytnout pouze na pravé straně (generaci souboru lze měnit pouze<br>
+    příkazem TurnCat.).<br>
+    <br>
+    ██ NázevDleKatalogu.PATH ....... Cesta (úplná fyzická cesta datového souboru)<br>
+    ██ NázevDleKatalogu.VOLUME ..... Návěští (volume diskety)<br>
+    ██ NázevDleKatalogu.GENERATION.. Číslo generace<br>
+    ██ NázevDleKatalogu.ARCHIVES.... Číslo úrovně archivace<br>
+    <br>
+    <br>
+    Jiný způsob práce s katalogem je založen na využití implicitně deklarovaného<br>
+    souboru catalog.<br>
+</div>
+<div>
+    <h4>GetEnv</h4>
+    <span style="color:red">HODNOTA SYSTÉMOVÉ PROMĚNNÉ</span>
+    <hr>
+    Hodnota systémové proměnné (SET-parametry) z oblasti prostředí systému.<br>
+    <br>
+    ██ syntaxe:         GETENV( TextVýraz ) : string<br>
+    <br>
+    <br>
+    ■  TextovýVýraz ... Název SET-parametru, jehož hodnotu chceme zjistit.<br>
+    Pokud je výraz prázdný (''), vrátí funkce plnou<br>
+    cestu ke spuštěnému programu .EXE ... tedy např.<br>
+    C:\FAND\FAND.EXE.<br>
+    <br>
+    Poznámka:  Getenv('')  je jediný  korektní způsob  jak  zjistit, z kterého<br>
+    adresáře je spuštěn FAND.EXE (tzv. FAND-adresář ). Pro zjištění<br>
+    adresáře spuštěné úlohy (.RDB) je možno  využít faktu, že tento<br>
+    adresář je aktivní jako DOS-aktuální adresář(current directory).<br>
+</div>
+<div>
+    <h4>GetIndex</h4>
+    <span style="color:red">GETINDEX</span>
+    <hr>
+    Příkaz procedury  GetIndex  vytváří pracovní index v lokální proměnné resp.<br>
+    parametru procedury typu index of soubor. Pomocí alternativní verze<br>
+    příkazu lze i upravovat již vytvořený pracovní index.<br>
+    <br>
+    ██ Syntaxe1:    GETINDEX( LokPromTypuIndex,<br>
+    Soubor [ / NázevKlíče | LokPromTypuIndex ]<br>
+    [ ,cond = ( LogickýVýraz ) ]<br>
+    [ ,sort = ( TřídícíÚdaje ) ]<br>
+    [ ,owner = VazbaOwner      ]  )<br>
+    <br>
+    ■ Soubor/NázevKlíče ..... Soubor je název kapitoly F, přístup podle klíče<br>
+    použijeme ze dvou důvodů:<br>
+    1. případné použití key in v parametru cond<br>
+    2. při shodě popisu klíče s tříděním indexu dojde<br>
+    k výrazné úspoře času<br>
+    Poznámka: Ve verzi 3.2 se podle NázevKlíče přebralo třídění<br>
+    do pracovního indexu. Ve verzi 3.3 nikoliv.<br>
+    <br>
+    ■ Cond=(LogickýVýraz) ... Pracovní index prezentuje podmnožinu souboru.<br>
+    V podmínce se může vyskytnout key in, v případě<br>
+    souboru .SQL lze použít i textový výraz<br>
+    ( pro SELECT WHERE )<br>
+    <br>
+    ■ Sort=(TřídícíÚdaje) ... Syntaxe je shodná s tříděním v deklaraci indexu.<br>
+    Parametr  sort  lze  použít jen  tehdy, není-li<br>
+    třídění uvedeno v deklaraci  a jde-li  o lokální<br>
+    proměnnou procedury (nikoliv parametr procedury).<br>
+    Z posledního faktu plyne důležité omezení a sice:<br>
+    ve volané proceduře nelze změnit třídění pracov.<br>
+    indexu, který tam byl předán jako parametr.<br>
+    <br>
+    ■ owner = VazbaOwner .... Generování podmnožiny podle vazby owner. Syntaxe<br>
+    viz. popis owner.<br>
+    POZOR ! U distribuční verze 4.0 chybně funguje<br>
+    varianta OWNER Soubor[FyzČísloVěty]<br>
+    Pouze u příkazu GetIndex, jinak OK.<br>
+    <br>
+    ■ Vytvářená lokální proměnná typu index může být stejná jako /...Index.<br>
+    Tak lze realizovat postupné zúžení podmnožiny.<br>
+    <br>
+    <br>
+    ██ Syntaxe2:    GETINDEX( LokPromTypuIndex, + | - , ČísloVěty )<br>
+    <br>
+    ■ +  ... Příkaz přidá do pracovního indexu větu, danou fyzickým číslem<br>
+    ve třetím parametru. Neprovede nic, pokud je číslo věty neplatné,<br>
+    věta je neplatná nebo je již v indexu zařazena (se stejnou<br>
+    hodnotou klíče).<br>
+    <br>
+    ■ -  ... Příkaz vyřadí danou větu z indexu. Pokud věta není v indexu nebo<br>
+    tam je s jinou hodnotou klíče, neprovede se žádná akce.<br>
+    <br>
+    ■ ČísloVěty ... číselný výraz, fyzické číslo věty, která se má přidat nebo<br>
+    vyjmout z pracovního indexu.<br>
+</div>
+<div>
+    <h4>getlex</h4>
+    <span style="color:red">getlex</span>
+    <hr>
+    getlex(Lexem)<br>
+    <br>
+    Vrací aktuální  seznam  lexemů  z  interní  paměti.  Predikát  lze<br>
+    použít pouze ve větvi po loadlex.<br>
+    <br>
+    <br>
+    Lexem  Term typu L_Lexem.<br>
+</div>
+<div>
+    <h4>GetMaxX</h4>
+    <span style="color:red">ROZMĚRY OBRAZOVKY</span>
+    <hr>
+    Funkce vrací rozměry obrazovky (textový režim).<br>
+    <br>
+    ██ syntaxe:     MAXCOL : real   ....... počet sloupců obrazovky (stand.80)<br>
+    MAXROW : real   ....... počet řádků obrazovky (stand.25)<br>
+    <br>
+    <br>
+    gotoxy, Funkce v L kapitole<br>
+    ───────────────<br>
+    <br>
+    Rozměry aktuálního okna v pixelech ( grafický režim ).<br>
+    <br>
+    ██ syntaxe:     GETMAXX : real  ........ Maximální souřadnice X<br>
+    GETMAXY : real  ........ Maximální souřadnice Y<br>
+    <br>
+    Poznámka :   Pozor na rozdíl grafiky oproti textu. V grafice se počítá<br>
+    od 0. Např. pro VGA, pro celou obrazovku je getmaxx=639.<br>
+</div>
+<div>
+    <h4>GetMaxY</h4>
+    <span style="color:red">ROZMĚRY OBRAZOVKY</span>
+    <hr>
+</div>
+<div>
+    <h4>GetPath</h4>
+    <span style="color:red">DOTAZ UŽIVATELI</span>
+    <hr>
+    Interaktivní výběr cesty k souboru v systému adresářů.<br>
+    <br>
+    ██ syntaxe:     GETPATH [ ( Maska ) ] : string<br>
+    <br>
+    ■  Maska ...... Textový výraz. Zadání vhodné masky umožňuje :<br>
+    -   zúžit výběr na soubory s určitou příponou<br>
+    -   zvolit vhodný adresář pro začátek hledání<br>
+    -   nastavení požadovaného disku<br>
+    V masce je možno použít speciální znaky :<br>
+    ?   nahradí se libovolným znakem - jen pro danou pozici<br>
+    *   nahradí se libovolnou kombinací znaků (řetězcem)<br>
+    Implicitní maska je '*.*' ( tj. všechny soubory)<br>
+    ■  Vrací ...... Funkce vrací úplnou cestu k potvrzenému souboru (ENTER)<br>
+    nebo prázdný string při ESC.<br>
+    ■  Kapitoly ... P, D<br>
+    <br>
+    komunikační příkazy<br>
+    <br>
+    ░░░░░░░░░░░░      ██    s:=getpath('*.TXT');<br>
+    ░░příklady░░            TEXT.Path:=s;<br>
+    ░░░░░░░░░░░░            printtxt(TEXT);  {tisk vybraného souboru}<br>
+</div>
+<div>
+    <h4>GetTxt</h4>
+    <span style="color:red">ZÁPIS A ČTENÍ TEXTU ZE SOUBORU</span>
+    <hr>
+    Načtení textu  z textového souboru  od zadané pozice.  Načte se celý text,<br>
+    nebo, pokud je zadán třetí parametr, blok této délky. Pozor na to, že<br>
+    pracuje i s texty delšími než 65 000 byte, které načte celé jen při přímém<br>
+    přiřazení do lokální proměnné typu string nebo do údaje souboru typu T.<br>
+    Pokud nemůže načíst celý soubor až do konce (resp. celý požadovaný úsek),<br>
+    nastaví exitcode=1, jinak platí exitcode=0.<br>
+    <br>
+    ██ syntaxe :        GETTXT ( NázevSouboru [,PoziceOd [ ,Délka]] ) : string<br>
+    <br>
+    ■  NázevSouboru ... fyzické jméno v apostrofech nebo jméno z katalogu<br>
+    ■  Kapitoly ....... P,D<br>
+    <br>
+    Příklad:<br>
+    var s:string;<br>
+    begin<br>
+    s:=gettxt('soubor'); {zde je exitcode vždy =0, neboť do s se přečte i<br>
+    dlouhý string do 2GB}<br>
+    <br>
+    s:=gettxt('soubor')+'něco k tomu';<br>
+    if exicode=1 then<br>
+    message('ze souboru se nepřečetlo vše, neboť výraz typu string <= 65000B');<br>
+    <br>
+    ───────────────────────<br>
+    <br>
+    Zápis textu do textového souboru.<br>
+    <br>
+    ██ syntaxe :        PUTTXT ( NázevSouboru , TextVýraz [ ,append ] )<br>
+    <br>
+    ■  NázevSouboru ... fyzické jméno v apostrofech nebo jméno z katalogu<br>
+    ■  append ......... připojení textu za textový soubor<br>
+    ■  Kapitoly ....... P<br>
+</div>
+<div>
+    <h4>GF</h4>
+    <span style="color:red">ZOBRAZENÍ SOUBORU VE FORMÁTU .PCX</span>
+    <hr>
+    Příkazem graph lze zobrazit soubor v grafickém formátu PCX (pixel grafika)<br>
+    <br>
+    ██ Syntaxe:    graph ( GF= NázevSouboruPCX , ... )<br>
+    <br>
+    <br>
+    ■  Z ostatních parametrů lze uvést Print, ww, Txt, TxtWin,  Assign.<br>
+    <br>
+    ■  Parametrem WW lze obraz .PCX "ořezat". Pokud je obraz větší než použité<br>
+    okno, lze oknem rolovat pomocí kurzorových kláves.<br>
+    <br>
+    ■  Předefinováním barev v .PCX se změní barvy na celé obrazovce po dobu<br>
+    příkazu graph<br>
+    <br>
+    ■  graph( GF='', ... ) ... tisk , uložení nebo inverze grafické obrazovky.<br>
+    Dále jsou akceptovány parametry Print, ww,  Txt,<br>
+    a TxtWin.<br>
+    <br>
+    <br>
+    Chyby při zobrazení .PCX<br>
+    Nastane-li při zobrazení souboru PCX chyba, nahlásí PC FAND<br>
+    F10! Chyba obrazení PCX(číslo chyby)<br>
+    kde číslo chyby znamená:  1... soubor nelze otevřít (nenalezen)<br>
+    2... nerozpoznán formát PCX souboru<br>
+    3... možné zobrazit pouze na VGA kartě(256 barev)<br>
+    4... pokus o zobrazení PCX v 256 barvách do okna<br>
+    (lze pouze přes celou obrazovku)<br>
+</div>
+<div>
+    <h4>Globální proměnné</h4>
+    <span style="color:red">PARAMETRICKÝ KLÍČ</span>
+    <hr>
+    Datový soubor s definovaným  parametrickým  klíčem je parametrický soubor.<br>
+    Jeho poslední věta je viditelná (tj. jeho údaje se mohou vyskytovat pomocí<br>
+    tečkové notace ve výrazech i na levé straně přiřazovacího příkazu) v celém<br>
+    projektu.<br>
+    <br>
+    █ @ @ ....................... definice parametrického klíče<br>
+    <br>
+    Parametrický soubor může být dále v projektu zpracováván jako obyčejný<br>
+    datový soubor a může mít více vět, většinou má však pouze jednu větu. Když<br>
+    je parametrický soubor prázdný, PC FAND automaticky vytváří při prvním<br>
+    přístupu jednu větu a naplní ji nulami a mezerami.<br>
+    <br>
+    Údaje poslední věty parametrického souboru nazýváme globální proměnné.<br>
+    Na globální proměnné se v celém projektu odkazujeme tečkovou notací<br>
+    a mohou vystupovat ve výrazech i na levé straně přiřazovacího příkazu.<br>
+    <br>
+    █ NázevSouboru.NázevÚdaje ... globální proměnná<br>
+    <br>
+    <br>
+    ░░░░░░░░░░░░<br>
+    ░░příklady░░<br>
+    ░░░░░░░░░░░░<br>
+    <br>
+    ██ Deklarace parametrického souboru PARAM<br>
+    <br>
+    F  PARAM    Datum : D ;<br>
+    ....<br>
+    #K @ @ ;<br>
+    <br>
+    Odkaz na globální proměnnou PARAM.Datum kdekoliv v projektu<br>
+    PARAM.Datum:=today;<br>
+</div>
+<div>
+    <h4>GotoXY</h4>
+    <span style="color:red">VÝSTUP NA OBRAZOVKU</span>
+    <hr>
+    Základními příkazy  pro výstup  na obrazovku jsou  write a  writeln, který<br>
+    navíc provede odřádkování.Výstup se provede do aktuálního okna od aktuální<br>
+    pozice kurzoru.<br>
+    <br>
+    ██ syntaxe:          WRITE( SeznamPrvků )<br>
+    WRITELN( SeznamPrvků )<br>
+    <br>
+    ■ prvek seznamu prvků ...... TextVýraz, LogVýraz, ČísVýraz s maskou<br>
+    ■ masky pro výstup čísla ... ČísVýraz:m nebo ČísVýraz:m:n<br>
+    m celková délka zobrazení čísla (počet míst)<br>
+    n je počet míst za čárkou<br>
+    při n=-1 se použije exponenciální tvar<br>
+    výstup datumu a času ..... ČísVýraz:Maska (maska pro datum)<br>
+    ───────────────<br>
+    <br>
+    Nastavení aktuální pozice kurzoru.<br>
+    <br>
+    ██ syntaxe:         GOTOXY( Sloupec,Řádek )<br>
+    <br>
+    ■  Sloupec,Řádek... Číselné výrazy, relativní vzhledem k aktuálnímu oknu.<br>
+</div>
+<div>
+    <h4>Grafické příkazy</h4>
+    <span style="color:red">GRAFICKÉ PŘÍKAZY</span>
+    <hr>
+    Grafické příkazy  jsou definovány pouze v módu 80x25.  Kromě příkazu graph<br>
+    musí být před použitím grafického příkazu aktivován grafický mód  příkazem<br>
+    with graphics. Pokud tomu tak není, příkaz se ignoruje.<br>
+    <br>
+    ██ syntaxe:    WITH GRAPHICS DO Příkaz<br>
+    <br>
+    ■  Příkaz bude proveden v grafickém módu dle typu obrazovky. Platí pro EGA<br>
+    (640x350), VGA (640x450)  Hercules (720x348).  Příkaz může být i<br>
+    složený (begin ... end).<br>
+    <br>
+    ──────────────────<br>
+    Další příkazy pro grafický režim:<br>
+    <br>
+    ■ graph ....... grafické zobrazení dat, obchodní (bussines) grafika<br>
+    ■ putpixel .... kreslení bodu<br>
+    ■  line ....... kreslení čáry<br>
+    ■ rectangle ... kreslení obdélníku<br>
+    ■ ellipse ..... kreslení elipsy (kružnice)<br>
+    ■ floodfill ... vyplnění ohraničené oblasti vzorem<br>
+    ■ outtextxy ... výpis textu zadaným typem, velikostí a směrem písma<br>
+    ■ getmaxx, getmaxy ... maximální grafické souřadnice aktuálního okna<br>
+</div>
+<div>
+    <h4>Grafy</h4>
+    <span style="color:red">PŘÍKAZ GRAPH               ovládání zobrazení grafu</span>
+    <hr>
+    Příkaz procedury pro grafické zobrazení datových souborů (jen při 80x25).<br>
+    <br>
+    ██ tři varianty syntaxe:<br>
+    GRAPH; ....... interaktivní práce s grafem (bez implicitních hodnot)<br>
+    GRAPH (GF=TextVýraz); ........ zobrazení grafického souboru *.PCX<br>
+    <br>
+    GRAPH ( NázevSouboru [/NázevKlíče ], ............... graf souboru<br>
+    ( SeznamÚdajů )<br>
+    [, Type=TextVýraz]   [, Head=TextVýraz]   [, HeadX=TextVýraz]<br>
+    [, HeadY=TextVýraz]  [, HeadZn=TextVýraz] [, DirX=TextVýraz]<br>
+    [, Width=ČísVýraz]   [, Grid=TextVýraz]   [, Print=TextVýraz]<br>
+    [, GrPoly=ČísVýraz]  [, Fill=TextVýraz]   [, Cond=[()LogVýraz[)]]<br>
+    [, Recno=ČísVýraz]   [, Max=ČísVýraz]     [, Min=ČísVýraz]<br>
+    [, Nrecs=ČísVýraz]   [, Interact]         [, Palette=TextVýraz]<br>
+    [{, Txt=(DefiniceTextu)}]   [{,TxtWin=(DefiniceTextuOkna)}]<br>
+    [, ww=(DefiniceOkna) ]     [{,RGB=(DefiniceBarvy)} ]<br>
+    [, assign=TextVýraz] );<br>
+    <br>
+    ■  Názevklíče  ... zobrazení dle alternativního klíče<br>
+    ■  SeznamÚdajů ... alespoň dva údaje souboru, první pro osu X, druhý a<br>
+    další pro osu Y. Typy údajů :  osaX  (F,A,N,D),<br>
+    osaYi (F,N,D)<br>
+</div>
+<div>
+    <h4>Graph</h4>
+    <span style="color:red">PŘÍKAZ GRAPH               ovládání zobrazení grafu</span>
+    <hr>
+</div>
+<div>
+    <h4>Graphics</h4>
+    <span style="color:red">GRAFICKÉ PŘÍKAZY</span>
+    <hr>
+</div>
+<div>
+    <h4>Grid</h4>
+    <span style="color:red">PARAMETRY GRAFU</span>
+    <hr>
+</div>
+<div>
+    <h4>Group</h4>
+    <span style="color:red">GROUP, COUNT - duplicitní klíčová slova</span>
+    <hr>
+</div>
+<div>
+    <h4>GrPoly</h4>
+    <span style="color:red">PARAMETRY GRAFU</span>
+    <hr>
+    Výběr vět ze souboru<br>
+    ■ COND=LogVýraz ... výběr vět pro zobrazení<br>
+    ■ RECNO=ČísVýraz .. počáteční věta pro zobrazení (podmnožina se akceptuje)<br>
+    Implicitně = 1.<br>
+    ■ NRECS=ČísVýraz .. počet vět pro zobrazení<br>
+    maximum pro CIRCLE a POLYREG je 32,pro ostatní typy 64,<br>
+    zobrazí se však počet reálně zobrazitelných vět.<br>
+    ...........<br>
+    <br>
+    <br>
+    ■ WIDTH=ČísVýraz .. šířka objektů v procentech (1..100%), implicitně 50%<br>
+    Lze použít pro všechny typy kromě CIRCLE. Pro čárové<br>
+    grafy šířka čar-pod 50% tence, jinak tlustá (3pixely)<br>
+    <br>
+    ■ MAX=ČísVýraz .... maximum na ose Y │ když Min=-1 dosadí se do Max maximum<br>
+    ■ MIN=ČísVýraz .... minimum na ose Y │ hodnot+10% a do Min minimum-10%<br>
+    Jiné záporné hodnoty než min=-1 nejsou akceptovány.<br>
+    (Funkce v L kapitole)<br>
+    ■ GRPOLY=ČísVýraz . stupeň aproximačního polynomu pro POLYREG(max. Nrec-1)<br>
+    ■ INTERACT ........ interaktivní práce s převzetím zadaných parametrů<br>
+</div>
+
+
+<div>
+    <h4></h4>
+    <span style="color:red"></span>
+    <hr>
+</div>
+<div>
+    <h4></h4>
+    <span style="color:red"></span>
+    <hr>
+</div>
+<div>
+    <h4></h4>
+    <span style="color:red"></span>
+    <hr>
+</div>
+<div>
     <h4></h4>
     <span style="color:red"></span>
     <hr>

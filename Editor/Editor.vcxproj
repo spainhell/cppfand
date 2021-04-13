@@ -157,11 +157,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="EditorHelp.cpp" />
     <ClCompile Include="rdedit.cpp" />
     <ClCompile Include="runedi.cpp" />
     <ClCompile Include="Editor.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="EditorHelp.h" />
     <ClInclude Include="rdedit.h" />
     <ClInclude Include="runedi.h" />
     <ClInclude Include="Editor.h" />

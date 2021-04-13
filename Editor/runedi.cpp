@@ -2,6 +2,7 @@
 
 
 #include "Editor.h"
+#include "EditorHelp.h"
 #include "rdedit.h"
 #include "../cppfand/ChkD.h"
 #include "../cppfand/compile.h"

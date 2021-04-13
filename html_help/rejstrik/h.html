@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <title>H</title>
+</head>
+<body style="font-family:'Courier New'">
+
+<div>
+    <h4>Head</h4>
+    <span style="color:red">HEAD - duplicitní klíčové slovo</span>
+    <hr>
+    ■ edit(...head) ....... parametry editace: první řádek obrazovky datového<br>
+    editoru<br>
+    ■ edittxt(...head) .... první řádek obrazovky textového editoru<br>
+    ■ graph(...head) ...... hlavička grafu,  head<br>
+    ■ report(...head) ..... parametry automatické sestavy: hlavička strany<br>
+    ■ selectstr(...head)... text pro horní hranu okna při výběru z pole stringů<br>
+    ■ copyfile(...head) ... hlavička textového souboru při exportu dat do textu<br>
+</div>
+<div>
+    <h4>HeadLine</h4>
+    <span style="color:red">VÝSTUP NA OBRAZOVKU</span>
+    <hr>
+</div>
+<div>
+    <h4>HeadX</h4>
+    <span style="color:red">PARAMETRY GRAFU</span>
+    <hr>
+</div>
+<div>
+    <h4>HeadY</h4>
+    <span style="color:red">PARAMETRY GRAFU</span>
+    <hr>
+</div>
+<div>
+    <h4>HeadZ</h4>
+    <span style="color:red">PARAMETRY GRAFU</span>
+    <hr>
+</div>
+<div>
+    <h4>Help</h4>
+    <span style="color:red">VÝSTUP NA OBRAZOVKU</span>
+    <hr>
+</div>
+<div>
+    <h4>Heslo</h4>
+    <span style="color:red">SPECIÁLNÍ FUNKCE</span>
+    <hr>
+    Funkce cond je obecná funkce  pro vyhodnocení  podmíněné hodnoty typu real<br>
+    nebo string. Typ vrácené hodnoty závisí na typu parametrů.<br>
+    <br>
+    ██ Syntaxe:   COND ( LogVýraz1 : Výraz1,<br>
+    LogVýraz2 : Výraz2,<br>
+    ...<br>
+    else :  Výraz )   : real | string<br>
+    <br>
+    Výsledkem cond je výraz u prvního splněného logického výrazu. Není-li<br>
+    ani jeden splněn, výsledkem cond je výraz za else (nepovinná větev)<br>
+    nebo prázdný text resp. nula.<br>
+    ─────────────────<br>
+    <br>
+    ██ password: string ... vyvolá dotaz na heslo a předá jej jako výsledek<br>
+    <br>
+    ██ version: string .... číslo verze PC FANDu<br>
+    <br>
+    ██ testmode: boolean... true, pokud je PC FAND v ladícím režimu<br>
+</div>
+<div>
+    <h4>Hlavní menu PC FANDu</h4>
+    <span style="color:red">HLAVNÍ MENU PC FANDu</span>
+    <hr>
+    Nabídka obsahuje následující volby:<br>
+    <br>
+    ■ Ladit úlohu ....... programování úlohy v projektantském prostředí<br>
+    ■ Provést úlohu ..... spuštění úlohy v uživatelském režimu<br>
+    ■ Instalace úlohy ... změna katalogu souborů a seznamu oprávněných uživatelů<br>
+    ■ Editace textu ..... vyvolání textového editoru pro textové soubory na disku<br>
+    ■ MsDos ............. odskok do operačního systému (návrat příkazem exit)<br>
+    ■ Konec ............. ukončení PC FANDu (též Esc)<br>
+    <br>
+    Spuštěním PC FANDu s parametrem se hlavní menu nezobrazí a spustí se rovnou<br>
+    požadovaná akce:<br>
+    <br>
+    ■ FAND NázevÚlohy ..... spuštění úlohy v uživatelském režimu<br>
+    ■ FAND NázevÚlohy D ... nastavení programátorského prostředí pro úlohu<br>
+    ■ FAND NázevTextu T ... textový editor pro zadaný textový soubor<br>
+</div>
+<div>
+    <h4>Hledání podle klíče</h4>
+    <span style="color:red">HLEDÁNÍ PODLE KLÍČE</span>
+    <hr>
+    Funkce recno vrací fyzické  číslo věty  identifikované  určitým klíčem. Lze<br>
+    použít pro  indexové soubory nebo  neindexové s vlastním klíčem.  Ve druhém<br>
+    případě dává funkce  korektní výsledek  jen tehdy , je-li soubor dle tohoto<br>
+    klíče fyzicky setříděn. Pokud věta s touto hodnotou klíče neexistuje, vrací<br>
+    záporné číslo nejbližší vyšší věty.<br>
+    <br>
+    ██ Syntaxe: RECNO( NázevSouboru [/NázevKlíče] ,SeznamArgumentůKlíče) : real<br>
+    <br>
+    ■  NázevSouboru ........... Název kapitoly F.<br>
+    ■  NázevKlíče ............. Název vlastního (alternativního) klíče souboru.<br>
+    Implicitně se použije hlavní vlastní klíč (@)<br>
+    ■  SeznamArgumentůKlíče ... Počet prvků seznamu musí přesně co do pořadí,<br>
+    počtu a typů odpovídat deklaraci klíče.<br>
+    Jednotlivé prvky seznamu jsou číselné výrazy<br>
+    odpovídajícího typu, oddělené čárkou.<br>
+    ───────────────<br>
+    <br>
+    ██ Syntaxe:   RECNOABS ( NázevSouboru [/NázevKlíče] ,LogickéČíslo) : real<br>
+    RECNOLOG ( NázevSouboru [/NázevKlíče] ,FyzickéČíslo) : real<br>
+    <br>
+    Funkce recnoabs převádí logické pořadové číslo věty podle daného klíče<br>
+    na fyzické číslo věty. Funkce recnolog provádí právě opačný převod. Pokud<br>
+    věta s fyzickým číslem neexistuje nebo je neplatná, vrací 0.<br>
+    <br>
+    ■ LogickéČíslo a FyzickéČíslo jsou číselné výrazy.<br>
+    <br>
+    ░░░░░░░░░░░░<br>
+    ░░příklady░░<br>
+    ░░░░░░░░░░░░<br>
+    <br>
+    i:=recno(SKLAD,Cislo)               {bez indexů nebo podle primárního klíče}<br>
+    i:=recno(SKLAD,Cislo,Datum)                        {několik klíčových údajů}<br>
+    i:=recno(SKLAD,POM.Zbozi,int(today))                         {obecné výrazy}<br>
+    i:=recno(SKLAD/Klic2,Cislo)                       {podle sekundárního klíče}<br>
+    <br>
+    <br>
+    i:=recnoabs(DATA/Klic, 1)                           {první věta podle klíče}<br>
+    i:=recnoabs(DATA/Klic,DATA.nrecs)                {poslední věta podle klíče}<br>
+</div>
+
+<div>
+    <h4></h4>
+    <span style="color:red"></span>
+    <hr>
+</div>
+<div>
+    <h4></h4>
+    <span style="color:red"></span>
+    <hr>
+</div>
+
+</body>
+</html>

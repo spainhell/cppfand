@@ -2,7 +2,6 @@
 #include "../cppfand/constants.h"
 #include "../cppfand/pstring.h"
 #include "../cppfand/rdrun.h"
-#include "../cppfand/XString.h"
 #include "../cppfand/models/FrmlElem.h"
 
 class FieldDescr;

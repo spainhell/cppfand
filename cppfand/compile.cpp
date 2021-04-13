@@ -9,7 +9,7 @@
 #include "runfrml.h"
 #include "TFile.h"
 #include "wwmix.h"
-#include "../Editor/editor.h"
+#include "../Editor/Editor.h"
 #include "../textfunc/textfunc.h"
 
 const BYTE MaxLen = 9;
