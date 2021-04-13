@@ -2,666 +2,751 @@
 <html lang="cs">
 <head>
     <meta charset="UTF-8">
-    <title>E</title>
+    <title>F</title>
 </head>
 <body style="font-family:'Courier New'">
+
 <div>
-    <h4>E</h4>
+    <h4>F</h4>
+    <span style="color:red">DEKLARACE SOUBORU - kapitola F</span>
+    <hr>
+</div>
+<div>
+    <h4>fail</h4>
+    <span style="color:red">fail - neúspěch</span>
+    <hr>
+    fail<br>
+    <br>
+    Predikát fail vyvolá neúspěch - návrat k poslednímu bodu větvení a<br>
+    zrušení všech  mezivýsledků mimo  assert/retract nebo  efektů z  volání<br>
+    procedur FANDu.<br>
+    Slouží  k   zajištění  průchodu  všemi  větvemi.  Podobně  jako  u<br>
+    predikátu not  nelze přebírat  výstupní parametry volaných predikátů  -<br>
+    při návratu  je proměnná  uvolněna. Uchování  výsledku  lze  realizovat<br>
+    pomocí predikátu  assert. Tento  způsob je  časově  náročný,  rychlejší<br>
+    řešení přinese predikát all.<br>
+    <br>
+    Příklad:<br>
+    <br>
+    <br>
+    e:- a(_) , fail.<br>
+    <br>
+    Při   provádění  predikátu  "e"  je  vyhledána  struktura  "a".<br>
+    Predikát "fail" vyvolá  nesplnění a  návrat zpět. Bude vyhledána  další<br>
+    větev "a".  Po nalezení  všech větví  je výsledkem nesplnění cíle.  Cíl<br>
+    může být splněn druhou větví predikátu "e".<br>
+</div>
+<div>
+    <h4>FANDCAT</h4>
+    <span style="color:red">SET-parametry</span>
+    <hr>
+    Tyto parametry interpretuje  PC FAND  při startu  programu a zadávají se<br>
+    do oblasti systémových proměnných (environment) příkazem<br>
+    SET PARAMETR=hodnota.<br>
+    Všechny parametry jsou nepovinné (při jednouživatelském režimu) a nejsou<br>
+    -li zadány, platí implicitní nastavení.<br>
+    <br>
+    ■ FANDRES .... cesta k souboru FAND.RES (message,fonty,drivery)<br>
+    ■ FANDCFG .... cesta k souboru FAND.CFG (instalační parametry PC FANDu)<br>
+    ■ FANDOVR .... cesta k souboru FAND.OVR nebo UFAND*.OVR (overlay)<br>
+    použití hlavně v LAN.<br>
+    ■ FANDWORK ... pracovní soubory FANDWORK.$$$, FANDWORK.X$$,FANDWORK.T$$<br>
+    (realizace ClipBoardu, dočasné třídění, podmnožiny,...)<br>
+    a PRINTER.TXT - tiskové sestavy. Význam hlavně v LAN.<br>
+    Implicitní hodnota všech výše uvedených parametrů je adresář PC FANDU.<br>
+    <br>
+    ■ LANNODE .... číslo stanice v síti ( unikátní pro každou stanici ! )<br>
+    Hodnoty 0..255. Povinný při sdílení datových souborů !<br>
+    ■ FANDDATA ... jiná cesta pro datové soubory a katalog<br>
+    ■ FANDCAT .... adresář pro katalog úlohy (má přednost před FANDDATA)<br>
+    ■ FANDOVRB ... zvětšení operační paměti pro úlohu, zadá se počet KB,<br>
+    které má použít PC FAND pro oblast overlay místo optimální<br>
+    velikosti (124 KB). Důsledkem je ovšem zpomalení práce<br>
+    PC FANDu (zvláště volání exit-procedur).<br>
+    Přípustné hodnoty parametru jsou v intervalu 80..134 KB,<br>
+    jinak PC FAND použije 124 KB.<br>
+</div>
+<div>
+    <h4>FANDCFG</h4>
+    <span style="color:red">SET-parametry</span>
+    <hr>
+</div>
+<div>
+    <h4>FANDDATA</h4>
+    <span style="color:red">SET-parametry</span>
+    <hr>
+</div>
+<div>
+    <h4>fandfile</h4>
+    <span style="color:red">fandfile</span>
+    <hr>
+    fandfile([&]String_Soubor,&String_Typ,&String_Rdb,&String_Cesta)<br>
+    <br>
+    String_Soubor   Logické jméno souboru PC FANDu.<br>
+    String_Typ      Typ souboru:  ''    - standardní soubor<br>
+    'SQL' - SQL tabulka<br>
+    'X'   - s podporou indexů<br>
+    'DBF' - DBF soubor<br>
+    'DTA' - formát 8-bitového FANDu.<br>
+    String_Rdb      Úloha v které je soubor definován.<br>
+    String_Cesta    Úplná cesta k souboru.<br>
+    <br>
+    vstupní_parametry<br>
+    <br>
+    Zjištění  informací  o  popisu  souborů  projektu.  Popis  dalších<br>
+    souborů  je vrácen při prohledávání další větve. Seznam popisů  souboru<br>
+    lze vytvořit vyvoláním pomocí predikátu all.<br>
+    <br>
+    Vrácen je popis  všech viditelných  souborů, tj. včetně souborů  z<br>
+    nadřízených   úloh.    Překryté  soubory    nadřízených  úloh   nebudou<br>
+    zpřístupněny.<br>
+    <br>
+    <br>
+    <br>
+    Příklad:<br>
+    <br>
+    soubor:-trace(1),fandfile(Soubor,'X','PROLOG',Cesta),<br>
+    write('Soubor:',Soubor,'    Cesta:',Cesta),fail.<br>
+    <br>
+    Výpis indexovaných souborů projektu "PROLOG".<br>
+</div>
+<div>
+    <h4>fandfield</h4>
+    <span style="color:red">fandfield</span>
+    <hr>
+    fandfield(String_Soubor,[&]String_Název,&String_Typ,&Integer_Delka<br>
+    ,&Integer_DesM,&Integer_Flags,&String_Maska)<br>
+    <br>
+    String_Soubor  Název souboru.<br>
+    String_Název   Název údaje.<br>
+    String_Typ     Typ údaje ('F','A','N','D','B','T','R').<br>
+    Integer_Delka  Délka, resp. počet míst před desetinnou tečkou.<br>
+    Integer_DesM   Počet míst za desetinnou tečkou.<br>
+    Integer_Flags  Maska s následujícím významem bitů:<br>
+    1 - uložen (1)<br>
+    2 - zakódován (2)<br>
+    3 - s maskou (4)<br>
+    4 - myšlená čárka (8)<br>
+    5 - zarovnání vlevo pro typy A,N (16)<br>
+    String_Maska   Maska údaje. U údajů bez masky vrací ''.<br>
+    <br>
+    vstupní_parametry<br>
+    <br>
+    Zjištění  jména a typu údaje určeného souboru včetně popisu  masky<br>
+    údaje.<br>
+    Maska  obsahuje binárně kódovanou informaci. Například při  výběru<br>
+    uložených  údajů je nutno vybrat  údaje s  hodnotou prvního bitu 1,  tj<br>
+    liché hodnoty.  Zjištění  obsahu  bitu  lze  provést  pomocí  binárního<br>
+    operátoru &&.<br>
+    <br>
+    Příklad:<br>
+    <br>
+    udaj:-fandfield('HLP',Název,Typ,_,_,_,_),write(Název,Typ).<br>
+</div>
+<div>
+    <h4>fandkey</h4>
+    <span style="color:red">fandkey</span>
+    <hr>
+    fandkey(String_Soubor,&String_Klíč,&Boolean_Int,<br>
+    &Boolean_Dupl)<br>
+    <br>
+    String_Soubor  Název souboru.<br>
+    String_Klíč    Název vlastního klíče. Primární klíč označen "@".<br>
+    Boolean_Int    Intervalový klíč.<br>
+    Boolean_Dupl   Duplicitní klíč.<br>
+    <br>
+    vstupní_parametry<br>
+    <br>
+    Zjistí  názvy a typy vlastních  klíčů.<br>
+    <br>
+    Příklad:<br>
+    <br>
+    klic:-fandkey('ZAMESTN',Klic,_,_),<br>
+    fandkeyfield('ZAMESTN',Klic,Udaj,_,_), write(Klic,Udaj).<br>
+    <br>
+    Výpis prvního údaje prvního klíče.<br>
+</div>
+<div>
+    <h4>fandkeyfield</h4>
+    <span style="color:red">fandkeyfield</span>
+    <hr>
+    fandkeyfield(String_Soubor,String_Klíč,&String_Údaj,<br>
+    &Boolean_Lex,&Boolean_Sest)<br>
+    <br>
+    String_Soubor  Název souboru.<br>
+    String_Klíč    Název vlastního klíče.<br>
+    String_Údaj    Název údaje.<br>
+    Boolean_Lex    Lexikální klíč.<br>
+    Boolean_Sest   Sestupné třídění.<br>
+    <br>
+    vstupní_parametry<br>
+    <br>
+    Zjistí jméno údaje tvořícího primární klíč a typ třídění.<br>
+    <br>
+    Příklad:<br>
+    <br>
+    klic:-fandkey('ZAMESTN',Klic,_,_),<br>
+    fandkeyfield('ZAMESTN',Klic,Udaj,_,_), write(Klic,Udaj).<br>
+    <br>
+    Výpis prvního údaje prvního klíče.<br>
+</div>
+<div>
+    <h4>fandlink</h4>
+    <span style="color:red">fandlink</span>
+    <hr>
+    fandlink(String_Soubor,[&]String_Spojení,[&]String_Soub,<br>
+    &String_Klíč,&String_Own,&Integer_Fl)<br>
+    <br>
+    String_Soubor       Název podřízeného souboru.<br>
+    String_Spojení˙˙˙˙˙˙Název  spojení do nadřízeného souboru. Může to  být<br>
+    jméno role, klíče, nebo nadřízeného souboru.<br>
+    String_Soub         Jméno nadřízeného souboru.<br>
+    String_Klíč         Název klíče v nadřízeném souboru.<br>
+    String_Own˙˙˙˙˙˙˙˙˙˙Název  vlastního   klíče,  který   lze  použít  pro<br>
+    vytvoření vazby owner z nadřízeného souboru do podřízeného.<br>
+    Integer_Fl          Maska s následujícím významem bitů:<br>
+    1 - referenční integrita  !      (1)<br>
+    2 - referenční integrita  !!     (2)<br>
+    3 - možno vytvořit owner spojení (4)<br>
+    <br>
+    <br>
+    Predikát   vyhledává  cizí  klíče  v  uvedeném  souboru.  Výstupní<br>
+    parametry popisují uvedený klíč.<br>
+    <br>
+    Podporovány   jsou  následující  dvě  kombinace  vstupních  (i)  a<br>
+    výstupních (o) parametrů: (i,i,o,o,o,o) a (i,o,i,o,o,o)<br>
+    <br>
+    <br>
+    Příklad:<br>
+    <br>
+    c_klic:-fandlink('UZIV',Spoj,Soub,Klíč,_,_),<br>
+    fandlinkfield('UZIV',Spoj,Udaj),<br>
+    write(Soub,Klíč,Udaj).<br>
+    <br>
+    Vyhledá  první   údaj  prvního  cizího  klíče  souboru  "UZIV".<br>
+</div>
+<div>
+    <h4>fandlinkfield</h4>
+    <span style="color:red">fandlinkfield</span>
+    <hr>
+    fandlinkfield(String_Soub,String_Spoj,&String_Údaj)<br>
+    <br>
+    String_Soub         Jméno podřízeného souboru.<br>
+    String_Spoj         Název spojení.<br>
+    String_Údaj         Jméno klíčového údaje.<br>
+    <br>
+    vstupní_parametry<br>
+    <br>
+    Vyhledá klíčové údaje určeného cizího klíče podřízeného souboru.<br>
+    <br>
+    Příklad:<br>
+    <br>
+    c_klic:-fandlink('UZIV',Spoj,Soub,Klíč,_,_),<br>
+    fandlinkfield('UZIV',Spoj,Udaj),<br>
+    write(Soub,Klíč,Udaj).<br>
+    <br>
+    Vyhledá  první údaj  prvního cizího  klíče  z  souboru  "UZIV"  do<br>
+    nadřízeného souboru.<br>
+</div>
+<div>
+    <h4>FANDOVR</h4>
+    <span style="color:red">SET-parametry</span>
+    <hr>
+</div>
+<div>
+    <h4>FANDOVRB</h4>
+    <span style="color:red">SET-parametry</span>
+    <hr>
+</div>
+<div>
+    <h4>FANDRES</h4>
+    <span style="color:red">SET-parametry</span>
+    <hr>
+</div>
+<div>
+    <h4>FANDWORK</h4>
+    <span style="color:red">SET-parametry</span>
+    <hr>
+</div>
+<div>
+    <h4>Field</h4>
+    <span style="color:red">PROCEDURÁLNÍ PARAMETRY EDITACE</span>
+    <hr>
+    Další parametry procedury edit použitelné výhradně v proceduře.<br>
+    <br>
+    ██ recno=ČísVýraz .... počáteční nastavení editoru - číslo věty (edrecno)<br>
+    ██ irec=ČísVýraz ..... pořadové číslo věty s kurzorem na obrazovce (edirec)<br>
+    ██ field=TextVýraz ... počáteční poloha kurzoru - název údaje (edfield)<br>
+    ██ reckey=TextVýraz .. počáteční poloha kurzoru na větě s touto (interní)<br>
+    hodnotou klíče (edreckey)<br>
+    <br>
+    Pomocí těchto  parametrů lze přesně  definovat, na kterou  větu souboru má<br>
+    editor při startu  najet včetně umístění  věty a kurzoru v aktuálním okně.<br>
+    <br>
+    <br>
+    ██ owner= ... editace skupiny vět podřízeného souboru podle viditelné věty<br>
+    <br>
+    ██ sel=PracovníIndex...pracovní index je lokální proměnná nebo parametr<br>
+    procedury, který slouží pro realizaci výběru podmno-<br>
+    žiny pomocí kláves:<br>
+    F8      vybrat/nevybrat aktuální větu (přepínač)<br>
+    ShiftF8 všechny věty do výběru nebo naopak<br>
+    Věty, vybrané do indexu jsou barevně odlišeny viz.<br>
+    instalace barev nebo parametr editace v okně.<br>
+    Třídění pracovního indexu musí odpovídat třídění<br>
+    editačního indexu (definuje se před editem).<br>
+    Souvislosti: mode='sl'  viz. módy datového editoru<br>
+    <br>
+    ██ check ... příkaz edit provede jen kontrolu syntaxe dynamické deklarace<br>
+    kapitoly E.<br>
+</div>
+<div>
+    <h4>File</h4>
+    <span style="color:red">FILE</span>
+    <hr>
+    Použití typu file (soubor) se pro parametry procedury poněkud liší od<br>
+    použití jako typu lokální proměnné procedury.<br>
+    <br>
+    Parametr typu FILE<br>
+    ──────────────────<br>
+    <br>
+    ██  ( ... ; NázevSouboru : FILE ; ... )<br>
+    <br>
+    ■ NázevSouboru ...  Při běžném překladu (Ctrl-F8) se bere jako reálný<br>
+    soubor (název viditelné kapitoly F). Při vyvolání<br>
+    procedury se substituuje aktuálním parametrem, lze<br>
+    použít i dynamickou deklaraci souboru.<br>
+    <br>
+    Význam parametru typu file je především pro psaní zobecněných procedur,tj.<br>
+    procedur, použitelných pro více souborů. Dynamizací  aktuálního parametru<br>
+    typu file lze deklarovat lokální soubor.<br>
+    <br>
+    ██          Proc( NázevProcedury,(@NázevSouboru)) ;<br>
+    Proc( NázevProcedury,(@[NázevSouboru,TextVýraz])) ;<br>
+    <br>
+    V příkazu Proc při volání procedury syntakticky odlišíme parametr FILE<br>
+    pomocí znaku '@'.<br>
+    <br>
+    ■   Aktuální parametr nemusí mít stejnou  deklaraci se souborem , použitým<br>
+    jako formální  parametr, ale musí se samozřejmě shodovat všechny prvky<br>
+    deklarace  použité  v proceduře ( údaje, odstavce ).  Tato podmínka je<br>
+    např. splněna,  je-li aktuální  parametr  souborem  deklarovaným  LIKE<br>
+    formální parametr.<br>
+    Pro substituci názvů vlastních alternativních klíčů platí konvence:<br>
+    Je-li NázevKlíče == [Prefix_]ZbytekNázvu, pak pokud soubor, substi-<br>
+    tuovaný místo původního, nemá klíč s tímto názvem, PC FAND zkusí<br>
+    klíč s názvem  NázevAktuálníhoParametru_ZbytekNázvu<br>
+    <br>
+    Pozor: Při použití nevhodného parametru mohou nastat běhové chyby.<br>
+    <br>
+    ■   TextVýraz ... ve druhé  variantě znamená  možnost  dynamické deklarace<br>
+    souboru - lokálního v dané proceduře.  Nemůže mít indexy<br>
+    a ignorují se odstavce #U/#D/#L/#I. Slouží jako pracovní<br>
+    soubor, může mít zápis v katalogu.<br>
+    Na konci procedury se lokální soubor na disku automaticky<br>
+    nezruší. To lze v případě potřeby zajistit explicitním<br>
+    příkazem  NázevSouboru.nrecs:=0<br>
+    Při prvním otevření maže případný starý soubor se stejným<br>
+    jménem - ale jen tehdy, pokud nesouhlasí s deklarací.<br>
+    <br>
+    .........................................................................<br>
+    <br>
+    Lokální proměnná procedury typu FILE - lokální soubor<br>
+    ────────────────────────────────────<br>
+    <br>
+    ██ VAR  NázevSouboru : file     [DeklaraceSouboru];<br>
+    NázevSouboru : file.X   [DeklaraceSouboru];<br>
+    NázevSouboru : file.DBF [DeklaraceSouboru];<br>
+    <br>
+    Na rozdíl od parametru typu file je deklarace struktury souboru přímou<br>
+    součástí deklarace lokálního souboru.<br>
+    <br>
+    ■ NázevSouboru ... Identifikátor, nesmí se překrývat s žádným názvem<br>
+    kapitoly typu F (na rozdíl od parametru typu file).<br>
+    ■ Lokální soubor může mít indexy nebo může být typu DBF.<br>
+    ■ DeklaraceSouboru Nesmí obsahovat odstavce #U, #D, #L, #I. Tedy je povo-<br>
+    lena jen první část kapitoly F. Nepíše se jako textový<br>
+    výraz, např. do apostrofů (na rozdíl od parametru-dyna-<br>
+    micky deklarovaného lokálního souboru).<br>
+    <br>
+    <br>
+    <br>
+    ░░░░░░░░░░░░<br>
+    ░░příklady░░<br>
+    ░░░░░░░░░░░░<br>
+    <br>
+    ██  Povolená kombinace parametrů:<br>
+    ( Soubor : File; veta : RECORD of Soubor )<br>
+    <br>
+    Umožňuje psaní obecných exit-procedur. Odkaz na soubor musí být vždy<br>
+    za deklarací.<br>
+    <br>
+    ██  Obdobně:  ( Soubor : File; indx : INDEX of Soubor )<br>
+    <br>
+    ██  P Ukazka  VAR  Pracovni : FILE     [ Jmeno:A,20; Castka:F,3.0 ] ;<br>
+    Export   : FILE.DBF [ Ucet:A,6; Kc:F,6.2 ] ;<br>
+    PracX    : FILE.X   [ Jmeno:A,20; #K @ ~Jmeno ] ;<br>
+    Begin<br>
+    ....<br>
+    <br>
+</div>
+<div>
+    <h4>FileSize</h4>
+    <span style="color:red">OBSAZENÍ DISKU A VELIKOST SOUBORU</span>
+    <hr>
+</div>
+<div>
+    <h4>Fill</h4>
+    <span style="color:red">PARAMETRY GRAFU</span>
+    <hr>
+    ■ FILL=TextVýraz ... dva znaky 'AB', první=typ výplně, druhý=tvar objektů<br>
+    A = N-obrys        C-barvy      F-vzor<br>
+    M-barvy&vzor   O-1 barva<br>
+    B = pro 2DBAR|GROUP|GROUPLINE|CIRCLE|APPROX|POLYREG<br>
+    1|2 - dvojrozměrná verze<br>
+    3 - trojrozměrná verze<br>
+    pro 3DBAR   1 - válcové sloupce<br>
+    2 - jehlany<br>
+    3 - kvádry<br>
+    pro 3DLINE  1 - lomená plocha<br>
+    2 - plochy mezi úsečkami<br>
+    3 - "kulisy"<br>
+    <br>
+    ■ GRID=TextVýraz ... zobrazení rastru, výpis hodnot do grafu<br>
+    Y-yes (pro čárové grafy v ose X i Y, jinak jen X)<br>
+    N-no(impl.)<br>
+    H-hodnota do grafu (2DBAR,3DBAR,3DLINE).<br>
+    Pro H lze dále zadat počet desetinných míst<br>
+    H:n (n = 0..10)<br>
+</div>
+<div>
+    <h4>Fix</h4>
+    <span style="color:red">KOPÍROVÁNÍ A PŘEVODY</span>
+    <hr>
+</div>
+<div>
+    <h4>FloodFill</h4>
+    <span style="color:red">FLOODFILL - vyplnění omezené oblasti</span>
+    <hr>
+    Příkaz  floodfill  vyplní oblast omezenou zadanou hraniční barvou určitým<br>
+    předdefinovaným vzorem v požadované barvě.<br>
+    <br>
+    ██ syntaxe:     FLOODFILL ( X, Y, Vzor, HrBarva, Barva )<br>
+    <br>
+    ■  X,Y ....... Číselné výrazy, bod uvnitř oblasti<br>
+    ■  Vzor ...... Číselný výraz, kód typu výplně. Povolené hodnoty 0..11<br>
+    ■  HrBarva ... Číselný výraz, kód barvy (Ctrl-znak), která ohraničuje<br>
+    zadanou oblast. Hranice musí být souvislá.<br>
+    ■  Barva ..... Číselný výraz - kód barvy (nebo Ctrl-znak) vzoru, kterým<br>
+    se vyplní oblast.<br>
+</div>
+<div>
+    <h4>Foot</h4>
+    <span style="color:red">SELECTSTR</span>
+    <hr>
+</div>
+<div>
+    <h4>For</h4>
+    <span style="color:red">PŘÍKAZY CYKLU</span>
+    <hr>
+    Jednotlivé typy cyklů se od sebe liší především umístěním a typem podmínky.<br>
+    <br>
+    Příkaz  while  se provádí  dokud platí logická  podmínka, která se testuje<br>
+    před tělem příkazu (smyčkou). To znamená, že příkaz uvnitř cyklu se nemusí<br>
+    provést ani jednou.<br>
+    <br>
+    ██ Syntaxe:       WHILE LogVýraz DO Příkaz<br>
+    <br>
+    Sekvence příkazů mezi repeat a until se provádí,dokud je nesplněna podmínka<br>
+    na konci těla příkazu. To znamená, že příkaz se provede vždy alespoň jednou<br>
+    (pokud není ukončen jinak).<br>
+    <br>
+    ██ Syntaxe:       REPEAT { Příkaz ; } UNTIL LogVýraz<br>
+    <br>
+    Příkaz cyklu for je řízen lokální řídící proměnnou typu real, která se na<br>
+    počátku příkazu inicializuje na hodnotu ČísVýraz1 a na konci každé smyčky<br>
+    se zvýší o 1. Před každou smyčkou se provede srovnání <= na ČísVýraz2.<br>
+    V podstatě jde o speciální případ příkazu while.<br>
+    <br>
+    ██ Syntaxe:       FOR LokálníProměnná := ČísVýraz1 TO ČísVýraz2 DO Příkaz<br>
+</div>
+<div>
+    <h4>ForAll</h4>
+    <span style="color:red">FORALL CYKLUS</span>
+    <hr>
+    Forall cyklus prochází platné věty celého souboru nebo jeho části a provádí<br>
+    požadované akce. Na věty souboru se odkazuje přímým přístupem  podle řídící<br>
+    proměnné cyklu  typu  real,  která  postupně  nabývá hodnot fyzických čísel<br>
+    procházených vět, nebo  pomocí  record  proměnné  typu  record of, která se<br>
+    postupně naplňuje jednotlivými větami souboru nebo kombinací obou způsobů.<br>
+    <br>
+    ██ Syntaxe:      FORALL    RecordProměnná |<br>
+    RealProměnná in RecordProměnná |<br>
+    RealProměnná in NázevSouboru<br>
+    [ /@ | /NázevKlíče | VazbaOwner ]<br>
+    [ ( LogickáPodmínka ) ] [ ! ] [ % ] do Příkaz<br>
+    <br>
+    ■ RecordProměnná ... Lokální proměnná typu record of zpracovávaný soubor.<br>
+    Aktualizované věty jsou automaticky vypsány do souboru<br>
+    včetně aditivních změn. O který soubor jde, je zřejmé<br>
+    z deklarace proměnné. V této variantě se není třeba<br>
+    starat o čtení a zápis vět.<br>
+    <br>
+    ■ RealProměnná ..... Obsahuje fyzické číslo zpracovávané věty, které lze<br>
+    použít pro přímý přístup Soubor[i].Údaj nebo pro<br>
+    operace typu rušení věty deleterec.<br>
+    <br>
+    ■ /@,/NázevKlíče ... Věty se zpracují v pořadí vlastního resp. alternativ-<br>
+    ního klíče. Nelze kombinovat s owner. Implicitně se<br>
+    soubor prochází ve fyzickém pořadí (index of).<br>
+    <br>
+    ■ LogickáPodmínka... Vstupní filtr. Logický výraz, ve kterém lze použít<br>
+    údaje souboru. Je efektivnější než rozhodování až<br>
+    v těle cyklu. Je povolena i konstrukce key in.<br>
+    Pro SQL je možno podmínku realizovat na serveru.<br>
+    <br>
+    ■ Vazba Owner ...... Skupina vět podřízeného souboru podle viditelné věty<br>
+    nadřízeného souboru.<br>
+    <br>
+    ■ ! ......... Píše se při /klíč nebo owner, když chceme rušit,zařadit věty<br>
+    či měnit indexy (hodnoty klíče). Pro korektní provedení cyklu<br>
+    se vygeneruje virtuální index.<br>
+    <br>
+    ■ % ......... Automatické zobrazení  procenta zpracování  souboru v dolním<br>
+    levém rohu (jako merge,report). Implicitně definuje okno pro<br>
+    výstup, které je v případě potřeby nutno předefinovat v těle<br>
+    cyklu.<br>
+    <br>
+    Charakteristika variant:<br>
+    RealProměnná in Soubor  se s výhodou použije při jednoduché změně několika<br>
+    (1-3) údajů - např. vynulování  proměnné.  Velmi výhodný  je v případě, že<br>
+    soubor obsahuje volné texty, se kterými se ale v cyklu nepracuje.<br>
+    Pokud se pracuje s více údaji, bude výhodnější varianta s record proměnnou,<br>
+    sníží počet fyzických přístupů na disk a zápis je přehlednější.<br>
+    <br>
+    <br>
+    ░░░░░░░░░░░░<br>
+    ░░příklady░░<br>
+    ░░░░░░░░░░░░<br>
+    <br>
+    ██ { kolik pracovníků má vyšší mzdu než 33.000 Kč }<br>
+    Kolik:=0 ;<br>
+    forall i in PRACOV (mzda>33000) do  Kolik+=1 ;<br>
+    <br>
+    forall i in PRACOV do                                { takto lze také }<br>
+    if PRACOV[i].mzda>33000 then Kolik+=1 ; { ale bude to pomalejší}<br>
+    <br>
+    <br>
+    ██ { zpracování podle indexu }<br>
+    var r:record of PRACOV ;  i:real ;<br>
+    forall i in DATA/@ (key in [...]) do ...<br>
+    forall r/PodleJmena do ...<br>
+    <br>
+    ██ { vazba owner - výběr podřízených vět pro jednu nadřízenou }<br>
+    var VětaPod:record of POD;<br>
+    VětaNad:record of NAD;<br>
+    VětaNad.Klíč:=...;<br>
+    forall VětaPod owner VětaNad do ...;<br>
+    forall VětaPod owner NAD[i] do ... ;<br>
+</div>
+<div>
+    <h4>Formátování textu</h4>
+    <span style="color:red">FORMÁTOVÁNÍ TEXTU</span>
+    <hr>
+    Kvůli formátování v textech PC FANDu rozlišujeme měkké a tvrdé konce řádků.<br>
+    Odstavec je pak definován jako úsek textu ukončený tvrdým koncem řádku (při<br>
+    editaci klávesou Enter ). Řádky s  tvrdými  konci  jsou označeny znakem < v<br>
+    posledním sloupci obrazovky (při zapnutém přepínači pro formátování).<br>
+    Odstavce lze formátovat do sloupce mezi levý a pravý okraj textu.<br>
+    <br>
+    ■ Ctrl-O Ctrl-L ... nastavení levého okraje textu (implicitně 1)<br>
+    ■ Ctrl-O Ctrl-R ... nastavení pravého okraje textu (implicitně 78)<br>
+    <br>
+    ■ Ctrl-B .......... formátování textu od pozice kurzoru do konce odstavce<br>
+    ■ Ctrl-K Ctrl-F ... formátování celého bloku<br>
+    <br>
+    Při nastaveném přepínači  automatické  formátování (Ctrl-O Ctrl-W) se<br>
+    text formátuje již během pořizování textu vždy při naplnění řádku.<br>
+    Pokud je navíc nastaven přepínač zarovnávání (Ctrl-O Ctrl-J), bude<br>
+    text při formátování zarovnán na pravý okraj (do řádku se vloží mezery).<br>
+    <br>
+    Interní uložení oddělovačů v textu: ^M^J - tvrdý konec, ^M - měkký konec.<br>
+</div>
+<div>
+    <h4>Formulář</h4>
     <span style="color:red">FORMULÁŘ - kapitola E</span>
     <hr>
-    Formulář definuje  rozvrh  obrazovky  pro editaci souboru datovým editorem<br>
-    ( hlavičku  obrazovky, pořadí a  rozmístění  údajů jedné věty a doprovodné<br>
-    texty).<br>
-    <br>
-    ██ Syntaxe:          { Komentář }<br>
-    [ TextHlavičky ]<br>
-    #_NázevSouboru PopisnáČást ;<br>
-    ZobrazovacíČást<br>
-    <br>
-    ■ {Komentář}........ (volitelně) nezahrne se do hlavičky. Pro programátora.<br>
-    ■ TextHlavičky...... (volitelně): na obrazovce bude jednou před první větou<br>
-    Hlavička může mít i několik řádků.<br>
-    ■ NázevSouboru ..... název kapitoly F, kde je soubor deklarován. V příkazu<br>
-    edit lze použít tento formulář i pro jiný soubor.<br>
-    ■ PopisnáČást ...... seznam editovaných údajů (příp. s pořadovým číslem).<br>
-    [číslo:] NázevÚdaje { ,[číslo:] NázevÚdaje }<br>
-    Může obsahovat uložené nebo vypočítané údaje.<br>
-    <br>
-    Pořadí editace (číslo:údaj) se uvádí, jestliže bude<br>
-    editace probíhat v jiném pořadí než zleva doprava<br>
-    a odshora dolů. Editace probíhá podle vzestupného pořadí<br>
-    čísel, které nemusí být souvislé (1,10,19,31,...).<br>
-    Pokud není číslo uvedeno, dosadí se implicitní podle<br>
-    pořadí od začátku seznamu.<br>
-    <br>
-    ■ ZobrazovacíČást... předloha pro editaci jedné věty datovým editorem<br>
-    (na obrazovce vystoupí tolik vět, kolik se jich vejde)<br>
-    Jde o libovolný text (včetně rámečků a barev), který<br>
-    se při editaci opíše na obrazovku. Na místech, kde<br>
-    vystupují údaje souboru, jsou v textu masky pro<br>
-    editaci údajů. '\' v zobrazovací části znamená<br>
-    odstránkování (přechod na další obrazovku u dlouhých<br>
-    formulářů).<br>
-    <br>
-    Maska<br>
-    Je řetězec podtržítek '_', jehož  délka  je dána  deklarací  údaje. Seznam<br>
-    údajů v popisné části musí odpovídat z maskám v zobrazovací části ( stejný<br>
-    počet, odpovídající  délky  a  pořadí).<br>
-    Typ údaje        maska(počet znaků '_')<br>
-    F,n.m            n+m+2  je-li m>0<br>
-    n+m+1  je-li m=0<br>
-    R                17<br>
-    A,n              k      kde k<=n<br>
-    N,n              n<br>
-    D                podle délky masky (např. ________ při 'DD.MM.YY')<br>
-    B                1<br>
-    T                1<br>
 </div>
 <div>
-    <h4>EdBool</h4>
-    <span style="color:red">FUNKCE DATOVÉHO EDITORU</span>
-    <hr>
-</div>
-<div>
-    <h4>EdBreak</h4>
-    <span style="color:red">FUNKCE DATOVÉHO EDITORU</span>
-    <hr>
-</div>
-<div>
-    <h4>EdField</h4>
-    <span style="color:red">FUNKCE DATOVÉHO EDITORU</span>
-    <hr>
-</div>
-<div>
-    <h4>EdFile</h4>
-    <span style="color:red">FUNKCE DATOVÉHO EDITORU</span>
-    <hr>
-</div>
-<div>
-    <h4>EdIRec</h4>
-    <span style="color:red">FUNKCE DATOVÉHO EDITORU</span>
-    <hr>
-</div>
-<div>
-    <h4>Edit</h4>
-    <span style="color:red">EDIT - duplicitní klíčové slovo</span>
-    <br>
-    ■ edit(...) ........  volání editoru: editace datového souboru<br>
-    ■ report(...edit) ... parametry sestavy: prohlížení sestavy s možností<br>
-    editace<br>
-    <hr>
-</div>
-<div>
-    <h4>Editace record proměnné</h4>
-    <span style="color:red">EDITACE RECORD PROMĚNNÉ</span>
-    <hr>
-    Při editaci record proměnné se edituje jen daná věta. Neprovádí se aditivní<br>
-    změny resp. změny pro referenční integritu.<br>
-    <br>
-    Nelze zadat parametry : journal, cond, refresh, saveafter, owner,recno,<br>
-    reckey,irec,exit(..:report..).<br>
-    (případně. převzaté z U=.. se ignorují)<br>
-    mode='01' je implicitní<br>
-    klávesy   F2,F3,F6,CtrlF2,CtrlF3 jsou nefunkční.<br>
-</div>
-<div>
-    <h4>Editace textu</h4>
-    <span style="color:red"></span>
-    <hr>
-</div>
-<div>
-    <h4></h4>
-    <span style="color:red">EDITACE TEXTU</span>
-    <hr>
-    ■ Enter ..... ukončení řádku (nebo odstavce při zapnutém formátování)<br>
-    ■ Esc ....... ukončení editace s nahráním změn na disk<br>
-    ■ Alt-= ..... ukončení editace bez nahrání změn na disk<br>
-    (neplatí pro diskový soubor)<br>
-    <br>
-    ■ Del ............. mazání znaku pod kurzorem<br>
-    ■ BackSpace <- .... mazání znaku před kurzorem<br>
-    ■ Ctrl-T .......... výmaz jednoho slova<br>
-    ■ Ctrl-Y .......... výmaz řádku<br>
-    ■ Ctrl-Q Ctrl-Y ... výmaz od pozice kurzoru do konce řádku<br>
-    <br>
-    ■ Ctrl-U ...... zrušení změn a obnovení textu (neplatí pro diskový soubor)<br>
-    ■ Ctrl-Q Ctrl-L ... obnovení obsahu řádku (pouze právě editovaný řádek)<br>
-    ■ F9 .............. nahrání změn na disk (prevence proti výpadku proudu)<br>
-    <br>
-    ■ Ctrl-N ............. vložení nového řádku za kurzor<br>
-    ■ Ctrl-I ............. tabelátor<br>
-    ■ Ctrl-J ............. tabelace zprava<br>
-    ■ Ctrl-O Ctrl-C ...... vycentrování řádku<br>
-    ■ Ctrl-P Ctrl-Znak ... zadání řídícího znaku<br>
-</div>
-<div>
-    <h4>Editace v okně</h4>
-    <span style="color:red">EDITACE V OKNĚ</span>
-    <hr>
-    Implicitně (při neuvedení parametru ww) se otevře editační okno na celou<br>
-    obrazovku. Tj. ww=(1,1,80,25).<br>
-    <br>
-    ██ WW = ([(] Souřadnice [ ,Rámeček [ ,Atributy ] ] [)] )<br>
-    <br>
-    ■  Souřadnice,<br>
-    Rámeček ....... Syntaxe i význam jsou stejné jako v příkaze with window.<br>
-    Viz. také definice okna.<br>
-    <br>
-    ■  Atributy ...... Atr,Norm,Hili [,Subset [,Deleted [,Tab [,Select ]]]]<br>
-    Minimálně 3, max. 7 atributů barev. Zadávají se buď<br>
-    kódem barvy (číselný výraz) nebo Ctrl-znakem.<br>
-    Atr ...... barva výplně okna, rámečku<br>
-    Norm ..... barva pro zobrazení dat<br>
-    Hili ..... barva pro zvýrazněná data (kurzor)<br>
-    Subset ... barva vybrané podmnožiny<br>
-    Deleted... barva pro zrušené věty (LAN)<br>
-    Tab ...... barva pro znak tabelátoru<br>
-    Select ... barva pro výběr do pracovního indexu (sel)<br>
-    Je-li hodnota 0, doplní se implicitně dle instalace barev<br>
-    <br>
-    <br>
-    ░░░░░░░░░░░░<br>
-    ░░příklady░░<br>
-    ░░░░░░░░░░░░<br>
-    <br>
-    ██  edit(DATA,(jméno,adresa,tlf),ww=(5,15,55,20));   {minimální varianta}<br>
-    <br>
-    edit(DATA,(jméno,adresa,tlf),<br>
-    ww=(5,15,55,20,'',7,20,5,12,0));            {maximální varianta}<br>
-    <br>
-    edit(DATA,Formulář,                        { změna první barvy(Atr) }<br>
-    ww=((1,3,80,24,'DATA',^Q,0,0,0)));    { ostatní implicitní     }<br>
-    { okno bez obnovy        }<br>
-</div>
-<div>
-    <h4>Edittxt</h4>
-    <span style="color:red">PŘÍKAZY PRO EDITACI TEXTU</span>
-    <hr>
-    Implicitně je v PC FANDu volán  textový editor v několika standardních si-<br>
-    tuacích ( tisk sestav, editace volných textů ).  Explicitně v programu lze<br>
-    textový editor vyvolat příkazem  edittxt.  Textovým editorem lze zpracovat<br>
-    tři typy textu : volný text, diskový textový soubor nebo lokální proměnnou<br>
-    procedury typu string.<br>
-    Příkazem SetEditTxt nastavíme přepínače textového editoru.<br>
-    <br>
-    ██ syntaxe:      EDITTXT ( NázevTextu | LokálníProměnnáTypuString<br>
-    [ ,noedit ]<br>
-    [ ,txtpos=ČíselnýVýraz ] [,txtxy=ČíselnýVýraz ]<br>
-    [ ,ww=(ParametryOkna) ]<br>
-    [ ,exit=(SeznamPřerušení) ]<br>
-    [ ,head=TextVýraz ]<br>
-    [ ,last=TextVýraz ] [ ,ctrl=TextVýraz  ]<br>
-    [ ,alt=TextVýraz  ] [ ,shift=TextVýraz ]<br>
-    [ ,errmsg=TextVýraz ] )<br>
-    <br>
-    ■ NázevTextu: fyzické jméno (příp.včetně cesty) v apostrofech<br>
-    nebo logické jméno (katalog)<br>
-    ■ noedit .... pouze prohlížení, zákaz editace<br>
-    ■ ww ........ editace v okně (souřadnice,orámování,barva) viz. with window<br>
-    ■ txtpos..... počáteční nastavení kurzoru na pozici v textu (funkce  txtpos)<br>
-    ■ txtxy ..... počáteční pozice kurzoru v okně  txtxy<br>
-    ■ exit ...... přerušení editace textu<br>
-    ■ head ...... Text pro hlavičku - 1.řádek (nahradí implicitní text). Text<br>
-    musí obsahovat masku '___________________________________'<br>
-    (tj.35 podtržítek) pro ukazatel pozice v textu a stav přepí-<br>
-    načů. Je-li maska kratší, přepíše se část textu hlavičky.<br>
-    ■ last,ctrl,alt,shift ... alternativní nápověda<br>
-    ■ errmsg .... zobrazení chybové zprávy při startu textového editoru<br>
-    <br>
-    !!! Editace diskového souboru<br>
-    Do verze FANDu 4.0 nebylo možno editovat (ani prohlížet) textový soubor na<br>
-    médiu s ochranou proti zapisu. Aktuální je to na CD, ale platí to i<br>
-    v případě diskety s nastavenou ochranou proti zápisu, má-li soubor atribut<br>
-    RdOnly nebo je uložen v adresáři s nastavenými právy přístupu (LAN).<br>
-    <br>
-    *  Od verze FANDu 4.1 je diskový soubor otevírán vždy jen na čtení,<br>
-    *  změna na exclusívní otevření se provede až při pokusu o zápis do<br>
-    *  souboru.<br>
-    <br>
-    Toto platí jak pro příkaz edittxt tak i pro editaci textového souboru<br>
-    z hlavního menu PC FANDu.<br>
-</div>
-<div>
-    <h4>EdKey</h4>
-    <span style="color:red">FUNKCE DATOVÉHO EDITORU</span>
-    <hr>
-</div>
-<div>
-    <h4>EdOK</h4>
-    <span style="color:red">EXIT - PROCEDURY</span>
-    <hr>
-    Termínem exit-procedura označujeme proceduru, která byla vyvolána z datového<br>
-    editoru  v důsledku akce definované  parametrem   exit. Tyto  procedury jsou<br>
-    syntakticky shodné s běžnou procedurou.  Určitá specifika a omezení  přináší<br>
-    fakt, že jsou volány z přerušeného (!!! nikoliv ukončeného) datového editoru.<br>
-    <br>
-    Aktuální stav (rozpracované) věty je do exit-procedury předán prostřednictvím<br>
-    parametru procedury typu  record of soubor. Pokud potřebujeme s rozeditovanou<br>
-    větou  pracovat , deklarujeme  odpovídající  record  proměnnou jako  poslední<br>
-    parametr procedury. Z record proměnné lze údaje číst ale i do nich zapisovat.<br>
-    Případně změněné hodnoty jsou po  ukončení exit-procedury automaticky předány<br>
-    zpět do editoru.<br>
-    <br>
-    Omezení v exit-procedurách se týkají především zpětných zásahů do editovaného<br>
-    souboru. Vyplývají z toho,  že přerušený  editor má rozpracované určité vazby<br>
-    na aktuální stav souboru a při necitlivém zásahu může dojít k narušení těchto<br>
-    vazeb a potažmo k chybovým stavům. Tato omezení nelze syntakticky vyhodnotit,<br>
-    neboť jedna procedura může být volána jako  exit, ale na jiném místě i běžným<br>
-    způsobem (příkaz proc), kde je kód procedury naprosto korektní.<br>
-    ┌──────────────────────────────────────────────────────────────────────────┐<br>
-    │Výrazně je nutno upozornit na nekorektnost jakékoliv změny editované věty │<br>
-    │pomocí přímého přístupu  (soubor[edrecno].údaj, writerec(...,edrecno).    │<br>
-    └──────────────────────────────────────────────────────────────────────────┘<br>
-    <br>
-    V exit-proceduře vyvolané funkční klávesou ( př.F6 ) nebo kurzorovou klávesou<br>
-    lze po návratu z procedury vyvolat dále i standardní činnost datového editoru<br>
-    pro danou klávesu. Zadáme EdOk:=true. Implicitně je EdOk=false tj. standardní<br>
-    procedura se neprovede.<br>
-    <br>
-    Pomocí deklarace parametru procedury typu file lze psát zobecněné exit-proce-<br>
-    dury s korektním řešením deklarace předávané věty souboru. Tj.jedna procedura<br>
-    pro více různých souborů.<br>
-</div>
-<div>
-    <h4>EdRecKey</h4>
-    <span style="color:red">FUNKCE DATOVÉHO EDITORU</span>
-    <hr>
-</div>
-<div>
-    <h4>EdRecNo</h4>
-    <span style="color:red">FUNKCE DATOVÉHO EDITORU</span>
-    <hr>
-</div>
-<div>
-    <h4>EdUpdated</h4>
-    <span style="color:red">FUNKCE DATOVÉHO EDITORU</span>
-    <hr>
-</div>
-<div>
-    <h4>Ellipse</h4>
-    <span style="color:red">ELLIPSE - kreslení elipsy, kružnice, oblouku</span>
-    <hr>
-    Příkazem pro vykreslení elipsy lze dle zadaných hodnot parametrů vykreslit<br>
-    kružnici nebo oblouk (část kružnice nebo elipsy).<br>
-    <br>
-    ██ syntaxe:         ELLIPSE ( X, Y, RX, RY, Barva [ ,StÚhel, KonÚhel ] )<br>
-    <br>
-    ■  X,Y ..... Souřadnice se zásadně zadávají v grafických bodech (pixel)<br>
-    relativně v aktuálním okně.<br>
-    ■  RX,RY ... Číselné výrazy, poloměry pro osu X a osu Y (pixel).<br>
-    Pro vykreslení kružnice nemusí nutně postačovat RX=RY, neboť<br>
-    obecně nemusí být "pixel souřadný systém" symetrický ( poměr<br>
-    počtu bodů a rozměrů obrazovky )<br>
-    ■  Barva ... Číselný výraz - kód barvy nebo Ctrl-znak.<br>
-    ■  StÚhel,<br>
-    KonÚhel.. Počáteční a koncový úhel, implicitně 0..360°<br>
-</div>
-<div>
-    <h4>Else</h4>
-    <span style="color:red">IF, THEN, ELSE - duplicitní klíčová slova</span>
-    <hr>
-    <br>
-    ■ if then else ... větvení programu: podmíněný příkaz jestliže-pak-jinak<br>
-    ... PříkazováČástVýstupu: transformace<br>
-    ... PopisnáČástÚrovně: výpočetní část v tiskových sestavách<br>
-</div>
-<div>
-    <h4>End</h4>
-    <span style="color:red">BEGIN, END - duplicitní klíčová slova</span>
-    <hr>
-</div>
-<div>
-    <h4>ENDIF</h4>
-    <span style="color:red">PODMÍNĚNÝ PŘEKLAD - direktivy kompilátoru</span>
-    <hr>
-</div>
-<div>
-    <h4>EquMask</h4>
-    <span style="color:red">POROVNÁNÍ TEXTOVÝCH ŘETĚZCŮ</span>
-    <hr>
-    Hledání pozice podřetězce textu podle stanovených podmínek porovnání.<br>
-    <br>
-    ██ syntaxe:   POS( Podřetězec ,Text [,'Podmínky' [,KterýVýskyt]] ) : real<br>
-    <br>
-    ■  Podřetězec ... Textový výraz, který hledáme v řetězci text.<br>
-    Omezení: vyhodnotí se maximálně v délce 255 znaků.<br>
-    ■  Text ......... Textový výraz, který je prohledán.<br>
-    ■  Podmínky ..... Textová konstanta - apostrofy se píší (nikoliv výraz).<br>
-    Může obsahovat tyto znaky (jeden nebo kombinace ):<br>
-    w ... jen celá slova, ne složeniny<br>
-    ~ ... lexikální porovnání podle národní abecedy<br>
-    u ... bez rozlišení malých a velkých písmen (upcase)<br>
-    ■  KterýVýskyt .. Kolikátý výskyt od počátku hledáme.<br>
-    ■  Kapitoly ....... F,M,R,P,D (Funkce v L kapitole)<br>
-    ──────────────────<br>
-    Porovnání textového řetězce na masku. Lze použít ve všech kapitolách.<br>
-    <br>
-    ██ syntaxe:   EQUMASK( Text , Maska ) : boolean<br>
-    <br>
-    ■  maska .... Textový výraz. Je to vzor, na který se provede porovnání<br>
-    textu. Maska nemusí být jednoznačná, ale mohou se v ní<br>
-    vyskytovat speciální znaky (tzv. wildcards) :<br>
-    ?   nahradí se libovolným znakem - jen pro danou pozici<br>
-    *   nahradí se libovolnou kombinací znaků (řetězcem)<br>
-    ■  Kapitoly ..... F,M,R,P,D<br>
-    <br>
-    zpracování textu<br>
-    <br>
-    ░░░░░░░░░░░░<br>
-    ░░příklady░░<br>
-    ░░░░░░░░░░░░<br>
-    <br>
-    ██  pos( 'lhota', 'Dolní Lhota')      = 0 ;<br>
-    pos( 'lhota', 'Dolní Lhota','u' ) = 7 ;<br>
-    pos( 'dolni', 'Dolní Lhota','u' ) = 0 ;              { vadí i & í }<br>
-    pos( 'dolní', 'Dolní Lhota','~' ) = 1 ;<br>
-    pos( 'lh', 'Dolní Lhota','w~' )   = 0 ;          { jen celá slova }<br>
-    pos( 'lh', 'Dolní Lhota','u' )    = 7 ;<br>
-    pos( 'lh', 'Dolní Lhota','u',2 )  = 0 ;    { lh tam je jen jednou }<br>
-    <br>
-    ██  equmask( 'Dolní Lhota',  'Lhota' ) = FALSE ;<br>
-    equmask( 'Dolní Lhota', '*Lhota' ) = TRUE ;<br>
-    equmask( 'Dolní Lhota', '?Lhota' ) = FALSE ;<br>
-    equmask( 'Dolní Lhota', '??????Lhota' ) = TRUE ;<br>
-</div>
-<div>
-    <h4>ErrMsg</h4>
-    <span style="color:red">PŘÍKAZY PRO EDITACI TEXTU</span>
-    <hr>
-</div>
-<div>
-    <h4>Error</h4>
-    <span style="color:red">error</span>
-    Klíčové slovo error lze použít ve dvou kontextech.<br>
-    <br>
-    ■ V transformaci - speciální funkce v transformaci.<br>
-    <br>
-    ■ Ukončení L kapitoly ( error).<br>
-    <hr>
-</div>
-<div>
-    <h4>ErrorText</h4>
-    <span style="color:red">SPECIÁLNÍ FUNKCE V TRANSFORMACI</span>
-    <hr>
-    Na pravé straně  přiřazovacích příkazů výstupní části transformace mohou kromě<br>
-    obvyklých konstrukcí vystupovat speciální funkce:<br>
-    <br>
-    █ sum :real .............. součtování (pouze ve výstupech #O a #O*)<br>
-    <br>
-    █ group :real ............ pořadí aktuální zpracovávané skupiny vět<br>
-    █ Ii.count :real ......... pořadí věty vstupního souboru v aktuální skupině<br>
-    (rozdělení vstupů do skupin podle řídících údajů)<br>
-    <br>
-    █ Ii.error :boolean ...... dvojice funkcí, která vrací výsledek logických<br>
-    █ Ii.warning :boolean .... kontrol ve větě. Test se provádí v pořadí podle<br>
-    deklarace #L a skončí na první nesplněné podmínce<br>
-    pro logickou kontrolu !!!  Tj. nesplněná varování<br>
-    "přejde". Warning je v případě jakékoliv nesplněné<br>
-    podmínky vždy TRUE, error jen tehdy, pokud tato<br>
-    podmínka byla logickou kontrolou (nikoliv jen<br>
-    varováním).<br>
-    <br>
-    Výsledek testů věty           Hodnoty<br>
-    Kontroly   Varování        error   warning<br>
-    ANO        ANO           FALSE    FALSE<br>
-    ANO         NE           FALSE    TRUE<br>
-    NE        ANO           TRUE     TRUE<br>
-    NE         NE           TRUE     TRUE<br>
-    <br>
-    █ Ii.errortext :string ... je-li ve vstupní větě chyba, text chybového<br>
-    případně varovného hlášení<br>
-    <br>
-    <br>
-    Funkce sum, group a  count  jsou  obdobně  použitelné  také  v  popisné  části<br>
-    výstupní úrovně sestavy (kapitola R).<br>
-</div>
-<div>
-    <h4>Escape</h4>
-    <span style="color:red">SEZNAM VOLEB</span>
-    <hr>
-    Seznam voleb  v nabídce  obsahuje text volby, jak se objeví na uživatelské<br>
-    obrazovce, a odpovídající příkazy.<br>
-    <br>
-    ██ syntaxe :      { TextVolby [,Nápověda [,Podmínka[!]]] : Příkaz ; }<br>
-    [ Escape : Příkaz ; ]<br>
-    <br>
-    ■  TextVolby ... Textový výraz, zobrazí se jako řádek menu.<br>
-    Mezi znaky ^W (zadání Ctrl-P Ctrl-W) může být uzavřeno<br>
-    písmeno = "hot klávesa" pro rychlou volbu jedním písmenem<br>
-    (jiná barva) implicitně první písmeno každé volby.<br>
-    ■  Nápověda .... Identifikátor nebo textová konstanta (v apostrofech).<br>
-    Podle hesla nápovědy se zobrazí odpovídající text ze<br>
-    souboru .HLP. V 25. řádku jako krátká nápověda nebo<br>
-    po F1 celý. Viz. konstrukce nápovědy.<br>
-    ■  Podmínka .... Logický výraz, pokud není splněn, volba se potlačí.<br>
-    Je-li uveden znak !, bude volba nefunkční ale zůstane<br>
-    v menu, ovšem zobrazená odlišnou barvou (čtvrtý atribut).<br>
-    ■  Escape ...... Uvedený příkaz se provede při ESC. Pokud není uvedeno,<br>
-    ukončí ESC práci v menu.<br>
-    ■  Příkaz ...... Může být i složený (begin - end)<br>
-    ■ '':; ......... prázdná volba: na obrazovce vodorovná čára,<br>
-    která se při pohybu po menu přeskakuje<br>
-    Maximální počet voleb je dán rozměry obrazovky.<br>
-</div>
-<div>
-    <h4>EscPrompt</h4>
-    <span style="color:red">DOTAZ UŽIVATELI</span>
-    <hr>
-</div>
-<div>
-    <h4>EvalB</h4>
-    <span style="color:red">EVALB, EVALR, EVALS</span>
-    <hr>
-    Funkce pro vyhodnocení výrazu daného typu.<br>
-    <br>
-    ██ syntax:   evalb( TextovýVýraz ) : boolean<br>
-    evalr( TextovýVýraz ) : real<br>
-    evals( TextovýVýraz ) : string<br>
-    <br>
-    ■  použití:  kapitola P .<br>
-    <br>
-    ■  TextovýVýraz ... Text výrazu daného typu, který se při výpočtu funkce<br>
-    přeloží a pak vyhodnocuje.<br>
-    <br>
-    Úspěšný překlad výrazu nastaví exitcode=0. Při chybě ve výrazu vrátí<br>
-    nulovou hodnotu (FALSE,0,''). Pak je exitcode=1 a txtpos udává pozici<br>
-    chyby.<br>
-    <br>
-    Syntaxe výrazu odpovídá výrazům v proceduře. Při použití pro definici<br>
-    filtru (podmínky cond) v dalších příkazech se mohou vyskytovat i údaje<br>
-    daného souboru (forall,edit,report,graph). V tomto případě ji nelze<br>
-    v podmínce kombinovat s další podmínkou (nesmí být vnořená).<br>
-    Doporučuje se používat jen omezeně a zkušenějším programátorem .<br>
-    <br>
-    ░░░░░░░░░░░░<br>
-    ░░příklady░░<br>
-    ░░░░░░░░░░░░<br>
-    <br>
-    ██  Vyvolání editoru s libovolnou podmínkou :<br>
-    P Ukazka1 *  VAR   podminka : string ;<br>
-    BEGIN<br>
-    podminka:=prompt(' zadejte podmínku : ':A,60) ;<br>
-    edit( soubor,(), cond=(evalB(podminka))) ;<br>
-    END ;<br>
-    <br>
-    Chybné použití:<br>
-    BEGIN<br>
-    edit( soubor,(),<br>
-    cond=(evalb(prompt(' zadejte podmínku : ':A,60))));<br>
-    END ;<br>
-    V tomto případě se výraz překládá v kontextu věty souboru, nelze tedy<br>
-    použít funkce, vyhrazené pro procedury.<br>
-    <br>
-    ██  evalb('') = true                      { vyhodnocení prázdné podmínky }<br>
-</div>
-<div>
-    <h4>EvalR</h4>
-    <span style="color:red">EVALB, EVALR, EVALS</span>
-    <hr>
-</div>
-<div>
-    <h4>EvalS</h4>
-    <span style="color:red">EVALB, EVALR, EVALS</span>
-    <hr>
-</div>
-<div>
-    <h4>Excl</h4>
-    <span style="color:red">LAN - POUŽITÍ VYŠŠÍCH MÓDŮ BLOKOVÁNÍ</span>
-    <hr>
-</div>
-<div>
-    <h4>Exclusive</h4>
-    <span style="color:red">LAN - PŘEHLED POUŽÍVANÝCH POJMŮ</span>
-    <hr>
-</div>
-<div>
-    <h4>Exec</h4>
-    <span style="color:red">EXTERNÍ PROGRAMY</span>
-    <hr>
-    Příkazem exec voláme vnější program (.COM, .EXE), příkaz MS-DOSu nebo .BAT<br>
-    proceduru.  Volanému programu lze předat parametry.  Při předání řízení je<br>
-    možno ovlivnit velikost volné paměti a mód obrazovky.<br>
-    <br>
-    ██ Syntaxe:        EXEC ( Program , ParamProgramu<br>
-    [,nocancel] [,freemem] [,loadfont] [,textmode] )<br>
-    <br>
-    ██ Základní        exec(Program, Param,...).. volání programu s parametry<br>
-    ██ varianty:       exec('',DOSPříkaz, ...) .. interní příkaz DOSu nebo .BAT<br>
-    exec('','',...)        ... odskok do DOSu<br>
-    <br>
-    ■ Program ........ fyz.jméno vč.cesty v apostrofech nebo log.jméno (katalog)<br>
-    při hledání programu se zohledňuje systémová proměnná PATH<br>
-    ■ ParamProgramu... TextovýVýraz (parametry volaného programu)<br>
-    ■ DOSPříkaz ...... TextovýVýraz (copy, time, del apod. včetně parametrů)<br>
-    ■ nocancel ....... potlačí ukončení úlohy při chybě a číslo chyby je<br>
-    přístupné funkcí exitcode. Číslo chyby nastavuje program<br>
-    a většinou platí: Exitcode=0 => bez chyby<br>
-    ■ freemem ........ uvolňuje maximum paměti - nelze použít pro DML-programy<br>
-    ■ loadfont ....... při návratu do PC FANDu se obnoví fonty<br>
-    ■ textmode ....... pokud PC FAND pracuje v grafickém módu a volaný program<br>
-    komunikuje v textovém módu.<br>
-    <br>
-    Chyba v prováděném programu (tj. ukončení s nenulovým návratovým kódem) má<br>
-    za následek chybové hlášení a přerušení  FANDovské aplikace. Pokud se však<br>
-    použije parametr nocancel, aplikace se nepřeruší a pouze nastaví návratový<br>
-    kód exitcode.<br>
-    <br>
-    Při nenalezení programu nebo nedostatku paměti však je aplikace přerušena<br>
-    bez ohledu na parametr nocancel.<br>
-    <br>
-    ██ EXITCODE .. funkce typu real, návratový kód posledního volaného příkazu.<br>
-    Nastavují příkazy  exec,mount,gettxt,writerec,deleterec,<br>
-    recallrec, linkrec, backup, restore,<br>
-    selectstr,checkfile, evalb, evalr, evals<br>
-    copyfile, backupm, restorem<br>
-    report a edit s parametrem check<br>
-</div>
-<div>
-    <h4>Exist</h4>
-    <span style="color:red">CIZÍ KLÍČ</span>
-    <hr>
-</div>
-<div>
-    <h4>Exit</h4>
-    <span style="color:red">EXIT - duplicitní klíčové slovo</span>
-    <hr>
-    <br>
-    ■ exit ................. řídící příkazy: ukončení procedury<br>
-    ■ edit(...exit...) ..... přerušení editace: exit-procedura<br>
-    ■ edittxt(...exit...) .. přerušení editace textu<br>
-</div>
-<div>
-    <h4>ExitCode</h4>
-    <span style="color:red">EXTERNÍ PROGRAMY</span>
-    <hr>
-</div>
-<div>
-    <h4>Exit-procedury</h4>
-    <span style="color:red">EXIT - PROCEDURY</span>
-    <hr>
-</div>
-<div>
-    <h4>Exp</h4>
+    <h4>Frac</h4>
     <span style="color:red">ARITMETICKÉ FUNKCE</span>
     <hr>
 </div>
 <div>
-    <h4>Externí programy</h4>
+    <h4>FreeMem</h4>
     <span style="color:red">EXTERNÍ PROGRAMY</span>
     <hr>
 </div>
-
-
-
 <div>
-    <h4></h4>
-    <span style="color:red"></span>
+    <h4>Function</h4>
+    <span style="color:red">FUNKCE</span>
     <hr>
 </div>
 <div>
-    <h4></h4>
-    <span style="color:red"></span>
+    <h4>Funkce</h4>
+    <span style="color:red">FUNKCE</span>
     <hr>
 </div>
 <div>
-    <h4></h4>
-    <span style="color:red"></span>
+    <h4>Funkce datového editoru</h4>
+    <span style="color:red">FUNKCE DATOVÉHO EDITORU</span>
     <hr>
 </div>
 <div>
-    <h4></h4>
-    <span style="color:red"></span>
+    <h4>Funkce pro datum a čas</h4>
+    <span style="color:red">FUNKCE PRO DATUM A ČAS</span>
     <hr>
+    PC FAND obsahuje  datumovou aritmetiku , tj. funkce pro počítání  a převody<br>
+    datumu a času. Zahrnuje i práci s interním kalendářem - tabulkou pracovních<br>
+    dní, viz. Instalační program.  Pokud  funkce pracují s datumem a časem jako<br>
+    číselným  výrazem ( typ real ) , jde o stejný  formát jako  FANDovský typ D<br>
+    (celá část - pořadové číslo dne od 01.01.0001 a desetinná část - část dne).<br>
+    <br>
+    Přehled funkcí:<br>
+    ■ today ......... aktuální (dnešní) datum<br>
+    ■ currtime ...... vrací aktuální čas<br>
+    ■ strdate ....... převod datumu a času na string<br>
+    ■ valdate ....... převod datumu a času v textové podobě na interní (real)<br>
+    ■ addwdays ...... přičtení počtu dní daného typu k počátečnímu datu<br>
+    ■ addmonth ...... k počátečnímu datu přičte zadaný počet měsíců<br>
+    ■ difwdays ...... počet dní daného typu v časovém období<br>
+    ■ difmonth ...... počet měsíců v časovém období<br>
 </div>
 <div>
-    <h4></h4>
-    <span style="color:red"></span>
+    <h4>Funkce pro zpracování textu</h4>
+    <span style="color:red">ZPRACOVÁNÍ TEXTU - přehled funkcí a příkazů</span>
     <hr>
+    Color .............. kód barvy podle instalace<br>
+    Copy ............... výběr podřetězce<br>
+    CopyLine ........... načtení určitého řádku z víceřádkového textu<br>
+    EdBool ............. vrací text aktuální podmnožiny datového editoru (F6)<br>
+    EditTxt ............ varianta příkazu edit pro editaci textové proměnné<br>
+    EquMask ............ porovnání řetězce na masku<br>
+    EvalB,EvalR,EvalS .. vyhodnocení textu výrazu daného typu<br>
+    GetTxt ............. načtení úseku textu ze souboru<br>
+    Char ............... vrací znak s určitým ASCII kódem<br>
+    LeadChar ........... odstranění nebo nahrazení vedoucích znaků<br>
+    Length ............. délka textu<br>
+    LineCnt ............ počet řádků textu<br>
+    LowCase ............ převod velkých písmen na malé v textu<br>
+    NoDiakr ............ odstranění diakritiky z textu<br>
+    Ord ................ hodnota ASCII kódu znaku<br>
+    Pos ................ pozice výskytu podřetězce v textu<br>
+    PutTxt ............. příkaz pro zápis textu do (fyzického) souboru<br>
+    RepeatStr .......... generování textu opakováním řetězce (nebo znaku)<br>
+    Replace ............ nahrazení podřetězce v textu jiným řetězcem<br>
+    SelectStr .......... výběr z pole textů (jednoho nebo i podmnožiny)<br>
+    Str ................ převod čísla na text<br>
+    StrDate ............ převod datumu (času) z číselné do textové formy<br>
+    TxtPos ............. určení pozice při (po) editaci textu<br>
+    TrailChar .......... odstranění nebo nahrazení ukončujících znaků<br>
+    UpCase ............. převod malých písmen na velké v textu<br>
+    Val ................ převod textového zápisu čísla na číselný typ (real)<br>
 </div>
 <div>
-    <h4></h4>
-    <span style="color:red"></span>
+    <h4>Funkce textového editoru</h4>
+    <span style="color:red">FUNKCE TEXTOVÉHO EDITORU</span>
     <hr>
+    ██ syntaxe:         EDUPDATED : boolean<br>
+    CLIPBD    : string<br>
+    TXTPOS    : real<br>
+    TXTXY     : real<br>
+    <br>
+    ■ EdUpdated ... Test provedení aktualizace souboru během editace. Udává,<br>
+    zda byl soubor změněn (true) či nikoliv (false).<br>
+    Je funkční pro datový i textový editor.<br>
+    ■ Clipbd ...... Definována v exit-proceduře, vrací obsah clipboardu<br>
+    ■ TxtPos ...... Pozice kurzoru v textu při opuštění textového editoru. Pro<br>
+    opětovný vstup do textu lze použít stejnojmenný  parametr<br>
+    příkazu  edittxt. Další význam txtpos viz. funkce evalb,<br>
+    evalr,evals, exit, mode='EX'.<br>
+    ■ TxtXY ....... Pozice kurzoru v okně při ukončení textového editoru.<br>
+    Výpočet pozice kurzoru :<br>
+    txtXY = 65536*pozice v řádku + 256*řádek + sloupec<br>
+    Řádek a sloupec jsou relativní souřad. kurzoru v aktuálním<br>
+    okně. Pozice v řádku je pozice kurzoru od počátku řádku.<br>
+    Poznámka:<br>
+    Pomocí funkcí a parametrů TxtPos a TxtXY se lze po opuštění textového<br>
+    editoru vrátit na stejné místo textu a obrazovky (okna). Podobně při exit<br>
+    proceduře. Tento mechanismus však korektně funguje jen za předpokladu, že<br>
+    se kurzor nachází v rámci textu (nikoliv za posledním znakem řádku).<br>
 </div>
 <div>
-    <h4></h4>
-    <span style="color:red"></span>
+    <h4>Funkce v L kapitole</h4>
+    <span style="color:red">funkce</span>
     <hr>
+    Funkce typu Integer<br>
+    <br>
+    max(Integer_1,Integer_2) Funkce vracející maximum.<br>
+    min(Integer_1,Integer_2) Funkce vracející minimum.<br>
+    val(String)              Převod čísla z typu String do typu Integer.<br>
+    length(String)           Délka řetězce.<br>
+    pos(String_1,String_2)   Pozice podřetězce String_1 v řetězci String_2.<br>
+    maxcol                   Počet sloupců obrazovky.<br>
+    maxrow                   Počet řádků obrazovky.<br>
+    <br>
+    Funkce typu String<br>
+    <br>
+    copy(String,Integer_1,Integer_2) Výběr  podřetězce z řetězce String  od<br>
+    pozice Integer_1 v délce Integer_2.<br>
+    str(Integer)                     Převod z typu Integer do String.<br>
+    repeatstr(String,Integer)        Opakování řetězce String Integer  krát.<br>
+    leadchar(ZnakKonst,String)˙˙˙˙˙˙˙Odstranění úvodních znaků ZnakKonst  z<br>
+    řetězce String.<br>
+    trailchar(ZnakKonst,String)˙˙˙˙˙˙Odstranění     ukončujících      znaků<br>
+    ZnakKonst z řetězce String.<br>
+    <br>
+    <br>
+    Integer, Integer_1, Integer_2<br>
+    Termy typu Integer neobsahující nepřiřazené proměnné.<br>
+    String, String_1, String_2<br>
+    Termy typu String neobsahující nepřiřazené proměnné.<br>
+    ZnakKonst  Znaková konstanta.<br>
+    <br>
+    Příklady:<br>
+    <br>
+    vetsi:- X:Integer=max(15,10),writeln(' 10  a 15   => větší je',X).<br>
+    mensi:- X:Integer=min(10,105), writeln('Min: ',X).<br>
+    fce1:- X:Integer=val(str(2)+copy('0001',1,3))+length('abc')*100 + pos('d','f<br>
+    Mc:Integer=maxcol, Mr:Integer=maxrow,<br>
+    write('Obrazovka : ',Mc,' x ',Mr).<br>
+    fce2:- X:String=repeatstr('d',2)+'X',Y:String=leadchar('d',X), writeln(Y).<br>
 </div>
 <div>
-    <h4></h4>
-    <span style="color:red"></span>
+    <h4>Funkční a řídící klávesy</h4>
+    <span style="color:red">FUNKČNÍ A ŘÍDÍCÍ KLÁVESY</span>
     <hr>
-</div>
-<div>
-    <h4></h4>
-    <span style="color:red"></span>
-    <hr>
-</div>
-<div>
-    <h4></h4>
-    <span style="color:red"></span>
-    <hr>
-</div>
-<div>
-    <h4></h4>
-    <span style="color:red"></span>
-    <hr>
-</div>
-<div>
-    <h4></h4>
-    <span style="color:red"></span>
-    <hr>
-</div>
-<div>
-    <h4></h4>
-    <span style="color:red"></span>
-    <hr>
-</div>
-<div>
-    <h4></h4>
-    <span style="color:red"></span>
-    <hr>
+    ■ F2 (pořiď/edit) ... přepnutí do módu pořízení/editace<br>
+    ■ F3 (hledej) ....... vyhledání věty podle vlastního klíče<br>
+    ■ F4 (duplikace) .... údaj se zkopíruje podle předchozí věty<br>
+    ■ F5 (přepínače) .... nastavení a zrušení přepínačů<br>
+    ■ F6 (akce) ......... spuštění operací nad souborem<br>
+    ■ F8,ShiftF8 (výběr). manuální výběr věty do podmnožiny sel<br>
+    ■ F9 (ulož) ......... uloží aktuální stav souboru na disk proti výpadku proudu<br>
+    <br>
+    ■ Ctrl-F2 ................ obnovení podmnožiny cond (sítě, exit procedury)<br>
+    ■ Ctrl-F3 (věta) ......... nastavení editoru podle čísla věty<br>
+    ■ Ctrl-F5 (vypočítej) .... vyvolání kalkulátoru<br>
+    (Ctrl-U obnovuje poslední výraz a Ctrl-F4 přenáší výsledek zpět do editoru)<br>
+    <br>
+    ■ Ctrl-<- resp. Ctrl--> ... výměna sousedních vět<br>
+    <br>
+    ■ Ctrl-Y ... zrušení aktuální věty (nebo celé podmnožiny vět, je-li nastavena)<br>
+    ■ Ctrl-N ... vložení věty na místo datového kurzoru<br>
+    ■ Ctrl-U ... zrušení změn ve větě a obnovení původního obsahu načtením z disku<br>
+    ■ Ctrl-\ ... odskok na začátek příští věty.<br>
+    ■ Esc ...... ukončení práce datového editoru<br>
+    ■ případně (Alt,Ctrl,Shift,)-F1 až ...-F10 ... programátorem definované akce<br>
 </div>
 
 </body>
