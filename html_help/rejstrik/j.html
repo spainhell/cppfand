@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <title>J</title>
+</head>
+<body style="font-family:'Courier New'">
+
+<div>
+    <h4>Jounal</h4>
+    <span style="color:red">PARAMETRY EDITACE</span>
+    <hr>
+</div>
+<div>
+    <h4>JounalOf</h4>
+    <span style="color:red">JOURNALOF</span>
+    <hr>
+    █ journalof NázevSouboru ... deklarace žurnálu pro sledování změn<br>
+    <br>
+    Deklarace souboru pro automatické zaznamenávání změn při editaci původního<br>
+    datového souboru NázevSouboru (při volání datového editoru s parametrem<br>
+    journal). Žurnál obsahuje následující pomocné údaje pro klasifikaci změn:<br>
+    <br>
+    ■ Upd      :A,1 ..... typ změny (+ nová věta, - zrušená věta,<br>
+    O a N starý a nový obsah změněné věty)<br>
+    ■ RecNr    :F,8.0 ... fyzické číslo věty originálního souboru<br>
+    ■ User     :F,4.0 ... kód uživatele, který editoval soubor (usercode)<br>
+    ■ TimeStamp:D,'DD.MM.YY hh:mm:ss' ... datum a čas provedení změny<br>
+    a dále všechny uložené údaje souboru NázevSouboru - kromě údajů typu T.<br>
+    <br>
+    Verze: - do verze 3.2 bylo možno deklarovat žurnál pouze pro soubor bez<br>
+    volných textů<br>
+    - od verze 3.3 toto omezení neplatí, ale místo údajů typu T se<br>
+    do žurnálu přenese stejnojmenný údaj typu F,9.0.<br>
+    <br>
+    <br>
+    ░░░░░░░░░░░░<br>
+    ░░příklady░░<br>
+    ░░░░░░░░░░░░<br>
+    <br>
+    F ZURNAL   * journalof DATA                 {žurnál pro sledování změn}<br>
+    P Editace  * edit(DATA,(),journal=ZURNAL);  {editace s autom.zápisem změn}<br>
+    Při změně deklarace souboru DATA bude automaticky upraven i ZURNAL<br>
+</div>
+
+</body>
+</html>

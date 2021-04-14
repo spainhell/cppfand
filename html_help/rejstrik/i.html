@@ -7,73 +7,1012 @@
 <body style="font-family:'Courier New'">
 
 <div>
-    <h4></h4>
-    <span style="color:red"></span>
+    <h4>I</h4>
+    <span style="color:red">I - duplicitní klíčové slovo</span>
+    <hr>
+    ■ #I ..... implicitní hodnoty: odstavec deklarace datového souboru (kap.F)<br>
+    ■ #I_ .... VstupSestavy: vstupní soubor sestavy (kap.R) - může být i #I1_<br>
+    ■ #I1_ ... VstupTransformace: vstupní soubor transformace (kap.M)<br>
+    ■ I ...... kapitola I : kapitola typu I - vkládané texty<br>
+</div>
+<div>
+    <h4>Identifikátor</h4>
+    <span style="color:red">IDENTIFIKÁTOR</span>
+    <hr>
+    Identifikátory slouží k označení  jednotlivých konstrukcí v PC FANDu. Může<br>
+    jít jak o předdefinované  konstrukce ( tzv. klíčová slova - názvy příkazů,<br>
+    operací, funkcí ... ), tak i o konstrukce, vytvořené programátorem ( názvy<br>
+    údajů souborů , proměnných, procedur, sestav , transformací, uživatelských<br>
+    funkcí, ...).<br>
+    <br>
+    Pravidla pro tvorbu identifikátorů :<br>
+    <br>
+    ■  Identifikátory jsou v PC FANDu tvořeny písmeny, číslicemi a znakem<br>
+    '_' (podtržítko).<br>
+    <br>
+    ■  První znak musí být písmeno.<br>
+    <br>
+    ■  Malá a velká písmena se nerozlišují.<br>
+</div>
+<div>
+    <h4>Identifikátory (PROLOG)</h4>
+    <span style="color:red">Identifikátory, komentář</span>
+    <hr>
+    Kompilátor  důsledně  rozlišuje  velikost  písmen  identifikátorů.<br>
+    Zvláštní  význam  má  velikost  prvního  znaku  identifikátoru.  Velkým<br>
+    písmenem  se označují  proměnné  a  typy  dat.  Malá  písmena  označují<br>
+    konstanty a predikáty.<br>
+    <br>
+    Identifikátor  musí začínat  písmenem nebo  znakem "_" a na  další<br>
+    pozici může být i číslice. Celková délka identifikátoru nesmí být větší<br>
+    než 32 znaků.<br>
+    <br>
+    Za komentář je považována posloupnost znaků ohraničených znaky "{"<br>
+    a "}".<br>
+</div>
+<div>
+    <h4>If</h4>
+    <span style="color:red">IF, THEN, ELSE - duplicitní klíčová slova</span>
     <hr>
 </div>
 <div>
-    <h4></h4>
-    <span style="color:red"></span>
-    <hr>
-</div>
-
-I
-Identifikátor
-Identifikátory (PROLOG)
-If
-IFDEF
-IFNDEF
-Implicitní hodnoty
-In
-Include
-Indent
-Index
-Index of
-IndexFile
-Indexovaný soubor
-Indexy
-Instalace abecedy
-Instalace barev
-Instalace kalendáře
-
-<div>
-    <h4></h4>
-    <span style="color:red"></span>
+    <h4>IFDEF</h4>
+    <span style="color:red">PODMÍNĚNÝ PŘEKLAD - direktivy kompilátoru</span>
     <hr>
 </div>
 <div>
-    <h4></h4>
-    <span style="color:red"></span>
-    <hr>
-</div>
-
-Instalace konstant
-Instalace monitoru
-Instalace sítě
-Instalace systému
-Instalace tiskárny
-Instalace úlohy
-Instalační program
-Int
-inter
-Interact
-Interní proměnné
-Intervalový klíč
-IntTSR
-inv
-Irec
-IsDeleted
-IsMouse
-IsNewRec
-
-<div>
-    <h4></h4>
-    <span style="color:red"></span>
+    <h4>IFNDEF</h4>
+    <span style="color:red">PODMÍNĚNÝ PŘEKLAD - direktivy kompilátoru</span>
     <hr>
 </div>
 <div>
-    <h4></h4>
-    <span style="color:red"></span>
+    <h4>Implicitní hodnoty</h4>
+    <span style="color:red">IMPLICITNÍ HODNOTY - odstavec #I</span>
+    <hr>
+    Implicitní hodnota se definuje pro rychlejší pořizování dat dat. editorem.<br>
+    Když při pořizování nových vět datový  kurzor  dojde  až k údaji, který má<br>
+    implicitní hodnotu, vypočte se zadaný výraz a  hodnota se zobrazí na místě<br>
+    údaje. Obsluha potom hodnotu potvrdí,  edituje nebo zadá jinou. Implicitní<br>
+    hodnoty se při pořízení nasazují i do nezobrazených údajů věty.<br>
+    <br>
+    ██ Syntaxe:     #I {  NázevÚdaje:=Výraz; }<br>
+    <br>
+    Při opravách v  módu editace  dosáhne uživatel nasazení implicitní hodnoty<br>
+    tak, že původní obsah údaje  zruší  (včetně  mezer)  a  odešle  k  uložení<br>
+    prázdný řetězec.<br>
+    <br>
+    ░░░░░░░░░░░░<br>
+    ░░příklady░░<br>
+    ░░░░░░░░░░░░<br>
+    <br>
+    #I Datum:=today+currtime;<br>
+    Norma:=cond(Muž:8.5, Žena:7);<br>
+    Prémie:=Mzda*0.15 + Soboty*20;<br>
+    Jméno:=ADRESÁŘ.Jméno;<br>
+</div>
+<div>
+    <h4>In</h4>
+    <span style="color:red">IN - duplicitní klíčové slovo</span>
+    <hr>
+    ■ in ............. speciální operátory: test na seznam intervalů nebo<br>
+    konstant<br>
+    ■ forall i in .... forall cyklus<br>
+    <br>
+    ■ key in ......... čtení souborů podle indexů<br>
+</div>
+<div>
+    <h4>Include</h4>
+    <span style="color:red">VKLÁDANÉ KAPITOLY</span>
+    <hr>
+    Text kapitoly typu I se kopíruje během překladu na dané místo ( kapitola I<br>
+    musí být ve stejné nebo nadřízené úloze). To znamená, že syntaxe  kapitoly<br>
+    I odpovídá  syntaxi kapitoly, kam bude text vložen. Nemusí  však obsahovat<br>
+    syntakticky uzavřený  celek. Jakákoli  změna takové  kapitoly vyvolá  nový<br>
+    překlad celé úlohy. Kapitoly I použijeme tehdy, když se několikrát opakuje<br>
+    stejný úsek textu programu.<br>
+    <br>
+    ■ Místa, kam se má vložit text kapitoly I se určí speciální direktivou<br>
+    kompilátoru:<br>
+    {$include NázevKapitolyI}<br>
+    <br>
+    ■ Pozor na mezery okolo složených závorek (jsou významné).<br>
+    ■ Podmínky použití v kapitole F:<br>
+    Druhá část kapitoly F (#U/D/L/I) nesmí začít instrukci {$include ..}.<br>
+    <br>
+    ■ Při nenávratném zaheslení úlohy (Alt-F10) se text kapitoly I substituuje<br>
+    a kapitoly I se zruší. Pozor na dvě úskalí:<br>
+    - po substituci nesmí být překročena maximální délka volného textu<br>
+    65000 B (jinak běhové chyby).<br>
+    - nejprve zaheslit podřízené úlohy<br>
+</div>
+<div>
+    <h4>Indent</h4>
+    <span style="color:red">SETEDITTXT</span>
+    <hr>
+</div>
+<div>
+    <h4>Index</h4>
+    <span style="color:red">INDEX of Soubor</span>
+    <hr>
+    Index je strukturovaný typ, který lze použít při deklaraci parametrů nebo<br>
+    lokálních proměnných procedury. Je to pracovní index indexovaného souboru<br>
+    (přípona .X) nebo do SQL-souboru s vlastním klíčem (přípona .SQL).<br>
+    <br>
+    ██ Syntaxe: ... : INDEX OF Soubor [ ( TřídícíÚdaje ) ]<br>
+    <br>
+    ■ Přístup do souboru přes pracovní index index of soubor má dvě základní<br>
+    charakteristiky:  podmnožina souboru<br>
+    třídění souboru (podpora pro vyhledávání dle klíče),<br>
+    třídění lze buď zahrnout přímo do deklarace<br>
+    nebo definovat později příkazem getindex<br>
+    <br>
+    ■ TřídícíÚdaje ... setřídění pracovního indexu (nemá vliv na data)<br>
+    speciální znaky před názvy třídících údajů:<br>
+    > ... sestupné setřídění<br>
+    ~ ... lexikální setřídění.<br>
+    Pokud je třídění uvedeno v deklaraci, lze použít pro<br>
+    takový index konstrukci key in a funkce procedury<br>
+    recno, recnoabs, recnolog a keyof.<br>
+    <br>
+    ■ Použití: Lze ho použít všude v proceduře, kde je možno psát /NázevKlíče.<br>
+    <br>
+    ■ Inicializace: Po deklaraci je pracovní index prázdný<br>
+    <br>
+    ■ Naplnění:     Základním prostředkem pro práci s pracovním indexem je<br>
+    příkaz procedury GetIndex. Další možnost aktualizace<br>
+    pracovního indexu je v příkazu<br>
+    edit(Soubor/LokPromTypuIndex, ... ) ;<br>
+    Pokud jsou v editu přidány nebo zrušeny věty, je po<br>
+    ukončení editace aktualizován i pracovní index. Toto<br>
+    však neplatí při variantách editace, kdy si editor<br>
+    vytváří vlastní pracovní index, tj. při editaci s cond,<br>
+    owner, mode='F2', mode='WX'.<br>
+    <br>
+    Ruční výběr do pracovního indexu je možný pomocí příkazu<br>
+    edit s parametrem sel.<br>
+    <br>
+    ■ Počet vět pracovního indexu: pomocí konstrukce .nrecs, tj.<br>
+    PracovníIndex.nrecs<br>
+    ■ Zrušení pracovního indexu:   pomocí konstrukce<br>
+    PracovniIndex.nrecs:=0<br>
+    <br>
+    ░░░░░░░░░░░░<br>
+    ░░příklady░░<br>
+    ░░░░░░░░░░░░<br>
+    <br>
+    ██ P Ukazka1   *  VAR WorkIndex : index of Pracov (~Jmeno) ;<br>
+    BEGIN<br>
+    GetIndex(WorkIndex, Pracov/DleJmena, cond=(JeMuz)) ;<br>
+    { vybere z pracovníků jen muže v třídění dle<br>
+    jmen }<br>
+    ....<br>
+    GetIndex(WorkIndex, Pracov/WorkIndex, cond=(vek>60) ) ;<br>
+    { postupné zúžení podmnožiny na pracující<br>
+    důchodce - muže }<br>
+    <br>
+    edit( Pracov / WorkIndex, .... ) ;<br>
+    report( Pracov / WorkIndex, Sestava, .... ) ;<br>
+    ...<br>
+    END ;<br>
+    <br>
+    ██ Příklad vytvoření uživatelského indexu.<br>
+    ...<br>
+    s:=prompt('zadej podmnožinu:':A,60) ;<br>
+    GetIndex( WorkIndex, Pracov, cond=(evalb(s)));<br>
+    ...<br>
+</div>
+<div>
+    <h4>Index of</h4>
+    <span style="color:red">INDEX of Soubor</span>
+    <hr>
+</div>
+<div>
+    <h4>IndexFile</h4>
+    <span style="color:red">EXPLICITNÍ INDEXOVÁNÍ</span>
+    <hr>
+</div>
+<div>
+    <h4>Indexovaný soubor</h4>
+    <span style="color:red">INDEXOVANÝ SOUBOR</span>
+    <hr>
+    Indexovaný soubor je datový soubor  podporovaný indexy. Indexy jsou fyzicky<br>
+    uloženy v pomocném souboru na disku s příponou .X00, PC FAND je automaticky<br>
+    vytváří, při  editaci aktualizuje, v případě potřeby zruší a znovu vytvoří.<br>
+    <br>
+    Zavedení indexové podpory:<br>
+    K definici souboru v kapitole F doplňte příponu .X za NázevSouboru. Smazání<br>
+    přípony zruší i indexy pro tento datový soubor. Soubor může být indexovaný,<br>
+    když má alespoň jeden  vlastní klíč.  Naopak soubor, který má alespoň jeden<br>
+    alternativní vlastní klíč, již musí být nutně indexovaný.<br>
+    <br>
+    Použití indexů:<br>
+    Udržuje  soubor  setříděný  bez ohledu na fyzické  pořadí vět, a to i podle<br>
+    několika různých hledisek najednou.  Zabraňuje  nechtěným duplicitám klíčů,<br>
+    zrychluje odezvu editoru při mazání a vkládání vět (zrušené věty jsou pouze<br>
+    označeny, ne fyzicky mazány). Umožňuje navigaci směrem dolů (Ctrl-F7)- pod-<br>
+    řízený soubor musí mít vlastní klíč podporovaný indexy, který je rozšířením<br>
+    cizího klíče, podle kterého se hledá (tzv. vazba typu owner).<br>
+    Má vliv na celý projekt:<br>
+    <br>
+    navigace nahoru a dolů, editace podle klíče, F3 hledání v datovém editoru<br>
+    vlastní klíč, alternativní vlastní klíč, uživatelské pohledy v deklaraci<br>
+    soub. formulář, VstupSestavy, VstupTransformace: pořadí vět v souboru podle<br>
+    indexu, hledání recno a link, volání forall, edit a report podle indexu<br>
+    v proceduře<br>
+</div>
+<div>
+    <h4>Indexy</h4>
+    <span style="color:red">INDEXOVANÝ SOUBOR</span>
+    <hr>
+</div>
+<div>
+    <h4>Instalace abecedy</h4>
+    <span style="color:red">INSTALACE ABECEDY</span>
+    <hr>
+    Pro podporu národního prostředí PC FAND obsahuje driver klávesnice a fonty<br>
+    pro obrazovku. Neřeší pouze  fonty pro tiskárnu. Při  instalaci  se vybírá<br>
+    kódová tabulka pro lexikální třídění z těchto možností:<br>
+    <br>
+    ■ IBM ........... počítač bez instalované národní abecedy<br>
+    ■ Kamenických<br>
+    ■ Latin2 ........ dvě používané varianty kódování češtiny a slovenštiny<br>
+    (převod mezi oběma kódy procedurou copyfile(...mode...)<br>
+    <br>
+    Výstupy na tiskárnu lze překódovat - viz. instalace tiskárny<br>
+    <br>
+    Podle instalované abecedy jsou v PC FANDu podporované funkce:<br>
+    <br>
+    ■ upcase .............. převod malých písmen na velká<br>
+    ■ lowcase ............. převod velkých písmen na malá<br>
+    ■ nodiakr ............. odstranění diakritiky z textu<br>
+    ■ lexikální třídění ... třídění zohlední diakritiku<br>
+</div>
+<div>
+    <h4>Instalace barev</h4>
+    <span style="color:red">INSTALACE BAREV</span>
+    <hr>
+    Každá barva se zadává hexadecimálním číslem atributu podle nápovědy.<br>
+    <br>
+    ■ uživatelská barva č.0-15.. uživatelské barvy přístupné funkcí color<br>
+    ■ MENU normální text ....... jednotlivé (neaktivní) volby nabídky<br>
+    ■      aktivní volba ....... zvýrazněná volba, na které je kurzor<br>
+    ■      první písmeno ....... zvýrazněné písmeno pro rychlou volbu<br>
+    ■      nefunkční volba ..... zobrazená ale nefunkční volba<br>
+    <br>
+    ■ VÝBĚR normální text ...... výběr z prvků seznamu<br>
+    ■       aktivní položka .... zvýrazněná položka, na které je kurzor<br>
+    ■       maska pro soubor ... maska pro výběr souboru z disku<br>
+    <br>
+    ■ ZADÁNÍ zadávaný text ............ prompt na posledním řádku<br>
+    ■        nápověda ................. vysvětlující text k promptu<br>
+    ■ HLÁŠENÍ na posledním řádku ...... F10 message<br>
+    ■ POSLEDNÍ ŘÁDEK nápověda ......... nápověda v datovém a textovém editoru<br>
+    ■                symboly kláves ... označení funkčních kláves v nápovědě<br>
+    ■                přepínače ........ vypnutí aditivních změn a kontrol<br>
+    ■ PRVNÍ ŘÁDEK systém.informace .... první řádek uživatelské obrazovky<br>
+    <br>
+    ■ EDITOR TEXTU text ............... editovaný text<br>
+    ■              ctrl-znaky ......... řídící znaky (kromě přepínačů barev)<br>
+    ■              blok ............... označení bloku<br>
+    ■ DRUHY PÍSMA podtržený text ...... Ctrl-S<br>
+    ■             kurzíva ............. Ctrl-W<br>
+    ■             široký text ......... Ctrl-Q<br>
+    ■             dvojitý text ........ Ctrl-D<br>
+    ■             mastný text ......... Ctrl-B<br>
+    ■             zhuštěný text ....... Ctrl-E<br>
+    ■             písmo elite ......... Ctrl-A<br>
+    <br>
+    ■ EDITOR DAT data ............ editovaná data<br>
+    ■            datový kurzor ... zvýrazněný údaj, na kterém je kurzor<br>
+    ■            podmnožina ...... vybraná podmnožina (F6-akce, F5-přepínače)<br>
+    ■            ostatní text .... názvy údajů apod.<br>
+    ■            zrušené věty .... věty, zrušené jinou stanicí (LAN)<br>
+    ■            výběr(F8,ShiftF8) podmnožina dle pracovního indexu sel<br>
+    <br>
+    ■ UŽIVATELSKÁ OBRAZOVKA ...... základní atribut pro write apod.<br>
+    <br>
+    ■ NÁPOVĚDA text .............. běžný text nápovědy<br>
+    ■          vybrané téma ...... zvýrazněný název, na kterém je kurzor<br>
+    ■          ostatní témata .... ostatní témata, na která lze nastavit kurzor<br>
+    ■          zvýrazněný text ... nadpisy apod.<br>
+    ■ KRÁTKÁ NÁPOVĚDA ............ jednořádková nápověda na (před)posledním<br>
+    řádku<br>
+    <br>
+    ■ OKNA stíny ............. stíny oken ( menu, with window, ww )<br>
+    ■ DESKTOP ................ barva "pracovního" stolu (hlavní menu PC FANDu)<br>
+</div>
+<div>
+    <h4>Instalace kalendáře</h4>
+    <span style="color:red">INSTALACE KALENDÁŘE</span>
+    <hr>
+    Tabulka kalendářních výjimek (svátky,...) se používá v datumové aritmetice<br>
+    při počítání s pracovními dny (funkce typeday, addwdays, difwdays ). Pokud<br>
+    není tabulkou určeno jinak, počítá se funkce typeday podle dne v týdnu.<br>
+    <br>
+    Instalace pobíhá ve dvou krocích :<br>
+    Před spuštěním instalačního programu volejte pod PC FANDem úlohu INST.RDB,<br>
+    kde editujete kalendářní výjimky (datový  soubor DNY.000). Pořizujete vždy<br>
+    dva údaje, datum a nový typ dne (0 až 3 podle požadovaného nového výsledku<br>
+    funkce typeday).<br>
+    V druhém kroku zvolte v instalačním programu FANDINST volbu Dny.<br>
+</div>
+<div>
+    <h4>Instalace konstant</h4>
+    <span style="color:red">INSTALACE KONSTANT</span>
+    <hr>
+    ■ Počet vět k uložení v editoru<br>
+    Po pořízení či změně daného počtu vět v datovém editoru dojde k uložení vět<br>
+    a uvedení souboru do definovaného stavu. Tj. provedou se celkem tři akce:<br>
+    aktualizuje se hlavička souboru<br>
+    data se z cache uloží na disk<br>
+    aktualizují se údaje v adresáři disku (fyzická délka souboru).<br>
+    V případě havárie, např. přerušení přívodu el.proudu, případná automatická<br>
+    oprava PC FANDem vede k návratu k tomuto stavu. Implicitní hodnota je 20<br>
+    vět. Nižší hodnota znamená vyšší bezpečnost ale možné zdržování při práci.<br>
+    Toto nastavení platí globálně pro všechny spuštěné datové editory, indivi-<br>
+    duálně lze interval uložení nastavit parametrem saveafter příkazu edit.<br>
+    <br>
+    ■ Automatická sestava - šířka<br>
+    Základní parametr automatické sestavy, který udává počet znaků na řádce<br>
+    při generování automatické sestavy. Implicitně 80 znaků. Šířka sestavy<br>
+    se odvozuje podle normální velikosti písma (10 CPI). Jde vlastně o impli-<br>
+    citní hodnotu parametru width příkazu report.<br>
+    <br>
+    ■ Automatická sestava - délka<br>
+    ■                     - ukončení strany<br>
+    Délka udává počet řádků sestavy, které se mají generovat na jednu tiskovou<br>
+    stranu. Jde tedy o logickou délku strany. Přičtením počtu řádků pro<br>
+    ukončení strany se získá údaj o fyzické délce strany. Uplatní se jak při<br>
+    automatické tak i při definované sestavě. V definované sestavě lze fyzickou<br>
+    i logickou délku strany upravit pomocí parametrů sestavy .pagesize a<br>
+    .pagelimit.<br>
+    Implicitní hodnoty jsou 69 a 3. Celkem 72 řádků = implicitní fyzická délka<br>
+    stránky. Vždy na začátku tisku vyšle PC FAND do tiskárny ESC-sekvenci pro<br>
+    nastavení fyzické délky stránky (pokud je tato sekvence uvedena viz.<br>
+    instalace tiskárny a fyzická délka strany je jiná než 72). Fyzickou délku<br>
+    strany lze definovat také tečkovým příkazem .pl.<br>
+    Ukončení strany lze definovat také tečkovým příkazem .cp.<br>
+    Při tisku na jednotlivé listy (podavač) doporučujeme nastavit hodnoty<br>
+    těchto parametrů na 64 (nebo kolik řádků se skutečně vejde na list) a<br>
+    ukončení strany doplníme na součet 72, tedy 8.<br>
+    Důležitý je součet 72, při jiné hodnotě se mohou některé tiskárny chovat<br>
+    "podivně", navíc to až na speciální typy sestav (složenky) nemá význam.<br>
+    <br>
+    <br>
+    ■ Sestava - výstup rovnou na tiskárnu ?<br>
+    Při generování automatické sestavy pomocí volby datového editoru F6 - opis<br>
+    sestava vystupuje rovnou na tiskárnu, nikoliv nejdříve do tiskového souboru<br>
+    PRINTER.TXT. Možné hodnoty A/N, implicitně N. Viz. parametr  assign příkazu<br>
+    report.<br>
+    <br>
+    ■ Výběr tiskárny před tiskem ?    A/N (N)<br>
+    Po vyvolání tisku (F6,CtrlF6,CtrlK-P,příkaz printtxt) se místo hlášky<br>
+    F10! (ESC)  nastavte tiskárnu!<br>
+    objeví seznam instalovaných tiskáren (jako při AltF6) s nastavenou aktivní<br>
+    tiskárnou a možností změny.<br>
+    <br>
+    ■ Graficky oddělit stránky ?<br>
+    ■ -        znak pro oddělení<br>
+    Při zapnuté klávese ScrolLock se v textovém editoru oddělovače stránek<br>
+    (CtrlP-CtrlL) zobrazí jako řada teček (znaků pro oddělení, implicitně<br>
+    znaku s kódem 250) a tak se "graficky" oddělí stránky. Není zohledněno<br>
+    nastavení logické délky strany. Implicitně je grafické oddělení zapnuto.<br>
+    <br>
+    ■ Potvrdit ESC z editoru ?   A/N (N)<br>
+    Při opuštění datového editoru aktivuje kontrolní dotaz pro uživatele<br>
+    opustit editor A/N ?<br>
+    Neuplatní se při přerušení pořízení nové věty - viz. následující parametr.<br>
+    Individuálně lze toto nastavit parametrem mode='??' příkazu edit,<br>
+    viz. módy datového editoru.<br>
+    <br>
+    ■ Potvrdit ESC z nedokončené věty? A/N (N)<br>
+    Parametrizace přerušení pořízení nové věty v datovém editoru. Při nastavení<br>
+    na A musí obsluha přerušení pořízení potvrdit na hlášku:<br>
+    Nedokončená věta bude zrušena! Přesto opustit A/N?<br>
+    V opačném případě je "rozeditovaná" věta bez varování nenávratně ztracena.<br>
+    Individuálně lze toto nastavit parametrem mode='?N' příkazu edit,<br>
+    viz. módy datového editoru.<br>
+    <br>
+    ■ Potvrzení hlášky ENTER místo F10  A/N (N)<br>
+    Pro potvrzení hlášek PC FANDu (včetně příkazu message) lze kromě klávesy<br>
+    F10 použít i ENTER. Možné hodnoty A/N, implicitně N.<br>
+    <br>
+    ■ Komentář k RDB při ladění ?  A/N (A)<br>
+    V programátorském prostředí se zobrazí první řádek textu.<br>
+    <br>
+    ■ CP/M šachta (např. D,E,F...)<br>
+    Pro účely převodu dat z 8-bitové verze PC FANDu (oper.systém CP/M) je možno<br>
+    speciálním driverem instalovat možnost čtení disket ve formátu CP/M.<br>
+    V tomto parametru se uvede, kam bylo čtení CP/M disket driverem mapováno.<br>
+    <br>
+    ■ Sítě LAN - obnovení obrazovky<br>
+    Při editaci sdíleného datového souboru dochází k automatické pravidelné<br>
+    obnově obrazovky - načtením dat z disku. Interval obnovy se zadává v se-<br>
+    kundách, implicitně 5 sec. Nižší hodnota parametru znamená lepší přehled<br>
+    obsluhy o akcích ostatních stanic avšak vyšší zátěž serveru.<br>
+    Individuálně lze zadat interval parametrem refresh příkazu edit.<br>
+    lokální sítě - používané pojmy.<br>
+    <br>
+    ■ Sítě LAN - opak. blokovaného přístupu  (net delay)<br>
+    V lokální síti mohou být soubory, požadované pro určitou akci, dočasně<br>
+    nepřístupné z důvodu práce ostatních stanic. Proto je třeba odmítnutý<br>
+    pokus o práci s nimi po určitém čase automaticky znovu opakovat. Tento<br>
+    časový interval se zadává v jednotkách CPU (z důvodu jemnějšího odlišení<br>
+    jednotlivých stanic), implicitně 54 CPU. ( 1 sec ¸ 18 CPU )<br>
+    <br>
+    ■ Sítě LAN - pípání při opakování blokování  A/N (A)<br>
+    Viz. předchozí parametr. Nepřístupnost souboru je signalizována vizuální<br>
+    hláškou a pípnutím, které je možno vypnout, ruší-li obsluhu.<br>
+    <br>
+    První přístup - prodleva (CPU)     0 .. 255 (0)<br>
+    - počet opakování    0 .. 255<br>
+    Je-li parametr "počet opakování" > 0, potom PC FAND při odmítnutí prvního<br>
+    pokusu o systémový zámek čeká dobu podle prodlevy v CPU a zkusí to znovu<br>
+    aniž by hlásil uživateli blokovací hlášku. Čekací doba mezi pokusy<br>
+    a počet pokusů bez hlášení jsou dány těmito parametry.<br>
+    Jde o analogii parametrů Lock Delay a Lock Retries ze souboru NET.CFG pro<br>
+    konfiguraci stanice v síti Novell. Vhodné nastavení těchto parametrů může<br>
+    zlepšit chování aplikace při větší zátěži - urychlit a méně hlášek.<br>
+    Konkrétní hodnoty je třeba ověřit v praxi, používají se spíše nižší.<br>
+    <br>
+    ■ Pípání při chybách ?   A/N (A)<br>
+    Chybová a některá další hlášení doprovází zvukový signál, který lze<br>
+    zde vypnout / zapnout. Potlačí i efekt příkazu beep, ovšem nepotlačí<br>
+    příkaz sound.<br>
+    <br>
+    ■ Max.velikost XMS pro PC FAND<br>
+    PC FAND obsahuje vlastní diskovou cache. Implicitně alokuje 200 KB paměti<br>
+    XMS. Nedoporučuje se kombinovat s jiným typem cache (např. SMARTDRIVE),<br>
+    jsou možné kolize a dvojí "kešování" nemá smysl.<br>
+    <br>
+    ■ Potlačit Ctrl-Break ?  A/N (N)<br>
+    Možnost ukončení programu kombinací kláves Ctrl-Break.<br>
+    <br>
+    ■ Číslo implicitní klávesnice ..... 0 až 4 (0)<br>
+    PC FAND obsahuje podporu národního prostředí pro klávesnici. Celkem<br>
+    5 typů klávesnic v určitém pořadí - viz. klávesa AltF8 v PC FANDu.<br>
+    Tento parametr určuje číslo aktivní klávesnice po startu PC FANDU.<br>
+    Možné hodnoty 0 - 4, implicitně 0.<br>
+    <br>
+    ■ PARAMETRIZACE MYŠI<br>
+    Myš - podpora vypnuta   A/N (N)<br>
+    Možnost vypnutí podpory myši.<br>
+    <br>
+    - výměna kláves   A/N (N)<br>
+    Výměna levé a pravé klávesy.<br>
+    <br>
+    - interval pro dvojitý stisk<br>
+    Zadává se v CPU, implicitně 8.<br>
+    <br>
+    - interval pro opakování<br>
+    Automat.opakování stisku myši. Zadává se v CPU, implicitně 8.<br>
+    <br>
+    ■ Prodleva Ctrl,Alt,Shift<br>
+    Interval pro vyvolání alternativ. nápovědy po stisku přeřazovací klávesy.<br>
+    Zadává se v CPU, implicitně 15.<br>
+    <br>
+    ■ Automat.přepsat návěští diskety . A/N (A)<br>
+    Při zálohování na disketu (příkazy backup, backupm) lze při nesouhlasu<br>
+    návěští diskety toto návěští po dotazu obsluze přepsat. Je-li tento parametr<br>
+    nastaven na N, PC FAND striktně vyžaduje disketu s návěštím podle katalogu.<br>
+    <br>
+    ■ Interval zhasnutí obrazovky<br>
+    Aktivuje šetřič obrazovky, tj. délku intervalu v sekundách po kterém při<br>
+    nepoužití libovolné klávesy zhasne obrazovka. Je-li hodnota 0 (implicitně),<br>
+    obrazovka nezhasíná.<br>
+    Maximální povolená hodnota je 3640 sec (asi 1 hodina).<br>
+    <br>
+    ■ Posun implicitního století (roky, 0)<br>
+    Parametrizuje dosazení století při zadávání datumu s dvojmístným číslem pro<br>
+    rok, tj. například při standardní masce 'DD.MM.YY'. Důležité hlavně na<br>
+    přelomu století. Po zadání datumu se provede test nerovnosti<br>
+    YY < (AR + konstanta) MOD 100<br>
+    kde:         AR ... aktuální rok<br>
+    YY ... zadané dvojčíslí roku<br>
+    konstanta ... zadaná hodnota parametru posunu století<br>
+    Pokud je splněna, přičte se k zadanému roku 2000, výsledný rok bude 20YY.<br>
+    V opačném případě 19YY. Pokud je konstanta=0 (implicitně), použije se<br>
+    vždy aktuální století (tj. neprovádí se vyhodnocení nerovnosti).<br>
+    Pozor na chybné nastavení konstanty, např. by nemělo být AR+konstanta=99.<br>
+    Tato parametrizace se projeví na všech místech v PC FANDu, kde lze použít<br>
+    nějakou formu krátkého tvaru datumu '...YY', přičemž pro další zpracování<br>
+    se vždy převádí na plný tvar '...YYYY'.<br>
+    strdate   valdate   konstanty   uložené údaje  copyfile<br>
+    <br>
+    ■ Kontrola volného místa na disku  A / N (A)<br>
+    Při práci na diskových polích o velikosti větší než 2 GB nastavíme na 'N'<br>
+    a tak se můžeme vyhnout neoprávněným hlášením o nedostatku  volného místa<br>
+    na disku.<br>
+</div>
+<div>
+    <h4>Instalace monitoru</h4>
+    <span style="color:red">INSTALACE MONITORU</span>
+    <hr>
+    1.blok - systémové konstanty,  které  je třeba  měnit pouze ve výjimečných<br>
+    případech na nestandardních konfiguracích PC. Implicitní hodnoty<br>
+    se liší podle typu monitoru.<br>
+    <br>
+    ■ Adresa videopaměti ........ automaticky nastavena pro Hercules/VGA apod.<br>
+    ■ Počet řádků monitoru ...... nutno nastavit v některých případech, kdy<br>
+    systém vrací chybnou hodnotu. Pokud = 0,<br>
+    (implic.) použije hodnotu vrácenou systémem.<br>
+    ■ Ošetřit sněžení ? ......... odstranění "sněžení" na levnějších monitorech<br>
+    zpomaluje odezvu při zápisu na obrazovku<br>
+    ■ Zapnutý kurzor ............ tvary kurzoru (horní a dolní řádek kurzoru)<br>
+    ■ Vypnutý kurzor              viz. dokumentace BIOSu, např. TECHHELP<br>
+    ■ Velký kurzor<br>
+    <br>
+    2.blok - podpora češtiny na monitoru<br>
+    ■ Použít fonty FANDu ? ...... na EGA/VGA automaticky použije font s dia-<br>
+    kritikou podle instalace abecedy, implic.A<br>
+    ■ Monitor bez diakritiky ?... pokud je nastaveno A, bude z hlášení pro<br>
+    komunikaci s uživatelem odstraněna před výpi-<br>
+    sem na monitor diakritika, implicitně N.<br>
+</div>
+<div>
+    <h4>Instalace sítě</h4>
+    <span style="color:red">LAN - INSTALACE SÍTĚ</span>
+    <hr>
+    Požadavky na software:<br>
+    ■ MS DOS 3.3 nebo vyšší<br>
+    ■ síťový operační systém, který využívá MS DOS open-share módy a lock bytů<br>
+    i mimo fyzický rozsah souboru (většina dostupných sítí)<br>
+    <br>
+    Instalace síťového prostředí:<br>
+    ■ Adresáři s datovými soubory  přidělujeme přístupová  práva RWOCDM (read/<br>
+    write/ open/ create/ delete/ modify attributes).<br>
+    Totéž platí pro pracovní soubory PC FANDu ( FANDWORK.?$$ , PRINTER.TXT).<br>
+    <br>
+    ■ Pro již existující plně sdílené soubory (# v katalogu) stačí pouze RWO.<br>
+    <br>
+    ■ Pro existující sdílené soubory, které budou některé stanice v síti pouze<br>
+    číst ( v katalogu  těchto  stanic označeny #R ), stačí adresáři přidělit<br>
+    práva RO.  Do této skupiny  lze zařadit  i moduly FAND.* , (U)FANDHLP.*,<br>
+    datové soubory jen pro čtení - s DOS-atributem RdOnly  a odladěnou ( za-<br>
+    heslenou) úlohu.<br>
+    <br>
+    ■ Pro úlohu, kterou chceme ještě instalovat nebo ladit, potřebujeme práva<br>
+    RWOM .<br>
+    <br>
+    Závěr: V praxi se většinou do jednoho adresáře instalují soubory s různými<br>
+    nároky na přístupová práva  ( FAND.* , FANDWORK.* ). Potom se samo-<br>
+    zřejmě uplatní nejvyšší z nich.  Na rozsáhlejších sítích ( Novell )<br>
+    se vyplatí tyto záležitosti neignorovat.<br>
+    <br>
+    ■ Je nutné instalovat dostatečně velký maximální počet současně otevřených<br>
+    handlů pro otevírané soubory a také maximální počet současně provedených<br>
+    locků na serveru.  Některé  sítě vyžadují  na serveru spuštění  programu<br>
+    SHARE ( součást operačního systému MS DOS ) s příslušnými  parametry,  u<br>
+    jiných je třeba postupovat dle instalačního návodu.<br>
+</div>
+<div>
+    <h4>Instalace systému</h4>
+    <span style="color:red">INSTALACE</span>
+    <hr>
+</div>
+<div>
+    <h4>Instalace tiskárny</h4>
+    <span style="color:red">INSTALACE TISKÁRNY</span>
+    <hr>
+    Při generování tiskových sestav a jejich tisku na tiskárně odpovídají nároky<br>
+    PC FANDu na tiskárnu zhruba možnostem textového editoru PC FANDu. To znamená,<br>
+    že se používá neproporcionální písmo, diakritika v kódování Kamen nebo Latin<br>
+    a základní typy písma. Tento přístup k tiskárně vychází z možností jehličko-<br>
+    vých tiskáren, především ohledně typů písem (zhuštěné, elite, široké, ...).<br>
+    <br>
+    ██  TYPY TISKÁREN :<br>
+    Jehličkové  Jsou ovládány z programu v tzv. módu EPSON. V rámci tiskáren s<br>
+    tímto způsobem ovládání vládne široká kompatibilita a většinou<br>
+    lze použít řídící sekvence "STANDARD".<br>
+    <br>
+    Inkoustové, laserové<br>
+    Novější typy tiskáren, které mají většinou odlišný způsob<br>
+    ovládání, nejčastěji jazyk PCL, bývají také označovány<br>
+    jako HP-kompatibilní. Tyto tiskárny mají obecně vyšší kvalitu<br>
+    tisku než jehličkové, avšak z hlediska tisku z PC FANDu<br>
+    je jejich kompatibilita - vzájemná nebo na jehličkové - často<br>
+    problematická.<br>
+    Z výběru tiskáren v distribuci je nejobecněji použitelná<br>
+    sada řídících sekvencí pro HP DJ520 (jazyk PCL 3).<br>
+    <br>
+    Bublinkové  Podle konkrétního typu lze často použít buď standardní<br>
+    sekvence jako pro jehličkové tiskárny (mód EPSON) nebo<br>
+    přepnout tiskárnu do IBM-modu (DIP přepínače, ovládací<br>
+    program) a použít přednastavené sekvence IBM PRO (IBM<br>
+    proprinter).<br>
+    <br>
+    Pro řízení všech typů tiskáren se používají tzv. escape sekvence, které<br>
+    se zadávají v hexadecimálním tvaru (např. 1B=Esc) podle manuálu tiskárny.<br>
+    <br>
+    Řízení tiskárny zahrnuje dva hlavní okruhy problémů:<br>
+    ■ Podpora diakritiky  Na rozdíl od klávesnice a obrazovky PC FAND neobsa-<br>
+    huje podporu diakritiky pro tiskárnu. Proto musí<br>
+    tiskárna umět češtinu sama (hardwarová podpora, lepší<br>
+    varianta) nebo musí být použita systémová podpora<br>
+    (rezidentní program). Důležité je to, že lze tisknout<br>
+    na tiskárnu v jiném kódování diakritiky než probíhá<br>
+    zpracování na počítači, případně může být tiskárna bez<br>
+    podpory češtiny, viz. parametr Kód.<br>
+    Pokud tiskárna obsahuje hardwarovou podporu češtiny,<br>
+    je často třeba ji aktivovat, nejčastěji přidáním<br>
+    speciální ESC-sekvence k resetu.<br>
+    U tiskáren s jazykem PCL-3 se pro nastavení kódové<br>
+    stránky 852 (Latin2) používá sekvence 1B 28 31 37 55<br>
+    pro kód Kamenických sekvence 1B 28 31 38 55.<br>
+    <br>
+    ■ Typy písma          V drtivé většině případů lze odpovídající typy písma<br>
+    nainstalovat pomocí ESC-sekvencí. Pro každý typ písma<br>
+    se zadává kód pro zapnutí a kód pro vypnutí písma.<br>
+    Délka sekvence je max. 254 znaků.<br>
+    <br>
+    <br>
+    Popis jednotlivých řídicích sekvencí:<br>
+    <br>
+    Po vybrání tiskárny ze seznamu se objeví menu s možnostmi výběru<br>
+    způsobu tisku. Jsou 3:<br>
+    Standardní (LPT1-3)<br>
+    Přes logický port (dos.LPT1-9)<br>
+    Náhradní tisk (manažer)<br>
+    Rozlišuje se podle hodnoty timeout. Viz.další popis.<br>
+    <br>
+    ■ TISKÁRNA (název)<br>
+    Použije se pro generování menu pro výběr tiskárny v PC FANDU (klávesa<br>
+    Alt-F6) - lze instalovat až 10 tiskáren. Viz. SetPrinter, CPrinter.<br>
+    Standardní instalace od distributora obsahuje tyto typy tiskáren:<br>
+    Název dle FANDINST  určeno pro tiskárny         kódování češtiny<br>
+    ─────────────────────────────────────────────────────────────────<br>
+    EPS-bez           EPSON a kompatibilní       bez kódování češtiny<br>
+    EPS-kam           EPSON a kompatibilní           Kamenických<br>
+    EPS-lat           EPSON a kompatibilní             Latin 2<br>
+    DJ-PCL3           inkoustové (s jazykem PCL3)      Latin 2<br>
+    LJ-PCL5           laserové (s jazykem PCL5)        Latin 2<br>
+    IBM-bez           bublinkové                 bez kódování češtiny<br>
+    IBM-lat           bublinkové                       Latin 2<br>
+    Výjimky a známé nastavení pro další konkrétní typy tiskáren jsou<br>
+    dostupné na WEBu firmy alis www.alis.cz<br>
+    <br>
+    ■ Typ<br>
+    Typ tiskárny (M-mozaiková,C-mozaiková-barva,L-laserová HP LaserjetII)<br>
+    Uplatní se při tisku grafu, při tisku textu jen pro interpretaci ESC<br>
+    sekvencí s proměnnou částí, viz. délka stránky a odsazení zleva.<br>
+    <br>
+    ■ kód(KL,KN,LK,LN)<br>
+    Tento parametr umožňuje překódování výstupu na tiskárnu a tak pro tisk<br>
+    použít jiné kódování diakritiky než pro vlastní zpracování. Častá<br>
+    kombinace je pro PC (data) kódování Kamen a pro tisk Latin2.<br>
+    Kód je dvouznaková konstanta:<br>
+    KL     kamen -> latin<br>
+    KN     kamen -> bez diakritiky<br>
+    LK     latin -> kamen<br>
+    LN     latin -> bez diakritiky<br>
+    nezadáno     bez překódování<br>
+    Viz. také CopyFile.<br>
+    <br>
+    ■ Číslo portu tiskárny (1 až 9)<br>
+    Označení paralelního portu pro výstup : LPT1 ... LPT9. Implicitně 1.<br>
+    Lze tisknout i na fyzicky neexistující porty, na které jsou mapovány<br>
+    síťové tiskárny.<br>
+    Porty 4-9 lze použít jen při tisku na "logický" port, viz další<br>
+    parametr.<br>
+    <br>
+    ■ Čekání na odezvu tiskárny<br>
+    Tzv. timeout. Zadává se v sekundách, význam nastavení hodnot:<br>
+    1 až 14 ... Při zahájení i v průběhu tisku sleduje PC FAND odezvy<br>
+    tiskárny a pokud doba přesáhne stanovený limit, vydá<br>
+    hlášku "F10! (ESC)  připojte tiskárnu!<br>
+    Zadaná konstanta se zapisuje do oblasti BIOSu,<br>
+    0 ......... Neprovede se žádný zápis a použije se implicitní hodnota<br>
+    BIOSu na vašem PC.<br>
+    Pokud se u širokých tiskáren formátu A3, např. STAR LC-15<br>
+    objeví (neoprávněně) výše uvedená hláška v průběhu tisku<br>
+    použijte hodnotu 14 nebo 0.<br>
+    Hodnotu 0 použijte i při tisku pod Windows 95.<br>
+    253 ....... Speciální tisk. Podpora tisku přes tiskový manažer<br>
+    (Win95/98/NT), viz. www.alis.cz.<br>
+    Provedou se dvě akce:<br>
+    1. Kopie souboru PRINTER.TXT do souboru se jménem podle<br>
+    parametru Název kopie(uloženo v sekvenci "RESET").<br>
+    Jméno souboru může obsahovat znak #, který bude nahrazen<br>
+    pořadovým číslem 1..99.<br>
+    2. Spustí se externí program (EXEC) podle parametru<br>
+    Název programu (uloženo v sekvenci "Délka strany").<br>
+    Jako parametry programu se připojí obsah dalšího<br>
+    parametru instalace tiskárny Parametry programu<br>
+    (uloženy v sekvenci "Uk.řetězec/laser").<br>
+    <br>
+    254 ....... Tisk přes tzv. "logický" port. To znamená že tisk se<br>
+    z PC FANDu posílá do souboru s názvem LPTx (kde x=1..9)<br>
+    jehož přesměrování na tiskárnu je již v režii oper. systému<br>
+    MS DOS. Porty 4-9 lze použít jen pod WIN95/98/NT.<br>
+    255 ....... Má význam pouze u síťových tiskáren v těch typech sítí,<br>
+    kde se na vlastní tisk musí čekat delší dobu, případně<br>
+    až do ukončení aplikace (např. ve WFW nelze parametrizovat,<br>
+    v Novellu 3.xy program CAPTURE - parametr TI).<br>
+    PC FAND provede po ukončení tisku formální otevření<br>
+    a uzavření handle pro odpovídající tiskový port.<br>
+    Implicitně je nastaveno 7 sec.<br>
+    <br>
+    ■ (^S) Podtržení ........ ^S Underline<br>
+    ■ (^W) Kurzíva .......... ^W Italic<br>
+    ■ (^Q) Široký ........... ^Q Double-width<br>
+    ■ (^D) Dvojitý .......... ^D Double-strike<br>
+    ■ (^B) Mastný ........... ^B Emphasised<br>
+    ■ (^E) Zhuštěný ......... ^E Compressed<br>
+    ■ (^A) Elite ............ ^A Elite<br>
+    Pro jednotlivé typy písma se instaluje řídicí sekvence pro zapnutí<br>
+    (lichý výskyt) a pro vypnutí (sudý výskyt přepínače). Tyto sekvence<br>
+    jsou při tisku textu substituovány na místo výskytu odpovídajících<br>
+    přepínačů. Na jehličkových tiskárnách lze jednotlivé typy kombinovat,<br>
+    což však může činit obtíže na některých typech tiskáren s jazykem<br>
+    PCL (HP-kompatibilní).<br>
+    <br>
+    <br>
+    ■ Reset tiskárny<br>
+    Tato řídicí sekvence se do tiskárny vyšle vždy na začátku každého tisku<br>
+    (po potvrzení F6, CtrlF6,...). V tomto smyslu jde o "startovací" řídicí<br>
+    sekvenci pro tisk. Nejčastěji obsahuje vlastní ESC sekvenci pro reset<br>
+    daného typu tiskárny, která nastavuje tiskárnu do výchozího stavu.<br>
+    Někdy (u některých typů podpory diakritiky) dojde při tom ke "shození"<br>
+    této podpory. V takovém případě je nutno sekvenci pro reset zrušit<br>
+    (vyprázdnit).<br>
+    U tiskáren s HP-módem (laserové,inkoustové HP-DJxyz) je naopak často<br>
+    potřeba sekvenci pro reset rozšířit o nastavení znakové sady, nejlépe<br>
+    neproporcionálního fontu s diakritikou. Dále zde lze nastavit i velikost<br>
+    písma, řádkování apod. To je nutné proto, že i tiskárna, která "umí"<br>
+    češtinu nemusí mít tuto vlastnost aktivní po "čistém" resetu.<br>
+    <br>
+    ■ Délka strany<br>
+    Pokud je tato sekvence v instalaci zadána, PC FAND ji vždy vyšle na<br>
+    tiskárnu při zahájení tisku, ihned po sekvenci pro reset. Rozumí se<br>
+    fyzická délka strany a zadává se v počtu řádků na stranu. Prioritně<br>
+    se počet řádků vyhodnotí podle tečkového příkazu .pl. Pokud není zadán,<br>
+    použije se hodnota z instalace konstant - sečte se logická délka a<br>
+    ukončení strany. Implicitní hodnota je 72.<br>
+    Zpracování sekvence je různé podle nastavení typu tiskárny. Pro typ<br>
+    M a C se k instalované sekvenci délky strany připojí hodnota délky<br>
+    v binárním kódování (1 byte, např. znak s hodnotou 72, tj. 'H') a<br>
+    vyšle na tiskárnu.<br>
+    U typu L se údaj délky kóduje znakově, to jest např. znaky '7' a '2'.<br>
+    Ovšem na konec se připojí ukončovací sekvence, viz. následující parametr<br>
+    instalace.<br>
+    <br>
+    ■ Uk.řetězec/LASER<br>
+    Ukončující řídící sekvence pro délku strany, používá se pro laserové<br>
+    tiskárny (Typ=L). Viz. komentář k parametru délka strany.<br>
+    <br>
+    ■ Odsazení zleva<br>
+    ■ Uk.odsaz.zleva<br>
+    Používá se pro realizaci tečkového příkazu .PO. Zadává se počet<br>
+    sloupců zleva. Způsob zpracování proměnné části počtu sloupců je<br>
+    stejný jako pro délku strany včetně ukončující sekvence.<br>
+    (tečkové příkazy)<br>
+    <br>
+    ■ (^X) Uživatelský kód 1<br>
+    ■ (^V) Uživatelský kód 2<br>
+    ■ (^T) Uživatelský kód 3<br>
+    Další typy písma nebo využití speciálních vlastností konkrétní<br>
+    tiskárny (řádkování, barvy, NLQ, ...). Pro tiskárnu typu STANDARD<br>
+    jsou tyto typy nastaveny takto: ^X ... dvojnásobné písmo<br>
+    ^V ... čtyřnásobné písmo<br>
+    ^T ... husté řádkování (1/8")<br>
+    <br>
+    <br>
+    ■ PARAMETRY PRO GRAFICKÝ TISK<br>
+    <br>
+    Řádkování n/72, ....... dle možností tiskárny ──┐<br>
+    Řádkování n/216                                 │   lze ovlivnit<br>
+    Gr.hustota 60, ........ grafická hustota        ├   proporce<br>
+    Gr.hustota 120,                                 │   tisku<br>
+    Gr.hustota 240                                ──┘   tisk grafu<br>
+    Tyto parametry se nastavují jen u typu tiskárny 'M' a 'C'. Pro typ 'L'<br>
+    nemají význam.<br>
+    <br>
+    Nastavení barev<br>
+    Pouze prefix, PC FAND doplní číslo barvy. Použije se u typu tiskárny C.<br>
+    <br>
+    <br>
+    ■ Závěr.sekvence<br>
+    Závěrečná sekvence pro ukončení tisku. Má význam jen při speciálních<br>
+    případech tisku.<br>
+</div>
+<div>
+    <h4>Instalace úlohy</h4>
+    <span style="color:red">INSTALACE ÚLOHY</span>
+    <hr>
+    Z hlavního menu PC FANDu lze volbou Instalace úlohy instalovat nepovinná<br>
+    rozšíření projektu:<br>
+    <br>
+    katalog ............ umístění datových souborů jinde než v adresáři<br>
+    s úlohou,  soubory sdílené v lokální síti LAN,<br>
+    vícedisketové záložní kopie,<br>
+    generační soubory<br>
+    seznam uživatelů ... seznam oprávněných uživatelů a jejich přístupových<br>
+    práv<br>
+    <br>
+    Celou instalaci lze uzavřít na heslo před nepovolaným zásahem.<br>
+    Heslo je nutné z bezpečnostních důvodů (překlepy atd.) zadat dvakrát.<br>
+</div>
+<div>
+    <h4>Instalační program</h4>
+    <span style="color:red">INSTALAČNÍ PROGRAM FANDINST</span>
+    <hr>
+    Program FANDINST.EXE naplňuje soubor instalačních parametrů FAND.CFG,který<br>
+    se zohledňuje  během startu PC FANDu při naplňování globálních proměnných.<br>
+    Instalace je rozdělena do několika bloků:<br>
+    <br>
+    Program zpracuje soubor FAND.CFG dle nastavení SET parametru FANDCFG.<br>
+    Pokud není, hledá se v aktuálním adresáři.<br>
+    <br>
+    ■ Barvy ....... barvy pro datový a textový editor, nápovědu, nabídky atd.<br>
+    ■ Tiskárna .... kódy pro přepínání druhů písma a ostatní escape sekvence<br>
+    pro tiskárny, změna kódování diakritiky pro tiskárnu<br>
+    lze instalovat až 10 tiskáren<br>
+    ■ Konstanty ... hodnoty všech typů ovlivňující chování PC FANDu<br>
+    ■ Monitor ..... adresa videopaměti, tvar kurzoru, ošetření sněžení<br>
+    ■ Abeceda ..... výběr národní abecedy pro lexikální třídění<br>
+    připravené tabulky Kamenických a Latin2<br>
+    ■ Dny ......... tabulka výjimečných dnů v roce (svátky,...)<br>
+    pro zabudovaný kalendář<br>
+</div>
+<div>
+    <h4>Int</h4>
+    <span style="color:red">ARITMETICKÉ FUNKCE</span>
+    <hr>
+</div>
+<div>
+    <h4>inter</h4>
+    <span style="color:red">inter_</span>
+    <hr>
+    inter_NázevTypu(L_NázevTypu_1,L_NázevTypu_2,&L_NázevTypu_3)<br>
+    <br>
+    L_NázevTypu_1    První vstupní seznam.<br>
+    L_NázevTypu_2    Druhý vstupní seznam.<br>
+    L_NázevTypu_3    Výsledný seznam.<br>
+    <br>
+    <br>
+    Prvky  prvního seznamu,  které existují  i v  druhém seznamu  jsou<br>
+    přeneseny do výstupního seznamu L_NázevTypu_3.<br>
+    <br>
+    Příklad:<br>
+    <br>
+    intr:-inter_String(['A'],['A','B'],X),writeln(X),<br>
+    inter_String(['B','A'],['a'],Y),writeln(Y).<br>
+</div>
+<div>
+    <h4>Interact</h4>
+    <span style="color:red">PARAMETRY GRAFU</span>
+    <hr>
+</div>
+<div>
+    <h4>Interní proměnné</h4>
+    <span style="color:red">INTERNÍ PROMĚNNÉ</span>
+    <hr>
+    Interní proměnné  jsou vnitřní proměnné  PC FANDu, které jsou zpřístupněny<br>
+    programátorovi.  Na rozdíl od  funkcí  mohou  vystupovat i na  levé straně<br>
+    přiřazovacího příkazu.<br>
+    <br>
+    Je třeba upozornit na to, že přiřazení hodnoty  interní proměnné  většinou<br>
+    vyvolá další akce dle konkrétní proměnné a má spíše charakter příkazu.<br>
+    <br>
+    accright                            randseed<br>
+    soubor.archives                     usercode<br>
+    clipbd                              username<br>
+    soubor.nrecs                        soubor.volume<br>
+    soubor.path<br>
+</div>
+<div>
+    <h4>Intervalový klíč</h4>
+    <span style="color:red">VLASTNÍ KLÍČ</span>
+    <hr>
+    Vlastní klíč  identifikuje zadáním jednoho nebo několika údajů větu soubo-<br>
+    ru. Může být  jednoznačný nebo duplicitní. Soubor musí být podle vlastního<br>
+    klíče setříděn.  Soubor může mít jeden nebo několik vlastních klíčů, potom<br>
+    rozlišujeme  jeden  vlastní klíč ( na něj se odvoláváme jménem souboru ) a<br>
+    ostatní  alternativní vlastní klíče,  které musíme pojmenovat. Volné texty<br>
+    (textové údaje typu T) nemohou být součástí klíče.<br>
+    <br>
+    █ @ KlíčovéÚdaje ............... vlastní klíč (identifikace věty,jen jeden)<br>
+    █ NázevKlíče(@) KlíčovéÚdaje ... alternativní vlastní klíč<br>
+    (udržuje najednou setřídění souboru podle několika různých hledisek)<br>
+    <br>
+    ■ <= před seznamem údajů ... intervalový klíč (klíče pro celé intervaly)<br>
+    ■ *  před seznamem údajů ... duplicitní klíč (jinak jsou duplic. zakázány)<br>
+    ■ >  před názvem klíčového údaje ... sestupné třídění (jinak vzestupné)<br>
+    ■ ~  před názvem klíčového údaje ... lexikální třídění (národní abeceda)<br>
+    lze použít jen pro údaje typu A<br>
+    <br>
+    Vlastní klíče  mohou být  podporovány  indexy.  Potom je setřídění souboru<br>
+    podle všech vlastních  klíčů  automaticky  zajištěno indexovaným souborem.<br>
+    Pokud soubor nemá indexy,může mít nejvýše jeden vlastní klíč a programátor<br>
+    musí zajistit, aby byl soubor setříděn podle vlastního klíče.<br>
+    <br>
+    <br>
+    ░░░░░░░░░░░░<br>
+    ░░příklady░░<br>
+    ░░░░░░░░░░░░<br>
+    <br>
+    #K @ Název;                           {příklady deklarace vlastních klíčů}<br>
+    #K @ Datum,Číslo,~Jméno;                  {klíč s lexikálním vyhledáváním}<br>
+    #K @ * Měsíc;                                            {duplicitní klíč}<br>
+    #K @ <= TarifPásmo;                                     {intervalový klíč}<br>
+    #K ČÍSFAK(@) ČísloFaktury;                     {alternativní vlastní klíč}<br>
+</div>
+<div>
+    <h4>IntTSR</h4>
+    <span style="color:red">KOMUNIKACE S REZIDENTNÍM PROGRAMEM</span>
+    <hr>
+    Komunikaci s rezidentními programy zajišťuje speciální funkce inttsr typu<br>
+    real, která vyvolá přerušení s číslem prvního argumentu, hodnotou druhého<br>
+    argumentu  v registru  AX  a adresou lokální  proměnné v DS:DX.  Hodnotou<br>
+    funkce je hodnota registru AX po návratu z přerušení.<br>
+    <br>
+    ██ syntaxe:   INTTSR( ČísloInt ,RegAX ,RecordProměnná | Výraz ) : real<br>
+    <br>
+    ■  ČísloInt ......... číslo přerušení (Interrupt)<br>
+    ■  RegAX ............ hodnota registru AX<br>
+    ■  RecordProměnná ... předá se adresa pro čtení a zápis dat ve formátu<br>
+    PC FANDu<br>
+    ■  Výraz ............ Výraz typu  string, real nebo  boolean. FAND předá<br>
+    pointer na  údaj ( ve formátu  PASCALu ), který je<br>
+    hodnotou výrazu. Parametr je volán odkazem, což<br>
+    znamená, že po volaný interrupt může aktualizovat<br>
+    hodnotu parametru.<br>
+    <br>
+    Rezidentní program musí zpracovat dané přerušení, pomocí něhož zjistí kód<br>
+    požadované  činnosti a adresy, kam má psát ( nebo kde má převzít ) data z<br>
+    úlohy.<br>
+</div>
+<div>
+    <h4>inv</h4>
+    <span style="color:red">Inverze seznamu</span>
+    <hr>
+    inv_NázevTypu(Seznam_Vstup, &Seznam_Výstup)<br>
+    <br>
+    Seznam_Vstup        Vstupní seznam typu NázevTypu.<br>
+    Seznam_Výstup       Invertovaný seznam.<br>
+    <br>
+    Prvky vstupního  seznamu uloží  do výstupního  seznamu  v  opačném<br>
+    pořadí.<br>
+    <br>
+    Příklad:<br>
+    <br>
+    inverze:-inv_Integer([1,12,15,19,259,10000],X), writeln(X).<br>
+</div>
+<div>
+    <h4>Irec</h4>
+    <span style="color:red">PROCEDURÁLNÍ PARAMETRY EDITACE</span>
+    <hr>
+</div>
+<div>
+    <h4>IsDeleted</h4>
+    <span style="color:red">ZALOŽENÍ, RUŠENÍ A OBNOVENÍ VĚTY SOUBORU</span>
+    <hr>
+</div>
+<div>
+    <h4>IsMouse</h4>
+    <span style="color:red">MYŠ V PROCEDUŘE</span>
+    <hr>
+    Větvení programu podle druhu události. Funkce zpracuje aktuální událost,<br>
+    která byla načtena funkcí mouseevent.<br>
+    <br>
+    ██ syntaxe:      ISMOUSE( MaskaUdálostí , MaskaKlávesy ) : boolean<br>
+    <br>
+    ■  MaskaUdálostí Celé číslo, konstanta, pro test druhu události.<br>
+    1     stisk  klávesy<br>
+    2     pustit klávesu<br>
+    4     přesun myši<br>
+    ■  MaskaKlávesy  Celé číslo, konstanta, maska  pro klávesu ( sčítáme čísla<br>
+    podmínek, které musí být splněny)<br>
+    1     levá klávesa<br>
+    2     pravá klávesa<br>
+    256     dvojité stisknutí<br>
+    Pro událost 2 (pustit klávesu) lze použít jen masku<br>
+    klávesy 0. Tedy IsMouse(2,0).<br>
+    ■  Kapitoly .... P,D<br>
+</div>
+<div>
+    <h4>IsNewRec</h4>
+    <span style="color:red">FUNKCE DATOVÉHO EDITORU</span>
     <hr>
 </div>
 
