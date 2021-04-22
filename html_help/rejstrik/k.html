@@ -7,6 +7,542 @@
 <body style="font-family:'Courier New'">
 
 <div>
+    <h4>#K</h4>
+    <span style="color:red">KLÍČE - odstavec #K</span>
+    <hr>
+    Klíč je jeden  nebo  několik  údajů ( uložených nebo vypočítaných ) z věty<br>
+    souboru, které postačují k identifikaci celé věty. Používají se k vyhledá-<br>
+    vání vět a ke spojování souborů. Rozlišujeme následující typy klíčů:<br>
+    <br>
+    ■ vlastní klíč ........ slouží k identifikaci věty uvnitř souboru<br>
+    umožňuje rychlé hledání v datovém editoru pomocí<br>
+    F3 a připojení podřízených souborů cizím klíčem<br>
+    ■ parametrický klíč ... definice globálních proměnných úlohy<br>
+    ■ cizí klíč ........... napojení do nadřízeného souboru (číselníku)<br>
+    umožňuje přebírat údaje z viditelné věty<br>
+    (věta nadřízeného souboru se stejnou hodnotou klíče)<br>
+    a navigaci po databázi směrem nahoru i dolů<br>
+    <br>
+    Definice klíčů se mohou v deklaraci střídat s odstavcem vypočítaných údajů.<br>
+    Pomocí parametrických a cizích klíčů se odvoláváme ve výrazech na údaje<br>
+    viditelných souborů tečkovou notací:<br>
+    <br>
+    █ NázevSouboru.NázevÚdaje ... tečková notace<br>
+    █ NázevSpojení.NázevÚdaje ... podle typu spojení nadřízeného souboru<br>
+</div>
+<div>
+    <h4>Katalog</h4>
+    <span style="color:red">KATALOG</span>
+    <hr>
+    Katalog je nepovinný soubor přiřazený k úloze (stejné jméno, přípona .CAT,<br>
+    kterým lze  měnit ve speciálních případech některé implicitní  vlastnosti,<br>
+    především jména fyzických souborů na disku.  Jedna věta katalogu  odpovídá<br>
+    jednomu souboru v úloze (soubor je pak katalogizovaný) a obsahuje údaje:<br>
+    <br>
+    ■ Název úlohy ..... Úloha, v níž je soubor popsán a používán.<br>
+    ■ Název souboru ... Logické jméno souboru používané ve zdrojových textech<br>
+    úlohy (pozor - nemusí jít nutně o kapitolu F).<br>
+    Název kapitoly F se uvádí bez přípony (.X,.RDB,.DBF)<br>
+    ■ Číslo archivace . Zařazení souboru do úrovně archivace (viz.zálohování)<br>
+    ■ Cesta ........... Fyzické jméno souboru (Jednotka,Cesta,Jméno,Přípona).<br>
+    Cesta nemusí být úplná, platí běžné konvence MS-DOSu<br>
+    pro kompletaci cesty s tím, že jako aktuální adresář<br>
+    platí adresář úlohy.<br>
+    ■ Návěští ......... Volume diskety, pokud se soubor nachází na disketě<br>
+    nebo znak #, #R, SQL (viz. lokální sítě, SQL)<br>
+    <br>
+    ██ Založení a úprava katalogu<br>
+    Katalog se zakládá a upravuje z hlavního menu PC FANDu volbou Instalace<br>
+    úlohy (i v uživatelské verzi).<br>
+    <br>
+    ██ Dynamická změna katalogu aktivní úlohy<br>
+    Ze spuštěné úlohy je možno dynamicky zasáhnout do katalogu vlastní<br>
+    úlohy. V každém případě však se zvýšenou opatrností. Jsou v zásadě<br>
+    dvě možnosti:<br>
+    ■  Přímý přístup k údajům věty katalogu z procedury - path, volume,<br>
+    generation.<br>
+    ■  Katalog je implicitně deklarovaný datový soubor s názvem catalog,<br>
+    se kterým lze pracovat jako s běžným souborem.<br>
+    <br>
+    V katalogu  rozlišujeme  interní soubory  ( datové  soubory  deklarované v<br>
+    projektu v kapitole F ) a externí soubory ( texty, programy, záložní kopie<br>
+    atd. uvedené pouze v katalogu, v projektu se vyskytují bez udání struktury<br>
+    jako  parametry procedur) - viz. soubory v katalogu.<br>
+    <br>
+    Poznámka Mezi verzí PC FANDu 3.0 (3.01) a 3.2 došlo ke změně struktury<br>
+    katalogu (položka Ar). Starý formát se na nový převede automaticky,<br>
+    Převod nového formátu na starý lze provést programem OldCatlg.EXE.<br>
+    (Samozřejmě lze použít i vhodný MERGE).<br>
+</div>
+<div>
+    <h4>Katalog v proceduře</h4>
+    <span style="color:red">KATALOG V PROCEDUŘE</span>
+    <hr>
+</div>
+<div>
+    <h4>Key in</h4>
+    <span style="color:red">PODMÍNKA KEY IN</span>
+    <hr>
+    Často lze  dosáhnout  řádového  zrychlení tím,  že se čtení vět ze souboru<br>
+    podle indexu omezuje na vybrané hodnoty klíče resp. intervaly klíče. Místo<br>
+    obvyklého logického výrazu pro vstupní podmínku lze použít:<br>
+    <br>
+    ██ key in [SeznamIntervalůNeboHodnot] ... výběr podle indexu<br>
+    ■ prvky seznamu: Hodnota nebo DolníHodnota..HorníHodnota (interval hodnot)<br>
+    <br>
+    Slovo key se vztahuje na klíč, podle kterého se soubor  čte  (při fyzickém<br>
+    pořadí není key in povolen).  Hodnoty  v seznamu  mohou být konstanty nebo<br>
+    výrazy. Má-li klíč více údajů, píše se seznam výrazů v závorkách-lze zadat<br>
+    i jen prvních n údajů (pro zbytek údajů chceme všechny hodnoty ). Podmínku<br>
+    key in lze kombinovat s běžnou vstupní podmínkou:<br>
+    <br>
+    ■ key in [...] & LogickýVyraz ... filtr pro věty vybrané podmínkou key in<br>
+    ■ key in nelze kombinovat s podmínkou owner<br>
+    <br>
+    Použití podmínky key in v projektu<br>
+    ■ vstupní podmínka sestavy: VstupSestavy - kapitola R nebo příkaz report<br>
+    ■ vstupní podmínka transformace: VstupTransformace - kapitola M<br>
+    ■ vstupní podmínka příkazů procedury edit, report, graph, forall, getindex<br>
+    <br>
+    ░░░░░░░░░░░░<br>
+    ░░příklady░░<br>
+    ░░░░░░░░░░░░<br>
+    <br>
+    key in ['200'..'499','623','900'..'999']       {seznam intervalů a hodnot}<br>
+    key in [1.9.39..8.5.45]<br>
+    key in ['Praha','Brno','Bratislava']<br>
+    key in [PARAM.Od..PARAM.Do]<br>
+    key in [i,j,k..l]<br>
+    key in [(1.1.92,5000)..(31.12.92,10000)]<br>
+    key in [('010','000','00')..('020','999','99')]<br>
+    <br>
+    edit(DATA,(),cond=(key in [...]));                    {použití v projektu}<br>
+    edit(DATA,(),cond=(key in [...] & Středisko='005'));<br>
+    report(DATA/@,(),cond=(key in [...]));<br>
+    forall Věta/Klíč (key in [...]) do ...;<br>
+    <br>
+    #I_DATA/@ (key in [...])                                   {vstup sestavy}<br>
+    <br>
+    #I2_DATA/Klíč (key in [...] & Datum>0)                {vstup transformace}<br>
+</div>
+<div>
+    <h4>KeyBuf</h4>
+    <span style="color:red">OŠETŘENÍ KLÁVESNICE</span>
+    <hr>
+</div>
+<div>
+    <h4>KeyOf</h4>
+    <span style="color:red">KEYOF</span>
+    <hr>
+    Funkce procedury, která  vrací  interní  string klíče  zadané věty souboru.<br>
+    Jde o jednu z funkcí , které podporují  práci  s větami souborů. Lze použít<br>
+    dva formáty.<br>
+    <br>
+    ██ Syntaxe:     KEYOF ( RecordProměnná [ /NázevKlíče ] )           : string<br>
+    KEYOF ( Soubor[/NázevKlíče] ,SeznamArgumentůKlíče) : string<br>
+    <br>
+    ■  RecordProměnná ......... proměnná typu record of soubor<br>
+    ■  NázevKlíče ............. vlastní (alternativní) klíč souboru<br>
+    ■  SeznamArgumentůKlíče ... odpovídá co do počtu a typu položek deklaraci<br>
+    klíče. Podobně jako   recno.<br>
+    <br>
+    ■  Souvislosti ............ funkce            edreckey,<br>
+    příkazy           readrec, writerec, deleterec,<br>
+    parametr editace  reckey<br>
+    SQL<br>
+    <br>
+    ░░░░░░░░░░░░<br>
+    ░░příklady░░<br>
+    ░░░░░░░░░░░░<br>
+    <br>
+    ██ F  PSC.x    *  psc : N,5 ; #K @ psc ;                     { seznam psc }<br>
+    P  Ukazka1  *  VAR   rec : record of PSC ;<br>
+    s : string ;<br>
+    BEGIN rec.psc := prompt(' zadej psč: ':N,5) ;<br>
+    s:=keyof(rec) ;                   { hodnota klice }<br>
+    readrec( rec,s) ;              { pokus o precteni }<br>
+    if IsDeleted(rec)                { vysledek cteni }<br>
+    then message('psč není v seznamu')<br>
+    else message('psč je v seznamu') ;<br>
+    ...<br>
+    END ;<br>
+</div>
+<div>
+    <h4>KeyPressed</h4>
+    <span style="color:red">OŠETŘENÍ KLÁVESNICE</span>
+    <hr>
+</div>
+<div>
+    <h4>Klávesnice</h4>
+    <span style="color:red">KLÁVESNICE</span>
+    <hr>
+    V datovém a textovém  editoru  vyvolá  kombinace kláves Alt-F8 nabídku pro<br>
+    přepínání mezi různým rozložením znaků na klávesnici:<br>
+    <br>
+    ■ klávesnice standardní .......... bez předefinování klávesnice<br>
+    ■ klávesnice česká ............... jako český psací stroj<br>
+    ■ klávesnice česká amatérská ..... mění pouze horní řadu kláves<br>
+    (malá písmena pod čísly, čárka/háček<br>
+    a některé úpravy pro slovenčinu)<br>
+    ■ klávesnice slovenská ........... jako slovenský psací stroj<br>
+    ■ klávesnice německá amatérská ... německé rozložení<br>
+    <br>
+    Lze instalovat, která klávesnice bude aktivní po startu PC FANDu.<br>
+</div>
+<div>
+    <h4>Klávesnice česká</h4>
+    <span style="color:red">ČESKÁ KLÁVESNICE</span>
+    <hr>
+    ┌───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┐<br>
+    │;  │1  │2  │3  │4  │5  │6  │7  │8  │9  │0  │%  │hák│'  │BS │<br>
+    │`  │+  │ě  │š  │č  │ř  │ž  │ý  │á  │í  │é  │=  │čár│pře│   │<br>
+    ├───┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴───┤<br>
+    │ Tab │   │   │   │   │Z  │   │   │   │   │   │/  │(  │     │<br>
+    │     │   │   │   │   │z  │   │   │   │   │   │ú  │)  │     │<br>
+    ├─────┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┘     │<br>
+    │ Caps │   │   │   │   │   │   │   │   │   │"  │!  │ Enter  │<br>
+    │ Lock │   │   │   │   │   │   │   │   │   │ů  │§  │        │<br>
+    ├──────┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴────────┤<br>
+    │ Shift  │Y  │   │   │   │   │   │   │?  │:  │_  │  Shift   │<br>
+    │        │y  │   │   │   │   │   │   │,  │.  │-  │          │<br>
+    ├─────┬──┴┬──┴──┬┴───┴───┴───┴───┴───┴───┴──┬┴───┴┬───┬─────┤<br>
+    │Ctrl │   │ Alt │                           │ Alt │   │Ctrl │<br>
+    │     │   │     │                           │     │   │     │<br>
+    └─────┘   └─────┴───────────────────────────┴─────┘   └─────┘<br>
+</div>
+<div>
+    <h4>Klávesnice česká amatérská</h4>
+    <span style="color:red">ČESKÁ AMATÉRSKÁ KLÁVESNICE</span>
+    <hr>
+    ┌───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┐<br>
+    │   │!  │@  │#  │$  │%  │^  │&  │*  │(  │)  │   │hák│   │BS │<br>
+    │   │+  │ě  │š  │č  │ř  │ž  │ý  │á  │í  │é  │   │čár│   │   │<br>
+    ├───┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴───┤<br>
+    │ Tab │   │   │   │   │   │   │   │   │   │   │   │   │     │<br>
+    │     │   │   │   │   │   │   │   │   │   │   │   │   │     │<br>
+    ├─────┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┘     │<br>
+    │ Caps │   │   │   │   │   │   │   │   │   │   │   │ Enter  │<br>
+    │ Lock │   │   │   │   │   │   │   │   │   │   │   │        │<br>
+    ├──────┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴────────┤<br>
+    │ Shift  │   │   │   │   │   │   │   │   │   │   │  Shift   │<br>
+    │        │   │   │   │   │   │   │   │   │   │   │          │<br>
+    ├─────┬──┴┬──┴──┬┴───┴───┴───┴───┴───┴───┴──┬┴───┴┬───┬─────┤<br>
+    │Ctrl │   │ Alt │                           │ Alt │   │Ctrl │<br>
+    │     │   │     │                           │     │   │     │<br>
+    └─────┘   └─────┴───────────────────────────┴─────┘   └─────┘<br>
+    <br>
+    znaky + a = získáme dvojitým stiskem odpovídající klávesy<br>
+    <br>
+    Podporované kombinace:  háček+A    ä,Ä            Jen LATIN 2<br>
+    pro slovensko           háček+p,P  ö,Ö           čárka+p,P   ő,║<br>
+    háček+h,H  ü,Ü           čárka+h,H   ű,Ű<br>
+</div>
+<div>
+    <h4>Klávesnice německá amatérská</h4>
+    <span style="color:red">NĚMECKÁ AMATÉRSKÁ KLÁVESNICE</span>
+    <hr>
+    ┌───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┐<br>
+    │'  │!  │"  │#  │$  │%  │^  │&  │*  │(  │)  │/  │+  │|  │BS │<br>
+    │`  │1  │2  │3  │4  │5  │6  │7  │8  │9  │0  │ß  │=  │\  │   │<br>
+    ├───┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴───┤<br>
+    │ Tab │   │   │   │   │   │   │   │   │   │   │Ü  │}  │     │<br>
+    │     │   │   │   │   │   │   │   │   │   │   │ü  │]  │     │<br>
+    ├─────┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┘     │<br>
+    │ Caps │   │   │   │   │   │   │   │   │   │Ö  │Ä  │ Enter  │<br>
+    │ Lock │   │   │   │   │   │   │   │   │   │ö  │ä  │        │<br>
+    ├──────┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴────────┤<br>
+    │ Shift  │   │   │   │   │   │   │   │;  │:  │?  │  Shift   │<br>
+    │        │   │   │   │   │   │   │   │,  │.  │-  │          │<br>
+    ├─────┬──┴┬──┴──┬┴───┴───┴───┴───┴───┴───┴──┬┴───┴┬───┬─────┤<br>
+    │Ctrl │   │ Alt │                           │ Alt │   │Ctrl │<br>
+    │     │   │     │                           │     │   │     │<br>
+    └─────┘   └─────┴───────────────────────────┴─────┘   └─────┘<br>
+</div>
+<div>
+    <h4>Klávesnice slovenská</h4>
+    <span style="color:red">SLOVENSKÁ KLÁVESNICE</span>
+    <hr>
+    ┌───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┐<br>
+    │ ; │1  │2  │3  │4  │5  │6  │7  │8  │9  │0  │%  │hák│   │BS │<br>
+    │ ` │+  │ľ  │š  │č  │ť  │ž  │ý  │á  │í  │é  │=  │čár│   │   │<br>
+    ├───┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴───┤<br>
+    │ Tab │   │   │   │   │   │Z  │   │   │   │   │/  │(  │     │<br>
+    │     │   │   │   │   │   │z  │   │   │   │   │ú  │ä  │     │<br>
+    ├─────┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┘     │<br>
+    │ Caps │   │   │   │   │   │   │   │   │   │"  │!  │ Enter  │<br>
+    │ Lock │   │   │   │   │   │   │   │   │   │ô  │)  │        │<br>
+    ├──────┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴────────┤<br>
+    │ Shift  │Y  │   │   │   │   │   │   │?  │:  │_  │  Shift   │<br>
+    │        │y  │   │   │   │   │   │   │,  │.  │-  │          │<br>
+    ├─────┬──┴┬──┴──┬┴───┴───┴───┴───┴───┴───┴──┬┴───┴┬───┬─────┤<br>
+    │Ctrl │   │ Alt │                           │ Alt │   │Ctrl │<br>
+    │     │   │     │                           │     │   │     │<br>
+    └─────┘   └─────┴───────────────────────────┴─────┘   └─────┘<br>
+    <br>
+    Podporované kombinace:  háček+A    Ä                 Jen LATIN 2<br>
+    háček+p,P  ö,Ö           čárka+p,P   ő,║<br>
+    háček+h,H  ü,Ü           čárka+h,H   ű,Ű<br>
+</div>
+<div>
+    <h4>Klávesnice standardní</h4>
+    <span style="color:red">STANDARDNÍ KLÁVESNICE</span>
+    <hr>
+    ┌───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┐<br>
+    │~  │!  │@  │#  │$  │%  │^  │&  │*  │(  │)  │_  │+  │|  │BS │<br>
+    │`  │1  │2  │3  │4  │5  │6  │7  │8  │9  │0  │-  │=  │\  │   │<br>
+    ├───┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴───┤<br>
+    │ Tab │   │   │   │   │   │   │   │   │   │   │{  │}  │     │<br>
+    │     │   │   │   │   │   │   │   │   │   │   │[  │]  │     │<br>
+    ├─────┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┘     │<br>
+    │ Caps │   │   │   │   │   │   │   │   │   │   │   │ Enter  │<br>
+    │ Lock │   │   │   │   │   │   │   │   │   │   │   │        │<br>
+    ├──────┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴────────┤<br>
+    │ Shift  │   │   │   │   │   │   │   │   │   │   │  Shift   │<br>
+    │        │   │   │   │   │   │   │   │   │   │   │          │<br>
+    ├─────┬──┴┬──┴──┬┴───┴───┴───┴───┴───┴───┴──┬┴───┴┬───┬─────┤<br>
+    │Ctrl │   │ Alt │                           │ Alt │   │Ctrl │<br>
+    │     │   │     │                           │     │   │     │<br>
+    └─────┘   └─────┴───────────────────────────┴─────┘   └─────┘<br>
+</div>
+<div>
+    <h4>Klíč</h4>
+    <span style="color:red">KLÍČE - odstavec #K</span>
+    <hr>
+</div>
+<div>
+    <h4>Klíče</h4>
+    <span style="color:red">KLÍČE - odstavec #K</span>
+    <hr>
+</div>
+<div>
+    <h4>Kódy řídících a funkčních kláves</h4>
+    <span style="color:red">KÓDY ŘÍDÍCÍCH A FUNKČNÍCH KLÁVES</span>
+    <hr>
+    Kódy funkčních kláves se zadávají (např. v proceduře setkeybuf) se znakem  '\'<br>
+    a dekadickou hodnotou kódu podle tabulky):<br>
+    <br>
+    ┌─────────────────────────────────────────┐ ┌──────────────────────┐<br>
+    │ rozšířené klávesy s prefixem \0:        │ │ klávesy bez prefixu: │<br>
+    │ Home ....... 71 │ Ctrl-Šipka vlevo  115 │ │ Tab ........  9      │<br>
+    │ Šipka nahoru 72 │ Ctrl-Šipka vpravo 116 │ │ Esc ........ 27      │<br>
+    │ PgUp ....... 73 │ Ctrl-End ........ 117 │ │ Enter ...... 13      │<br>
+    │ Šipka vlevo  75 │ Ctrl-PgDn ....... 118 │ │ ^A až ^Z ... 1 až 26 │<br>
+    │ Šipka vpravo 77 │ Ctrl-Home ....... 119 │ └──────────────────────┘<br>
+    │ End ........ 79 │ Ctrl-PgUp ....... 132 │<br>
+    │ Šipka dolů . 80 │ Shift-Tab .......  15 └──────────┐<br>
+    │ PgDn ....... 81 │ F1 až F10 ............ 59 až  68 │<br>
+    │ Ins ........ 82 │ Ctrl-F1 až Ctrl-F10 .. 94 až 103 │<br>
+    │ Del ........ 83 │ Alt-F1 až Alt-F10 ... 104 až 113 │<br>
+    │                 │ Shift-F1 až Shift-F10  84 až  93 │<br>
+    │                 │ Ctrl-= ..................... 131 │<br>
+    └─────────────────┴──────────────────────────────────┘<br>
+    ░ setkeybuf('\0\132\0\80');                             {Ctrl-PgUp Šipka dolů}<br>
+</div>
+<div>
+    <h4>Komentář</h4>
+    <span style="color:red">STRUKTURA PROJEKTU</span>
+    <hr>
+    Projektový soubor je soubor s předdeklarovanou strukturou věty. Každá věta<br>
+    obsahuje jednu  kapitolu projektu. Popis struktury viz. projektový soubor.<br>
+    Hlavní program ( start úlohy ) je v proceduře MAIN. Při programování v<br>
+    projektantském editoru jsou viditelné údaje:<br>
+    <br>
+    ■ Typ ..... typ kapitoly (File, Edit, Report, Merge, Proc, User, Include,<br>
+    Deklaration(funkce)).<br>
+    Jedno písmeno, mezera=komentář a věta se při překladu ignoruje.<br>
+    ■ Nazev ... jednoznačný název kapitoly pro její volání z projektu.<br>
+    Max.12 písmen, název musí být identifikátor (bez mezer apod.).<br>
+    Jednoznačnost názvu se kontroluje v rámci každého typu kapitoly,<br>
+    nebo-li dvě kapitoly s odlišným typem mohou mít stejný název.<br>
+    Ovšem, zachování jednoznačnosti v celé úloze je vhodné nejen pro<br>
+    přehlednost ale i pro mechanismus navigace ShiftF1 po úloze.<br>
+    ■ Text .... volný text s vlastní deklarací kapitoly<br>
+    Editace volného textu: Ins dovnitř, Esc zpět do datového<br>
+    editoru. Komentáře uzavíráme do složených závorek { komentář }.<br>
+    Komentáře mohou být i vnořené. { { komentář1 } { aaa } neco; }<br>
+    <br>
+    Typy kapitol:<br>
+    ■ D ... deklarace uživatelských funkcí<br>
+    ■ F ... deklarace souboru, uložené a vypočítané údaje, klíče, aditivní změny,<br>
+    kontroly, implicitní přiřazení, uživatelské pohledy, závislosti;<br>
+    vzhledem k deklarativnímu programování je kapitola F těžištěm projekt<br>
+    ■ E ... editační formulář pro jeden soubor, rozvrh obrazovky<br>
+    ■ R ... tisková sestava, stránkování, součtování, výběr vět, typy písma atd.<br>
+    ■ M ... sekvenční transformace až devíti vstupních souborů, výpočty<br>
+    ■ P ... procedura pro řazení kroků projektu a dialog s uživatelem<br>
+    ■ U ... seznam oprávněných uživatelů a jejich hesel<br>
+    ■ I ... vkládané kapitoly (Include)<br>
+    ■ L ... logický programovací jazyk typu PROLOG<br>
+</div>
+<div>
+    <h4>Komunikace s rezidentním programem</h4>
+    <span style="color:red">KOMUNIKACE S REZIDENTNÍM PROGRAMEM</span>
+    <hr>
+</div>
+<div>
+    <h4>Komunikační příkazy</h4>
+    <span style="color:red">KOMUNIKAČNÍ PŘÍKAZY PROCEDURY</span>
+    <hr>
+    ■ menu .......... uživatelská nabídka (menu)<br>
+    ■ menuloop ...... nabídka v cyklu<br>
+    ■ menubar ....... vodorovná nabídka<br>
+    ■ write ......... výstup na obrazovku<br>
+    ■ writeln ....... s odřádkováním<br>
+    ■ gotoxy ........ nastavení kurzoru<br>
+    ■ clrscr ........ mazání obrazovky nebo okna<br>
+    ■ clreol ........ mazání konce řádku<br>
+    ■ display ....... uživatelská obrazovky<br>
+    ■ help .......... vyvolání nápovědy<br>
+    ■ headline ...... první řádek obrazovky<br>
+    ■ message ....... hlášení v posledním řádku<br>
+    ■ setkeybuf ..... naplnění bufferu klávesnice<br>
+    ■ clearkeybuf ... vyprázdnění bufferu<br>
+    ■ wait .......... čekání na vstup z klávesnice<br>
+    ■ delay ......... pauza<br>
+    ■ with window do ... definice okna pro další výstup<br>
+    <br>
+    příkazy pro zvuk<br>
+    ■ sound ......... zapne zvuk se zadanou výškou<br>
+    ■ nosound ....... vypne zvuk<br>
+    ■ beep .......... jednorázové instalovatelné pípnutí<br>
+    <br>
+    komunikační funkce<br>
+    ■ readkey ....... ošetření klávesnice<br>
+    ■ keybuf<br>
+    ■ keypressed<br>
+    ■ maxcol ........ rozměry obrazovky<br>
+    ■ maxrow<br>
+    ■ prompt ........ dotaz uživateli - zadání hodnoty z klávesnice<br>
+    ■ escprompt<br>
+    ■ promptyn ...... dotaz na 25.řádku<br>
+    ■ getpath ....... dotaz uživateli - výběr souboru z disku<br>
+    ■ selectstr ..... dotaz uživateli - výběr z pole textů<br>
+    ■ edbool ........ text výrazu podmnožiny v datovém editoru<br>
+    <br>
+    Příkazy a funkce pro myš<br>
+    ■ setmouse ...... nastavení pozice myši<br>
+    ■ mouseevent .... čtení událostí z fronty<br>
+    ■ ismouse ....... větvení dle druhu události<br>
+    ■ mousein ....... testování pozice myši<br>
+    ■ mousex ........ souřadnice kurzoru myši<br>
+    ■ mousey ........       -  "  -<br>
+</div>
+<div>
+    <h4>Konstanty</h4>
+    <span style="color:red">KONSTANTY</span>
+    <hr>
+    ■ číselná konstanta ... celé číslo (příp. se znaménkem)<br>
+    ... číslo s pevnou řádovou čárkou<br>
+    ... exponenciální tvar čísla<br>
+    ... datum ve tvaru DD.MM.YY nebo DD.MM.YYYY<br>
+    ... čas ve tvaru hh:mm, hh:mm:ss nebo hh:mm:ss.tt<br>
+    <br>
+    ■ textová konstanta ... řetězec libovolných znaků v apostrofech<br>
+    apostrof uvnitř konstanty: dva apostrofy ''<br>
+    znak zadaný dekadickým kódem znaku: \nnn<br>
+    <br>
+    ■ logická konstanta ... false, true<br>
+    <br>
+    ░░░░░░░░░░░░<br>
+    ░░příklady░░<br>
+    ░░░░░░░░░░░░<br>
+    <br>
+    ██  datum 12.7.1995 lze zadat konstantou 12.7.1995   nebo  12.7.95<br>
+    12.7.95                        12.7.0095<br>
+    1.1.1                          1.1.0001<br>
+    1.1.1996                       1.1.1996   nebo   1.1.96<br>
+</div>
+<div>
+    <h4>Konstrukce nápovědy</h4>
+    <span style="color:red">KONSTRUKCE  NÁPOVĚDY</span>
+    <hr>
+    Každá úloha  může mít jeden  help-soubor ( deklarovaný v kapitole F ) pro<br>
+    nápovědu k projektu.  Věta help-souboru obsahuje  Heslo  pro identifikaci<br>
+    konkrétní nápovědy a volný  Text obsahující vlastní nápovědu  ( obrazovku<br>
+    textu ).  Soubor pro  nápovědu má v  NázvuSouboru příponu .HLP a obsahuje<br>
+    povinně dva údaje:<br>
+    <br>
+    ■ Heslo:A,n ... deklarace .HLP souboru<br>
+    ■ Text:T        délka hesla i názvy identifikátorů jsou libovolné<br>
+    <br>
+    Pomocí Hesla lze obrazovku Text vyvolat na různých místech projektu:<br>
+    <br>
+    ■ menu, menuloop, menubar: nápověda k jednotlivým volbám nabídky<br>
+    ■ logické kontroly: bližší vysvětlení chyby pro uživatele v datovém editoru<br>
+    ■ message: bližší specifikace chybové zprávy<br>
+    ■ edit: editace s módem 'F1' nebo 'F124' - nápověda k jednotlivým údajům<br>
+    souboru pro každý údaj existuje nápověda s heslem<br>
+    NázevSouboru.NázevÚdaje<br>
+    Hesla mohou obsahovat masku (se znaky *, ?) - společná nápověda.<br>
+    Při pohybu po souboru se na posledním řádku ( na 24.řádku při F124)<br>
+    zobrazí první řádek z textu helpu. Klávesa Ctrl-F1 vyvolá nápovědu<br>
+    na celou obrazovku. Pokud první řádek textu uzavřeme do {...},<br>
+    tak se zobrazí jen jako krátká nápověda, ale vynechá se při<br>
+    zobrazení celé obrazovky.<br>
+    ■ help: příkaz pro vyvolání nápovědy kdekoliv v proceduře.<br>
+    ■ display : pouze zobrazí zvolený text, ale bez mechanismu navigace.<br>
+    <br>
+    Nápověda v podúlohách<br>
+    V podúloze může být definována vlastní nápověda. Při použití stejného<br>
+    hesla se vybere heslo z podúlohy. Pokud není nalezeno heslo v nápovědě<br>
+    úlohy, hledá se v helpu nadřízené úlohy.<br>
+    <br>
+    Navigace po nápovědě<br>
+    Jednotlivé obrazovky (věty help-souboru) mohou být propojeny pomocí hesel.<br>
+    Heslo uvnitř  textu je ohraničeno mezi  znaky ^S , zvýrazněné  části textu<br>
+    mezi ^B.  Potom lze  nápovědu  procházet podle  obvyklého  schématu. Hesla<br>
+    mohou obsahovat masky (*, ?).  Úvodní obrazovka nápovědy ( help index ) má<br>
+    heslo root - naviguje se na něj dvojím stiskem F1.<br>
+    <br>
+    Heslo s prázdným textem: jako odpovídající obrazovka (Text) se vezme první<br>
+    neprázdný text za tímto heslem.Tak může mít několik hesel stejnou nápovědu.<br>
+</div>
+<div>
+    <h4>Kontroly</h4>
+    <span style="color:red">LOGICKÉ KONTROLY - odstavec #L</span>
+    <hr>
+    Logická kontrola  je obecný logický výraz, který musí splňovat každá  věta<br>
+    souboru. Jestliže  je výsledkem jeho vyhodnocení hodnota false ( nepravda,<br>
+    tzn. došlo  k chybě  integrity dat ), datový editor vypíše chybové hlášení<br>
+    a bude požadovat opravu.<br>
+    <br>
+    ██ Syntaxe:    #L { LogickýVýraz [?] [ : ChybovéHlášení ] [ ,Heslo ] ; }<br>
+    <br>
+    ■  LogickýVýraz ..... Vlastní logická kontrola.<br>
+    ■  ? ................ Jde jen o varování, má samostatný přepínač (F5),<br>
+    místo error se použije warning<br>
+    ■  ChybovéHlášení ... Textový výraz.<br>
+    Pokud věta nesplňuje LogickýVýraz, vypíše se toto<br>
+    chybové hlášení. Není-li uvedeno, vypíše se text<br>
+    logického výrazu.<br>
+    ■  Heslo ............ Odkaz do help-souboru při nesplnění log.podmínky.<br>
+    Help může obsahovat podrobnější pokyny pro obsluhu.<br>
+    Pokud heslo není identifikátor, musí být uzavřeno<br>
+    v apostrofech (textový výraz). Po stisku F1 se<br>
+    zobrazí jeho Text a vyvolá se nápověda<br>
+    <br>
+    Logické kontroly lze vypnout (F5 v datovém editoru) - nevztahuje se na<br>
+    varování. Vypnutí logických kontrol obsluhou může programátor zakázat<br>
+    použitím mode='#L' (módy datového editoru).<br>
+    <br>
+    ░░░░░░░░░░░░<br>
+    ░░příklady░░<br>
+    ░░░░░░░░░░░░<br>
+    <br>
+    #L Věk>15 : 'Špatně zadané datum narození';<br>
+    Pohlaví in ['M','Z'] : 'Přípustné hodnoty jsou M a Z';<br>
+    Mzda>PARAM.MinMzda & Mzda<=10000<br>
+    Množství>0: 'Množství musí být kladné', 'Heslo'<br>
+    ČÍSELNÍK.exist: 'Tento druh zboží neexistuje v číselníku'<br>
+    Množství>ZBOŽÍ.MaxMnož => Sleva>0<br>
+</div>
+<div>
+    <h4>Kopírování a převody</h4>
+    <span style="color:red">KOPÍROVÁNÍ A PŘEVODY</span>
+    <hr>
+</div>
+
+<div>
     <h4></h4>
     <span style="color:red"></span>
     <hr>

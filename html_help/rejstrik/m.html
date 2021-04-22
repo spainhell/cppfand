@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <title>M</title>
+</head>
+<body style="font-family:'Courier New'">
+
+<div>
+    <h4>M</h4>
+    <span style="color:red">TRANSFORMACE - kapitola M</span>
+    <hr>
+    Transformace definuje sekvenční operace s datovými soubory:<br>
+    <br>
+    █ DeklaraceLokálníchProměnných ... pomocné proměnné použité v transformaci<br>
+    █ VstupTransformace .............. vstupní soubor(y)<br>
+    █ VýstupTransformace ............. výstupní soubor(y) a způsob transformace<br>
+    <br>
+    Deklarace proměnných je volitelná, transformace však  musí  obsahovat  alespoň<br>
+    jeden vstupní a jeden výstupní soubor.<br>
+    <br>
+    Algoritmus transformace: čtou se vstupní soubory (případně jen část vět  podle<br>
+    vstupního filtru), podle definice výstupu přitom vystupují věty do  výstupních<br>
+    souborů.<br>
+</div>
+<div>
+    <h4>Main</h4>
+    <span style="color:red">STRUKTURA PROJEKTU</span>
+    <hr>
+</div>
+<div>
+    <h4>Maska pro datum</h4>
+    <span style="color:red">VÝJIMKY V TYPECH ÚDAJŮ</span>
+    <hr>
+    Pro speciální případy jsou určeny následující typy údajů:<br>
+    <br>
+    █ F,m,n   ... (čárka místo tečky) číslo s myšlenou desetinnou čárkou,<br>
+    číslo bude interně uloženo jako celé, což odstraňuje potíže<br>
+    se zaokrouhlováním desetinné části v binární soustavě<br>
+    <br>
+    █ A,nR    ... znakový řetězec bude při pořízení zarovnaný doprava<br>
+    █ A,...!  ... Znak ! na konci deklarace znamená, že údaj bude na disku<br>
+    uložen v zakódované formě.<br>
+    █ A,'Maska'.. Maska pro alfanumerický řetězec,text. konstanta v apostrofech.<br>
+    Délka údaje odpovídá největší možné délce podle masky a údaj<br>
+    je vždy uložen se zarovnáním doleva. Význam znaku masky:<br>
+    # číslice<br>
+    9 číslice<br>
+    @ písmeno<br>
+    ? libovolný znak<br>
+    $ písmeno s automatickou změnou na velké (upcase)<br>
+    ! libovolný znak s automatickou změnou na velké (upcase)<br>
+    [....]  volitelná skupina znaků<br>
+    (...|...|...) alternativní skupiny znaků příp. různé délky<br>
+    Ostatní znaky musí přesně souhlasit se vstupem (zadávají se<br>
+    a negenerují). Není povoleno vnoření závorek.<br>
+    Kontrola (a upcase) je až po Enter na údaji.<br>
+    <br>
+    █ N,nL    ... číselný řetězec bude při pořízení zarovnaný doleva<br>
+    <br>
+    █ D,'Maska'.. datum se speciální maskou<br>
+    Maska pro datum je libovolný řetězec v apostrofech obsahující<br>
+    kromě oddělovačů také speciální znaky pro jednotky datumu a<br>
+    času. Tyto znaky budou ve výsledku nahrazeny skutečnými<br>
+    hodnotami. Maska určuje způsob zobrazení datumu.<br>
+    ■ Y-rok, M-měsíc, D-den,<br>
+    ■ h-hodina, m-minuta, s-vteřina, t-setina vteřiny<br>
+    instalace konstant<br>
+    <br>
+    █ T,n     ... volný text, při editaci se zobrazí také n znaků prvního řádku<br>
+    █ T,...!  ... Znak ! na konci deklarace znamená, že údaj bude na disku<br>
+    uložen v zakódované formě.<br>
+    <br>
+    ░░░░░░░░░░░░<br>
+    ░░příklady░░<br>
+    ░░░░░░░░░░░░<br>
+    <br>
+    Cena: F,9,2;                                {myšlená řádová čárka}<br>
+    Nazev: A,20R;                                   {zarovnané doprava}<br>
+    RodneCislo: A,'######/###(#| )';                  {maska s alternativou}<br>
+    EvidCislo: N,6L;            {zarovnané doleva a doplněné nulami zprava}<br>
+    Obdobi: D,'YMM';                             {různé varianty datumu}<br>
+    Cas: D,'mm:ss.tt';<br>
+    UplnyRozsah: D,'DD.MM.YYYY hh:mm:ss';<br>
+    PopisVyrobku: T,40;                     {volný text s viditelným začátkem}<br>
+</div>
+<div>
+    <h4>Maska pro text</h4>
+    <span style="color:red">VÝJIMKY V TYPECH ÚDAJŮ</span>
+    <hr>
+</div>
+<div>
+    <h4>Max</h4>
+    <span style="color:red">PARAMETRY GRAFU</span>
+    <hr>
+</div>
+<div>
+    <h4>MaxCol</h4>
+    <span style="color:red">ROZMĚRY OBRAZOVKY</span>
+    <hr>
+</div>
+<div>
+    <h4>MaxRow</h4>
+    <span style="color:red">ROZMĚRY OBRAZOVKY</span>
+    <hr>
+</div>
+<div>
+    <h4>mem</h4>
+    <span style="color:red">Prvek seznamu</span>
+    <hr>
+    mem_NázevTypu([&]TermNázev,TermL_Název)<br>
+    <br>
+    TermNázev    Term typu NázevTypu.<br>
+    TermL_Název  Term typu L_NázevTypu, tj. seznam termů typu NázevTypu.<br>
+    <br>
+    Podmínkou činnosti je podmínka odpovídajícího pojmenování typů.  K<br>
+    uživatelskému  typu  je  automaticky  definován  typ  seznam  s  jménem<br>
+    doplněným předponou "L_".<br>
+    <br>
+    Funkčnost   predikátu  je  určena  typem  prvního  parametru.  Při<br>
+    vstupním  parametru zjišťuje, zda je term prvkem seznamu. U  výstupních<br>
+    parametrů   postupně  unifikuje   všechny  prvky   seznamu  s  uvedenou<br>
+    proměnnou.<br>
+    <br>
+    <br>
+    Příklad:<br>
+    <br>
+    Firma,Zamestnanec = String<br>
+    <br>
+    { Test  existence prvku v seznamu }<br>
+    je_prvek:- mem_Firma('Alis',['Alis','Derby','Pussa']),<br>
+    write('Je prvkem seznamu'),!.<br>
+    je_prvek:- write('Neni prvkem seznamu').<br>
+    <br>
+    { Příklad  výpisu seznamu }<br>
+    <br>
+    sezn_prvku:- mem_Firma(X,['Alis','Derby','Pussa']), write(X,'  '),fail.<br>
+    sezn_prvku.<br>
+</div>
+<div>
+    <h4>MemAvail</h4>
+    <span style="color:red">SPECIÁLNÍ PŘÍKAZY A FUNKCE</span>
+    <hr>
+    Při ladění větších úloh či spouštění externích programů může  být důležitá<br>
+    informace  o velikosti  volné paměti.  Volná  paměť  se používá pro  cache<br>
+    (stránkování přístupu na  disk).  Podle potřeby  se do ní překládají další<br>
+    subúlohy nebo volají externí programy.<br>
+    <br>
+    ██  syntaxe:       MEMAVAIL  : real<br>
+    <br>
+    Vrací velikost volné paměti v bytech<br>
+    ────────────<br>
+    <br>
+    ██  syntaxe:       MEMDIAG<br>
+    <br>
+    Ladící procedura vypíše na obrazovku obsah důležitých pointerů:<br>
+    dolní zásobník - začátek a konec     (PC FAND pracuje se dvěma zásobníky)<br>
+    horní zásobník - začátek a konec     (proti sobě místo standardního Heapu)<br>
+    Stack Pointer procesoru<br>
+    použitelná XMS paměť<br>
+    ┌────────────────────────────────────────────────────────────────────────┐<br>
+    │!!! Memdiag je použitelný pouze při spuštění programátorské verze, to   │<br>
+    │    jest FAND(C).EXE. Uživatelský run-time UFANDx.EXE ho "nezná".       │<br>
+    └────────────────────────────────────────────────────────────────────────┘<br>
+</div>
+<div>
+    <h4>MemDiag</h4>
+    <span style="color:red">SPECIÁLNÍ PŘÍKAZY A FUNKCE</span>
+    <hr>
+</div>
+<div>
+    <h4>Menu</h4>
+    <span style="color:red">UŽIVATELSKÁ NABÍDKA - MENU</span>
+    <hr>
+    Nabídka definuje větvení programu podle interaktivní volby uživatele.<br>
+    Existují tři typy nabídek s obdobnou syntaxí:<br>
+    ■ menu ....... jednorázová nabídka<br>
+    ■ menuloop ... nabídka se opakuje v cyklu, ukončí se klávesou Esc<br>
+    ■ menubar .... vodorovná nabídka (většinou hlavní nabídka programu), chová<br>
+    se jako pulldown.<br>
+    <br>
+    ██ syntaxe: MENU[LOOP] [([x,y][;a1,a2,a3,a4])] [!] [pulldown] [hlavička] of<br>
+    Seznam voleb<br>
+    end;<br>
+    <br>
+    ■  x,y ............čís.výrazy-levý horní roh (jinak implicitně dle kontextu)<br>
+    ■  a1,a2,a3,a4 ... atributy barev (normální,vybraná,důraz,nefunkční),<br>
+    Ctrl-znaky nebo čís.výrazy, instalace barev<br>
+    ■  ! ............. stín okna menu<br>
+    ■  pulldown ...... nabídka navazuje na předchozí nabídku (jinak uprostřed<br>
+    nebo podle souřadnic) a okno zůstane na obrazovce během<br>
+    provádění příkazu. Navazující pozice viz. MenuX, MenuY.<br>
+    ■  hlavička ...... Textový výraz, text v záhlaví okna s nabídkou (jinak<br>
+    bez hlavičky)<br>
+    <br>
+    ██ syntaxe:        MENUX : real      funkce,vracejí sloupec a řádek hor.<br>
+    MENUY : real      levého rohu pro pulldown.<br>
+    ───────────<br>
+    <br>
+    ██ syntaxe:        MENUBAR [(y[,x,xsize][;a1,a2,a3,a4])] of<br>
+    Seznam voleb<br>
+    end;<br>
+    <br>
+    ■  y ............. Číselný výraz, menu je umístěno na řádku y<br>
+    ■  x,xsize........ Číselné výrazy, počáteční sloupec,délka<br>
+    <br>
+    ░░░░░░░░░░░░<br>
+    ░░příklady░░<br>
+    ░░░░░░░░░░░░<br>
+    <br>
+    ██    menubar (3,10,60) of<br>
+    'Finance',Finance   : menuloop ! pulldown  'FINANCE' of<br>
+    'Peněžní deník': proc(Deník);<br>
+    'Závazky': proc(Závazky);<br>
+    end;<br>
+    'Inventář',Inventář : menuloop ! pulldown 'INVENTÁŘ' of<br>
+    'ZP': proc(ZP);<br>
+    'DKP': proc(DKP);<br>
+    end;<br>
+    'Ostatní','Ostatní volby',trust(3):<br>
+    menuloop ! pulldown of<br>
+    'Systém',,trust(1)!: with window (1,1,80,25) do exec('','');<br>
+    'Nápověda':  menuloop (0,10) ! pulldown of<br>
+    'Prohlížení': help('root');<br>
+    'Tisk': report(HELP,Help);<br>
+    end;<br>
+    end;<br>
+    escape : if prompt(' opravdu skončit (A/N)': B) then break ;<br>
+    end;<br>
+</div>
+<div>
+    <h4>MenuBar</h4>
+    <span style="color:red">UŽIVATELSKÁ NABÍDKA - MENU</span>
+    <hr>
+</div>
+<div>
+    <h4>MenuLoop</h4>
+    <span style="color:red">UŽIVATELSKÁ NABÍDKA - MENU</span>
+    <hr>
+</div>
+<div>
+    <h4>MenuX</h4>
+    <span style="color:red">UŽIVATELSKÁ NABÍDKA - MENU</span>
+    <hr>
+</div>
+<div>
+    <h4>MenuY</h4>
+    <span style="color:red">UŽIVATELSKÁ NABÍDKA - MENU</span>
+    <hr>
+</div>
+<div>
+    <h4>Merge</h4>
+    <span style="color:red">VOLÁNÍ TRANSFORMACE</span>
+    <hr>
+    Spuštění transformace lze provést ve dvou variantách. Základem je první<br>
+    varianta, která znamená statické spuštění předem připravené a hlavně řádně<br>
+    zkompilované kapitoly M.<br>
+    Druhá varianta přináší zkušenějším programátorům možnost dynamické definice<br>
+    kódu transformace v textovém výrazu. V tomto případě si programátor přebírá<br>
+    veškerou odpovědnost za riziko běhových chyb při provedení.<br>
+    <br>
+    ██ Syntaxe:    varianta1        MERGE ( NázevTransformace )<br>
+    varianta2        MERGE ( [ TextovýVýraz ]  )<br>
+    <br>
+    ■  NázevTransformace ... Název kapitoly M.<br>
+    ■  TextovýVýraz ........ Obsahuje dynamickou deklaraci zdrojového kódu<br>
+    transformace.<br>
+</div>
+<div>
+    <h4>Message</h4>
+    <span style="color:red">VÝSTUP NA OBRAZOVKU</span>
+    <hr>
+</div>
+<div>
+    <h4>Min</h4>
+    <span style="color:red">PARAMETRY GRAFU</span>
+    <hr>
+</div>
+<div>
+    <h4>minus</h4>
+    <span style="color:red">minus_</span>
+    <hr>
+    minus_NázevTypu(L_NázevTypu_1,L_NázevTypu_2,&L_NázevTypu_3)<br>
+    <br>
+    L_NázevTypu_1    Vstupní seznam.<br>
+    L_NázevTypu_2    Odstraňované prvky.<br>
+    L_NázevTypu_3    Výsledný seznam.<br>
+    <br>
+    <br>
+    Vynechá z  prvního seznamu  L_NázevTypu_1 všechny členy, které  se<br>
+    vyskytují i  v druhém  seznamu L_NázevTypu_2  a výsledek  je vrácen  ve<br>
+    výstupním  parametru L_NázevTypu_3.  Prvky druhého  seznamu,  které  se<br>
+    nevyskytují v prvním jsou ignorovány.<br>
+    <br>
+    Příklad:<br>
+    <br>
+    mi:-minus_String(['A'],['A','B'],X),writeln(X),<br>
+    minus_String(['B','A'],['A'],Y),writeln(Y).<br>
+</div>
+<div>
+    <h4>Mod</h4>
+    <span style="color:red">SPECIÁLNÍ OPERÁTORY</span>
+    <hr>
+</div>
+<div>
+    <h4>Mode</h4>
+    <span style="color:red">MODE - duplicitní klíčové slovo</span>
+    <hr>
+    ■ edit(...mode) ........ módy datového editoru: omezení při editaci<br>
+    ■ report(...mode) ...... parametry automatické sestavy: typ autoreportu<br>
+    ■ selectstr(...mode) ... parametrizace výběru z pole stringů<br>
+    ■ copyfile(...,mode) ... převod diakritiky při kopírování textových souborů<br>
+</div>
+<div>
+    <h4>Modulo</h4>
+    <span style="color:red">MODULO</span>
+    <hr>
+    Funkce modulo vrací true pokud kontrola vstupních parametrů metodou<br>
+    "modulo n" vyhovuje.<br>
+    <br>
+    ██ Syntaxe:       MODULO ( TextVýraz ,n,w1,w2,..wm ) : boolean<br>
+    <br>
+    ■  TextVýraz .... řetězec cifer délky m+1,  ci (i=1..m) jsou jeho cifry<br>
+    a cp je kontrolní cifra na pozici m+1<br>
+    ■  w1,...,wm .... tzv. váhy<br>
+    <br>
+    ■  definice:      ( n - sum ( ci * wi ) mod n ) mod 10 = cp<br>
+    <br>
+    Pokud platí tato rovnost, je výsledek TRUE.<br>
+</div>
+<div>
+    <h4>Módy blokování nižší</h4>
+    <span style="color:red">LAN - POUŽITÍ NIŽŠÍCH MÓDŮ BLOKOVÁNÍ</span>
+    <hr>
+    Null   ■ implicitně při otevření souboru, neklade žádné  omezení pro ostatní<br>
+    účastníky<br>
+    <br>
+    NoExcl ■ uplatní se pouze pro indexovaný soubor při:<br>
+    ■ edit s použitím cond, owner, mode='F2', mode='wx'<br>
+    nebo při editaci podle pracovního indexu (editace podmnožiny)<br>
+    ■ editace podle pracovního indexu ... edit(Soubor/PracIndex,...<br>
+    ■ report - ve fyzickém pořadí bez automatického třídění<br>
+    - s automatickým tříděním - jen část generování sestavy<br>
+    - třídění vstupu podle pracovního indexu<br>
+    ■ vstupní soubor merge ve fyzickém pořadí bez automatického třídění<br>
+    <br>
+    NoDel  ■ editace celého souboru (kromě cond, owner, mode='F2' nebo mode='wx')<br>
+    <br>
+    NoCr   ■ edit souboru bez indexů při použití cond nebo mode='F2' (podmnožina)<br>
+    ■ report souboru bez indexů, bez automatického třídění<br>
+    ■ vstupní soubor merge bez indexů, bez automatického třídění<br>
+    <br>
+    Rd     ■ datový editor - fáze startu datového editoru<br>
+    - další čtení vět souboru<br>
+    - obnova obrazovky v datovém editoru (refresh)<br>
+    - referenční integrita, varianta s !!<br>
+    ■ blokování nadřízených souborů při čtení viditelných údajů<br>
+    ■ report (ostatní případy)<br>
+    ■ vstupní soubor merge (ostatní případy)<br>
+    ■ údaje nebo věty ve výrazech kromě přiřazení (recno,link,nrecs,<br>
+    nrecsabs,lastupdate,isdeleted,owned)<br>
+    ■ readrec<br>
+    ■ help<br>
+    ■ close (uzavření souboru, kvůli trunc)<br>
+    ■ automatické vytváření indexu, příkaz getindex<br>
+    ■ cyklus forall (akce v průběhu cyklu mohou blokování zesílit)<br>
+    ■ backup (zálohování)<br>
+</div>
+<div>
+    <h4>Módy blokování souboru</h4>
+    <span style="color:red">LAN - MÓDY BLOKOVÁNÍ SOUBORU</span>
+    <hr>
+    Po otevření sdíleného souboru používá FAND na nezbytně nutnou dobu jeden z<br>
+    uvedených módů blokování (vyšší zahrnují vždy i nižší).<br>
+    <br>
+    Null   - nejnižší mód blokování, bez omezení pro ostatní<br>
+    NoExcl - zákaz módu Excl pro ostatní, povoluje vše kromě celkové reorganizace<br>
+    NoDel  - zákaz rušení vět<br>
+    ostatní nemohou spustit akci, která vyžaduje blokování Del nebo Excl<br>
+    NoCr   - zákaz vytváření vět<br>
+    ostatní nemohou blokovat Cr, Del nebo Excl<br>
+    Rd     - čtení na vlastní stanici<br>
+    ostatní nemohou blokovat Wr, Cr, Del nebo Excl<br>
+    Wr     - psaní na vlastní stanici,<br>
+    ostatní nemohou Rd, Wr, Cr, Del nebo Excl<br>
+    Cr     - vytváření nových vět<br>
+    ostatní nemohou NoCr, Rd, Wr, Cr, Del nebo Excl<br>
+    Del    - rušení vět<br>
+    ostatní nemohou NoDel, NoCr, Rd, Wr, Cr, Del, Excl<br>
+    Excl   - nejvyšší mód blokování, výstup do souboru resp. celková reorganizace<br>
+    ostatní účastníci nemohou se souborem pracovat<br>
+</div>
+<div>
+    <h4>Módy blokování vyšší</h4>
+    <span style="color:red">LAN - POUŽITÍ VYŠŠÍCH MÓDŮ BLOKOVÁNÍ</span>
+    <hr>
+</div>
+<div>
+    <h4>Módy datového editoru</h4>
+    <span style="color:red">MÓDY DATOVÉHO EDITORU</span>
+    <hr>
+    Parametr procedury edit mode='SeznamMódů' ovlivňuje  chování editoru během<br>
+    editace.  Zadává se  v textové  konstantě nebo v textovém výrazu, složeným<br>
+    z dvoupísmenných zkratek. Textový výraz se vyhodnotí až při provedení.<br>
+    Případné neplatné kombinace se ignorují.<br>
+    <br>
+    ■ ^Y ... zákaz rušení vět<br>
+    ■ ?Y ... rušení vět s potvrzením A/N<br>
+    ■ ^N ... zákaz vytváření vět ( mode='^y^n' - nelze ani třídit )<br>
+    ■ F2 ... režim pořízení<br>
+    ■ 01 ... editace jedné věty ('F201'...pořízení jedné věty)<br>
+    ■ !! ... editace na tabelátorech (ostatní údaje jen na prohlížení)<br>
+    ■ F3 ... hledání podle vlastního klíče (vlastní klíč)<br>
+    ■ <= ... potlačí hlášení F10 - věta neexistuje při hledání F3<br>
+    ■ ?? ... konec editace bez dotazu (instalace konstant)<br>
+    ■ ?E ... opak-vyžaduje potvrzení výskoku Esc dotazem opustit editor ? (A/N)<br>
+    ■ #A ... zákaz vypnutí aditivních změn (aditivní změny)<br>
+    ■ #L ... zákaz vypnutí logických kontrol (logické kontroly)<br>
+    ■ R2 ... použije 2.řádek obrazovky k vypsání výrazu pro aktuální podmnožinu<br>
+    ■ F1 ... zobrazuje nápovědu z .HLP souboru pod heslem NázevSouboru.NázÚdaje<br>
+    při pohybu po souboru jsou na posledním řádku jednořádkové nápovědy<br>
+    Ctrl-F1 vyvolá celoobrazovkovou nápovědu. Viz.soubor pro nápovědu<br>
+    ■ F124.. Nápověda se zobrazí na 24.řádku   (instalace barev)<br>
+    ■ WX ... při editaci sdíleného .X souboru vytváří pracovní index<br>
+    a tím umožňuje ostatním stanicím mazat věty (lokální sítě)<br>
+    ■ S7 ... potlačení chybového hlášení s ShiftF7, přímý přechod do editace<br>
+    nadřízeného souboru s možností převzetí údaje<br>
+    ■ CO ... podmínka COND slouží jen k výběru podmnožiny, nebude kontrolována<br>
+    při aktualizaci resp. pořízení nových vět<br>
+    ■ LI ... Při hledání pomocí F3, pro údaje typu A,N se nastavuje kurzor<br>
+    editoru již v průběhu zadávání.  klíč<br>
+    ■ ^M ... Double click levé klávesy myší není INS ale ENTER.<br>
+    myš v datovém a textovém editoru<br>
+    ■ -> ... Klávesa Up generuje <-, klávesa Down generuje ->.<br>
+    ■ EX ... exit-procedury vyvolané klávesou lze vyvolat i z editace údaje<br>
+    typu T. Parametr aktuální věty se předává stejně jako při volání<br>
+    z jiných míst. Rovněž nastavuje edfield,edirec,... Navíc nastavuje<br>
+    i  txtpos, který bude pro ostatní typy přerušení -1.<br>
+    Explicitní nápovědné řádky ( last=, shift=,...) se zobrazí<br>
+    i v textovém editoru.  (viz. přerušení editace textu)<br>
+    ■ SL ... Při použití parametru sel lze klávesou ENTER v existující větě<br>
+    ukončit editaci. Pokud byl zatím pracovní index prázdný, bude<br>
+    zároveň aktuální věta vybrána. V opačném případě se index nezmění.<br>
+    ■ ?N ... Při přerušení pořizování nové věty klávesou ESC nebo F2 je od<br>
+    obsluhy vyžádáno potvrzení dotazem "Nedokončená věta bude zrušena!<br>
+    Přesto opustit A/N?" (Instalace konstant).<br>
+</div>
+<div>
+    <h4>Mount</h4>
+    <span style="color:red">MANIPULACE S DISKETAMI</span>
+    <hr>
+    Příkaz pro explicitní montování diskety. Implicitně se tento příkaz vyvolá<br>
+    před použitím prvního souboru z diskety<br>
+    <br>
+    ██ Syntaxe:             MOUNT ( NázevDleKatalogu [ ,nocancel ] )<br>
+    <br>
+    ■  NázevDleKatalogu ... Soubor musí být v katalogu definován jako disketový<br>
+    včetně návěští ( identifikace diskety ).<br>
+    ■  nocancel ........... Potlačí ukončení práce po stisku ESC a nastaví<br>
+    návratový kód exitcode=1<br>
+    ──────────────────────<br>
+    <br>
+    Nasazenou disketu lze vyjmout z jednotky jen na výzvu programu. To se<br>
+    implicitně stane až při ukončení úlohy nebo požadavku na jinou disketu.<br>
+    Explicitně lze korektní vyjmutí diskety zajistit příkazem releasedrive.<br>
+    <br>
+    ██ Syntaxe:             RELEASEDRIVE ( Jednotka )<br>
+    <br>
+    ■  Jednotka .... Textový výraz (A:,B:,CPM-jednotka)<br>
+</div>
+<div>
+    <h4>MouseEvent</h4>
+    <span style="color:red">MYŠ V PROCEDUŘE</span>
+    <hr>
+</div>
+<div>
+    <h4>MouseIn</h4>
+    <span style="color:red">MYŠ V PROCEDUŘE</span>
+    <hr>
+    Test na pozici kurzoru myši. Funkce testuje, zda je v zadaném obdélníku.<br>
+    <br>
+    ██ syntaxe:      MOUSEIN ( x1, y1, x2, y2 ) : boolean<br>
+    <br>
+    ■  x1,y1,x2,y2   Číselné výrazy, absolutní textové souřadnice levého<br>
+    horního a pravého dolního rohu obdélníku. V grafickém<br>
+    režimu jsou souřadnice v grafických bodech.<br>
+    <br>
+    ■  Kapitoly .... P,D<br>
+    ────────────────────<br>
+    <br>
+    Příkaz pro nastavení pozice kurzoru myši.<br>
+    <br>
+    ██ syntaxe:      SETMOUSE ( x, y , JeVidět )<br>
+    <br>
+    ■  x,y ......... Číselné výrazy. Požadované souřadnice - absolutní,textové.<br>
+    V grafickém režimu jsou souřadnice v grafických bodech.<br>
+    ■  JeVidět ..... Logický výraz. Určuje zda bude kurzor myši viditelný.<br>
+    ■  Kapitoly .... P,D<br>
+    ────────────────────<br>
+    <br>
+    ██ syntaxe:    MOUSEX : real    .....  Souřadnice kurzoru myši.<br>
+    MOUSEY : real           ! Korektní až po mouseevent<br>
+    V grafickém režimu jsou souřadnice<br>
+    v grafických bodech, jinak textové.<br>
+</div>
+<div>
+    <h4>MouseX</h4>
+    <span style="color:red">MYŠ V PROCEDUŘE</span>
+    <hr>
+</div>
+<div>
+    <h4>MouseY</h4>
+    <span style="color:red">MYŠ V PROCEDUŘE</span>
+    <hr>
+</div>
+<div>
+    <h4>Myš</h4>
+    <span style="color:red">MYŠ</span>
+    <hr>
+    ┌─────┬─────┬─────┐<br>
+    Podpora myši funguje jen pro EGA/VGA            │ cli │     │  E  │<br>
+    V zásadě dodržuje běžně používané konvence         │ ck  │     │  S  │<br>
+    Funkce myši odpovídají kontextu a poloze kurzoru       │     │     │  C  │<br>
+    Význam pravé a levé klávesy lze instalací prohodit     ├─────┴─────┴─────┤<br>
+    │                 │<br>
+    Funkce myši dle kontextu a polohy kurzoru:             │                 │<br>
+    │                 │<br>
+    ■ menu ... stisk na volbě = vybrat                     │                 │<br>
+    stisk na posledním řádku = nápověda         │                 │<br>
+    └────────┬────────┘<br>
+    ■ dotaz na text. řetězec ... (prompt,název souboru,         ┌───┘<br>
+    editace údaje): stisk na vymezeném poli = Enter         └─┐<br>
+    <br>
+    ■ výběr ze seznamu ..... (názvy souborů, údaje pro třídění atd.):<br>
+    stisk na názvu ....  při výběru jednoho názvu = přesun kurzoru a Enter<br>
+    při výběru množiny = přesun kurzoru<br>
+    a přepnutí označit/neoznačit<br>
+    dvojitý stisk mimo název při výběru množiny: Enter<br>
+    držet a přesunout: výměna položek<br>
+</div>
+<div>
+    <h4>Myš v datovém a textovém editoru</h4>
+    <span style="color:red">MYŠ V DATOVÉM A TEXTOVÉM EDITORU</span>
+    <hr>
+    ■ datový editor ... stisk na údaji: kurzor přejde k údaji<br>
+    dvojitý stisk na údaji: INS (přechod k editaci údaje)<br>
+    nebo ENTER - viz. mode='^m'<br>
+    mode='F1 | F124' a click na nápovědě: jako Ctrl-F1<br>
+    <br>
+    ■ textový editor ...stisk - přenesení kurzoru na danou pozici<br>
+    <br>
+    ■ nápověda kláves ... v posledním řádku obrazovky může být buď standardní<br>
+    nebo alternativní - tj. určená parametry editace last, alt,<br>
+    ctrl, shift. Názvy kláves musí být uvedeny přesně a zdůrazněny<br>
+    ^P^W. Stisk na zdůrazněném názvu klávesy generuje tuto klávesu<br>
+    podržení generuje opakování. V "ikoně" pro myš nemusí být<br>
+    uveden název kontrolní klávesy. Např. v Ctrl nápovědě generuje<br>
+    ikona F8 kombinaci CtrlF8.<br>
+    Klávesy: F1..F10, AltF1..AltF10, ShiftF1..ShiftF10, CtrlF1..CtrlF10,<br>
+    ^Q┘, Enter, Alt, Ctrl, Shift, Esc, CtrlY,<br>
+    ↑,↓, PgUp,PgDn,CtrlHome,CtrlEnd,<br>
+    ikona pro tabelátor '\196\16\179' , ShiftTab('\179\17\196')<br>
+    analogicky funguje při chybovém hlášení také stisk na 'F10'<br>
+    resp. 'ShiftF7'<br>
+    <br>
+    ■ helpy... stisk na hesle: jako Enter na hesle, další v nápovědě 25.řádek<br>
+</div>
+<div>
+    <h4>Myš v proceduře</h4>
+    <span style="color:red">MYŠ V PROCEDUŘE</span>
+    <hr>
+</div>
+
+
+<div>
+    <h4></h4>
+    <span style="color:red"></span>
+    <hr>
+</div>
+<div>
+    <h4></h4>
+    <span style="color:red"></span>
+    <hr>
+</div>
+
+</body>
+</html>

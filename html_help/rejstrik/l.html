@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <title>L</title>
+</head>
+<body style="font-family:'Courier New'">
+
+<div>
+    <h4>#L</h4>
+    <span style="color:red">LOGICKÉ KONTROLY - odstavec #L</span>
+    <hr>
+</div>
+<div>
+    <h4>LAN</h4>
+    <span style="color:red">LAN - LOKÁLNÍ SÍTĚ</span>
+    <hr>
+    V lokální  počítačové síti  je možné sdílet FAND , úlohu i datové soubory.<br>
+    Před použitím  FANDu v síti je  nutné  nejprve  v  závislosti  na předmětu<br>
+    sdílení provést potřebné zásahy do instalace.<br>
+    <br>
+    V síťovém provozu FAND automaticky určuje režim sdílení (blokování)<br>
+    datových souborů a koordinuje práci datových editorů.<br>
+    <br>
+    Při programování síťových aplikací je možné použít také příkazy with shared<br>
+    a with locked.<br>
+    <br>
+    Pro sdílené soubory (#,#R) se kromě módu sdílení Excl nepoužívá cache paměť<br>
+    <br>
+    Instalace FANDu v síti        Technika sdílení souborů      Síťové příkazy<br>
+    <br>
+    instalace sítě                technika sdílení                 with shared<br>
+    parametry programu SHARE      technika blokování souboru       with locked<br>
+    sdílení FANDu                 módy blokování souboru<br>
+    sdílení úlohy                 tabulka módů blokování<br>
+    sdílení datových souborů      technika zamykání vět<br>
+    používané pojmy               sdílená editace<br>
+</div>
+<div>
+    <h4>LANNODE</h4>
+    <span style="color:red">SET-parametry</span>
+    <hr>
+</div>
+<div>
+    <h4>Lantastic</h4>
+    <span style="color:red">LANTASTIC</span>
+    <hr>
+    V praxi je provozováno několik verzí této sítě. Nejsou známy nějaké speci-<br>
+    fické problémy při instalaci PC FANDu nebo úloh. Nižší verze LANTASICu<br>
+    používají externí (DOSový) program SHARE.<br>
+    <br>
+    Verze LANTASTICu 6.0 může alternativně použít i interní SHARE:<br>
+    Spustíme program NET_MGR, nabídky Server startup parameters (rolovat dolů)<br>
+    Internal share<br>
+    <br>
+    volby: Internal share ... enabled/disabled (povolen/vypnut interní share)<br>
+    Share locks ...... maximální počet zámků (viz. SHARE /L: )<br>
+    Name space ....... velikost tabulky otevřených souborů (SHARE /F:)<br>
+</div>
+<div>
+    <h4>Last</h4>
+    <span style="color:red">ALTERNATIVNÍ NÁPOVĚDA</span>
+    <hr>
+</div>
+<div>
+    <h4>LastUpdate</h4>
+    <span style="color:red">ÚDAJE O SOUBORU</span>
+    <hr>
+    Parametry každého datového souboru lze zjistit v následujících interních<br>
+    proměnných a funkcích : nrecs, nrecsabs, lastupdate.<br>
+    Fyzickou délku souboru v bytech lze zjistit pomocí funkce filesize.<br>
+    <br>
+    ██ LASTUPDATE .............Datum a čas poslední aktualizace souboru<br>
+    (ve formátu typu D).<br>
+    Syntaxe:    NázevSouboru | NázevDleKatalogu  .lastupdate : real<br>
+    <br>
+    Poznámka:   Před lastupdate je vhodné dát close[(Soubor)], neboť<br>
+    aktualizace časového údaje se provádí při uzavření souboru.<br>
+    ───────────<br>
+    <br>
+    ██ NázevSouboru.NRECS :real ...... počet platných vět v souboru<br>
+    ██ NázevSouboru.NRECSABS :real ... počet fyzických vět (včetně neplatných)<br>
+    <br>
+    Neplatné věty mohou být pouze v indexovém nebo .DBF souboru, proto pro<br>
+    ostatní (neindexové) soubory platí nrecs=nrecsabs. Konstrukce nrecs může<br>
+    stát na levé  straně přiřazovacího příkazu:<br>
+    <br>
+    ■  NázevSouboru ... název kapitoly F<br>
+    ■  Interní proměnná NázevSouboru.nrecs může být i na levé straně přiřazova-<br>
+    cího příkazu. Tím lze docílit změnu počtu vět souboru na zadanou hodnotu.<br>
+    Tj. zkrácení, zrušení nebo prodloužení souboru.<br>
+    NázevSouboru.nrecs:=ČísVýraz<br>
+    Pro indexové soubory je přípustné pouze NázevSouboru.nrecs:=0. (zrušení)<br>
+    Toto je povoleno i pro pracovní index.<br>
+    <br>
+    ■  Fyzická interpretace příkazu soubor.NRECS:=0 je poněkud odlišná pro<br>
+    jednotlivé typy datových souborů:<br>
+    - běžný lokální datový soubor bude zrušen<br>
+    - sdílený datový soubor bude míti délku 6 byte - tj prefix.<br>
+    - soubor .DBF - zůstane hlavička (délka dle deklarace).<br>
+    - pracovní index bude zrušen.<br>
+    <br>
+    <br>
+    ░░░░░░░░░░░░<br>
+    ░░příklady░░<br>
+    ░░░░░░░░░░░░<br>
+    <br>
+    ██ Výpis informací o souboru.<br>
+    BEGIN<br>
+    writeln('Informace o souboru DATA');<br>
+    writeln('... počet platných vět: ',DATA.nrecs:6);<br>
+    writeln('... počet neplatných vět: ',DATA.nrecsabs-DATA.nrecs:6);<br>
+    writeln('... počet fyzických vět: ',DATA.nrecsabs:6);<br>
+    writeln('... poslední aktualizace: ',DATA.lastupdate:'DD.MM.YY hh:mm');<br>
+    writeln('... fyzické jméno: ',DATA.path);  {pouze pro soubory v katalogu}<br>
+    POMOCNY.Path:=DATA.Path; close(DATA);      {POMOCNY je katalogizovaný<br>
+    soubor bez kapitoly F     }<br>
+    writeln('... délka v bytech:',filesize(POMOCNY));<br>
+    writeln('... návěští: ',DATA.volume);<br>
+    END;<br>
+    <br>
+    ██ Zjištění času aktualizace libovolného souboru.<br>
+    V katalogu úlohy musí být založena věta s názvem souboru např. 'PRACOV',<br>
+    který nekoresponduje na žádnou kapitolu typu F.<br>
+    BEGIN<br>
+    PRACOV.Path:=prompt(' zadej cestu k souboru :':A,79) ;<br>
+    write('poslední aktualizace: ', PRACOV.lastupdate:'DD.MM.YY hh:mm');<br>
+    END ;<br>
+</div>
+<div>
+    <h4>LeadChar</h4>
+    <span style="color:red">NAHRAZENÍ V TEXTU</span>
+    <hr>
+    Odstranění nebo nahrazení vedoucích (LEADCHAR) nebo ukončujících<br>
+    (TRAILCHAR) znaků v textu.<br>
+    <br>
+    ██ syntaxe:      LEADCHAR  ( 'Zn1' , Text [,'Zn2' ] ) : string<br>
+    TRAILCHAR ( 'Zn1' , Text [,'Zn2' ] ) : string<br>
+    ■  Zn1,Zn2 ..... Znak Zn1 je odstraněn z textu Text, nebo, pokud je<br>
+    uveden znak Zn2, je tímto nahrazen.<br>
+    ■  Kapitoly .... F,M,R,P,D  (Funkce v L kapitole)<br>
+    <br>
+    ──────────────────────────<br>
+    <br>
+    Nahrazení podřetězce v textu jiným řetězcem. Na rozdíl od předchozích<br>
+    funkcí jsou nahrazeny všechny výskyty, nejen první či poslední.<br>
+    <br>
+    ██ syntaxe:      REPLACE ( Co , Kde , Čím [,'Podmínky'] ) : string<br>
+    <br>
+    ■ Co,Kde,Čím ... Textové výrazy, význam evidentní z názvu.<br>
+    Omezení: délka text.výrazů Co a Kde může být max.255 zn.<br>
+    ■ Podmínky ..... viz. funkce pos<br>
+    <br>
+    <br>
+    Zpracování textu<br>
+    <br>
+    ░░░░░░░░░░░░<br>
+    ░░příklady░░<br>
+    ░░░░░░░░░░░░<br>
+    <br>
+    <br>
+    ██   leadchar('x',trailchar('x','xxxAAAAxx')) = 'AAAA'<br>
+    <br>
+    ██   Funkce leadchar a trailchar se nejčastěji používají k odstranění<br>
+    přebytečných mezer z údajů typu A,n , což jsou textové řetězce<br>
+    pevné délky.<br>
+    <br>
+    F  Adresy   *   Prijmeni  : A,20 ;<br>
+    ...<br>
+    <br>
+    editace všech Nováků se musí zadat<br>
+    edit( ADRESY,....,<br>
+    cond=(trailchar(' ',Prijmeni)='Novák'),...) ;<br>
+    <br>
+    Podmínka Prijmeni='Novák'  by vybrala prázdnou množinu, neboť při<br>
+    porovnání musí souhlasit i délky řetězců. Mezera je také znak.<br>
+</div>
+<div>
+    <h4>Left</h4>
+    <span style="color:red">SETEDITTXT</span>
+    <hr>
+</div>
+<div>
+    <h4>len</h4>
+    <span style="color:red">Zjištění délky seznamu</span>
+    <hr>
+    len_NázevTypu(Seznam, &Integer)<br>
+    <br>
+    Seznam    Vstupní seznam tvořený prvky typu NázevTypu.<br>
+    Integer   Výstupní hodnota určující počet prvků v seznamu.<br>
+    <br>
+    <br>
+    Spočítá  počet  prvků  v  seznamu.  Je  rychlejší  než  uživatelem<br>
+    definovaný predikát provádějící sečtení počtu prvků.<br>
+    <br>
+    Příklad:<br>
+    <br>
+    delka_sezn:- len_String(['ff','f'],Del), write(Del).<br>
+</div>
+<div>
+    <h4>Length</h4>
+    <span style="color:red">TEXTOVÉ FUNKCE</span>
+    <hr>
+</div>
+<div>
+    <h4>Lexikální třídění</h4>
+    <span style="color:red">LEXIKÁLNÍ TŘÍDĚNÍ</span>
+    <hr>
+    PC FAND může pracovat s instalovatelnou tabulkou  národní abecedy. Podpora<br>
+    pro práci s národní abecedou se týká třídění a porovnávání a funkce upcase<br>
+    resp. lowcase.  Syntakticky  se  v projektu odlišuje  lexikální  relace od<br>
+    běžného třídění (podle kódu znaku) uvedením vlnovky~ za operátor nebo před<br>
+    klíčový (řídící, třídící) údaj.<br>
+    <br>
+    Při lexikálním třídění je správně zatříděna dvojhláska CH, jsou rovnocenná<br>
+    ( tj. jejich pořadí je náhodné ) malá a velká písmena a písmena s čárkou a<br>
+    bez čárky. Naproti tomu písmeno s háčkem je  zatříděno  až  za písmeno bez<br>
+    háčku. Při lexikálním srovnání se ignorují mezery zprava. Lexikální relace<br>
+    zasahuje do těchto míst projektu:<br>
+    <br>
+    ■ třídění podle národní abecedy (ruční třídění v dat. editoru, příkaz sort)<br>
+    ■ klíčové údaje typu A v definici klíčů<br>
+    ■ řídící a třídící údaje v sestavě a transformaci<br>
+    ■ srovnávací operátory pro porovnávání textů, operátor in, funkce pos<br>
+    ■ hledání v textovém editoru<br>
+    <br>
+    ░ Název=~''   #K @ ~Jméno    #I1_DATA ~ŘídÚdaj;~TřídÚdaj   Místo in~ [...]<br>
+</div>
+<div>
+    <h4>Like</h4>
+    <span style="color:red">LIKE deklarace</span>
+    <hr>
+    Deklaraci jednoho  souboru  lze použít  jako základ  pro deklaraci dalšího<br>
+    souboru. Přebírají se všechny  uložené údaje i další  odstavce  deklarace.<br>
+    Deklarace LIKE může odkazovat na soubor, deklarovaný také like. Vidíme zde<br>
+    tedy jisté prvky objektového přístupu.<br>
+    <br>
+    ██ Syntaxe:    like NázevSouboru [ (Prefix) ] [ ; RozšířeníDeklarace ]<br>
+    <br>
+    ■  RozšířeníDeklarace   Může obsahovat obvyklé syntaktické konstrukce<br>
+    kapitoly F, které rozšiřují původní deklaraci.<br>
+    Omezení: Pokud je originál indexovaný soubor,<br>
+    musí být i like-soubor indexovaný.<br>
+    ■  Prefix ............. Pro indexové soubory se musí zajistit jednoznačnost<br>
+    názvů klíčů, což se provede pomocí prefixu klíče.<br>
+    "Prefix_NázevKlíče".<br>
+    Implicitně je prefix NázevSouboru.<br>
+    <br>
+    ░░░░░░░░░░░░<br>
+    ░░příklady░░   F  UCTY2    *   like UCTY1 ;<br>
+    ░░░░░░░░░░░░                   Dodatek : A,10 ;     { další uložený údaj }<br>
+    #U DalšíPohled (1,2) : () ;<br>
+</div>
+<div>
+    <h4>Line</h4>
+    <span style="color:red">LINE - duplicitní klíčové slovo</span>
+    <hr>
+    ■ line, .line .... číslo vystupujícího řádku, speciální funkce v sestavě<br>
+    ■ line(....) ..... příkaz pro kreslení čáry mezi dvěma krajními body<br>
+    line<br>
+</div>
+<div>
+    <h4>LineCnt</h4>
+    <span style="color:red">ZPRACOVÁNÍ ŘÁDKU TEXTU</span>
+    <hr>
+</div>
+<div>
+    <h4>Link</h4>
+    <span style="color:red">LINK</span>
+    <hr>
+    Funkce  link  provede  hledání podle  cizího klíče  a vrátí  fyzické číslo<br>
+    nadřízené věty.  Tj. podle definice  cizího  klíče vyhledá v odpovídajícím<br>
+    nadřízeném souboru příslušnou (nadřízenou ) větu a vrátí její číslo. Pokud<br>
+    taková věta není nalezena , vrací záporné číslo nejbližší vyšší věty ( dle<br>
+    daného klíče). Funkce má dvě varianty dle typu identifikace podřízené věty.<br>
+    <br>
+    <br>
+    ██ Syntaxe :      LINK ( NázevSouboru[FyzČísloVěty] ,NázevSpojení ) : real<br>
+    LINK ( RecordProměnná , NázevSpojení )            : real<br>
+    <br>
+    ■  NázevSouboru ... Název kapitoly F, identifikátor.<br>
+    ■  FyzČísloVěty ... Číselný výraz. Číslo věty podřízeného souboru, k níž se<br>
+    hledá viditelná věta<br>
+    ■  NázevSpojení ... NázevSouboru, NázevRole nebo NázevKlíče (Cizí klíč)<br>
+    <br>
+    <br>
+    ░░░░░░░░░░░░<br>
+    ░░příklady░░    i:=link(POD[10],NAD);                   {podle čísla věty}<br>
+    ░░░░░░░░░░░░    i:=link(Věta,NAD);          {podle obsahu record proměnné}<br>
+</div>
+<div>
+    <h4>LinkRec</h4>
+    <span style="color:red">LINKREC</span>
+    <hr>
+    Příkaz  procedury,  který  pro  větu  podřízeného  souboru vyhledá a načte<br>
+    odpovídající větu nadřízeného souboru.<br>
+    <br>
+    ██ Syntaxe:    LINKREC ( RecordProměnná1,<br>
+    [ NázevSpojení(] RecordProměnná2 [)] )<br>
+    <br>
+    ■  RecordProměnná1 ... věta souboru, ke které hledáme "nadřízenou" větu<br>
+    ■  RecordProměnná2 ... sem bude (v případě úspěchu) načtena věta nadříz.<br>
+    souboru<br>
+    ■  NázevSpojení ...... Druh vazby na nadřízený soubor (viz. cizí klíč)<br>
+    NázevSouboru | NázevKlíče | NázevRole<br>
+    <br>
+    ■  Provedení příkazu   Pokud příkaz proběhl úspěšně (věta byla nalezena)<br>
+    bude exitcode = 0,<br>
+    exitcode = 1  v opačném případě<br>
+</div>
+<div>
+    <h4>Ln</h4>
+    <span style="color:red">ARITMETICKÉ FUNKCE</span>
+    <hr>
+</div>
+<div>
+    <h4>LoadFont</h4>
+    <span style="color:red">EXTERNÍ PROGRAMY</span>
+    <hr>
+</div>
+<div>
+    <h4>Loadlex</h4>
+    <span style="color:red">loadlex</span>
+    <hr>
+    loadlex(ParamSoub.ÚdajTypuT)<br>
+    <br>
+    Čte obsah  globální proměnné  typu  T,  provede  lexikální  rozbor<br>
+    a vytvoří interně  uložený seznam  L_Lexem. Domain Lexem je  implicitně<br>
+    deklarovaný s následující strukturou:<br>
+    <br>
+    Lexem  = lex(Integer_Pos,Integer_Typ,String)<br>
+    Integer_Pos  Pozice v textu.<br>
+    Integer_Typ  Typ : 0  oddělovač + ostatní<br>
+    1  slovo tvořené písmeny<br>
+    2  identifikátor začínající písmenem a obsahující<br>
+    písmena, číslice a znak "_"<br>
+    3  celé číslo<br>
+    String       Vlastní lexem<br>
+    <br>
+    Bílá  místa   tvořená  posloupností   znaků  ' '  a  komentáři  se<br>
+    vynechávají a  slouží pouze  k oddělení lexemu. Neukončené  komentářové<br>
+    závorky vyvolávají na konci textu chybu error(503).<br>
+    <br>
+    Závěr seznamu tvoří vždy dodatečný prvek lex(PoziceKonce,0,'').<br>
+    <br>
+    Vytvořený  interně    uložený  seznam    lze  zpracovávat   pomocí<br>
+    implicitních predikátů  nextlex  a  getlex.  Tyto  predikáty  se  smějí<br>
+    používat  ve větvi  po  loadlex.  V  opačném  případě  hrozí  zhroucení<br>
+    programu.<br>
+    <br>
+    Příklad:<br>
+    <br>
+    vyb_slov:- trace(1),loadlex(PROLPAR.Slova),<br>
+    getlex(X),writeln('Term celkem:',X),<br>
+    nextlex,getlex(Y),writeln('Term zkr.:',Y).<br>
+</div>
+<div>
+    <h4>Lock</h4>
+    <span style="color:red">LAN - PŘEHLED POUŽÍVANÝCH POJMŮ</span>
+    <hr>
+</div>
+<div>
+    <h4>Locked</h4>
+    <span style="color:red">LAN - PŘÍKAZ WITH LOCKED</span>
+    <hr>
+    Při přímém přístupu k větě datového souboru  z  procedury  není zamykání vět<br>
+    automaticky prováděno !  Pro  aktualizaci  údajů  nebo  rušení věty příkazem<br>
+    deleterec  v proceduře je tedy vhodné  použít  pro  koordinaci  práce v síti<br>
+    příkaz pro blokování jedné nebo více vět datového souboru:<br>
+    <br>
+    █ with locked NázevSouboru[VýrazČíslaVěty] {,NázevSouboru[VýrazČíslaVěty]} do<br>
+    █   Příkaz1<br>
+    █ [ else Příkaz2 ];<br>
+    <br>
+    Po dobu provedení "Příkaz1" je zamčena věta (několik vět)  datového souboru.<br>
+    Mód  blokování  souboru  je  určen  automaticky  samostatně  pro každou akci<br>
+    prováděnou v "Příkaz1" nebo je možné jej stanovit příkazem with shared.<br>
+    <br>
+    Pokus o aktualizaci zamčené věty  jiným  účastníkem  (z  datového editoru, z<br>
+    procedury s  uvedením  "with  locked  ...")  je  odmítnut.  Při požadavku na<br>
+    zamčení více vět najednou zamkne všechny věty současně  nebo žádnou. Není-li<br>
+    uvedena  větev  "else ..",  pak v případě blokování  některé z uvedených vět<br>
+    jiným účastníkem čeká FAND na  její uvolnění  bez možnosti přerušení  čekání.<br>
+    Periodu opakování přístupu je možné instalovat (net delay).<br>
+</div>
+<div>
+    <h4>Logické kontroly</h4>
+    <span style="color:red">LOGICKÉ KONTROLY - odstavec #L</span>
+    <hr>
+</div>
+<div>
+    <h4>Login (SQL)</h4>
+    <span style="color:red">ODBC</span>
+    <hr>
+    Pod zkratkou ODBC (Open Database Connectivity) se skrývá mechanismus<br>
+    otevřeného rozhraní (interface) pro práci s databázemi (datovýni soubory).<br>
+    <br>
+    Pro aplikační program přináší zabudování rozhraní ODBC možnost zpracování<br>
+    dat uložených v libovolné databázi, pro kterou existuje tzv. ODBC-ovladač.<br>
+    V podstatě jde o technologii zpracování client-server.<br>
+    Pro FANDovské datové soubory existuje ODBC ovladač pro platformy<br>
+    16 a 32 bit. Windows.<br>
+    To znamená, že z libovolné Windows-aplikace, která podporuje ODBC se<br>
+    lze "dostat" na datové soubory provozovaných FAND-aplikací. Pro příklad<br>
+    uveďme balík Microsoft Office, WinBase602, Delphi, Java atd.<br>
+    <br>
+    ODBC ovladač pro soubory PC FANDu<br>
+    je samostatný produkt, distribuovaný firmou ALIS spol.s.r.o.<br>
+    Demoverze je dostupná na www.alis.cz.<br>
+    Jelikož datové soubory PC FANDu neobsahují deklaraci, je pro přístup<br>
+    přes ODBC potřeba textový soubor s deklaracemi FAND-souborů, a to<br>
+    v syntaxi jazyka SQL.<br>
+    Je to proto, že celá filosofie ODBC je založena na jazyce SQL jako<br>
+    obecném databázovém jazyce.<br>
+    Pro tento definiční soubor je vyhrazena přípona RDA. Pro vytvoření<br>
+    tohoto souboru je většinou nutná spolupráce s autorem FAND-aplikace.<br>
+    Kromě deklarace dat obsahuje soubor RDA i definice uživatelů<br>
+    a přístupových práv k souborům - tabulkám.<br>
+    <br>
+    Možnosti použití ODBC ovladače vyplývají z obecných vlastností<br>
+    technologie ODBC. Z hlediska aplikace PC FANDu je důležité to, že<br>
+    přes ODBC ovladač je možno sdílet datové soubory spuštěné FAND-aplikace.<br>
+    Podrobnosti k instalaci jsou uvedeny v dokumetaci, která je i součástí<br>
+    demoverze ODBC-FAND-ovladače.<br>
+    <br>
+    POZOR !<br>
+    Nezaměňovat ODBC ovladač s podporou SQL serveru z FANDu.<br>
+    * ODBC-ovladač slouží pro přístup k datovým souborům PC FANDu (v.3.0<br>
+    a výše) z prostředí programů pro Windows.<br>
+    * SQL podpora ve FANDu (od verze 3.2) slouží k přístupu z DOS-FANDu<br>
+    k SQL-databázím. Po verzi 3.2 byl již tento směr vývoje ukončen.<br>
+</div>
+<div>
+    <h4>Lokální proměnné</h4>
+    <span style="color:red">DEKLARACE LOKÁLNÍCH PROMĚNNÝCH</span>
+    <hr>
+</div>
+<div>
+    <h4>Lokální soubory</h4>
+    <span style="color:red">FILE</span>
+    <hr>
+    Použití typu file (soubor) se pro parametry procedury poněkud liší od<br>
+    použití jako typu lokální proměnné procedury.<br>
+    <br>
+    Parametr typu FILE<br>
+    ──────────────────<br>
+    <br>
+    ██  ( ... ; NázevSouboru : FILE ; ... )<br>
+    <br>
+    ■ NázevSouboru ...  Při běžném překladu (Ctrl-F8) se bere jako reálný<br>
+    soubor (název viditelné kapitoly F). Při vyvolání<br>
+    procedury se substituuje aktuálním parametrem, lze<br>
+    použít i dynamickou deklaraci souboru.<br>
+    <br>
+    Význam parametru typu file je především pro psaní zobecněných procedur,tj.<br>
+    procedur, použitelných pro více souborů. Dynamizací  aktuálního parametru<br>
+    typu file lze deklarovat lokální soubor.<br>
+    <br>
+    ██          Proc( NázevProcedury,(@NázevSouboru)) ;<br>
+    Proc( NázevProcedury,(@[NázevSouboru,TextVýraz])) ;<br>
+    <br>
+    V příkazu Proc při volání procedury syntakticky odlišíme parametr FILE<br>
+    pomocí znaku '@'.<br>
+    <br>
+    ■   Aktuální parametr nemusí mít stejnou  deklaraci se souborem , použitým<br>
+    jako formální  parametr, ale musí se samozřejmě shodovat všechny prvky<br>
+    deklarace  použité  v proceduře ( údaje, odstavce ).  Tato podmínka je<br>
+    např. splněna,  je-li aktuální  parametr  souborem  deklarovaným  LIKE<br>
+    formální parametr.<br>
+    Pro substituci názvů vlastních alternativních klíčů platí konvence:<br>
+    Je-li NázevKlíče == [Prefix_]ZbytekNázvu, pak pokud soubor, substi-<br>
+    tuovaný místo původního, nemá klíč s tímto názvem, PC FAND zkusí<br>
+    klíč s názvem  NázevAktuálníhoParametru_ZbytekNázvu<br>
+    <br>
+    Pozor: Při použití nevhodného parametru mohou nastat běhové chyby.<br>
+    <br>
+    ■   TextVýraz ... ve druhé  variantě znamená  možnost  dynamické deklarace<br>
+    souboru - lokálního v dané proceduře.  Nemůže mít indexy<br>
+    a ignorují se odstavce #U/#D/#L/#I. Slouží jako pracovní<br>
+    soubor, může mít zápis v katalogu.<br>
+    Na konci procedury se lokální soubor na disku automaticky<br>
+    nezruší. To lze v případě potřeby zajistit explicitním<br>
+    příkazem  NázevSouboru.nrecs:=0<br>
+    Při prvním otevření maže případný starý soubor se stejným<br>
+    jménem - ale jen tehdy, pokud nesouhlasí s deklarací.<br>
+    <br>
+    .........................................................................<br>
+    <br>
+    Lokální proměnná procedury typu FILE - lokální soubor<br>
+    ────────────────────────────────────<br>
+    <br>
+    ██ VAR  NázevSouboru : file     [DeklaraceSouboru];<br>
+    NázevSouboru : file.X   [DeklaraceSouboru];<br>
+    NázevSouboru : file.DBF [DeklaraceSouboru];<br>
+    <br>
+    Na rozdíl od parametru typu file je deklarace struktury souboru přímou<br>
+    součástí deklarace lokálního souboru.<br>
+    <br>
+    ■ NázevSouboru ... Identifikátor, nesmí se překrývat s žádným názvem<br>
+    kapitoly typu F (na rozdíl od parametru typu file).<br>
+    ■ Lokální soubor může mít indexy nebo může být typu DBF.<br>
+    ■ DeklaraceSouboru Nesmí obsahovat odstavce #U, #D, #L, #I. Tedy je povo-<br>
+    lena jen první část kapitoly F. Nepíše se jako textový<br>
+    výraz, např. do apostrofů (na rozdíl od parametru-dyna-<br>
+    micky deklarovaného lokálního souboru).<br>
+    <br>
+    <br>
+    <br>
+    ░░░░░░░░░░░░<br>
+    ░░příklady░░<br>
+    ░░░░░░░░░░░░<br>
+    <br>
+    ██  Povolená kombinace parametrů:<br>
+    ( Soubor : File; veta : RECORD of Soubor )<br>
+    <br>
+    Umožňuje psaní obecných exit-procedur. Odkaz na soubor musí být vždy<br>
+    za deklarací.<br>
+    <br>
+    ██  Obdobně:  ( Soubor : File; indx : INDEX of Soubor )<br>
+    <br>
+    ██  P Ukazka  VAR  Pracovni : FILE     [ Jmeno:A,20; Castka:F,3.0 ] ;<br>
+    Export   : FILE.DBF [ Ucet:A,6; Kc:F,6.2 ] ;<br>
+    PracX    : FILE.X   [ Jmeno:A,20; #K @ ~Jmeno ] ;<br>
+    Begin<br>
+    ....<br>
+</div>
+<div>
+    <h4>Lokální sítě</h4>
+    <span style="color:red">LAN - LOKÁLNÍ SÍTĚ</span>
+    <hr>
+</div>
+<div>
+    <h4>LowCase</h4>
+    <span style="color:red">PRÁCE S DIAKRITIKOU A ABECEDOU</span>
+    <hr>
+    Převod malých písmen na velká a naopak.<br>
+    <br>
+    ██ syntaxe:      UPCASE (  TextVýraz ) : string<br>
+    LOWCASE(  TextVýraz ) : string<br>
+    <br>
+    ■  Upcase převede všechna malá písmena ve výrazu na velká, lowcase<br>
+    naopak velká na malá.<br>
+    ■  Kapitoly .... F,M,R,P,D<br>
+    ─────────────────────────────<br>
+    <br>
+    Odstranění diakritiky z textu. Použití v kapitolách F,M,R,P,D.<br>
+    <br>
+    ██ syntaxe:      NODIAKR(  TextVýraz ) : string<br>
+    <br>
+    Poznámka: Důležité je, že tyto  funkce  zohledňují instalované  národní<br>
+    prostředí ( kód Kamen. a Latin 2). Tzn. že pro  některé znaky<br>
+    s diakritikou jsou výsledky vizuálně shodné, ale interní kódy<br>
+    převedených znaků se mohou lišit.<br>
+</div>
+<div>
+    <h4>Lproc</h4>
+    <span style="color:red">Syntaxe  PC FAND PROLOGu</span>
+    <hr>
+    Program  se zapisuje  do kapitoly  typu "L"  a lze  jej vyvolat  z<br>
+    procedury pomocí příkazu lproc.<br>
+    <br>
+    lproc(Název[,NázevPredikátu])<br>
+    <br>
+    Název          Název kapitoly "L".<br>
+    NázevPredikátu Název prováděného predikátu. Implicitně "main".<br>
+    <br>
+    Po provedení příkazu je nastavena hodnota proměnné edbreak:<br>
+    <br>
+    0  úspěch<br>
+    1  program skončil neúspěchem (fail)<br>
+    2  skok na konec (error)<br>
+    <br>
+    Zápis  programu se  podobá zápisu  TURBO PROLOGu a má  následující<br>
+    strukturu dělenou do odstavců:<br>
+    <br>
+    #DOMAINS     Deklarace datových typů<br>
+    #CONSTANTS   Deklarace konstant<br>
+    #DATABASE    Deklarace databázových predikátů<br>
+    #PREDICATES  Deklarace programových predikátu<br>
+    #CLAUSES     Definice predikátů<br>
+    <br>
+    Odstavce  se mohou  vyskytovat i  několikrát v různém pořadí,  ale<br>
+    deklarace typu a predikátu  musí být  uvedena vždy před svým  použitím.<br>
+    Vyjímku tvoří pouze deklarace typu uvnitř jednoho odstavce DOMAINS.<br>
+</div>
+
+<div>
+    <h4></h4>
+    <span style="color:red"></span>
+    <hr>
+</div>
+<div>
+    <h4></h4>
+    <span style="color:red"></span>
+    <hr>
+</div>
+
+</body>
+</html>
