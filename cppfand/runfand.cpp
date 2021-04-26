@@ -5,7 +5,7 @@
 #include "legacy.h"
 #include "pstring.h"
 #include "../pascal/real48.h"
-#include "drivers.h"
+#include "OldDrivers.h"
 #include "access.h"
 #include "compile.h"
 #include "FieldDescr.h"
@@ -17,7 +17,7 @@
 #include "runproj.h"
 #include "wwmenu.h"
 #include "wwmix.h"
-#include "../Editor/Editor.h"
+#include "../Editor/OldEditor.h"
 #include "../Editor/runedi.h"
 #include "../textfunc/textfunc.h"
 

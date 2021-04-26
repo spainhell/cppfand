@@ -15,30 +15,18 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="OldEditor.cpp">
+    <ClCompile Include="keyboard.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="runedi.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="rdedit.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EditorHelp.cpp">
+    <ClCompile Include="screen.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="OldEditor.h">
+    <ClInclude Include="keyboard.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="runedi.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="rdedit.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="EditorHelp.h">
+    <ClInclude Include="screen.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

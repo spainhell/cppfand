@@ -30,7 +30,7 @@
     <ClCompile Include="pstring.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="drivers.cpp">
+    <ClCompile Include="OldDrivers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="obaseww.cpp">
@@ -79,12 +79,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="olongstr.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="keyboard.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="screen.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="expimp.cpp">
@@ -167,7 +161,7 @@
     <ClInclude Include="runfand.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="drivers.h">
+    <ClInclude Include="OldDrivers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="fanddml.h">
@@ -228,12 +222,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="olongstr.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="keyboard.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="screen.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="models\Instr.h">

@@ -3,7 +3,7 @@
 #include <fstream>
 #include "../pascal/random.h"
 #include "compile.h"
-#include "drivers.h"
+#include "OldDrivers.h"
 #include "expimp.h"
 #include "FieldDescr.h"
 #include "FileD.h"
@@ -23,7 +23,7 @@
 #include "../Prolog/RunProlog.h"
 #include "sort.h"
 #include "XFile.h"
-#include "../Editor/Editor.h"
+#include "../Editor/OldEditor.h"
 #include "../Editor/EditorHelp.h"
 #include "../Editor/runedi.h"
 #include "../MergeReport/genrprt.h"

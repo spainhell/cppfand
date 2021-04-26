@@ -161,13 +161,12 @@
     <ClCompile Include="ChkD.cpp" />
     <ClCompile Include="compile.cpp" />
     <ClCompile Include="cppfand.cpp" />
-    <ClCompile Include="drivers.cpp" />
+    <ClCompile Include="OldDrivers.cpp" />
     <ClCompile Include="expimp.cpp" />
     <ClCompile Include="FieldDescr.cpp" />
     <ClCompile Include="FileD.cpp" />
     <ClCompile Include="GlobalVariables.cpp" />
     <ClCompile Include="Graph.cpp" />
-    <ClCompile Include="keyboard.cpp" />
     <ClCompile Include="KeyFldD.cpp" />
     <ClCompile Include="legacy.cpp" />
     <ClCompile Include="models\FrmlElem.cpp" />
@@ -186,7 +185,6 @@
     <ClCompile Include="runfand.cpp" />
     <ClCompile Include="runfrml.cpp" />
     <ClCompile Include="runproc.cpp" />
-    <ClCompile Include="screen.cpp" />
     <ClCompile Include="sort.cpp" />
     <ClCompile Include="TFile.cpp" />
     <ClCompile Include="wwmenu.cpp" />
@@ -209,14 +207,13 @@
     <ClInclude Include="ChkD.h" />
     <ClInclude Include="compile.h" />
     <ClInclude Include="constants.h" />
-    <ClInclude Include="drivers.h" />
+    <ClInclude Include="OldDrivers.h" />
     <ClInclude Include="expimp.h" />
     <ClInclude Include="fanddml.h" />
     <ClInclude Include="FieldDescr.h" />
     <ClInclude Include="FileD.h" />
     <ClInclude Include="GlobalVariables.h" />
     <ClInclude Include="Graph.h" />
-    <ClInclude Include="keyboard.h" />
     <ClInclude Include="KeyFldD.h" />
     <ClInclude Include="legacy.h" />
     <ClInclude Include="LocVar.h" />
@@ -237,7 +234,6 @@
     <ClInclude Include="runfand.h" />
     <ClInclude Include="runfrml.h" />
     <ClInclude Include="runproc.h" />
-    <ClInclude Include="screen.h" />
     <ClInclude Include="sort.h" />
     <ClInclude Include="switches.h" />
     <ClInclude Include="TFile.h" />
@@ -259,6 +255,9 @@
   <ItemGroup>
     <ProjectReference Include="..\datafiles\datafiles.vcxproj">
       <Project>{4175a73a-df08-4f11-b715-cbe5408af874}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\Drivers\Drivers.vcxproj">
+      <Project>{eff16929-f4e0-4b93-a05a-e6bcfea36a68}</Project>
     </ProjectReference>
     <ProjectReference Include="..\Editor\Editor.vcxproj">
       <Project>{a08457d5-2848-4fb1-ae40-ec55ef69b5da}</Project>

@@ -1,7 +1,7 @@
 #include "runedi.h"
 
 
-#include "Editor.h"
+#include "OldEditor.h"
 #include "EditorHelp.h"
 #include "rdedit.h"
 #include "../cppfand/ChkD.h"

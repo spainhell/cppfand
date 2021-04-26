@@ -11,7 +11,7 @@
 #include "../cppfand/runproc.h"
 #include "../cppfand/runproj.h"
 #include "../cppfand/models/Instr.h"
-#include "../Editor/editor.h"
+#include "../Editor/OldEditor.h"
 
 TMemBlkHd* FreeMemList = nullptr;
 TMemory Mem1;

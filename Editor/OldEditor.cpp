@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Editor.h"
+#include "OldEditor.h"
 #include <set>
 #include <stdexcept>
 #include "runedi.h"
@@ -8,6 +8,7 @@
 #include "../cppfand/compile.h"
 #include "EditorHelp.h"
 #include "../cppfand/GlobalVariables.h"
+#include "../Drivers/keyboard.h"
 #include "../cppfand/oaccess.h"
 #include "../cppfand/obase.h"
 #include "../cppfand/obaseww.h"

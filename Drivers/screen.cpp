@@ -1,6 +1,5 @@
 #include "screen.h"
 #include <exception>
-#include "pstring.h"
 #include <stdarg.h>
 #include <vector>
 #include "../textfunc/textfunc.h"
@@ -86,11 +85,11 @@ void Screen::ScrWrStr(WORD X, WORD Y, std::string S, BYTE Color)
 
 void Screen::ScrWrFrameLn(WORD X, WORD Y, BYTE Typ, BYTE Width, BYTE Color)
 {
-	pstring txt;
-	txt[0] = Width;
-	txt[1] = FrameChars[Typ];
-	for (int i = 2; i <= Width - 1; i++) { txt[i] = FrameChars[Typ + 1]; }
-	txt[Width] = FrameChars[Typ + 2];
+	std::string txt;
+	txt.reserve(Width);
+	txt += FrameChars[Typ];
+	for (int i = 0; i < Width - 2; i++) { txt += FrameChars[Typ + 1]; }
+	txt += FrameChars[Typ + 2];
 	ScrWrStr(X, Y, txt, Color);
 }
 
@@ -267,6 +266,7 @@ size_t Screen::WriteStyledStringToWindow(std::string text, BYTE Attr)
 	short rows = WindMax->Y - WindMin->Y + 1;
 
 	// ziskame jendotlive radky textu
+	//std::vector<std::string> vStr;// = GetAllRows(text, cols);
 	auto vStr = GetAllRows(text, cols);
 
 	// buffer bude mit delku jednoho radku okna

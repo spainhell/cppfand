@@ -22,7 +22,7 @@
 
 
 #include "compile.h"
-#include "../Editor/Editor.h"
+#include "../Editor/OldEditor.h"
 #include "../Editor/EditorHelp.h"
 #include "../Editor/rdedit.h"
 #include "../Editor/runedi.h"

@@ -170,10 +170,10 @@ std::string RepeatString(char input, size_t count)
 }
 
 // old functions
-WORD CountDLines(void* Buf, WORD L, char C)
+unsigned short CountDLines(void* Buf, unsigned short L, char C)
 {
 	std::string s = std::string((char*)Buf, L);
-	return (WORD)CountLines(s, C);
+	return (unsigned short)CountLines(s, C);
 }
 
 //pstring GetDLine(void* Buf, WORD L, char C, WORD I) // I = 1 .. N

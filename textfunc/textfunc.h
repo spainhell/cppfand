@@ -2,7 +2,7 @@
 #include <vector>
 #include <string>
 
-#include "../cppfand/constants.h"
+//#include "../cppfand/constants.h"
 
 /// rozdeli vstup na jednotlive radky podle CR, LF nebo max. delky radku (0 = neomezeno); zohlednuje tisknutelne znaky
 std::vector<std::string> GetAllRows(std::string input, size_t maxLineLen = 0);
@@ -32,5 +32,5 @@ std::string RepeatString(std::string& input, size_t count);
 std::string RepeatString(char input, size_t count);
 
 // old functions:
-WORD CountDLines(void* Buf, WORD L, char C); // r139 ASM
+unsigned short CountDLines(void* Buf, unsigned short L, char C); // r139 ASM
 //pstring GetDLine(void* Buf, WORD L, char C, WORD I); // r144 ASM

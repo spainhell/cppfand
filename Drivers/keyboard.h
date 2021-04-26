@@ -1,7 +1,7 @@
 #pragma once
 #include <queue>
 #include <string>
-#include <windows.h>
+#include <Windows.h>
 
 const __int32 SHIFT = 0x00010000;
 const __int32  CTRL = 0x00020000;

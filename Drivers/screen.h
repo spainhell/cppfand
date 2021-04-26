@@ -1,9 +1,7 @@
 #pragma once
 #include <stack>
-
-#include "constants.h"
 #include <string>
-#include <windows.h>
+#include <Windows.h>
 
 struct TCrs
 {
@@ -22,7 +20,7 @@ struct WParam
 	Wind Max{ 0,0 };
 	WORD Attr = 0;
 	TCrs Cursor; // { 0, 0, false, false, false, 0 };
-	longint GrRoot = 0;
+	__int32 GrRoot = 0;
 };
 
 struct storeWindow
@@ -116,7 +114,6 @@ private:
 	std::stack<storeWindow> _windowStack;
 
 	HANDLE _handle;
-	//CHAR_INFO* _scrBuf;
 	size_t _actualIndex;
 	DWORD _inBuffer;
 };

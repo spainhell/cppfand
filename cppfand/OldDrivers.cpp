@@ -1,5 +1,5 @@
 #pragma once
-#include "drivers.h"
+#include "OldDrivers.h"
 #include <Windows.h>
 #include <stdio.h>
 #include <consoleapi.h>
@@ -11,7 +11,7 @@
 #include "GlobalVariables.h"
 #include "legacy.h"
 #include "obaseww.h"
-#include "screen.h"
+#include "../Drivers/screen.h"
 #include "wwmenu.h"
 
 // *** KONZOLA ***

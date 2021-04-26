@@ -2,8 +2,8 @@
 #include "constants.h"
 #include "legacy.h"
 #include "pstring.h"
-#include "screen.h"
-#include "keyboard.h"
+#include "../Drivers/screen.h"
+#include "../Drivers/keyboard.h"
 
 
 // ******** Struktury *********
