@@ -7,61 +7,359 @@
 <body style="font-family:'Courier New'">
 
 <div>
-    <h4></h4>
-    <span style="color:red"></span>
+    <h4>Náhodné číslo</h4>
+    <span style="color:red">NÁHODNÉ ČÍSLO</span>
+    <hr>
+    Funkce random vrací náhodné číslo z intervalu <0,1).  Protože však PC FAND<br>
+    interně také používá  generátor náhodných čísel, je třeba při specifických<br>
+    požadavcích  generátor  inicializovat.  Procedura  randomize  inicializuje<br>
+    generátor  náhodných čísel  náhodnou  hodnotou , odvozenou  ze systémových<br>
+    hodin. Interní proměnná randseed obsahuje startovací hodnotu generátoru.<br>
+    Po nastavení randseed na určitou hodnotu jsou generována náhodná čísla v<br>
+    naprosto konkrétním pořadí.<br>
+    <br>
+    <br>
+    ██ Syntaxe:        RANDOM   : real              .... funkce<br>
+    <br>
+    RANDSEED := ČísVýraz         .... interní proměnná<br>
+    <br>
+    RANDOMIZE                    .... příkaz procedury<br>
+</div>
+<div>
+    <h4>Nápověda</h4>
+    <span style="color:red">NÁPOVĚDA</span>
+    <hr>
+    Právě si prohlížíte nápovědu PC FANDu. Kromě toho může programátor opatřit<br>
+    projekt vlastní  nápovědou  pro  konkrétní úlohu.  Nápověda  obsahuje řadu<br>
+    spojených  obrazovek,  ve  kterých  se  můžete  pohybovat  prostřednictvím<br>
+    zvýrazněných hesel. Nápověda se vyvolává z projektu klávesami:<br>
+    <br>
+    Uživatelské prostředí:<br>
+    ■ F1 ....... v datovém a textovém editoru -> ovládání editoru (help FANDu)<br>
+    v menu -> nápověda k volbě (help FANDu nebo úlohy dle kontextu)<br>
+    ■ Ctrl-F1 .. v datovém editoru (mód F1,F124) -> nápověda k aktuálnímu údaji<br>
+    (help úlohy)<br>
+    ■ Alt-F10 .. aktivuje poslední volaný help (nezaměnit s F10).<br>
+    <br>
+    Projektantské prostředí:<br>
+    Další možnosti navíc oproti běžnému uživatelskému prostředí.<br>
+    ■ Alt-F1 ... v projektantském prostředí uvnitř kapitoly -> syntaxe kapitoly<br>
+    ■ Ctrl-F1 .. uvnitř kapitoly, kurzor ukazuje na jméno -> syntaxe funkce<br>
+    ■ Alt-F2 ... z editace úlohy -> vyvolání helpu úlohy<br>
+    z editace souboru -> vyvolání odpovídající položky helpu úlohy<br>
+    z menu -> vyvolání odpovídající položky helpu úlohy, pokud<br>
+    není, založí<br>
+    <br>
+    Během prohlížení nápovědy lze použít klávesy:<br>
+    <br>
+    ■ šipky ............ pohyb po zvýrazněných heslech (tématech)<br>
+    ■ Enter ............ přechod k další obrazovce popisující zvýrazněné heslo<br>
+    ■ F10 .............. návrat k předchozí obrazovce<br>
+    ■ F1 ............... přechod k první obrazovce nápovědy (help index)<br>
+    ■ F6 ............... tisk aktuálního textu helpu<br>
+    ■ Esc .............. ukončení nápovědy a návrat do programu<br>
+    ■ PageUp, PageDn ... listování v několikastránkových nápovědách<br>
+    ■ CtrlHome,CtrlEnd . lineární pohyb po helpu<br>
+</div>
+<div>
+    <h4>Navigace</h4>
+    <span style="color:red">NAVIGACE PO DATABÁZI</span>
+    <hr>
+    Navigace umožňuje vyvolat z editace souboru datový  editor  pro  jiný  soubor,<br>
+    tedy vloženou editaci s pozdějším návratem do místa vyvolání.  Před  vyvoláním<br>
+    editoru z okna vyberete požadovaný soubor nebo uživatelský pohled.<br>
+    <br>
+    ■ F7 (soubor) ... navigace směrem nahoru z podřízeného souboru do nadřízeného<br>
+    nabídnou se pouze k němu nadřízené soubory<br>
+    editor najde viditelnou větu (má stejný klíč) nebo nejbližší vyšší<br>
+    ■ Ctrl-F7 (podřízený soubor) ... navigace směrem dolů (nad.-> pod.)<br>
+    nabídnou se pouze podřízené soubory s odpovídajícím vlastním klíčem<br>
+    vyberou se jen odpovídající věty podřízeného souboru (se stejným klíčem)<br>
+    ■ Alt-F7 .............. navigace po celé databázi (všechny soubory)<br>
+    ■ Esc ................. návrat z vložené editace<br>
+    ■ Ctrl-F4 (převzít) ... návrat z vložené editace s převzetím hodnoty do údaje<br>
+    <br>
+    ■ Shift-F7 ............ zrychlený způsob navigace směrem nahoru<br>
+    určeno pro hledání a přenos údaje z nadřízeného souboru<br>
+    vyvolá se pouze z klíčového údaje, který definuje vazbu směrem nahoru<br>
+    následuje okamžitý odskok do nadřízeného souboru (pouze prohlížení)<br>
+    bez výběru souboru nebo uživatelského pohledu, viz. módy datového editoru(S7)<br>
+    Enter znamená návrat s přenosem klíčového údaje, Esc návrat bez přenosu<br>
+    Pokud v odpovídajícím pohledu uvedeme parametr tab=(), lze nadřízený soubor<br>
+    také editovat (i pořizovat věty).<br>
+</div>
+<div>
+    <h4>Navigace po databázi</h4>
+    <span style="color:red">NAVIGACE PO DATABÁZI</span>
     <hr>
 </div>
 <div>
-    <h4></h4>
-    <span style="color:red"></span>
+    <h4>Název spojení</h4>
+    <span style="color:red">CIZÍ KLÍČ</span>
     <hr>
 </div>
 <div>
-    <h4></h4>
-    <span style="color:red"></span>
+    <h4>Net delay</h4>
+    <span style="color:red">LAN - PŘEHLED POUŽÍVANÝCH POJMŮ</span>
     <hr>
 </div>
 <div>
-    <h4></h4>
-    <span style="color:red"></span>
+    <h4>NewRec</h4>
+    <span style="color:red">PŘERUŠENÍ EDITACE</span>
+    <hr>
+    Běžná editace datového souboru může být přerušena požadovanou akcí (vnořená<br>
+    procedura, tisková sestava z aktuální věty, nestandardní ukončení editace).<br>
+    Spuštění akce je buď  automatické ( vázané na přechod  přes editovaný údaj,<br>
+    změnu věty, mazání nebo přidání nové věty ) nebo ruční ( vyvolané funkčními<br>
+    nebo kurzorovými  klávesami - viz. edbreak ). Po skončení akce se pokračuje<br>
+    v editaci souboru.  Pro přerušení editace  z funkčních kláves  lze vytvořit<br>
+    alternativní nápovědu pomocí parametrů editace ctrl,alt nebo shift.<br>
+    <br>
+    ██ syntaxe:            EXIT=( SeznamPřerušení )<br>
+    <br>
+    ■  SeznamPřerušení ... ZpůsobPřerušení : Akce [{ ,ZpůsobPřerušení : Akce }]<br>
+    <br>
+    ■  ZpůsobPřerušení ... Seznam údajů | SeznamKláves | record | newrec<br>
+    Seznam událostí se může skládat i z událostí různého<br>
+    typu.  Např. (udaj1,udaj2),F8,record : akce) ...<br>
+    <br>
+    ■  Akce .............. Exit-procedura | Report | quit |<br>
+    <br>
+    Nutná poznámka:     Čtvrtá možnost je vynechání specifikace akce, což<br>
+    lze použít pro "odstavení" standardních kláves<br>
+    editoru (funkčně rovnocenná je prázdná procedura)<br>
+    <br>
+    Každý prvek seznamu přerušení definuje způsob přerušení (typ události) a<br>
+    požadovanou akci. Lze definovat více přerušení najednou.<br>
+    <br>
+    ■  SeznamKláves ... povolené klávesy viz. edbreak, jednotlivé klávesy jsou<br>
+    oddělené čárkou. Akci vyvolá stisk klávesy.<br>
+    ■  Seznam údajů ... přerušení vyvolá stisknutí Enter nebo F4 na údaji nebo<br>
+    přeskok údaje po tabelátorech           (edbreak=12)<br>
+    ■  record ......... Toto přerušení může vyvolat pouze exit-proceduru.<br>
+    Procedura se vyvolá před změnou, zapsáním nebo zrušením<br>
+    věty. edbreak=16: nová nebo změněná věta<br>
+    edbreak=17: zrušená věta (po Ctrl-Y)<br>
+    Dokončení započaté akce lze zabránit přiřazením<br>
+    EdOk:=false před návratem z exit-procedury.<br>
+    ■  newrec ......... Procedura se vyvolá před začátkem pořízení nové věty,<br>
+    tj. po vytvoření a zobrazení prázdné věty ale před<br>
+    editací prvního údaje. (edbreak=18).<br>
+    <br>
+    AKCE<br>
+    ■  Exit-procedury.. NázevProcedury[(SeznamParametrů)] nebo<br>
+    [TextVýraz][(SeznamParametrů)] ... Dynamické deklarace<br>
+    ■  report ......... report(NázevReportu)<br>
+    Tisková sestava z aktuální věty.<br>
+    Mohou následovat parametry reportu  assign nebo edit<br>
+    ■  quit ........... nestandardní ukončení editace místo běžného Esc<br>
+    (quit na údaji není funkční při pořízení)<br>
+    *<br>
+    Uvnitř exit - procedur lze použít funkce edupdated ( byla věta změněná ?) a<br>
+    návratový kód editoru edbreak (jak byla přerušena editace ?). Aktuální stav<br>
+    právě editované věty je předán  vnořené  proceduře  jako dodatečný poslední<br>
+    parametr volané procedury (typu record of editovaný soubor).<br>
+    Vnořená procedura může (ale nemusí) parametr deklarovat (použít). Případné<br>
+    změny record proměnné se po návratu promítnou do souboru.<br>
+    <br>
+    Další použitelné "stavové" funkce: edirec, edrecno, edfield, edreckey<br>
+</div>
+<div>
+    <h4>nextlex</h4>
+    <span style="color:red">nextlex</span>
+    <hr>
+    nextlex<br>
+    <br>
+    Zkrátí seznam  lexemů v  interní paměti vypuštěním prvního  prvku.<br>
+    Predikát lze použít pouze ve větvi po loadlex.<br>
+</div>
+<div>
+    <h4>NoCancel</h4>
+    <span style="color:red">NOCANCEL - duplicitní klíčové slovo</span>
+    <hr>
+    Parametr NoCancel vesměs zajišťuje, že havárie při provedení příkazu<br>
+    neukončí celý program ale program pokračuje za příkazem a je nastaveno<br>
+    exitcode<>0 .<br>
+    <br>
+    ■ exec(...,nocancel)................. volání externího programu<br>
+    ■ copyfile(...,nocancel) ............ kopírování  souborů<br>
+    ■ mount(...,nocancel) ............... vložení diskety do jednotky<br>
+    ■ restore,backup(...,nocancel)<br>
+    restorem, backupm(...,nocancel) ... zálohování dat<br>
+</div>
+<div>
+    <h4>NoCompress</h4>
+    <span style="color:red">BACKUP</span>
     <hr>
 </div>
 <div>
-    <h4></h4>
-    <span style="color:red"></span>
+    <h4>Nocr</h4>
+    <span style="color:red">LAN - POUŽITÍ NIŽŠÍCH MÓDŮ BLOKOVÁNÍ</span>
     <hr>
 </div>
 <div>
-    <h4></h4>
-    <span style="color:red"></span>
+    <h4>NoDel</h4>
+    <span style="color:red">LAN - POUŽITÍ NIŽŠÍCH MÓDŮ BLOKOVÁNÍ</span>
     <hr>
 </div>
-
-Náhodné číslo
-Nápověda
-Navigace
-Navigace po databázi
-Název spojení
-Net delay
-NewRec
-nextlex
-NoCancel
-NoCompress
-Nocr
-NoDel
-NoDiakr
-NoEd
-NoEdit
-NoExcl
-NoSound
-Not
-NotAtend
-NotSolo
-Novell
-NRecs
-NRecsAbs
-Null
-NULL-hodnoty (SQL)
+<div>
+    <h4>NoDiakr</h4>
+    <span style="color:red">PRÁCE S DIAKRITIKOU A ABECEDOU</span>
+    <hr>
+</div>
+<div>
+    <h4>NoEd</h4>
+    <span style="color:red">PARAMETRY EDITACE</span>
+    <hr>
+</div>
+<div>
+    <h4>NoEdit</h4>
+    <span style="color:red">PŘÍKAZY PRO EDITACI TEXTU</span>
+    <hr>
+</div>
+<div>
+    <h4>NoExcl</h4>
+    <span style="color:red">LAN - POUŽITÍ NIŽŠÍCH MÓDŮ BLOKOVÁNÍ</span>
+    <hr>
+</div>
+<div>
+    <h4>NoSound</h4>
+    <span style="color:red">OŠETŘENÍ KLÁVESNICE</span>
+    <hr>
+</div>
+<div>
+    <h4>Not</h4>
+    <span style="color:red">not - negace</span>
+    <hr>
+    not(predikát[(Term{,Term})])<br>
+    <br>
+    Volá uvedený predikát. Při úspěšném návratu z vyvolaného predikátu<br>
+    vyvolá zpětný chod. Při neúspěchu predikátu pokračuje další  instrukcí.<br>
+    Na pozici výstupních parametrů musí být podtržítko. Výstupní  parametry<br>
+    nelze přebírat, přebírání umožňuje později probíraný predikát all.<br>
+    <br>
+    Negaci  nelze aplikovat  u  standardních  predikátů  write,  save,<br>
+    consult, wait, !, fail, error ,trace, assert, retract, loadlex.<br>
+    <br>
+    Příklad:<br>
+    <br>
+    je_v_sezn(X):- mem_String(X,['Alis','Derby','Pussa']).<br>
+    neni_v_sezn:- not(je_v_sezn('S')),writeln('Prvek není v seznamu'),wait.<br>
+</div>
+<div>
+    <h4>NotAtend</h4>
+    <span style="color:red">SPECIÁLNÍ FUNKCE V SESTAVĚ</span>
+    <hr>
+    V popisné části sestavy mohou kromě obvyklých konstrukcí vystupovat  speciální<br>
+    funkce (všechny jsou typu real):<br>
+    █ page ............ číslo právě vystupující tiskové strany<br>
+    █ line ............ číslo právě vystupujícího řádku na straně<br>
+    █ pagelimit ....... počet řádků (kromě #PF) na jedné tiskové straně sestavy<br>
+    <br>
+    █ sum(ČísVýraz) ... kumulace číselného výrazu za skupinu vět<br>
+    jen v úrovních ukončujících skupinu vět (#RF, #PF, #CF)<br>
+    █ owned ........... přístup k podřízeným souborům<br>
+    <br>
+    █ group :real ............  ─┐<br>
+    █ Ii.count :real  ........   │<br>
+    █ Ii.error :boolean ......   │<br>
+    █ Ii.errortext :string ...   ├ viz. speciální funkce v transformaci<br>
+    █ Ii.warning :boolean ....  ─┘<br>
+    <br>
+    Funkce sum, group a count jsou  obdobně  použitelné  také  ve výpočetní  části<br>
+    transformace (kapitola M).<br>
+    <br>
+    Před seznamem výrazů (ovšem za případnou výpočetní částí) popisné části se<br>
+    mohou vyskytovat speciální příkazy:<br>
+    █ .line:=ČísVýraz ... před výstupem úrovně přejde na zadaný řádek<br>
+    █ .page:=ČísVýraz ... nastaví interní počítadlo stran (pro funkci page)<br>
+    V úrovni RH nastaví přečíslování od první strany sestavy<br>
+    █ .line<=ČísVýraz ... při překročení hranice (řádku) před výstupem odstránkuje<br>
+    █ .notatend ......... pouze úroveň PF, netiskne se na poslední stránce sestavy<br>
+    █ .notsolo .......... pouze pro úroveň DH, vystupuje pouze při nové stránce<br>
+    nebo výstupu CH, resp.CF. Zamezí se tak výstupu úrovně<br>
+    DH při změně třídících údajů (CHi).<br>
+</div>
+<div>
+    <h4>NotSolo</h4>
+    <span style="color:red">SPECIÁLNÍ FUNKCE V SESTAVĚ</span>
+    <hr>
+</div>
+<div>
+    <h4>Novell</h4>
+    <span style="color:red">NOVELL</span>
+    <hr>
+    Kromě sítě NetWareLite a Personal NetWare není třeba používat program<br>
+    SHARE.EXE.<br>
+    <br>
+    Většinou je nutno upravit konfigurační soubor stanice NET.CFG (ve starších<br>
+    verzích ovladačů SHELL.CFG)<br>
+    <br>
+    ■ parametr FILE HANDLES= počet souborů, které se otevírají ze serveru.<br>
+    Platí určité kontroly vzhledem k parametru FILES<br>
+    v CONFIG.SYS (viz. dokumentace Novellu).<br>
+    Základní kontrola se provádí takto:<br>
+    file handles +    files    <   255<br>
+    net.cfg        config.sys<br>
+    <br>
+    ■ parametr SHOW DOTS=ON  Při prohledávání adresářů v okně se objeví<br>
+    i odkaz na nadřízený adresář, t.j. dvě tečky.<br>
+    <br>
+    ■ parametr READ ONLY COMPATIBILITY=OFF<br>
+    nutný pro sdílení RdOnly souborů - např. úloh<br>
+    při použití VLM-ovladačů. Ve verzi PC FANDu 4.0<br>
+    je sdílení úloh již řešeno interně ve FANDu.<br>
+    Tento parametr je v dokumentaci popsán dosti<br>
+    neurčitě a také v praxi někdy "zabralo" nastavení<br>
+    na ON.<br>
+    <br>
+    ■ Při vyšším zatížení sítě, což může být kromě výkonu sítě způsobeno<br>
+    i nevhodným způsobem programování úlohy, může dojít k nadměrnému<br>
+    blokování souborů, zdánlivě  neoprávněnému. Důvodem může být "zahlcení"<br>
+    algoritmů pro blokování souborů na systémové úrovni. Často lze chování<br>
+    sítě zlepšit nastavením těchto dvou parametrů v NET.CFG (podle dokumentace<br>
+    pro Novell 4.x):<br>
+    <br>
+    Lock Delay=CPU ... prodleva při pokusu o uzamčení oblasti souboru<br>
+    Povolené hodnoty 0 .. 255, implicitně 1.<br>
+    Lock Retries=počet opakování pokusů<br>
+    <br>
+    -----------<br>
+    Pro přesměrování tiskárny se používá utilita CAPTURE:<br>
+    <br>
+    CAPTURE Q=Fronta NB NT NOFORMFEED TI=5 Local=1<br>
+    <br>
+    Parametry:<br>
+    Q=Fronta          označení síťové fronty<br>
+    NB                nebude tištěna hlavička<br>
+    NT                není prováděna konverze tabelátoru na mezery<br>
+    NOFORMFEED        potlačí odstránkování na konci tisku<br>
+    TI=5              tisková úloha vytištěna po 5 s<br>
+    Local=1           číslo portu (LPT1)<br>
+</div>
+<div>
+    <h4>NRecs</h4>
+    <span style="color:red">NRECS - duplicitní klíčové slovo</span>
+    <hr>
+    ■ NázevSouboru.nrecs ...... údaje o souboru : počet platných v vět souboru<br>
+    ■ NázevPracIndexu.nrecs ... počet vět pracovního indexu, index of<br>
+    ■ graph(...nrecs...) ...... počet vět pro zobrazení v grafu,  nrecs<br>
+</div>
+<div>
+    <h4>NRecsAbs</h4>
+    <span style="color:red">ÚDAJE O SOUBORU</span>
+    <hr>
+</div>
+<div>
+    <h4>Null</h4>
+    <span style="color:red">LAN - POUŽITÍ NIŽŠÍCH MÓDŮ BLOKOVÁNÍ</span>
+    <hr>
+</div>
+<div>
+    <h4>NULL-hodnoty (SQL)</h4>
+    <span style="color:red">ODBC</span>
+    <hr>
+</div>
 
 <div>
     <h4></h4>

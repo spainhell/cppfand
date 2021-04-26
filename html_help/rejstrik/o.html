@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <title>O</title>
+</head>
+<body style="font-family:'Courier New'">
+
+<div>
+    <h4>O</h4>
+    <span style="color:red">VÝSTUP TRANSFORMACE</span>
+    <hr>
+</div>
+<div>
+    <h4>ODBC</h4>
+    <span style="color:red">ODBC</span>
+    <hr>
+</div>
+<div>
+    <h4>Okna pro výstup</h4>
+    <span style="color:red">OKNO PRO VÝSTUP - with window</span>
+    <hr>
+    Při provádění příkazu  with window  se výstupy  zapisují do okna ( příkazy<br>
+    write, writeln, display, prompt,clrscr), po skončení se obnoví starý obsah<br>
+    obrazovky.  Volání grafu, datového  a textového  editoru má vlastní systém<br>
+    oken nezávislý na příkazu with window. Tyto příkazy mají parametr ww,který<br>
+    definuje okno příkazu a má téměř totožnou syntaxi jako with window.<br>
+    ( případné odlišnosti jsou v definici barev )<br>
+    <br>
+    ██ syntaxe:          WITH WINDOW [(] (DefiniceOkna) [)] DO Příkaz ;<br>
+    <br>
+    ■  DefiniceOkna ...  Souřadnice  [ , Rámeček [ , Atribut ] ]<br>
+    <br>
+    ■  Souřadnice .....  Sloupec1 , Řádek1 , Sloupec2 , Řádek2<br>
+    Číselné výrazy pro horní levý a dolní pravý roh okna.<br>
+    Zadává se v rozsahu 80 x 25.<br>
+    Sloupec1=0 resp. Řádek1=0 centruje v příslušném směru.<br>
+    <br>
+    ■  Rámeček ........  [ @ ] [ * ] [ = ] TextHlavičky [ ! ]<br>
+    Definice rámečku okolo okna a inicializace pracovní<br>
+    plochy okna:<br>
+    @  Plocha okna se nevyplní základní barvou (Atribut)<br>
+    tj. zůstane původní obsah.<br>
+    *  Původní obsah okna se uchová ( a po zrušení okna<br>
+    obnoví) i v grafickém režimu.<br>
+    =  Okolo okna bude dvojitý rámeček. Pokud není uveden<br>
+    bude rámeček jednoduchý nebo, pokud není uveden<br>
+    ani TextHlavičky, bude okno bez rámečku.<br>
+    TextHlavičky  Textový výraz, text pro horní hranu<br>
+    rámečku (centrovaný).<br>
+    !  Okno se stínem. Atribut stínu dle instalace barev<br>
+    <br>
+    ■  Atribut ........  Barva rámečku a obsahu okna. Číselný výraz barvy<br>
+    nebo Ctrl-znak (barvy a typy písma).<br>
+    Pokud se nezadá, nasadí se barva dle instalace.<br>
+    <br>
+    ██ with window ((...)) do Příkaz; ... dvojité závorky místo jednoduchých<br>
+    Po skončení příkazu okno zůstane na obrazovce a neobnoví se původní obsah.<br>
+    <br>
+    <br>
+    ░░░░░░░░░░░░<br>
+    ░░příklady░░<br>
+    ░░░░░░░░░░░░<br>
+    <br>
+    <br>
+    with window (10,10,60,20,=''!) do     { okno s dvojitým rámečkem a stínem}<br>
+    with window (0,0,50,10,='') do        { centrované okno bez stínu - stejné<br>
+    rozměry jako předchozí }<br>
+    <br>
+    with window (1,1,80,25) do            { maximální velikost okna v běžném<br>
+    textovém režimu }<br>
+    <br>
+    with window (10,10,40,20,@,^b) do    { okno nepřemaže původní obsah,nasadí<br>
+    barvu dle definice ^b, po ukončení<br>
+    okna obnoví předchozí stav<br>
+    tj. např. výpis údajů do masky }<br>
+</div>
+<div>
+    <h4>Okno pro graf</h4>
+    <span style="color:red">PARAMETRY GRAFU</span>
+    <hr>
+    ■ WW=( [(] Souřadnice,Rámeček [,Poz,Pop,Ram] [)] )<br>
+    <br>
+    Obecný popis viz.window, velikost objektů (txt,txtwin) je redukována dle<br>
+    velikosti okna,  implicitně je ww=(1,1,80,25,'','l','W','W')  poněkud se<br>
+    odlišuje zadání barev.<br>
+    <br>
+    Poz,Pop,Ram ... barvy pozadí, popředí a rámečku, textové výrazy,<br>
+    používají se konstanty dle parametru Palette.<br>
+    <br>
+    Není-li parametr ww zadán, použije se pro kreslení rámečku barva podle<br>
+    instalace (FANDINST) - "barvy" - "uživatelská obrazovka".<br>
+</div>
+<div>
+    <h4>Operátory</h4>
+    <span style="color:red">OPERÁTORY</span>
+    <hr>
+    logické                  číselné                      srovnávací<br>
+    ───────────────────      ──────────────────────       ──────────────────<br>
+    negace      (NOT) ^      sčítání              +       rovnost          =<br>
+    konjunkce   (AND) &      odčítání             -       nerovnost        <><br>
+    alternativa (OR)  |      násobení             *       větší            ><br>
+    implikace         =>     dělení               /       větší nebo roven >=<br>
+    ekvivalence      <=>     celočíselné dělení  div      menší            <<br>
+    zbytek po dělení    mod      menší nebo roven <=<br>
+    textové                  zaokrouhlování     round     prvek intervalu  in<br>
+    ──────────────<br>
+    zřetězení    +<br>
+    <br>
+    ■ srovnávací operátory slouží k porovnání čísel i textů a mohou být doplněny:<br>
+    - Operátor.Číslo ... přesnost číselného srovnání (implicitně 5 des.míst)<br>
+    - Operátor~ ........ lexikální textové srovnání v národní abecedě<br>
+    s ignorováním mezer zprava<br>
+    <br>
+    ░ 1.234 > 1.2   ale   1.234 =.1 1.2<br>
+    ░ 'Praha' <> 'Praha '   ale   'Praha' =~ 'PRAHA   '       'baba'=~'bÁBa'<br>
+</div>
+<div>
+    <h4>Ord</h4>
+    <span style="color:red">TEXTOVÉ FUNKCE</span>
+    <hr>
+</div>
+<div>
+    <h4>Ošetření klávesnice</h4>
+    <span style="color:red">OŠETŘENÍ KLÁVESNICE</span>
+    <hr>
+</div>
+<div>
+    <h4>OutTextXY</h4>
+    <span style="color:red">OUTTEXTXY</span>
+    <hr>
+    Příkaz outtextxy vypíše zadaný text v grafickém režimu do aktuálního okna.<br>
+    Text  je umístěn na zadanou  pozici, použije se zadaný druh písma (font) v<br>
+    požadované velikosti, barvě a směru výpisu.<br>
+    <br>
+    ██ syntaxe:      OUTTEXTXY ( X, Y, Text, Font, Barva<br>
+    [ ,Velikost [ ,Směr ]<br>
+    [ ,MultX ,DivX ,MultY ,DivY ] ] )<br>
+    <br>
+    ■  X,Y ......... Číselné výrazy, "pixel" souřadnice levého dolního okraje<br>
+    výpisu textu. Jsou relativní k aktuálnímu oknu.<br>
+    ■  Text ........ Textový výraz, který se vypíše na obrazovku.<br>
+    ■  Font ........ Číselný výraz, 0,1 - Triplex , 2 - Small<br>
+    ■  Barva ....... Číselný výraz - kód barvy, nebo Ctrl-znak. Barvy<br>
+    ■  Velikost .... Číselný výraz - velikost písma, rozsah 1..10,<br>
+    implicitně=4, dosadí se i při použití 0 .<br>
+    ■  Směr ........ Číselný výraz - 0 = horizontální výpis (implicitně)<br>
+    1 = vertikální výpis<br>
+    ■  MultX,DivX<br>
+    MultY,DivY... Číselné výrazy. Aplikují se jako zlomky MultX/DivX a<br>
+    MultY/DivY. Zjemní a zvýší rozsah parametru velikost v<br>
+    horizontálním i vertikálním směru. V případě jejich<br>
+    použití je velikost ignorována.<br>
+</div>
+<div>
+    <h4>Overwr</h4>
+    <span style="color:red">SETEDITTXT</span>
+    <hr>
+</div>
+<div>
+    <h4>Overwrite</h4>
+    <span style="color:red">FYZICKÉ ZÁLOHOVÁNÍ</span>
+    <hr>
+</div>
+<div>
+    <h4>Ovládání zobrazení grafu</h4>
+    <span style="color:red">OVLÁDÁNÍ ZOBRAZENÍ GRAFU</span>
+    <hr>
+    Při zobrazení grafu jsou tři možnosti chování:<br>
+    <br>
+    ■ tisk grafu bez dotazu, po vytištění pokračuje úloha dalším příkazem<br>
+    ■ zobrazení s časovou prodlevou (demonstrace), prodloužení stiskem klávesy<br>
+    ■ normální zobrazení - čeká na stisk klávesy :<br>
+    <br>
+    F6,ShiftF6 - tisk grafu, lze přerušit klávesou ESC<br>
+    F9,ShiftF9 - zápis do souboru GRAPH.PCX (v aktuálním adresáři,formát PCX)<br>
+    Při interaktivní práci lze jméno souboru změnit.<br>
+    Konec ukládání je zvukově signalizován.<br>
+    F4,Shift4  - graf bude zobrazen inverzně<br>
+    ESC        - ukončení zobrazení grafu<br>
+    <br>
+    Shift - klávesy se vztahují k aktuálnímu oknu, def. parametrem WW<br>
+    <br>
+    Pokud je při zobrazení PCX obraz větší než stanovené okno ( WW),lze v okně<br>
+    obrazem pohybovat:               kurzor. šipky - malý krok<br>
+    PgUp, PgPn - o celé okno vertikálně<br>
+    Ctrl-Right,Ctrl-Left - o celé okno horizontálně<br>
+</div>
+<div>
+    <h4>Owned</h4>
+    <span style="color:red"></span>
+    <hr>
+</div>
+<div>
+    <h4>Owner</h4>
+    <span style="color:red"></span>
+    <hr>
+</div>
+
+<div>
+    <h4></h4>
+    <span style="color:red"></span>
+    <hr>
+</div>
+<div>
+    <h4></h4>
+    <span style="color:red"></span>
+    <hr>
+</div>
+
+</body>
+</html>
