@@ -72,6 +72,7 @@ public:
 	void ScrColor(WORD X, WORD Y, WORD L, BYTE Color);
 	void WriteChar(short X, short Y, char C, BYTE attr, Position pos = relative);
 	size_t WriteStyledStringToWindow(std::string text, BYTE Attr);
+	//size_t WriteStyledString(short X, short Y, std::string& text, BYTE Attr);
 	void LF();
 	bool SetStyleAttr(char C, BYTE& a);
 	TCrs CrsGet();
