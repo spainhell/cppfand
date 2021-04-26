@@ -54,6 +54,7 @@ class Screen
 {
 public:
 	Screen(WORD* TxtCols, WORD* TxtRows, Wind* WindMin, Wind* WindMax, TCrs* Crs);
+	Screen(short TxtCols, short TxtRows, Wind* WindMin, Wind* WindMax, TCrs* Crs);
 	~Screen();
 	size_t BufSize();
 

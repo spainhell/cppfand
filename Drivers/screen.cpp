@@ -8,10 +8,15 @@ const unsigned int BUFFSIZE = 128 * 1024;
 
 Screen::Screen(WORD* TxtCols, WORD* TxtRows, Wind* WindMin, Wind* WindMax, TCrs* Crs)
 {
-	this->TxtCols = *TxtCols;
-	this->TxtRows = *TxtRows;
-	this->MaxColsIndex = (short)(*TxtCols - 1);
-	this->MaxRowsIndex = (short)(*TxtRows - 1);
+	Screen(*TxtCols, *TxtRows, WindMin, WindMax, Crs);
+}
+
+Screen::Screen(short TxtCols, short TxtRows, Wind* WindMin, Wind* WindMax, TCrs* Crs)
+{
+	this->TxtCols = TxtCols;
+	this->TxtRows = TxtRows;
+	this->MaxColsIndex = (short)(TxtCols - 1);
+	this->MaxRowsIndex = (short)(TxtRows - 1);
 	this->WindMin = WindMin;
 	this->WindMax = WindMax;
 	this->Crs = Crs;
@@ -20,7 +25,7 @@ Screen::Screen(WORD* TxtCols, WORD* TxtRows, Wind* WindMin, Wind* WindMax, TCrs*
 	if (_handle == INVALID_HANDLE_VALUE) { throw std::exception("Cannot open console output handle."); }
 	SMALL_RECT rect{ 0, 0, 79, 24 };
 	SetConsoleWindowInfo(_handle, true, &rect);
-	SetConsoleScreenBufferSize(_handle, { (short)*TxtCols, (short)*TxtRows });
+	SetConsoleScreenBufferSize(_handle, { TxtCols, TxtRows });
 	SetConsoleTitle("C++ FAND");
 	//DWORD consoleMode = ENABLE_VIRTUAL_TERMINAL_PROCESSING; // | ENABLE_LVB_GRID_WORLDWIDE;
 	//bool scm = SetConsoleMode(_handle, 0);
