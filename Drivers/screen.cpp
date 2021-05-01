@@ -6,9 +6,9 @@
 
 const unsigned int BUFFSIZE = 128 * 1024;
 
-Screen::Screen(WORD* TxtCols, WORD* TxtRows, Wind* WindMin, Wind* WindMax, TCrs* Crs)
+Screen::Screen(WORD* TxtCols, WORD* TxtRows, Wind* WindMin, Wind* WindMax, TCrs* Crs) : Screen(*TxtCols, *TxtRows, WindMin, WindMax, Crs)
 {
-	Screen(*TxtCols, *TxtRows, WindMin, WindMax, Crs);
+
 }
 
 Screen::Screen(short TxtCols, short TxtRows, Wind* WindMin, Wind* WindMax, TCrs* Crs)
