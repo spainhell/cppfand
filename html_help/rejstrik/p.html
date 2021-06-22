@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <title>P</title>
+</head>
+<body style="font-family:'Courier New'">
+
+<div>
+    <h4>P</h4>
+    <span style="color:red">PROCEDURA - kapitola P</span>
+    <hr>
+    Procedura kombinuje volání již připravených  kapitol projektu a komunikaci<br>
+    s uživatelem. Start celé úlohy začíná procedurou, která se povinně jmenuje<br>
+    MAIN.<br>
+    <br>
+    ██ Syntaxe:       [ ( ParametryProcedury ) ]<br>
+    [ DeklaraceLokálníchProměnných ]<br>
+    begin<br>
+    { Příkaz ; }<br>
+    end ;<br>
+    <br>
+    ██ ParametryProcedury<br>
+    Seznam parametrů oddělených středníkem. Celý seznam parametrů je<br>
+    uzavřený v kulatých závorkách. Pro tyto parametry se používá termín<br>
+    formální parametr.  Při volání procedury se na místo formálního<br>
+    parametru dosadí skutečný parametr.<br>
+    <br>
+    ( [VAR] NázevParametru : Typ  [{ ;[var] NázevParametru : Typ }] )<br>
+    <br>
+    ■  Typ ... Povolené typ parametrů : integer, real, string,<br>
+    record of soubor,<br>
+    index of soubor,<br>
+    file<br>
+    <br>
+    ■  VAR ... Tento prefix znamená, že při volání procedury se do proměnné,<br>
+    použité jako parametr procedury, dosadí hodnota, kterou tento<br>
+    parametr získal v proceduře. Jde o tzv. volání parametru odkazem.<br>
+    Lze použít jen pro typy  real, string, boolean.<br>
+    Poznámka : typy RECORD of soubor a INDEX of soubor jsou vždy<br>
+    volány odkazem.<br>
+    <br>
+    Při volání  z jiné  procedury musí  souhlasit počet  a typy parametrů v<br>
+    deklaraci volané procedury a v příkazu volání proc.  Před parametr typu<br>
+    FILE musíme vložit znak '@'.<br>
+    Příklad:    proc( Uzaverka,(@Ucty1)) ;<br>
+    <br>
+    <br>
+    ██ Tělo procedury         begin<br>
+    Příkazy ;<br>
+    end  ;<br>
+    řídící příkazy          volání editoru            výrazy<br>
+    přiřazovací příkaz      volání sestavy            příkazy pro editaci textu<br>
+    komunikační příkazy     volání transformace       kopírování a převody<br>
+    grafy                   třídění                   externí programy<br>
+    speciální příkazy       přímý přístup k datům     katalog v proceduře<br>
+    <br>
+    <br>
+    ░░░░░░░░░░░░<br>
+    ░░příklady░░<br>
+    ░░░░░░░░░░░░<br>
+    <br>
+    ██  Minimální zápis procedury:          P  Ukazka1   *   BEGIN<br>
+    END ;<br>
+    Nejčastěji se pro takovou proceduru používá výraz prázdná procedura.<br>
+    Vlastě neudělá vůbec nic. To se ale může někdy docela hodit.<br>
+    <br>
+    ██  Procedura s parametry a lokálními proměnnými:<br>
+    <br>
+    P  Ukazka2 *  ( rec:record of Soubor1; r:real; VAR s:string) {parametry}<br>
+    VAR i,j : real;<br>
+    b : boolean ;                   { lokální proměnné }<br>
+    BEGIN<br>
+    s:='';<br>
+    for i:=1 to int(r) do s:=s+char(i);<br>
+    rec.Poznamka:=s ;<br>
+    ....<br>
+    end ;<br>
+    <br>
+    V proceduře Ukazka2 se vytvoří řetězec znaků s kódy 1,2,...r (parametr)<br>
+    a ten se předá přes (VAR)parametr s ven z procedury. Kromě toho se<br>
+    zapíše string i do údaje record-proměnné rec, kde bude přístupný i po<br>
+    ukončení procedury.<br>
+</div>
+<div>
+    <h4>Page</h4>
+    <span style="color:red">SPECIÁLNÍ FUNKCE V SESTAVĚ</span>
+    <hr>
+</div>
+<div>
+    <h4>PageLimit</h4>
+    <span style="color:red">STRÁNKOVÁNÍ V SESTAVĚ</span>
+    <hr>
+    Stránkování v sestavě je určeno pro změnu implicitních hodnot:<br>
+    <br>
+    ■ fyzická strana ... délka jedné strany papíru (pagesize)<br>
+    ■ logická strana ... počet řádek využitých sestavou na straně (pagelimit)<br>
+    <br>
+    Implicitní nastavení fyzické  strany je 72 řádků (12 palců), délka logické<br>
+    strany je dána instalačním programem (parametr automatická sestava - délka,<br>
+    obvykle 69 řádků). Délku  fyzické  i  logické  strany v sestavě lze změnit<br>
+    přiřazením na začátku deklarace sestavy (před názvem vstupního souboru).<br>
+    <br>
+    █ .pagesize:=ČísVýraz ... řízení stránkování na začátku sestavy (kap. R)<br>
+    █ .pagelimit:=ČísVýraz<br>
+    █ pagelimit ............. také funkce v popisné části výstupní úrovně reportu<br>
+    <br>
+    ░ .pagesize:=43;                  {tisk do kratších formulářů}<br>
+    ░ #I_FAKTURY<br>
+    ░ ... atd ...<br>
+    ░ .pagelimit:=55;                 {tisk na volné listy}<br>
+    ░ .pagelimit:=PARAM.DélkaStrany   {vlastní instalace v programu}<br>
+</div>
+<div>
+    <h4>PageSize</h4>
+    <span style="color:red">STRÁNKOVÁNÍ V SESTAVĚ</span>
+    <hr>
+</div>
+<div>
+    <h4>Palette</h4>
+    <span style="color:red">PARAMETRY GRAFU</span>
+    <hr>
+    ■ PALETTE=TextVýraz ... pořadí barev pro zobrazení údajů, max 14 znaků<br>
+    B   - modrá       G - zelená     A   - tmavě šedá<br>
+    Y=y - žlutá       R - červená    c   - sv.purpurová<br>
+    r   - sv.červená  b - sv.modrá   W=w - bílá<br>
+    g   - sv.zelená   M - fialová    L=l - černá<br>
+    m   - sv.fialová  C - purpurová<br>
+    O=o - hnědá       a - sv.šedá<br>
+    implicitně BYrgmORGbMCaAc<br>
+    <br>
+    ■ RGB=(KódBarvy,R,G,B) ... předefinování barev (jen VGA)<br>
+    KódBarvy: dle Palette nebo '@' - ruční míchání<br>
+    R,G,B : ČísVýrazy, poměr složek R,G,B v %<br>
+</div>
+<div>
+    <h4>Parametrický klíč</h4>
+    <span style="color:red">PARAMETRICKÝ KLÍČ</span>
+    <hr>
+    Datový soubor s definovaným  parametrickým  klíčem je parametrický soubor.<br>
+    Jeho poslední věta je viditelná (tj. jeho údaje se mohou vyskytovat pomocí<br>
+    tečkové notace ve výrazech i na levé straně přiřazovacího příkazu) v celém<br>
+    projektu.<br>
+    <br>
+    █ @ @ ....................... definice parametrického klíče<br>
+    <br>
+    Parametrický soubor může být dále v projektu zpracováván jako obyčejný<br>
+    datový soubor a může mít více vět, většinou má však pouze jednu větu. Když<br>
+    je parametrický soubor prázdný, PC FAND automaticky vytváří při prvním<br>
+    přístupu jednu větu a naplní ji nulami a mezerami.<br>
+    <br>
+    Údaje poslední věty parametrického souboru nazýváme globální proměnné.<br>
+    Na globální proměnné se v celém projektu odkazujeme tečkovou notací<br>
+    a mohou vystupovat ve výrazech i na levé straně přiřazovacího příkazu.<br>
+    <br>
+    █ NázevSouboru.NázevÚdaje ... globální proměnná<br>
+    <br>
+    <br>
+    ░░░░░░░░░░░░<br>
+    ░░příklady░░<br>
+    ░░░░░░░░░░░░<br>
+    <br>
+    ██ Deklarace parametrického souboru PARAM<br>
+    <br>
+    F  PARAM    Datum : D ;<br>
+    ....<br>
+    #K @ @ ;<br>
+    <br>
+    Odkaz na globální proměnnou PARAM.Datum kdekoliv v projektu<br>
+    PARAM.Datum:=today;<br>
+</div>
+<div>
+    <h4>Parametry automatické sestavy</h4>
+    <span style="color:red">PARAMETRY AUTOMATICKÉ SESTAVY</span>
+    <hr>
+    ■ mode=errcheck ......... automatická sestava "Chybné věty"<br>
+    ■ mode=onlysum .......... automatická sestava "Jen součty"<br>
+    ■ sort=(TřídícíÚdaje) ... dočasné setřídění souboru<br>
+    (nemá vliv na data po ukončení sestavy)<br>
+    ■ speciální znaky před názvy třídících údajů: > ... sestupné setřídění<br>
+    ~ ... lexikální setřídění<br>
+    ■ ctrl=(SeznamÚdajů) .... řídící údaje součtované sestavy<br>
+    (nejsou automaticky zároveň třídícími údaji)<br>
+    ■ sum=(SeznamÚdajů) ..... součtované údaje sestavy<br>
+    <br>
+    ■ width=ČísVýraz ........ počet znaků na řádek podle šířky papíru<br>
+    (implicitně podle instalace)<br>
+    ■ style=compressed ...... tisk úzkým písmem (17cpi)<br>
+    ■ style=normal .......... tisk normálním písmem (10 cpi)<br>
+    ■ head=TextVýraz ........ vlastní hlavička strany autoreportu (řádek textu)<br>
+    maska pro číslo strany _____ ,<br>
+    maska pro dnešní datum __.__.__<br>
+    V textu hlavičky se nesmí vyskytovat znak '\'<br>
+</div>
+<div>
+    <h4>Parametry editace</h4>
+    <span style="color:red">PARAMETRY EDITACE</span>
+    <hr>
+    Parametry příkazu edit, lze  je použít i v definici uživatelského pohledu.<br>
+    <br>
+    ██ tab=(SeznamÚdajů) .... nastavení tabelátorů , viz. seznam údajů<br>
+    ██ dupl=(SeznamÚdajů) ... nastavení automatické duplikace<br>
+    ██ noed=(SeznamÚdajů) ... zadané údaje nelze editovat (měnit), ani při<br>
+    pořízení<br>
+    <br>
+    ██ mode='SeznamMódů' .... mód editace (parametrizace některých funkcí<br>
+    datového editoru) viz. módy datového editoru<br>
+    <br>
+    ██ cond=(LogVýraz) ...... podmínka pro výběr vět k editaci, v podmínce<br>
+    lze použít key in - výběr podle indexu<br>
+    ██ journal=NázevSouboru . soubor pro uchování změn při editaci (journalof)<br>
+    ██ saveafter=ČísVýraz ... aut.uložení na disk po daném počtu změněných vět.<br>
+    Zajistí korektní stav editovaného souboru. Menší<br>
+    saveafter znamená vyšší bezpečnost při výpadku<br>
+    proudu či jiné havárii.<br>
+    ██ ww=(...) ............. editace v okně<br>
+    ██ exit=(...) .     ..... přerušení editace (volání vnořené procedury)<br>
+    <br>
+    ██ head=TextVýraz ... nestandardní první (systémový) řádek editoru, může<br>
+    obsahovat masku pro  číslo věty _____ , (a) nebo<br>
+    masku pro dnešní datum __.__.__)<br>
+    <br>
+    ██ watch=ČísVýraz ... časový interval (sek.), pokud tak dlouho není<br>
+    stisknuta klávesa,  zvukově varuje, čekání 3 x opakuje<br>
+    a potom ukončí automaticky editaci. Je to prevence<br>
+    proti zablokování sítě uživatelem (edbreak=11)<br>
+    Pouze pro sdílené soubory ( #, #R v katalogu ).<br>
+    <br>
+    ██ refresh=ČísVýraz.. časový interval (sek.) pro automatickou obnovu<br>
+    obrazovky při editaci sdílených souborů v LAN.<br>
+    <br>
+    ██ last,Ctrl,Shift,Alt ... alternativní nápověda<br>
+</div>
+<div>
+    <h4>Parametry programu SHARE</h4>
+    <span style="color:red">LAN - PARAMETRY PROGRAMU SHARE</span>
+    <hr>
+    Některé  sítě  vyžadují  na  serveru spuštění programu SHARE.  Pro správné<br>
+    fungování PC FANDu je  nutné  věnovat pozornost nastavení parametrů tohoto<br>
+    programu:<br>
+    <br>
+    █ SHARE /F:n /L:m<br>
+    <br>
+    ■ parametr /F:n - prostor pro tabulku názvů otevřených souborů. Při určení<br>
+    hodnoty   parametru   doporučujeme   následující  postup<br>
+    (přetečení program SHARE nehlásí a může dojít k přepsání<br>
+    paměti):<br>
+    <br>
+    n = 71 * FILES      71 = nejdelší MS DOS cesta + 11 bytů<br>
+    FILES = maxim. počet otevřených souborů,<br>
+    uvedený například v CONFIG.SYS<br>
+    <br>
+    ■ parametr /L:m - počet locků (zámek souboru nebo věty),  které může SHARE<br>
+    najednou provést. Pro parametr "m" lze doporučit dvojná-<br>
+    sobek maximálního  počtu  najednou   otevřených  souborů<br>
+    (např. parametr FILES z CONFIG.SYS)<br>
+</div>
+<div>
+    <h4>Parametry sestavy</h4>
+    <span style="color:red">PARAMETRY SESTAVY</span>
+    <hr>
+    Následující nepovinné parametry  se používají pro sestavy podle kapitoly R<br>
+    i pro automatické sestavy.<br>
+    <br>
+    ■ cond=(LogVýraz) ...... logická podmínka pro výběr vět souboru do sestavy<br>
+    v podmínce lze použít key in - výběr podle indexu<br>
+    uplatní se pouze pro první vstupní soubor (#I1_..)<br>
+    <br>
+    ■ cond=( ? ) ........... podmínku zadá uživatel před generováním sestavy<br>
+    <br>
+    ■ assign=UrčeníVýstupu ... přesměrování výstupu na tiskárnu 'LPT1'<br>
+    nebo do souboru: jméno text.souboru včetně cesty<br>
+    nebo název dle katalogu. Implicitně se sestava<br>
+    vygeneruje do textu 'PRINTER.TXT' a edituje se<br>
+    assign potlačí editaci výsledné sestavy<br>
+    <br>
+    ■ times=ČísVýraz ....... počet výtisků při tisku sestavy<br>
+    (vygeneruje na začátek tečkový příkaz .ti)<br>
+    <br>
+    ■ edit ................. standardně se sestava edituje jen v módu prohlížení<br>
+    edit dovolí úplnou editaci (změny) sestavy<br>
+    <br>
+    ■ check ..............   příkaz report provede jen kontrolu syntaxe<br>
+    dynamické deklarace kapitoly R.<br>
+    <br>
+    ■ printctrl ............ výstup do tiskového souboru<br>
+    (místo řídících znaků pro přepínání typů písma se do sestavy generují<br>
+    rovnou kódy pro tiskárnu podle instalace - např.pro tisk mimo PC FAND,<br>
+    většinou  ve spojení s assign, POZOR - nezpracuje tečkové příkazy).<br>
+</div>
+<div>
+    <h4>Password</h4>
+    <span style="color:red">SPECIÁLNÍ FUNKCE</span>
+    <hr>
+</div>
+<div>
+    <h4>Path</h4>
+    <span style="color:red">KATALOG V PROCEDUŘE</span>
+    <hr>
+</div>
+<div>
+    <h4>PAU</h4>
+    <span style="color:red">PARAMETRY GRAFU</span>
+    <hr>
+    ■ PRINT=TextVýraz... parametry pro tisk grafu : string délky 6 znaků<br>
+    1. (impl.)D|M|H    Kvalita tisku - Draft,Midle,High<br>
+    2. H(impl.) | V    Směr tisku: horizont. nebo vertik.<br>
+    3. 0|1|2(impl.)|3  Hustota tisku: 120,60,120,240 dpi<br>
+    4. (impl.)0..9     Posunutí grafu od levé strany v cm<br>
+    5. (impl.)0..9     Počet prázdných řádků před tiskem<br>
+    6. (impl.)Y | N    Odstránkování po tisku grafu<br>
+    (nebo Print='PAUnn': doba zobrazení grafu v sekundách)<br>
+    tisk grafu<br>
+    <br>
+    ■ ASSIGN=TextVýraz... určí jméno souboru (nebo cestu), do kterého se zapíše<br>
+    graf při uložení do PCX (implicitně GRAPH.PCX,<br>
+    implicitní přípona .PCX)<br>
+</div>
+<div>
+    <h4>PF</h4>
+    <span style="color:red">VÝSTUP SESTAVY</span>
+    <hr>
+</div>
+<div>
+    <h4>PH</h4>
+    <span style="color:red">VÝSTUP SESTAVY</span>
+    <hr>
+</div>
+<div>
+    <h4>Pi</h4>
+    <span style="color:red">ARITMETICKÉ FUNKCE</span>
+    <hr>
+</div>
+<div>
+    <h4>Podmíněný překlad</h4>
+    <span style="color:red">PODMÍNĚNÝ PŘEKLAD - direktivy kompilátoru</span>
+    <hr>
+</div>
+<div>
+    <h4>Pohyby kurzoru</h4>
+    <span style="color:red">POHYBY KURZORU TEXTOVÉHO EDITORU</span>
+    <hr>
+    ■ šipka doleva ......... na předchozí znak<br>
+    ■ šipka doprava ........ na následující znak<br>
+    ■ šipka nahoru ......... na předchozí řádek<br>
+    ■ šipka dolů ........... na následující řádek<br>
+    ■ Ctrl-šipka doleva .... na předchozí slovo<br>
+    ■ Ctrl-šipka doprava ... na následující slovo<br>
+    ■ Home ................. na začátek řádku<br>
+    ■ End .................. na konec řádku<br>
+    <br>
+    ■ PageUp ............... na předchozí stranu<br>
+    ■ PageDown ............. na následující stranu<br>
+    ■ Ctrl-PageUp .......... na začátek textu<br>
+    ■ Ctrl-PageDown ........ na konec textu<br>
+    ■ Ctrl-F3 .............. na zadaný řádek<br>
+    ■ Ctrl-Q Ctrl-E ........ na první řádek okna<br>
+    ■ Ctrl-Q Ctrl-X ........ na poslední řádek okna<br>
+    <br>
+    ■ Ctrl-Home ............ na předchozí volný text<br>
+    ■ Ctrl-End ............. na následující volný text<br>
+    <br>
+    ■ Ctrl-W ... posune obrazovku o jeden řádek dolů (nemění pozici kurzoru)<br>
+    ■ Ctrl-Z ... posune obrazovku o jeden řádek nahoru<br>
+</div>
+<div>
+    <h4>PopisnáČástÚrovně</h4>
+    <span style="color:red">POPISNÁ ČÁST ÚROVNĚ</span>
+    <hr>
+    Na rozdíl od formuláře (E) v sestavě (R) vystupují nejen  údaje  souboru,  ale<br>
+    obecně výrazy. Popisná část obsahuje seznam výrazů vyhodnocovaných v  kontextu<br>
+    jedné věty vstupního souboru (uložené a vypočítané údaje, operátory a  funkce,<br>
+    lokální a globální  proměnné,  údaje  z  nadřízených  souborů  pomocí  tečkové<br>
+    notace). Při více vstupech platí pro  stejnojmenné  údaje  obdobná  implicitní<br>
+    pravidla jako v transformaci, silnější je použití prefixu Ii.NázevÚdaje.<br>
+    <br>
+    █ SeznamVýrazů ... popisná část výstupní úrovně reportu bez přiřazení<br>
+    <br>
+    █ begin SeznamPřiřazovacíchPříkazů end SeznamVýrazů ... s přiřazením do<br>
+    █ SeznamVýrazů begin SeznamPřiřazovacíchPříkazů end          proměnných<br>
+    Před  seznamem  a/nebo  po  seznamu  vystupujících  výrazů  může  být  uvedena<br>
+    výpočetní  část  -  seznam  přiřazovacích  příkazů  v  programových  závorkách<br>
+    begin...end (uvnitř případně s větvením if-then-else). Objektem přiřazení jsou<br>
+    lokální a globální proměnné. Před a/nebo po  výstupu  se  provedou  definovaná<br>
+    přiřazení.<br>
+    <br>
+    Popisná část může být i prázdná, potom vystoupí na tomto místě beze změny text<br>
+    definovaný v zobrazovací části (zobrazovací část je  bez  masek).  Pokud  celá<br>
+    úroveň obsahuje jen přiřazení, provedou se jen výpočty bez výstupu.<br>
+</div>
+<div>
+    <h4>PortIn</h4>
+    <span style="color:red">PRÁCE S PORTEM</span>
+    <hr>
+    Pro práci na úrovni vstupních/výstupních portů, tj. na úrovni instrukcí<br>
+    procesoru IN a OUT lze použít funkci portin pro příjem a příkaz portout<br>
+    pro výstup informací. Např. je tedy možno řešit častý problém komunikace<br>
+    přes sériové porty COMx.<br>
+    <br>
+    <br>
+    ██ syntaxe:        PORTIN ( Slovo, AdresaPortu ) : real<br>
+    <br>
+    Funkce vrací hodnotu byte nebo slova, které bylo<br>
+    přečteno z portu.<br>
+    ■  Slovo ......... Logický výraz, pokud je true, čte se z portu slovo<br>
+    (dva byte), jinak se čte jeden byte.<br>
+    ■  AdresaPortu ... Číselný výraz s adresou portu, např. pro COM1 se<br>
+    zadává 1016 (hexadecimálně 3F8).<br>
+    <br>
+    ■  Kapitoly .... P,D<br>
+    ────────────────────<br>
+    <br>
+    Příkaz<br>
+    ██ syntaxe:        PORTOUT ( Slovo, AdresaPortu, Výstup )<br>
+    <br>
+    ■  Slovo ......... Logický výraz, viz. portin.<br>
+    ■  AdresaPortu ... Číselný výraz s adresou portu, viz. portin<br>
+    ■  Výstup ........ Číselný výraz, hodnota slova nebo byte, který vystupuje<br>
+    <br>
+    ■  Kapitoly .... P<br>
+    <br>
+    <br>
+    ██ Poznámka:  Použití těchto instrukcí předpokládá znalosti na úrovni<br>
+    programování v assembleru a znalost popisu odpovídajících<br>
+    komunikačních rozhraní.<br>
+    Příklad na komunikaci mezi dvěma počítači pomocí portů<br>
+    COM1 a COM2 je uveden v distribuci PC FANDu verze 4.0 pod<br>
+    názvem PORT.<br>
+</div>
+<div>
+    <h4>PortOut</h4>
+    <span style="color:red">PRÁCE S PORTEM</span>
+    <hr>
+</div>
+<div>
+    <h4>Pos</h4>
+    <span style="color:red">POROVNÁNÍ TEXTOVÝCH ŘETĚZCŮ</span>
+    <hr>
+</div>
+<div>
+    <h4>Používané pojmy</h4>
+    <span style="color:red">LAN - PŘEHLED POUŽÍVANÝCH POJMŮ</span>
+    <hr>
+</div>
+<div>
+    <h4>Pracovní index</h4>
+    <span style="color:red">INDEX of Soubor</span>
+    <hr>
+</div>
+<div>
+    <h4>Práva přístupu k datům</h4>
+    <span style="color:red">PRÁVA PŘÍSTUPU K DATŮM</span>
+    <hr>
+</div>
+<div>
+    <h4>PREDICATES</h4>
+    <span style="color:red">#PREDICATES</span>
+    <hr>
+    NázevPredikátu[([&]NázevTypu[{,[&]NázevTypu}])]<br>
+    <br>
+    @NázevPredikátu [['ZdrojovýKódProc']] [([&]NázevTypu[{,[&]NázevTypu}])]<br>
+    <br>
+    Deklarace hlaviček predikátů.<br>
+    <br>
+    Deklarace  predikátů   rozlišuje  vstupní   a  výstupní parametry.<br>
+    Výstupní  parametry   jsou  označeny   pomocí  znaku   "&".  Znak   "@"<br>
+    označuje proceduru  PC FANDu s parametry typu Integer a Real - ve FANDu<br>
+    Real, Boolean  - v  FANDu Boolean  nebo String  a LongString - ve FANDu<br>
+    String. Seznamové a záznamové typy budou proceduře předány ve  vnitřním<br>
+    tvaru (ve FANDu typ String) a procedura je může uložit do typu string a<br>
+    volný text. Za  názvem predikátu  může být uvedena dynamická  deklarace<br>
+    predikátu umístěná  v hranatých závorkách.<br>
+    <br>
+    Znak  "&" se  skutečně zapisuje.  Při popisu  predikátů je  tohoto<br>
+    znaku použito pro označení výstupních termů. Při volání predikátu  není<br>
+    znak "&" součástí zápisu.<br>
+    <br>
+    Odstavec  definuje pouze hlavičku predikátu. Větev predikátu  musí<br>
+    být alespoň jednou uvedena v následujícím odstavci CLAUSES.<br>
+    <br>
+    Implicitně je  deklarován predikát "main" bez parametrů, který  je<br>
+    implicitně volán při vyvolání příkazu lproc(NázevLKap).<br>
+    <br>
+    Příklad:<br>
+    <br>
+    secti(Integer,Integer,&Integer)<br>
+    <br>
+    @upcase['(a:string;var b:string) begin b:=upcase(a); end;']<br>
+    (String,&String)<br>
+</div>
+<div>
+    <h4>Predikát</h4>
+    <span style="color:red">Predikát</span>
+    <hr>
+    Zápis programu  i dat  je tvořen posloupností predikátů.  Predikát<br>
+    může být  zapsán ve  tvaru faktu  nebo pravidla. Před vlastním  popisem<br>
+    predikátů je nutno uvést krátkou zmínku o syntaktickém zápisu.  Logická<br>
+    procedura  je  rozdělena  do  odstavců  s  pevně  daným  formátem  (viz<br>
+    syntaxe).<br>
+    <br>
+    Predikáty lze dělit do skupin:<br>
+    ■ Databázové  predikáty -  lze  zapsat  pouze  jako  fakt,  z  běžícího<br>
+    programu je lze modifikovat.<br>
+    ■ Programové predikáty - mohou být zapsány ve tvaru pravidla nebo faktu<br>
+    ■ Implicitní predikáty - predikáty realizované překladačem.<br>
+    <br>
+    <br>
+    Programový predikát je zapsán ve tvaru:<br>
+    <br>
+    Definice pravidla :  Hlava:-Tělo.<br>
+    <br>
+    Tělo tvoří  posloupnost příkazů  oddělených znakem  ",". Pokud  je<br>
+    tělo prázdné lze využít zápisu : Hlava.<br>
+    <br>
+    Hlava má následující tvar:<br>
+    <br>
+    Identifikátor[(Term{,Term})]<br>
+    <br>
+    Provádění  predikátu  je  označováno  jako  volání.  Při  vyvolání<br>
+    predikátu   se  nejdříve  substitují  vstupní  parametry  (termy).  Při<br>
+    substituci je nutno rozlišit tvar předávaných termů a termů  vyvolaného<br>
+    predikátu.<br>
+    Mohou nastat následující kombinace:<br>
+    <br>
+    ╔═════════════════╦══════════════════════╦════════════════════════════╗<br>
+    ║ Volání          ║   Predikát           ║  Popis                     ║<br>
+    ╠═════════════════╬══════════════════════╬════════════════════════════╣<br>
+    ║ Konstanta       ║   Vstupní prom.      ║  Vázání hodnoty prom.      ║<br>
+    ║ Vázaná prom.    ║   Vstupní prom.      ║  Vázání hodnoty prom.      ║<br>
+    ║ Nevázaná prom.  ║   Výstupní prom.     ║  Po vyhodn. pred. vázání   ║<br>
+    ║ Váz.prom.,konst.║   Výstupní prom.     ║  Test shodnosti po vyhodn. ║<br>
+    ║ Váz.prom.,konst.║   Konst.             ║  Test shodnosti            ║<br>
+    ╚═════════════════╩══════════════════════╩════════════════════════════╝<br>
+    <br>
+    V případě že nás nezajímá hodnota výstupního parametru zapíšeme do<br>
+    volání znak "_".<br>
+    <br>
+    Srovnaní  a přiřazení proměnných je nazýváno unifikace.  Vytvoření<br>
+    konstantního  termu pomocí  substituce  proměnných  jejich  obsahem  je<br>
+    označováno kopírování.<br>
+    <br>
+    Při úspěchu  unifikace vstupních  parametrů se zpracuje tělo  (tj.<br>
+    pravá strana) predikátu a při zdárném ukončení těla predikátu následuje<br>
+    návrat k volajícímu s přiřazením výstupních parametrů - substituce.<br>
+    <br>
+    Při neúspěchu unifikace  hlavičky větve  se přejde k další  větvi.<br>
+    Není-li další větev, vrátí s neúspěchem.<br>
+    <br>
+    Po  neúspěchu a  návratu k předchozímu bodu se v tomto bodu  hledá<br>
+    další alternativní řešení, tj. nezačíná se od počátku.<br>
+    <br>
+    Metodu zpracování popisuje  strom zpracování.  Je tvořen z uzlů  a<br>
+    hran.  Uzel je bod tvořený voláním predikátu. Hrany vycházejí z uzlu  a<br>
+    představují větve predikátu. Neúspěch vyvolá návrat do posledního  uzlu<br>
+    a hledání další větve.<br>
+    <br>
+    <br>
+    Příklad:<br>
+    <br>
+    Fakty:<br>
+    <br>
+    a(1).<br>
+    a(2).<br>
+    b(2).<br>
+    sezn_prvku.<br>
+    <br>
+    Pravidlo:<br>
+    <br>
+    sezn_prvku:- mem_Firma(X,[]), write(X,'  '),fail.<br>
+</div>
+<div>
+    <h4>Print</h4>
+    <span style="color:red">PARAMTERY GRAFU</span>
+    <hr>
+</div>
+<div>
+    <h4>PrintCtrl</h4>
+    <span style="color:red">PARAMETRY SESTAVY</span>
+    <hr>
+</div>
+<div>
+    <h4>PrintTxt</h4>
+    <span style="color:red">PŘÍKAZY  PRO TISK TEXTU</span>
+    <hr>
+</div>
+<div>
+    <h4>Priorita operátorů</h4>
+    <span style="color:red">PRIORITA OPERÁTORŮ</span>
+    <hr>
+    Pokud není uzávorkováním určeno jinak, operátory mají následující priority<br>
+    (od nejvyšší k nejnižší):<br>
+    <br>
+    1.  - (unární mínus)  ^<br>
+    2.  *  /  div  mod  round<br>
+    3.  +  -<br>
+    4.  =  <>  >  >=  <  <=<br>
+    5.  &<br>
+    6.  |<br>
+    7.  =>  <=><br>
+</div>
+<div>
+    <h4>Proc</h4>
+    <span style="color:red">VOLÁNÍ PROCEDUR A PODPROGRAMŮ</span>
+    <hr>
+    Příkaz volání procedury.<br>
+    <br>
+    ██ syntaxe:         PROC ( NázevProcedury | [DynamickáDeklarace]<br>
+    [ ,(Parametry) ] )<br>
+    <br>
+    ■ NázevProcedury .. Identifikátor, název kapitoly P.<br>
+    ■ Parametry ....... Seznam parametrů.  Obsahuje výrazy odpovídající co do<br>
+    typu a pořadí parametrům v deklaraci volané procedury<br>
+    Parametry typu real, string, boolean mohou být volány<br>
+    hodnotou nebo odkazem. Parametry strukturovaných typů<br>
+    ( record of, index of ) jsou volané vždy odkazem ( po<br>
+    návratu do volající  procedury se přenášejí  případné<br>
+    změny hodnot, viz. procedura ). Parametr typu file je<br>
+    nutno označit prefixem @ ( Proc(Ukazka,(@Ucty)); ) .<br>
+    ■ DynamickáDeklarace ... Textový výraz, který obsahuje zdrojový kód podle<br>
+    syntaxe kapitoly P. Viz. dynamické deklarace.<br>
+    <br>
+    Volání podúlohy  (volání v L kapitole  call).<br>
+    <br>
+    ██ syntaxe:         CALL ([\]NázevPodúlohy [,[ Procedura [( Parametry )]])<br>
+    <br>
+    Pokud není uvedeno jméno procedury,volá se procedura MAIN. V podúloze jsou<br>
+    použitelné všechny kapitoly deklarované v nadřízených úlohách (pokud nejsou<br>
+    překryty stejnojmennou deklarací v podúloze). Podúloha může volat další<br>
+    podúlohu atd.<br>
+    <br>
+    Po ukončení vnořené procedury nebo podúlohy se vrací řízení na místo volání<br>
+    a úloha pokračuje dalším příkazem.<br>
+    <br>
+    \ ... Z libovolné úlohy ve strukturovaném projektu je vyvolána úloha, která<br>
+    je přímo podřízená hlavní úloze. Oproti základnímu způsobu volání se<br>
+    modifikuje alokace souborů, které nemají v katalogu úplnou cestu,<br>
+    jako by byla volána přímo z hlavní úlohy.<br>
+    <br>
+    ░░░░░░░░░░░░<br>
+    ░░příklady░░<br>
+    ░░░░░░░░░░░░<br>
+    <br>
+    <br>
+    ██    menuloop 'ÚLOHY v PC FANDu' of<br>
+    'SKLADY - příjem ze skladu': call(SKLADY,prijem);<br>
+    '       - výdej ze skladu' : call(SKLADY,vydej);<br>
+    '       - celé zpracování' : call(SKLADY);<br>
+    'MZDY': call(MZDY);<br>
+    'UCETNICTVI': call(UCTY);<br>
+    end;<br>
+    <br>
+    ██    call( SKLADY, vydej('MTZ'));        { volání procedury z podúlohy<br>
+    z parametrem }<br>
+</div>
+<div>
+    <h4>Procedura</h4>
+    <span style="color:red">PROCEDURA - kapitola P</span>
+    <hr>
+</div>
+<div>
+    <h4>Procedurální parametry editace</h4>
+    <span style="color:red">PROCEDURÁLNÍ PARAMETRY EDITACE</span>
+    <hr>
+</div>
+<div>
+    <h4>Projektantské prostředí</h4>
+    <span style="color:red">PROJEKTANTSKÉ PROSTŘEDÍ             HOT - klávesy</span>
+    <hr>
+    Program v PC FANDu je projektový soubor - tj. speciální  případ datového<br>
+    souboru. Programátor při ladění používá datový editor obohacený o některé<br>
+    další funkce:<br>
+    <br>
+    ■ Ctrl-F8 .... diagnostika a syntaktická kontrola projektu<br>
+    ■ Ctrl-F9 .... ladění (kontrola a spuštění) jedné kapitoly projektu.<br>
+    Úloha jako celek musí být syntakticky v pořádku.<br>
+    ■ Alt-F9 ..... start procedury MAIN z libovolného místa v úloze<br>
+    ■ Ctrl-F10 ... uzavření (návratné zaheslování) úlohy<br>
+    Na kontrolní dotaz "chcete úlohu zaheslovat (A/N)?" jsou<br>
+    možné 3 odpovědi: A ......... návratné zaheslení<br>
+    N ......... zrušení<br>
+    Alt-F10 ... nenávratné zaheslení<br>
+    Nenávratné zaheslení úlohy<br>
+    Před tím však PC FAND nabídne zálohování zdrojových textů.<br>
+    Z nenávratně zaheslené úlohy jsou vypuštěny poznámky,<br>
+    nevýznamné oddělovače (mezery,...) a neplatné úseky dle<br>
+    direktiv kompilátoru. Dále jsou provedeny některé přesuny,<br>
+    takže ani případným dekódováním nelze získat původní<br>
+    kompletní zdroje.<br>
+    ■ Shift-F1 ... navigace po projektu - přechod k první kapitole s názvem,<br>
+    který je pod kurzorem návrat klávesou F10 - až 10 vnoření.<br>
+    Pozor na to, že znak podtržítko může být nyní součástí<br>
+    identifikátoru. Proto v kapitolách E,M,R píšeme místo<br>
+    #I_soubor  lépe #I_ soubor a lze navigovat Shift-F1.<br>
+    <br>
+    ■ Alt-F3 ..... vyvolání editace katalogu úlohy<br>
+    <br>
+    Podpora pro vytvoření helpu úlohy<br>
+    ■ Alt-F2 ..... přechod do aktuálního helpu úlohy dle kontextu:<br>
+    z editace úlohy (RDB) - editace helpu<br>
+    z editace dat.souboru - přechod na položku helpu, která<br>
+    odpovídá danému údaji, popř. ji<br>
+    vytvoří (viz. mode='F1'nebo'F124')<br>
+    z uživatelského menu  - přechod na položku helpu, která<br>
+    odpovídá dané volbě menu,<br>
+    pokud dosud není - vytvoří ji<br>
+    ■ F3 ......... při editaci helpu, hledání názvu<br>
+    <br>
+    Ladění<br>
+    spustí kapitolu, na které je kurzor, což znamená otevření datového<br>
+    editoru pro soubor (kapitola F  a  E),  vygenerování  sestavy  (R),<br>
+    provedení transformace (M - pozor - pracuje s daty) nebo spuštění<br>
+    procedury (P). Při překladu se mohou některé úseky zdrojového textu<br>
+    vynechat podle nastavení direktiv kompilátoru - viz. podmíněný překlad<br>
+    <br>
+    Při nalezení první  syntaktické chyby  se kurzor  nastaví na místo chyby<br>
+    a je vydáno chybové hlášení, které je třeba potvrdit libovolnou klávesou<br>
+    U syntakt. odladěných programů Diagnostika vypíše velikost obsazené<br>
+    a volné paměti.<br>
+    <br>
+    Další vlastnosti překladu:<br>
+    Při Ctrl-F10 se provede překlad všech kapitol úlohy, při ostatních typec<br>
+    překladu se přeloží jen kapitoly, které byly změněny od posledního<br>
+    překladu (viz. Projektový soubor - údaj "overit").<br>
+    <br>
+    Některé změny v úloze jsou natolik závažné, že se po nich provede vždy<br>
+    kompletní překlad celé úlohy (jako při Ctrl-F10) a navíc se uloží<br>
+    kontrolní datum a čas posledního překladu. Jsou to tyto změny:<br>
+    ■ změna v kapitolách typu F,D,E nebo I<br>
+    ■ přehozeni pořadí kapitol<br>
+    <br>
+    Příkazy datového editoru důležité v projektantském prostředí:<br>
+    ■ Ctrl-<- resp. Ctrl--> ... výměna sousedních kapitol při špatném pořadí<br>
+    ■ Ctrl-F7 a Shift-F7 .......... přenos bloků mezi kapitolami (Clipboard)<br>
+    ■ F6-Opis-Opis Vět ............... listing (opis zdrojového textu úlohy)<br>
+</div>
+<div>
+    <h4>Projektový soubor</h4>
+    <span style="color:red">PROJEKTOVÝ SOUBOR</span>
+    <hr>
+    V PC FANDu lze využít  fakt, že projektový soubor ( program ) je zvláštním<br>
+    datovým souborem.  Celý projekt je možné zpracovávat z jiné pomocné úlohy,<br>
+    jako by to byl standardní datový soubor (tvorba dokumentace, údržba velkých<br>
+    projektů, instalace úlohy, automatické generování programu).<br>
+    <br>
+    Deklarace projektového souboru: ve stejném adresáři založíte pomocnou úlohu<br>
+    a deklarujete kapitolu typu F s názvem projektového souboru (včetně přípony<br>
+    .RDB). Text deklarace je třeba nechat prázdný, deklarace se převezme<br>
+    z interních tabulek. Takto lze zpracovávat pouze otevřené úlohy.<br>
+    <br>
+    Údaje projektového souboru:<br>
+    <br>
+    ■ TxtPos:F,4.0... pozice v textu při poslední editaci kapitoly<br>
+    ■ Overit:B ...... příznak, zda již prošla kapitola syntaktickou kontrolou<br>
+    ■ StText:T ...... používá se pouze u kapitol typu F, obsahuje přeloženou<br>
+    aktuální deklaraci souboru po změnách (umožňuje<br>
+    automatickou transformaci podle nové deklarace)<br>
+    ■ Typ   :A,'!'... typ kapitoly<br>
+    ■ Nazev :A,12 ... název kapitoly<br>
+    ■ Text  :T ...... vlastní deklarace ve volném textu<br>
+</div>
+<div>
+    <h4>PROLOG</h4>
+    <span style="color:red">FAND PROLOG</span>
+    <hr>
+    Syntaxe : #DOMAINS                Identifikátory        Term<br>
+    #CONSTANTS              Predikát              Proměnné<br>
+    #DATABASE               Provádění predikátů<br>
+    #PREDICATES             OperaceSrovnání<br>
+    #CLAUSES                Funkce v L kapitole<br>
+    <br>
+    Implicitní predikáty:<br>
+    !             fandkey           retract<br>
+    abbrev        fandkeyfield        save<br>
+    add_          fandlink          self<br>
+    all_          fandlinkfield     trace<br>
+    assert        getlex            union_<br>
+    call         inter_            write*<br>
+    concat        inv_<br>
+    consult       len_<br>
+    del_         loadlex<br>
+    error        mem_<br>
+    fail          minus_<br>
+    fandfield     nextlex<br>
+    fandfile      not<br>
+</div>
+<div>
+    <h4>Proměnné (PROLOG)</h4>
+    <span style="color:red">Proměnné</span>
+    <hr>
+    Proměnné  jsou určeny  pro uchování  dat.  Identifikátor  proměnné<br>
+    začíná  velkým  písmenem.  Proměnná  může  obsahovat  libovolný  datový<br>
+    objekt.<br>
+    <br>
+    Proměnné   se  předem   nedefinují,  zavádí  se  implicitně  prvním<br>
+    použitím.  Typ proměnné  je určen  prvním výskytem. Obsah proměnné  lze<br>
+    naplnit pouze jednou, dále jej již nelze modifikovat. Naplnění proměnné<br>
+    je  označováno jako  vázání.  Proměnná  jejíž  obsah  nás  nezajímá  je<br>
+    označena znakem "_".<br>
+    <br>
+    Platnost  svázání  proměnné  je  vždy  jen  v  rámci  jedné  větve<br>
+    programu.  Stejný název  v další  větvi označuje  jinou proměnnou.  Při<br>
+    zpětném chodu  se vázání  proměnné uvolní  a proměnná  může  být  znovu<br>
+    svázána s jinou hodnotou.<br>
+    <br>
+    Vázání proměnné lze realizovat i přiřazením ve tvaru:<br>
+    <br>
+    Proměnná[:Typ]= Term<br>
+    <br>
+    Proměnná  Jméno nevázané proměnné.<br>
+    Typ       Typ  proměnné.  Nutno  uvést  pokud  proměnná  nebyla  předem<br>
+    deklarovaná.  Deklarovaná   může  být   pouze  jako  výstupní<br>
+    parametr v hlavičce predikátu.<br>
+    Term      Term obsahující vázené proměnné a konstanty.<br>
+    <br>
+    Příklad:<br>
+    <br>
+    is_:-X:Integer=10+12,write('Součet 10+12 = ',X),wait.<br>
+</div>
+<div>
+    <h4>Prompt</h4>
+    <span style="color:red">DOTAZ UŽIVATELI</span>
+    <hr>
+</div>
+<div>
+    <h4>Promptyn</h4>
+    <span style="color:red">DOTAZ UŽIVATELI</span>
+    <hr>
+</div>
+<div>
+    <h4>Přepínače</h4>
+    <span style="color:red">PŘEPÍNAČE TEXTOVÉHO EDITORU</span>
+    <hr>
+    Aktuální hodnoty přepínačů jsou vypsány zkratkami v prvním řádku obrazovky.<br>
+    Odpovídajícím povelem střídavě zapínáte a vypínáte funkci přepínače.<br>
+    <br>
+    přepínač                                     povel           zkratka<br>
+    -------------------------------------------------------------zap--vyp------<br>
+    vkládání/přepisování při psaní textu         Ins             Vkl  Přep<br>
+    odsazování dalšího řádku podle předchozího   Ctrl-Q Ctrl-I   Ods<br>
+    automatické formátování na konci řádku       Ctrl-O Ctrl-W   Form<br>
+    zarovnávání na pravý okraj při formátování   Ctrl-O Ctrl-J   Zar<br>
+    sloupcový blok/běžný blok                    Ctrl-K Ctrl-N   Slp<br>
+</div>
+<div>
+    <h4>Přepínače datového editoru</h4>
+    <span style="color:red">F5 - PŘEPÍNAČE DATOVÉHO EDITORU</span>
+    <hr>
+    Po F5 střídavě přepínače zapínáte a vypínáte volbou z menu:<br>
+    <br>
+    ┌─ zapni-vypni ──┐<br>
+    │ Podmnožina     │ editace podmnožiny vět nebo celého souboru<br>
+    │ Duplikace      │ při pořízení se údaj zkopíruje z předešlé věty<br>
+    │ Tabelátor      │ po Enter se kurzor zastaví jen na údajích s tabelátorem<br>
+    │ Aditivní změny │ vypnutí automatického přičítání do nadřízeného souboru<br>
+    │ Kontroly       │ vypnutí logických kontrol na správnost zadaných dat<br>
+    │ Varování       │ vypnutí kontrolních varování<br>
+    └────────────────┘<br>
+    <br>
+    Podmnožina, Aditivní změny a Kontroly  jsou  globální  přepínače  pro  editaci<br>
+    souboru, zatímco Tabelátor a Duplikace patří ke každému editovanému údaji.<br>
+    <br>
+    Indikace stavu přepínačů: při zapnuté podmnožině jsou vybrané věty  zvýrazněny<br>
+    barevně, navíc je v posledním řádku šipka. Vypnutí aditivních změn a logických<br>
+    kontrol je vyznačeno v posledním řádku znaky #A, resp. #L. Přepínač aditivních<br>
+    změn slouží rovněž i pro  referenční integritu ( zap/vyp ). Zapnuté tabelátory<br>
+    a duplikace jsou přímo u odpovídajícího údaje označeny šipkami.<br>
+    <br>
+    Přepínač vkládacího a přepisovacího režimu<br>
+    Přepínače pro vkládací a přepisovací režim při editaci dat jsou dva. Jeden pro<br>
+    textový editor ( údaje typu T ) a jeden pro  ostatní typy údajů.  Přepínač pro<br>
+    textový editor je globální (nastavení platí i pro editaci dalších textů).<br>
+    Přepínač pro ostatní typy dat je naopak lokální, což znamená,že jeho nastavení<br>
+    je platné jen v rámci právě rozpracované editace údaje.  Po vstupu do údaje je<br>
+    vždy vkládací režim.<br>
+</div>
+<div>
+    <h4>Přerušení editace</h4>
+    <span style="color:red">PŘERUŠENÍ EDITACE</span>
+    <hr>
+</div>
+<div>
+    <h4>Přerušení editace textu</h4>
+    <span style="color:red">PŘERUŠENÍ EDITACE TEXTU</span>
+    <hr>
+    Práce  textového  editoru  může být  přerušena  jinou činností - tzv. exit<br>
+    - procedurou. Syntaxe přerušení editace je stejná jako v datovém editoru s<br>
+    některými  logickými omezeními a odlišnostmi,  které vyplývají především z<br>
+    toho, jaký druh textu je editován.<br>
+    <br>
+    ■ Implicitně  se přerušení  textového  editoru  uskuteční v rámci datového<br>
+    editoru při editaci položky typu volný text a použití mode='EX'. V tomto<br>
+    případě dojde k předání rozpracovaného stavu editované věty do procedury<br>
+    formou parametru procedury typu record of editovaný soubor, jehož prost-<br>
+    řednictvím  jsou změněné  hodnoty v exit - proceduře vráceny do datového<br>
+    editoru.  (viz. módy datového editoru).<br>
+    <br>
+    ■ Explicitně se volá přerušení editace  textu při uvedení  parametru  exit<br>
+    příkazu  edittxt. V tomto případě nelze v seznamu  přerušení použít akci<br>
+    typu record nebo seznam údajů a dále nelze použít dodatečný parametr<br>
+    procedury typu record of soubor (viz. record proměnná).<br>
+    <br>
+    ■ Přerušení editace textu nastavuje EdBreak, TxtPos, TxtXY<br>
+    <br>
+    ■ Přerušení editace textového souboru:<br>
+    Před přerušením se aktualizovaný text vypíše zpět do souboru a soubor se<br>
+    uzavře. Je tedy v exit-proceduře korektně přístupný. Při jeho změně nelze<br>
+    ovšem obecně automaticky zajistit návrat na původní místo.<br>
+    <br>
+    ■ Přerušení editace lokální proměnné typu string:<br>
+    Rozpracovaný text ( po případných změnách ) je v exit-proceduře dostupný,<br>
+    pokud ho explicitně předáme do exit-procedury jako  parametr typu string.<br>
+    <br>
+    ░░░░░░░░░░░░   var s : string ;<br>
+    ░░příklady░░   begin<br>
+    ░░░░░░░░░░░░   edittxt( s, exit=( F10:ExProc(s) ));<br>
+    ...<br>
+    end ;<br>
+</div>
+<div>
+    <h4>PříkazováČástVýstupu</h4>
+    <span style="color:red">PŘÍKAZOVÁ ČÁST VÝSTUPU TRANSFORMACE</span>
+    <hr>
+    Příkazová část (seznam  přiřazovacích  příkazů)  definuje  obsah  vět  souborů<br>
+    vystupujících  v  transformaci.  Pokud  chybí,  údaje  se   naplní   hodnotami<br>
+    stejnojmenných údajů ze vstupních souborů podle implicitních  pravidel,  příp.<br>
+    zůstanou prázdné. Jinak obsahuje seznam přiřazovacích příkazů  (:=  nebo  +=),<br>
+    lze použít i konstrukci if-then-else.<br>
+    <br>
+    Objekty přiřazení v přiřazovacích  příkazech  jsou  uložené  údaje  výstupního<br>
+    souboru, lokální proměnné transformace nebo globální proměnné úlohy. Výrazy na<br>
+    pravé straně přiřazovacího příkazu mohou obsahovat údaje ze vstupních  souborů<br>
+    (NázevÚdaje), příp. ze souborů s nimi spojených klíčem (NázevKlíče.NázevÚdaje,<br>
+    NázevSouboru.NázevÚdaje nebo NázevRole.NázevÚdaje).  Všechny  tyto  konstrukce<br>
+    mohou být opatřeny prefixem:<br>
+    <br>
+    ■ Ii.NázevÚdaje ... i udává číslo vstupního souboru<br>
+    (také Ii.NázevSouboru.NázevÚdaje, příp. Ii.NázevKlíče..., Ii.NázevRole...)<br>
+    ■ O.NázevÚdaje .... údaj z právě připravované věty výstupního souboru<br>
+    ■ implicitní doplnění prefixu: detailní výstup (#Oi): #Ii, #I1..#Ii-1<br>
+    skupinový nebo násobný výstup (#O, #O*): #I1..#In<br>
+</div>
+<div>
+    <h4>Příkazy pro editaci textu</h4>
+    <span style="color:red">PŘÍKAZY PRO EDITACI TEXTU</span>
+    <hr>
+</div>
+<div>
+    <h4>Příkazy procedury</h4>
+    <span style="color:red">PŘÍKAZY PROCEDURY</span>
+    <hr>
+    Přiřazovací příkaz       ObjektPřiřazení := Výraz<br>
+    ObjektPřiřazení += Výraz  (a+=b odpovídá a:=a+b)<br>
+    <br>
+    Řídící příkazy           složený příkaz   Begin, End<br>
+    skoky            Break, Cancel, Exit<br>
+    větvení          Case , If<br>
+    cykly            For, ForAll, Repeat, While<br>
+    <br>
+    Komunikace s uživatelem  zvuky            Beep, Sound, NoSound<br>
+    čekání           Delay, Wait<br>
+    klávesnice       ClearKeyBuf, SetKeyBuf<br>
+    myš              SetMouse<br>
+    <br>
+    Výstup na obrazovku      With Window, ClrScr, ClrEol, Display, GoToXY,<br>
+    Help, HeadLine, Message, Write, WriteLn<br>
+    <br>
+    Uživatelské nabídky      Menu, MenuLoop, MenuBar<br>
+    <br>
+    Editace a uložení změn   Edit<br>
+    Sestava                  Report<br>
+    Transformace             Merge<br>
+    Práce s texty            EditTxt, PrintTxt, PutTxt<br>
+    Vyvolání procedury       Proc<br>
+    Třídění a indexování     Sort, IndexFile, GetIndex<br>
+    <br>
+    Přístup k větám          AppendRec, DeleteRec, RecallRec, ReadRec,<br>
+    WriteRec, LinkRec<br>
+    <br>
+    Katalog,diskové jednotky Close, Save, Mount, ReleaseDrive<br>
+    TurnCat, ResetCatalog, CheckFile<br>
+    <br>
+    Archivace                Backup, Restore, BackupM, RestoreM<br>
+    Externí programy         Exec<br>
+    Kopie a převody souborů  CopyFile<br>
+    <br>
+    Grafika                  With Graphics, Graph, GetMaxX, GetMaxY,<br>
+    PutPixel, Line, Ellipse, Rectangle, FloodFill,<br>
+    OutTextXY<br>
+    <br>
+    Práce s porty            PortOut<br>
+    <br>
+    Síťové příkazy           With Shared, With Locked<br>
+</div>
+<div>
+    <h4>Přímý přístup k datům</h4>
+    <span style="color:red">PŘÍMÝ PŘÍSTUP K DATŮM</span>
+    <hr>
+    Kromě implicitních  datových vazeb, deklarovaných v kapitole F, lze s daty<br>
+    pracovat procedurálními  prostředky pro přímý  přístup k datům.  Základním<br>
+    pojmem je zde číslo věty, které  jednoznačně identifikuje data, se kterými<br>
+    chceme pracovat. Lze použít dvě úrovně přístupu:<br>
+    <br>
+    ■ přístup k jednotlivým údajům... NázevSouboru[FyzČísVěty].NázevÚdaje<br>
+    Hranaté závorky se skutečně píší.<br>
+    FyzČísVěty je číselný výraz. Výsledkem<br>
+    je výraz typu, který odpovídá typu údaje.<br>
+    Může se vyskytovat na levé straně přiřa-<br>
+    zovacího příkazu a ve výrazech.<br>
+    <br>
+    ■ přístup k větám ......... Je preferovaný  v novějších verzích  (od 3.0).<br>
+    Základní jednotkou pro přístup na disk je celá<br>
+    věta ( record ) souboru. Přístup k údajům věty<br>
+    se realizuje v rámci operační paměti.<br>
+    readrec     deleterec    appendrec     keyof<br>
+    writerec    isdeleted    recallrec     linkrec<br>
+</div>
+<div>
+    <h4>Přiřazovací příkaz</h4>
+    <span style="color:red">PŘIŘAZOVACÍ PŘÍKAZ</span>
+    <hr>
+    Použití: v procedurách a příkazové části sestav a transformací.<br>
+    <br>
+    ██ ObjektPřiřazení:=Výraz ... výraz musí být odpovídajícího typu<br>
+    ██ ObjektPřiřazení+=Výraz ... např. a+=b je rychlejší varianta a:=a+b<br>
+    <br>
+    objekt přiřazení<br>
+    <br>
+    ■ lokální proměnné ........... proměnné deklarované v této kapitole<br>
+    ■ globální proměnné .......... údaje parametrických souborů<br>
+    ■ RecordProměnná.Údaj ........ naplnění položky record - proměnné<br>
+    ■ NázevSouboru[Číslo].Údaj ... přímý přístup k datům<br>
+    ■ Interní proměnné ........... vnitřní proměnné PC FANDu<br>
+    ───────────────────<br>
+    <br>
+    V proceduře lze přiřadit i celou strukturu record proměnné :<br>
+    ██ RecordProměnná1:=RecordProměnná2<br>
+    Record proměnné nemusí být ze stejných souborů, přiřazení se provede<br>
+    by-name - tj. údaje se stejným názvem a typem se přiřadí, ostatní zůstanou<br>
+    nezměněny (neresetují se) - podobně jako v merge.<br>
+</div>
+<div>
+    <h4>PullDown</h4>
+    <span style="color:red">UŽIVATELSKÁ NABÍDKA - MENU</span>
+    <hr>
+</div>
+<div>
+    <h4>PutPixel</h4>
+    <span style="color:red">ELEMENTÁRNÍ GRAFICKÉ KONSTRUKCE</span>
+    <hr>
+    Příkaz  putpixel vykreslí bod.   Line kreslí přímku , která je jednoznačně<br>
+    určena zadanými  krajními body. Rectangle  vykreslí obdélník dle  zadaného<br>
+    levého horního a pravého dolního rohu.<br>
+    <br>
+    ██ syntaxe:        PUTPIXEL ( X, Y, Barva )<br>
+    LINE ( X1, Y1, X2, Y2, Barva+Typ+Síla )<br>
+    RECTANGLE ( X1, Y1, X2, Y2, Barva+Typ+Síla )<br>
+    <br>
+    ■  X,Y,X1,Y1,X2,Y2 ... Souřadnice se zásadně zadávají v grafických bodech<br>
+    (pixel) relativně v aktuálním okně.<br>
+    ■  Barva ............. Číselný výraz - kód barvy nebo Ctrl-znak.<br>
+    ■  Typ ............... 16 ... tečkovaná čára<br>
+    32 ... čerchovaná čára<br>
+    48 ... čárkovaná čára<br>
+    ■  Síla .............  64 ... tlustá čára<br>
+    <br>
+    Parametry typ a síla pro příkazy line a rectangle jsou zavedeny od verze<br>
+    3.3d, jejich součet spolu s parametrem barva<br>
+</div>
+<div>
+    <h4>PutTxt</h4>
+    <span style="color:red">ZÁPIS A ČTENÍ TEXTU ZE SOUBORU</span>
+    <hr>
+</div>
+
+<div>
+    <h4></h4>
+    <span style="color:red"></span>
+    <hr>
+</div>
+<div>
+    <h4></h4>
+    <span style="color:red"></span>
+    <hr>
+</div>
+
+</body>
+</html>

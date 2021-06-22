@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <title>Ř</title>
+</head>
+<body style="font-family:'Courier New'">
+
+<div>
+    <h4>R</h4>
+    <span style="color:red">SESTAVA - kapitola R</span>
+    <hr>
+    Definice tiskové sestavy pro prohlížení na obrazovce textovým editorem nebo<br>
+    tisk na tiskárně. V deklaraci je třeba uvést název  souboru a alespoň jednu<br>
+    výstupní úroveň, všechny ostatní konstrukce jsou nepovinné.<br>
+    <br>
+    █ DeklaraceLokálníchProměnných ... pomocné proměnné použité v sestavě<br>
+    █ Stránkování .................... změna implicitního stránkování<br>
+    █ VstupSestavy ................... vstupní soubor(y),třídění,vstupní filtry<br>
+    █ VýstupSestavy .................. textová předloha pro generování sestavy<br>
+    <br>
+    Vytváření sestavy lze přerušit klávesou Esc.<br>
+</div>
+<div>
+    <h4>Rámečky</h4>
+    <span style="color:red">DOPLŇKY EDITORU</span>
+    <hr>
+</div>
+<div>
+    <h4>Random</h4>
+    <span style="color:red">NÁHODNÉ ČÍSLO</span>
+    <hr>
+</div>
+<div>
+    <h4>Randomize</h4>
+    <span style="color:red">NÁHODNÉ ČÍSLO</span>
+    <hr>
+</div>
+<div>
+    <h4>RandSeed</h4>
+    <span style="color:red">NÁHODNÉ ČÍSLO</span>
+    <hr>
+</div>
+<div>
+    <h4>Rd</h4>
+    <span style="color:red">LAN - POUŽITÍ NIŽŠÍCH MÓDŮ BLOKOVÁNÍ</span>
+    <hr>
+</div>
+<div>
+    <h4>RDA</h4>
+    <span style="color:red">ODBC</span>
+    <hr>
+</div>
+<div>
+    <h4>ReadKey</h4>
+    <span style="color:red">OŠETŘENÍ KLÁVESNICE</span>
+    <hr>
+</div>
+<div>
+    <h4>ReadRec</h4>
+    <span style="color:red">READREC - načtení věty souboru</span>
+    <hr>
+    Příkaz čtení věty souboru má dvě základní varianty dle způsobu identifikace<br>
+    věty : fyzickým číslem věty nebo hodnotou jednoho z vlastních klíčů souboru.<br>
+    <br>
+    ██ syntaxe:       READREC ( RecordProměnná , ČísloVěty )<br>
+    READREC ( RecordProměnná [ /NázevKlíče ]<br>
+    ,[ Srovnání ] HodnotaKlíče )<br>
+    <br>
+    ■  RecordProměnná Lokální proměnná typu record of soubor. Z deklarace této<br>
+    proměnné se odvodí, ze kterého souboru se věta čte.<br>
+    1. varianta<br>
+    ■  ČísloVěty..... Číselný výraz - fyzické číslo věty.<br>
+    Readrec(RecVar,0) provede inicializaci (nulování) proměnné.<br>
+    2. varianta<br>
+    ■  NázevKlíče ... Vlastní klíč souboru. Implicitně @.<br>
+    ■  Srovnání ..... Operace srovnání. Pro běžný indexovaný soubor lze použít<br>
+    pouze = (implicitní) - tj. načte se věta přesně dle<br>
+    požadované hodnoty klíče nebo žádná.<br>
+    Pro SQL lze použít >,>=,<,<=.<br>
+    Operace srovnání nezajistí nalezení další věty dle klíče,<br>
+    ale věty s hodnotou klíčových údajů splňujících podmínku.<br>
+    ■  HodnotaKlíče   Textový výraz, hodnota klíče v interní podobě. Viz.keyof<br>
+    Nenajde-li se hodnota klíče, bude věta vynulována a označena jako zrušená.<br>
+    <br>
+    writerec    isdeleted    deleterec    linkrec    klíče     recallrec<br>
+    <br>
+    ░░░░░░░░░░░░<br>
+    ░░příklady░░<br>
+    ░░░░░░░░░░░░<br>
+    <br>
+    ██  P Ukazka *  VAR   veta : record of ADRESY ;<br>
+    r : real ;<br>
+    klic : string ;<br>
+    BEGIN<br>
+    {1.způsob}  readrec( veta,1) ;    {načtení fyzicky první věty souboru}<br>
+    ...<br>
+    {2.způsob}  readrec( veta,0) ;                          {inicializace}<br>
+    veta.prijmeni := 'Novák' ;<br>
+    s:=keyof(veta/DlePrijmeni) ;    {generování hodnoty klíče}<br>
+    readrec( veta/DlePrijmeni,s) ;                     {čtení}<br>
+    if isdeleted(veta) then  message('Novák není ... ');<br>
+    ...<br>
+    END ;<br>
+    <br>
+    ██  P Ukazka2 * VAR p : record of PARAM ;<br>
+    ...<br>
+    readrec(p,'');     {čtení poslední věty parametr. souboru}<br>
+</div>
+<div>
+    <h4>Real</h4>
+    <span style="color:red">TYPY VÝRAZŮ</span>
+    <hr>
+</div>
+<div>
+    <h4>RecallRec</h4>
+    <span style="color:red">ZALOŽENÍ, RUŠENÍ A OBNOVENÍ VĚTY SOUBORU</span>
+    <hr>
+</div>
+<div>
+    <h4>RecKey</h4>
+    <span style="color:red">PROCEDURÁLNÍ PARAMETRY EDITACE</span>
+    <hr>
+</div>
+<div>
+    <h4>RecNo</h4>
+    <span style="color:red">RECNO - duplicitní klíčové slovo</span>
+    <hr>
+    ■ edit(...recno) .... procedurální parametry editace: nastavení na větu<br>
+    ■ recno(...) ........ hledání podle klíče, přímý přístup podle vlastního<br>
+    klíče<br>
+    ■ graph(...recno).... číslo první zobrazené věty v grafu, ( recno )<br>
+</div>
+<div>
+    <h4>RecNoAbs</h4>
+    <span style="color:red">HLEDÁNÍ PODLE KLÍČE</span>
+    <hr>
+</div>
+<div>
+    <h4>RecNoLog</h4>
+    <span style="color:red">HLEDÁNÍ PODLE KLÍČE</span>
+    <hr>
+</div>
+<div>
+    <h4>Record</h4>
+    <span style="color:red">RECORD</span>
+    <hr>
+    Klíčové slovo record lze použít ve dvou kontextech.<br>
+    <br>
+    ■ Lokální proměnná nebo parametr procedury typu record of soubor<br>
+    tzv. record proměnná.<br>
+    <br>
+    ■ Přerušení editace akcí typu record, tj. změna(zrušení) editované věty<br>
+</div>
+<div>
+    <h4>Record proměnná</h4>
+    <span style="color:red">RECORD PROMĚNNÁ</span>
+    <hr>
+    Record proměnná je použitelná jako lokální proměnná nebo parametr v  proceduře<br>
+    pro uchování jedné věty datového souboru.  Pohodlněji než přímým  přístupem do<br>
+    jednotlivých údajů umožňuje  číst, zapisovat a přiřazovat  celé věty najednou.<br>
+    Použití record proměnné má vliv i na rychlost programu, záleží na kontextu.<br>
+    <br>
+    █ var RecordProměnná:record of NázevSouboru ... deklarace record proměnné<br>
+    <br>
+    █ RecordProměnná.NázevÚdaje:=Výraz ... přiřazení do údaje věty<br>
+    █ RecordProměnná.NázevÚdaje .......... přístup k údajům ve výrazech<br>
+    █ RecordProměnná.NázevSpojení.NázevÚdaje ... viditelný údaj z nadřízeného<br>
+    souboru, i vícenásobně<br>
+    █ RecordProměnná.owned(...) .......... přístup k podřízeným větám<br>
+    <br>
+    █ RecordProměnná:=RecordProměnná ..... přiřazení celé věty<br>
+    Nemusí mít stejnou strukturu, stejnojmenné údaje se přenášejí jako v merge.<br>
+    Položky na levé straně, které nejsou implicitně naplněny (není stejnojmenný<br>
+    údaj na pravé straně) se nenulují.  To mimo jiné znamená, že je možno takto<br>
+    postupně "skládat" jednu větu z několika jiných - navzájem různých.<br>
+    Jsou-li ovšem názvy položky stejné a typy nekompatibilní, bude takový údaj<br>
+    "vynulován".<br>
+    <br>
+    Další použití: forall cyklus, vazba owner.<br>
+</div>
+<div>
+    <h4>Rectangle</h4>
+    <span style="color:red">ELEMENTÁRNÍ GRAFICKÉ KONSTRUKCE</span>
+    <hr>
+</div>
+<div>
+    <h4>Referenční integrita</h4>
+    <span style="color:red">CIZÍ KLÍČ</span>
+    <hr>
+</div>
+<div>
+    <h4>Refresh</h4>
+    <span style="color:red">PARAMETRY EDITACE</span>
+    <hr>
+</div>
+<div>
+    <h4>Releasedrive</h4>
+    <span style="color:red">MANIPULACE S DISKETAMI</span>
+    <hr>
+</div>
+<div>
+    <h4>Repeat</h4>
+    <span style="color:red">PŘÍKAZY CYKLU</span>
+    <hr>
+</div>
+<div>
+    <h4>RepeatStr</h4>
+    <span style="color:red">TEXTOVÉ FUNKCE</span>
+    <hr>
+</div>
+<div>
+    <h4>Replace</h4>
+    <span style="color:red">NAHRAZENÍ V TEXTU</span>
+    <hr>
+</div>
+<div>
+    <h4>Report</h4>
+    <span style="color:red">TISKOVÁ SESTAVA</span>
+    <hr>
+    Vyvolání tiskové sestavy podle kapitoly R nebo automatické sestavy (PC FAND<br>
+    sám umístí údaje v sestavě a doplní standardní hlavičku a ukončení).<br>
+    <br>
+    ██ syntaxe:  REPORT ( Soubor [/Klíč] [(LogVýraz)] nebo (SeznamSouborů)<br>
+    , NázevSestavy<br>
+    [ Parametry sestavy ]<br>
+    [ Parametry automatické sestavy ]  )<br>
+    REPORT ( RecordProměnná, ....)<br>
+    REPORT ( SeznamSouborů ,[ DynamickáDeklarace ],...)<br>
+    <br>
+    Základní varianty:<br>
+    report( ,NázevSestavy,...) .............. sestava přesně podle kapitoly R<br>
+    v dalších parametrech (cond) nelze<br>
+    použít údaje souboru.<br>
+    report(NázevSouboru,NázevSestavy) ....... sestava podle kapitoly R<br>
+    report(NázevSouboru,(Seznam Údajů)) ..... automatická sestava<br>
+    report(NázevSouboru,(?)) ................ ruční výběr údajů ze souboru<br>
+    report(NázevSouboru,(SeznamÚdajů ?)) .... omezený výběr ze seznamu<br>
+    report((Soubor1/@,Soubor2/AlterKlíč),...) seznam vstupních souborů<br>
+    report( RecordProměnná, ... ) ........... místo seznamu souborů lze zadat<br>
+    tisk record - proměnné<br>
+    report(NázevSouboru,[DynamickáDeklarace])... místo kapitoly R textový výraz<br>
+    obsahující deklaraci sestavy<br>
+    <br>
+    ■  Soubor ... Název kapitoly F, lze uvést i jiný než v deklaraci sestavy,<br>
+    pokud obsahuje údaje, použité v deklaraci sestavy.<br>
+    <br>
+    ■  SeznamSouborů ... Pokud vstupuje do reportu více vstupních souborů,<br>
+    lze je předefinovat pomocí seznamu souborů. Pro každý<br>
+    vstupní soubor lze uvést pořadí dle vlastního klíče a<br>
+    vstupní  filtr. Seznam je uzavřen v kulatých závorkách.<br>
+    ( Soubor[/Klíč][(LogVýraz)] { ,Soubor[/Klíč][(LogVýraz)]} )<br>
+    <br>
+    Libovolný soubor v seznamu může být nahrazen i record<br>
+    proměnnou odpovídajícího typu.<br>
+    <br>
+    Soubor nebo SeznamSouborů nemusí být uveden, pokud se report má provést<br>
+    přesně podle deklarace (kap.R nebo dynamické) bez přesměrování vstupů.<br>
+    Je však nutno uvést alespoň čárku, viz. první varianta.<br>
+    <br>
+    ■  /Klíč .... Věty vstupují do sestavy v pořadí podle (alternativního)<br>
+    vlastního klíče (jinak fyzické pořadí)<br>
+    <br>
+    ■  NázevSestavy ... Lze použít název kapitoly R - tzv. definovaná sestava<br>
+    nebo seznam údajů v závorkách - automatická sestava<br>
+    Uvedením znaku ? v seznamu pro autom. sestavu umožníme<br>
+    uživateli ruční výběr údajů do sestavy.<br>
+    <br>
+    ■  DynamickáDeklarace ... Místo statické (ale odladěné !!!) kapitoly R lze<br>
+    odpovídající deklaraci sestavy vložit dynamicky<br>
+    do textového výrazu podle kontextu úlohy.<br>
+    Pouze pro pokročilé !!!. Viz. Dynamické deklarace<br>
+    <br>
+    Již z názvu vyplývá, že další parametry sestavy se dělí do dvou skupin.<br>
+    Za prvé to jsou obecně použitelné parametry sestavy a do druhé skupiny<br>
+    patří parametry automatické sestavy jako určitá náhrada za kapitolu R.<br>
+    <br>
+    další volitelné parametry sestavy         parametry automatické sestavy<br>
+    cond ........ výběr vět ze souboru        mode .... typ autoreportu<br>
+    assign ...... přesměrování výstupu        sort .... třídící údaje<br>
+    times ....... počet výtisků               ctrl .... řídící údaje<br>
+    edit ........ povolená editace sestavy    sum ..... součtované údaje<br>
+    printctrl ... dekódování řídících znaků   width ... šířka sestavy<br>
+    check ....... kontrola syntaxe            style ... druh písma<br>
+    head .... hlavička strany<br>
+</div>
+<div>
+    <h4>ResetCatalog</h4>
+    <span style="color:red">CATALOG</span>
+    <hr>
+</div>
+<div>
+    <h4>Restore</h4>
+    <span style="color:red">RESTORE</span>
+    <hr>
+    Příkaz procedury pro obnovu zálohovaných dat.<br>
+    <br>
+    ██ Syntaxe:           RESTORE( NázevArchivace [,nocancel] [,nocompress] )<br>
+    <br>
+    ■  NázevArchivace ... Označení úrovně archivace, která se má provést.<br>
+    Kopíruje i soubory .T00.  Indexové soubory zruší.<br>
+    Kontroluje délku věty srovnáním na deklaraci.<br>
+    Viz. zálohování, katalog.<br>
+    <br>
+    ■  nocancel ......... Při chybě nedojde k ukončení programu, ale po návratu<br>
+    z obnovy dat lze testovat úspěšné ukončení exitcode=0.<br>
+    <br>
+    ■  nocompress ....... Data jsou zálohována bez komprese, vede k urychlení<br>
+    a k snížení nároku na paměť při provedení příkazu.<br>
+    <br>
+    ■  LAN ... mód sdílení Excl - pro síťové datové soubory, deklarované v<br>
+    nějakém aktivním .RDB<br>
+    Exclusive (open modus) - ostatní datové a textové soubory<br>
+    <br>
+    ██ Důležité:  seznam  souborů  s odpovídajícími  archivačními čísly se mezi<br>
+    backup a restore nesmí změnit.Jestliže příkaz restore nenajde požadovaný<br>
+    soubor, přeruší obnovení. Backup zálohuje i prázdné soubory !<br>
+</div>
+<div>
+    <h4>RestoreM</h4>
+    <span style="color:red">FYZICKÉ ZÁLOHOVÁNÍ</span>
+    <hr>
+</div>
+<div>
+    <h4>Retract</h4>
+    <span style="color:red">retract</span>
+    <hr>
+    retract(predikát[(Term{,Term})])<br>
+    <br>
+    predikát  Jméno odstraňovaného predikátu z databáze.<br>
+    Term      Vázaná proměnná a konstanta, nevázaná proměnná a "_".<br>
+    <br>
+    Při   použití  vázaných   a  volných   proměnných  odstraní  první<br>
+    vyhovující predikát.Termy mohou obsahovat volné proměnné jako  výstupní<br>
+    parametry. Při použití "_" odstraní všechny výskyty.<br>
+    <br>
+    <br>
+    Příklad:<br>
+    <br>
+    maz:- retract(a(X)),write(X).<br>
+</div>
+<div>
+    <h4>RF</h4>
+    <span style="color:red">VÝSTUP SESTAVY</span>
+    <hr>
+</div>
+<div>
+    <h4>RGB</h4>
+    <span style="color:red">PARAMETRY GRAFU</span>
+    <hr>
+</div>
+<div>
+    <h4>RH</h4>
+    <span style="color:red">VÝSTUP SESTAVY</span>
+    <hr>
+</div>
+<div>
+    <h4>Right</h4>
+    <span style="color:red">SETEDITTXT</span>
+    <hr>
+</div>
+<div>
+    <h4>Role</h4>
+    <span style="color:red">CIZÍ KLÍČ</span>
+    <hr>
+</div>
+<div>
+    <h4>Round</h4>
+    <span style="color:red">SPECIÁLNÍ OPERÁTORY</span>
+    <hr>
+</div>
+
+<div>
+    <h4></h4>
+    <span style="color:red"></span>
+    <hr>
+</div>
+<div>
+    <h4></h4>
+    <span style="color:red"></span>
+    <hr>
+</div>
+
+</body>
+</html>
