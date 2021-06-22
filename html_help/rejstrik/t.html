@@ -7,79 +7,524 @@
 <body style="font-family:'Courier New'">
 
 <div>
-    <h4></h4>
-    <span style="color:red"></span>
+    <h4>Tab</h4>
+    <span style="color:red">PARAMETRY EDITACE</span>
     <hr>
 </div>
 <div>
-    <h4></h4>
-    <span style="color:red"></span>
+    <h4>Tabulka módů blokování</h4>
+    <span style="color:red">LAN - TABULKA MÓDŮ BLOKOVÁNÍ</span>
+    <hr>
+    Tabulka obsahuje přehled všech kombinací, které mohou nastat<br>
+    při současné práci stanic A (řádky) a B (sloupce).<br>
+    Módy       ┌────────┬──────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┐<br>
+    blokování     │ A \ B  │NoExcl│NoDel│ NoCr│ Rd  │ Wr  │ Cr  │ Del │ Excl│<br>
+    ├────────┼──────┼─────┼─────┼─────┼─────┼─────┼─────┼─────┤<br>
+    nejnižší     │ Noexcl │ Ano  │ Ano │ Ano │ Ano │ Ano │ Ano │ Ano │     │<br>
+    ↑         │ NoDel  │ Ano  │ Ano │ Ano │ Ano │ Ano │ Ano │     │     │<br>
+    │         │ NoCr   │ Ano  │ Ano │ Ano │ Ano │ Ano │     │     │     │<br>
+    │         │ Rd     │ Ano  │ Ano │ Ano │ Ano │     │     │     │     │<br>
+    │         │ Wr     │ Ano  │ Ano │ Ano │     │     │     │     │     │<br>
+    │         │ Cr     │ Ano  │ Ano │     │     │     │     │     │     │<br>
+    ↓         │ Del    │ Ano  │     │     │     │     │     │     │     │<br>
+    nejvyšší     │ Excl   │      │     │     │     │     │     │     │     │<br>
+    └────────┴──────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┘<br>
+    Z popisu módů blokování je zřejmé, že při blokování v  módu Wr nebo vyšším,<br>
+    není možné na jiné stanici s tímto souborem pracovat (nelze číst ani psát).<br>
+    <br>
+    Stanice A blokuje  soubor NoCr ( např. editace podmnožiny vět souboru bez<br>
+    indexů). Stanice B může současně nárokovat blokování téhož souboru v módu<br>
+    WR nebo nižším. Nemůže přidávat a rušit věty ani provádět reorganizaci.<br>
+</div>
+<div>
+    <h4>Tabulka sdílené editace</h4>
+    <span style="color:red">LAN - TABULKA SDÍLENÉ EDITACE</span>
+    <hr>
+    V tabulce  jsou zachyceny  základní kombinace  módů  blokování při sdílené<br>
+    editaci souboru  dvěma stanicemi.  Kombinace  NoExcl - NoCr,  která nemůže<br>
+    nastat  (soubor buď indexy má nebo ne) není uvedena.<br>
+    ┌───────────────────────┬────────────────────────────────┐<br>
+    │    Mód blokování      │      Možnost provádění         │ Legenda:<br>
+    ├───────────┬───────────┼────────────────┬───────────────┤<br>
+    │           │           │   Stanice A    │   Stanice B   │ Edit-aktualizace<br>
+    │ Stanice A │ Stanice B ├────────────────┼───────────────┤  ^N -pořízení<br>
+    │           │           │ Edit  ^N   ^Y  │ Edit  ^N   ^Y │  ^Y -rušení vět<br>
+    ├───────────┼───────────┼────────────────┼───────────────┤<br>
+    │  NoExcl   │  NoExcl   │  Ano  Ano  Ano │  Ano  Ano  Ano│<br>
+    │  NoExcl   │  NoDel    │  Ano  Ano      │  Ano  Ano  Ano│<br>
+    │  NoDel    │  NoDel    │  Ano  Ano      │  Ano  Ano     │<br>
+    │  NoDel    │  NoCr     │  Ano           │  Ano  Ano     │<br>
+    │  NoCr     │  NoCr     │  Ano           │  Ano          │<br>
+    └───────────┴───────────┴────────────────┴───────────────┘<br>
+    Při pokusu o provedení právě blokované akce  vydá FAND hlášení o blokování<br>
+    souboru. Hlášení obsahuje možnost potlačení požadované akce klávesou (ESC).<br>
+    Pro snížení zátěže sítě je vhodné v příkazu edit použít parametr watch.<br>
+</div>
+<div>
+    <h4>Tabulky znaků</h4>
+    <span style="color:red">TABULKA ZNAKŮ</span>
+    <hr>
+    ┌────────────────┬──────────────┬──────────────┬──────────────┐<br>
+    │ dec hex  znak  │ dec hex znak │ dec hex znak │ dec hex znak │<br>
+    ├────────────────┼──────────────┼──────────────┼──────────────┤<br>
+    │  0  00  ^@ NUL │ 32  20  SPC  │ 64  40   @   │  96  60   `  │<br>
+    │  1  01  ^A SOH │ 33  21   !   │ 65  41   A   │  97  61   a  │<br>
+    │  2  02  ^B STX │ 34  22   "   │ 66  42   B   │  98  62   b  │<br>
+    │  3  03  ^C ETX │ 35  23   #   │ 67  43   C   │  99  63   c  │<br>
+    │  4  04  ^D EOT │ 36  24   $   │ 68  44   D   │ 100  64   d  │<br>
+    │  5  05  ^E ENQ │ 37  25   %   │ 69  45   E   │ 101  65   e  │<br>
+    │  6  06  ^F ACK │ 38  26   &   │ 70  46   F   │ 102  66   f  │<br>
+    │  7  07  ^G BEL │ 39  27   '   │ 71  47   G   │ 103  67   g  │<br>
+    │  8  08  ^H BS  │ 40  28   (   │ 72  48   H   │ 104  68   h  │<br>
+    │  9  09  ^I HT  │ 41  29   )   │ 73  49   I   │ 105  69   i  │<br>
+    │ 10  0A  ^J LF  │ 42  2A   *   │ 74  4A   J   │ 106  6A   j  │<br>
+    │ 11  0B  ^K VT  │ 43  2B   +   │ 75  4B   K   │ 107  6B   k  │<br>
+    │ 12  0C  ^L FF  │ 44  2C   ,   │ 76  4C   L   │ 108  6C   l  │<br>
+    │ 13  0D  ^M CR  │ 45  2D   -   │ 77  4D   M   │ 109  6D   m  │<br>
+    │ 14  0E  ^N SO  │ 46  2E   .   │ 78  4E   N   │ 110  6E   n  │<br>
+    │ 15  0F  ^O SI  │ 47  2F   /   │ 79  4F   O   │ 111  6F   o  │<br>
+    │ 16  10  ^P DLE │ 48  30   0   │ 80  50   P   │ 112  70   p  │<br>
+    │ 17  11  ^Q DC1 │ 49  31   1   │ 81  51   Q   │ 113  71   g  │<br>
+    │ 18  12  ^R DC2 │ 50  32   2   │ 82  52   R   │ 114  72   r  │<br>
+    │ 19  13  ^S DC3 │ 51  33   3   │ 83  53   S   │ 115  73   s  │<br>
+    │ 20  14  ^T DC4 │ 52  34   4   │ 84  54   T   │ 116  74   t  │<br>
+    │ 21  15  ^U NAK │ 53  35   5   │ 85  55   U   │ 117  75   u  │<br>
+    │ 22  16  ^V SYN │ 54  36   6   │ 86  56   V   │ 118  76   v  │<br>
+    │ 23  17  ^W ETB │ 55  37   7   │ 87  57   W   │ 119  77   w  │<br>
+    │ 24  18  ^X CAN │ 56  38   8   │ 88  58   X   │ 120  78   x  │<br>
+    │ 25  19  ^Y EM  │ 57  39   9   │ 89  59   Y   │ 121  79   y  │<br>
+    │ 26  1A  ^Z SUB │ 58  3A   :   │ 90  5A   Z   │ 122  7A   z  │<br>
+    │ 27  1B  ^[ ESC │ 59  3B   ;   │ 91  5B   [   │ 123  7B   {  │<br>
+    │ 28  1C  ^\ FS  │ 60  3C   <   │ 92  5C   \   │ 124  7C   |  │<br>
+    │ 29  1D  ^] GS  │ 61  3D   =   │ 93  5D   ]   │ 125  7D   }  │<br>
+    │ 30  1E  ^^ RS  │ 62  3E   >   │ 94  5E   ^   │ 126  7E   ~  │<br>
+    │ 31  1F  ^_ US  │ 63  3F   ?   │ 95  5F   _   │ 127  7F  DEL │<br>
+    └────────────────┴──────────────┴──────────────┴──────────────┘<br>
+    ┌──────────────┬──────────────┬──────────────┬──────────────┐<br>
+    │ dec hex znak │ dec hex znak │ dec hex znak │ dec hex znak │<br>
+    ├──────────────┼──────────────┼──────────────┼──────────────┤<br>
+    │ 128  80   Č  │ 160  A0   á  │ 192  C0   └  │ 224  E0   Ó  │<br>
+    │ 129  81   ü  │ 161  A1   í  │ 193  C1   ┴  │ 225  E1   ß  │<br>
+    │ 130  82   é  │ 162  A2   ó  │ 194  C2   ┬  │ 226  E2   Ô  │<br>
+    │ 131  83   ď  │ 163  A3   ú  │ 195  C3   ├  │ 227  E3   Ń  │<br>
+    │ 132  84   ä  │ 164  A4   ň  │ 196  C4   ─  │ 228  E4   ń  │<br>
+    │ 133  85   Ď  │ 165  A5   Ň  │ 197  C5   ┼  │ 229  E5   ň  │<br>
+    │ 134  86   Ť  │ 166  A6   Ů  │ 198  C6   Ă  │ 230  E6   Š  │<br>
+    │ 135  87   č  │ 167  A7   Ô  │ 199  C7   ║  │ 231  E7   š  │<br>
+    │ 136  88   ě  │ 168  A8   š  │ 200  C8   ╚  │ 232  E8   Ŕ  │<br>
+    │ 137  89   Ě  │ 169  A9   ř  │ 201  C9   ╔  │ 233  E9   Ú  │<br>
+    │ 138  8A   Ĺ  │ 170  AA   ŕ  │ 202  CA   ╩  │ 234  EA   ŕ  │<br>
+    │ 139  8B   Í  │ 171  AB   Ŕ  │ 203  CB   ╦  │ 235  EB   Ű  │<br>
+    │ 140  8C   ľ  │ 172  AC   ×  │ 204  CC   ╠  │ 236  EC   ý  │<br>
+    │ 141  8D   ĺ  │ 173  AD   §  │ 205  CD   ═  │ 237  ED   Ý  │<br>
+    │ 142  8E   Ä  │ 174  AE   «  │ 206  CE   ╬  │ 238  EE   ţ  │<br>
+    │ 143  8F   Á  │ 175  AF   »  │ 207  CF   ¤  │ 239  EF   ´  │<br>
+    │ 144  90   É  │ 176  B0   ░  │ 208  D0   đ  │ 240  F0   ­  │<br>
+    │ 145  91   ž  │ 177  B1   ▒  │ 209  D1   Đ  │ 241  F1   ˝  │<br>
+    │ 146  92   Ž  │ 178  B2   ▓  │ 210  D2   Ď  │ 242  F2   ˛  │<br>
+    │ 147  93   ô  │ 179  B3   │  │ 211  D3   Ë  │ 243  F3   ˇ  │<br>
+    │ 148  94   ö  │ 180  B4   ┤  │ 212  D4   ď  │ 244  F4   ˘  │<br>
+    │ 149  95   Ó  │ 181  B5   ő  │ 213  D5   Ň  │ 245  F5   §  │<br>
+    │ 150  96   ů  │ 182  B6   ║  │ 214  D6   Í  │ 246  F6   ÷  │<br>
+    │ 151  97   Ú  │ 183  B7   ű  │ 215  D7   Î  │ 247  F7   ¸  │<br>
+    │ 152  98   ý  │ 184  B8   Ű  │ 216  D8   ě  │ 248  F8   °  │<br>
+    │ 153  99   Ö  │ 185  B9   ╣  │ 217  D9   ┘  │ 249  F9   ¨  │<br>
+    │ 154  9A   Ü  │ 186  BA   ║  │ 218  DA   ┌  │ 250  FA   ˙  │<br>
+    │ 155  9B   Š  │ 187  BB   ╗  │ 219  DB   █  │ 251  FB   ű  │<br>
+    │ 156  9C   Ľ  │ 188  BC   ╝  │ 220  DC   ▄  │ 252  FC   Ř  │<br>
+    │ 157  9D   Ý  │ 189  BD   Ż  │ 221  DD   Ţ  │ 253  FD   ř  │<br>
+    │ 158  9E   Ř  │ 190  BE   ż  │ 222  DE   Ů  │ 254  FE   ■  │<br>
+    │ 159  9F   ť  │ 191  BF   ┐  │ 223  DF   ▀  │ 255  FF      │<br>
+    └──────────────┴──────────────┴──────────────┴──────────────┘<br>
+</div>
+<div>
+    <h4>Tečkové příkazy</h4>
+    <span style="color:red">TISK TEXTU</span>
+    <hr>
+    ■ F6 .............. tisk celého textu<br>
+    ■ Ctrl-F6 ......... tisk od pozice kurzoru do konce textu<br>
+    ■ Ctrl-K Ctrl-P ... tisk bloku (nebo celého textu není-li blok definován)<br>
+    ■ Alt-F6 .......... interaktivní změna tiskárny<br>
+    <br>
+    Tisk lze přerušit klávesou Esc. Při tisku se interpretují (netisknou se,<br>
+    ale provedou požadované akce) následující tečkové příkazy, jsou-li<br>
+    umístěné v prvních řádcích textu (po jednom na řádku vždy od prvního sloupce)<br>
+    <br>
+    ■ .ti n ... počet výtisků (implicitně 1)<br>
+    ■ .cp n ... automatické stránkování (počet řádek vynechaných na konci strany)<br>
+    <br>
+    ■ .pl n ... délka fyzické strany na tiskárně (implicitně 72 řádek)<br>
+    ■ .po n ... odsazení textu od levého okraje (implicitně 0)<br>
+    správná funkce .po a .pl závisí na instalaci odpovídající řídící<br>
+    sekvence pro tiskárnu - viz. Instalace tiskárny.<br>
+    <br>
+    ■ .ff ..... potlačí hlášku "nastav tiskárnu" na začátku a odstránkování<br>
+    na konci<br>
+    ■ .nm ..... jako .ff ale na konci odstránkuje<br>
+    <br>
+    ■ .he text ... hlavička strany  ┐     masky uvnitř textu<br>
+    ■ .fo text ... ukončení strany  ├     ___        číslo strany<br>
+    │     __.__.__   datum<br>
+    │     __.__.____ plné datum (od verze 4.2)<br>
+    ┘     __:__      čas<br>
+    n je libovolné číslo, text je jednořádkový řetězec<br>
+</div>
+<div>
+    <h4>Technika blokování souboru</h4>
+    <span style="color:red">LAN - TECHNIKA BLOKOVÁNÍ SOUBORU</span>
+    <hr>
+    Po otevření sdíleného souboru používá FAND na nezbytně nutnou dobu jeden z<br>
+    módů blokování (vyšší zahrnuje vždy i  nižší).<br>
+    <br>
+    Při sekvenčním zpracování  souboru  (sort, merge, report, indexace, cyklus<br>
+    forall, obnovení obrazovky v datovém editoru - refresh) zůstane nárokovaný<br>
+    mód blokování pro určitý soubor v platnosti do konce akce.<br>
+    <br>
+    Pro práci jednotlivých účastníků je vždy rozhodující nejvyšší mód bloková-<br>
+    ní, který je nárokován ostatními účastníky v okamžiku provedení akce.Platí<br>
+    tedy, že já mohu provádět vše, pokud mi to někdo jiný právě nezakazuje.<br>
+    <br>
+    Dočasná nedostupnost souboru je hlášena uživateli.  Pokus o práci s bloko-<br>
+    vaným souborem je opakován v pravidelných  intervalech určených parametrem<br>
+    net delay. Možnost přerušit čekání má uživatel pouze v některých případech<br>
+    při práci datového  editoru ( fáze startu  datového editoru, pokus o změnu<br>
+    právě blokované věty,... ), hlášení o blokování  souboru je potom doplněno<br>
+    o možnost  přerušení  klávesou  ESC.  Při  přerušení  fáze startu datového<br>
+    editoru nastaví edbreak=15.<br>
+</div>
+<div>
+    <h4>Technika sdílení</h4>
+    <span style="color:red">LAN - TECHNIKA SDÍLENÍ</span>
+    <hr>
+    Blokování souboru    - FAND  realizuje  přístup ke sdíleným souborům zcela<br>
+    automaticky.  Pro umožnění  postupného  přechodu od<br>
+    režimu sdílení souboru k jeho výlučnému (exclusive)<br>
+    blokování pro jednoho účastníka je použita technika<br>
+    blokování souboru s řadou módů blokování.<br>
+    <br>
+    Zamykání vět souboru - technika zamykání vět je použita pro  koordinaci<br>
+    práce datových editorů.<br>
+    <br>
+    Obě uvedené techniky je možné využít také  v procedurách. K dispozici jsou<br>
+    příkazy with shared (blokování souboru) a with locked (zamčení věty).<br>
+</div>
+<div>
+    <h4>Technika zamykání vět</h4>
+    <span style="color:red">LAN - TECHNIKA ZAMYKÁNÍ VĚT</span>
+    <hr>
+    Ke koordinaci  datových editorů  na různých  stanicích  v síti  je použita<br>
+    technika zamčení ( lock ) věty. Lock je  vydán  před  první  změnou  údaje<br>
+    dané věty a případné  čekání v případě  blokování  věty  jiným  účastníkem<br>
+    ( hlášení s ESC ) lze  přerušit a tím  odstoupit od záměru změny.  Lock je<br>
+    zrušen po úspěšném  ukončení věty nebo po její obnově Ctrl-U.<br>
+    <br>
+    Aby bylo možné vyhnout se dlouhému čekání a případnému  deadlock, není při<br>
+    lock zakázáno přepsání věty jiným programem (mimo  datový  editor a příkaz<br>
+    "with locked ...").  Před zápisem změněné věty PC FAND zjistí, zda mezitím<br>
+    nedošlo  k takovému přepsání a případně  po hlášení  přečte a zobrazí stav<br>
+    věty v souboru (anuluje změny provedené v editoru).<br>
+    <br>
+    Při přímém přístupu k větě datového souboru  z procedury není zamykání vět<br>
+    automaticky  prováděno !<br>
+    <br>
+    Pro aktualizaci  údajů nebo rušení věty příkazem deleterec v proceduře je<br>
+    tedy vhodné použít příkaz with locked. Není-li uvedena  větev  "else ..",<br>
+    pak v případě  blokování některé  ze zamykaných vět jiným účastníkem čeká<br>
+    FAND na její uvolnění bez možnosti čekání přerušit.<br>
+</div>
+<div>
+    <h4>Term</h4>
+    <span style="color:red">Term</span>
+    <hr>
+    Pojmem term  označujeme datovou  strukturu daného  typu. Může  být<br>
+    tvořen konstantou, proměnnou i jejich kombinací.<br>
+    <br>
+    Termy  typu Integer, Real, String, LongString, seznamové typy a  z<br>
+    nich odvozené typy mohou obsahovat:<br>
+    <br>
+    Změna pořadí vyhodnocování : kulaté závorky<br>
+    <br>
+    Aritmetické operátory       : +  -  *  /<br>
+    <br>
+    Bitové operátory            : ^   negace<br>
+    ||  disjunkce<br>
+    &&  konjunkce<br>
+    Použití bitových operátorů je omezeno pro typ Integer.<br>
+    <br>
+    Zřetězení stringu a seznamu : +<br>
+    <br>
+    Výraz typu  String může  obsahovat i  proměnné typu LongString a  výraz<br>
+    typu Real může obsahovat i proměnné typu Integer. Platí i obráceně, tj.<br>
+    výraz typu  LongString může  obsahovat  proměnné typu String a  výraz<br>
+    typu Integer může obsahovat  proměnné typu Real.<br>
+    <br>
+    Příklad:<br>
+    term typu Integer:     120<br>
+    String :     'Auto'<br>
+    Real   :     125.624<br>
+    Seznam :     [ H|Ostatní ]<br>
+    zřetězení        :     '0.'+'125'<br>
+</div>
+<div>
+    <h4>TestMode</h4>
+    <span style="color:red">SPECIÁLNÍ FUNKCE</span>
     <hr>
 </div>
 <div>
-    <h4></h4>
-    <span style="color:red"></span>
+    <h4>TextMode</h4>
+    <span style="color:red">EXTERNÍ PROGRAMY</span>
     <hr>
 </div>
 <div>
-    <h4></h4>
-    <span style="color:red"></span>
+    <h4>Textový editor</h4>
+    <span style="color:red">TEXTOVÝ EDITOR</span>
+    <hr>
+    Textový editor se používá zejména pro prohlížení tiskových sestav a editaci<br>
+    datových položek typu T (viz.volný text). Např. programátorské prostředí PC<br>
+    FANDu je z velké části totožné s prostředím textového editoru.<br>
+    <br>
+    Odchylky PC FANDovského textového editoru oproti standardním zvyklostem:<br>
+    <br>
+    ■ mód editace/prohlížení (přepíná se klávesou Scroll-Lock)<br>
+    ■ změněný text se při opuštění editoru klávesou Esc  automaticky bez dotazu<br>
+    nahraje na disk ( protože navíc do neformátovaných souborů vkládá oddělo-<br>
+    vače řádků, nedoporučuje se používat textový editor na netextové soubory)<br>
+    ■ Zápis bloku do volné paměti (clipboard) pomocí kláves CtrlF7 (ShiftF7)<br>
+    <br>
+    Některé charakteristiky textového editoru:<br>
+    Není přímo omezena velikost editovaného souboru. Číslování řádků je omezeno<br>
+    hodnotou 99.999.  V paměti není uložen celý  editovaný  soubor ale jen jeho<br>
+    určitá část, která se dynamicky (a pro obsluhu neviditelně ) načítá z disku<br>
+    a zpět ukládá na disk. Pomocí techniky přerušení editace ( exit-procedury )<br>
+    lze doplnit speciální funkce textového editoru. (příkazy pro editaci textu)<br>
+</div>
+<div>
+    <h4>Then</h4>
+    <span style="color:red">IF, THEN, ELSE - duplicitní klíčová slova</span>
     <hr>
 </div>
 <div>
-    <h4></h4>
-    <span style="color:red"></span>
+    <h4>Times</h4>
+    <span style="color:red">PARAMETRY SESTAVY</span>
     <hr>
 </div>
 <div>
-    <h4></h4>
-    <span style="color:red"></span>
+    <h4>Tisk grafu</h4>
+    <span style="color:red">TISK GRAFU</span>
+    <hr>
+    Tisk grafu  lze provést  pomocí prostředků  systému MS-DOS ( PrintScreen +<br>
+    utilita graphics ). Výhodnější je použití podpory PC FANDu. Tj. klávesy F6<br>
+    pro celou obrazovku nebo  ShifF6  pro tisk aktuálního okna.<br>
+    <br>
+    ■ Pomocí příkazu graph s parametrem GF lze tisknout nejen vlastní graf ale<br>
+    obecně libovolnou  obrazovku nebo okno v grafickém módu.<br>
+    viz. příkaz graph( GF='', ww=(...), Print=.., Txt=.., TxtWin=..)<br>
+    Pro tisk má největší význam parametr print.<br>
+    <br>
+    ■ Tisk grafu se provede jako kopie jednotlivých bodů obrazovky (pixelů) na<br>
+    tiskárnu v poměru 1:1.  Tj. bod na bod.  Samozřejmě zde hraje roli poměr<br>
+    rastru obrazovky na hustotu tisku na tiskárně (viz. instalace tiskárny).<br>
+</div>
+<div>
+    <h4>Tisk textu</h4>
+    <span style="color:red">TISK TEXTU</span>
+    <hr>
+
+</div>
+<div>
+    <h4>Today</h4>
+    <span style="color:red">AKTUÁLNÍ DATUM A ČAS, KONVERZE</span>
     <hr>
 </div>
 <div>
-    <h4></h4>
-    <span style="color:red"></span>
+    <h4>trace</h4>
+    <span style="color:red">trace</span>
+    <hr>
+    trace(Integer)<br>
+    <br>
+    Integer: 0                  Vypnutí trasováni.<br>
+    kladná hodnota     Zapnutí trasováni,  hodnota určuje  hloubku<br>
+    trasování.   Např.  při   hodnotě  1   bude<br>
+    trasován     pouze    aktuální    predikát,<br>
+    vyvolávané predikáty již trasovány nebudou.<br>
+    Při hodnotě 2 se trasují dvě úrovně atd.<br>
+    <br>
+    Řízení trasování.  Lze jej  vložit do těla libovolného  predikátu.<br>
+    Vypisuje  na obrazovku  průběh volání  a návratů  predikátů  a  hodnoty<br>
+    parametrů.  Automaticky se  vypíná při  opuštění predikátu v němž  bylo<br>
+    definováno.<br>
+    Běh trasovaného programu lze přerušit stlačením klávesy "ESC".<br>
+    <br>
+    Příklad:<br>
+    <br>
+    spoj:- trace(1), concat('A','B','AB'),<br>
+    concat('A','B',X), write(X),<br>
+    concat('A',Y,'AB'), write(Y),<br>
+    concat(Z,'B','AB'), write(Z).<br>
+</div>
+<div>
+    <h4>TrailChar</h4>
+    <span style="color:red">NAHRAZENÍ V TEXTU</span>
     <hr>
 </div>
 <div>
-    <h4></h4>
-    <span style="color:red"></span>
+    <h4>Transformace</h4>
+    <span style="color:red">TRANSFORMACE - kapitola M</span>
     <hr>
 </div>
-Tab
-Tabulka módů blokování
-Tabulka sdílené editace
-Tabulka znaků - 2.část
-Tabulky znaků
-Tečkové příkazy
-Technika blokování souboru
-Technika sdílení
-Technika zamykání vět
-Term
-TestMode
-TextMode
-Textový editor
-Then
-Times
-Tisk grafu
-Tisk textu
-Today
-trace
-TrailChar
-Transformace
-Trust
-Třídění
-TurnCat
-Txt
-TxtPos
-TxtWin
-TxtXY
-Typ dne
-Type
-TypeDay
-Typy grafu
-Typy údajů
-Typy výrazů
+<div>
+    <h4>Trust</h4>
+    <span style="color:red">PRÁVA PŘÍSTUPU K DATŮM</span>
+    <hr>
+</div>
+<div>
+    <h4>Třídění</h4>
+    <span style="color:red">TŘÍDĚNÍ</span>
+    <hr>
+    Třídění datového souboru.<br>
+    <br>
+    ██ Syntaxe:     SORT ( NázevSouboru,( TřídícíÚdaje ))<br>
+    <br>
+    ■  NázevSouboru ... Název kapitoly F.<br>
+    ■  TřídícíÚdaje ... [>] [~] NázevÚdaje [{, [>] [~] NázevÚdaje }]<br>
+    Seznam třídících údajů je uzavřen v kulatých závorkách<br>
+    a obsahuje alespoň jeden údaj. Speciální znaky před<br>
+    názvy třídících údajů:<br>
+    > ... sestupné setřídění (jinak vzestupné)<br>
+    ~ ... lexikální třídění (u textových údajů)<br>
+    <br>
+    ░░░░░░░░░░░░    sort(PRAC,(>Věk))                 {sestupně podle věku}<br>
+    ░░příklady░░    sort(PRAC,(OsobníČíslo))          {vzestupně podle čísla}<br>
+    ░░░░░░░░░░░░    sort(PRAC,(~Příjmení,~Jméno))     {lexikálně}<br>
+</div>
+<div>
+    <h4>TurnCat</h4>
+    <span style="color:red">GENERAČNÍ SOUBORY</span>
+    <hr>
+</div>
+<div>
+    <h4>Txt</h4>
+    <span style="color:red">TXT - duplicitní klíčové slovo</span>
+    <hr>
+    ■ graph(...,TXT=...,).................. příkaz graph - okno pro graf<br>
+    ■ copyfile(Soub1,Soub2/TXT,...) ....... převod textových souborů<br>
+</div>
+<div>
+    <h4>TxtPos</h4>
+    <span style="color:red">TXTPOS - duplicitní klíčové slovo</span>
+    <hr>
+    ■ txtpos ....................... pozice kurzoru v rámci textu po ukončení<br>
+    editace - funkce textového editoru<br>
+    ■ edittxt(...,TxtPos=,...) ..... nastavení počáteční pozice kurzoru pro<br>
+    editaci - příkazy pro editaci textu<br>
+</div>
+<div>
+    <h4>TxtWin</h4>
+    <span style="color:red">PARAMETRY GRAFU</span>
+    <hr>
+    ■ TXT=(XZ,YZ,VelikostPísma,BarvaPísma,Text) ......  zobrazení textu<br>
+    XZ,YZ : ČísVýraz - souřad. levého dolního rohu (80x25)<br>
+    VelikostPísma : ČísVýraz - [1..9]<br>
+    BarvaPísma : TextVýraz, kód barvy (Palette)<br>
+    Text : text pro zobrazení, zobrazí se co se vejde<br>
+    <br>
+    ■ TXTWIN=(XZ,YZ,XK,YK,BarvaPozadí,BarvaPísma,{Text[;]}) .. textové okno<br>
+    XZ,YZ : ČísVýraz - souřad. levého horního rohu (80x25)<br>
+    XK,YK : ČísVýraz - souřadnice pravého dolního rohu<br>
+    BarvaPozadí,BarvaPísma : TextVýrazy, kódy barvy<br>
+    Text : text pro zobrazení, nový řádek dle CR,LF a ;<br>
+</div>
+<div>
+    <h4>TxtXY</h4>
+    <span style="color:red">TXTXY - duplicitní klíčové slovo</span>
+    <hr>
+    ■ txtxy ........................ pozice kurzoru po ukončení editace textu<br>
+    ■ edittxt(...,TxtXY=,...) ...... nastavení pozice kurzoru v editačním okně<br>
+</div>
+<div>
+    <h4>Typ dne</h4>
+    <span style="color:red">TYP DNE</span>
+    <hr>
+    Funkce typeday vrací typ zadaného dne.<br>
+    <br>
+    ██ Syntaxe:     TYPEDAY ( Datum ) : real<br>
+    <br>
+    ■  Datum ...... Číselný výraz, datum v interním formátu PC FANDu.<br>
+    ■  Typ dne .... Návratová hodnota :<br>
+    0 - pracovní den<br>
+    1 - sobota, den pracovního volna<br>
+    2 - neděle, den pracovního klidu<br>
+    3 - svátek<br>
+</div>
+<div>
+    <h4>Type</h4>
+    <span style="color:red">TYPY GRAFU</span>
+    <hr>
+    Typ grafu se zadá  jako textový  řetězec do parametru type. Dle typu grafu<br>
+    se řídí použití dalších parametrů.  Do počtu  údajů v seznamu je zahrnut i<br>
+    první údaj pro osu X.<br>
+    <br>
+    ■ 2DBAR...... dvojrozměrný sloupcový graf (max. 3 údaje z věty)<br>
+    základní tvar 2 údaje, třetí údaj jako druhý sloupec<br>
+    ■ GROUP...... dvojrozměrný sloupcový graf (max. 11 údajů)<br>
+    pro každou větu se vytvoří skupina sloupců dle počtu údajů<br>
+    ■ STACKBAR .. poschoďový srovnávací graf, jako group ale hodnoty údajů<br>
+    věty se zobrazí do jednoho vícevrstevného sloupce<br>
+    ■ GROUPLINE.. dvojrozměrný čárový spojnicový graf (max. 11 údajů)<br>
+    ■ 3DBAR...... trojrozměrný sloupcový graf (max. 11 údajů)<br>
+    ■ 3DLINE..... trojrozměrný čárový graf (max. 11 údajů)<br>
+    ■ CIRCLE..... kruhový nebo koláčový graf (max. 2 údaje)<br>
+    může být dvoj nebo trojrozměrný-dle druhé pozice param. fill<br>
+    ■ APPROX..... dvojrozměrný čárový aproximační graf (max. 3 údaje)<br>
+    ■ POLYREG.... dvojrozměrný čárový graf - polynomická regrese (max.3 údaje)<br>
+    stupeň polynomu dle parametru grpoly<br>
+    <br>
+    Pokud tento parametr chybí, nebo textový výraz má jinou hodnotu použije se<br>
+    hodnota '2DBAR'.<br>
+</div>
+<div>
+    <h4>TypeDay</h4>
+    <span style="color:red">TYP DNE</span>
+    <hr>
+</div>
+<div>
+    <h4>Typy grafu</h4>
+    <span style="color:red">TYPY GRAFU</span>
+    <hr>
+</div>
+<div>
+    <h4>Typy údajů</h4>
+    <span style="color:red">ULOŽENÉ ÚDAJE</span>
+    <hr>
+    Seznam údajů, které budou fyzicky uloženy v souboru, ve tvaru:<br>
+    <br>
+    ██  NázevÚdaje : Typ ;<br>
+    <br>
+    typy údajů v PC FANDu:<br>
+    <br>
+    █ F,m.n ... číslo,  m, n udává počet míst před a za čárkou,<br>
+    rozsah čísla je až 18 míst, z toho je 11 platných míst<br>
+    ve verzi pro matematický koprocesor 15 platných míst<br>
+    █ R     ... reálné číslo v pohyblivé řádové čárce, interně uložen<br>
+    jako (Pascal) typ real v 6 bytech.<br>
+    █ A,n   ... znakový řetězec, n udává délku (až 255 znaků)<br>
+    █ N,n   ... číselný řetězec, n udává délku (až 79 znaků)<br>
+    █ D     ... datum s implicitní maskou 'DD.MM.YY'<br>
+    █ B     ... logický typ (pravda=true='A', nepravda=false='N')<br>
+    █ T     ... volný text (formátovaný text maxim. délky 65 000 B)<br>
+    <br>
+    ░░░░░░░░░░░░<br>
+    ░░příklady░░  Množství: F,6.0;          Cena: F,4.2;        Aktiva: F,9.2;<br>
+    ░░░░░░░░░░░░     Název: A,12;          Titul: A,30;       Poznámka: A,250;<br>
+    Kód: N,3;             Psč: N,5;             Ičo: N,8;<br>
+    Datum: D;        Proplaceno: B;          Poznámky: T;<br>
+</div>
+<div>
+    <h4>Typy výrazů</h4>
+    <span style="color:red">TYPY VÝRAZŮ</span>
+    <hr>
+</div>
+
 <div>
     <h4></h4>
     <span style="color:red"></span>
