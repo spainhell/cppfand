@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <title>S</title>
+</head>
+<body style="font-family:'Courier New'">
+
+<div>
+    <h4>Save</h4>
+    <span style="color:red">SAVE - duplicitní klíčová slova</span>
+    <hr>
+    ■ save............. příkaz pro uložení změn souborů (z cache na disk)<br>
+    ■ save(...)........ PROLOG - uložení databáze do údaje typu T<br>
+</div>
+<div>
+    <h4>save (PROLOG)</h4>
+    <span style="color:red">save</span>
+    <hr>
+    save(NázevDatabáze,ParamSoub.UdajTypuT)<br>
+    <br>
+    NázevDatabáze       Jméno databáze. Uvedeno za klíčovým slovem #DATABASE.<br>
+    ParamSoub.UdajTypuT Globální proměnná.<br>
+    <br>
+    Uložení současného obsahu databáze do globální proměnné typu T.<br>
+    <br>
+    Příklad:<br>
+    <br>
+    vloz:-save(FIRMA,PROLPAR.KapB).<br>
+</div>
+<div>
+    <h4>SaveAfter</h4>
+    <span style="color:red">PARAMETRY EDITACE</span>
+    <hr>
+</div>
+<div>
+    <h4>Sdílená editace</h4>
+    <span style="color:red">LAN - SDÍLENÁ EDITACE</span>
+    <hr>
+    Při práci se sdíleným souborem lze dělat  vše  (editovat,  pořizovat a rušit<br>
+    věty), pokud to některá  z dalších stanic nezakazuje!  Při konkurenční práci<br>
+    více účastníků je pro  každého  z  nich  rozhodující  nejvyšší mód blokování<br>
+    nárokovaný ostatními účastníky. Pro koordinaci  datových  editorů je použita<br>
+    technika zamykání vět.<br>
+    <br>
+    Mód blokování při editaci  je  jednoznačně  určen  způsobem  editace a právě<br>
+    probíhající akcí:<br>
+    NoExcl - editace podmnožiny vět souboru s  indexovou  podporou (cond, owner,<br>
+    mode='F2' nebo mode='wx')<br>
+    NoDel  - editace celého souboru (kromě cond, owner, mode='F2' nebo mode='wx')<br>
+    NoCr   - editace podmnožiny vět souboru bez indexů (cond nebo mode='F2')<br>
+    Použití módů Rd a vyšších je časově omezeno na provedení konkrétní akce<br>
+    (čtení souboru, zápis věty, přidání věty, aditivní změna atd.).<br>
+    <br>
+    Při editaci podmnožiny vět (NoExcl, NoCr) pravidelný  refresh vypisuje pouze<br>
+    aktuální stav vět vybraných  při  vytváření  podmnožiny.  Věty zrušené jiným<br>
+    účastníkem jsou při refresh zobrazeny barevně odlišně, nově pořízené věty se<br>
+    nezobrazí a při změně hodnoty klíče je hledání F3 ještě podle starých hodnot<br>
+    klíče. Obnovení podmnožiny lze vyvolat kombinací kláves Ctrl-F2.<br>
+    <br>
+    Jsou-li deklarovány rozsáhlejší aditivní změny a především referenční<br>
+    integrita, blokují se při potvrzení věty v odpovídajících módech blokování<br>
+    všechny nadřízené, resp. podřízené soubory. Celá akce tvoří jakousi transakci,<br>
+    která se provede buďto celá nebo vůbec. V případě nepřístupnosti souborů<br>
+    ji lze odvolat (ESC).<br>
+</div>
+<div>
+    <h4>Sdílení datových souborů</h4>
+    <span style="color:red">LAN - SDÍLENÍ DATOVÝCH SOUBORŮ</span>
+    <hr>
+    Sdílení datových souborů je možné pouze při instalovaném síťovém softwaru !<br>
+    ┌─────────────────────────────────────────────────────────────────────────┐<br>
+    │  Před spuštěním FANDu je nutné instalovat parametr operačního systému:  │<br>
+    │  ■ SET LANNODE= Unikátní číslo stanice v síti (0 až 255)                │<br>
+    └─────────────────────────────────────────────────────────────────────────┘<br>
+    Datové soubory i  katalog jsou implicitně umístěny ve stejném adresáři, kde<br>
+    je úloha.  Rozmístění datových souborů je možné změnit v katalogu. Umístění<br>
+    katalogu a datových souborů v něm neuvedených lze změnit před spuštěním<br>
+    FANDu nastavením SET FANDDATA. Určení přístupových práv viz. instalace sítě.<br>
+    <br>
+    <br>
+    Sdílené datové soubory je nutné při instalaci úlohy v katalogu všech stanic<br>
+    označit v údaji "Návěští" dle požadavku na sdílení:<br>
+    <br>
+    ■ všichni účastníci soubor pouze čtou - (úloha,.HLP) soubor má DOS-atribut<br>
+    ReadOnly , nemusí  být  v katalogu<br>
+    uveden nebo je  návěští v katalogu<br>
+    prázdné.<br>
+    ■ někteří účastníci soubor pouze čtou - v katalogu těchto stanic je soubor<br>
+    označen '#R'<br>
+    ■ soubor je určen pro čtení i zápis   - návěští v katalogu obsahuje '#'.<br>
+    <br>
+    Deklarace sdílených souborů není možné měnit ! Zápis do souboru určeného<br>
+    pouze pro čtení je vyhodnocen jako běhová chyba s ukončením úlohy !<br>
+</div>
+<div>
+    <h4>Sdílení FANDu</h4>
+    <span style="color:red">LAN - SDÍLENÍ FANDU</span>
+    <hr>
+    Pro sdílení  FANDu  je třeba  nejprve nastavit DOS - atribut ReadOnly  pro<br>
+    soubory FAND.EXE a FAND.OVR.<br>
+    <br>
+    Před sdíleným  spuštěním  FANDu  je nutné instalovat následující parametry<br>
+    operačního systému (SET-parametry):<br>
+    <br>
+    ■ SET FANDWORK= Cesta k pracovním souborům<br>
+    - každý účastník má vlastní adresář na lokálním počítači nebo na serveru<br>
+    <br>
+    Soubory FAND.OVR, FAND.CFG, FAND.RES a FANDHLP.* jsou  standardně  hledány<br>
+    ve stejném adresáři, kde je FAND.EXE. Dalšími parametry operačního systému<br>
+    lze standardní hledání změnit:  SET FANDOVR=,  SET FANDCFG=, SET FANDRES=.<br>
+    Programem FANDINST je možné dále nastavit "síťové" parametry:<br>
+    (viz. používané pojmy)<br>
+    <br>
+    net delay - opakování blokovaného přístupu<br>
+    refresh   - obnova obrazovky v datovém editoru (zvýšení implicitní<br>
+    hodnoty 5 sec. zmenší zatížení disku serveru a sítě)<br>
+</div>
+<div>
+    <h4>Sdílení úlohy</h4>
+    <span style="color:red">LAN - SDÍLENÍ ÚLOHY</span>
+    <hr>
+    Sdílení úlohy je  možné  pouze  v  režimu  provádění  (nelze  sdíleně  ladit).<br>
+    Projektové soubory (*.RDB a *.TTT) a soubory s nápovědou k úloze  (.HLP)  musí<br>
+    mít DOS-atribut ReadOnly. Pro úlohu FAND nastavuje tento  atribut  automaticky<br>
+    při uzavření na heslo, zruší je při ladění nebo při instalaci (na dobu úprav).<br>
+    <br>
+    !!!<br>
+    Od verze PC FANDu 4.0 se úlohy v režimu provedení otevírají automaticky<br>
+    RdOnly, není potřeba si toto vynucovat označením DOS-atributem.<br>
+    <br>
+    Pro práci s katalogem úlohy existují dvě varianty:<br>
+    ■ společný katalog - v případě, že úloha do katalogu  nepíše,  stačí  přiřadit<br>
+    (ručně) katalogu DOS-atribut  ReadOnly  (při  instalaci  atribut  není  na<br>
+    závadu). Katalog může být umístěn ve stejném adresáři jako  sdílená  úloha<br>
+    nebo dle nastavení: SET FANDCAT= nebo SET FANDDATA=.<br>
+    ■ každý účastník má vlastní katalog - před spuštěním FANDu je  třeba  nastavit<br>
+    pro každého účastníka do zvláštního adresáře (na lokálním počítači nebo na<br>
+    serveru) parametr:  SET FANDCAT= nebo SET FANDDATA=.<br>
+    <br>
+    SET FANDDATA= - určuje umístění katalogu a datových souborů,  které  nejsou  v<br>
+    katalogu uvedeny. Implicitně jsou data umístěna v adresáři, kde je úloha.<br>
+    SET FANDCAT= - určuje pouze umístění katalogu, uplatní se i při SET FANDDATA<br>
+</div>
+<div>
+    <h4>Sel</h4>
+    <span style="color:red">PROCEDURÁLNÍ PARAMETRY EDITACE</span>
+    <hr>
+</div>
+<div>
+    <h4>Select (SQL)</h4>
+    <span style="color:red">ODBC</span>
+    <hr>
+</div>
+<div>
+    <h4>SelectStr</h4>
+    <span style="color:red">SELECTSTR</span>
+    <hr>
+</div>
+<div>
+    <h4>Sestava</h4>
+    <span style="color:red">SESTAVA - kapitola R</span>
+    <hr>
+</div>
+<div>
+    <h4>SET-parametry</h4>
+    <span style="color:red">SET-parametry</span>
+    <hr>
+</div>
+<div>
+    <h4>SetEditTxt</h4>
+    <span style="color:red">SETEDITTXT</span>
+    <hr>
+</div>
+<div>
+    <h4>SetKeyBuf</h4>
+    <span style="color:red">OŠETŘENÍ KLÁVESNICE</span>
+    <hr>
+</div>
+<div>
+    <h4>SetMouse</h4>
+    <span style="color:red">MYŠ V PROCEDUŘE</span>
+    <hr>
+</div>
+<div>
+    <h4>SetPrinter</h4>
+    <span style="color:red">PŘÍKAZY  PRO TISK TEXTU</span>
+    <hr>
+</div>
+<div>
+    <h4>Seznam</h4>
+    <span style="color:red">#DOMAINS - Definice typů</span>
+    <hr>
+</div>
+<div>
+    <h4>Seznam údajů</h4>
+    <span style="color:red">SYNTAXE SEZNAMU ÚDAJŮ</span>
+    <hr>
+    V parametrech dupl, noed, tab, exit příkazu edit se může vyskytovat seznam<br>
+    údajů daného souboru, který má jednotnou syntaxi.<br>
+    <br>
+    ██ syntaxe :    [^] ( [ NázevÚdaje [ {,NázevÚdaje }]] )<br>
+    <br>
+    Jak vidno, seznam  údajů je vždy uzavřen  v kulatých závorkách , jednotlivé<br>
+    údaje jsou odděleny čárkou. Prázdný seznam () znamená všechny údaje souboru.<br>
+    Znak ^ před seznamem znamená doplněk - tj. všechny neuvedené uložené údaje.<br>
+    <br>
+    Poznámka:  () a ^() mají totožný význam - tj. všechny údaje<br>
+</div>
+<div>
+    <h4>Seznam uživatelů</h4>
+    <span style="color:red">SEZNAM UŽIVATELŮ - kapitola U</span>
+    <hr>
+    Seznam uživatelů je nepovinná kapitola typu U na začátku úlohy. Nemá jméno,<br>
+    musí být jako první v projektu a ve strukturovaných úlohách může být pouze<br>
+    v hlavní úloze. Obsahuje seznam oprávněných uživatelů úlohy.Každý uživatel<br>
+    má přiřazeno jméno (text), kód (číslo), heslo a seznam přístupových práv.<br>
+    <br>
+    █ 'Jméno',Kód,Heslo,(SeznamPřístupovýchPráv); ... jedna položka seznamu<br>
+    <br>
+    ■ Jméno:  jméno aktuálního uživatele pro identifikaci v projektu<br>
+    ■ Kód:    číslo aktuálního uživatele pro identifikaci v projektu<br>
+    ■ Heslo:  tímto heslem se uživatel přihlašuje při startu úlohy<br>
+    ■ Seznam: seznam čísel (1..255) pro rozlišení přístupových práv v projektu<br>
+    lze použít i interval<br>
+    <br>
+    Pokud  je úloha opatřena kapitolou U, před vstupem do úlohy musí  uživatel<br>
+    zadat jedno  z povolených hesel, jinak úloha nebude spuštěna. Po  správném<br>
+    zadání hesla se naplní jméno, kód a přístupová práva aktuálního  uživatele<br>
+    a podle  nich lze  měnit  chování  programu  v  dalším  zpracování.  Podle<br>
+    kapitoly U se řídí i omezení při navigaci po databázi podle  uživatelských<br>
+    pohledů. Prázdná kapitola U má stejný efekt, jako když kapitola neexistuje<br>
+    (lze dodatečně instalovat z hlavního menu PC FANDu bez zásahu do programu).<br>
+    <br>
+    ░░░░░░░░░░░░<br>
+    ░░příklady░░<br>
+    ░░░░░░░░░░░░<br>
+    <br>
+    {obsah kapitoly U}<br>
+    'Vladimír Grosmut',1,'VG',(1,2,4..6,9,11);<br>
+    'Luděk Galbavý',2,'LG',(1,3);<br>
+    'Iva Jablonská',3,'IJ',(10..11);<br>
+</div>
+<div>
+    <h4>Seznam voleb</h4>
+    <span style="color:red">SEZNAM VOLEB</span>
+    <hr>
+</div>
+<div>
+    <h4>Shared</h4>
+    <span style="color:red">LAN - PŘÍKAZ WITH SHARED</span>
+    <hr>
+    V některých případech může být žádoucí  změnit automatické  chování PC FANDu<br>
+    při blokování sdílených souborů. V proceduře je pro  určení režimu blokování<br>
+    jednoho nebo více souborů k dispozici příkaz:<br>
+    <br>
+    █ with shared NázevSouboru(MódSdílení) {,NázevSouboru(MódSdílení)} do<br>
+    █   Příkaz1<br>
+    █ [ else Příkaz2 ];<br>
+    <br>
+    Mód sdílení je textová konstanta, určující způsob práce se souborem a může<br>
+    nabývat hodnot: NoExcl, NoDel, NoCr, Rd, Wr, Cr, Del, Excl.<br>
+    <br>
+    Po dobu provedení "Příkaz1" je blokován  soubor  (případně  více souborů) ve<br>
+    zvoleném režimu blokování. Přístup k blokovaným souborům jiným účastníkem je<br>
+    povolen jen v případě, že nárokuje mód blokování, který je možné s aktuálním<br>
+    blokováním kombinovat. V opačném případě je přístup k  souboru odmítnut. Při<br>
+    požadavku na blokování více souborů najednou  blokuje  všechny současně nebo<br>
+    žádný. Není-li  uvedena  větev  "else  ..",  čeká  FAND  v případě blokování<br>
+    některého z uvedených souborů jiným účastníkem na jeho uvolnění bez možnosti<br>
+    čekání přerušit. Periodu opakování přístupu je možné instalovat (net delay).<br>
+</div>
+<div>
+    <h4>Shift</h4>
+    <span style="color:red">ALTERNATIVNÍ NÁPOVĚDA</span>
+    <hr>
+</div>
+<div>
+    <h4>Sin</h4>
+    <span style="color:red">ARITMETICKÉ FUNKCE</span>
+    <hr>
+</div>
+<div>
+    <h4>Sloupcový blok</h4>
+    <span style="color:red">SLOUPCOVÝ BLOK</span>
+    <hr>
+    Běžný blok je tvořen  souvislým  úsekem  textu , který je vymezen  prostým<br>
+    začátkem a koncem  bloku. Sloupcový blok  je kromě toho  vymezen i určitým<br>
+    počátečním a koncovým sloupcem textu. Z interního hlediska se tedy nejedná<br>
+    o souvislý úsek textu. Vizuálně jde o obdélník na obrazovce.<br>
+    <br>
+    Se sloupcovými bloky se manipuluje stejnými operacemi jako z běžným blokem.<br>
+    Režim práce (sloupcový<->běžný blok) se nastaví přepínačem Ctrl-K Ctrl-N.<br>
+    <br>
+    Pro sloupcové bloky nejsou definovány operace  vyhledávání  Ctrl-Q Ctrl-F,<br>
+    nahrazení  Ctrl-Q Ctrl-A s  podmínkou l a operace formátování bloku Ctrl-K<br>
+    Ctrl-F.<br>
+</div>
+<div>
+    <h4>Složený příkaz</h4>
+    <span style="color:red">SLOŽENÝ PŘÍKAZ</span>
+    <hr>
+    Složený  příkaz je sekvencí několika  příkazů , ohraničených  programovými<br>
+    závorkami  begin  a  end.  Složený  příkaz se v kontextu  chápe jako jeden<br>
+    příkaz.  Pomocí begin a end se provede i vnější ohraničení těla procedury.<br>
+    Se stejnou  syntaxí jako v proceduře  se složený příkaz  může vyskytnout v<br>
+    reportu nebo transformaci.<br>
+    <br>
+    ██ Syntaxe:      begin { Příkaz ; } end ;<br>
+    <br>
+    ■  Příkaz ...... Může být libovolný jiný příkaz včetně složeného příkazu.<br>
+</div>
+<div>
+    <h4>Sort</h4>
+    <span style="color:red">SORT - duplicitní klíčové slovo</span>
+    <hr>
+    ■ report(...sort) ..... parametry automatické sestavy: dočasné třídění<br>
+    v sestavě<br>
+    ■ sort(...) ........... třídění: třídění vyvolané z procedury<br>
+    <br>
+    ■ getindex(...sort) ... vytvoření pracovního indexu<br>
+</div>
+<div>
+    <h4>Soubor formátu .DBF</h4>
+    <span style="color:red">SOUBOR FORMÁTU .DBF</span>
+    <hr>
+</div>
+<div>
+    <h4>Soubor pro nápovědu</h4>
+    <span style="color:red">KONSTRUKCE  NÁPOVĚDY</span>
+    <hr>
+</div>
+<div>
+    <h4>Soubory v katalogu</h4>
+    <span style="color:red">SOUBORY V KATALOGU</span>
+    <hr>
+    Katalogizovat lze následující soubory:<br>
+    <br>
+    ■ Datový soubor ... jiné fyzické jméno (nebo přípona) než podle kapitoly F<br>
+    ... soubor je umístěn v jiném adresáři (disku) než úloha<br>
+    ... soubor je na disketě (automatická práce s návěštím)<br>
+    ... sdílený soubor v síti (lokální sítě)<br>
+    ... soubor SQL<br>
+    ... generační soubory<br>
+    ... archivní soubory pouze pro záložní kopie (copyfile)<br>
+    bez deklarace v kapitole F (externí soubory)<br>
+    ... vícedisketové soubory (copyfile)<br>
+    v katalogu je návěští první diskety, ostatní mají ASCII kód posledního znaku<br>
+    o 1 vyšší než předchozí disketa;   pouze externí soubory<br>
+    přípona: 2. a 3. znak jsou v rozsahu '00'..'49'<br>
+    <br>
+    ■ Textový soubor ...... procedury pro zpracování textu edittxt, printtxt<br>
+    ■ Externí program ..... obecné volání programu exec<br>
+    ■ Projektový soubor ... katalogizace subúloh (subúloha není v podadresáři)<br>
+    NázÚlohy: volající, call(NázSouboru): volaná úloha<br>
+</div>
+<div>
+    <h4>Sound</h4>
+    <span style="color:red">OŠETŘENÍ KLÁVESNICE</span>
+    <hr>
+</div>
+<div>
+    <h4>Speciální funkce</h4>
+    <span style="color:red">SPECIÁLNÍ FUNKCE</span>
+    <hr>
+</div>
+<div>
+    <h4>Speciální funkce v sestavě</h4>
+    <span style="color:red">SPECIÁLNÍ FUNKCE V SESTAVĚ</span>
+    <hr>
+</div>
+<div>
+    <h4>Speciální funkce v transformaci</h4>
+    <span style="color:red">SPECIÁLNÍ FUNKCE V TRANSFORMACI</span>
+    <hr>
+</div>
+<div>
+    <h4>Speciální operátory</h4>
+    <span style="color:red">SPECIÁLNÍ OPERÁTORY</span>
+    <hr>
+</div>
+<div>
+    <h4>Speciální příkazy</h4>
+    <span style="color:red">SPECIÁLNÍ PŘÍKAZY A FUNKCE</span>
+    <hr>
+</div>
+<div>
+    <h4>SQL</h4>
+    <span style="color:red">SQL</span>
+    <hr>
+    Tato  část  nápovědy  poskytuje  ucelenou  úvodní  informaci  o podpoře<br>
+    komunikace PC FANDu s SQL serverem.<br>
+    <br>
+    Rozšíření syntaxe příkazů.<br>
+    <br>
+    Základní princip komunikace SQL serveru s klientem je následující:<br>
+    PC FAND (klient) vyšle příkaz na  výběr  množiny  vět  z  tabulky.  SQL<br>
+    server  provede  výběr  vět(y)  a  při   výběru   automaticky   provádí<br>
+    optimalizaci vyhledávacího  výrazu.  Vybraná  množina  vět  je  předána<br>
+    klientu  (proměnné  typu  záznam)  a   může   být   zpracována   pomocí<br>
+    standardního příkazu PC FANDu.  Po  změně  je  upravená  proměnná  typu<br>
+    záznam přenesena a zapsána do databáze SQL serveru.<br>
+    <br>
+    <br>
+    V prostředí PC FANDu lze tabulku SQL  serveru  zpřístupnit  pomocí<br>
+    souboru typu "SQL". SQL server pracuje s  tabulkou  pomocí  množinových<br>
+    operací a neumožňuje identifikaci  vět  pomocí  čísla  věty.  Větu  lze<br>
+    identifikovat  pouze  pomocí  jednoznačného   klíče.  Toto  omezení  se<br>
+    projevuje například při editaci souboru - editovat lze soubor pouze dle<br>
+    jednoznačného klíče.<br>
+    <br>
+    <br>
+    <br>
+    Deklarace souboru typu SQL.<br>
+    <br>
+    Soubor typu SQL je definován pomocí  přípony ".SQL" názvu kapitoly<br>
+    "F". Typ uložených údajů musí být slučitelný s existující  tabulkou  na<br>
+    SQL serveru. Délka  údaje nemusí  přesně odpovídat,  ale  různé délky a<br>
+    přesnosti mohou způsobit ztrátu dat.<br>
+    <br>
+    Podporované typy:<br>
+    PC FAND   SQL<br>
+    <br>
+    F,R     int, smallint, tinyint. Myšlená řádová čárka ve Fandu.<br>
+    float, real. Skutečná řádová čárka ve Fandu.<br>
+    <br>
+    A,N     char(n) nebo varchar(n). Při různé  délce  se dle   zarovnání<br>
+    ve Fandu odříznou  a doplňují vedoucí nebo ukončující znaky.<br>
+    <br>
+    D       datetime,  smalldatetime (smalldatetime může vést ke   ztrátě<br>
+    přesnosti).<br>
+    <br>
+    B       bit.<br>
+    <br>
+    T       text. Maximálně 65 KB.<br>
+    <br>
+    Soubor typu SQL je  obdobou  indexového  souboru.  Podporuje  více<br>
+    vlastních  klíčů  i  parametrický  klíč.  Při   změně   hodnoty   údaje<br>
+    parametrického souboru  je prováděna  změna ve  všech  větách  souboru.<br>
+    Text delší než 32 KB lze přenést pomocí příkazů sqlrdtxt a sqlwrtxt.<br>
+    <br>
+    <br>
+    <br>
+    Hodnota NULL.<br>
+    <br>
+    PC FAND  nepodporuje hodnotu null, vyjímkou je pouze typ D a T.  U<br>
+    ostatních typů nelze hodnotu null přenést a platí následující  omezení.<br>
+    Hodnota  představuje nevyplněný  údaj. Při  přenosu z  SQL  serveru  je<br>
+    hodnota null převedena na 0, resp. prázdný řetězec.<br>
+    Klíčové  údaje nemohou obsahovat hodnotu null. Pro PC FAND by věty<br>
+    s tímto klíčem  byly neviditelné.  V datovém editoru by věty obsahující<br>
+    tuto hodnotu byly zobrazeny jako smazané a obarveny modrou barvou ( dle<br>
+    instalace ). Čtení a následný zápis věty z  PC FANDu změní hodnoty null<br>
+    na hodnotu 0, resp. ''.<br>
+    <br>
+    <br>
+    <br>
+    Navázání spojení s SQL serverem.<br>
+    <br>
+    Soubor typu SQL může být  lokální  nesdílený  soubor  (v  katalogu<br>
+    nevyplněný údaj návěští), sdílený soubor (v údaji  návěští  znak  "#").<br>
+    Uvedením "#SQL" do údaje návěští definujeme  umístění  souboru  na  SQL<br>
+    serveru.Zda bude soubor umístěn na SQL serveru,je určeno hodnotou údaje<br>
+    návěští v  okamžiku  kompilace  úlohy.  Pozdější  změna  údaje  návěští<br>
+    neprovede   změnu   umístění   souboru:   tabulka   SQL   serveru   <-><br>
+    sdílený/nesdílený soubor.  Provedené  změny  umístění  souboru  zplatní<br>
+    pouze příkaz resetcatalog.<br>
+    <br>
+    Při  startu úlohy  je vyhledávána  hodnota "#SQL" v údaji  návěští<br>
+    katalogu. V případě  nalezení  následuje  pokus  o navázání  komunikace<br>
+    s SQL serverem. Při neúspěchu navázat spojení je vyvolána běhová  chyba<br>
+    a chod  aplikace je ukončen.  V případě  úspěšného spojení se pokračuje<br>
+    v provádění aplikace.<br>
+    <br>
+    Spojení s SQL serverem musí být vyvoláno v okamžiku startu  úlohy.<br>
+    Nelze jej vyvolat  zápisem  "#SQL"  do  katalogu  a  vyvoláním  příkazu<br>
+    resetcatalog.<br>
+    <br>
+    <br>
+    <br>
+    ██     Rozšíření syntaxe příkazů PC FANDu pro práci s SQL serverem.<br>
+    <br>
+    keyof ( RecordProměnná[/NázevKlíče] ) : string<br>
+    <br>
+    keyof ( SOUBOR[/NázevKlíče],SeznamKlíčÚdajů ) : string<br>
+    <br>
+    edreckey :string<br>
+    <br>
+    isdeleted ( RecordProměnná )  :  boolean<br>
+    <br>
+    linkrec (RecordProměnná1,[NázevSpojení(]RecordProměnná2[)])<br>
+    <br>
+    readrec ( RecordProměnná[/NázevKlíče],<br>
+    [OperaceSrovnání] TextVýraz|ČíselnýVýraz )<br>
+    <br>
+    Při neexistenci čtené věty je proměnná typu věta vynulována a<br>
+    označena jako neplatná.<br>
+    <br>
+    <br>
+    writerec ( RecordProměnná[/NázevKlíče],TextVýraz|ČíselnýVýraz [,+] )<br>
+    <br>
+    deleterec ( NázevSouboru[/NázevKlíče],TextVyraz|ČíselnýVýraz[,+] )<br>
+    <br>
+    <br>
+    sql(TextovýVýraz)[:real]<br>
+    <br>
+    Provedení SQL  příkazu  SQL  serverem.  Lze  použít  pro  vyvolání<br>
+    uložených procedur a příkazů, které nevracejí tabulku.  Příkaz  použitý<br>
+    jako funkce vrací chybový návratový kód  a  negeneruje  běhovou  chybu.<br>
+    Příkaz použitý jako procedura generuje v případě chyby na  SQL  serveru<br>
+    běhovou chybu.<br>
+    <br>
+    <br>
+    forall RecordProměnná in sql(TextovýVýraz) do Příkaz<br>
+    <br>
+    Provedení  SQL   příkazu  uloženého  v  TextovýVýraz  generujícího<br>
+    výstupní tabulku SQL serverem. Sloupce tabulky musí odpovídat deklaraci<br>
+    údajů  v RecordProměnné,  vztahující se  na popis  souboru typu  "SQL".<br>
+    Výsledkem  SQL příkazu může být pouze jedna tabulka, zpracovaná  forall<br>
+    cyklem.<br>
+    Příkaz break ukončí provádění cyklu. Tabulka je PC FANDem  dočtena<br>
+    do konce.<br>
+    <br>
+    <br>
+    login( TextVýraz1,TextVýraz2 )<br>
+    <br>
+    Explicitní  přihlášení  k  SQL  serveru  jako  uživatel  s  jménem<br>
+    TextVýraz1 a heslem TextVýraz2. Není vytvořeno další spojení, ale jde o<br>
+    odhlášení a nové přihlášení.<br>
+    <br>
+    Příkaz  nelze vyvolat  v okamžiku  provádění akce,  např.  v  exit<br>
+    proceduře, forall in sql atd.<br>
+    <br>
+    Příkaz  se  provádí, jen  když  existuje  spojení, tj. v okamžiku<br>
+    kompilace je v údaji návěští katalogu uvedeno "#SQL".<br>
+    Pokud  katalog úlohy  obsahuje  návěští  "#SQL",  FAND automaticky<br>
+    vysílá login  při překladu  hlavní úlohy.  Jméno a  heslo uživatele  je<br>
+    čteno z kapitoly U).<br>
+    <br>
+    <br>
+    sqlrdtxt(NázevBinSouboru,NázevDatSouboru[/Klíč],Údaj,TextVýraz)<br>
+    sqlwrtxt(NázevBinSouboru,NázevDatSouboru[/Klíč],Údaj,TextVýraz)<br>
+    <br>
+    Čtení  či zápis údaje Údaj typu Text z tabulky NázevDatSouboru SQL<br>
+    serveru.  Údaj je uložen do binárního souboru NázevBinSouboru. Věta  je<br>
+    identifikována pomocí klíče uloženého v TextVýraz.<br>
+    <br>
+    Maximální délka textu je 1800 MB.<br>
+    <br>
+    <br>
+    resetcatalog<br>
+    <br>
+    Příkaz zajišťuje zohlednění změn v katalogu. Uzavírá všechny<br>
+    soubory mimo aktivních projektů. Změní umístění souborů ( tabulka SQL<br>
+    serveru <-> sdílený/nesdílený soubor) dle hodnoty údaje návěští.<br>
+    <br>
+    <br>
+    Příkaz edit<br>
+    <br>
+    Při  editaci tabulky  je vždy  použit pracovní index. Na  počátku<br>
+    editace FAND  čte hodnoty  klíčových údajů  pro  vytvoření  pracovního<br>
+    indexu.  Po ukončení  výběru je  pracovní index setříděn. Při  vlastní<br>
+    editaci FAND zasílá příkaz pro výběr, zápis a mazání jednotlivých  vět<br>
+    identifikovaných dle hodnoty pracovního indexu.<br>
+    <br>
+    Pro SQL soubory nelze zadávat následující  parametry  :  journal=,<br>
+    refresh=, saveafter=, owner=, recno=, irec=.<br>
+    <br>
+    Blokování   vět  realizované   při  sdílené   editaci  údaje  není<br>
+    realizováno.  Změněná věta  je ukládána  až při ukončení editace  věty.<br>
+    Před vlastním zápisem se provádí kontrolní čtení věty, a porovnává se s<br>
+    původním  obsahem  před  začátkem  editace.  Při  nerovnosti  následuje<br>
+    hlášení  o změně věty, zobrazení aktuálního načteného stavu a  uživatel<br>
+    může pokračovat v editaci.<br>
+    <br>
+    Při editaci údaje je chyba SQL serveru hlášena pouze číslem,  ale<br>
+    nevyvolá  běhovou chybu a ukončení FANDu. Časté chyby tvoří  duplicita<br>
+    klíče a vkládání nepovolené hodnoty.<br>
+    <br>
+    <br>
+    Vstupní podmínka.<br>
+    <br>
+    Vstupní výběrová podmínka  zadávaná  pomocí  logického  výrazu  je<br>
+    realizovaná na  lokální  stanici  (z  SQL  souboru  je  přenesena  celá<br>
+    tabulka). Výběr vět na SQL serveru  lze  realizovat  zadáním  textového<br>
+    výrazu namísto logické podmínky u kapitol  "R",  "M"  a  příkazů  edit,<br>
+    graph, forall, report. Výběrový výraz odpovídá klauzuli  WHERE  příkazu<br>
+    SELECT.<br>
+    <br>
+    <br>
+    <br>
+    Třídění a automatické třídění reportu a merge.<br>
+    <br>
+    Třídění je  realizováno  na  SQL  serveru.  Součástí  řídících  a<br>
+    třídících údajů  nemůže být vypočítaný údaj. Při použití  vypočítaného<br>
+    údaje SQL server generuje běhovou chybu neznámého názvu údaje.<br>
+    <br>
+    <br>
+    <br>
+    Transformace<br>
+    <br>
+    Pro vstupní  i výstupní  soubory je  vytvořen  samostatný  proud.<br>
+    Vstup  je  realizován  jako  výběr  vět  příkazem  SELECT.  Výstup  je<br>
+    realizován  komunikačním serverem  jako INSERT  nebo  bulkcopy.  Chyby<br>
+    vznikající při  zápisu jsou  komunikačním  serverem  kumulovány  a  po<br>
+    ukončení   transformace  předány   FANDu,  zobrazeny   a  následně  je<br>
+    generována běhová chyba.<br>
+    <br>
+    <br>
+    <br>
+    Vytváření aplikace pro různá prostředí.<br>
+    <br>
+    Direktivy  kompilátoru  umožňují podmíněný  překlad, tj. vypuštění<br>
+    části zdrojového kódu.  V praxi  lze například  jednu aplikaci vytvářet<br>
+    pro použití s SQL  serverem, nebo  jako klasickou aplikaci se  sdílením<br>
+    souborů.<br>
+    Před   použitím    direktiv  si    pečlivě  prostudujte   omezení.<br>
+    Příkladem použití může být vstupní podmínka. U SQL verze je  výhodnější<br>
+    zadávat podmínku  v textovém  výrazu a  pro klasickou  verzi  je  nutno<br>
+    zadat logický výraz.<br>
+    <br>
+    Příklad:<br>
+    edit(ORGANIZ,U=ORGANIZ_FIRMA,cond=(<br>
+    {$ifdef S} 'Firma like "'+trailchar(' ',PARAMADR.Text30)+'%"'<br>
+    {$elsif} Firma =~ PARAMADR.Text30<br>
+    {$endif}));<br>
+    <br>
+    <br>
+    <br>
+    SQL příkazy a provoz SQL aplikace bez SQL serveru.<br>
+    <br>
+    Popsané  příkazy  lze  používat   i   v   aplikačních   programech<br>
+    pracujících se sdílenými soubory. Vyjímkou jsou příkazy :<br>
+    <br>
+    sql, forall  rp in sql, sqlrdtxt, sqlwrtxt a textově zadávaná  vstupní<br>
+    podmínka.<br>
+    <br>
+    Tyto příkazy jsou ignorovány. Při vytváření aplikace používané pro<br>
+    práci  s SQL  serverem i  bez SQL  serveru  v  prostředí  lokální  sítě<br>
+    doporučujeme  programovat   univerzální  projekt   a  využít   direktiv<br>
+    kompilátoru pro vložení odpovídajících příkazů.<br>
+    <br>
+    <br>
+    <br>
+    Příklady použití souborů typu "SQL" v PC FANDu.<br>
+    <br>
+    ■ Vstupní a  výstupní  soubor  reportu,  merge,  copyfile  a  writerec,<br>
+    readrec, deleterec,  edit, forall, konstrukce NadřazenýSoubor.Údaj  a<br>
+    ParametrSoubor.Udaj...<br>
+    <br>
+    <br>
+    <br>
+    Omezení<br>
+    <br>
+    ■ Soubory typu SQL nelze použít v příkazech pracujících s číslem věty<br>
+    ■ DML nepodporuje přístup k souborům typu  SQL.  Lze realizovat  pomocí<br>
+    knihovny funkcí dodávané společně s SQL serverem<br>
+    ■ Copyfile z/do binárního souboru není povoleno<br>
+    ■ Násobný výstup #O*_ nelze aplikovat při vstupním souboru typu SQL<br>
+    ■ Transformace "na místě" není dovolena<br>
+    ■ SQL soubor lze editovat pouze dle jednoznačného vlastního klíče<br>
+    ■ Aditivní  přiřazení  ":="  není  přípustné  pro  SQL soubor<br>
+    ■ Přerušení  vytváření reportu  stiskem klávesy  ESC přeruší  vytváření<br>
+    sestavy, ale tabulka z SQL serveru je čtena až do konce<br>
+    ■ SOUBOR.nrecs:= nelze použít<br>
+    ■ nelze použít owner=ProměnnáTypuIndex<br>
+    <br>
+    <br>
+    Převod do SQL FANDu<br>
+    <br>
+    Převod hotových aplikačních programů  na  platformu  klient-server<br>
+    je umožněn s minimálním množstvím změn v zdrojovém kódu. Jde  především<br>
+    o  náhradu  příkazů  realizujících  přímý   přístup   a   používajících<br>
+    identifikační číslo věty  tvarem  využívajícím  identifikaci  věty  dle<br>
+    jednoznačného klíče.<br>
+    <br>
+    Prvním  krokem  by  měla  být  analýza  datové  základny  a  změna<br>
+    duplicitních  klíčů  na  jednoznačné.  Většina  indexovaných souborů má<br>
+    primární klíč  jednoznačný a  alternativní klíč duplicitní.<br>
+    <br>
+    SQL  server SYBASE  neumožňuje indexaci  dle  vypočítaného  údaje,<br>
+    údaje  typu bit  (B) a  text (text) ! V deklaraci souboru typu SQL  lze<br>
+    definovat klíč s vypočítaným údajem i typem B.<br>
+    <br>
+    V některých případech jsou alternativní klíče používány pouze  pro<br>
+    zrychlení  výběru a dle alternativního klíče není prováděna editace.  V<br>
+    tomto případě  postačí definice klíčů na SQL serveru a v PC FANDu  není<br>
+    nutno tyto klíče definovat. Výběr zadaný textovým výrazem je zaslán  na<br>
+    server, který provede výběr dle optimálního indexu.<br>
+    V případě  požadavku editace  dle klíče  je nutno  klíč doplnit  o<br>
+    jednoznačný primární klíč.<br>
+    <br>
+    Příklad klíče adresáře:<br>
+    #K @ Cislo;                    { Primární klíč }<br>
+    ORGANIZ_MISTO(@) ~Misto,Cislo; { Alternativní klíče }<br>
+    ORGANIZ_PRIJM(@) ~Jmeno,Cislo;<br>
+    <br>
+    Po  opravě klíčů  změňte typ  souboru na  "SQL".  Kontrola  pomocí<br>
+    překladu  odhalí především  používání identifikátoru čísla věty,  které<br>
+    je nutno nahradit identifikací klíčem.<br>
+    <br>
+    Dále převeďte vstupní podmínky do textového tvaru. Tuto část  není<br>
+    možno odladit bez propojení s SQL Serverem. Textové podmínky nejsou  PC<br>
+    FANDem kontrolovány a je nutno je ověřit provedením.<br>
+    <br>
+    Náročnější  částí  je  využití  a  definice  uložených   procedur,<br>
+    triggerů atd. Programování SQL serveru je hlavním nástrojem pro zvýšení<br>
+    bezpečnosti a rychlosti zpracování.<br>
+</div>
+<div>
+    <h4>SqlRdTxt (SQL)</h4>
+    <span style="color:red">ODBC</span>
+    <hr>
+</div>
+<div>
+    <h4>SqlWrTxt (SQL)</h4>
+    <span style="color:red">ODBC</span>
+    <hr>
+</div>
+<div>
+    <h4>Sqr</h4>
+    <span style="color:red">ARITMETICKÉ FUNKCE</span>
+    <hr>
+</div>
+<div>
+    <h4>Sqrt</h4>
+    <span style="color:red">ARITMETICKÉ FUNKCE</span>
+    <hr>
+</div>
+<div>
+    <h4>Str</h4>
+    <span style="color:red">KONVERZNÍ TEXTOVÉ FUNKCE</span>
+    <hr>
+    Funkce val převede text na číslo. Lze ji použít v kapitolách F,M,R,P,D.<br>
+    Pro převod textového zápisu datumu nebo(a) času na číslo použijte ValDate.<br>
+    <br>
+    ██ syntaxe :         VAL ( TextVýraz ) : real<br>
+    <br>
+    ────────────  (Funkce v L kapitole)<br>
+    <br>
+    Převod číselného výrazu na text.<br>
+    <br>
+    ██ syntaxe   1:      STR ( ČísVýraz, Šířka, PočetDesMíst ) : string<br>
+    2:      STR ( ČísVýraz, Maska ) : string<br>
+    <br>
+    ■  Šířka ..........  Číselný výraz, celková délka výsledného řetězce.<br>
+    ■  PočetDesMíst ...  Číselný výraz, počet míst za desetinnou tečkou.<br>
+    Dle počtu des. míst dojde k případnému zaokrouhlení.<br>
+    Naopak při přetečení před des. tečkou je výsledkem<br>
+    řetězec v plné délce.<br>
+    Je-li -1, použije se exponenciální tvar.<br>
+    ■  Maska ... Textový výraz. Následující znaky mají speciální význam.<br>
+    ','  desetinná čárka (potlačena, pokud před ní nebudou cifry)<br>
+    '.'  tečka oddělující skupiny cifer<br>
+    '_'  významné cifry, znaménko zleva nebo mezera<br>
+    '-'  mezery, pokud je číslo kladné<br>
+    '*','0'  významné cifry nebo znaménko zleva. Všechny '_' vpravo<br>
+    od '*','0' budou nahrazeny cifrou. Pokud je číslo nenulové<br>
+    budou cifry vystupovat počínaje nejpozději prvním místem<br>
+    před čárkou. Místa za čárkou musí být ve výrazu jako zlomek.<br>
+    Nemaskované cifry resp. znaménko se připojí zleva (přetečení).<br>
+    ■  Kapitoly ........ F,M,R,P,D<br>
+    <br>
+    zpracování textu<br>
+    <br>
+    ░░░░░░░░░░░░     ██  str(625.128,5,2) = '625.13'<br>
+    ░░příklady░░         str(625.128,1,0) = '625'<br>
+    ░░░░░░░░░░░░         str(625,6,0)     = '   625'<br>
+    str(1234.25,'__.___,__') = ' 1.234,25'<br>
+    str(1234,'000.000') = '001.234'<br>
+</div>
+<div>
+    <h4>Stránkování</h4>
+    <span style="color:red">STRÁNKOVÁNÍ V SESTAVĚ</span>
+    <hr>
+</div>
+<div>
+    <h4>StrDate</h4>
+    <span style="color:red">AKTUÁLNÍ DATUM A ČAS, KONVERZE</span>
+    <hr>
+</div>
+<div>
+    <h4>String</h4>
+    <span style="color:red">TYPY VÝRAZŮ</span>
+    <hr>
+</div>
+<div>
+    <h4>Struktura projektu</h4>
+    <span style="color:red">STRUKTURA PROJEKTU</span>
+    <hr>
+</div>
+<div>
+    <h4>Style</h4>
+    <span style="color:red">PARAMETRY AUTOMATICKÉ SESTAVY</span>
+    <hr>
+</div>
+<div>
+    <h4>Subdir</h4>
+    <span style="color:red">FYZICKÉ ZÁLOHOVÁNÍ</span>
+    <hr>
+</div>
+<div>
+    <h4>Sum</h4>
+    <span style="color:red">SUM - duplicitní klíčové slovo</span>
+    <hr>
+    ■ sum(ČísVýraz) ... funkce typu real, kumulace číselného výrazu za skupinu<br>
+    vět<br>
+    ... PopisnáČástÚrovně: součtování v sestavě<br>
+    ... PříkazováČástVýstupu: součtování v transformaci<br>
+    ... edit: součtování v automatických sestavách<br>
+</div>
+<div>
+    <h4>Syntaxe (PROLOG)</h4>
+    <span style="color:red">Syntaxe  PC FAND PROLOGu</span>
+    <hr>
+
+</div>
+<div>
+    <h4>Syntaktické diagramy</h4>
+    <span style="color:red">SYNTAKTICKÉ DIAGRAMY</span>
+    <hr>
+    Syntaktické diagramy popisují formální syntaxi jednotlivých kapitol  projektu.<br>
+    V zápisu se používají následující speciální znaky:<br>
+    <br>
+    ■ { }     kladná iterace, konstrukce uvnitř složených závorek se<br>
+    může jednou nebo vícekrát opakovat.<br>
+    <br>
+    ■ [ ]     nepovinný výskyt, konstrukce uvnitř hranatých závorek se<br>
+    vyskytuje jednou nebo vůbec.<br>
+    <br>
+    ■ |       alternativa, vyskytne se buď konstrukce vlevo od svislé<br>
+    čáry nebo konstrukce vpravo od ní.<br>
+    <br>
+    ■ [{ }]   iterace, konstrukce uvnitř závorek se může libovolně-krát<br>
+    opakovat nebo může být vynechána.<br>
+</div>
+
+<div>
+    <h4></h4>
+    <span style="color:red"></span>
+    <hr>
+</div>
+<div>
+    <h4></h4>
+    <span style="color:red"></span>
+    <hr>
+</div>
+
+</body>
+</html>
