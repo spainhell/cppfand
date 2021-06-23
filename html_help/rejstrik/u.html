@@ -7,46 +7,119 @@
 <body style="font-family:'Courier New'">
 
 <div>
-    <h4></h4>
-    <span style="color:red"></span>
+    <h4>U</h4>
+    <span style="color:red">U - duplicitní klíčové slovo</span>
+    <hr>
+    ■ #U ..... uživatelské pohledy: odstavec deklarace datového souboru (kap.F)<br>
+    ■ U ...... seznam uživatelů: kapitola U - definice přístupových práv<br>
+</div>
+<div>
+    <h4>#U</h4>
+    <span style="color:red">UŽIVATELSKÉ POHLEDY - odstavec #U</span>
+    <hr>
+    Uživatelský  pohled definuje  parametry datového  editoru  (seznam  údajů,<br>
+    rozvrh obrazovky,  přepínače, mód  editace, podmnožinu  atd.) pro  editaci<br>
+    souboru. Tato  definice se  použije při  navigaci po  databázi, kdy  místo<br>
+    výběru souboru a údajů editor ihned přejde do editace podle  uživatelského<br>
+    pohledu.  Další použití  uživatelských pohledů  je pro omezení přístupu  k<br>
+    souboru některým  třídám uživatelů  (práva  přístupu)  a  volání  datového<br>
+    editoru z procedury (parametr U=NázevPohledu).<br>
+    <br>
+    ██ Syntaxe:   #U NázevPohledu(PřístupováPráva) :<br>
+    [/NázevKlíče, ] DruhEditace [ ParametryEditace ]<br>
+    <br>
+    ■ PřístupováPráva ... Seznam uživatelských práv přístupu, pro které se<br>
+    pohled nabídne při navigaci (ostatní uživatelé mají<br>
+    přístup blokován). Práva jsou dána kapitolou U<br>
+    a vstupním heslem nebo pomocí interní proměnné<br>
+    accright.   ( práva přístupu k datům )<br>
+    Při ladění je kód=0 a všechny uživatelské pohledy<br>
+    jsou přístupné (absolutní přístupová práva).<br>
+    Při zadávání seznamu lze použít i interval x..y<br>
+    <br>
+    ■ NázevKlíče .... (volitelně) editace podle alternativního vlastního klíče<br>
+    <br>
+    ■ DruhEditace ....... Název formuláře (kapitola E) nebo seznam údajů pro<br>
+    automatický rozvrh obrazovky, nebo ? pro interaktivní<br>
+    výběr údajů, nebo název formuláře.<br>
+    <br>
+    ■ Parametry editace...(volitelně) obdobně jako při volání datového editoru<br>
+    (tab, dupl, mode, cond, journal, saveafter, ww, head,<br>
+    last, watch, refresh, ctrl, alt, shift, exit)<br>
+    <br>
+    <br>
+    ░░░░░░░░░░░░<br>
+    ░░příklady░░<br>
+    ░░░░░░░░░░░░<br>
+    <br>
+    #U POHLED(0): (Název,Cena)                {příklady uživatelských pohledů}<br>
+    DATA(1,6..9): ()                        {omezení podle třídy uživatele}<br>
+    SEZNAM(3): /KLÍČ (Číslo,Jméno)   {podle alternativního vlastního klíče}<br>
+    VÝBĚR (0): (?), mode='!!'         {s výběrem údajů, jen pro prohlížení}<br>
+    TELEF(5): Telefony, cond=Tlf<>~''               {formulář a podmnožina}<br>
+    <br>
+    edit(ADRESÁŘ, U=TELEF)         {použití uživatelského pohledu v proceduře}<br>
+</div>
+<div>
+    <h4>Údaje o souboru</h4>
+    <span style="color:red">ÚDAJE O SOUBORU</span>
     <hr>
 </div>
 <div>
-    <h4></h4>
-    <span style="color:red"></span>
+    <h4>Uložené údaje</h4>
+    <span style="color:red">ULOŽENÉ ÚDAJE</span>
     <hr>
 </div>
 <div>
-    <h4></h4>
-    <span style="color:red"></span>
+    <h4>union</h4>
+    <span style="color:red">union_</span>
+    <hr>
+    union_NázevTypu(L_NázevTypu_1,L_NázevTypu_2,&L_NázevTypu_3)<br>
+    <br>
+    L_NázevTypu_1    Vstupní seznam, ke kterému budou připojovány nové prvky.<br>
+    L_NázevTypu_2    Připojované prvky.<br>
+    L_NázevTypu_3    Výsledný seznam.<br>
+    <br>
+    <br>
+    Připojí k  prvnímu seznamu  L_NázevTypu_1 prvky z druhého  seznamu<br>
+    L_NázevTypu_2,  které v prvním seznamu neexistují a výsledek je  vrácen<br>
+    ve výstupním parametru L_NázevTypu_3.<br>
+    <br>
+    Příklad:<br>
+    <br>
+    uni:-union_String(['A'],['A','B'],X),writeln(X),<br>
+    union_String(['B','A'],['A','B','C'],Y),writeln(Y).<br>
+</div>
+<div>
+    <h4>Until</h4>
+    <span style="color:red">PŘÍKAZY CYKLU</span>
     <hr>
 </div>
 <div>
-    <h4></h4>
-    <span style="color:red"></span>
+    <h4>UpCase</h4>
+    <span style="color:red">PRÁCE S DIAKRITIKOU A ABECEDOU</span>
     <hr>
 </div>
 <div>
-    <h4></h4>
-    <span style="color:red"></span>
+    <h4>UserCode</h4>
+    <span style="color:red">PRÁVA PŘÍSTUPU K DATŮM</span>
     <hr>
 </div>
 <div>
-    <h4></h4>
-    <span style="color:red"></span>
+    <h4>UserName</h4>
+    <span style="color:red">PRÁVA PŘÍSTUPU K DATŮM</span>
     <hr>
 </div>
-U
-#U
-Údaje o souboru
-Uložené údaje
-union
-Until
-UpCase
-UserCode
-UserName
-Uživatelská nabídka
-Uživatelské pohledy
+<div>
+    <h4>Uživatelská nabídka</h4>
+    <span style="color:red">UŽIVATELSKÁ NABÍDKA - MENU</span>
+    <hr>
+</div>
+<div>
+    <h4>Uživatelské pohledy</h4>
+    <span style="color:red">UŽIVATELSKÉ POHLEDY - odstavec #U</span>
+    <hr>
+</div>
 
 <div>
     <h4></h4>

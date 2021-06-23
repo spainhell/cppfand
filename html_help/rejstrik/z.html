@@ -7,30 +7,76 @@
 <body style="font-family:'Courier New'">
 
 <div>
-    <h4></h4>
-    <span style="color:red"></span>
+    <h4>Zálohování</h4>
+    <span style="color:red">ZÁLOHOVÁNÍ</span>
     <hr>
 </div>
 <div>
-    <h4></h4>
-    <span style="color:red"></span>
+    <h4>Zamčení věty souboru</h4>
+    <span style="color:red">LAN - ZAMČENÍ VĚTY SOUBORU</span>
+    <hr>
+    Lock věty se vydává v těchto situacích:<br>
+    ■ v editoru při: - Ins nebo vstup znaku do údaje<br>
+    - duplikaci údaje z předchozí věty F4<br>
+    - nasazení hodnot dle odstavce #D (závislosti)<br>
+    - Ctrl-F4 z vnořené editace nebo kalkulátoru<br>
+    - standardním použití Shift-F7<br>
+    - během exit=(..NázevProcedury..)<br>
+    ■ po dobu provádění příkazu with locked<br>
+    <br>
+    Lock věty je zrušen v situacích:<br>
+    ■ v editoru při: - opuštění editoru s výjimkou exit=(..NázevProcedury..)<br>
+    - úspěšném přechodu na další větu<br>
+    - obnovení původního obsahu věty Ctrl-U<br>
+    - návratu z exit=(..NázevProcedury..), pokud v proceduře<br>
+    nedošlo ke změně editované věty<br>
+    - po návratu z nezměněného volného textu v případě, že<br>
+    nebyl dosud změněn žádný údaj věty<br>
+    - po ESC ze změny údaje (mimo volný text), nebyla-li věta<br>
+    již předtím změněna<br>
+    ■ po ukončení příkazu with locked<br>
+    ■ jako vedlejší efekt příkazu exec - POZOR ! zámek věty se neobnoví ani<br>
+    po ukončení EXEC<br>
+</div>
+<div>
+    <h4>Závislosti</h4>
+    <span style="color:red">ZÁVISLOSTI - odstavec #D</span>
     <hr>
 </div>
-
-Zálohování
-Zamčení věty souboru
-Závislosti
-ZobrazovacíČástÚrovně
-Zpracování textu
-
 <div>
-    <h4></h4>
-    <span style="color:red"></span>
+    <h4>ZobrazovacíČástÚrovně</h4>
+    <span style="color:red">ZOBRAZOVACÍ ČÁST ÚROVNĚ</span>
     <hr>
+    Zobrazovací část určuje, v jaké podobě budou vystupovat výrazy z popisné části<br>
+    úrovně. Obsahuje text, který se opíše do výsledné sestavy. V textu jsou  masky<br>
+    (řetězce  speciálních  znaků)  na  místech,  kde  budou  vystupovat  konkrétní<br>
+    hodnoty. Masky mají odpovídající délku podle předpokládaného výsledku:<br>
+    <br>
+    typ výrazu     maska<br>
+    ■ real (F,D)     ___    číslo (zaokrouhlené na celé)<br>
+    ___.__ číslo s desetinnou částí<br>
+    @@@.@@ číslo s potlačením výstupu nulových hodnot<br>
+    ___,__ výstup čísel s myšlenou desetinnou čárkou<br>
+    __.__.__ nebo __.__.____ datum<br>
+    ____:__:__.__ čas<br>
+    ■ string (A,N,T) ___    text přesně podle výrazu v popisné části<br>
+    @@@    text formátovaný do sloupce podle šíře masky<br>
+    P      (Ctrl-P,Ctrl-P) do výstupu se předá binární hodnota<br>
+    řetězce, má význam při tisku specialit, výsledkem<br>
+    nemusí být textový soubor ve formátu PC FANDu (PRINTER<br>
+    .TXT), proto je třeba použít v příkazu report parametry<br>
+    printctrl, resp. assign='lpt1'.<br>
+    ■ boolean (B)    _      vystoupí A nebo N (Ano/Ne)<br>
+    <br>
+    Zobrazovací část musí odpovídat popisné  části  (stejně  výrazů  jako  masek),<br>
+    nebo může být násobkem popisné části (předloha pro několik vět).  Po  skončení<br>
+    úrovně se odřádkuje, pokud další úroveň nezačíná od vyššího sloupce, než končí<br>
+    předcházející úroveň. Znak '\' na začátku nebo  na  konci  zobrazovací  úrovně<br>
+    vyvolá odstránkování před nebo po výstupu úrovně.<br>
 </div>
 <div>
-    <h4></h4>
-    <span style="color:red"></span>
+    <h4>Zpracování textu</h4>
+    <span style="color:red">ZPRACOVÁNÍ TEXTU - přehled funkcí a příkazů</span>
     <hr>
 </div>
 

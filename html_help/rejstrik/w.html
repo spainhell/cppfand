@@ -7,46 +7,230 @@
 <body style="font-family:'Courier New'">
 
 <div>
-    <h4></h4>
-    <span style="color:red"></span>
+    <h4>Wait</h4>
+    <span style="color:red">OŠETŘENÍ KLÁVESNICE</span>
     <hr>
 </div>
 <div>
-    <h4></h4>
-    <span style="color:red"></span>
-    <hr>
-</div>
-
-Wait
-Warning
-Watch
-Where (SQL)
-While
-Width
-Window
-Windows
-With
-With graphics
-With locked
-With shared
-With window
-Wr
-Wrap
-write* (PROLOG)
-Write
-WriteLn
-WriteRec
-Ww
-
-<div>
-    <h4></h4>
-    <span style="color:red"></span>
+    <h4>Warning</h4>
+    <span style="color:red">SPECIÁLNÍ FUNKCE V TRANSFORMACI</span>
     <hr>
 </div>
 <div>
-    <h4></h4>
-    <span style="color:red"></span>
+    <h4>Watch</h4>
+    <span style="color:red">PARAMETRY EDITACE</span>
     <hr>
+</div>
+<div>
+    <h4>Where (SQL)</h4>
+    <span style="color:red">ODBC</span>
+    <hr>
+</div>
+<div>
+    <h4>While</h4>
+    <span style="color:red">PŘÍKAZY CYKLU</span>
+    <hr>
+</div>
+<div>
+    <h4>Width</h4>
+    <span style="color:red">WIDTH - duplicitní klíčové slovo</span>
+    <hr>
+    ■ report(..width..)... parametry automatické sestavy: počet znaků na řádek<br>
+    ■ graph(...width..)... parametr příkazu graph: šířka objektů v procentech<br>
+    viz.  width<br>
+</div>
+<div>
+    <h4>Window</h4>
+    <span style="color:red">OKNO PRO VÝSTUP - with window</span>
+    <hr>
+</div>
+<div>
+    <h4>Windows</h4>
+    <span style="color:red">WINDOWS</span>
+    <hr>
+    Sítě Windows For Workgroups (WFW) a Windows 95, případně smíšené jsou<br>
+    typu peer to peer. Přesto lze z důvodů bezpečnosti doporučit vyhrazení<br>
+    jednoho počítače jako datového serveru. Není třeba používat program SHARE.<br>
+    <br>
+    Určitou slabinou (oproti Novellu) je nedostatek informací o interních<br>
+    strukturách systému (.INI soubory), nutných pro řešení občasných problémů.<br>
+    <br>
+    Známé problémy:<br>
+    <br>
+    ■ Při tisku na síťovou tiskárnu pod WFW nelze nastavit timeout. Jde o<br>
+    analogii parametru TI novelské utility CAPTURE. Implicitně platí 45 sec.<br>
+    což znamená, že tisk nastane až zhruba minutu po té, co byl odeslán z<br>
+    PC FANDu (aplikace).<br>
+    Od verze PC FANDu 4.0 je toto řešeno nastavením FANDINST - TISKARNY -<br>
+    - TIMEOUT=255. Viz. instalace tiskárny.<br>
+    <br>
+    ■ Občasné problémy při tisku nastávají i ve WIN95. Většinou jde o ztrátu<br>
+    několika znaků na konci sestavy. Není pozorován ani dokumentován<br>
+    jednoznačný vliv instalačních parametrů tiskárny ve WIN95 na tyto<br>
+    problémy. Většinou pomůže znovu instalovat tiskárnu a při tom si dát<br>
+    pozor na povolení tisku z DOS-aplikací.<br>
+    <br>
+    Nastavení tiskárny -  volba Start / Settings / Printer / Properties /<br>
+    Details.<br>
+    Pozor na:<br>
+    Port  Settings / MS-DOS print  job properties   (doporučujeme vypnout)<br>
+    Port  Settings /  Check port before printing (zapnout)<br>
+    Timeout settings - čekací doby (např. 15 a 45)<br>
+    <br>
+    ■ Nastavení HARDWARE, doporučujeme projít nastavení BIOSu pomocí SETUPu.<br>
+    U nových desek věnujte pozornost volbě "Peripheral Setup" z voleb "SPP"<br>
+    (standard pararel port), "ECP" (extended capabilities port)  vyzkoušejte<br>
+    "ECP". (CHIP 2/96,str.144)<br>
+    <br>
+    ■ Při připojení stanice s WIN95 k serveru Novell nelze sdílet RdOnly<br>
+    soubory (např. úlohy). Jde o stejný problém, který se řeší v konfigurač-<br>
+    ním souboru NET.CFG parametrem READ ONLY COMPATIBILITY=OFF. Ten ovšem<br>
+    nelze v distribuční verzi WIN95 nastavit.<br>
+    Řešení : - Ve FANDu 4.0 se úlohy při provedení otevírají rovnou RdOnly<br>
+    bez testování atributů souboru.<br>
+    - Nové 32-bit. drivery pro Novell pod WIN95 jsou dostupné na<br>
+    Internetu. V nich lze parametr Read Only Compatibility nastavit.<br>
+    <br>
+    ■ DOS - klient pro sítě WINxy má více variant. Při použití základní verze<br>
+    NET START BASIC mohou být problémy s textovými soubory, pokud jsou jinde<br>
+    než na lokálním disku.<br>
+    Startujte proto síť pomocí NET START FULL nebo je třeba v souboru<br>
+    SYSTEM.INI nastavit správné implicitní hodnoty pro klienta, to jest<br>
+    [network]<br>
+    AutoStart=Full<br>
+    PreferredRedir=Full<br>
+    <br>
+    ■ Windows 95 / 98<br>
+    Při problémech s datovými soubory zkuste nastavení parametrů:<br>
+    Ovládací panely -> Systém -> Výkon -> Systém souborů -><br>
+    Co dělat v nesnázích.<br>
+    Zde naleznete 6 zaškrtávacích polí, jejichž nastavením lze ovlivnit<br>
+    souborový systém Windows. Obecné optimální nastavení není známo,<br>
+    je třeba prostě něco změnit a ověřit chování aplikace.<br>
+</div>
+<div>
+    <h4>With</h4>
+    <span style="color:red">WITH, DO - duplicitní klíčová slova</span>
+    <hr>
+</div>
+<div>
+    <h4>With graphics</h4>
+    <span style="color:red">GRAFICKÉ PŘÍKAZY</span>
+    <hr>
+</div>
+<div>
+    <h4>With locked</h4>
+    <span style="color:red">LAN - PŘÍKAZ WITH LOCKED</span>
+    <hr>
+</div>
+<div>
+    <h4>With shared</h4>
+    <span style="color:red">LAN - PŘÍKAZ WITH SHARED</span>
+    <hr>
+</div>
+<div>
+    <h4>With window</h4>
+    <span style="color:red">OKNO PRO VÝSTUP - with window</span>
+    <hr>
+</div>
+<div>
+    <h4>Wr</h4>
+    <span style="color:red">LAN - POUŽITÍ VYŠŠÍCH MÓDŮ BLOKOVÁNÍ</span>
+    <hr>
+</div>
+<div>
+    <h4>Wrap</h4>
+    <span style="color:red">SETEDITTXT</span>
+    <hr>
+</div>
+<div>
+    <h4>write* (PROLOG)</h4>
+    <span style="color:red">write[ln]</span>
+    <hr>
+    write[ln]({Proměnná|'TextKonst'}[{,Proměnná|'TextKonst'}])<br>
+    <br>
+    Výpis  textových   konstant,  konstantních   termů  a  přiřazených<br>
+    proměnných.  Writeln po  výpisu přejde  na nový  řádek. Umožňuje  výpis<br>
+    termu libovolné struktury.<br>
+    <br>
+    Příklad:<br>
+    <br>
+    maz:- retract(a(X)),write(X).<br>
+</div>
+<div>
+    <h4>Write</h4>
+    <span style="color:red">WRITE, WRITELN - duplicitní klíčová slova</span>
+    <hr>
+    Příkazy write a writeln provedou výpis údajů na obrazovku, jejich syntaxe<br>
+    je však různá v kapitole P (procedury) a L (logic).<br>
+    <br>
+    ■ write(...)............. výstup na obrazovku (procedury)<br>
+    ■ write(...) ............ výstup na obrazovku - kapitola L write*<br>
+</div>
+<div>
+    <h4>WriteLn</h4>
+    <span style="color:red">WRITE, WRITELN - duplicitní klíčová slova</span>
+    <hr>
+</div>
+<div>
+    <h4>WriteRec</h4>
+    <span style="color:red">WRITEREC - zápis věty do souboru</span>
+    <hr>
+    Příkaz  pro zápis věty  do souboru má dvě základní  varianty podle způsobu<br>
+    identifikace věty : fyzickým číslem věty nebo hodnotou jednoho z vlastních<br>
+    klíčů souboru.<br>
+    <br>
+    ██ syntaxe:       WRITEREC ( RecordProměnná , ČísloVěty [ ,+ ] )<br>
+    WRITEREC ( RecordProměnná [ /NázevKlíče ]<br>
+    , HodnotaKlíče [ ,+ ] )<br>
+    <br>
+    ■  RecordProměnná Lokální proměnná typu record of soubor. Z deklarace této<br>
+    proměnné se odvodí, do kterého  souboru  se věta zapíše.<br>
+    ■  + ............ Provedení aditivních změn. V případě havárie se aditivní<br>
+    změny neprovedou a nastaví se exitcode=1.<br>
+    1. varianta<br>
+    ■  ČísloVěty..... Číselný výraz - fyzické číslo věty. Writerec(RecVar,0)<br>
+    provede zápis nové věty (na konec souboru).<br>
+    2. varianta<br>
+    ■  NázevKlíče ... Vlastní klíč souboru. Implicitně @.<br>
+    ■  HodnotaKlíče   Textový výraz, hodnota klíče v interní podobě.<br>
+    Slouží k identifikaci  věty a může být jiný než v record<br>
+    proměnné ( přepsání věty se změnou klíčových údajů).<br>
+    Viz. SQL, keyof.<br>
+    <br>
+    readrec     isdeleted     deleterec     linkrec     klíče      recallrec<br>
+    <br>
+    ░░░░░░░░░░░░<br>
+    ░░příklady░░<br>
+    ░░░░░░░░░░░░<br>
+    <br>
+    <br>
+    ██  P Ukazka1  * VAR p : record of PARAM ;<br>
+    ...<br>
+    writerec(p,'');   {zápis poslední věty parametr. souboru}<br>
+    <br>
+    ██  F soubor.x   klic : N,3 ; polozka : A,10 ;<br>
+    #K @ klic ;<br>
+    P Ukazka2  * VAR rec : record of soubor ;   i : real ;<br>
+    BEGIN<br>
+    ...                        { tohle neprojde neboť nelze }<br>
+    soubor[i].klic := '111' ;  { zapsat do klíčového údaje  }<br>
+    ...                        { platné věty                }<br>
+    readrec(rec,i);<br>
+    rec.klic:='111';          { takto dojde i k aktualizaci }<br>
+    writerec(rec,i);          { indexů věty !!!             }<br>
+    ...<br>
+    END ;<br>
+</div>
+<div>
+    <h4>Ww</h4>
+    <span style="color:red">WW - duplicitní klíčové slovo</span>
+    <hr>
+    ■ ww ................... editace v okně: obecný popis parametrů okna<br>
+    ■ edit(...ww...) ....... parametry editace: editace v okně<br>
+    ■ edittxt(...ww...) .... příkazy pro editaci textu: editace textu v okně<br>
+    ■ graph(...ww...) ...... okno pro graf<br>
+    ■ ww=(...) ............. uživatelské pohledy: navigace v okně<br>
 </div>
 
 </body>

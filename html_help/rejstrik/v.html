@@ -7,64 +7,307 @@
 <body style="font-family:'Courier New'">
 
 <div>
-    <h4></h4>
-    <span style="color:red"></span>
+    <h4>Val</h4>
+    <span style="color:red">KONVERZNÍ TEXTOVÉ FUNKCE</span>
     <hr>
 </div>
 <div>
-    <h4></h4>
-    <span style="color:red"></span>
+    <h4>ValDate</h4>
+    <span style="color:red">AKTUÁLNÍ DATUM A ČAS, KONVERZE</span>
     <hr>
 </div>
 <div>
-    <h4></h4>
-    <span style="color:red"></span>
+    <h4>Var</h4>
+    <span style="color:red">VAR - duplicitní klíčové slovo</span>
+    <hr>
+    ■ VAR i : real ; .................. lokální proměnné - deklarace
+    ■ copyfile(Soub1,Soub2/VAR,...) ... copyfile, převod souborů
+</div>
+<div>
+    <h4>Varování</h4>
+    <span style="color:red">LOGICKÉ KONTROLY - odstavec #L</span>
     <hr>
 </div>
 <div>
-    <h4></h4>
-    <span style="color:red"></span>
+    <h4>Version</h4>
+    <span style="color:red">SPECIÁLNÍ FUNKCE</span>
     <hr>
 </div>
 <div>
-    <h4></h4>
-    <span style="color:red"></span>
+    <h4>Větvení programu</h4>
+    <span style="color:red">VĚTVENÍ PROGRAMU</span>
     <hr>
 </div>
 <div>
-    <h4></h4>
-    <span style="color:red"></span>
+    <h4>Viditelný údaj</h4>
+    <span style="color:red">CIZÍ KLÍČ</span>
     <hr>
 </div>
-
-Val
-ValDate
-Var
-Varování
-Version
-Větvení programu
-Viditelný údaj
-Vkládané texty
-Vlastní klíč
-Volání editoru
-Volání procedur a podprogramů
-Volání sestavy
-Volání transformace
-Volba z nabídky
-Volný text
-Volume
-VstupSestavy
-VstupTransformace
-Výběr ze seznamu
-Výčtový typ
-Vyhledávání
-Výjimky v typech údajů
-Vypočítané údaje
-Výraz
-Výrazy
-Výstup na obrazovku
-VýstupSestavy
-VýstupTransformace
+<div>
+    <h4>Vkládané texty</h4>
+    <span style="color:red">VKLÁDANÉ KAPITOLY</span>
+    <hr>
+</div>
+<div>
+    <h4>Vlastní klíč</h4>
+    <span style="color:red">VLASTNÍ KLÍČ</span>
+    <hr>
+</div>
+<div>
+    <h4>Volání editoru</h4>
+    <span style="color:red">EDITACE DAT</span>
+    <hr>
+    Vyvolání datového editoru procedurou edit, obdobně uživatelské pohledy.<br>
+    <br>
+    ██ syntaxe:       EDIT ( Soubor [ /Klíč ] , DruhEditace<br>
+    [,Parametry editace]<br>
+    [,Procedurální parametry editace] )<br>
+    EDIT ( RecordProměnná,... )<br>
+    <br>
+    ■ Soubor ........ Název kapitoly F nebo record proměnná,<br>
+    viz. editace record proměnné<br>
+    ■ Klíč .......... Název vlastního klíče souboru, pouze při indexové podpoře.<br>
+    Implicitně @. Věty souboru se zobrazí v pořadí dle daného<br>
+    klíče. Věty se stejnou hodnotou klíče (duplicity) se zobrazí<br>
+    podle fyzického pořadí. Věty neindexového souboru se zobrazí<br>
+    dle fyzického pořadí.<br>
+    <br>
+    ■ DruhEditace ... 4 základní varianty zadání<br>
+    1... [^] ( [ SeznamÚdajů ] [ ? ] [ ! ] )<br>
+    Seznam údajů ... automatický rozvrh obrazovky editoru<br>
+    ^ negace: jen údaje neuvedené v seznamu<br>
+    ? interaktivní výběr údajů ze souboru<br>
+    ! všechny údaje včetně vypočítaných (#C)<br>
+    <br>
+    2... NázevFormuláře<br>
+    editace podle formuláře (kapitola E)<br>
+    3... U=NázevPohledu<br>
+    editace podle uživatelského pohledu #U<br>
+    4... [ DynamickáDeklarace ]<br>
+    Textový výraz v hranatých závorkách, který obsahuje<br>
+    text podle syntaxe kapitoly E (viz.Dynamické deklarace)<br>
+    <br>
+    ■ parametry editace<br>
+    cond ..... editace vybraných vět       head .................. první řádek<br>
+    tab ....... nastavení tabelátorů       journal ...sledování změn v žurnálu<br>
+    dupl ..... automatická duplikace       watch, refresh ....... lokální sítě<br>
+    mode ............... mód editace       exit ............ přerušení editace<br>
+    saveafter... uložení změn na disk      ww ................. editace v okně<br>
+    last,ctrl,alt,shift..alternativní nápovědy<br>
+    <br>
+    ■ procedurální parametry editace<br>
+    recno, reckey, field, irec ... počáteční nastavení<br>
+    owner ........................ editace podřízených vět<br>
+    check ........................ kontrola syntaxe dynamické deklarace<br>
+    <br>
+    funkce datového editoru ... edrecno edreckey edirec edfield edbreak edupdated<br>
+</div>
+<div>
+    <h4>Volání procedur a podprogramů</h4>
+    <span style="color:red">VOLÁNÍ PROCEDUR A PODPROGRAMŮ</span>
+    <hr>
+</div>
+<div>
+    <h4>Volání sestavy</h4>
+    <span style="color:red">TISKOVÁ SESTAVA</span>
+    <hr>
+</div>
+<div>
+    <h4>Volání transformace</h4>
+    <span style="color:red">VOLÁNÍ TRANSFORMACE</span>
+    <hr>
+</div>
+<div>
+    <h4>Volba z nabídky</h4>
+    <span style="color:red">VOLBA Z NABÍDKY</span>
+    <hr>
+    Volbou z nabídky (menu) odstartujete odpovídající příkazy. Nabídka může být<br>
+    sloupcová (seznam voleb pod sebou) nebo řádková (vedle sebe).<br>
+    <br>
+    ■ šipky ................ pohyb po volbách nabídky<br>
+    ■ Home (resp.End) ...... skok na první (poslední) volbu v nabídce<br>
+    ■ Enter ................ provede aktuální volbu<br>
+    ■ zvýrazněné písmeno ... okamžitě provede odpovídající volbu<br>
+    ■ Esc ... návrat o jednu úroveň zpět ve strukturovaných nabídkách<br>
+    (může být programátorem zakázáno)<br>
+    ■ F1 .... nápověda k aktuální volbě<br>
+    (pokud je volba opatřena nápovědou v posledním řádku)<br>
+</div>
+<div>
+    <h4>Volný text</h4>
+    <span style="color:red">ULOŽENÉ ÚDAJE</span>
+    <hr>
+</div>
+<div>
+    <h4>Volume</h4>
+    <span style="color:red">KATALOG V PROCEDUŘE</span>
+    <hr>
+</div>
+<div>
+    <h4>VstupSestavy</h4>
+    <span style="color:red">VSTUP SESTAVY</span>
+    <hr>
+    █ #I_NázevSouboru .... název kapitoly F, kde je soubor deklarován<br>
+    █ #Ii_NázevSouboru ... pro více vstupních souborů (i=1 až 9)<br>
+    <br>
+    Každý vstupní soubor sestavy může být doplněn:<br>
+    █ ...NázevSouboru ! (LogVýraz) ŘídícíÚdaje;TřídícíÚdaje ... upřesnění vstupu<br>
+    ■ /@ nebo /NázevKlíče za názvem souboru ... vstup vět v pořadí podle vlastního<br>
+    nebo alternativního vlastního klíče (jinak fyzické pořadí vět)<br>
+    ■ ! ... dočasné třídění podle řídících a třídících údajů (v tomto pořadí)<br>
+    (pouze pro pořadí vět v sestavě, nemá vliv na data)<br>
+    ■ LogVýraz ..... vstupní logická podmínka (filtr) - vstoupí jen podmnožina vět<br>
+    v podmínce lze použít key in - rychlý výběr podle indexu<br>
+    ■ ? místo LogVýrazu .. podmínku  zadá uživatel  nebo volající procedura report<br>
+    ■ ŘídícíÚdaje ........ rozdělují  soubor do skupin  vět se stejnými  hodnotami<br>
+    řídících údajů, je nutné setřídění podle řídících údajů<br>
+    ■ TřídícíÚdaje ....... pro třídění (!) uvnitř jedné skupiny, mohou být použity<br>
+    jako individuální řídící údaje pro i-tý soubor (CHi,CFi)<br>
+    ■ > před řídícím (třídícím) údajem ... sestupné třídění<br>
+    ■ ~ před řídícím (třídícím) údajem ... lexikální třídění<br>
+    Více vstupních souborů: řídící údaje u všech vstupů mají stejný typ a délku<br>
+    <br>
+    ┌──────────────────────────────────────────────────────────────────────────┐<br>
+    │ Řídící a třídící údaje vytvářejí společný seznam údajů, podle kterých    │<br>
+    │ musí být vstupní soubor setříděn. Určitý údaj proto může být buďto řídící│<br>
+    │ nebo třídící, nemá smysl ho uvádět v obou skupinách.                     │<br>
+    └──────────────────────────────────────────────────────────────────────────┘<br>
+</div>
+<div>
+    <h4>VstupTransformace</h4>
+    <span style="color:red">VSTUP TRANSFORMACE</span>
+    <hr>
+    Vstup  transformace  tvoří  seznam  jednoho  až   devíti   vstupních   souborů<br>
+    transformace, každý vstupní soubor může být doplněn:<br>
+    █ #Ii_NázevSouboru ! (LogVýraz) ŘídícíÚdaje;TřídícíÚdaje ... vstup merge<br>
+    ■ i ... číslo od 1 do 9, vstupní soubory se očíslují pro odkazy ve výstupu<br>
+    ■ /@ nebo /NázevKlíče za názvem souboru... vstup vět v pořadí podle vlastního<br>
+    nebo alternativního vlastního klíče (jinak fyzické pořadí vět)<br>
+    ■ ! ... dočasné třídění podle spojeného seznamu řídících a třídících údajů<br>
+    (pořadí vstupních vět, nemění původní soubor, pokud není zároveň výstupním)<br>
+    ■ LogVýraz ....... vstupní logická podmínka (filtr) - vstoupí podmnožina vět<br>
+    v podmínce lze použít key in - rychlý výběr podle indexu<br>
+    ■ ŘídícíÚdaje .... rozdělují soubor do skupin vět se stejnými hodnotami<br>
+    řídících údajů<br>
+    ■ TřídícíÚdaje ... pro třídění (!) uvnitř jedné skupiny<br>
+    ■ > před řídícím (třídícím) údajem ... sestupné třídění<br>
+    ■ ~ před řídícím (třídícím) údajem ... lexikální třídění<br>
+    <br>
+    Vstupní soubor musí být setříděn podle řídících  údajů  nebo  vstupovat  podle<br>
+    příslušného  indexu.  Při  více  vstupních  souborech  si  musí  řídící  údaje<br>
+    odpovídat (stejný počet a typy). Soubory se  čtou  v  pořadí  podle  deklarace<br>
+    vstupu buď po skupinách vět (když jsou definované řídící údaje) nebo celé.<br>
+</div>
+<div>
+    <h4>Výběr ze seznamu</h4>
+    <span style="color:red">VÝBĚR ZE SEZNAMU</span>
+    <hr>
+    Vybíráte několik prvků z množiny (např. soubory pro editaci, údaje ze sou-<br>
+    boru pro třídění). Prvky množiny jsou zobrazeny v okně uprostřed obrazovky.<br>
+    Vybrané prvky postupně označíte (F2) a výběr potvrdíte klávesou Enter.<br>
+    <br>
+    ■ šipky .................. pohyb po prvcích množiny<br>
+    ■ Home (resp.End) ........ skok na první (poslední) prvek množiny<br>
+    ■ PageUp (resp.PageDn) ... skok o stranu nahoru (dolů)<br>
+    pokud seznam v okně roluje<br>
+    ■ F2 ........ vybere a označí aktuální prvek ( znakem < )<br>
+    ■ F3 ........ zruší označení aktuálního prvku<br>
+    ■ Ctrl-F2 ... označí všechny prvky<br>
+    ■ Ctrl-F3 ... zruší označení všech prvků<br>
+    ■ > ......... (pouze u třídění) vybere prvek pro sestupné třídění<br>
+    podle údajů vybraných F2 se bude třídit vzestupně<br>
+    ■ F9 ........ zapne/vypne přemisťování prvku v seznamu pomocí šipek<br>
+    ■ Enter ..... potvrdí nastavený výběr a spustí akci<br>
+    ■ Esc ....... zruší celou akci<br>
+    <br>
+    Okamžitý Enter bez označování prvků klávesou F2 provede výběr dle kontextu:<br>
+    - při výběru údajů pro editaci nebo sestavu vybere jen uložené údaje,<br>
+    - výběr řídících nebo třídících údajů se vynechá.<br>
+</div>
+<div>
+    <h4>Výčtový typ</h4>
+    <span style="color:red">#DOMAINS - Definice typů</span>
+    <hr>
+</div>
+<div>
+    <h4>Vyhledávání</h4>
+    <span style="color:red">VYHLEDÁVÁNÍ V TEXTU</span>
+    <hr>
+    ■ Ctrl-Q Ctrl-F ... hledání řetězce v textu<br>
+    ■ Ctrl-Q Ctrl-A ... hledání řetězce a nahrazení jiným<br>
+    ■ Ctrl-L .......... nové spuštění hledání/nahrazování podle minulého zadání<br>
+    <br>
+    Při hledání/nahrazování postupně zadáváte na posledním řádku:<br>
+    <br>
+    ■ Najdi ...... hledaný řetězec<br>
+    ■ Nahraď ..... řetězec, kterým se bude nahrazovat původní text<br>
+    ■ Podmínky ... pro hledání: jedno nebo více písmen podle následující tabulky<br>
+    ■ g ... vyhledávání v celém textu (implicitně hledá jednou od současné pozice<br>
+    ■ e ... globální hledání ( jen volné texty, ve všech větách souboru )<br>
+    ■ n ... nahrazení probíhá automaticky bez dotazu Ano/Ne na potvrzení<br>
+    ■ w ... vyhledává jen celá slova, ne složeniny<br>
+    ■ ~ ... srovnává lexikálně (např. baba=BÁBA)<br>
+    ■ u ... srovnává bez rozlišení malých a velkých písmen (např. Praha=PRAHA)<br>
+    ■ l ... hledání / nahrazování je omezeno jen na definovaný blok<br>
+    <br>
+    Implicitní podmínky pro hledání  (podmínky  se nezadají): pouze jednou, od<br>
+    pozice kurzoru, s dotazem na přepsání, bez přeskočení složenin, s rozliše-<br>
+    ním malých a velkých písmen a znaků s diakritikou.<br>
+</div>
+<div>
+    <h4>Výjimky v typech údajů</h4>
+    <span style="color:red">VÝJIMKY V TYPECH ÚDAJŮ</span>
+    <hr>
+</div>
+<div>
+    <h4>Vypočítané údaje</h4>
+    <span style="color:red">VYPOČÍTANÉ ÚDAJE - odstavec #C</span>
+    <hr>
+</div>
+<div>
+    <h4>Výraz</h4>
+    <span style="color:red">VÝRAZY</span>
+    <hr>
+    Výrazy jsou naznačené  výpočty  a  objevují  se  na  mnoha  místech  projektu.<br>
+    Vytvářejí se obvyklým způsobem z konstant, proměnných, operátorů a funkcí.<br>
+    <br>
+    ■ typy výrazů ......... číselný - real, textový - string a logický - boolean<br>
+    ■ konstanty ........... všech typů<br>
+    ■ lokální proměnné .... definované v proceduře nebo transformaci<br>
+    ■ globální proměnné ... údaje parametrického souboru přístupné v celé úloze<br>
+    ■ operátory ........... číselné, textové, logické, srovnávací<br>
+    <br>
+    ■ aritmetické funkce ....... reálné, goniometrické, logaritmické<br>
+    ■ funkce pro datum a čas ... systémové datum a čas, převody mezi datumy a texty<br>
+    pracovní dny, kalendářní výjimky<br>
+    ■ zpracování textu ......... vyhledávání, převod mezi texty a čísly,<br>
+    podřetězce, textové soubory a volné texty<br>
+    ■ speciální funkce ......... verze, heslo, místo na disku, cond<br>
+    <br>
+    Jednotlivé kapitoly mají ještě některé speciální konstrukce, které lze  použít<br>
+    ve výrazech pouze uvnitř této kapitoly. Všude  je  použitelná  tečková  notace<br>
+    NázSouboru[ČísVýraz].NázÚdaje (klíče).<br>
+</div>
+<div>
+    <h4>Výrazy</h4>
+    <span style="color:red">VÝRAZY</span>
+    <hr>
+</div>
+<div>
+    <h4>Výstup na obrazovku</h4>
+    <span style="color:red">VÝSTUP NA OBRAZOVKU ?2?</span>
+    <hr>
+</div>
+<div>
+    <h4>VýstupSestavy</h4>
+    <span style="color:red">VÝSTUP SESTAVY</span>
+    <hr>
+</div>
+<div>
+    <h4>VýstupTransformace</h4>
+    <span style="color:red">VÝSTUP TRANSFORMACE</span>
+    <hr>
+</div>
 
 <div>
     <h4></h4>
