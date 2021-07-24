@@ -7,6 +7,7 @@
 #include "obaseww.h"
 #include "../Logging/Logging.h"
 #include "../pascal/random.h"
+#include "../textfunc/textfunc.h"
 
 struct TT1Page
 {
@@ -188,8 +189,10 @@ void TFile::RdPrefix(bool Chk)
 	if (Chk) {
 		FS = FileSizeH(Handle);
 		if (FS <= 512) {
-			FillChar(PwCode, 40, '@');
-			Code(PwCode, 40);
+			//FillChar(PwCode, 40, '@');
+			PwCode = "";
+			AddTrailChars(PwCode, '@', 40);
+			Code(PwCode);
 			SetEmpty();
 			return;
 		}
@@ -258,8 +261,8 @@ void TFile::RdPrefix(bool Chk)
 		RandWordByBytes(T.LicNr);
 		RandArrayByBytes(T.X2, 11);
 		RandArrayByBytes(T.PwNew, 40);
-		Move(T.PwNew, PwCode, 20);
-		Move(&T.PwNew[20], Pw2Code, 20);
+		PwCode = std::string(&T.PwNew[0], 20);
+		Pw2Code = std::string(&T.PwNew[20], 20);
 	}
 	else {
 		RandSeed = ML + T.Time;
@@ -268,11 +271,11 @@ void TFile::RdPrefix(bool Chk)
 		RandReal48ByBytes(T.TimeStmp);
 		RandBooleanByBytes(T.HasCoproc);
 		RandArrayByBytes(T.Rsrvd2, 25);
-		Move(T.PwNew, PwCode, 20);
-		Move(&T.PwNew[20], Pw2Code, 20);
+		PwCode = std::string(&T.PwNew[0], 20);
+		Pw2Code = std::string(&T.PwNew[20], 20);
 	}
-	Code(PwCode, 20);
-	Code(Pw2Code, 20);
+	Code(PwCode);
+	Code(Pw2Code);
 	if ((FreePart < MPageSize) || (FreePart > ML) || (FS < ML) ||
 		(FreeRoot > MaxPage) || (MaxPage == 0)) {
 		Err(893, false);
@@ -310,7 +313,7 @@ void TFile::WrPrefix()
 		goto label1;
 	}
 	memset(&T, '@', sizeof(T));
-	Move(PwCode, Pw, 40);
+	memcpy(Pw, PwCode.c_str(), 40);
 	Code(Pw, 40);
 	RandSeed = RS;
 	if (LicenseNr != 0)
@@ -381,8 +384,15 @@ void TFile::Create()
 	Handle = OpenH(_isoverwritefile, Exclusive);
 	TestErr();
 	IRec = 1; LicenseNr = 0;
-	FillChar(PwCode, 40, '@');
-	Code(PwCode, 40);
+
+	PwCode = "";
+	AddTrailChars(PwCode, '@', 20);
+	Code(PwCode);
+	
+	Pw2Code = "";
+	AddTrailChars(Pw2Code, '@', 20);
+	Code(Pw2Code);
+	
 	SetEmpty();
 }
 

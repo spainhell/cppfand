@@ -11,7 +11,7 @@ const BYTE MPageShft = 9;
 class TFile // ø. 147
 {
 public:
-	TFile() {};
+	TFile() {}
 	TFile(const TFile& orig);
 	FILE* Handle = nullptr;
 	longint FreePart = 0;
@@ -21,8 +21,8 @@ public:
 	double TimeStmp = 0.0;
 	integer LicenseNr = 0;
 	longint MLen = 0;
-	PwCodeArr PwCode{ 0 };
-	PwCodeArr Pw2Code{ 0 };
+	std::string PwCode;
+	std::string Pw2Code;
 	enum eFormat { T00Format, DbtFormat, FptFormat } Format = T00Format;
 	WORD BlockSize = 0; // FptFormat
 	bool IsWork = false;

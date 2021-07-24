@@ -9,6 +9,7 @@
 #include "TFile.h"
 #include "../Editor/runedi.h"
 #include "../FileSystem/directory.h"
+#include "../textfunc/textfunc.h"
 
 SS ss;
 
@@ -717,45 +718,67 @@ pstring wwmix::PassWord(bool TwoTimes)
 	MsgNr = 628;
 label1:
 	TextAttr = screen.colors.pNorm | 0x80;
-	screen.GotoXY(1, 1); ClrEol(); RdMsg(MsgNr);
+	screen.GotoXY(1, 1);
+	ClrEol();
+	RdMsg(MsgNr);
 	printf("%*s", (MsgLine.length() + 22) / 2, MsgLine.c_str());
 	keyboard.AddToFrontKeyBuf((char)ReadKbd);
 	TextAttr = screen.colors.pNorm;
 	screen.GotoXY(2, 1);
 	Txt = "";
 	EditTxt(&Txt, 1, 20, 20, 'A', true, true, true, false, 0);
-	if (KbdChar == _ESC_) { Txt = ""; goto label2; }
-	if (TwoTimes)
-		if (MsgNr == 628) { MsgNr = 637; Txt1 = Txt; goto label1; }
-		else if (Txt != Txt1) { WrLLF10Msg(638); MsgNr = 628; goto label1; }
+	if (KbdChar == VK_ESCAPE) {
+		Txt = ""; goto label2;
+	}
+	if (TwoTimes) {
+		if (MsgNr == 628) {
+			MsgNr = 637; Txt1 = Txt;
+			goto label1;
+		}
+		else {
+			if (Txt != Txt1) {
+				WrLLF10Msg(638);
+				MsgNr = 628;
+				goto label1;
+			}
+		}
+	}
 label2:
 	PopW(w);
 	return Txt;
 }
 
-void wwmix::SetPassWord(FileD* FD, WORD Nr, pstring Pw)
+/// <summary>
+/// Set password in TFile (set field PwCode or Pw2Code)
+/// </summary>
+/// <param name="FD">FileD pointer</param>
+/// <param name="Nr">Password type</param>
+/// <param name="Pw">Password</param>
+void wwmix::SetPassWord(FileD* FD, WORD Nr, std::string Pw)
 {
-	void* p;
-	if (Nr == 1) p = FD->TF->PwCode;
-	else p = FD->TF->Pw2Code;
-	FillChar(p, 20, '@');
-	Move(&Pw[1], p, Pw.length());
-	Code(p, 20);
+	if (Nr == 1) {
+		FD->TF->PwCode = Pw;
+		AddTrailChars(FD->TF->PwCode, '@', 20);
+		Code(FD->TF->PwCode);
+	}
+	else {
+		FD->TF->Pw2Code = Pw;
+		AddTrailChars(FD->TF->Pw2Code, '@', 20);
+		Code(FD->TF->Pw2Code);
+	}
 }
 
-bool wwmix::HasPassWord(FileD* FD, WORD Nr, pstring Pw)
+bool wwmix::HasPassWord(FileD* FD, WORD Nr, std::string Pw)
 {
-	PwCodeArr* X = nullptr;
-	/* !!! with FD->TF^ do!!! */
-	if (Nr == 1) X = &FD->TF->PwCode;
-	else X = &FD->TF->Pw2Code;
-	Code(X, 20);
-	/*for (int i = 0; i < 20; i++)
-	{
-		if (*X[i] != '@') return true;
+	std::string filePwd;
+	if (Nr == 1) {
+		Code(FD->TF->PwCode);
+		filePwd = FD->TF->PwCode;
 	}
-	return false;*/
-	pstring tmp(*X, 20);
-	return Pw == OldTrailChar('@', tmp);
+	else {
+		Code(FD->TF->Pw2Code);
+		filePwd = FD->TF->Pw2Code;
+	}
+	return Pw == filePwd;
 }
 

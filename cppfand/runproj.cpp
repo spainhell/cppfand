@@ -50,11 +50,10 @@ struct RdbRecVars
 {
 	char Typ = 0;
 	std::string Name;
-	pstring Ext;
+	std::string Ext;
 	longint Txt = 0; longint OldTxt = 0;
 	char FTyp = 0; WORD CatIRec = 0; bool isSQL = false;
 };
-
 
 FileD* CFileF = nullptr;
 longint sz = 0; WORD nTb = 0; void* Tb = nullptr;
@@ -104,14 +103,15 @@ bool NetFileTest(RdbRecVars* X)
 	return false;
 }
 
-void GetSplitChptName(std::string* Name, pstring* Ext)
+void GetSplitChptName(std::string& Name, std::string& Ext)
 {
-	*Ext = "";
-	*Name = OldTrailChar(' ', _ShortS(ChptName));
-	WORD i = Name->find('.');
+	Ext = "";
+    std::string chptName = _StdS(ChptName);
+	Name = TrailChar(chptName, ' ');
+	size_t i = Name.find('.');
 	if (i == std::string::npos) return;
-	*Ext = Name->substr(i, 255);
-	*Name = Name->substr(1, i - 1);
+	Ext = Name.substr(i, 255);
+	Name = Name.substr(1, i - 1);
 }
 
 void GetRdbRecVars(void* RecPtr, RdbRecVars* X)
@@ -124,7 +124,7 @@ void GetRdbRecVars(void* RecPtr, RdbRecVars* X)
 	CRecPtr = RecPtr;
 	s1 = _ShortS(ChptTyp);
 	X->Typ = s1[1];
-	GetSplitChptName(&X->Name, &X->Ext);
+	GetSplitChptName(X->Name, X->Ext);
 	X->Txt = _T(ChptTxt);
 	X->OldTxt = _T(ChptOldTxt);
 	if (X->Typ == 'F') {
@@ -159,22 +159,39 @@ void GetRdbRecVars(void* RecPtr, RdbRecVars* X)
 
 bool ChptDelFor(RdbRecVars* X)
 {
-	SetUpdHandle(ChptTF->Handle); ReleaseFDLDAfterChpt();
+	bool result = true;
+	SetUpdHandle(ChptTF->Handle);
+	ReleaseFDLDAfterChpt();
 	switch (X->Typ) {
-	case ' ': return true; break;
+	case ' ': {
+		result = true;
+		break;
+	}
 	case 'D':
-	case 'P': SetCompileAll(); break;
-	case 'F': {
-		if (X->OldTxt == 0) return true;  /*don't delete if the record is new*/
+	case 'P': {
 		SetCompileAll();
-		if (X->isSQL) return true;
+		break;
+	}
+	case 'F': {
+		if (X->OldTxt == 0) {
+			result = true; break; /*don't delete if the record is new*/
+		}
+		SetCompileAll();
+		if (X->isSQL) {
+			result = true;
+			break;
+		}
 		SetMsgPar(X->Name);
 		if (!PromptYN(814) || NetFileTest(X) && !PromptYN(836)) {
-			return false;
+			result = false;
+			break;
 		}
 		if (X->CatIRec != 0) {
 			WrCatField(X->CatIRec, CatFileName, "");
-			if (!PromptYN(815)) return true;
+			if (!PromptYN(815)) {
+				result = true;
+				break;
+			}
 			RdCatPathVol(X->CatIRec);
 			TestMountVol(CPath[1]);
 		}
@@ -185,10 +202,18 @@ bool ChptDelFor(RdbRecVars* X)
 		MyDeleteFile(CDir + CName + CExt);
 		CExtToT();
 		MyDeleteFile(CPath);
-		if (X->FTyp == 'X') { CExtToX(); MyDeleteFile(CPath); } }
-	default: ChptTF->CompileProc = true; break;
+		if (X->FTyp == 'X') {
+			CExtToX();
+			MyDeleteFile(CPath);
+		}
+		break;
 	}
-	return true;
+	default: {
+		ChptTF->CompileProc = true;
+		break;
+	}
+	}
+	return result;
 }
 
 bool ChptDel()
@@ -201,17 +226,16 @@ bool ChptDel()
 
 bool IsDuplFileName(std::string name)
 {
-	WORD I;
-	std::string n; pstring e; void* cr;
+	std::string n; std::string e; void* cr;
 	auto result = true;
 	if (SEquUpcase(name, Chpt->Name)) return result;
 	cr = CRecPtr;
 	CRecPtr = GetRecSpace();
-	for (I = 1; I <= Chpt->NRecs; I++)
+	for (WORD I = 1; I <= Chpt->NRecs; I++)
 		if (I != CRec()) {
 			ReadRec(CFile, I, CRecPtr);
 			if (_ShortS(ChptTyp) == 'F') {
-				GetSplitChptName(&n, &e);
+				GetSplitChptName(n, e);
 				if (SEquUpcase(name, n)) goto label1;
 			}
 		}
@@ -1135,8 +1159,8 @@ label2:
 	OpenCreateF(Exclusive);
 	SetCompileAll();
 label3:
-	if (ww->HasPassWord(Chpt, 1, "")) CRdb->Encrypted = false;
-	else CRdb->Encrypted = true;
+	const bool hasPasswd = ww->HasPassWord(Chpt, 1, "");
+	CRdb->Encrypted = hasPasswd ? false : true;
 }
 
 void CloseChpt()
@@ -1873,7 +1897,10 @@ bool EditExecRdb(std::string Nm, std::string ProcNm, Instr_proc* ProcCall, wwmix
 	}
 	else if (!top) UserW = PushW(1, 1, TxtCols, TxtRows);
 	EditRdbMode = true;
-	if (CRdb->Encrypted) passw = ww->PassWord(false);
+	if (CRdb->Encrypted) {
+		// ask for the project password
+		passw = ww->PassWord(false);
+	}
 	IsTestRun = true;
 	EO = GetEditOpt();
 	EO->Flds = AllFldsList(Chpt, true);
