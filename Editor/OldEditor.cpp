@@ -4129,7 +4129,7 @@ void ViewHelpText(LongStr* S, WORD& TxtPos)
 	bool Upd = false;
 	longint Scr = 0;
 	while (true) {
-		EditText(HelpM, MemoT, "", "", (char*)&S->A, 0xFFF0, S->LL, TxtPos, Scr,
+		EditText(HelpM, MemoT, "", "", (char*)S->A, 0xFFF0, S->LL, TxtPos, Scr,
 			_F1 + _F10 + _F6 + _CtrlHome + _CtrlEnd, nullptr, Srch, Upd, 142, 145, nullptr);
 		if (KbdChar == VK_F6) {
 			PrintArray(&S->A, S->LL, true);
