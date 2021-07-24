@@ -553,8 +553,13 @@ label2:
 		RdKumul();
 	}
 
-	if (FileDRoot == nullptr) { FileDRoot = CFile; Chpt = FileDRoot; }
-	else ChainLast(FileDRoot, CFile);
+	if (FileDRoot == nullptr) {
+		FileDRoot = CFile;
+		Chpt = FileDRoot;
+	}
+	else {
+		ChainLast(FileDRoot, CFile);
+	}
 
 	if (Ext == "$"/*compile from text at run time*/) {
 		CFile->IsDynFile = true;
@@ -574,7 +579,6 @@ label2:
 		TestUserView();
 	}
 	MarkStore(p);
-	//li = (LiRoots*)GetZStore(sizeof(LiRoots));
 	li = new LiRoots();
 	CFile->LiOfs = uintptr_t(li) - uintptr_t(CFile);
 	if ((Lexem == '#') && (ForwChar == 'D')) { RdLex(); TestDepend(); }
@@ -586,7 +590,7 @@ label2:
 	//}
 	if (Lexem != ']' && Lexem != 0x1A) Error(66); // !!! pridana podminka ']' oproti originalu
 label1:
-	return p; // má asi vracet HeapPtr
+	return p; // ma asi vracet HeapPtr
 }
 
 void RdKeyD()
@@ -608,7 +612,6 @@ void RdKeyD()
 		else {
 			Name = "";
 		label1:
-			//K = (KeyDPtr)GetZStore(sizeof(*K));
 			K = new XKey();
 			K1 = (XKey*)(&CFile->Keys);
 			N = 1;
@@ -653,7 +656,6 @@ label2:
 	else RdFileOrAlias(&FD, &K);
 	L = FindLD(Name);
 	if (L != nullptr) OldError(26);
-	//L = (LinkD*)GetZStore(sizeof(*L) - 1 + Name.length());
 	L = new LinkD();
 	//L->Args = new KeyFldD(); // pridano navic, aby to o par radku niz nepadalo
 	L->Chain = LinkDRoot;
@@ -680,7 +682,6 @@ label2:
 label3:
 	F = RdFldName(CFile);
 	if (F->Typ == 'T') OldError(84);
-	//Arg->Chain = (KeyFldD*)GetZStore(sizeof(*Arg)); 
 	Arg->Chain = new KeyFldD();
 	Arg = (KeyFldD*)Arg->Chain;
 	/* !!! with Arg^ do!!! */
@@ -824,14 +825,18 @@ label2:
 	if ((F->Flg & f_Stored) == 0) OldError(14);
 	Accept(_assign);
 	Z = RdFrml(FTyp);
-	if (F->FrmlTyp != FTyp) Error(12);
-	if (Lexem == ';')
-	{
+	if (F->FrmlTyp != FTyp) {
+		Error(12);
+	}
+	if (Lexem == ';') {
 		RdLex();
-		if (!(Lexem == '#' || Lexem == 0x1A))
-		{
-			if (Lexem == '(') goto label1;
-			else goto label2;
+		if (!(Lexem == '#' || Lexem == 0x1A)) {
+			if (Lexem == '(') {
+				goto label1;
+			}
+			else {
+				goto label2;
+			}
 		}
 	}
 	ReleaseStore(p);
@@ -856,8 +861,7 @@ label1:
 	ID->Frml = Z;
 	if (*IDRoot == nullptr) *IDRoot = ID;
 	else ChainLast(*IDRoot, ID);
-	if (Lexem == ';')
-	{
+	if (Lexem == ';') {
 		RdLex();
 		if (!(Lexem == '#' || Lexem == 0x1A)) goto label1;
 	}
@@ -952,8 +956,7 @@ void RdAssign(AddD* AD)
 	if (FTyp != AD->Field->FrmlTyp) OldError(12);
 }
 
-// smaze CFile->Handle, nastavi typ na FDTyp a ziska 
-// CatIRec z GetCatIRec() - musi existovat CatFD
+/// smaze CFile->Handle, nastavi typ na FDTyp a ziska CatIRec z GetCatIRec() - musi existovat CatFD
 void SetHCatTyp(char FDTyp)
 {
 	/* !!! with CFile^ do!!! */
@@ -961,7 +964,8 @@ void SetHCatTyp(char FDTyp)
 	CFile->Typ = FDTyp;
 	CFile->CatIRec = GetCatIRec(CFile->Name, CFile->Typ == '0'/*multilevel*/);
 #ifdef FandSQL
-	typSQLFile = issql; SetIsSQLFile();
+	typSQLFile = issql;
+	SetIsSQLFile();
 #endif
 }
 
@@ -981,10 +985,16 @@ void GetTFileD(char FDTyp)
 void GetXFileD()
 {
 	/* !!! with CFile^ do!!! */
-	if (CFile->Typ != 'X') { if (CFile->XF != nullptr) OldError(104); }
+	if (CFile->Typ != 'X') {
+		if (CFile->XF != nullptr) {
+			OldError(104);
+		}
+	}
 	else {
 		//if (CFile->XF == nullptr) CFile->XF = (XFile*)GetZStore(sizeof(XFile));
-		if (CFile->XF == nullptr) CFile->XF = new XFile();
+		if (CFile->XF == nullptr) {
+			CFile->XF = new XFile();
+		}
 		CFile->XF->Handle = nullptr;
 	}
 }
@@ -1022,8 +1032,12 @@ void CallRdFDSegment(FileD* FD)
 
 CompInpD* OrigInp()
 {
-	if (PrevCompInp == nullptr) return nullptr;
+	if (PrevCompInp == nullptr) {
+		return nullptr;
+	}
 	CompInpD* i = PrevCompInp;
-	while (i->ChainBack != nullptr) i = i->ChainBack;
+	while (i->ChainBack != nullptr) {
+		i = i->ChainBack;
+	}
 	return i;
 }

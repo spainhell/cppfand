@@ -1919,7 +1919,7 @@ label2:
 		goto label8;
 	}
 	if (Brk != 0) {
-		if (!CompileRdb(Brk = 2, false, false)) {
+		if (!CompileRdb(Brk == 2, false, false)) {
 		label3:
 			if (IsCompileErr) goto label4;
 			if (Brk == 1) DisplEditWw();
