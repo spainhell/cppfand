@@ -758,12 +758,12 @@ void wwmix::SetPassWord(FileD* FD, WORD Nr, std::string Pw)
 {
 	if (Nr == 1) {
 		FD->TF->PwCode = Pw;
-		AddTrailChars(FD->TF->PwCode, '@', 20);
+		FD->TF->PwCode= AddTrailChars(FD->TF->PwCode, '@', 20);
 		Code(FD->TF->PwCode);
 	}
 	else {
 		FD->TF->Pw2Code = Pw;
-		AddTrailChars(FD->TF->Pw2Code, '@', 20);
+		FD->TF->PwCode = AddTrailChars(FD->TF->Pw2Code, '@', 20);
 		Code(FD->TF->Pw2Code);
 	}
 }
@@ -772,13 +772,12 @@ bool wwmix::HasPassWord(FileD* FD, WORD Nr, std::string Pw)
 {
 	std::string filePwd;
 	if (Nr == 1) {
-		Code(FD->TF->PwCode);
 		filePwd = FD->TF->PwCode;
+		Code(filePwd);
 	}
 	else {
-		Code(FD->TF->Pw2Code);
 		filePwd = FD->TF->Pw2Code;
+		Code(filePwd);
 	}
-	return Pw == filePwd;
+	return Pw == TrailChar(filePwd, '@');
 }
-

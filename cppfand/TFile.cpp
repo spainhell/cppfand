@@ -191,7 +191,7 @@ void TFile::RdPrefix(bool Chk)
 		if (FS <= 512) {
 			//FillChar(PwCode, 40, '@');
 			PwCode = "";
-			AddTrailChars(PwCode, '@', 40);
+			PwCode = AddTrailChars(PwCode, '@', 40);
 			Code(PwCode);
 			SetEmpty();
 			return;
@@ -295,11 +295,11 @@ void TFile::WrPrefix()
 	longint* TNxtAvailPage = (longint*)&T;		/* .DBT */
 	struct stFptHd { longint FreePart = 0; WORD X = 0, BlockSize = 0; }; /* .FPT */
 	stFptHd* FptHd = (stFptHd*)&T;
-	char Pw[40];
 	// BYTE absolute 0 Time:0x46C; TODO: TIMER
 	WORD i = 0, n = 0;
 	BYTE sum = 0; longint RS = 0;
-	const PwCodeArr EmptyPw = { '@','@','@','@','@','@','@','@','@','@','@','@','@','@','@','@','@','@','@','@' };
+	std::string Pw;
+	// const PwCodeArr EmptyPw = { '@','@','@','@','@','@','@','@','@','@','@','@','@','@','@','@','@','@','@','@' };
 
 	if (Format == DbtFormat) {
 		memset(&T, ' ', sizeof(T));
@@ -313,15 +313,22 @@ void TFile::WrPrefix()
 		goto label1;
 	}
 	memset(&T, '@', sizeof(T));
-	memcpy(Pw, PwCode.c_str(), 40);
-	Code(Pw, 40);
+	//memcpy(Pw, PwCode.c_str(), 40);
+	Pw = PwCode + Pw2Code;
+	Code(Pw);
 	RandSeed = RS;
-	if (LicenseNr != 0)
-		for (i = 0; i < 20; i++)
+	if (LicenseNr != 0) {
+		for (i = 0; i < 20; i++) {
 			Pw[i] = static_cast<char>(Random(255));
+		}
+	}
 	n = 0x4000;
 	// TODO: T.Time = Time;
-	Move(Pw, T.PwNew, 40);
+	//Move(Pw, T.PwNew, 40);
+	if (Pw.length() != 40) {
+		throw std::exception("Bad PwCode + Pw2Code length! Must be 40.");
+	}
+	memcpy(T.PwNew, Pw.c_str(), Pw.length());
 	RandSeed = MLen + T.Time; // srand(MLen + T.Time);
 	// for (i = 14; i < 511; i++) TX[i] = TX[i] ^ Random(255);
 	RandIntByBytes(T.FreeRoot);
@@ -386,11 +393,11 @@ void TFile::Create()
 	IRec = 1; LicenseNr = 0;
 
 	PwCode = "";
-	AddTrailChars(PwCode, '@', 20);
+	PwCode = AddTrailChars(PwCode, '@', 20);
 	Code(PwCode);
 	
 	Pw2Code = "";
-	AddTrailChars(Pw2Code, '@', 20);
+	Pw2Code = AddTrailChars(Pw2Code, '@', 20);
 	Code(Pw2Code);
 	
 	SetEmpty();
