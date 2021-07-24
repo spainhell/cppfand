@@ -1260,8 +1260,7 @@ LocVar* LocVarBlkD::GetRoot()
 
 LocVar* LocVarBlkD::FindByName(std::string Name)
 {
-	for (auto& i : vLocVar)
-	{
+	for (auto& i : vLocVar) {
 		if (SEquUpcase(Name, i->Name)) return i;
 	}
 	return nullptr;
@@ -1271,12 +1270,12 @@ bool DeletedFlag()  // r771 ASM
 {
 	if (CFile->Typ == 'X') {
 		if (((BYTE*)CRecPtr)[0] == 0) return false;
-		return true;
+		else return true;
 	}
 
 	if (CFile->Typ == 'D') {
 		if (((BYTE*)CRecPtr)[0] != '*') return false;
-		return true;
+		else return true;
 	}
 
 	return false;
@@ -1285,16 +1284,16 @@ bool DeletedFlag()  // r771 ASM
 void ClearDeletedFlag()
 {
 	switch (CFile->Typ) {
-	case 'X': ((BYTE*)CRecPtr)[0] = 0; break;
-	case 'D': ((BYTE*)CRecPtr)[0] = ' '; break;
+	case 'X': { ((BYTE*)CRecPtr)[0] = 0; break; }
+	case 'D': { ((BYTE*)CRecPtr)[0] = ' '; break; }
 	}
 }
 
 void SetDeletedFlag()
 {
 	switch (CFile->Typ) {
-	case 'X': ((BYTE*)CRecPtr)[0] = 1; break;
-	case 'D': ((BYTE*)CRecPtr)[0] = '*'; break;
+	case 'X': { ((BYTE*)CRecPtr)[0] = 1; break; }
+	case 'D': { ((BYTE*)CRecPtr)[0] = '*'; break; }
 	}
 }
 
@@ -1421,28 +1420,8 @@ WORD CompLexStrings(const std::string& S1, const std::string& S2)
 	return result;
 }
 
-//pstring FieldDMask(FieldDescr* F)
-//{
-//	// toto je takova specialita, ze maska byla ulozena "za" F->Name jako dalsi Byty
-//	// TODO: najit jiny zpusob predavani masky pro datum
-//
-//	return "DD.MM.YY";
-//
-//	// puvodni kod:
-//	/*BYTE startIndex = F->Name[0] + 1;
-//	BYTE newLen = F->Name[startIndex];
-//
-//	pstring result;
-//	result[0] = newLen;
-//	memcpy(&result[1], &F[startIndex], newLen);
-//
-//	if (result.empty()) return "DD.MM.YY";
-//	return result;*/
-//}
-
 void* GetRecSpace()
 {
-	//return GetZStore(CFile->RecLen + 2);
 	return new BYTE * [CFile->RecLen + 2];
 }
 
@@ -1590,7 +1569,7 @@ label4:
 void CodingLongStr(LongStr* S)
 {
 	if (CFile->TF->LicenseNr == 0) Code(S->A, S->LL);
-	else XDecode(S); // musí mít o 2B víc - sahá si tm XDecode!!!
+	else XDecode(S); // musí mít o 2B víc - saha si tam XDecode!!!
 }
 
 void DirMinusBackslash(pstring& D)
@@ -1612,20 +1591,23 @@ LongStr* ReadDelInTWork(longint Pos)
 
 void ForAllFDs(void(*procedure)())
 {
-	RdbDPtr R; FileDPtr cf;
-	cf = CFile; R = CRdb;
+	FileD* cf = CFile;
+	RdbD* R = CRdb;
 	while (R != nullptr) {
 		CFile = R->FD;
-		while (CFile != nullptr) { procedure(); CFile = (FileD*)CFile->Chain; };
+		while (CFile != nullptr) {
+			procedure();
+			CFile = (FileD*)CFile->Chain;
+		}
 		R = R->ChainBack;
 	}
 	CFile = cf;
 }
 
-bool IsActiveRdb(FileDPtr FD)
+bool IsActiveRdb(FileD* FD)
 {
-	RdbDPtr R;
-	R = CRdb; while (R != nullptr) {
+	RdbDPtr R = CRdb;
+	while (R != nullptr) {
 		if (FD == R->FD) return true;
 		R = R->ChainBack;
 	}
