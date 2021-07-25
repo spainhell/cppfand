@@ -3097,10 +3097,14 @@ bool EditFreeTxt(FieldDescr* F, std::string ErrMsg, bool Ed, WORD& Brk)
 label1:
 	HdTxt = "    ";
 	WasUpd = false;
-	if (CRec() > 1) HdTxt[3] = 0x18; // ^X
-	if (CRec() < CNRecs()) HdTxt[4] = 0x19; // ^Y
+	if (CRec() > 1) {
+		HdTxt[2] = 0x18; // ^X
+	}
+	if (CRec() < CNRecs()) {
+		HdTxt[3] = 0x19; // ^Y
+	}
 	if (IsCurrChpt()) {
-		HdTxt = _ShortS(ChptTyp) + ':' + _ShortS(ChptName) + HdTxt;
+		HdTxt = _StdS(ChptTyp) + ':' + _StdS(ChptName) + HdTxt;
 		TxtPos = trunc(_R(ChptTxtPos));
 		Breaks = BreakKeys2;
 		CtrlMsgNr = 131;

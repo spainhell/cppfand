@@ -584,11 +584,10 @@ void WrStatusLine()
 		else {
 			Blanks = RepeatString(' ', TxtCols);
 			std::string s = ShortName(NameT);
-			size_t i = TStatL + 3;
+			size_t i = TStatL + 3 - 1;
 			if (s.length() + i >= TXTCOLS) i = TXTCOLS - s.length() - 2;
-			//Move(&s[1], &Blanks[i], s.length());
 			for (size_t j = 0; j < s.length(); j++) {
-				Blanks[j] = s[j];
+				Blanks[i + j] = s[j];
 			}
 		}
 		screen.ScrWrStr(1, 1, Blanks, SysLColor);
@@ -622,10 +621,10 @@ void WriteMargins()
 	}
 }
 
-void WrLLMargMsg(std::string* s, WORD n)
+void WrLLMargMsg(std::string& s, WORD n)
 {
-	if (s != nullptr) {
-		MsgLine = *s;
+	if (!s.empty()) {
+		MsgLine = s;
 		WrLLMsgTxt();
 	}
 	else {
@@ -885,9 +884,8 @@ WORD PColumn(WORD w, char* P)
 
 bool MyTestEvent()
 {
-	//return false; // TODO !!!
 	if (FirstEvent) return false;
-	return TestEvent();
+	//return TestEvent();
 }
 
 void DelEndT()
@@ -942,21 +940,18 @@ void PredPart()
 
 WORD CountChar(char C, WORD First, WORD Last)
 {
-	return 1;
-
-	//WORD j = 1;
-	//WORD I = FindChar(j, C, First, LenT);
-	//WORD n = 0;
-	//while (I < Last) {
-	//	n++;
-	//	I = FindChar(j, C, I + 1, LenT);
-	//}
-	//return n;
+	size_t I = FindChar(T, LenT, C, First);
+	WORD n = 0;
+	while (I < Last) {
+		n++;
+		I = FindChar(T, LenT, C, I + 1);
+	}
+	return n;
 }
 
 WORD SetLine(WORD Ind)
 {
-	return CountChar(_CR, 1, Ind);
+	return CountChar(_CR, 1, Ind) + 1;
 }
 
 WORD SetCurrI(WORD Ind)
@@ -1368,7 +1363,8 @@ void UpdScreen()
 void Background()
 {
 	UpdStatLine(LineL, Posi, Mode);
-	if (MyTestEvent()) return;
+	// TODO: musi to tady byt?
+	// if (MyTestEvent()) return;
 	if (HelpScroll) {
 		WORD p = Posi;
 		if (Mode == HelpM) {
@@ -1407,7 +1403,7 @@ void Background()
 	}
 	UpdScreen(); // {tisk obrazovky}
 	WriteMargins();
-	screen.GotoXY(Posi - BPos, succ(LineL - ScrL));
+	screen.GotoXY(Posi - BPos, LineL - ScrL + 1);
 	IsWrScreen = true;
 }
 
@@ -1491,11 +1487,11 @@ void ScrollPress()
 void DisplLL(WORD Flags)
 {
 	if ((Flags & 0x04) != 0) // { Ctrl }
-		WrLLMargMsg(&CtrlLastS, CtrlLastNr);
+		WrLLMargMsg(CtrlLastS, CtrlLastNr);
 	else if ((Flags & 0x03) != 0) // { Shift }
-		WrLLMargMsg(&ShiftLastS, 0);
+		WrLLMargMsg(ShiftLastS, 0);
 	else if ((Flags & 0x08) != 0) // { Alt }
-		WrLLMargMsg(&AltLastS, 0);
+		WrLLMargMsg(AltLastS, 0);
 }
 
 void CtrlShiftAlt()
@@ -1516,7 +1512,8 @@ label1:
 			else Delta = spec.CtrlDelay;
 	}
 	else if (Ctrl) {
-		flgs = 0; WrLLMargMsg(&LastS, LastNr);
+		flgs = 0;
+		WrLLMargMsg(LastS, LastNr);
 		Ctrl = false; Delta = 0;
 	}
 	/*      WaitEvent(Delta);*/
@@ -1525,7 +1522,8 @@ label1:
 		ClrEvent(); if (!IsWrScreen) Background(); goto label1;
 	}
 	if (flgs != 0) {
-		LLKeyFlags = 0; WrLLMargMsg(&LastS, LastNr);
+		LLKeyFlags = 0;
+		WrLLMargMsg(LastS, LastNr);
 		AddCtrlAltShift(flgs);
 	}
 }
@@ -1797,14 +1795,17 @@ void MyDelLine()
 void PredLine()
 {
 	WORD mi, ml;
-	TestKod;
+	TestKod();
 	if ((LineL == 1) && (Part.PosP > 0)) PredPart();
-	if (LineL > 1)
-	{
-		if (T[LineI - 1] == _LF) SetDekCurrI(LineI - 2);
-		else SetDekCurrI(LineI - 1); LineL--;
-		if (LineL < ScrL)
-		{
+	if (LineL > 1) {
+		if (T[LineI - 1 - 1] == _LF) {
+			SetDekCurrI(LineI - 2);
+		}
+		else {
+			SetDekCurrI(LineI - 1);
+		}
+		LineL--;
+		if (LineL < ScrL) {
 			screen.GotoXY(1, 1); MyInsLine(); ScrL--; ChangeScr = true;
 			if (Scroll)
 			{ /*dec(RLineL);*/
@@ -1869,7 +1870,9 @@ void NextLine(bool WrScr)
 	TestKod();
 	if ((NextI >= LenT) && !AllRd) NextPartDek();
 	if (NextI <= LenT) {
-		LineI = NextI; DekodLine(); LineL++;
+		LineI = NextI;
+		DekodLine();
+		LineL++;
 		if (bScroll) {
 			if (PageS > 1) MyWriteln();
 			ScrL++;
@@ -3181,7 +3184,9 @@ void HandleEvent() {
 			case VK_DOWN: {
 				if (Mode == HelpM) HelpRD('D');
 				else {
-					L1 = LineAbs(LineL); NextLine(true); BlockUDShift(L1);
+					L1 = LineAbs(LineL);
+					NextLine(true);
+					BlockUDShift(L1);
 					if (bScroll) Posi = Position(Colu);
 				}
 				break;
@@ -3879,7 +3884,7 @@ void Edit()
 		AddToKbdBuf(KbdChar);
 	}
 	FillChar((char*)MargLL, sizeof(MargLL), 0);
-	WrLLMargMsg(&LastS, LastNr);
+	WrLLMargMsg(LastS, LastNr);
 
 	do {
 		if (TypeT == FileT) {
