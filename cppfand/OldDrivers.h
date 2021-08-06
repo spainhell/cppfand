@@ -30,7 +30,6 @@ struct TEvent
 {
 	WORD What = 0;
 	PressedKey Pressed;
-	WORD KeyCode = 0;
 	WORD Buttons = 0;
 	TPoint Where;
 	TPoint WhereG;
@@ -38,7 +37,6 @@ struct TEvent
 };
 
 extern TEvent Event; // r39
-extern WORD KbdChar;
 extern BYTE KbdFlgs; // TODO: absolute $417
 
 // ******** Konstanty *********

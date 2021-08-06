@@ -234,7 +234,7 @@ label1:
 		else if (MouseInRect(0, TxtRows - 1, TxtCols, 1)) goto label2;
 		else if (ParentsContain(&Event.Where)) { KbdChar = _ESC_; return; }}
 	case evKeyDown: {
-		if (Event.Pressed.Char() == '\0') {
+		if (Event.Pressed.Char == '\0') {
 			switch (Event.KeyCode) {
 			case VK_HOME:
 			case VK_PRIOR: {

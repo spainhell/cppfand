@@ -110,24 +110,30 @@ WORD EditTxt(pstring* s, WORD pos, WORD maxlen, WORD maxcol, char typ, bool del,
 	cy1 = cy + WindMin.Y - 1;
 	screen.CrsNorm();
 	WriteStr(pos, base, maxlen, maxcol, *sLen, *s, star, cx, cy, cx1, cy1);
+	WORD KbdChar;
 label1:
 	switch (WaitEvent(Delta)) {
 	case 1/*flags*/: goto label1; break;
-	case 2/*timer*/: { KbdChar = VK_ESCAPE; goto label6; break; }
+	case 2/*timer*/: {
+		Event.Pressed.UpdateKey(__ESC);
+		goto label6;
+		break;
+	}
 	}
 
 	switch (Event.What) {
 	case evMouseDown: {
 		if (MouseInRect(cx1, cy1, maxcol, 1)) {
 			ClrEvent();
-			KbdChar =
-				VK_RETURN; goto label6;
+			Event.Pressed.UpdateKey(__ENTER);
+			goto label6;
 		}
 		break;
 	}
 	case evKeyDown: {
 		//KbdChar = Event.KeyCode;
 		ClrEvent();
+		KbdChar = Event.Pressed.KeyCombination();
 		if (del) {
 			if (KbdChar >= 0x20 && KbdChar <= 0xFE)
 			{
@@ -172,7 +178,7 @@ label1:
 		if (KbdChar > 0x20) break; // jedná se o znak, ne o funkèní klávesu -> dál nezpracováváme
 
 		//switch (KbdChar) {
-		switch (Event.KeyCode) {
+		switch (Event.Pressed.KeyCombination()) {
 		case VK_INSERT:
 		case _V_: InsMode = !InsMode; break;
 		case _U_: if (TxtEdCtrlUBrk) goto label6; break;
@@ -344,6 +350,7 @@ WORD FieldEdit(FieldDescr* F, FrmlElem* Impl, WORD LWw, WORD iPos, std::string& 
 	pstring C999 = "999999999999999";
 	Col = screen.WhereX();
 	Row = screen.WhereY();
+	WORD KbdChar = Event.Pressed.KeyCombination();
 	if (F->Typ == 'B') {
 		if (Txt.empty()) screen.ScrFormatWrText(Col, Row, " ");
 		else screen.ScrFormatWrText(Col, Row, "%s", Txt.c_str()); //printf("%s", Txt->c_str());
@@ -353,7 +360,7 @@ WORD FieldEdit(FieldDescr* F, FrmlElem* Impl, WORD LWw, WORD iPos, std::string& 
 		GetEvent();
 		switch (Event.What) {
 		case evKeyDown: {
-			KbdChar = Event.KeyCode;
+			KbdChar = Event.Pressed.KeyCombination();
 			ClrEvent();
 			if (KbdChar == VK_ESCAPE) {
 				screen.CrsHide();
@@ -372,7 +379,7 @@ WORD FieldEdit(FieldDescr* F, FrmlElem* Impl, WORD LWw, WORD iPos, std::string& 
 		case evMouseDown: {
 			if (MouseInRect(WindMin.X + screen.WhereX() - 1, WindMin.Y + screen.WhereY() - 1, 1, 1)) {
 				ClrEvent();
-				KbdChar = _M_;
+				Event.Pressed.UpdateKey(__ENTER);
 				goto label11;
 			}
 		}
@@ -508,7 +515,7 @@ void WrPromptTxt(std::string& S, FrmlElem* Impl, FieldDescr* F, pstring* Txt, do
 	screen.GotoXY(x, y);
 	FieldEdit(F, nullptr, LWw, 1, T, R, true, true, false, 0);
 	TextAttr = ProcAttr;
-	if (KbdChar == VK_ESCAPE) {
+	if (Event.Pressed.KeyCombination() == __ESC) {
 		EscPrompt = true;
 		printf("\n");
 	}
@@ -528,7 +535,7 @@ bool PromptB(std::string& S, FrmlElem* Impl, FieldDescr* F)
 	double R = 0.0;
 	WrPromptTxt(S, Impl, F, &Txt, R);
 	bool result = Txt[1] == AbbrYes;
-	if (KbdChar == VK_ESCAPE) {
+	if (Event.Pressed.KeyCombination() == __ESC) {
 		if (Impl != nullptr) result = RunBool(Impl);
 		else result = false;
 	}
@@ -541,7 +548,7 @@ pstring PromptS(std::string& S, FrmlElem* Impl, FieldDescr* F)
 	double R = 0.0;
 	WrPromptTxt(S, Impl, F, &Txt, R);
 	auto result = Txt;
-	if (KbdChar == _ESC_) {
+	if (Event.Pressed.KeyCombination() == __ESC) {
 		if (Impl != nullptr) result = RunShortStr(Impl);
 		else result = "";
 	}
@@ -554,7 +561,7 @@ double PromptR(std::string& S, FrmlElem* Impl, FieldDPtr F)
 	double R = 0.0;
 	WrPromptTxt(S, Impl, F, &Txt, R);
 	auto result = R;
-	if (KbdChar == _ESC_) {
+	if (Event.Pressed.KeyCombination() == __ESC) {
 		if (Impl != nullptr) result = RunReal(Impl);
 		else result = 0;
 	}
@@ -1087,7 +1094,7 @@ void DisplTabDupl()
 			}
 			else if (D->Dupl) {
 				screen.ScrFormatWrText(Col, Row, "%c", 0x19); // printf("%c", 0x19);
-				}
+			}
 			else {
 				screen.ScrFormatWrText(Col, Row, "%c", ' '); // printf(" ");
 			}
@@ -1363,7 +1370,7 @@ void BuildWork()
 #ifdef FandSQL
 		if (CFile->IsSQLFile && (bool = nullptr)) {
 			l = CFile->RecLen; f = CFile->FldD; OnlyKeyArgFlds(WK);
-		}
+	}
 #endif
 		if (
 #ifdef FandSQL
@@ -1389,7 +1396,7 @@ label1:
 	RestoreExit(er);
 	if (!ok) GoExit();
 	ReleaseStore(p);
-		}
+	}
 
 void SetStartRec()
 {
@@ -1438,7 +1445,7 @@ bool OpenEditWw()
 	if (EdRecVar) {
 		if (OnlyAppend) goto label2;
 		else goto label3;
-	}
+}
 #ifdef FandSQL
 	if (!CFile->IsSQLFile)
 #endif
@@ -1448,7 +1455,7 @@ bool OpenEditWw()
 #ifdef FandSQL
 	if (CFile->IsSQLFile) {
 		if ((VK = nullptr) || !VK->InWork) Subset = true
-}
+	}
 	else
 #endif
 	{
@@ -1518,7 +1525,7 @@ label3:
 	if (!EdRecVar) OldLMode(md2);
 	if (IsNewRec) NewRecExit();
 	return result;
-	}
+}
 
 void RefreshSubset()
 {
@@ -1650,16 +1657,16 @@ void UpdMemberRef(void* POld, void* PNew)
 					if (sql) Strm1->UpdateXRec(k, @x, false) else
 #endif
 						OverWrXRec(Scan->RecNr, p, p2);
-					}
-				goto label1;
 				}
+				goto label1;
+		}
 			Scan->Close();
 			ClearRecSpace(p);
 			ReleaseStore(p);
-			}
+	}
 	label2:
 		LD = LD->Chain;
-		}
+}
 	CFile = cf; CRecPtr = cr;
 	}
 
@@ -1855,7 +1862,7 @@ bool DelIndRec(longint I, longint N)
 		XString x;
 		if (CFile->IsSQLFile) {
 			x.PackKF(VK->KFlds); Strm1->DeleteXRec(VK, @x, false);
-}
+		}
 		else
 #endif
 			DeleteXRec(N, true);
@@ -1882,7 +1889,7 @@ bool DeleteRecProc()
 	if (Select) {
 		F10SpecKey = VK_ESCAPE;
 		Group = PromptYN(116);
-		if (KbdChar == VK_ESCAPE) return result;
+		if (Event.Pressed.KeyCombination() == __ESC) return result;
 	}
 	if (!Group) {
 		if (VerifyDelete && !PromptYN(109)) return result;
@@ -2157,7 +2164,7 @@ void UpwEdit(LinkDPtr LkD)
 		}
 		ss.Abcd = true;
 		ww.SelectStr(0, 0, 35, "");
-		if (KbdChar == VK_ESCAPE) goto label1;
+		if (Event.Pressed.KeyCombination() == __ESC) goto label1;
 		GetSel2S(&s1, &s2, '.', 2); LD = LinkDRoot;
 		while (!((LD->FromFD == CFile) && EquRoleName(s2, LD) && EquFileViewName(LD->ToFD, s1, EO)))
 			LD = LD->Chain;
@@ -2210,8 +2217,8 @@ void DisplChkErr(ChkD* C)
 	}
 	SetMsgPar(RunShortStr(C->TxtZ));
 	WrLLF10Msg(110);
-	if (KbdChar == _F1_) Help(CFile->ChptPos.R, *C->HelpName, false);
-	else if (KbdChar == _ShiftF7_)
+	if (Event.Pressed.KeyCombination() == __F1) Help(CFile->ChptPos.R, *C->HelpName, false);
+	else if (Event.Pressed.KeyCombination() == __SHIFT_F7)
 		label1:
 	UpwEdit(LD);
 }
@@ -2608,7 +2615,7 @@ bool PromptSearch(bool Create)
 		screen.GotoXY(Col, TxtRows);
 		pos = FieldEdit(F, nullptr, LWw, pos, s, r, false, true, li, E->WatchDelay);
 		xOld = x;
-		if ((KbdChar == _ESC_) || (Event.What == evKeyDown)) {
+		if (Event.Pressed.KeyCombination() == __ESC || (Event.What == evKeyDown)) {
 			CRecPtr = E->NewRecPtr; goto label3;
 		}
 		switch (F->FrmlTyp) {
@@ -2652,7 +2659,7 @@ void PromptGotoRecNr()
 	I = 1; Txt = ""; Del = true;
 	do {
 		ww.PromptLL(122, &Txt, I, Del);
-		if (KbdChar == _ESC_) return;
+		if (Event.Pressed.KeyCombination() == __ESC) return;
 		val(Txt, N, I);
 		Del = false;
 	} while (I != 0);
@@ -3136,7 +3143,7 @@ label2:
 	ErrMsg = "";
 	heslo = LexWord;
 	LastLen = S->LL;
-	if (EdBreak == 0xffff) C = KbdChar;
+	if (EdBreak == 0xffff) C = Event.Pressed.KeyCombination();
 	else C = 0;
 	if (C == _AltEqual_) C = _ESC_;
 	else WasUpd = WasUpd || Upd;
@@ -3195,7 +3202,7 @@ label2:
 		label4:
 			if (!Ed || LockRec(false)) goto label1; else goto label5;
 		}
-		WrEStatus(); Brk = 1; KbdChar = C; goto label6;
+		WrEStatus(); Brk = 1; Event.Pressed.UpdateKey(C); goto label6;
 	}
 label5:
 	ReleaseStore(p);
@@ -3223,7 +3230,7 @@ bool EditItemProc(bool del, bool ed, WORD& Brk)
 		wd = 0;
 		if (CFile->NotCached()) wd = E->WatchDelay;
 		FieldEdit(F, CFld->Impl, CFld->L, 1, Txt, R, del, ed, false, wd);
-		if ((KbdChar == VK_ESCAPE) || !ed) {
+		if (Event.Pressed.KeyCombination() == __ESC || !ed) {
 			DisplFld(CFld, IRec);
 			if (ed && !WasUpdated) UnLockRec(E);
 			return result;
@@ -3416,7 +3423,7 @@ void ImbeddEdit()
 		R = R->ChainBack;
 	}
 	ss.Abcd = true; ww.SelectStr(0, 0, 35, "");
-	if (KbdChar == _ESC_) goto label1;
+	if (Event.Pressed.KeyCombination() == __ESC) goto label1;
 	GetSel2S(&s1, &s2, '.', 1);
 	R = CRdb;
 	if (s2 != "") {
@@ -3469,7 +3476,7 @@ void DownEdit()
 	}
 	ss.Abcd = true;
 	ww.SelectStr(0, 0, 35, "");
-	if (KbdChar == _ESC_) goto label1;
+	if (Event.Pressed.KeyCombination() == __ESC) goto label1;
 	GetSel2S(&s1, &s2, '/', 2);
 	LD = LinkDRoot;
 	ali = *GetFromKey(LD)->Alias;
@@ -3591,13 +3598,13 @@ label1:
 	TxtEdCtrlUBrk = true;
 	TxtEdCtrlF4Brk = true;
 	ww.PromptLL(114, &Txt, I, Del);
-	if (KbdChar == _U_) goto label0;
-	if ((KbdChar == _ESC_) || (Txt.length() == 0)) goto label3;
+	if (Event.Pressed.KeyCombination() == 'U') goto label0;
+	if (Event.Pressed.KeyCombination() == __ESC || (Txt.length() == 0)) goto label3;
 	CalcTxt = Txt;
 	SetInpStr(Txt); RdLex();
 	Z = RdFrml(FTyp);
 	if (Lexem != 0x1A) Error(21);
-	if (KbdChar == _CtrlF4_) {
+	if (Event.Pressed.KeyCombination() == __CTRL_F4) {
 		F = CFld->FldD;
 		if (CFld->Ed(IsNewRec) && (F->FrmlTyp == FTyp)) {
 			if (LockRec(true)) {
@@ -3793,7 +3800,7 @@ bool StartExit(EdExitD* X, bool Displ)
 WORD ExitKeyProc()
 {
 	WORD w = 0;
-	WORD c = KbdChar;
+	WORD c = Event.Pressed.KeyCombination();
 	EdExitD* X = E->ExD;
 	while (X != nullptr) {
 		if (TestExitKey(c, X)) {
@@ -3813,7 +3820,7 @@ WORD ExitKeyProc()
 		ShiftF7Proc();
 		w = 2;
 	}
-	KbdChar = c;
+	Event.Pressed.UpdateKey(c);
 	return w;
 }
 
@@ -3949,15 +3956,18 @@ void MouseProc()
 			if (IsNewRec && (i == IRec) && (D == FirstEmptyFld)) goto label1;
 			if ((D->Page == CPage) && MouseInRect(D->Col - 1, FldRow(D, i) - 1, D->L, 1)) {
 				if ((i != IRec) && (IsNewRec || !WriteCRec(true, Displ))) goto label1;
-				GotoRecFld(n, D); if ((Event.Buttons && mbDoubleClick) != 0) {
-					if (MouseEnter) Event.KeyCode = _M_; else Event.KeyCode = _Ins_;
-					Event.What = evKeyDown; return;
+				GotoRecFld(n, D);
+				if ((Event.Buttons & mbDoubleClick) != 0) {
+					if (MouseEnter) Event.Pressed.UpdateKey(_M_);
+					else Event.Pressed.UpdateKey(_Ins_);
+					Event.What = evKeyDown;
+					return;
 				}
 				else ClrEvent();
 				return;
 			}
 			D = (EFldD*)D->Chain;
-		};
+		}
 	}
 label1:
 	ClrEvent();
@@ -4009,6 +4019,7 @@ void RunEdit(XString* PX, WORD& Brk)
 	longint OldTimeW = 0, OldTimeR = 0, n = 0;
 	BYTE EdBr = 0;
 	longint Timer = 0; // pùvodnì: Timer:longint absolute 0:$46C;
+	WORD KbdChar;
 
 	Brk = 0;
 	DisplLL();
@@ -4054,7 +4065,7 @@ label81:
 		break;
 	}
 	case evKeyDown: {
-		KbdChar = Event.KeyCode;
+		KbdChar = Event.Pressed.KeyCombination();
 		ClrEvent();
 		switch (ExitKeyProc())
 		{

@@ -70,6 +70,7 @@ void wwmix::PutSelect(std::string s)
 void wwmix::SelectStr(integer C1, integer R1, WORD NMsg, std::string LowTxt)
 {
 	WORD cols = 0, MaxBase = 0;
+	__int16 key;
 	char schar = '\0';
 	integer b = 0;
 	Item* p = nullptr;
@@ -95,7 +96,7 @@ void wwmix::SelectStr(integer C1, integer R1, WORD NMsg, std::string LowTxt)
 		WHasFrame + WDoubleFrame + WShadow + WPushPixel);
 	if (ss.Empty)
 	{
-		do { ReadKbd(); } while (KbdChar != VK_ESCAPE);
+		do { ReadKbd(); } while (Event.Pressed.KeyCombination() != VK_ESCAPE);
 		goto label3;
 	}
 	sv.TabSize = sv.MaxItemLen + 2;
@@ -138,7 +139,7 @@ label1:
 		else {
 			if (ss.Subset && ((Event.Buttons & mbDoubleClick) != 0)) {
 			label2:
-				KbdChar = _M_;
+				Event.Pressed.Char = VK_RETURN;
 				sv.iItem = i;
 				goto label3;
 			}
@@ -148,8 +149,8 @@ label1:
 	case evMouseUp: {
 		iOld = 0; break; }
 	case evKeyDown: {
-		KbdChar = Event.KeyCode;
-		switch (KbdChar) {
+		key = Event.Pressed.KeyCombination();
+		switch (key) {
 		case VK_RETURN:
 		case VK_ESCAPE: {
 		label3:
@@ -176,7 +177,7 @@ label1:
 					p = (Item*)p->Chain;
 				}
 			}
-			if (KbdChar == VK_ESCAPE) ReleaseStore(sv.markp);
+			if (Event.Pressed.KeyCombination() == VK_ESCAPE) ReleaseStore(sv.markp);
 			return;
 			break;
 		}
@@ -257,8 +258,8 @@ label1:
 		}
 		default: {
 			if (ss.Subset) {
-				switch (KbdChar) {
-				case _F2_: SetTag(schar); break;
+				switch (key) {
+				case 0x8000 + VK_F2: { SetTag(schar); break; }
 				case _CtrlF2_: SetAllTags(schar); break;
 				case  62 /*>*/: if (ss.AscDesc) SetTag('>'); break;
 				case _F3_: SetTag(' '); break;

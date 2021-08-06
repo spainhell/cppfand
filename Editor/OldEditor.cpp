@@ -1553,14 +1553,14 @@ bool My2GetEvent()
 		ClrEvent();
 		return false;
 	}
-	auto* ek = &Event.KeyCode;
-	if (*ek >= 'A' && *ek <= 'Z') // with Event do if upcase(chr(KeyCode)) in ['A'..'Z'] then
+	
+	if (toupper(Event.Pressed.Char) >= 'A' && toupper(Event.Pressed.Char) <= 'Z') // with Event do if upcase(chr(KeyCode)) in ['A'..'Z'] then
 	{
-		*ek = toupper(*ek) - '@';
-		if ((*ek == _Y_ || *ek == _Z_) && (spec.KbdTyp == CsKbd || spec.KbdTyp == SlKbd)) {
-			switch (*ek) {
-			case _Z_: *ek = _Y_; break;
-			case _Y_: *ek = _Z_; break;
+		Event.Pressed.Char = static_cast<char>(toupper(toupper(Event.Pressed.Char)) - '@');
+		if ((Event.Pressed.Char == 'Y' || Event.Pressed.Char == 'Z') && (spec.KbdTyp == CsKbd || spec.KbdTyp == SlKbd)) {
+			switch (Event.Pressed.Char) {
+			case 'Z': Event.Pressed.Char = 'Y'; break;
+			case 'Y': Event.Pressed.Char = 'Z'; break;
 			default: break;
 			}
 		}
@@ -1572,28 +1572,29 @@ bool ScrollEvent() {
 	bool result = false;
 	if (Event.What != evKeyDown) return result;
 	// with Event do case KeyCode of
-	switch (Event.KeyCode) {
-	case VK_ESCAPE:
-	case VK_LEFT:
-	case VK_RIGHT:
-	case VK_UP:
-	case VK_DOWN:
-	case VK_PRIOR:
-	case VK_NEXT:
-	case _CtrlPgUp_:
-	case _CtrlPgDn_:
-	case _CtrlF5_:
-	case _AltF8_:
+	switch (Event.Pressed.KeyCombination()) {
+	case __ESC:
+	case __LEFT:
+	case __RIGHT:
+	case __UP:
+	case __DOWN:
+	case __PAGEUP:
+	case __PAGEDOWN:
+	case __CTRL_PAGEUP:
+	case __CTRL_PAGEDOWN:
+	case __CTRL_F5:
+	case __ALT_F8:
 		result = true;
 		break;
 	default: {
-		if ((Lo(Event.KeyCode) == 0x00) && (Breaks.first(Hi(Event.KeyCode)) != 0)) {
+			// TODO: toto bude delat problem
+		if ((Lo(Event.Pressed.KeyCombination()) == 0x00) && (Breaks.first(Hi(Event.Pressed.KeyCombination())) != 0)) {
 			result = true;
 		}
 		else {
 			EdExitD* X = ExitD;
 			while (X != nullptr) {
-				if (TestExitKey(Event.KeyCode, X)) {
+				if (TestExitKey(Event.Pressed.KeyCombination(), X)) {
 					result = true;
 					break;
 				}
@@ -1611,7 +1612,7 @@ bool ViewEvent()
 {
 	bool result = ScrollEvent();
 	if (Event.What != evKeyDown) return result;
-	switch (Event.KeyCode) {
+	switch (Event.Pressed.KeyCombination()) {
 	case _QF_:
 	case _L_:
 	case _F7_:
@@ -1647,7 +1648,7 @@ bool HelpEvent()
 {
 	bool result = false;
 	if (Event.What == evKeyDown)
-		switch (Event.KeyCode) {
+		switch (Event.Pressed.KeyCombination()) {
 		case _ESC_:
 		case _left_:
 		case _right_:
@@ -1662,7 +1663,7 @@ bool HelpEvent()
 		default:;
 		}
 
-	else if ((Lo(Event.KeyCode) == 0x00) && (Breaks.first(Hi(Event.KeyCode))) != 0)
+	else if ((Lo(Event.Pressed.KeyCombination()) == 0x00) && (Breaks.first(Hi(Event.Pressed.KeyCombination()))) != 0)
 		result = true;
 	if (Event.What == evMouseDown) result = true;
 	return result;
@@ -1679,80 +1680,87 @@ bool MyGetEvent() {
 	// *** Prekodovani klaves ***
 	GetEvent();
 	if (Event.What == evKeyDown)
-		switch (Event.KeyCode) {
-		case _S_: Event.KeyCode = VK_LEFT; break;
-		case _D_: Event.KeyCode = VK_RIGHT; break;
-		case _E_: Event.KeyCode = VK_UP; break;
-		case _X_: Event.KeyCode = VK_DOWN; break;
-		case _R_: Event.KeyCode = VK_PRIOR; break;
-		case _C_: Event.KeyCode = VK_NEXT; break;
-		case _A_: Event.KeyCode = _CtrlLeft_; break;
-		case _F_: Event.KeyCode = _CtrlRight_; break;
-		case _V_: Event.KeyCode = VK_INSERT; break;
+		switch (Event.Pressed.KeyCombination()) {
+		case _S_: Event.Pressed.Key()->wVirtualKeyCode = VK_LEFT; break;
+		case _D_: Event.Pressed.Key()->wVirtualKeyCode = VK_RIGHT; break;
+		case _E_: Event.Pressed.Key()->wVirtualKeyCode = VK_UP; break;
+		case _X_: Event.Pressed.Key()->wVirtualKeyCode = VK_DOWN; break;
+		case _R_: Event.Pressed.Key()->wVirtualKeyCode = VK_PRIOR; break;
+		case _C_: Event.Pressed.Key()->wVirtualKeyCode = VK_NEXT; break;
+		case _A_: Event.Pressed.Key()->wVirtualKeyCode = _CtrlLeft_; break;
+		case _F_: Event.Pressed.Key()->wVirtualKeyCode = _CtrlRight_; break;
+		case _V_: Event.Pressed.Key()->wVirtualKeyCode = VK_INSERT; break;
 		case _P_:
 		{
 			Wr("\x10", OrigS);
-			ww = Event.KeyCode;
+			ww = Event.Pressed.KeyCombination();
 			if (My2GetEvent())
 			{
 				Wr("", OrigS);
-				if (Event.KeyCode <= 0x31) Event.KeyCode = (ww << 8) || Event.KeyCode;
+				if (Event.Pressed.Char <= 0x31) {
+					//Event.KeyCode = (ww << 8) || Event.KeyCode;
+				}
 			}
 			break;
 		}
 		case _Q_:
 		{
 			Wr("\x11", OrigS);
-			ww = Event.KeyCode;
+			ww = Event.Pressed.KeyCombination();
 			if (My2GetEvent())
 			{
 				Wr("", OrigS);
-				switch (Event.KeyCode) {
-				case _S_: Event.KeyCode = _Home_; break;
-				case _D_: Event.KeyCode = _End_; break;
-				case _R_: Event.KeyCode = _CtrlPgUp_; break;
-				case _C_: Event.KeyCode = _CtrlPgDn_; break;
+				switch (Event.Pressed.KeyCombination()) {
+				case _S_: Event.Pressed.Key()->wVirtualKeyCode = _Home_; break;
+				case _D_: Event.Pressed.Key()->wVirtualKeyCode = _End_; break;
+				case _R_: Event.Pressed.Key()->wVirtualKeyCode = _CtrlPgUp_; break;
+				case _C_: Event.Pressed.Key()->wVirtualKeyCode = _CtrlPgDn_; break;
 				case _E_: case _X_: case _Y_:
 				case _L_: case _B_: case _K_:
 				case _I_: case _F_: case _A_:
 				case 0x2D: // -
 				case 0x2F: // /
 				case 0x3D: // =
-					Event.KeyCode = (ww << 8) | Event.KeyCode;
+					// Event.KeyCode = (ww << 8) | Event.KeyCode;
 					break;
-				default: Event.KeyCode = 0;
+				default: {
+					// Event.KeyCode = 0;
+				}
 				}
 			}
 		}
 		case _K_:
 		{
 			Wr("\x0B", OrigS);
-			ww = Event.KeyCode;
+			ww = Event.Pressed.KeyCombination();
 			if (My2GetEvent())
 			{
 				Wr("", OrigS);
 				std::set<char> setKc = { _B_, _K_, _H_, _S_, _Y_, _C_, _V_, _W_, _R_, _P_, _F_, _U_, _L_, _N_ };
-				if (setKc.count(Event.KeyCode) > 0)
-				{
-					Event.KeyCode = (ww << 8) | Event.KeyCode;
+				if (setKc.count((char)Event.Pressed.KeyCombination()) > 0) {
+					//Event.KeyCode = (ww << 8) | Event.KeyCode;
 				}
-				else { Event.KeyCode = 0; }
+				else {
+					//Event.KeyCode = 0;
+				}
 			}
 		}
 		case _O_:
 		{
 			Wr("\x0F", OrigS);
-			ww = Event.KeyCode;
+			ww = Event.Pressed.KeyCombination();
 			if (My2GetEvent())
 			{
 				Wr("", OrigS);
-				switch (Event.KeyCode) {
+				switch (Event.Pressed.KeyCombination()) {
 				case _W_: case  _R_: case  _L_: case  _J_: case  _C_:
 				{
-					Event.KeyCode = (ww << 8) | Event.KeyCode;
+					//Event.KeyCode = (ww << 8) | Event.KeyCode;
 					break;
 				}
-				default: Event.KeyCode = 0;
+				default: {
+					//Event.KeyCode = 0;
+				}
 				}
 			}
 		}
@@ -1909,23 +1917,25 @@ void Frame()
 	while (true) /* !!! with Event do!!! */
 	{
 		if (!MyGetEvent() ||
-			((Event.What == evKeyDown) && (Event.KeyCode == _ESC_)) || (Event.What != evKeyDown))
-		{
-			ClrEvent(); screen.CrsNorm(); Mode = TextM; return;
+			((Event.What == evKeyDown) && (Event.Pressed.KeyCombination() == __ESC)) || (Event.What != evKeyDown)) {
+			ClrEvent();
+			screen.CrsNorm();
+			Mode = TextM;
+			return;
 		}
-		switch (Event.KeyCode) {
+		switch (Event.Pressed.KeyCombination()) {
 		case _frmsin_: Mode = SinFM; break;
 		case _frmdoub_: Mode = DouFM; break;
 		case _dfrm_: Mode = DelFM; break;
 		case _nfrm_: Mode = NotFM; break;
-		case _left_:
-		case _right_:
-		case _up_:
-		case _down_:
+		case __LEFT:
+		case __RIGHT:
+		case __UP:
+		case __DOWN:
 			if (!bScroll) {
 				FrameString[0] = 63;
 				zn1 = FrameString.first(Arr[Posi]); zn2 = zn1 & 0x30; zn1 = zn1 & 0x0F;
-				dir = FrameString.first(Hi(Event.KeyCode));
+				dir = FrameString.first(Hi(Event.Pressed.KeyCombination()));
 				auto dirodir = dir + odir;
 				if (dirodir == 2 || dirodir == 4 || dirodir == 8 || dirodir == 16) odir = 0;
 				if (zn1 == 1 || zn1 == 2 || zn1 == 4 || zn1 == 8) zn1 = 0;
@@ -1936,19 +1946,19 @@ void Frame()
 				if ((Mode == DelFM) && (zn1 != 0) && (b == 0)) oldzn = ' ';
 				direction1(dir, zn2); direction1(odir, zn2);
 				if (Mode == NotFM) b = 0;
-				if ((b != 0) && ((Event.KeyCode == _left_) || (Event.KeyCode == _right_) ||
-					(Event.KeyCode == _up_) || (Event.KeyCode == _down_)))
+				if ((b != 0) && ((Event.Pressed.KeyCombination() == __LEFT) || (Event.Pressed.KeyCombination() == __RIGHT) ||
+					(Event.Pressed.KeyCombination() == __UP) || (Event.Pressed.KeyCombination() == __DOWN)))
 					Arr[Posi] = FrameString[zn2 + b];
 				else Arr[Posi] = oldzn;
 				if ((dir == 1) || (dir == 4)) odir = dir * 2;
 				else odir = dir / 2;
 				if (Mode == NotFM) odir = 0;
 				else UpdatedL = true;
-				switch (Event.KeyCode) {
-				case _left_: if (Posi > 1) Posi--; break;
-				case _right_: if (Posi < LineSize) Posi++; break;
-				case _up_: PredLine(); break;
-				case _down_: NextLine(true); break;
+				switch (Event.Pressed.KeyCombination()) {
+				case __LEFT: if (Posi > 1) Posi--; break;
+				case __RIGHT: if (Posi < LineSize) Posi++; break;
+				case __UP: PredLine(); break;
+				case __DOWN: NextLine(true); break;
 				}
 			}
 			break;
@@ -1963,7 +1973,7 @@ void CleanFrameM()
 {
 	if (Mode == SinFM || Mode == DouFM || Mode == DelFM || Mode == NotFM) /* !!! with Event do!!! */
 		if (!MyGetEvent() ||
-			((Event.What == evKeyDown) && (Event.KeyCode == _ESC_)) || (Event.What != evKeyDown))
+			((Event.What == evKeyDown) && (Event.Pressed.KeyCombination() == __ESC)) || (Event.What != evKeyDown))
 		{
 			ClrEvent();
 			screen.CrsNorm();
@@ -2019,15 +2029,15 @@ void FrameStep(BYTE& odir, WORD EvKeyC)
 		if ((Mode == DelFM) && (zn1 != 0) && (b == 0)) oldzn = ' ';
 		direction2(dir, zn2); direction2(odir, zn2);
 		if (Mode == NotFM) b = 0;
-		if ((b != 0) && ((Event.KeyCode == _left_) || (Event.KeyCode == _right_) ||
-			(Event.KeyCode == _up_) || (Event.KeyCode == _down_)))
+		if ((b != 0) && ((Event.Pressed.KeyCombination() == _left_) || (Event.Pressed.KeyCombination() == _right_) ||
+			(Event.Pressed.KeyCombination() == _up_) || (Event.Pressed.KeyCombination() == _down_)))
 			Arr[Posi] = FrameString[zn2 + b];
 		else Arr[Posi] = oldzn;
 		if ((dir == 1) || (dir == 4)) odir = dir * 2;
 		else odir = dir / 2;
 		if (Mode == NotFM) odir = 0;
 		else UpdatedL = true;
-		switch (Event.KeyCode) {
+		switch (Event.Pressed.KeyCombination()) {
 		case _left_: if (Posi > 1) Posi--; break;
 		case _right_: if (Posi < LineSize) Posi++; break;
 		case _up_: PredLine(); break;
@@ -2303,10 +2313,10 @@ label0:
 label1:
 	TxtEdCtrlUBrk = true; TxtEdCtrlF4Brk = true;
 	ww.PromptLL(114, &Txt, I, Del);
-	if (KbdChar == _U_) goto label0;
-	if ((KbdChar == _ESC_) || (Txt.length() == 0)) goto label3;
+	if (Event.Pressed.KeyCombination() == _U_) goto label0;
+	if ((Event.Pressed.KeyCombination() == _ESC_) || (Txt.length() == 0)) goto label3;
 	CalcTxt = Txt;
-	if ((KbdChar == _CtrlF4_) && (Mode == TextM) && !bScroll)
+	if ((Event.Pressed.KeyCombination() == _CtrlF4_) && (Mode == TextM) && !bScroll)
 	{
 		if (Txt.length() > LineSize - LastPosLine())
 		{
@@ -2753,7 +2763,7 @@ bool MyPromptLL(WORD n, std::string* s)
 {
 	wwmix ww;
 	ww.PromptLL(n, s, 1, true);
-	return KbdChar == VK_ESCAPE;
+	return Event.Pressed.KeyCombination() == __ESC;
 }
 
 void ChangeP(WORD& fst)
@@ -3036,22 +3046,25 @@ void HandleEvent() {
 		IsWrScreen = false;
 		return;
 	}
-	if (!bScroll) CleanFrameM();
+	if (!bScroll) { CleanFrameM(); }
 	//NewExit(Ovr(), er);
 	//goto Opet;
 	// !!! with Event do:
 	if (Event.What == evKeyDown) {
-		EdOk = false; ww = Event.KeyCode;
+		EdOk = false;
+		ww = Event.Pressed.KeyCombination();
 		ClrEvent();
 		X = ExitD;                         // Exit-procedure
 		while (X != nullptr) {
 			if (TestExitKey(ww, X)) {  // nastavuje i EdBreak
-				TestKod(); IndT = SetInd(LineI, Posi);
+				TestKod();
+				IndT = SetInd(LineI, Posi);
 				ScrT = ((LineL - ScrL + 1) << 8) + Posi - BPos;
 				LastTxtPos = IndT + Part.PosP;
-				TxtXY = ScrT + (longint(Posi) << 16);
+				TxtXY = ScrT + ((longint)Posi << 16);
 				if (X->Typ == 'Q') {
-					KbdChar = ww; Konec = true; EditT = false;
+					Event.Pressed.UpdateKey(ww);
+					Konec = true; EditT = false;
 					goto Nic;
 				}
 				switch (TypeT) {
@@ -3198,18 +3211,22 @@ void HandleEvent() {
 				if (bScroll)
 				{
 					RScrL = MaxL(1, RScrL - PageS);
-					if (ModPage(RScrL)) RScrL++;
-					ScrL = NewL(RScrL); LineL = ScrL;
-					DekFindLine(LineAbs(LineL)); Posi = Position(Colu);
+					if (ModPage(RScrL)) { RScrL++; }
+					ScrL = NewL(RScrL);
+					LineL = ScrL;
+					DekFindLine(LineAbs(LineL));
+					Posi = Position(Colu);
 					j = CountChar(0x0C, LineI, ScrI);
 					if ((j > 0) && InsPg) {
 						DekFindLine(LineAbs(LineL + j));
-						ScrL = LineL; RScrL = NewRL(ScrL);
+						ScrL = LineL;
+						RScrL = NewRL(ScrL);
 					}
 				}
 				else
 				{
-					ScrL -= PageS; DekFindLine(LineAbs(LineL - PageS));
+					ScrL -= PageS;
+					DekFindLine(LineAbs(LineL - PageS));
 				}
 				ChangeScr = true;
 				if (Mode == HelpM)
@@ -3292,8 +3309,14 @@ void HandleEvent() {
 				}
 			label2:
 				break; }
-			case _Z_: { RollNext(); break; }
-			case _W_: { RollPred(); break; }
+			case _Z_: {
+				RollNext();
+				break;
+			}
+			case _W_: {
+				RollPred();
+				break;
+			}
 			case VK_HOME: {
 				I1 = Posi; Posi = 1;
 				if (Wrap) Posi = MaxI(LeftMarg, 1);
@@ -3327,28 +3350,43 @@ void HandleEvent() {
 						 // tady byly puvodne *********CHAR**********
 						 // *****************************************
 			case _M_: {
-				if (Mode == HelpM) { Konec = WordExist(); KbdChar = ww; }
-				else
-				{
+				if (Mode == HelpM) {
+					Konec = WordExist();
+					Event.Pressed.UpdateKey(ww);
+				}
+				else {
 					if ((NextI >= LenT) && !AllRd) NextPartDek();
-					if ((NextI > LenT) || Insert)
-					{
-						NewLine('m'); Posi = 1; ClrEol();
-						if (LineL - ScrL == PageS)
-						{
-							screen.GotoXY(1, 1); MyDelLine(); ScrL++; ChangeScr = true;
+					if ((NextI > LenT) || Insert) {
+						NewLine('m');
+						Posi = 1;
+						ClrEol();
+						if (LineL - ScrL == PageS) {
+							screen.GotoXY(1, 1);
+							MyDelLine();
+							ScrL++;
+							ChangeScr = true;
 						}
-						else { screen.GotoXY(1, succ(LineL - ScrL)); MyInsLine(); }
-						if (Indent)
-						{
-							I1 = SetPredI(); I = I1;
+						else {
+							screen.GotoXY(1, succ(LineL - ScrL));
+							MyInsLine();
+						}
+						if (Indent) {
+							I1 = SetPredI();
+							I = I1;
 							while ((T[I] == ' ') && (T[I] != _CR)) { I++; }
-							if (T[I] != _CR) Posi = I - I1 + 1;
+							if (T[I] != _CR) { Posi = I - I1 + 1; }
 						}
-						else if (Wrap) Posi = LeftMarg;
-						if (TestLastPos(1, Posi)) FillChar(&Arr[1], Posi - 1, 32);
+						else if (Wrap) {
+							Posi = LeftMarg;
+						}
+						if (TestLastPos(1, Posi)) {
+							FillChar(&Arr[1], Posi - 1, 32);
+						}
 					}
-					else if (NextI <= LenT) { NextLine(true); Posi = 1; }
+					else if (NextI <= LenT) {
+						NextLine(true);
+						Posi = 1;
+					}
 				}
 				break;
 			}
@@ -3538,7 +3576,8 @@ void HandleEvent() {
 			case _KR_: {
 				CPath = wwmix1.SelectDiskFile(".TXT", 400, false);
 				if (CPath == "") goto Nic;
-				CVol = ""; F1 = OpenH(_isoldfile, RdOnly);
+				CVol = "";
+				F1 = OpenH(_isoldfile, RdOnly);
 				if (HandleError != 0) { MyWrLLMsg(CPath); goto Nic; }
 				BegBLn = Part.LineP + LineL; BegBPos = Posi;
 				L1 = Part.PosP + LineI + Posi - 1;
@@ -3549,9 +3588,10 @@ void HandleEvent() {
 				case TextBlock: {
 					do {
 						I2 = 0x1000; if (fs - L2 < longint(I2))  I2 = fs - L2;
-						if ((TypeT != FileT) && ((I2 >= MaxLenT - LenT) || (I2 >= StoreAvail())))
-						{
-							if (I2 >= StoreAvail())  I2 = StoreAvail();
+						if ((TypeT != FileT) && ((I2 >= MaxLenT - LenT) || (I2 >= StoreAvail()))) {
+							if (I2 >= StoreAvail()) {
+								I2 = StoreAvail();
+							}
 							I2 = MinW(I2, MaxLenT - LenT) - 2; fs = L2 + I2;
 							WrLLF10Msg(404);
 						}
@@ -3562,8 +3602,13 @@ void HandleEvent() {
 						L2 += I2;
 					} while (L2 != fs);
 					I = L1 + L2 - Part.PosP;
-					if (T[I - 1] == 0x1A) { TestLenText(I, I - 1); I--; }
-					SetDekLnCurrI(I); EndBLn = Part.LineP + LineL; EndBPos = succ(I - LineI);
+					if (T[I - 1] == 0x1A) {
+						TestLenText(I, I - 1);
+						I--;
+					}
+					SetDekLnCurrI(I);
+					EndBLn = Part.LineP + LineL;
+					EndBPos = succ(I - LineI);
 				}
 				case ColBlock: {
 					EndBPos = Posi; I2 = 0x1000;
@@ -3576,18 +3621,22 @@ void HandleEvent() {
 					EndBLn = Part.LineP + LineL - 1; ReleaseStore2(P1);
 				}
 				}
-				CloseH(&F1); HMsgExit("");
-				SetPartLine(BegBLn); SetDekLnCurrI(L1 - Part.PosP); UpdatedL = true;
+				CloseH(&F1);
+				HMsgExit("");
+				SetPartLine(BegBLn);
+				SetDekLnCurrI(L1 - Part.PosP);
+				UpdatedL = true;
 				break;
 			} // end case _KR_
-			case _KP_: { if (!BlockHandle(fs, F1, 'P'))
-			{
-				I1 = BegBLn; I2 = BegBPos; I3 = EndBLn; I = EndBPos; bb = TypeB;
-				BegBLn = 1; EndBLn = 0x7FFF; BegBPos = 1; EndBPos = 0xFF;
-				TypeB = TextBlock;
-				BegBLn = I1; BegBPos = I2; EndBLn = I3; EndBPos = I; TypeB = bb;
-				break;
-			}
+			case _KP_: {
+				if (!BlockHandle(fs, F1, 'P'))
+				{
+					I1 = BegBLn; I2 = BegBPos; I3 = EndBLn; I = EndBPos; bb = TypeB;
+					BegBLn = 1; EndBLn = 0x7FFF; BegBPos = 1; EndBPos = 0xFF;
+					TypeB = TextBlock;
+					BegBLn = I1; BegBPos = I2; EndBLn = I3; EndBPos = I; TypeB = bb;
+					break;
+				}
 			case _KF_: {
 				if (BlockExist() && (TypeB == TextBlock))
 				{
@@ -3698,7 +3747,8 @@ void HandleEvent() {
 			case _U_: {
 				if (TypeT != FileT)
 					if (PromptYN(108)) {
-						IndT = 1; KbdChar = _U_;
+						IndT = 1;
+						Event.Pressed.UpdateKey('U');
 						Konec = true; EdBreak = 0xFFFF;
 					}
 				break;
@@ -3728,11 +3778,11 @@ void HandleEvent() {
 				if (((Lo(ww) == 0x00) && (Breaks.first(Hi(ww)) != 0))
 					|| ((ww == _AltEqual_) && (TypeT != FileT)))
 				{
-					TestKod(); KbdChar = ww; Konec = true; EdBreak = 0xFFFF;
+					TestKod(); Event.Pressed.UpdateKey(ww); Konec = true; EdBreak = 0xFFFF;
 				}
 				else if (ww == VK_ESCAPE)
 				{
-					TestKod(); KbdChar = ww; Konec = true; EdBreak = 0;
+					TestKod(); Event.Pressed.UpdateKey(ww); Konec = true; EdBreak = 0;
 				}
 				break;
 				// ***ERROR TESTLENTEXT***
@@ -3759,28 +3809,33 @@ void HandleEvent() {
 		if (Mode != TextM) Posi = Position(Posi);
 		Posi += BPos;
 		I = SetInd(LineI, Posi);
-		if (I < LenT)
-		{
-			if (Mode == HelpM)
-			{
+		if (I < LenT) {
+			if (Mode == HelpM) {
 				ClrWord();
 				WordFind(WordNo(I + 1), I1, I2, W1);
 				if ((I1 <= I) && (I2 >= I)) {
-					SetWord(I1, I2); KbdChar = _M_;
+					SetWord(I1, I2);
+					Event.Pressed.UpdateKey(_M_);
 					Konec = true;
 				}
-				else if (WordExist())
-				{
+				else if (WordExist()) {
 					WordFind(W2, I1, I2, W1);
 					SetWord(I1, I2);
 				}
-				else SetDekLnCurrI(I3);
+				else {
+					SetDekLnCurrI(I3);
+				}
 			}
 		}
-		else { SetDekLnCurrI(I3); Posi = j; }
+		else {
+			SetDekLnCurrI(I3);
+			Posi = (WORD)j;
+		}
 		ClrEvent();
 	} // else if ((Event.What == evMouseDown) && ((Mode == HelpM) || (Mode == TextM)))
-	else ClrEvent();
+	else {
+		ClrEvent();
+	}
 
 Nic:
 	//ClrEvent;
@@ -3798,7 +3853,7 @@ void CursorWord()
 	if (Mode == HelpM) O.insert(0x11);
 	else {
 		O = Oddel;
-		if (O.count(Arr[pp]) > 0) pp--;
+		if (O.count(Arr[pp]) > 0) { pp--; }
 	}
 	while ((pp > 0) && !O.count(Arr[pp])) { pp--; }
 	pp++;
@@ -3829,7 +3884,7 @@ void Edit()
 		AbsLenT = LenT - 1;
 		Part.LineP = 0;
 		Part.PosP = 0;
-		Part.LenP = AbsLenT;
+		Part.LenP = (WORD)AbsLenT;
 		Part.ColorP = "";
 		Part.UpdP = false;
 		NullChangePart();
@@ -3837,7 +3892,7 @@ void Edit()
 	}
 
 	FirstScroll = Mode == ViewM;
-	bool keybScroll = GetKeyState(VK_SCROLL) & 0x0001;
+	const bool keybScroll = GetKeyState(VK_SCROLL) & 0x0001;
 	bScroll = (keybScroll || FirstScroll) && (Mode != HelpM);
 	if (bScroll)
 	{
@@ -3881,7 +3936,7 @@ void Edit()
 		F10SpecKey = 0xffff;
 		WrLLF10Msg(110);
 		ClearKbdBuf();
-		AddToKbdBuf(KbdChar);
+		AddToKbdBuf(Event.Pressed.KeyCombination());
 	}
 	FillChar((char*)MargLL, sizeof(MargLL), 0);
 	WrLLMargMsg(LastS, LastNr);
@@ -3923,8 +3978,7 @@ void SetEditTxt(Instr_setedittxt* PD)
 	if (PD->Right != nullptr) RightMarg = MaxI(LeftMarg, MinI(255, RunInt(PD->Right)));
 }
 
-void GetEditTxt(bool& pInsert, bool& pIndent, bool& pWrap, bool& pJust, bool& pColBlk, integer& pLeftMarg,
-	integer& pRightMarg)
+void GetEditTxt(bool& pInsert, bool& pIndent, bool& pWrap, bool& pJust, bool& pColBlk, integer& pLeftMarg, integer& pRightMarg)
 {
 	pInsert = Insert; pIndent = Indent; pWrap = Wrap; pJust = Just; pColBlk = TypeB;
 	pLeftMarg = LeftMarg; pRightMarg = RightMarg;
@@ -3967,17 +4021,17 @@ bool EditText(char pMode, char pTxtType, pstring pName, pstring pErrMsg, char* p
 		/*pstring OldKbdBuffer = KbdBuffer;
 		KbdBuffer = 0x0C;
 		KbdBuffer += OldKbdBuffer;*/
-		KbdChar = _L_;
+		Event.Pressed.UpdateKey('L');
 		IndT = 0;
 	}
 
 	Edit();
-	if (Mode != HelpM) TextAttr = TxtColor;
+	if (Mode != HelpM) { TextAttr = TxtColor; }
 	pUpdat = UpdatT;
 	pSrch = SrchT;
 	pLen = LenT;
 	pInd = IndT;
-	pScr = ScrT + (longint(Posi) << 16);
+	pScr = ScrT + ((longint)Posi << 16);
 	EdOk = oldEdOK;
 	return EditT;
 }
@@ -4062,22 +4116,32 @@ label1:
 	}
 	TxtPos = Ind + Part.PosP;
 	if (Upd) EdUpdated = true;
-	if ((KbdChar == _AltEqual_) || (KbdChar == _U_))
-	{
-		ReleaseStore(LS); LS = TWork.Read(1, L);
-		if (KbdChar == _AltEqual_) { KbdChar = _ESC_; goto label4; }
-		else { Ind = oldInd; Txtxy = oldTxtxy; goto label1; }
+	WORD KbdChar = Event.Pressed.KeyCombination();
+	if ((KbdChar == __ALT_EQUAL) || (KbdChar == 'U')) {
+		ReleaseStore(LS);
+		LS = TWork.Read(1, L);
+		if (__ALT_EQUAL) {
+			KbdChar = VK_ESCAPE;
+			goto label4;
+		}
+		else {
+			Ind = oldInd; Txtxy = oldTxtxy;
+			goto label1;
+		}
 	}
 	if (!Loc) ReleaseStore(T);
 	if (EdBreak == 0xFFFF)
 		switch (KbdChar) {
-		case _F9_: {
+		case __F9: {
 			if (Loc) { TWork.Delete(*LP); *LP = StoreInTWork(LS); }
 			else RdPart();
 			goto label1;
 		}
-		case _AltF10_: { Help(nullptr, "", false); goto label2; }
-		case _F1_: {
+		case __F10: {
+			if (Event.Pressed.Alt()) { Help(nullptr, "", false); goto label2; }
+			break;
+		}
+		case __F1: {
 			RdMsg(6);
 			Help((RdbD*)HelpFD, MsgLine, false);
 		label2:
@@ -4136,7 +4200,7 @@ void ViewHelpText(LongStr* S, WORD& TxtPos)
 	while (true) {
 		EditText(HelpM, MemoT, "", "", (char*)S->A, 0xFFF0, S->LL, TxtPos, Scr,
 			_F1 + _F10 + _F6 + _CtrlHome + _CtrlEnd, nullptr, Srch, Upd, 142, 145, nullptr);
-		if (KbdChar == VK_F6) {
+		if (Event.Pressed.KeyCombination() == __F6) {
 			PrintArray(&S->A, S->LL, true);
 			continue;
 		}

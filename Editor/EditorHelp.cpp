@@ -22,6 +22,7 @@ void Help(RdbD* R, pstring Name, bool InCWw)
 	WORD* os = (WORD*)s; WORD* os2 = (WORD*)s2;
 	integer delta; bool frst, byName, backw;
 	FileD* cf, * cf2;
+	WORD KbdChar = Event.Pressed.KeyCombination();
 
 	if (R == nullptr) {
 		if (iStk == 0) return;
@@ -91,8 +92,8 @@ void Help(RdbD* R, pstring Name, bool InCWw)
 			oldIRec = iRec; i = 1; delta = 0;
 			ReleaseStore(s); CFile = cf2;
 			switch (KbdChar) {
-			case VK_ESCAPE: break;
-			case VK_F10: {
+			case __ESC: break;
+			case __F10: {
 				iStk--;
 			label3:
 				if (iStk > 0) {
@@ -102,10 +103,16 @@ void Help(RdbD* R, pstring Name, bool InCWw)
 					goto label2;
 				}
 			}
-			case _CtrlHome_: { iRec--; delta = -1; goto label2; }
-			case _CtrlEnd_: { iRec++; delta = 1; goto label2; }
+			case __CTRL_HOME: {
+				iRec--; delta = -1; goto label2;
+				break;
+			}
+			case __CTRL_END: {
+				iRec++; delta = 1; goto label2;
+				break;
+			}
 			default: {
-				if (KbdChar == VK_F1) { Name = "root"; }
+				if (KbdChar == __F1) { Name = "root"; }
 				else { Name = LexWord; }
 				goto label1;
 			}

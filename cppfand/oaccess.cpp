@@ -116,7 +116,7 @@ void SetCPathMountVolSetNet(FileUseMode UM)
 	SetCPathVol();
 	/* !!! with CFile^ do!!! */
 	CFile->UMode = UM;
-	CFile->Drive = TestMountVol(CPath[1]);
+	CFile->Drive = (BYTE)TestMountVol(CPath[1]);
 	if (!IsNetCVol() || (CFile == Chpt))
 		switch (UM) {
 		case RdShared: CFile->UMode = RdOnly; break;
@@ -169,7 +169,9 @@ label1:
 	TestCFileError();
 	if (CFile->TF != nullptr) /* !!! with TF^ do!!! */ {
 		CExtToT();
-		if (CFile->WasRdOnly) SetFileAttr(GetFileAttr() & 0x26);
+		if (CFile->WasRdOnly) {
+			SetFileAttr(GetFileAttr() & 0x26); // 0x26 = archive + hidden + system
+		}
 	label2:
 		CFile->TF->Handle = OpenH(_isoldfile, CFile->UMode);
 		if (HandleError == 2) {
@@ -205,7 +207,9 @@ label1:
 			HandleError = n;
 			TestCPathError();
 		}
-		if (CFile->XF != nullptr && FileSizeH(CFile->XF->Handle) < 512) CFile->XF->SetNotValid();
+		if (CFile->XF != nullptr && FileSizeH(CFile->XF->Handle) < 512) {
+			CFile->XF->SetNotValid();
+		}
 	}
 	return result;
 }
@@ -224,55 +228,77 @@ bool OpenF2()
 	if (FS < CFile->FrstDispl) goto label1;
 	rLen = RdPrefix();
 	n = (FS - CFile->FrstDispl) / CFile->RecLen;
-	if (rLen != 0xffff)
-		if (CFile->IsDynFile) { CloseClearHCFile(); return result; }
+	if (rLen != 0xffff) {
+		if (CFile->IsDynFile) {
+			CloseClearHCFile();
+			return result;
+		}
 		else {
-			if (OldToNewCat(FS)) goto label3;
+			if (OldToNewCat(FS)) {
+				goto label3;
+			}
 			CFileMsg(883, ' ');
 			l = (longint)CFile->NRecs * rLen + CFile->FrstDispl;
-			if ((l == FS) || !PromptYN(885)) CloseGoExit();
+			if ((l == FS) || !PromptYN(885)) {
+				CloseGoExit();
+			}
 			if ((CFile->NRecs == 0) || (l >> CachePageShft != FS >> CachePageShft)) {
-				WrLLF10Msg(886); CFile->NRecs = n;
+				WrLLF10Msg(886);
+				CFile->NRecs = n;
 			}
 			goto label2;
 		}
+	}
+	else {}
 	if (n < CFile->NRecs) {
 		SetCPathVol(); SetMsgPar(CPath);
 		if (PromptYN(882)) {
 			CFile->NRecs = n;
 		label1:
-			if (CFile->IsShared() && (CFile->LMode < ExclMode)) ChangeLMode(ExclMode, 0, false);
+			if (CFile->IsShared() && (CFile->LMode < ExclMode)) {
+				ChangeLMode(ExclMode, 0, false);
+			}
 			CFile->LMode = ExclMode;
 		label2:
 			SetUpdHandle(CFile->Handle);
 			WrPrefix();
 		}
-		else CloseGoExit();
+		else {
+			CloseGoExit();
+		}
 	}
 label3:
 	if (CFile->TF != nullptr) {
-		if (FS < CFile->FrstDispl) { CFile->TF->SetEmpty(); }
+		if (FS < CFile->FrstDispl) {
+			CFile->TF->SetEmpty();
+		}
 		else {
 			CFile->TF->RdPrefix(true);
-			if ((CFile->Typ == '0') && !IsActiveRdb(CFile)
-				&& !ww.HasPassWord(CFile, 1, "")) {
-				CFileMsg(616, ' '); CloseGoExit();
+			if ((CFile->Typ == '0') && !IsActiveRdb(CFile) && !ww.HasPassWord(CFile, 1, "")) {
+				CFileMsg(616, ' ');
+				CloseGoExit();
 			}
 		}
 	}
 	if (CFile->Typ == 'X') {/* !!! with XF^ do!!! */
-		if (FS < CFile->FrstDispl) { CFile->XF->SetNotValid(); }
+		if (FS < CFile->FrstDispl) {
+			CFile->XF->SetNotValid();
+		}
 		else {
 			RdWrCache(true, CFile->XF->Handle, CFile->XF->NotCached(), 0, 2, &Signum);
 			CFile->XF->RdPrefix();
-			if (!CFile->XF->NotValid &&
-				((Signum != 0x04FF) || (CFile->XF->NRecsAbs != CFile->NRecs)
+			if (
+				!CFile->XF->NotValid && ((Signum != 0x04FF) || (CFile->XF->NRecsAbs != CFile->NRecs)
 					|| (CFile->XF->FreeRoot > CFile->XF->MaxPage)
-					|| ((longint(CFile->XF->MaxPage + 1) << XPageShft) > FileSizeH(CFile->XF->Handle)))
+					|| ((((longint)CFile->XF->MaxPage + 1) << XPageShft) > FileSizeH(CFile->XF->Handle)))
 				|| (CFile->XF->NrKeys != 0) && (CFile->XF->NrKeys != CFile->GetNrKeys()))
 			{
-				if (!SEquUpcase(GetEnv("FANDMSG830"), "NO")) CFileMsg(830, 'X');
-				if (CFile->IsShared() && (CFile->LMode < ExclMode)) ChangeLMode(ExclMode, 0, false);
+				if (!SEquUpcase(GetEnv("FANDMSG830"), "NO")) {
+					CFileMsg(830, 'X');
+				}
+				if (CFile->IsShared() && (CFile->LMode < ExclMode)) {
+					ChangeLMode(ExclMode, 0, false);
+				}
 				CFile->LMode = ExclMode;
 				CFile->XF->SetNotValid();
 			}
@@ -280,7 +306,7 @@ label3:
 	}
 	SeekRec(0);
 	return true;
-}
+	}
 
 bool OpenF(FileUseMode UM)
 {
@@ -305,25 +331,26 @@ bool OpenF(FileUseMode UM)
 
 void CreateF()
 {
-	/* !!! with CFile^ do!!! */ {
-		SetCPathMountVolSetNet(Exclusive);
-		CFile->Handle = OpenH(_isoverwritefile, Exclusive);
-		TestCFileError(); CFile->NRecs = 0;
-		if (CFile->TF != nullptr) /* !!! with TF^ do!!! */ { CExtToT(); CFile->TF->Create(); }
-		if (CFile->Typ == 'X') /* !!! with XF^ do!!! */ {
-			CExtToX();
-			CFile->XF->Handle = OpenH(_isoverwritefile, Exclusive);
-			CFile->XF->TestErr(); /*SetNotValid*/
-			CFile->XF->SetEmpty();
-		}
-		SeekRec(0);
-		SetUpdHandle(CFile->Handle);
+	SetCPathMountVolSetNet(Exclusive);
+	CFile->Handle = OpenH(_isoverwritefile, Exclusive);
+	TestCFileError();
+	CFile->NRecs = 0;
+	if (CFile->TF != nullptr) {
+		CExtToT();
+		CFile->TF->Create();
 	}
+	if (CFile->Typ == 'X') {
+		CExtToX();
+		CFile->XF->Handle = OpenH(_isoverwritefile, Exclusive);
+		CFile->XF->TestErr(); /*SetNotValid*/
+		CFile->XF->SetEmpty();
+	}
+	SeekRec(0);
+	SetUpdHandle(CFile->Handle);
 }
 
 bool OpenCreateF(FileUseMode UM)
 {
-	/* !!! with CFile^ do!!! */
 	if (!OpenF(UM)) {
 		CreateF();
 		if ((UM == Shared) || (UM == RdShared)) {
@@ -334,18 +361,23 @@ bool OpenCreateF(FileUseMode UM)
 			if (CFile->TF != nullptr) CloseClearH(&CFile->TF->Handle);
 			OpenF(UM);
 		}
+		else {}
 	}
+	else {}
 	return true;
 }
 
-LockMode RewriteF(bool Append)
+LockMode RewriteF(const bool Append)
 {
 	LockMode result;
 	/* !!! with CFile^ do!!! */
 	if (Append) {
 		result = NewLMode(CrMode);
 		SeekRec(CFile->NRecs);
-		if (CFile->XF != nullptr) { CFile->XF->FirstDupl = true; TestXFExist(); }
+		if (CFile->XF != nullptr) {
+			CFile->XF->FirstDupl = true;
+			TestXFExist();
+		}
 		return result;
 	}
 	result = NewLMode(ExclMode);
@@ -463,14 +495,15 @@ bool ActiveRdbOnDrive(WORD D)
 
 void CloseFilesOnDrive(WORD D)
 {
-	RdbDPtr R; FileDPtr CF; bool b;
-	R = CRdb; CF = CFile;
-	while (R != nullptr)
-	{
+	//bool b;
+	RdbD* R = CRdb;
+	FileD* CF = CFile;
+	while (R != nullptr) {
 		CFile = R->FD;
-		while (CFile != nullptr)
-		{
-			if (CFile->Drive == D) CloseFile();
+		while (CFile != nullptr) {
+			if (CFile->Drive == D) {
+				CloseFile();
+			}
 			CFile = (FileD*)CFile->Chain;
 		}
 		R = R->ChainBack;
@@ -486,13 +519,22 @@ WORD TestMountVol(char DriveC)
 
 	if (IsNetCVol()) return 0;
 	D = toupper(DriveC) - '@';
-	if (D >= FloppyDrives)
-		if (!CDir.empty() && toupper(CDir[0]) == spec.CPMdrive) D = FloppyDrives;
-		else return 0;
-	if ((CVol == "") || SEquUpcase(MountedVol[D], CVol)) goto label3;
+	if (D >= FloppyDrives) {
+		if (!CDir.empty() && toupper(CDir[0]) == spec.CPMdrive) {
+			D = FloppyDrives;
+		}
+		else {
+			return 0;
+		}
+	}
+
+	const std::string MountedVolD = MountedVol[D];
+		if (CVol.empty() || SEquUpcase(MountedVolD, CVol)) {
+		goto label3;
+	}
+	
 	Drive[1] = DriveC;
-	if (ActiveRdbOnDrive(D))
-	{
+	if (ActiveRdbOnDrive(D)) {
 		SetMsgPar(Drive, CVol, MountedVol[D]);
 		RunError(812);
 	}
@@ -500,7 +542,7 @@ WORD TestMountVol(char DriveC)
 	CloseFilesOnDrive(D);
 	CVol = Vol;
 label1:
-	F10SpecKey = _ESC_;
+	F10SpecKey = VK_ESCAPE;
 	SetMsgPar(Drive, CVol);
 	WrLLF10Msg(808);
 	if (KbdChar == _ESC_) if (PromptYN(21)) GoExit();
@@ -519,7 +561,7 @@ label1:
 	//{
 	//	SetMsgPar(S.Name); WrLLF10Msg(817); goto label1;
 	//}
-label2:
+// label2:
 	MountedVol[D] = CVol;
 label3:
 	return D;
@@ -768,7 +810,7 @@ void SetCPathVol()
 	case '8': CExt = ".DTA"; break;
 	case 'D': CExt = ".DBF"; break;
 	default: CExt = ".000";
-	}
+}
 	if (SetContextDir(CDir, isRdb)) goto label2;
 	if (CFile == HelpFD) {
 		CDir = FandDir;

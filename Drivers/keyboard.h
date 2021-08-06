@@ -3,10 +3,6 @@
 #include <string>
 #include <Windows.h>
 
-const __int32 SHIFT = 0x00010000;
-const __int32  CTRL = 0x00020000;
-const __int32   ALT = 0x00040000;
-
 class Keyboard
 {
 public:
@@ -43,9 +39,13 @@ class PressedKey
 public:
 	PressedKey() = default;
 	PressedKey(KEY_EVENT_RECORD& key);
-	char Char();
+	KEY_EVENT_RECORD* Key();
+	/// transformed character (for use with Alt, Ctrl or Shift)
+	char Char; 
 	unsigned __int32 KeyDescr();
 	unsigned __int32 SimpleKeyDescr();
+	unsigned __int16 KeyCombination();
+	void UpdateKey(WORD newKey);
 	unsigned __int32 Function();
 	bool isChar();
 	bool Shift();

@@ -21,7 +21,6 @@ Keyboard::~Keyboard()
 bool Keyboard::Exists()
 {
 	return !Empty();
-	
 }
 
 bool Keyboard::Empty()
@@ -79,6 +78,15 @@ bool Keyboard::Get(KEY_EVENT_RECORD& key)
 	if (_actualIndex == _inBuffer) return false;
 		
 	key = _kbdBuf[_actualIndex++].Event.KeyEvent;
+
+#if _DEBUG
+	auto a = MapVirtualKey(key.wVirtualKeyCode, MAPVK_VK_TO_VSC);
+	auto b = MapVirtualKey(key.wVirtualKeyCode, MAPVK_VSC_TO_VK);
+	auto c = MapVirtualKey(key.wVirtualKeyCode, MAPVK_VK_TO_CHAR);
+	auto d = MapVirtualKey(key.wVirtualKeyCode, MAPVK_VSC_TO_VK_EX);
+	auto e = MapVirtualKey(key.wVirtualKeyCode, MAPVK_VK_TO_VSC_EX);
+#endif
+	
 	return true;
 }
 
@@ -230,19 +238,26 @@ PressedKey::PressedKey(KEY_EVENT_RECORD& key)
 		_key.uChar.AsciiChar = '.';
 		_key.uChar.UnicodeChar = '.';
 	}
+	// transformed character (for use with Alt, Ctrl or Shift)
+	Char = MapVirtualKey(key.wVirtualKeyCode, MAPVK_VK_TO_CHAR);
 }
 
-char PressedKey::Char()
+KEY_EVENT_RECORD* PressedKey::Key()
 {
-	return _key.uChar.AsciiChar;
+	return &_key;
 }
+
+//char PressedKey::Char()
+//{
+//	return _key.uChar.AsciiChar;
+//}
 
 unsigned __int32 PressedKey::KeyDescr()
 {
 	// 1. a 2. B - ControlKeyState  https://docs.microsoft.com/en-us/windows/console/key-event-record-str
-	// 3. B      - Virtual Key Code https://docs.microsoft.com/cs-cz/windows/win32/inputdev/virtual-key-codes?redirectedfrom=MSDN
+	// 3. B      - Virtual Key Code https://docs.microsoft.com/cs-cz/windows/win32/inputdev/virtual-key-codes
 	// 4. B      - znak CHAR
-	return (_key.dwControlKeyState << 16) + ((_key.wVirtualKeyCode & 0xFF) << 8) + _key.uChar.AsciiChar;
+	return (_key.dwControlKeyState << 16) + ((_key.wVirtualKeyCode & 0xFF) << 8) + Char;
 }
 
 unsigned __int32 PressedKey::SimpleKeyDescr()
@@ -255,22 +270,67 @@ unsigned __int32 PressedKey::SimpleKeyDescr()
 	if (Alt()) ControlKey += 4;
 	if (Ctrl()) ControlKey += 2;
 	if (Shift()) ControlKey += 1;
-	return (ControlKey << 16) + ((_key.wVirtualKeyCode & 0xFF) << 8) + _key.uChar.AsciiChar;
+	return (ControlKey << 16) + ((_key.wVirtualKeyCode & 0xFF) << 8) + Char;
+}
+
+unsigned __int16 PressedKey::KeyCombination()
+{
+	// primitive variant without detection of left or right side
+	// 2. B (0xN0000ACS) - NonChar, SHIFT, CONTROL, ALT
+	// 1. B NonChar: Virtual Key Code, otherwise printable char
+	__int16 result;
+	unsigned char ControlKey = 0;
+	if (Alt()) ControlKey += 4;
+	if (Ctrl()) ControlKey += 2;
+	if (Shift()) ControlKey += 1;
+	
+	if (Char == 0) {
+		// non printable character
+		ControlKey += 0x80;
+		result = static_cast<short>((ControlKey << 8) + (_key.wVirtualKeyCode & 0xFF));
+	}
+	else {
+		// printable character
+		result = static_cast<short>((ControlKey << 8) + Char);
+	}
+	return result;
+}
+
+void PressedKey::UpdateKey(WORD newKey)
+{
+	// reverse function to KeyCombination
+	if (newKey & 0x0400) { _key.dwControlKeyState += 0x0002; } // left Alt
+	if (newKey & 0x0200) { _key.dwControlKeyState += 0x0008; } // left Ctrl
+	if (newKey & 0x0100) { _key.dwControlKeyState += 0x0010; } // shift
+
+	if (newKey & 0x8000) {
+		// non printable character
+		_key.wVirtualKeyCode = newKey & 0xFF;
+		_key.uChar.AsciiChar = 0;
+		_key.uChar.UnicodeChar = 0;
+		Char = 0;
+	}
+	else {
+		_key.wVirtualKeyCode = newKey & 0xFF;
+		_key.uChar.AsciiChar = newKey & 0xFF;
+		_key.uChar.UnicodeChar = newKey & 0xFF;
+		Char = newKey & 0xFF;
+	}
 }
 
 unsigned __int32 PressedKey::Function()
 {
 	unsigned __int32 result = _key.wVirtualKeyCode;
-	if (Shift()) result += SHIFT;
-	if (Alt()) result += ALT;
-	if (Ctrl()) result += CTRL;
+	if (Shift()) result += 0x00010000;
+	if (Alt()) result += 0x00040000;
+	if (Ctrl()) result += 0x00020000;
 	return result;
 }
 
 /// jedna se o tisknutelny znak?
 bool PressedKey::isChar()
 {
-	BYTE c = (BYTE)Char();
+	BYTE c = (BYTE)Char;
 	// muze byt se SHIFT, to znaci velke pismeno ...
 	return c >= 0x20 && c <= 0xFE && !Alt() && !Ctrl();
 }

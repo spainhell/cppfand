@@ -202,6 +202,47 @@ const WORD VK_OEM_CLEAR = 0xFE;
 
 // *** end virtual keys ***
 
+// *** new keys definition ***
+const WORD VIRTUAL = 0x8000;
+const WORD ALT = 0x0400;
+const WORD CTRL = 0x0200;
+const WORD SHIFT = 0x0100;
+
+const WORD __ESC = VK_ESCAPE;
+const WORD __ENTER = VK_RETURN;
+const WORD __LEFT = VIRTUAL + VK_LEFT;
+const WORD __RIGHT = VIRTUAL + VK_RIGHT;
+const WORD __UP = VIRTUAL + VK_UP;
+const WORD __DOWN = VIRTUAL + VK_DOWN;
+const WORD __PAGEUP = VIRTUAL + VK_PRIOR;
+const WORD __PAGEDOWN = VIRTUAL + VK_NEXT;
+
+const WORD __F1 = VIRTUAL + VK_F1;
+const WORD __F2 = VIRTUAL + VK_F2;
+const WORD __F3 = VIRTUAL + VK_F3;
+const WORD __F4 = VIRTUAL + VK_F4;
+const WORD __CTRL_F4 = VIRTUAL + CTRL + VK_F4;
+const WORD __F5 = VIRTUAL + VK_F5;
+const WORD __CTRL_F5 = VIRTUAL + CTRL + VK_F5;
+const WORD __F6 = VIRTUAL + VK_F6;
+const WORD __F7 = VIRTUAL + VK_F7;
+const WORD __SHIFT_F7 = VIRTUAL + SHIFT + VK_F7;
+const WORD __F8 = VIRTUAL + VK_F8;
+const WORD __ALT_F8 = VIRTUAL + ALT + VK_F8;
+const WORD __F9 = VIRTUAL + VK_F9;
+const WORD __F10 = VIRTUAL + VK_F10;
+const WORD __F11 = VIRTUAL + VK_F11;
+const WORD __F12 = VIRTUAL + VK_F12;
+
+const WORD __CTRL_HOME = VIRTUAL + CTRL + VK_HOME;
+const WORD __CTRL_END = VIRTUAL + CTRL + VK_END;
+const WORD __CTRL_PAGEUP = VIRTUAL + CTRL + VK_PRIOR;
+const WORD __CTRL_PAGEDOWN = VIRTUAL + CTRL + VK_NEXT;
+
+const WORD __ALT_EQUAL = ALT + '=';
+
+//
+
 const WORD _F1 = 59;
 const WORD _F6 = 64;
 const WORD _F9 = 67;
@@ -321,7 +362,7 @@ const WORD _V_ = 0x56;
 const WORD _W_ = 0x57;
 const WORD _X_ = 0x58;
 const WORD _Y_ = 0x59;
-const WORD _Z_ = 0x60;
+const WORD _Z_ = 0x5A;
 
 // ********** DRIVERS.PAS ********** - ø. 225 - 231
 const WORD Gr640x350 = 0x10;

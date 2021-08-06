@@ -24,7 +24,6 @@ DWORD cNumRead = 0;
 // ***
 
 TEvent Event; // r39
-WORD KbdChar;
 BYTE KbdFlgs; // TODO: absolute $417
 //pstring KbdBuffer; // r. 83
 BYTE LLKeyFlags = 0; // r. 84
@@ -184,8 +183,6 @@ void GetKeyEvent()
 		{
 			Event.Pressed = PressedKey(key);
 			Event.What = evKeyDown;
-			Event.KeyCode = key.wVirtualKeyCode;
-			KbdChar = static_cast<BYTE>(Event.Pressed.Char()); // ceske znaky jsou 0x80 - 0xFF
 			return;
 		}
 	} while (exists);
