@@ -1,7 +1,4 @@
 #include "wwmenu.h"
-
-
-
 #include "FieldDescr.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
@@ -207,7 +204,7 @@ bool TMenu::FindChar()
 			k = s.first(0x17 /* CTRL+W */);
 			if (k != 0) c2 = s[k + 1];
 			else c2 = s[1];
-			if (toupper(NoDiakr(c2)) == toupper(NoDiakr((char)KbdChar))) {
+			if (toupper(NoDiakr(c2)) == toupper(NoDiakr((char)Event.Pressed.KeyCombination()))) {
 				iTxt = j;
 				WrText(i);
 				return true;
@@ -224,6 +221,7 @@ void TMenu::HandleEvent()
 	i = iTxt; frst = true;
 	std::string hlp = GetHlpName();
 	TestEvent();
+	WORD KbdChar = Event.Pressed.KeyCombination();
 label1:
 	KbdChar = 0;
 	//ReadKbd();
@@ -235,7 +233,7 @@ label1:
 		else if (ParentsContain(&Event.Where)) { KbdChar = _ESC_; return; }}
 	case evKeyDown: {
 		if (Event.Pressed.Char == '\0') {
-			switch (Event.KeyCode) {
+			switch (Event.Pressed.KeyCombination()) {
 			case VK_HOME:
 			case VK_PRIOR: {
 				iTxt = 0;
@@ -274,13 +272,13 @@ label1:
 				break;
 			}
 			default: {
-				KbdChar = Event.KeyCode;
+				KbdChar = Event.Pressed.KeyCombination();
 				break;
 			}
 			}
 		}
 		else {
-			KbdChar = Event.KeyCode;
+			KbdChar = Event.Pressed.KeyCombination();
 		}
 		break;
 	}
@@ -316,7 +314,7 @@ void TMenu::LeadIn(TPoint* T)
 			return;
 		}
 	}
-	KbdChar = 0;
+	Event.Pressed.UpdateKey(0);
 }
 
 void TMenu::Next()
@@ -437,10 +435,11 @@ WORD TMenuBox::Exec(WORD IStart)
 	if (iTxt == 0) iTxt = 1;
 	Prev();
 	Next();  /*get valid iTxt*/
+	WORD KbdChar;
 label1:
 	HandleEvent();
 	i = iTxt;
-	switch (KbdChar) {
+	switch (Event.Pressed.KeyCombination()) {
 	case VK_RETURN: goto label2; break;
 	case VK_ESCAPE: { i = 0; goto label3; break; }
 	case VK_UP: { Prev(); WrText(i); break; }
@@ -646,7 +645,7 @@ label1:
 	HandleEvent();
 	i = iTxt;
 	bool enter = false;
-	switch (KbdChar) {
+	switch (Event.Pressed.KeyCombination()) {
 	case VK_RETURN: { enter = true; goto label2; break; }
 	case VK_ESCAPE: { i = 0; goto label4; break; }
 	case VK_DOWN: { goto label3; break; }
