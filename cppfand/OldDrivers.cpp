@@ -288,36 +288,37 @@ void TestGlobalKey()
 
 WORD AddCtrlAltShift(BYTE Flgs)
 {
+	auto key = Event.Pressed.KeyCombination();
 	WORD result = 0;
 	if (Event.What != evKeyDown) return Event.What;
 	if ((Flgs & 0x04) == 0) goto label3;
-	if (Event.KeyCode != VK_HOME) goto label1;
-	result = _CtrlHome_;
+	if (key != __HOME) goto label1;
+	result = __CTRL_HOME;
 	goto label6;
 label1:
-	if (Event.KeyCode != VK_END) goto label2;
-	result = _CtrlEnd_;
+	if (key != __END) goto label2;
+	result = __CTRL_END;
 	goto label6;
 label2:
-	if (Event.KeyCode != 'Y') goto label3;
-	result = _Y_;
+	if (key != 'Y') goto label3;
+	result = 'Y';
 	goto label6;
 label3:
-	if (Event.KeyCode < VK_F1 || Event.KeyCode > VK_F10) return Event.KeyCode;
+	if (key < __F1 || key > __F10) return key;
 	if ((Flgs & 0x04) == 0) goto label4;
-	result = Event.KeyCode + _CtrlF1_ - _F1_;
+	result = key + CTRL;
 	goto label6;
 label4:
 	if ((Flgs & 0x08) == 0) goto label5;
-	result = Event.KeyCode + _AltF1_ - _F1_;
+	result = key + ALT;
 	goto label6;
 label5:
 	if ((Flgs & 0x03) == 0) goto label6;
-	result = Event.KeyCode + _ShiftF1_ - _F1_;
+	result = key + SHIFT;
 label6:
-	Event.KeyCode = result;
+	Event.Pressed.UpdateKey(result);
 	TestGlobalKey();
-	return Event.KeyCode;
+	return result;
 }
 
 bool TestEvent()
@@ -440,7 +441,7 @@ bool KbdPressed()
 	GetMouseKeyEvent();
 	if (Event.What == evKeyDown)
 	{
-		AddToKbdBuf(Event.KeyCode);
+		AddToKbdBuf(Event.Pressed.KeyCombination());
 		ClrEvent();
 		return true;
 	}
@@ -451,14 +452,14 @@ bool ESCPressed()
 {
 	if (KeyPressed())
 	{
-		if (ReadKey() == VK_ESCAPE) return true;
+		if (ReadKey() == __ESC) return true;
 	}
 	else
 	{
 		GetMouseKeyEvent();
 		if (Event.What == evKeyDown)
 		{
-			if (Event.KeyCode == VK_ESCAPE)
+			if (Event.Pressed.KeyCombination() == __ESC)
 			{
 				ClrEvent(); return true;
 			}
@@ -490,8 +491,8 @@ WORD ReadKbd()
 	} while (!exists || code == 0 || !pressed);
 
 	Event.What = evKeyDown;
-	Event.KeyCode = code;
-	KbdChar = key.uChar.AsciiChar & 0x00FF; // èeské znaky jsou 0xFFxx;
+	Event.Pressed.UpdateKey(code);
+	//KbdChar = key.uChar.AsciiChar & 0x00FF; // ceske znaky jsou 0xFFxx;
 	return code;
 }
 

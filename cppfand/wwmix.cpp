@@ -539,7 +539,7 @@ bool wwmix::SelFieldList(WORD Nmsg, bool ImplAll, FieldList FLRoot)
 	auto result = true;
 	if (ss.Empty) return true;
 	ss.Subset = true; ss.ImplAll = ImplAll; SelectStr(0, 0, Nmsg, CFile->Name);
-	if (KbdChar == _ESC_) { return false; }
+	if (Event.Pressed.KeyCombination() == __ESC) { return false; }
 label1:
 	s = GetSelect();
 	if (s != "")
@@ -589,7 +589,7 @@ label2:
 	screen.GotoXY(1, 1);
 	//EditTxt(&mask, 1, sizeof(mask) - 1, 22, 'A', true, false, true, false, 0);
 	EditTxt(mask, 1, sizeOfMask, 22, 'A', true, false, true, false, 0);
-	if (KbdChar == VK_ESCAPE) { PopW(w); return result; }
+	if (Event.Pressed.KeyCombination() == __ESC) { PopW(w); return result; }
 	if (mask.find(' ') != std::string::npos) {
 		WrLLF10Msg(60);
 		goto label2;
@@ -642,7 +642,7 @@ label3:
 	}*/
 	ss.Abcd = true;
 	SelectStr(c11, r11, HdMsg, p);
-	if (KbdChar == VK_ESCAPE) return result;
+	if (Event.Pressed.KeyCombination() == __ESC) return result;
 	s = GetSelect();
 	if (s[0] == '\\') {
 		s.erase(0, 1);
@@ -675,7 +675,7 @@ label1:
 	PromptLL(113, &Txt, I, Del);
 	Bool = nullptr;
 	BoolTxt = nullptr;
-	if (KbdChar == VK_ESCAPE) { result = false; goto label2; }
+	if (Event.Pressed.KeyCombination() == __ESC) { result = false; goto label2; }
 	if (Txt.length() == 0) goto label2;
 	SetInpStr(Txt);
 	RdLex();
@@ -728,7 +728,7 @@ label1:
 	screen.GotoXY(2, 1);
 	Txt = "";
 	EditTxt(&Txt, 1, 20, 20, 'A', true, true, true, false, 0);
-	if (KbdChar == VK_ESCAPE) {
+	if (Event.Pressed.KeyCombination() == __ESC) {
 		Txt = ""; goto label2;
 	}
 	if (TwoTimes) {

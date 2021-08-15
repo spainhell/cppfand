@@ -965,7 +965,7 @@ bool PromptHelpName(WORD& N)
 	std::string txt;
 	auto result = false; txt = "";
 	ww.PromptLL(153, &txt, 1, true);
-	if ((txt.length() == 0) || (KbdChar == VK_ESCAPE)) return result;
+	if ((txt.length() == 0) || (Event.Pressed.KeyCombination() == __ESC)) return result;
 	N = FindHelpRecNr(CFile, txt);
 	if (N != 0) result = true;
 	return result;
@@ -1930,7 +1930,8 @@ bool EditExecRdb(std::string Nm, std::string ProcNm, Instr_proc* ProcCall, wwmix
 label1:
 	RunEdit(nullptr, Brk);
 label2:
-	cc = KbdChar;
+	// TODO: je to potreba?
+	// cc = KbdChar;
 	SaveFiles();
 	if ((cc == _CtrlF10_) || ChptTF->CompileAll || CompileFD) {
 		ReleaseFDLDAfterChpt();

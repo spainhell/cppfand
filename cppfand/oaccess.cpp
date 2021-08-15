@@ -545,7 +545,7 @@ label1:
 	F10SpecKey = VK_ESCAPE;
 	SetMsgPar(Drive, CVol);
 	WrLLF10Msg(808);
-	if (KbdChar == _ESC_) if (PromptYN(21)) GoExit();
+	if (Event.Pressed.KeyCombination() == __ESC) { if (PromptYN(21)) { GoExit(); } }
 	else goto label1;
 	//if (D == FloppyDrives) FindFirst(Drive + ":\\*.VOL", 0, S);
 	//else FindFirst(Drive + ":\\*.*", VolumeID, S);

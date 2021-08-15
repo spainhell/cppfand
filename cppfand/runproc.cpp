@@ -281,7 +281,7 @@ label2:
 	label3:
 		SetMsgPar(t);
 		WrLLF10Msg(110);
-		if (KbdChar == _F1_) {
+		if (Event.Pressed.KeyCombination() == __F1) {
 			Help(PD->mHlpRdb, RunShortStr(PD->mHlpFrml), false);
 			goto label2;
 		}

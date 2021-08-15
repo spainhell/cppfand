@@ -371,7 +371,7 @@ LongStr* SelGenRprt(pstring RprtName)
 	ss.Abcd = true;
 	pstring tmpP = "\"";
 	ww.SelectStr(0, 0, 19, tmpP + RprtName + '\"');
-	if (KbdChar == _ESC_) return result;
+	if (Event.Pressed.KeyCombination() == __ESC) return result;
 	s = ww.GetSelect();
 	i = s.find('.'); r = CRdb;
 	if (i != std::string::npos) {

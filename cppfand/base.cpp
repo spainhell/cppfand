@@ -63,7 +63,7 @@ TMsgIdxItem* MsgIdx;// = TMsgIdx;
 WORD MsgIdxN;
 longint FrstMsgPos;
 
-WORD F10SpecKey; // ø. 293
+WORD F10SpecKey; // r. 293
 BYTE ProcAttr;
 // bool SetStyleAttr(char c, BYTE& a); // je v KBDWW
 std::string MsgLine;

@@ -216,6 +216,8 @@ const WORD __UP = VIRTUAL + VK_UP;
 const WORD __DOWN = VIRTUAL + VK_DOWN;
 const WORD __PAGEUP = VIRTUAL + VK_PRIOR;
 const WORD __PAGEDOWN = VIRTUAL + VK_NEXT;
+const WORD __HOME = VIRTUAL + VK_HOME;
+const WORD __END = VIRTUAL + VK_END;
 
 const WORD __F1 = VIRTUAL + VK_F1;
 const WORD __F2 = VIRTUAL + VK_F2;
@@ -241,7 +243,7 @@ const WORD __CTRL_PAGEDOWN = VIRTUAL + CTRL + VK_NEXT;
 
 const WORD __ALT_EQUAL = ALT + '=';
 
-//
+// *** END OF new keys definition ***
 
 const WORD _F1 = 59;
 const WORD _F6 = 64;

@@ -1202,7 +1202,7 @@ bool PromptSortKeys(FieldList FL, KeyFldD* SKRoot)
 	ss.AscDesc = true;
 	ss.Subset = true;
 	ww.SelectStr(0, 0, 25, "");
-	if (KbdChar == _ESC_) { return false; }
+	if (Event.Pressed.KeyCombination() == __ESC) { return false; }
 label1:
 	LexWord = ww.GetSelect(); if (LexWord != "") {
 		SK = (KeyFldD*)GetZStore(sizeof(*SK));

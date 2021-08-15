@@ -43,8 +43,8 @@ void Editor::Run()
 			case VK_RIGHT: { MoveRight(); break; }
 			case VK_UP: { MoveUp(); break; }
 			case VK_DOWN: { MoveDown(); break; }
-			case VK_HOME + CTRL: { MoveHome(); break; }
-			case VK_END + CTRL: { MoveEnd(); break; }
+			case VK_HOME /* + CTRL*/: { MoveHome(); break; }
+			case VK_END /* + CTRL*/: { MoveEnd(); break; }
 			}
 		}
 

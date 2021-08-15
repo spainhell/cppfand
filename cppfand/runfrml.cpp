@@ -2019,7 +2019,7 @@ LongStr* RunS(FrmlElem* Z)
 	}
 	case _readkey: {
 		ReadKbd();
-		s[1] = char(Lo(KbdChar));
+		s[1] = (char)Lo(Event.Pressed.KeyCombination());
 		s[0] = 1;
 		if (s[1] == 0) {
 			/*asm  mov al, KbdChar[1].BYTE; cmp al, 0; jne @1; mov al, 03H; jmp @2;
@@ -2104,7 +2104,7 @@ LongStr* RunSelectStr(FrmlElem0* Z)
 	MarkStore2(p2);
 	s2 = new LongStr(s->LL + 2); // GetStore2(s->LL + 2);
 	n = 1; LastExitCode = 0;
-	if (KbdChar == _ESC_) LastExitCode = 1;
+	if (Event.Pressed.KeyCombination() == __ESC) LastExitCode = 1;
 	else
 		do {
 			x = ww.GetSelect();

@@ -229,22 +229,23 @@ void WrLLF10MsgLine()
 label1:
 	GetEvent();
 	/*with Event*/
+	auto key = Event.Pressed.KeyCombination();
 	switch (Event.What) {
 	case evMouse:
-		if (MouseInRect(0, row, 3, 1))
-		{
-			KbdChar = _F10_;
+		if (MouseInRect(0, row, 3, 1)) {
+			Event.Pressed.UpdateKey(__F10);
 			goto label2;
 		}
 		if (len > 0 && MouseInRect(col, row, len, 1)) {
-			KbdChar = F10SpecKey;
+			Event.Pressed.UpdateKey(F10SpecKey);
 			goto label2;
 		}
 	case evKeyDown:
-		if (Event.KeyCode == VK_F10 || Event.KeyCode == F10SpecKey || F10SpecKey == 0xffff
-			|| F10SpecKey == 0xfffe && (Event.KeyCode == _ShiftF7_ || Event.KeyCode == _F1_))
+		if (key == __F10 || key == F10SpecKey || F10SpecKey == 0xffff
+			|| F10SpecKey == 0xfffe && (key == __SHIFT_F7 || key == __F1))
 		{
-			KbdChar = Event.KeyCode;
+			// TODO: je to potreba?
+			// KbdChar = Event.KeyCode;
 		label2:
 			ClrEvent();
 			goto label3;
@@ -289,7 +290,7 @@ bool PromptYN(WORD NMsg)
 	screen.CrsShow();
 	label1:
 	char cc = (char)toupper(ReadKbd());
-	if ((KbdChar != F10SpecKey) && (cc != AbbrYes) && (cc != AbbrNo)) goto label1;
+	if ((Event.Pressed.KeyCombination() != F10SpecKey) && (cc != AbbrYes) && (cc != AbbrNo)) goto label1;
 	F10SpecKey = 0; 
 	PopW(w);
 	return cc == AbbrYes;
@@ -326,10 +327,6 @@ void RunMsgOn(char C, longint N)
 	screen.ScrFormatWrStyledText(1, 1, TextAttr, "%c%c", /*0xAF*/ 0x10, C);
 	if (N == 0) screen.ScrFormatWrStyledText(3, 1, TextAttr, "    %c", /*0xAE*/ 0x11);
 	else screen.ScrFormatWrStyledText(3, 1, TextAttr, "  0%c%c", '%', /*0xAE*/ 0x11);
-
-	/*printf("%c%c", 0x10, C);
-	if (N == 0) printf("    %c", 0x11);
-	else printf("  0%c%c", '%', 0x11);*/
 #endif
 }
 
@@ -340,10 +337,8 @@ void RunMsgN(longint N)
 	while (N >= CM->MsgKum) {
 		CM->MsgKum += CM->MsgStep;
 	}
-	const WORD perc = (N * 100) / (CM->MsgNN + 1); // tady je pridane navic 1
-	//screen.GotoXY(3, 1);
-	screen.ScrFormatWrText(3, 1, "%*i", 3, perc);
-	//printf("%*i", 3, Perc);
+	const WORD percent = static_cast<WORD>(N * 100) / (CM->MsgNN + 1); // tady je pridane navic 1
+	screen.ScrFormatWrText(3, 1, "%*i", 3, percent);
 #endif
 }
 
