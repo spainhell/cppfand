@@ -1553,7 +1553,7 @@ bool My2GetEvent()
 		ClrEvent();
 		return false;
 	}
-	
+
 	if (toupper(Event.Pressed.Char) >= 'A' && toupper(Event.Pressed.Char) <= 'Z') // with Event do if upcase(chr(KeyCode)) in ['A'..'Z'] then
 	{
 		Event.Pressed.Char = static_cast<char>(toupper(toupper(Event.Pressed.Char)) - '@');
@@ -1587,7 +1587,7 @@ bool ScrollEvent() {
 		result = true;
 		break;
 	default: {
-			// TODO: toto bude delat problem
+		// TODO: toto bude delat problem
 		if ((Lo(Event.Pressed.KeyCombination()) == 0x00) && (Breaks.first(Hi(Event.Pressed.KeyCombination())) != 0)) {
 			result = true;
 		}
@@ -3055,6 +3055,8 @@ void HandleEvent() {
 		ww = Event.Pressed.KeyCombination();
 		ClrEvent();
 		X = ExitD;                         // Exit-procedure
+
+		// test all exit keys
 		while (X != nullptr) {
 			if (TestExitKey(ww, X)) {  // nastavuje i EdBreak
 				TestKod();
@@ -3149,12 +3151,13 @@ void HandleEvent() {
 			X = (EdExitD*)X->Chain;
 		}  // while
 
+		// test frame drawing mode
 		if (((Mode == SinFM) || (Mode == DouFM) || (Mode == DelFM) || (Mode == NotFM)) && !bScroll) {
 			FrameStep(FrameDir, ww);
 		}
 		else {
 			switch (ww) {
-			case VK_LEFT: {
+			case __LEFT: {
 				if (Mode == HelpM) HelpLU('L');
 				else
 					if (bScroll)
@@ -3168,7 +3171,7 @@ void HandleEvent() {
 					}
 				break;
 			}
-			case VK_RIGHT: {
+			case __RIGHT: {
 				if (Mode == HelpM) HelpRD('R');
 				else {
 					if (bScroll) {
@@ -3183,7 +3186,7 @@ void HandleEvent() {
 				}
 				break;
 			}
-			case VK_UP: {
+			case __UP: {
 				if (Mode == HelpM) HelpLU('U');
 				else {
 					if (bScroll) if (RScrL == 1) goto Nic;
@@ -3194,7 +3197,7 @@ void HandleEvent() {
 				}
 				break;
 			}
-			case VK_DOWN: {
+			case __DOWN: {
 				if (Mode == HelpM) HelpRD('D');
 				else {
 					L1 = LineAbs(LineL);
@@ -3204,12 +3207,14 @@ void HandleEvent() {
 				}
 				break;
 			}
-			case VK_PRIOR: { // PageUp
-				if (Mode == HelpM) TestKod();
-				else { ClrWord(); LineL = ScrL; }
+			case __PAGEUP: {
+				if (Mode == HelpM) { TestKod(); }
+				else {
+					ClrWord();
+					LineL = ScrL;
+				}
 				L1 = LineAbs(LineL);
-				if (bScroll)
-				{
+				if (bScroll) {
 					RScrL = MaxL(1, RScrL - PageS);
 					if (ModPage(RScrL)) { RScrL++; }
 					ScrL = NewL(RScrL);
@@ -3223,39 +3228,36 @@ void HandleEvent() {
 						RScrL = NewRL(ScrL);
 					}
 				}
-				else
-				{
+				else {
 					ScrL -= PageS;
 					DekFindLine(LineAbs(LineL - PageS));
 				}
 				ChangeScr = true;
-				if (Mode == HelpM)
-				{
+				if (Mode == HelpM) {
 					ScrI = FindLine(ScrL);
 					Posi = Position(Colu);
-					if (WordFind(WordNo2() + 1, I1, I2, WordL) && WordExist())
+					if (WordFind(WordNo2() + 1, I1, I2, WordL) && WordExist()) {
 						SetWord(I1, I2);
-					else WordL = 0;
+					}
+					else { WordL = 0; }
 				}
-				else BlockUDShift(L1);
+				else { BlockUDShift(L1); }
 				break;
 			}
-			case VK_NEXT: {
+			case __PAGEDOWN: {
 				if (Mode != HelpM) TestKod();
 				else {
 					ClrWord(); LineL = ScrL;
 				}
 				L1 = LineAbs(LineL);
-				if (bScroll)
-				{
+				if (bScroll) {
 					RScrL += PageS; if (ModPage(RScrL)) RScrL--;
 					DekFindLine(LineAbs(NewL(RScrL))); Posi = Position(Colu);
 					j = CountChar(0x0C, ScrI, LineI);
 					if ((j > 0) && InsPg) DekFindLine(LineAbs(LineL - j));
 					ScrL = LineL; RScrL = NewRL(ScrL);
 				}
-				else
-				{
+				else {
 					DekFindLine(LineAbs(LineL) + PageS);
 					if (LineL >= ScrL + PageS)  ScrL += PageS;
 				}
@@ -3263,26 +3265,24 @@ void HandleEvent() {
 				if (Mode == HelpM) {
 					ScrI = FindLine(ScrL);
 					Posi = Position(Colu); W1 = WordNo2(); I3 = WordL;
-					if (WordFind(W1 + 1, I1, I2, WordL) && WordExist()) SetWord(I1, I2);
-					else if (WordFind(W1, I1, I2, WordL) && WordExist()) SetWord(I1, I2);
-					else WordL = 0;
+					if (WordFind(W1 + 1, I1, I2, WordL) && WordExist()) { SetWord(I1, I2); }
+					else if (WordFind(W1, I1, I2, WordL) && WordExist()) { SetWord(I1, I2); }
+					else { WordL = 0; }
 				}
-				else BlockUDShift(L1);
+				else { BlockUDShift(L1); }
 				break;
 			}
-			case _CtrlLeft_: {
+			case __CTRL_LEFT: {
 				do {
 					Posi--;
-					if (Posi == 0)
-					{
+					if (Posi == 0) {
 						I = LineI; PredLine();
 						if ((I > 1) || ChangePart) Posi = LastPosLine();
 						goto label1;
 					}
 				} while (Oddel.count(Arr[Posi]) > 0);
 
-				while (!(Oddel.count(Arr[Posi]) > 0))
-				{
+				while (!(Oddel.count(Arr[Posi]) > 0)) {
 					Posi--;
 					if (Posi == 0) goto label1;
 				}
@@ -3290,7 +3290,7 @@ void HandleEvent() {
 				Posi++;
 				break;
 			}
-			case _CtrlRight_:
+			case __CTRL_RIGHT:
 			{
 				while (!(Oddel.count(Arr[Posi]) > 0))
 				{
@@ -3317,28 +3317,45 @@ void HandleEvent() {
 				RollPred();
 				break;
 			}
-			case VK_HOME: {
+			case __HOME: {
 				I1 = Posi; Posi = 1;
 				if (Wrap) Posi = MaxI(LeftMarg, 1);
 				BlockLRShift(I1);
 				break;
 			}
-			case VK_END: {
+			case __END: {
 				I1 = Posi;
 				Posi = LastPosLine();
 				if (Posi < LineSize) Posi++;
 				BlockLRShift(I1);
 				break;
 			}
-			case _QE_: { TestKod(); LineL = ScrL; LineI = ScrI; DekodLine(); break; }
-			case _QX_: { TestKod(); DekFindLine(LineAbs(ScrL + PageS - 1)); break; }
-			case _CtrlPgUp_: { TestKod(); SetPart(1); SetScreen(1, 0, 0); break; }
-			case _CtrlPgDn_: {
-				TestKod(); SetPart(AbsLenT - Part.LenP + LenT);
-				SetScreen(LenT, 0, 0); break;
+			case _QE_: {
+				TestKod();
+				LineL = ScrL; LineI = ScrI;
+				DekodLine();
+				break;
 			}
-			case _CtrlF3_: {
-				ss = ""; TestKod();
+			case _QX_: {
+				TestKod();
+				DekFindLine(LineAbs(ScrL + PageS - 1));
+				break;
+			}
+			case __CTRL_PAGEUP: {
+				TestKod();
+				SetPart(1);
+				SetScreen(1, 0, 0);
+				break;
+			}
+			case __CTRL_PAGEDOWN: {
+				TestKod();
+				SetPart(AbsLenT - Part.LenP + LenT);
+				SetScreen(LenT, 0, 0);
+				break;
+			}
+			case __CTRL_F3: {
+				ss = "";
+				TestKod();
 				do {
 					if (MyPromptLL(420, &ss)) goto Nic;
 					val(ss, L1, I);
@@ -3346,10 +3363,10 @@ void HandleEvent() {
 				DekFindLine(L1);
 				break;
 			}
-						 // *****************************************
-						 // tady byly puvodne *********CHAR**********
-						 // *****************************************
-			case _M_: {
+						  // *****************************************
+						  // tady byly puvodne *********CHAR**********
+						  // *****************************************
+			case __ENTER: {
 				if (Mode == HelpM) {
 					Konec = WordExist();
 					Event.Pressed.UpdateKey(ww);
@@ -3392,8 +3409,8 @@ void HandleEvent() {
 			}
 			case _N_: { NewLine('n'); ClrEol(); screen.GotoXY(1, LineL - ScrL + 2); MyInsLine(); break; }
 
-			case VK_INSERT: { Insert = !Insert; break; }
-			case VK_DELETE:
+			case __INSERT: { Insert = !Insert; break; }
+			case __DELETE:
 			case _G_: {
 				if (Posi <= LastPosLine()) DelChar();
 				else DeleteL(); break;
@@ -3402,8 +3419,7 @@ void HandleEvent() {
 				if (Posi > 1) { Posi--; DelChar(); }
 				else {
 					if ((LineL == 1) && (Part.PosP > 0)) PredPart();
-					if (LineI > 1)
-					{
+					if (LineI > 1) {
 						TestKod(); LineL--;
 						if (T[LineI - 1] == _LF) SetDekCurrI(LineI - 2);
 						else SetDekCurrI(LineI - 1);
@@ -3416,19 +3432,21 @@ void HandleEvent() {
 			}
 			case _Y_: {
 				if ((NextI >= LenT) && !AllRd) NextPartDek();
-				NextI = MinW(NextI, LenT); TestLenText(NextI, LineI);
+				NextI = MinW(NextI, LenT);
+				TestLenText(NextI, LineI);
 				if (BegBLn > LineAbs(LineL)) BegBLn--;
 				else if (BegBLn == LineAbs(LineL)) if (TypeB == TextBlock) BegBPos = 1;
 				if (EndBLn >= LineAbs(LineL))
 					if ((EndBLn == LineAbs(LineL)) && (TypeB == TextBlock)) BPos = 1;
 					else EndBLn--;
-				MyDelLine(); DekodLine(); Posi = 1;
+				MyDelLine();
+				DekodLine();
+				Posi = 1;
 				break;
 			}
 			case _T_: {
-				if (Posi > LastPosLine()) DeleteL();
-				else
-				{
+				if (Posi > LastPosLine()) { DeleteL(); }
+				else {
 					I = Posi;
 					if (Oddel.count(Arr[Posi]) > 0) DelChar();
 					else while ((I <= LastPosLine()) && !(Oddel.count(Arr[Posi]) > 0)) { I++; }
@@ -3508,7 +3526,7 @@ void HandleEvent() {
 				TestKod();
 				PosDekFindLine(EndBLn, MinW(LastPosLine() + 1, EndBPos), false); break; }
 			case _KB_:
-			case _F7_:
+			case __F7:
 			case _KH_: {
 				BegBLn = LineAbs(LineL);
 				if (TypeB == TextBlock) BegBPos = MinI(LastPosLine() + 1, Posi);
@@ -3517,7 +3535,7 @@ void HandleEvent() {
 				break;
 			}
 			case _KK_:
-			case _F8_: {
+			case __F8: {
 			OznB:
 				EndBLn = LineAbs(LineL);
 				if (TypeB == TextBlock) EndBPos = MinI(LastPosLine() + 1, Posi);
@@ -3537,7 +3555,7 @@ void HandleEvent() {
 			case _KV_: BlockCopyMove('M', P1, sp); break;
 			case _KU_: BlockHandle(fs, F1, 'U'); break;
 			case _KL_: BlockHandle(fs, F1, 'L'); break;
-			case _CtrlF7_: {
+			case __CTRL_F7: {
 				if (TypeB == TextBlock) BlockGrasp('G', P1, sp);
 				else BlockCGrasp('G', P1, sp);
 				break;
@@ -3568,14 +3586,14 @@ void HandleEvent() {
 				BegBLn = I1; BegBPos = I2; EndBLn = I3; EndBPos = I; TypeB = bb;
 				break;
 			}
-			case _ShiftF7_: {
-				if (TypeB == TextBlock) BlockDrop('D', P1, sp);
-				else BlockCDrop('D', P1, sp);
+			case __SHIFT_F7: {
+				if (TypeB == TextBlock) { BlockDrop('D', P1, sp); }
+				else { BlockCDrop('D', P1, sp); }
 				break;
 			}
 			case _KR_: {
 				CPath = wwmix1.SelectDiskFile(".TXT", 400, false);
-				if (CPath == "") goto Nic;
+				if (CPath.empty()) goto Nic;
 				CVol = "";
 				F1 = OpenH(_isoldfile, RdOnly);
 				if (HandleError != 0) { MyWrLLMsg(CPath); goto Nic; }
@@ -3759,7 +3777,7 @@ void HandleEvent() {
 					WrChar(Lo(ww)); // ***CTRL-klavesy***
 					if (ww == 0x100D) { TestKod(); DekodLine(); Posi--; }
 				}
-				if (ww >= 0x0020 && ww <= 0x00FF) { // *********CHAR********** }
+				if (ww >= 0x0020 && ww <= 0x00FF) { // *********CHAR**********
 					WrChar(Lo(ww));
 					if (Wrap) if (Posi > RightMarg + 1)
 					{
@@ -3780,7 +3798,7 @@ void HandleEvent() {
 				{
 					TestKod(); Event.Pressed.UpdateKey(ww); Konec = true; EdBreak = 0xFFFF;
 				}
-				else if (ww == VK_ESCAPE)
+				else if (ww == __ESC)
 				{
 					TestKod(); Event.Pressed.UpdateKey(ww); Konec = true; EdBreak = 0;
 				}

@@ -216,83 +216,93 @@ bool TMenu::FindChar()
 
 void TMenu::HandleEvent()
 {
-	WORD i = 0; bool frst = false;
+	WORD i = 0; bool frst = true;
 	WrText(iTxt);
-	i = iTxt; frst = true;
+	i = iTxt;
 	std::string hlp = GetHlpName();
 	TestEvent();
-	WORD KbdChar = Event.Pressed.KeyCombination();
-label1:
-	KbdChar = 0;
-	//ReadKbd();
-	/* !!! with Event do!!! */
-	switch (Event.What) {
-	case evMouseDown: {
-		if (Contains(&Event.Where)) { KbdChar = _M_; LeadIn(&Event.Where); }
-		else if (MouseInRect(0, TxtRows - 1, TxtCols, 1)) goto label2;
-		else if (ParentsContain(&Event.Where)) { KbdChar = _ESC_; return; }}
-	case evKeyDown: {
-		if (Event.Pressed.Char == '\0') {
-			switch (Event.Pressed.KeyCombination()) {
-			case VK_HOME:
-			case VK_PRIOR: {
-				iTxt = 0;
-				Next();
-				WrText(i);
-				break;
+
+	while (true) {
+		//ReadKbd();
+		/* !!! with Event do!!! */
+		switch (Event.What) {
+		case evMouseDown: {
+			if (Contains(&Event.Where)) {
+				Event.Pressed.UpdateKey(__ENTER);
+				LeadIn(&Event.Where);
 			}
-			case VK_END:
-			case VK_NEXT: {
-				iTxt = nTxt + 1;
-				Prev();
-				WrText(i);
-				break;
-			}
-			case VK_F1: {
-			label2:
+			else if (MouseInRect(0, TxtRows - 1, TxtCols, 1)) {
+				//goto label2;
 				ClrEvent();
 				if (HlpRdb != nullptr) Help(HlpRdb, hlp, false);
-				KbdChar = 0;
-				break;
 			}
-			case VK_F10: {
-				if (Event.Pressed.Alt()) {
+			else if (ParentsContain(&Event.Where)) {
+				Event.Pressed.UpdateKey(__ESC);
+				return;
+			}
+		}
+		case evKeyDown: {
+			if (Event.Pressed.Char == '\0') {
+				WORD KbdChar = Event.Pressed.KeyCombination();
+				switch (KbdChar) {
+				case __HOME:
+				case __PAGEUP: {
+					iTxt = 0;
+					Next();
+					WrText(i);
+					break;
+				}
+				case __END:
+				case __PAGEDOWN: {
+					iTxt = nTxt + 1;
+					Prev();
+					WrText(i);
+					break;
+				}
+				case __F1: {
+					ClrEvent();
+					if (HlpRdb != nullptr) Help(HlpRdb, hlp, false);
+					//KbdChar = 0;
+					break;
+				}
+				case __ALT_F10: {
 					ClrEvent();
 					Help(nullptr, "", false);
-					KbdChar = 0;
+					//KbdChar = 0;
+					break;
 				}
-				break;
-			}
-			case VK_F2: {
-				if (Event.Pressed.Alt() && IsTestRun && !IsBoxS) {
-					ClrEvent();
-					EditHelpOrCat(_AltF2_, 2, hlp);
-					KbdChar = 0;
+				case __ALT_F2: {
+					if (IsTestRun && !IsBoxS) {
+						ClrEvent();
+						EditHelpOrCat(_AltF2_, 2, hlp);
+						//KbdChar = 0;
+					}
+					break;
 				}
-				break;
+				default: {
+					//KbdChar = Event.Pressed.KeyCombination();
+					break;
+				}
+				}
 			}
-			default: {
-				KbdChar = Event.Pressed.KeyCombination();
-				break;
+			else {
+				//KbdChar = Event.Pressed.KeyCombination();
 			}
-			}
+			break;
 		}
-		else {
-			KbdChar = Event.Pressed.KeyCombination();
+		default: {
+			if (frst) {
+				DisplLLHelp(HlpRdb, hlp, false);
+				frst = false;
+			}
+			ClrEvent();
+			WaitEvent(0);
+			continue;
 		}
-		break;
-	}
-	default: {
-		if (frst) {
-			DisplLLHelp(HlpRdb, hlp, false);
-			frst = false;
 		}
 		ClrEvent();
-		WaitEvent(0);
-		goto label1;
+		break;
 	}
-	}
-	ClrEvent();
 }
 
 bool TMenu::IsMenuBar()
@@ -435,46 +445,47 @@ WORD TMenuBox::Exec(WORD IStart)
 	if (iTxt == 0) iTxt = 1;
 	Prev();
 	Next();  /*get valid iTxt*/
-	WORD KbdChar;
-label1:
-	HandleEvent();
-	i = iTxt;
-	switch (Event.Pressed.KeyCombination()) {
-	case VK_RETURN: goto label2; break;
-	case VK_ESCAPE: { i = 0; goto label3; break; }
-	case VK_UP: { Prev(); WrText(i); break; }
-	case VK_DOWN: { Next(); WrText(i); break; }
-	case VK_LEFT: {
-		if (UnderMenuBar()) {
-			j = 1;
-			goto label4;
-		}
-		break;
-	}
-	case VK_RIGHT: {
-		if (UnderMenuBar()) {
-			j = 2;
-			goto label4;
-		}
-		break;
-	}
-	default: {
-		if (!FindChar()) goto label1;
-		WrText(iTxt);
-	label2:
+
+	while (true) {
+		HandleEvent();
 		i = iTxt;
-		MenuX = Orig.X + 4;
-		MenuY = Orig.Y + i + 2;
-	label3:
-		ClearHlp();
-		if (!ExecItem(i)) {
-		label4:
-			return (j << 8) + i;
+		const WORD KbdChar = Event.Pressed.KeyCombination();
+		switch (KbdChar) {
+		case __ENTER: { goto label2; break; }
+		case __ESC: { i = 0; goto label3; break; }
+		case __UP: { Prev(); WrText(i); break; }
+		case __DOWN: { Next(); WrText(i); break; }
+		case __LEFT: {
+			if (UnderMenuBar()) {
+				j = 1;
+				goto label4;
+			}
+			break;
 		}
-		break;
+		case __RIGHT: {
+			if (UnderMenuBar()) {
+				j = 2;
+				goto label4;
+			}
+			break;
+		}
+		default: {
+			if (!FindChar()) continue;
+			WrText(iTxt);
+		label2:
+			i = iTxt;
+			MenuX = Orig.X + 4;
+			MenuY = Orig.Y + i + 2;
+		label3:
+			ClearHlp();
+			if (!ExecItem(i)) {
+			label4:
+				return (j << 8) + i;
+			}
+			break;
+		}
+		}
 	}
-	}
-	goto label1;
 }
 
 void TMenuBox::GetItemRect(WORD I, TRect* R)

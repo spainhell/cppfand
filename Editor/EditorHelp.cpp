@@ -119,7 +119,7 @@ void Help(RdbD* R, pstring Name, bool InCWw)
 			}
 		}
 	}
-	catch (std::exception e) {
+	catch (std::exception& e) {
 		//label4:
 		RestoreExit(er);
 	}
