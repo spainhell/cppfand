@@ -1844,26 +1844,27 @@ void RollNext()
 void RollPred()
 {
 	if ((ScrL == 1) && (Part.PosP > 0)) PredPart();
-	if (ScrL > 1)
-	{
-		screen.GotoXY(1, 1); MyInsLine(); ScrL--; ChangeScr = true;
-		if (LineL == ScrL + PageS)
-		{
-			TestKod(); LineL--;
-			if (T[LineI - 1] == _LF) SetDekCurrI(LineI - 2);
-			else SetDekCurrI(LineI - 1);
+	if (ScrL > 1) {
+		screen.GotoXY(1, 1);
+		MyInsLine();
+		ScrL--;
+		ChangeScr = true;
+		if (LineL == ScrL + PageS) {
+			TestKod();
+			LineL--;
+			if (T[LineI - 1] == _LF) { SetDekCurrI(LineI - 2); }
+			else { SetDekCurrI(LineI - 1); }
 		}
 	}
 }
 
 void direction1(BYTE x, BYTE& zn2)
 {
-	BYTE y;
-	y = 0x10;
-	if (x > 2) y = y << 1;
-	if (x == 0) y = 0;
-	if (Mode == DouFM) zn2 = zn2 || y;
-	else zn2 = zn2 && !y;
+	BYTE y = 0x10;
+	if (x > 2) { y = y << 1; }
+	if (x == 0) { y = 0; }
+	if (Mode == DouFM) { zn2 = zn2 || y; }
+	else { zn2 = zn2 && !y; }
 }
 
 void MyWriteln()
@@ -1891,12 +1892,11 @@ void NextLine(bool WrScr)
 				RScrL++;
 			}
 		}
-		else
-			if (WrScr && (LineL == ScrL + PageS)) {
-				if (PageS > 1) MyWriteln();
-				ScrL++;
-				ChangeScr = true;
-			}
+		else if (WrScr && (LineL == ScrL + PageS)) {
+			if (PageS > 1) MyWriteln();
+			ScrL++;
+			ChangeScr = true;
+		}
 	}
 }
 
@@ -1910,10 +1910,13 @@ void Frame()
 	FS2 = "\x50\x48\xB3\x4D\xD5\xD4\xC6\x4B\xB8\xBE\xB5\xCD\xD1\xCF\xD8";
 	pstring FS3(15);
 	FS3 = "\x50\x48\xBA\x4D\xC9\xC8\xCC\x4B\xBB\xBC\xB9\xCD\xCB\xCA\xCE";
-	char oldzn; BYTE dir, odir, zn1, zn2, b;
+	BYTE dir, zn1, zn2, b;
 
-	UpdStatLine(LineL, Posi, Mode); screen.CrsBig(); odir = 0;
+	UpdStatLine(LineL, Posi, Mode);
+	screen.CrsBig();
+	BYTE odir = 0;
 	ClrEvent();
+
 	while (true) /* !!! with Event do!!! */
 	{
 		if (!MyGetEvent() ||
@@ -1934,31 +1937,39 @@ void Frame()
 		case __DOWN:
 			if (!bScroll) {
 				FrameString[0] = 63;
-				zn1 = FrameString.first(Arr[Posi]); zn2 = zn1 & 0x30; zn1 = zn1 & 0x0F;
+				zn1 = FrameString.first(Arr[Posi]);
+				zn2 = zn1 & 0x30;
+				zn1 = zn1 & 0x0F;
 				dir = FrameString.first(Hi(Event.Pressed.KeyCombination()));
 				auto dirodir = dir + odir;
 				if (dirodir == 2 || dirodir == 4 || dirodir == 8 || dirodir == 16) odir = 0;
 				if (zn1 == 1 || zn1 == 2 || zn1 == 4 || zn1 == 8) zn1 = 0;
-				oldzn = Arr[Posi]; Arr[Posi] = ' ';
+				char oldzn = Arr[Posi];
+				Arr[Posi] = ' ';
 				if (Mode == DelFM) b = zn1 && !(odir || dir);
 				else b = zn1 | (odir ^ dir);
 				if (b == 1 || b == 2 || b == 4 || b == 8) b = 0;
 				if ((Mode == DelFM) && (zn1 != 0) && (b == 0)) oldzn = ' ';
 				direction1(dir, zn2); direction1(odir, zn2);
 				if (Mode == NotFM) b = 0;
+
 				if ((b != 0) && ((Event.Pressed.KeyCombination() == __LEFT) || (Event.Pressed.KeyCombination() == __RIGHT) ||
 					(Event.Pressed.KeyCombination() == __UP) || (Event.Pressed.KeyCombination() == __DOWN)))
 					Arr[Posi] = FrameString[zn2 + b];
 				else Arr[Posi] = oldzn;
+
 				if ((dir == 1) || (dir == 4)) odir = dir * 2;
 				else odir = dir / 2;
+
 				if (Mode == NotFM) odir = 0;
 				else UpdatedL = true;
+
 				switch (Event.Pressed.KeyCombination()) {
 				case __LEFT: if (Posi > 1) Posi--; break;
 				case __RIGHT: if (Posi < LineSize) Posi++; break;
 				case __UP: PredLine(); break;
 				case __DOWN: NextLine(true); break;
+				default:;
 				}
 			}
 			break;
@@ -2029,19 +2040,36 @@ void FrameStep(BYTE& odir, WORD EvKeyC)
 		if ((Mode == DelFM) && (zn1 != 0) && (b == 0)) oldzn = ' ';
 		direction2(dir, zn2); direction2(odir, zn2);
 		if (Mode == NotFM) b = 0;
-		if ((b != 0) && ((Event.Pressed.KeyCombination() == _left_) || (Event.Pressed.KeyCombination() == _right_) ||
-			(Event.Pressed.KeyCombination() == _up_) || (Event.Pressed.KeyCombination() == _down_)))
+
+		if ((b != 0) && ((Event.Pressed.KeyCombination() == __LEFT) || (Event.Pressed.KeyCombination() == __RIGHT) ||
+			(Event.Pressed.KeyCombination() == __UP) || (Event.Pressed.KeyCombination() == __DOWN)))
 			Arr[Posi] = FrameString[zn2 + b];
 		else Arr[Posi] = oldzn;
+
 		if ((dir == 1) || (dir == 4)) odir = dir * 2;
 		else odir = dir / 2;
+
 		if (Mode == NotFM) odir = 0;
 		else UpdatedL = true;
+
 		switch (Event.Pressed.KeyCombination()) {
-		case _left_: if (Posi > 1) Posi--; break;
-		case _right_: if (Posi < LineSize) Posi++; break;
-		case _up_: PredLine(); break;
-		case _down_: NextLine(true); break;
+		case __LEFT: {
+			if (Posi > 1) Posi--;
+			break;
+		}
+		case __RIGHT: {
+			if (Posi < LineSize) Posi++;
+			break;
+		}
+		case __UP: {
+			PredLine();
+			break;
+		}
+		case __DOWN: {
+			NextLine(true);
+			break;
+		}
+		default:;
 		}
 	}
 	break;

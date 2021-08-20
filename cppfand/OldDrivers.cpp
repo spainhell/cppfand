@@ -437,7 +437,7 @@ bool KbdPressed()
 {
 	if (keyboard.Exists()) return true;
 	if (KeyPressed()) return true;
-	Event.What = 0;
+	Event.What = evNothing;
 	GetMouseKeyEvent();
 	if (Event.What == evKeyDown)
 	{
@@ -603,7 +603,7 @@ label2:
 		if (ce) screen.CrsShow();
 		if (Event.What != 0)
 		{
-			Event.What = 0;
+			Event.What = evNothing;
 			goto label0;
 		}
 	}
@@ -624,7 +624,7 @@ void GetEvent()
 
 void ClrEvent()
 {
-	Event.What = 0;
+	Event.What = evNothing;
 }
 
 void AssignCrt(pstring* filepath)

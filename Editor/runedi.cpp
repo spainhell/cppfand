@@ -131,18 +131,15 @@ label1:
 		break;
 	}
 	case evKeyDown: {
-		//KbdChar = Event.KeyCode;
-		ClrEvent();
 		KbdChar = Event.Pressed.KeyCombination();
-		if (del) {
-			if (KbdChar >= 0x20 && KbdChar <= 0xFE)
-			{
+		ClrEvent();
+		if (Event.Pressed.isChar()) {
+			// printable character
+			if (del) {
 				pos = 1; *sLen = 0;
 				WriteStr(pos, base, maxlen, maxcol, *sLen, *s, star, cx, cy, cx1, cy1);
+				del = false;
 			}
-			del = false;
-		}
-		if (KbdChar >= 0x20 && KbdChar <= 0xFF) {
 			if (upd) {
 				switch (typ) {
 				case 'N': { if (KbdChar < '0' || KbdChar > '9') goto label7; }
@@ -159,82 +156,101 @@ label1:
 			label5:
 				if (pos > maxlen) { beep(); goto label7; }
 				if (InsMode) {
-					if (*sLen == maxlen)
-						if ((*s)[*sLen] == ' ') (*sLen)--;
-						else { beep(); goto label7; }
-					Move(&(*s)[pos], &(*s)[pos + 1], *sLen - pos + 1); (*sLen)++;
+					if (*sLen == maxlen) {
+						if ((*s)[*sLen] == ' ') {
+							(*sLen)--;
+						}
+						else {
+							beep();
+							goto label7;
+						}
+					}
+					Move(&(*s)[pos], &(*s)[pos + 1], *sLen - pos + 1);
+					(*sLen)++;
 				}
-				else if (pos > *sLen) (*sLen)++;
-				(*s)[pos] = (char)KbdChar;
+				else if (pos > *sLen) {
+					(*sLen)++;
+				}
+				(*s)[pos] = (char)(KbdChar & 0x00FF);
 				pos++;
 			label7: {}
 			}
-		}
-		else if (ret && ((KbdChar < 0x20) || (KbdChar >= 0x100))) {
-			Event.What = evKeyDown;
-			goto label8;
-		}
 
-		if (KbdChar > 0x20) break; // jedná se o znak, ne o funkèní klávesu -> dál nezpracováváme
-
-		//switch (KbdChar) {
-		switch (Event.Pressed.KeyCombination()) {
-		case VK_INSERT:
-		case _V_: InsMode = !InsMode; break;
-		case _U_: if (TxtEdCtrlUBrk) goto label6; break;
-		case _CtrlF4_: if (TxtEdCtrlF4Brk) goto label6; break;
-		case VK_ESCAPE:
-		case VK_RETURN: {
-		label6:
-			DelBlk(*sLen, *s, pos);
-			screen.CrsHide(); TxtEdCtrlUBrk = false; TxtEdCtrlF4Brk = false;
-			return 0;
+			/*if (ret && ((KbdChar < 0x20) || (KbdChar >= 0x100))) {
+				Event.What = evKeyDown;
+				goto label8;
+			}*/
 		}
-		case VK_LEFT:
-		case _S_: if ((pos > 1)) pos--; break;
-		case VK_RIGHT:
-		case _D_: {
-			if (pos <= maxlen)
-			{
-				if ((pos > *sLen) && (*sLen < maxlen)) s = s + ' ';
-				pos++;
+		else {
+			// non-printable
+			switch (KbdChar) {
+			case __INSERT:
+			case _V_: InsMode = !InsMode; break;
+			case _U_: if (TxtEdCtrlUBrk) goto label6; break;
+			case __CTRL_F4: if (TxtEdCtrlF4Brk) goto label6; break;
+			case __ESC:
+			case __ENTER: {
+			label6:
+				DelBlk(*sLen, *s, pos);
+				screen.CrsHide(); TxtEdCtrlUBrk = false; TxtEdCtrlF4Brk = false;
+				return 0;
 			}
-			break;
-		}
-		case _Q_: {
-			if (ReadKbd() == _S_) goto label3;
-			if (ReadKbd() == _D_) goto label4;
-			break;
-		}
-		case VK_HOME:
-		label3:
-			pos = 1; break;
-		case VK_END:
-		label4:
-			pos = *sLen + 1; break;
-		case VK_BACK: if (upd && (pos > 1)) { pos--; goto label2; } break;
-		case VK_DELETE:
-		case _G_: if (upd && (pos <= *sLen)) {
-		label2:
-			if (*sLen > pos) Move(&(*s)[pos + 1], &(*s)[pos], *sLen - pos);
-			(*sLen)--;
-		} break;
-		case _P_: if (upd) { ReadKbd(); if (KbdChar >= 0 && KbdChar <= 31) goto label5; }
-		case _F4_: if (upd && (typ == 'A') && (pos <= *sLen)) {
-			s[pos] = ToggleCS((*s)[pos]);
-			break;
-		}
-		default:
-			break;
+			case __LEFT:
+			case _S_: if ((pos > 1)) pos--; break;
+			case __RIGHT:
+			case _D_: {
+				if (pos <= maxlen)
+				{
+					if ((pos > *sLen) && (*sLen < maxlen)) s = s + ' ';
+					pos++;
+				}
+				break;
+			}
+			case _Q_: {
+				if (ReadKbd() == _S_) goto label3;
+				if (ReadKbd() == _D_) goto label4;
+				break;
+			}
+			case __HOME:
+			label3:
+				pos = 1; break;
+			case __END:
+			label4:
+				pos = *sLen + 1; break;
+			case __BACK: if (upd && (pos > 1)) { pos--; goto label2; } break;
+			case __DELETE:
+			case _G_: {
+				if (upd && (pos <= *sLen)) {
+				label2:
+					if (*sLen > pos) Move(&(*s)[pos + 1], &(*s)[pos], *sLen - pos);
+					(*sLen)--;
+				}
+				break;
+			}
+			case _P_: {
+				if (upd) {
+					ReadKbd();
+					if (KbdChar >= 0 && KbdChar <= 31) goto label5;
+				}
+				break;
+			}
+			case __F4: {
+				if (upd && (typ == 'A') && (pos <= *sLen)) {
+					(*s)[pos] = ToggleCS((*s)[pos]);
+				}
+				break;
+			}
+			default:
+				break;
+			}
 		}
 	}
 	}
 	WriteStr(pos, base, maxlen, maxcol, *sLen, *s, star, cx, cy, cx1, cy1);
 	ClrEvent();
 	if (!ret) goto label1;
-label8:
-	return pos;
 
+	return pos;
 }
 
 WORD EditTxt(std::string& s, WORD pos, WORD maxlen, WORD maxcol, char typ, bool del, bool star, bool upd, bool ret,
@@ -1370,7 +1386,7 @@ void BuildWork()
 #ifdef FandSQL
 		if (CFile->IsSQLFile && (bool = nullptr)) {
 			l = CFile->RecLen; f = CFile->FldD; OnlyKeyArgFlds(WK);
-	}
+		}
 #endif
 		if (
 #ifdef FandSQL
@@ -1381,7 +1397,7 @@ void BuildWork()
 		//New(Scan, Init(CFile, K, ki, false));
 		Scan = new XScan(CFile, K, ki, false);
 		Scan->Reset(boolP, E->SQLFilter);
-		}
+	}
 	CreateWIndex(Scan, WK, 'W');
 	Scan->Close();
 	if (wk2 != nullptr) wk2->Close();
@@ -1396,7 +1412,7 @@ label1:
 	RestoreExit(er);
 	if (!ok) GoExit();
 	ReleaseStore(p);
-	}
+}
 
 void SetStartRec()
 {
@@ -1445,7 +1461,7 @@ bool OpenEditWw()
 	if (EdRecVar) {
 		if (OnlyAppend) goto label2;
 		else goto label3;
-}
+	}
 #ifdef FandSQL
 	if (!CFile->IsSQLFile)
 #endif
@@ -1640,7 +1656,7 @@ void UpdMemberRef(void* POld, void* PNew)
 					else
 #endif
 						DeleteXRec(Scan->RecNr, true);
-			}
+				}
 				else {
 					Move(CRecPtr, p2, CFile->RecLen);
 					CRecPtr = p2;
@@ -1659,16 +1675,16 @@ void UpdMemberRef(void* POld, void* PNew)
 						OverWrXRec(Scan->RecNr, p, p2);
 				}
 				goto label1;
-		}
+			}
 			Scan->Close();
 			ClearRecSpace(p);
 			ReleaseStore(p);
-	}
+		}
 	label2:
 		LD = LD->Chain;
-}
-	CFile = cf; CRecPtr = cr;
 	}
+	CFile = cf; CRecPtr = cr;
+}
 
 void WrJournal(char Upd, void* RP, double Time)
 {
@@ -1872,9 +1888,9 @@ bool DelIndRec(longint I, longint N)
 		if (Subset) WK->DeleteAtNr(I);
 		result = true;
 		E->EdUpdated = true;
-}
-	return result;
 	}
+	return result;
+}
 
 bool DeleteRecProc()
 {
@@ -2243,7 +2259,7 @@ bool OldRecDiffers()
 			f = f->Chain;
 		}
 		goto label2;
-}
+	}
 	else
 #endif
 		ReadRec(CFile, E->LockedRec, CRecPtr);
@@ -2490,7 +2506,7 @@ label2:
 label1:
 	UnLockWithDep(OldMd);
 	return result;
-	}
+}
 
 void DuplFromPrevRec()
 {
@@ -4027,7 +4043,10 @@ void RunEdit(XString* PX, WORD& Brk)
 	if (!IsNewRec && (PX != nullptr)) GotoXRec(PX, n);
 	if (Select && !RunBool(E->Bool)) GoPrevNextRec(+1, true);
 	//if (/*E->StartFld != nullptr*/ true) { GoStartFld(&E->StartFld); goto label1; }
-	if (E->StartFld != nullptr) { GoStartFld(E->StartFld); goto label1; }
+	if (E->StartFld != nullptr) {
+		GoStartFld(E->StartFld);
+		goto label1;
+	}
 label0:
 	if (!CtrlMProc(0)) goto label7;
 label1:
@@ -4066,7 +4085,6 @@ label81:
 	}
 	case evKeyDown: {
 		KbdChar = Event.Pressed.KeyCombination();
-		ClrEvent();
 		switch (ExitKeyProc())
 		{
 		case 1:/*quit*/ goto label7; break;
@@ -4076,16 +4094,14 @@ label81:
 			// jedna se o tisknutelny znak
 			if (CFld->Ed(IsNewRec) && ((CFld->FldD->Typ != 'T') || (_T(CFld->FldD) == 0))
 				&& LockRec(true)) {
-				keyboard.AddToFrontKeyBuf(KbdChar); // vrati znak znovu do bufferu
-				/*pstring oldKbdBuffer = KbdBuffer;
-				KbdBuffer = (char)KbdChar;
-				KbdBuffer += oldKbdBuffer;*/
+				//keyboard.AddToFrontKeyBuf(KbdChar); // vrati znak znovu do bufferu
 				if (!EditItemProc(true, true, Brk)) goto label7;
 				if (Brk != 0) goto fin;
 			}
 		}
 		else {
-			// klavesa je funkci
+			// klavesa je funkcni
+			ClrEvent();
 			switch (Event.Pressed.Function()) {
 			case VK_F1: {
 				// index napovedy
@@ -4166,7 +4182,7 @@ label81:
 			}
 			case VK_F2: {
 				// F2 - novy zaznam, porizeni nove vety
-				if (!EdRecVar)
+				if (!EdRecVar) {
 					if (IsNewRec) {
 						if ((CNRecs() > 1) && (!Prompt158 || EquOldNewRec() || PromptYN(158))) DelNewRec();
 					}
@@ -4175,6 +4191,7 @@ label81:
 						if (Displ) DisplAllWwRecs();
 						SwitchToAppend();
 					}
+				}
 				goto label0;
 				break;
 			}
@@ -4238,9 +4255,9 @@ label81:
 			}
 			case VK_F4: {
 				// dopln diakriticke znamenko
-				if ((CRec() > 1) && (IsFirstEmptyFld() || PromptYN(121)) && LockRec(true))
-				{
-					DuplFromPrevRec(); if (!CtrlMProc(1)) goto label7;
+				if ((CRec() > 1) && (IsFirstEmptyFld() || PromptYN(121)) && LockRec(true)) {
+					DuplFromPrevRec();
+					if (!CtrlMProc(1)) goto label7;
 				}
 				break;
 			}
@@ -4277,7 +4294,7 @@ label81:
 					}
 					else if (WriteCRec(true, Displ)) {
 						if (Displ) DisplAllWwRecs();
-						KbdChar = w;       /*only in edit mode*/
+						Event.Pressed.UpdateKey(w);       /*only in edit mode*/
 						switch (Event.Pressed.Function()) {
 						case VK_F9: {
 							// uloz

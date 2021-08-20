@@ -21,16 +21,16 @@ public:
 	std::string GetKeyBufAsString(); // return all items form Prior Key Buffer
 	void SetKeyBuf(std::string input); // erase all items in Prior Key Buffer and new from input
 	void AddToKeyBuf(std::string input); // add items to the end of Prior Key Buffer
-	void AddToKeyBuf(char c); // add items to the end of Prior Key Buffer
+	void AddToKeyBuf(unsigned short c); // add items to the end of Prior Key Buffer
 	void AddToFrontKeyBuf(std::string input); // add items to the front of Prior Key Buffer
-	void AddToFrontKeyBuf(char c); // add items to the front of Prior Key Buffer 
+	void AddToFrontKeyBuf(unsigned short c); // add items to the front of Prior Key Buffer 
 	
 private:
 	HANDLE _handle;
 	PINPUT_RECORD _kbdBuf;
 	size_t _actualIndex;
 	DWORD _inBuffer;
-	std::queue<KEY_EVENT_RECORD> _priorBuffer; // used by SetKeyBuf() method
+	std::deque<KEY_EVENT_RECORD> _priorBuffer; // used by SetKeyBuf() method
 	void _read();
 };
 
@@ -44,7 +44,7 @@ public:
 	char Char; 
 	unsigned __int32 KeyDescr();
 	unsigned __int32 SimpleKeyDescr();
-	unsigned __int16 KeyCombination();
+	unsigned short KeyCombination();
 	void UpdateKey(WORD newKey);
 	unsigned __int32 Function();
 	bool isChar();

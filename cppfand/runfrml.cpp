@@ -592,7 +592,7 @@ bool RunBool(FrmlElem* X)
 	case _mouseevent: {
 	label2:
 		auto iX1 = (FrmlElem1*)X;
-		Event.What = 0;
+		Event.What = evNothing;
 		GetMouseEvent();
 		if (Event.What == 0) result = false;
 		else { if ((Event.What && iX1->W01) == 0) goto label2; result = true; }

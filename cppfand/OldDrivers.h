@@ -1,4 +1,6 @@
 ﻿#pragma once
+#include <xlocmon>
+
 #include "constants.h"
 #include "legacy.h"
 #include "pstring.h"
@@ -14,21 +16,19 @@ struct TPoint
 	void Assign(WORD XX, WORD YY);
 };
 
-const WORD evMouseDown = 0x0001;
-const WORD evMouseUp = 0x0002;
-const WORD evMouseMove = 0x0004;
-const WORD evMouseAuto = 0x0008;
-const WORD evNothing = 0x0000;
-const WORD evMouse = 0x000F;
-const WORD evKeyDown = 0x0010;
-
 const WORD mbLeftButton = 0x0001;
 const WORD mbRightButton = 0x0002;
 const WORD mbDoubleClick = 0x0100;
 
+enum EventType {
+	evNothing = 0,
+	evMouseDown = 1, evMouseUp = 2, evMouseMove = 4, evMouseAuto = 8, evMouse = 15,
+	evKeyDown = 16
+};
+
 struct TEvent
 {
-	WORD What = 0;
+	EventType What = evNothing;
 	PressedKey Pressed;
 	WORD Buttons = 0;
 	TPoint Where;

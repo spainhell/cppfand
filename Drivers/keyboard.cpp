@@ -58,7 +58,7 @@ bool Keyboard::Get(KEY_EVENT_RECORD& key)
 	if (!_priorBuffer.empty())
 	{
 		key = _priorBuffer.front();
-		_priorBuffer.pop();
+		_priorBuffer.pop_front();
 		return true;
 	}
 	// pokud jsme na konci bufferu, nacteme jej znovu
@@ -92,7 +92,7 @@ bool Keyboard::Get(KEY_EVENT_RECORD& key)
 
 void Keyboard::DeleteKeyBuf()
 {
-	_priorBuffer = std::queue<KEY_EVENT_RECORD>();
+	_priorBuffer = std::deque<KEY_EVENT_RECORD>();
 }
 
 void Keyboard::SetKeyBuf(std::string input)
@@ -190,7 +190,7 @@ void Keyboard::SetKeyBuf(std::string input)
 			default: break;
 			}
 		}
-		_priorBuffer.push(key);
+		_priorBuffer.push_back(key);
 		index++;
 	}
 }
@@ -200,9 +200,28 @@ void Keyboard::AddToKeyBuf(std::string input)
 	
 }
 
-void Keyboard::AddToKeyBuf(char c)
+void Keyboard::AddToKeyBuf(unsigned short c)
 {
+	KEY_EVENT_RECORD key = KEY_EVENT_RECORD();
+
+	// reverse function to KeyCombination
+	if (c & 0x0400) { key.dwControlKeyState += 0x0002; } // left Alt
+	if (c & 0x0200) { key.dwControlKeyState += 0x0008; } // left Ctrl
+	if (c & 0x0100) { key.dwControlKeyState += 0x0010; } // shift
+
+	if (c & 0x8000) {
+		// non printable character
+		key.wVirtualKeyCode = c & 0xFF;
+		key.uChar.AsciiChar = 0;
+		key.uChar.UnicodeChar = 0;
+	}
+	else {
+		key.wVirtualKeyCode = c & 0xFF;
+		key.uChar.AsciiChar = c & 0xFF;
+		key.uChar.UnicodeChar = c & 0xFF;
+	}
 	
+	_priorBuffer.push_back(key);
 }
 
 void Keyboard::AddToFrontKeyBuf(std::string input)
@@ -210,9 +229,28 @@ void Keyboard::AddToFrontKeyBuf(std::string input)
 	
 }
 
-void Keyboard::AddToFrontKeyBuf(char c)
+void Keyboard::AddToFrontKeyBuf(unsigned short c)
 {
-	
+	KEY_EVENT_RECORD key = KEY_EVENT_RECORD();
+
+	// reverse function to KeyCombination
+	if (c & 0x0400) { key.dwControlKeyState += 0x0002; } // left Alt
+	if (c & 0x0200) { key.dwControlKeyState += 0x0008; } // left Ctrl
+	if (c & 0x0100) { key.dwControlKeyState += 0x0010; } // shift
+
+	if (c & 0x8000) {
+		// non printable character
+		key.wVirtualKeyCode = c & 0xFF;
+		key.uChar.AsciiChar = 0;
+		key.uChar.UnicodeChar = 0;
+	}
+	else {
+		key.wVirtualKeyCode = c & 0xFF;
+		key.uChar.AsciiChar = c & 0xFF;
+		key.uChar.UnicodeChar = c & 0xFF;
+	}
+
+	_priorBuffer.push_front(key);
 }
 
 std::vector<KEY_EVENT_RECORD> Keyboard::GetKeyBuf()
@@ -273,12 +311,12 @@ unsigned __int32 PressedKey::SimpleKeyDescr()
 	return (ControlKey << 16) + ((_key.wVirtualKeyCode & 0xFF) << 8) + Char;
 }
 
-unsigned __int16 PressedKey::KeyCombination()
+unsigned short PressedKey::KeyCombination()
 {
 	// primitive variant without detection of left or right side
 	// 2. B (0xN0000ACS) - NonChar, SHIFT, CONTROL, ALT
 	// 1. B NonChar: Virtual Key Code, otherwise printable char
-	__int16 result;
+	unsigned short result;
 	unsigned char ControlKey = 0;
 	if (Alt()) ControlKey += 4;
 	if (Ctrl()) ControlKey += 2;
@@ -287,11 +325,15 @@ unsigned __int16 PressedKey::KeyCombination()
 	if (Char == 0) {
 		// non printable character
 		ControlKey += 0x80;
-		result = static_cast<short>((ControlKey << 8) + (_key.wVirtualKeyCode & 0xFF));
+		result = static_cast<unsigned short>((ControlKey << 8) + (_key.wVirtualKeyCode & 0xFF));
 	}
 	else {
 		// printable character
-		result = static_cast<short>((ControlKey << 8) + Char);
+		if (ControlKey == 1) {
+			// capital char
+			ControlKey = 0;
+		}
+		result = static_cast<unsigned short>((ControlKey << 8) + static_cast<unsigned char>(_key.uChar.AsciiChar));
 	}
 	return result;
 }
@@ -332,7 +374,7 @@ bool PressedKey::isChar()
 {
 	BYTE c = (BYTE)Char;
 	// muze byt se SHIFT, to znaci velke pismeno ...
-	return c >= 0x20 && c <= 0xFE && !Alt() && !Ctrl();
+	return c >= 0x20 && !Alt() && !Ctrl();
 }
 
 bool PressedKey::Shift()
