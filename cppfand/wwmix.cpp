@@ -713,7 +713,9 @@ void wwmix::PromptLL(WORD N, std::string* Txt, WORD I, bool Del)
 
 pstring wwmix::PassWord(bool TwoTimes)
 {
-	longint w; pstring Txt, Txt1;  WORD MsgNr, col;
+	longint w;
+	std::string Txt, Txt1;
+	WORD MsgNr, col;
 	col = (TxtCols - 21) >> 1;
 	w = PushW(col, TxtRows - 2, col + 21, TxtRows - 2);
 	MsgNr = 628;
@@ -727,9 +729,10 @@ label1:
 	TextAttr = screen.colors.pNorm;
 	screen.GotoXY(2, 1);
 	Txt = "";
-	EditTxt(&Txt, 1, 20, 20, 'A', true, true, true, false, 0);
+	EditTxt(Txt, 1, 20, 20, 'A', true, true, true, false, 0);
 	if (Event.Pressed.KeyCombination() == __ESC) {
-		Txt = ""; goto label2;
+		Txt = "";
+		goto label2;
 	}
 	if (TwoTimes) {
 		if (MsgNr == 628) {

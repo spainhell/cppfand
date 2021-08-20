@@ -372,7 +372,7 @@ unsigned __int32 PressedKey::Function()
 /// jedna se o tisknutelny znak?
 bool PressedKey::isChar()
 {
-	BYTE c = (BYTE)Char;
+	BYTE c = (BYTE)_key.uChar.AsciiChar;
 	// muze byt se SHIFT, to znaci velke pismeno ...
 	return c >= 0x20 && !Alt() && !Ctrl();
 }

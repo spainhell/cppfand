@@ -50,7 +50,8 @@ extern longint LastTxtPos;
 extern longint TxtXY;
 // { consecutive WORD - sized / for formula access / }
 extern WORD RprtLine; extern WORD RprtPage; extern WORD PgeLimit; // {report}
-extern WORD EdBreak; extern WORD EdIRec; // {common - alphabetical order}
+extern WORD EdBreak;
+extern WORD EdIRec; // {common - alphabetical order}
 extern WORD MenuX; extern WORD MenuY;
 extern WORD UserCode;
 // **********

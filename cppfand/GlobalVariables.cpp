@@ -47,7 +47,8 @@ longint LastTxtPos = 0;
 longint TxtXY = 0;
 // { consecutive WORD - sized / for formula access / }
 WORD RprtLine = 0; WORD RprtPage = 0; WORD PgeLimit = 0; // {report}
-WORD EdBreak = 0; WORD EdIRec = 1; // {common - alphabetical order}
+WORD EdBreak = 0;
+WORD EdIRec = 1; // {common - alphabetical order}
 WORD MenuX = 1; WORD MenuY = 1;
 WORD UserCode = 0;
 // WORD* WordVarArr = &RprtLine;

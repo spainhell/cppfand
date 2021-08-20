@@ -84,7 +84,7 @@ void WriteStr(WORD& pos, WORD& base, WORD& maxLen, WORD& maxCol, BYTE sLen, std:
 			if (star) Buffer[i].Char.AsciiChar = '*';
 			else Buffer[i].Char.AsciiChar = s[base + i];
 			if (Buffer[i].Char.AsciiChar >= '\0' && Buffer[i].Char.AsciiChar < ' ')
-			{	// jedná se o netisknutelný znak ...
+			{	// non-printable char ...
 				Buffer[i].Char.AsciiChar = Buffer[i].Char.AsciiChar + 64;
 				Buffer[i].Attributes = screen.colors.tCtrl;
 			}
@@ -96,20 +96,19 @@ void WriteStr(WORD& pos, WORD& base, WORD& maxLen, WORD& maxCol, BYTE sLen, std:
 	screen.GotoXY(cx + pos - base - 1, cy);
 }
 
-WORD EditTxt(pstring* s, WORD pos, WORD maxlen, WORD maxcol, char typ, bool del, bool star, bool upd, bool ret,
-	WORD Delta)
+WORD EditTxt(std::string& text, WORD pos, WORD maxlen, WORD maxcol, char typ, bool del, bool star, bool upd, bool ret, WORD Delta)
 {
-	auto sLen = &(*s)[0];
 	WORD base = 0, cx = 0, cy = 0, cx1 = 0, cy1 = 0;
 	longint EndTime = 0; bool InsMode = false;
 	InsMode = true; base = 0;
+	bool delPreviousState = del;
 	if (pos > maxlen + 1) pos = maxlen + 1;
 	cx = screen.WhereX();
 	cx1 = cx + WindMin.X - 1;
 	cy = screen.WhereY();
 	cy1 = cy + WindMin.Y - 1;
 	screen.CrsNorm();
-	WriteStr(pos, base, maxlen, maxcol, *sLen, *s, star, cx, cy, cx1, cy1);
+	WriteStr(pos, base, maxlen, maxcol, text.length(), text, star, cx, cy, cx1, cy1);
 	WORD KbdChar;
 label1:
 	switch (WaitEvent(Delta)) {
@@ -136,8 +135,8 @@ label1:
 		if (Event.Pressed.isChar()) {
 			// printable character
 			if (del) {
-				pos = 1; *sLen = 0;
-				WriteStr(pos, base, maxlen, maxcol, *sLen, *s, star, cx, cy, cx1, cy1);
+				pos = 1; text = "";
+				WriteStr(pos, base, maxlen, maxcol, text.length(), text, star, cx, cy, cx1, cy1);
 				del = false;
 			}
 			if (upd) {
@@ -156,23 +155,23 @@ label1:
 			label5:
 				if (pos > maxlen) { beep(); goto label7; }
 				if (InsMode) {
-					if (*sLen == maxlen) {
-						if ((*s)[*sLen] == ' ') {
-							(*sLen)--;
+					if (text.length() == maxlen) {
+						if (text[text.length() - 1] == ' ') {
+							text = text.substr(0, text.length() - 1);
 						}
 						else {
 							beep();
 							goto label7;
 						}
 					}
-					Move(&(*s)[pos], &(*s)[pos + 1], *sLen - pos + 1);
-					(*sLen)++;
+					char c = (char)(KbdChar & 0x00FF);
+					text.insert(pos - 1, 1, c);
+					pos++;
 				}
-				else if (pos > *sLen) {
-					(*sLen)++;
+				else {
+					// overwrite
+					text[pos - 1] = (char)(KbdChar & 0x00FF);
 				}
-				(*s)[pos] = (char)(KbdChar & 0x00FF);
-				pos++;
 			label7: {}
 			}
 
@@ -182,6 +181,8 @@ label1:
 			}*/
 		}
 		else {
+			delPreviousState = del;
+			del = false;
 			// non-printable
 			switch (KbdChar) {
 			case __INSERT:
@@ -191,17 +192,21 @@ label1:
 			case __ESC:
 			case __ENTER: {
 			label6:
-				DelBlk(*sLen, *s, pos);
-				screen.CrsHide(); TxtEdCtrlUBrk = false; TxtEdCtrlF4Brk = false;
+				text = TrailChar(text, ' ');
+				screen.CrsHide();
+				TxtEdCtrlUBrk = false;
+				TxtEdCtrlF4Brk = false;
 				return 0;
 			}
 			case __LEFT:
-			case _S_: if ((pos > 1)) pos--; break;
+			case _S_: {
+				if ((pos > 1)) pos--;
+				break;
+			}
 			case __RIGHT:
 			case _D_: {
-				if (pos <= maxlen)
-				{
-					if ((pos > *sLen) && (*sLen < maxlen)) s = s + ' ';
+				if (pos <= maxlen) {
+					if ((pos > text.length()) && (text.length() < maxlen)) text += ' ';
 					pos++;
 				}
 				break;
@@ -211,19 +216,30 @@ label1:
 				if (ReadKbd() == _D_) goto label4;
 				break;
 			}
-			case __HOME:
+			case __HOME: {
 			label3:
-				pos = 1; break;
-			case __END:
+				pos = 1;
+				break;
+			}
+			case __END: {
 			label4:
-				pos = *sLen + 1; break;
-			case __BACK: if (upd && (pos > 1)) { pos--; goto label2; } break;
+				pos = text.length() + 1;
+				break;
+			}
+			case __BACK: {
+				if (upd && (pos > 1)) {
+					pos--;
+					goto label2;
+				}
+				break;
+			}
 			case __DELETE:
 			case _G_: {
-				if (upd && (pos <= *sLen)) {
+				if (upd && (pos <= text.length())) {
 				label2:
-					if (*sLen > pos) Move(&(*s)[pos + 1], &(*s)[pos], *sLen - pos);
-					(*sLen)--;
+					if (text.length() >= pos) {
+						text.erase(pos - 1, 1);
+					}
 				}
 				break;
 			}
@@ -235,31 +251,23 @@ label1:
 				break;
 			}
 			case __F4: {
-				if (upd && (typ == 'A') && (pos <= *sLen)) {
-					(*s)[pos] = ToggleCS((*s)[pos]);
+				if (upd && (typ == 'A') && (pos <= text.length())) {
+					text[pos-1] = ToggleCS(text[pos-1]);
 				}
 				break;
 			}
 			default:
+				del = delPreviousState; // not change 'del' state if unsupported key pressed
 				break;
 			}
 		}
 	}
 	}
-	WriteStr(pos, base, maxlen, maxcol, *sLen, *s, star, cx, cy, cx1, cy1);
+	WriteStr(pos, base, maxlen, maxcol, text.length(), text, star, cx, cy, cx1, cy1);
 	ClrEvent();
 	if (!ret) goto label1;
 
 	return pos;
-}
-
-WORD EditTxt(std::string& s, WORD pos, WORD maxlen, WORD maxcol, char typ, bool del, bool star, bool upd, bool ret,
-	WORD Delta)
-{
-	pstring tmp = s;
-	auto result = EditTxt(&tmp, pos, maxlen, maxcol, typ, del, star, upd, ret, Delta);
-	s = tmp;
-	return result;
 }
 
 /// <summary>
@@ -1541,7 +1549,7 @@ label3:
 	if (!EdRecVar) OldLMode(md2);
 	if (IsNewRec) NewRecExit();
 	return result;
-}
+	}
 
 void RefreshSubset()
 {
@@ -1666,20 +1674,20 @@ void UpdMemberRef(void* POld, void* PNew)
 						DuplFld(cf, CFile, PNew, p2, nullptr, kf->FldD, Arg->FldD);
 						Arg = (KeyFldD*)Arg->Chain;
 						kf = (KeyFldD*)kf->Chain;
-					}
+				}
 					RunAddUpdte1('d', p, false, nullptr, LD);
 					UpdMemberRef(p, p2);
 #ifdef FandSQL
 					if (sql) Strm1->UpdateXRec(k, @x, false) else
 #endif
 						OverWrXRec(Scan->RecNr, p, p2);
-				}
+		}
 				goto label1;
-			}
+	}
 			Scan->Close();
 			ClearRecSpace(p);
 			ReleaseStore(p);
-		}
+}
 	label2:
 		LD = LD->Chain;
 	}
@@ -1999,7 +2007,7 @@ bool DeleteRecProc()
 	UnLockWithDep(OldMd);
 	result = true;
 	return result;
-}
+	}
 
 ChkD* CompChk(EFldD* D, char Typ)
 {
@@ -2257,9 +2265,9 @@ bool OldRecDiffers()
 				(CompArea(Pchar(CRecPtr) + Displ, Pchar(E->OldRecPtr) + Displ, NBytes) != ord(_equ)) then
 				goto label1;
 			f = f->Chain;
-		}
+}
 		goto label2;
-	}
+}
 	else
 #endif
 		ReadRec(CFile, E->LockedRec, CRecPtr);
