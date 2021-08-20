@@ -329,8 +329,8 @@ unsigned short PressedKey::KeyCombination()
 	}
 	else {
 		// printable character
-		if (ControlKey == 1) {
-			// capital char
+		if (ControlKey == 1 || (ControlKey == 6 && (Char != _key.uChar.AsciiChar))) {
+			// capital char || Ctrl + Alt + V (@), ...
 			ControlKey = 0;
 		}
 		result = static_cast<unsigned short>((ControlKey << 8) + static_cast<unsigned char>(_key.uChar.AsciiChar));
@@ -374,7 +374,9 @@ bool PressedKey::isChar()
 {
 	BYTE c = (BYTE)_key.uChar.AsciiChar;
 	// muze byt se SHIFT, to znaci velke pismeno ...
-	return c >= 0x20 && !Alt() && !Ctrl();
+	// muze byt s CTRL a ALT zaroven, to znaci znaky '@' atp.
+	bool combi = (!Alt() && !Ctrl()) || (Alt() && Ctrl());
+	return c >= 0x20 && combi;
 }
 
 bool PressedKey::Shift()
