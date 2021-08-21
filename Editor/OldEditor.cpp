@@ -3828,7 +3828,10 @@ void HandleEvent() {
 				}
 				else if (ww == __ESC)
 				{
-					TestKod(); Event.Pressed.UpdateKey(ww); Konec = true; EdBreak = 0;
+					TestKod();
+					Event.Pressed.UpdateKey(ww);
+					Konec = true;
+					EdBreak = 0;
 				}
 				break;
 				// ***ERROR TESTLENTEXT***
