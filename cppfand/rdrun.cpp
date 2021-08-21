@@ -31,7 +31,7 @@ EditD* EditDRoot;
 FrmlElem* PgeSizeZ = nullptr, * PgeLimitZ = nullptr;
 bool CompileFD, EditRdbMode;
 LocVarBlkD LVBD;
-pstring CalcTxt = "";
+std::string CalcTxt = "";
 MergOpSt MergOpGroup = { _const, 0.0 };
 
 bool EFldD::Ed(bool IsNewRec)

@@ -424,7 +424,7 @@ extern EditD* EditDRoot;
 extern bool CompileFD, EditRdbMode;
 extern LocVarBlkD LVBD;
 
-extern pstring CalcTxt;
+extern std::string CalcTxt;
 struct MergOpSt { char Op; double Group; };
 extern MergOpSt MergOpGroup;
 

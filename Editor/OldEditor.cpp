@@ -975,7 +975,7 @@ void SmallerPart(WORD Ind, WORD FreeSize)
 	WORD i, il, l;
 	longint lon;
 	NullChangePart();
-	if ((StoreAvail() > FreeSize) && (MaxLenT - LenT > FreeSize)) { exit; }
+	if ((StoreAvail() > FreeSize) && (MaxLenT - LenT > FreeSize)) { exit(0); }
 	TestUpdFile();
 	WrEndT();
 	lon = MinL(LenT + StoreAvail(), MaxLenT);
@@ -1046,8 +1046,7 @@ void TestLenText(WORD F, longint LL)
 	WORD* L = (WORD*)&LL;
 	longint _size = LL - F;
 	if (F < LL) {
-		if (TypeT == FileT)
-		{
+		if (TypeT == FileT)	{
 			SmallerPart(F, _size);
 			F -= Part.MovI;
 			L -= Part.MovI;
@@ -1411,8 +1410,8 @@ void KodLine()
 {
 	WORD LP = LastPosLine() + 1;
 	if (HardL) LP++;
-	TestLenText(NextI, longint(LineI) + LP);
-	Move(Arr, &T[LineI], LP);
+	TestLenText(NextI, LineI + LP);
+	Move(Arr, &T[LineI - 1], LP);
 	NextI = LineI + LP;
 	LP = NextI - 1;
 	if (HardL) LP--;
@@ -2086,22 +2085,19 @@ void MoveB(WORD& B, WORD& F, WORD& T)
 
 bool TestLastPos(WORD F, WORD T)
 {
-	WORD LP;
-	LP = LastPosLine();
+	WORD LP = LastPosLine();
 	if (F > LP) F = LP + 1;
-	if (LP + T - F <= LineSize)
-	{
+	if (LP + T - F <= LineSize)	{
 		if (LP >= F) Move(&Arr[F], &Arr[T], succ(LP - F));
-		if (TypeB == TextBlock)
-		{
+		if (TypeB == TextBlock) {
 			if (LineAbs(LineL) == BegBLn) MoveB(BegBPos, F, T);
 			if (LineAbs(LineL) == EndBLn) MoveB(EndBPos, F, T);
 		}
-		if (F > T)
-		{
-			if (T <= LP) FillChar(&Arr[LP + 1 + T - F], F - T, 32);
+		if (F > T) {
+			if (T <= LP) FillChar(&Arr[LP + 1 + T - F], F - T, ' ');
 		}
-		UpdatedL = true; return true;
+		UpdatedL = true;
+		return true;
 	}
 	else return false;
 }
@@ -2178,18 +2174,18 @@ WORD SetPredI()
 	else return SetCurrI(LineI - 1);
 }
 
-void WrChar_E(char Ch)
+void WrCharE(char Ch)
 {
 	if (Insert) {
-		if (TestLastPos(Posi, succ(Posi))) {
-			Arr[Posi] = Ch;
+		if (TestLastPos(Posi, Posi + 1)) {
+			Arr[Posi - 1] = Ch;
 			if (Posi < LineSize) {
 				Posi++;
 			}
 		}
 	}
 	else {
-		Arr[Posi] = Ch;
+		Arr[Posi - 1] = Ch;
 		UpdatedL = true;
 		if (Posi < LineSize) {
 			Posi++;
@@ -2199,46 +2195,43 @@ void WrChar_E(char Ch)
 
 void Format(WORD& i, longint First, longint Last, WORD Posit, bool Rep)
 {
-	WORD fst, lst, ii1;
+	WORD lst, ii1;
 	integer ii;
-	longint llst;
 	char A[260];
 	bool bBool;
 	WORD rp, nb, nw, n;
 	WORD RelPos;
 
-	SetPart(First); fst = First - Part.PosP; llst = Last - Part.PosP;
-	if (llst > LenT) lst = LenT; else lst = llst;
+	SetPart(First);
+	WORD fst = First - Part.PosP;
+	longint llst = Last - Part.PosP;
+	if (llst > LenT) lst = LenT;
+	else lst = llst;
 	do {
-		if (LenT > 0x400) ii1 = LenT - 0x400; else ii1 = 0;
-		if ((fst >= ii1) && !AllRd)
-		{
+		if (LenT > 0x400) ii1 = LenT - 0x400;
+		else ii1 = 0;
+		if ((fst >= ii1) && !AllRd)	{
 			NextPartDek();
 			fst -= Part.MovI; lst -= Part.MovI; llst -= Part.MovI;
 			if (llst > LenT) lst = LenT; else lst = llst;
 		}
 		i = fst; ii1 = i;
-		if ((i < 2) || (T[i - 1] == _LF))
-		{
+		if ((i < 2) || (T[i - 1] == _LF)) {
 			while (T[ii1] == ' ') ii1++; Posit = MaxW(Posit, ii1 - i + 1);
 		}
 		ii1 = i; RelPos = 1;
-		if (Posit > 1)
-		{
+		if (Posit > 1) {
 			Move(&T[i], A, Posit);
-			for (ii = 1; ii < Posit - 1; i++)
-			{
+			for (ii = 1; ii < Posit - 1; i++) {
 				if (CtrlKey.find(T[i]) == std::string::npos) RelPos++;
 				if (T[i] == _CR) A[ii] = ' ';
 				else i++;
 			}
-			if ((T[i] == ' ') && (A[Posit - 1] != ' '))
-			{
+			if ((T[i] == ' ') && (A[Posit - 1] != ' '))	{
 				Posit++; RelPos++;
 			}
 		}
-		while (i < lst)
-		{
+		while (i < lst) {
 			bBool = true; nw = 0; nb = 0;
 			if (RelPos < LeftMarg)
 				if ((Posit == 1) || (A[Posit - 1] == ' '))
@@ -2330,44 +2323,47 @@ void Format(WORD& i, longint First, longint Last, WORD Posit, bool Rep)
 void Calculate()
 {
 	wwmix ww;
-	FrmlPtr Z = nullptr; std::string Txt;
+	FrmlPtr Z = nullptr;
+	std::string txt;
 	ExitRecord er; WORD I; pstring Msg;
 	void* p = nullptr; char FTyp; double R; bool Del;
-	MarkStore(p); //NewExit(Ovr(), er);
-	goto label2; ResetCompilePars();
+	MarkStore(p);
+	//NewExit(Ovr(), er);
+	goto label2;
+	ResetCompilePars();
 	RdFldNameFrml = RdFldNameFrmlT;
 label0:
-	Txt = CalcTxt; Del = true; I = 1;
+	txt = CalcTxt; Del = true; I = 1;
 label1:
 	TxtEdCtrlUBrk = true; TxtEdCtrlF4Brk = true;
-	ww.PromptLL(114, &Txt, I, Del);
+	ww.PromptLL(114, &txt, I, Del);
 	if (Event.Pressed.KeyCombination() == _U_) goto label0;
-	if ((Event.Pressed.KeyCombination() == _ESC_) || (Txt.length() == 0)) goto label3;
-	CalcTxt = Txt;
+	if ((Event.Pressed.KeyCombination() == _ESC_) || (txt.length() == 0)) goto label3;
+	CalcTxt = txt;
 	if ((Event.Pressed.KeyCombination() == _CtrlF4_) && (Mode == TextM) && !bScroll)
 	{
-		if (Txt.length() > LineSize - LastPosLine())
+		if (txt.length() > LineSize - LastPosLine())
 		{
 			I = LineSize - LastPosLine(); WrLLF10Msg(419); goto label1;
 		}
-		if (Posi <= LastPosLine()) TestLastPos(Posi, Posi + Txt.length());
-		Move(&Txt[1], &Arr[Posi], Txt.length()); UpdatedL = true; goto label3;
+		if (Posi <= LastPosLine()) TestLastPos(Posi, Posi + txt.length());
+		Move(&txt[1], &Arr[Posi], txt.length()); UpdatedL = true; goto label3;
 	}
-	SetInpStr(Txt);
+	SetInpStr(txt);
 	RdLex();
 	Z = RdFrml(FTyp);
 	if (Lexem != 0x1A) Error(21);
 	switch (FTyp) {
 	case 'R': {
-		R = RunReal(Z); str(R, 30, 10, Txt);
-		Txt = LeadChar(' ', TrailChar(Txt, '0'));
-		if (Txt[Txt.length()] == '.') Txt[0]--;
+		R = RunReal(Z); str(R, 30, 10, txt);
+		txt = LeadChar(' ', TrailChar(txt, '0'));
+		if (txt[txt.length()] == '.') txt[0]--;
 		break;
 	}
-	case 'S': { Txt = RunShortStr(Z);   /* wie RdMode fuer T ??*/ break; }
+	case 'S': { txt = RunShortStr(Z);   /* wie RdMode fuer T ??*/ break; }
 	case 'B': {
-		if (RunBool(Z)) Txt = AbbrYes;
-		else Txt = AbbrNo;
+		if (RunBool(Z)) txt = AbbrYes;
+		else txt = AbbrNo;
 		break;
 	}
 	}
@@ -2418,17 +2414,15 @@ void ResetPrint(char Oper, longint& fs, FILE* W1, longint LenPrint, ColorOrd* co
 
 void LowCase(unsigned char& c)
 {
-	BYTE i;
 	if ((c >= 'A') && (c <= 'Z')) { c = c + 0x20; return; }
-	for (i = 128; i <= 255; i++)
+	for (size_t i = 128; i <= 255; i++)
 		if ((UpcCharTab[i] == c) && (i != c)) { c = i; return; }
 }
 
 void LowCase(char& c)
 {
-	BYTE i;
 	if ((c >= 'A') && (c <= 'Z')) { c = c + 0x20; return; }
-	for (i = 128; i <= 255; i++)
+	for (size_t i = 128; i <= 255; i++)
 		if ((UpcCharTab[i] == c) && (i != c)) { c = i; return; }
 }
 
@@ -2467,9 +2461,9 @@ bool BlockHandle(longint& fs, FILE* W1, char Oper)
 			case 'L': { for (i = I1; i < I2 - 1; i++) LowCase(T[i]); LL1 += I2 - I1; break; }
 			case 'p':
 			case 'P': {
-				if (isPrintFile)
-				{
-					WriteH(W1, I2 - I1, &T[I1]); HMsgExit(CPath);
+				if (isPrintFile) {
+					WriteH(W1, I2 - I1, &T[I1]);
+					HMsgExit(CPath);
 				}
 				else {
 					Move(&T[I1], p[fs + 1], I2 - I1);
@@ -2478,7 +2472,9 @@ bool BlockHandle(longint& fs, FILE* W1, char Oper)
 				break;
 			}
 			case 'W': {
-				SeekH(W1, fs); WriteH(W1, I2 - I1, &T[I1]); HMsgExit(CPath);
+				SeekH(W1, fs);
+				WriteH(W1, I2 - I1, &T[I1]);
+				HMsgExit(CPath);
 				fs += I2 - I1; LL1 += I2 - I1;
 				break;
 			}
@@ -2500,12 +2496,16 @@ bool BlockHandle(longint& fs, FILE* W1, char Oper)
 			switch (Oper) {
 			case 'Y': { TestLastPos(EndBPos, BegBPos); break; }
 			case 'U': {
-				for (i = BegBPos; i < EndBPos - 1; i++)
-					Arr[i] = UpcCharTab[Arr[i]]; UpdatedL = true;
+				for (i = BegBPos; i < EndBPos - 1; i++) {
+					Arr[i] = UpcCharTab[Arr[i]];
+				}
+				UpdatedL = true;
 				break;
 			}
 			case 'L': {
-				for (i = BegBPos; i < EndBPos - 1; i++) LowCase(Arr[i]);
+				for (i = BegBPos; i < EndBPos - 1; i++) {
+					LowCase(Arr[i]);
+				}
 				UpdatedL = true;
 				break;
 			}
@@ -2657,14 +2657,12 @@ void BlockCDrop(char Oper, void* P1, LongStr* sp)
 	if (sp->LL == 0) return;
 	/* hlidani sp->LL a StoreAvail, MaxLenT
 		dela NextLine - prechazi mezi segmenty */
-	if (Oper != 'R')
-	{
+	if (Oper != 'R') {
 		EndBPos = Posi; BegBPos = Posi; BegBLn = LineL + Part.LineP;
 	}
 	ww = BegBPos; I1 = 1; I3 = 1;
 	do {
-		if (sp->A[I1] == _CR)
-		{
+		if (sp->A[I1] == _CR) {
 			InsertLine(i, I1, I3, ww, sp);
 			ww = BegBPos; EndBPos = MaxW(ww + i, EndBPos);
 			if ((NextI > LenT) && ((TypeT != FileT) || AllRd))
@@ -2839,9 +2837,10 @@ void SetScreen(WORD Ind, WORD ScrXY, WORD Pos)
 
 void ReplaceString(WORD& J, WORD& fst, WORD& lst, longint& Last)
 {
-	integer r, f;
-	r = ReplaceStr.length(); f = FindStr.length();
-	TestLenText(J, longint(J) + r - f); ChangeP(fst);
+	integer r = ReplaceStr.length();
+	integer f = FindStr.length();
+	TestLenText(J, longint(J) + r - f);
+	ChangeP(fst);
 	//if (TestLastPos(Posi, Posi + r - f));
 	if (ReplaceStr != "") Move(&ReplaceStr[1], &T[J - f], r);
 	J += r - f;
@@ -2853,12 +2852,20 @@ void ReplaceString(WORD& J, WORD& fst, WORD& lst, longint& Last)
 char MyVerifyLL(WORD n, pstring s)
 {
 	longint w, t; WORD c1, c2, r1, r2, r; char cc;
-	c2 = screen.WhereX() + FirstC - 1; r2 = screen.WhereY() + FirstR;
-	w = PushW(1, 1, TxtCols, TxtRows); screen.GotoXY(1, TxtRows);
-	TextAttr = screen.colors.pTxt; ClrEol(); SetMsgPar(s); WriteMsg(n);
+	c2 = screen.WhereX() + FirstC - 1;
+	r2 = screen.WhereY() + FirstR;
+	w = PushW(1, 1, TxtCols, TxtRows);
+	screen.GotoXY(1, TxtRows);
+	TextAttr = screen.colors.pTxt;
+	ClrEol();
+	SetMsgPar(s);
+	WriteMsg(n);
 	c1 = screen.WhereX(); r1 = screen.WhereY();
 	TextAttr = screen.colors.pNorm;
-	printf(" "); screen.CrsNorm(); t = Timer + 15; r = r1;
+	printf(" ");
+	screen.CrsNorm();
+	t = Timer + 15;
+	r = r1;
 	do {
 		while (!KbdPressed())
 			if (Timer >= t) {
@@ -3055,7 +3062,7 @@ void HandleEvent() {
 	wwmix wwmix1;
 	WORD I = 0, I1 = 0, I2 = 0, I3 = 0;
 	FILE* F1 = nullptr;
-	WORD W1 = 0, W2 = 0, ww = 0;
+	WORD W1 = 0, W2 = 0;
 	longint L1 = 0, L2 = 0, fs = 0;
 	std::string ss;
 	int j = 0;
@@ -3079,21 +3086,21 @@ void HandleEvent() {
 	//goto Opet;
 	// !!! with Event do:
 	if (Event.What == evKeyDown) {
+		WORD key = Event.Pressed.KeyCombination();
 		EdOk = false;
-		ww = Event.Pressed.KeyCombination();
 		ClrEvent();
-		X = ExitD;                         // Exit-procedure
+		X = ExitD; // Exit-procedure
 
 		// test all exit keys
 		while (X != nullptr) {
-			if (TestExitKey(ww, X)) {  // nastavuje i EdBreak
+			if (TestExitKey(key, X)) {  // nastavuje i EdBreak
 				TestKod();
 				IndT = SetInd(LineI, Posi);
 				ScrT = ((LineL - ScrL + 1) << 8) + Posi - BPos;
 				LastTxtPos = IndT + Part.PosP;
 				TxtXY = ScrT + ((longint)Posi << 16);
 				if (X->Typ == 'Q') {
-					Event.Pressed.UpdateKey(ww);
+					Event.Pressed.UpdateKey(key);
 					Konec = true; EditT = false;
 					goto Nic;
 				}
@@ -3180,17 +3187,84 @@ void HandleEvent() {
 		}  // while
 
 		// test frame drawing mode
-		if (((Mode == SinFM) || (Mode == DouFM) || (Mode == DelFM) || (Mode == NotFM)) && !bScroll) {
-			FrameStep(FrameDir, ww);
+		if ((Mode == SinFM || Mode == DouFM || Mode == DelFM || Mode == NotFM) && !bScroll) {
+			FrameStep(FrameDir, key);
+		}
+		else if (Event.Pressed.isChar()) {
+			// printable character
+			WrCharE(Lo(key));
+			if (Wrap) {
+				if (Posi > RightMarg + 1) {
+					W1 = Arr[Posi];
+					Arr[Posi] = 0xFF;
+					KodLine();
+					I1 = LeftMarg;
+					while (Arr[I1] == ' ') { I1++; }
+					if (I1 > RightMarg) { I1 = RightMarg; }
+					L1 = Part.PosP + LineI;
+					Format(I, L1, AbsLenT + LenT - Part.LenP, I1, false);
+					SetPart(L1);
+					I = 1;
+					// TODO: tady se pouzivalo 'I' ve FindChar, ale k cemu je???
+					I = FindChar(T, LenT, 0xFF, 1);
+					T[I] = W1;
+					SetDekLnCurrI(I);
+					Posi = I - LineI + 1;
+				}
+			}
 		}
 		else {
-			switch (ww) {
+			// control key
+			switch (key) {
+			case __ENTER: {
+				if (Mode == HelpM) {
+					Konec = WordExist();
+					Event.Pressed.UpdateKey(key);
+				}
+				else {
+					if ((NextI >= LenT) && !AllRd) NextPartDek();
+					if ((NextI > LenT) || Insert) {
+						NewLine('m');
+						Posi = 1;
+						ClrEol();
+						if (LineL - ScrL == PageS) {
+							screen.GotoXY(1, 1);
+							MyDelLine();
+							ScrL++;
+							ChangeScr = true;
+						}
+						else {
+							screen.GotoXY(1, succ(LineL - ScrL));
+							MyInsLine();
+						}
+						if (Indent) {
+							I1 = SetPredI();
+							I = I1;
+							while ((T[I] == ' ') && (T[I] != _CR)) { I++; }
+							if (T[I] != _CR) { Posi = I - I1 + 1; }
+						}
+						else if (Wrap) {
+							Posi = LeftMarg;
+						}
+						if (TestLastPos(1, Posi)) {
+							FillChar(&Arr[1], Posi - 1, 32);
+						}
+					}
+					else if (NextI <= LenT) {
+						NextLine(true);
+						Posi = 1;
+					}
+				}
+				break;
+			}
 			case __LEFT: {
-				if (Mode == HelpM) HelpLU('L');
+				if (Mode == HelpM) { HelpLU('L'); }
 				else
-					if (bScroll)
-					{
-						if (BCol > 0) { Colu = BCol; Posi = Position(Colu); }
+					if (bScroll) {
+						if (BCol > 0) {
+							Colu = BCol;
+							Posi = Position(Colu);
+						}
 					}
 					else {
 						I1 = Posi;
@@ -3215,7 +3289,9 @@ void HandleEvent() {
 				break;
 			}
 			case __UP: {
-				if (Mode == HelpM) HelpLU('U');
+				if (Mode == HelpM) {
+					HelpLU('U');
+				}
 				else {
 					if (bScroll) if (RScrL == 1) goto Nic;
 					L1 = LineAbs(LineL);
@@ -3391,50 +3467,6 @@ void HandleEvent() {
 				DekFindLine(L1);
 				break;
 			}
-						  // *****************************************
-						  // tady byly puvodne *********CHAR**********
-						  // *****************************************
-			case __ENTER: {
-				if (Mode == HelpM) {
-					Konec = WordExist();
-					Event.Pressed.UpdateKey(ww);
-				}
-				else {
-					if ((NextI >= LenT) && !AllRd) NextPartDek();
-					if ((NextI > LenT) || Insert) {
-						NewLine('m');
-						Posi = 1;
-						ClrEol();
-						if (LineL - ScrL == PageS) {
-							screen.GotoXY(1, 1);
-							MyDelLine();
-							ScrL++;
-							ChangeScr = true;
-						}
-						else {
-							screen.GotoXY(1, succ(LineL - ScrL));
-							MyInsLine();
-						}
-						if (Indent) {
-							I1 = SetPredI();
-							I = I1;
-							while ((T[I] == ' ') && (T[I] != _CR)) { I++; }
-							if (T[I] != _CR) { Posi = I - I1 + 1; }
-						}
-						else if (Wrap) {
-							Posi = LeftMarg;
-						}
-						if (TestLastPos(1, Posi)) {
-							FillChar(&Arr[1], Posi - 1, 32);
-						}
-					}
-					else if (NextI <= LenT) {
-						NextLine(true);
-						Posi = 1;
-					}
-				}
-				break;
-			}
 			case _N_: { NewLine('n'); ClrEol(); screen.GotoXY(1, LineL - ScrL + 2); MyInsLine(); break; }
 
 			case __INSERT: { Insert = !Insert; break; }
@@ -3490,7 +3522,7 @@ void HandleEvent() {
 			case _QA_: {
 				Replace = false;
 				if (MyPromptLL(405, &FindStr)) goto Nic;
-				if (ww == _QA_)
+				if (key == _QA_)
 				{
 					if (MyPromptLL(407, &ReplaceStr)) goto Nic;
 					Replace = true;
@@ -3504,7 +3536,7 @@ void HandleEvent() {
 					if (TestOptStr('g') || TestOptStr('e'))  L1 = 1;
 					else L1 = Part.PosP + SetInd(LineI, Posi);
 				}
-				FindReplaceString(L1, L2); if (ww == _QA_) DekodLine();
+				FindReplaceString(L1, L2); if (key == _QA_) DekodLine();
 				if (!Konec) { FirstEvent = false; Background(); }
 				break;
 			}
@@ -3559,7 +3591,7 @@ void HandleEvent() {
 				BegBLn = LineAbs(LineL);
 				if (TypeB == TextBlock) BegBPos = MinI(LastPosLine() + 1, Posi);
 				else BegBPos = Posi;
-				if (ww == _KH_) goto OznB;
+				if (key == _KH_) goto OznB;
 				break;
 			}
 			case _KK_:
@@ -3655,6 +3687,7 @@ void HandleEvent() {
 					SetDekLnCurrI(I);
 					EndBLn = Part.LineP + LineL;
 					EndBPos = succ(I - LineI);
+					break;
 				}
 				case ColBlock: {
 					EndBPos = Posi; I2 = 0x1000;
@@ -3665,6 +3698,7 @@ void HandleEvent() {
 						L2 += I2; sp->LL = I2; BlockCDrop('R', P1, sp);
 					} while (L2 != fs);
 					EndBLn = Part.LineP + LineL - 1; ReleaseStore2(P1);
+					break;
 				}
 				}
 				CloseH(&F1);
@@ -3681,8 +3715,8 @@ void HandleEvent() {
 					BegBLn = 1; EndBLn = 0x7FFF; BegBPos = 1; EndBPos = 0xFF;
 					TypeB = TextBlock;
 					BegBLn = I1; BegBPos = I2; EndBLn = I3; EndBPos = I; TypeB = bb;
-					break;
 				}
+				break;
 			case _KF_: {
 				if (BlockExist() && (TypeB == TextBlock))
 				{
@@ -3730,12 +3764,13 @@ void HandleEvent() {
 				break;
 			}
 			case _OC_: {
-				I1 = 1; while ((I1 < LastPosLine()) && (Arr[I1] == ' ')) { I1++; }
-				I2 = LastPosLine(); while ((I2 > 1) && (Arr[I2] == ' ')) { I2--; }
+				I1 = 1;
+				while ((I1 < LastPosLine()) && (Arr[I1] == ' ')) { I1++; }
+				I2 = LastPosLine();
+				while ((I2 > 1) && (Arr[I2] == ' ')) { I2--; }
 				j = (LeftMarg + (RightMarg - LeftMarg) / 2) - int(I1 + (I2 - I1) / 2);
 				if ((I2 < I1) || (j == 0)) goto Nic;
-				if (j > 0)
-				{
+				if (j > 0) {
 					if (TestLastPos(1, j + 1)) FillChar(&Arr[1], j, 32);
 				}
 				else {
@@ -3746,9 +3781,12 @@ void HandleEvent() {
 				break;
 			}
 			case _B_: {
-				TestKod(); L1 = Part.PosP + LineI;
+				TestKod();
+				L1 = Part.PosP + LineI;
 				Format(I, L1, AbsLenT + LenT - Part.LenP, MinI(LeftMarg, Posi), false);
-				SetPart(L1); I2 = L1 - Part.PosP; SetDekLnCurrI(I2); Posi = 1;
+				SetPart(L1);
+				I2 = L1 - Part.PosP;
+				SetDekLnCurrI(I2); Posi = 1;
 				break;
 			}
 			case _framesingle_: {
@@ -3780,7 +3818,6 @@ void HandleEvent() {
 				if ((TypeT == FileT) || (TypeT == LocalT)) BlockHandle(fs, F1, 'p');
 				break;
 			}
-
 			case 0x1000: {
 			Opet:
 				if ((Mode != HelpM) && (Mode != ViewM) && Wrap)
@@ -3788,8 +3825,9 @@ void HandleEvent() {
 				else screen.Window(FirstC, FirstR + 1, LastC, LastR);
 
 				if (!Scroll) screen.CrsShow();
-				SetScreen(LineI, 0, 0); }
-
+				SetScreen(LineI, 0, 0);
+				break;
+			}
 			case _U_: {
 				if (TypeT != FileT)
 					if (PromptYN(108)) {
@@ -3799,39 +3837,23 @@ void HandleEvent() {
 					}
 				break;
 			}
-			default:
-			{
-				if (ww >= 0x1000 && ww <= 0x101F) {
-					WrChar(Lo(ww)); // ***CTRL-klavesy***
-					if (ww == 0x100D) { TestKod(); DekodLine(); Posi--; }
+			case __ESC: {
+				TestKod();
+				Event.Pressed.UpdateKey(key);
+				Konec = true;
+				EdBreak = 0;
+				break;
 				}
-				if (ww >= 0x0020 && ww <= 0x00FF) { // *********CHAR**********
-					WrChar(Lo(ww));
-					if (Wrap) if (Posi > RightMarg + 1)
-					{
-						W1 = Arr[Posi]; Arr[Posi] = 0xFF; KodLine();
-						I1 = LeftMarg; while (Arr[I1] == ' ') I1++;
-						if (I1 > RightMarg) I1 = RightMarg;
-						L1 = Part.PosP + LineI;
-						Format(I, L1, AbsLenT + LenT - Part.LenP, I1, false);
-						SetPart(L1); I = 1;
-						// TODO: tady se pouzivalo 'I' ve FindChar, ale k cemu je???
-						I = FindChar(T, LenT, 0xFF, 1);
-						T[I] = W1;
-						SetDekLnCurrI(I); Posi = I - LineI + 1;
-					}
+			default: {
+				if (key >= 0x1000 && key <= 0x101F) {
+					WrCharE(Lo(key)); // ***CTRL-klavesy***
+					if (key == 0x100D) { TestKod(); DekodLine(); Posi--; }
 				}
-				if (((Lo(ww) == 0x00) && (Breaks.first(Hi(ww)) != 0))
-					|| ((ww == _AltEqual_) && (TypeT != FileT)))
+
+				if (((Lo(key) == 0x00) && (Breaks.first(Hi(key)) != 0))
+					|| ((key == _AltEqual_) && (TypeT != FileT)))
 				{
-					TestKod(); Event.Pressed.UpdateKey(ww); Konec = true; EdBreak = 0xFFFF;
-				}
-				else if (ww == __ESC)
-				{
-					TestKod();
-					Event.Pressed.UpdateKey(ww);
-					Konec = true;
-					EdBreak = 0;
+					TestKod(); Event.Pressed.UpdateKey(key); Konec = true; EdBreak = 0xFFFF;
 				}
 				break;
 				// ***ERROR TESTLENTEXT***

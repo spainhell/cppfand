@@ -4103,7 +4103,8 @@ label81:
 			if (CFld->Ed(IsNewRec) && ((CFld->FldD->Typ != 'T') || (_T(CFld->FldD) == 0))
 				&& LockRec(true)) {
 				//keyboard.AddToFrontKeyBuf(KbdChar); // vrati znak znovu do bufferu
-				if (!EditItemProc(true, true, Brk)) goto label7;
+				const bool res = !EditItemProc(true, true, Brk);
+				if (res) goto label7;
 				if (Brk != 0) goto fin;
 			}
 		}

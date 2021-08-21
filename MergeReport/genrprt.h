@@ -20,10 +20,10 @@ extern LongStrPtr Txt;
 
 void SubstChar(pstring S, char C1, char C2);
 void Design(RprtOpt* RO);
-void WrChar(char C); // existuje i v EDEVPROC!
-void WrBlks(integer N);
-void WrStr(pstring S);
-void WrLevel(integer Level);
+//void WrChar(char C); // existuje i v EDEVPROC!
+//void WrBlks(integer N);
+//void WrStr(pstring S);
+//void WrLevel(integer Level);
 LongStr* GenAutoRprt(RprtOpt* RO, bool WithNRecs);
 void RunAutoReport(RprtOpt* RO); // r223
 bool SelForAutoRprt(RprtOpt* RO); // r232
