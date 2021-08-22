@@ -1007,6 +1007,8 @@ void TruncH(FILE* handle, longint N)
 	if (FileSizeH(handle) > N) {
 		SeekH(handle, N);
 		SetEndOfFile(handle);
+		SeekH(handle, 0);
+		SetFileValidData(handle, N);
 	}
 }
 

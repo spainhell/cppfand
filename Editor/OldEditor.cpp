@@ -149,8 +149,7 @@ longint SavePar()
 
 void RestorePar(longint l)
 {
-	LongStr* sp;
-	sp = ReadDelInTWork(l);
+	LongStr* sp = ReadDelInTWork(l);
 	Move(sp->A, &Insert, InterfL);
 	Move(&sp->A[InterfL + 1], &Mode, sp->LL - InterfL);
 	ReleaseStore(sp);
@@ -191,7 +190,10 @@ void HMsgExit(pstring s)
 		RunError(700 + HandleError);
 		break;
 	}
-	case 4: RunError(704); break;
+	case 4: {
+		RunError(704);
+		break;
+	}
 	}
 }
 
@@ -340,65 +342,6 @@ bool RdNextPart()
 	LenT = fileSize;
 	AllRd = true;
 	return false; // return ChangePart
-
-	//char* ppa = nullptr;
-	//WORD L11 = 0, L1 = 0;
-	//longint Max = MinL(MaxLenT, StoreAvail() + LenT);
-	//WORD Pass = Max - (Max >> 3);
-	//Part.MovL = 0;
-	//Part.MovI = 0;
-	//WORD MI = 0;
-	//auto result = false;
-	//if (AllRd) return result;
-	//if (Part.LenP == 0) {
-	//	LenT = 0; /*T = (CharArr*)GetStore(0);*/
-	//	T = new char[0xFFFF];
-	//}
-	//longint Pos = Part.PosP;
-	//longint BL = Part.LineP;
-
-	//if (LenT > (Pass >> 1)) {
-	//	LastLine(ppa, 0, LenT - (Pass >> 1), MI, Part.MovL);     /* 28kB+1 radek*/
-	//	SetColorOrd(Part.ColorP, 1, MI + 1);
-	//	Pos += MI;
-	//	LenT -= MI;
-	//	Move(&T[MI + 1], &T[1], LenT);
-	//	ReleaseStore(&T[LenT + 1]);
-	//	Part.LineP = BL + Part.MovL;
-	//	Part.PosP = Pos;
-	//	Part.MovI = MI;
-	//}
-	//Pos += LenT;
-	//longint FSize = FileSizeH(TxtFH);
-	//AllRd = false;
-	//WORD iL = LenT;
-
-	//do {
-	//	longint Rest = FSize - Pos;
-	//	if (Rest > 0x1000) L11 = 0x1000;
-	//	else L11 = Rest;
-	//	Max = StoreAvail();
-	//	if (Max > 0x400) Max -= 0x400;
-	//	if (L11 > Max) L11 = Max;
-	//	//ppa = new char[L11];
-	//	ppa = T;
-	//	L1 = L11;
-	//	if (L1 > 0) { SeekH(TxtFH, Pos); ReadH(TxtFH, L1, ppa); }
-	//	AllRd = Pos + L11 >= FSize;
-	//	LenT += L1;
-	//	Pos += L1;
-	//} while (!((LenT > Pass) || AllRd || (L11 == Max)));
-
-	//LastLine(T, iL, LenT - iL - 1, iL, L1);
-	//if (AllRd) iL = LenT;
-	//if ((iL < LenT)) { LenT = iL; AllRd = false; }
-	//Part.LenP = LenT;
-	//Part.UpdP = false;
-	//if ((T[LenT - 1] == 0x1A) && AllRd) LenT--;
-	//if ((LenT <= 1)) return result;  /*????????*/
-	//if (LenT < 49) ReleaseStore(&T[LenT + 1]); // TODO: pùvodnì ReleaseStore(@T^[succ(LenT)]);
-	//result = true;
-	//return result;
 }
 
 void FirstLine(WORD from, WORD num, WORD& Ind, WORD& Count)
@@ -473,10 +416,17 @@ void UpdateFile()
 {
 	SeekH(TxtFH, 0);
 	WriteH(TxtFH, LenT, T);
-	if (HandleError != 0) { SetMsgPar(TxtPath); WrLLF10Msg(700 + HandleError); }
+	if (HandleError != 0) {
+		SetMsgPar(TxtPath);
+		WrLLF10Msg(700 + HandleError);
+	}
 	FlushH(TxtFH);
+	TruncH(TxtFH, LenT);
 	AbsLenT = FileSizeH(TxtFH);
-	if (HandleError != 0) { SetMsgPar(TxtPath); WrLLF10Msg(700 + HandleError); }
+	if (HandleError != 0) {
+		SetMsgPar(TxtPath);
+		WrLLF10Msg(700 + HandleError);
+	}
 }
 
 void RdPart()
@@ -2059,7 +2009,7 @@ bool TestLastPos(WORD F, WORD T)
 		}
 		if (F > T) {
 			if (T <= LP) {
-				memset(&Arr[LP + T - F],  ' ', F - T);
+				memset(&Arr[LP + T - F], ' ', F - T);
 			}
 		}
 		UpdatedL = true;
@@ -2110,24 +2060,27 @@ void DeleteL()
 
 void NewLine(char Mode)
 {
-	WORD LP;
-	KodLine(); LP = LineI + MinI(LastPosLine(), Posi - 1);
+	KodLine();
+	WORD LP = LineI + MinI(LastPosLine(), Posi - 1);
 	NullChangePart();
-	TestLenText(LP, longint(LP) + 2);
+	TestLenText(LP, LP + 2);
 	LP -= Part.MovI;
-	if (LineAbs(LineL) <= BegBLn)
+	if (LineAbs(LineL) <= BegBLn) {
 		if (LineAbs(LineL) < BegBLn) BegBLn++;
-		else if ((BegBPos > Posi) && (TypeB == TextBlock))
-		{
+		else if ((BegBPos > Posi) && (TypeB == TextBlock)) {
 			BegBLn++; BegBPos -= Posi - 1;
 		}
-	if (LineAbs(LineL) <= EndBLn)
+	}
+	if (LineAbs(LineL) <= EndBLn) {
 		if (LineAbs(LineL) < EndBLn) EndBLn++;
 		else if ((EndBPos > Posi) && (TypeB == TextBlock))
 		{
-			EndBLn++; EndBPos -= Posi - 1;
+			EndBLn++;
+			EndBPos -= Posi - 1;
 		}
-	T[LP] = _CR; T[succ(LP)] = _LF;
+	}
+	T[LP - 1] = _CR;
+	T[LP] = _LF;
 	if (Mode == 'm') { LineL++; LineI = LP + 2; }
 	DekodLine();
 }
@@ -3441,7 +3394,7 @@ void HandleEvent() {
 				if (Posi <= LastPosLine()) DelChar();
 				else DeleteL(); break;
 			}
-			case _H_: {
+			case __BACK: {
 				if (Posi > 1) { Posi--; DelChar(); }
 				else {
 					if ((LineL == 1) && (Part.PosP > 0)) PredPart();
@@ -4141,74 +4094,96 @@ void EditTxtFile(longint* LP, char Mode, pstring& ErrMsg, EdExitD* ExD, longint 
 	}
 	oldInd = Ind; oldTxtxy = Txtxy;
 
-label1:
-	Srch = false; Upd = false;
-	if (!Loc) {
-		EditText(Mode, FileT, TxtPath, ErrMsg, T, 0xFFF0, LenT, Ind, Txtxy,
-			_F1 + _F6 + _F9 + _AltF10, ExD, Srch, Upd, 126, 143, MsgS);
-	}
-	else {
-		EditText(Mode, LocalT, "", ErrMsg, (char*)&LS->A, MaxLStrLen, LS->LL, Ind, Txtxy,
-			_F1 + _F6, ExD, Srch, Upd, 126, 143, MsgS);
-	}
-	TxtPos = Ind + Part.PosP;
-	if (Upd) EdUpdated = true;
-	WORD KbdChar = Event.Pressed.KeyCombination();
-	if ((KbdChar == __ALT_EQUAL) || (KbdChar == 'U')) {
-		ReleaseStore(LS);
-		LS = TWork.Read(1, L);
-		if (__ALT_EQUAL) {
-			KbdChar = VK_ESCAPE;
-			goto label4;
+	//label1:
+	while (true) {
+		Srch = false; Upd = false;
+		if (!Loc) {
+			EditText(Mode, FileT, TxtPath, ErrMsg, T, 0xFFF0, LenT, Ind, Txtxy,
+				_F1 + _F6 + _F9 + _AltF10, ExD, Srch, Upd, 126, 143, MsgS);
 		}
 		else {
-			Ind = oldInd; Txtxy = oldTxtxy;
-			goto label1;
+			EditText(Mode, LocalT, "", ErrMsg, (char*)&LS->A, MaxLStrLen, LS->LL, Ind, Txtxy,
+				_F1 + _F6, ExD, Srch, Upd, 126, 143, MsgS);
 		}
+		TxtPos = Ind + Part.PosP;
+		if (Upd) EdUpdated = true;
+		WORD KbdChar = Event.Pressed.KeyCombination();
+		if ((KbdChar == __ALT_EQUAL) || (KbdChar == 'U')) {
+			ReleaseStore(LS);
+			LS = TWork.Read(1, L);
+			if (KbdChar == __ALT_EQUAL) {
+				Event.Pressed.UpdateKey(__ESC);
+				goto label4;
+			}
+			else {
+				Ind = oldInd; Txtxy = oldTxtxy;
+				continue;
+			}
+		}
+		if (!Loc) {
+			delete[] T;
+			T = nullptr;
+		}
+		if (EdBreak == 0xFFFF)
+			switch (KbdChar) {
+			case __F9: {
+				if (Loc) { TWork.Delete(*LP); *LP = StoreInTWork(LS); }
+				else RdPart();
+				continue;
+			}
+			case __F10: {
+				if (Event.Pressed.Alt()) { Help(nullptr, "", false); goto label2; }
+				break;
+			}
+			case __F1: {
+				RdMsg(6);
+				Help((RdbD*)HelpFD, MsgLine, false);
+			label2:
+				if (!Loc) RdPart();
+				continue;
+			}
+			}
+		if (!Loc) { Size = FileSizeH(TxtFH); CloseH(&TxtFH); }
+		if ((EdBreak == 0xFFFF) && (KbdChar == _F6_)) {
+			if (Loc) {
+				PrintArray(T, LenT, false);
+				continue;
+			}
+			else {
+				CPath = TxtPath;
+				CVol = TxtVol;
+				PrintTxtFile(0);
+				OpenTxtFh(Mode);
+				RdPart();
+				continue;
+			}
+		}
+		if (!Loc && (Size < 1)) MyDeleteFile(TxtPath);
+		if (Loc && (KbdChar == __ESC)) LS->LL = LenT;
+	label4:
+		if (IsCompileErr) {
+			IsCompileErr = false;
+			compErrTxt = MsgLine;
+			SetMsgPar(compErrTxt);
+			WrLLF10Msg(110);
+		}
+		if (Loc) {
+			TWork.Delete(L);
+			TWork.Delete(*LP); *LP = StoreInTWork(LS);
+			ReleaseStore(LS);
+		}
+		if (w3 != 0) {
+			PopW2(w3, (WFlags & WNoPop) == 0);
+		}
+		if (w2 != 0) {
+			PopW(w2);
+		}
+		PopW(w1);
+		LastTxtPos = Ind + Part.PosP;
+		RestoreExit(er);
+
+		break;
 	}
-	if (!Loc) ReleaseStore(T);
-	if (EdBreak == 0xFFFF)
-		switch (KbdChar) {
-		case __F9: {
-			if (Loc) { TWork.Delete(*LP); *LP = StoreInTWork(LS); }
-			else RdPart();
-			goto label1;
-		}
-		case __F10: {
-			if (Event.Pressed.Alt()) { Help(nullptr, "", false); goto label2; }
-			break;
-		}
-		case __F1: {
-			RdMsg(6);
-			Help((RdbD*)HelpFD, MsgLine, false);
-		label2:
-			if (!Loc) RdPart(); goto label1; }
-		}
-	if (!Loc) { Size = FileSizeH(TxtFH); CloseH(&TxtFH); }
-	if ((EdBreak == 0xFFFF) && (KbdChar == _F6_))
-		if (Loc) { PrintArray(T, LenT, false); goto label1; }
-		else {
-			CPath = TxtPath; CVol = TxtVol; PrintTxtFile(0);
-			OpenTxtFh(Mode); RdPart(); goto label1;
-		}
-	if (!Loc && (Size < 1)) MyDeleteFile(TxtPath);
-	if (Loc && (KbdChar == __END)) LS->LL = LenT;
-label4:
-	if (IsCompileErr) {
-		IsCompileErr = false;
-		compErrTxt = MsgLine;
-		SetMsgPar(compErrTxt); WrLLF10Msg(110);
-	}
-	if (Loc)
-	{
-		TWork.Delete(L);
-		TWork.Delete(*LP); *LP = StoreInTWork(LS);
-		ReleaseStore(LS);
-	}
-	if (w3 != 0) PopW2(w3, (WFlags & WNoPop) == 0); if (w2 != 0) PopW(w2);
-	PopW(w1);
-	LastTxtPos = Ind + Part.PosP;
-	RestoreExit(er);
 }
 
 void ViewPrinterTxt()
@@ -4216,12 +4191,11 @@ void ViewPrinterTxt()
 	WRect V = { 1, 2, 80, 24 };
 	if (!PrintView) return;
 	SetPrintTxtPath();
-	V.C2 = TxtCols; V.R2 = TxtRows - 1;
+	V.C2 = TxtCols;
+	V.R2 = TxtRows - 1;
 	pstring temp(1);
 	EditTxtFile(nullptr, 'T', temp, nullptr, 1, 0, &V, 0, "", WPushPixel, nullptr);
 }
-
-
 
 void ViewHelpText(LongStr* S, WORD& TxtPos)
 {
