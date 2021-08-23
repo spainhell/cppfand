@@ -92,7 +92,8 @@ char Mode = '\0';
 char TypeT = '\0';
 pstring NameT;
 pstring ErrMsg;
-WORD MaxLenT = 0, LenT = 0, IndT = 0, ScrT = 0;
+WORD MaxLenT = 0, IndT = 0, ScrT = 0;
+size_t LenT = 0;
 pstring Breaks;
 EdExitD* ExitD = nullptr;
 bool SrchT, UpdatT;
@@ -950,18 +951,18 @@ void SetUpdat()
 	}
 }
 
-void TestLenText(WORD i, int j)
+void TestLenText(char** text, size_t& textLength, WORD i, int j)
 {
 	int lenDiff = j - i;
 	if (lenDiff != 0) {
-		// T will be shorter or longer
-		char* newT = new char[LenT + lenDiff];
-		memcpy(newT, T, i + lenDiff - 1);
-		memcpy(&newT[i + lenDiff - 1], &T[i - 1], LenT - i + 1);
-		delete[] T;
-		T = newT;
+		// TEXT will be shorter or longer
+		char* newT = new char[textLength + lenDiff];
+		memcpy(newT, *text, i + lenDiff - 1);
+		memcpy(&newT[i + lenDiff - 1], &(*text)[i - 1], textLength - i + 1);
+		delete[] *text;
+		*text = newT;
 	}
-	LenT += lenDiff;
+	textLength += lenDiff;
 	SetUpdat();
 }
 
@@ -980,7 +981,7 @@ void DekodLine()
 			if (PromptYN(402)) {
 				LL = LineI + LineSize;
 				NullChangePart();
-				TestLenText(LL, longint(LL) + 1);
+				TestLenText(&T, LenT, LL, longint(LL) + 1);
 				LL -= Part.MovI;
 				T[LL] = _CR;
 				NextI = LineI + LP + 1;
@@ -1317,7 +1318,7 @@ void KodLine()
 {
 	WORD LP = LastPosLine() + 1; // position behind last char on the line (counted from 1)
 	if (HardL) LP++;
-	TestLenText(NextI, LineI + LP);
+	TestLenText(&T, LenT, NextI, LineI + LP);
 	Move(Arr, &T[LineI - 1], LP);
 	NextI = LineI + LP;
 	LP = NextI - 1;
@@ -2033,7 +2034,7 @@ void FillBlank()
 	KodLine();
 	I = LastPosLine();
 	if (Posi > I + 1) {
-		TestLenText(LineI + I, longint(LineI) + Posi - 1);
+		TestLenText(&T, LenT, LineI + I, longint(LineI) + Posi - 1);
 		FillChar(&T[LineI + I], Posi - I - 1, 32); NextI += Posi - I - 1;
 	}
 }
@@ -2055,9 +2056,10 @@ void DeleteL()
 			EndBPos += LastPosLine();
 	}
 	if ((NextI >= LenT) && !AllRd) NextPartDek();
-	if (NextI <= LenT)
-		if (T[NextI - 1] == _LF) TestLenText(NextI, NextI - 2);
-		else TestLenText(NextI, NextI - 1);
+	if (NextI <= LenT) {
+		if (T[NextI - 1] == _LF) { TestLenText(&T, LenT, NextI, NextI - 2); }
+		else { TestLenText(&T, LenT, NextI, NextI - 1); }
+	}
 	DekodLine();
 }
 
@@ -2066,7 +2068,7 @@ void NewLine(char Mode)
 	KodLine();
 	WORD LP = LineI + MinI(LastPosLine(), Posi - 1);
 	NullChangePart();
-	TestLenText(LP, LP + 2);
+	TestLenText(&T, LenT, LP, LP + 2);
 	LP -= Part.MovI;
 	if (LineAbs(LineL) <= BegBLn) {
 		if (LineAbs(LineL) < BegBLn) BegBLn++;
@@ -2228,7 +2230,7 @@ void Format(WORD& i, longint First, longint Last, WORD Posit, bool Rep)
 			while (A[ii] == ' ') ii++;
 			if (ii >= Posit) Posit = 1;
 			if (i < lst) A[Posit] = _CR; else Posit--;
-			TestLenText(i, longint(ii1) + Posit);
+			TestLenText(&T, LenT, i, longint(ii1) + Posit);
 			if (Posit > 0) Move(A, &T[ii1], Posit);
 			ii = ii1 + Posit - i; i = ii1 + Posit; lst += ii; llst += ii;
 			Posit = 1; RelPos = 1; ii1 = i;
@@ -2375,7 +2377,7 @@ bool BlockHandle(longint& fs, FILE* W1, char Oper)
 			if (LL2 > Part.PosP + LenT) I2 = LenT;
 			else I2 = LL2 - Part.PosP;
 			switch (Oper) {
-			case 'Y': { TestLenText(I2, I1); LL2 -= I2 - I1; break; }
+			case 'Y': { TestLenText(&T, LenT, I2, I1); LL2 -= I2 - I1; break; }
 			case 'U': {
 				for (i = I1; i < I2 - 1; i++) T[i] = UpcCharTab[T[i]];
 				LL1 += I2 - I1; break;
@@ -2481,7 +2483,7 @@ void MovePart(WORD Ind)
 	{ Part.MovI = SetCurrI(Ind) - 1; Part.MovL = SetLine(Part.MovI) - 1;
 	Part.LineP += Part.MovL; Part.PosP += Part.MovI; Part.LenP -= Part.MovI;
 	SetColorOrd(Part.ColorP, 1, Part.MovI + 1);
-	TestLenText(Part.MovI + 1, 1);
+	TestLenText(&T, LenT, Part.MovI + 1, 1);
 	ChangePart = true;
 	}
 }
@@ -2502,7 +2504,7 @@ bool BlockGrasp(char Oper, void* P1, LongStr* sp)
 	Move(&T[I1], sp->A, L);
 	if (Oper == 'M')
 	{
-		TestLenText(I1 + L, I1);
+		TestLenText(&T, LenT, I1 + L, I1);
 		/*   if (L1>Part.PosP+I1) dec(L1,L);*/
 		if (EndBLn <= ln)
 		{
@@ -2525,9 +2527,11 @@ void BlockDrop(char Oper, void* P1, LongStr* sp)
 	if (Oper == 'D') FillBlank();
 	I = LineI + Posi - 1; I2 = sp->LL;
 	BegBLn = LineAbs(LineL); BegBPos = Posi;
-	NullChangePart(); TestLenText(I, longint(I) + I2);
+	NullChangePart();
+	TestLenText(&T, LenT, I, longint(I) + I2);
 	if (ChangePart) I -= Part.MovI;
-	Move(sp->A, &T[I], I2); ReleaseStore2(P1);
+	Move(sp->A, &T[I], I2);
+	ReleaseStore2(P1);
 	SetDekLnCurrI(I + I2);
 	EndBLn = Part.LineP + LineL;
 	EndBPos = succ(I + I2 - LineI);
@@ -2589,7 +2593,7 @@ void BlockCDrop(char Oper, void* P1, LongStr* sp)
 			ww = BegBPos; EndBPos = MaxW(ww + i, EndBPos);
 			if ((NextI > LenT) && ((TypeT != FileT) || AllRd))
 			{
-				TestLenText(LenT, longint(LenT) + 2);
+				TestLenText(&T, LenT, LenT, longint(LenT) + 2);
 				T[LenT - 2] = _CR; T[LenT - 1] = _LF; NextI = LenT;
 			}
 			NextLine(false);
@@ -2761,7 +2765,7 @@ void ReplaceString(WORD& J, WORD& fst, WORD& lst, longint& Last)
 {
 	integer r = ReplaceStr.length();
 	integer f = FindStr.length();
-	TestLenText(J, longint(J) + r - f);
+	TestLenText(&T, LenT, J, longint(J) + r - f);
 	ChangeP(fst);
 	//if (TestLastPos(Posi, Posi + r - f));
 	if (ReplaceStr != "") Move(&ReplaceStr[1], &T[J - f], r);
@@ -3415,7 +3419,7 @@ void HandleEvent() {
 			case _Y_: {
 				if ((NextI >= LenT) && !AllRd) NextPartDek();
 				NextI = MinW(NextI, LenT);
-				TestLenText(NextI, LineI);
+				TestLenText(&T, LenT, NextI, LineI);
 				if (BegBLn > LineAbs(LineL)) BegBLn--;
 				else if (BegBLn == LineAbs(LineL)) if (TypeB == TextBlock) BegBPos = 1;
 				if (EndBLn >= LineAbs(LineL))
@@ -3596,14 +3600,14 @@ void HandleEvent() {
 							WrLLF10Msg(404);
 						}
 						I1 = L1 + L2 - Part.PosP;
-						TestLenText(I1, longint(I1) + I2);
+						TestLenText(&T, LenT, I1, longint(I1) + I2);
 						if (ChangePart) I1 -= Part.MovI;
 						SeekH(F1, L2); ReadH(F1, I2, &T[I1]); HMsgExit("");
 						L2 += I2;
 					} while (L2 != fs);
 					I = L1 + L2 - Part.PosP;
 					if (T[I - 1] == 0x1A) {
-						TestLenText(I, I - 1);
+						TestLenText(&T, LenT, I, I - 1);
 						I--;
 					}
 					SetDekLnCurrI(I);
@@ -3977,7 +3981,7 @@ void GetEditTxt(bool& pInsert, bool& pIndent, bool& pWrap, bool& pJust, bool& pC
 	pLeftMarg = LeftMarg; pRightMarg = RightMarg;
 }
 
-bool EditText(char pMode, char pTxtType, pstring pName, pstring pErrMsg, char* pTxtPtr, WORD pMaxLen, WORD& pLen,
+bool EditText(char pMode, char pTxtType, pstring pName, pstring pErrMsg, char* pTxtPtr, WORD pMaxLen, size_t& pLen,
 	WORD& pInd, longint& pScr, pstring pBreaks, EdExitD* pExD, bool& pSrch, bool& pUpdat, WORD pLastNr,
 	WORD pCtrlLastNr, MsgStr* pMsgS)
 {
@@ -4029,7 +4033,7 @@ bool EditText(char pMode, char pTxtType, pstring pName, pstring pErrMsg, char* p
 	return EditT;
 }
 
-void SimpleEditText(char pMode, pstring pErrMsg, pstring pName, char* TxtPtr, WORD MaxLen, WORD& Len, WORD& Ind, bool& Updat)
+void SimpleEditText(char pMode, pstring pErrMsg, pstring pName, char* TxtPtr, WORD MaxLen, size_t& Len, WORD& Ind, bool& Updat)
 {
 	bool Srch; longint Scr;
 	Srch = false; Scr = 0;
@@ -4105,8 +4109,10 @@ void EditTxtFile(longint* LP, char Mode, pstring& ErrMsg, EdExitD* ExD, longint 
 				_F1 + _F6 + _F9 + _AltF10, ExD, Srch, Upd, 126, 143, MsgS);
 		}
 		else {
-			EditText(Mode, LocalT, "", ErrMsg, (char*)&LS->A, MaxLStrLen, LS->LL, Ind, Txtxy,
+			size_t LL = LS->LL;
+			EditText(Mode, LocalT, "", ErrMsg, (char*)&LS->A, MaxLStrLen, LL, Ind, Txtxy,
 				_F1 + _F6, ExD, Srch, Upd, 126, 143, MsgS);
+			LS->LL = (WORD)LL;
 		}
 		TxtPos = Ind + Part.PosP;
 		if (Upd) EdUpdated = true;
@@ -4212,8 +4218,10 @@ void ViewHelpText(LongStr* S, WORD& TxtPos)
 	bool Upd = false;
 	longint Scr = 0;
 	while (true) {
-		EditText(HelpM, MemoT, "", "", (char*)S->A, 0xFFF0, S->LL, TxtPos, Scr,
+		size_t LL = S->LL;
+		EditText(HelpM, MemoT, "", "", (char*)S->A, 0xFFF0, LL, TxtPos, Scr,
 			_F1 + _F10 + _F6 + _CtrlHome + _CtrlEnd, nullptr, Srch, Upd, 142, 145, nullptr);
+		S->LL = (WORD)LL;
 		if (Event.Pressed.KeyCombination() == __F6) {
 			PrintArray(&S->A, S->LL, true);
 			continue;

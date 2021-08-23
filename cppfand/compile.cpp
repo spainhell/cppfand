@@ -31,9 +31,6 @@ void Error(integer N)
 	pstring ErrMsg;
 	pstring HdTxt(40);
 	void* p = nullptr; void* p1 = nullptr;
-	bool upd;
-	WORD l, i;
-	longint w;
 
 	RdMsg(1000 + N);
 	ErrMsg = MsgLine;
@@ -53,13 +50,15 @@ void Error(integer N)
 	}
 	CurrPos--;
 	ClearKbdBuf();
-	l = InpArrLen; i = CurrPos;
+	size_t l = InpArrLen;
+	WORD i = CurrPos;
 	if (IsTestRun && (PrevCompInp != nullptr && InpRdbPos.R != CRdb /* 0xinclude higher Rdb*/
 		|| InpRdbPos.R == nullptr) /* TODO: ptr(0, 1)*/ /*LongStr + ShowErr*/
 		&& StoreAvail() > l + TxtCols * TxtRows * 2 + 50)
 	{
+		bool upd;
 		MarkStore(p1);
-		w = PushW(1, 1, TxtCols, TxtRows);
+		longint w = PushW(1, 1, TxtCols, TxtRows);
 		TextAttr = screen.colors.tNorm;
 		p = GetStore(l);
 		Move(InpArrPtr, p, l);

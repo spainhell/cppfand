@@ -1,6 +1,5 @@
 #include "runedi.h"
 
-
 #include "OldEditor.h"
 #include "EditorHelp.h"
 #include "rdedit.h"
@@ -3161,9 +3160,11 @@ label2:
 	X = nullptr;
 	if (TTExit) X = E->ExD;
 	Upd = false;
+	size_t LL = S->LL;
 	result =
-		EditText(Kind, MemoT, HdTxt, ErrMsg, (char*)S->A, MaxLStrLen, S->LL, TxtPos, TxtXY, Breaks, X,
+		EditText(Kind, MemoT, HdTxt, ErrMsg, (char*)S->A, MaxLStrLen, LL, TxtPos, TxtXY, Breaks, X,
 			Srch, Upd, 141, CtrlMsgNr, PTxtMsgS);
+	S->LL = (WORD)LL;
 	ErrMsg = "";
 	heslo = LexWord;
 	LastLen = S->LL;

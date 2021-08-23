@@ -2015,6 +2015,7 @@ void UpdateUTxt()
 	longint w; WORD TxtPos, LicNr; LongStr* S = nullptr; LongStr* s2 = nullptr;
 	bool Srch, Upd, b;
 	longint OldPos, Pos; ExitRecord er; void* p = nullptr; void* p1 = nullptr;
+	size_t LL;
 	CFile = Chpt;
 	CRecPtr = Chpt->RecPtr;
 	LicNr = ChptTF->LicenseNr;
@@ -2038,7 +2039,9 @@ void UpdateUTxt()
 	ReleaseStore(p);
 	b = true;
 label2:
-	SimpleEditText('T', "", "", (char*)&S->A, 0x7FFF, S->LL, TxtPos, Upd);
+	LL = S->LL;
+	SimpleEditText('T', "", "", (char*)&S->A, 0x7FFF, LL, TxtPos, Upd);
+	S->LL = LL;
 	SetInpLongStr(S, false);
 	MarkStore(p);
 	RdUserId(false);
