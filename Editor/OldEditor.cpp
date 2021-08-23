@@ -17,7 +17,6 @@
 #include "../cppfand/wwmenu.h"
 #include "../cppfand/wwmix.h"
 #include "../cppfand/models/FrmlElem.h"
-#include "../MergeReport/genrprt.h"
 #include "../textfunc/textfunc.h"
 
 const int TXTCOLS = 80;
@@ -957,7 +956,7 @@ void TestLenText(WORD i, int j)
 	if (lenDiff != 0) {
 		// T will be shorter or longer
 		char* newT = new char[LenT + lenDiff];
-		memcpy(newT, T, i - 1);
+		memcpy(newT, T, i + lenDiff - 1);
 		memcpy(&newT[i + lenDiff - 1], &T[i - 1], LenT - i + 1);
 		delete[] T;
 		T = newT;
@@ -1048,8 +1047,8 @@ WORD Column(WORD p)
 
 WORD LastPosLine()
 {
-	WORD LP = LineSize;
-	while ((LP > 0) && (Arr[LP] == ' ' || Arr[LP] == '\0')) {
+	int LP = LineSize;
+	while ((LP >= 0) && (Arr[LP] == ' ' || Arr[LP] == '\0')) {
 		LP--;
 	}
 	return LP + 1; // vraci Pascal index 1 .. N;
@@ -1322,9 +1321,13 @@ void KodLine()
 	Move(Arr, &T[LineI - 1], LP);
 	NextI = LineI + LP;
 	LP = NextI - 1;
-	if (HardL) LP--;
-	T[LP - 1] = _CR;
-	if (HardL) T[LP] = _LF;
+	if (HardL) {
+		T[LP - 2] = _CR;
+		T[LP - 1] = _LF;
+	}
+	else {
+		T[LP - 1] = _CR;
+	}
 	UpdatedL = false;
 }
 
