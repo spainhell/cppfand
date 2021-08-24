@@ -514,7 +514,8 @@ void CloseFilesOnDrive(WORD D)
 WORD TestMountVol(char DriveC)
 {
 	//SearchRec S; 
-	WORD D = 0, i = 0; pstring Vol;
+	WORD D = 0, i = 0;
+	std::string Vol;
 	pstring Drive(1); Drive = "A";
 
 	if (IsNetCVol()) return 0;

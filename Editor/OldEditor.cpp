@@ -2860,11 +2860,11 @@ bool EditText(char pMode, char pTxtType, std::string pName, std::string pErrMsg,
 	return EditT;
 }
 
-void SimpleEditText(char pMode, pstring pErrMsg, pstring pName, char* TxtPtr, WORD MaxLen, size_t& Len, WORD& Ind, bool& Updat)
+void SimpleEditText(char pMode, std::string pErrMsg, std::string pName, char* TxtPtr, WORD MaxLen, size_t& Len, WORD& Ind, bool& Updat)
 {
 	bool Srch; longint Scr;
 	Srch = false; Scr = 0;
-	EditText(pMode, LocalT, pName, pErrMsg, TxtPtr, MaxLen, Len, Ind, Scr, "", nullptr, Srch, Updat, 0, 0, nullptr);
+	EditText(pMode, LocalT, std::move(pName), std::move(pErrMsg), TxtPtr, MaxLen, Len, Ind, Scr, "", nullptr, Srch, Updat, 0, 0, nullptr);
 }
 
 WORD FindTextE(const pstring& Pstr, pstring Popt, char* PTxtPtr, WORD PLen)
@@ -2882,7 +2882,7 @@ WORD FindTextE(const pstring& Pstr, pstring Popt, char* PTxtPtr, WORD PLen)
 	return result;
 }
 
-void EditTxtFile(longint* LP, char Mode, pstring& ErrMsg, EdExitD* ExD, longint TxtPos, longint Txtxy, WRect* V, WORD Atr, const pstring Hd, BYTE WFlags, MsgStr* MsgS)
+void EditTxtFile(longint* LP, char Mode, std::string& ErrMsg, EdExitD* ExD, longint TxtPos, longint Txtxy, WRect* V, WORD Atr, const std::string Hd, BYTE WFlags, MsgStr* MsgS)
 {
 	bool Srch = false, Upd = false;
 	longint Size = 0, L = 0;
@@ -3020,17 +3020,6 @@ void EditTxtFile(longint* LP, char Mode, pstring& ErrMsg, EdExitD* ExD, longint 
 
 		break;
 	}
-}
-
-void ViewPrinterTxt()
-{
-	WRect V = { 1, 2, 80, 24 };
-	if (!PrintView) return;
-	SetPrintTxtPath();
-	V.C2 = TxtCols;
-	V.R2 = TxtRows - 1;
-	pstring temp(1);
-	EditTxtFile(nullptr, 'T', temp, nullptr, 1, 0, &V, 0, "", WPushPixel, nullptr);
 }
 
 void ViewHelpText(LongStr* S, WORD& TxtPos)

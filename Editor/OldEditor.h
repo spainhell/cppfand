@@ -19,16 +19,16 @@ bool EditText(char pMode, char pTxtType, std::string pName, std::string pErrMsg,
 	char* pTxtPtr, WORD pMaxLen, size_t& pLen, WORD& pInd, longint& pScr,
 	pstring pBreaks, EdExitD* pExD, bool& pSrch, bool& pUpdat,
 	WORD pLastNr, WORD pCtrlLastNr, MsgStr* pMsgS); // r169
-void SimpleEditText(char pMode, pstring pErrMsg, pstring pName, char* TxtPtr,
+void SimpleEditText(char pMode, std::string pErrMsg, std::string pName, char* TxtPtr,
 	WORD MaxLen, size_t& Len, WORD& Ind, bool& Updat); // r202
 WORD FindTextE(const pstring& PstrScreenStr, pstring Popt, char* PTxtPtr, WORD PLen); // r209
 void InitTxtEditor();
-void EditTxtFile(longint* LP, char Mode, pstring& ErrMsg, EdExitD* ExD, longint TxtPos,
-	longint Txtxy, WRect* V, WORD Atr, pstring Hd, BYTE WFlags, MsgStr* MsgS);
+void EditTxtFile(longint* LP, char Mode, std::string& ErrMsg, EdExitD* ExD, longint TxtPos,
+	longint Txtxy, WRect* V, WORD Atr, std::string Hd, BYTE WFlags, MsgStr* MsgS);
 void ViewPrinterTxt(); // r353
 void SetEditTxt(Instr_setedittxt* PD);
-void GetEditTxt(bool& pInsert, bool& pIndent, bool& pWrap, bool& pJust, bool& pColBlk,
-	integer& pLeftMarg, integer& pRightMarg); // r162
+//void GetEditTxt(bool& pInsert, bool& pIndent, bool& pWrap, bool& pJust, bool& pColBlk,
+//	integer& pLeftMarg, integer& pRightMarg); // r162
 
 void Background();
 void DisplLL(WORD Flags);

@@ -100,8 +100,8 @@ void ReportProc(RprtOpt* RO, bool save)
 	if (PrintView) {
 		w = PushW(1, 1, TxtCols, TxtRows);
 		SetPrintTxtPath();
-		pstring tmp;
-		EditTxtFile(nullptr, md, tmp, nullptr, 0, 0, nullptr, 0, "", 0, nullptr);
+		std::string errMessage;
+		EditTxtFile(nullptr, md, errMessage, nullptr, 0, 0, nullptr, 0, "", 0, nullptr);
 		PopW(w);
 	}
 label2:
@@ -431,7 +431,7 @@ void EditTxtProc(Instr_edittxt* PD)
 {
 	longint i = 0; WRect v;
 	WRect* pv = nullptr; BYTE a = 0; longint* lp = nullptr;
-	MsgStr MsgS; void* p = nullptr; pstring msg;
+	MsgStr MsgS; void* p = nullptr;
 	MarkStore(p);
 	i = 1;
 	if (PD->TxtPos != nullptr) i = RunInt(PD->TxtPos);
@@ -452,8 +452,8 @@ void EditTxtProc(Instr_edittxt* PD)
 		SetTxtPathVol(PD->TxtPath, PD->TxtCatIRec);
 		lp = nullptr;
 	}
-	msg = "";
-	if (PD->ErrMsg != nullptr) msg = RunShortStr(PD->ErrMsg);
+	std::string msg = "";
+	if (PD->ErrMsg != nullptr) msg = RunStdStr(PD->ErrMsg);
 	EditTxtFile(lp, PD->EdTxtMode, msg, PD->ExD, i, RunInt(PD->TxtXY), pv, a, RunShortStr(PD->Hd), PD->WFlags, &MsgS);
 	ReleaseStore(p);
 }
