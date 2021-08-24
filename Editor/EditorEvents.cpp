@@ -1,16 +1,19 @@
 #include "EditorEvents.h"
 
-#include "../cppfand/constants.h"
+
 #include "../cppfand/wwmix.h"
-#include "../cppfand/rdrun.h"
+#include "../cppfand/GlobalVariables.h"
+#include "../cppfand/runproc.h"
 
 #include <cstdio>
 #include <set>
-#include <string>
 
 #include "Editor.h"
 #include "OldEditor.h"
 #include "runedi.h"
+#include "../cppfand/obaseww.h"
+#include "../cppfand/wwmenu.h"
+
 
 void CtrlShiftAlt(char Mode, std::string& LastS, WORD LastNr, bool IsWrScreen)
 {
@@ -307,7 +310,7 @@ bool MyGetEvent(char Mode, BYTE SysLColor, std::string& LastS, WORD LastNr, bool
 	return result;
 }
 
-void HandleEvent(bool& IsWrScreen) {
+void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS, WORD LastNr) {
 	wwmix wwmix1;
 	WORD I = 0, I1 = 0, I2 = 0, I3 = 0;
 	FILE* F1 = nullptr;
@@ -325,7 +328,7 @@ void HandleEvent(bool& IsWrScreen) {
 
 	IsWrScreen = false;
 
-	if (!MyGetEvent()) {
+	if (!MyGetEvent(Mode, SysLColor, LastS, LastNr, IsWrScreen, bScroll, ExitD)) {
 		ClrEvent();
 		IsWrScreen = false;
 		return;
@@ -633,9 +636,9 @@ void HandleEvent(bool& IsWrScreen) {
 						if ((I > 1) || ChangePart) Posi = LastPosLine();
 						goto label1;
 					}
-				} while (Oddel.count(Arr[Posi]) > 0);
+				} while (Separ.count(Arr[Posi]) > 0);
 
-				while (!(Oddel.count(Arr[Posi]) > 0)) {
+				while (!(Separ.count(Arr[Posi]) > 0)) {
 					Posi--;
 					if (Posi == 0) goto label1;
 				}
@@ -645,11 +648,11 @@ void HandleEvent(bool& IsWrScreen) {
 			}
 			case __CTRL_RIGHT:
 			{
-				while (!(Oddel.count(Arr[Posi]) > 0))
+				while (!(Separ.count(Arr[Posi]) > 0))
 				{
 					Posi++; if (Posi > LastPosLine()) goto label2;
 				}
-				while (Oddel.count(Arr[Posi]) > 0)
+				while (Separ.count(Arr[Posi]) > 0)
 				{
 					Posi++;
 					I = LastPosLine();
@@ -765,8 +768,8 @@ void HandleEvent(bool& IsWrScreen) {
 				if (Posi > LastPosLine()) { DeleteL(); }
 				else {
 					I = Posi;
-					if (Oddel.count(Arr[Posi]) > 0) DelChar();
-					else while ((I <= LastPosLine()) && !(Oddel.count(Arr[Posi]) > 0)) { I++; }
+					if (Separ.count(Arr[Posi]) > 0) DelChar();
+					else while ((I <= LastPosLine()) && !(Separ.count(Arr[Posi]) > 0)) { I++; }
 					while ((I <= LastPosLine()) && (Arr[I] == ' ')) { I++; }
 					// TODO: k èemu to tady je? if ((I>Posi) and TestLastPos(I,Posi))
 				}
@@ -786,7 +789,7 @@ void HandleEvent(bool& IsWrScreen) {
 				}
 				ss = OptionStr; if (MyPromptLL(406, &ss)) goto Nic; OptionStr = ss;
 				TestKod();
-				if (TestOptStr('l') && (!BlockExist() || (TypeB = ColBlock))) goto Nic;
+				if (TestOptStr('l') && (!BlockExist() || (TypeB == ColBlock))) goto Nic;
 				if (TestOptStr('l')) SetBlockBound(L1, L2);
 				else {
 					L2 = AbsLenT - Part.LenP + LenT;
@@ -831,7 +834,7 @@ void HandleEvent(bool& IsWrScreen) {
 				I2 = I - I1 - 1;
 				I = Posi;
 				Posi--;
-				while ((Posi > 0) and (Arr[Posi] != ' ')) { Posi--; }
+				while ((Posi > 0) && (Arr[Posi] != ' ')) { Posi--; }
 				Posi++;
 				if (TestLastPos(Posi, Posi + I2)) FillChar(&Arr[Posi], I2, 32);
 				Posi = I + I2 + 1;
@@ -866,7 +869,7 @@ void HandleEvent(bool& IsWrScreen) {
 				break;
 			}
 			case _KY_: {
-				if (BlockHandle(fs, F1, 'Y')) { EndBLn = BegBLn; EndBPos = BegBPos; };
+				if (BlockHandle(fs, F1, 'Y')) { EndBLn = BegBLn; EndBPos = BegBPos; }
 				break;
 			}
 			case _KC_: BlockCopyMove('C', P1, sp); break;

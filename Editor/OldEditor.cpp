@@ -3,10 +3,8 @@
 #include "OldEditor.h"
 #include <set>
 #include <stdexcept>
-
 #include "EditorEvents.h"
 #include "runedi.h"
-
 #include "../cppfand/compile.h"
 #include "EditorHelp.h"
 #include "../cppfand/GlobalVariables.h"
@@ -15,20 +13,18 @@
 #include "../cppfand/obase.h"
 #include "../cppfand/obaseww.h"
 #include "../cppfand/printtxt.h"
-#include "../cppfand/runproc.h"
 #include "../cppfand/wwmenu.h"
 #include "../cppfand/wwmix.h"
 #include "../cppfand/models/FrmlElem.h"
 #include "../textfunc/textfunc.h"
 
 const int TXTCOLS = 80;
-const int SuccLineSize = 256;
 longint Timer = 0;
 bool Insert, Indent, Wrap, Just;
 
 // PROMENNE
 bool InsPage;
-typedef std::string ColorOrd;
+PartDescr Part;
 
 struct Character {
 	char ch = 0;
@@ -60,20 +56,18 @@ WORD i1 = 0, i2 = 0, i3 = 0;
 // *** konec promennych
 
 const BYTE InterfL = 4; /*sizeof(Insert+Indent+Wrap+Just)*/
-const BYTE LineSize = 255; const WORD TextStore = 0x1000;
+const WORD TextStore = 0x1000;
 const BYTE TStatL = 35; /*=10(Col Row)+length(InsMsg+IndMsg+WrapMsg+JustMsg+BlockMsg)*/
-
-std::set<char> Oddel = { 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,
-26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,58,59,60,61,62,63,64,
-91,92,93,94,96,123,124,125,126,127 };
 
 const BYTE CountC = 7;
 
 ///  { ^s - underline, ^w - italic, ^q - expanded, ^d - double, ^b - bold, ^e - compressed, ^a - ELITE }
 std::string CtrlKey = "\x13\x17\x11\x04\x02\x05\x01";
 
-const bool ColBlock = true;
-const bool TextBlock = false;
+std::set<char> Separ = { 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,
+26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,58,59,60,61,62,63,64,
+91,92,93,94,96,123,124,125,126,127 };
+
 
 // {**********global param begin for SavePar}  // r85
 char Mode = '\0';
@@ -107,13 +101,7 @@ bool Replace = false;
 pstring OptionStr;
 bool FirstEvent = false;
 WORD PHNum = 0, PPageS = 0; // {strankovani ve Scroll}
-struct PartDescr
-{
-	longint PosP = 0; longint LineP = 0;
-	WORD LenP = 0, MovI = 0, MovL = 0;
-	bool UpdP = false;
-	ColorOrd ColorP;
-} Part;
+
 FILE* TxtFH = nullptr;
 pstring TxtPath;
 pstring TxtVol;
@@ -263,7 +251,7 @@ bool FindString(WORD& I, WORD Len)
 		}
 		else if (s1 != s2) { I++; goto label1; }
 		if (TestOptStr('w'))
-			if (I > 1 && !Oddel.count(T[I - 1]) || !Oddel.count(T[I + FindStr.length()]))
+			if (I > 1 && !Separ.count(T[I - 1]) || !Separ.count(T[I + FindStr.length()]))
 			{
 				I++;
 				goto label1;
@@ -1524,7 +1512,7 @@ void Frame()
 
 	while (true) /* !!! with Event do!!! */
 	{
-		if (!MyGetEvent() ||
+		if (!MyGetEvent(Mode, SysLColor, LastS, LastNr, IsWrScreen, bScroll, ExitD) ||
 			((Event.What == evKeyDown) && (Event.Pressed.KeyCombination() == __ESC)) || (Event.What != evKeyDown)) {
 			ClrEvent();
 			screen.CrsNorm();
@@ -1588,7 +1576,7 @@ void Frame()
 void CleanFrameM()
 {
 	if (Mode == SinFM || Mode == DouFM || Mode == DelFM || Mode == NotFM) /* !!! with Event do!!! */
-		if (!MyGetEvent() ||
+		if (!MyGetEvent(Mode, SysLColor, LastS, LastNr, IsWrScreen, bScroll, ExitD) ||
 			((Event.What == evKeyDown) && (Event.Pressed.KeyCombination() == __ESC)) || (Event.What != evKeyDown))
 		{
 			ClrEvent();
@@ -2688,7 +2676,7 @@ void CursorWord()
 	pp = Posi;
 	if (Mode == HelpM) O.insert(0x11);
 	else {
-		O = Oddel;
+		O = Separ;
 		if (O.count(Arr[pp]) > 0) { pp--; }
 	}
 	while ((pp > 0) && !O.count(Arr[pp])) { pp--; }
@@ -2781,7 +2769,7 @@ void Edit()
 		if (TypeT == FileT) {
 			NullChangePart();
 		}
-		HandleEvent();
+		HandleEvent(Mode, IsWrScreen, SysLColor, LastS, LastNr);
 		if (!(Konec || IsWrScreen)) {
 			Background();
 		}

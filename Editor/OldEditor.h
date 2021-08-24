@@ -1,5 +1,6 @@
 #pragma once
 
+#include <set>
 #include <string>
 #include "../cppfand/base.h"
 #include "../cppfand/constants.h"
@@ -46,11 +47,117 @@ WORD SetPredI();
 void NextLine(bool WrScr);
 void HelpLU(char dir);
 void BlockLRShift(WORD I1);
+void FrameStep(BYTE& odir, WORD EvKeyC);
+void WrCharE(char Ch);
+void Format(WORD& i, longint First, longint Last, WORD Posit, bool Rep);
+void SetPart(longint Idx);
+bool WordExist();
+void NextPartDek();
+void NewLine(char Mode);
+bool TestLastPos(WORD F, WORD T);
+void HelpRD(char dir);
+WORD Column(WORD p);
+longint LineAbs(int Ln);
+void PredLine();
+void BlockUDShift(longint L1);
+void TestKod();
+void ClrWord();
+bool ModPage(longint RLine);
+int NewL(longint RLine);
+void DekFindLine(longint Num);
+WORD CountChar(char C, WORD First, WORD Last);
+longint NewRL(int Line);
+WORD FindLine(int Num);
+bool WordFind(WORD i, WORD WB, WORD WE, WORD LI);
+void SetWord(WORD WB, WORD WE);
+WORD WordNo2();
+WORD LastPosLine();
+void RollNext();
+void RollPred();
+void DekodLine();
+void SetScreen(WORD Ind, WORD ScrXY, WORD Pos);
+bool MyPromptLL(WORD n, std::string* s);
+void DelChar();
+void PredPart();
+void DeleteL();
+void SetDekCurrI(WORD Ind);
+void TestLenText(char** text, size_t& textLength, WORD i, int j);
+bool TestOptStr(char c);
+bool BlockExist();
+void SetBlockBound(longint& BBPos, longint& EBPos);
+void FindReplaceString(longint First, longint Last);
+void PosDekFindLine(longint Num, WORD Pos, bool ChScr);
+bool BlockHandle(longint& fs, FILE* W1, char Oper);
+void BlockCopyMove(char Oper, void* P1, LongStr* sp);
+bool BlockGrasp(char Oper, void* P1, LongStr* sp);
+bool BlockCGrasp(char Oper, void* P1, LongStr* sp);
+void BlockDrop(char Oper, void* P1, LongStr* sp);
+void BlockCDrop(char Oper, void* P1, LongStr* sp);
+void FillBlank();
+void NullChangePart();
+void SetPartLine(longint Ln);
+void MyWrLLMsg(pstring s);
+void HMsgExit(pstring s);
+void Calculate();
+longint SavePar();
+void RestorePar(longint l);
+void OpenTxtFh(char Mode);
+void RdFirstPart();
+void SimplePrintHead();
+bool RdNextPart();
+void WrEndT();
+WORD WordNo(WORD I);
 
 
-
+typedef std::string ColorOrd;
+struct PartDescr
+{
+	longint PosP = 0; longint LineP = 0;
+	WORD LenP = 0, MovI = 0, MovL = 0;
+	bool UpdP = false;
+	ColorOrd ColorP;
+};
+const int SuccLineSize = 256;
+extern PartDescr Part;
 extern pstring Breaks;
+extern size_t LenT;
+extern char Arr[SuccLineSize];
+extern char* T;
+extern bool bScroll;
+extern EdExitD* ExitD;
+extern WORD MaxLenT, IndT, ScrT;
+extern WORD ScrI, LineI, Posi, BPos;
+extern WORD NextI, PageS, LineS;
+extern integer LineL, ScrL;
+extern longint RScrL;
+extern bool Konec;
+extern bool EditT, ChangeScr;
+extern char TypeT;
+extern bool SrchT, UpdatT;
+extern longint* LocalPPtr;
+extern FILE* TxtFH;
+extern bool AllRd;
+extern longint AbsLenT;
+extern BYTE FrameDir;
+extern bool Insert, Indent, Wrap, Just;
+extern integer LeftMarg, RightMarg;
+extern WORD BCol, Colu, Row;
+extern bool InsPg, ChangePart, TypeB;
+extern WORD WordL, LastC, FirstC, FirstR, LastR;
+extern longint BegBLn, EndBLn;
+extern WORD BegBPos, EndBPos;
+extern bool UpdatedL;
+extern std::string FindStr, ReplaceStr;
+extern bool Replace, FirstEvent;
+extern pstring OptionStr;
+extern WORD MargLL[4];
 
+
+extern std::set<char> Separ;
+
+const BYTE LineSize = 255;
+const bool TextBlock = false;
+const bool ColBlock = true;
 
 const char TextM = 'T'; const char ViewM = 'V'; const char HelpM = 'H';
 const char SinFM = 'S'; const char DouFM = 'D'; const char DelFM = 'F';
