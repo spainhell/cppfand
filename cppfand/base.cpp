@@ -243,7 +243,7 @@ label1:
 			if (s[i] == '$') i++;
 		}
 	}
-	//printf("MSG: %s\n", MsgLine.c_str());
+	
 }
 
 void WriteMsg(WORD N)

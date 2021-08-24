@@ -754,7 +754,7 @@ void NewChkKey()
 			}
 			D = LstUsedFld();
 			if (D != nullptr) {
-				KL = new KeyListEl(); // (KeyListEl*)GetStore(sizeof(*KL));
+				KL = new KeyListEl();
 				if (D->KL == nullptr) D->KL = KL;
 				else ChainLast(D->KL, KL);
 				KL->Key = K;

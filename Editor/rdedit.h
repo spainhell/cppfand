@@ -15,7 +15,7 @@ void SToSL(StringListEl** SLRoot, pstring s);
 void StoreRT(WORD Ln, StringList SL, WORD NFlds);
 void RdEForm(FileD* ParFD, RdbPos FormPos);
 EFldD* FindScanNr(WORD N);
-void AutoDesign(FieldList FL);
+void AutoDesign(FieldListEl* FL);
 void RdFormOrDesign(FileD* F, FieldList FL, RdbPos FormPos);
 void NewEditD(FileD* ParFD, EditOpt* EO); // r158
 EFldD* FindEFld_E(FieldDescr* F); // existuje -> *_E
@@ -31,5 +31,5 @@ void RdImpl();
 void RdUDLI();
 void RdAllUDLIs(FileD* FD);
 std::string StandardHead();
-pstring GetStr_E(FrmlPtr Z); // existuje -> *_E
+pstring GetStr_E(FrmlElem* Z); // existuje -> *_E
 void NewChkKey();

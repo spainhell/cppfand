@@ -15,7 +15,7 @@ struct MsgStr
 	std::string Head, Last, CtrlLast, AltLast, ShiftLast;
 };
 
-bool EditText(char pMode, char pTxtType, pstring pName, pstring pErrMsg,
+bool EditText(char pMode, char pTxtType, std::string pName, std::string pErrMsg,
 	char* pTxtPtr, WORD pMaxLen, size_t& pLen, WORD& pInd, longint& pScr,
 	pstring pBreaks, EdExitD* pExD, bool& pSrch, bool& pUpdat,
 	WORD pLastNr, WORD pCtrlLastNr, MsgStr* pMsgS); // r169

@@ -72,8 +72,8 @@ std::set<char> Separ = { 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,2
 // {**********global param begin for SavePar}  // r85
 char Mode = '\0';
 char TypeT = '\0';
-pstring NameT;
-pstring ErrMsg;
+std::string NameT;
+std::string ErrMsg;
 WORD MaxLenT = 0, IndT = 0, ScrT = 0;
 size_t LenT = 0;
 pstring Breaks;
@@ -2808,7 +2808,7 @@ void GetEditTxt(bool& pInsert, bool& pIndent, bool& pWrap, bool& pJust, bool& pC
 	pLeftMarg = LeftMarg; pRightMarg = RightMarg;
 }
 
-bool EditText(char pMode, char pTxtType, pstring pName, pstring pErrMsg, char* pTxtPtr, WORD pMaxLen, size_t& pLen,
+bool EditText(char pMode, char pTxtType, std::string pName, std::string pErrMsg, char* pTxtPtr, WORD pMaxLen, size_t& pLen,
 	WORD& pInd, longint& pScr, pstring pBreaks, EdExitD* pExD, bool& pSrch, bool& pUpdat, WORD pLastNr,
 	WORD pCtrlLastNr, MsgStr* pMsgS)
 {

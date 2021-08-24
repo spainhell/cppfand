@@ -159,7 +159,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Editor.cpp" />
     <ClCompile Include="EditorEvents.cpp" />
     <ClCompile Include="EditorHelp.cpp" />
     <ClCompile Include="rdedit.cpp" />
@@ -167,7 +166,6 @@
     <ClCompile Include="OldEditor.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Editor.h" />
     <ClInclude Include="EditorEvents.h" />
     <ClInclude Include="EditorHelp.h" />
     <ClInclude Include="rdedit.h" />

@@ -251,7 +251,7 @@ label1:
 			}
 			case __F4: {
 				if (upd && (typ == 'A') && (pos <= text.length())) {
-					text[pos-1] = ToggleCS(text[pos-1]);
+					text[pos - 1] = ToggleCS(text[pos - 1]);
 				}
 				break;
 			}
@@ -1548,7 +1548,7 @@ label3:
 	if (!EdRecVar) OldLMode(md2);
 	if (IsNewRec) NewRecExit();
 	return result;
-	}
+}
 
 void RefreshSubset()
 {
@@ -1673,20 +1673,20 @@ void UpdMemberRef(void* POld, void* PNew)
 						DuplFld(cf, CFile, PNew, p2, nullptr, kf->FldD, Arg->FldD);
 						Arg = (KeyFldD*)Arg->Chain;
 						kf = (KeyFldD*)kf->Chain;
-				}
+					}
 					RunAddUpdte1('d', p, false, nullptr, LD);
 					UpdMemberRef(p, p2);
 #ifdef FandSQL
 					if (sql) Strm1->UpdateXRec(k, @x, false) else
 #endif
 						OverWrXRec(Scan->RecNr, p, p2);
-		}
+				}
 				goto label1;
-	}
+			}
 			Scan->Close();
 			ClearRecSpace(p);
 			ReleaseStore(p);
-}
+		}
 	label2:
 		LD = LD->Chain;
 	}
@@ -2006,7 +2006,7 @@ bool DeleteRecProc()
 	UnLockWithDep(OldMd);
 	result = true;
 	return result;
-	}
+}
 
 ChkD* CompChk(EFldD* D, char Typ)
 {
@@ -2264,9 +2264,9 @@ bool OldRecDiffers()
 				(CompArea(Pchar(CRecPtr) + Displ, Pchar(E->OldRecPtr) + Displ, NBytes) != ord(_equ)) then
 				goto label1;
 			f = f->Chain;
-}
+		}
 		goto label2;
-}
+	}
 	else
 #endif
 		ReadRec(CFile, E->LockedRec, CRecPtr);
@@ -3287,27 +3287,55 @@ label1:
 	case 104: N += 2; break;
 	}
 	switch (N) {
-	case 1: { if (Select) Select = false; else if (E->Bool != nullptr) Select = true;
-		DisplBool(); NewDisplLL = true; SetNewWwRecAttr(); break; }
-	case 2: if (CFld->FldD->Flg && f_Stored != 0) {
-		B = CFld->Dupl; CFld->Dupl = !B; DisplTabDupl();
-		if (B) E->NDuplSet--; else E->NDuplSet++;
+	case 1: {
+		if (Select) Select = false;
+		else if (E->Bool != nullptr) Select = true;
+		DisplBool();
+		NewDisplLL = true;
+		SetNewWwRecAttr();
 		break;
 	}
-	case 3: { B = CFld->Tab; CFld->Tab = !B; DisplTabDupl();
-		if (B) E->NTabsSet--; else E->NTabsSet++; break; }
-	case 4: { AddSwitch = !AddSwitch; NewDisplLL = true; break; }
-	case 5: if (!MustCheck) {
-		ChkSwitch = !ChkSwitch; NewDisplLL = true; break;
+	case 2: {
+		if (CFld->FldD->Flg && f_Stored != 0) {
+			B = CFld->Dupl;
+			CFld->Dupl = !B;
+			DisplTabDupl();
+			if (B) E->NDuplSet--;
+			else E->NDuplSet++;
+		}
+		break;
 	}
-	case 6: { WarnSwitch = !WarnSwitch; NewDisplLL = true;  break; }
+	case 3: {
+		B = CFld->Tab;
+		CFld->Tab = !B;
+		DisplTabDupl();
+		if (B) E->NTabsSet--;
+		else E->NTabsSet++;
+		break;
+	}
+	case 4: {
+		AddSwitch = !AddSwitch;
+		NewDisplLL = true;
+		break;
+	}
+	case 5: {
+		if (!MustCheck) {
+			ChkSwitch = !ChkSwitch;
+			NewDisplLL = true;
+		}
+		break;
+	}
+	case 6: {
+		WarnSwitch = !WarnSwitch;
+		NewDisplLL = true;
+		break;
+	}
 	}
 }
 
 void PromptSelect()
 {
 	wwmix ww;
-
 	std::string Txt;
 	if (Select) Txt = *E->BoolTxt;
 	else Txt = "";
@@ -3315,7 +3343,9 @@ void PromptSelect()
 	ReleaseStore(E->AfterE);
 	ww.PromptFilter(Txt, E->Bool, E->BoolTxt);
 	if (E->Bool == nullptr) Select = false; else Select = true;
-	DisplBool(); SetNewWwRecAttr(); NewDisplLL = true;
+	DisplBool();
+	SetNewWwRecAttr();
+	NewDisplLL = true;
 }
 
 void SwitchRecs(integer Delta)

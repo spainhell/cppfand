@@ -8,7 +8,6 @@
 #include <cstdio>
 #include <set>
 
-#include "Editor.h"
 #include "OldEditor.h"
 #include "runedi.h"
 #include "../cppfand/obaseww.h"

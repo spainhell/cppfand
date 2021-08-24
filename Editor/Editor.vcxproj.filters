@@ -27,9 +27,6 @@
     <ClCompile Include="EditorHelp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Editor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="EditorEvents.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -45,9 +42,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="EditorHelp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Editor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="EditorEvents.h">
