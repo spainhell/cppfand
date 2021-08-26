@@ -16,11 +16,11 @@ struct MsgStr
 };
 
 bool EditText(char pMode, char pTxtType, std::string pName, std::string pErrMsg,
-	char* pTxtPtr, WORD pMaxLen, size_t& pLen, WORD& pInd, longint& pScr,
+	LongStr* pLS, WORD pMaxLen, WORD& pInd, longint& pScr,
 	pstring pBreaks, EdExitD* pExD, bool& pSrch, bool& pUpdat,
 	WORD pLastNr, WORD pCtrlLastNr, MsgStr* pMsgS); // r169
-void SimpleEditText(char pMode, std::string pErrMsg, std::string pName, char* TxtPtr,
-	WORD MaxLen, size_t& Len, WORD& Ind, bool& Updat); // r202
+void SimpleEditText(char pMode, std::string pErrMsg, std::string pName, LongStr* TxtPtr,
+	WORD MaxLen, WORD& Ind, bool& Updat); // r202
 WORD FindTextE(const pstring& PstrScreenStr, pstring Popt, char* PTxtPtr, WORD PLen); // r209
 void InitTxtEditor();
 void EditTxtFile(longint* LP, char Mode, std::string& ErrMsg, EdExitD* ExD, longint TxtPos,

@@ -64,7 +64,9 @@ void Error(integer N)
 		Move(InpArrPtr, p, l);
 		if (PrevCompInp != nullptr) RdMsg(63); else RdMsg(61);
 		HdTxt = MsgLine;
-		SimpleEditText('T', ErrMsg, HdTxt, (char*)p, 0xfff, l, i, upd);
+		LongStr LS; LS.A = (char*)p; LS.LL = l;
+		SimpleEditText('T', ErrMsg, HdTxt, &LS, 0xfff, i, upd);
+		p = LS.A; l = LS.LL;
 		PopW(w);
 		ReleaseStore(p1);
 	}

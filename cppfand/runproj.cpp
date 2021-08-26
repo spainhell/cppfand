@@ -2039,9 +2039,7 @@ void UpdateUTxt()
 	ReleaseStore(p);
 	b = true;
 label2:
-	LL = S->LL;
-	SimpleEditText('T', "", "", (char*)&S->A, 0x7FFF, LL, TxtPos, Upd);
-	S->LL = LL;
+	SimpleEditText('T', "", "", S, 0x7FFF, TxtPos, Upd);
 	SetInpLongStr(S, false);
 	MarkStore(p);
 	RdUserId(false);

@@ -3163,11 +3163,9 @@ label2:
 	X = nullptr;
 	if (TTExit) X = E->ExD;
 	Upd = false;
-	size_t LL = S->LL;
 	result =
-		EditText(Kind, MemoT, HdTxt, ErrMsg, (char*)S->A, MaxLStrLen, LL, TxtPos, TxtXY, Breaks, X,
+		EditText(Kind, MemoT, HdTxt, ErrMsg, S, MaxLStrLen, TxtPos, TxtXY, Breaks, X,
 			Srch, Upd, 141, CtrlMsgNr, PTxtMsgS);
-	S->LL = (WORD)LL;
 	ErrMsg = "";
 	heslo = LexWord;
 	LastLen = S->LL;

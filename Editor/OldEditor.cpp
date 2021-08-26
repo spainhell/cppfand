@@ -2808,7 +2808,7 @@ void GetEditTxt(bool& pInsert, bool& pIndent, bool& pWrap, bool& pJust, bool& pC
 	pLeftMarg = LeftMarg; pRightMarg = RightMarg;
 }
 
-bool EditText(char pMode, char pTxtType, std::string pName, std::string pErrMsg, char* pTxtPtr, WORD pMaxLen, size_t& pLen,
+bool EditText(char pMode, char pTxtType, std::string pName, std::string pErrMsg, LongStr* pLS, WORD pMaxLen,
 	WORD& pInd, longint& pScr, pstring pBreaks, EdExitD* pExD, bool& pSrch, bool& pUpdat, WORD pLastNr,
 	WORD pCtrlLastNr, MsgStr* pMsgS)
 {
@@ -2817,9 +2817,9 @@ bool EditText(char pMode, char pTxtType, std::string pName, std::string pErrMsg,
 	TypeT = pTxtType;
 	NameT = pName;
 	ErrMsg = pErrMsg;
-	T = pTxtPtr;
+	T = pLS->A;
 	MaxLenT = pMaxLen;
-	LenT = pLen; IndT = pInd;
+	LenT = pLS->LL; IndT = pInd;
 	ScrT = pScr & 0xFFFF;
 	Posi = pScr >> 16;
 	Breaks = pBreaks;
@@ -2853,18 +2853,19 @@ bool EditText(char pMode, char pTxtType, std::string pName, std::string pErrMsg,
 	if (Mode != HelpM) { TextAttr = TxtColor; }
 	pUpdat = UpdatT;
 	pSrch = SrchT;
-	pLen = LenT;
+	pLS->LL = LenT;
+	pLS->A = T;
 	pInd = IndT;
 	pScr = ScrT + ((longint)Posi << 16);
 	EdOk = oldEdOK;
 	return EditT;
 }
 
-void SimpleEditText(char pMode, std::string pErrMsg, std::string pName, char* TxtPtr, WORD MaxLen, size_t& Len, WORD& Ind, bool& Updat)
+void SimpleEditText(char pMode, std::string pErrMsg, std::string pName, LongStr* pLS, WORD MaxLen, WORD& Ind, bool& Updat)
 {
 	bool Srch; longint Scr;
 	Srch = false; Scr = 0;
-	EditText(pMode, LocalT, std::move(pName), std::move(pErrMsg), TxtPtr, MaxLen, Len, Ind, Scr, "", nullptr, Srch, Updat, 0, 0, nullptr);
+	EditText(pMode, LocalT, std::move(pName), std::move(pErrMsg), pLS, MaxLen, Ind, Scr, "", nullptr, Srch, Updat, 0, 0, nullptr);
 }
 
 WORD FindTextE(const pstring& Pstr, pstring Popt, char* PTxtPtr, WORD PLen)
@@ -2932,14 +2933,15 @@ void EditTxtFile(longint* LP, char Mode, std::string& ErrMsg, EdExitD* ExD, long
 	while (true) {
 		Srch = false; Upd = false;
 		if (!Loc) {
-			EditText(Mode, FileT, TxtPath, ErrMsg, T, 0xFFF0, LenT, Ind, Txtxy,
+			LongStr LS2;
+			LS2.A = T; LS2.LL = LenT;
+			EditText(Mode, FileT, TxtPath, ErrMsg, &LS2, 0xFFF0, Ind, Txtxy,
 				_F1 + _F6 + _F9 + _AltF10, ExD, Srch, Upd, 126, 143, MsgS);
+			T = LS2.A; LenT = LS2.LL;
 		}
 		else {
-			size_t LL = LS->LL;
-			EditText(Mode, LocalT, "", ErrMsg, (char*)&LS->A, MaxLStrLen, LL, Ind, Txtxy,
+			EditText(Mode, LocalT, "", ErrMsg, LS, MaxLStrLen, Ind, Txtxy,
 				_F1 + _F6, ExD, Srch, Upd, 126, 143, MsgS);
-			LS->LL = (WORD)LL;
 		}
 		TxtPos = Ind + Part.PosP;
 		if (Upd) EdUpdated = true;
@@ -3034,10 +3036,8 @@ void ViewHelpText(LongStr* S, WORD& TxtPos)
 	bool Upd = false;
 	longint Scr = 0;
 	while (true) {
-		size_t LL = S->LL;
-		EditText(HelpM, MemoT, "", "", (char*)S->A, 0xFFF0, LL, TxtPos, Scr,
+		EditText(HelpM, MemoT, "", "", S, 0xFFF0, TxtPos, Scr,
 			_F1 + _F10 + _F6 + _CtrlHome + _CtrlEnd, nullptr, Srch, Upd, 142, 145, nullptr);
-		S->LL = (WORD)LL;
 		if (Event.Pressed.KeyCombination() == __F6) {
 			PrintArray(&S->A, S->LL, true);
 			continue;
