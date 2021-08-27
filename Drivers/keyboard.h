@@ -46,7 +46,7 @@ public:
 	unsigned __int32 SimpleKeyDescr();
 	unsigned short KeyCombination();
 	void UpdateKey(WORD newKey);
-	unsigned __int32 Function();
+	//unsigned __int32 Function();
 	bool isChar();
 	bool Shift();
 	bool Alt();

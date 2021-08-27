@@ -248,8 +248,8 @@ void Screen::WriteChar(short X, short Y, char C, BYTE attr, Position pos)
 	default:;
 	}
 	WORD color = attr;
-	auto resatr = WriteConsoleOutputAttribute(_handle, &color, 1, { X - 1, Y - 1 }, &written);
-	auto result = WriteConsoleOutputCharacterA(_handle, &C, 1, { X - 1, Y - 1}, &written);
+	auto resatr = WriteConsoleOutputAttribute(_handle, &color, 1, { (short)(X - 1), (short)(Y - 1) }, &written);
+	auto result = WriteConsoleOutputCharacterA(_handle, &C, 1, { (short)(X - 1), (short)(Y - 1) }, &written);
 	GotoXY(WhereXabs() + 1, WhereYabs(), absolute); // po zapisu poseneme kurzor
 }
 
@@ -532,7 +532,7 @@ void Screen::GotoXY(WORD X, WORD Y, Position pos)
 	case actual: return;
 	default: return;
 	}
-	bool succ = SetConsoleCursorPosition(_handle, { (short)X - 1, (short)Y - 1 });
+	bool succ = SetConsoleCursorPosition(_handle, { (short)(X - 1), (short)(Y - 1) });
 	if (!succ) {
 		printf("GotoXY() fail");
 	}

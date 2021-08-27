@@ -272,26 +272,28 @@ void TestGlobalKey()
 	bool InMenu6 = false; bool InMenu8 = false;
 	if (Event.What != evKeyDown) return;
 	if (Event.Pressed.isChar()) return;
-	switch (Event.Pressed.Function()) {
-	case VK_F8 + ALT:
+	switch (Event.Pressed.KeyCombination()) {
+	case __ALT_F8:
 	{
 		if (!InMenu8)
 		{
-			ClrEvent(); InMenu8 = true; i = Menu(45, spec.KbdTyp + 1);
+			ClrEvent(); InMenu8 = true;
+			i = Menu(45, spec.KbdTyp + 1);
 			if (i != 0) spec.KbdTyp = TKbdConv(i - 1);
 			InMenu8 = false;
 		}
 		break;
 	}
-	case VK_F6 + ALT:
+	case __ALT_F6:
 	{
 		if (!InMenu6)
 		{
-			ClrEvent(); InMenu6 = true; PrinterMenu(46); InMenu6 = false;
+			ClrEvent(); InMenu6 = true;
+			PrinterMenu(46); InMenu6 = false;
 		}
 		break;
 	}
-	case VK_ESCAPE:
+	case __ESC:
 	{
 		if (LLKeyFlags != 0) { LLKeyFlags = 0; ClrEvent(); }
 		break;

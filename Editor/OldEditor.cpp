@@ -76,7 +76,6 @@ std::string NameT;
 std::string ErrMsg;
 WORD MaxLenT = 0, IndT = 0, ScrT = 0;
 size_t LenT = 0;
-pstring Breaks;
 EdExitD* ExitD = nullptr;
 bool SrchT, UpdatT;
 WORD LastNr, CtrlLastNr;
@@ -985,13 +984,11 @@ void SetDekLnCurrI(WORD Ind)
 	LineL = SetLine(LineI);
 }
 
-WORD SetInd(WORD Ind, WORD Pos) // { line, pozice --> index}
+WORD SetInd(char* text, size_t len_text, WORD Ind, WORD Pos) // { line, pozice --> index}
 {
-	WORD P;
-	P = pred(Ind);
-	if (Ind < LenT)
-	{
-		while ((Ind - P < Pos) && (T[Ind] != _CR)) { Ind++; }
+	WORD P = Ind == 0 ? 0 : Ind - 1;
+	if (Ind < len_text)	{
+		while ((Ind - P < Pos) && (text[Ind - 1] != _CR)) { Ind++; }
 	}
 	return Ind;
 }
@@ -1993,10 +1990,10 @@ void SetBlockBound(longint& BBPos, longint& EBPos)
 	integer i;
 	SetPartLine(EndBLn);
 	i = EndBLn - Part.LineP;
-	EBPos = SetInd(FindLine(i), EndBPos) + Part.PosP;
+	EBPos = SetInd(T, LenT, FindLine(i), EndBPos) + Part.PosP;
 	SetPartLine(BegBLn);
 	i = BegBLn - Part.LineP;
-	BBPos = SetInd(FindLine(i), BegBPos) + Part.PosP;
+	BBPos = SetInd(T, LenT, FindLine(i), BegBPos) + Part.PosP;
 }
 
 void ResetPrint(char Oper, longint& fs, FILE* W1, longint LenPrint, ColorOrd* co, WORD& I1, bool isPrintFile, CharArr* p)
@@ -2051,7 +2048,7 @@ bool BlockHandle(longint& fs, FILE* W1, char Oper)
 		if (Oper == 'p')
 		{
 			LL2 = AbsLenT - Part.LenP + LenT;
-			LL1 = Part.PosP + SetInd(LineI, Posi);
+			LL1 = Part.PosP + SetInd(T, LenT, LineI, Posi);
 		}
 		else SetBlockBound(LL1, LL2); I1 = LL1 - Part.PosP;
 		if (toupper(Oper) == 'P') ResetPrint(Oper, fs, W1, LL2 - LL1, &co, I1, isPrintFile, p);
@@ -2552,7 +2549,7 @@ bool WordExist()
 
 WORD WordNo2()
 {
-	if (WordExist()) return WordNo(SetInd(LineI, Posi));
+	if (WordExist()) return WordNo(SetInd(T, LenT, LineI, Posi));
 	return WordNo(ScrI);
 }
 
@@ -2615,7 +2612,7 @@ void HelpLU(char dir)
 	}
 	else {
 		if (WordFind(h1 + 1, I1, I2, I) && (I >= ScrL)) SetWord(I1, I2);
-		else { I1 = SetInd(LineI, Posi); WordL = 0; }
+		else { I1 = SetInd(T, LenT, LineI, Posi); WordL = 0; }
 		I = ScrL - 1;
 	}
 	if (I <= ScrL - 1) {
@@ -2654,7 +2651,7 @@ void HelpRD(char dir)
 			SetWord(I1, I2);
 		}
 		else {
-			I1 = SetInd(LineI, Posi); WordL = 0;
+			I1 = SetInd(T, LenT, LineI, Posi); WordL = 0;
 		}
 		I = ScrL + PageS;
 	}
@@ -2737,7 +2734,7 @@ void Edit()
 
 	if (Mode == HelpM) {
 		WordL = 0;
-		ScrI = SetInd(LineI, Posi);
+		ScrI = SetInd(T, LenT, LineI, Posi);
 		if (WordFind(WordNo2() + 1, i1, i2, i3)) {
 			SetWord(i1, i2);
 		}
@@ -2779,7 +2776,7 @@ void Edit()
 		Posi = BPos + 1; LineL = ScrL; LineI = ScrI;
 	}
 
-	IndT = SetInd(LineI, Posi);
+	IndT = SetInd(T, LenT, LineI, Posi);
 	ScrT = ((LineL - ScrL + 1) << 8) + Posi - BPos;
 	if (Mode != HelpM) {
 		TxtXY = ScrT + (longint(Posi) << 16);
@@ -2809,7 +2806,7 @@ void GetEditTxt(bool& pInsert, bool& pIndent, bool& pWrap, bool& pJust, bool& pC
 }
 
 bool EditText(char pMode, char pTxtType, std::string pName, std::string pErrMsg, LongStr* pLS, WORD pMaxLen,
-	WORD& pInd, longint& pScr, pstring pBreaks, EdExitD* pExD, bool& pSrch, bool& pUpdat, WORD pLastNr,
+	WORD& pInd, longint& pScr, std::vector<WORD> break_keys, EdExitD* pExD, bool& pSrch, bool& pUpdat, WORD pLastNr,
 	WORD pCtrlLastNr, MsgStr* pMsgS)
 {
 	bool oldEdOK = EdOk; EditT = true;
@@ -2822,7 +2819,7 @@ bool EditText(char pMode, char pTxtType, std::string pName, std::string pErrMsg,
 	LenT = pLS->LL; IndT = pInd;
 	ScrT = pScr & 0xFFFF;
 	Posi = pScr >> 16;
-	Breaks = pBreaks;
+	//Breaks = break_keys;
 	ExitD = pExD;
 	SrchT = pSrch; UpdatT = pUpdat;
 	LastNr = pLastNr; CtrlLastNr = pCtrlLastNr;
@@ -2865,7 +2862,8 @@ void SimpleEditText(char pMode, std::string pErrMsg, std::string pName, LongStr*
 {
 	bool Srch; longint Scr;
 	Srch = false; Scr = 0;
-	EditText(pMode, LocalT, std::move(pName), std::move(pErrMsg), pLS, MaxLen, Ind, Scr, "", nullptr, Srch, Updat, 0, 0, nullptr);
+	EditText(pMode, LocalT, std::move(pName), std::move(pErrMsg), pLS, MaxLen, Ind, Scr, 
+		std::vector<WORD>(), nullptr, Srch, Updat, 0, 0, nullptr);
 }
 
 WORD FindTextE(const pstring& Pstr, pstring Popt, char* PTxtPtr, WORD PLen)
@@ -2933,15 +2931,16 @@ void EditTxtFile(longint* LP, char Mode, std::string& ErrMsg, EdExitD* ExD, long
 	while (true) {
 		Srch = false; Upd = false;
 		if (!Loc) {
-			LongStr LS2;
-			LS2.A = T; LS2.LL = LenT;
-			EditText(Mode, FileT, TxtPath, ErrMsg, &LS2, 0xFFF0, Ind, Txtxy,
-				_F1 + _F6 + _F9 + _AltF10, ExD, Srch, Upd, 126, 143, MsgS);
-			T = LS2.A; LenT = LS2.LL;
+			LongStr* LS2 = new LongStr(T, LenT);
+			std::vector<WORD> brkKeys = { __F1, __F6, __F9, __ALT_F10 };
+			EditText(Mode, FileT, TxtPath, ErrMsg, LS2, 0xFFF0, Ind, Txtxy,
+				std::move(brkKeys), ExD, Srch, Upd, 126, 143, MsgS);
+			T = LS2->A; LenT = LS2->LL;
 		}
 		else {
+			std::vector<WORD> brkKeys = { __F1, __F6 };
 			EditText(Mode, LocalT, "", ErrMsg, LS, MaxLStrLen, Ind, Txtxy,
-				_F1 + _F6, ExD, Srch, Upd, 126, 143, MsgS);
+				std::move(brkKeys), ExD, Srch, Upd, 126, 143, MsgS);
 		}
 		TxtPos = Ind + Part.PosP;
 		if (Upd) EdUpdated = true;
@@ -3036,8 +3035,14 @@ void ViewHelpText(LongStr* S, WORD& TxtPos)
 	bool Upd = false;
 	longint Scr = 0;
 	while (true) {
+		std::vector<WORD> brkKeys;
+		brkKeys.push_back(__F1);
+		brkKeys.push_back(__F6);
+		brkKeys.push_back(__F10);
+		brkKeys.push_back(__CTRL_HOME);
+		brkKeys.push_back(__CTRL_END);
 		EditText(HelpM, MemoT, "", "", S, 0xFFF0, TxtPos, Scr,
-			_F1 + _F10 + _F6 + _CtrlHome + _CtrlEnd, nullptr, Srch, Upd, 142, 145, nullptr);
+			std::move(brkKeys), nullptr, Srch, Upd, 142, 145, nullptr);
 		if (Event.Pressed.KeyCombination() == __F6) {
 			PrintArray(&S->A, S->LL, true);
 			continue;

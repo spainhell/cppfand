@@ -327,10 +327,19 @@ unsigned short PressedKey::KeyCombination()
 		ControlKey += 0x80;
 		result = static_cast<unsigned short>((ControlKey << 8) + (_key.wVirtualKeyCode & 0xFF));
 	}
+	else if (ControlKey == 2 && Char != _key.uChar.AsciiChar) {
+		// CTRL + A .. CTRL + N
+		ControlKey += 0x80;
+		result = static_cast<unsigned short>((ControlKey << 8) + Char);
+	}
 	else {
 		// printable character
-		if (ControlKey == 1 || (ControlKey == 6 && (Char != _key.uChar.AsciiChar))) {
-			// capital char || Ctrl + Alt + V (@), ...
+		if (ControlKey == 1) {
+			// capital char (with Shift)
+			ControlKey = 0;
+		}
+		else if (ControlKey == 6 && Char != _key.uChar.AsciiChar) {
+			// Ctrl + Alt + V (@), ...
 			ControlKey = 0;
 		}
 		result = static_cast<unsigned short>((ControlKey << 8) + static_cast<unsigned char>(_key.uChar.AsciiChar));
@@ -341,6 +350,7 @@ unsigned short PressedKey::KeyCombination()
 void PressedKey::UpdateKey(WORD newKey)
 {
 	// reverse function to KeyCombination
+	_key.dwControlKeyState = 0;
 	if (newKey & 0x0400) { _key.dwControlKeyState += 0x0002; } // left Alt
 	if (newKey & 0x0200) { _key.dwControlKeyState += 0x0008; } // left Ctrl
 	if (newKey & 0x0100) { _key.dwControlKeyState += 0x0010; } // shift
@@ -355,28 +365,34 @@ void PressedKey::UpdateKey(WORD newKey)
 	else {
 		_key.wVirtualKeyCode = newKey & 0xFF;
 		_key.uChar.AsciiChar = newKey & 0xFF;
-		_key.uChar.UnicodeChar = newKey & 0xFF;
 		Char = newKey & 0xFF;
 	}
 }
 
-unsigned __int32 PressedKey::Function()
-{
-	unsigned __int32 result = _key.wVirtualKeyCode;
-	if (Shift()) result += 0x00010000;
-	if (Alt()) result += 0x00040000;
-	if (Ctrl()) result += 0x00020000;
-	return result;
-}
+//unsigned __int32 PressedKey::Function()
+//{
+//	unsigned __int32 result = _key.wVirtualKeyCode;
+//	if (Shift()) result += 0x00010000;
+//	if (Alt()) result += 0x00040000;
+//	if (Ctrl()) result += 0x00020000;
+//	return result;
+//}
 
 /// jedna se o tisknutelny znak?
 bool PressedKey::isChar()
 {
+	WORD comb = this->KeyCombination();
+	return comb >= 0x20 && comb <= 0xFF;
+
+	/*
 	BYTE c = (BYTE)_key.uChar.AsciiChar;
 	// muze byt se SHIFT, to znaci velke pismeno ...
 	// muze byt s CTRL a ALT zaroven, to znaci znaky '@' atp.
-	bool combi = (!Alt() && !Ctrl()) || (Alt() && Ctrl());
+	bool alt = Alt();
+	bool ctrl = Ctrl();
+	bool combi = (!alt && !ctrl) || (alt && ctrl);
 	return c >= 0x20 && combi;
+	*/
 }
 
 bool PressedKey::Shift()

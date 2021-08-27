@@ -361,7 +361,6 @@ void AssignFld(FieldDescr* F, FrmlElem* Z)
 WORD FieldEdit(FieldDescr* F, FrmlElem* Impl, WORD LWw, WORD iPos, std::string& Txt, double& RR, bool del, bool upd, bool ret,
 	WORD Delta)
 {
-	//WORD N = 0, L = 0, M = 0;
 	short Col = 0, Row = 0;
 	char cc = '\0';
 	pstring* Mask = nullptr;
@@ -3080,25 +3079,33 @@ void UpdateEdTFld(LongStr* S)
 void UpdateTxtPos(WORD TxtPos)
 {
 	LockMode md;
-	if (IsCurrChpt) {
-		md = NewLMode(WrMode); SetWasUpdated();
-		R_(ChptTxtPos, integer(TxtPos)); OldLMode(md);
+	if (IsCurrChpt()) {
+		md = NewLMode(WrMode);
+		SetWasUpdated();
+		R_(ChptTxtPos, (integer)TxtPos);
+		OldLMode(md);
 	}
 }
 
 bool EditFreeTxt(FieldDescr* F, std::string ErrMsg, bool Ed, WORD& Brk)
 {
-	const std::string BreakKeys = {
+	std::vector<WORD> BreakKeys;
 #ifndef FandRunV
-		(char)_CtrlF1,
+	BreakKeys.push_back(__CTRL_F1);
 #endif
-		(char)_F1, (char)_CtrlHome, (char)_CtrlEnd, (char)_F9, (char)_AltF10 };
-	const std::string BreakKeys1 = { _CtrlF1, _F1, _CtrlHome, _CtrlEnd, _F9, _AltF10, _ShiftF1, _F10 };
-	const std::string BreakKeys2 = { _F1, _CtrlHome, _CtrlEnd, _F9, _F10, _AltF10,
-		_CtrlF1, _AltF1, _ShiftF1, _AltF2, _AltF3, _CtrlF8, _CtrlF9, _AltF9 };
+	BreakKeys.push_back(__F1);
+	BreakKeys.push_back(__F9);
+	BreakKeys.push_back(__CTRL_HOME);
+	BreakKeys.push_back(__CTRL_END);
+
+	std::vector<WORD> BreakKeys1 = { __CTRL_F1, __F1, __CTRL_HOME, __CTRL_END, __F9, __ALT_F10, __SHIFT_F1, __F10 };
+	std::vector<WORD> BreakKeys2 = { __F1, __CTRL_HOME, __CTRL_END, __F9, __F10, __ALT_F10,
+									__CTRL_F1, __ALT_F1, __SHIFT_F1, __ALT_F2, __ALT_F3, __CTRL_F8, __CTRL_F9, __ALT_F9 };
+
+	std::vector<WORD> Breaks;
+
 	const BYTE maxStk = 10;
 
-	std::string Breaks;
 	bool Srch = false, Upd = false, WasUpd = false, Displ = false, quit;
 	std::string HdTxt;
 	MsgStr TxtMsgS;
@@ -3164,7 +3171,7 @@ label2:
 	if (TTExit) X = E->ExD;
 	Upd = false;
 	result =
-		EditText(Kind, MemoT, HdTxt, ErrMsg, S, MaxLStrLen, TxtPos, TxtXY, Breaks, X,
+		EditText(Kind, MemoT, HdTxt, ErrMsg, S, MaxLStrLen, TxtPos, TxtXY, std::move(Breaks), X,
 			Srch, Upd, 141, CtrlMsgNr, PTxtMsgS);
 	ErrMsg = "";
 	heslo = LexWord;
@@ -3876,7 +3883,7 @@ WORD ExitKeyProc()
 		ShiftF7Proc();
 		w = 2;
 	}
-	Event.Pressed.UpdateKey(c);
+	//Event.Pressed.UpdateKey(c);
 	return w;
 }
 
@@ -4070,7 +4077,8 @@ void GoStartFld(EFldD* SFld)
 
 void RunEdit(XString* PX, WORD& Brk)
 {
-	WORD i = 0, LongBeep = 0, w = 0; bool Displ = false, b = false;
+	WORD i = 0, LongBeep = 0;
+	bool Displ = false, b = false;
 	EdExitD* X = nullptr;
 	longint OldTimeW = 0, OldTimeR = 0, n = 0;
 	BYTE EdBr = 0;
@@ -4318,8 +4326,7 @@ label81:
 				//{
 			label13:
 				if (!IsNewRec) {
-					w = KbdChar;
-					if (Event.Pressed.Function() == 'Y' + CTRL) {
+					if (KbdChar == __CTRL_Y) {
 						if (!NoDelete) if (DeleteRecProc()) {
 							ClearKeyBuf();
 							b = true;
@@ -4334,15 +4341,15 @@ label81:
 					}
 					else if (WriteCRec(true, Displ)) {
 						if (Displ) DisplAllWwRecs();
-						Event.Pressed.UpdateKey(w);       /*only in edit mode*/
-						switch (Event.Pressed.Function()) {
+						//Event.Pressed.UpdateKey(w);       /*only in edit mode*/
+						switch (KbdChar) {
 						case __F9: {
 							// uloz
 							SaveFiles();
 							UpdCount = 0;
 							break;
 						}
-						case 'N' + CTRL: {
+						case __CTRL_N: {
 							// vloz novou vetu pred aktualni
 							if (!NoCreate && !Only1Record)
 							{
@@ -4417,14 +4424,19 @@ label81:
 						}
 						case __ALT_F2:
 						case __ALT_F3:
-							if (IsCurrChpt())
-								if (w == _AltF3_) {
+							if (IsCurrChpt()) {
+								if (KbdChar == _AltF3_) {
 									ForAllFDs(ClosePassiveFD);
-									EditHelpOrCat(w, 0, "");
+									EditHelpOrCat(KbdChar, 0, "");
 								}
-								else { Brk = 2; goto fin; }
-							else if (IsTestRun && (CFile != CatFD) && (w == _AltF2_))
-								EditHelpOrCat(w, 1, CFile->Name + '.' + CFld->FldD->Name);
+								else {
+									Brk = 2;
+									goto fin;
+								}
+							}
+							else if (IsTestRun && (CFile != CatFD) && (KbdChar == _AltF2_)) {
+								EditHelpOrCat(KbdChar, 1, CFile->Name + '.' + CFld->FldD->Name);
+							}
 							break;
 						case __F6: if (!EdRecVar) F6Proc(); break;
 						case __F4: if (DuplToPrevEdit()) { EdBreak = 14; goto fin; } break;

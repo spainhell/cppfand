@@ -657,16 +657,16 @@ label1:
 	i = iTxt;
 	bool enter = false;
 	switch (Event.Pressed.KeyCombination()) {
-	case VK_RETURN: { enter = true; goto label2; break; }
-	case VK_ESCAPE: { i = 0; goto label4; break; }
-	case VK_DOWN: { goto label3; break; }
-	case VK_LEFT: {
+	case __ENTER: { enter = true; goto label2; break; }
+	case __ESC: { i = 0; goto label4; break; }
+	case __DOWN: { goto label3; break; }
+	case __LEFT: {
 		Prev();
 		WrText(i);
 		if (down) goto label2;
 		break;
 	}
-	case VK_RIGHT: {
+	case __RIGHT: {
 		Next();
 		WrText(i);
 		if (down) goto label2;

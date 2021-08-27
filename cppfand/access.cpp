@@ -942,6 +942,7 @@ double _RforD(FieldDescr* F, void* P)
 	return r;
 }
 
+/// Read NUMBER from the field
 double _R(FieldDescr* F)
 {
 	void* P = CRecPtr;
@@ -985,7 +986,7 @@ double _R(FieldDescr* F)
 	return result;
 }
 
-// vraci BOOL ze zaznamu CRecPtr na pozici F->Displ
+/// Read BOOL from the field
 bool _B(FieldDescr* F)
 {
 	bool result = false;
@@ -1000,6 +1001,7 @@ bool _B(FieldDescr* F)
 	return result;
 }
 
+/// Save NUMBER to the field
 void R_(FieldDescr* F, double R)
 {
 	void* p = CRecPtr;
@@ -1053,6 +1055,7 @@ void R_(FieldDescr* F, double R)
 	}
 }
 
+/// Save BOOL into the field
 void B_(FieldDescr* F, bool B)
 {
 	void* p = CRecPtr;

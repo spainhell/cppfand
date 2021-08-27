@@ -225,35 +225,62 @@ const WORD __DELETE = VIRTUAL + VK_DELETE;
 const WORD __BACK = VK_BACK;
 
 const WORD __F1 = VIRTUAL + VK_F1;
+const WORD __ALT_F1 = VIRTUAL + ALT + VK_F1;
 const WORD __CTRL_F1 = VIRTUAL + CTRL + VK_F1;
+const WORD __SHIFT_F1 = VIRTUAL + SHIFT + VK_F1;
+
 const WORD __F2 = VIRTUAL + VK_F2;
 const WORD __ALT_F2 = VIRTUAL + ALT + VK_F2;
 const WORD __CTRL_F2 = VIRTUAL + CTRL + VK_F2;
+
 const WORD __F3 = VIRTUAL + VK_F3;
 const WORD __ALT_F3 = VIRTUAL + ALT + VK_F3;
 const WORD __CTRL_F3 = VIRTUAL + CTRL + VK_F3;
+
 const WORD __F4 = VIRTUAL + VK_F4;
 const WORD __CTRL_F4 = VIRTUAL + CTRL + VK_F4;
+
 const WORD __F5 = VIRTUAL + VK_F5;
 const WORD __CTRL_F5 = VIRTUAL + CTRL + VK_F5;
+
 const WORD __F6 = VIRTUAL + VK_F6;
+const WORD __ALT_F6 = VIRTUAL + ALT + VK_F6;
+const WORD __CTRL_F6 = VIRTUAL + CTRL + VK_F6;
+const WORD __SHIFT_F6 = VIRTUAL + SHIFT + VK_F6;
+
 const WORD __F7 = VIRTUAL + VK_F7;
 const WORD __ALT_F7 = VIRTUAL + ALT + VK_F7;
 const WORD __CTRL_F7 = VIRTUAL + CTRL + VK_F7;
 const WORD __SHIFT_F7 = VIRTUAL + SHIFT + VK_F7;
+
 const WORD __F8 = VIRTUAL + VK_F8;
 const WORD __ALT_F8 = VIRTUAL + ALT + VK_F8;
 const WORD __CTRL_F8 = VIRTUAL + CTRL + VK_F8;
 const WORD __SHIFT_F8 = VIRTUAL + SHIFT + VK_F8;
+
 const WORD __F9 = VIRTUAL + VK_F9;
 const WORD __ALT_F9 = VIRTUAL + ALT + VK_F9;
 const WORD __CTRL_F9 = VIRTUAL + CTRL + VK_F9;
+
 const WORD __F10 = VIRTUAL + VK_F10;
 const WORD __ALT_F10 = VIRTUAL + ALT + VK_F10;
 const WORD __CTRL_F10 = VIRTUAL + CTRL + VK_F10;
 const WORD __SHIFT_F10 = VIRTUAL + SHIFT + VK_F10;
+
 const WORD __F11 = VIRTUAL + VK_F11;
+
 const WORD __F12 = VIRTUAL + VK_F12;
+
+const WORD __CTRL_C = VIRTUAL + CTRL + 'C';
+const WORD __CTRL_D = VIRTUAL + CTRL + 'D';
+const WORD __CTRL_K = VIRTUAL + CTRL + 'K';
+const WORD __CTRL_N = VIRTUAL + CTRL + 'N';
+const WORD __CTRL_O = VIRTUAL + CTRL + 'O';
+const WORD __CTRL_P = VIRTUAL + CTRL + 'P';
+const WORD __CTRL_Q = VIRTUAL + CTRL + 'Q';
+const WORD __CTRL_X = VIRTUAL + CTRL + 'X';
+const WORD __CTRL_Y = VIRTUAL + CTRL + 'Y';
+const WORD __CTRL_Z = VIRTUAL + CTRL + 'Z';
 
 const WORD __CTRL_HOME = VIRTUAL + CTRL + VK_HOME;
 const WORD __CTRL_END = VIRTUAL + CTRL + VK_END;

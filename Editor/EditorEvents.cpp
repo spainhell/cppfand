@@ -58,9 +58,8 @@ bool My2GetEvent()
 		return false;
 	}
 
-	if (toupper(Event.Pressed.Char) >= 'A' && toupper(Event.Pressed.Char) <= 'Z') // with Event do if upcase(chr(KeyCode)) in ['A'..'Z'] then
-	{
-		Event.Pressed.Char = static_cast<char>(toupper(toupper(Event.Pressed.Char)) - '@');
+	if (toupper(Event.Pressed.Char) >= 'A' && toupper(Event.Pressed.Char) <= 'Z') {
+		Event.Pressed.UpdateKey(toupper(toupper(Event.Pressed.Char)) - '@');
 		if ((Event.Pressed.Char == 'Y' || Event.Pressed.Char == 'Z') && (spec.KbdTyp == CsKbd || spec.KbdTyp == SlKbd)) {
 			switch (Event.Pressed.Char) {
 			case 'Z': Event.Pressed.Char = 'Y'; break;
@@ -75,7 +74,7 @@ bool My2GetEvent()
 bool HelpEvent()
 {
 	bool result = false;
-	if (Event.What == evKeyDown)
+	if (Event.What == evKeyDown) {
 		switch (Event.Pressed.KeyCombination()) {
 		case _ESC_:
 		case _left_:
@@ -90,27 +89,27 @@ bool HelpEvent()
 		}
 		default:;
 		}
-
-	else if ((Lo(Event.Pressed.KeyCombination()) == 0x00) && (Breaks.first(Hi(Event.Pressed.KeyCombination()))) != 0)
+	}
+	else if ((Lo(Event.Pressed.KeyCombination()) == 0x00)/* && (Breaks.first(Hi(Event.Pressed.KeyCombination()))) != 0*/) {
 		result = true;
-	if (Event.What == evMouseDown) result = true;
+	}
+	if (Event.What == evMouseDown) {
+		result = true;
+	}
 	return result;
 }
 
-void Wr(pstring s, pstring OrigS, char Mode, BYTE SysLColor)
+void Wr(std::string s, std::string& OrigS, char Mode, BYTE SysLColor)
 {
 	CHAR_INFO ci2[2];
 	if (Mode != HelpM) {
 		if (s.empty()) s = OrigS;
 		else {
-			screen.ScrRdBuf(0, 0, ci2, 2);
-			//screen.ScrRdBuf(0, 0, &OrigS[1], 2);
-			OrigS[1] = ci2[0].Char.AsciiChar;
-			//Move(&OrigS[3], &OrigS[2], 1);
-			OrigS[2] = OrigS[3];
-			OrigS[0] = 2;
+			screen.ScrRdBuf(1, 1, ci2, 2);
+			OrigS[0] = ci2[0].Char.AsciiChar;
+			OrigS[1] = ci2[1].Char.AsciiChar;
 		}
-		screen.ScrWrStr(0, 0, s, SysLColor);
+		screen.ScrWrStr(1, 1, s, SysLColor);
 	}
 }
 
@@ -134,7 +133,7 @@ bool ScrollEvent(EdExitD* ExitD) {
 		break;
 	default: {
 		// TODO: toto bude delat problem
-		if ((Lo(Event.Pressed.KeyCombination()) == 0x00) && (Breaks.first(Hi(Event.Pressed.KeyCombination())) != 0)) {
+		if ((Lo(Event.Pressed.KeyCombination()) == 0x00) /* && (Breaks.first(Hi(Event.Pressed.KeyCombination())) != 0)*/) {
 			result = true;
 		}
 		else {
@@ -191,8 +190,7 @@ bool ViewEvent(EdExitD* ExitD)
 }
 
 bool MyGetEvent(char Mode, BYTE SysLColor, std::string& LastS, WORD LastNr, bool IsWrScreen, bool bScroll, EdExitD* ExitD) {
-	pstring OrigS(4);
-	OrigS = "    ";
+	std::string OrigS = "    ";
 	WORD ww;
 
 	auto result = false;
@@ -211,22 +209,23 @@ bool MyGetEvent(char Mode, BYTE SysLColor, std::string& LastS, WORD LastNr, bool
 		case _A_: Event.Pressed.Key()->wVirtualKeyCode = _CtrlLeft_; break;
 		case _F_: Event.Pressed.Key()->wVirtualKeyCode = _CtrlRight_; break;
 		case _V_: Event.Pressed.Key()->wVirtualKeyCode = VK_INSERT; break;
-		case _P_:
+		case __CTRL_P:
 		{
-			Wr("\x10", OrigS, Mode, SysLColor);
+			Wr("^P", OrigS, Mode, SysLColor);
 			ww = Event.Pressed.KeyCombination();
 			if (My2GetEvent())
 			{
 				Wr("", OrigS, Mode, SysLColor);
 				if (Event.Pressed.Char <= 0x31) {
+					Event.Pressed.UpdateKey(CTRL + Event.Pressed.Char);
 					//Event.KeyCode = (ww << 8) || Event.KeyCode;
 				}
 			}
 			break;
 		}
-		case _Q_:
+		case __CTRL_Q:
 		{
-			Wr("\x11", OrigS, Mode, SysLColor);
+			Wr("^Q", OrigS, Mode, SysLColor);
 			ww = Event.Pressed.KeyCombination();
 			if (My2GetEvent())
 			{
@@ -250,9 +249,9 @@ bool MyGetEvent(char Mode, BYTE SysLColor, std::string& LastS, WORD LastNr, bool
 				}
 			}
 		}
-		case _K_:
+		case __CTRL_K:
 		{
-			Wr("\x0B", OrigS, Mode, SysLColor);
+			Wr("^K", OrigS, Mode, SysLColor);
 			ww = Event.Pressed.KeyCombination();
 			if (My2GetEvent())
 			{
@@ -266,9 +265,9 @@ bool MyGetEvent(char Mode, BYTE SysLColor, std::string& LastS, WORD LastNr, bool
 				}
 			}
 		}
-		case _O_:
+		case __CTRL_O:
 		{
-			Wr("\x0F", OrigS, Mode, SysLColor);
+			Wr("^O", OrigS, Mode, SysLColor);
 			ww = Event.Pressed.KeyCombination();
 			if (My2GetEvent())
 			{
@@ -346,7 +345,7 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 		while (X != nullptr) {
 			if (TestExitKey(key, X)) {  // nastavuje i EdBreak
 				TestKod();
-				IndT = SetInd(LineI, Posi);
+				IndT = SetInd(T, LenT, LineI, Posi);
 				ScrT = ((LineL - ScrL + 1) << 8) + Posi - BPos;
 				LastTxtPos = IndT + Part.PosP;
 				TxtXY = ScrT + ((longint)Posi << 16);
@@ -441,7 +440,7 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 		if ((Mode == SinFM || Mode == DouFM || Mode == DelFM || Mode == NotFM) && !bScroll) {
 			FrameStep(FrameDir, key);
 		}
-		else if (Event.Pressed.isChar()) {
+		else if (Event.Pressed.isChar() || (key >= CTRL + '\x01' && key <= CTRL + '\x31')) {
 			// printable character
 			WrCharE(Lo(key));
 			if (Wrap) {
@@ -793,7 +792,7 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 				else {
 					L2 = AbsLenT - Part.LenP + LenT;
 					if (TestOptStr('g') || TestOptStr('e'))  L1 = 1;
-					else L1 = Part.PosP + SetInd(LineI, Posi);
+					else L1 = Part.PosP + SetInd(T, LenT, LineI, Posi);
 				}
 				FindReplaceString(L1, L2); if (key == _QA_) DekodLine();
 				if (!Konec) { FirstEvent = false; Background(); }
@@ -803,7 +802,7 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 				if (!FindStr.empty()) {
 					TestKod();
 					if (TestOptStr('l') && (!BlockExist() || (TypeB == ColBlock))) goto Nic;
-					fs = 1; L1 = Part.PosP + SetInd(LineI, Posi);
+					fs = 1; L1 = Part.PosP + SetInd(T, LenT, LineI, Posi);
 					if (TestOptStr('l'))  SetBlockBound(fs, L2);
 					else L2 = AbsLenT - Part.LenP + LenT;
 					if (L1 < fs)  L1 = fs;  // { if L1>=L2  goto Nic;}
@@ -982,7 +981,7 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 				{
 					TestKod(); screen.CrsHide();
 					SetPartLine(EndBLn); I2 = EndBLn - Part.LineP;
-					L1 = SetInd(FindLine(integer(I2)), EndBPos) + Part.PosP;
+					L1 = SetInd(T, LenT, FindLine(integer(I2)), EndBPos) + Part.PosP;
 					L2 = BegBLn; Posi = BegBPos; SetPartLine(L2); I2 = BegBLn - Part.LineP;
 					Format(I, FindLine(integer(I2)) + Part.PosP, L1, BegBPos, true);
 					DekFindLine(L2);
@@ -1143,7 +1142,7 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 		Posi = Event.Where.X - WindMin.X + 1;
 		if (Mode != TextM) Posi = Position(Posi);
 		Posi += BPos;
-		I = SetInd(LineI, Posi);
+		I = SetInd(T, LenT, LineI, Posi);
 		if (I < LenT) {
 			if (Mode == HelpM) {
 				ClrWord();

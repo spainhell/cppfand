@@ -156,14 +156,12 @@ void RdColors(FILE* CfgHandle)
 void RdPrinter(FILE* CfgHandle)
 {
 	BYTE L;
-	//printf("Pozice v souboru pred tiskarnami: %i (0x%x)\n", ftell(CfgHandle), ftell(CfgHandle));
 	ReadH(CfgHandle, 1, &prMax);
 	while (prMax > 0)
 	{
 		ReadH(CfgHandle, 1, &L);
 		if (L == 0xFF) prMax--;
 	}
-	//printf("Pozice v souboru po tiskarnach: %i (0x%x)\n", ftell(CfgHandle), ftell(CfgHandle));
 	
 	// jeste jsou tam nejaka data a datum v nasl. konfiguraci je posunuty -> nutno rucne posunout:
 	SeekH(CfgHandle, PosH(CfgHandle) + 4);
@@ -184,10 +182,6 @@ void RdWDaysTab(FILE* CfgHandle)
 		ReadH(CfgHandle, sizeof(WDaysTab[i].Typ), &WDaysTab[i].Typ);
 		ReadH(CfgHandle, sizeof(WDaysTab[i].Nr), &WDaysTab[i].Nr);
 	}
-
-	/*for (int i = 0; i < NWDaysTab; i++) {
-		printf("%i: %i\n", WDaysTab[i].Nr, WDaysTab[i].Typ);
-	}*/
 }
 
 void RdCFG()
@@ -236,9 +230,9 @@ void RdCFG()
 	ReadH(CfgHandle, sizeof(spec.WithDiskFree), &spec.WithDiskFree);
 	// konec SPEC
 
-	RdColors(CfgHandle); // naètení konfigurace (VGA + barvy)
+	RdColors(CfgHandle); // nacteni konfigurace (VGA + barvy)
 
-	// Naètení fontù
+	// Nacteni fontu
 	ReadH(CfgHandle, 1, &fonts.VFont); // enum orginál 1B
 	ReadH(CfgHandle, sizeof(fonts.LoadVideoAllowed), &fonts.LoadVideoAllowed);
 	ReadH(CfgHandle, sizeof(fonts.NoDiakrSupported), &fonts.NoDiakrSupported);

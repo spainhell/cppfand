@@ -406,7 +406,7 @@ void TFile::Create()
 longint TFile::NewPage(bool NegL)
 {
 	longint PosPg;
-	BYTE X[MPageSize];
+	BYTE X[MPageSize]{0};
 	longint* L = (longint*)&X;
 	if (FreeRoot != 0) {
 		PosPg = FreeRoot << MPageShft;
@@ -571,7 +571,7 @@ label2:
 longint TFile::Store(LongStrPtr S)
 {
 	integer rest; WORD l, M; longint N; void* p; longint pos;
-	char X[MPageSize + 1];
+	char X[MPageSize + 1]{0};
 	struct stFptD { longint Typ = 0, Len = 0; } FptD;
 	longint result = 0;
 	l = S->LL;

@@ -17,7 +17,7 @@ struct MsgStr
 
 bool EditText(char pMode, char pTxtType, std::string pName, std::string pErrMsg,
 	LongStr* pLS, WORD pMaxLen, WORD& pInd, longint& pScr,
-	pstring pBreaks, EdExitD* pExD, bool& pSrch, bool& pUpdat,
+	std::vector<WORD> break_keys, EdExitD* pExD, bool& pSrch, bool& pUpdat,
 	WORD pLastNr, WORD pCtrlLastNr, MsgStr* pMsgS); // r169
 void SimpleEditText(char pMode, std::string pErrMsg, std::string pName, LongStr* TxtPtr,
 	WORD MaxLen, WORD& Ind, bool& Updat); // r202
@@ -27,15 +27,13 @@ void EditTxtFile(longint* LP, char Mode, std::string& ErrMsg, EdExitD* ExD, long
 	longint Txtxy, WRect* V, WORD Atr, std::string Hd, BYTE WFlags, MsgStr* MsgS);
 void ViewPrinterTxt(); // r353
 void SetEditTxt(Instr_setedittxt* PD);
-//void GetEditTxt(bool& pInsert, bool& pIndent, bool& pWrap, bool& pJust, bool& pColBlk,
-//	integer& pLeftMarg, integer& pRightMarg); // r162
 
 void Background();
 void DisplLL(WORD Flags);
 void WrLLMargMsg(std::string& s, WORD n);
 void ScrollPress();
 void CleanFrameM();
-WORD SetInd(WORD Ind, WORD Pos);
+WORD SetInd(char* text, size_t len_text, WORD Ind, WORD Pos);
 void TestUpdFile();
 void DelEndT();
 void KodLine();
@@ -119,7 +117,6 @@ struct PartDescr
 };
 const int SuccLineSize = 256;
 extern PartDescr Part;
-extern pstring Breaks;
 extern size_t LenT;
 extern char Arr[SuccLineSize];
 extern char* T;

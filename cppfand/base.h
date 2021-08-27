@@ -17,6 +17,11 @@ public:
 		allocated = size;
 		LL = 0;
 	}
+	LongStr(char* data, WORD size) {
+		A = data;
+		allocated = size;
+		LL = size;
+	}
 	~LongStr() { delete[] A; }
 	WORD LL;
 	char* A;
