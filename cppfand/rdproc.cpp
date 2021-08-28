@@ -941,24 +941,25 @@ Instr_proc* RdProcArg(char Caller)
 
 void SetCode(std::string keyName, BYTE fnNr, EdExKeyD* E)
 {
+	E->KeyCode = __F1 + fnNr - 1;
 	if (keyName.empty()) {
 		// pouze F1-F12
-		E->KeyCode = VK_F1 + fnNr - 1;
+		//E->KeyCode = VIRTUAL + __F1 + fnNr - 1;
 		E->Break = 20 + fnNr;
 	}
 	else if (keyName == "shift") {
 		// Shift F1-F12
-		E->KeyCode = SHIFT + VK_F1 + fnNr - 1;
+		E->KeyCode += SHIFT;
 		E->Break = 0 + fnNr;
 	}
 	else if (keyName == "ctrl") {
 		// Ctrl F1-F12
-		E->KeyCode = CTRL + VK_F1 + fnNr - 1;
+		E->KeyCode += CTRL;
 		E->Break = 30 + fnNr;
 	}
-	else if (keyName == "shift") {
+	else if (keyName == "alt") {
 		// Alt F1-F12
-		E->KeyCode = ALT + VK_F1 + fnNr - 1;
+		E->KeyCode += ALT;
 		E->Break = 40 + fnNr;
 	}
 }

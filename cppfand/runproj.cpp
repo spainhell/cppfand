@@ -116,14 +116,13 @@ void GetSplitChptName(std::string& Name, std::string& Ext)
 
 void GetRdbRecVars(void* RecPtr, RdbRecVars* X)
 {
-	pstring s1(1);
 	void* p = nullptr; void* p2 = nullptr; void* cr = nullptr;
 	LinkDPtr ld = nullptr;
 
 	cr = CRecPtr;
 	CRecPtr = RecPtr;
-	s1 = _ShortS(ChptTyp);
-	X->Typ = s1[1];
+	std::string s1 = _StdS(ChptTyp);
+	X->Typ = s1[0];
 	GetSplitChptName(X->Name, X->Ext);
 	X->Txt = _T(ChptTxt);
 	X->OldTxt = _T(ChptOldTxt);
@@ -153,8 +152,8 @@ void GetRdbRecVars(void* RecPtr, RdbRecVars* X)
 #ifdef FandSQL
 		if (X->Ext == ".SQL") X->isSQL = true;
 #endif
-		CRecPtr = cr;
 	}
+	CRecPtr = cr;
 }
 
 bool ChptDelFor(RdbRecVars* X)

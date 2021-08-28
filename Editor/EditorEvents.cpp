@@ -248,6 +248,7 @@ bool MyGetEvent(char Mode, BYTE SysLColor, std::string& LastS, WORD LastNr, bool
 				}
 				}
 			}
+			break;
 		}
 		case __CTRL_K:
 		{
@@ -264,6 +265,7 @@ bool MyGetEvent(char Mode, BYTE SysLColor, std::string& LastS, WORD LastNr, bool
 					//Event.KeyCode = 0;
 				}
 			}
+			break;
 		}
 		case __CTRL_O:
 		{
@@ -283,6 +285,7 @@ bool MyGetEvent(char Mode, BYTE SysLColor, std::string& LastS, WORD LastNr, bool
 				}
 				}
 			}
+			break;
 		}
 		}
 	// *** Rezim - test ***

@@ -160,7 +160,7 @@ struct EdExKeyD
 {
 	std::string KeyName;
 	BYTE Break = 0;
-	unsigned __int32 KeyCode = 0;
+	unsigned short KeyCode = 0;
 };
 
 struct EdExitD : Chained

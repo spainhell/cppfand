@@ -207,10 +207,16 @@ bool KbdTimer(WORD Delta, BYTE Kind)
 	auto result = false;
 	EndTime = GetTickCount() + Delta;
 	result = false;
-	label1:
+label1:
 	switch (Kind) {          /* 0 - wait, 1 - wait || ESC, 2 - wait || any key */
-	case 1: if (KeyPressed() && (ReadKey() == __ESC)) return result;
-	case 2: if (KbdPressed()) { ReadKbd(); return result; }
+	case 1: {
+		if (KeyPressed() && (ReadKey() == __ESC)) return result;
+		break;
+	}
+	case 2: {
+		if (KbdPressed()) { ReadKbd(); return result; }
+		break;
+	}
 	}
 	if (GetTickCount() < EndTime) goto label1;
 	result = true;
@@ -603,7 +609,7 @@ label1:
 	if (Event.What != 0) { result = 0; goto label2; }
 	if (Flgs != KbdFlgs) { result = 1; goto label2; }
 	if ((Delta != 0) && (GetTickCount() > t + Delta)) { result = 2; goto label2; }
- 	if (pos != 0)
+	if (pos != 0)
 	{
 		if (GetTickCount() > t1 + MoveDelay)
 		{

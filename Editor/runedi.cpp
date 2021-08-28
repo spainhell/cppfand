@@ -2480,11 +2480,15 @@ bool WriteCRec(bool MayDispl, bool& Displ)
 			if (!RunAddUpdte1('d', E->OldRecPtr, false, nullptr, nullptr)) goto label1;
 			UpdMemberRef(E->OldRecPtr, CRecPtr);
 		}
-		switch (ChptWriteCRec()) {
-		case 1: goto label1; break;
+		WORD chptWrite = ChptWriteCRec();
+		switch (chptWrite) {
+		case 1: {
+			goto label1;
+			break;
+		}
 		case 2: {
-			if ((*(longint*)((char*)(E->OldRecPtr) + ChptTxt->Displ) == *(longint*)((char*)(CRecPtr)+ChptTxt->Displ))
-				&& PromptYN(157)) {
+			// are old and new text positions same?
+			if ((*(longint*)((char*)E->OldRecPtr + ChptTxt->Displ) == *(longint*)((char*)CRecPtr + ChptTxt->Displ)) && PromptYN(157)) {
 				s = _LongS(ChptTxt);
 				TWork.Delete(ClpBdPos);
 				ClpBdPos = TWork.Store(s);

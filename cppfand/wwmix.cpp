@@ -70,7 +70,7 @@ void wwmix::PutSelect(std::string s)
 void wwmix::SelectStr(integer C1, integer R1, WORD NMsg, std::string LowTxt)
 {
 	WORD cols = 0, MaxBase = 0;
-	__int16 key;
+	WORD key;
 	char schar = '\0';
 	integer b = 0;
 	Item* p = nullptr;
@@ -151,8 +151,8 @@ label1:
 	case evKeyDown: {
 		key = Event.Pressed.KeyCombination();
 		switch (key) {
-		case VK_RETURN:
-		case VK_ESCAPE: {
+		case __ENTER:
+		case __ESC: {
 		label3:
 			ClrEvent();
 			PopW(w2);
@@ -181,11 +181,11 @@ label1:
 			return;
 			break;
 		}
-		case VK_LEFT: Left(); break;
-		case VK_RIGHT: Right(); break;
-		case VK_UP: Up(); break;
-		case VK_DOWN: Down(); break;
-		case VK_PRIOR: {
+		case __LEFT: Left(); break;
+		case __RIGHT: Right(); break;
+		case __UP: Up(); break;
+		case __DOWN: Down(); break;
+		case __PAGEUP: {
 			if (sv.Base > 1)
 			{
 				IVOff();
@@ -198,7 +198,7 @@ label1:
 			}
 			break;
 		}
-		case VK_NEXT: {
+		case __PAGEDOWN: {
 			if (sv.Base < MaxBase)
 			{
 				IVOff();
@@ -233,8 +233,8 @@ label1:
 			}
 			break;
 		}
-		case _CtrlPgUp_:
-		case _Home_: {
+		case __CTRL_PAGEUP:
+		case __HOME: {
 			if (sv.iItem > 1) {
 				IVOff();
 				sv.iItem = 1;
@@ -243,8 +243,8 @@ label1:
 			}
 			break;
 		}
-		case _CtrlPgDn_:
-		case _End_: {
+		case __CTRL_PAGEDOWN:
+		case __END: {
 			if (sv.iItem < sv.NItems) {
 				IVOff();
 				sv.iItem = sv.NItems;
