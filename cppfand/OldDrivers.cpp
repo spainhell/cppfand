@@ -567,15 +567,15 @@ void TextColor(BYTE Color)
 {
 }
 
-void InsLine()
-{
-	Scroll(WindMin.X, Crs.Y, WindMax.X - WindMin.X + 1, WindMax.Y - Crs.Y + 1, false);
-}
+//void InsLine()
+//{
+//	Scroll(WindMin.X, Crs.Y, WindMax.X - WindMin.X + 1, WindMax.Y - Crs.Y + 1, false);
+//}
 
-void DelLine()
-{
-	Scroll(WindMin.X, Crs.Y, WindMax.X - WindMin.X + 1, WindMax.Y - Crs.Y + 1, true);
-}
+//void DelLine()
+//{
+//	Scroll(WindMin.X, Crs.Y, WindMax.X - WindMin.X + 1, WindMax.Y - Crs.Y + 1, true);
+//}
 
 void Beep()
 {

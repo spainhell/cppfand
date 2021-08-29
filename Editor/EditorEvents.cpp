@@ -313,7 +313,8 @@ bool MyGetEvent(char Mode, BYTE SysLColor, std::string& LastS, WORD LastNr, bool
 
 void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS, WORD LastNr) {
 	wwmix wwmix1;
-	WORD I = 0, I1 = 0, I2 = 0, I3 = 0;
+	WORD I = 0, I1 = 0;
+	integer I2 = 0, I3 = 0;
 	FILE* F1 = nullptr;
 	WORD W1 = 0, W2 = 0;
 	longint L1 = 0, L2 = 0, fs = 0;
@@ -482,18 +483,18 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 						ClrEol();
 						if (LineL - ScrL == PageS) {
 							screen.GotoXY(1, 1);
-							MyDelLine();
+							//MyDelLine();
 							ScrL++;
 							ChangeScr = true;
 						}
 						else {
 							screen.GotoXY(1, succ(LineL - ScrL));
-							MyInsLine();
+							//MyInsLine();
 						}
 						if (Indent) {
 							I1 = SetPredI();
 							I = I1;
-							while ((T[I] == ' ') && (T[I] != _CR)) { I++; }
+							while ((T[I] == ' ') && (T[I] != _CR)) { I++; } // tento radek je nesmyslny
 							if (T[I] != _CR) { Posi = I - I1 + 1; }
 						}
 						else if (Wrap) {
@@ -724,7 +725,7 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 				NewLine('n');
 				ClrEol();
 				screen.GotoXY(1, LineL - ScrL + 2);
-				MyInsLine();
+				//MyInsLine();
 				break;
 			}
 
@@ -760,7 +761,7 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 				if (EndBLn >= LineAbs(LineL))
 					if ((EndBLn == LineAbs(LineL)) && (TypeB == TextBlock)) BPos = 1;
 					else EndBLn--;
-				MyDelLine();
+				//MyDelLine();
 				DekodLine();
 				Posi = 1;
 				break;
@@ -984,9 +985,9 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 				{
 					TestKod(); screen.CrsHide();
 					SetPartLine(EndBLn); I2 = EndBLn - Part.LineP;
-					L1 = SetInd(T, LenT, FindLine(integer(I2)), EndBPos) + Part.PosP;
+					L1 = SetInd(T, LenT, FindLine(I2), EndBPos) + Part.PosP;
 					L2 = BegBLn; Posi = BegBPos; SetPartLine(L2); I2 = BegBLn - Part.LineP;
-					Format(I, FindLine(integer(I2)) + Part.PosP, L1, BegBPos, true);
+					Format(I, FindLine(I2) + Part.PosP, L1, BegBPos, true);
 					DekFindLine(L2);
 					if (!bScroll) screen.CrsShow();
 				}
@@ -1086,7 +1087,7 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 					screen.Window(FirstC, FirstR + 1, LastC + 1, LastR);
 				else screen.Window(FirstC, FirstR + 1, LastC, LastR);
 
-				if (!Scroll) screen.CrsShow();
+				if (!bScroll) screen.CrsShow();
 				SetScreen(LineI, 0, 0);
 				break;
 			}

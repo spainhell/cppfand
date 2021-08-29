@@ -267,9 +267,10 @@ bool FindString(WORD& I, WORD Len)
 	return result;
 }
 
-/// pracuje s C++ indexem 0 .. N-1
+/// pracuje s Pascal indexem 1 .. N
 size_t FindCtrl(char* t, size_t first, size_t last)
 {
+	first--; last--;
 	// ^A ^B ^D ^E ^Q ^S ^W
 	std::set<char> pc = { 0x01, 0x02, 0x04, 0x05, 0x11, 0x13, 0x17 };
 	for (size_t i = first; i <= last; i++) {
@@ -280,17 +281,17 @@ size_t FindCtrl(char* t, size_t first, size_t last)
 
 void SetColorOrd(ColorOrd& CO, WORD First, WORD Last)
 {
-	WORD I = FindCtrl(T, First - 1, Last - 1); // -1 to convert Pascal to C++
-	while (I < Last - 1) // if not found I = std::string::npos
+	size_t index = FindCtrl(T, First, Last); 
+	while (index < Last - 1) // if not found -> I = std::string::npos
 	{
-		size_t pp = CO.find(T[I]);
+		size_t pp = CO.find(T[index]);
 		if (pp != std::string::npos) {
-			CO = CO.substr(0, pp - 1) + CO.substr(pp + 1, CO.length() - pp + 1);
+			CO.erase(pp);
 		}
 		else {
-			CO += T[I];
+			CO += T[index];
 		}
-		I = FindCtrl(T, I + 1, Last - 1);
+		index = FindCtrl(T, index + 2, Last);
 	}
 }
 
@@ -1056,20 +1057,24 @@ void NextPart()
 	WrEndT();
 }
 
-WORD FindLine(int Num)
+WORD FindLine(integer& Num)
 {
 	WORD result;
 
 	while (true) {
 		if (Num <= 0) {
-			if (Part.PosP == 0) Num = 1;
+			if (Part.PosP == 0) {
+				Num = 1;
+				//if (LineI < 1) LineI = 1;
+				//if (LineL < 1) LineL = 1;
+			}
 			else {
 				PredPart();
 				continue;
 			}
 		}
 		if (Num == 1) {
-			result = 0;
+			result = 1;
 		}
 		else {
 			// WORD J = Num - 1;
@@ -1171,7 +1176,7 @@ void UpdScreen()
 		if (ChangePart) DekodLine();
 		ChangeScr = false;
 
-		if (bScroll) ScrI = LineI + 1;
+		if (bScroll) ScrI = LineI;
 		else ScrI = FindLine(ScrL);
 
 		if (HelpScroll) {
@@ -1200,6 +1205,9 @@ void UpdScreen()
 	}
 	WrEndL(HardL, LineL - ScrL + 1);
 	if (MyTestEvent()) return;
+	if (ScrI < 1) {
+		throw std::exception("UpdScreen(): variable ScrI < 1");
+	}
 	WORD index = ScrI - 1;
 	r = 1;
 	integer rr = 0;
@@ -1347,17 +1355,15 @@ int NewL(longint RLine)
 
 void ScrollPress()
 {
-	BYTE* BP = nullptr;
-	bool old = false, fyz = false;
-	longint L1 = 0;
-	void* ptr = nullptr;
+	//void* ptr = nullptr;
 
-	old = bScroll;
+	bool old = bScroll;
 	//fyz = *(BP(ptr(0, 0x417)) && 0x10) != 0;
+	const bool fyz = GetKeyState(VK_SCROLL) & 0x0001;
 	if (fyz == old) FirstScroll = false;
 	bScroll = (fyz || FirstScroll) && (Mode != HelpM);
 	HelpScroll = bScroll || (Mode == HelpM);
-	L1 = LineAbs(ScrL);
+	longint L1 = LineAbs(ScrL);
 	if (old != bScroll) {
 		if (bScroll) {
 			WrStatusLine();
@@ -1403,17 +1409,17 @@ void DisplLL(WORD Flags)
 		WrLLMargMsg(AltLastS, 0);
 }
 
-void MyInsLine()
-{
-	TextAttr = TxtColor;
-	InsLine();
-}
+//void MyInsLine()
+//{
+//	TextAttr = TxtColor;
+//	InsLine();
+//}
 
-void MyDelLine()
-{
-	TextAttr = TxtColor;
-	DelLine();
-}
+//void MyDelLine()
+//{
+//	TextAttr = TxtColor;
+//	DelLine();
+//}
 
 void PredLine()
 {
@@ -1429,14 +1435,18 @@ void PredLine()
 		}
 		LineL--;
 		if (LineL < ScrL) {
-			screen.GotoXY(1, 1); MyInsLine(); ScrL--; ChangeScr = true;
-			if (Scroll)
-			{ /*dec(RLineL);*/
+			screen.GotoXY(1, 1);
+			//MyInsLine();
+			ScrL--;
+			ChangeScr = true;
+			if (bScroll) {
+				/*dec(RLineL);*/
 				RScrL--;
 				/*if (ModPage(RLineL))*/
-				if (ModPage(RScrL))
-				{
-					screen.GotoXY(1, 1); MyInsLine();/*dec(RLineL);*/RScrL--;
+				if (ModPage(RScrL))	{
+					screen.GotoXY(1, 1);
+					//MyInsLine();/*dec(RLineL);*/
+					RScrL--;
 				}
 			}
 		}
@@ -1446,12 +1456,16 @@ void PredLine()
 void RollNext()
 {
 	if ((NextI >= LenT) && !AllRd) NextPartDek();
-	if (NextI <= LenT)
-	{
-		screen.GotoXY(1, 1); MyDelLine(); ScrL++; ChangeScr = true;
-		if (LineL < ScrL)
-		{
-			TestKod(); LineL++; LineI = NextI; DekodLine();
+	if (NextI <= LenT) {
+		screen.GotoXY(1, 1);
+		//MyDelLine();
+		ScrL++;
+		ChangeScr = true;
+		if (LineL < ScrL) {
+			TestKod();
+			LineL++;
+			LineI = NextI;
+			DekodLine();
 		}
 	}
 }
@@ -1461,7 +1475,7 @@ void RollPred()
 	if ((ScrL == 1) && (Part.PosP > 0)) PredPart();
 	if (ScrL > 1) {
 		screen.GotoXY(1, 1);
-		MyInsLine();
+		//MyInsLine();
 		ScrL--;
 		ChangeScr = true;
 		if (LineL == ScrL + PageS) {
