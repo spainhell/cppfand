@@ -172,16 +172,22 @@ void HMsgExit(pstring s)
 	}
 }
 
-/// Find index of 1st character in C-string, if not found then LENGTH is returned!
+/// Find index of nth character in C-string, if not found then index after LENGTH is returned!
 /// Works with values 1 .. N (Pascal style)
-size_t FindChar(char* text, size_t length, char c, size_t from)
+size_t FindChar(char* text, size_t length, char c, size_t from, size_t n)
 {
-	for (size_t i = from; i <= length; i++) {
-		if (text[i - 1] == c) {
-			return i;
+	size_t result = 0; // as not found
+	from--;
+	for (size_t j = 0; j < n; j++) {
+		for (size_t i = from; i < length; i++) {
+			if (text[i] == c) {
+				result = i;
+				break;
+			}
 		}
+		from = result + 1;
 	}
-	return length + 1; // return index after string
+	return result == 0 ? length + 1 : result + 1;
 }
 
 bool TestOptStr(char c)
@@ -821,20 +827,34 @@ void PredPart()
 	WrEndT();
 }
 
-WORD CountChar(char C, WORD First, WORD Last)
+/// Counts the number of occurrences of a character. 'first' & 'last' are (1 .. N)
+size_t CountChar(char* text, size_t text_len, char C, size_t first, size_t last)
 {
-	size_t I = FindChar(T, LenT, C, First);
-	WORD n = 0;
-	while (I < Last) {
-		n++;
-		I = FindChar(T, LenT, C, I + 1);
+	size_t count = 0;
+	first--; last--; // to be C indexes
+	if (first < text_len) {
+		if (last >= text_len) last = text_len - 1;
+		for (size_t i = first; i <= last; i++) {
+			if (text[i] == C) count++;
+		}
 	}
-	return n;
+	else {
+		// out of index
+	}
+	return count;
+
+	//size_t I = FindChar(T, LenT, C, First);
+	//WORD n = 0;
+	//while (I < Last) {
+	//	n++;
+	//	I = FindChar(T, LenT, C, I + 1);
+	//}
+	//return n;
 }
 
 WORD SetLine(WORD Ind)
 {
-	return CountChar(_CR, 1, Ind) + 1;
+	return CountChar(T, LenT, _CR, 1, Ind) + 1;
 }
 
 WORD SetCurrI(WORD Ind)
@@ -1038,39 +1058,44 @@ void NextPart()
 
 WORD FindLine(int Num)
 {
-	WORD I, J;
 	WORD result;
 
-label1:
-	if (Num <= 0) {
-		if (Part.PosP == 0) Num = 1;
-		else {
-			PredPart();
-			goto label1;
+	while (true) {
+		if (Num <= 0) {
+			if (Part.PosP == 0) Num = 1;
+			else {
+				PredPart();
+				continue;
+			}
 		}
-	}
-	if (Num == 1) { result = 1; }
-	else {
-		J = pred(Num);
-		// TODO: tady se vyuziva jinak puvodni kod -> k cemu je to 'J'?
-		// J = pred(Num); I = FindChar(J, _CR, 1, LenT) + 1;
-		I = FindChar(T, LenT, _CR, 1) + 1;
-		if (T[I] == _LF) { I++; }
-		if (I > LenT)
-		{
-			if (AllRd) {
-				Num = SetLine(LenT);
-				result = SetCurrI(LenT);
+		if (Num == 1) {
+			result = 0;
+		}
+		else {
+			// WORD J = Num - 1;
+			// TODO: tady se vyuziva jinak puvodni kod -> k cemu je to 'J'?
+			// I = FindChar(J, _CR, 1, LenT) + 1;
+			WORD I = FindChar(T, LenT, _CR, 1, Num - 1) + 1;
+			if (T[I - 1] == _LF) {
+				I++;
+			}
+			if (I > LenT) {
+				if (AllRd) {
+					Num = SetLine(LenT);
+					result = SetCurrI(LenT);
+				}
+				else {
+					NextPart();
+					if (Num != LineL) Num -= Part.MovL;
+					continue;
+				}
 			}
 			else {
-				NextPart();
-				if (Num != LineL) Num -= Part.MovL;
-				goto label1;
+				result = I;
 			}
 		}
-		else { result = I; }
+		return result; // returns C string index (0..n)
 	}
-	return result - 1;
 }
 
 void SetPart(longint Idx)
@@ -1216,10 +1241,10 @@ void UpdScreen()
 				EditWrline((char*)&T[index], r);
 			}
 			if (InsPage) {
-				index = FindChar(T, LenT, 0x0C, index) + 1;
+				index = FindChar(T, LenT, 0x0C, index + 1);
 			}
 			else {
-				index = FindChar(T, LenT, _CR, index) + 1;
+				index = FindChar(T, LenT, _CR, index + 1);
 			}
 			WrEndL((index < LenT) && (T[index] == _LF), r);
 			if (T[index] == _LF) {
@@ -1483,7 +1508,7 @@ void NextLine(bool WrScr)
 			}
 		}
 		else if (WrScr && (LineL == ScrL + PageS)) {
-			if (PageS > 1) MyWriteln();
+			//if (PageS > 1) MyWriteln();
 			ScrL++;
 			ChangeScr = true;
 		}
@@ -2539,7 +2564,7 @@ label1:
 
 WORD WordNo(WORD I)
 {
-	return (CountChar(0x13, 1, MinW(LenT, I - 1)) + 1) / 2;
+	return (CountChar(T, LenT, 0x13, 1, MinW(LenT, I - 1)) + 1) / 2;
 }
 
 bool WordExist()

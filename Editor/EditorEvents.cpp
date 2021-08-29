@@ -557,7 +557,7 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 			case __DOWN: {
 				if (Mode == HelpM) HelpRD('D');
 				else {
-					L1 = LineAbs(LineL);
+					L1 = LineAbs(LineL); // na kterem jsme prave radku textu (celkove, ne na obrazovce)
 					NextLine(true);
 					BlockUDShift(L1);
 					if (bScroll) Posi = Position(Colu);
@@ -578,7 +578,7 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 					LineL = ScrL;
 					DekFindLine(LineAbs(LineL));
 					Posi = Position(Colu);
-					j = CountChar(0x0C, LineI, ScrI);
+					j = CountChar(T, LenT, 0x0C, LineI, ScrI);
 					if ((j > 0) && InsPg) {
 						DekFindLine(LineAbs(LineL + j));
 						ScrL = LineL;
@@ -610,7 +610,7 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 				if (bScroll) {
 					RScrL += PageS; if (ModPage(RScrL)) RScrL--;
 					DekFindLine(LineAbs(NewL(RScrL))); Posi = Position(Colu);
-					j = CountChar(0x0C, ScrI, LineI);
+					j = CountChar(T, LenT, 0x0C, ScrI, LineI);
 					if ((j > 0) && InsPg) DekFindLine(LineAbs(LineL - j));
 					ScrL = LineL; RScrL = NewRL(ScrL);
 				}
