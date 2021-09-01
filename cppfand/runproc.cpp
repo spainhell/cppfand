@@ -424,7 +424,7 @@ void EditProc(Instr_edit* PD)
 	if (!EO->UserSelFlds || SelFldsForEO(EO, nullptr)) EditDataFile(CFile, EO);
 	SaveFiles();
 	//ReleaseStore(EO);
-	delete EO;
+	// delete EO; - jinak je problem s opetovnym spustenim editoru ...
 }
 
 void EditTxtProc(Instr_edittxt* PD)
@@ -928,20 +928,24 @@ FILE* OpenHForPutTxt(Instr_puttxt* PD)
 
 void PutTxt(Instr_puttxt* PD)
 {
-	FILE* h = nullptr; LongStr* s = nullptr;
+	FILE* h = nullptr;
 	FrmlElem* z = nullptr; pstring pth;
 	z = PD->Txt;
-	if (CanCopyT(nullptr, z)) {
+
+	//const bool canCopyT = CanCopyT(nullptr, z);
+	// TODO: this causes problem, file is never saved
+	const bool canCopyT = false;
+
+	if (canCopyT) {
 		h = OpenHForPutTxt(PD);
 		pth = CPath;
 		CopyTFStringToH(h);
 		CPath = pth;
 	}
 	else {
-		s = RunLongStr(z);
+		std::string s = RunStdStr(z);
 		h = OpenHForPutTxt(PD);
-		WriteH(h, s->LL, s->A);
-		ReleaseStore(s);
+		WriteH(h, s.length(), (void*)s.c_str());
 	}
 	CPath = pth;
 	TestCPathError();
@@ -1338,7 +1342,7 @@ void CallProcedure(Instr_proc* PD)
 
 #ifdef _DEBUG
 	std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
-	if (srcCode.find("(Taspol:boolean; Mod:string) var i,r:real; v,v2,s:string; begin clrscr(1,2,maxcol,maxrow-1,,PARAM3.Obr);   gotoxy(1,1); if") != std::string::npos) {
+	if (srcCode.find("exit=") != std::string::npos) {
 		printf("");
 	}
 #endif

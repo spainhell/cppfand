@@ -94,67 +94,101 @@ void PopProcStk()
 	//SetMyBP(MyBP->ChainBack);
 }
 
+bool Add(AddD* AD, void* RP, double R, bool Back)
+{
+	auto result = true;
+	CRecPtr = RP;
+	if (Back) R = -R;
+	R_(AD->Field, _R(AD->Field) + R);
+	if (AD->Chk == nullptr) return result;
+	if (!Back && !RunBool(AD->Chk->Bool))
+	{
+		SetMsgPar(RunShortStr(AD->Chk->TxtZ));
+		WrLLF10Msg(110);
+		result = false;
+	}
+	return result;
+}
+
 bool RunAddUpdte1(char Kind, void* CRold, bool Back, AddD* StopAD, LinkDPtr notLD)
 {
-	AddD* AD; AddD* ADback;
 	longint N2, N2old;
 	char Kind2, Kind2old;
-	void* CF; void* CF2; void* CR; void* CR2 = nullptr;
+	void* CF2;
+	void* CR2 = nullptr;
 	void* CR2old = nullptr; void* p = nullptr;
 	double R, Rold;
 	bool b;
-
 	auto result = true;
-	AD = CFile->Add; CF = CFile; CR = CRecPtr; MarkStore(p); ADback = nullptr;
-	while (AD != nullptr)
-	{
-		if (AD == StopAD) { ReleaseStore(p); return result; }
+	AddD* AD = CFile->Add;
+	void* CF = CFile;
+	void* CR = CRecPtr;
+	MarkStore(p);
+	AddD* ADback = nullptr;
+
+	while (AD != nullptr) {
+		if (AD == StopAD) {
+			ReleaseStore(p);
+			return result;
+		}
 		if ((notLD != nullptr) && (AD->LD == notLD)) goto label1;
-		if (AD->Assign) if (Assign(AD)) goto label1; else goto fail;
-		R = RunReal(AD->Frml); if (Kind == '-') R = -R; Rold = 0;
-		if (Kind == 'd')
-		{
-			CRecPtr = CRold; Rold = RunReal(AD->Frml);
+		if (AD->Assign) {
+			if (Assign(AD)) goto label1;
+			else goto fail;
 		}
-		ADback = AD; CF2 = AD->File2; N2 = 0; N2old = 0;
-		if (R != 0)
-		{
+
+		R = RunReal(AD->Frml);
+		if (Kind == '-') R = -R;
+		Rold = 0;
+		if (Kind == 'd') {
+			CRecPtr = CRold;
+			Rold = RunReal(AD->Frml);
+		}
+		ADback = AD; CF2 = AD->File2;
+		N2 = 0; N2old = 0;
+		if (R != 0.0) {
 			CRecPtr = CR;
-			if (!Link(AD, N2, Kind2)) goto fail; CR2 = CRecPtr;
+			if (!Link(AD, N2, Kind2)) goto fail;
+			CR2 = CRecPtr;
 		}
-		if (Rold != 0)
-		{
-			CFile = (FileD*)CF; CRecPtr = CRold;
-			if (!Link(AD, N2old, Kind2old)) goto fail; CR2old = CRecPtr;
+		if (Rold != 0.0) {
+			CFile = (FileD*)CF;
+			CRecPtr = CRold;
+			if (!Link(AD, N2old, Kind2old)) goto fail;
+			CR2old = CRecPtr;
 			if (N2old == N2)
 			{
-				R = R - Rold; if (R == 0) goto label1; N2old = 0;
+				R = R - Rold;
+				if (R == 0.0) goto label1;
+				N2old = 0;
 			}
 		}
 		if ((N2 == 0) && (N2old == 0)) goto label1;
 		CFile = (FileD*)CF2;
-		if (N2old != 0)
-		{
-			if (!Add(AD, CR2old, -Rold)) goto fail;
+		if (N2old != 0) {
+			if (!Add(AD, CR2old, -Rold, Back)) goto fail;
 		}
-		if (N2 != 0)
-		{
-			if (!Add(AD, CR2, R)) goto fail;
+		if (N2 != 0) {
+			if (!Add(AD, CR2, R, Back)) goto fail;
 		}
 		if ((N2old != 0) && !TransAdd(AD, (FileD*)CF, CR, CR2old, N2old, Kind2old, false)) goto fail;
-		if ((N2 != 0) && !TransAdd(AD, (FileD*)CF, CR, CR2, N2, Kind2, false))
-		{
+		if ((N2 != 0) && !TransAdd(AD, (FileD*)CF, CR, CR2, N2, Kind2, false)) {
 			if (N2old != 0) b = TransAdd(AD, (FileD*)CF, CR, CR2old, N2old, Kind2old, true);
 			goto fail;
 		}
 		if (N2old != 0) WrUpdRec(AD, (FileD*)CF, CR, CR2old, N2old);
 		if (N2 != 0) WrUpdRec(AD, (FileD*)CF, CR, CR2, N2);
-	label1: ReleaseStore(p); CFile = (FileD*)CF; CRecPtr = CR; AD = AD->Chain;
-		;
+	label1:
+		ReleaseStore(p);
+		CFile = (FileD*)CF;
+		CRecPtr = CR;
+		AD = AD->Chain;
 	}
-	return result;;
+	return result;
 fail:
-	ReleaseStore(p); CFile = (FileD*)CF; CRecPtr = CR; result = false;
+	ReleaseStore(p);
+	CFile = (FileD*)CF; CRecPtr = CR;
+	result = false;
 	if (ADback != nullptr) b = RunAddUpdte1(Kind, CRold, true, ADback, notLD);  /* backtracking */
 	return result;
 }
@@ -226,25 +260,6 @@ bool TransAdd(AddD* AD, FileD* FD, void* RP, void* CRnew, longint N, char Kind2,
 	CRecPtr = CRnew;
 	auto result = RunAddUpdte1('d', CRold, Back, nullptr, nullptr);
 	ReleaseStore(CRold);
-	return result;
-}
-
-bool Add(AddD* AD, void* RP, double R)
-{
-	return true;
-}
-
-bool Add(AddD* AD, void* RP, double R, bool Back)
-{
-	auto result = true;
-	CRecPtr = RP;
-	if (Back) R = -R;
-	R_(AD->Field, _R(AD->Field) + R); if (AD->Chk == nullptr) return result;
-	if (!Back && !RunBool(AD->Chk->Bool))
-	{
-		SetMsgPar(RunShortStr(AD->Chk->TxtZ));
-		WrLLF10Msg(110); result = false;
-	}
 	return result;
 }
 

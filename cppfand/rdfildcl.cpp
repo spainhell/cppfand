@@ -226,7 +226,7 @@ void RdBegViewDcl(EditOpt* EO)
 	FieldListEl* fl1 = new FieldListEl(); // FieldListEl* fl1 = nullptr;
 	EO->UserSelFlds = false;
 	if (Lexem == '^') { RdLex(); neg = true; } Accept('(');
-	if (Lexem == _identifier) RdFldList(fl1);
+	if (Lexem == _identifier) RdFldList(&fl1);
 	else neg = true;
 label1:
 	switch (Lexem) {

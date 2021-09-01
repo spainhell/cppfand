@@ -440,7 +440,7 @@ bool RunAddUpdte1(char Kind/*+,-,d*/, void* CRold, bool Back/*tracking*/,
 void CrIndRec();
 bool Link(AddD* AD, longint& N, char& Kind2);
 bool TransAdd(AddD* AD, FileD* FD, void* RP, void* CRnew, longint N, char Kind2, bool Back);
-bool Add(AddD* AD, void* RP, double R);
+//bool Add(AddD* AD, void* RP, double R);
 void WrUpdRec(AddD* AD, FileD* FD, void* RP, void* CRnew, longint N);
 bool Assign(AddDPtr AD);
 bool LockForAdd(FileD* FD, WORD Kind, bool Ta, LockMode& md);

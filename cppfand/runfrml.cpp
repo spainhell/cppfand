@@ -1185,10 +1185,17 @@ void TestTFrml(FieldDescr* F, FrmlElem* Z)
 
 bool CanCopyT(FieldDescr* F, FrmlElem* Z)
 {
-	FileD* cf = nullptr; void* cr = nullptr;
+	FileD* cf = nullptr;
+	void* cr = nullptr;
 	auto result = false;
-	cf = CFile; cr = CRecPtr; TF02 = nullptr; result = false; TestTFrml(F, Z);
-	CFile = cf; CRecPtr = cr; result = TF02 != nullptr;
+	cf = CFile;
+	cr = CRecPtr;
+	TF02 = nullptr;
+	result = false;
+	TestTFrml(F, Z);
+	CFile = cf;
+	CRecPtr = cr;
+	result = TF02 != nullptr;
 	return result;
 }
 

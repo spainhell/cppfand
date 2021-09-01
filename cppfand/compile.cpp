@@ -1234,20 +1234,21 @@ bool FldTypIdentity(FieldDescr* F1, FieldDescr* F2)
 	return true;
 }
 
-void RdFldList(FieldListEl* FLRoot)
+void RdFldList(FieldListEl** FLRoot)
 {
-	FieldDescr* F = nullptr; FieldListEl* FL = nullptr;
+	FieldDescr* F = nullptr;
+	FieldListEl* FL = nullptr;
 label1:
 	F = RdFldName(CFile);
 	//FL = (FieldListEl*)GetStore(sizeof(*FL));
 	FL = new FieldListEl();
 	FL->FldD = F;
-	if (FLRoot == nullptr) FLRoot = FL;
-	else ChainLast(FLRoot, FL);
-	if (Lexem == ',') { RdLex(); goto label1; };
+	if (*FLRoot == nullptr) *FLRoot = FL;
+	else ChainLast(*FLRoot, FL);
+	if (Lexem == ',') { RdLex(); goto label1; }
 }
 
-void RdNegFldList(bool& Neg, FieldList FLRoot)
+void RdNegFldList(bool& Neg, FieldListEl** FLRoot)
 {
 	if (Lexem == '^') { RdLex(); Neg = true; }
 	Accept('(');

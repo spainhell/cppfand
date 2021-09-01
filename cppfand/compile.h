@@ -96,11 +96,11 @@ std::string* RdHelpName(); // r144
 FrmlPtr RdAttr(); // r152
 void RdW(WRectFrml& W); // r161
 void RdFrame(FrmlElem** Z, BYTE& WFlags); // r166
-bool PromptSortKeys(FieldList FL, KeyFldD* SKRoot);
+bool PromptSortKeys(FieldListEl* FL, KeyFldD* SKRoot);
 void RdAssignFrml(char FTyp, bool& Add, FrmlElem** Z); // r193
 bool FldTypIdentity(FieldDescr* F1, FieldDescr* F2);
-void RdFldList(FieldListEl* FLRoot);
-void RdNegFldList(bool& Neg, FieldList FLRoot); // r214
+void RdFldList(FieldListEl** FLRoot);
+void RdNegFldList(bool& Neg, FieldListEl** FLRoot); // r214
 void EditModeToFlags(pstring Mode, void* Flgs, bool Err); // r220
 
 // z LEXANAL

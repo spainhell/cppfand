@@ -3872,7 +3872,9 @@ WORD ExitKeyProc()
 	while (X != nullptr) {
 		if (TestExitKey(c, X)) {
 			LastTxtPos = -1;
-			if (X->Typ == 'Q') w = 1;
+			if (X->Typ == 'Q') {
+				w = 1;
+			}
 			else {
 				bool ok = EdOk; EdOk = false;
 				StartExit(X, true);
@@ -3880,6 +3882,7 @@ WORD ExitKeyProc()
 				else w = 2;
 				EdOk = ok;
 			}
+			ClrEvent();
 		}
 		X = (EdExitD*)X->Chain;
 	}
