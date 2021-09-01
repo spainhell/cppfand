@@ -281,7 +281,7 @@ size_t FindCtrl(char* t, size_t first, size_t last)
 
 void SetColorOrd(ColorOrd& CO, WORD First, WORD Last)
 {
-	size_t index = FindCtrl(T, First, Last); 
+	size_t index = FindCtrl(T, First, Last);
 	while (index < Last - 1) // if not found -> I = std::string::npos
 	{
 		size_t pp = CO.find(T[index]);
@@ -1008,7 +1008,7 @@ void SetDekLnCurrI(WORD Ind)
 WORD SetInd(char* text, size_t len_text, WORD Ind, WORD Pos) // { line, pozice --> index}
 {
 	WORD P = Ind == 0 ? 0 : Ind - 1;
-	if (Ind < len_text)	{
+	if (Ind < len_text) {
 		while ((Ind - P < Pos) && (text[Ind - 1] != _CR)) { Ind++; }
 	}
 	return Ind;
@@ -1443,7 +1443,7 @@ void PredLine()
 				/*dec(RLineL);*/
 				RScrL--;
 				/*if (ModPage(RLineL))*/
-				if (ModPage(RScrL))	{
+				if (ModPage(RScrL)) {
 					screen.GotoXY(1, 1);
 					//MyInsLine();/*dec(RLineL);*/
 					RScrL--;
@@ -2562,17 +2562,19 @@ label1:
 			if (TestOptStr('g') || TestOptStr('e') || TestOptStr('l')) goto label1;
 		}
 	}
-	else                        /* !FindString */
-		if (!AllRd && (Last > Part.PosP + LenT))
-		{
+	else {                       /* !FindString */
+		if (!AllRd && (Last > Part.PosP + LenT)) {
 			NextPart(); goto label1;
 		}
-		else
-			if (TestOptStr('e') && (TypeT == MemoT))
-			{
+		else {
+			if (TestOptStr('e') && (TypeT == MemoT)) {
 				SrchT = true; Konec = true;
 			}
-			else SetScreen(lst, 0, 0);
+			else {
+				SetScreen(lst, 0, 0);
+			}
+		}
+	}
 	/* BackGround; */
 }
 
@@ -2706,10 +2708,9 @@ void HelpRD(char dir)
 void CursorWord()
 {
 	std::set<char> O;
-	WORD pp;
 
 	LexWord = "";
-	pp = Posi;
+	WORD pp = Posi;
 	if (Mode == HelpM) O.insert(0x11);
 	else {
 		O = Separ;
@@ -2901,7 +2902,7 @@ void SimpleEditText(char pMode, std::string pErrMsg, std::string pName, LongStr*
 {
 	bool Srch; longint Scr;
 	Srch = false; Scr = 0;
-	EditText(pMode, LocalT, std::move(pName), std::move(pErrMsg), pLS, MaxLen, Ind, Scr, 
+	EditText(pMode, LocalT, std::move(pName), std::move(pErrMsg), pLS, MaxLen, Ind, Scr,
 		std::vector<WORD>(), nullptr, Srch, Updat, 0, 0, nullptr);
 }
 
