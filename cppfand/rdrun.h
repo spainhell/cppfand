@@ -435,14 +435,14 @@ void SetMyBP(ProcStkD* Bp);
 void PushProcStk();
 void PopProcStk();
 bool RunAddUpdte1(char Kind/*+,-,d*/, void* CRold, bool Back/*tracking*/,
-	AddDPtr StopAD, LinkDPtr notLD);
+	AddD* StopAD, LinkDPtr notLD);
 
 void CrIndRec();
 bool Link(AddD* AD, longint& N, char& Kind2);
 bool TransAdd(AddD* AD, FileD* FD, void* RP, void* CRnew, longint N, char Kind2, bool Back);
 //bool Add(AddD* AD, void* RP, double R);
 void WrUpdRec(AddD* AD, FileD* FD, void* RP, void* CRnew, longint N);
-bool Assign(AddDPtr AD);
+bool Assign(AddD* AD);
 bool LockForAdd(FileD* FD, WORD Kind, bool Ta, LockMode& md);
 bool RunAddUpdte(char Kind, void* CRold, LinkD* notLD);
 bool TestExitKey(WORD KeyCode, EdExitD* X);

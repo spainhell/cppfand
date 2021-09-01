@@ -11,8 +11,7 @@ class AddD // r135
 {
 public:
 	AddD() {}
-	AddD(const AddD& orig);
-	AddD* Chain = nullptr;
+	//AddD(const AddD& orig);
 	FieldDescr* Field = nullptr;
 	FileD* File2 = nullptr;
 	LinkD* LD = nullptr;
@@ -22,4 +21,3 @@ public:
 	FrmlElem* Bool = nullptr;
 	ChkD* Chk = nullptr;
 };
-typedef AddD* AddDPtr;

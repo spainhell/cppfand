@@ -869,53 +869,45 @@ label1:
 
 void RdKumul()
 {
-	AddD* AD = nullptr; WORD Low = 0; FileD* CF = nullptr;
+	WORD Low = 0; FileD* CF = nullptr;
 	RdLex();
-	AD = CFile->Add;
-label1:
-	//AD->Chain = (AddD*)GetZStore(sizeof(AddD)); 
-	if (AD == nullptr) {
-		CFile->Add = new AddD();
-		AD = CFile->Add;
-	}
-	else {
-		AD->Chain = new AddD();
-		AD = AD->Chain;
-	}
 
-	if (IsKeyWord("IF"))
-	{
-		AD->Bool = RdBool();
-		AcceptKeyWord("THEN");
-		RdRoleField(AD);
-		RdImper(AD);
-		RdAssign(AD);
-	}
-	else {
-		RdRoleField(AD);
-		if (Lexem == '(')
-		{
-			Low = CurrPos;
-			RdLex();
-			CF = CFile;
-			CFile = AD->File2;
-			AD->Chk = RdChkD(Low);
-			CFile = CF;
-			Accept(')');
+	while (true) {
+		AddD* AD = new AddD();
+		CFile->Add.push_back(AD);
+
+		if (IsKeyWord("IF")) {
+			AD->Bool = RdBool();
+			AcceptKeyWord("THEN");
+			RdRoleField(AD);
+			RdImper(AD);
+			RdAssign(AD);
 		}
-		RdImper(AD);
-		if ((AD->Chk == nullptr) && (Lexem == _assign)) RdAssign(AD);
 		else {
-			Accept(_addass);
-			AD->Assign = false;
-			TestReal(AD->Field->FrmlTyp);
-			AD->Frml = RdRealFrml();
+			RdRoleField(AD);
+			if (Lexem == '(')
+			{
+				Low = CurrPos;
+				RdLex();
+				CF = CFile;
+				CFile = AD->File2;
+				AD->Chk = RdChkD(Low);
+				CFile = CF;
+				Accept(')');
+			}
+			RdImper(AD);
+			if ((AD->Chk == nullptr) && (Lexem == _assign)) RdAssign(AD);
+			else {
+				Accept(_addass);
+				AD->Assign = false;
+				TestReal(AD->Field->FrmlTyp);
+				AD->Frml = RdRealFrml();
+			}
 		}
-	}
-	if (Lexem == ';')
-	{
-		RdLex();
-		if (!(Lexem == '#' || Lexem == 0x1A)) goto label1;
+		if (Lexem == ';') {
+			RdLex();
+			if (Lexem == '#' || Lexem == 0x1A) break;
+		}
 	}
 }
 

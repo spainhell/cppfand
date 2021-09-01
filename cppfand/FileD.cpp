@@ -56,7 +56,7 @@ FileD::FileD(const FileD& orig)
 		Keys = new XKey(*orig.Keys, false); // nebudeme kopirovat Keys->KFlds->FldD
 		Keys->KFlds->FldD = FldD.front(); // pripojime stavajici FldD
 	}
-	if (orig.Add != nullptr) Add = new AddD(*orig.Add);
+	Add = orig.Add;
 	nLDs = orig.nLDs;
 	LiOfs = orig.LiOfs;
 }

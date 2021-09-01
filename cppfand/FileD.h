@@ -40,7 +40,7 @@ public:
 	StringListEl* ViewNames = nullptr;  //after each string BYTE string with user codes 
 	XFile* XF = nullptr;
 	KeyD* Keys = nullptr;
-	AddD* Add = nullptr;
+	std::vector<AddD*> Add;
 	uintptr_t nLDs = 0, LiOfs = 0;
 	longint UsedFileSize();
 	bool IsShared();

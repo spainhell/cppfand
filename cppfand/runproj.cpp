@@ -106,7 +106,7 @@ bool NetFileTest(RdbRecVars* X)
 void GetSplitChptName(std::string& Name, std::string& Ext)
 {
 	Ext = "";
-    std::string chptName = _StdS(ChptName);
+	std::string chptName = _StdS(ChptName);
 	Name = TrailChar(chptName, ' ');
 	size_t i = Name.find('.');
 	if (i == std::string::npos) return;
@@ -531,29 +531,29 @@ void WrFDSegment(longint RecNr)
 			OKF((KeyFldD*)(&k->KFlds));
 		}
 	}
-	ad = CFile->Add;
-	if (ad != nullptr) {
-		while (ad->Chain != nullptr) {
-			ad->Chain = (AddD*)O(ad->Chain);
-			ad = ad->Chain;
-			ad->LD = (LinkD*)O(ad->LD);
-			OFrml(ad->Frml);
-			if (ad->Assign) OFrml(ad->Bool);
-			else {
-				c = ad->Chk;
-				if (c != nullptr) {
-					ad->Chk = (ChkD*)O(c);
-					//c->HelpName = (pstring*)O(c->HelpName);
-				}
-			}
-			cf = CFileF;
-			CFileF = ad->File2;
-			ad->File2 = (FileD*)OTb(CFileF->Name);
-			ad->Field = (FieldDescr*)OCF(ad->Field);
-			if (!ad->Assign && (c != nullptr)) { OFrml(c->Bool); OFrml(c->TxtZ); }
-			CFileF = cf;
-		}
-	}
+	//ad = CFile->Add;
+
+	//while (ad->Chain != nullptr) {
+	//	ad->Chain = (AddD*)O(ad->Chain);
+	//	ad = ad->Chain;
+	//	ad->LD = (LinkD*)O(ad->LD);
+	//	OFrml(ad->Frml);
+	//	if (ad->Assign) OFrml(ad->Bool);
+	//	else {
+	//		c = ad->Chk;
+	//		if (c != nullptr) {
+	//			ad->Chk = (ChkD*)O(c);
+	//			//c->HelpName = (pstring*)O(c->HelpName);
+	//		}
+	//	}
+	//	cf = CFileF;
+	//	CFileF = ad->File2;
+	//	ad->File2 = (FileD*)OTb(CFileF->Name);
+	//	ad->Field = (FieldDescr*)OCF(ad->Field);
+	//	if (!ad->Assign && (c != nullptr)) { OFrml(c->Bool); OFrml(c->TxtZ); }
+	//	CFileF = cf;
+	//}
+
 	ld = (LinkD*)O(LinkDRoot);
 	n = CFile->nLDs;
 	while (n > 0) {
@@ -652,7 +652,7 @@ FileD* FileD_FromSegment(LongStr* ss) {
 	f->ViewNames = reinterpret_cast<StringListEl*>(*(unsigned int*)&A[index]); index += 4;
 	f->XF = reinterpret_cast<XFile*>(*(unsigned int*)&A[index]); index += 4;
 	f->Keys = reinterpret_cast<KeyD*>(*(unsigned int*)&A[index]); index += 4;
-	f->Add = reinterpret_cast<AddD*>(*(unsigned int*)&A[index]); index += 4;
+	//f->Add = reinterpret_cast<AddD*>(*(unsigned int*)&A[index]); index += 4;
 	f->nLDs = *(WORD*)&A[index]; index += 2;
 	f->LiOfs = *(WORD*)&A[index]; index += 2;
 	f->Name[0] = *(BYTE*)&A[index]; index++;
@@ -872,7 +872,7 @@ bool RdFDSegment(WORD FromI, longint Pos)
 	//	SgKF(KeyFldDPtr(&k->KFlds), Sg);
 	//}
 
-	if (CFile->Add != nullptr) {
+	if (!CFile->Add.empty()) {
 		throw std::exception("Not implemented.");
 	}
 	//AddD* ad = (AddD*)&Add;

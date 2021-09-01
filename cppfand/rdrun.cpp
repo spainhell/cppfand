@@ -120,41 +120,40 @@ bool RunAddUpdte1(char Kind, void* CRold, bool Back, AddD* StopAD, LinkDPtr notL
 	double R, Rold;
 	bool b;
 	auto result = true;
-	AddD* AD = CFile->Add;
 	void* CF = CFile;
 	void* CR = CRecPtr;
 	MarkStore(p);
 	AddD* ADback = nullptr;
 
-	while (AD != nullptr) {
-		if (AD == StopAD) {
+	for (AddD* add : CFile->Add) {
+		if (add == StopAD) {
 			ReleaseStore(p);
 			return result;
 		}
-		if ((notLD != nullptr) && (AD->LD == notLD)) goto label1;
-		if (AD->Assign) {
-			if (Assign(AD)) goto label1;
+		if ((notLD != nullptr) && (add->LD == notLD)) goto label1;
+		if (add->Assign) {
+			if (Assign(add)) goto label1;
 			else goto fail;
 		}
 
-		R = RunReal(AD->Frml);
+		R = RunReal(add->Frml);
 		if (Kind == '-') R = -R;
 		Rold = 0;
 		if (Kind == 'd') {
 			CRecPtr = CRold;
-			Rold = RunReal(AD->Frml);
+			Rold = RunReal(add->Frml);
 		}
-		ADback = AD; CF2 = AD->File2;
+		ADback = add; CF2 = add->File2;
 		N2 = 0; N2old = 0;
 		if (R != 0.0) {
 			CRecPtr = CR;
-			if (!Link(AD, N2, Kind2)) goto fail;
+			if (!Link(add, N2, Kind2)) goto fail;
 			CR2 = CRecPtr;
 		}
 		if (Rold != 0.0) {
 			CFile = (FileD*)CF;
 			CRecPtr = CRold;
-			if (!Link(AD, N2old, Kind2old)) goto fail;
+			if (!Link(add, N2old, Kind2old)) goto fail;
 			CR2old = CRecPtr;
 			if (N2old == N2)
 			{
@@ -166,23 +165,22 @@ bool RunAddUpdte1(char Kind, void* CRold, bool Back, AddD* StopAD, LinkDPtr notL
 		if ((N2 == 0) && (N2old == 0)) goto label1;
 		CFile = (FileD*)CF2;
 		if (N2old != 0) {
-			if (!Add(AD, CR2old, -Rold, Back)) goto fail;
+			if (!Add(add, CR2old, -Rold, Back)) goto fail;
 		}
 		if (N2 != 0) {
-			if (!Add(AD, CR2, R, Back)) goto fail;
+			if (!Add(add, CR2, R, Back)) goto fail;
 		}
-		if ((N2old != 0) && !TransAdd(AD, (FileD*)CF, CR, CR2old, N2old, Kind2old, false)) goto fail;
-		if ((N2 != 0) && !TransAdd(AD, (FileD*)CF, CR, CR2, N2, Kind2, false)) {
-			if (N2old != 0) b = TransAdd(AD, (FileD*)CF, CR, CR2old, N2old, Kind2old, true);
+		if ((N2old != 0) && !TransAdd(add, (FileD*)CF, CR, CR2old, N2old, Kind2old, false)) goto fail;
+		if ((N2 != 0) && !TransAdd(add, (FileD*)CF, CR, CR2, N2, Kind2, false)) {
+			if (N2old != 0) b = TransAdd(add, (FileD*)CF, CR, CR2old, N2old, Kind2old, true);
 			goto fail;
 		}
-		if (N2old != 0) WrUpdRec(AD, (FileD*)CF, CR, CR2old, N2old);
-		if (N2 != 0) WrUpdRec(AD, (FileD*)CF, CR, CR2, N2);
+		if (N2old != 0) WrUpdRec(add, (FileD*)CF, CR, CR2old, N2old);
+		if (N2 != 0) WrUpdRec(add, (FileD*)CF, CR, CR2, N2);
 	label1:
 		ReleaseStore(p);
 		CFile = (FileD*)CF;
 		CRecPtr = CR;
-		AD = AD->Chain;
 	}
 	return result;
 fail:
@@ -215,23 +213,23 @@ bool Link(AddD* AD, longint& N, char& Kind2)
 #endif
 			) {
 			IncNRecs(1);
-			WriteRec(CFile, 1, CRecPtr);
-		}
-		return result;
+				WriteRec(CFile, 1, CRecPtr);
 	}
+		return result;
+}
 	Kind2 = '+';
-	if ((AD->Create == 2) || (AD->Create == 1) && PromptYN(132)) {
+		if ((AD->Create == 2) || (AD->Create == 1) && PromptYN(132)) {
 #ifdef FandSQL
-		if (CFile->IsSQLFile) Strm1->InsertRec(false, true) else
+			if (CFile->IsSQLFile) Strm1->InsertRec(false, true) else
 #endif
 
-		{
-			ClearDeletedFlag();
-			if ((LD != nullptr) && (CFile->Typ = 'X')) { CrIndRec(); N = CFile->NRecs; }
-			else CreateRec(N);
+			{
+				ClearDeletedFlag();
+				if ((LD != nullptr) && (CFile->Typ = 'X')) { CrIndRec(); N = CFile->NRecs; }
+				else CreateRec(N);
+			}
+			return result;
 		}
-		return result;
-	}
 	WrLLF10Msg(119);
 	result = false;
 	return result;
@@ -240,7 +238,7 @@ bool Link(AddD* AD, longint& N, char& Kind2)
 bool TransAdd(AddD* AD, FileD* FD, void* RP, void* CRnew, longint N, char Kind2, bool Back)
 {
 	void* CRold; XString x; LinkD* ld;
-	if (CFile->Add == nullptr) { return true; }
+	if (CFile->Add.empty() /*== nullptr*/) { return true; }
 	if (Kind2 == '+')
 	{
 		CRecPtr = CRnew; return RunAddUpdte1('+', nullptr, Back, nullptr, nullptr);
@@ -261,7 +259,7 @@ bool TransAdd(AddD* AD, FileD* FD, void* RP, void* CRnew, longint N, char Kind2,
 	auto result = RunAddUpdte1('d', CRold, Back, nullptr, nullptr);
 	ReleaseStore(CRold);
 	return result;
-}
+	}
 
 void WrUpdRec(AddD* AD, FileD* FD, void* RP, void* CRnew, longint N)
 {
@@ -278,9 +276,9 @@ void WrUpdRec(AddD* AD, FileD* FD, void* RP, void* CRnew, longint N)
 	else
 #endif
 		WriteRec(CFile, N, CRecPtr);
-}
+	}
 
-bool Assign(AddDPtr AD)
+bool Assign(AddD* AD)
 {
 	double R; LongStr* S = nullptr; pstring ss; bool B;
 	longint Pos, N2; char Kind2;
@@ -305,11 +303,10 @@ bool Assign(AddDPtr AD)
 
 bool LockForAdd(FileD* FD, WORD Kind, bool Ta, LockMode& md)
 {
-	AddD* AD = nullptr; LockMode md1; /*0-ExLMode,1-lock,2-unlock*/
+	LockMode md1; /*0-ExLMode,1-lock,2-unlock*/
 	auto result = false;
 	CFile = FD;
-	AD = FD->Add;
-	while (AD != nullptr) {
+	for (AddD* AD : FD->Add) {
 		/* !!! with AD^ do!!! */
 		if (CFile != AD->File2) {
 			CFile = AD->File2;
@@ -333,7 +330,6 @@ bool LockForAdd(FileD* FD, WORD Kind, bool Ta, LockMode& md)
 			}
 			if (!LockForAdd(CFile, Kind, Ta, md)) return result;
 		}
-		AD = AD->Chain;
 	}
 	result = true;
 	return result;
