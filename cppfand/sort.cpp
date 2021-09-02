@@ -473,6 +473,7 @@ void XWorkFile::Main(char Typ)
 	NxtXPage = XF->NewPage(XPP);
 	MsgWritten = false;
 	frst = true;
+	// for all keys defined in #K
 	while (KD != nullptr) {
 		PX = new XXPage(); // (XXPage*)GetZStore(sizeof(XXPage));
 		PX->Reset(this);

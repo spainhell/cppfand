@@ -1632,7 +1632,7 @@ std::string TranslateOrd(std::string text)
 {
 	std::string trans;
 	for (size_t i = 0; i < text.length(); i++) {
-		char c = CharOrdTab[text[i]];
+		char c = CharOrdTab[(BYTE)text[i]];
 #ifndef FandAng
 		if (c == 0x49 && trans.length() > 0) { // znak 'H'
 			if (trans[trans.length() - 1] == 0x43) { // posledni znak ve vystupnim retezci je 'C' ?
