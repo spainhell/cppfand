@@ -1980,16 +1980,19 @@ label1:
 	TxtEdCtrlUBrk = true; TxtEdCtrlF4Brk = true;
 	ww.PromptLL(114, &txt, I, Del);
 	if (Event.Pressed.KeyCombination() == _U_) goto label0;
-	if ((Event.Pressed.KeyCombination() == _ESC_) || (txt.length() == 0)) goto label3;
+	if ((Event.Pressed.KeyCombination() == __ESC) || (txt.length() == 0)) goto label3;
 	CalcTxt = txt;
-	if ((Event.Pressed.KeyCombination() == _CtrlF4_) && (Mode == TextM) && !bScroll)
+	if ((Event.Pressed.KeyCombination() == __CTRL_F4) && (Mode == TextM) && !bScroll)
 	{
-		if (txt.length() > LineSize - LastPosLine())
-		{
-			I = LineSize - LastPosLine(); WrLLF10Msg(419); goto label1;
+		if (txt.length() > LineSize - LastPosLine()) {
+			I = LineSize - LastPosLine();
+			WrLLF10Msg(419);
+			goto label1;
 		}
 		if (Posi <= LastPosLine()) TestLastPos(Posi, Posi + txt.length());
-		Move(&txt[1], &Arr[Posi], txt.length()); UpdatedL = true; goto label3;
+		Move(&txt[1], &Arr[Posi], txt.length());
+		UpdatedL = true;
+		goto label3;
 	}
 	SetInpStr(txt);
 	RdLex();
@@ -2011,8 +2014,14 @@ label1:
 	}
 	I = 1; goto label1;
 label2:
-	Msg = MsgLine; I = CurrPos; SetMsgPar(Msg); WrLLF10Msg(110);
-	IsCompileErr = false; ReleaseStore(p); Del = false; goto label1;
+	Msg = MsgLine;
+	I = CurrPos;
+	SetMsgPar(Msg);
+	WrLLF10Msg(110);
+	IsCompileErr = false;
+	ReleaseStore(p);
+	Del = false;
+	goto label1;
 label3:
 	ReleaseStore(p); RestoreExit(er);
 }

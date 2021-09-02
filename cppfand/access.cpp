@@ -443,7 +443,7 @@ void RecallRec(longint RecNr)
 {
 	TestXFExist();
 	CFile->XF->NRecs++;
-	KeyDPtr K = CFile->Keys;
+	KeyD* K = CFile->Keys;
 	while (K != nullptr) { K->Insert(RecNr, false); K = K->Chain; }
 	ClearDeletedFlag();
 	WriteRec(CFile, RecNr, CRecPtr);

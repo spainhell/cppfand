@@ -105,7 +105,7 @@ public:
 	void PutMLX(BYTE M, BYTE L); // ASM
 	void ClearRest(); // ASM
 	void PageFull();
-	void AddToLeaf(WRec* R, KeyDPtr KD);
+	void AddToLeaf(WRec* R, KeyD* KD);
 	void AddToUpper(XXPage* P, longint DownPage);
 };
 
@@ -115,4 +115,4 @@ void CreateWIndex(XScan* Scan, XWKey* K, char Typ); // r508
 void ScanSubstWIndex(XScan* Scan, KeyFldD* SK, char Typ); // r518
 void SortAndSubst(KeyFldD* SK); // r534
 void GetIndexSort(Instr_getindex* PD);
-void CopyIndex(WKeyDPtr K, KeyDPtr FromK); // r581
+void CopyIndex(WKeyDPtr K, KeyD* FromK); // r581

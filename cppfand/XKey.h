@@ -46,7 +46,7 @@ public:
 	bool Delete(longint RecNr);
 };
 
-typedef XKey* KeyDPtr;
+//typedef XKey* KeyDPtr;
 typedef XKey KeyD;
 
 bool SearchKey(XString& XX, XKey* Key, longint& NN);

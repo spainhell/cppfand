@@ -24,7 +24,7 @@ longint TF02Pos; // r33
 
 double Owned(FrmlPtr Bool, FrmlPtr Sum, LinkDPtr LD)
 {
-	XScan* Scan; KeyDPtr K; XString x; LockMode md; longint n, nBeg;
+	XScan* Scan; KeyD* K; XString x; LockMode md; longint n, nBeg;
 	FileDPtr cf; void* cr; double r;
 	x.PackKF(LD->ToKey->KFlds); cf = CFile; cr = CRecPtr;
 	CFile = LD->FromFD; md = NewLMode(RdMode); TestXFExist(); K = GetFromKey(LD);
@@ -329,7 +329,7 @@ longint AbsLogRecNoFun(FrmlElem13* Z)
 	FileDPtr cf = CFile;
 	void* cr = CRecPtr;
 	MarkStore(p);
-	KeyDPtr k = Z->Key;
+	KeyD* k = Z->Key;
 	longint N = RunInt(Z->Arg[0]);
 	if (N <= 0) return result;
 	CFile = Z->FFD;
@@ -1380,7 +1380,7 @@ bool FieldInList(FieldDescr* F, FieldListEl* FL)
 	return result;
 }
 
-KeyDPtr GetFromKey(LinkDPtr LD)
+KeyD* GetFromKey(LinkDPtr LD)
 {
 	KeyD* K = LD->FromFD->Keys;
 	while (K->IndexRoot != LD->IndexRoot) K = K->Chain;

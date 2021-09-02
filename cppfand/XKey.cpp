@@ -646,7 +646,7 @@ void TryInsertAllIndexes(longint RecNr)
 	void* p = nullptr;
 	TestXFExist();
 	MarkStore(p);
-	KeyDPtr K = CFile->Keys;
+	KeyD* K = CFile->Keys;
 	while (K != nullptr) {
 		if (!K->Insert(RecNr, true)) goto label1; K = K->Chain;
 	}
@@ -654,7 +654,7 @@ void TryInsertAllIndexes(longint RecNr)
 	return;
 label1:
 	ReleaseStore(p);
-	KeyDPtr K1 = CFile->Keys;
+	KeyD* K1 = CFile->Keys;
 	while ((K1 != nullptr) && (K1 != K)) {
 		K1->Delete(RecNr); K1 = K1->Chain;
 	}
@@ -673,7 +673,7 @@ void DeleteAllIndexes(longint RecNr)
 	Logging* log = Logging::getInstance();
 	log->log(loglevel::DEBUG, "DeleteAllIndexes(%i)", RecNr);
 
-	KeyDPtr K = CFile->Keys;
+	KeyD* K = CFile->Keys;
 	while (K != nullptr) {
 		K->Delete(RecNr);
 		K = K->Chain;

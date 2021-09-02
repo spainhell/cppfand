@@ -2802,7 +2802,7 @@ void RdSqlRdWrTxt(bool Rd)
 	/* !!! with pd^ do!!! */
 	pd->IsRead = Rd; RdPath(true, pd->TxtPath, pd->TxtCatIRec);
 	Accept(','); CFile = RdFileName(); pd->sqlFD = CFile;
-	KeyDPtr k = RdViewKey(); if (k == nullptr) k = CFile->Keys; pd->sqlKey = k; Accept(',');
+	KeyD* k = RdViewKey(); if (k == nullptr) k = CFile->Keys; pd->sqlKey = k; Accept(',');
 	pd->sqlFldD = RdFldName(CFile); Accept(','); pd->sqlXStr = RdStrFrml();
 	if (!pd->sqlFD->typSQLFile || (pd->sqlFldD->Typ != 'T')) OldError(170);
 }

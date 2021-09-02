@@ -2161,7 +2161,7 @@ void UpwEdit(LinkDPtr LkD)
 	std::string s;
 	std::string s1, s2; XString x; XString* px = nullptr;
 	FieldDPtr F = nullptr; KeyFldDPtr KF = nullptr;
-	KeyDPtr K = nullptr; EditOpt* EO = nullptr;
+	KeyD* K = nullptr; EditOpt* EO = nullptr;
 	WORD Brk; FileDPtr ToFD = nullptr; StringList SL, SL1; LinkDPtr LD = nullptr;
 	longint w; bool b;
 	MarkStore(p);
@@ -2561,7 +2561,7 @@ void AppendRecord(void* RP)
 
 bool GotoXRec(XString* PX, longint& N)
 {
-	LockMode md; KeyDPtr k;
+	LockMode md; KeyD* k;
 	auto result = false;
 	md = NewLMode(RdMode); k = VK; if (Subset) k = WK;
 	if (Subset || HasIndex) {
@@ -2597,7 +2597,7 @@ bool PromptSearch(bool Create)
 	auto result = false;
 	FieldDPtr F, F2; FileDPtr FD, FD2; void* RP; void* RP2; KeyFldDPtr KF, KF2;
 	longint n; std::string s; double r; bool b, li, found; LockMode md;
-	XString x, xOld; KeyDPtr K; longint w; WORD Col, LWw, pos; EFldD* D;
+	XString x, xOld; KeyD* K; longint w; WORD Col, LWw, pos; EFldD* D;
 	FD = CFile; K = VK; if (Subset) K = WK; KF = K->KFlds;
 	RP = GetRecSpace(); CRecPtr = RP; ZeroAllFlds(); x.Clear();
 	li = F3LeadIn && !IsNewRec;
@@ -3362,7 +3362,7 @@ void PromptSelect()
 
 void SwitchRecs(integer Delta)
 {
-	LockMode md; longint n1, n2; void* p1; void* p2; XString x1, x2; KeyDPtr k;
+	LockMode md; longint n1, n2; void* p1; void* p2; XString x1, x2; KeyD* k;
 #ifdef FandSQL
 	if (CFile->IsSQLFile) return;
 #endif
@@ -3516,7 +3516,7 @@ void DownEdit()
 {
 	wwmix ww;
 
-	LinkDPtr LD = nullptr; FileDPtr FD = nullptr; StringList SL = nullptr; KeyDPtr K = nullptr;
+	LinkDPtr LD = nullptr; FileDPtr FD = nullptr; StringList SL = nullptr; KeyD* K = nullptr;
 	EditOpt* EO = nullptr; WORD Brk, i; void* p = nullptr;
 	std::string s, s1, s2; longint w;
 	std::string ali;

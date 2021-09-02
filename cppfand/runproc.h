@@ -28,7 +28,7 @@ void EditTxtProc(Instr_edittxt* PD);
 std::string* GetStr(FrmlPtr Z);
 
 void PrintTxtProc(Instr_edittxt* PD);
-bool SrchXKey(KeyDPtr K, XString& X, longint& N);
+bool SrchXKey(KeyD* K, XString& X, longint& N);
 void DeleteRecProc(Instr_recs* PD);
 void RecallRecProc(Instr_recs* PD);
 void AppendRecProc();

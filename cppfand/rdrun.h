@@ -93,7 +93,7 @@ struct InpD
 enum AutoRprtMode { _ALstg, _ARprt, _ATotal, _AErrRecs };
 struct RprtFDListEl
 {
-	RprtFDListEl* Chain; FileD* FD; KeyDPtr ViewKey;
+	RprtFDListEl* Chain; FileD* FD; KeyD* ViewKey;
 	FrmlPtr Cond; KeyInD* KeyIn; bool SQLFilter;
 	void* LVRecPtr;
 };
@@ -338,7 +338,7 @@ struct CopyD
 	pstring* Path1; /*FrmlPtr if cpList*/
 	WORD CatIRec1;
 	FileD* FD1;
-	KeyDPtr ViewKey;
+	KeyD* ViewKey;
 	bool WithX1;
 	CpOption Opt1;
 	pstring* Path2; /*  "  */

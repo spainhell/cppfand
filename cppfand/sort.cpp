@@ -638,7 +638,7 @@ void XXPage::PageFull()
 	XW->XF->WrPage((XPage*)(&IsLeaf), n);
 }
 
-void XXPage::AddToLeaf(WRec* R, KeyDPtr KD)
+void XXPage::AddToLeaf(WRec* R, KeyD* KD)
 {
 	BYTE m, l; longint n;
 label1:
@@ -895,7 +895,7 @@ void GetIndexSort(Instr_getindex* PD)
 	ReleaseStore(p);
 }
 
-void CopyIndex(WKeyDPtr K, KeyDPtr FromK)
+void CopyIndex(WKeyDPtr K, KeyD* FromK)
 {
 	XScan* Scan = nullptr; void* p = nullptr; LockMode md;
 	K->Release(); MarkStore(p); md = NewLMode(RdMode);

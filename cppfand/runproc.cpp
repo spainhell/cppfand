@@ -480,7 +480,7 @@ void PrintTxtProc(Instr_edittxt* PD)
 	}
 }
 
-bool SrchXKey(KeyDPtr K, XString& X, longint& N)
+bool SrchXKey(KeyD* K, XString& X, longint& N)
 {
 	void* cr;
 	if (CFile->Typ == 'X') {
