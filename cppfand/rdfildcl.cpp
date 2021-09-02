@@ -281,7 +281,7 @@ bool RdUserView(pstring ViewName, EditOpt* EO)
 {
 	bool found = false, Fin = false, FVA = false;
 	void* p = nullptr; void* p2 = nullptr;
-	KeyD* K = nullptr; EditOpt EOD;
+	XKey* K = nullptr; EditOpt EOD;
 	FileD* fd = CFile;
 	MarkStore(p);
 	MarkStore2(p2);
@@ -331,7 +331,7 @@ label3:
 void TestUserView()
 {
 	void* p = nullptr;
-	KeyD* K = nullptr;
+	XKey* K = nullptr;
 	EditOpt* EO = nullptr;
 	StringListEl* S = nullptr;
 	FileD* FD = nullptr;
@@ -422,7 +422,7 @@ void FakeRdFDSegment(FileD* FD)
 void* RdFileD(std::string FileName, char FDTyp, std::string Ext)
 {
 	std::string JournalFlds = "A Upd,1;F RecNr,8.0;F User,4.0;D TimeStamp,'DD.MM.YYYY mm hh:ss'";
-	FileD* FD = nullptr; KeyD* K = nullptr;
+	FileD* FD = nullptr; XKey* K = nullptr;
 	FieldDescr* F = nullptr; FieldDescr* F2 = nullptr;
 	void* p = nullptr;
 	ChkD* C = nullptr; LinkD* LDOld = nullptr;
@@ -598,7 +598,7 @@ void RdKeyD()
 	FieldDescr* F = nullptr; FieldDescr* F2 = nullptr;
 	KeyFldD* KF = nullptr; KeyFldD* Arg = nullptr;
 	FileD* FD = nullptr; LinkD* L = nullptr;
-	KeyD* K = nullptr; KeyD* K1 = nullptr;
+	XKey* K = nullptr; XKey* K1 = nullptr;
 	pstring Name; WORD N = 0;
 	RdLex();
 	if (Lexem == '@')
@@ -720,7 +720,7 @@ void CheckDuplAlias(pstring Name)
 
 void LookForK(pstring* Name, FileD* F)
 {
-	KeyD* K = nullptr;
+	XKey* K = nullptr;
 	std::string name = *Name;
 	if (SEquUpcase(F->Name, name)) Error(26);
 	K = F->Keys;
@@ -730,9 +730,9 @@ void LookForK(pstring* Name, FileD* F)
 	}
 }
 
-KeyD* RdFileOrAlias1(FileD* F)
+XKey* RdFileOrAlias1(FileD* F)
 {
-	KeyD* k = F->Keys;
+	XKey* k = F->Keys;
 	std::string lw = LexWord;
 	if (!EquUpcase(F->Name, lw))
 		while (k != nullptr) {
@@ -744,9 +744,9 @@ label1:
 	return k;
 }
 
-void RdFileOrAlias(FileD** FD, KeyD** KD)
+void RdFileOrAlias(FileD** FD, XKey** KD)
 {
-	FileD* f = nullptr; RdbD* r = nullptr; KeyD* k = nullptr;
+	FileD* f = nullptr; RdbD* r = nullptr; XKey* k = nullptr;
 	TestIdentif();
 	f = CFile;
 	k = RdFileOrAlias1(f);
@@ -771,7 +771,7 @@ label1:
 
 void SetLDIndexRoot(LinkD* L, LinkD* L2)
 {
-	KeyD* K = nullptr;
+	XKey* K = nullptr;
 	KeyFldD* Arg = nullptr;
 	KeyFldD* KF = nullptr;
 	bool cmptd = false;

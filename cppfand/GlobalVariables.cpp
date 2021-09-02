@@ -10,7 +10,7 @@ FileD* FileDRoot; // { only current RDB }
 LinkD* LinkDRoot; // { for all RDBs     }
 FuncD* FuncDRoot;
 void* CRecPtr;
-KeyD* CViewKey;
+XKey* CViewKey;
 std::string TopRdbDir, TopDataDir;
 pstring CatFDName;
 RdbD* CRdb, TopRdb;

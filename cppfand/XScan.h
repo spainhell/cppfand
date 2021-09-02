@@ -11,12 +11,12 @@ class XScan
 {
 public:
 	FileD* FD = nullptr;
-	KeyD* Key = nullptr;
+	XKey* Key = nullptr;
 	FrmlElem* Bool = nullptr;
 	BYTE Kind = 0;
 	longint NRecs = 0, IRec = 0, RecNr = 0;
 	bool hasSQLFilter = false, eof = false;
-	XScan(FileD* aFD, KeyD* aKey, KeyInD* aKIRoot, bool aWithT);
+	XScan(FileD* aFD, XKey* aKey, KeyInD* aKIRoot, bool aWithT);
 	void Reset(FrmlElem* ABool, bool SQLFilter);
 	void ResetSort(KeyFldD* aSK, FrmlPtr& BoolZ, LockMode OldMd, bool SQLFilter);
 	void SubstWIndex(WKeyDPtr WK);

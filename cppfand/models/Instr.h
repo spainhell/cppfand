@@ -155,7 +155,7 @@ public:
 	bool AdUpd = false;
 	LocVar* LV = nullptr;
 	bool ByKey = false;
-	KeyD* Key = nullptr;
+	XKey* Key = nullptr;
 	char CompOp = '\0';
 	FileD* RecFD = nullptr;
 };
@@ -246,7 +246,7 @@ public:
 	Instr_getindex();
 	LocVar* giLV = nullptr; char giMode = '\0'; /*+,-,blank*/
 	FrmlElem* giCond = nullptr; /* || RecNr-Frml */
-	KeyD* giKD = nullptr; KeyFldD* giKFlds = nullptr;
+	XKey* giKD = nullptr; KeyFldD* giKFlds = nullptr;
 	KeyInD* giKIRoot = nullptr; bool giSQLFilter = false;
 	char giOwnerTyp = '\0';
 	LinkD* giLD = nullptr; LocVar* giLV2 = nullptr;
@@ -277,7 +277,7 @@ class Instr_forall : public Instr
 public:
 	Instr_forall();
 	FileD* CFD = nullptr;
-	KeyD* CKey = nullptr;
+	XKey* CKey = nullptr;
 	LocVar* CVar = nullptr;
 	LocVar* CRecVar = nullptr;
 	KeyInD* CKIRoot = nullptr;
@@ -381,7 +381,7 @@ public:
 	pstring* TxtPath2 = nullptr;
 	WORD TxtCatIRec2 = 0;
 	bool IsRead = false;
-	FileD* sqlFD = nullptr; KeyD* sqlKey = nullptr;
+	FileD* sqlFD = nullptr; XKey* sqlKey = nullptr;
 	FieldDescr* sqlFldD = nullptr; FrmlElem* sqlXStr = nullptr;
 };
 

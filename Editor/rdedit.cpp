@@ -741,7 +741,7 @@ pstring GetStr_E(FrmlElem* Z)
 
 void NewChkKey()
 {
-	KeyD* K = CFile->Keys; KeyFldD* KF = nullptr;
+	XKey* K = CFile->Keys; KeyFldD* KF = nullptr;
 	EFldD* D = nullptr; KeyListEl* KL = nullptr;
 	while (K != nullptr) {
 		if (!K->Duplic) {

@@ -443,7 +443,7 @@ void RecallRec(longint RecNr)
 {
 	TestXFExist();
 	CFile->XF->NRecs++;
-	KeyD* K = CFile->Keys;
+	XKey* K = CFile->Keys;
 	while (K != nullptr) { K->Insert(RecNr, false); K = K->Chain; }
 	ClearDeletedFlag();
 	WriteRec(CFile, RecNr, CRecPtr);
@@ -1085,7 +1085,7 @@ bool LinkUpw(LinkDPtr LD, longint& N, bool WithT)
 	FileD* ToFD = LD->ToFD;
 	FileD* CF = CFile;
 	void* CP = CRecPtr;
-	KeyD* K = LD->ToKey;
+	XKey* K = LD->ToKey;
 	KeyFldD* Arg = LD->Args;
 	x.PackKF(Arg);
 	CFile = ToFD;

@@ -488,7 +488,7 @@ void SgFrml(FrmlElem* Z, WORD Sg, WORD SgF)
 
 void WrFDSegment(longint RecNr)
 {
-	FileD* cf = nullptr; StringList s; FieldDescr* f = nullptr; KeyD* k = nullptr;
+	FileD* cf = nullptr; StringList s; FieldDescr* f = nullptr; XKey* k = nullptr;
 	AddD* ad = nullptr; ChkD* c = nullptr; LinkD* ld = nullptr; WORD n = 0, oldsz = 0;
 	void* fdsaved = nullptr; void* p2 = nullptr; LongStr* ss = nullptr;
 	ImplD* id = nullptr; LiRoots* li = nullptr;
@@ -651,7 +651,7 @@ FileD* FileD_FromSegment(LongStr* ss) {
 	f->TaLMode = (LockMode)mode;
 	f->ViewNames = reinterpret_cast<StringListEl*>(*(unsigned int*)&A[index]); index += 4;
 	f->XF = reinterpret_cast<XFile*>(*(unsigned int*)&A[index]); index += 4;
-	f->Keys = reinterpret_cast<KeyD*>(*(unsigned int*)&A[index]); index += 4;
+	f->Keys = reinterpret_cast<XKey*>(*(unsigned int*)&A[index]); index += 4;
 	//f->Add = reinterpret_cast<AddD*>(*(unsigned int*)&A[index]); index += 4;
 	f->nLDs = *(WORD*)&A[index]; index += 2;
 	f->LiOfs = *(WORD*)&A[index]; index += 2;
@@ -764,7 +764,7 @@ void createFieldDescrFromStr(FileD* F, uintptr_t firstAddress, BYTE* str)
 	}
 }
 
-KeyFldD* createKFldsFromStr(BYTE* str, uintptr_t address, std::map<uintptr_t, KeyD*>* mKeyDs)
+KeyFldD* createKFldsFromStr(BYTE* str, uintptr_t address, std::map<uintptr_t, XKey*>* mKeyDs)
 {
 	WORD nextItemIndex = address & 0x0000FFFF;
 	auto kfd = new KeyFldD(&str[nextItemIndex]);
@@ -779,16 +779,16 @@ void createKeysFromStr(FileD* F, uintptr_t firstAddress, BYTE* str)
 	WORD nextItemIndex = (uintptr_t)CFile->Keys & 0x0000FFFF;
 	// pokud soubor klice nema, koncime
 	if (nextItemIndex == 0) { CFile->Keys = nullptr; return; }
-	std::map<uintptr_t, KeyD*> mKeyD;
-	KeyD* lastKeyD = new KeyD(&str[nextItemIndex]);
+	std::map<uintptr_t, XKey*> mKeyD;
+	XKey* lastKeyD = new XKey(&str[nextItemIndex]);
 	nextItemIndex = (uintptr_t(lastKeyD->Chain) & 0x0000FFFF);
-	mKeyD.insert(std::pair<uintptr_t, KeyD*>(firstAddress, lastKeyD));
+	mKeyD.insert(std::pair<uintptr_t, XKey*>(firstAddress, lastKeyD));
 	F->Keys = lastKeyD;
 
 	while (nextItemIndex != 0) {
-		KeyD* nKeyD = new KeyD(&str[nextItemIndex]);
+		XKey* nKeyD = new XKey(&str[nextItemIndex]);
 		nextItemIndex = (uintptr_t(nKeyD->Chain) & 0x0000FFFF);
-		mKeyD.insert(std::pair<uintptr_t, KeyD*>((uintptr_t)lastKeyD->Chain, nKeyD));
+		mKeyD.insert(std::pair<uintptr_t, XKey*>((uintptr_t)lastKeyD->Chain, nKeyD));
 		lastKeyD->Chain = nKeyD;
 		lastKeyD = nKeyD;
 	}
@@ -864,7 +864,7 @@ bool RdFDSegment(WORD FromI, longint Pos)
 	if (CFile->Keys != nullptr) {
 		throw std::exception("Not implemented.");
 	}
-	//KeyD* k = CFile->Keys;
+	//XKey* k = CFile->Keys;
 	//while (k->Chain != nullptr) {
 	//	//(k->Chain).Seg = Sg;
 	//	k = k->Chain;
@@ -1546,7 +1546,7 @@ label1:
 	return result;
 }
 
-bool EquKeys(KeyD* K1, KeyD* K2)
+bool EquKeys(XKey* K1, XKey* K2)
 {
 	auto result = false;
 	while (K1 != nullptr) {

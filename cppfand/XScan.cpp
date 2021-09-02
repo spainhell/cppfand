@@ -7,7 +7,7 @@
 #include "runfrml.h"
 #include "sort.h"
 
-void AddFFs(KeyD* K, pstring& s)
+void AddFFs(XKey* K, pstring& s)
 {
 	WORD l = MinW(K->IndexLen + 1, 255);
 	for (WORD i = s.length() + 1; i <= l; i++) s[i] = 0xff;
@@ -29,7 +29,7 @@ void CompKIFrml(XKey* K, KeyInD* KI, bool AddFF)
 	}
 }
 
-XScan::XScan(FileD* aFD, KeyD* aKey, KeyInD* aKIRoot, bool aWithT)
+XScan::XScan(FileD* aFD, XKey* aKey, KeyInD* aKIRoot, bool aWithT)
 {
 	FD = aFD; Key = aKey; KIRoot = aKIRoot; withT = aWithT;
 #ifdef FandSQL

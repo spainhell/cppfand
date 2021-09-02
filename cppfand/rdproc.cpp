@@ -172,7 +172,7 @@ FrmlPtr RdFldNameFrmlP(char& FTyp)
 	FileD* FD = nullptr; FrmlPtr Z = nullptr; LocVar* LV = nullptr;
 	instr_type Op = _notdefined;
 	LinkD* LD = nullptr; FieldDescr* F = nullptr;
-	KeyD* K = nullptr;
+	XKey* K = nullptr;
 
 	FrmlPtr result = nullptr;
 
@@ -369,7 +369,7 @@ FrmlPtr RdFunctionP(char& FFTyp)
 		FTyp = 'R';
 	label11:
 		FD = RdFileName();
-		KeyD* K = RdViewKeyImpl(FD);
+		XKey* K = RdViewKeyImpl(FD);
 		if (Op == _recno) {
 			KeyFldD* KF = K->KFlds;
 			N = 0;
@@ -535,9 +535,9 @@ FrmlPtr RdFunctionP(char& FFTyp)
 	return result;
 }
 
-KeyD* RdViewKeyImpl(FileD* FD)
+XKey* RdViewKeyImpl(FileD* FD)
 {
-	KeyD* K = nullptr;
+	XKey* K = nullptr;
 	if (FD != nullptr) K = FD->Keys;
 	if (K == nullptr) Error(24);
 	if (Lexem == '/') {
@@ -1415,7 +1415,7 @@ Instr_edit* RdEditCall()
 {
 	stSaveState* p = nullptr;
 	bool b = false;
-	KeyD* K = nullptr;
+	XKey* K = nullptr;
 	LocVar* lv = nullptr;
 	Instr_edit* PD = new Instr_edit(); // GetPD(_edit, 8);
 	RdLex();
@@ -1973,7 +1973,7 @@ Instr* RdGetIndex()
 		}
 		else if (IsOpt("OWNER")) {
 			PD->giOwnerTyp = RdOwner(&PD->giLD, &PD->giLV2);
-			KeyD* k = GetFromKey(PD->giLD);
+			XKey* k = GetFromKey(PD->giLD);
 			if (CViewKey == nullptr) PD->giKD = k;
 			else if (CViewKey != k) OldError(178);
 		}
@@ -2183,7 +2183,7 @@ Instr_recs* RdMixRecAcc(PInstrCode Op)
 			if (!IsRecVar(&PD->LV)) Error(141);
 			CFile = PD->LV->FD;
 		}
-		KeyD* K = RdViewKey();
+		XKey* K = RdViewKey();
 		Accept(',');
 #ifdef FandSQL
 		if (CFile->typSQLFile
@@ -2802,7 +2802,7 @@ void RdSqlRdWrTxt(bool Rd)
 	/* !!! with pd^ do!!! */
 	pd->IsRead = Rd; RdPath(true, pd->TxtPath, pd->TxtCatIRec);
 	Accept(','); CFile = RdFileName(); pd->sqlFD = CFile;
-	KeyD* k = RdViewKey(); if (k == nullptr) k = CFile->Keys; pd->sqlKey = k; Accept(',');
+	XKey* k = RdViewKey(); if (k == nullptr) k = CFile->Keys; pd->sqlKey = k; Accept(',');
 	pd->sqlFldD = RdFldName(CFile); Accept(','); pd->sqlXStr = RdStrFrml();
 	if (!pd->sqlFD->typSQLFile || (pd->sqlFldD->Typ != 'T')) OldError(170);
 }

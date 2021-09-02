@@ -467,7 +467,7 @@ XWorkFile::XWorkFile(XScan* AScan, XKey* AK)
 
 void XWorkFile::Main(char Typ)
 {
-	WRec* R = nullptr; KeyD* k = nullptr; KeyFldD* kf = nullptr;
+	WRec* R = nullptr; XKey* k = nullptr; KeyFldD* kf = nullptr;
 	XPage* p = nullptr; bool frst = false;
 	XPP = new XPage(); // (XPage*)GetStore(XPageSize);
 	NxtXPage = XF->NewPage(XPP);
@@ -499,7 +499,7 @@ void XWorkFile::Main(char Typ)
 	ReleaseStore(XPP);
 }
 
-void XWorkFile::CopyIndex(KeyD* K, KeyFldD* KF, char Typ)
+void XWorkFile::CopyIndex(XKey* K, KeyFldD* KF, char Typ)
 {
 	WRec* r = nullptr; XPagePtr p = nullptr; longint page; WORD n; longint i;
 	XItem* x = nullptr;
@@ -638,7 +638,7 @@ void XXPage::PageFull()
 	XW->XF->WrPage((XPage*)(&IsLeaf), n);
 }
 
-void XXPage::AddToLeaf(WRec* R, KeyD* KD)
+void XXPage::AddToLeaf(WRec* R, XKey* KD)
 {
 	BYTE m, l; longint n;
 label1:
@@ -725,7 +725,7 @@ void ScanSubstWIndex(XScan* Scan, KeyFldD* SK, char Typ)
 	//k2 = (XWKey*)GetZStore(sizeof(*k2));
 	XWKey* k2 = new XWKey();
 	if (Scan->FD->IsSQLFile && (Scan->Kind == 3)) /*F6-autoreport & sort*/ {
-		KeyD* k = Scan->Key;
+		XKey* k = Scan->Key;
 		n = k->IndexLen;
 		KeyFldD* kf = SK;
 		while (kf != nullptr) {
@@ -895,7 +895,7 @@ void GetIndexSort(Instr_getindex* PD)
 	ReleaseStore(p);
 }
 
-void CopyIndex(WKeyDPtr K, KeyD* FromK)
+void CopyIndex(WKeyDPtr K, XKey* FromK)
 {
 	XScan* Scan = nullptr; void* p = nullptr; LockMode md;
 	K->Release(); MarkStore(p); md = NewLMode(RdMode);

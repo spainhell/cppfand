@@ -12,7 +12,7 @@ void RectToPixel(WORD c1, WORD r1, WORD c2, WORD r2, WORD& x1, WORD& y1, WORD& x
 {
 }
 
-void RunAutoGraph(FieldList FL, KeyD* VK, FrmlElem* Bool)
+void RunAutoGraph(FieldList FL, XKey* VK, FrmlElem* Bool)
 {
 }
 

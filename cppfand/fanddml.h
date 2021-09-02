@@ -11,15 +11,15 @@ using namespace std;
 //};
 //typedef KeyFldD* KeyFldDPtr;
 //
-//struct KeyD {
-//	KeyD* KeyDPtr;
+//struct XKey {
+//	XKey* KeyDPtr;
 //	KeyFldDPtr KFlds;
 //	bool Intervaltest, Duplic;
 //	WORD IndexRoot;
 //	BYTE IndexLen;
 //	string Alias;
 //};
-//typedef KeyD* KeyDPtr;
+//typedef XKey* KeyDPtr;
 
 //
 //

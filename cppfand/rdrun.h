@@ -93,7 +93,7 @@ struct InpD
 enum AutoRprtMode { _ALstg, _ARprt, _ATotal, _AErrRecs };
 struct RprtFDListEl
 {
-	RprtFDListEl* Chain; FileD* FD; KeyD* ViewKey;
+	RprtFDListEl* Chain; FileD* FD; XKey* ViewKey;
 	FrmlPtr Cond; KeyInD* KeyIn; bool SQLFilter;
 	void* LVRecPtr;
 };
@@ -269,7 +269,7 @@ struct EditD : Chained
 	EFldD* LastFld = nullptr; 
 	EFldD* StartFld = nullptr;
 	EFldD* CFld = nullptr; EFldD* FirstEmptyFld = nullptr;    /*copied*/
-	KeyD* VK = nullptr; XWKey* WK = nullptr;                  /*  "   */
+	XKey* VK = nullptr; XWKey* WK = nullptr;                  /*  "   */
 	longint BaseRec = 0; BYTE IRec = 0;                       /*  "   */
 	bool IsNewRec = false, Append = false, Select = false,    /*  "   */
 		 WasUpdated = false, EdRecVar = false,                /*  "   */
@@ -290,7 +290,7 @@ struct EditD : Chained
 	     MustAdd = false;                                     /*  "   */
 	bool MustCheck = false, SelMode = false;                  /*  "   */
 	bool DownSet = false, IsLocked = false, WwPart = false;    
-	KeyD* DownKey = nullptr;
+	XKey* DownKey = nullptr;
 	longint LockedRec = 0;
 	FrmlElem* Cond = nullptr; FrmlElem* Bool = nullptr;
 	std::string* BoolTxt = nullptr;
@@ -338,7 +338,7 @@ struct CopyD
 	pstring* Path1; /*FrmlPtr if cpList*/
 	WORD CatIRec1;
 	FileD* FD1;
-	KeyD* ViewKey;
+	XKey* ViewKey;
 	bool WithX1;
 	CpOption Opt1;
 	pstring* Path2; /*  "  */

@@ -480,7 +480,7 @@ void PrintTxtProc(Instr_edittxt* PD)
 	}
 }
 
-bool SrchXKey(KeyD* K, XString& X, longint& N)
+bool SrchXKey(XKey* K, XString& X, longint& N)
 {
 	void* cr;
 	if (CFile->Typ == 'X') {
@@ -569,7 +569,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 	CFile = PD->LV->FD;
 	CRecPtr = PD->LV->RecPtr;
 	N = 1;
-	KeyD* k = PD->Key;
+	XKey* k = PD->Key;
 	bool ad = PD->AdUpd;
 	LockMode md = CFile->LMode;
 	app = false;
@@ -672,7 +672,7 @@ void LinkRecProc(Instr_assign* PD)
 
 void ForAllProc(Instr_forall* PD)
 {
-	FileD* FD = nullptr; KeyD* Key = nullptr; KeyD* k = nullptr; FrmlElem* Bool = nullptr;
+	FileD* FD = nullptr; XKey* Key = nullptr; XKey* k = nullptr; FrmlElem* Bool = nullptr;
 	LinkD* LD = nullptr; KeyInD* KI = nullptr;
 	void* cr = nullptr; void* p = nullptr; void* lr = nullptr;
 	XScan* Scan = nullptr; LockMode md, md1; XString xx;

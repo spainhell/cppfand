@@ -25,7 +25,7 @@ void XFile::SetEmpty()
 	p->IsLeaf = true;
 	FreeRoot = 0;
 	NRecs = 0;
-	KeyD* k = CFile->Keys;
+	XKey* k = CFile->Keys;
 	while (k != nullptr) {
 		longint n = k->IndexRoot;
 		MaxPage = n;

@@ -1222,7 +1222,7 @@ TCommand* RdPredCommand(TCommandTyp Code)
 	WORD tofs = 0; // absolute t
 	TScanInf* si = nullptr;
 	WORD siofs = 0; // absolute si
-	KeyD* k = nullptr; KeyFldD* kf = nullptr;
+	XKey* k = nullptr; KeyFldD* kf = nullptr;
 	TFldList* fl = nullptr;
 	TFldList* flofs = nullptr; // absolute fl
 	BYTE a[256]{ 0 };
@@ -3117,7 +3117,7 @@ bool RunBuildIn()
 	pstring s;
 	LongStr* p = nullptr; LongStr* p1 = nullptr; LongStr* p2 = nullptr; LongStr* p3 = nullptr;
 	RdbD* r = nullptr; FileD* fd = nullptr; FieldDescr* f = nullptr;
-	KeyD* k = nullptr; KeyFldD* kf = nullptr;
+	XKey* k = nullptr; KeyFldD* kf = nullptr;
 	TTerm* t1 = nullptr; TTerm* t2 = nullptr; TTerm* tprev = nullptr;
 	TTerm* t = nullptr; TTerm* root = nullptr;
 	LinkD* ld = nullptr; pstring mask;
@@ -3246,7 +3246,7 @@ bool RunBuildIn()
 			break;
 		}
 		case _FandKeyP: {
-			k = (KeyD*)CurrInst->NextBranch;
+			k = (XKey*)CurrInst->NextBranch;
 			if (k == nullptr) {
 				fd = FindFD(CurrInst->Vars[0]->SS);
 				if (fd == nullptr) goto label1;
@@ -3881,7 +3881,7 @@ TFileScan* GetScan(TScanInf* SIOfs, TCommand* C, TInstance* Q)
 {
 	TFldList* fl = nullptr;
 	WORD flofs = 0; // absolute fl
-	KeyD* k = nullptr;
+	XKey* k = nullptr;
 	WORD kofs = 0; // absolute k
 	KeyFldD* kf = nullptr; FieldDescr* f = nullptr;
 	XString xx; WORD i = 0;
@@ -3966,8 +3966,8 @@ bool ScanFile(TInstance* Q)
 	TDomain* d = nullptr;
 	TDomain* dofs = nullptr; // absolute d
 	void* pt = PackedTermPtr;
-	KeyD* k = nullptr;
-	KeyD* kofs = nullptr; // absolute k
+	XKey* k = nullptr;
+	XKey* kofs = nullptr; // absolute k
 	LockMode md, md1;
 	TFileScan* fs = nullptr; TFileScan* fs1 = nullptr;
 	longint RecNr = 0; XString xx;

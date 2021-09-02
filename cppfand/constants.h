@@ -534,7 +534,7 @@ enum instr_type
 	_password = 0x37, _version = 0x38, _username = 0x39, _edfield = 0x3a,
 	_accright = 0x3b, _readkey = 0x3c, _edreckey = 0x3d, _edbool = 0x3e,
 	_edfile = 0x3f, _edkey = 0x40, _clipbd = 0x41, _keybuf = 0x42,
-	_keyof = 0x43,  // {LV,KeyD}                                             // {S}
+	_keyof = 0x43,  // {LV,XKey}                                             // {S}
 	_edupdated = 0x44, _keypressed = 0x45, _escprompt = 0x46,
 	_trust = 0x47, _lvdeleted = 0x48,  // {bytestring}_lvdeleted=#$48,   // {LV}                      // {B}
 	_userfunc = 0x49,

@@ -12,7 +12,7 @@ extern LinkD* LinkDRoot; // { for all RDBs     }
 extern FuncD* FuncDRoot;
 extern FileD* CFile;
 extern void* CRecPtr;
-extern KeyD* CViewKey;
+extern XKey* CViewKey;
 extern std::string TopRdbDir, TopDataDir;
 extern pstring CatFDName;
 extern RdbD* CRdb, TopRdb;

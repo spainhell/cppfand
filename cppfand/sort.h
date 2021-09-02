@@ -72,14 +72,14 @@ class XWorkFile : public WorkFile
 public:
 	XWorkFile(XScan* AScan, XKey* AK);
 	XXPage* PX = nullptr;
-	KeyD* KD = nullptr;
+	XKey* KD = nullptr;
 	XScan* Scan = nullptr;
 	bool MsgWritten = false;
 	longint NxtXPage = 0;
 	XWFile* XF = nullptr;
 	XPage* XPP = nullptr;
 	void Main(char Typ);
-	void CopyIndex(KeyD* K, KeyFldD* KF, char Typ);
+	void CopyIndex(XKey* K, KeyFldD* KF, char Typ);
 	bool GetCRec() override;
 	void Output(WRec* R) override;
 private:
@@ -105,7 +105,7 @@ public:
 	void PutMLX(BYTE M, BYTE L); // ASM
 	void ClearRest(); // ASM
 	void PageFull();
-	void AddToLeaf(WRec* R, KeyD* KD);
+	void AddToLeaf(WRec* R, XKey* KD);
 	void AddToUpper(XXPage* P, longint DownPage);
 };
 
@@ -115,4 +115,4 @@ void CreateWIndex(XScan* Scan, XWKey* K, char Typ); // r508
 void ScanSubstWIndex(XScan* Scan, KeyFldD* SK, char Typ); // r518
 void SortAndSubst(KeyFldD* SK); // r534
 void GetIndexSort(Instr_getindex* PD);
-void CopyIndex(WKeyDPtr K, KeyD* FromK); // r581
+void CopyIndex(WKeyDPtr K, XKey* FromK); // r581

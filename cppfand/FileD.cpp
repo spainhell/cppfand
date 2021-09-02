@@ -90,7 +90,7 @@ bool FileD::Cached()
 
 WORD FileD::GetNrKeys()
 {
-	KeyD* k = Keys;
+	XKey* k = Keys;
 	WORD n = 0;
 	while (k != nullptr) { n++; k = k->Chain; }
 	return n;

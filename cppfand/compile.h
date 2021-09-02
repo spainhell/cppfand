@@ -84,7 +84,7 @@ FrmlElem* RdKeyInBool(KeyInD** KIRoot, bool NewMyBP, bool FromRdProc, bool& SQLF
 FrmlPtr RdBool();
 FrmlPtr RdRealFrml();
 FrmlPtr RdStrFrml();
-KeyD* RdViewKey(); // r238
+XKey* RdViewKey(); // r238
 KeyFldD* RdKF(FileD* FD);
 WORD RdKFList(KeyFldD** KFRoot, FileD* FD); // r298
 bool IsKeyArg(FieldDescr* F, FileD* FD); // r278

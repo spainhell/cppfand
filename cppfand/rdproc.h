@@ -18,7 +18,7 @@ char RdOwner(LinkD** LLD, LocVar** LLV); // 'r','i','F'
 FrmlPtr RdFldNameFrmlP(char& FTyp);
 FileD* RdPath(bool NoFD, pstring** Path, WORD& CatIRec);
 FrmlPtr RdFunctionP(char& FFTyp);
-KeyD* RdViewKeyImpl(FileD* FD);
+XKey* RdViewKeyImpl(FileD* FD);
 void RdSelectStr(FrmlElem0* Z);
 //Instr* GetPInstr(PInstrCode Kind, WORD Size);
 

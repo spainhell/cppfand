@@ -22,8 +22,8 @@ void* RdFileD(std::string FileName, char FDTyp, std::string Ext); // r220
 void RdKeyD();
 void CheckDuplAlias(pstring Name);
 void LookForK(pstring* Name, FileD* F);
-KeyD* RdFileOrAlias1(FileD* F);
-void RdFileOrAlias(FileD** FD, KeyD** KD);
+XKey* RdFileOrAlias1(FileD* F);
+void RdFileOrAlias(FileD** FD, XKey** KD);
 void SetLDIndexRoot(LinkD* L, LinkD* L2);
 void TestDepend();
 void RdImpl(ImplD** IDRoot);

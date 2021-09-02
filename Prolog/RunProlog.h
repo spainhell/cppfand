@@ -101,7 +101,7 @@ struct TCommand : public Chained {
 	TDomain* Elem = nullptr; /*_MemP..:ListDom else PPTerm*/
 	WORD Idx = 0;
 	WORD Idx2 = 0; /*_AllC*/
-	WORD CompMask = 0; KeyD* KDOfs = nullptr; BYTE ArgI[1]{ 0 }; /*only FAND-file*/
+	WORD CompMask = 0; XKey* KDOfs = nullptr; BYTE ArgI[1]{ 0 }; /*only FAND-file*/
 	TWriteD* WrD = nullptr; /*PWriteD*/ bool NL = false;
 	WORD WrD1 = 0; WORD MsgNr = 0;
 	integer TrcLevel = 0;

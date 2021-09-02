@@ -40,7 +40,7 @@ typedef StringListEl* StringList;
 struct KeyListEl : public Chained // ø. 49
 {
 	//KeyListEl* Chain;
-	KeyD* Key = nullptr;
+	XKey* Key = nullptr;
 };
 typedef KeyListEl* KeyList;
 
@@ -113,7 +113,7 @@ struct LinkD // ø. 220
 	KeyFldD* Args = nullptr;
 	FileD* FromFD = nullptr;
 	FileD* ToFD = nullptr;
-	KeyD* ToKey = nullptr;
+	XKey* ToKey = nullptr;
 	pstring RoleName;
 };
 typedef LinkD* LinkDPtr;

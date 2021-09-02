@@ -18,4 +18,3 @@ public:
 	longint NewPage(XPage* P);
 	void ReleasePage(XPage* P, longint N);
 };
-typedef XWFile* XWFilePtr;

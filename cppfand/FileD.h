@@ -39,7 +39,7 @@ public:
 	LockMode LMode = NullMode, ExLMode = NullMode, TaLMode = NullMode;
 	StringListEl* ViewNames = nullptr;  //after each string BYTE string with user codes 
 	XFile* XF = nullptr;
-	KeyD* Keys = nullptr;
+	XKey* Keys = nullptr;
 	std::vector<AddD*> Add;
 	uintptr_t nLDs = 0, LiOfs = 0;
 	longint UsedFileSize();

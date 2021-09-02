@@ -1280,11 +1280,11 @@ void EditModeToFlags(pstring Mode, void* Flgs, bool Err)
 	if (Err) Error(92);
 }
 
-KeyD* RdViewKey()
+XKey* RdViewKey()
 {
-	KeyD* k = nullptr; LocVar* lv = nullptr;
+	XKey* k = nullptr; LocVar* lv = nullptr;
 	std::string s;
-	KeyD* result = nullptr;
+	XKey* result = nullptr;
 	if (Lexem != '/') return result;
 	RdLex();
 	size_t i = 0;
@@ -1309,7 +1309,7 @@ KeyD* RdViewKey()
 	if (IdxLocVarAllowed && FindLocVar(&LVBD, &lv) && (lv->FTyp == 'i'))
 	{
 		if (lv->FD != CFile) Error(164);
-		k = KeyD*(lv->RecPtr);
+		k = (XKey*)(lv->RecPtr);
 		goto label1;
 	}
 	Error(109);
@@ -1418,7 +1418,7 @@ bool IsKeyArg(FieldDescr* F, FileD* FD)
 {
 	KeyArgFound = false;
 	KeyFldD* kf = nullptr;
-	KeyD* k = FD->Keys;
+	XKey* k = FD->Keys;
 	while (k != nullptr) {
 		KeyArgFld = F;
 		kf = k->KFlds;

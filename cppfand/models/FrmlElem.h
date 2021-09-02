@@ -140,7 +140,7 @@ class FrmlElem13 : public FrmlElem
 public:
 	FrmlElem13(instr_type Op, size_t buff_size);
 	FileD* FFD = nullptr;
-	KeyD* Key = nullptr;
+	XKey* Key = nullptr;
 	void SaveArgs(FrmlElem* arguments[], size_t count);
 	std::vector<FrmlElem*> Arg;
 	//FrmlElem* Arg[2]{ nullptr }; // 13 {_recno/typ='R' or 'S'/,_recnoabs,_recnolog}
@@ -194,7 +194,7 @@ class FrmlElem20 : public FrmlElem
 public:
 	FrmlElem20(instr_type Op, size_t buff_size);
 	LocVar* LV = nullptr;
-	KeyD* PackKey = nullptr; // 20 { _keyof,_lvdeleted }
+	XKey* PackKey = nullptr; // 20 { _keyof,_lvdeleted }
 };
 class FrmlElem21 : public FrmlElem
 {

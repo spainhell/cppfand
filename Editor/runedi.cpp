@@ -29,7 +29,7 @@ EFldD* CFld;
 
 //EditD* E = EditDRoot;
 EFldD* FirstEmptyFld;
-KeyD* VK;
+XKey* VK;
 XWKey* WK;
 longint BaseRec;
 BYTE IRec;
@@ -1340,7 +1340,7 @@ void BuildWork()
 {
 	XScan* Scan = nullptr; XScan* Scan2 = nullptr;
 	void* p = nullptr;
-	KeyD* K = nullptr;
+	XKey* K = nullptr;
 	KeyFldD* KF = nullptr;
 	XString xx;
 	bool dupl = true, intvl = false, ok = false;
@@ -1425,7 +1425,7 @@ void SetStartRec()
 {
 	longint n = 0;
 	KeyFldD* kf = nullptr;
-	KeyD* k = VK;
+	XKey* k = VK;
 	if (Subset) k = WK;
 	if (k != nullptr) kf = k->KFlds;
 	if ((E->StartRecKey != nullptr) && (k != nullptr)) {
@@ -2161,7 +2161,7 @@ void UpwEdit(LinkDPtr LkD)
 	std::string s;
 	std::string s1, s2; XString x; XString* px = nullptr;
 	FieldDPtr F = nullptr; KeyFldDPtr KF = nullptr;
-	KeyD* K = nullptr; EditOpt* EO = nullptr;
+	XKey* K = nullptr; EditOpt* EO = nullptr;
 	WORD Brk; FileDPtr ToFD = nullptr; StringList SL, SL1; LinkDPtr LD = nullptr;
 	longint w; bool b;
 	MarkStore(p);
@@ -2299,7 +2299,7 @@ bool ExitCheck(bool MayDispl)
 
 longint UpdateIndexes()
 {
-	KeyD* K = nullptr;
+	XKey* K = nullptr;
 	longint N = 0;
 	XString x;
 	longint NNew = E->LockedRec;
@@ -2368,7 +2368,7 @@ bool WriteCRec(bool MayDispl, bool& Displ)
 	EFldD* D = nullptr;
 	ChkD* C = nullptr;
 	LockMode OldMd = LockMode::NullMode;
-	KeyD* K = nullptr;
+	XKey* K = nullptr;
 	Displ = false;
 	auto result = false;
 
@@ -2561,7 +2561,7 @@ void AppendRecord(void* RP)
 
 bool GotoXRec(XString* PX, longint& N)
 {
-	LockMode md; KeyD* k;
+	LockMode md; XKey* k;
 	auto result = false;
 	md = NewLMode(RdMode); k = VK; if (Subset) k = WK;
 	if (Subset || HasIndex) {
@@ -2597,7 +2597,7 @@ bool PromptSearch(bool Create)
 	auto result = false;
 	FieldDPtr F, F2; FileDPtr FD, FD2; void* RP; void* RP2; KeyFldDPtr KF, KF2;
 	longint n; std::string s; double r; bool b, li, found; LockMode md;
-	XString x, xOld; KeyD* K; longint w; WORD Col, LWw, pos; EFldD* D;
+	XString x, xOld; XKey* K; longint w; WORD Col, LWw, pos; EFldD* D;
 	FD = CFile; K = VK; if (Subset) K = WK; KF = K->KFlds;
 	RP = GetRecSpace(); CRecPtr = RP; ZeroAllFlds(); x.Clear();
 	li = F3LeadIn && !IsNewRec;
@@ -2756,7 +2756,7 @@ void AutoGraph()
 #ifdef FandGraph
 	FrmlElem* Bool = nullptr;
 	if (Select) Bool = E->Bool;
-	KeyD* K = nullptr;
+	XKey* K = nullptr;
 	if (Subset) K = WK;
 	else if (HasIndex) K = VK;
 	RunAutoGraph(E->Flds, K, Bool);
@@ -3362,7 +3362,7 @@ void PromptSelect()
 
 void SwitchRecs(integer Delta)
 {
-	LockMode md; longint n1, n2; void* p1; void* p2; XString x1, x2; KeyD* k;
+	LockMode md; longint n1, n2; void* p1; void* p2; XString x1, x2; XKey* k;
 #ifdef FandSQL
 	if (CFile->IsSQLFile) return;
 #endif
@@ -3516,7 +3516,7 @@ void DownEdit()
 {
 	wwmix ww;
 
-	LinkDPtr LD = nullptr; FileDPtr FD = nullptr; StringList SL = nullptr; KeyD* K = nullptr;
+	LinkDPtr LD = nullptr; FileDPtr FD = nullptr; StringList SL = nullptr; XKey* K = nullptr;
 	EditOpt* EO = nullptr; WORD Brk, i; void* p = nullptr;
 	std::string s, s1, s2; longint w;
 	std::string ali;
@@ -3778,7 +3778,7 @@ void SetEdRecNoEtc(longint RNr)
 	if (!IsNewRec) {
 		void* cr = CRecPtr;
 		if (WasUpdated) CRecPtr = E->OldRecPtr;
-		KeyD* k = VK;
+		XKey* k = VK;
 		if (Subset) k = WK;
 		x.PackKF(k->KFlds);
 		CRecPtr = cr;
