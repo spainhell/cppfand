@@ -49,16 +49,18 @@ bool XPage::Overflow()
 	return size > XPageSize;
 }
 
-pstring XPage::StrI(WORD I)
+
+/// i = 1 .. N
+pstring XPage::GetKey(WORD i)
 {
 	pstring s; // toto bude vystup
 	XItem* x = new XItem(A, IsLeaf);
 	WORD xofs = 0;
 	WORD o = Off();
 
-	if (I > NItems) s[0] = 0;
+	if (i > NItems) s[0] = 0;
 	else {
-		for (WORD j = 1; j <= I; j++) {
+		for (WORD j = 1; j <= i; j++) {
 			xofs += x->UpdStr(o, &s);
 			auto oldX = x;
 			x = new XItem(&A[xofs], IsLeaf);
@@ -84,69 +86,38 @@ longint XPage::SumN()
 
 void XPage::Insert(WORD I, void* SS, XItem** XX)
 {
-	genItems();
-	pstring* S = (pstring*)SS;
-	NItems++;
-	auto x = &_leafItems[I - 1]; // vytahneme predchozi zaznam
-	WORD m = 0;
-	// zjistime spolecne casti s predchozim zaznamem
-	if (I > 1) m = SLeadEqu(StrI(I - 1), *S);
-	WORD l = S->length() - m;
-	// vytvorime novou polozku s novym zaznamem
-	auto newXi = XItemLeaf((unsigned int)I, m, l, *S);
+	if (IsLeaf) {
+		genItems();
+		pstring* S = (pstring*)SS;
+		NItems++;
+		auto x = &_leafItems[I - 1]; // vytahneme predchozi zaznam
+		WORD m = 0;
+		// zjistime spolecne casti s predchozim zaznamem
+		if (I > 1) m = SLeadEqu(GetKey(I - 1), *S);
+		WORD l = S->length() - m;
+		// vytvorime novou polozku s novym zaznamem
+		auto newXi = XItemLeaf((unsigned int)I, m, l, *S);
 
-	if (I < NItems) {
-		// vkladany zaznam nebude posledni (nebude na konci)
-		// zjistime spolecne casti s nasledujicim zaznamem
-		WORD m2 = SLeadEqu(StrI(I), *S);
-		integer d = m2 - newXi.M;
-		if (d > 0) {
-			printf("XPage::Insert() - Nutno doimplementovat!");
+		if (I < NItems) {
+			// vkladany zaznam nebude posledni (nebude na konci)
+			// zjistime spolecne casti s nasledujicim zaznamem
+			WORD m2 = SLeadEqu(GetKey(I), *S);
+			integer d = m2 - newXi.M;
+			if (d > 0) {
+				printf("XPage::Insert() - Nutno doimplementovat!");
+			}
 		}
+
+		size_t bufLen = newXi.size();
+		BYTE* buf = new BYTE[bufLen];
+		newXi.Serialize(buf, bufLen);
+
+		// vratime tuto novou polozku
+		*XX = new XItem(buf, IsLeaf);
 	}
-
-	size_t bufLen = newXi.size();
-	BYTE* buf = new BYTE[bufLen];
-	newXi.Serialize(buf, bufLen);
-
-	// vratime tuto novou polozku
-	*XX = new XItem(buf, IsLeaf);
-
-	//pstring* S = (pstring*)SS;
-	//
-	//WORD xofs = 0; // posun pro x
-	//WORD x2ofs = 0; // posun pro x2
-	//
-	//WORD o = Off();
-	//WORD oE = EndOff();
-	//NItems++;
-	//XItem* x = XI(I, IsLeaf);
-	//WORD m = 0;
-	//// zjistime spolecne casti s predchozim zaznamem
-	//if (I > 1) m = SLeadEqu(StrI(I - 1), *S);
-	//WORD l = S->length() - m;
-	//WORD sz = o + 2 + l;
-	//if (I < NItems) {
-	//	// vkladany zaznam nebude posledni (nebude na konci)
-	//	XItem* x2 = x;
-	//	// zjistime spolecne casti s nasledujicim zaznamem
-	//	WORD m2 = SLeadEqu(StrI(I), *S);
-	//	integer d = m2 - x->GetM(o);
-	//	if (d > 0) {
-	//		WORD l2 = x->GetL(o);
-	//		x2ofs += d;
-	//		Move(x, x2, o);
-	//		x2->PutM(o, m2);
-	//		x2->PutL(o, l2 - d);
-	//		sz -= d;
-	//	}
-	//	// Move(x2, uintptr_t(x2) + x2ofs + sz, oE - *x2ofs);
-	//}
-	//*XX = x;
-	//x->PutM(o, m);
-	//x->PutL(o, l);
-	////xofs += (o + 2);
-	//memcpy(&x->Nr[0], &(*S)[m + 1], l);
+	else {
+		
+	}
 }
 
 void XPage::InsertLeaf(unsigned int RecNr, size_t I, pstring& SS)
@@ -155,7 +126,7 @@ void XPage::InsertLeaf(unsigned int RecNr, size_t I, pstring& SS)
 	NItems++;
 	WORD m = 0;
 	// zjistime spolecne casti s predchozim zaznamem
-	if (I > 1) m = SLeadEqu(StrI(I - 1), SS);
+	if (I > 1) m = SLeadEqu(GetKey(I - 1), SS);
 	WORD l = SS.length() - m;
 	// vytvorime novou polozku s novym zaznamem a vlozime ji do vektoru
 
@@ -165,7 +136,7 @@ void XPage::InsertLeaf(unsigned int RecNr, size_t I, pstring& SS)
 	if (I < NItems) {
 		// vkladany zaznam nebude posledni (nebude na konci)
 		// zjistime spolecne casti s nasledujicim zaznamem
-		WORD m2 = SLeadEqu(StrI(I), SS);
+		WORD m2 = SLeadEqu(GetKey(I), SS);
 		BYTE d = m2 - newXi->M;
 		if (d > 0) {
 			// puvodni polozka je ted na pozici I (nova je na I - 1)
@@ -178,7 +149,7 @@ void XPage::InsDownIndex(WORD I, longint Page, XPage* P)
 {
 	pstring s;
 	XItem* x = nullptr;
-	s = P->StrI(P->NItems);
+	s = P->GetKey(P->NItems);
 	Insert(I, &s, &x);
 	x->PutN(P->SumN());
 	*(x->DownPage) = Page;
@@ -241,7 +212,7 @@ void XPage::AddPage(XPage* P)
 	XItemPtr xE = XI(NItems + 1, IsLeaf);
 	WORD oE = P->EndOff(); WORD o = Off(); x = XItemPtr(&P->A);
 	if (NItems > 0) {
-		WORD m = SLeadEqu(StrI(NItems), P->StrI(1));
+		WORD m = SLeadEqu(GetKey(NItems), P->GetKey(1));
 		if (m > 0) {
 			WORD l = x->GetL(o) - m;
 			x1 = x;
@@ -256,33 +227,33 @@ void XPage::AddPage(XPage* P)
 
 void XPage::SplitPage(XPage* P, longint ThisPage)
 {
-	// figuruje tady pstring* s, ale výsledek se nikam neukládá, je to zakomentované
+	// 1st half of this XPage will be moved into P
 
-	XItemPtr x = nullptr, x1 = nullptr, x2 = nullptr;
-	WORD* xofs = (WORD*)x;
-	WORD* x1ofs = (WORD*)x1;
-	WORD* x2ofs = (WORD*)x2;
-	WORD o, oA, oE, n;
-	pstring* s;
+	size_t origSize = this->ItemsSize();
+	size_t actualSize;
+	size_t index; // last index that will be moved into P
+	for (index = 0, actualSize = 0; index < _leafItems.size(); index++) {
+		actualSize += _leafItems[index]->size();
+		if (actualSize > origSize / 2) break;
+	}
 
-	x = XItemPtr(&A);
-	x1 = x; o = Off();
-	oA = *xofs;
-	oE = EndOff();
-	n = 0;
-	while (*xofs - oA < oE - *xofs + x->GetM(o)) { x = x->Next(o, IsLeaf); n++; }
-	FillChar(P, XPageSize, 0);
-	Move(x1, P->A, *xofs - oA);
-	//s = (pstring*)(uintptr_t(x1) + oA + o + 1);;
-	//s = &StrI(n + 1);
-	Move(x, x1, o);
-	x1->PutM(o, 0);
-	x1 = x1->Next(o, IsLeaf);
-	x = x->Next(o, IsLeaf);
-	Move(x, x1, oE - *xofs);
-	P->NItems = n; NItems -= n;
-	*xofs = EndOff();
-	FillChar(x, oE - *xofs, 0);
+	// get new first key for this page
+	auto firstNewKey = GetKey(index + 1 + 1);
+	XItemLeaf* firstXItem = this->_leafItems[index + 1];
+
+	// move first items into page P and remove them from this page
+	for(size_t i = 0; i <= index; i++) {
+		P->_leafItems.push_back(this->_leafItems.front()); // add 1st element to P
+		P->NItems++;
+		this->_leafItems.erase(_leafItems.begin()); // erase 1st element from original
+		this->NItems--;
+	}
+
+	// replace 1st item of this page with full key
+	auto newFirstXItem = new XItemLeaf(firstXItem->RecNr, 0, firstNewKey.length(), firstNewKey);
+	this->_leafItems.erase(_leafItems.begin());
+	this->_leafItems.insert(_leafItems.begin(), newFirstXItem);
+
 	if (IsLeaf) P->GreaterPage = ThisPage;
 	else P->GreaterPage = 0;
 	P->IsLeaf = IsLeaf;

@@ -263,7 +263,7 @@ bool XKey::RecNrToPath(XString& XX, longint RecNr)
 	label1:
 		XF()->RdPage(p, X.Page);
 		x = p->XI(X.I, p->IsLeaf);
-		if (!(p->StrI(X.I) == XX.S)) goto label3;
+		if (!(p->GetKey(X.I) == XX.S)) goto label3;
 	label2:
 		if (x->GetN() == RecNr) { result = true; goto label3; }
 		X.I++;
@@ -322,7 +322,7 @@ pstring XKey::NrToStr(longint I)
 	NrToPath(I);
 	/* !!! with XPath[XPathN] do!!! */
 	XF()->RdPage(p, XPath[XPathN].Page);
-	result = p->StrI(I);
+	result = p->GetKey(I);
 	ReleaseStore(p);
 	return result;
 }
@@ -430,7 +430,9 @@ void XKey::InsertLeafItem(XString& XX, XPage* P, XPage* UpP, longint Page, WORD 
 		// *X byl puvodne parametr metody
 		// if (I <= UpP->NItems) *X = UpP->XI(I, P->IsLeaf);
 		// else *X = P->XI(I - UpP->NItems, P->IsLeaf);
-		XX.S = UpP->StrI(UpP->NItems);
+		P->GenArrayFromVectorItems();
+		UpP->GenArrayFromVectorItems();
+		XX.S = UpP->GetKey(UpP->NItems);
 	}
 	else {
 		// pregenerujeme data z vektoru do P->A
@@ -442,7 +444,7 @@ void XKey::ChainPrevLeaf(XPagePtr P, longint N)
 {
 	longint page = 0;
 	WORD i = 0, j = 0;
-	for (j = XPathN - 1; j > 1; j--)
+	for (j = XPathN - 1; j >= 1; j--)
 		if (XPath[j].I > 1) {
 			XF()->RdPage(P, XPath[j].Page);
 			i = XPath[j].I - 1;

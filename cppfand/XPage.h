@@ -24,7 +24,7 @@ public:
 	WORD EndOff();
 	bool Underflow();
 	bool Overflow();
-	pstring StrI(WORD I);
+	pstring GetKey(WORD i);
 	longint SumN();
 	void Insert(WORD I, void* SS, XItem** XX);
 	void InsertLeaf(unsigned int RecNr, size_t I, pstring& SS);
