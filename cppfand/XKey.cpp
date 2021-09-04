@@ -406,7 +406,8 @@ void XKey::InsertOnPath(XString& XX, longint RecNr)
 
 void XKey::InsertItem(XString& XX, XPage* P, XPage* UpP, longint Page, WORD I, XItem** X, longint& UpPage)
 {
-	P->Insert(I, &XX.S, X);
+	size_t Xlen = 0;
+	P->Insert(I, &XX.S, X, Xlen);
 	UpPage = 0;
 	if (P->Overflow()) {
 		printf("XKey::InsertItem overflow");
@@ -438,6 +439,17 @@ void XKey::InsertLeafItem(XString& XX, XPage* P, XPage* UpP, longint Page, WORD 
 		// pregenerujeme data z vektoru do P->A
 		P->GenArrayFromVectorItems();
 	}
+#if _DEBUG
+	std::vector<pstring> vP;
+	for(size_t i = 1; i <= P->NItems; i++) {
+		vP.push_back(P->GetKey(i));
+	}
+	std::vector<pstring> vUpP;
+	for (size_t i = 1; i <= UpP->NItems; i++) {
+		vUpP.push_back(UpP->GetKey(i));
+	}
+	printf("");
+#endif
 }
 
 void XKey::ChainPrevLeaf(XPagePtr P, longint N)

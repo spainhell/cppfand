@@ -26,7 +26,7 @@ public:
 	bool Overflow();
 	pstring GetKey(WORD i);
 	longint SumN();
-	void Insert(WORD I, void* SS, XItem** XX);
+	void Insert(WORD I, void* SS, XItem** XX, size_t& XXLen);
 	void InsertLeaf(unsigned int RecNr, size_t I, pstring& SS);
 	void InsDownIndex(WORD I, longint Page, XPage* P);
 	void Delete(WORD I);

@@ -15,7 +15,7 @@ XItem::XItem(BYTE* data, bool isLeaf)
 
 longint XItem::GetN()
 {
-	return *DownPage & 0x00ffffff;
+	return *Nr & 0x00ffffff;
 }
 
 void XItem::PutN(longint N)

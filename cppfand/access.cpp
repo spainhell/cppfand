@@ -577,7 +577,7 @@ void CreateRec(longint N)
 	IncNRecs(1);
 	void* cr = CRecPtr;
 	CRecPtr = GetRecSpace();
-	for (longint i = CFile->NRecs - 1; i > N; i--) {
+	for (longint i = CFile->NRecs - 1; i >= N; i--) {
 		ReadRec(CFile, i, CRecPtr);
 		WriteRec(CFile, i + 1, CRecPtr);
 	}

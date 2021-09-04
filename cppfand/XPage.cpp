@@ -84,40 +84,55 @@ longint XPage::SumN()
 	return n;
 }
 
-void XPage::Insert(WORD I, void* SS, XItem** XX)
+void XPage::Insert(WORD I, void* SS, XItem** XX, size_t& XXLen)
 {
-	if (IsLeaf) {
 		genItems();
 		pstring* S = (pstring*)SS;
+		std::unique_ptr<XItemLeaf> newXi;
 		NItems++;
-		auto x = &_leafItems[I - 1]; // vytahneme predchozi zaznam
-		WORD m = 0;
-		// zjistime spolecne casti s predchozim zaznamem
-		if (I > 1) m = SLeadEqu(GetKey(I - 1), *S);
-		WORD l = S->length() - m;
-		// vytvorime novou polozku s novym zaznamem
-		auto newXi = XItemLeaf((unsigned int)I, m, l, *S);
+		if (!_leafItems.empty()) {
+			// predchozi zaznam existuje -> vytahneme jej
+			auto x = &_leafItems[I - 1];
+			WORD m = 0;
+			// zjistime spolecne casti s predchozim zaznamem
+			if (I > 1) m = SLeadEqu(GetKey(I - 1), *S);
+			WORD l = S->length() - m;
+			// vytvorime novou polozku s novym zaznamem
+			newXi = std::make_unique<XItemLeaf>((unsigned int)I, m, l, *S);
+		}
+		else {
+			// vytvorime 1. polozku s novym zaznamem
+			newXi = std::make_unique<XItemLeaf>((unsigned int)I, 0, S->length(), *S);
+		}
 
 		if (I < NItems) {
 			// vkladany zaznam nebude posledni (nebude na konci)
 			// zjistime spolecne casti s nasledujicim zaznamem
 			WORD m2 = SLeadEqu(GetKey(I), *S);
-			integer d = m2 - newXi.M;
+			integer d = m2 - newXi->M;
 			if (d > 0) {
 				printf("XPage::Insert() - Nutno doimplementovat!");
 			}
 		}
 
-		size_t bufLen = newXi.size();
-		BYTE* buf = new BYTE[bufLen];
-		newXi.Serialize(buf, bufLen);
+		if (IsLeaf) {
+			size_t bufLen = newXi->size();
+			XXLen = bufLen;
+			BYTE* buf = new BYTE[bufLen];
+			newXi->Serialize(buf, bufLen);
 
-		// vratime tuto novou polozku
-		*XX = new XItem(buf, IsLeaf);
-	}
-	else {
-		
-	}
+			// vratime tuto novou polozku
+			*XX = new XItem(buf, IsLeaf);
+		}
+		else {
+			size_t bufLen = newXi->size() + 4; // nonLeaf is 2 B greater then Leaf item
+			XXLen = bufLen;
+			BYTE* buf = new BYTE[bufLen];
+			newXi->Serialize(&buf[4], bufLen);
+
+			// vratime tuto novou polozku
+			*XX = new XItem(buf, IsLeaf);
+		}
 }
 
 void XPage::InsertLeaf(unsigned int RecNr, size_t I, pstring& SS)
@@ -147,12 +162,14 @@ void XPage::InsertLeaf(unsigned int RecNr, size_t I, pstring& SS)
 
 void XPage::InsDownIndex(WORD I, longint Page, XPage* P)
 {
-	pstring s;
+	pstring s = P->GetKey(P->NItems);
 	XItem* x = nullptr;
-	s = P->GetKey(P->NItems);
-	Insert(I, &s, &x);
+	size_t xLen = 0;
+	Insert(I, &s, &x, xLen);
 	x->PutN(P->SumN());
 	*(x->DownPage) = Page;
+	this->_xItem = x;
+	memcpy(this->A, this->_xItem->Nr, xLen);
 }
 
 void XPage::Delete(WORD I)
