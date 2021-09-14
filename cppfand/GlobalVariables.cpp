@@ -17,7 +17,7 @@ RdbD* CRdb, TopRdb;
 FileD* CatFD, *HelpFD;
 size_t InpArrLen, CurrPos, OldErrPos;
 
-pstring LockModeTxt[9] = { "NULL", "NOEXCL","NODEL","NOCR","RD","WR","CR","DEL","EXCL" };
+pstring LockModeTxt[9] = { "NULL", "NOEXCL", "NODEL", "NOCR", "RD", "WR", "CR", "DEL", "EXCL" };
 
 structXPath XPath[10];
 WORD XPathN;

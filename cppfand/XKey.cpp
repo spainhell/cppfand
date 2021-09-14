@@ -194,7 +194,9 @@ longint XKey::PathToNr()
 		delete x; x = nullptr;
 	}
 	n += XPath[XPathN].I;
-	if (n > NRecs() + 1) XF()->Err(834);
+	if (n > NRecs() + 1) {
+		XF()->Err(834);
+	}
 	ReleaseStore(p);
 	return n;
 }
@@ -245,7 +247,9 @@ longint XKey::PathToRecNr()
 	auto pxi = p->XI(X.I, p->IsLeaf);
 	longint recnr = pxi->GetN();
 	longint result = recnr;
-	if ((recnr == 0) || (recnr > CFile->NRecs)) XF()->Err(835);
+	if ((recnr == 0) || (recnr > CFile->NRecs)) {
+		XF()->Err(835);
+	}
 	ReleaseStore(p);
 	return result;
 }
@@ -407,7 +411,7 @@ void XKey::InsertOnPath(XString& XX, longint RecNr)
 void XKey::InsertItem(XString& XX, XPage* P, XPage* UpP, longint Page, WORD I, XItem** X, longint& UpPage)
 {
 	size_t Xlen = 0;
-	P->Insert(I, &XX.S, X, Xlen);
+	P->InsertNonLeaf(I, &XX.S, X, Xlen);
 	UpPage = 0;
 	if (P->Overflow()) {
 		printf("XKey::InsertItem overflow");
@@ -424,20 +428,20 @@ void XKey::InsertLeafItem(XString& XX, XPage* P, XPage* UpP, longint Page, WORD 
 	P->InsertLeaf(RecNr, I, XX.S);
 	UpPage = 0;
 	if (P->ItemsSize() > sizeof(P->A)) {
-		printf("XKey::InsertLeafItem() PREKROCENA VELIKOST STRANKY");
+		// printf("XKey::InsertLeafItem() PREKROCENA VELIKOST STRANKY");
 		UpPage = XF()->NewPage(UpP);
 		P->SplitPage(UpP, Page);
 		// TODO: NUTNO DORESIT, CO SE TADY DEJE
 		// *X byl puvodne parametr metody
 		// if (I <= UpP->NItems) *X = UpP->XI(I, P->IsLeaf);
 		// else *X = P->XI(I - UpP->NItems, P->IsLeaf);
-		P->GenArrayFromVectorItems();
-		UpP->GenArrayFromVectorItems();
+		P->Serialize();
+		UpP->Serialize();
 		XX.S = UpP->GetKey(UpP->NItems);
 	}
 	else {
 		// pregenerujeme data z vektoru do P->A
-		P->GenArrayFromVectorItems();
+		P->Serialize();
 	}
 #if _DEBUG
 	std::vector<pstring> vP;
@@ -452,7 +456,7 @@ void XKey::InsertLeafItem(XString& XX, XPage* P, XPage* UpP, longint Page, WORD 
 #endif
 }
 
-void XKey::ChainPrevLeaf(XPagePtr P, longint N)
+void XKey::ChainPrevLeaf(XPage* P, longint N)
 {
 	longint page = 0;
 	WORD i = 0, j = 0;

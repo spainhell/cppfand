@@ -44,7 +44,7 @@ bool XPage::Underflow()
 
 bool XPage::Overflow()
 {
-	genItems();
+	Deserialize();
 	auto size = ItemsSize();
 	return size > XPageSize;
 }
@@ -84,60 +84,60 @@ longint XPage::SumN()
 	return n;
 }
 
-void XPage::Insert(WORD I, void* SS, XItem** XX, size_t& XXLen)
+void XPage::InsertNonLeaf(WORD I, void* SS, XItem** XX, size_t& XXLen)
 {
-		genItems();
-		pstring* S = (pstring*)SS;
-		std::unique_ptr<XItemLeaf> newXi;
-		NItems++;
-		if (!_leafItems.empty()) {
-			// predchozi zaznam existuje -> vytahneme jej
-			auto x = &_leafItems[I - 1];
-			WORD m = 0;
-			// zjistime spolecne casti s predchozim zaznamem
-			if (I > 1) m = SLeadEqu(GetKey(I - 1), *S);
-			WORD l = S->length() - m;
-			// vytvorime novou polozku s novym zaznamem
-			newXi = std::make_unique<XItemLeaf>((unsigned int)I, m, l, *S);
-		}
-		else {
-			// vytvorime 1. polozku s novym zaznamem
-			newXi = std::make_unique<XItemLeaf>((unsigned int)I, 0, S->length(), *S);
-		}
+	if (_leafItems.empty()) Deserialize();
+	pstring* S = (pstring*)SS;
+	std::unique_ptr<XItemLeaf> newXi;
+	NItems++;
+	if (!_leafItems.empty()) {
+		// predchozi zaznam existuje -> vytahneme jej
+		auto x = &_leafItems[I - 1];
+		WORD m = 0;
+		// zjistime spolecne casti s predchozim zaznamem
+		if (I > 1) m = SLeadEqu(GetKey(I - 1), *S);
+		WORD l = S->length() - m;
+		// vytvorime novou polozku s novym zaznamem
+		newXi = std::make_unique<XItemLeaf>((unsigned int)I, m, l, *S);
+	}
+	else {
+		// vytvorime 1. polozku s novym zaznamem
+		newXi = std::make_unique<XItemLeaf>((unsigned int)I, 0, S->length(), *S);
+	}
 
-		if (I < NItems) {
-			// vkladany zaznam nebude posledni (nebude na konci)
-			// zjistime spolecne casti s nasledujicim zaznamem
-			WORD m2 = SLeadEqu(GetKey(I), *S);
-			integer d = m2 - newXi->M;
-			if (d > 0) {
-				printf("XPage::Insert() - Nutno doimplementovat!");
-			}
+	if (I < NItems) {
+		// vkladany zaznam nebude posledni (nebude na konci)
+		// zjistime spolecne casti s nasledujicim zaznamem
+		WORD m2 = SLeadEqu(GetKey(I), *S);
+		integer d = m2 - newXi->M;
+		if (d > 0) {
+			printf("XPage::InsertNonLeaf() - Nutno doimplementovat!");
 		}
+	}
 
-		if (IsLeaf) {
-			size_t bufLen = newXi->size();
-			XXLen = bufLen;
-			BYTE* buf = new BYTE[bufLen];
-			newXi->Serialize(buf, bufLen);
+	if (IsLeaf) {
+		size_t bufLen = newXi->size();
+		XXLen = bufLen;
+		BYTE* buf = new BYTE[bufLen];
+		newXi->Serialize(buf, bufLen);
 
-			// vratime tuto novou polozku
-			*XX = new XItem(buf, IsLeaf);
-		}
-		else {
-			size_t bufLen = newXi->size() + 4; // nonLeaf is 2 B greater then Leaf item
-			XXLen = bufLen;
-			BYTE* buf = new BYTE[bufLen];
-			newXi->Serialize(&buf[4], bufLen);
+		// vratime tuto novou polozku
+		*XX = new XItem(buf, IsLeaf);
+	}
+	else {
+		size_t bufLen = newXi->size() + 4; // nonLeaf is 2 B greater then Leaf item
+		XXLen = bufLen;
+		BYTE* buf = new BYTE[bufLen];
+		newXi->Serialize(&buf[4], bufLen);
 
-			// vratime tuto novou polozku
-			*XX = new XItem(buf, IsLeaf);
-		}
+		// vratime tuto novou polozku
+		*XX = new XItem(buf, IsLeaf);
+	}
 }
 
 void XPage::InsertLeaf(unsigned int RecNr, size_t I, pstring& SS)
 {
-	genItems();
+	Deserialize();
 	NItems++;
 	WORD m = 0;
 	// zjistime spolecne casti s predchozim zaznamem
@@ -146,7 +146,7 @@ void XPage::InsertLeaf(unsigned int RecNr, size_t I, pstring& SS)
 	// vytvorime novou polozku s novym zaznamem a vlozime ji do vektoru
 
 	auto newXi = new XItemLeaf(RecNr, m, l, SS);
-	_addToItems(newXi, I - 1);
+	_addToLeafItems(newXi, I - 1);
 
 	if (I < NItems) {
 		// vkladany zaznam nebude posledni (nebude na konci)
@@ -165,7 +165,7 @@ void XPage::InsDownIndex(WORD I, longint Page, XPage* P)
 	pstring s = P->GetKey(P->NItems);
 	XItem* x = nullptr;
 	size_t xLen = 0;
-	Insert(I, &s, &x, xLen);
+	InsertNonLeaf(I, &s, &x, xLen);
 	x->PutN(P->SumN());
 	*(x->DownPage) = Page;
 	this->_xItem = x;
@@ -174,7 +174,7 @@ void XPage::InsDownIndex(WORD I, longint Page, XPage* P)
 
 void XPage::Delete(WORD I)
 {
-	genItems();
+	Deserialize();
 	// polozka ke smazani
 	auto Xi = _leafItems[I - 1];
 	if (I < NItems) {
@@ -195,7 +195,7 @@ void XPage::Delete(WORD I)
 
 	// pregenerujeme pole
 	NItems--;
-	GenArrayFromVectorItems();
+	Serialize();
 
 	//XItemPtr x = nullptr, x1 = nullptr, x2 = nullptr;
 	//WORD* xofs = (WORD*)x;
@@ -259,7 +259,7 @@ void XPage::SplitPage(XPage* P, longint ThisPage)
 	XItemLeaf* firstXItem = this->_leafItems[index + 1];
 
 	// move first items into page P and remove them from this page
-	for(size_t i = 0; i <= index; i++) {
+	for (size_t i = 0; i <= index; i++) {
 		P->_leafItems.push_back(this->_leafItems.front()); // add 1st element to P
 		P->NItems++;
 		this->_leafItems.erase(_leafItems.begin()); // erase 1st element from original
@@ -293,25 +293,23 @@ size_t XPage::ItemsSize()
 	return count;
 }
 
-void XPage::genItems()
+void XPage::Deserialize()
 {
 	_leafItems.clear();
 	size_t offset = 0;
-	for (WORD i = 0; i < NItems; i++)
-	{
+	for (WORD i = 0; i < NItems; i++) {
 		auto x = new XItemLeaf(&A[offset]);
 		offset += x->size();
 		_leafItems.push_back(std::move(x));
 	}
 }
 
-void XPage::GenArrayFromVectorItems()
+void XPage::Serialize()
 {
 	memset(A, 0, sizeof(A));
 	size_t offset = 0;
 	BYTE buffer[256];
-	for (auto&& item : _leafItems)
-	{
+	for (auto&& item : _leafItems) {
 		size_t len = item->Serialize(buffer, sizeof(buffer));
 		memcpy(&A[offset], buffer, len);
 		offset += len;
@@ -319,9 +317,14 @@ void XPage::GenArrayFromVectorItems()
 	NItems = _leafItems.size();
 }
 
-std::vector<XItemLeaf*>::iterator XPage::_addToItems(XItemLeaf* xi, size_t pos)
+std::vector<XItemLeaf*>::iterator XPage::_addToLeafItems(XItemLeaf* xi, size_t pos)
 {
 	return _leafItems.insert(_leafItems.begin() + pos, std::move(xi));
+}
+
+std::vector<XItemNonLeaf*>::iterator XPage::_addToNonLeafItems(XItemNonLeaf* xi, size_t pos)
+{
+	return _nonLeafItems.insert(_nonLeafItems.begin() + pos, std::move(xi));
 }
 
 bool XPage::_cutLeafItem(size_t iIndex, BYTE length)
