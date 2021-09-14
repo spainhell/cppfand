@@ -8,7 +8,7 @@ class XItemLeaf
 public:
 	XItemLeaf(BYTE* data);
 	XItemLeaf(const XItemLeaf& orig);
-	XItemLeaf(unsigned int RecNr, BYTE M, BYTE L, pstring& s); // kompletni 's', zpracuje se jen pozadovana cast
+	XItemLeaf(unsigned int RecNr, BYTE M, BYTE L, pstring& s); // cely klic 's', zpracuje se jen cast od 'M' o delce 'L'
 	~XItemLeaf();
 	unsigned int RecNr;
 	BYTE M;

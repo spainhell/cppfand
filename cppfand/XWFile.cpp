@@ -41,10 +41,12 @@ void XWFile::RdPage(XPage* P, longint N)
 	RdWrCache(true, Handle, NotCached(), (N << XPageShft) + 1, 4, &P->GreaterPage);
 	RdWrCache(true, Handle, NotCached(), (N << XPageShft) + 5, 2, &P->NItems);
 	RdWrCache(true, Handle, NotCached(), (N << XPageShft) + 7, XPageSize - 7, P->A);
+	P->Deserialize();
 }
 
 void XWFile::WrPage(XPage* P, longint N)
 {
+	//P->Serialize();
 	if (UpdLockCnt > 0) Err(645);
 	// puvodne se zapisovalo celych XPageSize z P, bylo nutno to rozhodit na jednotlive tridni promenne
 	RdWrCache(false, Handle, NotCached(), N << XPageShft, 1, &P->IsLeaf);

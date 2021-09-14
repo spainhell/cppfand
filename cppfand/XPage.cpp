@@ -221,13 +221,13 @@ void XPage::Delete(WORD I)
 
 void XPage::AddPage(XPage* P)
 {
-	XItemPtr x = nullptr, x1 = nullptr;
+	XItem* x = nullptr, *x1 = nullptr;
 	WORD* xofs = (WORD*)x;
 
 	GreaterPage = P->GreaterPage;
 	if (P->NItems == 0) return;
-	XItemPtr xE = XI(NItems + 1, IsLeaf);
-	WORD oE = P->EndOff(); WORD o = Off(); x = XItemPtr(&P->A);
+	XItem* xE = XI(NItems + 1, IsLeaf);
+	WORD oE = P->EndOff(); WORD o = Off(); x = (XItem*)(&P->A);
 	if (NItems > 0) {
 		WORD m = SLeadEqu(GetKey(NItems), P->GetKey(1));
 		if (m > 0) {
@@ -295,12 +295,23 @@ size_t XPage::ItemsSize()
 
 void XPage::Deserialize()
 {
-	_leafItems.clear();
-	size_t offset = 0;
-	for (WORD i = 0; i < NItems; i++) {
-		auto x = new XItemLeaf(&A[offset]);
-		offset += x->size();
-		_leafItems.push_back(std::move(x));
+	if (IsLeaf) {
+		_leafItems.clear();
+		size_t offset = 0;
+		for (WORD i = 0; i < NItems; i++) {
+			auto x = new XItemLeaf(&A[offset]);
+			offset += x->size();
+			_leafItems.push_back(std::move(x));
+		}
+	}
+	else {
+		_nonLeafItems.clear();
+		size_t offset = 0;
+		for (WORD i = 0; i < NItems; i++) {
+			auto x = new XItemNonLeaf(&A[offset]);
+			offset += x->size();
+			_nonLeafItems.push_back(std::move(x));
+		}
 	}
 }
 

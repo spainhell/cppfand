@@ -18,10 +18,13 @@ class XPage // r289
 public:
 	XPage() {}
 	~XPage();
-	bool IsLeaf = false;
-	longint GreaterPage = 0;  // or free pages chaining
-	WORD NItems = 0;
-	BYTE A[XPageSize - 4]{ '\0' };  // item array
+
+	// hlavicka spolecna pro Leaf i NonLeaf              (7B)
+	bool IsLeaf = false;                             // = 1B
+	longint GreaterPage = 0;  // or free pages chaining = 4B
+	WORD NItems = 0;                                 // = 2B
+
+	BYTE A[XPageSize]{ '\0' };  // item array
 	WORD Off();
 	XItem* XI(WORD I, bool isLeaf);
 	WORD EndOff();
@@ -41,12 +44,16 @@ public:
 	void Deserialize(); // generate vector from array
 private:
 	XItem* _xItem = nullptr;
+
+	// Leaf section
 	std::vector<XItemLeaf*>::iterator _addToLeafItems(XItemLeaf* xi, size_t pos);
 	std::vector<XItemLeaf*> _leafItems;
-	std::vector<XItemNonLeaf*>::iterator _addToNonLeafItems(XItemNonLeaf* xi, size_t pos);
-	std::vector<XItemNonLeaf*> _nonLeafItems;
 	bool _cutLeafItem(size_t iIndex, BYTE length); // zkrati polozku o X Bytu, zaktualizuje M i L
 	bool _enhLeafItem(size_t iIndex, BYTE length); // prodlouzi polozku o X Bytu z predchozi polozky, zaktualizuje M i L
+
+	// Non Leaf section
+	std::vector<XItemNonLeaf*>::iterator _addToNonLeafItems(XItemNonLeaf* xi, size_t pos);
+	std::vector<XItemNonLeaf*> _nonLeafItems;
 };
 typedef XPage* XPagePtr;
 

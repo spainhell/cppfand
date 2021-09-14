@@ -18,7 +18,7 @@ XItemLeaf::XItemLeaf(const XItemLeaf& orig)
 	memcpy(this->data, orig.data, L);
 }
 
-XItemLeaf::XItemLeaf(unsigned RecNr, BYTE M, BYTE L, pstring& s)
+XItemLeaf::XItemLeaf(unsigned int RecNr, BYTE M, BYTE L, pstring& s)
 {
 	this->RecNr = RecNr;
 	this->M = M;
