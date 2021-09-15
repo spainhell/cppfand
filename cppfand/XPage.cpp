@@ -41,9 +41,8 @@ bool XPage::Underflow()
 
 bool XPage::Overflow()
 {
-	//Deserialize();
 	auto size = ItemsSize();
-	return size > XPageSize;
+	return size > XPageSize - XPageOverHead;
 }
 
 

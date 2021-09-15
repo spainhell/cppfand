@@ -175,33 +175,38 @@ void XKey::NrToPath(longint I)
 	longint page = IndexRoot;
 	XPathN = 0;
 	size_t item = 1;
-label1:
-	XF()->RdPage(p, page);
-	XPathN++;
-	XPath[XPathN].Page = page;
-	if (p->IsLeaf) {
-		if (I > p->NItems + 1) {
-			XF()->Err(837);
-		}
-		XPath[XPathN].I = I;
-		ReleaseStore(p);
-		return;
-	}
 
-	for (WORD j = 1; j <= p->NItems; j++) {
-		XItem* x = p->XI(item++);
-		if (I <= x->GetN()) {
-			XPath[XPathN].I = j;
-			page = ((XItemNonLeaf*)x)->DownPage;
-			// delete x; x = nullptr;
-			goto label1;
+	while (true) {
+		XF()->RdPage(p, page);
+		XPathN++;
+		XPath[XPathN].Page = page;
+		if (p->IsLeaf) {
+			if (I > p->NItems + 1) {
+				XF()->Err(837);
+			}
+			XPath[XPathN].I = I;
+			ReleaseStore(p);
+			return;
 		}
-		I -= x->GetN();
-	}
+		else {
+			// Non Leaf
+			bool next = false;
+			for (WORD j = 1; j <= p->NItems; j++) {
+				XItem* x = p->XI(item++);
+				if (I <= x->GetN()) {
+					XPath[XPathN].I = j;
+					page = ((XItemNonLeaf*)x)->DownPage;
+					next = true;
+					break;
+				}
+				I -= x->GetN();
+			}
+			if (next) continue;
 
-	XPath[XPathN].I = p->NItems + 1;
-	page = p->GreaterPage;
-	goto label1;
+			XPath[XPathN].I = p->NItems + 1;
+			page = p->GreaterPage;
+		}
+	}
 }
 
 longint XKey::PathToRecNr()
@@ -401,7 +406,7 @@ void XKey::InsertLeafItem(XString& XX, XPage* P, XPage* UpP, longint Page, WORD 
 {
 	P->InsertLeaf(RecNr, I, XX.S);
 	UpPage = 0;
-	if (P->ItemsSize() > sizeof(P->A)) {
+	if (P->Overflow()) {
 		// printf("XKey::InsertLeafItem() PREKROCENA VELIKOST STRANKY");
 		UpPage = XF()->NewPage(UpP);
 		P->SplitPage(UpP, Page);

@@ -66,11 +66,9 @@ XItem* XItemNonLeaf::Next()
 
 WORD XItemNonLeaf::UpdStr(pstring* S)
 {
-	BYTE M = data[7];
-	BYTE L = data[7 + 1];
 	(*S)[0] = M + L; // nova delka retezce
-	memcpy(&(*S)[M + 1], &data[7 + 2], L);
-	return 7 + L + 2;
+	memcpy(&(*S)[M + 1], data, L);
+	return L + 2;
 }
 
 size_t XItemNonLeaf::size()
