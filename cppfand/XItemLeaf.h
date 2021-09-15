@@ -1,20 +1,35 @@
 #pragma once
 #include "constants.h"
 #include "pstring.h"
+#include "XItem.h"
 
 /// implementace XItem pro kratky zaznam
-class XItemLeaf
+class XItemLeaf : public XItem
 {
 public:
 	XItemLeaf(BYTE* data);
 	XItemLeaf(const XItemLeaf& orig);
 	XItemLeaf(unsigned int RecNr, BYTE M, BYTE L, pstring& s); // cely klic 's', zpracuje se jen cast od 'M' o delce 'L'
-	~XItemLeaf();
+	~XItemLeaf() override;
+
 	unsigned int RecNr;
 	BYTE M;
 	BYTE L;
 	BYTE* data;
-	size_t size();
+
+	longint GetN() override;
+	void PutN(longint N) override;
+
+	WORD GetM() override;
+	void PutM(WORD M) override;
+
+	WORD GetL() override;
+	void PutL(WORD L) override;
+
+	XItem* Next() override;
+	WORD UpdStr(pstring* S) override;
+
+	size_t size() override;
 	size_t dataLen(); // bez 2B L + M
 	size_t Serialize(BYTE* buffer, size_t bufferSize);
 };

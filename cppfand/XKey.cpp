@@ -66,56 +66,8 @@ longint XKey::NRecs()
 
 bool XKey::Search(XString& XX, bool AfterEqu, longint& RecNr)
 {
-	bool searchResult = false;
-	XPage* p = nullptr;
-	WORD iItem = 0;
-	XItem* x = nullptr;
-	size_t iItemIndex = 0;
-	char result = '\0';
-	p = new XPage(); // (XPage*)GetStore(XPageSize);
-	XPathN = 1;
-	longint page = IndexRoot;
-	AfterEqu = AfterEqu && Duplic;
-label1:
-	XPath[XPathN].Page = page;
-	XF()->RdPage(p, page); // je nactena asi cela stranka indexu
-
-	WORD o = p->Off();
-	WORD nItems = p->NItems;
-	if (nItems == 0) {
-		RecNr = CFile->NRecs + 1;
-		XPath[1].I = 1;
-		goto label2;
-	}
-
-	// * PUVODNI ASM
-	result = XKeySearch2(p->A, &XX.S[0], iItem, iItemIndex, nItems, o, AfterEqu);
-	// * KONEC PUVODNIHO ASM
-
-	XPath[XPathN].I = iItem;
-	x = new XItem(&p->A[iItemIndex], p->IsLeaf);
-	if (p->IsLeaf) {
-		if (iItem > nItems) RecNr = CFile->NRecs + 1;
-		else RecNr = x->GetN();
-		if (result == _equ)
-			if
-#ifdef FandSQL
-				!CFile->IsSQLFile&&
-#endif
-				(((RecNr == 0) || (RecNr > CFile->NRecs))) XF()->Err(833);
-			else searchResult = true;
-		else
-			label2:
-		searchResult = false;
-		ReleaseStore(p);
-		delete x;
-		return searchResult;
-	}
-	if (iItem > nItems) page = p->GreaterPage;
-	else page = *(x->DownPage);
-	XPathN++;
-	delete x;
-	goto label1;
+	std::string s = XX.S;
+	return this->Search(s, AfterEqu, RecNr);
 }
 
 bool XKey::Search(std::string const X, bool AfterEqu, longint& RecNr)
@@ -126,50 +78,67 @@ bool XKey::Search(std::string const X, bool AfterEqu, longint& RecNr)
 	XItem* x = nullptr;
 	size_t iItemIndex = 0;
 	char result = '\0';
-	p = new XPage(); // (XPage*)GetStore(XPageSize);
+	p = new XPage();
 	XPathN = 1;
 	longint page = IndexRoot;
 	AfterEqu = AfterEqu && Duplic;
-label1:
-	XPath[XPathN].Page = page;
-	XF()->RdPage(p, page); // je nactena asi cela stranka indexu
 
-	WORD o = p->Off();
-	WORD nItems = p->NItems;
-	if (nItems == 0) {
-		RecNr = CFile->NRecs + 1;
-		XPath[1].I = 1;
-		goto label2;
-	}
+	while (true) {
+		XPath[XPathN].Page = page;
+		XF()->RdPage(p, page); // je nactena asi cela stranka indexu
 
-	// * PUVODNI ASM
-	result = XKeySearch2(p->A, X, iItem, iItemIndex, nItems, o, AfterEqu);
-	// * KONEC PUVODNIHO ASM
+		WORD o = p->Off();
+		WORD nItems = p->NItems;
+		if (nItems == 0) {
+			RecNr = CFile->NRecs + 1;
+			XPath[1].I = 1;
+			searchResult = false;
+			ReleaseStore(p);
+			delete x;
+			return searchResult;
+		}
 
-	XPath[XPathN].I = iItem;
-	x = new XItem(&p->A[iItemIndex], p->IsLeaf);
-	if (p->IsLeaf) {
-		if (iItem > nItems) RecNr = CFile->NRecs + 1;
-		else RecNr = x->GetN();
-		if (result == _equ)
-			if
-#ifdef FandSQL
-				!CFile->IsSQLFile&&
-#endif
-				(((RecNr == 0) || (RecNr > CFile->NRecs))) XF()->Err(833);
-			else searchResult = true;
-		else
-			label2:
-		searchResult = false;
-		ReleaseStore(p);
+		// * PUVODNI ASM
+		result = XKeySearch2(p->A, X, iItem, iItemIndex, nItems, o, AfterEqu);
+		// * KONEC PUVODNIHO ASM
+
+		XPath[XPathN].I = iItem;
+
+		if (p->IsLeaf) {
+			x = new XItemLeaf(&p->A[iItemIndex]);
+			if (iItem > nItems) {
+				RecNr = CFile->NRecs + 1;
+			}
+			else {
+				RecNr = x->GetN();
+			}
+			if (result == _equ) {
+				if (((RecNr == 0) || (RecNr > CFile->NRecs))) {
+					XF()->Err(833);
+				}
+				else {
+					searchResult = true;
+				}
+			}
+			else {
+				searchResult = false;
+			}
+			ReleaseStore(p);
+			delete x;
+			return searchResult;
+		}
+		else {
+			x = new XItemNonLeaf(&p->A[iItemIndex]);
+		}
+		if (iItem > nItems) {
+			page = p->GreaterPage;
+		}
+		else {
+			page = ((XItemNonLeaf*)x)->DownPage;
+		}
+		XPathN++;
 		delete x;
-		return searchResult;
 	}
-	if (iItem > nItems) page = p->GreaterPage;
-	else page = *(x->DownPage);
-	XPathN++;
-	delete x;
-	goto label1;
 }
 
 bool XKey::SearchIntvl(XString& XX, bool AfterEqu, longint& RecNr)
@@ -180,18 +149,14 @@ bool XKey::SearchIntvl(XString& XX, bool AfterEqu, longint& RecNr)
 longint XKey::PathToNr()
 {
 	longint n = 0;
-	XPage* p = new XPage(); // (XPage*)GetStore(XPageSize);
-	for (WORD j = 1; j <= XPathN - 1; j++)
-	{
+	XPage* p = new XPage();
+	size_t item = 1;
+	for (WORD j = 1; j <= XPathN - 1; j++) {
 		XF()->RdPage(p, XPath[j].Page);
-		XItem* x = new XItem(p->A, p->IsLeaf); // XItemPtr(p->A);
 		for (WORD i = 1; i <= XPath[j].I - 1; i++) {
+			XItem* x = p->XI(item++);
 			n += x->GetN();
-			auto prevX = x;
-			x = x->Next(oNotLeaf, p->IsLeaf);
-			delete prevX; prevX = 0;
 		}
-		delete x; x = nullptr;
 	}
 	n += XPath[XPathN].I;
 	if (n > NRecs() + 1) {
@@ -209,6 +174,7 @@ void XKey::NrToPath(longint I)
 	XPage* p = new XPage(); // (XPage*)GetStore(XPageSize);
 	longint page = IndexRoot;
 	XPathN = 0;
+	size_t item = 1;
 label1:
 	XF()->RdPage(p, page);
 	XPathN++;
@@ -219,20 +185,18 @@ label1:
 		ReleaseStore(p);
 		return;
 	}
-	XItem* x = new XItem(p->A, p->IsLeaf);
+
 	for (WORD j = 1; j <= p->NItems; j++) {
+		XItem* x = p->XI(item++);
 		if (I <= x->GetN()) {
 			XPath[XPathN].I = j;
-			page = *(x->DownPage);
-			delete x; x = nullptr;
+			page = ((XItemNonLeaf*)x)->DownPage;
+			// delete x; x = nullptr;
 			goto label1;
 		}
 		I -= x->GetN();
-		auto prevX = x;
-		x = x->Next(oNotLeaf, p->IsLeaf);
-		delete prevX; prevX = nullptr;
 	}
-	delete x; x = nullptr;
+
 	XPath[XPathN].I = p->NItems + 1;
 	page = p->GreaterPage;
 	goto label1;
@@ -260,26 +224,27 @@ bool XKey::RecNrToPath(XString& XX, longint RecNr)
 	XItem* x = nullptr; longint n = 0;
 	XX.PackKF(KFlds);
 	Search(XX, false, n);
-	XPage* p = new XPage(); // (XPage*)GetStore(XPageSize);
-	/* !!! with XPath[XPathN] do!!! */
-	{
-		auto X = XPath[XPathN];
-	label1:
-		XF()->RdPage(p, X.Page);
-		x = p->XI(X.I, p->IsLeaf);
-		if (!(p->GetKey(X.I) == XX.S)) goto label3;
-	label2:
-		if (x->GetN() == RecNr) { result = true; goto label3; }
-		X.I++;
-		if (X.I > p->NItems) {
-			if (IncPath(XPathN - 1, X.Page)) { X.I = 1; goto label1; }
-		}
-		else {
-			x = x->Next(oLeaf, p->IsLeaf);
-			if (x->GetL(oLeaf) != 0) goto label3;
-			goto label2;
-		}
+	XPage* p = new XPage();
+	size_t item = 1;
+
+
+	auto X = XPath[XPathN];
+label1:
+	XF()->RdPage(p, X.Page);
+	x = p->XI(X.I);
+	if (!(p->GetKey(X.I) == XX.S)) goto label3;
+label2:
+	if (x->GetN() == RecNr) { result = true; goto label3; }
+	X.I++;
+	if (X.I > p->NItems) {
+		if (IncPath(XPathN - 1, X.Page)) { X.I = 1; goto label1; }
 	}
+	else {
+		x = p->XI(X.I); // x = x->Next();
+		if (x->GetL() != 0) goto label3;
+		goto label2;
+	}
+
 label3:
 	ReleaseStore(p);
 	return result;
@@ -300,10 +265,17 @@ bool XKey::IncPath(WORD J, longint& Pg)
 		X.I++;
 		if (X.I > p->NItems)
 			if (p->GreaterPage == 0) {
-				X.I = 0; if (IncPath(J - 1, X.Page)) goto label1; goto label2;
+				X.I = 0;
+				if (IncPath(J - 1, X.Page)) goto label1;
+				goto label2;
 			}
-			else Pg = p->GreaterPage;
-		else Pg = *(p->XI(X.I, p->IsLeaf)->DownPage);
+			else {
+				Pg = p->GreaterPage;
+			}
+		else {
+			XItem* item = p->XI(X.I, p->IsLeaf);
+			Pg = ((XItemNonLeaf*)item)->DownPage;
+		}
 	}
 	result = true;
 label2:
@@ -362,9 +334,9 @@ void XKey::InsertOnPath(XString& XX, longint RecNr)
 	XItem* x = nullptr;
 	longint n = 0, upsum = 0;
 
-	XPage* p = new XPage(); // (XPage*)GetStore(2 * XPageSize);
-	XPage* p1 = new XPage(); // (XPage*)GetStore(2 * XPageSize);
-	XPage* upp = new XPage(); // (XPage*)GetStore(2 * XPageSize);
+	XPage* p = new XPage();
+	XPage* p1 = new XPage();
+	XPage* upp = new XPage();
 	for (j = XPathN; j >= 1; j--) {
 		page = XPath[j].Page;
 		XF()->RdPage(p, page);
@@ -383,7 +355,7 @@ void XKey::InsertOnPath(XString& XX, longint RecNr)
 			if (uppage != 0) {
 				downpage = uppage;
 				InsertItem(XX, p, upp, page, i, &x, uppage);
-				*(x->DownPage) = downpage;
+				((XItemNonLeaf*)x)->DownPage = downpage;
 				x->PutN(upsum);
 			}
 		}
@@ -445,7 +417,7 @@ void XKey::InsertLeafItem(XString& XX, XPage* P, XPage* UpP, longint Page, WORD 
 	}
 #if _DEBUG
 	std::vector<pstring> vP;
-	for(size_t i = 1; i <= P->NItems; i++) {
+	for (size_t i = 1; i <= P->NItems; i++) {
 		vP.push_back(P->GetKey(i));
 	}
 	std::vector<pstring> vUpP;
@@ -464,16 +436,16 @@ void XKey::ChainPrevLeaf(XPage* P, longint N)
 		if (XPath[j].I > 1) {
 			XF()->RdPage(P, XPath[j].Page);
 			i = XPath[j].I - 1;
-		label1:
-			page = *(P->XI(i, P->IsLeaf)->DownPage);
-			XF()->RdPage(P, page);
-			if (P->IsLeaf) {
-				P->GreaterPage = N;
-				XF()->WrPage(P, page);
-				return;
+			while (true) {
+				page = ((XItemNonLeaf*)P->XI(i, P->IsLeaf))->DownPage;
+				XF()->RdPage(P, page);
+				if (P->IsLeaf) {
+					P->GreaterPage = N;
+					XF()->WrPage(P, page);
+					return;
+				}
+				i = P->NItems;
 			}
-			i = P->NItems;
-			goto label1;
 		}
 }
 
@@ -596,8 +568,12 @@ void XKey::BalancePages(XPage* P1, XPage* P2, bool& Released)
 
 void XKey::XIDown(XPage* P, XPage* P1, WORD I, longint& Page1)
 {
-	if (I > P->NItems) Page1 = P->GreaterPage;
-	else Page1 = *(P->XI(I, P->IsLeaf)->DownPage);
+	if (I > P->NItems) {
+		Page1 = P->GreaterPage;
+	}
+	else {
+		Page1 = ((XItemNonLeaf*)P->XI(I, P->IsLeaf))->DownPage;
+	}
 	XF()->RdPage(P1, Page1);
 }
 

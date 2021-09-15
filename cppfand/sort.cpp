@@ -502,7 +502,7 @@ void XWorkFile::Main(char Typ)
 
 void XWorkFile::CopyIndex(XKey* K, KeyFldD* KF, char Typ)
 {
-	WRec* r = nullptr; XPagePtr p = nullptr; longint page; WORD n; longint i;
+	WRec* r = nullptr; XPage* p = nullptr; longint page; WORD n; longint i;
 	XItem* x = nullptr;
 	WORD* xofs = (WORD*)x;
 
@@ -518,8 +518,9 @@ void XWorkFile::CopyIndex(XKey* K, KeyFldD* KF, char Typ)
 		n = p->NItems;
 		while (n > 0) {
 			r->PutN(x->GetN());
-			if (KF == nullptr) x = x->Next(oLeaf, p->IsLeaf);
-			else *xofs = x->UpdStr(oLeaf, (pstring*)(&r->X.S));
+			// TODO: zbavit se Next()
+			if (KF == nullptr) x = x->Next();
+			else *xofs = x->UpdStr(&r->X.S);
 			Output(r); n--;
 		}
 		i += p->NItems; RunMsgN(i); page = p->GreaterPage;

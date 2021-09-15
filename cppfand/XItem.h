@@ -5,19 +5,18 @@
 class XItem // r274
 {
 public:
-	XItem(BYTE* data, bool isLeaf);
-	BYTE* Nr; // NN  RecNr /on leaf/ or NumberofRecordsBelow
-	longint* DownPage; // not on leaf
-	// M byte  number of equal bytes /not stored bytes/ 
-	// Index string  /L=length, A area ptr/
-	BYTE* XPageData;
-	longint GetN();
-	void PutN(longint N);
-	WORD GetM(WORD O);
-	void PutM(WORD O, WORD M);
-	WORD GetL(WORD O);
-	void PutL(WORD O, WORD L);
-	XItem* Next(WORD O, bool isLeaf);
-	WORD UpdStr(WORD O, pstring* S);
-	size_t size(bool isLeaf); // vrati delku zaznamu
+	virtual ~XItem() = default;
+
+	virtual longint GetN() = 0;
+	virtual void PutN(longint N) = 0;
+
+	virtual WORD GetM() = 0;
+	virtual void PutM(WORD M) = 0;
+
+	virtual WORD GetL() = 0;
+	virtual void PutL(WORD L) = 0;
+
+	virtual XItem* Next() = 0;
+	virtual WORD UpdStr(pstring* S) = 0;
+	virtual size_t size() = 0; // vrati delku zaznamu
 };

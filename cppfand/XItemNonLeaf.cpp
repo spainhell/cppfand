@@ -2,7 +2,7 @@
 
 XItemNonLeaf::XItemNonLeaf(BYTE* data)
 {
-	RecNr = *(int*)data & 0x00FFFFFF;
+	RecordsCount = *(int*)data & 0x00FFFFFF;
 	DownPage = *(uint32_t*)&data[3];
 	M = data[7];
 	L = data[8];
@@ -12,7 +12,7 @@ XItemNonLeaf::XItemNonLeaf(BYTE* data)
 
 XItemNonLeaf::XItemNonLeaf(const XItemNonLeaf& orig)
 {
-	RecNr = orig.RecNr;
+	RecordsCount = orig.RecordsCount;
 	DownPage = orig.DownPage;
 	M = orig.M;
 	L = orig.L;
@@ -24,6 +24,49 @@ XItemNonLeaf::~XItemNonLeaf()
 {
 	delete[] data;
 	data = nullptr;
+}
+
+longint XItemNonLeaf::GetN()
+{
+	return RecordsCount;
+}
+
+void XItemNonLeaf::PutN(longint N)
+{
+	this->RecordsCount = N;
+}
+
+WORD XItemNonLeaf::GetM()
+{
+	return M;
+}
+
+void XItemNonLeaf::PutM(WORD M)
+{
+	this->M = M;
+}
+
+WORD XItemNonLeaf::GetL()
+{
+	return L;
+}
+
+void XItemNonLeaf::PutL(WORD L)
+{
+	this->L = L;
+}
+
+XItem* XItemNonLeaf::Next()
+{
+	unsigned char recLen = data[0];
+	// dalsi zaznam zacina hned za daty o delce recLen
+	auto xi = new XItemNonLeaf(&data[recLen + 1]);
+	return xi;
+}
+
+WORD XItemNonLeaf::UpdStr(pstring* S)
+{
+	return 0;
 }
 
 size_t XItemNonLeaf::size()
@@ -40,7 +83,7 @@ size_t XItemNonLeaf::Serialize(BYTE* buffer, size_t bufferSize)
 {
 	if (bufferSize < size()) return -1;
 	size_t offset = 0;
-	memcpy(&buffer[offset], &RecNr, 3);
+	memcpy(&buffer[offset], &RecordsCount, 3);
 	offset += 3;
 	memcpy(&buffer[offset], &DownPage, 4);
 	offset += 4;

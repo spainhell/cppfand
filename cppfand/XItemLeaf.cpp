@@ -33,6 +33,49 @@ XItemLeaf::~XItemLeaf()
 	data = nullptr;
 }
 
+longint XItemLeaf::GetN()
+{
+	return RecNr;
+}
+
+void XItemLeaf::PutN(longint N)
+{
+	this->RecNr = N;
+}
+
+WORD XItemLeaf::GetM()
+{
+	return M;
+}
+
+void XItemLeaf::PutM(WORD M)
+{
+	this->M = M;
+}
+
+WORD XItemLeaf::GetL()
+{
+	return L;
+}
+
+void XItemLeaf::PutL(WORD L)
+{
+	this->L = L;
+}
+
+XItem* XItemLeaf::Next()
+{
+	unsigned char recLen = data[0];
+	// dalsi zaznam zacina hned za daty o delce recLen
+	auto xi = new XItemLeaf(&data[recLen + 1]);
+	return xi;
+}
+
+WORD XItemLeaf::UpdStr(pstring* S)
+{
+	return 0;
+}
+
 size_t XItemLeaf::size()
 {
 	return 3 + 2 + L; // 3 cislo zaznamu, 2 L+M, delka zaznamu

@@ -312,6 +312,7 @@ void XScan::GetRec()
 {
 	XString xx;
 	CFile = FD;
+	size_t item = 0;
 #ifdef FandSQL
 	if (Kind == 4) {
 		repeat EOF = !SQLStreamPtr(Strm)->GetRec
@@ -329,7 +330,8 @@ label1:
 		case 2: {
 			RecNr = X->GetN();
 			NOnPg--;
-			if (NOnPg > 0) X = X->Next(oLeaf, P->IsLeaf);
+				//TODO: zbavit se Next()
+			if (NOnPg > 0) X = X->Next();
 			else if ((Kind == 2) && (NOfKI == 0)) NextIntvl();
 			else if (P->GreaterPage > 0) SeekOnPage(P->GreaterPage, 1);
 		label2:

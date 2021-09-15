@@ -48,7 +48,8 @@ void XWKey::ReleaseTree(longint Page, bool IsClose)
 	if (!p->IsLeaf) {
 		WORD n = p->NItems;
 		for (WORD i = 1; i <= n; i++) {
-			ReleaseTree(*(p->XI(i, p->IsLeaf)->DownPage), IsClose);
+			XItemNonLeaf* item = (XItemNonLeaf*)p->XI(i, p->IsLeaf);
+			ReleaseTree(item->DownPage, IsClose);
 			XF()->RdPage(p, Page);
 		}
 		if (p->GreaterPage != 0) ReleaseTree(p->GreaterPage, IsClose);
@@ -100,20 +101,17 @@ void XWKey::AddToRecNr(longint RecNr, integer Dif)
 {
 	if (NRecs() == 0) return;
 	NrToPath(1);
-	XPage* p = new XPage(); // (XPage*)GetStore(sizeof(*p));
-	/* !!! with XPath[XPathN] do!!! */
+	XPage* p = new XPage();
 	longint pg = XPath[XPathN].Page;
 	integer j = XPath[XPathN].I;
+	size_t item = j;
 	do {
 		XF()->RdPage(p, pg);
 		integer n = p->NItems - j + 1;
-		XItem* x = p->XI(j, p->IsLeaf);
 		while (n > 0) {
+			XItem* x = p->XI(j++);
 			longint nn = x->GetN();
 			if (nn >= RecNr) x->PutN(nn + Dif);
-			auto prevX = x;
-			x = x->Next(oLeaf, p->IsLeaf);
-			delete prevX; prevX = nullptr;
 			n--;
 		}
 		XF()->WrPage(p, pg);

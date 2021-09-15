@@ -27,6 +27,7 @@ public:
 	BYTE A[XPageSize]{ '\0' };  // item array
 	WORD Off();
 	XItem* XI(WORD I, bool isLeaf);
+	XItem* XI(WORD I);
 	WORD EndOff();
 	bool Underflow();
 	bool Overflow();
@@ -55,5 +56,4 @@ private:
 	std::vector<XItemNonLeaf*>::iterator _addToNonLeafItems(XItemNonLeaf* xi, size_t pos);
 	std::vector<XItemNonLeaf*> _nonLeafItems;
 };
-typedef XPage* XPagePtr;
 

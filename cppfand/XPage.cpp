@@ -18,15 +18,29 @@ WORD XPage::Off()
 
 XItem* XPage::XI(WORD I, bool isLeaf)
 {
-	_xItem = new XItem(A, isLeaf);
-	WORD o = Off();
-	while (I > 1) {
-		auto oldXitem = _xItem;
-		_xItem = _xItem->Next(o, isLeaf);
-		delete oldXitem; oldXitem = nullptr;
-		I--;
+	//if (isLeaf) _xItem = new XItemLeaf(A);
+	//else _xItem = new XItemNonLeaf(A);
+	//WORD o = Off();
+	//while (I > 1) {
+	//	auto oldXitem = _xItem;
+	//	_xItem = _xItem->Next();
+	//	delete oldXitem;
+	//	oldXitem = nullptr;
+	//	I--;
+	//}
+	//return _xItem;
+
+	return this->XI(I);
+}
+
+XItem* XPage::XI(WORD I)
+{
+	if (this->IsLeaf) {
+		return _leafItems[I - 1];
 	}
-	return _xItem;
+	else {
+		return _nonLeafItems[I - 1];
+	}
 }
 
 WORD XPage::EndOff()
@@ -54,16 +68,19 @@ bool XPage::Overflow()
 pstring XPage::GetKey(WORD i)
 {
 	pstring s; // toto bude vystup
-	XItem* x = new XItem(A, IsLeaf);
+	XItem* x;
+	if (this->IsLeaf) x = new XItemLeaf(A);
+	else x = new XItemNonLeaf(A);
 	WORD xofs = 0;
 	WORD o = Off();
 
 	if (i > NItems) s[0] = 0;
 	else {
 		for (WORD j = 1; j <= i; j++) {
-			xofs += x->UpdStr(o, &s);
+			xofs += x->UpdStr(&s);
 			auto oldX = x;
-			x = new XItem(&A[xofs], IsLeaf);
+			if (this->IsLeaf) x = new XItemLeaf(&A[xofs]);
+			else x = new XItemNonLeaf(&A[xofs]);
 			delete oldX; oldX = nullptr;
 		}
 	}
@@ -73,15 +90,18 @@ pstring XPage::GetKey(WORD i)
 
 longint XPage::SumN()
 {
-	if (IsLeaf) { return NItems; }
-	longint n = 0;
-	XItem* x = new XItem(A, IsLeaf);
-	WORD o = Off();
-	for (WORD i = 1; i < NItems; i++) {
-		n += x->GetN();
-		x = x->Next(o, IsLeaf);
+	if (IsLeaf) {
+		return NItems;
 	}
-	return n;
+	else {
+		longint n = 0;
+		WORD o = Off();
+		for (WORD i = 1; i < NItems; i++) {
+			XItem* x = this->XI(i);
+			n += x->GetN();
+		}
+		return n;
+	}
 }
 
 void XPage::InsertNonLeaf(WORD I, void* SS, XItem** XX, size_t& XXLen)
@@ -122,7 +142,7 @@ void XPage::InsertNonLeaf(WORD I, void* SS, XItem** XX, size_t& XXLen)
 		newXi->Serialize(buf, bufLen);
 
 		// vratime tuto novou polozku
-		*XX = new XItem(buf, IsLeaf);
+		*XX = new XItemLeaf(buf);
 	}
 	else {
 		size_t bufLen = newXi->size() + 4; // nonLeaf is 2 B greater then Leaf item
@@ -131,7 +151,7 @@ void XPage::InsertNonLeaf(WORD I, void* SS, XItem** XX, size_t& XXLen)
 		newXi->Serialize(&buf[4], bufLen);
 
 		// vratime tuto novou polozku
-		*XX = new XItem(buf, IsLeaf);
+		*XX = new XItemNonLeaf(buf);
 	}
 }
 
@@ -167,9 +187,10 @@ void XPage::InsDownIndex(WORD I, longint Page, XPage* P)
 	size_t xLen = 0;
 	InsertNonLeaf(I, &s, &x, xLen);
 	x->PutN(P->SumN());
-	*(x->DownPage) = Page;
+	((XItemNonLeaf*)x)->DownPage = Page;
 	this->_xItem = x;
-	memcpy(this->A, this->_xItem->Nr, xLen);
+	XItemNonLeaf* source = ((XItemNonLeaf*)_xItem);
+	memcpy(this->A, &source->RecordsCount, xLen);
 }
 
 void XPage::Delete(WORD I)
@@ -196,27 +217,6 @@ void XPage::Delete(WORD I)
 	// pregenerujeme pole
 	NItems--;
 	Serialize();
-
-	//XItemPtr x = nullptr, x1 = nullptr, x2 = nullptr;
-	//WORD* xofs = (WORD*)x;
-	//WORD* x1ofs = (WORD*)x1;
-	//WORD* x2ofs = (WORD*)x2;
-	//WORD o = Off(); WORD oE = EndOff(); x = XI(I, IsLeaf);
-	//if (I < NItems) {
-	//	x2 = x->Next(o, IsLeaf);
-	//	integer d = x2->GetM(o) - x->GetM(o);
-	//	if (d <= 0) Move(x2, x, oE - *x2ofs);
-	//	else {
-	//		Move(x2, x, o);
-	//		x->PutL(o, x2->GetL(o) + d); x1 = x;
-	//		*x1ofs = *x1ofs + o + 2 + d;
-	//		*x2ofs = *x2ofs + o + 2;
-	//		Move(x2, x1, oE - *x2ofs);
-	//	}
-	//	x = XI(NItems, IsLeaf);
-	//}
-	//FillChar(x, oE - *xofs, 0);
-	//NItems--;
 }
 
 void XPage::AddPage(XPage* P)
@@ -231,11 +231,11 @@ void XPage::AddPage(XPage* P)
 	if (NItems > 0) {
 		WORD m = SLeadEqu(GetKey(NItems), P->GetKey(1));
 		if (m > 0) {
-			WORD l = x->GetL(o) - m;
+			WORD l = x->GetL() - m;
 			x1 = x;
 			xofs += m;
 			Move(x1, x, o);
-			x->PutM(o, m); x->PutL(o, l);
+			x->PutM(m); x->PutL(l);
 		}
 	}
 	Move(x, xE, oE - *xofs);
@@ -295,8 +295,10 @@ size_t XPage::ItemsSize()
 
 void XPage::Deserialize()
 {
+	_leafItems.clear();
+	_nonLeafItems.clear();
+
 	if (IsLeaf) {
-		_leafItems.clear();
 		size_t offset = 0;
 		for (WORD i = 0; i < NItems; i++) {
 			auto x = new XItemLeaf(&A[offset]);
@@ -305,7 +307,6 @@ void XPage::Deserialize()
 		}
 	}
 	else {
-		_nonLeafItems.clear();
 		size_t offset = 0;
 		for (WORD i = 0; i < NItems; i++) {
 			auto x = new XItemNonLeaf(&A[offset]);
