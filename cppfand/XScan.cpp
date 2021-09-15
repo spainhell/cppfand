@@ -273,7 +273,7 @@ void XScan::SeekOnPage(longint Page, WORD I)
 		if (NOnPg > NOfKI) NOnPg = NOfKI;
 		NOfKI -= NOnPg;
 	}
-	X = P->XI(I, P->IsLeaf);
+	X = P->XI(I);
 }
 
 void XScan::NextIntvl()

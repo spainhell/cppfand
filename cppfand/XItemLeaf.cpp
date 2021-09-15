@@ -73,7 +73,9 @@ XItem* XItemLeaf::Next()
 
 WORD XItemLeaf::UpdStr(pstring* S)
 {
-	return 0;
+	(*S)[0] = M + L; // nova delka retezce
+	memcpy(&(*S)[M + 1], data, L);
+	return L + 2;
 }
 
 size_t XItemLeaf::size()

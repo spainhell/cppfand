@@ -560,7 +560,7 @@ label1:
 	xp->GreaterPage = p->GreaterPage;
 	xp->NItems = p->NItems;
 	memcpy(xp->A, p->A, sizeof(p->A)); // p->A ma 1017B, xp->A ma 1024B
-	XF->WrPage(xp, n);
+	XF->WrPage(xp, n, false);
 	delete xp; xp = nullptr;
 	
 	p = p1;
@@ -637,7 +637,7 @@ void XXPage::PageFull()
 		XW->NxtXPage = XW->XF->NewPage(XW->XPP);
 		GreaterPage = XW->NxtXPage;
 	}
-	XW->XF->WrPage((XPage*)(&IsLeaf), n);
+	XW->XF->WrPage((XPage*)(&IsLeaf), n, false);
 }
 
 void XXPage::AddToLeaf(WRec* R, XKey* KD)

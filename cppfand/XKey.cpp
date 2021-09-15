@@ -180,7 +180,9 @@ label1:
 	XPathN++;
 	XPath[XPathN].Page = page;
 	if (p->IsLeaf) {
-		if (I > p->NItems + 1) XF()->Err(837);
+		if (I > p->NItems + 1) {
+			XF()->Err(837);
+		}
 		XPath[XPathN].I = I;
 		ReleaseStore(p);
 		return;
@@ -208,7 +210,7 @@ longint XKey::PathToRecNr()
 	auto X = XPath[XPathN];
 	XPage* p = new XPage(); // (XPage*)GetStore(XPageSize);
 	XF()->RdPage(p, X.Page);
-	auto pxi = p->XI(X.I, p->IsLeaf);
+	auto pxi = p->XI(X.I);
 	longint recnr = pxi->GetN();
 	longint result = recnr;
 	if ((recnr == 0) || (recnr > CFile->NRecs)) {
@@ -273,7 +275,7 @@ bool XKey::IncPath(WORD J, longint& Pg)
 				Pg = p->GreaterPage;
 			}
 		else {
-			XItem* item = p->XI(X.I, p->IsLeaf);
+			XItem* item = p->XI(X.I);
 			Pg = ((XItemNonLeaf*)item)->DownPage;
 		}
 	}
@@ -347,7 +349,7 @@ void XKey::InsertOnPath(XString& XX, longint RecNr)
 		}
 		else {
 			if (i <= p->NItems) {
-				x = p->XI(i, p->IsLeaf);
+				x = p->XI(i);
 				n = x->GetN() + 1;
 				if (uppage != 0) n -= upsum;
 				x->PutN(n);
@@ -407,24 +409,24 @@ void XKey::InsertLeafItem(XString& XX, XPage* P, XPage* UpP, longint Page, WORD 
 		// *X byl puvodne parametr metody
 		// if (I <= UpP->NItems) *X = UpP->XI(I, P->IsLeaf);
 		// else *X = P->XI(I - UpP->NItems, P->IsLeaf);
-		P->Serialize();
-		UpP->Serialize();
+		//P->Serialize();
+		//UpP->Serialize();
 		XX.S = UpP->GetKey(UpP->NItems);
 	}
 	else {
 		// pregenerujeme data z vektoru do P->A
-		P->Serialize();
+		//P->Serialize();
 	}
 #if _DEBUG
-	std::vector<pstring> vP;
-	for (size_t i = 1; i <= P->NItems; i++) {
-		vP.push_back(P->GetKey(i));
-	}
-	std::vector<pstring> vUpP;
-	for (size_t i = 1; i <= UpP->NItems; i++) {
-		vUpP.push_back(UpP->GetKey(i));
-	}
-	printf("");
+	//std::vector<pstring> vP;
+	//for (size_t i = 1; i <= P->NItems; i++) {
+	//	vP.push_back(P->GetKey(i));
+	//}
+	//std::vector<pstring> vUpP;
+	//for (size_t i = 1; i <= UpP->NItems; i++) {
+	//	vUpP.push_back(UpP->GetKey(i));
+	//}
+	//printf("");
 #endif
 }
 
@@ -437,7 +439,7 @@ void XKey::ChainPrevLeaf(XPage* P, longint N)
 			XF()->RdPage(P, XPath[j].Page);
 			i = XPath[j].I - 1;
 			while (true) {
-				page = ((XItemNonLeaf*)P->XI(i, P->IsLeaf))->DownPage;
+				page = ((XItemNonLeaf*)P->XI(i))->DownPage;
 				XF()->RdPage(P, page);
 				if (P->IsLeaf) {
 					P->GreaterPage = N;
@@ -572,7 +574,7 @@ void XKey::XIDown(XPage* P, XPage* P1, WORD I, longint& Page1)
 		Page1 = P->GreaterPage;
 	}
 	else {
-		Page1 = ((XItemNonLeaf*)P->XI(I, P->IsLeaf))->DownPage;
+		Page1 = ((XItemNonLeaf*)P->XI(I))->DownPage;
 	}
 	XF()->RdPage(P1, Page1);
 }

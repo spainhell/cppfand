@@ -26,7 +26,6 @@ public:
 
 	BYTE A[XPageSize]{ '\0' };  // item array
 	WORD Off();
-	XItem* XI(WORD I, bool isLeaf);
 	XItem* XI(WORD I);
 	WORD EndOff();
 	bool Underflow();

@@ -48,7 +48,7 @@ void XWKey::ReleaseTree(longint Page, bool IsClose)
 	if (!p->IsLeaf) {
 		WORD n = p->NItems;
 		for (WORD i = 1; i <= n; i++) {
-			XItemNonLeaf* item = (XItemNonLeaf*)p->XI(i, p->IsLeaf);
+			XItemNonLeaf* item = (XItemNonLeaf*)p->XI(i);
 			ReleaseTree(item->DownPage, IsClose);
 			XF()->RdPage(p, Page);
 		}
