@@ -17,6 +17,7 @@ class XPage // r289
 {
 public:
 	XPage() {}
+	XPage(const XPage& orig);
 	~XPage();
 
 	// hlavicka spolecna pro Leaf i NonLeaf              (7B)
@@ -53,7 +54,7 @@ private:
 	std::vector<XItemNonLeaf*>::iterator _addToNonLeafItems(XItemNonLeaf* xi, size_t pos);
 	std::vector<XItemNonLeaf*> _nonLeafItems;
 
-	bool _cutLeafItem(size_t iIndex, BYTE length); // zkrati polozku o X Bytu, zaktualizuje M i L
-	bool _enhLeafItem(size_t iIndex, BYTE length); // prodlouzi polozku o X Bytu z predchozi polozky, zaktualizuje M i L
+	bool _cutItem(size_t iIndex, BYTE length); // zkrati polozku o X Bytu, zaktualizuje M i L
+	bool _enhItem(size_t iIndex, BYTE length); // prodlouzi polozku o X Bytu z predchozi polozky, zaktualizuje M i L
 };
 

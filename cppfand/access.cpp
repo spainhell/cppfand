@@ -1286,17 +1286,19 @@ bool DeletedFlag()  // r771 ASM
 
 void ClearDeletedFlag()
 {
+	BYTE* ptr = (BYTE*)CRecPtr;
 	switch (CFile->Typ) {
-	case 'X': { ((BYTE*)CRecPtr)[0] = 0; break; }
-	case 'D': { ((BYTE*)CRecPtr)[0] = ' '; break; }
+	case 'X': { ptr[0] = 0; break; }
+	case 'D': { ptr[0] = ' '; break; }
 	}
 }
 
 void SetDeletedFlag()
 {
+	BYTE* ptr = (BYTE*)CRecPtr;
 	switch (CFile->Typ) {
-	case 'X': { ((BYTE*)CRecPtr)[0] = 1; break; }
-	case 'D': { ((BYTE*)CRecPtr)[0] = '*'; break; }
+	case 'X': { ptr[0] = 1; break; }
+	case 'D': { ptr[0] = '*'; break; }
 	}
 }
 

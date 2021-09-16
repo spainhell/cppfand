@@ -3,6 +3,23 @@
 #include "base.h"
 
 
+XPage::XPage(const XPage& orig)
+{
+	this->IsLeaf = orig.IsLeaf;
+	this->GreaterPage = orig.GreaterPage;
+	this->NItems = orig.NItems;
+	if (IsLeaf) {
+		for (size_t i = 0; i < orig._leafItems.size(); i++) {
+			_leafItems.push_back(orig._leafItems[i]);
+		}
+	}
+	else {
+		for (size_t i = 0; i < orig._nonLeafItems.size(); i++) {
+			_nonLeafItems.push_back(orig._nonLeafItems[i]);
+		}
+	}
+}
+
 XPage::~XPage()
 {
 	for (size_t i = 0; i < _leafItems.size(); i++) {
@@ -116,7 +133,7 @@ void XPage::InsertItem(unsigned int recordsCount, unsigned int downPage, WORD I,
 		integer d = m2 - newXi->GetM();
 		if (d > 0) {
 			// puvodni polozka je ted na pozici I (nova je na I - 1)
-			_cutLeafItem(I, d);
+			_cutItem(I, d);
 		}
 	}
 }
@@ -146,7 +163,7 @@ void XPage::InsertItem(unsigned int recNr, size_t I, pstring& SS)
 		BYTE d = m2 - newXi->M;
 		if (d > 0) {
 			// puvodni polozka je ted na pozici I (nova je na I - 1)
-			_cutLeafItem(I, d);
+			_cutItem(I, d);
 		}
 	}
 }
@@ -162,90 +179,143 @@ void XPage::InsDownIndex(WORD I, longint Page, XPage* P)
 void XPage::Delete(WORD I)
 {
 	// polozka ke smazani
-	auto Xi = _leafItems[I - 1];
-	if (I < NItems) {
-		// tato polozka (I - 1) neni posledni, bude se asi muset upravovat polozka za ni (I)
-		auto nextXi = _leafItems[I];
-		integer d = nextXi->M - Xi->M;
-		if (d > 0) {
-			// nasledujici polozku je nutne upravit
-			_enhLeafItem(I, d);
+	XItem* Xi;
+
+	if (IsLeaf) {
+		Xi = _leafItems[I - 1];
+		if (I < NItems) {
+			// tato polozka (I - 1) neni posledni, bude se asi muset upravovat polozka za ni (I)
+			auto nextXi = _leafItems[I];
+			integer d = nextXi->M - Xi->M;
+			if (d > 0) {
+				// nasledujici polozku je nutne upravit
+				_enhItem(I, d);
+			}
 		}
+		// polozku smazeme z vektoru
+		_leafItems.erase(_leafItems.begin() + (I - 1));
+	}
+	else
+	{
+		Xi = _nonLeafItems[I - 1];
+		if (I < NItems) {
+			// tato polozka (I - 1) neni posledni, bude se asi muset upravovat polozka za ni (I)
+			auto nextXi = _nonLeafItems[I];
+			integer d = nextXi->M - Xi->M;
+			if (d > 0) {
+				// nasledujici polozku je nutne upravit
+				_enhItem(I, d);
+			}
+		}
+		// polozku smazeme z vektoru
+		_nonLeafItems.erase(_nonLeafItems.begin() + (I - 1));
 	}
 
-	// polozku smazeme z vektoru
-	_leafItems.erase(_leafItems.begin() + (I - 1));
-
-	// polozku smazeme z pameti
 	delete Xi; Xi = nullptr;
 
-	// pregenerujeme pole
 	NItems--;
-	// Serialize();
 }
 
 void XPage::AddPage(XPage* P)
 {
-	XItem* x = nullptr, * x1 = nullptr;
-	WORD* xofs = (WORD*)x;
-
 	GreaterPage = P->GreaterPage;
 	if (P->NItems == 0) return;
-	XItem* xE = XI(NItems + 1);
-	WORD oE = P->EndOff(); WORD o = Off(); x = (XItem*)(&P->A);
+
 	if (NItems > 0) {
 		WORD m = SLeadEqu(GetKey(NItems), P->GetKey(1));
 		if (m > 0) {
-			WORD l = x->GetL() - m;
-			x1 = x;
-			xofs += m;
-			Move(x1, x, o);
-			x->PutM(m); x->PutL(l);
+			P->_cutItem(0, m);
 		}
 	}
-	Move(x, xE, oE - *xofs);
+
+	if (IsLeaf) {
+		for (size_t i = 0; i < P->_leafItems.size(); i++) {
+			this->_leafItems.push_back(P->_leafItems[i]);
+		}
+		P->_leafItems.clear(); // must clear it, otherwise after destroy P there will be problem in local vector 
+	}
+	else {
+		for (size_t i = 0; i < P->_nonLeafItems.size(); i++) {
+			this->_nonLeafItems.push_back(P->_nonLeafItems[i]);
+		}
+		P->_nonLeafItems.clear(); // must clear it, otherwise after destroy P there will be problem in local vector 
+	}
 	NItems += P->NItems;
 }
 
+/// <summary>
+/// Moves 1st half of this XPage to page P
+/// </summary>
+/// <param name="P">destination page - have to be empty</param>
+/// <param name="ThisPage">this page number</param>
 void XPage::SplitPage(XPage* P, longint ThisPage)
 {
 	// 1st half of this XPage will be moved into P
+	P->IsLeaf = IsLeaf;
 	size_t origSize = this->ItemsSize();
 	size_t actualSize;
 	size_t index; // last index that will be moved into P
-	for (index = 0, actualSize = 0; index < _leafItems.size(); index++) {
-		actualSize += _leafItems[index]->size();
-		if (actualSize > origSize / 2) break;
+
+	if (IsLeaf) {
+		P->GreaterPage = ThisPage;
+
+		for (index = 0, actualSize = 0; index < _leafItems.size(); index++) {
+			actualSize += _leafItems[index]->size();
+			if (actualSize > origSize / 2) break;
+		}
+
+		// get new first key for this page
+		auto firstNewKey = GetKey(index + 1 + 1);
+		XItemLeaf* firstXItem = this->_leafItems[index + 1];
+
+		// move first items into page P and remove them from this page
+		for (size_t i = 0; i <= index; i++) {
+			P->_leafItems.push_back(this->_leafItems.front()); // add 1st element to P
+			P->NItems++;
+			this->_leafItems.erase(_leafItems.begin()); // erase 1st element from original
+			this->NItems--;
+		}
+
+		// replace 1st item of this page with full key
+		auto newFirstXItem = new XItemLeaf(firstXItem->RecNr, 0, firstNewKey.length(), firstNewKey);
+		this->_leafItems.erase(_leafItems.begin());
+		this->_leafItems.insert(_leafItems.begin(), newFirstXItem);
 	}
+	else {
+		P->GreaterPage = 0;
 
-	// get new first key for this page
-	auto firstNewKey = GetKey(index + 1 + 1);
-	XItemLeaf* firstXItem = this->_leafItems[index + 1];
+		for (index = 0, actualSize = 0; index < _nonLeafItems.size(); index++) {
+			actualSize += _nonLeafItems[index]->size();
+			if (actualSize > origSize / 2) break;
+		}
 
-	// move first items into page P and remove them from this page
-	for (size_t i = 0; i <= index; i++) {
-		P->_leafItems.push_back(this->_leafItems.front()); // add 1st element to P
-		P->NItems++;
-		this->_leafItems.erase(_leafItems.begin()); // erase 1st element from original
-		this->NItems--;
+		// get new first key for this page
+		auto firstNewKey = GetKey(index + 1 + 1);
+		XItemNonLeaf* firstXItem = this->_nonLeafItems[index + 1];
+
+		// move first items into page P and remove them from this page
+		for (size_t i = 0; i <= index; i++) {
+			P->_nonLeafItems.push_back(this->_nonLeafItems.front()); // add 1st element to P
+			P->NItems++;
+			this->_nonLeafItems.erase(_nonLeafItems.begin()); // erase 1st element from original
+			this->NItems--;
+		}
+
+		// replace 1st item of this page with full key
+		auto newFirstXItem = new XItemNonLeaf(firstXItem->RecordsCount, firstXItem->DownPage, 0, firstNewKey.length(), firstNewKey);
+		this->_nonLeafItems.erase(_nonLeafItems.begin());
+		this->_nonLeafItems.insert(_nonLeafItems.begin(), newFirstXItem);
 	}
-
-	// replace 1st item of this page with full key
-	auto newFirstXItem = new XItemLeaf(firstXItem->RecNr, 0, firstNewKey.length(), firstNewKey);
-	this->_leafItems.erase(_leafItems.begin());
-	this->_leafItems.insert(_leafItems.begin(), newFirstXItem);
-
-	if (IsLeaf) P->GreaterPage = ThisPage;
-	else P->GreaterPage = 0;
-	P->IsLeaf = IsLeaf;
 }
 
 void XPage::Clean()
 {
 	IsLeaf = false;
 	GreaterPage = 0;
-	WORD NItems = 0;
-	memset(A, 0, XPageSize - 4);
+	NItems = 0;
+	memset(A, 0, sizeof(A));
+	_leafItems.clear();
+	_nonLeafItems.clear();
 }
 
 size_t XPage::ItemsSize()
@@ -314,7 +384,7 @@ std::vector<XItemNonLeaf*>::iterator XPage::_addToNonLeafItems(XItemNonLeaf* xi,
 	return _nonLeafItems.insert(_nonLeafItems.begin() + pos, std::move(xi));
 }
 
-bool XPage::_cutLeafItem(size_t iIndex, BYTE length)
+bool XPage::_cutItem(size_t iIndex, BYTE length)
 {
 	XItem* Xi;
 	if (IsLeaf) {
@@ -336,7 +406,7 @@ bool XPage::_cutLeafItem(size_t iIndex, BYTE length)
 
 }
 
-bool XPage::_enhLeafItem(size_t iIndex, BYTE length)
+bool XPage::_enhItem(size_t iIndex, BYTE length)
 {
 	XItem* Xi;
 	XItem* prevXi;
@@ -356,7 +426,7 @@ bool XPage::_enhLeafItem(size_t iIndex, BYTE length)
 	Xi->L += length;
 	auto origData = Xi->data;
 	Xi->data = new BYTE[Xi->L];
-	memcpy(Xi->data, &prevXi->data[prevXi->L - length - 1], length); // z predchoziho zaznamu zkopirujeme X poslednich Bytu
+	memcpy(Xi->data, prevXi->data, length); // z predchoziho zaznamu zkopirujeme prvni Byty
 	memcpy(&Xi->data[length], origData, Xi->L - length); // a doplnime je puvodnimi daty
 	delete origData; origData = nullptr;
 	return true;

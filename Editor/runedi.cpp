@@ -1881,14 +1881,7 @@ bool DelIndRec(longint I, longint N)
 {
 	auto result = false;
 	if (CleanUp()) {
-#ifdef FandSQL
-		XString x;
-		if (CFile->IsSQLFile) {
-			x.PackKF(VK->KFlds); Strm1->DeleteXRec(VK, @x, false);
-		}
-		else
-#endif
-			DeleteXRec(N, true);
+		DeleteXRec(N, true);
 		SetUpdHandle(CFile->Handle); // navic
 		SetUpdHandle(CFile->XF->Handle); // navic
 		if ((E->SelKey != nullptr) && E->SelKey->Delete(N)) E->SelKey->NR--;
@@ -1944,16 +1937,16 @@ bool DeleteRecProc()
 				}
 				UnLockRec(E);
 				if (!b) goto label1;
-			}
+		}
 		label1:
 			{}
-		}
+	}
 		else {
 			if (!ELockRec(E, N, false, Subset)) goto label1;
 			DelIndRec(CRec(), N);
 			UnLockRec(E);
 		}
-	}
+}
 	else if (Group) {
 		J = 0;
 		fail = false;
@@ -2435,9 +2428,9 @@ bool WriteCRec(bool MayDispl, bool& Displ)
 				UnLockWithDep(OldMd);
 				DuplKeyMsg(K);
 				return result;
-			}
+	}
 			K = K->Chain;
-		}
+}
 	}
 	ClearDeletedFlag();
 	if (HasIndex) {
@@ -4491,9 +4484,9 @@ label81:
 			}
 			}
 			break;
-		}
+			}
 		break;
-	}
+		}
 	default: {
 		// nejedna se o udalost z klavesnice ani mysi
 		ClrEvent();
@@ -4501,7 +4494,7 @@ label81:
 	}
 	}
 	goto label1;
-}
+	}
 
 void EditDataFile(FileD* FD, EditOpt* EO)
 {

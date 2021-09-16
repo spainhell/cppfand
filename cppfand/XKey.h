@@ -41,7 +41,7 @@ public:
 	void ChainPrevLeaf(XPage* P, longint N);
 	bool Insert(longint RecNr, bool Try);
 	void DeleteOnPath();
-	void BalancePages(XPage* P1, XPage* P2, bool& Released);
+	void BalancePages(XPage* P1, XPage** P2, bool& Released);
 	void XIDown(XPage* P, XPage* P1, WORD I, longint& Page1);
 	bool Delete(longint RecNr);
 };

@@ -454,29 +454,26 @@ void XKey::DeleteOnPath()
 	longint page1 = 0;
 	longint page2 = 0;
 	longint uppage = 0;
-	void* pp = nullptr;
-	XItem* x = nullptr;
 	bool released = false;
-	longint n = 0;
-
-	MarkStore(pp);
-	XPage* p = new XPage(); // (XPage*)GetStore(2 * XPageSize);
-	XPage* p1 = new XPage(); // (XPage*)GetStore(2 * XPageSize);
-	XPage* p2 = new XPage(); // (XPage*)GetStore(2 * XPageSize);
-	XPage* upp = p2;
+	XPage* p = new XPage();
+	XPage* p1 = new XPage();
+	XPage* p2 = new XPage();
 	for (WORD j = XPathN; j >= 1; j--) {
 		page = XPath[j].Page;
 		XF()->RdPage(p, page);
 		WORD i = XPath[j].I;
-		if (p->IsLeaf) p->Delete(i);
-		else if (upp->Underflow()) {
-			XF()->WrPage(upp, uppage);
+		if (p->IsLeaf) {
+			p->Delete(i);
+		}
+		else if (p2->Underflow()) {
+			// Non Leaf and underflow
+			XF()->WrPage(p2, uppage);
 			WORD i1 = i - 1;
 			WORD i2 = i;
 			if (i1 == 0) { i1 = 1; i2 = 2; }
 			XIDown(p, p1, i1, page1);
 			XIDown(p, p2, i2, page2);
-			BalancePages(p1, p2, released);
+			BalancePages(p1, &p2, released);
 			XF()->WrPage(p1, page1);
 			p->Delete(i1);
 			if (released) {
@@ -497,55 +494,66 @@ void XKey::DeleteOnPath()
 			}
 		}
 		else {
-			if (upp->Overflow()) {
+			// Non Leaf
+			if (p2->Overflow()) {
 				page1 = XF()->NewPage(p1);
-				upp->SplitPage(p1, uppage);
+				p2->SplitPage(p1, uppage);
 				XF()->WrPage(p1, page1);
 				p->InsDownIndex(i, page1, p1); i++;
 			}
-			XF()->WrPage(upp, uppage);
+			XF()->WrPage(p2, uppage);
 			if (i <= p->NItems) {
 				p->Delete(i);
-				p->InsDownIndex(i, uppage, upp);
+				p->InsDownIndex(i, uppage, p2);
 			}
 		}
 		uppage = page;
-		XPage* px = upp;
-		upp = p;
+		XPage* px = p2;
+		p2 = p;
 		p = px;
 	}
-	if (upp->Overflow()) {
+	if (p2->Overflow()) {
 		page1 = XF()->NewPage(p1);
-		upp->SplitPage(p1, uppage);
+		p2->SplitPage(p1, uppage);
 		page = XF()->NewPage(p);
 		p->GreaterPage = page;
 		p->InsDownIndex(1, page1, p1);
 		XF()->WrPage(p1, page1);
 		XF()->WrPage(p, uppage);
-		XF()->WrPage(upp, page);
+		XF()->WrPage(p2, page);
 	}
 	else {
-		page1 = upp->GreaterPage;
-		if ((upp->NItems == 0) && (page1 > 0)) {
+		page1 = p2->GreaterPage;
+		if ((p2->NItems == 0) && (page1 > 0)) {
 			XF()->RdPage(p1, page1);
-			Move(p1, upp, XPageSize);
+
+			// kopie p1 do upp
+			delete p2; p2 = nullptr;
+			p2 = new XPage(*p1);
+
 			XF()->ReleasePage(p1, page1);
 		}
-		XF()->WrPage(upp, uppage);
+		XF()->WrPage(p2, uppage);
 	}
-	ReleaseStore(pp);
 }
 
-void XKey::BalancePages(XPage* P1, XPage* P2, bool& Released)
+void XKey::BalancePages(XPage* P1, XPage** P2, bool& Released)
 {
 	longint n = P1->GreaterPage;
-	P1->AddPage(P2);
-	WORD sz = P1->EndOff() - uintptr_t(P1);
-	if (sz <= XPageSize) Released = true;
+	P1->AddPage(*P2);
+	WORD sz = P1->ItemsSize();
+	if (sz <= XPageSize) {
+		Released = true;
+	}
 	else {
 		Released = false;
-		Move(P1, P2, sz);
-		P2->SplitPage(P1, n);
+		// will copy P1 into P2
+		delete* P2;
+		*P2 = new XPage(*P1);
+		// will clean P1
+		P1->Clean();
+		// will move part of items into P1
+		(*P2)->SplitPage(P1, n);
 	}
 }
 

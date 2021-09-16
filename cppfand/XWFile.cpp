@@ -79,11 +79,16 @@ longint XWFile::NewPage(XPage* P)
 
 void XWFile::ReleasePage(XPage* P, longint N)
 {
-	P->IsLeaf = false;
-	P->NItems = 0;
-	//FillChar(P, XPageSize, 0);
-	memset(P->A, 0, sizeof(P->A));
+	P->Clean();
 	P->GreaterPage = FreeRoot;
 	FreeRoot = N;
 	WrPage(P, N);
+
+	//P->IsLeaf = false;
+	//P->NItems = 0;
+	////FillChar(P, XPageSize, 0);
+	//memset(P->A, 0, sizeof(P->A));
+	//P->GreaterPage = FreeRoot;
+	//FreeRoot = N;
+	//WrPage(P, N);
 }
