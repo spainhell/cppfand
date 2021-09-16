@@ -522,8 +522,7 @@ pstring wwmix::GetSelect()
 {
 	Item* p = (Item*)&sv;
 	pstring result;
-	if (!ss.Subset)
-	{
+	if (!ss.Subset)	{
 		p = GetItem(sv.iItem); result = p->S; ReleaseStore(sv.markp); return result;
 	}
 	while ((p != nullptr) && (p->Tag == ' ')) p = (Item*)p->Chain;
@@ -542,20 +541,19 @@ bool wwmix::SelFieldList(WORD Nmsg, bool ImplAll, FieldList FLRoot)
 	if (Event.Pressed.KeyCombination() == __ESC) { return false; }
 label1:
 	s = GetSelect();
-	if (s != "")
-	{
+	if (s != "") {
 		F = CFile->FldD.front();
 		//F = CFile->FldD[0];
 		if (s[1] == SelMark) s = copy(s, 2, 255);
-		while (F != nullptr)
-			if (s == F->Name)
-			{
+		while (F != nullptr) {
+			if (s == F->Name) {
 				FL = (FieldListEl*)GetStore(sizeof(*FL));
 				ChainLast(FLRoot, FL);
 				FL->FldD = F;
 				goto label1;
 			}
-			else F = (FieldDescr*)F->Chain;
+			F = (FieldDescr*)F->Chain;
+		}
 		goto label1;
 	}
 	return result;
@@ -574,11 +572,15 @@ std::string wwmix::SelectDiskFile(std::string Path, WORD HdMsg, bool OnFace)
 		c1 = 43; r1 = 6; c2 = 67; r2 = 8; c11 = 28; r11 = 4;
 	}
 	if (Path.empty()) ext = ".*";
-	else if (Path[0] == '.') ext = Path;
+	else if (Path[0] == '.') {
+		ext = Path;
+	}
 	else {
 		FSplit(FExpand(Path), d, n, e);
 		ne = n + e;
-		if (ne == "") ne = "*.*";
+		if (ne == "") {
+			ne = "*.*";
+		}
 		goto label3;
 	}
 	mask = pstring("*") + ext;

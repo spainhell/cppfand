@@ -135,6 +135,8 @@ integer WrOutput(TextFile* F);
 integer DummyCrt(TextFile* F);
 integer OpenCrt(TextFile* F);
 
+unsigned long long getAvailPhysMemory();
+
 void BreakIntrDone();
 bool KbdTimer(WORD Delta, BYTE Kind);
 bool TestEvent();

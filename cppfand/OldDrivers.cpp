@@ -731,3 +731,11 @@ integer OpenCrt(TextFile* F)
 	F->closefunc = DummyCrt;
 	return 0;
 }
+
+unsigned long long getAvailPhysMemory()
+{
+	MEMORYSTATUSEX status;
+	status.dwLength = sizeof(status);
+	GlobalMemoryStatusEx(&status);
+	return status.ullAvailPhys;
+}

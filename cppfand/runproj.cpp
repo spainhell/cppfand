@@ -1221,18 +1221,16 @@ FileD* FindFD()
 
 void Diagnostics(void* MaxHp, longint Free, FileD* FD)
 {
-	void* p; pstring s1(8); pstring s2(8);
-	pstring s3(8); pstring s4(8); RdbD* r;
-	r = CRdb;
-	while (r->ChainBack != nullptr) r = r->ChainBack;
-	str(AbsAdr(CRdb) - AbsAdr(r), s1);  /* BYTEs on top of this RDB */
-	str(AbsAdr(0/*HeapPtr*/) - AbsAdr(E->AfterE), s2); /* BYTEs for FileD's */
-	if (FD != nullptr) {
-		p = FD->Chain;
-		if (p == nullptr) p = 0 /*HeapPtr*/; str(AbsAdr(p) - AbsAdr(FD), s3);
+	std::string s1 = "---";
+	std::string s2 = "---";
+	std::string s3 = "---";
+	std::string s4 = std::to_string(getAvailPhysMemory() / 1024 / 1024) + " MB";
+	RdbD* r = CRdb;
+
+	while (r->ChainBack != nullptr) {
+		r = r->ChainBack;
 	}
-	else str(AbsAdr(MaxHp) - AbsAdr(0 /*HeapPtr*/), s3);  /* BYTEs of this chapter */
-	str(Free, s4);
+
 	SetMsgPar(s1, s2, s3, s4);
 	WrLLF10Msg(136);
 }
@@ -1256,7 +1254,7 @@ bool CompRunChptRec(WORD CC)
 #ifdef FandSQL
 	nStrm = nStreams;
 #endif
-	if (CC == _AltF9_) {
+	if (CC == __ALT_F9) {
 		if (FindChpt('P', "MAIN", true, &RP)) goto label1;
 		else WrLLF10Msg(58);
 	}
@@ -1264,14 +1262,14 @@ bool CompRunChptRec(WORD CC)
 		switch (STyp[1]) {
 		case 'F': {
 			FD = FindFD();
-			if ((FD != nullptr) && (CC == _CtrlF9_)) {
+			if ((FD != nullptr) && (CC == __CTRL_F9)) {
 				EO = GetEditOpt(); CFile = FD; EO->Flds = AllFldsList(CFile, false);
 				if (SelFldsForEO(EO, nullptr)) EditDataFile(FD, EO);
 			}
 			break;
 		}
 		case 'E': {
-			if (CC == _CtrlF9_) {
+			if (CC == __CTRL_F9) {
 				EO = GetEditOpt(); EO->FormPos = RP; EditDataFile(nullptr, EO);
 			}
 			else { PushEdit(); RdFormOrDesign(nullptr, nullptr, RP); }
@@ -1280,13 +1278,13 @@ bool CompRunChptRec(WORD CC)
 		case 'M': {
 			SetInpTT(&RP, true);
 			ReadMerge();
-			if (CC == _CtrlF9_) RunMerge();
+			if (CC == __CTRL_F9) RunMerge();
 			break;
 		}
 		case 'R': {
 			SetInpTT(&RP, true);
 			ReadReport(nullptr);
-			if (CC == _CtrlF9_) {
+			if (CC == __CTRL_F9) {
 				RunReport(nullptr);
 				SaveFiles();
 				ViewPrinterTxt();
@@ -1294,7 +1292,7 @@ bool CompRunChptRec(WORD CC)
 			break;
 		}
 		case 'P': {
-			if (CC == _CtrlF9_) {
+			if (CC == __CTRL_F9) {
 			label1:
 				if (UserW != 0) { PopW(UserW); uw = true; }
 				RunMainProc(RP, CRdb->ChainBack = nullptr);
@@ -1311,7 +1309,7 @@ bool CompRunChptRec(WORD CC)
 		}
 #ifdef FandProlog
 		case 'L': {
-			if (CC == _CtrlF9_) {
+			if (CC == __CTRL_F9) {
 				TextAttr = ProcAttr;
 				ClrScr();
 				RunProlog(&RP, nullptr);
@@ -1338,7 +1336,8 @@ label2:
 		else ClrScr();
 	}
 	if (uw) { UserW = 0;/*mem overflow*/UserW = PushW(1, 1, TxtCols, TxtRows); }
-	SaveFiles(); if (mv) ShowMouse();
+	SaveFiles();
+	if (mv) ShowMouse();
 	if (WasError) ForAllFDs(ClearXFUpdLock);
 	CFile = (FileD*)lstFD->Chain;
 	while (CFile != nullptr) {
@@ -1358,7 +1357,7 @@ label2:
 		if (WasError) return result;
 		B_(ChptVerif, false);
 		WriteRec(CFile, CRec(), CRecPtr);
-		if (CC == _CtrlF8_) Diagnostics(MaxHp, Free, FD);
+		if (CC == __CTRL_F8) Diagnostics(MaxHp, Free, FD);
 	}
 	return result;
 }
@@ -1930,15 +1929,15 @@ label1:
 	RunEdit(nullptr, Brk);
 label2:
 	// TODO: je to potreba?
-	// cc = KbdChar;
+	cc = Event.Pressed.KeyCombination();
 	SaveFiles();
-	if ((cc == _CtrlF10_) || ChptTF->CompileAll || CompileFD) {
+	if ((cc == __CTRL_F10) || ChptTF->CompileAll || CompileFD) {
 		ReleaseFDLDAfterChpt();
 		SetSelectFalse();
 		E->Bool = nullptr;
 		ReleaseStore(E->AfterE);
 	}
-	if (cc == _CtrlF10_) {
+	if (cc == __CTRL_F10) {
 		SetUpdHandle(ChptTF->Handle);
 		if (!CompileRdb(true, false, true)) goto label3;
 		if (!PromptCodeRdb()) goto label6;
@@ -1953,7 +1952,7 @@ label2:
 			GotoRecFld(InpRdbPos.IRec, (EFldD*)E->FirstFld->Chain);
 			goto label1;
 		}
-		if (cc == _AltF2_) {
+		if (cc == __ALT_F2) {
 			EditHelpOrCat(cc, 0, "");
 			goto label41;
 		}
