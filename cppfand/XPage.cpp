@@ -8,6 +8,9 @@ XPage::~XPage()
 	for (size_t i = 0; i < _leafItems.size(); i++) {
 		delete _leafItems[i];
 	}
+	for (size_t i = 0; i < _nonLeafItems.size(); i++) {
+		delete _nonLeafItems[i];
+	}
 }
 
 WORD XPage::Off()
@@ -36,16 +39,18 @@ WORD XPage::EndOff()
 
 bool XPage::Underflow()
 {
-	return (EndOff() - uintptr_t(A)) < (XPageSize - XPageOverHead) / 2;
+	const auto size = ItemsSize();
+	return size < (XPageSize - XPageOverHead) / 2;
 }
 
 bool XPage::Overflow()
 {
-	auto size = ItemsSize();
+	const auto size = ItemsSize();
 	return size > XPageSize - XPageOverHead;
 }
 
 
+/// Returns calculated complete key value;
 /// i = 1 .. N
 pstring XPage::GetKey(WORD i)
 {
@@ -53,11 +58,17 @@ pstring XPage::GetKey(WORD i)
 
 	if (i > NItems) s[0] = 0;
 	else {
-		for (WORD j = 0; j < i; j++) {
-			XItem* x;
-			if (IsLeaf)	x = _leafItems[j];
-			else x = _nonLeafItems[j];
-			x->UpdStr(&s);
+		if (IsLeaf) {
+			for (WORD j = 0; j < i; j++) {
+				XItem* x = _leafItems[j];
+				x->UpdStr(&s);
+			}
+		}
+		else {
+			for (WORD j = 0; j < i; j++) {
+				XItem* x = _nonLeafItems[j];
+				x->UpdStr(&s);
+			}
 		}
 	}
 	return s;
@@ -79,60 +90,33 @@ longint XPage::SumN()
 	}
 }
 
-void XPage::InsertNonLeaf(WORD I, void* SS, XItem** XX, size_t& XXLen)
+void XPage::InsertNonLeaf(unsigned int recordsCount, unsigned int downPage, WORD I, pstring& SS)
 {
-	//if (_leafItems.empty()) Deserialize();
-	pstring* S = (pstring*)SS;
-	std::unique_ptr<XItemLeaf> newXi;
 	NItems++;
-	if (!_leafItems.empty()) {
-		// predchozi zaznam existuje -> vytahneme jej
-		auto x = &_leafItems[I - 1];
-		WORD m = 0;
-		// zjistime spolecne casti s predchozim zaznamem
-		if (I > 1) m = SLeadEqu(GetKey(I - 1), *S);
-		WORD l = S->length() - m;
-		// vytvorime novou polozku s novym zaznamem
-		newXi = std::make_unique<XItemLeaf>((unsigned int)I, m, l, *S);
-	}
-	else {
-		// vytvorime 1. polozku s novym zaznamem
-		newXi = std::make_unique<XItemLeaf>((unsigned int)I, 0, S->length(), *S);
-	}
+	WORD m = 0;
+	// zjistime spolecne casti s predchozim zaznamem
+	if (I > 1) m = SLeadEqu(GetKey(I - 1), SS);
+	WORD l = SS.length() - m;
+	// vytvorime novou polozku s novym zaznamem a vlozime ji do vektoru
+
+	auto newXi = new XItemNonLeaf(recordsCount, downPage, m, l, SS);
+	_addToNonLeafItems(newXi, I - 1);
 
 	if (I < NItems) {
 		// vkladany zaznam nebude posledni (nebude na konci)
 		// zjistime spolecne casti s nasledujicim zaznamem
-		WORD m2 = SLeadEqu(GetKey(I), *S);
-		integer d = m2 - newXi->M;
+		WORD m2 = SLeadEqu(GetKey(I), SS);
+		integer d = m2 - newXi->GetM();
 		if (d > 0) {
-			printf("XPage::InsertNonLeaf() - Nutno doimplementovat!");
+			// puvodni polozka je ted na pozici I (nova je na I - 1)
+			_cutLeafItem(I, d);
 		}
 	}
 
-	if (IsLeaf) {
-		size_t bufLen = newXi->size();
-		XXLen = bufLen;
-		BYTE* buf = new BYTE[bufLen];
-		newXi->Serialize(buf, bufLen);
-
-		// vratime tuto novou polozku
-		*XX = new XItemLeaf(buf);
-	}
-	else {
-		size_t bufLen = newXi->size() + 4; // nonLeaf is 2 B greater then Leaf item
-		XXLen = bufLen;
-		BYTE* buf = new BYTE[bufLen];
-		newXi->Serialize(&buf[4], bufLen);
-
-		// vratime tuto novou polozku
-		*XX = new XItemNonLeaf(buf);
-	}
 }
 
 void XPage::InsertLeaf(unsigned int RecNr, size_t I, pstring& SS)
 {
-	//Deserialize();
 	NItems++;
 	WORD m = 0;
 	// zjistime spolecne casti s predchozim zaznamem
@@ -158,19 +142,13 @@ void XPage::InsertLeaf(unsigned int RecNr, size_t I, pstring& SS)
 void XPage::InsDownIndex(WORD I, longint Page, XPage* P)
 {
 	pstring s = P->GetKey(P->NItems);
-	XItem* x = nullptr;
 	size_t xLen = 0;
-	InsertNonLeaf(I, &s, &x, xLen);
-	x->PutN(P->SumN());
-	((XItemNonLeaf*)x)->DownPage = Page;
-	this->_xItem = x;
-	XItemNonLeaf* source = ((XItemNonLeaf*)_xItem);
-	memcpy(this->A, &source->RecordsCount, xLen);
+	InsertNonLeaf(P->SumN(), Page, I, s);
+	//memcpy(this->A, &x->RecordsCount, xLen);
 }
 
 void XPage::Delete(WORD I)
 {
-	//Deserialize();
 	// polozka ke smazani
 	auto Xi = _leafItems[I - 1];
 	if (I < NItems) {
@@ -196,7 +174,7 @@ void XPage::Delete(WORD I)
 
 void XPage::AddPage(XPage* P)
 {
-	XItem* x = nullptr, *x1 = nullptr;
+	XItem* x = nullptr, * x1 = nullptr;
 	WORD* xofs = (WORD*)x;
 
 	GreaterPage = P->GreaterPage;
@@ -220,7 +198,6 @@ void XPage::AddPage(XPage* P)
 void XPage::SplitPage(XPage* P, longint ThisPage)
 {
 	// 1st half of this XPage will be moved into P
-
 	size_t origSize = this->ItemsSize();
 	size_t actualSize;
 	size_t index; // last index that will be moved into P
@@ -312,7 +289,7 @@ void XPage::Serialize()
 		}
 		NItems = _nonLeafItems.size();
 	}
-	
+
 }
 
 std::vector<XItemLeaf*>::iterator XPage::_addToLeafItems(XItemLeaf* xi, size_t pos)
@@ -327,8 +304,15 @@ std::vector<XItemNonLeaf*>::iterator XPage::_addToNonLeafItems(XItemNonLeaf* xi,
 
 bool XPage::_cutLeafItem(size_t iIndex, BYTE length)
 {
-	if (_leafItems.size() < iIndex + 1) return false; // polozka neexistuje
-	auto Xi = _leafItems[iIndex];
+	XItem* Xi;
+	if (IsLeaf) {
+		if (_leafItems.size() < iIndex + 1) return false; // polozka neexistuje
+		Xi = _leafItems[iIndex];
+	}
+	else {
+		if (_nonLeafItems.size() < iIndex + 1) return false; // polozka neexistuje
+		Xi = _nonLeafItems[iIndex];
+	}
 	if (length > Xi->L) return false; // polozka neni tak dlouha, delka by byla zaporna
 	Xi->M += length;
 	Xi->L -= length;
@@ -337,13 +321,25 @@ bool XPage::_cutLeafItem(size_t iIndex, BYTE length)
 	memcpy(Xi->data, &origData[length], Xi->L);
 	delete origData; origData = nullptr;
 	return true;
+
 }
 
 bool XPage::_enhLeafItem(size_t iIndex, BYTE length)
 {
-	if (_leafItems.size() < iIndex + 1) return false; // polozka neexistuje
-	auto prevXi = _leafItems[iIndex - 1]; // mazana polozka, z teto budeme brat data
-	auto Xi = _leafItems[iIndex]; // aktualizovana (rozsirovana) polozka	
+	XItem* Xi;
+	XItem* prevXi;
+
+	if (IsLeaf) {
+		if (_leafItems.size() < iIndex + 1) return false; // polozka neexistuje
+		prevXi = _leafItems[iIndex - 1]; // mazana polozka, z teto budeme brat data
+		Xi = _leafItems[iIndex]; // aktualizovana (rozsirovana) polozka	
+	}
+	else {
+		if (_nonLeafItems.size() < iIndex + 1) return false; // polozka neexistuje
+		prevXi = _nonLeafItems[iIndex - 1]; // mazana polozka, z teto budeme brat data
+		Xi = _nonLeafItems[iIndex]; // aktualizovana (rozsirovana) polozka	
+	}
+
 	Xi->M -= length;
 	Xi->L += length;
 	auto origData = Xi->data;

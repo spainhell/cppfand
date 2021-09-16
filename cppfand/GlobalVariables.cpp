@@ -21,6 +21,7 @@ pstring LockModeTxt[9] = { "NULL", "NOEXCL", "NODEL", "NOCR", "RD", "WR", "CR", 
 
 structXPath XPath[10];
 WORD XPathN;
+
 XWFile XWork;
 TFile TWork;
 longint ClpBdPos = 0;

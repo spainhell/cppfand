@@ -2,7 +2,7 @@
 #include <string>
 #include "constants.h"
 #include "pstring.h"
-#include "XItem.h"
+#include "XItemNonLeaf.h"
 #include "XString.h"
 
 class XWFile;
@@ -36,7 +36,7 @@ public:
 	bool FindNr(XString& X, longint& IndexNr);
 	bool FindNr(std::string X, longint& IndexNr);
 	void InsertOnPath(XString& XX, longint RecNr);
-	void InsertItem(XString& XX, XPage* P, XPage* UpP, longint Page, WORD I, XItem** X, longint& UpPage);
+	void InsertNonLeafItem(XString& XX, XPage* P, XPage* UpP, longint Page, WORD I, longint& UpPage, unsigned int upSum, unsigned int downPage);
 	void InsertLeafItem(XString& XX, XPage* P, XPage* UpP, longint Page, WORD I, int RecNr, longint& UpPage);
 	void ChainPrevLeaf(XPage* P, longint N);
 	bool Insert(longint RecNr, bool Try);
@@ -45,9 +45,6 @@ public:
 	void XIDown(XPage* P, XPage* P1, WORD I, longint& Page1);
 	bool Delete(longint RecNr);
 };
-
-//typedef XKey* KeyDPtr;
-//typedef XKey XKey;
 
 bool SearchKey(XString& XX, XKey* Key, longint& NN);
 longint XNRecs(XKey* K);

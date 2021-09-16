@@ -32,7 +32,7 @@ public:
 	bool Overflow();
 	pstring GetKey(WORD i);
 	longint SumN();
-	void InsertNonLeaf(WORD I, void* SS, XItem** XX, size_t& XXLen);
+	void InsertNonLeaf(unsigned int recordsCount, unsigned int downPage, WORD I, pstring& SS);
 	void InsertLeaf(unsigned int RecNr, size_t I, pstring& SS);
 	void InsDownIndex(WORD I, longint Page, XPage* P);
 	void Delete(WORD I);
@@ -48,11 +48,12 @@ private:
 	// Leaf section
 	std::vector<XItemLeaf*>::iterator _addToLeafItems(XItemLeaf* xi, size_t pos);
 	std::vector<XItemLeaf*> _leafItems;
-	bool _cutLeafItem(size_t iIndex, BYTE length); // zkrati polozku o X Bytu, zaktualizuje M i L
-	bool _enhLeafItem(size_t iIndex, BYTE length); // prodlouzi polozku o X Bytu z predchozi polozky, zaktualizuje M i L
 
 	// Non Leaf section
 	std::vector<XItemNonLeaf*>::iterator _addToNonLeafItems(XItemNonLeaf* xi, size_t pos);
 	std::vector<XItemNonLeaf*> _nonLeafItems;
+
+	bool _cutLeafItem(size_t iIndex, BYTE length); // zkrati polozku o X Bytu, zaktualizuje M i L
+	bool _enhLeafItem(size_t iIndex, BYTE length); // prodlouzi polozku o X Bytu z predchozi polozky, zaktualizuje M i L
 };
 

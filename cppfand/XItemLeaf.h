@@ -13,9 +13,6 @@ public:
 	~XItemLeaf() override;
 
 	unsigned int RecNr;
-	BYTE M;
-	BYTE L;
-	BYTE* data;
 
 	longint GetN() override;
 	void PutN(longint N) override;
@@ -29,8 +26,9 @@ public:
 	XItem* Next() override;
 	WORD UpdStr(pstring* S) override;
 
+	size_t Serialize(BYTE* buffer, size_t bufferSize) override;
+
 	size_t size() override;
 	size_t dataLen(); // bez 2B L + M
-	size_t Serialize(BYTE* buffer, size_t bufferSize);
 };
 

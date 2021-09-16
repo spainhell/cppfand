@@ -9,14 +9,11 @@ class XItemNonLeaf: public XItem
 public:
 	XItemNonLeaf(BYTE* data);
 	XItemNonLeaf(const XItemNonLeaf& orig);
-	//XItemNonLeaf(unsigned int RecNr, BYTE M, BYTE L, pstring& s); // kompletni 's', zpracuje se jen pozadovana cast
+	XItemNonLeaf(unsigned int recordsCount, unsigned int downPage, BYTE M, BYTE L, pstring& s); // kompletni 's', zpracuje se jen pozadovana cast
 	~XItemNonLeaf() override;
 
 	longint RecordsCount = 0;
 	longint DownPage = 0;
-	BYTE M;
-	BYTE L;
-	BYTE* data;
 
 	longint GetN() override;
 	void PutN(longint N) override;
@@ -29,9 +26,10 @@ public:
 
 	XItem* Next() override;
 	WORD UpdStr(pstring* S) override;
-	
+
+	size_t Serialize(BYTE* buffer, size_t bufferSize) override;
+
 	size_t size();
 	size_t data_len(); // bez 2B L + M
-	size_t Serialize(BYTE* buffer, size_t bufferSize);
 };
 

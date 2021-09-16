@@ -20,6 +20,16 @@ XItemNonLeaf::XItemNonLeaf(const XItemNonLeaf& orig)
 	memcpy(this->data, orig.data, L);
 }
 
+XItemNonLeaf::XItemNonLeaf(unsigned recordsCount, unsigned downPage, BYTE M, BYTE L, pstring& s)
+{
+	this->RecordsCount = recordsCount;
+	this->DownPage = downPage;
+	this->M = M;
+	this->L = L;
+	this->data = new BYTE[L];
+	memcpy(this->data, &s[1 + M], L);
+}
+
 XItemNonLeaf::~XItemNonLeaf()
 {
 	delete[] data;

@@ -211,9 +211,8 @@ void XKey::NrToPath(longint I)
 
 longint XKey::PathToRecNr()
 {
-	/* !!! with XPath[XPathN] do!!! */
 	auto X = XPath[XPathN];
-	XPage* p = new XPage(); // (XPage*)GetStore(XPageSize);
+	XPage* p = new XPage();
 	XF()->RdPage(p, X.Page);
 	auto pxi = p->XI(X.I);
 	longint recnr = pxi->GetN();
@@ -350,7 +349,6 @@ void XKey::InsertOnPath(XString& XX, longint RecNr)
 		i = XPath[j].I;
 		if (p->IsLeaf) {
 			InsertLeafItem(XX, p, upp, page, i, RecNr, uppage);
-			// x->PutN(RecNr); // zapisuje se primo o radek vys!
 		}
 		else {
 			if (i <= p->NItems) {
@@ -361,9 +359,7 @@ void XKey::InsertOnPath(XString& XX, longint RecNr)
 			}
 			if (uppage != 0) {
 				downpage = uppage;
-				InsertItem(XX, p, upp, page, i, &x, uppage);
-				((XItemNonLeaf*)x)->DownPage = downpage;
-				x->PutN(upsum);
+				InsertNonLeafItem(XX, p, upp, page, i, uppage, upsum, downpage);
 			}
 		}
 		XF()->WrPage(p, page);
@@ -387,18 +383,18 @@ void XKey::InsertOnPath(XString& XX, longint RecNr)
 	ReleaseStore(p);
 }
 
-void XKey::InsertItem(XString& XX, XPage* P, XPage* UpP, longint Page, WORD I, XItem** X, longint& UpPage)
+void XKey::InsertNonLeafItem(XString& XX, XPage* P, XPage* UpP, longint Page, WORD I, longint& UpPage, unsigned int upSum, unsigned int downPage)
 {
 	size_t Xlen = 0;
-	P->InsertNonLeaf(I, &XX.S, X, Xlen);
+	P->InsertNonLeaf(upSum, downPage, I, XX.S);
 	UpPage = 0;
 	if (P->Overflow()) {
+		// page is too long -> will be divided
 		printf("XKey::InsertItem overflow");
-		/*UpPage = XF()->NewPage(UpP);
+		UpPage = XF()->NewPage(UpP);
 		P->SplitPage(UpP, Page);
-		if (I <= UpP->NItems) *X = UpP->XI(I, P->IsLeaf);
-		else *X = P->XI(I - UpP->NItems, P->IsLeaf);
-		XX.S = UpP->StrI(UpP->NItems);*/
+		// TODO: NUTNO DORESIT, CO SE TADY DEJE - puvodni kod byl delsi
+		XX.S = UpP->GetKey(UpP->NItems);
 	}
 }
 
@@ -407,32 +403,12 @@ void XKey::InsertLeafItem(XString& XX, XPage* P, XPage* UpP, longint Page, WORD 
 	P->InsertLeaf(RecNr, I, XX.S);
 	UpPage = 0;
 	if (P->Overflow()) {
-		// printf("XKey::InsertLeafItem() PREKROCENA VELIKOST STRANKY");
+		// page is too long -> will be divided
 		UpPage = XF()->NewPage(UpP);
 		P->SplitPage(UpP, Page);
-		// TODO: NUTNO DORESIT, CO SE TADY DEJE
-		// *X byl puvodne parametr metody
-		// if (I <= UpP->NItems) *X = UpP->XI(I, P->IsLeaf);
-		// else *X = P->XI(I - UpP->NItems, P->IsLeaf);
-		//P->Serialize();
-		//UpP->Serialize();
+		// TODO: NUTNO DORESIT, CO SE TADY DEJE - puvodni kod byl delsi
 		XX.S = UpP->GetKey(UpP->NItems);
 	}
-	else {
-		// pregenerujeme data z vektoru do P->A
-		//P->Serialize();
-	}
-#if _DEBUG
-	//std::vector<pstring> vP;
-	//for (size_t i = 1; i <= P->NItems; i++) {
-	//	vP.push_back(P->GetKey(i));
-	//}
-	//std::vector<pstring> vUpP;
-	//for (size_t i = 1; i <= UpP->NItems; i++) {
-	//	vUpP.push_back(UpP->GetKey(i));
-	//}
-	//printf("");
-#endif
 }
 
 void XKey::ChainPrevLeaf(XPage* P, longint N)
