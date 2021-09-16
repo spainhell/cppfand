@@ -32,8 +32,8 @@ public:
 	bool Overflow();
 	pstring GetKey(WORD i);
 	longint SumN();
-	void InsertNonLeaf(unsigned int recordsCount, unsigned int downPage, WORD I, pstring& SS);
-	void InsertLeaf(unsigned int RecNr, size_t I, pstring& SS);
+	void InsertItem(unsigned int recordsCount, unsigned int downPage, WORD I, pstring& SS);
+	void InsertItem(unsigned int recNr, size_t I, pstring& SS);
 	void InsDownIndex(WORD I, longint Page, XPage* P);
 	void Delete(WORD I);
 	void AddPage(XPage* P);

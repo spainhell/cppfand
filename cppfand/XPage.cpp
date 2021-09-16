@@ -90,7 +90,14 @@ longint XPage::SumN()
 	}
 }
 
-void XPage::InsertNonLeaf(unsigned int recordsCount, unsigned int downPage, WORD I, pstring& SS)
+/// <summary>
+/// Insert Non Leaf Item
+/// </summary>
+/// <param name="recordsCount">total records count on the referenced page</param>
+/// <param name="downPage">down page number</param>
+/// <param name="I">order of the inserted item</param>
+/// <param name="SS">key</param>
+void XPage::InsertItem(unsigned int recordsCount, unsigned int downPage, WORD I, pstring& SS)
 {
 	NItems++;
 	WORD m = 0;
@@ -105,17 +112,22 @@ void XPage::InsertNonLeaf(unsigned int recordsCount, unsigned int downPage, WORD
 	if (I < NItems) {
 		// vkladany zaznam nebude posledni (nebude na konci)
 		// zjistime spolecne casti s nasledujicim zaznamem
-		WORD m2 = SLeadEqu(GetKey(I), SS);
+		WORD m2 = SLeadEqu(GetKey(I + 1), SS);
 		integer d = m2 - newXi->GetM();
 		if (d > 0) {
 			// puvodni polozka je ted na pozici I (nova je na I - 1)
 			_cutLeafItem(I, d);
 		}
 	}
-
 }
 
-void XPage::InsertLeaf(unsigned int RecNr, size_t I, pstring& SS)
+/// <summary>
+/// Insert Leaf Item
+/// </summary>
+/// <param name="recNr">record number in .000 file</param>
+/// <param name="I">order of the inserted item</param>
+/// <param name="SS">key</param>
+void XPage::InsertItem(unsigned int recNr, size_t I, pstring& SS)
 {
 	NItems++;
 	WORD m = 0;
@@ -124,7 +136,7 @@ void XPage::InsertLeaf(unsigned int RecNr, size_t I, pstring& SS)
 	WORD l = SS.length() - m;
 	// vytvorime novou polozku s novym zaznamem a vlozime ji do vektoru
 
-	auto newXi = new XItemLeaf(RecNr, m, l, SS);
+	auto newXi = new XItemLeaf(recNr, m, l, SS);
 	_addToLeafItems(newXi, I - 1);
 
 	if (I < NItems) {
@@ -143,8 +155,8 @@ void XPage::InsDownIndex(WORD I, longint Page, XPage* P)
 {
 	pstring s = P->GetKey(P->NItems);
 	size_t xLen = 0;
-	InsertNonLeaf(P->SumN(), Page, I, s);
-	//memcpy(this->A, &x->RecordsCount, xLen);
+	InsertItem(P->SumN(), Page, I, s);
+	// TODO: memcpy(this->A, &x->RecordsCount, xLen);
 }
 
 void XPage::Delete(WORD I)

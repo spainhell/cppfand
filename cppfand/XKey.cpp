@@ -386,7 +386,7 @@ void XKey::InsertOnPath(XString& XX, longint RecNr)
 void XKey::InsertNonLeafItem(XString& XX, XPage* P, XPage* UpP, longint Page, WORD I, longint& UpPage, unsigned int upSum, unsigned int downPage)
 {
 	size_t Xlen = 0;
-	P->InsertNonLeaf(upSum, downPage, I, XX.S);
+	P->InsertItem(upSum, downPage, I, XX.S);
 	UpPage = 0;
 	if (P->Overflow()) {
 		// page is too long -> will be divided
@@ -400,7 +400,7 @@ void XKey::InsertNonLeafItem(XString& XX, XPage* P, XPage* UpP, longint Page, WO
 
 void XKey::InsertLeafItem(XString& XX, XPage* P, XPage* UpP, longint Page, WORD I, int RecNr, longint& UpPage)
 {
-	P->InsertLeaf(RecNr, I, XX.S);
+	P->InsertItem(RecNr, I, XX.S);
 	UpPage = 0;
 	if (P->Overflow()) {
 		// page is too long -> will be divided
