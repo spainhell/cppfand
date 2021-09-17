@@ -229,11 +229,11 @@ struct Fonts // r350
 };
 extern Fonts fonts;
 
-pstring PrTab(WORD N);
+std::string PrTab(WORD N);
 void SetCurrPrinter(integer NewPr);
 
 struct Printer {
-	void* Strg; char Typ, Kod; BYTE Lpti, TmOut;
+	std::string Strg; char Typ, Kod; BYTE Lpti, TmOut;
 	bool OpCls, ToHandle, ToMgr; WORD Handle;
 };
 

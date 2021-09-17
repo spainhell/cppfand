@@ -101,7 +101,7 @@ WORD ScrTextMode(bool Redraw, bool Switch)
 
 bool IsAT()
 {
-	// snad to zjišuje, jestli je to PC-XT nebo PC-AT :-)
+	// snad to zjistuje, jestli je to PC-XT nebo PC-AT :-)
 	return true;
 }
 
@@ -156,15 +156,58 @@ void RdColors(FILE* CfgHandle)
 void RdPrinter(FILE* CfgHandle)
 {
 	BYTE L;
+	const int NPrintStrg = 32;
+	BYTE A[NPrintStrg * 256]{ '\0' };
 	ReadH(CfgHandle, 1, &prMax);
-	while (prMax > 0)
-	{
+
+	for (integer j = 0; j < prMax; j++) {
+		WORD n = 0;
+		size_t index = 0;
+		for (int i = 0; i <= NPrintStrg; i++) {
+			ReadH(CfgHandle, 1, &L);
+			if (L == 255) goto label1;
+			A[index++] = L;
+			ReadH(CfgHandle, L, &A[index]);
+			index += L;
+			n += L + 1;
+		}
 		ReadH(CfgHandle, 1, &L);
-		if (L == 0xFF) prMax--;
+		if (L != 255) {
+		label1:
+			printf("Invalid FAND.CFG");
+			wait();
+			exit(-1);
+		}
+		printer[j].Strg = std::string((char*)A, n);
+		ReadH(CfgHandle, 1, &printer[j].Typ);
+		ReadH(CfgHandle, 1, &printer[j].Kod);
+		ReadH(CfgHandle, 1, &printer[j].Lpti);
+		ReadH(CfgHandle, 1, &printer[j].TmOut);
+		printer[j].OpCls = false;
+		printer[j].ToHandle = false;
+		printer[j].ToMgr = false;
+		switch (printer[j].TmOut) {
+		case 255: {
+			printer[j].OpCls = true;
+			printer[j].TmOut = 0;
+			break;
+;			}
+		case 254: {
+			printer[j].ToHandle = true;
+			printer[j].TmOut = 0;
+			break;
+		}
+		case 253: {
+			printer[j].ToMgr = true;
+			printer[j].TmOut = 0;
+			break;
+		}
+		default: break;
+		}
 	}
-	
+
 	// jeste jsou tam nejaka data a datum v nasl. konfiguraci je posunuty -> nutno rucne posunout:
-	SeekH(CfgHandle, PosH(CfgHandle) + 4);
+	// SeekH(CfgHandle, PosH(CfgHandle) + 4);
 	SetCurrPrinter(0);
 }
 
@@ -355,7 +398,7 @@ void CallEditTxt()
 void SelectEditTxt(pstring e, bool OnFace)
 {
 	wwmix ww;
-	CPath = ww.SelectDiskFile(e, 35, OnFace); 
+	CPath = ww.SelectDiskFile(e, 35, OnFace);
 	if (CPath.empty()) return;
 	CallEditTxt();
 }
@@ -469,10 +512,10 @@ void InitRunFand()
 		case 16: {if (Fonts.VFont == foKamen) NrVFont = Vga8x16K; else NrVFont = Vga8x16L; break; }
 		}*/
 
-	// Access
-	// GetIntVec(0x3f, FandInt3f); // toto je vektor pøerušení INT 3fH - Overlay a DLL
-	//FillChar(&XWork, sizeof(XWork), 0); // celý objekt nulovat nemusíme, snad ...
-	//FillChar(&TWork, sizeof(TWork), 0); //  -"-
+		// Access
+		// GetIntVec(0x3f, FandInt3f); // toto je vektor pøerušení INT 3fH - Overlay a DLL
+		//FillChar(&XWork, sizeof(XWork), 0); // celý objekt nulovat nemusíme, snad ...
+		//FillChar(&TWork, sizeof(TWork), 0); //  -"-
 	CRdb = nullptr;
 	for (i = 0; i < FloppyDrives; i++) { MountedVol[i] = ""; }
 	// Ww
@@ -586,7 +629,7 @@ void InitRunFand()
 	if (!txt.empty()) {
 		txt += ")";
 		MsgLine = MsgLine + "x (" + txt;
-	}
+}
 	else MsgLine += 'x';
 
 	screen.ScrWrText(5, TxtRows - 3, MsgLine.c_str());
@@ -637,7 +680,7 @@ label1:
 	case 2: { SelectRunRdb(true); IsTestRun = false; break; }
 	case 3: { IsInstallRun = true; CallInstallRdb(); IsInstallRun = false; break; }
 	case 4: SelectEditTxt(".TXT", true); break;
-	//case 5: OSshell("", "", false, true, true, true); break;
+		//case 5: OSshell("", "", false, true, true, true); break;
 	case 5: OpenFileDialog(); break;
 	case 0:
 	case 6: { CloseH(&WorkHandle); CloseFANDFiles(false); return; break; }

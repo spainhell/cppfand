@@ -865,32 +865,19 @@ WORD Menu(WORD MsgNr, WORD IStart)
 
 bool PrinterMenu(WORD Msg)
 {
-	TMenuBoxS* w = nullptr; WORD i, j;
-	void* p = nullptr;
-	std::string nr;
-	std::string nm, lpt;
-
-	MarkStore(p);
 	RdMsg(Msg);
-	j = prCurr;
-	for (prCurr = 0; prCurr <= prMax - 1; prCurr++) {
-		i = printer[prCurr].Lpti;
-		nr = std::to_string(i);
-		nm = PrTab(prName);
-		ReplaceChar(nm, '/', '-');
-		lpt = "(LPT" + nr + ")";
-		if (printer[prCurr].ToMgr) lpt = "";
+	for (WORD j = 0; j < prMax; j++) {
+		Printer* pr = &printer[j];
+		std::string nm = PrTab(j);
+		std::replace(nm.begin(), nm.end(), '/', '-');
+		std::string lpt = (pr->ToMgr) ? "" : "(LPT" + std::to_string(pr->Lpti) + ")";
 		char buffer[10]{ 0 };
 		snprintf(buffer, sizeof(buffer), "%*c", MaxI(0, 9 - nm.length()), ' ');
 		MsgLine = MsgLine + '/' + nm + buffer + lpt;
 	}
-	prCurr = j;
-	//New(w, Init(0, 0, (pstring*)&MsgLine));
-	w = new TMenuBoxS(0, 0, MsgLine);
-	i = w->Exec(prCurr + 1);
+	std::unique_ptr<TMenuBoxS> w = std::make_unique<TMenuBoxS>(0, 0, MsgLine);
+	WORD i = w->Exec(prCurr + 1);
 	if (i > 0) SetCurrPrinter(i - 1);
-	delete w;
-	ReleaseStore(p);
 	return i > 0;
 }
 

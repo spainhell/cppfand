@@ -1576,22 +1576,29 @@ bool OSshell(std::string Path, std::string CmdLine, bool NoCancel, bool FreeMm, 
 	return true;
 }
 
-pstring PrTab(WORD N)
+std::string PrTab(WORD N)
 {
-	void* p = printer[prCurr].Strg;
-
-	// ASM
-	return "";
+	std::string result;
+	if (printer[N].Strg.empty()) result = "";
+	BYTE length = printer[N].Strg[0];
+	result = printer[N].Strg.substr(1, length);
+	return result;
 }
 
 void SetCurrPrinter(integer NewPr)
 {
 	if (NewPr >= prMax) return;
-	if (prCurr >= 0) /* !!! with printer[prCurr] do!!! */
-		if (printer[prCurr].TmOut != 0)	PrTimeOut[printer[prCurr].Lpti] = OldPrTimeOut[printer[prCurr].Lpti];
+	if (prCurr >= 0) {/* !!! with printer[prCurr] do!!! */
+		if (printer[prCurr].TmOut != 0) {
+			PrTimeOut[printer[prCurr].Lpti] = OldPrTimeOut[printer[prCurr].Lpti];
+		}
+	}
 	prCurr = NewPr;
-	if (prCurr >= 0) /* !!! with printer[prCurr] do!!! */
-		if (printer[prCurr].TmOut != 0) PrTimeOut[printer[prCurr].Lpti] = printer[prCurr].TmOut;
+	if (prCurr >= 0) { /* !!! with printer[prCurr] do!!! */
+		if (printer[prCurr].TmOut != 0) {
+			PrTimeOut[printer[prCurr].Lpti] = printer[prCurr].TmOut;
+		}
+	}
 }
 
 void (*ExitSave)(); //535
