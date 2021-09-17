@@ -3168,7 +3168,7 @@ label2:
 	if (TTExit) X = E->ExD;
 	Upd = false;
 	result =
-		EditText(Kind, MemoT, HdTxt, ErrMsg, S, MaxLStrLen, TxtPos, TxtXY, std::move(Breaks), X,
+		EditText(Kind, MemoT, HdTxt, ErrMsg, S, MaxLStrLen, TxtPos, TxtXY, Breaks, X,
 			Srch, Upd, 141, CtrlMsgNr, PTxtMsgS);
 	ErrMsg = "";
 	heslo = LexWord;

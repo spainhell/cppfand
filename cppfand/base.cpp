@@ -256,8 +256,7 @@ void ClearLL(BYTE attr)
 
 WORD TResFile::Get(WORD Kod, void** P)
 {
-	// CPP: kod-1 (indexujeme tady od 0) 
-	WORD l = A[Kod - 1].Size;
+	WORD l = A[Kod].Size;
 	//GetMem(P, l);
 	*P = new BYTE(l);
 	auto sizeF = FileSizeH(Handle);
@@ -268,13 +267,13 @@ WORD TResFile::Get(WORD Kod, void** P)
 
 std::string TResFile::Get(WORD Kod)
 {
-	char* tmpCh = new char[A[Kod - 1].Size];
-	WORD l = A[Kod - 1].Size;
+	char* tmpCh = new char[A[Kod].Size];
+	WORD l = A[Kod].Size;
 
 	auto sizeF = FileSizeH(Handle);
-	auto seekF = SeekH(Handle, A[Kod - 1].Pos);
+	auto seekF = SeekH(Handle, A[Kod].Pos);
 	auto readF = ReadH(Handle, l, tmpCh);
-	std::string result = tmpCh;
+	std::string result = std::string(tmpCh, l);
 	delete[] tmpCh;
 	return result;
 }

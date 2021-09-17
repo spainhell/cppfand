@@ -1529,7 +1529,7 @@ void NextLine(bool WrScr)
 	}
 }
 
-void Frame()
+void Frame(std::vector<WORD>& breakKeys)
 {
 	pstring FrameString(15);
 	FrameString = "\x50\x48\xB3\x4D\xDA\xC0\xC3\x4B\xBF\xD9\xB4\xC4\xC2\xC1\xC5";
@@ -1548,7 +1548,7 @@ void Frame()
 
 	while (true) /* !!! with Event do!!! */
 	{
-		if (!MyGetEvent(Mode, SysLColor, LastS, LastNr, IsWrScreen, bScroll, ExitD) ||
+		if (!MyGetEvent(Mode, SysLColor, LastS, LastNr, IsWrScreen, bScroll, ExitD, breakKeys) ||
 			((Event.What == evKeyDown) && (Event.Pressed.KeyCombination() == __ESC)) || (Event.What != evKeyDown)) {
 			ClrEvent();
 			screen.CrsNorm();
@@ -1609,10 +1609,10 @@ void Frame()
 	}
 }
 
-void CleanFrameM()
+void CleanFrameM(std::vector<WORD>& breakKeys)
 {
 	if (Mode == SinFM || Mode == DouFM || Mode == DelFM || Mode == NotFM) /* !!! with Event do!!! */
-		if (!MyGetEvent(Mode, SysLColor, LastS, LastNr, IsWrScreen, bScroll, ExitD) ||
+		if (!MyGetEvent(Mode, SysLColor, LastS, LastNr, IsWrScreen, bScroll, ExitD, breakKeys) ||
 			((Event.What == evKeyDown) && (Event.Pressed.KeyCombination() == __ESC)) || (Event.What != evKeyDown))
 		{
 			ClrEvent();
@@ -2733,7 +2733,7 @@ void CursorWord()
 	}
 }
 
-void Edit()
+void Edit(std::vector<WORD>& breakKeys)
 {
 	InitScr();
 	IsWrScreen = false;
@@ -2815,7 +2815,7 @@ void Edit()
 		if (TypeT == FileT) {
 			NullChangePart();
 		}
-		HandleEvent(Mode, IsWrScreen, SysLColor, LastS, LastNr);
+		HandleEvent(Mode, IsWrScreen, SysLColor, LastS, LastNr, breakKeys);
 		if (!(Konec || IsWrScreen)) {
 			Background();
 		}
@@ -2855,7 +2855,7 @@ void GetEditTxt(bool& pInsert, bool& pIndent, bool& pWrap, bool& pJust, bool& pC
 }
 
 bool EditText(char pMode, char pTxtType, std::string pName, std::string pErrMsg, LongStr* pLS, WORD pMaxLen,
-	WORD& pInd, longint& pScr, std::vector<WORD> break_keys, EdExitD* pExD, bool& pSrch, bool& pUpdat, WORD pLastNr,
+	WORD& pInd, longint& pScr, std::vector<WORD>& break_keys, EdExitD* pExD, bool& pSrch, bool& pUpdat, WORD pLastNr,
 	WORD pCtrlLastNr, MsgStr* pMsgS)
 {
 	bool oldEdOK = EdOk; EditT = true;
@@ -2895,7 +2895,7 @@ bool EditText(char pMode, char pTxtType, std::string pName, std::string pErrMsg,
 		IndT = 0;
 	}
 
-	Edit();
+	Edit(break_keys);
 	if (Mode != HelpM) { TextAttr = TxtColor; }
 	pUpdat = UpdatT;
 	pSrch = SrchT;
@@ -2911,8 +2911,9 @@ void SimpleEditText(char pMode, std::string pErrMsg, std::string pName, LongStr*
 {
 	bool Srch; longint Scr;
 	Srch = false; Scr = 0;
+	std::vector<WORD> emptyBreakKeys;
 	EditText(pMode, LocalT, std::move(pName), std::move(pErrMsg), pLS, MaxLen, Ind, Scr,
-		std::vector<WORD>(), nullptr, Srch, Updat, 0, 0, nullptr);
+		emptyBreakKeys, nullptr, Srch, Updat, 0, 0, nullptr);
 }
 
 WORD FindTextE(const pstring& Pstr, pstring Popt, char* PTxtPtr, WORD PLen)
@@ -2983,13 +2984,13 @@ void EditTxtFile(longint* LP, char Mode, std::string& ErrMsg, EdExitD* ExD, long
 			LongStr* LS2 = new LongStr(T, LenT);
 			std::vector<WORD> brkKeys = { __F1, __F6, __F9, __ALT_F10 };
 			EditText(Mode, FileT, TxtPath, ErrMsg, LS2, 0xFFF0, Ind, Txtxy,
-				std::move(brkKeys), ExD, Srch, Upd, 126, 143, MsgS);
+				brkKeys, ExD, Srch, Upd, 126, 143, MsgS);
 			T = LS2->A; LenT = LS2->LL;
 		}
 		else {
 			std::vector<WORD> brkKeys = { __F1, __F6 };
 			EditText(Mode, LocalT, "", ErrMsg, LS, MaxLStrLen, Ind, Txtxy,
-				std::move(brkKeys), ExD, Srch, Upd, 126, 143, MsgS);
+				brkKeys, ExD, Srch, Upd, 126, 143, MsgS);
 		}
 		TxtPos = Ind + Part.PosP;
 		if (Upd) EdUpdated = true;
@@ -3030,7 +3031,7 @@ void EditTxtFile(longint* LP, char Mode, std::string& ErrMsg, EdExitD* ExD, long
 			}
 			}
 		if (!Loc) { Size = FileSizeH(TxtFH); CloseH(&TxtFH); }
-		if ((EdBreak == 0xFFFF) && (KbdChar == _F6_)) {
+		if ((EdBreak == 0xFFFF) && (KbdChar == __F6)) {
 			if (Loc) {
 				PrintArray(T, LenT, false);
 				continue;
@@ -3091,7 +3092,7 @@ void ViewHelpText(LongStr* S, WORD& TxtPos)
 		brkKeys.push_back(__CTRL_HOME);
 		brkKeys.push_back(__CTRL_END);
 		EditText(HelpM, MemoT, "", "", S, 0xFFF0, TxtPos, Scr,
-			std::move(brkKeys), nullptr, Srch, Upd, 142, 145, nullptr);
+			brkKeys, nullptr, Srch, Upd, 142, 145, nullptr);
 		if (Event.Pressed.KeyCombination() == __F6) {
 			PrintArray(&S->A, S->LL, true);
 			continue;

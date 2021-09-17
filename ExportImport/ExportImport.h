@@ -1,6 +1,6 @@
 #pragma once
-#include "constants.h"
-#include "rdrun.h"
+#include "../cppfand/constants.h"
+#include "../cppfand/rdrun.h"
 
 class Instr_backup;
 
@@ -10,9 +10,7 @@ inline void XEncode(LongStr* S1, LongStr* S2)
 {
 }
 
-inline void CopyFileE(CopyD* CD)
-{
-}
+void CopyFile(CopyD* CD);
 
 inline void Backup(bool IsBackup, bool NoCompress, WORD Ir, bool NoCancel)
 {

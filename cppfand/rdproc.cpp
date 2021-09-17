@@ -1650,7 +1650,7 @@ Instr* RdExec()
 
 Instr* RdCopyFile()
 {
-	pstring ModeTxt[7] = { "KL","LK","KN","LN","LW","KW","WL" };
+	std::string ModeTxt[7] = { "KL","LK","KN","LN","LW","KW","WL" };
 	FieldDPtr* F = nullptr;
 	WORD i = 0;
 	CopyD* D = nullptr;
@@ -1697,8 +1697,12 @@ Instr* RdCopyFile()
 		}
 		else if (IsOpt("MODE")) {
 			TestLex(_quotedstr);
-			for (i = 0; i < 7; i++)
-				if (SEquUpcase(LexWord, ModeTxt[i])) { D->Mode = i; goto label1; }
+			for (i = 0; i < 7; i++) {
+				if (SEquUpcase(LexWord, ModeTxt[i])) {
+					D->Mode = i + 1;
+					goto label1;
+				}
+			}
 			Error(142);
 		label1:
 			RdLex();

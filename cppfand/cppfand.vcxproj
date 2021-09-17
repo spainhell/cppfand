@@ -166,7 +166,6 @@
     <ClCompile Include="compile.cpp" />
     <ClCompile Include="cppfand.cpp" />
     <ClCompile Include="OldDrivers.cpp" />
-    <ClCompile Include="expimp.cpp" />
     <ClCompile Include="FieldDescr.cpp" />
     <ClCompile Include="FileD.cpp" />
     <ClCompile Include="GlobalVariables.cpp" />
@@ -213,7 +212,6 @@
     <ClInclude Include="compile.h" />
     <ClInclude Include="constants.h" />
     <ClInclude Include="OldDrivers.h" />
-    <ClInclude Include="expimp.h" />
     <ClInclude Include="fanddml.h" />
     <ClInclude Include="FieldDescr.h" />
     <ClInclude Include="FileD.h" />
@@ -267,6 +265,9 @@
     </ProjectReference>
     <ProjectReference Include="..\Editor\Editor.vcxproj">
       <Project>{a08457d5-2848-4fb1-ae40-ec55ef69b5da}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\ExportImport\ExportImport.vcxproj">
+      <Project>{b84d55f3-9189-4319-b73d-d3ee0dd4b0f1}</Project>
     </ProjectReference>
     <ProjectReference Include="..\exprcmp\exprcmp.vcxproj">
       <Project>{f5de7ca0-3e83-42c1-9602-54cfea2e5378}</Project>

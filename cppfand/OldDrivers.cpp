@@ -417,7 +417,7 @@ void ConvKamenToCurr(void* Buf, WORD L)
 	}
 }
 
-void ConvKamenLatin(WORD* Buf, WORD L, bool ToLatin)
+void ConvKamenLatin(void* Buf, WORD L, bool ToLatin)
 {
 }
 

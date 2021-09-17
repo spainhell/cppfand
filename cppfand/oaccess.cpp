@@ -1,7 +1,6 @@
 #include "oaccess.h"
 
 #include "base.h"
-#include "expimp.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
 #include "legacy.h"
@@ -10,6 +9,7 @@
 #include "TFile.h"
 #include "wwmix.h"
 #include "XFile.h"
+#include "../ExportImport/ExportImport.h"
 
 void OpenXWorkH()
 {

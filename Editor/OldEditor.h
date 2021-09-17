@@ -17,7 +17,7 @@ struct MsgStr
 
 bool EditText(char pMode, char pTxtType, std::string pName, std::string pErrMsg,
 	LongStr* pLS, WORD pMaxLen, WORD& pInd, longint& pScr,
-	std::vector<WORD> break_keys, EdExitD* pExD, bool& pSrch, bool& pUpdat,
+	std::vector<WORD>& break_keys, EdExitD* pExD, bool& pSrch, bool& pUpdat,
 	WORD pLastNr, WORD pCtrlLastNr, MsgStr* pMsgS); // r169
 void SimpleEditText(char pMode, std::string pErrMsg, std::string pName, LongStr* TxtPtr,
 	WORD MaxLen, WORD& Ind, bool& Updat); // r202
@@ -32,7 +32,7 @@ void Background();
 void DisplLL(WORD Flags);
 void WrLLMargMsg(std::string& s, WORD n);
 void ScrollPress();
-void CleanFrameM();
+void CleanFrameM(std::vector<WORD>& breakKeys);
 WORD SetInd(char* text, size_t len_text, WORD Ind, WORD Pos);
 void TestUpdFile();
 void DelEndT();

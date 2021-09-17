@@ -196,7 +196,7 @@ void RdCFG()
 	if (strcmp(ver, CfgVersion) != 0) {
 		printf("Invalid version of FAND.CFG"); wait(); Halt(-1);
 	}
-	// naètení SPEC
+	// nactení SPEC
 	ReadH(CfgHandle, sizeof(spec.UpdCount), &spec.UpdCount);
 	ReadH(CfgHandle, sizeof(spec.AutoRprtWidth), &spec.AutoRprtWidth);
 	ReadH(CfgHandle, sizeof(spec.AutoRprtLimit), &spec.AutoRprtLimit);
@@ -536,7 +536,7 @@ void InitRunFand()
 	//ResFile.Get(FandFace, &p);
 	//x = (pstring*)p;
 
-	std::string ResText = ResFile.Get(FandFace);
+	std::string ResText = ResFile.Get(FandFace - 1);
 
 	xofs++;
 	for (int ii = -11; ii <= -6; ii++) {

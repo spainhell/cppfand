@@ -93,7 +93,7 @@ void Assign(WORD XX, WORD YY);
 void Assign(pstring XX, pstring YY);
 char CurrToKamen(char C);
 void ConvKamenToCurr(void* Buf, WORD L);
-void ConvKamenLatin(WORD* Buf, WORD L, bool ToLatin);
+void ConvKamenLatin(void* Buf, WORD L, bool ToLatin);
 char ToggleCS(char C);
 char NoDiakr(char C);
 void ConvToNoDiakr(void* Buf, WORD L, TVideoFont FromFont);

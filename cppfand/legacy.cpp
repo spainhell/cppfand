@@ -482,7 +482,3 @@ bool TextFile::ResetTxt()
 {
 	return false;
 }
-
-
-
-

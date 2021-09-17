@@ -71,11 +71,12 @@ bool My2GetEvent()
 	return true;
 }
 
-bool HelpEvent()
+bool HelpEvent(std::vector<WORD>& breakKeys)
 {
+	WORD key = Event.Pressed.KeyCombination();
 	bool result = false;
 	if (Event.What == evKeyDown) {
-		switch (Event.Pressed.KeyCombination()) {
+		switch (key) {
 		case _ESC_:
 		case _left_:
 		case _right_:
@@ -90,7 +91,8 @@ bool HelpEvent()
 		default:;
 		}
 	}
-	else if ((Lo(Event.Pressed.KeyCombination()) == 0x00)/* && (Breaks.first(Hi(Event.Pressed.KeyCombination()))) != 0*/) {
+	//else if ((Lo(Event.Pressed.KeyCombination()) == 0x00) && (Breaks.first(Hi(Event.Pressed.KeyCombination()))) != 0) {
+	else if (std::find(breakKeys.begin(), breakKeys.end(), key) != breakKeys.end()) {
 		result = true;
 	}
 	if (Event.What == evMouseDown) {
@@ -113,11 +115,13 @@ void Wr(std::string s, std::string& OrigS, char Mode, BYTE SysLColor)
 	}
 }
 
-bool ScrollEvent(EdExitD* ExitD) {
+bool ScrollEvent(EdExitD* ExitD, std::vector<WORD>& breakKeys)
+{
+	WORD key = Event.Pressed.KeyCombination();
 	bool result = false;
 	if (Event.What != evKeyDown) return result;
 	// with Event do case KeyCode of
-	switch (Event.Pressed.KeyCombination()) {
+	switch (key) {
 	case __ESC:
 	case __LEFT:
 	case __RIGHT:
@@ -133,7 +137,8 @@ bool ScrollEvent(EdExitD* ExitD) {
 		break;
 	default: {
 		// TODO: toto bude delat problem
-		if ((Lo(Event.Pressed.KeyCombination()) == 0x00) /* && (Breaks.first(Hi(Event.Pressed.KeyCombination())) != 0)*/) {
+		//if ((Lo(Event.Pressed.KeyCombination()) == 0x00)  && (Breaks.first(Hi(Event.Pressed.KeyCombination())) != 0)) {
+			if (std::find(breakKeys.begin(), breakKeys.end(), key) != breakKeys.end()) {
 			result = true;
 		}
 		else {
@@ -153,9 +158,9 @@ bool ScrollEvent(EdExitD* ExitD) {
 	return result;
 }
 
-bool ViewEvent(EdExitD* ExitD)
+bool ViewEvent(EdExitD* ExitD, std::vector<WORD>& breakKeys)
 {
-	bool result = ScrollEvent(ExitD);
+	bool result = ScrollEvent(ExitD, breakKeys);
 	if (Event.What != evKeyDown) return result;
 	switch (Event.Pressed.KeyCombination()) {
 	case _QF_:
@@ -189,7 +194,7 @@ bool ViewEvent(EdExitD* ExitD)
 	return result;
 }
 
-bool MyGetEvent(char Mode, BYTE SysLColor, std::string& LastS, WORD LastNr, bool IsWrScreen, bool bScroll, EdExitD* ExitD) {
+bool MyGetEvent(char Mode, BYTE SysLColor, std::string& LastS, WORD LastNr, bool IsWrScreen, bool bScroll, EdExitD* ExitD, std::vector<WORD>& breakKeys) {
 	std::string OrigS = "    ";
 	WORD ww;
 
@@ -293,16 +298,16 @@ bool MyGetEvent(char Mode, BYTE SysLColor, std::string& LastS, WORD LastNr, bool
 	{
 	case HelpM:
 	{
-		result = HelpEvent();
+		result = HelpEvent(breakKeys);
 		break;
 	}
 	case ViewM: {
-		if (bScroll) result = ScrollEvent(ExitD);
-		else result = ViewEvent(ExitD);
+		if (bScroll) result = ScrollEvent(ExitD, breakKeys);
+		else result = ViewEvent(ExitD, breakKeys);
 		break;
 	}
 	case TextM: {
-		if (bScroll) result = ScrollEvent(ExitD);
+		if (bScroll) result = ScrollEvent(ExitD, breakKeys);
 		else result = true;
 		break;
 	}
@@ -311,7 +316,7 @@ bool MyGetEvent(char Mode, BYTE SysLColor, std::string& LastS, WORD LastNr, bool
 	return result;
 }
 
-void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS, WORD LastNr) {
+void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS, WORD LastNr, std::vector<WORD>& breakKeys) {
 	wwmix wwmix1;
 	WORD I = 0, I1 = 0;
 	integer I2 = 0, I3 = 0;
@@ -330,12 +335,12 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 
 	IsWrScreen = false;
 
-	if (!MyGetEvent(Mode, SysLColor, LastS, LastNr, IsWrScreen, bScroll, ExitD)) {
+	if (!MyGetEvent(Mode, SysLColor, LastS, LastNr, IsWrScreen, bScroll, ExitD, breakKeys)) {
 		ClrEvent();
 		IsWrScreen = false;
 		return;
 	}
-	if (!bScroll) { CleanFrameM(); }
+	if (!bScroll) { CleanFrameM(breakKeys); }
 	//NewExit(Ovr(), er);
 	//goto Opet;
 	// !!! with Event do:
@@ -1118,9 +1123,20 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 				break;
 			}
 			default: {
-				if (key >= 0x1000 && key <= 0x101F) {
+				if (std::find(breakKeys.begin(), breakKeys.end(), key) != breakKeys.end()) {
+					// *** BREAK KEYS ***
+					TestKod();
+					//KbdChar: = ww;
+					Konec = true;
+					EdBreak = 0xFFFF;
+				}
+				else if (key >= 0x1000 && key <= 0x101F) {
 					WrCharE(Lo(key)); // ***CTRL-klavesy***
-					if (key == 0x100D) { TestKod(); DekodLine(); Posi--; }
+					if (key == 0x100D) {
+						TestKod();
+						DekodLine();
+						Posi--;
+					}
 				}
 				break;
 				// ***ERROR TESTLENTEXT***

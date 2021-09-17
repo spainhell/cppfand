@@ -4,7 +4,6 @@
 #include "../pascal/random.h"
 #include "compile.h"
 #include "OldDrivers.h"
-#include "expimp.h"
 #include "FieldDescr.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
@@ -26,6 +25,7 @@
 #include "../Editor/OldEditor.h"
 #include "../Editor/EditorHelp.h"
 #include "../Editor/runedi.h"
+#include "../ExportImport/ExportImport.h"
 #include "../MergeReport/genrprt.h"
 #include "../MergeReport/rdmerg.h"
 #include "../MergeReport/rdrprt.h"
@@ -1125,7 +1125,7 @@ void RunInstr(Instr* PD)
 		case _exec: ExecPgm((Instr_exec*)PD); break;
 		case _proc: CallProcedure((Instr_proc*)PD); break;
 		case _call: CallRdbProc((Instr_call*)PD); break;
-		case _copyfile: CopyFileE(((Instr_copyfile*)PD)->CD); break;
+		case _copyfile: CopyFile(((Instr_copyfile*)PD)->CD); break;
 		case _headline: HeadLineProc(((Instr_assign*)PD)->Frml); break;
 		case _setkeybuf: SetKeyBufProc(((Instr_assign*)PD)->Frml); break;
 		case _writeln: WritelnProc((Instr_writeln*)PD); break;

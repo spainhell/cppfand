@@ -81,9 +81,6 @@
     <ClCompile Include="olongstr.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="expimp.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="models\Instr.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -219,9 +216,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="obase.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="expimp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="olongstr.h">
