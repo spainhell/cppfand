@@ -1,6 +1,8 @@
 #include "printtxt.h"
 
+#include <fstream>
 
+#include "../textfunc/textfunc.h"
 #include "GlobalVariables.h"
 #include "legacy.h"
 #include "oaccess.h"
@@ -51,12 +53,11 @@ void PrintHeFo(pstring T)
 	NewLine();
 }
 
-pstring replaceNo(pstring s, pstring sNew)
+std::string replaceNo(std::string s, std::string sNew)
 {
-	integer i = s.first('#');
-	if (i > 0) {
-		s.Delete(i, 1);
-		s.insert(sNew.c_str(), i);
+	size_t i = s.find('#');
+	if (i != std::string::npos) {
+		s.replace(i, 1, sNew);
 	}
 	return s;
 }
@@ -64,9 +65,9 @@ pstring replaceNo(pstring s, pstring sNew)
 void ExecMgrPgm()
 {
 	BYTE x = 0, y = 0;
-	pstring pgmNm = PrTab(prMgrProg);
-	if (pgmNm == "") return;
-	pstring param = replaceNo(PrTab(prMgrParam), CPath);
+	std::string pgmNm = PrTab(prCurr, prMgrProg);
+	if (pgmNm.empty()) return;
+	std::string param = replaceNo(PrTab(prCurr, prMgrParam), CPath);
 	Wind wmin = WindMin;
 	Wind wmax = WindMax;
 	TCrs crs = screen.CrsGet();
@@ -82,11 +83,10 @@ void ExecMgrPgm()
 
 FILE* OpenMgrOutput()
 {
-	pstring s;
 	FILE* h;
 	prFileNr = (prFileNr + 1) % 100;
-	str(prFileNr, s);
-	CPath = replaceNo(PrTab(prMgrFileNm), s);
+	std::string s = std::to_string(prFileNr);
+	CPath = replaceNo(PrTab(prCurr, prMgrFileNm), s);
 	CVol = "";
 	if (CPath.length() == 0) h = nullptr;
 	else {
@@ -100,36 +100,39 @@ FILE* OpenMgrOutput()
 	return h;
 }
 
-void CopyToMgr()
+void CopyToMgr(std::string& text)
 {
-	FILE* h1; FILE* h2;
-	WORD n; void* buf; longint lbuf, sz; pstring s; void* cf; void* cr;
-	h2 = OpenMgrOutput(); if (h2 == nullptr) return; cf = CFile; cr = CRecPtr;
+	FILE* h2 = OpenMgrOutput();
+	if (h2 == nullptr) return;
+	//FileD* cf = CFile; void* cr = CRecPtr;
 	if (printBlk) WriteH(h2, nBlk, *pBlk);
-	else { /* !!! with TextRec(Rprt) do!!! */
-		h1 = Rprt.Handle;
-		SeekH(h1, 0);
-		lbuf = 1000; buf = GetStore(lbuf); sz = FileSizeH(h1);
-		while (sz > 0) {
-			if (sz > lbuf) n = lbuf;
-			else n = sz;
-			sz -= n;
-			ReadH(h1, n, buf);
-			WriteH(h2, n, buf);
-		}
-		ReleaseStore(buf);
-		CloseH(&h1);
-		if (h1 == WorkHandle) WorkHandle = nullptr;
-		/* !!! with TextRec(Rprt) do!!! */
-		Rprt.Handle = nullptr;
+	else {
+		//longint n;
+		//FILE* h1 = Rprt.Handle;
+		//SeekH(h1, 0);
+		//longint lbuf = 1000;
+		//void* buf = GetStore(lbuf);
+		//longint sz = FileSizeH(h1);
+		//while (sz > 0) {
+		//	if (sz > lbuf) n = lbuf;
+		//	else n = sz;
+		//	sz -= n;
+		//	ReadH(h1, n, buf);
+		//	WriteH(h2, n, buf);
+		//}
+		//ReleaseStore(buf);
+		//CloseH(&h1);
+		//if (h1 == WorkHandle) WorkHandle = nullptr;
+		///* !!! with TextRec(Rprt) do!!! */
+		//Rprt.Handle = nullptr;
+		WriteH(h2, text.length(), (void*)text.c_str());
 	}
 	CloseH(&h2);
 	ExecMgrPgm();
-	CFile = (FileD*)cf;
-	CRecPtr = cr;
+	//CFile = cf; CRecPtr = cr;
 }
 
-void PrintTxtFBlk(longint BegPos, bool CtrlL)
+void PrintTxtFBlk(std::string& text, longint BegPos, bool CtrlL)
 {
 	WORD Ti = 0, Times = 0, Cp = 0, Pl = 0, MaxLine = 0;
 	pstring FoTxt, HeTxt;
@@ -138,6 +141,9 @@ void PrintTxtFBlk(longint BegPos, bool CtrlL)
 	// NewExit(Ovr(), er);
 	// goto label3;
 	RunMsgOn('P', 0);
+
+	auto lines = GetAllLines(text);
+
 	bool FrstRun = true; outpsw = false; charrd = 0;
 	do {
 		bool AutoFF = false; bool FFOpt = false;
@@ -147,9 +153,9 @@ void PrintTxtFBlk(longint BegPos, bool CtrlL)
 		Cp = spec.CpLines;
 		Pl = spec.AutoRprtLimit + Cp;
 		ResetInp();
-		while (!EofInp()) {
-			RdLnInp();
-			s = copy(Ln, 1, 3);
+		for (std::string& line : lines) {
+			// RdLnInp(); // TODO: tisk bloku
+			std::string s = line.substr(0, 3);
 			if (SEquUpcase(s, ".cp")) {
 				AutoFF = true;
 				GetNum(Cp);
@@ -174,7 +180,7 @@ void PrintTxtFBlk(longint BegPos, bool CtrlL)
 		bool adj = FrstRun && !FFOpt && !NMOpt;
 		if (adj && spec.ChoosePrMsg) if (!PrinterMenu(62)) goto label3;
 		if (printer[prCurr].ToMgr) {
-			CopyToMgr();
+			CopyToMgr(text);
 			goto label3;
 		}
 		if (!ResetPrinter(Pl, Po, adj, FrstRun)) goto label3;
@@ -219,7 +225,7 @@ void PrintTxtFBlk(longint BegPos, bool CtrlL)
 			PrintHeFo(FoTxt);
 		}
 		if (!FFOpt && CtrlL)
-			if (PrTab(prClose) != "ff") PrintChar_T(0x0C); /*  Mark*** */
+			if (PrTab(prCurr, prClose) != "ff") PrintChar_T(0x0C); /*  Mark*** */
 		Times--;
 	} while (Times != 0);
 	ClosePrinter(Po);
@@ -230,42 +236,63 @@ label3:
 
 void PrintTxtFile(longint BegPos)
 {
-	TestMountVol(CPath[1]);
-	if (!Rprt.ResetTxt())
-	{
+	//TestMountVol(CPath[1]);
+	//if (!Rprt.ResetTxt())
+	//{
+	//	SetMsgPar(CPath);
+	//	WrLLF10Msg(700 + HandleError);
+	//	return;
+	//}
+	std::string text;
+	try {
+		//std::ifstream t(CPath);
+		//text = std::string((std::istreambuf_iterator<char>(t)),	std::istreambuf_iterator<char>());
+		//t.close();
+		FILE* handle;
+		fopen_s(&handle, CPath.c_str(), "rb");
+		fseek(handle, 0, std::ios::end);
+		size_t size = ftell(handle);
+		text = std::string(size, ' ');
+		fseek(handle, 0, std::ios::beg);
+		fread(&text[0], 1, size, handle);
+		fclose(handle);
+	}
+	catch (std::exception& e) {
 		SetMsgPar(CPath);
 		WrLLF10Msg(700 + HandleError);
 		return;
 	}
+
 	printBlk = false;
-	PrintTxtFBlk(BegPos, true);
-	/* !!! with TextRec(Rprt) do!!! */
-	if (Rprt.Handle == nullptr) return;
-	Rprt.Close(nullptr); // nullptr je tady navic po uprave metody Close()
+	PrintTxtFBlk(text, BegPos, true);
+
+	//if (Rprt.Handle == nullptr) return;
+	//Rprt.Close(nullptr); // nullptr je tady navic po uprave metody Close()
 }
 
 void PrintArray(void* P, WORD N, bool CtrlL)
 {
 	printBlk = true;
-	pBlk = CharArrPtr(P);
-	nBlk = N;
-	PrintTxtFBlk(0, CtrlL);
+	std::string text = std::string((char*)P);
+	//pBlk = CharArrPtr(P);
+	//nBlk = N;
+	PrintTxtFBlk(text, 0, CtrlL);
 }
 
 void PrintFandWork()
 {
-	CloseH(&WorkHandle);
-	Rprt.Assign(FandWorkName.c_str());
-	/* !!! with TextRec(Rprt) do!!! */
-	{
-		Rprt.openfunc = Rprt.opentxt;
-		OpenWorkH();
-		Rprt.Handle = WorkHandle;
-	}
-	Rprt.Reset();
-	printBlk = false;
-	PrintTxtFBlk(0, true);
-	if (WorkHandle == nullptr) OpenWorkH();
+	//CloseH(&WorkHandle);
+	//Rprt.Assign(FandWorkName.c_str());
+	///* !!! with TextRec(Rprt) do!!! */
+	//{
+	//	Rprt.openfunc = Rprt.opentxt;
+	//	OpenWorkH();
+	//	Rprt.Handle = WorkHandle;
+	//}
+	//Rprt.Reset();
+	//printBlk = false;
+	//PrintTxtFBlk(0, true);
+	//if (WorkHandle == nullptr) OpenWorkH();
 }
 
 void PrintChar_T(char c)
@@ -321,7 +348,7 @@ void RdLnInp()
 void ResetInp()
 {
 	if (printBlk) iBlk = 1;
-	else Seek0Txt(&Rprt);
+	//else Seek0Txt(&Rprt);
 }
 
 

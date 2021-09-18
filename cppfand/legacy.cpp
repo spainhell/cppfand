@@ -442,6 +442,11 @@ double DiskFree(char disk)
 	return 1000000000.0;
 }
 
+TextFile::~TextFile()
+{
+	delete[] buffer;
+}
+
 const char* TextFile::c_str()
 {
 	return (const char*)buffer;
@@ -452,9 +457,10 @@ void TextFile::Close(const char* data)
 	// ulozi data do souboru a zavre jej
 	// ukladame po 1 znaku, aby bylo mozno ukladat misto '\n' cely '\r\n'
 	char charCR = '\r';
-	for (size_t i = 0; i < strlen(data); i++)
-	{
-		if (data[i] == '\n') fwrite(&charCR, 1, 1, Handle);
+	for (size_t i = 0; i < strlen(data); i++) {
+		if (data[i] == '\n') {
+			fwrite(&charCR, 1, 1, Handle);
+		}
 		fwrite(&data[i], 1, 1, Handle);
 	}
 	
@@ -480,5 +486,13 @@ void TextFile::Rewrite()
 
 bool TextFile::ResetTxt()
 {
-	return false;
+	auto HandleError = fopen_s(&Handle, FullPath.c_str(), "r");
+	//fseek(Handle, 0, SEEK_END);
+	//auto pos = ftell(Handle);
+	//buffer = new BYTE[pos];
+	//fseek(Handle, 0, SEEK_SET);
+	//fread_s(buffer, pos, sizeof(BYTE), pos, Handle);
+	//fclose(Handle);
+	//Handle = nullptr;
+	return true;
 }

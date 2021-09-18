@@ -78,44 +78,44 @@ pstring CtrlToESC(char C)
 		return res; break;
 	}
 	case 0x13: // ^S
-		if (SFlag) { return PrTab(prUl2); SFlag = false; }
-		else { SFlag = true; return PrTab(prUl1); }
+		if (SFlag) { return PrTab(prCurr, prUl2); SFlag = false; }
+		else { SFlag = true; return PrTab(prCurr, prUl1); }
 		break;
 	case 0x11: // ^Q
-		if (QFlag) { return PrTab(prBr2); QFlag = false; }
-		else { QFlag = true; return PrTab(prBr1); }
+		if (QFlag) { return PrTab(prCurr, prBr2); QFlag = false; }
+		else { QFlag = true; return PrTab(prCurr, prBr1); }
 		break;
 	case 0x17: // ^W
-		if (WFlag) { return PrTab(prKv2); WFlag = false; }
-		else { WFlag = true; return PrTab(prKv1); }
+		if (WFlag) { return PrTab(prCurr, prKv2); WFlag = false; }
+		else { WFlag = true; return PrTab(prCurr, prKv1); }
 		break;
 	case 0x02: // ^B
-		if (BFlag) { return PrTab(prBd2); BFlag = false; }
-		else { BFlag = true; return PrTab(prBd1); }
+		if (BFlag) { return PrTab(prCurr, prBd2); BFlag = false; }
+		else { BFlag = true; return PrTab(prCurr, prBd1); }
 		break;
 	case 0x04: // ^D
-		if (DFlag) { return PrTab(prDb2); DFlag = false; }
-		else { DFlag = true; return PrTab(prDb1); }
+		if (DFlag) { return PrTab(prCurr, prDb2); DFlag = false; }
+		else { DFlag = true; return PrTab(prCurr, prDb1); }
 		break;
 	case 0x05: // ^E
-		if (EFlag) { return PrTab(prKp2); EFlag = false; }
-		else { EFlag = true; return PrTab(prKp1); }
+		if (EFlag) { return PrTab(prCurr, prKp2); EFlag = false; }
+		else { EFlag = true; return PrTab(prCurr, prKp1); }
 		break;
 	case 0x01: // ^A
-		if (AFlag) { return PrTab(prEl2); AFlag = false; }
-		else { AFlag = true; return PrTab(prEl1); }
+		if (AFlag) { return PrTab(prCurr, prEl2); AFlag = false; }
+		else { AFlag = true; return PrTab(prCurr, prEl1); }
 		break;
 	case 0x18: // ^X
-		if (XFlag) { return PrTab(prUs12); XFlag = false; }
-		else { XFlag = true; return PrTab(prUs11); }
+		if (XFlag) { return PrTab(prCurr, prUs12); XFlag = false; }
+		else { XFlag = true; return PrTab(prCurr, prUs11); }
 		break;
 	case 0x16: // ^V
-		if (VFlag) { return PrTab(prUs22); VFlag = false; }
-		else { VFlag = true; return PrTab(prUs21); }
+		if (VFlag) { return PrTab(prCurr, prUs22); VFlag = false; }
+		else { VFlag = true; return PrTab(prCurr, prUs21); }
 		break;
 	case 0x14: // ^T
-		if (TFlag) { return PrTab(prUs32); TFlag = false; }
-		else { TFlag = true; return PrTab(prUs31); }
+		if (TFlag) { return PrTab(prCurr, prUs32); TFlag = false; }
+		else { TFlag = true; return PrTab(prCurr, prUs31); }
 		break;
 	default: return ""; break;
 	}

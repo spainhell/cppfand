@@ -10,11 +10,11 @@ extern bool printBlk, outpsw;
 extern WORD prFileNr;
 extern pstring Ln;
 
-pstring replaceNo(pstring s, pstring sNew);
+std::string replaceNo(std::string s, std::string sNew);
 void ExecMgrPgm();
 FILE* OpenMgrOutput();
-void CopyToMgr();
-void PrintTxtFBlk(longint BegPos, bool CtrlL);
+void CopyToMgr(std::string& text);
+void PrintTxtFBlk(std::string& text, longint BegPos, bool CtrlL);
 void PrintChar_T(char c); // definován v obase -> pøidáno *_T
 void PrintStr(pstring s);
 void NewLine();

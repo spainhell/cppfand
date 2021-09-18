@@ -240,14 +240,15 @@ double LastUpdate(FILE* Handle)
 
 WORD TypeDay(double R)
 {
-	WORD i, d;
-	if ((R >= WDaysFirst) && (R <= WDaysLast))
-	{
+	WORD d;
+	if ((R >= WDaysFirst) && (R <= WDaysLast)) {
 		d = trunc(R - WDaysFirst);
-		for (i = 0; i < NWDaysTab; i++)
-			if (WDaysTab[i].Nr == d) { return WDaysTab[i].Typ; }
+		for (WORD i = 0; i < NWDaysTab; i++)
+			if (WDaysTab[i].Nr == d) {
+				return WDaysTab[i].Typ;
+			}
 	}
-	d = longint(trunc(R)) % 7;
+	d = (longint)trunc(R) % 7;
 	switch (d) {
 	case 0: d = 2/*Su*/; break;
 	case 6: d = 1/*Sa*/; break;
@@ -258,23 +259,33 @@ WORD TypeDay(double R)
 
 double AddWDays(double R, integer N, WORD d)
 {
-	if (N > 0) while ((N > 0) && (R <= 748383.0/*2050*/)) {
-		R = R + 1; if (TypeDay(R) == d) N--;
+	if (N > 0) {
+		while ((N > 0) && (R <= 748383.0/*2050*/)) {
+			R = R + 1;
+			if (TypeDay(R) == d) N--;
+		}
 	}
-	else while ((N < 0) && (R >= 1)) { R = R - 1; if (TypeDay(R) == d) N++; }
+	else {
+		while ((N < 0) && (R >= 1))	{
+			R = R - 1;
+			if (TypeDay(R) == d) N++;
+		}
+	}
 	return R;
 }
 
 double DifWDays(double R1, double R2, WORD d)
 {
-	integer N; double x1, x2; bool neg; long double r;
-	N = 0;
-	x1 = R1; x2 = R2; neg = false;
-	if (x1 > x2) { x1 = R2; x2 = R1; neg = true; }
+	integer N = 0;
+	double x1 = R1; double x2 = R2;
+	bool neg = false;
+	if (x1 > x2) {
+		x1 = R2; x2 = R1;
+		neg = true;
+	}
 	x1 = x1 + 1;
 	if ((x1 >= 697248.0 /*1910*/) && (x2 <= 748383.0 /*2050*/))
-		while (x1 <= x2)
-		{
+		while (x1 <= x2) {
 			if (TypeDay(x1) == d) N++;
 			x1 = x1 + 1;
 		}

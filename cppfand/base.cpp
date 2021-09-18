@@ -1576,12 +1576,18 @@ bool OSshell(std::string Path, std::string CmdLine, bool NoCancel, bool FreeMm, 
 	return true;
 }
 
-std::string PrTab(WORD N)
+std::string PrTab(WORD printerNr, WORD value)
 {
 	std::string result;
-	if (printer[N].Strg.empty()) result = "";
-	BYTE length = printer[N].Strg[0];
-	result = printer[N].Strg.substr(1, length);
+	if (printer[printerNr].Strg.empty()) result = "";
+
+	size_t offset = 0;
+	for (size_t i = 0; i < value; i++) {
+		offset += printer[printerNr].Strg[offset++];
+	}
+
+	BYTE length = printer[printerNr].Strg[offset];
+	result = printer[printerNr].Strg.substr(offset + 1, length);
 	return result;
 }
 

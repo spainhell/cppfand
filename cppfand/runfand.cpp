@@ -219,7 +219,6 @@ void RdWDaysTab(FILE* CfgHandle)
 	ReadH(CfgHandle, 6, &WDaysLast);  // v Pascalu real 6B
 	WDaysLast = Real48ToDouble(&WDaysLast);
 
-	//GetMem(WDaysTab, NWDaysTab * 3);
 	WDaysTab = new wdaystt[NWDaysTab];
 	for (int i = 0; i < NWDaysTab; i++) {
 		ReadH(CfgHandle, sizeof(WDaysTab[i].Typ), &WDaysTab[i].Typ);
@@ -239,7 +238,7 @@ void RdCFG()
 	if (strcmp(ver, CfgVersion) != 0) {
 		printf("Invalid version of FAND.CFG"); wait(); Halt(-1);
 	}
-	// nactení SPEC
+	// nacteni SPEC
 	ReadH(CfgHandle, sizeof(spec.UpdCount), &spec.UpdCount);
 	ReadH(CfgHandle, sizeof(spec.AutoRprtWidth), &spec.AutoRprtWidth);
 	ReadH(CfgHandle, sizeof(spec.AutoRprtLimit), &spec.AutoRprtLimit);

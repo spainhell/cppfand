@@ -868,7 +868,7 @@ bool PrinterMenu(WORD Msg)
 	RdMsg(Msg);
 	for (WORD j = 0; j < prMax; j++) {
 		Printer* pr = &printer[j];
-		std::string nm = PrTab(j);
+		std::string nm = PrTab(j, prName);
 		std::replace(nm.begin(), nm.end(), '/', '-');
 		std::string lpt = (pr->ToMgr) ? "" : "(LPT" + std::to_string(pr->Lpti) + ")";
 		char buffer[10]{ 0 };

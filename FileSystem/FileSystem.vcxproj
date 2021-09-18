@@ -144,9 +144,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="directory.h" />
+    <ClInclude Include="TextFile.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="directory.cpp" />
+    <ClCompile Include="TextFile.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

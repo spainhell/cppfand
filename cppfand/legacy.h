@@ -82,6 +82,7 @@ double DiskFree(char disk);
 class TextFile
 {
 public:
+	~TextFile();
 	FILE* Handle = nullptr;
 	std::string Mode = ""; // read, write, append ...
 	size_t bufsize = 0;

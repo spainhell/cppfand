@@ -271,7 +271,7 @@ size_t Screen::WriteStyledStringToWindow(std::string text, BYTE Attr)
 	short rows = WindMax->Y - WindMin->Y + 1;
 
 	// ziskame jednotlive radky textu
-	auto vStr = GetAllRows(text, cols);
+	auto vStr = GetAllLines(text, cols);
 
 	// buffer bude mit delku jednoho radku okna
 	CHAR_INFO* _buf = new CHAR_INFO[cols];
