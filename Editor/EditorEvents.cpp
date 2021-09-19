@@ -1082,7 +1082,7 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 				RestorePar(L2);
 				break;
 			}
-			case _CtrlF6_: {
+			case __CTRL_F6: {
 				if ((TypeT == FileT) || (TypeT == LocalT)) BlockHandle(fs, F1, 'p');
 				break;
 			}

@@ -234,19 +234,19 @@ bool XKey::RecNrToPath(XString& XX, longint RecNr)
 	size_t item = 1;
 
 
-	auto X = XPath[XPathN];
+	structXPath* X = &XPath[XPathN];
 label1:
-	XF()->RdPage(p, X.Page);
-	x = p->XI(X.I);
-	if (!(p->GetKey(X.I) == XX.S)) goto label3;
+	XF()->RdPage(p, X->Page);
+	x = p->XI(X->I);
+	if (!(p->GetKey(X->I) == XX.S)) goto label3;
 label2:
 	if (x->GetN() == RecNr) { result = true; goto label3; }
-	X.I++;
-	if (X.I > p->NItems) {
-		if (IncPath(XPathN - 1, X.Page)) { X.I = 1; goto label1; }
+	X->I++;
+	if (X->I > p->NItems) {
+		if (IncPath(XPathN - 1, X->Page)) { X->I = 1; goto label1; }
 	}
 	else {
-		x = p->XI(X.I); // x = x->Next();
+		x = p->XI(X->I); // x = x->Next();
 		if (x->GetL() != 0) goto label3;
 		goto label2;
 	}
