@@ -756,7 +756,7 @@ LongStr* _LongS(FieldDescr* F)
 	memcpy(result->A, s.c_str(), s.length());
 
 	return result;
-	
+
 	//void* P = CRecPtr;
 	//char* source = (char*)P + F->Displ;
 	//LongStr* S = nullptr; longint Pos = 0; integer err = 0;
@@ -828,13 +828,12 @@ pstring _ShortS(FieldDescr* F)
 			if (F->Typ == 'A') {
 				Move(source, &S[1], l);
 				if ((F->Flg & f_Encryp) != 0) Code(&S[1], l);
-				if (IsNullValue(&S[2], l)) FillChar(&S[0], l, ' ');
+				if (S[1] == '\0') memset(&S[1], ' ', l);
 			}
-			else if (IsNullValue(source, F->NBytes)) FillChar(&S[0], l, ' ');
-			else
-			{
-				// nebudeme volat, zøejmìní není potøeba
-				// UnPack(P, (WORD*)S[0], l);
+			else if (IsNullValue(source, F->NBytes)) {
+				FillChar(&S[0], l, ' ');
+			}
+			else {
 				for (size_t i = 0; i < l; i++) {
 					// kolikaty byte?
 					size_t iB = i / 2;
@@ -880,6 +879,9 @@ std::string _StdS(FieldDescr* F)
 			if (F->Typ == 'A') {
 				S = std::string(source, l);
 				if ((F->Flg & f_Encryp) != 0) Code(S);
+				if (!S.empty() && S[0] == '\0') {
+					S = ""; // TODO: mel by to byt patricny pocet mezer
+				}
 			}
 			else if (IsNullValue(source, F->NBytes)) {
 				S = "";
@@ -1095,7 +1097,7 @@ bool LinkUpw(LinkDPtr LD, longint& N, bool WithT)
 	if (CFile->IsSQLFile) {
 		LU = Strm1->SelectXRec(K, @X, _equ, WithT); N = 1;
 		if (LU) goto label2; else goto label1;
-}
+	}
 #endif
 	md = NewLMode(RdMode);
 	if (ToFD->Typ == 'X') {
@@ -1106,7 +1108,7 @@ bool LinkUpw(LinkDPtr LD, longint& N, bool WithT)
 	else LU = SearchKey(x, K, N);
 	if (LU) ReadRec(CFile, N, CRecPtr);
 	else {
-	// label1:
+		// label1:
 		ZeroAllFlds();
 		KF = K->KFlds;
 		while (Arg != nullptr) {
@@ -1156,7 +1158,7 @@ void AssignNRecs(bool Add, longint N)
 #ifdef FandSQL
 	if (CFile->IsSQLFile) {
 		if ((N = 0) && !Add) Strm1->DeleteXRec(nullptr, nullptr, false); return;
-}
+	}
 #endif
 	md = NewLMode(DelMode); OldNRecs = CFile->NRecs;
 	if (Add) N = N + OldNRecs;
@@ -1427,7 +1429,10 @@ WORD CompLexStrings(const std::string& S1, const std::string& S2)
 
 void* GetRecSpace()
 {
-	return new BYTE * [CFile->RecLen + 2];
+	size_t length = CFile->RecLen + 2;
+	void* result = new BYTE[length];
+	memset(result, '\0', length);
+	return result;
 }
 
 void* GetRecSpace2()

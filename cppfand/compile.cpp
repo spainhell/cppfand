@@ -30,7 +30,8 @@ void Error(integer N)
 {
 	pstring ErrMsg;
 	pstring HdTxt(40);
-	void* p = nullptr; void* p1 = nullptr;
+	void* p = nullptr;
+	void* p1 = nullptr;
 
 	RdMsg(1000 + N);
 	ErrMsg = MsgLine;
@@ -60,11 +61,14 @@ void Error(integer N)
 		MarkStore(p1);
 		longint w = PushW(1, 1, TxtCols, TxtRows);
 		TextAttr = screen.colors.tNorm;
-		p = GetStore(l);
-		Move(InpArrPtr, p, l);
-		if (PrevCompInp != nullptr) RdMsg(63); else RdMsg(61);
+		p = new BYTE[l]; // GetStore(l);
+		memcpy(p, InpArrPtr, l);
+		if (PrevCompInp != nullptr) RdMsg(63);
+		else RdMsg(61);
 		HdTxt = MsgLine;
-		LongStr LS; LS.A = (char*)p; LS.LL = l;
+		LongStr LS;
+		LS.A = (char*)p;
+		LS.LL = l;
 		SimpleEditText('T', ErrMsg, HdTxt, &LS, 0xfff, i, upd);
 		p = LS.A; l = LS.LL;
 		PopW(w);

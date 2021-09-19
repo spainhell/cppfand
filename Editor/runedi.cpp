@@ -4425,7 +4425,7 @@ label81:
 						case __ALT_F2:
 						case __ALT_F3:
 							if (IsCurrChpt()) {
-								if (KbdChar == _AltF3_) {
+								if (KbdChar == __ALT_F3) {
 									ForAllFDs(ClosePassiveFD);
 									EditHelpOrCat(KbdChar, 0, "");
 								}

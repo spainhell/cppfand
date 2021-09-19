@@ -498,7 +498,7 @@ void RdDepChkImpl()
 		if (spec.CPMdrive != ' ') s = s + ',' + spec.CPMdrive + ':';
 		RdMsg(55); s = s + MsgLine;
 		if (spec.CPMdrive != ' ') s = s + ',' + spec.CPMdrive + ':';
-		s = s + "''";
+		s = s + "'";
 		ResetCompilePars();
 		SetInpStr(s);
 		RdUDLI();

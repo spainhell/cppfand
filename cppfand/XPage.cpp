@@ -39,9 +39,11 @@ WORD XPage::Off()
 XItem* XPage::XI(WORD I)
 {
 	if (this->IsLeaf) {
+		if (_leafItems.empty()) return nullptr;
 		return _leafItems[I - 1];
 	}
 	else {
+		if (_nonLeafItems.empty()) return nullptr;
 		return _nonLeafItems[I - 1];
 	}
 }
