@@ -1559,6 +1559,7 @@ bool OSshell(std::string Path, std::string CmdLine, bool NoCancel, bool FreeMm, 
 	if ((pPipe = _popen(cmd.c_str(), "rt")) == nullptr)
 		return false;
 
+
 	while (fgets(psBuffer, 128, pPipe))
 	{
 		puts(psBuffer);

@@ -15,7 +15,6 @@
 WORD CountNTxt(ChoiceD* C, bool IsMenuBar)
 {
 	WORD n = 0, nValid = 0;
-	//pstring s; 
 	std::string s;
 	bool b = false;
 	while (C != nullptr) {
@@ -96,22 +95,27 @@ void TWindow::InitTWindow(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, std::st
 		SavedLLW = 0;
 	}
 	if (Shadow.Y == 1) screen.ScrColor(Orig.X + 2, Row2(), Size.X + Shadow.X - 2, screen.colors.ShadowAttr);
-	if (Shadow.X > 0)
-		for (i = Row1(); i <= Row2(); i++)
+	if (Shadow.X > 0) {
+		for (i = Row1(); i <= Row2(); i++) {
 			screen.ScrColor(Col2(), i, Shadow.X, screen.colors.ShadowAttr);
+		}
+	}
 	if (GetState(sfFramed)) {
 		n = 0;
-		if (GetState(sfFrDouble)) n = 9;
+		if (GetState(sfFrDouble)) {
+			n = 9;
+		}
 		screen.ScrWrFrameLn(Orig.X + 1, Orig.Y + 1, n, Size.X, Attr);
-		for (i = 1; i <= Size.Y - 2; i++)
+		for (i = 1; i <= Size.Y - 2; i++) {
 			screen.ScrWrFrameLn(Orig.X + 1, Orig.Y + i + 1, n + 6, Size.X, Attr);
+		}
 		screen.ScrWrFrameLn(Orig.X + 1, Orig.Y + Size.Y, n + 3, Size.X, Attr);
 		m = Size.X - 2;
 		if (top.length() != 0) {
 			std::string sTop = " " + top + " ";
 			short l = min(sTop.length(), m);
 			if (l > m) sTop = sTop.substr(0, m);
-			screen.ScrWrStr(Col1() + (m - sTop.length()) / 2, Orig.Y + 1, sTop, Attr);
+			screen.ScrWrStr(Col1() + (m - sTop.length()) / 2 + 1, Orig.Y + 1, sTop, Attr);
 		}
 		if (bottom.length() != 0) {
 			std::string sBottom = " " + bottom + " ";

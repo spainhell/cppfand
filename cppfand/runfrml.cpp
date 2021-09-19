@@ -1845,7 +1845,7 @@ label1:
 	return result;
 }
 
-std::string RunShortStr(FrmlPtr X)
+std::string RunShortStr(FrmlElem* X)
 {
 	auto s = RunStdStr(X);
 	if (s.length() > 255) s = s.substr(0, 255);
