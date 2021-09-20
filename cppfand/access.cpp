@@ -1334,8 +1334,8 @@ WORD CmpLxStr(char* p1, WORD len1, char* p2, WORD len2)
 
 	WORD cmpLen = min(len1, len2);
 	for (size_t i = 0; i < cmpLen; i++) {
-		if (p1[i] == p2[i]) continue;
-		if (p1[i] < p2[i]) return _lt;
+		if ((BYTE)p1[i] == (BYTE)p2[i]) continue;
+		if ((BYTE)p1[i] < (BYTE)p2[i]) return _lt;
 		return _gt;
 	}
 	if (len1 < len2) return _lt;
@@ -1414,10 +1414,10 @@ WORD CompLexStrings(const std::string& S1, const std::string& S2)
 	char* b2 = new char[l2];
 
 	for (size_t i = 0; i < l1; i++) {
-		b1[i] = CharOrdTab[S1[i]];
+		b1[i] = CharOrdTab[(BYTE)S1[i]];
 	}
 	for (size_t i = 0; i < l2; i++) {
-		b2[i] = CharOrdTab[S2[i]];
+		b2[i] = CharOrdTab[(BYTE)S2[i]];
 	}
 
 	auto result = CmpLxStr(b1, l1, b2, l2);

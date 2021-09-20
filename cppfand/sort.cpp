@@ -180,64 +180,6 @@ void WPage::Sort(WORD N, WORD RecLen)
 	// zkotrolujeme délky offsetu pri nacitani a pri ukladani
 	// mely by byt stejne
 	if (offset1 != offset2) throw std::exception("WPage::Sort() error: Offset1 != Offset2");
-
-	//std::stack<integer> stack;
-	//WRec* X = nullptr, * Y = nullptr, * Z = nullptr, * V = nullptr;
-	//WORD oA = 0, cx = 0, cy = 0, OldSP = 0, CurSP = 0;
-	//integer iX, iY, R, L;
-
-	//V = new WRec(); // GetStore(sizeof(WRec));
-	//X = new WRec(this); // WRecPtr(A);
-	////dec(PtrRec(X).Seg, 0x10);
-	//*(WORD*)&X->N[0] += 0x100; /*prevent negative ofs*/
-	//Y = X; Z = X;
-	//oA = *(WORD*)&X->N[0];
-	//stack.push(0);
-	//stack.push(N - 1);
-	//
-	//do {
-	//	R = stack.top(); stack.pop();
-	//	L = stack.top(); stack.pop();
-	//	do {
-	//		*(WORD*)&Z->N[0] = oA + ((L + R) >> 1) * RecLen;
-	//		memcpy(V, Z, RecLen); // MyMove(Z^, V^, RecLen);
-	//		*(WORD*)&X->N[0] = oA + L * RecLen;
-	//		*(WORD*)&Y->N[0] = oA + R * RecLen;
-	//		do {
-	//		label1:
-	//			cx = X->Comp(V);
-	//			if (cx == _lt) { *(WORD*)&X->N[0] += RecLen; goto label1; }
-	//		label2:
-	//			cy = V->Comp(Y);
-	//			if (cy == _lt) { *(WORD*)&Y->N[0] -= RecLen; goto label2; }
-	//			if (*(WORD*)&X->N[0] <= *(WORD*)&Y->N[0]) {
-	//				if ((cx || cy) != _equ) ExChange(X, Y, RecLen);
-	//				*(WORD*)&X->N[0] += RecLen;
-	//				*(WORD*)&Y->N[0] -= RecLen;
-	//			}
-	//		} while (!(*(WORD*)&X->N[0] > *(WORD*)&Y->N[0]));
-	//		iX = (*(WORD*)&X->N[0] - oA) / RecLen;
-	//		if (*(WORD*)&X->N[0] - RecLen > *(WORD*)&Y->N[0]) iY = iX - 2;
-	//		else iY = iX - 1;
-	//		if (iY == L) L = iX;
-	//		else if (iX == R) R = iY;
-	//		else if (iY - L < R - iX) {  /*push longest interval on stack*/
-	//			if (iX < R) {
-	//				stack.push(iX);
-	//				stack.push(R);
-	//			}
-	//			R = iY;
-	//		}
-	//		else {
-	//			if (L < iY) {
-	//				stack.push(L);
-	//				stack.push(iY);
-	//			}
-	//			L = iX;
-	//		}
-	//	} while (!(L >= R));
-	//} while (!stack.empty());
-	//ReleaseStore(V);
 }
 
 WorkFile::WorkFile()
@@ -469,13 +411,13 @@ void XWorkFile::Main(char Typ)
 {
 	WRec* R = nullptr; XKey* k = nullptr; KeyFldD* kf = nullptr;
 	XPage* p = nullptr; bool frst = false;
-	XPP = new XPage(); // (XPage*)GetStore(XPageSize);
+	XPP = new XPage();
 	NxtXPage = XF->NewPage(XPP);
 	MsgWritten = false;
 	frst = true;
 	// for all keys defined in #K
 	while (KD != nullptr) {
-		PX = new XXPage(); // (XXPage*)GetZStore(sizeof(XXPage));
+		PX = new XXPage();
 		PX->Reset(this);
 		PX->IsLeaf = true;
 		k = Scan->Key;
@@ -582,30 +524,18 @@ void XXPage::Reset(XWorkFile* OwnerXW)
 
 void XXPage::PutN(longint* N)
 {
-	/*asm push ds; cld; les bx, Self; mov di, es: [bx] .XXPage.Off;
-	lds si, N; lodsw; stosw; lodsb; stosb;
-	mov es : [bx] .XXPage.Off, di; pop ds;*/
 	memcpy(&A[Off], N, 3); // kopirujeme 3 nejnizsi Byty, posledni se ignoruje
 	Off += 3;
 }
 
 void XXPage::PutDownPage(longint DownPage)
 {
-	/*asm cld; les bx, Self; mov di, es: [bx] .XXPage.Off;
-	mov ax, DownPage.WORD; stosw; mov ax, DownPage[2].WORD; stosw;
-	mov es : [bx] .XXPage.Off, di;*/
 	memcpy(&A[Off], &DownPage, 4);
 	Off += 4;
 }
 
 void XXPage::PutMLX(BYTE M, BYTE L)
 {
-	/*asm push ds; cld; les bx, Self; mov di, es: [bx] .XXPage.Off;
-	mov al, M; stosb; mov al, L; stosb;
-	mov ax, es; mov ds, ax; lea si, es: [bx] .XXPage.LastIndex;
-	inc si;xor ch, ch; mov cl, M; add si, cx; mov cl, L; rep movsb;
-	mov es : [bx] .XXPage.Off, di; pop ds;*/
-
 	A[Off++] = M;
 	A[Off++] = L;
 	memcpy(&A[Off], &LastIndex[M + 1], L);
@@ -614,8 +544,6 @@ void XXPage::PutMLX(BYTE M, BYTE L)
 
 void XXPage::ClearRest()
 {
-	/*asm les bx, Self; mov di, es: [bx] .XXPage.Off; mov cx, es: [bx] .XXPage.MaxOff;
-	sub cx, di; jcxz @1; cld; mov al, 0; rep stosb; @  1;*/
 	// max. offset je 1 mensi nez delka pole
 	// aktualni offset vcetne -> maximalni offset vcetne (proto +1)
 	size_t count = MaxOff - Off + 1;
@@ -627,7 +555,7 @@ void XXPage::PageFull()
 	longint n = 0;
 	ClearRest();
 	if (Chain == nullptr) {
-		Chain = new XXPage(); // (XXPage*)GetZStore(sizeof(XXPage));
+		Chain = new XXPage(); 
 		Chain->Reset(XW);
 	}
 	if (IsLeaf) n = XW->NxtXPage;
@@ -709,22 +637,17 @@ label1:
 
 void CreateWIndex(XScan* Scan, XWKey* K, char Typ)
 {
-	//void* p = nullptr;
-	//MarkStore(p);
 	void* cr = CRecPtr;
 	CRecPtr = GetRecSpace();
-	//New(XW, Init(Scan, K));
 	XWorkFile* XW = new XWorkFile(Scan, K);
 	XW->Main(Typ);
 	delete XW; XW = nullptr;
 	CRecPtr = cr;
-	//ReleaseStore(p);
 }
 
 void ScanSubstWIndex(XScan* Scan, KeyFldD* SK, char Typ)
 {
 	WORD n = 0;
-	//k2 = (XWKey*)GetZStore(sizeof(*k2));
 	XWKey* k2 = new XWKey();
 	if (Scan->FD->IsSQLFile && (Scan->Kind == 3)) /*F6-autoreport & sort*/ {
 		XKey* k = Scan->Key;

@@ -39,11 +39,15 @@ WORD XPage::Off()
 XItem* XPage::XI(WORD I)
 {
 	if (this->IsLeaf) {
-		if (_leafItems.empty()) return nullptr;
+		if (_leafItems.size() < I) {
+			return nullptr;
+		}
 		return _leafItems[I - 1];
 	}
 	else {
-		if (_nonLeafItems.empty()) return nullptr;
+		if (_nonLeafItems.size() < I) {
+			return nullptr;
+		}
 		return _nonLeafItems[I - 1];
 	}
 }
