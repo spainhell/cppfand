@@ -460,7 +460,7 @@ void XWorkFile::CopyIndex(XKey* K, KeyFldD* KF, char Typ)
 		n = p->NItems;
 		while (n > 0) {
 			r->PutN(x->GetN());
-			// TODO: zbavit se Next()
+			// TODO: zbavit se Next() - TOTO NEBUDE FUNGOVAT!!!
 			if (KF == nullptr) x = x->Next();
 			else *xofs = x->UpdStr(&r->X.S);
 			Output(r); n--;

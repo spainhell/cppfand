@@ -5,8 +5,7 @@
 #include "models/FrmlElem.h"
 
 struct KeyInD;
-/// trida ma dedit TObject z Pascalu
-/// DOC: https://www.freepascal.org/docs-html/rtl/system/tobject.html
+
 class XScan
 {
 public:
@@ -33,7 +32,8 @@ private:
 	KeyInD* KIRoot = nullptr;
 	LocVar* OwnerLV = nullptr;
 	KeyFldD* SK = nullptr;
-	XItem* X = nullptr;
+	//XItem* X = nullptr;
+	size_t _item = 1;
 	XPage* P = nullptr;
 	WORD NOnPg = 0;
 	KeyInD* KI = nullptr;

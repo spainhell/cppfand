@@ -2377,11 +2377,11 @@ FrmlElem* RdStrFrml()
 
 FieldDescr* FindFldName(FileD* FD, std::string fieldName)
 {
-	if (fieldName == "") fieldName = LexWord;
-	//std::string tmp = LexWord;
-	for (auto& i : FD->FldD)
-	{
-		if (EquUpcase(i->Name, fieldName)) return i;
+	if (fieldName.empty()) fieldName = LexWord;
+	if (FD != nullptr) {
+		for (auto& i : FD->FldD) {
+			if (EquUpcase(i->Name, fieldName)) return i;
+		}
 	}
 	return nullptr;
 }

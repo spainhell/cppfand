@@ -913,7 +913,9 @@ void RdKumul()
 
 void RdRoleField(AddD* AD)
 {
-	if (!IsRoleName(true, &AD->File2, &AD->LD)) Error(9);
+	if (!IsRoleName(true, &AD->File2, &AD->LD)) {
+		Error(9);
+	}
 	Accept('.');
 	FieldDescr* F = RdFldName(AD->File2);
 	AD->Field = F;

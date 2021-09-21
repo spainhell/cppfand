@@ -268,12 +268,12 @@ void XScan::SeekOnPage(longint Page, WORD I)
 {
 	Key->XF()->RdPage(P, Page);
 	NOnPg = P->NItems - I + 1;
-	if (Kind == 2)
-	{
+	if (Kind == 2) {
 		if (NOnPg > NOfKI) NOnPg = NOfKI;
 		NOfKI -= NOnPg;
 	}
-	X = P->XI(I);
+	//X = P->XI(I);
+	_item = I;
 }
 
 void XScan::NextIntvl()
@@ -328,10 +328,11 @@ label1:
 		case 0: { RecNr = IRec; goto label2; break; }
 		case 1:
 		case 2: {
-			RecNr = X->GetN();
+			RecNr = P->XI(_item)->GetN();
 			NOnPg--;
-				//TODO: zbavit se Next()
-			if (NOnPg > 0) X = X->Next();
+			if (NOnPg > 0) {
+				_item++;
+			}
 			else if ((Kind == 2) && (NOfKI == 0)) NextIntvl();
 			else if (P->GreaterPage > 0) SeekOnPage(P->GreaterPage, 1);
 		label2:
