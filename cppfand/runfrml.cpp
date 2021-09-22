@@ -1210,12 +1210,12 @@ bool CanCopyT(FieldDescr* F, FrmlElem* Z)
 	return result;
 }
 
-bool TryCopyT(FieldDescr* F, TFilePtr TF, longint& pos, FrmlPtr Z)
+bool TryCopyT(FieldDescr* F, TFile* TF, longint& pos, FrmlElem* Z)
 {
 	LockMode md, md2;
 	bool result = false;
 	if (TF->Format == TFile::DbtFormat || TF->Format == TFile::FptFormat) return result;
-	if ((BYTE)Z->Op == _gettxt) {
+	if (Z->Op == _gettxt) {
 		pos = CopyTFFromGetTxt(TF, Z);
 		result = true;
 	}

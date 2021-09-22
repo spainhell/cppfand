@@ -135,7 +135,7 @@ label4:
 	return result;
 }
 
-longint CopyTFString(TFilePtr TF, FileD* FD2, TFilePtr TF2, longint Pos2)
+longint CopyTFString(TFile* TF, FileD* FD2, TFile* TF2, longint Pos2)
 {
 	FileD* cf = nullptr;
 	WORD l = 0; integer rest = 0; bool isLongTxt = false, frst = false;

@@ -527,9 +527,10 @@ bool TMenuBoxS::ExecItem(WORD& I)
 
 std::string TMenuBoxS::GetHlpName()
 {
-	pstring s;
+	/*pstring s;
 	str(iTxt, s);
-	return GetText(-1) + "_" + s.c_str();
+	return GetText(-1) + "_" + s.c_str();*/
+	return GetText(-1) + "_" + std::to_string(iTxt);
 }
 
 std::string TMenuBoxS::GetText(integer I)

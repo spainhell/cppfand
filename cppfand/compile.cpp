@@ -1105,9 +1105,8 @@ FieldListEl* AllFldsList(FileD* FD, bool OnlyStored)
 {
 	FieldListEl* FLRoot = nullptr;
 	for (auto& F : FD->FldD) {
-		if (((F->Flg & f_Stored) != 0) || !OnlyStored)
-		{
-			auto* const FL = new FieldListEl(); // (FieldListEl*)GetStore(sizeof(*FL));
+		if (((F->Flg & f_Stored) != 0) || !OnlyStored) {
+			auto* const FL = new FieldListEl();
 			FL->FldD = F;
 			if (FLRoot == nullptr) { FLRoot = FL; FL->Chain = nullptr; }
 			else ChainLast(FLRoot, FL);
@@ -1119,17 +1118,13 @@ FieldListEl* AllFldsList(FileD* FD, bool OnlyStored)
 EditOpt* GetEditOpt()
 {
 	EditOpt* EO = new EditOpt();
-	//EO = (EditOpt*)GetZStore(sizeof(*EO));
-	auto result = EO;
 	EO->UserSelFlds = true;
-	return result;
+	return EO;
 }
 
 RprtOpt* GetRprtOpt()
 {
-	//RO = (RprtOpt*)GetZStore(sizeof(*RO));
 	auto RO = new RprtOpt();
-	auto result = RO;
 	RO->Mode = _ALstg;
 	RO->Style = '?';
 	RO->Width = spec.AutoRprtWidth;
@@ -1156,13 +1151,12 @@ std::string* RdHelpName()
 
 FrmlElem* RdAttr()
 {
-	char c; BYTE n; FrmlElem* z;
 	if (Lexem == '^') {
+		BYTE n;
 		RdLex();
-		c = (char)toupper(Rd1Char()) - 64;
+		const char c = (char)(toupper(Rd1Char()) - 64);
 		if (!screen.SetStyleAttr(c, n)) OldError(120);
-		z = new FrmlElem2(_const, 0, n); // GetOp(_const, sizeof(double));
-		//z->R = n;
+		FrmlElem* z = new FrmlElem2(_const, 0, n);
 		return z;
 	}
 	return RdRealFrml();
@@ -1201,7 +1195,8 @@ bool PromptSortKeys(FieldList FL, KeyFldD* SKRoot)
 	SKRoot = nullptr;
 	while (FL != nullptr) {
 		/* !!! with FL->FldD^ do!!! */
-		if (FL->FldD->Typ != 'T') ww.PutSelect(FL->FldD->Name); FL = (FieldList)FL->Chain;
+		if (FL->FldD->Typ != 'T') ww.PutSelect(FL->FldD->Name);
+		FL = (FieldList)FL->Chain;
 	}
 	if (ss.Empty) return result;
 	ss.AscDesc = true;
@@ -1209,7 +1204,8 @@ bool PromptSortKeys(FieldList FL, KeyFldD* SKRoot)
 	ww.SelectStr(0, 0, 25, "");
 	if (Event.Pressed.KeyCombination() == __ESC) { return false; }
 label1:
-	LexWord = ww.GetSelect(); if (LexWord != "") {
+	LexWord = ww.GetSelect();
+	if (LexWord != "") {
 		SK = (KeyFldD*)GetZStore(sizeof(*SK));
 		ChainLast(SKRoot, SK);
 		SK->FldD = FindFldName(CFile);
@@ -1395,27 +1391,12 @@ bool IsFun(std::map<std::string, int>& strs, std::string input, instr_type& FunC
 		c = tolower(c);
 	}
 	auto it = strs.find(input);
-	if (it != strs.end())
-	{
+	if (it != strs.end()) {
 		FunCode = (instr_type)it->second;
 		RdLex();
 		return true;
 	}
 	return false;
-
-	/*
-	 asm  les bx,XFun; lea dx,LexWord[1]; mov ch,LexWord.byte; xor cl,cl; cld;
-@1:  mov ah,es:[bx]; cmp ah,ch; jne @4; mov si,dx; mov di,bx; inc di;
-@2:  lodsb; cmp al,41H; jb @3; cmp al,5AH; ja @3; add al,20H; { lowercase }
-@3:  cmp al,es:[di]; jb @5; ja @4; inc di; dec ah; jnz @2; jmp @6;
-@4:  add bx,MaxLen+1; inc cl; cmp cl,N; jb @1;              { next string }
-@5:  mov ax,0; jmp @7;                                      { not found }
-@6:  xor ch,ch; mov bx,cx; les di,XCode; mov al,es:[di+bx];  { found }
-	 les di,FunCode; mov es:[di],al;
-	 call RdLex; mov ax,1;
-@7:
-end;
-	 */
 }
 
 bool IsKeyArg(FieldDescr* F, FileD* FD)
@@ -1559,7 +1540,8 @@ label1:
 		Z->P2 = RdMult(FTyp);
 		TestReal(FTyp);
 		goto label1;
-		break; }
+		break;
+	}
 	}
 	return Z;
 }
@@ -1593,8 +1575,7 @@ FrmlElem* RdComp(char& FTyp)
 	FrmlElem* Z = RdAdd(FTyp);
 	Z1 = Z;
 	if (Lexem >= _equ && Lexem <= _ne)
-		if (FTyp == 'R')
-		{
+		if (FTyp == 'R') {
 			Z = new FrmlElem0(_compreal, 2); // GetOp(_compreal, 2);
 			auto iZ0 = (FrmlElem0*)Z;
 			iZ0->P1 = Z1;
@@ -1620,13 +1601,11 @@ FrmlElem* RdComp(char& FTyp)
 	else if ((Lexem == _identifier) && IsKeyWord("IN"))
 	{
 		FrmlElemIn* zIn = nullptr;
-		if (FTyp == 'R')
-		{
+		if (FTyp == 'R') {
 			zIn = new FrmlElemIn(_inreal); // GetOp(_inreal, 1);
 			zIn->param1 = RdPrecision();
 		}
-		else
-		{
+		else {
 			TestString(FTyp);
 			zIn = new FrmlElemIn(_instr); // GetOp(_instr, 1);
 			zIn->param1 = RdTilde();
@@ -1669,8 +1648,7 @@ FrmlElem* RdComp(char& FTyp)
 FrmlPtr RdBAnd(char& FTyp)
 {
 	FrmlPtr Z = RdComp(FTyp);
-	while (Lexem == '&')
-	{
+	while (Lexem == '&') {
 		Z = BOperation(FTyp, _and, Z);
 		((FrmlElem0*)Z)->P2 = RdComp(FTyp);
 		TestBool(FTyp);
@@ -2289,12 +2267,9 @@ FrmlElem* RdKeyInBool(KeyInD** KIRoot, bool NewMyBP, bool FromRdProc, bool& SQLF
 		Accept('[');
 		l = CViewKey->IndexLen + 1;
 	label1:
-		//KI = (KeyInD*)GetZStore(sizeof(KeyInD));
 		KI = new KeyInD();
 		if (*KIRoot == nullptr) *KIRoot = KI;
 		else ChainLast(*KIRoot, KI);
-		// KI->X1 = new pstring(); //(pstring*)GetZStore(l);
-		// KI->X2 = new pstring(); //(pstring*)GetZStore(l + 1);
 		KI->FL1 = RdFL(NewMyBP, nullptr);
 		if (Lexem == _subrange) {
 			RdLex();
@@ -2398,13 +2373,12 @@ FieldDescr* RdFldName(FileD* FD)
 	return F;
 }
 
-FileDPtr FindFileD()
+FileD* FindFileD()
 {
 	FileD* FD = nullptr;
 	RdbD* R = nullptr;
 	LocVar* LV = nullptr;
-	if (FDLocVarAllowed && FindLocVar(&LVBD, &LV) && (LV->FTyp == 'f'))
-	{
+	if (FDLocVarAllowed && FindLocVar(&LVBD, &LV) && (LV->FTyp == 'f'))	{
 		return LV->FD;
 	}
 	R = CRdb;
@@ -2435,7 +2409,7 @@ FileD* RdFileName()
 	return FD;
 }
 
-LinkDPtr FindLD(pstring RoleName)
+LinkD* FindLD(pstring RoleName)
 {
 	LinkD* L = LinkDRoot;
 	while (L != nullptr) {
@@ -2489,7 +2463,7 @@ FrmlElem* RdFAccess(FileD* FD, LinkD* LD, char& FTyp)
 	return Z;
 }
 
-FrmlPtr FrmlContxt(FrmlPtr Z, FileDPtr FD, void* RP)
+FrmlElem* FrmlContxt(FrmlElem* Z, FileD* FD, void* RP)
 {
 	auto Z1 = new FrmlElem8(_newfile, 8); // GetOp(_newfile, 8);
 	Z1->Frml = Z;
@@ -2498,7 +2472,7 @@ FrmlPtr FrmlContxt(FrmlPtr Z, FileDPtr FD, void* RP)
 	return Z1;
 }
 
-FrmlPtr MakeFldFrml(FieldDescr* F, char& FTyp)
+FrmlElem* MakeFldFrml(FieldDescr* F, char& FTyp)
 {
 	auto Z = new FrmlElem7(_field, 4); // GetOp(_field, 4);
 	Z->Field = F;
@@ -2524,7 +2498,7 @@ label1:
 	return ld;
 }
 
-FrmlPtr TryRdFldFrml(FileDPtr FD, char& FTyp)
+FrmlElem* TryRdFldFrml(FileD* FD, char& FTyp)
 {
 	FileD* cf = nullptr; FieldDescr* f = nullptr;
 	LinkD* ld = nullptr; FrmlElem* z = nullptr;
@@ -2586,8 +2560,7 @@ FrmlElem* RdFldNameFrmlF(char& FTyp)
 	FileD* fd = nullptr;
 	FrmlElem* z = nullptr;
 
-	if (IsForwPoint())
-	{
+	if (IsForwPoint()) {
 		if (!IsRoleName(FileVarsAllowed, &fd, &ld)) Error(9);
 		RdLex();
 		return RdFAccess(fd, ld, FTyp);
