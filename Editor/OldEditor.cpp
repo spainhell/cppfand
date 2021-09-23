@@ -861,7 +861,7 @@ WORD SetLine(WORD Ind)
 WORD SetCurrI(WORD Ind)
 {
 	WORD result = 1;
-	Ind--;
+	if (Ind > 0) Ind--;
 	while (Ind > 0) {
 		if (T[Ind - 1] == _CR) {
 			Ind++;
