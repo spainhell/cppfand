@@ -31,6 +31,9 @@ size_t GetLengthOfStyledString(std::string& input);
 std::string RepeatString(std::string& input, size_t count);
 std::string RepeatString(char input, size_t count);
 
+std::string lowerCaseString(std::string input);
+std::string upperCaseString(std::string input);
+
 // old functions:
 unsigned short CountDLines(void* Buf, unsigned short L, char C); // r139 ASM
 //pstring GetDLine(void* Buf, WORD L, char C, WORD I); // r144 ASM

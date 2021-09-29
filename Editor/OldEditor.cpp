@@ -172,22 +172,24 @@ void HMsgExit(pstring s)
 	}
 }
 
-/// Find index of nth character in C-string, if not found then index after LENGTH is returned!
+/// Find index of Nth character in C-string, if not found then index after LENGTH is returned!
 /// Works with values 1 .. N (Pascal style)
 size_t FindChar(char* text, size_t length, char c, size_t from, size_t n)
 {
-	size_t result = 0; // as not found
-	from--;
-	for (size_t j = 0; j < n; j++) {
-		for (size_t i = from; i < length; i++) {
-			if (text[i] == c) {
-				result = i;
-				break;
+	size_t result = std::string::npos; // as not found
+	if (from > 0) {
+		from--;
+		for (size_t j = 0; j < n; j++) {
+			for (size_t i = from; i < length; i++) {
+				if (text[i] == c) {
+					result = i;
+					break;
+				}
 			}
+			from = result + 1;
 		}
-		from = result + 1;
 	}
-	return result == 0 ? length + 1 : result + 1;
+	return result == std::string::npos ? length + 1 : result + 1;
 }
 
 bool TestOptStr(char c)
@@ -828,7 +830,8 @@ void PredPart()
 	WrEndT();
 }
 
-/// Counts the number of occurrences of a character. 'first' & 'last' are (1 .. N)
+/// Counts the number of occurrences of a character;
+/// 'first' & 'last' are indexed from 1 (1 .. N)
 size_t CountChar(char* text, size_t text_len, char C, size_t first, size_t last)
 {
 	size_t count = 0;
@@ -842,7 +845,7 @@ size_t CountChar(char* text, size_t text_len, char C, size_t first, size_t last)
 	else {
 		// out of index
 	}
-	return count;
+	return count == 0 ? 0 : count - 1;
 
 	//size_t I = FindChar(T, LenT, C, First);
 	//WORD n = 0;

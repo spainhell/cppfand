@@ -1,5 +1,7 @@
 #include "textfunc.h"
 
+#include <algorithm>
+
 /// <summary>
 /// pomocna metoda - zkontroluje delku retezce;
 /// pokud je dlouhy, rozdeli jej na mensi;
@@ -167,6 +169,18 @@ std::string RepeatString(char input, size_t count)
 		result += input;
 	}
 	return result;
+}
+
+std::string lowerCaseString(std::string input)
+{
+	std::for_each(input.begin(), input.end(), [](char& c) { c = ::tolower(c); });
+	return input;
+}
+
+std::string upperCaseString(std::string input)
+{
+	std::for_each(input.begin(), input.end(), [](char& c) { c = ::toupper(c); });
+	return input;
 }
 
 // old functions

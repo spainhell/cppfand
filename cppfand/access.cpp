@@ -459,7 +459,7 @@ bool IsNullValue(void* p, WORD l)
 	return true;
 }
 
-// v CRecPtr se posune o F->Displ a vyète integer
+// v CRecPtr vycte pozici zaznamu v .T00 souboru (ukazatel na zacatek textu)
 longint _T(FieldDescr* F)
 {
 	return _T(F, (unsigned char*)CRecPtr, CFile->Typ);
