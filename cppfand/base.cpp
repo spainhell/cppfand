@@ -278,11 +278,11 @@ std::string TResFile::Get(WORD Kod)
 	return result;
 }
 
-LongStrPtr TResFile::GetStr(WORD Kod)
+LongStr* TResFile::GetStr(WORD Kod)
 {
-	LongStrPtr s;
+	LongStr* s;
 	/* !!! with A[Kod] do!!! */
-	s = (LongStrPtr)GetStore(A[Kod].Size + 2);
+	s = (LongStr*)GetStore(A[Kod].Size + 2);
 	s->LL = A[Kod].Size;
 	SeekH(Handle, A[Kod].Pos);
 	ReadH(Handle, A[Kod].Size, s->A);
@@ -1172,7 +1172,7 @@ WORD FindCtrlM(LongStr* s, WORD i, WORD n)
 	return l + 1;
 }
 
-WORD SkipCtrlMJ(LongStrPtr s, WORD i)
+WORD SkipCtrlMJ(LongStr* s, WORD i)
 {
 	WORD l = s->LL;
 	if (i <= 1)

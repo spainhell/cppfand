@@ -11,25 +11,23 @@ class LongStr // ø24
 {
 public:
 	LongStr() { A = new char[50]{ 0 }; allocated = 50; LL = 0; }
-	LongStr(WORD size) {
+	LongStr(size_t size) {
 		if (size == 0) size = 50;
 		A = new char[size] {0};
 		allocated = size;
 		LL = 0;
 	}
-	LongStr(char* data, WORD size) {
+	LongStr(char* data, size_t size) {
 		A = data;
 		allocated = size;
 		LL = size;
 	}
 	~LongStr() { delete[] A; }
-	WORD LL;
+	size_t LL;
 	char* A;
 private:
-	WORD allocated = 0;
+	size_t allocated = 0;
 };
-
-typedef LongStr* LongStrPtr; // ø25
 
 struct WRect { BYTE C1 = 0, R1 = 0, C2 = 0, R2 = 0; }; // r34
 struct WordRec { BYTE Lo = 0, Hi = 0; };
@@ -66,7 +64,7 @@ longint SwapLong(longint N);
 void ExChange(void* X, void* Y, WORD L);
 bool OverlapByteStr(void* p1, void* p2); // ASM
 WORD FindCtrlM(LongStr* s, WORD i, WORD n); // r152
-WORD SkipCtrlMJ(LongStrPtr s, WORD i); // r158
+WORD SkipCtrlMJ(LongStr* s, WORD i); // r158
 void AddBackSlash(std::string& s);
 void DelBackSlash(std::string& s);
 bool MouseInRect(WORD X, WORD Y, WORD XSize, WORD Size); // r175 ASM

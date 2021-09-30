@@ -16,7 +16,7 @@ extern PFldD* PFldDs;
 extern bool KpLetter;
 extern integer MaxCol, MaxColOld, MaxColUsed, NLines, NLevels;
 extern AutoRprtMode ARMode;
-extern LongStrPtr Txt;
+extern LongStr* Txt;
 
 void SubstChar(pstring S, char C1, char C2);
 void Design(RprtOpt* RO);

@@ -3002,7 +3002,7 @@ void ConsultDb(LongStr* S, TDatabase* DbOfs/*PDatabase*/)
 			//}
 			while (q[0] == 1) {
 				q++;
-				n = LenDbEntry(LongStrPtr(q), p->Arity);
+				n = LenDbEntry((LongStr*)q, p->Arity);
 				//b = Mem3.Alloc(n + 4);
 				ChainLast(p->Branch, b);
 				//Move(q[0], b->LL, n);
@@ -3469,7 +3469,7 @@ void AppendLex(TTerm* tPrev, integer Pos, integer Typ, pstring s)
 	tPrev = t;
 }
 
-void LoadLex(LongStrPtr S)
+void LoadLex(LongStr* S)
 {
 	WORD l = 0, i = 0, n = 0;
 	char* p = nullptr;
@@ -3700,7 +3700,7 @@ void CallFandProc()
 	WORD i = 0, n = 0, w = 0;
 	TTerm* t = nullptr;
 	char* pp = (char*)ps;
-	LongStrPtr s = nullptr;
+	LongStr* s = nullptr;
 	TDomain* d = nullptr;
 	TDomain* dofs = nullptr; // absolute d
 	void* pt = PackedTermPtr;

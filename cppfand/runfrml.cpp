@@ -418,7 +418,7 @@ WORD IntTSR(FrmlElem* X)
 		case 'S': {
 			ss = CopyToLongStr(s);
 			TWork.Delete((longint)p);
-			auto tmp = TWork.Store(ss);
+			auto tmp = TWork.Store(ss->A, ss->LL);
 			p = &tmp;
 			ReleaseStore(ss);
 			break;

@@ -1211,7 +1211,7 @@ void RunInstr(Instr* PD)
 		case _asgnclipbd: {
 			s = RunLongStr(((Instr_assign*)PD)->Frml);
 			TWork.Delete(ClpBdPos);
-			ClpBdPos = TWork.Store(s);
+			ClpBdPos = TWork.Store(s->A, s->LL);
 			ReleaseStore(s);
 			break;
 		}

@@ -612,10 +612,10 @@ void LongS_(FieldDescr* F, LongStr* S)
 #endif
 				if (HasTWorkFlag())
 					label1:
-			Pos = TWork.Store(S);
+			Pos = TWork.Store(S->A, S->LL);
 				else {
 					md = NewLMode(WrMode);
-					Pos = CFile->TF->Store(S);
+					Pos = CFile->TF->Store(S->A, S->LL);
 					OldLMode(md);
 				}
 			if ((F->Flg & f_Encryp) != 0) Code(S->A, S->LL);
@@ -849,7 +849,7 @@ pstring _ShortS(FieldDescr* F)
 			break;
 		}
 		case 'T': {		// volny text max. 65k
-			LongStrPtr ss = _LongS(F);
+			LongStr* ss = _LongS(F);
 			if (ss->LL > 255) S = S.substr(0, 255);
 			else S = S.substr(0, ss->LL);
 			Move(&ss[0], &S[0], S.length());
@@ -1225,7 +1225,7 @@ void CopyRecWithT(void* p1, void* p2)
 			TFile* tf2 = tf1;
 			CRecPtr = p1;
 			if ((tf1->Format != TFile::T00Format)) {
-				LongStrPtr s = _LongS(F);
+				LongStr* s = _LongS(F);
 				CRecPtr = p2;
 				LongS_(F, s);
 				ReleaseStore(s);
@@ -1589,7 +1589,7 @@ void DirMinusBackslash(pstring& D)
 
 longint StoreInTWork(LongStr* S)
 {
-	return TWork.Store(S);
+	return TWork.Store(S->A, S->LL);
 }
 
 LongStr* ReadDelInTWork(longint Pos)

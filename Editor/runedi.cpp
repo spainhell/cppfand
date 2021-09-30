@@ -2484,7 +2484,7 @@ bool WriteCRec(bool MayDispl, bool& Displ)
 			if ((*(longint*)((char*)E->OldRecPtr + ChptTxt->Displ) == *(longint*)((char*)CRecPtr + ChptTxt->Displ)) && PromptYN(157)) {
 				s = _LongS(ChptTxt);
 				TWork.Delete(ClpBdPos);
-				ClpBdPos = TWork.Store(s);
+				ClpBdPos = TWork.Store(s->A, s->LL);
 				ReleaseStore(s);
 			}
 			UndoRecord();

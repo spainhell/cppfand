@@ -79,7 +79,7 @@ void DelChar();
 void PredPart();
 void DeleteL();
 void SetDekCurrI(WORD Ind);
-void TestLenText(char** text, size_t& textLength, WORD i, int j);
+void TestLenText(char** text, size_t& textLength, size_t i, size_t j);
 bool TestOptStr(char c);
 bool BlockExist();
 void SetBlockBound(longint& BBPos, longint& EBPos);

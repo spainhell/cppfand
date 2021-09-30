@@ -16,7 +16,7 @@ PFldD* PFldDs = nullptr;
 bool KpLetter = false;
 integer MaxCol = 0, MaxColOld = 0, MaxColUsed = 0, NLines = 0, NLevels = 0;
 AutoRprtMode ARMode = _ALstg;
-LongStrPtr Txt = nullptr;
+LongStr* Txt = nullptr;
 
 void SubstChar(pstring S, char C1, char C2)
 {

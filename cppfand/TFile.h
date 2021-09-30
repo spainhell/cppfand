@@ -39,10 +39,16 @@ public:
 	void ReleasePage(longint PosPg);
 	void Delete(longint Pos);
 	LongStr* Read(WORD StackNr, longint Pos);
-	longint Store(LongStrPtr S);
+	longint Store(char* s, size_t l);
+	void AddLongStr(char* s, size_t l, unsigned short ls);
+	void StoreShortStr(char* s, size_t l);
+protected:
+	struct { long startPos, segPos, workPos; };	// StoreStr()
+	struct { unsigned short size, length, rest; };	// ReadStr()
 private:
 	void RdWr(bool ReadOp, longint Pos, WORD N, void* X);
 	void GetMLen();
+	long eofPos;
 };
 typedef TFile* TFilePtr;
 

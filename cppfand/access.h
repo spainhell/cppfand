@@ -73,16 +73,16 @@ bool DeletedFlag(); // r771 ASM
 void ClearDeletedFlag(); // r779 ASM
 void SetDeletedFlag(); // r785 ASM
 integer CompStr(pstring& S1, pstring& S2); // r792 ASM
-WORD CompLexLongStr(LongStrPtr S1, LongStrPtr S2); // r854 ASM
-WORD CompLexLongShortStr(LongStrPtr S1, pstring& S2); // r863 ASM
+WORD CompLexLongStr(LongStr* S1, LongStr* S2); // r854 ASM
+WORD CompLexLongShortStr(LongStr* S1, pstring& S2); // r863 ASM
 WORD CompLexStr(pstring& S1, pstring& S2); // r871 ASM
 WORD CompLexStrings(const std::string& S1, const std::string& S2);
 bool EquKFlds(KeyFldD* KF1, KeyFldD* KF2); // r881
 void Code(std::string& data);
 void Code(void* A, WORD L); // r897 ASM
-void CodingLongStr(LongStrPtr S);
+void CodingLongStr(LongStr* S);
 longint StoreInTWork(LongStr* S);
-LongStrPtr ReadDelInTWork(longint Pos);
+LongStr* ReadDelInTWork(longint Pos);
 void ForAllFDs(void(*procedure)()); // r935
 bool IsActiveRdb(FileD* FD);
 void ResetCompilePars(); // r953 - posledni fce

@@ -1017,7 +1017,7 @@ void StoreChptTxt(FieldDPtr F, LongStr* S, bool Del)
 	}
 	if (Del) if (LicNr == 0) ChptTF->Delete(oldpos);
 	else if (oldpos != 0) ChptTF->Delete(oldpos - LicNr);
-	pos = ChptTF->Store(S);
+	pos = ChptTF->Store(S->A, S->LL);
 	if (LicNr == 0) T_(F, pos);
 	else T_(F, pos + LicNr);
 	ReleaseStore(p);

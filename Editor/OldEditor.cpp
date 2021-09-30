@@ -950,15 +950,44 @@ void SetUpdat()
 	}
 }
 
-void TestLenText(char** text, size_t& textLength, WORD i, int j)
+void TestLenText(char** text, size_t& textLength, size_t F, size_t LL)
 {
-	int lenDiff = j - i;
-	if (lenDiff != 0) {
-		// TEXT will be shorter or longer
+	/*longint size = LL - F;
+	char* newT;
+	if (F < LL) {
+		newT = new char[textLength + size];
+		memcpy(newT, *text, textLength);
+		delete[] *text;
+		*text = newT;
+	}
+	if (textLength >= F) {
+		memcpy(&(*text)[LL], &(*text)[F], textLength - F);
+	}
+	if (F >= LL) {
+		newT = new char[textLength + size];
+		memcpy(newT, *text, textLength + size);
+		delete[] *text;
+		*text = newT;
+	}
+	textLength += size;
+	SetUpdat();*/
+
+
+	int lenDiff = LL - F;
+	if (lenDiff > 0) {
+		// TEXT will be longer
 		char* newT = new char[textLength + lenDiff];
-		memcpy(newT, *text, i + lenDiff - 1);
-		memcpy(&newT[i + lenDiff - 1], &(*text)[i - 1], textLength - i + 1);
-		delete[] * text;
+		memcpy(&newT[lenDiff], *text, F - 1);
+		//memcpy(&newT[i + 1], &(*text)[i - 1], textLength - i + 1);
+		delete[] *text;
+		*text = newT;
+	}
+	else if (lenDiff < 0)
+	{
+		// TEXT will be shorter
+		char* newT = new char[textLength + lenDiff];
+		memcpy(newT, *text, F + lenDiff);
+		delete[] *text;
 		*text = newT;
 	}
 	textLength += lenDiff;
@@ -2197,7 +2226,7 @@ bool BlockHandle(longint& fs, FILE* W1, char Oper)
 void DelStorClpBd(void* P1, LongStr* sp)
 {
 	TWork.Delete(ClpBdPos);
-	ClpBdPos = TWork.Store(sp);
+	ClpBdPos = TWork.Store(sp->A, sp->LL);
 	ReleaseStore2(P1);
 }
 
