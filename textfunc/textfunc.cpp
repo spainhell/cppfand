@@ -10,7 +10,7 @@
 /// <param name="vStr">Cilovy vektor stringu</param>
 /// <param name="line">Vstupni retezec</param>
 /// <param name="maxLineLen">Maximalni delka retezce (zobrazitelnych znaku)</param>
-void CheckMaxLineLengthAndAddToOutputVector(std::vector<std::string>& vStr, std::string& line, size_t maxLineLen)
+void CheckMaxLineLengthAndAddToOutputVector(std::vector<std::string>& vStr, std::string& line, size_t maxLineLen, bool skipEmptyLines)
 {
 	if (maxLineLen > 0 && line.length() > maxLineLen) {
 		// je -> musime jej rozsekat
@@ -18,15 +18,15 @@ void CheckMaxLineLengthAndAddToOutputVector(std::vector<std::string>& vStr, std:
 		while (i2 < line.length()) {
 			std::string part = GetStyledStringOfLength(line, i2, maxLineLen);
 			i2 += part.length();
-			vStr.push_back(part);
+			if (!(skipEmptyLines && part.empty())) vStr.push_back(part);
 		}
 	}
 	else {
-		vStr.push_back(line);
+		if (!(skipEmptyLines && line.empty())) vStr.push_back(line);
 	}
 }
 
-std::vector<std::string> GetAllLines(std::string& input, size_t maxLineLen)
+std::vector<std::string> GetAllLines(std::string& input, size_t maxLineLen, bool skipLastEmptyLine)
 {
 	std::vector<std::string> vStr;
 	size_t nextStart = 0;
@@ -42,13 +42,13 @@ std::vector<std::string> GetAllLines(std::string& input, size_t maxLineLen)
 			}
 			std::string nStr = input.substr(nextStart, i - nextStart + 1 - nl);
 			// neni radek delsi nez max mozny?
-			CheckMaxLineLengthAndAddToOutputVector(vStr, nStr, maxLineLen);
+			CheckMaxLineLengthAndAddToOutputVector(vStr, nStr, maxLineLen, false);
 			nextStart = i + 1;
 		}
 	}
 	std::string nStr = input.substr(nextStart, input.length() - nextStart);
 	// i posledni cast retezce muze byt prilis dlouha -> zkontolujeme
-	CheckMaxLineLengthAndAddToOutputVector(vStr, nStr, maxLineLen);
+	CheckMaxLineLengthAndAddToOutputVector(vStr, nStr, maxLineLen, skipLastEmptyLine);
 	
 	return vStr;
 }

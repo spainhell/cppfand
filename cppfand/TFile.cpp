@@ -640,6 +640,8 @@ longint TFile::Store(char* s, size_t l)
 	longint result = 0;
 	if (l == 0) { return result; }
 
+	SetUpdHandle(Handle);
+
 	switch (Format)
 	{
 	case DbtFormat: {
@@ -670,14 +672,11 @@ longint TFile::Store(char* s, size_t l)
 		break;
 	}
 	case T00Format: {
-		SetUpdHandle(Handle);
-
-		long l1;
 		short i;
-		char buf[MPageSize];
 
 		if (startPos != 0)			// rozpracovano?
-		{       				// ANO
+		{
+			// ANO
 			if (segPos != 0) {		// long string?
 				//Seek(segPos);  // ano
 				RdWrCache(true, Handle, NotCached(), segPos, 2, &i);
@@ -687,9 +686,10 @@ longint TFile::Store(char* s, size_t l)
 				RdWrCache(true, Handle, NotCached(), startPos, 2, &i);
 			}
 			//Read(&i, 2);			// dosud zapsana delka v aktualnim segmentu
-			l1 = (unsigned short)i + l; 			// nova delka
+			long l1 = (unsigned short)i + l; 			// nova delka
 			if (segPos == 0 && ((unsigned short)i < MPageSize - 2))		// short data?
 			{
+				char buf[MPageSize];
 				//Read(buf, i);
 				RdWrCache(true, Handle, NotCached(), startPos, i, buf);
 				Delete(startPos);

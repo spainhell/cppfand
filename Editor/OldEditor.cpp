@@ -110,6 +110,47 @@ bool ChangePart, UpdPHead;
 void RestorePar(longint l);
 
 
+
+std::vector<std::string> GetLinesFromT()
+{
+	// create string from T
+	std::string text(T, LenT);
+	return GetAllLines(text, 0, true);
+}
+
+char* GetT(std::vector<std::string>& lines, size_t& len, bool hardL)
+{
+	size_t totalLen = 0;
+	char* output = nullptr;
+
+	if (lines.empty()) {
+		len = (hardL) ? 2 : 1;
+		output = new char[len];
+	}
+	else {
+		// calculate total length
+		for (auto& line : lines) { totalLen += line.length(); }
+		totalLen += (hardL) ? 2 * lines.size() - 1 : lines.size();
+
+		// generate string
+		std::string txt;
+		txt.reserve(totalLen);
+		for (size_t i = 0; i < lines.size(); i++) {
+			txt += lines[i];
+			txt += hardL ? "\r\n" : "\r";
+		}
+
+		// create c_str
+		if (totalLen != txt.length()) {
+			throw std::exception("Bad string size - OldEditor.cpp, method GetT");
+		}
+		len = totalLen;
+		output = new char[len];
+		memcpy(output, txt.c_str(), len);
+	}
+	return output;
+}
+
 longint SavePar()
 {
 	WORD len = InterfL + 4;
@@ -952,46 +993,9 @@ void SetUpdat()
 
 void TestLenText(char** text, size_t& textLength, size_t F, size_t LL)
 {
-	/*longint size = LL - F;
-	char* newT;
-	if (F < LL) {
-		newT = new char[textLength + size];
-		memcpy(newT, *text, textLength);
-		delete[] *text;
-		*text = newT;
-	}
-	if (textLength >= F) {
-		memcpy(&(*text)[LL], &(*text)[F], textLength - F);
-	}
-	if (F >= LL) {
-		newT = new char[textLength + size];
-		memcpy(newT, *text, textLength + size);
-		delete[] *text;
-		*text = newT;
-	}
-	textLength += size;
-	SetUpdat();*/
-
-
-	int lenDiff = LL - F;
-	if (lenDiff > 0) {
-		// TEXT will be longer
-		char* newT = new char[textLength + lenDiff];
-		memcpy(&newT[lenDiff], *text, F - 1);
-		//memcpy(&newT[i + 1], &(*text)[i - 1], textLength - i + 1);
-		delete[] *text;
-		*text = newT;
-	}
-	else if (lenDiff < 0)
-	{
-		// TEXT will be shorter
-		char* newT = new char[textLength + lenDiff];
-		memcpy(newT, *text, F + lenDiff);
-		delete[] *text;
-		*text = newT;
-	}
-	textLength += lenDiff;
 	SetUpdat();
+	printf("TestLenText() implementation is bad. Don't call it.");
+	//throw std::exception("TestLenText() implementation is bad. Don't call it.");
 }
 
 void DekodLine()
@@ -1356,17 +1360,28 @@ void KodLine()
 {
 	WORD LP = LastPosLine() + 1; // position behind last char on the line (counted from 1)
 	if (HardL) LP++;
+
+	// create vector of strings from T
+	auto allLines = GetLinesFromT();
+	allLines[LineL - 1] = std::string(Arr, HardL ? LP - 2 : LP - 1);
+
 	TestLenText(&T, LenT, NextI, LineI + LP);
-	Move(Arr, &T[LineI - 1], LP);
+	// Move(Arr, &T[LineI - 1], LP);
+
+	// create T back from vector
+	char* newT = GetT(allLines, LenT, HardL);
+	delete[] T;
+	T = newT;
+
 	NextI = LineI + LP;
 	LP = NextI - 1;
-	if (HardL) {
-		T[LP - 2] = _CR;
-		T[LP - 1] = _LF;
-	}
-	else {
-		T[LP - 1] = _CR;
-	}
+	//if (HardL) {
+	//	T[LP - 2] = _CR;
+	//	T[LP - 1] = _LF;
+	//}
+	//else {
+	//	T[LP - 1] = _CR;
+	//}
 	UpdatedL = false;
 }
 
@@ -1818,7 +1833,16 @@ void NewLine(char Mode)
 	KodLine();
 	WORD LP = LineI + MinI(LastPosLine(), Posi - 1);
 	NullChangePart();
+
+	auto lines = GetLinesFromT();
+	lines.insert(lines.begin() + LineL, "");
+
 	TestLenText(&T, LenT, LP, LP + 2);
+	char* newT = GetT(lines, LenT, HardL);
+	delete[] T;
+	T = newT;
+
+
 	LP -= Part.MovI;
 	if (LineAbs(LineL) <= BegBLn) {
 		if (LineAbs(LineL) < BegBLn) BegBLn++;
@@ -1828,15 +1852,15 @@ void NewLine(char Mode)
 	}
 	if (LineAbs(LineL) <= EndBLn) {
 		if (LineAbs(LineL) < EndBLn) EndBLn++;
-		else if ((EndBPos > Posi) && (TypeB == TextBlock))
-		{
+		else if ((EndBPos > Posi) && (TypeB == TextBlock)) {
 			EndBLn++;
 			EndBPos -= Posi - 1;
 		}
 	}
-	T[LP - 1] = _CR;
-	T[LP] = _LF;
-	if (Mode == 'm') { LineL++; LineI = LP + 2; }
+	//T[LP - 1] = _CR;
+	//T[LP] = _LF;
+	//if (Mode == 'm') { LineL++; LineI = LP + 2; }
+	if (Mode == 'm') { LineL++; LineI = LP + 1; }
 	DekodLine();
 }
 

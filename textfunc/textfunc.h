@@ -5,7 +5,7 @@
 //#include "../cppfand/constants.h"
 
 /// rozdeli vstup na jednotlive radky podle CR, LF nebo max. delky radku (0 = neomezeno); zohlednuje tisknutelne znaky
-std::vector<std::string> GetAllLines(std::string& input, size_t maxLineLen = 0);
+std::vector<std::string> GetAllLines(std::string& input, size_t maxLineLen = 0, bool skipLastEmptyLine = false);
 
 /// odstrani zadane znaky na konci retezce
 std::string TrailChar(std::string& input, char c);
