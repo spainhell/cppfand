@@ -294,7 +294,7 @@ void TFile::WrPrefix()
 {
 	TT1Page T;
 
-	switch (Format)	{
+	switch (Format) {
 	case DbtFormat: {
 		longint* TNxtAvailPage = (longint*)&T;		/* .DBT */
 		memset(&T, ' ', sizeof(T));
@@ -368,7 +368,7 @@ void TFile::WrPrefix()
 		RandSeed = RS;
 		break;
 	}
-	default: ;
+	default:;
 	}
 
 	BYTE header512[512]{ 0 };
@@ -380,13 +380,27 @@ void TFile::SetEmpty()
 {
 	BYTE X[MPageSize];
 	integer* XL = (integer*)&X;
-	if (Format == DbtFormat) { MaxPage = 0; WrPrefix(); return; }
-	if (Format == FptFormat) { FreePart = 8; BlockSize = 64; WrPrefix(); return; }
-	FreeRoot = 0; MaxPage = 1; FreePart = MPageSize; MLen = 2 * MPageSize;
-	WrPrefix();
-	memset(X, 0, MPageSize); //FillChar(X, MPageSize, 0); 
-	*XL = -510;
-	RdWrCache(false, Handle, NotCached(), MPageSize, MPageSize, X);
+	switch (Format) {
+	case DbtFormat: {
+		MaxPage = 0;
+		WrPrefix();
+		break;
+	}
+	case FptFormat: {
+		FreePart = 8; BlockSize = 64;
+		WrPrefix();
+		break;
+	}
+	case T00Format: {
+		FreeRoot = 0; MaxPage = 1; FreePart = MPageSize; MLen = 2 * MPageSize;
+		WrPrefix();
+		memset(X, 0, MPageSize); //FillChar(X, MPageSize, 0); 
+		*XL = -510;
+		RdWrCache(false, Handle, NotCached(), MPageSize, MPageSize, X);
+		break;
+	}
+	default: break;
+	}
 }
 
 void TFile::Create()
@@ -486,7 +500,7 @@ void TFile::Delete(longint pos)
 		RdWrCache(true, Handle, NotCached(), pospg, MPageSize, pg);
 		*(short*)(pg + u) = -l;				// zaporne delku
 		p = pg;
-		while (!0)							// spojuji volne fragmenty (posledni je vzdy volny!)
+		while (true)							// spojuji volne fragmenty (posledni je vzdy volny!)
 		{
 			// POZOR, fand v aktualni strance neudrzuje zbyvajici delku!!!, proto nasl. 2 radky
 			if (pospg + p - pg == FreePart)
@@ -561,54 +575,57 @@ LongStr* TFile::Read(WORD StackNr, longint Pos)
 	struct stFptD { longint Typ = 0, Len = 0; } FptD;
 	Pos -= LicenseNr;
 	if (Pos <= 0 /*OldTxt=-1 in RDB!*/) goto label11;
-	else switch (Format) {
-	case DbtFormat: {
-		s = new LongStr(32768); //(LongStr*)GetStore(32770);
-		Pos = Pos << MPageShft;
-		p = s->A;
-		l = 0;
-		while (l <= 32768 - MPageSize) {
-			RdWrCache(true, Handle, NotCached(), Pos, MPageSize, &p[offset]);
-			for (i = 1; i < MPageSize; i++) { if (p[offset + i] == 0x1A) goto label0; l++; }
-			offset += MPageSize;
-			Pos += MPageSize;
+	else {
+		switch (Format) {
+		case DbtFormat: {
+			s = new LongStr(32768); //(LongStr*)GetStore(32770);
+			Pos = Pos << MPageShft;
+			p = s->A;
+			l = 0;
+			while (l <= 32768 - MPageSize) {
+				RdWrCache(true, Handle, NotCached(), Pos, MPageSize, &p[offset]);
+				for (i = 1; i < MPageSize; i++) { if (p[offset + i] == 0x1A) goto label0; l++; }
+				offset += MPageSize;
+				Pos += MPageSize;
+			}
+			l--;
+		label0:
+			s->LL = l; ReleaseStore(&s->A[l + 1]);
+			break;
 		}
-		l--;
-	label0:
-		s->LL = l; ReleaseStore(&s->A[l + 1]);
-		break;
-	}
-	case FptFormat: {
-		Pos = Pos * BlockSize;
-		RdWrCache(true, Handle, NotCached(), Pos, sizeof(FptD), &FptD);
-		if (SwapLong(FptD.Typ) != 1/*text*/) goto label11;
-		else {
-			l = SwapLong(FptD.Len) & 0x7FFF;
-			s = new LongStr(l); //(LongStr*)GetStore(l + 2);
-
+		case FptFormat: {
+			Pos = Pos * BlockSize;
+			RdWrCache(true, Handle, NotCached(), Pos, sizeof(FptD), &FptD);
+			if (SwapLong(FptD.Typ) != 1/*text*/) goto label11;
+			else {
+				l = SwapLong(FptD.Len) & 0x7FFF;
+				s = new LongStr(l); //(LongStr*)GetStore(l + 2);
+				s->LL = l;
+				RdWrCache(true, Handle, NotCached(), Pos + sizeof(FptD), l, s->A);
+			}
+			break;
+		}
+		case T00Format: {
+			if ((Pos < MPageSize) || (Pos >= MLen)) goto label1;
+			RdWrCache(true, Handle, NotCached(), Pos, 2, &l);
+			if (l > MaxLStrLen + 1) {
+			label1:
+				Err(891, false);
+			label11:
+				if (StackNr == 1) s = new LongStr(l); //(LongStr*)GetStore(2);
+				else s = new LongStr(l); //(LongStr*)GetStore2(2);
+				s->LL = 0;
+				goto label2;
+			}
+			if (l == MaxLStrLen + 1) { l--; } // 65001
+			if (StackNr == 1) s = new LongStr(l); //(LongStr*)GetStore(l + 2);
+			else s = new LongStr(l + 2); //(LongStr*)GetStore2(l + 2);
 			s->LL = l;
-			RdWrCache(true, Handle, NotCached(), Pos + sizeof(FptD), l, s->A);
+			RdWr(true, Pos + 2, l, s->A);
+			break;
 		}
-		break;
-	}
-	default:
-		if ((Pos < MPageSize) || (Pos >= MLen)) goto label1;
-		RdWrCache(true, Handle, NotCached(), Pos, 2, &l);
-		if (l > MaxLStrLen + 1) {
-		label1:
-			Err(891, false);
-		label11:
-			if (StackNr == 1) s = new LongStr(l); //(LongStr*)GetStore(2);
-			else s = new LongStr(l); //(LongStr*)GetStore2(2);
-			s->LL = 0;
-			goto label2;
+		default: break;
 		}
-		if (l == MaxLStrLen + 1) { l--; }
-		if (StackNr == 1) s = new LongStr(l); //(LongStr*)GetStore(l + 2);
-		else s = new LongStr(l + 2); //(LongStr*)GetStore2(l + 2);
-		s->LL = l;
-		RdWr(true, Pos + 2, l, s->A);
-		break;
 	}
 label2:
 	return s;
@@ -616,7 +633,8 @@ label2:
 
 longint TFile::Store(char* s, size_t l)
 {
-	integer rest; longint N; void* p; longint pos;
+	integer rest; longint N;
+	longint pos = 0;
 	char X[MPageSize + 1]{ 0 };
 	struct stFptD { longint Typ = 0, Len = 0; } FptD;
 	longint result = 0;
@@ -644,13 +662,14 @@ longint TFile::Store(char* s, size_t l)
 		N += l;
 		l = FreePart * BlockSize - N;
 		if (l > 0) {
-			p = GetStore(l); FillChar(p, l, ' ');
-			RdWrCache(false, Handle, NotCached(), N, l, p); ReleaseStore(p);
+			void* p = GetStore(l);
+			FillChar(p, l, ' ');
+			RdWrCache(false, Handle, NotCached(), N, l, p);
+			ReleaseStore(p);
 		}
 		break;
-
 	}
-	default: {
+	case T00Format: {
 		SetUpdHandle(Handle);
 
 		long l1;
@@ -707,34 +726,10 @@ longint TFile::Store(char* s, size_t l)
 		}
 		pos = startPos;
 		break;
-		}
+	}
+	default: break;
 	}
 	return pos;
-
-//	if (Format == DbtFormat) {
-//
-//		goto label1;
-//	}
-//	if (Format == FptFormat) {
-//
-//		goto label1;
-//	}
-//	if (l > MaxLStrLen) l = MaxLStrLen;
-//	if (l > MPageSize - 2) pos = NewPage(false);  /* long text */
-//	else {                                  /* short text */
-//		rest = MPageSize - FreePart % MPageSize;
-//		if (l + 2 <= rest) pos = FreePart;
-//		else { pos = NewPage(false); FreePart = pos; rest = MPageSize; }
-//		if (l + 4 >= rest) FreePart = NewPage(false);
-//		else {
-//			FreePart += l + 2; rest = l + 4 - rest;
-//			RdWrCache(false, Handle, NotCached(), FreePart, 2, &rest);
-//		}
-//	}
-//	RdWrCache(false, Handle, NotCached(), pos, 2, &l);
-//	RdWr(false, pos + 2, l, S->A);
-//label1:
-	// return pos;
 }
 
 void TFile::AddLongStr(char* s, size_t l, unsigned short ls)
