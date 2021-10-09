@@ -2088,7 +2088,8 @@ label2:
 	Del = false;
 	goto label1;
 label3:
-	ReleaseStore(p); RestoreExit(er);
+	ReleaseStore(p);
+	RestoreExit(er);
 }
 
 bool BlockExist()
@@ -2211,7 +2212,8 @@ bool BlockHandle(longint& fs, FILE* W1, char Oper)
 				SeekH(W1, fs);
 				WriteH(W1, I2 - I1, &T[I1]);
 				HMsgExit(CPath);
-				fs += I2 - I1; LL1 += I2 - I1;
+				fs += I2 - I1;
+				LL1 += I2 - I1;
 				break;
 			}
 			}
@@ -2400,7 +2402,10 @@ bool BlockCGrasp(char Oper, void* P1, LongStr* sp)
 void InsertLine(WORD& i, WORD& I1, WORD& I3, WORD& ww, LongStr* sp)
 {
 	i = MinW(I1 - I3, LineSize - LastPosLine());
-	if (i > 0) { TestLastPos(ww, ww + i); Move(&sp->A[I3], &Arr[ww], i); }
+	if (i > 0) {
+		TestLastPos(ww, ww + i);
+		Move(&sp->A[I3], &Arr[ww], i);
+	}
 	TestKod();
 }
 
@@ -2439,13 +2444,12 @@ void BlockCDrop(char Oper, void* P1, LongStr* sp)
 void BlockCopyMove(char Oper, void* P1, LongStr* sp)
 {
 	bool b;
-	if (!BlockExist()) return; FillBlank();
-	if (TypeB == TextBlock)
-	{
-		if (BlockGrasp(Oper, P1, sp)) BlockDrop(Oper, P1, sp);
+	if (!BlockExist()) return;
+	FillBlank();
+	if (TypeB == TextBlock) {
+		if (BlockGrasp(Oper, P1, sp)) { BlockDrop(Oper, P1, sp); }
 	}
-	else
-		if (BlockCGrasp(Oper, P1, sp)) BlockCDrop(Oper, P1, sp);
+	else if (BlockCGrasp(Oper, P1, sp)) { BlockCDrop(Oper, P1, sp); }
 }
 
 bool ColBlockExist()
@@ -2457,19 +2461,19 @@ bool ColBlockExist()
 
 void NewBlock1(WORD& I1, longint& L2)
 {
-	if (I1 != Posi)
-	{
-		BegBLn = L2; EndBLn = L2;
-		BegBPos = MinW(I1, Posi); EndBPos = MaxW(I1, Posi);
+	if (I1 != Posi) {
+		BegBLn = L2;
+		EndBLn = L2;
+		BegBPos = MinW(I1, Posi);
+		EndBPos = MaxW(I1, Posi);
 	}
 }
 
 void BlockLRShift(WORD I1)
 {
-	longint L2;
 	if (!bScroll && (Mode != HelpM) && ((KbdFlgs & 0x03) != 0))   /*Shift*/
 	{
-		L2 = LineAbs(LineL);
+		longint L2 = LineAbs(LineL);
 		if (!ColBlockExist()) NewBlock1(I1, L2);
 		else
 			switch (TypeB) {
@@ -2512,7 +2516,7 @@ void BlockUDShift(longint L1)
 	{
 		L2 = LineAbs(LineL);
 		if (!ColBlockExist()) NewBlock2(L1, L2);
-		else
+		else {
 			switch (TypeB) {
 			case TextBlock: {
 				if ((BegBLn == EndBLn) && (L1 == BegBLn))
@@ -2535,6 +2539,7 @@ void BlockUDShift(longint L1)
 					else NewBlock2(L1, L2);
 				else NewBlock2(L1, L2);
 			}
+		}
 	}
 }
 
@@ -2547,8 +2552,7 @@ bool MyPromptLL(WORD n, std::string* s)
 
 void ChangeP(WORD& fst)
 {
-	if (ChangePart)
-	{
+	if (ChangePart) {
 		if (fst <= Part.MovI) fst = 1;
 		else fst -= Part.MovI;
 		/* if (Last>Part.PosP+LenT) lst = LenT-1 else lst = Last-Part.PosP; */
@@ -2590,8 +2594,8 @@ void SetScreen(WORD Ind, WORD ScrXY, WORD Pos)
 
 void ReplaceString(WORD& J, WORD& fst, WORD& lst, longint& Last)
 {
-	integer r = ReplaceStr.length();
-	integer f = FindStr.length();
+	size_t r = ReplaceStr.length();
+	size_t f = FindStr.length();
 	TestLenText(&T, LenT, J, longint(J) + r - f);
 	ChangeP(fst);
 	//if (TestLastPos(Posi, Posi + r - f));
@@ -2604,21 +2608,22 @@ void ReplaceString(WORD& J, WORD& fst, WORD& lst, longint& Last)
 
 char MyVerifyLL(WORD n, pstring s)
 {
-	longint w, t; WORD c1, c2, r1, r2, r; char cc;
-	c2 = screen.WhereX() + FirstC - 1;
-	r2 = screen.WhereY() + FirstR;
-	w = PushW(1, 1, TxtCols, TxtRows);
+	char cc;
+	WORD c2 = screen.WhereX() + FirstC - 1;
+	WORD r2 = screen.WhereY() + FirstR;
+	longint w = PushW(1, 1, TxtCols, TxtRows);
 	screen.GotoXY(1, TxtRows);
 	TextAttr = screen.colors.pTxt;
 	ClrEol();
 	SetMsgPar(s);
 	WriteMsg(n);
-	c1 = screen.WhereX(); r1 = screen.WhereY();
+	WORD c1 = screen.WhereX();
+	WORD r1 = screen.WhereY();
 	TextAttr = screen.colors.pNorm;
 	printf(" ");
 	screen.CrsNorm();
-	t = Timer + 15;
-	r = r1;
+	longint t = Timer + 15;
+	WORD r = r1;
 	do {
 		while (!KbdPressed())
 			if (Timer >= t) {
@@ -2627,35 +2632,33 @@ char MyVerifyLL(WORD n, pstring s)
 				else { screen.GotoXY(c1, r1); r = r1; }
 			}
 		cc = toupper(ReadKbd());
-	} while (!(cc == AbbrYes || cc == AbbrNo || cc == _ESC));
+	} while (!(cc == AbbrYes || cc == AbbrNo || cc == __ESC));
 	PopW(w);
 	return cc;
 }
 
 void FindReplaceString(longint First, longint Last)
 {
-	WORD fst, lst;
-	char c;
-	if (First >= Last)
-	{
-		if ((TypeT == MemoT) && TestOptStr('e'))
-		{
-			SrchT = true; Konec = true;
+	WORD lst;
+	if (First >= Last) {
+		if ((TypeT == MemoT) && TestOptStr('e')) {
+			SrchT = true;
+			Konec = true;
 		}
 		return;
 	}
 	FirstEvent = false;
-	SetPart(First); fst = First - Part.PosP; NullChangePart();
+	SetPart(First);
+	WORD fst = First - Part.PosP;
+	NullChangePart();
 label1:
-	if (Last > Part.PosP + LenT) lst = LenT - 1; else lst = Last - Part.PosP;
+	if (Last > Part.PosP + LenT) lst = LenT - 1;
+	else lst = Last - Part.PosP;
 	ChangeP(fst);            /* Background muze volat NextPart */
-	if (FindString(fst, lst))
-	{
+	if (FindString(fst, lst)) {
 		SetScreen(fst, 0, 0);
-		if (Replace)
-		{
-			if (TestOptStr('n'))
-			{
+		if (Replace) {
+			if (TestOptStr('n')) {
 				ReplaceString(fst, fst, lst, Last);
 				UpdStatLine(LineL, Posi, Mode);/*BackGround*/
 			}
@@ -2663,17 +2666,17 @@ label1:
 				FirstEvent = true;
 				Background();
 				FirstEvent = false;
-				c = MyVerifyLL(408, "");
+				char c = MyVerifyLL(408, "");
 				if (c == AbbrYes) ReplaceString(fst, fst, lst, Last);
 				else if (c == _ESC) return;
-				;
 			}
 			if (TestOptStr('g') || TestOptStr('e') || TestOptStr('l')) goto label1;
 		}
 	}
 	else {                       /* !FindString */
 		if (!AllRd && (Last > Part.PosP + LenT)) {
-			NextPart(); goto label1;
+			NextPart();
+			goto label1;
 		}
 		else {
 			if (TestOptStr('e') && (TypeT == MemoT)) {
@@ -2705,9 +2708,8 @@ WORD WordNo2()
 
 void ClrWord()
 {
-	WORD k, m;
-	m = 1;
-	k = 1;
+	WORD m = 1;
+	WORD k = 1;
 	k = FindChar(T, LenT, 0x11, k);
 	while (k < LenT) {
 		T[k] = 0x13;
@@ -2718,12 +2720,11 @@ void ClrWord()
 
 bool WordFind(WORD i, WORD WB, WORD WE, WORD LI)
 {
-	WORD k;
 	bool result = false;
 	if (i == 0) return result;
 	i = i * 2 - 1;
 	// TODO: tady puvodne pouzite 'i'
-	k = FindChar(T, LenT, 0x13, 1);
+	WORD k = FindChar(T, LenT, 0x13, 1);
 	if (k >= LenT) return result;
 	WB = k;
 	k++;
@@ -2901,7 +2902,7 @@ void Edit(std::vector<WORD>& breakKeys)
 	FirstEvent = false;
 
 	// {!!!!!!!!!!!!!!}
-	if (ErrMsg != "") {
+	if (!ErrMsg.empty()) {
 		SetMsgPar(ErrMsg);
 		F10SpecKey = 0xffff;
 		WrLLF10Msg(110);
@@ -3009,8 +3010,8 @@ bool EditText(char pMode, char pTxtType, std::string pName, std::string pErrMsg,
 
 void SimpleEditText(char pMode, std::string pErrMsg, std::string pName, LongStr* pLS, WORD MaxLen, WORD& Ind, bool& Updat)
 {
-	bool Srch; longint Scr;
-	Srch = false; Scr = 0;
+	bool Srch = false;
+	longint Scr = 0;
 	std::vector<WORD> emptyBreakKeys;
 	EditText(pMode, LocalT, std::move(pName), std::move(pErrMsg), pLS, MaxLen, Ind, Scr,
 		emptyBreakKeys, nullptr, Srch, Updat, 0, 0, nullptr);
@@ -3020,13 +3021,19 @@ WORD FindTextE(const pstring& Pstr, pstring Popt, char* PTxtPtr, WORD PLen)
 {
 	auto* origT = T;
 	T = (char*)PTxtPtr;
-	pstring f = FindStr; pstring o = OptionStr;	bool r = Replace;
-	FindStr = Pstr; OptionStr = Popt; Replace = false;
+	pstring f = FindStr;
+	pstring o = OptionStr;
+	bool r = Replace;
+	FindStr = Pstr;
+	OptionStr = Popt;
+	Replace = false;
 	WORD I = 1;
 	WORD result;
 	if (FindString(I, PLen + 1)) result = I;
 	else result = 0;
-	FindStr = f; OptionStr = o; Replace = r;
+	FindStr = f;
+	OptionStr = o;
+	Replace = r;
 	T = origT;
 	return result;
 }
@@ -3040,18 +3047,19 @@ void EditTxtFile(longint* LP, char Mode, std::string& ErrMsg, EdExitD* ExD, long
 	bool Loc = false;
 	WORD Ind = 0, oldInd = 0;
 	longint oldTxtxy = 0;
-	LongStr* LS = nullptr; pstring compErrTxt;
+	LongStr* LS = nullptr;
+	pstring compErrTxt;
 	//T = new char[65536];
 
 	if (Atr == 0) Atr = screen.colors.tNorm;
-	longint w2 = 0; longint w3 = 0;
+	longint w2 = 0;
+	longint w3 = 0;
 	if (V != nullptr) {
 		w1 = PushW1(1, 1, TxtCols, 1, (WFlags & WPushPixel) != 0, false);
 		w2 = PushW1(1, TxtRows, TxtCols, TxtRows, (WFlags & WPushPixel) != 0, false);
 		w3 = PushWFramed(V->C1, V->R1, V->C2, V->R2, Atr, Hd, "", WFlags);
 	}
-	else
-	{
+	else {
 		w1 = PushW(1, 1, TxtCols, TxtRows);
 		TextAttr = Atr;
 	}
@@ -3059,9 +3067,9 @@ void EditTxtFile(longint* LP, char Mode, std::string& ErrMsg, EdExitD* ExD, long
 	//goto label4;
 	Loc = (LP != nullptr);
 	LocalPPtr = LP;
-	if (!Loc)
-	{
-		MaxLenT = 0xFFF0; LenT = 0; Part.UpdP = false;
+	if (!Loc) {
+		MaxLenT = 0xFFF0; LenT = 0;
+		Part.UpdP = false;
 		TxtPath = CPath; TxtVol = CVol;
 		// zacatek prace se souborem
 		OpenTxtFh(Mode);
@@ -3075,17 +3083,20 @@ void EditTxtFile(longint* LP, char Mode, std::string& ErrMsg, EdExitD* ExD, long
 		Ind = TxtPos;
 		L = StoreInTWork(LS);
 	}
-	oldInd = Ind; oldTxtxy = Txtxy;
+	oldInd = Ind;
+	oldTxtxy = Txtxy;
 
 	//label1:
 	while (true) {
-		Srch = false; Upd = false;
+		Srch = false;
+		Upd = false;
 		if (!Loc) {
 			LongStr* LS2 = new LongStr(T, LenT);
 			std::vector<WORD> brkKeys = { __F1, __F6, __F9, __ALT_F10 };
 			EditText(Mode, FileT, TxtPath, ErrMsg, LS2, 0xFFF0, Ind, Txtxy,
 				brkKeys, ExD, Srch, Upd, 126, 143, MsgS);
-			T = LS2->A; LenT = LS2->LL;
+			T = LS2->A;
+			LenT = LS2->LL;
 		}
 		else {
 			std::vector<WORD> brkKeys = { __F1, __F6 };
@@ -3103,7 +3114,8 @@ void EditTxtFile(longint* LP, char Mode, std::string& ErrMsg, EdExitD* ExD, long
 				goto label4;
 			}
 			else {
-				Ind = oldInd; Txtxy = oldTxtxy;
+				Ind = oldInd;
+				Txtxy = oldTxtxy;
 				continue;
 			}
 		}
@@ -3111,7 +3123,7 @@ void EditTxtFile(longint* LP, char Mode, std::string& ErrMsg, EdExitD* ExD, long
 			delete[] T;
 			T = nullptr;
 		}
-		if (EdBreak == 0xFFFF)
+		if (EdBreak == 0xFFFF) {
 			switch (KbdChar) {
 			case __F9: {
 				if (Loc) { TWork.Delete(*LP); *LP = StoreInTWork(LS); }
@@ -3130,7 +3142,11 @@ void EditTxtFile(longint* LP, char Mode, std::string& ErrMsg, EdExitD* ExD, long
 				continue;
 			}
 			}
-		if (!Loc) { Size = FileSizeH(TxtFH); CloseH(&TxtFH); }
+		}
+		if (!Loc) {
+			Size = FileSizeH(TxtFH);
+			CloseH(&TxtFH);
+		}
 		if ((EdBreak == 0xFFFF) && (KbdChar == __F6)) {
 			if (Loc) {
 				PrintArray(T, LenT, false);
@@ -3168,7 +3184,6 @@ void EditTxtFile(longint* LP, char Mode, std::string& ErrMsg, EdExitD* ExD, long
 		PopW(w1);
 		LastTxtPos = Ind + Part.PosP;
 		RestoreExit(er);
-
 		break;
 	}
 }
