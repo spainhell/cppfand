@@ -994,7 +994,7 @@ void SetUpdat()
 void TestLenText(char** text, size_t& textLength, size_t F, size_t LL)
 {
 	SetUpdat();
-	printf("TestLenText() implementation is bad. Don't call it.");
+	printf("!!!");
 	//throw std::exception("TestLenText() implementation is bad. Don't call it.");
 }
 
@@ -1822,8 +1822,17 @@ void DeleteL()
 	}
 	if ((NextI >= LenT) && !AllRd) NextPartDek();
 	if (NextI <= LenT) {
-		if (T[NextI - 1] == _LF) { TestLenText(&T, LenT, NextI, NextI - 2); }
-		else { TestLenText(&T, LenT, NextI, NextI - 1); }
+		// if BACKSPACE was pressed we will delete line below cursor (which was already moved)
+		int index = (Event.Pressed.Char == '\b') ? 0 : -1;
+		index += LineL;
+		if (index < 0) return;
+		// if (T[NextI - 1] == _LF) { TestLenText(&T, LenT, NextI, NextI - 2); }
+		// else { TestLenText(&T, LenT, NextI, NextI - 1); }
+		auto lines = GetLinesFromT();
+		lines.erase(lines.begin() + index);
+		auto newT = GetT(lines, LenT, HardL);
+		delete[] T;
+		T = newT;
 	}
 	DekodLine();
 }
@@ -2091,9 +2100,8 @@ bool BlockExist()
 
 void SetBlockBound(longint& BBPos, longint& EBPos)
 {
-	integer i;
 	SetPartLine(EndBLn);
-	i = EndBLn - Part.LineP;
+	integer i = EndBLn - Part.LineP;
 	EBPos = SetInd(T, LenT, FindLine(i), EndBPos) + Part.PosP;
 	SetPartLine(BegBLn);
 	i = BegBLn - Part.LineP;
@@ -2105,7 +2113,8 @@ void ResetPrint(char Oper, longint& fs, FILE* W1, longint LenPrint, ColorOrd* co
 	*co = Part.ColorP;
 	SetColorOrd(*co, 1, I1);
 	isPrintFile = false;
-	fs = co->length(); LenPrint += fs;
+	fs = co->length();
+	LenPrint += fs;
 	if (Oper == 'p') LenPrint++;
 	if ((StoreAvail() > LenPrint) && (LenPrint < 0xFFF0)) {
 		p = (CharArr*)GetStore2(LenPrint);
@@ -2115,7 +2124,8 @@ void ResetPrint(char Oper, longint& fs, FILE* W1, longint LenPrint, ColorOrd* co
 		isPrintFile = true;
 		W1 = WorkHandle;
 		SeekH(W1, 0);
-		WriteH(W1, co->length(), &co[1]); HMsgExit(CPath);
+		WriteH(W1, co->length(), &co[1]);
+		HMsgExit(CPath);
 	}
 }
 
@@ -2123,7 +2133,7 @@ void LowCase(unsigned char& c)
 {
 	if ((c >= 'A') && (c <= 'Z')) { c = c + 0x20; return; }
 	for (size_t i = 128; i <= 255; i++)
-		if ((UpcCharTab[i] == c) && (i != c)) { c = i; return; }
+		if (((unsigned char)UpcCharTab[i] == c) && (i != c)) { c = i; return; }
 }
 
 void LowCase(char& c)
@@ -2135,37 +2145,56 @@ void LowCase(char& c)
 
 bool BlockHandle(longint& fs, FILE* W1, char Oper)
 {
-	WORD i, I1, I2, Ps;
-	longint LL1, LL2, Ln;
-	char* a = nullptr;
-	ColorOrd co; bool isPrintFile = false; CharArr* p = nullptr;
+	WORD i, I1;
+	longint LL1, LL2;
+	ColorOrd co;
+	bool isPrintFile = false;
+	CharArr* p = nullptr;
 	bool tb; char c;
 
-	TestKod(); Ln = LineAbs(LineL); Ps = Posi;
-	if (Oper == 'p') { tb = TypeB; TypeB = TextBlock; }
+	TestKod();
+	longint Ln = LineAbs(LineL);
+	WORD Ps = Posi;
+	if (Oper == 'p') {
+		tb = TypeB;
+		TypeB = TextBlock;
+	}
 	else
 		if (!BlockExist()) { return false; }
 	screen.CrsHide();
 	auto result = true;
-	if (TypeB == TextBlock)
-	{
-		if (Oper == 'p')
-		{
+	if (TypeB == TextBlock) {
+		WORD I2;
+		if (Oper == 'p') {
 			LL2 = AbsLenT - Part.LenP + LenT;
 			LL1 = Part.PosP + SetInd(T, LenT, LineI, Posi);
 		}
-		else SetBlockBound(LL1, LL2); I1 = LL1 - Part.PosP;
-		if (toupper(Oper) == 'P') ResetPrint(Oper, fs, W1, LL2 - LL1, &co, I1, isPrintFile, p);
+		else {
+			SetBlockBound(LL1, LL2);
+		}
+		I1 = LL1 - Part.PosP;
+		if (toupper(Oper) == 'P') {
+			ResetPrint(Oper, fs, W1, LL2 - LL1, &co, I1, isPrintFile, p);
+		}
 		do {
 			if (LL2 > Part.PosP + LenT) I2 = LenT;
 			else I2 = LL2 - Part.PosP;
 			switch (Oper) {
-			case 'Y': { TestLenText(&T, LenT, I2, I1); LL2 -= I2 - I1; break; }
+			case 'Y': {
+				TestLenText(&T, LenT, I2, I1);
+				LL2 -= I2 - I1;
+				break;
+			}
 			case 'U': {
 				for (i = I1; i < I2 - 1; i++) T[i] = UpcCharTab[T[i]];
-				LL1 += I2 - I1; break;
+				LL1 += I2 - I1;
+				break;
 			}
-			case 'L': { for (i = I1; i < I2 - 1; i++) LowCase(T[i]); LL1 += I2 - I1; break; }
+			case 'L': {
+				for (i = I1; i < I2 - 1; i++) LowCase(T[i]);
+				LL1 += I2 - I1;
+				break;
+			}
 			case 'p':
 			case 'P': {
 				if (isPrintFile) {
@@ -2190,14 +2219,18 @@ bool BlockHandle(longint& fs, FILE* W1, char Oper)
 			if ((Oper == 'p') && AllRd) LL1 = LL2;
 			if (!AllRd && (LL1 < LL2))
 			{
-				I1 = LenT; NextPart(); I1 -= Part.MovI;
+				I1 = LenT;
+				NextPart();
+				I1 -= Part.MovI;
 			}
 		} while (LL1 != LL2);
 	}
 	else              /*ColBlock*/
 	{
 		PosDekFindLine(BegBLn, BegBPos, false);
-		I1 = EndBPos - BegBPos; LL1 = (EndBLn - BegBLn + 1) * (I1 + 2); LL2 = 0;
+		I1 = EndBPos - BegBPos;
+		LL1 = (EndBLn - BegBLn + 1) * (I1 + 2);
+		LL2 = 0;
 		if (Oper == 'P') ResetPrint(Oper, fs, W1, LL1, &co, I1, isPrintFile, p);
 		do {
 			switch (Oper) {
@@ -2218,9 +2251,15 @@ bool BlockHandle(longint& fs, FILE* W1, char Oper)
 			}
 			case 'W':
 			case 'P': {
-				Move(&Arr[BegBPos], a, I1); a[I1 + 1] = _CR; a[I1 + 2] = _LF;
+				char* a = nullptr;
+				Move(&Arr[BegBPos], a, I1);
+				a[I1 + 1] = _CR;
+				a[I1 + 2] = _LF;
 				if ((Oper == 'P') && !isPrintFile) Move(a, p[fs + 1], I1 + 2);
-				else { WriteH(W1, I1 + 2, a); HMsgExit(CPath); }
+				else {
+					WriteH(W1, I1 + 2, a);
+					HMsgExit(CPath);
+				}
 				fs += I1 + 2;
 				break;
 			}
@@ -2231,18 +2270,21 @@ bool BlockHandle(longint& fs, FILE* W1, char Oper)
 
 	}
 	if (toupper(Oper) == 'P') {
-		if (isPrintFile)
-		{
-			WriteH(W1, 0, T);/*truncH*/PrintFandWork();
+		if (isPrintFile) {
+			WriteH(W1, 0, T);/*truncH*/
+			PrintFandWork();
 		}
-		else
-		{
-			PrintArray(p, fs, false); ReleaseStore2(p);
+		else {
+			PrintArray(p, fs, false);
+			ReleaseStore2(p);
 		}
 	}
-	if (Oper == 'p') TypeB = tb;
-	if (Oper == 'Y') PosDekFindLine(BegBLn, BegBPos, true);
-	else { if (Oper == 'p') SetPart(1); PosDekFindLine(Ln, Ps, true); }
+	if (Oper == 'p') { TypeB = tb; }
+	if (Oper == 'Y') { PosDekFindLine(BegBLn, BegBPos, true); }
+	else {
+		if (Oper == 'p') SetPart(1);
+		PosDekFindLine(Ln, Ps, true);
+	}
 	if (!bScroll) screen.CrsShow();
 	return result;
 }
@@ -2256,18 +2298,22 @@ void DelStorClpBd(void* P1, LongStr* sp)
 
 void MarkRdClpBd(void* P1, LongStr* sp)
 {
-	MarkStore2(P1); sp = TWork.Read(2, ClpBdPos);
+	MarkStore2(P1);
+	sp = TWork.Read(2, ClpBdPos);
 }
 
 void MovePart(WORD Ind)
 {
-	if (TypeT != FileT) return; TestUpdFile(); WrEndT();
+	if (TypeT != FileT) return;
+	TestUpdFile();
+	WrEndT();
 	/* !!! with Part do!!! */
-	{ Part.MovI = SetCurrI(Ind) - 1; Part.MovL = SetLine(Part.MovI) - 1;
-	Part.LineP += Part.MovL; Part.PosP += Part.MovI; Part.LenP -= Part.MovI;
-	SetColorOrd(Part.ColorP, 1, Part.MovI + 1);
-	TestLenText(&T, LenT, Part.MovI + 1, 1);
-	ChangePart = true;
+	{
+		Part.MovI = SetCurrI(Ind) - 1; Part.MovL = SetLine(Part.MovI) - 1;
+		Part.LineP += Part.MovL; Part.PosP += Part.MovI; Part.LenP -= Part.MovI;
+		SetColorOrd(Part.ColorP, 1, Part.MovI + 1);
+		TestLenText(&T, LenT, Part.MovI + 1, 1);
+		ChangePart = true;
 	}
 }
 
@@ -2285,8 +2331,7 @@ bool BlockGrasp(char Oper, void* P1, LongStr* sp)
 	I1 = L1 - Part.PosP;
 	MarkStore2(P1); sp = (LongStr*)GetStore2(L + 2); sp->LL = L;
 	Move(&T[I1], sp->A, L);
-	if (Oper == 'M')
-	{
+	if (Oper == 'M') {
 		TestLenText(&T, LenT, I1 + L, I1);
 		/*   if (L1>Part.PosP+I1) dec(L1,L);*/
 		if (EndBLn <= ln)
@@ -2374,8 +2419,7 @@ void BlockCDrop(char Oper, void* P1, LongStr* sp)
 		if (sp->A[I1] == _CR) {
 			InsertLine(i, I1, I3, ww, sp);
 			ww = BegBPos; EndBPos = MaxW(ww + i, EndBPos);
-			if ((NextI > LenT) && ((TypeT != FileT) || AllRd))
-			{
+			if ((NextI > LenT) && ((TypeT != FileT) || AllRd)) {
 				TestLenText(&T, LenT, LenT, longint(LenT) + 2);
 				T[LenT - 2] = _CR; T[LenT - 1] = _LF; NextI = LenT;
 			}
@@ -2551,7 +2595,7 @@ void ReplaceString(WORD& J, WORD& fst, WORD& lst, longint& Last)
 	TestLenText(&T, LenT, J, longint(J) + r - f);
 	ChangeP(fst);
 	//if (TestLastPos(Posi, Posi + r - f));
-	if (ReplaceStr != "") Move(&ReplaceStr[1], &T[J - f], r);
+	if (!ReplaceStr.empty()) Move(&ReplaceStr[1], &T[J - f], r);
 	J += r - f;
 	SetScreen(J, 0, 0);
 	lst += r - f;
