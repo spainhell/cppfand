@@ -39,6 +39,7 @@ bool SetContextDir(std::string& D, bool& IsRdb);// ø. 414
 void GetCPathForCat(WORD I);// ø. 429
 void SetCPathVol(); // ø. 441
 void SetTxtPathVol(pstring* Path, WORD CatIRec); // r463
+void SetTxtPathVol(std::string& Path, WORD CatIRec);
 void SetTempCExt(char Typ, bool IsNet);
 FileD* OpenDuplF(bool CrTF);
 void CopyDuplF(FileD* TempFD, bool DelTF);

@@ -296,7 +296,28 @@ FileD* RdPath(bool NoFD, pstring** Path, WORD& CatIRec)
 	return fd;
 }
 
-FrmlPtr RdFunctionP(char& FFTyp)
+FileD* RdPath(bool NoFD, std::string& Path, WORD& CatIRec)
+{
+	FileD* fd = nullptr;
+	CatIRec = 0;
+	if (Lexem == _quotedstr) {
+		Path = RdStringConst();
+		fd = nullptr;
+	}
+	else {
+		TestIdentif();
+		fd = FindFileD();
+		if (fd == nullptr) {
+			CatIRec = GetCatIRec(LexWord, true);
+			TestCatError(CatIRec, LexWord, false);
+		}
+		else if (NoFD) Error(97);
+		RdLex();
+	}
+	return fd;
+}
+
+FrmlElem* RdFunctionP(char& FFTyp)
 {
 	/*if (InpArrLen == 0x257)	{
 		printf("RdFunctionP");
@@ -1653,32 +1674,31 @@ Instr* RdCopyFile()
 	std::string ModeTxt[7] = { "KL","LK","KN","LN","LW","KW","WL" };
 	FieldDPtr* F = nullptr;
 	WORD i = 0;
-	CopyD* D = nullptr;
+	CopyD* CD = nullptr;
 	bool noapp = false;
 	auto PD = new Instr_copyfile(); // GetPD(_copyfile, 4);
 	RdLex();
 	noapp = false;
-	D = new CopyD(); // (CopyD*)GetZStore(sizeof(*D));
-	PD->CD = D;
+	CD = new CopyD(); // (CopyD*)GetZStore(sizeof(*D));
+	PD->CD = CD;
 	/* !!! with D^ do!!! */
-	D->FD1 = RdPath(false, &D->Path1, D->CatIRec1);
-	D->WithX1 = RdX(D->FD1);
-	if (Lexem == '/')
-	{
-		if (D->FD1 != nullptr) { CFile = D->FD1; D->ViewKey = RdViewKey(); }
-		else D->Opt1 = RdCOpt();
+	CD->FD1 = RdPath(false, CD->Path1, CD->CatIRec1);
+	CD->WithX1 = RdX(CD->FD1);
+	if (Lexem == '/') {
+		if (CD->FD1 != nullptr) { CFile = CD->FD1; CD->ViewKey = RdViewKey(); }
+		else CD->Opt1 = RdCOpt();
 	}
 	Accept(',');
-	D->FD2 = RdPath(false, &D->Path2, D->CatIRec2);
-	D->WithX2 = RdX(D->FD2);
+	CD->FD2 = RdPath(false, CD->Path2, CD->CatIRec2);
+	CD->WithX2 = RdX(CD->FD2);
 	if (Lexem == '/') {
-		if (D->FD2 != nullptr) Error(139);
-		else D->Opt2 = RdCOpt();
+		if (CD->FD2 != nullptr) Error(139);
+		else CD->Opt2 = RdCOpt();
 	}
-	if (!TestFixVar(D->Opt1, D->FD1, D->FD2) && !TestFixVar(D->Opt2, D->FD2, D->FD1))
+	if (!TestFixVar(CD->Opt1, CD->FD1, CD->FD2) && !TestFixVar(CD->Opt2, CD->FD2, CD->FD1))
 	{
-		if ((D->Opt1 == cpTxt) && (D->FD2 != nullptr)) OldError(139);
-		noapp = (D->FD1 == nullptr) ^ (D->FD2 == nullptr); // XOR
+		if ((CD->Opt1 == cpTxt) && (CD->FD2 != nullptr)) OldError(139);
+		noapp = (CD->FD1 == nullptr) ^ (CD->FD2 == nullptr); // XOR
 #ifdef FandSQL
 		if (noapp)
 			if ((FD1 != nullptr) && (FD1->typSQLFile) || (FD2 != nullptr)
@@ -1688,18 +1708,18 @@ Instr* RdCopyFile()
 	while (Lexem == ',') {
 		RdLex();
 		if (IsOpt("HEAD")) {
-			D->HdFD = RdFileName();
+			CD->HdFD = RdFileName();
 			Accept('.');
-			D->HdF = RdFldName(D->HdFD);
-			if ((D->HdF->FrmlTyp != 'S') || !D->HdFD->IsParFile
-				|| (D->Opt1 == cpFix || D->Opt1 == cpVar)
-				&& ((D->HdF->Flg & f_Stored) == 0)) Error(52);
+			CD->HdF = RdFldName(CD->HdFD);
+			if ((CD->HdF->FrmlTyp != 'S') || !CD->HdFD->IsParFile
+				|| (CD->Opt1 == cpFix || CD->Opt1 == cpVar)
+				&& ((CD->HdF->Flg & f_Stored) == 0)) Error(52);
 		}
 		else if (IsOpt("MODE")) {
 			TestLex(_quotedstr);
 			for (i = 0; i < 7; i++) {
 				if (SEquUpcase(LexWord, ModeTxt[i])) {
-					D->Mode = i + 1;
+					CD->Mode = i + 1;
 					goto label1;
 				}
 			}
@@ -1707,9 +1727,9 @@ Instr* RdCopyFile()
 		label1:
 			RdLex();
 		}
-		else if (IsKeyWord("NOCANCEL")) D->NoCancel = true;
+		else if (IsKeyWord("NOCANCEL")) CD->NoCancel = true;
 		else if (IsKeyWord("APPEND")) {
-			if (noapp) OldError(139); D->Append = true;
+			if (noapp) OldError(139); CD->Append = true;
 		}
 		else Error(52);
 	}

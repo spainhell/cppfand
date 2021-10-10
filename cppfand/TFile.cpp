@@ -732,7 +732,7 @@ longint TFile::Store(char* s, size_t l)
 	return pos;
 }
 
-void TFile::AddLongStr(char* s, size_t l, unsigned short ls)
+void TFile::AddLongStr(char* s, size_t l, int ls)
 {
 	long l1, pos;
 	unsigned short i, u;

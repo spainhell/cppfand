@@ -335,13 +335,15 @@ enum CpOption {cpNo, cpFix, cpVar, cpTxt};
 
 struct CopyD
 {
-	pstring* Path1; /*FrmlPtr if cpList*/
+	// pstring* Path1; /*FrmlPtr if cpList*/
+	std::string Path1;
 	WORD CatIRec1;
 	FileD* FD1;
 	XKey* ViewKey;
 	bool WithX1;
 	CpOption Opt1;
-	pstring* Path2; /*  "  */
+	// pstring* Path2; /*  "  */
+	std::string Path2;
 	WORD CatIRec2;
 	FileD* FD2;
 	bool WithX2;

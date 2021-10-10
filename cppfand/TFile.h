@@ -40,7 +40,7 @@ public:
 	void Delete(longint Pos);
 	LongStr* Read(WORD StackNr, longint Pos);
 	longint Store(char* s, size_t l);
-	void AddLongStr(char* s, size_t l, unsigned short ls);
+	void AddLongStr(char* s, size_t l, int ls);
 	void StoreShortStr(char* s, size_t l);
 protected:
 	struct { long startPos, segPos, workPos; };	// StoreStr()

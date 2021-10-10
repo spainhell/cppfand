@@ -701,6 +701,13 @@ pstring* RdStrConst()
 	return S;
 }
 
+std::string RdStringConst()
+{
+	std::string result = LexWord;
+	Accept(_quotedstr);
+	return result;
+}
+
 char Rd1Char()
 {
 	if ((Lexem != _identifier) || (LexWord.length() != 1)) Error(124);

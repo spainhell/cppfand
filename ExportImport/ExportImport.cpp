@@ -48,10 +48,22 @@ void MakeCopy(CopyD* CD)
 	std::string pKod;
 	// NewExit(Ovr,er); goto 1;
 	// with CD^ do begin
-	ThFile* F1 = new ThFile(*CD->Path1, CD->CatIRec1, _inp, 0, nullptr);
+	ThFile* F1 = new ThFile(CD->Path1, CD->CatIRec1, _inp, 0, nullptr);
+	if (HandleError != 0) {
+		LastExitCode = 1;
+		return;
+	}
+
 	InOutMode m = _outp;
 	if (CD->Append) m = _append;
-	ThFile* F2 = new ThFile(*CD->Path2, CD->CatIRec2, m, 0, F1);
+
+	ThFile* F2 = new ThFile(CD->Path2, CD->CatIRec2, m, 0, F1);
+	if (HandleError != 0) {
+		delete F1;
+		LastExitCode = 1;
+		return;
+	}
+	
 	WORD kod;
 	switch (CD->Mode) {
 	case 5: {
@@ -108,8 +120,12 @@ void CopyFile(CopyD* CD)
 		if (CD->FD2 != nullptr) {} //MakeMerge();
 		else {} //ExportFD();
 	}
-	else if (CD->Opt1 == cpTxt) {} //TxtCtrlJ();
-	else MakeCopy(CD);
+	else if (CD->Opt1 == cpTxt) {
+		//TxtCtrlJ();
+	}
+	else {
+		// MakeCopy(CD);
+	}
 	SaveFiles();
 	RunMsgOff();
 	//ReleaseStore(p);

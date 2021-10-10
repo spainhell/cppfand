@@ -19,6 +19,7 @@ public:
 	std::string Vol;
 	InOutMode Mode = _inp;
 	bool Floppy = false, IsEOL = false, Continued = false;
+	BYTE compress = 0;
 	longint Size = 0, OrigSize = 0, SpaceOnDisk = 0;
 	FileD* FD = nullptr;
 

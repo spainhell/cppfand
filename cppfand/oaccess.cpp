@@ -845,6 +845,17 @@ void SetTxtPathVol(pstring* Path, WORD CatIRec)
 	}
 }
 
+void SetTxtPathVol(std::string& Path, WORD CatIRec)
+{
+	if (CatIRec != 0) {
+		RdCatPathVol(CatIRec);
+	}
+	else {
+		CPath = FExpand(Path);
+		CVol = "";
+	}
+}
+
 void SetTempCExt(char Typ, bool IsNet)
 {
 	char Nr;
