@@ -21,6 +21,7 @@ class WRec /* record on WPage */
 {
 public:
 	WRec() = default;
+	WRec(unsigned char* data);
 	WRec(WPage* wp);
 	BYTE N[3]{ 0, 0, 0 };
 	BYTE IR[3]{ 0, 0, 0 };

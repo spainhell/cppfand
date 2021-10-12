@@ -1941,20 +1941,37 @@ void StrMask(double R, pstring& Mask)
 	if (minus) Mask = tmp + Mask;
 }
 
-std::string Replace(std::string text, std::string& oldText, std::string& newText, std::string options)
+std::string Replace(std::string text, std::string oldText, std::string& newText, std::string options)
 {
+
 	bool tilda = options.find('~') != std::string::npos;
 	bool words = (options.find('w') != std::string::npos) || (options.find('W') != std::string::npos);
 	bool upper = (options.find('u') != std::string::npos) || (options.find('U') != std::string::npos);
 
-	if (tilda || words || upper) throw std::exception("Replace() not implemented.");
+	std::string copyInputText = text;
 
+	if (upper) {
+		for (size_t i = 0; i < copyInputText.length(); i++) {
+			copyInputText[i] = UpcCharTab[(BYTE)copyInputText[i]];
+		}
+		for (size_t i = 0; i < oldText.length(); i++) {
+			oldText[i] = UpcCharTab[(BYTE)oldText[i]];
+		}
+	}
+	else {
+	}
+
+	if (tilda || words) throw std::exception("Replace() not implemented.");
+
+	// we are looking for equ strings in transformed string (copyInputText),
+	// but we change text in original string (text) too!!!
 	size_t old_len = oldText.length();
-	size_t pos = text.find(oldText);
+	size_t pos = copyInputText.find(oldText);
 
 	while (pos != std::string::npos) {
 		text = text.replace(pos, old_len, newText);
-		pos = text.find(oldText);
+		copyInputText = copyInputText.replace(pos, old_len, newText);
+		pos = copyInputText.find(oldText);
 	}
 
 	return text;

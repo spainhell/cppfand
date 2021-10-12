@@ -14,6 +14,11 @@
 #include "models/Instr.h"
 
 
+WRec::WRec(unsigned char* data)
+{
+	this->Deserialize(data);
+}
+
 WRec::WRec(WPage* wp)
 {
 	N[0] = wp->A[0]; N[1] = wp->A[1]; N[2] = wp->A[2];
@@ -208,7 +213,8 @@ void WorkFile::Reset(KeyFldD* KF, longint RestBytes, char Typ, longint NRecs)
 	if (BYTEs < 4096) RunError(624);
 	if (BYTEs < kB60) WPageSize = (WORD)BYTEs & 0xF000;
 	else WPageSize = kB60;
-	MaxOnWPage = (WPageSize - (sizeof(WPage) - 65535 + 1)) / RecLen; // nebude se do toho pocitat delka pole 'A' (66535)
+	// MaxOnWPage = (WPageSize - (sizeof(WPage) - 65535 + 1)) / RecLen; // nebude se do toho pocitat delka pole 'A' (66535)
+	MaxOnWPage = WPageSize / RecLen;
 	if (MaxOnWPage < 4) RunError(624);
 	MaxWPage = 0; NFreeNr = 0;
 	PW = new WPage(); // (WPage*)GetStore(WPageSize);
@@ -233,7 +239,7 @@ void WorkFile::SortMerge()
 	// ty pak projdou upravou;
 	// a zpatky se vraci na stejne misto do PW->A;
 	
-	WRec* r = new WRec();
+	//WRec* r = new WRec();
 	BYTE buffer[512]{ 0 };
 	size_t offsetOfPwA = 0;
 	WORD n = 0; longint pg = 0, nxt = 0;
@@ -247,9 +253,12 @@ void WorkFile::SortMerge()
 			nxt = GetFreeNr();
 			NChains++;
 			WriteWPage(n, pg, nxt, 0);
+			memset(PW->A, '0', sizeof(PW->A));
+			offsetOfPwA = 0;
 			n = 0;
 		}
-		r->Deserialize(&PW->A[offsetOfPwA]);
+		auto r = std::make_unique<WRec>();
+		//r->Deserialize(&PW->A[offsetOfPwA]);
 		r->PutN(RecNr);
 		r->PutIR(IRec);
 		r->X.PackKF(KFRoot);
@@ -258,7 +267,7 @@ void WorkFile::SortMerge()
 		n++;
 		offsetOfPwA += RecLen;
 	}
-	delete r; r = nullptr;
+	//delete r; r = nullptr;
 	PW->Sort(n, RecLen);
 	WriteWPage(n, nxt, 0, 0);
 	if (NChains > 1) Merge();
@@ -296,69 +305,104 @@ void WorkFile::Merge()
 {
 	longint npairs, newli, nxtnew, pg1, pg2, nxt;
 	nxt = 0;
-	PW1 = (WPage*)GetStore(WPageSize);
-	PW2 = (WPage*)GetStore(WPageSize);
+	PW1 = new WPage(); // (WPage*)GetStore(WPageSize);
+	PW2 = new WPage(); // (WPage*)GetStore(WPageSize);
 label1:
 	if (NChains == 1) return;
-	npairs = NChains / 2; pg1 = WRoot;
-	if (NChains == 2) newli = 0; else { WRoot = GetFreeNr(); newli = WRoot; }
-	if (nxt > 0) { pg2 = pg1; pg1 = nxt; ReadWPage(PW1, pg1); goto label2; }
+	npairs = NChains / 2;
+	pg1 = WRoot;
+	if (NChains == 2) newli = 0;
+	else {
+		WRoot = GetFreeNr();
+		newli = WRoot;
+	}
+	if (nxt > 0) {
+		pg2 = pg1; pg1 = nxt;
+		ReadWPage(PW1, pg1);
+		goto label2;
+	}
 	while (npairs > 0) {
-		ReadWPage(PW1, pg1); pg2 = PW1->NxtChain;
+		ReadWPage(PW1, pg1);
+		pg2 = PW1->NxtChain;
 	label2:
-		ReadWPage(PW2, pg2); nxt = PW2->NxtChain;
-		if (npairs == 1) nxtnew = 0; else nxtnew = GetFreeNr();
+		ReadWPage(PW2, pg2);
+		nxt = PW2->NxtChain;
+		if (npairs == 1) nxtnew = 0;
+		else nxtnew = GetFreeNr();
 		NChains--;
 		Merge2Chains(pg1, pg2, newli, nxtnew);
-		npairs--; pg1 = nxt; newli = nxtnew;
+		npairs--;
+		pg1 = nxt; newli = nxtnew;
 	}
 	goto label1;
 }
 
 void WorkFile::Merge2Chains(longint Pg1, longint Pg2, longint Pg, longint Nxt)
 {
-	WRec* r1 = nullptr; WRec* r2 = nullptr; WRec* r = nullptr;
-	WORD* r1ofs = (WORD*)r1;
-	WORD* r2ofs = (WORD*)r2;
-	WORD* rofs = (WORD*)r;
-	WORD max1ofs, max2ofs, maxofs;
-	bool eof1, eof2;
-	longint chn; WORD l;
-	WPage* w1 = nullptr; WPage* w2 = nullptr; WPage* w = nullptr;
-	w1 = PW1; w2 = PW2; w = PW; l = RecLen; eof1 = false; eof2 = false;
-	r1 = (WRec*)(&w1->A); r2 = (WRec*)(&w2->A); r = (WRec*)(&w->A);
-	max1ofs = *r1ofs + w1->NRecs * l; max2ofs = *r2ofs + w2->NRecs * l;
-	maxofs = *rofs + MaxOnWPage * l;
+	//WORD r1index = 0;
+	//WORD r2index = 0;
+	//WORD rIndex = 0;
+	longint chn;
+	WPage* w1 = PW1;
+	WPage* w2 = PW2;
+	WPage* w = PW;
+	WORD l = RecLen;
+	bool eof1 = false; bool eof2 = false;
+	WRec* r1 = new WRec(w1->A);
+	WRec* r2 = new WRec(w2->A);
+	WRec* r = new WRec(w->A);
+	WORD max1ofs = r1->GetN() + w1->NRecs * l;
+	WORD max2ofs = r2->GetN() + w2->NRecs * l;
+	WORD maxofs = r->GetN() + MaxOnWPage * l;
 label1:
-	if (*rofs == maxofs) {
-		chn = GetFreeNr(); WriteWPage(MaxOnWPage, Pg, Nxt, chn); Pg = chn; Nxt = 0;
-		r = (WRec*)(&w->A);
+	if (r->GetN() == maxofs) {
+		chn = GetFreeNr();
+		WriteWPage(MaxOnWPage, Pg, Nxt, chn);
+		Pg = chn; Nxt = 0;
+		delete r;
+		r = new WRec(w->A);
 	}
 	if (eof1) goto label3;
 	if (eof2) goto label2;
 	if (r1->Comp(r2) == _gt) goto label3;
 label2:
-	MyMove(r1, r, l); rofs += l; r1ofs += l;
-	if (*r1ofs == max1ofs) {
-		PutFreeNr(Pg1); Pg1 = w1->Chain;
+	MyMove(r1, r, l);
+	r->PutN(r->GetN() + l);
+	r1->PutN(r1->GetN() + l);
+	if (r1->GetN() == max1ofs) {
+		PutFreeNr(Pg1);
+		Pg1 = w1->Chain;
 		if (Pg1 != 0) {
-			ReadWPage(w1, Pg1); r1 = (WRec*)(&w1->A); max1ofs = *r1ofs + w1->NRecs * l;
+			ReadWPage(w1, Pg1);
+			delete r1;
+			r1 = new WRec(w1->A);
+			max1ofs = r1->GetN() + w1->NRecs * l;
 		}
-		else if (eof2) goto label4; else eof1 = true;
+		else if (eof2) goto label4;
+		else eof1 = true;
 	}
 	goto label1;
 label3:
-	MyMove(r2, r, l); rofs += l; r2ofs += l;
-	if (*r2ofs == max2ofs) {
-		PutFreeNr(Pg2); Pg2 = w2->Chain;
+	MyMove(r2, r, l);
+	r->PutN(r->GetN() + l);
+	r2->PutN(r2->GetN() + l);
+	if (r2->GetN() == max2ofs) {
+		PutFreeNr(Pg2);
+		Pg2 = w2->Chain;
 		if (Pg2 != 0) {
-			ReadWPage(w2, Pg2); r2 = (WRec*)(&w2->A); max2ofs = *r2ofs + w2->NRecs * l;
+			ReadWPage(w2, Pg2);
+			delete r2;
+			r2 = new WRec(w2->A);
+			max2ofs = r2->GetN() + w2->NRecs * l;
 		}
-		else if (eof1) goto label4; else eof2 = true;
+		else if (eof1) goto label4;
+		else eof2 = true;
 	}
 	goto label1;
 label4:
-	WriteWPage((*rofs - w->A[0]) / l, Pg, Nxt, 0);
+	WriteWPage((r->GetN() - w->A[0]) / l, Pg, Nxt, 0);
+	delete r; delete r1; delete r2;
+
 }
 
 void WorkFile::PutFreeNr(longint N)

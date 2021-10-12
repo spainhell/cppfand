@@ -672,7 +672,7 @@ longint TFile::Store(char* s, size_t l)
 		break;
 	}
 	case T00Format: {
-		short i;
+		/*short i;
 
 		if (startPos != 0)			// rozpracovano?
 		{
@@ -687,7 +687,7 @@ longint TFile::Store(char* s, size_t l)
 			}
 			//Read(&i, 2);			// dosud zapsana delka v aktualnim segmentu
 			long l1 = (unsigned short)i + l; 			// nova delka
-			if (segPos == 0 && ((unsigned short)i < MPageSize - 2))		// short data?
+			if (segPos == 0 && (abs(i) < MPageSize - 2))		// short data?
 			{
 				char buf[MPageSize];
 				//Read(buf, i);
@@ -724,7 +724,36 @@ longint TFile::Store(char* s, size_t l)
 				AddLongStr(s, l, 0);
 			}
 		}
-		pos = startPos;
+		pos = startPos;*/
+
+		if (l > MaxLStrLen) {
+
+			l = MaxLStrLen;
+		}
+		if (l > MPageSize - 2) {
+			// long text
+			pos = NewPage(false);
+		} 
+		else {
+			// short text
+			rest = MPageSize - FreePart % MPageSize;
+			if (l + 2 <= rest) {
+				pos = FreePart;
+			}
+			else {
+				pos = NewPage(false);
+				FreePart = pos;
+				rest = MPageSize;
+			}
+			if (l + 4 >= rest) FreePart = NewPage(false);
+			else {
+				FreePart += l + 2;
+				rest = l + 4 - rest;
+				RdWrCache(false, Handle, NotCached(), FreePart, 2, &rest);
+			}
+		}
+		RdWrCache(false, Handle, NotCached(), pos, 2, &l);
+		RdWr(false, pos + 2, l, s);
 		break;
 	}
 	default: break;
@@ -732,111 +761,111 @@ longint TFile::Store(char* s, size_t l)
 	return pos;
 }
 
-void TFile::AddLongStr(char* s, size_t l, int ls)
-{
-	long l1, pos;
-	unsigned short i, u;
-	char* p;
-
-	while (!0)				// segment loop
-	{
-		l1 = ls + l;            	// nova delka
-		if (l1 > MaxLStrLen)        // vysledek delsi nez segment?
-		{
-			u = MaxLStrLen - ls;	// kolik se vejde do stavajiciho segmentu
-			l1 = MaxLStrLen + 1;	// ano
-		}
-		else
-			u = l;
-		l -= u;					// kolik zbyva na dalsi segment
-		//Seek(segPos);
-		//Write(&l1, 2);				// INTEL!
-		RdWrCache(false, Handle, NotCached(), segPos, 2, &l1);
-		if (i = workPos % MPageSize)		// nikdy nepripravuju prazdnou stranku!
-			i = MPageSize - i;              // volne misto ve strance
-		if (u > i && i < 4)		// nevejde se a neni misto na adresu, musim ho uvolnit
-		{
-			workPos += (short)i - 4;	// couvnu na 4 slabiku pred koncem stranky
-			// Seek(workPos); Read(&l1, 4);	// uschovam 4 posledni slabiky
-			RdWrCache(true, Handle, NotCached(), workPos, 4, &l1);
-			pos = NewPage(false);
-			// Seek(workPos); Write(&pos, 4);
-			RdWrCache(false, Handle, NotCached(), workPos, 4, &pos);
-			//Seek(pos); Write(&l1, 4);		// na zacatek nove stranky ulozim uschovana data
-			RdWrCache(false, Handle, NotCached(), pos, 4, &l1);
-			workPos = pos + 4 - i;
-			i = MPageSize + (short)i - 4;        // volne misto v nove strance
-		}
-		for (p = s; u > i; u -= i, p += i, workPos = pos, i = MPageSize)	// dokud se to nevejde  cele
-		{
-			i -= 4;			// vynecham misto na chain adresu (musi byt zaruceno)
-			pos = NewPage(false);
-			//Seek(workPos);
-			//Write(p, i);
-			//Write(&pos, 4);	// zapisu chain addresu
-			RdWrCache(false, Handle, NotCached(), workPos, i, p);
-			RdWrCache(false, Handle, NotCached(), workPos + i, 4, &pos);
-		}
-		//Seek(workPos);		// zapisu zbytek segmentu
-		//Write(p, u);
-		RdWrCache(false, Handle, NotCached(), workPos, u, p);
-		workPos += u;
-		if (l == 0)			// neni treba dalsi segment
-			break;
-		s = p + u;
-		segPos = NewPage(false);
-		workPos = workPos - workPos % MPageSize + MPageSize - 4;  // muze to byt za strankou???
-		//Seek(workPos);
-		//Write(&segPos, 4);
-		RdWrCache(false, Handle, NotCached(), workPos, 4, &segPos);
-		workPos = segPos + 2;
-		ls = 0;
-	}
-}
-
-void TFile::StoreShortStr(char* s, size_t l)
-{
-	// tohle zobecnit na hledani ve strance?
-	short i;
-	size_t offset = 0;
-	//	Seek(freePart);
-	//	Read(&i, 2);			
-	//	i = -i; 				// delka volne casti pro data
-	i = MPageSize - FreePart % MPageSize - 2;		// delka volne casti - 2 = prostor pro text
-	if (l > (unsigned short)i)	// vejde se tam?
-	{
-		// mohl by prohledavat volne casti
-		FreePart = NewPage(false); 	// ne, alokuju novou stranku
-		i = MPageSize - 2;		// prostor pro data
-	}
-	startPos = FreePart;
-	//Seek(startPos = FreePart);
-	//Write(&l, 2);			// zapisu delku
-	//Write(s, l);			// zapisu data
-	RdWrCache(false, Handle, NotCached(), startPos, 2, &l);
-	RdWrCache(false, Handle, NotCached(), startPos + 2, l, s);
-	i -= l;
-	// nepripravovat novou stranku (?) - je to predcasne
-	// problem - pri uplnem vycerpani ukazuje na nasledujici stranku
-	// mohl by mirit o byte nize, stejne se tam zadny fragment nevejde
-	// pri ruseni to odchytnu na posledni segment a ne free
-	if (i < 2)				// pripravim novou stranku
-	{
-		FreePart = NewPage(false);
-		//Seek(FreePart);
-		offset = FreePart;
-		i = -MPageSize;
-	}
-	else
-	{
-		offset = startPos + 2 + l;
-		FreePart += l + 2;
-		i = -i;
-	}
-	i += 2;
-	// Write(&i, 2);
-	RdWrCache(false, Handle, NotCached(), offset, 2, &i);
-}
+//void TFile::AddLongStr(char* s, size_t l, int ls)
+//{
+//	long l1, pos;
+//	unsigned short i, u;
+//	char* p;
+//
+//	while (!0)				// segment loop
+//	{
+//		l1 = ls + l;            	// nova delka
+//		if (l1 > MaxLStrLen)        // vysledek delsi nez segment?
+//		{
+//			u = MaxLStrLen - ls;	// kolik se vejde do stavajiciho segmentu
+//			l1 = MaxLStrLen + 1;	// ano
+//		}
+//		else
+//			u = l;
+//		l -= u;					// kolik zbyva na dalsi segment
+//		//Seek(segPos);
+//		//Write(&l1, 2);				// INTEL!
+//		RdWrCache(false, Handle, NotCached(), segPos, 2, &l1);
+//		if (i = workPos % MPageSize)		// nikdy nepripravuju prazdnou stranku!
+//			i = MPageSize - i;              // volne misto ve strance
+//		if (u > i && i < 4)		// nevejde se a neni misto na adresu, musim ho uvolnit
+//		{
+//			workPos += (short)i - 4;	// couvnu na 4 slabiku pred koncem stranky
+//			// Seek(workPos); Read(&l1, 4);	// uschovam 4 posledni slabiky
+//			RdWrCache(true, Handle, NotCached(), workPos, 4, &l1);
+//			pos = NewPage(false);
+//			// Seek(workPos); Write(&pos, 4);
+//			RdWrCache(false, Handle, NotCached(), workPos, 4, &pos);
+//			//Seek(pos); Write(&l1, 4);		// na zacatek nove stranky ulozim uschovana data
+//			RdWrCache(false, Handle, NotCached(), pos, 4, &l1);
+//			workPos = pos + 4 - i;
+//			i = MPageSize + (short)i - 4;        // volne misto v nove strance
+//		}
+//		for (p = s; u > i; u -= i, p += i, workPos = pos, i = MPageSize)	// dokud se to nevejde  cele
+//		{
+//			i -= 4;			// vynecham misto na chain adresu (musi byt zaruceno)
+//			pos = NewPage(false);
+//			//Seek(workPos);
+//			//Write(p, i);
+//			//Write(&pos, 4);	// zapisu chain addresu
+//			RdWrCache(false, Handle, NotCached(), workPos, i, p);
+//			RdWrCache(false, Handle, NotCached(), workPos + i, 4, &pos);
+//		}
+//		//Seek(workPos);		// zapisu zbytek segmentu
+//		//Write(p, u);
+//		RdWrCache(false, Handle, NotCached(), workPos, u, p);
+//		workPos += u;
+//		if (l == 0)			// neni treba dalsi segment
+//			break;
+//		s = p + u;
+//		segPos = NewPage(false);
+//		workPos = workPos - workPos % MPageSize + MPageSize - 4;  // muze to byt za strankou???
+//		//Seek(workPos);
+//		//Write(&segPos, 4);
+//		RdWrCache(false, Handle, NotCached(), workPos, 4, &segPos);
+//		workPos = segPos + 2;
+//		ls = 0;
+//	}
+//}
+//
+//void TFile::StoreShortStr(char* s, size_t l)
+//{
+//	// tohle zobecnit na hledani ve strance?
+//	short i;
+//	size_t offset = 0;
+//	//	Seek(freePart);
+//	//	Read(&i, 2);			
+//	//	i = -i; 				// delka volne casti pro data
+//	i = MPageSize - FreePart % MPageSize - 2;		// delka volne casti - 2 = prostor pro text
+//	if (l > (unsigned short)i)	// vejde se tam?
+//	{
+//		// mohl by prohledavat volne casti
+//		FreePart = NewPage(false); 	// ne, alokuju novou stranku
+//		i = MPageSize - 2;		// prostor pro data
+//	}
+//	startPos = FreePart;
+//	//Seek(startPos = FreePart);
+//	//Write(&l, 2);			// zapisu delku
+//	//Write(s, l);			// zapisu data
+//	RdWrCache(false, Handle, NotCached(), startPos, 2, &l);
+//	RdWrCache(false, Handle, NotCached(), startPos + 2, l, s);
+//	i -= l;
+//	// nepripravovat novou stranku (?) - je to predcasne
+//	// problem - pri uplnem vycerpani ukazuje na nasledujici stranku
+//	// mohl by mirit o byte nize, stejne se tam zadny fragment nevejde
+//	// pri ruseni to odchytnu na posledni segment a ne free
+//	if (i < 2)				// pripravim novou stranku
+//	{
+//		FreePart = NewPage(false);
+//		//Seek(FreePart);
+//		offset = FreePart;
+//		i = -MPageSize;
+//	}
+//	else
+//	{
+//		offset = startPos + 2 + l;
+//		FreePart += l + 2;
+//		i = -i;
+//	}
+//	i += 2;
+//	// Write(&i, 2);
+//	RdWrCache(false, Handle, NotCached(), offset, 2, &i);
+//}
 
 
 void TFile::RdWr(bool ReadOp, longint Pos, WORD N, void* X)

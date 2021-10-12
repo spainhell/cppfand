@@ -5,6 +5,7 @@
 #include "../cppfand/GlobalVariables.h"
 #include "../cppfand/oaccess.h"
 #include "../cppfand/obaseww.h"
+#include "../FileSystem/directory.h"
 
 
 bool OldToNewCat(longint& FilSz)
@@ -63,7 +64,7 @@ void MakeCopy(CopyD* CD)
 		LastExitCode = 1;
 		return;
 	}
-	
+
 	WORD kod;
 	switch (CD->Mode) {
 	case 5: {
@@ -81,7 +82,7 @@ void MakeCopy(CopyD* CD)
 		pKod = ResFile.Get(kod);
 		break;
 	}
-	default: ;
+	default:;
 	}
 	while (!F1->eof) {
 		memcpy(F2->Buf, F1->Buf, F1->lBuf);
@@ -94,7 +95,7 @@ void MakeCopy(CopyD* CD)
 		case 5:
 		case 6:
 		case 7:	ConvWinCp((unsigned char*)F2->Buf, (unsigned char*)pKod.c_str(), F2->lBuf); break;
-		default: ;
+		default:;
 		}
 		F2->WriteBuf(false);
 		F1->ReadBuf();
@@ -140,7 +141,16 @@ void CheckFile(FileD* FD)
 	pstring d; pstring n; pstring e;
 	longint fs = 0;
 
-	TestMountVol(CPath[1]);
+	TestMountVol(CPath[0]);
+
+	const int fileStatus = fileExists(CPath);
+	if (fileStatus != 0) {
+		// path not exists
+		if (fileStatus == 1) LastExitCode = 1;
+		else LastExitCode = 2;
+		return;
+	}
+	
 	h = OpenH(_isoldfile, RdShared);
 	LastExitCode = 0;
 	if (HandleError != 0) {

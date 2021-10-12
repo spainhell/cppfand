@@ -40,11 +40,11 @@ public:
 	void Delete(longint Pos);
 	LongStr* Read(WORD StackNr, longint Pos);
 	longint Store(char* s, size_t l);
-	void AddLongStr(char* s, size_t l, int ls);
-	void StoreShortStr(char* s, size_t l);
+	// void AddLongStr(char* s, size_t l, int ls);
+	// void StoreShortStr(char* s, size_t l);
 protected:
-	struct { long startPos, segPos, workPos; };	// StoreStr()
-	struct { unsigned short size, length, rest; };	// ReadStr()
+	// struct { long startPos, segPos, workPos; };	// StoreStr()
+	// struct { unsigned short size, length, rest; };	// ReadStr()
 private:
 	void RdWr(bool ReadOp, longint Pos, WORD N, void* X);
 	void GetMLen();

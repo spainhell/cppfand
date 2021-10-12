@@ -1132,7 +1132,7 @@ void RunInstr(Instr* PD)
 		case _gotoxy: {
 			auto iPD = (Instr_gotoxy*)PD;
 			WORD x = RunInt(iPD->GoX);
-			WORD y = RunInt(iPD->GoX);
+			WORD y = RunInt(iPD->GoY);
 			//screen.Window(1, 1, TxtCols, TxtRows);
 			screen.GotoXY(x + WindMin.X - 1, y + WindMin.Y - 1, absolute);
 			break;
@@ -1342,7 +1342,7 @@ void CallProcedure(Instr_proc* PD)
 
 #ifdef _DEBUG
 	std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
-	if (srcCode.find("exit=") != std::string::npos) {
+	if (srcCode.find("{SEST}") != std::string::npos) {
 		printf("");
 	}
 #endif
