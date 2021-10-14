@@ -209,7 +209,7 @@ void WorkFile::Reset(KeyFldD* KF, longint RestBytes, char Typ, longint NRecs)
 		else RecLen += KF->FldD->NBytes;
 		KF = (KeyFldD*)KF->Chain;
 	}
-	BYTEs = 35000; // TODO: (StoreAvail() - RestBytes - sizeof(WRec)) / 3;
+	BYTEs = /*35000; // TODO:*/ (StoreAvail() - RestBytes - sizeof(WRec)) / 3;
 	if (BYTEs < 4096) RunError(624);
 	if (BYTEs < kB60) WPageSize = (WORD)BYTEs & 0xF000;
 	else WPageSize = kB60;
@@ -303,10 +303,10 @@ longint WorkFile::GetFreeNr()
 
 void WorkFile::Merge()
 {
-	longint npairs, newli, nxtnew, pg1, pg2, nxt;
-	nxt = 0;
-	PW1 = new WPage(); // (WPage*)GetStore(WPageSize);
-	PW2 = new WPage(); // (WPage*)GetStore(WPageSize);
+	longint npairs, newli, nxtnew, pg1, pg2;
+	longint nxt = 0;
+	PW1 = new WPage();
+	PW2 = new WPage();
 label1:
 	if (NChains == 1) return;
 	npairs = NChains / 2;
@@ -339,11 +339,6 @@ label1:
 
 void WorkFile::Merge2Chains(longint Pg1, longint Pg2, longint Pg, longint Nxt)
 {
-	longint chn;
-	WPage* w1 = PW1;
-	WPage* w2 = PW2;
-	WPage* w = PW;
-	WORD l = RecLen;
 	bool eof1 = false;
 	bool eof2 = false;
 	
@@ -351,64 +346,71 @@ void WorkFile::Merge2Chains(longint Pg1, longint Pg2, longint Pg, longint Nxt)
 	size_t r2ofs = 0;
 	size_t rofs = 0;
 
-	WRec* r1 = new WRec(&w1->A[r1ofs]);
-	WRec* r2 = new WRec(&w2->A[r2ofs]);
-	WRec* r = new WRec(&w->A[rofs]);
+	WRec* r1 = nullptr;
+	WRec* r2 = nullptr;
+	WRec* r = new WRec(&PW->A[rofs]);
 
-	WORD max1ofs = w1->NRecs * l;
-	WORD max2ofs = w2->NRecs * l;
-	WORD maxofs = MaxOnWPage * l;
-label1:
-	if (rofs == maxofs) {
-		chn = GetFreeNr();
-		WriteWPage(MaxOnWPage, Pg, Nxt, chn);
-		Pg = chn;
-		Nxt = 0;
-		delete r;
-		rofs = 0;
-		r = new WRec(&w->A[rofs]);
-	}
-	if (eof1) goto label3;
-	if (eof2) goto label2;
-	if (r1->Comp(r2) == _gt) goto label3;
-label2:
-	MyMove(&w1->A[r1ofs], &w->A[rofs], l);
-	rofs += l;
-	r1ofs += l;
-	if (r1ofs == max1ofs) {
-		PutFreeNr(Pg1);
-		Pg1 = w1->Chain;
-		if (Pg1 != 0) {
-			ReadWPage(w1, Pg1);
-			delete r1;
-			r1ofs = 0;
-			r1 = new WRec(&w1->A[r1ofs]);
-			max1ofs = w1->NRecs * l;
+	WORD max1ofs = PW1->NRecs * RecLen;
+	WORD max2ofs = PW2->NRecs * RecLen;
+	const WORD maxofs = MaxOnWPage * RecLen;
+
+	while (true) {
+		if (rofs == maxofs) {
+			longint chn = GetFreeNr();
+			WriteWPage(MaxOnWPage, Pg, Nxt, chn);
+			Pg = chn;
+			Nxt = 0;
+			delete r;
+			rofs = 0;
+			r = new WRec(&PW->A[rofs]);
 		}
-		else if (eof2) goto label4;
-		else eof1 = true;
-	}
-	goto label1;
-label3:
-	MyMove(&w2->A[r2ofs], &w->A[rofs], l);
-	rofs += l;
-	r2ofs += l;
-	if (r2ofs == max2ofs) {
-		PutFreeNr(Pg2);
-		Pg2 = w2->Chain;
-		if (Pg2 != 0) {
-			ReadWPage(w2, Pg2);
-			delete r2;
-			r2ofs = 0;
-			r2 = new WRec(&w2->A[r2ofs]);
-			max2ofs = w2->NRecs * l;
+		if (eof1) goto label3;
+		if (eof2) goto label2;
+
+		delete r1; delete r2;
+		r1 = new WRec(&PW1->A[r1ofs]);
+		r2 = new WRec(&PW2->A[r2ofs]);
+
+		if (r1->Comp(r2) == _gt) goto label3;
+	label2:
+		memcpy(&PW->A[rofs], &PW1->A[r1ofs], RecLen);
+		rofs += RecLen;
+		r1ofs += RecLen;
+		if (r1ofs == max1ofs) {
+			PutFreeNr(Pg1);
+			Pg1 = PW1->Chain;
+			if (Pg1 != 0) {
+				ReadWPage(PW1, Pg1);
+				delete r1;
+				r1ofs = 0;
+				r1 = new WRec(&PW1->A[r1ofs]);
+				max1ofs = PW1->NRecs * RecLen;
+			}
+			else if (eof2) break;
+			else eof1 = true;
 		}
-		else if (eof1) goto label4;
-		else eof2 = true;
+		continue;
+	label3:
+		memcpy(&PW->A[rofs], &PW2->A[r2ofs], RecLen);
+		rofs += RecLen;
+		r2ofs += RecLen;
+		if (r2ofs == max2ofs) {
+			PutFreeNr(Pg2);
+			Pg2 = PW2->Chain;
+			if (Pg2 != 0) {
+				ReadWPage(PW2, Pg2);
+				delete r2;
+				r2ofs = 0;
+				r2 = new WRec(&PW2->A[r2ofs]);
+				max2ofs = PW2->NRecs * RecLen;
+			}
+			else if (eof1) break;
+			else eof2 = true;
+		}
+		continue;
 	}
-	goto label1;
-label4:
-	WriteWPage(rofs / l, Pg, Nxt, 0);
+
+	WriteWPage(rofs / RecLen, Pg, Nxt, 0);
 	delete r; delete r1; delete r2;
 }
 
@@ -469,28 +471,32 @@ XWorkFile::XWorkFile(XScan* AScan, XKey* AK)
 
 void XWorkFile::Main(char Typ)
 {
-	WRec* R = nullptr; XKey* k = nullptr; KeyFldD* kf = nullptr;
-	XPage* p = nullptr; bool frst = false;
 	XPP = new XPage();
 	NxtXPage = XF->NewPage(XPP);
 	MsgWritten = false;
-	frst = true;
+	bool frst = true;
 	// for all keys defined in #K
 	while (KD != nullptr) {
 		PX = new XXPage();
 		PX->Reset(this);
 		PX->IsLeaf = true;
-		k = Scan->Key;
-		kf = KD->KFlds;
+		XKey* k = Scan->Key;
+		KeyFldD* kf = KD->KFlds;
 		if (Scan->Kind == 1 &&
 #ifdef FandSQL
 			!Scan->FD->IsSQLFile &&
 #endif
 			(Scan->Bool == nullptr
-				&& (EquKFlds(k->KFlds, kf) || kf == nullptr))) CopyIndex(k, kf, Typ);
+				&& (kf == nullptr || EquKFlds(k->KFlds, kf)))) {
+			CopyIndex(k, kf, Typ);
+		}
 		else {
-			if (frst) frst = false;
-			else Scan->SeekRec(0);
+			if (frst) {
+				frst = false;
+			}
+			else {
+				Scan->SeekRec(0);
+			}
 			Reset(KD->KFlds, sizeof(XXPage) * 9, Typ, Scan->NRecs);
 			SortMerge();
 		}
@@ -498,12 +504,15 @@ void XWorkFile::Main(char Typ)
 		ReleaseStore(PX);
 		KD = KD->Chain;
 	}
-	XF->ReleasePage(XPP, NxtXPage);	ReleaseStore(XPP);
+	XF->ReleasePage(XPP, NxtXPage);
+	ReleaseStore(XPP);
 }
 
 void XWorkFile::CopyIndex(XKey* K, KeyFldD* KF, char Typ)
 {
-	WRec* r = nullptr; XPage* p = nullptr; longint page; WORD n; longint i;
+	WRec* r = nullptr;
+	XPage* p = nullptr;
+	longint page; WORD n; longint i;
 	XItem* x = nullptr;
 	WORD* xofs = (WORD*)x;
 
@@ -512,7 +521,8 @@ void XWorkFile::CopyIndex(XKey* K, KeyFldD* KF, char Typ)
 	p = (XPage*)GetStore(XPageSize);
 	K->NrToPath(1);
 	page = XPath[XPathN].Page;
-	RunMsgOn(Typ, K->NRecs()); i = 0;
+	RunMsgOn(Typ, K->NRecs());
+	i = 0;
 	while (page != 0) {
 		K->XF()->RdPage(p, page);
 		x = (XItem*)(&p->A);
@@ -522,9 +532,12 @@ void XWorkFile::CopyIndex(XKey* K, KeyFldD* KF, char Typ)
 			// TODO: zbavit se Next() - TOTO NEBUDE FUNGOVAT!!!
 			if (KF == nullptr) x = x->Next();
 			else *xofs = x->UpdStr(&r->X.S);
-			Output(r); n--;
+			Output(r);
+			n--;
 		}
-		i += p->NItems; RunMsgN(i); page = p->GreaterPage;
+		i += p->NItems;
+		RunMsgN(i);
+		page = p->GreaterPage;
 	}
 	RunMsgOff();
 }
