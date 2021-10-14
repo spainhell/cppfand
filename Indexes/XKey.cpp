@@ -4,7 +4,7 @@
 #include "../cppfand/GlobalVariables.h"
 #include "../cppfand/KeyFldD.h"
 #include "../cppfand/obaseww.h"
-#include "../cppfand/XFile.h"
+#include "XFile.h"
 #include "XPage.h"
 #include "../Logging/Logging.h"
 #include "../pascal/asm.h"

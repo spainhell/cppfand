@@ -5,6 +5,7 @@
 #include "obaseww.h"
 #include "../Indexes/sort.h"
 #include "../Indexes/XScan.h"
+#include "../Indexes/XWorkFile.h"
 #include "../Logging/Logging.h"
 
 
