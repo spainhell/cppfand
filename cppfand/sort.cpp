@@ -209,12 +209,12 @@ void WorkFile::Reset(KeyFldD* KF, longint RestBytes, char Typ, longint NRecs)
 		else RecLen += KF->FldD->NBytes;
 		KF = (KeyFldD*)KF->Chain;
 	}
-	BYTEs = (StoreAvail() - RestBytes - sizeof(WRec)) / 3;
+	BYTEs = 35000; // TODO: (StoreAvail() - RestBytes - sizeof(WRec)) / 3;
 	if (BYTEs < 4096) RunError(624);
 	if (BYTEs < kB60) WPageSize = (WORD)BYTEs & 0xF000;
 	else WPageSize = kB60;
 	// MaxOnWPage = (WPageSize - (sizeof(WPage) - 65535 + 1)) / RecLen; // nebude se do toho pocitat delka pole 'A' (66535)
-	MaxOnWPage = WPageSize / RecLen;
+	MaxOnWPage = (WPageSize - 10 + 1) / RecLen; // 10B is size of WPage without array
 	if (MaxOnWPage < 4) RunError(624);
 	MaxWPage = 0; NFreeNr = 0;
 	PW = new WPage(); // (WPage*)GetStore(WPageSize);
@@ -339,70 +339,77 @@ label1:
 
 void WorkFile::Merge2Chains(longint Pg1, longint Pg2, longint Pg, longint Nxt)
 {
-	//WORD r1index = 0;
-	//WORD r2index = 0;
-	//WORD rIndex = 0;
 	longint chn;
 	WPage* w1 = PW1;
 	WPage* w2 = PW2;
 	WPage* w = PW;
 	WORD l = RecLen;
-	bool eof1 = false; bool eof2 = false;
-	WRec* r1 = new WRec(w1->A);
-	WRec* r2 = new WRec(w2->A);
-	WRec* r = new WRec(w->A);
-	WORD max1ofs = r1->GetN() + w1->NRecs * l;
-	WORD max2ofs = r2->GetN() + w2->NRecs * l;
-	WORD maxofs = r->GetN() + MaxOnWPage * l;
+	bool eof1 = false;
+	bool eof2 = false;
+	
+	size_t r1ofs = 0;
+	size_t r2ofs = 0;
+	size_t rofs = 0;
+
+	WRec* r1 = new WRec(&w1->A[r1ofs]);
+	WRec* r2 = new WRec(&w2->A[r2ofs]);
+	WRec* r = new WRec(&w->A[rofs]);
+
+	WORD max1ofs = w1->NRecs * l;
+	WORD max2ofs = w2->NRecs * l;
+	WORD maxofs = MaxOnWPage * l;
 label1:
-	if (r->GetN() == maxofs) {
+	if (rofs == maxofs) {
 		chn = GetFreeNr();
 		WriteWPage(MaxOnWPage, Pg, Nxt, chn);
-		Pg = chn; Nxt = 0;
+		Pg = chn;
+		Nxt = 0;
 		delete r;
-		r = new WRec(w->A);
+		rofs = 0;
+		r = new WRec(&w->A[rofs]);
 	}
 	if (eof1) goto label3;
 	if (eof2) goto label2;
 	if (r1->Comp(r2) == _gt) goto label3;
 label2:
-	MyMove(r1, r, l);
-	r->PutN(r->GetN() + l);
-	r1->PutN(r1->GetN() + l);
-	if (r1->GetN() == max1ofs) {
+	MyMove(&w1->A[r1ofs], &w->A[rofs], l);
+	rofs += l;
+	r1ofs += l;
+	if (r1ofs == max1ofs) {
 		PutFreeNr(Pg1);
 		Pg1 = w1->Chain;
 		if (Pg1 != 0) {
 			ReadWPage(w1, Pg1);
 			delete r1;
-			r1 = new WRec(w1->A);
-			max1ofs = r1->GetN() + w1->NRecs * l;
+			r1ofs = 0;
+			r1 = new WRec(&w1->A[r1ofs]);
+			max1ofs = w1->NRecs * l;
 		}
 		else if (eof2) goto label4;
 		else eof1 = true;
 	}
 	goto label1;
 label3:
-	MyMove(r2, r, l);
-	r->PutN(r->GetN() + l);
-	r2->PutN(r2->GetN() + l);
-	if (r2->GetN() == max2ofs) {
+	MyMove(&w2->A[r2ofs], &w->A[rofs], l);
+	rofs += l;
+	r2ofs += l;
+	if (r2ofs == max2ofs) {
 		PutFreeNr(Pg2);
 		Pg2 = w2->Chain;
 		if (Pg2 != 0) {
 			ReadWPage(w2, Pg2);
 			delete r2;
-			r2 = new WRec(w2->A);
-			max2ofs = r2->GetN() + w2->NRecs * l;
+			r2ofs = 0;
+			r2 = new WRec(&w2->A[r2ofs]);
+			max2ofs = w2->NRecs * l;
 		}
 		else if (eof1) goto label4;
 		else eof2 = true;
 	}
 	goto label1;
 label4:
-	WriteWPage((r->GetN() - w->A[0]) / l, Pg, Nxt, 0);
+	WriteWPage(rofs / l, Pg, Nxt, 0);
 	delete r; delete r1; delete r2;
-
 }
 
 void WorkFile::PutFreeNr(longint N)
@@ -414,7 +421,11 @@ void WorkFile::PutFreeNr(longint N)
 void WorkFile::ReadWPage(WPage* W, longint Pg)
 {
 	SeekH(Handle, WBaseSize + (Pg - 1) * WPageSize);
-	ReadH(Handle, WPageSize, W); TestErr();
+	ReadH(Handle, 4, &W->NxtChain);
+	ReadH(Handle, 4, &W->Chain);
+	ReadH(Handle, 2, &W->NRecs);
+	ReadH(Handle, WPageSize - 10, &W->A);
+	TestErr();
 }
 
 void WorkFile::WriteWPage(WORD N, longint Pg, longint Nxt, longint Chn)
@@ -436,9 +447,14 @@ void WorkFile::WriteWPage(WORD N, longint Pg, longint Nxt, longint Chn)
 	}
 	else {
 		/* !!! with PW^ do!!! */
-		{ PW->NRecs = N; PW->NxtChain = Nxt; PW->Chain = Chn; }
+		PW->NRecs = N;
+		PW->NxtChain = Nxt;
+		PW->Chain = Chn;
 		SeekH(Handle, WBaseSize + (Pg - 1) * WPageSize);
-		WriteH(Handle, WPageSize, PW);
+		WriteH(Handle, 4, &PW->NxtChain);
+		WriteH(Handle, 4, &PW->Chain);
+		WriteH(Handle, 2, &PW->NRecs);
+		WriteH(Handle, WPageSize - 10, &PW->A);
 		TestErr();
 	}
 }
@@ -482,8 +498,7 @@ void XWorkFile::Main(char Typ)
 		ReleaseStore(PX);
 		KD = KD->Chain;
 	}
-	XF->ReleasePage(XPP, NxtXPage);
-	ReleaseStore(XPP);
+	XF->ReleasePage(XPP, NxtXPage);	ReleaseStore(XPP);
 }
 
 void XWorkFile::CopyIndex(XKey* K, KeyFldD* KF, char Typ)
