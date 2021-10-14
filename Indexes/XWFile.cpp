@@ -33,6 +33,12 @@ bool XWFile::NotCached()
 	return (this != &XWork) && CFile->NotCached();
 }
 
+XWFile* XKey::XF()
+{
+	if (InWork) return &XWork;
+	return CFile->XF;
+}
+
 void XWFile::RdPage(XPage* P, longint N)
 {
 	if ((N == 0) || (N > MaxPage)) Err(831);

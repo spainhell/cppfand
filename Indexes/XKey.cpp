@@ -4,7 +4,7 @@
 #include "../cppfand/GlobalVariables.h"
 #include "../cppfand/KeyFldD.h"
 #include "../cppfand/obaseww.h"
-#include "XFile.h"
+#include "../cppfand/XFile.h"
 #include "XPage.h"
 #include "../Logging/Logging.h"
 #include "../pascal/asm.h"
@@ -50,12 +50,6 @@ XKey::XKey(BYTE* inputStr)
 	//}
 	//Name[0] = inputStr[index]; index++;
 	//memcpy(&Name[1], &inputStr[index], Name[0]); index += Name[0];
-}
-
-XWFile* XKey::XF()
-{
-	if (InWork) return &XWork;
-	return CFile->XF;
 }
 
 longint XKey::NRecs()
