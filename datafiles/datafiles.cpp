@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "datafiles.h"
 
 std::map<std::string, DataFile> filesMap;

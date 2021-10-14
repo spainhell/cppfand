@@ -209,7 +209,7 @@ void WorkFile::Reset(KeyFldD* KF, longint RestBytes, char Typ, longint NRecs)
 		else RecLen += KF->FldD->NBytes;
 		KF = (KeyFldD*)KF->Chain;
 	}
-	BYTEs = /*35000; // TODO:*/ (StoreAvail() - RestBytes - sizeof(WRec)) / 3;
+	BYTEs = (StoreAvail() - RestBytes - sizeof(WRec)) / 3;
 	if (BYTEs < 4096) RunError(624);
 	if (BYTEs < kB60) WPageSize = (WORD)BYTEs & 0xF000;
 	else WPageSize = kB60;

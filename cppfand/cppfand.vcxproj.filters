@@ -236,9 +236,6 @@
     <ClInclude Include="XString.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="XItem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="XItemLeaf.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -255,9 +252,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="XWFile.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="XFile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TFile.h">
@@ -288,6 +282,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="XItemNonLeaf.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="XFile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="XItem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
