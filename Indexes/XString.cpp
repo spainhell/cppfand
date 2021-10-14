@@ -137,16 +137,17 @@ void XString::StoreD(void* R, bool descend)
 	unsigned char D0 = data[0]; // AL
 	unsigned char D5 = data[5]; // AH
 
-	unsigned char b5 = (D5 >= 0x80) ? 0 : 0x80; // nevyssi bit z d5 (AH) - NEGOVANY		
+	unsigned char b8D5 = (D5 >= 0x80) ? 0 : 0x80; // nevyssi bit z d5 (AH) - NEGOVANY
+	unsigned char b1D0 = (D0 & 0x01) << 7;               // nejnizsi bit z d0 (AL)
 
-	unsigned char b0 = (D0 & 0b00000001) << 7; // posledni bit pred posunem D0 doprava, budeme potrebovat jako nejvyssi bit pozdeji
-	D0 = D0 >> 1; // rotace R[0] doprava, nejvyssi bit je 0
-	D0 += b5; // nejvyssi bit bude b5 (bud pricteme 0b0000000 nebo 0b10000000)
+	D5 = (unsigned char)(D5 << 1); // rotace doleva, nejnizsi bit je 0
 
-	D5 = D5 >> 1; // rotace R[0] doprava, nejvyssi bit je 0
-	D5 += b0; // nejvyssi bit bude b0 (bud pricteme 0b0000000 nebo 0b10000000)
+	D0 = D0 >> 1; // rotace doprava, nejvyssi bit je 0
+	D0 += b8D5; // nejvyssi bit bude b8 z D5 (bud pricteme 0b0000000 nebo 0b10000000)
 
-
+	D5 = D5 >> 1; // rotace doprava, nejvyssi bit je 0
+	D5 += b1D0;   // nejvyssi bit bude b1 z D0 (bud pricteme 0b0000000 nebo 0b10000000)
+	
 	S[origLen + 1] = D0; // data zacinaji za origLen (jeste je tam 1B delka retezce)
 	S[origLen + 2] = D5;
 

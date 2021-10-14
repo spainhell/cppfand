@@ -1937,16 +1937,16 @@ bool DeleteRecProc()
 				}
 				UnLockRec(E);
 				if (!b) goto label1;
-		}
+			}
 		label1:
 			{}
-	}
+		}
 		else {
 			if (!ELockRec(E, N, false, Subset)) goto label1;
 			DelIndRec(CRec(), N);
 			UnLockRec(E);
 		}
-}
+	}
 	else if (Group) {
 		J = 0;
 		fail = false;
@@ -2428,9 +2428,9 @@ bool WriteCRec(bool MayDispl, bool& Displ)
 				UnLockWithDep(OldMd);
 				DuplKeyMsg(K);
 				return result;
-	}
+			}
 			K = K->Chain;
-}
+		}
 	}
 	ClearDeletedFlag();
 	if (HasIndex) {
@@ -4484,9 +4484,9 @@ label81:
 			}
 			}
 			break;
-			}
-		break;
 		}
+		break;
+	}
 	default: {
 		// nejedna se o udalost z klavesnice ani mysi
 		ClrEvent();
@@ -4494,7 +4494,7 @@ label81:
 	}
 	}
 	goto label1;
-	}
+}
 
 void EditDataFile(FileD* FD, EditOpt* EO)
 {
