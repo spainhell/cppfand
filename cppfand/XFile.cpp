@@ -3,8 +3,8 @@
 #include "FileD.h"
 #include "GlobalVariables.h"
 #include "obaseww.h"
-#include "sort.h"
-#include "XScan.h"
+#include "../Indexes/sort.h"
+#include "../Indexes/XScan.h"
 #include "../Logging/Logging.h"
 
 

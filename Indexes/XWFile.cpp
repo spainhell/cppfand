@@ -1,9 +1,9 @@
 #include "XWFile.h"
 
-#include "FileD.h"
-#include "GlobalVariables.h"
-#include "obaseww.h"
-#include "XFile.h"
+#include "../cppfand/FileD.h"
+#include "../cppfand/GlobalVariables.h"
+#include "../cppfand/obaseww.h"
+#include "../cppfand/XFile.h"
 
 void XWFile::Err(WORD N)
 {

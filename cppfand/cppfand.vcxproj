@@ -188,20 +188,10 @@
     <ClCompile Include="runfand.cpp" />
     <ClCompile Include="runfrml.cpp" />
     <ClCompile Include="runproc.cpp" />
-    <ClCompile Include="sort.cpp" />
     <ClCompile Include="TFile.cpp" />
     <ClCompile Include="wwmenu.cpp" />
     <ClCompile Include="wwmix.cpp" />
     <ClCompile Include="XFile.cpp" />
-    <ClCompile Include="XItem.cpp" />
-    <ClCompile Include="XItemLeaf.cpp" />
-    <ClCompile Include="XItemNonLeaf.cpp" />
-    <ClCompile Include="XKey.cpp" />
-    <ClCompile Include="XPage.cpp" />
-    <ClCompile Include="XScan.cpp" />
-    <ClCompile Include="XString.cpp" />
-    <ClCompile Include="XWFile.cpp" />
-    <ClCompile Include="XWKey.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="access-structs.h" />
@@ -237,21 +227,11 @@
     <ClInclude Include="runfand.h" />
     <ClInclude Include="runfrml.h" />
     <ClInclude Include="runproc.h" />
-    <ClInclude Include="sort.h" />
     <ClInclude Include="switches.h" />
     <ClInclude Include="TFile.h" />
     <ClInclude Include="wwmenu.h" />
     <ClInclude Include="wwmix.h" />
     <ClInclude Include="XFile.h" />
-    <ClInclude Include="XItem.h" />
-    <ClInclude Include="XItemLeaf.h" />
-    <ClInclude Include="XItemNonLeaf.h" />
-    <ClInclude Include="XKey.h" />
-    <ClInclude Include="XPage.h" />
-    <ClInclude Include="XScan.h" />
-    <ClInclude Include="XString.h" />
-    <ClInclude Include="XWFile.h" />
-    <ClInclude Include="XWKey.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="cppfand.rc" />
@@ -277,6 +257,9 @@
     </ProjectReference>
     <ProjectReference Include="..\FileSystem\FileSystem.vcxproj">
       <Project>{0071ff96-1112-4351-bda4-7c419d354789}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\Indexes\Indexes.vcxproj">
+      <Project>{6b2a68c7-24e2-4045-bdd5-5379645f8bbd}</Project>
     </ProjectReference>
     <ProjectReference Include="..\Logging\Logging.vcxproj">
       <Project>{431ccfda-764c-498c-ae07-276fb41ebbf9}</Project>

@@ -1,8 +1,8 @@
 #pragma once
-#include "access-structs.h"
-#include "constants.h"
+#include "../cppfand/access-structs.h"
+#include "../cppfand/constants.h"
 #include "XWKey.h"
-#include "models/FrmlElem.h"
+#include "../cppfand/models/FrmlElem.h"
 
 struct KeyInD;
 

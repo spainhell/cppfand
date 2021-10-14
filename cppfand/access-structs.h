@@ -1,7 +1,7 @@
 #pragma once
 #include "base.h"
 #include "Rdb.h"
-#include "XKey.h"
+#include "../Indexes/XKey.h"
 
 
 class Instr;

@@ -1,10 +1,10 @@
 #include "XScan.h"
-#include "FieldDescr.h"
-#include "FileD.h"
-#include "GlobalVariables.h"
-#include "KeyFldD.h"
-#include "obaseww.h"
-#include "runfrml.h"
+#include "../cppfand/FieldDescr.h"
+#include "../cppfand/FileD.h"
+#include "../cppfand/GlobalVariables.h"
+#include "../cppfand/KeyFldD.h"
+#include "../cppfand/obaseww.h"
+#include "../cppfand/runfrml.h"
 #include "sort.h"
 
 void AddFFs(XKey* K, pstring& s)

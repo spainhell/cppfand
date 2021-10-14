@@ -2,16 +2,16 @@
 #include <queue>
 
 
-#include "FieldDescr.h"
-#include "FileD.h"
-#include "GlobalVariables.h"
-#include "KeyFldD.h"
-#include "oaccess.h"
-#include "obaseww.h"
-#include "runfrml.h"
-#include "XFile.h"
+#include "../cppfand/FieldDescr.h"
+#include "../cppfand/FileD.h"
+#include "../cppfand/GlobalVariables.h"
+#include "../cppfand/KeyFldD.h"
+#include "../cppfand/oaccess.h"
+#include "../cppfand/obaseww.h"
+#include "../cppfand/runfrml.h"
+#include "../cppfand/XFile.h"
 #include "../Logging/Logging.h"
-#include "models/Instr.h"
+#include "../cppfand/models/Instr.h"
 
 
 WRec::WRec(unsigned char* data)

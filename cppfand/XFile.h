@@ -1,6 +1,6 @@
 #pragma once
 #include "constants.h"
-#include "XWFile.h"
+#include "../Indexes/XWFile.h"
 
 class XFile : public XWFile // r357
 {

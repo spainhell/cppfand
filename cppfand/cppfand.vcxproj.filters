@@ -63,9 +63,6 @@
     <ClCompile Include="runproj.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="sort.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="rdfildcl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -93,30 +90,6 @@
     <ClCompile Include="GlobalVariables.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="XString.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="XItem.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="XItemLeaf.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="XWKey.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="XKey.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="XPage.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="XScan.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="XWFile.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="XFile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -139,9 +112,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ChkD.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="XItemNonLeaf.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -194,9 +164,6 @@
     <ClInclude Include="access.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="sort.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="compile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -233,27 +200,6 @@
     <ClInclude Include="GlobalVariables.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="XString.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="XItemLeaf.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="XWKey.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="XKey.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="XPage.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="XScan.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="XWFile.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="TFile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -281,13 +227,7 @@
     <ClInclude Include="AddD.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="XItemNonLeaf.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="XFile.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="XItem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

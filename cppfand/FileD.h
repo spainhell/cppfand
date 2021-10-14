@@ -2,7 +2,7 @@
 #include "base.h"
 #include "Rdb.h"
 #include "TFile.h"
-#include "XKey.h"
+#include "../Indexes/XKey.h"
 #include "XFile.h"
 
 class FieldDescr;

@@ -1,6 +1,6 @@
 #include "XPage.h"
 
-#include "base.h"
+#include "../cppfand/base.h"
 
 
 XPage::XPage(const XPage& orig)

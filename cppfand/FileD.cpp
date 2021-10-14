@@ -4,7 +4,7 @@
 #include "GlobalVariables.h"
 #include "KeyFldD.h"
 #include "XFile.h"
-#include "XKey.h"
+#include "../Indexes/XKey.h"
 #include "../Logging/Logging.h"
 
 /// <summary>

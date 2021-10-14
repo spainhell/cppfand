@@ -11,10 +11,10 @@
 #include "obaseww.h"
 #include "olongstr.h"
 #include "runfrml.h"
-#include "sort.h"
+#include "../Indexes/sort.h"
 #include "TFile.h"
 #include "XFile.h"
-#include "XKey.h"
+#include "../Indexes/XKey.h"
 #include "../Logging/Logging.h"
 #include "../textfunc/textfunc.h"
 

@@ -1,8 +1,7 @@
 #pragma once
 #include <string>
-#include "constants.h"
-#include "pstring.h"
-#include "XItemNonLeaf.h"
+#include "../cppfand/constants.h"
+#include "../cppfand/pstring.h"
 #include "XString.h"
 
 class XWFile;

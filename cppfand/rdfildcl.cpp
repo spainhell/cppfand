@@ -11,7 +11,7 @@
 #include "runfrml.h"
 #include "runproj.h"
 #include "XFile.h"
-#include "XPage.h"
+#include "../Indexes/XPage.h"
 
 bool HasTT;
 bool issql;
