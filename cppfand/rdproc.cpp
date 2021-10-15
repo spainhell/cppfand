@@ -275,26 +275,26 @@ FrmlPtr RdFldNameFrmlP(char& FTyp)
 	return result;
 }
 
-FileD* RdPath(bool NoFD, pstring** Path, WORD& CatIRec)
-{
-	FileD* fd = nullptr;
-	CatIRec = 0;
-	if (Lexem == _quotedstr) {
-		*Path = RdStrConst();
-		fd = nullptr;
-	}
-	else {
-		TestIdentif();
-		fd = FindFileD();
-		if (fd == nullptr) {
-			CatIRec = GetCatIRec(LexWord, true);
-			TestCatError(CatIRec, LexWord, false);
-		}
-		else if (NoFD) Error(97);
-		RdLex();
-	}
-	return fd;
-}
+//FileD* RdPath(bool NoFD, pstring** Path, WORD& CatIRec)
+//{
+//	FileD* fd = nullptr;
+//	CatIRec = 0;
+//	if (Lexem == _quotedstr) {
+//		*Path = RdStrConst();
+//		fd = nullptr;
+//	}
+//	else {
+//		TestIdentif();
+//		fd = FindFileD();
+//		if (fd == nullptr) {
+//			CatIRec = GetCatIRec(LexWord, true);
+//			TestCatError(CatIRec, LexWord, false);
+//		}
+//		else if (NoFD) Error(97);
+//		RdLex();
+//	}
+//	return fd;
+//}
 
 FileD* RdPath(bool NoFD, std::string& Path, WORD& CatIRec)
 {
@@ -482,7 +482,7 @@ FrmlElem* RdFunctionP(char& FFTyp)
 		FTyp = 'R';
 	label3:
 		auto iZ = (FrmlElem16*)Z;
-		RdPath(true, &iZ->TxtPath, iZ->TxtCatIRec);
+		RdPath(true, iZ->TxtPath, iZ->TxtCatIRec);
 		if ((Z->Op == _gettxt) && (Lexem == ',')) {
 			RdLex();
 			iZ->PPPPPP1 = RdRealFrml();
@@ -1110,7 +1110,7 @@ bool RdViewOpt(EditOpt* EO)
 			RdChptName('R', &RO->RprtPos, true);
 			while (Lexem == ',') {
 				RdLex();
-				if (IsOpt("ASSIGN")) RdPath(true, &RO->Path, RO->CatIRec);
+				if (IsOpt("ASSIGN")) RdPath(true, RO->Path, RO->CatIRec);
 				else if (IsKeyWord("EDIT")) RO->Edit = true;
 				else Error(130);
 			}
@@ -1337,13 +1337,13 @@ void RdProcCall(Instr** pinstr)
 		auto iPD = (Instr_checkfile*)*pinstr;
 		iPD->cfFD = RdFileName();
 		/* !!! with PD->cfFD^ do!!! */
-		if ((iPD->cfFD->Typ == '8' || iPD->cfFD->Typ == 'D')
+		if (iPD->cfFD != nullptr && (iPD->cfFD->Typ == '8' || iPD->cfFD->Typ == 'D')
 #ifdef FandSQL
 			|| PD->cfFD->typSQLFile
 #endif
 			) OldError(169);
 		Accept(',');
-		RdPath(true, &iPD->cfPath, iPD->cfCatIRec);
+		RdPath(true, iPD->cfPath, iPD->cfCatIRec);
 	}
 #ifdef FandSQL
 	else if (IsKeyWord("SQL")) { PD = GetPD(_sql, 4); goto label1; }
@@ -1434,18 +1434,19 @@ Instr_sort* RdSortCall()
 
 Instr_edit* RdEditCall()
 {
-	stSaveState* p = nullptr;
-	bool b = false;
-	XKey* K = nullptr;
 	LocVar* lv = nullptr;
 	Instr_edit* PD = new Instr_edit(); // GetPD(_edit, 8);
 	RdLex();
-	EditOpt* EO = GetEditOpt();
-	PD->EO = EO;
-	if (IsRecVar(&lv)) { EO->LVRecPtr = lv->RecPtr; CFile = lv->FD; }
+	EditOpt* EO = &PD->EO;
+	EO->UserSelFlds = true;
+	
+	if (IsRecVar(&lv)) {
+		EO->LVRecPtr = lv->RecPtr;
+		CFile = lv->FD;
+	}
 	else {
 		CFile = RdFileName();
-		K = RdViewKey();
+		XKey* K = RdViewKey();
 		if (K == nullptr) K = CFile->Keys;
 		EO->ViewKey = K;
 	}
@@ -1454,15 +1455,17 @@ Instr_edit* RdEditCall()
 	if (IsOpt("U")) {
 		TestIdentif();
 		if (CFile->ViewNames == nullptr) Error(114);
-		p = SaveCompState();
-		b = RdUserView(LexWord, EO);
+		stSaveState* p = SaveCompState();
+		bool b = RdUserView(LexWord, EO);
 		RestoreCompState(p);
 		if (!b) Error(114);
 		RdLex();
 	}
-	else RdBegViewDcl(EO);
+	else {
+		RdBegViewDcl(EO);
+	}
 	while (Lexem == ',') {
-		b = RdViewOpt(EO);
+		bool b = RdViewOpt(EO);
 		if (!b) RdEditOpt(EO);
 	}
 	return PD;
@@ -1470,7 +1473,6 @@ Instr_edit* RdEditCall()
 
 void RdEditOpt(EditOpt* EO)
 {
-	LocVar* lv = nullptr;
 	/* !!! with EO^ do!!! */
 	if (IsOpt("FIELD")) EO->StartFieldZ = RdStrFrml();
 	else if (EO->LVRecPtr != nullptr) Error(125);
@@ -1487,7 +1489,7 @@ void RdEditOpt(EditOpt* EO)
 	else if (IsOpt("IREC")) EO->StartIRecZ = RdRealFrml();
 	else if (IsKeyWord("CHECK")) EO->SyntxChk = true;
 	else if (IsOpt("SEL")) {
-		lv = RdIdxVar();
+		LocVar* lv = RdIdxVar();
 		EO->SelKey = (XWKey*)lv->RecPtr;
 		if ((EO->ViewKey == nullptr)) OldError(108);
 		if (EO->ViewKey == EO->SelKey) OldError(184);
@@ -1577,7 +1579,7 @@ void RdRprtOpt(RprtOpt* RO, bool HasFrst)
 	FileD* FD = nullptr;
 	WORD N = 0;
 	/* !!! with RO^ do!!! */
-	if (IsOpt("ASSIGN")) RdPath(true, &RO->Path, RO->CatIRec);
+	if (IsOpt("ASSIGN")) RdPath(true, RO->Path, RO->CatIRec);
 	else if (IsOpt("TIMES")) RO->Times = RdRealFrml();
 	else if (IsOpt("MODE"))
 		if (IsKeyWord("ONLYSUM")) RO->Mode = _ATotal;
@@ -1655,7 +1657,7 @@ Instr* RdExec()
 {
 	auto PD = new Instr_exec(); // GetPD(_exec, 14);
 	RdLex();
-	RdPath(true, &PD->ProgPath, PD->ProgCatIRec);
+	RdPath(true, PD->ProgPath, PD->ProgCatIRec);
 	Accept(',');
 	PD->Param = RdStrFrml();
 	while (Lexem == ',') {
@@ -1792,7 +1794,7 @@ Instr* RdPrintTxt()
 	RdLex();
 	/* !!! with PD^ do!!! */
 	if (FindLocVar(&LVBD, &PD->TxtLV)) { RdLex(); TestString(PD->TxtLV->FTyp); }
-	else RdPath(true, &PD->TxtPath, PD->TxtCatIRec);
+	else RdPath(true, PD->TxtPath, PD->TxtCatIRec);
 	return PD;
 }
 
@@ -1804,7 +1806,7 @@ Instr* RdEditTxt()
 	RdLex();
 	/* !!! with PD^ do!!! */
 	if (FindLocVar(&LVBD, &PD->TxtLV)) { RdLex(); TestString(PD->TxtLV->FTyp); }
-	else RdPath(true, &PD->TxtPath, PD->TxtCatIRec);
+	else RdPath(true, PD->TxtPath, PD->TxtCatIRec);
 	PD->EdTxtMode = 'T';
 	while (Lexem == ',') {
 		RdLex();
@@ -1851,11 +1853,10 @@ Instr* RdPutTxt()
 {
 	auto PD = new Instr_puttxt(); // GetPD(_puttxt, 11);
 	RdLex();
-	RdPath(true, &PD->TxtPath1, PD->TxtCatIRec1);
+	RdPath(true, PD->TxtPath1, PD->TxtCatIRec1);
 	Accept(',');
 	PD->Txt = RdStrFrml();
-	if (Lexem == ',')
-	{
+	if (Lexem == ',') {
 		RdLex();
 		AcceptKeyWord("APPEND");
 		PD->App = true;
@@ -2605,7 +2606,7 @@ Instr* RdPInstr()
 	else if (IsKeyWord("RANDOMIZE")) result = new Instr(_randomize);
 	else if (Lexem == _identifier) {
 		SkipBlank(false);
-		if (ForwChar == '(') RdProcCall(&result); // funkce mùže ovlivnit result
+		if (ForwChar == '(') RdProcCall(&result); // funkce muze ovlivnit RESULT
 		else if (IsKeyWord("CLRSCR")) result = new Instr(_clrscr);
 		else if (IsKeyWord("GRAPH")) result = new Instr_graph();
 		else if (IsKeyWord("CLOSE")) result = new Instr_closefds();
@@ -2652,69 +2653,69 @@ void ReadDeclChpt()
 	WORD n = 0;
 	LocVar* lv = nullptr;
 	RdLex();
-label1:
-	if (IsKeyWord("FUNCTION")) {
-		TestIdentif();
-		fc = FuncDRoot;
-		while (fc != CRdb->OldFCRoot) {
-			if (EquUpcase(fc->Name, LexWord)) Error(26);
-			fc = fc->Chain;
+	while (true) {
+		if (IsKeyWord("FUNCTION")) {
+			TestIdentif();
+			fc = FuncDRoot;
+			while (fc != CRdb->OldFCRoot) {
+				if (EquUpcase(fc->Name, LexWord)) Error(26);
+				fc = fc->Chain;
+			}
+			//fc = (FuncD*)GetStore(sizeof(FuncD) - 1 + LexWord.length());
+			fc = new FuncD();
+			fc->Chain = FuncDRoot;
+			FuncDRoot = fc;
+			//Move(&LexWord, &fc->Name, LexWord.length() + 1);
+			fc->Name = LexWord;
+			RdFldNameFrml = RdFldNameFrmlP;
+			RdFunction = RdFunctionP;
+			ChainSumEl = nullptr;
+			FileVarsAllowed = false; IsRdUserFunc = true;
+			RdLex();
+			ResetLVBD();
+			LVBD.FceName = fc->Name;
+			Accept('(');
+			if (Lexem != ')') RdLocDcl(&LVBD, true, false, 'D'); // nacte parametry funkce
+			Accept(')');
+			Accept(':');
+			// nacte typ navratove hodnoty
+			if (IsKeyWord("REAL")) {
+				typ = 'R';
+				n = sizeof(double);
+			}
+			else if (IsKeyWord("STRING")) {
+				typ = 'S';
+				n = sizeof(longint);
+			}
+			else if (IsKeyWord("BOOLEAN")) {
+				typ = 'B';
+				n = sizeof(bool);
+			}
+			else Error(39);
+			//lv = (LocVar*)GetZStore(sizeof(*lv) - 1 + (fc->Name).length());
+			lv = new LocVar();
+			//if (LVBD.Root == nullptr) LVBD.Root = lv;
+			//else ChainLast(LVBD.Root, lv);
+			LVBD.vLocVar.push_back(lv);
+			//Move(&fc->Name, &lv->Name, (fc->Name).length() + 1);
+			lv->Name = fc->Name;
+			lv->IsRetValue = true;
+			/* !!! with lv^ do!!! */
+			{ lv->FTyp = typ; lv->Op = _getlocvar; lv->BPOfs = LVBD.Size; }
+			fc->FTyp = typ;
+			LVBD.Size += n;
+			Accept(';');
+			// nacte promenne
+			if (IsKeyWord("VAR")) RdLocDcl(&LVBD, false, false, 'D');
+			fc->LVB = LVBD;
+			// nacte kod funkce (procedury)
+			AcceptKeyWord("BEGIN");
+			fc->pInstr = RdBeginEnd();
+			Accept(';');
 		}
-		//fc = (FuncD*)GetStore(sizeof(FuncD) - 1 + LexWord.length());
-		fc = new FuncD();
-		fc->Chain = FuncDRoot;
-		FuncDRoot = fc;
-		//Move(&LexWord, &fc->Name, LexWord.length() + 1);
-		fc->Name = LexWord;
-		RdFldNameFrml = RdFldNameFrmlP;
-		RdFunction = RdFunctionP;
-		ChainSumEl = nullptr;
-		FileVarsAllowed = false; IsRdUserFunc = true;
-		RdLex();
-		ResetLVBD();
-		LVBD.FceName = fc->Name;
-		Accept('(');
-		if (Lexem != ')') RdLocDcl(&LVBD, true, false, 'D'); // nacte parametry funkce
-		Accept(')');
-		Accept(':');
-		// nacte typ navratove hodnoty
-		if (IsKeyWord("REAL")) {
-			typ = 'R';
-			n = sizeof(double);
-		}
-		else if (IsKeyWord("STRING")) {
-			typ = 'S';
-			n = sizeof(longint);
-		}
-		else if (IsKeyWord("BOOLEAN")) {
-			typ = 'B';
-			n = sizeof(bool);
-		}
-		else Error(39);
-		//lv = (LocVar*)GetZStore(sizeof(*lv) - 1 + (fc->Name).length());
-		lv = new LocVar();
-		//if (LVBD.Root == nullptr) LVBD.Root = lv;
-		//else ChainLast(LVBD.Root, lv);
-		LVBD.vLocVar.push_back(lv);
-		//Move(&fc->Name, &lv->Name, (fc->Name).length() + 1);
-		lv->Name = fc->Name;
-		lv->IsRetValue = true;
-		/* !!! with lv^ do!!! */
-		{ lv->FTyp = typ; lv->Op = _getlocvar; lv->BPOfs = LVBD.Size; }
-		fc->FTyp = typ;
-		LVBD.Size += n;
-		Accept(';');
-		// nacte promenne
-		if (IsKeyWord("VAR")) RdLocDcl(&LVBD, false, false, 'D');
-		fc->LVB = LVBD;
-		// nacte kod funkce (procedury)
-		AcceptKeyWord("BEGIN");
-		fc->pInstr = RdBeginEnd();
-		Accept(';');
+		else if (Lexem == 0x1A) return;
+		else Error(40);
 	}
-	else if (Lexem == 0x1A) return;
-	else Error(40);
-	goto label1;
 }
 
 FrmlElem* GetEvalFrml(FrmlElem21* X)

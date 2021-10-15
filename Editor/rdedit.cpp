@@ -324,9 +324,8 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 	E->dDel = RunWordImpl(EO->ZdDel, screen.colors.dDeleted);
 	E->dTab = RunWordImpl(EO->ZdTab, E->Attr | 0x08);
 	E->dSelect = RunWordImpl(EO->ZdSelect, screen.colors.dSelect);
-	E->Top = StoreStr(RunShortStr(EO->Top));
-	if (EO->Mode != nullptr)
-		EditModeToFlags(RunShortStr(EO->Mode), &E->NoDelete, false);
+	E->Top = RunStdStr(EO->Top);
+	if (EO->Mode != nullptr) EditModeToFlags(RunShortStr(EO->Mode), &E->NoDelete, false);
 	if (spec.Prompt158) E->Prompt158 = true;
 	if (EO->SetOnlyView /*UpwEdit*/) {
 		EO->Tab = nullptr; E->OnlyTabs = true; E->OnlySearch = false;
@@ -378,7 +377,7 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 		E->Cond = RunEvalFrml(EO->Cond);
 		E->RefreshDelay = RunWordImpl(EO->RefreshDelayZ, spec.RefreshDelay) * 18;
 		E->SaveAfter = RunWordImpl(EO->SaveAfterZ, spec.UpdCount);
-		if (EO->StartRecKeyZ != nullptr) E->StartRecKey = StoreStr(RunShortStr(EO->StartRecKeyZ));
+		if (EO->StartRecKeyZ != nullptr) E->StartRecKey = RunShortStr(EO->StartRecKeyZ);
 		E->StartRecNo = RunInt(EO->StartRecNoZ); E->StartIRec = RunInt(EO->StartIRecZ);
 		E->VK = EO->ViewKey;
 		if (E->DownLD != nullptr) {
@@ -704,7 +703,7 @@ std::string StandardHead()
 {
 	std::string s;
 	std::string c = "          ______                                 __.__.____";
-	if (E->ViewName != nullptr) s = *E->ViewName;
+	if (!E->ViewName.empty()) s = E->ViewName;
 	else if (E->EdRecVar) s = "";
 	else {
 		s = E->FD->Name;

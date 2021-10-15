@@ -175,7 +175,7 @@ LongStr* GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 	PFldDs = nullptr;
 	fl = RO->Flds;
 	while (fl != nullptr) {
-		d = (PFldD*)GetZStore(sizeof(PFldD));
+		d = new PFldD(); //(PFldD*)GetZStore(sizeof(PFldD));
 		f = fl->FldD; d->FldD = f;
 		d->IsSum = FieldInList(f, RO->Sum);
 		fl1 = RO->Ctrl; i = NLevels;
@@ -190,7 +190,7 @@ LongStr* GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 	}
 	Design(RO);
 
-	Txt = (LongStr*)GetZStore(2);
+	Txt = new LongStr(2); // (LongStr*)GetZStore(2);
 
 	if ((ARMode == _AErrRecs)) WrStr("var noErrRecs:real;\r\n");
 	WrStr("#I1_");
@@ -346,7 +346,9 @@ bool SelForAutoRprt(RprtOpt* RO)
 		}
 		if (!ww.SelFieldList(38, true, RO->Sum)) return result;
 	}
-	if (spec.AutoRprtPrint) { RO->Path = (pstring*)GetStore(5); *RO->Path = "LPT1"; }
+	if (spec.AutoRprtPrint) {
+		RO->Path = "LPT1";
+	}
 	result = true;
 	return result;
 }

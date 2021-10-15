@@ -1122,13 +1122,6 @@ FieldListEl* AllFldsList(FileD* FD, bool OnlyStored)
 	return FLRoot;
 }
 
-EditOpt* GetEditOpt()
-{
-	EditOpt* EO = new EditOpt();
-	EO->UserSelFlds = true;
-	return EO;
-}
-
 RprtOpt* GetRprtOpt()
 {
 	auto RO = new RprtOpt();

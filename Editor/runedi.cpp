@@ -1166,13 +1166,12 @@ void DisplSysLine()
 
 void DisplBool()
 {
-	pstring s;
 	if (!WithBoolDispl) return;
 	screen.GotoXY(1, 2);
 	TextAttr = E->dSubSet;
 	ClrEol();
 	if (Select) {
-		s = *E->BoolTxt;
+		std::string s = E->BoolTxt;
 		if (s.length() > TxtCols) s[0] = (char)TxtCols;
 		screen.GotoXY((TxtCols - s.length()) / 2 + 1, 2);
 		printf("%s", s.c_str());
@@ -1278,7 +1277,7 @@ void DisplEditWw()
 	TextAttr = E->Attr;
 	ClrScr();
 
-	WriteWFrame(E->WFlags, *E->Top, "");
+	WriteWFrame(E->WFlags, E->Top, "");
 	screen.Window(1, 1, TxtCols, TxtRows);
 	DisplSysLine();
 	DisplBool();
@@ -1428,8 +1427,8 @@ void SetStartRec()
 	XKey* k = VK;
 	if (Subset) k = WK;
 	if (k != nullptr) kf = k->KFlds;
-	if ((E->StartRecKey != nullptr) && (k != nullptr)) {
-		if (k->FindNr(*E->StartRecKey, n)) goto label1;
+	if ((!E->StartRecKey.empty()) && (k != nullptr)) {
+		if (k->FindNr(E->StartRecKey, n)) goto label1;
 	}
 	else if (E->StartRecNo > 0) {
 		n = LogRecNo(E->StartRecNo);
@@ -2128,7 +2127,8 @@ bool EquFileViewName(FileD* FD, std::string S, EditOpt* EO)
 		SL = CFile->ViewNames;
 		while (SL != nullptr) {
 			if (SL->S == S) {
-				EO = GetEditOpt();
+				//EO = GetEditOpt();
+				EO->UserSelFlds = true;
 				RdUserView(S, EO);
 				goto label1;
 			}
@@ -2136,7 +2136,8 @@ bool EquFileViewName(FileD* FD, std::string S, EditOpt* EO)
 		}
 	}
 	else if (S == std::string(CFile->Name)) {
-		EO = GetEditOpt();
+		//EO = GetEditOpt();
+		EO->UserSelFlds = true;
 		EO->Flds = AllFldsList(CFile, false);
 		return result;
 	}
@@ -2146,7 +2147,7 @@ label1:
 	return result;
 }
 
-void UpwEdit(LinkDPtr LkD)
+void UpwEdit(LinkD* LkD)
 {
 	wwmix ww;
 
@@ -2186,7 +2187,10 @@ void UpwEdit(LinkDPtr LkD)
 			LD = LD->Chain;
 	}
 	else {
-		LD = LkD; EO = GetEditOpt(); EO->UserSelFlds = false; CFile = LD->ToFD;
+		LD = LkD;
+		EO = new EditOpt(); // GetEditOpt();
+		EO->UserSelFlds = false;
+		CFile = LD->ToFD;
 		SL = CFile->ViewNames;
 		SL1 = nullptr;
 		while (SL != nullptr) {
@@ -2209,7 +2213,10 @@ void UpwEdit(LinkDPtr LkD)
 		PopEdit();
 	}
 label1:
-	PopW(w); ReleaseStore(p); RdEStatus(); DisplEditWw();
+	PopW(w);
+	ReleaseStore(p);
+	RdEStatus();
+	DisplEditWw();
 }
 
 void DisplChkErr(ChkD* C)
@@ -2730,7 +2737,7 @@ void AutoReport()
 	MarkStore(p); RO = GetRprtOpt(); RO->FDL.FD = CFile; RO->Flds = E->Flds;
 	if (Select) {
 		RO->FDL.Cond = E->Bool;
-		RO->CondTxt = *E->BoolTxt;
+		RO->CondTxt = E->BoolTxt;
 	}
 	if (Subset) RO->FDL.ViewKey = WK; else if (HasIndex) RO->FDL.ViewKey = VK;
 	PrintView = false;
@@ -3342,11 +3349,11 @@ void PromptSelect()
 {
 	wwmix ww;
 	std::string Txt;
-	if (Select) Txt = *E->BoolTxt;
+	if (Select) Txt = E->BoolTxt;
 	else Txt = "";
 	if (IsCurrChpt()) ReleaseFDLDAfterChpt();
 	ReleaseStore(E->AfterE);
-	ww.PromptFilter(Txt, E->Bool, E->BoolTxt);
+	ww.PromptFilter(Txt, E->Bool, &E->BoolTxt);
 	if (E->Bool == nullptr) Select = false; else Select = true;
 	DisplBool();
 	SetNewWwRecAttr();

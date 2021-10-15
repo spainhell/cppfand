@@ -50,6 +50,20 @@ std::string RegexFromString(std::string Mask)
 		index = Mask.find('}', index + 2);
 	}
 
+	// puvodni "(" je v reg. vyrazu r"\("
+	index = Mask.find('('); // ( -> \(
+	while (index != std::string::npos) {
+		Mask = Mask.replace(index, 1, "\\(");
+		index = Mask.find('(', index + 2);
+	}
+
+	// puvodni ")" je v reg. vyrazu r"\)"
+	index = Mask.find(')'); // ) -> \)
+	while (index != std::string::npos) {
+		Mask = Mask.replace(index, 1, "\\)");
+		index = Mask.find(')', index + 2);
+	}
+
 	// puvodni "." je v reg. vyrazu r"\."
 	index = Mask.find('.'); // . -> \.
 	while (index != std::string::npos) {

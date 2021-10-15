@@ -1018,18 +1018,18 @@ bool RewriteRprt(RprtOpt* RO, WORD pageLimit, WORD& Times, bool& IsLPT1)
 	Times = 1;
 	bool PrintCtrl = RO->PrintCtrl;
 	if ((RO != nullptr) && (RO->Times != nullptr)) Times = (WORD)RunInt(RO->Times);
-	if ((RO == nullptr) || (RO->Path == nullptr) && (RO->CatIRec == 0))
+	if ((RO == nullptr) || (RO->Path.empty()) && (RO->CatIRec == 0))
 	{
 		SetPrintTxtPath();
 		PrintView = true; PrintCtrl = false;
 	}
 	else {
-		if (RO->Path != nullptr && SEquUpcase(*RO->Path, "LPT1"))
-		{
+		if (!RO->Path.empty() && SEquUpcase(RO->Path, "LPT1")) {
 			CPath = "LPT1";
 			CVol = "";
 			IsLPT1 = true;
-			return ResetPrinter(pageLimit, 0, true, true) && RewriteTxt(&Rprt, false);
+			result = ResetPrinter(pageLimit, 0, true, true) && RewriteTxt(&Rprt, false);
+			return result;
 		}
 		SetTxtPathVol(RO->Path, RO->CatIRec);
 	}

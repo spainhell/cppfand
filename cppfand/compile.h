@@ -64,7 +64,6 @@ bool FindLocVar(LocVar* LVRoot, LocVar** LV); // r84
 bool FindChpt(char Typ, const pstring& name, bool local, RdbPos* RP);
 void RdChptName(char C, RdbPos* Pos, bool TxtExpr); // r108
 FieldListEl* AllFldsList(FileD* FD, bool OnlyStored); // r118
-EditOpt* GetEditOpt(); // r129
 RprtOpt* GetRprtOpt(); // r132
 //FrmlPtr GetOp(BYTE Op, integer BytesAfter); // r1
 FieldDescr* FindFldName(FileD* FD, std::string fieldName = ""); // r7

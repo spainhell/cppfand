@@ -168,7 +168,7 @@ class FrmlElem16 : public FrmlElem
 public:
 	FrmlElem16(instr_type Op, size_t buff_size);
 	FrmlElem* PPPPPP1 = nullptr; FrmlElem* PPPP2 = nullptr;
-	pstring* TxtPath = nullptr; WORD TxtCatIRec = 0; // 16 {_gettxt,_filesize}
+	std::string TxtPath; WORD TxtCatIRec = 0; // 16 {_gettxt,_filesize}
 };
 
 class FrmlElem18 : public FrmlElem

@@ -13,10 +13,10 @@ void TestCatError(WORD I, pstring Nm, bool Old);
 bool IsRecVar(LocVar** LV);
 LocVar* RdRecVar();
 LocVar* RdIdxVar();
-FrmlPtr RdRecVarFldFrml(LocVar* LV, char& FTyp);
+FrmlElem* RdRecVarFldFrml(LocVar* LV, char& FTyp);
 char RdOwner(LinkD** LLD, LocVar** LLV); // 'r','i','F'
-FrmlPtr RdFldNameFrmlP(char& FTyp);
-FileD* RdPath(bool NoFD, pstring** Path, WORD& CatIRec);
+FrmlElem* RdFldNameFrmlP(char& FTyp);
+// FileD* RdPath(bool NoFD, pstring** Path, WORD& CatIRec);
 FileD* RdPath(bool NoFD, std::string& Path, WORD& CatIRec);
 FrmlElem* RdFunctionP(char& FFTyp);
 XKey* RdViewKeyImpl(FileD* FD);

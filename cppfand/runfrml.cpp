@@ -266,7 +266,7 @@ double AddWDays(double R, integer N, WORD d)
 		}
 	}
 	else {
-		while ((N < 0) && (R >= 1))	{
+		while ((N < 0) && (R >= 1)) {
 			R = R - 1;
 			if (TypeDay(R) == d) N++;
 		}
@@ -704,7 +704,10 @@ bool RunBool(FrmlElem* X)
 	}
 	case _isnewrec: result = TestIsNewRec(); break;
 	case _testmode: result = IsTestRun; break;
-	case _equmask: result = RunEquMask((FrmlElem0*)X); break;
+	case _equmask: {
+		result = RunEquMask((FrmlElem0*)X);
+		break;
+	}
 	case _userfunc: {
 		//auto save_LVDB = LVBD;
 		result = RunUserFunc((FrmlElem19*)X)->B;
@@ -2103,7 +2106,7 @@ LongStr* RunS(FrmlElem* Z)
 	case _edbool: {
 		s[0] = 0;
 		if ((EditDRoot != nullptr) && EditDRoot->Select
-			&& (EditDRoot->BoolTxt != nullptr)) s = *EditDRoot->BoolTxt;
+			&& (!EditDRoot->BoolTxt.empty())) s = EditDRoot->BoolTxt;
 		break;
 	}
 	}
@@ -2233,7 +2236,7 @@ void AccRecNoProc(FrmlElem14* X, WORD Msg)
 	LockMode md = NewLMode(RdMode);
 	CRecPtr = GetRecSpace();
 	longint N = RunInt(X->PPPPP1);
-	if ((N <= 0) || (N > CFile->NRecs))	{
+	if ((N <= 0) || (N > CFile->NRecs)) {
 		SetMsgPar(CFile->Name, X->RecFldD->Name);
 		RunErrorM(md, Msg);
 	}

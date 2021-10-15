@@ -972,10 +972,11 @@ bool PromptHelpName(WORD& N)
 
 void EditHelpOrCat(WORD cc, WORD kind, pstring txt)
 {
-	FileDPtr FD; EditOpt* EO; WORD i, n;
+	FileD* FD;
+	WORD i, n;
 	WORD nCat = 1; WORD iCat = 1; WORD nHelp = 1; WORD iHelp = 1;
 	struct niFrml { char Op; double R; } nFrml{ 0,0 }, iFrml{ 0,0 };
-	if (cc == _AltF2_) {
+	if (cc == __ALT_F2) {
 		FD = CRdb->HelpFD;
 		if (kind == 1) FD = CFile->ChptPos.R->HelpFD;
 		if (FD == nullptr) return;
@@ -987,17 +988,31 @@ void EditHelpOrCat(WORD cc, WORD kind, pstring txt)
 			}
 		}
 	}
-	else { FD = CatFD; i = iCat; n = nCat; }
+	else {
+		FD = CatFD;
+		i = iCat;
+		n = nCat;
+	}
 	if (kind != 2) WrEStatus();
-	EO = GetEditOpt(); EO->Flds = AllFldsList(FD, false);
+	EditOpt* EO = new EditOpt(); EO->UserSelFlds = true; // GetEditOpt();
+	EO->Flds = AllFldsList(FD, false);
 	EO->WFlags = EO->WFlags | WPushPixel;
 	if ((kind == 0) || (n != 0)) {
 		iFrml.R = i; nFrml.R = n;
-		EO->StartRecNoZ = (FrmlPtr)(&nFrml); EO->StartIRecZ = (FrmlPtr)(&iFrml);
+		EO->StartRecNoZ = (FrmlElem*)(&nFrml);
+		EO->StartIRecZ = (FrmlElem*)(&iFrml);
 	}
-	EditDataFile(FD, EO); ReleaseStore(EO);
-	if (cc == _AltF2_) { nHelp = EdRecNo; iHelp = EdIRec; }
-	else { ResetCatalog(); nCat = EdRecNo; iCat = EdIRec; }
+	EditDataFile(FD, EO);
+	ReleaseStore(EO);
+	if (cc == __ALT_F2) {
+		nHelp = EdRecNo;
+		iHelp = EdIRec;
+	}
+	else {
+		ResetCatalog();
+		nCat = EdRecNo;
+		iCat = EdIRec;
+	}
 	if (kind != 2) RdEStatus();
 }
 
@@ -1239,18 +1254,22 @@ bool CompRunChptRec(WORD CC)
 {
 	pstring STyp(1); void* p = nullptr; void* p2 = nullptr; void* MaxHp = nullptr;
 	ExitRecord er; EditD* OldE = nullptr;
-	RdbPos RP; longint Free; bool WasError = false, WasGraph = false, uw = false, mv = false;
-	FileD* FD = nullptr; FileD* lstFD = nullptr; LinkD* oldLd = nullptr; LinkD* ld = nullptr;
+	RdbPos RP; longint Free; bool uw = false, mv = false;
+	FileD* FD = nullptr; LinkD* oldLd = nullptr; LinkD* ld = nullptr;
 	EditOpt* EO = nullptr; WORD nStrm = 0;
 	auto result = false;
 
 	OldE = E; MarkBoth(p, p2); WrEStatus(); //NewExit(Ovr(), er);
 	//goto label2;
 	IsCompileErr = false; uw = false; mv = MausVisible;
-	lstFD = (FileD*)LastInChain(FileDRoot);
+	FileD* lstFD = (FileD*)LastInChain(FileDRoot);
 	oldLd = LinkDRoot;
-	WasError = true; WasGraph = IsGraphMode;
-	FD = nullptr; STyp = _ShortS(ChptTyp); RP.R = CRdb; RP.IRec = CRec();
+	bool WasError = true;
+	bool WasGraph = IsGraphMode;
+	FD = nullptr;
+	STyp = _ShortS(ChptTyp);
+	RP.R = CRdb;
+	RP.IRec = CRec();
 #ifdef FandSQL
 	nStrm = nStreams;
 #endif
@@ -1263,14 +1282,18 @@ bool CompRunChptRec(WORD CC)
 		case 'F': {
 			FD = FindFD();
 			if ((FD != nullptr) && (CC == __CTRL_F9)) {
-				EO = GetEditOpt(); CFile = FD; EO->Flds = AllFldsList(CFile, false);
+				EO = new EditOpt(); EO->UserSelFlds = true; // GetEditOpt();
+				CFile = FD;
+				EO->Flds = AllFldsList(CFile, false);
 				if (SelFldsForEO(EO, nullptr)) EditDataFile(FD, EO);
 			}
 			break;
 		}
 		case 'E': {
 			if (CC == __CTRL_F9) {
-				EO = GetEditOpt(); EO->FormPos = RP; EditDataFile(nullptr, EO);
+				EO = new EditOpt(); EO->UserSelFlds = true; // GetEditOpt();
+				EO->FormPos = RP;
+				EditDataFile(nullptr, EO);
 			}
 			else { PushEdit(); RdFormOrDesign(nullptr, nullptr, RP); }
 			break;
@@ -1900,7 +1923,7 @@ bool EditExecRdb(std::string Nm, std::string ProcNm, Instr_proc* ProcCall, wwmix
 		passw = ww->PassWord(false);
 	}
 	IsTestRun = true;
-	EO = GetEditOpt();
+	EO = new EditOpt(); EO->UserSelFlds = true; //EO = GetEditOpt();
 	EO->Flds = AllFldsList(Chpt, true);
 	EO->Flds = (FieldList)EO->Flds->Chain->Chain->Chain;
 	NewEditD(Chpt, EO);
@@ -1998,10 +2021,9 @@ label9:
 
 void UpdateCat()
 {
-	EditOpt* EO = nullptr;
 	CFile = CatFD;
 	if (CatFD->Handle == nullptr) OpenCreateF(Exclusive);
-	EO = GetEditOpt();
+	EditOpt* EO = new EditOpt(); EO->UserSelFlds = true; // GetEditOpt();
 	EO->Flds = AllFldsList(CatFD, true);
 	EditDataFile(CatFD, EO);
 	ChDir(OldDir);

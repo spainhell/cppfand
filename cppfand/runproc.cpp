@@ -329,20 +329,24 @@ void ClrWwProc(Instr_clrww* PD)
 
 void ExecPgm(Instr_exec* PD)
 {
-	pstring s; pstring Prog; WORD i = 0; BYTE x = 0, y = 0; bool b = false;
-	Wind wmin = WindMin;
-	Wind wmax = WindMax;
-	TCrs crs = screen.CrsGet();
-	longint w = PushW(1, 1, TxtCols, 1);
+	const Wind wmin = WindMin;
+	const Wind wmax = WindMax;
+	const TCrs crs = screen.CrsGet();
+	const longint w = PushW(1, 1, TxtCols, 1);
 	WindMin = wmin;
 	WindMax = wmax;
 	screen.CrsSet(crs);
-	s = RunShortStr(PD->Param);
-	i = PD->ProgCatIRec;
+	std::string s = RunStdStr(PD->Param);
+	WORD i = PD->ProgCatIRec;
 	CVol = "";
-	if (i != 0) Prog = RdCatField(i, CatPathName);
-	else Prog = *PD->ProgPath;
-	b = OSshell(Prog, s, PD->NoCancel, PD->FreeMm, PD->LdFont, PD->TextMd);
+	std::string prog;
+	if (i != 0) {
+		prog = RdCatField(i, CatPathName);
+	}
+	else {
+		prog = PD->ProgPath;
+	}
+	bool b = OSshell(prog, s, PD->NoCancel, PD->FreeMm, PD->LdFont, PD->TextMd);
 	/*asm mov ah, 3; mov bh, 0; push bp; int 10H; pop bp; mov x, dl; mov y, dh;*/
 	PopW(w);
 	//screen.GotoXY(x - WindMin.X + 1, y - WindMin.Y + 1);
@@ -417,14 +421,16 @@ void EditProc(Instr_edit* PD)
 	EdUpdated = false;
 	SaveFiles();
 	CFile = PD->EditFD;
-	//EditOpt* EO = (EditOpt*)GetStore(sizeof(*EO));
-	EditOpt* EO = new EditOpt();
-	//Move(PD->EO, EO, sizeof(*EO));
-	*EO = *PD->EO;
-	if (!EO->UserSelFlds || SelFldsForEO(EO, nullptr)) EditDataFile(CFile, EO);
+
+	// TODO: is needed to make copy of EditOptions before call edit?
+
+	const bool selFlds = SelFldsForEO(&PD->EO, nullptr);
+	if (!PD->EO.UserSelFlds || selFlds) {
+		EditDataFile(CFile, &PD->EO);
+	}
 	SaveFiles();
-	//ReleaseStore(EO);
-	// delete EO; - jinak je problem s opetovnym spustenim editoru ...
+
+	// TODO: and here delete copy?
 }
 
 void EditTxtProc(Instr_edittxt* PD)

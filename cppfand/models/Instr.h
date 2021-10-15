@@ -76,7 +76,7 @@ class Instr_exec : public Instr
 {
 public:
 	Instr_exec();
-	pstring* ProgPath = nullptr;
+	std::string ProgPath;
 	WORD ProgCatIRec = 0;
 	bool NoCancel = false, FreeMm = false, LdFont = false, TextMd = false;
 	FrmlElem* Param = nullptr;
@@ -183,7 +183,7 @@ class Instr_edit : public Instr
 public:
 	Instr_edit();
 	FileD* EditFD = nullptr;
-	EditOpt* EO = nullptr;
+	EditOpt EO;
 };
 
 class Instr_report : public Instr
@@ -197,7 +197,7 @@ class Instr_edittxt : public Instr
 {
 public:
 	Instr_edittxt(PInstrCode Kind);
-	pstring* TxtPath = nullptr;
+	std::string TxtPath;
 	WORD TxtCatIRec = 0;
 	LocVar* TxtLV = nullptr;
 	char EdTxtMode = '\0';
@@ -213,7 +213,7 @@ class Instr_puttxt : public Instr
 {
 public:
 	Instr_puttxt();
-	pstring* TxtPath1 = nullptr; WORD TxtCatIRec1 = 0;
+	std::string TxtPath1; WORD TxtCatIRec1 = 0;
 	FrmlElem* Txt = nullptr; bool App = false;
 };
 
@@ -362,7 +362,7 @@ class Instr_checkfile : public Instr
 public:
 	Instr_checkfile();
 	FileD* cfFD = nullptr;
-	pstring* cfPath = nullptr;
+	std::string cfPath;
 	WORD cfCatIRec = 0;
 };
 

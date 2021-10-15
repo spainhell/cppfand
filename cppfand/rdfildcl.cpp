@@ -298,7 +298,7 @@ label2:
 	ReleaseStore(p);
 	Move(&EOD, EO, sizeof(*EO));
 	if (EquUpcase(ViewName, LexWord)) found = true;
-	EO->ViewName = StoreStr(LexWord);
+	EO->ViewName = LexWord;
 	RdLex(); /*'('*/
 	do {
 		RdLex();
@@ -330,41 +330,43 @@ label3:
 
 void TestUserView()
 {
-	void* p = nullptr;
-	XKey* K = nullptr;
-	EditOpt* EO = nullptr;
-	StringListEl* S = nullptr;
-	FileD* FD = nullptr;
+	EditOpt EO = EditOpt();
+	EO.UserSelFlds = true;
 	RdLex();
-label1:
-	TestIdentif();
-	TestDupl(CFile);
-	FD = FileDRoot;
-	while (FD != nullptr) {
-		TestDupl(FD);
-		FD = (FileD*)FD->Chain;
-	}
-	//S = (StringList)GetStore(LexWord.length() + 5);
-	S = new StringListEl();
-	S->S = LexWord;
-	if (CFile->ViewNames == nullptr) CFile->ViewNames = S;
-	else ChainLast(CFile->ViewNames, S);
-	RdLex();
-	RdByteListInStore();
-	Accept(':');
-	MarkStore(p);
-	EO = GetEditOpt(); // vytvori objekt EditOpt
-	K = RdViewKey(); // nacteni klice, podle ktereho budou polozky setrideny
-	if (K != nullptr) {
-		Accept(',');
-		EO->ViewKey = K;
-	}
-	RdBegViewDcl(EO);
-	while (Lexem == ',') if (!RdViewOpt(EO)) Error(44);
-	ReleaseStore(p);
-	if (Lexem == ';') {
+	while (true) {
+		TestIdentif();
+		TestDupl(CFile);
+		FileD* FD = FileDRoot;
+		while (FD != nullptr) {
+			TestDupl(FD);
+			FD = (FileD*)FD->Chain;
+		}
+		StringListEl* S = new StringListEl();
+		S->S = LexWord;
+		if (CFile->ViewNames == nullptr) {
+			CFile->ViewNames = S;
+		}
+		else {
+			ChainLast(CFile->ViewNames, S);
+		}
 		RdLex();
-		if (!(Lexem == '#' || Lexem == 0x1A)) goto label1;
+		RdByteListInStore();
+		Accept(':');
+		// GetEditOpt(); // vytvori objekt EditOpt
+		XKey* K = RdViewKey(); // nacteni klice, podle ktereho budou polozky setrideny
+		if (K != nullptr) {
+			Accept(',');
+			EO.ViewKey = K;
+		}
+		RdBegViewDcl(&EO);
+		while (Lexem == ',') {
+			if (!RdViewOpt(&EO)) Error(44);
+		}
+		if (Lexem == ';') {
+			RdLex();
+			if (!(Lexem == '#' || Lexem == 0x1A)) continue;
+		}
+		break;
 	}
 }
 
