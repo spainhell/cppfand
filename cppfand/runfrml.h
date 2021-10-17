@@ -38,6 +38,7 @@ std::string DecodeField(FieldDescr* F, WORD LWw);
 void RunWFrml(WRectFrml& X, BYTE WFlags, WRect& W);
 WORD RunWordImpl(FrmlElem* Z, WORD Impl);
 bool FieldInList(FieldDescr* F, FieldListEl* FL);
+bool FieldInList(FieldDescr* F, std::vector<FieldDescr*>& FL);
 XKey* GetFromKey(LinkDPtr LD);
 FrmlPtr RunEvalFrml(FrmlPtr Z);
 LongStr* RunLongStr(FrmlElem* X);  // r417 zacina od 555

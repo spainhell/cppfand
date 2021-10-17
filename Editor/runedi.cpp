@@ -2132,7 +2132,7 @@ bool EquFileViewName(FileD* FD, std::string S, EditOpt* EO)
 				RdUserView(S, EO);
 				goto label1;
 			}
-			SL = (StringList)SL->Chain;
+			SL = (StringListEl*)SL->Chain;
 		}
 	}
 	else if (S == std::string(CFile->Name)) {
@@ -4500,6 +4500,7 @@ label81:
 		break;
 	}
 	}
+	Event.What = evNothing;
 	goto label1;
 }
 

@@ -16,7 +16,7 @@ void StoreRT(WORD Ln, StringList SL, WORD NFlds);
 void RdEForm(FileD* ParFD, RdbPos FormPos);
 EFldD* FindScanNr(WORD N);
 void AutoDesign(FieldListEl* FL);
-void RdFormOrDesign(FileD* F, FieldList FL, RdbPos FormPos);
+void RdFormOrDesign(FileD* F, FieldListEl* FL, RdbPos FormPos);
 void NewEditD(FileD* ParFD, EditOpt* EO); // r158
 EFldD* FindEFld_E(FieldDescr* F); // existuje -> *_E
 void ZeroUsed();

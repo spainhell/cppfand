@@ -75,7 +75,7 @@ void ResetCFileUpdH()
 
 void ClearCacheCFile()
 {
-	// chache nepouzivame
+	// cache nepouzivame
 	return;
 	/* !!! with CFile^ do!!! */
 	/*ClearCacheH(CFile->Handle);
@@ -84,9 +84,12 @@ void ClearCacheCFile()
 }
 
 #ifdef FandNetV
-const longint TransLock = 0x0A000501;  /* locked while state transition */
-const longint ModeLock = 0x0A000000;  /* base for mode locking */
-const longint RecLock = 0x0B000000;  /* base for record locking */
+// const longint TransLock = 0x0A000501;  /* locked while state transition */
+const longint TransLock = 0x40000501; // MB160
+// const longint ModeLock = 0x0A000000;  /* base for mode locking */
+const longint ModeLock = 0x40000000;  // MB160
+// const longint RecLock = 0x0B000000;  /* base for record locking */
+const longint RecLock = 0x41000000;   // MB160
 
 
 bool TryLockH(FILE* Handle, longint Pos, WORD Len)
@@ -118,8 +121,7 @@ void ModeLockBnds(LockMode Mode, longint& Pos, WORD& Len)
 
 bool ChangeLMode(LockMode Mode, WORD Kind, bool RdPref)
 {
-	FILE* h;
-	longint pos, oldpos; WORD len, oldlen, count, d; longint w, w1; LockMode oldmode;
+	longint oldpos; WORD oldlen, d;
 	bool result = false;
 	if (!CFile->IsShared()) {         /*neu!!*/
 		result = true;
@@ -127,8 +129,8 @@ bool ChangeLMode(LockMode Mode, WORD Kind, bool RdPref)
 		return result;
 	}
 	result = false;
-	oldmode = CFile->LMode;
-	h = CFile->Handle;
+	LockMode oldmode = CFile->LMode;
+	FILE* h = CFile->Handle;
 	if (oldmode >= WrMode) {
 		if (Mode < WrMode) WrPrefixes();
 		if (oldmode == ExclMode) {
@@ -137,7 +139,8 @@ bool ChangeLMode(LockMode Mode, WORD Kind, bool RdPref)
 		}
 		if (Mode < WrMode) ResetCFileUpdH();
 	}
-	w = 0; count = 0;
+	longint w = 0;
+	WORD count = 0;
 label1:
 	if (Mode != NullMode)
 		if (!TryLockH(h, TransLock, 1)) {
@@ -149,7 +152,7 @@ label1:
 				d = spec.NetDelay;
 				SetCPathVol();
 				SetMsgPar(CPath, LockModeTxt[Mode]);
-				w1 = PushWrLLMsg(825, Kind = 1);
+				longint w1 = PushWrLLMsg(825, Kind = 1);
 				if (w == 0) w = w1;
 				else TWork.Delete(w1);
 				LockBeep();
@@ -163,6 +166,8 @@ label1:
 		UnLockH(h, oldpos, oldlen);
 	}
 	if (Mode != NullMode) {
+		WORD len;
+		longint pos;
 		ModeLockBnds(Mode, pos, len);
 		if (!TryLockH(h, pos, len)) {
 			if (oldmode != NullMode) TryLockH(h, oldpos, oldlen);

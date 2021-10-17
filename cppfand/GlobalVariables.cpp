@@ -61,8 +61,7 @@ CompInpD* PrevCompInp = nullptr;			// { saved at "include" }
 BYTE* InpArrPtr; RdbPos InpRdbPos;		// { "  "  }
 std::vector<FrmlElemSum*> *FrmlSumEl;				//{ set while reading sum / count argument }
 bool FrstSumVar, FileVarsAllowed;
-// FrmlPtr RdFldNameFrml() = FrmlPtr(char& FTyp);
-// FrmlPtr RdFunction() = FrmlPtr(char& FTyp);
+
 FrmlElem* (*RdFldNameFrml)(char&) = nullptr; // ukazatel na funkci
 FrmlElem* (*RdFunction)(char&) = nullptr; // ukazatel na funkci
 void(*ChainSumEl)(); // {set by user}

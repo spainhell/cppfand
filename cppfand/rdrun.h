@@ -180,15 +180,23 @@ struct EditOpt
 	RdbPos FormPos;
 	bool UserSelFlds = false, SetOnlyView = false, NegDupl = false;
 	bool NegTab = false, NegNoEd = false, SyntxChk = false;
-	FieldListEl* Flds = nullptr; FieldListEl* Dupl = nullptr; 
-	FieldListEl* Tab = nullptr; FieldListEl* NoEd = nullptr;
+	FieldListEl* Flds = nullptr;
+	std::vector<FieldDescr*> Dupl;
+	std::vector<FieldDescr*> Tab;
+	std::vector<FieldDescr*> NoEd;
 	FrmlElem* Cond = nullptr;
-	FrmlElem* Head = nullptr; FrmlElem* Last = nullptr; 
-	FrmlElem* CtrlLast = nullptr; FrmlElem* AltLast = nullptr; FrmlElem* ShiftLast = nullptr;
+	FrmlElem* Head = nullptr;
+	FrmlElem* Last = nullptr; 
+	FrmlElem* CtrlLast = nullptr;
+	FrmlElem* AltLast = nullptr;
+	FrmlElem* ShiftLast = nullptr;
 	FrmlElem* Mode = nullptr;
-	FrmlElem* StartRecNoZ = nullptr; FrmlElem* StartRecKeyZ = nullptr;
-	FrmlElem* StartIRecZ = nullptr; FrmlElem* StartFieldZ = nullptr;
-	FrmlElem* SaveAfterZ = nullptr; FrmlElem* WatchDelayZ = nullptr; 
+	FrmlElem* StartRecNoZ = nullptr;
+	FrmlElem* StartRecKeyZ = nullptr;
+	FrmlElem* StartIRecZ = nullptr;
+	FrmlElem* StartFieldZ = nullptr;
+	FrmlElem* SaveAfterZ = nullptr;
+	FrmlElem* WatchDelayZ = nullptr; 
 	FrmlElem* RefreshDelayZ = nullptr;
 	WRectFrml W;
 	FrmlElem* ZAttr = nullptr;
@@ -225,8 +233,8 @@ struct EFldD : public Chained
 	KeyListEl* KL = nullptr;
 	BYTE Page = 0, Col = 0, Ln = 0, L = 0;
 	WORD ScanNr = 0;
-	bool Tab = false, Dupl = false, Used = false,
-	EdU = false, EdN = false;
+	bool Tab = false, Dupl = false, Used = false;
+	bool EdU = false, EdN = false;
 	bool Ed(bool IsNewRec);
 };
 

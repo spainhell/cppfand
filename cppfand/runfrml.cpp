@@ -686,15 +686,18 @@ bool RunBool(FrmlElem* X)
 	case _isdeleted: {
 		cr = CRecPtr; cf = CFile;
 		AccRecNoProc((FrmlElem14*)X, 642);
-		result = DeletedFlag(); ReleaseStore(CRecPtr);
+		result = DeletedFlag();
+		ReleaseStore(CRecPtr);
 		CRecPtr = cr; CFile = cf;
 		break;
 	}
 	case _lvdeleted: {
 		auto iX = (FrmlElem20*)X;
 		cr = CRecPtr; cf = CFile;
-		CRecPtr = iX->LV->RecPtr; CFile = iX->LV->FD;
-		result = DeletedFlag(); CRecPtr = cr; CFile = cf;
+		CRecPtr = iX->LV->RecPtr;
+		CFile = iX->LV->FD;
+		result = DeletedFlag();
+		CRecPtr = cr; CFile = cf;
 		break;
 	}
 	case _trust: {
@@ -1391,6 +1394,14 @@ bool FieldInList(FieldDescr* F, FieldListEl* FL)
 		if (FL->FldD == F) result = true;
 		FL = (FieldListEl*)FL->Chain;
 	}
+	return result;
+}
+
+bool FieldInList(FieldDescr* F, std::vector<FieldDescr*>& FL)
+{
+	bool result = false;
+	if (std::find(FL.begin(), FL.end(), F) != FL.end())
+		result = true;
 	return result;
 }
 

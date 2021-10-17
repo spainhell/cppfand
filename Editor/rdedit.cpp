@@ -270,7 +270,7 @@ void AutoDesign(FieldListEl* FL)
 	}
 }
 
-void RdFormOrDesign(FileD* F, FieldList FL, RdbPos FormPos)
+void RdFormOrDesign(FileD* F, FieldListEl* FL, RdbPos FormPos)
 {
 	/* !!! with E^ do!!! */
 	E->FrstCol = E->V.C1; E->FrstRow = E->V.R1; E->LastCol = E->V.C2; E->LastRow = E->V.R2;
@@ -294,12 +294,10 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 {
 	EFldD* D = nullptr;
 	FieldList FL = nullptr;
-	void* p = nullptr;
-	WORD i = 0; pstring s;
+	WORD i = 0; //pstring s;
 	FieldDescr* F = nullptr;
 	bool b = false, b2 = false, F2NoUpd = false;
 	PushEdit();
-	MarkStore2(p);
 	/* !!! with E^ do!!! */
 	//Move(&EO->WFlags, &E->WFlags, (uintptr_t)(E->SelKey) - (uintptr_t)(E->WFlags) + 4);
 	// move je nahrazen kopirovanim jednotlivych polozek:
@@ -328,7 +326,7 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 	if (EO->Mode != nullptr) EditModeToFlags(RunShortStr(EO->Mode), &E->NoDelete, false);
 	if (spec.Prompt158) E->Prompt158 = true;
 	if (EO->SetOnlyView /*UpwEdit*/) {
-		EO->Tab = nullptr; E->OnlyTabs = true; E->OnlySearch = false;
+		EO->Tab.clear(); E->OnlyTabs = true; E->OnlySearch = false;
 	}
 	if (E->LVRecPtr != nullptr) { E->EdRecVar = true; E->Only1Record = true; }
 	if (E->Only1Record) E->OnlySearch = false;
@@ -398,28 +396,36 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 #ifdef FandSQL
 		if (CFile->IsSQLFile && (E->VK = nullptr)) { SetMsgPar(CFile->Name); RunError(652); }
 #endif
-		if (E->SelKey != nullptr)
-			if (E->SelKey->KFlds == nullptr) E->SelKey->KFlds = E->VK->KFlds;
-			else if (!EquKFlds(E->SelKey->KFlds, E->VK->KFlds)) RunError(663);
+		if (E->SelKey != nullptr) {
+			if (E->SelKey->KFlds == nullptr) {
+				E->SelKey->KFlds = E->VK->KFlds;
+			}
+			else if (!EquKFlds(E->SelKey->KFlds, E->VK->KFlds)) {
+				RunError(663);
+			}
+	}
 	}
 	if (EO->StartFieldZ != nullptr) {
 		std::string rss = RunShortStr(EO->StartFieldZ);
-		s = TrailChar(rss, ' ');
+		std::string s = TrailChar(rss, ' ');
 		D = E->FirstFld;
 		while (D != nullptr) {
-			std::string tmpS = s;
-			if (SEquUpcase(D->FldD->Name, tmpS)) E->StartFld = D;
+			if (SEquUpcase(D->FldD->Name, s)) E->StartFld = D;
 			D = (EFldD*)D->Chain;
 		}
 	}
 	E->WatchDelay = RunInt(EO->WatchDelayZ) * 18;
-	if (EO->Head == nullptr) { E->Head = StandardHead(); }
-	else E->Head = GetStr_E(EO->Head);
+	if (EO->Head == nullptr) {
+		E->Head = StandardHead();
+	}
+	else {
+		E->Head = GetStr_E(EO->Head);
+	}
 	E->Last = GetStr_E(EO->Last);
 	E->AltLast = GetStr_E(EO->AltLast);
 	E->CtrlLast = GetStr_E(EO->CtrlLast);
 	E->ShiftLast = GetStr_E(EO->ShiftLast);
-	F2NoUpd = E->OnlyTabs && (EO->Tab == nullptr) && !EO->NegTab && E->OnlyAppend;
+	F2NoUpd = E->OnlyTabs && EO->Tab.empty() && !EO->NegTab && E->OnlyAppend;
 	/* END WITH */
 
 	D = E->FirstFld;
@@ -446,7 +452,6 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 	RdDepChkImpl();
 	NewChkKey();
 	MarkStore(E->AfterE);
-	ReleaseStore2(p);
 }
 
 EFldD* FindEFld_E(FieldDescr* F)

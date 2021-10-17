@@ -1248,12 +1248,34 @@ label1:
 	if (Lexem == ',') { RdLex(); goto label1; }
 }
 
+void RdFldList(std::vector<FieldDescr*>& vFields)
+{
+	while (true) {
+		FieldDescr* F = RdFldName(CFile);
+		vFields.push_back(F);
+		if (Lexem == ',') {
+			RdLex();
+			continue;
+		}
+		break;
+	}
+}
+
 void RdNegFldList(bool& Neg, FieldListEl** FLRoot)
 {
 	if (Lexem == '^') { RdLex(); Neg = true; }
 	Accept('(');
 	if (Lexem == ')') Neg = true;
 	else RdFldList(FLRoot);
+	Accept(')');
+}
+
+void RdNegFldList(bool& Neg, std::vector<FieldDescr*>& vFields)
+{
+	if (Lexem == '^') { RdLex(); Neg = true; }
+	Accept('(');
+	if (Lexem == ')') Neg = true;
+	else RdFldList(vFields);
 	Accept(')');
 }
 
