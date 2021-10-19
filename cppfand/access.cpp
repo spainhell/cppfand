@@ -449,7 +449,10 @@ void RecallRec(longint RecNr)
 	TestXFExist();
 	CFile->XF->NRecs++;
 	XKey* K = CFile->Keys;
-	while (K != nullptr) { K->Insert(RecNr, false); K = K->Chain; }
+	while (K != nullptr) {
+		K->Insert(RecNr, false);
+		K = K->Chain;
+	}
 	ClearDeletedFlag();
 	WriteRec(CFile, RecNr, CRecPtr);
 }
@@ -457,8 +460,7 @@ void RecallRec(longint RecNr)
 bool IsNullValue(void* p, WORD l)
 {
 	BYTE* pb = (BYTE*)p;
-	for (size_t i = 0; i < l; i++)
-	{
+	for (size_t i = 0; i < l; i++) {
 		if (pb[i] != 0xFF) return false;
 	}
 	return true;
@@ -476,16 +478,14 @@ longint _T(FieldDescr* F, unsigned char* data, char Typ)
 	integer err = 0;
 	char* source = (char*)data + F->Displ;
 
-	if (Typ == 'D')
-	{
+	if (Typ == 'D') {
 		// tváøíme se, že CRecPtr je pstring ...
 		// TODO: toto je asi blbì, nutno opravit pøed 1. použitím
 		pstring* s = (pstring*)CRecPtr;
 		auto result = std::stoi(LeadChar(' ', *s));
 		return result;
 	}
-	else
-	{
+	else {
 		if (data == nullptr) return 0;
 		return *(longint*)source;
 	}
@@ -499,12 +499,22 @@ void T_(FieldDescr* F, longint Pos)
 	char* source = (char*)p + F->Displ;
 	longint* LP = (longint*)source;
 	if ((F->Typ == 'T') && ((F->Flg & f_Stored) != 0)) {
-		if (CFile->Typ == 'D')
-			if (Pos == 0) FillChar(source, 10, ' ');
-			else { str(Pos, s); Move(&s[1], source, 10); }
-		else *LP = Pos;
+		if (CFile->Typ == 'D') {
+			if (Pos == 0) {
+				FillChar(source, 10, ' ');
+			}
+			else {
+				str(Pos, s);
+				Move(&s[1], source, 10);
+			}
+		}
+		else {
+			*LP = Pos;
+		}
 	}
-	else RunError(906);
+	else {
+		RunError(906);
+	}
 }
 
 void DelTFld(FieldDescr* F)

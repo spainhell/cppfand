@@ -603,7 +603,7 @@ label2:
 	Z = RdFrml(FTyp);
 	if (D != nullptr)
 	{
-		Dp = new DepD(); // (DepD*)GetStore(sizeof(*Dp));
+		Dp = new DepD();
 		Dp->Bool = Bool;
 		Dp->Frml = Z;
 		if (D->Dep == nullptr) D->Dep = Dp;

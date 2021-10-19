@@ -908,8 +908,9 @@ void RdKumul()
 		}
 		if (Lexem == ';') {
 			RdLex();
-			if (Lexem == '#' || Lexem == 0x1A) break;
+			if (!(Lexem == '#' || Lexem == 0x1A)) continue;
 		}
+		break;
 	}
 }
 
