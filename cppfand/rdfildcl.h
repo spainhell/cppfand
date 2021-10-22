@@ -2,6 +2,7 @@
 #include "AddD.h"
 #include "pstring.h"
 #include "rdrun.h"
+#include "EditOpt.h"
 
 extern bool HasTT;
 FieldDescr* RdFldDescr(pstring Name, bool Stored); // r25
@@ -11,7 +12,7 @@ void RdChkDsFromPos(FileD* FD, ChkD* C); // r98
 void RdBegViewDcl(EditOpt* EO); // r110
 void RdByteList(pstring* s);
 void RdByteListInStore();
-bool RdUserView(pstring ViewName, EditOpt* EO);
+bool RdUserView(std::string ViewName, EditOpt* EO);
 
 extern bool issql;
 

@@ -1048,9 +1048,15 @@ bool RdViewOpt(EditOpt* EO)
 	/* !!! with EO^ do!!! */
 	RdLex(); result = true;
 	CViewKey = EO->ViewKey;
-	if (IsOpt("TAB")) RdNegFldList(EO->NegTab, EO->Tab);
-	else if (IsOpt("DUPL")) RdNegFldList(EO->NegDupl, EO->Dupl);
-	else if (IsOpt("NOED")) RdNegFldList(EO->NegNoEd, EO->NoEd);
+	if (IsOpt("TAB")) {
+		RdNegFldList(EO->NegTab, EO->Tab);
+	}
+	else if (IsOpt("DUPL")) {
+		RdNegFldList(EO->NegDupl, EO->Dupl);
+	}
+	else if (IsOpt("NOED")) {
+		RdNegFldList(EO->NegNoEd, EO->NoEd);
+	}
 	else if (IsOpt("MODE")) {
 		SkipBlank(false);
 		if ((Lexem == _quotedstr) && (ForwChar == ',' || ForwChar == ')')) {

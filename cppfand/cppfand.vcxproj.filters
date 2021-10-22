@@ -114,6 +114,9 @@
     <ClCompile Include="XFile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="EditOpt.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base.h">
@@ -228,6 +231,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="XFile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EditOpt.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

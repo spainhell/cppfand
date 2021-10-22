@@ -277,54 +277,64 @@ void RdByteListInStore()
 	RdByteList(&s); StoreStr(s);
 }
 
-bool RdUserView(pstring ViewName, EditOpt* EO)
+bool RdUserView(std::string ViewName, EditOpt* EO)
 {
+	// TODO: proc je tady 'EOD' a proc se kopiruje tam a zpet z/do EO ???
 	bool found = false, Fin = false, FVA = false;
-	void* p = nullptr; void* p2 = nullptr;
-	XKey* K = nullptr; EditOpt EOD;
+	XKey* K = nullptr;
+	//EditOpt EOD;
 	FileD* fd = CFile;
-	MarkStore(p);
-	MarkStore2(p2);
-	Move(EO, &EOD, sizeof(EOD));
-label1:
-	if (fd->TxtPosUDLI == 0) goto label3;
-	ResetCompilePars();
-	SetInpTTxtPos(fd);
-	RdLex();
-	if ((Lexem != '#') || (ForwChar != 'U')) goto label3;
-	RdLex();/*#*/
-	RdLex();/*U*/
-label2:
-	ReleaseStore(p);
-	Move(&EOD, EO, sizeof(*EO));
-	if (EquUpcase(ViewName, LexWord)) found = true;
-	EO->ViewName = LexWord;
-	RdLex(); /*'('*/
-	do {
+	//Move(EO, &EOD, sizeof(EOD));
+	while (true) {
+		if (fd->TxtPosUDLI == 0) {
+			fd = fd->OrigFD;
+			if ((fd != nullptr) && !found) continue;
+			break;
+		}
+		ResetCompilePars();
+		SetInpTTxtPos(fd);
 		RdLex();
-	} while (!(Lexem == ')' || Lexem == 0x1A));
-	RdLex();
-	RdLex();/*"):"*/
-	K = RdViewKey();
-	if (K != nullptr) {
-		RdLex();/*','*/
-		EO->ViewKey = K;
+		if ((Lexem != '#') || (ForwChar != 'U')) {
+			fd = fd->OrigFD;
+			if ((fd != nullptr) && !found) continue;
+			break;
+		}
+		RdLex(); // #
+		RdLex(); // U
+		while (true) {
+			//Move(&EOD, EO, sizeof(*EO));
+			std::string sLexWord = LexWord;
+			if (EquUpcase(ViewName, sLexWord)) found = true;
+			EO->ViewName = LexWord;
+			RdLex(); /*'('*/
+			do {
+				RdLex();
+			} while (!(Lexem == ')' || Lexem == 0x1A));
+			RdLex();
+			RdLex();/*"):"*/
+			K = RdViewKey();
+			if (K != nullptr) {
+				RdLex();/*','*/
+				EO->ViewKey = K;
+			}
+			RdBegViewDcl(EO);
+			while (Lexem == ',') {
+				FVA = FileVarsAllowed;
+				FileVarsAllowed = false;
+				if (!RdViewOpt(EO)) Error(44);
+				FileVarsAllowed = FVA;
+			}
+			if (!found && (Lexem == ';')) {
+				RdLex();
+				if (!(Lexem == '#' || Lexem == 0x1A)) continue;
+			}
+			break;
+		}
+
+		fd = fd->OrigFD;
+		if ((fd != nullptr) && !found) continue;
+		break;
 	}
-	RdBegViewDcl(EO);
-	while (Lexem == ',') {
-		FVA = FileVarsAllowed;
-		FileVarsAllowed = false;
-		if (!RdViewOpt(EO)) Error(44);
-		FileVarsAllowed = FVA;
-	}
-	if (!found && (Lexem == ';')) {
-		RdLex();
-		if (!(Lexem == '#' || Lexem == 0x1A)) goto label2;
-	}
-label3:
-	ReleaseStore2(p2);
-	fd = fd->OrigFD;
-	if ((fd != nullptr) && !found) goto label1;
 	return found;
 }
 

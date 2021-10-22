@@ -5,6 +5,7 @@
 #include "rdedit.h"
 #include "../cppfand/ChkD.h"
 #include "../cppfand/compile.h"
+#include "../cppfand/EditOpt.h"
 #include "../cppfand/FieldDescr.h"
 #include "../cppfand/FileD.h"
 #include "../cppfand/GlobalVariables.h"

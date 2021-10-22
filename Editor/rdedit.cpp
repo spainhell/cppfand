@@ -118,7 +118,10 @@ label5:
 	while (!(ForwChar == 0x0D || ForwChar == 0x1A || ForwChar == '\\' || ForwChar == '{'))
 		if (ForwChar == '_') {
 			if (D == nullptr) Error(30); NFlds++;
-			D->Col = Col; D->Ln = Ln; D->Page = NPages; M = 0;
+			D->Col = Col;
+			D->Ln = Ln;
+			D->Page = NPages;
+			M = 0;
 			while (ForwChar == '_') {
 				s.Append(' ');
 				M++; Col++;
@@ -326,7 +329,9 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 	if (EO->Mode != nullptr) EditModeToFlags(RunShortStr(EO->Mode), &E->NoDelete, false);
 	if (spec.Prompt158) E->Prompt158 = true;
 	if (EO->SetOnlyView /*UpwEdit*/) {
-		EO->Tab.clear(); E->OnlyTabs = true; E->OnlySearch = false;
+		EO->Tab.clear();
+		E->OnlyTabs = true;
+		E->OnlySearch = false;
 	}
 	if (E->LVRecPtr != nullptr) { E->EdRecVar = true; E->Only1Record = true; }
 	if (E->Only1Record) E->OnlySearch = false;
@@ -362,8 +367,11 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 	if (CFile->IsSQLFile) SetTWorkFlag;
 #endif
 	if (E->EdRecVar) {
-		E->NewRecPtr = E->LVRecPtr; E->NoDelete = true; E->NoCreate = true;
-		E->Journal = nullptr; E->KIRoot = nullptr;
+		E->NewRecPtr = E->LVRecPtr;
+		E->NoDelete = true;
+		E->NoCreate = true;
+		E->Journal = nullptr;
+		E->KIRoot = nullptr;
 	}
 	else {
 		CRecPtr = GetRecSpace();
@@ -375,14 +383,23 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 		E->Cond = RunEvalFrml(EO->Cond);
 		E->RefreshDelay = RunWordImpl(EO->RefreshDelayZ, spec.RefreshDelay) * 18;
 		E->SaveAfter = RunWordImpl(EO->SaveAfterZ, spec.UpdCount);
-		if (EO->StartRecKeyZ != nullptr) E->StartRecKey = RunShortStr(EO->StartRecKeyZ);
-		E->StartRecNo = RunInt(EO->StartRecNoZ); E->StartIRec = RunInt(EO->StartIRecZ);
+		if (EO->StartRecKeyZ != nullptr) {
+			E->StartRecKey = RunShortStr(EO->StartRecKeyZ);
+		}
+		E->StartRecNo = RunInt(EO->StartRecNoZ);
+		E->StartIRec = RunInt(EO->StartIRecZ);
 		E->VK = EO->ViewKey;
 		if (E->DownLD != nullptr) {
-			E->DownSet = true; E->DownKey = GetFromKey(E->DownLD);
-			if (E->VK == nullptr) E->VK = E->DownKey;
+			E->DownSet = true;
+			E->DownKey = GetFromKey(E->DownLD);
+			if (E->VK == nullptr) {
+				E->VK = E->DownKey;
+			}
 			switch (E->OwnerTyp) {
-			case 'r': E->DownRecPtr = E->DownLV->RecPtr; break;
+			case 'r': {
+				E->DownRecPtr = E->DownLV->RecPtr;
+				break;
+			}
 			case 'F': {
 				E->OwnerRecNo = RunInt((FrmlElem*)EO->DownLV);
 				CFile = E->DownLD->ToFD;
@@ -390,6 +407,7 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 				CFile = E->FD;
 				break;
 			}
+			default: ;
 			}
 		}
 		else if (E->VK == nullptr) E->VK = E->FD->Keys;
@@ -447,7 +465,9 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 	}
 	if (E->OnlyTabs && (E->NTabsSet == 0)) {
 		E->NoDelete = true;
-		if (!E->OnlyAppend) E->NoCreate = true;
+		if (!E->OnlyAppend) {
+			E->NoCreate = true;
+		}
 	}
 	RdDepChkImpl();
 	NewChkKey();

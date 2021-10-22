@@ -1,6 +1,7 @@
 #pragma once
 #include "../rdrun.h"
 #include "../Graph.h"
+#include "../EditOpt.h"
 
 //class Chained;
 //class FrmlElem;

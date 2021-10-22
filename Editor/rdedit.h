@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../cppfand/access-structs.h"
+#include "../cppfand/EditOpt.h"
 #include "../cppfand/FieldDescr.h"
 #include "../cppfand/rdrun.h"
 
