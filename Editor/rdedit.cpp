@@ -94,8 +94,10 @@ label3:
 	}
 	else D->ScanNr = N;
 	D1 = FindScanNr(D->ScanNr);
+
 	if (E->FirstFld == nullptr) E->FirstFld = D;
 	else ChainLast(E->FirstFld, D);
+
 	if ((D1 != nullptr) && (D->ScanNr == D1->ScanNr)) Error(77);
 	F = RdFldName(CFile);
 	D->FldD = F;
@@ -117,7 +119,8 @@ label5:
 	Col = E->FrstCol;
 	while (!(ForwChar == 0x0D || ForwChar == 0x1A || ForwChar == '\\' || ForwChar == '{'))
 		if (ForwChar == '_') {
-			if (D == nullptr) Error(30); NFlds++;
+			if (D == nullptr) Error(30); 
+			NFlds++;
 			D->Col = Col;
 			D->Ln = Ln;
 			D->Page = NPages;
@@ -127,9 +130,14 @@ label5:
 				M++; Col++;
 				ReadChar();
 			}
-			F = D->FldD; D->L = F->L;
-			if (F->Typ == 'T') D->L = 1;
-			if ((F->Typ == 'A') && (M < F->L)) D->L = M;
+			F = D->FldD; 
+			D->L = F->L;
+			if (F->Typ == 'T') {
+				D->L = 1;
+			}
+			if ((F->Typ == 'A') && (M < F->L)) {
+				D->L = M;
+			}
 			else if (M != D->L) {
 				str(D->L, 2, s);
 				SetMsgPar(s, F->Name);
