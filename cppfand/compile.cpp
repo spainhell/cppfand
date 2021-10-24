@@ -13,7 +13,7 @@
 #include "../textfunc/textfunc.h"
 
 const BYTE MaxLen = 9;
-RdbPos ChptIPos; // usen in LexAnal & ProjMgr
+RdbPos ChptIPos; // used in LexAnal & ProjMgr
 
 bool KeyArgFound;
 FieldDescr* KeyArgFld;
@@ -1037,14 +1037,6 @@ bool FindLocVar(LocVarBlkD* LVB, LocVar** LV)
 	*LV = LVB->FindByName(LexWord);
 	if (*LV == nullptr) return false;
 	return true;
-
-	//*LV = LVRoot;
-	//while (*LV != nullptr) {
-	//	pstring lvName = (*LV)->Name.c_str();
-	//	if (EquUpcase(lvName, LexWord)) { return true; }
-	//	*LV = (LocVar*)(*LV)->Chain;
-	//}
-	//return result;
 }
 
 bool FindChpt(char Typ, const pstring& name, bool local, RdbPos* RP)
