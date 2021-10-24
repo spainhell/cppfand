@@ -341,8 +341,8 @@ std::string GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 		ReplaceChar(s, '@', '*');
 		ReplaceChar(s, '#', '=');
 		ReplaceChar(s, '\\', '|');
-		if (s.length() > MaxCol) s[0] = char(MaxCol);
-		WrBlks(report, (MaxColOld - s.length()) / 2);
+		if (s.length() > MaxCol) s = s.substr(0, MaxCol);
+		WrBlks(report, ((int)MaxColOld - (int)s.length()) / 2);
 		WrStr(report, s);
 		WrChar(report, 0x17);
 	}

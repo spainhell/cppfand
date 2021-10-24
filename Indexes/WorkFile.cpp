@@ -22,7 +22,11 @@ void WorkFile::Reset(KeyFldD* KF, longint RestBytes, char Typ, longint NRecs)
 	while (KF != nullptr) {
 		/* !!! with KF->FldD^ do!!! */
 		if (Typ == 'D') RecLen += 6;
-		else RecLen += KF->FldD->NBytes;
+		else {
+			if (KF->FldD != nullptr) {
+				RecLen += KF->FldD->NBytes;
+			}
+		}
 		KF = (KeyFldD*)KF->Chain;
 	}
 	BYTEs = (StoreAvail() - RestBytes - sizeof(WRec)) / 3;

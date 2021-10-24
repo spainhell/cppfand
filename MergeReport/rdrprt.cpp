@@ -329,7 +329,6 @@ label1:
 		}
 		Error(89);
 	label2:
-		//ID = (InpD*)GetZStore(sizeof(*ID)); 
 		ID = new InpD();
 		IDA[Ii] = ID;
 		RdLex();
@@ -393,71 +392,69 @@ label1:
 
 	PageHd = nullptr; RprtHd = nullptr; PageFt = nullptr;
 	PFZeroLst.clear();
-label3:
-	ReadChar();
-	s = toupper(CurrChar);
-	ReadChar();
-	s += toupper(CurrChar);
-	ChainSumEl = nullptr;
-	RdFldNameFrml = RdFldNameFrmlR;
-	WhatToRd = 'O';
-	if (s == "DE") { // detailni vystup
-		Rd_Oi();
-		RdLex();
-		WhatToRd = 'i';
-		RdBlock(&IDA[Oi]->FrstLvS->Ft);
-		goto label4;
-	}
-	if (s == "RH") { // hlavicka sestavy
-		RdLex();
-		RdBlock(&RprtHd);
-		goto label4;
-	}
-	if (s == "PH") { // hlavicka stranky
-		RdLex();
-		RdBlock(&PageHd);
-		goto label4;
-	}
-	if (s == "DH") { // hlavicka detailu
-		Rd_Oi();
-		RdLex();
-		WhatToRd = 'i';
-		RdBlock(&IDA[Oi]->FrstLvS->Hd);
-		goto label4;
-	}
-	if (s == "CH") { // hlavicka skupiny
-		Rd_Oi();
-		L = RdKeyName();
-		RdBlock(&L->Hd);
-		goto label4;
-	}
-	ChainSumEl = ChainSumElR;
-	if (s == "RF") { // paticka sestavy
-		RdLex();
-		LvToRd = LstLvM;
-		CZeroLst = &LvToRd->ZeroLst;
-		RdBlock(&LvToRd->Ft);
-		goto label4;
-	}
-	if (s == "CF") { // paticka skupiny
-		Rd_Oi();
-		LvToRd = RdKeyName();
-		CZeroLst = &LvToRd->ZeroLst;
-		RdBlock(&LvToRd->Ft);
-		goto label4;
-	}
-	if (s == "PF") { // paticka stranky
-		RdLex();
-		LvToRd = LstLvM;
-		CZeroLst = &PFZeroLst;
-		RdBlock(&PageFt);
-		goto label4;
-	}
-	Error(57);
-label4:
-	if (Lexem != 0x1A) {
-		TestLex('#');
-		goto label3;
+	while (true) {
+		ReadChar();
+		s = toupper(CurrChar);
+		ReadChar();
+		s += toupper(CurrChar);
+		ChainSumEl = nullptr;
+		RdFldNameFrml = RdFldNameFrmlR;
+		WhatToRd = 'O';
+		if (s == "DE") { // detailni vystup
+			Rd_Oi();
+			RdLex();
+			WhatToRd = 'i';
+			RdBlock(&IDA[Oi]->FrstLvS->Ft);
+		}
+		else if (s == "RH") { // hlavicka sestavy
+			RdLex();
+			RdBlock(&RprtHd);
+		}
+		else if (s == "PH") { // hlavicka stranky
+			RdLex();
+			RdBlock(&PageHd);
+		}
+		else if (s == "DH") { // hlavicka detailu
+			Rd_Oi();
+			RdLex();
+			WhatToRd = 'i';
+			RdBlock(&IDA[Oi]->FrstLvS->Hd);
+		}
+		else if (s == "CH") { // hlavicka skupiny
+			Rd_Oi();
+			L = RdKeyName();
+			RdBlock(&L->Hd);
+		}
+		else if (s == "RF") { // paticka sestavy
+			ChainSumEl = ChainSumElR;
+			RdLex();
+			LvToRd = LstLvM;
+			CZeroLst = &LvToRd->ZeroLst;
+			RdBlock(&LvToRd->Ft);
+		}
+		else if (s == "CF") { // paticka skupiny
+			ChainSumEl = ChainSumElR;
+			Rd_Oi();
+			LvToRd = RdKeyName();
+			CZeroLst = &LvToRd->ZeroLst;
+			RdBlock(&LvToRd->Ft);
+		}
+		else if (s == "PF") { // paticka stranky
+			ChainSumEl = ChainSumElR;
+			RdLex();
+			LvToRd = LstLvM;
+			CZeroLst = &PFZeroLst;
+			RdBlock(&PageFt);
+		}
+		else {
+			Error(57);
+		}
+
+		if (Lexem != 0x1A) {
+			TestLex('#');
+			continue;
+		}
+		break;
 	}
 
 	for (i = 1; i <= MaxIi; i++) {

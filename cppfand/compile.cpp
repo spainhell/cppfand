@@ -800,19 +800,6 @@ LocVar* RdVarName(LocVarBlkD* LVB, bool IsParList)
 	}
 	RdLex();
 	return lvar;
-
-	//LocVar* lv = LVB->Root;
-	//while (lv != nullptr) {
-	//	pstring lvName = lv->Name.c_str();
-	//	if (EquUpcase(lvName, LexWord)) Error(26);
-	//	lv = (LocVar*)lv->Chain;
-	//}
-	////lv = (LocVar*)GetZStore(sizeof(*lv) - 1 + LexWord.length());
-	//lv = new LocVar();
-	//if (LVB->Root == nullptr) LVB->Root = lv;
-	//else ChainLast(LVB->Root, lv);
-	////Move(&LexWord, &lv->Name, LexWord.length() + 1); 
-	//lv->Name = LexWord;
 }
 
 KeyFldD* RdKF(FileD* FD)
@@ -824,6 +811,7 @@ KeyFldD* RdKF(FileD* FD)
 	if (Lexem == '~') { RdLex(); KF->CompLex = true; }
 	FieldDescr* F = RdFldName(FD);
 	KF->FldD = F;
+	if (F == nullptr) return result;
 	if (F->Typ == 'T') OldError(84);
 	if (KF->CompLex && (F->Typ != 'A')) OldError(94);
 	return result;
@@ -838,8 +826,7 @@ label1:
 	if (Lexem == ',') { RdLex(); goto label1; }
 	n = 0;
 	KF = *KFRoot;   /*looping over all fields, !only the last read*/
-	while (KF != nullptr)
-	{
+	while (KF != nullptr) {
 		if (KF->FldD != nullptr) n += KF->FldD->NBytes;
 		KF = (KeyFldD*)KF->Chain;
 	}
