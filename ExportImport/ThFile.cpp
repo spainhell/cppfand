@@ -32,23 +32,39 @@ ThFile::ThFile(std::string APath, WORD CatIRec, InOutMode AMode, byte aCompress,
 	if (Handle != nullptr) {
 		this->ReadBuf();
 	}
+	else {
+		if (HandleError == 2) {
+			Size = 0;
+			eof = true;
+		}
+	}
 }
 
 ThFile::~ThFile()
 {
-	fclose(Handle);
+	if (Handle != nullptr) {
+		fclose(Handle);
+	}
 	Handle = nullptr;
 }
 
 void ThFile::ReadBuf()
 {
-	lBuf = fread_s(Buf, BUFFER_SIZE, 1, BUFFER_SIZE, Handle);
-	if (lBuf == 0) this->eof = true;
+	if (Handle != nullptr) {
+		lBuf = fread_s(Buf, BUFFER_SIZE, 1, BUFFER_SIZE, Handle);
+		if (lBuf == 0) this->eof = true;
+	}
+	else {
+		Size = 0;
+		eof = true;
+	}
 }
 
 void ThFile::WriteBuf(bool cond)
 {
-	lBuf = fwrite(Buf, 1, lBuf, Handle);
+	if (Handle != nullptr) {
+		lBuf = fwrite(Buf, 1, lBuf, Handle);
+	}
 }
 
 void ThFile::ClearBuf()

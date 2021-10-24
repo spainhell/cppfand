@@ -46,75 +46,74 @@ void ConvWinCp(unsigned char* pBuf, unsigned char* pKod, WORD L)
 
 void MakeCopy(CopyD* CD)
 {
-	std::string pKod;
-	// NewExit(Ovr,er); goto 1;
-	// with CD^ do begin
-	ThFile* F1 = new ThFile(CD->Path1, CD->CatIRec1, _inp, 0, nullptr);
-	if (HandleError != 0) {
-		LastExitCode = 1;
-		return;
-	}
+	try {
+		ThFile F1 = ThFile(CD->Path1, CD->CatIRec1, _inp, 0, nullptr);
 
-	InOutMode m = _outp;
-	if (CD->Append) m = _append;
-
-	ThFile* F2 = new ThFile(CD->Path2, CD->CatIRec2, m, 0, F1);
-	if (HandleError != 0) {
-		delete F1;
-		LastExitCode = 1;
-		return;
-	}
-
-	WORD kod;
-	switch (CD->Mode) {
-	case 5: {
-		kod = LatToWinCp;
-		pKod = ResFile.Get(kod);
-		break;
-	}
-	case 6: {
-		kod = KamToWinCp;
-		pKod = ResFile.Get(kod);
-		break;
-	}
-	case 7: {
-		kod = WinCpToLat;
-		pKod = ResFile.Get(kod);
-		break;
-	}
-	default:;
-	}
-	while (!F1->eof) {
-		memcpy(F2->Buf, F1->Buf, F1->lBuf);
-		F2->lBuf = F1->lBuf;
-		switch (CD->Mode) {
-		case 1: ConvKamenLatin(F2->Buf, F2->lBuf, true); break;
-		case 2: ConvKamenLatin(F2->Buf, F2->lBuf, false); break;
-		case 3: ConvToNoDiakr(F2->Buf, F2->lBuf, TVideoFont::foKamen); break;
-		case 4: ConvToNoDiakr(F2->Buf, F2->lBuf, TVideoFont::foLatin2); break;
-		case 5:
-		case 6:
-		case 7:	ConvWinCp((unsigned char*)F2->Buf, (unsigned char*)pKod.c_str(), F2->lBuf); break;
-		default:;
+		ThFile F2 = ThFile(CD->Path2, CD->CatIRec2, CD->Append ? _append : _outp, 0, &F1);
+		if (HandleError != 0) {
+			//delete F1;
+			LastExitCode = 1;
+			return;
 		}
-		F2->WriteBuf(false);
-		F1->ReadBuf();
+
+		while (!F1.eof) {
+			memcpy(F2.Buf, F1.Buf, F1.lBuf);
+			F2.lBuf = F1.lBuf;
+			switch (CD->Mode) {
+			case 1: {
+				ConvKamenLatin(F2.Buf, F2.lBuf, true);
+				break;
+			}
+			case 2: {
+				ConvKamenLatin(F2.Buf, F2.lBuf, false);
+				break;
+			}
+			case 3: {
+				ConvToNoDiakr(F2.Buf, F2.lBuf, TVideoFont::foKamen);
+				break;
+			}
+			case 4: {
+				ConvToNoDiakr(F2.Buf, F2.lBuf, TVideoFont::foLatin2);
+				break;
+			}
+			case 5: {
+				std::string pKod = ResFile.Get(LatToWinCp);
+				ConvWinCp((unsigned char*)F2.Buf, (unsigned char*)pKod.c_str(), F2.lBuf);
+				break;
+			}
+			case 6: {
+				std::string pKod = ResFile.Get(KamToWinCp);
+				ConvWinCp((unsigned char*)F2.Buf, (unsigned char*)pKod.c_str(), F2.lBuf);
+				break;
+			}
+			case 7: {
+				std::string pKod = ResFile.Get(WinCpToLat);
+				ConvWinCp((unsigned char*)F2.Buf, (unsigned char*)pKod.c_str(), F2.lBuf);
+				break;
+			}
+			default: break;
+			}
+			F2.WriteBuf(false);
+			F1.ReadBuf();
+		}
+		LastExitCode = 0;
 	}
-	LastExitCode = 0;
-label1:
-	// RestoreExit(er);
-	if (F1 != nullptr && F1->Handle != nullptr) delete F1;
-	if (F2 != nullptr && F2->Handle != nullptr) {
-		if (LastExitCode != 0) F2->ClearBuf();
-		delete F2;
+
+	catch (std::exception& e) {
+		LastExitCode = 1;
 	}
+
+	//if (F1 != nullptr && F1->Handle != nullptr) delete F1;
+	//if (F2 != nullptr && F2->Handle != nullptr) {
+	//	if (LastExitCode != 0) F2->ClearBuf();
+	//	delete F2;
+	//}
 }
 
 void CopyFile(CopyD* CD)
 {
 	void* p = nullptr, * p2;
 	LastExitCode = 2;
-	//MarkStore(p);
 	if (CD->Opt1 == cpFix || CD->Opt1 == cpVar) {} //ImportTxt();
 	else if (CD->Opt2 == cpFix || CD->Opt2 == cpVar) {} //ExportTxt();
 	else if (CD->FD1 != nullptr) {
@@ -125,11 +124,10 @@ void CopyFile(CopyD* CD)
 		//TxtCtrlJ();
 	}
 	else {
-		// MakeCopy(CD);
+		MakeCopy(CD);
 	}
 	SaveFiles();
 	RunMsgOff();
-	//ReleaseStore(p);
 	if (LastExitCode != 0 && !CD->NoCancel) GoExit();
 }
 
@@ -150,7 +148,7 @@ void CheckFile(FileD* FD)
 		else LastExitCode = 2;
 		return;
 	}
-	
+
 	h = OpenH(_isoldfile, RdShared);
 	LastExitCode = 0;
 	if (HandleError != 0) {

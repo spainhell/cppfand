@@ -1085,11 +1085,9 @@ void MemDiagProc()
 
 void RunInstr(Instr* PD)
 {
-	LongStr* s = nullptr;
 	while (!ExitP && !BreakP && (PD != nullptr)) {
 		switch (PD->Kind) {
 		case _ifthenelseP: {
-			/* !!! with PD^ do!!! */
 			auto iPD = (Instr_loops*)PD;
 			if (RunBool(iPD->Bool)) {
 				RunInstr(iPD->Instr1);
@@ -1100,7 +1098,6 @@ void RunInstr(Instr* PD)
 			break;
 		}
 		case _whiledo: {
-			/* !!! with PD^ do!!! */
 			auto iPD = (Instr_loops*)PD;
 			while (!ExitP && !BreakP && RunBool(iPD->Bool)) {
 				RunInstr(iPD->Instr1);
@@ -1109,7 +1106,6 @@ void RunInstr(Instr* PD)
 			break;
 		}
 		case _repeatuntil: {
-			/* !!! with PD^ do!!! */
 			auto iPD = (Instr_loops*)PD;
 			do {
 				RunInstr(iPD->Instr1);
@@ -1123,7 +1119,10 @@ void RunInstr(Instr* PD)
 		case _window: WithWindowProc((Instr_window*)PD); break;
 		case _break: BreakP = true; break;
 		case _exitP: ExitP = true; break;
-		case _cancel: GoExit(); break;
+		case _cancel: {
+			GoExit();
+			break;
+		}
 		case _save: SaveFiles(); break;
 		case _clrscr: { TextAttr = ProcAttr; ClrScr(); break; }
 		case _clrww: ClrWwProc((Instr_clrww*)PD); break;
@@ -1215,7 +1214,7 @@ void RunInstr(Instr* PD)
 		case _asgnusername: AssgnUserName((Instr_assign*)PD); break;
 		case _asgnusertoday: userToday = RunReal(((Instr_assign*)PD)->Frml); break;
 		case _asgnclipbd: {
-			s = RunLongStr(((Instr_assign*)PD)->Frml);
+			LongStr* s = RunLongStr(((Instr_assign*)PD)->Frml);
 			TWork.Delete(ClpBdPos);
 			ClpBdPos = TWork.Store(s->A, s->LL);
 			ReleaseStore(s);
@@ -1230,18 +1229,17 @@ void RunInstr(Instr* PD)
 		}
 		case _releasedrive: ReleaseDriveProc(((Instr_releasedrive*)PD)->Drive); break;
 		case _setprinter: SetCurrPrinter(abs(RunInt(((Instr_assign*)PD)->Frml))); break;
-		case _indexfile: /* !!! with PD^ do!!! */ {
+		case _indexfile: {
 			auto iPD = (Instr_indexfile*)PD;
 			IndexfileProc(iPD->IndexFD, iPD->Compress);
 			break;
 		}
 		case _display: {
-			/* !!! with PD^ do!!! */
 			auto iPD = (Instr_merge_display*)PD;
 			DisplayProc(iPD->Pos.R, iPD->Pos.IRec);
 			break;
 		}
-		case _mount: /* !!! with PD^ do!!! */ {
+		case _mount: {
 			auto iPD = (Instr_mount*)PD;
 			MountProc(iPD->MountCatIRec, iPD->MountNoCancel);
 			break;
@@ -1306,15 +1304,13 @@ void RunInstr(Instr* PD)
 		case _asgnxnrecs: ((Instr_assign*)PD)->xnrIdx->Release(); break;
 		case _portout: {
 			auto iPD = (Instr_portout*)PD;
-			PortOut(RunBool(iPD->IsWord),
-				WORD(RunInt(iPD->Port)),
-				WORD(RunInt(iPD->PortWhat)));
+			PortOut(RunBool(iPD->IsWord), WORD(RunInt(iPD->Port)), WORD(RunInt(iPD->PortWhat)));
 			break;
 		}
 		}
 		PD = (Instr*)PD->Chain;
+		}
 	}
-}
 
 void RunProcedure(Instr* PDRoot)
 {

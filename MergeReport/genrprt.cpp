@@ -166,21 +166,31 @@ void WrLevel(integer Level)
 
 LongStr* GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 {
-	PFldD* d; FieldDescr* f; FieldListEl* fl; FieldListEl* fl1; KeyFldD* kf;
-	integer i, l, col; char* p; bool first, point;
+	PFldD* d = nullptr;  
+	FieldListEl* fl; 
+	FieldListEl* fl1; 
+	KeyFldD* kf;
+	integer i, l, col; 
+	char* p; 
+	bool first, point;
 	std::string s;
 
-	CFile = RO->FDL.FD; ARMode = RO->Mode;
+	CFile = RO->FDL.FD; 
+	ARMode = RO->Mode;
 	NLevels = ListLength(RO->Ctrl);
 	PFldDs = nullptr;
 	fl = RO->Flds;
 	while (fl != nullptr) {
 		d = new PFldD(); //(PFldD*)GetZStore(sizeof(PFldD));
-		f = fl->FldD; d->FldD = f;
+		FieldDescr* f = fl->FldD; 
+		d->FldD = f;
 		d->IsSum = FieldInList(f, RO->Sum);
-		fl1 = RO->Ctrl; i = NLevels;
+		fl1 = RO->Ctrl; 
+		i = NLevels;
 		while (fl1 != nullptr) {
-			if (fl1->FldD == f) { d->IsCtrl = true; d->Level = i; }
+			if (fl1->FldD == f) {
+				d->IsCtrl = true; 
+				d->Level = i; }
 			i--;
 			fl1 = (FieldListEl*)fl1->Chain;
 		}
@@ -199,7 +209,8 @@ LongStr* GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 	WrBlks(2);
 	first = true; fl = RO->Ctrl; kf = RO->SK;
 	while (fl != nullptr) {
-		if (!first) WrChar(','); f = fl->FldD;
+		if (!first) WrChar(','); 
+		FieldDescr* f = fl->FldD;
 		if ((kf != nullptr) && (f == kf->FldD)) {
 			if (kf->Descend) WrChar('>');
 			if (kf->CompLex) WrChar('~');
@@ -224,23 +235,31 @@ LongStr* GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 	else WrStr("\r\n#PH ");
 
 	if (RO->HeadTxt == nullptr) {
-		WrStr("today,page;\r\n"); WrBlks(19);
-		WrChar(0x11); s = CFile->Name; WrBlks(8 - s.length());
+		WrStr("today,page;\r\n"); 
+		WrBlks(19);
+		WrChar(0x11); 
+		s = CFile->Name; 
+		WrBlks(8 - s.length());
 		SubstChar(s, '_', '-');
 		WrStr(s); WrChar(0x11);
-		WrBlks(14); WrStr("__.__.____");
+		WrBlks(14); 
+		WrStr("__.__.____");
 		RdMsg(17);
 		WrBlks(12 - MsgLine.length());
-		WrStr(MsgLine); WrStr("___");
+		WrStr(MsgLine); 
+		WrStr("___");
 	}
 	else {
-		l = RO->HeadTxt->LL; p = (char*)(&RO->HeadTxt->A);
-		i = 0; first = true;
+		l = RO->HeadTxt->LL; 
+		p = (char*)(&RO->HeadTxt->A);
+		i = 0; 
+		first = true;
 		while (i < l) {
 			if (p[i] == '_') {
 				point = false;
 				while ((i <= l) && (p[i] == '_' || p[i] == '.')) {
-					if (p[i] == '.') point = true; i++;
+					if (p[i] == '.') point = true; 
+					i++;
 				}
 				if (!first) WrChar(','); first = false;
 				if (point) WrStr("today");
@@ -253,33 +272,52 @@ LongStr* GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 	}
 
 	if (ARMode == _AErrRecs) {
-		RdMsg(18); WrStr("\r\n\x17"); WrBlks((38 - MsgLine.length()) / 2);
+		RdMsg(18); 
+		WrStr("\r\n\x17"); 
+		WrBlks((38 - MsgLine.length()) / 2);
 		WrStr(MsgLine); WrChar(0x17);
 	}
 	if (!RO->CondTxt.empty()) {
 		WrStr("\r\n\x17");
 		s = RO->CondTxt;
-		SubstChar(s, '{', '%'); SubstChar(s, '}', '%');
-		SubstChar(s, '_', '-'); SubstChar(s, '@', '*');
-		SubstChar(s, '#', '='); SubstChar(s, '\\', '|');
+		SubstChar(s, '{', '%'); 
+		SubstChar(s, '}', '%');
+		SubstChar(s, '_', '-'); 
+		SubstChar(s, '@', '*');
+		SubstChar(s, '#', '='); 
+		SubstChar(s, '\\', '|');
 		if (s.length() > MaxCol) s[0] = char(MaxCol);
 		WrBlks((MaxColOld - s.length()) / 2);
-		WrStr(s); WrChar(0x17);
+		WrStr(s); 
+		WrChar(0x17);
 	}
 	WrStr("\r\n");
 	if (KpLetter) WrChar(0x05);
-	d = PFldDs; col = 1; while (d != nullptr) {
-		if (d->NxtLine) { WrStr("\r\n"); col = 1; }
-		WrBlks(d->ColTxt - col); s = d->FldD->Name; SubstChar(s, '_', '-'); WrStr(s);
-		col = d->ColTxt + d->FldD->Name.length(); d = d->Chain;
+	d = PFldDs; 
+	col = 1; 
+	while (d != nullptr) {
+		if (d->NxtLine) { 
+			WrStr("\r\n"); 
+			col = 1; 
+		}
+		WrBlks(d->ColTxt - col); 
+		s = d->FldD->Name; 
+		SubstChar(s, '_', '-'); 
+		WrStr(s);
+		col = d->ColTxt + d->FldD->Name.length(); 
+		d = d->Chain;
 	}
 
 	if (KpLetter) WrStr("\r\n#PF;\r\n\x05");
 
 	WrStr("\r\n#DH .notsolo;\r\n");
-	if (ARMode != _ATotal) { WrStr("\r\n#DE "); WrLevel(0); }
+	if (ARMode != _ATotal) { 
+		WrStr("\r\n#DE "); 
+		WrLevel(0); 
+	}
 	for (i = 1; i <= NLevels; i++) {
-		WrStr("\r\n#CF_"); d = PFldDs;
+		WrStr("\r\n#CF_"); 
+		d = PFldDs;
 		while (d != nullptr) {
 			if (d->IsCtrl && (d->Level == i)) WrStr(d->FldD->Name);
 			d = d->Chain;

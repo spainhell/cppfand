@@ -1281,40 +1281,6 @@ bool SEquUpcase(std::string S1, std::string S2)
 	return true;
 }
 
-//WORD LenStyleStr(pstring s)
-//{
-//	WORD l = s.length();
-//	for (WORD i = 1; i <= s.length(); i++) {
-//		if (s[i] == 0x13 || s[i] == 0x17 || s[i] == 0x11 || s[i] == 0x04
-//			|| s[i] == 0x02 || s[i] == 0x05 || s[i] == 0x01)
-//			l--;
-//	}
-//	return l;
-//}
-
-//void WrStyleChar(char C)
-//{
-//	
-//}
-//
-//void WrStyleStr(pstring s, WORD Attr)
-//{
-//	TextAttr = Attr, CStyle = ""; CColor = char(Attr);
-//	for (size_t i = 1; i <= s.length(); i++) {
-//		WrStyleChar(s[i]);
-//	}
-//	TextAttr = Attr;
-//}
-//
-//void WrLongStyleStr(LongStr* S, WORD Attr)
-//{
-//	TextAttr = Attr; CStyle = ""; 
-//	CColor = (char)Attr;
-//	for (size_t i = 0; i < S->LL; i++)	{
-//		WrStyleChar(S->A[i]);
-//	}
-//	TextAttr = Attr;
-//}
 
 WORD LogToAbsLenStyleStr(pstring s, WORD l)
 {
@@ -1328,22 +1294,6 @@ WORD LogToAbsLenStyleStr(pstring s, WORD l)
 	return i - 1;
 }
 
-void CloseXMS()
-{
-	if (XMSCachePages > 0)
-	{
-		// asm mov ah,0AH; mov dx,XMSHandle; call [XMSFun] ;
-	}
-}
-
-void MoveToXMS(WORD NPage, void* Src)
-{
-}
-
-void MoveFromXMS(WORD NPage, void* Dest)
-{
-}
-
 bool CacheExist()
 {
 	return true;
@@ -1355,27 +1305,10 @@ void SetMyHeapEnd()
 	// MyHeapEnd = ptr(PtrRec(CacheEnd).Seg - CachePageSz, PtrRec(CacheEnd).Ofs);
 }
 
-//void NewCachePage(CachePage* ZLast, CachePage* Z)
-//{
-//}
-//
-//void FormatCache()
-//{
-//}
-
 bool WrCPage(FILE* Handle, longint N, void* Buf, WORD ErrH)
 {
 	return true;
 }
-
-//bool WriteCachePage(CachePage* Z, WORD ErrH)
-//{
-//	return true;
-//}
-//
-//void ReadCachePage(CachePage* Z)
-//{
-//}
 
 void LockCache()
 {
@@ -1395,18 +1328,6 @@ bool SaveCache(WORD ErrH, FILE* f)
 void SubstHandle(WORD h1, WORD h2)
 {
 }
-
-//void FreeCachePage(CachePage* Z)
-//{
-//}
-//
-//void ExpandCacheUp()
-//{
-//}
-//
-//void ExpandCacheDown()
-//{
-//}
 
 integer HeapErrFun(WORD Size)
 {
@@ -1649,7 +1570,8 @@ void MyExit()
 	MyDeleteFile(FandWorkXName);
 	MyDeleteFile(FandWorkTName);
 	// TODO? CloseXMS();
-label1: if (WasInitDrivers) {
+label1: 
+	if (WasInitDrivers) {
 	// TODO? DoneMouseEvents();
 	// CrsIntrDone();
 	BreakIntrDone();
