@@ -45,7 +45,6 @@ void MyMove(void* A1, void* A2, WORD N);
 void ChainLast(Chained* Frst, Chained* New); // r13 ASM
 Chained* LastInChain(Chained* Frst); // r18 ASM
 WORD ListLength(void* P); // r22 ASM
-void ReplaceChar(std::string& S, char C1, char C2); // r30 ASM
 bool SEquUpcase(std::string S1, std::string S2);
 //bool SEquUpcase(pstring S1, pstring S2);
 pstring StrPas(const char* Src);

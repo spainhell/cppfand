@@ -50,8 +50,8 @@ void RdKeyList(EdExitD* X);
 //extern Instr* RdPInstr; // toto bude ukazatel na pozdìji pøiøazenou funkci
 //Instr* GetPD(PInstrCode Kind, WORD Size);
 void RdProcCall(Instr** pinstr); // mùže upravit pinstr z hlavní funkce
-FieldList RdFlds();
-FieldList RdSubFldList(FieldList InFL, char Opt);
+FieldListEl* RdFlds();
+FieldListEl* RdSubFldList(FieldList InFL, char Opt);
 Instr_sort* RdSortCall();
 Instr_edit* RdEditCall();
 void RdEditOpt(EditOpt* EO);

@@ -1257,13 +1257,6 @@ longint AbsAdr(void* P)
 	return 0;
 }
 
-void ReplaceChar(std::string& S, char C1, char C2)
-{
-	for (size_t i =0 ; i < S.length(); i++)	{
-		if (S[i] == C1) S[i] = C2;
-	}
-}
-
 bool SEquUpcase(std::string S1, std::string S2)
 {
 	size_t s1_len = S1.length();

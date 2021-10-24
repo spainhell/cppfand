@@ -19,7 +19,7 @@ std::string AddTrailChars(std::string& input, char c, size_t totalLength);
 /// vrati 1 radek; cislo radku zacina 1 .. N, pocet 1 .. N; da se nastavit oddelovac
 std::string GetNthLine(std::string& input, size_t from, size_t count, char delimiter = '\r');
 
-/// vrati seznam casti v retezci po rozdeleni vstupnim znakem
+/// vrati pocet casti v retezci po rozdeleni vstupnim znakem
 size_t CountLines(std::string& input, char delimiter);
 
 /// vytvori ze vstupu formatovany retez o maximalnim poctu zobrazitelnych znaku; vstup prochazi od pozice 'from'
@@ -33,6 +33,8 @@ std::string RepeatString(char input, size_t count);
 
 std::string lowerCaseString(std::string input);
 std::string upperCaseString(std::string input);
+
+size_t ReplaceChar(std::string& text, char oldChar, char newChar);
 
 // old functions:
 unsigned short CountDLines(void* Buf, unsigned short L, char C); // r139 ASM

@@ -183,6 +183,16 @@ std::string upperCaseString(std::string input)
 	return input;
 }
 
+size_t ReplaceChar(std::string& S, char C1, char C2)
+{
+	size_t count = 0;
+	for (size_t i = 0; i < S.length(); i++) {
+		if (S[i] == C1) S[i] = C2;
+		count++;
+	}
+	return count;
+}
+
 // old functions
 unsigned short CountDLines(void* Buf, unsigned short L, char C)
 {

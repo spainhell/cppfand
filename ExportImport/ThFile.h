@@ -24,7 +24,7 @@ public:
 	FileD* FD = nullptr;
 
 	size_t lBuf = BUFFER_SIZE;
-	BYTE Buf[BUFFER_SIZE]{ '\0' };
+	BYTE* Buf = new BYTE[BUFFER_SIZE]{ '\0' };
 	
 	bool eof = false;
 	void ReadBuf();

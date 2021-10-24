@@ -3183,11 +3183,21 @@ label2:
 	LastLen = S->LL;
 	if (EdBreak == 0xffff) C = Event.Pressed.KeyCombination();
 	else C = 0;
+
 	if (C == _AltEqual_) C = _ESC_;
 	else WasUpd = WasUpd || Upd;
+
 	switch (C) {
-	case _AltF3_: { EditHelpOrCat(C, 0, ""); goto label2; }
-	case _U_: { ReleaseStore(S); TxtXY = 0; goto label1; }
+	case __ALT_F3: {
+		EditHelpOrCat(C, 0, "");
+		goto label2;
+		break;
+	}
+	case _U_: {
+		ReleaseStore(S); 
+		TxtXY = 0; 
+		goto label1;
+		break; }
 	}
 	screen.Window(1, 1, TxtCols, TxtRows);
 	if (WasUpd) UpdateEdTFld(S);
@@ -3196,13 +3206,14 @@ label2:
 	if (Ed && !WasUpdated) UnLockRec(E);
 	if (Srch) if (WriteCRec(false, Displ)) goto label31;
 	switch (C) {
-	case _F9_: {
+	case __F9: {
 		if (WriteCRec(false, Displ)) { SaveFiles; UpdCount = 0; }
 		goto label4;
+		break;
 	}
-	case _F1_: { RdMsg(6); heslo = MsgLine; goto label3; }
-	case _CtrlF1_: goto label3;
-	case _ShiftF1_:
+	case __F1: { RdMsg(6); heslo = MsgLine; goto label3; break; }
+	case __CTRL_F1: goto label3; break;
+	case __SHIFT_F1:
 		if (IsCurrChpt() || (CFile == CRdb->HelpFD)) {
 			if ((iStk < maxStk) && WriteCRec(false, Displ) && GetChpt(heslo, i)) {
 				Append = false; iStk++;
@@ -3210,8 +3221,9 @@ label2:
 				SetCRec(i);
 			}
 			TxtXY = 0; goto label4;
+			break;
 		}
-	case _F10_: {
+	case __F10: {
 		if ((iStk > 0) && WriteCRec(false, Displ)) {
 			Append = false;
 			/* !!! with Stk[iStk] do!!! */
@@ -3220,27 +3232,44 @@ label2:
 		}
 		TxtXY = 0;
 		goto label4;
+		break;
 	}
-	case _AltF10_: { Help(nullptr, "", false); goto label4; }
-	case _AltF1_: { heslo = _ShortS(ChptTyp);
+	case __ALT_F10: {
+		Help(nullptr, "", false);
+		goto label4;
+		break; }
+	case __ALT_F1: {
+		heslo = _ShortS(ChptTyp);
 	label3:
 		Help((RdbDPtr)&HelpFD, heslo, false);
 		goto label4;
+		break;
 	}
-	}
+	} // switch end
+
 	if ((C > 0xFF) && WriteCRec(false, Displ)) {
 		Append = false;
-		if (C == _CtrlHome_) { GoPrevNextRec(-1, false); TxtXY = 0; goto label4; }
+		if (C == _CtrlHome_) { 
+			GoPrevNextRec(-1, false); 
+			TxtXY = 0; 
+			goto label4; 
+		}
 		if (C == _CtrlEnd_) {
 		label31:
 			if (!GoPrevNextRec(+1, false) && Srch) {
-				UpdateTxtPos(LastLen); Srch = false;
+				UpdateTxtPos(LastLen); 
+				Srch = false;
 			}
 			TxtXY = 0;
 		label4:
-			if (!Ed || LockRec(false)) goto label1; else goto label5;
+			if (!Ed || LockRec(false)) goto label1; 
+			else goto label5;
 		}
-		WrEStatus(); Brk = 1; Event.Pressed.UpdateKey(C); goto label6;
+		WrEStatus(); 
+		Brk = 1; 
+		Event.Pressed.UpdateKey(C); 
+		goto label6;
+
 	}
 label5:
 	ReleaseStore(p);

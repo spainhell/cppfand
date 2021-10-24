@@ -1642,7 +1642,8 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 	void* p = nullptr; void* p1 = nullptr; void* p2 = nullptr;
 	ExitRecord er; WORD lmsg = 0;
 	LinkD* ld = nullptr;
-	LongStr* RprtTxt = nullptr; bool top = false;
+	std::string RprtTxt; 
+	bool top = false;
 	FileD* lstFD = nullptr;
 	auto result = false;
 
@@ -1745,8 +1746,8 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 				if ((Txt == 0) && IsTestRun) {
 					RprtTxt = SelGenRprt(Name);
 					CFile = Chpt;
-					if (RprtTxt == nullptr) GoCompileErr(I, 1145);
-					LongS_(ChptTxt, RprtTxt);
+					if (RprtTxt.empty()) GoCompileErr(I, 1145);
+					S_(ChptTxt, RprtTxt);
 					WriteRec(CFile, I, CRecPtr);
 				}
 				else {

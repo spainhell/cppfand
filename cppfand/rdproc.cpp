@@ -1389,7 +1389,7 @@ label1:
 	return FLRoot;
 }
 
-FieldList RdSubFldList(FieldList InFL, char Opt)
+FieldListEl* RdSubFldList(FieldList InFL, char Opt)
 {
 	FieldListEl* FLRoot = nullptr;
 	FieldListEl* FL = nullptr;
@@ -1575,7 +1575,7 @@ label2:
 	while (Lexem == ',') {
 		RdLex(); RdRprtOpt(RO, (hasfrst && (FDL->LVRecPtr == nullptr)));
 	}
-	if ((RO->Mode == _ALstg) && ((RO->Ctrl != nullptr) || (RO->Sum != nullptr)))
+	if ((RO->Mode == _ALstg) && ((!RO->Ctrl.empty()) || (RO->Sum != nullptr)))
 		RO->Mode = _ARprt;
 	return PD;
 }
@@ -1611,7 +1611,9 @@ void RdRprtOpt(RprtOpt* RO, bool HasFrst)
 	}
 	else if (IsOpt("CTRL")) {
 		if (!HasFrst) goto label2;
-		RO->Ctrl = RdSubFldList(RO->Flds, 'C');
+		// RO->Ctrl = RdSubFldList(RO->Flds, 'C');
+		auto fldList = RdSubFldList(RO->Flds, 'C');
+		RO->Ctrl.push_back(fldList);
 	}
 	else if (IsOpt("SUM")) {
 		if (!HasFrst) goto label2;
