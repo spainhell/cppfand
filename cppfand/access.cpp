@@ -94,12 +94,42 @@ const longint RecLock = 0x41000000;   // MB160
 
 bool TryLockH(FILE* Handle, longint Pos, WORD Len)
 {
-	return false;
+	OVERLAPPED sOverlapped;
+	sOverlapped.Offset = Pos;
+	sOverlapped.OffsetHigh = 0;
+	auto fSuccess = LockFileEx(Handle, LOCKFILE_EXCLUSIVE_LOCK | LOCKFILE_FAIL_IMMEDIATELY, 0, Len, 0, &sOverlapped);
+
+	if (!fSuccess) {
+		LPVOID lpMsgBuf;
+		LPVOID lpDisplayBuf;
+		DWORD dw = GetLastError();
+
+		FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+			NULL, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR)&lpMsgBuf, 0, NULL);
+
+		return false;
+	}
+	return true;
 }
 
 bool UnLockH(FILE* Handle, longint Pos, WORD Len)
 {
-	return false;
+	OVERLAPPED sOverlapped;
+	sOverlapped.Offset = Pos;
+	sOverlapped.OffsetHigh = 0;
+	auto fSuccess = UnlockFileEx(Handle, 0, Len, 0, &sOverlapped);
+
+	if (!fSuccess) {
+		LPVOID lpMsgBuf;
+		LPVOID lpDisplayBuf;
+		DWORD dw = GetLastError();
+
+		FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+					NULL, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR)&lpMsgBuf, 0, NULL);
+
+		return false;
+	}
+	return true;
 }
 
 void ModeLockBnds(LockMode Mode, longint& Pos, WORD& Len)
