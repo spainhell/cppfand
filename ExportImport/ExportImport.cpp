@@ -6,6 +6,9 @@
 #include "../cppfand/oaccess.h"
 #include "../cppfand/obaseww.h"
 #include "../FileSystem/directory.h"
+#include "../cppfand/compile.h"
+#include "../MergeReport/rdmerg.h"
+#include "../MergeReport/runmerg.h"
 
 
 bool OldToNewCat(longint& FilSz)
@@ -117,22 +120,21 @@ void FileCopy(CopyD* CD)
 	if (CD->Opt1 == CpOption::cpFix || CD->Opt1 == CpOption::cpVar) {
 		//ImportTxt();
 		screen.ScrWrText(1, 1, "ImportTxt()");
-	} 
+	}
 	else if (CD->Opt2 == CpOption::cpFix || CD->Opt2 == CpOption::cpVar) {
 		//ExportTxt();
 		screen.ScrWrText(1, 1, "ExportTxt()");
-	} 
+	}
 	else if (CD->FD1 != nullptr) {
 		if (CD->FD2 != nullptr) {
-			//MakeMerge();
-			screen.ScrWrText(1, 1, "MakeMerge()");
-		} 
+			MakeMerge(CD);
+		}
 		else {
 			//ExportFD();
 			screen.ScrWrText(1, 1, "ExportFD()");
 		}
 	}
-	else if (CD->Opt1 == cpTxt) {
+	else if (CD->Opt1 == CpOption::cpTxt) {
 		//TxtCtrlJ();
 		screen.ScrWrText(1, 1, "TxtCtrlJ()");
 	}
@@ -142,6 +144,28 @@ void FileCopy(CopyD* CD)
 	SaveFiles();
 	RunMsgOff();
 	if (LastExitCode != 0 && !CD->NoCancel) GoExit();
+}
+
+void MakeMerge(CopyD* CD)
+{
+	try {
+		std::string s = "#I1_" + CD->FD1->Name;
+		if (CD->ViewKey != nullptr) {
+			std::string ali = *CD->ViewKey->Alias;
+			if (ali == "") ali = '@';
+			s = s + '/' + ali;
+		}
+		s = s + " #O1_" + CD->FD2->Name;
+		if (CD->Append) s = s + '+';
+
+		SetInpStr(s);
+		ReadMerge();
+		RunMerge();
+		LastExitCode = 0;
+	}
+	catch (std::exception& e) {
+
+	}
 }
 
 

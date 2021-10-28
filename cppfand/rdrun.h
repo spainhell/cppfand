@@ -294,7 +294,7 @@ enum PInstrCode
 	_portout
 };
 
-enum CpOption {cpNo, cpFix, cpVar, cpTxt};
+enum class CpOption {cpNo, cpFix, cpVar, cpTxt};
 
 struct CopyD
 {
