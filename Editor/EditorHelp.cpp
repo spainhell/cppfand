@@ -11,7 +11,7 @@
 
 // ***********HELP**********  // r351
 const BYTE maxStk = 15; WORD iStk = 0;
-struct structStk { RdbDPtr Rdb; FileD* FD; WORD iR, iT; } Stk[maxStk];
+struct structStk { RdbD* Rdb; FileD* FD; WORD iR, iT; } Stk[maxStk];
 void ViewHelpText(LongStr* S, WORD& TxtPos);
 
 void Help(RdbD* R, pstring Name, bool InCWw)

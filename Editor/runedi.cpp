@@ -3241,7 +3241,7 @@ label2:
 	case __ALT_F1: {
 		heslo = _ShortS(ChptTyp);
 	label3:
-		Help((RdbDPtr)&HelpFD, heslo, false);
+		Help((RdbD*)&HelpFD, heslo, false);
 		goto label4;
 		break;
 	}

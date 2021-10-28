@@ -3083,7 +3083,7 @@ label9:
 
 FileD* NextFD(FileD* FD)
 {
-	RdbDPtr r;
+	RdbD* r;
 	if (FD == nullptr) { r = CRdb; FD = r->FD; }
 	else r = FD->ChptPos.R; /*not .RDB*/
 label1:
@@ -3519,7 +3519,7 @@ label1:
 
 void SetCFile(const pstring Name)
 {
-	RdbDPtr r = CRdb;
+	RdbD* r = CRdb;
 	while (r != nullptr) {
 		CFile = r->FD;
 		while (CFile != nullptr) {

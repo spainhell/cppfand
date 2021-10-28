@@ -1661,7 +1661,7 @@ void ForAllFDs(void(*procedure)())
 
 bool IsActiveRdb(FileD* FD)
 {
-	RdbDPtr R = CRdb;
+	RdbD* R = CRdb;
 	while (R != nullptr) {
 		if (FD == R->FD) return true;
 		R = R->ChainBack;

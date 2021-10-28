@@ -1121,7 +1121,7 @@ void CreateOpenChpt(std::string Nm, bool create, wwmix* ww)
 	R->ChainBack = CRdb;
 	R->OldLDRoot = LinkDRoot;
 	R->OldFCRoot = FuncDRoot;
-	MarkStore2(R->Mark2);
+	//MarkStore2(R->Mark2);
 	RdMsg(51);
 	s = MsgLine;
 	RdMsg(48);
@@ -1183,14 +1183,14 @@ void CloseChpt()
 	ClearHelpStkForCRdb();
 	SaveFiles();
 	bool del = Chpt->NRecs == 0;
-	pstring d = CRdb->RdbDir;
+	std::string d = CRdb->RdbDir;
 	CloseFAfter(FileDRoot);
 	LinkDRoot = CRdb->OldLDRoot;
 	FuncDRoot = CRdb->OldFCRoot;
 	void* p = CRdb;
-	void* p2 = CRdb->Mark2;
+	//void* p2 = CRdb->Mark2;
 	CRdb = CRdb->ChainBack;
-	ReleaseBoth(p, p2);
+	//ReleaseBoth(p, p2);
 	if (CRdb != nullptr) {
 		FileDRoot = CRdb->FD;
 		Chpt = FileDRoot;

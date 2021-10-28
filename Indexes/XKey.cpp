@@ -431,9 +431,10 @@ bool XKey::Insert(longint RecNr, bool Try)
 	longint N = 0, XNr = 0; XString x;
 	x.PackKF(KFlds);
 	if (Search(x, true, N)) {
-		if (Try) { return false; }
-		else
-		{
+		if (Try) {
+			return false;
+		}
+		else {
 			XFNotValid();
 			CFileError(822);
 		}
@@ -457,6 +458,7 @@ void XKey::DeleteOnPath()
 		XF()->RdPage(p, page);
 		WORD i = XPath[j].I;
 		if (p->IsLeaf) {
+			// Leaf
 			p->Delete(i);
 		}
 		else if (p2->Underflow()) {
@@ -582,17 +584,23 @@ bool SearchKey(XString& XX, XKey* Key, longint& NN)
 	longint N = NN;
 	if (N == 0) return bResult;
 	KeyFldD* KF = Key->KFlds;
+	
 	do {
-		if (Result == _gt) R = N;
-		else L = N + 1;
+		if (Result == _gt) {
+			R = N;
+		}
+		else {
+			L = N + 1;
+		}
 		N = (L + R) / 2;
 		ReadRec(CFile, N, CRecPtr);
 		x.PackKF(KF);
 		Result = CompStr(x.S, XX.S);
 	} while (!((L >= R) || (Result == _equ)));
+	
 	if ((N == NN) && (Result == _lt)) NN++;
 	else {
-		if (Key->Duplic && (Result == _equ))
+		if (Key->Duplic && (Result == _equ)) {
 			while (N > 1) {
 				N--;
 				ReadRec(CFile, N, CRecPtr);
@@ -600,10 +608,13 @@ bool SearchKey(XString& XX, XKey* Key, longint& NN)
 				if (CompStr(x.S, XX.S) != _equ) {
 					N++;
 					ReadRec(CFile, N, CRecPtr);
-					goto label1;
+					//goto label1;
+					break;
 				}
 			}
-	label1:  NN = N;
+		}
+	//label1:
+		NN = N;
 	}
 	if ((Result == _equ) || Key->Intervaltest && (Result == _gt))
 		bResult = true;
@@ -612,8 +623,7 @@ bool SearchKey(XString& XX, XKey* Key, longint& NN)
 
 longint XNRecs(XKey* K)
 {
-	if ((CFile->Typ == 'X') && (K != nullptr))
-	{
+	if ((CFile->Typ == 'X') && (K != nullptr)) {
 		TestXFExist();
 		return CFile->XF->NRecs;
 	}
@@ -622,20 +632,24 @@ longint XNRecs(XKey* K)
 
 void TryInsertAllIndexes(longint RecNr)
 {
-	void* p = nullptr;
+	//void* p = nullptr;
 	TestXFExist();
-	MarkStore(p);
+	//MarkStore(p);
 	XKey* K = CFile->Keys;
 	while (K != nullptr) {
-		if (!K->Insert(RecNr, true)) goto label1; K = K->Chain;
+		if (!K->Insert(RecNr, true)) {
+			goto label1;
+		}
+		K = K->Chain;
 	}
 	CFile->XF->NRecs++;
 	return;
 label1:
-	ReleaseStore(p);
+	//ReleaseStore(p);
 	XKey* K1 = CFile->Keys;
 	while ((K1 != nullptr) && (K1 != K)) {
-		K1->Delete(RecNr); K1 = K1->Chain;
+		K1->Delete(RecNr); 
+		K1 = K1->Chain;
 	}
 	SetDeletedFlag();
 	WriteRec(CFile, RecNr, CRecPtr);
