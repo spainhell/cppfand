@@ -203,9 +203,9 @@ void GetKeyEvent()
 
 bool KbdTimer(WORD Delta, BYTE Kind)
 {
-	longint EndTime;
+	ULONGLONG EndTime;
 	auto result = false;
-	EndTime = GetTickCount() + Delta;
+	EndTime = GetTickCount64() + Delta;
 	result = false;
 label1:
 	switch (Kind) {          /* 0 - wait, 1 - wait || ESC, 2 - wait || any key */
@@ -218,7 +218,7 @@ label1:
 		break;
 	}
 	}
-	if (GetTickCount() < EndTime) goto label1;
+	if (GetTickCount64() < EndTime) goto label1;
 	result = true;
 	return result;
 }

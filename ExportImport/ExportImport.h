@@ -10,7 +10,7 @@ inline void XEncode(LongStr* S1, LongStr* S2)
 {
 }
 
-void CopyFile(CopyD* CD);
+void FileCopy(CopyD* CD);
 
 inline void Backup(bool IsBackup, bool NoCompress, WORD Ir, bool NoCancel)
 {

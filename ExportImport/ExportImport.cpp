@@ -110,18 +110,31 @@ void MakeCopy(CopyD* CD)
 	//}
 }
 
-void CopyFile(CopyD* CD)
+void FileCopy(CopyD* CD)
 {
 	void* p = nullptr, * p2;
 	LastExitCode = 2;
-	if (CD->Opt1 == cpFix || CD->Opt1 == cpVar) {} //ImportTxt();
-	else if (CD->Opt2 == cpFix || CD->Opt2 == cpVar) {} //ExportTxt();
+	if (CD->Opt1 == CpOption::cpFix || CD->Opt1 == CpOption::cpVar) {
+		//ImportTxt();
+		screen.ScrWrText(1, 1, "ImportTxt()");
+	} 
+	else if (CD->Opt2 == CpOption::cpFix || CD->Opt2 == CpOption::cpVar) {
+		//ExportTxt();
+		screen.ScrWrText(1, 1, "ExportTxt()");
+	} 
 	else if (CD->FD1 != nullptr) {
-		if (CD->FD2 != nullptr) {} //MakeMerge();
-		else {} //ExportFD();
+		if (CD->FD2 != nullptr) {
+			//MakeMerge();
+			screen.ScrWrText(1, 1, "MakeMerge()");
+		} 
+		else {
+			//ExportFD();
+			screen.ScrWrText(1, 1, "ExportFD()");
+		}
 	}
 	else if (CD->Opt1 == cpTxt) {
 		//TxtCtrlJ();
+		screen.ScrWrText(1, 1, "TxtCtrlJ()");
 	}
 	else {
 		MakeCopy(CD);

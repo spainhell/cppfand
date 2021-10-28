@@ -1142,7 +1142,7 @@ void RunInstr(Instr* PD)
 		case _exec: ExecPgm((Instr_exec*)PD); break;
 		case _proc: CallProcedure((Instr_proc*)PD); break;
 		case _call: CallRdbProc((Instr_call*)PD); break;
-		case _copyfile: CopyFile(((Instr_copyfile*)PD)->CD); break;
+		case _copyfile: FileCopy(((Instr_copyfile*)PD)->CD); break;
 		case _headline: HeadLineProc(((Instr_assign*)PD)->Frml); break;
 		case _setkeybuf: SetKeyBufProc(((Instr_assign*)PD)->Frml); break;
 		case _writeln: WritelnProc((Instr_writeln*)PD); break;
