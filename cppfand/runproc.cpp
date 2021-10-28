@@ -1113,10 +1113,22 @@ void RunInstr(Instr* PD)
 			BreakP = false;
 			break;
 		}
-		case _menubox: { MenuBoxProc((Instr_menu*)PD); break; }
-		case _menubar: { MenuBarProc((Instr_menu*)PD); break; }
-		case _forall: ForAllProc((Instr_forall*)PD); break;
-		case _window: WithWindowProc((Instr_window*)PD); break;
+		case _menubox: {
+			MenuBoxProc((Instr_menu*)PD);
+			break;
+		}
+		case _menubar: {
+			MenuBarProc((Instr_menu*)PD);
+			break;
+		}
+		case _forall: {
+			ForAllProc((Instr_forall*)PD);
+			break;
+		}
+		case _window: {
+			WithWindowProc((Instr_window*)PD);
+			break;
+		}
 		case _break: BreakP = true; break;
 		case _exitP: ExitP = true; break;
 		case _cancel: {
@@ -1309,8 +1321,8 @@ void RunInstr(Instr* PD)
 		}
 		}
 		PD = (Instr*)PD->Chain;
-		}
 	}
+}
 
 void RunProcedure(Instr* PDRoot)
 {

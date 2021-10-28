@@ -162,10 +162,10 @@ WORD LogToAbsLenStyleStr(pstring s, WORD l);
 //void WrLongStyleStr(LongStr* S, WORD Attr);
 
 
-void SetMsgPar(pstring s);
-void SetMsgPar(pstring s1, pstring s2);
-void SetMsgPar(pstring s1, pstring s2, pstring s3);
-void SetMsgPar(pstring s1, pstring s2, pstring s3, pstring s4);
+void SetMsgPar(std::string s);
+void SetMsgPar(std::string s1, std::string s2);
+void SetMsgPar(std::string s1, std::string s2, std::string s3);
+void SetMsgPar(std::string s1, std::string s2, std::string s3, std::string s4);
 void RdMsg(integer N);
 void WriteMsg(WORD N);
 void ClearLL(BYTE attr);

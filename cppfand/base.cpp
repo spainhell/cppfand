@@ -71,12 +71,13 @@ std::string MsgPar[4];
 
 WORD OldNumH; // r1 
 void* OldHTPtr = nullptr;
-#ifdef FandDemo
-WORD files = 30;
-#else
-WORD files = 250; // {files in CONFIG.SYS -3}
-#endif
-WORD CardHandles;
+
+//#ifdef FandDemo
+//WORD files = 30;
+//#else
+//WORD files = 250; // {files in CONFIG.SYS -3}
+//#endif
+//WORD CardHandles;
 
 Cache cache;
 //std::map<FILE*, FileCache*> Cache::cacheMap;
@@ -116,24 +117,24 @@ std::set<FILE*> FlshHandles;
 // náhrada za 'WORD OvrHandle = h - 1' - zjištìní pøedchozího otevøeného souboru;
 std::vector<FILE*> vOverHandle;
 
-void SetMsgPar(pstring s)
+void SetMsgPar(std::string s)
 {
 	MsgPar[0] = s;
 }
 
-void SetMsgPar(pstring s1, pstring s2)
+void SetMsgPar(std::string s1, std::string s2)
 {
 	MsgPar[0] = s1;
 	MsgPar[1] = s2;
 }
 
-void SetMsgPar(pstring s1, pstring s2, pstring s3)
+void SetMsgPar(std::string s1, std::string s2, std::string s3)
 {
 	SetMsgPar(s1, s2);
 	MsgPar[2] = s3;
 }
 
-void SetMsgPar(pstring s1, pstring s2, pstring s3, pstring s4)
+void SetMsgPar(std::string s1, std::string s2, std::string s3, std::string s4)
 {
 	SetMsgPar(s1, s2, s3);
 	MsgPar[3] = s4;
@@ -778,7 +779,7 @@ void SetHandle(FILE* H)
 {
 	if (H == nullptr) return;
 	Handles.insert(H);
-	CardHandles++;
+	//CardHandles++;
 }
 
 void SetUpdHandle(FILE* H)
@@ -813,7 +814,7 @@ void ResetHandle(FILE* H)
 {
 	if (H == nullptr) return;
 	Handles.erase(H);
-	CardHandles--;
+	//CardHandles--;
 }
 
 void ResetUpdHandle(FILE* H)
@@ -831,7 +832,7 @@ void ResetFlshHandle(FILE* H)
 void ClearHandles()
 {
 	Handles.clear();
-	CardHandles = 0;
+	//CardHandles = 0;
 }
 
 void ClearUpdHandles()
@@ -875,9 +876,9 @@ FILE* OpenH(FileOpenMode Mode, FileUseMode UM)
 	// pøi 'IsNetCVol' se chová jinak
 	// RdOnly $20, RdShared $40, Shared $42, Exclusive $12
 
-	pstring txt[] = { "Clos", "OpRd", "OpRs", "OpSh", "OpEx" };
+	std::string txt[] = { "Clos", "OpRd", "OpRs", "OpSh", "OpEx" };
 
-	if (CardHandles == files) RunError(884);
+	//if (CardHandles == files) RunError(884);
 	longint w = 0;
 	std::string openFlags;
 label1:

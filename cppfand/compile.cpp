@@ -30,8 +30,6 @@ void Error(integer N)
 {
 	pstring ErrMsg;
 	pstring HdTxt(40);
-	void* p = nullptr;
-	void* p1 = nullptr;
 
 	RdMsg(1000 + N);
 	ErrMsg = MsgLine;
@@ -58,21 +56,22 @@ void Error(integer N)
 		&& StoreAvail() > l + TxtCols * TxtRows * 2 + 50)
 	{
 		bool upd;
-		MarkStore(p1);
+		//MarkStore(p1);
 		longint w = PushW(1, 1, TxtCols, TxtRows);
 		TextAttr = screen.colors.tNorm;
-		p = new BYTE[l]; // GetStore(l);
+		char* p = new char[l]; // GetStore(l);
 		memcpy(p, InpArrPtr, l);
 		if (PrevCompInp != nullptr) RdMsg(63);
 		else RdMsg(61);
 		HdTxt = MsgLine;
 		LongStr LS;
-		LS.A = (char*)p;
+		LS.A = p;
 		LS.LL = l;
 		SimpleEditText('T', ErrMsg, HdTxt, &LS, 0xfff, i, upd);
-		p = LS.A; l = LS.LL;
+		p = LS.A; 
+		l = LS.LL;
 		PopW(w);
-		ReleaseStore(p1);
+		//ReleaseStore(p1);
 	}
 	EdRecKey = ErrMsg;
 	LastExitCode = i + 1;
