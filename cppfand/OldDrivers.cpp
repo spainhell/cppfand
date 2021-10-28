@@ -419,16 +419,17 @@ void ConvKamenLatin(void* Buf, WORD L, bool ToLatin)
 char ToggleCS(char C)
 {
 	char result = 0;
+	BYTE input = (BYTE)C;
 
-	if (C == 0) {
+	if (input == 0) {
 		// null stays null
 	}
-	else if (C > 0 && C < 32) {
+	else if (input > 0 && input < 32) {
 		// non-printable char -> stays same
-		result = C;
+		result = input;
 	}
 	else {
-		result = (char)toggleLatin2[(BYTE)C];
+		result = (char)toggleLatin2[input];
 		if (result == 0) {
 			// substitute not exists -> return input char
 			result = C;
