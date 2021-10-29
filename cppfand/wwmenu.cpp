@@ -629,9 +629,8 @@ bool TMenuBoxP::ExecItem(WORD& I)
 
 std::string TMenuBoxP::GetHlpName()
 {
-	std::string* S = CI(CRoot, iTxt)->HelpName;
-	if (S != nullptr) return *S;
-	return "";
+	std::string helpName = CI(CRoot, iTxt)->HelpName;
+	return helpName;
 }
 
 std::string TMenuBoxP::GetText(integer I)
@@ -869,15 +868,14 @@ bool TMenuBarP::GetDownMenu(TMenuBox** W)
 
 std::string TMenuBarP::GetHlpName()
 {
-	std::string* S = CI(CRoot, iTxt)->HelpName;
-	if (S != nullptr) return *S;
-	else return "";
+	std::string helpName = CI(CRoot, iTxt)->HelpName;
+	return helpName;
 }
 
 std::string TMenuBarP::GetText(integer I)
 {
-	auto tmp = CI(CRoot, I);
-	return tmp->Txt;
+	ChoiceD* choice = CI(CRoot, I);
+	return choice->Txt;
 }
 
 WORD Menu(WORD MsgNr, WORD IStart)

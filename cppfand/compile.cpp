@@ -1117,12 +1117,12 @@ void CFileLikeFD(FileD* FD, WORD MsgNr)
 	RunError(MsgNr);
 }
 
-std::string* RdHelpName()
+std::string RdHelpName()
 {
-	std::string* s;
+	std::string s;
 	if (CRdb->HelpFD == nullptr) Error(132);
 	if (Lexem != _identifier) TestLex(_quotedstr);
-	s = StoreStr(LexWord);
+	s = LexWord;
 	RdLex();
 	return s;
 }

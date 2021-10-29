@@ -92,7 +92,7 @@ void CompileRecLen();
 stSaveState* SaveCompState(); // r104
 void RestoreCompState(stSaveState* p); // 109
 void CFileLikeFD(FileD* FD, WORD MsgNr);
-std::string* RdHelpName(); // r144
+std::string RdHelpName(); // r144
 FrmlPtr RdAttr(); // r152
 void RdW(WRectFrml& W); // r161
 void RdFrame(FrmlElem** Z, BYTE& WFlags); // r166

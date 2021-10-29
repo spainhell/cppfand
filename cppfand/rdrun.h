@@ -320,7 +320,7 @@ struct CopyD
 struct ChoiceD : Chained
 {
 	//ChoiceD* Chain = nullptr;
-	std::string* HelpName = nullptr;
+	std::string HelpName;
 	bool Displ = false, DisplEver = false, Enabled = false, TxtConst = false;
 	FrmlElem* Bool = nullptr;
 	Instr* Instr = nullptr;

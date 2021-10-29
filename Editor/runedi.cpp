@@ -2233,15 +2233,15 @@ void DisplChkErr(ChkD* C)
 		CFile = cf; CRecPtr = cr;
 		if (!b)
 			if (NoShiftF7Msg) goto label1;
-			else F10SpecKey = _ShiftF7_;
+			else F10SpecKey = __SHIFT_F7;
 	}
-	if (C->HelpName != nullptr) {
-		if (F10SpecKey == _ShiftF7_) F10SpecKey = 0xfffe;
-		else F10SpecKey = _F1_;
+	if (!C->HelpName.empty()) {
+		if (F10SpecKey == __SHIFT_F7) F10SpecKey = 0xfffe;
+		else F10SpecKey = __F1;
 	}
 	SetMsgPar(RunShortStr(C->TxtZ));
 	WrLLF10Msg(110);
-	if (Event.Pressed.KeyCombination() == __F1) Help(CFile->ChptPos.R, *C->HelpName, false);
+	if (Event.Pressed.KeyCombination() == __F1) Help(CFile->ChptPos.R, C->HelpName, false);
 	else if (Event.Pressed.KeyCombination() == __SHIFT_F7)
 		label1:
 	UpwEdit(LD);

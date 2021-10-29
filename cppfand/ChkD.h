@@ -11,7 +11,7 @@ public:
 	ChkD(const ChkD& orig);
 	// ChkD* Chain = nullptr;
 	FrmlElem* Bool = nullptr;
-	std::string* HelpName = nullptr;
+	std::string HelpName;
 	FrmlElem* TxtZ = nullptr;
 	bool Warning = false;
 };
