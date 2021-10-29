@@ -2075,13 +2075,16 @@ LongStr* RunS(FrmlElem* Z)
 		s = ww.PassWord(false); break;
 	}
 	case _readkey: {
-		ReadKbd();
-		s[1] = (char)Lo(Event.Pressed.KeyCombination());
-		s[0] = 1;
-		if (s[1] == 0) {
-			/*asm  mov al, KbdChar[1].BYTE; cmp al, 0; jne @1; mov al, 03H; jmp @2;
-			@cmp 1 al, 03H; jne @2; mov al, 84H;
-			@mov 2 s[2].BYTE, al; mov s.BYTE, 2*/
+		WORD keyb = ReadKbd();
+		if (keyb <= 0x00FF) {
+			// it's char
+			s[1] = (char)Lo(keyb);
+			s[0] = 1;
+		}
+		else {
+			s[1] = '\0';
+			s[2] = (char)Lo(keyb);
+			s[0] = 1;
 		}
 		break;
 	}

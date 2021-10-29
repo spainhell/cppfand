@@ -3901,6 +3901,7 @@ WORD ExitKeyProc()
 	EdExitD* X = E->ExD;
 	while (X != nullptr) {
 		if (TestExitKey(c, X)) {
+			ClrEvent();
 			LastTxtPos = -1;
 			if (X->Typ == 'Q') {
 				w = 1;
@@ -3912,7 +3913,6 @@ WORD ExitKeyProc()
 				else w = 2;
 				EdOk = ok;
 			}
-			ClrEvent();
 		}
 		X = (EdExitD*)X->Chain;
 	}

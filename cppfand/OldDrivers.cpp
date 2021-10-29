@@ -188,7 +188,6 @@ void GetKeyEvent()
 {
 	KEY_EVENT_RECORD key;
 	bool exists = false;
-	bool pressed = false;
 
 	do {
 		exists = keyboard.Get(key);
@@ -199,6 +198,29 @@ void GetKeyEvent()
 			return;
 		}
 	} while (exists);
+}
+
+WORD ReadKbd()
+{
+	// KEYBD.PAS r606
+	// v puvodnim kodu cekala, dokud neexistovala udalost Event.What == evKeyDown
+	// dokola volala ClrEvent + GetEvent
+	// pak vratila KeyCode a do KbdChar ulozila take KeyCode
+	// na konci zavolala ClrEvent
+
+	KEY_EVENT_RECORD key;
+	bool exists = false;
+
+	while (true) {
+		exists = keyboard.Get(key);
+		if (exists && key.bKeyDown) {
+			auto pressed = PressedKey(key);
+			return pressed.KeyCombination();
+		}
+		else {
+			Sleep(100);
+		}
+	}
 }
 
 bool KbdTimer(WORD Delta, BYTE Kind)
@@ -500,33 +522,6 @@ bool ESCPressed()
 		ClrEvent();
 	}
 	return false;
-}
-
-WORD ReadKbd()
-{
-	// KEYBD.PAS r606
-	// v puvodnim kodu cekala, dokud neexistovala udalost Event.What == evKeyDown
-	// dokola volala ClrEvent + GetEvent
-	// pak vratila KeyCode a do KbdChar ulozila take KeyCode
-	// na konci zavolala ClrEvent
-
-	KEY_EVENT_RECORD key;
-	//key.uChar.AsciiChar = '\0';
-	bool exists = false;
-	bool pressed = false;
-	WORD code = 0;
-
-	do {
-		exists = keyboard.Get(key);
-		pressed = key.bKeyDown;
-		code = key.wVirtualKeyCode;
-		Sleep(50);
-	} while (!exists || code == 0 || !pressed);
-
-	Event.What = evKeyDown;
-	Event.Pressed.UpdateKey(code);
-	//KbdChar = key.uChar.AsciiChar & 0x00FF; // ceske znaky jsou 0xFFxx;
-	return code;
 }
 
 void Delay(WORD N)
