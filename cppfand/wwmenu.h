@@ -58,7 +58,7 @@ public:
 	void ClearHlp();
 	virtual bool Enabled(WORD I) = 0;
 	virtual bool ExecItem(WORD& I) = 0;
-	bool FindChar();
+	bool FindChar(char c1);
 	virtual std::string GetHlpName() = 0;
 	virtual void GetItemRect(WORD I, TRect* R) = 0;
 	virtual std::string GetText(integer I) = 0;

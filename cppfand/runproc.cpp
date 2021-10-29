@@ -1356,7 +1356,7 @@ void CallProcedure(Instr_proc* PD)
 
 #ifdef _DEBUG
 	std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
-	if (srcCode.find("{SEST}") != std::string::npos) {
+	if (srcCode.find("tisknout sestavy") != std::string::npos) {
 		printf("");
 	}
 #endif

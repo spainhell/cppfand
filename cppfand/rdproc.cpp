@@ -1707,7 +1707,7 @@ Instr* RdCopyFile()
 	}
 	if (!TestFixVar(CD->Opt1, CD->FD1, CD->FD2) && !TestFixVar(CD->Opt2, CD->FD2, CD->FD1))
 	{
-		if ((CD->Opt1 == cpTxt) && (CD->FD2 != nullptr)) OldError(139);
+		if ((CD->Opt1 == CpOption::cpTxt) && (CD->FD2 != nullptr)) OldError(139);
 		noapp = (CD->FD1 == nullptr) ^ (CD->FD2 == nullptr); // XOR
 #ifdef FandSQL
 		if (noapp)
@@ -1722,7 +1722,7 @@ Instr* RdCopyFile()
 			Accept('.');
 			CD->HdF = RdFldName(CD->HdFD);
 			if ((CD->HdF->FrmlTyp != 'S') || !CD->HdFD->IsParFile
-				|| (CD->Opt1 == cpFix || CD->Opt1 == cpVar)
+				|| (CD->Opt1 == CpOption::cpFix || CD->Opt1 == CpOption::cpVar)
 				&& ((CD->HdF->Flg & f_Stored) == 0)) Error(52);
 		}
 		else if (IsOpt("MODE")) {
@@ -1776,9 +1776,9 @@ bool RdX(FileD* FD)
 bool TestFixVar(CpOption Opt, FileD* FD1, FileD* FD2)
 {
 	auto result = false;
-	if ((Opt != cpNo) && (FD1 != nullptr)) OldError(139);
+	if ((Opt != CpOption::cpNo) && (FD1 != nullptr)) OldError(139);
 	result = false;
-	if (Opt == cpFix || Opt == cpVar) {
+	if (Opt == CpOption::cpFix || Opt == CpOption::cpVar) {
 		result = true;
 		if (FD2 == nullptr) OldError(139);
 	}

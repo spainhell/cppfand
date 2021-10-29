@@ -4265,67 +4265,67 @@ label3:
 
 void RunProlog(RdbPos* Pos, std::string* PredName)
 {
-	return; // prolog neumime :-(
+	//return; // prolog neumime :-(
 	
-//	TInstance* q = nullptr; TInstance* q1 = nullptr; TInstance* TopInst = nullptr;
-//	TDbBranch* b1 = nullptr;
-//	WORD w = 0, n = 0; integer i = 0;
-//	LongStr* s = nullptr; char* pt = PackedTermPtr;
-//	char A[MaxPackedPredLen + 1]{ '\0' };
-//	WORD* wp = nullptr;
-//	void* pp = nullptr; void* pp1 = nullptr; void* pp2 = nullptr;
-//	void* pp3 = nullptr; void* pm1 = nullptr; void* pm2 = nullptr;
-//	LongStr* ss = nullptr; longint WMark = 0;
-//	TPredicate* p = nullptr; TPredicate* p1 = nullptr; TPredicate* pofs = nullptr; // absolute p
-//	TCommand* c = nullptr; TCommand* cofs = nullptr; // absolute c
-//	TBranch* b = nullptr; TBranch* bofs = nullptr; // absolute b
-//	TDbBranch* bd = nullptr; // absolute b
-//	TTermList* l = nullptr; TTermList* lofs = nullptr; // absolute l
-//	TDatabase* db = nullptr;
-//	TDatabase* dbofs = nullptr; // absolute db
-//	TTerm* t = nullptr; TProgRoots* Roots = nullptr;
-//	RdbD* ChptLRdb = nullptr;
-//	WORD oldSg = 0; TInstance* oldCurrInst = nullptr;
-//	WORD tl = 0, cl = 0;
-//	ExitRecord er;
-//
-//	ProlgCallLevel++;
-//	//NewExit(Ovr, er); 
-//	//goto label7; 
-//	LastExitCode = 1;
-//	//oldSg = _Sg;
-//	oldCurrInst = CurrInst;
-//	ForAllFDs(SaveLMode);
-//	WMark = MaxWSize;
-//	if (ProlgCallLevel == 1) {
-//		MarkBoth(pm1, pm2);
-//		FreeMemList = nullptr;
-//		Mem1.Init(); Mem2.Init(); Mem3.Init();
-//		TrcLevel = 0;
-//		CallLevel = 0;
-//	}
-//	else {
-//		MarkStore(pp);
-//		pp1 = Mem1.Mark(); pp2 = Mem2.Mark(); pp3 = Mem3.Mark();
-//		tl = TrcLevel;
-//		cl = CallLevel;
-//	}
-//	if (Pos->IRec == 0) {
-//		SetInpLongStr(RunLongStr(FrmlPtr(Pos->R)), true);
-//		//_Sg = ReadProlog(0);
-//		ChptLRdb = CRdb;
-//	}
-//	else {
-//		ChptLRdb = Pos->R;
-//		CFile = ChptLRdb->FD;
-//		CRecPtr = GetRecSpace();
-//		ReadRec(CFile, Pos->IRec, CRecPtr);
-//		AlignLongStr();
-//		//_Sg = PtrRec(HeapPtr).Seg + 1;
-//		ss = _LongS(ChptOldTxt);
-//		if (ChptLRdb->Encrypted) CodingLongStr(ss);
-//	}
-//	//Roots = ptr(_Sg, 0);
+	TInstance* q = nullptr; TInstance* q1 = nullptr; TInstance* TopInst = nullptr;
+	TDbBranch* b1 = nullptr;
+	WORD w = 0, n = 0; integer i = 0;
+	LongStr* s = nullptr; char* pt = PackedTermPtr;
+	char A[MaxPackedPredLen + 1]{ '\0' };
+	WORD* wp = nullptr;
+	void* pp = nullptr; void* pp1 = nullptr; void* pp2 = nullptr;
+	void* pp3 = nullptr; void* pm1 = nullptr; void* pm2 = nullptr;
+	LongStr* ss = nullptr; longint WMark = 0;
+	TPredicate* p = nullptr; TPredicate* p1 = nullptr; TPredicate* pofs = nullptr; // absolute p
+	TCommand* c = nullptr; TCommand* cofs = nullptr; // absolute c
+	TBranch* b = nullptr; TBranch* bofs = nullptr; // absolute b
+	TDbBranch* bd = nullptr; // absolute b
+	TTermList* l = nullptr; TTermList* lofs = nullptr; // absolute l
+	TDatabase* db = nullptr;
+	TDatabase* dbofs = nullptr; // absolute db
+	TTerm* t = nullptr; TProgRoots* Roots = nullptr;
+	RdbD* ChptLRdb = nullptr;
+	WORD oldSg = 0; TInstance* oldCurrInst = nullptr;
+	WORD tl = 0, cl = 0;
+	ExitRecord er;
+
+	ProlgCallLevel++;
+	//NewExit(Ovr, er); 
+	//goto label7; 
+	LastExitCode = 1;
+	//oldSg = _Sg;
+	oldCurrInst = CurrInst;
+	ForAllFDs(SaveLMode);
+	WMark = MaxWSize;
+	if (ProlgCallLevel == 1) {
+		MarkBoth(pm1, pm2);
+		FreeMemList = nullptr;
+		Mem1.Init(); Mem2.Init(); Mem3.Init();
+		TrcLevel = 0;
+		CallLevel = 0;
+	}
+	else {
+		MarkStore(pp);
+		pp1 = Mem1.Mark(); pp2 = Mem2.Mark(); pp3 = Mem3.Mark();
+		tl = TrcLevel;
+		cl = CallLevel;
+	}
+	if (Pos->IRec == 0) {
+		SetInpLongStr(RunLongStr(FrmlPtr(Pos->R)), true);
+		//_Sg = ReadProlog(0);
+		ChptLRdb = CRdb;
+	}
+	else {
+		ChptLRdb = Pos->R;
+		CFile = ChptLRdb->FD;
+		CRecPtr = GetRecSpace();
+		ReadRec(CFile, Pos->IRec, CRecPtr);
+		AlignLongStr();
+		//_Sg = PtrRec(HeapPtr).Seg + 1;
+		ss = _LongS(ChptOldTxt);
+		if (ChptLRdb->Encrypted) CodingLongStr(ss);
+	}
+	//Roots = ptr(_Sg, 0);
 //
 //	db = Roots->Databases;
 //	while (dbofs != nullptr) {

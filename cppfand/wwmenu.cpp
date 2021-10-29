@@ -197,21 +197,23 @@ void TMenu::ClearHlp()
 	if (HlpRdb != nullptr) ClearLL(screen.colors.uNorm);
 }
 
-bool TMenu::FindChar()
+bool TMenu::FindChar(char c1)
 {
-	pstring s(80);
-	WORD i, j, k; char c2;
-	bool result = false; i = iTxt;
-	for (j = 1; j <= nTxt; j++) if (Enabled(j)) {
-		s = GetText(j);
-		if (s.length() > 0) {
-			k = s.first(0x17 /* CTRL+W */);
-			if (k != 0) c2 = s[k + 1];
-			else c2 = s[1];
-			if (toupper(NoDiakr(c2)) == toupper(NoDiakr((char)Event.Pressed.KeyCombination()))) {
-				iTxt = j;
-				WrText(i);
-				return true;
+	bool result = false;
+	WORD i = iTxt;
+	for (size_t j = 1; j <= nTxt; j++) {
+		if (Enabled(j)) {
+			std::string s = GetText(j);
+			if (s.length() > 0) {
+				size_t k = s.find_first_of(0x17); /* CTRL+W */
+				char c2;
+				if (k != std::string::npos) c2 = s[k + 1];
+				else c2 = s[0];
+				if (toupper(NoDiakr(c2)) == toupper(NoDiakr(c1))) {
+					iTxt = j;
+					WrText(i);
+					return true;
+				}
 			}
 		}
 	}
@@ -454,37 +456,61 @@ WORD TMenuBox::Exec(WORD IStart)
 		HandleEvent();
 		i = iTxt;
 		const WORD KbdChar = Event.Pressed.KeyCombination();
+		ClrEvent();
 		switch (KbdChar) {
-		case __ENTER: { goto label2; break; }
-		case __ESC: { i = 0; goto label3; break; }
-		case __UP: { Prev(); WrText(i); break; }
-		case __DOWN: { Next(); WrText(i); break; }
+		case __ENTER: { 
+			i = iTxt;
+			MenuX = Orig.X + 4;
+			MenuY = Orig.Y + i + 2;
+			ClearHlp();
+			if (!ExecItem(i)) {
+				return (j << 8) + i;
+			}
+			break; 
+		}
+		case __ESC: { 
+			i = 0; 
+			ClearHlp();
+			return 0;
+			break; 
+		}
+		case __UP: { 
+			Prev(); 
+			WrText(i); 
+			break; 
+		}
+		case __DOWN: { 
+			Next(); 
+			WrText(i); 
+			break; 
+		}
 		case __LEFT: {
 			if (UnderMenuBar()) {
 				j = 1;
-				goto label4;
+				return (j << 8) + i;
 			}
 			break;
 		}
 		case __RIGHT: {
 			if (UnderMenuBar()) {
 				j = 2;
-				goto label4;
+				return (j << 8) + i;
 			}
 			break;
 		}
 		default: {
-			if (!FindChar()) continue;
-			WrText(iTxt);
-		label2:
-			i = iTxt;
-			MenuX = Orig.X + 4;
-			MenuY = Orig.Y + i + 2;
-		label3:
-			ClearHlp();
-			if (!ExecItem(i)) {
-			label4:
-				return (j << 8) + i;
+			if (Event.Pressed.isChar() && !FindChar(Event.Pressed.Char)) {
+				continue;
+			}
+			else {
+				WrText(iTxt);
+				i = iTxt;
+				MenuX = Orig.X + 4;
+				MenuY = Orig.Y + i + 2;
+				ClearHlp();
+				if (!ExecItem(i)) {
+					return (j << 8) + i;
+				}
 			}
 			break;
 		}
@@ -678,7 +704,7 @@ label1:
 		break;
 	}
 	default: {
-		if (!FindChar()) goto label1;
+		if (Event.Pressed.isChar() && !FindChar(Event.Pressed.Char)) goto label1;
 		enter = true;
 	label2:
 		WrText(iTxt);

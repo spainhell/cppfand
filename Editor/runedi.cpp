@@ -386,11 +386,11 @@ WORD FieldEdit(FieldDescr* F, FrmlElem* Impl, WORD LWw, WORD iPos, std::string& 
 		case evKeyDown: {
 			KbdChar = Event.Pressed.KeyCombination();
 			ClrEvent();
-			if (KbdChar == VK_ESCAPE) {
+			if (KbdChar == __ESC) {
 				screen.CrsHide();
 				return result;
 			}
-			if (KbdChar == _M_) {
+			if (KbdChar == __ENTER) {
 			label11:
 				if ((Txt.length() > 0) && (Txt[0] == AbbrYes)) cc = AbbrYes;
 				else cc = AbbrNo;
