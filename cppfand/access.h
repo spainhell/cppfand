@@ -72,6 +72,7 @@ bool DeletedFlag(); // r771 ASM
 void ClearDeletedFlag(); // r779 ASM
 void SetDeletedFlag(); // r785 ASM
 integer CompStr(pstring& S1, pstring& S2); // r792 ASM
+int CompStr(std::string S1, std::string S2);
 WORD CompLexLongStr(LongStr* S1, LongStr* S2); // r854 ASM
 WORD CompLexLongShortStr(LongStr* S1, pstring& S2); // r863 ASM
 WORD CompLexStr(pstring& S1, pstring& S2); // r871 ASM
