@@ -81,7 +81,7 @@ struct InpD
 	bool Warning = false;
 	FrmlElem4* ErrTxtFrml = nullptr;
 	KeyFldD* SFld = nullptr;                /* only Report */
-	ConstListEl* OldSFlds = nullptr;
+	std::vector<ConstListEl> OldSFlds;
 	LvDescr* FrstLvS = nullptr;
 	LvDescr* LstLvS = nullptr;		/* FrstLvS->Ft=DE */
 	bool IsInplace = false;              /* only Merge */
@@ -366,8 +366,8 @@ public:
 	Instr* Chain = nullptr;
 };
 
-extern ConstListEl* OldMFlds;
-extern ConstListEl* NewMFlds;   /* Merge + Report*/
+extern std::vector<ConstListEl> OldMFlds;
+extern std::vector<ConstListEl> NewMFlds;   /* Merge + Report*/
 extern InpD* IDA[30];
 extern integer MaxIi;
 extern XString OldMXStr;                  /* Merge */

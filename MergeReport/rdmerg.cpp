@@ -316,23 +316,9 @@ void MakeOldMFlds()
 {
 	KeyFldD* M = IDA[1]->MFld;
 	WORD n = 0;
-	OldMFlds = nullptr;
+	OldMFlds.clear();
 	while (M != nullptr) {
-		switch (M->FldD->FrmlTyp)
-		{
-		case 'B': n = 1; break;
-		case 'R': n = sizeof(double); break;
-		default: n = 256; break;
-		}
-		// nahradit nasledujici radek:
-		// ChainLast(OldMFlds, (Chained*)GetStore(sizeof(void*) + n));
-
-		// vytvorime pole BYTE o delce void* + n
-		BYTE* arr = new BYTE[sizeof(void*) + n]{ 0 };
-		// a budeme se tvarit, ze toto pole je typu Chained (na zacatku je ukazatel, takze asi v pohode)
-		if (OldMFlds == nullptr) OldMFlds = (ConstListEl*)arr;
-		else ChainLast(OldMFlds, (Chained*)arr);
-
+		OldMFlds.push_back(ConstListEl());
 		M = (KeyFldD*)M->Chain;
 	}
 }
