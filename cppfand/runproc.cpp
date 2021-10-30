@@ -274,9 +274,10 @@ label2:
 		break;
 	}
 	case WriteType::msgAndHelp: {
-		F10SpecKey = _F1_;
+		F10SpecKey = __F1;
 		goto label3;
-		break; }
+		break;
+	}
 	case WriteType::message: {
 	label3:
 		SetMsgPar(t);
@@ -316,13 +317,13 @@ label1:
 
 void ClrWwProc(Instr_clrww* PD)
 {
-	WRect v; WORD a = 0; pstring s; char c = '\0';
+	WRect v; WORD a = 0; char c = '\0';
 	RunWFrml(PD->W2, 0, v);
 	a = RunWordImpl(PD->Attr2, screen.colors.uNorm);
 	c = ' ';
 	if (PD->FillC != nullptr) {
-		s = RunShortStr(PD->FillC);
-		if (s.length() > 0) c = s[1];
+		std::string s = RunShortStr(PD->FillC);
+		if (s.length() > 0) c = s[0];
 	}
 	screen.ScrClr(v.C1, v.R1, v.C2 - v.C1 + 1, v.R2 - v.R1 + 1, c, a);
 }
@@ -366,7 +367,7 @@ void CallRdbProc(Instr_call* PD)
 	if (!b) GoExit();
 }
 
-void IndexfileProc(FileDPtr FD, bool Compress)
+void IndexfileProc(FileD* FD, bool Compress)
 {
 	FileD* FD2 = nullptr;
 	LockMode md;
