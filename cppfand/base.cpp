@@ -1475,18 +1475,15 @@ bool OSshell(std::string Path, std::string CmdLine, bool NoCancel, bool FreeMm, 
 		return false;
 
 
-	while (fgets(psBuffer, 128, pPipe))
-	{
+	while (fgets(psBuffer, 128, pPipe)) {
 		puts(psBuffer);
 	}
 
-	if (feof(pPipe))
-	{
-		//printf("\nProcess returned %d\n", _pclose(pPipe));
+	if (feof(pPipe)) {
+		LastExitCode = _pclose(pPipe);
 	}
-	else
-	{
-		//printf("Error: Failed to read the pipe to the end.\n");
+	else {
+		LastExitCode = -1;
 	}
 
 	return true;

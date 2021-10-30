@@ -334,7 +334,7 @@ unsigned short PressedKey::KeyCombination()
 	}
 	else {
 		// printable character
-		if (ControlKey == 1) {
+		if (ControlKey == 1 && (Char < 1 || Char > 31)) {
 			// capital char (with Shift)
 			ControlKey = 0;
 		}

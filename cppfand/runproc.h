@@ -1,6 +1,5 @@
 #pragma once
 #include "constants.h"
-#include "pstring.h"
 #include "rdrun.h"
 #include "switches.h"
 #include "models/Instr.h"
@@ -73,5 +72,5 @@ void MemDiagProc();
 
 void RunInstr(Instr* PD);
 void RunProcedure(Instr* PDRoot);
-void CallProcedure(Instr_proc* PD); // TODO: nìjaké ukazatele
+void CallProcedure(Instr_proc* PD);
 void RunMainProc(RdbPos RP, bool NewWw);
