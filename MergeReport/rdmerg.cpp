@@ -160,10 +160,14 @@ label2:
 
 void RdOutpFldName(char& FTyp, FrmlElem** res)
 {
-	if (RD->OD == nullptr /*dummy*/) Error(85);
-	/* !!! with RD->OD^ do!!! */
-	*res = FrmlContxt(MakeFldFrml(RdFldName(RD->OD->FD), FTyp),
-		RD->OD->FD, RD->OD->RecPtr);
+	if (RD->OD == nullptr /*dummy*/) {
+		Error(85);
+	}
+	else {
+		auto rdFldName = RdFldName(RD->OD->FD);
+		auto makeFldFrml = MakeFldFrml(rdFldName, FTyp);
+		*res = FrmlContxt(makeFldFrml, RD->OD->FD, RD->OD->RecPtr);
+	}
 }
 
 void ChainSumElM()

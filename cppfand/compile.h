@@ -73,17 +73,17 @@ FileD* RdFileName(); // r34
 LinkDPtr FindLD(pstring RoleName); // r41
 bool IsRoleName(bool Both, FileD** FD, LinkD** LD); // r49
 FrmlElem* RdFAccess(FileD* FD, LinkD* LD, char& FTyp); // r58
-FrmlPtr TryRdFldFrml(FileD* FD, char& FTyp); // r76
+FrmlElem* TryRdFldFrml(FileD* FD, char& FTyp); // r76
 FrmlElem* RdFldNameFrmlF(char& FTyp); // r111
-FrmlPtr FrmlContxt(FrmlPtr Z, FileD* FD, void* RP); // r68
-FrmlPtr MakeFldFrml(FieldDescr* F, char& FTyp); // r72
+FrmlElem* FrmlContxt(FrmlElem* Z, FileD* FD, void* RP); // r68
+FrmlElem* MakeFldFrml(FieldDescr* F, char& FTyp); // r72
 void TestString(char FTyp);
 void TestReal(char FTyp);
-FrmlPtr RdFrml(char& FTyp);
+FrmlElem* RdFrml(char& FTyp);
 FrmlElem* RdKeyInBool(KeyInD** KIRoot, bool NewMyBP, bool FromRdProc, bool& SQLFilter);
-FrmlPtr RdBool();
-FrmlPtr RdRealFrml();
-FrmlPtr RdStrFrml();
+FrmlElem* RdBool();
+FrmlElem* RdRealFrml();
+FrmlElem* RdStrFrml();
 XKey* RdViewKey(); // r238
 KeyFldD* RdKF(FileD* FD);
 WORD RdKFList(KeyFldD** KFRoot, FileD* FD); // r298
@@ -93,7 +93,7 @@ stSaveState* SaveCompState(); // r104
 void RestoreCompState(stSaveState* p); // 109
 void CFileLikeFD(FileD* FD, WORD MsgNr);
 std::string RdHelpName(); // r144
-FrmlPtr RdAttr(); // r152
+FrmlElem* RdAttr(); // r152
 void RdW(WRectFrml& W); // r161
 void RdFrame(FrmlElem** Z, BYTE& WFlags); // r166
 bool PromptSortKeys(FieldListEl* FL, KeyFldD* SKRoot);
@@ -106,29 +106,3 @@ void RdNegFldList(bool& Neg, FieldListEl** FLRoot); // r214
 void RdNegFldList(bool& Neg, std::vector<FieldDescr*>& vFields);
 void RdNegFldList(bool& Neg, std::vector<FieldDescr*>* vFields);
 void EditModeToFlags(pstring Mode, void* Flgs, bool Err); // r220
-
-// z LEXANAL
-
-//double ValofS(pstring& S); // r251
-//void SrchF(FieldDPtr F);
-//LocVar* RdVarName(LocVarBlkD* LVB, bool IsParList);
-//void SrchZ(FrmlPtr Z);
-//void TestBool(char FTyp);
-//FrmlPtr RdPrim(char& FTyp);
-//bool FindFuncD(FrmlPtr* ZZ);
-//bool IsFun(void* XFun, BYTE N, void* XCode, char& FunCode); // ASM
-//FrmlPtr RdMult(char& FTyp);
-//FrmlPtr RdAdd(char& FTyp);
-//FrmlPtr RdComp(char& FTyp);
-//WORD RdPrecision();
-//WORD RdTilde();
-//void RdInConst(FrmlPtr Z, double& R, pstring* S, char& FTyp);
-//void StoreConst(double& R, pstring* S, char& FTyp);
-//FrmlPtr BOperation(char Typ, char Fun, FrmlPtr Frml);
-//FrmlPtr RdBAnd(char& FTyp);
-//FrmlPtr RdBOr(char& FTyp);
-//FrmlPtr RdFormula(char& FTyp);
-//FrmlPtr MyBPContext(FrmlPtr Z, bool NewMyBP);
-//FrmlList RdFL(bool NewMyBP, FrmlList FL1);
-//LinkDPtr FindOwnLD(FileDPtr FD, const pstring& RoleName); // 77
-

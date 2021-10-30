@@ -499,10 +499,8 @@ WORD TMenuBox::Exec(WORD IStart)
 			break;
 		}
 		default: {
-			if (Event.Pressed.isChar() && !FindChar(Event.Pressed.Char)) {
-				continue;
-			}
-			else {
+			if (Event.Pressed.isChar() && FindChar(Event.Pressed.Char)) {
+				// item char shortcut
 				WrText(iTxt);
 				i = iTxt;
 				MenuX = Orig.X + 4;
@@ -511,6 +509,16 @@ WORD TMenuBox::Exec(WORD IStart)
 				if (!ExecItem(i)) {
 					return (j << 8) + i;
 				}
+			}
+			else {
+				//WrText(iTxt);
+				//i = iTxt;
+				//MenuX = Orig.X + 4;
+				//MenuY = Orig.Y + i + 2;
+				//ClearHlp();
+				//if (!ExecItem(i)) {
+				//	return (j << 8) + i;
+				//}
 			}
 			break;
 		}
