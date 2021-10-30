@@ -128,8 +128,8 @@ label1:
 		RestoreExit(er);
 		if (PrintView && (NLinesOutp == 0) && (LineLenLst == 0)) {
 			RdMsg(159);
-			printf("%s\n", Rprt.c_str());
-			printf("%s%s", Rprt.c_str(), MsgLine.c_str());
+			printf("%s\n", ReportString.c_str());
+			printf("%s%s", ReportString.c_str(), MsgLine.c_str());
 		}
 		Rprt.Close(ReportString.c_str());
 		// if (isLPT1) ClosePrinter(0);

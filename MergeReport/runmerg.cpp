@@ -92,7 +92,7 @@ void SetOldMFlds(KeyFldD* M)
 	ConstListEl* C = nullptr;
 	FieldDescr* F = nullptr;
 	OldMXStr.Clear();
-	*C = *OldMFlds;
+	C = OldMFlds;
 	while (C != nullptr) {
 		F = M->FldD;
 		switch (F->FrmlTyp) {

@@ -19,7 +19,7 @@ OutpFD* OutpFDRoot;
 OutpRD* OutpRDs;
 bool Join;
 bool PrintView;                  /* Report */
-TextFile Rprt;		// pùvodnì text - souvisí s text. souborem
+TextFile Rprt;		// puvodne text - souvisi s text. souborem
 BlkD* RprtHd;
 BlkD* PageHd;
 BlkD* PageFt;

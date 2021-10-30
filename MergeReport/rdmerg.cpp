@@ -314,8 +314,9 @@ label3:
 
 void MakeOldMFlds()
 {
-	KeyFldD* M = nullptr; WORD n = 0;
-	M = IDA[1]->MFld; OldMFlds = nullptr;
+	KeyFldD* M = IDA[1]->MFld;
+	WORD n = 0;
+	OldMFlds = nullptr;
 	while (M != nullptr) {
 		switch (M->FldD->FrmlTyp)
 		{
@@ -343,8 +344,8 @@ void RdAutoSortSK_M(InpD* ID)
 	M = ID->MFld;
 	while (M != nullptr) {
 		SK = new KeyFldD(); // (KeyFldD*)GetStore(sizeof(*SK));
-		Move(M, SK, sizeof(SK));
-		//SK = M;
+		//Move(M, SK, sizeof(SK));
+		*SK = *M;
 		if (ID->SK == nullptr) { ID->SK = SK; SK->Chain = nullptr; }
 		else ChainLast(ID->SK, SK);
 		M = (KeyFldD*)M->Chain;
