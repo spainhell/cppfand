@@ -495,7 +495,7 @@ void RdAutoSortSK(InpD* ID)
 	L = nullptr;
 	as = ID->AutoSort;
 	if (as) {
-		SK = ID->SK;
+		SK = (KeyFldD*)(&ID->SK);
 		M = ID->MFld;
 		while (M != nullptr) {
 			//SK->Chain = (KeyFldD*)GetStore(sizeof(*SK)); 
