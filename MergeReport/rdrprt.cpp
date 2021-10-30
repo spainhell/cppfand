@@ -468,22 +468,15 @@ label1:
 LvDescr* MakeOldMLvD()
 {
 	LvDescr* L1 = nullptr; WORD n = 0;
-	OldMFlds = nullptr; NewMFlds = nullptr;
+	OldMFlds.clear();
+	NewMFlds.clear();
 	//LvDescr* L = (LvDescr*)GetZStore(sizeof(*L)); 
 	LvDescr* L = new LvDescr();
 	LstLvM = L;
 	KeyFldD* M = IDA[1]->MFld;
 	while (M != nullptr) {
-		n = sizeof(void*) + M->FldD->NBytes + 1;
-		//ConstListEl* C = (ConstListEl*)GetStore(n);
-		ConstListEl* C = new ConstListEl();
-		if (OldMFlds == nullptr) OldMFlds = C;
-		else ChainLast(OldMFlds, C);
-		//C = (ConstListEl*)GetStore(n);
-		C = new ConstListEl();
-		if (NewMFlds == nullptr) NewMFlds = C;
-		else ChainLast(NewMFlds, C);
-		//L1 = (LvDescr*)GetZStore(sizeof(*L1));
+		OldMFlds.push_back(ConstListEl());
+		NewMFlds.push_back(ConstListEl());
 		L1 = new LvDescr();
 		L->ChainBack = L1;
 		L1->Chain = L;
@@ -497,12 +490,12 @@ LvDescr* MakeOldMLvD()
 void RdAutoSortSK(InpD* ID)
 {
 	KeyFldD* M = nullptr; KeyFldD* SK = nullptr; LvDescr* L = nullptr;
-	WORD n = 0; ConstListEl* C = nullptr; bool as = false;
+	WORD n = 0; bool as = false;
 	if (Lexem == ';') { RdLex(); RdKFList(&ID->SFld, CFile); }
 	L = nullptr;
 	as = ID->AutoSort;
 	if (as) {
-		SK = (KeyFldD*)(&ID->SK);
+		SK = ID->SK;
 		M = ID->MFld;
 		while (M != nullptr) {
 			//SK->Chain = (KeyFldD*)GetStore(sizeof(*SK)); 
@@ -518,15 +511,10 @@ void RdAutoSortSK(InpD* ID)
 		L = NewLvS(L, ID);
 		L->Fld = M->FldD;
 		n = sizeof(void*) + M->FldD->NBytes + 1;
-		//C = (ConstListEl*)GetStore(n);
-		C = new ConstListEl();
-		if (ID->OldSFlds == nullptr) ID->OldSFlds = C;
-		else ChainLast(ID->OldSFlds, C);
+		ID->OldSFlds.push_back(ConstListEl());
 		if (as) {
-			//SK->Chain = (KeyFldD*)GetStore(sizeof(*SK));
 			SK->Chain = new KeyFldD();
 			SK = (KeyFldD*)SK->Chain;
-			//Move(M, SK, sizeof(*SK));
 			*SK = *M;
 		}
 		M = (KeyFldD*)M->Chain;

@@ -32,7 +32,7 @@ label1:
 		IDA[I]->IRec = IDA[I]->Scan->IRec;
 		ZeroSumFlds(IDA[I]->Sum);
 		if (IDA[I]->Scan->eof) NEof++;
-		if (OldMFlds == nullptr) {
+		if (OldMFlds.empty()) {
 			IDA[I]->Exist = !IDA[I]->Scan->eof;
 			MinIi = 1;
 		}
@@ -89,30 +89,30 @@ WORD CompMFlds(KeyFldD* M)
 
 void SetOldMFlds(KeyFldD* M)
 {
-	ConstListEl* C = nullptr;
+	//ConstListEl* C = nullptr;
 	FieldDescr* F = nullptr;
 	OldMXStr.Clear();
-	C = OldMFlds;
-	while (C != nullptr) {
+	//C = OldMFlds;
+	for (auto& C : OldMFlds) { //while (C != nullptr) {
 		F = M->FldD;
 		switch (F->FrmlTyp) {
 		case 'S': {
-			C->S = _ShortS(F);
-			OldMXStr.StoreStr(C->S, M);
+			C.S = _ShortS(F);
+			OldMXStr.StoreStr(C.S, M);
 			break;
 		}
 		case 'R': {
-			C->R = _R(F);
-			OldMXStr.StoreReal(C->R, M);
+			C.R = _R(F);
+			OldMXStr.StoreReal(C.R, M);
 			break;
 		}
 		default: {
-			C->B = _B(F);
-			OldMXStr.StoreBool(C->B, M);
+			C.B = _B(F);
+			OldMXStr.StoreBool(C.B, M);
 			break;
 		}
 		}
-		C = (ConstListEl*)C->Chain;
+		//C = (ConstListEl*)C->Chain;
 		M = (KeyFldD*)M->Chain;
 	}
 }
@@ -120,17 +120,18 @@ void SetOldMFlds(KeyFldD* M)
 void SetMFlds(KeyFldD* M)
 {
 	FieldDescr* F = nullptr;
-	ConstListEl* C = OldMFlds;
+	std::vector<ConstListEl>::iterator it0 = OldMFlds.begin();
 	while (M != nullptr)
 	{
 		F = M->FldD;
 		switch (F->FrmlTyp) {
-		case 'S': { S_(F, C->S); break; }
-		case 'R': { R_(F, C->R); break; }
-		default: { B_(F, C->B); break; }
+		case 'S': { S_(F, it0->S); break; }
+		case 'R': { R_(F, it0->R); break; }
+		default: { B_(F, it0->B); break; }
 		}
 		M = (KeyFldD*)M->Chain;
-		C = (ConstListEl*)C->Chain;
+		
+		if (it0 != OldMFlds.end()) it0++;
 	}
 }
 

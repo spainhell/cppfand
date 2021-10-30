@@ -783,40 +783,39 @@ void CloseInp()
 	}
 }
 
-WORD CompMFlds(ConstListEl* C, KeyFldD* M, integer& NLv)
+WORD CompMFlds(std::vector<ConstListEl>& C, KeyFldD* M, integer& NLv)
 {
 	integer res = 0; XString x;
 	NLv = 0;
-	while (C != nullptr) {
+	for (auto& c : C) { //while (C != nullptr) {
 		NLv++;
 		x.Clear();
 		x.StoreKF(M);
-		res = CompStr(x.S, C->S);
+		res = CompStr(x.S, c.S);
 		if (res != _equ) { return res; }
-		C = (ConstListEl*)C->Chain;
+		//C = (ConstListEl*)C->Chain;
 		M = (KeyFldD*)M->Chain;
 	}
 	return _equ;
 }
 
-void GetMFlds(ConstListEl* C, KeyFldD* M)
+void GetMFlds(std::vector<ConstListEl>& C, KeyFldD* M)
 {
-	while (C != nullptr) {
-		pstring* s = &C->S;
-		XString* x = (XString*)s;
-		x->Clear();
-		x->StoreKF(M);
-		C = (ConstListEl*)C->Chain;
+	for (auto& c : C) { //while (C != nullptr) {
+		XString x;
+		x.Clear();
+		x.StoreKF(M);
+		c.S = x.S;
+		//C = (ConstListEl*)C->Chain;
 		M = (KeyFldD*)M->Chain;
 	}
 }
 
-void MoveMFlds(ConstListEl* C1, ConstListEl* C2)
+void MoveMFlds(std::vector<ConstListEl>& C1, std::vector<ConstListEl>& C2)
 {
-	while (C2 != nullptr) {
-		C2->S = C1->S;
-		C1 = (ConstListEl*)C1->Chain;
-		C2 = (ConstListEl*)C2->Chain;
+	for (size_t i = 0; i < C2.size(); i++) {
+		// puvodne se kopiroval jen pstring z C1 do C2
+		C2[i] = C1[i];
 	}
 }
 
@@ -866,7 +865,7 @@ void GetMinKey()
 		/* !!! with IDA[i]^ do!!! */
 		CFile = IDA[i]->Scan->FD;
 		if (IDA[i]->Scan->eof) NEof++;
-		if (OldMFlds == nullptr) {
+		if (OldMFlds.empty()) {
 			IDA[i]->Exist = !IDA[i]->Scan->eof;
 			mini = 1;
 		}
@@ -907,16 +906,19 @@ void ZeroCount()
 
 LvDescr* GetDifLevel()
 {
-	ConstListEl* C1 = NewMFlds;
-	ConstListEl* C2 = OldMFlds;
+	//ConstListEl* C1 = NewMFlds;
+	//ConstListEl* C2 = OldMFlds;
 	KeyFldD* M = IDA[1]->MFld;
 	LvDescr* L = LstLvM->ChainBack;
+	size_t vIndex = 0;
 	while (M != nullptr) {
-		if (C1->S != C2->S) {
+		//if (C1->S != C2->S) {
+		if (NewMFlds[vIndex].S != OldMFlds[vIndex].S) {
 			return L;
 		}
-		C1 = (ConstListEl*)C1->Chain;
-		C2 = (ConstListEl*)C2->Chain;
+		//C1 = (ConstListEl*)C1->Chain;
+		//C2 = (ConstListEl*)C2->Chain;
+		vIndex++;
 		M = (KeyFldD*)M->Chain;
 		L = L->ChainBack;
 	}

@@ -10,8 +10,8 @@
 #include "obaseww.h"
 #include "runfrml.h"
 
-ConstListEl* OldMFlds;
-ConstListEl* NewMFlds;   /* Merge + Report*/
+std::vector<ConstListEl> OldMFlds;
+std::vector<ConstListEl> NewMFlds;   /* Merge + Report*/
 InpD* IDA[30];
 integer MaxIi;
 XString OldMXStr;                  /* Merge */
