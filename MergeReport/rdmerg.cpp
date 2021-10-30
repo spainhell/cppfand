@@ -69,7 +69,7 @@ FrmlPtr RdFldNameFrmlM(char& FTyp)
 	if (!WasIiPrefix) if (FindLocVar(&LVBD, &LV)) {
 		RdLex();
 		TestNotSum();
-		result = (FrmlElem*)(&LV->Op);
+		result = new FrmlElem18(_getlocvar, LV);
 		FTyp = LV->FTyp;
 		return result;
 	}
