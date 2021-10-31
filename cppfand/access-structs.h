@@ -114,7 +114,7 @@ struct LinkD // ø. 220
 	FileD* FromFD = nullptr;
 	FileD* ToFD = nullptr;
 	XKey* ToKey = nullptr;
-	pstring RoleName;
+	std::string RoleName;
 };
 typedef LinkD* LinkDPtr;
 

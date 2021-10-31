@@ -525,10 +525,10 @@ void* RdFileD(std::string FileName, char FDTyp, std::string Ext)
 		CFile = new FileD();
 	}
 	//if (InpArrLen == 6261 && CurrPos == 5052)
-	if (FileName == "KATEG")
-	{
-		printf("RdFileD() r. 449\n");
-	}
+	//if (FileName == "KATEG")
+	//{
+	//	printf("RdFileD() r. 449\n");
+	//}
 	CFile->Name = FileName;
 	SetHCatTyp(FDTyp);
 	HasTT = false;

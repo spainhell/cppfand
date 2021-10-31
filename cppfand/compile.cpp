@@ -2591,15 +2591,18 @@ FrmlElem* TryRdFldFrml(FileD* FD, char& FTyp)
 
 FrmlElem* RdFldNameFrmlF(char& FTyp)
 {
-	//if (InpArrLen == 0x02f3) {
-	//	printf("RdFldNameFrmlF() %i\n", CurrPos);
-	//}
+	if (InpArrLen == 3360) {
+		printf("RdFldNameFrmlF() %i\n", CurrPos);
+	}
 	LinkD* ld = nullptr;
 	FileD* fd = nullptr;
 	FrmlElem* z = nullptr;
 
 	if (IsForwPoint()) {
-		if (!IsRoleName(FileVarsAllowed, &fd, &ld)) Error(9);
+		const bool isRoleName = IsRoleName(FileVarsAllowed, &fd, &ld);
+		if (!isRoleName) {
+			Error(9);
+		}
 		RdLex();
 		return RdFAccess(fd, ld, FTyp);
 	}

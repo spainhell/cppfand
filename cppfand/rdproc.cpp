@@ -109,6 +109,7 @@ char RdOwner(LinkD** LLD, LocVar** LLV)
 	auto result = '\0';
 	LinkD* ld = nullptr;
 	LocVar* lv = nullptr;
+	std::string sLexWord;
 	if (FindLocVar(&LVBD, &lv)) {
 		if (!(lv->FTyp == 'i' || lv->FTyp == 'r' || lv->FTyp == 'f')) Error(177);
 		ld = nullptr;
@@ -126,7 +127,8 @@ char RdOwner(LinkD** LLD, LocVar** LLV)
 	TestIdentif();
 	ld = LinkDRoot;
 	while (ld != nullptr) {
-		if ((ld->FromFD == CFile) && EquUpcase(ld->RoleName, LexWord)) {
+		sLexWord = LexWord;
+		if ((ld->FromFD == CFile) && EquUpcase(ld->RoleName, sLexWord)) {
 			if ((ld->IndexRoot == 0)) Error(116);
 			RdLex();
 			fd = ld->ToFD;

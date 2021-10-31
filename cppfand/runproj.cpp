@@ -404,43 +404,44 @@ void OFrml(FrmlPtr Z)
 	//}
 }
 
-FileD* GetFD(void* p, bool WithSelf, WORD Sg)
-{
-	if (p != nullptr) {
-		LexWord = *(pstring*)(p);
-		std::string lw = LexWord;
-		if (WithSelf && EquUpcase(CFile->Name, lw)) p = CFile;
-		else p = FindFileD();
-	}
-	return (FileD*)p;
-}
+//FileD* GetFD(void* p, bool WithSelf, WORD Sg)
+//{
+//	if (p != nullptr) {
+//		LexWord = *(pstring*)(p);
+//		std::string lw = LexWord;
+//		if (WithSelf && EquUpcase(CFile->Name, lw)) p = CFile;
+//		else p = FindFileD();
+//	}
+//	return (FileD*)p;
+//}
 
-FuncD* GetFC(void* p, WORD Sg)
-{
-	FuncD* fc;
-	LexWord = *(pstring*)(p);
-	fc = FuncDRoot; while (fc != nullptr) {
-		if (EquUpcase(fc->Name, LexWord)) goto label1;
-		fc = fc->Chain;
-	}
-label1:
-	return fc;
-}
+//FuncD* GetFC(void* p, WORD Sg)
+//{
+//	FuncD* fc;
+//	LexWord = *(pstring*)(p);
+//	fc = FuncDRoot; while (fc != nullptr) {
+//		if (EquUpcase(fc->Name, LexWord)) goto label1;
+//		fc = fc->Chain;
+//	}
+//label1:
+//	return fc;
+//}
 
-LinkD* GetLinkD(void* P, WORD Sg)
-{
-	LinkD* ld; FileD* fd;
-	LexWord = *(pstring*)(P);
-	fd = (FileD*)FindFileD;
-	ld = LinkDRoot;
-	while (ld != nullptr) {
-		if ((ld->FromFD == fd) && (ld->RoleName == *((pstring*)(WORD(P)))))
-		{
-			return ld;
-		} ld = ld->Chain;
-	}
-	return nullptr;
-}
+//LinkD* GetLinkD(void* P, WORD Sg)
+//{
+//	LinkD* ld; FileD* fd;
+//	LexWord = *(pstring*)(P);
+//	fd = (FileD*)FindFileD;
+//	ld = LinkDRoot;
+//
+//	while (ld != nullptr) {
+//		if ((ld->FromFD == fd) && (ld->RoleName == *((pstring*)(WORD(P)))))
+//		{
+//			return ld;
+//		} ld = ld->Chain;
+//	}
+//	return nullptr;
+//}
 
 void SgFrml(FrmlElem* Z, WORD Sg, WORD SgF)
 {
@@ -688,10 +689,10 @@ FrmlElem* createFrmlElemFromStr(BYTE* str, uintptr_t address, std::map<uintptr_t
 	}
 	else if (Op == _access)
 	{
-		auto frml7 = new FrmlElem7(Op, 0);
-		if (frml7->LD != nullptr) frml7->LD = new LinkD();
-		frml7->File2 = GetFD(frml7->File2, frml7->File2 != nullptr, address); // tady bude adresa segmentu - tedy bez offsetu asi
-		return frml7;
+		//auto frml7 = new FrmlElem7(Op, 0);
+		//if (frml7->LD != nullptr) frml7->LD = new LinkD();
+		//frml7->File2 = GetFD(frml7->File2, frml7->File2 != nullptr, address); // tady bude adresa segmentu - tedy bez offsetu asi
+		//return frml7;
 		// nedopsáno
 	}
 	else if (Op == _userfunc)
