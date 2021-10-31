@@ -2449,13 +2449,20 @@ FileD* RdFileName()
 
 LinkD* FindLD(pstring RoleName)
 {
-	LinkD* L = LinkDRoot;
-	while (L != nullptr) {
-		if ((L->FromFD == CFile) && SEquUpcase(L->RoleName, RoleName)) {
-			return L;
+	FileD* F = CFile;
+
+	// pro soubory 'LIKE' neexistuje zaznam v LinkDRoot, budeme tedy prochazet i predky (OrigFD)
+	while (F != nullptr) {
+		LinkD* L = LinkDRoot;
+		while (L != nullptr) {
+			if ((L->FromFD == F) && SEquUpcase(L->RoleName, RoleName)) {
+				return L;
+			}
+			L = L->Chain;
 		}
-		L = L->Chain;
+		F = F->OrigFD;
 	}
+
 	return nullptr;
 }
 
@@ -2591,9 +2598,9 @@ FrmlElem* TryRdFldFrml(FileD* FD, char& FTyp)
 
 FrmlElem* RdFldNameFrmlF(char& FTyp)
 {
-	if (InpArrLen == 3360) {
-		printf("RdFldNameFrmlF() %i\n", CurrPos);
-	}
+	//if (InpArrLen == 3360) {
+	//	printf("RdFldNameFrmlF() %i\n", CurrPos);
+	//}
 	LinkD* ld = nullptr;
 	FileD* fd = nullptr;
 	FrmlElem* z = nullptr;

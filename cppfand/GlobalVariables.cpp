@@ -7,7 +7,7 @@ WORD randIndex = 0;
 FileD* CFile;
 FieldDescr* CatRdbName, * CatFileName, * CatArchiv, * CatPathName, * CatVolume;
 FileD* FileDRoot; // { only current RDB }
-std::vector<LinkD*> LinkDRoot; // { for all RDBs     }
+LinkD* LinkDRoot; // { for all RDBs     }
 FuncD* FuncDRoot;
 void* CRecPtr;
 XKey* CViewKey;

@@ -21,7 +21,7 @@ void val(pstring s, BYTE& b, WORD& err)
 {
 	size_t sz;
 	b = std::stoul(s.c_str(), &sz, 10);
-	// přeložil se celý řetězec?
+	// prelozil se cely retezec?
 	if (sz == s.length() - 1) {	err = 0; }
 	else { err = static_cast<WORD>(sz); }
 }
@@ -31,7 +31,7 @@ void val(pstring s, WORD& b, WORD& err)
 	if (s.empty()) return;
 	size_t idx;
 	b = std::stoul(s.c_str(), &idx, 10);
-	// přeložil se celý řetězec?
+	// prelozil se cely retezec?
 	if (idx == s.length()) { err = 0; }
 	else { err = static_cast<WORD>(idx); }
 }
@@ -55,10 +55,16 @@ void val(pstring s, integer& b, integer& err)
 void val(pstring s, double& b, integer& err)
 {
 	size_t idx = 0;
-	b = std::stod(s.c_str(), &idx);
-	// přeložil se celý řetězec?
-	if (idx == s.length()) { err = 0; }
-	else { err = static_cast<integer>(idx);	}
+	try {
+		b = std::stod(s.c_str(), &idx);
+		// prelozil se cely retezec?
+		if (idx == s.length()) { err = 0; }
+		else { err = static_cast<integer>(idx); }
+	}
+	catch (std::invalid_argument& e) {
+		b = 0;
+		err = 1;
+	}
 }
 
 void val(pstring s, double& b, WORD& err)
@@ -68,20 +74,32 @@ void val(pstring s, double& b, WORD& err)
 		return;
 	}
 	size_t idx = 0;
-	b = std::stod(s.c_str(), &idx);
-	// přeložil se celý řetězec?
-	if (idx == s.length()) { err = 0; }
-	else { err = static_cast<WORD>(idx); }
+	try {
+		b = std::stod(s.c_str(), &idx);
+		// prelozil se cely retezec?
+		if (idx == s.length()) { err = 0; }
+		else { err = static_cast<WORD>(idx); }
+	}
+	catch (std::invalid_argument& e) {
+		b = 0;
+		err = 1;
+	}
 }
 
 void val(pstring s, longint& b, WORD& err)
 {
 	if (s.length() == 0) { err = 1;	return;	}
 	size_t idx = 0;
-	b = std::stoi(s.c_str(), &idx);
-	// přeložil se celý řetězec?
-	if (idx == s.length()) { err = 0; }
-	else { err = static_cast<WORD>(idx); }
+	try {
+		b = std::stoi(s.c_str(), &idx);
+		// prelozil se cely retezec?
+		if (idx == s.length()) { err = 0; }
+		else { err = static_cast<WORD>(idx); }
+	}
+	catch (std::invalid_argument& e) {
+		b = 0;
+		err = 1;
+	}
 }
 
 double valDouble(std::string& s, integer& err)
@@ -90,11 +108,18 @@ double valDouble(std::string& s, integer& err)
 		err = 0;
 		return 0;
 	}
+	double result = 0;
 	size_t idx = 0;
-	auto result = std::stod(s.c_str(), &idx);
-	// přeložil se celý řetězec?
-	if (idx == s.length()) { err = 0; }
-	else { err = static_cast<WORD>(idx); }
+	try {
+		result = std::stod(s.c_str(), &idx);
+		// prelozil se cely retezec?
+		if (idx == s.length()) { err = 0; }
+		else { err = static_cast<WORD>(idx); }
+	}
+	catch (std::invalid_argument& e) {
+		result = 0;
+		err = 1;
+	}
 	return result;
 }
 
