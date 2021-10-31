@@ -151,7 +151,7 @@ void MakeMerge(CopyD* CD)
 	try {
 		std::string s = "#I1_" + CD->FD1->Name;
 		if (CD->ViewKey != nullptr) {
-			std::string ali = *CD->ViewKey->Alias;
+			std::string ali = CD->ViewKey->Alias;
 			if (ali == "") ali = '@';
 			s = s + '/' + ali;
 		}

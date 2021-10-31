@@ -721,7 +721,10 @@ void RdUDLI()
 void RdAllUDLIs(FileD* FD)
 {
 	RdbD* r = nullptr;
-	if (FD->OrigFD != nullptr) RdAllUDLIs(FD->OrigFD);
+	if (FD->OrigFD != nullptr) {
+		// this FD was created as 'LIKE'
+		RdAllUDLIs(FD->OrigFD);
+	}
 	if (FD->TxtPosUDLI != 0) {
 		ResetCompilePars();
 		SetInpTTxtPos(FD);
@@ -742,8 +745,7 @@ std::string StandardHead()
 		s = E->FD->Name;
 		switch (E->FD->Typ) {
 		case 'X': {
-			std::string* p = E->VK->Alias;
-			if ((p != nullptr) && (!p->empty())) s = s + "/" + *E->VK->Alias;
+			if (!E->VK->Alias.empty()) s = s + "/" + E->VK->Alias;
 			break;
 		}
 		case '0': s += ".RDB"; break;

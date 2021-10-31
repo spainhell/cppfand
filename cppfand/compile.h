@@ -19,7 +19,7 @@ struct stSaveState
 	bool FrstSumVar = false, FileVarsAllowed = false;
 	FrmlElem* (*RdFldNameFrml)(char&) = nullptr; // ukazatel na funkci
 	FrmlElem* (*RdFunction)(char&) = nullptr; // ukazatel na funkci
-	void(*ChainSumEl)(); // {set by user}
+	void(*ChainSumEl)() = nullptr; // {set by user}
 };
 
 // funkce dle COMPILE.PAS
@@ -70,7 +70,7 @@ FieldDescr* FindFldName(FileD* FD, std::string fieldName = ""); // r7
 FieldDescr* RdFldName(FileD* FD); // r17
 FileD* FindFileD(); // r22
 FileD* RdFileName(); // r34
-LinkDPtr FindLD(pstring RoleName); // r41
+LinkD* FindLD(pstring RoleName); // r41
 bool IsRoleName(bool Both, FileD** FD, LinkD** LD); // r49
 FrmlElem* RdFAccess(FileD* FD, LinkD* LD, char& FTyp); // r58
 FrmlElem* TryRdFldFrml(FileD* FD, char& FTyp); // r76

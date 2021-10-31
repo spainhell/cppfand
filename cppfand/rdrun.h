@@ -52,9 +52,9 @@ struct OutpRD : public Chained
 	std::vector<AssignD*> Ass;
 };
 
-struct ConstListEl : public Chained
+struct ConstListEl
 {
-	pstring S = "";
+	std::string S;
 	double R = 0;
 	bool B = false;
 };

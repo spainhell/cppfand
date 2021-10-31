@@ -40,10 +40,16 @@ void val(pstring s, integer& b, integer& err)
 {
 	if (s.empty()) return;
 	size_t idx;
-	b = std::stoul(s.c_str(), &idx, 10);
-	// přeložil se celý řetězec?
-	if (idx == s.length()) { err = 0; }
-	else { err = static_cast<integer>(idx);	}
+	try {
+		b = std::stoi(s.c_str(), &idx, 10);
+		// prelozil se cely retezec?
+		if (idx == s.length()) { err = 0; }
+		else { err = static_cast<integer>(idx); }
+	}
+	catch (std::invalid_argument& e) {
+		b = 0;
+		err = 1;
+	}
 }
 
 void val(pstring s, double& b, integer& err)

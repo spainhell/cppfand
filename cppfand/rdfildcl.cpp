@@ -197,7 +197,10 @@ label1:
 
 void RdChkDsFromPos(FileD* FD, ChkD* C)
 {
-	if (FD->OrigFD != nullptr) RdChkDsFromPos(FD->OrigFD, C);
+	if (FD->OrigFD != nullptr) {
+		// this FD was created as 'LIKE'
+		RdChkDsFromPos(FD->OrigFD, C);
+	}
 	if (FD->ChptPos.R == nullptr) return;
 	if (FD->TxtPosUDLI == 0) return;
 	ResetCompilePars();
@@ -423,7 +426,9 @@ label1:
 
 void FakeRdFDSegment(FileD* FD)
 {
-	if (Lexem != 0x1A) Accept(';');
+	if (Lexem != 0x1A) {
+		Accept(';');
+	}
 	WORD i = FD->ChptPos.IRec;
 	CFile = new FileD(*FD);
 	CFile->OrigFD = FD;
@@ -506,19 +511,17 @@ void* RdFileD(std::string FileName, char FDTyp, std::string Ext)
 		if (!(FDTyp == '6' || FDTyp == 'X') || !(CFile->Typ == '6' || CFile->Typ == 'X')) OldError(106);
 		K = CFile->Keys;
 		while (K != nullptr) {
-			if (!K->Alias->empty()) {
-				s = *K->Alias;
+			if (!K->Alias.empty()) {
+				s = K->Alias;
 				i = s.find('_');
 				if (i != std::string::npos) s = s.substr(i + 1, 255);
 				s = Prefix + "_" + s;
-				K->Alias = StoreStr(s);
+				K->Alias = s;
 			}
 			K = K->Chain;
 		}
 	}
 	else {
-		//AlignLongStr();
-		//GetStore(2);
 		CFile = new FileD();
 	}
 	/*if (InpArrLen == 6261 && CurrPos == 5052)
@@ -528,7 +531,9 @@ void* RdFileD(std::string FileName, char FDTyp, std::string Ext)
 	CFile->Name = FileName;
 	SetHCatTyp(FDTyp);
 	HasTT = false;
-	if ((CFile->OrigFD == nullptr) || !(Lexem == 0x1A || Lexem == '#' || Lexem == ']'))	RdFieldDList(true);
+	if ((CFile->OrigFD == nullptr) || !(Lexem == 0x1A || Lexem == '#' || Lexem == ']')) {
+		RdFieldDList(true);
+	}
 	GetTFileD(FDTyp);
 	LDOld = LinkDRoot;
 
@@ -629,7 +634,7 @@ void RdKeyD()
 			N = 1;
 			while (K1->Chain != nullptr) { K1 = K1->Chain; N++; }
 			K1->Chain = K;
-			K->Alias = StoreStr(Name);
+			K->Alias = Name;
 			K->Intervaltest = false;
 			K->Duplic = false;
 			if (Lexem == _le) {
@@ -737,7 +742,7 @@ void LookForK(pstring* Name, FileD* F)
 	if (SEquUpcase(F->Name, name)) Error(26);
 	K = F->Keys;
 	while (K != nullptr) {
-		if (SEquUpcase(*K->Alias, *Name)) Error(26);
+		if (SEquUpcase(K->Alias, *Name)) Error(26);
 		K = K->Chain;
 	}
 }
@@ -749,7 +754,7 @@ XKey* RdFileOrAlias1(FileD* F)
 	if (!EquUpcase(F->Name, lw))
 		while (k != nullptr) {
 			std::string lw = LexWord;
-			if (EquUpcase(*k->Alias, lw)) goto label1;
+			if (EquUpcase(k->Alias, lw)) goto label1;
 			k = k->Chain;
 		}
 label1:
@@ -822,7 +827,8 @@ void SetLDIndexRoot(LinkD* L, LinkD* L2)
 
 void TestDepend()
 {
-	FrmlElem* ZBool = nullptr; FrmlElem* Z = nullptr;
+	FrmlElem* ZBool = nullptr;
+	FrmlElem* Z = nullptr;
 	FieldDescr* F = nullptr;
 	char FTyp;
 	void* p = nullptr;

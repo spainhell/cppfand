@@ -485,10 +485,10 @@ void RdLex()
 		break;
 	default: break;
 	}
-	//if (LexWord == "CelkemZ")
-	//{
-	//	printf("RdLex() r. 437 - %s\n", LexWord.c_str());
-	//}
+	if (LexWord == "KATEG")
+	{
+		printf("RdLex() r. 437 - %s\n", LexWord.c_str());
+	}
 }
 
 bool IsForwPoint()
@@ -522,7 +522,8 @@ void Accept(char X)
 integer RdInteger()
 {
 	integer I, J;
-	val(LexWord, I, J); if (J != 0) Lexem = 0 /* != _number*/;
+	val(LexWord, I, J);
+	if (J != 0) Lexem = 0 /* != _number*/;
 	Accept(_number);
 	return I;
 }
@@ -805,15 +806,26 @@ KeyFldD* RdKF(FileD* FD)
 {
 	//KF = (KeyFldD*)GetZStore(sizeof(KeyFldD));
 	KeyFldD* KF = new KeyFldD();
-	KeyFldD* result = KF;
-	if (Lexem == _gt) { RdLex(); KF->Descend = true; }
-	if (Lexem == '~') { RdLex(); KF->CompLex = true; }
+	if (Lexem == _gt) {
+		RdLex();
+		KF->Descend = true;
+	}
+	if (Lexem == '~') {
+		RdLex();
+		KF->CompLex = true;
+	}
 	FieldDescr* F = RdFldName(FD);
 	KF->FldD = F;
-	if (F == nullptr) return result;
-	if (F->Typ == 'T') OldError(84);
-	if (KF->CompLex && (F->Typ != 'A')) OldError(94);
-	return result;
+	if (F == nullptr) {
+		return nullptr;
+	}
+	if (F->Typ == 'T') {
+		OldError(84);
+	}
+	if (KF->CompLex && (F->Typ != 'A')) {
+		OldError(94);
+	}
+	return KF;
 }
 
 WORD RdKFList(KeyFldD** KFRoot, FileD* FD)
@@ -822,7 +834,11 @@ WORD RdKFList(KeyFldD** KFRoot, FileD* FD)
 label1:
 	if (*KFRoot == nullptr) *KFRoot = RdKF(FD);
 	else ChainLast(*KFRoot, RdKF(FD));
-	if (Lexem == ',') { RdLex(); goto label1; }
+
+	if (Lexem == ',') {
+		RdLex();
+		goto label1;
+	}
 	n = 0;
 	KF = *KFRoot;   /*looping over all fields, !only the last read*/
 	while (KF != nullptr) {
@@ -1315,7 +1331,7 @@ XKey* RdViewKey()
 	TestIdentif();
 	while (k != nullptr) {
 		std::string lw = LexWord;
-		if (EquUpcase(*k->Alias, lw)) goto label1;
+		if (EquUpcase(k->Alias, lw)) goto label1;
 		k = k->Chain;
 	}
 	s = LexWord;
@@ -1324,7 +1340,7 @@ XKey* RdViewKey()
 	s = CFile->Name + "_" + s;
 	k = CFile->Keys;
 	while (k != nullptr) {
-		std::string kAl = *k->Alias;
+		std::string kAl = k->Alias;
 		if (SEquUpcase(s, kAl)) goto label1;
 		k = k->Chain;
 	}

@@ -18,7 +18,7 @@ public:
 	bool Intervaltest = false, Duplic = false, InWork = false;
 	WORD IndexRoot = 0; BYTE IndexLen = 0;
 	longint NR = 0; // {used only by XWKey}
-	std::string* Alias = nullptr;
+	std::string Alias;
 	XWFile* XF();
 	longint NRecs();
 	bool Search(XString& XX, bool AfterEqu, longint& RecNr);

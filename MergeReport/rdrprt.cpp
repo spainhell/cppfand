@@ -376,13 +376,20 @@ label1:
 		//New(ID->Scan, Init(FD, CViewKey, KI, true));
 		ID->Scan = new XScan(FD, CViewKey, KI, true);
 		if ((FDL != nullptr) && (FDL->LVRecPtr != nullptr)) ID->Scan->ResetLV(FDL->LVRecPtr);
-		if (!(Lexem == ';' || Lexem == '#' || Lexem == 0x1A)) RdKFList(&ID->MFld, FD);
-		if (Ii > 1)
+		if (!(Lexem == ';' || Lexem == '#' || Lexem == 0x1A)) {
+			RdKFList(&ID->MFld, FD);
+		}
+		if (Ii > 1) {
 			if (IDA[Ii - 1]->MFld == nullptr) {
 				if (ID->MFld != nullptr) OldError(22);
 			}
-			else if (ID->MFld == nullptr) CopyPrevMFlds();
-			else CheckMFlds(IDA[Ii - 1]->MFld, ID->MFld);
+			else if (ID->MFld == nullptr) {
+				CopyPrevMFlds();
+			}
+			else {
+				CheckMFlds(IDA[Ii - 1]->MFld, ID->MFld);
+			}
+		}
 		RdAutoSortSK(ID);
 		TestLex('#');
 		if (FDL != nullptr) FDL = FDL->Chain;

@@ -1332,7 +1332,7 @@ bool TestDuplKey(XKey* K)
 
 void DuplKeyMsg(XKey* K)
 {
-	SetMsgPar(*K->Alias);
+	SetMsgPar(K->Alias);
 	WrLLF10Msg(820);
 }
 
@@ -3564,8 +3564,8 @@ void DownEdit()
 			K = GetFromKey(LD);
 			do {
 				s = GetFileViewName(FD, &SL);
-				std::string kali = *K->Alias;
-				if (*K->Alias != "") s = s + '/' + kali;
+				std::string kali = K->Alias;
+				if (!K->Alias.empty()) s = s + "/" + kali;
 				ww.PutSelect(s);
 			} while (SL != nullptr);
 		}
@@ -3576,7 +3576,7 @@ void DownEdit()
 	if (Event.Pressed.KeyCombination() == __ESC) goto label1;
 	GetSel2S(&s1, &s2, '/', 2);
 	LD = LinkDRoot;
-	ali = *GetFromKey(LD)->Alias;
+	ali = GetFromKey(LD)->Alias;
 	while ((LD->ToFD != E->FD) || (LD->IndexRoot == 0) || (s2 != ali)
 		|| !EquFileViewName(LD->FromFD, s1, EO)) LD = LD->Chain;
 	CFile = LD->FromFD;
@@ -3801,8 +3801,8 @@ void SetEdRecNoEtc(longint RNr)
 	EdRecNo = RNr;
 	if (RNr == 0) EdRecNo = GetEdRecNo();
 	if (VK == nullptr) return;
-	if (!WasWK && (VK->Alias != nullptr)) {
-		EdKey = *VK->Alias;
+	if (!WasWK && !VK->Alias.empty()) {
+		EdKey = VK->Alias;
 		if (EdKey == "") EdKey = "@";
 	}
 	if (!IsNewRec) {

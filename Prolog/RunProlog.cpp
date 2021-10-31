@@ -3253,7 +3253,7 @@ bool RunBuildIn()
 				k = fd->Keys;
 				if (k == nullptr) goto label1;
 			}
-			CurrInst->Vars[1] = GetStringTerm(Pound(*k->Alias));
+			CurrInst->Vars[1] = GetStringTerm(Pound(k->Alias));
 			CurrInst->Vars[2] = GetBoolTerm(k->Intervaltest);
 			CurrInst->Vars[3] = GetBoolTerm(k->Duplic);
 			CurrInst->NextBranch = (TBranch*)(k->Chain);
@@ -3285,11 +3285,11 @@ bool RunBuildIn()
 				CurrInst->Vars[1] = GetStringTerm(ld->RoleName);
 				CurrInst->Vars[2] = GetStringTerm(ld->ToFD->Name);
 			}
-			CurrInst->Vars[3] = GetStringTerm(Pound(*ld->ToKey->Alias));
+			CurrInst->Vars[3] = GetStringTerm(Pound(ld->ToKey->Alias));
 			s[0] = 0;
 			k = fd->Keys;
 			while (k != nullptr) {
-				if (k->IndexRoot == ld->IndexRoot) s = *k->Alias;
+				if (k->IndexRoot == ld->IndexRoot) s = k->Alias;
 				k = k->Chain;
 			}
 			CurrInst->Vars[4] = GetStringTerm(Pound(s));
@@ -3310,7 +3310,7 @@ bool RunBuildIn()
 				fd = FindFD(CurrInst->Vars[0]->SS);
 				if (fd == nullptr) goto label1;
 				k = fd->Keys;
-				while ((k != nullptr) && !SEquUpcase(Pound(*k->Alias), CurrInst->Vars[1]->SS)) k = k->Chain;
+				while ((k != nullptr) && !SEquUpcase(Pound(k->Alias), CurrInst->Vars[1]->SS)) k = k->Chain;
 				if (k == nullptr) goto label1; kf = k->KFlds;
 			}
 			CurrInst->Vars[2] = GetStringTerm(kf->FldD->Name);
