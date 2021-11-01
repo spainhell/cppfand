@@ -209,7 +209,7 @@ void WrLevel(std::string& report, int Level)
 std::string GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 {
 	KeyFldD* kf;
-	char* p;
+	//char* p;
 	bool first, point;
 	std::string s;
 
@@ -287,7 +287,7 @@ std::string GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 	if ((ARMode == _ATotal) && (NLevels == 0)) WrStr(report, "\r\n#RH");
 	else WrStr(report, "\r\n#PH ");
 
-	if (RO->HeadTxt == nullptr) {
+	if (RO->HeadTxt.empty()) {
 		WrStr(report, "today,page;\r\n");
 		WrBlks(report, 19);
 		WrChar(report, 0x11);
@@ -304,8 +304,8 @@ std::string GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 		WrStr(report, "___");
 	}
 	else {
-		int l = RO->HeadTxt->LL;
-		p = RO->HeadTxt->A;
+		size_t l = RO->HeadTxt.length();
+		const char* p = RO->HeadTxt.c_str();
 		int i = 0;
 		first = true;
 		while (i < l) {
@@ -456,7 +456,8 @@ std::string SelGenRprt(pstring RprtName)
 	std::string result;
 	r = CRdb;
 	while (r != nullptr) {
-		fd = (FileD*)r->FD->Chain; while (fd != nullptr) {
+		fd = (FileD*)r->FD->Chain;
+		while (fd != nullptr) {
 			s = fd->Name;
 			if (r != CRdb) s = r->FD->Name + '.' + s;
 			ww.PutSelect(s);

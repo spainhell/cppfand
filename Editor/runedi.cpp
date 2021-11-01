@@ -2274,7 +2274,8 @@ bool OldRecDiffers()
 	if (CompArea(CRecPtr, E->OldRecPtr, CFile->RecLen) != _equ) {
 	label1:
 		DelAllDifTFlds(E->NewRecPtr, E->OldRecPtr);
-		Move(CRecPtr, E->NewRecPtr, CFile->RecLen); WasUpdated = false;
+		Move(CRecPtr, E->NewRecPtr, CFile->RecLen);
+		WasUpdated = false;
 		result = true;
 	}
 label2:
@@ -2535,12 +2536,19 @@ void DuplFromPrevRec()
 
 void InsertRecProc(void* RP)
 {
-	GotoRecFld(CRec(), E->FirstFld); IsNewRec = true; LockRec(false);
+	GotoRecFld(CRec(), E->FirstFld);
+	IsNewRec = true;
+	LockRec(false);
 	if (RP != nullptr) Move(RP, CRecPtr, CFile->RecLen);
 	else ZeroAllFlds();
-	DuplOwnerKey(); SetWasUpdated();
-	IVoff(); MoveDispl(E->NRecs - 1, E->NRecs, E->NRecs - IRec);
-	FirstEmptyFld = CFld; DisplRec(IRec); IVon(); NewDisplLL = true;
+	DuplOwnerKey();
+	SetWasUpdated();
+	IVoff();
+	MoveDispl(E->NRecs - 1, E->NRecs, E->NRecs - IRec);
+	FirstEmptyFld = CFld;
+	DisplRec(IRec);
+	IVon();
+	NewDisplLL = true;
 	NewRecExit();
 }
 

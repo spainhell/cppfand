@@ -1605,7 +1605,7 @@ void RdRprtOpt(RprtOpt* RO, bool HasFrst)
 		}
 		RO->FDL.Cond = RdKeyInBool(&RO->FDL.KeyIn, true, true, RO->FDL.SQLFilter);
 		N = OldErrPos - Low;
-		RO->CondTxt = std::string(InpArrPtr[Low], N); // (pstring*)GetStore(N + 1);
+		RO->CondTxt = std::string((const char*)&InpArrPtr[Low], N); // (pstring*)GetStore(N + 1);
 		//Move(&InpArrPtr[Low], &(*RO->CondTxt)[1], N);
 		//(*RO->CondTxt)[0] = N;
 	label1:

@@ -977,7 +977,7 @@ LongStr* GetHlpText(RdbD* R, std::string S, bool ByName, WORD& IRec)
 label1:
 	md = NewLMode(RdMode);
 	if (CFile->Handle == nullptr) goto label5;
-	CRecPtr = new BYTE[CFile->RecLen + 2];
+	CRecPtr = new BYTE[CFile->RecLen + 2]{ '\0' };
 	NmF = CFile->FldD.front();
 	TxtF = (FieldDescr*)NmF->Chain;
 	if (!ByName) {

@@ -114,7 +114,7 @@ struct RprtOpt
 	FrmlElem* WidthFrml = nullptr, *Head = nullptr;
 	WORD Width = 0;
 	std::string CondTxt;
-	LongStr* HeadTxt = nullptr;
+	std::string HeadTxt;
 	char Style = '\0';
 	bool Edit = false, PrintCtrl = false;
 };

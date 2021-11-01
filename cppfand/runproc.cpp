@@ -68,9 +68,12 @@ void UserHeadLine(std::string UserHeader)
 
 void ReportProc(RprtOpt* RO, bool save)
 {
-	void* p = nullptr; void* p2 = nullptr;
-	char md = '\0'; longint w = 0; ExitRecord er;
-	MarkBoth(p, p2);
+	//void* p = nullptr;
+	//void* p2 = nullptr;
+	char md = '\0';
+	longint w = 0;
+	//ExitRecord er;
+	//MarkBoth(p, p2);
 	PrintView = false;
 	/* !!! with RO^ do!!! */
 	if (RO->Flds == nullptr) {
@@ -81,21 +84,23 @@ void ReportProc(RprtOpt* RO, bool save)
 			//goto label1;
 			ReadReport(RO);
 			LastExitCode = 0;
-		label1:
-			RestoreExit(er);
+		//label1:
+			//RestoreExit(er);
 			IsCompileErr = false;
-			goto label2;
+			//goto label2;
+			return;
 		}
 		ReadReport(RO);
 		RunReport(RO);
 	}
 	else {
 		if (RO->WidthFrml != nullptr) RO->Width = RunInt(RO->WidthFrml);
-		if (RO->Head != nullptr) RO->HeadTxt = RunLongStr(RO->Head);
+		if (RO->Head != nullptr) RO->HeadTxt = RunStdStr(RO->Head);
 		if (RO->UserSelFlds) PromptAutoRprt(RO);
 		else RunAutoReport(RO);
 	}
-	if (RO->Edit) md = 'T'; else md = 'V';
+	if (RO->Edit) md = 'T';
+	else md = 'V';
 	if (save) SaveFiles();
 	if (PrintView) {
 		w = PushW(1, 1, TxtCols, TxtRows);
@@ -104,8 +109,8 @@ void ReportProc(RprtOpt* RO, bool save)
 		EditTxtFile(nullptr, md, errMessage, nullptr, 0, 0, nullptr, 0, "", 0, nullptr);
 		PopW(w);
 	}
-label2:
-	ReleaseBoth(p, p2);
+//label2:
+	//ReleaseBoth(p, p2);
 }
 
 void PromptAutoRprt(RprtOpt* RO)

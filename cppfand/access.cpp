@@ -1263,7 +1263,7 @@ void DelTFlds()
 
 void CopyRecWithT(void* p1, void* p2)
 {
-	memcpy(p2, p1, CFile->RecLen);
+	memcpy(p2, p1, CFile->RecLen + 2);
 	for (auto& F : CFile->FldD) {
 		if ((F->Typ == 'T') && ((F->Flg & f_Stored) != 0)) {
 			TFile* tf1 = CFile->TF;
@@ -1512,7 +1512,8 @@ void SetTWorkFlag()
 bool HasTWorkFlag()
 {
 	BYTE* p = (BYTE*)CRecPtr;
-	return p[CFile->RecLen] == 1;
+	const bool workFlag = p[CFile->RecLen] == 1;
+	return workFlag;
 }
 
 void SetUpdFlag()
