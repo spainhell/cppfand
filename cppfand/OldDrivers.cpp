@@ -584,7 +584,8 @@ void ScrBeep()
 
 WORD WaitEvent(WORD Delta)
 {
-	longint t = 0, t1 = 0, pos = 0, l = 555;
+	ULONGLONG t = 0;
+	longint t1 = 0, pos = 0, l = 555;
 	BYTE Flgs = 0;
 	WORD x = 0, y = 0;
 	bool vis = false, ce = false;
@@ -593,21 +594,21 @@ WORD WaitEvent(WORD Delta)
 
 	Flgs = KbdFlgs;
 label0:
-	pos = 0; t = GetTickCount();
+	pos = 0; t = GetTickCount64();
 label1:
 	if (Event.What == 0) { GetMouseKeyEvent(); }
 	if (Event.What == 0) { GetKeyEvent(); }
 	if (Event.What != 0) { result = 0; goto label2; }
 	if (Flgs != KbdFlgs) { result = 1; goto label2; }
-	if ((Delta != 0) && (GetTickCount() > t + Delta)) { result = 2; goto label2; }
+	if ((Delta != 0) && (GetTickCount64() > t + Delta)) { result = 2; goto label2; }
 	if (pos != 0)
 	{
-		if (GetTickCount() > t1 + MoveDelay)
+		if (GetTickCount64() > t1 + MoveDelay)
 		{
 			screen.ScrWrStr(x, y, "       ", 7);
 			x = Random(TxtCols - 8); y = Random(TxtRows - 1);
 			screen.ScrWrStr(x, y, "PC FAND", 7);
-			t1 = GetTickCount();
+			t1 = GetTickCount64();
 		}
 	}
 	else

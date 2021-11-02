@@ -182,7 +182,7 @@ label1:
 				d = spec.NetDelay;
 				SetCPathVol();
 				SetMsgPar(CPath, LockModeTxt[Mode]);
-				longint w1 = PushWrLLMsg(825, Kind = 1);
+				longint w1 = PushWrLLMsg(825, Kind == 1);
 				if (w == 0) w = w1;
 				else TWork.Delete(w1);
 				LockBeep();
@@ -414,7 +414,7 @@ label1:
 		if (Kind != 2) {   /*0 Kind-wait, 1-wait until ESC, 2-no wait*/
 			m = 826;
 			if (N == 0) { SetCPathVol(); SetMsgPar(CPath, XTxt); m = 825; }
-			w1 = PushWrLLMsg(m, Kind = 1);
+			w1 = PushWrLLMsg(m, Kind == 1);
 			if (w == 0) w = w1;
 			else TWork.Delete(w1);
 			/*beep; don't disturb*/
@@ -868,7 +868,7 @@ pstring _ShortS(FieldDescr* F)
 		WORD l = F->L;
 		S[0] = l;
 		switch (F->Typ) {
-		case 'A':		// znakovy retezec max. 255 znaku
+		case 'A':   	// znakovy retezec max. 255 znaku
 		case 'N': {		// ciselny retezec max. 79 znaku
 			if (F->Typ == 'A') {
 				Move(source, &S[1], l);
@@ -901,7 +901,8 @@ pstring _ShortS(FieldDescr* F)
 			ReleaseStore(ss);
 			break;
 		}
-		default:;
+		default:
+			break;
 		}
 		return S;
 	}
@@ -1362,7 +1363,7 @@ int CompStr(std::string& S1, std::string& S2)
 	for (size_t i = 0; i < cmpLen; i++) {
 		if (S1[i] == S2[i]) { continue; }
 		else {
-			if (S1[i] < S2[i]) return 2; // _lt
+			if ((BYTE)S1[i] < (BYTE)S2[i]) return 2; // _lt
 			else return 4; // _gt
 		}
 	}

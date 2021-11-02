@@ -68,7 +68,7 @@ void Error(integer N)
 		LS.A = p;
 		LS.LL = l;
 		SimpleEditText('T', ErrMsg, HdTxt, &LS, 0xfff, i, upd);
-		p = LS.A; 
+		p = LS.A;
 		l = LS.LL;
 		PopW(w);
 		//ReleaseStore(p1);
@@ -352,10 +352,17 @@ label1:
 			n = 1;
 		label2:
 			switch (ForwChar) {
-			case '{': n++; // TODO: /*^Error z(11);*/
+			case '{': {
+				n++; // TODO: /*^Error z(11);*/
+				[[fallthrough]];
+			}
 			case '}': {
 				n--;
-				if (n == 0) { ReadChar(); goto label1; break; }
+				if (n == 0) {
+					ReadChar();
+					goto label1;
+				}
+				break;
 			}
 			default: break;
 			}
@@ -2416,7 +2423,7 @@ FileD* FindFileD()
 	FileD* FD = nullptr;
 	RdbD* R = nullptr;
 	LocVar* LV = nullptr;
-	if (FDLocVarAllowed && FindLocVar(&LVBD, &LV) && (LV->FTyp == 'f'))	{
+	if (FDLocVarAllowed && FindLocVar(&LVBD, &LV) && (LV->FTyp == 'f')) {
 		return LV->FD;
 	}
 	R = CRdb;
