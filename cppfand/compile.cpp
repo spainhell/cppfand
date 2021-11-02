@@ -2244,18 +2244,18 @@ WORD RdPrecision()
 	return n;
 }
 
-FrmlElem* MyBPContext(FrmlElem* Z, bool NewMyBP)
-{
-	FrmlElem* Z1;
-	if (NewMyBP) {
-		Z1 = new FrmlElem0(_setmybp, 0); // GetOp(_setmybp, 0);
-		((FrmlElem0*)Z1)->P1 = Z;
-		Z = Z1;
-	}
-	return Z;
-}
+//FrmlElem* MyBPContext(FrmlElem* Z, bool NewMyBP)
+//{
+//	FrmlElem* Z1;
+//	if (NewMyBP) {
+//		Z1 = new FrmlElem0(_setmybp, 0); // GetOp(_setmybp, 0);
+//		((FrmlElem0*)Z1)->P1 = Z;
+//		Z = Z1;
+//	}
+//	return Z;
+//}
 
-FrmlList RdFL(bool NewMyBP, FrmlList FL1)
+FrmlListEl* RdFL(bool NewMyBP, FrmlList FL1)
 {
 	char FTyp = '\0';
 	KeyFldD* KF = CViewKey->KFlds;
@@ -2269,7 +2269,7 @@ label1:
 	FrmlList FL = new FrmlListEl(); // (FrmlListEl*)GetStore(sizeof(*FL));
 	if (FLRoot == nullptr) FLRoot = FL;
 	else ChainLast(FLRoot, FL);
-	FL->Frml = MyBPContext(RdFrml(FTyp), NewMyBP);
+	FL->Frml = RdFrml(FTyp); // MyBPContext(RdFrml(FTyp), NewMyBP);
 	if (FTyp != KF->FldD->FrmlTyp) OldError(12);
 	KF = (KeyFldD*)KF->Chain;
 	if (b) {
@@ -2326,19 +2326,19 @@ FrmlElem* RdKeyInBool(KeyInD** KIRoot, bool NewMyBP, bool FromRdProc, bool& SQLF
 			TestBool(FTyp);
 			if (Z->Op == _eval) ((FrmlElem21*)Z)->EvalFD = CFile;
 		}
-		result = MyBPContext(Z, NewMyBP && (Z->Op != _eval));
+		result = Z; // MyBPContext(Z, NewMyBP && (Z->Op != _eval));
 	}
 	if (FromRdProc) FileVarsAllowed = FVA;
 	return result;
 }
 
-FrmlPtr RdFrml(char& FTyp)
+FrmlElem* RdFrml(char& FTyp)
 {
 	FrmlSumEl = nullptr;
 	return RdFormula(FTyp);
 }
 
-FrmlPtr RdBool()
+FrmlElem* RdBool()
 {
 	char FTyp = 0;
 	FrmlSumEl = nullptr;

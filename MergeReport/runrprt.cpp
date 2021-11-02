@@ -791,7 +791,8 @@ WORD CompMFlds(std::vector<ConstListEl>& C, KeyFldD* M, integer& NLv)
 		NLv++;
 		x.Clear();
 		x.StoreKF(M);
-		res = CompStr(x.S, c.S);
+		std::string s = x.S;
+		res = CompStr(s, c.S);
 		if (res != _equ) { return res; }
 		//C = (ConstListEl*)C->Chain;
 		M = (KeyFldD*)M->Chain;

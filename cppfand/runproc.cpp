@@ -84,8 +84,8 @@ void ReportProc(RprtOpt* RO, bool save)
 			//goto label1;
 			ReadReport(RO);
 			LastExitCode = 0;
-		//label1:
-			//RestoreExit(er);
+			//label1:
+				//RestoreExit(er);
 			IsCompileErr = false;
 			//goto label2;
 			return;
@@ -109,8 +109,8 @@ void ReportProc(RprtOpt* RO, bool save)
 		EditTxtFile(nullptr, md, errMessage, nullptr, 0, 0, nullptr, 0, "", 0, nullptr);
 		PopW(w);
 	}
-//label2:
-	//ReleaseBoth(p, p2);
+	//label2:
+		//ReleaseBoth(p, p2);
 }
 
 void PromptAutoRprt(RprtOpt* RO)
@@ -1142,7 +1142,11 @@ void RunInstr(Instr* PD)
 			break;
 		}
 		case _save: SaveFiles(); break;
-		case _clrscr: { TextAttr = ProcAttr; ClrScr(); break; }
+		case _clrscr: {
+			TextAttr = ProcAttr;
+			ClrScr();
+			break;
+		}
 		case _clrww: ClrWwProc((Instr_clrww*)PD); break;
 		case _clreol: { TextAttr = ProcAttr; ClrEol(); break; }
 		case _exec: ExecPgm((Instr_exec*)PD); break;
@@ -1327,8 +1331,8 @@ void RunInstr(Instr* PD)
 		}
 		}
 		PD = (Instr*)PD->Chain;
+		}
 	}
-}
 
 void RunProcedure(Instr* PDRoot)
 {

@@ -594,7 +594,8 @@ bool RunBool(FrmlElem* X)
 			cmpRes = CompLexStrings(TrailChar(s1, ' '), TrailChar(s2, ' '));
 		}
 		else {
-			cmpRes = CompLexStrings(s1, s2);
+			//cmpRes = CompLexStrings(s1, s2);
+			cmpRes = CompStr(s1, s2);
 		}
 		result = (cmpRes & iX0->N21) != 0;
 		break;

@@ -1601,7 +1601,7 @@ void RdRprtOpt(RprtOpt* RO, bool HasFrst)
 			Low = CurrPos;
 			RdLex();
 			br = true;
-			if (Lexem == '?') { RdLex(); RO->UserCondQuest = true; goto label1; };
+			if (Lexem == '?') { RdLex(); RO->UserCondQuest = true; goto label1; }
 		}
 		RO->FDL.Cond = RdKeyInBool(&RO->FDL.KeyIn, true, true, RO->FDL.SQLFilter);
 		N = OldErrPos - Low;
@@ -2777,11 +2777,11 @@ label1:
 			// z->B = false;
 		}
 	}
-	if (z != nullptr) {
-		FrmlPtr z1 = z;
-		z = new FrmlElem0(_setmybp, 0); // GetOp(_setmybp, 0);
-		((FrmlElem0*)z)->P1 = z1;
-	}
+	//if (z != nullptr) {
+	//	FrmlPtr z1 = z;
+	//	z = new FrmlElem0(_setmybp, 0); // GetOp(_setmybp, 0);
+	//	((FrmlElem0*)z)->P1 = z1;
+	//}
 label2:
 	auto result = z;
 	CFile = cf; CRecPtr = cr;

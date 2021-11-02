@@ -1351,18 +1351,12 @@ void SetDeletedFlag()
 
 integer CompStr(pstring& S1, pstring& S2)
 {
-	BYTE cmpLen = min(S1.length(), S2.length());
-	for (BYTE i = 1; i <= cmpLen; i++) {
-		if (S1[i] == S2[i]) { continue; }
-		else {
-			if (S1[i] < S2[i]) return 2; // _lt
-			else return 4; // _gt
-		}
-	}
-	return 1; // _equ
+	std::string s1 = S1;
+	std::string s2 = S2;
+	return CompStr(s1, s2);
 }
 
-int CompStr(std::string S1, std::string S2) 
+int CompStr(std::string& S1, std::string& S2) 
 {
 	size_t cmpLen = min(S1.length(), S2.length());
 	for (size_t i = 0; i < cmpLen; i++) {
@@ -1372,7 +1366,9 @@ int CompStr(std::string S1, std::string S2)
 			else return 4; // _gt
 		}
 	}
-	return 1; // _equ
+	if (S1.length() < S2.length()) return _lt;
+	if (S1.length() > S2.length()) return _gt;
+	return _equ;
 }
 
 WORD CmpLxStr(char* p1, WORD len1, char* p2, WORD len2)
