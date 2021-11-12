@@ -381,24 +381,6 @@ void CloseGraph()
 	return;
 }
 
-//double Random()
-//{
-//	//srand(time(0));
-//	double randnr = rand();
-//	while (randnr >= 1)
-//	{
-//		randnr = randnr / 10;
-//	}
-//	return randnr;
-//}
-//
-//WORD Random(WORD rozsah)
-//{
-//	//srand(time(0));
-//	int randnr = rand();
-//	return randnr % rozsah;
-//}
-
 WORD ParamCount()
 {
 	return (WORD)paramstr.size();

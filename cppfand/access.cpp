@@ -1264,7 +1264,7 @@ void DelTFlds()
 
 void CopyRecWithT(void* p1, void* p2)
 {
-	memcpy(p2, p1, CFile->RecLen + 2);
+	memcpy(p2, p1, CFile->RecLen);
 	for (auto& F : CFile->FldD) {
 		if ((F->Typ == 'T') && ((F->Flg & f_Stored) != 0)) {
 			TFile* tf1 = CFile->TF;
@@ -1277,10 +1277,14 @@ void CopyRecWithT(void* p1, void* p2)
 				ReleaseStore(s);
 			}
 			else {
-				if (HasTWorkFlag()) tf1 = &TWork;
+				if (HasTWorkFlag()) {
+					tf1 = &TWork;
+				}
 				longint pos = _T(F);
 				CRecPtr = p2;
-				if (HasTWorkFlag()) tf2 = &TWork;
+				if (HasTWorkFlag()) {
+					tf2 = &TWork;
+				}
 				pos = CopyTFString(tf2, CFile, tf1, pos);
 				T_(F, pos);
 			}

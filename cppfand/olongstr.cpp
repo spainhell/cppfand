@@ -137,6 +137,9 @@ label4:
 
 longint CopyTFString(TFile* TF, FileD* FD2, TFile* TF2, longint Pos2)
 {
+	//if (TF == TF2) {
+	//	throw std::exception("CopyTFString() exception: Source and destination file is same.");
+	//}
 	FileD* cf = nullptr;
 	WORD l = 0; integer rest = 0; bool isLongTxt = false, frst = false;
 	longint pos = 0, nxtpos = 0; LockMode md, md2;
