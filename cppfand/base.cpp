@@ -244,7 +244,7 @@ label1:
 			if (s[i] == '$') i++;
 		}
 	}
-	
+
 }
 
 void WriteMsg(WORD N)
@@ -936,7 +936,7 @@ label1:
 
 	Logging* log = Logging::getInstance();
 	log->log(loglevel::DEBUG, "opening file  0x%p '%s', error %i", nFile, CPath.c_str(), HandleError);
-	
+
 	// pridani FILE* do vektoru kvuli 'WORD OvrHandle = h - 1;'
 	vOverHandle.push_back(nFile);
 #ifdef _DEBUG
@@ -1020,13 +1020,13 @@ void CloseH(FILE** handle)
 	// uzavre soubor
 	auto res = fclose(*handle);
 	WORD HandleError = res;
-	log->log(loglevel::DEBUG, "closing file 0x%p '%s', error %i", 
+	log->log(loglevel::DEBUG, "closing file 0x%p '%s', error %i",
 		*handle, fileForClose == nullptr ? "nullptr" : fileForClose->Name.c_str(), res);
 
 	if (res != 0) {
 		throw std::exception("Cannot close file!");
 	}
-	
+
 #ifdef _DEBUG
 	// oznaci za uzavreny ve filesMap
 	for (auto& f : filesMap)
@@ -1097,7 +1097,7 @@ WORD GetFileAttr()
 void RdWrCache(bool ReadOp, FILE* Handle, bool NotCached, longint Pos, WORD N, void* Buf)
 {
 	Logging* log = Logging::getInstance();
-	
+
 	bool Cached = !NotCached;
 	integer PgeIdx = 0, PgeRest = 0; WORD err = 0; longint PgeNo = 0;
 	//CachePage* Z = nullptr;
@@ -1115,6 +1115,11 @@ void RdWrCache(bool ReadOp, FILE* Handle, bool NotCached, longint Pos, WORD N, v
 		FileCache* c1 = cache.GetCache(Handle);
 		c1->Save(Pos, N, (unsigned char*)Buf);
 		return;
+	}
+
+	// writing to the file -> Set Update Flag
+	if (!ReadOp) {
+		SetUpdHandle(Handle);
 	}
 
 	if (Cached) {
@@ -1464,7 +1469,7 @@ void RestoreExit(ExitRecord& Buf)
 bool OSshell(std::string Path, std::string CmdLine, bool NoCancel, bool FreeMm, bool LdFont, bool TextMd)
 {
 	Logging* log = Logging::getInstance();
-	
+
 	char psBuffer[128];
 	FILE* pPipe;
 
@@ -1561,27 +1566,27 @@ void MyExit()
 	MyDeleteFile(FandWorkXName);
 	MyDeleteFile(FandWorkTName);
 	// TODO? CloseXMS();
-label1: 
+label1:
 	if (WasInitDrivers) {
-	// TODO? DoneMouseEvents();
-	// CrsIntrDone();
-	BreakIntrDone();
-	if (IsGraphMode) {
-		CloseGraph();
-		IsGraphMode = false;
-		// TODO? ScrSeg = video.Address;
-		/*asm  push bp; mov ah,0fH; int 10H; cmp al,StartMode; je @1;
-			 mov ah,0; mov al,StartMode; int 10H;
-		@1:  pop bp end; */
-		screen.Window(1, 1, TxtCols, TxtRows);
-		TextAttr = StartAttr;
-		ClrScr();
-		screen.CrsNorm();
-		ChDir(OldDir);
-		SetCurrPrinter(-1);
+		// TODO? DoneMouseEvents();
+		// CrsIntrDone();
+		BreakIntrDone();
+		if (IsGraphMode) {
+			CloseGraph();
+			IsGraphMode = false;
+			// TODO? ScrSeg = video.Address;
+			/*asm  push bp; mov ah,0fH; int 10H; cmp al,StartMode; je @1;
+				 mov ah,0; mov al,StartMode; int 10H;
+			@1:  pop bp end; */
+			screen.Window(1, 1, TxtCols, TxtRows);
+			TextAttr = StartAttr;
+			ClrScr();
+			screen.CrsNorm();
+			ChDir(OldDir);
+			SetCurrPrinter(-1);
+		}
+		if (ExitCode == 202) Halt(202);
 	}
-	if (ExitCode == 202) Halt(202);
-}
 }
 
 void OpenResFile()

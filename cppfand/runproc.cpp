@@ -944,14 +944,18 @@ void PutTxt(Instr_puttxt* PD)
 	FrmlElem* z = nullptr; pstring pth;
 	z = PD->Txt;
 
-	//const bool canCopyT = CanCopyT(nullptr, z);
+	FileD* TFD02;
+	TFile* TF02;
+	longint TF02Pos;
+
 	// TODO: this causes problem, file is never saved
-	const bool canCopyT = false;
+ 	// const bool canCopyT = false;
+	const bool canCopyT = CanCopyT(nullptr, z, &TF02, &TFD02, TF02Pos);
 
 	if (canCopyT) {
 		h = OpenHForPutTxt(PD);
 		pth = CPath;
-		CopyTFStringToH(h);
+		CopyTFStringToH(h, TF02, TFD02, TF02Pos);
 		CPath = pth;
 	}
 	else {

@@ -5,5 +5,5 @@ class TFile;
 
 LongStr* GetTxt(FrmlPtr Z);
 longint CopyTFFromGetTxt(TFile* TF, FrmlElem* Z);
-longint CopyTFString(TFile* TF, FileD* FD2, TFile* TF2, longint Pos2);
-void CopyTFStringToH(FILE* h);
+longint CopyTFString(TFile* destT00File, FileD* srcFileDescr, TFile* scrT00File, longint srcT00Pos);
+void CopyTFStringToH(FILE* h, TFile* TF02, FileD* TFD02, longint& TF02Pos);

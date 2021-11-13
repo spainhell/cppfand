@@ -135,56 +135,61 @@ label4:
 	return result;
 }
 
-longint CopyTFString(TFile* TF, FileD* FD2, TFile* TF2, longint Pos2)
+longint CopyTFString(TFile* destT00File, FileD* srcFileDescr, TFile* scrT00File, longint srcT00Pos)
 {
-	//if (TF == TF2) {
+	//if (destT00File == scrT00File) {
 	//	throw std::exception("CopyTFString() exception: Source and destination file is same.");
 	//}
 	FileD* cf = nullptr;
-	WORD l = 0; integer rest = 0; bool isLongTxt = false, frst = false;
-	longint pos = 0, nxtpos = 0; LockMode md, md2;
+	WORD l = 0;
+	integer rest = 0;
+	bool isLongTxt = false, frst = false;
+	longint pos = 0, nxtpos = 0;
+	LockMode md, md2;
 	BYTE X[MPageSize + 1]{ 0 };
 	WORD* ll = (WORD*)X;
 	longint result = 0;
 
-	if (Pos2 == 0) {
+	if (srcT00Pos == 0) {
 	label0:
 		return 0; /*Mark****/
 	}
 	cf = CFile;
-	if (!TF->IsWork) md = NewLMode(WrMode);
-	CFile = FD2;
-	if (!TF2->IsWork) md2 = NewLMode(RdMode);
-	RdWrCache(true, TF2->Handle, TF2->NotCached(), Pos2, 2, &l);
+	if (!destT00File->IsWork) md = NewLMode(WrMode);
+	CFile = srcFileDescr;
+	if (!scrT00File->IsWork) md2 = NewLMode(RdMode);
+	RdWrCache(true, scrT00File->Handle, scrT00File->NotCached(), srcT00Pos, 2, &l);
 	if (l <= MPageSize - 2) { /* short text */
 		if (l == 0) goto label0; /*Mark****/
-		RdWrCache(true, TF2->Handle, TF2->NotCached(), Pos2 + 2, l, X);
+		RdWrCache(true, scrT00File->Handle, scrT00File->NotCached(), srcT00Pos + 2, l, X);
 		CFile = cf;
-		rest = MPageSize - TF->FreePart % MPageSize;
-		if (l + 2 <= rest) pos = TF->FreePart;
+		rest = MPageSize - destT00File->FreePart % MPageSize;
+		if (l + 2 <= rest) pos = destT00File->FreePart;
 		else {
-			pos = TF->NewPage(false);
-			TF->FreePart = pos;
+			pos = destT00File->NewPage(false);
+			destT00File->FreePart = pos;
 			rest = MPageSize;
 		}
-		if (l + 4 >= rest) TF->FreePart = TF->NewPage(false);
+		if (l + 4 >= rest) destT00File->FreePart = destT00File->NewPage(false);
 		else {
-			TF->FreePart += l + 2;
+			destT00File->FreePart += l + 2;
 			rest = l + 4 - rest;
-			RdWrCache(false, TF->Handle, TF->NotCached(), TF->FreePart, 2, &rest);
+			RdWrCache(false, destT00File->Handle, destT00File->NotCached(), destT00File->FreePart, 2, &rest);
 		}
-		RdWrCache(false, TF->Handle, TF->NotCached(), pos, 2, &l);
-		RdWrCache(false, TF->Handle, TF->NotCached(), pos + 2, l, X);
+		RdWrCache(false, destT00File->Handle, destT00File->NotCached(), pos, 2, &l);
+		RdWrCache(false, destT00File->Handle, destT00File->NotCached(), pos + 2, l, X);
 		result = pos;
 		goto label4;
 	}
-	if ((Pos2 % MPageSize) != 0) goto label2;
-	RdWrCache(true, TF2->Handle, TF2->NotCached(), Pos2, MPageSize, X);
+	if ((srcT00Pos % MPageSize) != 0) {
+		goto label2;
+	}
+	RdWrCache(true, scrT00File->Handle, scrT00File->NotCached(), srcT00Pos, MPageSize, X);
 	frst = true;
 label1:
 	if (l > MaxLStrLen + 1) {
 	label2:
-		TF2->Err(889, false);
+		scrT00File->Err(889, false);
 		result = 0;
 		goto label4;
 	}
@@ -194,23 +199,23 @@ label1:
 label3:
 	CFile = cf;
 	if (frst) {
-		pos = TF->NewPage(false);
+		pos = destT00File->NewPage(false);
 		result = pos;
 		frst = false;
 	}
 	if ((l > MPageSize) || isLongTxt) {
-		Pos2 = *(longint*)&X[MPageSize - 4];
-		nxtpos = TF->NewPage(false);
+		srcT00Pos = *(longint*)&X[MPageSize - 4];
+		nxtpos = destT00File->NewPage(false);
 		*(longint*)&X[MPageSize - 4] = nxtpos;
-		RdWrCache(false, TF->Handle, TF->NotCached(), pos, MPageSize, X);
+		RdWrCache(false, destT00File->Handle, destT00File->NotCached(), pos, MPageSize, X);
 		pos = nxtpos;
-		CFile = FD2;
-		if ((Pos2 < MPageSize) || (Pos2 + MPageSize > TF2->MLen) || (Pos2 % MPageSize != 0)) {
-			TF2->Err(888, false);
+		CFile = srcFileDescr;
+		if ((srcT00Pos < MPageSize) || (srcT00Pos + MPageSize > scrT00File->MLen) || (srcT00Pos % MPageSize != 0)) {
+			scrT00File->Err(888, false);
 			result = 0;
 			goto label4;
 		}
-		RdWrCache(true, TF2->Handle, TF2->NotCached(), Pos2, MPageSize, X);
+		RdWrCache(true, scrT00File->Handle, scrT00File->NotCached(), srcT00Pos, MPageSize, X);
 		if ((l <= MPageSize)) {
 			l = *ll;
 			goto label1;
@@ -218,16 +223,16 @@ label3:
 		l -= MPageSize - 4;
 		goto label3;
 	}
-	RdWrCache(false, TF->Handle, TF->NotCached(), pos, MPageSize, X);
+	RdWrCache(false, destT00File->Handle, destT00File->NotCached(), pos, MPageSize, X);
 label4:
-	CFile = FD2;
-	if (!TF2->IsWork) OldLMode(md2);
+	CFile = srcFileDescr;
+	if (!scrT00File->IsWork) OldLMode(md2);
 	CFile = cf;
-	if (!TF->IsWork) OldLMode(md);
+	if (!destT00File->IsWork) OldLMode(md);
 	return result;
 }
 
-void CopyTFStringToH(FILE* h)
+void CopyTFStringToH(FILE* h, TFile* TF02, FileD* TFD02, longint& TF02Pos)
 {
 	FileD* cf = nullptr; TFilePtr tf = nullptr;
 	WORD i = 0, l = 0, n = 0; bool isLongTxt = false; longint pos = 0;

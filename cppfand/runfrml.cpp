@@ -18,9 +18,9 @@
 #include "../Editor/runedi.h"
 #include "../textfunc/textfunc.h"
 
-FileDPtr TFD02;
-TFile* TF02;
-longint TF02Pos; // r33
+//FileDPtr TFD02;
+//TFile* TF02;
+//longint TF02Pos; // r33
 
 double Owned(FrmlPtr Bool, FrmlPtr Sum, LinkDPtr LD)
 {
@@ -555,18 +555,17 @@ bool RunBool(FrmlElem* X)
 	}
 	case _instr: {
 		auto iX0 = (FrmlElemIn*)X;
-		S = RunLongStr(iX0->P1);
+		std::string s = RunStdStr(iX0->P1);
 		switch (iX0->param1)
 		{
 		case 0:
-			result = InStr(S, iX0); break;
+			result = InStr(s, iX0); break;
 		case 1:
 			// '~' lexikalni porovnani
-			result = LexInStr(S, iX0); break;
+			result = LexInStr(s, iX0); break;
 		default:
 			throw std::exception("_instr iX0->param1 for value %i not implemented.", iX0->param1);
 		}
-		ReleaseStore(S);
 		break;
 	}
 	case _inreal: {
@@ -748,95 +747,49 @@ bool InReal(FrmlElemIn* frml)
 
 }
 
-bool LexInStr(LongStr* S, FrmlElemIn* X)
-{
-	std::string s = std::string(S->A, S->LL);
 
+bool LexInStr(std::string& S, FrmlElemIn* X)
+{
+	S = TrailChar(S, ' ');
 	for (auto& pat : X->strings) {
-		WORD res = CompLexStrings(pat, s);
+		const int res = CompLexStrings(pat, S);
 		if (res == _equ) return true;
 	}
 
-	for (auto& ran : X->strings_range) {
+	for (const auto& ran : X->strings_range) {
 		auto s1 = ran.first;
 		auto s2 = ran.second;
-		WORD res1 = CompLexStrings(s1, s);
-		WORD res2 = CompLexStrings(s2, s);
+		const int res1 = CompLexStrings(s1, S);
+		const int res2 = CompLexStrings(s2, S);
 		if (res1 == _equ || res2 == _equ) return true;
 		if (res1 == _lt && res2 == _gt) return true;
 	}
 	return false;
-
-
-	//	WORD* LOffs = (WORD*)L; pstring* Cs = (pstring*)L; integer I, N;
-	//	auto result = true;
-	//label1:
-	//	N = *L;
-	//	*LOffs += 1;
-	//	if (N == 0) { result = false; return result; }
-	//	if (N == 0xFF) {
-	//		if (CompLexLongShortStr(S, *Cs) == _lt) {
-	//			*LOffs += *L + 1; *LOffs += *L + 1;
-	//		}
-	//		else {
-	//			*LOffs += *L + 1;
-	//			if (CompLexLongShortStr(S, *Cs) != _gt) return result;
-	//			*LOffs += *L + 1;
-	//		}
-	//	}
-	//	else {
-	//		for (I = 1; I < N; I++) {
-	//			if (CompLexLongShortStr(S, *Cs) == _equ) return result;
-	//			else *LOffs += *L + 1;
-	//		}
-	//	}
-	//	goto label1;
 }
 
 bool InStr(LongStr* S, FrmlElemIn* X)
 {
 	std::string s = std::string(S->A, S->LL);
+	return InStr(s, X);
+}
 
+bool InStr(std::string& S, FrmlElemIn* X)
+{
 	for (auto& pat : X->strings) {
-		if (s == pat) return true;
+		if (S == pat) return true;
 	}
 
-	for (auto& ran : X->strings_range) {
+	for (const auto& ran : X->strings_range) {
 		bool success = false;
-		pstring s1 = ran.first;
-		pstring s2 = ran.second;
-		WORD res1 = CompLongShortStr(S, &s1);
-		WORD res2 = CompLongShortStr(S, &s2);
+		std::string s1 = ran.first;
+		std::string s2 = ran.second;
+		const int res1 = CompStr(S, s1);
+		const int res2 = CompStr(S, s2);
 		if (res1 == _equ || res2 == _equ) return true;
 		if (res1 == _gt && res2 == _lt) return true;
 	}
 
 	return false;
-
-	//	WORD* LOffs = (WORD*)L; 
-	//	pstring* Cs = (pstring*)L; 
-	//	integer I, N;
-	//
-	//	auto result = true;
-	//label1:
-	//	N = *L;
-	//	*LOffs++;
-	//	if (N == 0) { result = false; return result; }
-	//	if (N == 0xFF) {
-	//		if (CompLongShortStr(S, Cs) == _lt) {
-	//			*LOffs += *L + 1; *LOffs += *L + 1;
-	//		}
-	//		else {
-	//			*LOffs += *L + 1;
-	//			if (CompLongShortStr(S, Cs) != _gt) return result; *LOffs += *L + 1;
-	//		}
-	//	}
-	//	else {
-	//		for (I = 1; I <= N; I++)
-	//			if (CompLongShortStr(S, Cs) == _equ) return result;
-	//			else *LOffs += *L + 1;
-	//	}
-	//	goto label1;
 }
 
 bool RunModulo(FrmlElem1* X)
@@ -1155,78 +1108,102 @@ longint RunInt(FrmlPtr X)
 	return trunc(rr);
 }
 
-void TestTFrml(FieldDescr* F, FrmlElem* Z)
+void TestTFrml(FieldDescr* F, FrmlElem* Z, TFile** TF02, FileD** TFD02, longint& TF02Pos)
 {
-	FileDPtr cf = nullptr; void* p = nullptr;
-	longint n; LockMode md; FieldDPtr f1 = nullptr;
+	FileD* cf = nullptr;
+	void* p = nullptr;
+	longint n; LockMode md;
+	FieldDescr* f1 = nullptr;
 	switch (Z->Op) {
 	case _newfile: {
 		auto iZ = (FrmlElem8*)Z;
-		CFile = iZ->NewFile; CRecPtr = iZ->NewRP; TestTFrml(F, iZ->Frml);
+		CFile = iZ->NewFile;
+		CRecPtr = iZ->NewRP;
+		TestTFrml(F, iZ->Frml, TF02, TFD02, TF02Pos);
 		break;
 	}
 	case _field: {
 		auto iZ = (FrmlElem7*)Z;
 		f1 = iZ->Field;
 		if ((f1->Typ != 'T') || ((f1->Flg & f_Stored) == 0)) return;
-		if (F == nullptr) { if ((f1->Flg & f_Encryp) != 0) return; }
+		if (F == nullptr) {
+			if ((f1->Flg & f_Encryp) != 0) return;
+		}
 		else if ((F->Flg & f_Encryp) != (f1->Flg & f_Encryp)) return;
-		TFD02 = CFile; TF02 = CFile->TF;
-		if (HasTWorkFlag()) TF02 = &TWork;
+		*TFD02 = CFile;
+		*TF02 = CFile->TF;
+		if (HasTWorkFlag()) {
+			*TF02 = &TWork;
+		}
 		TF02Pos = _T(f1);
 		break;
 	}
 	case _getlocvar: {
 		if ((F != nullptr) && ((F->Flg & f_Encryp) != 0)) return;
-		TFD02 = CFile; TF02 = &TWork;
-		//TF02Pos = *(longint*)(MyBP + ((FrmlElem18*)Z)->BPOfs);
+		*TFD02 = CFile;
+		*TF02 = &TWork;
 		TF02Pos = (longint)((FrmlElem18*)Z)->locvar->R;
 		break;
 	}
 	case _access: {
 		auto iZ = (FrmlElem7*)Z;
-		cf = CFile; MarkStore(p); CFile = iZ->File2;
+		cf = CFile;
+		MarkStore(p);
+		CFile = iZ->File2;
 		md = NewLMode(RdMode);
-		if (iZ->LD != nullptr) { CFile = cf; LinkUpw(iZ->LD, n, true); }
-		else LinkLastRec(iZ->File2, n, true);
-		TestTFrml(F, iZ->P011);
-		CFile = iZ->File2; OldLMode(md); ReleaseStore(p);
+		if (iZ->LD != nullptr) {
+			CFile = cf;
+			LinkUpw(iZ->LD, n, true);
+		}
+		else {
+			LinkLastRec(iZ->File2, n, true);
+		}
+		TestTFrml(F, iZ->P011, TF02, TFD02, TF02Pos);
+		CFile = iZ->File2;
+		OldLMode(md);
+		ReleaseStore(p);
 		break;
 	}
 	case _recvarfld: {
 		auto iZ = (FrmlElem7*)Z;
-		CFile = iZ->File2; CRecPtr = iZ->LD; TestTFrml(F, iZ->P011);
+		CFile = iZ->File2;
+		CRecPtr = iZ->LD;
+		TestTFrml(F, iZ->P011, TF02, TFD02, TF02Pos);
 		break;
 	}
 	}
 }
 
-bool CanCopyT(FieldDescr* F, FrmlElem* Z)
+bool CanCopyT(FieldDescr* F, FrmlElem* Z, TFile** TF02, FileD** TFD02, longint& TF02Pos)
 {
-	FileD* cf = nullptr;
-	void* cr = nullptr;
+	FileD* cf = CFile;
+	void* cr = CRecPtr;
 	auto result = false;
-	cf = CFile;
-	cr = CRecPtr;
-	TF02 = nullptr;
-	result = false;
-	TestTFrml(F, Z);
+	*TF02 = nullptr;
+
+	TestTFrml(F, Z, TF02, TFD02, TF02Pos);
+
 	CFile = cf;
 	CRecPtr = cr;
-	result = TF02 != nullptr;
+	result = (*TF02) != nullptr;
 	return result;
 }
 
 bool TryCopyT(FieldDescr* F, TFile* TF, longint& pos, FrmlElem* Z)
 {
 	LockMode md, md2;
+
+	FileD* TFD02;
+	TFile* TF02;
+	longint TF02Pos;
+
 	bool result = false;
 	if (TF->Format == TFile::DbtFormat || TF->Format == TFile::FptFormat) return result;
 	if (Z->Op == _gettxt) {
 		pos = CopyTFFromGetTxt(TF, Z);
 		result = true;
 	}
-	else if (CanCopyT(F, Z) && (TF02->Format == TF->Format)) {
+	else if (CanCopyT(F, Z, &TF02, &TFD02, TF02Pos) && (TF02->Format == TF->Format)) {
 		result = true;
 		pos = CopyTFString(TF, TFD02, TF02, TF02Pos);
 	}

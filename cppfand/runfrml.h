@@ -10,9 +10,9 @@
 #include "channel.h"
 #endif
 
-extern FileD* TFD02;
-extern TFile* TF02;
-extern longint TF02Pos; // r33
+//extern FileD* TFD02;
+//extern TFile* TF02;
+//extern longint TF02Pos; // r33
 
 double Owned(FrmlPtr Bool, FrmlPtr Sum, LinkDPtr LD);
 integer CompBool(bool B1, bool B2);
@@ -22,14 +22,15 @@ LongStr* CopyToLongStr(std::string& SS);
 pstring LeadChar(char C, pstring S); // r69
 bool RunBool(FrmlPtr X);
 bool InReal(FrmlElemIn* frml);
-bool LexInStr(LongStr* S, FrmlElemIn* X);
+bool LexInStr(std::string& S, FrmlElemIn* X);
 bool InStr(LongStr* S, FrmlElemIn* X);
+bool InStr(std::string& S, FrmlElemIn* X);
 bool RunModulo(FrmlElem1* X);
 bool RunEquMask(FrmlElem0* X);
 double RunReal(FrmlElem* X);
 longint RunInt(FrmlPtr X);
-void TestTFrml(FieldDescr* F, FrmlElem* Z);
-bool CanCopyT(FieldDescr* F, FrmlElem* Z);
+//void TestTFrml(FieldDescr* F, FrmlElem* Z);
+bool CanCopyT(FieldDescr* F, FrmlElem* Z, TFile** TF02, FileD** TFD02, longint& TF02Pos);
 bool TryCopyT(FieldDescr* F, TFile* TF, longint& pos, FrmlPtr Z);
 void AssgnFrml(FieldDescr* F, FrmlElem* X, bool Delete, bool Add);
 void LVAssignFrml(LocVar* LV, void* OldBP, bool Add, FrmlElem* X);

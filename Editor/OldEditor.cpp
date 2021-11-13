@@ -1318,7 +1318,7 @@ void Background()
 		WORD p = Posi;
 		if (Mode == HelpM) {
 			if (WordL == LineL) {
-				while (Arr[p + 1] != 0x11) {
+				while (Arr[p] != 0x11) {
 					p++;
 				}
 			}
@@ -1328,7 +1328,7 @@ void Background()
 			BPos = Position(BCol);
 		}
 		if (Column(Posi) <= BCol) {
-			BCol = Column(Posi) - 1;
+			BCol = Column(Posi);
 			BPos = Position(BCol);
 		}
 	}
@@ -2692,7 +2692,7 @@ label1:
 
 WORD WordNo(WORD I)
 {
-	return (CountChar(T, LenT, 0x13, 1, MinW(LenT, I - 1)) + 1) / 2;
+	return (CountChar(T, LenT, 0x13 /* ^S */, 1, MinW(LenT, I)) + 1) / 2;
 }
 
 bool WordExist()
