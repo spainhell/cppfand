@@ -2702,8 +2702,17 @@ bool WordExist()
 
 WORD WordNo2()
 {
-	if (WordExist()) return WordNo(SetInd(T, LenT, LineI, Posi));
-	return WordNo(ScrI);
+	WORD wNo;
+	bool wExists = WordExist();
+
+	if (wExists) {
+		wNo = WordNo(SetInd(T, LenT, LineI, Posi));
+	}
+	else {
+		wNo = WordNo(ScrI);
+	}
+
+	return wNo;
 }
 
 void ClrWord()

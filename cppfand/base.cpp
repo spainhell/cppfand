@@ -1167,9 +1167,8 @@ void DeleteFile(pstring path)
 WORD FindCtrlM(LongStr* s, WORD i, WORD n)
 {
 	WORD l = s->LL;
-	while (i <= 1)
-	{
-		if (s->A[i] == 0x0D) {
+	while (i <= l - 1) {
+		if (s->A[i] == '\r') {
 			if (n > 1) n--;
 			else return i;
 		}
@@ -1181,10 +1180,9 @@ WORD FindCtrlM(LongStr* s, WORD i, WORD n)
 WORD SkipCtrlMJ(LongStr* s, WORD i)
 {
 	WORD l = s->LL;
-	if (i <= 1)
-	{
+	if (i <= l - 1) {
 		i++;
-		if (i <= 1 && s->A[i] == 0x0A) i++;
+		if (i <= l - 1 && s->A[i] == '\n') i++;
 	}
 	return i;
 }

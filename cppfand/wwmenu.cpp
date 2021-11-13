@@ -964,7 +964,8 @@ LongStr* GetHlpText(RdbD* R, std::string S, bool ByName, WORD& IRec)
 	void* cr = CRecPtr;
 	if (ByName) {
 		if (R == nullptr) goto label5;
-		CFile = (FileD*)R;  // toto je nesmysl
+		//CFile = (FileD*)R;  // toto je nesmysl
+		CFile = R->HelpFD;
 		if (CFile == HelpFD) {
 			if (CFile->Handle == nullptr) goto label5;
 		}

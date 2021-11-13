@@ -19,7 +19,6 @@ void Help(RdbD* R, pstring Name, bool InCWw)
 	void* p = nullptr; ExitRecord er; FileD* fd = nullptr;
 	WORD i, l, l2; WORD iRec, oldIRec;
 	LongStr* s = nullptr; LongStr* s2 = nullptr;
-	WORD* os = (WORD*)s; WORD* os2 = (WORD*)s2;
 	integer delta; bool frst, byName, backw;
 	FileD* cf2;
 	WORD KbdChar = Event.Pressed.KeyCombination();
@@ -79,12 +78,18 @@ void Help(RdbD* R, pstring Name, bool InCWw)
 			}
 		else {
 			frst = false; byName = false;
-			s2 = s;
-			if ((s->LL > 0) && (s->A[1] == '{')) {
+			if ((s->LL > 0) && (s->A[0] == '{')) {
 				//view after 1. line
-				l = FindCtrlM(s, 1, 1);
-				l = SkipCtrlMJ(s, l) - 1;
-				os2 += l; s2->LL = s->LL - l;
+				l = FindCtrlM(s, 0, 1);
+				l = SkipCtrlMJ(s, l);
+				char* newA = new char[s->LL - l];
+				memcpy(newA, &s->A[l], s->LL - l);
+				s2 = new LongStr(newA, s->LL - l);
+			}
+			else {
+				char* newA = new char[s->LL];
+				memcpy(newA, s->A, s->LL);
+				s2 = new LongStr(s->A, s->LL);
 			}
 			if (s2->LL == 0) {
 				if (delta == 0) { /*goto label4*/ throw std::invalid_argument("Editor::Help - delta is equal 0"); }
@@ -108,6 +113,7 @@ void Help(RdbD* R, pstring Name, bool InCWw)
 			Stk[iStk].iR = iRec; Stk[iStk].iT = i;
 			oldIRec = iRec; i = 1; delta = 0;
 			ReleaseStore(s);
+			ReleaseStore(s2);
 			CFile = cf2;
 
 			switch (KbdChar) {
