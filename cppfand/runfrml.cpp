@@ -176,14 +176,14 @@ double RunRealStr(FrmlElem* X)
 			if (n < 1) return 0; // 0 - nenalezeno
 		}
 		size_t offset = 0;
-		while (n > 0) {
+		for (size_t i = 0; i < n; i++) {
 			const size_t found = strS.find(strMask, offset);
 			if (found == std::string::npos) {
 				// n-ty vyskyt nenalezen
 				return 0; // 0 - nenalezeno
 			}
 			offset = found;
-			n--;
+			if (i < n - 1) offset += strMask.length(); // next search behind last found 
 		}
 		return offset + 1; // spoleha na to, ze se vraci PASCAL pozice v retezci
 		break;

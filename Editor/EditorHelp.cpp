@@ -116,6 +116,7 @@ void Help(RdbD* R, pstring Name, bool InCWw)
 			ReleaseStore(s2);
 			CFile = cf2;
 
+			KbdChar = Event.Pressed.KeyCombination();
 			switch (KbdChar) {
 			case __ESC: break;
 			case __F10: {

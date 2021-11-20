@@ -66,7 +66,7 @@ void DekFindLine(longint Num);
 size_t CountChar(char* text, size_t text_len, char C, size_t first, size_t last);
 longint NewRL(int Line);
 WORD FindLine(integer& Num);
-bool WordFind(WORD i, WORD WB, WORD WE, WORD LI);
+bool WordFind(WORD i, WORD& WB, integer& WE, WORD& LI);
 void SetWord(WORD WB, WORD WE);
 WORD WordNo2();
 WORD LastPosLine();

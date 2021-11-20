@@ -52,7 +52,8 @@ WORD PredScPos = 0; // {pozice pred Scroll}
 BYTE FrameDir = 0;
 WORD WordL = 0; // {Mode=HelpM & ctrl-word is on screen}
 bool Konec = false;
-WORD i1 = 0, i2 = 0, i3 = 0;
+WORD i1 = 0, i3 = 0;
+integer i2 = 0;
 // *** konec promennych
 
 const BYTE InterfL = 4; /*sizeof(Insert+Indent+Wrap+Just)*/
@@ -1234,7 +1235,7 @@ void UpdScreen()
 	else if (Mode == HelpM) {
 		co1 = Part.ColorP;
 		SetColorOrd(co1, 1, LineI);
-		ScrollWrline(Arr, LineL - ScrL + 1, co1);
+		ScrollWrline(Arr, LineL - ScrL + 2, co1);
 	}
 	else {
 		EditWrline(Arr, LineL - ScrL + 1);
@@ -2727,19 +2728,21 @@ void ClrWord()
 	}
 }
 
-bool WordFind(WORD i, WORD WB, WORD WE, WORD LI)
+bool WordFind(WORD i, WORD& WB, integer& WE, WORD& LI)
 {
 	bool result = false;
 	if (i == 0) return result;
 	i = i * 2 - 1;
-	// TODO: tady puvodne pouzite 'i'
-	WORD k = FindChar(T, LenT, 0x13, 1);
+	WORD k = FindChar(T, LenT, 0x13, i); // Pascal index 1 .. N
 	if (k >= LenT) return result;
-	WB = k;
+	WB = k - 1;
 	k++;
-	while (T[k] != 0x13) { k++; }
+	while (T[k] != 0x13) {
+		k++;
+	}
 	if (k >= LenT) return result;
-	WE = k; LI = SetLine(WB);
+	WE = k;
+	LI = SetLine(WB) + 1;
 	result = true;
 	return result;
 }
@@ -2756,7 +2759,8 @@ void SetWord(WORD WB, WORD WE)
 
 void HelpLU(char dir)
 {
-	WORD I = 0, I1 = 0, I2 = 0, h1 = 0, h2 = 0;
+	WORD I = 0, I1 = 0, h1 = 0, h2 = 0;
+	integer I2 = 0;
 	ClrWord();
 	h1 = WordNo2();
 	if (dir == 'U') {
@@ -2784,7 +2788,8 @@ void HelpLU(char dir)
 
 void HelpRD(char dir)
 {
-	WORD I = 0, I1 = 0, I2 = 0, h1 = 0, h2 = 0;
+	WORD I = 0, I1 = 0, h1 = 0, h2 = 0;
+	integer I2 = 0;
 	ClrWord();
 	h1 = WordNo2();
 	if (WordExist()) {
