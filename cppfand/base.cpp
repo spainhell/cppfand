@@ -379,6 +379,9 @@ void ChainLast(Chained* Frst, Chained* New)
 Chained* LastInChain(Chained* Frst)
 {
 	Chained* last = Frst->Chain;
+	if (last == nullptr) {
+		return Frst;
+	}
 	while (last != nullptr) {
 		if (last->Chain == nullptr) return last;
 		last = last->Chain;

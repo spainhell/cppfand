@@ -62,9 +62,8 @@ class FrmlElem4 : public FrmlElem
 {
 public:
 	FrmlElem4(instr_type Op, size_t buff_size);
-	FrmlElem4(instr_type Op, size_t buff_size, pstring value);
-	FrmlElem4(instr_type Op, size_t buff_size, pstring* value);
-	pstring S; // 4
+	FrmlElem4(instr_type Op, size_t buff_size, std::string& value);
+	std::string S; // 4
 };
 
 class FrmlElem5 : public FrmlElem

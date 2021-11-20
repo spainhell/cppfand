@@ -2237,7 +2237,7 @@ Instr_recs* RdMixRecAcc(PInstrCode Op)
 			if (K == nullptr) K = CFile->Keys;
 			PD->Key = K;
 			if ((K == nullptr) && (!CFile->IsParFile || (Z->Op != _const)
-				|| (((FrmlElem4*)Z)->S[0] != 0))) OldError(24);
+				|| (((FrmlElem4*)Z)->S.length() > 0))) OldError(24);
 			break;
 		}
 #ifdef FandSQL

@@ -21,14 +21,9 @@ FrmlElem4::FrmlElem4(instr_type Op, size_t buff_size) : FrmlElem(Op, buff_size)
 {
 }
 
-FrmlElem4::FrmlElem4(instr_type Op, size_t buff_size, pstring value) : FrmlElem(Op, buff_size)
+FrmlElem4::FrmlElem4(instr_type Op, size_t buff_size, std::string& value) : FrmlElem(Op, buff_size)
 {
 	this->S = value;
-}
-
-FrmlElem4::FrmlElem4(instr_type Op, size_t buff_size, pstring* value) : FrmlElem(Op, buff_size)
-{
-	this->S = *value;
 }
 
 FrmlElem5::FrmlElem5(instr_type Op, size_t buff_size) : FrmlElem(Op, buff_size)

@@ -166,12 +166,13 @@ ChkD* RdChkD(WORD Low)
 	if (Lexem == ':') { RdLex(); C->TxtZ = RdStrFrml(); }
 	else {
 		N = Upper - Low;
-		if (N > sizeof(pstring)) N = pred(sizeof(pstring));
+		//if (N > sizeof(pstring)) N = pred(sizeof(pstring));
 		Z = new FrmlElem4(_const, 0); // GetOp(_const, N + 1);
 		C->TxtZ = Z;
 		auto iZ = (FrmlElem4*)Z;
-		iZ->S[0] = char(N);
-		Move(&InpArrPtr[Low], &iZ->S[1], N);
+		((FrmlElem4*)Z)->S = std::string((char*)&InpArrPtr[Low], N);
+		//char(N);
+		//Move(&InpArrPtr[Low], &iZ->S[1], N);
 	}
 	if (Lexem == ',') {
 		RdLex();
