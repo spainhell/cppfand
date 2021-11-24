@@ -17,13 +17,13 @@ struct MsgStr
 
 bool EditText(char pMode, char pTxtType, std::string pName, std::string pErrMsg,
 	LongStr* pLS, WORD pMaxLen, WORD& pInd, longint& pScr,
-	std::vector<WORD>& break_keys, EdExitD* pExD, bool& pSrch, bool& pUpdat,
+	std::vector<WORD>& break_keys, std::vector<EdExitD*> *pExD, bool& pSrch, bool& pUpdat,
 	WORD pLastNr, WORD pCtrlLastNr, MsgStr* pMsgS); // r169
 void SimpleEditText(char pMode, std::string pErrMsg, std::string pName, LongStr* TxtPtr,
 	WORD MaxLen, WORD& Ind, bool& Updat); // r202
 WORD FindTextE(const pstring& PstrScreenStr, pstring Popt, char* PTxtPtr, WORD PLen); // r209
 void InitTxtEditor();
-void EditTxtFile(longint* LP, char Mode, std::string& ErrMsg, EdExitD* ExD, longint TxtPos,
+void EditTxtFile(longint* LP, char Mode, std::string& ErrMsg, std::vector<EdExitD*>* ExD, longint TxtPos,
 	longint Txtxy, WRect* V, WORD Atr, std::string Hd, BYTE WFlags, MsgStr* MsgS);
 void ViewPrinterTxt(); // r353
 void SetEditTxt(Instr_setedittxt* PD);
@@ -121,7 +121,7 @@ extern size_t LenT;
 extern char Arr[SuccLineSize];
 extern char* T;
 extern bool bScroll;
-extern EdExitD* ExitD;
+extern std::vector<EdExitD*> *ExitD;
 extern WORD MaxLenT, IndT, ScrT;
 extern WORD ScrI, LineI, Posi, BPos;
 extern WORD NextI, PageS, LineS;

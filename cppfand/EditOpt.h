@@ -40,7 +40,7 @@ public:
 	FrmlElem* ZdSelect = nullptr;
 	FrmlElem* Top = nullptr;
 	BYTE WFlags = 0;
-	EdExitD* ExD = nullptr;
+	std::vector<EdExitD*> ExD;
 	FileD* Journal = nullptr;
 	std::string ViewName;
 	char OwnerTyp = '\0';

@@ -921,14 +921,15 @@ void UnLockRec(EditD* E)
 
 void NewRecExit()
 {
-	EdExitD* X = E->ExD;
-	while (X != nullptr) {
+	//EdExitD* X = E->ExD;
+	//while (X != nullptr) {
+	for (auto& X : E->ExD) {
 		if (X->AtNewRec) {
 			EdBreak = 18;
 			LastTxtPos = -1;
 			StartExit(X, false);
 		}
-		X = (EdExitD*)X->Chain;
+		//X = (EdExitD*)X->Chain;
 	}
 }
 
@@ -1844,8 +1845,9 @@ void UndoRecord()
 bool CleanUp()
 {
 	if (HasIndex && DeletedFlag()) return false;
-	EdExitD* X = E->ExD;
-	while (X != nullptr) {
+	//EdExitD* X = E->ExD;
+	//while (X != nullptr) {
+	for (auto& X : E->ExD) {
 		if (X->AtWrRec) {
 			EdBreak = 17;
 			bool ok = EdOk;
@@ -1858,7 +1860,7 @@ bool CleanUp()
 			EdOk = ok;
 			WasUpdated = false;
 		}
-		X = (EdExitD*)X->Chain;
+		//X = (EdExitD*)X->Chain;
 	}
 	if (AddSwitch) {
 		LinkD* ld = LinkDRoot;
@@ -2285,15 +2287,23 @@ label2:
 
 bool ExitCheck(bool MayDispl)
 {
-	EdExitD* X; bool ok;
-	auto result = false; X = E->ExD;
-	while (X != nullptr) {
+	auto result = false;
+	//X = E->ExD;
+	//while (X != nullptr) {
+	for (auto& X : E->ExD) {
 		if (X->AtWrRec) {
-			EdBreak = 16; ok = EdOk; EdOk = true; LastTxtPos = -1;
-			if (StartExit(X, MayDispl) && EdOk) EdOk = ok;
-			else { EdOk = ok; return result; }
+			EdBreak = 16;
+			bool ok = EdOk;
+			EdOk = true; LastTxtPos = -1;
+			if (StartExit(X, MayDispl) && EdOk) {
+				EdOk = ok;
+			}
+			else {
+				EdOk = ok;
+				return result;
+			}
 		}
-		X = (EdExitD*)X->Chain;
+		//X = (EdExitD*)X->Chain;
 	}
 	result = true;
 	return result;
@@ -2807,8 +2817,9 @@ void SwitchToAppend()
 bool CheckForExit(bool& Quit)
 {
 	auto result = false;
-	EdExitD* X = E->ExD;
-	while (X != nullptr) {
+	//EdExitD* X = E->ExD;
+	//while (X != nullptr) {
+	for (auto& X : E->ExD) {
 		bool b = FieldInList(CFld->FldD, X->Flds);
 		if (X->NegFlds) b = !b;
 		if (b) if (X->Typ == 'Q') Quit = true;
@@ -2816,7 +2827,7 @@ bool CheckForExit(bool& Quit)
 			EdBreak = 12; LastTxtPos = -1;
 			if (!StartExit(X, true)) return result;
 		}
-		X = (EdExitD*)X->Chain;
+		//X = (EdExitD*)X->Chain;
 	}
 	result = true;
 	return result;
@@ -3127,7 +3138,7 @@ bool EditFreeTxt(FieldDescr* F, std::string ErrMsg, bool Ed, WORD& Brk)
 	WORD R1 = 0, OldTxtPos = 0, TxtPos = 0, CtrlMsgNr = 0, C = 0, LastLen = 0;
 	LongStr* S = nullptr;
 	char Kind = '\0'; LockMode md; void* p = nullptr; longint i = 0, w = 0;
-	EdExitD* X = nullptr;
+	std::vector<EdExitD*> *X = nullptr;
 	WORD iStk = 0;
 	struct { longint N = 0; longint I = 0; } Stk[maxStk];
 	std::string heslo;
@@ -3181,7 +3192,7 @@ label1:
 	else S = RunLongStr(F->Frml);
 label2:
 	X = nullptr;
-	if (TTExit) X = E->ExD;
+	if (TTExit) X = &E->ExD;
 	Upd = false;
 	result =
 		EditText(Kind, MemoT, HdTxt, ErrMsg, S, MaxLStrLen, TxtPos, TxtXY, Breaks, X,
@@ -3929,8 +3940,9 @@ WORD ExitKeyProc()
 {
 	WORD w = 0;
 	WORD c = Event.Pressed.KeyCombination();
-	EdExitD* X = E->ExD;
-	while (X != nullptr) {
+	//EdExitD* X = E->ExD;
+	//while (X != nullptr) {
+	for (auto& X : E->ExD) {
 		if (TestExitKey(c, X)) {
 			ClrEvent();
 			LastTxtPos = -1;
@@ -3938,14 +3950,15 @@ WORD ExitKeyProc()
 				w = 1;
 			}
 			else {
-				bool ok = EdOk; EdOk = false;
+				bool ok = EdOk;
+				EdOk = false;
 				StartExit(X, true);
 				if (EdOk) w = 3;
 				else w = 2;
 				EdOk = ok;
 			}
 		}
-		X = (EdExitD*)X->Chain;
+		//X = (EdExitD*)X->Chain;
 	}
 	if (((w == 0) || (w == 3)) && (c == _ShiftF7_) && CFld->Ed(IsNewRec)) {
 		ShiftF7Proc();

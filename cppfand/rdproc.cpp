@@ -1104,10 +1104,9 @@ bool RdViewOpt(EditOpt* EO)
 	else if (IsOpt("EXIT")) {
 		Accept('(');
 	label1:
-		//EdExitD* X = (EdExitD*)GetZStore(sizeof(*X));
 		EdExitD* X = new EdExitD();
-		if (EO->ExD == nullptr) EO->ExD = X;
-		else ChainLast(EO->ExD, X);
+		EO->ExD.push_back(X);
+
 		RdKeyList(X);
 		if (IsKeyWord("QUIT")) X->Typ = 'Q';
 		else if (IsKeyWord("REPORT")) {
@@ -1837,8 +1836,7 @@ Instr* RdEditTxt()
 				Accept('(');
 			label1:
 				pX = new EdExitD(); // (EdExitD*)GetZStore(sizeof(*pX));
-				if (PD->ExD == nullptr) PD->ExD = pX;
-				else ChainLast(PD->ExD, pX);
+				PD->ExD.push_back(pX);
 			label2:
 				RdKeyCode(pX);
 				if (Lexem == ',') { RdLex(); goto label2; }

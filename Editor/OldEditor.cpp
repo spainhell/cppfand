@@ -77,7 +77,7 @@ std::string NameT;
 std::string ErrMsg;
 WORD MaxLenT = 0, IndT = 0, ScrT = 0;
 size_t LenT = 0;
-EdExitD* ExitD = nullptr;
+std::vector<EdExitD*> *ExitD = nullptr;
 bool SrchT, UpdatT;
 WORD LastNr, CtrlLastNr;
 integer LeftMarg, RightMarg;
@@ -2987,7 +2987,7 @@ void GetEditTxt(bool& pInsert, bool& pIndent, bool& pWrap, bool& pJust, bool& pC
 }
 
 bool EditText(char pMode, char pTxtType, std::string pName, std::string pErrMsg, LongStr* pLS, WORD pMaxLen,
-	WORD& pInd, longint& pScr, std::vector<WORD>& break_keys, EdExitD* pExD, bool& pSrch, bool& pUpdat, WORD pLastNr,
+	WORD& pInd, longint& pScr, std::vector<WORD>& break_keys, std::vector<EdExitD*> *pExD, bool& pSrch, bool& pUpdat, WORD pLastNr,
 	WORD pCtrlLastNr, MsgStr* pMsgS)
 {
 	bool oldEdOK = EdOk; EditT = true;
@@ -3069,7 +3069,7 @@ WORD FindTextE(const pstring& Pstr, pstring Popt, char* PTxtPtr, WORD PLen)
 	return result;
 }
 
-void EditTxtFile(longint* LP, char Mode, std::string& ErrMsg, EdExitD* ExD, longint TxtPos, longint Txtxy, WRect* V, WORD Atr, const std::string Hd, BYTE WFlags, MsgStr* MsgS)
+void EditTxtFile(longint* LP, char Mode, std::string& ErrMsg, std::vector<EdExitD*> *ExD, longint TxtPos, longint Txtxy, WRect* V, WORD Atr, const std::string Hd, BYTE WFlags, MsgStr* MsgS)
 {
 	bool Srch = false, Upd = false;
 	longint Size = 0, L = 0;

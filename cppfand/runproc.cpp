@@ -439,6 +439,14 @@ void EditProc(Instr_edit* PD)
 	// TODO: and here delete copy?
 }
 
+std::string GetStr(FrmlElem* Z)
+{
+	std::string result;
+	if (Z == nullptr) return result;
+	result = RunShortStr(Z);
+	return result;
+}
+
 void EditTxtProc(Instr_edittxt* PD)
 {
 	longint i = 0; WRect v;
@@ -451,11 +459,11 @@ void EditTxtProc(Instr_edittxt* PD)
 	a = RunWordImpl(PD->Atr, 0);
 	pv = nullptr;
 	if (PD->Ww.C1 != nullptr) { RunWFrml(PD->Ww, PD->WFlags, v); pv = &v; }
-	MsgS.Head = (PD->Head == nullptr) ? "" : *GetStr(PD->Head);
-	MsgS.Last = (PD->Last == nullptr) ? "" : *GetStr(PD->Last);
-	MsgS.CtrlLast = (PD->CtrlLast == nullptr) ? "" : *GetStr(PD->CtrlLast);
-	MsgS.ShiftLast = (PD->ShiftLast == nullptr) ? "" : *GetStr(PD->ShiftLast);
-	MsgS.AltLast = (PD->AltLast == nullptr) ? "" : *GetStr(PD->AltLast);
+	MsgS.Head = GetStr(PD->Head);
+	MsgS.Last = GetStr(PD->Last);
+	MsgS.CtrlLast = GetStr(PD->CtrlLast);
+	MsgS.ShiftLast = GetStr(PD->ShiftLast);
+	MsgS.AltLast = GetStr(PD->AltLast);
 
 	if (PD->TxtLV != nullptr) {
 		lp = (longint*)(uintptr_t(MyBP) + PD->TxtLV->BPOfs);
@@ -464,17 +472,10 @@ void EditTxtProc(Instr_edittxt* PD)
 		SetTxtPathVol(PD->TxtPath, PD->TxtCatIRec);
 		lp = nullptr;
 	}
-	std::string msg = "";
+	std::string msg;
 	if (PD->ErrMsg != nullptr) msg = RunStdStr(PD->ErrMsg);
-	EditTxtFile(lp, PD->EdTxtMode, msg, PD->ExD, i, RunInt(PD->TxtXY), pv, a, RunShortStr(PD->Hd), PD->WFlags, &MsgS);
+	EditTxtFile(lp, PD->EdTxtMode, msg, &PD->ExD, i, RunInt(PD->TxtXY), pv, a, RunShortStr(PD->Hd), PD->WFlags, &MsgS);
 	ReleaseStore(p);
-}
-
-std::string* GetStr(FrmlElem* Z)
-{
-	if (Z == nullptr) return nullptr;
-	std::string s = RunShortStr(Z);
-	return StoreStr(s);
 }
 
 void PrintTxtProc(Instr_edittxt* PD)

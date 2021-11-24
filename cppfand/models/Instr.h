@@ -202,7 +202,7 @@ public:
 	WORD TxtCatIRec = 0;
 	LocVar* TxtLV = nullptr;
 	char EdTxtMode = '\0';
-	EdExitD* ExD = nullptr;
+	std::vector<EdExitD*> ExD;
 	BYTE WFlags = 0;
 	FrmlElem* TxtPos = nullptr; FrmlElem* TxtXY = nullptr; FrmlElem* ErrMsg = nullptr;
 	WRectFrml Ww; FrmlElem* Atr = nullptr; FrmlElem* Hd = nullptr;

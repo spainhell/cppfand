@@ -163,9 +163,8 @@ struct EdExKeyD
 	unsigned short KeyCode = 0;
 };
 
-struct EdExitD : Chained
+struct EdExitD
 {
-	//EdExKeyD* Keys = nullptr;
 	std::vector<EdExKeyD> Keys;
 	bool AtWrRec = false, AtNewRec = false, NegFlds = false;
 	FieldList Flds = nullptr;    /*in edittxt !used*/
@@ -211,7 +210,7 @@ struct EditD : Chained
 	BYTE dDel = 0, dTab = 0, dSelect = 0;
 	std::string Top;
 	BYTE WFlags = 0;                             /* copied from EO */
-	EdExitD* ExD = nullptr;                      /*      "         */
+	std::vector<EdExitD*> ExD;                   /*      "         */
 	FileD* Journal = nullptr;                    /*      "         */
 	std::string ViewName;                        /*      "         */
 	char OwnerTyp = '\0'; /* #0=CtrlF7 */        /*      "         */

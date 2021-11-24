@@ -115,7 +115,7 @@ void Wr(std::string s, std::string& OrigS, char Mode, BYTE SysLColor)
 	}
 }
 
-bool ScrollEvent(EdExitD* ExitD, std::vector<WORD>& breakKeys)
+bool ScrollEvent(std::vector<EdExitD*> *ExitD, std::vector<WORD>& breakKeys)
 {
 	WORD key = Event.Pressed.KeyCombination();
 	bool result = false;
@@ -142,14 +142,16 @@ bool ScrollEvent(EdExitD* ExitD, std::vector<WORD>& breakKeys)
 			result = true;
 		}
 		else {
-			EdExitD* X = ExitD;
-			while (X != nullptr) {
+			//EdExitD* X = ExitD;
+			//while (X != nullptr) {
+				for (auto& X : *ExitD) {
 				if (TestExitKey(Event.Pressed.KeyCombination(), X)) {
 					result = true;
 					break;
 				}
 				else {
-					X = (EdExitD*)X->Chain;
+					//X = (EdExitD*)X->Chain;
+					continue;
 				}
 			}
 		}
@@ -158,7 +160,7 @@ bool ScrollEvent(EdExitD* ExitD, std::vector<WORD>& breakKeys)
 	return result;
 }
 
-bool ViewEvent(EdExitD* ExitD, std::vector<WORD>& breakKeys)
+bool ViewEvent(std::vector<EdExitD*> *ExitD, std::vector<WORD>& breakKeys)
 {
 	bool result = ScrollEvent(ExitD, breakKeys);
 	if (Event.What != evKeyDown) return result;
@@ -194,7 +196,7 @@ bool ViewEvent(EdExitD* ExitD, std::vector<WORD>& breakKeys)
 	return result;
 }
 
-bool MyGetEvent(char Mode, BYTE SysLColor, std::string& LastS, WORD LastNr, bool IsWrScreen, bool bScroll, EdExitD* ExitD, std::vector<WORD>& breakKeys) {
+bool MyGetEvent(char Mode, BYTE SysLColor, std::string& LastS, WORD LastNr, bool IsWrScreen, bool bScroll, std::vector<EdExitD*> *ExitD, std::vector<WORD>& breakKeys) {
 	std::string OrigS = "    ";
 	WORD ww;
 
@@ -331,7 +333,7 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 	bool bb = false;
 
 	ExitRecord er;
-	EdExitD* X = nullptr;
+	//EdExitD* X = nullptr;
 
 	IsWrScreen = false;
 
@@ -348,10 +350,11 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 		WORD key = Event.Pressed.KeyCombination();
 		EdOk = false;
 		ClrEvent();
-		X = ExitD; // Exit-procedure
+		//X = ExitD; // Exit-procedure
 
 		// test all exit keys
-		while (X != nullptr) {
+		//while (X != nullptr) {
+		for (auto& X : *ExitD) {
 			if (TestExitKey(key, X)) {  // nastavuje i EdBreak
 				TestKod();
 				IndT = SetInd(T, LenT, LineI, Posi);
@@ -442,7 +445,7 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 				if (!bScroll) { screen.CrsShow(); }
 				if (!EdOk) { goto Nic; }
 			}
-			X = (EdExitD*)X->Chain;
+			//X = (EdExitD*)X->Chain;
 		}  // while
 
 		// test frame drawing mode
