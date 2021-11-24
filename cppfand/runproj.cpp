@@ -964,7 +964,7 @@ bool PromptHelpName(WORD& N)
 	wwmix ww;
 	std::string txt;
 	auto result = false; txt = "";
-	ww.PromptLL(153, &txt, 1, true);
+	ww.PromptLL(153, txt, 1, true);
 	if ((txt.length() == 0) || (Event.Pressed.KeyCombination() == __ESC)) return result;
 	N = FindHelpRecNr(CFile, txt);
 	if (N != 0) result = true;

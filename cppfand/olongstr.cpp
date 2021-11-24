@@ -120,7 +120,7 @@ label3:
 		ReadH(h, n, &X[i]);
 		i = 0;
 		nxtpos = TF->NewPage(false);
-		*(longint*)X[MPageSize - 4] = nxtpos;
+		*(longint*)&X[MPageSize - 4] = nxtpos;
 		RdWrCache(false, TF->Handle, TF->NotCached(), pos, MPageSize, X);
 		pos = nxtpos;
 		l -= n;

@@ -2694,7 +2694,7 @@ void PromptGotoRecNr()
 	WORD I; std::string Txt; longint N; bool Del;
 	I = 1; Txt = ""; Del = true;
 	do {
-		ww.PromptLL(122, &Txt, I, Del);
+		ww.PromptLL(122, Txt, I, Del);
 		if (Event.Pressed.KeyCombination() == __ESC) return;
 		val(Txt, N, I);
 		Del = false;
@@ -3202,8 +3202,8 @@ label2:
 		break;
 	}
 	case _U_: {
-		ReleaseStore(S); 
-		TxtXY = 0; 
+		ReleaseStore(S);
+		TxtXY = 0;
 		goto label1;
 		break; }
 	}
@@ -3257,25 +3257,25 @@ label2:
 
 	if ((C > 0xFF) && WriteCRec(false, Displ)) {
 		Append = false;
-		if (C == _CtrlHome_) { 
-			GoPrevNextRec(-1, false); 
-			TxtXY = 0; 
-			goto label4; 
+		if (C == _CtrlHome_) {
+			GoPrevNextRec(-1, false);
+			TxtXY = 0;
+			goto label4;
 		}
 		if (C == _CtrlEnd_) {
 		label31:
 			if (!GoPrevNextRec(+1, false) && Srch) {
-				UpdateTxtPos(LastLen); 
+				UpdateTxtPos(LastLen);
 				Srch = false;
 			}
 			TxtXY = 0;
 		label4:
-			if (!Ed || LockRec(false)) goto label1; 
+			if (!Ed || LockRec(false)) goto label1;
 			else goto label5;
 		}
-		WrEStatus(); 
-		Brk = 1; 
-		Event.Pressed.UpdateKey(C); 
+		WrEStatus();
+		Brk = 1;
+		Event.Pressed.UpdateKey(C);
 		goto label6;
 
 	}
@@ -3691,63 +3691,86 @@ void Calculate2()
 
 	FrmlElem* Z; std::string Txt; ExitRecord er; WORD I; pstring Msg;
 	void* p = nullptr; char FTyp; double R; FieldDescr* F; bool Del;
-	MarkStore(p);
+	//MarkStore(p);
 	//NewExit(Ovr(), er);
-	goto label2; ResetCompilePars();
-label0:
-	Txt = CalcTxt;
-label4:
-	I = 1;
-	Del = true;
-label1:
-	TxtEdCtrlUBrk = true;
-	TxtEdCtrlF4Brk = true;
-	ww.PromptLL(114, &Txt, I, Del);
-	if (Event.Pressed.KeyCombination() == 'U') goto label0;
-	if (Event.Pressed.KeyCombination() == __ESC || (Txt.length() == 0)) goto label3;
-	CalcTxt = Txt;
-	SetInpStr(Txt); RdLex();
-	Z = RdFrml(FTyp);
-	if (Lexem != 0x1A) Error(21);
-	if (Event.Pressed.KeyCombination() == __CTRL_F4) {
-		F = CFld->FldD;
-		if (CFld->Ed(IsNewRec) && (F->FrmlTyp == FTyp)) {
-			if (LockRec(true)) {
-				if ((F->Typ == 'F') && ((F->Flg & f_Comma) != 0)) {
-					auto iZ0 = (FrmlElem0*)Z;
-					auto iZ02 = (FrmlElem2*)iZ0->P1;
-					if ((Z->Op = _const)) R = ((FrmlElem2*)Z)->R;
-					else if ((Z->Op == _unminus) && (iZ02->Op == _const)) R = -iZ02->R;
-					else goto label5;
-					SetWasUpdated(); R_(F, R * Power10[F->M]);
+	//goto label2;
+	try {
+		ResetCompilePars();
+	label0:
+		Txt = CalcTxt;
+	label4:
+		I = 1;
+		Del = true;
+	label1:
+		TxtEdCtrlUBrk = true;
+		TxtEdCtrlF4Brk = true;
+		ww.PromptLL(114, Txt, I, Del);
+		if (Event.Pressed.KeyCombination() == 'U') goto label0;
+		if (Event.Pressed.KeyCombination() == __ESC || (Txt.length() == 0)) goto label3;
+		CalcTxt = Txt;
+		SetInpStr(Txt);
+		RdLex();
+		Z = RdFrml(FTyp);
+		if (Lexem != 0x1A) Error(21);
+		if (Event.Pressed.KeyCombination() == __CTRL_F4) {
+			F = CFld->FldD;
+			if (CFld->Ed(IsNewRec) && (F->FrmlTyp == FTyp)) {
+				if (LockRec(true)) {
+					if ((F->Typ == 'F') && ((F->Flg & f_Comma) != 0)) {
+						auto iZ0 = (FrmlElem0*)Z;
+						auto iZ02 = (FrmlElem2*)iZ0->P1;
+						if ((Z->Op = _const)) R = ((FrmlElem2*)Z)->R;
+						else if ((Z->Op == _unminus) && (iZ02->Op == _const)) R = -iZ02->R;
+						else goto label5;
+						SetWasUpdated();
+						R_(F, R * Power10[F->M]);
+					}
+					else
+						label5:
+					AssignFld(F, Z);
+					DisplFld(CFld, IRec);
+					IVon();
+					goto label3;
 				}
-				else
-					label5:
-				AssignFld(F, Z);
-				DisplFld(CFld, IRec); IVon(); goto label3;
 			}
+			else WrLLF10Msg(140);
 		}
-		else WrLLF10Msg(140);
+		switch (FTyp) {
+		case 'R': {
+			R = RunReal(Z);
+			str(R, 30, 10, Txt);
+			Txt = LeadChar(' ', TrailChar(Txt, '0'));
+			if (Txt[Txt.length()] == '.') Txt[0]--;
+			break;
+		}
+		case 'S': {
+			/* wie RdMode fuer T ??*/
+			Txt = RunShortStr(Z);
+			break;
+		}
+		case 'B': {
+			if (RunBool(Z)) Txt = AbbrYes;
+			else Txt = AbbrNo;
+			break;
+		}
+		}
+		goto label4;
 	}
-	switch (FTyp) {
-	case 'R': {
-		R = RunReal(Z); str(R, 30, 10, Txt);
-		Txt = LeadChar(' ', TrailChar(Txt, '0'));
-		if (Txt[Txt.length()] == '.') Txt[0]--;
-		break; }
-	case 'S': Txt = RunShortStr(Z); break;  /* wie RdMode fuer T ??*/
-	case 'B': {
-		if (RunBool(Z)) Txt = AbbrYes;
-		else Txt = AbbrNo;
-		break;
+	catch (std::exception& e) {
+	//label2:
+		Msg = MsgLine;
+		I = CurrPos;
+		SetMsgPar(Msg);
+		WrLLF10Msg(110);
+		IsCompileErr = false;
+		Del = false;
+		CFile = E->FD;
+		ReleaseStore(p);
+		// TODO: goto label1;
 	}
-	}
-	goto label4;
-label2:
-	Msg = MsgLine; I = CurrPos; SetMsgPar(Msg); WrLLF10Msg(110);
-	IsCompileErr = false; Del = false; CFile = E->FD; ReleaseStore(p); goto label1;
 label3:
-	ReleaseStore(p); RestoreExit(er);
+	//ReleaseStore(p);
+	RestoreExit(er);
 }
 
 void DelNewRec()
@@ -4252,9 +4275,9 @@ label81:
 						if (CFile->IsSQLFile) Strm1->EndKeyAcc(WK);
 #endif
 						OldLMode(E->OldMd);
-					}
-					return;
 				}
+					return;
+			}
 				break;
 			}
 			case __ALT_EQUAL: {
@@ -4527,9 +4550,9 @@ label81:
 				}
 				//}
 			}
-			}
-			break;
 		}
+			break;
+	}
 		break;
 	}
 	default: {
@@ -4537,7 +4560,7 @@ label81:
 		ClrEvent();
 		break;
 	}
-	}
+}
 	Event.What = evNothing;
 	goto label1;
 }

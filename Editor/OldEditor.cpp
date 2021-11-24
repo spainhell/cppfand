@@ -2031,63 +2031,80 @@ void Format(WORD& i, longint First, longint Last, WORD Posit, bool Rep)
 void Calculate()
 {
 	wwmix ww;
-	FrmlPtr Z = nullptr;
+	FrmlElem* Z = nullptr;
 	std::string txt;
-	ExitRecord er; WORD I; pstring Msg;
-	void* p = nullptr; char FTyp; double R; bool Del;
+	ExitRecord er;
+	WORD I; pstring Msg;
+	void* p = nullptr;
+	char FTyp;
+	double R;
+	bool Del;
 	MarkStore(p);
 	//NewExit(Ovr(), er);
-	goto label2;
-	ResetCompilePars();
-	RdFldNameFrml = RdFldNameFrmlT;
-label0:
-	txt = CalcTxt; Del = true; I = 1;
-label1:
-	TxtEdCtrlUBrk = true; TxtEdCtrlF4Brk = true;
-	ww.PromptLL(114, &txt, I, Del);
-	if (Event.Pressed.KeyCombination() == _U_) goto label0;
-	if ((Event.Pressed.KeyCombination() == __ESC) || (txt.length() == 0)) goto label3;
-	CalcTxt = txt;
-	if ((Event.Pressed.KeyCombination() == __CTRL_F4) && (Mode == TextM) && !bScroll)
-	{
-		if (txt.length() > LineSize - LastPosLine()) {
-			I = LineSize - LastPosLine();
-			WrLLF10Msg(419);
-			goto label1;
+	//goto label2;
+	try {
+		ResetCompilePars();
+		RdFldNameFrml = RdFldNameFrmlT;
+	label0:
+		txt = CalcTxt;
+		Del = true; I = 1;
+	label1:
+		TxtEdCtrlUBrk = true; TxtEdCtrlF4Brk = true;
+		ww.PromptLL(114, txt, I, Del);
+		if (Event.Pressed.KeyCombination() == _U_) goto label0;
+		if ((Event.Pressed.KeyCombination() == __ESC) || (txt.length() == 0)) goto label3;
+		CalcTxt = txt;
+		if ((Event.Pressed.KeyCombination() == __CTRL_F4) && (Mode == TextM) && !bScroll) {
+			if (txt.length() > LineSize - LastPosLine()) {
+				I = LineSize - LastPosLine();
+				WrLLF10Msg(419);
+				goto label1;
+			}
+			if (Posi <= LastPosLine()) TestLastPos(Posi, Posi + txt.length());
+			memcpy(&Arr[Posi], txt.c_str(), txt.length());
+			UpdatedL = true;
+			goto label3;
 		}
-		if (Posi <= LastPosLine()) TestLastPos(Posi, Posi + txt.length());
-		Move(&txt[1], &Arr[Posi], txt.length());
-		UpdatedL = true;
-		goto label3;
+		SetInpStr(txt);
+		RdLex();
+		Z = RdFrml(FTyp);
+		if (Lexem != 0x1A) Error(21);
+
+		switch (FTyp) {
+		case 'R': {
+			R = RunReal(Z);
+			str(R, 30, 10, txt);
+			txt = LeadChar(' ', TrailChar(txt, '0'));
+			if (txt[txt.length() - 1] == '.') {
+				txt = txt.substr(0, txt.length() - 1);
+			}
+			break;
+		}
+		case 'S': {
+			/* wie RdMode fuer T ??*/
+			txt = RunShortStr(Z);
+			break;
+		}
+		case 'B': {
+			if (RunBool(Z)) txt = AbbrYes;
+			else txt = AbbrNo;
+			break;
+		}
+		}
+		I = 1;
+		goto label1;
 	}
-	SetInpStr(txt);
-	RdLex();
-	Z = RdFrml(FTyp);
-	if (Lexem != 0x1A) Error(21);
-	switch (FTyp) {
-	case 'R': {
-		R = RunReal(Z); str(R, 30, 10, txt);
-		txt = LeadChar(' ', TrailChar(txt, '0'));
-		if (txt[txt.length()] == '.') txt[0]--;
-		break;
+	catch (std::exception& e) {
+		//label2:
+		Msg = MsgLine;
+		I = CurrPos;
+		SetMsgPar(Msg);
+		WrLLF10Msg(110);
+		IsCompileErr = false;
+		ReleaseStore(p);
+		Del = false;
+		// TODO: goto label1;
 	}
-	case 'S': { txt = RunShortStr(Z);   /* wie RdMode fuer T ??*/ break; }
-	case 'B': {
-		if (RunBool(Z)) txt = AbbrYes;
-		else txt = AbbrNo;
-		break;
-	}
-	}
-	I = 1; goto label1;
-label2:
-	Msg = MsgLine;
-	I = CurrPos;
-	SetMsgPar(Msg);
-	WrLLF10Msg(110);
-	IsCompileErr = false;
-	ReleaseStore(p);
-	Del = false;
-	goto label1;
 label3:
 	ReleaseStore(p);
 	RestoreExit(er);
@@ -2544,7 +2561,7 @@ void BlockUDShift(longint L1)
 	}
 }
 
-bool MyPromptLL(WORD n, std::string* s)
+bool MyPromptLL(WORD n, std::string& s)
 {
 	wwmix ww;
 	ww.PromptLL(n, s, 1, true);

@@ -674,7 +674,7 @@ bool wwmix::PromptFilter(std::string Txt, FrmlElem* Bool, std::string* BoolTxt)
 	ResetCompilePars();
 	cf = CFile;
 label1:
-	PromptLL(113, &Txt, I, Del);
+	PromptLL(113, Txt, I, Del);
 	Bool = nullptr;
 	BoolTxt = nullptr;
 	if (Event.Pressed.KeyCombination() == __ESC) { result = false; goto label2; }
@@ -700,16 +700,18 @@ label3:
 	goto label1;
 }
 
-void wwmix::PromptLL(WORD N, std::string* Txt, WORD I, bool Del)
+void wwmix::PromptLL(WORD N, std::string& Txt, WORD I, bool Del)
 {
 	longint w = PushW(1, TxtRows, TxtCols, TxtRows);
-	screen.GotoXY(1, TxtRows);
+	screen.GotoXY(1, TxtRows, Position::absolute);
 	TextAttr = screen.colors.pTxt;
 	ClrEol();
 	RdMsg(N);
-	printf("%s", MsgLine.c_str());
+	screen.ScrWrStr(1, TxtRows, MsgLine, screen.colors.pTxt);
+	screen.GotoXY(MsgLine.length() + 1, TxtRows, Position::absolute);
+	//printf("%s", MsgLine.c_str());
 	TextAttr = screen.colors.pNorm;
-	EditTxt(*Txt, I, 255, TxtCols - screen.WhereX(), 'A', Del, false, true, false, 0);
+	EditTxt(Txt, I, 255, TxtCols - screen.WhereX(), 'A', Del, false, true, false, 0);
 	PopW(w);
 }
 

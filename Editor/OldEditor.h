@@ -74,7 +74,7 @@ void RollNext();
 void RollPred();
 void DekodLine();
 void SetScreen(WORD Ind, WORD ScrXY, WORD Pos);
-bool MyPromptLL(WORD n, std::string* s);
+bool MyPromptLL(WORD n, std::string& s);
 void DelChar();
 void PredPart();
 void DeleteL();

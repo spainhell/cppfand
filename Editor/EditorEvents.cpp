@@ -720,7 +720,7 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 				ss = "";
 				TestKod();
 				do {
-					if (MyPromptLL(420, &ss)) goto Nic;
+					if (MyPromptLL(420, ss)) goto Nic;
 					val(ss, L1, I);
 				} while (!(L1 > 0));
 				DekFindLine(L1);
@@ -788,13 +788,13 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 			case _QF_:
 			case _QA_: {
 				Replace = false;
-				if (MyPromptLL(405, &FindStr)) goto Nic;
+				if (MyPromptLL(405, FindStr)) goto Nic;
 				if (key == _QA_)
 				{
-					if (MyPromptLL(407, &ReplaceStr)) goto Nic;
+					if (MyPromptLL(407, ReplaceStr)) goto Nic;
 					Replace = true;
 				}
-				ss = OptionStr; if (MyPromptLL(406, &ss)) goto Nic; OptionStr = ss;
+				ss = OptionStr; if (MyPromptLL(406, ss)) goto Nic; OptionStr = ss;
 				TestKod();
 				if (TestOptStr('l') && (!BlockExist() || (TypeB == ColBlock))) goto Nic;
 				if (TestOptStr('l')) SetBlockBound(L1, L2);
@@ -1016,7 +1016,7 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 			case _OL_: {       // LeftMarg
 				do {
 					ss = std::to_string(Posi);
-					if (MyPromptLL(410, &ss)) goto Nic;
+					if (MyPromptLL(410, ss)) goto Nic;
 					val(ss, I1, I);
 				} while (!((I1 < RightMarg) && (I1 > 0)));
 				LeftMarg = I1;
@@ -1025,7 +1025,7 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 			case _OR_: {       //RightMarg
 				do {
 					ss = std::to_string(Posi);
-					if (MyPromptLL(409, &ss)) goto Nic;
+					if (MyPromptLL(409, ss)) goto Nic;
 					val(ss, I1, I); // inc(I1);
 				} while (!((I1 <= 255) && (LeftMarg < I1)));
 				RightMarg = I1;
