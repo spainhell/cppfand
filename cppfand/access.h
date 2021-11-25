@@ -98,7 +98,7 @@ longint _T(FieldDescr* F);
 longint _T(FieldDescr* F, unsigned char* data, char Typ);
 // * UKLADANI DO SOUBORU * / DO FRMLELEM *
 void B_(FieldDescr* F, bool B);
-void R_(FieldDescr* F, double R);
+void R_(FieldDescr* F, double R, void* record = nullptr);
 void S_(FieldDescr* F, std::string S, void* record = nullptr);
 void LongS_(FieldDescr* F, LongStr* S);
 void T_(FieldDescr* F, longint Pos);

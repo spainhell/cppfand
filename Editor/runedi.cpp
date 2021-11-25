@@ -1696,6 +1696,9 @@ void UpdMemberRef(void* POld, void* PNew)
 
 void WrJournal(char Upd, void* RP, double Time)
 {
+	// Upd:
+	// + new record; - deleted record; O old record data; N new record data
+
 	size_t srcOffset = 0;
 	if (E->Journal != nullptr) {
 		WORD l = CFile->RecLen;
@@ -1705,28 +1708,24 @@ void WrJournal(char Upd, void* RP, double Time)
 			l--;
 		}
 		CFile = E->Journal;
-		CRecPtr = GetRecSpace();
+		//CRecPtr = GetRecSpace();
 
-		FieldDescr* F = CFile->FldD.front();
-		std::string UpdStr = std::string(Upd, 1);
-		S_(F, UpdStr);
-		F = (FieldDescr*)F->Chain;
-		R_(F, int(n));
-		F = (FieldDescr*)F->Chain;
-		R_(F, int(UserCode));
-		F = (FieldDescr*)F->Chain;
-		R_(F, Time);
-		F = (FieldDescr*)F->Chain;
+		const auto newData = std::make_unique<BYTE[]>(CFile->RecLen + 2);
 
-		char* dst = (char*)CRecPtr;
+		auto it = CFile->FldD.begin();
+
+		S_(*it++, std::string(1, Upd), newData.get());	// change type
+		R_(*it++, int(n), newData.get());						// record number
+		R_(*it++, int(UserCode), newData.get());				// user code
+		R_(*it++, Time, newData.get());							// timestamp
+
 		char* src = (char*)RP;
-		memcpy(&dst[F->Displ], &src[srcOffset], l);
+		memcpy(&newData.get()[(*it)->Displ], &src[srcOffset], l);		// record data
 
 		LockMode md = NewLMode(CrMode);
 		IncNRecs(1);
-		WriteRec(CFile, CFile->NRecs, CRecPtr);
+		WriteRec(CFile, CFile->NRecs, newData.get());
 		OldLMode(md);
-		ReleaseStore(CRecPtr);
 		CFile = E->FD;
 		CRecPtr = E->NewRecPtr;
 	}

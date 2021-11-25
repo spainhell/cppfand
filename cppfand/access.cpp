@@ -1050,42 +1050,44 @@ bool _B(FieldDescr* F)
 }
 
 /// Save NUMBER to the field
-void R_(FieldDescr* F, double R)
+void R_(FieldDescr* F, double R, void* record)
 {
-	void* p = CRecPtr;
-	BYTE* bp = (BYTE*)p + F->Displ;
+	BYTE* pRec = nullptr;
 	pstring s; WORD m = 0; longint l = 0;
 	if ((F->Flg & f_Stored) != 0) {
+		if (record == nullptr) { pRec = (BYTE*)CRecPtr + F->Displ; }
+		else { pRec = (BYTE*)record + F->Displ; }
+
 		m = F->M;
 		switch (F->Typ) {
 		case 'F': {
 			if (CFile->Typ == 'D') {
 				if ((F->Flg & f_Comma) != 0) R = R / Power10[m];
 				str(F->NBytes, s);
-				Move(&s[1], bp, F->NBytes);
+				Move(&s[1], pRec, F->NBytes);
 			}
 			else {
 				if ((F->Flg & f_Comma) == 0) R = R * Power10[m];
-				FixFromReal(R, bp, F->NBytes);
+				FixFromReal(R, pRec, F->NBytes);
 			}
 			break;
 		}
 		case 'D': {
 			switch (CFile->Typ) {
 			case '8': {
-				if (trunc(R) == 0) *(long*)&bp = 0;
-				else *(long*)bp = trunc(R - FirstDate);
+				if (trunc(R) == 0) *(long*)&pRec = 0;
+				else *(long*)pRec = trunc(R - FirstDate);
 				break;
 			}
 			case 'D': {
 				s = StrDate(R, "YYYYMMDD");
-				Move(&s[1], bp, 8);
+				Move(&s[1], pRec, 8);
 				break;
 			}
 			default: {
 				auto r48 = DoubleToReal48(R);
 				for (size_t i = 0; i < 6; i++) {
-					bp[i] = r48[i];
+					pRec[i] = r48[i];
 				}
 				break;
 			}
@@ -1095,7 +1097,7 @@ void R_(FieldDescr* F, double R)
 		case 'R': {
 			auto r48 = DoubleToReal48(R);
 			for (size_t i = 0; i < 6; i++) {
-				bp[i] = r48[i];
+				pRec[i] = r48[i];
 			}
 			break;
 		}

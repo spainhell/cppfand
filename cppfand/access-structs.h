@@ -53,19 +53,6 @@ struct KeyInD : public Chained // r89
 	std::string X2;
 };
 
-//class SumElem // r95
-//{
-//public:
-//	SumElem() {}
-//	SumElem(instr_type instr, double r, FrmlElem* frml)	{
-//		
-//	}
-//private:
-//	std::stack<FrmlElemSum*> *frmlStack = new std::stack<FrmlElemSum*>();
-//	// SumElem* Chain = nullptr;
-//	// FrmlElemSum* Frml = nullptr;
-//};
-
 struct structXPath
 {
 	longint Page = 0;
