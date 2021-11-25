@@ -177,7 +177,7 @@ void GetIndexSort(Instr_getindex* PD)
 		}
 		kf = PD->giKFlds;
 		if (kf == nullptr) kf = k->KFlds;
-		kNew = new XWKey(); // (XWKey*)GetZStore(sizeof(*kNew));
+		kNew = new XWKey();
 		kNew->Open(kf, true, false);
 		CreateWIndex(Scan, kNew, 'X');
 		k->Close();

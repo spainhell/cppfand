@@ -1244,14 +1244,14 @@ void SetNewCRec(longint N, bool withRead)
 	if (withRead) RdRec(CRec());
 }
 
-void WriteSL(StringList SL)
+void WriteSL(StringListEl* SL)
 {
 	while (SL != nullptr) {
 		WORD Row = screen.WhereY();
 		// WrStyleStr(SL->S, E->Attr);
 		screen.WriteStyledStringToWindow(SL->S, E->Attr);
 		screen.GotoXY(E->FrstCol, Row + 1);
-		SL = (StringList)SL->Chain;
+		SL = (StringListEl*)SL->Chain;
 	}
 }
 
@@ -1392,7 +1392,7 @@ void BuildWork()
 	}
 	else {
 #ifdef FandSQL
-		if (CFile->IsSQLFile && (bool = nullptr)) {
+		if (CFile->IsSQLFile && (boolP == nullptr)) {
 			l = CFile->RecLen; f = CFile->FldD; OnlyKeyArgFlds(WK);
 		}
 #endif
@@ -1402,7 +1402,6 @@ void BuildWork()
 #endif
 			(boolP != nullptr))
 			if ((K != nullptr) && !K->InWork && (ki == nullptr)) K = nullptr;
-		//New(Scan, Init(CFile, K, ki, false));
 		Scan = new XScan(CFile, K, ki, false);
 		Scan->Reset(boolP, E->SQLFilter);
 	}

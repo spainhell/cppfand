@@ -641,92 +641,6 @@ void DeleteRec(longint N)
 	DecNRecs(1);
 }
 
-void LongS_(FieldDescr* F, LongStr* S)
-{
-	// asi se vzdy uklada do souboru (nebo pracovniho souboru)
-	// nakonec vola T_
-	longint Pos; LockMode md;
-
-	if ((F->Flg & f_Stored) != 0) {
-		if (S->LL == 0) T_(F, 0);
-		else {
-			if ((F->Flg & f_Encryp) != 0) Code(S->A, S->LL);
-#ifdef FandSQL
-			if (CFile->IsSQLFile) { SetTWorkFlag; goto label1; }
-			else
-#endif
-				if (HasTWorkFlag())
-					label1:
-			Pos = TWork.Store(S->A, S->LL);
-				else {
-					md = NewLMode(WrMode);
-					Pos = CFile->TF->Store(S->A, S->LL);
-					OldLMode(md);
-				}
-			if ((F->Flg & f_Encryp) != 0) Code(S->A, S->LL);
-			T_(F, Pos);
-		}
-	}
-}
-
-void S_(FieldDescr* F, std::string S, void* record)
-{
-	S = S.substr(0, F->L); // delka retezce je max. F->L
-	const BYTE LeftJust = 1;
-	BYTE* pRec = nullptr;
-
-	if ((F->Flg & f_Stored) != 0) {
-		if (record == nullptr) { pRec = (BYTE*)CRecPtr + F->Displ; }
-		else { pRec = (BYTE*)record + F->Displ; }
-		integer L = F->L;
-		integer M = F->M;
-		switch (F->Typ) {
-		case 'A': {
-			if (M == LeftJust) {
-				// doplnime mezery zprava
-				memcpy(pRec, S.c_str(), S.length()); // probiha kontrola max. delky retezce
-				memset(&pRec[S.length()], ' ', F->L - S.length());
-			}
-			else {
-				// doplnime mezery zleva
-				memset(pRec, ' ', F->L - S.length());
-				memcpy(&pRec[F->L - S.length()], S.c_str(), S.length());
-			}
-			break;
-		}
-		case 'N': {
-			BYTE tmpArr[80]{ 0 };
-			if (M == LeftJust) {
-				// doplnime nuly zprava
-				memcpy(tmpArr, S.c_str(), S.length());
-				memset(&tmpArr[F->L - S.length()], '0', F->L - S.length());
-			}
-			else {
-				// doplnime mezery zleva
-				memset(tmpArr, ' ', F->L - S.length());
-				memcpy(&tmpArr[F->L - S.length()], S.c_str(), S.length());
-			}
-			bool odd = F->L % 2 == 1; // lichy pocet znaku
-			for (size_t i = 0; i < F->NBytes; i++) {
-				if (odd && i == F->NBytes - 1) {
-					pRec[i] = ((tmpArr[2 * i] - 0x30) << 4);
-				}
-				else {
-					pRec[i] = ((tmpArr[2 * i] - 0x30) << 4) + (tmpArr[2 * i + 1] - 0x30);
-				}
-			}
-			break;
-		}
-		case 'T': {
-			LongStr* ss = CopyToLongStr(S);
-			LongS_(F, ss);
-			ReleaseStore(ss);
-			break;
-		}
-		}
-	}
-}
-
 void ZeroAllFlds()
 {
 	FillChar(CRecPtr, CFile->RecLen, 0);
@@ -792,6 +706,159 @@ void AsgnParFldFrml(FileD* FD, FieldDescr* F, FrmlElem* Z, bool Ad)
 	CFile = cf; CRecPtr = cr;
 }
 
+double _RforD(FieldDescr* F, void* P)
+{
+	std::string s;
+	integer err;
+	double r = 0;
+	s[0] = F->NBytes;
+	Move(P, &s[1], s.length());
+	switch (F->Typ) {
+	case 'F': {
+		ReplaceChar(s, ',', '.');
+		if ((F->Flg & f_Comma) != 0) {
+			size_t i = s.find('.');
+			if (i != std::string::npos) s.erase(i, 1);
+		}
+		val(LeadChar(' ', TrailChar(s, ' ')), r, err);
+		break;
+	}
+	case 'D': r = ValDate(s, "YYYYMMDD"); break;
+	}
+	return r;
+}
+
+/// Read BOOL from the record
+bool _B(FieldDescr* F)
+{
+	bool result = false;
+	void* p = CRecPtr;
+	unsigned char* CP = (unsigned char*)p + F->Displ;
+	if ((F->Flg & f_Stored) != 0) {
+		if (CFile->Typ == 'D') result = *CP == 'Y' || *CP == 'y' || *CP == 'T' || *CP == 't';
+		else if ((*CP == '\0') || (*CP == 0xFF)) result = false;
+		else result = true;
+	}
+	else result = RunBool(F->Frml);
+	return result;
+}
+
+/// Save BOOL into the record
+void B_(FieldDescr* F, bool B)
+{
+	void* p = CRecPtr;
+	char* pB = (char*)p + F->Displ;
+	if ((F->Typ == 'B') && ((F->Flg & f_Stored) != 0)) {
+		if (CFile->Typ == 'D')
+		{
+			if (B) *pB = 'T';
+			else *pB = 'F';
+		}
+		else *pB = B;
+	}
+}
+
+/// Read NUMBER from the record
+double _R(FieldDescr* F)
+{
+	void* P = CRecPtr;
+	char* source = (char*)P + F->Displ;
+	double result = 0.0;
+	double r;
+
+	if ((F->Flg & f_Stored) != 0) {
+		if (CFile->Typ == 'D') result = _RforD(F, source);
+		else switch (F->Typ) {
+		case 'F': { // FIX CISLO (M,N)
+			r = RealFromFix(source, F->NBytes);
+			if ((F->Flg & f_Comma) == 0) result = r / Power10[F->M];
+			else result = r;
+			break;
+		}
+		case 'D': { // DATUM DD.MM.YY
+			if (CFile->Typ == '8') {
+				if (*(integer*)source == 0) result = 0.0;
+				else result = *(integer*)source + FirstDate;
+			}
+			else goto label1;
+			break;
+		}
+		case 'R': {
+		label1:
+			if (P == nullptr) result = 0;
+			else {
+				result = Real48ToDouble(source);
+			}
+			break;
+		}
+		case 'T': {
+			integer i = *(integer*)source;
+			result = i;
+			break;
+		}
+		}
+	}
+	else return RunReal(F->Frml);
+	return result;
+}
+
+/// Save NUMBER to the record
+void R_(FieldDescr* F, double R, void* record)
+{
+	BYTE* pRec = nullptr;
+	pstring s; WORD m = 0; longint l = 0;
+	if ((F->Flg & f_Stored) != 0) {
+		if (record == nullptr) { pRec = (BYTE*)CRecPtr + F->Displ; }
+		else { pRec = (BYTE*)record + F->Displ; }
+
+		m = F->M;
+		switch (F->Typ) {
+		case 'F': {
+			if (CFile->Typ == 'D') {
+				if ((F->Flg & f_Comma) != 0) R = R / Power10[m];
+				str(F->NBytes, s);
+				Move(&s[1], pRec, F->NBytes);
+			}
+			else {
+				if ((F->Flg & f_Comma) == 0) R = R * Power10[m];
+				FixFromReal(R, pRec, F->NBytes);
+			}
+			break;
+		}
+		case 'D': {
+			switch (CFile->Typ) {
+			case '8': {
+				if (trunc(R) == 0) *(long*)&pRec = 0;
+				else *(long*)pRec = trunc(R - FirstDate);
+				break;
+			}
+			case 'D': {
+				s = StrDate(R, "YYYYMMDD");
+				Move(&s[1], pRec, 8);
+				break;
+			}
+			default: {
+				auto r48 = DoubleToReal48(R);
+				for (size_t i = 0; i < 6; i++) {
+					pRec[i] = r48[i];
+				}
+				break;
+			}
+			}
+			break;
+		}
+		case 'R': {
+			auto r48 = DoubleToReal48(R);
+			for (size_t i = 0; i < 6; i++) {
+				pRec[i] = r48[i];
+			}
+			break;
+		}
+		}
+	}
+}
+
+/// Read LONG STRING from the record
 LongStr* _LongS(FieldDescr* F)
 {
 	std::string s = _StdS(F);
@@ -801,64 +868,9 @@ LongStr* _LongS(FieldDescr* F)
 	memcpy(result->A, s.c_str(), s.length());
 
 	return result;
-
-	//void* P = CRecPtr;
-	//char* source = (char*)P + F->Displ;
-	//LongStr* S = nullptr; longint Pos = 0; integer err = 0;
-	//LockMode md; WORD l = 0;
-	//if ((F->Flg & f_Stored) != 0) {
-	//	l = F->L;
-	//	switch (F->Typ)
-	//	{
-	//	case 'A':		// znakovy retezec max. 255 znaku
-	//	case 'N': {		// ciselny retezec max. 79 znaku
-	//		S = new LongStr(l);
-	//		S->LL = l;
-	//		if (F->Typ == 'A') {
-	//			Move(source, &S->A[0], l);
-	//			if ((F->Flg & f_Encryp) != 0) Code(S->A, l);
-	//			if (IsNullValue(S, l)) {
-	//				S->LL = 0;
-	//				//ReleaseAfterLongStr(S);
-	//			}
-	//		}
-	//		else if (IsNullValue(source, F->NBytes)) {
-	//			S->LL = 0;
-	//			//ReleaseAfterLongStr(S);
-	//		}
-	//		else
-	//		{
-	//			// jedna je o typ N - prevedeme cislo na znaky
-	//			// UnPack(P, S->A, l);
-	//			for (size_t i = 0; i < F->NBytes; i++) {
-	//				S->A[2 * i] = ((BYTE)source[i] >> 4) + 0x30;
-	//				S->A[2 * i + 1] = ((BYTE)source[i] & 0x0F) + 0x30;
-	//			}
-	//		}
-	//		break;
-	//	}
-	//	case 'T': {		// volny text max. 65k
-	//		if (HasTWorkFlag()) S = TWork.Read(1, _T(F));
-	//		else {
-	//			md = NewLMode(RdMode);
-	//			S = CFile->TF->Read(1, _T(F));
-	//			OldLMode(md);
-	//		}
-	//		if ((F->Flg & f_Encryp) != 0) Code(S->A, S->LL);
-	//		if (IsNullValue(S->A, S->LL))
-	//		{
-	//			S->LL = 0;
-	//			// ReleaseAfterLongStr(S);
-	//		}
-	//		break;
-	//	}
-	//	}
-	//	return S;
-	//}
-	//return RunLongStr(F->Frml);
 }
 
-// z CRecPtr vyète øetìzec o délce F->L z pozice F->Displ
+/// Read PASCAL STRING from the record
 pstring _ShortS(FieldDescr* F)
 {
 	void* P = CRecPtr;
@@ -909,6 +921,7 @@ pstring _ShortS(FieldDescr* F)
 	return RunShortStr(F->Frml);
 }
 
+/// Read STD::STRING from the record
 std::string _StdS(FieldDescr* F)
 {
 	void* P = CRecPtr;
@@ -968,155 +981,91 @@ std::string _StdS(FieldDescr* F)
 	return RunStdStr(F->Frml);
 }
 
-double _RforD(FieldDescr* F, void* P)
+/// Save LONG STRING to the record
+void LongS_(FieldDescr* F, LongStr* S)
 {
-	std::string s;
-	integer err;
-	double r = 0;
-	s[0] = F->NBytes;
-	Move(P, &s[1], s.length());
-	switch (F->Typ) {
-	case 'F': {
-		ReplaceChar(s, ',', '.');
-		if ((F->Flg & f_Comma) != 0) {
-			size_t i = s.find('.');
-			if (i != std::string::npos) s.erase(i, 1);
-		}
-		val(LeadChar(' ', TrailChar(s, ' ')), r, err);
-		break;
-	}
-	case 'D': r = ValDate(s, "YYYYMMDD"); break;
-	}
-	return r;
-}
-
-/// Read NUMBER from the field
-double _R(FieldDescr* F)
-{
-	void* P = CRecPtr;
-	char* source = (char*)P + F->Displ;
-	double result = 0.0;
-	double r;
+	// asi se vzdy uklada do souboru (nebo pracovniho souboru)
+	// nakonec vola T_
+	longint Pos; LockMode md;
 
 	if ((F->Flg & f_Stored) != 0) {
-		if (CFile->Typ == 'D') result = _RforD(F, source);
-		else switch (F->Typ) {
-		case 'F': { // FIX CISLO (M,N)
-			r = RealFromFix(source, F->NBytes);
-			if ((F->Flg & f_Comma) == 0) result = r / Power10[F->M];
-			else result = r;
-			break;
+		if (S->LL == 0) T_(F, 0);
+		else {
+			if ((F->Flg & f_Encryp) != 0) Code(S->A, S->LL);
+#ifdef FandSQL
+			if (CFile->IsSQLFile) { SetTWorkFlag; goto label1; }
+			else
+#endif
+				if (HasTWorkFlag())
+					label1:
+			Pos = TWork.Store(S->A, S->LL);
+				else {
+					md = NewLMode(WrMode);
+					Pos = CFile->TF->Store(S->A, S->LL);
+					OldLMode(md);
+				}
+			if ((F->Flg & f_Encryp) != 0) Code(S->A, S->LL);
+			T_(F, Pos);
 		}
-		case 'D': { // DATUM DD.MM.YY
-			if (CFile->Typ == '8') {
-				if (*(integer*)source == 0) result = 0.0;
-				else result = *(integer*)source + FirstDate;
+	}
+}
+
+/// Save STD::STRING to the record
+void S_(FieldDescr* F, std::string S, void* record)
+{
+	S = S.substr(0, F->L); // delka retezce je max. F->L
+	const BYTE LeftJust = 1;
+	BYTE* pRec = nullptr;
+
+	if ((F->Flg & f_Stored) != 0) {
+		if (record == nullptr) { pRec = (BYTE*)CRecPtr + F->Displ; }
+		else { pRec = (BYTE*)record + F->Displ; }
+		integer L = F->L;
+		integer M = F->M;
+		switch (F->Typ) {
+		case 'A': {
+			if (M == LeftJust) {
+				// doplnime mezery zprava
+				memcpy(pRec, S.c_str(), S.length()); // probiha kontrola max. delky retezce
+				memset(&pRec[S.length()], ' ', F->L - S.length());
 			}
-			else goto label1;
+			else {
+				// doplnime mezery zleva
+				memset(pRec, ' ', F->L - S.length());
+				memcpy(&pRec[F->L - S.length()], S.c_str(), S.length());
+			}
 			break;
 		}
-		case 'R': {
-		label1:
-			if (P == nullptr) result = 0;
+		case 'N': {
+			BYTE tmpArr[80]{ 0 };
+			if (M == LeftJust) {
+				// doplnime nuly zprava
+				memcpy(tmpArr, S.c_str(), S.length());
+				memset(&tmpArr[F->L - S.length()], '0', F->L - S.length());
+			}
 			else {
-				result = Real48ToDouble(source);
+				// doplnime mezery zleva
+				memset(tmpArr, ' ', F->L - S.length());
+				memcpy(&tmpArr[F->L - S.length()], S.c_str(), S.length());
+			}
+			bool odd = F->L % 2 == 1; // lichy pocet znaku
+			for (size_t i = 0; i < F->NBytes; i++) {
+				if (odd && i == F->NBytes - 1) {
+					pRec[i] = ((tmpArr[2 * i] - 0x30) << 4);
+				}
+				else {
+					pRec[i] = ((tmpArr[2 * i] - 0x30) << 4) + (tmpArr[2 * i + 1] - 0x30);
+				}
 			}
 			break;
 		}
 		case 'T': {
-			integer i = *(integer*)source;
-			result = i;
+			LongStr* ss = CopyToLongStr(S);
+			LongS_(F, ss);
+			ReleaseStore(ss);
 			break;
 		}
 		}
-	}
-	else return RunReal(F->Frml);
-	return result;
-}
-
-/// Read BOOL from the field
-bool _B(FieldDescr* F)
-{
-	bool result = false;
-	void* p = CRecPtr;
-	unsigned char* CP = (unsigned char*)p + F->Displ;
-	if ((F->Flg & f_Stored) != 0) {
-		if (CFile->Typ == 'D') result = *CP == 'Y' || *CP == 'y' || *CP == 'T' || *CP == 't';
-		else if ((*CP == '\0') || (*CP == 0xFF)) result = false;
-		else result = true;
-	}
-	else result = RunBool(F->Frml);
-	return result;
-}
-
-/// Save NUMBER to the field
-void R_(FieldDescr* F, double R, void* record)
-{
-	BYTE* pRec = nullptr;
-	pstring s; WORD m = 0; longint l = 0;
-	if ((F->Flg & f_Stored) != 0) {
-		if (record == nullptr) { pRec = (BYTE*)CRecPtr + F->Displ; }
-		else { pRec = (BYTE*)record + F->Displ; }
-
-		m = F->M;
-		switch (F->Typ) {
-		case 'F': {
-			if (CFile->Typ == 'D') {
-				if ((F->Flg & f_Comma) != 0) R = R / Power10[m];
-				str(F->NBytes, s);
-				Move(&s[1], pRec, F->NBytes);
-			}
-			else {
-				if ((F->Flg & f_Comma) == 0) R = R * Power10[m];
-				FixFromReal(R, pRec, F->NBytes);
-			}
-			break;
-		}
-		case 'D': {
-			switch (CFile->Typ) {
-			case '8': {
-				if (trunc(R) == 0) *(long*)&pRec = 0;
-				else *(long*)pRec = trunc(R - FirstDate);
-				break;
-			}
-			case 'D': {
-				s = StrDate(R, "YYYYMMDD");
-				Move(&s[1], pRec, 8);
-				break;
-			}
-			default: {
-				auto r48 = DoubleToReal48(R);
-				for (size_t i = 0; i < 6; i++) {
-					pRec[i] = r48[i];
-				}
-				break;
-			}
-			}
-			break;
-		}
-		case 'R': {
-			auto r48 = DoubleToReal48(R);
-			for (size_t i = 0; i < 6; i++) {
-				pRec[i] = r48[i];
-			}
-			break;
-		}
-		}
-	}
-}
-
-/// Save BOOL into the field
-void B_(FieldDescr* F, bool B)
-{
-	void* p = CRecPtr;
-	char* pB = (char*)p + F->Displ;
-	if ((F->Typ == 'B') && ((F->Flg & f_Stored) != 0)) {
-		if (CFile->Typ == 'D')
-		{
-			if (B) *pB = 'T';
-			else *pB = 'F';
-		}
-		else *pB = B;
 	}
 }
 
