@@ -41,6 +41,7 @@ XWFile* XKey::XF()
 
 void XWFile::RdPage(XPage* P, longint N)
 {
+	P->Clean();
 	if ((N == 0) || (N > MaxPage)) Err(831);
 	// puvodne se nacitalo celych XPageSize z P, bylo nutno to rozhodit na jednotlive tridni promenne
 	RdWrCache(true, Handle, NotCached(), N << XPageShft, 1, &P->IsLeaf);

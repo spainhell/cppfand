@@ -44,8 +44,6 @@ public:
 	void Serialize(); // generate array from vector
 	void Deserialize(); // generate vector from array
 private:
-	XItem* _xItem = nullptr;
-
 	// Leaf section
 	std::vector<XItemLeaf*>::iterator _addToLeafItems(XItemLeaf* xi, size_t pos);
 	std::vector<XItemLeaf*> _leafItems;

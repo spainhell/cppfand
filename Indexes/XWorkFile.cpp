@@ -46,11 +46,11 @@ void XWorkFile::Main(char Typ)
 			SortMerge();
 		}
 		FinishIndex();
-		ReleaseStore(PX);
+		delete PX; PX = nullptr;
 		KD = KD->Chain;
 	}
 	XF->ReleasePage(XPP, NxtXPage);
-	ReleaseStore(XPP);
+	delete XPP;	XPP = nullptr;
 }
 
 void XWorkFile::CopyIndex(XKey* K, KeyFldD* KF, char Typ)
@@ -114,13 +114,12 @@ label1:
 	else n = NxtXPage;
 
 	// kopie XXPage do XPage a jeji zapis;
-	auto xp = new XPage();
+	auto xp = std::make_unique<XPage>();
 	xp->IsLeaf = p->IsLeaf;
 	xp->GreaterPage = p->GreaterPage;
 	xp->NItems = p->NItems;
 	memcpy(xp->A, p->A, sizeof(p->A)); // p->A ma 1017B, xp->A ma 1024B
-	XF->WrPage(xp, n, false);
-	delete xp; xp = nullptr;
+	XF->WrPage(xp.get(), n, false);
 
 	p = p1;
 	if (p != nullptr) {

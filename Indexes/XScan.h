@@ -9,6 +9,7 @@ struct KeyInD;
 class XScan
 {
 public:
+	~XScan();
 	FileD* FD = nullptr;
 	XKey* Key = nullptr;
 	FrmlElem* Bool = nullptr;

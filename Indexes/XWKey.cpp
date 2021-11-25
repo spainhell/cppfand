@@ -16,11 +16,11 @@ void XWKey::Open(KeyFldD* KF, bool Dupl, bool Intvl)
 	Intervaltest = Intvl;
 	NR = 0;
 	//XPage* p = (XPage*)GetStore(sizeof(p)); 
-	XPage* p = new XPage();
-	IndexRoot = XF()->NewPage(p);
+	auto p = std::make_unique<XPage>();
+	IndexRoot = XF()->NewPage(p.get());
 	p->IsLeaf = true;
-	XF()->WrPage(p, IndexRoot);
-	ReleaseStore(p);
+	XF()->WrPage(p.get(), IndexRoot);
+	//ReleaseStore(p);
 	IndexLen = 0;
 	while (KF != nullptr) {
 		if (KF->FldD != nullptr) IndexLen += KF->FldD->NBytes;
@@ -43,25 +43,25 @@ void XWKey::Release()
 void XWKey::ReleaseTree(longint Page, bool IsClose)
 {
 	if ((Page == 0) || (Page > XF()->MaxPage)) return;
-	XPage* p = new XPage(); // (XPage*)GetStore(XPageSize);
-	XF()->RdPage(p, Page);
+	auto p = std::make_unique<XPage>();
+	XF()->RdPage(p.get(), Page);
 	if (!p->IsLeaf) {
 		WORD n = p->NItems;
 		for (WORD i = 1; i <= n; i++) {
 			XItemNonLeaf* item = (XItemNonLeaf*)p->XI(i);
 			ReleaseTree(item->DownPage, IsClose);
-			XF()->RdPage(p, Page);
+			XF()->RdPage(p.get(), Page);
 		}
 		if (p->GreaterPage != 0) ReleaseTree(p->GreaterPage, IsClose);
 	}
 	if ((Page != IndexRoot) || IsClose)
-		XF()->ReleasePage(p, Page);
+		XF()->ReleasePage(p.get(), Page);
 	else {
-		FillChar(p, XPageSize, 0);
+		p->Clean(); //FillChar(p.get(), XPageSize, 0);
 		p->IsLeaf = true;
-		XF()->WrPage(p, Page);
+		XF()->WrPage(p.get(), Page);
 	}
-	ReleaseStore(p);
+	//ReleaseStore(p);
 }
 
 void XWKey::OneRecIdx(KeyFldD* KF, longint N)
@@ -101,12 +101,12 @@ void XWKey::AddToRecNr(longint RecNr, integer Dif)
 {
 	if (NRecs() == 0) return;
 	NrToPath(1);
-	XPage* p = new XPage();
+	auto p = std::make_unique<XPage>();
 	longint pg = XPath[XPathN].Page;
 	integer j = XPath[XPathN].I;
 	size_t item = j;
 	do {
-		XF()->RdPage(p, pg);
+		XF()->RdPage(p.get(), pg);
 		integer n = p->NItems - j + 1;
 		while (n > 0) {
 			XItem* x = p->XI(j++);
@@ -114,9 +114,9 @@ void XWKey::AddToRecNr(longint RecNr, integer Dif)
 			if (nn >= RecNr) x->PutN(nn + Dif);
 			n--;
 		}
-		XF()->WrPage(p, pg);
+		XF()->WrPage(p.get(), pg);
 		pg = p->GreaterPage;
 		j = 1;
 	} while (pg != 0);
-	ReleaseStore(p);
+	//ReleaseStore(p);
 }

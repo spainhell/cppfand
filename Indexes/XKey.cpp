@@ -68,19 +68,18 @@ bool XKey::Search(XString& XX, bool AfterEqu, longint& RecNr)
 bool XKey::Search(std::string const X, bool AfterEqu, longint& RecNr)
 {
 	bool searchResult = false;
-	XPage* p = nullptr;
 	WORD iItem = 0;
 	XItem* x = nullptr;
 	size_t iItemIndex = 0;
 	char result = '\0';
-	p = new XPage();
+	auto p = std::make_unique<XPage>();
 	XPathN = 1;
 	longint page = IndexRoot;
 	AfterEqu = AfterEqu && Duplic;
 
 	while (true) {
 		XPath[XPathN].Page = page;
-		XF()->RdPage(p, page); // je nactena asi cela stranka indexu
+		XF()->RdPage(p.get(), page); // je nactena asi cela stranka indexu
 
 		WORD o = p->Off();
 		WORD nItems = p->NItems;
@@ -88,8 +87,7 @@ bool XKey::Search(std::string const X, bool AfterEqu, longint& RecNr)
 			RecNr = CFile->NRecs + 1;
 			XPath[1].I = 1;
 			searchResult = false;
-			ReleaseStore(p);
-			delete x;
+			delete x; x = nullptr;
 			return searchResult;
 		}
 
@@ -118,8 +116,7 @@ bool XKey::Search(std::string const X, bool AfterEqu, longint& RecNr)
 			else {
 				searchResult = false;
 			}
-			ReleaseStore(p);
-			delete x;
+			delete x; x = nullptr;
 			return searchResult;
 		}
 		else {
@@ -132,7 +129,7 @@ bool XKey::Search(std::string const X, bool AfterEqu, longint& RecNr)
 			page = ((XItemNonLeaf*)x)->DownPage;
 		}
 		XPathN++;
-		delete x;
+		delete x; x = nullptr;
 	}
 }
 
@@ -144,10 +141,10 @@ bool XKey::SearchIntvl(XString& XX, bool AfterEqu, longint& RecNr)
 longint XKey::PathToNr()
 {
 	longint n = 0;
-	XPage* p = new XPage();
+	auto p = std::make_unique<XPage>();
 	size_t item = 1;
 	for (WORD j = 1; j <= XPathN - 1; j++) {
-		XF()->RdPage(p, XPath[j].Page);
+		XF()->RdPage(p.get(), XPath[j].Page);
 		for (WORD i = 1; i <= XPath[j].I - 1; i++) {
 			XItem* x = p->XI(item++);
 			n += x->GetN();
@@ -157,7 +154,6 @@ longint XKey::PathToNr()
 	if (n > NRecs() + 1) {
 		XF()->Err(834);
 	}
-	ReleaseStore(p);
 	return n;
 }
 
@@ -166,13 +162,13 @@ void XKey::NrToPath(longint I)
 	auto log = Logging::getInstance();
 	log->log(loglevel::DEBUG, "XKey::NrToPath(%i)", I);
 
-	XPage* p = new XPage(); // (XPage*)GetStore(XPageSize);
+	auto p = std::make_unique<XPage>();
 	longint page = IndexRoot;
 	XPathN = 0;
 	size_t item = 1;
 
 	while (true) {
-		XF()->RdPage(p, page);
+		XF()->RdPage(p.get(), page);
 		XPathN++;
 		XPath[XPathN].Page = page;
 		if (p->IsLeaf) {
@@ -180,7 +176,7 @@ void XKey::NrToPath(longint I)
 				XF()->Err(837);
 			}
 			XPath[XPathN].I = I;
-			ReleaseStore(p);
+			//ReleaseStore(p);
 			return;
 		}
 		else {
@@ -207,15 +203,17 @@ void XKey::NrToPath(longint I)
 longint XKey::PathToRecNr()
 {
 	auto X = XPath[XPathN];
-	XPage* p = new XPage();
-	XF()->RdPage(p, X.Page);
+	auto p = std::make_unique<XPage>();
+
+	XF()->RdPage(p.get(), X.Page);
 	auto pxi = p->XI(X.I);
+
 	longint recnr = pxi->GetN();
 	longint result = recnr;
 	if ((recnr == 0) || (recnr > CFile->NRecs)) {
 		XF()->Err(835);
 	}
-	ReleaseStore(p);
+	//ReleaseStore(p);
 	return result;
 }
 
@@ -225,13 +223,12 @@ bool XKey::RecNrToPath(XString& XX, longint RecNr)
 	XItem* x = nullptr; longint n = 0;
 	XX.PackKF(KFlds);
 	Search(XX, false, n);
-	XPage* p = new XPage();
+	auto p = std::make_unique<XPage>();
 	size_t item = 1;
-
 
 	structXPath* X = &XPath[XPathN];
 label1:
-	XF()->RdPage(p, X->Page);
+	XF()->RdPage(p.get(), X->Page);
 	x = p->XI(X->I);
 	if (!(p->GetKey(X->I) == XX.S)) goto label3;
 label2:
@@ -247,19 +244,19 @@ label2:
 	}
 
 label3:
-	ReleaseStore(p);
+	//ReleaseStore(p);
 	return result;
 }
 
 bool XKey::IncPath(WORD J, longint& Pg)
 {
-	XPage* p = new XPage(); // (XPage*)GetStore(XPageSize);
+	auto p = std::make_unique<XPage>();
 	bool result = false;
 	auto X = XPath[J];
 	if (J == 0) { goto label2; } /* !!! with XPath[J] do!!! */
 	{
 	label1:
-		XF()->RdPage(p, X.Page);
+		XF()->RdPage(p.get(), X.Page);
 		if (X.I > p->NItems)
 			if (IncPath(J - 1, X.Page)) { X.I = 0; goto label1; }
 			else goto label2;
@@ -280,7 +277,7 @@ bool XKey::IncPath(WORD J, longint& Pg)
 	}
 	result = true;
 label2:
-	ReleaseStore(p);
+	//ReleaseStore(p);
 	return result;
 }
 
@@ -295,12 +292,10 @@ longint XKey::NrToRecNr(longint I)
 pstring XKey::NrToStr(longint I)
 {
 	pstring result;
-	XPage* p = new XPage(); // (XPage*)GetStore(XPageSize);
+	auto p = std::make_unique<XPage>();
 	NrToPath(I);
-	/* !!! with XPath[XPathN] do!!! */
-	XF()->RdPage(p, XPath[XPathN].Page);
+	XF()->RdPage(p.get(), XPath[XPathN].Page);
 	result = p->GetKey(I);
-	ReleaseStore(p);
 	return result;
 }
 
@@ -532,6 +527,9 @@ void XKey::DeleteOnPath()
 		}
 		XF()->WrPage(p2, uppage);
 	}
+	delete p;
+	delete p1;
+	delete p2;
 }
 
 void XKey::BalancePages(XPage* P1, XPage** P2, bool& Released)

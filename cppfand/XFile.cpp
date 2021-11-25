@@ -21,8 +21,8 @@ XFile::XFile(const XFile& orig)
 
 void XFile::SetEmpty()
 {
-	auto p = new XPage(); // (XPage*)GetZStore(XPageSize);
-	WrPage(p, 0);
+	auto p = std::make_unique<XPage>();
+	WrPage(p.get(), 0);
 	p->IsLeaf = true;
 	FreeRoot = 0;
 	NRecs = 0;
@@ -30,10 +30,10 @@ void XFile::SetEmpty()
 	while (k != nullptr) {
 		longint n = k->IndexRoot;
 		MaxPage = n;
-		WrPage(p, n);
+		WrPage(p.get(), n);
 		k = k->Chain;
 	}
-	ReleaseStore(p);
+	//ReleaseStore(p);
 	WrPrefix();
 }
 

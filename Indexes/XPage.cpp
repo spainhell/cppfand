@@ -22,12 +22,7 @@ XPage::XPage(const XPage& orig)
 
 XPage::~XPage()
 {
-	for (size_t i = 0; i < _leafItems.size(); i++) {
-		delete _leafItems[i];
-	}
-	for (size_t i = 0; i < _nonLeafItems.size(); i++) {
-		delete _nonLeafItems[i];
-	}
+	Clean();
 }
 
 WORD XPage::Off()
@@ -320,6 +315,12 @@ void XPage::Clean()
 	GreaterPage = 0;
 	NItems = 0;
 	memset(A, 0, sizeof(A));
+	for (size_t i = 0; i < _leafItems.size(); i++) {
+		delete _leafItems[i];
+	}
+	for (size_t i = 0; i < _nonLeafItems.size(); i++) {
+		delete _nonLeafItems[i];
+	}
 	_leafItems.clear();
 	_nonLeafItems.clear();
 }
@@ -343,7 +344,7 @@ void XPage::Deserialize()
 		for (WORD i = 0; i < NItems; i++) {
 			auto x = new XItemLeaf(&A[offset]);
 			offset += x->size();
-			_leafItems.push_back(std::move(x));
+			_leafItems.push_back(x);
 		}
 	}
 	else {
@@ -351,7 +352,7 @@ void XPage::Deserialize()
 		for (WORD i = 0; i < NItems; i++) {
 			auto x = new XItemNonLeaf(&A[offset]);
 			offset += x->size();
-			_nonLeafItems.push_back(std::move(x));
+			_nonLeafItems.push_back(x);
 		}
 	}
 }

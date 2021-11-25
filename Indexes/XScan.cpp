@@ -29,6 +29,11 @@ void CompKIFrml(XKey* K, KeyInD* KI, bool AddFF)
 	}
 }
 
+XScan::~XScan()
+{
+	delete P;
+}
+
 XScan::XScan(FileD* aFD, XKey* aKey, KeyInD* aKIRoot, bool aWithT)
 {
 	FD = aFD; Key = aKey; KIRoot = aKIRoot; withT = aWithT;
