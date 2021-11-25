@@ -20,7 +20,7 @@ public:
 	bool Contains(TPoint* P);
 };
 
-class TWindow // TODO: : TObject
+class TWindow
 {
 public:
 	TWindow();
@@ -47,14 +47,14 @@ public:
 class TMenu : public TWindow
 {
 public:
-	//TMenu();
+	TMenu();
 	void InitTMenu();
 	virtual ~TMenu();
-	TMenu* parent;
-	WORD iTxt, nTxt, mx, my;
-	RdbD* HlpRdb;
+	TMenu* parent = nullptr;
+	WORD iTxt = 0, nTxt = 0, mx = 0, my = 0;
+	RdbD* HlpRdb = nullptr;
 	BYTE Palette[4]; // norm, curr, char, disabled
-	bool IsBoxS;
+	bool IsBoxS = false;
 	void ClearHlp();
 	virtual bool Enabled(WORD I) = 0;
 	virtual bool ExecItem(WORD& I) = 0;

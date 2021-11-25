@@ -192,6 +192,10 @@ void TWindow::SetState(WORD Flag, bool On)
 	else { State = State & !Flag; }
 }
 
+TMenu::TMenu() : TWindow()
+{
+}
+
 void TMenu::ClearHlp()
 {
 	if (HlpRdb != nullptr) ClearLL(screen.colors.uNorm);
@@ -416,7 +420,7 @@ void TMenu::SetPalette(Instr_menu* aPD)
 //	this.my = my;
 //}
 
-TMenuBox::TMenuBox()
+TMenuBox::TMenuBox() : TMenu()
 {
 }
 
@@ -534,14 +538,11 @@ void TMenuBox::GetItemRect(WORD I, TRect* R)
 	R->Size.Y = 1;
 }
 
-//TMenuBoxS::TMenuBoxS()
-//{
-//}
-
-TMenuBoxS::TMenuBoxS(WORD C1, WORD R1, pstring Msg)
+TMenuBoxS::TMenuBoxS(WORD C1, WORD R1, pstring Msg) : TMenuBox()
 {
 	MsgTxt = Msg;
-	HlpRdb = (RdbD*)HelpFD;
+
+	HlpRdb = new RdbD(); HlpRdb->HelpFD = HelpFD;
 	IsBoxS = true;
 	nTxt = CountDLines(&MsgTxt[1], MsgTxt.length(), '/') - 2;
 	Move(&screen.colors.mNorm, Palette, 3);
@@ -964,7 +965,7 @@ LongStr* GetHlpText(RdbD* R, std::string S, bool ByName, WORD& IRec)
 	void* cr = CRecPtr;
 	if (ByName) {
 		if (R == nullptr) goto label5;
-		//CFile = (FileD*)R;  // toto je nesmysl
+		//CFile = (FileD*)R;  // TODO: toto je nesmysl
 		CFile = R->HelpFD;
 		if (CFile == HelpFD) {
 			if (CFile->Handle == nullptr) goto label5;
