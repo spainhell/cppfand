@@ -1696,23 +1696,32 @@ void UpdMemberRef(void* POld, void* PNew)
 
 void WrJournal(char Upd, void* RP, double Time)
 {
-	WORD* RPOfs = (WORD*)RP;
+	size_t srcOffset = 0;
 	if (E->Journal != nullptr) {
 		WORD l = CFile->RecLen;
 		longint n = AbsRecNr(CRec());
-		if ((CFile->XF != nullptr)) { RPOfs++; l--; }
+		if (CFile->XF != nullptr)	{
+			srcOffset += 2;
+			l--;
+		}
 		CFile = E->Journal;
 		CRecPtr = GetRecSpace();
-		FieldDPtr F = CFile->FldD.front();
+
+		FieldDescr* F = CFile->FldD.front();
 		std::string UpdStr = std::string(Upd, 1);
 		S_(F, UpdStr);
 		F = (FieldDescr*)F->Chain;
 		R_(F, int(n));
 		F = (FieldDescr*)F->Chain;
 		R_(F, int(UserCode));
-		F = (FieldDescr*)F->Chain; R_(F, Time);
 		F = (FieldDescr*)F->Chain;
-		Move(RP, &CRecPtr + F->Displ, l);
+		R_(F, Time);
+		F = (FieldDescr*)F->Chain;
+
+		char* dst = (char*)CRecPtr;
+		char* src = (char*)RP;
+		memcpy(&dst[F->Displ], &src[srcOffset], l);
+
 		LockMode md = NewLMode(CrMode);
 		IncNRecs(1);
 		WriteRec(CFile, CFile->NRecs, CRecPtr);
@@ -1722,7 +1731,10 @@ void WrJournal(char Upd, void* RP, double Time)
 		CRecPtr = E->NewRecPtr;
 	}
 	UpdCount++;
-	if (UpdCount == E->SaveAfter) { SaveFiles(); UpdCount = 0; }
+	if (UpdCount == E->SaveAfter) {
+		SaveFiles();
+		UpdCount = 0;
+	}
 }
 
 bool LockForMemb(FileDPtr FD, WORD Kind, LockMode NewMd, LockMode& md)
@@ -2822,10 +2834,12 @@ bool CheckForExit(bool& Quit)
 	for (auto& X : E->ExD) {
 		bool b = FieldInList(CFld->FldD, X->Flds);
 		if (X->NegFlds) b = !b;
-		if (b) if (X->Typ == 'Q') Quit = true;
-		else {
-			EdBreak = 12; LastTxtPos = -1;
-			if (!StartExit(X, true)) return result;
+		if (b) {
+			if (X->Typ == 'Q') Quit = true;
+			else {
+				EdBreak = 12; LastTxtPos = -1;
+				if (!StartExit(X, true)) return result;
+			}
 		}
 		//X = (EdExitD*)X->Chain;
 	}
@@ -3138,7 +3152,7 @@ bool EditFreeTxt(FieldDescr* F, std::string ErrMsg, bool Ed, WORD& Brk)
 	WORD R1 = 0, OldTxtPos = 0, TxtPos = 0, CtrlMsgNr = 0, C = 0, LastLen = 0;
 	LongStr* S = nullptr;
 	char Kind = '\0'; LockMode md; void* p = nullptr; longint i = 0, w = 0;
-	std::vector<EdExitD*> *X = nullptr;
+	std::vector<EdExitD*> X;
 	WORD iStk = 0;
 	struct { longint N = 0; longint I = 0; } Stk[maxStk];
 	std::string heslo;
@@ -3191,8 +3205,9 @@ label1:
 	}
 	else S = RunLongStr(F->Frml);
 label2:
-	X = nullptr;
-	if (TTExit) X = &E->ExD;
+	if (TTExit) X = E->ExD;
+	else X.clear();
+
 	Upd = false;
 	result =
 		EditText(Kind, MemoT, HdTxt, ErrMsg, S, MaxLStrLen, TxtPos, TxtXY, Breaks, X,
@@ -4635,5 +4650,6 @@ void ViewPrinterTxt()
 	V.C2 = TxtCols;
 	V.R2 = TxtRows - 1;
 	std::string ErrMsg;
-	EditTxtFile(nullptr, 'T', ErrMsg, nullptr, 1, 0, &V, 0, "", WPushPixel, nullptr);
+	std::vector<EdExitD*> emptyExitD;
+	EditTxtFile(nullptr, 'T', ErrMsg, emptyExitD, 1, 0, &V, 0, "", WPushPixel, nullptr);
 }

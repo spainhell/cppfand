@@ -115,7 +115,7 @@ void Wr(std::string s, std::string& OrigS, char Mode, BYTE SysLColor)
 	}
 }
 
-bool ScrollEvent(std::vector<EdExitD*> *ExitD, std::vector<WORD>& breakKeys)
+bool ScrollEvent(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys)
 {
 	WORD key = Event.Pressed.KeyCombination();
 	bool result = false;
@@ -144,7 +144,7 @@ bool ScrollEvent(std::vector<EdExitD*> *ExitD, std::vector<WORD>& breakKeys)
 		else {
 			//EdExitD* X = ExitD;
 			//while (X != nullptr) {
-				for (auto& X : *ExitD) {
+				for (auto& X : ExitD) {
 				if (TestExitKey(Event.Pressed.KeyCombination(), X)) {
 					result = true;
 					break;
@@ -160,7 +160,7 @@ bool ScrollEvent(std::vector<EdExitD*> *ExitD, std::vector<WORD>& breakKeys)
 	return result;
 }
 
-bool ViewEvent(std::vector<EdExitD*> *ExitD, std::vector<WORD>& breakKeys)
+bool ViewEvent(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys)
 {
 	bool result = ScrollEvent(ExitD, breakKeys);
 	if (Event.What != evKeyDown) return result;
@@ -196,7 +196,7 @@ bool ViewEvent(std::vector<EdExitD*> *ExitD, std::vector<WORD>& breakKeys)
 	return result;
 }
 
-bool MyGetEvent(char Mode, BYTE SysLColor, std::string& LastS, WORD LastNr, bool IsWrScreen, bool bScroll, std::vector<EdExitD*> *ExitD, std::vector<WORD>& breakKeys) {
+bool MyGetEvent(char Mode, BYTE SysLColor, std::string& LastS, WORD LastNr, bool IsWrScreen, bool bScroll, std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys) {
 	std::string OrigS = "    ";
 	WORD ww;
 
@@ -318,7 +318,7 @@ bool MyGetEvent(char Mode, BYTE SysLColor, std::string& LastS, WORD LastNr, bool
 	return result;
 }
 
-void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS, WORD LastNr, std::vector<WORD>& breakKeys) {
+void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS, WORD LastNr, std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys) {
 	wwmix wwmix1;
 	WORD I = 0, I1 = 0;
 	integer I2 = 0, I3 = 0;
@@ -342,7 +342,7 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 		IsWrScreen = false;
 		return;
 	}
-	if (!bScroll) { CleanFrameM(breakKeys); }
+	if (!bScroll) { CleanFrameM(ExitD, breakKeys); }
 	//NewExit(Ovr(), er);
 	//goto Opet;
 	// !!! with Event do:
@@ -354,7 +354,7 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 
 		// test all exit keys
 		//while (X != nullptr) {
-		for (auto& X : *ExitD) {
+		for (auto& X : ExitD) {
 			if (TestExitKey(key, X)) {  // nastavuje i EdBreak
 				TestKod();
 				IndT = SetInd(T, LenT, LineI, Posi);

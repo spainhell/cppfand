@@ -391,7 +391,8 @@ void CallEditTxt()
 	CPath = FExpand(CPath);
 	CVol = "";
 	std::string errMessage;
-	EditTxtFile(nullptr, 'T', errMessage, nullptr, 1, 0, nullptr, 0, "", 0, nullptr);
+	std::vector<EdExitD*> emptyEdExit;
+	EditTxtFile(nullptr, 'T', errMessage, emptyEdExit, 1, 0, nullptr, 0, "", 0, nullptr);
 }
 
 void SelectEditTxt(pstring e, bool OnFace)

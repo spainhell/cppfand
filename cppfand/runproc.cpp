@@ -106,7 +106,8 @@ void ReportProc(RprtOpt* RO, bool save)
 		w = PushW(1, 1, TxtCols, TxtRows);
 		SetPrintTxtPath();
 		std::string errMessage;
-		EditTxtFile(nullptr, md, errMessage, nullptr, 0, 0, nullptr, 0, "", 0, nullptr);
+		std::vector<EdExitD*> emptyEdExit;
+		EditTxtFile(nullptr, md, errMessage, emptyEdExit, 0, 0, nullptr, 0, "", 0, nullptr);
 		PopW(w);
 	}
 	//label2:
@@ -474,7 +475,7 @@ void EditTxtProc(Instr_edittxt* PD)
 	}
 	std::string msg;
 	if (PD->ErrMsg != nullptr) msg = RunStdStr(PD->ErrMsg);
-	EditTxtFile(lp, PD->EdTxtMode, msg, &PD->ExD, i, RunInt(PD->TxtXY), pv, a, RunShortStr(PD->Hd), PD->WFlags, &MsgS);
+	EditTxtFile(lp, PD->EdTxtMode, msg, PD->ExD, i, RunInt(PD->TxtXY), pv, a, RunShortStr(PD->Hd), PD->WFlags, &MsgS);
 	ReleaseStore(p);
 }
 
