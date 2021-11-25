@@ -330,15 +330,15 @@ void XKey::InsertOnPath(XString& XX, longint RecNr)
 	XItem* x = nullptr;
 	longint n = 0, upsum = 0;
 
-	XPage* p = new XPage();
-	XPage* p1 = new XPage();
-	XPage* upp = new XPage();
+	auto p = std::make_unique<XPage>();
+	auto p1 = std::make_unique<XPage>();
+	auto upp = std::make_unique<XPage>();
 	for (j = XPathN; j >= 1; j--) {
 		page = XPath[j].Page;
-		XF()->RdPage(p, page);
+		XF()->RdPage(p.get(), page);
 		i = XPath[j].I;
 		if (p->IsLeaf) {
-			InsertLeafItem(XX, p, upp, page, i, RecNr, uppage);
+			InsertLeafItem(XX, p.get(), upp.get(), page, i, RecNr, uppage);
 		}
 		else {
 			if (i <= p->NItems) {
@@ -349,28 +349,27 @@ void XKey::InsertOnPath(XString& XX, longint RecNr)
 			}
 			if (uppage != 0) {
 				downpage = uppage;
-				InsertNonLeafItem(XX, p, upp, page, i, uppage, upsum, downpage);
+				InsertNonLeafItem(XX, p.get(), upp.get(), page, i, uppage, upsum, downpage);
 			}
 		}
-		XF()->WrPage(p, page);
+		XF()->WrPage(p.get(), page);
 		if (uppage != 0) {
-			XF()->WrPage(upp, uppage);
+			XF()->WrPage(upp.get(), uppage);
 			upsum = upp->SumN();
-			if (upp->IsLeaf) ChainPrevLeaf(p1, uppage);
+			if (upp->IsLeaf) ChainPrevLeaf(p1.get(), uppage);
 		}
 	}
 	if (uppage != 0) {
-		page1 = XF()->NewPage(p1);
+		page1 = XF()->NewPage(p1.get());
 		p1->GreaterPage = page1;
-		p1->InsDownIndex(1, uppage, upp);
-		XF()->WrPage(p, page1);
-		XF()->WrPage(p1, page);
+		p1->InsDownIndex(1, uppage, upp.get());
+		XF()->WrPage(p.get(), page1);
+		XF()->WrPage(p1.get(), page);
 		if (upp->IsLeaf) {
 			upp->GreaterPage = page1;
-			XF()->WrPage(upp, uppage);
+			XF()->WrPage(upp.get(), uppage);
 		}
 	}
-	ReleaseStore(p);
 }
 
 void XKey::InsertNonLeafItem(XString& XX, XPage* P, XPage* UpP, longint Page, WORD I, longint& UpPage, unsigned int upSum, unsigned int downPage)
