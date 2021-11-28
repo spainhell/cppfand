@@ -2095,13 +2095,12 @@ void InstallRdb(std::string n)
 	TMenuBoxS* w = nullptr;
 	WORD i = 0;
 
-	//NewExit(Ovr(), er);
-	//goto label1;
 	CreateOpenChpt(n, false, &ww);
 	if (!ww.HasPassWord(Chpt, 1, "") && !ww.HasPassWord(Chpt, 2, "")) {
 		passw = ww.PassWord(false);
 		if (!ww.HasPassWord(Chpt, 2, passw)) {
-			WrLLF10Msg(629); goto label1;
+			WrLLF10Msg(629);
+			goto label1;
 		}
 	}
 	if (Chpt->UMode == RdOnly) {
@@ -2109,16 +2108,16 @@ void InstallRdb(std::string n)
 		goto label1;
 	}
 	RdMsg(8);
-	//New(w, Init(43, 6, StringPtr(@MsgLine)));
+
 	i = 1;
 	w = new TMenuBoxS(43, 6, MsgLine);
 label0:
 	i = w->Exec(i);
 	switch (i) {
-	case 0: { delete w; ReleaseStore(w); goto label1; }
+	case 0: { delete w; w = nullptr; goto label1; }
 	case 1: { UpdateCat(); goto label0; }
-	case 2: UpdateUTxt(); break;
-	case 3: ww.SetPassWord(Chpt, 2, ww.PassWord(true)); break;
+	case 2: { UpdateUTxt(); break; }
+	case 3: { ww.SetPassWord(Chpt, 2, ww.PassWord(true)); break; }
 	}
 	SetUpdHandle(ChptTF->Handle);
 	goto label0;

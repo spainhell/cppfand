@@ -154,5 +154,5 @@ bool PrinterMenu(WORD Msg);
 //WORD CountNTxt(ChoiceD* C, bool IsMenuBar);
 void MenuBoxProc(Instr_menu* PD);
 void MenuBarProc(Instr_menu* PD);
-LongStr* GetHlpText(RdbD* R, std::string S, bool ByName, WORD& IRec);
+std::string GetHlpText(RdbD* R, std::string S, bool ByName, WORD& IRec);
 void DisplLLHelp(RdbD* R, std::string Name, bool R24);

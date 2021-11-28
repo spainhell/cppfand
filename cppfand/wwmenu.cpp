@@ -951,18 +951,19 @@ void MenuBarProc(Instr_menu* PD)
 	ReleaseStore(p);
 }
 
-LongStr* GetHlpText(RdbD* R, std::string S, bool ByName, WORD& IRec)
+std::string GetHlpText(RdbD* R, std::string S, bool ByName, WORD& IRec)
 {
 	FieldDescr* NmF = nullptr;
 	FieldDescr* TxtF = nullptr;
-	LongStr* T = nullptr;
 	std::string Nm;
 	longint i = 0;
 	TVideoFont fo;
-	FileD* cf = nullptr;
+	//FileD* cf = nullptr;
 	void* p = nullptr;
-	LockMode md = NullMode;
+	LockMode md = LockMode::NullMode;
 	void* cr = CRecPtr;
+	std::string result;
+
 	if (ByName) {
 		if (R == nullptr) goto label5;
 		//CFile = (FileD*)R;  // TODO: toto je nesmysl
@@ -971,7 +972,7 @@ LongStr* GetHlpText(RdbD* R, std::string S, bool ByName, WORD& IRec)
 			if (CFile->Handle == nullptr) goto label5;
 		}
 		else {
-			CFile = R->HelpFD;
+			// CFile = R->HelpFD;
 			if (CFile == nullptr) goto label5;
 		}
 		ConvToNoDiakr(&S[0], S.length(), fonts.VFont);
@@ -996,13 +997,12 @@ label1:
 		//printf("comp: %s <=> %s\n", S.c_str(), Nm.c_str());
 		if (EqualsMask(&S[0], S.length(), Nm)) {
 		label2:
-			T = _LongS(TxtF);
-			if (!ByName || (T->LL > 0) || (i == CFile->NRecs)) {
-				if (CFile == HelpFD) ConvKamenToCurr(T->A, T->LL);
+			result = _StdS(TxtF);
+			if (!ByName || (result.length() > 0) || (i == CFile->NRecs)) {
+				if (CFile == HelpFD) ConvKamenToCurr((void*)result.c_str(), result.length());
 				IRec = i;
 				goto label3;
 			}
-			delete T;
 			i++;
 			ReadRec(CFile, i, CRecPtr);
 			goto label2;
@@ -1010,7 +1010,7 @@ label1:
 	}
 label3:
 	OldLMode(md);
-	if ((T == nullptr) && (CFile != HelpFD)) {
+	if ((result.empty()) && (CFile != HelpFD)) {
 	label4:
 		R = R->ChainBack;
 		if (R != nullptr)
@@ -1018,46 +1018,48 @@ label3:
 				CFile = R->HelpFD;
 				goto label1;
 			}
-			else goto label4;
+			else {
+				goto label4;
+			}
 	}
 label5:
 	CRecPtr = cr;
-	return T;
+	return result;
 }
 
 void DisplLLHelp(RdbD* R, std::string Name, bool R24)
 {
-	LongStr* s = nullptr;
-	void* p = nullptr;
-	size_t i = 0, y = 0; WORD iRec = 0; FileD* cf = nullptr;
-	//if ((R == nullptr) || (R != (RdbD*)HelpFD) && (R->HelpFD == nullptr)) return;
+	size_t i = 0, y = 0; WORD iRec = 0;
+
 	if ((R == nullptr) || (R->HelpFD != HelpFD) && (R->HelpFD == nullptr)) return;
-	MarkStore(p);
-	cf = CFile;
+
+	FileD* cf = CFile;
 	if (!Name.empty()) {
 		iRec = 0;
-		s = GetHlpText(R, Name, true, iRec);
-		if (s != nullptr) {
-			std::string ss = std::string(s->A, s->LL);
-			ss = GetNthLine(ss, 1, 1);
-			MsgLine = ss;
+		std::string sHelp = GetHlpText(R, Name, true, iRec);
+		if (!sHelp.empty()) {
+			sHelp = GetNthLine(sHelp, 1, 1);
+			MsgLine = sHelp;
 			if (MsgLine[0] == '{') {
 				MsgLine = MsgLine.substr(1, 255);
 				i = MsgLine.find('}');
 				if (i != std::string::npos) MsgLine.erase(i, 255);
 			}
 			MsgLine = MsgLine.substr(0, min(TxtCols, MsgLine.length()));
-			goto label1;
+		}
+		else {
+			MsgLine = "";
 		}
 	}
-	MsgLine = "";
-label1:
+	else {
+		MsgLine = "";
+	}
+
 	y = TxtRows - 1;
 	if (R24) y--;
 	screen.ScrWrStr(1, y + 1, MsgLine, screen.colors.nNorm);
 	screen.ScrClr(MsgLine.length() + 1, y + 1, TxtCols - MsgLine.length(), 1, ' ', screen.colors.nNorm);
 	CFile = cf;
-	ReleaseStore(p);
 }
 
 void TMenu::InitTMenu()

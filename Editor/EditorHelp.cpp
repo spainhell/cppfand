@@ -12,14 +12,17 @@
 // ***********HELP**********  // r351
 const BYTE maxStk = 15; WORD iStk = 0;
 struct structStk { RdbD* Rdb; FileD* FD; WORD iR, iT; } Stk[maxStk];
-void ViewHelpText(LongStr* S, WORD& TxtPos);
+
+void ViewHelpText(std::string& S, WORD& TxtPos);
 
 void Help(RdbD* R, pstring Name, bool InCWw)
 {
 	void* p = nullptr; ExitRecord er; FileD* fd = nullptr;
 	WORD i, l, l2; WORD iRec, oldIRec;
-	LongStr* s = nullptr; LongStr* s2 = nullptr;
-	integer delta; bool frst, byName, backw;
+	std::string s;
+	std::string s2;
+	integer delta;
+	bool frst, byName, backw;
 	FileD* cf2;
 	WORD KbdChar = Event.Pressed.KeyCombination();
 
@@ -43,8 +46,7 @@ void Help(RdbD* R, pstring Name, bool InCWw)
 	MarkStore(p);
 	FileD* cf = CFile;
 	longint w = 0, w2 = 0;
-	//NewExit(Ovr(), er);
-	//goto label4;
+
 	try {
 		if (InCWw) {
 			WORD c1 = WindMin.X; WORD c2 = WindMax.X;
@@ -66,8 +68,8 @@ void Help(RdbD* R, pstring Name, bool InCWw)
 	label2:
 		s = GetHlpText(R, Name, byName, iRec);
 		cf2 = CFile;
-		if (s == nullptr)
-			if (frst && (R == (RdbD*)(&HelpFD)) && (KbdChar == _CtrlF1_)) {
+		if (s.empty())
+			if (frst && (R == (RdbD*)(&HelpFD)) && (KbdChar == __CTRL_F1)) {
 				KbdChar = 0;
 				Name = "Ctrl-F1 error";
 				goto label1;
@@ -77,21 +79,22 @@ void Help(RdbD* R, pstring Name, bool InCWw)
 				WrLLF10Msg(146);
 			}
 		else {
-			frst = false; byName = false;
-			if ((s->LL > 0) && (s->A[0] == '{')) {
+			frst = false;
+			byName = false;
+			if (!s.empty() && s[0] == '{') {
 				//view after 1. line
 				l = FindCtrlM(s, 0, 1);
 				l = SkipCtrlMJ(s, l);
-				char* newA = new char[s->LL - l];
-				memcpy(newA, &s->A[l], s->LL - l);
-				s2 = new LongStr(newA, s->LL - l);
+				// char* newA = new char[s->LL - l];
+				// memcpy(newA, &s->A[l], s->LL - l);
+				s2 = s.substr(l, s.length() - l); // new LongStr(newA, s->LL - l);
 			}
 			else {
-				char* newA = new char[s->LL];
-				memcpy(newA, s->A, s->LL);
-				s2 = new LongStr(s->A, s->LL);
+				// char* newA = new char[s->LL];
+				// memcpy(newA, s->A, s->LL);
+				s2 = s; // new LongStr(s->A, s->LL);
 			}
-			if (s2->LL == 0) {
+			if (s2.empty()) {
 				if (delta == 0) { /*goto label4*/ throw std::invalid_argument("Editor::Help - delta is equal 0"); }
 				else {
 					if (iRec != oldIRec) {
@@ -112,8 +115,8 @@ void Help(RdbD* R, pstring Name, bool InCWw)
 			Stk[iStk].Rdb = R; Stk[iStk].FD = cf2;
 			Stk[iStk].iR = iRec; Stk[iStk].iT = i;
 			oldIRec = iRec; i = 1; delta = 0;
-			ReleaseStore(s);
-			ReleaseStore(s2);
+			// ReleaseStore(s);
+			// ReleaseStore(s2);
 			CFile = cf2;
 
 			KbdChar = Event.Pressed.KeyCombination();

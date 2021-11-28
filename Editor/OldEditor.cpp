@@ -3220,9 +3220,11 @@ void EditTxtFile(longint* LP, char Mode, std::string& ErrMsg, std::vector<EdExit
 	}
 }
 
-void ViewHelpText(LongStr* S, WORD& TxtPos)
+void ViewHelpText(std::string& s, WORD& TxtPos)
 {
+	auto S = std::make_unique<LongStr>((char*)s.c_str(), s.length());
 	longint L = SavePar();
+
 	TxtColor = screen.colors.hNorm;
 	FillChar(ColKey, 8, screen.colors.tCtrl);
 	ColKey[5] = screen.colors.hSpec;
@@ -3239,7 +3241,7 @@ void ViewHelpText(LongStr* S, WORD& TxtPos)
 		brkKeys.push_back(__CTRL_HOME);
 		brkKeys.push_back(__CTRL_END);
 		std::vector<EdExitD*> emptyExitD;
-		EditText(HelpM, MemoT, "", "", S, 0xFFF0, TxtPos, Scr,
+		EditText(HelpM, MemoT, "", "", S.get(), 0xFFF0, TxtPos, Scr,
 			brkKeys, emptyExitD, Srch, Upd, 142, 145, nullptr);
 		if (Event.Pressed.KeyCombination() == __F6) {
 			PrintArray(&S->A, S->LL, true);

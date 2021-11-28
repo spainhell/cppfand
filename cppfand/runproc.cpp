@@ -299,26 +299,22 @@ label2:
 
 void DisplayProc(RdbD* R, WORD IRec)
 {
-	LongStr* S = nullptr; void* p = nullptr; WORD i = 0;
 	std::string str;
-	MarkStore(p);
+	LongStr* S = nullptr;
+	void* p = nullptr; WORD i = 0;
 	if (IRec == 0) {
-		S = GetHlpText(CRdb, RunShortStr((FrmlElem*)R), true, i);
-		if (S == nullptr) goto label1;
+		str = GetHlpText(CRdb, RunShortStr((FrmlElem*)R), true, i);
+		if (str.empty()) return;
 	}
 	else {
 		CFile = R->FD; CRecPtr = Chpt->RecPtr;
 		ReadRec(CFile, IRec, CRecPtr);
-		S = CFile->TF->Read(1, _T(ChptTxt));
+		LongStr* S = CFile->TF->Read(1, _T(ChptTxt));
 		if (R->Encrypted) CodingLongStr(S);
+		str = std::string(S->A, S->LL);
+		delete S; S = nullptr;
 	}
-	//WrLongStyleStr(S, ProcAttr);
-	str = std::string(S->A, S->LL);
 	screen.WriteStyledStringToWindow(str, ProcAttr);
-	ReleaseStore(S);
-
-label1:
-	ReleaseStore(p);
 }
 
 void ClrWwProc(Instr_clrww* PD)

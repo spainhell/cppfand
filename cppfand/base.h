@@ -63,11 +63,13 @@ longint SwapLong(longint N);
 void ExChange(void* X, void* Y, WORD L);
 bool OverlapByteStr(void* p1, void* p2); // ASM
 WORD FindCtrlM(LongStr* s, WORD i, WORD n); // r152
+WORD FindCtrlM(std::string& s, WORD i, WORD n);
 WORD SkipCtrlMJ(LongStr* s, WORD i); // r158
+WORD SkipCtrlMJ(std::string& s, WORD i);
 void AddBackSlash(std::string& s);
 void DelBackSlash(std::string& s);
 bool MouseInRect(WORD X, WORD Y, WORD XSize, WORD Size); // r175 ASM
-bool MouseInRectProc(WORD X, WORD Y, WORD XSize, WORD Size); // r182 ASM - rozdìleno na txt a graph režim
+bool MouseInRectProc(WORD X, WORD Y, WORD XSize, WORD Size); // r182 ASM - rozdeleno na txt a graph rezim
 
 // *** TIME, DATE ***
 void SplitDate(double R, WORD& d, WORD& m, WORD& y);

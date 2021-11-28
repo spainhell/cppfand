@@ -1180,12 +1180,35 @@ WORD FindCtrlM(LongStr* s, WORD i, WORD n)
 	return l + 1;
 }
 
+WORD FindCtrlM(std::string& s, WORD i, WORD n)
+{
+	size_t l = s.length();
+	while (i <= l - 1) {
+		if (s[i] == '\r') {
+			if (n > 1) n--;
+			else return i;
+		}
+		i++;
+	}
+	return l + 1;
+}
+
 WORD SkipCtrlMJ(LongStr* s, WORD i)
 {
 	WORD l = s->LL;
 	if (i <= l - 1) {
 		i++;
 		if (i <= l - 1 && s->A[i] == '\n') i++;
+	}
+	return i;
+}
+
+WORD SkipCtrlMJ(std::string& s, WORD i)
+{
+	size_t l = s.length();
+	if (i <= l - 1) {
+		i++;
+		if (i <= l - 1 && s[i] == '\n') i++;
 	}
 	return i;
 }
