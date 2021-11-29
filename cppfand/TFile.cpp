@@ -469,9 +469,10 @@ void TFile::Delete(longint pos)
 
 	// proto budeme kontrolovat, zda se jedna o TTT soubor a pokud ano,
 	// tak koncime a nic mazat nebudeme
-
-	std::string name = upperCaseString(CFile->FullName);
-	if (name.find("ttt") != std::string::npos) return;
+	if (CFile != nullptr) {
+		std::string name = upperCaseString(CFile->FullName);
+		if (name.find("ttt") != std::string::npos) return;
+	}
 
 	if (pos <= 0) return;
 	if ((Format != T00Format) || NotCached()) return;

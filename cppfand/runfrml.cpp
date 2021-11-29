@@ -1139,11 +1139,13 @@ void TestTFrml(FieldDescr* F, FrmlElem* Z, TFile** TF02, FileD** TFD02, longint&
 		break;
 	}
 	case _getlocvar: {
-		if ((F != nullptr) && ((F->Flg & f_Encryp) != 0)) return;
-		*TFD02 = CFile;
-		*TF02 = &TWork;
-		TF02Pos = (longint)((FrmlElem18*)Z)->locvar->R;
+		// local var is now always in memory, not in the work file
 		break;
+		//if ((F != nullptr) && ((F->Flg & f_Encryp) != 0)) return;
+		//*TFD02 = CFile;
+		//*TF02 = &TWork;
+		//TF02Pos = (longint)((FrmlElem18*)Z)->locvar->R;
+		//break;
 	}
 	case _access: {
 		auto iZ = (FrmlElem7*)Z;
