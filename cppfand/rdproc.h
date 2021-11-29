@@ -16,12 +16,10 @@ LocVar* RdIdxVar();
 FrmlElem* RdRecVarFldFrml(LocVar* LV, char& FTyp);
 char RdOwner(LinkD** LLD, LocVar** LLV); // 'r','i','F'
 FrmlElem* RdFldNameFrmlP(char& FTyp);
-// FileD* RdPath(bool NoFD, pstring** Path, WORD& CatIRec);
 FileD* RdPath(bool NoFD, std::string& Path, WORD& CatIRec);
 FrmlElem* RdFunctionP(char& FFTyp);
 XKey* RdViewKeyImpl(FileD* FD);
 void RdSelectStr(FrmlElem0* Z);
-//Instr* GetPInstr(PInstrCode Kind, WORD Size);
 
 Instr* RdPInstr(); // hlavní funkce
 
@@ -47,9 +45,8 @@ bool RdHeadLast(EditOpt* EO);
 bool RdHeadLast(Instr_edittxt* IE);
 bool RdViewOpt(EditOpt* EO);
 void RdKeyList(EdExitD* X);
-//extern Instr* RdPInstr; // toto bude ukazatel na pozdìji pøiøazenou funkci
-//Instr* GetPD(PInstrCode Kind, WORD Size);
-void RdProcCall(Instr** pinstr); // mùže upravit pinstr z hlavní funkce
+void RdProcCall(Instr** pinstr); // muze upravit pinstr z hlavni funkce
+
 FieldListEl* RdFlds();
 FieldListEl* RdSubFldList(FieldList InFL, char Opt);
 Instr_sort* RdSortCall();
@@ -76,19 +73,11 @@ Instr* RdGotoXY();
 Instr* RdClrWw();
 Instr* RdMount();
 Instr* RdDisplay();
-#ifdef FandGraph
-Instr_graph* RdGraphP();
-#endif
+
 Instr_recs* RdMixRecAcc(PInstrCode Op);
 Instr* RdLinkRec();
 Instr* RdBackup(char MTyp, bool IsBackup);
 Instr* RdSetEditTxt();
-#ifndef FandSQL
-void RdSqlRdWrTxt(bool Rd);
-#endif
-#ifdef FandProlog
-Instr* RdCallLProc();
-#endif
 FrmlElem* AdjustComma(FrmlElem* Z1, FieldDescr* F, instr_type Op);
 AssignD* MakeImplAssign(FileD* FD1, FileD* FD2);
 Instr_assign* RdAssign();
@@ -98,3 +87,15 @@ void ReadProcHead(const std::string& name);
 Instr* ReadProcBody();
 void ReadDeclChpt();
 FrmlElem* GetEvalFrml(FrmlElem21* X);
+
+#ifdef FandGraph
+Instr_graph* RdGraphP();
+#endif
+
+#ifdef FandProlog
+Instr* RdCallLProc();
+#endif
+
+#ifndef FandSQL
+void RdSqlRdWrTxt(bool Rd);
+#endif

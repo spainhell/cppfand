@@ -2653,7 +2653,6 @@ Instr* ReadProcBody()
 
 // metoda nacita funkce a procedury z InpArrPtr a postupne je zpracovava
 // nacte nazev, parametry, navr. hodnotu, promenne, konstanty i kód
-
 void ReadDeclChpt()
 {
 	FuncD* fc = nullptr;
@@ -2700,16 +2699,11 @@ void ReadDeclChpt()
 				n = sizeof(bool);
 			}
 			else Error(39);
-			//lv = (LocVar*)GetZStore(sizeof(*lv) - 1 + (fc->Name).length());
 			lv = new LocVar();
-			//if (LVBD.Root == nullptr) LVBD.Root = lv;
-			//else ChainLast(LVBD.Root, lv);
 			LVBD.vLocVar.push_back(lv);
-			//Move(&fc->Name, &lv->Name, (fc->Name).length() + 1);
 			lv->Name = fc->Name;
 			lv->IsRetValue = true;
-			/* !!! with lv^ do!!! */
-			{ lv->FTyp = typ; lv->Op = _getlocvar; lv->BPOfs = LVBD.Size; }
+			lv->FTyp = typ; lv->Op = _getlocvar; lv->BPOfs = LVBD.Size;
 			fc->FTyp = typ;
 			LVBD.Size += n;
 			Accept(';');
@@ -2775,11 +2769,7 @@ label1:
 			// z->B = false;
 		}
 	}
-	//if (z != nullptr) {
-	//	FrmlPtr z1 = z;
-	//	z = new FrmlElem0(_setmybp, 0); // GetOp(_setmybp, 0);
-	//	((FrmlElem0*)z)->P1 = z1;
-	//}
+
 label2:
 	auto result = z;
 	CFile = cf; CRecPtr = cr;
@@ -2791,8 +2781,8 @@ label2:
 Instr* RdBackup(char MTyp, bool IsBackup)
 {
 	Instr_backup* PD = nullptr;
-	if (MTyp == 'M') PD = new Instr_backup(_backupm); // GetPD(_backupm, 15);
-	else PD = new Instr_backup(_backup); // GetPD(_backup, 5);
+	if (MTyp == 'M') PD = new Instr_backup(_backupm);
+	else PD = new Instr_backup(_backup);
 	RdLex();
 	PD->IsBackup = IsBackup;
 	TestIdentif();
@@ -2800,7 +2790,7 @@ Instr* RdBackup(char MTyp, bool IsBackup)
 	void* cr = CRecPtr;
 	CFile = CatFD;
 	CRecPtr = GetRecSpace();
-	for (WORD i = 1; i <= CatFD->NRecs; i++) {
+	for (longint i = 1; i <= CatFD->NRecs; i++) {
 		ReadRec(CFile, i, CRecPtr);
 		if (SEquUpcase(OldTrailChar(' ', _ShortS(CatRdbName)), "ARCHIVES") &&
 			SEquUpcase(OldTrailChar(' ', _ShortS(CatFileName)), LexWord)) {
@@ -2840,6 +2830,7 @@ void RdSqlRdWrTxt(bool Rd)
 	if (!pd->sqlFD->typSQLFile || (pd->sqlFldD->Typ != 'T')) OldError(170);
 }
 #endif
+
 #ifdef FandProlog
 Instr* RdCallLProc()
 {
@@ -2855,4 +2846,3 @@ Instr* RdCallLProc()
 	return pd;
 }
 #endif
-
