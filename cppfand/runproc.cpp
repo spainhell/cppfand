@@ -988,11 +988,9 @@ void AssgnUserName(Instr_assign* PD)
 
 void ReleaseDriveProc(FrmlPtr Z)
 {
-	pstring s;
-	char c;
-	SaveFiles;
-	s = RunShortStr(Z);
-	c = toupper((char)s[1]);
+	SaveFiles();
+	pstring s = RunShortStr(Z);
+	char c = toupper((char)s[1]);
 	if (c == spec.CPMdrive) ReleaseDrive(FloppyDrives);
 	else
 		if ((c == 'A') || (c == 'B')) ReleaseDrive(c - '@');
@@ -1059,7 +1057,8 @@ void RecallRecProc(Instr_recs* PD)
 			if (PD->AdUpd) LastExitCode = !RunAddUpdte('+', nullptr, nullptr);
 		}
 	}
-	OldLMode(md); ReleaseStore(CRecPtr);
+	OldLMode(md);
+	ReleaseStore(CRecPtr);
 }
 
 void UnLck(Instr_withshared* PD, LockD* Ld1, PInstrCode Op)
@@ -1076,11 +1075,10 @@ void UnLck(Instr_withshared* PD, LockD* Ld1, PInstrCode Op)
 	}
 }
 
-void WaitProc() // ø. 604
+void WaitProc() // r. 604
 {
 	WORD w;
-	do
-	{
+	do {
 		GetEvent();
 		w = Event.What;
 		ClrEvent();
@@ -1168,8 +1166,7 @@ void RunInstr(Instr* PD)
 		}
 		case _merge: MergeProc((Instr_merge_display*)PD); break;
 #ifdef FandProlog
-		case _lproc:
-		{
+		case _lproc: {
 			auto iPD = (Instr_lproc*)PD;
 			RunProlog(&iPD->lpPos, iPD->lpName);
 			break;
@@ -1194,12 +1191,12 @@ void RunInstr(Instr* PD)
 			break;
 		}
 		case _asgnrecfld: AssignRecFld(((Instr_assign*)PD)); break;
-		case _asgnrecvar:/* !!! with PD^ do!!! */ {
+		case _asgnrecvar: {
 			auto iPD = (Instr_assign*)PD;
 			AssignRecVar(iPD->RecLV1, iPD->RecLV2, iPD->Ass);
 			break;
 		}
-		case _asgnpar: /* !!! with PD^ do!!! */ {
+		case _asgnpar: {
 			// ulozi globalni parametr - do souboru
 			auto iPD = (Instr_assign*)PD;
 			AsgnParFldFrml(iPD->FD, iPD->FldD, iPD->Frml, iPD->Add);
@@ -1328,7 +1325,7 @@ void RunInstr(Instr* PD)
 		case _asgnxnrecs: ((Instr_assign*)PD)->xnrIdx->Release(); break;
 		case _portout: {
 			auto iPD = (Instr_portout*)PD;
-			PortOut(RunBool(iPD->IsWord), WORD(RunInt(iPD->Port)), WORD(RunInt(iPD->PortWhat)));
+			PortOut(RunBool(iPD->IsWord), (WORD)(RunInt(iPD->Port)), (WORD)(RunInt(iPD->PortWhat)));
 			break;
 		}
 		}
@@ -1454,6 +1451,7 @@ void CallProcedure(Instr_proc* PD)
 		next = (Instr*)next->Chain;
 	}
 #endif
+
 	FDLocVarAllowed = false;
 	//lv0 = lv1;
 	it0 = it1;
