@@ -1120,7 +1120,8 @@ void RunInstr(Instr* PD)
 			break;
 		}
 		case _menubox: {
-			MenuBoxProc((Instr_menu*)PD);
+			auto menu = std::make_unique<TMenuBoxP>(0, 0, nullptr, (Instr_menu*)PD);
+			menu->call();
 			break;
 		}
 		case _menubar: {

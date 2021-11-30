@@ -621,10 +621,9 @@ label1:
 		PD->ESCInstr = RdPInstr();
 	}
 	else {
-		//CD = (ChoiceD*)GetZStore(sizeof(CD));
 		CD = new ChoiceD();
-		if (PD->Choices == nullptr) PD->Choices = CD;
-		else ChainLast(PD->Choices, CD);
+		PD->Choices.push_back(CD);
+
 		N++;
 		if ((PD->Kind == _menubar) && (N > 30)) Error(102);
 		CD->TxtFrml = RdStrFrml();
@@ -637,7 +636,7 @@ label1:
 			if (Lexem == ',') {
 				RdLex();
 				if (Lexem != ',') {
-					CD->Bool = RdBool();
+					CD->Condition = RdBool();
 					if (Lexem == '!') {
 						CD->DisplEver = true; RdLex();
 					}

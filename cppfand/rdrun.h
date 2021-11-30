@@ -316,18 +316,17 @@ struct CopyD
 	BYTE Mode;
 };
 
-struct ChoiceD : Chained
+struct ChoiceD
 {
-	//ChoiceD* Chain = nullptr;
 	std::string HelpName;
 	bool Displ = false, DisplEver = false, Enabled = false, TxtConst = false;
-	FrmlElem* Bool = nullptr;
+	FrmlElem* Condition = nullptr;
 	Instr* Instr = nullptr;
 	FrmlElem* TxtFrml = nullptr;
 	std::string Txt;
 };
 
-struct WrLnD : public Chained
+struct WrLnD : Chained
 {
 	//WrLnD* Chain;
 	FrmlElem* Frml = nullptr;

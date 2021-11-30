@@ -4,6 +4,13 @@ Instr_menu::Instr_menu(PInstrCode Kind): Instr(Kind)
 {
 }
 
+Instr_menu::~Instr_menu()
+{
+	for (const auto& choice : Choices)	{
+		delete choice;
+	}
+}
+
 Instr_loops::Instr_loops(PInstrCode Kind): Instr(Kind)
 {
 }

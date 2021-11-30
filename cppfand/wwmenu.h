@@ -71,8 +71,13 @@ public:
 	bool UnderMenuBar();
 	void WrText(WORD I);
 	void SetPalette(Instr_menu* aPD);
-//protected:
-	//TMenu(WORD mx, WORD my);
+protected:
+	ChoiceD* getChoice(size_t order);
+	void insertChoices(std::vector<ChoiceD*>& choices, bool isMenuBar);
+	void countChoices(bool isMenuBar);
+	std::vector<ChoiceD*> choices;
+	std::vector<ChoiceD*> filteredChoices;
+	
 };
 
 class TMenuBox : public TMenu
@@ -87,7 +92,6 @@ public:
 class TMenuBoxS : public TMenuBox
 {
 public:
-	//TMenuBoxS();
 	TMenuBoxS(WORD C1, WORD R1, pstring Msg);
 	pstring MsgTxt;
 	bool Enabled(WORD I) override;
@@ -99,15 +103,14 @@ public:
 class TMenuBoxP : public TMenuBox
 {
 public:
-	//TMenuBoxP();
 	TMenuBoxP(WORD C1, WORD R1, TMenu* aParent, Instr_menu* aPD);
 	Instr_menu* PD;
-	ChoiceD* CRoot;
 	std::string HdTxt;
 	bool Enabled(WORD I) override;
 	bool ExecItem(WORD& I) override;
 	std::string GetHlpName() override;
 	std::string GetText(integer I) override;
+	void call();
 };
 
 class TMenuBar : public TMenu
@@ -140,7 +143,6 @@ public:
 	TMenuBarP();
 	TMenuBarP(Instr_menu* aPD);
 	Instr_menu* PD;
-	ChoiceD* CRoot;
 	bool Enabled(WORD I) override;
 	bool ExecItem(WORD& I) override;
 	bool GetDownMenu(TMenuBox** W) override;
@@ -150,9 +152,6 @@ public:
 
 WORD Menu(WORD MsgNr, WORD IStart);
 bool PrinterMenu(WORD Msg);
-//ChoiceD* CI(ChoiceD* C, WORD I);
-//WORD CountNTxt(ChoiceD* C, bool IsMenuBar);
-void MenuBoxProc(Instr_menu* PD);
 void MenuBarProc(Instr_menu* PD);
 std::string GetHlpText(RdbD* R, std::string S, bool ByName, WORD& IRec);
 void DisplLLHelp(RdbD* R, std::string Name, bool R24);

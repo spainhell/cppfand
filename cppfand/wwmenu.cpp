@@ -12,49 +12,6 @@
 #include "../textfunc/textfunc.h"
 
 
-WORD CountNTxt(ChoiceD* C, bool IsMenuBar)
-{
-	WORD n = 0, nValid = 0;
-	std::string s;
-	bool b = false;
-	while (C != nullptr) {
-		b = RunBool(C->Bool);
-		C->Displ = false;
-		if (b || C->DisplEver) {
-			C->Displ = true;
-			n++;
-			s = RunShortStr(C->TxtFrml);
-			if (s.length() != 0) {
-				short maxLen = min(s.length(), TxtCols - 6);
-				if (s.length() > maxLen) s = s.substr(0, maxLen);
-				char ctrlW = '\x17';
-				if (s.find(ctrlW) == std::string::npos) {
-					char arr[MaxTxtCols]{ 0 };
-					sprintf_s(arr, "\x17%c\x17%s", s[0], &(s.c_str()[1]));
-					s = arr;
-				}
-			}
-			else if (IsMenuBar) s = " ";
-			C->Txt = s;
-			if (C->Txt == "") b = false;
-			if (b) nValid++;
-		}
-		C->Enabled = b;
-		C = (ChoiceD*)C->Chain;
-	}
-	if (nValid == 0) n = 0;
-	return n;
-}
-
-ChoiceD* CI(ChoiceD* C, WORD I)
-{
-label1:
-	if (C->Displ) I--;
-	if (I == 0) { return C; }
-	C = (ChoiceD*)C->Chain;
-	goto label1;
-}
-
 bool TRect::Contains(TPoint* P)
 {
 	return (P->X >= A.X) && (P->X < A.X + Size.X) && (P->Y >= A.Y) && (P->Y < A.Y + Size.Y);
@@ -414,11 +371,55 @@ void TMenu::SetPalette(Instr_menu* aPD)
 	Palette[3] = RunWordImpl(aPD->mAttr[3], screen.colors.mDisabled);
 }
 
-//TMenu::TMenu(WORD mx, WORD my)
-//{
-//	this.mx = mx;
-//	this.my = my;
-//}
+ChoiceD* TMenu::getChoice(size_t order)
+{
+	if (this->filteredChoices.size() < order) return nullptr;
+	return this->filteredChoices[order - 1];
+}
+
+void TMenu::insertChoices(std::vector<ChoiceD*>& choices, bool isMenuBar)
+{
+	this->choices = choices;
+	this->countChoices(isMenuBar);
+	for (auto& c : this->choices) {
+		if (c->Displ) {
+			this->filteredChoices.push_back(c);
+		}
+	}
+}
+
+void TMenu::countChoices(bool isMenuBar)
+{
+	nTxt = 0;
+	WORD nValid = 0;
+	std::string s;
+	bool b = false;
+	for (auto& C : choices) {
+		b = RunBool(C->Condition);
+		C->Displ = false;
+		if (b || C->DisplEver) {
+			C->Displ = true;
+			nTxt++;
+			s = RunShortStr(C->TxtFrml);
+			if (s.length() != 0) {
+				short maxLen = min(s.length(), TxtCols - 6);
+				if (s.length() > maxLen) s = s.substr(0, maxLen);
+				char ctrlW = '\x17';
+				if (s.find(ctrlW) == std::string::npos) {
+					char arr[MaxTxtCols]{ 0 };
+					sprintf_s(arr, "\x17%c\x17%s", s[0], &(s.c_str()[1]));
+					s = arr;
+				}
+			}
+			else if (isMenuBar) s = " ";
+			C->Txt = s;
+			if (C->Txt.empty()) b = false;
+			if (b) nValid++;
+		}
+		C->Enabled = b;
+	}
+	if (nValid == 0) nTxt = 0;
+}
 
 TMenuBox::TMenuBox() : TMenu()
 {
@@ -462,7 +463,7 @@ WORD TMenuBox::Exec(WORD IStart)
 		const WORD KbdChar = Event.Pressed.KeyCombination();
 		ClrEvent();
 		switch (KbdChar) {
-		case __ENTER: { 
+		case __ENTER: {
 			i = iTxt;
 			MenuX = Orig.X + 4;
 			MenuY = Orig.Y + i + 2;
@@ -470,23 +471,23 @@ WORD TMenuBox::Exec(WORD IStart)
 			if (!ExecItem(i)) {
 				return (j << 8) + i;
 			}
-			break; 
+			break;
 		}
-		case __ESC: { 
-			i = 0; 
+		case __ESC: {
+			i = 0;
 			ClearHlp();
 			return 0;
-			break; 
+			break;
 		}
-		case __UP: { 
-			Prev(); 
-			WrText(i); 
-			break; 
+		case __UP: {
+			Prev();
+			WrText(i);
+			break;
 		}
-		case __DOWN: { 
-			Next(); 
-			WrText(i); 
-			break; 
+		case __DOWN: {
+			Next();
+			WrText(i);
+			break;
 		}
 		case __LEFT: {
 			if (UnderMenuBar()) {
@@ -578,15 +579,14 @@ std::string TMenuBoxS::GetText(integer I)
 
 TMenuBoxP::TMenuBoxP(WORD C1, WORD R1, TMenu* aParent, Instr_menu* aPD)
 {
-	pstring s;
 	PD = aPD;
 	parent = aParent;
-	s = RunShortStr(aPD->HdLine);
+	pstring s = RunShortStr(aPD->HdLine);
 	s[0] = (char)MinI(s.length(), TxtCols - 6);
 	HdTxt = s;
 	HlpRdb = aPD->HelpRdb;
-	CRoot = aPD->Choices;
-	nTxt = CountNTxt(CRoot, false);
+	//nTxt = CountNTxt(choices, false);
+	this->insertChoices(aPD->Choices, false);
 	SetPalette(aPD);
 	if (aPD->X != nullptr)
 	{
@@ -604,7 +604,7 @@ TMenuBoxP::TMenuBoxP(WORD C1, WORD R1, TMenu* aParent, Instr_menu* aPD)
 
 bool TMenuBoxP::Enabled(WORD I)
 {
-	return CI(CRoot, I)->Enabled;
+	return getChoice(I)->Enabled;
 }
 
 bool TMenuBoxP::ExecItem(WORD& I)
@@ -616,7 +616,7 @@ bool TMenuBoxP::ExecItem(WORD& I)
 		RunInstr(PD->ESCInstr);
 	}
 	else {
-		auto choice = CI(CRoot, I);
+		auto choice = getChoice(I);
 		RunInstr(choice->Instr);
 	}
 	if (ExitP) { I = 255; return result; }
@@ -638,7 +638,7 @@ bool TMenuBoxP::ExecItem(WORD& I)
 
 std::string TMenuBoxP::GetHlpName()
 {
-	std::string helpName = CI(CRoot, iTxt)->HelpName;
+	std::string helpName = getChoice(iTxt)->HelpName;
 	return helpName;
 }
 
@@ -648,7 +648,28 @@ std::string TMenuBoxP::GetText(integer I)
 		return HdTxt;
 	}
 	else {
-		return CI(CRoot, I)->Txt;
+		return getChoice(I)->Txt;
+	}
+}
+
+void TMenuBoxP::call()
+{
+	WORD i = 0;
+	BYTE mx = 0, my = 0;
+label1:
+	i = this->Exec(i);
+	if (!PD->PullDown) {
+		if (i == 0) {
+			if (!PD->WasESCBranch) return;
+			RunInstr(PD->ESCInstr);
+		}
+		else {
+			RunInstr(getChoice(i)->Instr);
+		}
+		if (BreakP || ExitP) {
+			if (PD->Loop) BreakP = false;
+		}
+		else if (PD->Loop) goto label1;
 	}
 }
 
@@ -826,8 +847,8 @@ TMenuBarP::TMenuBarP(Instr_menu* aPD)
 	WORD x1 = 0, y1 = 0, l1 = 0;
 	PD = aPD;
 	HlpRdb = PD->HelpRdb;
-	CRoot = PD->Choices;
-	nTxt = CountNTxt(CRoot, true);
+	//nTxt = CountNTxt(choices, true);
+	this->insertChoices(aPD->Choices, true);
 	SetPalette(PD);
 	y1 = 1;
 	if (PD->Y != nullptr) y1 = RunInt(PD->Y);
@@ -842,7 +863,7 @@ TMenuBarP::TMenuBarP(Instr_menu* aPD)
 
 bool TMenuBarP::Enabled(WORD I)
 {
-	auto choice = CI(CRoot, I);
+	auto choice = getChoice(I);
 	return choice->Enabled;
 }
 
@@ -854,7 +875,7 @@ bool TMenuBarP::ExecItem(WORD& I)
 		if (!PD->WasESCBranch) return result;
 		RunInstr(PD->ESCInstr);
 	}
-	else RunInstr(CI(CRoot, I)->Instr);
+	else RunInstr(getChoice(I)->Instr);
 	I = 0;
 	if (BreakP || ExitP) { result = false; return result; }
 	result = true;
@@ -863,12 +884,10 @@ bool TMenuBarP::ExecItem(WORD& I)
 
 bool TMenuBarP::GetDownMenu(TMenuBox** W)
 {
-	// Instr_menu* PD1; TMenuBoxP* p;
 	auto result = false;
-	auto PD1 = (Instr_menu*)CI(CRoot, iTxt)->Instr;
+	auto PD1 = (Instr_menu*)getChoice(iTxt)->Instr;
 	if ((PD1 == nullptr) || (PD1->Chain != nullptr)
 		|| (PD1->Kind != _menubox) || !PD1->PullDown) return result;
-	//New(p, Init(MenuX, MenuY, this, PD1));
 	auto p = new TMenuBoxP(MenuX, MenuY, this, PD1);
 	*W = p;
 	result = true;
@@ -877,13 +896,13 @@ bool TMenuBarP::GetDownMenu(TMenuBox** W)
 
 std::string TMenuBarP::GetHlpName()
 {
-	std::string helpName = CI(CRoot, iTxt)->HelpName;
+	std::string helpName = getChoice(iTxt)->HelpName;
 	return helpName;
 }
 
 std::string TMenuBarP::GetText(integer I)
 {
-	ChoiceD* choice = CI(CRoot, I);
+	ChoiceD* choice = getChoice(I);
 	return choice->Txt;
 }
 
@@ -893,7 +912,6 @@ WORD Menu(WORD MsgNr, WORD IStart)
 	void* p = nullptr;
 	MarkStore(p);
 	RdMsg(MsgNr);
-	//New(w, Init(0, 0, (pstring*)&MsgLine));
 	w = new TMenuBoxS(0, 0, MsgLine);
 	auto result = w->Exec(IStart);
 	delete w;
@@ -917,27 +935,6 @@ bool PrinterMenu(WORD Msg)
 	WORD i = w->Exec(prCurr + 1);
 	if (i > 0) SetCurrPrinter(i - 1);
 	return i > 0;
-}
-
-void MenuBoxProc(Instr_menu* PD)
-{
-	TMenuBoxP* w = nullptr; WORD i = 0;
-	BYTE mx = 0, my = 0;
-label1:
-	w = new TMenuBoxP(0, 0, nullptr, PD);
-	i = w->Exec(i);
-	delete w;
-	if (!PD->PullDown) {
-		if (i == 0) {
-			if (!PD->WasESCBranch) return;
-			RunInstr(PD->ESCInstr);
-		}
-		else RunInstr(CI(PD->Choices, i)->Instr);
-		if (BreakP || ExitP) {
-			if (PD->Loop) BreakP = false;
-		}
-		else if (PD->Loop) goto label1;
-	}
 }
 
 void MenuBarProc(Instr_menu* PD)

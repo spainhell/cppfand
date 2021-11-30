@@ -14,11 +14,12 @@ class Instr_menu : public Instr
 {
 public:
 	Instr_menu(PInstrCode Kind);
+	~Instr_menu();
 	FrmlElem* HdLine = nullptr;
 	RdbD* HelpRdb = nullptr;
 	bool WasESCBranch = false;
 	Instr* ESCInstr = nullptr;
-	ChoiceD* Choices = nullptr;
+	std::vector<ChoiceD*> Choices;
 	bool Loop = false, PullDown = false, Shdw = false;
 	FrmlElem* X = nullptr;
 	FrmlElem* Y = nullptr;
