@@ -4,7 +4,7 @@
 #include "TcFile.h"
 #include "../cppfand/FileD.h"
 
-enum InOutMode { _inp, _outp, _append };
+enum class InOutMode { _inp, _outp, _append };
 
 const size_t BUFFER_SIZE = 16384;
 
@@ -17,7 +17,7 @@ public:
 	FILE* Handle = nullptr;
 	std::string Path;
 	std::string Vol;
-	InOutMode Mode = _inp;
+	InOutMode Mode = InOutMode::_inp;
 	bool Floppy = false, IsEOL = false, Continued = false;
 	BYTE compress = 0;
 	longint Size = 0, OrigSize = 0, SpaceOnDisk = 0;

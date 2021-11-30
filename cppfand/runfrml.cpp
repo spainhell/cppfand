@@ -337,7 +337,7 @@ longint AbsLogRecNoFun(FrmlElem13* Z)
 {
 	longint result = 0;
 	void* p = nullptr;
-	FileDPtr cf = CFile;
+	FileD* cf = CFile;
 	void* cr = CRecPtr;
 	MarkStore(p);
 	XKey* k = Z->Key;
@@ -363,8 +363,7 @@ longint AbsLogRecNoFun(FrmlElem13* Z)
 label1:
 	OldLMode(md);
 	ReleaseStore(p);
-	CFile = cf;
-	CRecPtr = cr;
+	CFile = cf;	CRecPtr = cr;
 	return result;
 }
 
@@ -372,8 +371,11 @@ double LinkProc(FrmlElem15* X)
 {
 	void* p = nullptr;
 	longint N;
-	FileDPtr cf = CFile; void* cr = CRecPtr; MarkStore(p);
-	LinkDPtr LD = X->LinkLD; CFile = LD->FromFD;
+	FileD* cf = CFile;
+	void* cr = CRecPtr;
+	MarkStore(p);
+	LinkD* LD = X->LinkLD;
+	CFile = LD->FromFD;
 	if (X->LinkFromRec) CRecPtr = X->LinkLV->RecPtr;
 	else {
 		N = RunInt(X->LinkRecFrml);
@@ -382,39 +384,38 @@ double LinkProc(FrmlElem15* X)
 			SetMsgPar(CFile->Name, LD->RoleName);
 			RunErrorM(md, 609);
 		}
-		CRecPtr = GetRecSpace(); ReadRec(CFile, N, CRecPtr); OldLMode(md);
+		CRecPtr = GetRecSpace();
+		ReadRec(CFile, N, CRecPtr);
+		OldLMode(md);
 	}
 	if (!LinkUpw(LD, N, false)) N = -N;
-	auto result = int(N);
-	ReleaseStore(p); CFile = cf; CRecPtr = cr;
+	auto result = N;
+	ReleaseStore(p);
+	CFile = cf;
+	CRecPtr = cr;
 	return result;
 }
 
 WORD IntTSR(FrmlElem* X)
 {
-	BYTE IntNr; WORD FunNr; void* p; FrmlPtr z;
+	void* p;
 	pstring s; bool b; double r; LongStr* ss;
 	auto iX0 = (FrmlElem0*)X;
-	IntNr = RunInt(iX0->P1);
-	FunNr = RunInt(iX0->P2);
-	z = iX0->P3;
-	switch (((FrmlElem1*)X)->N31) {
-	case 'r': p = z; break;
+	BYTE IntNr = RunInt(iX0->P1);
+	WORD FunNr = RunInt(iX0->P2);
+	FrmlElem* z = iX0->P3;
+	switch (iX0->N31) {
+	case 'r': { p = z; break; }
 	case 'S': { s = RunShortStr(z); p = &s; break; }
 	case 'B': { b = RunBool(z); p = &b; break; }
 	case 'R': { r = RunReal(z); p = &r; break; }
 	}
-	/*asm  push ds; mov cl, IntNr; mov ax, FunNr; lds dx, p;
-	call @1; int 80H; pop ds; jmp @2;
-	@pop 1 bx; push cs; push bx;
-	mov cs : [bx + 1] , cl;  ret;  // modify int-instruction; far ret
-	@mov 2 @result, ax;*/
 
 	if (z->Op == _getlocvar) {
 		// p = (void*)(MyBP + ((FrmlElem18*)z)->BPOfs);
 		p = ((FrmlElem18*)z)->locvar;
-		switch (((FrmlElem1*)X)->N31) {
-		case 'R': p = (void*)&r; break;
+		switch (iX0->N31) {
+		case 'R': { p = &r; break; }
 		case 'S': {
 			ss = CopyToLongStr(s);
 			TWork.Delete((longint)p);
@@ -423,7 +424,7 @@ WORD IntTSR(FrmlElem* X)
 			ReleaseStore(ss);
 			break;
 		}
-		case 'B': p = &b; break;
+		case 'B': { p = &b; break; } 
 		}
 	}
 	return 0; // asi se vrací nìco z ASM kódu

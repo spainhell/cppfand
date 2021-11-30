@@ -9,9 +9,9 @@ ThFile::ThFile(std::string APath, WORD CatIRec, InOutMode AMode, byte aCompress,
 	std::string mode;
 	std::string d, Nm, e;
 	switch (AMode) {
-	case _inp: mode = "r"; break;
-	case _outp: mode = "w"; break;
-	case _append: mode = "a+"; break;
+	case InOutMode::_inp: mode = "r"; break;
+	case InOutMode::_outp: mode = "w"; break;
+	case InOutMode::_append: mode = "a+"; break;
 	default: break;
 	}
 
