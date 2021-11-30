@@ -116,11 +116,11 @@ public:
 class TMenuBar : public TMenu
 {
 public:
-	TMenuBar();
+	TMenuBar() = default;
 	TMenuBar(WORD C1, WORD R1, WORD Cols);
 	void InitTMenuBar(WORD C1, WORD R1, WORD Cols);
-	WORD nBlks;
-	BYTE DownI[30];
+	WORD nBlks = 0;
+	BYTE DownI[30]{ '\0' };
 	WORD Exec();
 	virtual bool GetDownMenu(TMenuBox** W);
 	void GetItemRect(WORD I, TRect* R) override;

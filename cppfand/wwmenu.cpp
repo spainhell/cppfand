@@ -564,18 +564,14 @@ bool TMenuBoxS::ExecItem(WORD& I)
 
 std::string TMenuBoxS::GetHlpName()
 {
-	/*pstring s;
-	str(iTxt, s);
-	return GetText(-1) + "_" + s.c_str();*/
 	return GetText(-1) + "_" + std::to_string(iTxt);
 }
 
 std::string TMenuBoxS::GetText(integer I)
 {
-	/*helpname/head/text1/text2/...*/
+	// format: 'helpname/head/text1/text2/...'
 	std::string s = MsgTxt;
 	return GetNthLine(s, I + 2, 1, '/');
-	//return GetDLine(&MsgTxt[1], MsgTxt.length(), '/', I + 2);
 }
 
 TMenuBoxP::TMenuBoxP(WORD C1, WORD R1, TMenu* aParent, Instr_menu* aPD)
@@ -586,16 +582,13 @@ TMenuBoxP::TMenuBoxP(WORD C1, WORD R1, TMenu* aParent, Instr_menu* aPD)
 	s[0] = (char)MinI(s.length(), TxtCols - 6);
 	HdTxt = s;
 	HlpRdb = aPD->HelpRdb;
-	//nTxt = CountNTxt(choices, false);
 	this->insertChoices(aPD->Choices, false);
 	SetPalette(aPD);
-	if (aPD->X != nullptr)
-	{
+	if (aPD->X != nullptr) {
 		C1 = RunInt(aPD->X);
 		R1 = RunInt(aPD->Y);
 	}
-	else if (aPD->PullDown && (aParent == nullptr))
-	{
+	else if (aPD->PullDown && aParent == nullptr) {
 		C1 = MenuX;
 		R1 = MenuY;
 	}
@@ -672,10 +665,6 @@ label1:
 		}
 		else if (PD->Loop) goto label1;
 	}
-}
-
-TMenuBar::TMenuBar()
-{
 }
 
 TMenuBar::TMenuBar(WORD C1, WORD R1, WORD Cols)
