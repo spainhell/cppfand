@@ -47,12 +47,75 @@ void ConvWinCp(unsigned char* pBuf, unsigned char* pKod, WORD L)
 	}
 }
 
+//void ImportTxt(CopyD* CD)
+//{
+//	ThFile* F1;
+//	ExitRecord er;
+//	LockMode md;
+//	FrmlElem4* FE = new FrmlElem4(_const, 0);
+//#ifdef FandSQL
+//	SQLStreamPtr q;
+//#endif
+//label1:
+//	//NewExit(Ovr, er);
+//	//goto label1;
+//	F1 = nullptr;
+//#ifdef FandSQL
+//	q = nullptr;
+//#endif
+//	//with CD^ do begin
+//	F1 = new ThFile(CD->Path1, CD->CatIRec1, _inp, 0, nullptr);
+//	if (CD->HdFD != nullptr) {
+//		FE->Op = _const;
+//		FE->S = F1->RdDelim(0x1A); //^Z
+//		AsgnParFldFrml(CD->HdFD, CD->HdF, FE, false);
+//	}
+//	CFile = CD->FD2;
+//	CRecPtr = GetRecSpace();
+//#ifdef FandSQL
+//	if (CFile->IsSQLFile) {
+//		New(q, Init);
+//		q->OutpRewrite(Append);
+//	}
+//	else
+//#endif
+//		md = RewriteF(CD->Append);
+//	while (!(F1->eof) && (F1->ForwChar != 0x1A)) {
+//		ZeroAllFlds();
+//		ClearDeletedFlag();
+//		VarFixImp(F1, CD->Opt1);
+//		F1->ForwChar; //{set IsEOF at End}
+//#ifdef FandSQL
+//		if (CFile->IsSQLFile) q->PutRec();
+//		else
+//#endif
+//		{
+//			PutRec(CFile, CRecPtr);
+//			if (CD->Append && (CFile->Typ == 'X')) TryInsertAllIndexes(CFile->IRec);
+//		}
+//	}
+//	LastExitCode = 0;
+//label1:
+//	RestoreExit(er);
+//#ifdef FandSQL
+//	if (q != nullptr) {
+//		q->OutpClose();
+//		ClearRecSpace(CRecPtr);
+//	};
+//#endif
+//	if ((F1!=nullptr) && (F1->Handle != nullptr)) {
+//		F1->Done();
+//		OldLMode(md);
+//	}
+//}
+
+
 void MakeCopy(CopyD* CD)
 {
 	try {
 		ThFile F1 = ThFile(CD->Path1, CD->CatIRec1, _inp, 0, nullptr);
 
-		ThFile F2 = ThFile(CD->Path2, CD->CatIRec2, CD->Append ? _append : _outp, 0, &F1);
+		ThFile F2 = ThFile(CD->Path2, CD->CatIRec2, CD->Append ? InOutMode::_append : InOutMode::_outp, 0, &F1);
 		if (HandleError != 0) {
 			//delete F1;
 			LastExitCode = 1;
@@ -105,12 +168,6 @@ void MakeCopy(CopyD* CD)
 	catch (std::exception& e) {
 		LastExitCode = 1;
 	}
-
-	//if (F1 != nullptr && F1->Handle != nullptr) delete F1;
-	//if (F2 != nullptr && F2->Handle != nullptr) {
-	//	if (LastExitCode != 0) F2->ClearBuf();
-	//	delete F2;
-	//}
 }
 
 void FileCopy(CopyD* CD)
@@ -148,11 +205,12 @@ void FileCopy(CopyD* CD)
 
 void MakeMerge(CopyD* CD)
 {
-	try {
+	try
+	{
 		std::string s = "#I1_" + CD->FD1->Name;
 		if (CD->ViewKey != nullptr) {
 			std::string ali = CD->ViewKey->Alias;
-			if (ali == "") ali = '@';
+			if (ali.empty()) ali = '@';
 			s = s + '/' + ali;
 		}
 		s = s + " #O1_" + CD->FD2->Name;
@@ -163,8 +221,9 @@ void MakeMerge(CopyD* CD)
 		RunMerge();
 		LastExitCode = 0;
 	}
-	catch (std::exception& e) {
 
+	catch (std::exception& e)
+	{
 	}
 }
 
