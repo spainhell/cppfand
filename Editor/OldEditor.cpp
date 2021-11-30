@@ -152,24 +152,29 @@ char* GetT(std::vector<std::string>& lines, size_t& len, bool hardL)
 	return output;
 }
 
-longint SavePar()
+stEditorPar SavePar()
 {
-	WORD len = InterfL + 4;
-	LongStr* sp = new LongStr(len); // (LongStr*)GetStore(len + 2);
-	sp->LL = len;
-	Move(&Insert, &sp->A[0], InterfL);
-	Move(&Mode, &sp->A[InterfL + 1], len - InterfL);
-	auto result = StoreInTWork(sp);
-	ReleaseStore(sp);
-	return result;
+	stEditorPar save_par;
+	save_par.Insert = Insert;
+	save_par.Indent = Indent;
+	save_par.Wrap = Wrap;
+	save_par.Just = Just;
+	save_par.Mode = Mode;
+	save_par.TypeT = TypeT;
+	save_par.NameT = NameT;
+
+	return save_par;
 }
 
-void RestorePar(longint l)
+void RestorePar(stEditorPar& save_par)
 {
-	LongStr* sp = ReadDelInTWork(l);
-	Move(sp->A, &Insert, InterfL);
-	Move(&sp->A[InterfL + 1], &Mode, sp->LL - InterfL);
-	ReleaseStore(sp);
+	Insert = save_par.Insert;
+	Indent = save_par.Indent;
+	Wrap = save_par.Wrap;
+	Just = save_par.Just;
+	Mode = save_par.Mode;
+	TypeT = save_par.TypeT;
+	NameT = save_par.NameT;
 }
 
 FrmlElem* RdFldNameFrmlT(char& FTyp)
@@ -3222,34 +3227,45 @@ void EditTxtFile(longint* LP, char Mode, std::string& ErrMsg, std::vector<EdExit
 
 void ViewHelpText(std::string& s, WORD& TxtPos)
 {
-	auto S = std::make_unique<LongStr>((char*)s.c_str(), s.length());
-	longint L = SavePar();
+	// make copy of text from std::string because it changes in EditText()
+	char* helpText = new char[s.length()];
+	memcpy(helpText, s.c_str(), s.length());
+	auto S = std::make_unique<LongStr>(helpText, s.length());
 
-	TxtColor = screen.colors.hNorm;
-	FillChar(ColKey, 8, screen.colors.tCtrl);
-	ColKey[5] = screen.colors.hSpec;
-	ColKey[3] = screen.colors.hHili;
-	ColKey[1] = screen.colors.hMenu;
-	bool Srch = false;
-	bool Upd = false;
-	longint Scr = 0;
-	while (true) {
-		std::vector<WORD> brkKeys;
-		brkKeys.push_back(__F1);
-		brkKeys.push_back(__F6);
-		brkKeys.push_back(__F10);
-		brkKeys.push_back(__CTRL_HOME);
-		brkKeys.push_back(__CTRL_END);
-		std::vector<EdExitD*> emptyExitD;
-		EditText(HelpM, MemoT, "", "", S.get(), 0xFFF0, TxtPos, Scr,
-			brkKeys, emptyExitD, Srch, Upd, 142, 145, nullptr);
-		if (Event.Pressed.KeyCombination() == __F6) {
-			PrintArray(&S->A, S->LL, true);
-			continue;
+	stEditorPar ep;
+
+	try {
+		ep = SavePar();
+		TxtColor = screen.colors.hNorm;
+		FillChar(ColKey, 8, screen.colors.tCtrl);
+		ColKey[5] = screen.colors.hSpec;
+		ColKey[3] = screen.colors.hHili;
+		ColKey[1] = screen.colors.hMenu;
+		bool Srch = false;
+		bool Upd = false;
+		longint Scr = 0;
+		while (true) {
+			std::vector<WORD> brkKeys;
+			brkKeys.push_back(__F1);
+			brkKeys.push_back(__F6);
+			brkKeys.push_back(__F10);
+			brkKeys.push_back(__CTRL_HOME);
+			brkKeys.push_back(__CTRL_END);
+			std::vector<EdExitD*> emptyExitD;
+			EditText(HelpM, MemoT, "", "", S.get(), 0xFFF0, TxtPos, Scr,
+				brkKeys, emptyExitD, Srch, Upd, 142, 145, nullptr);
+			if (Event.Pressed.KeyCombination() == __F6) {
+				PrintArray(&S->A, S->LL, true);
+				continue;
+			}
+			break;
 		}
-		break;
+		RestorePar(ep);
 	}
-	RestorePar(L);
+	catch (std::exception& e)
+	{
+		RestorePar(ep);
+	}
 }
 
 void InitTxtEditor()

@@ -15,6 +15,14 @@ struct MsgStr
 	std::string Head, Last, CtrlLast, AltLast, ShiftLast;
 };
 
+struct stEditorPar
+{
+	bool Insert = false, Indent = false, Wrap = false, Just = false;
+	char Mode = '\0';
+	char TypeT = '\0';
+	std::string NameT;
+};
+
 bool EditText(char pMode, char pTxtType, std::string pName, std::string pErrMsg,
 	LongStr* pLS, WORD pMaxLen, WORD& pInd, longint& pScr,
 	std::vector<WORD>& break_keys, std::vector<EdExitD*>& pExD, bool& pSrch, bool& pUpdat,
@@ -97,8 +105,8 @@ void SetPartLine(longint Ln);
 void MyWrLLMsg(pstring s);
 void HMsgExit(pstring s);
 void Calculate();
-longint SavePar();
-void RestorePar(longint l);
+stEditorPar SavePar();
+void RestorePar(stEditorPar& editorPar);
 void OpenTxtFh(char Mode);
 void RdFirstPart();
 void SimplePrintHead();

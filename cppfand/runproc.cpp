@@ -1228,7 +1228,7 @@ void RunInstr(Instr* PD)
 		case _asgnusercode: {
 			UserCode = RunInt(((Instr_assign*)PD)->Frml);
 			AccRight[0] = 0x01;
-			AccRight[1] = char(UserCode);
+			AccRight[1] = (char)UserCode;
 			break;
 		}
 		case _asgnaccright: AssgnAccRight((Instr_assign*)PD); break;
