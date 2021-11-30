@@ -241,7 +241,7 @@ void TMenu::HandleEvent()
 				case __ALT_F2: {
 					if (IsTestRun && !IsBoxS) {
 						ClrEvent();
-						EditHelpOrCat(_AltF2_, 2, hlp);
+						EditHelpOrCat(__ALT_F2, 2, hlp);
 						//KbdChar = 0;
 					}
 					break;
@@ -259,7 +259,7 @@ void TMenu::HandleEvent()
 		}
 		default: {
 			if (frst) {
-				DisplLLHelp(HlpRdb, hlp, false);
+				//DisplLLHelp(HlpRdb, hlp, false);
 				frst = false;
 			}
 			ClrEvent();
@@ -458,6 +458,7 @@ WORD TMenuBox::Exec(WORD IStart)
 	Next();  /*get valid iTxt*/
 
 	while (true) {
+		DisplLLHelp(HlpRdb, GetHlpName(), false);
 		HandleEvent();
 		i = iTxt;
 		const WORD KbdChar = Event.Pressed.KeyCombination();
@@ -712,67 +713,68 @@ WORD TMenuBar::Exec()
 	Prev();
 	Next();  /*get valid iTxt*/
 	for (i = 1; i <= nTxt; i++) WrText(i);
-label1:
-	HandleEvent();
-	i = iTxt;
-	bool enter = false;
-	switch (Event.Pressed.KeyCombination()) {
-	case __ENTER: { enter = true; goto label2; break; }
-	case __ESC: { i = 0; goto label4; break; }
-	case __DOWN: { goto label3; break; }
-	case __LEFT: {
-		Prev();
-		WrText(i);
-		if (down) goto label2;
-		break;
-	}
-	case __RIGHT: {
-		Next();
-		WrText(i);
-		if (down) goto label2;
-		break;
-	}
-	default: {
-		if (Event.Pressed.isChar() && !FindChar(Event.Pressed.Char)) goto label1;
-		enter = true;
-	label2:
-		WrText(iTxt);
-	label3:
-		GetItemRect(iTxt, &r);
-		MenuX = r.A.X; MenuY = r.A.Y + 1;
-		if (GetDownMenu(&w)) {
-			i = w->Exec(DownI[iTxt]);
-			delete w;
-			//ReleaseStore(w);
-			DownI[iTxt] = Lo(i);
-			enter = false;
-			down = true;
-			if (Hi(i) == 1) {
-				i = iTxt;
-				Prev();
-				WrText(i);
-				goto label2;
-			}
-			if (Hi(i) == 2) {
-				i = iTxt;
-				Next();
-				WrText(i);
-				goto label2;
-			}
-			down = false;
-			if (i == 0) goto label1;
-			return (iTxt << 8) + i;
+
+	while (true) {//label1:
+		DisplLLHelp(HlpRdb, GetHlpName(), false);
+		HandleEvent();
+		i = iTxt;
+		bool enter = false;
+		switch (Event.Pressed.KeyCombination()) {
+		case __ENTER: { enter = true; goto label2; break; }
+		case __ESC: { i = 0; goto label4; break; }
+		case __DOWN: { goto label3; break; }
+		case __LEFT: {
+			Prev();
+			WrText(i);
+			if (down) goto label2;
+			break;
 		}
-		if (enter) {
-			i = iTxt;
-		label4:
-			ClearHlp();
-			bool exI = ExecItem(i);
-			if (!exI) return i << 8;
+		case __RIGHT: {
+			Next();
+			WrText(i);
+			if (down) goto label2;
+			break;
+		}
+		default: {
+			if (Event.Pressed.isChar() && !FindChar(Event.Pressed.Char)) continue;
+			enter = true;
+		label2:
+			WrText(iTxt);
+		label3:
+			GetItemRect(iTxt, &r);
+			MenuX = r.A.X; MenuY = r.A.Y + 1;
+			if (GetDownMenu(&w)) {
+				i = w->Exec(DownI[iTxt]);
+				delete w;
+				DownI[iTxt] = Lo(i);
+				enter = false;
+				down = true;
+				if (Hi(i) == 1) {
+					i = iTxt;
+					Prev();
+					WrText(i);
+					goto label2;
+				}
+				if (Hi(i) == 2) {
+					i = iTxt;
+					Next();
+					WrText(i);
+					goto label2;
+				}
+				down = false;
+				if (i == 0) continue;
+				return (iTxt << 8) + i;
+			}
+			if (enter) {
+				i = iTxt;
+			label4:
+				ClearHlp();
+				bool exI = ExecItem(i);
+				if (!exI) return i << 8;
+			}
+		}
 		}
 	}
-	}
-	goto label1;
 }
 
 bool TMenuBar::GetDownMenu(TMenuBox** W)
