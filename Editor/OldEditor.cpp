@@ -1408,11 +1408,8 @@ int NewL(longint RLine)
 
 void ScrollPress()
 {
-	//void* ptr = nullptr;
-
 	bool old = bScroll;
-	//fyz = *(BP(ptr(0, 0x417)) && 0x10) != 0;
-	const bool fyz = GetKeyState(VK_SCROLL) & 0x0001;
+	const bool fyz = keyboard.GetState(VK_SCROLL) & 0x0001;
 	if (fyz == old) FirstScroll = false;
 	bScroll = (fyz || FirstScroll) && (Mode != HelpM);
 	HelpScroll = bScroll || (Mode == HelpM);
@@ -1476,7 +1473,7 @@ void DisplLL(WORD Flags)
 
 void PredLine()
 {
-	WORD mi, ml;
+	//WORD mi, ml;
 	TestKod();
 	if ((LineL == 1) && (Part.PosP > 0)) PredPart();
 	if (LineL > 1) {
