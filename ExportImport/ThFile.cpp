@@ -3,6 +3,7 @@
 #include "../cppfand/oaccess.h"
 #include "../cppfand/obaseww.h"
 
+WORD iBuf = 0;
 
 ThFile::ThFile(std::string APath, WORD CatIRec, InOutMode AMode, byte aCompress, ThFile* F)
 {
@@ -71,6 +72,124 @@ void ThFile::WriteBuf(bool cond)
 
 void ThFile::ClearBuf()
 {
-	memset(Buf, 0, sizeof(Buf));
+	memset(Buf, 0, sizeof(*Buf));
 	lBuf = 16384;
 }
+
+char ThFile::ForwChar()
+{
+	char result;
+label1:
+	if (iBuf < lBuf) result = (char)Buf[iBuf];
+	else {
+		ReadBuf();
+		if (eof) result = 0x1A;
+		else goto label1;
+	}
+	return result;
+}
+
+char ThFile::RdChar()
+{
+	char result;
+label1:
+	if (iBuf < lBuf) {
+		result = (char)Buf[iBuf];
+		iBuf++;
+	}
+	else {
+		ReadBuf();
+		if (eof) result = 0x1A;
+		else goto label1;
+	}
+	return result;
+}
+
+std::string ThFile::RdDM(char Delim, integer Max)
+{
+	std::string s;
+	IsEOL = false;
+	char c = RdChar();
+label1:
+	if (eof) IsEOL = true;
+	else {
+		if ((c == '\r') && !(Delim == '\'' || Delim == '"')) {
+			IsEOL = true;
+			if (ForwChar() == '\n') RdChar();
+		}
+		else {
+			if (c != Delim) {
+			label2:
+				s += c;
+				if (s.length() < Max) {
+					c = RdChar();
+					goto label1;
+				}
+			}
+			else if ((Delim == '\'' || Delim == '"') && (ForwChar() == c)) {
+				RdChar();
+				goto label2;
+			}
+		}
+	}
+	return s;
+}
+
+std::string ThFile::RdDelim(char Delim)
+{
+	return RdDM(Delim, 255);
+}
+
+std::string ThFile::RdFix(integer N)
+{
+	return RdDM('\r', N);
+}
+
+std::string ThFile::RdLongStr()
+{
+	char c; WORD l, n;
+
+	std::string x;
+	l = 0; n = 0;
+	if (ForwChar() == '\'') {
+		RdChar();
+		c = RdChar();
+		while (!eof && (l < MaxLStrLen)) {
+			if (c == '\'') {
+				if (ForwChar() == '\'') RdChar();
+				else goto label1;
+			}
+			x += c;
+			c = RdChar();
+		}
+	}
+	else
+		while (!eof && (l < MaxLStrLen) && (ForwChar() != '\r')) {
+			x += RdChar();
+		}
+label1:
+	return x;
+}
+
+void ThFile::WrChar(char C)
+{
+	if (lBuf == BUFFER_SIZE) WriteBuf(false);
+	Buf[lBuf] = C;
+	lBuf++;
+}
+
+void ThFile::WrString(std::string S)
+{
+	for (size_t i = 0; i < S.length(); i++) WrChar(S[i]);
+}
+
+void ThFile::WrLongStr(LongStr* S, bool WithDelim)
+{
+	if (WithDelim) WrChar('\'');
+	for (size_t i = 0; i < S->LL; i++) {
+		WrChar(S->A[i]);
+		if (WithDelim && (S->A[i] == '\'')) WrChar('\'');
+	}
+	if (WithDelim) WrChar('\'');
+}
+

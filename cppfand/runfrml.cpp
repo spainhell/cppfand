@@ -399,16 +399,25 @@ double LinkProc(FrmlElem15* X)
 WORD IntTSR(FrmlElem* X)
 {
 	void* p;
-	pstring s; bool b; double r; LongStr* ss;
+	pstring s;
+	bool b = false; double r = 0.0;
+	LongStr* ss = nullptr;
+
 	auto iX0 = (FrmlElem0*)X;
 	BYTE IntNr = RunInt(iX0->P1);
 	WORD FunNr = RunInt(iX0->P2);
 	FrmlElem* z = iX0->P3;
+
 	switch (iX0->N31) {
 	case 'r': { p = z; break; }
 	case 'S': { s = RunShortStr(z); p = &s; break; }
 	case 'B': { b = RunBool(z); p = &b; break; }
 	case 'R': { r = RunReal(z); p = &r; break; }
+	}
+
+	if (IntNr == 0x16 && FunNr == 0x200 && iX0->N31 == 'R' && r == 0.0) {
+		// IntTSR(22, 512, 0) - get key states
+
 	}
 
 	if (z->Op == _getlocvar) {

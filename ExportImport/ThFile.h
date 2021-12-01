@@ -33,12 +33,12 @@ public:
 
 	//void Append();
 	//void Delete();
-	//char ForwChar();
-	//char RdChar();
-	//std::string RdDM(char Delim, integer Max);
-	//std::string RdDelim(char Delim);
-	//std::string RdFix(integer N);
-	//LongStr* RdLongStr();
+	char ForwChar();
+	char RdChar();
+	std::string RdDM(char Delim, integer Max);
+	std::string RdDelim(char Delim);
+	std::string RdFix(integer N);
+	std::string RdLongStr();
 	//void ReadBuf2();
 	//void Reset();
 	//void ExtToT();
@@ -49,8 +49,9 @@ public:
 	//void RewriteX();
 	//void TestError();
 	//bool TestErr152();
-	//void WrChar(char C);
+	void WrChar(char C);
 	//void WriteBuf2();
-	//void WrString(std::string S);
-	//void WrLongStr(LongStr* S, bool WithDelim);
+	void WrString(std::string S);
+	void WrLongStr(LongStr* S, bool WithDelim);
 };
+

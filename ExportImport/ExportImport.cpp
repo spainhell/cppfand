@@ -2,6 +2,7 @@
 
 #include "ThFile.h"
 #include "../cppfand/FileD.h"
+#include "../cppfand/FieldDescr.h"
 #include "../cppfand/GlobalVariables.h"
 #include "../cppfand/oaccess.h"
 #include "../cppfand/obaseww.h"
@@ -9,13 +10,14 @@
 #include "../cppfand/compile.h"
 #include "../MergeReport/rdmerg.h"
 #include "../MergeReport/runmerg.h"
+#include "../textfunc/textfunc.h"
 
 
 bool OldToNewCat(longint& FilSz)
 {
 	struct stX { longint NRecs; WORD  RecLen; } x;
 	longint off, offNew;
-	BYTE a[91]; // budeme èíslovat od 1, jako v Pascalu (a:array[1..90] of byte;)
+	BYTE a[91]; // budeme cislovat od 1, jako v Pascalu (a:array[1..90] of byte;)
 
 	auto result = false;
 	bool cached = CFile->NotCached();
@@ -47,74 +49,295 @@ void ConvWinCp(unsigned char* pBuf, unsigned char* pKod, WORD L)
 	}
 }
 
-//void ImportTxt(CopyD* CD)
-//{
-//	ThFile* F1;
-//	ExitRecord er;
-//	LockMode md;
-//	FrmlElem4* FE = new FrmlElem4(_const, 0);
-//#ifdef FandSQL
-//	SQLStreamPtr q;
-//#endif
-//label1:
-//	//NewExit(Ovr, er);
-//	//goto label1;
-//	F1 = nullptr;
-//#ifdef FandSQL
-//	q = nullptr;
-//#endif
-//	//with CD^ do begin
-//	F1 = new ThFile(CD->Path1, CD->CatIRec1, _inp, 0, nullptr);
-//	if (CD->HdFD != nullptr) {
-//		FE->Op = _const;
-//		FE->S = F1->RdDelim(0x1A); //^Z
-//		AsgnParFldFrml(CD->HdFD, CD->HdF, FE, false);
-//	}
-//	CFile = CD->FD2;
-//	CRecPtr = GetRecSpace();
-//#ifdef FandSQL
-//	if (CFile->IsSQLFile) {
-//		New(q, Init);
-//		q->OutpRewrite(Append);
-//	}
-//	else
-//#endif
-//		md = RewriteF(CD->Append);
-//	while (!(F1->eof) && (F1->ForwChar != 0x1A)) {
-//		ZeroAllFlds();
-//		ClearDeletedFlag();
-//		VarFixImp(F1, CD->Opt1);
-//		F1->ForwChar; //{set IsEOF at End}
-//#ifdef FandSQL
-//		if (CFile->IsSQLFile) q->PutRec();
-//		else
-//#endif
-//		{
-//			PutRec(CFile, CRecPtr);
-//			if (CD->Append && (CFile->Typ == 'X')) TryInsertAllIndexes(CFile->IRec);
-//		}
-//	}
-//	LastExitCode = 0;
-//label1:
-//	RestoreExit(er);
-//#ifdef FandSQL
-//	if (q != nullptr) {
-//		q->OutpClose();
-//		ClearRecSpace(CRecPtr);
-//	};
-//#endif
-//	if ((F1!=nullptr) && (F1->Handle != nullptr)) {
-//		F1->Done();
-//		OldLMode(md);
-//	}
-//}
+void VarFixImp(ThFile* F1, CpOption Opt)
+{
+	pstring s;
+	longint pos;
+	char c; double r; WORD err;
 
+	F1->IsEOL = false;
+	for (auto& F : CFile->FldD) { //while (F != nullptr) {
+		if ((F->Flg & f_Stored) != 0)
+			if (F1->IsEOL) {
+				switch (F->FrmlTyp) {
+				case 'R': R_(F, 0); break;
+				case 'B': B_(F, false); break;
+				case 'S': S_(F, ""); break;
+				}
+			}
+			else
+				switch (F->Typ) {
+				case 'F': {
+					if (Opt == CpOption::cpFix) s = F1->RdFix(F->L);
+					else s = F1->RdDelim(',');
+					val(LeadChar(' ', s), r, err);
+					if (F->Flg && f_Comma != 0) r = r * Power10[F->M]; R_(F, r);
+					break;
+				}
+				case 'A': {
+					if (Opt == CpOption::cpFix) S_(F, F1->RdFix(F->L));
+					else {
+						c = ForwChar;
+						if (c == '\'' || c == '"') {
+							F1->RdChar();
+							s = F1->RdDelim(c);
+							F1->RdDelim(',');
+						}
+						else s = F1->RdDelim(',');
+						S_(F, s);
+					}
+					break;
+				}
+				case 'N': {
+					if (Opt == CpOption::cpFix) S_(F, F1->RdFix(F->L));
+					else S_(F, F1->RdDelim(','));
+					break;
+				}
+				case 'D':
+				case 'R': {
+					if (Opt == CpOption::cpFix) s = F1->RdFix(F->L);
+					else {
+						s = F1->RdDelim(',');
+						if (s[1] == '\'' || s[1] == '"') {
+							s = copy(s, 2, s.length() - 2);
+						}
+					}
+					if (s == "") {
+						R_(F, 0.0);
+					}
+					else if (F->Typ == 'R') {
+						val(s, r, err);
+						R_(F, r);
+					}
+					else {
+						R_(F, ValDate(s, F->Mask));
+					}
+					break;
+				}
+				case 'B': {
+					s = F1->RdFix(1);
+					B_(F, s[1] = 'A');
+					if (Opt == CpOption::cpVar) {
+						F1->RdDelim(',');
+					}
+					break;
+				}
+				case 'T': {
+					if (Opt == CpOption::cpVar) {
+						std::string x = F1->RdLongStr();
+						s = F1->RdDelim(',');
+						S_(F, x);
+					}
+					else T_(F, 0);
+				}
+				}
+	}
+	if (!F1->IsEOL) F1->RdDelim('\r');
+}
+
+void VarFixExp(ThFile* F2, CpOption Opt)
+{
+	WORD i, n;
+	std::string s, s1;
+	LongStr* x;
+	bool first; double r;
+
+	first = true;
+	for (auto& F : CFile->FldD) {
+		if ((F->Flg & f_Stored) != 0) {
+			if (first) first = false;
+			else if (Opt == CpOption::cpVar) F2->WrChar(',');
+
+			switch (F->Typ) {
+			case 'F': {
+				r = _R(F);
+				if ((F->Flg & f_Comma) != 0) r = r / Power10[F->M];
+				str(r, F->L, F->M, s);
+				if (s.length() > F->L) {
+					s[0] = '>';
+					s = s.substr(0, F->L);
+				}
+				if (Opt == CpOption::cpVar) {
+					s = LeadChar(' ', s);
+					if (F->M > 0) {
+						s = TrailChar(s, '0');
+						if ((s.length() > 0) and (s[s.length() - 1] == '.')) s = s.substr(0, s.length() - 1);
+					}
+					if (s == "0") s = "";
+
+				}
+				break;
+			}
+			case 'A': {
+				s = _StdS(F);
+				if (Opt == CpOption::cpVar) {
+					if (F->M == 1) s = TrailChar(s, ' ');
+					else s = LeadChar(' ', s);
+					s1 = "";
+					for (i = 0; i < s.length(); i++) {
+						s1 += s[i];
+						if (s[i] == '\'') s1 += '\'';
+					}
+					s = '\'' + s1 + '\'';
+				}
+				break;
+			}
+			case 'N': {
+				s = _StdS(F);
+					if (Opt == CpOption::cpVar) {
+						if (F->M == 1) s = TrailChar(s, '0');
+						else s = LeadChar('0', s);
+					}
+				break;
+			}
+			case 'D':
+			case 'R': {
+				r = _R(F);
+				if ((r == 0.0) && (Opt == CpOption::cpVar)) s = "";
+				else if (F->Typ == 'R') str(r, F->L, s);
+				else {
+					s = StrDate(r, F->Mask);
+					if (Opt == CpOption::cpVar) s = '\'' + s + '\'';
+				}
+				break;
+			}
+			case 'B': {
+				if (_B(F)) s = 'A';
+				else s = 'N';
+				break;
+			}
+			case 'T': {
+				if (Opt == CpOption::cpVar) {
+					x = _LongS(F);
+					F2->WrLongStr(x, true);
+					delete x;
+				}
+				break;
+			}
+			}
+
+			if (F->Typ != 'T') F2->WrString(s);
+		}
+	}
+}
+
+void ImportTxt(CopyD* CD)
+{
+	ThFile* F1 = nullptr;
+	ExitRecord er;
+	LockMode md;
+	auto FE = std::make_unique<FrmlElem4>(_const, 0);
+
+#ifdef FandSQL
+	SQLStreamPtr q;
+#endif
+	try {
+#ifdef FandSQL
+		q = nullptr;
+#endif
+		F1 = new ThFile(CD->Path1, CD->CatIRec1, InOutMode::_inp, 0, nullptr);
+		if (CD->HdFD != nullptr) {
+			FE->Op = _const;
+			FE->S = F1->RdDelim(0x1A); //^Z
+			AsgnParFldFrml(CD->HdFD, CD->HdF, FE.get(), false);
+		}
+		CFile = CD->FD2;
+		CRecPtr = GetRecSpace();
+#ifdef FandSQL
+		if (CFile->IsSQLFile) {
+			New(q, Init);
+			q->OutpRewrite(Append);
+}
+		else
+#endif
+			md = RewriteF(CD->Append);
+		while (!(F1->eof) && (F1->ForwChar() != 0x1A)) {
+			ZeroAllFlds();
+			ClearDeletedFlag();
+			VarFixImp(F1, CD->Opt1);
+			F1->ForwChar(); //{set IsEOF at End}
+#ifdef FandSQL
+			if (CFile->IsSQLFile) q->PutRec();
+			else
+#endif
+			{
+				PutRec(CFile, CRecPtr);
+				if (CD->Append && (CFile->Typ == 'X')) TryInsertAllIndexes(CFile->IRec);
+			}
+		}
+		LastExitCode = 0;
+	}
+	catch (std::exception& e) {
+		RestoreExit(er);
+	}
+#ifdef FandSQL
+	if (q != nullptr) {
+		q->OutpClose();
+		ClearRecSpace(CRecPtr);
+	};
+#endif
+	if ((F1 != nullptr) && (F1->Handle != nullptr)) {
+		delete F1;
+		OldLMode(md);
+	}
+}
+
+void ExportTxt(CopyD* CD)
+{
+	ThFile* F2; longint n; longint i; pstring s; ExitRecord er;
+	XScan* Scan; LockMode md; InOutMode m;
+
+	//NewExit(Ovr, er);
+	//goto label2;
+	F2 = nullptr; Scan = nullptr;
+
+	m = InOutMode::_outp;
+	if (CD->Append) m = InOutMode::_append;
+
+	F2 = new ThFile(CD->Path2, CD->CatIRec2, m, 0, nullptr);
+	if (CD->HdFD != nullptr) {
+		LinkLastRec(CD->HdFD, n, true);
+		s = _ShortS(CD->HdF);
+		i = s.first('\r');
+		if (i > 0) s[0] = i - 1;
+		F2->WrString(s);
+		F2->WrString("\r\n");
+		ClearRecSpace(CRecPtr);
+		ReleaseStore(CRecPtr);
+	}
+	CFile = CD->FD1;
+	CRecPtr = GetRecSpace;
+	md = NewLMode(RdMode);
+	Scan = new XScan(CFile, CD->ViewKey, nullptr, true);
+	Scan->Reset(nullptr, false);
+	RunMsgOn('C', Scan->NRecs);
+label1:
+	Scan->GetRec();
+	if (!Scan->eof) {
+		VarFixExp(F2, CD->Opt2);
+		F2->WrString("\r\n");
+		RunMsgN(Scan->IRec);
+		goto label1;
+	}
+	LastExitCode = 0;
+	RunMsgOff();
+label2:
+	RestoreExit(er);
+	if (Scan != nullptr) {
+		Scan->Close();
+		ClearRecSpace(CRecPtr);
+		OldLMode(md);
+	}
+	if ((F2 != nullptr) && (F2->Handle != nullptr)) {
+		if (LastExitCode != 0) F2->ClearBuf();
+		delete F2;
+	}
+}
 
 void MakeCopy(CopyD* CD)
 {
 	try {
 		ThFile F1 = ThFile(CD->Path1, CD->CatIRec1, InOutMode::_inp, 0, nullptr);
-
 		ThFile F2 = ThFile(CD->Path2, CD->CatIRec2, CD->Append ? InOutMode::_append : InOutMode::_outp, 0, &F1);
 		if (HandleError != 0) {
 			//delete F1;
@@ -175,12 +398,10 @@ void FileCopy(CopyD* CD)
 	void* p = nullptr, * p2;
 	LastExitCode = 2;
 	if (CD->Opt1 == CpOption::cpFix || CD->Opt1 == CpOption::cpVar) {
-		//ImportTxt();
-		screen.ScrWrText(1, 1, "ImportTxt()");
+		ImportTxt(CD);
 	}
 	else if (CD->Opt2 == CpOption::cpFix || CD->Opt2 == CpOption::cpVar) {
-		//ExportTxt();
-		screen.ScrWrText(1, 1, "ExportTxt()");
+		ExportTxt(CD);
 	}
 	else if (CD->FD1 != nullptr) {
 		if (CD->FD2 != nullptr) {
@@ -232,7 +453,7 @@ void CheckFile(FileD* FD)
 {
 	struct stPrfx { longint NRecs; WORD RecLen; } Prfx;
 	FILE* h = nullptr;
-	pstring d; pstring n; pstring e;
+	std::string d, n, e;
 	longint fs = 0;
 
 	TestMountVol(CPath[0]);
@@ -265,7 +486,7 @@ void CheckFile(FileD* FD)
 	if (FD->TF == nullptr) return;
 	FSplit(CPath, d, n, e);
 	if (SEquUpcase(e, ".RDB")) e = ".TTT";
-	else e[2] = 'T';
+	else e[1] = 'T';
 	CPath = d + n + e;
 	h = OpenH(_isoldfile, RdShared);
 	if (HandleError == 0) CloseH(&h);
