@@ -253,6 +253,11 @@ void Keyboard::AddToFrontKeyBuf(unsigned short c)
 	_priorBuffer.push_front(key);
 }
 
+short Keyboard::GetState(int nVirtKey)
+{
+	return GetKeyState(nVirtKey);
+}
+
 std::vector<KEY_EVENT_RECORD> Keyboard::GetKeyBuf()
 {
 	return std::vector<KEY_EVENT_RECORD>();

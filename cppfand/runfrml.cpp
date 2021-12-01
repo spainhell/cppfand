@@ -417,7 +417,22 @@ WORD IntTSR(FrmlElem* X)
 
 	if (IntNr == 0x16 && FunNr == 0x200 && iX0->N31 == 'R' && r == 0.0) {
 		// IntTSR(22, 512, 0) - get key states
-
+		WORD result = 0;
+		bool numlock  = keyboard.GetState(VK_NUMLOCK) & 0x0001;
+		bool capslock = keyboard.GetState(VK_CAPITAL) & 0x0001;
+		bool scroll   = keyboard.GetState(VK_SCROLL) & 0x0001;
+		bool alt      = keyboard.GetState(VK_MENU) & 0x8000;
+		bool ctrl     = keyboard.GetState(VK_CONTROL) & 0x8000;
+		bool lshift   = keyboard.GetState(VK_LSHIFT) & 0x8000;
+		bool rshift   = keyboard.GetState(VK_RSHIFT) & 0x8000;
+		if (capslock) result += 0b01000000;
+		if (numlock)  result += 0b00100000;
+		if (scroll)   result += 0b00010000;
+		if (alt)      result += 0b00001000;
+		if (ctrl)     result += 0b00000100;
+		if (lshift)   result += 0b00000010;
+		if (rshift)   result += 0b00000001;
+		return result;
 	}
 
 	if (z->Op == _getlocvar) {
@@ -436,7 +451,7 @@ WORD IntTSR(FrmlElem* X)
 		case 'B': { p = &b; break; } 
 		}
 	}
-	return 0; // asi se vrací nìco z ASM kódu
+	return 0; // puvodne se vracel obsah AX registru
 }
 
 WORD PortIn(bool IsWord, WORD Port)

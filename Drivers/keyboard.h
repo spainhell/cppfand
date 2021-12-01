@@ -23,7 +23,8 @@ public:
 	void AddToKeyBuf(std::string input); // add items to the end of Prior Key Buffer
 	void AddToKeyBuf(unsigned short c); // add items to the end of Prior Key Buffer
 	void AddToFrontKeyBuf(std::string input); // add items to the front of Prior Key Buffer
-	void AddToFrontKeyBuf(unsigned short c); // add items to the front of Prior Key Buffer 
+	void AddToFrontKeyBuf(unsigned short c); // add items to the front of Prior Key Buffer
+	short GetState(int nVirtKey); // get state of the Virtual key
 	
 private:
 	HANDLE _handle;
