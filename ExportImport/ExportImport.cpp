@@ -1,5 +1,6 @@
 #include "ExportImport.h"
 
+#include "TbFile.h"
 #include "ThFile.h"
 #include "../cppfand/FileD.h"
 #include "../cppfand/FieldDescr.h"
@@ -445,6 +446,28 @@ void MakeMerge(CopyD* CD)
 
 	catch (std::exception& e)
 	{
+	}
+}
+
+void Backup(bool IsBackup, bool NoCompress, WORD Ir, bool NoCancel)
+{
+	TbFile* F = new TbFile(NoCompress);
+	ExitRecord er;
+
+	try {
+		LastExitCode = 1;
+		F->Backup(IsBackup, Ir);
+		LastExitCode = 0;
+	}
+	catch (std::exception& e) 
+	{
+		RestoreExit(er);
+	}
+
+	ReleaseStore(F);
+	if (LastExitCode != 0) {
+		RunMsgOff();
+		if (!NoCancel) GoExit();
 	}
 }
 

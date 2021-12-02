@@ -1346,7 +1346,8 @@ void CallProcedure(Instr_proc* PD)
 {
 	stSaveState* p = nullptr;
 	void* p1 = nullptr; void* p2 = nullptr;
-	void* oldbp = nullptr; void* oldprocbp = nullptr;
+	void* oldbp = nullptr;
+	void* oldprocbp = nullptr;
 	//LocVar* lv0 = nullptr;
 	std::_Vector_iterator<std::_Vector_val<std::_Simple_types<LocVar*>>> it0;
 	//LocVar* lv1 = nullptr;
@@ -1382,7 +1383,7 @@ void CallProcedure(Instr_proc* PD)
 		CurrPos = 0;
 		Error(119);
 	}
-	//lv0 = lvroot;
+
 	it0 = PD->variables.vLocVar.begin();
 	// projdeme vstupni parametry funkce
 	for (i = 0; i < n; i++) /* !!! with PD->TArg[i] do!!! */
@@ -1407,7 +1408,7 @@ void CallProcedure(Instr_proc* PD)
 			while (it1 != PD->variables.vLocVar.end()) {
 				if (((*it1)->FTyp == 'i' || (*it1)->FTyp == 'r')
 					&& ((*it1)->FD == (*it0)->FD)) (*it1)->FD = CFile;
-				it1++; // (LocVar*)lv1->Chain;
+				++it1;
 			}
 			(*it0)->FD = CFile;
 			FDLocVarAllowed = true;
@@ -1423,11 +1424,8 @@ void CallProcedure(Instr_proc* PD)
 			break;
 		}
 		}
-		/*if (it0 != LVBD.vLocVar.end())*/
 		++it0;
-		// (LocVar*)lv0->Chain;
 	}
-	//lv1 = lv0;
 	it1 = it0;
 	while (it0 != PD->variables.vLocVar.end()) {
 		if ((*it0)->FTyp == 'r') {
@@ -1456,19 +1454,19 @@ void CallProcedure(Instr_proc* PD)
 	FDLocVarAllowed = false;
 	//lv0 = lv1;
 	it0 = it1;
-	while (it0 != PD->variables.vLocVar.end()/*lv0 != nullptr*/) {
-		if ((*it0)->FTyp == 'i') /* !!! with WKeyDPtr(lv->RecPtr)^ do!!! */
+	while (it0 != PD->variables.vLocVar.end()) {
+		if ((*it0)->FTyp == 'i')
 		{
 			auto hX = (XWKey*)(*it0)->RecPtr;
 			if (hX->KFlds == nullptr) hX->KFlds = (*it0)->FD->Keys->KFlds;
 			auto tmp = (XWKey*)(*it0)->RecPtr;
 			tmp->Open(hX->KFlds, true, false);
 		}
-		++it0; // (LocVar*)lv0->Chain;
+		++it0;
 	}
 	ReleaseStore2(p2);
 	RunProcedure(pd1);
-	//lv0 = lvroot;
+
 	it0 = PD->variables.vLocVar.begin();
 	i = 0;
 	while (it0 != PD->variables.vLocVar.end()) {
@@ -1479,21 +1477,13 @@ void CallProcedure(Instr_proc* PD)
 			switch ((*it0)->FTyp) {
 			case 'R': {
 				z18->locvar->R = (*it0)->R;
-				/*FloatPtr(Ptr(Seg(oldbp^), Ofs(oldbp^) + z->BPOfs)) =
-				FloatPtr(Ptr(Seg(MyBP^), Ofs(MyBP^) + lv->BPOfs))*;*/
 				break;
 			}
 			case 'S': {
 				z18->locvar->S = (*it0)->S;
-				/*l = LongintPtr(Ptr(Seg(oldbp^), Ofs(oldbp^) + z->BPOfs))*;
-				LongintPtr(Ptr(Seg(oldbp^), Ofs(oldbp^) + z->BPOfs)) ^ =
-				LongintPtr(Ptr(Seg(MyBP^), Ofs(MyBP^) + lv->BPOfs))*;
-				LongintPtr(Ptr(Seg(MyBP^), Ofs(MyBP^) + lv->BPOfs)) ^ = l;*/
 				break; }
 			case 'B': {
 				z18->locvar->B = (*it0)->B;
-				/*BooleanPtr(Ptr(Seg(oldbp^), Ofs(oldbp^) + z->BPOfs)) ^ =
-				BooleanPtr(Ptr(Seg(MyBP^), Ofs(MyBP^) + lv->BPOfs))^*/
 				break;
 			}
 			}
@@ -1512,7 +1502,7 @@ void CallProcedure(Instr_proc* PD)
 			}
 			}
 		i++;
-		it0++; // (LocVar*)lv0->Chain;
+		it0++;
 	}
 	PopProcStk();
 	ProcMyBP = (ProcStkD*)oldprocbp;

@@ -160,13 +160,19 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ExportImport.cpp" />
+    <ClCompile Include="TbFile.cpp" />
     <ClCompile Include="TcFile.cpp" />
     <ClCompile Include="ThFile.cpp" />
+    <ClCompile Include="TyFile.cpp" />
+    <ClCompile Include="TzFile.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ExportImport.h" />
+    <ClInclude Include="TbFile.h" />
     <ClInclude Include="TcFile.h" />
     <ClInclude Include="ThFile.h" />
+    <ClInclude Include="TyFile.h" />
+    <ClInclude Include="TzFile.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

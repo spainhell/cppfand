@@ -1,7 +1,5 @@
 #pragma once
 #include <string>
-
-#include "TcFile.h"
 #include "../cppfand/FileD.h"
 
 enum class InOutMode { _inp, _outp, _append };

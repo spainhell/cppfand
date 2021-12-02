@@ -16,7 +16,7 @@ struct TXBuf {
 class TcFile {
 public:
 	TcFile(BYTE aCompress);
-	~TcFile();
+	virtual ~TcFile();
 	char* Buf = nullptr;
 	char* Buf2 = nullptr;
 	WORD iBuf = 0, lBuf = 0, iBuf2 = 0, lBuf2 = 0, BufSize = 0, BufSize2 = 0;

@@ -13,9 +13,7 @@ inline void XEncode(LongStr* S1, LongStr* S2)
 void FileCopy(CopyD* CD);
 void MakeMerge(CopyD* CD);
 
-inline void Backup(bool IsBackup, bool NoCompress, WORD Ir, bool NoCancel)
-{
-}
+void Backup(bool IsBackup, bool NoCompress, WORD Ir, bool NoCancel);
 
 inline void BackupM(Instr_backup* PD)
 {
