@@ -15,12 +15,13 @@ public:
 	std::string Dir;
 	std::string FName;
 	std::string Ext;
+    longint Size, OrigSize, SpaceOnDisk;
 
     void TestErr();
     void Reset();
     void Rewrite();
-    void ReadBuf2();
-    void WriteBuf2();
+    void ReadBuf2() override;
+    void WriteBuf2() override;
     void BackupH();
     void RestoreH();
     void BackupHFD(WORD h);

@@ -1,44 +1,44 @@
 #pragma once
 
-//#include "fanddml.h"
 #include "access.h"
 
-void OpenXWorkH(); // ø. 49
-void OpenTWorkH(); // ø. 57
+void OpenXWorkH();
+void OpenTWorkH();
 void SaveFD();
-void SaveFiles(); // r69
-void ClosePassiveFD(); // r76
-void CloseFANDFiles(bool FromDML);// ø. 81
-void OpenFANDFiles(bool FromDML);// ø. 94
+void SaveFiles();
+void ClosePassiveFD();
+void CloseFANDFiles(bool FromDML);
+void OpenFANDFiles(bool FromDML);
 void SetCPathMountVolSetNet(FileUseMode UM);
-bool OpenF1(FileUseMode UM); // ø. 119
-bool OpenF2(); // ø. 159
-bool OpenF(FileUseMode UM); // ø. 196
+void TestCFileError();
+bool OpenF1(FileUseMode UM);
+bool OpenF2();
+bool OpenF(FileUseMode UM);
 void CreateF();
-bool OpenCreateF(FileUseMode UM); // r218
+bool OpenCreateF(FileUseMode UM);
 LockMode RewriteF(bool Append);
-void TruncF(); // ø. 239
-void CloseFile(); // ø. 252
+void TruncF();
+void CloseFile();
 void CloseFAfter(FileD* FD);
 bool ActiveRdbOnDrive(WORD D);
 void CloseFilesOnDrive(WORD D);
-WORD TestMountVol(char DriveC); // r301
+WORD TestMountVol(char DriveC);
 void ReleaseDrive(WORD D);
 void SetCPathForH(FILE* handle);
 #ifdef FandSQL
 void SetIsSQLFile();
 #endif
-WORD GetCatIRec(pstring Name, bool MultiLevel); // r364
+WORD GetCatIRec(pstring Name, bool MultiLevel);
 WORD Generation();
 void TurnCat(WORD Frst, WORD N, integer I);
-pstring RdCatField(WORD CatIRec, FieldDescr* CatF);// ø. 400
+pstring RdCatField(WORD CatIRec, FieldDescr* CatF);
 void WrCatField(FileD* catFD, WORD CatIRec, FieldDescr* CatF, const std::string& Txt);
 void WrCatField(WORD CatIRec, FieldDescr* CatF, pstring Txt);
 void RdCatPathVol(WORD CatIRec);
-bool SetContextDir(std::string& D, bool& IsRdb);// ø. 414
-void GetCPathForCat(WORD I);// ø. 429
-void SetCPathVol(); // ø. 441
-void SetTxtPathVol(pstring* Path, WORD CatIRec); // r463
+bool SetContextDir(std::string& D, bool& IsRdb);
+void GetCPathForCat(WORD I);
+void SetCPathVol();
+void SetTxtPathVol(pstring* Path, WORD CatIRec);
 void SetTxtPathVol(std::string& Path, WORD CatIRec);
 void SetTempCExt(char Typ, bool IsNet);
 FileD* OpenDuplF(bool CrTF);

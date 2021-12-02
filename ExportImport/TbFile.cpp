@@ -16,6 +16,35 @@ void FindFDforI() {
 
 TbFile::TbFile(bool noCompress) : TyFile()
 {
+	Size = 0;
+	OrigSize = 0;
+	SpaceOnDisk = 0;
+}
+
+TbFile::~TbFile()
+{
+}
+
+void TbFile::TestErr()
+{
+}
+
+void TbFile::Reset()
+{
+}
+
+void TbFile::Rewrite()
+{
+}
+
+void TbFile::ReadBuf2()
+{
+	TyFile::ReadBuf2();
+}
+
+void TbFile::WriteBuf2()
+{
+	TyFile::WriteBuf2();
 }
 
 void TbFile::Backup(bool isBackup, WORD Ir)
@@ -24,7 +53,7 @@ void TbFile::Backup(bool isBackup, WORD Ir)
 	std::string n;
 	std::string e;
 
-	IsBackup = IsBackup;
+	IsBackup = isBackup;
 	SaveFiles();
 	std::string ArNr = RdCatField(Ir, CatArchiv);
 	Vol = RdCatField(Ir, CatVolume);
@@ -126,4 +155,24 @@ void TbFile::BackupH()
 	}
 	WriteBuf(true);
 	CloseH(&Handle);
+}
+
+void TbFile::RestoreH()
+{
+}
+
+void TbFile::BackupHFD(WORD h)
+{
+}
+
+void TbFile::RestoreHFD(WORD h)
+{
+}
+
+void TbFile::BackupFD()
+{
+}
+
+void TbFile::RestoreFD()
+{
 }

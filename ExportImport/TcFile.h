@@ -1,6 +1,8 @@
 #pragma once
 #include "../cppfand/constants.h"
 
+const size_t BUFFER_SIZE = 16384;
+
 const WORD RingBufSz = 4096;
 const BYTE MaxMatchLen = 18;
 const BYTE MinMatchLen = 3;
@@ -17,9 +19,10 @@ class TcFile {
 public:
 	TcFile(BYTE aCompress);
 	virtual ~TcFile();
-	char* Buf = nullptr;
-	char* Buf2 = nullptr;
-	WORD iBuf = 0, lBuf = 0, iBuf2 = 0, lBuf2 = 0, BufSize = 0, BufSize2 = 0;
+	size_t lBuf = BUFFER_SIZE;
+	BYTE* Buf = new BYTE[BUFFER_SIZE]{ '\0' };
+	BYTE* Buf2 = nullptr;
+	WORD iBuf = 0, iBuf2 = 0, lBuf2 = 0, BufSize = 0, BufSize2 = 0;
 	bool eof = false, eof2 = false;
 	BYTE Compress = 0; BYTE CodeMask = 0;
 	WORD CodeMaskW = 0, lCode = 0, lInput = 0, nToRead = 0, iRingBuf = 0, jRingBuf = 0;
@@ -31,9 +34,9 @@ public:
 	void DeleteNode(integer p);
 	void WriteCodeBuf();
 	void InitBufOutp();
-	void WriteBuf(bool isLast);
+	virtual void WriteBuf(bool isLast);
 	virtual void WriteBuf2();
 	void InitBufInp();
-	void ReadBuf();
+	virtual void ReadBuf();
 	virtual void ReadBuf2();
 };

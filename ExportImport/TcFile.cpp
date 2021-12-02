@@ -8,14 +8,14 @@ TcFile::TcFile(BYTE aCompress)
 	Compress = aCompress;
 	if (aCompress == 0) {
 		BufSize = 4 * RingBufSz; BufSize2 = BufSize;
-		Buf = new char[BufSize];
+		Buf = new BYTE[BufSize];
 		Buf2 = Buf;
 	}
 	else {
 		BufSize = RingBufSz; BufSize2 = 4 * BufSize;
 		XBuf = new TXBuf(); // GetStore(sizeof(TXBuf));
-		Buf = new char[BufSize];
-		Buf2 = new char[BufSize2];
+		Buf = new BYTE[BufSize];
+		Buf2 = new BYTE[BufSize2];
 	}
 }
 

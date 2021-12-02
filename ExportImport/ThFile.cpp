@@ -5,7 +5,7 @@
 
 WORD iBuf = 0;
 
-ThFile::ThFile(std::string APath, WORD CatIRec, InOutMode AMode, byte aCompress, ThFile* F)
+ThFile::ThFile(std::string APath, WORD CatIRec, InOutMode AMode, byte aCompress, ThFile* F) : TcFile(aCompress)
 {
 	std::string mode;
 	std::string d, Nm, e;
@@ -16,7 +16,7 @@ ThFile::ThFile(std::string APath, WORD CatIRec, InOutMode AMode, byte aCompress,
 	default: break;
 	}
 
-	compress = aCompress;
+	Compress = aCompress;
 
 	SetTxtPathVol(APath, CatIRec); Path = CPath; Vol = CVol;
 
@@ -74,6 +74,15 @@ void ThFile::ClearBuf()
 {
 	memset(Buf, 0, sizeof(*Buf));
 	lBuf = 16384;
+}
+
+void ThFile::Delete()
+{
+	CVol = Vol;
+	CPath = Path;
+	TestMountVol(CPath[0]);
+	do { DeleteFile(CPath.c_str()); } while (TestErr152());
+	//if (Floppy) { CPath[l - 1] += 5); DeleteFile(CPath); }
 }
 
 char ThFile::ForwChar()
@@ -169,6 +178,52 @@ std::string ThFile::RdLongStr()
 		}
 label1:
 	return x;
+}
+
+void ThFile::ExtToT()
+{
+	CPath = Path;
+	FSplit(CPath, CDir, CName, CExt);
+	CExtToT();
+	Path = CPath;
+}
+
+void ThFile::Rewrite()
+{
+	Delete();
+	CPath = Path;
+	CVol = Vol; Handle = OpenH(_isoverwritefile, Exclusive);
+	TestCPathError();
+	SpaceOnDisk = MyDiskFree(Floppy, Path[0] - '@');
+	Size = 0;
+}
+
+void ThFile::RewriteT()
+{
+	ExtToT();
+	Rewrite();
+	InitBufOutp();
+}
+
+void ThFile::RewriteX()
+{
+	Path[Path.length() - 3] = 'X';
+	Rewrite();
+	InitBufOutp();
+}
+
+bool ThFile::TestErr152()
+{
+	bool result = false;
+	if (HandleError == 152) {
+		F10SpecKey = __ESC;
+		SetMsgPar(CPath, "");
+		WrLLF10Msg(808);
+		const WORD KbdChar = Event.Pressed.KeyCombination();
+		if ((KbdChar == __ESC) && PromptYN(21)) GoExit();
+		result = true;
+	}
+	return result;
 }
 
 void ThFile::WrChar(char C)

@@ -1,16 +1,17 @@
 #pragma once
 #include <string>
-
 #include "TcFile.h"
+
 class TyFile : public TcFile
 {
 public:
     TyFile();
-    BYTE Drive;
-    char DrvNm;
+    BYTE Drive = '\0';
+    char DrvNm = '\0';
 	std::string Vol;
     std::string Path;
-    bool IsBackup, Floppy, Continued;
+    bool IsBackup = false;
+    bool Floppy = false;
+	bool Continued = false;
     void MountVol(bool IsFirst);
 };
-

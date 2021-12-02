@@ -2,6 +2,7 @@
 
 #include "TbFile.h"
 #include "ThFile.h"
+#include "TzFile.h"
 #include "../cppfand/FileD.h"
 #include "../cppfand/FieldDescr.h"
 #include "../cppfand/GlobalVariables.h"
@@ -185,10 +186,10 @@ void VarFixExp(ThFile* F2, CpOption Opt)
 			}
 			case 'N': {
 				s = _StdS(F);
-					if (Opt == CpOption::cpVar) {
-						if (F->M == 1) s = TrailChar(s, '0');
-						else s = LeadChar('0', s);
-					}
+				if (Opt == CpOption::cpVar) {
+					if (F->M == 1) s = TrailChar(s, '0');
+					else s = LeadChar('0', s);
+				}
 				break;
 			}
 			case 'D':
@@ -248,7 +249,7 @@ void ImportTxt(CopyD* CD)
 		if (CFile->IsSQLFile) {
 			New(q, Init);
 			q->OutpRewrite(Append);
-}
+		}
 		else
 #endif
 			md = RewriteF(CD->Append);
@@ -332,6 +333,72 @@ label2:
 	if ((F2 != nullptr) && (F2->Handle != nullptr)) {
 		if (LastExitCode != 0) F2->ClearBuf();
 		delete F2;
+	}
+}
+
+void Cpy(FILE* h, longint sz, ThFile* F2)
+{
+	SeekH(h, 0);
+	longint i = 0;
+	RunMsgOn('C', sz);
+	while (i < sz) {
+		WORD n;
+		if (sz - i > F2->BufSize) n = F2->BufSize;
+		else n = sz - i;
+		i += n;
+		ReadH(h, n, F2->Buf);
+		TestCFileError();
+		F2->lBuf = n;
+		F2->WriteBuf(false);
+		RunMsgN(i);
+	}
+	delete F2;
+	RunMsgOff();
+}
+
+void ExportFD(CopyD* CD)
+{
+	ExitRecord er;
+
+	//NewExit(Ovr, er);
+	//goto label1;
+	ThFile* F2 = nullptr;
+
+	CFile = CD->FD1;
+	SaveFiles();
+	LockMode md = NewLMode(RdMode);
+	F2 = new ThFile(CD->Path2, CD->CatIRec2, InOutMode::_outp, 0, nullptr);
+	longint n = XNRecs(CD->FD1->Keys);
+	/* !!! with CFile^ do!!! */
+	if (n == 0) {
+		delete F2;
+		F2 = nullptr;
+	}
+	else Cpy(CFile->Handle, CFile->UsedFileSize(), F2);
+	if (CFile->TF != nullptr) {
+		F2->RewriteT(); /* !!! with CFile->TF^ do!!! */
+		if (n == 0) {
+			delete F2;
+			F2 = nullptr;
+		}
+		else Cpy(CFile->TF->Handle, CFile->TF->UsedFileSize(), F2);
+	}
+	if (CD->WithX1) {
+		F2->RewriteX(); /* !!! with CFile->XF^ do!!! */
+		if (n == 0) {
+			delete F2;
+			F2 = nullptr;
+		}
+		else Cpy(CFile->XF->Handle, CFile->XF->UsedFileSize(), F2);
+	}
+label0:
+	LastExitCode = 0;
+label1:
+	RestoreExit(er);
+	if ((F2 != nullptr) && (F2->Handle != nullptr)) {
+		if (LastExitCode != 0) F2->ClearBuf();
+		delete F2; F2 = nullptr;
+		OldLMode(md);
 	}
 }
 
@@ -459,7 +526,7 @@ void Backup(bool IsBackup, bool NoCompress, WORD Ir, bool NoCancel)
 		F->Backup(IsBackup, Ir);
 		LastExitCode = 0;
 	}
-	catch (std::exception& e) 
+	catch (std::exception& e)
 	{
 		RestoreExit(er);
 	}
@@ -469,6 +536,32 @@ void Backup(bool IsBackup, bool NoCompress, WORD Ir, bool NoCancel)
 		RunMsgOff();
 		if (!NoCancel) GoExit();
 	}
+}
+
+void BackupM(Instr_backup* PD)
+{
+	ExitRecord er; LongStr* s = nullptr; void* p = nullptr;
+
+	MarkStore(p);
+	if (PD->IsBackup) s = RunLongStr(PD->bmMasks);
+	TzFile* F = new TzFile(PD->IsBackup, PD->NoCompress, PD->bmSubDir, PD->bmOverwr,
+		PD->BrCatIRec, RunShortStr(PD->bmDir));
+	try {
+		LastExitCode = 1;
+		if (PD->IsBackup) F->Backup(s);
+		else F->Restore();
+		LastExitCode = 0;
+	}
+	catch (std::exception& e) {
+		RestoreExit(er);
+	}
+
+	F->Close();
+	if (LastExitCode != 0) {
+		RunMsgOff();
+		if (!PD->BrNoCancel) GoExit();
+	}
+	ReleaseStore(p);
 }
 
 
