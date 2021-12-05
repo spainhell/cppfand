@@ -2791,9 +2791,11 @@ Instr* RdBackup(char MTyp, bool IsBackup)
 	CRecPtr = GetRecSpace();
 	for (longint i = 1; i <= CatFD->NRecs; i++) {
 		ReadRec(CFile, i, CRecPtr);
-		if (SEquUpcase(OldTrailChar(' ', _ShortS(CatRdbName)), "ARCHIVES") &&
-			SEquUpcase(OldTrailChar(' ', _ShortS(CatFileName)), LexWord)) {
-			RdLex(); PD->BrCatIRec = i; ReleaseStore(CRecPtr);
+		if (SEquUpcase(OldTrailChar(' ', _ShortS(CatRdbName)), "ARCHIVES") 
+			&& SEquUpcase(OldTrailChar(' ', _ShortS(CatFileName)), LexWord)) {
+			RdLex();
+			PD->BrCatIRec = i;
+			ReleaseStore(CRecPtr);
 			CFile = cf; CRecPtr = cr;
 			goto label1;
 		}
@@ -2833,7 +2835,7 @@ void RdSqlRdWrTxt(bool Rd)
 #ifdef FandProlog
 Instr* RdCallLProc()
 {
-	auto pd = new Instr_lproc(); // GetPD(_lproc, sizeof(RdbPos) + 4);
+	auto pd = new Instr_lproc();
 	RdLex();
 	RdChptName('L', &pd->lpPos, true);
 	if (Lexem == ',') {

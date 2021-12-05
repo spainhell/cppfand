@@ -1,11 +1,16 @@
 #include "ExportImport.h"
 
+#include "TbFile.h"
 #include "ThFile.h"
+#include "TzFile.h"
 #include "../cppfand/FileD.h"
 #include "../cppfand/FieldDescr.h"
 #include "../cppfand/GlobalVariables.h"
 #include "../cppfand/oaccess.h"
 #include "../cppfand/obaseww.h"
+#include "../Editor/rdedit.h"
+#include "../Editor/runedi.h"
+#include "../cppfand/wwmix.h"
 #include "../FileSystem/directory.h"
 #include "../cppfand/compile.h"
 #include "../MergeReport/rdmerg.h"
@@ -184,10 +189,10 @@ void VarFixExp(ThFile* F2, CpOption Opt)
 			}
 			case 'N': {
 				s = _StdS(F);
-					if (Opt == CpOption::cpVar) {
-						if (F->M == 1) s = TrailChar(s, '0');
-						else s = LeadChar('0', s);
-					}
+				if (Opt == CpOption::cpVar) {
+					if (F->M == 1) s = TrailChar(s, '0');
+					else s = LeadChar('0', s);
+				}
 				break;
 			}
 			case 'D':
@@ -247,7 +252,7 @@ void ImportTxt(CopyD* CD)
 		if (CFile->IsSQLFile) {
 			New(q, Init);
 			q->OutpRewrite(Append);
-}
+		}
 		else
 #endif
 			md = RewriteF(CD->Append);
@@ -284,17 +289,16 @@ void ImportTxt(CopyD* CD)
 
 void ExportTxt(CopyD* CD)
 {
-	ThFile* F2; longint n; longint i; pstring s; ExitRecord er;
-	XScan* Scan; LockMode md; InOutMode m;
+	longint n; longint i;
+	pstring s;
+	ExitRecord er;
 
 	//NewExit(Ovr, er);
 	//goto label2;
-	F2 = nullptr; Scan = nullptr;
-
-	m = InOutMode::_outp;
+	InOutMode m = InOutMode::_outp;
 	if (CD->Append) m = InOutMode::_append;
 
-	F2 = new ThFile(CD->Path2, CD->CatIRec2, m, 0, nullptr);
+	ThFile* F2 = new ThFile(CD->Path2, CD->CatIRec2, m, 0, nullptr);
 	if (CD->HdFD != nullptr) {
 		LinkLastRec(CD->HdFD, n, true);
 		s = _ShortS(CD->HdF);
@@ -306,9 +310,9 @@ void ExportTxt(CopyD* CD)
 		ReleaseStore(CRecPtr);
 	}
 	CFile = CD->FD1;
-	CRecPtr = GetRecSpace;
-	md = NewLMode(RdMode);
-	Scan = new XScan(CFile, CD->ViewKey, nullptr, true);
+	CRecPtr = GetRecSpace();
+	LockMode md = NewLMode(RdMode);
+	XScan* Scan = new XScan(CFile, CD->ViewKey, nullptr, true);
 	Scan->Reset(nullptr, false);
 	RunMsgOn('C', Scan->NRecs);
 label1:
@@ -328,6 +332,111 @@ label2:
 		ClearRecSpace(CRecPtr);
 		OldLMode(md);
 	}
+	if ((F2 != nullptr) && (F2->Handle != nullptr)) {
+		if (LastExitCode != 0) F2->ClearBuf();
+		delete F2;
+	}
+}
+
+void Cpy(FILE* h, longint sz, ThFile* F2)
+{
+	SeekH(h, 0);
+	longint i = 0;
+	RunMsgOn('C', sz);
+	while (i < sz) {
+		WORD n;
+		if (sz - i > F2->BufSize) n = F2->BufSize;
+		else n = sz - i;
+		i += n;
+		ReadH(h, n, F2->Buf);
+		TestCFileError();
+		F2->lBuf = n;
+		F2->WriteBuf(false);
+		RunMsgN(i);
+	}
+	delete F2;
+	RunMsgOff();
+}
+
+void ExportFD(CopyD* CD)
+{
+	ExitRecord er;
+
+	//NewExit(Ovr, er);
+	//goto label1;
+	ThFile* F2 = nullptr;
+
+	CFile = CD->FD1;
+	SaveFiles();
+	LockMode md = NewLMode(RdMode);
+	F2 = new ThFile(CD->Path2, CD->CatIRec2, InOutMode::_outp, 0, nullptr);
+	longint n = XNRecs(CD->FD1->Keys);
+	/* !!! with CFile^ do!!! */
+	if (n == 0) {
+		delete F2;
+		F2 = nullptr;
+	}
+	else Cpy(CFile->Handle, CFile->UsedFileSize(), F2);
+	if (CFile->TF != nullptr) {
+		F2->RewriteT(); /* !!! with CFile->TF^ do!!! */
+		if (n == 0) {
+			delete F2;
+			F2 = nullptr;
+		}
+		else Cpy(CFile->TF->Handle, CFile->TF->UsedFileSize(), F2);
+	}
+	if (CD->WithX1) {
+		F2->RewriteX(); /* !!! with CFile->XF^ do!!! */
+		if (n == 0) {
+			delete F2;
+			F2 = nullptr;
+		}
+		else Cpy(CFile->XF->Handle, CFile->XF->UsedFileSize(), F2);
+	}
+label0:
+	LastExitCode = 0;
+label1:
+	RestoreExit(er);
+	if ((F2 != nullptr) && (F2->Handle != nullptr)) {
+		if (LastExitCode != 0) F2->ClearBuf();
+		delete F2; F2 = nullptr;
+		OldLMode(md);
+	}
+}
+
+void TxtCtrlJ(CopyD* CD)
+{
+	ExitRecord er;
+	ThFile* F1 = nullptr;
+	ThFile* F2 = nullptr;
+	InOutMode m = InOutMode::_outp;
+
+	if (CD->Append) m = InOutMode::_append;
+	try {
+		char c;
+		F1 = new ThFile(CD->Path1, CD->CatIRec1, InOutMode::_inp, 0, nullptr);
+		F2 = new ThFile(CD->Path2, CD->CatIRec2, m, 0, F2);
+
+		c = F1->RdChar();
+		while (!F1->eof) {
+			switch (c) {
+			case '\r': {
+				F2->WrChar('\r');
+				F2->WrChar('\n');
+				break;
+			}
+			case '\n': break;
+			default: F2->WrChar(c);
+			}
+			c = F1->RdChar();
+		}
+		LastExitCode = 0;
+	}
+	catch (std::exception& e) {
+		RestoreExit(er);
+	}
+
+	if ((F1 != nullptr) && (F1->Handle != nullptr)) delete F1;
 	if ((F2 != nullptr) && (F2->Handle != nullptr)) {
 		if (LastExitCode != 0) F2->ClearBuf();
 		delete F2;
@@ -408,13 +517,11 @@ void FileCopy(CopyD* CD)
 			MakeMerge(CD);
 		}
 		else {
-			//ExportFD();
-			screen.ScrWrText(1, 1, "ExportFD()");
+			ExportFD(CD);
 		}
 	}
 	else if (CD->Opt1 == CpOption::cpTxt) {
-		//TxtCtrlJ();
-		screen.ScrWrText(1, 1, "TxtCtrlJ()");
+		TxtCtrlJ(CD);
 	}
 	else {
 		MakeCopy(CD);
@@ -426,8 +533,7 @@ void FileCopy(CopyD* CD)
 
 void MakeMerge(CopyD* CD)
 {
-	try
-	{
+	try {
 		std::string s = "#I1_" + CD->FD1->Name;
 		if (CD->ViewKey != nullptr) {
 			std::string ali = CD->ViewKey->Alias;
@@ -443,9 +549,56 @@ void MakeMerge(CopyD* CD)
 		LastExitCode = 0;
 	}
 
+	catch (std::exception& e) {
+	}
+}
+
+void Backup(bool IsBackup, bool NoCompress, WORD Ir, bool NoCancel)
+{
+	TbFile* F = new TbFile(NoCompress);
+	ExitRecord er;
+
+	try {
+		LastExitCode = 1;
+		F->Backup(IsBackup, Ir);
+		LastExitCode = 0;
+	}
 	catch (std::exception& e)
 	{
+		RestoreExit(er);
 	}
+
+	ReleaseStore(F);
+	if (LastExitCode != 0) {
+		RunMsgOff();
+		if (!NoCancel) GoExit();
+	}
+}
+
+void BackupM(Instr_backup* PD)
+{
+	ExitRecord er; LongStr* s = nullptr; void* p = nullptr;
+
+	MarkStore(p);
+	if (PD->IsBackup) s = RunLongStr(PD->bmMasks);
+	TzFile* F = new TzFile(PD->IsBackup, PD->NoCompress, PD->bmSubDir, PD->bmOverwr,
+		PD->BrCatIRec, RunShortStr(PD->bmDir));
+	try {
+		LastExitCode = 1;
+		if (PD->IsBackup) F->Backup(s);
+		else F->Restore();
+		LastExitCode = 0;
+	}
+	catch (std::exception& e) {
+		RestoreExit(er);
+	}
+
+	F->Close();
+	if (LastExitCode != 0) {
+		RunMsgOff();
+		if (!PD->BrNoCancel) GoExit();
+	}
+	ReleaseStore(p);
 }
 
 
@@ -491,4 +644,114 @@ void CheckFile(FileD* FD)
 	h = OpenH(_isoldfile, RdShared);
 	if (HandleError == 0) CloseH(&h);
 	else LastExitCode = 4;
+}
+
+void AddLicNr(FieldDescr* F)
+{
+	if (_T(F) != 0) T_(F, _T(F) + (WORD(UserLicNrShow) & 0x7FFF));
+}
+
+void CopyH(FILE* H, pstring Nm)
+{
+	WORD n; FILE* h2;
+	BYTE* buf = new BYTE[MaxLStrLen]; // GetStore(MaxLStrLen);
+	CPath = Nm;
+	CVol = "";
+	h2 = OpenH(_isoverwritefile, Exclusive);
+	longint sz = FileSizeH(H);
+	SeekH(H, 0);
+	while (sz > 0) {
+		if (sz > MaxLStrLen) n = MaxLStrLen;
+		else n = sz;
+		sz -= n;
+		ReadH(H, n, buf);
+		WriteH(h2, n, buf);
+	}
+	CloseH(&h2);
+	delete[] buf;
+	buf = nullptr;
+}
+
+void CompressCRdb()
+{
+	void* p = nullptr;
+	MarkStore(p);
+	void* cr = Chpt->RecPtr;
+	std::string s = "#I1_" + Chpt->Name + "#O1_" + Chpt->Name;
+	SetInpStr(s);
+	SpecFDNameAllowed = true;
+	ReadMerge();
+	SpecFDNameAllowed = false;
+	RunMerge();
+	SaveFiles();
+	ReleaseStore(p);
+	Chpt->RecPtr = cr;
+	CFile = Chpt;
+	CRecPtr = E->NewRecPtr;
+	ReadRec(CFile, CRec(), CRecPtr);
+
+	ChptTF->CompileAll = false;
+	ChptTF->CompileProc = false;
+	SetUpdHandle(ChptTF->Handle);
+}
+
+
+bool PromptCodeRdb()
+{
+	WORD i;
+	FileDPtr cf;
+	void* cr;
+	auto wx = std::make_unique<wwmix>();
+	wx->SetPassWord(Chpt, 1, "");
+	wx->SetPassWord(Chpt, 2, "");
+	bool result = true;
+
+	F10SpecKey = __ALT_F10;
+
+	bool b = PromptYN(133);
+	WORD KbdChar = Event.Pressed.KeyCombination();
+	if (KbdChar == __ALT_F10) {
+		F10SpecKey = _ESC_;
+		b = PromptYN(147);
+		if (KbdChar == __ESC) goto label1;
+		if (b) {
+			CFile = Chpt;
+			WrPrefixes();
+			// TODO: SaveCache(0);
+			std::string s = CRdb->RdbDir;
+			AddBackSlash(s);
+			s = s + Chpt->Name;
+			CopyH(Chpt->Handle, s + ".RD0x");
+			CopyH(ChptTF->Handle, s + ".TT0x");
+		}
+		CodingCRdb(true);
+		ChptTF->LicenseNr = WORD(UserLicNrShow) & 0x7FFF;
+		cf = CFile;
+		cr = CRecPtr;
+		CFile = Chpt;
+		CRecPtr = GetRecSpace;
+		for (i = 1; i <= Chpt->NRecs; i++) {
+			ReadRec(CFile, i, CRecPtr);
+			AddLicNr(ChptOldTxt);
+			AddLicNr(ChptTxt);
+			WriteRec(CFile, i, CRecPtr);
+		}
+		ReleaseStore(CRecPtr);
+		CFile = cf;
+		CRecPtr = cr;
+		return result;
+	}
+	if (b) {
+		wx->SetPassWord(Chpt, 1, wx->PassWord(true));
+		if (wx->HasPassWord(Chpt, 1, "")) {
+			goto label1;
+		}
+		CodingCRdb(false);
+	}
+	else {
+	label1:
+		CompressCRdb();
+		result = false;
+	}
+	return result;
 }

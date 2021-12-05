@@ -14,7 +14,6 @@ class FileD : public Chained // ø. 177
 public:
 	FileD();
 	FileD(const FileD& orig);
-	// FileD* Chain = nullptr;
 	std::string Name;
 	std::string FullName;
 	WORD RecLen = 0;
@@ -32,7 +31,6 @@ public:
 	BYTE Drive = 0;         // 1=A, 2=B, else 0
 	WORD CatIRec = 0;
 	std::vector<FieldDescr*> FldD;
-	//FieldDescr* FldD = nullptr;
 	bool IsParFile = false, IsJournal = false, IsHlpFile = false;
 	bool typSQLFile = false, IsSQLFile = false, IsDynFile = false;
 	FileUseMode UMode = FileUseMode::Closed;
@@ -47,6 +45,7 @@ public:
 	bool NotCached();
 	bool Cached();
 	WORD GetNrKeys();
+	void Reset();
 };
 typedef FileD* FileDPtr;
 

@@ -466,11 +466,13 @@ void* RdFileD(std::string FileName, char FDTyp, std::string Ext)
 		CallRdFDSegment(FD);
 		LinkDRoot = LDOld;
 		F = CFile->FldD.front();
-		FillChar(CFile, sizeof(FileD), 0);
+		CFile->Reset();
 		CFile->Name = FileName;
 		CFile->IsJournal = true;
 		SetHCatTyp(FDTyp);
-		CFile->ChptPos = OrigInp()->InpRdbPos;
+		if (PrevCompInp != nullptr) {
+			CFile->ChptPos = OrigInp()->InpRdbPos;
+		}
 		SetInpStr(JournalFlds);
 		RdLex();
 		RdFieldDList(true);
