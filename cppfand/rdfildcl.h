@@ -35,5 +35,4 @@ void RdAssign(AddD* AD);
 void SetHCatTyp(char FDTyp);
 void GetTFileD(char FDTyp);
 void GetXFileD();
-void CallRdFDSegment(FileD* FD);
 CompInpD* OrigInp();

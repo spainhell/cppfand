@@ -2737,13 +2737,11 @@ WORD WordNo2()
 
 void ClrWord()
 {
-	WORD m = 1;
-	WORD k = 1;
+	WORD k = 0;
 	k = FindChar(T, LenT, 0x11, k);
 	while (k < LenT) {
 		T[k] = 0x13;
-		m = 1;
-		k = FindChar(T, LenT, 0x11, k);
+		k = FindChar(T, LenT, 0x11, k) + 1;
 	}
 }
 

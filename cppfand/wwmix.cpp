@@ -523,11 +523,22 @@ pstring wwmix::GetSelect()
 	Item* p = (Item*)&sv;
 	pstring result;
 	if (!ss.Subset)	{
-		p = GetItem(sv.iItem); result = p->S; ReleaseStore(sv.markp); return result;
+		p = GetItem(sv.iItem);
+		result = p->S;
+		ReleaseStore(sv.markp);
+		return result;
 	}
-	while ((p != nullptr) && (p->Tag == ' ')) p = (Item*)p->Chain;
-	if (p == nullptr) { ss.Tag = ' '; result = ""; return result; }
-	ss.Tag = p->Tag; result = p->S; p = (Item*)p->Chain;
+	while ((p != nullptr) && (p->Tag == ' ')) {
+		p = (Item*)p->Chain;
+	}
+	if (p == nullptr) {
+		ss.Tag = ' ';
+		result = "";
+		return result;
+	}
+	ss.Tag = p->Tag;
+	result = p->S;
+	p = (Item*)p->Chain;
 	return result;
 }
 

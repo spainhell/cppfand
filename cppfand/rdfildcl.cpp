@@ -439,7 +439,7 @@ void FakeRdFDSegment(FileD* FD)
 // ze souboru .000 vycte data
 void* RdFileD(std::string FileName, char FDTyp, std::string Ext)
 {
-	std::string JournalFlds = "A Upd,1;F RecNr,8.0;F User,4.0;D TimeStamp,'DD.MM.YYYY mm hh:ss'";
+	std::string JournalFlds = "Upd:A,1;RecNr:F,8.0;User:F,4.0;TimeStamp:D,'DD.MM.YYYY hh:mm:ss'";
 	FileD* FD = nullptr; XKey* K = nullptr;
 	FieldDescr* F = nullptr; FieldDescr* F2 = nullptr;
 	void* p = nullptr;
@@ -463,7 +463,36 @@ void* RdFileD(std::string FileName, char FDTyp, std::string Ext)
 		if (issql || FD->typSQLFile) OldError(155);
 #endif
 		LDOld = LinkDRoot;
-		CallRdFDSegment(FD);
+
+		//	RdbD* rdb = nullptr;
+		//	void* cr = nullptr;
+		//	FileD* cf = nullptr;
+		//	bool b = false;
+		//	WORD i = 0; longint pos = 0;
+		//	if (Lexem != 0x1A) Accept(';');
+		//	rdb = CRdb; cr = CRecPtr;
+		//	RdbD* r = FD->ChptPos.R;
+		//	if ((r == nullptr) || FD->IsDynFile) OldError(106);
+		//	CRdb = r;
+		//	i = FD->ChptPos.IRec;
+		//	CFile = CRdb->FD;
+		//	CRecPtr = CFile->RecPtr;
+		//	ReadRec(CFile, i, CRecPtr);
+		//	pos = _T(ChptOldTxt);
+		//	if (pos <= 0) Error(25);
+		//	b = RdFDSegment(i, pos);
+		//	cf = CFile; CRdb = rdb;
+		//	if (InpRdbPos.IRec != 0) {
+		//		CFile = rdb->FD;
+		//		ReadRec(CFile, InpRdbPos.IRec, CRecPtr);
+		//		CFile = cf;
+		//	}
+		//	CRecPtr = cr;
+		//	if (!b) Error(25);
+		//	CFile->OrigFD = FD;
+		//	CFile->TxtPosUDLI = 0;
+
+		FakeRdFDSegment(FD);
 		LinkDRoot = LDOld;
 		F = CFile->FldD.front();
 		CFile->Reset();
@@ -479,24 +508,24 @@ void* RdFileD(std::string FileName, char FDTyp, std::string Ext)
 		F2 = (FieldDescr*)LastInChain(CFile->FldD.front());
 		while (F != nullptr) {
 			if ((F->Flg & f_Stored) != 0) {
+				CFile->FldD.push_back(F);
 				F2->Chain = F;
 				F2 = F;
 				if (F->Typ == 'T') {
-					/* !!! with F^ do!!! */
 					F->FrmlTyp = 'R';
 					F->Typ = 'F';
 					F->L = 10;
 					F->Flg = F->Flg & !f_Encryp;
 				}
-				F = (FieldDescr*)F->Chain;
 			}
+			F = (FieldDescr*)F->Chain;
 		}
 		F2->Chain = nullptr;
 		CompileRecLen();
 		ChainLast(FileDRoot, CFile);
 		MarkStore(p);
 		goto label1;
-}
+	}
 	if (IsKeyWord("LIKE")) {
 		Prefix = FileName;
 		FD = RdFileName();
@@ -721,7 +750,7 @@ label6:
 		RdLex();
 		if (!(Lexem == '#' || Lexem == 0x1A)) goto label2;
 	}
-}
+	}
 
 void CheckDuplAlias(pstring Name)
 {
@@ -944,7 +973,7 @@ void RdRoleField(AddD* AD)
 	AD->Field = F;
 	if ((F->Flg & f_Stored) == 0) OldError(14);
 	if (IsKeyArg(F, AD->File2)) OldError(135);
-}
+	}
 
 void RdImper(AddD* AD)
 {
@@ -955,10 +984,10 @@ void RdImper(AddD* AD)
 			while (KF != nullptr) {
 				if ((KF->FldD->Flg & f_Stored) == 0) OldError(148);
 				KF = (KeyFldD*)KF->Chain;
-			}
-		}
-		if (Lexem == '!') { RdLex(); AD->Create = 2; }
 	}
+}
+		if (Lexem == '!') { RdLex(); AD->Create = 2; }
+}
 	}
 
 void RdAssign(AddD* AD)
@@ -1016,36 +1045,36 @@ void GetXFileD()
 	}
 }
 
-void CallRdFDSegment(FileD* FD)
-{
-	RdbD* rdb = nullptr;
-	void* cr = nullptr;
-	FileD* cf = nullptr;
-	bool b = false;
-	WORD i = 0; longint pos = 0;
-	if (Lexem != 0x1A) Accept(';');
-	rdb = CRdb; cr = CRecPtr;
-	RdbD* r = FD->ChptPos.R;
-	if ((r == nullptr) || FD->IsDynFile) OldError(106);
-	CRdb = r;
-	i = FD->ChptPos.IRec;
-	CFile = CRdb->FD;
-	CRecPtr = CFile->RecPtr;
-	ReadRec(CFile, i, CRecPtr);
-	pos = _T(ChptOldTxt);
-	if (pos <= 0) Error(25);
-	b = RdFDSegment(i, pos);
-	cf = CFile; CRdb = rdb;
-	if (InpRdbPos.IRec != 0) {
-		CFile = rdb->FD;
-		ReadRec(CFile, InpRdbPos.IRec, CRecPtr);
-		CFile = cf;
-	}
-	CRecPtr = cr;
-	if (!b) Error(25);
-	CFile->OrigFD = FD;
-	CFile->TxtPosUDLI = 0;
-}
+//void CallRdFDSegment(FileD* FD)
+//{
+//	RdbD* rdb = nullptr;
+//	void* cr = nullptr;
+//	FileD* cf = nullptr;
+//	bool b = false;
+//	WORD i = 0; longint pos = 0;
+//	if (Lexem != 0x1A) Accept(';');
+//	rdb = CRdb; cr = CRecPtr;
+//	RdbD* r = FD->ChptPos.R;
+//	if ((r == nullptr) || FD->IsDynFile) OldError(106);
+//	CRdb = r;
+//	i = FD->ChptPos.IRec;
+//	CFile = CRdb->FD;
+//	CRecPtr = CFile->RecPtr;
+//	ReadRec(CFile, i, CRecPtr);
+//	pos = _T(ChptOldTxt);
+//	if (pos <= 0) Error(25);
+//	b = RdFDSegment(i, pos);
+//	cf = CFile; CRdb = rdb;
+//	if (InpRdbPos.IRec != 0) {
+//		CFile = rdb->FD;
+//		ReadRec(CFile, InpRdbPos.IRec, CRecPtr);
+//		CFile = cf;
+//	}
+//	CRecPtr = cr;
+//	if (!b) Error(25);
+//	CFile->OrigFD = FD;
+//	CFile->TxtPosUDLI = 0;
+//}
 
 CompInpD* OrigInp()
 {
