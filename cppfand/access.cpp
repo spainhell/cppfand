@@ -1395,6 +1395,27 @@ WORD CompLexLongShortStr(LongStr* S1, pstring& S2)
 	return result;
 }
 
+WORD CompLexStr(const pstring& S1, const pstring& S2)
+{
+	WORD l1 = static_cast<pstring>(S1)[0];
+	char* b1 = new char[l1];
+	WORD l2 = static_cast<pstring>(S2)[0];
+	char* b2 = new char[l2];
+
+	for (size_t i = 0; i < l1; i++) {
+		b1[i] = CharOrdTab[static_cast<pstring>(S1)[i + 1]];
+	}
+	for (size_t i = 0; i < l2; i++) {
+		b2[i] = CharOrdTab[static_cast<pstring>(S2)[i + 1]];
+	}
+
+	auto result = CmpLxStr(b1, l1, b2, l2);
+
+	delete[] b1;
+	delete[] b2;
+	return result;
+}
+
 WORD CompLexStr(pstring& S1, pstring& S2)
 {
 	WORD l1 = S1[0];

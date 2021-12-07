@@ -25,7 +25,7 @@ public :
 	wwmix();
 	void PutSelect(std::string s); // r57
 	void SelectStr(integer C1, integer R1, WORD NMsg, std::string LowTxt);
-	pstring GetSelect();
+	std::string GetSelect();
 	bool SelFieldList(WORD Nmsg, bool ImplAll, FieldList FLRoot);
 	std::string SelectDiskFile(std::string Path, WORD HdMsg, bool OnFace);
 	bool PromptFilter(std::string Txt, FrmlElem* Bool, std::string* BoolTxt);

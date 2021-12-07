@@ -60,6 +60,7 @@ int CompStr(std::string& S1, std::string& S2);
 WORD CompLexLongStr(LongStr* S1, LongStr* S2); // r854 ASM
 WORD CompLexLongShortStr(LongStr* S1, pstring& S2); // r863 ASM
 WORD CompLexStr(pstring& S1, pstring& S2); // r871 ASM
+WORD CompLexStr(const pstring& S1, const pstring& S2);
 WORD CompLexStrings(const std::string& S1, const std::string& S2);
 
 void RunErrorM(LockMode Md, WORD N); // r729

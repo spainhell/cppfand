@@ -13,27 +13,38 @@
 
 SS ss;
 
-
-struct Item : Chained
+struct Item
 {
-	//Item* Chain;
 	char Tag;
-	pstring S;
+	std::string S;
+
+	WORD Compare(const Item& i) const { return CompLexStrings(this->S, i.S); }
+	bool operator ==(const Item& i) const { return Compare(i) == 1; }
+	bool operator <(const Item& i) const { return Compare(i) == 2; }
+	bool operator >(const Item& i) const { return Compare(i) == 4; }
 };
 
-struct stSv : public Chained
+struct stSv
 {
-	//Item* ItemRoot;
-	void* markp;
+	std::vector<Item> items;
 	integer NItems, MaxItemLen, Tabs, TabSize, WwSize, Base, iItem;
+
+	void Reset() {
+		NItems = 0;
+		MaxItemLen = 0;
+		Tabs = 0;
+		TabSize = 0;
+		WwSize = 0;
+		Base = 0;
+		iItem = 0;
+		//for (auto& i : items) { delete i; }
+		items.clear();
+	}
 } sv;
 
 Item* GetItem(WORD N)
 {
-	Item* p; WORD i;
-	p = (Item*)sv.Chain;
-	for (i = 2; i <= N; i++) p = (Item*)p->Chain;
-	return p;
+	return &sv.items[N - 1];
 }
 
 wwmix::wwmix()
@@ -42,15 +53,12 @@ wwmix::wwmix()
 
 void wwmix::PutSelect(std::string s)
 {
-	Item* p = new Item(); // (Item*)GetStore(sizeof(*p) - 1 + l);
+	Item p;
 	WORD l = MinW(s.length(), 46);
-	p->Tag = ' ';
-	Move(&s[0], &p->S[1], l);
-	p->S[0] = (char)l;
+	p.Tag = ' ';
+	p.S = s;
 	if (ss.Empty) {
-		FillChar(&sv, sizeof(sv), '\0');
-		//FillChar(&ss.Abcd, sizeof(ss) - 5, 0);
-		//
+		sv.Reset();
 		ss.Abcd = false;
 		ss.AscDesc = false;
 		ss.Subset = false;
@@ -58,11 +66,8 @@ void wwmix::PutSelect(std::string s)
 		ss.Empty = false;
 		ss.Size = 0;
 		ss.Tag = '\0';
-		//
-		sv.markp = p;
 	}
-	if (sv.Chain == nullptr) sv.Chain = p;
-	else ChainLast(sv.Chain, p);
+	sv.items.push_back(p);
 	sv.NItems++;
 	sv.MaxItemLen = MaxW(l, sv.MaxItemLen);
 }
@@ -75,10 +80,9 @@ void wwmix::SelectStr(integer C1, integer R1, WORD NMsg, std::string LowTxt)
 	integer b = 0;
 	Item* p = nullptr;
 	integer i = 0, iOld = 0;
-	/* !!! with sv do!!! */
+
 	void* pw = PushScr(1, TxtRows, TxtCols, TxtRows);
-	if (ss.Subset)
-	{
+	if (ss.Subset) {
 		if (ss.AscDesc) WrLLMsg(135);
 		else WrLLMsg(134);
 	}
@@ -94,9 +98,10 @@ void wwmix::SelectStr(integer C1, integer R1, WORD NMsg, std::string LowTxt)
 	TextAttr = screen.colors.sNorm;
 	longint w2 = PushWFramed(C1, R1, c2, r2, TextAttr, MsgLine, LowTxt,
 		WHasFrame + WDoubleFrame + WShadow + WPushPixel);
-	if (ss.Empty)
-	{
-		do { ReadKbd(); } while (Event.Pressed.KeyCombination() != VK_ESCAPE);
+	if (ss.Empty) {
+		do {
+			ReadKbd();
+		} while (Event.Pressed.KeyCombination() != VK_ESCAPE);
 		goto label3;
 	}
 	sv.TabSize = sv.MaxItemLen + 2;
@@ -162,22 +167,25 @@ label1:
 			ss.Empty = true;
 			ss.Pointto = nullptr;
 			ss.Size = 0;
-			p = (Item*)sv.Chain;
-			while (p != nullptr) {
-				if (p->Tag != ' ') ss.Size++;
-				p = (Item*)p->Chain;
+			//p = (Item*)sv.Chain;
+			for (auto& p : sv.items) { //while (p != nullptr) {
+				if (p.Tag != ' ') ss.Size++;
+				//p = (Item*)p->Chain;
 			}
 			if (ss.Subset && ss.ImplAll && (ss.Size == 0)) {
-				p = (Item*)sv.Chain;
-				while (p != nullptr) {
-					if (p->S[1] != SelMark) {
-						p->Tag = schar;
+				// p = (Item*)sv.Chain;
+				for (auto& p : sv.items) { //while (p != nullptr) {
+					if (p.S[0] != SelMark) {
+						p.Tag = schar;
 						ss.Size++;
 					}
-					p = (Item*)p->Chain;
+					//p = (Item*)p->Chain;
 				}
 			}
-			if (Event.Pressed.KeyCombination() == VK_ESCAPE) ReleaseStore(sv.markp);
+			if (Event.Pressed.KeyCombination() == VK_ESCAPE) {
+				// TODO: clean (memory leaks)!
+				//ReleaseStore(sv.markp);
+			}
 			return;
 			break;
 		}
@@ -186,8 +194,7 @@ label1:
 		case __UP: Up(); break;
 		case __DOWN: Down(); break;
 		case __PAGEUP: {
-			if (sv.Base > 1)
-			{
+			if (sv.Base > 1) {
 				IVOff();
 				b = sv.Base - sv.WwSize;
 				if (b < 1) b = 1;
@@ -260,11 +267,11 @@ label1:
 			if (ss.Subset) {
 				switch (key) {
 				case 0x8000 + VK_F2: { SetTag(schar); break; }
-				case _CtrlF2_: SetAllTags(schar); break;
-				case  62 /*>*/: if (ss.AscDesc) SetTag('>'); break;
-				case _F3_: SetTag(' '); break;
-				case _CtrlF3_: SetAllTags(' '); break;
-				case _F9_: { ClrEvent(); GraspAndMove(schar); break; }
+				case __CTRL_F2: { SetAllTags(schar); break; }
+				case  62 /*>*/: { if (ss.AscDesc) SetTag('>'); break; }
+				case __F3: { SetTag(' '); break; }
+				case __CTRL_F3: { SetAllTags(' '); break; }
+				case __F9: { ClrEvent(); GraspAndMove(schar); break; }
 				}
 			}
 			break;
@@ -280,7 +287,6 @@ label1:
 void wwmix::WriteItem(WORD N)
 {
 	WORD l = 0;
-	/* !!! with sv do!!! */
 	WORD i = N - sv.Base;
 	screen.GotoXY((i % sv.Tabs) * sv.TabSize + 2, i / sv.Tabs + 1);
 	if (N > sv.NItems) l = sv.TabSize - 2;
@@ -288,13 +294,11 @@ void wwmix::WriteItem(WORD N)
 		Item* p = GetItem(N);
 		if (ss.Subset) {
 			screen.ScrFormatWrStyledText(screen.WhereX(), screen.WhereY(), TextAttr, "%c", p->Tag);
-			//printf("%c", p->Tag);
 		}
 		screen.ScrFormatWrStyledText(screen.WhereX(), screen.WhereY(), TextAttr, "%s", p->S.c_str());
-		//printf("%s", p->S.c_str());
 		l = sv.MaxItemLen - p->S.length();
 	}
-	if (l > 0) screen.ScrFormatWrStyledText(screen.WhereX(), screen.WhereY(), TextAttr, "%*c", l, ' '); // printf(" ");
+	if (l > 0) screen.ScrFormatWrStyledText(screen.WhereX(), screen.WhereY(), TextAttr, "%*c", l, ' ');
 }
 
 void wwmix::SetAttr(WORD Attr)
@@ -318,24 +322,25 @@ void wwmix::IVOff()
 void wwmix::DisplWw()
 {
 	char c;
-	/* !!! with sv do!!! */
 	TextAttr = screen.colors.sNorm;
 	WORD max = sv.Base + sv.WwSize - 1;
-	if (sv.Base > 1) c = ''; else c = ' ';
+	if (sv.Base > 1) c = '';
+	else c = ' ';
 	screen.ScrWrChar(WindMin.X, WindMin.Y, c, TextAttr);
-	if (max >= sv.NItems) c = ' '; else c = '';
+	if (max >= sv.NItems) c = ' ';
+	else c = '';
 	screen.ScrWrChar(WindMax.X, WindMax.Y, c, TextAttr);
-	for (WORD i = sv.Base; i <= max; i++) WriteItem(i);
+	for (WORD i = sv.Base; i <= max; i++) {
+		WriteItem(i);
+	}
 	SetAttr(screen.colors.sHili);
 }
 
 void wwmix::Right()
 {
-	/* !!! with sv do!!! */
 	IVOff();
 	sv.iItem++;
-	if (sv.iItem >= sv.Base + sv.WwSize)
-	{
+	if (sv.iItem >= sv.Base + sv.WwSize) {
 		sv.Base += sv.Tabs;
 		DisplWw();
 	}
@@ -344,26 +349,22 @@ void wwmix::Right()
 
 void wwmix::Left()
 {
-	if (sv.iItem > 1)
-	{
+	if (sv.iItem > 1) {
 		IVOff(); sv.iItem--;
-		if (sv.iItem < sv.Base)
-		{
+		if (sv.iItem < sv.Base) {
 			sv.Base -= sv.Tabs;
 			DisplWw();
 		}
 		else IVOn();
-	};
+	}
 }
 
 void wwmix::Down()
 {
-	if (sv.iItem + sv.Tabs <= sv.NItems)
-	{
+	if (sv.iItem + sv.Tabs <= sv.NItems) {
 		IVOff();
 		sv.iItem += sv.Tabs;
-		if (sv.iItem >= sv.Base + sv.WwSize)
-		{
+		if (sv.iItem >= sv.Base + sv.WwSize) {
 			sv.Base += sv.Tabs;
 			DisplWw();
 		}
@@ -373,12 +374,10 @@ void wwmix::Down()
 
 void wwmix::Up()
 {
-	if (sv.iItem > sv.Tabs)
-	{
+	if (sv.iItem > sv.Tabs)	{
 		IVOff();
 		sv.iItem -= sv.Tabs;
-		if (sv.iItem < sv.Base)
-		{
+		if (sv.iItem < sv.Base)	{
 			sv.Base -= sv.Tabs;
 			DisplWw();
 		}
@@ -388,21 +387,29 @@ void wwmix::Up()
 
 void wwmix::SetTag(char c)
 {
-	Item* p;
-	p = GetItem(sv.iItem); p->Tag = c; TextAttr = screen.colors.sHili;
-	WriteItem(sv.iItem); Right();
+	Item* p = GetItem(sv.iItem);
+	p->Tag = c;
+	TextAttr = screen.colors.sHili;
+	WriteItem(sv.iItem);
+	Right();
 }
 
 void wwmix::SetAllTags(char c)
 {
-	Item* p;
-	p = (Item*)sv.Chain; while (p != nullptr) { p->Tag = c; p = (Item*)p->Chain; }
+	for (auto& p : sv.items) {
+		p.Tag = c;
+	}
 	DisplWw();
 }
 
 void wwmix::Switch(WORD I1, WORD I2)
 {
-	Item* p1; Item* p2; Item* q1; Item* q2; Item* h;
+	Item tmp = sv.items[I2 - 1];
+	sv.items[I2 - 1] = sv.items[I1 - 1];
+	sv.items[I1 - 1] = tmp;
+
+
+	/*Item* p1; Item* p2; Item* q1; Item* q2; Item* h;
 	WORD i;
 
 	p1 = (Item*)(&sv.Chain);
@@ -421,21 +428,19 @@ void wwmix::Switch(WORD I1, WORD I2)
 	else {
 		q2->Chain = h;
 		p2->Chain = q1;
-	}
+	}*/
 }
 
 void wwmix::GraspAndMove(char schar)
 {
-	WORD A; Item* p;
-	/* !!! with sv do!!! */
-	p = GetItem(sv.iItem);
+	Item* p = GetItem(sv.iItem);
 	if (p->Tag == ' ') p->Tag = schar;
 	SetAttr(screen.colors.sHili + 0x80);
-	A = screen.colors.sHili;
+	WORD A = screen.colors.sHili;
 	screen.colors.sHili = screen.colors.sHili + 0x80;
 label1:
 	switch (ReadKbd()) {
-	case _left_:
+	case __LEFT:
 	{
 		if (sv.iItem > 1) {
 			Switch(sv.iItem - 1, sv.iItem);
@@ -443,7 +448,7 @@ label1:
 		}
 		break;
 	}
-	case _right_:
+	case __RIGHT:
 	{
 		if (sv.iItem < sv.NItems) {
 			Switch(sv.iItem, sv.iItem + 1);
@@ -451,22 +456,22 @@ label1:
 		}
 		break;
 	}
-	case _down_: {
+	case __DOWN: {
 		if (sv.iItem + sv.Tabs <= sv.NItems) {
 			Switch(sv.iItem, sv.iItem + sv.Tabs);
 			Down();
 		}
 		break;
 	}
-	case _up_: {
+	case __UP: {
 		if (sv.iItem > sv.Tabs) {
 			Switch(sv.iItem - sv.Tabs, sv.iItem);
 			Up();
 		}
 		break;
 	}
-	case _F9_:
-	case _ESC_: {
+	case __F9:
+	case __ESC: {
 		screen.colors.sHili = A;
 		SetAttr(A);
 		return;
@@ -478,30 +483,41 @@ label1:
 
 void wwmix::AbcdSort()
 {
-	Item* p; Item* q; Item* r;
-	bool sorted;
-	do {
-		r = (Item*)(&sv.Chain); p = (Item*)sv.Chain; q = (Item*)p->Chain;
-		sorted = true;
-		while (q != nullptr) {
-			if (CompLexStr(p->S, q->S) == _gt) {
-				r->Chain = q; p->Chain = q->Chain; q->Chain = p;
-				r = q; q = (Item*)p->Chain; sorted = false;
-			}
-			else { r = p; p = q; q = (Item*)q->Chain; };
-		}
-	} while (!sorted);
+	std::sort(sv.items.begin(), sv.items.end());
+
+	//Item* p; Item* q; Item* r;
+	//bool sorted;
+	//do {
+	//	r = (Item*)(&sv.Chain);
+	//	p = (Item*)sv.Chain;
+	//	q = (Item*)p->Chain;
+	//	sorted = true;
+	//	while (q != nullptr) {
+	//		if (CompLexStr(p->S, q->S) == _gt) {
+	//			r->Chain = q;
+	//			p->Chain = q->Chain;
+	//			q->Chain = p;
+	//			r = q;
+	//			q = (Item*)p->Chain;
+	//			sorted = false;
+	//		}
+	//		else {
+	//			r = p; p = q;
+	//			q = (Item*)q->Chain;
+	//		}
+	//	}
+	//} while (!sorted);
 }
 
 void wwmix::SetFirstiItem()
 {
 	sv.iItem = 1;
 	if (ss.Pointto == nullptr) return;
-	Item* p = (Item*)sv.Chain;
-	while (p != nullptr) {
-		if (p->S == *ss.Pointto) return;
+	//Item* p = (Item*)sv.Chain;
+	for (auto& p : sv.items) { //while (p != nullptr) {
+		if (p.S == *ss.Pointto) return;
 		sv.iItem++;
-		p = (Item*)p->Chain;
+		//p = (Item*)p->Chain;
 	}
 }
 
@@ -518,19 +534,27 @@ bool wwmix::MouseInItem(integer& I)
 	return result;
 }
 
-pstring wwmix::GetSelect()
+std::string wwmix::GetSelect()
 {
-	Item* p = (Item*)&sv;
+	Item* p = &sv.items[0];
 	pstring result;
 	if (!ss.Subset)	{
 		p = GetItem(sv.iItem);
 		result = p->S;
-		ReleaseStore(sv.markp);
+		// TODO: ReleaseStore(sv.markp);
 		return result;
 	}
-	while ((p != nullptr) && (p->Tag == ' ')) {
-		p = (Item*)p->Chain;
+	//while ((p != nullptr) && (p->Tag == ' ')) {
+	//	p = (Item*)p->Chain;
+	//}
+	p = nullptr;
+	for (size_t i = 0; i < sv.items.size(); i++) {
+		if (sv.items[i].Tag != ' ') {
+			p = &sv.items[i];
+			break;
+		}
 	}
+
 	if (p == nullptr) {
 		ss.Tag = ' ';
 		result = "";
@@ -538,20 +562,22 @@ pstring wwmix::GetSelect()
 	}
 	ss.Tag = p->Tag;
 	result = p->S;
-	p = (Item*)p->Chain;
+	//p = (Item*)p->Chain;
 	return result;
 }
 
 bool wwmix::SelFieldList(WORD Nmsg, bool ImplAll, FieldList FLRoot)
 {
-	FieldDescr* F; FieldList FL; pstring s;
+	FieldDescr* F; FieldList FL;
 	FLRoot = nullptr;
 	auto result = true;
 	if (ss.Empty) return true;
-	ss.Subset = true; ss.ImplAll = ImplAll; SelectStr(0, 0, Nmsg, CFile->Name);
+	ss.Subset = true;
+	ss.ImplAll = ImplAll;
+	SelectStr(0, 0, Nmsg, CFile->Name);
 	if (Event.Pressed.KeyCombination() == __ESC) { return false; }
 label1:
-	s = GetSelect();
+	pstring s = GetSelect();
 	if (s != "") {
 		F = CFile->FldD.front();
 		//F = CFile->FldD[0];
@@ -589,12 +615,12 @@ std::string wwmix::SelectDiskFile(std::string Path, WORD HdMsg, bool OnFace)
 	else {
 		FSplit(FExpand(Path), d, n, e);
 		ne = n + e;
-		if (ne == "") {
+		if (ne.empty()) {
 			ne = "*.*";
 		}
 		goto label3;
 	}
-	mask = pstring("*") + ext;
+	mask = "*" + ext;
 label1:
 	RdMsg(HdMsg);
 	w = PushWFramed(c1, r1, c2, r2, screen.colors.sMask, MsgLine, "", WHasFrame + WShadow + WPushPixel);
@@ -694,7 +720,7 @@ label1:
 	RdLex();
 	Bool = RdBool();
 	if (Lexem != 0x1A) Error(21);
-	BoolTxt = new std::string(); // (pstring*)GetStore(Txt.length() + 1);
+	BoolTxt = new std::string();
 	*BoolTxt = Txt;
 label2:
 	RestoreExit(er);
@@ -720,7 +746,6 @@ void wwmix::PromptLL(WORD N, std::string& Txt, WORD I, bool Del)
 	RdMsg(N);
 	screen.ScrWrStr(1, TxtRows, MsgLine, screen.colors.pTxt);
 	screen.GotoXY(MsgLine.length() + 1, TxtRows, Position::absolute);
-	//printf("%s", MsgLine.c_str());
 	TextAttr = screen.colors.pNorm;
 	EditTxt(Txt, I, 255, TxtCols - screen.WhereX(), 'A', Del, false, true, false, 0);
 	PopW(w);
@@ -728,12 +753,10 @@ void wwmix::PromptLL(WORD N, std::string& Txt, WORD I, bool Del)
 
 pstring wwmix::PassWord(bool TwoTimes)
 {
-	longint w;
 	std::string Txt, Txt1;
-	WORD MsgNr, col;
-	col = (TxtCols - 21) >> 1;
-	w = PushW(col, TxtRows - 2, col + 21, TxtRows - 2);
-	MsgNr = 628;
+	WORD col = (TxtCols - 21) >> 1;
+	longint w = PushW(col, TxtRows - 2, col + 21, TxtRows - 2);
+	WORD MsgNr = 628;
 label1:
 	TextAttr = screen.colors.pNorm | 0x80;
 	screen.GotoXY(1, 1);
@@ -751,7 +774,8 @@ label1:
 	}
 	if (TwoTimes) {
 		if (MsgNr == 628) {
-			MsgNr = 637; Txt1 = Txt;
+			MsgNr = 637;
+			Txt1 = Txt;
 			goto label1;
 		}
 		else {
