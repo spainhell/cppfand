@@ -1276,6 +1276,7 @@ void RdProcCall(Instr** pinstr)
 	else if (IsKeyWord("OUTTEXTXY")) {
 		*pinstr = new Instr_putpixel(_outtextxy); // GetPD(_outtextxy, 11 * 4);
 	label3:
+		RdLex(); // read '('
 		auto iPutPixel = (Instr_putpixel*)(*pinstr);
 		iPutPixel->Par1 = RdRealFrml();
 		Accept(',');

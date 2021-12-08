@@ -353,8 +353,12 @@ label1:
 		label2:
 			switch (ForwChar) {
 			case '{': {
-				n++; // TODO: /*^Error z(11);*/
-				[[fallthrough]];
+				n++;
+				break;
+			}
+			case 0x1A: {
+				Error(11);
+				break;
 			}
 			case '}': {
 				n--;
@@ -515,12 +519,10 @@ void TestLex(char X)
 
 void Accept(char X)
 {
-	if (X == Lexem)
-	{
+	if (X == Lexem) {
 		RdLex();
 	}
-	else
-	{
+	else {
 		ExpChar = X;
 		Error(X);
 	}
@@ -1367,7 +1369,7 @@ label1:
 	RdLex();
 	result = k;
 	return result;
-}
+	}
 
 void SrchZ(FrmlElem* Z);
 
