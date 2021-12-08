@@ -1406,15 +1406,14 @@ void RunProcedure(Instr* PDRoot)
 
 void CallProcedure(Instr_proc* PD)
 {
-	stSaveState* p = nullptr;
-	void* p1 = nullptr; void* p2 = nullptr;
-	void* oldbp = nullptr;
-	void* oldprocbp = nullptr;
-	//LocVar* lv0 = nullptr;
+	void* p1 = nullptr;
+	void* p2 = nullptr;
+	void* oldbp;
+	void* oldprocbp;
+
 	std::_Vector_iterator<std::_Vector_val<std::_Simple_types<LocVar*>>> it0;
-	//LocVar* lv1 = nullptr;
 	std::_Vector_iterator<std::_Vector_val<std::_Simple_types<LocVar*>>> it1;
-	LocVar* lvroot = nullptr;
+
 	WORD i = 0, j = 0, n = 0;
 	longint l = 0; Instr* pd1 = nullptr;
 	LinkD* ld = nullptr; FileD* lstFD = nullptr;
@@ -1437,7 +1436,7 @@ void CallProcedure(Instr_proc* PD)
 	ReadProcHead("");
 	PD->variables = LVBD;
 	n = PD->variables.NParam;
-	lvroot = PD->variables.GetRoot();
+	LocVar* lvroot = PD->variables.GetRoot();
 	oldbp = MyBP;
 	//PushProcStk();
 	if ((n != PD->N) && !((n == PD->N - 1) && PD->ExPar)) {
@@ -1448,8 +1447,7 @@ void CallProcedure(Instr_proc* PD)
 
 	it0 = PD->variables.vLocVar.begin();
 	// projdeme vstupni parametry funkce
-	for (i = 0; i < n; i++) /* !!! with PD->TArg[i] do!!! */
-	{
+	for (i = 0; i < n; i++)	{
 		if (PD->TArg[i].FTyp != (*it0)->FTyp) goto label1;
 		switch (PD->TArg[i].FTyp) {
 		case 'r':
@@ -1460,10 +1458,11 @@ void CallProcedure(Instr_proc* PD)
 		}
 		case 'f': {
 			if (PD->TArg[i].RecPtr != nullptr) {
-				p = SaveCompState();
-				SetInpLongStr(RunLongStr(PD->TArg[i].TxtFrml), true);
+				auto state = SaveCompState();
+				std::string code = RunStdStr(PD->TArg[i].TxtFrml);
+				SetInpStdStr(code, true);
 				RdFileD(PD->TArg[i].Name, '6', "$");
-				RestoreCompState(p);
+				RestoreCompState(state);
 			}
 			else CFile = PD->TArg[i].FD;
 			it1 = it0;
@@ -1498,7 +1497,7 @@ void CallProcedure(Instr_proc* PD)
 			ClearDeletedFlag();
 			(*it0)->RecPtr = CRecPtr;
 		}
-		++it0; // (LocVar*)lv0->Chain;
+		++it0;
 	}
 	ProcMyBP = MyBP;
 	pd1 = ReadProcBody();

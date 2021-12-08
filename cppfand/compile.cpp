@@ -80,10 +80,10 @@ void Error(integer N)
 	GoExit();
 }
 
-void SetInpStr(std::string& S)
+void SetInpStr(std::string& s)
 {
-	InpArrLen = S.length();
-	InpArrPtr = (BYTE*)S.data();
+	InpArrLen = s.length();
+	InpArrPtr = (BYTE*)s.data();
 	if (InpArrLen == 0) ForwChar = 0x1A;
 	else ForwChar = InpArrPtr[0];
 	CurrPos = 0;
