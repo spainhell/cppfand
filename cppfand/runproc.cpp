@@ -42,8 +42,7 @@ void UserHeadLine(std::string UserHeader)
 	WORD maxlen = TxtCols - 10;
 	WORD l = GetLengthOfStyledString(UserHeader);
 	if (l >= maxlen) {
-		UserHeader[0] = (BYTE)maxlen;
-		l = GetLengthOfStyledString(UserHeader);
+		UserHeader = GetStyledStringOfLength(UserHeader, 0, maxlen);
 	}
 	WORD n = (TxtCols - l) / 2;
 
@@ -54,12 +53,7 @@ void UserHeadLine(std::string UserHeader)
 		screen.ScrWrText(screen.WhereX(), screen.WhereY(), buf);
 	}
 
-	//WrStyleStr(UserHeader, screen.colors.fNorm);
-	screen.WriteStyledStringToWindow(UserHeader, ProcAttr);
-
-	// screen.GotoXY(TxtCols - 10, 1);
-	// printf("%s", StrDate(Today(), "DD.MM.YYYY").c_str());
-	//screen.ScrWrText(TxtCols - 10, 1, StrDate(Today(), "DD.MM.YYYY").c_str());
+	screen.WriteStyledStringToWindow(UserHeader, screen.colors.fNorm);
 	screen.ScrWrText(TxtCols - 10, 1, CppToday().c_str());
 
 	PopWParam(p);
@@ -990,7 +984,7 @@ void ReleaseDriveProc(FrmlPtr Z)
 {
 	SaveFiles();
 	pstring s = RunShortStr(Z);
-	char c = toupper((char)s[1]);
+	char c = (char)toupper((char)s[1]);
 	if (c == spec.CPMdrive) ReleaseDrive(FloppyDrives);
 	else
 		if ((c == 'A') || (c == 'B')) ReleaseDrive(c - '@');
@@ -1063,8 +1057,7 @@ void RecallRecProc(Instr_recs* PD)
 
 void UnLck(Instr_withshared* PD, LockD* Ld1, PInstrCode Op)
 {
-	LockD* ld;
-	ld = &PD->WLD;
+	LockD* ld = &PD->WLD;
 	while (ld != Ld1) {
 		CFile = ld->FD;
 		if (CFile->IsShared()) {

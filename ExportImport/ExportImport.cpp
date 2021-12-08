@@ -646,6 +646,12 @@ void CheckFile(FileD* FD)
 	else LastExitCode = 4;
 }
 
+void CodingCRdb(bool Rotate)
+{
+	auto crdb = std::make_unique<CodingRdb>();
+	crdb->CodeRdb(Rotate);
+}
+
 void AddLicNr(FieldDescr* F)
 {
 	if (_T(F) != 0) T_(F, _T(F) + (WORD(UserLicNrShow) & 0x7FFF));
@@ -672,34 +678,10 @@ void CopyH(FILE* H, pstring Nm)
 	buf = nullptr;
 }
 
-void CompressCRdb()
-{
-	void* p = nullptr;
-	MarkStore(p);
-	void* cr = Chpt->RecPtr;
-	std::string s = "#I1_" + Chpt->Name + "#O1_" + Chpt->Name;
-	SetInpStr(s);
-	SpecFDNameAllowed = true;
-	ReadMerge();
-	SpecFDNameAllowed = false;
-	RunMerge();
-	SaveFiles();
-	ReleaseStore(p);
-	Chpt->RecPtr = cr;
-	CFile = Chpt;
-	CRecPtr = E->NewRecPtr;
-	ReadRec(CFile, CRec(), CRecPtr);
-
-	ChptTF->CompileAll = false;
-	ChptTF->CompileProc = false;
-	SetUpdHandle(ChptTF->Handle);
-}
-
-
 bool PromptCodeRdb()
 {
 	WORD i;
-	FileDPtr cf;
+	FileD* cf;
 	void* cr;
 	auto wx = std::make_unique<wwmix>();
 	wx->SetPassWord(Chpt, 1, "");
@@ -750,7 +732,8 @@ bool PromptCodeRdb()
 	}
 	else {
 	label1:
-		CompressCRdb();
+		auto coding = std::make_unique<CodingRdb>();
+		coding->CompressCRdb();
 		result = false;
 	}
 	return result;

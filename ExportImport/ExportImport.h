@@ -1,4 +1,5 @@
 #pragma once
+#include "CodingRdb.h"
 #include "../cppfand/constants.h"
 #include "../cppfand/rdrun.h"
 #include "../cppfand/models/Instr.h"
@@ -14,9 +15,8 @@ void BackupM(Instr_backup* PD);
 
 void CheckFile(FileD* FD);
 
-inline void CodingCRdb(bool Rotate)
-{
-}
+void CodingCRdb(bool Rotate);
+
 
 bool PromptCodeRdb();
 

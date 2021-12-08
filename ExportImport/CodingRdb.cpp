@@ -2,7 +2,52 @@
 #include "../cppfand/compile.h"
 #include "../cppfand/FileD.h"
 #include "../cppfand/GlobalVariables.h"
+#include "../cppfand/oaccess.h"
 #include "../cppfand/obaseww.h"
+#include "../Editor/rdedit.h"
+#include "../Editor/runedi.h"
+#include "../MergeReport/rdmerg.h"
+#include "../MergeReport/runmerg.h"
+
+
+void CodingRdb::CodeRdb(bool Rotate)
+{
+	WORD i, irec, pos; FileDPtr cf; void* cr; std::string s; bool compileAll;
+	cf = CFile; cr = CRecPtr; CFile = Chpt;
+
+	CRecPtr = GetRecSpace();
+	RunMsgOn('C', CFile->NRecs);
+	irec = ChptTF->IRec;
+	compileAll = ChptTF->CompileAll;
+	for (i = 1; i <= CFile->NRecs; i++) {
+		ReadRec(CFile, i, CRecPtr);
+		RunMsgN(i);
+		s = _ShortS(ChptTyp);
+		SetMsgPar(_ShortS(ChptName));
+		if (Rotate && (s[0] == ' ' || s[0] == 'I')) {}
+		else {
+			CodeF(Rotate, i, ChptTxt, s[0]);
+			CodeF(Rotate, i, ChptOldTxt, s[0]);
+			WriteRec(CFile, i, CRecPtr);
+		}
+	}
+	if (Rotate) {
+		i = 1;
+		while (i <= CFile->NRecs) {
+			ReadRec(CFile, i, CRecPtr);
+			s = _ShortS(ChptTyp);
+			if (s[0] == ' ' || s[0] == 'I') DeleteRec(i);
+			else i++;
+		}
+	}
+	RunMsgOff();
+	ReleaseStore(CRecPtr);
+	CFile = cf;
+	CRecPtr = cr;
+	CompressCRdb();
+	ChptTF->IRec = irec;
+	ChptTF->CompileAll = compileAll;
+}
 
 void CodingRdb::CompressTxt(WORD IRec, LongStr* s, char Typ)
 {
@@ -23,19 +68,21 @@ void CodingRdb::CompressTxt(WORD IRec, LongStr* s, char Typ)
 	if (Typ == 'E') {
 	label0:
 		while (!(ForwChar == '#' || ForwChar == 0x1A || ForwChar == '\r' || ForwChar == '{')) {
-			//{ read headlines }
+			// { read headlines }
 			Wr(ForwChar);
 			ReadChar();
 		}
 		switch (ForwChar) {
 		case 0x1A:
 		case '#': {
-			goto label1; break;
+			goto label1;
+			break;
 		}
 		case '{': {
 			SkipBlank(true);
 			Wr('{');
 			Wr('}');
+			break;
 		}
 		default: {
 			ReadChar();
@@ -63,6 +110,7 @@ label1:
 			CRecPtr = cr;
 			return;
 		}
+		break;
 	}
 	case '{': {
 		ReadChar();
@@ -191,4 +239,27 @@ void CodingRdb::CodeF(bool rotate, WORD IRec, FieldDescr* F, char Typ)
 label2:
 	LongS_(F, s);
 	ReleaseBoth(p, p2);
+}
+
+void CodingRdb::CompressCRdb()
+{
+	void* p = nullptr;
+	MarkStore(p);
+	void* cr = Chpt->RecPtr;
+	std::string s = "#I1_" + Chpt->Name + "#O1_" + Chpt->Name;
+	SetInpStr(s);
+	SpecFDNameAllowed = true;
+	ReadMerge();
+	SpecFDNameAllowed = false;
+	RunMerge();
+	SaveFiles();
+	ReleaseStore(p);
+	Chpt->RecPtr = cr;
+	CFile = Chpt;
+	CRecPtr = E->NewRecPtr;
+	ReadRec(CFile, CRec(), CRecPtr);
+
+	ChptTF->CompileAll = false;
+	ChptTF->CompileProc = false;
+	SetUpdHandle(ChptTF->Handle);
 }

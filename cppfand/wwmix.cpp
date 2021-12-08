@@ -706,7 +706,7 @@ bool wwmix::PromptFilter(std::string Txt, FrmlElem* Bool, std::string* BoolTxt)
 	size_t I = 1;
 	auto result = true;
 	//NewExit(Ovr(), er);
-	goto label3;
+	//goto label3;
 	Del = true;
 	ResetCompilePars();
 	cf = CFile;
@@ -759,11 +759,10 @@ pstring wwmix::PassWord(bool TwoTimes)
 	WORD MsgNr = 628;
 label1:
 	TextAttr = screen.colors.pNorm | 0x80;
-	screen.GotoXY(1, 1);
 	ClrEol();
 	RdMsg(MsgNr);
-	printf("%*s", (MsgLine.length() + 22) / 2, MsgLine.c_str());
-	keyboard.AddToFrontKeyBuf((char)ReadKbd);
+	screen.ScrFormatWrText(1, 1, "%*s", (MsgLine.length() + 22) / 2, MsgLine.c_str());
+	keyboard.AddToFrontKeyBuf((char)ReadKbd());
 	TextAttr = screen.colors.pNorm;
 	screen.GotoXY(2, 1);
 	Txt = "";
