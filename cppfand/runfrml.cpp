@@ -418,13 +418,13 @@ WORD IntTSR(FrmlElem* X)
 	if (IntNr == 0x16 && FunNr == 0x200 && iX0->N31 == 'R' && r == 0.0) {
 		// IntTSR(22, 512, 0) - get key states
 		WORD result = 0;
-		const bool numLock  = keyboard.GetState(VK_NUMLOCK) & 0x0001;
+		const bool numLock = keyboard.GetState(VK_NUMLOCK) & 0x0001;
 		const bool capsLock = keyboard.GetState(VK_CAPITAL) & 0x0001;
-		const bool scrollL  = keyboard.GetState(VK_SCROLL) & 0x0001;
-		const bool alt      = keyboard.GetState(VK_MENU) & 0x8000;
-		const bool ctrl     = keyboard.GetState(VK_CONTROL) & 0x8000;
-		const bool l_shift  = keyboard.GetState(VK_LSHIFT) & 0x8000;
-		const bool r_shift   = keyboard.GetState(VK_RSHIFT) & 0x8000;
+		const bool scrollL = keyboard.GetState(VK_SCROLL) & 0x0001;
+		const bool alt = keyboard.GetState(VK_MENU) & 0x8000;
+		const bool ctrl = keyboard.GetState(VK_CONTROL) & 0x8000;
+		const bool l_shift = keyboard.GetState(VK_LSHIFT) & 0x8000;
+		const bool r_shift = keyboard.GetState(VK_RSHIFT) & 0x8000;
 		if (capsLock) result += 0b01000000;
 		if (numLock)  result += 0b00100000;
 		if (scrollL)  result += 0b00010000;
@@ -448,7 +448,7 @@ WORD IntTSR(FrmlElem* X)
 			ReleaseStore(ss);
 			break;
 		}
-		case 'B': { p = &b; break; } 
+		case 'B': { p = &b; break; }
 		}
 	}
 	return 0; // puvodne se vracel obsah AX registru
@@ -1264,7 +1264,10 @@ void AssgnFrml(FieldDescr* F, FrmlElem* X, bool Delete, bool Add)
 		else R_(F, RunReal(X));
 		break;
 	}
-	case 'B': { B_(F, RunBool(X)); break;	}
+	case 'B': {
+		B_(F, RunBool(X));
+		break;
+	}
 	}
 }
 
