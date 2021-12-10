@@ -28,13 +28,13 @@ pstring LexWord;
 
 void Error(integer N)
 {
-	pstring ErrMsg;
-	pstring HdTxt(40);
-
 	RdMsg(1000 + N);
-	ErrMsg = MsgLine;
+	std::string ErrMsg = MsgLine;
+
 	if (N == 1) {
-		if (ExpChar >= ' ') ErrMsg = ErrMsg + " " + ExpChar;
+		if (ExpChar >= ' ') {
+			ErrMsg = ErrMsg + " " + (char)ExpChar;
+		}
 		else {
 			switch (ExpChar) {
 			case _assign: MsgLine = ":="; break;
@@ -61,9 +61,13 @@ void Error(integer N)
 		TextAttr = screen.colors.tNorm;
 		char* p = new char[l]; // GetStore(l);
 		memcpy(p, InpArrPtr, l);
-		if (PrevCompInp != nullptr) RdMsg(63);
-		else RdMsg(61);
-		HdTxt = MsgLine;
+		if (PrevCompInp != nullptr) {
+			RdMsg(63);
+		}
+		else {
+			RdMsg(61);
+		}
+		std::string HdTxt = MsgLine;
 		LongStr LS;
 		LS.A = p;
 		LS.LL = l;
@@ -94,7 +98,6 @@ void SetInpStdStr(std::string& s, bool ShowErr)
 {
 	InpArrLen = s.length();
 	InpArrPtr = (BYTE*)s.c_str();
-	//printf("%i ", InpArrLen);
 	if (InpArrLen == 0) ForwChar = 0x1A;
 	else ForwChar = InpArrPtr[0];
 	CurrPos = 0;
@@ -107,7 +110,6 @@ void SetInpLongStr(LongStr* S, bool ShowErr)
 {
 	InpArrLen = S->LL;
 	InpArrPtr = (BYTE*)&S->A[0];
-	//printf("%i ", InpArrLen);
 	if (InpArrLen == 0) ForwChar = 0x1A;
 	else ForwChar = InpArrPtr[0];
 	CurrPos = 0;
@@ -584,7 +586,7 @@ label1:
 	return ValofS(S);
 }
 
-bool EquUpcase(pstring& S1, pstring& S2)
+bool EquUpCase(pstring& S1, pstring& S2)
 {
 	if (S1.length() != S2.length()) return false;
 	for (size_t i = 1; i <= S1.length(); i++) // Pascal. string -> index od 1
@@ -605,7 +607,7 @@ bool EquUpcase(pstring& S1, pstring& S2)
 	//return false;
 }
 
-bool EquUpcase(std::string& S1, std::string& S2)
+bool EquUpCase(std::string& S1, std::string& S2)
 {
 	if (S1.length() != S2.length()) return false;
 	for (size_t i = 0; i <= S1.length(); i++)
@@ -617,46 +619,31 @@ bool EquUpcase(std::string& S1, std::string& S2)
 	return true;
 }
 
-bool EquUpcase(const char* S)
+bool EquUpCase(const char* S)
 {
 	pstring temp = S;
-	return EquUpcase(temp, LexWord);
+	return EquUpCase(temp, LexWord);
 }
 
 bool TestKeyWord(pstring S)
 {
-	return (Lexem == _identifier) && EquUpcase(S, LexWord);
+	return (Lexem == _identifier) && EquUpCase(S, LexWord);
 }
 
-bool IsKeyWord(pstring S)
+bool IsKeyWord(std::string S)
 {
 	if (Lexem != _identifier) return false;
 	if (LexWord.length() != S.length()) return false;
-	for (size_t i = 1; i <= LexWord.length(); i++) // procházíme Pascalovský string, tedy od indexu 1
-	{
-		BYTE lw = LexWord[i];
+
+	std::string sLexWord = LexWord;
+
+	for (size_t i = 0; i < sLexWord.length(); i++) {
+		BYTE lw = (BYTE)sLexWord[i];
 		BYTE upcLw = UpcCharTab[lw]; // velke pismeno dle UpcCharTab
-		if (upcLw != S[i]) return false;
+		if (upcLw != (BYTE)S[i]) return false;
 	}
 	RdLex();
 	return true;
-
-	//if (Lexem == _identifier)
-	//{
-	//	size_t count = LexWord.length();
-	//	if (S.length() == count)
-	//	{
-	//	label1:
-	//		size_t index = 1;
-	//		
-	//		if (UpcCharTab[LexWord[index]] != S[index]) return false;
-	//		index++;
-	//		if (count - index > 0) goto label1;
-	//		RdLex();
-	//		return true;
-	//	}
-	//}
-	//return false;
 }
 
 void AcceptKeyWord(pstring S)
@@ -969,8 +956,8 @@ label1:
 				if (Lexem == '.') {
 					RdLex();
 					TestIdentif();
-					if (EquUpcase("X")) FDTyp = 'X';
-					else if (EquUpcase("DBF")) FDTyp = 'D';
+					if (EquUpCase("X")) FDTyp = 'X';
+					else if (EquUpCase("DBF")) FDTyp = 'D';
 					else Error(185);
 					RdLex();
 				}
@@ -1048,7 +1035,7 @@ bool FindLocVar(LocVar* LVRoot, LocVar** LV)
 	*LV = LVRoot;
 	while (*LV != nullptr) {
 		pstring lvName = (*LV)->Name.c_str();
-		if (EquUpcase(lvName, LexWord)) { return true; }
+		if (EquUpCase(lvName, LexWord)) { return true; }
 		*LV = (LocVar*)(*LV)->Chain;
 	}
 	return result;
@@ -1340,7 +1327,7 @@ XKey* RdViewKey()
 	TestIdentif();
 	while (k != nullptr) {
 		std::string lw = LexWord;
-		if (EquUpcase(k->Alias, lw)) goto label1;
+		if (EquUpCase(k->Alias, lw)) goto label1;
 		k = k->Chain;
 	}
 	s = LexWord;
@@ -1539,9 +1526,9 @@ label1:
 		break;
 	}
 	case _identifier: {
-		if (EquUpcase(QQdiv, LexWord)) { Z = new FrmlElem0(_div, 0); /*GetOp(_div, 0);*/ goto label2; }
-		else if (EquUpcase(QQmod, LexWord)) { Z = new FrmlElem0(_mod, 0); /*GetOp(_mod, 0);*/ goto label2; }
-		else if (EquUpcase(QQround, LexWord)) {
+		if (EquUpCase(QQdiv, LexWord)) { Z = new FrmlElem0(_div, 0); /*GetOp(_div, 0);*/ goto label2; }
+		else if (EquUpCase(QQmod, LexWord)) { Z = new FrmlElem0(_mod, 0); /*GetOp(_mod, 0);*/ goto label2; }
+		else if (EquUpCase(QQround, LexWord)) {
 			TestReal(FTyp);
 			Z = new FrmlElem0(_round, 0); /*GetOp(_round, 0);*/ RdLex();
 			Z->P1 = Z1;
@@ -1715,9 +1702,9 @@ FrmlPtr RdBOr(char& FTyp)
 	return Z;
 }
 
-FrmlPtr RdFormula(char& FTyp)
+FrmlElem* RdFormula(char& FTyp)
 {
-	FrmlPtr Z = RdBOr(FTyp);
+	FrmlElem* Z = RdBOr(FTyp);
 	while ((BYTE)Lexem == _limpl || (BYTE)Lexem == _lequ)
 	{
 		Z = BOperation(FTyp, (instr_type)Lexem, Z);
@@ -1732,7 +1719,7 @@ bool FindFuncD(FrmlElem** ZZ)
 	char typ = '\0';
 	FuncD* fc = FuncDRoot;
 	while (fc != nullptr) {
-		if (EquUpcase(fc->Name, LexWord)) {
+		if (EquUpCase(fc->Name, LexWord)) {
 			RdLex(); RdLex();
 			FrmlElem19* z = new FrmlElem19(_userfunc, 8); // GetOp(_userfunc, 8);
 			z->FC = fc;
@@ -1896,7 +1883,7 @@ FrmlElem* RdPrim(char& FTyp)
 			Z = new FrmlElem5(_const, 1, false); // GetOp(_const, 1);
 			FTyp = 'B';
 		}
-		else if (!EquUpcase("OWNED") && (ForwChar == '(')) {
+		else if (!EquUpCase("OWNED") && (ForwChar == '(')) {
 			if (FindFuncD(&Z)) FTyp = ((FrmlElem19*)Z)->FC->FTyp;
 			else if (IsFun(S3Fun, LexWord, FunCode))
 			{
@@ -2304,7 +2291,7 @@ FrmlElem* RdKeyInBool(KeyInD** KIRoot, bool NewMyBP, bool FromRdProc, bool& SQLF
 		FileVarsAllowed = true;
 		if ((Lexem == _identifier)
 			&& (ForwChar == '(')
-			&& (EquUpcase("EVALB") || EquUpcase("EVALS") || EquUpcase("EVALR")))
+			&& (EquUpCase("EVALB") || EquUpCase("EVALS") || EquUpCase("EVALR")))
 			FileVarsAllowed = false;
 	}
 	if (IsKeyWord("KEY")) {
@@ -2402,7 +2389,7 @@ FieldDescr* FindFldName(FileD* FD, std::string fieldName)
 	if (fieldName.empty()) fieldName = LexWord;
 	if (FD != nullptr) {
 		for (auto& i : FD->FldD) {
-			if (EquUpcase(i->Name, fieldName)) return i;
+			if (EquUpCase(i->Name, fieldName)) return i;
 		}
 	}
 	return nullptr;
@@ -2433,12 +2420,12 @@ FileD* FindFileD()
 		FD = R->FD;
 		while (FD != nullptr) {
 			std::string lw = LexWord;
-			if (EquUpcase(FD->Name, lw)) { return FD; }
+			if (EquUpCase(FD->Name, lw)) { return FD; }
 			FD = (FileD*)FD->Chain;
 		}
 		R = R->ChainBack;
 	}
-	if (EquUpcase("CATALOG")) return CatFD;
+	if (EquUpCase("CATALOG")) return CatFD;
 	return nullptr;
 }
 
@@ -2504,7 +2491,7 @@ FrmlElem* RdFAccess(FileD* FD, LinkD* LD, char& FTyp)
 	auto Z = new FrmlElem7(_access, 12); // GetOp(_access, 12);
 	Z->File2 = FD;
 	Z->LD = LD;
-	if ((LD != nullptr) && EquUpcase("EXIST")) { RdLex(); FTyp = 'B'; }
+	if ((LD != nullptr) && EquUpCase("EXIST")) { RdLex(); FTyp = 'B'; }
 	else {
 		FileD* cf = CFile;
 		CFile = FD;
@@ -2541,7 +2528,7 @@ LinkD* FindOwnLD(FileD* FD, pstring RoleName)
 	while (ld != nullptr) {
 		std::string lw = LexWord;
 		if ((ld->ToFD == FD)
-			&& EquUpcase(ld->FromFD->Name, lw)
+			&& EquUpCase(ld->FromFD->Name, lw)
 			&& (ld->IndexRoot != 0)
 			&& SEquUpcase(ld->RoleName, RoleName))
 			goto label1;

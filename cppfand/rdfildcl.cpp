@@ -308,7 +308,7 @@ bool RdUserView(std::string ViewName, EditOpt* EO)
 		while (true) {
 			//Move(&EOD, EO, sizeof(*EO));
 			std::string sLexWord = LexWord;
-			if (EquUpcase(ViewName, sLexWord)) found = true;
+			if (EquUpCase(ViewName, sLexWord)) found = true;
 			EO->ViewName = LexWord;
 			RdLex(); /*'('*/
 			do {
@@ -390,7 +390,7 @@ void TestDupl(FileD* FD)
 	S = FD->ViewNames;
 	while (S != nullptr) {
 		std::string tmp = LexWord;
-		if (EquUpcase(S->S, tmp)) Error(26);
+		if (EquUpCase(S->S, tmp)) Error(26);
 		S = (StringList)S->Chain;
 	}
 }
@@ -784,10 +784,10 @@ XKey* RdFileOrAlias1(FileD* F)
 {
 	XKey* k = F->Keys;
 	std::string lw = LexWord;
-	if (!EquUpcase(F->Name, lw))
+	if (!EquUpCase(F->Name, lw))
 		while (k != nullptr) {
 			std::string lw = LexWord;
-			if (EquUpcase(k->Alias, lw)) goto label1;
+			if (EquUpCase(k->Alias, lw)) goto label1;
 			k = k->Chain;
 		}
 label1:

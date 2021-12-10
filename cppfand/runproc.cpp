@@ -15,6 +15,7 @@
 #include "printtxt.h"
 #include "rdfildcl.h"
 #include "rdproc.h"
+#include "runfand.h"
 #include "runfrml.h"
 #include "runproj.h"
 #include "wwmenu.h"
@@ -993,8 +994,6 @@ void ReleaseDriveProc(FrmlPtr Z)
 void WithGraphicsProc(Instr* PD)
 {
 	throw std::exception("WithGraphicsProc() not implemented!");
-	//void* p = nullptr;
-	//MarkStore(p);
 	//if (IsGraphMode) RunInstr(PD);
 	//else {
 	//	ScrGraphMode(true, 0);
@@ -1002,7 +1001,6 @@ void WithGraphicsProc(Instr* PD)
 	//	RunInstr(PD);
 	//	ScrTextMode(true, false);
 	//}
-	//ReleaseStore(p);
 }
 
 #ifdef FandGraph
@@ -1393,8 +1391,8 @@ void RunInstr(Instr* PD)
 		}
 		}
 		PD = (Instr*)PD->Chain;
-		}
 	}
+}
 
 void RunProcedure(Instr* PDRoot)
 {
@@ -1447,7 +1445,7 @@ void CallProcedure(Instr_proc* PD)
 
 	it0 = PD->variables.vLocVar.begin();
 	// projdeme vstupni parametry funkce
-	for (i = 0; i < n; i++)	{
+	for (i = 0; i < n; i++) {
 		if (PD->TArg[i].FTyp != (*it0)->FTyp) goto label1;
 		switch (PD->TArg[i].FTyp) {
 		case 'r':
@@ -1458,7 +1456,7 @@ void CallProcedure(Instr_proc* PD)
 		}
 		case 'f': {
 			if (PD->TArg[i].RecPtr != nullptr) {
-				auto state = SaveCompState();
+				const auto state = SaveCompState();
 				std::string code = RunStdStr(PD->TArg[i].TxtFrml);
 				SetInpStdStr(code, true);
 				RdFileD(PD->TArg[i].Name, '6', "$");
@@ -1502,8 +1500,8 @@ void CallProcedure(Instr_proc* PD)
 	ProcMyBP = MyBP;
 	pd1 = ReadProcBody();
 
-	// vytvorime vektor instrukci pro snadny prehled
 #ifdef _DEBUG
+	// vytvorime vektor instrukci pro snadny prehled
 	std::vector<Instr*> vI;
 	Instr* next = pd1;
 	while (next != nullptr) {
@@ -1513,7 +1511,6 @@ void CallProcedure(Instr_proc* PD)
 #endif
 
 	FDLocVarAllowed = false;
-	//lv0 = lv1;
 	it0 = it1;
 	while (it0 != PD->variables.vLocVar.end()) {
 		if ((*it0)->FTyp == 'i') {
@@ -1544,14 +1541,15 @@ void CallProcedure(Instr_proc* PD)
 			}
 			case 'S': {
 				z18->locvar->S = (*it0)->S;
-				break; }
+				break;
+			}
 			case 'B': {
 				z18->locvar->B = (*it0)->B;
 				break;
 			}
 			}
 		}
-		if (i > n)
+		if (i > n) {
 			switch ((*it0)->FTyp) {
 			case 'r': {
 				CFile = (*it0)->FD;
@@ -1564,6 +1562,7 @@ void CallProcedure(Instr_proc* PD)
 				break;
 			}
 			}
+		}
 		i++;
 		it0++;
 	}
@@ -1581,8 +1580,6 @@ void CallProcedure(Instr_proc* PD)
 
 void RunMainProc(RdbPos RP, bool NewWw)
 {
-	void* p1 = nullptr; void* p2 = nullptr;
-	LocVar* lv = nullptr;
 	if (NewWw) {
 		ProcAttr = screen.colors.uNorm;
 		screen.Window(1, 2, TxtCols, TxtRows);
@@ -1591,7 +1588,7 @@ void RunMainProc(RdbPos RP, bool NewWw)
 		UserHeadLine("");
 		MenuX = 1; MenuY = 2;
 	}
-	auto PD = new Instr_proc(0); // GetPInstr(_proc, sizeof(RdbPos) + 2);
+	auto PD = new Instr_proc(0);
 	PD->PPos = RP;
 	CallProcedure(PD);
 	ReleaseStore(PD);

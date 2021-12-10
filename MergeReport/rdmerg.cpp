@@ -115,8 +115,8 @@ FrmlPtr RdFldNameFrmlM(char& FTyp)
 	}
 	else Z = FindIiandFldFrml_M(&FD, FTyp);
 	if (Z == nullptr) {
-		if (IsKeyWord('N')) goto label1;
-		if (IsKeyWord('M')) goto label2;
+		if (IsKeyWord("N")) goto label1;
+		if (IsKeyWord("M")) goto label2;
 		Error(8);
 	}
 	TestSetSumIi();

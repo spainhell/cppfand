@@ -23,9 +23,9 @@ struct stSaveState
 };
 
 // funkce dle COMPILE.PAS
-bool EquUpcase(pstring& S1, pstring& S2); // r274 ASM
-bool EquUpcase(std::string& S1, std::string& S2);
-bool EquUpcase(const char* S);
+bool EquUpCase(pstring& S1, pstring& S2); // r274 ASM
+bool EquUpCase(std::string& S1, std::string& S2);
+bool EquUpCase(const char* S);
 void Error(integer N); // r1
 void SetInpStr(std::string& s); //r31
 void SetInpStdStr(std::string& s, bool ShowErr);
@@ -48,7 +48,7 @@ void TestLex(char X); // r237
 void Accept(char X); // r239 ASM
 integer RdInteger(); // r245
 double RdRealConst(); // r250
-bool IsKeyWord(pstring S); // r284 ASM
+bool IsKeyWord(std::string S); // r284 ASM
 bool TestKeyWord(pstring S); // r282
 bool IsOpt(pstring S); // r296 ASM
 bool IsDigitOpt(pstring S, WORD& N); // r305
