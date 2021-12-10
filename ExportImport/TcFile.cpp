@@ -6,7 +6,7 @@
 TcFile::TcFile(BYTE aCompress)
 {
 	Compress = aCompress;
-	if (aCompress == 0) {
+	if (Compress == 0) {
 		BufSize = 4 * RingBufSz; BufSize2 = BufSize;
 		Buf = new BYTE[BufSize];
 		Buf2 = Buf;
@@ -21,7 +21,10 @@ TcFile::TcFile(BYTE aCompress)
 
 TcFile::~TcFile()
 {
-	delete[] Buf; delete[] Buf2;
+	delete[] Buf;
+	if (Compress != 0) {
+		delete[] Buf2;
+	}
 }
 
 longint TcFile::MyDiskFree(bool Floppy, BYTE Drive)

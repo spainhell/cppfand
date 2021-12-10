@@ -415,10 +415,15 @@ label1:
 	ChainLast(CFile->FldD.front(), F);
 
 	if (Stored) {
-		if (CFile->Typ == '8') { if ((F->Typ == 'R' || F->Typ == 'B' || F->Typ == 'T')) OldError(35); }
-		else if ((F->Typ == 'F') && (F->NBytes > 5)) OldError(36);
+		if (CFile->Typ == '8') {
+			if ((F->Typ == 'R' || F->Typ == 'B' || F->Typ == 'T')) OldError(35);
+			else if ((F->Typ == 'F') && (F->NBytes > 5)) OldError(36);
+		}
 	}
-	else { F->Frml = Z; if (FTyp != F->FrmlTyp) OldError(12); }
+	else {
+		F->Frml = Z;
+		if (FTyp != F->FrmlTyp) OldError(12);
+	}
 	if (Lexem == ';') {
 		RdLex();
 		if (!(Lexem == '#' || Lexem == 0x1A)) goto label1;

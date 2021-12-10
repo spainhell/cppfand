@@ -1705,8 +1705,7 @@ FrmlPtr RdBOr(char& FTyp)
 FrmlElem* RdFormula(char& FTyp)
 {
 	FrmlElem* Z = RdBOr(FTyp);
-	while ((BYTE)Lexem == _limpl || (BYTE)Lexem == _lequ)
-	{
+	while ((BYTE)Lexem == _limpl || (BYTE)Lexem == _lequ) {
 		Z = BOperation(FTyp, (instr_type)Lexem, Z);
 		((FrmlElem0*)Z)->P2 = RdBOr(FTyp);
 		TestBool(FTyp);
@@ -1723,17 +1722,14 @@ bool FindFuncD(FrmlElem** ZZ)
 			RdLex(); RdLex();
 			FrmlElem19* z = new FrmlElem19(_userfunc, 8); // GetOp(_userfunc, 8);
 			z->FC = fc;
-			//LocVar* lv = fc->LVB.Root;
 			WORD n = fc->LVB.NParam;
 			auto itr = fc->LVB.vLocVar.begin();
 			for (WORD i = 1; i <= n; i++) {
-				//FrmlList fl = (FrmlList)GetStore(sizeof(*fl));
 				FrmlListEl* fl = new FrmlListEl();
 				if (z->FrmlL == nullptr) z->FrmlL = fl;
 				else ChainLast(z->FrmlL, fl);
 				fl->Frml = RdFormula(typ);
 				if (typ != (*itr++)->FTyp) OldError(12);
-				//lv = (LocVar*)lv->Chain;
 				if (i < n) Accept(',');
 			}
 			Accept(')');

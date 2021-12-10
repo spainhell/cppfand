@@ -442,7 +442,8 @@ std::string GetStr(FrmlElem* Z)
 void EditTxtProc(Instr_edittxt* PD)
 {
 	longint i = 0; WRect v;
-	WRect* pv = nullptr; BYTE a = 0; longint* lp = nullptr;
+	WRect* pv = nullptr; BYTE a = 0;
+	std::string* lp = nullptr;
 	MsgStr MsgS; void* p = nullptr;
 	MarkStore(p);
 	i = 1;
@@ -450,7 +451,10 @@ void EditTxtProc(Instr_edittxt* PD)
 	EdUpdated = false;
 	a = RunWordImpl(PD->Atr, 0);
 	pv = nullptr;
-	if (PD->Ww.C1 != nullptr) { RunWFrml(PD->Ww, PD->WFlags, v); pv = &v; }
+	if (PD->Ww.C1 != nullptr) {
+		RunWFrml(PD->Ww, PD->WFlags, v);
+		pv = &v;
+	}
 	MsgS.Head = GetStr(PD->Head);
 	MsgS.Last = GetStr(PD->Last);
 	MsgS.CtrlLast = GetStr(PD->CtrlLast);
@@ -458,7 +462,7 @@ void EditTxtProc(Instr_edittxt* PD)
 	MsgS.AltLast = GetStr(PD->AltLast);
 
 	if (PD->TxtLV != nullptr) {
-		lp = (longint*)(uintptr_t(MyBP) + PD->TxtLV->BPOfs);
+		lp = &PD->TxtLV->S;
 	}
 	else {
 		SetTxtPathVol(PD->TxtPath, PD->TxtCatIRec);

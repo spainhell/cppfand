@@ -31,7 +31,7 @@ void SimpleEditText(char pMode, std::string pErrMsg, std::string pName, LongStr*
 	WORD MaxLen, WORD& Ind, bool& Updat); // r202
 WORD FindTextE(const pstring& PstrScreenStr, pstring Popt, char* PTxtPtr, WORD PLen); // r209
 void InitTxtEditor();
-void EditTxtFile(longint* LP, char Mode, std::string& ErrMsg, std::vector<EdExitD*>& ExD, longint TxtPos,
+void EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg, std::vector<EdExitD*>& ExD, longint TxtPos,
 	longint Txtxy, WRect* V, WORD Atr, std::string Hd, BYTE WFlags, MsgStr* MsgS);
 void ViewPrinterTxt(); // r353
 void SetEditTxt(Instr_setedittxt* PD);
