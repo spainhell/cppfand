@@ -286,17 +286,16 @@ void ImportTxt(CopyD* CD)
 
 void ExportTxt(CopyD* CD)
 {
-	ThFile* F2; longint n; longint i; pstring s; ExitRecord er;
-	XScan* Scan; LockMode md; InOutMode m;
+	longint n; longint i;
+	pstring s;
+	ExitRecord er;
 
 	//NewExit(Ovr, er);
 	//goto label2;
-	F2 = nullptr; Scan = nullptr;
-
-	m = InOutMode::_outp;
+	InOutMode m = InOutMode::_outp;
 	if (CD->Append) m = InOutMode::_append;
 
-	F2 = new ThFile(CD->Path2, CD->CatIRec2, m, 0, nullptr);
+	ThFile* F2 = new ThFile(CD->Path2, CD->CatIRec2, m, 0, nullptr);
 	if (CD->HdFD != nullptr) {
 		LinkLastRec(CD->HdFD, n, true);
 		s = _ShortS(CD->HdF);
@@ -308,9 +307,9 @@ void ExportTxt(CopyD* CD)
 		ReleaseStore(CRecPtr);
 	}
 	CFile = CD->FD1;
-	CRecPtr = GetRecSpace;
-	md = NewLMode(RdMode);
-	Scan = new XScan(CFile, CD->ViewKey, nullptr, true);
+	CRecPtr = GetRecSpace();
+	LockMode md = NewLMode(RdMode);
+	XScan* Scan = new XScan(CFile, CD->ViewKey, nullptr, true);
 	Scan->Reset(nullptr, false);
 	RunMsgOn('C', Scan->NRecs);
 label1:
@@ -402,6 +401,45 @@ label1:
 	}
 }
 
+void TxtCtrlJ(CopyD* CD)
+{
+	ExitRecord er;
+	ThFile* F1 = nullptr;
+	ThFile* F2 = nullptr;
+	InOutMode m = InOutMode::_outp;
+
+	if (CD->Append) m = InOutMode::_append;
+	try {
+		char c;
+		F1 = new ThFile(CD->Path1, CD->CatIRec1, InOutMode::_inp, 0, nullptr);
+		F2 = new ThFile(CD->Path2, CD->CatIRec2, m, 0, F2);
+
+		c = F1->RdChar();
+		while (!F1->eof) {
+			switch (c) {
+			case '\r': {
+				F2->WrChar('\r');
+				F2->WrChar('\n');
+				break;
+			}
+			case '\n': break;
+			default: F2->WrChar(c);
+			}
+			c = F1->RdChar();
+		}
+		LastExitCode = 0;
+	}
+	catch (std::exception& e) {
+		RestoreExit(er);
+	}
+
+	if ((F1 != nullptr) && (F1->Handle != nullptr)) delete F1;
+	if ((F2 != nullptr) && (F2->Handle != nullptr)) {
+		if (LastExitCode != 0) F2->ClearBuf();
+		delete F2;
+	}
+}
+
 void MakeCopy(CopyD* CD)
 {
 	try {
@@ -476,13 +514,11 @@ void FileCopy(CopyD* CD)
 			MakeMerge(CD);
 		}
 		else {
-			//ExportFD();
-			screen.ScrWrText(1, 1, "ExportFD()");
+			ExportFD(CD);
 		}
 	}
 	else if (CD->Opt1 == CpOption::cpTxt) {
-		//TxtCtrlJ();
-		screen.ScrWrText(1, 1, "TxtCtrlJ()");
+		TxtCtrlJ(CD);
 	}
 	else {
 		MakeCopy(CD);
