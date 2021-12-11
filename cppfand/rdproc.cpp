@@ -128,7 +128,7 @@ char RdOwner(LinkD** LLD, LocVar** LLV)
 	ld = LinkDRoot;
 	while (ld != nullptr) {
 		sLexWord = LexWord;
-		if ((ld->FromFD == CFile) && EquUpcase(ld->RoleName, sLexWord)) {
+		if ((ld->FromFD == CFile) && EquUpCase(ld->RoleName, sLexWord)) {
 			if ((ld->IndexRoot == 0)) Error(116);
 			RdLex();
 			fd = ld->ToFD;
@@ -1005,7 +1005,7 @@ void RdKeyCode(EdExitD* X)
 		for (i = 0; i < NKeyNames; i++)
 		{
 			/* !!! with KeyNames[i] do!!! */
-			if (EquUpcase(KeyNames[i].Nm, LexWord)) {
+			if (EquUpCase(KeyNames[i].Nm, LexWord)) {
 				lastKey->KeyCode = KeyNames[i].Code;
 				lastKey->Break = KeyNames[i].Brk;
 				RdLex();
@@ -1276,6 +1276,7 @@ void RdProcCall(Instr** pinstr)
 	else if (IsKeyWord("OUTTEXTXY")) {
 		*pinstr = new Instr_putpixel(_outtextxy); // GetPD(_outtextxy, 11 * 4);
 	label3:
+		RdLex(); // read '('
 		auto iPutPixel = (Instr_putpixel*)(*pinstr);
 		iPutPixel->Par1 = RdRealFrml();
 		Accept(',');
@@ -1407,7 +1408,7 @@ label1:
 		while (FL1 != nullptr)
 		{
 			std::string tmp = LexWord;
-			if (EquUpcase(FL1->FldD->Name, tmp)) goto label2;
+			if (EquUpCase(FL1->FldD->Name, tmp)) goto label2;
 			FL1 = (FieldList)FL1->Chain;
 		}
 		Error(43);
@@ -1753,7 +1754,7 @@ CpOption RdCOpt()
 	RdLex();
 	TestIdentif();
 	for (i = 0; i < 3; i++)
-		if (EquUpcase(OptArr[i], LexWord)) {
+		if (EquUpCase(OptArr[i], LexWord)) {
 			RdLex();
 			return CpOption(i + 1); // vracime i + 1 (CpOption ma 4 moznosti, je to posunute ...)
 		}
@@ -2664,7 +2665,7 @@ void ReadDeclChpt()
 			TestIdentif();
 			fc = FuncDRoot;
 			while (fc != CRdb->OldFCRoot) {
-				if (EquUpcase(fc->Name, LexWord)) Error(26);
+				if (EquUpCase(fc->Name, LexWord)) Error(26);
 				fc = fc->Chain;
 			}
 			//fc = (FuncD*)GetStore(sizeof(FuncD) - 1 + LexWord.length());

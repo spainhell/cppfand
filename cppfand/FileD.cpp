@@ -95,3 +95,34 @@ WORD FileD::GetNrKeys()
 	while (k != nullptr) { n++; k = k->Chain; }
 	return n;
 }
+
+void FileD::Reset()
+{
+	Name = "";
+	FullName = "";
+	RecLen = 0;
+	RecPtr = nullptr;
+	NRecs = 0;
+	WasWrRec = false; WasRdOnly = false; Eof = false;
+	Typ = 0;        // 8= Fand 8; 6= Fand 16; X= .X; 0= RDB; C= CAT 
+	Handle = nullptr;
+	IRec = 0;
+	FrstDispl = 0;
+	TF = nullptr;
+	ChptPos.IRec = 0;
+	ChptPos.R = 0;
+	TxtPosUDLI = 0;    // =0 if not present; urcuje zacatek odstavcu #U #D #L #I
+	OrigFD = nullptr;    // like orig. or nil
+	Drive = 0;         // 1=A, 2=B, else 0
+	CatIRec = 0;
+	FldD.clear();
+	IsParFile = false; IsJournal = false; IsHlpFile = false;
+	typSQLFile = false; IsSQLFile = false; IsDynFile = false;
+	UMode = FileUseMode::Closed;
+	LMode = NullMode; ExLMode = NullMode; TaLMode = NullMode;
+	ViewNames = nullptr;  //after each string BYTE string with user codes 
+	XF = nullptr;
+	Keys = nullptr;
+	Add.clear();
+	nLDs = 0; LiOfs = 0;
+}

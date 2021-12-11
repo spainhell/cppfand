@@ -232,6 +232,8 @@ void Keyboard::AddToFrontKeyBuf(std::string input)
 void Keyboard::AddToFrontKeyBuf(unsigned short c)
 {
 	KEY_EVENT_RECORD key = KEY_EVENT_RECORD();
+	// set key down
+	key.bKeyDown = true;
 
 	// reverse function to KeyCombination
 	if (c & 0x0400) { key.dwControlKeyState += 0x0002; } // left Alt

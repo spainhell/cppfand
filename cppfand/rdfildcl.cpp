@@ -308,7 +308,7 @@ bool RdUserView(std::string ViewName, EditOpt* EO)
 		while (true) {
 			//Move(&EOD, EO, sizeof(*EO));
 			std::string sLexWord = LexWord;
-			if (EquUpcase(ViewName, sLexWord)) found = true;
+			if (EquUpCase(ViewName, sLexWord)) found = true;
 			EO->ViewName = LexWord;
 			RdLex(); /*'('*/
 			do {
@@ -390,7 +390,7 @@ void TestDupl(FileD* FD)
 	S = FD->ViewNames;
 	while (S != nullptr) {
 		std::string tmp = LexWord;
-		if (EquUpcase(S->S, tmp)) Error(26);
+		if (EquUpCase(S->S, tmp)) Error(26);
 		S = (StringList)S->Chain;
 	}
 }
@@ -415,10 +415,15 @@ label1:
 	ChainLast(CFile->FldD.front(), F);
 
 	if (Stored) {
-		if (CFile->Typ == '8') { if ((F->Typ == 'R' || F->Typ == 'B' || F->Typ == 'T')) OldError(35); }
-		else if ((F->Typ == 'F') && (F->NBytes > 5)) OldError(36);
+		if (CFile->Typ == '8') {
+			if ((F->Typ == 'R' || F->Typ == 'B' || F->Typ == 'T')) OldError(35);
+			else if ((F->Typ == 'F') && (F->NBytes > 5)) OldError(36);
+		}
 	}
-	else { F->Frml = Z; if (FTyp != F->FrmlTyp) OldError(12); }
+	else {
+		F->Frml = Z;
+		if (FTyp != F->FrmlTyp) OldError(12);
+	}
 	if (Lexem == ';') {
 		RdLex();
 		if (!(Lexem == '#' || Lexem == 0x1A)) goto label1;
@@ -439,7 +444,7 @@ void FakeRdFDSegment(FileD* FD)
 // ze souboru .000 vycte data
 void* RdFileD(std::string FileName, char FDTyp, std::string Ext)
 {
-	std::string JournalFlds = "A Upd,1;F RecNr,8.0;F User,4.0;D TimeStamp,'DD.MM.YYYY mm hh:ss'";
+	std::string JournalFlds = "Upd:A,1;RecNr:F,8.0;User:F,4.0;TimeStamp:D,'DD.MM.YYYY hh:mm:ss'";
 	FileD* FD = nullptr; XKey* K = nullptr;
 	FieldDescr* F = nullptr; FieldDescr* F2 = nullptr;
 	void* p = nullptr;
@@ -463,38 +468,69 @@ void* RdFileD(std::string FileName, char FDTyp, std::string Ext)
 		if (issql || FD->typSQLFile) OldError(155);
 #endif
 		LDOld = LinkDRoot;
-		CallRdFDSegment(FD);
+
+		//	RdbD* rdb = nullptr;
+		//	void* cr = nullptr;
+		//	FileD* cf = nullptr;
+		//	bool b = false;
+		//	WORD i = 0; longint pos = 0;
+		//	if (Lexem != 0x1A) Accept(';');
+		//	rdb = CRdb; cr = CRecPtr;
+		//	RdbD* r = FD->ChptPos.R;
+		//	if ((r == nullptr) || FD->IsDynFile) OldError(106);
+		//	CRdb = r;
+		//	i = FD->ChptPos.IRec;
+		//	CFile = CRdb->FD;
+		//	CRecPtr = CFile->RecPtr;
+		//	ReadRec(CFile, i, CRecPtr);
+		//	pos = _T(ChptOldTxt);
+		//	if (pos <= 0) Error(25);
+		//	b = RdFDSegment(i, pos);
+		//	cf = CFile; CRdb = rdb;
+		//	if (InpRdbPos.IRec != 0) {
+		//		CFile = rdb->FD;
+		//		ReadRec(CFile, InpRdbPos.IRec, CRecPtr);
+		//		CFile = cf;
+		//	}
+		//	CRecPtr = cr;
+		//	if (!b) Error(25);
+		//	CFile->OrigFD = FD;
+		//	CFile->TxtPosUDLI = 0;
+
+		FakeRdFDSegment(FD);
 		LinkDRoot = LDOld;
 		F = CFile->FldD.front();
-		FillChar(CFile, sizeof(FileD), 0);
+		CFile->Reset();
 		CFile->Name = FileName;
 		CFile->IsJournal = true;
 		SetHCatTyp(FDTyp);
-		CFile->ChptPos = OrigInp()->InpRdbPos;
+		if (PrevCompInp != nullptr) {
+			CFile->ChptPos = OrigInp()->InpRdbPos;
+		}
 		SetInpStr(JournalFlds);
 		RdLex();
 		RdFieldDList(true);
 		F2 = (FieldDescr*)LastInChain(CFile->FldD.front());
 		while (F != nullptr) {
 			if ((F->Flg & f_Stored) != 0) {
+				CFile->FldD.push_back(F);
 				F2->Chain = F;
 				F2 = F;
 				if (F->Typ == 'T') {
-					/* !!! with F^ do!!! */
 					F->FrmlTyp = 'R';
 					F->Typ = 'F';
 					F->L = 10;
 					F->Flg = F->Flg & !f_Encryp;
 				}
-				F = (FieldDescr*)F->Chain;
 			}
+			F = (FieldDescr*)F->Chain;
 		}
 		F2->Chain = nullptr;
 		CompileRecLen();
 		ChainLast(FileDRoot, CFile);
 		MarkStore(p);
 		goto label1;
-}
+	}
 	if (IsKeyWord("LIKE")) {
 		Prefix = FileName;
 		FD = RdFileName();
@@ -719,7 +755,7 @@ label6:
 		RdLex();
 		if (!(Lexem == '#' || Lexem == 0x1A)) goto label2;
 	}
-}
+	}
 
 void CheckDuplAlias(pstring Name)
 {
@@ -753,10 +789,10 @@ XKey* RdFileOrAlias1(FileD* F)
 {
 	XKey* k = F->Keys;
 	std::string lw = LexWord;
-	if (!EquUpcase(F->Name, lw))
+	if (!EquUpCase(F->Name, lw))
 		while (k != nullptr) {
 			std::string lw = LexWord;
-			if (EquUpcase(k->Alias, lw)) goto label1;
+			if (EquUpCase(k->Alias, lw)) goto label1;
 			k = k->Chain;
 		}
 label1:
@@ -942,7 +978,7 @@ void RdRoleField(AddD* AD)
 	AD->Field = F;
 	if ((F->Flg & f_Stored) == 0) OldError(14);
 	if (IsKeyArg(F, AD->File2)) OldError(135);
-}
+	}
 
 void RdImper(AddD* AD)
 {
@@ -953,10 +989,10 @@ void RdImper(AddD* AD)
 			while (KF != nullptr) {
 				if ((KF->FldD->Flg & f_Stored) == 0) OldError(148);
 				KF = (KeyFldD*)KF->Chain;
-			}
-		}
-		if (Lexem == '!') { RdLex(); AD->Create = 2; }
 	}
+}
+		if (Lexem == '!') { RdLex(); AD->Create = 2; }
+}
 	}
 
 void RdAssign(AddD* AD)
@@ -1014,36 +1050,36 @@ void GetXFileD()
 	}
 }
 
-void CallRdFDSegment(FileD* FD)
-{
-	RdbD* rdb = nullptr;
-	void* cr = nullptr;
-	FileD* cf = nullptr;
-	bool b = false;
-	WORD i = 0; longint pos = 0;
-	if (Lexem != 0x1A) Accept(';');
-	rdb = CRdb; cr = CRecPtr;
-	RdbD* r = FD->ChptPos.R;
-	if ((r == nullptr) || FD->IsDynFile) OldError(106);
-	CRdb = r;
-	i = FD->ChptPos.IRec;
-	CFile = CRdb->FD;
-	CRecPtr = CFile->RecPtr;
-	ReadRec(CFile, i, CRecPtr);
-	pos = _T(ChptOldTxt);
-	if (pos <= 0) Error(25);
-	b = RdFDSegment(i, pos);
-	cf = CFile; CRdb = rdb;
-	if (InpRdbPos.IRec != 0) {
-		CFile = rdb->FD;
-		ReadRec(CFile, InpRdbPos.IRec, CRecPtr);
-		CFile = cf;
-	}
-	CRecPtr = cr;
-	if (!b) Error(25);
-	CFile->OrigFD = FD;
-	CFile->TxtPosUDLI = 0;
-}
+//void CallRdFDSegment(FileD* FD)
+//{
+//	RdbD* rdb = nullptr;
+//	void* cr = nullptr;
+//	FileD* cf = nullptr;
+//	bool b = false;
+//	WORD i = 0; longint pos = 0;
+//	if (Lexem != 0x1A) Accept(';');
+//	rdb = CRdb; cr = CRecPtr;
+//	RdbD* r = FD->ChptPos.R;
+//	if ((r == nullptr) || FD->IsDynFile) OldError(106);
+//	CRdb = r;
+//	i = FD->ChptPos.IRec;
+//	CFile = CRdb->FD;
+//	CRecPtr = CFile->RecPtr;
+//	ReadRec(CFile, i, CRecPtr);
+//	pos = _T(ChptOldTxt);
+//	if (pos <= 0) Error(25);
+//	b = RdFDSegment(i, pos);
+//	cf = CFile; CRdb = rdb;
+//	if (InpRdbPos.IRec != 0) {
+//		CFile = rdb->FD;
+//		ReadRec(CFile, InpRdbPos.IRec, CRecPtr);
+//		CFile = cf;
+//	}
+//	CRecPtr = cr;
+//	if (!b) Error(25);
+//	CFile->OrigFD = FD;
+//	CFile->TxtPosUDLI = 0;
+//}
 
 CompInpD* OrigInp()
 {

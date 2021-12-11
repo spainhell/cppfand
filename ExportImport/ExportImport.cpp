@@ -8,6 +8,9 @@
 #include "../cppfand/GlobalVariables.h"
 #include "../cppfand/oaccess.h"
 #include "../cppfand/obaseww.h"
+#include "../Editor/rdedit.h"
+#include "../Editor/runedi.h"
+#include "../cppfand/wwmix.h"
 #include "../FileSystem/directory.h"
 #include "../cppfand/compile.h"
 #include "../MergeReport/rdmerg.h"
@@ -530,8 +533,7 @@ void FileCopy(CopyD* CD)
 
 void MakeMerge(CopyD* CD)
 {
-	try
-	{
+	try {
 		std::string s = "#I1_" + CD->FD1->Name;
 		if (CD->ViewKey != nullptr) {
 			std::string ali = CD->ViewKey->Alias;
@@ -547,9 +549,56 @@ void MakeMerge(CopyD* CD)
 		LastExitCode = 0;
 	}
 
+	catch (std::exception& e) {
+	}
+}
+
+void Backup(bool IsBackup, bool NoCompress, WORD Ir, bool NoCancel)
+{
+	TbFile* F = new TbFile(NoCompress);
+	ExitRecord er;
+
+	try {
+		LastExitCode = 1;
+		F->Backup(IsBackup, Ir);
+		LastExitCode = 0;
+	}
 	catch (std::exception& e)
 	{
+		RestoreExit(er);
 	}
+
+	ReleaseStore(F);
+	if (LastExitCode != 0) {
+		RunMsgOff();
+		if (!NoCancel) GoExit();
+	}
+}
+
+void BackupM(Instr_backup* PD)
+{
+	ExitRecord er; LongStr* s = nullptr; void* p = nullptr;
+
+	MarkStore(p);
+	if (PD->IsBackup) s = RunLongStr(PD->bmMasks);
+	TzFile* F = new TzFile(PD->IsBackup, PD->NoCompress, PD->bmSubDir, PD->bmOverwr,
+		PD->BrCatIRec, RunShortStr(PD->bmDir));
+	try {
+		LastExitCode = 1;
+		if (PD->IsBackup) F->Backup(s);
+		else F->Restore();
+		LastExitCode = 0;
+	}
+	catch (std::exception& e) {
+		RestoreExit(er);
+	}
+
+	F->Close();
+	if (LastExitCode != 0) {
+		RunMsgOff();
+		if (!PD->BrNoCancel) GoExit();
+	}
+	ReleaseStore(p);
 }
 
 void Backup(bool IsBackup, bool NoCompress, WORD Ir, bool NoCancel)
@@ -643,4 +692,97 @@ void CheckFile(FileD* FD)
 	h = OpenH(_isoldfile, RdShared);
 	if (HandleError == 0) CloseH(&h);
 	else LastExitCode = 4;
+}
+
+void CodingCRdb(bool Rotate)
+{
+	auto crdb = std::make_unique<CodingRdb>();
+	crdb->CodeRdb(Rotate);
+}
+
+void AddLicNr(FieldDescr* F)
+{
+	if (_T(F) != 0) T_(F, _T(F) + (WORD(UserLicNrShow) & 0x7FFF));
+}
+
+void CopyH(FILE* H, pstring Nm)
+{
+	WORD n; FILE* h2;
+	BYTE* buf = new BYTE[MaxLStrLen]; // GetStore(MaxLStrLen);
+	CPath = Nm;
+	CVol = "";
+	h2 = OpenH(_isoverwritefile, Exclusive);
+	longint sz = FileSizeH(H);
+	SeekH(H, 0);
+	while (sz > 0) {
+		if (sz > MaxLStrLen) n = MaxLStrLen;
+		else n = sz;
+		sz -= n;
+		ReadH(H, n, buf);
+		WriteH(h2, n, buf);
+	}
+	CloseH(&h2);
+	delete[] buf;
+	buf = nullptr;
+}
+
+bool PromptCodeRdb()
+{
+	WORD i;
+	FileD* cf;
+	void* cr;
+	auto wx = std::make_unique<wwmix>();
+	wx->SetPassWord(Chpt, 1, "");
+	wx->SetPassWord(Chpt, 2, "");
+	bool result = true;
+
+	F10SpecKey = __ALT_F10;
+
+	bool b = PromptYN(133);
+	WORD KbdChar = Event.Pressed.KeyCombination();
+	if (KbdChar == __ALT_F10) {
+		F10SpecKey = _ESC_;
+		b = PromptYN(147);
+		if (KbdChar == __ESC) goto label1;
+		if (b) {
+			CFile = Chpt;
+			WrPrefixes();
+			// TODO: SaveCache(0);
+			std::string s = CRdb->RdbDir;
+			AddBackSlash(s);
+			s = s + Chpt->Name;
+			CopyH(Chpt->Handle, s + ".RD0x");
+			CopyH(ChptTF->Handle, s + ".TT0x");
+		}
+		CodingCRdb(true);
+		ChptTF->LicenseNr = WORD(UserLicNrShow) & 0x7FFF;
+		cf = CFile;
+		cr = CRecPtr;
+		CFile = Chpt;
+		CRecPtr = GetRecSpace;
+		for (i = 1; i <= Chpt->NRecs; i++) {
+			ReadRec(CFile, i, CRecPtr);
+			AddLicNr(ChptOldTxt);
+			AddLicNr(ChptTxt);
+			WriteRec(CFile, i, CRecPtr);
+		}
+		ReleaseStore(CRecPtr);
+		CFile = cf;
+		CRecPtr = cr;
+		return result;
+	}
+	if (b) {
+		wx->SetPassWord(Chpt, 1, wx->PassWord(true));
+		if (wx->HasPassWord(Chpt, 1, "")) {
+			goto label1;
+		}
+		CodingCRdb(false);
+	}
+	else {
+	label1:
+		auto coding = std::make_unique<CodingRdb>();
+		coding->CompressCRdb();
+		result = false;
+	}
+	return result;
 }

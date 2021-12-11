@@ -3713,7 +3713,7 @@ void Calculate2()
 {
 	wwmix ww;
 
-	FrmlElem* Z; std::string Txt; ExitRecord er; WORD I; pstring Msg;
+	FrmlElem* Z; std::string txt; ExitRecord er; WORD I; pstring Msg;
 	void* p = nullptr; char FTyp; double R; FieldDescr* F; bool Del;
 	//MarkStore(p);
 	//NewExit(Ovr(), er);
@@ -3721,18 +3721,18 @@ void Calculate2()
 	try {
 		ResetCompilePars();
 	label0:
-		Txt = CalcTxt;
+		txt = CalcTxt;
 	label4:
 		I = 1;
 		Del = true;
 	label1:
 		TxtEdCtrlUBrk = true;
 		TxtEdCtrlF4Brk = true;
-		ww.PromptLL(114, Txt, I, Del);
+		ww.PromptLL(114, txt, I, Del);
 		if (Event.Pressed.KeyCombination() == 'U') goto label0;
-		if (Event.Pressed.KeyCombination() == __ESC || (Txt.length() == 0)) goto label3;
-		CalcTxt = Txt;
-		SetInpStr(Txt);
+		if (Event.Pressed.KeyCombination() == __ESC || (txt.length() == 0)) goto label3;
+		CalcTxt = txt;
+		SetInpStr(txt);
 		RdLex();
 		Z = RdFrml(FTyp);
 		if (Lexem != 0x1A) Error(21);
@@ -3762,19 +3762,21 @@ void Calculate2()
 		switch (FTyp) {
 		case 'R': {
 			R = RunReal(Z);
-			str(R, 30, 10, Txt);
-			Txt = LeadChar(' ', TrailChar(Txt, '0'));
-			if (Txt[Txt.length()] == '.') Txt[0]--;
+			str(R, 30, 10, txt);
+			txt = LeadChar(' ', TrailChar(txt, '0'));
+			if (txt[txt.length() - 1] == '.') {
+				txt = txt.substr(0, txt.length() - 1);
+			}
 			break;
 		}
 		case 'S': {
 			/* wie RdMode fuer T ??*/
-			Txt = RunShortStr(Z);
+			txt = RunShortStr(Z);
 			break;
 		}
 		case 'B': {
-			if (RunBool(Z)) Txt = AbbrYes;
-			else Txt = AbbrNo;
+			if (RunBool(Z)) txt = AbbrYes;
+			else txt = AbbrNo;
 			break;
 		}
 		}

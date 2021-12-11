@@ -159,6 +159,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CodingRdb.cpp" />
     <ClCompile Include="ExportImport.cpp" />
     <ClCompile Include="TbFile.cpp" />
     <ClCompile Include="TcFile.cpp" />
@@ -167,6 +168,7 @@
     <ClCompile Include="TzFile.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CodingRdb.h" />
     <ClInclude Include="ExportImport.h" />
     <ClInclude Include="TbFile.h" />
     <ClInclude Include="TcFile.h" />

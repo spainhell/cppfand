@@ -43,7 +43,7 @@ ThFile::ThFile(std::string APath, WORD CatIRec, InOutMode AMode, byte aCompress,
 
 ThFile::~ThFile()
 {
-	delete[] Buf;
+	//delete[] Buf;
 
 	if (Handle != nullptr) {
 		fclose(Handle);

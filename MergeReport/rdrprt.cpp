@@ -32,7 +32,7 @@ label1:
 			//while (RF1 != nullptr) {
 			for (auto rf : B1->ReportFields) {
 				std::string sLexWord = LexWord;
-				if ((Lexem == _identifier) && EquUpcase(rf->Name, sLexWord)) {
+				if ((Lexem == _identifier) && EquUpCase(rf->Name, sLexWord)) {
 					RdLex();
 					result = true;
 					RF = rf;
@@ -209,7 +209,7 @@ bool OwnInBlock(char& FTyp, FrmlElem** res)
 	// while (RF != nullptr) {
 	for (auto rf : CBlk->ReportFields) {
 		std::string sLexWord = LexWord;
-		if (EquUpcase(rf->Name, sLexWord))
+		if (EquUpCase(rf->Name, sLexWord))
 		{
 			RdLex();
 			FTyp = rf->FrmlTyp;

@@ -5,9 +5,9 @@
 #include "pstring.h"
 
 typedef char CharArr[50];
-typedef CharArr* CharArrPtr; // ø23
+typedef CharArr* CharArrPtr;
 
-class LongStr // ø24
+class LongStr
 {
 public:
 	LongStr() { A = new char[50]{ 0 }; allocated = 50; LL = 0; }

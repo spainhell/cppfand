@@ -2737,13 +2737,11 @@ WORD WordNo2()
 
 void ClrWord()
 {
-	WORD m = 1;
-	WORD k = 1;
+	WORD k = 0;
 	k = FindChar(T, LenT, 0x11, k);
 	while (k < LenT) {
 		T[k] = 0x13;
-		m = 1;
-		k = FindChar(T, LenT, 0x11, k);
+		k = FindChar(T, LenT, 0x11, k) + 1;
 	}
 }
 
@@ -3072,10 +3070,10 @@ WORD FindTextE(const pstring& Pstr, pstring Popt, char* PTxtPtr, WORD PLen)
 	return result;
 }
 
-void EditTxtFile(longint* LP, char Mode, std::string& ErrMsg, std::vector<EdExitD*>& ExD, longint TxtPos, longint Txtxy, WRect* V, WORD Atr, const std::string Hd, BYTE WFlags, MsgStr* MsgS)
+void EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg, std::vector<EdExitD*>& ExD, longint TxtPos, longint Txtxy, WRect* V, WORD Atr, const std::string Hd, BYTE WFlags, MsgStr* MsgS)
 {
 	bool Srch = false, Upd = false;
-	longint Size = 0, L = 0;
+	longint Size = 0; // , L = 0;
 	longint w1 = 0;
 	ExitRecord er;
 	bool Loc = false;
@@ -3099,8 +3097,8 @@ void EditTxtFile(longint* LP, char Mode, std::string& ErrMsg, std::vector<EdExit
 	}
 	//NewExit(Ovr(), er);
 	//goto label4;
-	Loc = (LP != nullptr);
-	LocalPPtr = LP;
+	Loc = (locVar != nullptr);
+	//LocalPPtr = locVar;
 	if (!Loc) {
 		MaxLenT = 0xFFF0; LenT = 0;
 		Part.UpdP = false;
@@ -3109,13 +3107,17 @@ void EditTxtFile(longint* LP, char Mode, std::string& ErrMsg, std::vector<EdExit
 		OpenTxtFh(Mode);
 		RdFirstPart();
 		SimplePrintHead();
-		while ((TxtPos > Part.PosP + Part.LenP) && !AllRd) RdNextPart();
+		while ((TxtPos > Part.PosP + Part.LenP) && !AllRd) {
+			RdNextPart();
+		}
 		Ind = TxtPos - Part.PosP;
 	}
 	else {
-		LS = TWork.Read(1, *LP);
+		LS = new LongStr(locVar->length()); // TWork.Read(1, *LP);
+		LS->LL = locVar->length();
 		Ind = TxtPos;
-		L = StoreInTWork(LS);
+		memcpy(LS->A, locVar->c_str(), LS->LL);
+		//L = StoreInTWork(LS);
 	}
 	oldInd = Ind;
 	oldTxtxy = Txtxy;
@@ -3141,8 +3143,13 @@ void EditTxtFile(longint* LP, char Mode, std::string& ErrMsg, std::vector<EdExit
 		if (Upd) EdUpdated = true;
 		WORD KbdChar = Event.Pressed.KeyCombination();
 		if ((KbdChar == __ALT_EQUAL) || (KbdChar == 'U')) {
-			ReleaseStore(LS);
-			LS = TWork.Read(1, L);
+			// UNDO CHANGES
+			//ReleaseStore(LS);
+			//LS = TWork.Read(1, L);
+			delete LS;
+			LS = new LongStr(locVar->length()); // TWork.Read(1, *LP);
+			memcpy(LS->A, locVar->c_str(), LS->LL);
+
 			if (KbdChar == __ALT_EQUAL) {
 				Event.Pressed.UpdateKey(__ESC);
 				goto label4;
@@ -3160,8 +3167,14 @@ void EditTxtFile(longint* LP, char Mode, std::string& ErrMsg, std::vector<EdExit
 		if (EdBreak == 0xFFFF) {
 			switch (KbdChar) {
 			case __F9: {
-				if (Loc) { TWork.Delete(*LP); *LP = StoreInTWork(LS); }
-				else RdPart();
+				if (Loc) {
+					//TWork.Delete(*LP);
+					//*LP = StoreInTWork(LS);
+					*locVar = std::string(LS->A, LS->LL);
+				}
+				else {
+					RdPart();
+				}
 				continue;
 			}
 			case __F10: {
@@ -3205,9 +3218,12 @@ void EditTxtFile(longint* LP, char Mode, std::string& ErrMsg, std::vector<EdExit
 			WrLLF10Msg(110);
 		}
 		if (Loc) {
-			TWork.Delete(L);
-			TWork.Delete(*LP); *LP = StoreInTWork(LS);
-			ReleaseStore(LS);
+			//TWork.Delete(L);
+			//TWork.Delete(*LP);
+			//*LP = StoreInTWork(LS);
+			*locVar = std::string(LS->A, LS->LL);
+			delete LS; // ReleaseStore(LS);
+			LS = nullptr;
 		}
 		if (w3 != 0) {
 			PopW2(w3, (WFlags & WNoPop) == 0);
