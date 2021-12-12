@@ -601,54 +601,6 @@ void BackupM(Instr_backup* PD)
 	ReleaseStore(p);
 }
 
-void Backup(bool IsBackup, bool NoCompress, WORD Ir, bool NoCancel)
-{
-	TbFile* F = new TbFile(NoCompress);
-	ExitRecord er;
-
-	try {
-		LastExitCode = 1;
-		F->Backup(IsBackup, Ir);
-		LastExitCode = 0;
-	}
-	catch (std::exception& e)
-	{
-		RestoreExit(er);
-	}
-
-	ReleaseStore(F);
-	if (LastExitCode != 0) {
-		RunMsgOff();
-		if (!NoCancel) GoExit();
-	}
-}
-
-void BackupM(Instr_backup* PD)
-{
-	ExitRecord er; LongStr* s = nullptr; void* p = nullptr;
-
-	MarkStore(p);
-	if (PD->IsBackup) s = RunLongStr(PD->bmMasks);
-	TzFile* F = new TzFile(PD->IsBackup, PD->NoCompress, PD->bmSubDir, PD->bmOverwr,
-		PD->BrCatIRec, RunShortStr(PD->bmDir));
-	try {
-		LastExitCode = 1;
-		if (PD->IsBackup) F->Backup(s);
-		else F->Restore();
-		LastExitCode = 0;
-	}
-	catch (std::exception& e) {
-		RestoreExit(er);
-	}
-
-	F->Close();
-	if (LastExitCode != 0) {
-		RunMsgOff();
-		if (!PD->BrNoCancel) GoExit();
-	}
-	ReleaseStore(p);
-}
-
 
 void CheckFile(FileD* FD)
 {

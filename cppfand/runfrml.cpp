@@ -2001,7 +2001,7 @@ std::string Replace(std::string text, std::string oldText, std::string& newText,
 	while (pos != std::string::npos) {
 		text = text.replace(pos, old_len, newText);
 		copyInputText = copyInputText.replace(pos, old_len, newText);
-		pos = copyInputText.find(oldText);
+		pos = copyInputText.find(oldText, pos + newText.length());
 	}
 
 	return text;

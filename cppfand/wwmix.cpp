@@ -76,7 +76,7 @@ void wwmix::SelectStr(integer C1, integer R1, WORD NMsg, std::string LowTxt)
 {
 	WORD cols = 0, MaxBase = 0;
 	WORD key;
-	char schar = '\0';
+	char schar;
 	integer b = 0;
 	Item* p = nullptr;
 	integer i = 0, iOld = 0;
@@ -111,8 +111,12 @@ void wwmix::SelectStr(integer C1, integer R1, WORD NMsg, std::string LowTxt)
 	MaxBase = 1;
 	while (MaxBase + sv.WwSize <= sv.NItems) MaxBase += sv.Tabs;
 	if (ss.Abcd) AbcdSort();
-	if (ss.AscDesc) schar = '<';
-	else schar = (char)p;
+	if (ss.AscDesc) {
+		schar = '<';
+	}
+	else {
+		schar = (char)p;
+	}
 	SetFirstiItem();
 	sv.Base = sv.iItem - (sv.iItem - 1) % sv.WwSize;
 	DisplWw();
@@ -374,10 +378,10 @@ void wwmix::Down()
 
 void wwmix::Up()
 {
-	if (sv.iItem > sv.Tabs)	{
+	if (sv.iItem > sv.Tabs) {
 		IVOff();
 		sv.iItem -= sv.Tabs;
-		if (sv.iItem < sv.Base)	{
+		if (sv.iItem < sv.Base) {
 			sv.Base -= sv.Tabs;
 			DisplWw();
 		}
@@ -538,7 +542,7 @@ std::string wwmix::GetSelect()
 {
 	Item* p = &sv.items[0];
 	pstring result;
-	if (!ss.Subset)	{
+	if (!ss.Subset) {
 		p = GetItem(sv.iItem);
 		result = p->S;
 		// TODO: ReleaseStore(sv.markp);
@@ -571,25 +575,27 @@ bool wwmix::SelFieldList(WORD Nmsg, bool ImplAll, FieldList FLRoot)
 	FieldDescr* F; FieldList FL;
 	FLRoot = nullptr;
 	auto result = true;
-	if (ss.Empty) return true;
+	if (ss.Empty) return result;
 	ss.Subset = true;
 	ss.ImplAll = ImplAll;
 	SelectStr(0, 0, Nmsg, CFile->Name);
 	if (Event.Pressed.KeyCombination() == __ESC) { return false; }
 label1:
-	pstring s = GetSelect();
-	if (s != "") {
+	std::string s = GetSelect();
+	if (!s.empty()) {
 		F = CFile->FldD.front();
-		//F = CFile->FldD[0];
-		if (s[1] == SelMark) s = copy(s, 2, 255);
+		if (s[0] == (char)SelMark) s = s.substr(1, 255); //copy(s, 2, 255);
 		while (F != nullptr) {
 			if (s == F->Name) {
-				FL = (FieldListEl*)GetStore(sizeof(*FL));
-				ChainLast(FLRoot, FL);
+				FL = new FieldListEl(); // (FieldListEl*)GetStore(sizeof(*FL));
+				if (FLRoot == nullptr) FLRoot = FL;
+				else ChainLast(FLRoot, FL);
 				FL->FldD = F;
 				goto label1;
 			}
-			F = (FieldDescr*)F->Chain;
+			else {
+				F = (FieldDescr*)F->Chain;
+			}
 		}
 		goto label1;
 	}
@@ -800,7 +806,7 @@ void wwmix::SetPassWord(FileD* FD, WORD Nr, std::string Pw)
 {
 	if (Nr == 1) {
 		FD->TF->PwCode = Pw;
-		FD->TF->PwCode= AddTrailChars(FD->TF->PwCode, '@', 20);
+		FD->TF->PwCode = AddTrailChars(FD->TF->PwCode, '@', 20);
 		Code(FD->TF->PwCode);
 	}
 	else {

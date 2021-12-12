@@ -514,7 +514,7 @@ label2:
 }
 
 
-void WrPromptTxt(std::string& S, FrmlElem* Impl, FieldDescr* F, pstring* Txt, double& R)
+void WrPromptTxt(std::string& S, FrmlElem* Impl, FieldDescr* F, std::string& Txt, double& R)
 {
 	WORD x = 0, y = 0, d = 0, LWw = 0;
 	std::string SS;
@@ -545,8 +545,8 @@ void WrPromptTxt(std::string& S, FrmlElem* Impl, FieldDescr* F, pstring* Txt, do
 	}
 	else {
 		EscPrompt = false;
-		*Txt = T;
-		(*Txt)[0] = (char)LWw;
+		//Txt = T;
+		Txt = T.substr(0, LWw); //()* Txt)[0] = (char)LWw;
 		screen.GotoXY(x, y);
 		// printf("%s", T.c_str());
 		screen.ScrFormatWrText(x, y, "%s", T.c_str());
@@ -555,10 +555,10 @@ void WrPromptTxt(std::string& S, FrmlElem* Impl, FieldDescr* F, pstring* Txt, do
 
 bool PromptB(std::string& S, FrmlElem* Impl, FieldDescr* F)
 {
-	pstring Txt;
+	std::string Txt;
 	double R = 0.0;
-	WrPromptTxt(S, Impl, F, &Txt, R);
-	bool result = Txt[1] == AbbrYes;
+	WrPromptTxt(S, Impl, F, Txt, R);
+	bool result = (Txt[0] == AbbrYes);
 	if (Event.Pressed.KeyCombination() == __ESC) {
 		if (Impl != nullptr) result = RunBool(Impl);
 		else result = false;
@@ -566,11 +566,11 @@ bool PromptB(std::string& S, FrmlElem* Impl, FieldDescr* F)
 	return result;
 }
 
-pstring PromptS(std::string& S, FrmlElem* Impl, FieldDescr* F)
+std::string PromptS(std::string& S, FrmlElem* Impl, FieldDescr* F)
 {
-	pstring Txt;
+	std::string Txt;
 	double R = 0.0;
-	WrPromptTxt(S, Impl, F, &Txt, R);
+	WrPromptTxt(S, Impl, F, Txt, R);
 	auto result = Txt;
 	if (Event.Pressed.KeyCombination() == __ESC) {
 		if (Impl != nullptr) result = RunShortStr(Impl);
@@ -581,9 +581,9 @@ pstring PromptS(std::string& S, FrmlElem* Impl, FieldDescr* F)
 
 double PromptR(std::string& S, FrmlElem* Impl, FieldDPtr F)
 {
-	pstring Txt;
+	std::string Txt;
 	double R = 0.0;
-	WrPromptTxt(S, Impl, F, &Txt, R);
+	WrPromptTxt(S, Impl, F, Txt, R);
 	auto result = R;
 	if (Event.Pressed.KeyCombination() == __ESC) {
 		if (Impl != nullptr) result = RunReal(Impl);
@@ -849,7 +849,7 @@ void Wr1Line(FieldDescr* F)
 	if (l < max) printf("%*c", max - l, ' ');*/
 }
 
-void DisplFld(EFldD* D, WORD I)
+void DisplFld(EFldD* D, WORD I, BYTE Color)
 {
 	WORD r = FldRow(D, I);
 	auto F = D->FldD;
@@ -857,8 +857,7 @@ void DisplFld(EFldD* D, WORD I)
 	std::string Txt = DecodeField(F, D->L);
 	for (size_t j = 0; j < Txt.length(); j++)
 		if ((unsigned char)Txt[j] < ' ') Txt[j] = Txt[j] + 0x40;
-	screen.WriteStyledStringToWindow(Txt, E->dNorm);
-	//printf("%s", Txt.c_str());
+	screen.WriteStyledStringToWindow(Txt, Color);
 	if (HasTTWw(F)) {
 		screen.GotoXY(D->Col + 2, r);
 		Wr1Line(F);
@@ -891,7 +890,7 @@ label1:
 		TextAttr = a;
 		if (D->Page == CPage) {
 			if (NewFlds) DisplEmptyFld(D, I);
-			else DisplFld(D, I);
+			else DisplFld(D, I, TextAttr);
 		}
 		if (IsCurrNewRec && (D == FirstEmptyFld)) NewFlds = true;
 		D = (EFldD*)D->Chain;
@@ -2900,7 +2899,7 @@ label1:
 	Quit = false;
 	if (!CheckForExit(Quit)) return result;
 	TextAttr = E->dHiLi;
-	DisplFld(CFld, IRec);
+	DisplFld(CFld, IRec, TextAttr);
 	if (ChkSwitch) {
 		if (Mode == 1 || Mode == 3) Typ = '?';
 		else Typ = 'F';
@@ -3003,7 +3002,7 @@ label2:
 	if (CFld->Tab) skip = false;
 	if (displ) {
 		TextAttr = E->dHiLi;
-		DisplFld(CFld, IRec);
+		DisplFld(CFld, IRec, TextAttr);
 	}
 	if (Mode == 2 /*bypass all remaining fields of the record */) goto label1;
 	if (skip && ExNotSkipFld() && (NR <= 1)) goto label1;
@@ -3330,7 +3329,7 @@ bool EditItemProc(bool del, bool ed, WORD& Brk)
 		if (CFile->NotCached()) wd = E->WatchDelay;
 		FieldEdit(F, CFld->Impl, CFld->L, 1, Txt, R, del, ed, false, wd);
 		if (Event.Pressed.KeyCombination() == __ESC || !ed) {
-			DisplFld(CFld, IRec);
+			DisplFld(CFld, IRec, TextAttr);
 			if (ed && !WasUpdated) UnLockRec(E);
 			return result;
 		}
@@ -3752,7 +3751,7 @@ void Calculate2()
 					else
 						label5:
 					AssignFld(F, Z);
-					DisplFld(CFld, IRec);
+					DisplFld(CFld, IRec, TextAttr);
 					IVon();
 					goto label3;
 				}
@@ -4165,7 +4164,7 @@ void GoStartFld(EFldD* SFld)
 		if (IsFirstEmptyFld()) {
 			if ((CFld->Impl != nullptr) && LockRec(true)) AssignFld(CFld->FldD, CFld->Impl);
 			FirstEmptyFld = (EFldD*)FirstEmptyFld->Chain;
-			DisplFld(CFld, IRec);
+			DisplFld(CFld, IRec, TextAttr);
 		}
 		GotoRecFld(CRec(), (EFldD*)CFld->Chain);
 	}
