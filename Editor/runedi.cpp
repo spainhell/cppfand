@@ -3510,7 +3510,7 @@ bool SelFldsForEO(EditOpt* EO, LinkD* LD)
 	}
 	if (EO->Flds == nullptr) WrLLF10Msg(156);
 	else {
-		ww.SelFieldList(36, true, EO->Flds);
+		ww.SelFieldList(36, true, &EO->Flds);
 	}
 	if (EO->Flds == nullptr) {
 		ReleaseStore(p);

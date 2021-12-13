@@ -12,7 +12,7 @@ public:
 	RdbPos FormPos;
 	bool UserSelFlds = false, SetOnlyView = false, NegDupl = false;
 	bool NegTab = false, NegNoEd = false, SyntxChk = false;
-	FieldListEl* Flds = nullptr;
+	std::vector<FieldDescr*> Flds;
 	std::vector<FieldDescr*> Dupl;
 	std::vector<FieldDescr*> Tab;
 	std::vector<FieldDescr*> NoEd;

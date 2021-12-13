@@ -127,7 +127,7 @@ void PromptAutoRprt(RprtOpt* RO)
 		}
 		FL = (FieldList)FL->Chain;
 	}
-	CFile = RO->FDL.FD; if (!ww.SelFieldList(36, true, RO2->Flds)) return;
+	CFile = RO->FDL.FD; if (!ww.SelFieldList(36, true, &RO2->Flds)) return;
 	if ((RO->FDL.Cond == nullptr) &&
 		!ww.PromptFilter("", RO2->FDL.Cond, &RO2->CondTxt)) return;
 	if (SelForAutoRprt(RO2)) RunAutoReport(RO2);

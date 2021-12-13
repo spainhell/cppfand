@@ -432,13 +432,13 @@ bool SelForAutoRprt(RprtOpt* RO)
 			if (FL->FldD->Typ != 'T') ww.PutSelect(FL->FldD->Name);
 			FL = (FieldListEl*)FL->Chain;
 		}
-		if (!ww.SelFieldList(37, false, RO->Ctrl[0])) return result; // TODO: RO->Ctrl[0] is probably bad idea
+		if (!ww.SelFieldList(37, false, &RO->Ctrl[0])) return result; // TODO: RO->Ctrl[0] is probably bad idea
 		FL = RO->Flds;
 		while (FL != nullptr) {
 			if (FL->FldD->FrmlTyp == 'R') ww.PutSelect(FL->FldD->Name);
 			FL = (FieldListEl*)FL->Chain;
 		}
-		if (!ww.SelFieldList(38, true, RO->Sum)) return result;
+		if (!ww.SelFieldList(38, true, &RO->Sum)) return result;
 	}
 	if (spec.AutoRprtPrint) {
 		RO->Path = "LPT1";
@@ -490,7 +490,7 @@ std::string SelGenRprt(pstring RprtName)
 		f = (FieldDescr*)f->Chain;
 	}
 	CFile = fd;
-	ww.SelFieldList(36, true, ro->Flds);
+	ww.SelFieldList(36, true, &ro->Flds);
 	if (ro->Flds == nullptr) return result;
 	ro->Mode = _ARprt;
 	fl = ro->Flds;
@@ -498,13 +498,13 @@ std::string SelGenRprt(pstring RprtName)
 		ww.PutSelect(fl->FldD->Name);
 		fl = (FieldListEl*)fl->Chain;
 	}
-	if (!ww.SelFieldList(37, false, ro->Ctrl[0])) return result; // TODO: ro->Ctrl[0] is probably bad idea
+	if (!ww.SelFieldList(37, false, &ro->Ctrl[0])) return result; // TODO: ro->Ctrl[0] is probably bad idea
 	fl = ro->Flds;
 	while (fl != nullptr) {
 		if (fl->FldD->FrmlTyp == 'R') ww.PutSelect(fl->FldD->Name);
 		fl = (FieldListEl*)fl->Chain;
 	}
-	if (!ww.SelFieldList(38, false, ro->Sum)) return result;
+	if (!ww.SelFieldList(38, false, &ro->Sum)) return result;
 	result = GenAutoRprt(ro, false);
 	return result;
 }

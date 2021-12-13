@@ -44,6 +44,7 @@ struct stSv
 
 Item* GetItem(WORD N)
 {
+	if (sv.items.size() < N) return nullptr;
 	return &sv.items[N - 1];
 }
 
@@ -115,7 +116,7 @@ void wwmix::SelectStr(integer C1, integer R1, WORD NMsg, std::string LowTxt)
 		schar = '<';
 	}
 	else {
-		schar = (char)p;
+		schar = 0x10;
 	}
 	SetFirstiItem();
 	sv.Base = sv.iItem - (sv.iItem - 1) % sv.WwSize;
@@ -270,9 +271,9 @@ label1:
 		default: {
 			if (ss.Subset) {
 				switch (key) {
-				case 0x8000 + VK_F2: { SetTag(schar); break; }
+				case __F2: { SetTag(schar); break; }
 				case __CTRL_F2: { SetAllTags(schar); break; }
-				case  62 /*>*/: { if (ss.AscDesc) SetTag('>'); break; }
+				case '>': { if (ss.AscDesc) SetTag('>'); break; }
 				case __F3: { SetTag(' '); break; }
 				case __CTRL_F3: { SetAllTags(' '); break; }
 				case __F9: { ClrEvent(); GraspAndMove(schar); break; }
@@ -540,7 +541,7 @@ bool wwmix::MouseInItem(integer& I)
 
 std::string wwmix::GetSelect()
 {
-	Item* p = &sv.items[0];
+	Item* p = nullptr;
 	pstring result;
 	if (!ss.Subset) {
 		p = GetItem(sv.iItem);
@@ -548,14 +549,17 @@ std::string wwmix::GetSelect()
 		// TODO: ReleaseStore(sv.markp);
 		return result;
 	}
-	//while ((p != nullptr) && (p->Tag == ' ')) {
-	//	p = (Item*)p->Chain;
-	//}
-	p = nullptr;
-	for (size_t i = 0; i < sv.items.size(); i++) {
+
+	// temp vector with items with Tag == ' '
+	for (size_t i = lastItemIndex; i < sv.items.size(); i++) {
 		if (sv.items[i].Tag != ' ') {
 			p = &sv.items[i];
+			lastItemIndex++;
 			break;
+		}
+		if (i == sv.items.size() - 1) {
+			// on the last item with Tag == ' '
+			p = nullptr;
 		}
 	}
 
@@ -570,10 +574,10 @@ std::string wwmix::GetSelect()
 	return result;
 }
 
-bool wwmix::SelFieldList(WORD Nmsg, bool ImplAll, FieldList FLRoot)
+bool wwmix::SelFieldList(WORD Nmsg, bool ImplAll, FieldListEl** FLRoot)
 {
 	FieldDescr* F; FieldList FL;
-	FLRoot = nullptr;
+	*FLRoot = nullptr;
 	auto result = true;
 	if (ss.Empty) return result;
 	ss.Subset = true;
@@ -588,8 +592,8 @@ label1:
 		while (F != nullptr) {
 			if (s == F->Name) {
 				FL = new FieldListEl(); // (FieldListEl*)GetStore(sizeof(*FL));
-				if (FLRoot == nullptr) FLRoot = FL;
-				else ChainLast(FLRoot, FL);
+				if (*FLRoot == nullptr) *FLRoot = FL;
+				else ChainLast(*FLRoot, FL);
 				FL->FldD = F;
 				goto label1;
 			}

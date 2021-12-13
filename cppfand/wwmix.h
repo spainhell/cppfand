@@ -26,7 +26,7 @@ public :
 	void PutSelect(std::string s); // r57
 	void SelectStr(integer C1, integer R1, WORD NMsg, std::string LowTxt);
 	std::string GetSelect();
-	bool SelFieldList(WORD Nmsg, bool ImplAll, FieldList FLRoot);
+	bool SelFieldList(WORD Nmsg, bool ImplAll, FieldListEl** FLRoot);
 	std::string SelectDiskFile(std::string Path, WORD HdMsg, bool OnFace);
 	bool PromptFilter(std::string Txt, FrmlElem* Bool, std::string* BoolTxt);
 	void PromptLL(WORD N, std::string& Txt, WORD I, bool Del);
@@ -51,4 +51,5 @@ private:
 	void AbcdSort();
 	void SetFirstiItem();
 	bool MouseInItem(integer& I);
+	size_t lastItemIndex = 0;
 };

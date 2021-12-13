@@ -505,17 +505,13 @@ bool KbdPressed()
 
 bool ESCPressed()
 {
-	if (KeyPressed())
-	{
+	if (KeyPressed()) {
 		if (ReadKey() == __ESC) return true;
 	}
-	else
-	{
+	else {
 		GetMouseKeyEvent();
-		if (Event.What == evKeyDown)
-		{
-			if (Event.Pressed.KeyCombination() == __ESC)
-			{
+		if (Event.What == evKeyDown) {
+			if (Event.Pressed.KeyCombination() == __ESC) {
 				ClrEvent(); return true;
 			}
 		}
