@@ -208,7 +208,7 @@ void WrLevel(std::string& report, int Level)
 
 std::string GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 {
-	KeyFldD* kf;
+	KeyFldD* kf = nullptr;
 	//char* p;
 	bool first, point;
 	std::string s;
@@ -225,21 +225,23 @@ std::string GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 		d.IsSum = FieldInList(f, RO->Sum);
 		//FieldListEl* fl1 = RO->Ctrl;
 		int i = NLevels;
-		for (size_t k = 0; k < RO->Ctrl.size(); k++) /*while (fl1 != nullptr)*/ {
-			FieldListEl* fl1 = RO->Ctrl[k];
-			if (fl1->FldD == f) {
-				d.IsCtrl = true;
-				d.Level = i;
+		if (!RO->Ctrl.empty()) {
+			FieldListEl* fl1 = RO->Ctrl[0];
+			while (fl1 != nullptr) {
+				if (fl1->FldD == f) {
+					d.IsCtrl = true;
+					d.Level = i;
+				}
+				i--;
+				fl1 = (FieldListEl*)fl1->Chain;
 			}
-			i--;
-			//fl1 = (FieldListEl*)fl1->Chain;
 		}
 		if ((ARMode == _ATotal) && !d.IsSum && !d.IsCtrl) {
 			//ReleaseStore(d);
 		}
 		else {
 			//ChainLast(PFldDs, d);
-			PFldDs.push_back(std::move(d));
+			PFldDs.push_back(d);
 		}
 		fl = (FieldListEl*)fl->Chain;
 	}
@@ -256,21 +258,22 @@ std::string GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 	if (RO->SK != nullptr) WrChar(report, '!');
 	WrBlks(report, 2);
 	first = true; 
-	// fl = RO->Ctrl; 
-	kf = RO->SK;
-	for (size_t k = 0; k < RO->Ctrl.size(); k++)/*while (fl != nullptr)*/ {
-		fl = RO->Ctrl[k];
-		if (!first) WrChar(report, ',');
-		FieldDescr* f = fl->FldD;
-		if ((kf != nullptr) && (f == kf->FldD)) {
-			if (kf->Descend) WrChar(report, '>');
-			if (kf->CompLex) WrChar(report, '~');
-			kf = (KeyFldD*)kf->Chain;
+	if (!RO->Ctrl.empty()) {
+		fl = RO->Ctrl[0];
+		kf = RO->SK;
+		while (fl != nullptr) {
+			if (!first) WrChar(report, ',');
+			FieldDescr* f = fl->FldD;
+			if ((kf != nullptr) && (f == kf->FldD)) {
+				if (kf->Descend) WrChar(report, '>');
+				if (kf->CompLex) WrChar(report, '~');
+				kf = (KeyFldD*)kf->Chain;
+			}
+			else if (f->Typ == 'A') WrChar(report, '~');
+			WrStr(report, f->Name);
+			fl = (FieldListEl*)fl->Chain;
+			first = false;
 		}
-		else if (f->Typ == 'A') WrChar(report, '~');
-		WrStr(report, f->Name);
-		//fl = (FieldListEl*)fl->Chain; 
-		first = false;
 	}
 	if (kf != nullptr) {
 		if (!first) WrChar(report, ';'); first = true;

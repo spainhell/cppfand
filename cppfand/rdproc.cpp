@@ -1399,8 +1399,10 @@ FieldListEl* RdSubFldList(FieldList InFL, char Opt)
 	Accept('(');
 label1:
 	FL = new FieldListEl(); // (FieldList)GetStore(sizeof(*FL));
+
 	if (FLRoot == nullptr) { FLRoot = FL; FL->Chain = nullptr; }
 	else ChainLast(FLRoot, FL);
+
 	if (InFL == nullptr) F = RdFldName(CFile);
 	else {
 		TestIdentif();

@@ -820,7 +820,7 @@ void MoveMFlds(std::vector<ConstListEl>& C1, std::vector<ConstListEl>& C2)
 	}
 }
 
-void PutMFlds(KeyFldD** M)
+void PutMFlds(KeyFldD* M)
 {
 	if (MinID == nullptr) return;
 	FileD* cf = CFile;
@@ -828,8 +828,8 @@ void PutMFlds(KeyFldD** M)
 	void* cr = CRecPtr;
 	void* cr1 = MinID->ForwRecPtr;
 	KeyFldD* m1 = MinID->MFld;
-	while (*M != nullptr) {
-		FieldDescr* f = (*M)->FldD;
+	while (M != nullptr) {
+		FieldDescr* f = M->FldD;
 		FieldDescr* f1 = m1->FldD;
 		CFile = cf1;
 		CRecPtr = cr1;
@@ -853,7 +853,7 @@ void PutMFlds(KeyFldD** M)
 				break;
 			}
 		}
-		*M = (KeyFldD*)(*M)->Chain;
+		M = (KeyFldD*)M->Chain;
 		m1 = (KeyFldD*)m1->Chain;
 	}
 }
@@ -959,7 +959,7 @@ void MoveFrstRecs()
 		if (IDA[i]->Exist) MoveForwToRec(IDA[i]);
 		else {
 			CFile = IDA[i]->Scan->FD; CRecPtr = CFile->RecPtr; ZeroAllFlds();
-			PutMFlds(&IDA[i]->MFld);
+			PutMFlds(IDA[i]->MFld);
 		}
 	}
 }

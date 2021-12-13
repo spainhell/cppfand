@@ -69,7 +69,7 @@ void CloseInp();
 WORD CompMFlds(std::vector<ConstListEl>& C, KeyFldD* M, integer& NLv);
 void GetMFlds(std::vector<ConstListEl>& C, KeyFldD* M);
 void MoveMFlds(std::vector<ConstListEl>& C1, std::vector<ConstListEl>& C2);
-void PutMFlds(KeyFldD** M);
+void PutMFlds(KeyFldD* M);
 void GetMinKey();
 void ZeroCount();
 LvDescr* GetDifLevel();
