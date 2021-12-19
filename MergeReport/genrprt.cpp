@@ -27,7 +27,7 @@ void Design(RprtOpt* RO)
 
 	MaxCol = RO->Width; MaxColOld = MaxCol;
 	bool First = true;
-	
+
 	switch (RO->Style) {
 	case 'C': {
 		KpLetter = true;
@@ -45,17 +45,17 @@ label1:
 	frstOnLine = true;
 	for (size_t i = 0; i < PFldDs.size(); i++) /*while (D != nullptr)*/ {
 		PFldD* D = &PFldDs[i];
-		F = D->FldD; 
-		LTxt = F->Name.length(); 
-		LItem = F->L; 
+		F = D->FldD;
+		LTxt = F->Name.length();
+		LItem = F->L;
 		L = MaxI(LTxt, LItem);
-		if (D->IsSum) L2 = 2; 
+		if (D->IsSum) L2 = 2;
 		else L2 = 0;
 		D->NxtLine = false;
 		if (LastTT || (F->Typ == 'T') || !frstOnLine && (Col + L2 + L > MaxCol + 1)) {
-			D->NxtLine = true; 
-			NLines++; 
-			Col = 1; 
+			D->NxtLine = true;
+			NLines++;
+			Col = 1;
 			indexD1 = i; // TODO: replace with iterator
 		}
 		frstOnLine = false;
@@ -64,9 +64,9 @@ label1:
 		if ((F->Typ == 'A' || F->Typ == 'N') && (F->M == LeftJust)) D->ColTxt = Col;
 		else D->ColTxt = Col + L - LTxt;
 		if (F->Typ == 'T') {
-			D->ColItem = 1; 
-			D->ColTxt = 1; 
-			WasTT = true; 
+			D->ColItem = 1;
+			D->ColTxt = 1;
+			WasTT = true;
 			LastTT = true;
 		}
 		else LastTT = false;
@@ -94,7 +94,7 @@ label1:
 	else {
 		MaxColUsed = Col;
 		if ((MaxColUsed <= RO->Width) && (RO->Style == '?')) {
-			MaxCol = RO->Width; 
+			MaxCol = RO->Width;
 			KpLetter = false;
 		}
 	}
@@ -128,18 +128,18 @@ void WrStr(std::string& report, const char* s)
 void WrLevel(std::string& report, int Level)
 {
 	bool first; FieldDescr* f;
-	std::string s; 
+	std::string s;
 	bool b = (Level == 0) && (ARMode == _AErrRecs);
 	if (b) WrStr(report, "(warning) { noErrRecs+=1},");
-	first = true; 
+	first = true;
 	for (size_t i = 0; i < PFldDs.size(); i++) /*while (d != nullptr)*/ {
 		PFldD* d = &PFldDs[i];
 		if ((Level == 0) || d->IsSum || d->IsCtrl && (d->Level >= Level)) {
 			if (!first) WrChar(report, ',');
 			f = d->FldD;
 			s = f->Name;
-			if ((Level != 0) && d->IsSum) { 
-				s = "sum(" + s + ')'; 
+			if ((Level != 0) && d->IsSum) {
+				s = "sum(" + s + ')';
 			}
 			if (f->Typ == 'D') {
 				WrStr(report, "strdate(");
@@ -169,13 +169,13 @@ void WrLevel(std::string& report, int Level)
 		if ((CFile->Typ == '0') && (i + 1 == PFldDs.size())) {
 			WrChar(report, 0x11);
 		}
-		if (d->NxtLine) { 
+		if (d->NxtLine) {
 			WrStr(report, "\r\n");
-			col = 1; 
+			col = 1;
 		}
-		f = d->FldD; 
-		int l = f->L; 
-		int n = d->ColItem - col; 
+		f = d->FldD;
+		int l = f->L;
+		int n = d->ColItem - col;
 		col = d->ColItem + l;
 		if ((Level == 0) || d->IsSum || d->IsCtrl && (d->Level >= Level)) {
 			if ((Level != 0) && d->IsSum) { n -= 2; l += 2; }
@@ -258,25 +258,23 @@ std::string GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 	WrStr(report, CFile->Name);
 	if (RO->SK != nullptr) WrChar(report, '!');
 	WrBlks(report, 2);
-	first = true; 
-	if (!RO->Ctrl.empty()) {
-		//fl2 = RO->Ctrl[0];
-		kf = RO->SK;
-		//while (fl2 != nullptr) {
-		for (auto& f : RO->Ctrl) {
-			if (!first) WrChar(report, ',');
-			//FieldDescr* f = fl2->FldD;
-			if ((kf != nullptr) && (f == kf->FldD)) {
-				if (kf->Descend) WrChar(report, '>');
-				if (kf->CompLex) WrChar(report, '~');
-				kf = (KeyFldD*)kf->Chain;
-			}
-			else if (f->Typ == 'A') WrChar(report, '~');
-			WrStr(report, f->Name);
-			//fl2 = (FieldListEl*)fl2->Chain;
-			first = false;
+	first = true;
+	kf = RO->SK;
+
+	for (auto& f : RO->Ctrl) {
+		if (!first) WrChar(report, ',');
+		//FieldDescr* f = fl2->FldD;
+		if ((kf != nullptr) && (f == kf->FldD)) {
+			if (kf->Descend) WrChar(report, '>');
+			if (kf->CompLex) WrChar(report, '~');
+			kf = (KeyFldD*)kf->Chain;
 		}
+		else if (f->Typ == 'A') WrChar(report, '~');
+		WrStr(report, f->Name);
+		//fl2 = (FieldListEl*)fl2->Chain;
+		first = false;
 	}
+
 	if (kf != nullptr) {
 		if (!first) WrChar(report, ';'); first = true;
 		while (kf != nullptr) {
@@ -284,7 +282,7 @@ std::string GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 			if (kf->Descend) WrChar(report, '>');
 			if (kf->CompLex) WrChar(report, '~');
 			WrStr(report, kf->FldD->Name);
-			kf = (KeyFldD*)kf->Chain; 
+			kf = (KeyFldD*)kf->Chain;
 			first = false;
 		}
 	}
@@ -334,7 +332,7 @@ std::string GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 		RdMsg(18);
 		WrStr(report, "\r\n\x17");
 		WrBlks(report, (38 - MsgLine.length()) / 2);
-		WrStr(report, MsgLine); 
+		WrStr(report, MsgLine);
 		WrChar(report, 0x17);
 	}
 	if (!RO->CondTxt.empty()) {
@@ -388,7 +386,7 @@ std::string GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 		WrLevel(report, i);
 	}
 	if ((!RO->Ctrl.empty()) || (!RO->Sum.empty())) {
-		WrStr(report, "\r\n#RF (sum(1)>0) "); 
+		WrStr(report, "\r\n#RF (sum(1)>0) ");
 		WrLevel(report, NLevels + 1);
 	}
 	if (WithNRecs) {

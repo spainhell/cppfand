@@ -89,14 +89,24 @@ void ReportProc(RprtOpt* RO, bool save)
 		RunReport(RO);
 	}
 	else {
-		if (RO->WidthFrml != nullptr) RO->Width = RunInt(RO->WidthFrml);
-		if (RO->Head != nullptr) RO->HeadTxt = RunStdStr(RO->Head);
-		if (RO->UserSelFlds) PromptAutoRprt(RO);
-		else RunAutoReport(RO);
+		if (RO->WidthFrml != nullptr) {
+			RO->Width = RunInt(RO->WidthFrml);
+		}
+		if (RO->Head != nullptr) {
+			RO->HeadTxt = RunStdStr(RO->Head);
+		}
+		if (RO->UserSelFlds) {
+			PromptAutoRprt(RO);
+		}
+		else {
+			RunAutoReport(RO);
+		}
 	}
 	if (RO->Edit) md = 'T';
 	else md = 'V';
-	if (save) SaveFiles();
+	if (save) {
+		SaveFiles();
+	}
 	if (PrintView) {
 		w = PushW(1, 1, TxtCols, TxtRows);
 		SetPrintTxtPath();
@@ -113,24 +123,26 @@ void PromptAutoRprt(RprtOpt* RO)
 {
 	wwmix ww;
 
-	FieldList FL; FieldDescr* F; RprtOpt* RO2;
-	RO2 = (RprtOpt*)GetStore(sizeof(*RO)); Move(RO, RO2, sizeof(*RO));
-	FL = RO->Flds;
-	while (FL != nullptr)
-	{
-		F = FL->FldD;
+	RprtOpt* RO2;
+	RO2 = (RprtOpt*)GetStore(sizeof(*RO));
+	Move(RO, RO2, sizeof(*RO));
+	FieldList FL = RO->Flds;
+	while (FL != nullptr) {
+		FieldDescr* F = FL->FldD;
 		if ((F->Flg & f_Stored) != 0) ww.PutSelect(F->Name);
-		else
-		{
+		else {
 			pstring tmpStr = SelMark;
 			ww.PutSelect(tmpStr + F->Name);
 		}
 		FL = (FieldList)FL->Chain;
 	}
-	CFile = RO->FDL.FD; if (!ww.SelFieldList(36, true, &RO2->Flds)) return;
+	CFile = RO->FDL.FD;
+	if (!ww.SelFieldList(36, true, &RO2->Flds)) return;
 	if ((RO->FDL.Cond == nullptr) &&
 		!ww.PromptFilter("", RO2->FDL.Cond, &RO2->CondTxt)) return;
-	if (SelForAutoRprt(RO2)) RunAutoReport(RO2);
+	if (SelForAutoRprt(RO2)) {
+		RunAutoReport(RO2);
+	}
 }
 
 void AssignField(Instr_assign* PD)

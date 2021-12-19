@@ -67,6 +67,11 @@ void Screen::ScrWrChar(WORD X, WORD Y, char C, BYTE Color)
 	WriteConsoleOutput(_handle, &ci, { 1, 1 }, { 0, 0 }, &rect);
 }
 
+void Screen::ScrWrStr(std::string S, BYTE Color)
+{
+	ScrWrStr(WhereXabs(), WhereYabs(), S, Color);
+}
+
 
 void Screen::ScrWrStr(WORD X, WORD Y, std::string S, BYTE Color)
 {

@@ -376,8 +376,9 @@ WORD FieldEdit(FieldDescr* F, FrmlElem* Impl, WORD LWw, WORD iPos, std::string& 
 	Row = screen.WhereY();
 	WORD KbdChar = Event.Pressed.KeyCombination();
 	if (F->Typ == 'B') {
-		if (Txt.empty()) screen.ScrFormatWrText(Col, Row, " ");
-		else screen.ScrFormatWrText(Col, Row, "%s", Txt.c_str()); //printf("%s", Txt->c_str());
+		screen.GotoXY(Col, Row);
+		if (Txt.empty()) screen.ScrWrStr(" ", TextAttr);
+		else screen.ScrWrStr(Txt, TextAttr);
 		screen.GotoXY(Col, Row);
 		screen.CrsNorm();
 	label0:

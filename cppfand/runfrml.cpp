@@ -503,37 +503,31 @@ WORD PortIn(bool IsWord, WORD Port)
 
 LocVar* RunUserFunc(FrmlElem19* X)
 {
-	//void* oldbp; void* oldprocbp;
-	//oldbp = MyBP;
-	//oldprocbp = ProcMyBP;
-	//auto oldLVBD = LVBD;
-	//LVBD = X->FC->LVB;
-	//PushProcStk();
-	//size_t i = 0;
-	LocVar* lv = nullptr; // tady je pak ulozena posledni promenna, ktera je pak navratovou hodnotou
-	auto itr = X->FC->LVB.vLocVar.begin();
+	LocVar* return_lv = nullptr; // tady je pak ulozena posledni promenna, ktera je pak navratovou hodnotou
 	FrmlListEl* fl = X->FrmlL;
-	while (itr != X->FC->LVB.vLocVar.end()) {
-		if ((*itr)->IsPar || (*itr)->IsRetPar) {
-			LVAssignFrml(*itr, nullptr, false, fl->Frml);
+
+	for (auto& lv : X->FC->LVB.vLocVar) {
+		if (lv->IsPar || lv->IsRetPar) {
+			// parameter or return parameter variable -> assign value
+			LVAssignFrml(lv, nullptr, false, fl->Frml);
 		}
-		if ((*itr)->IsRetValue)	lv = *itr;
-		++itr;
+		else if (lv->IsRetValue) {
+			// return value -> only mark it
+			return_lv = lv;
+		}
+		else {
+			// it's local variable -> inicialize it
+			lv->B = false;
+			lv->R = 0.0;
+			lv->S = "";
+		}
 		if (fl != nullptr) fl = static_cast<FrmlListEl*>(fl->Chain);
 	}
-	//ProcMyBP = MyBP;
+
 	auto instr = X->FC->pInstr;
 	RunProcedure(instr);
 
-	//LVBD = oldLVBD;
-	/*switch (instr->Kind)
-	{
-	case _asgnloc: return lv;
-	}*/
-
-	//auto result = LVBD.vLocVar.back();
-	//ProcMyBP = (ProcStkD*)oldprocbp;
-	return lv;
+	return return_lv;
 }
 
 bool RunBool(FrmlElem* X)
@@ -847,13 +841,12 @@ double RunReal(FrmlElem* X)
 {
 	if (X == nullptr) return 0;
 
-	double R = 0.0; FileD* cf = nullptr; LockMode md; bool b = false;
+	double R = 0.0; FileD* cf = nullptr; LockMode md;
 	longint RecNo = 0; void* p = &RecNo; void* cr = nullptr;
 #ifdef FandGraph
 	ViewPortType vp; // absolute R; /*9 BYTE*/
 #endif
 	FILE* h = (FILE*)&R;
-	WORD* n = (WORD*)cf;
 	double result = 0;
 label1:
 	auto iX0 = (FrmlElem0*)X;
@@ -914,7 +907,9 @@ label1:
 		break;
 	}
 	case _divide: {
-		result = RunReal(iX0->P1) / RunReal(iX0->P2);
+		double a = RunReal(iX0->P1);
+		double b = RunReal(iX0->P2);
+		result = (b == 0.0) ? 0 : a / b;
 		break;
 	}
 	case _cond: {

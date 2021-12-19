@@ -6,7 +6,7 @@ class FieldDescr;
 class KeyFldD : public Chained // ø. 108
 {
 public:
-	KeyFldD() {};
+	KeyFldD() {}
 	KeyFldD(const KeyFldD& orig, bool copyFlds);
 	KeyFldD(BYTE* inputStr);
 	FieldDescr* FldD = nullptr;

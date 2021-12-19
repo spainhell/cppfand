@@ -60,6 +60,7 @@ public:
 
 	void ScrClr(WORD X, WORD Y, WORD SizeX, WORD SizeY, char C, BYTE Color);
 	void ScrWrChar(WORD X, WORD Y, char C, BYTE Color);
+	void ScrWrStr(std::string S, BYTE Color);
 	void ScrWrStr(WORD X, WORD Y, std::string S, BYTE Color);
 	void ScrWrFrameLn(WORD X, WORD Y, BYTE Typ, BYTE Width, BYTE Color);
 	void ScrWrText(WORD X, WORD Y, const char* S);

@@ -129,10 +129,8 @@ struct RFldD : public Chained
 
 struct BlkD : public Chained
 {
-	// BlkD* Chain;
 	FrmlElem* Bool = nullptr;
 	std::vector<FrmlElemSum*> *Sum = nullptr;
-	//char* Txt = nullptr;          /*sequence of pstrings*/
 	size_t lineLength = 0; // total length of line after printing this block
 	bool AbsLine = false, SetPage = false, NotAtEnd = false, FF1 = false, FF2 = false;
 	FrmlElem* LineBound = nullptr;
