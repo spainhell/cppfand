@@ -1405,6 +1405,14 @@ bool FieldInList(FieldDescr* F, FieldListEl* FL)
 	return result;
 }
 
+//bool FieldInList(FieldDescr* F, std::vector<FieldListEl*>& FL)
+//{
+//	bool result = false;
+//	if (std::find(FL.begin(), FL.end(), F) != FL.end())
+//		result = true;
+//	return result;
+//}
+
 bool FieldInList(FieldDescr* F, std::vector<FieldDescr*>& FL)
 {
 	bool result = false;

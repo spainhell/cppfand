@@ -48,7 +48,7 @@ void RdKeyList(EdExitD* X);
 void RdProcCall(Instr** pinstr); // muze upravit pinstr z hlavni funkce
 
 FieldListEl* RdFlds();
-FieldListEl* RdSubFldList(FieldList InFL, char Opt);
+std::vector<FieldDescr*> RdSubFldList(FieldList InFL, char Opt);
 Instr_sort* RdSortCall();
 Instr_edit* RdEditCall();
 void RdEditOpt(EditOpt* EO);

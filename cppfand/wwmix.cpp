@@ -606,6 +606,34 @@ label1:
 	return result;
 }
 
+bool wwmix::SelFieldList(WORD Nmsg, bool ImplAll, std::vector<FieldDescr*>& FLRoot)
+{
+	FLRoot.clear();
+	auto result = true;
+	if (ss.Empty) return result;
+	ss.Subset = true;
+	ss.ImplAll = ImplAll;
+	SelectStr(0, 0, Nmsg, CFile->Name);
+	if (Event.Pressed.KeyCombination() == __ESC) { return false; }
+label1:
+	std::string s = GetSelect();
+	if (!s.empty()) {
+		FieldDescr* F = CFile->FldD.front();
+		if (s[0] == (char)SelMark) s = s.substr(1, 255);
+		while (F != nullptr) {
+			if (s == F->Name) {
+				FLRoot.push_back(F);
+				goto label1;
+			}
+			else {
+				F = (FieldDescr*)F->Chain;
+			}
+		}
+		goto label1;
+	}
+	return result;
+}
+
 std::string wwmix::SelectDiskFile(std::string Path, WORD HdMsg, bool OnFace)
 {
 	std::string mask, s;

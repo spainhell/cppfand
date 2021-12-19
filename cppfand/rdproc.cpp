@@ -1390,25 +1390,23 @@ label1:
 	return FLRoot;
 }
 
-FieldListEl* RdSubFldList(FieldList InFL, char Opt)
+std::vector<FieldDescr*> RdSubFldList(FieldList InFL, char Opt)
 {
-	FieldListEl* FLRoot = nullptr;
+	std::vector<FieldListEl*> FLRoot;
+	std::vector<FieldDescr*> result;
 	FieldListEl* FL = nullptr;
 	FieldListEl* FL1 = nullptr;
 	FieldDescr* F = nullptr;
 	Accept('(');
 label1:
-	FL = new FieldListEl(); // (FieldList)GetStore(sizeof(*FL));
-
-	if (FLRoot == nullptr) { FLRoot = FL; FL->Chain = nullptr; }
-	else ChainLast(FLRoot, FL);
+	FL = new FieldListEl();
+	FLRoot.push_back(FL);
 
 	if (InFL == nullptr) F = RdFldName(CFile);
 	else {
 		TestIdentif();
 		FL1 = InFL;
-		while (FL1 != nullptr)
-		{
+		while (FL1 != nullptr) {
 			std::string tmp = LexWord;
 			if (EquUpCase(FL1->FldD->Name, tmp)) goto label2;
 			FL1 = (FieldList)FL1->Chain;
@@ -1422,7 +1420,12 @@ label1:
 	if ((Opt == 'S') && (F->FrmlTyp != 'R')) OldError(20);
 	if (Lexem == ',') { RdLex(); goto label1; }
 	Accept(')');
-	return FLRoot;
+
+	// transform to vector of FieldDescr*
+	for (auto& fld : FLRoot) {
+		result.push_back(fld->FldD);
+	}
+	return result;
 }
 
 Instr_sort* RdSortCall()
@@ -1578,7 +1581,7 @@ label2:
 	while (Lexem == ',') {
 		RdLex(); RdRprtOpt(RO, (hasfrst && (FDL->LVRecPtr == nullptr)));
 	}
-	if ((RO->Mode == _ALstg) && ((!RO->Ctrl.empty()) || (RO->Sum != nullptr)))
+	if ((RO->Mode == _ALstg) && ((!RO->Ctrl.empty()) || (!RO->Sum.empty())))
 		RO->Mode = _ARprt;
 	return PD;
 }
@@ -1614,9 +1617,7 @@ void RdRprtOpt(RprtOpt* RO, bool HasFrst)
 	}
 	else if (IsOpt("CTRL")) {
 		if (!HasFrst) goto label2;
-		// RO->Ctrl = RdSubFldList(RO->Flds, 'C');
-		auto fldList = RdSubFldList(RO->Flds, 'C');
-		RO->Ctrl.push_back(fldList);
+		RO->Ctrl = RdSubFldList(RO->Flds, 'C');
 	}
 	else if (IsOpt("SUM")) {
 		if (!HasFrst) goto label2;

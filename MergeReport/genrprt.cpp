@@ -215,25 +215,26 @@ std::string GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 
 	CFile = RO->FDL.FD;
 	ARMode = RO->Mode;
-	NLevels = RO->Ctrl.size(); // ListLength(RO->Ctrl);
+	NLevels = RO->Ctrl.size();
 	PFldDs.clear();
 	FieldListEl* fl = RO->Flds;
 	while (fl != nullptr) {
-		PFldD d = PFldD(); //(PFldD*)GetZStore(sizeof(PFldD));
+		PFldD d = PFldD();
 		FieldDescr* f = fl->FldD;
 		d.FldD = f;
 		d.IsSum = FieldInList(f, RO->Sum);
 		//FieldListEl* fl1 = RO->Ctrl;
 		int i = NLevels;
 		if (!RO->Ctrl.empty()) {
-			FieldListEl* fl1 = RO->Ctrl[0];
-			while (fl1 != nullptr) {
-				if (fl1->FldD == f) {
+			//FieldListEl* fl1 = RO->Ctrl[0];
+			//while (fl1 != nullptr) {
+			for (auto& fl1 : RO->Ctrl) {
+				if (fl1 == f) {
 					d.IsCtrl = true;
 					d.Level = i;
 				}
 				i--;
-				fl1 = (FieldListEl*)fl1->Chain;
+				//fl1 = (FieldListEl*)fl1->Chain;
 			}
 		}
 		if ((ARMode == _ATotal) && !d.IsSum && !d.IsCtrl) {
@@ -259,11 +260,12 @@ std::string GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 	WrBlks(report, 2);
 	first = true; 
 	if (!RO->Ctrl.empty()) {
-		fl = RO->Ctrl[0];
+		//fl2 = RO->Ctrl[0];
 		kf = RO->SK;
-		while (fl != nullptr) {
+		//while (fl2 != nullptr) {
+		for (auto& f : RO->Ctrl) {
 			if (!first) WrChar(report, ',');
-			FieldDescr* f = fl->FldD;
+			//FieldDescr* f = fl2->FldD;
 			if ((kf != nullptr) && (f == kf->FldD)) {
 				if (kf->Descend) WrChar(report, '>');
 				if (kf->CompLex) WrChar(report, '~');
@@ -271,7 +273,7 @@ std::string GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 			}
 			else if (f->Typ == 'A') WrChar(report, '~');
 			WrStr(report, f->Name);
-			fl = (FieldListEl*)fl->Chain;
+			//fl2 = (FieldListEl*)fl2->Chain;
 			first = false;
 		}
 	}
@@ -385,7 +387,7 @@ std::string GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 		WrChar(report, ' ');
 		WrLevel(report, i);
 	}
-	if ((!RO->Ctrl.empty()) || (RO->Sum != nullptr)) {
+	if ((!RO->Ctrl.empty()) || (!RO->Sum.empty())) {
 		WrStr(report, "\r\n#RF (sum(1)>0) "); 
 		WrLevel(report, NLevels + 1);
 	}
@@ -435,13 +437,13 @@ bool SelForAutoRprt(RprtOpt* RO)
 			if (FL->FldD->Typ != 'T') ww.PutSelect(FL->FldD->Name);
 			FL = (FieldListEl*)FL->Chain;
 		}
-		if (!ww.SelFieldList(37, false, &RO->Ctrl[0])) return result; // TODO: RO->Ctrl[0] is probably bad idea
+		if (!ww.SelFieldList(37, false, RO->Ctrl)) return result; // TODO: RO->Ctrl[0] is probably bad idea
 		FL = RO->Flds;
 		while (FL != nullptr) {
 			if (FL->FldD->FrmlTyp == 'R') ww.PutSelect(FL->FldD->Name);
 			FL = (FieldListEl*)FL->Chain;
 		}
-		if (!ww.SelFieldList(38, true, &RO->Sum)) return result;
+		if (!ww.SelFieldList(38, true, RO->Sum)) return result;  // TODO: RO->Sum[0] is probably bad idea
 	}
 	if (spec.AutoRprtPrint) {
 		RO->Path = "LPT1";
@@ -501,13 +503,13 @@ std::string SelGenRprt(pstring RprtName)
 		ww.PutSelect(fl->FldD->Name);
 		fl = (FieldListEl*)fl->Chain;
 	}
-	if (!ww.SelFieldList(37, false, &ro->Ctrl[0])) return result; // TODO: ro->Ctrl[0] is probably bad idea
+	if (!ww.SelFieldList(37, false, ro->Ctrl)) return result;
 	fl = ro->Flds;
 	while (fl != nullptr) {
 		if (fl->FldD->FrmlTyp == 'R') ww.PutSelect(fl->FldD->Name);
 		fl = (FieldListEl*)fl->Chain;
 	}
-	if (!ww.SelFieldList(38, false, &ro->Sum)) return result;
+	if (!ww.SelFieldList(38, false, ro->Sum)) return result;
 	result = GenAutoRprt(ro, false);
 	return result;
 }

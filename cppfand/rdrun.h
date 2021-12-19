@@ -108,8 +108,8 @@ struct RprtOpt
 	AutoRprtMode Mode;
 	RdbPos RprtPos;
 	FieldListEl* Flds = nullptr;		 /* != nullptr => autoreport*/
-	std::vector<FieldListEl*> Ctrl;
-	FieldListEl* Sum = nullptr;
+	std::vector<FieldDescr*> Ctrl;
+	std::vector<FieldDescr*> Sum;
 	KeyFldD* SK = nullptr;
 	FrmlElem* WidthFrml = nullptr, *Head = nullptr;
 	WORD Width = 0;

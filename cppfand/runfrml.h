@@ -39,6 +39,7 @@ std::string DecodeField(FieldDescr* F, WORD LWw);
 void RunWFrml(WRectFrml& X, BYTE WFlags, WRect& W);
 WORD RunWordImpl(FrmlElem* Z, WORD Impl);
 bool FieldInList(FieldDescr* F, FieldListEl* FL);
+//bool FieldInList(FieldDescr* F, std::vector<FieldListEl*>& FL);
 bool FieldInList(FieldDescr* F, std::vector<FieldDescr*>& FL);
 bool FieldInList(FieldDescr* F, std::vector<FieldDescr*>* FL);
 XKey* GetFromKey(LinkDPtr LD);
