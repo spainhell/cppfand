@@ -516,12 +516,12 @@ void TestIdentif()
 
 void TestLex(char X)
 {
-	if (Lexem != X) { ExpChar = X; Error(1); }
+	if ((char)Lexem != X) { ExpChar = X; Error(1); }
 }
 
 void Accept(char X)
 {
-	if (X == Lexem) {
+	if (X == (char)Lexem) {
 		RdLex();
 	}
 	else {
@@ -546,11 +546,11 @@ double ValofS(pstring& S)
 	val(S, R, I);
 	if (I != 0) {
 		R = ValDate(S, "DD.MM.YY");
-		if (R == 0) {
+		if (R == 0.0) {
 			R = ValDate(S, "DD.MM.YYYY");
-			if (R == 0) {
+			if (R == 0.0) {
 				R = ValDate(S, "mm:hh:ss.tt");
-				if (R == 0) {
+				if (R == 0.0) {
 					Error(7);
 				}
 			}

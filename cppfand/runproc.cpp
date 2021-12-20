@@ -1442,7 +1442,7 @@ void CallProcedure(Instr_proc* PD)
 
 #ifdef _DEBUG
 	std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
-	if (srcCode.find("tisknout sestavy") != std::string::npos) {
+	if (srcCode.find("(DENIK:file; VetaD:record of DENIK)begin edit(VetaD,(),mode='??") != std::string::npos) {
 		printf("");
 	}
 #endif

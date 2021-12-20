@@ -1370,7 +1370,7 @@ label2:
 	}
 	lstFD->Chain = nullptr;
 	LinkDRoot = oldLd;
-	ReleaseBoth(p, p2); E = OldE;
+	ReleaseBoth(p, p2); E = OldE; EditDRoot = E;
 	RdEStatus();
 	CRdb = RP.R;
 	PrevCompInp = nullptr;
@@ -1772,6 +1772,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 				PushEdit();
 				RdFormOrDesign(nullptr, nullptr, RP);
 				E = OldE;
+				EditDRoot = E;
 				break;
 			}
 			case 'U': {
@@ -1826,7 +1827,8 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 label1:
 	RestoreExit(er); result = false; CompileMsgOff(Buf, w);
 	ReleaseFDLDAfterChpt(); PrevCompInp = nullptr;
-	ReleaseBoth(p, p2); E = OldE; CFile = Chpt;
+	ReleaseBoth(p, p2); E = OldE; EditDRoot = E;
+	CFile = Chpt;
 	if (!Run) CRecPtr = E->NewRecPtr;
 	if (!IsCompileErr) { InpRdbPos.IRec = I; }
 	return result;

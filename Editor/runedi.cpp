@@ -48,6 +48,7 @@ bool HasIndex, HasTF, NewDisplLL;
 void PopEdit()
 {
 	E = (EditD*)E->Chain;
+	EditDRoot = E;
 }
 
 bool TestIsNewRec()

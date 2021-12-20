@@ -23,6 +23,7 @@ void PushEdit()
 	}
 	e1->Chain = E;
 	E = e1;
+	EditDRoot = E;
 }
 
 void SToSL(StringListEl** SLRoot, pstring s)
