@@ -327,7 +327,7 @@ double RealFromFix(void* FixNo, WORD FLen)
 	}
 	rr[DblS - 1] = (rr[DblS - 1] & 0x0F) + ((exp & 0x0F) << 4);
 	rr[DblS] = exp >> 4;
-	if (neg) rr[DblS] = rr[DblS] || 0x80;
+	if (neg) rr[DblS] = rr[DblS] | 0x80;
 	return *(double*)&rr[1];
 }
 

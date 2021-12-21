@@ -287,7 +287,7 @@ double DifWDays(double R1, double R2, WORD d)
 	if ((x1 >= 697248.0 /*1910*/) && (x2 <= 748383.0 /*2050*/))
 		while (x1 <= x2) {
 			if (TypeDay(x1) == d) N++;
-			x1 = x1 + 1;
+			x1++;
 		}
 	if (neg) N = -N;
 	return int(N);
