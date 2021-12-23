@@ -322,13 +322,11 @@ label1:
 		}
 		break;
 	}
-	case '{':
-	{
+	case '{': {
 		ReadChar();
 		if (ForwChar == '$') {
 			n = RdDirective(b);
-			switch (n)
-			{
+			switch (n) {
 			case 0: break;
 			case 1: {
 				SwitchLevel++;
@@ -336,12 +334,18 @@ label1:
 				break;
 			}
 			case 5: {
-				ci = (CompInpD*)GetStore2(sizeof(CompInpD));
-				Move(PrevCompInp, ci, sizeof(CompInpD));
+				if (PrevCompInp == nullptr) {
+					ci = new CompInpD();
+				}
+				else {
+					ci = new CompInpD(); // (CompInpD*)GetStore2(sizeof(CompInpD));
+					*ci = *PrevCompInp; // Move(PrevCompInp, ci, sizeof(CompInpD));
+				}
 				PrevCompInp = ci;
-				SetInpTT(&ChptIPos, true); break; }
-			default:
-			{
+				SetInpTT(&ChptIPos, true);
+				break;
+			}
+			default: {
 				if (SwitchLevel == 0) Error(159);
 				if (n == 3) SkipLevel(false);
 				else SwitchLevel--;
@@ -385,7 +389,10 @@ label1:
 				ReadChar();
 				if (ForwChar == 0x0A) ReadChar(); // ^J = LF = 010 = 0x0A
 			}
-			else { ReadChar(); goto label1; }
+			else {
+				ReadChar();
+				goto label1;
+			}
 			break;
 		}
 		break;
@@ -1356,7 +1363,7 @@ label1:
 	RdLex();
 	result = k;
 	return result;
-	}
+}
 
 void SrchZ(FrmlElem* Z);
 

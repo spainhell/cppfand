@@ -253,32 +253,39 @@ label1:
 
 void RdByteList(pstring* s)
 {
-	integer i, i1, i2, l;
-	Accept('('); l = 0;
-label1:
-	i1 = RdInteger();
-	i2 = i1;
-	if (i1 < 0) OldError(133);
-	if (Lexem == _subrange) {
-		RdLex();
-		i2 = RdInteger();
-		if (i2 < i1) OldError(133);
+	Accept('(');
+	integer l = 0;
+
+	while (true) {
+		integer i1 = RdInteger();
+		integer i2 = i1;
+		if (i1 < 0) OldError(133);
+		if (Lexem == _subrange) {
+			RdLex();
+			i2 = RdInteger();
+			if (i2 < i1) OldError(133);
+		}
+		if ((i2 > 255) || (l + i2 - i1 >= 255)) OldError(133);
+		for (integer i = i1; i < i2; i++) {
+			l++;
+			(*s)[l] = (char)i;
+		}
+		if (Lexem == ',') {
+			RdLex();
+			continue;
+		}
+		break;
 	}
-	if ((i2 > 255) || (l + i2 - i1 >= 255)) OldError(133);
-	for (i = i1; i < i2; i++)
-	{
-		l++;
-		s[l] = char(i);
-	}
-	if (Lexem == ',') { RdLex(); goto label1; }
-	s[0] = char(l);
+
+	(*s)[0] = (char)l;
 	Accept(')');
 }
 
 void RdByteListInStore()
 {
 	pstring s;
-	RdByteList(&s); StoreStr(s);
+	RdByteList(&s);
+	StoreStr(s);
 }
 
 bool RdUserView(std::string ViewName, EditOpt* EO)

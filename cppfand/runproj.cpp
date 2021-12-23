@@ -1826,7 +1826,8 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 	return result;
 label1:
 	RestoreExit(er); result = false; CompileMsgOff(Buf, w);
-	ReleaseFDLDAfterChpt(); PrevCompInp = nullptr;
+	ReleaseFDLDAfterChpt();
+	PrevCompInp = nullptr;
 	ReleaseBoth(p, p2); E = OldE; EditDRoot = E;
 	CFile = Chpt;
 	if (!Run) CRecPtr = E->NewRecPtr;
