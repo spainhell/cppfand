@@ -511,7 +511,7 @@ void* RdFileD(std::string FileName, char FDTyp, std::string Ext)
 		CFile->Name = FileName;
 		CFile->IsJournal = true;
 		SetHCatTyp(FDTyp);
-		if (PrevCompInp != nullptr) {
+		if (!PrevCompInp.empty()) {
 			CFile->ChptPos = OrigInp()->InpRdbPos;
 		}
 		SetInpStr(JournalFlds);
@@ -1090,12 +1090,11 @@ void GetXFileD()
 
 CompInpD* OrigInp()
 {
-	if (PrevCompInp == nullptr) {
+	if (PrevCompInp.empty()) {
 		return nullptr;
 	}
-	CompInpD* i = PrevCompInp;
-	while (i->ChainBack != nullptr) {
-		i = i->ChainBack;
+	else
+	{
+		return &PrevCompInp.front();
 	}
-	return i;
 }

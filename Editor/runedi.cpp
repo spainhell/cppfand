@@ -2168,9 +2168,10 @@ void UpwEdit(LinkD* LkD)
 	void* p = nullptr;
 	std::string s;
 	std::string s1, s2; XString x; XString* px = nullptr;
-	FieldDPtr F = nullptr; KeyFldDPtr KF = nullptr;
+	FieldDescr* F = nullptr; KeyFldD* KF = nullptr;
 	XKey* K = nullptr; EditOpt* EO = nullptr;
-	WORD Brk; FileDPtr ToFD = nullptr; StringList SL, SL1; LinkDPtr LD = nullptr;
+	WORD Brk; FileD* ToFD = nullptr;
+	StringListEl* SL, *SL1; LinkD* LD = nullptr;
 	longint w; bool b;
 	MarkStore(p);
 	w = PushW1(1, 1, TxtCols, TxtRows, true, true);
@@ -2183,7 +2184,7 @@ void UpwEdit(LinkD* LkD)
 			if ((LD->FromFD == CFile) && ForNavigate(ToFD)) {
 				s = "";
 				std::string rn = LD->RoleName;
-				if (ToFD->Name != rn) { s = "." + (std::string)LD->RoleName; }
+				if (ToFD->Name != rn) { s = "." + LD->RoleName; }
 				SL = ToFD->ViewNames;
 				do {
 					s1 = GetFileViewName(ToFD, &SL) + s;
@@ -2196,8 +2197,9 @@ void UpwEdit(LinkD* LkD)
 		ss.Abcd = true;
 		ww.SelectStr(0, 0, 35, "");
 		if (Event.Pressed.KeyCombination() == __ESC) goto label1;
-		GetSel2S(&s1, &s2, '.', 2); LD = LinkDRoot;
-		while (!((LD->FromFD == CFile) && EquRoleName(s2, LD) && EquFileViewName(LD->ToFD, s1, EO)))
+		GetSel2S(&s1, &s2, '.', 2);
+		LD = LinkDRoot;
+		while (LD != nullptr && !(LD->FromFD == CFile && EquRoleName(s2, LD) && EquFileViewName(LD->ToFD, s1, EO)))
 			LD = LD->Chain;
 	}
 	else {
@@ -2209,7 +2211,7 @@ void UpwEdit(LinkD* LkD)
 		SL1 = nullptr;
 		while (SL != nullptr) {
 			if (TestAccRight(SL)) SL1 = SL;
-			SL = (StringList)SL->Chain;
+			SL = (StringListEl*)SL->Chain;
 		}
 		if (SL1 == nullptr) EO->Flds = AllFldsList(CFile, false);
 		else RdUserView(SL1->S, EO);

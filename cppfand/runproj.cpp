@@ -1373,7 +1373,7 @@ label2:
 	ReleaseBoth(p, p2); E = OldE; EditDRoot = E;
 	RdEStatus();
 	CRdb = RP.R;
-	PrevCompInp = nullptr;
+	PrevCompInp.clear();
 	ReadRec(CFile, CRec(), CRecPtr);
 	if (IsCompileErr) result = false;
 	else {
@@ -1827,7 +1827,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 label1:
 	RestoreExit(er); result = false; CompileMsgOff(Buf, w);
 	ReleaseFDLDAfterChpt();
-	PrevCompInp = nullptr;
+	PrevCompInp.clear();
 	ReleaseBoth(p, p2); E = OldE; EditDRoot = E;
 	CFile = Chpt;
 	if (!Run) CRecPtr = E->NewRecPtr;

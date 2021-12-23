@@ -56,7 +56,7 @@ void CodingRdb::CompressTxt(WORD IRec, LongStr* s, char Typ)
 
 	InpArrLen = s->LL;
 	InpArrPtr = (BYTE*)s->A;
-	PrevCompInp = nullptr;
+	PrevCompInp.clear();
 	if (InpArrLen == 0) ForwChar = 0x1A;
 	else ForwChar = InpArrPtr[1];
 	CurrPos = 1;
@@ -96,9 +96,8 @@ void CodingRdb::CompressTxt(WORD IRec, LongStr* s, char Typ)
 label1:
 	switch (ForwChar) {
 	case '0x1A': {
-		if (PrevCompInp != nullptr) {
-			ci = PrevCompInp;
-			Move(ci->ChainBack, PrevCompInp, sizeof(CompInpD));
+		if (!PrevCompInp.empty()) {
+			PrevCompInp.pop_back();
 			if (CurrPos <= InpArrLen) ForwChar = InpArrPtr[CurrPos];
 			goto label1;
 		}
@@ -123,10 +122,7 @@ label1:
 				if (!b) SkipLevel(true);
 			}
 			case 5: {
-				ci = new CompInpD(); // GetStore2(sizeof(CompInpD));
-				//Move(PrevCompInp, ci, sizeof(CompInpD));
-				*ci = *PrevCompInp;
-				PrevCompInp = ci;
+				PrevCompInp.emplace_back(CompInpD());
 				SetInpTT(&ChptIPos, true);
 			}
 

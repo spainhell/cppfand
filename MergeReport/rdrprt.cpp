@@ -209,8 +209,7 @@ bool OwnInBlock(char& FTyp, FrmlElem** res)
 	// while (RF != nullptr) {
 	for (auto rf : CBlk->ReportFields) {
 		std::string sLexWord = LexWord;
-		if (EquUpCase(rf->Name, sLexWord))
-		{
+		if (EquUpCase(rf->Name, sLexWord)) {
 			RdLex();
 			FTyp = rf->FrmlTyp;
 			*res = rf->Frml;
@@ -626,8 +625,7 @@ label0:
 		SkipBlank(false);
 		if (ForwChar == ':') {
 			TestIdentif();
-			GetStore(LexWord.length());
-			Move(&LexWord, &RF->Name, LexWord.length() + 1);
+			RF->Name = LexWord;
 			if (FindInLvBlk(LstLvM, DummyB, RF1) || FindLocVar(&LVBD, &LV)) Error(26);
 			RdLex();
 			Accept(_assign);
@@ -863,9 +861,14 @@ void TestSetRFTyp(char Typ, bool RepeatedGrp, RFldD* RF)
 
 void TestSetBlankOrWrap(bool RepeatedGrp, char UC, RFldD* RF)
 {
-	if (RF->Typ == 'R' || RF->Typ == 'F' || RF->Typ == 'S')
-		if (!RepeatedGrp) RF->BlankOrWrap = (UC == '@');
-		else { if (RF->BlankOrWrap && (UC == '_')) Error(73); }
+	if (RF->Typ == 'R' || RF->Typ == 'F' || RF->Typ == 'S') {
+		if (!RepeatedGrp) {
+			RF->BlankOrWrap = (UC == '@');
+		}
+		else {
+			if (RF->BlankOrWrap && (UC == '_')) Error(73);
+		}
+	}
 	else if (UC == '@') Error(80);
 }
 

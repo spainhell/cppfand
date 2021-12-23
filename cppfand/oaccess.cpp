@@ -530,14 +530,14 @@ WORD TestMountVol(char DriveC)
 		}
 	}
 
-	const std::string MountedVolD = MountedVol[D];
+	const std::string MountedVolD = MountedVol[D - 1];
 		if (CVol.empty() || SEquUpcase(MountedVolD, CVol)) {
 		goto label3;
 	}
 	
 	Drive[1] = DriveC;
 	if (ActiveRdbOnDrive(D)) {
-		SetMsgPar(Drive, CVol, MountedVol[D]);
+		SetMsgPar(Drive, CVol, MountedVol[D - 1]);
 		RunError(812);
 	}
 	Vol = CVol;
@@ -564,7 +564,7 @@ label1:
 	//	SetMsgPar(S.Name); WrLLF10Msg(817); goto label1;
 	//}
 // label2:
-	MountedVol[D] = CVol;
+	MountedVol[D - 1] = CVol;
 label3:
 	return D;
 }

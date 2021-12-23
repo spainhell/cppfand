@@ -70,7 +70,8 @@ extern BYTE ForwChar, ExpChar, Lexem;
 extern pstring LexWord;
 
 extern bool SpecFDNameAllowed, IdxLocVarAllowed, FDLocVarAllowed, IsCompileErr;
-extern CompInpD* PrevCompInp;						// { saved at "include" }
+//extern CompInpD* PrevCompInp;						// { saved at "include" }
+extern std::deque<CompInpD> PrevCompInp;						// { saved at "include" }
 extern BYTE* InpArrPtr; extern RdbPos InpRdbPos;		// { "  "  }
 extern size_t InpArrLen;
 extern size_t CurrPos;

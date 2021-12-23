@@ -413,11 +413,10 @@ void TxtCtrlJ(CopyD* CD)
 
 	if (CD->Append) m = InOutMode::_append;
 	try {
-		char c;
 		F1 = new ThFile(CD->Path1, CD->CatIRec1, InOutMode::_inp, 0, nullptr);
 		F2 = new ThFile(CD->Path2, CD->CatIRec2, m, 0, F2);
 
-		c = F1->RdChar();
+		char c = F1->RdChar();
 		while (!F1->eof) {
 			switch (c) {
 			case '\r': {
@@ -425,8 +424,13 @@ void TxtCtrlJ(CopyD* CD)
 				F2->WrChar('\n');
 				break;
 			}
-			case '\n': break;
-			default: F2->WrChar(c);
+			case '\n': {
+				break;
+			}
+			default: {
+				F2->WrChar(c);
+				break;
+			}
 			}
 			c = F1->RdChar();
 		}

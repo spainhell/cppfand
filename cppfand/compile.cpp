@@ -51,7 +51,7 @@ void Error(integer N)
 	ClearKbdBuf();
 	size_t l = InpArrLen;
 	WORD i = CurrPos;
-	if (IsTestRun && (PrevCompInp != nullptr && InpRdbPos.R != CRdb /* 0xinclude higher Rdb*/
+	if (IsTestRun && (!PrevCompInp.empty() && InpRdbPos.R != CRdb /* 0xinclude higher Rdb*/
 		|| InpRdbPos.R == nullptr) /* TODO: ptr(0, 1)*/ /*LongStr + ShowErr*/
 		&& StoreAvail() > l + TxtCols * TxtRows * 2 + 50)
 	{
@@ -61,7 +61,7 @@ void Error(integer N)
 		TextAttr = screen.colors.tNorm;
 		char* p = new char[l]; // GetStore(l);
 		memcpy(p, InpArrPtr, l);
-		if (PrevCompInp != nullptr) {
+		if (!PrevCompInp.empty()) {
 			RdMsg(63);
 		}
 		else {
@@ -314,9 +314,8 @@ label1:
 	switch (ForwChar)
 	{
 	case 0x1A: {
-		if (PrevCompInp != nullptr) {
-			ci = PrevCompInp;
-			Move(ci->ChainBack, PrevCompInp, sizeof(CompInpD));
+		if (!PrevCompInp.empty()) {
+			PrevCompInp.pop_back();
 			if (CurrPos <= InpArrLen) ForwChar = InpArrPtr[CurrPos];
 			goto label1;
 		}
@@ -334,14 +333,7 @@ label1:
 				break;
 			}
 			case 5: {
-				if (PrevCompInp == nullptr) {
-					ci = new CompInpD();
-				}
-				else {
-					ci = new CompInpD(); // (CompInpD*)GetStore2(sizeof(CompInpD));
-					*ci = *PrevCompInp; // Move(PrevCompInp, ci, sizeof(CompInpD));
-				}
-				PrevCompInp = ci;
+				PrevCompInp.emplace_back(CompInpD());
 				SetInpTT(&ChptIPos, true);
 				break;
 			}

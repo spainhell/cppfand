@@ -1664,7 +1664,7 @@ void ResetCompilePars()
 	FileVarsAllowed = true;
 	FDLocVarAllowed = false;
 	IdxLocVarAllowed = false;
-	PrevCompInp = nullptr;
+	PrevCompInp.clear();
 }
 
 std::string TranslateOrd(std::string text)

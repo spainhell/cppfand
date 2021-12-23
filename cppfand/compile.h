@@ -12,7 +12,7 @@ struct stSaveState
 	BYTE ForwChar = 0; BYTE ExpChar = 0; BYTE Lexem = 0;
 	pstring LexWord;
 	bool SpecFDNameAllowed = false, IdxLocVarAllowed = false, FDLocVarAllowed = false, IsCompileErr = false;
-	CompInpD* PrevCompInp = nullptr;
+	std::deque<CompInpD> PrevCompInp;
 	BYTE* InpArrPtr = nullptr; RdbPos InpRdbPos;
 	WORD InpArrLen = 0, CurrPos = 0, OldErrPos = 0;
 	std::vector<FrmlElemSum*> *FrmlSumEl = nullptr;
