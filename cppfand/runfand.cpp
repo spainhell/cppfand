@@ -327,30 +327,33 @@ bool SetTopDir(std::string& p, std::string& n)
 	std::string e;
 	ExitRecord er;
 	auto result = false;
-	FSplit(FExpand(p), TopRdbDir, n, e);
-	if (!IsIdentifStr(n)) {
-		WrLLF10Msg(881);
-		return result;
+	try {
+		FSplit(FExpand(p), TopRdbDir, n, e);
+		if (!IsIdentifStr(n)) {
+			WrLLF10Msg(881);
+			return result;
+		}
+		EditDRoot = nullptr; LinkDRoot = nullptr; FuncDRoot = nullptr;
+		TopDataDir = GetEnv("FANDDATA");
+		DelBackSlash(TopRdbDir);
+		DelBackSlash(TopDataDir);
+		if (TopDataDir != "") TopDataDir = FExpand(TopDataDir);
+		ChDir(TopRdbDir);
+		if (IOResult() != 0) {
+			SetMsgPar(p);
+			WrLLF10Msg(703);
+			return result;
+		}
+		CatFDName = n;
+		//NewExit(Ovr(), er);
+		//goto label1;
+		CFile = CatFD;
+		OpenF(Exclusive);
+		result = true;
 	}
-	EditDRoot = nullptr; LinkDRoot = nullptr; FuncDRoot = nullptr;
-	TopDataDir = GetEnv("FANDDATA");
-	DelBackSlash(TopRdbDir);
-	DelBackSlash(TopDataDir);
-	if (TopDataDir != "") TopDataDir = FExpand(TopDataDir);
-	ChDir(TopRdbDir);
-	if (IOResult() != 0) {
-		SetMsgPar(p);
-		WrLLF10Msg(703);
-		return result;
+	catch (std::exception& e) {
+		RestoreExit(er);
 	}
-	CatFDName = n;
-	//NewExit(Ovr(), er);
-	//goto label1;
-	CFile = CatFD;
-	OpenF(Exclusive);
-	result = true;
-label1:
-	RestoreExit(er);
 	return result;
 }
 
@@ -542,8 +545,7 @@ void InitRunFand()
 	OpenWorkH();
 	OpenFANDFiles(false);
 
-	if (paramstr.size() > 1 && !paramstr.at(1).empty() && paramstr.at(1) != "?")
-	{
+	if (paramstr.size() > 1 && !paramstr.at(1).empty() && paramstr.at(1) != "?") {
 #ifndef FandRunV
 		if (paramstr.size() > 2 && SEquUpcase(paramstr[2], "D")) {
 			IsTestRun = true;
