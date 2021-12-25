@@ -54,25 +54,35 @@ std::vector<std::string> GetAllLines(std::string& input, size_t maxLineLen, bool
 }
 
 /// odstrani znaky na konci retezce
-std::string TrailChar(std::string& input, char c)
+std::string TrailChar(std::string& input, char c_old, char n_new)
 {
 	size_t Count = 0;
 	for (int i = (int)input.length() - 1; i >= 0; i--) {
-		if (input[i] == c) Count++;
+		if (input[i] == c_old) Count++;
 		else break;
 	}
-	return input.substr(0, input.length() - Count);
+	if (n_new == '\0') {
+		return input.substr(0, input.length() - Count);
+	}
+	else {
+		return input.substr(0, input.length() - Count) + RepeatString(n_new, Count);
+	}
 }
 
 /// odstrani znaky na zacatku retezce
-std::string LeadChar(std::string& input, char c)
+std::string LeadChar(std::string& input, char c_old, char n_new)
 {
 	size_t startIndex = 0;
 	for (size_t i = 0; i < input.length(); i++) {
-		if (input[i] == c) startIndex++;
+		if (input[i] == c_old) startIndex++;
 		else break;
 	}
-	return input.substr(startIndex);
+	if (n_new == '\0') {
+		return input.substr(startIndex);
+	}
+	else {
+		return RepeatString(n_new, startIndex) + input.substr(startIndex);
+	}
 }
 
 std::string AddTrailChars(std::string& input, char c, size_t totalLength)
@@ -198,6 +208,23 @@ unsigned short CountDLines(void* Buf, unsigned short L, char C)
 {
 	std::string s = std::string((char*)Buf, L);
 	return (unsigned short)CountLines(s, C);
+}
+
+std::vector<std::string> SplitString(const std::string& input, char delimiter)
+{
+	std::vector<std::string> vStr;
+	size_t nextStart = 0;
+	for (size_t i = 0; i < input.length(); i++)	{
+		if (input[i] == delimiter) {
+			std::string nStr = input.substr(nextStart, i - nextStart);
+			if (!nStr.empty()) {
+				vStr.push_back(nStr);
+			}
+			nextStart = i + 1;
+		}
+	}
+	std::string nStr = input.substr(nextStart, input.length() - nextStart);
+	return vStr;
 }
 
 //pstring GetDLine(void* Buf, WORD L, char C, WORD I) // I = 1 .. N

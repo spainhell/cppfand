@@ -41,6 +41,13 @@ string parentDirectory(string path)
 	return result + '\\';
 }
 
+string getDirectory(string fullPath)
+{
+	fs::path p = fullPath;
+	p.remove_filename();
+	return p.generic_string();
+}
+
 vector<string> directoryItems(const string& path, string mask)
 {
 	vector<string> result;

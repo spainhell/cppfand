@@ -20,6 +20,7 @@
 #include "../Editor/OldEditor.h"
 #include "../Editor/runedi.h"
 #include "../textfunc/textfunc.h"
+#include "../FileSystem/directory.h"
 
 
 void ScrGraphMode(bool Redraw, WORD OldScrSeg)
@@ -426,6 +427,9 @@ void InitRunFand()
 	//WasInitDrivers = true;
 	InitAccess();
 
+	FandDir = getDirectory(paramstr[0]);
+	printf("FAND DIR:    %s\n", FandDir.c_str());
+
 	const unsigned long maxDir = 260;
 	char currentDir[maxDir];
 	GetCurrentDirectory(maxDir, currentDir);
@@ -449,15 +453,17 @@ void InitRunFand()
 		wait();
 		return; // pùvodnì wait;
 	}
+
 	WrkDir = GetEnv("FANDWORK");
 	if (WrkDir.empty()) WrkDir = FandDir;
 	AddBackSlash(WrkDir);
 	s = WrkDir + "FANDWORK";
+	printf("FANDWORK DIR: %s\n", s.c_str());
 	FandWorkName = s + ".$$$";
 	FandWorkXName = s + ".X$$";
 	FandWorkTName = s + ".T$$";
+
 	LANNode = 0;
-	printf("FANDWORK DIR: %s\n", s.c_str());
 	s = GetEnv("LANNODE");
 	s = TrailChar(s, ' ');
 	if (!s.empty()) {
@@ -471,6 +477,8 @@ void InitRunFand()
 #endif 
 	}
 	printf("LANNODE: %s\n", s.c_str());
+
+
 	h = ResFile.Handle;
 	ReadH(h, 2, &n);
 	if (n != ResVersion) {

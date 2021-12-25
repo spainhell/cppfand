@@ -154,7 +154,7 @@ WORD GetFileAttr();
 void RdWrCache(bool ReadOp, FILE* Handle, bool NotCached, longint Pos, WORD N, void* Buf);
 void MyDeleteFile(pstring path);
 void RenameFile56(pstring OldPath, pstring NewPath, bool Msg);
-std::string MyFExpand(pstring Nm, pstring EnvName);
+std::string MyFExpand(std::string Nm, std::string EnvName);
 
 // *** DISPLAY ***
 

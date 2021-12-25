@@ -1776,20 +1776,18 @@ label1:
 	}
 	case _leadchar: {
 		auto iX0 = (FrmlElem0*)X;
-		auto s0 = RunLongStr(iX0->P1);
-		auto s = LongLeadChar((char)iX0->N11, (char)iX0->N12, s0);
-		result = std::string(s->A, s->LL);
-		delete s;
+		char c = iX0->N11;
+		char cnew = iX0->N12;
+		auto sp1 = RunStdStr(iX0->P1);
+		result = LeadChar(sp1, c, cnew);
 		break;
 	}
 	case _trailchar: {
 		auto iX0 = (FrmlElem0*)X;
 		char c = iX0->N11;
 		char cnew = iX0->N12;
-		auto sp1 = RunLongStr(iX0->P1);
-		auto s = LongTrailChar(c, cnew, sp1);
-		result = std::string(s->A, s->LL);
-		delete s;
+		auto sp1 = RunStdStr(iX0->P1);
+		result = TrailChar(sp1, c, cnew);
 		break;
 	}
 	case _upcase: {
@@ -2214,9 +2212,9 @@ double RoundReal(double RR, integer M)
 
 LongStr* LongLeadChar(char C, char CNew, LongStr* S)
 {
-	WORD i = 1;
+	WORD i = 0;
 	WORD l = S->LL;
-	while (i <= l) {
+	while (i < l) {
 		if (S->A[i] != C) goto label1;
 		if (CNew != 0) S->A[i] = CNew; i++;
 	}

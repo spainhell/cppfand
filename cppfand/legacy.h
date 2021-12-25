@@ -29,6 +29,7 @@ WORD succ(WORD input);
 void FSplit(pstring fullname, pstring& dir, pstring& name, pstring& ext);
 void FSplit(const std::string& fullname, std::string& dir, std::string& name, std::string& ext);
 pstring FSearch(pstring& path, pstring& dirlist);
+std::string FSearch(const std::string path, const std::string dirlist);
 std::string FExpand(std::string path);
 
 void ChDir(std::string cesta);
@@ -73,7 +74,7 @@ void beep();
 
 extern BYTE OvrResult; // vždy 0 OvrOK
 
-pstring GetEnv(const char* name);
+std::string GetEnv(const char* name);
 
 WORD IOResult();
 WORD DosError();

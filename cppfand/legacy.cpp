@@ -3,11 +3,15 @@
 #include "windows.h"
 #include <ctime>
 #include <direct.h>
+#include <filesystem>
+
 #include "base.h"
 #include <iostream>
 #include <fstream>
 
 #include "GlobalVariables.h"
+#include "../textfunc/textfunc.h"
+#include "../FileSystem/directory.h"
 
 std::vector<std::string> paramstr;
 longint ExitCode = 0; // exit kód -> OS
@@ -221,6 +225,23 @@ void FSplit(pstring fullname, pstring& dir, pstring& name, pstring& ext)
 
 void FSplit(const std::string& fullname, std::string& dir, std::string& name, std::string& ext)
 {
+	std::filesystem::path pth = fullname;
+	bool isDir = is_directory(pth);
+
+	if (isDir) {
+		dir = pth.generic_string();
+		name = "";
+		ext = "";
+	}
+	else
+	{
+		name = pth.stem().string();
+		ext = pth.extension().string();
+		dir = pth.generic_string().substr(0, pth.generic_string().length() - name.length() - ext.length());
+	}
+
+	return;
+
 	size_t foundBackslash = fullname.find_last_of("/\\");
 	dir = fullname.substr(0, foundBackslash + 1);
 
@@ -290,6 +311,22 @@ pstring FSearch(pstring& path, pstring& dirlist)
 	//	}
 	//}
 	return path;
+}
+
+std::string FSearch(const std::string path, const std::string dirlist)
+{
+	std::string result;
+
+	auto dirs = SplitString(dirlist, ';');
+	for (auto& d : dirs) {
+		AddBackSlash(d);
+		auto fullpath = d + path;
+		if (fileExists(fullpath) == 0) {
+			result = fullpath;
+			break;
+		}
+	}
+	return result;
 }
 
 std::string FExpand(std::string path)
@@ -432,12 +469,21 @@ void beep()
 {
 }
 
-pstring GetEnv(const char* name)
+std::string GetEnv(const char* name)
 {
-	size_t value = 0;
-	char buffer[256];
-	getenv_s(&value, buffer, 256, name);
-	return pstring(buffer);
+	std::string result;
+	size_t requiredSize = 0;
+	getenv_s(&requiredSize, NULL, 0, name);
+	if (requiredSize == 0)
+	{
+		result = "";
+	}
+	else {
+		auto buffer = std::make_unique<char[]>(requiredSize * sizeof(char));
+		getenv_s(&requiredSize, buffer.get(), requiredSize, name);
+		result = std::string(buffer.get());
+	}
+	return result;
 }
 
 WORD IOResult()

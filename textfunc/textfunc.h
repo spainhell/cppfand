@@ -7,11 +7,11 @@
 /// rozdeli vstup na jednotlive radky podle CR, LF nebo max. delky radku (0 = neomezeno); zohlednuje tisknutelne znaky
 std::vector<std::string> GetAllLines(std::string& input, size_t maxLineLen = 0, bool skipLastEmptyLine = false);
 
-/// odstrani zadane znaky na konci retezce
-std::string TrailChar(std::string& input, char c);
+/// odstrani nebo nahradi zadane znaky na konci retezce
+std::string TrailChar(std::string& input, char c_old, char c_new = '\0');
 
-/// odstrani zadane znaky na zacatku retezce
-std::string LeadChar(std::string& input, char c);
+/// odstrani nebo nahradi zadane znaky na zacatku retezce
+std::string LeadChar(std::string& input, char c_old, char c_new = '\0');
 
 /// prida zadane znaky na konec retezce
 std::string AddTrailChars(std::string& input, char c, size_t totalLength);
@@ -39,3 +39,5 @@ size_t ReplaceChar(std::string& text, char oldChar, char newChar);
 // old functions:
 unsigned short CountDLines(void* Buf, unsigned short L, char C); // r139 ASM
 //pstring GetDLine(void* Buf, WORD L, char C, WORD I); // r144 ASM
+
+std::vector<std::string> SplitString(const std::string& str, char delimiter);

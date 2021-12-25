@@ -338,16 +338,22 @@ bool CacheLocked = false; // r510
 void AddBackSlash(std::string& s)
 {
 	if (s.empty()) { return; }
-	if (s[s.length()] == '\\') return;
-	s += '\\';
+	if (s[s.length()] == '\\' || s[s.length()] == '/') return;
+
+	if (s.find('\\') != std::string::npos) {
+		s += '\\';
+	}
+	else {
+		s += '/';
+	}
 }
 
 void DelBackSlash(std::string& s)
 {
 	if (s.empty()) return;
-	if (s[s.length() - 1] != '\\') return;
-	s.erase(s.length() - 1, 1);
-	//s[0] = s.length() - 1;
+	if (s[s.length() - 1] == '\\' || s[s.length() - 1] == '/') {
+		s.erase(s.length() - 1, 1);
+	}
 }
 
 pstring StrPas(const char* Src)
@@ -1258,22 +1264,22 @@ void RenameFile56(pstring OldPath, pstring NewPath, bool Msg)
 	}
 }
 
-std::string MyFExpand(pstring Nm, pstring EnvName)
+std::string MyFExpand(std::string Nm, std::string EnvName)
 {
-	pstring d;
-	GetDir(0, &d);
+	std::string d = GetDir(0);
 	std::string f = FandDir;
 	DelBackSlash(f);
-	ChDir(f);
+	//ChDir(f);
 	std::string p = GetEnv(EnvName.c_str());
 	AddBackSlash(p);
 	if (!p.empty()) p += Nm;
 	else {
-		pstring envp = GetEnv("PATH");
-		p = FSearch(Nm, envp);
+		std::string envp = GetEnv("PATH");
+		p = FSearch(Nm, f + ";" + envp);
 		if (p.empty()) p = Nm;
 	}
-	ChDir(d);
+	std::string result = FExpand(p);
+	//ChDir(d);
 	return p;
 }
 
@@ -1650,6 +1656,6 @@ void NonameStartFunction()
 	ExitProc = MyExit;
 	MyBP = nullptr;
 	// integer UserLicNr = WORD(UserLicNrShow) & 0x7FFF;
-	FandResName = MyFExpand("Fand.Res", "FANDRES");
+	FandResName = MyFExpand("FAND.RES", "FANDRES");
 	OpenResFile();
 }
