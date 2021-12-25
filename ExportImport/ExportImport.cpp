@@ -581,7 +581,9 @@ void Backup(bool IsBackup, bool NoCompress, WORD Ir, bool NoCancel)
 
 void BackupM(Instr_backup* PD)
 {
-	ExitRecord er; LongStr* s = nullptr; void* p = nullptr;
+	ExitRecord er;
+	LongStr* s = nullptr;
+	void* p = nullptr;
 
 	MarkStore(p);
 	if (PD->IsBackup) s = RunLongStr(PD->bmMasks);

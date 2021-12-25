@@ -213,23 +213,23 @@ bool Link(AddD* AD, longint& N, char& Kind2)
 #endif
 			) {
 			IncNRecs(1);
-				WriteRec(CFile, 1, CRecPtr);
-	}
+			WriteRec(CFile, 1, CRecPtr);
+		}
 		return result;
-}
+	}
 	Kind2 = '+';
-		if ((AD->Create == 2) || (AD->Create == 1) && PromptYN(132)) {
+	if ((AD->Create == 2) || (AD->Create == 1) && PromptYN(132)) {
 #ifdef FandSQL
-			if (CFile->IsSQLFile) Strm1->InsertRec(false, true) else
+		if (CFile->IsSQLFile) Strm1->InsertRec(false, true) else
 #endif
 
-			{
-				ClearDeletedFlag();
-				if ((LD != nullptr) && (CFile->Typ = 'X')) { CrIndRec(); N = CFile->NRecs; }
-				else CreateRec(N);
-			}
-			return result;
+		{
+			ClearDeletedFlag();
+			if ((LD != nullptr) && (CFile->Typ = 'X')) { CrIndRec(); N = CFile->NRecs; }
+			else CreateRec(N);
 		}
+		return result;
+	}
 	WrLLF10Msg(119);
 	result = false;
 	return result;
@@ -259,7 +259,7 @@ bool TransAdd(AddD* AD, FileD* FD, void* RP, void* CRnew, longint N, char Kind2,
 	auto result = RunAddUpdte1('d', CRold, Back, nullptr, nullptr);
 	ReleaseStore(CRold);
 	return result;
-	}
+}
 
 void WrUpdRec(AddD* AD, FileD* FD, void* RP, void* CRnew, longint N)
 {
@@ -276,26 +276,48 @@ void WrUpdRec(AddD* AD, FileD* FD, void* RP, void* CRnew, longint N)
 	else
 #endif
 		WriteRec(CFile, N, CRecPtr);
-	}
+}
 
 bool Assign(AddD* AD)
 {
-	double R; LongStr* S = nullptr; pstring ss; bool B;
+	double R; std::string S;
+	pstring ss; bool B;
 	longint Pos, N2; char Kind2;
 	if (!RunBool(AD->Bool)) return true;
 	FieldDescr* F = AD->Field;
 	FrmlPtr Z = AD->Frml;
+
 	switch (F->FrmlTyp) {
-	case 'R': R = RunReal(Z); break;
-	case 'S': if (F->Typ == 'T') S = RunLongStr(Z);
-			else ss = RunShortStr(Z); break;
-	default: B = RunBool(Z); break;
+	case 'R': {
+		R = RunReal(Z);
+		break;
 	}
+	case 'S': {
+		if (F->Typ == 'T') S = RunStdStr(Z);
+		else ss = RunShortStr(Z);
+		break;
+	}
+	default: {
+		B = RunBool(Z);
+		break;
+	}
+	}
+
 	if (!Link(AD, N2, Kind2)) { return false; }
 	switch (F->FrmlTyp) {
-	case 'R': { R_(F, R); break; }
-	case 'S': { if (F->Typ == 'T') LongS_(F, S); else S_(F, ss); break; }
-	default: { B_(F, B); break; }
+	case 'R': {
+		R_(F, R);
+		break;
+	}
+	case 'S': {
+		if (F->Typ == 'T') S_(F, S);
+		else S_(F, ss);
+		break;
+	}
+	default: {
+		B_(F, B);
+		break;
+	}
 	}
 	WriteRec(CFile, N2, CRecPtr);
 	return true;

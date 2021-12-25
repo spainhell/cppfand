@@ -153,11 +153,9 @@ double RunRealStr(FrmlElem* X)
 	}
 	case _ord: {
 		auto iX = (FrmlElem6*)X;
-		S = RunLongStr(iX->PP1);
-		N = 0;
-		if (S->LL > 0) N = S->A[0];
-		result = N;
-		ReleaseStore(S);
+		std::string s = RunStdStr(iX->PP1);
+		if (s.empty()) result = 0;
+		else result = s[0];
 		break;
 	}
 	case _prompt: {
@@ -205,9 +203,8 @@ double RunRealStr(FrmlElem* X)
 	}
 	case _diskfree: {
 		auto iX = (FrmlElem0*)X;
-		S = RunLongStr(iX->P1);
-		result = DiskFree(toupper(S->A[1]) - '@');
-		ReleaseStore(S);
+		std::string s = RunStdStr(iX->P1);
+		result = DiskFree(toupper(s[0]) - '@');
 		break;
 	}
 #ifdef FandSQL
@@ -1234,7 +1231,7 @@ bool TryCopyT(FieldDescr* F, TFile* TF, longint& pos, FrmlElem* Z)
 
 void AssgnFrml(FieldDescr* F, FrmlElem* X, bool Delete, bool Add)
 {
-	LongStr* s = nullptr; longint pos = 0; TFile* tf = nullptr;
+	std::string s; longint pos = 0; TFile* tf = nullptr;
 	switch (F->FrmlTyp) {
 	case 'S': {
 		if (F->Typ == 'T') {
@@ -1245,10 +1242,9 @@ void AssgnFrml(FieldDescr* F, FrmlElem* X, bool Delete, bool Add)
 				T_(F, pos);
 			}
 			else {
-				s = RunLongStr(X);
+				s = RunStdStr(X);
 				if (Delete) DelTFld(F);
-				LongS_(F, s);
-				ReleaseStore(s);
+				S_(F, s);
 			}
 		}
 		else S_(F, RunShortStr(X));
