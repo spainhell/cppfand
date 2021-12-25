@@ -644,12 +644,15 @@ label1:
 	}
 label2:
 	//RF = CBlk->RFD;
-	if (reportFieldsVectorIndex < CBlk->ReportFields.size()) {
-		RF = CBlk->ReportFields.at(reportFieldsVectorIndex);
-	}
-	else {
+	reportFieldsVectorIndex = 0;
+	if (CBlk->ReportFields.empty()) {
 		RF = nullptr;
 	}
+	else {
+		reportFieldsVectorIndex = 0;
+		RF = CBlk->ReportFields.at(reportFieldsVectorIndex);
+	}
+
 	RepeatedGrp = false;
 	SkipBlank(true);
 	switch (ForwChar) {
@@ -681,8 +684,14 @@ label3:
 			storedCh += static_cast<char>(0xFF);
 			rep[offset++] = 0xFF;
 			if (RF == nullptr) {
-				//RF = CBlk->RFD;
-				RF = CBlk->ReportFields.at(reportFieldsVectorIndex);
+				if (CBlk->ReportFields.empty()) {
+					RF = nullptr;
+				}
+				else {
+					reportFieldsVectorIndex = 0;
+					RF = CBlk->ReportFields.at(reportFieldsVectorIndex);
+				}
+				
 				if (RF == nullptr) Error(30);
 				RepeatedGrp = true;
 			}
