@@ -498,10 +498,10 @@ void RdLex()
 		break;
 	default: break;
 	}
-	//if (LexWord == "path1")
-	//{
-	//	printf("RdLex() r. 437 - %s\n", LexWord.c_str());
-	//}
+	if (LexWord == "H052")
+	{
+		printf("RdLex() r. 437 - %s\n", LexWord.c_str());
+	}
 }
 
 bool IsForwPoint()
@@ -625,9 +625,15 @@ bool EquUpCase(const char* S)
 	return EquUpCase(temp, LexWord);
 }
 
-bool TestKeyWord(pstring S)
+//bool TestKeyWord(pstring S)
+//{
+//	return (Lexem == _identifier) && EquUpCase(S, LexWord);
+//}
+
+bool TestKeyWord(std::string S)
 {
-	return (Lexem == _identifier) && EquUpCase(S, LexWord);
+	std::string lw = LexWord;
+	return (Lexem == _identifier) && EquUpCase(S, lw);
 }
 
 bool IsKeyWord(std::string S)
@@ -646,9 +652,11 @@ bool IsKeyWord(std::string S)
 	return true;
 }
 
-void AcceptKeyWord(pstring S)
+void AcceptKeyWord(const std::string& S)
 {
-	if (TestKeyWord(S)) RdLex();
+	if (TestKeyWord(S)) {
+		RdLex();
+	}
 	else {
 		SetMsgPar(S);
 		Error(33);

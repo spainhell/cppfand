@@ -20,7 +20,7 @@ FileD* InpFD(WORD I)
 	return IDA[I]->Scan->FD;
 }
 
-bool FindInLvBlk(LvDescr* L, BlkD* B, RFldD* RF)
+bool FindInLvBlk(LvDescr* L, BlkD** B, RFldD** RF)
 {
 	bool first = true;
 	auto result = false;
@@ -35,8 +35,8 @@ label1:
 				if ((Lexem == _identifier) && EquUpCase(rf->Name, sLexWord)) {
 					RdLex();
 					result = true;
-					RF = rf;
-					B = B1;
+					*RF = rf;
+					*B = B1;
 					return result;
 				}
 				//RF1 = (RFldD*)RF1->Chain;
@@ -120,8 +120,11 @@ FrmlElem* RdFldNameFrmlR(char& FTyp)
 		return result;
 	}
 	if (FrmlSumEl != nullptr) {
+		//if (InpArrLen == 1099) {
+		//	printf("");
+		//}
 		if (FrstSumVar) {
-			if (FindInLvBlk(LvToRd->ChainBack, CBlk, RF)) {
+			if (FindInLvBlk(LvToRd->ChainBack, &CBlk, &RF)) {
 				FTyp = RF->FrmlTyp;
 				result = RF->Frml;
 				return result;
@@ -241,6 +244,7 @@ void ChainSumElR()
 	CZeroLst->push_back(FrmlSumEl->at(0));
 
 	if (FrstSumVar || (SumIi == 0)) SumIi = 1;
+
 	if (FrstSumVar || (CBlk == nullptr)) {
 		if (IDA[SumIi]->Sum == nullptr) {
 			IDA[SumIi]->Sum = FrmlSumEl;
@@ -253,8 +257,8 @@ void ChainSumElR()
 			FrmlSumEl->clear();
 		}
 	}
-	else {
-		std::vector<FrmlElemSum*>* S = CBlk->Sum;
+	else if (CBlk != nullptr && CBlk->Sum != nullptr) {
+		//std::vector<FrmlElemSum*>* S = CBlk->Sum;
 		for (size_t i = 0; i < CBlk->Sum->size(); i++) {
 			auto* el = CBlk->Sum->at(i);
 			FrmlSumEl->push_back(el);
@@ -626,7 +630,7 @@ label0:
 		if (ForwChar == ':') {
 			TestIdentif();
 			RF->Name = LexWord;
-			if (FindInLvBlk(LstLvM, DummyB, RF1) || FindLocVar(&LVBD, &LV)) Error(26);
+			if (FindInLvBlk(LstLvM, &DummyB, &RF1) || FindLocVar(&LVBD, &LV)) Error(26);
 			RdLex();
 			Accept(_assign);
 		}

@@ -13,7 +13,7 @@ extern BlkD* CBlkSave;
 
 
 FileD* InpFD(WORD I);
-bool FindInLvBlk(LvDescr* L, BlkD* B, RFldD* RF);
+bool FindInLvBlk(LvDescr* L, BlkD** B, RFldD** RF);
 FrmlPtr RdFldNameFrmlR(char& FTyp);
 FrmlPtr FindIiandFldFrml(FileD** FD, char& FTyp);
 void RdDirFilVar(char& FTyp, FrmlElem** res, bool wasIiPrefix);

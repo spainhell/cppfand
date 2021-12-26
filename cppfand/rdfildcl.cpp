@@ -554,6 +554,9 @@ void* RdFileD(std::string FileName, char FDTyp, std::string Ext)
 		CFile->IsHlpFile = false;
 		if (!(FDTyp == '6' || FDTyp == 'X') || !(CFile->Typ == '6' || CFile->Typ == 'X')) OldError(106);
 		K = CFile->Keys;
+
+		//TODO: klice je nutne zkopirovat kvuli prejmenovani
+
 		while (K != nullptr) {
 			if (!K->Alias.empty()) {
 				s = K->Alias;

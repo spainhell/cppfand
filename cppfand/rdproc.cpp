@@ -300,6 +300,9 @@ FrmlPtr RdFldNameFrmlP(char& FTyp)
 
 FileD* RdPath(bool NoFD, std::string& Path, WORD& CatIRec)
 {
+	//if (InpArrLen == 2781) {
+	//	printf("");
+	//}
 	FileD* fd = nullptr;
 	CatIRec = 0;
 	if (Lexem == _quotedstr) {
@@ -867,7 +870,12 @@ Instr_forall* RdForAll()
 		PD->COwnerTyp = RdOwner(&PD->CLD, &PD->CLV);
 		CViewKey = GetFromKey(PD->CLD);
 	}
-	else CViewKey = RdViewKey();
+	else {
+		if (InpArrLen == 19159 && CurrPos > 11000) {
+			printf("");
+		}
+		CViewKey = RdViewKey();
+	}
 	if (Lexem == '(') {
 		/* !!! with PD^ do!!! */
 		RdLex();
@@ -1770,7 +1778,7 @@ bool RdX(FileD* FD)
 	auto result = false;
 	if ((Lexem == '.') && (FD != nullptr)) {
 		RdLex();
-		AcceptKeyWord('X');
+		AcceptKeyWord("X");
 		if (FD->Typ != 'X') OldError(108);
 		result = true;
 	}

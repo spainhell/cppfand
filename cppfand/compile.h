@@ -49,7 +49,8 @@ void Accept(char X); // r239 ASM
 integer RdInteger(); // r245
 double RdRealConst(); // r250
 bool IsKeyWord(std::string S); // r284 ASM
-bool TestKeyWord(pstring S); // r282
+//bool TestKeyWord(pstring S); // r282
+bool TestKeyWord(std::string S); // r282
 bool IsOpt(pstring S); // r296 ASM
 bool IsDigitOpt(pstring S, WORD& N); // r305
 bool IsIdentifStr(std::string& S); //r323
@@ -57,7 +58,7 @@ pstring* RdStrConst(); // r314
 std::string RdStringConst(); // r314
 char Rd1Char(); // r317
 char RdQuotedChar(); // r320
-void AcceptKeyWord(pstring S); // r293
+void AcceptKeyWord(const std::string& S); // r293
 void RdLocDcl(LocVarBlkD* LVB, bool IsParList, bool WithRecVar, char CTyp); // r1
 bool FindLocVar(LocVarBlkD* LVB, LocVar** LV); // r84
 bool FindLocVar(LocVar* LVRoot, LocVar** LV); // r84

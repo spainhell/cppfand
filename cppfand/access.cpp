@@ -1034,6 +1034,9 @@ void S_(FieldDescr* F, std::string S, void* record)
 				memset(pRec, ' ', F->L - S.length());
 				memcpy(&pRec[F->L - S.length()], S.c_str(), S.length());
 			}
+			if ((F->Flg & f_Encryp) != 0) {
+				Code(pRec, L);
+			}
 			break;
 		}
 		case 'N': {
