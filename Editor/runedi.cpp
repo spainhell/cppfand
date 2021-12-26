@@ -3082,7 +3082,7 @@ bool GetChpt(pstring Heslo, longint& NN)
 			s = OldTrailChar(' ', _ShortS(ChptName));
 			integer i = s.first('.');
 			if (i > 0) s.Delete(i, 255);
-			if (SEquUpcase(Heslo, s)) goto label1;
+			if (EquUpCase(Heslo, s)) goto label1;
 		}
 		else {
 			s = OldTrailChar(' ', _ShortS(CFile->FldD.front()));

@@ -866,18 +866,13 @@ Instr_forall* RdForAll()
 	}
 #endif
 	if (IsKeyWord("OWNER")) {
-		/* !!! with PD^ do!!! */
 		PD->COwnerTyp = RdOwner(&PD->CLD, &PD->CLV);
 		CViewKey = GetFromKey(PD->CLD);
 	}
 	else {
-		if (InpArrLen == 19159 && CurrPos > 11000) {
-			printf("");
-		}
 		CViewKey = RdViewKey();
 	}
 	if (Lexem == '(') {
-		/* !!! with PD^ do!!! */
 		RdLex();
 		PD->CBool = RdKeyInBool(&PD->CKIRoot, false, true, PD->CSQLFilter);
 		if ((PD->CKIRoot != nullptr) && (PD->CLV != nullptr)) OldError(118);
@@ -1652,14 +1647,17 @@ void RdRprtOpt(RprtOpt* RO, bool HasFrst)
 
 Instr* RdRDBCall()
 {
-	pstring s;
+	std::string s;
 	auto PD = new Instr_call(); // GetPD(_call, 12);
 	RdLex();
-	s[0] = 0;
-	if (Lexem == '\\') { s = Lexem; RdLex(); }
+	//s[0] = 0;
+	if (Lexem == '\\') {
+		s = "\\";
+		RdLex();
+	}
 	TestIdentif();
 	if (LexWord.length() > 8) Error(2);
-	PD->RdbNm = s + LexWord;
+	PD->RdbNm = s + std::string(LexWord);
 	RdLex();
 	if (Lexem == ',') {
 		RdLex();
@@ -1669,7 +1667,9 @@ Instr* RdRDBCall()
 		RdLex();
 		PD->ProcCall = RdProcArg('C');
 	}
-	else PD->ProcNm = "main";
+	else {
+		PD->ProcNm = "main";
+	}
 	return PD;
 }
 
@@ -1740,7 +1740,7 @@ Instr* RdCopyFile()
 		else if (IsOpt("MODE")) {
 			TestLex(_quotedstr);
 			for (i = 0; i < 7; i++) {
-				if (SEquUpcase(LexWord, ModeTxt[i])) {
+				if (EquUpCase(LexWord, ModeTxt[i])) {
 					CD->Mode = i + 1;
 					goto label1;
 				}
@@ -1896,8 +1896,8 @@ Instr* RdTurnCat()
 	pstring RN = RdCatField(Frst, CatRdbName);
 	pstring FN = RdCatField(Frst, CatFileName);
 	WORD I = Frst + 1;
-	while ((CatFD->NRecs >= I) && SEquUpcase(RN, RdCatField(I, CatRdbName))
-		&& SEquUpcase(FN, RdCatField(I, CatFileName))) I++;
+	while ((CatFD->NRecs >= I) && EquUpCase(RN, RdCatField(I, CatRdbName))
+		&& EquUpCase(FN, RdCatField(I, CatFileName))) I++;
 	if (I == Frst + 1) OldError(98);
 	PD->NCatIRecs = I - Frst;
 	Accept(',');
@@ -2803,8 +2803,8 @@ Instr* RdBackup(char MTyp, bool IsBackup)
 	CRecPtr = GetRecSpace();
 	for (longint i = 1; i <= CatFD->NRecs; i++) {
 		ReadRec(CFile, i, CRecPtr);
-		if (SEquUpcase(OldTrailChar(' ', _ShortS(CatRdbName)), "ARCHIVES") 
-			&& SEquUpcase(OldTrailChar(' ', _ShortS(CatFileName)), LexWord)) {
+		if (EquUpCase(OldTrailChar(' ', _ShortS(CatRdbName)), "ARCHIVES")
+			&& EquUpCase(OldTrailChar(' ', _ShortS(CatFileName)), LexWord)) {
 			RdLex();
 			PD->BrCatIRec = i;
 			ReleaseStore(CRecPtr);

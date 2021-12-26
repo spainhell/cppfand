@@ -644,7 +644,7 @@ void CheckFile(FileD* FD)
 	}
 	if (FD->TF == nullptr) return;
 	FSplit(CPath, d, n, e);
-	if (SEquUpcase(e, ".RDB")) e = ".TTT";
+	if (EquUpCase(e, ".RDB")) e = ".TTT";
 	else e[1] = 'T';
 	CPath = d + n + e;
 	h = OpenH(_isoldfile, RdShared);

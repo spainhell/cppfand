@@ -2,6 +2,7 @@
 
 #include <fstream>
 
+#include "compile.h"
 #include "../textfunc/textfunc.h"
 #include "GlobalVariables.h"
 #include "legacy.h"
@@ -156,23 +157,23 @@ void PrintTxtFBlk(std::string& text, longint BegPos, bool CtrlL)
 		for (std::string& line : lines) {
 			// RdLnInp(); // TODO: tisk bloku
 			std::string s = line.substr(0, 3);
-			if (SEquUpcase(s, ".cp")) {
+			if (EquUpCase(s, ".cp")) {
 				AutoFF = true;
 				GetNum(Cp);
 			}
-			else if (SEquUpcase(s, ".pl")) GetNum(Pl);
-			else if (SEquUpcase(s, ".po")) GetNum(Po);
-			else if (SEquUpcase(s, ".ti")) GetNum(Ti);
-			else if (SEquUpcase(s, ".he")) {
+			else if (EquUpCase(s, ".pl")) GetNum(Pl);
+			else if (EquUpCase(s, ".po")) GetNum(Po);
+			else if (EquUpCase(s, ".ti")) GetNum(Ti);
+			else if (EquUpCase(s, ".he")) {
 				He = true; AutoFF = true;
 				HeTxt = copy(Ln, 4, 255);
 			}
-			else if (SEquUpcase(s, ".fo")) {
+			else if (EquUpCase(s, ".fo")) {
 				Fo = true; AutoFF = true;
 				FoTxt = copy(Ln, 4, 255);
 			}
-			else if (SEquUpcase(s, ".ff")) FFOpt = true;
-			else if (SEquUpcase(s, ".nm")) NMOpt = true;
+			else if (EquUpCase(s, ".ff")) FFOpt = true;
+			else if (EquUpCase(s, ".nm")) NMOpt = true;
 			else goto label1;
 		}
 		goto label3;

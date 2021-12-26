@@ -555,13 +555,13 @@ void InitRunFand()
 
 	if (paramstr.size() > 1 && !paramstr.at(1).empty() && paramstr.at(1) != "?") {
 #ifndef FandRunV
-		if (paramstr.size() > 2 && SEquUpcase(paramstr[2], "D")) {
+		if (paramstr.size() > 2 && EquUpCase(paramstr[2], "D")) {
 			IsTestRun = true;
 			goto label0;
 		}
 		else
 #endif
-			if (paramstr.size() > 2 && SEquUpcase(paramstr.at(2), "T")) {
+			if (paramstr.size() > 2 && EquUpCase(paramstr.at(2), "T")) {
 				CPath = paramstr.at(1);
 				if (copy(CPath, 1, 2) == "*.")
 					SelectEditTxt(copy(CPath, 2, 4), false);

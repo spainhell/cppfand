@@ -298,7 +298,7 @@ bool FindString(WORD& I, WORD Len)
 		}
 		else if (TestOptStr('u'))
 		{
-			if (!SEquUpcase(s1, s2))
+			if (!EquUpCase(s1, s2))
 			{
 				I++; goto label1;
 			}

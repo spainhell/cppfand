@@ -463,8 +463,8 @@ void* RdFileD(std::string FileName, char FDTyp, std::string Ext)
 
 	ResetCompilePars();
 	RdLex();
-	issql = SEquUpcase(Ext, ".SQL");
-	isHlp = SEquUpcase(Ext, ".HLP");
+	issql = EquUpCase(Ext, ".SQL");
+	isHlp = EquUpCase(Ext, ".HLP");
 	if (IsKeyWord("JOURNALOF")) {
 		FD = RdFileName();
 		if (Lexem == ';') RdLex();
@@ -553,10 +553,8 @@ void* RdFileD(std::string FileName, char FDTyp, std::string Ext)
 		FakeRdFDSegment(FD);
 		CFile->IsHlpFile = false;
 		if (!(FDTyp == '6' || FDTyp == 'X') || !(CFile->Typ == '6' || CFile->Typ == 'X')) OldError(106);
+
 		K = CFile->Keys;
-
-		//TODO: klice je nutne zkopirovat kvuli prejmenovani
-
 		while (K != nullptr) {
 			if (!K->Alias.empty()) {
 				s = K->Alias;
@@ -571,11 +569,7 @@ void* RdFileD(std::string FileName, char FDTyp, std::string Ext)
 	else {
 		CFile = new FileD();
 	}
-	//if (InpArrLen == 6261 && CurrPos == 5052)
-	//if (FileName == "MZDY")
-	//{
-	//	printf("RdFileD() r. 530\n");
-	//}
+
 	CFile->Name = FileName;
 	SetHCatTyp(FDTyp);
 	HasTT = false;
@@ -787,10 +781,10 @@ void LookForK(pstring* Name, FileD* F)
 {
 	XKey* K = nullptr;
 	std::string name = *Name;
-	if (SEquUpcase(F->Name, name)) Error(26);
+	if (EquUpCase(F->Name, name)) Error(26);
 	K = F->Keys;
 	while (K != nullptr) {
-		if (SEquUpcase(K->Alias, *Name)) Error(26);
+		if (EquUpCase(K->Alias, *Name)) Error(26);
 		K = K->Chain;
 	}
 }

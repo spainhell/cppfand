@@ -460,9 +460,9 @@ void TestCPathError()
 // zmeni priponu souboru a nastavi CPath
 void CExtToT()
 {
-	if (SEquUpcase(CExt, ".RDB")) CExt = ".TTT";
+	if (EquUpCase(CExt, ".RDB")) CExt = ".TTT";
 	else
-		if (SEquUpcase(CExt, ".DBF"))
+		if (EquUpCase(CExt, ".DBF"))
 			if (CFile->TF->Format == TFile::FptFormat) CExt = ".FPT";
 			else CExt = ".DBT";
 		else CExt[1] = 'T';
@@ -1270,7 +1270,7 @@ LocVar* LocVarBlkD::GetRoot()
 LocVar* LocVarBlkD::FindByName(std::string Name)
 {
 	for (auto& i : vLocVar) {
-		if (SEquUpcase(Name, i->Name)) return i;
+		if (EquUpCase(Name, i->Name)) return i;
 	}
 	return nullptr;
 }

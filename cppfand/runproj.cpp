@@ -65,16 +65,16 @@ bool IsCurrChpt()
 
 char ExtToTyp(pstring Ext)
 {
-	if ((Ext == "") || SEquUpcase(Ext, ".HLP")
+	if ((Ext == "") || EquUpCase(Ext, ".HLP")
 #ifdef FandSQL
 		|| SEquUpcase(Ext, ".SQL")
 #endif	
 		)
 		return '6';
-	else if (SEquUpcase(Ext, ".X")) return 'X';
-	else if (SEquUpcase(Ext, ".DTA")) return '8';
-	else if (SEquUpcase(Ext, ".DBF")) return 'D';
-	else if (SEquUpcase(Ext, ".RDB")) return '0';
+	else if (EquUpCase(Ext, ".X")) return 'X';
+	else if (EquUpCase(Ext, ".DTA")) return '8';
+	else if (EquUpCase(Ext, ".DBF")) return 'D';
+	else if (EquUpCase(Ext, ".RDB")) return '0';
 	else return '?';
 }
 
@@ -227,7 +227,7 @@ bool IsDuplFileName(std::string name)
 {
 	std::string n; std::string e; void* cr;
 	auto result = true;
-	if (SEquUpcase(name, Chpt->Name)) return result;
+	if (EquUpCase(name, Chpt->Name)) return result;
 	cr = CRecPtr;
 	CRecPtr = GetRecSpace();
 	for (WORD I = 1; I <= Chpt->NRecs; I++)
@@ -235,7 +235,7 @@ bool IsDuplFileName(std::string name)
 			ReadRec(CFile, I, CRecPtr);
 			if (_ShortS(ChptTyp) == 'F') {
 				GetSplitChptName(n, e);
-				if (SEquUpcase(name, n)) goto label1;
+				if (EquUpCase(name, n)) goto label1;
 			}
 		}
 	result = false;
@@ -1130,7 +1130,7 @@ void CreateOpenChpt(std::string Nm, bool create, wwmix* ww)
 	nr = std::to_string((TxtCols - n));
 	s = s + nr;
 	SetInpStr(s);
-	if ((Nm[0] == '\\')) Nm1 = Nm.substr(2, 8);
+	if ((Nm[0] == '\\')) Nm1 = Nm.substr(1, 8);
 	else Nm1 = Nm;
 	RdFileD(Nm1, '0', ""); /*old CRdb for GetCatIRec*/
 	R->FD = CFile;
@@ -1229,7 +1229,7 @@ FileD* FindFD()
 	FSplit(FName, d, name, ext);
 	FD = FileDRoot;
 	while (FD != nullptr) {
-		if (SEquUpcase(FD->Name, name)) break;
+		if (EquUpCase(FD->Name, name)) break;
 		FD = (FileD*)FD->Chain;
 	}
 	return FD;
@@ -1404,7 +1404,7 @@ label1:
 	if (Lexem == ',') { RdLex(); RdByteList(&acc); }
 	else { acc[0] = 1; acc[1] = char(code); }
 	if (Chk) {
-		if (SEquUpcase(pw, pw2)) {
+		if (EquUpCase(pw, pw2)) {
 			UserName = name; UserCode = code; UserPassWORD = pw2; AccRight = acc; return;
 		}
 	}
@@ -1689,7 +1689,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 				if (!(Typ == ' ' || Typ == 'D' || Typ == 'U')) { /* dupclicate name checking */
 					for (J = 1; J < I - 1; J++) {
 						ReadRec(CFile, J, CRecPtr);
-						if ((STyp == _ShortS(ChptTyp)) && SEquUpcase(Name, OldTrailChar(' ', _ShortS(ChptName)))) GoCompileErr(I, 649);
+						if ((STyp == _ShortS(ChptTyp)) && EquUpCase(Name, OldTrailChar(' ', _ShortS(ChptName)))) GoCompileErr(I, 649);
 					}
 					ReadRec(CFile, I, CRecPtr);
 				}
@@ -1702,7 +1702,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 				FSplit(Name, dir, nm, ext);
 				if ((Txt == 0) && IsTestRun) {
 					SetMsgPar(Name);
-					if (SEquUpcase(ext, ".DBF") && PromptYN(39)) {
+					if (EquUpCase(ext, ".DBF") && PromptYN(39)) {
 						T_(ChptOldTxt, 0);
 						OldTxt = 0;
 						MakeDbfDcl(nm);
@@ -1711,7 +1711,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 					}
 				}
 #ifndef FandSQL
-				if (SEquUpcase(ext, ".SQL")) GoCompileErr(I, 654);
+				if (EquUpCase(ext, ".SQL")) GoCompileErr(I, 654);
 #endif
 				if (Verif || ChptTF->CompileAll || (OldTxt == 0)) {
 				label2:

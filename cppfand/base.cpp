@@ -13,7 +13,7 @@
 #include <ctime>
 #include <iostream>
 
-
+#include "compile.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
 #include "../datafiles/datafiles.h"
@@ -857,7 +857,7 @@ void ClearFlshHandles()
 bool IsNetCVol()
 {
 #ifdef FandNetV
-	return CVol == "#" || CVol == "##" || SEquUpcase(CVol, "#R");
+	return CVol == "#" || CVol == "##" || EquUpCase(CVol, "#R");
 #else
 	return false;
 #endif
@@ -1292,24 +1292,6 @@ longint AbsAdr(void* P)
 {
 	return 0;
 }
-
-bool SEquUpcase(std::string S1, std::string S2)
-{
-	size_t s1_len = S1.length();
-	size_t s2_len = S2.length();
-	if (s1_len != s2_len) return false;
-	if (s1_len == 0) return true;
-
-	const char* s1_c = S1.c_str();
-	const char* s2_c = S2.c_str();
-
-	for (size_t i = 0; i < s1_len; i++)
-	{
-		if (toupper(s1_c[i]) != toupper(s2_c[i])) return false;
-	}
-	return true;
-}
-
 
 WORD LogToAbsLenStyleStr(pstring s, WORD l)
 {

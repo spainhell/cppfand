@@ -72,7 +72,7 @@ void TbFile::Backup(bool isBackup, WORD Ir)
 	RdLex();
 label1:
 	for (WORD i = 1; i <= CatFD->NRecs; i++) {
-		if (!SEquUpcase(RdCatField(i, CatRdbName), "ARCHIVES")) {
+		if (!EquUpCase(RdCatField(i, CatRdbName), "ARCHIVES")) {
 			if (RdCatField(i, CatArchiv) == ArNr) {
 				FSplit(RdCatField(i, CatPathName), d, FName, e);
 				Ext[1] = '0';

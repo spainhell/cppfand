@@ -53,8 +53,7 @@ FileD::FileD(const FileD& orig)
 	IsDynFile = orig.IsDynFile;
 	if (orig.XF != nullptr) XF = new XFile(*orig.XF);
 	if (orig.Keys != nullptr) {
-		Keys = new XKey(*orig.Keys, true); // nebudeme kopirovat Keys->KFlds->FldD
-		//Keys->KFlds->FldD = FldD.front(); // pripojime stavajici FldD
+		Keys = new XKey(*orig.Keys, true);
 	}
 	Add = orig.Add;
 	nLDs = orig.nLDs;

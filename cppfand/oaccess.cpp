@@ -1,6 +1,7 @@
 #include "oaccess.h"
 
 #include "base.h"
+#include "compile.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
 #include "legacy.h"
@@ -122,7 +123,7 @@ void SetCPathMountVolSetNet(FileUseMode UM)
 		case RdShared: CFile->UMode = RdOnly; break;
 		case Shared: CFile->UMode = Exclusive; break;
 		}
-	else if ((UM == Shared) && SEquUpcase(CVol, "#R")) {
+	else if ((UM == Shared) && EquUpCase(CVol, "#R")) {
 		CFile->UMode = RdShared;
 	}
 }
@@ -294,7 +295,7 @@ label3:
 					|| ((((longint)CFile->XF->MaxPage + 1) << XPageShft) > FileSizeH(CFile->XF->Handle)))
 				|| (CFile->XF->NrKeys != 0) && (CFile->XF->NrKeys != CFile->GetNrKeys()))
 			{
-				if (!SEquUpcase(GetEnv("FANDMSG830"), "NO")) {
+				if (!EquUpCase(GetEnv("FANDMSG830"), "NO")) {
 					CFileMsg(830, 'X');
 				}
 				if (CFile->IsShared() && (CFile->LMode < ExclMode)) {
@@ -531,7 +532,7 @@ WORD TestMountVol(char DriveC)
 	}
 
 	const std::string MountedVolD = MountedVol[D - 1];
-		if (CVol.empty() || SEquUpcase(MountedVolD, CVol)) {
+		if (CVol.empty() || EquUpCase(MountedVolD, CVol)) {
 		goto label3;
 	}
 	
@@ -630,8 +631,8 @@ label1:
 	for (i = 1; i <= CatFD->NRecs; i++)
 	{
 		ReadRec(CFile, i, CRecPtr);
-		if (SEquUpcase(OldTrailChar(' ', _ShortS(CatRdbName)), R->FD->Name) &&
-			SEquUpcase(OldTrailChar(' ', _ShortS(CatFileName)), Name))
+		if (EquUpCase(OldTrailChar(' ', _ShortS(CatRdbName)), R->FD->Name) &&
+			EquUpCase(OldTrailChar(' ', _ShortS(CatFileName)), Name))
 		{
 			result = i; goto label2;
 		}

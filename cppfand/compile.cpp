@@ -209,7 +209,7 @@ WORD RdDirective(bool& b)
 	ReadChar();
 	RdForwName(s);
 	for (i = 0; i < 5; i++) {
-		if (SEquUpcase(s, Dirs[i])) goto label1;
+		if (EquUpCase(s, Dirs[i])) goto label1;
 	}
 	Error(158);
 label1:
@@ -498,10 +498,10 @@ void RdLex()
 		break;
 	default: break;
 	}
-	if (LexWord == "H052")
-	{
-		printf("RdLex() r. 437 - %s\n", LexWord.c_str());
-	}
+	//if (LexWord == "AktŸ¡sloP")
+	//{
+	//	printf("RdLex() r. 437 - %s\n", LexWord.c_str());
+	//}
 }
 
 bool IsForwPoint()
@@ -607,13 +607,15 @@ bool EquUpCase(pstring& S1, pstring& S2)
 	//return false;
 }
 
-bool EquUpCase(std::string& S1, std::string& S2)
+bool EquUpCase(std::string S1, std::string S2)
 {
 	if (S1.length() != S2.length()) return false;
 	for (size_t i = 0; i <= S1.length(); i++)
 	{
-		BYTE c1 = S1[i]; BYTE c2 = S2[i];
-		BYTE upC1 = UpcCharTab[c1]; BYTE upC2 = UpcCharTab[c2];
+		BYTE c1 = S1[i];
+		BYTE c2 = S2[i];
+		BYTE upC1 = UpcCharTab[c1];
+		BYTE upC2 = UpcCharTab[c2];
 		if (upC1 != upC2) return false;
 	}
 	return true;
@@ -687,7 +689,7 @@ bool IsDigitOpt(pstring S, WORD& N)
 {
 	char LastLexWord = LexWord[LexWord.length()];
 	if ((Lexem == _identifier) && (LexWord.length() == S.length() + 1)
-		&& SEquUpcase(copy(LexWord, 1, S.length()), S)
+		&& EquUpCase(copy(LexWord, 1, S.length()), S)
 		&& (LastLexWord >= '0' && LastLexWord <= '9'))
 	{
 		N = LastLexWord - '0';
@@ -1070,13 +1072,14 @@ bool FindChpt(char Typ, const pstring& name, bool local, RdbPos* RP)
 		CFile = R->FD;
 		for (WORD i = 1; i <= CFile->NRecs; i++) {
 			ReadRec(CFile, i, CRecPtr);
-			pstring chapterType = _ShortS(ChptTyp);
-			pstring chapterName = OldTrailChar(' ', _ShortS(ChptName));
+			std::string chapterType = _StdS(ChptTyp);
+			std::string chapterName = _StdS(ChptName);
+			chapterName = TrailChar(chapterName, ' ');
 
-			//if ((_ShortS(ChptTyp) == Typ)
-				//&& SEquUpcase(TrailChar(' ', _ShortS(ChptName)), name))
-			if (chapterType.length() == 1 && chapterType[1] == Typ && SEquUpcase(chapterName, name))
-			{
+			if (chapterType.length() == 1 
+				&& chapterType[0] == Typ 
+				&& EquUpCase(chapterName, name)) {
+
 				RP->R = R;
 				RP->IRec = i;
 				result = true;
@@ -1093,6 +1096,10 @@ label1:
 
 void RdChptName(char C, RdbPos* Pos, bool TxtExpr)
 {
+	//if (InpArrLen == 17623 && CurrPos > 4700) {
+	//	printf("");
+	//}
+
 	if (TxtExpr && (Lexem == '[')) {
 		RdLex();
 		Pos->R = (RdbD*)RdStrFrml();
@@ -1238,7 +1245,6 @@ void RdFldList(FieldListEl** FLRoot)
 	FieldListEl* FL = nullptr;
 label1:
 	F = RdFldName(CFile);
-	//FL = (FieldListEl*)GetStore(sizeof(*FL));
 	FL = new FieldListEl();
 	FL->FldD = F;
 	if (*FLRoot == nullptr) *FLRoot = FL;
@@ -1340,12 +1346,12 @@ XKey* RdViewKey()
 	}
 	s = LexWord;
 	i = s.find('_');
-	if (i != std::string::npos) s = copy(s, i + 1, 255);
+	if (i != std::string::npos) s = copy(s, i + 2, 255);
 	s = CFile->Name + "_" + s;
 	k = CFile->Keys;
 	while (k != nullptr) {
 		std::string kAl = k->Alias;
-		if (SEquUpcase(s, kAl)) goto label1;
+		if (EquUpCase(s, kAl)) goto label1;
 		k = k->Chain;
 	}
 	if (IdxLocVarAllowed && FindLocVar(&LVBD, &lv) && (lv->FTyp == 'i'))
@@ -2455,7 +2461,7 @@ LinkD* FindLD(pstring RoleName)
 	while (F != nullptr) {
 		LinkD* L = LinkDRoot;
 		while (L != nullptr) {
-			if ((L->FromFD == F) && SEquUpcase(L->RoleName, RoleName)) {
+			if ((L->FromFD == F) && EquUpCase(L->RoleName, RoleName)) {
 				return L;
 			}
 			L = L->Chain;
@@ -2534,7 +2540,7 @@ LinkD* FindOwnLD(FileD* FD, pstring RoleName)
 		if ((ld->ToFD == FD)
 			&& EquUpCase(ld->FromFD->Name, lw)
 			&& (ld->IndexRoot != 0)
-			&& SEquUpcase(ld->RoleName, RoleName))
+			&& EquUpCase(ld->RoleName, RoleName))
 			goto label1;
 		ld = ld->Chain;
 	}

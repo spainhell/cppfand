@@ -3101,7 +3101,7 @@ FileD* FindFD(pstring FDName)
 	FileD* fd = nullptr;
 	do {
 		fd = NextFD(fd);
-	} while (!((fd == nullptr) || SEquUpcase(fd->Name, FDName)));
+	} while (!((fd == nullptr) || EquUpCase(fd->Name, FDName)));
 	return fd;
 }
 
@@ -3221,7 +3221,7 @@ bool RunBuildIn()
 			}
 			if (w == 3/*ii*/) {
 				std::string tmpSS = CurrInst->Vars[1]->SS;
-				while ((f != nullptr) && !SEquUpcase(f->Name, tmpSS)) f = (FieldDescr*)f->Chain;
+				while ((f != nullptr) && !EquUpCase(f->Name, tmpSS)) f = (FieldDescr*)f->Chain;
 				if (f == nullptr) goto label1;
 			}
 			else CurrInst->Vars[1] = GetStringTerm(f->Name);
@@ -3263,7 +3263,7 @@ bool RunBuildIn()
 			ld = LinkDPtr(CurrInst->NextBranch);
 			if (ld == nullptr) {
 				ld = LinkDRoot;
-				while ((ld != nullptr) && !SEquUpcase(ld->FromFD->Name, CurrInst->Vars[0]->SS)) {
+				while ((ld != nullptr) && !EquUpCase(ld->FromFD->Name, CurrInst->Vars[0]->SS)) {
 					ld = ld->Chain;
 				}
 				if (ld == nullptr) goto label1;
@@ -3271,13 +3271,13 @@ bool RunBuildIn()
 			fd = ld->FromFD;
 			if (w == 3/*ii*/) {
 				while ((ld != nullptr) && ((fd != ld->FromFD) ||
-					!SEquUpcase(ld->RoleName, CurrInst->Vars[1]->SS))) ld = ld->Chain;
+					!EquUpCase(ld->RoleName, CurrInst->Vars[1]->SS))) ld = ld->Chain;
 				if (ld == nullptr) goto label1;
 				CurrInst->Vars[2] = GetStringTerm(ld->ToFD->Name);
 			}
 			else if (w == 5/*ioi*/) {
 				while ((ld != nullptr) && ((fd != ld->FromFD) ||
-					!SEquUpcase(ld->ToFD->Name, CurrInst->Vars[2]->SS))) ld = ld->Chain;
+					!EquUpCase(ld->ToFD->Name, CurrInst->Vars[2]->SS))) ld = ld->Chain;
 				if (ld == nullptr) goto label1;
 				CurrInst->Vars[1] = GetStringTerm(ld->RoleName);
 			}
@@ -3310,7 +3310,7 @@ bool RunBuildIn()
 				fd = FindFD(CurrInst->Vars[0]->SS);
 				if (fd == nullptr) goto label1;
 				k = fd->Keys;
-				while ((k != nullptr) && !SEquUpcase(Pound(k->Alias), CurrInst->Vars[1]->SS)) k = k->Chain;
+				while ((k != nullptr) && !EquUpCase(Pound(k->Alias), CurrInst->Vars[1]->SS)) k = k->Chain;
 				if (k == nullptr) goto label1; kf = k->KFlds;
 			}
 			CurrInst->Vars[2] = GetStringTerm(kf->FldD->Name);
@@ -3324,8 +3324,8 @@ bool RunBuildIn()
 			if (kf == nullptr) {
 				ld = LinkDRoot;
 				while ((ld != nullptr) && (
-					!SEquUpcase(ld->FromFD->Name, CurrInst->Vars[0]->SS) ||
-					!SEquUpcase(ld->RoleName, CurrInst->Vars[1]->SS))) ld = ld->Chain;
+					!EquUpCase(ld->FromFD->Name, CurrInst->Vars[0]->SS) ||
+					!EquUpCase(ld->RoleName, CurrInst->Vars[1]->SS))) ld = ld->Chain;
 				if (ld == nullptr) goto label1;
 				kf = ld->Args;
 			}
@@ -3523,12 +3523,12 @@ void SetCFile(const pstring Name)
 	while (r != nullptr) {
 		CFile = r->FD;
 		while (CFile != nullptr) {
-			if (SEquUpcase(Name, CFile->Name)) return;
+			if (EquUpCase(Name, CFile->Name)) return;
 			CFile = (FileD*)CFile->Chain;
 		}
 		r = r->ChainBack;
 	}
-	if (SEquUpcase(Name, "CATALOG")) CFile = CatFD;
+	if (EquUpCase(Name, "CATALOG")) CFile = CatFD;
 	else RunError(1539);
 }
 

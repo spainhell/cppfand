@@ -1,5 +1,6 @@
 #include "runrprt.h"
 
+#include "../cppfand/compile.h"
 #include "../cppfand/ChkD.h"
 #include "../cppfand/FieldDescr.h"
 #include "../cppfand/FileD.h"
@@ -1027,7 +1028,7 @@ bool RewriteRprt(RprtOpt* RO, WORD pageLimit, WORD& Times, bool& IsLPT1)
 		PrintView = true; PrintCtrl = false;
 	}
 	else {
-		if (!RO->Path.empty() && SEquUpcase(RO->Path, "LPT1")) {
+		if (!RO->Path.empty() && EquUpCase(RO->Path, "LPT1")) {
 			CPath = "LPT1";
 			CVol = "";
 			IsLPT1 = true;
