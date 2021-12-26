@@ -253,6 +253,7 @@ void WriteMsg(WORD N)
 
 void ClearLL(BYTE attr)
 {
+	screen.ScrClr(1, TxtRows, TxtCols, 1, ' ', colors.uNorm);
 }
 
 WORD TResFile::Get(WORD Kod, void** P)

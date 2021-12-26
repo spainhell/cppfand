@@ -13,7 +13,7 @@ void* CRecPtr;
 XKey* CViewKey;
 std::string TopRdbDir, TopDataDir;
 pstring CatFDName;
-RdbD* CRdb, TopRdb;
+RdbD* CRdb, *TopRdb;
 FileD* CatFD, *HelpFD;
 size_t InpArrLen, CurrPos, OldErrPos;
 

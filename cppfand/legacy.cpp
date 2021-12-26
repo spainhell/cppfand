@@ -455,16 +455,6 @@ WORD Swap(WORD cislo)
 	return ((cislo & 0x00FF) << 4) + (cislo >> 4);
 }
 
-void UnPack(void* PackArr, WORD& NumArr, WORD& NoDigits)
-{
-	return;
-}
-
-void Pack(void* NumArr, WORD& PackArr, WORD& NoDigits)
-{
-	return;
-}
-
 void beep()
 {
 }

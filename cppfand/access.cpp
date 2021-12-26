@@ -706,6 +706,28 @@ void AsgnParFldFrml(FileD* FD, FieldDescr* F, FrmlElem* Z, bool Ad)
 	CFile = cf; CRecPtr = cr;
 }
 
+//std::string UnPack(char* input, WORD length)
+//{
+//	std::string result;
+//	size_t i = 0;
+//
+//	while (length > 0) {
+//		char c = input[i++];
+//		char c16 = c >> 4;
+//		c16 += 0x30;
+//		result += c16;
+//		length--;
+//		if (length == 0) break;
+//		c16 = c;
+//		c16 = c16 & 0x0F;
+//		c16 += 0x30;
+//		result += c16;
+//		length--;
+//	}
+//
+//	return result;
+//}
+
 double _RforD(FieldDescr* F, void* P)
 {
 	std::string s;
@@ -939,23 +961,23 @@ std::string _StdS(FieldDescr* F)
 				S = std::string(source, l);
 				if ((F->Flg & f_Encryp) != 0) Code(S);
 				if (!S.empty() && S[0] == '\0') {
-					S = ""; // TODO: mel by to byt patricny pocet mezer
+					S = RepeatString(' ', l);
 				}
 			}
 			else if (IsNullValue(source, F->NBytes)) {
-				S = "";
-				//ReleaseAfterLongStr(S);
+				S = RepeatString(' ', l);
 			}
 			else
 			{
-				// jedna je o typ N - prevedeme cislo na znaky
-				// UnPack(P, S->A, l);
+				 //jedna je o typ N - prevedeme cislo na znaky
+				 //UnPack(P, S->A, l);
 				for (BYTE i = 0; i < F->L; i++) {
 					bool upper = (i % 2) == 0; // jde o "levou" cislici
 					BYTE j = i / 2;
 					if (upper) { S += ((BYTE)source[j] >> 4) + 0x30; }
 					else { S += ((BYTE)source[j] & 0x0F) + 0x30; }
 				}
+				//S = UnPack(source, l);
 			}
 			break;
 		}

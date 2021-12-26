@@ -1359,7 +1359,9 @@ std::string DecodeField(FieldDescr* F, WORD LWw)
 			else Txt = "*";
 			return Txt;
 		}
-		else s = _ShortS(F);
+		else {
+			s = _StdS(F);
+		}
 		break;
 	}
 	default: {

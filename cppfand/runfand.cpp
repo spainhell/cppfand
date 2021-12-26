@@ -361,8 +361,7 @@ bool SetTopDir(std::string& p, std::string& n)
 void RunRdb(std::string p)
 {
 	std::string n;
-	if (!p.empty() && SetTopDir(p, n))
-	{
+	if (!p.empty() && SetTopDir(p, n)) {
 		wwmix ww;
 		EditExecRdb(n, "main", nullptr, &ww);
 		CFile = CatFD;

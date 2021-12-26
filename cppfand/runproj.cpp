@@ -1059,9 +1059,13 @@ void SetRdbDir(char Typ, std::string* Nm)
 	std::string d;
 	r = CRdb;
 	rb = r->ChainBack;
-	if (rb == nullptr) TopRdb = *r; CVol = "";
+	if (rb == nullptr) {
+		TopRdb = r;
+	}
+	CVol = "";
 	if (Typ == '\\') {
-		rb = &TopRdb; CRdb = rb;
+		rb = TopRdb;
+		CRdb = rb;
 		CFile->CatIRec = GetCatIRec(*Nm, false);
 		CRdb = r;
 	}
@@ -1138,7 +1142,7 @@ void CreateOpenChpt(std::string Nm, bool create, wwmix* ww)
 	CFile->RecPtr = GetRecSpace();
 	SetRdbDir(Nm[0], &Nm1);
 	p = CDir + Nm1 + ".RDB";
-	CFile->Drive = TestMountVol(CPath[1]);
+	CFile->Drive = TestMountVol(CPath[0]);
 	SetChptFldDPtr();
 	if (!spec.RDBcomment) ChptTxt->L = 1;
 	SetMsgPar(p);

@@ -60,8 +60,6 @@ BYTE Hi(WORD cislo);
 BYTE Lo(WORD cislo);
 WORD Swap(WORD cislo);
 
-void UnPack(void* PackArr, WORD& NumArr, WORD& NoDigits);
-void Pack(void* NumArr, WORD& PackArr, WORD& NoDigits);
 inline void OvrInit(pstring FileName) {}
 inline void OvrInitEMS() {}
 inline longint OvrGetBuf() { return 1024 * 1024; }
