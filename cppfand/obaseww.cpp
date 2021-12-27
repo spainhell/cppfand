@@ -1,5 +1,6 @@
 #include "obaseww.h"
 
+#include "../textfunc/textfunc.h"
 #include "base.h"
 #include "OldDrivers.h"
 #include "GlobalVariables.h"
@@ -301,7 +302,9 @@ void CFileMsg(WORD n, char Typ)
 	SetCPathVol();
 	if (Typ == 'T') CExtToT();
 	else if (Typ == 'X') CExtToX();
-	SetMsgPar(CPath); 
+	std::string path = CPath;
+	ReplaceChar(path, '/', '\\');
+	SetMsgPar(path);
 	WrLLF10Msg(n);
 }
 

@@ -1035,7 +1035,6 @@ void LongS_(FieldDescr* F, LongStr* S)
 /// Save STD::STRING to the record
 void S_(FieldDescr* F, std::string S, void* record)
 {
-	S = S.substr(0, F->L); // delka retezce je max. F->L
 	const BYTE LeftJust = 1;
 	BYTE* pRec = nullptr;
 
@@ -1046,6 +1045,7 @@ void S_(FieldDescr* F, std::string S, void* record)
 		integer M = F->M;
 		switch (F->Typ) {
 		case 'A': {
+			S = S.substr(0, F->L); // delka retezce je max. F->L
 			if (M == LeftJust) {
 				// doplnime mezery zprava
 				memcpy(pRec, S.c_str(), S.length()); // probiha kontrola max. delky retezce
@@ -1062,6 +1062,7 @@ void S_(FieldDescr* F, std::string S, void* record)
 			break;
 		}
 		case 'N': {
+			S = S.substr(0, F->L); // delka retezce je max. F->L
 			BYTE tmpArr[80]{ 0 };
 			if (M == LeftJust) {
 				// doplnime nuly zprava

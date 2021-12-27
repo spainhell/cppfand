@@ -339,7 +339,7 @@ bool CacheLocked = false; // r510
 void AddBackSlash(std::string& s)
 {
 	if (s.empty()) { return; }
-	if (s[s.length()] == '\\' || s[s.length()] == '/') return;
+	if (s[s.length() - 1] == '\\' || s[s.length() - 1] == '/') return;
 
 	if (s.find('\\') != std::string::npos) {
 		s += '\\';
