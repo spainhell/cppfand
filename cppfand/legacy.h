@@ -27,14 +27,14 @@ WORD pred(WORD input);
 WORD succ(WORD input);
 
 void FSplit(pstring fullname, pstring& dir, pstring& name, pstring& ext);
-void FSplit(const std::string& fullname, std::string& dir, std::string& name, std::string& ext);
+void FSplit(const std::string& fullname, std::string& dir, std::string& name, std::string& ext, char pathDelim = '\\');
 pstring FSearch(pstring& path, pstring& dirlist);
 std::string FSearch(const std::string path, const std::string dirlist);
-std::string FExpand(std::string path);
+std::string FExpand(std::string path, char pathDelim = '\\');
 
 void ChDir(std::string cesta);
 void GetDir(BYTE disk, pstring* cesta);
-pstring GetDir(BYTE disk);
+std::string GetDir(BYTE disk);
 void MkDir(std::string cesta);
 void RmDir(std::string cesta);
 void Rename(std::string soubor, std::string novejmeno);

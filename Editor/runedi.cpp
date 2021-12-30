@@ -4534,7 +4534,7 @@ label81:
 								}
 							}
 							else if (IsTestRun && (CFile != CatFD) && (KbdChar == _AltF2_)) {
-								EditHelpOrCat(KbdChar, 1, CFile->Name + '.' + CFld->FldD->Name);
+								EditHelpOrCat(KbdChar, 1, CFile->Name + "." + CFld->FldD->Name);
 							}
 							break;
 						case __F6: if (!EdRecVar) F6Proc(); break;

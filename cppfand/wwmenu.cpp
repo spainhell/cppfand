@@ -983,7 +983,7 @@ label1:
 		else fo = fonts.VFont;
 		ConvToNoDiakr(&Nm[0], Nm.length(), fo);
 		//printf("comp: %s <=> %s\n", S.c_str(), Nm.c_str());
-		if (EqualsMask(&S[0], S.length(), Nm)) {
+		if (EqualsMask(S, Nm)) {
 		label2:
 			result = _StdS(TxtF);
 			if (!ByName || (result.length() > 0) || (i == CFile->NRecs)) {

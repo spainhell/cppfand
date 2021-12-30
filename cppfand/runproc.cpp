@@ -1146,7 +1146,10 @@ void RunInstr(Instr* PD)
 		case _break: { BreakP = true; break; }
 		case _exitP: { ExitP = true; break; }
 		case _cancel: {
-			GoExit();
+			// TODO: procedure GoExit; assembler; - was called here
+			BreakP = true; // from ExitBuf.BrkP
+			ExitP = true; // from ExitBuf.ExP
+			//GoExit();
 			break;
 		}
 		case _save: { SaveFiles(); break; }
@@ -1407,8 +1410,8 @@ void RunInstr(Instr* PD)
 		}
 		}
 		PD = (Instr*)PD->Chain;
+		}
 	}
-}
 
 void RunProcedure(Instr* PDRoot)
 {

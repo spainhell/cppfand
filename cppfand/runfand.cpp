@@ -699,6 +699,13 @@ label1:
 	goto label1;
 }
 
+void DeleteFandFiles()
+{
+	deleteFile(FandWorkName);
+	deleteFile(FandWorkXName);
+	deleteFile(FandWorkTName);
+}
+
 void OpenFileDialog()
 {
 	char filename[MAX_PATH];

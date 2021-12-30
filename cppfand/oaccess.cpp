@@ -11,6 +11,7 @@
 #include "wwmix.h"
 #include "XFile.h"
 #include "../ExportImport/ExportImport.h"
+#include "../textfunc/textfunc.h"
 
 void OpenXWorkH()
 {
@@ -786,7 +787,7 @@ void GetCPathForCat(WORD I)
 	FSplit(CPath, CDir, CName, CExt);
 }
 
-void SetCPathVol()
+void SetCPathVol(char pathDelim)
 {
 	WORD i = 0;
 	bool isRdb = false;
@@ -833,6 +834,8 @@ label2:
 label3:
 	CName = CFile->Name;
 label4:
+	if (pathDelim == '/') ReplaceChar(CDir, '\\', '/');
+	if (pathDelim == '\\') ReplaceChar(CDir, '/', '\\');
 	CPath = CDir + CName + CExt;
 }
 

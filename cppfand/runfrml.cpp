@@ -827,10 +827,9 @@ bool RunModulo(FrmlElem1* X)
 
 bool RunEquMask(FrmlElem0* X)
 {
-	LongStr* s = RunLongStr(X->P1);
+	auto value = RunStdStr(X->P1);
 	auto mask = RunShortStr(X->P2);
-	auto result = EqualsMask(s->A, s->LL, mask);
-	ReleaseStore(s);
+	auto result = EqualsMask(value, mask);
 	return result;
 }
 
@@ -838,12 +837,15 @@ double RunReal(FrmlElem* X)
 {
 	if (X == nullptr) return 0;
 
-	double R = 0.0; FileD* cf = nullptr; LockMode md;
-	longint RecNo = 0; void* p = &RecNo; void* cr = nullptr;
+	double R = 0.0;
+	FileD* cf = nullptr;
+	LockMode md;
+	longint RecNo = 0;
+	void* p = &RecNo;
+	void* cr = nullptr;
 #ifdef FandGraph
-	ViewPortType vp; // absolute R; /*9 BYTE*/
+	ViewPortType* vp = (ViewPortType*)&R;
 #endif
-	FILE* h = (FILE*)&R;
 	double result = 0;
 label1:
 	auto iX0 = (FrmlElem0*)X;
@@ -855,7 +857,6 @@ label1:
 	}
 	case _getlocvar: {
 		auto iX = (FrmlElem18*)X;
-		//result = *(double*)(uintptr_t(MyBP) + iX->BPOfs);
 		result = iX->locvar->R;
 		break;
 	}
@@ -965,7 +966,7 @@ label1:
 	case _sin: result = sin(RunReal(iX0->P1)); break;
 	case _cos: result = cos(RunReal(iX0->P1)); break;
 	case _arctan: result = atan(RunReal(iX0->P1)); break;
-	case _ln: result = log(RunReal(iX0->P1));
+	case _ln: result = log(RunReal(iX0->P1)); break;
 	case _exp: {
 		R = RunReal(iX0->P1);
 		if ((R <= -50) || (R > 88)) result = 0;
@@ -978,8 +979,12 @@ label1:
 		cf = CFile;
 		CFile = iX->FD;
 		md = NewLMode(RdMode);
-		if (X->Op == _nrecs) RecNo = XNRecs(CFile->Keys);
-		else RecNo = CFile->NRecs;
+		if (X->Op == _nrecs) {
+			RecNo = XNRecs(CFile->Keys);
+		}
+		else {
+			RecNo = CFile->NRecs;
+		}
 		OldLMode(md);
 		result = (int)RecNo;
 		CFile = cf;
@@ -999,14 +1004,15 @@ label1:
 		CFile = iX->FD;
 		md = NewLMode(RdMode);
 		result = LastUpdate(CFile->Handle);
-		OldLMode(md); CFile = cf;
+		OldLMode(md);
+		CFile = cf;
 		break;
 	}
 	case _catfield: {
 		auto iX = (FrmlElem10*)X;
 		RdCatPathVol(iX->CatIRec);
-		TestMountVol(CPath[1]);
-		h = OpenH(_isoldfile, RdOnly);
+		TestMountVol(CPath[0]);
+		FILE* h = OpenH(_isoldfile, RdOnly);
 		result = LastUpdate(h);
 		CloseH(&h);
 		break;
@@ -1029,10 +1035,12 @@ label1:
 	case _recnolog: result = AbsLogRecNoFun((FrmlElem13*)X); break;
 	case _accrecno: {
 		auto iX = (FrmlElem14*)X;
-		cf = CFile; cr = CRecPtr; AccRecNoProc(iX, 640);
+		cf = CFile; cr = CRecPtr;
+		AccRecNoProc(iX, 640);
 		result = _R(iX->RecFldD);
 		ReleaseStore(CRecPtr);
-		CFile = cf; CRecPtr = cr;
+		CFile = cf;
+		CRecPtr = cr;
 		break;
 	}
 	case _link: result = LinkProc((FrmlElem15*)X); break;
@@ -1042,16 +1050,16 @@ label1:
 #ifdef FandGraph
 	case _getmaxx: {
 		if (IsGraphMode) {
-			GetViewSettings(vp);
-			result = vp.x2 - vp.x1;
+			GetViewSettings(*vp);
+			result = vp->x2 - vp->x1;
 		}
 		else result = 0;
 		break;
 	}
 	case _getmaxy: {
 		if (IsGraphMode) {
-			GetViewSettings(vp);
-			result = vp.y2 - vp.y1;
+			GetViewSettings(*vp);
+			result = vp->y2 - vp->y1;
 		}
 		else result = 0;
 		break;

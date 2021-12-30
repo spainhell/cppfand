@@ -14,6 +14,7 @@ int main(int argc, char* argv[])
 	}
 	
 	InitRunFand();
+	DeleteFandFiles();
 	log->log(loglevel::INFO, "*** *** *** *** *** ***  APPLICATION ENDED   *** *** *** *** *** ***");
 	Logging::finish();
 	system("cls");

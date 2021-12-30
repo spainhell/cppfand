@@ -223,7 +223,7 @@ void FSplit(pstring fullname, pstring& dir, pstring& name, pstring& ext)
 	}
 }
 
-void FSplit(const std::string& fullname, std::string& dir, std::string& name, std::string& ext)
+void FSplit(const std::string& fullname, std::string& dir, std::string& name, std::string& ext, char pathDelim)
 {
 	std::filesystem::path pth = fullname;
 	bool isDir = is_directory(pth);
@@ -239,6 +239,9 @@ void FSplit(const std::string& fullname, std::string& dir, std::string& name, st
 		ext = pth.extension().string();
 		dir = pth.generic_string().substr(0, pth.generic_string().length() - name.length() - ext.length());
 	}
+	
+	if (pathDelim == '/') ReplaceChar(dir, '\\', '/');
+	if (pathDelim == '\\') ReplaceChar(dir, '/', '\\');
 
 	return;
 
@@ -329,22 +332,34 @@ std::string FSearch(const std::string path, const std::string dirlist)
 	return result;
 }
 
-std::string FExpand(std::string path)
+std::string FExpand(std::string path, char pathDelim)
 {
 	std::string dir, name, ext;
 	FSplit(path, dir, name, ext);
 
 	// je cesta kompletni?
-	if (dir.length() > 0 && name.length() > 0 && ext.length() > 0) return path; // je to kompletni soubor
-	if (dir.length() > 0) { return dir; } // je to jen adresar
+	if (dir.length() > 0 && name.length() > 0 && ext.length() > 0) {
+		// je to kompletni soubor
+		if (pathDelim == '/') ReplaceChar(path, '\\', '/');
+		if (pathDelim == '\\') ReplaceChar(path, '/', '\\');
+		return path;
+	}
+	if (dir.length() > 0) {
+		// je to jen adresar
+		if (pathDelim == '/') ReplaceChar(dir, '\\', '/');
+		if (pathDelim == '\\') ReplaceChar(dir, '/', '\\');
+		return dir;
+	} 
 
 	std::string fullpath = GetDir(0);
-	
 	if (name.length() > 0 || ext.length() > 0) {
 		fullpath += "\\";
 		fullpath += name;
 		if (ext.length() > 0) { fullpath += ext; }
 	}
+
+	if (pathDelim == '/') ReplaceChar(fullpath, '\\', '/');
+	if (pathDelim == '\\') ReplaceChar(fullpath, '/', '\\');
 	return fullpath;
 }
 
@@ -365,15 +380,14 @@ void GetDir(BYTE disk, pstring* cesta)
 	*cesta = buf;
 }
 
-pstring GetDir(BYTE disk)
+std::string GetDir(BYTE disk)
 {
 	char buf[MAX_PATH];
 	if (_getcwd(buf, MAX_PATH) == nullptr)
 	{
 		HandleError = errno;
 	}
-	pstring result = buf;
-	return result;
+	return buf;
 }
 
 void MkDir(std::string cesta)

@@ -1281,7 +1281,7 @@ std::string MyFExpand(std::string Nm, std::string EnvName)
 	}
 	std::string result = FExpand(p);
 	//ChDir(d);
-	return p;
+	return result;
 }
 
 void* Normalize(longint L)
@@ -1412,6 +1412,12 @@ bool EqualsMask(void* p, WORD l, pstring Mask)
 	//	if (inp[i] != Mask[i + 1]) return false;
 	//}
 	//return true;
+}
+
+bool EqualsMask(std::string& value, std::string& mask)
+{
+	if (mask.length() < 1) return false;
+	return CmpStringWithMask(value, mask);
 }
 
 bool EquLongStr(LongStr* S1, LongStr* S2)

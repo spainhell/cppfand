@@ -928,15 +928,14 @@ bool RdFDSegment(WORD FromI, longint Pos)
 	return result;
 }
 
-WORD FindHelpRecNr(FileDPtr FD, pstring txt)
+WORD FindHelpRecNr(FileDPtr FD, std::string& txt)
 {
 	FileD* cf = nullptr; void* cr = nullptr;
 	LockMode md = LockMode::NullMode;
 	FieldDescr* NmF = nullptr; FieldDescr* TxtF = nullptr;
 	WORD i = 0;
-	pstring nm;// (80);
 	WORD result = 0;
-	ConvToNoDiakr((WORD*)txt[1], txt.length(), fonts.VFont);
+	ConvToNoDiakr(&txt[0], txt.length(), fonts.VFont);
 	cf = CFile; cr = CRecPtr;
 	CFile = FD;
 	CRecPtr = GetRecSpace();
@@ -945,17 +944,26 @@ WORD FindHelpRecNr(FileDPtr FD, pstring txt)
 	NmF = CFile->FldD.front();
 	TxtF = (FieldDescr*)NmF->Chain;
 	for (i = 1; i < CFile->NRecs; i++) {
-		ReadRec(CFile, i, CRecPtr); nm = OldTrailChar(' ', _ShortS(NmF));
-		ConvToNoDiakr((WORD*)nm[1], nm.length(), fonts.VFont);
-		if (EqualsMask(&txt[1], txt.length(), nm)) {
-			while ((i < CFile->NRecs) && (_T(TxtF) == 0)) { i++; ReadRec(CFile, i, CRecPtr); }
-			result = i; goto label2;
+		ReadRec(CFile, i, CRecPtr);
+		auto NmFtext = _StdS(NmF);
+		std::string nm = TrailChar(NmFtext, ' ');
+		ConvToNoDiakr(&nm[0], nm.length(), fonts.VFont);
+		if (EqualsMask(txt, nm)) {
+			while ((i < CFile->NRecs) && (_T(TxtF) == 0)) {
+				i++;
+				ReadRec(CFile, i, CRecPtr);
+			}
+			result = i;
+			goto label2;
 		}
 	}
 label1:
 	result = 0;
 label2:
-	OldLMode(md); ReleaseStore(CRecPtr); CFile = cf; CRecPtr = cr;
+	OldLMode(md);
+	ReleaseStore(CRecPtr);
+	CFile = cf;
+	CRecPtr = cr;
 	return result;
 }
 
@@ -963,7 +971,7 @@ bool PromptHelpName(WORD& N)
 {
 	wwmix ww;
 	std::string txt;
-	auto result = false; txt = "";
+	auto result = false;
 	ww.PromptLL(153, txt, 1, true);
 	if ((txt.length() == 0) || (Event.Pressed.KeyCombination() == __ESC)) return result;
 	N = FindHelpRecNr(CFile, txt);
@@ -971,7 +979,7 @@ bool PromptHelpName(WORD& N)
 	return result;
 }
 
-void EditHelpOrCat(WORD cc, WORD kind, pstring txt)
+void EditHelpOrCat(WORD cc, WORD kind, std::string txt)
 {
 	FileD* FD;
 	WORD i, n;
@@ -985,7 +993,7 @@ void EditHelpOrCat(WORD cc, WORD kind, pstring txt)
 		else {
 			i = 3; n = FindHelpRecNr(FD, txt);
 			if (n == 0) {
-				keyboard.SetKeyBuf("\0\60" + std::string(txt)); // TODO: tady ma byt KbdBuffer:=#0#60+txt
+				keyboard.SetKeyBuf("\0\60" + txt); // TODO: tady ma byt KbdBuffer:=#0#60+txt
 			}
 		}
 	}

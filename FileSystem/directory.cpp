@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "../exprcmp/exprcmp.h"
+#include "../textfunc/textfunc.h"
 
 namespace fs = std::filesystem;
 
@@ -41,11 +42,16 @@ string parentDirectory(string path)
 	return result + '\\';
 }
 
-string getDirectory(string fullPath)
+string getDirectory(string fullPath, char pathDelim)
 {
 	fs::path p = fullPath;
 	p.remove_filename();
-	return p.generic_string();
+
+	auto dir = p.generic_string();
+	if (pathDelim == '/') ReplaceChar(dir, '\\', '/');
+	if (pathDelim == '\\') ReplaceChar(dir, '/', '\\');
+
+	return dir;
 }
 
 vector<string> directoryItems(const string& path, string mask)
@@ -63,6 +69,13 @@ vector<string> directoryItems(const string& path, string mask)
 			}
 		}
 	}
-	sort(result.begin(), result.end());
+	if (result.size() > 1) {
+		sort(result.begin() + 1, result.end());
+	}
 	return result;
+}
+
+bool deleteFile(const string& path)
+{
+	return fs::remove(path);
 }
