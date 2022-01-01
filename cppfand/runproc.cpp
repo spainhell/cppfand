@@ -1445,7 +1445,7 @@ void CallProcedure(Instr_proc* PD)
 
 #ifdef _DEBUG
 	std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
-	if (srcCode.find("if upcase(H002.Heslo)") != std::string::npos) {
+	if (srcCode.find("U002") != std::string::npos) {
 		printf("");
 	}
 #endif

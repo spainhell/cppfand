@@ -966,8 +966,7 @@ WORD ReadLongH(FILE* handle, longint bytes, void* buffer)
 	if (handle == nullptr) RunError(706);
 	if (bytes <= 0) return 0;
 	auto readed = fread_s(buffer, bytes, 1, bytes, handle);
-	if (readed != static_cast<unsigned int>(bytes))
-	{
+	if (readed != static_cast<unsigned int>(bytes)) {
 		// nebyl nacten pozadovany pocet B
 		auto eofReached = feof(handle);
 		HandleError = ferror(handle);

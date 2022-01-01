@@ -701,9 +701,23 @@ label1:
 
 void DeleteFandFiles()
 {
-	deleteFile(FandWorkName);
-	deleteFile(FandWorkXName);
-	deleteFile(FandWorkTName);
+	try {
+		fclose(WorkHandle);
+		deleteFile(FandWorkName);
+	}
+	catch(std::exception&) {}
+
+	try {
+		fclose(XWork.Handle);
+		deleteFile(FandWorkXName);
+	}
+	catch (std::exception&) {}
+	
+	try {
+		fclose(TWork.Handle);
+		deleteFile(FandWorkTName);
+	}
+	catch (std::exception&) {}
 }
 
 void OpenFileDialog()

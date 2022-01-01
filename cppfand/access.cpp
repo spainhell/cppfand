@@ -895,6 +895,10 @@ LongStr* _LongS(FieldDescr* F)
 /// Read PASCAL STRING from the record
 pstring _ShortS(FieldDescr* F)
 {
+	if (CFile != nullptr && CFile->Name == "U002" && F->Name == "Faktura")
+	{
+		printf("");
+	}
 	void* P = CRecPtr;
 	char* source = (char*)P + F->Displ;
 	pstring S;
@@ -946,6 +950,10 @@ pstring _ShortS(FieldDescr* F)
 /// Read STD::STRING from the record
 std::string _StdS(FieldDescr* F)
 {
+	if (CFile != nullptr && CFile->Name == "U002" && F->Name == "Faktura")
+	{
+		printf("");
+	}
 	void* P = CRecPtr;
 	char* source = (char*)P + F->Displ;
 	std::string S;
@@ -1006,6 +1014,10 @@ std::string _StdS(FieldDescr* F)
 /// Save LONG STRING to the record
 void LongS_(FieldDescr* F, LongStr* S)
 {
+	if (CFile != nullptr && CFile->Name == "U002" && F->Name == "Faktura")
+	{
+		printf("");
+	}
 	// asi se vzdy uklada do souboru (nebo pracovniho souboru)
 	// nakonec vola T_
 	longint Pos; LockMode md;
@@ -1035,6 +1047,10 @@ void LongS_(FieldDescr* F, LongStr* S)
 /// Save STD::STRING to the record
 void S_(FieldDescr* F, std::string S, void* record)
 {
+	if (CFile != nullptr && CFile->Name == "U002" && F->Name == "Faktura")
+	{
+		printf("");
+	}
 	const BYTE LeftJust = 1;
 	BYTE* pRec = nullptr;
 
@@ -1067,11 +1083,11 @@ void S_(FieldDescr* F, std::string S, void* record)
 			if (M == LeftJust) {
 				// doplnime nuly zprava
 				memcpy(tmpArr, S.c_str(), S.length());
-				memset(&tmpArr[F->L - S.length()], '0', F->L - S.length());
+				memset(&tmpArr[S.length()], '0', F->L - S.length());
 			}
 			else {
-				// doplnime mezery zleva
-				memset(tmpArr, ' ', F->L - S.length());
+				// doplnime nuly zleva
+				memset(tmpArr, '0', F->L - S.length());
 				memcpy(&tmpArr[F->L - S.length()], S.c_str(), S.length());
 			}
 			bool odd = F->L % 2 == 1; // lichy pocet znaku
@@ -1127,8 +1143,13 @@ bool LinkUpw(LinkDPtr LD, longint& N, bool WithT)
 		TestXFExist();
 		LU = K->SearchIntvl(x, false, N);
 	}
-	else if (CFile->NRecs == 0) { LU = false; N = 1; }
-	else LU = SearchKey(x, K, N);
+	else if (CFile->NRecs == 0) {
+		LU = false; N = 1;
+	}
+	else {
+		LU = SearchKey(x, K, N);
+	}
+
 	if (LU) ReadRec(CFile, N, CRecPtr);
 	else {
 		// label1:
@@ -1166,7 +1187,7 @@ bool LinkUpw(LinkDPtr LD, longint& N, bool WithT)
 		CFile = ToFD;
 		CRecPtr = RecPtr;
 	}
-label2:
+//label2:
 	auto result = LU;
 #ifdef FandSQL
 	if (!CFile->IsSQLFile)
