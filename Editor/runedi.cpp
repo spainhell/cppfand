@@ -621,7 +621,7 @@ longint CNRecs()
 longint AbsRecNr(longint N)
 {
 	Logging* log = Logging::getInstance();
-	log->log(loglevel::DEBUG, "AbsRecNr(%i), CFile 0x%p", N, CFile->Handle);
+	//log->log(loglevel::DEBUG, "AbsRecNr(%i), CFile 0x%p", N, CFile->Handle);
 	LockMode md;
 	longint result = 0;
 	if (EdRecVar
@@ -1908,7 +1908,7 @@ bool DelIndRec(longint I, longint N)
 bool DeleteRecProc()
 {
 	Logging* log = Logging::getInstance();
-	log->log(loglevel::DEBUG, "DeleteRecProc() deleting item (CFile '%c')", CFile->Name.c_str());
+	//log->log(loglevel::DEBUG, "DeleteRecProc() deleting item (CFile '%c')", CFile->Name.c_str());
 
 	longint I = 0, J = 0, N = 0, oBaseRec = 0;
 	WORD oIRec = 0;
@@ -1934,7 +1934,7 @@ bool DeleteRecProc()
 		|| CFile->IsSQLFile
 #endif
 		) {
-		log->log(loglevel::DEBUG, "... from file with index ...");
+		//log->log(loglevel::DEBUG, "... from file with index ...");
 		TestXFExist();
 		if (Group) {
 			IRec = 1; BaseRec = 1;

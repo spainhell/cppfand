@@ -872,7 +872,7 @@ longint TFile::Store(char* s, size_t l)
 void TFile::RdWr(bool ReadOp, longint Pos, WORD N, void* X)
 {
 	Logging* log = Logging::getInstance();
-	log->log(loglevel::DEBUG, "TFile::RdWr() 0x%p %s pos: %i, len: %i", Handle, ReadOp ? "read" : "write", Pos, N);
+	// log->log(loglevel::DEBUG, "TFile::RdWr() 0x%p %s pos: %i, len: %i", Handle, ReadOp ? "read" : "write", Pos, N);
 	WORD Rest = 0, L = 0;
 	longint NxtPg = 0;
 	char* source = (char*)X;

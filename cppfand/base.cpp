@@ -1058,7 +1058,7 @@ void CloseH(FILE** handle)
 void ClearCacheH(FILE* h)
 {
 	Logging* log = Logging::getInstance();
-	log->log(loglevel::DEBUG, "ClearCacheH() 0x%p", h);
+	//log->log(loglevel::DEBUG, "ClearCacheH() 0x%p", h);
 	// smazeme cache
 	cache.SaveRemoveCache(h);
 }
@@ -1066,7 +1066,7 @@ void ClearCacheH(FILE* h)
 void CloseClearH(FILE** h)
 {
 	Logging* log = Logging::getInstance();
-	log->log(loglevel::DEBUG, "CloseClearH() 0x%p", h);
+	//log->log(loglevel::DEBUG, "CloseClearH() 0x%p", h);
 	if (h == nullptr) return;
 	ClearCacheH(*h);
 	CloseH(h);
@@ -1160,7 +1160,7 @@ void RdWrCache(bool ReadOp, FILE* Handle, bool NotCached, longint Pos, WORD N, v
 void FlushH(FILE* handle)
 {
 	Logging* log = Logging::getInstance();
-	log->log(loglevel::DEBUG, "FlushH()      0x%p", handle);
+	//log->log(loglevel::DEBUG, "FlushH()      0x%p", handle);
 	if (handle == nullptr) return;
 	auto result = fflush(handle);
 	if (result == EOF) { HandleError = result; }

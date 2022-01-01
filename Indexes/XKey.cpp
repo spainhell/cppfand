@@ -160,7 +160,7 @@ longint XKey::PathToNr()
 void XKey::NrToPath(longint I)
 {
 	auto log = Logging::getInstance();
-	log->log(loglevel::DEBUG, "XKey::NrToPath(%i)", I);
+	//log->log(loglevel::DEBUG, "XKey::NrToPath(%i)", I);
 
 	auto p = std::make_unique<XPage>();
 	longint page = IndexRoot;
@@ -284,7 +284,7 @@ label2:
 longint XKey::NrToRecNr(longint I)
 {
 	auto log = Logging::getInstance();
-	log->log(loglevel::DEBUG, "XKey::NrToRecNr(%i)", I);
+	//log->log(loglevel::DEBUG, "XKey::NrToRecNr(%i)", I);
 	NrToPath(I);
 	return PathToRecNr();
 }
@@ -674,7 +674,7 @@ void DeleteAllIndexes(longint RecNr)
 void DeleteXRec(longint RecNr, bool DelT)
 {
 	Logging* log = Logging::getInstance();
-	log->log(loglevel::DEBUG, "DeleteXRec(%i, %s)", RecNr, DelT ? "true" : "false");
+	//log->log(loglevel::DEBUG, "DeleteXRec(%i, %s)", RecNr, DelT ? "true" : "false");
 	TestXFExist();
 	DeleteAllIndexes(RecNr);
 	if (DelT) DelAllDifTFlds(CRecPtr, nullptr);
