@@ -1112,7 +1112,7 @@ void S_(FieldDescr* F, std::string S, void* record)
 }
 
 // zrejme zajistuje pristup do jine tabulky (cizi klic)
-bool LinkUpw(LinkDPtr LD, longint& N, bool WithT)
+bool LinkUpw(LinkD* LD, longint& N, bool WithT)
 {
 	KeyFldD* KF;
 	FieldDescr* F, * F2;

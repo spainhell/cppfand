@@ -117,7 +117,7 @@ void GetSplitChptName(std::string& Name, std::string& Ext)
 void GetRdbRecVars(void* RecPtr, RdbRecVars* X)
 {
 	void* p = nullptr; void* p2 = nullptr; void* cr = nullptr;
-	LinkDPtr ld = nullptr;
+	LinkD* ld = nullptr;
 
 	cr = CRecPtr;
 	CRecPtr = RecPtr;

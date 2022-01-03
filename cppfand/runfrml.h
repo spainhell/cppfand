@@ -14,7 +14,7 @@
 //extern TFile* TF02;
 //extern longint TF02Pos; // r33
 
-double Owned(FrmlPtr Bool, FrmlPtr Sum, LinkDPtr LD);
+double Owned(FrmlPtr Bool, FrmlPtr Sum, LinkD* LD);
 integer CompBool(bool B1, bool B2);
 integer CompReal(double R1, double R2, integer M); // r42
 LongStr* CopyToLongStr(pstring& SS);

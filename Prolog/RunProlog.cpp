@@ -3260,7 +3260,7 @@ bool RunBuildIn()
 			break;
 		}
 		case _FandLinkP: {
-			ld = LinkDPtr(CurrInst->NextBranch);
+			ld = (LinkD*)CurrInst->NextBranch;
 			if (ld == nullptr) {
 				ld = LinkDRoot;
 				while ((ld != nullptr) && !EquUpCase(ld->FromFD->Name, CurrInst->Vars[0]->SS)) {

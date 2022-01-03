@@ -21,7 +21,7 @@ public:
 	void ResetSort(KeyFldD* aSK, FrmlPtr& BoolZ, LockMode OldMd, bool SQLFilter);
 	void SubstWIndex(WKeyDPtr WK);
 	void ResetOwner(XString* XX, FrmlPtr aBool);
-	void ResetOwnerIndex(LinkDPtr LD, LocVar* LV, FrmlPtr aBool);
+	void ResetOwnerIndex(LinkD* LD, LocVar* LV, FrmlPtr aBool);
 #ifdef FandSQL
 	void ResetSQLTxt(FrmlPtr Z);
 #endif

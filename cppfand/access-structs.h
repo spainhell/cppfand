@@ -95,7 +95,6 @@ struct LinkD // ø. 220
 	XKey* ToKey = nullptr;
 	std::string RoleName;
 };
-typedef LinkD* LinkDPtr;
 
 struct WRectFrml // r251
 {

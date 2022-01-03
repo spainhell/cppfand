@@ -182,7 +182,7 @@ bool EquKFlds(KeyFldD* KF1, KeyFldD* KF2)
 	return true;
 }
 
-void XScan::ResetOwnerIndex(LinkDPtr LD, LocVar* LV, FrmlPtr aBool)
+void XScan::ResetOwnerIndex(LinkD* LD, LocVar* LV, FrmlPtr aBool)
 {
 	WKeyDPtr k;
 	CFile = FD; TestXFExist(); Bool = aBool; OwnerLV = LV; Kind = 2;

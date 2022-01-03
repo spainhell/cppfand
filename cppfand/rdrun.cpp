@@ -110,7 +110,7 @@ bool Add(AddD* AD, void* RP, double R, bool Back)
 	return result;
 }
 
-bool RunAddUpdte1(char Kind, void* CRold, bool Back, AddD* StopAD, LinkDPtr notLD)
+bool RunAddUpdte1(char Kind, void* CRold, bool Back, AddD* StopAD, LinkD* notLD)
 {
 	longint N2, N2old;
 	char Kind2, Kind2old;
@@ -199,9 +199,11 @@ void CrIndRec()
 
 bool Link(AddD* AD, longint& N, char& Kind2)
 {
-	auto result = false;
-	void* CR; LinkDPtr LD;
-	result = true; LD = AD->LD; Kind2 = 'd';
+	void* CR;
+	auto result = true;
+	LinkD* LD = AD->LD;
+	Kind2 = 'd';
+
 	if (LD != nullptr) {
 		if (LinkUpw(LD, N, false)) return result;
 		SetMsgPar(LD->RoleName);
@@ -222,10 +224,9 @@ bool Link(AddD* AD, longint& N, char& Kind2)
 #ifdef FandSQL
 		if (CFile->IsSQLFile) Strm1->InsertRec(false, true) else
 #endif
-
 		{
 			ClearDeletedFlag();
-			if ((LD != nullptr) && (CFile->Typ = 'X')) { CrIndRec(); N = CFile->NRecs; }
+			if ((LD != nullptr) && (CFile->Typ == 'X')) { CrIndRec(); N = CFile->NRecs; }
 			else CreateRec(N);
 		}
 		return result;

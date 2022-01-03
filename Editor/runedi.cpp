@@ -3580,7 +3580,7 @@ void DownEdit()
 {
 	wwmix ww;
 
-	LinkDPtr LD = nullptr; FileDPtr FD = nullptr; StringList SL = nullptr; XKey* K = nullptr;
+	LinkD* LD = nullptr; FileD* FD = nullptr; StringListEl* SL = nullptr; XKey* K = nullptr;
 	EditOpt* EO = nullptr; WORD Brk, i; void* p = nullptr;
 	std::string s, s1, s2; longint w;
 	std::string ali;

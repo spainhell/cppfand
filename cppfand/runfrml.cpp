@@ -22,7 +22,7 @@
 //TFile* TF02;
 //longint TF02Pos; // r33
 
-double Owned(FrmlPtr Bool, FrmlPtr Sum, LinkDPtr LD)
+double Owned(FrmlPtr Bool, FrmlPtr Sum, LinkD* LD)
 {
 	XScan* Scan; XKey* K; XString x; LockMode md; longint n, nBeg;
 	FileDPtr cf; void* cr; double r;

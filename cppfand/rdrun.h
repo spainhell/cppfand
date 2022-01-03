@@ -396,7 +396,7 @@ void SetMyBP(ProcStkD* Bp);
 void PushProcStk();
 void PopProcStk();
 bool RunAddUpdte1(char Kind/*+,-,d*/, void* CRold, bool Back/*tracking*/,
-	AddD* StopAD, LinkDPtr notLD);
+	AddD* StopAD, LinkD* notLD);
 
 void CrIndRec();
 bool Link(AddD* AD, longint& N, char& Kind2);
