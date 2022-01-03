@@ -117,7 +117,7 @@ void GetSplitChptName(std::string& Name, std::string& Ext)
 void GetRdbRecVars(void* RecPtr, RdbRecVars* X)
 {
 	void* p = nullptr; void* p2 = nullptr; void* cr = nullptr;
-	LinkD* ld = nullptr;
+	//LinkD* ld = nullptr;
 
 	cr = CRecPtr;
 	CRecPtr = RecPtr;
@@ -131,7 +131,7 @@ void GetRdbRecVars(void* RecPtr, RdbRecVars* X)
 		X->CatIRec = GetCatIRec(X->Name, false);
 		X->isSQL = false;
 		if (X->OldTxt != 0) {
-			ld = LinkDRoot;
+			//ld = LinkDRoot;
 			MarkBoth(p, p2);
 			if (RdFDSegment(0, X->OldTxt)) {
 				X->FTyp = CFile->Typ;
@@ -145,7 +145,7 @@ void GetRdbRecVars(void* RecPtr, RdbRecVars* X)
 					}
 				}
 			}
-			LinkDRoot = ld;
+			//LinkDRoot = ld;
 			CFile = Chpt;
 			ReleaseBoth(p, p2);
 		}
@@ -898,11 +898,11 @@ bool RdFDSegment(WORD FromI, longint Pos)
 	//	SgF = Sg;
 	//}
 	//
-	ld1 = LinkDRoot;
-	ld = (LinkD*)CFile->Chain;
+	//ld1 = LinkDRoot;
+	//ld = (LinkD*)CFile->Chain;
 	//Pr(ld).Seg = Sg;
-	n = CFile->nLDs;
-	if (n > 0) LinkDRoot = ld;
+	//n = CFile->nLDs;
+	//if (n > 0) LinkDRoot = ld;
 	//while (n > 0) {
 	//	if (n == 1) ld->Chain = ld1;
 	//	//else Pr(ld->Chain).Seg = Sg;
@@ -1268,15 +1268,18 @@ bool CompRunChptRec(WORD CC)
 	pstring STyp(1); void* p = nullptr; void* p2 = nullptr; void* MaxHp = nullptr;
 	ExitRecord er; EditD* OldE = nullptr;
 	RdbPos RP; longint Free; bool uw = false, mv = false;
-	FileD* FD = nullptr; LinkD* oldLd = nullptr; LinkD* ld = nullptr;
-	EditOpt* EO = nullptr; WORD nStrm = 0;
+	FileD* FD = nullptr;
+	//LinkD* oldLd = nullptr;
+	//LinkD* ld = nullptr;
+	EditOpt* EO = nullptr;
+	WORD nStrm = 0;
 	auto result = false;
 
 	OldE = E; MarkBoth(p, p2); WrEStatus(); //NewExit(Ovr(), er);
 	//goto label2;
 	IsCompileErr = false; uw = false; mv = MausVisible;
 	FileD* lstFD = (FileD*)LastInChain(FileDRoot);
-	oldLd = LinkDRoot;
+	//oldLd = LinkDRoot;
 	bool WasError = true;
 	bool WasGraph = IsGraphMode;
 	FD = nullptr;
@@ -1334,12 +1337,13 @@ bool CompRunChptRec(WORD CC)
 				RunMainProc(RP, CRdb->ChainBack = nullptr);
 			}
 			else {
-				lstFD = (FileD*)LastInChain(FileDRoot); ld = LinkDRoot;
+				lstFD = (FileD*)LastInChain(FileDRoot);
+				//ld = LinkDRoot;
 				SetInpTT(&RP, true);
 				ReadProcHead("");
 				ReadProcBody();
 				lstFD->Chain = nullptr;
-				LinkDRoot = ld;
+				//LinkDRoot = ld;
 			}
 			break;
 		}
@@ -1381,7 +1385,7 @@ label2:
 		CFile = (FileD*)CFile->Chain;
 	}
 	lstFD->Chain = nullptr;
-	LinkDRoot = oldLd;
+	//LinkDRoot = oldLd;
 	ReleaseBoth(p, p2); E = OldE; EditDRoot = E;
 	RdEStatus();
 	CRdb = RP.R;
@@ -1606,7 +1610,7 @@ bool EquKeys(XKey* K1, XKey* K2)
 bool MergeOldNew(bool Veriflongint, longint Pos)
 {
 	std::string Name;
-	LinkD* ld = LinkDRoot;
+	//LinkD* ld = LinkDRoot;
 	auto result = false;
 	FileD* FDOld = nullptr;
 	FileD* FDNew = CFile;
@@ -1632,7 +1636,7 @@ bool MergeOldNew(bool Veriflongint, longint Pos)
 	}
 label1:
 	FDNew->Chain = nullptr;
-	LinkDRoot = ld;
+	//LinkDRoot = ld;
 	FDNew->Name = Name;
 	FDNew->FullName = CPath;
 	CFile = FDNew;
@@ -1654,7 +1658,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 	char Mode = '\0'; RdbPos RP;
 	void* p = nullptr; void* p1 = nullptr; void* p2 = nullptr;
 	ExitRecord er; WORD lmsg = 0;
-	LinkD* ld = nullptr;
+	//LinkD* ld = nullptr;
 	std::string RprtTxt; 
 	bool top = false;
 	FileD* lstFD = nullptr;
@@ -1709,7 +1713,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 			switch (Typ) {
 			case 'F': {
 				FDCompiled = true;
-				ld = LinkDRoot;
+				//ld = LinkDRoot;
 				MarkStore(p1);
 				FSplit(Name, dir, nm, ext);
 				if ((Txt == 0) && IsTestRun) {
@@ -1739,7 +1743,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 					else if (OldTxt != 0) ChptTF->Delete(OldTxt - ChptTF->LicenseNr);*/
 				}
 				else if (!RdFDSegment(I, OldTxt)) {
-					LinkDRoot = ld;
+					//LinkDRoot = ld;
 					ReleaseStore(p1);
 					CFile = Chpt;
 					goto label2;
@@ -1772,12 +1776,12 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 			case 'P': {
 				if (FileDRoot->Chain == nullptr) lstFD = FileDRoot;
 				else lstFD = (FileD*)LastInChain(FileDRoot);
-				ld = LinkDRoot;
+				//ld = LinkDRoot;
 				SetInpTTPos(Txt, Encryp);
 				ReadProcHead(Name);
 				ReadProcBody();
 				lstFD->Chain = nullptr;
-				LinkDRoot = ld;
+				//LinkDRoot = ld;
 				break;
 			}
 			case 'E': {

@@ -1433,13 +1433,13 @@ void CallProcedure(Instr_proc* PD)
 
 	WORD i = 0, j = 0, n = 0;
 	longint l = 0; Instr* pd1 = nullptr;
-	LinkD* ld = nullptr; FileD* lstFD = nullptr;
+	FileD* lstFD = nullptr;
 	KeyFldD* kf1 = nullptr; KeyFldD* kf2 = nullptr;
 
 	if (PD == nullptr) return;
 	MarkBoth(p1, p2);
 	oldprocbp = ProcMyBP;
-	ld = LinkDRoot;
+	std::deque<LinkD*> ld = LinkDRoot;
 	lstFD = (FileD*)LastInChain(FileDRoot);
 	SetInpTT(&PD->PPos, true);
 

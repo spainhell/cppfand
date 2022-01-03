@@ -334,11 +334,13 @@ bool SetTopDir(std::string& p, std::string& n)
 			WrLLF10Msg(881);
 			return result;
 		}
-		EditDRoot = nullptr; LinkDRoot = nullptr; FuncDRoot = nullptr;
+		EditDRoot = nullptr;
+		LinkDRoot.clear();
+		FuncDRoot = nullptr;
 		TopDataDir = GetEnv("FANDDATA");
 		DelBackSlash(TopRdbDir);
 		DelBackSlash(TopDataDir);
-		if (TopDataDir != "") TopDataDir = FExpand(TopDataDir);
+		if (!TopDataDir.empty()) TopDataDir = FExpand(TopDataDir);
 		ChDir(TopRdbDir);
 		if (IOResult() != 0) {
 			SetMsgPar(p);

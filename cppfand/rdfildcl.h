@@ -25,7 +25,6 @@ void CheckDuplAlias(pstring Name);
 void LookForK(pstring* Name, FileD* F);
 XKey* RdFileOrAlias1(FileD* F);
 void RdFileOrAlias(FileD** FD, XKey** KD);
-void SetLDIndexRoot(LinkD* L, LinkD* L2);
 void TestDepend();
 void RdImpl(ImplD** IDRoot);
 void RdKumul();

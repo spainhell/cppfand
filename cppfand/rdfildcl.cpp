@@ -448,6 +448,45 @@ void FakeRdFDSegment(FileD* FD)
 	CFile->TxtPosUDLI = 0;
 }
 
+void SetLDIndexRoot(/*LinkD* L,*/ LinkD* L2)
+{
+	XKey* K = nullptr;
+	KeyFldD* Arg = nullptr;
+	KeyFldD* KF = nullptr;
+	bool cmptd = false;
+	//L = LinkDRoot;
+	for (auto& L : LinkDRoot) { //while (L != L2) {   /* find key with equal beginning */
+		if (CFile->Typ == 'X') {
+			K = CFile->Keys;
+			while (K != nullptr) {
+				KF = K->KFlds;
+				Arg = L->Args;
+				cmptd = false;
+				while (Arg != nullptr) {
+					if ((KF == nullptr) || (Arg->FldD != KF->FldD)
+						|| (Arg->CompLex != KF->CompLex)
+						|| (Arg->Descend != KF->Descend))
+						goto label1;
+					if ((Arg->FldD->Flg & f_Stored) == 0) cmptd = true;
+					Arg = (KeyFldD*)Arg->Chain;
+					KF = (KeyFldD*)KF->Chain;
+				}
+				L->IndexRoot = K->IndexRoot;
+				goto label2;
+			label1:
+				K = K->Chain;
+			}
+		}
+	label2:
+		if ((L->MemberRef != 0) && ((L->IndexRoot == 0) || cmptd)) {
+			SetMsgPar(L->RoleName);
+			OldError(152);
+		}
+		//L = L->Chain;
+		CFile->nLDs++;
+	}
+}
+
 // ze souboru .000 vycte data
 void* RdFileD(std::string FileName, char FDTyp, std::string Ext)
 {
@@ -474,7 +513,7 @@ void* RdFileD(std::string FileName, char FDTyp, std::string Ext)
 #ifdef FandSQL
 		if (issql || FD->typSQLFile) OldError(155);
 #endif
-		LDOld = LinkDRoot;
+		//LDOld = LinkDRoot;
 
 		//	RdbD* rdb = nullptr;
 		//	void* cr = nullptr;
@@ -505,7 +544,7 @@ void* RdFileD(std::string FileName, char FDTyp, std::string Ext)
 		//	CFile->TxtPosUDLI = 0;
 
 		FakeRdFDSegment(FD);
-		LinkDRoot = LDOld;
+		//LinkDRoot = LDOld;
 		F = CFile->FldD.front();
 		CFile->Reset();
 		CFile->Name = FileName;
@@ -577,7 +616,7 @@ void* RdFileD(std::string FileName, char FDTyp, std::string Ext)
 		RdFieldDList(true);
 	}
 	GetTFileD(FDTyp);
-	LDOld = LinkDRoot;
+	//LDOld = LinkDRoot;
 
 	// TODO: v originale je to jinak, saha si to na nasl. promenne za PrevCompInp
 	// a bere posledni ChainBack
@@ -604,7 +643,7 @@ label2:
 	if (issql && (CFile->Keys != nullptr)) CFile->Typ = 'X';
 	GetXFileD();
 	CompileRecLen();
-	SetLDIndexRoot(LinkDRoot, LDOld);
+	//SetLDIndexRoot(LDOld);
 	if ((CFile->Typ == 'X') && (CFile->Keys == nullptr)) Error(107);
 	if ((Lexem == '#') && (ForwChar == 'A')) {
 		RdLex();
@@ -628,8 +667,7 @@ label2:
 	if (Lexem != 0x1A) {
 		CFile->TxtPosUDLI = /*OrigInp()->*/CurrPos - 1;
 	}
-	if ((Lexem == '#') && (ForwChar == 'U'))
-	{
+	if ((Lexem == '#') && (ForwChar == 'U')) {
 		// nacteni uzivatelskych pohledu
 		// nazev musi byt jedinecny v ramci cele ulohy
 		// format: #U NazevPohledu (SeznamPristupovychPrav): DruhEditace;
@@ -716,8 +754,9 @@ label2:
 	if (L != nullptr) OldError(26);
 	L = new LinkD();
 	//L->Args = new KeyFldD(); // pridano navic, aby to o par radku niz nepadalo
-	L->Chain = LinkDRoot;
-	LinkDRoot = L;
+	//L->Chain = LinkDRoot;
+	//LinkDRoot = L;
+	LinkDRoot.push_front(L);
 	//Move(&Name, &L->RoleName, Name.length() + 1);
 	L->RoleName = Name;
 	L->FromFD = CFile; L->ToFD = FD; L->ToKey = K;
@@ -825,45 +864,6 @@ label1:
 	RdLex();
 	*FD = f;
 	*KD = k;
-}
-
-void SetLDIndexRoot(LinkD* L, LinkD* L2)
-{
-	XKey* K = nullptr;
-	KeyFldD* Arg = nullptr;
-	KeyFldD* KF = nullptr;
-	bool cmptd = false;
-	L = LinkDRoot;
-	while (L != L2) {   /* find key with equal beginning */
-		if (CFile->Typ == 'X') {
-			K = CFile->Keys;
-			while (K != nullptr) {
-				KF = K->KFlds;
-				Arg = L->Args;
-				cmptd = false;
-				while (Arg != nullptr) {
-					if ((KF == nullptr) || (Arg->FldD != KF->FldD)
-						|| (Arg->CompLex != KF->CompLex)
-						|| (Arg->Descend != KF->Descend))
-						goto label1;
-					if ((Arg->FldD->Flg & f_Stored) == 0) cmptd = true;
-					Arg = (KeyFldD*)Arg->Chain;
-					KF = (KeyFldD*)KF->Chain;
-				}
-				L->IndexRoot = K->IndexRoot;
-				goto label2;
-			label1:
-				K = K->Chain;
-			}
-		}
-	label2:
-		if ((L->MemberRef != 0) && ((L->IndexRoot == 0) || cmptd)) {
-			SetMsgPar(L->RoleName);
-			OldError(152);
-		}
-		L = L->Chain;
-		CFile->nLDs++;
-	}
 }
 
 void TestDepend()

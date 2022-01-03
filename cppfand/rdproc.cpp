@@ -107,26 +107,46 @@ char RdOwner(LinkD** LLD, LocVar** LLV)
 {
 	FileD* fd = nullptr;
 	auto result = '\0';
-	LinkD* ld = nullptr;
+	//LinkD* ld = nullptr;
 	LocVar* lv = nullptr;
 	std::string sLexWord;
 	if (FindLocVar(&LVBD, &lv)) {
 		if (!(lv->FTyp == 'i' || lv->FTyp == 'r' || lv->FTyp == 'f')) Error(177);
-		ld = nullptr;
-		LinkD* ld1 = LinkDRoot;
-		while (ld1 != nullptr) {
+		LinkD* ld = nullptr;
+		//LinkD* ld1 = LinkDRoot;
+		for (auto& ld1 : LinkDRoot) { //while (ld1 != nullptr) {
 			if ((ld1->FromFD == CFile) && (ld1->IndexRoot != 0) && (ld1->ToFD == lv->FD))
 				ld = ld1;
-			ld1 = ld1->Chain;
+			//ld1 = ld1->Chain;
 		}
 		if (ld == nullptr) Error(116);
 		RdLex();
-		if (lv->FTyp == 'f') goto label2;
-		else goto label1;
+		if (lv->FTyp == 'f') {
+#ifdef FandSQL
+			if (ld->ToFD->typSQLFile) Error(155);
+#endif
+			Accept('[');
+			*LLV = (LocVar*)RdRealFrml();
+			Accept(']');
+			result = 'F';
+			*LLD = ld;
+			return result;
+		}
+		else {
+			if (lv->FTyp == 'i') {
+				KeyFldD* kf = WKeyDPtr(lv->RecPtr)->KFlds;
+				if (ld->FromFD->IsSQLFile || ld->ToFD->IsSQLFile) OldError(155);
+				if ((kf != nullptr) && !EquKFlds(kf, ld->ToKey->KFlds)) OldError(181);
+			}
+			*LLV = lv;
+			result = lv->FTyp;
+			*LLD = ld;
+			return result;
+		}
 	}
 	TestIdentif();
-	ld = LinkDRoot;
-	while (ld != nullptr) {
+	//ld = LinkDRoot;
+	for (auto& ld : LinkDRoot) {	//while (ld != nullptr) {
 		sLexWord = LexWord;
 		if ((ld->FromFD == CFile) && EquUpCase(ld->RoleName, sLexWord)) {
 			if ((ld->IndexRoot == 0)) Error(116);
@@ -138,7 +158,6 @@ char RdOwner(LinkD** LLD, LocVar** LLV)
 				RdLex();
 				Accept(')');
 				if (lv->FD != fd) OldError(149);
-			label1:
 				if (lv->FTyp == 'i') {
 					KeyFldD* kf = WKeyDPtr(lv->RecPtr)->KFlds;
 					if (ld->FromFD->IsSQLFile || ld->ToFD->IsSQLFile) OldError(155);
@@ -146,7 +165,8 @@ char RdOwner(LinkD** LLD, LocVar** LLV)
 				}
 				*LLV = lv;
 				result = lv->FTyp;
-				goto label3;
+				*LLD = ld;
+				return result;
 			}
 			else {
 			label2:
@@ -158,12 +178,11 @@ char RdOwner(LinkD** LLD, LocVar** LLV)
 				*LLV = (LocVar*)RdRealFrml();
 				Accept(']');
 				result = 'F';
-			label3:
 				*LLD = ld;
 				return result;
 			}
 		}
-		ld = ld->Chain;
+		//ld = ld->Chain;
 	}
 	Error(9);
 	return result;

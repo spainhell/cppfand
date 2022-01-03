@@ -1077,8 +1077,8 @@ bool FindChpt(char Typ, const pstring& name, bool local, RdbPos* RP)
 			std::string chapterName = _StdS(ChptName);
 			chapterName = TrailChar(chapterName, ' ');
 
-			if (chapterType.length() == 1 
-				&& chapterType[0] == Typ 
+			if (chapterType.length() == 1
+				&& chapterType[0] == Typ
 				&& EquUpCase(chapterName, name)) {
 
 				RP->R = R;
@@ -2460,12 +2460,12 @@ LinkD* FindLD(pstring RoleName)
 
 	// pro soubory 'LIKE' neexistuje zaznam v LinkDRoot, budeme tedy prochazet i predky (OrigFD)
 	while (F != nullptr) {
-		LinkD* L = LinkDRoot;
-		while (L != nullptr) {
+		//LinkD* L = LinkDRoot;
+		for (auto& L : LinkDRoot) { //while (L != nullptr) {
 			if ((L->FromFD == F) && EquUpCase(L->RoleName, RoleName)) {
 				return L;
 			}
-			L = L->Chain;
+			//L = L->Chain;
 		}
 		F = F->OrigFD;
 	}
@@ -2534,20 +2534,23 @@ FrmlElem* MakeFldFrml(FieldDescr* F, char& FTyp)
 
 LinkD* FindOwnLD(FileD* FD, pstring RoleName)
 {
-	LinkD* ld = LinkDRoot;
 	LinkD* result = nullptr;
-	while (ld != nullptr) {
+	//LinkD* ld = LinkDRoot;
+	//while (ld != nullptr) {
+	for (auto& ld : LinkDRoot) {
 		std::string lw = LexWord;
 		if ((ld->ToFD == FD)
 			&& EquUpCase(ld->FromFD->Name, lw)
 			&& (ld->IndexRoot != 0)
 			&& EquUpCase(ld->RoleName, RoleName))
-			goto label1;
-		ld = ld->Chain;
+		{
+			result = ld;
+			break;
+		}
+		//ld = ld->Chain;
 	}
-label1:
 	RdLex();
-	return ld;
+	return result;
 }
 
 FrmlElem* TryRdFldFrml(FileD* FD, char& FTyp)

@@ -3138,14 +3138,14 @@ bool RunBuildIn()
 			case 3/*iio*/: { CurrInst->Vars[2] = GetStringTerm(CurrInst->Vars[0]->SS + CurrInst->Vars[1]->SS); break; }
 			case 5/*ioi*/: {
 				l = CurrInst->Vars[0]->SS.length();
-				if (CurrInst->Vars[0]->SS != CurrInst->Vars[2]->SS.substr( 1, l)) goto label1;
+				if (CurrInst->Vars[0]->SS != CurrInst->Vars[2]->SS.substr(1, l)) goto label1;
 				CurrInst->Vars[1] = GetStringTerm(copy(CurrInst->Vars[2]->SS, l + 1, 255));
 				break;
 			}
 			case 6/*oii*/: {
 				l = CurrInst->Vars[1]->SS.length();
 				l2 = CurrInst->Vars[2]->SS.length();
-				if (CurrInst->Vars[1]->SS != CurrInst->Vars[2]->SS.substr( l2 - l + 1, l)) {
+				if (CurrInst->Vars[1]->SS != CurrInst->Vars[2]->SS.substr(l2 - l + 1, l)) {
 				label1:
 					CurrInst->NextBranch = nullptr;
 					return false;
@@ -3260,48 +3260,48 @@ bool RunBuildIn()
 			break;
 		}
 		case _FandLinkP: {
-			ld = (LinkD*)CurrInst->NextBranch;
-			if (ld == nullptr) {
-				ld = LinkDRoot;
-				while ((ld != nullptr) && !EquUpCase(ld->FromFD->Name, CurrInst->Vars[0]->SS)) {
-					ld = ld->Chain;
-				}
-				if (ld == nullptr) goto label1;
-			}
-			fd = ld->FromFD;
-			if (w == 3/*ii*/) {
-				while ((ld != nullptr) && ((fd != ld->FromFD) ||
-					!EquUpCase(ld->RoleName, CurrInst->Vars[1]->SS))) ld = ld->Chain;
-				if (ld == nullptr) goto label1;
-				CurrInst->Vars[2] = GetStringTerm(ld->ToFD->Name);
-			}
-			else if (w == 5/*ioi*/) {
-				while ((ld != nullptr) && ((fd != ld->FromFD) ||
-					!EquUpCase(ld->ToFD->Name, CurrInst->Vars[2]->SS))) ld = ld->Chain;
-				if (ld == nullptr) goto label1;
-				CurrInst->Vars[1] = GetStringTerm(ld->RoleName);
-			}
-			else {
-				CurrInst->Vars[1] = GetStringTerm(ld->RoleName);
-				CurrInst->Vars[2] = GetStringTerm(ld->ToFD->Name);
-			}
-			CurrInst->Vars[3] = GetStringTerm(Pound(ld->ToKey->Alias));
-			s[0] = 0;
-			k = fd->Keys;
-			while (k != nullptr) {
-				if (k->IndexRoot == ld->IndexRoot) s = k->Alias;
-				k = k->Chain;
-			}
-			CurrInst->Vars[4] = GetStringTerm(Pound(s));
-			n = ld->MemberRef;
-			if (ld->IndexRoot != 0) n += 4;
-			CurrInst->Vars[5] = GetIntTerm(n);
-			if (w == 3) ld = nullptr;
-			else
-				do {
-					ld = ld->Chain;
-				} while (!((ld == nullptr) || (ld->FromFD == fd)));
-				CurrInst->NextBranch = (TBranch*)ld;
+			//ld = (LinkD*)CurrInst->NextBranch;
+			//if (ld == nullptr) {
+			//	ld = LinkDRoot;
+			//	while ((ld != nullptr) && !EquUpCase(ld->FromFD->Name, CurrInst->Vars[0]->SS)) {
+			//		ld = ld->Chain;
+			//	}
+			//	if (ld == nullptr) goto label1;
+			//}
+			//fd = ld->FromFD;
+			//if (w == 3/*ii*/) {
+			//	while ((ld != nullptr) && ((fd != ld->FromFD) ||
+			//		!EquUpCase(ld->RoleName, CurrInst->Vars[1]->SS))) ld = ld->Chain;
+			//	if (ld == nullptr) goto label1;
+			//	CurrInst->Vars[2] = GetStringTerm(ld->ToFD->Name);
+			//}
+			//else if (w == 5/*ioi*/) {
+			//	while ((ld != nullptr) && ((fd != ld->FromFD) ||
+			//		!EquUpCase(ld->ToFD->Name, CurrInst->Vars[2]->SS))) ld = ld->Chain;
+			//	if (ld == nullptr) goto label1;
+			//	CurrInst->Vars[1] = GetStringTerm(ld->RoleName);
+			//}
+			//else {
+			//	CurrInst->Vars[1] = GetStringTerm(ld->RoleName);
+			//	CurrInst->Vars[2] = GetStringTerm(ld->ToFD->Name);
+			//}
+			//CurrInst->Vars[3] = GetStringTerm(Pound(ld->ToKey->Alias));
+			//s[0] = 0;
+			//k = fd->Keys;
+			//while (k != nullptr) {
+			//	if (k->IndexRoot == ld->IndexRoot) s = k->Alias;
+			//	k = k->Chain;
+			//}
+			//CurrInst->Vars[4] = GetStringTerm(Pound(s));
+			//n = ld->MemberRef;
+			//if (ld->IndexRoot != 0) n += 4;
+			//CurrInst->Vars[5] = GetIntTerm(n);
+			//if (w == 3) ld = nullptr;
+			//else
+			//	do {
+			//		ld = ld->Chain;
+			//	} while (!((ld == nullptr) || (ld->FromFD == fd)));
+			//	CurrInst->NextBranch = (TBranch*)ld;
 				break;
 		}
 		case _FandKeyFieldP: {
@@ -3320,7 +3320,7 @@ bool RunBuildIn()
 			break;
 		}
 		case _FandLinkFieldP: {
-			kf = KeyFldDPtr(CurrInst->NextBranch);
+			/*kf = KeyFldDPtr(CurrInst->NextBranch);
 			if (kf == nullptr) {
 				ld = LinkDRoot;
 				while ((ld != nullptr) && (
@@ -3330,7 +3330,7 @@ bool RunBuildIn()
 				kf = ld->Args;
 			}
 			CurrInst->Vars[2] = GetStringTerm(kf->FldD->Name);
-				CurrInst->NextBranch = (TBranch*)kf->Chain;
+			CurrInst->NextBranch = (TBranch*)kf->Chain;*/
 			break;
 		}
 		case _LenP: {
@@ -3861,8 +3861,8 @@ void AssertFand(TPredicate* P, TCommand* C)
 			flofs = (TFldList*)fl->Chain;
 			lofs = (TTermList*)l->Chain;
 			i++;
-			}
-			}
+		}
+	}
 #ifdef FandSQL
 	if (trace) { writeln("))"); waitC; }
 	if (CFile->IsSQLFile) Strm1->InsertRec(false, true); else
@@ -3875,7 +3875,7 @@ void AssertFand(TPredicate* P, TCommand* C)
 	}
 	OldLMode(md);
 	ReleaseStore(CRecPtr);
-		}
+}
 
 TFileScan* GetScan(TScanInf* SIOfs, TCommand* C, TInstance* Q)
 {
@@ -4266,7 +4266,7 @@ label3:
 void RunProlog(RdbPos* Pos, std::string* PredName)
 {
 	//return; // prolog neumime :-(
-	
+
 	TInstance* q = nullptr; TInstance* q1 = nullptr; TInstance* TopInst = nullptr;
 	TDbBranch* b1 = nullptr;
 	WORD w = 0, n = 0; integer i = 0;

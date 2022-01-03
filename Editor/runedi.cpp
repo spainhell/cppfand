@@ -1614,7 +1614,6 @@ label2:
 
 void UpdMemberRef(void* POld, void* PNew)
 {
-	LinkD* LD = LinkDRoot;
 	XString x, xnew, xold;
 	XScan* Scan = nullptr;
 	FileD* cf = CFile;
@@ -1622,7 +1621,7 @@ void UpdMemberRef(void* POld, void* PNew)
 	XKey* k = nullptr;
 	KeyFldD* kf = nullptr, * kf1 = nullptr, * kf2 = nullptr, * Arg = nullptr;
 
-	while (LD != nullptr) {
+	for (auto& LD:LinkDRoot) { //while (LD != nullptr) {
 		if ((LD->MemberRef != 0) && (LD->ToFD == cf) && ((PNew != nullptr) || (LD->MemberRef != 2))) {
 			CFile = cf;
 			kf2 = LD->ToKey->KFlds;
@@ -1631,7 +1630,7 @@ void UpdMemberRef(void* POld, void* PNew)
 			if (PNew != nullptr) {
 				CRecPtr = PNew;
 				xnew.PackKF(kf2);
-				if (xnew.S == xold.S) goto label2;
+				if (xnew.S == xold.S) continue;
 			}
 			CFile = LD->FromFD;
 #ifdef FandSQL
@@ -1687,8 +1686,6 @@ void UpdMemberRef(void* POld, void* PNew)
 			ClearRecSpace(p);
 			ReleaseStore(p);
 		}
-	label2:
-		LD = LD->Chain;
 	}
 	CFile = cf; CRecPtr = cr;
 }
@@ -1735,13 +1732,14 @@ void WrJournal(char Upd, void* RP, double Time)
 	}
 }
 
-bool LockForMemb(FileDPtr FD, WORD Kind, LockMode NewMd, LockMode& md)
+bool LockForMemb(FileD* FD, WORD Kind, LockMode NewMd, LockMode& md)
 {
-	LinkD* ld = LinkDRoot; LockMode md1; /*0-ExLMode,1-lock,2-unlock*/
+	//LinkD* ld = LinkDRoot;
+	LockMode md1; /*0-ExLMode,1-lock,2-unlock*/
 	auto result = false;
-	while (ld != nullptr) {
+	for (auto& ld : LinkDRoot) { //while (ld != nullptr) {
 		if ((ld->ToFD == FD)
-			&& ((NewMd != DelMode) && (ld->MemberRef != 0) || (ld->MemberRef == 1))
+			&& ((NewMd != DelMode) && (ld->MemberRef != 0) || (ld->MemberRef == 1)) 
 			&& (ld->FromFD != FD)) {
 			CFile = ld->FromFD;
 			switch (Kind) {
@@ -1762,7 +1760,6 @@ bool LockForMemb(FileDPtr FD, WORD Kind, LockMode NewMd, LockMode& md)
 			if (!LockForAdd(CFile, Kind, true, md)) return result;
 			if (!LockForMemb(ld->FromFD, Kind, NewMd, md)) return result;
 		}
-		ld = ld->Chain;
 	}
 	result = true;
 	return result;
@@ -1873,13 +1870,13 @@ bool CleanUp()
 		//X = (EdExitD*)X->Chain;
 	}
 	if (AddSwitch) {
-		LinkD* ld = LinkDRoot;
-		while (ld != nullptr) {
+		//LinkD* ld = LinkDRoot;
+		for (auto& ld : LinkDRoot) { //while (ld != nullptr) {
 			if ((ld->MemberRef == 2) && (ld->ToFD == CFile) && Owned(nullptr, nullptr, ld) > 0) {
 				WrLLF10Msg(662);
 				return false;
 			}
-			ld = ld->Chain;
+			//ld = ld->Chain;
 		}
 		if (!RunAddUpdte1('-', nullptr, false, nullptr, nullptr)) return false;
 		UpdMemberRef(CRecPtr, nullptr);
@@ -2165,41 +2162,48 @@ void UpwEdit(LinkD* LkD)
 	wwmix ww;
 
 	void* p = nullptr;
-	std::string s;
 	std::string s1, s2; XString x; XString* px = nullptr;
 	FieldDescr* F = nullptr; KeyFldD* KF = nullptr;
 	XKey* K = nullptr; EditOpt* EO = nullptr;
-	WORD Brk; FileD* ToFD = nullptr;
-	StringListEl* SL, *SL1; LinkD* LD = nullptr;
-	longint w; bool b;
+	WORD Brk;
+	StringListEl* SL, *SL1;
+	LinkD* LD;
 	MarkStore(p);
-	w = PushW1(1, 1, TxtCols, TxtRows, true, true);
+	longint w = PushW1(1, 1, TxtCols, TxtRows, true, true);
 	CFile->IRec = AbsRecNr(CRec());
 	WrEStatus();
+
 	if (LkD == nullptr) {
-		LD = LinkDRoot;
-		while (LD != nullptr) {
-			ToFD = LD->ToFD;
-			if ((LD->FromFD == CFile) && ForNavigate(ToFD)) {
-				s = "";
-				std::string rn = LD->RoleName;
-				if (ToFD->Name != rn) { s = "." + LD->RoleName; }
+		//LD = LinkDRoot.begin();
+		for (auto& ld : LinkDRoot) { //while (ld != nullptr) {
+			FileD* ToFD = ld->ToFD;
+			if ((ld->FromFD == CFile) && ForNavigate(ToFD)) {
+				std::string s;
+				std::string rn = ld->RoleName;
+				if (ToFD->Name != rn) { s = "." + ld->RoleName; }
 				SL = ToFD->ViewNames;
 				do {
 					s1 = GetFileViewName(ToFD, &SL) + s;
 					ww.PutSelect(s1);
-					SetPointTo(LD, &s1, &s2);
+					SetPointTo(ld, &s1, &s2);
 				} while (SL != nullptr);
 			}
-			LD = LD->Chain;
+			//ld = ld->Chain;
 		}
 		ss.Abcd = true;
 		ww.SelectStr(0, 0, 35, "");
 		if (Event.Pressed.KeyCombination() == __ESC) goto label1;
 		GetSel2S(&s1, &s2, '.', 2);
-		LD = LinkDRoot;
-		while (LD != nullptr && !(LD->FromFD == CFile && EquRoleName(s2, LD) && EquFileViewName(LD->ToFD, s1, EO)))
-			LD = LD->Chain;
+		//LD = LinkDRoot;
+		/*while (LD != nullptr && !(LD->FromFD == CFile && EquRoleName(s2, LD) && EquFileViewName(LD->ToFD, s1, EO)))
+			LD = LD->Chain;*/
+		LD = nullptr;
+		for (auto& ld : LinkDRoot) {
+			if (ld->FromFD == CFile && EquRoleName(s2, ld) && EquFileViewName(ld->ToFD, s1, EO)) {
+				LD = ld;
+				break;
+			}
+		}
 	}
 	else {
 		LD = LkD;
@@ -2209,21 +2213,32 @@ void UpwEdit(LinkD* LkD)
 		SL = CFile->ViewNames;
 		SL1 = nullptr;
 		while (SL != nullptr) {
-			if (TestAccRight(SL)) SL1 = SL;
+			if (TestAccRight(SL)) {
+				SL1 = SL;
+			}
 			SL = (StringListEl*)SL->Chain;
 		}
-		if (SL1 == nullptr) EO->Flds = AllFldsList(CFile, false);
-		else RdUserView(SL1->S, EO);
+		if (SL1 == nullptr) {
+			EO->Flds = AllFldsList(CFile, false);
+		}
+		else {
+			RdUserView(SL1->S, EO);
+		}
 		EO->SetOnlyView = true;
 	}
-	CFile = E->FD; x.PackKF(LD->Args); px = &x;
-	K = LD->ToKey; CFile = LD->ToFD;
+	CFile = E->FD;
+	x.PackKF(LD->Args);
+	px = &x;
+	K = LD->ToKey;
+	CFile = LD->ToFD;
 	if (EO->ViewKey == nullptr) EO->ViewKey = K;
 	else if (&EO->ViewKey != &K) px = nullptr;
 	if (SelFldsForEO(EO, nullptr)) {
 		NewEditD(CFile, EO);
 		E->ShiftF7LD = LkD;
-		if (OpenEditWw()) RunEdit(px, Brk);
+		if (OpenEditWw()) {
+			RunEdit(px, Brk);
+		}
 		SaveFiles();
 		PopEdit();
 	}
@@ -3557,7 +3572,7 @@ void ImbeddEdit()
 	if (Event.Pressed.KeyCombination() == __ESC) goto label1;
 	GetSel2S(&s1, &s2, '.', 1);
 	R = CRdb;
-	if (s2 != "") {
+	if (!s2.empty()) {
 		std::string ss2 = s2;
 		do { R = R->ChainBack; } while (R->FD->Name != ss2);
 	}
@@ -3580,22 +3595,25 @@ void DownEdit()
 {
 	wwmix ww;
 
-	LinkD* LD = nullptr; FileD* FD = nullptr; StringListEl* SL = nullptr; XKey* K = nullptr;
+	FileD* FD = nullptr; StringListEl* SL = nullptr; XKey* K = nullptr;
 	EditOpt* EO = nullptr; WORD Brk, i; void* p = nullptr;
 	std::string s, s1, s2; longint w;
 	std::string ali;
+	//LinkD* LD = LinkDRoot;
 	MarkStore(p);
+
 	w = PushW1(1, 1, TxtCols, TxtRows, true, true);
 	CFile->IRec = AbsRecNr(CRec());
+
 	WrEStatus();
-	LD = LinkDRoot;
-	while (LD != nullptr) {
-		FD = LD->FromFD;
-		if ((LD->ToFD == CFile) && ForNavigate(FD) && (LD->IndexRoot != 0))
+
+	for (auto& ld : LinkDRoot) { //while (LD != nullptr) {
+		FD = ld->FromFD;
+		if ((ld->ToFD == CFile) && ForNavigate(FD) && (ld->IndexRoot != 0))
 			/*own key with equal beginning*/
 		{
 			SL = FD->ViewNames;
-			K = GetFromKey(LD);
+			K = GetFromKey(ld);
 			do {
 				s = GetFileViewName(FD, &SL);
 				std::string kali = K->Alias;
@@ -3603,16 +3621,24 @@ void DownEdit()
 				ww.PutSelect(s);
 			} while (SL != nullptr);
 		}
-		LD = LD->Chain;
+		//ld = ld->Chain;
 	}
 	ss.Abcd = true;
 	ww.SelectStr(0, 0, 35, "");
+	LinkD* LD = *LinkDRoot.begin();
+
 	if (Event.Pressed.KeyCombination() == __ESC) goto label1;
+
 	GetSel2S(&s1, &s2, '/', 2);
-	LD = LinkDRoot;
 	ali = GetFromKey(LD)->Alias;
-	while ((LD->ToFD != E->FD) || (LD->IndexRoot == 0) || (s2 != ali)
-		|| !EquFileViewName(LD->FromFD, s1, EO)) LD = LD->Chain;
+	//while ((LD->ToFD != E->FD) || (LD->IndexRoot == 0) || (s2 != ali)
+	//	|| !EquFileViewName(LD->FromFD, s1, EO)) LD = LD->Chain;
+	for (auto& ld : LinkDRoot) {
+		if ((ld->ToFD != E->FD) || (ld->IndexRoot == 0) || (s2 != ali)
+			|| !EquFileViewName(ld->FromFD, s1, EO)) continue;
+		else LD = ld;
+	}
+
 	CFile = LD->FromFD;
 	if (SelFldsForEO(EO, LD)) {
 		EO->DownLD = LD;
@@ -3632,14 +3658,16 @@ label1:
 void ShiftF7Proc()
 {
 	/* find last (first decl.) foreign key link with CFld as an argument */
-	FieldDescr* F = CFld->FldD; LinkD* LD = LinkDRoot; LinkD* LD1 = nullptr;
-	while (LD != nullptr) {
-		KeyFldD* KF = LD->Args;
+	FieldDescr* F = CFld->FldD;
+	//LinkD* LD = LinkDRoot;
+	LinkD* LD1 = nullptr;
+	for (auto& ld : LinkDRoot) { //while (LD != nullptr) {
+		KeyFldD* KF = ld->Args;
 		while (KF != nullptr) {
-			if ((KF->FldD == F) && ForNavigate(LD->ToFD)) LD1 = LD;
+			if ((KF->FldD == F) && ForNavigate(ld->ToFD)) LD1 = ld;
 			KF = (KeyFldD*)KF->Chain;
 		}
-		LD = LD->Chain;
+		//LD = LD->Chain;
 	}
 	if (LD1 != nullptr) UpwEdit(LD1);
 }

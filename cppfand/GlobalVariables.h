@@ -8,7 +8,7 @@ extern pstring LockModeTxt[9];
 
 // r474
 extern FileD* FileDRoot; // { only current RDB }
-extern LinkD* LinkDRoot; // { for all RDBs     }
+extern std::deque<LinkD*> LinkDRoot; // { for all RDBs     }
 extern FuncD* FuncDRoot;
 extern FileD* CFile;
 extern void* CRecPtr;

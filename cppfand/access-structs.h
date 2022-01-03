@@ -86,7 +86,7 @@ struct DBaseHd // ø. 213
 
 struct LinkD // ø. 220
 {
-	LinkD* Chain = nullptr;
+	//LinkD* Chain = nullptr;
 	WORD IndexRoot = 0;
 	BYTE MemberRef = 0; // { 0-no, 1-!, 2-!!(no delete)}
 	KeyFldD* Args = nullptr;

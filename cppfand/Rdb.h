@@ -1,4 +1,5 @@
 #pragma once
+#include <deque>
 #include <string>
 #include "constants.h"
 
@@ -12,7 +13,7 @@ public:
 	RdbD* ChainBack = nullptr;
 	FileD* FD = nullptr;
 	FileD* HelpFD = nullptr; // { FD=FileDRoot and = Chpt for this RDB }
-	LinkD* OldLDRoot = nullptr;
+	std::deque<LinkD*> OldLDRoot;
 	FuncD* OldFCRoot = nullptr;
 	// void* Mark2 = nullptr; // { markstore2 at beginning }
 	bool Encrypted = false;
