@@ -1430,14 +1430,16 @@ bool FieldInList(FieldDescr* F, std::vector<FieldDescr*>* FL)
 	return result;
 }
 
-XKey* GetFromKey(LinkDPtr LD)
+XKey* GetFromKey(LinkD* LD)
 {
 	XKey* K = LD->FromFD->Keys;
-	while (K->IndexRoot != LD->IndexRoot) K = K->Chain;
+	while (K->IndexRoot != LD->IndexRoot) {
+		K = K->Chain;
+	}
 	return K;
 }
 
-FrmlPtr RunEvalFrml(FrmlPtr Z)
+FrmlElem* RunEvalFrml(FrmlElem* Z)
 {
 	if ((Z != nullptr) && (Z->Op == _eval)) Z = GetEvalFrml((FrmlElem21*)Z);
 	return Z;

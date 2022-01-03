@@ -687,13 +687,22 @@ void OverWrXRec(longint RecNr, void* P2, void* P)
 {
 	XString x, x2;
 	CRecPtr = P2;
-	if (DeletedFlag()) { CRecPtr = P; RecallRec(RecNr); return; }
+	if (DeletedFlag()) {
+		CRecPtr = P;
+		RecallRec(RecNr);
+		return;
+	}
 	TestXFExist();
 	XKey* K = CFile->Keys;
 	while (K != nullptr) {
-		CRecPtr = P; x.PackKF(K->KFlds); CRecPtr = P2; x2.PackKF(K->KFlds);
+		CRecPtr = P;
+		x.PackKF(K->KFlds);
+		CRecPtr = P2;
+		x2.PackKF(K->KFlds);
 		if (x.S != x2.S) {
-			K->Delete(RecNr); CRecPtr = P; K->Insert(RecNr, false);
+			K->Delete(RecNr);
+			CRecPtr = P;
+			K->Insert(RecNr, false);
 		}
 		K = K->Chain;
 	}

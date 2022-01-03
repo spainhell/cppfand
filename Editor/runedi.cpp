@@ -543,15 +543,14 @@ void WrPromptTxt(std::string& S, FrmlElem* Impl, FieldDescr* F, std::string& Txt
 	TextAttr = ProcAttr;
 	if (Event.Pressed.KeyCombination() == __ESC) {
 		EscPrompt = true;
-		printf("\n");
+		screen.GotoXY(1, y + 1);
 	}
 	else {
 		EscPrompt = false;
-		//Txt = T;
-		Txt = T.substr(0, LWw); //()* Txt)[0] = (char)LWw;
+		Txt = T.substr(0, LWw);
 		screen.GotoXY(x, y);
-		// printf("%s", T.c_str());
 		screen.ScrFormatWrText(x, y, "%s", T.c_str());
+		screen.GotoXY(1, y + 1);
 	}
 }
 

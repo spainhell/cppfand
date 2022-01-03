@@ -499,7 +499,7 @@ void RdLex()
 		break;
 	default: break;
 	}
-	//if (LexWord == "Aktü°sloP")
+	//if (LexWord == "S333")
 	//{
 	//	printf("RdLex() r. 437 - %s\n", LexWord.c_str());
 	//}

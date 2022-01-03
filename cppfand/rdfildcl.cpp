@@ -606,8 +606,7 @@ label2:
 	CompileRecLen();
 	SetLDIndexRoot(LinkDRoot, LDOld);
 	if ((CFile->Typ == 'X') && (CFile->Keys == nullptr)) Error(107);
-	if ((Lexem == '#') && (ForwChar == 'A'))
-	{
+	if ((Lexem == '#') && (ForwChar == 'A')) {
 		RdLex();
 		RdKumul();
 	}
@@ -647,7 +646,7 @@ label2:
 	//if (PtrRec(InpRdbPos.R).Seg == 0/*compiled from pstring*/) {
 	//	CFile->LiOfs = 0; ReleaseStore(p);
 	//}
-	if (Lexem != ']' && Lexem != 0x1A) Error(66); // !!! pridana podminka ']' oproti originalu
+	if (/*Lexem != ']' &&*/ Lexem != 0x1A) Error(66); // !!! pridana podminka ']' oproti originalu
 label1:
 	return p; // ma asi vracet HeapPtr
 }

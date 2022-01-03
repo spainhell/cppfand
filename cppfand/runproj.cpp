@@ -487,120 +487,120 @@ void SgFrml(FrmlElem* Z, WORD Sg, WORD SgF)
 	//}
 }
 
-void WrFDSegment(longint RecNr)
-{
-	FileD* cf = nullptr; StringList s; FieldDescr* f = nullptr; XKey* k = nullptr;
-	AddD* ad = nullptr; ChkD* c = nullptr; LinkD* ld = nullptr; WORD n = 0, oldsz = 0;
-	void* fdsaved = nullptr; void* p2 = nullptr; LongStr* ss = nullptr;
-	ImplD* id = nullptr; LiRoots* li = nullptr;
-
-	//sz = AbsAdr(HeapPtr) - AbsAdr(CFile);
-	if (sz > MaxLStrLen) RunError(664);
-	oldsz = sz; nTb = 0; //Tb = O(HeapPtr);
-	MarkStore2(p2);
-	fdsaved = GetStore2(sz);
-	Move(CFile, fdsaved, sz);
-
-	FileD savedFD = *CFile; // toto snad nahradí "požadovanou" zálohu ...
-
-	CFileF = CFile;
-	/* !!! with CFile^ do!!! */
-	CFile->TF = (TFile*)O(CFile->TF);
-	CFile->XF = (XFile*)O(CFile->XF);
-	if (CFile->OrigFD != nullptr) CFile->OrigFD = (FileD*)OTb(CFile->OrigFD->Name);
-	s = CFile->ViewNames;
-	if (s != nullptr) {
-		while (s->Chain != nullptr) {
-			s->Chain = (StringListEl*)O(s->Chain);
-			s = (StringList)s->Chain;
-		}
-	}
-	f = CFile->FldD.front();
-	if (f != nullptr) {
-		while (f->Chain != nullptr) {
-			f->Chain = (FieldDescr*)O(f->Chain);
-			f = (FieldDescr*)f->Chain;
-			if ((f->Flg & f_Stored) == 0) OFrml(f->Frml);
-		}
-	}
-	k = CFile->Keys;
-	if (k != nullptr) {
-		while (k->Chain != nullptr) {
-			k->Chain = (XKey*)O(k->Chain);
-			k = k->Chain;
-			//k->Alias = (pstring*)O(k->Alias);
-			OKF((KeyFldD*)(&k->KFlds));
-		}
-	}
-	//ad = CFile->Add;
-
-	//while (ad->Chain != nullptr) {
-	//	ad->Chain = (AddD*)O(ad->Chain);
-	//	ad = ad->Chain;
-	//	ad->LD = (LinkD*)O(ad->LD);
-	//	OFrml(ad->Frml);
-	//	if (ad->Assign) OFrml(ad->Bool);
-	//	else {
-	//		c = ad->Chk;
-	//		if (c != nullptr) {
-	//			ad->Chk = (ChkD*)O(c);
-	//			//c->HelpName = (pstring*)O(c->HelpName);
-	//		}
-	//	}
-	//	cf = CFileF;
-	//	CFileF = ad->File2;
-	//	ad->File2 = (FileD*)OTb(CFileF->Name);
-	//	ad->Field = (FieldDescr*)OCF(ad->Field);
-	//	if (!ad->Assign && (c != nullptr)) { OFrml(c->Bool); OFrml(c->TxtZ); }
-	//	CFileF = cf;
-	//}
-
-	ld = (LinkD*)O(LinkDRoot);
-	n = CFile->nLDs;
-	while (n > 0) {
-		OKF(KeyFldDPtr(ld->Args));
-		cf = CFileF;
-		CFileF = ld->ToFD;
-		ld->ToFD = (FileD*)OTb(CFileF->Name);
-		ld->ToKey = (XKey*)OCF(ld->ToKey);
-		CFileF = cf; n--;
-		if (n > 0) { ld->Chain = (LinkD*)O(ld->Chain); ld = ld->Chain; }
-	}
-	CFile->Chain = (FileD*)O(LinkDRoot);
-	CFile->IRec = FDVersion;
-	CFile->Handle = (FILE*)Tb;
-
-	/*if (CFile->LiOfs > 0) {
-		li = (LiRoots*)Normalize(AbsAdr(CFile) + CFile->LiOfs);
-		id = ImplDPtr(&li->Impls);
-		if (id != nullptr) {
-			while (id->Chain != nullptr) {
-				id->Chain = (ImplD*)O(id->Chain);
-				id = (ImplD*)id->Chain;
-				id->FldD = (FieldDescr*)O(id->FldD);
-				OFrml(id->Frml);
-			}
-		}
-		c = ChkDPtr(&li->Chks);
-		if (c != nullptr) {
-			while (c->Chain != nullptr) {
-				c->Chain = (ChkD*)O(c->Chain);
-				c = (ChkD*)c->Chain;
-				c->HelpName = (pstring*)O(c->HelpName);
-				OFrml(c->TxtZ);
-				OFrml(c->Bool);
-			}
-		}
-	}*/
-	ss = (LongStr*)&CFile->WasWrRec; // Ptr(PtrRec(CFile).Seg - 1, 14);
-	ss->LL = sz;
-	cf = CFile; CFile = Chpt;
-	StoreChptTxt(ChptOldTxt, ss, false);
-	WriteRec(CFile, RecNr, CRecPtr);
-	CFile = cf;
-	Move(fdsaved, CFile, oldsz);
-	ReleaseStore2(p2);
-}
+//void WrFDSegment(longint RecNr)
+//{
+//	FileD* cf = nullptr; StringList s; FieldDescr* f = nullptr; XKey* k = nullptr;
+//	AddD* ad = nullptr; ChkD* c = nullptr; LinkD* ld = nullptr; WORD n = 0, oldsz = 0;
+//	void* fdsaved = nullptr; void* p2 = nullptr; LongStr* ss = nullptr;
+//	ImplD* id = nullptr; LiRoots* li = nullptr;
+//
+//	//sz = AbsAdr(HeapPtr) - AbsAdr(CFile);
+//	if (sz > MaxLStrLen) RunError(664);
+//	oldsz = sz; nTb = 0; //Tb = O(HeapPtr);
+//	MarkStore2(p2);
+//	fdsaved = GetStore2(sz);
+//	Move(CFile, fdsaved, sz);
+//
+//	FileD savedFD = *CFile; // toto snad nahradí "požadovanou" zálohu ...
+//
+//	CFileF = CFile;
+//	/* !!! with CFile^ do!!! */
+//	CFile->TF = (TFile*)O(CFile->TF);
+//	CFile->XF = (XFile*)O(CFile->XF);
+//	if (CFile->OrigFD != nullptr) CFile->OrigFD = (FileD*)OTb(CFile->OrigFD->Name);
+//	s = CFile->ViewNames;
+//	if (s != nullptr) {
+//		while (s->Chain != nullptr) {
+//			s->Chain = (StringListEl*)O(s->Chain);
+//			s = (StringList)s->Chain;
+//		}
+//	}
+//	f = CFile->FldD.front();
+//	if (f != nullptr) {
+//		while (f->Chain != nullptr) {
+//			f->Chain = (FieldDescr*)O(f->Chain);
+//			f = (FieldDescr*)f->Chain;
+//			if ((f->Flg & f_Stored) == 0) OFrml(f->Frml);
+//		}
+//	}
+//	k = CFile->Keys;
+//	if (k != nullptr) {
+//		while (k->Chain != nullptr) {
+//			k->Chain = (XKey*)O(k->Chain);
+//			k = k->Chain;
+//			//k->Alias = (pstring*)O(k->Alias);
+//			OKF((KeyFldD*)(&k->KFlds));
+//		}
+//	}
+//	//ad = CFile->Add;
+//
+//	//while (ad->Chain != nullptr) {
+//	//	ad->Chain = (AddD*)O(ad->Chain);
+//	//	ad = ad->Chain;
+//	//	ad->LD = (LinkD*)O(ad->LD);
+//	//	OFrml(ad->Frml);
+//	//	if (ad->Assign) OFrml(ad->Bool);
+//	//	else {
+//	//		c = ad->Chk;
+//	//		if (c != nullptr) {
+//	//			ad->Chk = (ChkD*)O(c);
+//	//			//c->HelpName = (pstring*)O(c->HelpName);
+//	//		}
+//	//	}
+//	//	cf = CFileF;
+//	//	CFileF = ad->File2;
+//	//	ad->File2 = (FileD*)OTb(CFileF->Name);
+//	//	ad->Field = (FieldDescr*)OCF(ad->Field);
+//	//	if (!ad->Assign && (c != nullptr)) { OFrml(c->Bool); OFrml(c->TxtZ); }
+//	//	CFileF = cf;
+//	//}
+//
+//	ld = (LinkD*)O(LinkDRoot);
+//	n = CFile->nLDs;
+//	while (n > 0) {
+//		OKF(KeyFldDPtr(ld->Args));
+//		cf = CFileF;
+//		CFileF = ld->ToFD;
+//		ld->ToFD = (FileD*)OTb(CFileF->Name);
+//		ld->ToKey = (XKey*)OCF(ld->ToKey);
+//		CFileF = cf; n--;
+//		if (n > 0) { ld->Chain = (LinkD*)O(ld->Chain); ld = ld->Chain; }
+//	}
+//	CFile->Chain = (FileD*)O(LinkDRoot);
+//	CFile->IRec = FDVersion;
+//	CFile->Handle = (FILE*)Tb;
+//
+//	/*if (CFile->LiOfs > 0) {
+//		li = (LiRoots*)Normalize(AbsAdr(CFile) + CFile->LiOfs);
+//		id = ImplDPtr(&li->Impls);
+//		if (id != nullptr) {
+//			while (id->Chain != nullptr) {
+//				id->Chain = (ImplD*)O(id->Chain);
+//				id = (ImplD*)id->Chain;
+//				id->FldD = (FieldDescr*)O(id->FldD);
+//				OFrml(id->Frml);
+//			}
+//		}
+//		c = ChkDPtr(&li->Chks);
+//		if (c != nullptr) {
+//			while (c->Chain != nullptr) {
+//				c->Chain = (ChkD*)O(c->Chain);
+//				c = (ChkD*)c->Chain;
+//				c->HelpName = (pstring*)O(c->HelpName);
+//				OFrml(c->TxtZ);
+//				OFrml(c->Bool);
+//			}
+//		}
+//	}*/
+//	ss = (LongStr*)&CFile->WasWrRec; // Ptr(PtrRec(CFile).Seg - 1, 14);
+//	ss->LL = sz;
+//	cf = CFile; CFile = Chpt;
+//	StoreChptTxt(ChptOldTxt, ss, false);
+//	WriteRec(CFile, RecNr, CRecPtr);
+//	CFile = cf;
+//	Move(fdsaved, CFile, oldsz);
+//	ReleaseStore2(p2);
+//}
 
 void SgKF(KeyFldD* kf, WORD Sg)
 {

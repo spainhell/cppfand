@@ -42,8 +42,8 @@ bool FieldInList(FieldDescr* F, FieldListEl* FL);
 //bool FieldInList(FieldDescr* F, std::vector<FieldListEl*>& FL);
 bool FieldInList(FieldDescr* F, std::vector<FieldDescr*>& FL);
 bool FieldInList(FieldDescr* F, std::vector<FieldDescr*>* FL);
-XKey* GetFromKey(LinkDPtr LD);
-FrmlPtr RunEvalFrml(FrmlPtr Z);
+XKey* GetFromKey(LinkD* LD);
+FrmlElem* RunEvalFrml(FrmlElem* Z);
 LongStr* RunLongStr(FrmlElem* X);  // r417 zacina od 555
 std::string RunStdStr(FrmlElem* X);  // nove, vraci std::string
 std::string RunShortStr(FrmlElem* X); // r629 ASM
