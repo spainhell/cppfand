@@ -1621,7 +1621,7 @@ void UpdMemberRef(void* POld, void* PNew)
 	XKey* k = nullptr;
 	KeyFldD* kf = nullptr, * kf1 = nullptr, * kf2 = nullptr, * Arg = nullptr;
 
-	for (auto& LD:LinkDRoot) { //while (LD != nullptr) {
+	for (auto& LD : LinkDRoot) {
 		if ((LD->MemberRef != 0) && (LD->ToFD == cf) && ((PNew != nullptr) || (LD->MemberRef != 2))) {
 			CFile = cf;
 			kf2 = LD->ToKey->KFlds;
@@ -1734,10 +1734,9 @@ void WrJournal(char Upd, void* RP, double Time)
 
 bool LockForMemb(FileD* FD, WORD Kind, LockMode NewMd, LockMode& md)
 {
-	//LinkD* ld = LinkDRoot;
 	LockMode md1; /*0-ExLMode,1-lock,2-unlock*/
 	auto result = false;
-	for (auto& ld : LinkDRoot) { //while (ld != nullptr) {
+	for (auto& ld : LinkDRoot) {
 		if ((ld->ToFD == FD)
 			&& ((NewMd != DelMode) && (ld->MemberRef != 0) || (ld->MemberRef == 1)) 
 			&& (ld->FromFD != FD)) {
@@ -1852,8 +1851,6 @@ void UndoRecord()
 bool CleanUp()
 {
 	if (HasIndex && DeletedFlag()) return false;
-	//EdExitD* X = E->ExD;
-	//while (X != nullptr) {
 	for (auto& X : E->ExD) {
 		if (X->AtWrRec) {
 			EdBreak = 17;
@@ -1867,16 +1864,13 @@ bool CleanUp()
 			EdOk = ok;
 			WasUpdated = false;
 		}
-		//X = (EdExitD*)X->Chain;
 	}
 	if (AddSwitch) {
-		//LinkD* ld = LinkDRoot;
-		for (auto& ld : LinkDRoot) { //while (ld != nullptr) {
+		for (auto& ld : LinkDRoot) {
 			if ((ld->MemberRef == 2) && (ld->ToFD == CFile) && Owned(nullptr, nullptr, ld) > 0) {
 				WrLLF10Msg(662);
 				return false;
 			}
-			//ld = ld->Chain;
 		}
 		if (!RunAddUpdte1('-', nullptr, false, nullptr, nullptr)) return false;
 		UpdMemberRef(CRecPtr, nullptr);
@@ -2174,8 +2168,7 @@ void UpwEdit(LinkD* LkD)
 	WrEStatus();
 
 	if (LkD == nullptr) {
-		//LD = LinkDRoot.begin();
-		for (auto& ld : LinkDRoot) { //while (ld != nullptr) {
+		for (auto& ld : LinkDRoot) {
 			FileD* ToFD = ld->ToFD;
 			if ((ld->FromFD == CFile) && ForNavigate(ToFD)) {
 				std::string s;
@@ -2188,7 +2181,6 @@ void UpwEdit(LinkD* LkD)
 					SetPointTo(ld, &s1, &s2);
 				} while (SL != nullptr);
 			}
-			//ld = ld->Chain;
 		}
 		ss.Abcd = true;
 		ww.SelectStr(0, 0, 35, "");
@@ -3659,7 +3651,6 @@ void ShiftF7Proc()
 {
 	/* find last (first decl.) foreign key link with CFld as an argument */
 	FieldDescr* F = CFld->FldD;
-	//LinkD* LD = LinkDRoot;
 	LinkD* LD1 = nullptr;
 	for (auto& ld : LinkDRoot) { //while (LD != nullptr) {
 		KeyFldD* KF = ld->Args;
@@ -3667,7 +3658,6 @@ void ShiftF7Proc()
 			if ((KF->FldD == F) && ForNavigate(ld->ToFD)) LD1 = ld;
 			KF = (KeyFldD*)KF->Chain;
 		}
-		//LD = LD->Chain;
 	}
 	if (LD1 != nullptr) UpwEdit(LD1);
 }

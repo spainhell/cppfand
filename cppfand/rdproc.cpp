@@ -107,17 +107,15 @@ char RdOwner(LinkD** LLD, LocVar** LLV)
 {
 	FileD* fd = nullptr;
 	auto result = '\0';
-	//LinkD* ld = nullptr;
 	LocVar* lv = nullptr;
 	std::string sLexWord;
 	if (FindLocVar(&LVBD, &lv)) {
 		if (!(lv->FTyp == 'i' || lv->FTyp == 'r' || lv->FTyp == 'f')) Error(177);
 		LinkD* ld = nullptr;
-		//LinkD* ld1 = LinkDRoot;
-		for (auto& ld1 : LinkDRoot) { //while (ld1 != nullptr) {
-			if ((ld1->FromFD == CFile) && (ld1->IndexRoot != 0) && (ld1->ToFD == lv->FD))
+		for (auto& ld1 : LinkDRoot) {
+			if ((ld1->FromFD == CFile) && (ld1->IndexRoot != 0) && (ld1->ToFD == lv->FD)) {
 				ld = ld1;
-			//ld1 = ld1->Chain;
+			}
 		}
 		if (ld == nullptr) Error(116);
 		RdLex();
@@ -139,14 +137,13 @@ char RdOwner(LinkD** LLD, LocVar** LLV)
 				if ((kf != nullptr) && !EquKFlds(kf, ld->ToKey->KFlds)) OldError(181);
 			}
 			*LLV = lv;
-			result = lv->FTyp;
 			*LLD = ld;
+			result = lv->FTyp;
 			return result;
 		}
 	}
 	TestIdentif();
-	//ld = LinkDRoot;
-	for (auto& ld : LinkDRoot) {	//while (ld != nullptr) {
+	for (auto& ld : LinkDRoot) {
 		sLexWord = LexWord;
 		if ((ld->FromFD == CFile) && EquUpCase(ld->RoleName, sLexWord)) {
 			if ((ld->IndexRoot == 0)) Error(116);
@@ -164,16 +161,14 @@ char RdOwner(LinkD** LLD, LocVar** LLV)
 					if ((kf != nullptr) && !EquKFlds(kf, ld->ToKey->KFlds)) OldError(181);
 				}
 				*LLV = lv;
-				result = lv->FTyp;
 				*LLD = ld;
+				result = lv->FTyp;
 				return result;
 			}
 			else {
-			label2:
 #ifdef FandSQL
 				if (ld->ToFD->typSQLFile) Error(155);
 #endif
-
 				Accept('[');
 				*LLV = (LocVar*)RdRealFrml();
 				Accept(']');
@@ -188,14 +183,14 @@ char RdOwner(LinkD** LLD, LocVar** LLV)
 	return result;
 }
 
-FrmlPtr RdFldNameFrmlP(char& FTyp)
+FrmlElem* RdFldNameFrmlP(char& FTyp)
 {
-	FileD* FD = nullptr; FrmlPtr Z = nullptr; LocVar* LV = nullptr;
+	FileD* FD = nullptr; FrmlElem* Z = nullptr; LocVar* LV = nullptr;
 	instr_type Op = _notdefined;
 	LinkD* LD = nullptr; FieldDescr* F = nullptr;
 	XKey* K = nullptr;
 
-	FrmlPtr result = nullptr;
+	FrmlElem* result = nullptr;
 
 	//if (InpArrLen == 0x0571) {
 	//	printf("RdFldNameFrmlP() %i", CurrPos);
@@ -210,8 +205,12 @@ FrmlPtr RdFldNameFrmlP(char& FTyp)
 		else {
 			pstring FName = LexWord;
 			bool linked = IsRoleName(FileVarsAllowed, &FD, &LD);
-			if (FD != nullptr) FName = FD->Name;
-			if (!linked) RdLex();
+			if (FD != nullptr) {
+				FName = FD->Name;
+			}
+			if (!linked) {
+				RdLex();
+			}
 			RdLex();
 			FTyp = 'R';
 			if (IsKeyWord("LASTUPDATE")) {

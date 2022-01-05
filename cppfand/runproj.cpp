@@ -322,610 +322,9 @@ label2:
 	return result;
 }
 
-void OKF(KeyFldDPtr kf)
-{
-	while (kf->Chain != nullptr) {
-		kf->Chain = (KeyFldD*)O(kf->Chain);
-		kf = (KeyFldD*)kf->Chain;
-		kf->FldD = (FieldDescr*)O(kf->FldD);
-	}
-}
-
-void* OTb(pstring Nm)
-{
-	return nullptr;
-
-	//	pstring* s = nullptr;
-	//	WORD* sofs = (WORD*)s;
-	//	WORD i;
-	//	//s = (pstring*)Tb;
-	//	for (i = 1; i <= nTb; i++) {
-	//		if (SEquUpcase(*s, Nm)) goto label1;
-	//		sofs += s->length() + 1;
-	//	}
-	//	nTb++; sz += Nm.length() + 1;
-	//	if (sz > MaxLStrLen) RunError(664);
-	//	s = StoreStr(Nm);
-	//label1:
-	//	return O(s);
-}
-
-void* OLinkD(LinkD* Ld)
-{
-	// TODO: spoèítat, co se má vrátit:
-	// return ptr(WORD(OTb(Ld->FromFD->Name)), WORD(OTb(Ld->RoleName)));
-	return nullptr;
-}
-
-void OFrml(FrmlPtr Z)
-{
-	//FileDPtr cf = nullptr; FileDPtr fd1 = nullptr;
-	//FrmlList fl = nullptr; LinkDPtr ld = nullptr;
-	//if (Z != nullptr) {
-	//	Z = (FrmlElem*)O(Z);
-	//	/* !!! with Z^ do!!! */
-	//	switch (Z->Op) {
-	//	case _field: { Z->Field = (FieldDescr*)OCF(Z->Field); break; }
-	//	case _access: {
-	//		Z->LD = (LinkD*)OCF(Z->LD);
-	//		cf = CFileF;
-	//		CFileF = Z->File2;
-	//		Z->File2 = (FileD*)OTb(CFileF->Name);
-	//		OFrml(Z->P1);
-	//		CFileF = cf;
-	//		break;
-	//	}
-	//	case _userfunc: {
-	//		Z->FC = (FuncD*)OTb(Z->FC->Name);
-	//		fl = FrmlList(&Z->FrmlL);
-	//		while (fl->Chain != nullptr) {
-	//			fl->Chain = (FrmlListEl*)O(fl->Chain);
-	//			fl = (FrmlListEl*)fl->Chain;
-	//			OFrml(fl->Frml);
-	//		}
-	//		break;
-	//	}
-	//	case _owned: {
-	//		ld = Z->ownLD;
-	//		fd1 = ld->FromFD;
-	//		Z->ownLD = (LinkD*)OLinkD(ld);
-	//		cf = CFileF;
-	//		CFileF = fd1;
-	//		OFrml(Z->ownBool);
-	//		OFrml(Z->ownSum);
-	//		CFileF = cf;
-	//	}
-	//	default: {
-	//		if (Z->Op >= 0x60 && Z->Op <= 0xaf) { OFrml(Z->P1); break; }
-	//		if (Z->Op >= 0xb0 && Z->Op <= 0xef) { OFrml(Z->P1); OFrml(Z->P2); break; }
-	//		if (Z->Op >= 0xf0 && Z->Op <= 0xff) { OFrml(Z->P1); OFrml(Z->P2); OFrml(Z->P3); break; }
-	//	}
-	//	}
-	//}
-}
-
-//FileD* GetFD(void* p, bool WithSelf, WORD Sg)
-//{
-//	if (p != nullptr) {
-//		LexWord = *(pstring*)(p);
-//		std::string lw = LexWord;
-//		if (WithSelf && EquUpcase(CFile->Name, lw)) p = CFile;
-//		else p = FindFileD();
-//	}
-//	return (FileD*)p;
-//}
-
-//FuncD* GetFC(void* p, WORD Sg)
-//{
-//	FuncD* fc;
-//	LexWord = *(pstring*)(p);
-//	fc = FuncDRoot; while (fc != nullptr) {
-//		if (EquUpcase(fc->Name, LexWord)) goto label1;
-//		fc = fc->Chain;
-//	}
-//label1:
-//	return fc;
-//}
-
-//LinkD* GetLinkD(void* P, WORD Sg)
-//{
-//	LinkD* ld; FileD* fd;
-//	LexWord = *(pstring*)(P);
-//	fd = (FileD*)FindFileD;
-//	ld = LinkDRoot;
-//
-//	while (ld != nullptr) {
-//		if ((ld->FromFD == fd) && (ld->RoleName == *((pstring*)(WORD(P)))))
-//		{
-//			return ld;
-//		} ld = ld->Chain;
-//	}
-//	return nullptr;
-//}
-
-void SgFrml(FrmlElem* Z, WORD Sg, WORD SgF)
-{
-	//FrmlList fl = nullptr;
-	//WORD SgFold = 0;
-	//if (Z != nullptr) {
-	//	Z = (FrmlElem*)(Sg);
-	//	/* !!! with Z^ do!!! */
-	//	switch (Z->Op) {
-	//	case _field: Z->Field = (FieldDescr*)SgF; break;
-	//	case _access: {
-	//		if (Z->LD != nullptr) Z->LD = (LinkD*)SgF;
-	//		Z->File2 = GetFD(Z->File2, Z->LD != nullptr, Sg);
-	//		SgFold = SgF;
-	//		SgF = *(WORD*)Z->File2;
-	//		SgFrml(Z->P1, Sg, SgF);
-	//		SgF = SgFold;
-	//		break; }
-	//	case _userfunc: {
-	//		Z->FC = GetFC(Z->FC, Sg);
-	//		fl = (FrmlListEl*)Z->FrmlL;
-	//		while (fl->Chain != nullptr) {
-	//			fl->Chain = (FrmlListEl*)Sg;
-	//			fl = (FrmlListEl*)fl->Chain;
-	//			SgFrml(fl->Frml, Sg, SgF);
-	//		}
-	//		break;
-	//	}
-	//	case _owned: {
-	//		Z->ownLD = GetLinkD(Z->ownLD, Sg);
-	//		SgFold = SgF;
-	//		//SgF = (Z->ownLD->FromFD);
-	//		SgFrml(Z->ownBool, Sg, SgF);
-	//		SgFrml(Z->ownSum, Sg, SgF);
-	//		SgF = SgFold;
-	//		break; }
-	//	default: {
-	//		if (Z->Op >= 0x60 && Z->Op <= 0xaf) { SgFrml(Z->P1, Sg, SgF); break; }
-	//		if (Z->Op >= 0xb0 && Z->Op <= 0xef) { SgFrml(Z->P1, Sg, SgF); SgFrml(Z->P2, Sg, SgF); break; }
-	//		if (Z->Op >= 0xf0 && Z->Op <= 0xff) { SgFrml(Z->P1, Sg, SgF); SgFrml(Z->P2, Sg, SgF); SgFrml(Z->P3, Sg, SgF); break; }
-	//	}
-	//	}
-	//}
-}
-
-//void WrFDSegment(longint RecNr)
-//{
-//	FileD* cf = nullptr; StringList s; FieldDescr* f = nullptr; XKey* k = nullptr;
-//	AddD* ad = nullptr; ChkD* c = nullptr; LinkD* ld = nullptr; WORD n = 0, oldsz = 0;
-//	void* fdsaved = nullptr; void* p2 = nullptr; LongStr* ss = nullptr;
-//	ImplD* id = nullptr; LiRoots* li = nullptr;
-//
-//	//sz = AbsAdr(HeapPtr) - AbsAdr(CFile);
-//	if (sz > MaxLStrLen) RunError(664);
-//	oldsz = sz; nTb = 0; //Tb = O(HeapPtr);
-//	MarkStore2(p2);
-//	fdsaved = GetStore2(sz);
-//	Move(CFile, fdsaved, sz);
-//
-//	FileD savedFD = *CFile; // toto snad nahradí "požadovanou" zálohu ...
-//
-//	CFileF = CFile;
-//	/* !!! with CFile^ do!!! */
-//	CFile->TF = (TFile*)O(CFile->TF);
-//	CFile->XF = (XFile*)O(CFile->XF);
-//	if (CFile->OrigFD != nullptr) CFile->OrigFD = (FileD*)OTb(CFile->OrigFD->Name);
-//	s = CFile->ViewNames;
-//	if (s != nullptr) {
-//		while (s->Chain != nullptr) {
-//			s->Chain = (StringListEl*)O(s->Chain);
-//			s = (StringList)s->Chain;
-//		}
-//	}
-//	f = CFile->FldD.front();
-//	if (f != nullptr) {
-//		while (f->Chain != nullptr) {
-//			f->Chain = (FieldDescr*)O(f->Chain);
-//			f = (FieldDescr*)f->Chain;
-//			if ((f->Flg & f_Stored) == 0) OFrml(f->Frml);
-//		}
-//	}
-//	k = CFile->Keys;
-//	if (k != nullptr) {
-//		while (k->Chain != nullptr) {
-//			k->Chain = (XKey*)O(k->Chain);
-//			k = k->Chain;
-//			//k->Alias = (pstring*)O(k->Alias);
-//			OKF((KeyFldD*)(&k->KFlds));
-//		}
-//	}
-//	//ad = CFile->Add;
-//
-//	//while (ad->Chain != nullptr) {
-//	//	ad->Chain = (AddD*)O(ad->Chain);
-//	//	ad = ad->Chain;
-//	//	ad->LD = (LinkD*)O(ad->LD);
-//	//	OFrml(ad->Frml);
-//	//	if (ad->Assign) OFrml(ad->Bool);
-//	//	else {
-//	//		c = ad->Chk;
-//	//		if (c != nullptr) {
-//	//			ad->Chk = (ChkD*)O(c);
-//	//			//c->HelpName = (pstring*)O(c->HelpName);
-//	//		}
-//	//	}
-//	//	cf = CFileF;
-//	//	CFileF = ad->File2;
-//	//	ad->File2 = (FileD*)OTb(CFileF->Name);
-//	//	ad->Field = (FieldDescr*)OCF(ad->Field);
-//	//	if (!ad->Assign && (c != nullptr)) { OFrml(c->Bool); OFrml(c->TxtZ); }
-//	//	CFileF = cf;
-//	//}
-//
-//	ld = (LinkD*)O(LinkDRoot);
-//	n = CFile->nLDs;
-//	while (n > 0) {
-//		OKF(KeyFldDPtr(ld->Args));
-//		cf = CFileF;
-//		CFileF = ld->ToFD;
-//		ld->ToFD = (FileD*)OTb(CFileF->Name);
-//		ld->ToKey = (XKey*)OCF(ld->ToKey);
-//		CFileF = cf; n--;
-//		if (n > 0) { ld->Chain = (LinkD*)O(ld->Chain); ld = ld->Chain; }
-//	}
-//	CFile->Chain = (FileD*)O(LinkDRoot);
-//	CFile->IRec = FDVersion;
-//	CFile->Handle = (FILE*)Tb;
-//
-//	/*if (CFile->LiOfs > 0) {
-//		li = (LiRoots*)Normalize(AbsAdr(CFile) + CFile->LiOfs);
-//		id = ImplDPtr(&li->Impls);
-//		if (id != nullptr) {
-//			while (id->Chain != nullptr) {
-//				id->Chain = (ImplD*)O(id->Chain);
-//				id = (ImplD*)id->Chain;
-//				id->FldD = (FieldDescr*)O(id->FldD);
-//				OFrml(id->Frml);
-//			}
-//		}
-//		c = ChkDPtr(&li->Chks);
-//		if (c != nullptr) {
-//			while (c->Chain != nullptr) {
-//				c->Chain = (ChkD*)O(c->Chain);
-//				c = (ChkD*)c->Chain;
-//				c->HelpName = (pstring*)O(c->HelpName);
-//				OFrml(c->TxtZ);
-//				OFrml(c->Bool);
-//			}
-//		}
-//	}*/
-//	ss = (LongStr*)&CFile->WasWrRec; // Ptr(PtrRec(CFile).Seg - 1, 14);
-//	ss->LL = sz;
-//	cf = CFile; CFile = Chpt;
-//	StoreChptTxt(ChptOldTxt, ss, false);
-//	WriteRec(CFile, RecNr, CRecPtr);
-//	CFile = cf;
-//	Move(fdsaved, CFile, oldsz);
-//	ReleaseStore2(p2);
-//}
-
-void SgKF(KeyFldD* kf, WORD Sg)
-{
-	if (kf == nullptr) return;
-	while (kf->Chain != nullptr) {
-		// PtrRec(kf->Chain).Seg = Sg; 
-		// kf = kf->Chain; 
-		// PtrRec(kf->FldD).Seg = Sg;
-	}
-}
-
-// preklopi data ze souboru (TTT, ...) do jednotlivych promennych objektu FileD
-FileD* FileD_FromSegment(LongStr* ss) {
-	char* A = ss->A;
-	size_t index = 0;
-	FileD* f = new FileD;
-	f->Chain = (Chained*)(uintptr_t)(&A[index]); index += 4;
-	f->RecLen = *(WORD*)&A[index]; index += 2;
-	f->RecPtr = reinterpret_cast<FileD*>(*(unsigned int*)&A[index]); index += 4;
-	f->NRecs = *(longint*)&A[index]; index += 4;
-	f->WasWrRec = *(boolean*)&A[index]; index++;
-	f->WasRdOnly = *(boolean*)&A[index]; index++;
-	f->Eof = *(boolean*)&A[index]; index++;
-	f->Typ = A[index]; index++;
-	f->Handle = nullptr; index += 2; // V Pascalu byly jen 2B, tady je to ukazatel
-	f->IRec = *(longint*)&A[index]; index += 4;
-	f->FrstDispl = *(WORD*)&A[index]; index += 2;
-	f->TF = reinterpret_cast<TFile*>(*(unsigned int*)&A[index]); index += 4;
-	f->ChptPos.R = reinterpret_cast<RdbD*>(*(unsigned int*)&A[index]); index += 4;
-	f->ChptPos.IRec = *(WORD*)&A[index]; index += 2;
-	f->TxtPosUDLI = *(WORD*)&A[index]; index += 2;
-	f->OrigFD = reinterpret_cast<FileD*>(*(unsigned int*)&A[index]); index += 4;
-	f->Drive = *(BYTE*)&A[index]; index++;
-	f->CatIRec = *(WORD*)&A[index]; index += 2;
-	/*f->FldD = reinterpret_cast<FieldDescr*>(*(unsigned int*)&A[index]);*/ index += 4;
-	f->IsParFile = *(boolean*)&A[index]; index++;
-	f->IsJournal = *(boolean*)&A[index]; index++;
-	f->IsHlpFile = *(boolean*)&A[index]; index++;
-	f->typSQLFile = *(boolean*)&A[index]; index++;
-	f->IsSQLFile = *(boolean*)&A[index]; index++;
-	f->IsDynFile = *(boolean*)&A[index]; index++;
-	BYTE mode = *(BYTE*)&A[index]; index++;
-	f->UMode = (FileUseMode)mode;
-	mode = *(BYTE*)&A[index]; index++;
-	f->LMode = (LockMode)mode;
-	mode = *(BYTE*)&A[index]; index++;
-	f->ExLMode = (LockMode)mode;
-	mode = *(BYTE*)&A[index]; index++;
-	f->TaLMode = (LockMode)mode;
-	f->ViewNames = reinterpret_cast<StringListEl*>(*(unsigned int*)&A[index]); index += 4;
-	f->XF = reinterpret_cast<XFile*>(*(unsigned int*)&A[index]); index += 4;
-	f->Keys = reinterpret_cast<XKey*>(*(unsigned int*)&A[index]); index += 4;
-	//f->Add = reinterpret_cast<AddD*>(*(unsigned int*)&A[index]); index += 4;
-	f->nLDs = *(WORD*)&A[index]; index += 2;
-	f->LiOfs = *(WORD*)&A[index]; index += 2;
-	f->Name[0] = *(BYTE*)&A[index]; index++;
-	memcpy(&f->Name[1], &A[index], 8); index += 8;
-
-	void* fff = &A[index];
-
-	return f;
-}
-
-FrmlElem* createFrmlElemFromStr(BYTE* str, uintptr_t address, std::map<uintptr_t, FieldDescr*>* mFields)
-{
-	FrmlElem* frml = nullptr;
-	WORD nextItemIndex = address & 0x0000FFFF;
-	instr_type Op = (instr_type)str[nextItemIndex];
-	//frml->Op = Op;
-	switch (Op) {
-	case _instr: {
-		frml = new FrmlElemIn(_instr);
-		break;
-	}
-
-	}
-
-
-	if (Op == _field)
-	{
-		auto fDescAddress = *(uintptr_t*)&str[nextItemIndex + 1];
-		auto it = mFields->find(fDescAddress);
-		if (it == mFields->end()) throw std::exception("Field wasn't found.");
-		frml = new FrmlElem7(Op, 0);
-		((FrmlElem7*)frml)->Field = it->second;
-	}
-	else if (Op == _access)
-	{
-		//auto frml7 = new FrmlElem7(Op, 0);
-		//if (frml7->LD != nullptr) frml7->LD = new LinkD();
-		//frml7->File2 = GetFD(frml7->File2, frml7->File2 != nullptr, address); // tady bude adresa segmentu - tedy bez offsetu asi
-		//return frml7;
-		// nedopsáno
-	}
-	else if (Op == _userfunc)
-	{
-		//frml->FC = GetFC(frml->FC, address);
-		//FrmlListEl* fl = frml->FrmlL;
-		//while (fl->Chain != nullptr)
-		//{
-		//	fl->Chain = (FrmlListEl*)fl->Chain;
-		//	fl->Frml = createFrmlElemFromStr(str, address, mFields); // taky nesmysl
-		//}
-	}
-	else if (Op == _owned)
-	{
-		//frml->ownLD = GetLinkD(frml->ownLD, address);
-		//// nedopsáno
-	}
-	else if (Op >= 0x60 && Op <= 0xAF)
-	{
-		//frml->P1 = createFrmlElemFromStr(str, *(uintptr_t*)&str[nextItemIndex + 1], mFields);
-	}
-	else if (Op >= 0xB0 && Op <= 0xEF)
-	{
-		/*frml->P1 = createFrmlElemFromStr(str, *(uintptr_t*)&str[nextItemIndex + 1], mFields);
-		frml->P2 = createFrmlElemFromStr(str, *(uintptr_t*)&str[nextItemIndex + 5], mFields);*/
-	}
-	else if (Op >= 0xF0 && Op <= 0xFF)
-	{
-		/*frml->P1 = createFrmlElemFromStr(str, *(uintptr_t*)&str[nextItemIndex + 1], mFields);
-		frml->P2 = createFrmlElemFromStr(str, *(uintptr_t*)&str[nextItemIndex + 5], mFields);
-		frml->P3 = createFrmlElemFromStr(str, *(uintptr_t*)&str[nextItemIndex + 9], mFields);*/
-	}
-	else
-	{
-		//throw std::exception("createFrmlElemFromStr: OP unknown");
-	}
-	return frml;
-}
-
-void createFieldDescrFromStr(FileD* F, uintptr_t firstAddress, BYTE* str)
-{
-	// nacte vsechny zretezene FieldDescr z predaneho retezce, vytvori mapu, kde klicem je puvodni adresa prvku
-	// nactene polozky vzajemne zretezi, posledni ma jako Chain NULL
-	WORD nextItemIndex = (uintptr_t)CFile->FldD.front() & 0x0000FFFF;
-	std::map<uintptr_t, FieldDescr*> mFieldD;
-	FieldDescr* lastFieldD = new FieldDescr(&str[nextItemIndex]);
-	nextItemIndex = (uintptr_t(lastFieldD->Chain) & 0x0000FFFF);
-	mFieldD.insert(std::pair<uintptr_t, FieldDescr*>(firstAddress, lastFieldD));
-	F->FldD.push_back(lastFieldD);
-
-	while (nextItemIndex != 0) {
-		FieldDescr* nFieldD = new FieldDescr(&str[nextItemIndex]);
-		nextItemIndex = (uintptr_t(nFieldD->Chain) & 0x0000FFFF);
-		mFieldD.insert(std::pair<uintptr_t, FieldDescr*>((uintptr_t)lastFieldD->Chain, nFieldD));
-		lastFieldD->Chain = nFieldD;
-		lastFieldD = nFieldD;
-	}
-
-	// jednotlive polozky v mape ted maji jako Frml uvedene stare adresy
-	// je nutne i jednotlive Frml vytvorit a adresy nahradit
-	// projdeme tedy mapu a ke vsem polozkam nacteme formulare
-	for (auto&& d : mFieldD)
-	{
-		auto frml = d.second->Frml;
-		if (frml == nullptr) continue;
-		if ((d.second->Flg & f_Stored) != 0) continue; // opsana podminka z puvodni RdFDSegment();
-		uintptr_t address = (uintptr_t)d.second->Frml;
-		// TODO: musi to tady byt? d.second->Frml = new FrmlElem(0, 0);
-		d.second->Frml = createFrmlElemFromStr(str, address, &mFieldD);
-	}
-}
-
-KeyFldD* createKFldsFromStr(BYTE* str, uintptr_t address, std::map<uintptr_t, XKey*>* mKeyDs)
-{
-	WORD nextItemIndex = address & 0x0000FFFF;
-	auto kfd = new KeyFldD(&str[nextItemIndex]);
-
-	return kfd;
-}
-
-void createKeysFromStr(FileD* F, uintptr_t firstAddress, BYTE* str)
-{
-	// nacte vsechny zretezene FileDescr z predaneho retezce, vytvori mapu, kde klicem je puvodni adresa prvku
-	// nactene polozky vzajemne zretezi, posledni ma jako Chain NULL
-	WORD nextItemIndex = (uintptr_t)CFile->Keys & 0x0000FFFF;
-	// pokud soubor klice nema, koncime
-	if (nextItemIndex == 0) { CFile->Keys = nullptr; return; }
-	std::map<uintptr_t, XKey*> mKeyD;
-	XKey* lastKeyD = new XKey(&str[nextItemIndex]);
-	nextItemIndex = (uintptr_t(lastKeyD->Chain) & 0x0000FFFF);
-	mKeyD.insert(std::pair<uintptr_t, XKey*>(firstAddress, lastKeyD));
-	F->Keys = lastKeyD;
-
-	while (nextItemIndex != 0) {
-		XKey* nKeyD = new XKey(&str[nextItemIndex]);
-		nextItemIndex = (uintptr_t(nKeyD->Chain) & 0x0000FFFF);
-		mKeyD.insert(std::pair<uintptr_t, XKey*>((uintptr_t)lastKeyD->Chain, nKeyD));
-		lastKeyD->Chain = nKeyD;
-		lastKeyD = nKeyD;
-	}
-
-	// jednotlive klice v mape ted maji jako KFlds uvedene stare adresy
-	// je nutne i jednotlive KFlds vytvorit a adresy nahradit
-	// projdeme tedy mapu a ke vsem polozkam nacteme KFlds
-	for (auto&& k : mKeyD)
-	{
-		auto kflds = k.second->KFlds;
-		if (kflds == nullptr) continue;
-		uintptr_t address = (uintptr_t)k.second->KFlds;
-		k.second->KFlds = createKFldsFromStr(str, address, &mKeyD);
-	}
-}
-
 bool RdFDSegment(WORD FromI, longint Pos)
 {
 	return false;
-
-	integer Sg = 0, SgF = 0;/*CFile-Seg*/
-	ChkD* c = nullptr;
-	LinkD* ld = nullptr; LinkD* ld1 = nullptr;
-	integer n = 0; LongStr* ss = nullptr; pstring lw;
-	void* p = nullptr;
-	auto result = false;
-	lw = LexWord;
-	//AlignLongStr();
-	ss = CFile->TF->Read(1, Pos);
-	if ((ss->LL <= sizeof(FileD))) return result;
-	if (CRdb->Encrypted) CodingLongStr(ss);
-	//Sg = uintptr_t(ss + 1);
-	//SgF = Sg;
-	FILE* origHandle = CFile->Handle;
-	CFile = FileD_FromSegment(ss);
-	CFile->Handle = origHandle;
-
-	if (CFile->TF != nullptr) CFile->TF = new TFile();
-
-	//CFile = (FileD*)Sg;
-	/* !!! with CFile^ do!!! */
-	if (CFile->IRec != FDVersion) return result;
-	result = true;
-	Tb = &CFile->Handle;
-	//CFile->Handle = nullptr;
-	//if (CFile->TF != nullptr) Pr(CFile->TF).Seg = Sg;
-	//if (CFile->TF != nullptr) throw std::exception("Not implemented.");
-	//if (CFile->XF != nullptr) Pr(CFile->XF).Seg = Sg;
-	//if (CFile->XF != nullptr) throw std::exception("Not implemented.");
-
-	//WORD offset = uintptr_t(CFile->FldD) & 0x0000FFFF;
-	//WORD ssDataLen = ss->LL - offset;
-	createFieldDescrFromStr(CFile, uintptr_t(CFile->FldD.front()), (BYTE*)&ss->A[0]);
-	createKeysFromStr(CFile, uintptr_t(CFile->Keys), (BYTE*)&ss->A[0]);
-
-	//FieldDescr* f = CFile->FldD;
-	//while (f->Chain != nullptr) {
-	//	//Pr(f->Chain).Seg = Sg; 
-	//	f = (FieldDescr*)f->Chain;
-	//	if ((f->Flg & f_Stored) == 0) SgFrml(f->Frml, Sg, SgF);
-	//}
-
-	if (CFile->OrigFD != nullptr) {
-		throw std::exception("Not implemented.");
-	}
-	//CFile->OrigFD = GetFD(CFile->OrigFD, false, Sg);
-	//StringList s = CFile->ViewNames;
-	//while (s->Chain != nullptr) {
-	//	//Pr(s->Chain).Seg = Sg; 
-	//	s = (StringList)s->Chain;
-	//}
-
-	if (CFile->Keys != nullptr) {
-		throw std::exception("Not implemented.");
-	}
-	//XKey* k = CFile->Keys;
-	//while (k->Chain != nullptr) {
-	//	//(k->Chain).Seg = Sg;
-	//	k = k->Chain;
-	//	//Pr(k->Alias).Seg = Sg;
-	//	SgKF(KeyFldDPtr(&k->KFlds), Sg);
-	//}
-
-	if (!CFile->Add.empty()) {
-		throw std::exception("Not implemented.");
-	}
-	//AddD* ad = (AddD*)&Add;
-	//while (ad->Chain != nullptr) {
-	//	//Pr(ad->Chain).Seg = Sg; 
-	//	ad = ad->Chain;
-	//	//if (ad->LD != nullptr) Pr(ad->LD).Seg = Sg; 
-	//	SgFrml(ad->Frml, Sg, SgF);
-	//	if (ad->Assign) SgFrml(ad->Bool, Sg, SgF);
-	//	else if (ad->Chk != nullptr) {
-	//		//Pr(ad->Chk).Seg = Sg; 
-	//		/* !!! with ad->Chk^ do!!! */
-	//		//if (ad->Chk->HelpName != nullptr) Pr(ad->Chk->HelpName).Seg = Sg;
-	//	}
-	//	ad->File2 = GetFD(ad->File2, true, Sg);
-	//	//SgF = Pr(ad->File2).Seg;
-	//	//Pr(ad->Field).Seg = SgF;
-	//	if (!ad->Assign) {
-	//		c = ad->Chk;
-	//		if (c != nullptr) { SgFrml(c->Bool, Sg, SgF); SgFrml(c->TxtZ, Sg, SgF); }
-	//	}
-	//	SgF = Sg;
-	//}
-	//
-	//ld1 = LinkDRoot;
-	//ld = (LinkD*)CFile->Chain;
-	//Pr(ld).Seg = Sg;
-	//n = CFile->nLDs;
-	//if (n > 0) LinkDRoot = ld;
-	//while (n > 0) {
-	//	if (n == 1) ld->Chain = ld1;
-	//	//else Pr(ld->Chain).Seg = Sg;
-	//	SgKF((KeyFldD*)ld->Args, Sg);
-	//	ld->FromFD = CFile;
-	//	ld->ToFD = GetFD(ld->ToFD, true, Sg);
-	//	//Pr(ld->ToKey).Seg = Pr(ld->ToFD).Seg;
-	//	ld = ld->Chain; n--;
-	//}
-	CFile->CatIRec = GetCatIRec(CFile->Name, CFile->Typ == '0'/*multilevel*/);
-	CFile->ChptPos.R = CRdb; CFile->ChptPos.IRec = FromI;
-#ifdef FandSQL
-	SetIsSQLFile;
-#endif
-	CompileRecLen();
-	p = Tb;
-	if (CFile->LiOfs > 0) {
-		p = Normalize(AbsAdr(CFile) + CFile->LiOfs);
-		CFile->LiOfs = 0;
-	}
-	ReleaseStore(p);
-	LexWord = lw;
-	return result;
 }
 
 WORD FindHelpRecNr(FileDPtr FD, std::string& txt)
@@ -1025,7 +424,7 @@ void EditHelpOrCat(WORD cc, WORD kind, std::string txt)
 	if (kind != 2) RdEStatus();
 }
 
-void StoreChptTxt(FieldDPtr F, LongStr* S, bool Del)
+void StoreChptTxt(FieldDescr* F, LongStr* S, bool Del)
 {
 	LongStr* s2 = nullptr; void* p = nullptr;
 	WORD LicNr; longint oldpos, pos;
@@ -1275,11 +674,14 @@ bool CompRunChptRec(WORD CC)
 	WORD nStrm = 0;
 	auto result = false;
 
-	OldE = E; MarkBoth(p, p2); WrEStatus(); //NewExit(Ovr(), er);
+	OldE = E;
+	MarkBoth(p, p2);
+	WrEStatus();
+	//NewExit(Ovr(), er);
 	//goto label2;
 	IsCompileErr = false; uw = false; mv = MausVisible;
 	FileD* lstFD = (FileD*)LastInChain(FileDRoot);
-	//oldLd = LinkDRoot;
+	std::deque<LinkD*> oldLd = LinkDRoot;
 	bool WasError = true;
 	bool WasGraph = IsGraphMode;
 	FD = nullptr;
@@ -1338,12 +740,12 @@ bool CompRunChptRec(WORD CC)
 			}
 			else {
 				lstFD = (FileD*)LastInChain(FileDRoot);
-				//ld = LinkDRoot;
+				std::deque<LinkD*> ld = LinkDRoot;
 				SetInpTT(&RP, true);
 				ReadProcHead("");
 				ReadProcBody();
 				lstFD->Chain = nullptr;
-				//LinkDRoot = ld;
+				LinkDRoot = ld;
 			}
 			break;
 		}
@@ -1385,7 +787,7 @@ label2:
 		CFile = (FileD*)CFile->Chain;
 	}
 	lstFD->Chain = nullptr;
-	//LinkDRoot = oldLd;
+	LinkDRoot = oldLd;
 	ReleaseBoth(p, p2); E = OldE; EditDRoot = E;
 	RdEStatus();
 	CRdb = RP.R;
@@ -1610,7 +1012,7 @@ bool EquKeys(XKey* K1, XKey* K2)
 bool MergeOldNew(bool Veriflongint, longint Pos)
 {
 	std::string Name;
-	//LinkD* ld = LinkDRoot;
+	std::deque<LinkD*> ld = LinkDRoot;
 	auto result = false;
 	FileD* FDOld = nullptr;
 	FileD* FDNew = CFile;
@@ -1636,7 +1038,7 @@ bool MergeOldNew(bool Veriflongint, longint Pos)
 	}
 label1:
 	FDNew->Chain = nullptr;
-	//LinkDRoot = ld;
+	LinkDRoot = ld;
 	FDNew->Name = Name;
 	FDNew->FullName = CPath;
 	CFile = FDNew;
@@ -1713,7 +1115,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 			switch (Typ) {
 			case 'F': {
 				FDCompiled = true;
-				//ld = LinkDRoot;
+				std::deque<LinkD*> ld = LinkDRoot;
 				MarkStore(p1);
 				FSplit(Name, dir, nm, ext);
 				if ((Txt == 0) && IsTestRun) {
@@ -1743,7 +1145,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 					else if (OldTxt != 0) ChptTF->Delete(OldTxt - ChptTF->LicenseNr);*/
 				}
 				else if (!RdFDSegment(I, OldTxt)) {
-					//LinkDRoot = ld;
+					LinkDRoot = ld;
 					ReleaseStore(p1);
 					CFile = Chpt;
 					goto label2;
@@ -1776,12 +1178,12 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 			case 'P': {
 				if (FileDRoot->Chain == nullptr) lstFD = FileDRoot;
 				else lstFD = (FileD*)LastInChain(FileDRoot);
-				//ld = LinkDRoot;
+				std::deque<LinkD*> ld = LinkDRoot;
 				SetInpTTPos(Txt, Encryp);
 				ReadProcHead(Name);
 				ReadProcBody();
 				lstFD->Chain = nullptr;
-				//LinkDRoot = ld;
+				LinkDRoot = ld;
 				break;
 			}
 			case 'E': {

@@ -448,14 +448,20 @@ void FakeRdFDSegment(FileD* FD)
 	CFile->TxtPosUDLI = 0;
 }
 
-void SetLDIndexRoot(/*LinkD* L,*/ LinkD* L2)
+void SetLDIndexRoot(/*LinkD* L,*/ std::deque<LinkD*>& L2)
 {
+	LinkD* l2 = nullptr;
+	if (!L2.empty()) l2 = *L2.begin();
+
 	XKey* K = nullptr;
 	KeyFldD* Arg = nullptr;
 	KeyFldD* KF = nullptr;
 	bool cmptd = false;
-	//L = LinkDRoot;
-	for (auto& L : LinkDRoot) { //while (L != L2) {   /* find key with equal beginning */
+
+	for (auto& L : LinkDRoot) { /* find key with equal beginning */
+		if (L == l2) {
+			break;
+		}
 		if (CFile->Typ == 'X') {
 			K = CFile->Keys;
 			while (K != nullptr) {
@@ -494,7 +500,8 @@ void* RdFileD(std::string FileName, char FDTyp, std::string Ext)
 	FileD* FD = nullptr; XKey* K = nullptr;
 	FieldDescr* F = nullptr; FieldDescr* F2 = nullptr;
 	void* p = nullptr;
-	ChkD* C = nullptr; LinkD* LDOld = nullptr;
+	ChkD* C = nullptr;
+	std::deque<LinkD*> LDOld;
 	size_t n = 0, i = 0; bool isHlp = false;
 	std::string Prefix, s;
 	LiRoots* li = nullptr;
@@ -515,33 +522,13 @@ void* RdFileD(std::string FileName, char FDTyp, std::string Ext)
 #endif
 		//LDOld = LinkDRoot;
 
-		//	RdbD* rdb = nullptr;
-		//	void* cr = nullptr;
-		//	FileD* cf = nullptr;
-		//	bool b = false;
-		//	WORD i = 0; longint pos = 0;
-		//	if (Lexem != 0x1A) Accept(';');
-		//	rdb = CRdb; cr = CRecPtr;
-		//	RdbD* r = FD->ChptPos.R;
-		//	if ((r == nullptr) || FD->IsDynFile) OldError(106);
-		//	CRdb = r;
-		//	i = FD->ChptPos.IRec;
-		//	CFile = CRdb->FD;
-		//	CRecPtr = CFile->RecPtr;
-		//	ReadRec(CFile, i, CRecPtr);
-		//	pos = _T(ChptOldTxt);
-		//	if (pos <= 0) Error(25);
-		//	b = RdFDSegment(i, pos);
-		//	cf = CFile; CRdb = rdb;
-		//	if (InpRdbPos.IRec != 0) {
-		//		CFile = rdb->FD;
-		//		ReadRec(CFile, InpRdbPos.IRec, CRecPtr);
-		//		CFile = cf;
-		//	}
-		//	CRecPtr = cr;
-		//	if (!b) Error(25);
-		//	CFile->OrigFD = FD;
-		//	CFile->TxtPosUDLI = 0;
+		//	RdbD* rdb = nullptr; void* cr = nullptr; FileD* cf = nullptr; bool b = false; WORD i = 0; longint pos = 0;
+		//	if (Lexem != 0x1A) Accept(';');	rdb = CRdb; cr = CRecPtr; RdbD* r = FD->ChptPos.R;
+		//	if ((r == nullptr) || FD->IsDynFile) OldError(106); CRdb = r; i = FD->ChptPos.IRec;	CFile = CRdb->FD;
+		//	CRecPtr = CFile->RecPtr; ReadRec(CFile, i, CRecPtr); pos = _T(ChptOldTxt); if (pos <= 0) Error(25);
+		//	b = RdFDSegment(i, pos); cf = CFile; CRdb = rdb; if (InpRdbPos.IRec != 0) {	CFile = rdb->FD;
+		//		ReadRec(CFile, InpRdbPos.IRec, CRecPtr); CFile = cf; }
+		//	CRecPtr = cr; if (!b) Error(25); CFile->OrigFD = FD; CFile->TxtPosUDLI = 0;
 
 		FakeRdFDSegment(FD);
 		//LinkDRoot = LDOld;
@@ -616,7 +603,7 @@ void* RdFileD(std::string FileName, char FDTyp, std::string Ext)
 		RdFieldDList(true);
 	}
 	GetTFileD(FDTyp);
-	//LDOld = LinkDRoot;
+	LDOld = LinkDRoot;
 
 	// TODO: v originale je to jinak, saha si to na nasl. promenne za PrevCompInp
 	// a bere posledni ChainBack
@@ -643,7 +630,7 @@ label2:
 	if (issql && (CFile->Keys != nullptr)) CFile->Typ = 'X';
 	GetXFileD();
 	CompileRecLen();
-	//SetLDIndexRoot(LDOld);
+	SetLDIndexRoot(LDOld);
 	if ((CFile->Typ == 'X') && (CFile->Keys == nullptr)) Error(107);
 	if ((Lexem == '#') && (ForwChar == 'A')) {
 		RdLex();

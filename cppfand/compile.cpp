@@ -2454,18 +2454,16 @@ FileD* RdFileName()
 	return FD;
 }
 
-LinkD* FindLD(pstring RoleName)
+LinkD* FindLD(std::string RoleName)
 {
 	FileD* F = CFile;
 
 	// pro soubory 'LIKE' neexistuje zaznam v LinkDRoot, budeme tedy prochazet i predky (OrigFD)
 	while (F != nullptr) {
-		//LinkD* L = LinkDRoot;
-		for (auto& L : LinkDRoot) { //while (L != nullptr) {
+		for (auto& L : LinkDRoot) {
 			if ((L->FromFD == F) && EquUpCase(L->RoleName, RoleName)) {
 				return L;
 			}
-			//L = L->Chain;
 		}
 		F = F->OrigFD;
 	}
@@ -2483,8 +2481,7 @@ bool IsRoleName(bool Both, FileD** FD, LinkD** LD)
 		*LD = nullptr;
 		return result;
 	}
-	if (Both)
-	{
+	if (Both) {
 		*LD = FindLD(LexWord);
 		if (*LD != nullptr) {
 			RdLex();
@@ -2532,13 +2529,11 @@ FrmlElem* MakeFldFrml(FieldDescr* F, char& FTyp)
 	return Z;
 }
 
-LinkD* FindOwnLD(FileD* FD, pstring RoleName)
+LinkD* FindOwnLD(FileD* FD, std::string RoleName)
 {
+	std::string lw = LexWord;
 	LinkD* result = nullptr;
-	//LinkD* ld = LinkDRoot;
-	//while (ld != nullptr) {
 	for (auto& ld : LinkDRoot) {
-		std::string lw = LexWord;
 		if ((ld->ToFD == FD)
 			&& EquUpCase(ld->FromFD->Name, lw)
 			&& (ld->IndexRoot != 0)
@@ -2547,7 +2542,6 @@ LinkD* FindOwnLD(FileD* FD, pstring RoleName)
 			result = ld;
 			break;
 		}
-		//ld = ld->Chain;
 	}
 	RdLex();
 	return result;
@@ -2575,7 +2569,9 @@ FrmlElem* TryRdFldFrml(FileD* FD, char& FTyp)
 			ld = FindOwnLD(FD, roleNm);
 			Accept(')');
 		}
-		else ld = FindOwnLD(FD, FD->Name);
+		else {
+			ld = FindOwnLD(FD, FD->Name);
+		}
 		if (ld == nullptr) OldError(182);
 		((FrmlElem23*)z)->ownLD = ld;
 		cf = CFile;
