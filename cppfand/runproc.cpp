@@ -366,12 +366,12 @@ void ExecPgm(Instr_exec* PD)
 
 void CallRdbProc(Instr_call* PD)
 {
-	bool b = false; void* p = nullptr; ProcStkD* bp = nullptr;
+	bool b = false; void* p = nullptr;
 	wwmix ww;
 	MarkStore(p);
-	bp = MyBP;
+	// TODO: tady se ma ulozit stav (MyBP - ProcStkD)
 	b = EditExecRdb(PD->RdbNm, PD->ProcNm, PD->ProcCall, &ww);
-	SetMyBP(bp);
+	// TODO: tady se ma obnovit stav (MyBP - ProcStkD)
 	ReleaseStore(p);
 	if (!b) GoExit();
 }
@@ -491,7 +491,7 @@ void PrintTxtProc(Instr_edittxt* PD)
 	LongStr* s = nullptr;
 	/* !!! with PD^ do!!! */
 	if (PD->TxtLV != nullptr) {
-		s = TWork.Read(1, *(longint*)(uintptr_t(MyBP) + PD->TxtLV->BPOfs));
+		//s = TWork.Read(1, *(longint*)(uintptr_t(MyBP) + PD->TxtLV->BPOfs));
 		PrintArray(s->A, s->LL, false);
 		ReleaseStore(s);
 	}
@@ -1198,7 +1198,7 @@ void RunInstr(Instr* PD)
 		}
 		case _asgnloc:/* !!! with PD^ do!!! */ {
 			auto iPD = (Instr_assign*)PD;
-			LVAssignFrml(iPD->AssLV, MyBP, iPD->Add, iPD->Frml);
+			LVAssignFrml(iPD->AssLV, iPD->Add, iPD->Frml);
 			break;
 		}
 		case _asgnrecfld: { AssignRecFld(((Instr_assign*)PD)); break; }
@@ -1425,8 +1425,8 @@ void CallProcedure(Instr_proc* PD)
 {
 	void* p1 = nullptr;
 	void* p2 = nullptr;
-	void* oldbp;
-	void* oldprocbp;
+	//void* oldbp;
+	//void* oldprocbp;
 
 	std::_Vector_iterator<std::_Vector_val<std::_Simple_types<LocVar*>>> it0;
 	std::_Vector_iterator<std::_Vector_val<std::_Simple_types<LocVar*>>> it1;
@@ -1438,23 +1438,26 @@ void CallProcedure(Instr_proc* PD)
 
 	if (PD == nullptr) return;
 	MarkBoth(p1, p2);
-	oldprocbp = ProcMyBP;
+	//oldprocbp = ProcMyBP;
 	std::deque<LinkD*> ld = LinkDRoot;
 	lstFD = (FileD*)LastInChain(FileDRoot);
 	SetInpTT(&PD->PPos, true);
 
 #ifdef _DEBUG
 	std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
-	if (srcCode.find("U002") != std::string::npos) {
+	if (srcCode.find("m:=Trail(evals('VetaH.M") != std::string::npos) {
 		printf("");
 	}
 #endif
+
+	// save LVBD
+	LocVarBlkD oldLVDB = LVBD;
 
 	ReadProcHead("");
 	PD->variables = LVBD;
 	n = PD->variables.NParam;
 	LocVar* lvroot = PD->variables.GetRoot();
-	oldbp = MyBP;
+	//oldbp = MyBP;
 	//PushProcStk();
 	if ((n != PD->N) && !((n == PD->N - 1) && PD->ExPar)) {
 	label1:
@@ -1498,7 +1501,7 @@ void CallProcedure(Instr_proc* PD)
 			if (lv->IsRetPar && (z->Op != _getlocvar)
 				|| PD->TArg[i].FromProlog
 				&& (PD->TArg[i].IsRetPar != lv->IsRetPar)) goto label1;
-			LVAssignFrml(lv, oldbp, false, PD->TArg[i].Frml);
+			LVAssignFrml(lv, false, PD->TArg[i].Frml);
 			break;
 		}
 		}
@@ -1516,7 +1519,7 @@ void CallProcedure(Instr_proc* PD)
 		}
 		++it0;
 	}
-	ProcMyBP = MyBP;
+	//ProcMyBP = MyBP;
 	pd1 = ReadProcBody();
 
 #ifdef _DEBUG
@@ -1585,9 +1588,12 @@ void CallProcedure(Instr_proc* PD)
 		i++;
 		it0++;
 	}
-	PopProcStk();
-	ProcMyBP = (ProcStkD*)oldprocbp;
+	//PopProcStk();
+	//ProcMyBP = (ProcStkD*)oldprocbp;
+
+	LVBD = oldLVDB;
 	LinkDRoot = ld;
+
 	CFile = (FileD*)lstFD->Chain;
 	while (CFile != nullptr) {
 		CloseFile();

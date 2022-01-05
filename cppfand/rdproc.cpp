@@ -934,7 +934,12 @@ Instr_proc* RdProcArg(char Caller)
 	LocVar* LV = nullptr;
 	if (Caller != 'C') RdChptName('P', &Pos, Caller == 'P' || Caller == 'E' || Caller == 'T');
 	WORD N = 0;
-	if (Caller != 'P') { if (Lexem == '(') { RdLex(); goto label1; } }
+	if (Caller != 'P') {
+		if (Lexem == '(') {
+			RdLex();
+			goto label1;
+		}
+	}
 	else if (Lexem == ',') {
 		RdLex();
 		Accept('(');
@@ -942,19 +947,17 @@ Instr_proc* RdProcArg(char Caller)
 		N++;
 		if (N > 30) Error(123);
 		TArg[N].Name = LexWord;
-		if ((ForwChar != '.') && FindLocVar(&LVBD, &LV) && (LV->FTyp == 'i' || LV->FTyp == 'r'))
-		{
+		if ((ForwChar != '.') && FindLocVar(&LVBD, &LV) && (LV->FTyp == 'i' || LV->FTyp == 'r')) {
 			RdLex();
 			TArg[N].FTyp = LV->FTyp;
 			TArg[N].FD = LV->FD;
 			TArg[N].RecPtr = LV->RecPtr;
 		}
-		else if (Lexem == '@')
-		{
+		else if (Lexem == '@') {
 			RdLex();
 			if (Lexem == '[') {
 				RdLex();
-				TArg[N].Name = *StoreStr(LexWord);
+				TArg[N].Name = LexWord;
 				Accept(_identifier);
 				Accept(',');
 				auto z = new FrmlElem0(_setmybp, 0); // GetOp(_setmybp, 0);
@@ -966,11 +969,14 @@ Instr_proc* RdProcArg(char Caller)
 			TArg[N].FTyp = 'f';
 		}
 		else TArg[N].Frml = RdFrml(TArg[N].FTyp);
-		if (Lexem == ',') { RdLex(); goto label1; }
+		if (Lexem == ',') {
+			RdLex();
+			goto label1;
+		}
 		Accept(')');
 	}
 	if (Caller == 'E') { N++; TArg[N].FTyp = 'r'; }
-	auto* PD = new Instr_proc(N); //GetPInstr(_proc, sizeof(RdbPos) + 2 + L);
+	auto* PD = new Instr_proc(N);
 	PD->PPos = Pos;
 	PD->N = N;
 	PD->ProcName = ProcName;
@@ -1023,9 +1029,7 @@ void RdKeyCode(EdExitD* X)
 		RdLex();
 	}
 	else {
-		for (i = 0; i < NKeyNames; i++)
-		{
-			/* !!! with KeyNames[i] do!!! */
+		for (i = 0; i < NKeyNames; i++)	{
 			if (EquUpCase(KeyNames[i].Nm, LexWord)) {
 				lastKey->KeyCode = KeyNames[i].Code;
 				lastKey->Break = KeyNames[i].Brk;
@@ -2756,11 +2760,11 @@ FrmlElem* GetEvalFrml(FrmlElem21* X)
 	char fTyp;
 	WORD cpos = 0;
 	//ExitRecord er = ExitRecord();
-	ProcStkD* oldbp;
+	//ProcStkD* oldbp;
 
 	LocVarBlkD oldLVBD = LVBD;
-	oldbp = MyBP;
-	SetMyBP(ProcMyBP);
+	//oldbp = MyBP;
+	//SetMyBP(ProcMyBP);
 	FrmlElem* z = nullptr;
 	FileD* cf = CFile;
 	cr = CRecPtr;
@@ -2802,7 +2806,7 @@ label1:
 label2:
 	auto result = z;
 	CFile = cf; CRecPtr = cr;
-	SetMyBP(oldbp);
+	//SetMyBP(oldbp);
 	LVBD = oldLVBD; /*for cond before cycle called when PushProcStk is !ready*/
 	return result;
 }

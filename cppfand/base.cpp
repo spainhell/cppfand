@@ -83,8 +83,8 @@ Cache cache;
 //std::map<FILE*, FileCache*> Cache::cacheMap;
 WORD CachePageSize;
 void* AfterCatFD; // r108
-ProcStkD* MyBP;
-ProcStkD* ProcMyBP;
+//ProcStkD* MyBP;
+//ProcStkD* ProcMyBP;
 WORD BPBound; // r212
 bool ExitP, BreakP;
 longint LastExitCode = 0; // r215
@@ -1613,9 +1613,9 @@ void OpenResFile()
 	CVol = "";
 	ResFile.Handle = OpenH(_isoldfile, RdOnly);
 	ResFile.FullName = CPath;
-	if (HandleError != 0)
-	{
-		printf("can't open %s", FandResName.c_str());
+	if (HandleError != 0) {
+		printf("can't open %s\n", FandResName.c_str());
+		system("pause");
 		wait();
 		Halt(0);
 	}
@@ -1642,7 +1642,7 @@ void NonameStartFunction()
 	prCurr = -1;
 	ExitSave = ExitProc;
 	ExitProc = MyExit;
-	MyBP = nullptr;
+	//MyBP = nullptr;
 	// integer UserLicNr = WORD(UserLicNrShow) & 0x7FFF;
 	FandResName = MyFExpand("FAND.RES", "FANDRES");
 	OpenResFile();

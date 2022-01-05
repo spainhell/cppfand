@@ -33,7 +33,7 @@ longint RunInt(FrmlPtr X);
 bool CanCopyT(FieldDescr* F, FrmlElem* Z, TFile** TF02, FileD** TFD02, longint& TF02Pos);
 bool TryCopyT(FieldDescr* F, TFile* TF, longint& pos, FrmlPtr Z);
 void AssgnFrml(FieldDescr* F, FrmlElem* X, bool Delete, bool Add);
-void LVAssignFrml(LocVar* LV, void* OldBP, bool Add, FrmlElem* X);
+void LVAssignFrml(LocVar* LV, bool Add, FrmlElem* X);
 std::string DecodeFieldRSB(FieldDescr* F, WORD LWw, double R, std::string& T, bool B);
 std::string DecodeField(FieldDescr* F, WORD LWw);
 void RunWFrml(WRectFrml& X, BYTE WFlags, WRect& W);

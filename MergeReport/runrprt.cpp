@@ -67,7 +67,7 @@ void RunReport(RprtOpt* RO)
 	if (!RewriteRprt(RO, PgeSize, Times, isLPT1)) return;  // pouze zajisti otevreni souboru
 	MarkStore2(Store2Ptr);
 	ex = true;
-	PushProcStk();
+	//PushProcStk();
 	//NewExit(Ovr(), er);
 	//goto label3;
 	OpenInp();
@@ -135,7 +135,7 @@ label1:
 		Rprt.Close(ReportString.c_str());
 		// if (isLPT1) ClosePrinter(0);
 		CloseInp();
-		PopProcStk();
+		//PopProcStk();
 		if (ex) {
 			RunMsgOff();
 			if (!WasLPTCancel) GoExit();
@@ -434,7 +434,7 @@ void RunAProc(std::vector<AssignD*> vAssign)
 {
 	for (auto* A : vAssign) {
 		switch (A->Kind) {
-		case _locvar: { LVAssignFrml(A->LV, MyBP, A->Add, A->Frml); break; }
+		case _locvar: { LVAssignFrml(A->LV, A->Add, A->Frml); break; }
 		case _parfile: { AsgnParFldFrml(A->FD, A->PFldD, A->Frml, A->Add); break; }
 		case _ifthenelseM: {
 			if (RunBool(A->Bool)) {

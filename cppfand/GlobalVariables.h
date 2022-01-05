@@ -93,8 +93,8 @@ extern char Version[5];
 extern WORD CachePageSize;
 extern void* AfterCatFD; // r108
 extern ExitRecord ExitBuf; // r202 - r210
-extern ProcStkD* MyBP;
-extern ProcStkD* ProcMyBP;
+//extern ProcStkD* MyBP;
+//extern ProcStkD* ProcMyBP;
 extern WORD BPBound; // r212
 extern bool ExitP, BreakP;
 extern longint LastExitCode; // r215

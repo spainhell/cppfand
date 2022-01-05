@@ -54,45 +54,45 @@ void ResetLVBD()
 	LVBD.FceName = "";
 }
 
-void SetMyBP(ProcStkD* Bp)
-{
-	/*MyBP = Bp;
-	if (MyBP != nullptr) LVBD.Root = (LocVar*)MyBP->LVRoot;
-	else LVBD.Root = nullptr;*/
-}
+//void SetMyBP(ProcStkD* Bp)
+//{
+//	/*MyBP = Bp;
+//	if (MyBP != nullptr) LVBD.Root = (LocVar*)MyBP->LVRoot;
+//	else LVBD.Root = nullptr;*/
+//}
 
-void PushProcStk()
-{
-	//ProcStkD* ps = nullptr;
-	//LocVar* lv = nullptr;
-	////ps = (ProcStkD*)GetZStore(LVBD.Size);
-	//ps = new ProcStkD();
-	//ps->ChainBack = MyBP;
-	//MyBP = ps;
-	//lv = LVBD.Root;
-	//ps->LVRoot = lv;
-	//while (lv != nullptr) {
-	//	/* !!! with lv^ do!!! */
-	//	if ((lv->FTyp == 'R' || lv->FTyp == 'S' || lv->FTyp == 'B')
-	//		&& (lv->Init != nullptr))
-	//		LVAssignFrml(lv, MyBP, false, lv->Init);
-	//	lv = (LocVar*)lv->Chain;
-	//}
-}
+//void PushProcStk()
+//{
+//	//ProcStkD* ps = nullptr;
+//	//LocVar* lv = nullptr;
+//	////ps = (ProcStkD*)GetZStore(LVBD.Size);
+//	//ps = new ProcStkD();
+//	//ps->ChainBack = MyBP;
+//	//MyBP = ps;
+//	//lv = LVBD.Root;
+//	//ps->LVRoot = lv;
+//	//while (lv != nullptr) {
+//	//	/* !!! with lv^ do!!! */
+//	//	if ((lv->FTyp == 'R' || lv->FTyp == 'S' || lv->FTyp == 'B')
+//	//		&& (lv->Init != nullptr))
+//	//		LVAssignFrml(lv, MyBP, false, lv->Init);
+//	//	lv = (LocVar*)lv->Chain;
+//	//}
+//}
 
-void PopProcStk()
-{
-	//LocVar* lv = nullptr;
-	//lv = (LocVar*)MyBP->LVRoot;
-	//while (lv != nullptr) {
-	//	if (lv->FTyp == 'S') {
-	//		longint* posptr = (longint*)LocVarAd(lv);
-	//		TWork.Delete(*posptr);
-	//	}
-	//	lv = (LocVar*)lv->Chain;
-	//}
-	//SetMyBP(MyBP->ChainBack);
-}
+//void PopProcStk()
+//{
+//	//LocVar* lv = nullptr;
+//	//lv = (LocVar*)MyBP->LVRoot;
+//	//while (lv != nullptr) {
+//	//	if (lv->FTyp == 'S') {
+//	//		longint* posptr = (longint*)LocVarAd(lv);
+//	//		TWork.Delete(*posptr);
+//	//	}
+//	//	lv = (LocVar*)lv->Chain;
+//	//}
+//	//SetMyBP(MyBP->ChainBack);
+//}
 
 bool Add(AddD* AD, void* RP, double R, bool Back)
 {

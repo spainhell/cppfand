@@ -3747,9 +3747,9 @@ void CallFandProc()
 		}
 		w = w >> 1;
 	}
-	ps->ChainBack = MyBP;
-	oldBP = MyBP;
-	SetMyBP(ps);
+	//ps->ChainBack = MyBP;
+	//oldBP = MyBP;
+	//SetMyBP(ps);
 	CallProcedure(pd);
 	w = p->InpMask;
 	for (i = 1; i <= p->Arity; i++) {
@@ -3784,7 +3784,7 @@ void CallFandProc()
 		}
 		w = w >> 1;
 	}
-	SetMyBP(oldBP);
+	//SetMyBP(oldBP);
 	ReleaseStore(ps);
 }
 

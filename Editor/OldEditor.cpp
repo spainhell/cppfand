@@ -1270,7 +1270,7 @@ void UpdScreen()
 
 		if (bScroll && (index < LenT)) {
 			if ((InsPg && (ModPage(r - rr + RScrL - 1))) || InsPage) {
-				EditWrline((char*)PgStr[1], r);
+				EditWrline((char*)&PgStr[1], r);
 				WrEndL(false, r);
 				if (InsPage) rr++;
 				InsPage = false;

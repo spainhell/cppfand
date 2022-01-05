@@ -18,7 +18,7 @@ void RunMerge()
 {
 	integer I = 0, MinIi = 0, res = 0, NEof = 0;      /*RunMerge - body*/
 	bool EmptyGroup = false, b = false;
-	PushProcStk();
+	//PushProcStk();
 	OpenInpM();
 	OpenOutp();
 	MergOpGroup.Group = 1.0;
@@ -63,7 +63,7 @@ label1:
 		RunMsgOff();
 		if (!b) GoExit();
 		CloseInpOutp();
-		PopProcStk();
+		//PopProcStk();
 		return;
 	}
 	EmptyGroup = false;
@@ -171,7 +171,7 @@ void RunAssign(std::vector<AssignD*> Assigns)
 			break;
 		}
 		case _locvar: {
-			LVAssignFrml(A->LV, MyBP, A->Add, A->Frml);
+			LVAssignFrml(A->LV, A->Add, A->Frml);
 			break;
 		}
 		case _parfile: {

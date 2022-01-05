@@ -483,12 +483,12 @@ void InitRunFand()
 	h = ResFile.Handle;
 	ReadH(h, 2, &n);
 	if (n != ResVersion) {
-		printf("FAND.RES incorr. version");
+		printf("FAND.RES incorr. version\n");
+		system("pause");
 		wait(); Halt(0);
 	}
 
-	for (int readindexes = 0; readindexes < FandFace; readindexes++)
-	{
+	for (int readindexes = 0; readindexes < FandFace; readindexes++) {
 		ReadH(h, sizeof(ResFile.A->Pos), &ResFile.A[readindexes].Pos);
 		ReadH(h, sizeof(ResFile.A->Size), &ResFile.A[readindexes].Size);
 	}
@@ -586,9 +586,6 @@ void InitRunFand()
 	WriteWFrame(WHasFrame + WDoubleFrame, "", "");
 	screen.ScrClr(2, 2, TxtCols - 2, TxtRows - 13, (char)0xB1, TextAttr);
 	screen.ScrClr(2, TxtRows - 11, TxtCols - 2, 10, (char)0xb2, TextAttr);
-	//ScrClr(1, 1, TxtCols - 2, TxtRows - 13, 'A', TextAttr);
-	//ResFile.Get(FandFace, &p);
-	//x = (pstring*)p;
 
 	std::string ResText = ResFile.Get(FandFace - 1);
 

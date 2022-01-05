@@ -392,9 +392,9 @@ extern MergOpSt MergOpGroup;
 // *** IMPLEMENTATION ***
 
 void ResetLVBD();
-void SetMyBP(ProcStkD* Bp);
-void PushProcStk();
-void PopProcStk();
+//void SetMyBP(ProcStkD* Bp);
+//void PushProcStk();
+//void PopProcStk();
 bool RunAddUpdte1(char Kind/*+,-,d*/, void* CRold, bool Back/*tracking*/,
 	AddD* StopAD, LinkD* notLD);
 
