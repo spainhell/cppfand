@@ -10,3 +10,4 @@ string parentDirectory(string path);
 string getDirectory(string fullPath, char pathDelim = '\\');
 vector<string> directoryItems(const string& path, string mask);
 bool deleteFile(const string& path);
+time_t lastWriteTime(const string& path);

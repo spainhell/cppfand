@@ -31,7 +31,7 @@ void SetIsSQLFile();
 WORD GetCatIRec(pstring Name, bool MultiLevel);
 WORD Generation();
 void TurnCat(WORD Frst, WORD N, integer I);
-pstring RdCatField(WORD CatIRec, FieldDescr* CatF);
+std::string RdCatField(WORD CatIRec, FieldDescr* CatF);
 void WrCatField(FileD* catFD, WORD CatIRec, FieldDescr* CatF, const std::string& Txt);
 void WrCatField(WORD CatIRec, FieldDescr* CatF, pstring Txt);
 void RdCatPathVol(WORD CatIRec);

@@ -502,7 +502,6 @@ void InitRunFand()
 		ReadH(h, sizeof(MsgIdx->Nr), &MsgIdx[readindexes].Nr);
 		ReadH(h, sizeof(MsgIdx->Ofs), &MsgIdx[readindexes].Ofs);
 		ReadH(h, sizeof(MsgIdx->Count), &MsgIdx[readindexes].Count);
-		//printf("Zprava cislo: %i, offset %i, delka %i\n", MsgIdx[readindexes].Nr, MsgIdx[readindexes].Ofs, MsgIdx[readindexes].Count);
 	}
 	FrstMsgPos = PosH(h);
 	// *** konec ***
@@ -538,7 +537,6 @@ void InitRunFand()
 	InitMouseEvents();
 	// Editor
 	InitTxtEditor();
-	//
 	OpenCache();
 
 	WasInitPgm = true;

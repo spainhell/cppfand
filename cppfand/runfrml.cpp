@@ -17,6 +17,7 @@
 #include "wwmix.h"
 #include "../Editor/runedi.h"
 #include "../textfunc/textfunc.h"
+#include "../FileSystem/directory.h"
 
 //FileDPtr TFD02;
 //TFile* TF02;
@@ -227,12 +228,16 @@ double RMod(FrmlElem0* X)
 	return int(R1 - int(R1 / R2) * R2);
 }
 
-double LastUpdate(FILE* Handle)
+double LastUpdate(const std::string& path)
 {
-	//DateTime dt;
-	//UnPackTime(GetDateTimeH(Handle), dt);
-	//return RDate(dt.year, dt.month, dt.day, dt.hour, dt.min, dt.sec, 0);
-	return 0.0;
+	double result = 0.0;
+	const time_t dt = lastWriteTime(path);
+	if (dt != 0) {
+		struct tm lt;
+		errno_t err = localtime_s(&lt, &dt);
+		result = RDate(lt.tm_year + 1900, lt.tm_mon + 1, lt.tm_mday, lt.tm_hour, lt.tm_min, lt.tm_sec, 0);
+	}
+	return result;
 }
 
 WORD TypeDay(double R)
@@ -999,22 +1004,20 @@ label1:
 		break;
 	}
 	case _lastupdate: {
-		cf = CFile;
+		//cf = CFile;
 		auto iX = (FrmlElem9*)X;
-		CFile = iX->FD;
-		md = NewLMode(RdMode);
-		result = LastUpdate(CFile->Handle);
-		OldLMode(md);
-		CFile = cf;
+		//CFile = iX->FD;
+		//md = NewLMode(RdMode);
+		result = LastUpdate(iX->FD->FullName);
+		//OldLMode(md);
+		//CFile = cf;
 		break;
 	}
 	case _catfield: {
 		auto iX = (FrmlElem10*)X;
 		RdCatPathVol(iX->CatIRec);
 		TestMountVol(CPath[0]);
-		FILE* h = OpenH(_isoldfile, RdOnly);
-		result = LastUpdate(h);
-		CloseH(&h);
+		result = LastUpdate(CPath);
 		break;
 	}
 	case _currtime: {

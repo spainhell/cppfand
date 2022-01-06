@@ -62,7 +62,7 @@ void AccRecNoProc(FrmlElem14* X, WORD Msg);
 void GetRecNoXString(FrmlElem13* Z, XString& X);
 double RunRealStr(FrmlElem* X);
 double RMod(FrmlElem0* X);
-double LastUpdate(FILE* Handle);
+double LastUpdate(const std::string& path);
 WORD TypeDay(double R);
 double AddWDays(double R, integer N, WORD d);
 

@@ -689,14 +689,15 @@ void TurnCat(WORD Frst, WORD N, integer I)
 	ReleaseStore(p);
 }
 
-pstring RdCatField(WORD CatIRec, FieldDescr* CatF)
+std::string RdCatField(WORD CatIRec, FieldDescr* CatF)
 {
 	FileD* CF = CFile;
 	void* CR = CRecPtr;
 	CFile = CatFD;
 	CRecPtr = GetRecSpace();
 	ReadRec(CFile, CatIRec, CRecPtr);
-	auto result = OldTrailChar(' ', _ShortS(CatF));
+	auto stdS = _StdS(CatF);
+	auto result = TrailChar(stdS, ' ');
 	ReleaseStore(CRecPtr);
 	CFile = CF;
 	CRecPtr = CR;
