@@ -123,7 +123,7 @@ void TzFile::Get1Dir(StringList Msk, longint D, longint& DLast)
 			sl = Msk;
 			while (sl != nullptr) {
 				if (EqualsMask(SR.name[1], length(SR.name), sl->S)) goto label1;
-				sl = (StringListEl*)sl->Chain;
+				sl = (StringListEl*)sl->pChain;
 			}
 		}
 		FindNext(SR);

@@ -177,7 +177,7 @@ char RdOwner(LinkD** LLD, LocVar** LLV)
 				return result;
 			}
 		}
-		//ld = ld->Chain;
+		//ld = ld->pChain;
 	}
 	Error(9);
 	return result;
@@ -424,7 +424,7 @@ FrmlElem* RdFunctionP(char& FFTyp)
 				Arg[N] = RdFrml(Typ);
 				N++;
 				if (Typ != KF->FldD->FrmlTyp) OldError(12);
-				KF = (KeyFldD*)KF->Chain;
+				KF = (KeyFldD*)KF->pChain;
 			}
 		}
 		else {
@@ -765,7 +765,7 @@ Instr* RdFor()
 	AcceptKeyWord("TO");
 	auto iLoop = new Instr_loops(_whiledo); // GetPInstr(_whiledo, 8);
 	PD->Chain = iLoop;
-	//PD = (Instr_assign*)PD->Chain;
+	//PD = (Instr_assign*)PD->pChain;
 	auto Z1 = new FrmlElem0(_compreal, 2); // GetOp(_compreal, 2);
 	Z1->P1 = nullptr;
 	Z1->LV1 = LV;
@@ -1408,7 +1408,7 @@ FieldList RdFlds()
 	FieldListEl* FLRoot = nullptr; FieldListEl* FL = nullptr;
 label1:
 	FL = new FieldListEl(); // (FieldList)GetStore(sizeof(*FL));
-	if (FLRoot == nullptr) { FLRoot = FL; FL->Chain = nullptr; }
+	if (FLRoot == nullptr) { FLRoot = FL; FL->pChain = nullptr; }
 	else ChainLast(FLRoot, FL);
 	FL->FldD = RdFldName(CFile);
 	if (Lexem == ',') { RdLex(); goto label1; }
@@ -1434,7 +1434,7 @@ label1:
 		while (FL1 != nullptr) {
 			std::string tmp = LexWord;
 			if (EquUpCase(FL1->FldD->Name, tmp)) goto label2;
-			FL1 = (FieldList)FL1->Chain;
+			FL1 = (FieldList)FL1->pChain;
 		}
 		Error(43);
 	label2:

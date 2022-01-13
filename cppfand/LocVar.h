@@ -5,7 +5,7 @@
 class FrmlElem;
 class FileD;
 
-class LocVar : public Chained // r. 239
+class LocVar : public Chained<LocVar> // r. 239
 {
 public:
 	LocVar() = default;
@@ -26,7 +26,7 @@ public:
 	std::string S;
 };
 
-class LocVarBlkD : public Chained // r228
+class LocVarBlkD : public Chained<LocVarBlkD> // r228
 {
 public:
 	LocVarBlkD() {  }

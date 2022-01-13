@@ -47,7 +47,7 @@ Instr::Instr(PInstrCode kind)
 void ResetLVBD()
 {
 	//FillChar(&LVBD, sizeof(LVBD), 0); 
-	LVBD.Chain = nullptr;
+	LVBD.pChain = nullptr;
 	LVBD.vLocVar.clear();
 	LVBD.NParam = 0;
 	LVBD.Size = 2 * 4;
@@ -76,7 +76,7 @@ void ResetLVBD()
 //	//	if ((lv->FTyp == 'R' || lv->FTyp == 'S' || lv->FTyp == 'B')
 //	//		&& (lv->Init != nullptr))
 //	//		LVAssignFrml(lv, MyBP, false, lv->Init);
-//	//	lv = (LocVar*)lv->Chain;
+//	//	lv = (LocVar*)lv->pChain;
 //	//}
 //}
 
@@ -89,7 +89,7 @@ void ResetLVBD()
 //	//		longint* posptr = (longint*)LocVarAd(lv);
 //	//		TWork.Delete(*posptr);
 //	//	}
-//	//	lv = (LocVar*)lv->Chain;
+//	//	lv = (LocVar*)lv->pChain;
 //	//}
 //	//SetMyBP(MyBP->ChainBack);
 //}
@@ -392,7 +392,7 @@ bool TestExitKey(WORD KeyCode, EdExitD* X)
 			EdBreak = E->Break;
 			return true;
 		}
-		E = E->Chain;
+		E = E->pChain;
 	}
 	return false;*/
 }

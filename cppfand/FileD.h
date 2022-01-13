@@ -1,5 +1,6 @@
 #pragma once
 #include "base.h"
+#include "Chained.h"
 #include "Rdb.h"
 #include "TFile.h"
 #include "../Indexes/XKey.h"
@@ -9,7 +10,7 @@ class FieldDescr;
 struct StringListEl;
 class AddD;
 
-class FileD : public Chained // ø. 177
+class FileD : public Chained<FileD> // ø. 177
 {
 public:
 	FileD();

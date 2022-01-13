@@ -14,9 +14,9 @@ class FieldDescr;
 
 enum MInstrCode { _zero, _move, _output, _locvar, _parfile, _ifthenelseM };
 
-struct AssignD : public Chained
+struct AssignD : public Chained<AssignD>
 {
-	//AssignD* Chain;
+	//AssignD* pChain;
 	MInstrCode Kind = _zero;
 	FieldDescr* inputFldD = nullptr;
 	FieldDescr* outputFldD = nullptr;
@@ -32,9 +32,8 @@ struct AssignD : public Chained
 	std::vector<AssignD*> ElseInstr;
 };
 
-struct OutpFD : public Chained
+struct OutpFD : public Chained<OutpFD>
 {
-	//OutpFD* Chain;
 	FileD* FD = nullptr;
 	LockMode Md = NullMode;
 	void* RecPtr = nullptr;
@@ -45,7 +44,7 @@ struct OutpFD : public Chained
 #endif
 };
 
-struct OutpRD : public Chained
+struct OutpRD : public Chained<OutpRD>
 {
 	OutpFD* OD = nullptr; /*nullptr=dummy*/
 	FrmlElem* Bool = nullptr;
@@ -119,7 +118,7 @@ struct RprtOpt
 	bool Edit = false, PrintCtrl = false;
 };
 
-struct RFldD : public Chained
+struct RFldD : public Chained<RFldD>
 {
 	char FrmlTyp = '\0', Typ = '\0';    /*R,F,D,T*/
 	bool BlankOrWrap = false; /*long date "DD.MM.YYYY"*/
@@ -127,7 +126,7 @@ struct RFldD : public Chained
 	std::string Name; /*curr. length*/
 };
 
-struct BlkD : public Chained
+struct BlkD : public Chained<BlkD>
 {
 	FrmlElem* Bool = nullptr;
 	std::vector<FrmlElemSum*> *Sum = nullptr;
@@ -172,9 +171,8 @@ struct EdExitD
 	/*"Q" quit   #0 dummy*/
 };
 
-struct EFldD : public Chained
+struct EFldD : public Chained<EFldD>
 {
-	//EFldD* Chain;
 	EFldD* ChainBack = nullptr;
 	FieldDescr* FldD = nullptr;
 	ChkD* Chk = nullptr;
@@ -188,15 +186,15 @@ struct EFldD : public Chained
 	bool Ed(bool IsNewRec);
 };
 
-struct ERecTxtD : public Chained
+struct ERecTxtD : public Chained<ERecTxtD>
 {
 	WORD N;
 	StringList SL;
 };
 
-struct EditD : Chained
+struct EditD : Chained<EditD>
 {
-	// EditD* PrevE; - toto bude Chain ...
+	// EditD* PrevE; - toto bude pChain ...
 	FileD* FD = nullptr;
 	LockMode OldMd = NullMode;
 	bool IsUserForm = false;
@@ -324,9 +322,8 @@ struct ChoiceD
 	std::string Txt;
 };
 
-struct WrLnD : Chained
+struct WrLnD : Chained<WrLnD>
 {
-	//WrLnD* Chain;
 	FrmlElem* Frml = nullptr;
 	char Typ = '\0'; /* S, B, F, D */
 	BYTE N = 0, M = 0;
@@ -357,7 +354,7 @@ class Instr /*: public Chained// POZOR konflikt názvù viz níže*/
 {
 public:
 	Instr(PInstrCode kind);
-	//Instr* Chain = nullptr;
+	//Instr* pChain = nullptr;
 	PInstrCode Kind;
 	Instr* Chain = nullptr;
 };

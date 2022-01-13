@@ -5,23 +5,23 @@
 
 class FieldDescr;
 
-struct GraphVD : public Chained
+struct GraphVD : public Chained<GraphVD>
 {
-	//GraphVD* Chain;
+	//GraphVD* pChain;
 	FrmlElem* XZ, *YZ, *Velikost; /*float*/
 	FrmlElem* BarPis, *Text; /*pstring*/
 };
 
-struct GraphWD : public Chained
+struct GraphWD : public Chained<GraphWD>
 {
-	//GraphWD* Chain;
+	//GraphWD* pChain;
 	FrmlPtr XZ, YZ, XK, YK; /*float*/
 	FrmlPtr BarPoz, BarPis, Text; /*pstring*/
 };
 
-struct GraphRGBD : public Chained
+struct GraphRGBD : public Chained<GraphRGBD>
 {
-	// GraphRGBD* Chain;
+	// GraphRGBD* pChain;
 	FrmlPtr Barva; /*pstring*/
 	FrmlPtr R, G, B; /*float*/
 };

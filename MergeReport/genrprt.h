@@ -6,7 +6,7 @@ class FieldDescr;
 
 struct PFldD //: public Chained
 {
-	//PFldD* Chain = nullptr; 
+	//PFldD* pChain = nullptr; 
 	FieldDescr* FldD = nullptr;
 	integer ColTxt = 0, ColItem = 0;
 	bool IsCtrl = false, IsSum = false, NxtLine = false;

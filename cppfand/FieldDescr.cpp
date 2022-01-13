@@ -8,7 +8,7 @@ FieldDescr::FieldDescr()
 FieldDescr::FieldDescr(BYTE* inputStr)
 {
 	size_t index = 0;
-	Chain = reinterpret_cast<FieldDescr*>(*(unsigned int*)&inputStr[index]); index += 4;
+	pChain = reinterpret_cast<FieldDescr*>(*(unsigned int*)&inputStr[index]); index += 4;
 	Typ = *(char*)&inputStr[index]; index++;
 	FrmlTyp = *(char*)&inputStr[index]; index++;
 	L = *(char*)&inputStr[index]; index++;
@@ -31,7 +31,7 @@ FieldDescr::FieldDescr(BYTE* inputStr)
 
 FieldDescr::FieldDescr(const FieldDescr& orig)
 {
-	if (orig.Chain != nullptr) Chain = new FieldDescr(*(FieldDescr*)orig.Chain);
+	if (orig.pChain != nullptr) pChain = new FieldDescr(*(FieldDescr*)orig.pChain);
 	Typ = orig.Typ;
 	FrmlTyp = orig.FrmlTyp;
 	L = orig.L; M = orig.M; NBytes = orig.NBytes; Flg = orig.Flg;

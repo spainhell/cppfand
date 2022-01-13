@@ -134,7 +134,7 @@ void PromptAutoRprt(RprtOpt* RO)
 			pstring tmpStr = SelMark;
 			ww.PutSelect(tmpStr + F->Name);
 		}
-		FL = (FieldList)FL->Chain;
+		FL = (FieldList)FL->pChain;
 	}
 	CFile = RO->FDL.FD;
 	if (!ww.SelFieldList(36, true, &RO2->Flds)) return;
@@ -201,7 +201,7 @@ void AssignRecVar(LocVar* LV1, LocVar* LV2, AssignD* A)
 			break;
 		}
 		}
-		A = (AssignD*)A->Chain;
+		A = (AssignD*)A->pChain;
 	}
 	CFile = FD1; CRecPtr = RP1;
 	SetUpdFlag();
@@ -276,7 +276,7 @@ void WritelnProc(Instr_writeln* PD)
 		if (LF == WriteType::message || LF == WriteType::msgAndHelp) t = t + x;
 		else printS += x;
 	label1:
-		W = (WrLnD*)W->Chain;
+		W = (WrLnD*)W->pChain;
 	}
 	screen.WriteStyledStringToWindow(printS, ProcAttr);
 label2:
@@ -1031,14 +1031,14 @@ void ResetCatalog()
 	FileD* cf = CFile;
 	RdbD* r = CRdb;
 	while (CRdb != nullptr) {
-		CFile = (FileD*)CRdb->FD->Chain;
+		CFile = (FileD*)CRdb->FD->pChain;
 		while (CFile != nullptr) {
 			CloseFile();
 			CFile->CatIRec = GetCatIRec(CFile->Name, CFile->Typ == '0');
 #ifdef FandSQL
 			SetIsSQLFile();
 #endif
-			CFile = (FileD*)CFile->Chain;
+			CFile = (FileD*)CFile->pChain;
 		}
 		CRdb = CRdb->ChainBack;
 	}
@@ -1594,12 +1594,12 @@ void CallProcedure(Instr_proc* PD)
 	LVBD = oldLVDB;
 	LinkDRoot = ld;
 
-	CFile = (FileD*)lstFD->Chain;
+	CFile = (FileD*)lstFD->pChain;
 	while (CFile != nullptr) {
 		CloseFile();
-		CFile = (FileD*)CFile->Chain;
+		CFile = (FileD*)CFile->pChain;
 	}
-	lstFD->Chain = nullptr;
+	lstFD->pChain = nullptr;
 	ReleaseBoth(p1, p2);
 }
 

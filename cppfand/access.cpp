@@ -1181,8 +1181,8 @@ bool LinkUpw(LinkD* LD, longint& N, bool WithT)
 					break;
 				}
 				}
-			Arg = (KeyFldD*)Arg->Chain;
-			KF = (KeyFldD*)KF->Chain;
+			Arg = (KeyFldD*)Arg->pChain;
+			KF = (KeyFldD*)KF->pChain;
 		}
 		CFile = ToFD;
 		CRecPtr = RecPtr;
@@ -1686,7 +1686,7 @@ void ForAllFDs(void(*procedure)())
 		CFile = R->FD;
 		while (CFile != nullptr) {
 			procedure();
-			CFile = (FileD*)CFile->Chain;
+			CFile = (FileD*)CFile->pChain;
 		}
 		R = R->ChainBack;
 	}

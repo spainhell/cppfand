@@ -67,7 +67,7 @@ void CloseFANDFiles(bool FromDML)
 		while (CFile != nullptr) {
 			if (!FromDML) CFile->ExLMode = CFile->LMode;
 			CloseFile();
-			CFile = (FileD*)CFile->Chain;
+			CFile = (FileD*)CFile->pChain;
 		}
 		RD = RD->ChainBack;
 	}
@@ -98,7 +98,7 @@ void OpenFANDFiles(bool FromDML)
 		CFile = RD->FD;
 		if (IsTestRun) OpenF(Exclusive);
 		else OpenF(RdOnly);
-		CFile = (FileD*)CFile->Chain;
+		CFile = (FileD*)CFile->pChain;
 		while (!FromDML && (CFile != nullptr)) {
 			/*with CFile^*/
 			if (CFile->ExLMode != NullMode)
@@ -106,7 +106,7 @@ void OpenFANDFiles(bool FromDML)
 				OpenF(Shared);
 				md = NewLMode(CFile->ExLMode);
 			}
-			CFile = (FileD*)CFile->Chain;
+			CFile = (FileD*)CFile->pChain;
 		}
 		RD = RD->ChainBack;
 	}
@@ -475,11 +475,11 @@ void CloseFAfter(FileD* FD)
 	CFile = FD;
 
 	// timto preskocime aktualizaci RDB a TTT
-	//CFile = (FileD*)CFile->Chain;
+	//CFile = (FileD*)CFile->pChain;
 
 	while (CFile != nullptr) {
 		CloseFile();
-		CFile = (FileD*)CFile->Chain;
+		CFile = (FileD*)CFile->pChain;
 	}
 }
 
@@ -507,7 +507,7 @@ void CloseFilesOnDrive(WORD D)
 			if (CFile->Drive == D) {
 				CloseFile();
 			}
-			CFile = (FileD*)CFile->Chain;
+			CFile = (FileD*)CFile->pChain;
 		}
 		R = R->ChainBack;
 	}
@@ -610,7 +610,7 @@ void SetCPathForH(FILE* handle)
 				CExtToT();
 				goto label1;
 			}
-			CFile = (FileD*)CFile->Chain;
+			CFile = (FileD*)CFile->pChain;
 		} RD = RD->ChainBack;
 	}
 	RdMsg(799);
@@ -753,7 +753,7 @@ bool SetContextDir(std::string& D, bool& IsRdb)
 				else D = R->DataDir;
 				return result;
 			}
-			F = (FileD*)F->Chain;
+			F = (FileD*)F->pChain;
 		}
 		R = R->ChainBack;
 	}
@@ -991,13 +991,13 @@ void SubstDuplF(FileD* TempFD, bool DelTF)
 		CloseClearH(&PrimFD->Handle);
 		MyDeleteFile(p);
 		TestDelErr(p);
-		FileD* FD = (FileD*)PrimFD->Chain;
+		FileD* FD = (FileD*)PrimFD->pChain;
 		TFile* MD = PrimFD->TF;
 		XFile* xf2 = PrimFD->XF;
 		FileUseMode um = PrimFD->UMode;
 		//Move(TempFD, PrimFD, sizeof(FileD) - 2);
 		*PrimFD = *TempFD;
-		PrimFD->Chain = FD;
+		PrimFD->pChain = FD;
 		PrimFD->XF = xf2;
 		PrimFD->UMode = um;
 		CloseClearH(&PrimFD->Handle);

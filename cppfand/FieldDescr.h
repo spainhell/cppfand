@@ -1,12 +1,13 @@
 #pragma once
 #include <string>
 #include "base.h"
+#include "Chained.h"
 #include "constants.h"
 //#include "models/FrmlElem.h"
 
 class FrmlElem;
 
-class FieldDescr : public Chained // ø. 100
+class FieldDescr : public Chained<FieldDescr> // ø. 100
 {
 public:
 	FieldDescr();

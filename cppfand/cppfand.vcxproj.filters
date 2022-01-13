@@ -236,6 +236,9 @@
     <ClInclude Include="EditOpt.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Chained.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="cppfand.rc">

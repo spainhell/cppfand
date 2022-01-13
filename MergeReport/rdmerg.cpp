@@ -183,7 +183,7 @@ void ChainSumElM()
 			FrmlSumEl->clear();
 		}
 	}
-	//FrmlSumEl->Chain = IDA[SumIi]->Sum;
+	//FrmlSumEl->pChain = IDA[SumIi]->Sum;
 	//IDA[SumIi]->Sum = FrmlSumEl;
 }
 
@@ -323,7 +323,7 @@ void MakeOldMFlds()
 	OldMFlds.clear();
 	while (M != nullptr) {
 		OldMFlds.push_back(ConstListEl());
-		M = (KeyFldD*)M->Chain;
+		M = (KeyFldD*)M->pChain;
 	}
 }
 
@@ -336,9 +336,9 @@ void RdAutoSortSK_M(InpD* ID)
 		SK = new KeyFldD(); // (KeyFldD*)GetStore(sizeof(*SK));
 		//Move(M, SK, sizeof(SK));
 		*SK = *M;
-		if (ID->SK == nullptr) { ID->SK = SK; SK->Chain = nullptr; }
+		if (ID->SK == nullptr) { ID->SK = SK; SK->pChain = nullptr; }
 		else ChainLast(ID->SK, SK);
-		M = (KeyFldD*)M->Chain;
+		M = (KeyFldD*)M->pChain;
 	}
 	if (Lexem == ';') {
 		RdLex();
@@ -392,7 +392,7 @@ void ImplAssign(OutpRD* outputRD, FieldDescr* outputField)
 			newAssign->Frml = FrmlContxt(Z, inputFile, inputFile->RecPtr);
 		}
 	}
-	//newAssign->Chain = RD_Ass;
+	//newAssign->pChain = RD_Ass;
 	outputRD->Ass.push_back(newAssign);
 //label1:
 }
@@ -442,7 +442,7 @@ bool FindAssignToF(std::vector<AssignD*> A, FieldDescr* F)
 		if ((assign->Kind == _output) && (assign->OFldD == F) && !assign->Add) {
 			return true;
 		}
-		//A = (AssignD*)A->Chain;
+		//A = (AssignD*)A->pChain;
 	}
 	return false;
 }
@@ -462,7 +462,7 @@ void TestIsOutpFile(FileDPtr FD)
 {
 	OutpFD* OFD = OutpFDRoot;
 	while (OFD != nullptr) {
-		if (OFD->FD == FD) OldError(173); OFD = (OutpFD*)OFD->Chain;
+		if (OFD->FD == FD) OldError(173); OFD = (OutpFD*)OFD->pChain;
 	}
 }
 
@@ -528,8 +528,8 @@ label1:
 	//}
 	//else {
 	//	A = ARoot;
-	//	while (A->Chain != nullptr) A = (AssignD*)A->Chain;
-	//	A->Chain = RdAssign_M();
+	//	while (A->pChain != nullptr) A = (AssignD*)A->pChain;
+	//	A->pChain = RdAssign_M();
 	//}
 	auto rd_assign = RdAssign_M();
 	for (AssignD* a : rd_assign) {
@@ -570,7 +570,7 @@ void RdOutpRD(OutpRD** RDRoot)
 				else if (OD->Append) Error(31);
 				goto label1;
 			}
-			OD = (OutpFD*)OD->Chain;
+			OD = (OutpFD*)OD->pChain;
 		}
 		//OD = (OutpFD*)GetStore(sizeof(*OD));
 		OD = new OutpFD();

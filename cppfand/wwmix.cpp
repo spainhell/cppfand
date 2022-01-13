@@ -172,19 +172,19 @@ label1:
 			ss.Empty = true;
 			ss.Pointto = nullptr;
 			ss.Size = 0;
-			//p = (Item*)sv.Chain;
+			//p = (Item*)sv.pChain;
 			for (auto& p : sv.items) { //while (p != nullptr) {
 				if (p.Tag != ' ') ss.Size++;
-				//p = (Item*)p->Chain;
+				//p = (Item*)p->pChain;
 			}
 			if (ss.Subset && ss.ImplAll && (ss.Size == 0)) {
-				// p = (Item*)sv.Chain;
+				// p = (Item*)sv.pChain;
 				for (auto& p : sv.items) { //while (p != nullptr) {
 					if (p.S[0] != SelMark) {
 						p.Tag = schar;
 						ss.Size++;
 					}
-					//p = (Item*)p->Chain;
+					//p = (Item*)p->pChain;
 				}
 			}
 			if (Event.Pressed.KeyCombination() == VK_ESCAPE) {
@@ -417,22 +417,22 @@ void wwmix::Switch(WORD I1, WORD I2)
 	/*Item* p1; Item* p2; Item* q1; Item* q2; Item* h;
 	WORD i;
 
-	p1 = (Item*)(&sv.Chain);
-	for (i = 2; i <= I1; i++) p1 = (Item*)p1->Chain;
-	q1 = (Item*)p1->Chain;
-	p2 = (Item*)(&sv.Chain);
-	for (i = 2; i <= I2; i++) p2 = (Item*)p2->Chain;
-	q2 = (Item*)p2->Chain;
-	h = (Item*)q1->Chain;
-	p1->Chain = q2;
-	q1->Chain = q2->Chain;
+	p1 = (Item*)(&sv.pChain);
+	for (i = 2; i <= I1; i++) p1 = (Item*)p1->pChain;
+	q1 = (Item*)p1->pChain;
+	p2 = (Item*)(&sv.pChain);
+	for (i = 2; i <= I2; i++) p2 = (Item*)p2->pChain;
+	q2 = (Item*)p2->pChain;
+	h = (Item*)q1->pChain;
+	p1->pChain = q2;
+	q1->pChain = q2->pChain;
 
 	if (p2 == q1) {
-		q2->Chain = q1;
+		q2->pChain = q1;
 	}
 	else {
-		q2->Chain = h;
-		p2->Chain = q1;
+		q2->pChain = h;
+		p2->pChain = q1;
 	}*/
 }
 
@@ -493,22 +493,22 @@ void wwmix::AbcdSort()
 	//Item* p; Item* q; Item* r;
 	//bool sorted;
 	//do {
-	//	r = (Item*)(&sv.Chain);
-	//	p = (Item*)sv.Chain;
-	//	q = (Item*)p->Chain;
+	//	r = (Item*)(&sv.pChain);
+	//	p = (Item*)sv.pChain;
+	//	q = (Item*)p->pChain;
 	//	sorted = true;
 	//	while (q != nullptr) {
 	//		if (CompLexStr(p->S, q->S) == _gt) {
-	//			r->Chain = q;
-	//			p->Chain = q->Chain;
-	//			q->Chain = p;
+	//			r->pChain = q;
+	//			p->pChain = q->pChain;
+	//			q->pChain = p;
 	//			r = q;
-	//			q = (Item*)p->Chain;
+	//			q = (Item*)p->pChain;
 	//			sorted = false;
 	//		}
 	//		else {
 	//			r = p; p = q;
-	//			q = (Item*)q->Chain;
+	//			q = (Item*)q->pChain;
 	//		}
 	//	}
 	//} while (!sorted);
@@ -518,11 +518,11 @@ void wwmix::SetFirstiItem()
 {
 	sv.iItem = 1;
 	if (ss.Pointto == nullptr) return;
-	//Item* p = (Item*)sv.Chain;
+	//Item* p = (Item*)sv.pChain;
 	for (auto& p : sv.items) { //while (p != nullptr) {
 		if (p.S == *ss.Pointto) return;
 		sv.iItem++;
-		//p = (Item*)p->Chain;
+		//p = (Item*)p->pChain;
 	}
 }
 
@@ -570,7 +570,7 @@ std::string wwmix::GetSelect()
 	}
 	ss.Tag = p->Tag;
 	result = p->S;
-	//p = (Item*)p->Chain;
+	//p = (Item*)p->pChain;
 	return result;
 }
 
@@ -598,7 +598,7 @@ label1:
 				goto label1;
 			}
 			else {
-				F = (FieldDescr*)F->Chain;
+				F = (FieldDescr*)F->pChain;
 			}
 		}
 		goto label1;
@@ -626,7 +626,7 @@ label1:
 				goto label1;
 			}
 			else {
-				F = (FieldDescr*)F->Chain;
+				F = (FieldDescr*)F->pChain;
 			}
 		}
 		goto label1;

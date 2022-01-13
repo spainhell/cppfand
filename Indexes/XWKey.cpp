@@ -24,7 +24,7 @@ void XWKey::Open(KeyFldD* KF, bool Dupl, bool Intvl)
 	IndexLen = 0;
 	while (KF != nullptr) {
 		if (KF->FldD != nullptr) IndexLen += KF->FldD->NBytes;
-		KF = (KeyFldD*)KF->Chain;
+		KF = (KeyFldD*)KF->pChain;
 	}
 }
 

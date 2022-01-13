@@ -970,7 +970,7 @@ label1:
 	if (CFile->Handle == nullptr) goto label5;
 	CRecPtr = new BYTE[CFile->RecLen + 2]{ '\0' };
 	NmF = CFile->FldD.front();
-	TxtF = (FieldDescr*)NmF->Chain;
+	TxtF = (FieldDescr*)NmF->pChain;
 	if (!ByName) {
 		i = MaxW(1, MinW(IRec, CFile->NRecs));
 		ReadRec(CFile, i, CRecPtr);

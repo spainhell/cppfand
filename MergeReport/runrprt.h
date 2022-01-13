@@ -7,9 +7,9 @@ struct InpD;
 struct BlkD;
 class KeyFldD;
 
-struct TTD : public Chained
+struct TTD : public Chained<TTD>
 {
-    //TTD* Chain = nullptr;
+    //TTD* pChain = nullptr;
     StringList SL = nullptr;
     WORD Col = 0, Width = 0, Ln = 0;
 };

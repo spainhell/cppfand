@@ -34,9 +34,9 @@ const BYTE f_Mask = 4; const BYTE f_Comma = 8; // {FieldD flags}
 //typedef FuncD* FuncDPtr;
 //typedef XWKey* WKeyDPtr;
 
-struct DepD : Chained // r122
+struct DepD : Chained<DepD> // r122
 {
-	//DepD* Chain; 
+	//DepD* pChain; 
 	FrmlElem* Bool = nullptr;
 	FrmlElem* Frml = nullptr;
 };

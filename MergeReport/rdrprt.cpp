@@ -39,9 +39,9 @@ label1:
 					*B = B1;
 					return result;
 				}
-				//RF1 = (RFldD*)RF1->Chain;
+				//RF1 = (RFldD*)RF1->pChain;
 			}
-			B1 = (BlkD*)B1->Chain;
+			B1 = (BlkD*)B1->pChain;
 		}
 		L = L->ChainBack;
 	}
@@ -219,7 +219,7 @@ bool OwnInBlock(char& FTyp, FrmlElem** res)
 			result = true;
 			return result;
 		}
-		// RF = (RFldD*)RF->Chain;
+		// RF = (RFldD*)RF->pChain;
 	}
 	return result;
 }
@@ -492,7 +492,7 @@ LvDescr* MakeOldMLvD()
 		L1->Chain = L;
 		L = L1;
 		L->Fld = M->FldD;
-		M = (KeyFldD*)M->Chain;
+		M = (KeyFldD*)M->pChain;
 	}
 	return L;
 }
@@ -508,12 +508,12 @@ void RdAutoSortSK(InpD* ID)
 		SK = (KeyFldD*)(&ID->SK);
 		M = ID->MFld;
 		while (M != nullptr) {
-			//SK->Chain = (KeyFldD*)GetStore(sizeof(*SK)); 
-			SK->Chain = new KeyFldD();
-			SK = (KeyFldD*)SK->Chain;
+			//SK->pChain = (KeyFldD*)GetStore(sizeof(*SK)); 
+			SK->pChain = new KeyFldD();
+			SK = (KeyFldD*)SK->pChain;
 			//Move(M, SK, sizeof(*SK)); 
 			*SK = *M;
-			M = (KeyFldD*)M->Chain;
+			M = (KeyFldD*)M->pChain;
 		}
 	}
 	M = ID->SFld;
@@ -523,11 +523,11 @@ void RdAutoSortSK(InpD* ID)
 		n = sizeof(void*) + M->FldD->NBytes + 1;
 		ID->OldSFlds.push_back(ConstListEl());
 		if (as) {
-			SK->Chain = new KeyFldD();
-			SK = (KeyFldD*)SK->Chain;
+			SK->pChain = new KeyFldD();
+			SK = (KeyFldD*)SK->pChain;
 			*SK = *M;
 		}
-		M = (KeyFldD*)M->Chain;
+		M = (KeyFldD*)M->pChain;
 	}
 	if (as && (ID->SK == nullptr)) OldError(60);
 	ID->FrstLvS = NewLvS(L, ID);
@@ -780,7 +780,7 @@ label3:
 			}
 			TestSetBlankOrWrap(RepeatedGrp, UC, RF);
 		label5:
-			//RF = (RFldD*)RF->Chain;
+			//RF = (RFldD*)RF->pChain;
 			if (reportFieldsVectorIndex < CBlk->ReportFields.size() - 1) {
 				RF = CBlk->ReportFields.at(++reportFieldsVectorIndex);
 			}

@@ -408,9 +408,9 @@ void PendingTT(std::string& text)
 				text += SL->S;
 				Col = TD->Col + GetLengthOfStyledString(SL->S);
 				TD->Ln--;
-				TD->SL = (StringList)SL->Chain;
+				TD->SL = (StringList)SL->pChain;
 			}
-			TD = (TTD*)TD->Chain;
+			TD = (TTD*)TD->pChain;
 		}
 		Y.TLn--;
 		LineLenLst = lll;
@@ -448,7 +448,7 @@ void RunAProc(std::vector<AssignD*> vAssign)
 		default: 
 			break;
 		}
-		//A = (AssignD*)A->Chain;
+		//A = (AssignD*)A->pChain;
 	}
 }
 
@@ -466,7 +466,7 @@ void PrintBlock(BlkD* B, std::string& text, BlkD* DH)
 					B1 = DH;
 					while (B1 != nullptr) {
 						if (RunBool(B1->Bool)) LAfter += B1->NTxtLines;
-						B1 = (BlkD*)B1->Chain;
+						B1 = (BlkD*)B1->pChain;
 					}
 				}
 				if (B->FF1 || WasFF2 || FrstBlk && (B->NTxtLines > 0) ||
@@ -483,7 +483,7 @@ void PrintBlock(BlkD* B, std::string& text, BlkD* DH)
 			if ((DH == nullptr) && WasOutput) pdh = true;
 			SumUp(B->Sum);
 		}
-		B = (BlkD*)B->Chain;
+		B = (BlkD*)B->pChain;
 	}
 	if (pdh) PrintDH = 2;
 }
@@ -544,7 +544,7 @@ label1:
 		BYTE C = (BYTE)Y.P[Y.I];
 		if (C == 0xFF) {
 			//if (RF == nullptr) RF = Y.Blk->RFD;
-			//else RF = (RFldD*)RF->Chain;
+			//else RF = (RFldD*)RF->pChain;
 			//if (RF == nullptr) return;
 			if (RF == nullptr) {
 				RF = *reportFieldsIt; // 1st time
@@ -699,7 +699,7 @@ void PrintBlkChn(BlkD* B, std::string& text, bool ChkPg, bool ChkLine)
 			PrintTxt(B, text, ChkPg);
 			WasFF2 = B->FF2;
 		}
-		B = (BlkD*)B->Chain;
+		B = (BlkD*)B->pChain;
 	}
 }
 
@@ -795,8 +795,8 @@ WORD CompMFlds(std::vector<ConstListEl>& C, KeyFldD* M, integer& NLv)
 		std::string s = x.S;
 		res = CompStr(s, c.S);
 		if (res != _equ) { return res; }
-		//C = (ConstListEl*)C->Chain;
-		M = (KeyFldD*)M->Chain;
+		//C = (ConstListEl*)C->pChain;
+		M = (KeyFldD*)M->pChain;
 	}
 	return _equ;
 }
@@ -808,8 +808,8 @@ void GetMFlds(std::vector<ConstListEl>& C, KeyFldD* M)
 		x.Clear();
 		x.StoreKF(M);
 		c.S = x.S;
-		//C = (ConstListEl*)C->Chain;
-		M = (KeyFldD*)M->Chain;
+		//C = (ConstListEl*)C->pChain;
+		M = (KeyFldD*)M->pChain;
 	}
 }
 
@@ -854,8 +854,8 @@ void PutMFlds(KeyFldD* M)
 				break;
 			}
 		}
-		M = (KeyFldD*)M->Chain;
-		m1 = (KeyFldD*)m1->Chain;
+		M = (KeyFldD*)M->pChain;
+		m1 = (KeyFldD*)m1->pChain;
 	}
 }
 
@@ -918,10 +918,10 @@ LvDescr* GetDifLevel()
 		if (NewMFlds[vIndex].S != OldMFlds[vIndex].S) {
 			return L;
 		}
-		//C1 = (ConstListEl*)C1->Chain;
-		//C2 = (ConstListEl*)C2->Chain;
+		//C1 = (ConstListEl*)C1->pChain;
+		//C2 = (ConstListEl*)C2->pChain;
 		vIndex++;
-		M = (KeyFldD*)M->Chain;
+		M = (KeyFldD*)M->pChain;
 		L = L->ChainBack;
 	}
 	return nullptr;
@@ -948,7 +948,7 @@ void MoveForwToRec(InpD* ID)
 					return;
 				}
 			}
-			C = (ChkD*)C->Chain;
+			C = (ChkD*)C->pChain;
 		}
 	}
 }

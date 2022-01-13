@@ -366,36 +366,6 @@ pstring StrPas(const char* Src)
 	return s;
 }
 
-void ChainLast(Chained* Frst, Chained* New)
-{
-	if (Frst == nullptr) throw std::exception("ChainLast: Parent is NULL!");
-
-	if (New == nullptr) return;
-
-	Chained* last = Frst;
-
-	while (last->Chain != nullptr) {
-		last = last->Chain;
-	}
-
-	last->Chain = New;
-
-	New->Chain = nullptr; // TODO: pridano kvuli zacykleni v RdAutoSortSK_M
-}
-
-Chained* LastInChain(Chained* Frst)
-{
-	Chained* last = Frst->Chain;
-	if (last == nullptr) {
-		return Frst;
-	}
-	while (last != nullptr) {
-		if (last->Chain == nullptr) return last;
-		last = last->Chain;
-	}
-	return last;
-}
-
 void StrLPCopy(char* Dest, pstring s, WORD MaxL)
 {
 	auto sLen = s.length();

@@ -315,10 +315,10 @@ void CompileHelpCatDcl()
 	Chpt = FileDRoot;
 	CatRdbName = CatFD->FldD.front();
 	if (CatRdbName == nullptr) throw std::exception("CompileHelpCatDcl: CarRdbName is NULL");
-	CatFileName = (FieldDescr*)CatRdbName->Chain;
-	CatArchiv = (FieldDescr*)CatFileName->Chain;
-	CatPathName = (FieldDescr*)CatArchiv->Chain;
-	CatVolume = (FieldDescr*)CatPathName->Chain;
+	CatFileName = (FieldDescr*)CatRdbName->pChain;
+	CatArchiv = (FieldDescr*)CatFileName->pChain;
+	CatPathName = (FieldDescr*)CatArchiv->pChain;
+	CatVolume = (FieldDescr*)CatPathName->pChain;
 	MarkStore(AfterCatFD);
 	ReleaseStore2(p2);
 }

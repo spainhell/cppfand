@@ -199,6 +199,7 @@
     <ClInclude Include="access.h" />
     <ClInclude Include="AddD.h" />
     <ClInclude Include="base.h" />
+    <ClInclude Include="Chained.h" />
     <ClInclude Include="ChkD.h" />
     <ClInclude Include="compile.h" />
     <ClInclude Include="constants.h" />

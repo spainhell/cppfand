@@ -850,7 +850,7 @@ label1:
 	KF = *KFRoot;   /*looping over all fields, !only the last read*/
 	while (KF != nullptr) {
 		if (KF->FldD != nullptr) n += KF->FldD->NBytes;
-		KF = (KeyFldD*)KF->Chain;
+		KF = (KeyFldD*)KF->pChain;
 	}
 	if (n > 255) OldError(126);
 	return n;
@@ -943,7 +943,7 @@ label1:
 		//	lv->Init = Z;
 		//	lv->BPOfs = LVB->Size;
 		//	LVB->Size += sz;
-		//	lv = (LocVar*)lv->Chain;
+		//	lv = (LocVar*)lv->pChain;
 		//}
 	}
 	else if (rp) Error(168);
@@ -1017,11 +1017,11 @@ label1:
 					kf = kf1;
 					while (kf != nullptr) {
 						k->IndexLen += kf->FldD->NBytes;
-						kf = (KeyFldD*)kf->Chain;
+						kf = (KeyFldD*)kf->pChain;
 					}
 					locvar->RecPtr = k;
 				}
-				//lv = (LocVar*)lv->Chain;
+				//lv = (LocVar*)lv->pChain;
 			}
 			CFile = cf; CRecPtr = cr;
 		}
@@ -1047,7 +1047,7 @@ bool FindLocVar(LocVar* LVRoot, LocVar** LV)
 	while (*LV != nullptr) {
 		pstring lvName = (*LV)->Name.c_str();
 		if (EquUpCase(lvName, LexWord)) { return true; }
-		*LV = (LocVar*)(*LV)->Chain;
+		*LV = (LocVar*)(*LV)->pChain;
 	}
 	return result;
 }
@@ -1121,7 +1121,7 @@ FieldListEl* AllFldsList(FileD* FD, bool OnlyStored)
 		if (((F->Flg & f_Stored) != 0) || !OnlyStored) {
 			auto* const FL = new FieldListEl();
 			FL->FldD = F;
-			if (FLRoot == nullptr) { FLRoot = FL; FL->Chain = nullptr; }
+			if (FLRoot == nullptr) { FLRoot = FL; FL->pChain = nullptr; }
 			else ChainLast(FLRoot, FL);
 		}
 	}
@@ -1192,7 +1192,7 @@ void RdFrame(FrmlElem** Z, BYTE& WFlags)
 	if (Lexem == '!') { WFlags = WFlags | WShadow; RdLex(); }
 }
 
-bool PromptSortKeys(FieldList FL, KeyFldD* SKRoot)
+bool PromptSortKeys(FieldListEl* FL, KeyFldD* SKRoot)
 {
 	wwmix ww;
 
@@ -1202,7 +1202,7 @@ bool PromptSortKeys(FieldList FL, KeyFldD* SKRoot)
 	while (FL != nullptr) {
 		/* !!! with FL->FldD^ do!!! */
 		if (FL->FldD->Typ != 'T') ww.PutSelect(FL->FldD->Name);
-		FL = (FieldList)FL->Chain;
+		FL = FL->pChain;
 	}
 	if (ss.Empty) return result;
 	ss.AscDesc = true;
@@ -1401,7 +1401,7 @@ void SrchZ(FrmlElem* Z)
 			KF = iZ7->LD->Args;
 			while (KF != nullptr) {
 				SrchF(KF->FldD);
-				KF = (KeyFldD*)KF->Chain;
+				KF = (KeyFldD*)KF->pChain;
 			}
 		}
 		break;
@@ -1410,7 +1410,7 @@ void SrchZ(FrmlElem* Z)
 		fl = iZ19->FrmlL;
 		while (fl != nullptr) {
 			SrchZ(fl->Frml);
-			fl = (FrmlListEl*)fl->Chain;
+			fl = (FrmlListEl*)fl->pChain;
 		}
 		break;
 	}
@@ -1459,7 +1459,7 @@ bool IsKeyArg(FieldDescr* F, FileD* FD)
 		while (kf != nullptr) {
 			SrchF(kf->FldD);
 			if (KeyArgFound) { return true; }
-			kf = (KeyFldD*)kf->Chain;
+			kf = (KeyFldD*)kf->pChain;
 		}
 		k = k->Chain;
 	}
@@ -2267,7 +2267,7 @@ FrmlListEl* RdFL(bool NewMyBP, FrmlList FL1)
 	char FTyp = '\0';
 	KeyFldD* KF = CViewKey->KFlds;
 	FrmlListEl* FLRoot = nullptr;
-	KeyFldD* KF2 = (KeyFldD*)KF->Chain;
+	KeyFldD* KF2 = (KeyFldD*)KF->pChain;
 	bool FVA = FileVarsAllowed;
 	FileVarsAllowed = false;
 	bool b = FL1 != nullptr;
@@ -2278,9 +2278,9 @@ label1:
 	else ChainLast(FLRoot, FL);
 	FL->Frml = RdFrml(FTyp); // MyBPContext(RdFrml(FTyp), NewMyBP);
 	if (FTyp != KF->FldD->FrmlTyp) OldError(12);
-	KF = (KeyFldD*)KF->Chain;
+	KF = (KeyFldD*)KF->pChain;
 	if (b) {
-		FL1 = (FrmlListEl*)FL1->Chain;
+		FL1 = (FrmlListEl*)FL1->pChain;
 		if (FL1 != nullptr) { Accept(','); goto label1; }
 	}
 	else if ((KF != nullptr) && (Lexem == ',')) { RdLex(); goto label1; }
@@ -2432,7 +2432,7 @@ FileD* FindFileD()
 		while (FD != nullptr) {
 			std::string lw = LexWord;
 			if (EquUpCase(FD->Name, lw)) { return FD; }
-			FD = (FileD*)FD->Chain;
+			FD = (FileD*)FD->pChain;
 		}
 		R = R->ChainBack;
 	}

@@ -244,7 +244,7 @@ label1:
 		if ((((f->Flg & f_Stored) != 0) || all) && !FieldInList(f, fl1)) {
 			fl = new FieldListEl(); // (FieldListEl*)GetStore(sizeof(*fl));
 			fl->FldD = f;
-			if (EO->Flds == nullptr) { EO->Flds = fl; fl->Chain = nullptr; }
+			if (EO->Flds == nullptr) { EO->Flds = fl; fl->pChain = nullptr; }
 			else ChainLast(EO->Flds, fl);
 		}
 	}
@@ -360,7 +360,7 @@ void TestUserView()
 		FileD* FD = FileDRoot;
 		while (FD != nullptr) {
 			TestDupl(FD);
-			FD = (FileD*)FD->Chain;
+			FD = (FileD*)FD->pChain;
 		}
 		StringListEl* S = new StringListEl();
 		S->S = LexWord;
@@ -398,7 +398,7 @@ void TestDupl(FileD* FD)
 	while (S != nullptr) {
 		std::string tmp = LexWord;
 		if (EquUpCase(S->S, tmp)) Error(26);
-		S = (StringList)S->Chain;
+		S = (StringList)S->pChain;
 	}
 }
 
@@ -474,8 +474,8 @@ void SetLDIndexRoot(/*LinkD* L,*/ std::deque<LinkD*>& L2)
 						|| (Arg->Descend != KF->Descend))
 						goto label1;
 					if ((Arg->FldD->Flg & f_Stored) == 0) cmptd = true;
-					Arg = (KeyFldD*)Arg->Chain;
-					KF = (KeyFldD*)KF->Chain;
+					Arg = (KeyFldD*)Arg->pChain;
+					KF = (KeyFldD*)KF->pChain;
 				}
 				L->IndexRoot = K->IndexRoot;
 				goto label2;
@@ -488,7 +488,7 @@ void SetLDIndexRoot(/*LinkD* L,*/ std::deque<LinkD*>& L2)
 			SetMsgPar(L->RoleName);
 			OldError(152);
 		}
-		//L = L->Chain;
+		//L = L->pChain;
 		CFile->nLDs++;
 	}
 }
@@ -547,7 +547,7 @@ void* RdFileD(std::string FileName, char FDTyp, std::string Ext)
 		while (F != nullptr) {
 			if ((F->Flg & f_Stored) != 0) {
 				CFile->FldD.push_back(F);
-				F2->Chain = F;
+				F2->pChain = F;
 				F2 = F;
 				if (F->Typ == 'T') {
 					F->FrmlTyp = 'R';
@@ -556,9 +556,9 @@ void* RdFileD(std::string FileName, char FDTyp, std::string Ext)
 					F->Flg = F->Flg & !f_Encryp;
 				}
 			}
-			F = (FieldDescr*)F->Chain;
+			F = (FieldDescr*)F->pChain;
 		}
-		F2->Chain = nullptr;
+		F2->pChain = nullptr;
 		CompileRecLen();
 		ChainLast(FileDRoot, CFile);
 		MarkStore(p);
@@ -611,8 +611,8 @@ void* RdFileD(std::string FileName, char FDTyp, std::string Ext)
 
 	if (isHlp) {
 		F = CFile->FldD.front();
-		F2 = (FieldDescr*)F->Chain;
-		if ((F->Typ != 'A') || (F2 == nullptr) || (F2->Typ != 'T') || (F2->Chain != nullptr)) OldError(128);
+		F2 = (FieldDescr*)F->pChain;
+		if ((F->Typ != 'A') || (F2 == nullptr) || (F2->Typ != 'T') || (F2->pChain != nullptr)) OldError(128);
 		CFile->IsHlpFile = true;
 	}
 label2:
@@ -741,7 +741,7 @@ label2:
 	if (L != nullptr) OldError(26);
 	L = new LinkD();
 	//L->Args = new KeyFldD(); // pridano navic, aby to o par radku niz nepadalo
-	//L->Chain = LinkDRoot;
+	//L->pChain = LinkDRoot;
 	//LinkDRoot = L;
 	LinkDRoot.push_front(L);
 	//Move(&Name, &L->RoleName, Name.length() + 1);
@@ -766,14 +766,14 @@ label2:
 label3:
 	F = RdFldName(CFile);
 	if (F->Typ == 'T') OldError(84);
-	Arg->Chain = new KeyFldD();
-	Arg = (KeyFldD*)Arg->Chain;
+	Arg->pChain = new KeyFldD();
+	Arg = (KeyFldD*)Arg->pChain;
 	/* !!! with Arg^ do!!! */
 	{ Arg->FldD = F; Arg->CompLex = KF->CompLex; Arg->Descend = KF->Descend; }
 	F2 = KF->FldD;
 	if ((F->Typ != F2->Typ) || (F->Typ != 'D') && (F->L != F2->L) ||
 		(F->Typ == 'F') && (F->M != F2->M)) OldError(12);
-	KF = (KeyFldD*)KF->Chain;
+	KF = (KeyFldD*)KF->pChain;
 	if (KF != nullptr) {
 		Accept(',');
 		goto label3;
@@ -798,7 +798,7 @@ void CheckDuplAlias(pstring Name)
 	F = FileDRoot;
 	while (F != nullptr) {
 		LookForK(&Name, F);
-		F = (FileD*)F->Chain;
+		F = (FileD*)F->pChain;
 	}
 }
 
@@ -841,7 +841,7 @@ void RdFileOrAlias(FileD** FD, XKey** KD)
 		while (f != nullptr) {
 			k = RdFileOrAlias1(f);
 			if (k != nullptr) goto label1;
-			f = (FileD*)f->Chain;
+			f = (FileD*)f->pChain;
 		}
 		r = r->ChainBack;
 	}
@@ -978,7 +978,7 @@ void RdImper(AddD* AD)
 			KeyFldDPtr KF = AD->LD->ToKey->KFlds;
 			while (KF != nullptr) {
 				if ((KF->FldD->Flg & f_Stored) == 0) OldError(148);
-				KF = (KeyFldD*)KF->Chain;
+				KF = (KeyFldD*)KF->pChain;
 	}
 }
 		if (Lexem == '!') { RdLex(); AD->Create = 2; }

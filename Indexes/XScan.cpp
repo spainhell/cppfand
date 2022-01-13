@@ -25,7 +25,7 @@ void CompKIFrml(XKey* K, KeyInD* KI, bool AddFF)
 		if (KI->FL2 != nullptr) x.PackFrml(KI->FL2, K->KFlds);
 		if (AddFF) AddFFs(K, x.S);
 		KI->X2 = x.S;
-		KI = (KeyInD*)KI->Chain;
+		KI = (KeyInD*)KI->pChain;
 	}
 }
 
@@ -90,7 +90,7 @@ void XScan::Reset(FrmlElem* ABool, bool SQLFilter)
 			k->N = 0;
 			if (n >= k->XNrBeg) k->N = n - k->XNrBeg + b;
 			NRecs += k->N;
-			k = (KeyInD*)k->Chain;
+			k = (KeyInD*)k->pChain;
 		}
 		break;
 	}
@@ -175,8 +175,8 @@ bool EquKFlds(KeyFldD* KF1, KeyFldD* KF2)
 	while (KF1 != nullptr) {
 		if ((KF2 == nullptr) || (KF1->CompLex != KF2->CompLex) || (KF1->Descend != KF2->Descend)
 			|| (KF1->FldD->Name != KF2->FldD->Name)) return result;
-		KF1 = (KeyFldD*)KF1->Chain;
-		KF2 = (KeyFldD*)KF2->Chain;
+		KF1 = (KeyFldD*)KF1->pChain;
+		KF2 = (KeyFldD*)KF2->pChain;
 	}
 	if (KF2 != nullptr) return false;
 	return true;
@@ -252,7 +252,7 @@ void XScan::SeekRec(longint I)
 		}
 		case 2: {
 			k = KIRoot;
-			while (I >= k->N) { I -= k->N; k = (KeyInD*)k->Chain; }
+			while (I >= k->N) { I -= k->N; k = (KeyInD*)k->pChain; }
 			KI = k;
 			SeekOnKI(I);
 			break;
@@ -308,7 +308,7 @@ void XScan::NextIntvl()
 		NRecs = IRec; /*EOF*/
 	}
 	else {
-		do { KI = (KeyInD*)KI->Chain; } while (!((KI == nullptr) || (KI->N > 0)));
+		do { KI = (KeyInD*)KI->pChain; } while (!((KI == nullptr) || (KI->N > 0)));
 		if (KI != nullptr) SeekOnKI(0);
 	}
 }

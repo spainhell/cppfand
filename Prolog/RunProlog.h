@@ -1,10 +1,13 @@
 #pragma once
 
 #include "../cppfand/base.h"
+#include "../cppfand/Chained.h"
 #include "../cppfand/constants.h"
 #include "../cppfand/FieldDescr.h"
 #include "../cppfand/FileD.h"
+#include "../cppfand/pstring.h"
 #include "../Indexes/XKey.h"
+
 
 const BYTE _IntT = 249; const BYTE _RealT = 250; const BYTE _StrT = 251;
 const BYTE _LongStrT = 252; const BYTE _ListT = 253; const BYTE _VarT = 254;
@@ -24,8 +27,8 @@ const BYTE _CallP = 32;
 
 enum TDomainTyp { _UndefD, _IntD, _RealD, _StrD, _LongStrD, _ListD, _FunD, _RedefD };
 
-struct TDomain : public Chained {
-	//WORD Chain = 0;
+struct TDomain : public Chained<TDomain> {
+	//WORD pChain = 0;
 	TDomainTyp Typ = _UndefD;
 	// case byte of
 	TDomain* ElemDom = nullptr; pstring Name; // 0
@@ -35,17 +38,17 @@ struct TDomain : public Chained {
 
 struct TPTerm;
 
-struct TConst : public Chained {
-	//WORD Chain = 0;
+struct TConst : public Chained<TConst> {
+	//WORD pChain = 0;
 	TDomain* Dom = nullptr;/*PDomain*/
 	TPTerm* Expr = nullptr;/*PPTerm*/ pstring Name;
 };
 
-struct TFunDcl : public Chained {
-	//WORD Chain = 0;
+struct TFunDcl : public Chained<TFunDcl> {
+	//WORD pChain = 0;
 	pstring Name;
 	BYTE Arity = 0;
-	Chained* Arg[3]{ nullptr };
+	Chained<TDomain>* Arg[3]{ nullptr };
 };
 
 struct TPTerm {
@@ -61,21 +64,22 @@ struct TPTerm {
 	WORD Idx = 0; bool Bound = false;
 };
 
-struct TTermList : public Chained {
-	//WORD Chain = 0; /*PTermList*/
+struct TTermList : public Chained<TTermList> {
+	//WORD pChain = 0; /*PTermList*/
 	TPTerm* Elem = nullptr; /*PPTerm*/
 };
 
-struct TVarDcl : public Chained {
-	//TVarDcl* Chain = nullptr;
+class TVarDcl : public Chained<TVarDcl> {
+public:
+	//TVarDcl* pChain = nullptr;
 	TDomain* Dom = nullptr;
 	integer Idx = 0;
 	bool Bound = false, Used = false;
 	pstring Name;
 };
 
-struct TWriteD : public Chained {
-	// WORD Chain = 0; /*PWriteD*/
+struct TWriteD : public Chained<TWriteD> {
+	// WORD pChain = 0; /*PWriteD*/
 	bool IsString = false;
 	pstring SS;
 	integer Idx = 0;
@@ -92,8 +96,8 @@ enum TCommandTyp {
 struct TDatabase;
 struct TPredicate;
 
-struct TCommand : public Chained {
-	// WORD Chain = 0; /*PCommand*/
+struct TCommand : public Chained<TCommand> {
+	// WORD pChain = 0; /*PCommand*/
 	TCommandTyp Code;
 	TTermList* Arg = nullptr; /*PTermList*/
 	TPredicate* Pred = nullptr; /*PPredicate*/
@@ -114,20 +118,20 @@ struct TCommand : public Chained {
 	struct stPair { BYTE iInp = 0; BYTE iOutp = 0; } Pair[6];
 };
 
-struct TBranch : public Chained {
-	//WORD Chain = 0; /*PBranch*/
+struct TBranch : public Chained<TBranch> {
+	//WORD pChain = 0; /*PBranch*/
 	WORD HeadIMask = 0, HeadOMask = 0; 
 	TTermList* Head = nullptr; /*PTermList*/ 
 	TCommand* Cmd = nullptr; /*PCommand*/
 };
 
-struct TDbBranch : public Chained {
+struct TDbBranch : public Chained<TDbBranch> {
 	WORD LL = 0; 
 	BYTE A[2/*LL*/]{ 0 }; /*  for all Arguments */
 };
 
-struct TFldList : public Chained {
-	//WORD Chain = 0; /*PFldList*/
+struct TFldList : public Chained<TFldList> {
+	//WORD pChain = 0; /*PFldList*/
 	FieldDescr* FldD = nullptr;
 };
 
@@ -137,8 +141,8 @@ struct TScanInf {
 	pstring Name;
 };
 
-struct TPredicate : public Chained {
-	// WORD Chain = 0;
+struct TPredicate : public Chained<TPredicate> {
+	// WORD pChain = 0;
 	TPredicate* ChainDb = nullptr; /*PPredicate*/
 	pstring Name; /*PString*/
 	TBranch* Branch = nullptr; /*offset*/ /*InstrPtr|ofs PScanInf|PDbBranch*/
@@ -146,8 +150,8 @@ struct TPredicate : public Chained {
 	BYTE Opt = 0; BYTE Arity = 0; TDomain* Arg[3]{ nullptr }; /*PDomain*/
 };
 
-struct TDatabase : public Chained {
-	// WORD Chain = 0; /*PDatabase*/
+struct TDatabase : public Chained<TDatabase> {
+	// WORD pChain = 0; /*PDatabase*/
 	TPredicate* Pred = nullptr; /*PPredicate*/ 
 	LongStr* SOfs = nullptr; /*LongStrPtr/saved/*/
 	pstring Name;
@@ -162,9 +166,9 @@ struct TProgRoots {
 
 //extern WORD _Sg;
 
-struct TMemBlkHd : public Chained
+struct TMemBlkHd : public Chained<TMemBlkHd>
 {
-	// TMemBlkHd* Chain = nullptr;
+	// TMemBlkHd* pChain = nullptr;
 	WORD Sz = 0;
 };
 

@@ -1,5 +1,6 @@
 #pragma once
 #include "base.h"
+#include "Chained.h"
 #include "Rdb.h"
 #include "../Indexes/XKey.h"
 
@@ -12,31 +13,31 @@ class FrmlElemSum;
 class FieldDescr;
 class LocVarBlkD;
 
-struct FieldListEl : public Chained // r32
+struct FieldListEl : public Chained<FieldListEl> // r32
 {
 	FieldDescr* FldD = nullptr;
 };
 typedef FieldListEl* FieldList;
 
-struct FrmlListEl : public Chained // ø. 34
+struct FrmlListEl : public Chained<FrmlListEl> // ø. 34
 {
 	FrmlElem* Frml = nullptr;
 };
 typedef FrmlListEl* FrmlList;
 
-struct StringListEl : public Chained // ø. 38
+struct StringListEl : public Chained<StringListEl> // ø. 38
 {
 	std::string S;
 };
 typedef StringListEl* StringList;
 
-struct KeyListEl : public Chained // ø. 49
+struct KeyListEl : public Chained<KeyListEl> // ø. 49
 {
 	XKey* Key = nullptr;
 };
 typedef KeyListEl* KeyList;
 
-struct KeyInD : public Chained // r89
+struct KeyInD : public Chained<KeyListEl> // r89
 {
 	FrmlListEl* FL1 = nullptr;
 	FrmlListEl* FL2 = nullptr;
@@ -51,9 +52,9 @@ struct structXPath
 	WORD I = 0;
 };
 
-struct ImplD : public Chained
+struct ImplD : public Chained<ImplD>
 {
-	//ImplD* Chain; 
+	//ImplD* pChain; 
 	FieldDescr* FldD = nullptr;
 	FrmlElem* Frml = nullptr;
 };
@@ -86,7 +87,7 @@ struct DBaseHd // ø. 213
 
 struct LinkD // ø. 220
 {
-	//LinkD* Chain = nullptr;
+	//LinkD* pChain = nullptr;
 	WORD IndexRoot = 0;
 	BYTE MemberRef = 0; // { 0-no, 1-!, 2-!!(no delete)}
 	KeyFldD* Args = nullptr;

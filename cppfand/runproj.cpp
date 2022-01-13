@@ -83,8 +83,8 @@ void ReleaseFDLDAfterChpt()
 	FileD* FD = nullptr;
 	RdbD* R = nullptr;
 
-	if (Chpt->Chain != nullptr) CloseFAfter((FileD*)Chpt->Chain);
-	Chpt->Chain = nullptr;
+	if (Chpt->pChain != nullptr) CloseFAfter((FileD*)Chpt->pChain);
+	Chpt->pChain = nullptr;
 	LinkDRoot = CRdb->OldLDRoot;
 	FuncDRoot = CRdb->OldFCRoot;
 	CFile = Chpt;
@@ -341,7 +341,7 @@ WORD FindHelpRecNr(FileDPtr FD, std::string& txt)
 	md = NewLMode(RdMode);
 	if (CFile->Handle == nullptr) goto label1;
 	NmF = CFile->FldD.front();
-	TxtF = (FieldDescr*)NmF->Chain;
+	TxtF = (FieldDescr*)NmF->pChain;
 	for (i = 1; i < CFile->NRecs; i++) {
 		ReadRec(CFile, i, CRecPtr);
 		auto NmFtext = _StdS(NmF);
@@ -452,11 +452,11 @@ void SetChptFldDPtr()
 	else {
 		ChptTF = Chpt->TF;
 		ChptTxtPos = Chpt->FldD.front();
-		ChptVerif = (FieldDescr*)ChptTxtPos->Chain;
-		ChptOldTxt = (FieldDescr*)ChptVerif->Chain;
-		ChptTyp = (FieldDescr*)ChptOldTxt->Chain;
-		ChptName = (FieldDescr*)ChptTyp->Chain;
-		ChptTxt = (FieldDescr*)ChptName->Chain;
+		ChptVerif = (FieldDescr*)ChptTxtPos->pChain;
+		ChptOldTxt = (FieldDescr*)ChptVerif->pChain;
+		ChptTyp = (FieldDescr*)ChptOldTxt->pChain;
+		ChptName = (FieldDescr*)ChptTyp->pChain;
+		ChptTxt = (FieldDescr*)ChptName->pChain;
 	}
 }
 
@@ -641,7 +641,7 @@ FileD* FindFD()
 	FD = FileDRoot;
 	while (FD != nullptr) {
 		if (EquUpCase(FD->Name, name)) break;
-		FD = (FileD*)FD->Chain;
+		FD = (FileD*)FD->pChain;
 	}
 	return FD;
 }
@@ -744,7 +744,7 @@ bool CompRunChptRec(WORD CC)
 				SetInpTT(&RP, true);
 				ReadProcHead("");
 				ReadProcBody();
-				lstFD->Chain = nullptr;
+				lstFD->pChain = nullptr;
 				LinkDRoot = ld;
 			}
 			break;
@@ -781,12 +781,12 @@ label2:
 	SaveFiles();
 	if (mv) ShowMouse();
 	if (WasError) ForAllFDs(ClearXFUpdLock);
-	CFile = (FileD*)lstFD->Chain;
+	CFile = (FileD*)lstFD->pChain;
 	while (CFile != nullptr) {
 		CloseFile();
-		CFile = (FileD*)CFile->Chain;
+		CFile = (FileD*)CFile->pChain;
 	}
-	lstFD->Chain = nullptr;
+	lstFD->pChain = nullptr;
 	LinkDRoot = oldLd;
 	ReleaseBoth(p, p2); E = OldE; EditDRoot = E;
 	RdEStatus();
@@ -938,8 +938,8 @@ bool EquStoredF(FieldDPtr F1, FieldDPtr F2)
 {
 	auto result = false;
 label1:
-	while ((F1 != nullptr) && (F1->Flg && f_Stored == 0)) F1 = (FieldDescr*)F1->Chain;
-	while ((F2 != nullptr) && (F2->Flg && f_Stored == 0)) F2 = (FieldDescr*)F2->Chain;
+	while ((F1 != nullptr) && (F1->Flg && f_Stored == 0)) F1 = (FieldDescr*)F1->pChain;
+	while ((F2 != nullptr) && (F2->Flg && f_Stored == 0)) F2 = (FieldDescr*)F2->pChain;
 	if (F1 == nullptr)
 	{
 		if (F2 != nullptr) return result;
@@ -948,7 +948,7 @@ label1:
 	}
 	if ((F2 == nullptr) || !FldTypIdentity(F1, F2) ||
 		(F1->Flg && (!f_Mask) != F2->Flg && (!f_Mask))) return result;
-	F1 = (FieldDescr*)F1->Chain; F2 = (FieldDescr*)F2->Chain;
+	F1 = (FieldDescr*)F1->pChain; F2 = (FieldDescr*)F2->pChain;
 	goto label1;
 }
 
@@ -997,8 +997,8 @@ bool EquKeys(XKey* K1, XKey* K2)
 		while (KF1 != nullptr) {
 			if ((KF2 == nullptr) || (KF1->CompLex != KF2->CompLex) || (KF1->Descend != KF2->Descend)
 				|| (KF1->FldD->Name != KF2->FldD->Name)) return result;
-			KF1 = (KeyFldD*)KF1->Chain;
-			KF2 = (KeyFldD*)KF2->Chain;
+			KF1 = (KeyFldD*)KF1->pChain;
+			KF2 = (KeyFldD*)KF2->pChain;
 		}
 		if (KF2 != nullptr) return result;
 		K1 = K1->Chain;
@@ -1037,7 +1037,7 @@ bool MergeOldNew(bool Veriflongint, longint Pos)
 		MyDeleteFile(CPath);
 	}
 label1:
-	FDNew->Chain = nullptr;
+	FDNew->pChain = nullptr;
 	LinkDRoot = ld;
 	FDNew->Name = Name;
 	FDNew->FullName = CPath;
@@ -1176,13 +1176,13 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 				break;
 			}
 			case 'P': {
-				if (FileDRoot->Chain == nullptr) lstFD = FileDRoot;
+				if (FileDRoot->pChain == nullptr) lstFD = FileDRoot;
 				else lstFD = (FileD*)LastInChain(FileDRoot);
 				std::deque<LinkD*> ld = LinkDRoot;
 				SetInpTTPos(Txt, Encryp);
 				ReadProcHead(Name);
 				ReadProcBody();
-				lstFD->Chain = nullptr;
+				lstFD->pChain = nullptr;
 				LinkDRoot = ld;
 				break;
 			}
@@ -1264,7 +1264,7 @@ void GotoErrPos(WORD& Brk)
 	}
 	if (CurrPos == 0) {
 		DisplEditWw();
-		GotoRecFld(InpRdbPos.IRec, (EFldD*)E->FirstFld->Chain);
+		GotoRecFld(InpRdbPos.IRec, (EFldD*)E->FirstFld->pChain);
 		SetMsgPar(s); WrLLF10Msg(110); Brk = 0; return;
 	}
 	CFld = E->LastFld;
@@ -1348,7 +1348,7 @@ bool EditExecRdb(std::string Nm, std::string ProcNm, Instr_proc* ProcCall, wwmix
 	IsTestRun = true;
 	EO = new EditOpt(); EO->UserSelFlds = true; //EO = GetEditOpt();
 	EO->Flds = AllFldsList(Chpt, true);
-	EO->Flds = (FieldList)EO->Flds->Chain->Chain->Chain;
+	EO->Flds = (FieldList)EO->Flds->pChain->pChain->pChain;
 	NewEditD(Chpt, EO);
 	E->MustCheck = true; /*ChptTyp*/
 	if (CRdb->Encrypted) {
@@ -1395,7 +1395,7 @@ label2:
 		label3:
 			if (IsCompileErr) goto label4;
 			if (Brk == 1) DisplEditWw();
-			GotoRecFld(InpRdbPos.IRec, (EFldD*)E->FirstFld->Chain);
+			GotoRecFld(InpRdbPos.IRec, (EFldD*)E->FirstFld->pChain);
 			goto label1;
 		}
 		if (cc == __ALT_F2) {

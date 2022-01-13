@@ -99,7 +99,7 @@ void XString::PackKF(KeyFldD* KF)
 	Clear();
 	while (KF != nullptr) {
 		StoreKF(KF);
-		KF = (KeyFldD*)KF->Chain;
+		KF = (KeyFldD*)KF->pChain;
 	}
 }
 
@@ -122,8 +122,8 @@ bool XString::PackFrml(FrmlListEl* FL, KeyFldD* KF)
 			break;
 		}
 		}
-		KF = (KeyFldD*)KF->Chain;
-		FL = (FrmlListEl*)FL->Chain;
+		KF = (KeyFldD*)KF->pChain;
+		FL = (FrmlListEl*)FL->pChain;
 	}
 	return KF != nullptr;
 }

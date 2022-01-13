@@ -523,7 +523,7 @@ LocVar* RunUserFunc(FrmlElem19* X)
 			lv->R = 0.0;
 			lv->S = "";
 		}
-		if (fl != nullptr) fl = static_cast<FrmlListEl*>(fl->Chain);
+		if (fl != nullptr) fl = static_cast<FrmlListEl*>(fl->pChain);
 	}
 
 	auto instr = X->FC->pInstr;
@@ -1406,7 +1406,7 @@ bool FieldInList(FieldDescr* F, FieldListEl* FL)
 	auto result = false;
 	while (FL != nullptr) {
 		if (FL->FldD == F) result = true;
-		FL = (FieldListEl*)FL->Chain;
+		FL = (FieldListEl*)FL->pChain;
 	}
 	return result;
 }
@@ -2307,7 +2307,7 @@ void GetRecNoXString(FrmlElem13* Z, XString& X)
 		case 'R': X.StoreReal(RunReal(zz), kf); break;
 		case 'B': X.StoreBool(RunBool(zz), kf); break;
 		}
-		kf = (KeyFldD*)kf->Chain;
+		kf = (KeyFldD*)kf->pChain;
 		i++;
 	}
 }

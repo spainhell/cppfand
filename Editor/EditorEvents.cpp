@@ -150,7 +150,7 @@ bool ScrollEvent(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys)
 					break;
 				}
 				else {
-					//X = (EdExitD*)X->Chain;
+					//X = (EdExitD*)X->pChain;
 					continue;
 				}
 			}
@@ -446,7 +446,7 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 				if (!bScroll) { screen.CrsShow(); }
 				if (!EdOk) { goto Nic; }
 			}
-			//X = (EdExitD*)X->Chain;
+			//X = (EdExitD*)X->pChain;
 		}  // while
 
 		// test frame drawing mode

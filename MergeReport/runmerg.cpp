@@ -112,8 +112,8 @@ void SetOldMFlds(KeyFldD* M)
 			break;
 		}
 		}
-		//C = (ConstListEl*)C->Chain;
-		M = (KeyFldD*)M->Chain;
+		//C = (ConstListEl*)C->pChain;
+		M = (KeyFldD*)M->pChain;
 	}
 }
 
@@ -129,7 +129,7 @@ void SetMFlds(KeyFldD* M)
 		case 'R': { R_(F, it0->R); break; }
 		default: { B_(F, it0->B); break; }
 		}
-		M = (KeyFldD*)M->Chain;
+		M = (KeyFldD*)M->pChain;
 		
 		if (it0 != OldMFlds.end()) it0++;
 	}
@@ -213,7 +213,7 @@ void WriteOutp(OutpRD* RD)
 				}
 			}
 }
-		RD = (OutpRD*)RD->Chain;
+		RD = (OutpRD*)RD->pChain;
 	}
 }
 
@@ -248,7 +248,7 @@ void OpenOutp()
 		{
 			if (OD->InplFD != nullptr) OD->FD = OpenDuplF(true);
 			else OD->Md = RewriteF(OD->Append);
-			OD = (OutpFD*)OD->Chain;
+			OD = (OutpFD*)OD->pChain;
 		}
 	}
 }
@@ -272,7 +272,7 @@ void CloseInpOutp()
 			}
 			else OldLMode(OD->Md);
 		}
-		OD = (OutpFD*)OD->Chain;
+		OD = (OutpFD*)OD->pChain;
 	}
 	for (integer i = 1; i <= MaxIi; i++) /* !!! with IDA[i]^ do!!! */ {
 		IDA[i]->Scan->Close();
@@ -299,7 +299,7 @@ void MoveForwToRecM(InpD* ID)
 				ID->ErrTxtFrml->S = RunShortStr(C->TxtZ);
 				if (!C->Warning) { ID->Error = true; return; }
 			}
-			C = (ChkD*)C->Chain;
+			C = (ChkD*)C->pChain;
 		}
 	}
 }

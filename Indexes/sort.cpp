@@ -39,7 +39,7 @@ void ScanSubstWIndex(XScan* Scan, KeyFldD* SK, char Typ)
 		KeyFldD* kf = SK;
 		while (kf != nullptr) {
 			n += kf->FldD->NBytes;
-			kf = (KeyFldD*)kf->Chain;
+			kf = (KeyFldD*)kf->pChain;
 		}
 		if (n > 255) {
 			WrLLF10Msg(155);
@@ -54,9 +54,9 @@ void ScanSubstWIndex(XScan* Scan, KeyFldD* SK, char Typ)
 			kf2 = new KeyFldD();
 			*kf2 = *kf;
 			ChainLast(kfroot, kf2);
-			kf = (KeyFldD*)kf->Chain;
+			kf = (KeyFldD*)kf->pChain;
 		}
-		if (kf2 != nullptr)	kf2->Chain = SK;
+		if (kf2 != nullptr)	kf2->pChain = SK;
 		SK = kfroot;
 	}
 	k2->Open(SK, true, false);

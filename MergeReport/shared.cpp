@@ -80,7 +80,7 @@ void CopyPrevMFlds()
 		if (F == nullptr) OldError(8);
 		if (!FldTypIdentity(M->FldD, F)) OldError(12);
 		MNew = new KeyFldD(); // (KeyFldD*)GetStore(sizeof(*MNew));
-		MNew->Chain = nullptr; // M->Chain;
+		MNew->pChain = nullptr; // M->pChain;
 		MNew->CompLex = M->CompLex;
 		MNew->Descend = M->Descend;
 		MNew->FldD = F;
@@ -88,7 +88,7 @@ void CopyPrevMFlds()
 		if (IDA[Ii]->MFld == nullptr) IDA[Ii]->MFld = MNew;
 		else ChainLast(IDA[Ii]->MFld, MNew);
 
-		M = (KeyFldD*)M->Chain;
+		M = (KeyFldD*)M->pChain;
 	}
 	LexWord = s;
 }
@@ -101,8 +101,8 @@ void CheckMFlds(KeyFldD* M1, KeyFldD* M2)
 			|| (M1->Descend != M2->Descend)
 			|| (M1->CompLex != M2->CompLex))
 			OldError(12);
-		M1 = (KeyFldD*)M1->Chain;
-		M2 = (KeyFldD*)M2->Chain;
+		M1 = (KeyFldD*)M1->pChain;
+		M2 = (KeyFldD*)M2->pChain;
 	}
 	if (M2 != nullptr) OldError(30);
 }

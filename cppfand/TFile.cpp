@@ -987,7 +987,7 @@ void WrDBaseHd()
 				StrLPCopy((char*)&actual.Name[1], s, 11);
 			}
 		}
-		F = (FieldDescr*)F->Chain;
+		F = (FieldDescr*)F->pChain;
 	}
 
 	{ //with P^ do 

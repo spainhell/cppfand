@@ -27,7 +27,7 @@ void WorkFile::Reset(KeyFldD* KF, longint RestBytes, char Typ, longint NRecs)
 				RecLen += KF->FldD->NBytes;
 			}
 		}
-		KF = (KeyFldD*)KF->Chain;
+		KF = (KeyFldD*)KF->pChain;
 	}
 	BYTEs = (StoreAvail() - RestBytes - sizeof(WRec)) / 3;
 	if (BYTEs < 4096) RunError(624);

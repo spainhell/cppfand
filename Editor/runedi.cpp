@@ -47,7 +47,7 @@ bool HasIndex, HasTF, NewDisplLL;
 
 void PopEdit()
 {
-	E = (EditD*)E->Chain;
+	E = (EditD*)E->pChain;
 	EditDRoot = E;
 }
 
@@ -747,7 +747,7 @@ bool CheckKeyIn(EditD* E)
 		else {
 			if ((k->X1.length() <= X.S.length()) && (X.S.length() <= k->X2.length() + 0xFF)) return result;
 		}
-		k = (KeyInD*)k->Chain;
+		k = (KeyInD*)k->pChain;
 	}
 	result = false;
 	return result;
@@ -894,7 +894,7 @@ label1:
 			else DisplFld(D, I, TextAttr);
 		}
 		if (IsCurrNewRec && (D == FirstEmptyFld)) NewFlds = true;
-		D = (EFldD*)D->Chain;
+		D = (EFldD*)D->pChain;
 	}
 	ClearRecSpace(p);
 	ReleaseStore(p);
@@ -929,7 +929,7 @@ void NewRecExit()
 			LastTxtPos = -1;
 			StartExit(X, false);
 		}
-		//X = (EdExitD*)X->Chain;
+		//X = (EdExitD*)X->pChain;
 	}
 }
 
@@ -937,7 +937,7 @@ void SetCPage()
 {
 	CPage = CFld->Page;
 	RT = (ERecTxtD*)E->RecTxt;
-	for (WORD i = 1; i < CPage; i++) RT = (ERecTxtD*)RT->Chain;
+	for (WORD i = 1; i < CPage; i++) RT = (ERecTxtD*)RT->pChain;
 }
 
 
@@ -1101,7 +1101,7 @@ void SetRecAttr(WORD I)
 		if (D->Page == CPage) {
 			SetFldAttr(D, I, TA);
 		}
-		D = (EFldD*)D->Chain;
+		D = (EFldD*)D->pChain;
 	}
 }
 
@@ -1124,7 +1124,7 @@ void DisplTabDupl()
 				screen.ScrFormatWrText(Col, Row, "%c", ' '); // printf(" ");
 			}
 		}
-		D = (EFldD*)D->Chain;
+		D = (EFldD*)D->pChain;
 	}
 }
 
@@ -1221,7 +1221,7 @@ void MoveDispl(WORD From, WORD Where, WORD Number)
 			screen.ScrMove(D->Col - 1, r1, D->Col - 1, r2, D->L);
 			if (HasTTWw(D->FldD))
 				screen.ScrMove(D->Col + 1, r1, D->Col + 1, r2, D->FldD->L - 2);
-			D = (EFldD*)D->Chain;
+			D = (EFldD*)D->pChain;
 		}
 		if (From < Where) {
 			From--;
@@ -1251,7 +1251,7 @@ void WriteSL(StringListEl* SL)
 		// WrStyleStr(SL->S, E->Attr);
 		screen.WriteStyledStringToWindow(SL->S, E->Attr);
 		screen.GotoXY(E->FrstCol, Row + 1);
-		SL = (StringListEl*)SL->Chain;
+		SL = (StringListEl*)SL->pChain;
 	}
 }
 
@@ -1318,8 +1318,8 @@ void DuplOwnerKey()
 	while (Arg != nullptr) {
 		DuplFld(E->DownLD->ToFD, CFile, E->DownRecPtr, E->NewRecPtr, E->OldRecPtr,
 			KF->FldD, Arg->FldD);
-		Arg = (KeyFldD*)Arg->Chain;
-		KF = (KeyFldD*)KF->Chain;
+		Arg = (KeyFldD*)Arg->pChain;
+		KF = (KeyFldD*)KF->pChain;
 	}
 }
 
@@ -1670,8 +1670,8 @@ void UpdMemberRef(void* POld, void* PNew)
 					Arg = LD->Args;
 					while (kf != nullptr) {
 						DuplFld(cf, CFile, PNew, p2, nullptr, kf->FldD, Arg->FldD);
-						Arg = (KeyFldD*)Arg->Chain;
-						kf = (KeyFldD*)kf->Chain;
+						Arg = (KeyFldD*)Arg->pChain;
+						kf = (KeyFldD*)kf->pChain;
 					}
 					RunAddUpdte1('d', p, false, nullptr, LD);
 					UpdMemberRef(p, p2);
@@ -1832,7 +1832,7 @@ void UndoRecord()
 				while (f != nullptr) {
 					if (((f->Flg & f_Stored) != 0) && (f->Typ == 'T'))
 						*(longint*)((char*)(E->OldRecPtr) + f->Displ) = *(longint*)(((char*)(CRecPtr)+f->Displ));
-					f = (FieldDescr*)f->Chain;
+					f = (FieldDescr*)f->pChain;
 				}
 			}
 		}
@@ -2015,7 +2015,7 @@ ChkD* CompChk(EFldD* D, char Typ)
 			result = C;
 			return result;
 		}
-		C = (ChkD*)C->Chain;
+		C = C->pChain;
 	}
 	return result;
 }
@@ -2068,7 +2068,7 @@ bool ForNavigate(FileD* FD)
 	StringListEl* S = FD->ViewNames;
 	while (S != nullptr) {
 		if (TestAccRight(S)) return result;
-		S = (StringListEl*)S->Chain;
+		S = (StringListEl*)S->pChain;
 	}
 	result = false;
 	return result;
@@ -2078,9 +2078,9 @@ std::string GetFileViewName(FileD* FD, StringListEl** SL)
 {
 	if (SL == nullptr) { return FD->Name; }
 	std::string result = "\x1"; // ^A
-	while (!TestAccRight(*SL)) *SL = (StringListEl*)(*SL)->Chain;
+	while (!TestAccRight(*SL)) *SL = (StringListEl*)(*SL)->pChain;
 	result += (*SL)->S;
-	do { *SL = (StringListEl*)(*SL)->Chain; } while (!(SL == nullptr || TestAccRight(*SL)));
+	do { *SL = (StringListEl*)(*SL)->pChain; } while (!(SL == nullptr || TestAccRight(*SL)));
 	return result;
 }
 
@@ -2092,7 +2092,7 @@ void SetPointTo(LinkD* LD, std::string* s1, std::string* s2)
 			s2 = s1;
 			ss.Pointto = s2;
 		}
-		KF = (KeyFldD*)KF->Chain;
+		KF = (KeyFldD*)KF->pChain;
 	}
 }
 
@@ -2136,7 +2136,7 @@ bool EquFileViewName(FileD* FD, std::string S, EditOpt* EO)
 				RdUserView(S, EO);
 				goto label1;
 			}
-			SL = (StringListEl*)SL->Chain;
+			SL = (StringListEl*)SL->pChain;
 		}
 	}
 	else if (S == std::string(CFile->Name)) {
@@ -2188,7 +2188,7 @@ void UpwEdit(LinkD* LkD)
 		GetSel2S(&s1, &s2, '.', 2);
 		//LD = LinkDRoot;
 		/*while (LD != nullptr && !(LD->FromFD == CFile && EquRoleName(s2, LD) && EquFileViewName(LD->ToFD, s1, EO)))
-			LD = LD->Chain;*/
+			LD = LD->pChain;*/
 		LD = nullptr;
 		for (auto& ld : LinkDRoot) {
 			if (ld->FromFD == CFile && EquRoleName(s2, ld) && EquFileViewName(ld->ToFD, s1, EO)) {
@@ -2208,7 +2208,7 @@ void UpwEdit(LinkD* LkD)
 			if (TestAccRight(SL)) {
 				SL1 = SL;
 			}
-			SL = (StringListEl*)SL->Chain;
+			SL = (StringListEl*)SL->pChain;
 		}
 		if (SL1 == nullptr) {
 			EO->Flds = AllFldsList(CFile, false);
@@ -2285,7 +2285,7 @@ bool OldRecDiffers()
 			/* !!! with f^ do!!! */ if (Flg && f_Stored != 0) && (Typ != 'T') and
 				(CompArea(Pchar(CRecPtr) + Displ, Pchar(E->OldRecPtr) + Displ, NBytes) != ord(_equ)) then
 				goto label1;
-			f = f->Chain;
+			f = f->pChain;
 		}
 		goto label2;
 	}
@@ -2322,7 +2322,7 @@ bool ExitCheck(bool MayDispl)
 				return result;
 			}
 		}
-		//X = (EdExitD*)X->Chain;
+		//X = (EdExitD*)X->pChain;
 	}
 	result = true;
 	return result;
@@ -2413,7 +2413,7 @@ bool WriteCRec(bool MayDispl, bool& Displ)
 		ID = E->Impl;
 		while (ID != nullptr) {
 			AssgnFrml(ID->FldD, ID->Frml, true, false);
-			ID = (ImplD*)ID->Chain;
+			ID = (ImplD*)ID->pChain;
 		}
 	}
 	if (MustCheck) {   /* repeat field checking */
@@ -2426,7 +2426,7 @@ bool WriteCRec(bool MayDispl, bool& Displ)
 				DisplChkErr(C);
 				return result;
 			}
-			D = (EFldD*)D->Chain;
+			D = (EFldD*)D->pChain;
 		}
 	}
 	if (IsNewRec) {
@@ -2618,7 +2618,7 @@ EFldD* FindEFld(FieldDPtr F)
 	EFldD* D = E->FirstFld;
 	while (D != nullptr) {
 		if (D->FldD == F) goto label1;
-		D = (EFldD*)D->Chain;
+		D = (EFldD*)D->pChain;
 	}
 label1:
 	return D;
@@ -2654,8 +2654,8 @@ bool PromptSearch(bool Create)
 			case 'B': { b = _B(F2); x.StoreBool(b, KF);
 				CFile = FD; CRecPtr = RP; B_(F, b); break; }
 			}
-			KF2 = (KeyFldD*)KF2->Chain;
-			KF = (KeyFldD*)KF->Chain;
+			KF2 = (KeyFldD*)KF2->pChain;
+			KF = (KeyFldD*)KF->pChain;
 		}
 	}
 	if (KF == nullptr) {
@@ -2695,7 +2695,7 @@ bool PromptSearch(bool Create)
 			}
 			CRecPtr = RP; if (pos != 0) { x = xOld; goto label2; };
 		}
-		KF = (KeyFldD*)KF->Chain;
+		KF = (KeyFldD*)KF->pChain;
 	}
 	CRecPtr = E->NewRecPtr;
 	if (li) { if (!found) CreateOrErr(Create, RP, n); }
@@ -2745,7 +2745,7 @@ label1:
 				DisplChkErr(C);
 				return;
 			}
-			D = (EFldD*)D->Chain;
+			D = (EFldD*)D->pChain;
 		}
 	if (N < CNRecs()) {
 		N++; DisplRecNr(N); RdRec(N); D = E->FirstFld; goto label1;
@@ -2810,7 +2810,7 @@ bool IsDependItem()
 	while (Dp != nullptr)
 	{
 		if (RunBool(Dp->Bool)) { return true; }
-		Dp = (DepD*)Dp->Chain;
+		Dp = (DepD*)Dp->pChain;
 	}
 	return false;
 }
@@ -2821,7 +2821,7 @@ void SetDependItem()
 	while (Dp != nullptr)
 	{
 		if (RunBool(Dp->Bool)) { AssignFld(CFld->FldD, Dp->Frml); return; }
-		Dp = (DepD*)Dp->Chain;
+		Dp = (DepD*)Dp->pChain;
 	}
 }
 
@@ -2848,7 +2848,7 @@ bool CheckForExit(bool& Quit)
 				if (!StartExit(X, true)) return result;
 			}
 		}
-		//X = (EdExitD*)X->Chain;
+		//X = (EdExitD*)X->pChain;
 	}
 	result = true;
 	return result;
@@ -2862,7 +2862,7 @@ bool FldInModeF3Key(FieldDPtr F)
 	KF = VK->KFlds;
 	while (KF != nullptr) {
 		if (KF->FldD == F) { result = true; return result; }
-		KF = (KeyFldD*)KF->Chain;
+		KF = (KeyFldD*)KF->pChain;
 	}
 	return result;
 }
@@ -2882,7 +2882,7 @@ bool ExNotSkipFld()
 	D = E->FirstFld;
 	while (D != nullptr) {
 		if ((D != CFld) && !IsSkipFld(D)) { result = true; return result; }
-		D = (EFldD*)D->Chain;
+		D = (EFldD*)D->pChain;
 	}
 	return result;
 }
@@ -2905,7 +2905,7 @@ bool CtrlMProc(WORD Mode)
 	auto result = true;
 	if (Mode == 0 /*only bypass unrelevant fields*/) goto label2;
 label1:
-	if (IsFirstEmptyFld()) FirstEmptyFld = (EFldD*)FirstEmptyFld->Chain;
+	if (IsFirstEmptyFld()) FirstEmptyFld = (EFldD*)FirstEmptyFld->pChain;
 	Quit = false;
 	if (!CheckForExit(Quit)) return result;
 	TextAttr = E->dHiLi;
@@ -2929,7 +2929,7 @@ label1:
 				DuplKeyMsg(KL->Key);
 				return result;
 			}
-			KL = (KeyList)KL->Chain;
+			KL = (KeyList)KL->pChain;
 		}
 	}
 	if (Quit && !IsNewRec && (Mode == 1 || Mode == 3)) {
@@ -2937,8 +2937,8 @@ label1:
 		result = false;
 		return result;
 	}
-	if (CFld->Chain != nullptr) {
-		GotoRecFld(CRec(), (EFldD*)CFld->Chain);
+	if (CFld->pChain != nullptr) {
+		GotoRecFld(CRec(), (EFldD*)CFld->pChain);
 		if (Mode == 1 || Mode == 3) Mode = 0;
 	}
 	else {
@@ -3476,7 +3476,7 @@ bool FinArgs(LinkD* LD, FieldDPtr F)
 	KeyFldDPtr KF = LD->Args;
 	while (KF != nullptr) {
 		if (KF->FldD == F) return result;
-		KF = (KeyFldD*)KF->Chain;
+		KF = (KeyFldD*)KF->pChain;
 	}
 	result = false;
 	return result;
@@ -3495,12 +3495,12 @@ bool SelFldsForEO(EditOpt* EO, LinkD* LD)
 			FieldListEl* FL1 = FieldList(EO->Flds);
 			while (FL != nullptr) {
 				if (FinArgs(LD, FL->FldD)) {
-					FL1->Chain = FL;
+					FL1->pChain = FL;
 					FL1 = FL;
 				}
-				FL = (FieldList)FL->Chain;
+				FL = (FieldList)FL->pChain;
 			}
-			FL1->Chain = nullptr;
+			FL1->pChain = nullptr;
 		}
 		return result;
 	}
@@ -3516,7 +3516,7 @@ bool SelFldsForEO(EditOpt* EO, LinkD* LD)
 			}
 			ww.PutSelect(s);
 		}
-		FL = (FieldList)FL->Chain;
+		FL = (FieldList)FL->pChain;
 	}
 	if (EO->Flds == nullptr) WrLLF10Msg(156);
 	else {
@@ -3546,7 +3546,7 @@ void ImbeddEdit()
 	WrEStatus();
 	R = CRdb;
 	while (R != nullptr) {
-		FD = (FileD*)R->FD->Chain;
+		FD = (FileD*)R->FD->pChain;
 		while (FD != nullptr) {
 			if (ForNavigate(FD)) {
 				SL = FD->ViewNames;
@@ -3556,7 +3556,7 @@ void ImbeddEdit()
 					ww.PutSelect(s);
 				} while (SL != nullptr);
 			}
-			FD = (FileD*)FD->Chain;
+			FD = (FileD*)FD->pChain;
 		}
 		R = R->ChainBack;
 	}
@@ -3569,7 +3569,7 @@ void ImbeddEdit()
 		do { R = R->ChainBack; } while (R->FD->Name != ss2);
 	}
 	CFile = R->FD;
-	while (!EquFileViewName(CFile, s1, EO)) CFile = (FileD*)CFile->Chain;
+	while (!EquFileViewName(CFile, s1, EO)) CFile = (FileD*)CFile->pChain;
 	if (SelFldsForEO(EO, nullptr)) {
 		NewEditD(CFile, EO);
 		if (OpenEditWw()) RunEdit(nullptr, Brk);
@@ -3613,7 +3613,7 @@ void DownEdit()
 				ww.PutSelect(s);
 			} while (SL != nullptr);
 		}
-		//ld = ld->Chain;
+		//ld = ld->pChain;
 	}
 	ss.Abcd = true;
 	ww.SelectStr(0, 0, 35, "");
@@ -3624,7 +3624,7 @@ void DownEdit()
 	GetSel2S(&s1, &s2, '/', 2);
 	ali = GetFromKey(LD)->Alias;
 	//while ((LD->ToFD != E->FD) || (LD->IndexRoot == 0) || (s2 != ali)
-	//	|| !EquFileViewName(LD->FromFD, s1, EO)) LD = LD->Chain;
+	//	|| !EquFileViewName(LD->FromFD, s1, EO)) LD = LD->pChain;
 	for (auto& ld : LinkDRoot) {
 		if ((ld->ToFD != E->FD) || (ld->IndexRoot == 0) || (s2 != ali)
 			|| !EquFileViewName(ld->FromFD, s1, EO)) continue;
@@ -3656,7 +3656,7 @@ void ShiftF7Proc()
 		KeyFldD* KF = ld->Args;
 		while (KF != nullptr) {
 			if ((KF->FldD == F) && ForNavigate(ld->ToFD)) LD1 = ld;
-			KF = (KeyFldD*)KF->Chain;
+			KF = (KeyFldD*)KF->pChain;
 		}
 	}
 	if (LD1 != nullptr) UpwEdit(LD1);
@@ -3665,7 +3665,7 @@ void ShiftF7Proc()
 bool ShiftF7Duplicate()
 {
 	auto result = false;
-	EditD* ee = (EditD*)E->Chain;
+	EditD* ee = (EditD*)E->pChain;
 
 	/* !!! with ee^ do!!! */
 	CFile = ee->FD;
@@ -3679,8 +3679,8 @@ bool ShiftF7Duplicate()
 	KeyFldD* kf2 = E->ShiftF7LD->ToKey->KFlds;
 	while (kf != nullptr) {
 		DuplFld(E->FD, CFile, E->NewRecPtr, CRecPtr, ee->OldRecPtr, kf2->FldD, kf->FldD);
-		kf = (KeyFldD*)kf->Chain;
-		kf2 = (KeyFldD*)kf2->Chain;
+		kf = (KeyFldD*)kf->pChain;
+		kf2 = (KeyFldD*)kf2->pChain;
 	}
 
 	SetUpdFlag();
@@ -3698,7 +3698,7 @@ bool ShiftF7Duplicate()
 bool DuplToPrevEdit()
 {
 	LockMode md;
-	auto result = false; EditD* ee = (EditD*)E->Chain;
+	auto result = false; EditD* ee = (EditD*)E->pChain;
 	if (ee == nullptr) return result;
 	FieldDescr* f1 = CFld->FldD;
 
@@ -3838,7 +3838,7 @@ void DelNewRec()
 EFldD* FrstFldOnPage(WORD Page)
 {
 	EFldD* D = E->FirstFld;
-	while (D->Page < Page) D = (EFldD*)D->Chain;
+	while (D->Page < Page) D = (EFldD*)D->pChain;
 	return D;
 }
 
@@ -3993,7 +3993,7 @@ WORD ExitKeyProc()
 				EdOk = ok;
 			}
 		}
-		//X = (EdExitD*)X->Chain;
+		//X = (EdExitD*)X->pChain;
 	}
 	if (((w == 0) || (w == 3)) && (c == _ShiftF7_) && CFld->Ed(IsNewRec)) {
 		ShiftF7Proc();
@@ -4145,7 +4145,7 @@ void MouseProc()
 				else ClrEvent();
 				return;
 			}
-			D = (EFldD*)D->Chain;
+			D = (EFldD*)D->pChain;
 		}
 	}
 label1:
@@ -4181,13 +4181,13 @@ void ToggleSelectAll()
 
 void GoStartFld(EFldD* SFld)
 {
-	while ((CFld != SFld) && (CFld->Chain != nullptr)) {
+	while ((CFld != SFld) && (CFld->pChain != nullptr)) {
 		if (IsFirstEmptyFld()) {
 			if ((CFld->Impl != nullptr) && LockRec(true)) AssignFld(CFld->FldD, CFld->Impl);
-			FirstEmptyFld = (EFldD*)FirstEmptyFld->Chain;
+			FirstEmptyFld = (EFldD*)FirstEmptyFld->pChain;
 			DisplFld(CFld, IRec, TextAttr);
 		}
-		GotoRecFld(CRec(), (EFldD*)CFld->Chain);
+		GotoRecFld(CRec(), (EFldD*)CFld->pChain);
 	}
 }
 
@@ -4380,8 +4380,8 @@ label81:
 			case __RIGHT:
 			case 'D': {
 			label12:
-				if ((CFld->Chain != nullptr) && !IsFirstEmptyFld())
-					GotoRecFld(CRec(), (EFldD*)CFld->Chain);
+				if ((CFld->pChain != nullptr) && !IsFirstEmptyFld())
+					GotoRecFld(CRec(), (EFldD*)CFld->pChain);
 				break;
 			}
 			case __HOME:

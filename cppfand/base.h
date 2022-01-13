@@ -34,16 +34,9 @@ struct WordRec { BYTE Lo = 0, Hi = 0; };
 struct LongRec { WORD Lo = 0, Hi = 0; };
 typedef void* PProcedure;
 
-class Chained 
-{
-public:
-	Chained* Chain = nullptr;
-};
-
 bool IsLetter(char C); // r4
 void MyMove(void* A1, void* A2, WORD N);
-void ChainLast(Chained* Frst, Chained* New); // r13 ASM
-Chained* LastInChain(Chained* Frst); // r18 ASM
+
 WORD ListLength(void* P); // r22 ASM
 pstring StrPas(const char* Src);
 void StrLPCopy(char* Dest, pstring s, WORD MaxL);

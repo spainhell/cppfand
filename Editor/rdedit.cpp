@@ -21,7 +21,7 @@ void PushEdit()
 		e1->V.C2 = TxtCols;
 		e1->V.R2 = TxtRows - 1;
 	}
-	e1->Chain = E;
+	e1->pChain = E;
 	E = e1;
 	EditDRoot = E;
 }
@@ -145,7 +145,7 @@ label5:
 				Error(79);
 			}
 			if (Col > E->LastCol) Error(102);
-			D = (EFldD*)D->Chain;
+			D = (EFldD*)D->pChain;
 		}
 		else {
 			if (!screen.SetStyleAttr(ForwChar, a)) {
@@ -180,7 +180,7 @@ label5:
 	E->LastFld = D;
 	PrevD = nullptr;
 	while (D != nullptr) {
-		D->Chain = PrevD;
+		D->pChain = PrevD;
 		PrevD = D;
 		D = D->ChainBack;
 	}
@@ -194,7 +194,7 @@ EFldD* FindScanNr(WORD N)
 	WORD M = 0xffff;
 	while (D != nullptr) {
 		if ((D->ScanNr >= N) && (D->ScanNr < M)) { M = D->ScanNr; D1 = D; }
-		D = (EFldD*)D->Chain;
+		D = (EFldD*)D->pChain;
 	}
 	return D1;
 }
@@ -211,11 +211,11 @@ void AutoDesign(FieldListEl* FL)
 	WORD maxcol = E->LastCol - E->FrstCol;
 	while (FL != nullptr) {
 		FieldDescr* F = FL->FldD;
-		FL = (FieldListEl*)FL->Chain;
+		FL = (FieldListEl*)FL->pChain;
 		if (F == nullptr) continue; // tady to padalo na 1. polozce, protoze ta ma FldD = nullptr
-		//D->Chain = (EFldD*)GetZStore(sizeof(*D)); 
-		D->Chain = new EFldD();
-		D = (EFldD*)D->Chain;
+		//D->pChain = (EFldD*)GetZStore(sizeof(*D)); 
+		D->pChain = new EFldD();
+		D = (EFldD*)D->pChain;
 		D->ChainBack = PrevD;
 		PrevD = D;
 		D->FldD = F;
@@ -252,21 +252,21 @@ void AutoDesign(FieldListEl* FL)
 	SToSL(&SLRoot, "");
 	Ln += 2;
 	StoreRT(Ln, SLRoot, 1);
-	D->Chain = nullptr;
+	D->pChain = nullptr;
 	E->LastFld = D;
 	E->NPages = NPages;
 	if (NPages == 1) { /* !!! with E->RecTxt^ do!!! */
 		auto& er = *E->RecTxt;
 		if (er.N == 2) {
 			E->HdTxt = er.SL;
-			er.SL = (StringListEl*)er.SL->Chain;
-			E->HdTxt->Chain = nullptr;
+			er.SL = (StringListEl*)er.SL->pChain;
+			E->HdTxt->pChain = nullptr;
 			E->NHdTxt = 1;
 			er.N = 1;
 			D = E->FirstFld;
 			while (D != nullptr) {
 				D->Ln--;
-				D = (EFldD*)D->Chain;
+				D = (EFldD*)D->pChain;
 			}
 			if (E->Rows == 1) {
 				E->NHdTxt = 0;
@@ -438,7 +438,7 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 		D = E->FirstFld;
 		while (D != nullptr) {
 			if (EquUpCase(D->FldD->Name, s)) E->StartFld = D;
-			D = (EFldD*)D->Chain;
+			D = (EFldD*)D->pChain;
 		}
 	}
 	E->WatchDelay = RunInt(EO->WatchDelayZ) * 18;
@@ -470,7 +470,7 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 		if (EO->NegDupl) b = !b;
 		if (b && ((F->Flg & f_Stored) != 0)) D->Dupl = true;
 		if (b || ((F->Flg & f_Stored) != 0)) E->NDuplSet++;
-		D = (EFldD*)D->Chain;
+		D = (EFldD*)D->pChain;
 	}
 	if (E->OnlyTabs && (E->NTabsSet == 0)) {
 		E->NoDelete = true;
@@ -488,7 +488,7 @@ EFldD* FindEFld_E(FieldDescr* F)
 	EFldD* D = E->FirstFld;
 	while (D != nullptr) {
 		if (D->FldD == F) break;
-		D = (EFldD*)D->Chain;
+		D = (EFldD*)D->pChain;
 	}
 	return D;
 }
@@ -498,7 +498,7 @@ void ZeroUsed()
 	EFldD* D = E->FirstFld;
 	while (D != nullptr) {
 		D->Used = false;
-		D = (EFldD*)D->Chain;
+		D = (EFldD*)D->pChain;
 	}
 }
 
@@ -567,7 +567,7 @@ void SetFrmlFlags(FrmlElem* Z)
 			KeyFldD* Arg = iZ7->LD->Args;
 			while (Arg != nullptr) {
 				SetFlag(Arg->FldD);
-				Arg = (KeyFldD*)Arg->Chain;
+				Arg = (KeyFldD*)Arg->pChain;
 			}
 		}
 		break;
@@ -576,7 +576,7 @@ void SetFrmlFlags(FrmlElem* Z)
 		FrmlList fl = ((FrmlElem19*)Z)->FrmlL;
 		while (fl != nullptr) {
 			SetFrmlFlags(fl->Frml);
-			fl = (FrmlListEl*)fl->Chain;
+			fl = (FrmlListEl*)fl->pChain;
 		}
 		break;
 	}
@@ -785,7 +785,7 @@ void NewChkKey()
 			while (KF != nullptr) {
 				D = FindEFld_E(KF->FldD);
 				if (D != nullptr) D->Used = true;
-				KF = (KeyFldD*)KF->Chain;
+				KF = (KeyFldD*)KF->pChain;
 			}
 			D = LstUsedFld();
 			if (D != nullptr) {
