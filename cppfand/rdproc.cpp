@@ -117,7 +117,9 @@ char RdOwner(LinkD** LLD, LocVar** LLV)
 				ld = ld1;
 			}
 		}
-		if (ld == nullptr) Error(116);
+		if (ld == nullptr) {
+			Error(116);
+		}
 		RdLex();
 		if (lv->FTyp == 'f') {
 #ifdef FandSQL

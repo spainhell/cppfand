@@ -1445,7 +1445,7 @@ void CallProcedure(Instr_proc* PD)
 
 #ifdef _DEBUG
 	std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
-	if (srcCode.find("m:=Trail(evals('VetaH.M") != std::string::npos) {
+	if (srcCode.find("UKOLYS:file [") != std::string::npos) {
 		printf("");
 	}
 #endif
@@ -1460,7 +1460,6 @@ void CallProcedure(Instr_proc* PD)
 	//oldbp = MyBP;
 	//PushProcStk();
 	if ((n != PD->N) && !((n == PD->N - 1) && PD->ExPar)) {
-	label1:
 		CurrPos = 0;
 		Error(119);
 	}
@@ -1468,11 +1467,17 @@ void CallProcedure(Instr_proc* PD)
 	it0 = PD->variables.vLocVar.begin();
 	// projdeme vstupni parametry funkce
 	for (i = 0; i < n; i++) {
-		if (PD->TArg[i].FTyp != (*it0)->FTyp) goto label1;
+		if (PD->TArg[i].FTyp != (*it0)->FTyp) {
+			CurrPos = 0;
+			Error(119);
+		}
 		switch (PD->TArg[i].FTyp) {
 		case 'r':
 		case 'i': {
-			if ((*it0)->FD != PD->TArg[i].FD) goto label1;
+			if ((*it0)->FD != PD->TArg[i].FD) {
+				CurrPos = 0;
+				Error(119);
+			}
 			(*it0)->RecPtr = PD->TArg[i].RecPtr;
 			break;
 		}
@@ -1484,7 +1489,9 @@ void CallProcedure(Instr_proc* PD)
 				RdFileD(PD->TArg[i].Name, '6', "$");
 				RestoreCompState(state);
 			}
-			else CFile = PD->TArg[i].FD;
+			else {
+				CFile = PD->TArg[i].FD;
+			}
 			it1 = it0;
 			while (it1 != PD->variables.vLocVar.end()) {
 				if (((*it1)->FTyp == 'i' || (*it1)->FTyp == 'r')
@@ -1500,7 +1507,10 @@ void CallProcedure(Instr_proc* PD)
 			auto lv = *it0;
 			if (lv->IsRetPar && (z->Op != _getlocvar)
 				|| PD->TArg[i].FromProlog
-				&& (PD->TArg[i].IsRetPar != lv->IsRetPar)) goto label1;
+				&& (PD->TArg[i].IsRetPar != lv->IsRetPar)) {
+				CurrPos = 0;
+				Error(119);
+			}
 			LVAssignFrml(lv, false, PD->TArg[i].Frml);
 			break;
 		}
@@ -1516,6 +1526,10 @@ void CallProcedure(Instr_proc* PD)
 			ZeroAllFlds();
 			ClearDeletedFlag();
 			(*it0)->RecPtr = CRecPtr;
+		}
+		else if ((*it0)->FTyp == 'f') {
+			// dynamic file definition
+			printf("");
 		}
 		++it0;
 	}
@@ -1586,7 +1600,7 @@ void CallProcedure(Instr_proc* PD)
 			}
 		}
 		i++;
-		it0++;
+		++it0;
 	}
 	//PopProcStk();
 	//ProcMyBP = (ProcStkD*)oldprocbp;

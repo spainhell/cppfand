@@ -474,8 +474,8 @@ void SetLDIndexRoot(/*LinkD* L,*/ std::deque<LinkD*>& L2)
 						|| (Arg->Descend != KF->Descend))
 						goto label1;
 					if ((Arg->FldD->Flg & f_Stored) == 0) cmptd = true;
-					Arg = (KeyFldD*)Arg->pChain;
-					KF = (KeyFldD*)KF->pChain;
+					Arg = Arg->pChain;
+					KF = KF->pChain;
 				}
 				L->IndexRoot = K->IndexRoot;
 				goto label2;
@@ -493,7 +493,7 @@ void SetLDIndexRoot(/*LinkD* L,*/ std::deque<LinkD*>& L2)
 	}
 }
 
-// ze souboru .000 vycte data
+// z ulohy vycte kapilotu 'F', prip. dynamickou definici 'F'
 void* RdFileD(std::string FileName, char FDTyp, std::string Ext)
 {
 	std::string JournalFlds = "Upd:A,1;RecNr:F,8.0;User:F,4.0;TimeStamp:D,'DD.MM.YYYY hh:mm:ss'";
@@ -627,7 +627,9 @@ label2:
 		RdKeyD();
 		goto label2;
 	}
-	if (issql && (CFile->Keys != nullptr)) CFile->Typ = 'X';
+	if (issql && (CFile->Keys != nullptr)) {
+		CFile->Typ = 'X';
+	}
 	GetXFileD();
 	CompileRecLen();
 	SetLDIndexRoot(LDOld);
