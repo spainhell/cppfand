@@ -125,7 +125,7 @@ bool UnLockH(FILE* Handle, longint Pos, WORD Len)
 		DWORD dw = GetLastError();
 
 		FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-					NULL, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR)&lpMsgBuf, 0, NULL);
+			NULL, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR)&lpMsgBuf, 0, NULL);
 
 		return false;
 	}
@@ -977,8 +977,8 @@ std::string _StdS(FieldDescr* F)
 			}
 			else
 			{
-				 //jedna je o typ N - prevedeme cislo na znaky
-				 //UnPack(P, S->A, l);
+				//jedna je o typ N - prevedeme cislo na znaky
+				//UnPack(P, S->A, l);
 				for (BYTE i = 0; i < F->L; i++) {
 					bool upper = (i % 2) == 0; // jde o "levou" cislici
 					BYTE j = i / 2;
@@ -1127,8 +1127,8 @@ bool LinkUpw(LinkD* LD, longint& N, bool WithT)
 	FileD* CF = CFile;
 	void* CP = CRecPtr;
 	XKey* K = LD->ToKey;
-	KeyFldD* Arg = LD->Args;
-	x.PackKF(Arg);
+	//KeyFldD* Arg = LD->Args;
+	x.PackKF(LD->Args);
 	CFile = ToFD;
 	void* RecPtr = GetRecSpace();
 	CRecPtr = RecPtr;
@@ -1150,13 +1150,14 @@ bool LinkUpw(LinkD* LD, longint& N, bool WithT)
 		LU = SearchKey(x, K, N);
 	}
 
-	if (LU) ReadRec(CFile, N, CRecPtr);
+	if (LU) {
+		ReadRec(CFile, N, CRecPtr);
+	}
 	else {
-		// label1:
 		ZeroAllFlds();
 		KF = K->KFlds;
-		while (Arg != nullptr) {
-			F = Arg->FldD;
+		for (auto& arg : LD->Args) {
+			F = arg->FldD;
 			F2 = KF->FldD;
 			CFile = CF;
 			CRecPtr = CP;
@@ -1181,13 +1182,12 @@ bool LinkUpw(LinkD* LD, longint& N, bool WithT)
 					break;
 				}
 				}
-			Arg = (KeyFldD*)Arg->pChain;
-			KF = (KeyFldD*)KF->pChain;
+			KF = KF->pChain;
 		}
 		CFile = ToFD;
 		CRecPtr = RecPtr;
 	}
-//label2:
+
 	auto result = LU;
 #ifdef FandSQL
 	if (!CFile->IsSQLFile)
@@ -1233,7 +1233,7 @@ void AssignNRecs(bool Add, longint N)
 	ReleaseStore(CRecPtr);
 label1:
 	OldLMode(md);
-}
+	}
 
 void ClearRecSpace(void* p)
 {
@@ -1359,7 +1359,7 @@ integer CompStr(pstring& S1, pstring& S2)
 	return CompStr(s1, s2);
 }
 
-int CompStr(std::string& S1, std::string& S2) 
+int CompStr(std::string& S1, std::string& S2)
 {
 	size_t cmpLen = min(S1.length(), S2.length());
 	for (size_t i = 0; i < cmpLen; i++) {

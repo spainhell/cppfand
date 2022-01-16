@@ -1,4 +1,6 @@
 #pragma once
+#include <vector>
+
 #include "../cppfand/constants.h"
 #include "../cppfand/pstring.h"
 
@@ -16,6 +18,7 @@ public:
 	void StoreBool(bool B, KeyFldD* KF);
 	void StoreKF(KeyFldD* KF);
 	void PackKF(KeyFldD* KF);
+	void PackKF(std::vector<KeyFldD*>& KF);
 	bool PackFrml(FrmlListEl* FL, KeyFldD* KF);
 #ifdef FandSQL
 	void GetF(WORD Off, WORD Len, bool Descend, void* Buf);

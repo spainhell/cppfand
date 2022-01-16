@@ -1398,10 +1398,11 @@ void SrchZ(FrmlElem* Z)
 	}
 	case _access: {
 		if (iZ7->LD != nullptr) {
-			KF = iZ7->LD->Args;
-			while (KF != nullptr) {
+			//KF = iZ7->LD->Args;
+			//while (KF != nullptr) {
+			for (auto& KF : iZ7->LD->Args) {
 				SrchF(KF->FldD);
-				KF = (KeyFldD*)KF->pChain;
+				//KF = KF->pChain;
 			}
 		}
 		break;
@@ -1410,7 +1411,7 @@ void SrchZ(FrmlElem* Z)
 		fl = iZ19->FrmlL;
 		while (fl != nullptr) {
 			SrchZ(fl->Frml);
-			fl = (FrmlListEl*)fl->pChain;
+			fl = fl->pChain;
 		}
 		break;
 	}

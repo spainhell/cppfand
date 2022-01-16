@@ -13,31 +13,30 @@ class FrmlElemSum;
 class FieldDescr;
 class LocVarBlkD;
 
-struct FieldListEl : public Chained<FieldListEl> // r32
+struct FieldListEl : public Chained<FieldListEl>
 {
 	FieldDescr* FldD = nullptr;
 };
 typedef FieldListEl* FieldList;
 
-struct FrmlListEl : public Chained<FrmlListEl> // ø. 34
+struct FrmlListEl : public Chained<FrmlListEl>
 {
 	FrmlElem* Frml = nullptr;
 };
 typedef FrmlListEl* FrmlList;
 
-struct StringListEl : public Chained<StringListEl> // ø. 38
+struct StringListEl : public Chained<StringListEl>
 {
 	std::string S;
 };
 typedef StringListEl* StringList;
 
-struct KeyListEl : public Chained<KeyListEl> // ø. 49
+struct KeyListEl : public Chained<KeyListEl>
 {
 	XKey* Key = nullptr;
 };
-typedef KeyListEl* KeyList;
 
-struct KeyInD : public Chained<KeyListEl> // r89
+struct KeyInD : public Chained<KeyListEl>
 {
 	FrmlListEl* FL1 = nullptr;
 	FrmlListEl* FL2 = nullptr;
@@ -67,7 +66,7 @@ struct LiRoots
 };
 typedef LiRoots* LiRootsPtr;
 
-struct DBaseFld // ø. 208
+struct DBaseFld
 {
 	pstring Name;
 	char Typ = 0;
@@ -76,7 +75,7 @@ struct DBaseFld // ø. 208
 	BYTE x2[14];
 };
 
-struct DBaseHd // ø. 213
+struct DBaseHd
 {
 	BYTE Ver = 0;
 	BYTE Date[4]{ 0,0,0,0 };
@@ -87,9 +86,9 @@ struct DBaseHd // ø. 213
 
 struct LinkD
 {
-	WORD IndexRoot = 0;
+	WORD IndexRoot = 0; // 0 - non index file || to only primary key
 	BYTE MemberRef = 0; // { 0-no, 1-!, 2-!!(no delete)}
-	KeyFldD* Args = nullptr;
+	std::vector<KeyFldD*> Args;
 	FileD* FromFD = nullptr;
 	FileD* ToFD = nullptr;
 	XKey* ToKey = nullptr;

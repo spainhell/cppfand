@@ -99,7 +99,15 @@ void XString::PackKF(KeyFldD* KF)
 	Clear();
 	while (KF != nullptr) {
 		StoreKF(KF);
-		KF = (KeyFldD*)KF->pChain;
+		KF = KF->pChain;
+	}
+}
+
+void XString::PackKF(std::vector<KeyFldD*>& KF)
+{
+	Clear();
+	for (auto& k : KF) {
+		StoreKF(k);
 	}
 }
 

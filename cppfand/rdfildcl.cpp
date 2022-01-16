@@ -453,43 +453,48 @@ void SetLDIndexRoot(/*LinkD* L,*/ std::deque<LinkD*>& L2)
 	LinkD* l2 = nullptr;
 	if (!L2.empty()) l2 = *L2.begin();
 
-	XKey* K = nullptr;
-	KeyFldD* Arg = nullptr;
-	KeyFldD* KF = nullptr;
-	bool cmptd = false;
+	bool computed = false;
 
 	for (auto& L : LinkDRoot) { /* find key with equal beginning */
 		if (L == l2) {
 			break;
 		}
 		if (CFile->Typ == 'X') {
-			K = CFile->Keys;
+			XKey* K = CFile->Keys;
 			while (K != nullptr) {
-				KF = K->KFlds;
-				Arg = L->Args;
-				cmptd = false;
-				while (Arg != nullptr) {
-					if ((KF == nullptr) || (Arg->FldD != KF->FldD)
-						|| (Arg->CompLex != KF->CompLex)
-						|| (Arg->Descend != KF->Descend))
-						goto label1;
-					if ((Arg->FldD->Flg & f_Stored) == 0) cmptd = true;
-					Arg = Arg->pChain;
+				KeyFldD* KF = K->KFlds;
+				computed = false;
+				bool continueWithNextK = false;
+
+				for (auto& arg : L->Args) {
+					// cmp CFile key fields with Arg fields
+					if (KF == nullptr || arg->FldD != KF->FldD || arg->CompLex != KF->CompLex || arg->Descend != KF->Descend) {
+						continueWithNextK = true;
+						break;
+					}
+					if ((arg->FldD->Flg & f_Stored) == 0) {
+						computed = true;
+					}
 					KF = KF->pChain;
 				}
+				if (continueWithNextK) {
+					K = K->Chain;
+					continue;
+				}
 				L->IndexRoot = K->IndexRoot;
-				goto label2;
-			label1:
-				K = K->Chain;
+				break;
 			}
 		}
-	label2:
-		if ((L->MemberRef != 0) && ((L->IndexRoot == 0) || cmptd)) {
+
+		if ((L->MemberRef != 0) && ((L->IndexRoot == 0) || computed)) {
 			SetMsgPar(L->RoleName);
 			OldError(152);
 		}
-		//L = L->pChain;
 		CFile->nLDs++;
+
+		if (CFile->Typ == 'X' && L->IndexRoot == 0) {
+			printf("");
+		}
 	}
 }
 
@@ -680,14 +685,19 @@ label1:
 
 void RdKeyD()
 {
-	FieldDescr* F = nullptr; FieldDescr* F2 = nullptr;
-	KeyFldD* KF = nullptr; KeyFldD* Arg = nullptr;
-	FileD* FD = nullptr; LinkD* L = nullptr;
-	XKey* K = nullptr; XKey* K1 = nullptr;
-	pstring Name; WORD N = 0;
+	FieldDescr* F = nullptr;
+	FieldDescr* F2 = nullptr;
+	KeyFldD* KF = nullptr;
+	KeyFldD* arg = nullptr;
+	FileD* FD = nullptr;
+	LinkD* L = nullptr;
+	XKey* K = nullptr;
+	XKey* K1 = nullptr;
+	pstring Name;
+	WORD N = 0;
+
 	RdLex();
-	if (Lexem == '@')
-	{
+	if (Lexem == '@') {
 		if ((CFile->Keys != nullptr) || CFile->IsParFile) Error(26);
 		RdLex();
 		if (Lexem == '@') {
@@ -697,11 +707,22 @@ void RdKeyD()
 		else {
 			Name = "";
 		label1:
-			K = new XKey();
-			K1 = (XKey*)(&CFile->Keys);
-			N = 1;
-			while (K1->Chain != nullptr) { K1 = K1->Chain; N++; }
-			K1->Chain = K;
+			if (CFile->Keys == nullptr) {
+				N = 1;
+				K = new XKey();
+				CFile->Keys = K;
+			}
+			else {
+				K1 = CFile->Keys;
+				N = 1;
+				while (K1->Chain != nullptr) {
+					K1 = K1->Chain;
+					N++;
+				}
+				K = new XKey();
+				K1->Chain = K;
+			}
+
 			K->Alias = Name;
 			K->Intervaltest = false;
 			K->Duplic = false;
@@ -718,7 +739,9 @@ void RdKeyD()
 			}
 			K->IndexRoot = N;
 			K->IndexLen = RdKFList(&K->KFlds, CFile);
-			if (K->IndexLen > MaxIndexLen) OldError(105);
+			if (K->IndexLen > MaxIndexLen) {
+				OldError(105);
+			}
 		}
 		goto label6;
 	}
@@ -726,36 +749,42 @@ label2:
 	TestIdentif();
 	Name = LexWord;
 	SkipBlank(false);
-	if (ForwChar == '(')
-	{
+	if (ForwChar == '(') {
 		RdLex(); RdLex();
-		if (Lexem == '@')
-		{
+		if (Lexem == '@') {
 			CheckDuplAlias(Name);
-			RdLex(); Accept(')');
+			RdLex();
+			Accept(')');
 			goto label1;
 		}
 		RdFileOrAlias(&FD, &K);
 		Accept(')');
 	}
-	else RdFileOrAlias(&FD, &K);
+	else {
+		RdFileOrAlias(&FD, &K);
+	}
+
 	L = FindLD(Name);
-	if (L != nullptr) OldError(26);
+	if (L != nullptr) {
+		OldError(26);
+	}
+
 	L = new LinkD();
-	//L->Args = new KeyFldD(); // pridano navic, aby to o par radku niz nepadalo
-	//L->pChain = LinkDRoot;
-	//LinkDRoot = L;
-	LinkDRoot.push_front(L);
-	//Move(&Name, &L->RoleName, Name.length() + 1);
 	L->RoleName = Name;
-	L->FromFD = CFile; L->ToFD = FD; L->ToKey = K;
+	L->FromFD = CFile;
+	L->ToFD = FD;
+	L->ToKey = K;
+	LinkDRoot.push_front(L);
+
 	if (Lexem == '!') {
 		if (CFile->Typ != 'X'
 #ifdef FandSQL
 			&& !CFile->typSQLFile
 #endif
 			) Error(108);
-		if (K->Duplic) Error(153);
+		if (K->Duplic) {
+			Error(153);
+		}
 		RdLex();
 		L->MemberRef = 1;
 		if (Lexem == '!') {
@@ -763,26 +792,28 @@ label2:
 			L->MemberRef = 2;
 		}
 	}
-	Arg = (KeyFldD*)&L->Args;
+	//Arg = &L->Args;
 	KF = K->KFlds;
 label3:
 	F = RdFldName(CFile);
 	if (F->Typ == 'T') OldError(84);
-	Arg->pChain = new KeyFldD();
-	Arg = (KeyFldD*)Arg->pChain;
-	/* !!! with Arg^ do!!! */
-	{ Arg->FldD = F; Arg->CompLex = KF->CompLex; Arg->Descend = KF->Descend; }
+	arg = new KeyFldD();
+	arg->FldD = F;
+	arg->CompLex = KF->CompLex;
+	arg->Descend = KF->Descend;
+	L->Args.push_back(arg);
+
 	F2 = KF->FldD;
 	if ((F->Typ != F2->Typ) || (F->Typ != 'D') && (F->L != F2->L) ||
 		(F->Typ == 'F') && (F->M != F2->M)) OldError(12);
-	KF = (KeyFldD*)KF->pChain;
+
+	KF = KF->pChain;
 	if (KF != nullptr) {
 		Accept(',');
 		goto label3;
 	}
 label6:
-	if (Lexem == ';')
-	{
+	if (Lexem == ';') {
 		RdLex();
 		if (!(Lexem == '#' || Lexem == 0x1A)) goto label2;
 	}
@@ -790,14 +821,13 @@ label6:
 
 void CheckDuplAlias(pstring Name)
 {
-	FileDPtr F;
 	if (CFile->Typ != 'X'
 #ifdef FandSQL
 		&& !CFile->typSQLFile
 #endif
 		) Error(108);
 	LookForK(&Name, CFile);
-	F = FileDRoot;
+	FileD* F = FileDRoot;
 	while (F != nullptr) {
 		LookForK(&Name, F);
 		F = (FileD*)F->pChain;
@@ -806,10 +836,9 @@ void CheckDuplAlias(pstring Name)
 
 void LookForK(pstring* Name, FileD* F)
 {
-	XKey* K = nullptr;
 	std::string name = *Name;
 	if (EquUpCase(F->Name, name)) Error(26);
-	K = F->Keys;
+	XKey* K = F->Keys;
 	while (K != nullptr) {
 		if (EquUpCase(K->Alias, *Name)) Error(26);
 		K = K->Chain;

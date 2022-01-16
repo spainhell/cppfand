@@ -1311,15 +1311,15 @@ void DisplWwRecsOrPage()
 
 void DuplOwnerKey()
 {
-	KeyFldD* KF = nullptr, * Arg = nullptr;
 	if (!E->DownSet || (E->OwnerTyp == 'i')) return;
-	KF = E->DownLD->ToKey->KFlds;
-	Arg = E->DownLD->Args;
-	while (Arg != nullptr) {
+	KeyFldD* KF = E->DownLD->ToKey->KFlds;
+	//Arg = E->DownLD->Args;
+	//while (Arg != nullptr) {
+	for (auto& arg : E->DownLD->Args) {
 		DuplFld(E->DownLD->ToFD, CFile, E->DownRecPtr, E->NewRecPtr, E->OldRecPtr,
-			KF->FldD, Arg->FldD);
-		Arg = (KeyFldD*)Arg->pChain;
-		KF = (KeyFldD*)KF->pChain;
+			KF->FldD, arg->FldD);
+		//Arg = Arg->pChain;
+		KF = KF->pChain;
 	}
 }
 
@@ -1619,7 +1619,7 @@ void UpdMemberRef(void* POld, void* PNew)
 	FileD* cf = CFile;
 	void* cr = CRecPtr; void* p = nullptr; void* p2 = nullptr;
 	XKey* k = nullptr;
-	KeyFldD* kf = nullptr, * kf1 = nullptr, * kf2 = nullptr, * Arg = nullptr;
+	KeyFldD* kf = nullptr, * kf1 = nullptr, * kf2 = nullptr; // , * Arg = nullptr;
 
 	for (auto& LD : LinkDRoot) {
 		if ((LD->MemberRef != 0) && (LD->ToFD == cf) && ((PNew != nullptr) || (LD->MemberRef != 2))) {
@@ -1667,11 +1667,12 @@ void UpdMemberRef(void* POld, void* PNew)
 					Move(CRecPtr, p2, CFile->RecLen);
 					CRecPtr = p2;
 					kf = kf2;
-					Arg = LD->Args;
-					while (kf != nullptr) {
-						DuplFld(cf, CFile, PNew, p2, nullptr, kf->FldD, Arg->FldD);
-						Arg = (KeyFldD*)Arg->pChain;
-						kf = (KeyFldD*)kf->pChain;
+					//Arg = LD->Args;
+					//while (kf != nullptr) {
+					for (auto& arg : LD->Args) {
+						DuplFld(cf, CFile, PNew, p2, nullptr, kf->FldD, arg->FldD);
+						//Arg = Arg->pChain;
+						kf = kf->pChain;
 					}
 					RunAddUpdte1('d', p, false, nullptr, LD);
 					UpdMemberRef(p, p2);
@@ -1699,7 +1700,7 @@ void WrJournal(char Upd, void* RP, double Time)
 	if (E->Journal != nullptr) {
 		WORD l = CFile->RecLen;
 		longint n = AbsRecNr(CRec());
-		if (CFile->XF != nullptr)	{
+		if (CFile->XF != nullptr) {
 			srcOffset += 2;
 			l--;
 		}
@@ -1738,7 +1739,7 @@ bool LockForMemb(FileD* FD, WORD Kind, LockMode NewMd, LockMode& md)
 	auto result = false;
 	for (auto& ld : LinkDRoot) {
 		if ((ld->ToFD == FD)
-			&& ((NewMd != DelMode) && (ld->MemberRef != 0) || (ld->MemberRef == 1)) 
+			&& ((NewMd != DelMode) && (ld->MemberRef != 0) || (ld->MemberRef == 1))
 			&& (ld->FromFD != FD)) {
 			CFile = ld->FromFD;
 			switch (Kind) {
@@ -2076,23 +2077,24 @@ bool ForNavigate(FileD* FD)
 
 std::string GetFileViewName(FileD* FD, StringListEl** SL)
 {
-	if (SL == nullptr) { return FD->Name; }
+	if (*SL == nullptr) { return FD->Name; }
 	std::string result = "\x1"; // ^A
-	while (!TestAccRight(*SL)) *SL = (StringListEl*)(*SL)->pChain;
+	while (!TestAccRight(*SL)) *SL = (*SL)->pChain;
 	result += (*SL)->S;
-	do { *SL = (StringListEl*)(*SL)->pChain; } while (!(SL == nullptr || TestAccRight(*SL)));
+	do { *SL = (*SL)->pChain; } while (!(SL == nullptr || TestAccRight(*SL)));
 	return result;
 }
 
 void SetPointTo(LinkD* LD, std::string* s1, std::string* s2)
 {
-	KeyFldD* KF = LD->Args;
-	while (KF != nullptr) {
-		if (KF->FldD == CFld->FldD) {
+	//KeyFldD* KF = LD->Args;
+	//while (KF != nullptr) {
+	for (auto& arg : LD->Args) {
+		if (arg->FldD == CFld->FldD) {
 			s2 = s1;
 			ss.Pointto = s2;
 		}
-		KF = (KeyFldD*)KF->pChain;
+		//KF = KF->pChain;
 	}
 }
 
@@ -2160,7 +2162,7 @@ void UpwEdit(LinkD* LkD)
 	FieldDescr* F = nullptr; KeyFldD* KF = nullptr;
 	XKey* K = nullptr; EditOpt* EO = nullptr;
 	WORD Brk;
-	StringListEl* SL, *SL1;
+	StringListEl* SL, * SL1;
 	LinkD* LD;
 	MarkStore(p);
 	longint w = PushW1(1, 1, TxtCols, TxtRows, true, true);
@@ -2929,7 +2931,7 @@ label1:
 				DuplKeyMsg(KL->Key);
 				return result;
 			}
-			KL = (KeyList)KL->pChain;
+			KL = KL->pChain;
 		}
 	}
 	if (Quit && !IsNewRec && (Mode == 1 || Mode == 3)) {
@@ -3470,13 +3472,14 @@ label1:
 	CRecPtr = E->NewRecPtr;
 }
 
-bool FinArgs(LinkD* LD, FieldDPtr F)
+bool FinArgs(LinkD* LD, FieldDescr* F)
 {
 	auto result = true;
-	KeyFldDPtr KF = LD->Args;
-	while (KF != nullptr) {
-		if (KF->FldD == F) return result;
-		KF = (KeyFldD*)KF->pChain;
+	//KeyFldD* KF = LD->Args;
+	//while (KF != nullptr) {
+	for (auto& arg : LD->Args) {
+		if (arg->FldD == F) return result;
+		//KF = KF->pChain;
 	}
 	result = false;
 	return result;
@@ -3653,10 +3656,11 @@ void ShiftF7Proc()
 	FieldDescr* F = CFld->FldD;
 	LinkD* LD1 = nullptr;
 	for (auto& ld : LinkDRoot) { //while (LD != nullptr) {
-		KeyFldD* KF = ld->Args;
-		while (KF != nullptr) {
-			if ((KF->FldD == F) && ForNavigate(ld->ToFD)) LD1 = ld;
-			KF = (KeyFldD*)KF->pChain;
+		for (auto& arg : ld->Args) {
+		//KeyFldD* KF = ld->Args;
+		//while (KF != nullptr) {
+			if ((arg->FldD == F) && ForNavigate(ld->ToFD)) LD1 = ld;
+			//KF = KF->pChain;
 		}
 	}
 	if (LD1 != nullptr) UpwEdit(LD1);
@@ -3665,9 +3669,8 @@ void ShiftF7Proc()
 bool ShiftF7Duplicate()
 {
 	auto result = false;
-	EditD* ee = (EditD*)E->pChain;
+	EditD* ee = E->pChain;
 
-	/* !!! with ee^ do!!! */
 	CFile = ee->FD;
 	CRecPtr = ee->NewRecPtr;
 	if (!ELockRec(ee, CFile->IRec, ee->IsNewRec, ee->SubSet)) return result;
@@ -3675,12 +3678,13 @@ bool ShiftF7Duplicate()
 		Move(CRecPtr, ee->OldRecPtr, CFile->RecLen);
 		WasUpdated = true;
 	}
-	KeyFldD* kf = E->ShiftF7LD->Args;
+	//KeyFldD* kf = E->ShiftF7LD->Args;
 	KeyFldD* kf2 = E->ShiftF7LD->ToKey->KFlds;
-	while (kf != nullptr) {
-		DuplFld(E->FD, CFile, E->NewRecPtr, CRecPtr, ee->OldRecPtr, kf2->FldD, kf->FldD);
-		kf = (KeyFldD*)kf->pChain;
-		kf2 = (KeyFldD*)kf2->pChain;
+	//while (kf != nullptr) {
+	for (auto& arg : E->ShiftF7LD->Args) {
+		DuplFld(E->FD, CFile, E->NewRecPtr, CRecPtr, ee->OldRecPtr, kf2->FldD, arg->FldD);
+		//kf = kf->pChain;
+		kf2 = kf2->pChain;
 	}
 
 	SetUpdFlag();
@@ -3803,7 +3807,7 @@ void Calculate2()
 		goto label4;
 	}
 	catch (std::exception& e) {
-	//label2:
+		//label2:
 		Msg = MsgLine;
 		I = CurrPos;
 		SetMsgPar(Msg);
@@ -4323,9 +4327,9 @@ label81:
 						if (CFile->IsSQLFile) Strm1->EndKeyAcc(WK);
 #endif
 						OldLMode(E->OldMd);
-				}
+					}
 					return;
-			}
+				}
 				break;
 			}
 			case __ALT_EQUAL: {
@@ -4598,9 +4602,9 @@ label81:
 				}
 				//}
 			}
-		}
+			}
 			break;
-	}
+		}
 		break;
 	}
 	default: {
@@ -4608,7 +4612,7 @@ label81:
 		ClrEvent();
 		break;
 	}
-}
+	}
 	Event.What = evNothing;
 	goto label1;
 }

@@ -564,10 +564,11 @@ void SetFrmlFlags(FrmlElem* Z)
 	}
 	case _access: {
 		if (iZ7->LD != nullptr) {
-			KeyFldD* Arg = iZ7->LD->Args;
-			while (Arg != nullptr) {
-				SetFlag(Arg->FldD);
-				Arg = (KeyFldD*)Arg->pChain;
+			//KeyFldD* Arg = iZ7->LD->Args;
+			//while (Arg != nullptr) {
+			for (auto& arg : iZ7->LD->Args) {
+				SetFlag(arg->FldD);
+				//Arg = Arg->pChain;
 			}
 		}
 		break;
@@ -576,7 +577,7 @@ void SetFrmlFlags(FrmlElem* Z)
 		FrmlList fl = ((FrmlElem19*)Z)->FrmlL;
 		while (fl != nullptr) {
 			SetFrmlFlags(fl->Frml);
-			fl = (FrmlListEl*)fl->pChain;
+			fl = fl->pChain;
 		}
 		break;
 	}
