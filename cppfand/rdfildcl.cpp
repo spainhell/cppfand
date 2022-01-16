@@ -582,6 +582,17 @@ void* RdFileD(std::string FileName, char FDTyp, std::string Ext)
 		//CallRdFDSegment(FD);
 		// misto nacitani objektu ze souboru budeme objekt kopirovat
 		FakeRdFDSegment(FD);
+
+		// copy LinkD records too
+		for (auto& l : LinkDRoot) {
+			// LinkD for OrigFD exists?
+			if (l->FromFD == FD) {
+				auto copiedLinkD = new LinkD(*l);
+				copiedLinkD->FromFD = CFile;
+				LinkDRoot.push_front(copiedLinkD);
+			}
+		}
+				
 		CFile->IsHlpFile = false;
 		if (!(FDTyp == '6' || FDTyp == 'X') || !(CFile->Typ == '6' || CFile->Typ == 'X')) OldError(106);
 

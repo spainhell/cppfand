@@ -9,7 +9,7 @@ struct MergOpSt;
 struct InpD;
 class XWKey;
 struct FuncD;
-struct LinkD;
+class LinkD;
 class FileD;
 class FieldDescr;
 class LocVar;

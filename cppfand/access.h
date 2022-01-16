@@ -22,7 +22,7 @@ struct FuncD;
 class XWKey;
 class XWFile;
 class XKey;
-struct LinkD;
+class LinkD;
 class FieldDescr;
 
 // ********** CONST **********

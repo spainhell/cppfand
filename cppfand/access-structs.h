@@ -84,8 +84,20 @@ struct DBaseHd
 	DBaseFld Flds[1];
 };
 
-struct LinkD
+class LinkD
 {
+public:
+	LinkD() = default;
+	LinkD(const LinkD& orig)
+	{
+		this->IndexRoot = orig.IndexRoot;
+		this->MemberRef = orig.MemberRef;
+		this->Args = orig.Args;
+		this->FromFD = orig.FromFD;
+		this->ToFD = orig.ToFD;
+		this->ToKey = orig.ToKey;
+		this->RoleName = orig.RoleName;
+	}
 	WORD IndexRoot = 0; // 0 - non index file || to only primary key
 	BYTE MemberRef = 0; // { 0-no, 1-!, 2-!!(no delete)}
 	std::vector<KeyFldD*> Args;

@@ -2,7 +2,7 @@
 #include "constants.h"
 
 class FrmlElem;
-struct LinkD;
+class LinkD;
 class FileD;
 class FieldDescr;
 class ChkD;

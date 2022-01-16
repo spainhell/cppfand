@@ -4,7 +4,7 @@
 #include "constants.h"
 
 class FileD;
-struct LinkD;
+class LinkD;
 struct FuncD;
 
 class RdbD // r. 243
