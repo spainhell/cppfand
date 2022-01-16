@@ -8,7 +8,7 @@ int main(int argc, char* argv[])
 	Logging* log = Logging::getInstance();
 	log->log(loglevel::INFO, "*** *** *** *** *** *** APPLICATION STARTED *** *** *** *** *** ***");
 
-	//system("pause");
+	system("pause");
 
 	for (int i = 0; i < argc; i++)
 	{

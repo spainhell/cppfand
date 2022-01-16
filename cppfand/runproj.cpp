@@ -997,8 +997,8 @@ bool EquKeys(XKey* K1, XKey* K2)
 		while (KF1 != nullptr) {
 			if ((KF2 == nullptr) || (KF1->CompLex != KF2->CompLex) || (KF1->Descend != KF2->Descend)
 				|| (KF1->FldD->Name != KF2->FldD->Name)) return result;
-			KF1 = (KeyFldD*)KF1->pChain;
-			KF2 = (KeyFldD*)KF2->pChain;
+			KF1 = KF1->pChain;
+			KF2 = KF2->pChain;
 		}
 		if (KF2 != nullptr) return result;
 		K1 = K1->Chain;

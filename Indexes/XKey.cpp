@@ -16,7 +16,8 @@ XKey::XKey()
 XKey::XKey(const XKey& orig, bool copyFlds)
 {
 	if (orig.Chain != nullptr) Chain = new XKey(*orig.Chain, copyFlds);
-	if (orig.KFlds != nullptr) KFlds = new KeyFldD(*orig.KFlds, copyFlds);
+	//if (orig.KFlds != nullptr) KFlds = new KeyFldD(*orig.KFlds, copyFlds);
+	KFlds = orig.KFlds;
 	Intervaltest = orig.Intervaltest;
 	Duplic = orig.Duplic;
 	InWork = orig.InWork;
