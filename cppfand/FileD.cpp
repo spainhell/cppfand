@@ -51,9 +51,10 @@ FileD::FileD(const FileD& orig)
 	IsSQLFile = orig.IsSQLFile;
 	IsDynFile = orig.IsDynFile;
 	if (orig.XF != nullptr) XF = new XFile(*orig.XF);
-	if (orig.Keys != nullptr) {
+	/*if (orig.Keys != nullptr) {
 		Keys = new XKey(*orig.Keys, true);
-	}
+	}*/
+	Keys = orig.Keys;
 	Add = orig.Add;
 	nLDs = orig.nLDs;
 	LiOfs = orig.LiOfs;
@@ -88,10 +89,7 @@ bool FileD::Cached()
 
 WORD FileD::GetNrKeys()
 {
-	XKey* k = Keys;
-	WORD n = 0;
-	while (k != nullptr) { n++; k = k->Chain; }
-	return n;
+	return Keys.size();
 }
 
 void FileD::Reset()
@@ -120,7 +118,7 @@ void FileD::Reset()
 	LMode = NullMode; ExLMode = NullMode; TaLMode = NullMode;
 	ViewNames = nullptr;  //after each string BYTE string with user codes 
 	XF = nullptr;
-	Keys = nullptr;
+	Keys.clear();
 	Add.clear();
 	nLDs = 0; LiOfs = 0;
 }

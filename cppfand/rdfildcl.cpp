@@ -460,8 +460,9 @@ void SetLDIndexRoot(/*LinkD* L,*/ std::deque<LinkD*>& L2)
 			break;
 		}
 		if (CFile->Typ == 'X') {
-			XKey* K = CFile->Keys;
-			while (K != nullptr) {
+			//XKey* K = CFile->Keys;
+			//while (K != nullptr) {
+			for (auto& K : CFile->Keys) {
 				KeyFldD* KF = K->KFlds;
 				computed = false;
 				bool continueWithNextK = false;
@@ -478,7 +479,7 @@ void SetLDIndexRoot(/*LinkD* L,*/ std::deque<LinkD*>& L2)
 					KF = KF->pChain;
 				}
 				if (continueWithNextK) {
-					K = K->Chain;
+					//K = K->Chain;
 					continue;
 				}
 				L->IndexRoot = K->IndexRoot;
@@ -502,7 +503,7 @@ void SetLDIndexRoot(/*LinkD* L,*/ std::deque<LinkD*>& L2)
 void* RdFileD(std::string FileName, char FDTyp, std::string Ext)
 {
 	std::string JournalFlds = "Upd:A,1;RecNr:F,8.0;User:F,4.0;TimeStamp:D,'DD.MM.YYYY hh:mm:ss'";
-	FileD* FD = nullptr; XKey* K = nullptr;
+	FileD* FD = nullptr; //XKey* K = nullptr;
 	FieldDescr* F = nullptr; FieldDescr* F2 = nullptr;
 	void* p = nullptr;
 	ChkD* C = nullptr;
@@ -596,8 +597,9 @@ void* RdFileD(std::string FileName, char FDTyp, std::string Ext)
 		CFile->IsHlpFile = false;
 		if (!(FDTyp == '6' || FDTyp == 'X') || !(CFile->Typ == '6' || CFile->Typ == 'X')) OldError(106);
 
-		K = CFile->Keys;
-		while (K != nullptr) {
+		//K = CFile->Keys;
+		//while (K != nullptr) {
+		for (auto& K : CFile->Keys) {
 			if (!K->Alias.empty()) {
 				s = K->Alias;
 				i = s.find('_');
@@ -605,7 +607,7 @@ void* RdFileD(std::string FileName, char FDTyp, std::string Ext)
 				s = Prefix + "_" + s;
 				K->Alias = s;
 			}
-			K = K->Chain;
+			//K = K->Chain;
 		}
 	}
 	else {
@@ -643,13 +645,13 @@ label2:
 		RdKeyD();
 		goto label2;
 	}
-	if (issql && (CFile->Keys != nullptr)) {
+	if (issql && (!CFile->Keys.empty())) {
 		CFile->Typ = 'X';
 	}
 	GetXFileD();
 	CompileRecLen();
 	SetLDIndexRoot(LDOld);
-	if ((CFile->Typ == 'X') && (CFile->Keys == nullptr)) Error(107);
+	if ((CFile->Typ == 'X') && (CFile->Keys.empty())) Error(107);
 	if ((Lexem == '#') && (ForwChar == 'A')) {
 		RdLex();
 		RdKumul();
@@ -703,13 +705,13 @@ void RdKeyD()
 	FileD* FD = nullptr;
 	LinkD* L = nullptr;
 	XKey* K = nullptr;
-	XKey* K1 = nullptr;
+	//XKey* K1 = nullptr;
 	pstring Name;
 	WORD N = 0;
 
 	RdLex();
 	if (Lexem == '@') {
-		if ((CFile->Keys != nullptr) || CFile->IsParFile) Error(26);
+		if (!CFile->Keys.empty() || CFile->IsParFile) Error(26);
 		RdLex();
 		if (Lexem == '@') {
 			RdLex();
@@ -718,21 +720,16 @@ void RdKeyD()
 		else {
 			Name = "";
 		label1:
-			if (CFile->Keys == nullptr) {
-				N = 1;
-				K = new XKey();
-				CFile->Keys = K;
+			N = CFile->Keys.size() + 1;
+			K = new XKey();
+			if (CFile->Keys.empty()) {
+				// do nothing
 			}
 			else {
-				K1 = CFile->Keys;
-				N = 1;
-				while (K1->Chain != nullptr) {
-					K1 = K1->Chain;
-					N++;
-				}
-				K = new XKey();
-				K1->Chain = K;
+				XKey* lastKey = CFile->Keys[CFile->Keys.size() - 1];
+				lastKey->Chain = K;
 			}
+			CFile->Keys.push_back(K);
 
 			K->Alias = Name;
 			K->Intervaltest = false;
@@ -841,7 +838,7 @@ void CheckDuplAlias(pstring Name)
 	FileD* F = FileDRoot;
 	while (F != nullptr) {
 		LookForK(&Name, F);
-		F = (FileD*)F->pChain;
+		F = F->pChain;
 	}
 }
 
@@ -849,25 +846,26 @@ void LookForK(pstring* Name, FileD* F)
 {
 	std::string name = *Name;
 	if (EquUpCase(F->Name, name)) Error(26);
-	XKey* K = F->Keys;
-	while (K != nullptr) {
+	//XKey* K = F->Keys;
+	//while (K != nullptr) {
+	for (auto& K : F->Keys) {
 		if (EquUpCase(K->Alias, *Name)) Error(26);
-		K = K->Chain;
+		//K = K->Chain;
 	}
 }
 
 XKey* RdFileOrAlias1(FileD* F)
 {
-	XKey* k = F->Keys;
 	std::string lw = LexWord;
 	if (!EquUpCase(F->Name, lw))
-		while (k != nullptr) {
+		//while (k != nullptr) {
+		for (auto& K : F->Keys) {
 			std::string lw = LexWord;
-			if (EquUpCase(k->Alias, lw)) goto label1;
-			k = k->Chain;
+			if (EquUpCase(K->Alias, lw)) return K;
+			//k = k->Chain;
 		}
-label1:
-	return k;
+
+	return nullptr;
 }
 
 void RdFileOrAlias(FileD** FD, XKey** KD)
@@ -883,7 +881,7 @@ void RdFileOrAlias(FileD** FD, XKey** KD)
 		while (f != nullptr) {
 			k = RdFileOrAlias1(f);
 			if (k != nullptr) goto label1;
-			f = (FileD*)f->pChain;
+			f = f->pChain;
 		}
 		r = r->ChainBack;
 	}
