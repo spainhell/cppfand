@@ -584,7 +584,7 @@ FrmlElem* RdFunctionP(char& FFTyp)
 XKey* RdViewKeyImpl(FileD* FD)
 {
 	XKey* K = nullptr;
-	if (FD != nullptr && !FD->Keys.empty()) K = FD->Keys[0];
+	if (FD != nullptr) K = FD->Keys;
 	if (K == nullptr) Error(24);
 	if (Lexem == '/') {
 		FileD* cf = CFile;
@@ -1486,7 +1486,7 @@ Instr_edit* RdEditCall()
 	else {
 		CFile = RdFileName();
 		XKey* K = RdViewKey();
-		if (K == nullptr) K = CFile->Keys[0];
+		if (K == nullptr) K = CFile->Keys;
 		EO->ViewKey = K;
 	}
 	PD->EditFD = CFile;
@@ -2267,7 +2267,7 @@ Instr_recs* RdMixRecAcc(PInstrCode Op)
 		case 'S': {
 			PD->ByKey = true;
 			if (PD->CompOp == 0) PD->CompOp = _equ;
-			if (K == nullptr && !CFile->Keys.empty()) K = CFile->Keys[0];
+			if (K == nullptr) K = CFile->Keys;
 			PD->Key = K;
 			if ((K == nullptr) && (!CFile->IsParFile || (Z->Op != _const)
 				|| (((FrmlElem4*)Z)->S.length() > 0))) OldError(24);

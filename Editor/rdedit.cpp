@@ -419,9 +419,7 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 			default: ;
 			}
 		}
-		else if (E->VK == nullptr) {
-			E->VK = E->FD->Keys.empty() ? nullptr : E->FD->Keys[0];
-		}
+		else if (E->VK == nullptr) E->VK = E->FD->Keys;
 #ifdef FandSQL
 		if (CFile->IsSQLFile && (E->VK = nullptr)) { SetMsgPar(CFile->Name); RunError(652); }
 #endif
@@ -779,19 +777,16 @@ pstring GetStr_E(FrmlElem* Z)
 
 void NewChkKey()
 {
-	//XKey* K = CFile->Keys;
-	KeyFldD* KF = nullptr;
-	EFldD* D = nullptr;
-	KeyListEl* KL = nullptr;
-	//while (K != nullptr) {
-	for (auto& K : CFile->Keys) {
+	XKey* K = CFile->Keys; KeyFldD* KF = nullptr;
+	EFldD* D = nullptr; KeyListEl* KL = nullptr;
+	while (K != nullptr) {
 		if (!K->Duplic) {
 			ZeroUsed();
 			KF = K->KFlds;
 			while (KF != nullptr) {
 				D = FindEFld_E(KF->FldD);
 				if (D != nullptr) D->Used = true;
-				KF = KF->pChain;
+				KF = (KeyFldD*)KF->pChain;
 			}
 			D = LstUsedFld();
 			if (D != nullptr) {
@@ -801,6 +796,6 @@ void NewChkKey()
 				KL->Key = K;
 			}
 		}
-		//K = K->Chain;
+		K = K->Chain;
 	}
 }

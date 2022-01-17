@@ -14,14 +14,6 @@ XWorkFile::XWorkFile(XScan* AScan, XKey* AK)
 	XF = AK->XF();
 }
 
-XWorkFile::XWorkFile(XScan* AScan, std::vector<XKey*>& AK)
-{
-	Scan = AScan;
-	CFile = Scan->FD;
-	KD = AK.empty() ? nullptr : AK[0];
-	XF = AK.empty() ? nullptr : AK[0]->XF();
-}
-
 void XWorkFile::Main(char Typ)
 {
 	XPP = new XPage();

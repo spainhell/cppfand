@@ -1351,7 +1351,7 @@ void BuildWork()
 	FieldDescr* f = nullptr;
 	ExitRecord er;
 
-	if (!CFile->Keys.empty()) KF = CFile->Keys[0]->KFlds;
+	if (CFile->Keys != nullptr) KF = CFile->Keys->KFlds;
 	if (HasIndex) {
 		K = VK;
 		KF = K->KFlds;
@@ -1513,7 +1513,7 @@ bool OpenEditWw()
 	if (Subset) BuildWork();
 	if (!Only1Record && HasIndex && VK->InWork) {
 		if (!Subset) WK = (XWKey*)VK;
-		VK = CFile->Keys[0];
+		VK = CFile->Keys;
 		WasWK = true;
 		Subset = true;
 	}
@@ -2332,7 +2332,7 @@ bool ExitCheck(bool MayDispl)
 
 longint UpdateIndexes()
 {
-	//XKey* K = nullptr;
+	XKey* K = nullptr;
 	longint N = 0;
 	XString x;
 	longint NNew = E->LockedRec;
@@ -2375,9 +2375,8 @@ longint UpdateIndexes()
 	}
 
 	WORD result = N;
-	//K = CFile->Keys;
-	//while (K != nullptr) {
-	for (auto& K : CFile->Keys) {
+	K = CFile->Keys;
+	while (K != nullptr) {
 		if (K != VK) {
 			if (!IsNewRec) {
 				CRecPtr = E->OldRecPtr;
@@ -2386,7 +2385,7 @@ longint UpdateIndexes()
 			CRecPtr = E->NewRecPtr;
 			K->Insert(NNew, true);
 		}
-		//K = K->Chain;
+		K = K->Chain;
 	}
 	CRecPtr = E->NewRecPtr;
 	return result;
@@ -2463,15 +2462,14 @@ bool WriteCRec(bool MayDispl, bool& Displ)
 	}
 #endif
 	if (HasIndex) {   /* test duplicate keys */
-		//K = CFile->Keys;
-		//while (K != nullptr) {
-		for (auto& K : CFile->Keys) {
+		K = CFile->Keys;
+		while (K != nullptr) {
 			if (!K->Duplic && TestDuplKey(K)) {
 				UnLockWithDep(OldMd);
 				DuplKeyMsg(K);
 				return result;
 			}
-			//K = K->Chain;
+			K = K->Chain;
 		}
 	}
 	ClearDeletedFlag();
@@ -3437,8 +3435,7 @@ void PromptSelect()
 
 void SwitchRecs(integer Delta)
 {
-	LockMode md; longint n1, n2; void* p1; void* p2; XString x1, x2;
-	//XKey* k;
+	LockMode md; longint n1, n2; void* p1; void* p2; XString x1, x2; XKey* k;
 #ifdef FandSQL
 	if (CFile->IsSQLFile) return;
 #endif
@@ -3453,16 +3450,15 @@ void SwitchRecs(integer Delta)
 	CRecPtr = p1;
 	WriteRec(CFile, n2, CRecPtr);
 	if (HasIndex) {
-		//k = CFile->Keys;
-		//while (k != nullptr) {
-		for (auto& k : CFile->Keys) {
+		k = CFile->Keys;
+		while (k != nullptr) {
 			if (k != VK) {
 				CRecPtr = p1; k->Delete(n1);
 				CRecPtr = p2; k->Delete(n2);
 				CRecPtr = p1; k->Insert(n2, true);
 				CRecPtr = p2; k->Insert(n1, true);
 			}
-			//k = k->Chain;
+			k = k->Chain;
 		}
 	}
 	SetNewCRec(CRec() + Delta, true);

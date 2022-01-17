@@ -987,52 +987,25 @@ label1:
 	return result;
 }
 
-//bool EquKeys(XKey* K1, XKey* K2)
-//{
-//	auto result = false;
-//	while (K1 != nullptr) {
-//		if ((K2 == nullptr) || (K1->Duplic != K2->Duplic)) return result;
-//		KeyFldD* KF1 = K1->KFlds;
-//		KeyFldD* KF2 = K2->KFlds;
-//		while (KF1 != nullptr) {
-//			if ((KF2 == nullptr) || (KF1->CompLex != KF2->CompLex) || (KF1->Descend != KF2->Descend)
-//				|| (KF1->FldD->Name != KF2->FldD->Name)) return result;
-//			KF1 = KF1->pChain;
-//			KF2 = KF2->pChain;
-//		}
-//		if (KF2 != nullptr) return result;
-//		K1 = K1->Chain;
-//		K2 = K2->Chain;
-//	}
-//	if (K2 != nullptr) return result;
-//	result = true;
-//	return result;
-//}
-
-bool EquKeys(std::vector<XKey*>& K1, std::vector<XKey*>& K2)
+bool EquKeys(XKey* K1, XKey* K2)
 {
-	bool result = false;
-	if (K1.size() == K2.size()) {
-		for (size_t i = 0; i < K1.size(); i++) {
-			const XKey* k1 = K1[i];
-			const XKey* k2 = K2[i];
-			if (k1->Duplic != k2->Duplic) return result;
-			KeyFldD* KF1 = k1->KFlds;
-			KeyFldD* KF2 = k2->KFlds;
-			while (KF1 != nullptr) {
-				if ((KF2 == nullptr) || (KF1->CompLex != KF2->CompLex) || (KF1->Descend != KF2->Descend)
-					|| (KF1->FldD->Name != KF2->FldD->Name)) return result;
-				KF1 = KF1->pChain;
-				KF2 = KF2->pChain;
-			}
-			if (KF2 != nullptr) return result;
-			result = true;
+	auto result = false;
+	while (K1 != nullptr) {
+		if ((K2 == nullptr) || (K1->Duplic != K2->Duplic)) return result;
+		KeyFldD* KF1 = K1->KFlds;
+		KeyFldD* KF2 = K2->KFlds;
+		while (KF1 != nullptr) {
+			if ((KF2 == nullptr) || (KF1->CompLex != KF2->CompLex) || (KF1->Descend != KF2->Descend)
+				|| (KF1->FldD->Name != KF2->FldD->Name)) return result;
+			KF1 = KF1->pChain;
+			KF2 = KF2->pChain;
 		}
+		if (KF2 != nullptr) return result;
+		K1 = K1->Chain;
+		K2 = K2->Chain;
 	}
-	else {
-		// do nothing
-	}
-
+	if (K2 != nullptr) return result;
+	result = true;
 	return result;
 }
 

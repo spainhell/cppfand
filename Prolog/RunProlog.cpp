@@ -1285,7 +1285,7 @@ TCommand* RdPredCommand(TCommandTyp Code)
 		siofs = WORD(p->Branch);
 		CFile = si->FD;
 		if (CFile->Typ == 'X') {
-			//k = CFile->Keys;
+			k = CFile->Keys;
 			while (k != nullptr) {
 				kf = k->KFlds; inOut = false;
 				while (kf != nullptr) {
@@ -3250,7 +3250,7 @@ bool RunBuildIn()
 			if (k == nullptr) {
 				fd = FindFD(CurrInst->Vars[0]->SS);
 				if (fd == nullptr) goto label1;
-				//k = fd->Keys;
+				k = fd->Keys;
 				if (k == nullptr) goto label1;
 			}
 			CurrInst->Vars[1] = GetStringTerm(Pound(k->Alias));
@@ -3309,7 +3309,7 @@ bool RunBuildIn()
 			if (kf == nullptr) {
 				fd = FindFD(CurrInst->Vars[0]->SS);
 				if (fd == nullptr) goto label1;
-				//k = fd->Keys;
+				k = fd->Keys;
 				while ((k != nullptr) && !EquUpCase(Pound(k->Alias), CurrInst->Vars[1]->SS)) k = k->Chain;
 				if (k == nullptr) goto label1; kf = k->KFlds;
 			}

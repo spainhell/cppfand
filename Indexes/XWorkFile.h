@@ -9,7 +9,6 @@ class XWorkFile : public WorkFile
 {
 public:
 	XWorkFile(XScan* AScan, XKey* AK);
-	XWorkFile(XScan* AScan, std::vector<XKey*>& AK);
 	XXPage* PX = nullptr;
 	XKey* KD = nullptr;
 	XScan* Scan = nullptr;

@@ -478,11 +478,10 @@ void RecallRec(longint RecNr)
 {
 	TestXFExist();
 	CFile->XF->NRecs++;
-	//XKey* K = CFile->Keys;
-	//while (K != nullptr) {
-	for (auto& K : CFile->Keys) {
+	XKey* K = CFile->Keys;
+	while (K != nullptr) {
 		K->Insert(RecNr, false);
-		//K = K->Chain;
+		K = K->Chain;
 	}
 	ClearDeletedFlag();
 	WriteRec(CFile, RecNr, CRecPtr);

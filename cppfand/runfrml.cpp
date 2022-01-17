@@ -1437,13 +1437,11 @@ bool FieldInList(FieldDescr* F, std::vector<FieldDescr*>* FL)
 
 XKey* GetFromKey(LinkD* LD)
 {
-	XKey* result = nullptr;
-	//while (K->IndexRoot != LD->IndexRoot) {
-	for (auto& K : LD->FromFD->Keys) {
-		if (K->IndexRoot == LD->IndexRoot) break;
-		result = K;
+	XKey* K = LD->FromFD->Keys;
+	while (K->IndexRoot != LD->IndexRoot) {
+		K = K->Chain;
 	}
-	return result;
+	return K;
 }
 
 FrmlElem* RunEvalFrml(FrmlElem* Z)
