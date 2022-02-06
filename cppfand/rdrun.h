@@ -106,7 +106,8 @@ struct RprtOpt
 	FrmlElem* Times = nullptr;
 	AutoRprtMode Mode;
 	RdbPos RprtPos;
-	FieldListEl* Flds = nullptr;		 /* != nullptr => autoreport*/
+	//FieldListEl* Flds = nullptr;		 /* != nullptr => autoreport*/
+	std::vector<FieldDescr*> Flds;
 	std::vector<FieldDescr*> Ctrl;
 	std::vector<FieldDescr*> Sum;
 	KeyFldD* SK = nullptr;
@@ -198,7 +199,8 @@ struct EditD : Chained<EditD>
 	FileD* FD = nullptr;
 	LockMode OldMd = NullMode;
 	bool IsUserForm = false;
-	FieldListEl* Flds = nullptr;
+	//FieldListEl* Flds = nullptr;
+	std::vector<FieldDescr*> Flds;
 	void* OldRecPtr = nullptr; void* NewRecPtr = nullptr;
 	BYTE FrstCol = 0, FrstRow = 0, LastCol = 0, LastRow = 0, Rows = 0;
 	WRect V; BYTE ShdwX = 0, ShdwY = 0;

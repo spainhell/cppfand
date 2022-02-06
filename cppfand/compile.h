@@ -64,7 +64,7 @@ bool FindLocVar(LocVarBlkD* LVB, LocVar** LV); // r84
 bool FindLocVar(LocVar* LVRoot, LocVar** LV); // r84
 bool FindChpt(char Typ, const pstring& name, bool local, RdbPos* RP);
 void RdChptName(char C, RdbPos* Pos, bool TxtExpr); // r108
-FieldListEl* AllFldsList(FileD* FD, bool OnlyStored); // r118
+std::vector<FieldDescr*> AllFldsList(FileD* FD, bool OnlyStored); // r118
 RprtOpt* GetRprtOpt(); // r132
 //FrmlPtr GetOp(BYTE Op, integer BytesAfter); // r1
 FieldDescr* FindFldName(FileD* FD, std::string fieldName = ""); // r7
@@ -98,6 +98,7 @@ FrmlElem* RdAttr(); // r152
 void RdW(WRectFrml& W); // r161
 void RdFrame(FrmlElem** Z, BYTE& WFlags); // r166
 bool PromptSortKeys(FieldListEl* FL, KeyFldD* SKRoot);
+bool PromptSortKeys(std::vector<FieldDescr*>& FL, KeyFldD* SKRoot);
 void RdAssignFrml(char FTyp, bool& Add, FrmlElem** Z); // r193
 bool FldTypIdentity(FieldDescr* F1, FieldDescr* F2);
 void RdFldList(FieldListEl** FLRoot);

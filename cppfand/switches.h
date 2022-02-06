@@ -10,4 +10,4 @@
 //#define FandAng 7
 //#define Trial	8  // trial version
 #define FandProlog 9
-
+#define Coproc

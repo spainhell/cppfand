@@ -1114,15 +1114,12 @@ void RdChptName(char C, RdbPos* Pos, bool TxtExpr)
 	}
 }
 
-FieldListEl* AllFldsList(FileD* FD, bool OnlyStored)
+std::vector<FieldDescr*> AllFldsList(FileD* FD, bool OnlyStored)
 {
-	FieldListEl* FLRoot = nullptr;
+	std::vector<FieldDescr*> FLRoot;
 	for (auto& F : FD->FldD) {
 		if (((F->Flg & f_Stored) != 0) || !OnlyStored) {
-			auto* const FL = new FieldListEl();
-			FL->FldD = F;
-			if (FLRoot == nullptr) { FLRoot = FL; FL->pChain = nullptr; }
-			else ChainLast(FLRoot, FL);
+			FLRoot.push_back(F);
 		}
 	}
 	return FLRoot;
@@ -1203,6 +1200,35 @@ bool PromptSortKeys(FieldListEl* FL, KeyFldD* SKRoot)
 		/* !!! with FL->FldD^ do!!! */
 		if (FL->FldD->Typ != 'T') ww.PutSelect(FL->FldD->Name);
 		FL = FL->pChain;
+	}
+	if (ss.Empty) return result;
+	ss.AscDesc = true;
+	ss.Subset = true;
+	ww.SelectStr(0, 0, 25, "");
+	if (Event.Pressed.KeyCombination() == __ESC) { return false; }
+label1:
+	LexWord = ww.GetSelect();
+	if (LexWord != "") {
+		SK = (KeyFldD*)GetZStore(sizeof(*SK));
+		ChainLast(SKRoot, SK);
+		SK->FldD = FindFldName(CFile);
+		if (ss.Tag == '>') SK->Descend = true;
+		if (SK->FldD->Typ == 'A') SK->CompLex = true;
+		goto label1;
+	}
+	return result;
+}
+
+bool PromptSortKeys(std::vector<FieldDescr*>& FL, KeyFldD* SKRoot)
+{
+	wwmix ww;
+
+	KeyFldD* SK;
+	auto result = true;
+	SKRoot = nullptr;
+	//while (FL != nullptr) {
+	for (auto& fld : FL) {
+		if (fld->Typ != 'T') ww.PutSelect(fld->Name);
 	}
 	if (ss.Empty) return result;
 	ss.AscDesc = true;

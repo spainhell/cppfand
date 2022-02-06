@@ -102,11 +102,7 @@ label3:
 	if ((D1 != nullptr) && (D->ScanNr == D1->ScanNr)) Error(77);
 	F = RdFldName(CFile);
 	D->FldD = F;
-	//FL = (FieldListEl*)GetStore(sizeof(*FL));
-	FL = new FieldListEl();
-	FL->FldD = F;
-	if (E->Flds == nullptr) E->Flds = FL;
-	else ChainLast(E->Flds, FL);
+	E->Flds.push_back(F);
 	if (Lexem == ',') { RdLex(); goto label3; }
 	TestLex(';');
 	SkipBlank(true);
@@ -282,15 +278,97 @@ void AutoDesign(FieldListEl* FL)
 	}
 }
 
-void RdFormOrDesign(FileD* F, FieldListEl* FL, RdbPos FormPos)
+void AutoDesign(std::vector<FieldDescr*>& FL)
 {
-	/* !!! with E^ do!!! */
+	WORD L = 0, i = 0, m = 0, FldLen = 0;
+	pstring s = "";
+	StringListEl* SLRoot = nullptr;
+	EFldD* D = (EFldD*)(&E->FirstFld);
+	EFldD* PrevD = nullptr;
+	WORD NPages = 1; WORD Ln = 0;
+	WORD Col = E->FrstCol;
+	WORD maxcol = E->LastCol - E->FrstCol;
+	//while (FL != nullptr) {
+	for (auto& F : FL) {
+		//FieldDescr* F = FL->FldD;
+		//FL = (FieldListEl*)FL->pChain;
+		if (F == nullptr) continue; // tady to padalo na 1. polozce, protoze ta ma FldD = nullptr
+		D->pChain = new EFldD();
+		D = D->pChain;
+		D->ChainBack = PrevD;
+		PrevD = D;
+		D->FldD = F;
+		D->L = F->L;
+		if (D->L > maxcol) D->L = maxcol;
+		if ((E->FD->Typ == 'C') && (D->L > 44)) D->L = 44; /*catalog pathname*/
+		FldLen = D->L;
+		if (F->Typ == 'T') D->L = 1;
+		L = F->Name.length();
+		if (FldLen > L) L = FldLen;
+		if (Col + L > E->LastCol) {
+			SToSL(&SLRoot, s);
+			SToSL(&SLRoot, "");
+			Ln += 2;
+			if (Ln + 2 > E->Rows) {
+				StoreRT(Ln, SLRoot, 1);
+				NPages++;
+				Ln = 0;
+				SLRoot = nullptr;
+			}
+			Col = E->FrstCol; s = "";
+		}
+		m = (L - F->Name.length() + 1) / 2;
+		for (i = 1; i <= m; i++) s.Append(' ');
+		s = s + F->Name;
+		m = L - F->Name.length() - m;
+		for (i = 1; i <= m + 1; i++) s.Append(' ');
+		D->Col = Col + (L - FldLen + 1) / 2;
+		D->Ln = Ln + 2;
+		D->Page = NPages;
+		Col += (L + 1);
+	}
+	SToSL(&SLRoot, s);
+	SToSL(&SLRoot, "");
+	Ln += 2;
+	StoreRT(Ln, SLRoot, 1);
+	D->pChain = nullptr;
+	E->LastFld = D;
+	E->NPages = NPages;
+	if (NPages == 1) { /* !!! with E->RecTxt^ do!!! */
+		auto& er = *E->RecTxt;
+		if (er.N == 2) {
+			E->HdTxt = er.SL;
+			er.SL = (StringListEl*)er.SL->pChain;
+			E->HdTxt->pChain = nullptr;
+			E->NHdTxt = 1;
+			er.N = 1;
+			D = E->FirstFld;
+			while (D != nullptr) {
+				D->Ln--;
+				D = D->pChain;
+			}
+			if (E->Rows == 1) {
+				E->NHdTxt = 0;
+				E->HdTxt = nullptr;
+			}
+		}
+		else if (er.N < E->Rows) {
+			s = "";
+			for (i = E->FrstCol; i <= E->LastCol; i++) s.Append('-');
+			SToSL(&er.SL, s);
+			er.N++;
+		}
+	}
+}
+
+void RdFormOrDesign(FileD* F, std::vector<FieldDescr*>& FL, RdbPos FormPos)
+{
 	E->FrstCol = E->V.C1; E->FrstRow = E->V.R1; E->LastCol = E->V.C2; E->LastRow = E->V.R2;
 	if ((E->WFlags & WHasFrame) != 0) {
 		E->FrstCol++; E->LastCol--; E->FrstRow++; E->LastRow--;
 	}
 	E->Rows = E->LastRow - E->FrstRow + 1;
-	if (FL == nullptr) {
+	if (FL.empty()) {
 		ResetCompilePars();
 		RdEForm(F, FormPos);
 		E->IsUserForm = true;
