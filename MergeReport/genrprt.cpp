@@ -217,24 +217,20 @@ std::string GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 	ARMode = RO->Mode;
 	NLevels = RO->Ctrl.size();
 	PFldDs.clear();
-	FieldListEl* fl = RO->Flds;
-	while (fl != nullptr) {
+	//FieldListEl* fl = RO->Flds;
+	//while (fl != nullptr) {
+	for (auto f : RO->Flds) {
 		PFldD d = PFldD();
-		FieldDescr* f = fl->FldD;
 		d.FldD = f;
 		d.IsSum = FieldInList(f, RO->Sum);
-		//FieldListEl* fl1 = RO->Ctrl;
 		int i = NLevels;
 		if (!RO->Ctrl.empty()) {
-			//FieldListEl* fl1 = RO->Ctrl[0];
-			//while (fl1 != nullptr) {
 			for (auto& fl1 : RO->Ctrl) {
 				if (fl1 == f) {
 					d.IsCtrl = true;
 					d.Level = i;
 				}
 				i--;
-				//fl1 = (FieldListEl*)fl1->pChain;
 			}
 		}
 		if ((ARMode == _ATotal) && !d.IsSum && !d.IsCtrl) {
@@ -244,7 +240,6 @@ std::string GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 			//ChainLast(PFldDs, d);
 			PFldDs.push_back(d);
 		}
-		fl = (FieldListEl*)fl->pChain;
 	}
 
 	Design(RO);
@@ -422,7 +417,8 @@ bool SelForAutoRprt(RprtOpt* RO)
 {
 	wwmix ww;
 
-	FieldListEl* FL; WORD N;
+	//FieldListEl* FL;
+	WORD N;
 	auto result = false;
 	if ((RO->SK == nullptr) && !PromptSortKeys(RO->Flds, RO->SK)) return result;
 	N = Menu(4, 1);
@@ -430,16 +426,19 @@ bool SelForAutoRprt(RprtOpt* RO)
 	RO->Mode = AutoRprtMode(N - 1);
 	CFile = RO->FDL.FD;
 	if (RO->Mode == _ARprt || RO->Mode == _ATotal) {
-		FL = RO->Flds;
-		while (FL != nullptr) {
-			if (FL->FldD->Typ != 'T') ww.PutSelect(FL->FldD->Name);
-			FL = (FieldListEl*)FL->pChain;
+		//FL = RO->Flds;
+		//while (FL != nullptr) {
+		for (auto& f : RO->Flds) {
+			if (f->Typ != 'T') ww.PutSelect(f->Name);
+			//FL = FL->pChain;
 		}
 		if (!ww.SelFieldList(37, false, RO->Ctrl)) return result; // TODO: RO->Ctrl[0] is probably bad idea
-		FL = RO->Flds;
-		while (FL != nullptr) {
-			if (FL->FldD->FrmlTyp == 'R') ww.PutSelect(FL->FldD->Name);
-			FL = (FieldListEl*)FL->pChain;
+
+		//FL = RO->Flds;
+		//while (FL != nullptr) {
+		for (auto& f : RO->Flds) {
+			if (f->FrmlTyp == 'R') ww.PutSelect(f->Name);
+			//FL = FL->pChain;
 		}
 		if (!ww.SelFieldList(38, true, RO->Sum)) return result;  // TODO: RO->Sum[0] is probably bad idea
 	}
@@ -455,16 +454,16 @@ std::string SelGenRprt(pstring RprtName)
 	wwmix ww;
 	RdbD* r; FileD* fd; FieldDescr* f; RprtOpt* ro;
 	std::string s; size_t i;
-	FieldListEl* fl;
+
 	std::string result;
 	r = CRdb;
 	while (r != nullptr) {
-		fd = (FileD*)r->FD->pChain;
+		fd = r->FD->pChain;
 		while (fd != nullptr) {
 			s = fd->Name;
 			if (r != CRdb) s = r->FD->Name + '.' + s;
 			ww.PutSelect(s);
-			fd = (FileD*)fd->pChain;
+			fd = fd->pChain;
 		}
 		r = r->ChainBack;
 	}
@@ -479,33 +478,38 @@ std::string SelGenRprt(pstring RprtName)
 		s = s.substr(i + 1, 255);
 	}
 	fd = r->FD;
-	do { fd = (FileD*)fd->pChain; } while (fd->Name != s);
-	ro = GetRprtOpt(); ro->FDL.FD = fd;
+	do { fd = fd->pChain; } while (fd->Name != s);
+	ro = GetRprtOpt();
+	ro->FDL.FD = fd;
 	f = fd->FldD.front();
 	while (f != nullptr) {
 		s = f->Name;
-		if ((f->Flg & f_Stored) == 0)
-		{
+		if ((f->Flg & f_Stored) == 0) {
 			pstring oldS = s;
-			s = SelMark; s += oldS;
+			s = SelMark;
+			s += oldS;
 		}
 		ww.PutSelect(s);
-		f = (FieldDescr*)f->pChain;
+		f = f->pChain;
 	}
 	CFile = fd;
-	ww.SelFieldList(36, true, &ro->Flds);
-	if (ro->Flds == nullptr) return result;
+	ww.SelFieldList(36, true, ro->Flds);
+	if (ro->Flds.empty()) return result;
 	ro->Mode = _ARprt;
-	fl = ro->Flds;
-	while (fl != nullptr) {
-		ww.PutSelect(fl->FldD->Name);
-		fl = (FieldListEl*)fl->pChain;
+
+	//fl = ro->Flds;
+	//while (fl != nullptr) {
+	for (auto& fl : ro->Flds) {
+		ww.PutSelect(fl->Name);
+		//fl = fl->pChain;
 	}
 	if (!ww.SelFieldList(37, false, ro->Ctrl)) return result;
-	fl = ro->Flds;
-	while (fl != nullptr) {
-		if (fl->FldD->FrmlTyp == 'R') ww.PutSelect(fl->FldD->Name);
-		fl = (FieldListEl*)fl->pChain;
+
+	//fl = ro->Flds;
+	//while (fl != nullptr) {
+	for (auto& fl : ro->Flds) {
+		if (fl->FrmlTyp == 'R') ww.PutSelect(fl->Name);
+		//fl = (FieldListEl*)fl->pChain;
 	}
 	if (!ww.SelFieldList(38, false, ro->Sum)) return result;
 	result = GenAutoRprt(ro, false);

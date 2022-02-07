@@ -1031,7 +1031,7 @@ void RdKeyCode(EdExitD* X)
 		RdLex();
 	}
 	else {
-		for (i = 0; i < NKeyNames; i++)	{
+		for (i = 0; i < NKeyNames; i++) {
 			if (EquUpCase(KeyNames[i].Nm, LexWord)) {
 				lastKey->KeyCode = KeyNames[i].Code;
 				lastKey->Break = KeyNames[i].Brk;
@@ -1405,42 +1405,52 @@ void RdProcCall(Instr** pinstr)
 	Accept(')');
 }
 
-FieldList RdFlds()
+std::vector<FieldDescr*> RdFlds()
 {
-	FieldListEl* FLRoot = nullptr; FieldListEl* FL = nullptr;
-label1:
-	FL = new FieldListEl(); // (FieldList)GetStore(sizeof(*FL));
-	if (FLRoot == nullptr) { FLRoot = FL; FL->pChain = nullptr; }
-	else ChainLast(FLRoot, FL);
-	FL->FldD = RdFldName(CFile);
-	if (Lexem == ',') { RdLex(); goto label1; }
+	std::vector<FieldDescr*> FLRoot;
+	FieldListEl* FL = nullptr;
+
+	while (true) {
+		auto fd = RdFldName(CFile);
+		FLRoot.push_back(fd);
+		if (Lexem == ',') {
+			RdLex();
+			continue;
+		}
+		break;
+	}
+
 	return FLRoot;
 }
 
-std::vector<FieldDescr*> RdSubFldList(FieldList InFL, char Opt)
+std::vector<FieldDescr*> RdSubFldList(std::vector<FieldDescr*>& InFL, char Opt)
 {
+	// TODO: this method is probably badly transformed -> check it!
+
 	std::vector<FieldListEl*> FLRoot;
 	std::vector<FieldDescr*> result;
 	FieldListEl* FL = nullptr;
-	FieldListEl* FL1 = nullptr;
+	FieldDescr* FL1 = nullptr;
 	FieldDescr* F = nullptr;
 	Accept('(');
 label1:
 	FL = new FieldListEl();
 	FLRoot.push_back(FL);
 
-	if (InFL == nullptr) F = RdFldName(CFile);
+	if (InFL.empty()) F = RdFldName(CFile);
 	else {
 		TestIdentif();
-		FL1 = InFL;
-		while (FL1 != nullptr) {
+		//FL1 = InFL;
+		//while (FL1 != nullptr) {
+		for (auto& f : InFL) {
 			std::string tmp = LexWord;
-			if (EquUpCase(FL1->FldD->Name, tmp)) goto label2;
-			FL1 = (FieldList)FL1->pChain;
+			FL1 = f;
+			if (EquUpCase(f->Name, tmp)) goto label2;
+			//FL1 = FL1->pChain;
 		}
 		Error(43);
 	label2:
-		F = FL1->FldD;
+		F = FL1;
 		RdLex();
 	}
 	FL->FldD = F;
@@ -1478,7 +1488,7 @@ Instr_edit* RdEditCall()
 	RdLex();
 	EditOpt* EO = &PD->EO;
 	EO->UserSelFlds = true;
-	
+
 	if (IsRecVar(&lv)) {
 		EO->LVRecPtr = lv->RecPtr;
 		CFile = lv->FD;
