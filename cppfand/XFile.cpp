@@ -86,9 +86,10 @@ void XFNotValid()
 void TestXFExist()
 {
 	XFile* xf = CFile->XF;
-	if ((xf != nullptr) && xf->NotValid)
-	{
-		if (xf->NoCreate) CFileError(819);
+	if ((xf != nullptr) && xf->NotValid) {
+		if (xf->NoCreate) {
+			CFileError(819);
+		}
 		CreateIndexFile();
 	}
 }
@@ -118,16 +119,14 @@ void CreateIndexFile()
 	XF->RdPrefix();
 	if (XF->NotValid) {
 		XF->SetEmpty();
-		//New(Scan, Init(CFile, nullptr, nullptr, false));
 		Scan = new XScan(CFile, nullptr, nullptr, false);
 		Scan->Reset(nullptr, false);
-		//New(XW, Init(Scan, CFile->Keys));
 		XW = new XWorkFile(Scan, CFile->Keys);
 		XW->Main('X');
-		delete XW;
+		delete XW; XW = nullptr;
 		XF->NotValid = false;
 		XF->WrPrefix();
-		if (!SaveCache(0, CFile->Handle)) GoExit(); /*FlushHandles;*/;
+		if (!SaveCache(0, CFile->Handle)) GoExit(); /*FlushHandles;*/
 	}
 	fail = false;
 label1:
