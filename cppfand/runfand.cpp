@@ -633,6 +633,7 @@ void InitRunFand()
 #endif
 
 	if (!txt.empty()) {
+		if (txt[txt.length() - 1] == ',') txt = txt.substr(0, txt.length() - 1);
 		txt += ")";
 		MsgLine = MsgLine + "x (" + txt;
 }
@@ -698,23 +699,32 @@ label1:
 
 void DeleteFandFiles()
 {
-	try {
-		fclose(WorkHandle);
-		deleteFile(FandWorkName);
+	if (WorkHandle != nullptr) {
+		try {
+			fclose(WorkHandle);
+			deleteFile(FandWorkName);
+		}
+		catch (std::exception&) {}
+		WorkHandle = nullptr;
 	}
-	catch(std::exception&) {}
 
-	try {
-		fclose(XWork.Handle);
-		deleteFile(FandWorkXName);
+	if (XWork.Handle != nullptr) {
+		try {
+			fclose(XWork.Handle);
+			deleteFile(FandWorkXName);
+		}
+		catch (std::exception&) {}
+		XWork.Handle = nullptr;
 	}
-	catch (std::exception&) {}
-	
-	try {
-		fclose(TWork.Handle);
-		deleteFile(FandWorkTName);
+
+	if (TWork.Handle != nullptr) {
+		try {
+			fclose(TWork.Handle);
+			deleteFile(FandWorkTName);
+		}
+		catch (std::exception&) {}
+		TWork.Handle = nullptr;
 	}
-	catch (std::exception&) {}
 }
 
 void OpenFileDialog()

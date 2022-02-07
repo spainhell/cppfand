@@ -713,7 +713,11 @@ bool CompRunChptRec(WORD CC)
 				EO->FormPos = RP;
 				EditDataFile(nullptr, EO);
 			}
-			else { PushEdit(); RdFormOrDesign(nullptr, nullptr, RP); }
+			else {
+				PushEdit();
+				std::vector<FieldDescr*> unusedFD;
+				RdFormOrDesign(nullptr, unusedFD, RP);
+			}
 			break;
 		}
 		case 'M': {
@@ -1188,7 +1192,8 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 			}
 			case 'E': {
 				PushEdit();
-				RdFormOrDesign(nullptr, nullptr, RP);
+				std::vector<FieldDescr*> unusedFD;
+				RdFormOrDesign(nullptr, unusedFD, RP);
 				E = OldE;
 				EditDRoot = E;
 				break;
@@ -1346,9 +1351,12 @@ bool EditExecRdb(std::string Nm, std::string ProcNm, Instr_proc* ProcCall, wwmix
 		passw = ww->PassWord(false);
 	}
 	IsTestRun = true;
-	EO = new EditOpt(); EO->UserSelFlds = true; //EO = GetEditOpt();
+	EO = new EditOpt();
+	EO->UserSelFlds = true; //EO = GetEditOpt();
 	EO->Flds = AllFldsList(Chpt, true);
-	EO->Flds = (FieldList)EO->Flds->pChain->pChain->pChain;
+	//EO->Flds = EO->Flds->pChain->pChain->pChain;
+	EO->Flds.erase(EO->Flds.begin(), EO->Flds.begin() + 3);
+
 	NewEditD(Chpt, EO);
 	E->MustCheck = true; /*ChptTyp*/
 	if (CRdb->Encrypted) {

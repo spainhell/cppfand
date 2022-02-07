@@ -71,7 +71,7 @@ void ReportProc(RprtOpt* RO, bool save)
 	//MarkBoth(p, p2);
 	PrintView = false;
 	/* !!! with RO^ do!!! */
-	if (RO->Flds == nullptr) {
+	if (RO->Flds.empty()) {
 		SetInpTT(&RO->RprtPos, true);
 		if (RO->SyntxChk) {
 			IsCompileErr = false;
@@ -126,18 +126,19 @@ void PromptAutoRprt(RprtOpt* RO)
 	RprtOpt* RO2;
 	RO2 = (RprtOpt*)GetStore(sizeof(*RO));
 	Move(RO, RO2, sizeof(*RO));
-	FieldList FL = RO->Flds;
-	while (FL != nullptr) {
-		FieldDescr* F = FL->FldD;
-		if ((F->Flg & f_Stored) != 0) ww.PutSelect(F->Name);
+	//FieldList FL = RO->Flds;
+	//while (FL != nullptr) {
+	for (auto& f : RO->Flds) {
+		//FieldDescr* F = FL->FldD;
+		if ((f->Flg & f_Stored) != 0) ww.PutSelect(f->Name);
 		else {
 			pstring tmpStr = SelMark;
-			ww.PutSelect(tmpStr + F->Name);
+			ww.PutSelect(tmpStr + f->Name);
 		}
-		FL = (FieldList)FL->pChain;
+		//FL = (FieldList)FL->pChain;
 	}
 	CFile = RO->FDL.FD;
-	if (!ww.SelFieldList(36, true, &RO2->Flds)) return;
+	if (!ww.SelFieldList(36, true, RO2->Flds)) return;
 	if ((RO->FDL.Cond == nullptr) &&
 		!ww.PromptFilter("", RO2->FDL.Cond, &RO2->CondTxt)) return;
 	if (SelForAutoRprt(RO2)) {

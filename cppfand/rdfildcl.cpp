@@ -227,28 +227,25 @@ void RdBegViewDcl(EditOpt* EO)
 		return;
 	}
 	neg = false; all = false;
-	FieldListEl* fl1 = new FieldListEl(); // FieldListEl* fl1 = nullptr;
+	std::vector<FieldDescr*> fl1;
 	EO->UserSelFlds = false;
 	if (Lexem == '^') { RdLex(); neg = true; } Accept('(');
-	if (Lexem == _identifier) RdFldList(&fl1);
+	if (Lexem == _identifier) RdFldList(fl1);
 	else neg = true;
 label1:
 	switch (Lexem) {
 	case '!': if (neg) { RdLex(); all = true; goto label1; } break;
-	case '?': { RdLex(); EO->UserSelFlds = true; goto label1; break; };
+	case '?': { RdLex(); EO->UserSelFlds = true; goto label1; break; }
 	}
 	Accept(')');
 	if (!neg) { EO->Flds = fl1; return; }
-	EO->Flds = nullptr;
+	EO->Flds.clear();
 	for (auto& f : CFile->FldD) {
 		if ((((f->Flg & f_Stored) != 0) || all) && !FieldInList(f, fl1)) {
-			fl = new FieldListEl(); // (FieldListEl*)GetStore(sizeof(*fl));
-			fl->FldD = f;
-			if (EO->Flds == nullptr) { EO->Flds = fl; fl->pChain = nullptr; }
-			else ChainLast(EO->Flds, fl);
+			EO->Flds.push_back(f);
 		}
 	}
-	if (EO->Flds == nullptr) OldError(117);
+	if (EO->Flds.empty()) OldError(117);
 }
 
 void RdByteList(pstring* s)

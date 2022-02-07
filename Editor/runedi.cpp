@@ -2738,7 +2738,7 @@ void CheckFromHere()
 	longint N; EFldD* D; ChkD* C; LockMode md;
 	D = CFld; N = CRec(); md = NewLMode(RdMode);
 label1:
-	if (!DeletedFlag)
+	if (!DeletedFlag())
 		while (D != nullptr) {
 			C = CompChk(D, '?');
 			if (C != nullptr) {
@@ -2747,7 +2747,7 @@ label1:
 				DisplChkErr(C);
 				return;
 			}
-			D = (EFldD*)D->pChain;
+			D = D->pChain;
 		}
 	if (N < CNRecs()) {
 		N++; DisplRecNr(N); RdRec(N); D = E->FirstFld; goto label1;
@@ -2758,28 +2758,35 @@ label1:
 void Sorting()
 {
 	KeyFldD* SKRoot = nullptr; void* p = nullptr; ExitRecord er; LockMode md;
-	SaveFiles; MarkStore(p);
+	SaveFiles(); MarkStore(p);
 	if (!PromptSortKeys(E->Flds, SKRoot) || (SKRoot == nullptr)) goto label2;
 	if (!TryLMode(ExclMode, md, 1)) goto label2;
 	//NewExit(Ovr(), er);
-	goto label1;
-	SortAndSubst(SKRoot);
-	E->EdUpdated = true;
-label1:
-	RestoreExit(er); CFile = E->FD; OldLMode(md);
+	//goto label1;
+	try {
+		SortAndSubst(SKRoot);
+		E->EdUpdated = true;
+	}
+	catch (std::exception&) {
+		RestoreExit(er); CFile = E->FD; OldLMode(md);
+	}
 label2:
 	ReleaseStore(p); CRecPtr = E->NewRecPtr; DisplAllWwRecs();
 }
 
 void AutoReport()
 {
-	void* p = nullptr; RprtOpt* RO = nullptr; FileUseMode UM = Closed;
-	MarkStore(p); RO = GetRprtOpt(); RO->FDL.FD = CFile; RO->Flds = E->Flds;
+	void* p = nullptr; RprtOpt* RO = nullptr;
+	FileUseMode UM = Closed;
+	MarkStore(p); RO = GetRprtOpt();
+	RO->FDL.FD = CFile;
+	RO->Flds = E->Flds;
 	if (Select) {
 		RO->FDL.Cond = E->Bool;
 		RO->CondTxt = E->BoolTxt;
 	}
-	if (Subset) RO->FDL.ViewKey = WK; else if (HasIndex) RO->FDL.ViewKey = VK;
+	if (Subset) RO->FDL.ViewKey = WK;
+	else if (HasIndex) RO->FDL.ViewKey = VK;
 	PrintView = false;
 	if (SelForAutoRprt(RO)) {
 		SpecFDNameAllowed = IsCurrChpt();
@@ -2820,10 +2827,9 @@ bool IsDependItem()
 void SetDependItem()
 {
 	DepD* Dp = CFld->Dep;
-	while (Dp != nullptr)
-	{
+	while (Dp != nullptr) {
 		if (RunBool(Dp->Bool)) { AssignFld(CFld->FldD, Dp->Frml); return; }
-		Dp = (DepD*)Dp->pChain;
+		Dp = Dp->pChain;
 	}
 }
 
@@ -3487,29 +3493,32 @@ bool FinArgs(LinkD* LD, FieldDescr* F)
 
 bool SelFldsForEO(EditOpt* EO, LinkD* LD)
 {
+	// TODO: this method is bad, need to investigate what happens here ...
+
 	wwmix ww;
 
 	void* p = nullptr;
 	auto result = true;
-	if (EO->Flds == nullptr) return result;
-	FieldListEl* FL = EO->Flds;
+	if (EO->Flds.empty()) return result;
+	//FieldListEl* FL = EO->Flds;
 	if (!EO->UserSelFlds) {
 		if (LD != nullptr) {
-			FieldListEl* FL1 = FieldList(EO->Flds);
-			while (FL != nullptr) {
-				if (FinArgs(LD, FL->FldD)) {
-					FL1->pChain = FL;
-					FL1 = FL;
+			//FieldListEl* FL1 = FieldList(EO->Flds);
+			//while (FL != nullptr) {
+			for (auto& FL : EO->Flds) {
+				if (FinArgs(LD, FL)) {
+					//FL1->pChain = FL;
+					//FL1 = FL;
 				}
-				FL = (FieldList)FL->pChain;
+				//FL = FL->pChain;
 			}
-			FL1->pChain = nullptr;
+			//FL1->pChain = nullptr;
 		}
 		return result;
 	}
 	MarkStore(p);
-	while (FL != nullptr) {
-		FieldDescr* F = FL->FldD;
+	//while (FL != nullptr) {
+	for (auto& F : EO->Flds) {
 		if ((LD == nullptr) || !FinArgs(LD, F)) {
 			pstring s = F->Name;
 			if ((F->Flg & f_Stored) == 0) {
@@ -3519,13 +3528,13 @@ bool SelFldsForEO(EditOpt* EO, LinkD* LD)
 			}
 			ww.PutSelect(s);
 		}
-		FL = (FieldList)FL->pChain;
+		//FL = FL->pChain;
 	}
-	if (EO->Flds == nullptr) WrLLF10Msg(156);
+	if (EO->Flds.empty()) WrLLF10Msg(156);
 	else {
-		ww.SelFieldList(36, true, &EO->Flds);
+		ww.SelFieldList(36, true, EO->Flds);
 	}
-	if (EO->Flds == nullptr) {
+	if (EO->Flds.empty()) {
 		ReleaseStore(p);
 		result = false;
 	}
@@ -3657,8 +3666,8 @@ void ShiftF7Proc()
 	LinkD* LD1 = nullptr;
 	for (auto& ld : LinkDRoot) { //while (LD != nullptr) {
 		for (auto& arg : ld->Args) {
-		//KeyFldD* KF = ld->Args;
-		//while (KF != nullptr) {
+			//KeyFldD* KF = ld->Args;
+			//while (KF != nullptr) {
 			if ((arg->FldD == F) && ForNavigate(ld->ToFD)) LD1 = ld;
 			//KF = KF->pChain;
 		}
