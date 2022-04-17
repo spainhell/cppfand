@@ -5,7 +5,7 @@
 class XFile : public XWFile // r357
 {
 public:
-	XFile() {};
+	XFile() {}
 	XFile(const XFile& orig);
 	longint NRecs = 0, NRecsAbs = 0; // {FreeRoot..NrKeys read / written by 1 instr.}
 	bool NotValid = false;

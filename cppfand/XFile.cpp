@@ -99,39 +99,42 @@ void CreateIndexFile()
 	Logging* log = Logging::getInstance();
 
 	ExitRecord er;
-	void* cr = nullptr; //void* p = nullptr;
+	void* cr = nullptr;
 	LockMode md = NullMode;
 	bool fail = false;
 	XWorkFile* XW = nullptr;
 	XScan* Scan = nullptr;
 	XFile* XF = nullptr;
-	//NewExit(Ovr(), er);
-	//goto label1;
-	//MarkStore(p);
-	fail = true;
-	XF = CFile->XF;
-	cr = CRecPtr;
-	CRecPtr = GetRecSpace();
-	md = NewLMode(RdMode);
-	TryLockN(0, 0); /*ClearCacheCFile;*/
-	if (XF->Handle == nullptr) RunError(903);
-	log->log(loglevel::DEBUG, "CreateIndexFile() file 0x%p name '%s'", XF->Handle, CFile->Name.c_str());
-	XF->RdPrefix();
-	if (XF->NotValid) {
-		XF->SetEmpty();
-		Scan = new XScan(CFile, nullptr, nullptr, false);
-		Scan->Reset(nullptr, false);
-		XW = new XWorkFile(Scan, CFile->Keys);
-		XW->Main('X');
-		delete XW; XW = nullptr;
-		XF->NotValid = false;
-		XF->WrPrefix();
-		if (!SaveCache(0, CFile->Handle)) GoExit(); /*FlushHandles;*/
+
+	try {
+		fail = true;
+		XF = CFile->XF;
+		cr = CRecPtr;
+		CRecPtr = GetRecSpace();
+		md = NewLMode(RdMode);
+		TryLockN(0, 0);
+		/*ClearCacheCFile;*/
+		if (XF->Handle == nullptr) RunError(903);
+		log->log(loglevel::DEBUG, "CreateIndexFile() file 0x%p name '%s'", XF->Handle, CFile->Name.c_str());
+		XF->RdPrefix();
+		if (XF->NotValid) {
+			XF->SetEmpty();
+			Scan = new XScan(CFile, nullptr, nullptr, false);
+			Scan->Reset(nullptr, false);
+			XW = new XWorkFile(Scan, CFile->Keys);
+			XW->Main('X');
+			delete XW; XW = nullptr;
+			XF->NotValid = false;
+			XF->WrPrefix();
+			if (!SaveCache(0, CFile->Handle)) GoExit();
+			/*FlushHandles; */
+		}
+		fail = false;
 	}
-	fail = false;
-label1:
-	RestoreExit(er);
-	//ReleaseStore(p);
+	catch (std::exception& e) {
+		RestoreExit(er);
+	}
+
 	CRecPtr = cr;
 	if (fail) {
 		XF->SetNotValid();
@@ -144,5 +147,7 @@ label1:
 
 void ClearXFUpdLock()
 {
-	if (CFile->XF != nullptr) CFile->XF->UpdLockCnt = 0;
+	if (CFile->XF != nullptr) {
+		CFile->XF->UpdLockCnt = 0;
+	}
 }

@@ -722,7 +722,7 @@ void RdKeyD()
 			}
 			else {
 				K1 = CFile->Keys;
-				N = 1;
+				N = 2;
 				while (K1->Chain != nullptr) {
 					K1 = K1->Chain;
 					N++;
