@@ -1365,7 +1365,10 @@ XKey* RdViewKey()
 	RdLex();
 	size_t i = 0;
 	//k = CFile->Keys;
-	if (Lexem == '@') goto label1;
+	if (Lexem == '@') {
+		lastK = CFile->Keys.empty() ? nullptr : CFile->Keys[0];
+		goto label1;
+	}
 	TestIdentif();
 	//while (k != nullptr) {
 	for (auto& k : CFile->Keys) {

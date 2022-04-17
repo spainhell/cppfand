@@ -863,18 +863,18 @@ void LookForK(pstring* Name, FileD* F)
 
 XKey* RdFileOrAlias1(FileD* F)
 {
+	if (F->Keys.empty()) return nullptr;
+
+	XKey* k = F->Keys[0];
 	std::string lw = LexWord;
 	if (!EquUpCase(F->Name, lw))
-		//while (k != nullptr) {
-		for (auto& k : F->Keys) {
+		while (k != nullptr) {
 			std::string lw = LexWord;
-			if (EquUpCase(k->Alias, lw)) {
-				return k;
-			}
-			//k = k->Chain;
+			if (EquUpCase(k->Alias, lw)) goto label1;
+			k = k->Chain;
 		}
-
-	return F->Keys.empty() ? nullptr : F->Keys[0];
+label1:
+	return k;
 }
 
 void RdFileOrAlias(FileD** FD, XKey** KD)
