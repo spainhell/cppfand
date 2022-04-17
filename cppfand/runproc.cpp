@@ -755,7 +755,7 @@ void ForAllProc(Instr_forall* PD)
 			if (PD->CWIdx) ScanSubstWIndex(Scan, Key->KFlds, 'W');
 			else { CFile->XF->UpdLockCnt++; lk = true; }
 	if (LVr != nullptr) lr = LVr->RecPtr;
-	k = CFile->Keys;
+	k = CFile->Keys.empty() ? nullptr : CFile->Keys[0];
 	b = PD->CProcent;
 	if (b) RunMsgOn('F', Scan->NRecs);
 label1:
@@ -1552,7 +1552,7 @@ void CallProcedure(Instr_proc* PD)
 	while (it0 != PD->variables.vLocVar.end()) {
 		if ((*it0)->FTyp == 'i') {
 			auto hX = (XWKey*)(*it0)->RecPtr;
-			if (hX->KFlds == nullptr) hX->KFlds = (*it0)->FD->Keys->KFlds;
+			if (hX->KFlds == nullptr) hX->KFlds = (*it0)->FD->Keys[0]->KFlds;
 			auto tmp = (XWKey*)(*it0)->RecPtr;
 			tmp->Open(hX->KFlds, true, false);
 		}

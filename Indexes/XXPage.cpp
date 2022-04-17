@@ -80,10 +80,11 @@ label1:
 					XW->MsgWritten = true;
 				}
 				ReadRec(CFile, n, CRecPtr);
-				XKey* k = CFile->Keys;
-				while ((k != KD)) {
-					k->Delete(n);
-					k = k->Chain;
+				/*XKey* k = CFile->Keys;
+				while ((k != KD)) {*/
+				for (auto& K : CFile->Keys) {
+					K->Delete(n);
+					//k = k->Chain;
 				}
 				SetDeletedFlag();
 				WriteRec(CFile, n, CRecPtr);

@@ -411,7 +411,10 @@ label1:
 	F = FindFldName(CFile);
 	if (F != nullptr) Error(26);
 	RdLex();
-	if (!Stored) { Accept(_assign); Z = RdFrml(FTyp); }
+	if (!Stored) {
+		Accept(_assign);
+		Z = RdFrml(FTyp);
+	}
 	F = RdFldDescr(Name, Stored);
 	if ((CFile->Typ == 'D') && Stored && (F->Typ == 'R' || F->Typ == 'N')) OldError(86);
 
@@ -457,8 +460,9 @@ void SetLDIndexRoot(/*LinkD* L,*/ std::deque<LinkD*>& L2)
 			break;
 		}
 		if (CFile->Typ == 'X') {
-			XKey* K = CFile->Keys;
-			while (K != nullptr) {
+			//XKey* K = CFile->Keys;
+			//while (K != nullptr) {
+			for (auto& K : CFile->Keys) {
 				KeyFldD* KF = K->KFlds;
 				computed = false;
 				bool continueWithNextK = false;
@@ -475,7 +479,7 @@ void SetLDIndexRoot(/*LinkD* L,*/ std::deque<LinkD*>& L2)
 					KF = KF->pChain;
 				}
 				if (continueWithNextK) {
-					K = K->Chain;
+					//K = K->Chain;
 					continue;
 				}
 				L->IndexRoot = K->IndexRoot;
@@ -499,7 +503,8 @@ void SetLDIndexRoot(/*LinkD* L,*/ std::deque<LinkD*>& L2)
 void* RdFileD(std::string FileName, char FDTyp, std::string Ext)
 {
 	std::string JournalFlds = "Upd:A,1;RecNr:F,8.0;User:F,4.0;TimeStamp:D,'DD.MM.YYYY hh:mm:ss'";
-	FileD* FD = nullptr; XKey* K = nullptr;
+	FileD* FD = nullptr;
+	//XKey* K = nullptr;
 	FieldDescr* F = nullptr; FieldDescr* F2 = nullptr;
 	void* p = nullptr;
 	ChkD* C = nullptr;
@@ -593,8 +598,9 @@ void* RdFileD(std::string FileName, char FDTyp, std::string Ext)
 		CFile->IsHlpFile = false;
 		if (!(FDTyp == '6' || FDTyp == 'X') || !(CFile->Typ == '6' || CFile->Typ == 'X')) OldError(106);
 
-		K = CFile->Keys;
-		while (K != nullptr) {
+		//K = CFile->Keys;
+		//while (K != nullptr) {
+		for (auto& K : CFile->Keys) {
 			if (!K->Alias.empty()) {
 				s = K->Alias;
 				i = s.find('_');
@@ -602,7 +608,7 @@ void* RdFileD(std::string FileName, char FDTyp, std::string Ext)
 				s = Prefix + "_" + s;
 				K->Alias = s;
 			}
-			K = K->Chain;
+			//K = K->Chain;
 		}
 	}
 	else {
@@ -640,13 +646,13 @@ label2:
 		RdKeyD();
 		goto label2;
 	}
-	if (issql && (CFile->Keys != nullptr)) {
+	if (issql && !CFile->Keys.empty()) {
 		CFile->Typ = 'X';
 	}
 	GetXFileD();
 	CompileRecLen();
 	SetLDIndexRoot(LDOld);
-	if ((CFile->Typ == 'X') && (CFile->Keys == nullptr)) Error(107);
+	if ((CFile->Typ == 'X') && CFile->Keys.empty()) Error(107);
 	if ((Lexem == '#') && (ForwChar == 'A')) {
 		RdLex();
 		RdKumul();
@@ -706,7 +712,7 @@ void RdKeyD()
 
 	RdLex();
 	if (Lexem == '@') {
-		if ((CFile->Keys != nullptr) || CFile->IsParFile) Error(26);
+		if (!CFile->Keys.empty() || CFile->IsParFile) Error(26);
 		RdLex();
 		if (Lexem == '@') {
 			RdLex();
@@ -715,13 +721,13 @@ void RdKeyD()
 		else {
 			Name = "";
 		label1:
-			if (CFile->Keys == nullptr) {
+			if (CFile->Keys.empty()) {
 				N = 1;
 				K = new XKey();
-				CFile->Keys = K;
+				CFile->Keys.push_back(K);
 			}
 			else {
-				K1 = CFile->Keys;
+				K1 = CFile->Keys[0];
 				N = 2;
 				while (K1->Chain != nullptr) {
 					K1 = K1->Chain;
@@ -729,6 +735,7 @@ void RdKeyD()
 				}
 				K = new XKey();
 				K1->Chain = K;
+				CFile->Keys.push_back(K);
 			}
 
 			K->Alias = Name;
@@ -846,25 +853,28 @@ void LookForK(pstring* Name, FileD* F)
 {
 	std::string name = *Name;
 	if (EquUpCase(F->Name, name)) Error(26);
-	XKey* K = F->Keys;
-	while (K != nullptr) {
+	//XKey* K = F->Keys;
+	//while (K != nullptr) {
+	for (auto& K : CFile->Keys) {
 		if (EquUpCase(K->Alias, *Name)) Error(26);
-		K = K->Chain;
+		//K = K->Chain;
 	}
 }
 
 XKey* RdFileOrAlias1(FileD* F)
 {
-	XKey* k = F->Keys;
 	std::string lw = LexWord;
 	if (!EquUpCase(F->Name, lw))
-		while (k != nullptr) {
+		//while (k != nullptr) {
+		for (auto& k : F->Keys) {
 			std::string lw = LexWord;
-			if (EquUpCase(k->Alias, lw)) goto label1;
-			k = k->Chain;
+			if (EquUpCase(k->Alias, lw)) {
+				return k;
+			}
+			//k = k->Chain;
 		}
-label1:
-	return k;
+
+	return F->Keys.empty() ? nullptr : F->Keys[0];
 }
 
 void RdFileOrAlias(FileD** FD, XKey** KD)

@@ -1437,7 +1437,9 @@ bool FieldInList(FieldDescr* F, std::vector<FieldDescr*>* FL)
 
 XKey* GetFromKey(LinkD* LD)
 {
-	XKey* K = LD->FromFD->Keys;
+	if (LD->FromFD->Keys.empty()) return nullptr;
+
+	XKey* K = LD->FromFD->Keys[0];
 	while (K->IndexRoot != LD->IndexRoot) {
 		K = K->Chain;
 	}

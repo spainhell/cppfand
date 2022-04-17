@@ -1035,7 +1035,7 @@ bool MergeOldNew(bool Veriflongint, longint Pos)
 		MergAndReplace(FDOld, FDNew);
 		result = true;
 	}
-	else if ((FDOld->Typ == 'X') && !EquKeys(FDOld->Keys, FDNew->Keys)) {
+	else if ((FDOld->Typ == 'X') && !EquKeys(FDOld->Keys[0], FDNew->Keys[0])) {
 		SetCPathVol();
 		CExtToX();
 		MyDeleteFile(CPath);

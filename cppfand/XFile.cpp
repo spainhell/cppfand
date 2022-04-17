@@ -26,12 +26,13 @@ void XFile::SetEmpty()
 	p->IsLeaf = true;
 	FreeRoot = 0;
 	NRecs = 0;
-	XKey* k = CFile->Keys;
-	while (k != nullptr) {
+	//XKey* k = CFile->Keys;
+	//while (k != nullptr) {
+	for (auto& k : CFile->Keys) {
 		longint n = k->IndexRoot;
 		MaxPage = n;
 		WrPage(p.get(), n);
-		k = k->Chain;
+		//k = k->Chain;
 	}
 	//ReleaseStore(p);
 	WrPrefix();
@@ -121,7 +122,7 @@ void CreateIndexFile()
 			XF->SetEmpty();
 			Scan = new XScan(CFile, nullptr, nullptr, false);
 			Scan->Reset(nullptr, false);
-			XW = new XWorkFile(Scan, CFile->Keys);
+			XW = new XWorkFile(Scan, CFile->Keys[0]);
 			XW->Main('X');
 			delete XW; XW = nullptr;
 			XF->NotValid = false;

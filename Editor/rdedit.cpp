@@ -338,7 +338,7 @@ void AutoDesign(std::vector<FieldDescr*>& FL)
 		auto& er = *E->RecTxt;
 		if (er.N == 2) {
 			E->HdTxt = er.SL;
-			er.SL = (StringListEl*)er.SL->pChain;
+			er.SL = er.SL->pChain;
 			E->HdTxt->pChain = nullptr;
 			E->NHdTxt = 1;
 			er.N = 1;
@@ -497,7 +497,9 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 			default: ;
 			}
 		}
-		else if (E->VK == nullptr) E->VK = E->FD->Keys;
+		else if (E->VK == nullptr) {
+			E->VK = E->FD->Keys.empty() ? nullptr : E->FD->Keys[0];
+		}
 #ifdef FandSQL
 		if (CFile->IsSQLFile && (E->VK = nullptr)) { SetMsgPar(CFile->Name); RunError(652); }
 #endif
@@ -855,16 +857,19 @@ pstring GetStr_E(FrmlElem* Z)
 
 void NewChkKey()
 {
-	XKey* K = CFile->Keys; KeyFldD* KF = nullptr;
-	EFldD* D = nullptr; KeyListEl* KL = nullptr;
-	while (K != nullptr) {
+	//XKey* K = CFile->Keys;
+	KeyFldD* KF = nullptr;
+	EFldD* D = nullptr;
+	KeyListEl* KL = nullptr;
+	for (auto& K : CFile->Keys) {
+	//while (K != nullptr) {
 		if (!K->Duplic) {
 			ZeroUsed();
 			KF = K->KFlds;
 			while (KF != nullptr) {
 				D = FindEFld_E(KF->FldD);
 				if (D != nullptr) D->Used = true;
-				KF = (KeyFldD*)KF->pChain;
+				KF = KF->pChain;
 			}
 			D = LstUsedFld();
 			if (D != nullptr) {
@@ -874,6 +879,6 @@ void NewChkKey()
 				KL->Key = K;
 			}
 		}
-		K = K->Chain;
+		//K = K->Chain;
 	}
 }

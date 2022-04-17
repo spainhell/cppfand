@@ -13,9 +13,9 @@ XKey::XKey()
 {
 }
 
-XKey::XKey(const XKey& orig, bool copyFlds)
+XKey::XKey(const XKey& orig)
 {
-	if (orig.Chain != nullptr) Chain = new XKey(*orig.Chain, copyFlds);
+	if (orig.Chain != nullptr) Chain = new XKey(*orig.Chain);
 	//if (orig.KFlds != nullptr) KFlds = new KeyFldD(*orig.KFlds, copyFlds);
 	KFlds = orig.KFlds;
 	Intervaltest = orig.Intervaltest;
@@ -629,30 +629,45 @@ longint XNRecs(XKey* K)
 	return CFile->NRecs;
 }
 
+longint XNRecs(std::vector<XKey*>& K)
+{
+	if (CFile->Typ == 'X' && !K.empty()) {
+		TestXFExist();
+		return CFile->XF->NRecs;
+	}
+	return CFile->NRecs;
+}
+
 void TryInsertAllIndexes(longint RecNr)
 {
 	//void* p = nullptr;
 	TestXFExist();
 	//MarkStore(p);
-	XKey* K = CFile->Keys;
-	while (K != nullptr) {
+	XKey* lastK = nullptr;
+	//while (K != nullptr) {
+	for (auto& K : CFile->Keys) {
+		lastK = K;
 		if (!K->Insert(RecNr, true)) {
 			goto label1;
 		}
-		K = K->Chain;
+		//K = K->Chain;
 	}
 	CFile->XF->NRecs++;
 	return;
 label1:
 	//ReleaseStore(p);
-	XKey* K1 = CFile->Keys;
-	while ((K1 != nullptr) && (K1 != K)) {
+	//XKey* K1 = CFile->Keys;
+	//while ((K1 != nullptr) && (K1 != K)) {
+	for (auto& K1 : CFile->Keys) {
+		if (K1 == lastK) {
+			break;
+		}
 		K1->Delete(RecNr); 
-		K1 = K1->Chain;
+		//K1 = K1->Chain;
 	}
 	SetDeletedFlag();
 	WriteRec(CFile, RecNr, CRecPtr);
-	/* !!! with CFile->XF^ do!!! */
+	
 	if (CFile->XF->FirstDupl) {
 		SetMsgPar(CFile->Name);
 		WrLLF10Msg(828);
@@ -665,10 +680,11 @@ void DeleteAllIndexes(longint RecNr)
 	Logging* log = Logging::getInstance();
 	log->log(loglevel::DEBUG, "DeleteAllIndexes(%i)", RecNr);
 
-	XKey* K = CFile->Keys;
-	while (K != nullptr) {
+	//XKey* K = CFile->Keys;
+	//while (K != nullptr) {
+	for (auto& K : CFile->Keys) {
 		K->Delete(RecNr);
-		K = K->Chain;
+		//K = K->Chain;
 	}
 }
 
@@ -694,8 +710,9 @@ void OverWrXRec(longint RecNr, void* P2, void* P)
 		return;
 	}
 	TestXFExist();
-	XKey* K = CFile->Keys;
-	while (K != nullptr) {
+	//XKey* K = CFile->Keys;
+	//while (K != nullptr) {
+	for (auto& K : CFile->Keys) {
 		CRecPtr = P;
 		x.PackKF(K->KFlds);
 		CRecPtr = P2;
@@ -705,7 +722,7 @@ void OverWrXRec(longint RecNr, void* P2, void* P)
 			CRecPtr = P;
 			K->Insert(RecNr, false);
 		}
-		K = K->Chain;
+		//K = K->Chain;
 	}
 	CRecPtr = P;
 	WriteRec(CFile, RecNr, CRecPtr);

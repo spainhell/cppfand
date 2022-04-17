@@ -11,7 +11,7 @@ class XKey // r309
 {
 public:
 	XKey();
-	XKey(const XKey& orig, bool copyFlds);
+	XKey(const XKey& orig);
 	XKey(BYTE* inputStr);
 	XKey* Chain = nullptr;
 	KeyFldD* KFlds = nullptr;
@@ -47,6 +47,7 @@ public:
 
 bool SearchKey(XString& XX, XKey* Key, longint& NN);
 longint XNRecs(XKey* K);
+longint XNRecs(std::vector<XKey*>& K);
 void TryInsertAllIndexes(longint RecNr);
 void DeleteXRec(longint RecNr, bool DelT);
 void OverWrXRec(longint RecNr, void* P2, void* P);

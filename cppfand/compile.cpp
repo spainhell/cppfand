@@ -1357,34 +1357,43 @@ void EditModeToFlags(pstring Mode, void* Flgs, bool Err)
 
 XKey* RdViewKey()
 {
-	XKey* k = nullptr; LocVar* lv = nullptr;
+	XKey* lastK = nullptr;
+	LocVar* lv = nullptr;
 	std::string s;
 	XKey* result = nullptr;
 	if (Lexem != '/') return result;
 	RdLex();
 	size_t i = 0;
-	k = CFile->Keys;
+	//k = CFile->Keys;
 	if (Lexem == '@') goto label1;
 	TestIdentif();
-	while (k != nullptr) {
+	//while (k != nullptr) {
+	for (auto& k : CFile->Keys) {
 		std::string lw = LexWord;
-		if (EquUpCase(k->Alias, lw)) goto label1;
-		k = k->Chain;
+		if (EquUpCase(k->Alias, lw)) {
+			lastK = k;
+			goto label1;
+		}
+		//k = k->Chain;
 	}
 	s = LexWord;
 	i = s.find('_');
 	if (i != std::string::npos) s = copy(s, i + 2, 255);
 	s = CFile->Name + "_" + s;
-	k = CFile->Keys;
-	while (k != nullptr) {
+	//k = CFile->Keys;
+	//while (k != nullptr) {
+	for (auto& k : CFile->Keys) {
 		std::string kAl = k->Alias;
-		if (EquUpCase(s, kAl)) goto label1;
-		k = k->Chain;
+		if (EquUpCase(s, kAl)) {
+			lastK = k;
+			goto label1;
+		}
+		//k = k->Chain;
 	}
 	if (IdxLocVarAllowed && FindLocVar(&LVBD, &lv) && (lv->FTyp == 'i'))
 	{
 		if (lv->FD != CFile) Error(164);
-		k = (XKey*)(lv->RecPtr);
+		lastK = (XKey*)(lv->RecPtr);
 		goto label1;
 	}
 	Error(109);
@@ -1395,7 +1404,7 @@ label1:
 #endif
 			Error(108);
 	RdLex();
-	result = k;
+	result = lastK;
 	return result;
 }
 
@@ -1478,17 +1487,17 @@ bool IsFun(std::map<std::string, int>& strs, std::string input, instr_type& FunC
 bool IsKeyArg(FieldDescr* F, FileD* FD)
 {
 	KeyArgFound = false;
-	KeyFldD* kf = nullptr;
-	XKey* k = FD->Keys;
-	while (k != nullptr) {
+	//XKey* k = FD->Keys;
+	//while (k != nullptr) {
+	for (auto& k : FD->Keys) {
 		KeyArgFld = F;
-		kf = k->KFlds;
+		KeyFldD* kf = k->KFlds;
 		while (kf != nullptr) {
 			SrchF(kf->FldD);
 			if (KeyArgFound) { return true; }
-			kf = (KeyFldD*)kf->pChain;
+			kf = kf->pChain;
 		}
-		k = k->Chain;
+		//k = k->Chain;
 	}
 	return false;
 }

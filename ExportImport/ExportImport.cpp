@@ -361,42 +361,45 @@ void Cpy(FILE* h, longint sz, ThFile* F2)
 void ExportFD(CopyD* CD)
 {
 	ExitRecord er;
-
-	//NewExit(Ovr, er);
-	//goto label1;
 	ThFile* F2 = nullptr;
+	LockMode md = NullMode;
 
-	CFile = CD->FD1;
-	SaveFiles();
-	LockMode md = NewLMode(RdMode);
-	F2 = new ThFile(CD->Path2, CD->CatIRec2, InOutMode::_outp, 0, nullptr);
-	longint n = XNRecs(CD->FD1->Keys);
-	/* !!! with CFile^ do!!! */
-	if (n == 0) {
-		delete F2;
-		F2 = nullptr;
-	}
-	else Cpy(CFile->Handle, CFile->UsedFileSize(), F2);
-	if (CFile->TF != nullptr) {
-		F2->RewriteT(); /* !!! with CFile->TF^ do!!! */
+	try {
+		CFile = CD->FD1;
+		SaveFiles();
+		md = NewLMode(RdMode);
+		F2 = new ThFile(CD->Path2, CD->CatIRec2, InOutMode::_outp, 0, nullptr);
+		longint n = XNRecs(CD->FD1->Keys);
+		/* !!! with CFile^ do!!! */
 		if (n == 0) {
 			delete F2;
 			F2 = nullptr;
 		}
-		else Cpy(CFile->TF->Handle, CFile->TF->UsedFileSize(), F2);
-	}
-	if (CD->WithX1) {
-		F2->RewriteX(); /* !!! with CFile->XF^ do!!! */
-		if (n == 0) {
-			delete F2;
-			F2 = nullptr;
+		else Cpy(CFile->Handle, CFile->UsedFileSize(), F2);
+		if (CFile->TF != nullptr) {
+			F2->RewriteT(); /* !!! with CFile->TF^ do!!! */
+			if (n == 0) {
+				delete F2;
+				F2 = nullptr;
+			}
+			else Cpy(CFile->TF->Handle, CFile->TF->UsedFileSize(), F2);
 		}
-		else Cpy(CFile->XF->Handle, CFile->XF->UsedFileSize(), F2);
+		if (CD->WithX1) {
+			F2->RewriteX(); /* !!! with CFile->XF^ do!!! */
+			if (n == 0) {
+				delete F2;
+				F2 = nullptr;
+			}
+			else Cpy(CFile->XF->Handle, CFile->XF->UsedFileSize(), F2);
+		}
+	label0:
+		LastExitCode = 0;
 	}
-label0:
-	LastExitCode = 0;
-label1:
-	RestoreExit(er);
+
+	catch (std::exception& e) {
+		RestoreExit(er);
+	}
+
 	if ((F2 != nullptr) && (F2->Handle != nullptr)) {
 		if (LastExitCode != 0) F2->ClearBuf();
 		delete F2; F2 = nullptr;
