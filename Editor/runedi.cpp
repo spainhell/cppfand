@@ -4058,13 +4058,22 @@ void DisplLL()
 		}
 		return;
 	}
-	if (E->ShiftF7LD != nullptr) n = 144;
-	else if (NoCreate || Only1Record)
+
+	if (E->ShiftF7LD != nullptr) {
+		n = 144;
+	}
+	else if (NoCreate || Only1Record) {
 		if (IsNewRec) n = 129;
 		else if (EdRecVar) n = 130;
 		else n = 128;
-	else if (IsNewRec) n = 123;
-	else n = 124;
+	}
+	else if (IsNewRec) {
+		n = 123;
+	}
+	else {
+		n = 124;
+	}
+
 	if (!F1Mode || Mode24) {
 		WrLLMsg(n);
 		DisplLASwitches();
@@ -4098,57 +4107,89 @@ void DisplCtrlAltLL(WORD Flags)
 	}
 }
 
-void DisplLLHlp()
-{
-	if (CRdb->HelpFD != nullptr) {
-		DisplLLHelp(CFile->ChptPos.R, CFile->Name + "." + CFld->FldD->Name, Mode24);
-	}
-}
-
 // po nacteni editoru se smycka drzi tady a ceka na stisknuti klavesy
 void CtrlReadKbd()
 {
 	BYTE flgs = 0;
 	longint TimeBeg = TimerRE;
 	WORD D = 0;
+	
+	if (F1Mode && Mode24 && CRdb->HelpFD != nullptr) {
+		DisplayLastLineHelp(CFile->ChptPos.R, CFile->Name + "." + CFld->FldD->Name, Mode24);
+	}
+
 	TestEvent();
-	if (Event.What == evKeyDown || Event.What == evMouseDown) goto label2;
+
+	if (Event.What == evKeyDown || Event.What == evMouseDown) {
+		if (flgs != 0) {
+			LLKeyFlags = 0;
+			DisplLL();
+			AddCtrlAltShift(flgs);
+		}
+		return;
+	}
 	ClrEvent();
+
 	if (NewDisplLL) {
 		DisplLL();
 		NewDisplLL = false;
 	}
+
 	if (CFile->NotCached()) {
-		if (!E->EdRecVar && ((spec.ScreenDelay == 0) || (E->RefreshDelay < spec.ScreenDelay)))
+		if (!E->EdRecVar && (spec.ScreenDelay == 0 || E->RefreshDelay < spec.ScreenDelay)) {
 			D = E->RefreshDelay;
+		}
 		if (E->WatchDelay != 0) {
-			if (D == 0) D = E->WatchDelay;
-			else D = MinW(D, E->WatchDelay);
+			if (D == 0) {
+				D = E->WatchDelay;
+			}
+			else {
+				D = MinW(D, E->WatchDelay);
+			}
 		}
 	}
-	if (F1Mode && Mode24) DisplLLHlp();
-label1:
-	if (LLKeyFlags != 0) { flgs = LLKeyFlags; goto label11; }
-	else if ((KbdFlgs & 0x0f) != 0) {
-		flgs = KbdFlgs;
-	label11:
-		DisplCtrlAltLL(flgs);
+
+	while (true) {
+		if (LLKeyFlags != 0) {
+			flgs = LLKeyFlags;
+			//goto label11;
+			DisplCtrlAltLL(flgs);
+		}
+		else if ((KbdFlgs & 0x0F) != 0) {
+			flgs = KbdFlgs;
+			//label11:
+			DisplCtrlAltLL(flgs);
+		}
+		else {
+			DisplLL();
+			flgs = 0;
+			if (F1Mode && !Mode24 && CRdb->HelpFD != nullptr) {
+				DisplayLastLineHelp(CFile->ChptPos.R, CFile->Name + "." + CFld->FldD->Name, Mode24);
+			}
+		}
+
+		if (D > 0) {
+			if (TimerRE >= TimeBeg + D) {
+				//goto label2;
+				break;
+			}
+			else {
+				WaitEvent(TimeBeg + D - TimerRE);
+			}
+		}
+		else {
+			WaitEvent(0);
+		}
+
+		if (!(Event.What == evKeyDown || Event.What == evMouseDown)) {
+			ClrEvent();
+			//goto label1;
+			continue;
+		}
+
+		break;
 	}
-	else {
-		DisplLL();
-		flgs = 0;
-		if (F1Mode && !Mode24) DisplLLHlp();
-	}
-	if (D > 0) {
-		if (TimerRE >= TimeBeg + D) goto label2;
-		else WaitEvent(TimeBeg + D - TimerRE);
-	}
-	else WaitEvent(0);
-	if (!(Event.What == evKeyDown || Event.What == evMouseDown)) {
-		ClrEvent();
-		goto label1;
-	}
-label2:
+	//label2:
 	if (flgs != 0) {
 		LLKeyFlags = 0;
 		DisplLL();

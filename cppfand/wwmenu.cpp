@@ -259,7 +259,7 @@ void TMenu::HandleEvent()
 		}
 		default: {
 			if (frst) {
-				//DisplLLHelp(HlpRdb, hlp, false);
+				//DisplayLastLineHelp(HlpRdb, hlp, false);
 				frst = false;
 			}
 			ClrEvent();
@@ -458,7 +458,7 @@ WORD TMenuBox::Exec(WORD IStart)
 	Next();  /*get valid iTxt*/
 
 	while (true) {
-		DisplLLHelp(HlpRdb, GetHlpName(), false);
+		DisplayLastLineHelp(HlpRdb, GetHlpName(), false);
 		HandleEvent();
 		i = iTxt;
 		const WORD KbdChar = Event.Pressed.KeyCombination();
@@ -704,7 +704,7 @@ WORD TMenuBar::Exec()
 	for (i = 1; i <= nTxt; i++) WrText(i);
 
 	while (true) {//label1:
-		DisplLLHelp(HlpRdb, GetHlpName(), false);
+		DisplayLastLineHelp(HlpRdb, GetHlpName(), false);
 		HandleEvent();
 		i = iTxt;
 		bool enter = false;
@@ -1015,7 +1015,7 @@ label5:
 	return result;
 }
 
-void DisplLLHelp(RdbD* R, std::string Name, bool R24)
+void DisplayLastLineHelp(RdbD* R, std::string Name, bool R24)
 {
 	size_t i = 0, y = 0; WORD iRec = 0;
 

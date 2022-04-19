@@ -620,14 +620,14 @@ bool SearchKey(XString& XX, XKey* Key, longint& NN)
 	return bResult;
 }
 
-longint XNRecs(XKey* K)
-{
-	if ((CFile->Typ == 'X') && (K != nullptr)) {
-		TestXFExist();
-		return CFile->XF->NRecs;
-	}
-	return CFile->NRecs;
-}
+//longint XNRecs(XKey* K)
+//{
+//	if ((CFile->Typ == 'X') && (K != nullptr)) {
+//		TestXFExist();
+//		return CFile->XF->NRecs;
+//	}
+//	return CFile->NRecs;
+//}
 
 longint XNRecs(std::vector<XKey*>& K)
 {

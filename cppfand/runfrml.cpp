@@ -539,7 +539,6 @@ bool RunBool(FrmlElem* X)
 {
 	longint RecNo;
 	LongStr* S = nullptr;
-	LongStr* S2 = nullptr;
 	WORD* w1 = (WORD*)&RecNo;
 	WORD* w2 = (WORD*)S;
 	FileD* cf = nullptr;
@@ -760,11 +759,11 @@ bool RunBool(FrmlElem* X)
 
 bool InReal(FrmlElemIn* frml)
 {
-	auto R = RunReal(frml->P1);
+	double R = RunReal(frml->P1);
 	for (auto r : frml->reals) {
 		if (r == R) return true;
 	}
-	for (auto range : frml->reals_range) {
+	for (auto& range : frml->reals_range) {
 		auto range1 = range.first;
 		auto range2 = range.second;
 		if (range1 <= R && R <= range2) return true;

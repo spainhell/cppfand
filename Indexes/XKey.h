@@ -46,7 +46,7 @@ public:
 };
 
 bool SearchKey(XString& XX, XKey* Key, longint& NN);
-longint XNRecs(XKey* K);
+//longint XNRecs(XKey* K);
 longint XNRecs(std::vector<XKey*>& K);
 void TryInsertAllIndexes(longint RecNr);
 void DeleteXRec(longint RecNr, bool DelT);

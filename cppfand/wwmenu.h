@@ -154,4 +154,4 @@ WORD Menu(WORD MsgNr, WORD IStart);
 bool PrinterMenu(WORD Msg);
 void MenuBarProc(Instr_menu* PD);
 std::string GetHlpText(RdbD* R, std::string S, bool ByName, WORD& IRec);
-void DisplLLHelp(RdbD* R, std::string Name, bool R24);
+void DisplayLastLineHelp(RdbD* R, std::string Name, bool R24);
