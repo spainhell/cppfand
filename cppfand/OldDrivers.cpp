@@ -462,7 +462,15 @@ char ToggleCS(char C)
 
 char NoDiakr(char C)
 {
-	return C;
+	BYTE byteC = static_cast<BYTE>(C);
+	if (byteC < 0x80) return C;
+
+	switch (fonts.VFont) {
+	case TVideoFont::foAscii: return C; break;
+	case TVideoFont::foLatin2: return static_cast<char>(TabLtN[byteC]); break;
+	case TVideoFont::foKamen: return static_cast<char>(TabKtN[byteC]); break;
+	default: return C; break;
+	}
 }
 
 void ConvToNoDiakr(void* Buf, WORD L, TVideoFont FromFont)

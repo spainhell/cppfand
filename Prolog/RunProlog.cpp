@@ -4324,6 +4324,8 @@ void RunProlog(RdbPos* Pos, std::string* PredName)
 		//_Sg = PtrRec(HeapPtr).Seg + 1;
 		ss = _LongS(ChptOldTxt);
 		if (ChptLRdb->Encrypted) CodingLongStr(ss);
+		std::string code = std::string(ss->A, ss->LL);
+		printf("");
 	}
 	//Roots = ptr(_Sg, 0);
 //
