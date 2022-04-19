@@ -514,16 +514,19 @@ LocVar* RunUserFunc(FrmlElem19* X)
 			LVAssignFrml(lv, false, fl->Frml);
 		}
 		else if (lv->IsRetValue) {
-			// return value -> only mark it
+			// it's return value -> initialize it and mark it
+			lv->B = false;
+			lv->R = 0.0;
+			lv->S = "";
 			return_lv = lv;
 		}
 		else {
-			// it's local variable -> inicialize it
+			// it's local variable -> initialize it
 			lv->B = false;
 			lv->R = 0.0;
 			lv->S = "";
 		}
-		if (fl != nullptr) fl = static_cast<FrmlListEl*>(fl->pChain);
+		if (fl != nullptr) fl = fl->pChain;
 	}
 
 	auto instr = X->FC->pInstr;
@@ -547,7 +550,9 @@ bool RunBool(FrmlElem* X)
 	switch (X->Op) {
 	case _and: {
 		auto iX0 = (FrmlElem0*)X;
-		if (RunBool(iX0->P1)) result = RunBool(iX0->P2);
+		if (RunBool(iX0->P1)) {
+			result = RunBool(iX0->P2);
+		}
 		else result = false;
 		break;
 	}

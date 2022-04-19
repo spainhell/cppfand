@@ -865,6 +865,7 @@ void DisplFld(EFldD* D, WORD I, BYTE Color)
 	}
 }
 
+// Display a form record
 void DisplRec(WORD I)
 {
 	EFldD* D = nullptr;
@@ -877,7 +878,9 @@ void DisplRec(WORD I)
 		NewFlds = true;
 		goto label1;
 	}
-	if (I == IRec) CRecPtr = E->NewRecPtr;
+	if (I == IRec) {
+		CRecPtr = E->NewRecPtr;
+	}
 	else {
 		CRecPtr = p;
 		RdRec(N);
@@ -887,14 +890,19 @@ void DisplRec(WORD I)
 label1:
 	D = E->FirstFld;
 	while (D != nullptr) {
-		if (IsCurrNewRec && (D == FirstEmptyFld) && (D->Impl == nullptr)) NewFlds = true;
+		if (IsCurrNewRec && D == FirstEmptyFld && D->Impl == nullptr) NewFlds = true;
 		TextAttr = a;
+		// Display an item of the record
 		if (D->Page == CPage) {
-			if (NewFlds) DisplEmptyFld(D, I);
-			else DisplFld(D, I, TextAttr);
+			if (NewFlds) {
+				DisplEmptyFld(D, I);
+			}
+			else {
+				DisplFld(D, I, TextAttr);
+			}
 		}
 		if (IsCurrNewRec && (D == FirstEmptyFld)) NewFlds = true;
-		D = (EFldD*)D->pChain;
+		D = D->pChain;
 	}
 	ClearRecSpace(p);
 	ReleaseStore(p);

@@ -896,10 +896,6 @@ LongStr* _LongS(FieldDescr* F)
 /// Read PASCAL STRING from the record
 pstring _ShortS(FieldDescr* F)
 {
-	if (CFile != nullptr && CFile->Name == "U002" && F->Name == "Faktura")
-	{
-		printf("");
-	}
 	void* P = CRecPtr;
 	char* source = (char*)P + F->Displ;
 	pstring S;
@@ -951,10 +947,6 @@ pstring _ShortS(FieldDescr* F)
 /// Read STD::STRING from the record
 std::string _StdS(FieldDescr* F)
 {
-	if (CFile != nullptr && CFile->Name == "U002" && F->Name == "Faktura")
-	{
-		printf("");
-	}
 	void* P = CRecPtr;
 	char* source = (char*)P + F->Displ;
 	std::string S;
@@ -1015,10 +1007,6 @@ std::string _StdS(FieldDescr* F)
 /// Save LONG STRING to the record
 void LongS_(FieldDescr* F, LongStr* S)
 {
-	if (CFile != nullptr && CFile->Name == "U002" && F->Name == "Faktura")
-	{
-		printf("");
-	}
 	// asi se vzdy uklada do souboru (nebo pracovniho souboru)
 	// nakonec vola T_
 	longint Pos; LockMode md;
@@ -1048,10 +1036,6 @@ void LongS_(FieldDescr* F, LongStr* S)
 /// Save STD::STRING to the record
 void S_(FieldDescr* F, std::string S, void* record)
 {
-	if (CFile != nullptr && CFile->Name == "U002" && F->Name == "Faktura")
-	{
-		printf("");
-	}
 	const BYTE LeftJust = 1;
 	BYTE* pRec = nullptr;
 

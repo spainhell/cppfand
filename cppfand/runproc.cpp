@@ -1530,7 +1530,7 @@ void CallProcedure(Instr_proc* PD)
 		}
 		else if ((*it0)->FTyp == 'f') {
 			// dynamic file definition
-			printf("");
+			//printf("");
 		}
 		++it0;
 	}

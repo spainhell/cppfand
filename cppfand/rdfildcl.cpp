@@ -493,9 +493,9 @@ void SetLDIndexRoot(/*LinkD* L,*/ std::deque<LinkD*>& L2)
 		}
 		CFile->nLDs++;
 
-		if (CFile->Typ == 'X' && L->IndexRoot == 0) {
-			printf("");
-		}
+		//if (CFile->Typ == 'X' && L->IndexRoot == 0) {
+		//	printf("");
+		//}
 	}
 }
 
