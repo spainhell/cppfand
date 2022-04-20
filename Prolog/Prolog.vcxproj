@@ -19,10 +19,16 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Prolog.cpp" />
+    <ClCompile Include="RdProlog.cpp" />
     <ClCompile Include="RunProlog.cpp" />
+    <ClCompile Include="TMemory.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Prolog.h" />
+    <ClInclude Include="RdProlog.h" />
     <ClInclude Include="RunProlog.h" />
+    <ClInclude Include="TMemory.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

@@ -14,6 +14,7 @@
 #include "runproc.h"
 #include "runproj.h"
 #include "../Prolog/RunProlog.h"
+#include "../Prolog/RdProlog.h"
 #include "TFile.h"
 #include "wwmenu.h"
 #include "XFile.h"
@@ -173,7 +174,8 @@ bool ChptDelFor(RdbRecVars* X)
 	}
 	case 'F': {
 		if (X->OldTxt == 0) {
-			result = true; break; /*don't delete if the record is new*/
+			result = true;
+			break; /*don't delete if the record is new*/
 		}
 		SetCompileAll();
 		if (X->isSQL) {
@@ -1086,9 +1088,6 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 	CRecPtr = Chpt->RecPtr;
 	Encryp = CRdb->Encrypted;
 	for (I = 1; I <= Chpt->NRecs; I++) {
-		//if (I >= 580) {
-		//	printf("RunProj r1495, CompileRdb(), I = %i, strings: %i, total: %i\n", I, strcount, strbytes);
-		//}
 		ReadRec(CFile, I, CRecPtr);
 		RP.IRec = I;
 		Verif = _B(ChptVerif);
@@ -1218,7 +1217,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 #ifdef FandProlog
 			case 'L': {
 				SetInpTTPos(Txt, Encryp);
-				// ReadProlog(I); 
+				ReadProlog(I);
 				break;
 			}
 #endif
