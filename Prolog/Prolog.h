@@ -23,6 +23,7 @@ const BYTE _CallP = 32;
 
 enum TDomainTyp { _UndefD, _IntD, _RealD, _StrD, _LongStrD, _ListD, _FunD, _RedefD };
 
+struct TFunDcl;
 struct TDomain : public Chained<TDomain> {
 	//WORD pChain = 0;
 	TDomainTyp Typ = _UndefD;
@@ -30,11 +31,10 @@ struct TDomain : public Chained<TDomain> {
 	TDomain* ElemDom = nullptr;
 	std::string Name; // 0
 	TDomain* OrigDom = nullptr; // 1
-	Chained* FunDcl = 0; // 2
+	TFunDcl* FunDcl = nullptr; // 2
 };
 
 struct TPTerm;
-
 struct TConst : public Chained<TConst> {
 	//WORD pChain = 0;
 	TDomain* Dom = nullptr;/*PDomain*/
@@ -43,7 +43,7 @@ struct TConst : public Chained<TConst> {
 
 struct TFunDcl : public Chained<TFunDcl> {
 	//WORD pChain = 0;
-	pstring Name;
+	std::string Name;
 	BYTE Arity = 0;
 	Chained<TDomain>* Arg[3]{ nullptr };
 };
@@ -135,23 +135,24 @@ struct TFldList : public Chained<TFldList> {
 struct TScanInf {
 	FileD* FD = nullptr;
 	TFldList* FL = nullptr; /*PFldList*/
-	pstring Name;
+	std::string Name;
 };
 
 struct TPredicate : public Chained<TPredicate> {
-	// WORD pChain = 0;
 	TPredicate* ChainDb = nullptr; /*PPredicate*/
-	pstring Name; /*PString*/
+	std::string Name; /*PString*/
 	TBranch* Branch = nullptr; /*offset*/ /*InstrPtr|ofs PScanInf|PDbBranch*/
 	WORD InstSz = 0, InpMask = 0, LocVarSz = 0; /*FAND-proc| _xxxP for buildIn*/
-	BYTE Opt = 0; BYTE Arity = 0; TDomain* Arg[3]{ nullptr }; /*PDomain*/
+	BYTE Opt = 0;
+	BYTE Arity = 0;
+	TDomain* Arg[3]{ nullptr }; /*PDomain*/
 };
 
 struct TDatabase : public Chained<TDatabase> {
 	// WORD pChain = 0; /*PDatabase*/
 	TPredicate* Pred = nullptr; /*PPredicate*/
 	LongStr* SOfs = nullptr; /*LongStrPtr/saved/*/
-	pstring Name;
+	std::string Name;
 };
 
 struct TProgRoots {
