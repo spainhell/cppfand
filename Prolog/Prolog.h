@@ -38,14 +38,15 @@ struct TPTerm;
 struct TConst : public Chained<TConst> {
 	//WORD pChain = 0;
 	TDomain* Dom = nullptr;/*PDomain*/
-	TPTerm* Expr = nullptr;/*PPTerm*/ pstring Name;
+	TPTerm* Expr = nullptr;/*PPTerm*/
+	std::string Name;
 };
 
 struct TFunDcl : public Chained<TFunDcl> {
 	//WORD pChain = 0;
 	std::string Name;
 	BYTE Arity = 0;
-	Chained<TDomain>* Arg[3]{ nullptr };
+	std::vector<TDomain*> Arg;
 };
 
 struct TPTerm {
@@ -53,7 +54,8 @@ struct TPTerm {
 	BYTE Arity = 0; TPTerm* Arg[1]{ nullptr }; /*PPTerm*/
 	char Op = '\0';
 	TPTerm* E1 = nullptr; TPTerm* E2 = nullptr; TPTerm* E3 = nullptr; /*PPTerm*/
-	char Op0 = '\0'; WORD E[4]{ 0 }; // puvodne 1..3
+	char Op0 = '\0';
+	TPTerm* E[4]{ nullptr }; // puvodne 1..3
 	char Op1 = '\0'; integer II = 0;
 	char Op2 = '\0'; double RR = 0.0;
 	char Op3 = '\0'; std::string SS;
@@ -145,7 +147,7 @@ struct TPredicate : public Chained<TPredicate> {
 	WORD InstSz = 0, InpMask = 0, LocVarSz = 0; /*FAND-proc| _xxxP for buildIn*/
 	BYTE Opt = 0;
 	BYTE Arity = 0;
-	TDomain* Arg[3]{ nullptr }; /*PDomain*/
+	std::vector<TDomain*> Arg; /*PDomain*/
 };
 
 struct TDatabase : public Chained<TDatabase> {

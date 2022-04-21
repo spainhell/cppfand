@@ -1067,7 +1067,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 	void* p = nullptr; void* p1 = nullptr; void* p2 = nullptr;
 	ExitRecord er; WORD lmsg = 0;
 	//LinkD* ld = nullptr;
-	std::string RprtTxt; 
+	std::string RprtTxt;
 	bool top = false;
 	FileD* lstFD = nullptr;
 	auto result = false;
@@ -1077,183 +1077,189 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 	p1 = p;
 	//NewExit(Ovr, er);
 	//goto label1;
-	IsCompileErr = false; FDCompiled = false;
-	OldCRec = CRec(); RP.R = CRdb;
-	top = (CRdb->ChainBack == nullptr);
-	if (top) {
-		UserName[0] = 0; UserCode = 0; UserPassWORD[0] = 0; AccRight[0] = 0;
-		if (ChptTF->CompileAll || CompileFD) Switches[0] = 0;
-	}
-	lmsg = CompileMsgOn(Buf, w);
-	CRecPtr = Chpt->RecPtr;
-	Encryp = CRdb->Encrypted;
-	for (I = 1; I <= Chpt->NRecs; I++) {
-		ReadRec(CFile, I, CRecPtr);
-		RP.IRec = I;
-		Verif = _B(ChptVerif);
-		STyp = _ShortS(ChptTyp);
-		Typ = STyp[1];
-		Name = OldTrailChar(' ', _ShortS(ChptName));
-		Txt = _T(ChptTxt);
-		if (Verif && ((ChptTF->LicenseNr != 0) || Encryp || (Chpt->UMode == RdOnly))) GoCompileErr(I, 647);
-		if (Verif || ChptTF->CompileAll || FromCtrlF10 || (Typ == 'U') ||
-			(Typ == 'F' || Typ == 'D') && CompileFD ||
-			(Typ == 'P') && ChptTF->CompileProc) {
-			OldTxt = _T(ChptOldTxt);
-			InpRdbPos = RP;
-			if (IsTestRun) {
-				ClrScr();
-				screen.GotoXY(3 + lmsg, 2);
-				printf("%*i", 4, I);
-				screen.GotoXY(3 + lmsg, 3);
-				printf("%*s%*s", 4, STyp.c_str(), 14, _ShortS(ChptName).c_str());
-				if (!(Typ == ' ' || Typ == 'D' || Typ == 'U')) { /* dupclicate name checking */
-					for (J = 1; J < I - 1; J++) {
-						ReadRec(CFile, J, CRecPtr);
-						if ((STyp == _ShortS(ChptTyp)) && EquUpCase(Name, OldTrailChar(' ', _ShortS(ChptName)))) GoCompileErr(I, 649);
+	try {
+		IsCompileErr = false; FDCompiled = false;
+		OldCRec = CRec(); RP.R = CRdb;
+		top = (CRdb->ChainBack == nullptr);
+		if (top) {
+			UserName[0] = 0; UserCode = 0; UserPassWORD[0] = 0; AccRight[0] = 0;
+			if (ChptTF->CompileAll || CompileFD) Switches[0] = 0;
+		}
+		lmsg = CompileMsgOn(Buf, w);
+		CRecPtr = Chpt->RecPtr;
+		Encryp = CRdb->Encrypted;
+		for (I = 1; I <= Chpt->NRecs; I++) {
+			ReadRec(CFile, I, CRecPtr);
+			RP.IRec = I;
+			Verif = _B(ChptVerif);
+			STyp = _ShortS(ChptTyp);
+			Typ = STyp[1];
+			Name = OldTrailChar(' ', _ShortS(ChptName));
+			Txt = _T(ChptTxt);
+			if (Verif && ((ChptTF->LicenseNr != 0) || Encryp || (Chpt->UMode == RdOnly))) GoCompileErr(I, 647);
+			if (Verif || ChptTF->CompileAll || FromCtrlF10 || (Typ == 'U') ||
+				(Typ == 'F' || Typ == 'D') && CompileFD ||
+				(Typ == 'P') && ChptTF->CompileProc) {
+				OldTxt = _T(ChptOldTxt);
+				InpRdbPos = RP;
+				if (IsTestRun) {
+					ClrScr();
+					screen.GotoXY(3 + lmsg, 2);
+					printf("%*i", 4, I);
+					screen.GotoXY(3 + lmsg, 3);
+					printf("%*s%*s", 4, STyp.c_str(), 14, _ShortS(ChptName).c_str());
+					if (!(Typ == ' ' || Typ == 'D' || Typ == 'U')) { /* dupclicate name checking */
+						for (J = 1; J < I - 1; J++) {
+							ReadRec(CFile, J, CRecPtr);
+							if ((STyp == _ShortS(ChptTyp)) && EquUpCase(Name, OldTrailChar(' ', _ShortS(ChptName)))) GoCompileErr(I, 649);
+						}
+						ReadRec(CFile, I, CRecPtr);
 					}
-					ReadRec(CFile, I, CRecPtr);
 				}
-			}
-			switch (Typ) {
-			case 'F': {
-				FDCompiled = true;
-				std::deque<LinkD*> ld = LinkDRoot;
-				MarkStore(p1);
-				FSplit(Name, dir, nm, ext);
-				if ((Txt == 0) && IsTestRun) {
-					SetMsgPar(Name);
-					if (EquUpCase(ext, ".DBF") && PromptYN(39)) {
-						T_(ChptOldTxt, 0);
-						OldTxt = 0;
-						MakeDbfDcl(nm);
-						Txt = _T(ChptTxt);
+				switch (Typ) {
+				case 'F': {
+					FDCompiled = true;
+					std::deque<LinkD*> ld = LinkDRoot;
+					MarkStore(p1);
+					FSplit(Name, dir, nm, ext);
+					if ((Txt == 0) && IsTestRun) {
+						SetMsgPar(Name);
+						if (EquUpCase(ext, ".DBF") && PromptYN(39)) {
+							T_(ChptOldTxt, 0);
+							OldTxt = 0;
+							MakeDbfDcl(nm);
+							Txt = _T(ChptTxt);
+							WriteRec(CFile, I, CRecPtr);
+						}
+					}
+#ifndef FandSQL
+					if (EquUpCase(ext, ".SQL")) GoCompileErr(I, 654);
+#endif
+					if (Verif || ChptTF->CompileAll || (OldTxt == 0)) {
+					label2:
+						p1 = RdF(Name);
+						// TODO: toto se asi zase musi povolit !!! 
+						//WrFDSegment(I);
+						if (CFile->IsHlpFile) CRdb->HelpFD = CFile;
+						if (OldTxt > 0) MergeOldNew(Verif, OldTxt);
+						ReleaseStore(p1);
+						CFile = Chpt;
+						// Odmazani dat z TTT souboru nebudeme provadet!
+						/*if (ChptTF->LicenseNr == 0) ChptTF->Delete(OldTxt);
+						else if (OldTxt != 0) ChptTF->Delete(OldTxt - ChptTF->LicenseNr);*/
+					}
+					else if (!RdFDSegment(I, OldTxt)) {
+						LinkDRoot = ld;
+						ReleaseStore(p1);
+						CFile = Chpt;
+						goto label2;
+					}
+					else {
+						ChainLast(FileDRoot, CFile); MarkStore(p1);
+						if (CFile->IsHlpFile) CRdb->HelpFD = CFile;
+					}
+					break;
+				}
+				case 'M': {
+					SetInpTTPos(Txt, Encryp);
+					ReadMerge();
+					break;
+				}
+				case 'R': {
+					if ((Txt == 0) && IsTestRun) {
+						RprtTxt = SelGenRprt(Name);
+						CFile = Chpt;
+						if (RprtTxt.empty()) GoCompileErr(I, 1145);
+						S_(ChptTxt, RprtTxt);
 						WriteRec(CFile, I, CRecPtr);
 					}
+					else {
+						SetInpTTPos(Txt, Encryp);
+						ReadReport(nullptr);
+					}
+					break;
 				}
-#ifndef FandSQL
-				if (EquUpCase(ext, ".SQL")) GoCompileErr(I, 654);
-#endif
-				if (Verif || ChptTF->CompileAll || (OldTxt == 0)) {
-				label2:
-					p1 = RdF(Name);
-					// TODO: toto se asi zase musi povolit !!! 
-					//WrFDSegment(I);
-					if (CFile->IsHlpFile) CRdb->HelpFD = CFile;
-					if (OldTxt > 0) MergeOldNew(Verif, OldTxt);
-					ReleaseStore(p1);
-					CFile = Chpt;
-					// Odmazani dat z TTT souboru nebudeme provadet!
-					/*if (ChptTF->LicenseNr == 0) ChptTF->Delete(OldTxt);
-					else if (OldTxt != 0) ChptTF->Delete(OldTxt - ChptTF->LicenseNr);*/
-				}
-				else if (!RdFDSegment(I, OldTxt)) {
-					LinkDRoot = ld;
-					ReleaseStore(p1);
-					CFile = Chpt;
-					goto label2;
-				}
-				else {
-					ChainLast(FileDRoot, CFile); MarkStore(p1);
-					if (CFile->IsHlpFile) CRdb->HelpFD = CFile;
-				}
-				break;
-			}
-			case 'M': {
-				SetInpTTPos(Txt, Encryp);
-				ReadMerge();
-				break;
-			}
-			case 'R': {
-				if ((Txt == 0) && IsTestRun) {
-					RprtTxt = SelGenRprt(Name);
-					CFile = Chpt;
-					if (RprtTxt.empty()) GoCompileErr(I, 1145);
-					S_(ChptTxt, RprtTxt);
-					WriteRec(CFile, I, CRecPtr);
-				}
-				else {
+				case 'P': {
+					if (FileDRoot->pChain == nullptr) lstFD = FileDRoot;
+					else lstFD = (FileD*)LastInChain(FileDRoot);
+					std::deque<LinkD*> ld = LinkDRoot;
 					SetInpTTPos(Txt, Encryp);
-					ReadReport(nullptr);
+					ReadProcHead(Name);
+					ReadProcBody();
+					lstFD->pChain = nullptr;
+					LinkDRoot = ld;
+					break;
 				}
-				break;
-			}
-			case 'P': {
-				if (FileDRoot->pChain == nullptr) lstFD = FileDRoot;
-				else lstFD = (FileD*)LastInChain(FileDRoot);
-				std::deque<LinkD*> ld = LinkDRoot;
-				SetInpTTPos(Txt, Encryp);
-				ReadProcHead(Name);
-				ReadProcBody();
-				lstFD->pChain = nullptr;
-				LinkDRoot = ld;
-				break;
-			}
-			case 'E': {
-				PushEdit();
-				std::vector<FieldDescr*> unusedFD;
-				RdFormOrDesign(nullptr, unusedFD, RP);
-				E = OldE;
-				EditDRoot = E;
-				break;
-			}
-			case 'U': {
-				if (!top || (I > 1)) GoCompileErr(I, 623);
-				if (Txt != 0) {
+				case 'E': {
+					PushEdit();
+					std::vector<FieldDescr*> unusedFD;
+					RdFormOrDesign(nullptr, unusedFD, RP);
+					E = OldE;
+					EditDRoot = E;
+					break;
+				}
+				case 'U': {
+					if (!top || (I > 1)) GoCompileErr(I, 623);
+					if (Txt != 0) {
+						ResetCompilePars();
+						SetInpTTPos(Txt, Encryp);
+						RdUserId(!IsTestRun || (ChptTF->LicenseNr != 0));
+						MarkStore(p1);
+					}
+					break;
+				}
+				case 'D': {
 					ResetCompilePars();
 					SetInpTTPos(Txt, Encryp);
-					RdUserId(!IsTestRun || (ChptTF->LicenseNr != 0));
+					ReadDeclChpt();
 					MarkStore(p1);
+					break;
 				}
-				break;
-			}
-			case 'D': {
-				ResetCompilePars();
-				SetInpTTPos(Txt, Encryp);
-				ReadDeclChpt();
-				MarkStore(p1);
-				break;
-			}
 #ifdef FandProlog
-			case 'L': {
-				SetInpTTPos(Txt, Encryp);
-				ReadProlog(I);
-				break;
-			}
+				case 'L': {
+					SetInpTTPos(Txt, Encryp);
+					TProgRoots* typeL = ReadProlog(I);
+					delete typeL; typeL = nullptr;
+					break;
+				}
 #endif
+				}
+			}
+			ReleaseBoth(p1, p2); CFile = Chpt; CRecPtr = Chpt->RecPtr;
+			if (Verif) {
+				ReadRec(CFile, I, CRecPtr);
+				B_(ChptVerif, false);
+				WriteRec(CFile, I, CRecPtr);
 			}
 		}
-		ReleaseBoth(p1, p2); CFile = Chpt; CRecPtr = Chpt->RecPtr;
-		if (Verif) {
-			ReadRec(CFile, I, CRecPtr);
-			B_(ChptVerif, false);
-			WriteRec(CFile, I, CRecPtr);
+		/* !!! with ChptTF^ do!!! */
+		if (ChptTF->CompileAll || ChptTF->CompileProc) {
+			ChptTF->CompileAll = false;
+			ChptTF->CompileProc = false;
+			SetUpdHandle(ChptTF->Handle);
 		}
-	}
-	/* !!! with ChptTF^ do!!! */
-	if (ChptTF->CompileAll || ChptTF->CompileProc) {
-		ChptTF->CompileAll = false;
-		ChptTF->CompileProc = false;
-		SetUpdHandle(ChptTF->Handle);
-	}
-	CompileFD = false;
-	result = true;
-	RestoreExit(er);
-	if (!Run) { CRecPtr = E->NewRecPtr; ReadRec(CFile, CRec(), CRecPtr); }
-	CompileMsgOff(Buf, w);
+		CompileFD = false;
+		result = true;
+		RestoreExit(er);
+		if (!Run) { CRecPtr = E->NewRecPtr; ReadRec(CFile, CRec(), CRecPtr); }
+		CompileMsgOff(Buf, w);
 #ifdef FandSQL
-	if (top && (Strm1 != nullptr)) Strm1->Login(UserName, UserPassWORD);
+		if (top && (Strm1 != nullptr)) Strm1->Login(UserName, UserPassWORD);
 #endif
-	log->log(loglevel::DEBUG, "finish CompileRdb()");
-	return result;
-label1:
-	RestoreExit(er); result = false; CompileMsgOff(Buf, w);
-	ReleaseFDLDAfterChpt();
-	PrevCompInp.clear();
-	ReleaseBoth(p, p2); E = OldE; EditDRoot = E;
-	CFile = Chpt;
-	if (!Run) CRecPtr = E->NewRecPtr;
-	if (!IsCompileErr) { InpRdbPos.IRec = I; }
+		log->log(loglevel::DEBUG, "finish CompileRdb()");
+	}
+	catch (std::exception& e) {
+		RestoreExit(er);
+		result = false;
+	}
+	CompileMsgOff(Buf, w);
+	//ReleaseFDLDAfterChpt();
+	//PrevCompInp.clear();
+	//ReleaseBoth(p, p2);
+	//E = OldE; EditDRoot = E;
+	//CFile = Chpt;
+	//if (!Run) CRecPtr = E->NewRecPtr;
+	//if (!IsCompileErr) { InpRdbPos.IRec = I; }
 	return result;
 }
 

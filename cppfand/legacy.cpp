@@ -106,6 +106,22 @@ void val(pstring s, longint& b, WORD& err)
 	}
 }
 
+void val(pstring s, longint& b, integer& err)
+{
+	if (s.length() == 0) { err = 1;	return; }
+	size_t idx = 0;
+	try {
+		b = std::stoi(s.c_str(), &idx);
+		// prelozil se cely retezec?
+		if (idx == s.length()) { err = 0; }
+		else { err = static_cast<WORD>(idx); }
+	}
+	catch (std::invalid_argument& e) {
+		b = 0;
+		err = 1;
+	}
+}
+
 double valDouble(std::string& s, integer& err)
 {
 	if (s.length() == 0) {

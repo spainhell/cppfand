@@ -15,6 +15,7 @@ void val(pstring s, integer& b, integer& err);
 void val(pstring s, double& b, integer& err);
 void val(pstring s, double& b, WORD& err);
 void val(pstring s, longint& b, WORD& err);
+void val(pstring s, longint& b, integer& err);
 double valDouble(std::string& s, integer& err);
 pstring copy(pstring source, size_t index, size_t count);
 void str(int input, pstring& output);

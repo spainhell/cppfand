@@ -2887,7 +2887,7 @@ Instr* RdCallLProc()
 	if (Lexem == ',') {
 		RdLex();
 		TestIdentif();
-		pd->lpName = StoreStr(LexWord);
+		pd->lpName = LexWord;
 		RdLex();
 	}
 	return pd;
