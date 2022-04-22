@@ -2027,8 +2027,8 @@ TProgRoots* ReadProlog(WORD RecNr)
 		}
 	}
 	//if (AbsAdr(HeapPtr) - AA > MaxLStrLen) OldError(544);
-	db->pChain = Roots->Databases;
-	while (db->pChain != nullptr) {
+	db = Roots->Databases;
+	while (db != nullptr) {
 		db->SOfs = SaveDb(db, AA);
 		db = db->pChain;
 	}

@@ -153,7 +153,7 @@ struct TPredicate : public Chained<TPredicate> {
 struct TDatabase : public Chained<TDatabase> {
 	// WORD pChain = 0; /*PDatabase*/
 	TPredicate* Pred = nullptr; /*PPredicate*/
-	LongStr* SOfs = nullptr; /*LongStrPtr/saved/*/
+	std::string SOfs; /*LongStrPtr/saved/*/
 	std::string Name;
 };
 

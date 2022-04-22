@@ -1089,7 +1089,7 @@ void S_(FieldDescr* F, std::string S, void* record)
 		case 'T': {
 			LongStr* ss = CopyToLongStr(S);
 			LongS_(F, ss);
-			ReleaseStore(ss);
+			delete ss;
 			break;
 		}
 		}

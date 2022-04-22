@@ -249,20 +249,19 @@ double RunRExpr(TPTerm* t/*PPTerm*/)
 
 void RunSExpr1(TPTerm* t, std::string* s)
 {
+	TPTerm* t1;
 	std::string s2;
-	TPTerm* tofs = nullptr; // absolute T
-	TPTerm* t1ofs = nullptr;
 	WORD l = 0, l2 = 0;
 	bool b = false;
 	do {
 		b = (t->Fun == _StrT) && (t->Op == '+');
-		if (b) t1ofs = t->E1;
-		else t1ofs = tofs;
-		RunSExpr(t1ofs, &s2);
+		if (b) t = t->E1;
+		else t1 = t;
+		RunSExpr(t1, &s2);
 		l2 = MinW(s2.length(), 255 - l);
 		Move(&s2[1], &s[l + 1], l2);
 		l += l2;
-		if (b) tofs = t->E2;
+		if (b) t = t->E2;
 	} while (b);
 	s[0] = (char)l;
 }
@@ -467,11 +466,10 @@ bool UnifyTermsCV(TTerm* T1, TPTerm* T2/*PPTerm*/)
 
 bool UnifyVList(TTerm* TT1, TPTerm* T2)
 {
-	WORD* t2ofs = &T2->Fun; // absolute T2
 	TTerm* t = nullptr; TTerm* t1 = nullptr;
 	t1 = TT1;
 	auto result = false;
-	while (t2ofs != nullptr)
+	while (T2 != nullptr)
 		switch (T2->Fun) {
 		case _VarT: {
 			if (T2->Bound) {
@@ -493,7 +491,7 @@ bool UnifyVList(TTerm* TT1, TPTerm* T2)
 		default: {
 			if ((t1 == nullptr) || !UnifyTermsCV(t1->Elem, T2->Elem)) return result;
 			t1 = t1->Next;
-			t2ofs = (WORD*)&T2->Next;
+			T2 = T2->Next;
 			break;
 		}
 		}
@@ -536,15 +534,14 @@ TTerm* CopyVList(TPTerm* T, bool Cpy);
 TTerm* CopyTerm(TPTerm* t/*PPTerm*/)
 {
 	TTerm* t1 = nullptr;
-	WORD* tofs = (WORD*)t; // absolute t
 	TTerm* t2 = nullptr;
 	integer i = 0;
 	LongStr* p = nullptr;
 	if (t == nullptr) { return nullptr; }
 	//t = ptr(_Sg, TOff);
 	switch (t->Fun) {
-	case _IntT: return GetIntTerm(RunIExpr((TPTerm*)tofs)); break;
-	case _RealT: return GetRealTerm(RunRExpr((TPTerm*)tofs)); break;
+	case _IntT: return GetIntTerm(RunIExpr((TPTerm*)t)); break;
+	case _RealT: return GetRealTerm(RunRExpr((TPTerm*)t)); break;
 	case _StrT: {
 		if (t->Op == _const) return GetStringTerm(t->SS);
 		else {
@@ -565,7 +562,7 @@ TTerm* CopyTerm(TPTerm* t/*PPTerm*/)
 		t2 = nullptr;
 		while (t->Op == '+') {
 			ChainList(t2, CopyVList(t->E1, true));
-			tofs = (WORD*)&t->E2;
+			t = t->E2;
 		}
 		ChainList(t2, CopyVList(t, false));
 		return t2;
@@ -573,7 +570,7 @@ TTerm* CopyTerm(TPTerm* t/*PPTerm*/)
 	}
 	default: {
 		t2 = GetFunTerm(t->Fun, t->Arity);
-		for (i = 0; i <= integer(t->Arity) - 1; i++)
+		for (i = 0; i <= (integer)t->Arity - 1; i++)
 			t2->Arg[i] = CopyTerm(t->Arg[i]);
 		return t2;
 		break;
@@ -583,9 +580,8 @@ TTerm* CopyTerm(TPTerm* t/*PPTerm*/)
 
 TTerm* CopyVList(TPTerm* T, bool Cpy)
 {
-	WORD tofs = 0; // absolute T
 	TTerm* root = nullptr; TTerm* t1 = nullptr; TTerm* prev = nullptr;
-	if (tofs == 0) { return nullptr; }
+	if (T == nullptr) { return nullptr; }
 	root = nullptr;
 label1:
 	if (T->Fun == _VarT) {
@@ -601,8 +597,8 @@ label1:
 	else prev->Next = t1;
 	if ((T->Fun != _VarT)) {
 		prev = t1;
-		tofs = *(WORD*)&T->Next;
-		if (tofs != 0) goto label1;
+		T = T->Next;
+		if (T != nullptr) goto label1;
 	}
 	return root;
 }
@@ -675,20 +671,19 @@ void PackTermV(TPTerm* T/*PPTerm*/)
 {
 	char* p = PackedTermPtr;
 	integer i = 0; WORD n = 0; WORD* wp = nullptr;
-	//TPTerm* T = nullptr;
-	TPTerm* tofs = nullptr; // absolute t
+	TPTerm* t = nullptr;
 	TTerm* t1 = nullptr;
 	//if (PtrRec(p).Ofs >= PTPMaxOfs) RunError(1527);
 	//T = ptr(_Sg, TOff);
 label1:
-	if (tofs == 0 /* [] */) { *(WORD*)p = 0; p += 2; }
+	if (t == 0 /* [] */) { *(WORD*)p = 0; p += 2; }
 	else {
 		switch (T->Fun) {
 		case _VarT: PackTermC(CurrInst->Vars[T->Idx]); break;
-		case _IntT: { *(integer*)p = RunIExpr((TPTerm*)tofs); p += 2; break; }
-		case _RealT: { *(double*)p = RunRExpr((TPTerm*)tofs); p += sizeof(double); break; }
+		case _IntT: { *(integer*)p = RunIExpr((TPTerm*)t); p += 2; break; }
+		case _RealT: { *(double*)p = RunRExpr((TPTerm*)t); p += sizeof(double); break; }
 		case _StrT: {
-			RunSExpr((TPTerm*)tofs, &XXS);
+			RunSExpr((TPTerm*)t, &XXS);
 			n = XXS.length() + 1;
 			//if (PtrRec(p).Ofs + n >= PTPMaxOfs) RunError(1527);
 			Move(&XXS, p, n);
@@ -702,7 +697,7 @@ label1:
 			*wp = 0;
 			while (T->Op == '+') {
 				*wp += PackVList(T->E1);
-				tofs = T->E2;
+				t = T->E2;
 			}
 			*wp += PackVList(T);
 			break;
@@ -710,7 +705,9 @@ label1:
 		default: {
 			*p = char(T->Fun);
 			p++;
-			for (i = 0; i <= integer(T->Arity) - 1; i++) PackTermV(T->Arg[i]);
+			for (i = 0; i <= integer(T->Arity) - 1; i++) {
+				PackTermV(T->Arg[i]);
+			}
 		}
 		}
 	}
@@ -759,7 +756,9 @@ TTerm* UnpackTerm(TDomain* D)
 		n = *p; p++;
 		f = GetFunDcl(D, n);
 		t = GetFunTerm(n, f->Arity);
-		for (i = 0; i <= integer(f->Arity) - 1; i++) t->Arg[i] = UnpackTerm((TDomain*)f->Arg[i]);
+		for (i = 0; i <= (integer)f->Arity - 1; i++) {
+			t->Arg[i] = UnpackTerm((TDomain*)f->Arg[i]);
+		}
 		break;
 	}
 	}
@@ -881,81 +880,79 @@ WORD LenDbEntry(LongStr* S, integer Arity)
 	return n;
 }
 
-LongStr* SaveDb(TDatabase* Db, longint AA)
+std::string SaveDb(TDatabase* Db, longint AA)
 {
-	WORD n = 0, arity = 0; longint l = 0;
 	std::string s;
-	char* q = nullptr;
-	bool x = false;
-	TPredicate* p = nullptr;
-	TDbBranch* b = nullptr;
-	TDatabase* db = nullptr;
-	db = Db;
-	p = db->Pred;
-	x = AA != 0;
+	TPredicate* p = Db->Pred;
+	bool x = AA != 0;
+
 	while (p != nullptr) {
 		if ((p->Opt & _FandCallOpt) == 0) {
-			arity = p->Arity;
+			BYTE arity = p->Arity;
 			if (!x) {
+				s += (char)p->Name.length();
 				s += p->Name;
-				*(BYTE*)(GetStore(1)) = arity;
+				s += (char)arity;
 			}
-			b = (TDbBranch*)p->Branch;
+			TDbBranch* b = (TDbBranch*)p->Branch;
 			while (b != nullptr) {
-				n = LenDbEntry((LongStr*)b->LL, arity);
-				//q = GetStore(n + 1);
-				//if (x && (AbsAdr(HeapPtr) - AA > MaxLStrLen)) OldError(544);
-				q[0] = 1;
-				Move(&b->LL, &q[1], n);
+				s += '\1';
+				s.append((char*)b->A, b->LL);
 				b = b->pChain;
 			}
-			*(BYTE*)(GetStore(1)) = 0;
+			s += '\0';
 		}
 		p = p->ChainDb;
 	}
-	//l = AbsAdr(HeapPtr) - AbsAdr(s) - 2;
-	//s->LL = l;
-	if (l > MaxLStrLen) {
-		SetMsgPar(db->Name);
+	if (s.length() > MaxLStrLen) {
+		SetMsgPar(Db->Name);
 		RunError(1532);
 	}
-	return new LongStr();
+	return s;
 }
 
-void ConsultDb(LongStr* S, TDatabase* DbOfs/*PDatabase*/)
+void ConsultDb(std::string S, TDatabase* Db/*PDatabase*/)
 {
-	WORD n = 0; char* q = nullptr;
-	TPredicate* p = nullptr;
-	TPredicate* pofs = nullptr; // absolute p
-	TDbBranch* b = nullptr; TDatabase* db = nullptr;
-	q = (char*)(S->A);
-	db = DbOfs;
-	p = db->Pred;
-	while (pofs != nullptr) {
+	WORD n = 0;
+	TPredicate* p;
+	p = Db->Pred;
+	size_t index = 0;
+	while (p != nullptr) {
 		if ((p->Opt & _FandCallOpt) == 0) {
-			//if (PtrRec(S).Seg != _Sg) {
-			//	if (*(pstring*)q != *(pstring*)(ptr(_Sg, p->Name))) goto label1;
-			//	q += *q + 1;
-			//	if (*q != p->Arity) goto label1;
-			//	q++;
-			//}
-			while (q[0] == 1) {
-				q++;
-				n = LenDbEntry((LongStr*)q, p->Arity);
-				//b = Mem3.Alloc(n + 4);
-				//ChainLast<TBranch>(p->Branch, b);
-				//Move(q[0], b->LL, n);
-				q += n;
+			//if (PtrRec(S).Seg != _Sg)
+			{
+				std::string loadedName((BYTE)S[index], S[index + 1]);
+				index += loadedName.length() + 1;
+				if (p->Name != loadedName) {
+					SetMsgPar(Db->Name);
+					RunError(1533);
+					return;
+				}
+				if ((BYTE)S[index++] != p->Arity) {
+					SetMsgPar(Db->Name);
+					RunError(1533);
+					return;
+				}
 			}
-			if (q[0] != 0) goto label1;
-			q++;
+
+			while (S[index] == '\1') {
+				index++;
+				TDbBranch* b = new TDbBranch();
+				memcpy(&b->LL, &S[index], 2);
+				index += 2;
+				memcpy(b->A, &S[index], b->LL);
+				index += b->LL;
+				if (p->Branch == nullptr) p->Branch = (TBranch*)b;
+				else ChainLast(p->Branch, (TBranch*)b);
+			}
+			if (S[index] != '\0') {
+				SetMsgPar(Db->Name);
+				RunError(1533);
+				return;
+			}
+			index++;
 		}
-		pofs = p->ChainDb;
-	}
-	if (S->LL != AbsAdr(q) - AbsAdr(S) - 2) {
-	label1:
-		SetMsgPar(db->Name);
-		RunError(1533);
+		p = p->ChainDb;
 	}
 }
 
@@ -1528,9 +1525,7 @@ bool RunCommand(TCommand* COff/*PCommand*/)
 	WORD i = 0;
 	TTerm* t = nullptr;
 	TWriteD* w = nullptr;
-	TWriteD* wofs = nullptr; // absolute w
 	TCommand* c = nullptr;
-	WORD cofs = 0; // absolute c
 	void* p1 = nullptr;
 	longint n = 0; LongStr* s = nullptr;
 	LockMode md;
@@ -1539,10 +1534,10 @@ bool RunCommand(TCommand* COff/*PCommand*/)
 	switch (c->Code) {
 	case _WriteC: {
 		w = c->WrD;
-		while (wofs != nullptr) {
+		while (w != nullptr) {
 			if (w->IsString) printf("%s", w->SS.c_str());
 			else PrintTerm(CurrInst->Vars[w->Idx], w->Dom);
-			wofs = (TWriteD*)w->pChain;
+			w = w->pChain;
 		}
 		if (c->NL) printf("\n");
 		break;
@@ -1590,15 +1585,15 @@ bool RunCommand(TCommand* COff/*PCommand*/)
 			md = NewLMode(WrMode);
 			if (!LinkLastRec(CFile, n, true)) IncNRecs(1);
 			DelTFld(c->FldD);
-			s = SaveDb(c->DbPred, 0);
-			LongS_(c->FldD, s);
+			std::string save = SaveDb(c->DbPred, 0);
+			S_(c->FldD, save);
 			WriteRec(CFile, CFile->NRecs, CRecPtr);
 		}
 		else {
 			md = NewLMode(RdMode);
 			LinkLastRec(CFile, n, true);
 			s = _LongS(c->FldD);
-			if (c->Code == _ConsultC) ConsultDb(s, c->DbPred);
+			if (c->Code == _ConsultC) ConsultDb(std::string(s->A, s->LL), c->DbPred);
 			else LoadLex(s);
 		}
 		OldLMode(md);
@@ -1607,14 +1602,14 @@ bool RunCommand(TCommand* COff/*PCommand*/)
 	}
 	case _ErrorC: {
 		i1 = -1; i = 1; w = c->WrD;
-		while (wofs != 0) {
+		while (w != nullptr) {
 			if (w->IsString) { MsgPar[i] = w->SS; i++; }
 			else {
 				t = CurrInst->Vars[w->Idx];
 				if (w->Dom->Typ == _IntD) i1 = t->II;
 				else { MsgPar[i] = t->SS; i++; };
 			}
-			wofs = (TWriteD*)w->pChain;
+			w = w->pChain;
 		}
 		if (i1 == -1) {
 			i1 = 0;
@@ -1641,7 +1636,6 @@ void CallFandProc()
 	char* pp = (char*)ps;
 	LongStr* s = nullptr;
 	TDomain* d = nullptr;
-	TDomain* dofs = nullptr; // absolute d
 	void* pt = PackedTermPtr;
 	pstring* ss = nullptr;
 
@@ -1659,7 +1653,7 @@ void CallFandProc()
 	{
 		auto ta = &pd->TArg[i];
 		//PtrRec(Frml).Seg = _Sg;
-		dofs = p->Arg[i - 1];
+		d = p->Arg[i - 1];
 		t = CurrInst->Vars[i - 1];
 		if ((w & 1) != 0) {
 			switch (ta->FTyp) {
@@ -1703,7 +1697,7 @@ void CallFandProc()
 					else {
 						s = RunLongStr(ta->Frml);
 						if (d->Typ == _LongStrD) CurrInst->Vars[i - 1] = GetLongStrTerm(WrLongStr(s));
-						else { PackedTermPtr = s->A; CurrInst->Vars[i - 1] = UnpackTerm(dofs); }
+						else { PackedTermPtr = s->A; CurrInst->Vars[i - 1] = UnpackTerm(d); }
 						ReleaseStore(s);
 					}
 				}
@@ -1729,31 +1723,25 @@ void CallFandProc()
 
 TScanInf* SiCFile(TScanInf* SiOfs)
 {
-	TScanInf* si = nullptr;
-	TFldList* fl = nullptr;
-	TFldList* flofs = 0; // absolute fl
-	si = SiOfs;
-	auto result = si;
+	TScanInf* si = SiOfs;
+	TScanInf* result = si;
 	CFile = si->FD;
 	if (CFile != nullptr) return result;
+
 	SetCFile(si->Name);
 	si->FD = CFile;
-	fl = si->FL;
-	while (flofs != nullptr) {
+	TFldList* fl = si->FL;
+	while (fl != nullptr) {
 		fl->FldD = (FieldDescr*)CFile;
-		flofs = (TFldList*)fl->pChain;
+		fl = fl->pChain;
 	}
-	return result;
 }
 
 void AssertFand(TPredicate* P, TCommand* C)
 {
 	TFldList* fl = nullptr;
-	TFldList* flofs = nullptr; // absolute fl 
 	TTermList* l = nullptr;
-	TTermList* lofs = nullptr; // absolute l
 	TDomain* d = nullptr;
-	TDomain* dofs = nullptr; // absolute d
 	FieldDescr* f = nullptr;
 	LockMode md;
 	TTerm* t = nullptr;
@@ -1770,17 +1758,20 @@ void AssertFand(TPredicate* P, TCommand* C)
 	l = C->Arg;
 	i = 0;
 	if (Trace()) printf("CALL assert(%s(", P->Name.c_str());
-	while (flofs != nullptr) {
+	while (fl != nullptr) {
 		f = fl->FldD;
 		if ((f->Flg & f_Stored) != 0) {
 			t = CopyTerm(l->Elem);
-			dofs = P->Arg[i];
+			d = P->Arg[i];
 			if (Trace()) {
 				if (i > 0) printf(",");
-				PrintTerm(t, dofs);
+				PrintTerm(t, d);
 			}
 			switch (f->FrmlTyp) {
-			case 'B': B_(f, bool(t->Fun)); break;
+			case 'B': {
+				B_(f, (bool)t->Fun);
+				break;
+			}
 			case 'R': {
 				if (t->Fun == _IntT) R_(f, t->II);
 				else R_(f, t->RR);
@@ -1797,8 +1788,8 @@ void AssertFand(TPredicate* P, TCommand* C)
 				break;
 			}
 			}
-			flofs = (TFldList*)fl->pChain;
-			lofs = (TTermList*)l->pChain;
+			fl = fl->pChain;
+			l = l->pChain;
 			i++;
 		}
 	}
@@ -1819,20 +1810,18 @@ void AssertFand(TPredicate* P, TCommand* C)
 TFileScan* GetScan(TScanInf* SIOfs, TCommand* C, TInstance* Q)
 {
 	TFldList* fl = nullptr;
-	WORD flofs = 0; // absolute fl
 	XKey* k = nullptr;
-	WORD kofs = 0; // absolute k
 	KeyFldD* kf = nullptr; FieldDescr* f = nullptr;
 	XString xx; WORD i = 0;
 	TTerm* t = nullptr; double r = 0.0; LongStr* s = nullptr; pstring* ss = nullptr;
 	LockMode md; longint n = 0; bool b = false;
 
 	TScanInf* si = SiCFile(SIOfs);
-	TFileScan* fs = (TFileScan*)Mem1.Get(sizeof(TFileScan));
+	TFileScan* fs = new TFileScan(); // (TFileScan*)Mem1.Get(sizeof(TFileScan));
 	md = NewLMode(RdMode);
 	k = nullptr;
 	if (C->KDOfs != nullptr) k = C->KDOfs;
-	if (kofs == 0) {
+	if (k == nullptr) {
 		fs->IRec = 1;
 		fs->Count = CFile->NRecs;
 		goto label1;
@@ -1851,25 +1840,28 @@ TFileScan* GetScan(TScanInf* SIOfs, TCommand* C, TInstance* Q)
 			xx.StoreReal(r, kf);
 			break;
 		}
-		case 'B': xx.StoreBool(bool(t->Fun), kf); break;
+		case 'B': {
+			xx.StoreBool(bool(t->Fun), kf);
+			break;
+		}
 		default: {
 			if (t->Fun == _StrT) xx.StoreStr(t->SS, kf);
 			else {
 				if (t->Fun == _LongStrT) s = RdLongStr(t->Pos);
 				else s = GetPackedTerm(t);
 				//ss = ptr(PtrRec(s).Seg, PtrRec(s).Ofs + 1);
-				ss[0] = char(MinW(s->LL, 255));
+				ss[0] = (char)MinW(s->LL, 255);
 				xx.StoreStr(*ss, kf);
 				ReleaseStore(s);
 			}
 			break;
 		}
 		}
-		kf = (KeyFldD*)kf->pChain;
+		kf = kf->pChain;
 		i++;
 	}
 	k->FindNr(xx, fs->IRec);
-	if ((f->Typ != 'A') || (xx.S[xx.S.length()] != 0x1f)) xx.S[0]++;
+	if ((f->Typ != 'A' | xx.S[xx.S.length()]) != 0x1f) xx.S[0]++;
 	xx.S[xx.S.length()] = 0xFF;
 	b = k->FindNr(xx, n);
 	fs->Count = 0;
@@ -1892,24 +1884,22 @@ std::string _MyS(FieldDescr* F)
 bool ScanFile(TInstance* Q)
 {
 	TPredicate* p = nullptr;
-	TPredicate* pofs = nullptr; // absolute p
 	TCommand* c = nullptr;
-	TCommand* cofs = nullptr; // absolute c
 	TFldList* fl = nullptr;
-	TFldList* flofs = nullptr; // absolute fl
-	FieldDescr* f = nullptr; TScanInf* si = nullptr;
+	FieldDescr* f = nullptr;
+	TScanInf* si = nullptr;
 	WORD w = 0; integer i = 0;
 	TTerm* t = nullptr; double r = 0.0;
 	LongStr* s = nullptr;
 	pstring ss; bool b = false;
 	TDomain* d = nullptr;
-	TDomain* dofs = nullptr; // absolute d
 	void* pt = PackedTermPtr;
 	XKey* k = nullptr;
-	XKey* kofs = nullptr; // absolute k
 	LockMode md, md1;
-	TFileScan* fs = nullptr; TFileScan* fs1 = nullptr;
-	longint RecNr = 0; XString xx;
+	TFileScan* fs = nullptr;
+	TFileScan* fs1 = nullptr;
+	longint RecNr = 0;
+	XString xx;
 
 	auto result = false;
 	fs = (TFileScan*)CurrInst->NextBranch;
@@ -1948,7 +1938,7 @@ label1:
 		fs->Count--;
 		if ((fs->Count == 0) || (fs->IRec > k->NRecs())) CurrInst->NextBranch = nullptr;
 	}
-	flofs = si->FL;
+	fl = si->FL;
 	w = c->CompMask;
 	for (i = 0; i <= integer(p->Arity) - 1; i++)
 	{ /* compare with inp. parameters */
@@ -1956,7 +1946,10 @@ label1:
 			t = CurrInst->Vars[i];
 			f = fl->FldD;
 			switch (f->FrmlTyp) {
-			case 'B': if (_B(f) != t->Fun) goto label1; break;
+			case 'B': {
+				if (_B(f) != t->Fun) goto label1;
+				break;
+			}
 			case 'R': {
 				r = _R(f);
 				if (t->Fun == _IntT) { if (r != t->II) goto label1; }
@@ -1965,7 +1958,7 @@ label1:
 			}
 			default: {
 				if (f->Typ == 'T') {
-					dofs = p->Arg[i];
+					d = p->Arg[i];
 					if (d->Typ == _LongStrD) s = RdLongStr(t->Pos);
 					else s = GetPackedTerm(t);
 					b = EquLongStr(s, _LongS(f));
@@ -1977,16 +1970,16 @@ label1:
 			}
 		}
 		else if (t->SS != _MyS(f)) goto label1;
-		flofs = (TFldList*)fl->pChain;
+		fl = fl->pChain;
 		w = w >> 1;
 	}
-	flofs = si->FL;
+	fl = si->FL;
 	w = c->OutpMask;
-	for (i = 0; i <= integer(p->Arity) - 1; i++)
+	for (i = 0; i <= (integer)p->Arity - 1; i++)
 	{ /* create outp. parameters */
 		if ((w & 1) != 0) {
 			f = fl->FldD;
-			dofs = p->Arg[i];
+			d = p->Arg[i];
 			switch (f->FrmlTyp) {
 			case 'B': CurrInst->Vars[i] = GetBoolTerm(_B(f)); break;
 			case 'R': {
@@ -1997,15 +1990,15 @@ label1:
 			default: {
 				if (f->Typ == 'T') {
 					s = _LongS(f);
-					if (d->Typ = _LongStrD) CurrInst->Vars[i] = GetLongStrTerm(WrLongStr(s));
-					else { pt = s->A; CurrInst->Vars[i] = UnpackTerm(dofs); }
+					if (d->Typ == _LongStrD) CurrInst->Vars[i] = GetLongStrTerm(WrLongStr(s));
+					else { pt = s->A; CurrInst->Vars[i] = UnpackTerm(d); }
 					ReleaseStore(s);
 				}
 				else CurrInst->Vars[i] = GetStringTerm(_MyS(f));
 				break;
 			}
 			}
-			flofs = (TFldList*)fl->pChain;
+			fl = fl->pChain;
 			w = w >> 1;
 		}
 		result = true;
@@ -2013,17 +2006,18 @@ label1:
 			md1 = NewLMode(DelMode);
 			while ((Q != nullptr)) {
 				fs1 = (TFileScan*)Q->NextBranch;
-				if ((Q->Pred == pofs) && (fs1 != nullptr))
+				if ((Q->Pred == p) && (fs1 != nullptr)) {
 					if (CFile->Typ == 'X') {
-						cofs = Q->RetCmd;
-						kofs = c->KDOfs;
-						if (kofs != 0) {
+						c = Q->RetCmd;
+						k = c->KDOfs;
+						if (k != 0) {
 							xx.PackKF(k->KFlds);
 							k->RecNrToPath(xx, RecNr);
 							if (k->PathToNr() <= fs1->IRec) fs1->IRec--;
 						}
 					}
 					else if (RecNr <= fs1->IRec) fs1->IRec--;
+				}
 				Q = Q->PrevInst;
 			}
 			if (CFile->Typ == 'X') { DeleteXRec(RecNr, true); fs->IRec--; }
@@ -2053,7 +2047,6 @@ void TraceCall(TInstance* Q, BYTE X)
 	TPredicate* p = nullptr;
 	TCommand* c = nullptr;
 	TDomain* d = nullptr;
-	TDomain* dofs = nullptr; // absolute d
 
 	p = Q->Pred;
 	c = Q->RetCmd;
@@ -2075,10 +2068,10 @@ void TraceCall(TInstance* Q, BYTE X)
 		else w = p->InpMask;
 		for (i = 0; i <= p->Arity - 1; i++) {
 			if (i > 0) printf(",");
-			dofs = p->Arg[i];
+			d = p->Arg[i];
 			if ((w & 1) == X) {
 				if ((X == 1) && ((p->Opt & _PackInpOpt) != 0))
-					PrintPackedTerm((char*)(Q->Vars[i]) + 2, dofs);
+					PrintPackedTerm((char*)(Q->Vars[i]) + 2, d);
 				else {
 					if ((p->Opt & _BuildInOpt) != 0)
 					{
@@ -2086,18 +2079,18 @@ void TraceCall(TInstance* Q, BYTE X)
 						case _MemP:
 						case _AddP:
 						case _DelP: {
-							dofs = c->Elem;
-							if (i == 0) dofs = d->ElemDom;
+							d = c->Elem;
+							if (i == 0) d = d->ElemDom;
 							break;
 						}
-						case _LenP: if (i == 0) dofs = c->Elem; break;
+						case _LenP: if (i == 0) d = c->Elem; break;
 						case _InvP:
 						case _UnionP:
 						case _MinusP:
-						case _InterP: dofs = c->Elem; break;
+						case _InterP: d = c->Elem; break;
 						}
 					}
-					PrintTerm(Q->Vars[i], dofs);
+					PrintTerm(Q->Vars[i], d);
 				}
 			}
 			else printf("_");
@@ -2120,7 +2113,6 @@ bool AutoRecursion(TInstance* q, TPredicate* p, TCommand* c)
 	integer i = 0, j = 0, i2 = 0, iOutp = 0, sz = 0, arity = 0;
 	TAutoR* w = nullptr; TTerm* t = nullptr; TTerm* t1 = nullptr; TFunDcl* f = nullptr;
 	TDomain* d = nullptr;
-	TDomain* dofs = nullptr; // absolute d
 
 	d = p->Arg[0];
 	iOutp = c->iOutp;
@@ -2148,22 +2140,25 @@ bool AutoRecursion(TInstance* q, TPredicate* p, TCommand* c)
 	w = (TAutoR*)t1;
 	if (w == nullptr) {
 		t = q->Vars[0];
-		f = GetFunDcl(dofs, t->Fun);
+		f = GetFunDcl(d, t->Fun);
 		w = (TAutoR*)Mem2.Get(sizeof(TAutoR) + 4 * f->Arity);
 		w->t = t; i = 0;
 		q->Vars[c->iWrk] = (TTerm*)w;
 	}
 	else {
 		t = w->t;
-		f = GetFunDcl(dofs, t->Fun);
+		f = GetFunDcl(d, t->Fun);
 		i = w->i;
 		if (iOutp > 0) w->Arg[i] = q->Vars[iOutp];
 		i++;
 	}
 	while (i < f->Arity)
-		if (f->Arg[i] == dofs) {
-			if (w->wasCall) for (j = 0; j <= c->nPairs - 1; j++)
-				q->Vars[c->Pair[j].iInp] = q->Vars[c->Pair[j].iOutp];
+		if (f->Arg[i] == d) {
+			if (w->wasCall) {
+				for (j = 0; j <= c->nPairs - 1; j++) {
+					q->Vars[c->Pair[j].iInp] = q->Vars[c->Pair[j].iOutp];
+				}
+			}
 			q->Vars[0] = t->Arg[i];
 			w->i = i;
 			w->wasCall = true;
@@ -2187,7 +2182,7 @@ bool AutoRecursion(TInstance* q, TPredicate* p, TCommand* c)
 		i2 = c->Pair[j].iOutp;
 		if (i > 0) t = q->Vars[i];
 		else {
-			dofs = p->Arg[i2];
+			d = p->Arg[i2];
 			switch (d->Typ) {
 			case _ListD: t = nullptr; break;
 			case _StrD: t = GetStringTerm(""); break;
@@ -2290,7 +2285,7 @@ void RunProlog(RdbPos* Pos, std::string PredName)
 	}
 label1:
 	/* new instance remember prev. inst,branch,cmd */
-	q = (TInstance*)Mem2.Get(p->InstSz + (sizeof(TInstance) - 7 * 4));
+	q = new TInstance(); // (TInstance*)Mem2.Get(p->InstSz + (sizeof(TInstance) - 7 * 4));
 	q->Pred = p;
 	q->PrevInst = TopInst;
 	TopInst = q;
@@ -2474,7 +2469,7 @@ label23:
 		}
 		default: {
 			if (!RunCommand(c)) goto label5;
-				break;
+			break;
 		}
 		}
 		/*       resume command   */
