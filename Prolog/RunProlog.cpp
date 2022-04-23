@@ -88,60 +88,57 @@ TFunDcl* GetFunDcl(TDomain* D, BYTE I)
 /*  T T E R M  =============================================================*/
 TTerm* GetIntTerm(integer I)
 {
-	TTerm* t = (TTerm*)Mem1.Get(1 + sizeof(integer));
-	/* !!! with t^ do!!! */
-	{ t->Fun = _IntT; t->II = I; }
+	TTerm* t = new TTerm(); // (TTerm*)Mem1.Get(1 + sizeof(integer));
+	t->Fun = _IntT;
+	t->II = I;
 	return t;
 }
 
 TTerm* GetRealTerm(double R)
 {
-	TTerm* t = (TTerm*)Mem1.Get(1 + sizeof(double));
-	/* !!! with t^ do!!! */
-	{ t->Fun = _RealT; t->RR = R; }
+	TTerm* t = new TTerm(); //(TTerm*)Mem1.Get(1 + sizeof(double));
+	t->Fun = _RealT;
+	t->RR = R;
 	return t;
 }
 
 TTerm* GetBoolTerm(bool B)
 {
-	TTerm* t = (TTerm*)Mem1.Get(1 + 1);
+	TTerm* t = new TTerm(); // (TTerm*)Mem1.Get(1 + 1);
 	t->Fun = B;
 	return t;
 }
 
 TTerm* GetStringTerm(pstring S)
 {
-	TTerm* t = (TTerm*)Mem1.Get(1 + 1 + S.length());
-	/* !!! with t^ do!!! */
-	{ t->Fun = _StrT; t->SS = S; }
+	TTerm* t = new TTerm(); // (TTerm*)Mem1.Get(1 + 1 + S.length());
+	t->Fun = _StrT;
+	t->SS = S;
 	return t;
 }
 
 TTerm* GetLongStrTerm(longint N)
 {
-	TTerm* t = (TTerm*)Mem1.Get(1 + 4);
-	/* !!! with t^ do!!! */
-	{ t->Fun = _LongStrT; t->Pos = N; }
+	TTerm* t = new TTerm(); // (TTerm*)Mem1.Get(1 + 4);
+	t->Fun = _LongStrT;
+	t->Pos = N;
 	return t;
 }
 
 TTerm* GetListTerm(TTerm* aElem, TTerm* aNext)
 {
-	TTerm* t = (TTerm*)Mem1.Get(1 + 2 * 4);
-	/* !!! with t^ do!!! */
-	{
-		t->Fun = _ListT;
-		t->Elem = aElem;
-		t->Next = aNext;
-	}
+	TTerm* t = new TTerm(); // (TTerm*)Mem1.Get(1 + 2 * 4);
+	t->Fun = _ListT;
+	t->Elem = aElem;
+	t->Next = aNext;
 	return t;
 }
 
 TTerm* GetFunTerm(BYTE aFun, BYTE aArity)
 {
-	TTerm* t = (TTerm*)Mem1.Get(1 + 1 + aArity * 4);
-	/* !!! with t^ do!!! */
-	{ t->Fun = aFun; t->Arity = aArity; }
+	TTerm* t = new TTerm(); // (TTerm*)Mem1.Get(1 + 1 + aArity * 4);
+	t->Fun = aFun;
+	t->Arity = aArity;
 	return t;
 }
 
@@ -185,25 +182,31 @@ longint WrLongStr(LongStr* S)
 	return WrLongStrLP(S->LL, S->A);
 }
 
-LongStr* RunLSExpr(TPTerm* TOfs);
-void RunSExpr(TPTerm* t, std::string* s);
+std::string RunLSExpr(TPTerm* t);
+std::string RunSExpr(TPTerm* t);
 double RunRExpr(TPTerm* TOfs);
 
 integer RunIExpr1(TPTerm* t)
 {
 	std::string s, s2;
 	integer i = 0, err = 0, l = 0;
-	LongStr* ss = nullptr;
 	switch (t->Op) {
-	case _length: { RunSExpr(t->E1, &s); i = s.length(); break; }
-	case _val: { RunSExpr(t->E1, &s); val(s, i, err); break; }
+	case _length: {
+		s = RunSExpr(t->E1);
+		i = s.length();
+		break;
+	}
+	case _val: {
+		s = RunSExpr(t->E1);
+		val(s, i, err);
+		break;
+	}
 	case _pos: {
-		RunSExpr(t->E1, &s);
-		ss = RunLSExpr(t->E2);
-		l = ss->LL;
-		i = FindTextE(s, "", ss->A, l);
-		if (i > 0) i = i - s.length();
-		ReleaseStore(ss);
+		s = RunSExpr(t->E1);
+		std::string se = RunLSExpr(t->E2);
+		const size_t f = se.find(s); //FindTextE(s, "", ss->A, l);
+		if (f == std::string::npos) i = 0;
+		else i = f + 1;
 		break;
 	}
 	}
@@ -247,9 +250,9 @@ double RunRExpr(TPTerm* t/*PPTerm*/)
 	return 0.0;
 }
 
-void RunSExpr1(TPTerm* t, std::string* s)
+std::string RunSExpr1(TPTerm* t)
 {
-	TPTerm* t1;
+	TPTerm* t1 = nullptr;
 	std::string s2;
 	WORD l = 0, l2 = 0;
 	bool b = false;
@@ -257,45 +260,51 @@ void RunSExpr1(TPTerm* t, std::string* s)
 		b = (t->Fun == _StrT) && (t->Op == '+');
 		if (b) t = t->E1;
 		else t1 = t;
-		RunSExpr(t1, &s2);
+		s2 = RunSExpr(t1);
 		l2 = MinW(s2.length(), 255 - l);
-		Move(&s2[1], &s[l + 1], l2);
+		Move(&s2[1], &s2[l + 1], l2);
 		l += l2;
 		if (b) t = t->E2;
 	} while (b);
-	s[0] = (char)l;
+	s2[0] = (char)l;
+	return s2;
 }
 
-void RunSExpr(TPTerm* t, std::string* s)
+std::string RunSExpr(TPTerm* t)
 {
 	//TPTerm* t = nullptr;
 	WORD i = 0, n = 0, l = 0;
 	LongStr* p = nullptr;
-	std::string* q = nullptr;
+	std::string q;
+	std::string s;
 	//t = ptr(_Sg, TOfs);
-	if (t->Fun == _VarT) { q = &CurrInst->Vars[t->Idx]->SS; goto label1; }
+	if (t->Fun == _VarT) { q = CurrInst->Vars[t->Idx]->SS; goto label1; }
 	else {
 		switch (t->Op) {
 		case _const: {
-			q = &t->SS;
+			q = t->SS;
 		label1:
-			Move(q, s, q->length() + 1);
+			Move(&q, &s, q.length() + 1);
 			break;
 		}
-		case '+': RunSExpr1(t, s); break;
+		case '+': {
+			s = RunSExpr1(t);
+			break;
+		}
 		case _conv: {
-			p = RunLSExpr(t->E1);
-			l = MinW(p->LL, 255);
-			s[0] = (char)l;
-			Move(p->A, &s[1], l);
-			ReleaseStore(p);
+			//p = RunLSExpr(t->E1);
+			//l = MinW(p->LL, 255);
+			//s[0] = (char)l;
+			//Move(p->A, &s[1], l);
+			//ReleaseStore(p);
+			s = RunLSExpr(t->E1);
 			break;
 		}
 		case _copy: {
-			RunSExpr(t->E1, s);
+			s = RunSExpr(t->E1);
 			i = RunIExpr(t->E2);
 			n = RunIExpr(t->E3);
-			l = s->length();
+			l = s.length();
 			i = MaxW(1, MinW(i, l + 1));
 		label2:
 			n = MinW(n, l + 1 - i);
@@ -304,77 +313,81 @@ void RunSExpr(TPTerm* t, std::string* s)
 			break;
 		}
 		case _leadchar: {
-			RunSExpr(t->E2, s);
+			s = RunSExpr(t->E2);
 			i = 1;
-			l = s->length();
+			l = s.length();
 			n = l;
-			while ((i <= l) && ((*s)[i] == (char)(t->E1))) i++;
+			while ((i <= l) && (s[i] == (char)(t->E1))) i++;
 			goto label2;
 			break;
 		}
 		case _trailchar: {
-			RunSExpr(t->E2, s);
-			l = s->length();
-			while ((l > 0) && ((*s)[l] == (char)(t->E1))) l--;
+			s = RunSExpr(t->E2);
+			l = s.length();
+			while ((l > 0) && (s[l] == (char)(t->E1))) l--;
 			s[0] = (char)l;
 			break;
 		}
 		case _repeatstr: {
-			RunSExpr(t->E1, s);
+			s = RunSExpr(t->E1);
 			n = RunIExpr(t->E2);
-			l = s->length();
+			l = s.length();
 			i = 0;
 			while ((n > 0) && (i + l <= 255)) {
 				n--;
 				Move(&s[1], &s[i + 1], l);
 				i += l;
 			}
-			s[0] = char(i);
+			s[0] = (char)i;
 			break;
 		}
-		case _str: *s = std::to_string(RunIExpr(t->E1)); break;
+		case _str: {
+			s = std::to_string(RunIExpr(t->E1));
+			break;
+		}
 		}
 	}
+	return s;
 }
 
-LongStr* RunLSExpr(TPTerm* t)
+std::string RunLSExpr(TPTerm* t)
 {
 	//TPTerm* t = ptr(_Sg, TOfs);
-	LongStr* p = nullptr;
-	LongStr* p2 = nullptr;
-	WORD l = 0;
-	std::string* s = nullptr;
+	//WORD l = 0;
+	std::string result;
 
-	if (t->Fun == _VarT) p = RdLongStr(CurrInst->Vars[t->Idx]->Pos);
+	if (t->Fun == _VarT) {
+		LongStr* p = RdLongStr(CurrInst->Vars[t->Idx]->Pos);
+		result = std::string(p->A, p->LL);
+		delete p;
+	}
 	else {
 		switch (t->Op) {
 		case _const: {
-			l = t->SS.length();
-			p = new LongStr(l + 2); // GetStore(l + 2);
-			p->LL = l;
-			Move(&t->SS[1], &p->A, l);
+			//l = t->SS.length();
+			//p = new LongStr(l + 2); // GetStore(l + 2);
+			//p->LL = l;
+			//Move(&t->SS[1], &p->A, l);
+			result = t->SS;
 			break;
 		}
 		case '+': {
-			p = RunLSExpr(t->E1);
-			p2 = RunLSExpr(t->E2);
-			l = p2->LL;
-			p->LL = p->LL + l;
-			Move(&p2->A, &p2->LL, l);
-			ReleaseAfterLongStr(p);
+			std::string r1 = RunLSExpr(t->E1);
+			std::string r2 = RunLSExpr(t->E2);
+			result = r1 + r2;
 			break;
 		}
 		case _conv: {
 			//p = GetStore(257);
 			//s = ptr(PtrRec(p).Seg, PtrRec(p).Ofs + 1);
-			RunSExpr(t->E1, s);
-			p->LL = s->length();
-			ReleaseAfterLongStr(p);
+			result = RunSExpr(t->E1);
+			/*p->LL = s->length();
+			ReleaseAfterLongStr(p);*/
 			break;
 		}
 		}
 	}
-	return p;
+	return result;
 }
 
 bool UnifyTermsCC(TTerm* T1, TTerm* T2)
@@ -430,16 +443,17 @@ bool UnifyTermsCV(TTerm* T1, TPTerm* T2/*PPTerm*/)
 		case _StrT: {
 			if (T2->Op == _const) result = T1->SS == T2->SS;
 			else {
-				RunSExpr(T2, &XXS);
+				XXS = RunSExpr(T2);
 				result = T1->SS == XXS;
 			}
 			break;
 		}
 		case _LongStrT: {
 			p = RdLongStr(T1->Pos);
-			p2 = RunLSExpr(T2);
+			std::string s2 = RunLSExpr(T2);
+			p2 = new LongStr((char*)s2.c_str(), s2.length());
 			result = EquLongStr(p, p2);
-			ReleaseStore(p);
+			//ReleaseStore(p);
 			break;
 		}
 		case _ListT: {
@@ -545,15 +559,16 @@ TTerm* CopyTerm(TPTerm* t/*PPTerm*/)
 	case _StrT: {
 		if (t->Op == _const) return GetStringTerm(t->SS);
 		else {
-			RunSExpr(t, &XXS);
+			XXS = RunSExpr(t);
 			return GetStringTerm(XXS);
 		}
 		break;
 	}
 	case _LongStrT: {
-		p = RunLSExpr(t);
+		std::string s = RunLSExpr(t);
+		p = new LongStr((char*)s.c_str(), s.length());
 		auto result = GetLongStrTerm(WrLongStr(p));
-		ReleaseStore(p);
+		//ReleaseStore(p);
 		return result;
 		break;
 	}
@@ -646,7 +661,6 @@ void PackTermV(TPTerm* T/*PPTerm*/);
 
 WORD PackVList(TPTerm* T)
 {
-	TPTerm* tofs = nullptr; // absolute T
 	WORD n = 0;
 	TTerm* t1 = nullptr;
 	do {
@@ -661,8 +675,8 @@ WORD PackVList(TPTerm* T)
 		}
 		PackTermV(T->Elem);
 		n++;
-		tofs = T->Next;
-	} while (tofs != nullptr);
+		T = T->Next;
+	} while (T != nullptr);
 label1:
 	return n;
 }
@@ -683,7 +697,7 @@ label1:
 		case _IntT: { *(integer*)p = RunIExpr((TPTerm*)t); p += 2; break; }
 		case _RealT: { *(double*)p = RunRExpr((TPTerm*)t); p += sizeof(double); break; }
 		case _StrT: {
-			RunSExpr((TPTerm*)t, &XXS);
+			XXS = RunSExpr(t);
 			n = XXS.length() + 1;
 			//if (PtrRec(p).Ofs + n >= PTPMaxOfs) RunError(1527);
 			Move(&XXS, p, n);
@@ -1627,39 +1641,40 @@ bool RunCommand(TCommand* COff/*PCommand*/)
 
 void CallFandProc()
 {
-	TPredicate* p = nullptr;
-	Instr_proc* pd = nullptr;
-	ProcStkD* oldBP = nullptr;
-	ProcStkD* ps = nullptr;
+	//ProcStkD* oldBPr;
+	ProcStkD* ps;
 	WORD i = 0, n = 0, w = 0;
-	TTerm* t = nullptr;
-	char* pp = (char*)ps;
-	LongStr* s = nullptr;
+	TTerm* t;
+	//char* pp = (char*)ps;
+	LongStr* s;
 	TDomain* d = nullptr;
-	void* pt = PackedTermPtr;
-	pstring* ss = nullptr;
+	//void* pt = PackedTermPtr;
+	//pstring* ss = nullptr;
 
-	p = CurrInst->Pred;
+	TPredicate* p = CurrInst->Pred;
 	//PtrRec(d).Seg = _Sg;
-	pd = (Instr_proc*)p->Branch;
+	Instr_proc* pd = (Instr_proc*)p->Branch;
 	//ps = GetZStore(p->LocVarSz);
 	w = p->InpMask;
 	//if (PtrRec(pd->Pos.R).Seg == 0) {
 	//	PtrRec(pd->Pos.R).Seg = _Sg;
-	//	if (pd->Pos.IRec = 0xffff)
-	//		if (!FindChpt('P', (pstring*)(pd->Pos.R), false, pd->Pos)) RunError(1037);
-	//}
-	for (i = 1; i <= p->Arity; i++) /* !!! with pd->TArg[i] do!!! */
-	{
+	if (pd->PPos.IRec == 0xffff) {
+		if (!FindChpt('P', pd->ProcName, false, &pd->PPos)) RunError(1037);
+	}
+	for (i = 0; i < p->Arity; i++) {
 		auto ta = &pd->TArg[i];
 		//PtrRec(Frml).Seg = _Sg;
-		d = p->Arg[i - 1];
-		t = CurrInst->Vars[i - 1];
+		d = p->Arg[i];
+		t = CurrInst->Vars[i];
 		if ((w & 1) != 0) {
 			switch (ta->FTyp) {
 			case 'R': {
-				if (t->Fun == _IntT) ((FrmlElem2*)ta->Frml)->R = t->II;
-				else ((FrmlElem2*)ta->Frml)->R = t->RR;
+				if (t->Fun == _IntT) {
+					((FrmlElem2*)ta->Frml)->R = t->II;
+				}
+				else {
+					((FrmlElem2*)ta->Frml)->R = t->RR;
+				}
 				break;
 			}
 			case 'B': {
@@ -1667,10 +1682,16 @@ void CallFandProc()
 				break;
 			}
 			default: {
-				if (ta->Frml->Op == _const) ((FrmlElem4*)ta->Frml)->S = t->SS;
+				if (ta->Frml->Op == _const) {
+					((FrmlElem4*)ta->Frml)->S = t->SS;
+				}
 				else {
-					if (d->Typ == _LongStrD) s = RdLongStr(t->Pos);
-					else s = GetPackedTerm(t);
+					if (d->Typ == _LongStrD) {
+						s = RdLongStr(t->Pos);
+					}
+					else {
+						s = GetPackedTerm(t);
+					}
 					//*(longint*)(pp + ((FrmlElem18*)ta->Frml)->BPOfs) = TWork.Store(s);
 					ReleaseStore(s);
 				}
@@ -1685,19 +1706,24 @@ void CallFandProc()
 	//SetMyBP(ps);
 	CallProcedure(pd);
 	w = p->InpMask;
-	for (i = 1; i <= p->Arity; i++) {
-		/* !!! with pd->TArg[i] do with CurrInst^ do  do!!! */
-		auto ta = &pd->TArg[i];
-		//fs = p->Arg[i - 1];
+	for (i = 0; i < p->Arity; i++) {
+		TypAndFrml* ta = &pd->TArg[i];
 		if (ta->Frml->Op == _getlocvar) {
 			switch (ta->FTyp) {
 			case 'S': {
 				if ((w & 1) == 0) {
-					if (d->Typ == _StrD) CurrInst->Vars[i - 1] = GetStringTerm(RunShortStr(ta->Frml));
+					if (d->Typ == _StrD) {
+						CurrInst->Vars[i] = GetStringTerm(RunShortStr(ta->Frml));
+					}
 					else {
 						s = RunLongStr(ta->Frml);
-						if (d->Typ == _LongStrD) CurrInst->Vars[i - 1] = GetLongStrTerm(WrLongStr(s));
-						else { PackedTermPtr = s->A; CurrInst->Vars[i - 1] = UnpackTerm(d); }
+						if (d->Typ == _LongStrD) {
+							CurrInst->Vars[i] = GetLongStrTerm(WrLongStr(s));
+						}
+						else {
+							PackedTermPtr = s->A;
+							CurrInst->Vars[i] = UnpackTerm(d);
+						}
 						ReleaseStore(s);
 					}
 				}
@@ -1705,12 +1731,12 @@ void CallFandProc()
 				break;
 			}
 			case 'R': {
-				if (d->Typ == _IntD) CurrInst->Vars[i - 1] = GetIntTerm(RunInt(ta->Frml));
-				else CurrInst->Vars[i - 1] = GetRealTerm(RunReal(ta->Frml));
+				if (d->Typ == _IntD) CurrInst->Vars[i] = GetIntTerm(RunInt(ta->Frml));
+				else CurrInst->Vars[i] = GetRealTerm(RunReal(ta->Frml));
 				break;
 			}
 			default: {
-				CurrInst->Vars[i - 1] = GetBoolTerm(RunBool(ta->Frml));
+				CurrInst->Vars[i] = GetBoolTerm(RunBool(ta->Frml));
 				break;
 			}
 			}
@@ -1732,7 +1758,7 @@ TScanInf* SiCFile(TScanInf* SiOfs)
 	si->FD = CFile;
 	TFldList* fl = si->FL;
 	while (fl != nullptr) {
-		fl->FldD = (FieldDescr*)CFile;
+		fl->FldD = CFile->FldD[0];
 		fl = fl->pChain;
 	}
 }
@@ -1792,7 +1818,7 @@ void AssertFand(TPredicate* P, TCommand* C)
 			l = l->pChain;
 			i++;
 		}
-	}
+		}
 #ifdef FandSQL
 	if (trace) { writeln("))"); waitC; }
 	if (CFile->IsSQLFile) Strm1->InsertRec(false, true); else
@@ -1805,7 +1831,7 @@ void AssertFand(TPredicate* P, TCommand* C)
 	}
 	OldLMode(md);
 	ReleaseStore(CRecPtr);
-}
+	}
 
 TFileScan* GetScan(TScanInf* SIOfs, TCommand* C, TInstance* Q)
 {
@@ -1952,7 +1978,9 @@ label1:
 			}
 			case 'R': {
 				r = _R(f);
-				if (t->Fun == _IntT) { if (r != t->II) goto label1; }
+				if (t->Fun == _IntT) {
+					if (r != t->II) goto label1;
+				}
 				else if (r != t->RR) goto label1;
 				break;
 			}
@@ -1964,12 +1992,16 @@ label1:
 					b = EquLongStr(s, _LongS(f));
 					ReleaseStore(s);
 					if (!b) goto label1;
-					break;
 				}
+				else if (t->SS != _MyS(f)) {
+					goto label1;
+				}
+				else {
+				}
+				break;
 			}
 			}
 		}
-		else if (t->SS != _MyS(f)) goto label1;
 		fl = fl->pChain;
 		w = w >> 1;
 	}
@@ -1981,53 +2013,74 @@ label1:
 			f = fl->FldD;
 			d = p->Arg[i];
 			switch (f->FrmlTyp) {
-			case 'B': CurrInst->Vars[i] = GetBoolTerm(_B(f)); break;
+			case 'B': {
+				CurrInst->Vars[i] = GetBoolTerm(_B(f));
+				break;
+			}
 			case 'R': {
-				if (d->Typ == _RealD) CurrInst->Vars[i] = GetRealTerm(_R(f));
-				else CurrInst->Vars[i] = GetIntTerm(trunc(_R(f)));
+				if (d->Typ == _RealD) {
+					CurrInst->Vars[i] = GetRealTerm(_R(f));
+				}
+				else {
+					CurrInst->Vars[i] = GetIntTerm(trunc(_R(f)));
+				}
 				break;
 			}
 			default: {
 				if (f->Typ == 'T') {
 					s = _LongS(f);
-					if (d->Typ == _LongStrD) CurrInst->Vars[i] = GetLongStrTerm(WrLongStr(s));
-					else { pt = s->A; CurrInst->Vars[i] = UnpackTerm(d); }
+					if (d->Typ == _LongStrD) {
+						CurrInst->Vars[i] = GetLongStrTerm(WrLongStr(s));
+					}
+					else {
+						pt = s->A;
+						CurrInst->Vars[i] = UnpackTerm(d);
+					}
 					ReleaseStore(s);
 				}
-				else CurrInst->Vars[i] = GetStringTerm(_MyS(f));
+				else {
+					CurrInst->Vars[i] = GetStringTerm(_MyS(f));
+				}
 				break;
 			}
 			}
-			fl = fl->pChain;
-			w = w >> 1;
 		}
-		result = true;
-		if (c->Code == _RetractC) {
-			md1 = NewLMode(DelMode);
-			while ((Q != nullptr)) {
-				fs1 = (TFileScan*)Q->NextBranch;
-				if ((Q->Pred == p) && (fs1 != nullptr)) {
-					if (CFile->Typ == 'X') {
-						c = Q->RetCmd;
-						k = c->KDOfs;
-						if (k != 0) {
-							xx.PackKF(k->KFlds);
-							k->RecNrToPath(xx, RecNr);
-							if (k->PathToNr() <= fs1->IRec) fs1->IRec--;
-						}
-					}
-					else if (RecNr <= fs1->IRec) fs1->IRec--;
-				}
-				Q = Q->PrevInst;
-			}
-			if (CFile->Typ == 'X') { DeleteXRec(RecNr, true); fs->IRec--; }
-			else DeleteRec(RecNr);
-			OldLMode(md1);
-		}
-	label2:
-		OldLMode(md);
-		ReleaseStore(CRecPtr);
+		fl = fl->pChain;
+		w = w >> 1;
 	}
+	result = true;
+	if (c->Code == _RetractC) {
+		md1 = NewLMode(DelMode);
+		while ((Q != nullptr)) {
+			fs1 = (TFileScan*)Q->NextBranch;
+			if ((Q->Pred == p) && (fs1 != nullptr)) {
+				if (CFile->Typ == 'X') {
+					c = Q->RetCmd;
+					k = c->KDOfs;
+					if (k != 0) {
+						xx.PackKF(k->KFlds);
+						k->RecNrToPath(xx, RecNr);
+						if (k->PathToNr() <= fs1->IRec) fs1->IRec--;
+					}
+				}
+				else if (RecNr <= fs1->IRec) {
+					fs1->IRec--;
+				}
+			}
+			Q = Q->PrevInst;
+		}
+		if (CFile->Typ == 'X') {
+			DeleteXRec(RecNr, true);
+			fs->IRec--;
+		}
+		else {
+			DeleteRec(RecNr);
+		}
+		OldLMode(md1);
+	}
+label2:
+	OldLMode(md);
+	ReleaseStore(CRecPtr);
 	return result;
 }
 

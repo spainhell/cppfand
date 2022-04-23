@@ -42,13 +42,13 @@
 //	return ptr(Sg, ((PtrRec(p).Seg - Sg) << 4) + PtrRec(p).Ofs);
 //}
 
-std::vector<std::string> vPredicates;
+//std::vector<std::string> vPredicates;
 
-std::string StorStr(std::string S) // assembler
-{
-	vPredicates.push_back(S);
-	return S;
-}
+//std::string StorStr(std::string S) // assembler
+//{
+//	vPredicates.push_back(S);
+//	return S;
+//}
 
 /*  L E X A N A L  =========================================================*/
 bool IsCharUpper2(unsigned char C)
@@ -716,7 +716,7 @@ label1:
 label2:
 	if (GetFunDclByName(d, n) != nullptr) Error(505);
 	if (IsCharUpper2(LexWord[1])) Error(515);
-	nm = StorStr(LexWord);
+	nm = LexWord;
 	RdLexP();
 	n = 0;
 	if (Lexem == '(') {
@@ -876,7 +876,7 @@ void RdPredicateDcl(bool FromClauses, TDatabase* Db)
 	TestIdentifP();
 	if (IsCharUpper2(LexWord[1])) Error(518);
 	if (GetPredicate() != nullptr) OldError(505);
-	nm = StorStr(LexWord);
+	nm = LexWord;
 	if ((o & _FandCallOpt) != 0) {
 		if (Db != nullptr) {
 			si = new TScanInf();
@@ -1535,11 +1535,9 @@ void RdDbClause(TPredicate* P)
 
 void CheckPredicates(TPredicate* POff)
 {
-	TPredicate* p = nullptr;
-	TPredicate* pofs = 0; // absolute p
 	TScanInf* si = nullptr;
-	p = POff;
-	while (pofs != nullptr) {
+	TPredicate* p = POff;
+	while (p != nullptr) {
 		if (((p->Opt & (_DbaseOpt + _FandCallOpt + _BuildInOpt)) == 0) && (p->Branch == nullptr)) {
 			SetMsgPar(p->Name);
 			OldError(522);
@@ -1550,7 +1548,7 @@ void CheckPredicates(TPredicate* POff)
 				si->FD = nullptr;
 			}
 			else p->Branch = nullptr;
-		pofs = (TPredicate*)p->pChain;
+		p = p->pChain;
 	}
 }
 
@@ -1631,9 +1629,7 @@ void RdSemicolonClause(TPredicate* p, TBranch* b)
 {
 	TVarDcl* v = nullptr;
 	TCommand* c = nullptr;
-	TCommand* cofs = nullptr; // absolute c
 	char x = '\0';
-	TBranch* bofs = nullptr; // absolute B
 	RdLexP();
 	//PtrRec(c).Seg = _Sg;
 	if (IsUpperIdentif()) {
@@ -1644,40 +1640,42 @@ void RdSemicolonClause(TPredicate* p, TBranch* b)
 		RdLexP();
 		AcceptP('+'); AcceptP('=');
 		v->Bound = true;
-		cofs = GetCommand(_AppPkC, 6);
+		c = GetCommand(_AppPkC, 6);
 		c->apIdx = v->Idx;
 		c->apTerm = RdTerm(v->Dom, 2);
-		ChainLast(b->Cmd, cofs);
+		ChainLast(b->Cmd, c);
 		if (Lexem == ',') {
 			RdLexP();
 			AcceptPKeyWord("self");
-			cofs = GetCommand(_SelfC, 0);
+			c = GetCommand(_SelfC, 0);
 			goto label2;
 		}
 		goto label1;
 	}
 	else if (TestKeyWordP("error")) {
 		x = 'e';
-		cofs = GetCommand(_CutC, 0);
+		c = GetCommand(_CutC, 0);
 	}
 	else if (IsKeyWordP("self")) { x = 's'; goto label3; }
 	else {
 		x = 'f';
 	label1:
-		cofs = GetCommand(_FailC, 0);
+		c = GetCommand(_FailC, 0);
 	}
 label2:
-	ChainLast(b->Cmd, cofs);
+	ChainLast(b->Cmd, c);
 label3:
-	bofs = new TBranch(); // GetZStor(sizeof(TBranch));
-	ChainLast(p->Branch, bofs);
+	b = new TBranch(); // GetZStor(sizeof(TBranch));
+	ChainLast(p->Branch, b);
 	switch (x) {
 	case 'e': b->Cmd = RdCommand(); break;
 	case 'f': if (GetOutpMask(p) != 0) Error(559); break;
 	case 's': b->Cmd = GetCommand(_SelfC, 0); break;
 	case 'a': {
-		cofs = GetCommand(_AppUnpkC, 4); c->apIdx = v->Idx; c->apDom = (TPTerm*)v->Dom;
-		b->Cmd = cofs;
+		c = GetCommand(_AppUnpkC, 4);
+		c->apIdx = v->Idx;
+		c->apDom = (TPTerm*)v->Dom;
+		b->Cmd = c;
 		break;
 	}
 	}
@@ -1859,7 +1857,7 @@ TPredicate* MakePred(std::string PredName, std::string ArgTyp, WORD PredKod, WOR
 	if (Roots->Predicates == nullptr) Roots->Predicates = p;
 	else ChainLast(Roots->Predicates, p);
 
-	p->Name = StorStr(PredName);
+	p->Name = PredName;
 	p->Arity = ArgTyp.length();
 	p->LocVarSz = PredKod;
 	for (size_t i = 0; i < ArgTyp.length(); i++) {
@@ -1872,15 +1870,17 @@ TPredicate* MakePred(std::string PredName, std::string ArgTyp, WORD PredKod, WOR
 		case 'x': d = LLexDom; break;
 		}
 		p->Arg.push_back(d); // p->Arg[i] = d;
-		if (PredMask == 0xffff) {
-			p->Opt = _BuildInOpt + _CioMaskOpt;
-		}
-		else {
-			p->Opt = _BuildInOpt;
-			p->InpMask = PredMask;
-		}
-		p->InstSz = ArgTyp.length() * 4;
 	}
+
+	if (PredMask == 0xffff) {
+		p->Opt = _BuildInOpt + _CioMaskOpt;
+	}
+	else {
+		p->Opt = _BuildInOpt;
+		p->InpMask = PredMask;
+	}
+	p->InstSz = ArgTyp.length() * 4;
+
 	return p;
 }
 
@@ -1939,23 +1939,23 @@ TProgRoots* ReadProlog(WORD RecNr)
 	d = BoolDom;
 
 	f = new TFunDcl();
-	f->Name = StorStr("false");
+	f->Name = "false";
 	if (d->FunDcl == nullptr) d->FunDcl = f;
 	else ChainLast(d->FunDcl, f);
 
 	f = new TFunDcl();
-	f->Name = StorStr("true");
+	f->Name = "true";
 	if (d->FunDcl == nullptr) d->FunDcl = f;
 	else ChainLast(d->FunDcl, f);
 
 	p = new TPredicate();
-	p->Name = StorStr("main");
+	p->Name = "main";
 	Roots->Predicates = p;
 	LexDom = MakeDomain(_FunD, "Lexem");
 	d->pChain = LexDom;
 
 	f = new TFunDcl();
-	f->Name = StorStr("lex");
+	f->Name = "lex";
 	f->Arity = 3;
 	f->Arg.push_back(IntDom);
 	f->Arg.push_back(IntDom);
