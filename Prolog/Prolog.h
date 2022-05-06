@@ -52,14 +52,14 @@ struct TFunDcl : public Chained<TFunDcl> {
 struct TPTerm {
 	WORD Fun = 0;
 	BYTE Arity = 0; TPTerm* Arg[1]{ nullptr }; /*PPTerm*/
-	char Op = '\0';
+	instr_type Op = _notdefined;
 	TPTerm* E1 = nullptr; TPTerm* E2 = nullptr; TPTerm* E3 = nullptr; /*PPTerm*/
-	char Op0 = '\0';
+	instr_type Op0 = _notdefined;
 	TPTerm* E[4]{ nullptr }; // puvodne 1..3
-	char Op1 = '\0'; integer II = 0;
-	char Op2 = '\0'; double RR = 0.0;
-	char Op3 = '\0'; std::string SS;
-	char Op4 = '\0'; TPTerm* Elem = nullptr; TPTerm* Next = nullptr; /*PPTerm*/
+	instr_type Op1 = _notdefined; integer II = 0;
+	instr_type Op2 = _notdefined; double RR = 0.0;
+	instr_type Op3 = _notdefined; std::string SS;
+	instr_type Op4 = _notdefined; TPTerm* Elem = nullptr; TPTerm* Next = nullptr; /*PPTerm*/
 	WORD Idx = 0; bool Bound = false;
 };
 

@@ -264,7 +264,7 @@ TVarDcl* MakeVarDcl(TDomain* D, integer Idx)
 	return v;
 }
 
-TPTerm* GetOp1(TDomain* D, char Op, TPTerm* E1);
+TPTerm* GetOp1(TDomain* D, instr_type Op, TPTerm* E1);
 
 bool RdVar(TDomain* D, integer Kind, integer Idx, TPTerm** RT) /*PTerm || idx*/
 {
@@ -337,7 +337,7 @@ WORD DomFun(TDomain* D)
 	else return _LongStrT;
 }
 
-TPTerm* GetOp1(TDomain* D, char Op, TPTerm* E1)
+TPTerm* GetOp1(TDomain* D, instr_type Op, TPTerm* E1)
 {
 	TPTerm* t = new TPTerm(); // ptr(_Sg,GetZStor(1+1+2));
 	t->Fun = DomFun(D);
@@ -347,7 +347,7 @@ TPTerm* GetOp1(TDomain* D, char Op, TPTerm* E1)
 	return t;
 }
 
-TPTerm* GetOp2(TDomain* D, char Op, TPTerm* E1, TPTerm* E2)
+TPTerm* GetOp2(TDomain* D, instr_type Op, TPTerm* E1, TPTerm* E2)
 {
 	TPTerm* t = new TPTerm(); // ptr(_Sg, GetZStor(1 + 1 + 2 * 2));
 	t->Fun = DomFun(D);
@@ -358,7 +358,7 @@ TPTerm* GetOp2(TDomain* D, char Op, TPTerm* E1, TPTerm* E2)
 	return t;
 }
 
-TPTerm* GetFunOp(TDomain* D, TDomain* ResD, char Op, std::string ArgTyp, integer Kind)
+TPTerm* GetFunOp(TDomain* D, TDomain* ResD, instr_type Op, std::string ArgTyp, integer Kind)
 {
 	TPTerm* t = nullptr;
 	TPTerm* t1 = nullptr;
@@ -391,7 +391,7 @@ TPTerm* GetFunOp(TDomain* D, TDomain* ResD, char Op, std::string ArgTyp, integer
 TPTerm* RdPrimExpr(TDomain* D, integer Kind)
 {
 	TPTerm* t = nullptr;
-	char op = '\0';
+	instr_type op = _notdefined;
 	bool minus = false; double r = 0.0;
 	pstring s; integer i = 0; longint n = 0;
 
@@ -399,7 +399,8 @@ TPTerm* RdPrimExpr(TDomain* D, integer Kind)
 	switch (Lexem) {
 	case '^': {
 		if (D != IntDom) Error(510);
-		op = (char)Lexem;
+		BYTE lx = (BYTE)Lexem;
+		op = (instr_type)lx;
 		RdLexP();
 		t = GetOp1(D, op, RdPrimExpr(D, Kind));
 		break;
@@ -507,7 +508,8 @@ TPTerm* RdMultExpr(TDomain* D, integer Kind)
 	TPTerm* t = RdPrimExpr(D, Kind);
 	while ((D != StrDom) && (D != LongStrDom) && ((Lexem == '*' || Lexem == '/') ||
 		(Lexem == _and || Lexem == _or) && (D == IntDom))) {
-		char op = (char)Lexem;
+		BYTE lx = (BYTE)Lexem;
+		instr_type op = (instr_type)lx;
 		RdLexP();
 		t = GetOp2(D, op, t, RdPrimExpr(D, Kind));
 	}
@@ -518,7 +520,8 @@ TPTerm* RdAddExpr(TDomain* D, integer Kind)
 {
 	TPTerm* t = RdMultExpr(D, Kind);
 	while ((Lexem == '+') || (Lexem == '-') && ((D == IntDom) || (D == RealDom))) {
-		char op = (char)Lexem;
+		BYTE lx = (BYTE)Lexem;
+		instr_type op = (instr_type)lx;
 		RdLexP();
 		t = GetOp2(D, op, t, RdMultExpr(D, Kind));
 	}
@@ -558,7 +561,7 @@ TPTerm* RdListTerm(TDomain* D, integer Kind)
 	if (Lexem == '+') {
 		t1 = t;
 		t = new TPTerm(); // GetZStor(1 + 1 + 2 * 2);
-		t->Op = '+';
+		t->Op = (instr_type)'+';
 		RdLexP();
 		t->Fun = _ListT;
 		t->E1 = t1;
@@ -998,8 +1001,8 @@ label2:
 			for (size_t i = 0; i < n; i++) {
 				d = p->Arg[i];
 
-				if ((d == RealDom) || (d == IntDom)) typ = 'R';
-				else if ((d = BoolDom)) typ = 'B';
+				if (d == RealDom || d == IntDom) typ = 'R';
+				else if (d == BoolDom) typ = 'B';
 				else typ = 'S';
 
 				isOutp = (w & 1) == 0;
@@ -1017,12 +1020,14 @@ label2:
 					case 'R': z = new FrmlElem2(_const, 0); /* GetOp(_const, sizeof(double));*/ break;
 					case 'B': z = new FrmlElem5(_const, 0); /* GetOp(_const, sizeof(bool));*/ break;
 					default: {
-						if (d == StrDom) z = new FrmlElem4(_const, 0); // GetOp(_const, sizeof(pstring));
-						else {
-							z = new FrmlElem18(_getlocvar, 2); // GetOp(_getlocvar, 2);
-							//((FrmlElem18*)z)->BPOfs = bpOfs;
-							bpOfs += sizeof(longint);
-						}
+						// StrDom or LongStrDom
+						z = new FrmlElem4(_const, 0);
+						//if (d == StrDom) z = new FrmlElem4(_const, 0); // GetOp(_const, sizeof(pstring));
+						//else {
+						//	z = new FrmlElem18(_getlocvar, 2); // GetOp(_getlocvar, 2);
+						//	//((FrmlElem18*)z)->BPOfs = bpOfs;
+						//	bpOfs += sizeof(longint);
+						//}
 						break;
 					}
 					}

@@ -51,27 +51,20 @@ TTerm* LexemList = nullptr;
 
 bool Trace()
 {
-	/*asm
-	xor ax, ax; mov bx, TrcLevel; cmp bx, ax; je @1;
-	cmp bx, CallLevel; jb @1; mov ax, 1; { if TrcLevel < >0 and >= CallLevel }
-	@1: end;*/
-
-	return false;
+	if (TrcLevel != 0 && TrcLevel >= CallLevel) return true;
+	else return false;
 }
 
 void SetCallLevel(WORD Lv)
 {
-	/*
-	asm mov ax,Lv; mov CallLevel,ax; { CallLevel=lv  if =0 then TrcLevel=0 }
-	cmp ax,0; jne @1; mov TrcLevel,ax;
-	@1: end;
-	*/
+	CallLevel = Lv;
+	if (Lv == 0) TrcLevel = 0;
 }
 
 void WaitC()
 {
 	WORD c = ReadKey();
-	if ((c == _ESC_) && PromptYN(21)) GoExit();
+	if ((c == __ESC) && PromptYN(21)) GoExit();
 }
 
 /*  T D O M A I N  =========================================================*/
@@ -1075,328 +1068,346 @@ bool RunBuildIn()
 	TCommand* c = nullptr; bool b = false;
 	TInstance* q = nullptr; RdbPos pos;
 
-	/* !!! with CurrInst^ do!!! */
-	{
-		c = CurrInst->RetCmd;
-		w = c->InpMask;
-		switch (((TPredicate*)&CurrInst->Pred)->LocVarSz) {
-		case _NextLexP: if (LexemList != nullptr) LexemList = LexemList->Next; break;
-		case _GetLexP: CurrInst->Vars[0] = LexemList; break;
-		case _ConcatP: {
-			switch (w) {
-			case 7/*iii*/: { if (CurrInst->Vars[0]->SS + CurrInst->Vars[1]->SS != CurrInst->Vars[2]->SS) goto label1; break; }
-			case 3/*iio*/: { CurrInst->Vars[2] = GetStringTerm(CurrInst->Vars[0]->SS + CurrInst->Vars[1]->SS); break; }
-			case 5/*ioi*/: {
-				l = CurrInst->Vars[0]->SS.length();
-				if (CurrInst->Vars[0]->SS != CurrInst->Vars[2]->SS.substr(1, l)) goto label1;
-				CurrInst->Vars[1] = GetStringTerm(copy(CurrInst->Vars[2]->SS, l + 1, 255));
-				break;
-			}
-			case 6/*oii*/: {
-				l = CurrInst->Vars[1]->SS.length();
-				l2 = CurrInst->Vars[2]->SS.length();
-				if (CurrInst->Vars[1]->SS != CurrInst->Vars[2]->SS.substr(l2 - l + 1, l)) {
-				label1:
-					CurrInst->NextBranch = nullptr;
-					return false;
-				}
-				CurrInst->Vars[0] = GetStringTerm(copy(CurrInst->Vars[2]->SS, 1, l2 - l));
-				break;
-			}
-			case 4/*ooi*/: {
-				n = WORD(CurrInst->NextBranch);
-				s = CurrInst->Vars[2]->SS;
-				if (n == 0) n = s.length();
-				if (n == 0) goto label1;
-				n--;
-				CurrInst->Vars[0] = GetStringTerm(copy(s, 1, s.length() - n));
-				CurrInst->Vars[1] = GetStringTerm(copy(s, s.length() - n + 1, n));
-				WORD(NextBranch) = n;
-				break;
-			}
-			}
+	c = CurrInst->RetCmd;
+	w = c->InpMask;
+	switch (CurrInst->Pred->LocVarSz) {
+	case _NextLexP: {
+		if (LexemList != nullptr) LexemList = LexemList->Next;
+		break;
+	}
+	case _GetLexP: {
+		CurrInst->Vars[0] = LexemList;
+		break;
+	}
+	case _ConcatP: {
+		switch (w) {
+		case 7: {
+			/*iii*/
+			if (CurrInst->Vars[0]->SS + CurrInst->Vars[1]->SS != CurrInst->Vars[2]->SS) goto label1;
 			break;
 		}
-		case _MemP: {
-			switch (w) {
-			case 3/*ii*/: {
-				t1 = CurrInst->Vars[0]; t2 = CurrInst->Vars[1];
-				while (t2 != nullptr) {
-					if (UnifyTermsCC(t1, t2->Elem)) goto label3;
-					t2 = t2->Next;
-				}
-				goto label1;
-				break;
-			}
-			case 2/*oi*/: {
-				t2 = (TTerm*)CurrInst->NextBranch;
-				if (t2 == nullptr) {
-					t2 = CurrInst->Vars[1];
-					if (t2 == nullptr) goto label1;
-				}
-				CurrInst->Vars[0] = t2->Elem;
-				CurrInst->NextBranch = (TBranch*)t2->Next;
-				break;
-			}
-			}
-		}
-		case _FandFileP: {
-			fd = (FileD*)CurrInst->NextBranch;
-			if (fd == nullptr) {
-				fd = NextFD(nullptr);
-				if (fd == nullptr) goto label1;
-			}
-			CurrInst->Vars[0] = GetStringTerm(fd->Name);
-			s[0] = 0;
-			switch (fd->Typ) {
-			case '6': if (fd->IsSQLFile) s = "SQL"; break;
-			case 'X': s = 'X'; break;
-			case 'D': s = "DBF"; break;
-			case '8': s = "DTA"; break;
-			}
-			CurrInst->Vars[1] = GetStringTerm(s);
-			CurrInst->Vars[2] = GetStringTerm(fd->ChptPos.R->FD->Name);
-			CFile = fd;
-			SetCPathVol();
-			CurrInst->Vars[3] = GetStringTerm(CPath);
-			CurrInst->NextBranch = (TBranch*)NextFD(fd);
+		case 3: {
+			/*iio*/
+			CurrInst->Vars[2] = GetStringTerm(CurrInst->Vars[0]->SS + CurrInst->Vars[1]->SS);
 			break;
 		}
-		case _FandFieldP: {
-			f = (FieldDescr*)CurrInst->NextBranch;
-			if (f == nullptr) {
-				fd = FindFD(CurrInst->Vars[0]->SS);
-				if (fd == nullptr) goto label1;
-				f = fd->FldD.front();
-			}
-			if (w == 3/*ii*/) {
-				std::string tmpSS = CurrInst->Vars[1]->SS;
-				while ((f != nullptr) && !EquUpCase(f->Name, tmpSS)) f = (FieldDescr*)f->pChain;
-				if (f == nullptr) goto label1;
-			}
-			else CurrInst->Vars[1] = GetStringTerm(f->Name);
-			CurrInst->Vars[2] = GetStringTerm(f->Typ);
-			m = 0; l = f->L;
-			if (f->Typ == 'F') {
-				m = f->M;
-				l--;
-				if (m > 0) l -= (m + 1);
-			}
-			CurrInst->Vars[3] = GetIntTerm(l);
-			CurrInst->Vars[4] = GetIntTerm(m);
-			m = f->Flg;
-			if ((f->Typ == 'N' || f->Typ == 'A')) m = m | (f->M << 4);
-			CurrInst->Vars[5] = GetIntTerm(m);
-			//if ((f->Flg & f_Mask) != 0) mask = FieldDMask(f);
-			if ((f->Flg & f_Mask) != 0) mask = f->Mask;
-			else mask = "";
-			CurrInst->Vars[6] = GetStringTerm(mask);
-			if (w == 3) CurrInst->NextBranch = nullptr;
-			else CurrInst->NextBranch = (TBranch*)f->pChain;
+		case 5: {
+			/*ioi*/
+			l = CurrInst->Vars[0]->SS.length();
+			if (CurrInst->Vars[0]->SS != CurrInst->Vars[2]->SS.substr(1, l)) goto label1;
+			CurrInst->Vars[1] = GetStringTerm(copy(CurrInst->Vars[2]->SS, l + 1, 255));
 			break;
 		}
-		case _FandKeyP: {
-			k = (XKey*)CurrInst->NextBranch;
-			if (k == nullptr) {
-				fd = FindFD(CurrInst->Vars[0]->SS);
-				if (fd == nullptr) goto label1;
-				//k = fd->Keys;
-				if (k == nullptr) goto label1;
+		case 6: {
+			/*oii*/
+			l = CurrInst->Vars[1]->SS.length();
+			l2 = CurrInst->Vars[2]->SS.length();
+			if (CurrInst->Vars[1]->SS != CurrInst->Vars[2]->SS.substr(l2 - l + 1, l)) {
+			label1:
+				CurrInst->NextBranch = nullptr;
+				return false;
 			}
-			CurrInst->Vars[1] = GetStringTerm(Pound(k->Alias));
-			CurrInst->Vars[2] = GetBoolTerm(k->Intervaltest);
-			CurrInst->Vars[3] = GetBoolTerm(k->Duplic);
-			CurrInst->NextBranch = (TBranch*)(k->Chain);
+			CurrInst->Vars[0] = GetStringTerm(copy(CurrInst->Vars[2]->SS, 1, l2 - l));
 			break;
 		}
-		case _FandLinkP: {
-			//ld = (LinkD*)CurrInst->NextBranch;
-			//if (ld == nullptr) {
-			//	ld = LinkDRoot;
-			//	while ((ld != nullptr) && !EquUpCase(ld->FromFD->Name, CurrInst->Vars[0]->SS)) {
-			//		ld = ld->pChain;
-			//	}
-			//	if (ld == nullptr) goto label1;
-			//}
-			//fd = ld->FromFD;
-			//if (w == 3/*ii*/) {
-			//	while ((ld != nullptr) && ((fd != ld->FromFD) ||
-			//		!EquUpCase(ld->RoleName, CurrInst->Vars[1]->SS))) ld = ld->pChain;
-			//	if (ld == nullptr) goto label1;
-			//	CurrInst->Vars[2] = GetStringTerm(ld->ToFD->Name);
-			//}
-			//else if (w == 5/*ioi*/) {
-			//	while ((ld != nullptr) && ((fd != ld->FromFD) ||
-			//		!EquUpCase(ld->ToFD->Name, CurrInst->Vars[2]->SS))) ld = ld->pChain;
-			//	if (ld == nullptr) goto label1;
-			//	CurrInst->Vars[1] = GetStringTerm(ld->RoleName);
-			//}
-			//else {
-			//	CurrInst->Vars[1] = GetStringTerm(ld->RoleName);
-			//	CurrInst->Vars[2] = GetStringTerm(ld->ToFD->Name);
-			//}
-			//CurrInst->Vars[3] = GetStringTerm(Pound(ld->ToKey->Alias));
-			//s[0] = 0;
-			//k = fd->Keys;
-			//while (k != nullptr) {
-			//	if (k->IndexRoot == ld->IndexRoot) s = k->Alias;
-			//	k = k->pChain;
-			//}
-			//CurrInst->Vars[4] = GetStringTerm(Pound(s));
-			//n = ld->MemberRef;
-			//if (ld->IndexRoot != 0) n += 4;
-			//CurrInst->Vars[5] = GetIntTerm(n);
-			//if (w == 3) ld = nullptr;
-			//else
-			//	do {
-			//		ld = ld->pChain;
-			//	} while (!((ld == nullptr) || (ld->FromFD == fd)));
-			//	CurrInst->NextBranch = (TBranch*)ld;
+		case 4: {
+			/*ooi*/
+				// TODO: nutno predelat praci s offsetem na ukazatele (n)
+			throw std::exception("TODO: RunProlog case 4 ooi not impelemented");
+			//n = (WORD)CurrInst->NextBranch;
+			s = CurrInst->Vars[2]->SS;
+			if (n == 0) n = s.length();
+			if (n == 0) goto label1;
+			n--;
+			CurrInst->Vars[0] = GetStringTerm(copy(s, 1, s.length() - n));
+			CurrInst->Vars[1] = GetStringTerm(copy(s, s.length() - n + 1, n));
+			//(WORD)(CurrInst->NextBranch) = n;
 			break;
 		}
-		case _FandKeyFieldP: {
-			kf = KeyFldDPtr(CurrInst->NextBranch);
-			if (kf == nullptr) {
-				fd = FindFD(CurrInst->Vars[0]->SS);
-				if (fd == nullptr) goto label1;
-				//k = fd->Keys;
-				while ((k != nullptr) && !EquUpCase(Pound(k->Alias), CurrInst->Vars[1]->SS)) k = k->Chain;
-				if (k == nullptr) goto label1; kf = k->KFlds;
-			}
-			CurrInst->Vars[2] = GetStringTerm(kf->FldD->Name);
-			CurrInst->Vars[3] = GetBoolTerm(kf->CompLex);
-			CurrInst->Vars[4] = GetBoolTerm(kf->Descend);
-			CurrInst->NextBranch = (TBranch*)kf->pChain;
-			break;
 		}
-		case _FandLinkFieldP: {
-			/*kf = KeyFldDPtr(CurrInst->NextBranch);
-			if (kf == nullptr) {
-				ld = LinkDRoot;
-				while ((ld != nullptr) && (
-					!EquUpCase(ld->FromFD->Name, CurrInst->Vars[0]->SS) ||
-					!EquUpCase(ld->RoleName, CurrInst->Vars[1]->SS))) ld = ld->pChain;
-				if (ld == nullptr) goto label1;
-				kf = ld->Args;
-			}
-			CurrInst->Vars[2] = GetStringTerm(kf->FldD->Name);
-			CurrInst->NextBranch = (TBranch*)kf->pChain;*/
-			break;
-		}
-		case _LenP: {
-			t1 = CurrInst->Vars[0]; n = 0;
-			while (t1 != nullptr) { n++; t1 = t1->Next; }
-			CurrInst->Vars[1] = GetIntTerm(n);
-			break;
-		}
-		case _InvP: {
-			t1 = CurrInst->Vars[0]; t2 = nullptr;
-			while (t1 != nullptr) {
-				t2 = GetListTerm(t1->Elem, t2);
-				t1 = t1->Next;
-			}
-			CurrInst->Vars[1] = t2;
-			break;
-		}
-		case _AddP: {
-			t1 = CurrInst->Vars[0]; t2 = CurrInst->Vars[1]; CurrInst->Vars[2] = t2;
+		break;
+	}
+	case _MemP: {
+		switch (w) {
+		case 3: {
+			/*ii*/
+			t1 = CurrInst->Vars[0]; t2 = CurrInst->Vars[1];
 			while (t2 != nullptr) {
 				if (UnifyTermsCC(t1, t2->Elem)) goto label3;
 				t2 = t2->Next;
 			}
-			CurrInst->Vars[2] = GetListTerm(t1, CurrInst->Vars[1]);
+			goto label1;
 			break;
 		}
-		case _DelP: {
-			q = CurrInst;
-			t1 = (TTerm*)CurrInst->NextBranch;
-			if (t1 == nullptr) t1 = CurrInst->Vars[1];
-		label2:
-			if (t1 == nullptr) goto label1;
-			CurrInst->Vars[0] = t1->Elem;
-			CurrInst = CurrInst->RetInst;
-			b = UnifyTermsCV(t1->Elem, c->Arg->Elem);
-			CurrInst = q;
-			if (b) {
-				root = nullptr;
-				t = CurrInst->Vars[1];
-				while (t != t1) {
-					t2 = GetListTerm(t->Elem, nullptr);
-					if (root == nullptr) root = t2;
-					else tprev->Next = t2;
-					tprev = t2;
-					t = t->Next;
-				}
-				t1 = t1->Next;
-				if (root == nullptr) root = t1;
-				else tprev->Next = t1;
-				CurrInst->Vars[2] = root;
-				CurrInst->NextBranch = (TBranch*)t1;
-				goto label3;
+		case 2: {
+			/*oi*/
+			t2 = (TTerm*)CurrInst->NextBranch;
+			if (t2 == nullptr) {
+				t2 = CurrInst->Vars[1];
+				if (t2 == nullptr) goto label1;
 			}
-			Mem1.Release(q->StkMark); t1 = t1->Next; goto label2;
-			break;
-		}
-		case _UnionP: {
-			t1 = CopyCList(CurrInst->Vars[0]);
-			root = nullptr;
-			t2 = CurrInst->Vars[1];
-			while (t2 != nullptr) {
-				if (!FindInCList(t2->Elem, t1)) {
-					t = GetListTerm(t2->Elem, nullptr);
-					if (root == nullptr) root = t;
-					else tprev->Next = t;
-					tprev = t;
-				}
-				t2 = t2->Next;
-			}
-			ChainList(t1, root);
-			CurrInst->Vars[2] = t1;
-			break;
-		}
-		case _MinusP: {
-			root = nullptr; t1 = CurrInst->Vars[0]; t2 = CurrInst->Vars[1];
-			while (t1 != nullptr) {
-				if (!FindInCList(t1->Elem, t2)) {
-					t = GetListTerm(t1->Elem, nullptr);
-					if (root == nullptr) root = t;
-					else tprev->Next = t;
-					tprev = t;
-				}
-				t1 = t1->Next;
-			}
-			CurrInst->Vars[2] = root;
-			break;
-		}
-		case _InterP: {
-			root = nullptr;
-			t1 = CurrInst->Vars[0]; t2 = CurrInst->Vars[1];
-			while (t1 != nullptr) {
-				if (FindInCList(t1->Elem, t2)) {
-					t = GetListTerm(t1->Elem, nullptr);
-					if (root == nullptr) root = t;
-					else tprev->Next = t;
-					tprev = t;
-				}
-				t1 = t1->Next;
-			}
-			CurrInst->Vars[2] = root;
-			break;
-		}
-		case _AbbrevP: { CurrInst->Vars[1] = GetStringTerm(Abbrev(CurrInst->Vars[0]->SS)); break; }
-		case _CallP: {
-			if (!FindChpt('L', CurrInst->Vars[0]->SS, false, &pos)) {
-				SetMsgPar(CurrInst->Vars[0]->SS);
-				RunError(1554);
-			}
-			RunProlog(&pos, CurrInst->Vars[1]->SS);
-			if (EdBreak != 0) goto label1;
+			CurrInst->Vars[0] = t2->Elem;
+			CurrInst->NextBranch = (TBranch*)t2->Next;
 			break;
 		}
 		}
-	label3:
-		return true;
 	}
+	case _FandFileP: {
+		fd = (FileD*)CurrInst->NextBranch;
+		if (fd == nullptr) {
+			fd = NextFD(nullptr);
+			if (fd == nullptr) goto label1;
+		}
+		CurrInst->Vars[0] = GetStringTerm(fd->Name);
+		s[0] = 0;
+		switch (fd->Typ) {
+		case '6': if (fd->IsSQLFile) s = "SQL"; break;
+		case 'X': s = 'X'; break;
+		case 'D': s = "DBF"; break;
+		case '8': s = "DTA"; break;
+		}
+		CurrInst->Vars[1] = GetStringTerm(s);
+		CurrInst->Vars[2] = GetStringTerm(fd->ChptPos.R->FD->Name);
+		CFile = fd;
+		SetCPathVol();
+		CurrInst->Vars[3] = GetStringTerm(CPath);
+		CurrInst->NextBranch = (TBranch*)NextFD(fd);
+		break;
+	}
+	case _FandFieldP: {
+		f = (FieldDescr*)CurrInst->NextBranch;
+		if (f == nullptr) {
+			fd = FindFD(CurrInst->Vars[0]->SS);
+			if (fd == nullptr) goto label1;
+			f = fd->FldD.front();
+		}
+		if (w == 3/*ii*/) {
+			std::string tmpSS = CurrInst->Vars[1]->SS;
+			while ((f != nullptr) && !EquUpCase(f->Name, tmpSS)) f = (FieldDescr*)f->pChain;
+			if (f == nullptr) goto label1;
+		}
+		else CurrInst->Vars[1] = GetStringTerm(f->Name);
+		CurrInst->Vars[2] = GetStringTerm(f->Typ);
+		m = 0; l = f->L;
+		if (f->Typ == 'F') {
+			m = f->M;
+			l--;
+			if (m > 0) l -= (m + 1);
+		}
+		CurrInst->Vars[3] = GetIntTerm(l);
+		CurrInst->Vars[4] = GetIntTerm(m);
+		m = f->Flg;
+		if ((f->Typ == 'N' || f->Typ == 'A')) m = m | (f->M << 4);
+		CurrInst->Vars[5] = GetIntTerm(m);
+		//if ((f->Flg & f_Mask) != 0) mask = FieldDMask(f);
+		if ((f->Flg & f_Mask) != 0) mask = f->Mask;
+		else mask = "";
+		CurrInst->Vars[6] = GetStringTerm(mask);
+		if (w == 3) CurrInst->NextBranch = nullptr;
+		else CurrInst->NextBranch = (TBranch*)f->pChain;
+		break;
+	}
+	case _FandKeyP: {
+		k = (XKey*)CurrInst->NextBranch;
+		if (k == nullptr) {
+			fd = FindFD(CurrInst->Vars[0]->SS);
+			if (fd == nullptr) goto label1;
+			//k = fd->Keys;
+			if (k == nullptr) goto label1;
+		}
+		CurrInst->Vars[1] = GetStringTerm(Pound(k->Alias));
+		CurrInst->Vars[2] = GetBoolTerm(k->Intervaltest);
+		CurrInst->Vars[3] = GetBoolTerm(k->Duplic);
+		CurrInst->NextBranch = (TBranch*)(k->Chain);
+		break;
+	}
+	case _FandLinkP: {
+		//ld = (LinkD*)CurrInst->NextBranch;
+		//if (ld == nullptr) {
+		//	ld = LinkDRoot;
+		//	while ((ld != nullptr) && !EquUpCase(ld->FromFD->Name, CurrInst->Vars[0]->SS)) {
+		//		ld = ld->pChain;
+		//	}
+		//	if (ld == nullptr) goto label1;
+		//}
+		//fd = ld->FromFD;
+		//if (w == 3/*ii*/) {
+		//	while ((ld != nullptr) && ((fd != ld->FromFD) ||
+		//		!EquUpCase(ld->RoleName, CurrInst->Vars[1]->SS))) ld = ld->pChain;
+		//	if (ld == nullptr) goto label1;
+		//	CurrInst->Vars[2] = GetStringTerm(ld->ToFD->Name);
+		//}
+		//else if (w == 5/*ioi*/) {
+		//	while ((ld != nullptr) && ((fd != ld->FromFD) ||
+		//		!EquUpCase(ld->ToFD->Name, CurrInst->Vars[2]->SS))) ld = ld->pChain;
+		//	if (ld == nullptr) goto label1;
+		//	CurrInst->Vars[1] = GetStringTerm(ld->RoleName);
+		//}
+		//else {
+		//	CurrInst->Vars[1] = GetStringTerm(ld->RoleName);
+		//	CurrInst->Vars[2] = GetStringTerm(ld->ToFD->Name);
+		//}
+		//CurrInst->Vars[3] = GetStringTerm(Pound(ld->ToKey->Alias));
+		//s[0] = 0;
+		//k = fd->Keys;
+		//while (k != nullptr) {
+		//	if (k->IndexRoot == ld->IndexRoot) s = k->Alias;
+		//	k = k->pChain;
+		//}
+		//CurrInst->Vars[4] = GetStringTerm(Pound(s));
+		//n = ld->MemberRef;
+		//if (ld->IndexRoot != 0) n += 4;
+		//CurrInst->Vars[5] = GetIntTerm(n);
+		//if (w == 3) ld = nullptr;
+		//else
+		//	do {
+		//		ld = ld->pChain;
+		//	} while (!((ld == nullptr) || (ld->FromFD == fd)));
+		//	CurrInst->NextBranch = (TBranch*)ld;
+		break;
+	}
+	case _FandKeyFieldP: {
+		kf = KeyFldDPtr(CurrInst->NextBranch);
+		if (kf == nullptr) {
+			fd = FindFD(CurrInst->Vars[0]->SS);
+			if (fd == nullptr) goto label1;
+			//k = fd->Keys;
+			while ((k != nullptr) && !EquUpCase(Pound(k->Alias), CurrInst->Vars[1]->SS)) k = k->Chain;
+			if (k == nullptr) goto label1; kf = k->KFlds;
+		}
+		CurrInst->Vars[2] = GetStringTerm(kf->FldD->Name);
+		CurrInst->Vars[3] = GetBoolTerm(kf->CompLex);
+		CurrInst->Vars[4] = GetBoolTerm(kf->Descend);
+		CurrInst->NextBranch = (TBranch*)kf->pChain;
+		break;
+	}
+	case _FandLinkFieldP: {
+		/*kf = KeyFldDPtr(CurrInst->NextBranch);
+		if (kf == nullptr) {
+			ld = LinkDRoot;
+			while ((ld != nullptr) && (
+				!EquUpCase(ld->FromFD->Name, CurrInst->Vars[0]->SS) ||
+				!EquUpCase(ld->RoleName, CurrInst->Vars[1]->SS))) ld = ld->pChain;
+			if (ld == nullptr) goto label1;
+			kf = ld->Args;
+		}
+		CurrInst->Vars[2] = GetStringTerm(kf->FldD->Name);
+		CurrInst->NextBranch = (TBranch*)kf->pChain;*/
+		break;
+	}
+	case _LenP: {
+		t1 = CurrInst->Vars[0]; n = 0;
+		while (t1 != nullptr) { n++; t1 = t1->Next; }
+		CurrInst->Vars[1] = GetIntTerm(n);
+		break;
+	}
+	case _InvP: {
+		t1 = CurrInst->Vars[0]; t2 = nullptr;
+		while (t1 != nullptr) {
+			t2 = GetListTerm(t1->Elem, t2);
+			t1 = t1->Next;
+		}
+		CurrInst->Vars[1] = t2;
+		break;
+	}
+	case _AddP: {
+		t1 = CurrInst->Vars[0]; t2 = CurrInst->Vars[1]; CurrInst->Vars[2] = t2;
+		while (t2 != nullptr) {
+			if (UnifyTermsCC(t1, t2->Elem)) goto label3;
+			t2 = t2->Next;
+		}
+		CurrInst->Vars[2] = GetListTerm(t1, CurrInst->Vars[1]);
+		break;
+	}
+	case _DelP: {
+		q = CurrInst;
+		t1 = (TTerm*)CurrInst->NextBranch;
+		if (t1 == nullptr) t1 = CurrInst->Vars[1];
+	label2:
+		if (t1 == nullptr) goto label1;
+		CurrInst->Vars[0] = t1->Elem;
+		CurrInst = CurrInst->RetInst;
+		b = UnifyTermsCV(t1->Elem, c->Arg->Elem);
+		CurrInst = q;
+		if (b) {
+			root = nullptr;
+			t = CurrInst->Vars[1];
+			while (t != t1) {
+				t2 = GetListTerm(t->Elem, nullptr);
+				if (root == nullptr) root = t2;
+				else tprev->Next = t2;
+				tprev = t2;
+				t = t->Next;
+			}
+			t1 = t1->Next;
+			if (root == nullptr) root = t1;
+			else tprev->Next = t1;
+			CurrInst->Vars[2] = root;
+			CurrInst->NextBranch = (TBranch*)t1;
+			goto label3;
+		}
+		Mem1.Release(q->StkMark); t1 = t1->Next; goto label2;
+		break;
+	}
+	case _UnionP: {
+		t1 = CopyCList(CurrInst->Vars[0]);
+		root = nullptr;
+		t2 = CurrInst->Vars[1];
+		while (t2 != nullptr) {
+			if (!FindInCList(t2->Elem, t1)) {
+				t = GetListTerm(t2->Elem, nullptr);
+				if (root == nullptr) root = t;
+				else tprev->Next = t;
+				tprev = t;
+			}
+			t2 = t2->Next;
+		}
+		ChainList(t1, root);
+		CurrInst->Vars[2] = t1;
+		break;
+	}
+	case _MinusP: {
+		root = nullptr; t1 = CurrInst->Vars[0]; t2 = CurrInst->Vars[1];
+		while (t1 != nullptr) {
+			if (!FindInCList(t1->Elem, t2)) {
+				t = GetListTerm(t1->Elem, nullptr);
+				if (root == nullptr) root = t;
+				else tprev->Next = t;
+				tprev = t;
+			}
+			t1 = t1->Next;
+		}
+		CurrInst->Vars[2] = root;
+		break;
+	}
+	case _InterP: {
+		root = nullptr;
+		t1 = CurrInst->Vars[0]; t2 = CurrInst->Vars[1];
+		while (t1 != nullptr) {
+			if (FindInCList(t1->Elem, t2)) {
+				t = GetListTerm(t1->Elem, nullptr);
+				if (root == nullptr) root = t;
+				else tprev->Next = t;
+				tprev = t;
+			}
+			t1 = t1->Next;
+		}
+		CurrInst->Vars[2] = root;
+		break;
+	}
+	case _AbbrevP: { CurrInst->Vars[1] = GetStringTerm(Abbrev(CurrInst->Vars[0]->SS)); break; }
+	case _CallP: {
+		if (!FindChpt('L', CurrInst->Vars[0]->SS, false, &pos)) {
+			SetMsgPar(CurrInst->Vars[0]->SS);
+			RunError(1554);
+		}
+		RunProlog(&pos, CurrInst->Vars[1]->SS);
+		if (EdBreak != 0) goto label1;
+		break;
+	}
+	}
+label3:
+	return true;
 }
 
 void SyntxError(WORD N, integer Ex)
@@ -1642,7 +1653,7 @@ bool RunCommand(TCommand* COff/*PCommand*/)
 void CallFandProc()
 {
 	//ProcStkD* oldBPr;
-	ProcStkD* ps;
+	//ProcStkD* ps;
 	WORD i = 0, n = 0, w = 0;
 	TTerm* t;
 	//char* pp = (char*)ps;
@@ -1744,7 +1755,7 @@ void CallFandProc()
 		w = w >> 1;
 	}
 	//SetMyBP(oldBP);
-	ReleaseStore(ps);
+	//ReleaseStore(ps);
 }
 
 TScanInf* SiCFile(TScanInf* SiOfs)
@@ -1818,7 +1829,7 @@ void AssertFand(TPredicate* P, TCommand* C)
 			l = l->pChain;
 			i++;
 		}
-		}
+	}
 #ifdef FandSQL
 	if (trace) { writeln("))"); waitC; }
 	if (CFile->IsSQLFile) Strm1->InsertRec(false, true); else
@@ -1831,7 +1842,7 @@ void AssertFand(TPredicate* P, TCommand* C)
 	}
 	OldLMode(md);
 	ReleaseStore(CRecPtr);
-	}
+}
 
 TFileScan* GetScan(TScanInf* SIOfs, TCommand* C, TInstance* Q)
 {
@@ -2353,7 +2364,7 @@ label1:
 	b = p->Branch; i = 0;
 	if ((p->Opt & _CioMaskOpt) != 0) w = c->InpMask;
 	else w = p->InpMask;
-	while (l != 0) {
+	while (l != nullptr) {
 		if ((w & 1) != 0) {
 			if ((p->Opt & _PackInpOpt) != 0) {
 				pt = (char*)A;
@@ -2423,7 +2434,7 @@ label2:
 	//PtrRec(b).Seg = _Sg;
 label23:
 	/* normal unify branch head predicates */
-	q->NextBranch = (TBranch*)b->pChain;
+	q->NextBranch = b->pChain;
 	i = 0; l = b->Head; w = b->HeadIMask;
 	while (l != nullptr) {
 		if (((w & 1) != 0) && !UnifyTermsCV(q->Vars[i], l->Elem)) {
@@ -2582,7 +2593,8 @@ label41:
 	/*---------------------------------  backtracking  ---------------------------*/
 label5:
 	q1 = nullptr; q = TopInst;
-	while ((q != nullptr) && (q->NextBranch == nullptr) && !(q->RetCmd->Code == _NotC || q->RetCmd->Code == _AllC)) {
+	while ((q != nullptr) && (q->NextBranch == nullptr) && q->RetCmd != nullptr
+		&& !(q->RetCmd->Code == _NotC || q->RetCmd->Code == _AllC)) {
 		q1 = q;
 		q = q->PrevInst;
 	}
@@ -2600,7 +2612,7 @@ label5:
 		CurrInst = q;
 		TopInst = q1->PrevInst;
 		Mem2.Release(q1);
-		if (c->Code == _NotC) {
+		if (c != nullptr && c->Code == _NotC) {
 			if (Trace()) { printf("FAIL%c%cRETURN not()", 0x0D, 0x0A); WaitC(); }
 		}
 		else {
@@ -2625,7 +2637,7 @@ label6:
 	if (Trace()) { printf("REDO %s", p->Name.c_str()); WaitC(); }
 	goto label2;
 
-	/*--------------------------  } of program  ------------------------------*/
+	/*--------------------------  end of program  ------------------------------*/
 label7:
 	EdBreak = 2;
 label8:
