@@ -268,9 +268,6 @@ TPTerm* GetOp1(TDomain* D, instr_type Op, TPTerm* E1);
 
 bool RdVar(TDomain* D, integer Kind, integer Idx, TPTerm** RT) /*PTerm || idx*/
 {
-	TVarDcl* v = nullptr;
-	bool bnd; /* idx=-1 except solo variable in head */
-	TPTerm* t = nullptr;
 	if (IsKeyWordP("_")) {
 		if (!(Kind >= 1 && Kind <= 4)) OldError(508);
 		UnbdVarsInTerm = true;
@@ -283,41 +280,65 @@ bool RdVar(TDomain* D, integer Kind, integer Idx, TPTerm** RT) /*PTerm || idx*/
 		if (Kind == 5) Error(523);
 		return false;
 	}
-	v = FindVarDcl();
-	if (v == nullptr) v = MakeVarDcl(D, Idx);
-	else if ((v->Dom != D) &&
-		!((v->Dom == StrDom) && (D == LongStrDom)) &&
-		!((v->Dom == LongStrDom) && (D == StrDom)) &&
-		!((v->Dom == IntDom) && (D == RealDom)) &&
-		!((v->Dom == RealDom) && (D == IntDom))) {
+
+	TVarDcl* var_dcl = FindVarDcl();
+	if (var_dcl == nullptr) var_dcl = MakeVarDcl(D, Idx);
+	else if ((var_dcl->Dom != D) &&
+		!((var_dcl->Dom == StrDom) && (D == LongStrDom)) &&
+		!((var_dcl->Dom == LongStrDom) && (D == StrDom)) &&
+		!((var_dcl->Dom == IntDom) && (D == RealDom)) &&
+		!((var_dcl->Dom == RealDom) && (D == IntDom))) {
 		RdLexP();
 	label1:
-		SetMsgPar(v->Dom->Name, D->Name);
+		SetMsgPar(var_dcl->Dom->Name, D->Name);
 		OldError(507);
 	}
+
 	RdLexP();
-	bnd = v->Bound;
+	bool bnd = var_dcl->Bound; /* idx=-1 except solo variable in head */
+
 	switch (Kind) { /* head 1-i,call-o  call 2-i  head 3-o  unbound 5-o */
-	case 1: { v->Bound = true; if (bnd) v->Used = true; break; }
-	case 2: { if (!bnd) Error(509); v->Used = true; break; }
-	case 3: v->Used = true; break;
+	case 1: {
+		var_dcl->Bound = true;
+		if (bnd) {
+			var_dcl->Used = true;
+		}
+		break;
+	}
+	case 2: {
+		if (!bnd) Error(509);
+		var_dcl->Used = true;
+		break;
+	}
+	case 3: {
+		var_dcl->Used = true;
+		break;
+	}
 	case 4: {
-		if (bnd) v->Used = true;
-		else { v->Bound = true; UnbdVarsInTerm = true; WasUnbd = true; }
+		if (bnd) {
+			var_dcl->Used = true;
+		}
+		else {
+			var_dcl->Bound = true;
+			UnbdVarsInTerm = true;
+			WasUnbd = true;
+		}
 		break;
 	}
 	case 5: {
-		v->Bound = true;
+		var_dcl->Bound = true;
 		if (bnd) OldError(523);
-		// TODO: *RT = v->Idx;
+		// TODO: *RT = var_dcl->Idx;
 		return true;
 	}
 	}
-	if ((Idx == -1) || (v->Idx != Idx)) {
-		//PtrRec(t).Seg = _Sg;
-		t = new TPTerm(); // GetZStor(5);
-		t->Fun = _VarT; t->Idx = v->Idx; t->Bound = bnd;
-		if ((v->Dom != D)) {
+
+	if ((Idx == -1) || (var_dcl->Idx != Idx)) {
+		TPTerm* t = new TPTerm();
+		t->Fun = _VarT;
+		t->Idx = var_dcl->Idx;
+		t->Bound = bnd;
+		if ((var_dcl->Dom != D)) {
 			if (!bnd) goto label1;
 			t = GetOp1(D, _conv, t);
 		}
@@ -339,7 +360,7 @@ WORD DomFun(TDomain* D)
 
 TPTerm* GetOp1(TDomain* D, instr_type Op, TPTerm* E1)
 {
-	TPTerm* t = new TPTerm(); // ptr(_Sg,GetZStor(1+1+2));
+	TPTerm* t = new TPTerm();
 	t->Fun = DomFun(D);
 	t->Op = Op;
 	WasOp = true;
@@ -349,7 +370,7 @@ TPTerm* GetOp1(TDomain* D, instr_type Op, TPTerm* E1)
 
 TPTerm* GetOp2(TDomain* D, instr_type Op, TPTerm* E1, TPTerm* E2)
 {
-	TPTerm* t = new TPTerm(); // ptr(_Sg, GetZStor(1 + 1 + 2 * 2));
+	TPTerm* t = new TPTerm();
 	t->Fun = DomFun(D);
 	t->Op = Op;
 	WasOp = true;
@@ -399,8 +420,7 @@ TPTerm* RdPrimExpr(TDomain* D, integer Kind)
 	switch (Lexem) {
 	case '^': {
 		if (D != IntDom) Error(510);
-		BYTE lx = (BYTE)Lexem;
-		op = (instr_type)lx;
+		op = (instr_type)Lexem;
 		RdLexP();
 		t = GetOp1(D, op, RdPrimExpr(D, Kind));
 		break;
@@ -1041,7 +1061,7 @@ label2:
 				w = w >> 1;
 			}
 			p->Branch = (TBranch*)ip;
-			p->LocVarSz = _undefined; // bpOfs;
+			p->LocVarSz = proc_type::_undefined; // bpOfs;
 		}
 	}
 }
@@ -1125,7 +1145,8 @@ TCommand* RdCommand() /*PCommand*/
 		}
 		c = GetCommand(_CompC, 1 + 1 + 2 * 2);
 		c->Typ = d->Typ;
-		c->E1Idx = v->Idx; c->CompOp = op;
+		c->E1Idx = v->Idx;
+		c->CompOp = op;
 		c->E2 = RdTerm(d, 2);
 		if (v->Bound) v->Used = true;
 		v->Bound = true;
@@ -1331,14 +1352,14 @@ TCommand* RdPredCommand(TCommandTyp Code)
 	}
 	if ((p->Opt & _BuildInOpt) != 0) {
 		switch (p->LocVarSz) {
-		case _ConcatP: {
+		case proc_type::_ConcatP: {
 			if (!(InpMask >= 3 && InpMask <= 7)) OldError(534);
 			break;
 		}
-		case _FandFieldP:
-		case _FandLinkP: {
+		case proc_type::_FandFieldP:
+		case proc_type::_FandLinkP: {
 			if ((InpMask & 1) == 0/*o...*/) OldError(555);
-			if (p->LocVarSz == _FandLinkP) {
+			if (p->LocVarSz == proc_type::_FandLinkP) {
 				InpMask = InpMask & 0x7;
 				if (InpMask == 0x7) InpMask = 5;
 			}
@@ -1392,7 +1413,7 @@ label3:
 	c = GetCommand(Code, sz);
 	c->Pred = p;
 	c->Arg = lRoot;
-	if (p->Opt && _CioMaskOpt != 0) {
+	if ((p->Opt & _CioMaskOpt) != 0) {
 		c->InpMask = InpMask;
 		c->OutpMask = OutpMask;
 		if (IsFandDb) {
@@ -1466,7 +1487,7 @@ void RdDbTerm(TDomain* D)
 		}
 		else {
 			if (d->Typ != _RealD) Error(510);
-			if ((Lexem = '.') && isdigit(ForwChar)) {
+			if ((Lexem == '.') && isdigit(ForwChar)) {
 				RdLexP();
 				s.Append('.');
 				s += LexWord;
@@ -1499,14 +1520,15 @@ void RdDbTerm(TDomain* D)
 		if (d->Typ != _FunD) Error(510);
 		f = GetFunDclByName(D, idx);
 		if (f == nullptr) Error(512);
-		*p = char(idx); p++;
+		*p = (char)idx;
+		p++;
 		RdLexP();
 		n = f->Arity;
 		if (n > 0) {
 			AcceptP('(');
 			for (i = 0; i <= n - 1; i++) {
 				if (i > 0) AcceptP(',');
-				RdDbTerm((TDomain*)f->Arg[i]);
+				RdDbTerm(f->Arg[i]);
 			}
 			AcceptP(')');
 		}
@@ -1587,7 +1609,9 @@ void RdAutoRecursionHead(TPredicate* p, TBranch* b)
 		lofs = new TTermList(); // GetZStor(sizeof(TTermList));
 		ChainLast(c->Arg, lofs);
 		tofs = new TPTerm(); // GetZStor(1 + 2 + 1);
-		t->Fun = _VarT; t->Idx = i; t->Bound = isInput;
+		t->Fun = _VarT;
+		t->Idx = i;
+		t->Bound = isInput;
 		l->Elem = tofs;
 		l1ofs = new TTermList(); // GetZStor(sizeof(TTermList));
 		ChainLast(b->Head, l1ofs);
@@ -1689,7 +1713,8 @@ label3:
 void RdClauses()
 {
 	TBranch* b = nullptr;
-	WORD w = 0, m = 0, mp = 0; integer i = 0, kind = 0; bool iserr = false;
+	WORD w = 0, m = 0, mp = 0; integer i = 0, kind = 0;
+	bool iserr = false;
 	TDomain* d = nullptr;
 	TDomain* dEl = nullptr;
 	TTermList* l = nullptr;
@@ -1704,153 +1729,182 @@ void RdClauses()
 		WORD BP = 0; void* Ret = nullptr; WORD RetOfs = 0;
 	};
 	SF* z = nullptr;
-	WORD zofs; // absolute z
 	bool WasNotC = false;
 
-	/*PtrRec(d).Seg = _Sg; PtrRec(dEl).Seg = _Sg; PtrRec(p).Seg = _Sg;
-	PtrRec(l).Seg = _Sg; PtrRec(c).Seg = _Sg; PtrRec(b).Seg = _Sg;
-	PtrRec(t).Seg = _Sg; PtrRec(p1).Seg = _Sg;*/
-label1:
-	if (Lexem == ':') {
-		RdLexP();
-		RdPredicateDcl(true, nullptr);
-		goto label6;
-	}
-
-	TestIdentifP();
-	p = RdPredicate();
-	if ((p->Opt & (_FandCallOpt | _BuildInOpt)) != 0) {
-		OldError(529);
-	}
-	if ((p->Opt & _DbaseOpt) != 0) {
-		RdDbClause(p);
-		goto label6;
-	}
-
-	VarDcls = nullptr;
-	VarCount = p->Arity;
-	x = Mem1.Mark();
-	b = new TBranch(); // GetZStor(sizeof(TBranch));
-	if (p->Branch == nullptr) p->Branch = b;
-	else ChainLast(p->Branch, b);
-
-	if (p->Arity > 0) {
-		AcceptP('(');
-		if (Lexem == '!') {
-			RdAutoRecursionHead(p, b);
-			goto label4;
+	while (true) {
+		if (Lexem == ':') {
+			RdLexP();
+			RdPredicateDcl(true, nullptr);
+			if (!(Lexem == 0x1A || Lexem == '#')) continue;
+			break;
 		}
-		w = p->InpMask; m = 1;
-		for (i = 0; i < p->Arity; i++) {
-			if (i > 0) AcceptP(',');
-			d = p->Arg[i];
-			kind = 1;
-			if ((w & 1) == 0) kind = 3;
 
-			l = new TTermList(); // GetZStor(sizeof(TTermList));
-			if (b->Head == nullptr) b->Head = l;
-			else ChainLast(b->Head, l);
+		TestIdentifP();
+		p = RdPredicate();
+		if ((p->Opt & (_FandCallOpt | _BuildInOpt)) != 0) {
+			OldError(529);
+		}
+		if ((p->Opt & _DbaseOpt) != 0) {
+			RdDbClause(p);
+			if (!(Lexem == 0x1A || Lexem == '#')) continue;
+			break;
+		}
 
-			SkipBlank(false);
-			if (IsUpperIdentif() && (ForwChar == ',' || ForwChar == ')') /*solo variable*/) {
-				RdVar(d, kind, i, &t);
-				if (t != nullptr) goto label11;
-			}
-			else {
-				t = nullptr;
-			label11:
-				if ((w & 1) != 0) b->HeadIMask = b->HeadIMask | m;
-				else b->HeadOMask = b->HeadOMask | m;
-				if (t == nullptr) t = RdTerm(d, kind);
-				l->Elem = t;
-			}
-			w = w >> 1;
-			m = m << 1;
-		}
-		AcceptP(')');
-	}
-	if (Lexem != '.') {
-		AcceptP(_assign);
-	label2:
-		WasNotC = false;
-		if (IsKeyWordP("self")) {
-			c = GetCommand(_SelfC, 0);
-			ChainLast(b->Cmd, c);
-			goto label4;
-		}
-		if (IsKeyWordP("not")) { AcceptP('('); WasNotC = true; }
-		c = RdCommand();
-		if (c == nullptr)
-			if ((Lexem == _identifier) && (copy(LexWord, 1, 4) == "all_")) {
-				pstring s1 = "L_";
-				s1 += copy(LexWord, 5, 255);
-				d = GetDomain(false, s1);
-				if (d->Typ != _ListD) Error(548);
-				RdLexP();
-				AcceptP('(');
-				c = RdPredCommand(_AllC);
-				AcceptP(',');
-				c->Elem = (TDomain*)RdTerm(d->ElemDom, 2);
-				AcceptP(',');
-				c->Idx = VarCount;
-				VarCount++;
-				//TODO: Idx je WORD - RdVar(d, 5, -1, &c->Idx2);
-				TPTerm* tpTerm; // Toto je navic - nikde se pak nepouzije. CO S TIM?
-				RdVar(d, 5, -1, &tpTerm);
-				AcceptP(')');
-			}
-			else {
-				if (IsKeyWordP("assert")) { code = _AssertC; goto label3; }
-				else {
-					if (IsKeyWordP("retract")) {
-						code = _RetractC;
-					label3:
-						AcceptP('(');
-						c = RdPredCommand(code);
-						AcceptP(')');
+		VarDcls = nullptr;
+		VarCount = p->Arity;
+		x = Mem1.Mark();
+		b = new TBranch();
+		if (p->Branch == nullptr) p->Branch = b;
+		else ChainLast(p->Branch, b);
+
+		if (p->Arity > 0) {
+			AcceptP('(');
+			if (Lexem == '!') {
+				RdAutoRecursionHead(p, b);
+
+				AcceptP('.');
+				v = VarDcls;
+				while (v != nullptr) {
+					if (!v->Used || !v->Bound) {
+						SetMsgPar(v->Name);
+						if (!v->Used) OldError(521);
+						else OldError(520);
 					}
-					else c = RdPredCommand(_PredC);
+					v = v->pChain;
 				}
+				p->InstSz = MaxW(p->InstSz, 4 * VarCount);
+				Mem1.Release(x);
+
+				if (!(Lexem == 0x1A || Lexem == '#')) continue;
+				break;
+
+				//goto label4;
 			}
+			w = p->InpMask; m = 1;
+			for (i = 0; i < p->Arity; i++) {
+				if (i > 0) AcceptP(',');
+				d = p->Arg[i];
+				kind = 1;
+				if ((w & 1) == 0) kind = 3;
 
-		if (b->Cmd == nullptr) b->Cmd = c;
-		else ChainLast(b->Cmd, c);
+				l = new TTermList();
+				if (b->Head == nullptr) b->Head = l;
+				else ChainLast(b->Head, l);
 
-		if (WasNotC) {
-			if (c->Code != _PredC) OldError(546);
-			p1 = c->Pred;
-			l = c->Arg;
-			if ((p1->Opt & _CioMaskOpt) != 0) w = c->InpMask;
-			else w = p1->InpMask;
-			while (l != nullptr) {
-				if ((w & 1) == 0) {
-					t = l->Elem;
-					if ((t == nullptr) || (t->Fun != _UnderscT)) OldError(547);
+				SkipBlank(false);
+				if (IsUpperIdentif() && (ForwChar == ',' || ForwChar == ')') /*solo variable*/) {
+					RdVar(d, kind, i, &t);
+					if (t != nullptr) goto label11;
 				}
-				l = l->pChain;
+				else {
+					t = nullptr;
+				label11:
+					if ((w & 1) != 0) b->HeadIMask = b->HeadIMask | m;
+					else b->HeadOMask = b->HeadOMask | m;
+					if (t == nullptr) t = RdTerm(d, kind);
+					l->Elem = t;
+				}
 				w = w >> 1;
+				m = m << 1;
 			}
 			AcceptP(')');
-			c->Code = _NotC;
 		}
-		if (Lexem == ',') { RdLexP(); goto label2; }
-		if (Lexem == ';') RdSemicolonClause(p, b);
-	}
-label4:
-	AcceptP('.');
-	v = VarDcls;
-	while (v != nullptr) {
-		if (!v->Used || !v->Bound) {
-			SetMsgPar(v->Name);
-			if (!v->Used) OldError(521);
-			else OldError(520);
+		if (Lexem != '.') {
+			AcceptP(_assign);
+			//label2:
+			while (true) {
+				WasNotC = false;
+				if (IsKeyWordP("self")) {
+					c = GetCommand(_SelfC, 0);
+					ChainLast(b->Cmd, c);
+					break; // goto label4;
+				}
+				if (IsKeyWordP("not")) { AcceptP('('); WasNotC = true; }
+				c = RdCommand();
+				if (c == nullptr) {
+					if ((Lexem == _identifier) && (copy(LexWord, 1, 4) == "all_")) {
+						pstring s1 = "L_";
+						s1 += copy(LexWord, 5, 255);
+						d = GetDomain(false, s1);
+						if (d->Typ != _ListD) Error(548);
+						RdLexP();
+						AcceptP('(');
+						c = RdPredCommand(_AllC);
+						AcceptP(',');
+						c->Elem = (TDomain*)RdTerm(d->ElemDom, 2);
+						AcceptP(',');
+						c->Idx = VarCount;
+						VarCount++;
+						//TODO: Idx je WORD - RdVar(d, 5, -1, &c->Idx2);
+						TPTerm* tpTerm; // Toto je navic - nikde se pak nepouzije. CO S TIM?
+						RdVar(d, 5, -1, &tpTerm);
+						AcceptP(')');
+					}
+					else {
+						if (IsKeyWordP("assert")) { code = _AssertC; goto label3; }
+						else {
+							if (IsKeyWordP("retract")) {
+								code = _RetractC;
+							label3:
+								AcceptP('(');
+								c = RdPredCommand(code);
+								AcceptP(')');
+							}
+							else c = RdPredCommand(_PredC);
+						}
+					}
+				}
+
+				if (b->Cmd == nullptr) b->Cmd = c;
+				else ChainLast(b->Cmd, c);
+
+				if (WasNotC) {
+					if (c->Code != _PredC) OldError(546);
+					p1 = c->Pred;
+					l = c->Arg;
+
+					if ((p1->Opt & _CioMaskOpt) != 0) w = c->InpMask;
+					else w = p1->InpMask;
+
+					while (l != nullptr) {
+						if ((w & 1) == 0) {
+							t = l->Elem;
+							if ((t == nullptr) || (t->Fun != _UnderscT)) OldError(547);
+						}
+						l = l->pChain;
+						w = w >> 1;
+					}
+					AcceptP(')');
+					c->Code = _NotC;
+				}
+				if (Lexem == ',') {
+					RdLexP();
+					continue;
+				}
+				if (Lexem == ';') {
+					RdSemicolonClause(p, b);
+				}
+				break;
+			}
 		}
-		v = v->pChain;
+	//label4:
+		AcceptP('.');
+		v = VarDcls;
+		while (v != nullptr) {
+			if (!v->Used || !v->Bound) {
+				SetMsgPar(v->Name);
+				if (!v->Used) OldError(521);
+				else OldError(520);
+			}
+			v = v->pChain;
+		}
+		p->InstSz = MaxW(p->InstSz, 4 * VarCount);
+		Mem1.Release(x);
+
+		if (!(Lexem == 0x1A || Lexem == '#')) continue;
+		break;
 	}
-	p->InstSz = MaxW(p->InstSz, 4 * VarCount);
-	Mem1.Release(x);
-label6:
-	if (!(Lexem == 0x1A || Lexem == '#')) goto label1;
+
 	CheckPredicates(ClausePreds);
 	ClausePreds = nullptr;
 }
@@ -1971,25 +2025,25 @@ TProgRoots* ReadProlog(WORD RecNr)
 	LLexDom = MakeDomain(_ListD, "L_Lexem");
 	d->pChain = LLexDom;
 	d->ElemDom = LexDom;
-	MemPred = MakePred("mem_?", "ii", _MemP, 0xffff);
-	MakePred("concat", "sss", _ConcatP, 0xffff);
-	MakePred("call", "ss", _CallP, 3/*ii*/);
-	LenPred = MakePred("len_?", "ii", _LenP, 1/*io*/);
-	InvPred = MakePred("inv_?", "ii", _InvP, 1/*io*/);
-	AddPred = MakePred("add_?", "iii", _AddP, 3/*iio*/);
-	DelPred = MakePred("del_?", "iii", _DelP, 2/*oio*/);
-	UnionPred = MakePred("union_?", "iii", _UnionP, 3/*iio*/);
-	MinusPred = MakePred("minus_?", "iii", _MinusP, 3/*iio*/);
-	InterPred = MakePred("inter_?", "iii", _InterP, 3/*iio*/);
-	MakePred("abbrev", "ss", _AbbrevP, 1/*io*/);
-	MakePred("fandfile", "ssss", _FandFileP, 0/*oooo*/);
-	MakePred("fandfield", "sssiiis", _FandFieldP, 0xffff);
-	MakePred("fandkey", "ssbb", _FandKeyP, 1/*iooo*/);
-	MakePred("fandkeyfield", "sssbb", _FandKeyFieldP, 3/*iiooo*/);
-	MakePred("fandlink", "sssssi", _FandLinkP, 0xffff);
-	MakePred("fandlinkfield", "sss", _FandLinkFieldP, 3/*iio*/);
-	MakePred("nextlex", "", _NextLexP, 0);
-	MakePred("getlex", "x", _GetLexP, 0/*o*/);
+	MemPred = MakePred("mem_?", "ii", proc_type::_MemP, 0xffff);
+	MakePred("concat", "sss", proc_type::_ConcatP, 0xffff);
+	MakePred("call", "ss", proc_type::_CallP, 3/*ii*/);
+	LenPred = MakePred("len_?", "ii", proc_type::_LenP, 1/*io*/);
+	InvPred = MakePred("inv_?", "ii", proc_type::_InvP, 1/*io*/);
+	AddPred = MakePred("add_?", "iii", proc_type::_AddP, 3/*iio*/);
+	DelPred = MakePred("del_?", "iii", proc_type::_DelP, 2/*oio*/);
+	UnionPred = MakePred("union_?", "iii", proc_type::_UnionP, 3/*iio*/);
+	MinusPred = MakePred("minus_?", "iii", proc_type::_MinusP, 3/*iio*/);
+	InterPred = MakePred("inter_?", "iii", proc_type::_InterP, 3/*iio*/);
+	MakePred("abbrev", "ss", proc_type::_AbbrevP, 1/*io*/);
+	MakePred("fandfile", "ssss", proc_type::_FandFileP, 0/*oooo*/);
+	MakePred("fandfield", "sssiiis", proc_type::_FandFieldP, 0xffff);
+	MakePred("fandkey", "ssbb", proc_type::_FandKeyP, 1/*iooo*/);
+	MakePred("fandkeyfield", "sssbb", proc_type::_FandKeyFieldP, 3/*iiooo*/);
+	MakePred("fandlink", "sssssi", proc_type::_FandLinkP, 0xffff);
+	MakePred("fandlinkfield", "sss", proc_type::_FandLinkFieldP, 3/*iio*/);
+	MakePred("nextlex", "", proc_type::_NextLexP, 0);
+	MakePred("getlex", "x", proc_type::_GetLexP, 0/*o*/);
 	ResetCompilePars();
 	RdLexP();
 	while (Lexem != 0x1A) {

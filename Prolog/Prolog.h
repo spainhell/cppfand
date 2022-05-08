@@ -18,7 +18,7 @@ const BYTE _FandCallOpt = 0x20;
 const BYTE _BuildInOpt = 0x10;
 const BYTE _DbaseOpt = 0x08;  /* predicate Opt */
 
-enum proc_type
+enum class proc_type
 {
 	_undefined = 0, _ConcatP = 2, _NextLexP = 4, _GetLexP = 5,
 	_FandFieldP = 6, _FandFileP = 7, _FandKeyP = 8,
@@ -151,7 +151,7 @@ struct TPredicate : public Chained<TPredicate> {
 	std::string Name; /*PString*/
 	TBranch* Branch = nullptr; /*offset*/ /*InstrPtr|ofs PScanInf|PDbBranch*/
 	WORD InstSz = 0, InpMask = 0;
-	proc_type LocVarSz = _undefined; /*FAND-proc | _xxxP for buildIn*/
+	proc_type LocVarSz = proc_type::_undefined; /*FAND-proc | _xxxP for buildIn*/
 	BYTE Opt = 0;
 	BYTE Arity = 0;
 	std::vector<TDomain*> Arg; /*PDomain*/
