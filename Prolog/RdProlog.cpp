@@ -195,33 +195,18 @@ TDomain* GetOrigDomain(TDomain* D)
 }
 
 /*  T D A T A B A S E  =====================================================*/
-TDatabase* FindDataBase(std::string S)
+TDatabase* FindDataBase(std::string db)
 {
-	TDatabase* db = nullptr;
-	TDatabase* next = nullptr;
-
-	if (Roots->Databases == nullptr) return nullptr;
-
-	db = Roots->Databases;
-	while (db->pChain != nullptr) {
-		if (db->Name == S) goto label1;
-		next = db->pChain;
-	}
-label1:
-	return db->pChain;
+	const auto it = Roots->Databases.find(db);
+	if (it == Roots->Databases.end()) return nullptr;
+	else return it->second;
 }
 
 /*  T P R O G R A M  =======================================================*/
-TPTerm* FindConst(TDomain* D)
+TPTerm* FindConst(std::string name /*LexWord*/, TDomain* domain)
 {
-	TConst* p = Roots->Consts;
-	std::string sLexWord = LexWord;
-
-	while (p != nullptr) {
-		if ((p->Dom == D) && (p->Name == sLexWord)) {
-			return p->Expr;
-		}
-		p = p->pChain;
+	for (auto& c : Roots->Consts) {
+		if (c->Dom == domain && c->Name == name) return c->Expr;
 	}
 	return nullptr;
 }
@@ -229,7 +214,7 @@ TPTerm* FindConst(TDomain* D)
 bool RdConst(TDomain* D, TPTerm** RT)
 {
 	if (Lexem == _identifier) {
-		TPTerm* t = FindConst(D);
+		TPTerm* t = FindConst(LexWord, D);
 		if (t != nullptr) {
 			RdLexP();
 			*RT = t;
@@ -646,37 +631,40 @@ label1:
 	return t;
 }
 
-TDomain* MakeDomain(TDomainTyp DTyp, std::string Nm)
+TDomain* MakeDomain(TDomainTyp domain_type, std::string domain_name)
 {
 	TDomain* d = new TDomain();
-	if (Roots->Domains == nullptr) Roots->Domains = d;
-	else ChainLast(Roots->Domains, d);
-	d->Typ = DTyp;
-	d->Name = Nm;
+	d->Typ = domain_type;
+	d->Name = domain_name;
+
+	Roots->Domains.insert(std::pair(domain_name, d));
+
 	return d;
 }
 
 TDomain* GetDomain(bool Create, std::string Nm)
 {
-	TDomain* d = Roots->Domains;
-
-	TDomain* d1 = nullptr;
-	TDomain* d2 = nullptr;
-
-	while ((d != nullptr) && (d->Name != Nm)) {
-		d = d->pChain;
-	}
+	TDomain* d;
+	auto it = Roots->Domains.find(Nm);
+	if (it == Roots->Domains.end()) d = nullptr;
+	else d = it->second;
 
 	if (d == nullptr) {
 		if (Nm.substr(0, 2) == "L_") {
-			d1 = GetOrigDomain(GetDomain(Create, Nm.substr(2)));
-			if (d1 == nullptr) Error(517);
+			TDomain* d1 = GetOrigDomain(GetDomain(Create, Nm.substr(2)));
+			if (d1 == nullptr) {
+				Error(517);
+				std::string msg = "Exception in Prolog GetDomain " + Nm;
+				throw std::exception(msg.c_str());
+			}
 			Nm = "L_";
 			Nm += d1->Name;
-			d = Roots->Domains;
-			while ((d != nullptr) && (d->Name != Nm)) {
-				d = d->pChain;
-			}
+
+			// try to find domain again (maybe it was created few lines ago)
+			it = Roots->Domains.find(Nm);
+			if (it == Roots->Domains.end()) d = nullptr;
+			else d = it->second;
+
 			if (d == nullptr) {
 				d = MakeDomain(_ListD, Nm);
 				d->ElemDom = d1;
@@ -768,26 +756,31 @@ label2:
 	}
 label4:
 	if (!(Lexem == 0x1A || Lexem == '#')) goto label1;
-	d = Roots->Domains;
-	while (d != nullptr) {
-		switch (d->Typ) {
+
+	//d = Roots->Domains;
+	//while (d != nullptr) {
+	for (auto& d : Roots->Domains) {
+		switch (d.second->Typ) {
 		case _UndefD: {
-			SetMsgPar(d->Name);
+			SetMsgPar(d.second->Name);
 			OldError(516);
 			break;
 		}
 		case _FunD: {
-			fd = d->FunDcl;
+			fd = d.second->FunDcl;
 			while (fd != nullptr) {
-				for (i = 1; i <= fd->Arity; i++) {
-					fd->Arg[i - 1] = GetOrigDomain(fd->Arg[i - 1]);
+				for (i = 0; i < fd->Arity; i++) {
+					fd->Arg[i] = GetOrigDomain(fd->Arg[i]);
 				}
 				fd = fd->pChain;
 			}
 			break;
 		}
+		default: {
+			// process for other types probably not needed?
 		}
-		d = d->pChain;
+		}
+		//d = d->pChain;
 	}
 }
 
@@ -801,7 +794,7 @@ void RdConstants()
 		while (true) {
 			TestIdentifP();
 			if (IsCharUpper2(LexWord[1])) Error(515);
-			if (FindConst(d) != nullptr) Error(505);
+			if (FindConst(LexWord, d) != nullptr) Error(505);
 			TConst* p = new TConst();
 			p->Name = LexWord;
 			RdLexP();
@@ -809,8 +802,9 @@ void RdConstants()
 			AcceptP('=');
 			p->Expr = RdTerm(d, 6);
 
-			if (Roots->Consts == nullptr) Roots->Consts = p;
-			else ChainLast(Roots->Consts, p);
+			/*if (Roots->Consts == nullptr) Roots->Consts = p;
+			else ChainLast(Roots->Consts, p);*/
+			Roots->Consts.push_back(p);
 
 			if (Lexem == ',') {
 				RdLexP();
@@ -825,36 +819,35 @@ void RdConstants()
 	}
 }
 
-TPredicate* GetPredicate() /*PPredicate*/
+TPredicate* GetPredicate(std::string predicate_name)
 {
-	std::string sLexWord = LexWord;
-
-	TPredicate* p = Roots->Predicates;
-	while (p != nullptr) {
-		if (sLexWord == p->Name) {
+	//TPredicate* p = Roots->Predicates;
+	//while (p != nullptr) {
+	for (auto& p : Roots->Predicates) {
+		if (p->Name == predicate_name) {
 			RdLexP();
 			return p;
 		}
-		p = p->pChain;
+		//p = p->pChain;
 	}
 
-	p = ClausePreds;
+	TPredicate* p = ClausePreds;
 	while (p != nullptr) {
-		if (sLexWord == p->Name) {
+		if (p->Name == predicate_name) {
 			RdLexP();
 			return p;
 		}
-		p = p->pChain;
+		//p = p->pChain;
 	}
 
-	return p;
+	return nullptr;
 }
 
 TPredicate* RdPredicate() /*PPredicate*/
 {
-	TPredicate* pofs = GetPredicate();
-	if (pofs == nullptr) Error(513);
-	return pofs;
+	TPredicate* p = GetPredicate(LexWord);
+	if (p == nullptr) Error(513);
+	return p;
 }
 
 WORD GetOutpMask(TPredicate* P)
@@ -866,13 +859,9 @@ void RdPredicateDcl(bool FromClauses, TDatabase* Db)
 {
 	TDomain* d = nullptr;
 	TPredicate* p = nullptr;
-	//TPredicate* pofs = 0; // absolute p
 	TScanInf* si = nullptr;
-	//TScanInf* siofs = nullptr; // absolute si
 	TFldList* fl = nullptr;
-	//TFldList* flofs = nullptr; // absolute fl
 	Instr_proc* ip = nullptr;
-	//WORD ipofs = 0; // absolute ip
 	std::string nm; /*PString*/
 	integer n = 0;
 	WORD w = 0, m = 0;
@@ -882,14 +871,10 @@ void RdPredicateDcl(bool FromClauses, TDatabase* Db)
 	WORD bpOfs = 0;
 	bool isOutp = false, b = false;
 	FieldDescr* f = nullptr;
-	BYTE o = 0;
 	RdbD* r = nullptr;
 	FrmlElem* z = nullptr;
-	WORD zofs = 0; // absolute z
 
-	//PtrRec(d).Seg = _Sg; PtrRec(p).Seg = _Sg; PtrRec(si).Seg = _Sg;
-	//PtrRec(fl).Seg = _Sg; PtrRec(ip).Seg = _Sg;
-	o = 0;
+	BYTE o = 0;
 	if (Db != nullptr) o = _DbaseOpt + _CioMaskOpt;
 	if (Lexem == '@') {
 		RdLexP();
@@ -898,7 +883,7 @@ void RdPredicateDcl(bool FromClauses, TDatabase* Db)
 	else if (Db != nullptr) o = o | _PackInpOpt;
 	TestIdentifP();
 	if (IsCharUpper2(LexWord[1])) Error(518);
-	if (GetPredicate() != nullptr) OldError(505);
+	if (GetPredicate(LexWord) != nullptr) OldError(505);
 	nm = LexWord;
 	if ((o & _FandCallOpt) != 0) {
 		if (Db != nullptr) {
@@ -994,7 +979,8 @@ label2:
 		else ChainLast(ClausePreds, p);
 	}
 	else {
-		ChainLast(Roots->Predicates, p);
+		//ChainLast(Roots->Predicates, p);
+		Roots->Predicates.push_back(p);
 	}
 
 	if (Db != nullptr) {
@@ -1560,21 +1546,45 @@ void RdDbClause(TPredicate* P)
 	AcceptP('.');
 }
 
-void CheckPredicates(TPredicate* POff)
+void CheckPredicates(std::vector<TPredicate*>& P)
 {
 	TScanInf* si = nullptr;
-	TPredicate* p = POff;
+	//TPredicate* p = P;
+	//while (p != nullptr) {
+	for (auto& p : P) {
+		if (((p->Opt & (_DbaseOpt + _FandCallOpt + _BuildInOpt)) == 0) && (p->Branch == nullptr)) {
+			SetMsgPar(p->Name);
+			OldError(522);
+		}
+		if ((p->Opt & _DbaseOpt) != 0) {
+			if ((p->Opt & _FandCallOpt) != 0) {
+				si = (TScanInf*)p->Branch;
+				// not needed -> FD is actual (not loaded from RDB file, but actually compiled)
+				//si->FD = nullptr;
+			}
+			else p->Branch = nullptr;
+		}
+		//p = p->pChain;
+	}
+}
+
+void CheckPredicates(TPredicate* P)
+{
+	TScanInf* si = nullptr;
+	TPredicate* p = P;
 	while (p != nullptr) {
 		if (((p->Opt & (_DbaseOpt + _FandCallOpt + _BuildInOpt)) == 0) && (p->Branch == nullptr)) {
 			SetMsgPar(p->Name);
 			OldError(522);
 		}
-		if ((p->Opt & _DbaseOpt) != 0)
+		if ((p->Opt & _DbaseOpt) != 0) {
 			if ((p->Opt & _FandCallOpt) != 0) {
 				si = (TScanInf*)p->Branch;
-				si->FD = nullptr;
+				// not needed -> FD is actual (not loaded from RDB file, but actually compiled)
+				//si->FD = nullptr;
 			}
 			else p->Branch = nullptr;
+		}
 		p = p->pChain;
 	}
 }
@@ -1584,43 +1594,37 @@ void RdAutoRecursionHead(TPredicate* p, TBranch* b)
 	TTermList* l = nullptr;
 	TTermList* l1 = nullptr;
 	WORD w = 0;
-	TCommand* c = nullptr;
 	TPTerm* t = nullptr;
 	TDomain* d = nullptr;
 	TVarDcl* v = nullptr;
-	TTermList* lofs = nullptr; // absolute l
-	TTermList* l1ofs = nullptr; // absolute l1
-	TCommand* cofs = nullptr; // absolute c
-	TPTerm* tofs = nullptr; // absolute t
-	TDomain* dofs = nullptr; // absolute d
 	bool isInput = false;
 	integer i = 0, j = 0, k = 0;
 	if (p->Opt != 0) Error(550);
 	//PtrRec(c).Seg = _Sg; PtrRec(l).Seg = _Sg; PtrRec(l1).Seg = _Sg;
 	//PtrRec(t).Seg = _Sg; PtrRec(d).Seg = _Sg;
-	cofs = GetCommand(_AutoC, 2 + 3 + 6 * 2);
-	b->Cmd = cofs;
+	TCommand* c = GetCommand(_AutoC, 2 + 3 + 6 * 2);
+	b->Cmd = c;
 	p->InstSz += 4;
 	c->iWrk = (p->InstSz / 4) - 1;
 	w = p->InpMask;
-	for (i = 0; i <= p->Arity - 1; i++) {
+	for (i = 0; i < p->Arity; i++) {
 		if ((w & 1) != 0) isInput = true;
 		else isInput = false;
-		lofs = new TTermList(); // GetZStor(sizeof(TTermList));
-		ChainLast(c->Arg, lofs);
-		tofs = new TPTerm(); // GetZStor(1 + 2 + 1);
+		l = new TTermList(); // GetZStor(sizeof(TTermList));
+		ChainLast(c->Arg, l);
+		t = new TPTerm(); // GetZStor(1 + 2 + 1);
 		t->Fun = _VarT;
 		t->Idx = i;
 		t->Bound = isInput;
-		l->Elem = tofs;
-		l1ofs = new TTermList(); // GetZStor(sizeof(TTermList));
-		ChainLast(b->Head, l1ofs);
-		dofs = p->Arg[i];
+		l->Elem = t;
+		l1 = new TTermList(); // GetZStor(sizeof(TTermList));
+		ChainLast(b->Head, l1);
+		d = p->Arg[i];
 		if (i > 0) AcceptP(',');
 		else if (!(d->Typ == _FunD || d->Typ == _ListD)) Error(556);
 		if (Lexem == '!') {
 			if (i > 0) {
-				if (isInput || (dofs != p->Arg[0]) || (c->iOutp > 0)) Error(551);
+				if (isInput || (d != p->Arg[0]) || (c->iOutp > 0)) Error(551);
 				c->iOutp = i;
 			}
 			else if (!isInput) Error(552);
@@ -1634,7 +1638,7 @@ void RdAutoRecursionHead(TPredicate* p, TBranch* b)
 		else {
 			if (!IsUpperIdentif()) Error(511);
 			v = FindVarDcl();
-			if (v == nullptr) v = MakeVarDcl(dofs, i);
+			if (v == nullptr) v = MakeVarDcl(d, i);
 			if (isInput) {
 				if (v->Bound) Error(553);
 				v->Bound = true;
@@ -1643,9 +1647,16 @@ void RdAutoRecursionHead(TPredicate* p, TBranch* b)
 			if (v->Bound && v->Used) {
 				j = v->Idx;
 			label1:
-				k = c->nPairs; (c->nPairs)++;
-				if (isInput) { c->Pair[k].iInp = i; c->Pair[k].iOutp = j; }
-				else { c->Pair[k].iInp = j; c->Pair[k].iOutp = i; }
+				k = c->nPairs;
+				(c->nPairs)++;
+				if (isInput) {
+					c->Pair[k].iInp = i;
+					c->Pair[k].iOutp = j;
+				}
+				else {
+					c->Pair[k].iInp = j;
+					c->Pair[k].iOutp = i;
+				}
 			}
 		}
 		RdLexP();
@@ -1664,8 +1675,8 @@ void RdSemicolonClause(TPredicate* p, TBranch* b)
 	if (IsUpperIdentif()) {
 		x = 'a';
 		v = FindVarDcl();
-		if (p->InpMask != (1 << (p->Arity - 1)) - 1) Error(562);
-		if ((v == nullptr) || v->Bound || (v->Dom->Typ != _ListD)) Error(561);
+		if (p->InpMask != (1 << (p->Arity - 1)) - 1) { Error(562); }
+		if ((v == nullptr) || v->Bound || (v->Dom->Typ != _ListD)) { Error(561); }
 		RdLexP();
 		AcceptP('+'); AcceptP('=');
 		v->Bound = true;
@@ -1694,7 +1705,7 @@ void RdSemicolonClause(TPredicate* p, TBranch* b)
 label2:
 	ChainLast(b->Cmd, c);
 label3:
-	b = new TBranch(); // GetZStor(sizeof(TBranch));
+	b = new TBranch();
 	ChainLast(p->Branch, b);
 	switch (x) {
 	case 'e': b->Cmd = RdCommand(); break;
@@ -1887,7 +1898,7 @@ void RdClauses()
 				break;
 			}
 		}
-	//label4:
+		//label4:
 		AcceptP('.');
 		v = VarDcls;
 		while (v != nullptr) {
@@ -1913,12 +1924,15 @@ TPredicate* MakePred(std::string PredName, std::string ArgTyp, proc_type PredKod
 {
 	TDomain* d = nullptr;
 	TPredicate* p = new TPredicate();
-	if (Roots->Predicates == nullptr) Roots->Predicates = p;
-	else ChainLast(Roots->Predicates, p);
+	/*if (Roots->Predicates == nullptr) Roots->Predicates = p;
+	else ChainLast(Roots->Predicates, p);*/
 
 	p->Name = PredName;
 	p->Arity = ArgTyp.length();
 	p->LocVarSz = PredKod;
+
+	Roots->Predicates.push_back(p);
+
 	for (size_t i = 0; i < ArgTyp.length(); i++) {
 		switch (ArgTyp[i]) {
 		case 's': d = StrDom; break;
@@ -1927,6 +1941,7 @@ TPredicate* MakePred(std::string PredName, std::string ArgTyp, proc_type PredKod
 		case 'r': d = RealDom; break;
 		case 'b': d = BoolDom; break;
 		case 'x': d = LLexDom; break;
+		default: break;
 		}
 		p->Arg.push_back(d); // p->Arg[i] = d;
 	}
@@ -1947,24 +1962,19 @@ TProgRoots* ReadProlog(WORD RecNr)
 {
 	pstring Booln = "Boolean";
 	pstring Reell = "Real";
-	TDatabase* db = nullptr;
-	//WORD* dbofs = &db->pChain; // absolute db dbofs;
 	TPredicate* p = nullptr;
-	//WORD* pofs = &p->pChain;
 	TDomain* d = nullptr;
-	//WORD* dofs = &d->pChain;
 	TFunDcl* f = nullptr;
-	//WORD* fofs = &f->pChain;
 	pstring s;
 	RdbPos pos;
 	LongStr* ss = nullptr;
 	void* p1 = nullptr; void* p2 = nullptr; void* pp1 = nullptr;
-	void* pp2 = nullptr; void* pp3 = nullptr; void* cr = nullptr;
+	void* pp2 = nullptr; void* pp3 = nullptr;
 	longint AA = 0;
 	WORD result = 0;
 
 	MarkBoth(p1, p2);
-	cr = CRecPtr;
+	void* cr = CRecPtr;
 	if (ProlgCallLevel == 0) {
 		FreeMemList = nullptr;
 		Mem1.Init(); Mem2.Init(); Mem3.Init();
@@ -1973,21 +1983,11 @@ TProgRoots* ReadProlog(WORD RecNr)
 		pp1 = Mem1.Mark(); pp2 = Mem2.Mark(); pp3 = Mem3.Mark();
 	}
 	AlignLongStr();
-	ss = new LongStr(2); // GetStore(2);
-	//AA = AbsAdr(&ss->A);
-	//_Sg = PtrRec(HeapPtr).Seg;
-	//result = _Sg;
-	//PtrRec(db).Seg = _Sg;
-	db = new TDatabase();
-	//PtrRec(p).Seg = _Sg;
-	//p = new TPredicate();
-	//PtrRec(d).Seg = _Sg;
-	//d = new TDomain();
-	//PtrRec(f).Seg = _Sg;
+	ss = new LongStr(2);
 	f = new TFunDcl();
 	ClausePreds = 0;
-	Roots = new TProgRoots(); // GetZStore(sizeof(TProgRoots));
-	UnderscoreTerm = new TPTerm(); // GetZStor(1);
+	Roots = new TProgRoots();
+	UnderscoreTerm = new TPTerm();
 	UnderscoreTerm->Fun = _UnderscT;
 	StrDom = MakeDomain(_StrD, "String");
 	LongStrDom = MakeDomain(_LongStrD, "LongString");
@@ -2009,7 +2009,7 @@ TProgRoots* ReadProlog(WORD RecNr)
 
 	p = new TPredicate();
 	p->Name = "main";
-	Roots->Predicates = p;
+	Roots->Predicates.push_back(p);
 	LexDom = MakeDomain(_FunD, "Lexem");
 	d->pChain = LexDom;
 
@@ -2062,12 +2062,13 @@ TProgRoots* ReadProlog(WORD RecNr)
 				s = LexWord;
 				RdLexP();
 			}
-			db->pChain = FindDataBase(s);
-			if (db->pChain == nullptr) {
-				db->pChain = new TDatabase();
-				if (Roots->Databases == nullptr) Roots->Databases = db->pChain;
-				else ChainLast(Roots->Databases, db->pChain);
+			TDatabase* db = FindDataBase(s);
+			if (db == nullptr) {
+				db = new TDatabase();
+				//if (Roots->Databases == nullptr) Roots->Databases = db->pChain;
+				//else ChainLast(Roots->Databases, db->pChain);
 				db->Name = s;
+				Roots->Databases.insert(std::pair(db->Name, db));
 			}
 			do {
 				RdPredicateDcl(false, db);
@@ -2086,11 +2087,16 @@ TProgRoots* ReadProlog(WORD RecNr)
 		}
 	}
 	//if (AbsAdr(HeapPtr) - AA > MaxLStrLen) OldError(544);
-	db = Roots->Databases;
-	while (db != nullptr) {
-		db->SOfs = SaveDb(db, AA);
-		db = db->pChain;
+	//db = Roots->Databases;
+	//while (db != nullptr) {
+	//	db->SOfs = SaveDb(db, AA);
+	//	db = db->pChain;
+	//}
+
+	for (const auto& db : Roots->Databases) {
+		db.second->SOfs = SaveDb(db.second, AA);
 	}
+
 	CheckPredicates(Roots->Predicates);
 	//ss->LL = AbsAdr(HeapPtr) - AA;
 	if (ProlgCallLevel == 0) ReleaseStore2(p2);

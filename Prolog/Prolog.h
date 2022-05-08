@@ -1,4 +1,6 @@
 #pragma once
+#include <map>
+
 #include "../cppfand/Chained.h"
 #include "../cppfand/constants.h"
 #include "../cppfand/FieldDescr.h"
@@ -165,10 +167,10 @@ struct TDatabase : public Chained<TDatabase> {
 };
 
 struct TProgRoots {
-	TDomain* Domains = nullptr;
-	TConst* Consts = nullptr;
-	TPredicate* Predicates = nullptr;
-	TDatabase* Databases = nullptr;
+	std::map<std::string, TDomain*> Domains;
+	std::vector<TConst*> Consts;
+	std::vector<TPredicate*> Predicates;
+	std::map<std::string, TDatabase*> Databases;
 };
 
 extern TVarDcl* VarDcls;

@@ -2301,7 +2301,7 @@ void RunProlog(RdbPos* Pos, std::string PredName)
 	TBranch* b1 = nullptr;
 	TDbBranch* bd = nullptr;
 	TTermList* l = nullptr;
-	TDatabase* db = nullptr;
+	//TDatabase* db = nullptr;
 	TTerm* t = nullptr; TProgRoots* Roots = nullptr;
 	RdbD* ChptLRdb = nullptr;
 	WORD oldSg = 0; TInstance* oldCurrInst = nullptr;
@@ -2339,28 +2339,23 @@ void RunProlog(RdbPos* Pos, std::string PredName)
 		CFile = ChptLRdb->FD;
 		CRecPtr = GetRecSpace();
 		ReadRec(CFile, Pos->IRec, CRecPtr);
-		//AlignLongStr();
-		//_Sg = PtrRec(HeapPtr).Seg + 1;
 		longint hhh = _T(ChptTxt);
-		//ss = _LongS(ChptOldTxt);
 		SetInpTTPos(hhh, ChptLRdb->Encrypted);
-		//if (ChptLRdb->Encrypted) CodingLongStr(ss);
-		//std::string code = std::string(ss->A, ss->LL);
-		//printf("");
 		Roots = ReadProlog(Pos->IRec);
 	}
-	//Roots = ptr(_Sg, 0);
 
-	db = Roots->Databases;
-	while (db != nullptr) {
-		ConsultDb(db->SOfs, db);
-		db = db->pChain;
+	//db = Roots->Databases;
+	//while (db != nullptr) {
+	//	ConsultDb(db->SOfs, db);
+	//	db = db->pChain;
+	//}
+
+	for (auto& db : Roots->Databases) {
+		ConsultDb(db.second->SOfs, db.second);
 	}
+
 	TopInst = nullptr;
 	CurrInst = nullptr;
-	//c = ptr(_Sg, 0);
-	//b = ptr(_Sg, 0);
-	//l = ptr(_Sg, 0);
 	p = Roots->Predicates; /* main */
 	if (!PredName.empty()) {
 		while ((p != nullptr) && (p->Name != PredName)) {
@@ -2385,7 +2380,8 @@ label1:
 		q->CallLevel = CallLevel;
 	}
 	/* copy input parameters */
-	b = p->Branch; i = 0;
+	b = p->Branch;
+	i = 0;
 	if ((p->Opt & _CioMaskOpt) != 0) w = c->InpMask;
 	else w = p->InpMask;
 	while (l != nullptr) {
