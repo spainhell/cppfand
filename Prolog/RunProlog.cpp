@@ -151,12 +151,13 @@ void ChainList(void* Frst, void* New)
 std::string XXS;
 LongStr* RdLongStr(longint Pos)
 {
-	LongStr* p = new LongStr(2); // GetStore(2);
-	WORD l = 0;
+	WORD l;
 	SeekH(WorkHandle, Pos);
 	ReadH(WorkHandle, 2, &l);
+
+	LongStr* p = new LongStr(l);
+	ReadH(WorkHandle, l, p->A);
 	p->LL = l;
-	if (l > 0) { GetStore(l); ReadH(WorkHandle, l, p->A); }
 	return p;
 }
 
@@ -1761,17 +1762,20 @@ void CallFandProc()
 TScanInf* SiCFile(TScanInf* SiOfs)
 {
 	TScanInf* si = SiOfs;
-	TScanInf* result = si;
 	CFile = si->FD;
-	if (CFile != nullptr) return result;
+	if (CFile != nullptr) return si;
 
 	SetCFile(si->Name);
 	si->FD = CFile;
 	TFldList* fl = si->FL;
-	while (fl != nullptr) {
-		fl->FldD = CFile->FldD[0];
-		fl = fl->pChain;
-	}
+
+	return si;
+
+	// TODO: co to ma delat???
+	//while (fl != nullptr) {
+	//	//fl->FldD = CFile->FldD[0];
+	//	fl = fl->pChain;
+	//}
 }
 
 void AssertFand(TPredicate* P, TCommand* C)
@@ -1926,9 +1930,11 @@ bool ScanFile(TInstance* Q)
 	FieldDescr* f = nullptr;
 	TScanInf* si = nullptr;
 	WORD w = 0; integer i = 0;
-	TTerm* t = nullptr; double r = 0.0;
+	TTerm* t = nullptr;
+	double r = 0.0;
 	LongStr* s = nullptr;
-	pstring ss; bool b = false;
+	pstring ss;
+	bool b = false;
 	TDomain* d = nullptr;
 	void* pt = PackedTermPtr;
 	XKey* k = nullptr;
@@ -1977,7 +1983,7 @@ label1:
 	}
 	fl = si->FL;
 	w = c->CompMask;
-	for (i = 0; i <= integer(p->Arity) - 1; i++)
+	for (i = 0; i < p->Arity; i++)
 	{ /* compare with inp. parameters */
 		if ((w & 1) != 0) {
 			t = CurrInst->Vars[i];
@@ -2018,7 +2024,7 @@ label1:
 	}
 	fl = si->FL;
 	w = c->OutpMask;
-	for (i = 0; i <= (integer)p->Arity - 1; i++)
+	for (i = 0; i < p->Arity; i++)
 	{ /* create outp. parameters */
 		if ((w & 1) != 0) {
 			f = fl->FldD;

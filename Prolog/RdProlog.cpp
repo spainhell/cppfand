@@ -921,7 +921,7 @@ label2:
 			if ((o & _FandCallOpt) != 0) {
 				f = RdFldName(CFile);
 				fl = new TFldList(); // GetZStor(sizeof(TFldList));
-				fl->FldD = CFile->FldD.front(); // OPtr(PtrRec(CFile).Seg, f);
+				fl->FldD = f; // OPtr(PtrRec(CFile).Seg, f);
 
 				if (si->FL == nullptr) si->FL = fl;
 				else ChainLast(si->FL, fl);

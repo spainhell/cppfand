@@ -1176,7 +1176,10 @@ void RunInstr(Instr* PD)
 			screen.GotoXY(x + WindMin.X - 1, y + WindMin.Y - 1, absolute);
 			break;
 		}
-		case _merge: { MergeProc((Instr_merge_display*)PD); break; }
+		case _merge: {
+			MergeProc((Instr_merge_display*)PD);
+			break;
+		}
 #ifdef FandProlog
 		case _lproc: {
 			auto iPD = (Instr_lproc*)PD;
@@ -1202,7 +1205,10 @@ void RunInstr(Instr* PD)
 			LVAssignFrml(iPD->AssLV, iPD->Add, iPD->Frml);
 			break;
 		}
-		case _asgnrecfld: { AssignRecFld(((Instr_assign*)PD)); break; }
+		case _asgnrecfld: {
+			AssignRecFld((Instr_assign*)PD);
+			break;
+		}
 		case _asgnrecvar: {
 			auto iPD = (Instr_assign*)PD;
 			AssignRecVar(iPD->RecLV1, iPD->RecLV2, iPD->Ass);
@@ -1214,7 +1220,10 @@ void RunInstr(Instr* PD)
 			AsgnParFldFrml(iPD->FD, iPD->FldD, iPD->Frml, iPD->Add);
 			break;
 		}
-		case _asgnfield: { AssignField(((Instr_assign*)PD)); break; }
+		case _asgnfield: {
+			AssignField((Instr_assign*)PD);
+			break;
+		}
 		case _asgnnrecs: /* !!! with PD^ do!!! */ {
 			auto iPD = (Instr_assign*)PD;
 			CFile = iPD->FD;
@@ -1410,7 +1419,7 @@ void RunInstr(Instr* PD)
 			break;
 		}
 		}
-		PD = (Instr*)PD->Chain;
+		PD = PD->Chain;
 		}
 	}
 
@@ -1426,8 +1435,6 @@ void CallProcedure(Instr_proc* PD)
 {
 	void* p1 = nullptr;
 	void* p2 = nullptr;
-	//void* oldbp;
-	//void* oldprocbp;
 
 	std::_Vector_iterator<std::_Vector_val<std::_Simple_types<LocVar*>>> it0;
 	std::_Vector_iterator<std::_Vector_val<std::_Simple_types<LocVar*>>> it1;
@@ -1543,7 +1550,7 @@ void CallProcedure(Instr_proc* PD)
 	Instr* next = pd1;
 	while (next != nullptr) {
 		vI.push_back(next);
-		next = (Instr*)next->Chain;
+		next = next->Chain;
 	}
 #endif
 
@@ -1609,10 +1616,10 @@ void CallProcedure(Instr_proc* PD)
 	LVBD = oldLVDB;
 	LinkDRoot = ld;
 
-	CFile = (FileD*)lstFD->pChain;
+	CFile = lstFD->pChain;
 	while (CFile != nullptr) {
 		CloseFile();
-		CFile = (FileD*)CFile->pChain;
+		CFile = CFile->pChain;
 	}
 	lstFD->pChain = nullptr;
 	ReleaseBoth(p1, p2);
