@@ -1041,7 +1041,7 @@ label2:
 				w = w >> 1;
 			}
 			p->Branch = (TBranch*)ip;
-			p->LocVarSz = bpOfs;
+			p->LocVarSz = _undefined; // bpOfs;
 		}
 	}
 }
@@ -1855,7 +1855,7 @@ label6:
 	ClausePreds = nullptr;
 }
 
-TPredicate* MakePred(std::string PredName, std::string ArgTyp, WORD PredKod, WORD PredMask)
+TPredicate* MakePred(std::string PredName, std::string ArgTyp, proc_type PredKod, WORD PredMask)
 {
 	TDomain* d = nullptr;
 	TPredicate* p = new TPredicate();

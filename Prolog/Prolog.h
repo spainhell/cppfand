@@ -5,21 +5,27 @@
 #include "../cppfand/FileD.h"
 #include "../cppfand/pstring.h"
 
-const BYTE _IntT = 249; const BYTE _RealT = 250; const BYTE _StrT = 251;
-const BYTE _LongStrT = 252; const BYTE _ListT = 253; const BYTE _VarT = 254;
+const BYTE _IntT = 249;
+const BYTE _RealT = 250;
+const BYTE _StrT = 251;
+const BYTE _LongStrT = 252;
+const BYTE _ListT = 253;
+const BYTE _VarT = 254;
 const BYTE _UnderscT = 255; /*term fun*/
-const BYTE _CioMaskOpt = 0x80; const BYTE _PackInpOpt = 0x40;
-const BYTE _FandCallOpt = 0x20; const BYTE _BuildInOpt = 0x10;
+const BYTE _CioMaskOpt = 0x80;
+const BYTE _PackInpOpt = 0x40;
+const BYTE _FandCallOpt = 0x20;
+const BYTE _BuildInOpt = 0x10;
 const BYTE _DbaseOpt = 0x08;  /* predicate Opt */
-const BYTE _ConcatP = 2; const BYTE _NextLexP = 4; const BYTE _GetLexP = 5;
-const BYTE _FandFieldP = 6; const BYTE _FandFileP = 7; const BYTE _FandKeyP = 8;
-const BYTE _FandKeyFieldP = 9;
-const BYTE _FandLinkP = 10; const BYTE _FandLinkFieldP = 11;
-const BYTE _MemP = 14; const BYTE _LenP = 15; const BYTE _InvP = 16;
-const BYTE _AddP = 17; const BYTE _DelP = 18;
-const BYTE _UnionP = 20; const BYTE _MinusP = 21; const BYTE _InterP = 22;
-const BYTE _AbbrevP = 25;
-const BYTE _CallP = 32;
+
+enum proc_type
+{
+	_undefined = 0, _ConcatP = 2, _NextLexP = 4, _GetLexP = 5,
+	_FandFieldP = 6, _FandFileP = 7, _FandKeyP = 8,
+	_FandKeyFieldP = 9, _FandLinkP = 10, _FandLinkFieldP = 11,
+	_MemP = 14,	_LenP = 15, _InvP = 16, _AddP = 17, _DelP = 18,
+	_UnionP = 20, _MinusP = 21,	_InterP = 22, _AbbrevP = 25, _CallP = 32
+};
 
 enum TDomainTyp { _UndefD, _IntD, _RealD, _StrD, _LongStrD, _ListD, _FunD, _RedefD };
 
@@ -144,7 +150,8 @@ struct TPredicate : public Chained<TPredicate> {
 	TPredicate* ChainDb = nullptr; /*PPredicate*/
 	std::string Name; /*PString*/
 	TBranch* Branch = nullptr; /*offset*/ /*InstrPtr|ofs PScanInf|PDbBranch*/
-	WORD InstSz = 0, InpMask = 0, LocVarSz = 0; /*FAND-proc| _xxxP for buildIn*/
+	WORD InstSz = 0, InpMask = 0;
+	proc_type LocVarSz = _undefined; /*FAND-proc | _xxxP for buildIn*/
 	BYTE Opt = 0;
 	BYTE Arity = 0;
 	std::vector<TDomain*> Arg; /*PDomain*/
