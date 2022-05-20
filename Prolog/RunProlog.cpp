@@ -17,9 +17,11 @@
 const WORD MaxPackedPredLen = 4000;
 
 struct TTerm {
-	BYTE Fun = 0;
+	prolog_func Fun = prolog_func::_undefined;
+	BYTE FunIdx = 0;
 	BYTE Arity = 0;
 	TTerm* Arg[3];
+	bool BB = false;
 	integer II = 0;
 	double RR = 0.0;
 	std::string SS;
@@ -82,7 +84,7 @@ TFunDcl* GetFunDcl(TDomain* D, BYTE I)
 TTerm* GetIntTerm(integer I)
 {
 	TTerm* t = new TTerm(); // (TTerm*)Mem1.Get(1 + sizeof(integer));
-	t->Fun = _IntT;
+	t->Fun = prolog_func::_IntT;
 	t->II = I;
 	return t;
 }
@@ -90,7 +92,7 @@ TTerm* GetIntTerm(integer I)
 TTerm* GetRealTerm(double R)
 {
 	TTerm* t = new TTerm(); //(TTerm*)Mem1.Get(1 + sizeof(double));
-	t->Fun = _RealT;
+	t->Fun = prolog_func::_RealT;
 	t->RR = R;
 	return t;
 }
@@ -98,14 +100,14 @@ TTerm* GetRealTerm(double R)
 TTerm* GetBoolTerm(bool B)
 {
 	TTerm* t = new TTerm(); // (TTerm*)Mem1.Get(1 + 1);
-	t->Fun = B;
+	t->BB = B;
 	return t;
 }
 
 TTerm* GetStringTerm(pstring S)
 {
 	TTerm* t = new TTerm(); // (TTerm*)Mem1.Get(1 + 1 + S.length());
-	t->Fun = _StrT;
+	t->Fun = prolog_func::_StrT;
 	t->SS = S;
 	return t;
 }
@@ -113,7 +115,7 @@ TTerm* GetStringTerm(pstring S)
 TTerm* GetLongStrTerm(longint N)
 {
 	TTerm* t = new TTerm(); // (TTerm*)Mem1.Get(1 + 4);
-	t->Fun = _LongStrT;
+	t->Fun = prolog_func::_LongStrT;
 	t->Pos = N;
 	return t;
 }
@@ -121,7 +123,7 @@ TTerm* GetLongStrTerm(longint N)
 TTerm* GetListTerm(TTerm* aElem, TTerm* aNext)
 {
 	TTerm* t = new TTerm(); // (TTerm*)Mem1.Get(1 + 2 * 4);
-	t->Fun = _ListT;
+	t->Fun = prolog_func::_ListT;
 	t->Elem = aElem;
 	t->Next = aNext;
 	return t;
@@ -130,7 +132,8 @@ TTerm* GetListTerm(TTerm* aElem, TTerm* aNext)
 TTerm* GetFunTerm(BYTE aFun, BYTE aArity)
 {
 	TTerm* t = new TTerm(); // (TTerm*)Mem1.Get(1 + 1 + aArity * 4);
-	t->Fun = aFun;
+	t->Fun = prolog_func::_undefined;
+	t->FunIdx = aFun;
 	t->Arity = aArity;
 	return t;
 }
@@ -208,10 +211,13 @@ integer RunIExpr1(TPTerm* t)
 	return i;
 }
 
-integer RunIExpr(TPTerm* t/*PPTerm*/)
+integer RunIExpr(TPTerm* t)
 {
 	//TPTerm* t = ptr(_Sg, TOfs);
-	if (t->Fun == _VarT) { return CurrInst->Vars[t->Idx]->II; }
+	if (t->Fun == prolog_func::_VarT) {
+		return CurrInst->Vars[t->Idx]->II;
+	}
+
 	switch (t->Op) {
 	case _const: return t->II;
 	case '^': return !RunIExpr(t->E1);
@@ -230,10 +236,12 @@ integer RunIExpr(TPTerm* t/*PPTerm*/)
 	}
 }
 
-double RunRExpr(TPTerm* t/*PPTerm*/)
+double RunRExpr(TPTerm* t)
 {
 	//TPTerm* t = ptr(_Sg, TOfs);
-	if (t->Fun == _VarT) { return CurrInst->Vars[t->Idx]->RR; }
+	if (t->Fun == prolog_func::_VarT) {
+		return CurrInst->Vars[t->Idx]->RR;
+	}
 	switch (t->Op) {
 	case _const: return t->RR;
 	case '+': return RunRExpr(t->E1) + RunRExpr(t->E2);
@@ -252,7 +260,7 @@ std::string RunSExpr1(TPTerm* t)
 	WORD l = 0, l2 = 0;
 	bool b = false;
 	do {
-		b = (t->Fun == _StrT) && (t->Op == '+');
+		b = (t->Fun == prolog_func::_StrT) && (t->Op == '+');
 		if (b) t = t->E1;
 		else t1 = t;
 		s2 = RunSExpr(t1);
@@ -273,7 +281,10 @@ std::string RunSExpr(TPTerm* t)
 	std::string q;
 	std::string s;
 	//t = ptr(_Sg, TOfs);
-	if (t->Fun == _VarT) { q = CurrInst->Vars[t->Idx]->SS; goto label1; }
+	if (t->Fun == prolog_func::_VarT) {
+		q = CurrInst->Vars[t->Idx]->SS;
+		goto label1;
+	}
 	else {
 		switch (t->Op) {
 		case _const: {
@@ -351,7 +362,7 @@ std::string RunLSExpr(TPTerm* t)
 	//WORD l = 0;
 	std::string result;
 
-	if (t->Fun == _VarT) {
+	if (t->Fun == prolog_func::_VarT) {
 		LongStr* p = RdLongStr(CurrInst->Vars[t->Idx]->Pos);
 		result = std::string(p->A, p->LL);
 		delete p;
@@ -393,17 +404,17 @@ bool UnifyTermsCC(TTerm* T1, TTerm* T2)
 	if (T2 == nullptr) { if (T1 != nullptr) return false; }
 	if ((T1 == nullptr) || (T1->Fun != T2->Fun)) return false;
 	else switch (T2->Fun) {
-	case _IntT: return T1->II == T2->II;
-	case _RealT: return T1->RR == T2->RR;
-	case _StrT: return T1->SS == T2->SS;
-	case _LongStrT: {
+	case prolog_func::_IntT: return T1->II == T2->II;
+	case prolog_func::_RealT: return T1->RR == T2->RR;
+	case prolog_func::_StrT: return T1->SS == T2->SS;
+	case prolog_func::_LongStrT: {
 		p1 = RdLongStr(T1->Pos);
 		p2 = RdLongStr(T2->Pos);
 		result = EquLongStr(p1, p2);
 		ReleaseStore(p1);
 		return result;
 	}
-	case _ListT: return UnifyTermsCC(T1->Elem, T2->Elem) && UnifyTermsCC(T1->Next, T2->Next);
+	case prolog_func::_ListT: return UnifyTermsCC(T1->Elem, T2->Elem) && UnifyTermsCC(T1->Next, T2->Next);
 	default: {
 		for (i = 0; i <= (integer)T1->Arity - 1; i++)
 			if (!UnifyTermsCC(T1->Arg[i], T2->Arg[i])) {
@@ -424,18 +435,18 @@ bool UnifyTermsCV(TTerm* T1, TPTerm* T2/*PPTerm*/)
 	auto result = true;
 	if (T2 == nullptr) { if (T1 != nullptr) return false; }
 	switch (T2->Fun) {
-	case _VarT: {
+	case prolog_func::_VarT: {
 		if (T2->Bound) result = UnifyTermsCC(T1, CurrInst->Vars[T2->Idx]);
 		else CurrInst->Vars[T2->Idx] = T1;
 		break;
 	}
-	case _UnderscT: break;
+	case prolog_func::_UnderscT: break;
 	default: {
 		if ((T1 == nullptr) || (T1->Fun != T2->Fun)) goto label1;
 		else switch (T2->Fun) {
-		case _IntT: result = T1->II == RunIExpr(T2); break;
-		case _RealT: result = T1->RR == RunRExpr(T2); break;
-		case _StrT: {
+		case prolog_func::_IntT: result = T1->II == RunIExpr(T2); break;
+		case prolog_func::_RealT: result = T1->RR == RunRExpr(T2); break;
+		case prolog_func::_StrT: {
 			if (T2->Op == _const) result = T1->SS == T2->SS;
 			else {
 				XXS = RunSExpr(T2);
@@ -443,7 +454,7 @@ bool UnifyTermsCV(TTerm* T1, TPTerm* T2/*PPTerm*/)
 			}
 			break;
 		}
-		case _LongStrT: {
+		case prolog_func::_LongStrT: {
 			p = RdLongStr(T1->Pos);
 			std::string s2 = RunLSExpr(T2);
 			p2 = new LongStr((char*)s2.c_str(), s2.length());
@@ -451,7 +462,7 @@ bool UnifyTermsCV(TTerm* T1, TPTerm* T2/*PPTerm*/)
 			//ReleaseStore(p);
 			break;
 		}
-		case _ListT: {
+		case prolog_func::_ListT: {
 			while (T2->Op == '+') {
 				if (!UnifyVList(T1, T2->E1)) goto label1;
 				T2 = T2->E2;
@@ -460,7 +471,7 @@ bool UnifyTermsCV(TTerm* T1, TPTerm* T2/*PPTerm*/)
 			break;
 		}
 		default: {
-			for (i = 0; i <= integer(T1->Arity) - 1; i++)
+			for (i = 0; i <= T1->Arity; i++)
 				if (!UnifyTermsCV(T1->Arg[i], T2->Arg[i])) {
 				label1:
 					return false;
@@ -480,7 +491,7 @@ bool UnifyVList(TTerm* TT1, TPTerm* T2)
 	auto result = false;
 	while (T2 != nullptr)
 		switch (T2->Fun) {
-		case _VarT: {
+		case prolog_func::_VarT: {
 			if (T2->Bound) {
 				t = CurrInst->Vars[T2->Idx];
 				while (t != nullptr) {
@@ -496,7 +507,7 @@ bool UnifyVList(TTerm* TT1, TPTerm* T2)
 			goto label1;
 			break;
 		}
-		case _UnderscT: { t1 = nullptr; goto label1; break; }
+		case prolog_func::_UnderscT: { t1 = nullptr; goto label1; break; }
 		default: {
 			if ((t1 == nullptr) || !UnifyTermsCV(t1->Elem, T2->Elem)) return result;
 			t1 = t1->Next;
@@ -528,7 +539,7 @@ TTerm* CopyCList(TTerm* T)
 	root = nullptr;
 	do {
 		t1 = (TTerm*)Mem1.Get(1 + 2 * 4);
-		t1->Fun = _ListT;
+		t1->Fun = prolog_func::_ListT;
 		t1->Elem = T->Elem;
 		if (root == nullptr) root = t1;
 		else prev->Next = t1;
@@ -549,9 +560,9 @@ TTerm* CopyTerm(TPTerm* t/*PPTerm*/)
 	if (t == nullptr) { return nullptr; }
 	//t = ptr(_Sg, TOff);
 	switch (t->Fun) {
-	case _IntT: return GetIntTerm(RunIExpr((TPTerm*)t)); break;
-	case _RealT: return GetRealTerm(RunRExpr((TPTerm*)t)); break;
-	case _StrT: {
+	case prolog_func::_IntT: return GetIntTerm(RunIExpr((TPTerm*)t)); break;
+	case prolog_func::_RealT: return GetRealTerm(RunRExpr((TPTerm*)t)); break;
+	case prolog_func::_StrT: {
 		if (t->Op == _const) return GetStringTerm(t->SS);
 		else {
 			XXS = RunSExpr(t);
@@ -559,7 +570,7 @@ TTerm* CopyTerm(TPTerm* t/*PPTerm*/)
 		}
 		break;
 	}
-	case _LongStrT: {
+	case prolog_func::_LongStrT: {
 		std::string s = RunLSExpr(t);
 		p = new LongStr((char*)s.c_str(), s.length());
 		auto result = GetLongStrTerm(WrLongStr(p));
@@ -567,11 +578,11 @@ TTerm* CopyTerm(TPTerm* t/*PPTerm*/)
 		return result;
 		break;
 	}
-	case _VarT: {
+	case prolog_func::_VarT: {
 		return CurrInst->Vars[t->Idx];
 		break;
 	}
-	case _ListT: {
+	case prolog_func::_ListT: {
 		t2 = nullptr;
 		while (t->Op == '+') {
 			ChainList(&t2, CopyVList(t->E1, true));
@@ -582,8 +593,8 @@ TTerm* CopyTerm(TPTerm* t/*PPTerm*/)
 		break;
 	}
 	default: {
-		t2 = GetFunTerm(t->Fun, t->Arity);
-		for (i = 0; i <= (integer)t->Arity - 1; i++)
+		t2 = GetFunTerm(t->FunIdx, t->Arity);
+		for (i = 0; i < t->Arity; i++)
 			t2->Arg[i] = CopyTerm(t->Arg[i]);
 		return t2;
 		break;
@@ -597,18 +608,18 @@ TTerm* CopyVList(TPTerm* T, bool Cpy)
 	if (T == nullptr) { return nullptr; }
 	root = nullptr;
 label1:
-	if (T->Fun == _VarT) {
+	if (T->Fun == prolog_func::_VarT) {
 		t1 = CurrInst->Vars[T->Idx];
 		if (Cpy) t1 = CopyCList(t1);
 	}
 	else {
 		t1 = (TTerm*)Mem1.Get(1 + 2 * 4);
-		t1->Fun = _ListT;
+		t1->Fun = prolog_func::_ListT;
 		t1->Elem = CopyTerm(T->Elem);
 	}
 	if (root == nullptr) root = t1;
 	else prev->Next = t1;
-	if ((T->Fun != _VarT)) {
+	if ((T->Fun != prolog_func::_VarT)) {
 		prev = t1;
 		T = T->Next;
 		if (T != nullptr) goto label1;
@@ -628,28 +639,34 @@ label1:
 	if (T == nullptr /* [] */) { *(WORD*)p = 0; p += 2; }
 	else {
 		switch (T->Fun) {
-		case _IntT: { *(integer*)p = T->II; p += 2; break; }
-		case _RealT: { *(double*)p = T->RR; p += sizeof(double); break; }
-		case _StrT: {
+		case prolog_func::_IntT: { *(integer*)p = T->II; p += 2; break; }
+		case prolog_func::_RealT: { *(double*)p = T->RR; p += sizeof(double); break; }
+		case prolog_func::_StrT: {
 			n = T->SS.length() + 1;
 			//if (PtrRec(p).Ofs + n >= PTPMaxOfs) RunError(1527);
 			//Move(t->SS, p, n);
 			p += n;
 			break;
 		}
-		case _LongStrT: RunError(1543); break;
-		case _ListT: {
+		case prolog_func::_LongStrT: RunError(1543); break;
+		case prolog_func::_ListT: {
 			wp = (WORD*)p;
 			p += 2;
 			n = 0;
-			while (T != nullptr) { PackTermC(T->Elem); T = T->Next; n++; }
+			while (T != nullptr) {
+				PackTermC(T->Elem);
+				T = T->Next;
+				n++;
+			}
 			*wp = n;
 			break;
 		}
 		default: {
-			*p = char(T->Fun);
+			*p = (char)T->Fun;
 			p++;
-			for (i = 0; i <= integer(T->Arity) - 1; i++) PackTermC(T->Arg[i]);
+			for (i = 0; i < T->Arity; i++) {
+				PackTermC(T->Arg[i]);
+			}
 		}
 		}
 	}
@@ -662,7 +679,7 @@ WORD PackVList(TPTerm* T)
 	WORD n = 0;
 	TTerm* t1 = nullptr;
 	do {
-		if (T->Fun == _VarT) {
+		if (T->Fun == prolog_func::_VarT) {
 			t1 = CurrInst->Vars[T->Idx];
 			while (t1 != nullptr) {
 				PackTermC(t1->Elem);
@@ -691,13 +708,21 @@ label1:
 	if (t == 0 /* [] */) { *(WORD*)p = 0; p += 2; }
 	else {
 		switch (T->Fun) {
-		case _VarT: {
+		case prolog_func::_VarT: {
 			PackTermC(CurrInst->Vars[T->Idx]);
 			break;
 		}
-		case _IntT: { *(integer*)p = RunIExpr((TPTerm*)t); p += 2; break; }
-		case _RealT: { *(double*)p = RunRExpr((TPTerm*)t); p += sizeof(double); break; }
-		case _StrT: {
+		case prolog_func::_IntT: {
+			*(integer*)p = RunIExpr((TPTerm*)t);
+			p += 2;
+			break;
+		}
+		case prolog_func::_RealT: {
+			*(double*)p = RunRExpr((TPTerm*)t);
+			p += sizeof(double);
+			break;
+		}
+		case prolog_func::_StrT: {
 			XXS = RunSExpr(t);
 			n = XXS.length() + 1;
 			//if (PtrRec(p).Ofs + n >= PTPMaxOfs) RunError(1527);
@@ -705,8 +730,11 @@ label1:
 			p += n;
 			break;
 		}
-		case _LongStrT: RunError(1543); break;
-		case _ListT: {
+		case prolog_func::_LongStrT: {
+			RunError(1543);
+			break;
+		}
+		case prolog_func::_ListT: {
 			wp = (WORD*)p;
 			p += 2;
 			*wp = 0;
@@ -718,9 +746,9 @@ label1:
 			break;
 		}
 		default: {
-			*p = char(T->Fun);
+			*p = (char)T->Fun;
 			p++;
-			for (i = 0; i <= integer(T->Arity) - 1; i++) {
+			for (i = 0; i < T->Arity; i++) {
 				PackTermV(T->Arg[i]);
 			}
 		}
@@ -768,11 +796,12 @@ TTerm* UnpackTerm(TDomain* D)
 		break;
 	}
 	default: {
-		n = *p; p++;
+		n = *p;
+		p++;
 		f = GetFunDcl(D, n);
 		t = GetFunTerm(n, f->Arity);
-		for (i = 0; i <= (integer)f->Arity - 1; i++) {
-			t->Arg[i] = UnpackTerm((TDomain*)f->Arg[i]);
+		for (i = 0; i < f->Arity; i++) {
+			t->Arg[i] = UnpackTerm(f->Arg[i]);
 		}
 		break;
 	}
@@ -834,7 +863,7 @@ void PrintPackedPred(char* Q, TPredicate* POfs/*PPredicate*/)
 	WaitC();
 }
 
-void PrintTerm(TTerm* T, TDomain* DOfs)
+void PrintTerm(TTerm* T, TDomain* D)
 {
 	TFunDcl* fd = nullptr;
 	WORD i = 0; LongStr* p = nullptr;
@@ -843,10 +872,10 @@ void PrintTerm(TTerm* T, TDomain* DOfs)
 	if (T == nullptr) printf("[]");
 	else {
 		switch (T->Fun) {
-		case _IntT: printf("%i", T->II); break;
-		case _RealT: printf("%f", T->RR); break;
-		case _StrT: printf("'%s'", T->SS.c_str()); break;
-		case _LongStrT: {
+		case prolog_func::_IntT: printf("%i", T->II); break;
+		case prolog_func::_RealT: printf("%f", T->RR); break;
+		case prolog_func::_StrT: printf("'%s'", T->SS.c_str()); break;
+		case prolog_func::_LongStrT: {
 			p = RdLongStr(T->Pos);
 			printf("'");
 			for (i = 1; i <= p->LL; i++) printf("%c", p->A[i]);
@@ -854,9 +883,9 @@ void PrintTerm(TTerm* T, TDomain* DOfs)
 			ReleaseStore(p);
 			break;
 		}
-		case _ListT: {
+		case prolog_func::_ListT: {
 			printf("[");
-			d = DOfs;
+			d = D;
 			i = 0;
 		label1:
 			PrintTerm(T->Elem, d->ElemDom);
@@ -870,7 +899,7 @@ void PrintTerm(TTerm* T, TDomain* DOfs)
 			break;
 		}
 		default: {
-			fd = GetFunDcl(DOfs, T->Fun);
+			fd = GetFunDcl(D, T->FunIdx);
 			printf("%s", fd->Name.c_str());
 			if (T->Arity == 0) return;
 			break;
@@ -909,7 +938,7 @@ std::string SaveDb(TDatabase* Db, longint AA)
 				s += p->Name;
 				s += (char)arity;
 			}
-			TDbBranch* b = (TDbBranch*)p->Branch;
+			TDbBranch* b = p->dbBranch;
 			while (b != nullptr) {
 				s += '\1';
 				s.append((char*)b->A, b->LL);
@@ -957,8 +986,8 @@ void ConsultDb(std::string S, TDatabase* Db/*PDatabase*/)
 				index += 2;
 				memcpy(b->A, &S[index], b->LL);
 				index += b->LL;
-				if (p->Branch == nullptr) p->Branch = (TBranch*)b;
-				else ChainLast(p->Branch, (TBranch*)b);
+				if (p->dbBranch == nullptr) p->dbBranch = b;
+				else ChainLast(p->dbBranch, b);
 			}
 			if (S[index] != '\0') {
 				SetMsgPar(Db->Name);
@@ -1504,12 +1533,9 @@ void SetCFile(const pstring Name)
 	else RunError(1539);
 }
 
-void RetractDbEntry(TInstance* Q, TPredicate* POfs/*PPredicate*/, TDbBranch* B)
+void RetractDbEntry(TInstance* Q, TPredicate* P, TDbBranch* B)
 {
-	TDbBranch* b1 = nullptr;
-	TPredicate* p = nullptr;
-	p = POfs;
-	b1 = (TDbBranch*)(&p->Branch);
+	TDbBranch* b1 = P->dbBranch;
 label1:
 	if (b1->pChain != nullptr)
 		if (b1->pChain = B) {
@@ -1520,7 +1546,7 @@ label1:
 			}
 		}
 		else { b1 = (TDbBranch*)b1->pChain; goto label1; }
-	Mem3.Free(B, LenDbEntry((LongStr*)&B->LL, p->Arity) + 4);
+	Mem3.Free(B, LenDbEntry((LongStr*)&B->LL, P->Arity) + 4);
 }
 
 void AppendPackedTerm(TCommand* C)
@@ -1676,7 +1702,7 @@ void CallFandProc()
 
 	TPredicate* p = CurrInst->Pred;
 	//PtrRec(d).Seg = _Sg;
-	Instr_proc* pd = (Instr_proc*)p->Branch;
+	Instr_proc* pd = p->instr;
 	//ps = GetZStore(p->LocVarSz);
 	w = p->InpMask;
 	//if (PtrRec(pd->Pos.R).Seg == 0) {
@@ -1692,7 +1718,7 @@ void CallFandProc()
 		if ((w & 1) != 0) {
 			switch (ta->FTyp) {
 			case 'R': {
-				if (t->Fun == _IntT) {
+				if (t->Fun == prolog_func::_IntT) {
 					((FrmlElem2*)ta->Frml)->R = t->II;
 				}
 				else {
@@ -1701,7 +1727,7 @@ void CallFandProc()
 				break;
 			}
 			case 'B': {
-				((FrmlElem5*)ta->Frml)->B = bool(t->Fun);
+				((FrmlElem5*)ta->Frml)->B = t->BB;
 				break;
 			}
 			default: {
@@ -1801,7 +1827,7 @@ void AssertFand(TPredicate* P, TCommand* C)
 	WORD i = 0;
 	LongStr* s = nullptr;
 
-	si = SiCFile((TScanInf*)P->Branch);
+	si = SiCFile(P->scanInf);
 	md = NewLMode(CrMode);
 	CRecPtr = GetRecSpace();
 	ZeroAllFlds();
@@ -1821,11 +1847,11 @@ void AssertFand(TPredicate* P, TCommand* C)
 			}
 			switch (f->FrmlTyp) {
 			case 'B': {
-				B_(f, (bool)t->Fun);
+				B_(f, t->BB);
 				break;
 			}
 			case 'R': {
-				if (t->Fun == _IntT) R_(f, t->II);
+				if (t->Fun == prolog_func::_IntT) R_(f, t->II);
 				else R_(f, t->RR);
 				break;
 			}
@@ -1843,8 +1869,8 @@ void AssertFand(TPredicate* P, TCommand* C)
 			fl = fl->pChain;
 			l = l->pChain;
 			i++;
-			}
 		}
+	}
 #ifdef FandSQL
 	if (trace) { writeln("))"); waitC; }
 	if (CFile->IsSQLFile) Strm1->InsertRec(false, true); else
@@ -1863,13 +1889,20 @@ TFileScan* GetScan(TScanInf* SIOfs, TCommand* C, TInstance* Q)
 {
 	TFldList* fl = nullptr;
 	XKey* k = nullptr;
-	KeyFldD* kf = nullptr; FieldDescr* f = nullptr;
-	XString xx; WORD i = 0;
-	TTerm* t = nullptr; double r = 0.0; LongStr* s = nullptr; pstring* ss = nullptr;
-	LockMode md; longint n = 0; bool b = false;
+	KeyFldD* kf = nullptr;
+	FieldDescr* f = nullptr;
+	XString xx;
+	WORD i = 0;
+	TTerm* t = nullptr;
+	double r = 0.0;
+	LongStr* s = nullptr;
+	pstring* ss = nullptr;
+	LockMode md;
+	longint n = 0;
+	bool b = false;
 
 	TScanInf* si = SiCFile(SIOfs);
-	TFileScan* fs = new TFileScan(); // (TFileScan*)Mem1.Get(sizeof(TFileScan));
+	TFileScan* fs = new TFileScan();
 	md = NewLMode(RdMode);
 	k = nullptr;
 	if (C->KDOfs != nullptr) k = C->KDOfs;
@@ -1887,7 +1920,7 @@ TFileScan* GetScan(TScanInf* SIOfs, TCommand* C, TInstance* Q)
 		t = Q->Vars[C->ArgI[i]];
 		switch (f->FrmlTyp) {
 		case 'R': {
-			if (t->Fun == _IntT) r = t->II;
+			if (t->Fun == prolog_func::_IntT) r = t->II;
 			else r = t->RR;
 			xx.StoreReal(r, kf);
 			break;
@@ -1897,9 +1930,9 @@ TFileScan* GetScan(TScanInf* SIOfs, TCommand* C, TInstance* Q)
 			break;
 		}
 		default: {
-			if (t->Fun == _StrT) xx.StoreStr(t->SS, kf);
+			if (t->Fun == prolog_func::_StrT) xx.StoreStr(t->SS, kf);
 			else {
-				if (t->Fun == _LongStrT) s = RdLongStr(t->Pos);
+				if (t->Fun == prolog_func::_LongStrT) s = RdLongStr(t->Pos);
 				else s = GetPackedTerm(t);
 				//ss = ptr(PtrRec(s).Seg, PtrRec(s).Ofs + 1);
 				ss[0] = (char)MinW(s->LL, 255);
@@ -1961,7 +1994,7 @@ bool ScanFile(TInstance* Q)
 	p = CurrInst->Pred;
 	c = CurrInst->RetCmd;
 	//PtrRec(d).Seg = _Sg;
-	si = (TScanInf*)p->Branch;
+	si = p->scanInf;
 	//PtrRec(fl).Seg = _Sg;
 	CFile = si->FD;
 	CRecPtr = GetRecSpace();
@@ -2001,12 +2034,12 @@ label1:
 			f = fl->FldD;
 			switch (f->FrmlTyp) {
 			case 'B': {
-				if (_B(f) != t->Fun) goto label1;
+				if (_B(f) != t->BB) goto label1;
 				break;
 			}
 			case 'R': {
 				r = _R(f);
-				if (t->Fun == _IntT) {
+				if (t->Fun == prolog_func::_IntT) {
 					if (r != t->II) goto label1;
 				}
 				else if (r != t->RR) goto label1;
@@ -2161,19 +2194,19 @@ void TraceCall(TInstance* Q, BYTE X)
 						case proc_type::_MemP:
 						case proc_type::_AddP:
 						case proc_type::_DelP: {
-							d = c->Elem;
+							d = c->ElemDomain;
 							if (i == 0) d = d->ElemDom;
 							break;
 						}
 						case proc_type::_LenP: {
-							if (i == 0) d = c->Elem;
+							if (i == 0) d = c->ElemDomain;
 							break;
 						}
 						case proc_type::_InvP:
 						case proc_type::_UnionP:
 						case proc_type::_MinusP:
 						case proc_type::_InterP: {
-							d = c->Elem;
+							d = c->ElemDomain;
 							break;
 						}
 						}
@@ -2228,14 +2261,14 @@ bool AutoRecursion(TInstance* q, TPredicate* p, TCommand* c)
 	w = (TAutoR*)t1;
 	if (w == nullptr) {
 		t = q->Vars[0];
-		f = GetFunDcl(d, t->Fun);
+		f = GetFunDcl(d, t->FunIdx);
 		w = (TAutoR*)Mem2.Get(sizeof(TAutoR) + 4 * f->Arity);
 		w->t = t; i = 0;
 		q->Vars[c->iWrk] = (TTerm*)w;
 	}
 	else {
 		t = w->t;
-		f = GetFunDcl(d, t->Fun);
+		f = GetFunDcl(d, t->FunIdx);
 		i = w->i;
 		if (iOutp > 0) w->Arg[i] = q->Vars[iOutp];
 		i++;
@@ -2257,7 +2290,7 @@ bool AutoRecursion(TInstance* q, TPredicate* p, TCommand* c)
 	if (iOutp > 0) {
 		sz = 4 * f->Arity;
 		if (!EquArea(t->Arg, w->Arg, sz)) {
-			t1 = GetFunTerm(t->Fun, f->Arity);
+			t1 = GetFunTerm(t->FunIdx, f->Arity);
 			Move(w->Arg, t1->Arg, sz);
 			q->Vars[iOutp] = t1;
 		}
@@ -2265,7 +2298,7 @@ bool AutoRecursion(TInstance* q, TPredicate* p, TCommand* c)
 	}
 	if (!w->wasCall)
 		label2:
-	for (j = 0; j <= c->nPairs - 1; j++) {
+	for (j = 0; j < c->nPairs; j++) {
 		i = c->Pair[j].iInp;
 		i2 = c->Pair[j].iOutp;
 		if (i > 0) t = q->Vars[i];
@@ -2295,7 +2328,7 @@ void RunProlog(RdbPos* Pos, std::string PredName)
 	void* pp = nullptr; void* pp1 = nullptr; void* pp2 = nullptr;
 	void* pp3 = nullptr; void* pm1 = nullptr; void* pm2 = nullptr;
 	LongStr* ss = nullptr; longint WMark = 0;
-	TPredicate* p = nullptr; TPredicate* p1 = nullptr;
+	TPredicate* p1 = nullptr;
 	TCommand* c = nullptr;
 	TBranch* b = nullptr;
 	TBranch* b1 = nullptr;
@@ -2356,7 +2389,7 @@ void RunProlog(RdbPos* Pos, std::string PredName)
 
 	TopInst = nullptr;
 	CurrInst = nullptr;
-	p = Roots->Predicates; /* main */
+	TPredicate* p = Roots->Predicates[0]; /* main */
 	if (!PredName.empty()) {
 		while ((p != nullptr) && (p->Name != PredName)) {
 			p = p->pChain;
@@ -2368,7 +2401,7 @@ void RunProlog(RdbPos* Pos, std::string PredName)
 	}
 label1:
 	/* new instance remember prev. inst,branch,cmd */
-	q = new TInstance(); // (TInstance*)Mem2.Get(p->InstSz + (sizeof(TInstance) - 7 * 4));
+	q = new TInstance();
 	q->Pred = p;
 	q->PrevInst = TopInst;
 	TopInst = q;
@@ -2380,7 +2413,7 @@ label1:
 		q->CallLevel = CallLevel;
 	}
 	/* copy input parameters */
-	b = p->Branch;
+	b = p->branch;
 	i = 0;
 	if ((p->Opt & _CioMaskOpt) != 0) w = c->InpMask;
 	else w = p->InpMask;
@@ -2403,6 +2436,7 @@ label1:
 		w = w >> 1;
 	}
 	if ((p->Opt & (_FandCallOpt + _DbaseOpt)) == _FandCallOpt + _DbaseOpt) {
+		b = (TBranch*)p->scanInf;
 		q->NextBranch = (TBranch*)GetScan((TScanInf*)b, c, q);
 	}
 	if (Trace()) {
@@ -2455,7 +2489,9 @@ label2:
 label23:
 	/* normal unify branch head predicates */
 	q->NextBranch = b->pChain;
-	i = 0; l = b->Head; w = b->HeadIMask;
+	i = 0;
+	l = b->Head;
+	w = b->HeadIMask;
 	while (l != nullptr) {
 		if (((w & 1) != 0) && !UnifyTermsCV(q->Vars[i], l->Elem)) {
 			b = b->pChain;
@@ -2522,8 +2558,8 @@ label23:
 				b1 = new TBranch(); // Mem3.Alloc(4 + n);
 				Move(A, &b1/*->LL*/, n);
 
-				if (p1->Branch == nullptr) p1->Branch = (TBranch*)b1;
-				else ChainLast(p1->Branch, (TBranch*)b1);
+				if (p1->branch == nullptr) p1->branch = b1;
+				else ChainLast(p1->branch, b1);
 
 				if (Trace()) PrintPackedPred(A, c->Pred);
 			}
@@ -2547,7 +2583,7 @@ label23:
 			Mem1.Release(q->StkMark);
 			MaxWSize = q->WMark;
 			p = q->Pred;
-			b = p->Branch;
+			b = p->branch;
 			goto label6;
 			break;
 		}
@@ -2561,7 +2597,9 @@ label23:
 		c = c->pChain;
 	}
 	/*           copy output parameters */
-	i = 0; l = b->Head; w = b->HeadOMask;
+	i = 0;
+	l = b->Head;
+	w = b->HeadOMask;
 	while (l != nullptr) {
 		if ((w & 1) != 0) q->Vars[i] = CopyTerm(l->Elem);
 		i++;
@@ -2593,7 +2631,7 @@ label41:
 	}
 	/*  return to caller;  */
 	if (c->Code == _AllC) {
-		ChainList(&q->Vars[c->Idx], GetListTerm(CopyTerm((TPTerm*)c->Elem), nullptr));
+		ChainList(&q->Vars[c->Idx], GetListTerm(CopyTerm(c->ElemTerm), nullptr));
 		q1 = TopInst;
 		while (q1 != q) {
 			q1->StkMark = Mem1.Mark();
