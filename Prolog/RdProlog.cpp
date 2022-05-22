@@ -237,7 +237,7 @@ label1:
 
 TVarDcl* MakeVarDcl(TDomain* D, integer Idx)
 {
-	TVarDcl* v = new TVarDcl(); // (TVarDcl*)Mem1.Get(sizeof(TVarDcl) + LexWord.length() - 1);
+	TVarDcl* v = new TVarDcl();
 	if (VarDcls == nullptr) VarDcls = v;
 	else ChainLast(VarDcls, v);
 
@@ -1058,16 +1058,14 @@ label2:
 
 TCommand* GetCommand(TCommandTyp Code, WORD N)
 {
-	TCommand* c = new TCommand(); // ptr(_Sg, GetZStor(3 + N));
-	//WORD cofs; // absolute c
+	TCommand* c = new TCommand();
 	c->Code = Code;
-	return c; // ofs;
+	return c;
 }
 
 void RdTermList(TCommand* C, TDomain* D, WORD Kind)
 {
 	TTermList* l = new TTermList(); // ptr(_Sg, GetZStor(sizeof(TTermList)));
-	//WORD lofs; // absolute l
 	ChainLast(C->Arg, l);
 	l->Elem = RdTerm(D, Kind);
 }
@@ -1744,16 +1742,10 @@ void RdClauses()
 	TDomain* dEl = nullptr;
 	TTermList* l = nullptr;
 	TPTerm* t = nullptr;
-	TPredicate* p = nullptr;
-	TPredicate* p1 = nullptr;
 	TCommand* c = nullptr;
 	TVarDcl* v = nullptr;
 	void* x = nullptr;
 	TCommandTyp code;
-	struct SF {
-		WORD BP = 0; void* Ret = nullptr; WORD RetOfs = 0;
-	};
-	SF* z = nullptr;
 	bool WasNotC = false;
 
 	while (true) {
@@ -1765,7 +1757,7 @@ void RdClauses()
 		}
 
 		TestIdentifP();
-		p = RdPredicate(LexWord);
+		TPredicate* p = RdPredicate(LexWord);
 		if ((p->Opt & (_FandCallOpt | _BuildInOpt)) != 0) {
 			OldError(529);
 		}
@@ -1887,7 +1879,7 @@ void RdClauses()
 
 				if (WasNotC) {
 					if (c->Code != _PredC) OldError(546);
-					p1 = c->Pred;
+					TPredicate* p1 = c->Pred;
 					l = c->Arg;
 
 					if ((p1->Opt & _CioMaskOpt) != 0) w = c->InpMask;
