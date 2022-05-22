@@ -1,6 +1,6 @@
 #include "Prolog.h"
 
-TVarDcl* VarDcls = nullptr;
+//TVarDcl* VarDcls = nullptr;
 integer VarCount = 0;
 TDomain* IntDom = nullptr;
 TDomain* RealDom = nullptr;

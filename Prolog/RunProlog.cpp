@@ -1883,7 +1883,7 @@ void AssertFand(TPredicate* P, TCommand* C)
 	}
 	OldLMode(md);
 	ReleaseStore(CRecPtr);
-	}
+}
 
 TFileScan* GetScan(TScanInf* SIOfs, TCommand* C, TInstance* Q)
 {
@@ -2232,14 +2232,17 @@ struct TAutoR
 bool AutoRecursion(TInstance* q, TPredicate* p, TCommand* c)
 {
 	integer i = 0, j = 0, i2 = 0, iOutp = 0, sz = 0, arity = 0;
-	TAutoR* w = nullptr; TTerm* t = nullptr; TTerm* t1 = nullptr; TFunDcl* f = nullptr;
+	TAutoR* w = nullptr;
+	TTerm* t = nullptr;
+	TTerm* t1 = nullptr;
+	TFunDcl* f = nullptr;
 	TDomain* d = nullptr;
 
 	d = p->Arg[0];
 	iOutp = c->iOutp;
 	t1 = q->Vars[c->iWrk];
 
-	if (d->Typ == _ListD)
+	if (d->Typ == _ListD) {
 		if (t1 == nullptr) {
 			t = q->Vars[0];
 			if (t == nullptr) {
@@ -2257,12 +2260,12 @@ bool AutoRecursion(TInstance* q, TPredicate* p, TCommand* c)
 			}
 			goto label3;
 		}
-
+	}
 	w = (TAutoR*)t1;
 	if (w == nullptr) {
 		t = q->Vars[0];
 		f = GetFunDcl(d, t->FunIdx);
-		w = (TAutoR*)Mem2.Get(sizeof(TAutoR) + 4 * f->Arity);
+		w = new TAutoR(); // (TAutoR*)Mem2.Get(sizeof(TAutoR) + 4 * f->Arity);
 		w->t = t; i = 0;
 		q->Vars[c->iWrk] = (TTerm*)w;
 	}
@@ -2286,7 +2289,10 @@ bool AutoRecursion(TInstance* q, TPredicate* p, TCommand* c)
 		label1:
 			return true;
 		}
-		else { if (iOutp > 0) w->Arg[i] = t->Arg[i]; i++; }
+		else {
+			if (iOutp > 0) w->Arg[i] = t->Arg[i];
+			i++;
+		}
 	if (iOutp > 0) {
 		sz = 4 * f->Arity;
 		if (!EquArea(t->Arg, w->Arg, sz)) {
@@ -2424,10 +2430,10 @@ label1:
 				//PTPMaxOfs = ofs(A) + MaxPackedPredLen - 2;
 				PackTermV(l->Elem);
 				//n = PtrRec(pt).Ofs - ofs(A);
-				s = (LongStr*)Mem1.Get(2 + n);
+				s = new LongStr(2 + n); //(LongStr*)Mem1.Get(2 + n);
 				q->Vars[i] = (TTerm*)s;
 				s->LL = n;
-				Move(A, s->A, n);
+				memcpy(s->A, A, n);
 			}
 			else q->Vars[i] = CopyTerm(l->Elem);
 		}
@@ -2476,12 +2482,14 @@ label2:
 		q->NextBranch = (TBranch*)bd->pChain;
 		s = (LongStr*)bd->LL;
 		w = c->OutpMask;
-		for (i = 0; i <= integer(p->Arity) - 1; i++)
-		{ /* unpack db outp.parameters */
-			if ((w & 1) != 0) { pt = s->A; q->Vars[i] = UnpackTerm(p->Arg[i]); }
-			//PtrRec(s).Ofs += s->LL + 2;
-			w = w >> 1;
+		for (i = 0; i < p->Arity; i++) {
+			/* unpack db outp.parameters */
+			if ((w & 1) != 0) {
+				pt = s->A; q->Vars[i] = UnpackTerm(p->Arg[i]);
+			}
 		}
+		//PtrRec(s).Ofs += s->LL + 2;
+		w = w >> 1;
 		if (c->Code == _RetractC) RetractDbEntry(TopInst, p, bd);
 		goto label4;
 	}
@@ -2535,9 +2543,14 @@ label23:
 		case _Trace: {
 			TrcLevel = c->TrcLevel;
 			if (TrcLevel != 0) {
-				TrcLevel++; CallLevel = 1; q->CallLevel = 1;
+				TrcLevel++;
+				CallLevel = 1;
+				q->CallLevel = 1;
 			}
-			else { CallLevel = 0; q->CallLevel = 0; }
+			else {
+				CallLevel = 0;
+				q->CallLevel = 0;
+			}
 			break;
 		}
 		case _AssertC: {

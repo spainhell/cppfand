@@ -47,9 +47,9 @@ struct TDomain : public Chained<TDomain> {
 struct TPTerm;
 struct TConst : public Chained<TConst> {
 	//WORD pChain = 0;
+	std::string Name;
 	TDomain* Dom = nullptr;/*PDomain*/
 	TPTerm* Expr = nullptr;/*PPTerm*/
-	std::string Name;
 };
 
 struct TFunDcl : public Chained<TFunDcl> {
@@ -89,13 +89,13 @@ struct TTermList : public Chained<TTermList> {
 	TPTerm* Elem = nullptr; /*PPTerm*/
 };
 
-class TVarDcl : public Chained<TVarDcl> {
+class TVarDcl {
 public:
-	//TVarDcl* pChain = nullptr;
+	std::string Name;
 	TDomain* Dom = nullptr;
 	integer Idx = 0;
-	bool Bound = false, Used = false;
-	std::string Name;
+	bool Bound = false;
+	bool Used = false;
 };
 
 struct TWriteD : public Chained<TWriteD> {
@@ -124,8 +124,7 @@ struct TCommand : public Chained<TCommand> {
 	WORD InpMask = 0, OutpMask = 0; /*only _CioMaskOpt*/
 	TDomain* ElemDomain = nullptr; /*_MemP..:ListDom else PPTerm*/
 	TPTerm* ElemTerm = nullptr;
-	WORD Idx = 0;
-	WORD Idx2 = 0; /*_AllC*/
+	WORD Idx = 0; WORD Idx2 = 0; /*_AllC*/
 	WORD CompMask = 0; XKey* KDOfs = nullptr; BYTE ArgI[1]{ 0 }; /*only FAND-file*/
 	TWriteD* WrD = nullptr; /*PWriteD*/ bool NL = false;
 	WORD WrD1 = 0; WORD MsgNr = 0;
@@ -157,9 +156,10 @@ struct TFldList : public Chained<TFldList> {
 };
 
 struct TScanInf {
+	std::string Name;
 	FileD* FD = nullptr;
 	TFldList* FL = nullptr; /*PFldList*/
-	std::string Name;
+	
 };
 
 struct TPredicate : public Chained<TPredicate> {
@@ -174,13 +174,14 @@ struct TPredicate : public Chained<TPredicate> {
 	BYTE Opt = 0;
 	BYTE Arity = 0;
 	std::vector<TDomain*> Arg; /*PDomain*/
+	std::map<std::string, TVarDcl*> Vars;
 };
 
 struct TDatabase : public Chained<TDatabase> {
 	// WORD pChain = 0; /*PDatabase*/
+	std::string Name;
 	TPredicate* Pred = nullptr; /*PPredicate*/
 	std::string SOfs; /*LongStrPtr/saved/*/
-	std::string Name;
 };
 
 struct TProgRoots {
@@ -190,7 +191,7 @@ struct TProgRoots {
 	std::map<std::string, TDatabase*> Databases;
 };
 
-extern TVarDcl* VarDcls;
+//extern TVarDcl* VarDcls;
 extern integer VarCount;
 extern TDomain* IntDom;
 extern TDomain* RealDom;
