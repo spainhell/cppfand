@@ -44,14 +44,6 @@ struct TDomain : public Chained<TDomain> {
 	TFunDcl* FunDcl = nullptr; // 2
 };
 
-struct TPTerm;
-struct TConst : public Chained<TConst> {
-	//WORD pChain = 0;
-	std::string Name;
-	TDomain* Dom = nullptr;/*PDomain*/
-	TPTerm* Expr = nullptr;/*PPTerm*/
-};
-
 struct TFunDcl : public Chained<TFunDcl> {
 	//WORD pChain = 0;
 	std::string Name;
@@ -59,18 +51,19 @@ struct TFunDcl : public Chained<TFunDcl> {
 	std::vector<TDomain*> Arg;
 };
 
-struct TPTerm {
+struct TTerm {
 	prolog_func Fun = prolog_func::_undefined;
 	BYTE FunIdx = 0;
 	BYTE Arity = 0;
-	TPTerm* Arg[1]{ nullptr }; /*PPTerm*/
+	longint Pos = 0;
+	TTerm* Arg[3]{ nullptr }; /*PPTerm*/
 	instr_type Op = _notdefined;
-	TPTerm* E1 = nullptr;
-	TPTerm* E2 = nullptr;
-	TPTerm* E3 = nullptr; /*PPTerm*/
+	TTerm* E1 = nullptr;
+	TTerm* E2 = nullptr;
+	TTerm* E3 = nullptr; /*PPTerm*/
 	instr_type Op0 = _notdefined;
-	TPTerm* E[4]{ nullptr }; // puvodne 1..3
-	//bool BB = false;
+	TTerm* E[4]{ nullptr }; // puvodne 1..3
+	bool BB = false;
 	instr_type Op1 = _notdefined;
 	integer II = 0;
 	instr_type Op2 = _notdefined;
@@ -78,15 +71,17 @@ struct TPTerm {
 	instr_type Op3 = _notdefined;
 	std::string SS;
 	instr_type Op4 = _notdefined;
-	TPTerm* Elem = nullptr;
-	TPTerm* Next = nullptr; /*PPTerm*/
+	TTerm* Elem = nullptr;
+	TTerm* Next = nullptr; /*PPTerm*/
 	WORD Idx = 0;
 	bool Bound = false;
 };
 
-struct TTermList : public Chained<TTermList> {
-	//WORD pChain = 0; /*PTermList*/
-	TPTerm* Elem = nullptr; /*PPTerm*/
+struct TConst : public Chained<TConst> {
+	//WORD pChain = 0;
+	std::string Name;
+	TDomain* Dom = nullptr;/*PDomain*/
+	TTerm* Expr = nullptr;/*PPTerm*/
 };
 
 class TVarDcl {
@@ -119,20 +114,20 @@ struct TPredicate;
 struct TCommand : public Chained<TCommand> {
 	std::string Name;
 	TCommandTyp Code;
-	TTermList* Arg = nullptr; /*PTermList*/
+	std::map<int, TTerm*> Arg; /*PTermList*/
 	TPredicate* Pred = nullptr; /*PPredicate*/
 	WORD InpMask = 0, OutpMask = 0; /*only _CioMaskOpt*/
 	TDomain* ElemDomain = nullptr; /*_MemP..:ListDom else PPTerm*/
-	TPTerm* ElemTerm = nullptr;
+	TTerm* ElemTerm = nullptr;
 	WORD Idx = 0; WORD Idx2 = 0; /*_AllC*/
 	WORD CompMask = 0; XKey* KDOfs = nullptr; BYTE ArgI[1]{ 0 }; /*only FAND-file*/
 	TWriteD* WrD = nullptr; /*PWriteD*/ bool NL = false;
 	WORD WrD1 = 0; WORD MsgNr = 0;
 	integer TrcLevel = 0;
-	TDomainTyp Typ; char CompOp = 0; WORD E1Idx = 0; TPTerm* E2 = nullptr;/*PPTerm*/
+	TDomainTyp Typ; char CompOp = 0; WORD E1Idx = 0; TTerm* E2 = nullptr;/*PPTerm*/
 	TDatabase* DbPred = nullptr;  /* !_LoadLexC */
 	FileD* FD = nullptr; FieldDescr* FldD = nullptr;
-	WORD apIdx = 0; TPTerm* apDom = nullptr; TPTerm* apTerm = nullptr;/*Unpk*/
+	WORD apIdx = 0; TTerm* apDom = nullptr; TTerm* apTerm = nullptr;/*Unpk*/
 	WORD Arg1 = 0; /*PTermList*/  /* like _PredC       autorecursion*/
 	BYTE iWrk = 0, iOutp = 0, nPairs = 0;
 	struct stPair { BYTE iInp = 0; BYTE iOutp = 0; } Pair[6];
@@ -140,8 +135,9 @@ struct TCommand : public Chained<TCommand> {
 
 struct TBranch : public Chained<TBranch> {
 	//WORD pChain = 0; /*PBranch*/
-	WORD HeadIMask = 0, HeadOMask = 0;
-	TTermList* Head = nullptr; /*PTermList*/
+	WORD HeadIMask = 0;
+	WORD HeadOMask = 0;
+	std::map<int, TTerm*> Head; /*PTermList*/
 	TCommand* Cmd = nullptr; /*PCommand*/
 };
 
@@ -159,7 +155,6 @@ struct TScanInf {
 	std::string Name;
 	FileD* FD = nullptr;
 	TFldList* FL = nullptr; /*PFldList*/
-	
 };
 
 struct TPredicate : public Chained<TPredicate> {
@@ -174,7 +169,7 @@ struct TPredicate : public Chained<TPredicate> {
 	BYTE Opt = 0;
 	BYTE Arity = 0;
 	std::vector<TDomain*> Arg; /*PDomain*/
-	std::map<std::string, TVarDcl*> Vars;
+	std::map<int, TVarDcl*> VarsCheck;
 };
 
 struct TDatabase : public Chained<TDatabase> {
@@ -209,7 +204,7 @@ extern TPredicate* UnionPred;
 extern TPredicate* MinusPred;
 extern TPredicate* InterPred;
 extern TPredicate* TxtPred; /*PPredicate*/
-extern TPTerm* UnderscoreTerm; /*PPTerm*/
+extern TTerm* UnderscoreTerm; /*PPTerm*/
 extern bool UnbdVarsInTerm, WasUnbd, WasOp;
 extern TProgRoots* Roots;
 extern char* PackedTermPtr;

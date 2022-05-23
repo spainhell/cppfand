@@ -18,7 +18,7 @@ TPredicate* UnionPred = nullptr;
 TPredicate* MinusPred = nullptr;
 TPredicate* InterPred = nullptr;
 TPredicate* TxtPred = nullptr; /*PPredicate*/
-TPTerm* UnderscoreTerm = nullptr; /*PPTerm*/
+TTerm* UnderscoreTerm = nullptr; /*PPTerm*/
 bool UnbdVarsInTerm = false, WasUnbd = false, WasOp = false;
 TProgRoots* Roots = nullptr;
 char* PackedTermPtr = nullptr;
