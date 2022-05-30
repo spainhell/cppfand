@@ -215,6 +215,8 @@ integer RunIExpr(TTerm* t)
 {
 	//TTerm* t = ptr(_Sg, TOfs);
 	if (t->Fun == prolog_func::_VarT) {
+		//TTerm* term = CurrInst->Pred->VarsCheck[t->Idx]->term;
+		//return term->II;
 		return CurrInst->Vars[t->Idx]->II;
 	}
 
@@ -240,6 +242,8 @@ double RunRExpr(TTerm* t)
 {
 	//TTerm* t = ptr(_Sg, TOfs);
 	if (t->Fun == prolog_func::_VarT) {
+		//TTerm* term = CurrInst->Pred->VarsCheck[t->Idx]->term;
+		//return term->RR;
 		return CurrInst->Vars[t->Idx]->RR;
 	}
 	switch (t->Op) {
@@ -282,6 +286,8 @@ std::string RunSExpr(TTerm* t)
 	std::string s;
 	//t = ptr(_Sg, TOfs);
 	if (t->Fun == prolog_func::_VarT) {
+		//TTerm* term = CurrInst->Pred->VarsCheck[t->Idx]->term;
+		//q = term->SS;
 		q = CurrInst->Vars[t->Idx]->SS;
 		goto label1;
 	}
@@ -363,6 +369,8 @@ std::string RunLSExpr(TTerm* t)
 	std::string result;
 
 	if (t->Fun == prolog_func::_VarT) {
+		//TTerm* term = CurrInst->Pred->VarsCheck[t->Idx]->term;
+		//LongStr* p = RdLongStr(term->Pos);
 		LongStr* p = RdLongStr(CurrInst->Vars[t->Idx]->Pos);
 		result = std::string(p->A, p->LL);
 		delete p;
@@ -2436,10 +2444,10 @@ label1:
 					//PTPMaxOfs = ofs(A) + MaxPackedPredLen - 2;
 					PackTermV(l->second);
 					//n = PtrRec(pt).Ofs - ofs(A);
-					s = new LongStr(2 + n); //(LongStr*)Mem1.Get(2 + n);
-					q->Vars[i] = (TTerm*)s;
-					s->LL = n;
-					memcpy(s->A, A, n);
+					//s = new LongStr(2 + n); //(LongStr*)Mem1.Get(2 + n);
+					q->Vars[i] = new TTerm();
+					//s->LL = n;
+					//memcpy(s->A, A, n);
 				}
 				else q->Vars[i] = CopyTerm(l->second);
 			}
@@ -2457,10 +2465,10 @@ label1:
 					//PTPMaxOfs = ofs(A) + MaxPackedPredLen - 2;
 					PackTermV(l->second);
 					//n = PtrRec(pt).Ofs - ofs(A);
-					s = new LongStr(2 + n); //(LongStr*)Mem1.Get(2 + n);
-					q->Vars[i] = (TTerm*)s;
-					s->LL = n;
-					memcpy(s->A, A, n);
+					//s = new LongStr(2 + n); //(LongStr*)Mem1.Get(2 + n);
+					q->Vars[i] = new TTerm();
+					//s->LL = n;
+					//memcpy(s->A, A, n);
 				}
 				else q->Vars[i] = CopyTerm(l->second);
 			}

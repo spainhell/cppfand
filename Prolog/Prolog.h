@@ -88,6 +88,7 @@ class TVarDcl {
 public:
 	std::string Name;
 	TDomain* Dom = nullptr;
+	TTerm* term = nullptr;
 	integer Idx = 0;
 	bool Bound = false;
 	bool Used = false;

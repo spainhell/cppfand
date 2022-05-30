@@ -304,6 +304,7 @@ bool RdVar(TDomain* D, integer Kind, integer Idx, TTerm** RT, WORD* kind5idx, st
 			if (!bnd) goto label1;
 			t = GetOp1(D, _conv, t);
 		}
+		var_dcl->term = t;
 		*RT = t;
 	}
 	return true;
@@ -1802,7 +1803,9 @@ void RdClauses()
 				SkipBlank(false);
 				if (IsUpperIdentif() && (ForwChar == ',' || ForwChar == ')') /*solo variable*/) {
 					RdVar(d, kind, i, &t, nullptr, p->VarsCheck);
-					if (t != nullptr) goto label11;
+					if (t != nullptr) {
+						goto label11;
+					}
 				}
 				else {
 					t = nullptr;
@@ -1812,7 +1815,9 @@ void RdClauses()
 					if (t == nullptr) {
 						t = RdTerm(d, kind, p->VarsCheck);
 					}
-					b->Head.insert(std::pair(t->Idx, t));
+					if (t != nullptr) {
+						b->Head.insert(std::pair(t->Idx, t));
+					}
 				}
 				w = w >> 1;
 				m = m << 1;
