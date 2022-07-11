@@ -2449,7 +2449,9 @@ label1:
 					//s->LL = n;
 					//memcpy(s->A, A, n);
 				}
-				else q->Vars[i] = CopyTerm(l->second);
+			}
+			else {
+				q->Vars[i] = CopyTerm(l->second);
 			}
 			i++;
 			++l;
@@ -2470,7 +2472,9 @@ label1:
 					//s->LL = n;
 					//memcpy(s->A, A, n);
 				}
-				else q->Vars[i] = CopyTerm(l->second);
+			}
+			else {
+				q->Vars[i] = CopyTerm(l->second);
 			}
 			i++;
 			++l;
