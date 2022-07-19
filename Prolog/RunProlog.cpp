@@ -30,6 +30,8 @@ const WORD MaxPackedPredLen = 4000;
 //	TTerm* Next = nullptr;
 //};
 
+const unsigned int MAX_VARS_COUNT = 16;
+
 struct TInstance {
 	TPredicate* Pred = nullptr; /*PPredicate*/
 	TInstance* PrevInst = nullptr;
@@ -40,7 +42,7 @@ struct TInstance {
 	void* StkMark = nullptr;
 	longint WMark = 0;
 	WORD CallLevel = 0;
-	TTerm* Vars[7]{ nullptr };
+	TTerm* Vars[MAX_VARS_COUNT]{ nullptr };
 };
 
 struct TFileScan {
@@ -587,7 +589,7 @@ TTerm* CopyTerm(TTerm* t/*PPTerm*/)
 		break;
 	}
 	case prolog_func::_VarT: {
-		return CurrInst->Vars[t->Idx];
+		return CurrInst->Pred->VarsCheck[t->Idx]->term;
 		break;
 	}
 	case prolog_func::_ListT: {
@@ -1696,7 +1698,7 @@ bool RunCommand(TCommand* COff/*PCommand*/)
 	return true;
 }
 
-void CallFandProc()
+void CallFandProc(TCommand* cmd)
 {
 	//ProcStkD* oldBPr;
 	//ProcStkD* ps;
@@ -1722,7 +1724,7 @@ void CallFandProc()
 		auto ta = &pd->TArg[i];
 		//PtrRec(Frml).Seg = _Sg;
 		d = p->Arg[i];
-		t = CurrInst->Vars[i];
+		t = cmd->Arg[i]; // CurrInst->Vars[i];
 		if ((w & 1) != 0) {
 			switch (ta->FTyp) {
 			case 'R': {
@@ -2426,6 +2428,11 @@ label1:
 	q->RetInst = CurrInst;
 	q->RetBranch = b;
 	q->RetCmd = c;
+	//if (CurrInst != nullptr) {
+	//	for (int qi = 0; i < MAX_VARS_COUNT; i++) {
+	//		q->Vars[qi] = CurrInst->Vars[qi];
+	//	}
+	//}
 	if (TrcLevel != 0) {
 		CallLevel = CurrInst->CallLevel + 1;
 		q->CallLevel = CallLevel;
@@ -2493,7 +2500,7 @@ label1:
 	q->WMark = MaxWSize;
 	CurrInst = q;
 	if ((p->Opt & (_FandCallOpt + _DbaseOpt)) == _FandCallOpt) {
-		CallFandProc();
+		CallFandProc(c);
 		goto label4;
 	}
 label2:
