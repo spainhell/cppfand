@@ -139,7 +139,7 @@ struct TBranch : public Chained<TBranch> {
 	WORD HeadIMask = 0;
 	WORD HeadOMask = 0;
 	std::map<int, TTerm*> Head; /*PTermList*/
-	std::vector<TCommand*> Cmd; /*PCommand*/
+	TCommand* Cmd = nullptr; /*PCommand*/
 };
 
 struct TDbBranch : public Chained<TDbBranch> {
