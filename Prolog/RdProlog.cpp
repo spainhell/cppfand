@@ -1595,7 +1595,7 @@ void RdAutoRecursionHead(TPredicate* p, TBranch* b)
 	//PtrRec(c).Seg = _Sg; PtrRec(l).Seg = _Sg; PtrRec(l1).Seg = _Sg;
 	//PtrRec(t).Seg = _Sg; PtrRec(d).Seg = _Sg;
 	TCommand* c = GetCommand(_AutoC, 2 + 3 + 6 * 2);
-	b->Cmd = c;
+	b->Cmd.push_back(c);
 	p->InstSz += 4;
 	c->iWrk = (p->InstSz / 4) - 1;
 	w = p->InpMask;
@@ -1676,7 +1676,7 @@ void RdSemicolonClause(TPredicate* p, TBranch* b)
 		c = GetCommand(_AppPkC, 6);
 		c->apIdx = v->Idx;
 		c->apTerm = RdTerm(v->Dom, 2, p->VarsCheck);
-		ChainLast(b->Cmd, c);
+		b->Cmd.push_back(c);
 		if (Lexem == ',') {
 			RdLexP();
 			AcceptPKeyWord("self");
@@ -1699,13 +1699,14 @@ void RdSemicolonClause(TPredicate* p, TBranch* b)
 		c = GetCommand(_FailC, 0);
 	}
 label2:
-	ChainLast(b->Cmd, c);
+	b->Cmd.push_back( c);
 label3:
 	b = new TBranch();
 	ChainLast(p->branch, b);
 	switch (x) {
 	case 'e': {
-		b->Cmd = RdCommand(p->VarsCheck);
+		TCommand* cmd = RdCommand(p->VarsCheck);
+		b->Cmd.push_back(cmd);
 		break;
 	}
 	case 'f': {
@@ -1713,14 +1714,15 @@ label3:
 		break;
 	}
 	case 's': {
-		b->Cmd = GetCommand(_SelfC, 0);
+		TCommand* cmd = GetCommand(_SelfC, 0);
+		b->Cmd.push_back(cmd);
 		break;
 	}
 	case 'a': {
 		c = GetCommand(_AppUnpkC, 4);
 		c->apIdx = v->Idx;
 		c->apDom = (TTerm*)v->Dom;
-		b->Cmd = c;
+		b->Cmd.push_back(c);
 		break;
 	}
 	default: break;
@@ -1831,7 +1833,7 @@ void RdClauses()
 				WasNotC = false;
 				if (IsKeyWordP("self")) {
 					c = GetCommand(_SelfC, 0);
-					ChainLast(b->Cmd, c);
+					b->Cmd.push_back(c);
 					break; // goto label4;
 				}
 				if (IsKeyWordP("not")) { AcceptP('('); WasNotC = true; }
@@ -1869,8 +1871,7 @@ void RdClauses()
 					}
 				}
 
-				if (b->Cmd == nullptr) b->Cmd = c;
-				else ChainLast(b->Cmd, c);
+				b->Cmd.push_back(c);
 
 				if (WasNotC) {
 					if (c->Code != _PredC) OldError(546);

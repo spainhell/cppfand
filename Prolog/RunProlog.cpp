@@ -2561,8 +2561,10 @@ label23:
 		w = w >> 1;
 	}
 	/* execute all commands */
-	c = b->Cmd;
-	while (c != nullptr) {
+	//c = b->Cmd;
+	//while (c != nullptr) {
+	for (auto& cmd : b->Cmd) {
+		c = cmd;
 		switch (c->Code) {
 		case _PredC:
 		case _RetractC:
