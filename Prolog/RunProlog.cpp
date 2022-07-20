@@ -865,7 +865,7 @@ void PrintPackedPred(char* Q, TPredicate* POfs/*PPredicate*/)
 		for (i = 1; i <= n; i++) {
 			if (i > 1) printf(",");
 			Q += 2;
-			Q = PrintPackedTerm(Q, p->Arg[i - 1]);
+			Q = PrintPackedTerm(Q, p->ArgDomains[i - 1]);
 		}
 		printf(")");
 	}
@@ -1723,7 +1723,7 @@ void CallFandProc(TCommand* cmd)
 	for (i = 0; i < p->Arity; i++) {
 		auto ta = &pd->TArg[i];
 		//PtrRec(Frml).Seg = _Sg;
-		d = p->Arg[i];
+		d = p->ArgDomains[i];
 		t = cmd->Arg[i]; // CurrInst->Vars[i];
 		if ((w & 1) != 0) {
 			switch (ta->FTyp) {
@@ -1849,7 +1849,7 @@ void AssertFand(TPredicate* P, TCommand* C)
 		f = fl->FldD;
 		if ((f->Flg & f_Stored) != 0) {
 			t = CopyTerm(l->second);
-			d = P->Arg[i];
+			d = P->ArgDomains[i];
 			if (Trace()) {
 				if (i > 0) printf(",");
 				PrintTerm(t, d);
@@ -2056,7 +2056,7 @@ label1:
 			}
 			default: {
 				if (f->Typ == 'T') {
-					d = p->Arg[i];
+					d = p->ArgDomains[i];
 					if (d->Typ == _LongStrD) s = RdLongStr(t->Pos);
 					else s = GetPackedTerm(t);
 					b = EquLongStr(s, _LongS(f));
@@ -2081,7 +2081,7 @@ label1:
 	{ /* create outp. parameters */
 		if ((w & 1) != 0) {
 			f = fl->FldD;
-			d = p->Arg[i];
+			d = p->ArgDomains[i];
 			switch (f->FrmlTyp) {
 			case 'B': {
 				CurrInst->Vars[i] = GetBoolTerm(_B(f));
@@ -2192,7 +2192,7 @@ void TraceCall(TInstance* Q, BYTE X)
 		else w = p->InpMask;
 		for (i = 0; i <= p->Arity - 1; i++) {
 			if (i > 0) printf(",");
-			d = p->Arg[i];
+			d = p->ArgDomains[i];
 			if ((w & 1) == X) {
 				if ((X == 1) && ((p->Opt & _PackInpOpt) != 0))
 					PrintPackedTerm((char*)(Q->Vars[i]) + 2, d);
@@ -2247,7 +2247,7 @@ bool AutoRecursion(TInstance* q, TPredicate* p, TCommand* c)
 	TFunDcl* f = nullptr;
 	TDomain* d = nullptr;
 
-	d = p->Arg[0];
+	d = p->ArgDomains[0];
 	iOutp = c->iOutp;
 	t1 = q->Vars[c->iWrk];
 
@@ -2318,7 +2318,7 @@ bool AutoRecursion(TInstance* q, TPredicate* p, TCommand* c)
 		i2 = c->Pair[j].iOutp;
 		if (i > 0) t = q->Vars[i];
 		else {
-			d = p->Arg[i2];
+			d = p->ArgDomains[i2];
 			switch (d->Typ) {
 			case _ListD: t = nullptr; break;
 			case _StrD: t = GetStringTerm(""); break;
@@ -2533,7 +2533,7 @@ label2:
 		for (i = 0; i < p->Arity; i++) {
 			/* unpack db outp.parameters */
 			if ((w & 1) != 0) {
-				pt = s->A; q->Vars[i] = UnpackTerm(p->Arg[i]);
+				pt = s->A; q->Vars[i] = UnpackTerm(p->ArgDomains[i]);
 			}
 		}
 		//PtrRec(s).Ofs += s->LL + 2;

@@ -52,6 +52,7 @@ struct TFunDcl : public Chained<TFunDcl> {
 };
 
 struct TTerm {
+	std::string Name;
 	prolog_func Fun = prolog_func::_undefined;
 	BYTE FunIdx = 0;
 	BYTE Arity = 0;
@@ -169,7 +170,7 @@ struct TPredicate : public Chained<TPredicate> {
 	proc_type LocVarSz = proc_type::_undefined; /*FAND-proc | _xxxP for buildIn*/
 	BYTE Opt = 0;
 	BYTE Arity = 0;
-	std::vector<TDomain*> Arg; /*PDomain*/
+	std::vector<TDomain*> ArgDomains; /*PDomain*/ // Domains for Arguments
 	std::map<int, TVarDcl*> VarsCheck;
 };
 

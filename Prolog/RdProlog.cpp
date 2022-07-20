@@ -779,6 +779,7 @@ void RdConstants(std::map<int, TVarDcl*>& Vars)
 			p->Dom = d;
 			AcceptP('=');
 			p->Expr = RdTerm(d, 6, Vars);
+			p->Expr->Name = p->Name;
 
 			/*if (Roots->Consts == nullptr) Roots->Consts = p;
 			else ChainLast(Roots->Consts, p);*/
@@ -968,7 +969,7 @@ label2:
 
 	p->Name = nm;
 	p->Arity = n;
-	p->Arg = a; //memcpy(p->Arg, a, 2 * n);
+	p->ArgDomains = a; //memcpy(p->Arg, a, 2 * n);
 	p->Opt = o;
 	p->InpMask = w;
 	p->InstSz = 4 * n;
@@ -983,7 +984,7 @@ label2:
 			ip->N = n;
 			bpOfs = 4;
 			for (size_t i = 0; i < n; i++) {
-				d = p->Arg[i];
+				d = p->ArgDomains[i];
 
 				if (d == RealDom || d == IntDom) typ = 'R';
 				else if (d == BoolDom) typ = 'B';
@@ -1303,7 +1304,7 @@ TCommand* RdPredCommand(TCommandTyp Code, TPredicate* predicate)
 				if ((w & 1) != 0) kind = 2;
 				else kind = 1;
 			}
-			d = p->Arg[i];
+			d = p->ArgDomains[i];
 
 			auto l = RdTerm(d, kind, predicate->VarsCheck);
 			lRoot.insert(std::pair(l->Idx,l));
@@ -1611,12 +1612,12 @@ void RdAutoRecursionHead(TPredicate* p, TBranch* b)
 
 		// TODO: proc je prvni zaznam "prazdny"?
 		b->Head.insert(std::pair(-1, new TTerm()));
-		d = p->Arg[i];
+		d = p->ArgDomains[i];
 		if (i > 0) AcceptP(',');
 		else if (!(d->Typ == _FunD || d->Typ == _ListD)) Error(556);
 		if (Lexem == '!') {
 			if (i > 0) {
-				if (isInput || (d != p->Arg[0]) || (c->iOutp > 0)) Error(551);
+				if (isInput || (d != p->ArgDomains[0]) || (c->iOutp > 0)) Error(551);
 				c->iOutp = i;
 			}
 			else if (!isInput) Error(552);
@@ -1796,7 +1797,7 @@ void RdClauses()
 			w = p->InpMask; m = 1;
 			for (i = 0; i < p->Arity; i++) {
 				if (i > 0) AcceptP(',');
-				d = p->Arg[i];
+				d = p->ArgDomains[i];
 				kind = 1;
 				if ((w & 1) == 0) kind = 3;
 
@@ -1946,7 +1947,7 @@ TPredicate* MakePred(std::string PredName, std::string ArgTyp, proc_type PredKod
 		case 'x': d = LLexDom; break;
 		default: break;
 		}
-		p->Arg.push_back(d); // p->Arg[i] = d;
+		p->ArgDomains.push_back(d); // p->Arg[i] = d;
 	}
 
 	if (PredMask == 0xffff) {
@@ -2064,8 +2065,6 @@ TProgRoots* ReadProlog(WORD RecNr)
 			TDatabase* db = FindDataBase(s);
 			if (db == nullptr) {
 				db = new TDatabase();
-				//if (Roots->Databases == nullptr) Roots->Databases = db->pChain;
-				//else ChainLast(Roots->Databases, db->pChain);
 				db->Name = s;
 				Roots->Databases.insert(std::pair(db->Name, db));
 			}
