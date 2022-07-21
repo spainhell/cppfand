@@ -2456,10 +2456,11 @@ label1:
 					//s->LL = n;
 					//memcpy(s->A, A, n);
 				}
+				else {
+					q->Vars[i] = CopyTerm(l->second);
+				}
 			}
-			else {
-				q->Vars[i] = CopyTerm(l->second);
-			}
+			
 			i++;
 			++l;
 			w = w >> 1;
@@ -2470,6 +2471,7 @@ label1:
 		while (l != c->Arg.end()) {
 			if ((w & 1) != 0) {
 				if ((p->Opt & _PackInpOpt) != 0) {
+					// imported from DB
 					pt = (char*)A;
 					//PTPMaxOfs = ofs(A) + MaxPackedPredLen - 2;
 					PackTermV(l->second);
@@ -2479,9 +2481,9 @@ label1:
 					//s->LL = n;
 					//memcpy(s->A, A, n);
 				}
-			}
-			else {
-				q->Vars[i] = CopyTerm(l->second);
+				else {
+					q->Vars[i] = CopyTerm(l->second);
+				}
 			}
 			i++;
 			++l;
@@ -2517,7 +2519,7 @@ label2:
 	label21:
 		s = (LongStr*)bd->LL;
 		w = c->InpMask;
-		for (i = 0; i <= integer(p->Arity) - 1; i++) {
+		for (i = 0; i <= (integer)p->Arity - 1; i++) {
 			if (((w & 1) != 0) && !EquLongStr((LongStr*)(q->Vars[i]), s)) {
 				bd = bd->pChain;
 				if (bd == nullptr) { q->NextBranch = nullptr; goto label5; }

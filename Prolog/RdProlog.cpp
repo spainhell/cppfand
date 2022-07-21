@@ -1209,7 +1209,8 @@ TCommand* RdCommand(std::map<int, TVarDcl*>& Vars) /*PCommand*/
 			RdTermList(c, d->ElemDom, 4, Vars);
 			if (UnbdVarsInTerm) n = 2;
 			else n = 3;
-			c->InpMask = n; c->OutpMask = !n;
+			c->InpMask = n;
+			c->OutpMask = ~n;
 			AcceptP(',');
 			RdTermList(c, d, 2, Vars);
 		}
@@ -1307,12 +1308,11 @@ TCommand* RdPredCommand(TCommandTyp Code, TPredicate* predicate)
 			d = p->ArgDomains[i];
 
 			auto l = RdTerm(d, kind, predicate->VarsCheck);
-			lRoot.insert(std::pair(l->Idx,l));
+			lRoot.insert(std::pair(l->Idx, l));
 
 			if ((p->Opt & _CioMaskOpt) != 0) {
 				if (UnbdVarsInTerm) {
-					if (l->Elem != UnderscoreTerm)
-						OutpMask = OutpMask | m;
+					if (l->Elem != UnderscoreTerm) OutpMask = OutpMask | m;
 				}
 				else InpMask = InpMask | m;
 			}
@@ -1327,15 +1327,17 @@ TCommand* RdPredCommand(TCommandTyp Code, TPredicate* predicate)
 			if (!(InpMask >= 3 && InpMask <= 7)) OldError(534);
 			break;
 		}
-		case proc_type::_FandFieldP:
+		case proc_type::_FandFieldP: {
+			if ((InpMask & 1) == 0/*o...*/) OldError(555);
+			InpMask = InpMask & 0x3;
+			OutpMask = ~InpMask;
+			break;
+		}
 		case proc_type::_FandLinkP: {
 			if ((InpMask & 1) == 0/*o...*/) OldError(555);
-			if (p->LocVarSz == proc_type::_FandLinkP) {
-				InpMask = InpMask & 0x7;
-				if (InpMask == 0x7) InpMask = 5;
-			}
-			else InpMask = InpMask & 0x3;
-			OutpMask = !InpMask;
+			InpMask = InpMask & 0x7;
+			if (InpMask == 0x7) InpMask = 0x5;
+			OutpMask = ~InpMask;
 			break;
 		}
 		}
@@ -1388,7 +1390,7 @@ label3:
 		c->InpMask = InpMask;
 		c->OutpMask = OutpMask;
 		if (IsFandDb) {
-			c->CompMask = (InpMask & !w);
+			c->CompMask = InpMask & ~w;
 			if (i > 0) {
 				//Move(a, c->ArgI, i);
 
@@ -1603,7 +1605,7 @@ void RdAutoRecursionHead(TPredicate* p, TBranch* b)
 	for (i = 0; i < p->Arity; i++) {
 		if ((w & 1) != 0) isInput = true;
 		else isInput = false;
-		
+
 		t = new TTerm();
 		c->Arg.insert(std::pair(t->Idx, t));
 		t->Fun = prolog_func::_VarT;
