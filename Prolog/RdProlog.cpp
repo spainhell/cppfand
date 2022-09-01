@@ -241,6 +241,7 @@ bool RdVar(TDomain* D, integer Kind, integer Idx, TTerm** RT, WORD* kind5idx, st
 
 	TVarDcl* var_dcl = FindVarDcl(LexWord, Vars);
 	if (var_dcl == nullptr) {
+		// 1. vyskyt promenne, jeste neexistuje -> bude vytvorena
 		var_dcl = MakeVarDcl(D, Idx);
 		Vars.insert(std::pair(var_dcl->Idx, var_dcl));
 	}
@@ -296,7 +297,9 @@ bool RdVar(TDomain* D, integer Kind, integer Idx, TTerm** RT, WORD* kind5idx, st
 
 	*RT = nullptr;
 	if ((Idx == -1) || (var_dcl->Idx != Idx)) {
+		// k promenne bude vytvoreny "nosic informace (hodnoty)"
 		TTerm* t = new TTerm();
+		t->Name = LexWord;
 		t->Fun = prolog_func::_VarT;
 		t->Idx = var_dcl->Idx;
 		t->Bound = bnd;

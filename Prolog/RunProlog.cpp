@@ -823,9 +823,21 @@ char* PrintPackedTerm(char* p, TDomain* D)
 	integer i = 0, n = 0;
 	TFunDcl* f = nullptr;
 	switch (D->Typ) {
-	case _IntD: { printf("%i", *(integer*)p); p += 2; break; }
-	case _RealD: { printf("%f", *(double*)p); p += sizeof(double); break; }
-	case _StrD: { printf("'%s'", ((pstring*)p)->c_str()); p += *p + 1; break; }
+	case _IntD:	{
+			printf("%i", *(integer*)p);
+			p += 2;
+			break;
+		}
+	case _RealD: {
+			printf("%f", *(double*)p);
+			p += sizeof(double);
+			break;
+		}
+	case _StrD: {
+			printf("'%s'", ((pstring*)p)->c_str());
+			p += *p + 1;
+			break;
+		}
 	case _ListD: {
 		printf("[");
 		n = *(WORD*)p;
@@ -912,16 +924,16 @@ void PrintTerm(TTerm* T, TDomain* D)
 			fd = GetFunDcl(D, T->FunIdx);
 			printf("%s", fd->Name.c_str());
 			if (T->Arity == 0) return;
+			printf("(");
+			for (i = 0; i < T->Arity; i++) {
+				if (i > 0) printf(",");
+				PrintTerm(T->Arg[i], fd->Arg[i]);
+			}
+			printf(")");
 			break;
 		}
 		}
 	}
-	printf("(");
-	for (i = 0; i < T->Arity; i++) {
-		if (i > 0) printf(",");
-		PrintTerm(T->Arg[i], fd->Arg[i]);
-	}
-	printf(")");
 }
 
 WORD LenDbEntry(LongStr* S, integer Arity)
@@ -1844,7 +1856,9 @@ void AssertFand(TPredicate* P, TCommand* C)
 	fl = si->FL;
 	auto l = C->Arg.begin();
 	i = 0;
-	if (Trace()) printf("CALL assert(%s(", P->Name.c_str());
+	if (Trace()) {
+		printf("CALL assert(%s(", P->Name.c_str());
+	}
 	while (fl != nullptr) {
 		f = fl->FldD;
 		if ((f->Flg & f_Stored) != 0) {
@@ -2350,7 +2364,7 @@ void RunProlog(RdbPos* Pos, std::string PredName)
 	TBranch* b = nullptr;
 	TBranch* b1 = nullptr;
 	TDbBranch* bd = nullptr;
-	std::map<int, TTerm*>::iterator l;
+	std::map<int, TTerm*>::iterator branch_head_item;
 	//TTermList* l = nullptr;
 	//TDatabase* db = nullptr;
 	TTerm* t = nullptr; TProgRoots* Roots = nullptr;
@@ -2444,12 +2458,12 @@ label1:
 	else w = p->InpMask;
 
 	if (l_source_branch) {
-		while (l != b->Head.end()) {
+		while (branch_head_item != b->Head.end()) {
 			if ((w & 1) != 0) {
 				if ((p->Opt & _PackInpOpt) != 0) {
 					pt = (char*)A;
 					//PTPMaxOfs = ofs(A) + MaxPackedPredLen - 2;
-					PackTermV(l->second);
+					PackTermV(branch_head_item->second);
 					//n = PtrRec(pt).Ofs - ofs(A);
 					//s = new LongStr(2 + n); //(LongStr*)Mem1.Get(2 + n);
 					q->Vars[i] = new TTerm();
@@ -2457,24 +2471,24 @@ label1:
 					//memcpy(s->A, A, n);
 				}
 				else {
-					q->Vars[i] = CopyTerm(l->second);
+					q->Vars[i] = CopyTerm(branch_head_item->second);
 				}
 			}
 			
 			i++;
-			++l;
+			++branch_head_item;
 			w = w >> 1;
 		}
 	}
 
 	if (l_source_cmd) {
-		while (l != c->Arg.end()) {
+		while (branch_head_item != c->Arg.end()) {
 			if ((w & 1) != 0) {
 				if ((p->Opt & _PackInpOpt) != 0) {
 					// imported from DB
 					pt = (char*)A;
 					//PTPMaxOfs = ofs(A) + MaxPackedPredLen - 2;
-					PackTermV(l->second);
+					PackTermV(branch_head_item->second);
 					//n = PtrRec(pt).Ofs - ofs(A);
 					//s = new LongStr(2 + n); //(LongStr*)Mem1.Get(2 + n);
 					q->Vars[i] = new TTerm();
@@ -2482,11 +2496,11 @@ label1:
 					//memcpy(s->A, A, n);
 				}
 				else {
-					q->Vars[i] = CopyTerm(l->second);
+					q->Vars[i] = CopyTerm(branch_head_item->second);
 				}
 			}
 			i++;
-			++l;
+			++branch_head_item;
 			w = w >> 1;
 		}
 	}
@@ -2507,14 +2521,22 @@ label1:
 	}
 label2:
 	/*        branch       / redo /        */
-	if ((p->Opt & _BuildInOpt) != 0)             /* build-in predicates */
-		if (RunBuildIn()) goto label4;
-		else goto label5;
+	if ((p->Opt & _BuildInOpt) != 0) {            /* build-in predicates */
+		if (RunBuildIn()) {
+			goto label4;
+		}
+		else {
+			goto label5; // backtracking
+		}
+	}
 	if ((p->Opt & _DbaseOpt) != 0) {         /* database predicates */
-		if ((p->Opt & _FandCallOpt) != 0)
+		if ((p->Opt & _FandCallOpt) != 0) {
 			if (ScanFile(TopInst)) goto label4;
-			else goto label5;
-		if (bd == nullptr) goto label5;
+			else goto label5; // backtracking
+		}
+		if (bd == nullptr) {
+			goto label5; // backtracking
+		}
 		c = q->RetCmd;
 	label21:
 		s = (LongStr*)bd->LL;
@@ -2548,18 +2570,18 @@ label23:
 	/* normal unify branch head predicates */
 	q->NextBranch = b->pChain;
 	i = 0;
-	l = b->Head.begin();
+	branch_head_item = b->Head.begin();
 	l_source_branch = true;
 	l_source_cmd = false;
 	w = b->HeadIMask;
-	while (l != b->Head.end()) {
-		if (((w & 1) != 0) && !UnifyTermsCV(q->Vars[i], l->second)) {
+	while (branch_head_item != b->Head.end()) {
+		if (((w & 1) != 0) && !UnifyTermsCV(q->Vars[i], branch_head_item->second)) {
 			b = b->pChain;
 			if (b == nullptr) goto label5;
 			goto label23;
 		}
 		i++;
-		++l;
+		++branch_head_item;
 		w = w >> 1;
 	}
 	/* execute all commands */
@@ -2571,7 +2593,7 @@ label23:
 		case _NotC: {
 		label24:
 			p = c->Pred;
-			l = c->Arg.begin();
+			branch_head_item = c->Arg.begin();
 			l_source_branch = false;
 			l_source_cmd = true;
 			goto label1;
@@ -2592,7 +2614,7 @@ label23:
 			break;
 		}
 		case _FailC: {
-			goto label5;
+			goto label5; // backtracking
 			break;
 		}
 		case _Trace: {
@@ -2612,17 +2634,17 @@ label23:
 			p1 = c->Pred;
 			if ((p1->Opt & _FandCallOpt) != 0) AssertFand(p1, c);
 			else {
-				l = c->Arg.begin();
+				branch_head_item = c->Arg.begin();
 				l_source_branch = false;
 				l_source_cmd = true;
 				pt = (char*)A;
 				//PTPMaxOfs = ofs(A) + MaxPackedPredLen - 2;
-				while (l != c->Arg.end()) {
+				while (branch_head_item != c->Arg.end()) {
 					wp = (WORD*)pt;
 					pt += 2;
-					PackTermV(l->second);
+					PackTermV(branch_head_item->second);
 					//*wp = PtrRec(pt).Ofs - PtrRec(wp).Ofs - 2;
-					++l;
+					++branch_head_item;
 				}
 				//n = PtrRec(pt).Ofs - Ofs(A);
 				b1 = new TBranch(); // Mem3.Alloc(4 + n);
@@ -2638,7 +2660,7 @@ label23:
 		case _AutoC:
 		label25:
 			if (AutoRecursion(q, p, c)) {
-				l = c->Arg.begin();
+				branch_head_item = c->Arg.begin();
 				l_source_branch = false;
 				l_source_cmd = true;
 				goto label1;
@@ -2670,14 +2692,14 @@ label23:
 	}
 	/*           copy output parameters */
 	i = 0;
-	l = b->Head.begin();
+	branch_head_item = b->Head.begin();
 	l_source_branch = true;
 	l_source_cmd = false;
 	w = b->HeadOMask;
-	while (l != b->Head.end()) {
-		if ((w & 1) != 0) q->Vars[i] = CopyTerm(l->second);
+	while (branch_head_item != b->Head.end()) {
+		if ((w & 1) != 0) q->Vars[i] = CopyTerm(branch_head_item->second);
 		i++;
-		++l;
+		++branch_head_item;
 		w = w >> 1;
 	}
 	/*       called predicate finished   */
@@ -2691,18 +2713,26 @@ label41:
 	p = q->Pred;
 	q1 = q;
 	q = q->RetInst;
-	if (q == nullptr) { EdBreak = 0; LastExitCode = 0; goto label8; }
+	if (q == nullptr) {
+		EdBreak = 0;
+		LastExitCode = 0;
+		goto label8_end;
+	}
 	CurrInst = q;
-	if ((p->Opt & _CioMaskOpt) != 0) w = c->OutpMask;
-	else w = !p->InpMask;
+	if ((p->Opt & _CioMaskOpt) != 0) {
+		w = c->OutpMask;
+	}
+	else {
+		w = ~p->InpMask;
+	}
 	i = 0;
-	l = c->Arg.begin();
+	branch_head_item = c->Arg.begin();
 	l_source_branch = false;
 	l_source_cmd = true;
-	while (l != c->Arg.end()) {
-		if (((w & 1) == 1) && !UnifyTermsCV(q1->Vars[i], l->second)) goto label5;
+	while (branch_head_item != c->Arg.end()) {
+		if (((w & 1) == 1) && !UnifyTermsCV(q1->Vars[i], branch_head_item->second)) goto label5;
 		i++;
-		++l;
+		++branch_head_item;
 		w = w >> 1;
 	}
 	/*  return to caller;  */
@@ -2733,8 +2763,13 @@ label5:
 		q = q->PrevInst;
 	}
 	if (q == nullptr) {
-		if (Trace()) { printf("FAIL"); WaitC(); }
-		EdBreak = 1; LastExitCode = 0; goto label8;
+		if (Trace()) {
+			printf("FAIL");
+			WaitC();
+		}
+		EdBreak = 1;
+		LastExitCode = 0;
+		goto label8_end;
 	}
 	Mem1.Release(q->StkMark);
 	MaxWSize = q->WMark;
@@ -2747,20 +2782,27 @@ label5:
 		TopInst = q1->PrevInst;
 		Mem2.Release(q1);
 		if (c != nullptr && c->Code == _NotC) {
-			if (Trace()) { printf("FAIL%c%cRETURN not()", 0x0D, 0x0A); WaitC(); }
+			if (Trace()) {
+				printf("FAIL%c%cRETURN not()", 0x0D, 0x0A);
+				WaitC();
+			}
 		}
 		else {
 			q->Vars[c->Idx2] = q->Vars[c->Idx];
 			q->Vars[c->Idx] = nullptr;
 			if (Trace()) {
-				printf("RETURN all_()"); WaitC();
+				printf("RETURN all_()");
+				WaitC();
 			}
 		}
 		SetCallLevel(q->CallLevel);
 		p = q->Pred;
 		goto label3;
 	}
-	if (Trace()) { printf("FAIL"); WaitC(); }
+	if (Trace()) {
+		printf("FAIL");
+		WaitC();
+	}
 	TopInst = q;
 	CurrInst = TopInst;
 	b = q->NextBranch;
@@ -2768,13 +2810,16 @@ label5:
 	SetCallLevel(q->CallLevel);
 	if (q1 != nullptr) Mem2.Release(q1);
 label6:
-	if (Trace()) { printf("REDO %s", p->Name.c_str()); WaitC(); }
+	if (Trace()) {
+		printf("REDO %s", p->Name.c_str());
+		WaitC();
+	}
 	goto label2;
 
 	/*--------------------------  end of program  ------------------------------*/
 label7:
 	EdBreak = 2;
-label8:
+label8_end:
 	RestoreExit(er);
 	/*writeln(AbsAdr(HeapPtr)-AbsAdr(pm1),'/',AbsAdr(pm2)-AbsAdr(Stack2Ptr)); */
 	//_Sg = oldSg;
