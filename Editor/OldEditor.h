@@ -46,7 +46,7 @@ void TestUpdFile();
 void DelEndT();
 void KodLine();
 void SetDekLnCurrI(WORD Ind);
-size_t FindChar(char* text, size_t length, char c, size_t from, size_t n = 1);
+size_t FindCharPosition(char* text, size_t length, char c, size_t from, size_t n = 1);
 //void MyDelLine();
 //void MyInsLine();
 WORD SetPredI();
@@ -131,9 +131,9 @@ extern char* T;
 extern bool bScroll;
 //extern std::vector<EdExitD*> *ExitD;
 extern WORD MaxLenT, IndT, ScrT;
-extern WORD ScrI, LineI, Posi, BPos;
-extern WORD NextI, PageS, LineS;
-extern integer LineL, ScrL;
+extern WORD ScrI, textIndex, Posi, BPos;
+extern WORD NextLineStartIndex, PageS, LineS;
+extern integer TextLineNr, ScrL;
 extern longint RScrL;
 extern bool Konec;
 extern bool EditT, ChangeScr;
@@ -160,7 +160,7 @@ extern WORD MargLL[4];
 
 extern std::set<char> Separ;
 
-const BYTE LineSize = 255;
+const BYTE LineMaxSize = 255;
 const bool TextBlock = false;
 const bool ColBlock = true;
 
