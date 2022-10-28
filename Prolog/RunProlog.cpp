@@ -30,6 +30,8 @@ const WORD MaxPackedPredLen = 4000;
 //	TTerm* Next = nullptr;
 //};
 
+const unsigned int MAX_VARS_COUNT = 16;
+
 struct TInstance {
 	TPredicate* Pred = nullptr; /*PPredicate*/
 	TInstance* PrevInst = nullptr;
@@ -40,7 +42,7 @@ struct TInstance {
 	void* StkMark = nullptr;
 	longint WMark = 0;
 	WORD CallLevel = 0;
-	TTerm* Vars[7]{ nullptr };
+	TTerm* Vars[MAX_VARS_COUNT]{ nullptr };
 };
 
 struct TFileScan {
@@ -587,7 +589,7 @@ TTerm* CopyTerm(TTerm* t/*PPTerm*/)
 		break;
 	}
 	case prolog_func::_VarT: {
-		return CurrInst->Vars[t->Idx];
+		return CurrInst->Pred->VarsCheck[t->Idx]->term;
 		break;
 	}
 	case prolog_func::_ListT: {
@@ -863,7 +865,7 @@ void PrintPackedPred(char* Q, TPredicate* POfs/*PPredicate*/)
 		for (i = 1; i <= n; i++) {
 			if (i > 1) printf(",");
 			Q += 2;
-			Q = PrintPackedTerm(Q, p->Arg[i - 1]);
+			Q = PrintPackedTerm(Q, p->ArgDomains[i - 1]);
 		}
 		printf(")");
 	}
@@ -1696,7 +1698,7 @@ bool RunCommand(TCommand* COff/*PCommand*/)
 	return true;
 }
 
-void CallFandProc()
+void CallFandProc(TCommand* cmd)
 {
 	//ProcStkD* oldBPr;
 	//ProcStkD* ps;
@@ -1721,8 +1723,8 @@ void CallFandProc()
 	for (i = 0; i < p->Arity; i++) {
 		auto ta = &pd->TArg[i];
 		//PtrRec(Frml).Seg = _Sg;
-		d = p->Arg[i];
-		t = CurrInst->Vars[i];
+		d = p->ArgDomains[i];
+		t = cmd->Arg[i]; // CurrInst->Vars[i];
 		if ((w & 1) != 0) {
 			switch (ta->FTyp) {
 			case 'R': {
@@ -1847,7 +1849,7 @@ void AssertFand(TPredicate* P, TCommand* C)
 		f = fl->FldD;
 		if ((f->Flg & f_Stored) != 0) {
 			t = CopyTerm(l->second);
-			d = P->Arg[i];
+			d = P->ArgDomains[i];
 			if (Trace()) {
 				if (i > 0) printf(",");
 				PrintTerm(t, d);
@@ -2054,7 +2056,7 @@ label1:
 			}
 			default: {
 				if (f->Typ == 'T') {
-					d = p->Arg[i];
+					d = p->ArgDomains[i];
 					if (d->Typ == _LongStrD) s = RdLongStr(t->Pos);
 					else s = GetPackedTerm(t);
 					b = EquLongStr(s, _LongS(f));
@@ -2079,7 +2081,7 @@ label1:
 	{ /* create outp. parameters */
 		if ((w & 1) != 0) {
 			f = fl->FldD;
-			d = p->Arg[i];
+			d = p->ArgDomains[i];
 			switch (f->FrmlTyp) {
 			case 'B': {
 				CurrInst->Vars[i] = GetBoolTerm(_B(f));
@@ -2190,7 +2192,7 @@ void TraceCall(TInstance* Q, BYTE X)
 		else w = p->InpMask;
 		for (i = 0; i <= p->Arity - 1; i++) {
 			if (i > 0) printf(",");
-			d = p->Arg[i];
+			d = p->ArgDomains[i];
 			if ((w & 1) == X) {
 				if ((X == 1) && ((p->Opt & _PackInpOpt) != 0))
 					PrintPackedTerm((char*)(Q->Vars[i]) + 2, d);
@@ -2245,7 +2247,7 @@ bool AutoRecursion(TInstance* q, TPredicate* p, TCommand* c)
 	TFunDcl* f = nullptr;
 	TDomain* d = nullptr;
 
-	d = p->Arg[0];
+	d = p->ArgDomains[0];
 	iOutp = c->iOutp;
 	t1 = q->Vars[c->iWrk];
 
@@ -2316,7 +2318,7 @@ bool AutoRecursion(TInstance* q, TPredicate* p, TCommand* c)
 		i2 = c->Pair[j].iOutp;
 		if (i > 0) t = q->Vars[i];
 		else {
-			d = p->Arg[i2];
+			d = p->ArgDomains[i2];
 			switch (d->Typ) {
 			case _ListD: t = nullptr; break;
 			case _StrD: t = GetStringTerm(""); break;
@@ -2426,6 +2428,11 @@ label1:
 	q->RetInst = CurrInst;
 	q->RetBranch = b;
 	q->RetCmd = c;
+	//if (CurrInst != nullptr) {
+	//	for (int qi = 0; i < MAX_VARS_COUNT; i++) {
+	//		q->Vars[qi] = CurrInst->Vars[qi];
+	//	}
+	//}
 	if (TrcLevel != 0) {
 		CallLevel = CurrInst->CallLevel + 1;
 		q->CallLevel = CallLevel;
@@ -2449,8 +2456,11 @@ label1:
 					//s->LL = n;
 					//memcpy(s->A, A, n);
 				}
-				else q->Vars[i] = CopyTerm(l->second);
+				else {
+					q->Vars[i] = CopyTerm(l->second);
+				}
 			}
+			
 			i++;
 			++l;
 			w = w >> 1;
@@ -2461,6 +2471,7 @@ label1:
 		while (l != c->Arg.end()) {
 			if ((w & 1) != 0) {
 				if ((p->Opt & _PackInpOpt) != 0) {
+					// imported from DB
 					pt = (char*)A;
 					//PTPMaxOfs = ofs(A) + MaxPackedPredLen - 2;
 					PackTermV(l->second);
@@ -2470,7 +2481,9 @@ label1:
 					//s->LL = n;
 					//memcpy(s->A, A, n);
 				}
-				else q->Vars[i] = CopyTerm(l->second);
+				else {
+					q->Vars[i] = CopyTerm(l->second);
+				}
 			}
 			i++;
 			++l;
@@ -2489,7 +2502,7 @@ label1:
 	q->WMark = MaxWSize;
 	CurrInst = q;
 	if ((p->Opt & (_FandCallOpt + _DbaseOpt)) == _FandCallOpt) {
-		CallFandProc();
+		CallFandProc(c);
 		goto label4;
 	}
 label2:
@@ -2506,7 +2519,7 @@ label2:
 	label21:
 		s = (LongStr*)bd->LL;
 		w = c->InpMask;
-		for (i = 0; i <= integer(p->Arity) - 1; i++) {
+		for (i = 0; i <= (integer)p->Arity - 1; i++) {
 			if (((w & 1) != 0) && !EquLongStr((LongStr*)(q->Vars[i]), s)) {
 				bd = bd->pChain;
 				if (bd == nullptr) { q->NextBranch = nullptr; goto label5; }
@@ -2522,7 +2535,7 @@ label2:
 		for (i = 0; i < p->Arity; i++) {
 			/* unpack db outp.parameters */
 			if ((w & 1) != 0) {
-				pt = s->A; q->Vars[i] = UnpackTerm(p->Arg[i]);
+				pt = s->A; q->Vars[i] = UnpackTerm(p->ArgDomains[i]);
 			}
 		}
 		//PtrRec(s).Ofs += s->LL + 2;

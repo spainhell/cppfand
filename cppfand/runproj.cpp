@@ -1216,12 +1216,12 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 					break;
 				}
 #ifdef FandProlog
-				case 'L': {
-					SetInpTTPos(Txt, Encryp);
-					TProgRoots* typeL = ReadProlog(I);
-					delete typeL; typeL = nullptr;
-					break;
-				}
+				//case 'L': {
+				//	SetInpTTPos(Txt, Encryp);
+				//	TProgRoots* typeL = ReadProlog(I);
+				//	delete typeL; typeL = nullptr;
+				//	break;
+				//}
 #endif
 				}
 			}
