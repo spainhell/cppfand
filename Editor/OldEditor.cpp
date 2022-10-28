@@ -33,10 +33,10 @@ struct Character {
 
 // *** Promenne metody EDIT
 char Arr[SuccLineSize]{ '\0' }; // znaky pro 1 radek
-char* T = nullptr; // ukazatel na vstupni retezec (cely editovany text)
-WORD NextLineStartIndex = 0;
-integer TextLineNr = 0; // cislo radku v celem textu (1 .. N)
-integer ScrL = 0;
+char* T = nullptr;              // ukazatel na vstupni retezec (cely editovany text)
+WORD NextLineStartIndex = 0;    // index prvniho znaku na dalsim radku
+integer TextLineNr = 0;         // cislo radku v celem textu (1 .. N)
+integer ScreenFirstLineNr = 0;  // cislo radku, ktery je na obrazovce zobrazen jako prvni (1 .. N)
 longint RScrL = 0;
 bool UpdatedL = false, CtrlL = false, HardL = false;
 WORD BCol = 0, Colu = 0, Row = 0;
@@ -76,7 +76,9 @@ char Mode = '\0';
 char TypeT = '\0';
 std::string NameT;
 std::string ErrMsg;
-WORD MaxLenT = 0, IndT = 0, ScrT = 0;
+WORD MaxLenT = 0;
+WORD IndexT = 0;
+WORD ScrT = 0;
 size_t LenT = 0;
 //std::vector<EdExitD*> *ExitD = nullptr;
 bool SrchT, UpdatT;
@@ -694,7 +696,7 @@ void EditWrline(char* P, int Row)
 	BYTE nv2;
 	bool IsCtrl = false;
 
-	WORD Line = pred(ScrL + Row);
+	WORD Line = pred(ScreenFirstLineNr + Row);
 	if (LineInBlock(Line) && (TypeB == TextBlock)) {
 		nv2 = BlockColor;
 	}
@@ -867,7 +869,9 @@ void MoveIdx(int dir)
 	WORD mi = -dir * Part.MovI;
 	WORD ml = -dir * Part.MovL;
 	ScrI += mi; textIndex += mi; // {****GLOBAL***}
-	NextLineStartIndex += mi; TextLineNr += ml; ScrL += ml; // {****Edit***}
+	NextLineStartIndex += mi;
+	TextLineNr += ml;
+	ScreenFirstLineNr += ml; // {****Edit***}
 }
 
 void PredPart()
@@ -904,23 +908,24 @@ size_t CountChar(char* text, size_t text_len, char C, size_t first, size_t last)
 	//return n;
 }
 
+// vraci cislo radku, ve kterem se nachazi index (1 .. N)
 WORD SetLine(WORD Ind)
 {
 	return CountChar(T, LenT, _CR, 1, Ind) + 1;
 }
 
-WORD SetCurrI(WORD Ind)
+// vraci index 1. znaku na aktualnim radku (index = 0 .. N)
+WORD CurrentLineFirstCharIndex(WORD index)
 {
-	WORD result = 1;
-	if (Ind > 0) Ind--;
-	while (Ind > 0) {
-		if (T[Ind - 1] == _CR) {
-			Ind++;
-			if (T[Ind - 1] == _LF) Ind++;
-			result = Ind;
+	WORD result = 0;
+	while (index > 0) {
+		if (T[index] == _CR) {
+			index++;
+			if (T[index] == _LF) index++;
+			result = index;
 			break;
 		}
-		Ind--;
+		index--;
 	}
 	return result;
 }
@@ -1038,23 +1043,24 @@ void DekodLine()
 	}
 	if (lineLen > 0) {
 		// zkopiruj radek do Arr
-		memcpy(Arr, &T[textIndex - 1], lineLen);
+		memcpy(Arr, &T[textIndex], lineLen);
 	}
 	UpdatedL = false;
 }
 
-/// nastavuje textIndex, vola DekodLine()
-void SetDekCurrI(WORD Ind)
+/// ziska index 1. znaku akt. radku, vola DekodLine()
+void CopyCurrentLineToArr(size_t Ind)
 {
-	textIndex = SetCurrI(Ind);
+	textIndex = CurrentLineFirstCharIndex(Ind);
 	DekodLine();
 }
 
-/// nastavuje TextLineNr, vola SetDekCurrI(i)
-void SetDekLnCurrI(WORD Ind)
+/// vraci cislo radku, na kterem je index
+size_t GetLineNumber(size_t Ind)
 {
-	SetDekCurrI(Ind);
-	TextLineNr = SetLine(textIndex);
+	CopyCurrentLineToArr(Ind);
+	//TextLineNr = SetLine(textIndex);
+	return SetLine(textIndex);
 }
 
 WORD SetInd(char* text, size_t len_text, WORD Ind, WORD Pos) // { line, pozice --> index}
@@ -1139,7 +1145,7 @@ WORD FindLine(integer& Num)
 			if (I > LenT) {
 				if (AllRd) {
 					Num = SetLine(LenT);
-					result = SetCurrI(LenT);
+					result = CurrentLineFirstCharIndex(LenT);
 				}
 				else {
 					NextPart();
@@ -1225,11 +1231,17 @@ void UpdScreen()
 
 	InsPage = false;
 	if (ChangeScr) {
-		if (ChangePart) DekodLine();
+		if (ChangePart) {
+			DekodLine();
+		}
 		ChangeScr = false;
 
-		if (bScroll) ScrI = textIndex;
-		else ScrI = FindLine(ScrL);
+		if (bScroll) {
+			ScrI = textIndex;
+		}
+		else {
+			ScrI = FindLine(ScreenFirstLineNr);
+		}
 
 		if (HelpScroll) {
 			ColScr = Part.ColorP;
@@ -1250,12 +1262,12 @@ void UpdScreen()
 	else if (Mode == HelpM) {
 		co1 = Part.ColorP;
 		SetColorOrd(co1, 1, textIndex);
-		ScrollWrline(Arr, TextLineNr - ScrL + 2, co1);
+		ScrollWrline(Arr, TextLineNr - ScreenFirstLineNr + 2, co1);
 	}
 	else {
-		EditWrline(Arr, TextLineNr - ScrL + 1);
+		EditWrline(Arr, TextLineNr - ScreenFirstLineNr + 1);
 	}
-	WrEndL(HardL, TextLineNr - ScrL + 1);
+	WrEndL(HardL, TextLineNr - ScreenFirstLineNr + 1);
 	if (MyTestEvent()) return;
 	if (ScrI < 1) {
 		throw std::exception("UpdScreen(): variable ScrI < 1");
@@ -1272,7 +1284,7 @@ void UpdScreen()
 		}
 	}
 	do {
-		if (MyTestEvent()) return;                   // {tisk celeho okna}
+		if (MyTestEvent()) return; // {tisk celeho okna}
 		if ((index >= LenT) && !AllRd) {
 			NextPartDek();
 			index -= Part.MovI;
@@ -1288,7 +1300,7 @@ void UpdScreen()
 			}
 		}
 		if (!bScroll && (index == textIndex - 1)) {
-			index = NextLineStartIndex - 1;
+			index = NextLineStartIndex;
 			co2 = co1;
 			goto label1;
 		}
@@ -1358,17 +1370,17 @@ void Background()
 			BPos = pred(Posi);
 		}
 	}
-	if (TextLineNr < ScrL) {
-		ScrL = TextLineNr;
+	if (TextLineNr < ScreenFirstLineNr) {
+		ScreenFirstLineNr = TextLineNr;
 		ChangeScr = true;
 	}
-	if (TextLineNr >= ScrL + PageS) {
-		ScrL = succ(TextLineNr - PageS);
+	if (TextLineNr >= ScreenFirstLineNr + PageS) {
+		ScreenFirstLineNr = succ(TextLineNr - PageS);
 		ChangeScr = true;
 	}
 	UpdScreen(); // {tisk obrazovky}
 	WriteMargins();
-	screen.GotoXY(Posi - BPos, TextLineNr - ScrL + 1);
+	screen.GotoXY(Posi - BPos, TextLineNr - ScreenFirstLineNr + 1);
 	IsWrScreen = true;
 }
 
@@ -1423,7 +1435,7 @@ void ScrollPress()
 	if (fyz == old) FirstScroll = false;
 	bScroll = (fyz || FirstScroll) && (Mode != HelpM);
 	HelpScroll = bScroll || (Mode == HelpM);
-	longint L1 = LineAbs(ScrL);
+	longint L1 = LineAbs(ScreenFirstLineNr);
 	if (old != bScroll) {
 		if (bScroll) {
 			WrStatusLine();
@@ -1439,9 +1451,9 @@ void ScrollPress()
 			else {
 				DekFindLine(MaxL(L1, PHNum + 1));
 			}
-			ScrL = TextLineNr;
-			RScrL = NewRL(ScrL);
-			if (L1 != LineAbs(ScrL)) ChangeScr = true; // { DekodLine; }
+			ScreenFirstLineNr = TextLineNr;
+			RScrL = NewRL(ScreenFirstLineNr);
+			if (L1 != LineAbs(ScreenFirstLineNr)) ChangeScr = true; // { DekodLine; }
 			BCol = Column(BPos);
 			Colu = Column(Posi);
 			ColScr = Part.ColorP;
@@ -1488,16 +1500,16 @@ void PredLine()
 	if ((TextLineNr == 1) && (Part.PosP > 0)) PredPart();
 	if (TextLineNr > 1) {
 		if (T[textIndex - 1 - 1] == _LF) {
-			SetDekCurrI(textIndex - 2);
+			CopyCurrentLineToArr(textIndex - 2);
 		}
 		else {
-			SetDekCurrI(textIndex - 1);
+			CopyCurrentLineToArr(textIndex - 1);
 		}
 		TextLineNr--;
-		if (TextLineNr < ScrL) {
+		if (TextLineNr < ScreenFirstLineNr) {
 			screen.GotoXY(1, 1);
 			//MyInsLine();
-			ScrL--;
+			ScreenFirstLineNr--;
 			ChangeScr = true;
 			if (bScroll) {
 				/*dec(RLineL);*/
@@ -1519,9 +1531,9 @@ void RollNext()
 	if (NextLineStartIndex <= LenT) {
 		screen.GotoXY(1, 1);
 		//MyDelLine();
-		ScrL++;
+		ScreenFirstLineNr++;
 		ChangeScr = true;
-		if (TextLineNr < ScrL) {
+		if (TextLineNr < ScreenFirstLineNr) {
 			TestKod();
 			TextLineNr++;
 			textIndex = NextLineStartIndex;
@@ -1532,17 +1544,17 @@ void RollNext()
 
 void RollPred()
 {
-	if ((ScrL == 1) && (Part.PosP > 0)) PredPart();
-	if (ScrL > 1) {
+	if ((ScreenFirstLineNr == 1) && (Part.PosP > 0)) PredPart();
+	if (ScreenFirstLineNr > 1) {
 		screen.GotoXY(1, 1);
 		//MyInsLine();
-		ScrL--;
+		ScreenFirstLineNr--;
 		ChangeScr = true;
-		if (TextLineNr == ScrL + PageS) {
+		if (TextLineNr == ScreenFirstLineNr + PageS) {
 			TestKod();
 			TextLineNr--;
-			if (T[textIndex - 1] == _LF) { SetDekCurrI(textIndex - 2); }
-			else { SetDekCurrI(textIndex - 1); }
+			if (T[textIndex - 1] == _LF) { CopyCurrentLineToArr(textIndex - 2); }
+			else { CopyCurrentLineToArr(textIndex - 1); }
 		}
 	}
 }
@@ -1590,7 +1602,7 @@ void NextLine(bool WrScr)
 		TextLineNr++;
 		if (bScroll) {
 			if (PageS > 1) MyWriteln();
-			ScrL++;
+			ScreenFirstLineNr++;
 			ChangeScr = true;
 			RScrL++;
 			if (ModPage(RScrL)) {
@@ -1598,9 +1610,9 @@ void NextLine(bool WrScr)
 				RScrL++;
 			}
 		}
-		else if (WrScr && (TextLineNr == ScrL + PageS)) {
+		else if (WrScr && (TextLineNr == ScreenFirstLineNr + PageS)) {
 			//if (PageS > 1) MyWriteln();
-			ScrL++;
+			ScreenFirstLineNr++;
 			ChangeScr = true;
 		}
 	}
@@ -1919,8 +1931,8 @@ WORD SetPredI()
 {
 	if ((TextLineNr == 1) && (Part.PosP > 0)) PredPart();
 	if (textIndex <= 1) return textIndex;
-	else if (T[textIndex - 1] == _LF) return SetCurrI(textIndex - 2);
-	else return SetCurrI(textIndex - 1);
+	else if (T[textIndex - 1] == _LF) return CurrentLineFirstCharIndex(textIndex - 2);
+	else return CurrentLineFirstCharIndex(textIndex - 1);
 }
 
 void WrCharE(char Ch)
@@ -2373,7 +2385,7 @@ void MovePart(WORD Ind)
 	WrEndT();
 	/* !!! with Part do!!! */
 	{
-		Part.MovI = SetCurrI(Ind) - 1; Part.MovL = SetLine(Part.MovI) - 1;
+		Part.MovI = CurrentLineFirstCharIndex(Ind) - 1; Part.MovL = SetLine(Part.MovI) - 1;
 		Part.LineP += Part.MovL; Part.PosP += Part.MovI; Part.LenP -= Part.MovI;
 		SetColorOrd(Part.ColorP, 1, Part.MovI + 1);
 		TestLenText(&T, LenT, Part.MovI + 1, 1);
@@ -2424,7 +2436,7 @@ void BlockDrop(char Oper, void* P1, LongStr* sp)
 	if (ChangePart) I -= Part.MovI;
 	Move(sp->A, &T[I], I2);
 	ReleaseStore2(P1);
-	SetDekLnCurrI(I + I2);
+	TextLineNr = GetLineNumber(I + I2);
 	EndBLn = Part.LineP + TextLineNr;
 	EndBPos = succ(I + I2 - textIndex);
 	PosDekFindLine(BegBLn, BegBPos, true); /*ChangeScr = true;*/
@@ -2490,7 +2502,9 @@ void BlockCDrop(char Oper, void* P1, LongStr* sp)
 			ww = BegBPos; EndBPos = MaxW(ww + i, EndBPos);
 			if ((NextLineStartIndex > LenT) && ((TypeT != FileT) || AllRd)) {
 				TestLenText(&T, LenT, LenT, longint(LenT) + 2);
-				T[LenT - 2] = _CR; T[LenT - 1] = _LF; NextLineStartIndex = LenT;
+				T[LenT - 2] = _CR;
+				T[LenT - 1] = _LF;
+				NextLineStartIndex = LenT;
 			}
 			NextLine(false);
 		}
@@ -2626,31 +2640,31 @@ void ChangeP(WORD& fst)
 
 void SetScreen(WORD Ind, WORD ScrXY, WORD Pos)
 {
-	SetDekLnCurrI(Ind);
+	TextLineNr = GetLineNumber(Ind);
 	Posi = MinI(LineMaxSize, MaxI(MaxW(1, Pos), Ind - textIndex + 1));
 	if (ScrXY > 0) {
-		ScrL = TextLineNr - (ScrXY >> 8) + 1;
+		ScreenFirstLineNr = TextLineNr - (ScrXY >> 8) + 1;
 		Posi = MaxW(Posi, ScrXY & 0x00FF);
 		BPos = Posi - (ScrXY & 0x00FF);
 		ChangeScr = true;
 	}
 	Colu = Column(Posi); BCol = Column(BPos);
 	if (bScroll) {
-		RScrL = NewRL(ScrL);
+		RScrL = NewRL(ScreenFirstLineNr);
 		TextLineNr = MaxI(PHNum + 1, LineAbs(TextLineNr)) - Part.LineP;
 		longint rl = NewRL(TextLineNr);
 		if ((rl >= RScrL + PageS) || (rl < RScrL)) {
 			if (rl > 10) RScrL = rl - 10;
 			else RScrL = 1;
-			ChangeScr = true; ScrL = NewL(RScrL);
+			ChangeScr = true; ScreenFirstLineNr = NewL(RScrL);
 		}
-		TextLineNr = ScrL;
+		TextLineNr = ScreenFirstLineNr;
 		DekFindLine(LineAbs(TextLineNr));
 	}
 	else {
-		if ((TextLineNr >= ScrL + PageS) || (TextLineNr < ScrL)) {
-			if (TextLineNr > 10) ScrL = TextLineNr - 10;
-			else ScrL = 1;
+		if ((TextLineNr >= ScreenFirstLineNr + PageS) || (TextLineNr < ScreenFirstLineNr)) {
+			if (TextLineNr > 10) ScreenFirstLineNr = TextLineNr - 10;
+			else ScreenFirstLineNr = 1;
 			ChangeScr = true;
 		}
 	}
@@ -2761,7 +2775,7 @@ WORD WordNo(WORD I)
 
 bool WordExist()
 {
-	return (WordL >= ScrL) && (WordL < ScrL + PageS);
+	return (WordL >= ScreenFirstLineNr) && (WordL < ScreenFirstLineNr + PageS);
 }
 
 WORD WordNo2()
@@ -2812,7 +2826,7 @@ void SetWord(WORD WB, WORD WE)
 {
 	T[WB] = 0x11;
 	T[WE] = 0x11;
-	SetDekLnCurrI(WB);
+	TextLineNr = GetLineNumber(WB);
 	WordL = TextLineNr;
 	Posi = WB - textIndex + 1;
 	Colu = Column(Posi);
@@ -2832,19 +2846,21 @@ void HelpLU(char dir)
 	else {
 		h2 = h1;
 	}
-	if (WordFind(h2, I1, I2, I) && (I >= ScrL - 1)) {
+	if (WordFind(h2, I1, I2, I) && (I >= ScreenFirstLineNr - 1)) {
 		SetWord(I1, I2);
 	}
 	else {
-		if (WordFind(h1 + 1, I1, I2, I) && (I >= ScrL)) SetWord(I1, I2);
+		if (WordFind(h1 + 1, I1, I2, I) && (I >= ScreenFirstLineNr)) SetWord(I1, I2);
 		else { I1 = SetInd(T, LenT, textIndex, Posi); WordL = 0; }
-		I = ScrL - 1;
+		I = ScreenFirstLineNr - 1;
 	}
-	if (I <= ScrL - 1) {
-		DekFindLine(ScrL);
+	if (I <= ScreenFirstLineNr - 1) {
+		DekFindLine(ScreenFirstLineNr);
 		RollPred();
 	}
-	if (WordExist()) SetDekLnCurrI(I1);
+	if (WordExist()) {
+		TextLineNr = GetLineNumber(I1);
+	}
 }
 
 void HelpRD(char dir)
@@ -2866,27 +2882,27 @@ void HelpRD(char dir)
 	else {
 		h2 = h1 + 1;
 	}
-	if (WordFind(h2, I1, I2, I) && (I <= ScrL + PageS)) {
+	if (WordFind(h2, I1, I2, I) && (I <= ScreenFirstLineNr + PageS)) {
 		SetWord(I1, I2);
 	}
 	else {
 		if (WordNo2() > h1) {
 			h1++;
 		}
-		if (WordFind(h1, I1, I2, I) && (I <= ScrL + PageS)) {
+		if (WordFind(h1, I1, I2, I) && (I <= ScreenFirstLineNr + PageS)) {
 			SetWord(I1, I2);
 		}
 		else {
 			I1 = SetInd(T, LenT, textIndex, Posi); WordL = 0;
 		}
-		I = ScrL + PageS;
+		I = ScreenFirstLineNr + PageS;
 	}
-	if (I >= ScrL + PageS) {
-		DekFindLine(ScrL + PageS - 1);
+	if (I >= ScreenFirstLineNr + PageS) {
+		DekFindLine(ScreenFirstLineNr + PageS - 1);
 		RollNext();
 	}
 	if (WordExist()) {
-		SetDekLnCurrI(I1);
+		TextLineNr = GetLineNumber(I1);
 	}
 }
 
@@ -2914,12 +2930,12 @@ void Edit(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys)
 	InitScr();
 	IsWrScreen = false;
 	WrEndT();
-	IndT = min((WORD)max(1, (int)IndT), LenT);
+	IndexT = min(IndexT, LenT - 1);
 	BegBLn = 1;
 	EndBLn = 1;
 	BegBPos = 1;
 	EndBPos = 1;
-	ScrL = 1;
+	ScreenFirstLineNr = 1;
 	ScrI = 1;
 	RScrL = 1;
 	PredScLn = 1;
@@ -2942,7 +2958,7 @@ void Edit(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys)
 	bScroll = (keybScroll || FirstScroll) && (Mode != HelpM);
 	if (bScroll)
 	{
-		ScrL = NewL(RScrL);
+		ScreenFirstLineNr = NewL(RScrL);
 		ChangeScr = true;
 	}
 	HelpScroll = bScroll || (Mode == HelpM);
@@ -2954,7 +2970,7 @@ void Edit(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys)
 	}
 	BCol = 0;
 	BPos = 0;
-	SetScreen(IndT, ScrT, Posi);
+	SetScreen(IndexT, ScrT, Posi);
 	Konec = false;
 
 	if (Mode == HelpM) {
@@ -2964,7 +2980,7 @@ void Edit(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys)
 			SetWord(i1, i2);
 		}
 		if (!WordExist()) {
-			SetDekLnCurrI(IndT);
+			TextLineNr = GetLineNumber(IndexT);
 			ScrI = 1;
 		}
 	}
@@ -2998,11 +3014,11 @@ void Edit(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys)
 	} while (!Konec);
 
 	if (bScroll && (Mode != HelpM)) {
-		Posi = BPos + 1; TextLineNr = ScrL; textIndex = ScrI;
+		Posi = BPos + 1; TextLineNr = ScreenFirstLineNr; textIndex = ScrI;
 	}
 
-	IndT = SetInd(T, LenT, textIndex, Posi);
-	ScrT = ((TextLineNr - ScrL + 1) << 8) + Posi - BPos;
+	IndexT = SetInd(T, LenT, textIndex, Posi);
+	ScrT = ((TextLineNr - ScreenFirstLineNr + 1) << 8) + Posi - BPos;
 	if (Mode != HelpM) {
 		TxtXY = ScrT + (longint(Posi) << 16);
 		CursorWord();
@@ -3041,7 +3057,7 @@ bool EditText(char pMode, char pTxtType, std::string pName, std::string pErrMsg,
 	ErrMsg = pErrMsg;
 	T = pLS->A;
 	MaxLenT = pMaxLen;
-	LenT = pLS->LL; IndT = pInd;
+	LenT = pLS->LL; IndexT = pInd;
 	ScrT = pScr & 0xFFFF;
 	Posi = pScr >> 16;
 	//Breaks = break_keys;
@@ -3068,7 +3084,7 @@ bool EditText(char pMode, char pTxtType, std::string pName, std::string pErrMsg,
 		KbdBuffer = 0x0C;
 		KbdBuffer += OldKbdBuffer;*/
 		Event.Pressed.UpdateKey('L');
-		IndT = 0;
+		IndexT = 0;
 	}
 
 	Edit(pExD, break_keys);
@@ -3077,7 +3093,7 @@ bool EditText(char pMode, char pTxtType, std::string pName, std::string pErrMsg,
 	pSrch = SrchT;
 	pLS->LL = LenT;
 	pLS->A = T;
-	pInd = IndT;
+	pInd = IndexT;
 	pScr = ScrT + ((longint)Posi << 16);
 	EdOk = oldEdOK;
 	return EditT;
