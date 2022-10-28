@@ -1552,8 +1552,25 @@ void direction1(BYTE x, BYTE& zn2)
 	BYTE y = 0x10;
 	if (x > 2) { y = y << 1; }
 	if (x == 0) { y = 0; }
-	if (Mode == DouFM) { zn2 = zn2 || y; }
-	else { zn2 = zn2 && !y; }
+	if (Mode == DouFM) {
+		zn2 = zn2 | y;
+	}
+	else {
+		zn2 = zn2 & !y;
+	}
+}
+
+void direction2(BYTE x, BYTE& zn2)
+{
+	BYTE y = 0x10;
+	if (x > 2) { y = y << 1; }
+	if (x == 0) { y = 0; }
+	if (Mode == DouFM) {
+		zn2 = zn2 | y;
+	}
+	else {
+		zn2 = zn2 & !y;
+	}
 }
 
 void MyWriteln()
@@ -1654,11 +1671,11 @@ void Frame(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys)
 				else UpdatedL = true;
 
 				switch (Event.Pressed.KeyCombination()) {
-				case __LEFT: if (Posi > 1) Posi--; break;
-				case __RIGHT: if (Posi < LineMaxSize) Posi++; break;
-				case __UP: PredLine(); break;
-				case __DOWN: NextLine(true); break;
-				default:;
+				case __LEFT: { if (Posi > 1) Posi--; break; }
+				case __RIGHT: { if (Posi < LineMaxSize) Posi++; break; }
+				case __UP: { PredLine(); break; }
+				case __DOWN: { NextLine(true); break; }
+				default: {};
 				}
 			}
 			break;
@@ -1681,16 +1698,6 @@ void CleanFrameM(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys)
 			UpdStatLine(TextLineNr, Posi, Mode);
 			return;
 		}
-}
-
-void direction2(BYTE x, BYTE& zn2)
-{
-	BYTE y;
-	y = 0x10;
-	if (x > 2) y = y << 1;
-	if (x == 0) y = 0;
-	if (Mode == DouFM) zn2 = zn2 || y;
-	else zn2 = zn2 && !y;
 }
 
 void FrameStep(BYTE& odir, WORD EvKeyC)
@@ -1720,23 +1727,45 @@ void FrameStep(BYTE& odir, WORD EvKeyC)
 		zn2 = zn1 & 0x30; zn1 = zn1 & 0x0F;
 		dir = FrameString.first(Hi(EvKeyC));
 		auto dirodir = dir + odir;
-		if (dirodir == 2 || dirodir == 4 || dirodir == 8 || dirodir == 16) odir = 0;
-		if (zn1 == 1 || zn1 == 2 || zn1 == 4 || zn1 == 8) zn1 = 0;
-		oldzn = Arr[Posi]; Arr[Posi] = ' ';
-		if (Mode == DelFM) b = zn1 && !(odir || dir);
-		else b = zn1 || (odir ^ dir);
-		if (b == 1 || b == 2 || b == 4 || b == 8) b = 0;
-		if ((Mode == DelFM) && (zn1 != 0) && (b == 0)) oldzn = ' ';
+		if (dirodir == 2 || dirodir == 4 || dirodir == 8 || dirodir == 16) {
+			odir = 0;
+		}
+		if (zn1 == 1 || zn1 == 2 || zn1 == 4 || zn1 == 8) {
+			zn1 = 0;
+		}
+		oldzn = Arr[Posi];
+		Arr[Posi] = ' ';
+		if (Mode == DelFM) {
+			b = zn1 & !(odir | dir);
+		}
+		else {
+			b = zn1 | (odir ^ dir);
+		}
+		if (b == 1 || b == 2 || b == 4 || b == 8) {
+			b = 0;
+		}
+		if ((Mode == DelFM) && (zn1 != 0) && (b == 0)) {
+			oldzn = ' ';
+		}
 		direction2(dir, zn2); direction2(odir, zn2);
-		if (Mode == NotFM) b = 0;
+		if (Mode == NotFM) {
+			b = 0;
+		}
 
 		if ((b != 0) && ((Event.Pressed.KeyCombination() == __LEFT) || (Event.Pressed.KeyCombination() == __RIGHT) ||
-			(Event.Pressed.KeyCombination() == __UP) || (Event.Pressed.KeyCombination() == __DOWN)))
+			(Event.Pressed.KeyCombination() == __UP) || (Event.Pressed.KeyCombination() == __DOWN))) {
 			Arr[Posi] = FrameString[zn2 + b];
-		else Arr[Posi] = oldzn;
+		}
+		else {
+			Arr[Posi] = oldzn;
+		}
 
-		if ((dir == 1) || (dir == 4)) odir = dir * 2;
-		else odir = dir / 2;
+		if ((dir == 1) || (dir == 4)) {
+			odir = dir * 2;
+		}
+		else {
+			odir = dir / 2;
+		}
 
 		if (Mode == NotFM) odir = 0;
 		else UpdatedL = true;
@@ -1967,45 +1996,46 @@ void Format(WORD& i, longint First, longint Last, WORD Posit, bool Rep)
 					if (T[i] == _CR) A[Posit] = ' ';
 					else A[Posit] = T[i];
 				}
-			while ((RelPos <= RightMarg) && (i < lst))
-			{
-				if ((T[i] == _CR) || (T[i] == ' '))
-				{
+			while ((RelPos <= RightMarg) && (i < lst)) {
+				if ((T[i] == _CR) || (T[i] == ' ')) {
 					while (((T[i] == _CR) || (T[i] == ' ')) && (i < lst))
 						if (T[i + 1] == _LF) lst = i;
 						else { T[i] = ' '; i++; }
 					if (!bBool) { nw++; if (i < lst) i--; };
 				}
-				if (i < lst)
-				{
+				if (i < lst) {
 					bBool = false;
 					A[Posit] = T[i];
 					if (CtrlKey.find(A[Posit]) == std::string::npos) RelPos++;
 					i++; Posit++;
 				}
 			}
-			if ((i < lst) && (T[i] != ' ') && (T[i] != _CR))
-			{
+			if ((i < lst) && (T[i] != ' ') && (T[i] != _CR)) {
 				ii = Posit - 1;
 				if (CtrlKey.find(A[ii]) != std::string::npos) ii--;
 				rp = RelPos; RelPos--;
-				while ((A[ii] != ' ') && (ii > LeftMarg))
-				{
+				while ((A[ii] != ' ') && (ii > LeftMarg)) {
 					if (CtrlKey.find(A[ii]) == std::string::npos) RelPos--; ii--;
 				}
-				if (RelPos > LeftMarg)
-				{
-					nb = rp - RelPos; i -= (Posit - ii); Posit = ii;
+				if (RelPos > LeftMarg) {
+					nb = rp - RelPos;
+					i -= (Posit - ii);
+					Posit = ii;
 				}
 				else
 				{
-					while ((T[i] != ' ') && (T[i] != _CR) && (Posit < LineMaxSize))
-					{
+					while ((T[i] != ' ') && (T[i] != _CR) && (Posit < LineMaxSize)) {
 						A[Posit] = T[i]; i++; Posit++;
 					}
-					while (((T[i] == _CR) || (T[i] == ' ')) && (i < lst))
-						if (T[i + 1] == _LF) lst = i;
-						else { T[i] = ' '; i++; }
+					while (((T[i] == _CR) || (T[i] == ' ')) && (i < lst)) {
+						if (T[i + 1] == _LF) {
+							lst = i;
+						}
+						else {
+							T[i] = ' ';
+							i++;
+						}
+					}
 				}
 			}
 			if (Just)
@@ -2287,7 +2317,9 @@ bool BlockHandle(longint& fs, FILE* W1, char Oper)
 				Move(&Arr[BegBPos], a, I1);
 				a[I1 + 1] = _CR;
 				a[I1 + 2] = _LF;
-				if ((Oper == 'P') && !isPrintFile) Move(a, p[fs + 1], I1 + 2);
+				if ((Oper == 'P') && !isPrintFile) {
+					Move(a, p[fs + 1], I1 + 2);
+				}
 				else {
 					WriteH(W1, I1 + 2, a);
 					HMsgExit(CPath);
@@ -2413,7 +2445,9 @@ bool BlockCGrasp(char Oper, void* P1, LongStr* sp)
 	if (l1 > 0x7FFF) { WrLLF10Msg(418); return result; }
 	MarkStore2(P1);
 	sp = (LongStr*)GetStore2(l1 + 2); sp->LL = l1;
-	PosDekFindLine(BegBLn, Posi, false); I2 = 0; i = EndBPos - BegBPos;
+	PosDekFindLine(BegBLn, Posi, false);
+	I2 = 0;
+	i = EndBPos - BegBPos;
 	do {
 		Move(&Arr[BegBPos], a, i); a[i + 1] = _CR; a[i + 2] = _LF;
 		if (Oper == 'M') TestLastPos(EndBPos, BegBPos);
