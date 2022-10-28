@@ -51,17 +51,24 @@ void CodingRdb::CodeRdb(bool Rotate)
 
 void CodingRdb::CompressTxt(WORD IRec, LongStr* s, char Typ)
 {
-	WORD i, n; bool b; CompInpD* ci; void* cr; LongStr* s2;
+	WORD i, n;
+	bool b;
+	CompInpD* ci;
+	LongStr* s2;
 	void* p2 = nullptr;
 
 	InpArrLen = s->LL;
 	InpArrPtr = (BYTE*)s->A;
 	PrevCompInp.clear();
-	if (InpArrLen == 0) ForwChar = 0x1A;
-	else ForwChar = InpArrPtr[1];
+	if (InpArrLen == 0) {
+		ForwChar = 0x1A;
+	}
+	else {
+		ForwChar = InpArrPtr[1];
+	}
 	CurrPos = 1;
 	SwitchLevel = 0;
-	cr = CRecPtr;
+	void* cr = CRecPtr;
 	ss = new LongStr(MaxLStrLen + 2); // GetStore(MaxLStrLen + 2);
 	MarkStore2(p2);
 	l = 0;
@@ -185,7 +192,8 @@ void CodingRdb::Wr(BYTE c)
 
 void CodingRdb::CodeF(bool rotate, WORD IRec, FieldDescr* F, char Typ)
 {
-	void* p = nullptr, * p2 = nullptr;
+	void* p = nullptr;
+	void* p2 = nullptr;
 
 	longint pos = _T(F);
 	if (pos == 0) return;

@@ -129,15 +129,21 @@ void SortAndSubst(KeyFldD* SK)
 
 void GetIndexSort(Instr_getindex* PD)
 {
-	XScan* Scan = nullptr; void* p = nullptr; LocVar* lv = nullptr;
-	LocVar* lv2 = nullptr; XWKey* kNew = nullptr; longint nr = 0;
-	LockMode md, md1; FrmlElem* cond = nullptr; LinkD* ld = nullptr;
-	KeyFldD* kf = nullptr; XString x;
+	XScan* Scan = nullptr;
+	void* p = nullptr;
+	LocVar* lv2 = nullptr;
+	XWKey* kNew = nullptr;
+	longint nr = 0;
+	LockMode md1;
+	FrmlElem* cond = nullptr;
+	LinkD* ld = nullptr;
+	KeyFldD* kf = nullptr;
+	XString x;
 	MarkStore(p);
-	lv = PD->giLV;
+	LocVar* lv = PD->giLV;
 	CFile = lv->FD;
 	XWKey* k = (XWKey*)lv->RecPtr;
-	md = NewLMode(RdMode);
+	LockMode md = NewLMode(RdMode);
 	if (PD->giMode == ' ') {
 		ld = PD->giLD;
 		if (ld != nullptr) kf = ld->ToKey->KFlds;
@@ -197,7 +203,11 @@ void GetIndexSort(Instr_getindex* PD)
 					}
 				}
 			}
-			else if (k->Delete(nr)) k->NR--;
+			else {
+				if (k->Delete(nr)) {
+					k->NR--;
+				}
+			}
 		}
 	}
 	OldLMode(md);
