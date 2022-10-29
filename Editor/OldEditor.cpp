@@ -32,11 +32,11 @@ struct Character {
 };
 
 // *** Promenne metody EDIT
-char Arr[SuccLineSize]{ '\0' }; // znaky pro 1 radek
-char* T = nullptr;              // ukazatel na vstupni retezec (cely editovany text)
-WORD NextLineStartIndex = 0;    // index prvniho znaku na dalsim radku
-integer TextLineNr = 0;         // cislo radku v celem textu (1 .. N)
-integer ScreenFirstLineNr = 0;  // cislo radku, ktery je na obrazovce zobrazen jako prvni (1 .. N)
+char Arr[SuccLineSize]{ '\0' };  // znaky pro 1 radek
+char* T = nullptr;               // ukazatel na vstupni retezec (cely editovany text)
+WORD NextLineStartIndex = 0;     // index prvniho znaku na dalsim radku
+integer TextLineNr = 0;          // cislo radku v celem textu (1 .. N)
+integer ScreenFirstLineNr = 0;   // cislo radku, ktery je na obrazovce zobrazen jako prvni (1 .. N)
 longint RScrL = 0;
 bool UpdatedL = false, CtrlL = false, HardL = false;
 WORD BCol = 0, Colu = 0, Row = 0;
@@ -3020,7 +3020,7 @@ void Edit(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys)
 	IndexT = SetInd(T, LenT, textIndex, Posi);
 	ScrT = ((TextLineNr - ScreenFirstLineNr + 1) << 8) + Posi - BPos;
 	if (Mode != HelpM) {
-		TxtXY = ScrT + (longint(Posi) << 16);
+		TxtXY = ScrT + ((longint)Posi << 16);
 		CursorWord();
 		if (Mode == HelpM) { ClrWord(); }
 	}
