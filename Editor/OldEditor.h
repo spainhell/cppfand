@@ -73,14 +73,14 @@ int NewL(longint RLine);
 void DekFindLine(longint Num);
 size_t CountChar(char* text, size_t text_len, char C, size_t first, size_t last);
 longint NewRL(int Line);
-WORD FindLine(integer& Num);
+size_t GetIndexOfFirstCharOnTheLine(char* text, size_t text_len, size_t lineNr);
 bool WordFind(WORD i, WORD& WB, integer& WE, WORD& LI);
 void SetWord(WORD WB, WORD WE);
 WORD WordNo2();
 WORD LastPosLine();
 void RollNext();
 void RollPred();
-void DekodLine();
+void DekodLine(size_t lineStartIndex);
 void SetScreen(WORD Ind, WORD ScrXY, WORD Pos);
 bool MyPromptLL(WORD n, std::string& s);
 void DelChar();
@@ -129,7 +129,9 @@ extern size_t LenT;
 extern char Arr[SuccLineSize];
 extern char* T;
 extern bool bScroll;
+
 //extern std::vector<EdExitD*> *ExitD;
+
 extern WORD MaxLenT, IndexT, ScrT;
 extern WORD ScrI, textIndex, Posi, BPos;
 extern WORD NextLineStartIndex, PageS, LineS;

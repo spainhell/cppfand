@@ -77,10 +77,12 @@ char TypeT = '\0';
 std::string NameT;
 std::string ErrMsg;
 WORD MaxLenT = 0;
-WORD IndexT = 0;
+WORD IndexT = 0; // index editovaneho textu (uklada se pro opetovne nacteni na stejne pozici)
 WORD ScrT = 0;
-size_t LenT = 0;
+size_t LenT = 0; // delka editovaneho textu
+
 //std::vector<EdExitD*> *ExitD = nullptr;
+
 bool SrchT, UpdatT;
 WORD LastNr, CtrlLastNr;
 integer LeftMarg, RightMarg;
@@ -90,6 +92,7 @@ longint* LocalPPtr;
 bool EditT;
 
 // od r101
+
 BYTE ColKey[CountC + 1]{ 0 };
 BYTE TxtColor = 0, BlockColor = 0, SysLColor = 0;
 pstring InsMsg, nInsMsg, IndMsg, WrapMsg, JustMsg, BlockMsg;
@@ -223,23 +226,32 @@ void HMsgExit(pstring s)
 }
 
 /// Find index of Nth character in C-string, if not found then index after LENGTH is returned!
-/// Works with values 1 .. N (Pascal style)
-size_t FindCharPosition(char* text, size_t length, char c, size_t from, size_t n)
+/// Works with values 0 .. n
+
+
+
+/// <summary>
+/// Find N-th char position in the text
+/// </summary>
+/// <param name="text">input text</param>
+/// <param name="length">input text length</param>
+/// <param name="c">character to find</param>
+/// <param name="idx_from">start position 0..n</param>
+/// <param name="n">n-th occur 1..n</param>
+/// <returns>index of found character, input text length if not found</returns>
+size_t FindCharPosition(char* text, size_t length, char c, size_t idx_from, size_t n)
 {
 	size_t result = std::string::npos; // as not found
-	if (from > 0) {
-		from--;
-		for (size_t j = 0; j < n; j++) {
-			for (size_t i = from; i < length; i++) {
-				if (text[i] == c) {
-					result = i;
-					break;
-				}
+	for (size_t j = 0; j < n; j++) {
+		for (size_t i = idx_from; i < length; i++) {
+			if (text[i] == c) {
+				result = i;
+				break;
 			}
-			from = result + 1;
 		}
+		idx_from = result + 1;
 	}
-	return result == std::string::npos ? length + 1 : result + 1;
+	return result == std::string::npos ? length : result;
 }
 
 bool TestOptStr(char c)
@@ -653,7 +665,11 @@ void UpdStatLine(int Row, int Col, char mode)
 
 longint LineAbs(int Ln)
 {
-	return Part.LineP + Ln;
+	longint result = Part.LineP + Ln;
+	if (Ln < 1) {
+		result = 1;
+	}
+	return result;
 }
 
 bool LineInBlock(int Ln)
@@ -883,11 +899,10 @@ void PredPart()
 }
 
 /// Counts the number of occurrences of a character;
-/// 'first' & 'last' are indexed from 1 (1 .. N)
+/// 'first' & 'last' are 0 .. N
 size_t CountChar(char* text, size_t text_len, char C, size_t first, size_t last)
 {
 	size_t count = 0;
-	first--; last--; // to be C indexes
 	if (first < text_len) {
 		if (last >= text_len) last = text_len - 1;
 		for (size_t i = first; i <= last; i++) {
@@ -898,20 +913,16 @@ size_t CountChar(char* text, size_t text_len, char C, size_t first, size_t last)
 		// out of index
 	}
 	return count == 0 ? 0 : count - 1;
-
-	//size_t I = FindCharPosition(T, LenT, C, First);
-	//WORD n = 0;
-	//while (I < Last) {
-	//	n++;
-	//	I = FindCharPosition(T, LenT, C, I + 1);
-	//}
-	//return n;
 }
 
-// vraci cislo radku, ve kterem se nachazi index (1 .. N)
-WORD SetLine(WORD Ind)
+/**
+ * \brief Ziska cislo radku, ve kterem je znak na indexu
+ * \param idx - index 0 .. n
+ * \return vraci cislo radku (1 .. N), ve kterem se nachazi index
+ */
+WORD GetLine(WORD idx)
 {
-	return CountChar(T, LenT, _CR, 1, Ind) + 1;
+	return CountChar(T, LenT, _CR, 0, idx) + 1;
 }
 
 // vraci index 1. znaku na aktualnim radku (index = 0 .. N)
@@ -920,11 +931,19 @@ WORD CurrentLineFirstCharIndex(WORD index)
 	WORD result = 0;
 	while (index > 0) {
 		if (T[index] == _CR) {
-			index++;
-			if (T[index] == _LF) index++;
+			// jsme na '\r' -> prazdny radek
 			result = index;
 			break;
 		}
+
+		if (T[index - 1] == _CR || T[index - 1] == _LF) {
+			// predchozi znak je '\r' nebo '\n' -> jsme na 1. znaku radku
+			//index++;
+			//if (T[index] == _LF) index++;
+			result = index;
+			break;
+		}
+
 		index--;
 	}
 	return result;
@@ -1010,13 +1029,11 @@ void TestLenText(char** text, size_t& textLength, size_t F, size_t LL)
 	//throw std::exception("TestLenText() implementation is bad. Don't call it.");
 }
 
-void DekodLine()
+void DekodLine(size_t lineStartIndex)
 {
-	WORD LL = 1;
-	WORD lineLen = FindCharPosition(T, LenT, _CR, textIndex) - textIndex;
+	WORD lineLen = FindCharPosition(T, LenT, _CR, lineStartIndex) - lineStartIndex;
 	HardL = true;
-	FillChar(Arr, LineMaxSize, 32);
-	NextLineStartIndex = textIndex + lineLen + 1; // 1 = CR
+	NextLineStartIndex = lineStartIndex + lineLen + 1; // 1 = CR
 
 	if ((NextLineStartIndex < LenT) && (T[NextLineStartIndex - 1] == _LF)) {
 		NextLineStartIndex++;
@@ -1029,22 +1046,25 @@ void DekodLine()
 		lineLen = LineMaxSize;
 		if (Mode == TextM) {
 			if (PromptYN(402)) {
-				LL = textIndex + LineMaxSize;
+				WORD LL = lineStartIndex + LineMaxSize;
 				NullChangePart();
 				TestLenText(&T, LenT, LL, (longint)LL + 1);
 				LL -= Part.MovI;
 				T[LL] = _CR;
-				NextLineStartIndex = textIndex + lineLen + 1;
+				NextLineStartIndex = lineStartIndex + lineLen + 1;
 			}
 		}
 		else {
 			Mode = ViewM;
 		}
 	}
+
+	FillChar(Arr, LineMaxSize, ' ');
 	if (lineLen > 0) {
 		// zkopiruj radek do Arr
-		memcpy(Arr, &T[textIndex], lineLen);
+		memcpy(Arr, &T[lineStartIndex], lineLen);
 	}
+
 	UpdatedL = false;
 }
 
@@ -1052,15 +1072,15 @@ void DekodLine()
 void CopyCurrentLineToArr(size_t Ind)
 {
 	textIndex = CurrentLineFirstCharIndex(Ind);
-	DekodLine();
+	DekodLine(textIndex);
 }
 
 /// vraci cislo radku, na kterem je index
 size_t GetLineNumber(size_t Ind)
 {
 	CopyCurrentLineToArr(Ind);
-	//TextLineNr = SetLine(textIndex);
-	return SetLine(textIndex);
+	size_t line = GetLine(textIndex);
+	return line;
 }
 
 WORD SetInd(char* text, size_t len_text, WORD Ind, WORD Pos) // { line, pozice --> index}
@@ -1115,50 +1135,74 @@ void NextPart()
 	WrEndT();
 }
 
-WORD FindLine(integer& Num)
+/**
+ * \brief Get index of the 1st character on the line
+ * \param text input text
+ * \param text_len input text length
+ * \param lineNr line number (1 .. N)
+ * \return index of first char on the line (0 .. n), or text length if not found
+ */
+size_t GetIndexOfFirstCharOnTheLine(char* text, size_t text_len, size_t lineNr)
 {
-	WORD result;
+	// znacne zjednoduseno oproti originalu
 
-	while (true) {
-		if (Num <= 0) {
-			if (Part.PosP == 0) {
-				Num = 1;
-				//if (textIndex < 1) textIndex = 1;
-				//if (TextLineNr < 1) TextLineNr = 1;
-			}
-			else {
-				PredPart();
-				continue;
-			}
-		}
-		if (Num == 1) {
-			result = 1;
-		}
-		else {
-			// WORD J = Num - 1;
-			// TODO: tady se vyuziva jinak puvodni kod -> k cemu je to 'J'?
-			// I = FindCharPosition(J, _CR, 1, LenT) + 1;
-			WORD I = FindCharPosition(T, LenT, _CR, 1, Num - 1) + 1;
-			if (T[I - 1] == _LF) {
-				I++;
-			}
-			if (I > LenT) {
-				if (AllRd) {
-					Num = SetLine(LenT);
-					result = CurrentLineFirstCharIndex(LenT);
-				}
-				else {
-					NextPart();
-					if (Num != TextLineNr) Num -= Part.MovL;
-					continue;
-				}
-			}
-			else {
-				result = I;
-			}
-		}
-		return result; // returns C string index (0..n)
+	//WORD result;
+
+	//while (true) {
+	//	if (Num <= 0) {
+	//		if (Part.PosP == 0) {
+	//			Num = 1;
+	//			//if (textIndex < 1) textIndex = 1;
+	//			//if (TextLineNr < 1) TextLineNr = 1;
+	//		}
+	//		else {
+	//			PredPart();
+	//			continue;
+	//		}
+	//	}
+	//	if (Num == 1) {
+	//		result = 1;
+	//	}
+	//	else {
+	//		// WORD J = Num - 1;
+	//		// TODO: tady se vyuziva jinak puvodni kod -> k cemu je to 'J'?
+	//		// I = FindCharPosition(J, _CR, 1, LenT) + 1;
+	//		WORD I = FindCharPosition(T, LenT, _CR, 1, Num - 1) + 1;
+	//		if (T[I - 1] == _LF) {
+	//			I++;
+	//		}
+	//		if (I > LenT) {
+	//			if (AllRd) {
+	//				Num = GetLine(LenT);
+	//				result = CurrentLineFirstCharIndex(LenT);
+	//			}
+	//			else {
+	//				NextPart();
+	//				if (Num != TextLineNr) Num -= Part.MovL;
+	//				continue;
+	//			}
+	//		}
+	//		else {
+	//			result = I;
+	//		}
+	//	}
+	//	return result; // returns C string index (0..n)
+	// }
+
+	size_t result;
+
+	if (lineNr <= 1) {
+		result = 0;
 	}
+	else {
+		// hledame pozici za n-tym vyskytem _CR
+		size_t pos = FindCharPosition(text, text_len, _CR, 0, lineNr - 1) + 1;
+		if (pos < text_len && text[pos + 1] == _LF) {
+			pos++;
+		}
+		result = pos;
+	}
+	return result;
 }
 
 void SetPart(longint Idx)
@@ -1178,16 +1222,20 @@ void SetPart(longint Idx)
 
 void SetPartLine(longint Ln)
 {
-	while ((Ln <= Part.LineP) && (Part.PosP > 0)) { PredPart(); }
-	while ((Ln - Part.LineP > 0x7FFF) && !AllRd) { NextPart(); }
+	while ((Ln <= Part.LineP) && (Part.PosP > 0)) {
+		PredPart();
+	}
+	while ((Ln - Part.LineP > 0x7FFF) && !AllRd) {
+		NextPart();
+	}
 }
 
 void DekFindLine(longint Num)
 {
 	SetPartLine(Num);
 	TextLineNr = Num - Part.LineP;
-	textIndex = FindLine(TextLineNr);
-	DekodLine();
+	textIndex = GetIndexOfFirstCharOnTheLine(T, LenT, TextLineNr);
+	DekodLine(textIndex);
 }
 
 void PosDekFindLine(longint Num, WORD Pos, bool ChScr)
@@ -1214,7 +1262,7 @@ void WrEndL(bool Hard, int Row)
 void NextPartDek()
 {
 	NextPart();
-	DekodLine();
+	DekodLine(textIndex);
 }
 
 bool ModPage(longint RLine)
@@ -1232,7 +1280,7 @@ void UpdScreen()
 	InsPage = false;
 	if (ChangeScr) {
 		if (ChangePart) {
-			DekodLine();
+			DekodLine(textIndex);
 		}
 		ChangeScr = false;
 
@@ -1240,7 +1288,7 @@ void UpdScreen()
 			ScrI = textIndex;
 		}
 		else {
-			ScrI = FindLine(ScreenFirstLineNr);
+			ScrI = GetIndexOfFirstCharOnTheLine(T, LenT, ScreenFirstLineNr);
 		}
 
 		if (HelpScroll) {
@@ -1313,13 +1361,15 @@ void UpdScreen()
 				EditWrline((char*)&T[index], r);
 			}
 			if (InsPage) {
-				index = FindCharPosition(T, LenT, 0x0C, index + 1);
+				// najde konec radku, potrebujeme 1. znak dalsiho radku
+				index = FindCharPosition(T, LenT, 0x0C, index) + 1;
 			}
 			else {
-				index = FindCharPosition(T, LenT, _CR, index + 1);
+				// najde konec radku, potrebujeme 1. znak dalsiho radku
+				index = FindCharPosition(T, LenT, _CR, index) + 1;
 			}
 			WrEndL((index < LenT) && (T[index] == _LF), r);
-			if (T[index] == _LF) {
+			if (index < LenT && T[index] == _LF) {
 				index++;
 			}
 		}
@@ -1537,7 +1587,7 @@ void RollNext()
 			TestKod();
 			TextLineNr++;
 			textIndex = NextLineStartIndex;
-			DekodLine();
+			DekodLine(textIndex);
 		}
 	}
 }
@@ -1598,7 +1648,7 @@ void NextLine(bool WrScr)
 	if ((NextLineStartIndex >= LenT) && !AllRd) NextPartDek();
 	if (NextLineStartIndex <= LenT) {
 		textIndex = NextLineStartIndex;
-		DekodLine();
+		DekodLine(textIndex);
 		TextLineNr++;
 		if (bScroll) {
 			if (PageS > 1) MyWriteln();
@@ -1853,8 +1903,9 @@ void FillBlank()
 	KodLine();
 	I = LastPosLine();
 	if (Posi > I + 1) {
-		TestLenText(&T, LenT, textIndex + I, longint(textIndex) + Posi - 1);
-		FillChar(&T[textIndex + I], Posi - I - 1, 32); NextLineStartIndex += Posi - I - 1;
+		TestLenText(&T, LenT, textIndex + I, textIndex + Posi - 1);
+		FillChar(&T[textIndex + I], Posi - I - 1, 32);
+		NextLineStartIndex += Posi - I - 1;
 	}
 }
 
@@ -1888,7 +1939,7 @@ void DeleteL()
 		delete[] T;
 		T = newT;
 	}
-	DekodLine();
+	DekodLine(textIndex);
 }
 
 void NewLine(char Mode)
@@ -1924,7 +1975,7 @@ void NewLine(char Mode)
 	//T[LP] = _LF;
 	//if (Mode == 'm') { TextLineNr++; textIndex = LP + 2; }
 	if (Mode == 'm') { TextLineNr++; textIndex = LP + 1; }
-	DekodLine();
+	DekodLine(textIndex);
 }
 
 WORD SetPredI()
@@ -2175,10 +2226,12 @@ void SetBlockBound(longint& BBPos, longint& EBPos)
 {
 	SetPartLine(EndBLn);
 	integer i = EndBLn - Part.LineP;
-	EBPos = SetInd(T, LenT, FindLine(i), EndBPos) + Part.PosP;
+	size_t nextLineIdx = GetIndexOfFirstCharOnTheLine(T, LenT, i);
+	EBPos = SetInd(T, LenT, nextLineIdx, EndBPos) + Part.PosP;
 	SetPartLine(BegBLn);
 	i = BegBLn - Part.LineP;
-	BBPos = SetInd(T, LenT, FindLine(i), BegBPos) + Part.PosP;
+	nextLineIdx = GetIndexOfFirstCharOnTheLine(T, LenT, i);
+	BBPos = SetInd(T, LenT, nextLineIdx, BegBPos) + Part.PosP;
 }
 
 void ResetPrint(char Oper, longint& fs, FILE* W1, longint LenPrint, ColorOrd* co, WORD& I1, bool isPrintFile, CharArr* p)
@@ -2385,8 +2438,11 @@ void MovePart(WORD Ind)
 	WrEndT();
 	/* !!! with Part do!!! */
 	{
-		Part.MovI = CurrentLineFirstCharIndex(Ind) - 1; Part.MovL = SetLine(Part.MovI) - 1;
-		Part.LineP += Part.MovL; Part.PosP += Part.MovI; Part.LenP -= Part.MovI;
+		Part.MovI = CurrentLineFirstCharIndex(Ind) - 1;
+		Part.MovL = GetLine(Part.MovI) - 1;
+		Part.LineP += Part.MovL;
+		Part.PosP += Part.MovI;
+		Part.LenP -= Part.MovI;
 		SetColorOrd(Part.ColorP, 1, Part.MovI + 1);
 		TestLenText(&T, LenT, Part.MovI + 1, 1);
 		ChangePart = true;
@@ -2808,7 +2864,7 @@ bool WordFind(WORD i, WORD& WB, integer& WE, WORD& LI)
 	bool result = false;
 	if (i == 0) return result;
 	i = i * 2 - 1;
-	WORD k = FindCharPosition(T, LenT, 0x13, i); // Pascal index 1 .. N
+	WORD k = FindCharPosition(T, LenT, 0x13, i - 1);
 	if (k >= LenT) return result;
 	WB = k - 1;
 	k++;
@@ -2817,7 +2873,7 @@ bool WordFind(WORD i, WORD& WB, integer& WE, WORD& LI)
 	}
 	if (k >= LenT) return result;
 	WE = k;
-	LI = SetLine(WB) + 1;
+	LI = GetLine(WB) + 1;
 	result = true;
 	return result;
 }
@@ -3014,7 +3070,9 @@ void Edit(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys)
 	} while (!Konec);
 
 	if (bScroll && (Mode != HelpM)) {
-		Posi = BPos + 1; TextLineNr = ScreenFirstLineNr; textIndex = ScrI;
+		Posi = BPos + 1;
+		TextLineNr = ScreenFirstLineNr;
+		textIndex = ScrI;
 	}
 
 	IndexT = SetInd(T, LenT, textIndex, Posi);
