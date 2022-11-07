@@ -48,7 +48,7 @@ protected:
 private:
 	void RdWr(bool ReadOp, longint Pos, WORD N, void* X);
 	void GetMLen();
-	long eofPos;
+	long eofPos = 0;
 };
 typedef TFile* TFilePtr;
 

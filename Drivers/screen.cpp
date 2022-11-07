@@ -51,7 +51,7 @@ void Screen::ScrClr(WORD X, WORD Y, WORD SizeX, WORD SizeY, char C, BYTE Color)
 	DWORD written = 0;
 	CHAR_INFO* _buf = new CHAR_INFO[SizeX * SizeY];
 	COORD BufferSize = { (short)SizeX, (short)SizeY };
-	SMALL_RECT rect = { X - 1, Y - 1, X + SizeX, Y + SizeY };
+	SMALL_RECT rect = { (short)(X - 1), (short)(Y - 1), (short)(X + SizeX), (short)(Y + SizeY) };
 
 	CHAR_INFO ci; ci.Char.AsciiChar = C; ci.Attributes = Color;
 	for (int i = 0; i < SizeX * SizeY; i++) { _buf[i] = ci; }
@@ -62,7 +62,7 @@ void Screen::ScrClr(WORD X, WORD Y, WORD SizeX, WORD SizeY, char C, BYTE Color)
 
 void Screen::ScrWrChar(WORD X, WORD Y, char C, BYTE Color)
 {
-	SMALL_RECT rect = { X - 1, Y - 1, X, Y };
+	SMALL_RECT rect = { (short)(X - 1), (short)(Y - 1), (short)X, (short)Y };
 	CHAR_INFO ci; ci.Char.AsciiChar = C; ci.Attributes = Color;
 	WriteConsoleOutput(_handle, &ci, { 1, 1 }, { 0, 0 }, &rect);
 }
@@ -80,7 +80,7 @@ void Screen::ScrWrStr(WORD X, WORD Y, std::string S, BYTE Color)
 	short len = S.length();
 	CHAR_INFO* _buf = new CHAR_INFO[len];
 	COORD BufferSize = { len, 1 };
-	SMALL_RECT rect = { (short)X - 1, (short)Y - 1, (short)X + len - 1, (short)Y - 1 };
+	SMALL_RECT rect = { (short)(X - 1), (short)(Y - 1), (short)(X + len - 1), (short)(Y - 1) };
 
 	CHAR_INFO ci;
 	ci.Attributes = Color;
@@ -118,7 +118,7 @@ void Screen::ScrWrText(WORD X, WORD Y, const char* S)
 
 	// vycteme oblast do bufferu
 	auto buff = new CHAR_INFO[len];
-	SMALL_RECT XY = { (short)X - 1, (short)Y - 1, (short)X + len - 2, (short)Y - 1 };
+	SMALL_RECT XY = { (short)(X - 1), (short)(Y - 1), (short)(X + len - 2), (short)(Y - 1) };
 	ReadConsoleOutput(_handle, buff, { (short)len, 1 }, { 0, 0 }, &XY);
 	// vezme jednotlive znaky a "opravime je" ve vyctenem bufferu
 	for (size_t i = 0; i < len; i++) {
@@ -128,8 +128,12 @@ void Screen::ScrWrText(WORD X, WORD Y, const char* S)
 	WriteConsoleOutputA(_handle, buff, { (short)len, 1 }, { 0, 0 }, &XY);
 	//WriteConsoleOutputCharacterA(_handle, S, len, { (short)X - 1, (short)Y - 1 }, &written);
 	delete[] buff;
-	if (X + len > TxtCols) { GotoXY(1, Y + 1, absolute); }
-	else { GotoXY(X + len, Y, absolute); }
+	if (X + len > TxtCols) {
+		GotoXY(1, Y + 1, absolute);
+	}
+	else {
+		GotoXY(X + len, Y, absolute);
+	}
 }
 
 void Screen::ScrFormatWrText(WORD X, WORD Y, char const* const _Format, ...)
@@ -154,7 +158,7 @@ void Screen::ScrFormatWrStyledText(WORD X, WORD Y, BYTE Color, char const* const
 	vsnprintf(buffer, sizeof(buffer), _Format, args);
 	size_t len = strlen(buffer);
 	auto buff = new CHAR_INFO[len];
-	SMALL_RECT XY = { (short)X - 1, (short)Y - 1, (short)X + len - 1, (short)Y - 1 };
+	SMALL_RECT XY = { (short)(X - 1), (short)(Y - 1), (short)(X + len - 1), (short)(Y - 1) };
 	
 	for (size_t i = 0; i < len; i++) {
 		buff[i].Attributes = Color;
@@ -172,7 +176,7 @@ void Screen::ScrWrBuf(WORD X, WORD Y, void* Buf, WORD L)
 {
 	//X++; // v Pacalu to bylo od 1
 	//Y++; // --""--
-	SMALL_RECT XY = { (short)X, (short)Y, (short)X + L, (short)Y + 1 };
+	SMALL_RECT XY = { (short)X, (short)Y, (short)(X + L), (short)(Y + 1) };
 	COORD BufferSize = { (short)L, 1 };
 
 	// zkonvertujeme WORD do CHAR_INFO
@@ -192,14 +196,14 @@ void Screen::ScrWrCharInfoBuf(short X, short Y, CHAR_INFO* Buf, short L)
 {
 	//X++; // v Pacalu to bylo od 1
 	//Y++; // --""--
-	SMALL_RECT XY = { X - 1, Y - 1, (short)(X + L), (short)(Y + 1) };
+	SMALL_RECT XY = { (short)(X - 1), (short)(Y - 1), (short)(X + L), (short)(Y + 1) };
 	COORD BufferSize = { (short)L, 1 };
 	WriteConsoleOutputA(_handle, Buf, BufferSize, { 0, 0 }, &XY);
 }
 
 bool Screen::ScrRdBuf(WORD X, WORD Y, CHAR_INFO* Buf, WORD L)
 {
-	SMALL_RECT rect{ (short)X, (short)Y, (short)X + L - 1, (short)Y };
+	SMALL_RECT rect{ (short)X, (short)Y, (short)(X + L - 1), (short)Y };
 	COORD bufSize{ (short)(L), 1 };
 	//CHAR_INFO* buf = new CHAR_INFO[bufSize.X * bufSize.Y];
 	bool result = ReadConsoleOutput(_handle, Buf, bufSize, { 0, 0 }, &rect);
@@ -217,8 +221,8 @@ void Screen::ScrMove(short X, short Y, short ToX, short ToY, short L)
 		throw std::exception("Bad ScrMove index.");
 	if ((ToX < 0) || (ToX > MaxColsIndex) || (ToY < 0) || (ToY > MaxRowsIndex))
 		throw std::exception("Bad ScrMove index.");
-	SMALL_RECT rectFrom{ (short)X, (short)Y, (short)X + L, (short)Y };
-	SMALL_RECT rectTo{ (short)ToX, (short)ToY, (short)ToX + L, (short)ToY };
+	SMALL_RECT rectFrom{ (short)X, (short)Y, (short)(X + L), (short)Y };
+	SMALL_RECT rectTo{ (short)ToX, (short)ToY, (short)(ToX + L), (short)ToY };
 	COORD bufSize{ (short)L, 1 };
 	CHAR_INFO* buf = new CHAR_INFO[L * 1];
 	ReadConsoleOutput(_handle, buf, bufSize, { 0, 0 }, &rectFrom);
@@ -293,10 +297,10 @@ size_t Screen::WriteStyledStringToWindow(std::string text, BYTE Attr)
 		auto strLen = str.length();
 		// okenko bude mit jen 1 radek
 		SMALL_RECT rect = { 
-			WindMin->X + actualWindowCol - 2,			// oba parametry jsou cislovane od 1
-			WindMin->Y + actualWindowRow - 2,			// oba parametry jsou cislovane od 1
-			WindMax->X - 1,								// prava strana zustava stejna
-			WindMin->Y + actualWindowRow - 2,			// dolni strana stejna jako horni (jen 1 radek)
+			(short)(WindMin->X + actualWindowCol - 2),			// oba parametry jsou cislovane od 1
+			(short)(WindMin->Y + actualWindowRow - 2),			// oba parametry jsou cislovane od 1
+			(short)(WindMax->X - 1),								// prava strana zustava stejna
+			(short)(WindMin->Y + actualWindowRow - 2)			// dolni strana stejna jako horni (jen 1 radek)
 		};
 
 		size_t ctrlCharsCount = 0;
@@ -334,7 +338,7 @@ size_t Screen::WriteStyledStringToWindow(std::string text, BYTE Attr)
 			}
 			_buf[position] = ci;
 		}
-		COORD BufferSize = { strLen - ctrlCharsCount, 1 }; // pocet tisknutelnych znaku, 1 radek
+		COORD BufferSize = { (short)(strLen - ctrlCharsCount), 1 }; // pocet tisknutelnych znaku, 1 radek
 		WriteConsoleOutputA(_handle, _buf, BufferSize, { 0, 0 }, &rect);
 		totalChars += strLen - ctrlCharsCount;
 		// nastavime zacatek dalsiho radku, pokud se nejedna o posledni radek
@@ -618,7 +622,7 @@ void Screen::CrsGotoXY(WORD aX, WORD aY)
 
 int Screen::ScrPush1(WORD X, WORD Y, WORD SizeX, WORD SizeY, void* P)
 {
-	SMALL_RECT rect{ (short)X, (short)Y, (short)X + (short)SizeX, (short)Y + (short)SizeY };
+	SMALL_RECT rect{ (short)X, (short)Y, (short)(X + SizeX), (short)(Y + SizeY) };
 	// do ukazatele zøejmì uloží obsah videopamìti ...
 	ReadConsoleOutput(_handle, (CHAR_INFO*)P, { (short)SizeX, (short)SizeY }, { 0, 0 }, &rect);
 	return SizeX * SizeY;
@@ -645,7 +649,7 @@ int Screen::SaveScreen(WParam* wp, short c1, short r1, short c2, short r2)
 	r1--; r2--;
 
 	SMALL_RECT rect{ c1, r1, c2, r2 };
-	COORD bufSize{ (short)(c2 - c1 + 1), (short)r2 - r1 + 1 };
+	COORD bufSize{ (short)(c2 - c1 + 1), (short)(r2 - r1 + 1) };
 	CHAR_INFO* buf = new CHAR_INFO[bufSize.X * bufSize.Y];
 	ReadConsoleOutput(_handle, buf, bufSize, { 0, 0 }, &rect);
 	_windowStack.push({ wp, bufSize, rect, buf });
