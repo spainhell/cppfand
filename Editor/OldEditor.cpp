@@ -873,7 +873,7 @@ void WrEndT()
 	// vytvori nove pole o delce puvodniho + 1,
 	// puvodni pole se do nej prekopiruje a na konec se vlozi CR
 	LenT++;
-	char* T2 = new char[LenT];
+	char* T2 = new char[LenT + 1]{ 0 }; // udelame pole o 1 vetsi nez potrebujeme -> bude zakoncene '0'
 	memcpy(T2, T, LenT - 1);
 	T2[LenT - 1] = _CR;
 	delete[] T;
@@ -912,7 +912,7 @@ size_t CountChar(char* text, size_t text_len, char C, size_t first, size_t last)
 	else {
 		// out of index
 	}
-	return count == 0 ? 0 : count - 1;
+	return count;
 }
 
 /**
@@ -1118,7 +1118,11 @@ WORD Column(WORD p)
 
 }
 
-WORD LastPosLine()
+/**
+ * \brief Counts Arr Line length (without spaces on the end)
+ * \return Arr line length (0 .. 255)
+ */
+WORD GetArrLineLength()
 {
 	int LP = LineMaxSize;
 	while ((LP >= 0) && (Arr[LP] == ' ' || Arr[LP] == '\0')) {
@@ -1142,7 +1146,7 @@ void NextPart()
  * \param lineNr line number (1 .. N)
  * \return index of first char on the line (0 .. n), or text length if not found
  */
-size_t GetIndexOfFirstCharOnTheLine(char* text, size_t text_len, size_t lineNr)
+size_t GetLineStartIndex(size_t lineNr)
 {
 	// znacne zjednoduseno oproti originalu
 
@@ -1196,8 +1200,8 @@ size_t GetIndexOfFirstCharOnTheLine(char* text, size_t text_len, size_t lineNr)
 	}
 	else {
 		// hledame pozici za n-tym vyskytem _CR
-		size_t pos = FindCharPosition(text, text_len, _CR, 0, lineNr - 1) + 1;
-		if (pos < text_len && text[pos + 1] == _LF) {
+		size_t pos = FindCharPosition(T, LenT, _CR, 0, lineNr - 1) + 1;
+		if (pos < LenT && T[pos + 1] == _LF) {
 			pos++;
 		}
 		result = pos;
@@ -1234,7 +1238,7 @@ void DekFindLine(longint Num)
 {
 	SetPartLine(Num);
 	TextLineNr = Num - Part.LineP;
-	textIndex = GetIndexOfFirstCharOnTheLine(T, LenT, TextLineNr);
+	textIndex = GetLineStartIndex(TextLineNr);
 	DekodLine(textIndex);
 }
 
@@ -1288,7 +1292,7 @@ void UpdScreen()
 			ScrI = textIndex;
 		}
 		else {
-			ScrI = GetIndexOfFirstCharOnTheLine(T, LenT, ScreenFirstLineNr);
+			ScrI = GetLineStartIndex(ScreenFirstLineNr);
 		}
 
 		if (HelpScroll) {
@@ -1347,7 +1351,7 @@ void UpdScreen()
 				goto label1;
 			}
 		}
-		if (!bScroll && (index == textIndex - 1)) {
+		if (!bScroll && (index == textIndex)) {
 			index = NextLineStartIndex;
 			co2 = co1;
 			goto label1;
@@ -1436,7 +1440,7 @@ void Background()
 
 void KodLine()
 {
-	WORD LP = LastPosLine() + 1; // position behind last char on the line (counted from 1)
+	WORD LP = GetArrLineLength() + 1; // position behind last char on the line (counted from 1)
 	if (HardL) LP++;
 
 	// create vector of strings from T
@@ -1444,7 +1448,6 @@ void KodLine()
 	allLines[TextLineNr - 1] = std::string(Arr, HardL ? LP - 2 : LP - 1);
 
 	TestLenText(&T, LenT, NextLineStartIndex, textIndex + LP);
-	// Move(Arr, &T[textIndex - 1], LP);
 
 	// create T back from vector
 	char* newT = GetT(allLines, LenT, HardL);
@@ -1453,13 +1456,7 @@ void KodLine()
 
 	NextLineStartIndex = textIndex + LP;
 	LP = NextLineStartIndex - 1;
-	//if (HardL) {
-	//	T[LP - 2] = _CR;
-	//	T[LP - 1] = _LF;
-	//}
-	//else {
-	//	T[LP - 1] = _CR;
-	//}
+
 	UpdatedL = false;
 }
 
@@ -1543,38 +1540,6 @@ void DisplLL(WORD Flags)
 //	DelLine();
 //}
 
-void PredLine()
-{
-	//WORD mi, ml;
-	TestKod();
-	if ((TextLineNr == 1) && (Part.PosP > 0)) PredPart();
-	if (TextLineNr > 1) {
-		if (T[textIndex - 1 - 1] == _LF) {
-			CopyCurrentLineToArr(textIndex - 2);
-		}
-		else {
-			CopyCurrentLineToArr(textIndex - 1);
-		}
-		TextLineNr--;
-		if (TextLineNr < ScreenFirstLineNr) {
-			screen.GotoXY(1, 1);
-			//MyInsLine();
-			ScreenFirstLineNr--;
-			ChangeScr = true;
-			if (bScroll) {
-				/*dec(RLineL);*/
-				RScrL--;
-				/*if (ModPage(RLineL))*/
-				if (ModPage(RScrL)) {
-					screen.GotoXY(1, 1);
-					//MyInsLine();/*dec(RLineL);*/
-					RScrL--;
-				}
-			}
-		}
-	}
-}
-
 void RollNext()
 {
 	if ((NextLineStartIndex >= LenT) && !AllRd) NextPartDek();
@@ -1641,9 +1606,44 @@ void MyWriteln()
 	printf("\n");
 }
 
+void PreviousLine()
+{
+	//WORD mi, ml;
+	TestKod();
+	if ((TextLineNr == 1) && (Part.PosP > 0)) PredPart();
+	if (TextLineNr > 1) {
+		TextLineNr--;
+		textIndex = GetLineStartIndex(TextLineNr);
+		CopyCurrentLineToArr(textIndex);
+		//if (T[textIndex - 1] == _LF) {
+		//	size_t line 
+		//	CopyCurrentLineToArr(textIndex - 3);
+		//}
+		//else {
+		//	CopyCurrentLineToArr(textIndex - 2);
+		//}
+		//TextLineNr--;
+		if (TextLineNr < ScreenFirstLineNr) {
+			screen.GotoXY(1, 1);
+			//MyInsLine();
+			ScreenFirstLineNr--;
+			ChangeScr = true;
+			if (bScroll) {
+				/*dec(RLineL);*/
+				RScrL--;
+				/*if (ModPage(RLineL))*/
+				if (ModPage(RScrL)) {
+					screen.GotoXY(1, 1);
+					//MyInsLine();/*dec(RLineL);*/
+					RScrL--;
+				}
+			}
+		}
+	}
+}
+
 void NextLine(bool WrScr)
 {
-	bool b;
 	TestKod();
 	if ((NextLineStartIndex >= LenT) && !AllRd) NextPartDek();
 	if (NextLineStartIndex <= LenT) {
@@ -1735,7 +1735,7 @@ void Frame(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys)
 				switch (Event.Pressed.KeyCombination()) {
 				case __LEFT: { if (Posi > 1) Posi--; break; }
 				case __RIGHT: { if (Posi < LineMaxSize) Posi++; break; }
-				case __UP: { PredLine(); break; }
+				case __UP: { PreviousLine(); break; }
 				case __DOWN: { NextLine(true); break; }
 				default: {};
 				}
@@ -1842,7 +1842,7 @@ void FrameStep(BYTE& odir, WORD EvKeyC)
 			break;
 		}
 		case __UP: {
-			PredLine();
+			PreviousLine();
 			break;
 		}
 		case __DOWN: {
@@ -1861,12 +1861,12 @@ void MoveB(WORD& B, WORD& F, WORD& T)
 {
 	if (F <= T) { if (B > F) B += T - F; }
 	else if (B >= F) B -= F - T;
-	else if (B > T) B = T; B = MinW(B, LastPosLine() + 1);
+	else if (B > T) B = T; B = MinW(B, GetArrLineLength() + 1);
 }
 
 bool TestLastPos(WORD F, WORD T)
 {
-	WORD LP = LastPosLine();
+	WORD LP = GetArrLineLength();
 	if (F > LP) F = LP + 1;
 	if (LP + T - F <= LineMaxSize) {
 		if (LP >= F) {
@@ -1899,9 +1899,8 @@ void DelChar()
 
 void FillBlank()
 {
-	WORD I;
 	KodLine();
-	I = LastPosLine();
+	WORD I = GetArrLineLength();
 	if (Posi > I + 1) {
 		TestLenText(&T, LenT, textIndex + I, textIndex + Posi - 1);
 		FillChar(&T[textIndex + I], Posi - I - 1, 32);
@@ -1911,25 +1910,24 @@ void FillBlank()
 
 void DeleteL()
 {
-	bool B;
 	FillBlank();
 	if (LineAbs(TextLineNr) + 1 <= BegBLn)
 	{
 		BegBLn--;
 		if ((LineAbs(TextLineNr) == BegBLn) && (TypeB == TextBlock))
-			BegBPos += LastPosLine();
+			BegBPos += GetArrLineLength();
 	}
 	if (LineAbs(TextLineNr) + 1 <= EndBLn)
 	{
 		EndBLn--;
 		if ((LineAbs(TextLineNr) == EndBLn) && (TypeB == TextBlock))
-			EndBPos += LastPosLine();
+			EndBPos += GetArrLineLength();
 	}
 	if ((NextLineStartIndex >= LenT) && !AllRd) NextPartDek();
 	if (NextLineStartIndex <= LenT) {
 		// if BACKSPACE was pressed we will delete line below cursor (which was already moved)
-		int index = (Event.Pressed.Char == '\b') ? 0 : -1;
-		index += TextLineNr;
+		//int index = (Event.Pressed.Char == '\b') ? 0 : -1;
+		int index = TextLineNr - 1;
 		if (index < 0) return;
 		// if (T[NextLineStartIndex - 1] == _LF) { TestLenText(&T, LenT, NextLineStartIndex, NextLineStartIndex - 2); }
 		// else { TestLenText(&T, LenT, NextLineStartIndex, NextLineStartIndex - 1); }
@@ -1945,7 +1943,7 @@ void DeleteL()
 void NewLine(char Mode)
 {
 	KodLine();
-	WORD LP = textIndex + MinI(LastPosLine(), Posi - 1);
+	WORD LP = textIndex + MinI(GetArrLineLength(), Posi - 1);
 	NullChangePart();
 
 	auto lines = GetLinesFromT();
@@ -2160,12 +2158,12 @@ void Calculate()
 		if ((Event.Pressed.KeyCombination() == __ESC) || (txt.length() == 0)) goto label3;
 		CalcTxt = txt;
 		if ((Event.Pressed.KeyCombination() == __CTRL_F4) && (Mode == TextM) && !bScroll) {
-			if (txt.length() > LineMaxSize - LastPosLine()) {
-				I = LineMaxSize - LastPosLine();
+			if (txt.length() > LineMaxSize - GetArrLineLength()) {
+				I = LineMaxSize - GetArrLineLength();
 				WrLLF10Msg(419);
 				goto label1;
 			}
-			if (Posi <= LastPosLine()) TestLastPos(Posi, Posi + txt.length());
+			if (Posi <= GetArrLineLength()) TestLastPos(Posi, Posi + txt.length());
 			memcpy(&Arr[Posi], txt.c_str(), txt.length());
 			UpdatedL = true;
 			goto label3;
@@ -2226,11 +2224,11 @@ void SetBlockBound(longint& BBPos, longint& EBPos)
 {
 	SetPartLine(EndBLn);
 	integer i = EndBLn - Part.LineP;
-	size_t nextLineIdx = GetIndexOfFirstCharOnTheLine(T, LenT, i);
+	size_t nextLineIdx = GetLineStartIndex(i);
 	EBPos = SetInd(T, LenT, nextLineIdx, EndBPos) + Part.PosP;
 	SetPartLine(BegBLn);
 	i = BegBLn - Part.LineP;
-	nextLineIdx = GetIndexOfFirstCharOnTheLine(T, LenT, i);
+	nextLineIdx = GetLineStartIndex(i);
 	BBPos = SetInd(T, LenT, nextLineIdx, BegBPos) + Part.PosP;
 }
 
@@ -2533,7 +2531,7 @@ bool BlockCGrasp(char Oper, void* P1, LongStr* sp)
 
 void InsertLine(WORD& i, WORD& I1, WORD& I3, WORD& ww, LongStr* sp)
 {
-	i = MinW(I1 - I3, LineMaxSize - LastPosLine());
+	i = MinW(I1 - I3, LineMaxSize - GetArrLineLength());
 	if (i > 0) {
 		TestLastPos(ww, ww + i);
 		Move(&sp->A[I3], &Arr[ww], i);
@@ -2975,7 +2973,7 @@ void CursorWord()
 	}
 	while ((pp > 0) && !O.count(Arr[pp])) { pp--; }
 	pp++;
-	while ((pp <= LastPosLine()) && !O.count(Arr[pp])) {
+	while ((pp <= GetArrLineLength()) && !O.count(Arr[pp])) {
 		LexWord = LexWord + Arr[pp];
 		pp++;
 	}

@@ -556,9 +556,11 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 					HelpLU('U');
 				}
 				else {
-					if (bScroll) if (RScrL == 1) goto Nic;
+					if (bScroll) {
+						if (RScrL == 1) goto Nic;
+					}
 					L1 = LineAbs(TextLineNr);
-					PredLine();
+					PreviousLine();
 					BlockUDShift(L1);
 					if (bScroll) Posi = Position(Colu);
 				}
@@ -606,7 +608,7 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 				}
 				ChangeScr = true;
 				if (Mode == HelpM) {
-					ScrI = GetIndexOfFirstCharOnTheLine(T, LenT, ScreenFirstLineNr);
+					ScrI = GetLineStartIndex(ScreenFirstLineNr);
 					Posi = Position(Colu);
 					if (WordFind(WordNo2() + 1, I1, I2, WordL) && WordExist()) {
 						SetWord(I1, I2);
@@ -635,7 +637,7 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 				}
 				ChangeScr = true;
 				if (Mode == HelpM) {
-					ScrI = GetIndexOfFirstCharOnTheLine(T, LenT, ScreenFirstLineNr);
+					ScrI = GetLineStartIndex(ScreenFirstLineNr);
 					Posi = Position(Colu); W1 = WordNo2(); I3 = WordL;
 					if (WordFind(W1 + 1, I1, I2, WordL) && WordExist()) { SetWord(I1, I2); }
 					else if (WordFind(W1, I1, I2, WordL) && WordExist()) { SetWord(I1, I2); }
@@ -648,8 +650,9 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 				do {
 					Posi--;
 					if (Posi == 0) {
-						I = textIndex; PredLine();
-						if ((I > 1) || ChangePart) Posi = LastPosLine();
+						I = textIndex;
+						PreviousLine();
+						if ((I > 1) || ChangePart) Posi = GetArrLineLength();
 						goto label1;
 					}
 				} while (Separ.count(Arr[Posi]) > 0);
@@ -666,12 +669,12 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 			{
 				while (!(Separ.count(Arr[Posi]) > 0))
 				{
-					Posi++; if (Posi > LastPosLine()) goto label2;
+					Posi++; if (Posi > GetArrLineLength()) goto label2;
 				}
 				while (Separ.count(Arr[Posi]) > 0)
 				{
 					Posi++;
-					I = LastPosLine();
+					I = GetArrLineLength();
 					if (Posi > I)
 						if ((NextLineStartIndex <= LenT) && ((I == 0) || (Posi > I + 1)))
 						{
@@ -697,7 +700,7 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 			}
 			case __END: {
 				I1 = Posi;
-				Posi = LastPosLine();
+				Posi = GetArrLineLength();
 				if (Posi < LineMaxSize) Posi++;
 				BlockLRShift(I1);
 				break;
@@ -747,8 +750,12 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 			case __INSERT: { Insert = !Insert; break; }
 			case __DELETE:
 			case _G_: {
-				if (Posi <= LastPosLine()) DelChar();
-				else DeleteL();
+				if (Posi <= GetArrLineLength()) {
+					DelChar();
+				}
+				else {
+					DeleteL();
+				}
 				break;
 			}
 			case __BACK: {
@@ -758,9 +765,9 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 					if (textIndex > 1) {
 						TestKod();
 						TextLineNr--;
-						if (T[textIndex - 1] == _LF) CopyCurrentLineToArr(textIndex - 2);
-						else CopyCurrentLineToArr(textIndex - 1);
-						Posi = MinW(255, succ(LastPosLine()));
+						textIndex = GetLineStartIndex(TextLineNr);
+						CopyCurrentLineToArr(textIndex);
+						Posi = MinW(255, succ(GetArrLineLength()));
 						DeleteL();
 						if (TextLineNr < ScreenFirstLineNr) {
 							ScreenFirstLineNr--;
@@ -785,19 +792,19 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 				break;
 			}
 			case _T_: {
-				if (Posi > LastPosLine()) { DeleteL(); }
+				if (Posi > GetArrLineLength()) { DeleteL(); }
 				else {
 					I = Posi;
 					if (Separ.count(Arr[Posi]) > 0) DelChar();
-					else while ((I <= LastPosLine()) && !(Separ.count(Arr[Posi]) > 0)) { I++; }
-					while ((I <= LastPosLine()) && (Arr[I] == ' ')) { I++; }
+					else while ((I <= GetArrLineLength()) && !(Separ.count(Arr[Posi]) > 0)) { I++; }
+					while ((I <= GetArrLineLength()) && (Arr[I] == ' ')) { I++; }
 					// TODO: k èemu to tady je? if ((I>Posi) and TestLastPos(I,Posi))
 				}
 				break;
 			}
 			case _QI_: { Indent = !Indent; break; }
 			case _QL_: { if (UpdatedL) DekodLine(textIndex); break; }
-			case _QY_: {if (TestLastPos(LastPosLine() + 1, Posi)) ClrEol(); break; }
+			case _QY_: {if (TestLastPos(GetArrLineLength() + 1, Posi)) ClrEol(); break; }
 			case _QF_:
 			case _QA_: {
 				Replace = false;
@@ -863,15 +870,15 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 			}
 			case _QB_: {
 				TestKod();
-				PosDekFindLine(BegBLn, MinW(LastPosLine() + 1, BegBPos), false); break; }
+				PosDekFindLine(BegBLn, MinW(GetArrLineLength() + 1, BegBPos), false); break; }
 			case _QK_: {
 				TestKod();
-				PosDekFindLine(EndBLn, MinW(LastPosLine() + 1, EndBPos), false); break; }
+				PosDekFindLine(EndBLn, MinW(GetArrLineLength() + 1, EndBPos), false); break; }
 			case _KB_:
 			case __F7:
 			case _KH_: {
 				BegBLn = LineAbs(TextLineNr);
-				if (TypeB == TextBlock) BegBPos = MinI(LastPosLine() + 1, Posi);
+				if (TypeB == TextBlock) BegBPos = MinI(GetArrLineLength() + 1, Posi);
 				else BegBPos = Posi;
 				if (key == _KH_) goto OznB;
 				break;
@@ -880,7 +887,7 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 			case __F8: {
 			OznB:
 				EndBLn = LineAbs(TextLineNr);
-				if (TypeB == TextBlock) EndBPos = MinI(LastPosLine() + 1, Posi);
+				if (TypeB == TextBlock) EndBPos = MinI(GetArrLineLength() + 1, Posi);
 				else EndBPos = Posi;
 				break;
 			}
@@ -1005,12 +1012,12 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 					TestKod(); screen.CrsHide();
 					SetPartLine(EndBLn);
 					I2 = EndBLn - Part.LineP;
-					size_t nextLineIdx = GetIndexOfFirstCharOnTheLine(T, LenT, I2);
+					size_t nextLineIdx = GetLineStartIndex(I2);
 					L1 = SetInd(T, LenT, nextLineIdx, EndBPos) + Part.PosP;
 					L2 = BegBLn; Posi = BegBPos;
 					SetPartLine(L2);
 					I2 = BegBLn - Part.LineP;
-					nextLineIdx = GetIndexOfFirstCharOnTheLine(T, LenT, I2);
+					nextLineIdx = GetLineStartIndex(I2);
 					Format(I, nextLineIdx + Part.PosP, L1, BegBPos, true);
 					DekFindLine(L2);
 					if (!bScroll) screen.CrsShow();
@@ -1052,8 +1059,8 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 			}
 			case _OC_: {
 				I1 = 1;
-				while ((I1 < LastPosLine()) && (Arr[I1] == ' ')) { I1++; }
-				I2 = LastPosLine();
+				while ((I1 < GetArrLineLength()) && (Arr[I1] == ' ')) { I1++; }
+				I2 = GetArrLineLength();
 				while ((I2 > 1) && (Arr[I2] == ' ')) { I2--; }
 				j = (LeftMarg + (RightMarg - LeftMarg) / 2) - int(I1 + (I2 - I1) / 2);
 				if ((I2 < I1) || (j == 0)) goto Nic;
@@ -1064,7 +1071,7 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 					j = MinI(-j, I1 - 1);
 					TestLastPos(j + 1, 1);
 				}
-				Posi = MinW(LineMaxSize, LastPosLine() + 1);
+				Posi = MinW(LineMaxSize, GetArrLineLength() + 1);
 				break;
 			}
 			case _B_: {
