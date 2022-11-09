@@ -116,15 +116,19 @@ WORD WordNo(WORD I);
 
 
 typedef std::string ColorOrd;
-struct PartDescr
-{
-	longint PosP = 0; longint LineP = 0;
-	WORD LenP = 0, MovI = 0, MovL = 0;
-	bool UpdP = false;
-	ColorOrd ColorP;
-};
+
+//struct PartDescr
+//{
+//	longint PosP = 0; longint LineP = 0;
+//	WORD LenP = 0, MovI = 0, MovL = 0;
+//	bool UpdP = false;
+//	ColorOrd ColorP;
+//};
+
 const int SuccLineSize = 256;
-extern PartDescr Part;
+
+//extern PartDescr Part;
+
 extern size_t LenT;
 extern char Arr[SuccLineSize];
 extern char* T;

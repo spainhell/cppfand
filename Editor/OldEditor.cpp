@@ -24,7 +24,7 @@ bool Insert, Indent, Wrap, Just;
 
 // PROMENNE
 bool InsPage;
-PartDescr Part;
+//PartDescr Part;
 
 struct Character {
 	char ch = 0;
@@ -124,7 +124,7 @@ std::vector<std::string> GetLinesFromT()
 {
 	// create string from T
 	std::string text(T, LenT);
-	return GetAllLines(text, 0, true);
+	return GetAllLines(text, 0, false);
 }
 
 char* GetT(std::vector<std::string>& lines, size_t& len, bool hardL)
@@ -405,60 +405,61 @@ void FirstLine(WORD from, WORD num, WORD& Ind, WORD& Count)
 	if ((Count > 0) && (T[Ind + 1] == _LF)) Ind++;
 }
 
-bool RdPredPart()
-{
-	CharArr* ppa;
-	WORD L1, L11, MI;
-	longint BL, FSize, Rest, Max, Pos;
-	WORD Pass;
-	Max = MinL(MaxLenT, StoreAvail() + LenT);
-	Pass = Max - (Max >> 3);
-	Part.MovL = 0; MI = 0;
-	auto result = false;
-	if (Part.PosP == 0) return result;
-	Pos = Part.PosP; BL = Part.LineP;
-	if (LenT <= (Pass >> 1)) goto label1;
-	FirstLine(LenT + 1, LenT - (Pass >> 1), L1, L11);
-	if (L1 < LenT) {
-		AllRd = false;
-		LenT = L1;
-		ReleaseStore(&T[LenT + 1]);
-	}
-
-label1:
-	L11 = LenT;
-	do {
-		if (Pos > 0x1000) L1 = 0x1000;
-		else L1 = Pos;
-		Max = StoreAvail();
-		if (Max > 0x400) Max -= 0x400;
-		if (L1 > Max) L1 = Max;
-		ppa = (CharArr*)GetStore(L1);
-		Move(&T[0], &T[L1 + 1], LenT);
-		if (L1 > 0)
-		{
-			SeekH(TxtFH, Pos - L1); ReadH(TxtFH, L1, T);
-		}
-		LenT += L1; Pos -= L1;
-	} while (!((LenT > Pass) || (Pos == 0) || (L1 == Max)));
-
-	L11 = LenT - L11; FirstLine(L11 + 1, L11, MI, Part.MovL);
-	if (Pos == 0) MI = L11;
-	else if (Part.MovL > 0) { Part.MovL--; MI = L11 - MI; }
-	L1 = L11 - MI; LenT -= L1; Pos += L1;
-	if (L1 > 0)
-	{
-		Move(&T[L1 + 1], T, LenT);
-		ReleaseStore(&T[LenT + 1]);
-	}
-	/* !!! with Part do!!! */
-	Part.PosP = Pos; Part.LineP = BL - Part.MovL; Part.LenP = LenT;
-	Part.MovI = MI; Part.UpdP = false;
-	SetColorOrd(Part.ColorP, 1, MI + 1);
-	if ((LenT == 0)) return result;  /*????????*/
-	result = true;
-	return result;
-}
+//bool RdPredPart()
+//{
+//	CharArr* ppa;
+//	WORD L1, L11, MI;
+//	longint BL, FSize, Rest, Max, Pos;
+//	WORD Pass;
+//	Max = MinL(MaxLenT, StoreAvail() + LenT);
+//	Pass = Max - (Max >> 3);
+//	Part.MovL = 0;
+//	MI = 0;
+//	auto result = false;
+//	if (Part.PosP == 0) return result;
+//	Pos = Part.PosP; BL = Part.LineP;
+//	if (LenT <= (Pass >> 1)) goto label1;
+//	FirstLine(LenT + 1, LenT - (Pass >> 1), L1, L11);
+//	if (L1 < LenT) {
+//		AllRd = false;
+//		LenT = L1;
+//		ReleaseStore(&T[LenT + 1]);
+//	}
+//
+//label1:
+//	L11 = LenT;
+//	do {
+//		if (Pos > 0x1000) L1 = 0x1000;
+//		else L1 = Pos;
+//		Max = StoreAvail();
+//		if (Max > 0x400) Max -= 0x400;
+//		if (L1 > Max) L1 = Max;
+//		ppa = (CharArr*)GetStore(L1);
+//		Move(&T[0], &T[L1 + 1], LenT);
+//		if (L1 > 0)
+//		{
+//			SeekH(TxtFH, Pos - L1); ReadH(TxtFH, L1, T);
+//		}
+//		LenT += L1; Pos -= L1;
+//	} while (!((LenT > Pass) || (Pos == 0) || (L1 == Max)));
+//
+//	L11 = LenT - L11; FirstLine(L11 + 1, L11, MI, Part.MovL);
+//	if (Pos == 0) MI = L11;
+//	else if (Part.MovL > 0) { Part.MovL--; MI = L11 - MI; }
+//	L1 = L11 - MI; LenT -= L1; Pos += L1;
+//	if (L1 > 0)
+//	{
+//		Move(&T[L1 + 1], T, LenT);
+//		ReleaseStore(&T[LenT + 1]);
+//	}
+//	/* !!! with Part do!!! */
+//	Part.PosP = Pos; Part.LineP = BL - Part.MovL; Part.LenP = LenT;
+//	Part.MovI = MI; Part.UpdP = false;
+//	SetColorOrd(Part.ColorP, 1, MI + 1);
+//	if ((LenT == 0)) return result;  /*????????*/
+//	result = true;
+//	return result;
+//}
 
 void UpdateFile()
 {
@@ -477,24 +478,26 @@ void UpdateFile()
 	}
 }
 
-void RdPart()
-{
-	LenT = Part.LenP;
-	//T = (CharArr*)GetStore(LenT);
-	if (LenT == 0) return;
-	SeekH(TxtFH, Part.PosP);
-	ReadH(TxtFH, LenT, T);
-}
+//void RdPart()
+//{
+//	LenT = Part.LenP;
+//	//T = (CharArr*)GetStore(LenT);
+//	if (LenT == 0) return;
+//	SeekH(TxtFH, Part.PosP);
+//	ReadH(TxtFH, LenT, T);
+//}
 
 void NullChangePart()
 {
-	ChangePart = false; Part.MovI = 0; Part.MovL = 0;
+	ChangePart = false;
+	/*Part.MovI = 0;
+	Part.MovL = 0*/;
 }
 
 void RdFirstPart()
 {
 	NullChangePart();
-	Part.PosP = 0; Part.LineP = 0; Part.LenP = 0; Part.ColorP = "";
+	// Part.PosP = 0; Part.LineP = 0; Part.LenP = 0; Part.ColorP = "";
 	AllRd = false;
 	ChangePart = RdNextPart();
 }
@@ -631,7 +634,7 @@ void UpdStatLine(int Row, int Col, char mode)
 	char StatLine[] = "                                   ";
 
 	if (!HelpScroll) {
-		longint lRow = Row + Part.LineP;
+		longint lRow = Row; // +Part.LineP;
 		snprintf(RowCol, sizeof(RowCol), "%5i:%-5i", lRow, Col);
 		memcpy(&StatLine[1], RowCol, 11); // 11 znaku ve format 'RRRRR:CCCCC'
 		switch (mode) { // uses parameter 'mode', not global variable 'Mode'
@@ -667,7 +670,7 @@ void UpdStatLine(int Row, int Col, char mode)
 
 longint LineAbs(int Ln)
 {
-	longint result = Part.LineP + Ln;
+	longint result = Ln; // Part.LineP + Ln;
 	if (Ln < 1) {
 		result = 1;
 	}
@@ -867,7 +870,7 @@ void DelEndT()
 void TestUpdFile()
 {
 	DelEndT();
-	if (Part.UpdP) { UpdateFile(); }
+	//if (Part.UpdP) { UpdateFile(); }
 }
 
 void WrEndT()
@@ -884,8 +887,8 @@ void WrEndT()
 
 void MoveIdx(int dir)
 {
-	WORD mi = -dir * Part.MovI;
-	WORD ml = -dir * Part.MovL;
+	WORD mi = -dir; // *Part.MovI;
+	WORD ml = -dir; // *Part.MovL;
 	ScrI += mi; textIndex += mi; // {****GLOBAL***}
 	NextLineStartIndex += mi;
 	TextLineNr += ml;
@@ -895,7 +898,7 @@ void MoveIdx(int dir)
 void PredPart()
 {
 	TestUpdFile();
-	ChangePart = RdPredPart();
+	//ChangePart = RdPredPart();
 	MoveIdx(-1);
 	WrEndT();
 }
@@ -976,12 +979,11 @@ void SmallerPart(WORD Ind, WORD FreeSize)
 		if (LenT - il < lon) { i = Ind; i++; }
 	}
 
-	if (il > 0)
-	{
+	if (il > 0)	{
 		// with Part do:
-		Part.PosP += il; Part.LineP += l;
-		Part.MovI = il; Part.MovL = l;
-		SetColorOrd(Part.ColorP, 1, Part.MovI + 1);
+		//Part.PosP += il; Part.LineP += l;
+		//Part.MovI = il; Part.MovL = l;
+		//SetColorOrd(Part.ColorP, 1, Part.MovI + 1);
 		// end
 
 		LenT -= il;
@@ -993,8 +995,11 @@ void SmallerPart(WORD Ind, WORD FreeSize)
 	}
 
 	Ind -= il;
-	if (LenT < lon) { return; }
-	i = LenT; il = LenT;
+	if (LenT < lon)	{
+		return;
+	}
+	i = LenT;
+	il = LenT;
 	while (i > Ind) {
 		if (T[i] == _CR) {
 			il = i;
@@ -1006,7 +1011,7 @@ void SmallerPart(WORD Ind, WORD FreeSize)
 	if (il < LenT)
 	{
 		if (il < LenT - 1) { AllRd = false; }
-		Part.LenP = il;
+		//Part.LenP = il;
 		LenT = il + 1;
 		T[LenT] = _CR;
 		ReleaseStore(&T[LenT + 1]);
@@ -1016,12 +1021,12 @@ void SmallerPart(WORD Ind, WORD FreeSize)
 void SetUpdat()
 {
 	UpdatT = true;
-	if (TypeT == FileT) {
-		if (Part.PosP < 0x400) {
-			UpdPHead = true;
-			Part.UpdP = true;
-		}
-	}
+	//if (TypeT == FileT) {
+	//	if (Part.PosP < 0x400) {
+	//		UpdPHead = true;
+	//		Part.UpdP = true;
+	//	}
+	//}
 }
 
 void TestLenText(char** text, size_t& textLength, size_t F, size_t LL)
@@ -1051,7 +1056,7 @@ void DekodLine(size_t lineStartIndex)
 				WORD LL = lineStartIndex + LineMaxSize;
 				NullChangePart();
 				TestLenText(&T, LenT, LL, (longint)LL + 1);
-				LL -= Part.MovI;
+				//LL -= Part.MovI;
 				T[LL] = _CR;
 				NextLineStartIndex = lineStartIndex + lineLen + 1;
 			}
@@ -1213,33 +1218,33 @@ size_t GetLineStartIndex(size_t lineNr)
 
 void SetPart(longint Idx)
 {
-	if ((Idx > Part.PosP) && (Idx < Part.PosP + LenT) || (TypeT != FileT)) {
-		return;
-	}
+	//if ((Idx > Part.PosP) && (Idx < Part.PosP + LenT) || (TypeT != FileT)) {
+	//	return;
+	//}
 	TestUpdFile();
 	ReleaseStore(T);
 	RdFirstPart();
-	while ((Idx > Part.PosP + Part.LenP) && !AllRd)
-	{
-		ChangePart = RdNextPart();
-	}
+	//while ((Idx > Part.PosP + Part.LenP) && !AllRd)
+	//{
+	//	ChangePart = RdNextPart();
+	//}
 	WrEndT();
 }
 
 void SetPartLine(longint Ln)
 {
-	while ((Ln <= Part.LineP) && (Part.PosP > 0)) {
-		PredPart();
-	}
-	while ((Ln - Part.LineP > 0x7FFF) && !AllRd) {
-		NextPart();
-	}
+	//while ((Ln <= Part.LineP) && (Part.PosP > 0)) {
+	//	PredPart();
+	//}
+	//while ((Ln - Part.LineP > 0x7FFF) && !AllRd) {
+	//	NextPart();
+	//}
 }
 
 void DekFindLine(longint Num)
 {
 	SetPartLine(Num);
-	TextLineNr = Num - Part.LineP;
+	TextLineNr = Num; // -Part.LineP;
 	textIndex = GetLineStartIndex(TextLineNr);
 	DekodLine(textIndex);
 }
@@ -1298,7 +1303,7 @@ void UpdScreen()
 		}
 
 		if (HelpScroll) {
-			ColScr = Part.ColorP;
+			//ColScr = Part.ColorP;
 			SetColorOrd(ColScr, 1, ScrI);
 		}
 	}
@@ -1314,7 +1319,7 @@ void UpdScreen()
 		ScrollWrline(&Arr[r], 1, co1);
 	}
 	else if (Mode == HelpM) {
-		co1 = Part.ColorP;
+		//co1 = Part.ColorP;
 		SetColorOrd(co1, 1, textIndex);
 		ScrollWrline(Arr, TextLineNr - ScreenFirstLineNr + 2, co1);
 	}
@@ -1341,7 +1346,7 @@ void UpdScreen()
 		if (MyTestEvent()) return; // {tisk celeho okna}
 		if ((index >= LenT) && !AllRd) {
 			NextPartDek();
-			index -= Part.MovI;
+			//index -= Part.MovI;
 		}
 
 		if (bScroll && (index < LenT)) {
@@ -1474,7 +1479,7 @@ longint NewRL(int Line)
 
 int NewL(longint RLine)
 {
-	return RLine - Part.LineP;
+	return RLine; // -Part.LineP;
 }
 
 void ScrollPress()
@@ -1505,7 +1510,7 @@ void ScrollPress()
 			if (L1 != LineAbs(ScreenFirstLineNr)) ChangeScr = true; // { DekodLine; }
 			BCol = Column(BPos);
 			Colu = Column(positionOnActualLine);
-			ColScr = Part.ColorP;
+			//ColScr = Part.ColorP;
 			SetColorOrd(ColScr, 1, ScrI);
 		}
 		else {
@@ -1561,7 +1566,7 @@ void RollNext()
 
 void RollPred()
 {
-	if ((ScreenFirstLineNr == 1) && (Part.PosP > 0)) PredPart();
+	//if ((ScreenFirstLineNr == 1) && (Part.PosP > 0)) PredPart();
 	if (ScreenFirstLineNr > 1) {
 		screen.GotoXY(1, 1);
 		//MyInsLine();
@@ -1612,7 +1617,7 @@ void PreviousLine()
 {
 	//WORD mi, ml;
 	TestKod();
-	if ((TextLineNr == 1) && (Part.PosP > 0)) PredPart();
+	//if ((TextLineNr == 1) && (Part.PosP > 0)) PredPart();
 	if (TextLineNr > 1) {
 		TextLineNr--;
 		textIndex = GetLineStartIndex(TextLineNr);
@@ -1997,7 +2002,7 @@ void NewLine(char Mode)
 
 WORD SetPredI()
 {
-	if ((TextLineNr == 1) && (Part.PosP > 0)) PredPart();
+	//if ((TextLineNr == 1) && (Part.PosP > 0)) PredPart();
 	if (textIndex <= 1) return textIndex;
 	else if (T[textIndex - 1] == _LF) return CurrentLineFirstCharIndex(textIndex - 2);
 	else return CurrentLineFirstCharIndex(textIndex - 1);
@@ -2032,8 +2037,8 @@ void Format(WORD& i, longint First, longint Last, WORD Posit, bool Rep)
 	WORD RelPos;
 
 	SetPart(First);
-	WORD fst = First - Part.PosP;
-	longint llst = Last - Part.PosP;
+	WORD fst = First; // -Part.PosP;
+	longint llst = Last; // -Part.PosP;
 	if (llst > LenT) lst = LenT;
 	else lst = llst;
 	do {
@@ -2041,8 +2046,11 @@ void Format(WORD& i, longint First, longint Last, WORD Posit, bool Rep)
 		else ii1 = 0;
 		if ((fst >= ii1) && !AllRd) {
 			NextPartDek();
-			fst -= Part.MovI; lst -= Part.MovI; llst -= Part.MovI;
-			if (llst > LenT) lst = LenT; else lst = llst;
+			//fst -= Part.MovI;
+			//lst -= Part.MovI;
+			//llst -= Part.MovI;
+			if (llst > LenT) lst = LenT;
+			else lst = llst;
 		}
 		i = fst; ii1 = i;
 		if ((i < 2) || (T[i - 1] == _LF)) {
@@ -2242,18 +2250,18 @@ bool BlockExist()
 void SetBlockBound(longint& BBPos, longint& EBPos)
 {
 	SetPartLine(EndBLn);
-	integer i = EndBLn - Part.LineP;
+	integer i = EndBLn; // -Part.LineP;
 	size_t nextLineIdx = GetLineStartIndex(i);
-	EBPos = SetInd(T, LenT, nextLineIdx, EndBPos) + Part.PosP;
+	EBPos = SetInd(T, LenT, nextLineIdx, EndBPos); // +Part.PosP;
 	SetPartLine(BegBLn);
-	i = BegBLn - Part.LineP;
+	i = BegBLn; // -Part.LineP;
 	nextLineIdx = GetLineStartIndex(i);
-	BBPos = SetInd(T, LenT, nextLineIdx, BegBPos) + Part.PosP;
+	BBPos = SetInd(T, LenT, nextLineIdx, BegBPos); // +Part.PosP;
 }
 
 void ResetPrint(char Oper, longint& fs, FILE* W1, longint LenPrint, ColorOrd* co, WORD& I1, bool isPrintFile, CharArr* p)
 {
-	*co = Part.ColorP;
+	//*co = Part.ColorP;
 	SetColorOrd(*co, 1, I1);
 	isPrintFile = false;
 	fs = co->length();
@@ -2309,19 +2317,19 @@ bool BlockHandle(longint& fs, FILE* W1, char Oper)
 	if (TypeB == TextBlock) {
 		WORD I2;
 		if (Oper == 'p') {
-			LL2 = AbsLenT - Part.LenP + LenT;
-			LL1 = Part.PosP + SetInd(T, LenT, textIndex, positionOnActualLine);
+			LL2 = AbsLenT + LenT; // -Part.LenP;
+			LL1 = SetInd(T, LenT, textIndex, positionOnActualLine); // +Part.PosP;
 		}
 		else {
 			SetBlockBound(LL1, LL2);
 		}
-		I1 = LL1 - Part.PosP;
+		I1 = LL1; // -Part.PosP;
 		if (toupper(Oper) == 'P') {
 			ResetPrint(Oper, fs, W1, LL2 - LL1, &co, I1, isPrintFile, p);
 		}
 		do {
-			if (LL2 > Part.PosP + LenT) I2 = LenT;
-			else I2 = LL2 - Part.PosP;
+			if (LL2 > /*Part.PosP +*/ LenT) I2 = LenT;
+			else I2 = LL2; // -Part.PosP;
 			switch (Oper) {
 			case 'Y': {
 				TestLenText(&T, LenT, I2, I1);
@@ -2365,7 +2373,7 @@ bool BlockHandle(longint& fs, FILE* W1, char Oper)
 			{
 				I1 = LenT;
 				NextPart();
-				I1 -= Part.MovI;
+				//I1 -= Part.MovI;
 			}
 		} while (LL1 != LL2);
 	}
@@ -2455,13 +2463,13 @@ void MovePart(WORD Ind)
 	WrEndT();
 	/* !!! with Part do!!! */
 	{
-		Part.MovI = CurrentLineFirstCharIndex(Ind) - 1;
-		Part.MovL = GetLine(Part.MovI) - 1;
-		Part.LineP += Part.MovL;
-		Part.PosP += Part.MovI;
-		Part.LenP -= Part.MovI;
-		SetColorOrd(Part.ColorP, 1, Part.MovI + 1);
-		TestLenText(&T, LenT, Part.MovI + 1, 1);
+		//Part.MovI = CurrentLineFirstCharIndex(Ind) - 1;
+		//Part.MovL = GetLine(Part.MovI) - 1;
+		//Part.LineP += Part.MovL;
+		//Part.PosP += Part.MovI;
+		//Part.LenP -= Part.MovI;
+		//SetColorOrd(Part.ColorP, 1, Part.MovI + 1);
+		//TestLenText(&T, LenT, Part.MovI + 1, 1);
 		ChangePart = true;
 	}
 }
@@ -2471,13 +2479,14 @@ bool BlockGrasp(char Oper, void* P1, LongStr* sp)
 	longint L, L1, L2, ln;
 	WORD I1;
 	auto result = false;
-	if (!BlockExist()) return result; L = Part.PosP + textIndex + positionOnActualLine - 1;
+	if (!BlockExist()) return result;
+	L = /*Part.PosP +*/ textIndex + positionOnActualLine - 1;
 	ln = LineAbs(TextLineNr); if (Oper == 'G') TestKod();
 	SetBlockBound(L1, L2);
 	if ((L > L1) and (L < L2) and (Oper != 'G')) return result;
 	L = L2 - L1; if (L > 0x7FFF) { WrLLF10Msg(418); return result; }
-	if (L2 > Part.PosP + LenT) MovePart(L1 - Part.PosP);
-	I1 = L1 - Part.PosP;
+	if (L2 > /*Part.PosP +*/ LenT) MovePart(L1 /* - Part.PosP*/);
+	I1 = L1 /* - Part.PosP*/;
 	MarkStore2(P1); sp = (LongStr*)GetStore2(L + 2); sp->LL = L;
 	Move(&T[I1], sp->A, L);
 	if (Oper == 'M') {
@@ -2506,11 +2515,11 @@ void BlockDrop(char Oper, void* P1, LongStr* sp)
 	BegBLn = LineAbs(TextLineNr); BegBPos = positionOnActualLine;
 	NullChangePart();
 	TestLenText(&T, LenT, I, longint(I) + I2);
-	if (ChangePart) I -= Part.MovI;
+	//if (ChangePart) I -= Part.MovI;
 	Move(sp->A, &T[I], I2);
 	ReleaseStore2(P1);
 	TextLineNr = GetLineNumber(I + I2);
-	EndBLn = Part.LineP + TextLineNr;
+	EndBLn = /*Part.LineP +*/ TextLineNr;
 	EndBPos = succ(I + I2 - textIndex);
 	PosDekFindLine(BegBLn, BegBPos, true); /*ChangeScr = true;*/
 }
@@ -2566,7 +2575,9 @@ void BlockCDrop(char Oper, void* P1, LongStr* sp)
 	/* hlidani sp->LL a StoreAvail, MaxLenT
 		dela NextLine - prechazi mezi segmenty */
 	if (Oper != 'R') {
-		EndBPos = positionOnActualLine; BegBPos = positionOnActualLine; BegBLn = TextLineNr + Part.LineP;
+		EndBPos = positionOnActualLine;
+		BegBPos = positionOnActualLine;
+		BegBLn = TextLineNr /* + Part.LineP*/;
 	}
 	ww = BegBPos; I1 = 1; I3 = 1;
 	do {
@@ -2587,7 +2598,8 @@ void BlockCDrop(char Oper, void* P1, LongStr* sp)
 	if (I3 < I1) InsertLine(i, I1, I3, ww, sp);
 	if (Oper != 'R')
 	{
-		EndBLn = Part.LineP + TextLineNr - 1; ReleaseStore2(P1);
+		EndBLn = /*Part.LineP +*/ TextLineNr - 1;
+		ReleaseStore2(P1);
 		PosDekFindLine(BegBLn, BegBPos, true);
 	}
 }
@@ -2704,8 +2716,8 @@ bool MyPromptLL(WORD n, std::string& s)
 void ChangeP(WORD& fst)
 {
 	if (ChangePart) {
-		if (fst <= Part.MovI) fst = 1;
-		else fst -= Part.MovI;
+		//if (fst <= Part.MovI) fst = 1;
+		//else fst -= Part.MovI;
 		/* if (Last>Part.PosP+LenT) lst = LenT-1 else lst = Last-Part.PosP; */
 		NullChangePart();
 	}
@@ -2724,7 +2736,7 @@ void SetScreen(WORD Ind, WORD ScrXY, WORD Pos)
 	Colu = Column(positionOnActualLine); BCol = Column(BPos);
 	if (bScroll) {
 		RScrL = NewRL(ScreenFirstLineNr);
-		TextLineNr = MaxI(PHNum + 1, LineAbs(TextLineNr)) - Part.LineP;
+		TextLineNr = MaxI(PHNum + 1, LineAbs(TextLineNr)); // -Part.LineP;
 		longint rl = NewRL(TextLineNr);
 		if ((rl >= RScrL + PageS) || (rl < RScrL)) {
 			if (rl > 10) RScrL = rl - 10;
@@ -2800,11 +2812,11 @@ void FindReplaceString(longint First, longint Last)
 	}
 	FirstEvent = false;
 	SetPart(First);
-	WORD fst = First - Part.PosP;
+	WORD fst = First; // -Part.PosP;
 	NullChangePart();
 label1:
-	if (Last > Part.PosP + LenT) lst = LenT - 1;
-	else lst = Last - Part.PosP;
+	if (Last > /*Part.PosP +*/ LenT) lst = LenT - 1;
+	else lst = Last; // -Part.PosP;
 	ChangeP(fst);            /* Background muze volat NextPart */
 	if (FindString(fst, lst)) {
 		SetScreen(fst, 0, 0);
@@ -2825,18 +2837,18 @@ label1:
 		}
 	}
 	else {                       /* !FindString */
-		if (!AllRd && (Last > Part.PosP + LenT)) {
-			NextPart();
-			goto label1;
-		}
-		else {
+		//if (!AllRd && (Last > Part.PosP + LenT)) {
+		//	NextPart();
+		//	goto label1;
+		//}
+		//else {
 			if (TestOptStr('e') && (TypeT == MemoT)) {
 				SrchT = true; Konec = true;
 			}
 			else {
 				SetScreen(lst, 0, 0);
 			}
-		}
+		//}
 	}
 	/* BackGround; */
 }
@@ -3017,11 +3029,11 @@ void Edit(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys)
 	if (TypeT != FileT) {
 		AllRd = true;
 		AbsLenT = LenT - 1;
-		Part.LineP = 0;
-		Part.PosP = 0;
-		Part.LenP = (WORD)AbsLenT;
-		Part.ColorP = "";
-		Part.UpdP = false;
+		//Part.LineP = 0;
+		//Part.PosP = 0;
+		//Part.LenP = (WORD)AbsLenT;
+		//Part.ColorP = "";
+		//Part.UpdP = false;
 		NullChangePart();
 		SimplePrintHead();
 	}
@@ -3058,7 +3070,7 @@ void Edit(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys)
 		}
 	}
 	FillChar((char*)MargLL, sizeof(MargLL), 0);
-	ColScr = Part.ColorP;
+	//ColScr = Part.ColorP;
 	WrStatusLine();
 	TextAttr = TxtColor;
 	ClrScr();
@@ -3236,16 +3248,16 @@ void EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg, std::vecto
 	//LocalPPtr = locVar;
 	if (!Loc) {
 		MaxLenT = 0xFFF0; LenT = 0;
-		Part.UpdP = false;
+		//Part.UpdP = false;
 		TxtPath = CPath; TxtVol = CVol;
 		// zacatek prace se souborem
 		OpenTxtFh(Mode);
 		RdFirstPart();
 		SimplePrintHead();
-		while ((TxtPos > Part.PosP + Part.LenP) && !AllRd) {
-			RdNextPart();
-		}
-		Ind = TxtPos - Part.PosP;
+		//while ((TxtPos > Part.PosP + Part.LenP) && !AllRd) {
+		//	RdNextPart();
+		//}
+		Ind = TxtPos; // -Part.PosP;
 	}
 	else {
 		LS = new LongStr(locVar->length()); // TWork.Read(1, *LP);
@@ -3274,7 +3286,7 @@ void EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg, std::vecto
 			EditText(Mode, LocalT, "", ErrMsg, LS, MaxLStrLen, Ind, Txtxy,
 				brkKeys, ExD, Srch, Upd, 126, 143, MsgS);
 		}
-		TxtPos = Ind + Part.PosP;
+		TxtPos = Ind; // +Part.PosP;
 		if (Upd) EdUpdated = true;
 		WORD KbdChar = Event.Pressed.KeyCombination();
 		if ((KbdChar == __ALT_EQUAL) || (KbdChar == 'U')) {
@@ -3308,7 +3320,7 @@ void EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg, std::vecto
 					*locVar = std::string(LS->A, LS->LL);
 				}
 				else {
-					RdPart();
+					//RdPart();
 				}
 				continue;
 			}
@@ -3320,7 +3332,9 @@ void EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg, std::vecto
 				RdMsg(6);
 				Help((RdbD*)HelpFD, MsgLine, false);
 			label2:
-				if (!Loc) RdPart();
+				if (!Loc) {
+					// RdPart();
+				}
 				continue;
 			}
 			}
@@ -3339,7 +3353,7 @@ void EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg, std::vecto
 				CVol = TxtVol;
 				PrintTxtFile(0);
 				OpenTxtFh(Mode);
-				RdPart();
+				// RdPart();
 				continue;
 			}
 		}
@@ -3367,7 +3381,7 @@ void EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg, std::vecto
 			PopW(w2);
 		}
 		PopW(w1);
-		LastTxtPos = Ind + Part.PosP;
+		LastTxtPos = Ind; // +Part.PosP;
 		RestoreExit(er);
 		break;
 	}

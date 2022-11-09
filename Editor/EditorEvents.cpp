@@ -360,7 +360,7 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 				TestKod();
 				IndexT = SetInd(T, LenT, textIndex, positionOnActualLine);
 				ScrT = ((TextLineNr - ScreenFirstLineNr + 1) << 8) + positionOnActualLine - BPos;
-				LastTxtPos = IndexT + Part.PosP;
+				LastTxtPos = IndexT; // +Part.PosP;
 				TxtXY = ScrT + ((longint)positionOnActualLine << 16);
 				if (X->Typ == 'Q') {
 					Event.Pressed.UpdateKey(key);
@@ -411,12 +411,12 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 				RestorePar(ep);
 				switch (TypeT) {
 				case FileT: {
-					fs = Part.PosP + IndexT;
+					fs = IndexT; // Part.PosP + IndexT;
 					OpenTxtFh(Mode);
 					RdFirstPart();
 					SimplePrintHead();
-					while ((fs > Part.PosP + Part.LenP) && !AllRd) { RdNextPart(); }
-					IndexT = fs - Part.PosP;
+					//while ((fs > Part.PosP + Part.LenP) && !AllRd) { RdNextPart(); }
+					IndexT = fs; // fs - Part.PosP;
 					break;
 				}
 				case LocalT:
@@ -439,7 +439,7 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 				if (TypeT != FileT)  // !!! with Part do
 				{
 					AbsLenT = LenT - 1;
-					Part.LenP = AbsLenT;
+					//Part.LenP = AbsLenT;
 					SimplePrintHead();
 				}
 				SetScreen(IndexT, ScrT, positionOnActualLine);
@@ -464,8 +464,8 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 					I1 = LeftMarg;
 					while (Arr[I1] == ' ') { I1++; }
 					if (I1 > RightMarg) { I1 = RightMarg; }
-					L1 = Part.PosP + textIndex;
-					Format(I, L1, AbsLenT + LenT - Part.LenP, I1, false);
+					L1 = textIndex; // Part.PosP + textIndex;
+					Format(I, L1, AbsLenT + LenT /*- Part.LenP*/, I1, false);
 					SetPart(L1);
 					I = 1;
 					// TODO: tady se pouzivalo 'I' ve FindCharPosition, ale k cemu je???
@@ -725,7 +725,7 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 			}
 			case __CTRL_PAGEDOWN: {
 				TestKod();
-				SetPart(AbsLenT - Part.LenP + LenT);
+				SetPart(AbsLenT /* - Part.LenP*/ + LenT);
 				SetScreen(LenT, 0, 0);
 				break;
 			}
@@ -759,9 +759,11 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 				break;
 			}
 			case __BACK: {
-				if (positionOnActualLine > 1) { positionOnActualLine--; DelChar(); }
+				if (positionOnActualLine > 1) {
+					positionOnActualLine--;
+					DelChar();
+				}
 				else {
-					if ((TextLineNr == 1) && (Part.PosP > 0)) PredPart();
 					if (textIndex > 1) {
 						TestKod();
 						TextLineNr--;
@@ -819,9 +821,9 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 				if (TestOptStr('l') && (!BlockExist() || (TypeB == ColBlock))) goto Nic;
 				if (TestOptStr('l')) SetBlockBound(L1, L2);
 				else {
-					L2 = AbsLenT - Part.LenP + LenT;
+					L2 = AbsLenT /* - Part.LenP */ + LenT;
 					if (TestOptStr('g') || TestOptStr('e'))  L1 = 1;
-					else L1 = Part.PosP + SetInd(T, LenT, textIndex, positionOnActualLine);
+					else L1 = /* Part.PosP + */ SetInd(T, LenT, textIndex, positionOnActualLine);
 				}
 				FindReplaceString(L1, L2);
 				if (key == _QA_) DekodLine(textIndex);
@@ -832,9 +834,10 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 				if (!FindStr.empty()) {
 					TestKod();
 					if (TestOptStr('l') && (!BlockExist() || (TypeB == ColBlock))) goto Nic;
-					fs = 1; L1 = Part.PosP + SetInd(T, LenT, textIndex, positionOnActualLine);
+					fs = 1;
+					L1 = /* Part.PosP + */ SetInd(T, LenT, textIndex, positionOnActualLine);
 					if (TestOptStr('l'))  SetBlockBound(fs, L2);
-					else L2 = AbsLenT - Part.LenP + LenT;
+					else L2 = AbsLenT /* - Part.LenP */ + LenT;
 					if (L1 < fs)  L1 = fs;  // { if L1>=L2  goto Nic;}
 					FindReplaceString(L1, L2);
 					if (!Konec) { FirstEvent = false; Background(); };
@@ -946,8 +949,9 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 				CVol = "";
 				F1 = OpenH(_isoldfile, RdOnly);
 				if (HandleError != 0) { MyWrLLMsg(CPath); goto Nic; }
-				BegBLn = Part.LineP + TextLineNr; BegBPos = positionOnActualLine;
-				L1 = Part.PosP + textIndex + positionOnActualLine - 1;
+				BegBLn = /* Part.LineP + */ TextLineNr;
+				BegBPos = positionOnActualLine;
+				L1 = /* Part.PosP + */ textIndex + positionOnActualLine - 1;
 				FillBlank();
 				fs = FileSizeH(F1); L2 = 0;
 				NullChangePart();
@@ -962,19 +966,19 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 							I2 = MinW(I2, MaxLenT - LenT) - 2; fs = L2 + I2;
 							WrLLF10Msg(404);
 						}
-						I1 = L1 + L2 - Part.PosP;
+						I1 = L1 + L2; // - Part.PosP;
 						TestLenText(&T, LenT, I1, longint(I1) + I2);
-						if (ChangePart) I1 -= Part.MovI;
+						//if (ChangePart) I1 -= Part.MovI;
 						SeekH(F1, L2); ReadH(F1, I2, &T[I1]); HMsgExit("");
 						L2 += I2;
 					} while (L2 != fs);
-					I = L1 + L2 - Part.PosP;
+					I = L1 + L2; // - Part.PosP;
 					if (T[I - 1] == 0x1A) {
 						TestLenText(&T, LenT, I, I - 1);
 						I--;
 					}
 					TextLineNr = GetLineNumber(I);
-					EndBLn = Part.LineP + TextLineNr;
+					EndBLn = TextLineNr; // Part.LineP + TextLineNr;
 					EndBPos = succ(I - textIndex);
 					break;
 				}
@@ -986,14 +990,15 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 						SeekH(F1, L2); ReadH(F1, I2, sp->A); HMsgExit("");
 						L2 += I2; sp->LL = I2; BlockCDrop('R', P1, sp);
 					} while (L2 != fs);
-					EndBLn = Part.LineP + TextLineNr - 1; ReleaseStore2(P1);
+					EndBLn = /*Part.LineP +*/ TextLineNr - 1;
+					ReleaseStore2(P1);
 					break;
 				}
 				}
 				CloseH(&F1);
 				HMsgExit("");
 				SetPartLine(BegBLn);
-				TextLineNr = GetLineNumber(L1 - Part.PosP);
+				TextLineNr = GetLineNumber(L1 /* - Part.PosP*/);
 				UpdatedL = true;
 				break;
 			} // end case _KR_
@@ -1011,14 +1016,14 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 				{
 					TestKod(); screen.CrsHide();
 					SetPartLine(EndBLn);
-					I2 = EndBLn - Part.LineP;
+					I2 = EndBLn; // -Part.LineP;
 					size_t nextLineIdx = GetLineStartIndex(I2);
-					L1 = SetInd(T, LenT, nextLineIdx, EndBPos) + Part.PosP;
+					L1 = SetInd(T, LenT, nextLineIdx, EndBPos); // +Part.PosP;
 					L2 = BegBLn; positionOnActualLine = BegBPos;
 					SetPartLine(L2);
-					I2 = BegBLn - Part.LineP;
+					I2 = BegBLn; // -Part.LineP;
 					nextLineIdx = GetLineStartIndex(I2);
-					Format(I, nextLineIdx + Part.PosP, L1, BegBPos, true);
+					Format(I, nextLineIdx /* + Part.PosP */, L1, BegBPos, true);
 					DekFindLine(L2);
 					if (!bScroll) screen.CrsShow();
 				}
@@ -1076,10 +1081,10 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 			}
 			case _B_: {
 				TestKod();
-				L1 = Part.PosP + textIndex;
-				Format(I, L1, AbsLenT + LenT - Part.LenP, MinI(LeftMarg, positionOnActualLine), false);
+				L1 = /*Part.PosP +*/ textIndex;
+				Format(I, L1, AbsLenT + LenT /* - Part.LenP*/, MinI(LeftMarg, positionOnActualLine), false);
 				SetPart(L1);
-				I2 = L1 - Part.PosP;
+				I2 = L1; // -Part.PosP;
 				TextLineNr = GetLineNumber(I2);
 				positionOnActualLine = 1;
 				break;
