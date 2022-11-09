@@ -133,7 +133,7 @@ extern bool bScroll;
 //extern std::vector<EdExitD*> *ExitD;
 
 extern WORD MaxLenT, IndexT, ScrT;
-extern WORD ScrI, textIndex, Posi, BPos;
+extern WORD ScrI, textIndex, positionOnActualLine, BPos;
 extern WORD NextLineStartIndex, PageS, LineS;
 extern integer TextLineNr, ScreenFirstLineNr;
 extern longint RScrL;
