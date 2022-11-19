@@ -667,20 +667,25 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 			}
 			case __CTRL_RIGHT:
 			{
-				while (!(Separ.count(Arr[positionOnActualLine]) > 0))
-				{
-					positionOnActualLine++; if (positionOnActualLine > GetArrLineLength()) goto label2;
+				while (!(Separ.count(Arr[positionOnActualLine]) > 0)) {
+					positionOnActualLine++;
+					if (positionOnActualLine > GetArrLineLength()) {
+						goto label2;
+					}
 				}
-				while (Separ.count(Arr[positionOnActualLine]) > 0)
-				{
+				while (Separ.count(Arr[positionOnActualLine]) > 0) {
 					positionOnActualLine++;
 					I = GetArrLineLength();
-					if (positionOnActualLine > I)
-						if ((NextLineStartIndex <= LenT) && ((I == 0) || (positionOnActualLine > I + 1)))
-						{
-							NextLine(true); positionOnActualLine = 1;
+					if (positionOnActualLine > I) {
+						if ((NextLineStartIndex <= LenT) && ((I == 0) || (positionOnActualLine > I + 1))) {
+							NextLine(true);
+							positionOnActualLine = 1;
 						}
-						else { positionOnActualLine = I + 1; goto label2; }
+						else {
+							positionOnActualLine = I + 1;
+							goto label2;
+						}
+					}
 				}
 			label2:
 				break; }
@@ -693,15 +698,20 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 				break;
 			}
 			case __HOME: {
-				I1 = positionOnActualLine; positionOnActualLine = 1;
-				if (Wrap) positionOnActualLine = MaxI(LeftMarg, 1);
+				I1 = positionOnActualLine;
+				positionOnActualLine = 1;
+				if (Wrap) {
+					positionOnActualLine = MaxI(LeftMarg, 1);
+				}
 				BlockLRShift(I1);
 				break;
 			}
 			case __END: {
 				I1 = positionOnActualLine;
 				positionOnActualLine = GetArrLineLength();
-				if (positionOnActualLine < LineMaxSize) positionOnActualLine++;
+				if (positionOnActualLine < LineMaxSize) {
+					positionOnActualLine++;
+				}
 				BlockLRShift(I1);
 				break;
 			}
@@ -747,7 +757,10 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 				break;
 			}
 
-			case __INSERT: { Insert = !Insert; break; }
+			case __INSERT: {
+				Insert = !Insert;
+				break;
+			}
 			case __DELETE:
 			case _G_: {
 				if (positionOnActualLine <= GetArrLineLength()) {

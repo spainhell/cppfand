@@ -1042,7 +1042,7 @@ void DekodLine(size_t lineStartIndex)
 	HardL = true;
 	NextLineStartIndex = lineStartIndex + lineLen + 1; // 1 = CR
 
-	if ((NextLineStartIndex < LenT) && (T[NextLineStartIndex - 1] == _LF)) {
+	if ((NextLineStartIndex < LenT) && (T[NextLineStartIndex] == _LF)) {
 		NextLineStartIndex++;
 	}
 	else {
