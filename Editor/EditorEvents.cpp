@@ -590,7 +590,7 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 					TextLineNr = ScreenFirstLineNr;
 					DekFindLine(LineAbs(TextLineNr));
 					positionOnActualLine = Position(Colu);
-					j = CountChar(T, LenT, 0x0C, textIndex, ScrI);
+					j = CountChar(T, LenT, 0x0C, textIndex, ScreenIndex);
 					if ((j > 0) && InsPg) {
 						DekFindLine(LineAbs(TextLineNr + j));
 						ScreenFirstLineNr = TextLineNr;
@@ -608,7 +608,7 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 				}
 				ChangeScr = true;
 				if (Mode == HelpM) {
-					ScrI = GetLineStartIndex(ScreenFirstLineNr);
+					ScreenIndex = GetLineStartIndex(ScreenFirstLineNr);
 					positionOnActualLine = Position(Colu);
 					if (WordFind(WordNo2() + 1, I1, I2, WordL) && WordExist()) {
 						SetWord(I1, I2);
@@ -627,7 +627,7 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 				if (bScroll) {
 					RScrL += PageS; if (ModPage(RScrL)) RScrL--;
 					DekFindLine(LineAbs(NewL(RScrL))); positionOnActualLine = Position(Colu);
-					j = CountChar(T, LenT, 0x0C, ScrI, textIndex);
+					j = CountChar(T, LenT, 0x0C, ScreenIndex, textIndex);
 					if ((j > 0) && InsPg) DekFindLine(LineAbs(TextLineNr - j));
 					ScreenFirstLineNr = TextLineNr; RScrL = NewRL(ScreenFirstLineNr);
 				}
@@ -637,7 +637,7 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 				}
 				ChangeScr = true;
 				if (Mode == HelpM) {
-					ScrI = GetLineStartIndex(ScreenFirstLineNr);
+					ScreenIndex = GetLineStartIndex(ScreenFirstLineNr);
 					positionOnActualLine = Position(Colu); W1 = WordNo2(); I3 = WordL;
 					if (WordFind(W1 + 1, I1, I2, WordL) && WordExist()) { SetWord(I1, I2); }
 					else if (WordFind(W1, I1, I2, WordL) && WordExist()) { SetWord(I1, I2); }
@@ -718,7 +718,7 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 			case _QE_: {
 				TestKod();
 				TextLineNr = ScreenFirstLineNr;
-				textIndex = ScrI;
+				textIndex = ScreenIndex;
 				DekodLine(textIndex);
 				break;
 			}

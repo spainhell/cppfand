@@ -101,7 +101,8 @@ char CharPg = '\0';
 bool InsPg = false;
 longint BegBLn = 0, EndBLn = 0;
 WORD BegBPos = 0, EndBPos = 0;
-WORD ScrI = 0, textIndex = 0;
+WORD ScreenIndex = 0; // text index for printing position 0 .. N
+WORD textIndex = 0;
 WORD positionOnActualLine = 0; // position of the cursor on the actual line (1 .. 255)
 WORD BPos = 0; // {screen status}
 std::string FindStr, ReplaceStr;
@@ -889,7 +890,8 @@ void MoveIdx(int dir)
 {
 	WORD mi = -dir; // *Part.MovI;
 	WORD ml = -dir; // *Part.MovL;
-	ScrI += mi; textIndex += mi; // {****GLOBAL***}
+	ScreenIndex += mi;
+	textIndex += mi; // {****GLOBAL***}
 	NextLineStartIndex += mi;
 	TextLineNr += ml;
 	ScreenFirstLineNr += ml; // {****Edit***}
@@ -1285,7 +1287,7 @@ void UpdScreen()
 {
 	integer r; // row number, starts from 1
 	ColorOrd co1;
-	WORD oldSI = ScrI;
+	WORD oldScreenIndex = ScreenIndex;
 	pstring PgStr;
 
 	InsPage = false;
@@ -1296,15 +1298,15 @@ void UpdScreen()
 		ChangeScr = false;
 
 		if (bScroll) {
-			ScrI = textIndex;
+			ScreenIndex = textIndex;
 		}
 		else {
-			ScrI = GetLineStartIndex(ScreenFirstLineNr);
+			ScreenIndex = GetLineStartIndex(ScreenFirstLineNr);
 		}
 
 		if (HelpScroll) {
 			//ColScr = Part.ColorP;
-			SetColorOrd(ColScr, 1, ScrI);
+			SetColorOrd(ColScr, 1, ScreenIndex + 1);
 		}
 	}
 	if (bScroll) {
@@ -1328,10 +1330,8 @@ void UpdScreen()
 	}
 	WrEndL(HardL, TextLineNr - ScreenFirstLineNr + 1);
 	if (MyTestEvent()) return;
-	if (ScrI < 1) {
-		throw std::exception("UpdScreen(): variable ScrI < 1");
-	}
-	WORD index = ScrI - 1;
+
+	WORD index = ScreenIndex;
 	r = 1;
 	integer rr = 0;
 	WORD w = 1;
@@ -1511,7 +1511,7 @@ void ScrollPress()
 			BCol = Column(BPos);
 			Colu = Column(positionOnActualLine);
 			//ColScr = Part.ColorP;
-			SetColorOrd(ColScr, 1, ScrI);
+			SetColorOrd(ColScr, 1, ScreenIndex + 1);
 		}
 		else {
 			if ((PredScLn < L1) || (PredScLn >= L1 + PageS)) PredScLn = L1;
@@ -2872,7 +2872,7 @@ WORD WordNo2()
 		wNo = WordNo(SetInd(T, LenT, textIndex, positionOnActualLine));
 	}
 	else {
-		wNo = WordNo(ScrI);
+		wNo = WordNo(ScreenIndex + 1);
 	}
 
 	return wNo;
@@ -3021,7 +3021,7 @@ void Edit(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys)
 	BegBPos = 1;
 	EndBPos = 1;
 	ScreenFirstLineNr = 1;
-	ScrI = 1;
+	ScreenIndex = 0;
 	RScrL = 1;
 	PredScLn = 1;
 	PredScPos = 1;
@@ -3060,13 +3060,13 @@ void Edit(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys)
 
 	if (Mode == HelpM) {
 		WordL = 0;
-		ScrI = SetInd(T, LenT, textIndex, positionOnActualLine);
+		ScreenIndex = SetInd(T, LenT, textIndex, positionOnActualLine) - 1;
 		if (WordFind(WordNo2() + 1, i1, i2, i3)) {
 			SetWord(i1, i2);
 		}
 		if (!WordExist()) {
 			TextLineNr = GetLineNumber(IndexT);
-			ScrI = 1;
+			ScreenIndex = 0;
 		}
 	}
 	FillChar((char*)MargLL, sizeof(MargLL), 0);
@@ -3101,7 +3101,7 @@ void Edit(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys)
 	if (bScroll && (Mode != HelpM)) {
 		positionOnActualLine = BPos + 1;
 		TextLineNr = ScreenFirstLineNr;
-		textIndex = ScrI;
+		textIndex = ScreenIndex;
 	}
 
 	IndexT = SetInd(T, LenT, textIndex, positionOnActualLine);
