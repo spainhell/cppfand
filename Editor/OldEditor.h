@@ -15,7 +15,7 @@ struct MsgStr
 	std::string Head, Last, CtrlLast, AltLast, ShiftLast;
 };
 
-struct stEditorPar
+struct stEditorParams
 {
 	bool Insert = false, Indent = false, Wrap = false, Just = false;
 	char Mode = '\0';
@@ -49,8 +49,6 @@ size_t CountChar(char* text, size_t text_len, char C, size_t first, size_t last)
 size_t FindCharPosition(char* text, size_t length, char c, size_t from, size_t n = 1);
 size_t GetLineNumber(size_t Ind);
 size_t GetLineStartIndex(size_t lineNr);
-//void MyDelLine();
-//void MyInsLine();
 WORD SetPredI();
 void NextLine(bool WrScr);
 void HelpLU(char dir);
@@ -100,41 +98,27 @@ bool BlockCGrasp(char Oper, void* P1, LongStr* sp);
 void BlockDrop(char Oper, void* P1, LongStr* sp);
 void BlockCDrop(char Oper, void* P1, LongStr* sp);
 void FillBlank();
-void NullChangePart();
 void SetPartLine(longint Ln);
 void MyWrLLMsg(pstring s);
 void HMsgExit(pstring s);
 void Calculate();
-stEditorPar SavePar();
-void RestorePar(stEditorPar& editorPar);
+stEditorParams SaveParams();
+void RestoreParams(stEditorParams& editorParams);
 void OpenTxtFh(char Mode);
-void RdFirstPart();
+bool ReadTextFile();
 void SimplePrintHead();
-bool RdNextPart();
 void WrEndT();
 WORD WordNo(WORD I);
 
 
 typedef std::string ColorOrd;
 
-//struct PartDescr
-//{
-//	longint PosP = 0; longint LineP = 0;
-//	WORD LenP = 0, MovI = 0, MovL = 0;
-//	bool UpdP = false;
-//	ColorOrd ColorP;
-//};
-
 const int SuccLineSize = 256;
-
-//extern PartDescr Part;
 
 extern size_t LenT;
 extern char Arr[SuccLineSize];
 extern char* T;
 extern bool bScroll;
-
-//extern std::vector<EdExitD*> *ExitD;
 
 extern WORD MaxLenT, IndexT, ScrT;
 extern WORD ScreenIndex;

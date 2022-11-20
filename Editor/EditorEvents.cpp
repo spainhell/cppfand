@@ -325,7 +325,7 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 	FILE* F1 = nullptr;
 	WORD W1 = 0, W2 = 0;
 	longint L1 = 0, L2 = 0, fs = 0;
-	stEditorPar ep;
+	stEditorParams ep;
 	std::string ss;
 	int j = 0;
 	CHAR_INFO LastL[161];
@@ -394,7 +394,7 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 					break;
 				}
 				}
-				ep = SavePar();
+				ep = SaveParams();
 				screen.CrsHide();
 				RestoreExit(er);
 				if (TypeT == MemoT) {
@@ -408,12 +408,12 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 				if (!bScroll) {
 					screen.CrsShow();
 				}
-				RestorePar(ep);
+				RestoreParams(ep);
 				switch (TypeT) {
 				case FileT: {
 					fs = IndexT; // Part.PosP + IndexT;
 					OpenTxtFh(Mode);
-					RdFirstPart();
+					ReadTextFile();
 					SimplePrintHead();
 					//while ((fs > Part.PosP + Part.LenP) && !AllRd) { RdNextPart(); }
 					IndexT = fs; // fs - Part.PosP;
@@ -988,7 +988,7 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 				L1 = /* Part.PosP + */ textIndex + positionOnActualLine - 1;
 				FillBlank();
 				fs = FileSizeH(F1); L2 = 0;
-				NullChangePart();
+				//NullChangePart();
 				switch (TypeB) {
 				case TextBlock: {
 					do {
@@ -1142,10 +1142,10 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 				Calculate();
 				break;
 			case __ALT_F8: {
-				ep = SavePar();
+				ep = SaveParams();
 				W1 = Menu(45, spec.KbdTyp + 1);
 				if (W1 != 0) spec.KbdTyp = TKbdConv(W1 - 1);
-				RestorePar(ep);
+				RestoreParams(ep);
 				break;
 			}
 			case __CTRL_F6: {

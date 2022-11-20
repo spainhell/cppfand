@@ -71,7 +71,7 @@ std::set<char> Separ = { 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,2
 91,92,93,94,96,123,124,125,126,127 };
 
 
-// {**********global param begin for SavePar}  // r85
+// {**********global param begin for SaveParams}  // r85
 char Mode = '\0';
 char TypeT = '\0';
 std::string NameT;
@@ -161,29 +161,29 @@ char* GetT(std::vector<std::string>& lines, size_t& len, bool hardL)
 	return output;
 }
 
-stEditorPar SavePar()
+stEditorParams SaveParams()
 {
-	stEditorPar save_par;
-	save_par.Insert = Insert;
-	save_par.Indent = Indent;
-	save_par.Wrap = Wrap;
-	save_par.Just = Just;
-	save_par.Mode = Mode;
-	save_par.TypeT = TypeT;
-	save_par.NameT = NameT;
+	stEditorParams save_params;
+	save_params.Insert = Insert;
+	save_params.Indent = Indent;
+	save_params.Wrap = Wrap;
+	save_params.Just = Just;
+	save_params.Mode = Mode;
+	save_params.TypeT = TypeT;
+	save_params.NameT = NameT;
 
-	return save_par;
+	return save_params;
 }
 
-void RestorePar(stEditorPar& save_par)
+void RestoreParams(stEditorParams& editorParams)
 {
-	Insert = save_par.Insert;
-	Indent = save_par.Indent;
-	Wrap = save_par.Wrap;
-	Just = save_par.Just;
-	Mode = save_par.Mode;
-	TypeT = save_par.TypeT;
-	NameT = save_par.NameT;
+	Insert = editorParams.Insert;
+	Indent = editorParams.Indent;
+	Wrap = editorParams.Wrap;
+	Just = editorParams.Just;
+	Mode = editorParams.Mode;
+	TypeT = editorParams.TypeT;
+	NameT = editorParams.NameT;
 }
 
 FrmlElem* RdFldNameFrmlT(char& FTyp)
@@ -344,7 +344,12 @@ bool FindString(WORD& I, WORD Len)
  */
 size_t FindCtrlChar(char* text, size_t textLen, size_t first, size_t last)
 {
+	if (last > textLen - 1) {
+		// koncovy index je za textem
+		last = textLen - 1;
+	}
 	if (first > textLen - 1 || first > last) {
+		// pocatecni index je za textem nebo za koncovym indexem
 		return std::string::npos; // nenalezeno
 	}
 	else {
@@ -366,8 +371,8 @@ size_t FindCtrlChar(char* text, size_t textLen, size_t first, size_t last)
 void SetColorOrd(ColorOrd& co, size_t first, size_t last)
 {
 	size_t index = FindCtrlChar(T, LenT, first, last);
-	while (index < last) // if not found -> I = std::string::npos
-	{
+	// if not found -> index = std::string::npos
+	while (index < last) {
 		size_t pp = co.find(T[index]);
 		if (pp != std::string::npos) {
 			co.erase(pp);
@@ -402,7 +407,7 @@ void LastLine(char* input, WORD from, WORD num, WORD& Ind, WORD& Count)
 	}
 }
 
-bool RdNextPart()
+bool ReadTextFile()
 {
 	// kompletne prepsano -> vycte cely soubor do promenne T
 	auto fileSize = FileSizeH(TxtFH);
@@ -509,20 +514,20 @@ void UpdateFile()
 //	ReadH(TxtFH, LenT, T);
 //}
 
-void NullChangePart()
-{
-	ChangePart = false;
-	/*Part.MovI = 0;
-	Part.MovL = 0*/;
-}
-
-void RdFirstPart()
-{
-	NullChangePart();
-	// Part.PosP = 0; Part.LineP = 0; Part.LenP = 0; Part.ColorP = "";
-	//AllRd = false;
-	ChangePart = RdNextPart();
-}
+//void NullChangePart()
+//{
+//	ChangePart = false;
+//	/*Part.MovI = 0;
+//	Part.MovL = 0*/;
+//}
+//
+//void RdFirstPart()
+//{
+//	NullChangePart();
+//	// Part.PosP = 0; Part.LineP = 0; Part.LenP = 0; Part.ColorP = "";
+//	//AllRd = false;
+//	ChangePart = ReadTextFile();
+//}
 
 void OpenTxtFh(char Mode)
 {
@@ -981,7 +986,7 @@ void SmallerPart(WORD Ind, WORD FreeSize)
 {
 	WORD i, il, l;
 	longint lon;
-	NullChangePart();
+	//NullChangePart();
 	if ((StoreAvail() > FreeSize) && (MaxLenT - LenT > FreeSize)) {
 		return;
 	}
@@ -1077,7 +1082,7 @@ void DekodLine(size_t lineStartIndex)
 		if (Mode == TextM) {
 			if (PromptYN(402)) {
 				WORD LL = lineStartIndex + LineMaxSize;
-				NullChangePart();
+				//NullChangePart();
 				TestLenText(&T, LenT, LL, (longint)LL + 1);
 				//LL -= Part.MovI;
 				T[LL] = _CR;
@@ -1161,13 +1166,13 @@ WORD GetArrLineLength()
 	return LP + 1; // vraci Pascal index 1 .. N;
 }
 
-void NextPart()
-{
-	TestUpdFile();
-	ChangePart = RdNextPart();
-	MoveIdx(1);
-	WrEndT();
-}
+//void NextPart()
+//{
+//	TestUpdFile();
+//	ChangePart = RdNextPart();
+//	MoveIdx(1);
+//	WrEndT();
+//}
 
 /**
  * \brief Get index of the 1st character on the line
@@ -1204,7 +1209,7 @@ void SetPart(longint Idx)
 	//}
 	TestUpdFile();
 	ReleaseStore(T);
-	RdFirstPart();
+	ReadTextFile();
 	//while ((Idx > Part.PosP + Part.LenP) && !AllRd)
 	//{
 	//	ChangePart = RdNextPart();
@@ -1253,7 +1258,7 @@ void WrEndL(bool Hard, int Row)
 
 void NextPartDek()
 {
-	NextPart();
+	ReadTextFile();
 	DekodLine(textIndex);
 }
 
@@ -1936,7 +1941,7 @@ void NewLine(char Mode)
 {
 	KodLine();
 	WORD LP = textIndex + MinI(GetArrLineLength(), positionOnActualLine - 1);
-	NullChangePart();
+	//NullChangePart();
 
 	auto lines = GetLinesFromT();
 	lines.insert(lines.begin() + TextLineNr, "");
@@ -2492,7 +2497,7 @@ void BlockDrop(char Oper, void* P1, LongStr* sp)
 	if (Oper == 'D') FillBlank();
 	I = textIndex + positionOnActualLine - 1; I2 = sp->LL;
 	BegBLn = LineAbs(TextLineNr); BegBPos = positionOnActualLine;
-	NullChangePart();
+	//NullChangePart();
 	TestLenText(&T, LenT, I, longint(I) + I2);
 	//if (ChangePart) I -= Part.MovI;
 	Move(sp->A, &T[I], I2);
@@ -2698,7 +2703,7 @@ void ChangeP(WORD& fst)
 		//if (fst <= Part.MovI) fst = 1;
 		//else fst -= Part.MovI;
 		/* if (Last>Part.PosP+LenT) lst = LenT-1 else lst = Last-Part.PosP; */
-		NullChangePart();
+		//NullChangePart();
 	}
 }
 
@@ -2792,7 +2797,7 @@ void FindReplaceString(longint First, longint Last)
 	FirstEvent = false;
 	SetPart(First);
 	WORD fst = First; // -Part.PosP;
-	NullChangePart();
+	//NullChangePart();
 label1:
 	if (Last > /*Part.PosP +*/ LenT) lst = LenT - 1;
 	else lst = Last; // -Part.PosP;
@@ -3013,7 +3018,7 @@ void Edit(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys)
 		//Part.LenP = (WORD)AbsLenT;
 		//Part.ColorP = "";
 		//Part.UpdP = false;
-		NullChangePart();
+		//NullChangePart();
 		SimplePrintHead();
 	}
 
@@ -3068,9 +3073,9 @@ void Edit(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys)
 	WrLLMargMsg(LastS, LastNr);
 
 	do {
-		if (TypeT == FileT) {
-			NullChangePart();
-		}
+		//if (TypeT == FileT) {
+		//	NullChangePart();
+		//}
 		HandleEvent(Mode, IsWrScreen, SysLColor, LastS, LastNr, ExitD, breakKeys);
 		if (!(Konec || IsWrScreen)) {
 			Background();
@@ -3231,7 +3236,7 @@ void EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg, std::vecto
 		TxtPath = CPath; TxtVol = CVol;
 		// zacatek prace se souborem
 		OpenTxtFh(Mode);
-		RdFirstPart();
+		ReadTextFile();
 		SimplePrintHead();
 		//while ((TxtPos > Part.PosP + Part.LenP) && !AllRd) {
 		//	RdNextPart();
@@ -3373,10 +3378,10 @@ void ViewHelpText(std::string& s, WORD& TxtPos)
 	memcpy(helpText, s.c_str(), s.length());
 	auto S = std::make_unique<LongStr>(helpText, s.length());
 
-	stEditorPar ep;
+	stEditorParams ep;
 
 	try {
-		ep = SavePar();
+		ep = SaveParams();
 		TxtColor = screen.colors.hNorm;
 		FillChar(ColKey, 8, screen.colors.tCtrl);
 		ColKey[5] = screen.colors.hSpec;
@@ -3401,11 +3406,11 @@ void ViewHelpText(std::string& s, WORD& TxtPos)
 			}
 			break;
 		}
-		RestorePar(ep);
+		RestoreParams(ep);
 	}
 	catch (std::exception& e)
 	{
-		RestorePar(ep);
+		RestoreParams(ep);
 	}
 }
 

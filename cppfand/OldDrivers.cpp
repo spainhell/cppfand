@@ -321,6 +321,7 @@ void TestGlobalKey()
 		if (LLKeyFlags != 0) { LLKeyFlags = 0; ClrEvent(); }
 		break;
 	}
+	default: break;
 	}
 }
 
