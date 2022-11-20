@@ -793,26 +793,47 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 				break;
 			}
 			case _Y_: {
-				if ((NextLineStartIndex >= LenT) && !AllRd) NextPartDek();
+				// if ((NextLineStartIndex >= LenT) && !AllRd) NextPartDek();
 				NextLineStartIndex = MinW(NextLineStartIndex, LenT);
 				TestLenText(&T, LenT, NextLineStartIndex, textIndex);
-				if (BegBLn > LineAbs(TextLineNr)) BegBLn--;
-				else if (BegBLn == LineAbs(TextLineNr)) if (TypeB == TextBlock) BegBPos = 1;
-				if (EndBLn >= LineAbs(TextLineNr))
-					if ((EndBLn == LineAbs(TextLineNr)) && (TypeB == TextBlock)) BPos = 1;
-					else EndBLn--;
-				//MyDelLine();
+				if (BegBLn > LineAbs(TextLineNr)) {
+					BegBLn--;
+				}
+				else if (BegBLn == LineAbs(TextLineNr)) {
+					if (TypeB == TextBlock) {
+						BegBPos = 1;
+					}
+				}
+				if (EndBLn >= LineAbs(TextLineNr)) {
+					if ((EndBLn == LineAbs(TextLineNr)) && (TypeB == TextBlock)) {
+						BPos = 1;
+					}
+					else {
+						EndBLn--;
+					}
+				}
+				// MyDelLine();
 				DekodLine(textIndex);
 				positionOnActualLine = 1;
 				break;
 			}
 			case _T_: {
-				if (positionOnActualLine > GetArrLineLength()) { DeleteL(); }
+				if (positionOnActualLine > GetArrLineLength()) {
+					DeleteL();
+				}
 				else {
 					I = positionOnActualLine;
-					if (Separ.count(Arr[positionOnActualLine]) > 0) DelChar();
-					else while ((I <= GetArrLineLength()) && !(Separ.count(Arr[positionOnActualLine]) > 0)) { I++; }
-					while ((I <= GetArrLineLength()) && (Arr[I] == ' ')) { I++; }
+					if (Separ.count(Arr[positionOnActualLine]) > 0) {
+						DelChar();
+					}
+					else {
+						while ((I <= GetArrLineLength()) && !(Separ.count(Arr[positionOnActualLine]) > 0)) {
+							I++;
+						}
+					}
+					while ((I <= GetArrLineLength()) && (Arr[I] == ' ')) {
+						I++;
+					}
 					// TODO: k èemu to tady je? if ((I>positionOnActualLine) and TestLastPos(I,positionOnActualLine))
 				}
 				break;

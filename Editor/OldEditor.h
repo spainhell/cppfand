@@ -148,7 +148,7 @@ extern char TypeT;
 extern bool SrchT, UpdatT;
 extern longint* LocalPPtr;
 extern FILE* TxtFH;
-extern bool AllRd;
+//extern bool AllRd;
 extern longint AbsLenT;
 extern BYTE FrameDir;
 extern bool Insert, Indent, Wrap, Just;

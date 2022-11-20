@@ -114,7 +114,7 @@ WORD PHNum = 0, PPageS = 0; // {strankovani ve Scroll}
 FILE* TxtFH = nullptr;
 pstring TxtPath;
 pstring TxtVol;
-bool AllRd = false;
+//bool AllRd = false;
 longint AbsLenT = 0;
 bool ChangePart, UpdPHead;
 void RestorePar(longint l);
@@ -334,16 +334,27 @@ bool FindString(WORD& I, WORD Len)
 	return result;
 }
 
-/// pracuje s Pascal indexem 1 .. N
-size_t FindCtrl(char* t, size_t first, size_t last)
+/**
+ * \brief Find control char in the text
+ * \param text input text
+ * \param textLen input text length
+ * \param first first index 0 .. N
+ * \param last last index 0 .. N
+ * \return index of control char or string::npos if not found
+ */
+size_t FindCtrlChar(char* text, size_t textLen, size_t first, size_t last)
 {
-	first--; last--;
-	// ^A ^B ^D ^E ^Q ^S ^W
-	std::set<char> pc = { 0x01, 0x02, 0x04, 0x05, 0x11, 0x13, 0x17 };
-	for (size_t i = first; i <= last; i++) {
-		if (pc.count(t[i]) > 0) return i;
+	if (first > textLen - 1 || first > last) {
+		return std::string::npos; // nenalezeno
 	}
-	return std::string::npos; // nenalezeno
+	else {
+		// ^A ^B ^D ^E ^Q ^S ^W
+		std::set<char> pc = { 0x01, 0x02, 0x04, 0x05, 0x11, 0x13, 0x17 };
+		for (size_t i = first; i < last; i++) {
+			if (pc.count(text[i]) > 0) return i;
+		}
+		return std::string::npos; // nenalezeno
+	}
 }
 
 /**
@@ -354,11 +365,8 @@ size_t FindCtrl(char* t, size_t first, size_t last)
  */
 void SetColorOrd(ColorOrd& co, size_t first, size_t last)
 {
-	first = first + 1; // to work with Pascal type
-	last = last + 1;   // to work with Pascal type
-
-	size_t index = FindCtrl(T, first, last);
-	while (index < last - 1) // if not found -> I = std::string::npos
+	size_t index = FindCtrlChar(T, LenT, first, last);
+	while (index < last) // if not found -> I = std::string::npos
 	{
 		size_t pp = co.find(T[index]);
 		if (pp != std::string::npos) {
@@ -367,7 +375,7 @@ void SetColorOrd(ColorOrd& co, size_t first, size_t last)
 		else {
 			co += T[index];
 		}
-		index = FindCtrl(T, index + 2, last);
+		index = FindCtrlChar(T, LenT, index + 2, last);
 	}
 }
 
@@ -383,11 +391,15 @@ void LastLine(char* input, WORD from, WORD num, WORD& Ind, WORD& Count)
 	WORD length = Count;
 	Count = 0;
 	Ind = from;
-	for (int i = from; i < length; i++)
-	{
-		if (input[i] == _CR) { Ind = from + i; Count++; }
+	for (int i = from; i < length; i++)	{
+		if (input[i] == _CR) {
+			Ind = from + i;
+			Count++;
+		}
 	}
-	if (Count > 0 && input[Ind] == 0x0A) Ind++; // LF
+	if (Count > 0 && input[Ind] == _LF) {
+		Ind++; // LF
+	}
 }
 
 bool RdNextPart()
@@ -398,7 +410,7 @@ bool RdNextPart()
 	SeekH(TxtFH, 0);
 	ReadH(TxtFH, fileSize, T);
 	LenT = fileSize;
-	AllRd = true;
+	//AllRd = true;
 	return false; // return ChangePart
 }
 
@@ -508,7 +520,7 @@ void RdFirstPart()
 {
 	NullChangePart();
 	// Part.PosP = 0; Part.LineP = 0; Part.LenP = 0; Part.ColorP = "";
-	AllRd = false;
+	//AllRd = false;
 	ChangePart = RdNextPart();
 }
 
@@ -1021,7 +1033,7 @@ void SmallerPart(WORD Ind, WORD FreeSize)
 	}
 	if (il < LenT)
 	{
-		if (il < LenT - 1) { AllRd = false; }
+		//if (il < LenT - 1) { AllRd = false; }
 		//Part.LenP = il;
 		LenT = il + 1;
 		T[LenT] = _CR;
@@ -1311,10 +1323,10 @@ void UpdScreen()
 	}
 	do {
 		if (MyTestEvent()) return; // {tisk celeho okna}
-		if ((index >= LenT) && !AllRd) {
-			NextPartDek();
-			//index -= Part.MovI;
-		}
+		//if ((index >= LenT) && !AllRd) {
+		//	NextPartDek();
+		//	//index -= Part.MovI;
+		//}
 
 		if (bScroll && (index < LenT)) {
 			if ((InsPg && (ModPage(r - rr + RScrL - 1))) || InsPage) {
@@ -1516,7 +1528,7 @@ void DisplLL(WORD Flags)
 
 void RollNext()
 {
-	if ((NextLineStartIndex >= LenT) && !AllRd) NextPartDek();
+	//if ((NextLineStartIndex >= LenT) && !AllRd) NextPartDek();
 	if (NextLineStartIndex <= LenT) {
 		screen.GotoXY(1, 1);
 		//MyDelLine();
@@ -1619,7 +1631,7 @@ void PreviousLine()
 void NextLine(bool WrScr)
 {
 	TestKod();
-	if ((NextLineStartIndex >= LenT) && !AllRd) NextPartDek();
+	//if ((NextLineStartIndex >= LenT) && !AllRd) NextPartDek();
 	if (NextLineStartIndex <= LenT) {
 		textIndex = NextLineStartIndex;
 		DekodLine(textIndex);
@@ -2011,14 +2023,14 @@ void Format(WORD& i, longint First, longint Last, WORD Posit, bool Rep)
 	do {
 		if (LenT > 0x400) ii1 = LenT - 0x400;
 		else ii1 = 0;
-		if ((fst >= ii1) && !AllRd) {
-			NextPartDek();
-			//fst -= Part.MovI;
-			//lst -= Part.MovI;
-			//llst -= Part.MovI;
-			if (llst > LenT) lst = LenT;
-			else lst = llst;
-		}
+		//if ((fst >= ii1) && !AllRd) {
+		//	NextPartDek();
+		//	//fst -= Part.MovI;
+		//	//lst -= Part.MovI;
+		//	//llst -= Part.MovI;
+		//	if (llst > LenT) lst = LenT;
+		//	else lst = llst;
+		//}
 		i = fst; ii1 = i;
 		if ((i < 2) || (T[i - 1] == _LF)) {
 			while (T[ii1] == ' ') ii1++; Posit = MaxW(Posit, ii1 - i + 1);
@@ -2335,13 +2347,13 @@ bool BlockHandle(longint& fs, FILE* W1, char Oper)
 			}
 			}
 			if (Oper == 'U' || Oper == 'L' || Oper == 'Y') SetUpdat();
-			if ((Oper == 'p') && AllRd) LL1 = LL2;
-			if (!AllRd && (LL1 < LL2))
-			{
-				I1 = LenT;
-				NextPart();
-				//I1 -= Part.MovI;
-			}
+			if ((Oper == 'p') /* && AllRd*/) LL1 = LL2;
+			//if (!AllRd && (LL1 < LL2))
+			//{
+			//	I1 = LenT;
+			//	NextPart();
+			//	//I1 -= Part.MovI;
+			//}
 		} while (LL1 != LL2);
 	}
 	else              /*ColBlock*/
@@ -2551,8 +2563,8 @@ void BlockCDrop(char Oper, void* P1, LongStr* sp)
 		if (sp->A[I1] == _CR) {
 			InsertLine(i, I1, I3, ww, sp);
 			ww = BegBPos; EndBPos = MaxW(ww + i, EndBPos);
-			if ((NextLineStartIndex > LenT) && ((TypeT != FileT) || AllRd)) {
-				TestLenText(&T, LenT, LenT, longint(LenT) + 2);
+			if ((NextLineStartIndex > LenT) && ((TypeT != FileT) || true /*AllRd*/)) {
+				TestLenText(&T, LenT, LenT, (longint)LenT + 2);
 				T[LenT - 2] = _CR;
 				T[LenT - 1] = _LF;
 				NextLineStartIndex = LenT;
@@ -2994,7 +3006,7 @@ void Edit(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys)
 	PredScPos = 1;
 	UpdPHead = false;
 	if (TypeT != FileT) {
-		AllRd = true;
+		//AllRd = true;
 		AbsLenT = LenT - 1;
 		//Part.LineP = 0;
 		//Part.PosP = 0;
