@@ -101,7 +101,7 @@ char CharPg = '\0';
 bool InsPg = false;
 longint BegBLn = 0, EndBLn = 0;
 WORD BegBPos = 0, EndBPos = 0;
-WORD ScreenIndex = 0; // text index for printing position 0 .. N
+WORD ScreenIndex = 0; // index of the first char on the screen 0 .. N
 WORD textIndex = 0;
 WORD positionOnActualLine = 0; // position of the cursor on the actual line (1 .. 255)
 WORD BPos = 0; // {screen status}
@@ -346,19 +346,28 @@ size_t FindCtrl(char* t, size_t first, size_t last)
 	return std::string::npos; // nenalezeno
 }
 
-void SetColorOrd(ColorOrd& CO, WORD First, WORD Last)
+/**
+ * \brief Changes colors in text (what exactly?)
+ * \param co color
+ * \param first index of the first char 0 .. n
+ * \param last index of the last char 0 .. n
+ */
+void SetColorOrd(ColorOrd& co, size_t first, size_t last)
 {
-	size_t index = FindCtrl(T, First, Last);
-	while (index < Last - 1) // if not found -> I = std::string::npos
+	first = first + 1; // to work with Pascal type
+	last = last + 1;   // to work with Pascal type
+
+	size_t index = FindCtrl(T, first, last);
+	while (index < last - 1) // if not found -> I = std::string::npos
 	{
-		size_t pp = CO.find(T[index]);
+		size_t pp = co.find(T[index]);
 		if (pp != std::string::npos) {
-			CO.erase(pp);
+			co.erase(pp);
 		}
 		else {
-			CO += T[index];
+			co += T[index];
 		}
-		index = FindCtrl(T, index + 2, Last);
+		index = FindCtrl(T, index + 2, last);
 	}
 }
 
@@ -1159,49 +1168,6 @@ size_t GetLineStartIndex(size_t lineNr)
 {
 	// znacne zjednoduseno oproti originalu
 
-	//WORD result;
-
-	//while (true) {
-	//	if (Num <= 0) {
-	//		if (Part.PosP == 0) {
-	//			Num = 1;
-	//			//if (textIndex < 1) textIndex = 1;
-	//			//if (TextLineNr < 1) TextLineNr = 1;
-	//		}
-	//		else {
-	//			PredPart();
-	//			continue;
-	//		}
-	//	}
-	//	if (Num == 1) {
-	//		result = 1;
-	//	}
-	//	else {
-	//		// WORD J = Num - 1;
-	//		// TODO: tady se vyuziva jinak puvodni kod -> k cemu je to 'J'?
-	//		// I = FindCharPosition(J, _CR, 1, LenT) + 1;
-	//		WORD I = FindCharPosition(T, LenT, _CR, 1, Num - 1) + 1;
-	//		if (T[I - 1] == _LF) {
-	//			I++;
-	//		}
-	//		if (I > LenT) {
-	//			if (AllRd) {
-	//				Num = GetLine(LenT);
-	//				result = CurrentLineFirstCharIndex(LenT);
-	//			}
-	//			else {
-	//				NextPart();
-	//				if (Num != TextLineNr) Num -= Part.MovL;
-	//				continue;
-	//			}
-	//		}
-	//		else {
-	//			result = I;
-	//		}
-	//	}
-	//	return result; // returns C string index (0..n)
-	// }
-
 	size_t result;
 
 	if (lineNr <= 1) {
@@ -1210,7 +1176,8 @@ size_t GetLineStartIndex(size_t lineNr)
 	else {
 		// hledame pozici za n-tym vyskytem _CR
 		size_t pos = FindCharPosition(T, LenT, _CR, 0, lineNr - 1) + 1;
-		if (pos < LenT && T[pos + 1] == _LF) {
+		// pokud je na nalezene pozici _LF, jdi o 1 dal
+		if (pos < LenT && T[pos] == _LF) {
 			pos++;
 		}
 		result = pos;
@@ -1306,7 +1273,7 @@ void UpdScreen()
 
 		if (HelpScroll) {
 			//ColScr = Part.ColorP;
-			SetColorOrd(ColScr, 1, ScreenIndex + 1);
+			SetColorOrd(ColScr, 0, ScreenIndex);
 		}
 	}
 	if (bScroll) {
@@ -1322,7 +1289,7 @@ void UpdScreen()
 	}
 	else if (Mode == HelpM) {
 		//co1 = Part.ColorP;
-		SetColorOrd(co1, 1, textIndex);
+		SetColorOrd(co1, 0, textIndex);
 		ScrollWrline(Arr, TextLineNr - ScreenFirstLineNr + 2, co1);
 	}
 	else {
@@ -1511,7 +1478,7 @@ void ScrollPress()
 			BCol = Column(BPos);
 			Colu = Column(positionOnActualLine);
 			//ColScr = Part.ColorP;
-			SetColorOrd(ColScr, 1, ScreenIndex + 1);
+			SetColorOrd(ColScr, 0, ScreenIndex);
 		}
 		else {
 			if ((PredScLn < L1) || (PredScLn >= L1 + PageS)) PredScLn = L1;
@@ -2262,7 +2229,7 @@ void SetBlockBound(longint& BBPos, longint& EBPos)
 void ResetPrint(char Oper, longint& fs, FILE* W1, longint LenPrint, ColorOrd* co, WORD& I1, bool isPrintFile, CharArr* p)
 {
 	//*co = Part.ColorP;
-	SetColorOrd(*co, 1, I1);
+	SetColorOrd(*co, 0, I1 - 1);
 	isPrintFile = false;
 	fs = co->length();
 	LenPrint += fs;
