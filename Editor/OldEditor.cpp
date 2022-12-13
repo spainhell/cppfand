@@ -228,11 +228,6 @@ void HMsgExit(pstring s)
 	}
 }
 
-/// Find index of Nth character in C-string, if not found then index after LENGTH is returned!
-/// Works with values 0 .. n
-
-
-
 /// <summary>
 /// Find N-th char position in the text
 /// </summary>
@@ -732,7 +727,9 @@ BYTE Color(char c)
 
 BYTE Color(ColorOrd CO)
 {
-	if (CO.length() == 0) return TxtColor;
+	if (CO.length() == 0) {
+		return TxtColor;
+	}
 	const char lastColor = CO[CO.length() - 1];
 	return Color(lastColor);
 }
@@ -874,11 +871,24 @@ void ScrollWrline(char* P, int Row, ColorOrd& CO)
 
 WORD PColumn(WORD w, char* P)
 {
-	WORD c, ww;
-	if (w == 0) { return 0; }
-	ww = 1; c = 1;
-	while (ww <= w) { if (P[ww] >= ' ') c++; ww++; }
-	if (P[w] >= ' ') c--;
+	if (w == 0) {
+		return 0;
+	}
+
+	WORD ww = 1;
+	WORD c = 1;
+
+	while (ww <= w)	{
+		if (P[ww] >= ' ') {
+			c++;
+			ww++;
+		}
+	}
+
+	if (P[w] >= ' ') {
+		c--;
+	}
+
 	return c;
 }
 
