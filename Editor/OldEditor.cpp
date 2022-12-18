@@ -357,28 +357,6 @@ size_t FindCtrlChar(char* text, size_t textLen, size_t first, size_t last)
 	}
 }
 
-/**
- * \brief Changes colors in text (what exactly?)
- * \param co color
- * \param first index of the first char 0 .. n
- * \param last index of the last char 0 .. n
- */
-void SetColorOrd(ColorOrd& co, size_t first, size_t last)
-{
-	size_t index = FindCtrlChar(T, LenT, first, last);
-	// if not found -> index = std::string::npos
-	while (index < last) {
-		size_t pp = co.find(T[index]);
-		if (pp != std::string::npos) {
-			co.erase(pp);
-		}
-		else {
-			co += T[index];
-		}
-		index = FindCtrlChar(T, LenT, index + 2, last);
-	}
-}
-
 void SimplePrintHead()
 {
 	//pstring ln;
@@ -1277,6 +1255,30 @@ bool ModPage(longint RLine)
 	return false;
 }
 
+/**
+ * \brief Reads colors in text and creates ColorOrd string from it
+ * \param first index of the first char 0 .. n
+ * \param last index of the last char 0 .. n
+ * \return ColorOrd string with colors
+ */
+ColorOrd SetColorOrd(size_t first, size_t last)
+{
+	ColorOrd co;
+	size_t index = FindCtrlChar(T, LenT, first, last);
+	// if not found -> index = std::string::npos
+	while (index < last) {
+		size_t pp = co.find(T[index]);
+		if (pp != std::string::npos) {
+			co.erase(pp);
+		}
+		else {
+			co += T[index];
+		}
+		index = FindCtrlChar(T, LenT, index + 2, last);
+	}
+	return co;
+}
+
 void UpdScreen()
 {
 	integer r; // row number, starts from 1
@@ -1300,7 +1302,7 @@ void UpdScreen()
 
 		if (HelpScroll) {
 			//ColScr = Part.ColorP;
-			SetColorOrd(ColScr, 0, ScreenIndex);
+			ColScr = SetColorOrd(0, ScreenIndex);
 		}
 	}
 	if (bScroll) {
@@ -1316,7 +1318,7 @@ void UpdScreen()
 	}
 	else if (Mode == HelpM) {
 		//co1 = Part.ColorP;
-		SetColorOrd(co1, 0, textIndex);
+		co1 = SetColorOrd(0, textIndex);
 		ScrollWrline(Arr, TextLineNr - ScreenFirstLineNr + 2, co1);
 	}
 	else {
@@ -1505,7 +1507,7 @@ void ScrollPress()
 			BCol = Column(BPos);
 			Colu = Column(positionOnActualLine);
 			//ColScr = Part.ColorP;
-			SetColorOrd(ColScr, 0, ScreenIndex);
+			ColScr = SetColorOrd(0, ScreenIndex);
 		}
 		else {
 			if ((PredScLn < L1) || (PredScLn >= L1 + PageS)) PredScLn = L1;
@@ -2256,7 +2258,7 @@ void SetBlockBound(longint& BBPos, longint& EBPos)
 void ResetPrint(char Oper, longint& fs, FILE* W1, longint LenPrint, ColorOrd* co, WORD& I1, bool isPrintFile, CharArr* p)
 {
 	//*co = Part.ColorP;
-	SetColorOrd(*co, 0, I1 - 1);
+	*co = SetColorOrd(0, I1 - 1);
 	isPrintFile = false;
 	fs = co->length();
 	LenPrint += fs;
