@@ -524,8 +524,8 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 				if (Mode == HelpM) { HelpLU('L'); }
 				else
 					if (bScroll) {
-						if (BCol > 0) {
-							Colu = BCol;
+						if (columnOffset > 0) {
+							Colu = columnOffset;
 							positionOnActualLine = Position(Colu);
 						}
 					}
@@ -540,7 +540,7 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 				if (Mode == HelpM) HelpRD('R');
 				else {
 					if (bScroll) {
-						positionOnActualLine = MinI(LineMaxSize, Position(BCol + LineS + 1));
+						positionOnActualLine = MinI(LineMaxSize, Position(columnOffset + LineS + 1));
 						Colu = Column(positionOnActualLine);
 					}
 					else {

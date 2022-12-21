@@ -137,7 +137,7 @@ extern longint AbsLenT;
 extern BYTE FrameDir;
 extern bool Insert, Indent, Wrap, Just;
 extern integer LeftMarg, RightMarg;
-extern WORD BCol, Colu, Row;
+extern WORD columnOffset, Colu, Row;
 extern bool InsPg, ChangePart, TypeB;
 extern WORD WordL, LastC, FirstC, FirstR, LastR;
 extern longint BegBLn, EndBLn;

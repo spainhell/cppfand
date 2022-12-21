@@ -39,7 +39,9 @@ integer TextLineNr = 0;          // cislo radku v celem textu (1 .. N)
 integer ScreenFirstLineNr = 0;   // cislo radku, ktery je na obrazovce zobrazen jako prvni (1 .. N)
 longint RScrL = 0;
 bool UpdatedL = false, CtrlL = false, HardL = false;
-WORD BCol = 0, Colu = 0, Row = 0;
+WORD columnOffset = 0;
+WORD Colu = 0;
+WORD Row = 0;
 bool ChangeScr = false;
 ColorOrd ColScr;
 bool IsWrScreen = false;
@@ -797,7 +799,7 @@ void EditWrline(char* P, int Row)
 	screen.ScrWrBuf(WindMin.X - 1, WindMin.Y + Row - 2, &BuffLine[BPos], LineS);
 }
 
-void ScrollWrline(char* P, int Row, ColorOrd& CO)
+void ScrollWrline(char* P, size_t offsetX, int Row, ColorOrd& CO)
 {
 	std::set<char> GrafCtrl = { 3,6,9,11,15,16,18,21,22,24,25,26,29,30,31 };
 	BYTE len = 15; // GrafCtrl has 15 members
@@ -831,7 +833,7 @@ void ScrollWrline(char* P, int Row, ColorOrd& CO)
 	integer LP = I - 1;   // index of last character (before CR)
 	nv1 = ' ';
 
-	while (J < BCol + LineS) {
+	while (J < offsetX + LineS) {
 		BuffLine[J] = (nv2 << 8) + nv1;
 		J++;
 	}
@@ -860,13 +862,13 @@ void ScrollWrline(char* P, int Row, ColorOrd& CO)
 			}
 			I++;
 		}
-		while (J <= BCol + LineS) {
+		while (J <= offsetX + LineS) {
 			BuffLine[J] = (BuffLine[J] & 0x00FF) + (Col << 8);
 			J++;
 		}
 	}
 	// both 'WindMin.Y' and 'Row' are counted from 1 -> that's why -2 
-	screen.ScrWrBuf(WindMin.X - 1, WindMin.Y + Row - 2, &BuffLine[BCol], LineS);
+	screen.ScrWrBuf(WindMin.X - 1, WindMin.Y + Row - 2, &BuffLine[offsetX], LineS);
 }
 
 WORD PColumn(WORD w, char* P)
@@ -1139,10 +1141,9 @@ WORD SetInd(char* text, size_t len_text, WORD Ind, WORD Pos) // { line, pozice -
 
 WORD Position(WORD c) // {PosToCol}
 {
-	WORD cc, p;
-	cc = 1; p = 1;
-	while (cc <= c)
-	{
+	WORD cc = 1;
+	WORD p = 1;
+	while (cc <= c) {
 		if (Arr[p] >= ' ') cc++;
 		p++;
 	}
@@ -1151,16 +1152,23 @@ WORD Position(WORD c) // {PosToCol}
 
 WORD Column(WORD p)
 {
-	WORD c, pp;
-	if (p == 0) { return 0; }
-	pp = 1; c = 1;
-	while (pp <= p) {
-		if (Arr[pp] >= ' ') c++;
-		pp++;
+	if (p == 0 || p == 1) {
+		return 0;
 	}
-	if (Arr[p] >= ' ') c--;
-	return c;
+	WORD c = 1;
+	//WORD pp = 0;
+	//while (pp <= p) {
+	//	if ((BYTE)Arr[pp] >= ' ') c++;
+	//	pp++;
+	//}
 
+	for (size_t i = 0; i < p; i++) {
+		if ((BYTE)Arr[i] >= ' ') c++;
+	}
+
+	//if ((BYTE)Arr[p - 1] >= ' ') c--;
+
+	return c + 1;
 }
 
 /**
@@ -1312,12 +1320,12 @@ void UpdScreen()
 		while (Arr[r] == 0x0C) {
 			r++;
 		}
-		ScrollWrline(&Arr[r], 1, co1);
+		ScrollWrline(&Arr[r], columnOffset, 1, co1);
 	}
 	else if (Mode == HelpM) {
 		//co1 = Part.ColorP;
 		SetColorOrd(co1, 0, textIndex);
-		ScrollWrline(Arr, TextLineNr - ScreenFirstLineNr + 2, co1);
+		ScrollWrline(Arr, columnOffset, TextLineNr - ScreenFirstLineNr + 2, co1);
 	}
 	else {
 		EditWrline(Arr, TextLineNr - ScreenFirstLineNr + 1);
@@ -1360,10 +1368,10 @@ void UpdScreen()
 		if (index < LenT) {
 			// index je mensi nez delka textu -> porad je co tisknout
 			if (HelpScroll) {
-				ScrollWrline((char*)&T[index], r, co2);
+				ScrollWrline(&T[index], columnOffset, r, co2);
 			}
 			else {
-				EditWrline((char*)&T[index], r);
+				EditWrline(&T[index], r);
 			}
 			if (InsPage) {
 				// najde konec radku, potrebujeme 1. znak dalsiho radku
@@ -1379,7 +1387,7 @@ void UpdScreen()
 			}
 		}
 		else {
-			EditWrline((char*)&T[LenT - 1], r);
+			EditWrline(&T[LenT - 1], r);
 			WrEndL(false, r);
 		}
 
@@ -1406,13 +1414,13 @@ void Background()
 				}
 			}
 		}
-		if (Column(p) - BCol > LineS) {
-			BCol = Column(p) - LineS;
-			BPos = Position(BCol);
+		if (Column(p) - columnOffset > LineS) {
+			columnOffset = Column(p) - LineS;
+			BPos = Position(columnOffset);
 		}
-		if (Column(positionOnActualLine) <= BCol) {
-			BCol = Column(positionOnActualLine);
-			BPos = Position(BCol);
+		if (Column(positionOnActualLine) <= columnOffset + 1) {
+			columnOffset = Column(positionOnActualLine);
+			BPos = Position(columnOffset);
 		}
 	}
 	else {
@@ -1502,7 +1510,7 @@ void ScrollPress()
 			ScreenFirstLineNr = TextLineNr;
 			RScrL = NewRL(ScreenFirstLineNr);
 			if (L1 != LineAbs(ScreenFirstLineNr)) ChangeScr = true; // { DekodLine; }
-			BCol = Column(BPos);
+			columnOffset = Column(BPos);
 			Colu = Column(positionOnActualLine);
 			//ColScr = Part.ColorP;
 			SetColorOrd(ColScr, 0, ScreenIndex);
@@ -2727,7 +2735,8 @@ void SetScreen(WORD Ind, WORD ScrXY, WORD Pos)
 		BPos = positionOnActualLine - (ScrXY & 0x00FF);
 		ChangeScr = true;
 	}
-	Colu = Column(positionOnActualLine); BCol = Column(BPos);
+	Colu = Column(positionOnActualLine);
+	columnOffset = Column(BPos);
 	if (bScroll) {
 		RScrL = NewRL(ScreenFirstLineNr);
 		TextLineNr = MaxI(PHNum + 1, LineAbs(TextLineNr)); // -Part.LineP;
@@ -3047,7 +3056,7 @@ void Edit(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys)
 	else {
 		screen.CrsNorm();
 	}
-	BCol = 0;
+	columnOffset = 0;
 	BPos = 0;
 	SetScreen(IndexT, ScrT, positionOnActualLine);
 	Konec = false;
