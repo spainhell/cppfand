@@ -621,29 +621,49 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 			case __PAGEDOWN: {
 				if (Mode != HelpM) TestKod();
 				else {
-					ClrWord(); TextLineNr = ScreenFirstLineNr;
+					ClrWord();
+					TextLineNr = ScreenFirstLineNr;
 				}
 				L1 = LineAbs(TextLineNr);
 				if (bScroll) {
-					RScrL += PageS; if (ModPage(RScrL)) RScrL--;
-					DekFindLine(LineAbs(NewL(RScrL))); positionOnActualLine = Position(Colu);
+					RScrL += PageS;
+					if (ModPage(RScrL)) {
+						RScrL--;
+					}
+					DekFindLine(LineAbs(NewL(RScrL)));
+					positionOnActualLine = Position(Colu);
 					j = CountChar(T, LenT, 0x0C, ScreenIndex, textIndex);
-					if ((j > 0) && InsPg) DekFindLine(LineAbs(TextLineNr - j));
-					ScreenFirstLineNr = TextLineNr; RScrL = NewRL(ScreenFirstLineNr);
+					if ((j > 0) && InsPg) {
+						DekFindLine(LineAbs(TextLineNr - j));
+					}
+					ScreenFirstLineNr = TextLineNr;
+					RScrL = NewRL(ScreenFirstLineNr);
 				}
 				else {
 					DekFindLine(LineAbs(TextLineNr) + PageS);
-					if (TextLineNr >= ScreenFirstLineNr + PageS)  ScreenFirstLineNr += PageS;
+					if (TextLineNr >= ScreenFirstLineNr + PageS) {
+						ScreenFirstLineNr += PageS;
+					}
 				}
 				ChangeScr = true;
 				if (Mode == HelpM) {
 					ScreenIndex = GetLineStartIndex(ScreenFirstLineNr);
-					positionOnActualLine = Position(Colu); W1 = WordNo2(); I3 = WordL;
-					if (WordFind(W1 + 1, I1, I2, WordL) && WordExist()) { SetWord(I1, I2); }
-					else if (WordFind(W1, I1, I2, WordL) && WordExist()) { SetWord(I1, I2); }
-					else { WordL = 0; }
+					positionOnActualLine = Position(Colu);
+					W1 = WordNo2();
+					I3 = WordL;
+					if (WordFind(W1 + 1, I1, I2, WordL) && WordExist()) {
+						SetWord(I1, I2);
+					}
+					else if (WordFind(W1, I1, I2, WordL) && WordExist()) {
+						SetWord(I1, I2);
+					}
+					else {
+						WordL = 0;
+					}
 				}
-				else { BlockUDShift(L1); }
+				else {
+					BlockUDShift(L1);
+				}
 				break;
 			}
 			case __CTRL_LEFT: {
@@ -1018,9 +1038,10 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 				}
 				case ColBlock: {
 					EndBPos = positionOnActualLine; I2 = 0x1000;
-					MarkStore2(P1); sp = (LongStr*)GetStore2(I2 + 2); //ww =BegBPos;}
+					MarkStore2(P1);
+					sp = (LongStr*)GetStore2(I2 + 2); //ww =BegBPos;}
 					do {
-						if (fs - L2 < longint(I2)) I2 = fs - L2;
+						if (fs - L2 < (longint)I2) I2 = fs - L2;
 						SeekH(F1, L2); ReadH(F1, I2, sp->A); HMsgExit("");
 						L2 += I2; sp->LL = I2; BlockCDrop('R', P1, sp);
 					} while (L2 != fs);
@@ -1037,8 +1058,7 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 				break;
 			} // end case _KR_
 			case _KP_: {
-				if (!BlockHandle(fs, F1, 'P'))
-				{
+				if (!BlockHandle(fs, F1, 'P')) {
 					I1 = BegBLn; I2 = BegBPos; I3 = EndBLn; I = EndBPos; bb = TypeB;
 					BegBLn = 1; EndBLn = 0x7FFF; BegBPos = 1; EndBPos = 0xFF;
 					TypeB = TextBlock;
@@ -1046,8 +1066,7 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 				}
 				break;
 			case _KF_: {
-				if (BlockExist() && (TypeB == TextBlock))
-				{
+				if (BlockExist() && (TypeB == TextBlock)) {
 					TestKod(); screen.CrsHide();
 					SetPartLine(EndBLn);
 					I2 = EndBLn; // -Part.LineP;
@@ -1124,13 +1143,22 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 				break;
 			}
 			case _framesingle_: {
-				Mode = SinFM; screen.CrsBig(); FrameDir = 0; break;
+				Mode = SinFM;
+				screen.CrsBig();
+				FrameDir = 0;
+				break;
 			}
 			case _framedouble_: {
-				Mode = DouFM; screen.CrsBig(); FrameDir = 0; break;
+				Mode = DouFM;
+				screen.CrsBig();
+				FrameDir = 0;
+				break;
 			}
 			case _delframe_: {
-				Mode = DelFM; screen.CrsBig(); FrameDir = 0; break;
+				Mode = DelFM;
+				screen.CrsBig();
+				FrameDir = 0;
+				break;
 			}
 			case _F4_: {
 				char c = ToggleCS(Arr[positionOnActualLine]);
@@ -1144,21 +1172,30 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 			case __ALT_F8: {
 				ep = SaveParams();
 				W1 = Menu(45, spec.KbdTyp + 1);
-				if (W1 != 0) spec.KbdTyp = TKbdConv(W1 - 1);
+				if (W1 != 0) {
+					spec.KbdTyp = TKbdConv(W1 - 1);
+				}
 				RestoreParams(ep);
 				break;
 			}
 			case __CTRL_F6: {
-				if ((TypeT == FileT) || (TypeT == LocalT)) BlockHandle(fs, F1, 'p');
+				if ((TypeT == FileT) || (TypeT == LocalT)) {
+					BlockHandle(fs, F1, 'p');
+				}
 				break;
 			}
 			case 0x1000: {
 			Opet:
-				if ((Mode != HelpM) && (Mode != ViewM) && Wrap)
+				if ((Mode != HelpM) && (Mode != ViewM) && Wrap) {
 					screen.Window(FirstC, FirstR + 1, LastC + 1, LastR);
-				else screen.Window(FirstC, FirstR + 1, LastC, LastR);
+				}
+				else {
+					screen.Window(FirstC, FirstR + 1, LastC, LastR);
+				}
 
-				if (!bScroll) screen.CrsShow();
+				if (!bScroll) {
+					screen.CrsShow();
+				}
 				SetScreen(textIndex, 0, 0);
 				break;
 			}
