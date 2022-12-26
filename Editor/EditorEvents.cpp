@@ -14,13 +14,13 @@
 #include "../cppfand/wwmenu.h"
 
 
-void CtrlShiftAlt(char Mode, std::string& LastS, WORD LastNr, bool IsWrScreen)
+void CtrlShiftAlt(char mode, std::string& LastS, WORD LastNr, bool IsWrScreen)
 {
 	bool Ctrl = false;  WORD Delta = 0; WORD flgs = 0;
 	//(*MyTestEvent 1; *)
 label1:
 	WaitEvent(Delta);
-	if (Mode != HelpM) ScrollPress();
+	if (mode != HelpM) ScrollPress();
 	if (LLKeyFlags != 0)      /* mouse */
 	{
 		flgs = LLKeyFlags; DisplLL(LLKeyFlags); Ctrl = true;
@@ -196,13 +196,13 @@ bool ViewEvent(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys)
 	return result;
 }
 
-bool MyGetEvent(char Mode, BYTE SysLColor, std::string& LastS, WORD LastNr, bool IsWrScreen, bool bScroll, std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys) {
+bool MyGetEvent(char& mode, BYTE SysLColor, std::string& LastS, WORD LastNr, bool IsWrScreen, bool bScroll, std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys) {
 	std::string OrigS = "    ";
 	WORD ww;
 
 	auto result = false;
 
-	CtrlShiftAlt(Mode, LastS, LastNr, IsWrScreen);
+	CtrlShiftAlt(mode, LastS, LastNr, IsWrScreen);
 	// *** Prekodovani klaves ***
 	GetEvent();
 	if (Event.What == evKeyDown)
@@ -218,11 +218,11 @@ bool MyGetEvent(char Mode, BYTE SysLColor, std::string& LastS, WORD LastNr, bool
 		case _V_: Event.Pressed.Key()->wVirtualKeyCode = VK_INSERT; break;
 		case __CTRL_P:
 		{
-			Wr("^P", OrigS, Mode, SysLColor);
+			Wr("^P", OrigS, mode, SysLColor);
 			ww = Event.Pressed.KeyCombination();
 			if (My2GetEvent())
 			{
-				Wr("", OrigS, Mode, SysLColor);
+				Wr("", OrigS, mode, SysLColor);
 				if (Event.Pressed.Char <= 0x31) {
 					Event.Pressed.UpdateKey(CTRL + Event.Pressed.Char);
 					//Event.KeyCode = (ww << 8) || Event.KeyCode;
@@ -232,26 +232,49 @@ bool MyGetEvent(char Mode, BYTE SysLColor, std::string& LastS, WORD LastNr, bool
 		}
 		case __CTRL_Q:
 		{
-			Wr("^Q", OrigS, Mode, SysLColor);
+			Wr("^Q", OrigS, mode, SysLColor);
 			ww = Event.Pressed.KeyCombination();
 			if (My2GetEvent())
 			{
-				Wr("", OrigS, Mode, SysLColor);
+				Wr("", OrigS, mode, SysLColor);
 				switch (Event.Pressed.KeyCombination()) {
 				case _S_: Event.Pressed.Key()->wVirtualKeyCode = _Home_; break;
 				case _D_: Event.Pressed.Key()->wVirtualKeyCode = _End_; break;
 				case _R_: Event.Pressed.Key()->wVirtualKeyCode = _CtrlPgUp_; break;
 				case _C_: Event.Pressed.Key()->wVirtualKeyCode = _CtrlPgDn_; break;
+
 				case _E_: case _X_: case _Y_:
 				case _L_: case _B_: case _K_:
-				case _I_: case _F_: case _A_:
-				case 0x2D: // -
-				case 0x2F: // /
-				case 0x3D: // =
-					// Event.KeyCode = (ww << 8) | Event.KeyCode;
+				case _I_: case _F_: case _A_: {
 					break;
+				}
+
+				case '-': {
+					mode = SinFM;
+					screen.CrsBig();
+					FrameDir = 0;
+					result = true;
+					ClrEvent();
+					break;
+				}
+				case '=': {
+					mode = DouFM;
+					screen.CrsBig();
+					FrameDir = 0;
+					result = true;
+					ClrEvent();
+					break;
+				}
+				case '/': {
+					mode = DelFM;
+					screen.CrsBig();
+					FrameDir = 0;
+					result = true;
+					ClrEvent();
+					break;
+				}
 				default: {
-					// Event.KeyCode = 0;
+					ClrEvent();
 				}
 				}
 			}
@@ -259,11 +282,11 @@ bool MyGetEvent(char Mode, BYTE SysLColor, std::string& LastS, WORD LastNr, bool
 		}
 		case __CTRL_K:
 		{
-			Wr("^K", OrigS, Mode, SysLColor);
+			Wr("^K", OrigS, mode, SysLColor);
 			ww = Event.Pressed.KeyCombination();
 			if (My2GetEvent())
 			{
-				Wr("", OrigS, Mode, SysLColor);
+				Wr("", OrigS, mode, SysLColor);
 				std::set<char> setKc = { _B_, _K_, _H_, _S_, _Y_, _C_, _V_, _W_, _R_, _P_, _F_, _U_, _L_, _N_ };
 				if (setKc.count((char)Event.Pressed.KeyCombination()) > 0) {
 					//Event.KeyCode = (ww << 8) | Event.KeyCode;
@@ -276,11 +299,11 @@ bool MyGetEvent(char Mode, BYTE SysLColor, std::string& LastS, WORD LastNr, bool
 		}
 		case __CTRL_O:
 		{
-			Wr("^O", OrigS, Mode, SysLColor);
+			Wr("^O", OrigS, mode, SysLColor);
 			ww = Event.Pressed.KeyCombination();
 			if (My2GetEvent())
 			{
-				Wr("", OrigS, Mode, SysLColor);
+				Wr("", OrigS, mode, SysLColor);
 				switch (Event.Pressed.KeyCombination()) {
 				case _W_: case  _R_: case  _L_: case  _J_: case  _C_:
 				{
@@ -295,9 +318,15 @@ bool MyGetEvent(char Mode, BYTE SysLColor, std::string& LastS, WORD LastNr, bool
 			break;
 		}
 		}
-	// *** Rezim - test ***
-	switch (Mode)
+
+	switch (mode)
 	{
+	case SinFM:
+	case DouFM:
+	case DelFM: {
+		result = true;
+		break;
+	}
 	case HelpM:
 	{
 		result = HelpEvent(breakKeys);
@@ -318,7 +347,7 @@ bool MyGetEvent(char Mode, BYTE SysLColor, std::string& LastS, WORD LastNr, bool
 	return result;
 }
 
-void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS, WORD LastNr, std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys) {
+void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS, WORD LastNr, std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys) {
 	wwmix wwmix1;
 	WORD I = 0, I1 = 0;
 	integer I2 = 0, I3 = 0;
@@ -338,12 +367,12 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 
 	IsWrScreen = false;
 
-	if (!MyGetEvent(Mode, SysLColor, LastS, LastNr, IsWrScreen, bScroll, ExitD, breakKeys)) {
+	if (!MyGetEvent(mode, SysLColor, LastS, LastNr, IsWrScreen, bScroll, ExitD, breakKeys)) {
 		ClrEvent();
 		IsWrScreen = false;
 		return;
 	}
-	if (!bScroll) { CleanFrameM(ExitD, breakKeys); }
+	if (!bScroll) { CleanFrame(ExitD, breakKeys); }
 	//NewExit(Ovr(), er);
 	//goto Opet;
 	// !!! with Event do:
@@ -412,7 +441,7 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 				switch (TypeT) {
 				case FileT: {
 					fs = IndexT; // Part.PosP + IndexT;
-					OpenTxtFh(Mode);
+					OpenTxtFh(mode);
 					ReadTextFile();
 					SimplePrintHead();
 					//while ((fs > Part.PosP + Part.LenP) && !AllRd) { RdNextPart(); }
@@ -450,8 +479,8 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 		}  // while
 
 		// test frame drawing mode
-		if ((Mode == SinFM || Mode == DouFM || Mode == DelFM || Mode == NotFM) && !bScroll) {
-			FrameStep(FrameDir, key);
+		if ((mode == SinFM || mode == DouFM || mode == DelFM || mode == NotFM) && !bScroll) {
+			FrameStep(FrameDir, Event.Pressed);
 		}
 		else if (Event.Pressed.isChar() || (key >= CTRL + '\x01' && key <= CTRL + '\x31')) {
 			// printable character
@@ -480,7 +509,7 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 			// control key
 			switch (key) {
 			case __ENTER: {
-				if (Mode == HelpM) {
+				if (mode == HelpM) {
 					Konec = WordExist();
 					Event.Pressed.UpdateKey(key);
 				}
@@ -521,7 +550,7 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 				break;
 			}
 			case __LEFT: {
-				if (Mode == HelpM) { HelpLU('L'); }
+				if (mode == HelpM) { HelpLU('L'); }
 				else
 					if (bScroll) {
 						if (columnOffset > 0) {
@@ -537,7 +566,7 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 				break;
 			}
 			case __RIGHT: {
-				if (Mode == HelpM) HelpRD('R');
+				if (mode == HelpM) HelpRD('R');
 				else {
 					if (bScroll) {
 						positionOnActualLine = MinI(LineMaxSize, Position(columnOffset + LineS + 1));
@@ -552,7 +581,7 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 				break;
 			}
 			case __UP: {
-				if (Mode == HelpM) {
+				if (mode == HelpM) {
 					HelpLU('U');
 				}
 				else {
@@ -567,7 +596,7 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 				break;
 			}
 			case __DOWN: {
-				if (Mode == HelpM) HelpRD('D');
+				if (mode == HelpM) HelpRD('D');
 				else {
 					L1 = LineAbs(TextLineNr); // na kterem jsme prave radku textu (celkove, ne na obrazovce)
 					NextLine(true);
@@ -577,7 +606,7 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 				break;
 			}
 			case __PAGEUP: {
-				if (Mode == HelpM) { TestKod(); }
+				if (mode == HelpM) { TestKod(); }
 				else {
 					ClrWord();
 					TextLineNr = ScreenFirstLineNr;
@@ -607,7 +636,7 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 					DekFindLine(LineAbs(TextLineNr - PageS));
 				}
 				ChangeScr = true;
-				if (Mode == HelpM) {
+				if (mode == HelpM) {
 					ScreenIndex = GetLineStartIndex(ScreenFirstLineNr);
 					positionOnActualLine = Position(Colu);
 					if (WordFind(WordNo2() + 1, I1, I2, WordL) && WordExist()) {
@@ -619,7 +648,7 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 				break;
 			}
 			case __PAGEDOWN: {
-				if (Mode != HelpM) TestKod();
+				if (mode != HelpM) TestKod();
 				else {
 					ClrWord();
 					TextLineNr = ScreenFirstLineNr;
@@ -646,7 +675,7 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 					}
 				}
 				ChangeScr = true;
-				if (Mode == HelpM) {
+				if (mode == HelpM) {
 					ScreenIndex = GetLineStartIndex(ScreenFirstLineNr);
 					positionOnActualLine = Position(Colu);
 					W1 = WordNo2();
@@ -860,7 +889,7 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 			}
 			case _QI_: { Indent = !Indent; break; }
 			case _QL_: { if (UpdatedL) DekodLine(textIndex); break; }
-			case _QY_: {if (TestLastPos(GetArrLineLength() + 1, positionOnActualLine)) ClrEol(); break; }
+			case _QY_: { if (TestLastPos(GetArrLineLength() + 1, positionOnActualLine)) ClrEol(); break; }
 			case _QF_:
 			case _QA_: {
 				Replace = false;
@@ -870,7 +899,9 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 					if (MyPromptLL(407, ReplaceStr)) goto Nic;
 					Replace = true;
 				}
-				ss = OptionStr; if (MyPromptLL(406, ss)) goto Nic; OptionStr = ss;
+				ss = OptionStr;
+				if (MyPromptLL(406, ss)) goto Nic;
+				OptionStr = ss;
 				TestKod();
 				if (TestOptStr('l') && (!BlockExist() || (TypeB == ColBlock))) goto Nic;
 				if (TestOptStr('l')) SetBlockBound(L1, L2);
@@ -1142,24 +1173,24 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 				positionOnActualLine = 1;
 				break;
 			}
-			case _framesingle_: {
-				Mode = SinFM;
-				screen.CrsBig();
-				FrameDir = 0;
-				break;
-			}
-			case _framedouble_: {
-				Mode = DouFM;
-				screen.CrsBig();
-				FrameDir = 0;
-				break;
-			}
-			case _delframe_: {
-				Mode = DelFM;
-				screen.CrsBig();
-				FrameDir = 0;
-				break;
-			}
+					//case _framesingle_: {
+					//	Mode = SinFM;
+					//	screen.CrsBig();
+					//	FrameDir = 0;
+					//	break;
+					//}
+					//case _framedouble_: {
+					//	Mode = DouFM;
+					//	screen.CrsBig();
+					//	FrameDir = 0;
+					//	break;
+					//}
+					//case _delframe_: {
+					//	Mode = DelFM;
+					//	screen.CrsBig();
+					//	FrameDir = 0;
+					//	break;
+					//}
 			case _F4_: {
 				char c = ToggleCS(Arr[positionOnActualLine]);
 				UpdatedL = c != Arr[positionOnActualLine];
@@ -1186,7 +1217,7 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 			}
 			case 0x1000: {
 			Opet:
-				if ((Mode != HelpM) && (Mode != ViewM) && Wrap) {
+				if ((mode != HelpM) && (mode != ViewM) && Wrap) {
 					screen.Window(FirstC, FirstR + 1, LastC + 1, LastR);
 				}
 				else {
@@ -1249,9 +1280,9 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 		} // else
 	} // if (Event.What == evKeyDown)
 
-	else if ((Event.What == evMouseDown) && ((Mode == HelpM) || (Mode == TextM)))
+	else if ((Event.What == evMouseDown) && ((mode == HelpM) || (mode == TextM)))
 	{
-		if (Mode == TextM) TestKod();
+		if (mode == TextM) TestKod();
 		if (!((Event.Where.Y >= FirstR && Event.Where.Y <= LastR - 1)
 			&& (Event.Where.X >= FirstC - 1 && Event.Where.X <= LastC - 1)))
 		{
@@ -1260,14 +1291,14 @@ void HandleEvent(char Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS
 		}
 		I3 = textIndex; j = positionOnActualLine;
 		W1 = Event.Where.Y - WindMin.Y + ScreenFirstLineNr;
-		if (Mode == HelpM) W2 = WordNo2() + 1;
+		if (mode == HelpM) W2 = WordNo2() + 1;
 		DekFindLine(LineAbs(W1));
 		positionOnActualLine = Event.Where.X - WindMin.X + 1;
-		if (Mode != TextM) positionOnActualLine = Position(positionOnActualLine);
+		if (mode != TextM) positionOnActualLine = Position(positionOnActualLine);
 		positionOnActualLine += BPos;
 		I = SetInd(T, LenT, textIndex, positionOnActualLine);
 		if (I < LenT) {
-			if (Mode == HelpM) {
+			if (mode == HelpM) {
 				ClrWord();
 				WordFind(WordNo(I + 1), I1, I2, W1);
 				if ((I1 <= I) && (I2 >= I)) {

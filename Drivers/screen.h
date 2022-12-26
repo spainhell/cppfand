@@ -3,16 +3,21 @@
 #include <string>
 #include <Windows.h>
 
+const BYTE bigCrsSize = 50;
+
 struct TCrs
 {
-	short X = 0; short Y = 0;
-	bool Big = false; bool On = false; bool Enabled = false;
+	short X = 0;
+	short Y = 0;
+	DWORD Size = 1;
+	bool On = false;
+	bool Enabled = false;
 	WORD Ticks = 0;
 };
 struct Wind { BYTE X = 0, Y = 0; };
 const BYTE FrameChars[] { 0xDA, 0xC4, 0xBF, 0xC0, 0xC4, 0xD9, 0xB3, 0x20, 0xB3, 0xC9, 0xCD, 0xBB, 0xC8, 0xCD, 0xBC, 0xBA, 0x20, 0xBA, 0xC3, 0xC4, 0xB4 };
 
-enum Position { relative = 0, absolute = 1, actual = 2 };
+enum ScrPosition { relative = 0, absolute = 1, actual = 2 };
 
 struct WParam
 {
@@ -71,7 +76,7 @@ public:
 	bool ScrRdBuf(WORD X, WORD Y, CHAR_INFO* Buf, WORD L);
 	void ScrMove(short X, short Y, short ToX, short ToY, short L);
 	void ScrColor(WORD X, WORD Y, WORD L, BYTE Color);
-	void WriteChar(short X, short Y, char C, BYTE attr, Position pos = relative);
+	void WriteChar(short X, short Y, char C, BYTE attr, ScrPosition pos = relative);
 	size_t WriteStyledStringToWindow(std::string text, BYTE Attr);
 	//size_t WriteStyledString(short X, short Y, std::string& text, BYTE Attr);
 	void LF();
@@ -82,7 +87,7 @@ public:
 	void CrsHide();
 	void CrsBig();
 	void CrsNorm();
-	void GotoXY(WORD X, WORD Y, Position pos = relative);
+	void GotoXY(WORD X, WORD Y, ScrPosition pos = relative);
 	short WhereX();
 	short WhereY();
 	short WhereXabs();

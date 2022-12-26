@@ -404,5 +404,3 @@ void SetCompileAll()
 	ChptTF->TimeStmp = Today() + CurrTime();
 	SetUpdHandle(ChptTF->Handle);
 }
-
-

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "OldEditor.h"
 #include <set>
@@ -371,7 +371,7 @@ void LastLine(char* input, WORD from, WORD num, WORD& Ind, WORD& Count)
 	WORD length = Count;
 	Count = 0;
 	Ind = from;
-	for (int i = from; i < length; i++)	{
+	for (int i = from; i < length; i++) {
 		if (input[i] == _CR) {
 			Ind = from + i;
 			Count++;
@@ -858,7 +858,7 @@ WORD PColumn(WORD w, char* P)
 	WORD ww = 1;
 	WORD c = 1;
 
-	while (ww <= w)	{
+	while (ww <= w) {
 		if (P[ww] >= ' ') {
 			c++;
 			ww++;
@@ -895,7 +895,7 @@ void WrEndT()
 	// vytvori nove pole o delce puvodniho + 1,
 	// puvodni pole se do nej prekopiruje a na konec se vlozi CR
 	LenT++;
-	char* T2 = new char[LenT + 1]{ 0 }; // udelame pole o 1 vetsi nez potrebujeme -> bude zakoncene '0'
+	char* T2 = new char[LenT + 1] { 0 }; // udelame pole o 1 vetsi nez potrebujeme -> bude zakoncene '0'
 	memcpy(T2, T, LenT - 1);
 	T2[LenT - 1] = _CR;
 	delete[] T;
@@ -997,7 +997,7 @@ void SmallerPart(WORD Ind, WORD FreeSize)
 		if (LenT - il < lon) { i = Ind; i++; }
 	}
 
-	if (il > 0)	{
+	if (il > 0) {
 		// with Part do:
 		//Part.PosP += il; Part.LineP += l;
 		//Part.MovI = il; Part.MovL = l;
@@ -1013,7 +1013,7 @@ void SmallerPart(WORD Ind, WORD FreeSize)
 	}
 
 	Ind -= il;
-	if (LenT < lon)	{
+	if (LenT < lon) {
 		return;
 	}
 	i = LenT;
@@ -1117,36 +1117,44 @@ WORD SetInd(char* text, size_t len_text, WORD Ind, WORD Pos) // { line, pozice -
 	return Ind;
 }
 
-WORD Position(WORD c) // {PosToCol}
+/**
+ * \brief Returns order of N-th character in Arr (because of skipping color chars)
+ * \param n N-th character (1..256)
+ * \return order of the char (1..256)
+ */
+WORD Position(WORD n) // {PosToCol}
 {
 	WORD cc = 1;
 	WORD p = 1;
-	while (cc <= c) {
-		if (Arr[p] >= ' ') cc++;
+	while (cc <= n) {
+		if ((BYTE)Arr[p - 1] >= ' ') cc++;
 		p++;
 	}
 	return p - 1;
 }
 
+/**
+ * \brief Returns column for N-th character in Arr (because of skipping color chars)
+ * \param p order of the char in the Arr (1..256)
+ * \return column on the screen (1..256)
+ */
 WORD Column(WORD p)
 {
-	if (p == 0 || p == 1) {
-		return 0;
-	}
+	if (p == 0) return 0;
+
+	WORD pp = 1;
 	WORD c = 1;
-	//WORD pp = 0;
-	//while (pp <= p) {
-	//	if ((BYTE)Arr[pp] >= ' ') c++;
-	//	pp++;
-	//}
 
-	for (size_t i = 0; i < p; i++) {
-		if ((BYTE)Arr[i] >= ' ') c++;
+	while (pp <= p) {
+		if ((BYTE)Arr[pp - 1] >= ' ') {
+			c++;
+		}
+		pp++;
 	}
 
-	//if ((BYTE)Arr[p - 1] >= ' ') c--;
+	if ((BYTE)Arr[p - 1] >= ' ') c--;
 
-	return c + 1;
+	return c;
 }
 
 /**
@@ -1420,8 +1428,8 @@ void Background()
 			columnOffset = Column(p) - LineS;
 			BPos = Position(columnOffset);
 		}
-		if (Column(positionOnActualLine) <= columnOffset + 1) {
-			columnOffset = Column(positionOnActualLine);
+		if (Column(positionOnActualLine) <= columnOffset) {
+			columnOffset = Column(positionOnActualLine) - 1;
 			BPos = Position(columnOffset);
 		}
 	}
@@ -1585,20 +1593,7 @@ void RollPred()
 	}
 }
 
-void direction1(BYTE x, BYTE& zn2)
-{
-	BYTE y = 0x10;
-	if (x > 2) { y = y << 1; }
-	if (x == 0) { y = 0; }
-	if (Mode == DouFM) {
-		zn2 = zn2 | y;
-	}
-	else {
-		zn2 = zn2 & !y;
-	}
-}
-
-void direction2(BYTE x, BYTE& zn2)
+void direction(BYTE x, BYTE& zn2)
 {
 	BYTE y = 0x10;
 	if (x > 2) { y = y << 1; }
@@ -1679,126 +1674,134 @@ void NextLine(bool WrScr)
 	}
 }
 
-void Frame(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys)
+//void Frame(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys)
+//{
+//	pstring FrameString(15);
+//	FrameString = "\x50\x48\xB3\x4D\xDA\xC0\xC3\x4B\xBF\xD9\xB4\xC4\xC2\xC1\xC5";
+//	pstring FS1(15);
+//	FS1 = "\x50\x48\xBA\x4D\xD6\xD3\xC7\x4B\xB7\xBD\xB6\xC4\xD2\xD0\xD7";
+//	pstring FS2(15);
+//	FS2 = "\x50\x48\xB3\x4D\xD5\xD4\xC6\x4B\xB8\xBE\xB5\xCD\xD1\xCF\xD8";
+//	pstring FS3(15);
+//	FS3 = "\x50\x48\xBA\x4D\xC9\xC8\xCC\x4B\xBB\xBC\xB9\xCD\xCB\xCA\xCE";
+//	BYTE dir, zn1, zn2, b;
+//
+//	UpdStatLine(TextLineNr, positionOnActualLine, Mode);
+//	screen.CrsBig();
+//	BYTE odir = 0;
+//	ClrEvent();
+//
+//	while (true) /* !!! with Event do!!! */
+//	{
+//		if (!MyGetEvent(Mode, SysLColor, LastS, LastNr, IsWrScreen, bScroll, ExitD, breakKeys) ||
+//			((Event.What == evKeyDown) && (Event.Pressed.KeyCombination() == __ESC)) || (Event.What != evKeyDown)) {
+//			ClrEvent();
+//			screen.CrsNorm();
+//			Mode = TextM;
+//			return;
+//		}
+//		switch (Event.Pressed.KeyCombination()) {
+//		case _frmsin_: Mode = SinFM; break;
+//		case _frmdoub_: Mode = DouFM; break;
+//		case _dfrm_: Mode = DelFM; break;
+//		case _nfrm_: Mode = NotFM; break;
+//		case __LEFT:
+//		case __RIGHT:
+//		case __UP:
+//		case __DOWN:
+//			if (!bScroll) {
+//				FrameString[0] = 63;
+//				zn1 = FrameString.first(Arr[positionOnActualLine]);
+//				zn2 = zn1 & 0x30;
+//				zn1 = zn1 & 0x0F;
+//				dir = FrameString.first(Hi(Event.Pressed.KeyCombination()));
+//				auto dirodir = dir + odir;
+//				if (dirodir == 2 || dirodir == 4 || dirodir == 8 || dirodir == 16) odir = 0;
+//				if (zn1 == 1 || zn1 == 2 || zn1 == 4 || zn1 == 8) zn1 = 0;
+//				char oldzn = Arr[positionOnActualLine];
+//				Arr[positionOnActualLine] = ' ';
+//				if (Mode == DelFM) b = zn1 && !(odir || dir);
+//				else b = zn1 | (odir ^ dir);
+//				if (b == 1 || b == 2 || b == 4 || b == 8) b = 0;
+//				if ((Mode == DelFM) && (zn1 != 0) && (b == 0)) oldzn = ' ';
+//				direction(dir, zn2);
+//				direction(odir, zn2);
+//				if (Mode == NotFM) b = 0;
+//
+//				if ((b != 0) && ((Event.Pressed.KeyCombination() == __LEFT) || (Event.Pressed.KeyCombination() == __RIGHT) ||
+//					(Event.Pressed.KeyCombination() == __UP) || (Event.Pressed.KeyCombination() == __DOWN)))
+//					Arr[positionOnActualLine] = FrameString[zn2 + b];
+//				else Arr[positionOnActualLine] = oldzn;
+//
+//				if ((dir == 1) || (dir == 4)) odir = dir * 2;
+//				else odir = dir / 2;
+//
+//				if (Mode == NotFM) odir = 0;
+//				else UpdatedL = true;
+//
+//				switch (Event.Pressed.KeyCombination()) {
+//				case __LEFT: { if (positionOnActualLine > 1) positionOnActualLine--; break; }
+//				case __RIGHT: { if (positionOnActualLine < LineMaxSize) positionOnActualLine++; break; }
+//				case __UP: { PreviousLine(); break; }
+//				case __DOWN: { NextLine(true); break; }
+//				default: {};
+//				}
+//			}
+//			break;
+//		}
+//		ClrEvent();
+//		UpdStatLine(TextLineNr, positionOnActualLine, Mode);/*if (not MyTestEvent) */
+//		Background();
+//	}
+//}
+
+void CleanFrame(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys)
 {
-	pstring FrameString(15);
-	FrameString = "\x50\x48\xB3\x4D\xDA\xC0\xC3\x4B\xBF\xD9\xB4\xC4\xC2\xC1\xC5";
-	pstring FS1(15);
-	FS1 = "\x50\x48\xBA\x4D\xD6\xD3\xC7\x4B\xB7\xBD\xB6\xC4\xD2\xD0\xD7";
-	pstring FS2(15);
-	FS2 = "\x50\x48\xB3\x4D\xD5\xD4\xC6\x4B\xB8\xBE\xB5\xCD\xD1\xCF\xD8";
-	pstring FS3(15);
-	FS3 = "\x50\x48\xBA\x4D\xC9\xC8\xCC\x4B\xBB\xBC\xB9\xCD\xCB\xCA\xCE";
-	BYTE dir, zn1, zn2, b;
-
-	UpdStatLine(TextLineNr, positionOnActualLine, Mode);
-	screen.CrsBig();
-	BYTE odir = 0;
-	ClrEvent();
-
-	while (true) /* !!! with Event do!!! */
-	{
-		if (!MyGetEvent(Mode, SysLColor, LastS, LastNr, IsWrScreen, bScroll, ExitD, breakKeys) ||
-			((Event.What == evKeyDown) && (Event.Pressed.KeyCombination() == __ESC)) || (Event.What != evKeyDown)) {
-			ClrEvent();
-			screen.CrsNorm();
-			Mode = TextM;
-			return;
-		}
-		switch (Event.Pressed.KeyCombination()) {
-		case _frmsin_: Mode = SinFM; break;
-		case _frmdoub_: Mode = DouFM; break;
-		case _dfrm_: Mode = DelFM; break;
-		case _nfrm_: Mode = NotFM; break;
-		case __LEFT:
-		case __RIGHT:
-		case __UP:
-		case __DOWN:
-			if (!bScroll) {
-				FrameString[0] = 63;
-				zn1 = FrameString.first(Arr[positionOnActualLine]);
-				zn2 = zn1 & 0x30;
-				zn1 = zn1 & 0x0F;
-				dir = FrameString.first(Hi(Event.Pressed.KeyCombination()));
-				auto dirodir = dir + odir;
-				if (dirodir == 2 || dirodir == 4 || dirodir == 8 || dirodir == 16) odir = 0;
-				if (zn1 == 1 || zn1 == 2 || zn1 == 4 || zn1 == 8) zn1 = 0;
-				char oldzn = Arr[positionOnActualLine];
-				Arr[positionOnActualLine] = ' ';
-				if (Mode == DelFM) b = zn1 && !(odir || dir);
-				else b = zn1 | (odir ^ dir);
-				if (b == 1 || b == 2 || b == 4 || b == 8) b = 0;
-				if ((Mode == DelFM) && (zn1 != 0) && (b == 0)) oldzn = ' ';
-				direction1(dir, zn2); direction1(odir, zn2);
-				if (Mode == NotFM) b = 0;
-
-				if ((b != 0) && ((Event.Pressed.KeyCombination() == __LEFT) || (Event.Pressed.KeyCombination() == __RIGHT) ||
-					(Event.Pressed.KeyCombination() == __UP) || (Event.Pressed.KeyCombination() == __DOWN)))
-					Arr[positionOnActualLine] = FrameString[zn2 + b];
-				else Arr[positionOnActualLine] = oldzn;
-
-				if ((dir == 1) || (dir == 4)) odir = dir * 2;
-				else odir = dir / 2;
-
-				if (Mode == NotFM) odir = 0;
-				else UpdatedL = true;
-
-				switch (Event.Pressed.KeyCombination()) {
-				case __LEFT: { if (positionOnActualLine > 1) positionOnActualLine--; break; }
-				case __RIGHT: { if (positionOnActualLine < LineMaxSize) positionOnActualLine++; break; }
-				case __UP: { PreviousLine(); break; }
-				case __DOWN: { NextLine(true); break; }
-				default: {};
-				}
-			}
-			break;
-		}
-		ClrEvent();
-		UpdStatLine(TextLineNr, positionOnActualLine, Mode);/*if (not MyTestEvent) */
-		Background();
-	}
+	//if (Mode == SinFM || Mode == DouFM || Mode == DelFM || Mode == NotFM) /* !!! with Event do!!! */
+	//	if (!MyGetEvent(Mode, SysLColor, LastS, LastNr, IsWrScreen, bScroll, ExitD, breakKeys) ||
+	//		((Event.What == evKeyDown) && (Event.Pressed.KeyCombination() == __ESC)) || (Event.What != evKeyDown))
+	//	{
+	//		ClrEvent();
+	//		screen.CrsNorm();
+	//		Mode = TextM;
+	//		UpdStatLine(TextLineNr, positionOnActualLine, Mode);
+	//		return;
+	//	}
 }
 
-void CleanFrameM(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys)
+void FrameStep(BYTE& odir, PressedKey EvKeyC)
 {
-	if (Mode == SinFM || Mode == DouFM || Mode == DelFM || Mode == NotFM) /* !!! with Event do!!! */
-		if (!MyGetEvent(Mode, SysLColor, LastS, LastNr, IsWrScreen, bScroll, ExitD, breakKeys) ||
-			((Event.What == evKeyDown) && (Event.Pressed.KeyCombination() == __ESC)) || (Event.What != evKeyDown))
-		{
-			ClrEvent();
-			screen.CrsNorm();
-			Mode = TextM;
-			UpdStatLine(TextLineNr, positionOnActualLine, Mode);
-			return;
+	std::string FrameString = "\x3F\x50\x48\xB3\x4D\xDA\xC0\xC3\x4B\xBF\xD9\xB4\xC4\xC2\xC1\xC5";
+	//                                       │       ┌   └   ├       ┐   ┘   ┤   ─   ┬   ┴   ┼
+	FrameString +=            "\x0F\x50\x48\xBA\x4D\xD6\xD3\xC7\x4B\xB7\xBD\xB6\xC4\xD2\xD0\xD7";
+	//                                       ║       Í   Ë   ă       Ě   Ż   Â   ─   Ď   đ   Î
+	FrameString +=            "\x0F\x50\x48\xB3\x4D\xD5\xD4\xC6\x4B\xB8\xBE\xB5\xCD\xD1\xCF\xD8";
+	//							             │       Ň   ď   Ă       Ş   ż   Á   ═   Đ   ¤   ě
+	FrameString +=            "\x0F\x50\x48\xBA\x4D\xC9\xC8\xCC\x4B\xBB\xBC\xB9\xCD\xCB\xCA\xCE";
+	//                                       ║       ╔   ╚   ╠       ╗   ╝   ╣   ═   ╦   ╩   ╬
+
+	switch (EvKeyC.KeyCombination()) {
+	case '-': { Mode = SinFM; break; }
+	case '=': { Mode = DouFM; break; }
+	case '/': { Mode = DelFM; break; }
+	case ' ': { Mode = NotFM; break; }
+	case __ESC: {
+		screen.CrsNorm();
+		Mode = TextM;
 		}
-}
-
-void FrameStep(BYTE& odir, WORD EvKeyC)
-{
-	pstring FrameString(15);
-	FrameString = "\x50\x48\xB3\x4D\xDA\xC0\xC3\x4B\xBF\xD9\xB4\xC4\xC2\xC1\xC5";
-	pstring FS1(15);
-	FS1 = "\x50\x48\xBA\x4D\xD6\xD3\xC7\x4B\xB7\xBD\xB6\xC4\xD2\xD0\xD7";
-	pstring FS2(15);
-	FS2 = "\x50\x48\xB3\x4D\xD5\xD4\xC6\x4B\xB8\xBE\xB5\xCD\xD1\xCF\xD8";
-	pstring FS3(15);
-	FS3 = "\x50\x48\xBA\x4D\xC9\xC8\xCC\x4B\xBB\xBC\xB9\xCD\xCB\xCA\xCE";
-	char oldzn; BYTE dir, zn1, zn2, b;
-
-	switch (EvKeyC) {
-	case _frmsin_: Mode = SinFM; break;
-	case _frmdoub_: Mode = DouFM; break;
-	case _dfrm_: Mode = DelFM; break;
-	case _nfrm_: Mode = NotFM; break;
-	case _left_:
-	case _right_:
-	case _up_:
-	case _down_:
+	case __LEFT:
+	case __RIGHT:
+	case __UP:
+	case __DOWN:
 	{
-		FrameString[0] = 63;
-		zn1 = FrameString.first(Arr[positionOnActualLine]);
-		zn2 = zn1 & 0x30; zn1 = zn1 & 0x0F;
-		dir = FrameString.first(Hi(EvKeyC));
+		WORD scanCode = EvKeyC.Key()->wVirtualScanCode;
+		size_t idx = FrameString.find_first_of(Arr[positionOnActualLine - 1]);
+		BYTE zn1 = (idx == std::string::npos) ? 0 : BYTE(idx);
+		BYTE zn2 = zn1 & 0x30;
+		zn1 = zn1 & 0x0F;
+
+		idx = FrameString.find_first_of(Lo(scanCode));
+		BYTE dir = (idx == std::string::npos) ? 0 : BYTE(idx);
 		auto dirodir = dir + odir;
 		if (dirodir == 2 || dirodir == 4 || dirodir == 8 || dirodir == 16) {
 			odir = 0;
@@ -1806,8 +1809,9 @@ void FrameStep(BYTE& odir, WORD EvKeyC)
 		if (zn1 == 1 || zn1 == 2 || zn1 == 4 || zn1 == 8) {
 			zn1 = 0;
 		}
-		oldzn = Arr[positionOnActualLine];
-		Arr[positionOnActualLine] = ' ';
+		char oldzn = Arr[positionOnActualLine - 1];
+		Arr[positionOnActualLine - 1] = ' ';
+		BYTE b;
 		if (Mode == DelFM) {
 			b = zn1 & !(odir | dir);
 		}
@@ -1820,17 +1824,18 @@ void FrameStep(BYTE& odir, WORD EvKeyC)
 		if ((Mode == DelFM) && (zn1 != 0) && (b == 0)) {
 			oldzn = ' ';
 		}
-		direction2(dir, zn2); direction2(odir, zn2);
+		direction(dir, zn2);
+		direction(odir, zn2);
 		if (Mode == NotFM) {
 			b = 0;
 		}
 
 		if ((b != 0) && ((Event.Pressed.KeyCombination() == __LEFT) || (Event.Pressed.KeyCombination() == __RIGHT) ||
 			(Event.Pressed.KeyCombination() == __UP) || (Event.Pressed.KeyCombination() == __DOWN))) {
-			Arr[positionOnActualLine] = FrameString[zn2 + b];
+			Arr[positionOnActualLine - 1] = FrameString[zn2 + b];
 		}
 		else {
-			Arr[positionOnActualLine] = oldzn;
+			Arr[positionOnActualLine - 1] = oldzn;
 		}
 
 		if ((dir == 1) || (dir == 4)) {
@@ -1949,7 +1954,7 @@ void DeleteL()
 			lines[TextLineNr - 1] = lines[TextLineNr - 1] + lines[TextLineNr];
 			lines.erase(lines.begin() + TextLineNr);
 		}
-		
+
 		auto newT = GetT(lines, LenT, HardL);
 		delete[] T;
 		T = newT;
@@ -1972,7 +1977,7 @@ void NewLine(char Mode)
 	lines[TextLineNr] = lines[TextLineNr - 1].substr(positionOnActualLine - 1);
 	// na puvodnim radku zustane vse pred pozici kurzoru
 	lines[TextLineNr - 1] = lines[TextLineNr - 1].substr(0, positionOnActualLine - 1);
-	
+
 	char* newT = GetT(lines, LenT, HardL);
 	delete[] T;
 	T = newT;
@@ -2847,12 +2852,12 @@ label1:
 		//	goto label1;
 		//}
 		//else {
-			if (TestOptStr('e') && (TypeT == MemoT)) {
-				SrchT = true; Konec = true;
-			}
-			else {
-				SetScreen(lst, 0, 0);
-			}
+		if (TestOptStr('e') && (TypeT == MemoT)) {
+			SrchT = true; Konec = true;
+		}
+		else {
+			SetScreen(lst, 0, 0);
+		}
 		//}
 	}
 	/* BackGround; */

@@ -151,7 +151,7 @@ void Screen::ScrFormatWrStyledText(WORD X, WORD Y, BYTE Color, char const* const
 	// souradnice jsou relativni, tiskneme do aktualniho okna
 	X += WindMin->X - 1;
 	Y += WindMin->Y - 1;
-	
+
 	va_list args;
 	va_start(args, _Format);
 	char buffer[255];
@@ -159,7 +159,7 @@ void Screen::ScrFormatWrStyledText(WORD X, WORD Y, BYTE Color, char const* const
 	size_t len = strlen(buffer);
 	auto buff = new CHAR_INFO[len];
 	SMALL_RECT XY = { (short)(X - 1), (short)(Y - 1), (short)(X + len - 1), (short)(Y - 1) };
-	
+
 	for (size_t i = 0; i < len; i++) {
 		buff[i].Attributes = Color;
 		buff[i].Char.AsciiChar = buffer[i];
@@ -217,7 +217,7 @@ void Screen::ScrMove(short X, short Y, short ToX, short ToY, short L)
 	// ulozime obsah obrazovky a "pretiskneme" na jine misto
 	CrsHide();
 	// cislovani radku a sloupcu prichazi od 1 .. X
-	if ((X < 0) || (X > MaxColsIndex) || (Y < 0) || (Y > MaxRowsIndex)) 
+	if ((X < 0) || (X > MaxColsIndex) || (Y < 0) || (Y > MaxRowsIndex))
 		throw std::exception("Bad ScrMove index.");
 	if ((ToX < 0) || (ToX > MaxColsIndex) || (ToY < 0) || (ToY > MaxRowsIndex))
 		throw std::exception("Bad ScrMove index.");
@@ -237,7 +237,7 @@ void Screen::ScrColor(WORD X, WORD Y, WORD L, BYTE Color)
 }
 
 // vypise na zadanou pozici 1 znak v zadane barve
-void Screen::WriteChar(short X, short Y, char C, BYTE attr, Position pos)
+void Screen::WriteChar(short X, short Y, char C, BYTE attr, ScrPosition pos)
 {
 	DWORD written = 0;
 	switch (pos) {
@@ -296,7 +296,7 @@ size_t Screen::WriteStyledStringToWindow(std::string text, BYTE Attr)
 		auto str = vStr[i];
 		auto strLen = str.length();
 		// okenko bude mit jen 1 radek
-		SMALL_RECT rect = { 
+		SMALL_RECT rect = {
 			(short)(WindMin->X + actualWindowCol - 2),			// oba parametry jsou cislovane od 1
 			(short)(WindMin->Y + actualWindowRow - 2),			// oba parametry jsou cislovane od 1
 			(short)(WindMax->X - 1),								// prava strana zustava stejna
@@ -482,7 +482,7 @@ TCrs Screen::CrsGet()
 	TCrs crs;
 	crs.X = WhereXabs();
 	crs.Y = WhereYabs();
-	crs.Big = Crs->Big;
+	crs.Size = Crs->Size;
 	crs.Enabled = Crs->Enabled;
 	crs.Ticks = 0;
 	return crs;
@@ -493,7 +493,7 @@ void Screen::CrsSet(TCrs S)
 	CrsHide();
 	Crs->X = S.X;
 	Crs->Y = S.Y;
-	Crs->Big = S.Big;
+	Crs->Size = S.Size;
 	Crs->Enabled = S.Enabled;
 	GotoXY(Crs->X, Crs->Y, absolute);
 	if (Crs->Enabled) CrsShow();
@@ -501,7 +501,7 @@ void Screen::CrsSet(TCrs S)
 
 void Screen::CrsShow()
 {
-	CONSOLE_CURSOR_INFO visible{ 1, true };
+	const CONSOLE_CURSOR_INFO visible{ Crs->Size, true };
 	SetConsoleCursorInfo(_handle, &visible);
 	Crs->Enabled = true;
 }
@@ -519,17 +519,22 @@ void Screen::CrsHide()
 
 void Screen::CrsBig()
 {
-	if (!Crs->Big) { CrsHide(); Crs->Big = true; } CrsShow();
+	if (Crs->Size == 1) { CrsHide(); Crs->Size = bigCrsSize; } CrsShow();
 }
 
 void Screen::CrsNorm()
 {
-	if (Crs->Big) { CrsHide(); Crs->Big = false; } CrsShow();
+	if (Crs->Size == bigCrsSize) { CrsHide(); Crs->Size = 1; } CrsShow();
 }
 
-void Screen::GotoXY(WORD X, WORD Y, Position pos)
+/**
+ * \brief Go to XY coords
+ * \param X coord X
+ * \param Y coord Y
+ * \param pos positioning type
+ */
+void Screen::GotoXY(WORD X, WORD Y, ScrPosition pos)
 {
-	// if (X > WindMax->X || Y > WindMax->Y) return;
 	switch (pos)
 	{
 	case relative: {
@@ -542,7 +547,7 @@ void Screen::GotoXY(WORD X, WORD Y, Position pos)
 	default: return;
 	}
 	bool succ = SetConsoleCursorPosition(_handle, { (short)(X - 1), (short)(Y - 1) });
-	if (!succ) {
+	if (Crs->Enabled && !succ) {
 		printf("GotoXY() fail");
 	}
 }
@@ -659,7 +664,7 @@ int Screen::SaveScreen(WParam* wp, short c1, short r1, short c2, short r2)
 WParam* Screen::LoadScreen(bool draw)
 {
 	if (_windowStack.empty()) {
-			printf("Screen::LoadScreen() zasobnik je prazdny!!!\n");
+		printf("Screen::LoadScreen() zasobnik je prazdny!!!\n");
 		return nullptr;
 	}
 	auto scr = _windowStack.top();

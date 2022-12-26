@@ -778,12 +778,12 @@ label3:
 void wwmix::PromptLL(WORD N, std::string& Txt, WORD I, bool Del)
 {
 	longint w = PushW(1, TxtRows, TxtCols, TxtRows);
-	screen.GotoXY(1, TxtRows, Position::absolute);
+	screen.GotoXY(1, TxtRows, ScrPosition::absolute);
 	TextAttr = screen.colors.pTxt;
 	ClrEol();
 	RdMsg(N);
 	screen.ScrWrStr(1, TxtRows, MsgLine, screen.colors.pTxt);
-	screen.GotoXY(MsgLine.length() + 1, TxtRows, Position::absolute);
+	screen.GotoXY(MsgLine.length() + 1, TxtRows, ScrPosition::absolute);
 	TextAttr = screen.colors.pNorm;
 	EditTxt(Txt, I, 255, TxtCols - screen.WhereX(), 'A', Del, false, true, false, 0);
 	PopW(w);
