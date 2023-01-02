@@ -123,45 +123,52 @@ void RestorePar(longint l);
 
 
 
-std::vector<std::string> GetLinesFromT()
-{
-	// create string from T
-	std::string text(T, LenT);
-	return GetAllLines(text, 0, false);
-}
+//std::vector<std::string> GetLinesFromT()
+//{
+//	// create string from T
+//	std::string text(T, LenT);
+//	return GetAllLines(text, 0, false);
+//}
 
-char* GetT(std::vector<std::string>& lines, size_t& len, bool hardL)
-{
-	size_t totalLen = 0;
-	char* output = nullptr;
-
-	if (lines.empty()) {
-		len = (hardL) ? 2 : 1;
-		output = new char[len];
-	}
-	else {
-		// calculate total length
-		for (auto& line : lines) { totalLen += line.length(); }
-		totalLen += (hardL) ? 2 * lines.size() - 1 : lines.size();
-
-		// generate string
-		std::string txt;
-		txt.reserve(totalLen);
-		for (size_t i = 0; i < lines.size(); i++) {
-			txt += lines[i];
-			txt += hardL ? "\r\n" : "\r";
-		}
-
-		// create c_str
-		if (totalLen != txt.length()) {
-			throw std::exception("Bad string size - OldEditor.cpp, method GetT");
-		}
-		len = totalLen;
-		output = new char[len];
-		memcpy(output, txt.c_str(), len);
-	}
-	return output;
-}
+//char* GetT(std::vector<std::string>& lines, size_t& len, bool hardL)
+//{
+//	size_t totalLen = 0;
+//	char* output = nullptr;
+//
+//	if (lines.empty()) {
+//		len = (hardL) ? 2 : 1;
+//		output = new char[len];
+//	}
+//	else {
+//		// calculate total length
+//		for (auto& line : lines) { totalLen += line.length(); }
+//		totalLen += (hardL) ? 2 * (lines.size() - 1) : lines.size() - 1;
+//
+//		// generate string
+//		std::string txt;
+//		txt.reserve(totalLen);
+//		for (size_t i = 0; i < lines.size(); i++) {
+//			txt += lines[i];
+//			if (i == lines.size() - 1)
+//			{
+//				// add nothing after last line
+//			}
+//			else
+//			{
+//				txt += hardL ? "\r\n" : "\r";
+//			}
+//		}
+//
+//		// create c_str
+//		if (totalLen != txt.length()) {
+//			throw std::exception("Bad string size - OldEditor.cpp, method GetT");
+//		}
+//		len = totalLen;
+//		output = new char[len];
+//		memcpy(output, txt.c_str(), len);
+//	}
+//	return output;
+//}
 
 stEditorParams SaveParams()
 {
@@ -728,22 +735,22 @@ void EditWrline(char* P, int Row)
 	else {
 		nv2 = TxtColor;
 	}
-	integer I = 0;
-	while (P[I] != _CR && I < LineMaxSize - 1) {
-		nv1 = P[I];
-		if (I < 0 || I > 255) throw std::exception("Index");
-		BuffLine[I] = (nv2 << 8) + nv1;
+	integer i = 0;
+	while (!(P[i] == _CR || P[i] == _LF) && i < LineMaxSize - 1) {
+		nv1 = P[i];
+		if (i < 0 || i > 255) throw std::exception("Index");
+		BuffLine[i] = (nv2 << 8) + nv1;
 		if (nv1 < 32) IsCtrl = true;
-		I++;
+		i++;
 	}
 
-	integer LP = I - 1;  // index of last character (before CR)
+	integer LP = i - 1;  // index of last character (before CR)
 	nv1 = ' ';
 
-	for (I = LP + 1; I < BPos + LineS; I++) {
+	for (i = LP + 1; i < BPos + LineS; i++) {
 		// all characters after last char will be spaces (to the end of screen)
-		if (I < 0 || I > 255) throw std::exception("Index");
-		BuffLine[I] = (nv2 << 8) + nv1;
+		if (i < 0 || i > 255) throw std::exception("Index");
+		BuffLine[i] = (nv2 << 8) + nv1;
 	}
 
 	if (BegBLn <= EndBLn) {
@@ -757,19 +764,19 @@ void EditWrline(char* P, int Row)
 				E = MinI(EndBPos, LineS + BPos + 1);
 			}
 			else { E = LineS + BPos + 1; }
-			for (I = B; I < pred(E); I++) {
-				if (I < 0 || I > 255) throw std::exception("Index");
-				BuffLine[I] = (BuffLine[I] & 0x00FF) + (BlockColor << 8);
+			for (i = B; i < pred(E); i++) {
+				if (i < 0 || i > 255) throw std::exception("Index");
+				BuffLine[i] = (BuffLine[i] & 0x00FF) + (BlockColor << 8);
 			}
 		}
 	}
 	if (IsCtrl) {
 		// retezec obsahuje kontrolni znaky
 		// -> budou zmeneny na pismena a prebarveny
-		for (I = BPos; I <= LP; I++) {
-			if ((unsigned char)P[I] < 32) {
-				if (I < 0 || I > 254) throw std::exception("Index");
-				BuffLine[I] = ((P[I] + 64) & 0x00FF) + (Color(P[I]) << 8);
+		for (i = BPos; i <= LP; i++) {
+			if ((unsigned char)P[i] < 32) {
+				if (i < 0 || i > 254) throw std::exception("Index");
+				BuffLine[i] = ((P[i] + 64) & 0x00FF) + (Color(P[i]) << 8);
 			}
 		}
 	}
@@ -790,10 +797,11 @@ void ScrollWrline(char* P, size_t offsetX, int Row, ColorOrd& CO)
 	BYTE Col = Color(CO);
 	nv2 = Col;
 
-	integer I = 0; integer J = 0;
+	integer I = 0;
+	integer J = 0;
 	char cc = P[I];
-	while (cc != _CR && I < LineMaxSize && !InsPage) {
-		if (((unsigned char)cc >= 32) || (GrafCtrl.count(cc) > 0)) {
+	while (!(cc == _CR || cc == _LF) && I < LineMaxSize && !InsPage) {
+		if (((BYTE)cc >= 32) || (GrafCtrl.count(cc) > 0)) {
 			nv1 = cc;
 			BuffLine[J] = (nv2 << 8) + nv1;
 			J++;
@@ -819,7 +827,7 @@ void ScrollWrline(char* P, size_t offsetX, int Row, ColorOrd& CO)
 		I = 0; J = 0;
 		while (I <= LP) {
 			cc = P[I];
-			if (((unsigned char)cc >= 32) || (GrafCtrl.count(cc) > 0)) {
+			if (((BYTE)cc >= 32) || (GrafCtrl.count(cc) > 0)) {
 				BuffLine[J] = (BuffLine[J] & 0x00FF) + (Col << 8);
 				J++;
 			}
@@ -893,11 +901,10 @@ void TestUpdFile()
 void WrEndT()
 {
 	// vytvori nove pole o delce puvodniho + 1,
-	// puvodni pole se do nej prekopiruje a na konec se vlozi CR
-	LenT++;
-	char* T2 = new char[LenT + 1] { 0 }; // udelame pole o 1 vetsi nez potrebujeme -> bude zakoncene '0'
-	memcpy(T2, T, LenT - 1);
-	T2[LenT - 1] = _CR;
+	// puvodni pole se do nej prekopiruje a na konec se vlozi '\0'
+	char* T2 = new char[LenT + 1]; // udelame pole o 1 vetsi nez potrebujeme -> bude zakoncene '0'
+	T2[LenT] = '\0';
+	memcpy(T2, T, LenT);
 	delete[] T;
 	T = T2;
 }
@@ -1101,10 +1108,18 @@ void CopyCurrentLineToArr(size_t Ind)
 }
 
 /// vraci cislo radku, na kterem je index
-size_t GetLineNumber(size_t Ind)
+size_t GetLineNumber(size_t idx)
 {
-	CopyCurrentLineToArr(Ind);
-	size_t line = GetLine(textIndex);
+	CopyCurrentLineToArr(idx);
+	size_t line = 1;
+	if (idx == 0)
+	{
+		// 1st char is always in 1st line
+	}
+	else
+	{
+		line = GetLine(textIndex);
+	}
 	return line;
 }
 
@@ -1773,11 +1788,11 @@ void FrameStep(BYTE& odir, PressedKey EvKeyC)
 {
 	std::string FrameString = "\x3F\x50\x48\xB3\x4D\xDA\xC0\xC3\x4B\xBF\xD9\xB4\xC4\xC2\xC1\xC5";
 	//                                       │       ┌   └   ├       ┐   ┘   ┤   ─   ┬   ┴   ┼
-	FrameString +=            "\x0F\x50\x48\xBA\x4D\xD6\xD3\xC7\x4B\xB7\xBD\xB6\xC4\xD2\xD0\xD7";
+	FrameString += "\x0F\x50\x48\xBA\x4D\xD6\xD3\xC7\x4B\xB7\xBD\xB6\xC4\xD2\xD0\xD7";
 	//                                       ║       Í   Ë   ă       Ě   Ż   Â   ─   Ď   đ   Î
-	FrameString +=            "\x0F\x50\x48\xB3\x4D\xD5\xD4\xC6\x4B\xB8\xBE\xB5\xCD\xD1\xCF\xD8";
+	FrameString += "\x0F\x50\x48\xB3\x4D\xD5\xD4\xC6\x4B\xB8\xBE\xB5\xCD\xD1\xCF\xD8";
 	//							             │       Ň   ď   Ă       Ş   ż   Á   ═   Đ   ¤   ě
-	FrameString +=            "\x0F\x50\x48\xBA\x4D\xC9\xC8\xCC\x4B\xBB\xBC\xB9\xCD\xCB\xCA\xCE";
+	FrameString += "\x0F\x50\x48\xBA\x4D\xC9\xC8\xCC\x4B\xBB\xBC\xB9\xCD\xCB\xCA\xCE";
 	//                                       ║       ╔   ╚   ╠       ╗   ╝   ╣   ═   ╦   ╩   ╬
 
 	switch (EvKeyC.KeyCombination()) {
@@ -1788,7 +1803,7 @@ void FrameStep(BYTE& odir, PressedKey EvKeyC)
 	case __ESC: {
 		screen.CrsNorm();
 		Mode = TextM;
-		}
+	}
 	case __LEFT:
 	case __RIGHT:
 	case __UP:
@@ -1924,7 +1939,7 @@ void FillBlank()
 	}
 }
 
-void DeleteL()
+void DeleteLine()
 {
 	FillBlank();
 	if (LineAbs(TextLineNr) + 1 <= BegBLn)
@@ -3154,7 +3169,8 @@ bool EditText(char pMode, char pTxtType, std::string pName, std::string pErrMsg,
 	ErrMsg = pErrMsg;
 	T = pLS->A;
 	MaxLenT = pMaxLen;
-	LenT = pLS->LL; IndexT = pInd;
+	LenT = pLS->LL;
+	IndexT = pInd;
 	ScrT = pScr & 0xFFFF;
 	positionOnActualLine = pScr >> 16;
 	//Breaks = break_keys;
@@ -3227,7 +3243,9 @@ WORD FindTextE(const pstring& Pstr, pstring Popt, char* PTxtPtr, WORD PLen)
 	return result;
 }
 
-void EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg, std::vector<EdExitD*>& ExD, longint TxtPos, longint Txtxy, WRect* V, WORD Atr, const std::string Hd, BYTE WFlags, MsgStr* MsgS)
+void EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg, std::vector<EdExitD*>& ExD,
+	longint TxtPos, longint Txtxy, WRect* V, WORD Atr,
+	const std::string Hd, BYTE WFlags, MsgStr* MsgS)
 {
 	bool Srch = false, Upd = false;
 	longint Size = 0; // , L = 0;
@@ -3238,9 +3256,10 @@ void EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg, std::vecto
 	longint oldTxtxy = 0;
 	LongStr* LS = nullptr;
 	pstring compErrTxt;
-	//T = new char[65536];
 
-	if (Atr == 0) Atr = screen.colors.tNorm;
+	if (Atr == 0) {
+		Atr = screen.colors.tNorm;
+	}
 	longint w2 = 0;
 	longint w3 = 0;
 	if (V != nullptr) {
@@ -3252,148 +3271,153 @@ void EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg, std::vecto
 		w1 = PushW(1, 1, TxtCols, TxtRows);
 		TextAttr = Atr;
 	}
-	//NewExit(Ovr(), er);
-	//goto label4;
-	Loc = (locVar != nullptr);
-	//LocalPPtr = locVar;
-	if (!Loc) {
-		MaxLenT = 0xFFF0; LenT = 0;
-		//Part.UpdP = false;
-		TxtPath = CPath; TxtVol = CVol;
-		// zacatek prace se souborem
-		OpenTxtFh(Mode);
-		ReadTextFile();
-		SimplePrintHead();
-		//while ((TxtPos > Part.PosP + Part.LenP) && !AllRd) {
-		//	RdNextPart();
-		//}
-		Ind = TxtPos; // -Part.PosP;
-	}
-	else {
-		LS = new LongStr(locVar->length()); // TWork.Read(1, *LP);
-		LS->LL = locVar->length();
-		Ind = TxtPos;
-		memcpy(LS->A, locVar->c_str(), LS->LL);
-		//L = StoreInTWork(LS);
-	}
-	oldInd = Ind;
-	oldTxtxy = Txtxy;
 
-	//label1:
-	while (true) {
-		Srch = false;
-		Upd = false;
+	try {
+		Loc = (locVar != nullptr);
+		//LocalPPtr = locVar;
 		if (!Loc) {
-			LongStr* LS2 = new LongStr(T, LenT);
-			std::vector<WORD> brkKeys = { __F1, __F6, __F9, __ALT_F10 };
-			EditText(Mode, FileT, TxtPath, ErrMsg, LS2, 0xFFF0, Ind, Txtxy,
-				brkKeys, ExD, Srch, Upd, 126, 143, MsgS);
-			T = LS2->A;
-			LenT = LS2->LL;
+			MaxLenT = 0xFFF0; LenT = 0;
+			//Part.UpdP = false;
+			TxtPath = CPath; TxtVol = CVol;
+			// zacatek prace se souborem
+			OpenTxtFh(Mode);
+			ReadTextFile();
+			SimplePrintHead();
+			//while ((TxtPos > Part.PosP + Part.LenP) && !AllRd) {
+			//	RdNextPart();
+			//}
+			Ind = TxtPos; // -Part.PosP;
 		}
 		else {
-			std::vector<WORD> brkKeys = { __F1, __F6 };
-			EditText(Mode, LocalT, "", ErrMsg, LS, MaxLStrLen, Ind, Txtxy,
-				brkKeys, ExD, Srch, Upd, 126, 143, MsgS);
-		}
-		TxtPos = Ind; // +Part.PosP;
-		if (Upd) EdUpdated = true;
-		WORD KbdChar = Event.Pressed.KeyCombination();
-		if ((KbdChar == __ALT_EQUAL) || (KbdChar == 'U')) {
-			// UNDO CHANGES
-			//ReleaseStore(LS);
-			//LS = TWork.Read(1, L);
-			delete LS;
 			LS = new LongStr(locVar->length()); // TWork.Read(1, *LP);
+			LS->LL = locVar->length();
+			Ind = TxtPos;
 			memcpy(LS->A, locVar->c_str(), LS->LL);
+			//L = StoreInTWork(LS);
+		}
+		oldInd = Ind;
+		oldTxtxy = Txtxy;
 
-			if (KbdChar == __ALT_EQUAL) {
-				Event.Pressed.UpdateKey(__ESC);
-				goto label4;
+		while (true) {
+			Srch = false;
+			Upd = false;
+			if (!Loc) {
+				LongStr* LS2 = new LongStr(T, LenT);
+				std::vector<WORD> brkKeys = { __F1, __F6, __F9, __ALT_F10 };
+				EditText(Mode, FileT, TxtPath, ErrMsg, LS2, 0xFFF0, Ind, Txtxy,
+					brkKeys, ExD, Srch, Upd, 126, 143, MsgS);
+				T = LS2->A;
+				LenT = LS2->LL;
 			}
 			else {
-				Ind = oldInd;
-				Txtxy = oldTxtxy;
-				continue;
+				std::vector<WORD> brkKeys = { __F1, __F6 };
+				EditText(Mode, LocalT, "", ErrMsg, LS, MaxLStrLen, Ind, Txtxy,
+					brkKeys, ExD, Srch, Upd, 126, 143, MsgS);
 			}
-		}
-		if (!Loc) {
-			delete[] T;
-			T = nullptr;
-		}
-		if (EdBreak == 0xFFFF) {
-			switch (KbdChar) {
-			case __F9: {
-				if (Loc) {
-					//TWork.Delete(*LP);
-					//*LP = StoreInTWork(LS);
-					*locVar = std::string(LS->A, LS->LL);
+			TxtPos = Ind; // +Part.PosP;
+			if (Upd) EdUpdated = true;
+			WORD KbdChar = Event.Pressed.KeyCombination();
+			if ((KbdChar == __ALT_EQUAL) || (KbdChar == 'U')) {
+				// UNDO CHANGES
+				//ReleaseStore(LS);
+				//LS = TWork.Read(1, L);
+				delete LS;
+				LS = new LongStr(locVar->length()); // TWork.Read(1, *LP);
+				memcpy(LS->A, locVar->c_str(), LS->LL);
+
+				if (KbdChar == __ALT_EQUAL) {
+					Event.Pressed.UpdateKey(__ESC);
+					goto label4;
 				}
 				else {
-					//RdPart();
+					Ind = oldInd;
+					Txtxy = oldTxtxy;
+					continue;
 				}
-				continue;
 			}
-			case __F10: {
-				if (Event.Pressed.Alt()) { Help(nullptr, "", false); goto label2; }
-				break;
+			if (!Loc) {
+				delete[] T;
+				T = nullptr;
 			}
-			case __F1: {
-				RdMsg(6);
-				Help((RdbD*)HelpFD, MsgLine, false);
-			label2:
-				if (!Loc) {
+			if (EdBreak == 0xFFFF) {
+				switch (KbdChar) {
+				case __F9: {
+					if (Loc) {
+						//TWork.Delete(*LP);
+						//*LP = StoreInTWork(LS);
+						*locVar = std::string(LS->A, LS->LL);
+					}
+					else {
+						//RdPart();
+					}
+					continue;
+				}
+				case __F10: {
+					if (Event.Pressed.Alt()) {
+						Help(nullptr, "", false);
+						goto label2;
+					}
+					break;
+				}
+				case __F1: {
+					RdMsg(6);
+					Help((RdbD*)HelpFD, MsgLine, false);
+				label2:
+					if (!Loc) {
+						// RdPart();
+					}
+					continue;
+				}
+				}
+			}
+			if (!Loc) {
+				Size = FileSizeH(TxtFH);
+				CloseH(&TxtFH);
+			}
+			if ((EdBreak == 0xFFFF) && (KbdChar == __F6)) {
+				if (Loc) {
+					PrintArray(T, LenT, false);
+					continue;
+				}
+				else {
+					CPath = TxtPath;
+					CVol = TxtVol;
+					PrintTxtFile(0);
+					OpenTxtFh(Mode);
 					// RdPart();
+					continue;
 				}
-				continue;
 			}
+			if (!Loc && (Size < 1)) MyDeleteFile(TxtPath);
+			if (Loc && (KbdChar == __ESC)) LS->LL = LenT;
+
+		label4:
+			if (IsCompileErr) {
+				IsCompileErr = false;
+				compErrTxt = MsgLine;
+				SetMsgPar(compErrTxt);
+				WrLLF10Msg(110);
 			}
-		}
-		if (!Loc) {
-			Size = FileSizeH(TxtFH);
-			CloseH(&TxtFH);
-		}
-		if ((EdBreak == 0xFFFF) && (KbdChar == __F6)) {
 			if (Loc) {
-				PrintArray(T, LenT, false);
-				continue;
+				*locVar = std::string(LS->A, LS->LL);
+				delete LS;
+				LS = nullptr;
 			}
-			else {
-				CPath = TxtPath;
-				CVol = TxtVol;
-				PrintTxtFile(0);
-				OpenTxtFh(Mode);
-				// RdPart();
-				continue;
+			if (w3 != 0) {
+				PopW2(w3, (WFlags & WNoPop) == 0);
 			}
+			if (w2 != 0) {
+				PopW(w2);
+			}
+			PopW(w1);
+			LastTxtPos = Ind; // +Part.PosP;
+			RestoreExit(er);
+			break;
 		}
-		if (!Loc && (Size < 1)) MyDeleteFile(TxtPath);
-		if (Loc && (KbdChar == __ESC)) LS->LL = LenT;
-	label4:
-		if (IsCompileErr) {
-			IsCompileErr = false;
-			compErrTxt = MsgLine;
-			SetMsgPar(compErrTxt);
-			WrLLF10Msg(110);
-		}
-		if (Loc) {
-			//TWork.Delete(L);
-			//TWork.Delete(*LP);
-			//*LP = StoreInTWork(LS);
-			*locVar = std::string(LS->A, LS->LL);
-			delete LS; // ReleaseStore(LS);
-			LS = nullptr;
-		}
-		if (w3 != 0) {
-			PopW2(w3, (WFlags & WNoPop) == 0);
-		}
-		if (w2 != 0) {
-			PopW(w2);
-		}
-		PopW(w1);
-		LastTxtPos = Ind; // +Part.PosP;
-		RestoreExit(er);
-		break;
+	}
+	catch (std::exception& e)
+	{
+
 	}
 }
 

@@ -816,7 +816,7 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 					DelChar();
 				}
 				else {
-					DeleteL();
+					DeleteLine();
 				}
 				break;
 			}
@@ -832,7 +832,7 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 						textIndex = GetLineStartIndex(TextLineNr);
 						CopyCurrentLineToArr(textIndex);
 						positionOnActualLine = MinW(255, succ(GetArrLineLength()));
-						DeleteL();
+						DeleteLine();
 						if (TextLineNr < ScreenFirstLineNr) {
 							ScreenFirstLineNr--;
 							ChangeScr = true;
@@ -868,7 +868,7 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 			}
 			case _T_: {
 				if (positionOnActualLine > GetArrLineLength()) {
-					DeleteL();
+					DeleteLine();
 				}
 				else {
 					I = positionOnActualLine;

@@ -397,7 +397,7 @@ void CallEditTxt()
 	CVol = "";
 	std::string errMessage;
 	std::vector<EdExitD*> emptyEdExit;
-	EditTxtFile(nullptr, 'T', errMessage, emptyEdExit, 1, 0, nullptr, 0, "", 0, nullptr);
+	EditTxtFile(nullptr, 'T', errMessage, emptyEdExit, 0, 0, nullptr, 0, "", 0, nullptr);
 }
 
 void SelectEditTxt(pstring e, bool OnFace)
@@ -541,13 +541,6 @@ void InitRunFand()
 
 	WasInitPgm = true;
 	CompileHelpCatDcl();
-
-	// zøejmì není dùvod zavádìt fonty do graf. karty
-	//LoadVideoFont();
-	//if ((VideoCard == viHercules) && Fonts.LoadVideoAllowed) {
-	//	ScrGraphMode(false, 0);
-	//	BGIReload = false;
-	//}
 
 	OpenWorkH();
 	OpenFANDFiles(false);

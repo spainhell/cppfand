@@ -84,7 +84,7 @@ void SetScreen(WORD Ind, WORD ScrXY, WORD Pos);
 bool MyPromptLL(WORD n, std::string& s);
 void DelChar();
 void PredPart();
-void DeleteL();
+void DeleteLine();
 void CopyCurrentLineToArr(size_t Ind);
 void TestLenText(char** text, size_t& textLength, size_t i, size_t j);
 bool TestOptStr(char c);
