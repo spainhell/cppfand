@@ -86,7 +86,7 @@ void DelChar();
 void PredPart();
 void DeleteLine();
 void CopyCurrentLineToArr(size_t Ind);
-void TestLenText(char** text, size_t& textLength, size_t i, size_t j);
+//void TestLenText(char** text, size_t& textLength, size_t i, size_t j);
 bool TestOptStr(char c);
 bool BlockExist();
 void SetBlockBound(longint& BBPos, longint& EBPos);

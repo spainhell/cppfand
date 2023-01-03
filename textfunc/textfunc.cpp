@@ -30,8 +30,7 @@ std::vector<std::string> GetAllLines(std::string& input, size_t maxLineLen, bool
 {
 	std::vector<std::string> vStr;
 	size_t nextStart = 0;
-	for (size_t i = 0; i < input.length(); i++)
-	{
+	for (size_t i = 0; i < input.length(); i++)	{
 		if (input[i] == '\r' || input[i] == '\n') {
 			size_t nl = 1; // kolik znaku ma ukonceni?
 			// narazili jsme na konec radku
@@ -50,6 +49,28 @@ std::vector<std::string> GetAllLines(std::string& input, size_t maxLineLen, bool
 	// i posledni cast retezce muze byt prilis dlouha -> zkontolujeme
 	CheckMaxLineLengthAndAddToOutputVector(vStr, nStr, maxLineLen, skipLastEmptyLine);
 	
+	return vStr;
+}
+
+std::vector<std::string> GetAllLinesWithEnds(std::string& input)
+{
+	std::vector<std::string> vStr;
+	size_t nextStart = 0;
+	for (size_t i = 0; i < input.length(); i++)	{
+		if (input[i] == '\r') {
+			// narazili jsme na konec radku
+			if (i < input.length() - 1 && input[i + 1] == '\n') {
+				// jedna se o CR+LF
+				i++;
+			}
+			std::string nStr = input.substr(nextStart, i - nextStart + 1);
+			vStr.push_back(nStr);
+			nextStart = i + 1;
+		}
+	}
+	std::string nStr = input.substr(nextStart, input.length() - nextStart);
+	vStr.push_back(nStr);
+
 	return vStr;
 }
 

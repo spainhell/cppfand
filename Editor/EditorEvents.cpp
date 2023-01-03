@@ -375,7 +375,6 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 	if (!bScroll) { CleanFrame(ExitD, breakKeys); }
 	//NewExit(Ovr(), er);
 	//goto Opet;
-	// !!! with Event do:
 	if (Event.What == evKeyDown) {
 		WORD key = Event.Pressed.KeyCombination();
 		EdOk = false;
@@ -383,7 +382,6 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 		//X = ExitD; // Exit-procedure
 
 		// test all exit keys
-		//while (X != nullptr) {
 		for (auto& X : ExitD) {
 			if (TestExitKey(key, X)) {  // nastavuje i EdBreak
 				TestKod();
@@ -465,18 +463,20 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 
 				WrEndT();
 				IndexT = MinW(IndexT, LenT);
-				if (TypeT != FileT)  // !!! with Part do
-				{
+				if (TypeT != FileT) {
 					AbsLenT = LenT - 1;
 					//Part.LenP = AbsLenT;
 					SimplePrintHead();
 				}
 				SetScreen(IndexT, ScrT, positionOnActualLine);
-				if (!bScroll) { screen.CrsShow(); }
-				if (!EdOk) { goto Nic; }
+				if (!bScroll) {
+					screen.CrsShow();
+				}
+				if (!EdOk) {
+					goto Nic;
+				}
 			}
-			//X = (EdExitD*)X->pChain;
-		}  // while
+		}
 
 		// test frame drawing mode
 		if ((mode == SinFM || mode == DouFM || mode == DelFM || mode == NotFM) && !bScroll) {
@@ -844,7 +844,8 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 			case _Y_: {
 				// if ((NextLineStartIndex >= LenT) && !AllRd) NextPartDek();
 				NextLineStartIndex = MinW(NextLineStartIndex, LenT);
-				TestLenText(&T, LenT, NextLineStartIndex, textIndex);
+				//TestLenText(&T, LenT, NextLineStartIndex, textIndex);
+				UpdatT = true;
 				if (BegBLn > LineAbs(TextLineNr)) {
 					BegBLn--;
 				}
@@ -1052,14 +1053,16 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 							WrLLF10Msg(404);
 						}
 						I1 = L1 + L2; // - Part.PosP;
-						TestLenText(&T, LenT, I1, longint(I1) + I2);
+						//TestLenText(&T, LenT, I1, longint(I1) + I2);
+						UpdatT = true;
 						//if (ChangePart) I1 -= Part.MovI;
 						SeekH(F1, L2); ReadH(F1, I2, &T[I1]); HMsgExit("");
 						L2 += I2;
 					} while (L2 != fs);
 					I = L1 + L2; // - Part.PosP;
 					if (T[I - 1] == 0x1A) {
-						TestLenText(&T, LenT, I, I - 1);
+						//TestLenText(&T, LenT, I, I - 1);
+						UpdatT = true;
 						I--;
 					}
 					TextLineNr = GetLineNumber(I);

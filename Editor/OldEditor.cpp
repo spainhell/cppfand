@@ -38,7 +38,8 @@ WORD NextLineStartIndex = 0;     // index prvniho znaku na dalsim radku
 integer TextLineNr = 0;          // cislo radku v celem textu (1 .. N)
 integer ScreenFirstLineNr = 0;   // cislo radku, ktery je na obrazovce zobrazen jako prvni (1 .. N)
 longint RScrL = 0;
-bool UpdatedL = false, CtrlL = false, HardL = false;
+bool UpdatedL = false, CtrlL = false;
+bool HardL = false; // actual line (Arr) ended with CRLF "\r\n" - otherwise only with CR "\r"
 WORD columnOffset = 0;
 WORD Colu = 0;
 WORD Row = 0;
@@ -123,52 +124,43 @@ void RestorePar(longint l);
 
 
 
-//std::vector<std::string> GetLinesFromT()
-//{
-//	// create string from T
-//	std::string text(T, LenT);
-//	return GetAllLines(text, 0, false);
-//}
+std::vector<std::string> GetLinesFromT()
+{
+	// create std::string from T
+	std::string text(T, LenT);
+	return GetAllLinesWithEnds(text);
+}
 
-//char* GetT(std::vector<std::string>& lines, size_t& len, bool hardL)
-//{
-//	size_t totalLen = 0;
-//	char* output = nullptr;
-//
-//	if (lines.empty()) {
-//		len = (hardL) ? 2 : 1;
-//		output = new char[len];
-//	}
-//	else {
-//		// calculate total length
-//		for (auto& line : lines) { totalLen += line.length(); }
-//		totalLen += (hardL) ? 2 * (lines.size() - 1) : lines.size() - 1;
-//
-//		// generate string
-//		std::string txt;
-//		txt.reserve(totalLen);
-//		for (size_t i = 0; i < lines.size(); i++) {
-//			txt += lines[i];
-//			if (i == lines.size() - 1)
-//			{
-//				// add nothing after last line
-//			}
-//			else
-//			{
-//				txt += hardL ? "\r\n" : "\r";
-//			}
-//		}
-//
-//		// create c_str
-//		if (totalLen != txt.length()) {
-//			throw std::exception("Bad string size - OldEditor.cpp, method GetT");
-//		}
-//		len = totalLen;
-//		output = new char[len];
-//		memcpy(output, txt.c_str(), len);
-//	}
-//	return output;
-//}
+char* GetTfromLines(std::vector<std::string>& lines, size_t& len)
+{
+	char* output = nullptr;
+	len = 0;
+
+	if (lines.empty()) {
+		// do nothing
+	}
+	else {
+		// calculate total length
+		for (auto& line : lines) {
+			len += line.length();
+		}
+
+		// generate string
+		std::string txt;
+		txt.reserve(len);
+		for (size_t i = 0; i < lines.size(); i++) {
+			txt += lines[i];
+		}
+		
+		if (len != txt.length()) {
+			throw std::exception("Bad string size - OldEditor.cpp, method GetT");
+		}
+		// create c_str
+		output = new char[len];
+		memcpy(output, txt.c_str(), len);
+	}
+	return output;
+}
 
 stEditorParams SaveParams()
 {
@@ -1043,23 +1035,23 @@ void SmallerPart(WORD Ind, WORD FreeSize)
 	}
 }
 
-void SetUpdat()
-{
-	UpdatT = true;
-	//if (TypeT == FileT) {
-	//	if (Part.PosP < 0x400) {
-	//		UpdPHead = true;
-	//		Part.UpdP = true;
-	//	}
-	//}
-}
+//void SetUpdat()
+//{
+//	UpdatT = true;
+//	//if (TypeT == FileT) {
+//	//	if (Part.PosP < 0x400) {
+//	//		UpdPHead = true;
+//	//		Part.UpdP = true;
+//	//	}
+//	//}
+//}
 
-void TestLenText(char** text, size_t& textLength, size_t F, size_t LL)
-{
-	SetUpdat();
-	//printf("!!!");
-	//throw std::exception("TestLenText() implementation is bad. Don't call it.");
-}
+//void TestLenText(char** text, size_t& textLength, size_t F, size_t LL)
+//{
+//	SetUpdat();
+//	//printf("!!!");
+//	//throw std::exception("TestLenText() implementation is bad. Don't call it.");
+//}
 
 void DekodLine(size_t lineStartIndex)
 {
@@ -1080,7 +1072,8 @@ void DekodLine(size_t lineStartIndex)
 			if (PromptYN(402)) {
 				WORD LL = lineStartIndex + LineMaxSize;
 				//NullChangePart();
-				TestLenText(&T, LenT, LL, (longint)LL + 1);
+				//TestLenText(&T, LenT, LL, (longint)LL + 1);
+				UpdatT = true;
 				//LL -= Part.MovI;
 				T[LL] = _CR;
 				NextLineStartIndex = lineStartIndex + lineLen + 1;
@@ -1474,22 +1467,29 @@ void Background()
 
 void KodLine()
 {
-	WORD LP = GetArrLineLength() + 1; // position behind last char on the line (counted from 1)
-	if (HardL) LP++;
+	size_t ArrLineLen = GetArrLineLength();
+	std::string ArrLine = std::string(Arr, ArrLineLen);
+	if (HardL) {
+		ArrLine += "\r\n";
+	}
+	else {
+		ArrLine += "\r";
+	}
 
 	// create vector of strings from T
 	auto allLines = GetLinesFromT();
-	allLines[TextLineNr - 1] = std::string(Arr, HardL ? LP - 2 : LP - 1);
+	allLines[TextLineNr - 1] = ArrLine;
 
-	TestLenText(&T, LenT, NextLineStartIndex, textIndex + LP);
+	//TestLenText(&T, LenT, NextLineStartIndex, textIndex + LP);
+	UpdatT = true;
 
 	// create T back from vector
-	char* newT = GetT(allLines, LenT, HardL);
+	char* newT = GetTfromLines(allLines, LenT);
 	delete[] T;
 	T = newT;
 
-	NextLineStartIndex = textIndex + LP;
-	LP = NextLineStartIndex - 1;
+	NextLineStartIndex = textIndex + ArrLine.length();
+	//LP = NextLineStartIndex - 1;
 
 	UpdatedL = false;
 }
@@ -1933,8 +1933,9 @@ void FillBlank()
 	KodLine();
 	WORD I = GetArrLineLength();
 	if (positionOnActualLine > I + 1) {
-		TestLenText(&T, LenT, textIndex + I, textIndex + positionOnActualLine - 1);
-		FillChar(&T[textIndex + I], positionOnActualLine - I - 1, 32);
+		//TestLenText(&T, LenT, textIndex + I, textIndex + positionOnActualLine - 1);
+		UpdatT = true;
+		memset(&T[textIndex + I], ' ', positionOnActualLine - I - 1);
 		NextLineStartIndex += positionOnActualLine - I - 1;
 	}
 }
@@ -1970,7 +1971,7 @@ void DeleteLine()
 			lines.erase(lines.begin() + TextLineNr);
 		}
 
-		auto newT = GetT(lines, LenT, HardL);
+		auto newT = GetTfromLines(lines, LenT);
 		delete[] T;
 		T = newT;
 	}
@@ -1986,14 +1987,15 @@ void NewLine(char Mode)
 	auto lines = GetLinesFromT();
 	lines.insert(lines.begin() + TextLineNr, "");
 
-	TestLenText(&T, LenT, LP, LP + 2);
+	//TestLenText(&T, LenT, LP, LP + 2);
+	UpdatT = true;
 
 	// vse od aktualni pozice zkopirujeme na dalsi radek (nove vytvoreny)
 	lines[TextLineNr] = lines[TextLineNr - 1].substr(positionOnActualLine - 1);
 	// na puvodnim radku zustane vse pred pozici kurzoru
 	lines[TextLineNr - 1] = lines[TextLineNr - 1].substr(0, positionOnActualLine - 1);
 
-	char* newT = GetT(lines, LenT, HardL);
+	char* newT = GetTfromLines(lines, LenT);
 	delete[] T;
 	T = newT;
 
@@ -2168,7 +2170,8 @@ void Format(WORD& i, longint First, longint Last, WORD Posit, bool Rep)
 			while (A[ii] == ' ') ii++;
 			if (ii >= Posit) Posit = 1;
 			if (i < lst) A[Posit] = _CR; else Posit--;
-			TestLenText(&T, LenT, i, longint(ii1) + Posit);
+			//TestLenText(&T, LenT, i, longint(ii1) + Posit);
+			UpdatT = true;
 			if (Posit > 0) Move(A, &T[ii1], Posit);
 			ii = ii1 + Posit - i; i = ii1 + Posit; lst += ii; llst += ii;
 			Posit = 1; RelPos = 1; ii1 = i;
@@ -2356,7 +2359,8 @@ bool BlockHandle(longint& fs, FILE* W1, char Oper)
 			else I2 = LL2; // -Part.PosP;
 			switch (Oper) {
 			case 'Y': {
-				TestLenText(&T, LenT, I2, I1);
+				//TestLenText(&T, LenT, I2, I1);
+				UpdatT = true;
 				LL2 -= I2 - I1;
 				break;
 			}
@@ -2391,7 +2395,10 @@ bool BlockHandle(longint& fs, FILE* W1, char Oper)
 				break;
 			}
 			}
-			if (Oper == 'U' || Oper == 'L' || Oper == 'Y') SetUpdat();
+			if (Oper == 'U' || Oper == 'L' || Oper == 'Y') {
+				//SetUpdat();
+				UpdatT = true;
+			}
 			if ((Oper == 'p') /* && AllRd*/) LL1 = LL2;
 			//if (!AllRd && (LL1 < LL2))
 			//{
@@ -2514,7 +2521,8 @@ bool BlockGrasp(char Oper, void* P1, LongStr* sp)
 	MarkStore2(P1); sp = (LongStr*)GetStore2(L + 2); sp->LL = L;
 	Move(&T[I1], sp->A, L);
 	if (Oper == 'M') {
-		TestLenText(&T, LenT, I1 + L, I1);
+		//TestLenText(&T, LenT, I1 + L, I1);
+		UpdatT = true;
 		/*   if (L1>Part.PosP+I1) dec(L1,L);*/
 		if (EndBLn <= ln)
 		{
@@ -2538,7 +2546,8 @@ void BlockDrop(char Oper, void* P1, LongStr* sp)
 	I = textIndex + positionOnActualLine - 1; I2 = sp->LL;
 	BegBLn = LineAbs(TextLineNr); BegBPos = positionOnActualLine;
 	//NullChangePart();
-	TestLenText(&T, LenT, I, longint(I) + I2);
+	//TestLenText(&T, LenT, I, longint(I) + I2);
+	UpdatT = true;
 	//if (ChangePart) I -= Part.MovI;
 	Move(sp->A, &T[I], I2);
 	ReleaseStore2(P1);
@@ -2609,7 +2618,8 @@ void BlockCDrop(char Oper, void* P1, LongStr* sp)
 			InsertLine(i, I1, I3, ww, sp);
 			ww = BegBPos; EndBPos = MaxW(ww + i, EndBPos);
 			if ((NextLineStartIndex > LenT) && ((TypeT != FileT) || true /*AllRd*/)) {
-				TestLenText(&T, LenT, LenT, (longint)LenT + 2);
+				//TestLenText(&T, LenT, LenT, (longint)LenT + 2);
+				UpdatT = true;
 				T[LenT - 2] = _CR;
 				T[LenT - 1] = _LF;
 				NextLineStartIndex = LenT;
@@ -2784,7 +2794,8 @@ void ReplaceString(WORD& J, WORD& fst, WORD& lst, longint& Last)
 {
 	size_t r = ReplaceStr.length();
 	size_t f = FindStr.length();
-	TestLenText(&T, LenT, J, longint(J) + r - f);
+	//TestLenText(&T, LenT, J, longint(J) + r - f);
+	UpdatT = true;
 	ChangeP(fst);
 	//if (TestLastPos(positionOnActualLine, positionOnActualLine + r - f));
 	if (!ReplaceStr.empty()) Move(&ReplaceStr[1], &T[J - f], r);

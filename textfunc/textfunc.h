@@ -7,6 +7,9 @@
 /// rozdeli vstup na jednotlive radky podle CR, LF nebo max. delky radku (0 = neomezeno); zohlednuje tisknutelne znaky
 std::vector<std::string> GetAllLines(std::string& input, size_t maxLineLen = 0, bool skipLastEmptyLine = false);
 
+/// rozdeli vstup na jednolive radky a zachova v nich CR a LF; nezohlednuje tisknutelne znaky
+std::vector<std::string> GetAllLinesWithEnds(std::string& input);
+
 /// odstrani nebo nahradi zadane znaky na konci retezce
 std::string TrailChar(std::string& input, char c_old, char c_new = '\0');
 
