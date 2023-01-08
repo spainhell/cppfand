@@ -55,27 +55,26 @@ size_t Keyboard::FreeSpace()
 bool Keyboard::Get(KEY_EVENT_RECORD& key)
 {
 	// nejdrive zkontrolujeme primarni buffer
-	if (!_priorBuffer.empty())
-	{
+	if (!_priorBuffer.empty()) {
 		key = _priorBuffer.front();
 		_priorBuffer.pop_front();
 		return true;
 	}
 	// pokud jsme na konci bufferu, nacteme jej znovu
-	if (_inBuffer == 0 || _actualIndex >= _inBuffer)
-	{
+	if (_inBuffer == 0 || _actualIndex >= _inBuffer) {
 		// pokud nic neprislo, vratime false
 		_read();
 		if (_inBuffer == 0) return false;
 	}
 	// pokud udalost neni z klavesnice, jdeme na dalsi
-	while (_kbdBuf[_actualIndex].EventType != KEY_EVENT && _actualIndex < _inBuffer)
-	{
+	while (_kbdBuf[_actualIndex].EventType != KEY_EVENT && _actualIndex < _inBuffer) {
 		_actualIndex++;
 	}
 
 	// narazili jsme na udalost z klavesnice, nebo tam zadna takova neni a jsme na konci?
-	if (_actualIndex == _inBuffer) return false;
+	if (_actualIndex == _inBuffer) {
+		return false;
+	}
 		
 	key = _kbdBuf[_actualIndex++].Event.KeyEvent;
 

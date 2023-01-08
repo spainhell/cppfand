@@ -24,7 +24,13 @@ Screen::Screen(short TxtCols, short TxtRows, Wind* WindMin, Wind* WindMax, TCrs*
 	SMALL_RECT rect{ 0, 0, (short)(TxtCols - 1), (short)(TxtRows - 1) };
 	SetConsoleScreenBufferSize(_handle, { TxtCols, TxtRows });
 	SetConsoleWindowInfo(_handle, true, &rect);
+
 	SetConsoleTitle("C++ FAND");
+
+	// avoid console window size changes
+	HWND consoleWindow = GetConsoleWindow();
+	SetWindowLong(consoleWindow, GWL_STYLE, GetWindowLong(consoleWindow, GWL_STYLE) & ~WS_MAXIMIZEBOX & ~WS_SIZEBOX);
+
 	//DWORD consoleMode = ENABLE_VIRTUAL_TERMINAL_PROCESSING; // | ENABLE_LVB_GRID_WORLDWIDE;
 	//bool scm = SetConsoleMode(_handle, 0);
 	_actualIndex = 0;
