@@ -6,11 +6,6 @@
 
 const unsigned int BUFFSIZE = 128 * 1024;
 
-Screen::Screen(WORD* TxtCols, WORD* TxtRows, Wind* WindMin, Wind* WindMax, TCrs* Crs) : Screen(*TxtCols, *TxtRows, WindMin, WindMax, Crs)
-{
-
-}
-
 Screen::Screen(short TxtCols, short TxtRows, Wind* WindMin, Wind* WindMax, TCrs* Crs)
 {
 	this->TxtCols = TxtCols;
@@ -21,11 +16,14 @@ Screen::Screen(short TxtCols, short TxtRows, Wind* WindMin, Wind* WindMax, TCrs*
 	this->WindMax = WindMax;
 	this->Crs = Crs;
 
+	WindMax->X = (BYTE)MaxColsIndex;
+	WindMax->Y = (BYTE)MaxRowsIndex;
+
 	_handle = GetStdHandle(STD_OUTPUT_HANDLE);
 	if (_handle == INVALID_HANDLE_VALUE) { throw std::exception("Cannot open console output handle."); }
-	SMALL_RECT rect{ 0, 0, 79, 24 };
-	SetConsoleWindowInfo(_handle, true, &rect);
+	SMALL_RECT rect{ 0, 0, (short)(TxtCols - 1), (short)(TxtRows - 1) };
 	SetConsoleScreenBufferSize(_handle, { TxtCols, TxtRows });
+	SetConsoleWindowInfo(_handle, true, &rect);
 	SetConsoleTitle("C++ FAND");
 	//DWORD consoleMode = ENABLE_VIRTUAL_TERMINAL_PROCESSING; // | ENABLE_LVB_GRID_WORLDWIDE;
 	//bool scm = SetConsoleMode(_handle, 0);
@@ -33,9 +31,34 @@ Screen::Screen(short TxtCols, short TxtRows, Wind* WindMin, Wind* WindMax, TCrs*
 	_inBuffer = 0;
 }
 
+
 Screen::~Screen()
 {
 	//delete[] _scrBuf;
+}
+
+void Screen::ReInit(short TxtCols, short TxtRows)
+{
+	if (this->TxtCols != TxtCols || this->TxtRows != TxtRows) {
+		// cfg changed -> reinitialize
+		this->TxtCols = TxtCols;
+		this->TxtRows = TxtRows;
+		this->MaxColsIndex = (short)(TxtCols - 1);
+		this->MaxRowsIndex = (short)(TxtRows - 1);
+
+		this->WindMax->X = (BYTE)this->MaxColsIndex;
+		this->WindMax->Y = (BYTE)this->MaxRowsIndex;
+
+		SMALL_RECT rect{ 0, 0, (short)(TxtCols - 1), (short)(TxtRows - 1) };
+		SetConsoleScreenBufferSize(_handle, { TxtCols, TxtRows });
+		SetConsoleWindowInfo(_handle, true, &rect);
+
+		_actualIndex = 0;
+		_inBuffer = 0;
+	}
+	else {
+		// do nothing
+	}
 }
 
 size_t Screen::BufSize()
@@ -648,7 +671,7 @@ storeWindow Screen::popScreen()
 int Screen::SaveScreen(WParam* wp, short c1, short r1, short c2, short r2)
 {
 	// cislovani radku a sloupcu prichazi od 1 .. X
-	if (c1 < 1 || c2 > 80 || r1 < 1 || r2 > 25) { throw std::exception("Bad SaveScreen index."); }
+	//if (c1 < 1 || c2 > 80 || r1 < 1 || r2 > 25) { throw std::exception("Bad SaveScreen index."); }
 
 	c1--; c2--;
 	r1--; r2--;

@@ -15,7 +15,7 @@
 #include "wwmenu.h"
 
 // *** KONZOLA ***
-Screen screen(&TxtCols, &TxtRows, &WindMin, &WindMax, &Crs);
+Screen screen(TxtCols, TxtRows, &WindMin, &WindMax, &Crs);
 Keyboard keyboard;
 //SMALL_RECT hWin;
 DWORD ConsoleError;

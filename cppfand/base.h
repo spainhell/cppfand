@@ -204,7 +204,7 @@ struct Spec // r.319
 };
 extern Spec spec;
 
-struct Video // ø. 345
+struct Video // r. 345
 {
 	WORD address;
 	BYTE TxtRows;

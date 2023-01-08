@@ -58,9 +58,9 @@ struct Colors
 class Screen
 {
 public:
-	Screen(WORD* TxtCols, WORD* TxtRows, Wind* WindMin, Wind* WindMax, TCrs* Crs);
 	Screen(short TxtCols, short TxtRows, Wind* WindMin, Wind* WindMax, TCrs* Crs);
 	~Screen();
+	void ReInit(short TxtCols, short TxtRows);
 	size_t BufSize();
 
 	void ScrClr(WORD X, WORD Y, WORD SizeX, WORD SizeY, char C, BYTE Color);

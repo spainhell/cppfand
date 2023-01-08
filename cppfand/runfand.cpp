@@ -116,19 +116,19 @@ void OpenCache()
 	// pracuje s XMS -> ignorujeme
 }
 
-void DetectVideoCard()
-{
-	WindMax.X = 79;
-	WindMax.Y = 23;
-}
+//void DetectVideoCard()
+//{
+//	WindMax.X = 79;
+//	WindMax.Y = 23;
+//}
 
 void InitDrivers()
 {
-	char kl;
+	//char kl;
 	BreakIntrInit();
 	//DetectGraph(GraphDriver, GraphMode);
 	/* GraphDriver = EGAMono; Mark****/
-	DetectVideoCard();
+	//DetectVideoCard();
 	//AssignCrt(Output); Rewrite(Output);
 	ClrEvent();
 }
@@ -139,7 +139,7 @@ void InitAccess()
 	FillChar(&XWork, sizeof(XWork), 0);
 }
 
-void RdColors(FILE* CfgHandle)
+void RdVideoAndColors(FILE* CfgHandle)
 {
 	WORD typ;
 	if (StartMode == 7) typ = 1;
@@ -152,6 +152,13 @@ void RdColors(FILE* CfgHandle)
 	ReadH(CfgHandle, sizeof(video), &video);
 	ReadH(CfgHandle, sizeof(screen.colors), &screen.colors);
 	SeekH(CfgHandle, PosH(CfgHandle) + (sizeof(video) + sizeof(screen.colors)) * (3 - typ));
+
+	if (video.TxtRows != 0) {
+		TxtRows = video.TxtRows;
+	}
+	if (video.address < 0xFF) {
+		TxtCols = video.address;
+	}
 }
 
 void RdPrinter(FILE* CfgHandle)
@@ -273,7 +280,7 @@ void RdCFG()
 	ReadH(CfgHandle, sizeof(spec.WithDiskFree), &spec.WithDiskFree);
 	// konec SPEC
 
-	RdColors(CfgHandle); // nacteni konfigurace (VGA + barvy)
+	RdVideoAndColors(CfgHandle); // nacteni konfigurace (VGA + barvy)
 
 	// Nacteni fontu
 	ReadH(CfgHandle, 1, &fonts.VFont); // enum orginál 1B
@@ -493,10 +500,10 @@ void InitRunFand()
 		ReadH(h, sizeof(ResFile.A->Size), &ResFile.A[readindexes].Size);
 	}
 
-	// *** NACTENI INFORMACI O ZPRaVaCH Z FAND.RES
+	// *** NACTENI INFORMACI O ZPRAVACH Z FAND.RES
 	ReadH(h, 2, &MsgIdxN);
 	l = MsgIdxN;
-	MsgIdx = new TMsgIdxItem[l]; // GetMem(MsgIdx, l);
+	MsgIdx = new TMsgIdxItem[l];
 	for (int readindexes = 0; readindexes < l; readindexes++)
 	{
 		ReadH(h, sizeof(MsgIdx->Nr), &MsgIdx[readindexes].Nr);
@@ -506,27 +513,22 @@ void InitRunFand()
 	FrstMsgPos = PosH(h);
 	// *** konec ***
 
-	// NAÈTENÍ ZNAKÙ PRO 'ANO' A 'NE' - originál je Y a N
+	// NACTENI ZNAKU PRO 'ANO' A 'NE' - original je Y a N
 	RdMsg(50);
 	AbbrYes = MsgLine[0];
 	AbbrNo = MsgLine[1];
 
 	RdCFG();
+
+	// je nactena konfigurace -> reinicializace obrazovky
+	screen.ReInit((short)TxtCols, (short)TxtRows);
+
 	ProcAttr = screen.colors.uNorm;
-	// ScrSeg = video.address; TODO: nepotøebujeme, nezapisujeme pøímo do GK
-	if (video.TxtRows != 0) TxtRows = video.TxtRows;
 
-	/* FONTY ASI NENÍ POTØEBA NIKDE NAHRÁVAT
-	 *if (Fonts.LoadVideoAllowed && (VideoCard >= viEga))
-		switch (BytesPerChar) {
-		case 14: {if (Fonts.VFont == foKamen) NrVFont = Ega8x14K; else NrVFont = Ega8x14L; break; }
-		case 16: {if (Fonts.VFont == foKamen) NrVFont = Vga8x16K; else NrVFont = Vga8x16L; break; }
-		}*/
+	if (video.TxtRows != 0) {
+		TxtRows = video.TxtRows;
+	}
 
-		// Access
-		// GetIntVec(0x3f, FandInt3f); // toto je vektor pøerušení INT 3fH - Overlay a DLL
-		//FillChar(&XWork, sizeof(XWork), 0); // celý objekt nulovat nemusíme, snad ...
-		//FillChar(&TWork, sizeof(TWork), 0); //  -"-
 	CRdb = nullptr;
 	for (i = 0; i < FloppyDrives; i++) { MountedVol[i] = ""; }
 	// Ww
