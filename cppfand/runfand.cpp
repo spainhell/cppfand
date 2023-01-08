@@ -153,9 +153,11 @@ void RdVideoAndColors(FILE* CfgHandle)
 	ReadH(CfgHandle, sizeof(screen.colors), &screen.colors);
 	SeekH(CfgHandle, PosH(CfgHandle) + (sizeof(video) + sizeof(screen.colors)) * (3 - typ));
 
+	// Text Rows from CFG
 	if (video.TxtRows != 0) {
 		TxtRows = video.TxtRows;
 	}
+	// Text Columns from Video Address CFG
 	if (video.address < 0xFF) {
 		TxtCols = video.address;
 	}
