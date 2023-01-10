@@ -894,11 +894,21 @@ void WrEndT()
 {
 	// vytvori nove pole o delce puvodniho + 1,
 	// puvodni pole se do nej prekopiruje a na konec se vlozi '\0'
-	char* T2 = new char[LenT + 1]; // udelame pole o 1 vetsi nez potrebujeme -> bude zakoncene '0'
-	T2[LenT] = '\0';
-	memcpy(T2, T, LenT);
-	delete[] T;
-	T = T2;
+	if (LenT == 0) {
+		delete[] T;
+		T = new char[3]; // udelame pole o delce 3 -> bude zakoncene "\r\n\0"
+		T[0] = '\r';
+		T[1] = '\n';
+		T[2] = '\0';
+		LenT = 2;
+	}
+	else {
+		char* T2 = new char[LenT + 1]; // udelame pole o 1 vetsi nez potrebujeme -> bude zakoncene '0'
+		T2[LenT] = '\0';
+		memcpy(T2, T, LenT);
+		delete[] T;
+		T = T2;
+	}
 }
 
 void MoveIdx(int dir)
@@ -1959,15 +1969,17 @@ void DeleteLine()
 	if (NextLineStartIndex <= LenT) {
 		auto lines = GetLinesFromT();
 
+		size_t EoL_length = HardL ? 2 : 1;
+
 		if (Event.Pressed.Char == '\b') {
 			// if BACKSPACE was pressed we will delete line below cursor (which was already moved)
 			if (TextLineNr < 1) return;
-			lines[TextLineNr - 1] = lines[TextLineNr - 1] + lines[TextLineNr];
+			lines[TextLineNr - 1] = lines[TextLineNr - 1].substr(0, lines[TextLineNr - 1].length() - EoL_length) + lines[TextLineNr];
 			lines.erase(lines.begin() + TextLineNr);
 		}
 		else {
 			if (TextLineNr < 1) return;
-			lines[TextLineNr - 1] = lines[TextLineNr - 1] + lines[TextLineNr];
+			lines[TextLineNr - 1] = lines[TextLineNr - 1].substr(0, lines[TextLineNr - 1].length() - EoL_length) + lines[TextLineNr];
 			lines.erase(lines.begin() + TextLineNr);
 		}
 
@@ -1984,6 +1996,8 @@ void NewLine(char Mode)
 	WORD LP = textIndex + MinI(GetArrLineLength(), positionOnActualLine - 1);
 	//NullChangePart();
 
+	std::string EoL = HardL ? "\r\n" : "\r";
+
 	auto lines = GetLinesFromT();
 	lines.insert(lines.begin() + TextLineNr, "");
 
@@ -1992,10 +2006,10 @@ void NewLine(char Mode)
 
 	// vse od aktualni pozice zkopirujeme na dalsi radek (nove vytvoreny)
 	lines[TextLineNr] = lines[TextLineNr - 1].substr(positionOnActualLine - 1);
-	// na puvodnim radku zustane vse pred pozici kurzoru
-	lines[TextLineNr - 1] = lines[TextLineNr - 1].substr(0, positionOnActualLine - 1);
+	// na puvodnim radku zustane vse pred pozici kurzoru a pridame ukonceni radku
+	lines[TextLineNr - 1] = lines[TextLineNr - 1].substr(0, positionOnActualLine - 1) + EoL;
 
-	char* newT = GetTfromLines(lines, LenT);
+ 	char* newT = GetTfromLines(lines, LenT);
 	delete[] T;
 	T = newT;
 

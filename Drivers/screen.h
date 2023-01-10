@@ -78,7 +78,6 @@ public:
 	void ScrColor(WORD X, WORD Y, WORD L, BYTE Color);
 	void WriteChar(short X, short Y, char C, BYTE attr, ScrPosition pos = relative);
 	size_t WriteStyledStringToWindow(std::string text, BYTE Attr);
-	//size_t WriteStyledString(short X, short Y, std::string& text, BYTE Attr);
 	void LF();
 	bool SetStyleAttr(char C, BYTE& a);
 	TCrs CrsGet();
@@ -100,7 +99,6 @@ public:
 	void CrsGotoXY(WORD aX, WORD aY);
 
 	int ScrPush1(WORD X, WORD Y, WORD SizeX, WORD SizeY, void* P);
-	// void ScrGetPtr(WORD X, WORD Y, WORD& DX, WORD& DI);
 
 	void pushScreen(storeWindow sw);
 	storeWindow popScreen();

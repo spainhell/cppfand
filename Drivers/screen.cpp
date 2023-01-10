@@ -20,7 +20,10 @@ Screen::Screen(short TxtCols, short TxtRows, Wind* WindMin, Wind* WindMax, TCrs*
 	WindMax->Y = (BYTE)MaxRowsIndex;
 
 	_handle = GetStdHandle(STD_OUTPUT_HANDLE);
-	if (_handle == INVALID_HANDLE_VALUE) { throw std::exception("Cannot open console output handle."); }
+	if (_handle == INVALID_HANDLE_VALUE) {
+		throw std::exception("Cannot open console output handle.");
+	}
+
 	SMALL_RECT rect{ 0, 0, (short)(TxtCols - 1), (short)(TxtRows - 1) };
 	SetConsoleScreenBufferSize(_handle, { TxtCols, TxtRows });
 	SetConsoleWindowInfo(_handle, true, &rect);
@@ -36,7 +39,6 @@ Screen::Screen(short TxtCols, short TxtRows, Wind* WindMin, Wind* WindMax, TCrs*
 	_actualIndex = 0;
 	_inBuffer = 0;
 }
-
 
 Screen::~Screen()
 {
@@ -389,101 +391,6 @@ size_t Screen::WriteStyledStringToWindow(std::string text, BYTE Attr)
 	delete[] _buf;
 	return totalChars;
 }
-
-//size_t Screen::WriteStyledString(short X, short Y, std::string& text, BYTE Attr)
-//{
-//	if (text.length() == 0) return 0;
-//
-//	std::string CStyle;
-//	std::string CColor;
-//	CColor = (char)Attr;
-//
-//	// celkovy pocet vytistenych znaku
-//	size_t totalChars = 0;
-//
-//	CHAR_INFO ci;
-//
-//	short cols = WindMax->X - WindMin->X + 1;
-//	short rows = 1;
-//
-//	// buffer bude mit delku jednoho radku okna
-//	CHAR_INFO* _buf = new CHAR_INFO[cols];
-//
-//	// prevezmeme aktualni pozici kurzoru:
-//	actualWindowCol = WhereX();
-//	actualWindowRow = WhereY();
-//
-//	// pocet radku je mensi hodnota z poctu textu nebo radku okna
-//	short rowsToPrint = 1;
-//	for (size_t i = 0; i < 1; i++)
-//	{
-//		auto str = text;
-//		auto strLen = str.length();
-//		// okenko bude mit jen 1 radek
-//		SMALL_RECT rect = {
-//			X - 1,
-//			Y - 1,
-//			WindMax->X - 1,
-//			Y - 1,
-//		};
-//
-//		size_t ctrlCharsCount = 0;
-//
-//		for (size_t i = 0; i < strLen; i++)
-//		{
-//			char c = str[i];
-//			BYTE a = 0;
-//			if (SetStyleAttr(c, a))
-//			{
-//				ctrlCharsCount++;
-//				size_t i = CStyle.find_first_of(c);
-//				if (i != std::string::npos)
-//				{
-//					CStyle.erase(i, 1);
-//					CColor.erase(i, 1);
-//				}
-//				else {
-//					CStyle = c + CStyle;
-//					CColor = (char)a + CColor;
-//				}
-//				Attr = CColor[0];
-//				continue;
-//			}
-//			if (c == '\n' || c == '\r') {
-//				ctrlCharsCount++;
-//				continue;
-//			}
-//			ci.Attributes = Attr;
-//			ci.Char.AsciiChar = c;
-//			size_t position = i - ctrlCharsCount;
-//			if (position > cols - 1) {
-//				// retezec se do radku nevleze, ale budeme pokracovat kvuli nastaveni barev
-//				continue;
-//			}
-//			_buf[position] = ci;
-//		}
-//		COORD BufferSize = { strLen - ctrlCharsCount, 1 }; // pocet tisknutelnych znaku, 1 radek
-//		WriteConsoleOutputA(_handle, _buf, BufferSize, { 0, 0 }, &rect);
-//		totalChars += strLen - ctrlCharsCount;
-//		// nastavime zacatek dalsiho radku, pokud se nejedna o posledni radek
-//		if (i < rowsToPrint - 1) {
-//			actualWindowRow++;
-//			actualWindowCol = 1;
-//		}
-//		// pokud se jedna o posledni radek, nastavime korektne RELATIVNI souradnice
-//		else {
-//			// pokud jsme na konci radku, prejdeme na zacatek
-//			if (BufferSize.X + 1 > WindMax->X) {
-//				GotoXY(1, actualWindowRow);
-//			}
-//			else {
-//				GotoXY(BufferSize.X + 1, actualWindowRow);
-//			}
-//		}
-//	}
-//	delete[] _buf;
-//	return totalChars;
-//}
 
 void Screen::LF()
 {
