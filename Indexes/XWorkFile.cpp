@@ -31,8 +31,7 @@ void XWorkFile::Main(char Typ)
 #ifdef FandSQL
 			!Scan->FD->IsSQLFile &&
 #endif
-			(Scan->Bool == nullptr
-				&& (kf == nullptr || EquKFlds(k->KFlds, kf)))) {
+			(Scan->Bool == nullptr && (kf == nullptr || EquKFlds(k->KFlds, kf)))) {
 			CopyIndex(k, kf, Typ);
 		}
 		else {
@@ -55,28 +54,30 @@ void XWorkFile::Main(char Typ)
 
 void XWorkFile::CopyIndex(XKey* K, KeyFldD* KF, char Typ)
 {
-	WRec* r = nullptr;
-	XPage* p = nullptr;
-	longint page; WORD n; longint i;
 	XItem* x = nullptr;
-	WORD* xofs = (WORD*)x;
+	WORD xofs = 0;
 
-	r = (WRec*)GetStore(sizeof(WRec));
+	WRec* r = new WRec();
 	r->X.S = "";
-	p = (XPage*)GetStore(XPageSize);
+	XPage* p = new XPage();
+
 	K->NrToPath(1);
-	page = XPath[XPathN].Page;
+	longint page = XPath[XPathN].Page;
 	RunMsgOn(Typ, K->NRecs());
-	i = 0;
+	longint i = 0;
 	while (page != 0) {
 		K->XF()->RdPage(p, page);
 		x = (XItem*)(&p->A);
-		n = p->NItems;
+		WORD n = p->NItems;
 		while (n > 0) {
 			r->PutN(x->GetN());
 			// TODO: zbavit se Next() - TOTO NEBUDE FUNGOVAT!!!
-			if (KF == nullptr) x = x->Next();
-			else *xofs = x->UpdStr(&r->X.S);
+			if (KF == nullptr) {
+				x = x->Next();
+			}
+			else {
+				xofs = x->UpdStr(&r->X.S);
+			}
 			Output(r);
 			n--;
 		}
