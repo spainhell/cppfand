@@ -13,7 +13,7 @@
 void CheckMaxLineLengthAndAddToOutputVector(std::vector<std::string>& vStr, std::string& line, size_t maxLineLen, bool skipEmptyLines)
 {
 	if (maxLineLen > 0 && line.length() > maxLineLen) {
-		// je -> musime jej rozsekat
+		// je dlouhy -> musime jej rozsekat
 		size_t i2 = 0;
 		while (i2 < line.length()) {
 			std::string part = GetStyledStringOfLength(line, i2, maxLineLen);

@@ -713,7 +713,7 @@ BYTE Color(ColorOrd CO)
 	return Color(lastColor);
 }
 
-void EditWrline(char* P, int Row)
+void EditWrline(char* input_text, size_t text_len, int Row)
 {
 	WORD BuffLine[256]{ 0 };
 	BYTE nv1;
@@ -728,8 +728,8 @@ void EditWrline(char* P, int Row)
 		nv2 = TxtColor;
 	}
 	integer i = 0;
-	while (!(P[i] == _CR || P[i] == _LF) && i < LineMaxSize - 1) {
-		nv1 = P[i];
+	while (i < text_len && !(input_text[i] == _CR || input_text[i] == _LF) && i < LineMaxSize - 1) {
+		nv1 = input_text[i];
 		if (i < 0 || i > 255) throw std::exception("Index");
 		BuffLine[i] = (nv2 << 8) + nv1;
 		if (nv1 < 32) IsCtrl = true;
@@ -766,9 +766,9 @@ void EditWrline(char* P, int Row)
 		// retezec obsahuje kontrolni znaky
 		// -> budou zmeneny na pismena a prebarveny
 		for (i = BPos; i <= LP; i++) {
-			if ((unsigned char)P[i] < 32) {
+			if ((unsigned char)input_text[i] < 32) {
 				if (i < 0 || i > 254) throw std::exception("Index");
-				BuffLine[i] = ((P[i] + 64) & 0x00FF) + (Color(P[i]) << 8);
+				BuffLine[i] = ((input_text[i] + 64) & 0x00FF) + (Color(input_text[i]) << 8);
 			}
 		}
 	}
@@ -896,11 +896,10 @@ void WrEndT()
 	// puvodni pole se do nej prekopiruje a na konec se vlozi '\0'
 	if (LenT == 0) {
 		delete[] T;
-		T = new char[3]; // udelame pole o delce 3 -> bude zakoncene "\r\n\0"
-		T[0] = '\r';
-		T[1] = '\n';
-		T[2] = '\0';
-		LenT = 2;
+		T = new char[2]; // udelame pole o delce 3 -> bude zakoncene "\r\n\0"
+		T[0] = ' ';
+		T[1] = '\0';
+		LenT = 1;
 	}
 	else {
 		char* T2 = new char[LenT + 1]; // udelame pole o 1 vetsi nez potrebujeme -> bude zakoncene '0'
@@ -1356,7 +1355,7 @@ void UpdScreen()
 		ScrollWrline(Arr, columnOffset, TextLineNr - ScreenFirstLineNr + 2, co1);
 	}
 	else {
-		EditWrline(Arr, TextLineNr - ScreenFirstLineNr + 1);
+		EditWrline(Arr, LenT, TextLineNr - ScreenFirstLineNr + 1);
 	}
 	WrEndL(HardL, TextLineNr - ScreenFirstLineNr + 1);
 	if (MyTestEvent()) return;
@@ -1381,7 +1380,7 @@ void UpdScreen()
 
 		if (bScroll && (index < LenT)) {
 			if ((InsPg && (ModPage(r - rr + RScrL - 1))) || InsPage) {
-				EditWrline((char*)&PgStr[1], r);
+				EditWrline((char*)&PgStr[1], LenT, r);
 				WrEndL(false, r);
 				if (InsPage) rr++;
 				InsPage = false;
@@ -1399,7 +1398,7 @@ void UpdScreen()
 				ScrollWrline(&T[index], columnOffset, r, co2);
 			}
 			else {
-				EditWrline(&T[index], r);
+				EditWrline(&T[index], LenT, r);
 			}
 			if (InsPage) {
 				// najde konec radku, potrebujeme 1. znak dalsiho radku
@@ -1415,13 +1414,13 @@ void UpdScreen()
 			}
 		}
 		else {
-			EditWrline(&T[LenT - 1], r);
+			EditWrline(nullptr, 0, r);
 			WrEndL(false, r);
 		}
 
 	label1:
 		r++;
-		if (bScroll && (T[index] == 0x0C)) {
+		if (index < LenT && bScroll && (T[index] == 0x0C)) {
 			InsPage = InsPg;
 			index++;
 		}
