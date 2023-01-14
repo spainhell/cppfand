@@ -48,7 +48,7 @@ void XWKey::ReleaseTree(longint Page, bool IsClose)
 	if (!p->IsLeaf) {
 		WORD n = p->NItems;
 		for (WORD i = 1; i <= n; i++) {
-			XItemNonLeaf* item = (XItemNonLeaf*)p->XI(i);
+			XItemNonLeaf* item = (XItemNonLeaf*)p->GetItem(i);
 			ReleaseTree(item->DownPage, IsClose);
 			GetXFile()->RdPage(p.get(), Page);
 		}
@@ -109,7 +109,7 @@ void XWKey::AddToRecNr(longint RecNr, integer Dif)
 		GetXFile()->RdPage(p.get(), pg);
 		integer n = p->NItems - j + 1;
 		while (n > 0) {
-			XItem* x = p->XI(j++);
+			XItem* x = p->GetItem(j++);
 			longint nn = x->GetN();
 			if (nn >= RecNr) x->PutN(nn + Dif);
 			n--;

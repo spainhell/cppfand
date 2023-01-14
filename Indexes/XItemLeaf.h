@@ -23,8 +23,7 @@ public:
 	WORD GetL() override;
 	void PutL(WORD L) override;
 
-	XItem* Next() override;
-	WORD UpdStr(pstring* S) override;
+	size_t UpdStr(pstring* S) override;
 
 	size_t Serialize(BYTE* buffer, size_t bufferSize) override;
 

@@ -51,14 +51,14 @@ void XXPage::PageFull()
 		Chain = new XXPage();
 		Chain->Reset(XW);
 	}
-	if (IsLeaf) n = XW->NxtXPage;
-	else n = XW->XF->NewPage(XW->XPP);
+	if (IsLeaf) n = XW->nextXPage;
+	else n = XW->xwFile->NewPage(XW->xPage);
 	Chain->AddToUpper(this, n);
 	if (IsLeaf) {
-		XW->NxtXPage = XW->XF->NewPage(XW->XPP);
-		GreaterPage = XW->NxtXPage;
+		XW->nextXPage = XW->xwFile->NewPage(XW->xPage);
+		GreaterPage = XW->nextXPage;
 	}
-	XW->XF->WrPage((XPage*)(&IsLeaf), n, false);
+	XW->xwFile->WrPage((XPage*)(&IsLeaf), n, false);
 }
 
 void XXPage::AddToLeaf(WRec* R, XKey* KD)
@@ -73,15 +73,15 @@ label1:
 		if ((m == l) && (m == LastIndex.length())) {
 			if (n == LastRecNr) return; /* overlapping intervals from  key in .. */
 			if (!KD->InWork && !KD->Duplic) {
-				if (!XW->MsgWritten) {
+				if (!XW->msgWritten) {
 					SetMsgPar(CFile->Name);
 					if (IsTestRun) { if (!PromptYN(832)) GoExit(); }
 					else WrLLF10Msg(828);
-					XW->MsgWritten = true;
+					XW->msgWritten = true;
 				}
 				ReadRec(CFile, n, CRecPtr);
 				/*XKey* k = CFile->Keys;
-				while ((k != KD)) {*/
+				while ((k != xKey)) {*/
 				for (auto& K : CFile->Keys) {
 					K->Delete(n);
 					//k = k->Chain;

@@ -31,7 +31,7 @@ WORD XPage::Off()
 	else return oNotLeaf;
 }
 
-XItem* XPage::XI(WORD I)
+XItem* XPage::GetItem(WORD I)
 {
 	if (this->IsLeaf) {
 		if (_leafItems.size() < I) {
@@ -50,7 +50,7 @@ XItem* XPage::XI(WORD I)
 WORD XPage::EndOff()
 {
 	return sizeof(A);
-	XItem* x = XI(NItems + 1);
+	XItem* x = GetItem(NItems + 1);
 	WORD* xofs = (WORD*)x; // absolute x
 	return (uintptr_t)xofs;
 }
@@ -101,7 +101,7 @@ longint XPage::SumN()
 		longint n = 0;
 		WORD o = Off();
 		for (WORD i = 1; i < NItems; i++) {
-			XItem* x = this->XI(i);
+			XItem* x = this->GetItem(i);
 			n += x->GetN();
 		}
 		return n;

@@ -102,7 +102,7 @@ void SortAndSubst(KeyFldD* SK)
 	MarkStore(p);
 	FileD* cf = CFile;
 	CRecPtr = GetRecSpace();
-	//New(Scan, Init(CFile, nullptr, nullptr, false));
+	//New(xScan, Init(CFile, nullptr, nullptr, false));
 	XScan* Scan = new XScan(CFile, nullptr, nullptr, false);
 	Scan->Reset(nullptr, false);
 	ScanSubstWIndex(Scan, SK, 'S');
@@ -112,11 +112,11 @@ void SortAndSubst(KeyFldD* SK)
 
 	// zapiseme data do souboru .100
 	GenerateNew000File(FD2, Scan);
-	//while (!Scan->eof) {
-	//	RunMsgN(Scan->IRec);
+	//while (!xScan->eof) {
+	//	RunMsgN(xScan->IRec);
 	//	CFile = FD2;
 	//	PutRec();
-	//	Scan->GetRec();
+	//	xScan->GetRec();
 	//}
 	//if (!SaveCache(0, CFile->Handle)) GoExit();
 
@@ -148,7 +148,7 @@ void GetIndexSort(Instr_getindex* PD)
 		ld = PD->giLD;
 		if (ld != nullptr) kf = ld->ToKey->KFlds;
 		if (PD != nullptr) lv2 = PD->giLV2;
-		//New(Scan, Init(CFile, PD->giKD, PD->giKIRoot, false));
+		//New(xScan, Init(CFile, PD->giKD, PD->giKIRoot, false));
 		Scan = new XScan(CFile, PD->giKD, PD->giKIRoot, false);
 		cond = RunEvalFrml(PD->giCond);
 		switch (PD->giOwnerTyp) {

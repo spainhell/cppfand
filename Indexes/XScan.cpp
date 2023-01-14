@@ -277,7 +277,7 @@ void XScan::SeekOnPage(longint Page, WORD I)
 		if (NOnPg > NOfKI) NOnPg = NOfKI;
 		NOfKI -= NOnPg;
 	}
-	//X = P->XI(I);
+	//X = P->GetItem(I);
 	_item = I;
 }
 
@@ -333,7 +333,7 @@ label1:
 		case 0: { RecNr = IRec; goto label2; break; }
 		case 1:
 		case 2: {
-			RecNr = P->XI(_item)->GetN();
+			RecNr = P->GetItem(_item)->GetN();
 			NOnPg--;
 			if (NOnPg > 0) {
 				_item++;

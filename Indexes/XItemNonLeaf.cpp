@@ -66,15 +66,15 @@ void XItemNonLeaf::PutL(WORD L)
 	this->L = L;
 }
 
-XItem* XItemNonLeaf::Next()
-{
-	unsigned char recLen = data[0];
-	// dalsi zaznam zacina hned za daty o delce recLen
-	auto xi = new XItemNonLeaf(&data[recLen + 1]);
-	return xi;
-}
+//XItem* XItemNonLeaf::Next()
+//{
+//	unsigned char recLen = data[0];
+//	// dalsi zaznam zacina hned za daty o delce recLen
+//	auto xi = new XItemNonLeaf(&data[recLen + 1]);
+//	return xi;
+//}
 
-WORD XItemNonLeaf::UpdStr(pstring* S)
+size_t XItemNonLeaf::UpdStr(pstring* S)
 {
 	(*S)[0] = M + L; // nova delka retezce
 	memcpy(&(*S)[M + 1], data, L);

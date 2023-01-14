@@ -147,7 +147,7 @@ longint XKey::PathToNr()
 	for (WORD j = 1; j <= XPathN - 1; j++) {
 		GetXFile()->RdPage(p.get(), XPath[j].Page);
 		for (WORD i = 1; i <= XPath[j].I - 1; i++) {
-			XItem* x = p->XI(item++);
+			XItem* x = p->GetItem(item++);
 			n += x->GetN();
 		}
 	}
@@ -184,7 +184,7 @@ void XKey::NrToPath(longint I)
 			// Non Leaf
 			bool next = false;
 			for (WORD j = 1; j <= p->NItems; j++) {
-				XItem* x = p->XI(item++);
+				XItem* x = p->GetItem(item++);
 				if (I <= x->GetN()) {
 					XPath[XPathN].I = j;
 					page = ((XItemNonLeaf*)x)->DownPage;
@@ -207,7 +207,7 @@ longint XKey::PathToRecNr()
 	auto p = std::make_unique<XPage>();
 
 	GetXFile()->RdPage(p.get(), X.Page);
-	auto pxi = p->XI(X.I);
+	auto pxi = p->GetItem(X.I);
 
 	longint recnr = pxi->GetN();
 	longint result = recnr;
@@ -230,7 +230,7 @@ bool XKey::RecNrToPath(XString& XX, longint RecNr)
 	structXPath* X = &XPath[XPathN];
 label1:
 	GetXFile()->RdPage(p.get(), X->Page);
-	x = p->XI(X->I);
+	x = p->GetItem(X->I);
 	if (!(p->GetKey(X->I) == XX.S)) goto label3;
 label2:
 	if (x->GetN() == RecNr) { result = true; goto label3; }
@@ -239,7 +239,7 @@ label2:
 		if (IncPath(XPathN - 1, X->Page)) { X->I = 1; goto label1; }
 	}
 	else {
-		x = p->XI(X->I); // x = x->Next();
+		x = p->GetItem(X->I);
 		if (x->GetL() != 0) goto label3;
 		goto label2;
 	}
@@ -272,7 +272,7 @@ bool XKey::IncPath(WORD J, longint& Pg)
 				Pg = p->GreaterPage;
 			}
 		else {
-			XItem* item = p->XI(X.I);
+			XItem* item = p->GetItem(X.I);
 			Pg = ((XItemNonLeaf*)item)->DownPage;
 		}
 	}
@@ -343,7 +343,7 @@ void XKey::InsertOnPath(XString& XX, longint RecNr)
 		}
 		else {
 			if (i <= p->NItems) {
-				x = p->XI(i);
+				x = p->GetItem(i);
 				n = x->GetN() + 1;
 				if (uppage != 0) n -= upsum;
 				x->PutN(n);
@@ -410,7 +410,7 @@ void XKey::ChainPrevLeaf(XPage* P, longint N)
 			GetXFile()->RdPage(P, XPath[j].Page);
 			i = XPath[j].I - 1;
 			while (true) {
-				page = ((XItemNonLeaf*)P->XI(i))->DownPage;
+				page = ((XItemNonLeaf*)P->GetItem(i))->DownPage;
 				GetXFile()->RdPage(P, page);
 				if (P->IsLeaf) {
 					P->GreaterPage = N;
@@ -558,7 +558,7 @@ void XKey::XIDown(XPage* P, XPage* P1, WORD I, longint& Page1)
 		Page1 = P->GreaterPage;
 	}
 	else {
-		Page1 = ((XItemNonLeaf*)P->XI(I))->DownPage;
+		Page1 = ((XItemNonLeaf*)P->GetItem(I))->DownPage;
 	}
 	GetXFile()->RdPage(P1, Page1);
 }

@@ -27,7 +27,7 @@ public:
 
 	BYTE A[XPageSize]{ '\0' };  // item array
 	WORD Off();
-	XItem* XI(WORD I);
+	XItem* GetItem(WORD I);
 	WORD EndOff();
 	bool Underflow();
 	bool Overflow();
