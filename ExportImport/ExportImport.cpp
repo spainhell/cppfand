@@ -385,7 +385,7 @@ void ExportFD(CopyD* CD)
 			else Cpy(CFile->TF->Handle, CFile->TF->UsedFileSize(), F2);
 		}
 		if (CD->WithX1) {
-			F2->RewriteX(); /* !!! with CFile->XF^ do!!! */
+			F2->RewriteX(); /* !!! with CFile->GetXFile^ do!!! */
 			if (n == 0) {
 				delete F2;
 				F2 = nullptr;

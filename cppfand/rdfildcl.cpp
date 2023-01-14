@@ -1081,7 +1081,7 @@ void GetXFileD()
 		}
 	}
 	else {
-		//if (CFile->XF == nullptr) CFile->XF = (XFile*)GetZStore(sizeof(XFile));
+		//if (CFile->GetXFile == nullptr) CFile->GetXFile = (XFile*)GetZStore(sizeof(XFile));
 		if (CFile->XF == nullptr) {
 			CFile->XF = new XFile();
 		}

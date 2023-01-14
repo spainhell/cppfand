@@ -4244,9 +4244,15 @@ void ToggleSelectAll()
 {
 	XWKey* k = E->SelKey;
 	if (k == nullptr) return;
-	if (k->NR > 0) k->Release();
-	else if (Subset) CopyIndex(k, WK);
-	else CopyIndex(k, VK);
+	if (k->NR > 0) {
+		k->Release();
+	}
+	else if (Subset) {
+		CopyIndex(k, WK);
+	}
+	else {
+		CopyIndex(k, VK);
+	}
 	DisplAllWwRecs();
 }
 

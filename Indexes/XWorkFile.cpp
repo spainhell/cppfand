@@ -11,7 +11,7 @@ XWorkFile::XWorkFile(XScan* AScan, XKey* AK)
 	Scan = AScan;
 	CFile = Scan->FD;
 	KD = AK;
-	XF = AK->XF();
+	XF = AK->GetXFile();
 }
 
 void XWorkFile::Main(char Typ)
@@ -54,7 +54,6 @@ void XWorkFile::Main(char Typ)
 
 void XWorkFile::CopyIndex(XKey* K, KeyFldD* KF, char Typ)
 {
-	XItem* x = nullptr;
 	WORD xofs = 0;
 
 	WRec* r = new WRec();
@@ -66,10 +65,11 @@ void XWorkFile::CopyIndex(XKey* K, KeyFldD* KF, char Typ)
 	RunMsgOn(Typ, K->NRecs());
 	longint i = 0;
 	while (page != 0) {
-		K->XF()->RdPage(p, page);
-		x = (XItem*)(&p->A);
-		WORD n = p->NItems;
-		while (n > 0) {
+		K->GetXFile()->RdPage(p, page);
+		//WORD n = p->NItems;
+		//while (n > 0) {
+		for (size_t i = p->NItems; i > 0; i--) {
+			XItem* x = new XItemLeaf(&p->A[xofs]); // (XItem*)(&p->A);
 			r->PutN(x->GetN());
 			// TODO: zbavit se Next() - TOTO NEBUDE FUNGOVAT!!!
 			if (KF == nullptr) {
@@ -79,7 +79,7 @@ void XWorkFile::CopyIndex(XKey* K, KeyFldD* KF, char Typ)
 				xofs = x->UpdStr(&r->X.S);
 			}
 			Output(r);
-			n--;
+			//n--;
 		}
 		i += p->NItems;
 		RunMsgN(i);

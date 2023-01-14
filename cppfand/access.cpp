@@ -79,7 +79,7 @@ void ClearCacheCFile()
 	return;
 	/* !!! with CFile^ do!!! */
 	/*ClearCacheH(CFile->Handle);
-	if (CFile->Typ == 'X') ClearCacheH(CFile->XF->Handle);
+	if (CFile->Typ == 'X') ClearCacheH(CFile->GetXFile->Handle);
 	if (CFile->TF != nullptr) ClearCacheH(CFile->TF->Handle);*/
 }
 

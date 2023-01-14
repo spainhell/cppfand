@@ -191,7 +191,7 @@ label1:
 		}
 		if (HandleError != 0) goto label4;
 	}
-	if (CFile->Typ == 'X') /* !!! with XF^ do!!! */ {
+	if (CFile->Typ == 'X') /* !!! with GetXFile^ do!!! */ {
 		CExtToX();
 	label3:
 		CFile->XF->Handle = OpenH(_isoldfile, CFile->UMode);
@@ -283,7 +283,7 @@ label3:
 			}
 		}
 	}
-	if (CFile->Typ == 'X') {/* !!! with XF^ do!!! */
+	if (CFile->Typ == 'X') {/* !!! with GetXFile^ do!!! */
 		if (FS < CFile->FrstDispl) {
 			CFile->XF->SetNotValid();
 		}
@@ -405,7 +405,7 @@ void TruncF()
 		TruncH(CFile->TF->Handle, CFile->TF->UsedFileSize());
 		CFile->TF->TestErr();
 	}
-	if (CFile->Typ == 'X')  /*with XF^*/ {
+	if (CFile->Typ == 'X')  /*with GetXFile^*/ {
 		sz = CFile->XF->UsedFileSize();
 		if (CFile->XF->NotValid) sz = 0;
 		TruncH(CFile->XF->Handle, sz);
@@ -423,7 +423,7 @@ void CloseFile()
 	else WrPrefixes();
 	SaveCache(0, CFile->Handle);
 	TruncF();
-	if (CFile->Typ == 'X') { /*with XF^*/
+	if (CFile->Typ == 'X') { /*with GetXFile^*/
 		if (CFile->XF->Handle != nullptr) {
 			CloseClearH(&CFile->XF->Handle);
 			if (!CFile->IsShared())

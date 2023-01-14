@@ -271,7 +271,7 @@ void XScan::SeekOnKI(longint I)
 
 void XScan::SeekOnPage(longint Page, WORD I)
 {
-	Key->XF()->RdPage(P, Page);
+	Key->GetXFile()->RdPage(P, Page);
 	NOnPg = P->NItems - I + 1;
 	if (Kind == 2) {
 		if (NOnPg > NOfKI) NOnPg = NOfKI;

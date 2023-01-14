@@ -214,13 +214,13 @@ void GetIndexSort(Instr_getindex* PD)
 	ReleaseStore(p);
 }
 
-void CopyIndex(WKeyDPtr K, XKey* FromK)
+void CopyIndex(XWKey* K, XKey* FromK)
 {
-	XScan* Scan = nullptr; void* p = nullptr; LockMode md;
-	K->Release(); MarkStore(p); md = NewLMode(RdMode);
-	// New(Scan, Init(CFile, FromK, nullptr, false));
-	Scan = new XScan(CFile, FromK, nullptr, false);
+	XScan* Scan = nullptr;
+	K->Release();
+	LockMode md = NewLMode(RdMode);
+		Scan = new XScan(CFile, FromK, nullptr, false);
 	Scan->Reset(nullptr, false);
 	CreateWIndex(Scan, K, 'W');
-	OldLMode(md); ReleaseStore(p);
+	OldLMode(md);
 }
