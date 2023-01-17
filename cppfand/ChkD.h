@@ -5,12 +5,11 @@
 
 class FrmlElem;
 
-class ChkD : public Chained<ChkD> // ø. 115
+class ChkD : public Chained<ChkD>
 {
 public:
-	ChkD() {};
+	ChkD() {}
 	ChkD(const ChkD& orig);
-	// ChkD* pChain = nullptr;
 	FrmlElem* Bool = nullptr;
 	std::string HelpName;
 	FrmlElem* TxtZ = nullptr;

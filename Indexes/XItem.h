@@ -22,7 +22,6 @@ public:
 
 	virtual size_t Serialize(BYTE* buffer, size_t bufferSize) = 0;
 
-	virtual XItem* Next() = 0;
-	virtual WORD UpdStr(pstring* S) = 0;
+	virtual size_t UpdStr(pstring* S) = 0;
 	virtual size_t size() = 0; // vrati delku zaznamu
 };

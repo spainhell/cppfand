@@ -9,13 +9,13 @@ class XWorkFile : public WorkFile
 {
 public:
 	XWorkFile(XScan* AScan, XKey* AK);
-	XXPage* PX = nullptr;
-	XKey* KD = nullptr;
-	XScan* Scan = nullptr;
-	bool MsgWritten = false;
-	longint NxtXPage = 0;
-	XWFile* XF = nullptr;
-	XPage* XPP = nullptr;
+	XXPage* xxPage = nullptr;
+	XKey* xKey = nullptr;
+	XScan* xScan = nullptr;
+	bool msgWritten = false;
+	longint nextXPage = 0;
+	XWFile* xwFile = nullptr;
+	XPage* xPage = nullptr;
 	void Main(char Typ);
 	void CopyIndex(XKey* K, KeyFldD* KF, char Typ);
 	bool GetCRec() override;

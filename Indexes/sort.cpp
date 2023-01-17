@@ -96,7 +96,7 @@ void SortAndSubst(KeyFldD* SK)
 	MarkStore(p);
 	FileD* cf = CFile;
 	CRecPtr = GetRecSpace();
-	//New(Scan, Init(CFile, nullptr, nullptr, false));
+	//New(xScan, Init(CFile, nullptr, nullptr, false));
 	XScan* Scan = new XScan(CFile, nullptr, nullptr, false);
 	Scan->Reset(nullptr, false);
 	ScanSubstWIndex(Scan, SK, 'S');
@@ -106,11 +106,11 @@ void SortAndSubst(KeyFldD* SK)
 
 	// zapiseme data do souboru .100
 	GenerateNew000File(FD2, Scan);
-	//while (!Scan->eof) {
-	//	RunMsgN(Scan->IRec);
+	//while (!xScan->eof) {
+	//	RunMsgN(xScan->IRec);
 	//	CFile = FD2;
 	//	PutRec();
-	//	Scan->GetRec();
+	//	xScan->GetRec();
 	//}
 	//if (!SaveCache(0, CFile->Handle)) GoExit();
 
@@ -207,13 +207,13 @@ void GetIndexSort(Instr_getindex* PD)
 	ReleaseStore(p);
 }
 
-void CopyIndex(WKeyDPtr K, XKey* FromK)
+void CopyIndex(XWKey* K, XKey* FromK)
 {
-	XScan* Scan = nullptr; void* p = nullptr; LockMode md;
-	K->Release(); MarkStore(p); md = NewLMode(RdMode);
-	// New(Scan, Init(CFile, FromK, nullptr, false));
-	Scan = new XScan(CFile, FromK, nullptr, false);
+	XScan* Scan = nullptr;
+	K->Release();
+	LockMode md = NewLMode(RdMode);
+		Scan = new XScan(CFile, FromK, nullptr, false);
 	Scan->Reset(nullptr, false);
 	CreateWIndex(Scan, K, 'W');
-	OldLMode(md); ReleaseStore(p);
+	OldLMode(md);
 }

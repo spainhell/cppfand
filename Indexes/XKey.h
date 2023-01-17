@@ -19,7 +19,7 @@ public:
 	WORD IndexRoot = 0; BYTE IndexLen = 0;
 	longint NR = 0; // {used only by XWKey}
 	std::string Alias;
-	XWFile* XF();
+	XWFile* GetXFile();
 	longint NRecs();
 	bool Search(XString& XX, bool AfterEqu, longint& RecNr);
 	bool Search(std::string X, bool AfterEqu, longint& RecNr);

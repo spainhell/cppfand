@@ -697,7 +697,7 @@ void ForAllProc(Instr_forall* PD)
 	FileD* FD = nullptr; XKey* Key = nullptr; XKey* k = nullptr; FrmlElem* Bool = nullptr;
 	LinkD* LD = nullptr; KeyInD* KI = nullptr;
 	void* cr = nullptr; void* p = nullptr; void* lr = nullptr;
-	XScan* Scan = nullptr; LockMode md, md1; XString xx;
+	XScan* xScan = nullptr; LockMode md, md1; XString xx;
 	KeyFldD* KF = nullptr; LocVar* LVi = nullptr; LocVar* LVr = nullptr;
 	bool lk = false, b = false;
 #ifdef FandSQL
@@ -737,36 +737,52 @@ void ForAllProc(Instr_forall* PD)
 #endif
 	md = NewLMode(RdMode);
 	cr = GetRecSpace(); CRecPtr = cr; lr = cr;
-	Scan = new XScan(CFile, Key, KI, true); //New(Scan, Init(CFile, Key, KI, true));
+	xScan = new XScan(CFile, Key, KI, true);
 #ifdef FandSQL
 	if (PD->inSQL) Scan->ResetSQLTxt(Bool); else
 #endif
 		if (LD != nullptr) {
-			if (PD->COwnerTyp == 'i') Scan->ResetOwnerIndex(LD, PD->CLV, Bool);
-			else Scan->ResetOwner(&xx, Bool);
+			if (PD->COwnerTyp == 'i') {
+				xScan->ResetOwnerIndex(LD, PD->CLV, Bool);
+			}
+			else {
+				xScan->ResetOwner(&xx, Bool);
+			}
 		}
 		else {
-			Scan->Reset(Bool, PD->CSQLFilter);
+			xScan->Reset(Bool, PD->CSQLFilter);
 		}
 #ifdef FandSQL
 	if (!CFile->IsSQLFile)
 #endif
-		if (Key != nullptr)
-			if (PD->CWIdx) ScanSubstWIndex(Scan, Key->KFlds, 'W');
-			else { CFile->XF->UpdLockCnt++; lk = true; }
-	if (LVr != nullptr) lr = LVr->RecPtr;
+		if (Key != nullptr) {
+			if (PD->CWIdx) {
+				ScanSubstWIndex(xScan, Key->KFlds, 'W');
+			}
+			else {
+				CFile->XF->UpdLockCnt++;
+				lk = true;
+			}
+		}
+	if (LVr != nullptr) {
+		lr = LVr->RecPtr;
+	}
 	k = CFile->Keys.empty() ? nullptr : CFile->Keys[0];
 	b = PD->CProcent;
-	if (b) RunMsgOn('F', Scan->NRecs);
+	if (b) {
+		RunMsgOn('F', xScan->NRecs);
+	}
 label1:
 #ifdef FandSQL
 	if (sql) CRecPtr = lr;
 	else
 #endif
 		CRecPtr = cr;
-	Scan->GetRec();
-	if (b) RunMsgN(Scan->IRec);
-	if (!Scan->eof) {
+	xScan->GetRec();
+	if (b) {
+		RunMsgN(xScan->IRec);
+	}
+	if (!xScan->eof) {
 #ifdef FandSQL
 
 		if (sql) { ClearUpdFlag; if (k != nullptr) xx.PackKF(k->KFlds) }
@@ -780,7 +796,7 @@ label1:
 			}
 		//if (LVi != nullptr) *(double*)(LocVarAd(LVi)) = Scan->RecNr;
 		if (LVi != nullptr) {
-			LVi->R = Scan->RecNr;
+			LVi->R = xScan->RecNr;
 		}
 		RunInstr(PD->CInstr);
 		CFile = FD;
@@ -798,7 +814,7 @@ label1:
 			if ((LVr != nullptr) && (LVi == nullptr) && HasUpdFlag()) {
 				md1 = NewLMode(WrMode);
 				CopyRecWithT(lr, cr);
-				UpdRec(cr, Scan->RecNr, true);
+				UpdRec(cr, xScan->RecNr, true);
 				OldLMode(md1);
 			}
 		}
@@ -807,17 +823,21 @@ label1:
 #ifdef FandSQL
 				!sql &&
 #endif 
-				(Key == nullptr) && (Scan->NRecs > CFile->NRecs)) {
-				Scan->IRec--;
-				Scan->NRecs--;
+				(Key == nullptr) && (xScan->NRecs > CFile->NRecs)) {
+				xScan->IRec--;
+				xScan->NRecs--;
 			}
 			goto label1;
 		}
 	}
-	if (lk) CFile->XF->UpdLockCnt--;
-	Scan->Close();
+	if (lk) {
+		CFile->XF->UpdLockCnt--;
+	}
+	xScan->Close();
 	OldLMode(md);
-	if (b) RunMsgOff();
+	if (b) {
+		RunMsgOff();
+	}
 	ReleaseStore(p);
 	BreakP = false;
 }
@@ -856,7 +876,9 @@ void WithWindowProc(Instr_window* PD)
 	RunWFrml(PD->W, PD->WithWFlags, v); // nacte rozmery okna
 	auto top = RunShortStr(PD->Top); // nacte nadpis
 	w1 = PushWFramed(v.C1, v.R1, v.C2, v.R2, ProcAttr, top, "", PD->WithWFlags); // vykresli oramovane okno s nadpisem
-	if ((PD->WithWFlags & WNoClrScr) == 0) ClrScr();
+	if ((PD->WithWFlags & WNoClrScr) == 0) {
+		ClrScr();
+	}
 	SetWwViewPort();
 	RunInstr(PD->WwInstr);
 	PopW2(w1, (PD->WithWFlags & WNoPop) == 0);

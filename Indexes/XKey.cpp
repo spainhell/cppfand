@@ -80,7 +80,7 @@ bool XKey::Search(std::string const X, bool AfterEqu, longint& RecNr)
 
 	while (true) {
 		XPath[XPathN].Page = page;
-		XF()->RdPage(p.get(), page); // je nactena asi cela stranka indexu
+		GetXFile()->RdPage(p.get(), page); // je nactena asi cela stranka indexu
 
 		WORD o = p->Off();
 		WORD nItems = p->NItems;
@@ -108,7 +108,7 @@ bool XKey::Search(std::string const X, bool AfterEqu, longint& RecNr)
 			}
 			if (result == _equ) {
 				if (((RecNr == 0) || (RecNr > CFile->NRecs))) {
-					XF()->Err(833);
+					GetXFile()->Err(833);
 				}
 				else {
 					searchResult = true;
@@ -145,15 +145,15 @@ longint XKey::PathToNr()
 	auto p = std::make_unique<XPage>();
 	size_t item = 1;
 	for (WORD j = 1; j <= XPathN - 1; j++) {
-		XF()->RdPage(p.get(), XPath[j].Page);
+		GetXFile()->RdPage(p.get(), XPath[j].Page);
 		for (WORD i = 1; i <= XPath[j].I - 1; i++) {
-			XItem* x = p->XI(item++);
+			XItem* x = p->GetItem(item++);
 			n += x->GetN();
 		}
 	}
 	n += XPath[XPathN].I;
 	if (n > NRecs() + 1) {
-		XF()->Err(834);
+		GetXFile()->Err(834);
 	}
 	return n;
 }
@@ -169,12 +169,12 @@ void XKey::NrToPath(longint I)
 	size_t item = 1;
 
 	while (true) {
-		XF()->RdPage(p.get(), page);
+		GetXFile()->RdPage(p.get(), page);
 		XPathN++;
 		XPath[XPathN].Page = page;
 		if (p->IsLeaf) {
 			if (I > p->NItems + 1) {
-				XF()->Err(837);
+				GetXFile()->Err(837);
 			}
 			XPath[XPathN].I = I;
 			//ReleaseStore(p);
@@ -184,7 +184,7 @@ void XKey::NrToPath(longint I)
 			// Non Leaf
 			bool next = false;
 			for (WORD j = 1; j <= p->NItems; j++) {
-				XItem* x = p->XI(item++);
+				XItem* x = p->GetItem(item++);
 				if (I <= x->GetN()) {
 					XPath[XPathN].I = j;
 					page = ((XItemNonLeaf*)x)->DownPage;
@@ -206,13 +206,13 @@ longint XKey::PathToRecNr()
 	auto X = XPath[XPathN];
 	auto p = std::make_unique<XPage>();
 
-	XF()->RdPage(p.get(), X.Page);
-	auto pxi = p->XI(X.I);
+	GetXFile()->RdPage(p.get(), X.Page);
+	auto pxi = p->GetItem(X.I);
 
 	longint recnr = pxi->GetN();
 	longint result = recnr;
 	if ((recnr == 0) || (recnr > CFile->NRecs)) {
-		XF()->Err(835);
+		GetXFile()->Err(835);
 	}
 	//ReleaseStore(p);
 	return result;
@@ -229,8 +229,8 @@ bool XKey::RecNrToPath(XString& XX, longint RecNr)
 
 	structXPath* X = &XPath[XPathN];
 label1:
-	XF()->RdPage(p.get(), X->Page);
-	x = p->XI(X->I);
+	GetXFile()->RdPage(p.get(), X->Page);
+	x = p->GetItem(X->I);
 	if (!(p->GetKey(X->I) == XX.S)) goto label3;
 label2:
 	if (x->GetN() == RecNr) { result = true; goto label3; }
@@ -239,7 +239,7 @@ label2:
 		if (IncPath(XPathN - 1, X->Page)) { X->I = 1; goto label1; }
 	}
 	else {
-		x = p->XI(X->I); // x = x->Next();
+		x = p->GetItem(X->I);
 		if (x->GetL() != 0) goto label3;
 		goto label2;
 	}
@@ -257,7 +257,7 @@ bool XKey::IncPath(WORD J, longint& Pg)
 	if (J == 0) { goto label2; } /* !!! with XPath[J] do!!! */
 	{
 	label1:
-		XF()->RdPage(p.get(), X.Page);
+		GetXFile()->RdPage(p.get(), X.Page);
 		if (X.I > p->NItems)
 			if (IncPath(J - 1, X.Page)) { X.I = 0; goto label1; }
 			else goto label2;
@@ -272,7 +272,7 @@ bool XKey::IncPath(WORD J, longint& Pg)
 				Pg = p->GreaterPage;
 			}
 		else {
-			XItem* item = p->XI(X.I);
+			XItem* item = p->GetItem(X.I);
 			Pg = ((XItemNonLeaf*)item)->DownPage;
 		}
 	}
@@ -295,7 +295,7 @@ pstring XKey::NrToStr(longint I)
 	pstring result;
 	auto p = std::make_unique<XPage>();
 	NrToPath(I);
-	XF()->RdPage(p.get(), XPath[XPathN].Page);
+	GetXFile()->RdPage(p.get(), XPath[XPathN].Page);
 	result = p->GetKey(I);
 	return result;
 }
@@ -336,14 +336,14 @@ void XKey::InsertOnPath(XString& XX, longint RecNr)
 	auto upp = std::make_unique<XPage>();
 	for (j = XPathN; j >= 1; j--) {
 		page = XPath[j].Page;
-		XF()->RdPage(p.get(), page);
+		GetXFile()->RdPage(p.get(), page);
 		i = XPath[j].I;
 		if (p->IsLeaf) {
 			InsertLeafItem(XX, p.get(), upp.get(), page, i, RecNr, uppage);
 		}
 		else {
 			if (i <= p->NItems) {
-				x = p->XI(i);
+				x = p->GetItem(i);
 				n = x->GetN() + 1;
 				if (uppage != 0) n -= upsum;
 				x->PutN(n);
@@ -353,22 +353,22 @@ void XKey::InsertOnPath(XString& XX, longint RecNr)
 				InsertNonLeafItem(XX, p.get(), upp.get(), page, i, uppage, upsum, downpage);
 			}
 		}
-		XF()->WrPage(p.get(), page);
+		GetXFile()->WrPage(p.get(), page);
 		if (uppage != 0) {
-			XF()->WrPage(upp.get(), uppage);
+			GetXFile()->WrPage(upp.get(), uppage);
 			upsum = upp->SumN();
 			if (upp->IsLeaf) ChainPrevLeaf(p1.get(), uppage);
 		}
 	}
 	if (uppage != 0) {
-		page1 = XF()->NewPage(p1.get());
+		page1 = GetXFile()->NewPage(p1.get());
 		p1->GreaterPage = page1;
 		p1->InsDownIndex(1, uppage, upp.get());
-		XF()->WrPage(p.get(), page1);
-		XF()->WrPage(p1.get(), page);
+		GetXFile()->WrPage(p.get(), page1);
+		GetXFile()->WrPage(p1.get(), page);
 		if (upp->IsLeaf) {
 			upp->GreaterPage = page1;
-			XF()->WrPage(upp.get(), uppage);
+			GetXFile()->WrPage(upp.get(), uppage);
 		}
 	}
 }
@@ -381,7 +381,7 @@ void XKey::InsertNonLeafItem(XString& XX, XPage* P, XPage* UpP, longint Page, WO
 	if (P->Overflow()) {
 		// page is too long -> will be divided
 		printf("XKey::InsertItem overflow");
-		UpPage = XF()->NewPage(UpP);
+		UpPage = GetXFile()->NewPage(UpP);
 		P->SplitPage(UpP, Page);
 		// TODO: NUTNO DORESIT, CO SE TADY DEJE - puvodni kod byl delsi
 		XX.S = UpP->GetKey(UpP->NItems);
@@ -394,7 +394,7 @@ void XKey::InsertLeafItem(XString& XX, XPage* P, XPage* UpP, longint Page, WORD 
 	UpPage = 0;
 	if (P->Overflow()) {
 		// page is too long -> will be divided
-		UpPage = XF()->NewPage(UpP);
+		UpPage = GetXFile()->NewPage(UpP);
 		P->SplitPage(UpP, Page);
 		// TODO: NUTNO DORESIT, CO SE TADY DEJE - puvodni kod byl delsi
 		XX.S = UpP->GetKey(UpP->NItems);
@@ -407,14 +407,14 @@ void XKey::ChainPrevLeaf(XPage* P, longint N)
 	WORD i = 0, j = 0;
 	for (j = XPathN - 1; j >= 1; j--)
 		if (XPath[j].I > 1) {
-			XF()->RdPage(P, XPath[j].Page);
+			GetXFile()->RdPage(P, XPath[j].Page);
 			i = XPath[j].I - 1;
 			while (true) {
-				page = ((XItemNonLeaf*)P->XI(i))->DownPage;
-				XF()->RdPage(P, page);
+				page = ((XItemNonLeaf*)P->GetItem(i))->DownPage;
+				GetXFile()->RdPage(P, page);
 				if (P->IsLeaf) {
 					P->GreaterPage = N;
-					XF()->WrPage(P, page);
+					GetXFile()->WrPage(P, page);
 					return;
 				}
 				i = P->NItems;
@@ -451,7 +451,7 @@ void XKey::DeleteOnPath()
 	XPage* p2 = new XPage();
 	for (WORD j = XPathN; j >= 1; j--) {
 		page = XPath[j].Page;
-		XF()->RdPage(p, page);
+		GetXFile()->RdPage(p, page);
 		WORD i = XPath[j].I;
 		if (p->IsLeaf) {
 			// Leaf
@@ -459,17 +459,17 @@ void XKey::DeleteOnPath()
 		}
 		else if (p2->Underflow()) {
 			// Non Leaf and underflow
-			XF()->WrPage(p2, uppage);
+			GetXFile()->WrPage(p2, uppage);
 			WORD i1 = i - 1;
 			WORD i2 = i;
 			if (i1 == 0) { i1 = 1; i2 = 2; }
 			XIDown(p, p1, i1, page1);
 			XIDown(p, p2, i2, page2);
 			BalancePages(p1, &p2, released);
-			XF()->WrPage(p1, page1);
+			GetXFile()->WrPage(p1, page1);
 			p->Delete(i1);
 			if (released) {
-				XF()->ReleasePage(p2, page2);
+				GetXFile()->ReleasePage(p2, page2);
 				if (i1 > p->NItems) p->GreaterPage = page1;
 				else {
 					p->InsDownIndex(i1, page1, p1);
@@ -477,7 +477,7 @@ void XKey::DeleteOnPath()
 				}
 			}
 			else {
-				XF()->WrPage(p2, page2);
+				GetXFile()->WrPage(p2, page2);
 				p->InsDownIndex(i1, page1, p1);
 				if (i2 <= p->NItems) {
 					p->Delete(i2);
@@ -488,12 +488,12 @@ void XKey::DeleteOnPath()
 		else {
 			// Non Leaf
 			if (p2->Overflow()) {
-				page1 = XF()->NewPage(p1);
+				page1 = GetXFile()->NewPage(p1);
 				p2->SplitPage(p1, uppage);
-				XF()->WrPage(p1, page1);
+				GetXFile()->WrPage(p1, page1);
 				p->InsDownIndex(i, page1, p1); i++;
 			}
-			XF()->WrPage(p2, uppage);
+			GetXFile()->WrPage(p2, uppage);
 			if (i <= p->NItems) {
 				p->Delete(i);
 				p->InsDownIndex(i, uppage, p2);
@@ -505,27 +505,27 @@ void XKey::DeleteOnPath()
 		p = px;
 	}
 	if (p2->Overflow()) {
-		page1 = XF()->NewPage(p1);
+		page1 = GetXFile()->NewPage(p1);
 		p2->SplitPage(p1, uppage);
-		page = XF()->NewPage(p);
+		page = GetXFile()->NewPage(p);
 		p->GreaterPage = page;
 		p->InsDownIndex(1, page1, p1);
-		XF()->WrPage(p1, page1);
-		XF()->WrPage(p, uppage);
-		XF()->WrPage(p2, page);
+		GetXFile()->WrPage(p1, page1);
+		GetXFile()->WrPage(p, uppage);
+		GetXFile()->WrPage(p2, page);
 	}
 	else {
 		page1 = p2->GreaterPage;
 		if ((p2->NItems == 0) && (page1 > 0)) {
-			XF()->RdPage(p1, page1);
+			GetXFile()->RdPage(p1, page1);
 
 			// kopie p1 do upp
 			delete p2; p2 = nullptr;
 			p2 = new XPage(*p1);
 
-			XF()->ReleasePage(p1, page1);
+			GetXFile()->ReleasePage(p1, page1);
 		}
-		XF()->WrPage(p2, uppage);
+		GetXFile()->WrPage(p2, uppage);
 	}
 	delete p;
 	delete p1;
@@ -558,9 +558,9 @@ void XKey::XIDown(XPage* P, XPage* P1, WORD I, longint& Page1)
 		Page1 = P->GreaterPage;
 	}
 	else {
-		Page1 = ((XItemNonLeaf*)P->XI(I))->DownPage;
+		Page1 = ((XItemNonLeaf*)P->GetItem(I))->DownPage;
 	}
-	XF()->RdPage(P1, Page1);
+	GetXFile()->RdPage(P1, Page1);
 }
 
 bool XKey::Delete(longint RecNr)
@@ -624,7 +624,7 @@ bool SearchKey(XString& XX, XKey* Key, longint& NN)
 //{
 //	if ((CFile->Typ == 'X') && (K != nullptr)) {
 //		TestXFExist();
-//		return CFile->XF->NRecs;
+//		return CFile->GetXFile->NRecs;
 //	}
 //	return CFile->NRecs;
 //}

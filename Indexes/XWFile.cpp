@@ -33,7 +33,7 @@ bool XWFile::NotCached()
 	return (this != &XWork) && CFile->NotCached();
 }
 
-XWFile* XKey::XF()
+XWFile* XKey::GetXFile()
 {
 	if (InWork) return &XWork;
 	return CFile->XF;

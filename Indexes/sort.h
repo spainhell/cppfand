@@ -9,4 +9,4 @@ void CreateWIndex(XScan* Scan, XWKey* K, char Typ); // r508
 void ScanSubstWIndex(XScan* Scan, KeyFldD* SK, char Typ); // r518
 void SortAndSubst(KeyFldD* SK); // r534
 void GetIndexSort(Instr_getindex* PD);
-void CopyIndex(WKeyDPtr K, XKey* FromK); // r581
+void CopyIndex(XWKey* K, XKey* FromK); // r581
