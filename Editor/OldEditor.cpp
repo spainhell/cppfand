@@ -2308,7 +2308,8 @@ void ResetPrint(char Oper, longint& fs, FILE* W1, longint LenPrint, ColorOrd* co
 	LenPrint += fs;
 	if (Oper == 'p') LenPrint++;
 	if ((StoreAvail() > LenPrint) && (LenPrint < 0xFFF0)) {
-		p = (CharArr*)GetStore2(LenPrint);
+		char* t = new char[LenPrint];
+		p = (CharArr*)t;
 		Move(&co[1], p, co->length());
 	}
 	else {
@@ -2531,7 +2532,9 @@ bool BlockGrasp(char Oper, void* P1, LongStr* sp)
 	L = L2 - L1; if (L > 0x7FFF) { WrLLF10Msg(418); return result; }
 	if (L2 > /*Part.PosP +*/ LenT) MovePart(L1 /* - Part.PosP*/);
 	I1 = L1 /* - Part.PosP*/;
-	MarkStore2(P1); sp = (LongStr*)GetStore2(L + 2); sp->LL = L;
+	MarkStore2(P1);
+	sp = new LongStr(L + 2);
+	sp->LL = L;
 	Move(&T[I1], sp->A, L);
 	if (Oper == 'M') {
 		//TestLenText(&T, LenT, I1 + L, I1);
@@ -2584,7 +2587,8 @@ bool BlockCGrasp(char Oper, void* P1, LongStr* sp)
 	longint l1 = (EndBLn - BegBLn + 1) * (EndBPos - BegBPos + 2);
 	if (l1 > 0x7FFF) { WrLLF10Msg(418); return result; }
 	MarkStore2(P1);
-	sp = (LongStr*)GetStore2(l1 + 2); sp->LL = l1;
+	sp = new LongStr(l1 + 2);
+	sp->LL = l1;
 	PosDekFindLine(BegBLn, positionOnActualLine, false);
 	I2 = 0;
 	i = EndBPos - BegBPos;

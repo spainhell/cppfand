@@ -404,8 +404,12 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 				case LocalT:
 				case MemoT: {
 					DelEndT();
-					GetStore(2);
-					Move(T, &T[3], LenT);
+
+					char* T2 = new char[LenT + 2];
+					memcpy(&T2[2], T, LenT);
+					delete[] T;
+					T = T2;
+
 					sp->A = T;
 					sp->LL = (WORD)LenT;
 					if (TypeT == LocalT) {
@@ -1073,7 +1077,7 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 				case ColBlock: {
 					EndBPos = positionOnActualLine; I2 = 0x1000;
 					MarkStore2(P1);
-					sp = (LongStr*)GetStore2(I2 + 2); //ww =BegBPos;}
+					sp = new LongStr(I2 + 2); //ww =BegBPos;}
 					do {
 						if (fs - L2 < (longint)I2) I2 = fs - L2;
 						SeekH(F1, L2); ReadH(F1, I2, sp->A); HMsgExit("");

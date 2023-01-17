@@ -282,24 +282,22 @@ std::string TResFile::Get(WORD Kod)
 
 LongStr* TResFile::GetStr(WORD Kod)
 {
-	LongStr* s;
-	/* !!! with A[Kod] do!!! */
-	s = (LongStr*)GetStore(A[Kod].Size + 2);
+	LongStr* s = new LongStr(A[Kod].Size + 2);
 	s->LL = A[Kod].Size;
 	SeekH(Handle, A[Kod].Pos);
 	ReadH(Handle, A[Kod].Size, s->A);
 	return s;
 }
 
-void* GetStore(WORD Size)
-{
-	return nullptr;
-}
+//void* GetStore(WORD Size)
+//{
+//	return nullptr;
+//}
 
-void* GetZStore(WORD Size)
-{
-	return nullptr;
-}
+//void* GetZStore(WORD Size)
+//{
+//	return nullptr;
+//}
 
 WORD StackOvr()
 {
@@ -1319,15 +1317,15 @@ void AlignParagraph()
 {
 }
 
-void* GetStore2(WORD Size)
-{
-	return nullptr;
-}
+//void* GetStore2(WORD Size)
+//{
+//	return nullptr;
+//}
 
-void* GetZStore2(WORD Size)
-{
-	return nullptr;
-}
+//void* GetZStore2(WORD Size)
+//{
+//	return nullptr;
+//}
 
 std::string* StoreStr(std::string S)
 {

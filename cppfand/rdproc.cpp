@@ -2127,8 +2127,8 @@ Instr_graph* RdGraphP()
 	WORD i;
 	GraphVD* VD; GraphWD* WD; GraphRGBD* RGBD; WinG* Ww;
 
-	pstring Nm1[11] = { "TYPE","HEAD","HEADX","HEADY","HEADZ","FILL","DIRX","GRID","PRINT","PALETTE","ASSIGN" };
-	pstring Nm2[6] = { "WIDTH","RECNO","NRECS","MAX","MIN","GRPOLY" };
+	pstring Nm1[11] = { "TYPE", "HEAD", "HEADX", "HEADY", "HEADZ", "FILL", "DIRX", "GRID", "PRINT", "PALETTE", "ASSIGN" };
+	pstring Nm2[6] = { "WIDTH", "RECNO", "NRECS", "MAX", "MIN", "GRPOLY" };
 
 	PD = new Instr_graph(); // GetPD(_graph, 4);
 	RdLex();
@@ -2172,7 +2172,7 @@ Instr_graph* RdGraphP()
 			else PDGD->Cond = RdKeyInBool(&PDGD->KeyIn, false, true, PDGD->SQLFilter);
 		}
 		else if (IsOpt("TXT")) {
-			VD = (GraphVD*)GetZStore(sizeof(*VD));
+			VD = new GraphVD();
 			ChainLast(PDGD->V, VD);
 			{
 				/* !!! with VD^ do!!! */
@@ -2182,7 +2182,7 @@ Instr_graph* RdGraphP()
 			}
 		}
 		else if (IsOpt("TXTWIN")) {
-			WD = (GraphWD*)GetZStore(sizeof(*WD));
+			WD = new GraphWD();
 			ChainLast(PDGD->W, WD);
 			{
 				/* !!! with WD^ do!!! */
@@ -2193,10 +2193,9 @@ Instr_graph* RdGraphP()
 			}
 		}
 		else if (IsOpt("RGB")) {
-			RGBD = (GraphRGBD*)GetZStore(sizeof(*RGBD));
+			RGBD = new GraphRGBD();
 			ChainLast(PDGD->RGB, RGBD);
 			{
-				/* !!! with RGBD^ do!!! */
 				Accept('(');
 				RGBD->Barva = RdStrFrml();
 				Accept(',');
@@ -2209,7 +2208,6 @@ Instr_graph* RdGraphP()
 			}
 		}
 		else if (IsOpt("WW")) {
-			//Ww = (WinG*)GetZStore(sizeof(*Ww));
 			Ww = new WinG();
 			Accept('(');
 			if (Lexem == '(') { RdLex(); Ww->WFlags = WNoPop; }

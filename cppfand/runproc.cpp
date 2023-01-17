@@ -124,7 +124,7 @@ void PromptAutoRprt(RprtOpt* RO)
 	wwmix ww;
 
 	RprtOpt* RO2;
-	RO2 = (RprtOpt*)GetStore(sizeof(*RO));
+	RO2 = new RprtOpt();
 	Move(RO, RO2, sizeof(*RO));
 	//FieldList FL = RO->Flds;
 	//while (FL != nullptr) {

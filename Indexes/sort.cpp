@@ -13,12 +13,6 @@
 #include "../cppfand/models/Instr.h"
 
 
-void ExChange(void* X, void* Y, WORD L)
-{
-	if (L == 0) return;
-	printf("sort.cpp ExChange() - not implemented");
-}
-
 void CreateWIndex(XScan* Scan, XWKey* K, char Typ)
 {
 	void* cr = CRecPtr;
@@ -148,7 +142,6 @@ void GetIndexSort(Instr_getindex* PD)
 		ld = PD->giLD;
 		if (ld != nullptr) kf = ld->ToKey->KFlds;
 		if (PD != nullptr) lv2 = PD->giLV2;
-		//New(Scan, Init(CFile, PD->giKD, PD->giKIRoot, false));
 		Scan = new XScan(CFile, PD->giKD, PD->giKIRoot, false);
 		cond = RunEvalFrml(PD->giCond);
 		switch (PD->giOwnerTyp) {

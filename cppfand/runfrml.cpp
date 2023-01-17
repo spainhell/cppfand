@@ -2210,7 +2210,7 @@ LongStr* RunSelectStr(FrmlElem0* Z)
 			}
 		} while (!(!ss.Subset || (x == "")));
 		ReleaseStore(s);
-		s = (LongStr*)GetStore(n + 1);
+		s = new LongStr(n + 1);
 		s->LL = n - 1;
 		Move(s2->A, s->A, n - 1);
 		ReleaseStore2(p2);

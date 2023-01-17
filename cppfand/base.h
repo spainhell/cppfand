@@ -52,7 +52,6 @@ WORD MaxW(WORD X, WORD Y);
 longint MinL(longint X, longint Y);
 longint MaxL(longint X, longint Y);
 longint SwapLong(longint N);
-void ExChange(void* X, void* Y, WORD L);
 bool OverlapByteStr(void* p1, void* p2); // ASM
 WORD FindCtrlM(LongStr* s, WORD i, WORD n); // r152
 WORD FindCtrlM(std::string& s, WORD i, WORD n);
@@ -97,14 +96,14 @@ struct ExitRecord {
 
 void* Normalize(longint L);
 longint AbsAdr(void* P);
-void* GetStore(WORD Size);
-void* GetZStore(WORD Size);
+//void* GetStore(WORD Size);
+//void* GetZStore(WORD Size);
 void MarkStore(void* p);
 void ReleaseStore(void* pointer);
 void ReleaseAfterLongStr(void* p);
 int StoreAvail();
-void* GetStore2(WORD Size);
-void* GetZStore2(WORD Size);
+//void* GetStore2(WORD Size);
+//void* GetZStore2(WORD Size);
 std::string* StoreStr(std::string S);
 void MarkStore2(void* p);
 void ReleaseStore2(void* p);

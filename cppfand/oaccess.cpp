@@ -957,7 +957,7 @@ void CopyH(FILE* h1, FILE* h2)
 	// cache nepouzivame
 	//ClearCacheH(h1); 
 	//ClearCacheH(h2);
-	p = GetStore(BufSize);
+	p = new BYTE[BufSize];
 	sz = FileSizeH(h1);
 	SeekH(h1, 0);
 	SeekH(h2, 0);

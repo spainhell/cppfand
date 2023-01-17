@@ -63,40 +63,44 @@ void XXPage::PageFull()
 
 void XXPage::AddToLeaf(WRec* R, XKey* KD)
 {
-	BYTE m, l; longint n;
-label1:
-	m = 0;
-	l = R->X.S.length();
-	n = R->GetN();
-	if ((l > 0) && (NItems > 0)) {
-		m = SLeadEqu(R->X.S, LastIndex);
-		if ((m == l) && (m == LastIndex.length())) {
-			if (n == LastRecNr) return; /* overlapping intervals from  key in .. */
-			if (!KD->InWork && !KD->Duplic) {
-				if (!XW->MsgWritten) {
-					SetMsgPar(CFile->Name);
-					if (IsTestRun) { if (!PromptYN(832)) GoExit(); }
-					else WrLLF10Msg(828);
-					XW->MsgWritten = true;
+	BYTE m, l;
+	longint n;
+	while (true) {
+		m = 0;
+		l = R->X.S.length();
+		n = R->GetN();
+		if ((l > 0) && (NItems > 0)) {
+			m = SLeadEqu(R->X.S, LastIndex);
+			if ((m == l) && (m == LastIndex.length())) {
+				if (n == LastRecNr) return; /* overlapping intervals from  key in .. */
+				if (!KD->InWork && !KD->Duplic) {
+					if (!XW->MsgWritten) {
+						SetMsgPar(CFile->Name);
+						if (IsTestRun) {
+							if (!PromptYN(832)) {
+								GoExit();
+							}
+						}
+						else WrLLF10Msg(828);
+						XW->MsgWritten = true;
+					}
+					ReadRec(CFile, n, CRecPtr);
+					for (auto& K : CFile->Keys) {
+						K->Delete(n);
+					}
+					SetDeletedFlag();
+					WriteRec(CFile, n, CRecPtr);
+					return;
 				}
-				ReadRec(CFile, n, CRecPtr);
-				/*XKey* k = CFile->Keys;
-				while ((k != KD)) {*/
-				for (auto& K : CFile->Keys) {
-					K->Delete(n);
-					//k = k->Chain;
-				}
-				SetDeletedFlag();
-				WriteRec(CFile, n, CRecPtr);
-				return;
 			}
+			l = l - m;
 		}
-		l = l - m;
-	}
-	if (Off + 5 + l > MaxOff + 1) { // pristi offset muze skoncit +1, protoze pak uz se nebude zapisovat ...
-		PageFull();
-		Reset(XW);
-		goto label1;
+		if (Off + 5 + l > MaxOff + 1) { // pristi offset muze skoncit +1, protoze pak uz se nebude zapisovat ...
+			PageFull();
+			Reset(XW);
+			continue;
+		}
+		break;
 	}
 	LastIndex = R->X.S;
 	LastRecNr = n;
@@ -108,18 +112,20 @@ label1:
 
 void XXPage::AddToUpper(XXPage* P, longint DownPage)
 {
-	WORD l, m;
-label1:
-	m = 0;
-	l = P->LastIndex.length();
-	if ((l > 0) && (NItems > 0)) {
-		m = SLeadEqu(P->LastIndex, LastIndex);
-		l = l - m;
-	}
-	if (Off + 9 + l > MaxOff) {
-		PageFull();
-		Reset(XW);
-		goto label1;
+	WORD l = 0, m = 0;
+	while (true) {
+		WORD m = 0;
+		WORD l = P->LastIndex.length();
+		if ((l > 0) && (NItems > 0)) {
+			m = SLeadEqu(P->LastIndex, LastIndex);
+			l = l - m;
+		}
+		if (Off + 9 + l > MaxOff) {
+			PageFull();
+			Reset(XW);
+			continue;
+		}
+		break;
 	}
 	LastIndex = P->LastIndex;
 	Sum += P->Sum;

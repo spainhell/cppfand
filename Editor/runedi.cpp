@@ -1389,7 +1389,7 @@ void BuildWork()
 			Scan->ResetOwner(&xx, boolP);
 		}
 		if (ki != nullptr) {
-			wk2 = (XWKey*)GetZStore(sizeof(*wk2));
+			wk2 = new XWKey();
 			wk2->Open(KF, true, false);
 			CreateWIndex(Scan, wk2, 'W');
 			//New(Scan2, Init(CFile, wk2, ki, false));

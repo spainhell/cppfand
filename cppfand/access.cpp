@@ -1498,10 +1498,10 @@ void* GetRecSpace()
 	return result;
 }
 
-void* GetRecSpace2()
-{
-	return GetZStore2(CFile->RecLen + 2);
-}
+//void* GetRecSpace2()
+//{
+//	return GetZStore2(CFile->RecLen + 2);
+//}
 
 WORD CFileRecSize()
 {

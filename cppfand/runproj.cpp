@@ -435,7 +435,7 @@ void StoreChptTxt(FieldDescr* F, LongStr* S, bool Del)
 	MarkStore(p);
 	if (CRdb->Encrypted) {
 		if (LicNr != 0) {
-			s2 = (LongStr*)GetStore(0x8100); /*possibly longer*/
+			s2 = new LongStr(0x8100); /*possibly longer*/
 			XEncode(S, s2); S = s2;
 		}
 		else CodingLongStr(S);
@@ -880,7 +880,7 @@ longint MakeDbfDcl(pstring Nm)
 	CPath = FExpand(Nm + ".DBF"); CVol = "";
 	i = GetCatIRec(Nm, true); if (i != 0) RdCatPathVol(i);
 	h = OpenH(_isoldfile, RdOnly); TestCPathError();
-	ReadH(h, 32, &Hd); n = (Hd.HdLen - 1) / 32 - 1; t = (LongStr*)GetStore(2); t->LL = 0;
+	ReadH(h, 32, &Hd); n = (Hd.HdLen - 1) / 32 - 1; t = new LongStr(2); t->LL = 0;
 	for (i = 1; i < n; i++) {
 		ReadH(h, 32, &Fd);
 		s = StrPas((char*)Fd.Name.c_str());
@@ -904,7 +904,7 @@ longint MakeDbfDcl(pstring Nm)
 		}
 		}
 		s = s + ';' + 0x0D + 0x0A; // ^M + ^J
-		p = GetStore(s.length());
+		p = new BYTE[s.length()];
 		Move(&s[1], p, s.length());
 		t->LL += s.length();
 	}

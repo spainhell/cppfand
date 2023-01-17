@@ -665,7 +665,7 @@ longint TFile::Store(char* s, size_t l)
 		N += l;
 		l = FreePart * BlockSize - N;
 		if (l > 0) {
-			void* p = GetStore(l);
+			BYTE* p = new BYTE[l];
 			FillChar(p, l, ' ');
 			RdWrCache(false, Handle, NotCached(), N, l, p);
 			ReleaseStore(p);
@@ -962,7 +962,7 @@ void WrDBaseHd()
 	pstring s;
 	const char CtrlZ = '\x1a';
 
-	DBaseHd* P = (DBaseHd*)GetZStore(CFile->FrstDispl);
+	DBaseHd* P = new DBaseHd();
 	char* PA = (char*)&P; // PA:CharArrPtr absolute P;
 	F = CFile->FldD.front();
 	n = 0;

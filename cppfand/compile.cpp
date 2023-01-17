@@ -1209,7 +1209,7 @@ bool PromptSortKeys(FieldListEl* FL, KeyFldD* SKRoot)
 label1:
 	LexWord = ww.GetSelect();
 	if (LexWord != "") {
-		SK = (KeyFldD*)GetZStore(sizeof(*SK));
+		SK = new KeyFldD();
 		ChainLast(SKRoot, SK);
 		SK->FldD = FindFldName(CFile);
 		if (ss.Tag == '>') SK->Descend = true;
@@ -1238,7 +1238,7 @@ bool PromptSortKeys(std::vector<FieldDescr*>& FL, KeyFldD* SKRoot)
 label1:
 	LexWord = ww.GetSelect();
 	if (LexWord != "") {
-		SK = (KeyFldD*)GetZStore(sizeof(*SK));
+		SK = new KeyFldD();
 		ChainLast(SKRoot, SK);
 		SK->FldD = FindFldName(CFile);
 		if (ss.Tag == '>') SK->Descend = true;

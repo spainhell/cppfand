@@ -65,7 +65,7 @@ WORD CompLexStrings(const std::string& S1, const std::string& S2);
 
 void RunErrorM(LockMode Md, WORD N); // r729
 void* GetRecSpace(); // r739
-void* GetRecSpace2(); // r742
+//void* GetRecSpace2(); // r742
 WORD CFileRecSize(); // r744
 void SetTWorkFlag();  // r746 ASM
 bool HasTWorkFlag(); // r752 ASM
