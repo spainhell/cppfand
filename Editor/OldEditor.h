@@ -2,6 +2,8 @@
 
 #include <set>
 #include <string>
+
+#include "Blocks.h"
 #include "../cppfand/base.h"
 #include "../cppfand/constants.h"
 #include "../cppfand/pstring.h"
@@ -64,7 +66,6 @@ bool TestLastPos(WORD F, WORD T);
 void HelpRD(char dir);
 WORD Position(WORD c);
 WORD Column(WORD p);
-longint LineAbs(int Ln);
 void PreviousLine();
 void BlockUDShift(longint L1);
 void TestKod();
@@ -111,9 +112,6 @@ void SimplePrintHead();
 void WrEndT();
 WORD WordNo(WORD I);
 
-
-typedef std::string ColorOrd;
-
 const int SuccLineSize = 256;
 
 extern size_t LenT;
@@ -141,13 +139,13 @@ extern integer LeftMarg, RightMarg;
 extern WORD columnOffset, Colu, Row;
 extern bool InsPg, ChangePart, TypeB;
 extern WORD WordL, LastC, FirstC, FirstR, LastR;
-extern longint BegBLn, EndBLn;
-extern WORD BegBPos, EndBPos;
 extern bool UpdatedL;
 extern std::string FindStr, ReplaceStr;
 extern bool Replace, FirstEvent;
 extern pstring OptionStr;
 extern WORD MargLL[4];
+
+extern Blocks* blocks;
 
 
 extern std::set<char> Separ;

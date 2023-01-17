@@ -159,15 +159,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Blocks.cpp" />
     <ClCompile Include="EditorEvents.cpp" />
     <ClCompile Include="EditorHelp.cpp" />
+    <ClCompile Include="EditorScreen.cpp" />
     <ClCompile Include="rdedit.cpp" />
     <ClCompile Include="runedi.cpp" />
     <ClCompile Include="OldEditor.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Blocks.h" />
     <ClInclude Include="EditorEvents.h" />
     <ClInclude Include="EditorHelp.h" />
+    <ClInclude Include="EditorScreen.h" />
     <ClInclude Include="rdedit.h" />
     <ClInclude Include="runedi.h" />
     <ClInclude Include="OldEditor.h" />
