@@ -3,11 +3,18 @@
 #include "../cppfand/base.h"
 
 
+XPage::XPage()
+{
+}
+
 XPage::XPage(const XPage& orig)
 {
 	this->IsLeaf = orig.IsLeaf;
 	this->GreaterPage = orig.GreaterPage;
 	this->NItems = orig.NItems;
+
+	// to 01/18/2023 items weren't copied, but same items were inserted to the specific vector
+	// there were problems with the method XKey::DeleteOnPath() 
 	if (IsLeaf) {
 		for (size_t i = 0; i < orig._leafItems.size(); i++) {
 			_leafItems.push_back(orig._leafItems[i]);
@@ -18,6 +25,12 @@ XPage::XPage(const XPage& orig)
 			_nonLeafItems.push_back(orig._nonLeafItems[i]);
 		}
 	}
+
+	// since 01/18/2023 it will keep it's own data
+	Serialize();
+	_leafItems.clear();
+	_nonLeafItems.clear();
+	Deserialize();
 }
 
 XPage::~XPage()
@@ -27,8 +40,12 @@ XPage::~XPage()
 
 WORD XPage::Off()
 {
-	if (IsLeaf) return oLeaf;
-	else return oNotLeaf;
+	if (IsLeaf) {
+		return oLeaf;
+	}
+	else {
+		return oNotLeaf;
+	}
 }
 
 XItem* XPage::GetItem(WORD I)
@@ -47,13 +64,10 @@ XItem* XPage::GetItem(WORD I)
 	}
 }
 
-WORD XPage::EndOff()
-{
-	return sizeof(A);
-	XItem* x = GetItem(NItems + 1);
-	WORD* xofs = (WORD*)x; // absolute x
-	return (uintptr_t)xofs;
-}
+//WORD XPage::EndOff()
+//{
+//	return sizeof(A);
+//}
 
 bool XPage::Underflow()
 {
@@ -242,6 +256,7 @@ void XPage::AddPage(XPage* P)
 		P->_nonLeafItems.clear(); // must clear it, otherwise after destroy P there will be problem in local vector 
 	}
 	NItems += P->NItems;
+	P->NItems = 0;
 }
 
 /// <summary>
@@ -365,6 +380,9 @@ void XPage::Serialize()
 	if (IsLeaf) {
 		for (auto&& item : _leafItems) {
 			size_t len = item->Serialize(buffer, sizeof(buffer));
+			if (offset + len > sizeof(A)) {
+				throw std::exception("XPage::Serialize() buffer overflow.");
+			}
 			memcpy(&A[offset], buffer, len);
 			offset += len;
 		}
@@ -373,12 +391,14 @@ void XPage::Serialize()
 	else {
 		for (auto&& item : _nonLeafItems) {
 			size_t len = item->Serialize(buffer, sizeof(buffer));
+			if (offset + len > sizeof(A)) {
+				throw std::exception("XPage::Serialize() buffer overflow.");
+			}
 			memcpy(&A[offset], buffer, len);
 			offset += len;
 		}
 		NItems = _nonLeafItems.size();
 	}
-
 }
 
 std::vector<XItemLeaf*>::iterator XPage::_addToLeafItems(XItemLeaf* xi, size_t pos)
@@ -394,6 +414,7 @@ std::vector<XItemNonLeaf*>::iterator XPage::_addToNonLeafItems(XItemNonLeaf* xi,
 bool XPage::_cutItem(size_t iIndex, BYTE length)
 {
 	XItem* Xi;
+
 	if (IsLeaf) {
 		if (_leafItems.size() < iIndex + 1) return false; // polozka neexistuje
 		Xi = _leafItems[iIndex];
@@ -403,6 +424,7 @@ bool XPage::_cutItem(size_t iIndex, BYTE length)
 		Xi = _nonLeafItems[iIndex];
 	}
 	if (length > Xi->L) return false; // polozka neni tak dlouha, delka by byla zaporna
+
 	Xi->M += length;
 	Xi->L -= length;
 	auto origData = Xi->data;
@@ -410,7 +432,6 @@ bool XPage::_cutItem(size_t iIndex, BYTE length)
 	memcpy(Xi->data, &origData[length], Xi->L);
 	delete origData; origData = nullptr;
 	return true;
-
 }
 
 bool XPage::_enhItem(size_t iIndex, BYTE length)

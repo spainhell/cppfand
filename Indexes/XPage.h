@@ -13,10 +13,10 @@ const BYTE oNotLeaf = 7;
 const BYTE XPageOverHead = 7;
 const BYTE MaxIndexLen = 123; // { min.4 items };
 
-class XPage // r289
+class XPage
 {
 public:
-	XPage() {}
+	XPage();
 	XPage(const XPage& orig);
 	~XPage();
 
@@ -25,10 +25,9 @@ public:
 	longint GreaterPage = 0;  // or free pages chaining = 4B
 	WORD NItems = 0;                                 // = 2B
 
-	BYTE A[XPageSize]{ '\0' };  // item array
+	BYTE A[XPageSize * 2]{ '\0' };  // item array - double sized because last added item can exceed page size
 	WORD Off();
 	XItem* GetItem(WORD I);
-	WORD EndOff();
 	bool Underflow();
 	bool Overflow();
 	pstring GetKey(WORD i);
@@ -43,6 +42,7 @@ public:
 	size_t ItemsSize();
 	void Serialize(); // generate array from vector
 	void Deserialize(); // generate vector from array
+
 private:
 	// Leaf section
 	std::vector<XItemLeaf*>::iterator _addToLeafItems(XItemLeaf* xi, size_t pos);

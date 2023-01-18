@@ -228,24 +228,38 @@ bool XKey::RecNrToPath(XString& XX, longint RecNr)
 	size_t item = 1;
 
 	structXPath* X = &XPath[XPathN];
-label1:
+
 	GetXFile()->RdPage(p.get(), X->Page);
 	x = p->GetItem(X->I);
-	if (!(p->GetKey(X->I) == XX.S)) goto label3;
-label2:
-	if (x->GetN() == RecNr) { result = true; goto label3; }
-	X->I++;
-	if (X->I > p->NItems) {
-		if (IncPath(XPathN - 1, X->Page)) { X->I = 1; goto label1; }
-	}
-	else {
-		x = p->GetItem(X->I);
-		if (x->GetL() != 0) goto label3;
-		goto label2;
+	if (!(p->GetKey(X->I) == XX.S)) {
+		return result;
 	}
 
-label3:
-	//ReleaseStore(p);
+	while (true) {
+		if (x->GetN() == RecNr) {
+			result = true;
+			return result;
+		}
+		X->I++;
+		if (X->I > p->NItems) {
+			if (IncPath(XPathN - 1, X->Page)) {
+				X->I = 1;
+				GetXFile()->RdPage(p.get(), X->Page);
+				x = p->GetItem(X->I);
+				if (!(p->GetKey(X->I) == XX.S)) {
+					return result;
+				}
+				continue;
+			}
+		}
+		else {
+			x = p->GetItem(X->I);
+			if (x->GetL() != 0) return result;
+			continue;
+		}
+		break;
+	}
+
 	return result;
 }
 
@@ -552,15 +566,15 @@ void XKey::BalancePages(XPage* P1, XPage** P2, bool& Released)
 	}
 }
 
-void XKey::XIDown(XPage* P, XPage* P1, WORD I, longint& Page1)
+void XKey::XIDown(XPage* p, XPage* p1, WORD i, longint& page1)
 {
-	if (I > P->NItems) {
-		Page1 = P->GreaterPage;
+	if (i > p->NItems) {
+		page1 = p->GreaterPage;
 	}
 	else {
-		Page1 = ((XItemNonLeaf*)P->GetItem(I))->DownPage;
+		page1 = ((XItemNonLeaf*)p->GetItem(i))->DownPage;
 	}
-	GetXFile()->RdPage(P1, Page1);
+	GetXFile()->RdPage(p1, page1);
 }
 
 bool XKey::Delete(longint RecNr)
@@ -583,7 +597,7 @@ bool SearchKey(XString& XX, XKey* Key, longint& NN)
 	longint N = NN;
 	if (N == 0) return bResult;
 	KeyFldD* KF = Key->KFlds;
-	
+
 	do {
 		if (Result == _gt) {
 			R = N;
@@ -596,7 +610,7 @@ bool SearchKey(XString& XX, XKey* Key, longint& NN)
 		x.PackKF(KF);
 		Result = CompStr(x.S, XX.S);
 	} while (!((L >= R) || (Result == _equ)));
-	
+
 	if ((N == NN) && (Result == _lt)) NN++;
 	else {
 		if (Key->Duplic && (Result == _equ)) {
@@ -612,7 +626,7 @@ bool SearchKey(XString& XX, XKey* Key, longint& NN)
 				}
 			}
 		}
-	//label1:
+		//label1:
 		NN = N;
 	}
 	if ((Result == _equ) || Key->Intervaltest && (Result == _gt))
@@ -662,12 +676,12 @@ label1:
 		if (K1 == lastK) {
 			break;
 		}
-		K1->Delete(RecNr); 
+		K1->Delete(RecNr);
 		//K1 = K1->Chain;
 	}
 	SetDeletedFlag();
 	WriteRec(CFile, RecNr, CRecPtr);
-	
+
 	if (CFile->XF->FirstDupl) {
 		SetMsgPar(CFile->Name);
 		WrLLF10Msg(828);

@@ -19,7 +19,7 @@ extern RdbD* CRdb, *TopRdb;
 extern FileD* CatFD, *HelpFD;
 
 // r483
-extern structXPath XPath[10];
+extern structXPath XPath[100];
 extern WORD XPathN;
 extern XWFile XWork;
 extern TFile TWork;
