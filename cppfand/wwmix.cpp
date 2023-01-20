@@ -102,7 +102,7 @@ void wwmix::SelectStr(integer C1, integer R1, WORD NMsg, std::string LowTxt)
 	if (ss.Empty) {
 		do {
 			ReadKbd();
-		} while (Event.Pressed.KeyCombination() != VK_ESCAPE);
+		} while (Event.Pressed.KeyCombination() != __ESC);
 		goto label3;
 	}
 	sv.TabSize = sv.MaxItemLen + 2;
@@ -187,7 +187,7 @@ label1:
 					//p = (Item*)p->pChain;
 				}
 			}
-			if (Event.Pressed.KeyCombination() == VK_ESCAPE) {
+			if (Event.Pressed.KeyCombination() == __ESC) {
 				// TODO: clean (memory leaks)!
 				//ReleaseStore(sv.markp);
 			}

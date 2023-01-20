@@ -2223,7 +2223,7 @@ void UpwEdit(LinkD* LkD)
 			if (TestAccRight(SL)) {
 				SL1 = SL;
 			}
-			SL = (StringListEl*)SL->pChain;
+			SL = SL->pChain;
 		}
 		if (SL1 == nullptr) {
 			EO->Flds = AllFldsList(CFile, false);

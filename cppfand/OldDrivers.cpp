@@ -215,10 +215,13 @@ WORD ReadKbd()
 		exists = keyboard.Get(key);
 		if (exists && key.bKeyDown) {
 			auto pressed = PressedKey(key);
+			Event.Pressed = pressed;
+			Event.What = evKeyDown;
 			return pressed.KeyCombination();
 		}
 		else {
 			Sleep(100);
+			ClrEvent();
 		}
 	}
 }
