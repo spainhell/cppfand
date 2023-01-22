@@ -13,8 +13,8 @@ public:
 	void TestErr();
 	longint UsedFileSize();
 	bool NotCached();
-	void RdPage(XPage* P, longint N);
-	void WrPage(XPage* P, longint N, bool serialize = true);
+	void RdPage(XPage* P, longint pageNr);
+	void WrPage(XPage* P, longint pageNr, bool serialize = true);
 	longint NewPage(XPage* P);
 	void ReleasePage(XPage* P, longint N);
 };

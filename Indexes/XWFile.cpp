@@ -39,29 +39,29 @@ XWFile* XKey::GetXFile()
 	return CFile->XF;
 }
 
-void XWFile::RdPage(XPage* P, longint N)
+void XWFile::RdPage(XPage* P, longint pageNr)
 {
 	P->Clean();
-	if ((N == 0) || (N > MaxPage)) Err(831);
+	if ((pageNr == 0) || (pageNr > MaxPage)) Err(831);
 	// puvodne se nacitalo celych XPageSize z P, bylo nutno to rozhodit na jednotlive tridni promenne
-	RdWrCache(true, Handle, NotCached(), N << XPageShft, 1, &P->IsLeaf);
-	RdWrCache(true, Handle, NotCached(), (N << XPageShft) + 1, 4, &P->GreaterPage);
-	RdWrCache(true, Handle, NotCached(), (N << XPageShft) + 5, 2, &P->NItems);
-	RdWrCache(true, Handle, NotCached(), (N << XPageShft) + 7, XPageSize - 7, P->A);
+	RdWrCache(true, Handle, NotCached(), pageNr << XPageShft, 1, &P->IsLeaf);
+	RdWrCache(true, Handle, NotCached(), (pageNr << XPageShft) + 1, 4, &P->GreaterPage);
+	RdWrCache(true, Handle, NotCached(), (pageNr << XPageShft) + 5, 2, &P->NItems);
+	RdWrCache(true, Handle, NotCached(), (pageNr << XPageShft) + 7, XPageSize - 7, P->A);
 	P->Deserialize();
 }
 
-void XWFile::WrPage(XPage* P, longint N, bool serialize)
+void XWFile::WrPage(XPage* P, longint pageNr, bool serialize)
 {
 	if (serialize) {
 		P->Serialize();
 	}
 	if (UpdLockCnt > 0) Err(645);
 	// puvodne se zapisovalo celych XPageSize z P, bylo nutno to rozhodit na jednotlive tridni promenne
-	RdWrCache(false, Handle, NotCached(), N << XPageShft, 1, &P->IsLeaf);
-	RdWrCache(false, Handle, NotCached(), (N << XPageShft) + 1, 4, &P->GreaterPage);
-	RdWrCache(false, Handle, NotCached(), (N << XPageShft) + 5, 2, &P->NItems);
-	RdWrCache(false, Handle, NotCached(), (N << XPageShft) + 7, XPageSize - 7, P->A);
+	RdWrCache(false, Handle, NotCached(), pageNr << XPageShft, 1, &P->IsLeaf);
+	RdWrCache(false, Handle, NotCached(), (pageNr << XPageShft) + 1, 4, &P->GreaterPage);
+	RdWrCache(false, Handle, NotCached(), (pageNr << XPageShft) + 5, 2, &P->NItems);
+	RdWrCache(false, Handle, NotCached(), (pageNr << XPageShft) + 7, XPageSize - 7, P->A);
 }
 
 longint XWFile::NewPage(XPage* P)

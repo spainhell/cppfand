@@ -10,16 +10,19 @@ class XXPage /* for building XPage */
 public:
 	XXPage* Chain = nullptr;
 	XWorkFile* XW = nullptr;
-	WORD Off = 0, MaxOff = XPageSize - 4; // XPageOverHead - 1;
+	WORD Off = 0;
+	WORD MaxOff = XPageSize - 4;
 	pstring LastIndex;
-	longint LastRecNr = 0, Sum = 0;
+	longint LastRecNr = 0;
+	longint Sum = 0;
 	bool IsLeaf = false;
 	longint GreaterPage = 0;
 	WORD NItems = 0;
 	//BYTE A[XPageSize - XPageOverHead];
-	BYTE A[XPageSize - 4];
+	BYTE A[XPageSize];
+
 	void Reset(XWorkFile* OwnerXW);
-	void PutN(longint* N); // ASM
+	void PutN(longint N); // ASM
 	void PutDownPage(longint DownPage); // ASM
 	void PutMLX(BYTE M, BYTE L); // ASM
 	void ClearRest(); // ASM

@@ -15,9 +15,9 @@ void XXPage::Reset(XWorkFile* OwnerXW)
 	Off = 0;
 }
 
-void XXPage::PutN(longint* N)
+void XXPage::PutN(longint N)
 {
-	memcpy(&A[Off], N, 3); // kopirujeme 3 nejnizsi Byty, posledni se ignoruje
+	memcpy(&A[Off], &N, 3); // kopirujeme 3 nejnizsi Byty, posledni se ignoruje
 	Off += 3;
 }
 
@@ -51,13 +51,19 @@ void XXPage::PageFull()
 		Chain = new XXPage();
 		Chain->Reset(XW);
 	}
-	if (IsLeaf) n = XW->nextXPage;
-	else n = XW->xwFile->NewPage(XW->xPage);
+	if (IsLeaf) {
+		n = XW->nextXPage;
+	}
+	else {
+		n = XW->xwFile->NewPage(XW->xPage);
+	}
 	Chain->AddToUpper(this, n);
 	if (IsLeaf) {
 		XW->nextXPage = XW->xwFile->NewPage(XW->xPage);
 		GreaterPage = XW->nextXPage;
 	}
+
+	// tady je asi potreba vygenerovat data k zapisu
 	XW->xwFile->WrPage((XPage*)(&IsLeaf), n, false);
 }
 
@@ -65,6 +71,7 @@ void XXPage::AddToLeaf(WRec* R, XKey* KD)
 {
 	BYTE m, l;
 	longint n;
+
 	while (true) {
 		m = 0;
 		l = R->X.S.length();
@@ -81,7 +88,9 @@ void XXPage::AddToLeaf(WRec* R, XKey* KD)
 								GoExit();
 							}
 						}
-						else WrLLF10Msg(828);
+						else {
+							WrLLF10Msg(828);
+						}
 						XW->msgWritten = true;
 					}
 					ReadRec(CFile, n, CRecPtr);
@@ -95,7 +104,7 @@ void XXPage::AddToLeaf(WRec* R, XKey* KD)
 			}
 			l = l - m;
 		}
-		if (Off + 5 + l > MaxOff + 1) { // pristi offset muze skoncit +1, protoze pak uz se nebude zapisovat ...
+		if (Off + 5 + l > MaxOff) { // + 1) { // pristi offset muze skoncit +1, protoze pak uz se nebude zapisovat ...
 			PageFull();
 			Reset(XW);
 			continue;
@@ -106,7 +115,7 @@ void XXPage::AddToLeaf(WRec* R, XKey* KD)
 	LastRecNr = n;
 	Sum++;
 	NItems++;
-	PutN(&n);
+	PutN(n);
 	PutMLX(m, l);
 }
 
@@ -130,7 +139,7 @@ void XXPage::AddToUpper(XXPage* P, longint DownPage)
 	LastIndex = P->LastIndex;
 	Sum += P->Sum;
 	NItems++;
-	PutN(&P->Sum);
+	PutN(P->Sum);
 	PutDownPage(DownPage);
 	PutMLX(m, l);
 }
