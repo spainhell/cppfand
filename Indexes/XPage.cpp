@@ -163,11 +163,12 @@ void XPage::InsertItem(unsigned int recNr, size_t I, pstring& SS)
 {
 	NItems++;
 	WORD m = 0;
+
 	// zjistime spolecne casti s predchozim zaznamem
 	if (I > 1) m = SLeadEqu(GetKey(I - 1), SS);
 	WORD l = SS.length() - m;
-	// vytvorime novou polozku s novym zaznamem a vlozime ji do vektoru
 
+	// vytvorime novou polozku s novym zaznamem a vlozime ji do vektoru
 	auto newXi = new XItemLeaf(recNr, m, l, SS);
 	_addToLeafItems(newXi, I - 1);
 
