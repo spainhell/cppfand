@@ -29,5 +29,11 @@ public:
 
 	size_t size() override;
 	size_t dataLen(); // bez 2B L + M
+
+#if _DEBUG
+private:
+	std::string _key;
+#endif
+
 };
 

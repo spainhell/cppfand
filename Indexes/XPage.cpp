@@ -161,6 +161,12 @@ void XPage::InsertItem(unsigned int recordsCount, unsigned int downPage, WORD I,
 /// <param name="SS">key</param>
 void XPage::InsertItem(unsigned int recNr, size_t I, pstring& SS)
 {
+	const char* s = SS.c_str();
+	if (SS.length() >= 5 && s[2] == '7' && s[3] == '1' && s[4] == '8')
+	{
+		printf("Je to tady");
+	}
+
 	NItems++;
 	WORD m = 0;
 
