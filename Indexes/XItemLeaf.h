@@ -31,9 +31,7 @@ public:
 	size_t dataLen(); // bez 2B L + M
 
 #if _DEBUG
-private:
-	std::string _key;
+	std::string key;
 #endif
-
 };
 

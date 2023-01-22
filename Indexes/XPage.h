@@ -40,7 +40,7 @@ public:
 	void SplitPage(XPage* P, longint ThisPage);
 	void Clean();
 	size_t ItemsSize();
-	void Serialize(); // generate array from vector
+	void Serialize();   // generate array from vector
 	void Deserialize(); // generate vector from array
 
 private:

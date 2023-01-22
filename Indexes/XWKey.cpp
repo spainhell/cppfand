@@ -13,7 +13,7 @@ void XWKey::Open(KeyFldD* KF, bool Dupl, bool Intvl)
 	KFlds = KF;
 	Duplic = Dupl;
 	InWork = true;
-	Intervaltest = Intvl;
+	IntervalTest = Intvl;
 	NR = 0;
 	//XPage* p = (XPage*)GetStore(sizeof(p)); 
 	auto p = std::make_unique<XPage>();

@@ -1276,7 +1276,7 @@ bool RunBuildIn()
 			if (k == nullptr) goto label1;
 		}
 		CurrInst->Vars[1] = GetStringTerm(Pound(k->Alias));
-		CurrInst->Vars[2] = GetBoolTerm(k->Intervaltest);
+		CurrInst->Vars[2] = GetBoolTerm(k->IntervalTest);
 		CurrInst->Vars[3] = GetBoolTerm(k->Duplic);
 		CurrInst->NextBranch = (TBranch*)(k->Chain);
 		break;

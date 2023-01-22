@@ -30,5 +30,9 @@ public:
 
 	size_t size() override;
 	size_t data_len(); // bez 2B L + M
+
+#if _DEBUG
+	std::string key;
+#endif
 };
 

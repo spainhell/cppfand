@@ -377,6 +377,27 @@ void XPage::Deserialize()
 			_nonLeafItems.push_back(x);
 		}
 	}
+#if _DEBUG
+	// vygeneruj cely klic v polozkach
+	if (IsLeaf && !_leafItems.empty()) {
+		_leafItems[0]->key = std::string((char*)_leafItems[0]->data, _leafItems[0]->L);
+		for (size_t i = 1; i < NItems; i++) {
+			// part of previous key
+			std::string first_part = _leafItems[i - 1]->key.substr(0, _leafItems[i]->M);
+			std::string second_part = std::string((char*)_leafItems[i]->data, _leafItems[i]->L);
+			_leafItems[i]->key = first_part + second_part;
+		}
+	}
+	else if (!IsLeaf && !_nonLeafItems.empty()) {
+		_nonLeafItems[0]->key = std::string((char*)_nonLeafItems[0]->data, _nonLeafItems[0]->L);
+		for (size_t i = 1; i < NItems; i++) {
+			// part of previous key
+			std::string first_part = _nonLeafItems[i - 1]->key.substr(0, _nonLeafItems[i]->M);
+			std::string second_part = std::string((char*)_nonLeafItems[i]->data, _nonLeafItems[i]->L);
+			_nonLeafItems[i]->key = first_part + second_part;
+		}
+	}
+#endif
 }
 
 void XPage::Serialize()

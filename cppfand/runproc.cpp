@@ -507,7 +507,7 @@ bool SrchXKey(XKey* K, XString& X, longint& N)
 	void* cr;
 	if (CFile->Typ == 'X') {
 		TestXFExist();
-		return K->SearchIntvl(X, false, N);
+		return K->SearchInterval(X, false, N);
 	}
 	else {
 		cr = CRecPtr;

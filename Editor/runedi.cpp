@@ -1364,7 +1364,7 @@ void BuildWork()
 		K = VK;
 		KF = K->KFlds;
 		dupl = K->Duplic;
-		intvl = K->Intervaltest;
+		intvl = K->IntervalTest;
 	}
 	WK->Open(KF, dupl, intvl);
 	if (OnlyAppend) return;
@@ -2620,7 +2620,7 @@ bool GotoXRec(XString* PX, longint& N)
 	auto result = false;
 	md = NewLMode(RdMode); k = VK; if (Subset) k = WK;
 	if (Subset || HasIndex) {
-		result = k->SearchIntvl(*PX, false, N);
+		result = k->SearchInterval(*PX, false, N);
 		N = k->PathToNr();
 	}
 	else result = SearchKey(*PX, k, N);

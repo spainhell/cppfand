@@ -27,7 +27,7 @@ XItemLeaf::XItemLeaf(unsigned int RecNr, BYTE M, BYTE L, pstring& s)
 	memcpy(this->data, &s[1 + M], L);
 
 #if _DEBUG
-	this->_key = s;
+	this->key = s;
 #endif
 }
 

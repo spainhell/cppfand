@@ -1126,7 +1126,7 @@ bool LinkUpw(LinkD* LD, longint& N, bool WithT)
 	md = NewLMode(RdMode);
 	if (ToFD->Typ == 'X') {
 		TestXFExist();
-		LU = K->SearchIntvl(x, false, N);
+		LU = K->SearchInterval(x, false, N);
 	}
 	else if (CFile->NRecs == 0) {
 		LU = false; N = 1;

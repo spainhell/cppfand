@@ -18,7 +18,7 @@ XKey::XKey(const XKey& orig)
 	if (orig.Chain != nullptr) Chain = new XKey(*orig.Chain);
 	//if (orig.KFlds != nullptr) KFlds = new KeyFldD(*orig.KFlds, copyFlds);
 	KFlds = orig.KFlds;
-	Intervaltest = orig.Intervaltest;
+	IntervalTest = orig.IntervalTest;
 	Duplic = orig.Duplic;
 	InWork = orig.InWork;
 	IndexRoot = orig.IndexRoot;
@@ -32,7 +32,7 @@ XKey::XKey(BYTE* inputStr)
 	size_t index = 0;
 	Chain = reinterpret_cast<XKey*>(*(unsigned int*)&inputStr[index]); index += 4;
 	KFlds = reinterpret_cast<KeyFldD*>(*(unsigned int*)&inputStr[index]); index += 4;
-	Intervaltest = *(bool*)&inputStr[index]; index++;
+	IntervalTest = *(bool*)&inputStr[index]; index++;
 	Duplic = *(bool*)&inputStr[index]; index++;
 	InWork = *(bool*)&inputStr[index]; index++;
 	IndexRoot = *(unsigned short*)&inputStr[index]; index += 2;
@@ -134,9 +134,9 @@ bool XKey::Search(std::string const X, bool AfterEqu, longint& RecNr)
 	}
 }
 
-bool XKey::SearchIntvl(XString& XX, bool AfterEqu, longint& RecNr)
+bool XKey::SearchInterval(XString& XX, bool AfterEqu, longint& RecNr)
 {
-	return Search(XX, AfterEqu, RecNr) || Intervaltest && (RecNr <= CFile->NRecs);
+	return Search(XX, AfterEqu, RecNr) || IntervalTest && (RecNr <= CFile->NRecs);
 }
 
 longint XKey::PathToNr()
@@ -629,19 +629,10 @@ bool SearchKey(XString& XX, XKey* Key, longint& NN)
 		//label1:
 		NN = N;
 	}
-	if ((Result == _equ) || Key->Intervaltest && (Result == _gt))
+	if ((Result == _equ) || Key->IntervalTest && (Result == _gt))
 		bResult = true;
 	return bResult;
 }
-
-//longint XNRecs(XKey* K)
-//{
-//	if ((CFile->Typ == 'X') && (K != nullptr)) {
-//		TestXFExist();
-//		return CFile->GetXFile->NRecs;
-//	}
-//	return CFile->NRecs;
-//}
 
 longint XNRecs(std::vector<XKey*>& K)
 {
@@ -654,30 +645,23 @@ longint XNRecs(std::vector<XKey*>& K)
 
 void TryInsertAllIndexes(longint RecNr)
 {
-	//void* p = nullptr;
 	TestXFExist();
-	//MarkStore(p);
 	XKey* lastK = nullptr;
-	//while (K != nullptr) {
 	for (auto& K : CFile->Keys) {
 		lastK = K;
 		if (!K->Insert(RecNr, true)) {
 			goto label1;
 		}
-		//K = K->Chain;
 	}
 	CFile->XF->NRecs++;
 	return;
+
 label1:
-	//ReleaseStore(p);
-	//XKey* K1 = CFile->Keys;
-	//while ((K1 != nullptr) && (K1 != K)) {
 	for (auto& K1 : CFile->Keys) {
 		if (K1 == lastK) {
 			break;
 		}
 		K1->Delete(RecNr);
-		//K1 = K1->Chain;
 	}
 	SetDeletedFlag();
 	WriteRec(CFile, RecNr, CRecPtr);

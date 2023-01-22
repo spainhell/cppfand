@@ -323,7 +323,7 @@ longint RecNoFun(FrmlElem13* Z)
 	if (CFile->NRecs > 0) {
 		if (CFile->Typ == 'X') {
 			TestXFExist();
-			b = k->SearchIntvl(x, false, n);
+			b = k->SearchInterval(x, false, n);
 		}
 		else b = SearchKey(x, k, n);
 		if (!b) n = -n;

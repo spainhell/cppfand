@@ -739,10 +739,10 @@ void RdKeyD()
 			}
 
 			K->Alias = Name;
-			K->Intervaltest = false;
+			K->IntervalTest = false;
 			K->Duplic = false;
 			if (Lexem == _le) {
-				K->Intervaltest = true;
+				K->IntervalTest = true;
 				RdLex();
 			}
 			else if (Lexem == '*') {

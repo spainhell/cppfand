@@ -15,7 +15,7 @@ public:
 	XKey(BYTE* inputStr);
 	XKey* Chain = nullptr;
 	KeyFldD* KFlds = nullptr;
-	bool Intervaltest = false, Duplic = false, InWork = false;
+	bool IntervalTest = false, Duplic = false, InWork = false;
 	WORD IndexRoot = 0; BYTE IndexLen = 0;
 	longint NR = 0; // {used only by XWKey}
 	std::string Alias;
@@ -23,7 +23,7 @@ public:
 	longint NRecs();
 	bool Search(XString& XX, bool AfterEqu, longint& RecNr);
 	bool Search(std::string X, bool AfterEqu, longint& RecNr);
-	bool SearchIntvl(XString& XX, bool AfterEqu, longint& RecNr);
+	bool SearchInterval(XString& XX, bool AfterEqu, longint& RecNr);
 	longint PathToNr();
 	void NrToPath(longint I);
 	longint PathToRecNr();
@@ -46,7 +46,6 @@ public:
 };
 
 bool SearchKey(XString& XX, XKey* Key, longint& NN);
-//longint XNRecs(XKey* K);
 longint XNRecs(std::vector<XKey*>& K);
 void TryInsertAllIndexes(longint RecNr);
 void DeleteXRec(longint RecNr, bool DelT);
