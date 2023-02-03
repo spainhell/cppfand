@@ -64,6 +64,15 @@ void XWFile::WrPage(XPage* P, longint pageNr, bool serialize)
 	RdWrCache(false, Handle, NotCached(), (pageNr << XPageShft) + 7, XPageSize - 7, P->A);
 }
 
+void XWFile::WrPage(XXPage* p, longint pageNr)
+{
+	if (UpdLockCnt > 0) Err(645);
+	RdWrCache(false, Handle, NotCached(), pageNr << XPageShft, 1, &p->IsLeaf);
+	RdWrCache(false, Handle, NotCached(), (pageNr << XPageShft) + 1, 4, &p->GreaterPage);
+	RdWrCache(false, Handle, NotCached(), (pageNr << XPageShft) + 5, 2, &p->NItems);
+	RdWrCache(false, Handle, NotCached(), (pageNr << XPageShft) + 7, XPageSize - 7, p->A);
+}
+
 longint XWFile::NewPage(XPage* P)
 {
 	longint result = 0;

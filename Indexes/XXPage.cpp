@@ -10,8 +10,7 @@
 void XXPage::Reset(XWorkFile* OwnerXW)
 {
 	XW = OwnerXW; Sum = 0; NItems = 0;
-	// Offset a Max. offset objektu
-	MaxOff = XPageSize - XPageOverHead - 1;
+	memset(A, '\0', sizeof(A));
 	Off = 0;
 }
 
@@ -39,8 +38,8 @@ void XXPage::ClearRest()
 {
 	// max. offset je 1 mensi nez delka pole
 	// aktualni offset vcetne -> maximalni offset vcetne (proto +1)
-	size_t count = MaxOff - Off + 1;
-	memset(&A[Off], 0, sizeof(A) - Off);
+	//size_t count = XPageSize - Off;
+	//memset(&A[Off], 0, sizeof(A) - Off);
 }
 
 void XXPage::PageFull()
@@ -63,8 +62,7 @@ void XXPage::PageFull()
 		GreaterPage = XW->nextXPage;
 	}
 
-	// tady je asi potreba vygenerovat data k zapisu
-	XW->xwFile->WrPage((XPage*)(&IsLeaf), n, false);
+	XW->xwFile->WrPage(this, n);
 }
 
 void XXPage::AddToLeaf(WRec* R, XKey* KD)
@@ -104,7 +102,7 @@ void XXPage::AddToLeaf(WRec* R, XKey* KD)
 			}
 			l = l - m;
 		}
-		if (Off + 5 + l > MaxOff) { // + 1) { // pristi offset muze skoncit +1, protoze pak uz se nebude zapisovat ...
+		if (Off + 5 + l > XPageSize - 7) { // 7B je delka hlavicky
 			PageFull();
 			Reset(XW);
 			continue;
@@ -129,7 +127,7 @@ void XXPage::AddToUpper(XXPage* P, longint DownPage)
 			m = SLeadEqu(P->LastIndex, LastIndex);
 			l = l - m;
 		}
-		if (Off + 9 + l > MaxOff) {
+		if (Off + 9 + l > XPageSize - 7) { // 7B je delka hlavicky
 			PageFull();
 			Reset(XW);
 			continue;

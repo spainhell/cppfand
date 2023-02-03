@@ -11,14 +11,12 @@ public:
 	XXPage* Chain = nullptr;
 	XWorkFile* XW = nullptr;
 	WORD Off = 0;
-	WORD MaxOff = XPageSize - 4;
 	pstring LastIndex;
 	longint LastRecNr = 0;
 	longint Sum = 0;
 	bool IsLeaf = false;
 	longint GreaterPage = 0;
 	WORD NItems = 0;
-	//BYTE A[XPageSize - XPageOverHead];
 	BYTE A[XPageSize];
 
 	void Reset(XWorkFile* OwnerXW);

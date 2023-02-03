@@ -54,7 +54,7 @@ void XWorkFile::Main(char Typ)
 
 void XWorkFile::CopyIndex(XKey* K, KeyFldD* KF, char Typ)
 {
-	
+
 	WRec* r = new WRec();
 	// r->X.S = ""; pstring is always "" at the beginning
 	XPage* p = new XPage();
@@ -101,28 +101,37 @@ void XWorkFile::Output(WRec* R)
 
 void XWorkFile::FinishIndex()
 {
-	longint sum = 0, n = 0; XXPage* p = xxPage; XXPage* p1 = nullptr;
-label1:
-	sum = sum + p->Sum;
-	p->ClearRest();
-	p->GreaterPage = n;
-	p1 = p->Chain;
-	if (p1 == nullptr) n = xKey->IndexRoot;
-	else n = nextXPage;
+	longint sum = 0;
+	longint n = 0;
+	XXPage* p = xxPage;
 
-	// kopie XXPage do XPage a jeji zapis;
-	auto xp = std::make_unique<XPage>();
-	xp->IsLeaf = p->IsLeaf;
-	xp->GreaterPage = p->GreaterPage;
-	xp->NItems = p->NItems;
-	memcpy(xp->A, p->A, sizeof(p->A)); // p->A ma 1017B, xp->A ma 1024B
-	xwFile->WrPage(xp.get(), n, false);
+	while (true) {
+		sum += p->Sum;
+		p->ClearRest();
+		p->GreaterPage = n;
+		XXPage* p1 = p->Chain;
+		if (p1 == nullptr) {
+			n = xKey->IndexRoot;
+		}
+		else {
+			n = nextXPage;
+		}
 
-	p = p1;
-	if (p != nullptr) {
-		nextXPage = xwFile->NewPage(xPage);
-		goto label1;
+		xwFile->WrPage(p, n);
+
+		p = p1;
+		if (p != nullptr) {
+			nextXPage = xwFile->NewPage(xPage);
+			continue;
+		}
+
+		break;
 	}
-	if (xKey->InWork) ((XWKey*)xKey)->NR = sum;
-	else ((XFile*)xwFile)->NRecs = sum;
+
+	if (xKey->InWork) {
+		xKey->NR = sum;
+	}
+	else {
+		xwFile->UpdLockCnt = sum;
+	}
 }

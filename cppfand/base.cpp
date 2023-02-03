@@ -1549,7 +1549,7 @@ void MyExit()
 
 	UnExtendHandles();
 	MyDeleteFile(FandWorkName);
-	MyDeleteFile(FandWorkXName);
+	//MyDeleteFile(FandWorkXName);
 	MyDeleteFile(FandWorkTName);
 	// TODO? CloseXMS();
 label1:

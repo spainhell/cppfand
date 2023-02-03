@@ -26,15 +26,11 @@ void XFile::SetEmpty()
 	p->IsLeaf = true;
 	FreeRoot = 0;
 	NRecs = 0;
-	//XKey* k = CFile->Keys;
-	//while (k != nullptr) {
 	for (auto& k : CFile->Keys) {
 		longint n = k->IndexRoot;
 		MaxPage = n;
 		WrPage(p.get(), n);
-		//k = k->Chain;
 	}
-	//ReleaseStore(p);
 	WrPrefix();
 }
 
