@@ -31,7 +31,7 @@ void CompKIFrml(XKey* K, KeyInD* KI, bool AddFF)
 
 XScan::~XScan()
 {
-	delete P;
+	delete page_;
 }
 
 XScan::XScan(FileD* aFD, XKey* aKey, KeyInD* aKIRoot, bool aWithT)
@@ -47,7 +47,7 @@ XScan::XScan(FileD* aFD, XKey* aKey, KeyInD* aKIRoot, bool aWithT)
 	{
 		if (aKey != nullptr) {
 			//P = (XPage*)GetStore(XPageSize);
-			P = new XPage();
+			page_ = new XPage();
 			Kind = 1;
 			if (aKIRoot != nullptr) Kind = 2;
 		}
@@ -132,18 +132,20 @@ void XScan::ResetSort(KeyFldD* aSK, FrmlPtr& BoolZ, LockMode OldMd, bool SQLFilt
 	}
 }
 
-void XScan::SubstWIndex(WKeyDPtr WK)
+void XScan::SubstWIndex(XWKey* WK)
 {
 	Key = WK;
 	if (Kind != 3) Kind = 1;
-	if (P == nullptr) P = new XPage(); // (XPage*)GetStore(XPageSize);
+	if (page_ == nullptr) {
+		page_ = new XPage();
+	}
 	NRecs = Key->NRecs();
 	Bool = nullptr;
 	SeekRec(0);
 	TempWX = true;
 }
 
-void XScan::ResetOwner(XString* XX, FrmlPtr aBool)
+void XScan::ResetOwner(XString* XX, FrmlElem* aBool)
 {
 	longint n;
 	bool b;
@@ -269,16 +271,18 @@ void XScan::SeekOnKI(longint I)
 	SeekOnPage(XPath[XPathN].Page, XPath[XPathN].I);
 }
 
-void XScan::SeekOnPage(longint Page, WORD I)
+void XScan::SeekOnPage(longint pageNr, WORD i)
 {
-	Key->GetXFile()->RdPage(P, Page);
-	NOnPg = P->NItems - I + 1;
+	Key->GetXFile()->RdPage(page_, pageNr);
+	items_on_page_ = page_->NItems - i + 1;
 	if (Kind == 2) {
-		if (NOnPg > NOfKI) NOnPg = NOfKI;
-		NOfKI -= NOnPg;
+		if (items_on_page_ > NOfKI) {
+			items_on_page_ = NOfKI;
+		}
+		NOfKI -= items_on_page_;
 	}
 	//X = P->GetItem(I);
-	_item = I;
+	_item = i;
 }
 
 void XScan::NextIntvl()
@@ -288,7 +292,7 @@ void XScan::NextIntvl()
 	longint n = 0, nBeg = 0;
 
 	if (OwnerLV != nullptr) {
-		XWKey* k = (XWKey*)OwnerLV->RecPtr; // bude toto fungovat?
+		XWKey* k = (XWKey*)OwnerLV->RecPtr; // TODO: bude toto fungovat?
 		while (iOKey < k->NRecs()) {
 			iOKey++;
 			CFile = OwnerLV->FD;
@@ -300,16 +304,22 @@ void XScan::NextIntvl()
 			n = n - nBeg + b;
 			if (n > 0) {
 				NOfKI = n;
-				Key->NrToPath(nBeg); /* !!! with XPath[XPathN] do!!! */
+				Key->NrToPath(nBeg);
 				SeekOnPage(XPath[XPathN].Page, XPath[XPathN].I);
 				return;
-			};
+			}
 		}
 		NRecs = IRec; /*EOF*/
 	}
 	else {
-		do { KI = (KeyInD*)KI->pChain; } while (!((KI == nullptr) || (KI->N > 0)));
-		if (KI != nullptr) SeekOnKI(0);
+		do {
+			KI = (KeyInD*)KI->pChain;
+		}
+		while (!((KI == nullptr) || (KI->N > 0)));
+
+		if (KI != nullptr) {
+			SeekOnKI(0);
+		}
 	}
 }
 
@@ -333,13 +343,13 @@ label1:
 		case 0: { RecNr = IRec; goto label2; break; }
 		case 1:
 		case 2: {
-			RecNr = P->GetItem(_item)->GetN();
-			NOnPg--;
-			if (NOnPg > 0) {
+			RecNr = page_->GetItem(_item)->GetN();
+			items_on_page_--;
+			if (items_on_page_ > 0) {
 				_item++;
 			}
 			else if ((Kind == 2) && (NOfKI == 0)) NextIntvl();
-			else if (P->GreaterPage > 0) SeekOnPage(P->GreaterPage, 1);
+			else if (page_->GreaterPage > 0) SeekOnPage(page_->GreaterPage, 1);
 		label2:
 			ReadRec(CFile, RecNr, CRecPtr);
 			if (DeletedFlag()) goto label1;

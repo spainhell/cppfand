@@ -10,6 +10,7 @@ public:
 	XItemNonLeaf(BYTE* data);
 	XItemNonLeaf(const XItemNonLeaf& orig);
 	XItemNonLeaf(unsigned int recordsCount, unsigned int downPage, BYTE M, BYTE L, pstring& s); // kompletni 's', zpracuje se jen pozadovana cast
+	XItemNonLeaf(unsigned int recordsCount, unsigned int downPage, BYTE M, BYTE L, std::string& s);
 	~XItemNonLeaf() override;
 
 	longint RecordsCount = 0;
@@ -18,18 +19,11 @@ public:
 	longint GetN() override;
 	void PutN(longint N) override;
 
-	WORD GetM() override;
-	void PutM(WORD M) override;
-
-	WORD GetL() override;
-	void PutL(WORD L) override;
-
 	size_t UpdStr(pstring* S) override;
 
 	size_t Serialize(BYTE* buffer, size_t bufferSize) override;
 
 	size_t size() override;
-	size_t data_len(); // bez 2B L + M
 
 #if _DEBUG
 	std::string key;

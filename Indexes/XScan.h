@@ -19,9 +19,9 @@ public:
 	XScan(FileD* aFD, XKey* aKey, KeyInD* aKIRoot, bool aWithT);
 	void Reset(FrmlElem* ABool, bool SQLFilter);
 	void ResetSort(KeyFldD* aSK, FrmlPtr& BoolZ, LockMode OldMd, bool SQLFilter);
-	void SubstWIndex(WKeyDPtr WK);
-	void ResetOwner(XString* XX, FrmlPtr aBool);
-	void ResetOwnerIndex(LinkD* LD, LocVar* LV, FrmlPtr aBool);
+	void SubstWIndex(XWKey* WK);
+	void ResetOwner(XString* XX, FrmlElem* aBool);
+	void ResetOwnerIndex(LinkD* LD, LocVar* LV, FrmlElem* aBool);
 #ifdef FandSQL
 	void ResetSQLTxt(FrmlPtr Z);
 #endif
@@ -35,13 +35,15 @@ private:
 	KeyFldD* SK = nullptr;
 	//XItem* X = nullptr;
 	size_t _item = 1;
-	XPage* P = nullptr;
-	WORD NOnPg = 0;
+	XPage* page_ = nullptr;
+	WORD items_on_page_ = 0;
 	KeyInD* KI = nullptr;
 	longint NOfKI = 0, iOKey = 0;
-	bool TempWX = false, NotFrst = false, withT = false;
+	bool TempWX = false;
+	bool NotFrst = false;
+	bool withT = false;
 	void* Strm = nullptr; // {SQLStreamPtr or LVRecPtr}
 	void SeekOnKI(longint I);
-	void SeekOnPage(longint Page, WORD I);
+	void SeekOnPage(longint pageNr, WORD i);
 	void NextIntvl();
 };

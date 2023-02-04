@@ -30,6 +30,16 @@ XItemNonLeaf::XItemNonLeaf(unsigned recordsCount, unsigned downPage, BYTE M, BYT
 	memcpy(this->data, &s[1 + M], L);
 }
 
+XItemNonLeaf::XItemNonLeaf(unsigned recordsCount, unsigned downPage, BYTE M, BYTE L, std::string& s)
+{
+	this->RecordsCount = recordsCount;
+	this->DownPage = downPage;
+	this->M = M;
+	this->L = L;
+	this->data = new BYTE[L];
+	memcpy(this->data, &s.c_str()[M], L);
+}
+
 XItemNonLeaf::~XItemNonLeaf()
 {
 	delete[] data;
@@ -44,26 +54,6 @@ longint XItemNonLeaf::GetN()
 void XItemNonLeaf::PutN(longint N)
 {
 	this->RecordsCount = N;
-}
-
-WORD XItemNonLeaf::GetM()
-{
-	return M;
-}
-
-void XItemNonLeaf::PutM(WORD M)
-{
-	this->M = M;
-}
-
-WORD XItemNonLeaf::GetL()
-{
-	return L;
-}
-
-void XItemNonLeaf::PutL(WORD L)
-{
-	this->L = L;
 }
 
 //XItem* XItemNonLeaf::Next()
@@ -84,11 +74,6 @@ size_t XItemNonLeaf::UpdStr(pstring* S)
 size_t XItemNonLeaf::size()
 {
 	return 3 + 4 + 2 + L; // 3 cislo zaznamu, 4 cislo stranky, 2 L+M, delka zaznamu
-}
-
-size_t XItemNonLeaf::data_len()
-{
-	return L;
 }
 
 size_t XItemNonLeaf::Serialize(BYTE* buffer, size_t bufferSize)

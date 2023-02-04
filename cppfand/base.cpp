@@ -782,6 +782,21 @@ WORD SLeadEqu(pstring S1, pstring S2)
 	return count;
 }
 
+WORD SLeadEqu(const std::string& s1, const std::string& s2)
+{
+	WORD count = 0;
+	// pocet znaku k otestovani
+	WORD minLen = min(s1.length(), s2.length());
+	for (size_t i = 0; i < minLen; i++) {
+		if (s1[i] == s2[i]) {
+			count++;
+			continue;
+		}
+		break;
+	}
+	return count;
+}
+
 void SetFlshHandle(FILE* H)
 {
 	if (H == nullptr) return;
@@ -1066,7 +1081,7 @@ WORD GetFileAttr()
 	}
 }
 
-//CachePage* Cache(FILE* Handle, longint Page)
+//CachePage* Cache(FILE* Handle, longint page_)
 //{
 //	return nullptr;
 //}

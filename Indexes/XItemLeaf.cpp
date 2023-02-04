@@ -31,6 +31,19 @@ XItemLeaf::XItemLeaf(unsigned int RecNr, BYTE M, BYTE L, pstring& s)
 #endif
 }
 
+XItemLeaf::XItemLeaf(unsigned RecNr, BYTE M, BYTE L, std::string& s)
+{
+	this->RecNr = RecNr;
+	this->M = M;
+	this->L = L;
+	this->data = new BYTE[L];
+	memcpy(this->data, &s.c_str()[M], L);
+
+#if _DEBUG
+	this->key = s;
+#endif
+}
+
 XItemLeaf::~XItemLeaf()
 {
 	delete[] data;
@@ -45,26 +58,6 @@ longint XItemLeaf::GetN()
 void XItemLeaf::PutN(longint N)
 {
 	this->RecNr = N;
-}
-
-WORD XItemLeaf::GetM()
-{
-	return M;
-}
-
-void XItemLeaf::PutM(WORD M)
-{
-	this->M = M;
-}
-
-WORD XItemLeaf::GetL()
-{
-	return L;
-}
-
-void XItemLeaf::PutL(WORD L)
-{
-	this->L = L;
 }
 
 //XItem* XItemLeaf::Next()
@@ -85,11 +78,6 @@ size_t XItemLeaf::UpdStr(pstring* S)
 size_t XItemLeaf::size()
 {
 	return 3 + 2 + L; // 3 cislo zaznamu, 2 L+M, delka zaznamu
-}
-
-size_t XItemLeaf::dataLen()
-{
-	return L;
 }
 
 size_t XItemLeaf::Serialize(BYTE* buffer, size_t bufferSize)

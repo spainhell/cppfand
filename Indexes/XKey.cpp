@@ -231,7 +231,8 @@ bool XKey::RecNrToPath(XString& XX, longint RecNr)
 
 	GetXFile()->RdPage(p.get(), X->Page);
 	x = p->GetItem(X->I);
-	if (!(p->GetKey(X->I) == XX.S)) {
+	std::string xxS = XX.S;
+	if (p->GetKey(X->I) != xxS) {
 		return result;
 	}
 
@@ -246,7 +247,8 @@ bool XKey::RecNrToPath(XString& XX, longint RecNr)
 				X->I = 1;
 				GetXFile()->RdPage(p.get(), X->Page);
 				x = p->GetItem(X->I);
-				if (!(p->GetKey(X->I) == XX.S)) {
+				xxS = XX.S;
+				if (p->GetKey(X->I) != xxS) {
 					return result;
 				}
 				continue;
@@ -339,7 +341,6 @@ bool XKey::FindNr(std::string const X, longint& IndexNr)
 
 void XKey::InsertOnPath(XString& XX, longint RecNr)
 {
-
 	WORD i = 0, j = 0;
 	longint page = 0, page1 = 0, uppage = 0, downpage = 0;
 	XItem* x = nullptr;
@@ -551,7 +552,7 @@ void XKey::BalancePages(XPage* P1, XPage** P2, bool& Released)
 	longint n = P1->GreaterPage;
 	P1->AddPage(*P2);
 	WORD sz = P1->ItemsSize();
-	if (sz <= XPageSize) {
+	if (sz <= XPageSize - 7) { // header = 7B (1 + 4 + 2)
 		Released = true;
 	}
 	else {

@@ -81,29 +81,33 @@ bool XPage::Overflow()
 	return size > XPageSize - XPageOverHead;
 }
 
-
-/// Returns calculated complete key value;
-/// i = 1 .. N
-pstring XPage::GetKey(WORD i)
+/// <summary>
+/// Returns calculated complete X-key value
+/// </summary>
+/// <param name="i">item nr. 1 .. N</param>
+/// <returns>complete index key</returns>
+std::string XPage::GetKey(size_t i)
 {
-	pstring s; // toto bude vystup
-
-	if (i > NItems) s[0] = 0;
+	if (i > NItems) {
+		// do nothing -> return empty string
+		return "";
+	}
 	else {
+		std::string result;
 		if (IsLeaf) {
-			for (WORD j = 0; j < i; j++) {
+			for (size_t j = 0; j < i; j++) {
 				XItem* x = _leafItems[j];
-				x->UpdStr(&s);
+				result = x->GetKey(result);
 			}
 		}
 		else {
-			for (WORD j = 0; j < i; j++) {
+			for (size_t j = 0; j < i; j++) {
 				XItem* x = _nonLeafItems[j];
-				x->UpdStr(&s);
+				result = x->GetKey(result);
 			}
 		}
+		return result;
 	}
-	return s;
 }
 
 longint XPage::SumN()
@@ -131,20 +135,26 @@ longint XPage::SumN()
 /// <param name="SS">key</param>
 void XPage::InsertItem(unsigned int recordsCount, unsigned int downPage, WORD I, pstring& SS)
 {
+	std::string key = SS;
+
 	NItems++;
 	WORD m = 0;
-	// zjistime spolecne casti s predchozim zaznamem
-	if (I > 1) m = SLeadEqu(GetKey(I - 1), SS);
-	WORD l = SS.length() - m;
-	// vytvorime novou polozku s novym zaznamem a vlozime ji do vektoru
 
-	auto newXi = new XItemNonLeaf(recordsCount, downPage, m, l, SS);
+	// zjistime spolecne casti s predchozim zaznamem
+	if (I > 1) {
+		std::string previousKey = GetKey(I - 1);
+		m = SLeadEqu(previousKey, key);
+	}
+	WORD l = key.length() - m;
+
+	// vytvorime novou polozku s novym zaznamem a vlozime ji do vektoru
+	auto newXi = new XItemNonLeaf(recordsCount, downPage, m, l, key);
 	_addToNonLeafItems(newXi, I - 1);
 
 	if (I < NItems) {
 		// vkladany zaznam nebude posledni (nebude na konci)
 		// zjistime spolecne casti s nasledujicim zaznamem
-		WORD m2 = SLeadEqu(GetKey(I + 1), SS);
+		WORD m2 = SLeadEqu(GetKey(I + 1), key);
 		integer d = m2 - newXi->GetM();
 		if (d > 0) {
 			// puvodni polozka je ted na pozici I (nova je na I - 1)
@@ -161,27 +171,26 @@ void XPage::InsertItem(unsigned int recordsCount, unsigned int downPage, WORD I,
 /// <param name="SS">key</param>
 void XPage::InsertItem(unsigned int recNr, size_t I, pstring& SS)
 {
-	const char* s = SS.c_str();
-	if (SS.length() >= 5 && s[2] == '7' && s[3] == '1' && s[4] == '8')
-	{
-		printf("Je to tady");
-	}
+	std::string key = SS;
 
 	NItems++;
 	WORD m = 0;
 
 	// zjistime spolecne casti s predchozim zaznamem
-	if (I > 1) m = SLeadEqu(GetKey(I - 1), SS);
-	WORD l = SS.length() - m;
+	if (I > 1) {
+		std::string previousKey = GetKey(I - 1);
+		m = SLeadEqu(previousKey, key);
+	}
+	WORD l = key.length() - m;
 
 	// vytvorime novou polozku s novym zaznamem a vlozime ji do vektoru
-	auto newXi = new XItemLeaf(recNr, m, l, SS);
+	auto newXi = new XItemLeaf(recNr, m, l, key);
 	_addToLeafItems(newXi, I - 1);
 
 	if (I < NItems) {
 		// vkladany zaznam nebude posledni (nebude na konci)
 		// zjistime spolecne casti s nasledujicim zaznamem
-		WORD m2 = SLeadEqu(GetKey(I + 1), SS);
+		WORD m2 = SLeadEqu(GetKey(I + 1), key);
 		BYTE d = m2 - newXi->M;
 		if (d > 0) {
 			// puvodni polozka je ted na pozici I (nova je na I - 1)
@@ -276,6 +285,7 @@ void XPage::SplitPage(XPage* P, longint ThisPage)
 	// 1st half of this XPage will be moved into P
 	P->IsLeaf = IsLeaf;
 	size_t origSize = this->ItemsSize();
+	size_t compareSize = (origSize + 4) / 2 + (origSize + 4) % 2; // contains +5, it is coefficient calculated from original code
 	size_t actualSize;
 	size_t index; // last index that will be moved into P
 
@@ -284,7 +294,9 @@ void XPage::SplitPage(XPage* P, longint ThisPage)
 
 		for (index = 0, actualSize = 0; index < _leafItems.size(); index++) {
 			actualSize += _leafItems[index]->size();
-			if (actualSize > origSize / 2) break;
+			if (actualSize > compareSize) {
+				break;
+			}
 		}
 
 		// get new first key for this page

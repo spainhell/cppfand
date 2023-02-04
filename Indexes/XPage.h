@@ -30,7 +30,7 @@ public:
 	XItem* GetItem(WORD I);
 	bool Underflow();
 	bool Overflow();
-	pstring GetKey(WORD i);
+	std::string GetKey(size_t i);
 	longint SumN();
 	void InsertItem(unsigned int recordsCount, unsigned int downPage, WORD I, pstring& SS);
 	void InsertItem(unsigned int recNr, size_t I, pstring& SS);

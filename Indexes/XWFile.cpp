@@ -33,6 +33,11 @@ bool XWFile::NotCached()
 	return (this != &XWork) && CFile->NotCached();
 }
 
+
+/**
+ * \brief Returns working or regular index file
+ * \return Pointer to working or regular index file
+ */
 XWFile* XKey::GetXFile()
 {
 	if (InWork) return &XWork;

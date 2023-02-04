@@ -49,7 +49,7 @@ void XWorkFile::Main(char Typ)
 		xKey = xKey->Chain;
 	}
 	xwFile->ReleasePage(xPage, nextXPage);
-	delete xPage;	xPage = nullptr;
+	delete xPage; xPage = nullptr;
 }
 
 void XWorkFile::CopyIndex(XKey* K, KeyFldD* KF, char Typ)
@@ -73,7 +73,10 @@ void XWorkFile::CopyIndex(XKey* K, KeyFldD* KF, char Typ)
 				// x = x->Next();
 			}
 			else {
-				x->UpdStr(&r->X.S);
+				std::string s = r->X.S;
+				//x->UpdStr(&r->X.S);
+				s = x->GetKey(s);
+				r->X.S = s;
 			}
 			Output(r);
 		}

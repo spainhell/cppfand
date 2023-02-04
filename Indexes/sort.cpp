@@ -153,7 +153,9 @@ void GetIndexSort(Instr_getindex* PD)
 			CFile = ld->ToFD;
 			CRecPtr = lv2->RecPtr;
 			x.PackKF(kf);
-			goto label1;
+
+			CFile = lv->FD;
+			Scan->ResetOwner(&x, cond);
 			break;
 		}
 		case 'F': {
@@ -164,7 +166,7 @@ void GetIndexSort(Instr_getindex* PD)
 			x.PackKF(kf);
 			ReleaseStore(CRecPtr);
 			OldLMode(md);
-		label1:
+
 			CFile = lv->FD;
 			Scan->ResetOwner(&x, cond);
 			break;
