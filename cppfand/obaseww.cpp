@@ -290,7 +290,7 @@ bool PromptYN(WORD NMsg)
 	screen.GotoXY(col, row); 
 	screen.CrsShow();
 
-	char cc = (char)toupper(ReadKbd());
+	char cc;
 	while (true) {
 		cc = (char)toupper(ReadKbd());
 		if ((Event.Pressed.KeyCombination() != F10SpecKey) && (cc != AbbrYes) && (cc != AbbrNo)) {

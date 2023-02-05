@@ -64,19 +64,19 @@ bool IsCurrChpt()
 	return CRdb->FD == CFile;
 }
 
-FileType ExtToTyp(pstring Ext)
+char ExtToTyp(pstring Ext)
 {
 	if ((Ext == "") || EquUpCase(Ext, ".HLP")
 #ifdef FandSQL
 		|| SEquUpcase(Ext, ".SQL")
 #endif	
 		)
-		return fand16;
-	else if (EquUpCase(Ext, ".X")) return index;
-	else if (EquUpCase(Ext, ".DTA")) return fand8;
-	else if (EquUpCase(Ext, ".DBF")) return dbf;
-	else if (EquUpCase(Ext, ".RDB")) return rdb;
-	else return unknown;
+		return '6';
+	else if (EquUpCase(Ext, ".X")) return 'X';
+	else if (EquUpCase(Ext, ".DTA")) return '8';
+	else if (EquUpCase(Ext, ".DBF")) return 'D';
+	else if (EquUpCase(Ext, ".RDB")) return '0';
+	else return '?';
 }
 
 void ReleaseFDLDAfterChpt()
@@ -551,7 +551,7 @@ void CreateOpenChpt(std::string Nm, bool create, wwmix* ww)
 	SetInpStr(s);
 	if ((Nm[0] == '\\')) Nm1 = Nm.substr(1, 8);
 	else Nm1 = Nm;
-	RdFileD(Nm1, rdb, ""); /*old CRdb for GetCatIRec*/
+	RdFileD(Nm1, '0', ""); /*old CRdb for GetCatIRec*/
 	R->FD = CFile;
 	CRdb = R;
 	CFile->RecPtr = GetRecSpace();
@@ -922,7 +922,7 @@ longint MakeDbfDcl(pstring Nm)
 void* RdF(std::string FileName)
 {
 	std::string d, name, ext;
-	FileType FDTyp = rdb;
+	char FDTyp = '0';
 	std::string s;
 	FieldDescr* IdF = nullptr; FieldDescr* TxtF = nullptr;
 	integer i = 0, n = 0;

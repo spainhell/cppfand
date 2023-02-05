@@ -20,7 +20,7 @@ extern bool issql;
 void TestUserView();
 void TestDupl(FileD* FD);
 void RdFieldDList(bool Stored);
-void* RdFileD(std::string FileName, FileType FDTyp, std::string Ext); // r220
+void* RdFileD(std::string FileName, char FDTyp, std::string Ext); // r220
 void RdKeyD();
 void CheckDuplAlias(pstring Name);
 void LookForK(pstring* Name, FileD* F);
@@ -32,7 +32,7 @@ void RdKumul();
 void RdRoleField(AddD* AD);
 void RdImper(AddD* AD);
 void RdAssign(AddD* AD);
-void SetHCatTyp(FileType FDTyp);
-void GetTFileD(FileType FDTyp);
+void SetHCatTyp(char FDTyp);
+void GetTFileD(char FDTyp);
 void GetXFileD();
 CompInpD* OrigInp();

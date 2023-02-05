@@ -868,7 +868,7 @@ void RdLocDcl(LocVarBlkD* LVB, bool IsParList, bool WithRecVar, char CTyp)
 	void* cr = nullptr; stSaveState* p = nullptr;
 	XWKey* k = nullptr; bool rp = false;
 	KeyFldD* kf = nullptr; KeyFldD* kf1 = nullptr;
-	FileType FDTyp = rdb;
+	char FDTyp = '0';
 	std::vector<LocVar*> newVars;
 label1:
 	rp = false;
@@ -963,12 +963,12 @@ label1:
 			}
 			else {
 				if (fd != nullptr) OldError(26);
-				FDTyp = fand16;
+				FDTyp = '6';
 				if (Lexem == '.') {
 					RdLex();
 					TestIdentif();
-					if (EquUpCase("X")) FDTyp = index;
-					else if (EquUpCase("DBF")) FDTyp = dbf;
+					if (EquUpCase("X")) FDTyp = 'X';
+					else if (EquUpCase("DBF")) FDTyp = 'D';
 					else Error(185);
 					RdLex();
 				}

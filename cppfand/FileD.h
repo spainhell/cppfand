@@ -10,16 +10,16 @@ class FieldDescr;
 struct StringListEl;
 class AddD;
 
-enum FileType
-{
-	fand8 = '8',
-	fand16 = '6',
-	index = 'x',
-	rdb = '0',
-	cat = 'c',
-	dbf = 'd',
-	unknown = -1
-};
+//enum FileType
+//{
+//	fand8 = '8',
+//	fand16 = '6',
+//	index = 'x',
+//	rdb = '0',
+//	cat = 'c',
+//	dbf = 'd',
+//	unknown = -1
+//};
 
 class FileD : public Chained<FileD>
 {
@@ -32,7 +32,7 @@ public:
 	void* RecPtr = nullptr;
 	longint NRecs = 0;
 	bool WasWrRec = false, WasRdOnly = false, Eof = false;
-	FileType Typ = rdb;       // 8 = Fand 8; 6 = Fand 16; X = .X; 0 = RDB; C = CAT 
+	char Typ = '0';           // 8 = Fand 8; 6 = Fand 16; X = .X; 0 = RDB; C = CAT 
 	FILE* Handle = nullptr;
 	longint IRec = 0;
 	WORD FrstDispl = 0;

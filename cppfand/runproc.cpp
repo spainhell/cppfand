@@ -1522,7 +1522,7 @@ void CallProcedure(Instr_proc* PD)
 				const auto state = SaveCompState();
 				std::string code = RunStdStr(PD->TArg[i].TxtFrml);
 				SetInpStdStr(code, true);
-				RdFileD(PD->TArg[i].Name, fand16, "$");
+				RdFileD(PD->TArg[i].Name, '6', "$");
 				RestoreCompState(state);
 			}
 			else {
