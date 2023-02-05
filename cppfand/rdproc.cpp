@@ -2759,7 +2759,10 @@ void ReadDeclChpt()
 			Accept(';');
 		}
 		else if (Lexem == 0x1A) return;
-		else Error(40);
+		else {
+			Error(40);
+			return;
+		}
 	}
 }
 
