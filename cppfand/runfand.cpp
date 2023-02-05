@@ -544,13 +544,21 @@ void InitRunFand()
 			}
 			else {
 			label0:
-				pstring maska = "*.";
-				pstring podretez = copy(paramstr.at(1), 1, 2);
-				if (maska == podretez) SelectRunRdb(false);
-				//if (copy(paramstr.at(1), 1, 2) == "*.") SelectRunRdb(false);
-				else RunRdb(paramstr.at(1));
-				if (IsTestRun) IsTestRun = false;
-				else return;
+				//pstring maska = "*.";
+				//pstring podretez = copy(paramstr.at(1), 1, 2);
+				//if (maska == podretez) {
+				if (paramstr.at(1).substr(0, 2) == "*.") {
+					SelectRunRdb(false);
+				}
+				else {
+					RunRdb(paramstr.at(1));
+				}
+				if (IsTestRun) {
+					IsTestRun = false;
+				}
+				else {
+					return;
+				}
 			}
 	}
 

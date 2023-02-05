@@ -382,7 +382,7 @@ FrmlElem* RdFunctionP(char& FFTyp)
 		RdLex();
 		Z = new FrmlElem11(_prompt, 4); // GetOp(_prompt, 4);
 		((FrmlElem11*)Z)->PPP1 = RdStrFrml();
-		FieldDescr* F = RdFldDescr("", true);
+		FieldDescr* F = RdFieldDescr("", true);
 		((FrmlElem11*)Z)->FldD = F; FTyp = F->FrmlTyp;
 		if (F->Typ == 'T') OldError(65);
 		if (Lexem == _assign) {

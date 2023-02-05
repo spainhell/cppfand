@@ -6,7 +6,7 @@
 #include "FileD.h"
 
 extern bool HasTT;
-FieldDescr* RdFldDescr(pstring Name, bool Stored); // r25
+FieldDescr* RdFieldDescr(std::string name, bool Stored); // r25
 ChkD* RdChkD(WORD Low);
 void RdChkDChain(ChkD** CRoot);
 void RdChkDsFromPos(FileD* FD, ChkD* C); // r98

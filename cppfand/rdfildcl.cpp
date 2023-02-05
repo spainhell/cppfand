@@ -16,10 +16,10 @@
 bool HasTT;
 bool issql;
 
-FieldDescr* RdFldDescr(pstring Name, bool Stored)
+FieldDescr* RdFieldDescr(std::string name, bool Stored)
 {
 	const BYTE TabF[19] = { 0, 1, 1, 2, 2, 3, 3, 4, 4, 4, 5, 5, 6, 6, 6, 7, 7, 8, 8 };
-	FieldDPtr F = new FieldDescr();
+	FieldDescr* F = new FieldDescr();
 	pstring* S = nullptr;
 	WORD L = 0, M = 0, NBytes = 0;
 	BYTE Flg = 0;
@@ -28,7 +28,7 @@ FieldDescr* RdFldDescr(pstring Name, bool Stored)
 	pstring ss;
 	std::string sstr;
 
-	F->Name = Name;
+	F->Name = name;
 	if (Stored) Flg = f_Stored;
 	else Flg = 0;
 	Accept(':');
@@ -155,19 +155,16 @@ FieldDescr* RdFldDescr(pstring Name, bool Stored)
 
 ChkD* RdChkD(WORD Low)
 {
-	WORD Upper = 0, N = 0;
-	FrmlElem* Z = nullptr;
-	//C = (ChkD*)GetZStore(sizeof(*C));
 	ChkD* C = new ChkD();
 	ChkD* result = C;
 	C->Bool = RdBool();
-	Upper = OldErrPos;
+	WORD Upper = OldErrPos;
 	if (Lexem == '?') { RdLex(); C->Warning = true; }
 	if (Lexem == ':') { RdLex(); C->TxtZ = RdStrFrml(); }
 	else {
-		N = Upper - Low;
+		WORD N = Upper - Low;
 		//if (N > sizeof(pstring)) N = pred(sizeof(pstring));
-		Z = new FrmlElem4(_const, 0); // GetOp(_const, N + 1);
+		FrmlElem* Z = new FrmlElem4(_const, 0); // GetOp(_const, N + 1);
 		C->TxtZ = Z;
 		auto iZ = (FrmlElem4*)Z;
 		((FrmlElem4*)Z)->S = std::string((char*)&InpArrPtr[Low], N);
@@ -401,39 +398,43 @@ void TestDupl(FileD* FD)
 
 void RdFieldDList(bool Stored)
 {
-	pstring Name; FieldDescr* F = nullptr; char FTyp = 0; FrmlPtr Z = nullptr;
-label1:
-	//if (InpArrLen == 0x0ce2) {
-	//	printf("D\n");
-	//}
-	TestIdentif();
-	Name = LexWord;
-	F = FindFldName(CFile);
-	if (F != nullptr) Error(26);
-	RdLex();
-	if (!Stored) {
-		Accept(_assign);
-		Z = RdFrml(FTyp);
-	}
-	F = RdFldDescr(Name, Stored);
-	if ((CFile->Typ == 'D') && Stored && (F->Typ == 'R' || F->Typ == 'N')) OldError(86);
+	FieldDescr* F = nullptr;
+	char FTyp = 0;
+	FrmlElem* Z = nullptr;
 
-	CFile->FldD.push_back(F);
-	ChainLast(CFile->FldD.front(), F);
-
-	if (Stored) {
-		if (CFile->Typ == '8') {
-			if ((F->Typ == 'R' || F->Typ == 'B' || F->Typ == 'T')) OldError(35);
-			else if ((F->Typ == 'F') && (F->NBytes > 5)) OldError(36);
-		}
-	}
-	else {
-		F->Frml = Z;
-		if (FTyp != F->FrmlTyp) OldError(12);
-	}
-	if (Lexem == ';') {
+	while (true) {
+		TestIdentif();
+		std::string name = LexWord;
+		F = FindFldName(CFile);
+		if (F != nullptr) Error(26);
 		RdLex();
-		if (!(Lexem == '#' || Lexem == 0x1A)) goto label1;
+		if (!Stored) {
+			Accept(_assign);
+			Z = RdFrml(FTyp);
+		}
+		F = RdFieldDescr(name, Stored);
+		if ((CFile->Typ == dbf) && Stored && (F->Typ == 'R' || F->Typ == 'N')) {
+			OldError(86);
+		}
+
+		CFile->FldD.push_back(F);
+		ChainLast(CFile->FldD.front(), F);
+
+		if (Stored) {
+			if (CFile->Typ == '8') {
+				if ((F->Typ == 'R' || F->Typ == 'B' || F->Typ == 'T')) OldError(35);
+				else if ((F->Typ == 'F') && (F->NBytes > 5)) OldError(36);
+			}
+		}
+		else {
+			F->Frml = Z;
+			if (FTyp != F->FrmlTyp) OldError(12);
+		}
+		if (Lexem == ';') {
+			RdLex();
+			if (!(Lexem == '#' || Lexem == 0x1A)) continue;
+		}
+		break;
 	}
 }
 
@@ -594,7 +595,7 @@ void* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 				LinkDRoot.push_front(copiedLinkD);
 			}
 		}
-				
+
 		CFile->IsHlpFile = false;
 		if (!(FDTyp == fand16 || FDTyp == index) || !(CFile->Typ == fand16 || CFile->Typ == index)) OldError(106);
 
@@ -832,7 +833,7 @@ label6:
 		RdLex();
 		if (!(Lexem == '#' || Lexem == 0x1A)) goto label2;
 	}
-	}
+}
 
 void CheckDuplAlias(pstring Name)
 {
@@ -1017,7 +1018,7 @@ void RdRoleField(AddD* AD)
 	AD->Field = F;
 	if ((F->Flg & f_Stored) == 0) OldError(14);
 	if (IsKeyArg(F, AD->File2)) OldError(135);
-	}
+}
 
 void RdImper(AddD* AD)
 {
@@ -1028,11 +1029,11 @@ void RdImper(AddD* AD)
 			while (KF != nullptr) {
 				if ((KF->FldD->Flg & f_Stored) == 0) OldError(148);
 				KF = (KeyFldD*)KF->pChain;
-	}
-}
+			}
+		}
 		if (Lexem == '!') { RdLex(); AD->Create = 2; }
-}
 	}
+}
 
 void RdAssign(AddD* AD)
 {
