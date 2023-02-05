@@ -10,9 +10,18 @@ ThFile::ThFile(std::string APath, WORD CatIRec, InOutMode AMode, byte aCompress,
 	std::string mode;
 	std::string d, Nm, e;
 	switch (AMode) {
-	case InOutMode::_inp: mode = "r"; break;
-	case InOutMode::_outp: mode = "w"; break;
-	case InOutMode::_append: mode = "a+"; break;
+	case InOutMode::_inp: {
+		mode = "r";
+		break;
+	}
+	case InOutMode::_outp: {
+		mode = "w";
+		break;
+	}
+	case InOutMode::_append: {
+		mode = "a+";
+		break;
+	}
 	default: break;
 	}
 
@@ -39,6 +48,10 @@ ThFile::ThFile(std::string APath, WORD CatIRec, InOutMode AMode, byte aCompress,
 			eof = true;
 		}
 	}
+
+	if (AMode == InOutMode::_inp) {
+		RunMsgOn('C', Size);
+	}
 }
 
 ThFile::~ThFile()
@@ -56,6 +69,7 @@ void ThFile::ReadBuf()
 	if (Handle != nullptr) {
 		lBuf = fread_s(Buf, BUFFER_SIZE, 1, BUFFER_SIZE, Handle);
 		if (lBuf == 0) this->eof = true;
+		Size = lBuf;
 	}
 	else {
 		Size = 0;

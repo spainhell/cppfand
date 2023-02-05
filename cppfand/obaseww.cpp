@@ -316,38 +316,49 @@ void CFileError(WORD N)
 
 void RunMsgOn(char C, longint N)
 {
-	RunMsgD* CM1 = new RunMsgD(); // (RunMsgD*)GetStore(sizeof(RunMsgD));
+	RunMsgD* CM1 = new RunMsgD();
 #ifndef norunmsg
 	CM1->Last = CM; 
 	CM = CM1;
 	CM->MsgStep = N / 100;
-	if (CM->MsgStep == 0) CM->MsgStep = 1;
+	if (CM->MsgStep == 0) {
+		CM->MsgStep = 1;
+	}
 	CM->MsgKum = CM->MsgStep;
 	CM->MsgNN = N;
 	CM->W = PushW1(1, TxtRows, 8, TxtRows, true, true);
 	TextAttr = screen.colors.zNorm;
 
 	screen.ScrFormatWrStyledText(1, 1, TextAttr, "%c%c", /*0xAF*/ 0x10, C);
-	if (N == 0) screen.ScrFormatWrStyledText(3, 1, TextAttr, "    %c", /*0xAE*/ 0x11);
-	else screen.ScrFormatWrStyledText(3, 1, TextAttr, "  0%c%c", '%', /*0xAE*/ 0x11);
+	if (N == 0) {
+		screen.ScrFormatWrStyledText(3, 1, TextAttr, "    %c", /*0xAE*/ 0x11);
+	}
+	else {
+		screen.ScrFormatWrStyledText(3, 1, TextAttr, "  0%c%c", '%', /*0xAE*/ 0x11);
+	}
 #endif
 }
 
-void RunMsgN(longint N)
+void RunMsgN(longint n)
 {
 #ifndef norunmsg
-	if (N < CM->MsgKum) return;
-	while (N >= CM->MsgKum) {
+	if (n < CM->MsgKum) return;
+	while (n >= CM->MsgKum) {
 		CM->MsgKum += CM->MsgStep;
 	}
-	const WORD percent = static_cast<WORD>(N * 100) / (CM->MsgNN + 1); // tady je pridane navic 1
-	screen.ScrFormatWrText(3, 1, "%*i", 3, percent);
+	WORD percent;
+	if (CM->MsgNN == 0) {
+		// print 100%
+		screen.ScrFormatWrText(3, 1, "%*i", 3, 0);
+	}
+	else {
+		screen.ScrFormatWrText(3, 1, "%*i", 3, n * 100 / CM->MsgNN);
+	}
 #endif
 }
 
 void RunMsgOff()
 {
-	void* p;
 #ifndef norunmsg
 	if (CM == nullptr) return;
 	PopW(CM->W);
