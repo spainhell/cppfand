@@ -1,5 +1,5 @@
 #include "runedi.h"
-
+#include <memory>
 #include "OldEditor.h"
 #include "EditorHelp.h"
 #include "rdedit.h"

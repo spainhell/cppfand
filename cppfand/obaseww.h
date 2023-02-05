@@ -30,13 +30,13 @@ longint PushWFramed(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr,
 longint PushWrLLMsg(WORD N, bool WithESC);
 void WrLLMsg(WORD N);
 void WrLLMsgTxt();
-void WrLLF10MsgLine(); // stejná fce definována v kbdww.cpp
-void WrLLF10Msg(WORD N); // stejná fce definována v kbdww.cpp
+void WrLLF10MsgLine(); // stejna fce definovana v kbdww.cpp
+void WrLLF10Msg(WORD N); // stejna fce definovana v kbdww.cpp
 bool PromptYN(WORD NMsg);
 extern WORD RunErrNr;
-void RunError(WORD N); // podobná fce definována v kbdww.cpp
-void CFileMsg(WORD n, char Typ); // podobná fce definována v kbdww.cpp
-void CFileError(WORD N); // podobná fce definována v kbdww.cpp
+void RunError(WORD N); // podobna fce definovana v kbdww.cpp
+void CFileMsg(WORD n, char Typ); // podobna fce definovana v kbdww.cpp
+void CFileError(WORD N); // podobna fce definovana v kbdww.cpp
 
 struct RunMsgD // r292
 {
@@ -44,8 +44,6 @@ struct RunMsgD // r292
 	longint MsgNN = 0, MsgStep = 0, MsgKum = 0;
 	longint W = 0;
 };
-
-extern RunMsgD* CM;
 
 void RunMsgOn(char C, longint N); // r296
 void RunMsgN(longint N); // r305

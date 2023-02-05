@@ -289,9 +289,16 @@ bool PromptYN(WORD NMsg)
 	screen.ScrFormatWrText(col, row, " ");
 	screen.GotoXY(col, row); 
 	screen.CrsShow();
-	label1:
+
 	char cc = (char)toupper(ReadKbd());
-	if ((Event.Pressed.KeyCombination() != F10SpecKey) && (cc != AbbrYes) && (cc != AbbrNo)) goto label1;
+	while (true) {
+		cc = (char)toupper(ReadKbd());
+		if ((Event.Pressed.KeyCombination() != F10SpecKey) && (cc != AbbrYes) && (cc != AbbrNo)) {
+			continue;
+		}
+		break;
+	}
+
 	F10SpecKey = 0; 
 	PopW(w);
 	return cc == AbbrYes;
@@ -300,8 +307,12 @@ bool PromptYN(WORD NMsg)
 void CFileMsg(WORD n, char Typ)
 {
 	SetCPathVol();
-	if (Typ == 'T') CExtToT();
-	else if (Typ == 'X') CExtToX();
+	if (Typ == 'T') {
+		CExtToT();
+	}
+	else if (Typ == 'X') {
+		CExtToX();
+	}
 	std::string path = CPath;
 	ReplaceChar(path, '/', '\\');
 	SetMsgPar(path);
@@ -368,6 +379,11 @@ void RunMsgOff()
 
 void RunMsgClear()
 {
-	delete CM;
-	CM = nullptr;
+	if (CM != nullptr) {
+		delete CM;
+		CM = nullptr;
+	}
+	else {
+		// object CM not exists
+	}
 }

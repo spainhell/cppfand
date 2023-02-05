@@ -126,18 +126,6 @@ BYTE toggleLatin2[] = { 0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0
 
 const BYTE CsKbdSize = 67;
 
-void BreakIntHandler()
-{
-}
-
-void BreakIntrInit()
-{
-}
-
-void BreakIntrDone()
-{
-}
-
 void ClearKeyBuf()
 {
 }
@@ -145,7 +133,9 @@ void ClearKeyBuf()
 void BreakCheck()
 {
 	if (BreakFlag) {
-		BreakFlag = false; ClearKeyBuf(); Halt(-1);
+		BreakFlag = false;
+		ClearKeyBuf();
+		Halt(-1);
 	}
 }
 

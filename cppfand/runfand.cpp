@@ -25,7 +25,7 @@
 
 void ScrGraphMode(bool Redraw, WORD OldScrSeg)
 {
-	// graf. mód není podporován
+	// graph mode not supported
 
 	//void* p; void* p1;
 	//WORD* pofs = (WORD*)p;
@@ -106,36 +106,15 @@ bool IsAT()
 	return true;
 }
 
-void OpenXMS()
-{
-	// nebudeme otevírat XMS pamì, nejsme v DOSu
-}
-
-void OpenCache()
-{
-	// pracuje s XMS -> ignorujeme
-}
-
-//void DetectVideoCard()
-//{
-//	WindMax.X = 79;
-//	WindMax.Y = 23;
-//}
-
 void InitDrivers()
 {
-	//char kl;
-	BreakIntrInit();
-	//DetectGraph(GraphDriver, GraphMode);
-	/* GraphDriver = EGAMono; Mark****/
-	//DetectVideoCard();
-	//AssignCrt(Output); Rewrite(Output);
 	ClrEvent();
 }
 
 void InitAccess()
 {
-	ResetCompilePars(); SpecFDNameAllowed = false;
+	ResetCompilePars();
+	SpecFDNameAllowed = false;
 	FillChar(&XWork, sizeof(XWork), 0);
 }
 
@@ -312,22 +291,22 @@ void CompileHelpCatDcl()
 #if defined (FandRunV)
 	RdFileD("UFANDHLP", '6', "");
 #else
-	RdFileD("FANDHLP", '6', "");
+	RdFileD("FANDHLP", fand16, "");
 #endif
 	HelpFD = CFile;
 	RdMsg(52);
 	s = MsgLine;
 	SetInpStr(s);
-	RdFileD("Catalog", 'C', "");
+	RdFileD("Catalog", cat, "");
 	CatFD = CFile;
 	FileDRoot = nullptr;
 	Chpt = FileDRoot;
 	CatRdbName = CatFD->FldD.front();
 	if (CatRdbName == nullptr) throw std::exception("CompileHelpCatDcl: CarRdbName is NULL");
-	CatFileName = (FieldDescr*)CatRdbName->pChain;
-	CatArchiv = (FieldDescr*)CatFileName->pChain;
-	CatPathName = (FieldDescr*)CatArchiv->pChain;
-	CatVolume = (FieldDescr*)CatPathName->pChain;
+	CatFileName = CatRdbName->pChain;
+	CatArchiv = CatFileName->pChain;
+	CatPathName = CatArchiv->pChain;
+	CatVolume = CatPathName->pChain;
 	MarkStore(AfterCatFD);
 	ReleaseStore2(p2);
 }
@@ -541,7 +520,6 @@ void InitRunFand()
 	InitMouseEvents();
 	// Editor
 	InitTxtEditor();
-	OpenCache();
 
 	WasInitPgm = true;
 	CompileHelpCatDcl();

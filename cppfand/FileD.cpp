@@ -106,7 +106,7 @@ void FileD::Reset()
 	RecPtr = nullptr;
 	NRecs = 0;
 	WasWrRec = false; WasRdOnly = false; Eof = false;
-	Typ = 0;        // 8= Fand 8; 6= Fand 16; X= .X; 0= RDB; C= CAT 
+	Typ = rdb;        // 8= Fand 8; 6= Fand 16; X= .X; 0= RDB; C= CAT 
 	Handle = nullptr;
 	IRec = 0;
 	FrstDispl = 0;

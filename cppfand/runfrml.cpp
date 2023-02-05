@@ -1,8 +1,11 @@
 #include "runfrml.h"
+#include <memory>
 #include "pstring.h"
 #include "legacy.h"
 #include "rdrun.h"
-#include <math.h>
+#include <cmath>
+#include <ctime>
+
 #include "FieldDescr.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
@@ -19,10 +22,6 @@
 #include "../textfunc/textfunc.h"
 #include "../FileSystem/directory.h"
 
-//FileDPtr TFD02;
-//TFile* TF02;
-//longint TF02Pos; // r33
-
 double Owned(FrmlPtr Bool, FrmlPtr Sum, LinkD* LD)
 {
 	XScan* Scan; XKey* K; XString x; LockMode md; longint n, nBeg;
@@ -35,18 +34,21 @@ double Owned(FrmlPtr Bool, FrmlPtr Sum, LinkD* LD)
 	}
 	else {
 		r = 0; CRecPtr = GetRecSpace();
-		//New(Scan, Init(CFile, K, nullptr, true));
 		Scan = new XScan(CFile, K, nullptr, true);
 		Scan->ResetOwner(&x, nullptr);
-	label1:
-		Scan->GetRec(); if (!Scan->eof) {
-			if (RunBool(Bool)) {
-				if (Sum == nullptr) r = r + 1;
-				else r = r + RunReal(Sum);
+		while (true) {
+			Scan->GetRec();
+			if (!Scan->eof) {
+				if (RunBool(Bool)) {
+					if (Sum == nullptr) r = r + 1;
+					else r = r + RunReal(Sum);
+				}
+				continue;
 			}
-			goto label1;
+			break;
 		}
-		Scan->Close(); ReleaseStore(CRecPtr);
+		Scan->Close();
+		ReleaseStore(CRecPtr);
 	}
 	OldLMode(md); CFile = cf; CRecPtr = cr;
 	return r;
@@ -108,9 +110,8 @@ LongStr* CopyToLongStr(std::string& SS)
 
 pstring LeadChar(char C, pstring S)
 {
-	// TODO: øešit elegantnìji ...
-	while (S.length() > 0 && (S[1] == C))
-	{
+	// TODO: do it better
+	while (S.length() > 0 && (S[1] == (BYTE)C)) {
 		S = S.substr(1);
 	}
 	return S;

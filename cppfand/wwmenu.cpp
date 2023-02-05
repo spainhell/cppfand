@@ -1,4 +1,5 @@
 #include "wwmenu.h"
+#include <memory>
 #include "FieldDescr.h"
 #include "FileD.h"
 #include "GlobalVariables.h"

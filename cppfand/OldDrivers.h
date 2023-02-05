@@ -1,5 +1,4 @@
 ﻿#pragma once
-#include <xlocmon>
 
 #include "constants.h"
 #include "legacy.h"
@@ -137,7 +136,6 @@ integer OpenCrt(TextFile* F);
 
 unsigned long long getAvailPhysMemory();
 
-void BreakIntrDone();
 bool KbdTimer(WORD Delta, BYTE Kind);
 bool TestEvent();
 WORD AddCtrlAltShift(BYTE Flgs);
@@ -148,5 +146,4 @@ bool KeyPressed();
 WORD ReadKey();
 void SetMouse(WORD X, WORD Y, bool Visible);
 void ClearKeyBuf();
-void BreakIntrInit();
 void InitMouseEvents();

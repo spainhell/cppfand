@@ -500,7 +500,7 @@ void SetLDIndexRoot(/*LinkD* L,*/ std::deque<LinkD*>& L2)
 }
 
 // z ulohy vycte kapilotu 'F', prip. dynamickou definici 'F'
-void* RdFileD(std::string FileName, char FDTyp, std::string Ext)
+void* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 {
 	std::string JournalFlds = "Upd:A,1;RecNr:F,8.0;User:F,4.0;TimeStamp:D,'DD.MM.YYYY hh:mm:ss'";
 	FileD* FD = nullptr;
@@ -596,7 +596,7 @@ void* RdFileD(std::string FileName, char FDTyp, std::string Ext)
 		}
 				
 		CFile->IsHlpFile = false;
-		if (!(FDTyp == '6' || FDTyp == 'X') || !(CFile->Typ == '6' || CFile->Typ == 'X')) OldError(106);
+		if (!(FDTyp == fand16 || FDTyp == index) || !(CFile->Typ == fand16 || CFile->Typ == index)) OldError(106);
 
 		//K = CFile->Keys;
 		//while (K != nullptr) {
@@ -647,7 +647,7 @@ label2:
 		goto label2;
 	}
 	if (issql && !CFile->Keys.empty()) {
-		CFile->Typ = 'X';
+		CFile->Typ = FileType::index;
 	}
 	GetXFileD();
 	CompileRecLen();
@@ -1047,7 +1047,7 @@ void RdAssign(AddD* AD)
 }
 
 /// smaze CFile->Handle, nastavi typ na FDTyp a ziska CatIRec z GetCatIRec() - musi existovat CatFD
-void SetHCatTyp(char FDTyp)
+void SetHCatTyp(FileType FDTyp)
 {
 	/* !!! with CFile^ do!!! */
 	CFile->Handle = nullptr;
@@ -1059,7 +1059,7 @@ void SetHCatTyp(char FDTyp)
 #endif
 }
 
-void GetTFileD(char FDTyp)
+void GetTFileD(FileType FDTyp)
 {
 	//if ((uintptr_t)CFile->TF == 0x534b007f)
 	//{

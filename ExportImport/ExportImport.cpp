@@ -1,5 +1,5 @@
 #include "ExportImport.h"
-
+#include <memory>
 #include "TbFile.h"
 #include "ThFile.h"
 #include "TzFile.h"

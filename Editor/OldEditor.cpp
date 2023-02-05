@@ -1,8 +1,7 @@
-﻿#pragma once
-
-#include "OldEditor.h"
+﻿#include "OldEditor.h"
 #include <set>
 #include <stdexcept>
+#include <memory>
 
 #include "EditorEvents.h"
 #include "runedi.h"

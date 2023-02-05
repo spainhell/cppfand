@@ -64,19 +64,19 @@ bool IsCurrChpt()
 	return CRdb->FD == CFile;
 }
 
-char ExtToTyp(pstring Ext)
+FileType ExtToTyp(pstring Ext)
 {
 	if ((Ext == "") || EquUpCase(Ext, ".HLP")
 #ifdef FandSQL
 		|| SEquUpcase(Ext, ".SQL")
 #endif	
 		)
-		return '6';
-	else if (EquUpCase(Ext, ".X")) return 'X';
-	else if (EquUpCase(Ext, ".DTA")) return '8';
-	else if (EquUpCase(Ext, ".DBF")) return 'D';
-	else if (EquUpCase(Ext, ".RDB")) return '0';
-	else return '?';
+		return fand16;
+	else if (EquUpCase(Ext, ".X")) return index;
+	else if (EquUpCase(Ext, ".DTA")) return fand8;
+	else if (EquUpCase(Ext, ".DBF")) return dbf;
+	else if (EquUpCase(Ext, ".RDB")) return rdb;
+	else return unknown;
 }
 
 void ReleaseFDLDAfterChpt()
@@ -84,15 +84,21 @@ void ReleaseFDLDAfterChpt()
 	FileD* FD = nullptr;
 	RdbD* R = nullptr;
 
-	if (Chpt->pChain != nullptr) CloseFAfter((FileD*)Chpt->pChain);
+	if (Chpt->pChain != nullptr) {
+		CloseFAfter(Chpt->pChain);
+	}
 	Chpt->pChain = nullptr;
 	LinkDRoot = CRdb->OldLDRoot;
 	FuncDRoot = CRdb->OldFCRoot;
 	CFile = Chpt;
 	CRecPtr = E->NewRecPtr;
 	R = CRdb->ChainBack;
-	if (R != nullptr) CRdb->HelpFD = R->HelpFD;
-	else CRdb->HelpFD = nullptr;
+	if (R != nullptr) {
+		CRdb->HelpFD = R->HelpFD;
+	}
+	else {
+		CRdb->HelpFD = nullptr;
+	}
 	CompileFD = true;
 }
 
@@ -545,7 +551,7 @@ void CreateOpenChpt(std::string Nm, bool create, wwmix* ww)
 	SetInpStr(s);
 	if ((Nm[0] == '\\')) Nm1 = Nm.substr(1, 8);
 	else Nm1 = Nm;
-	RdFileD(Nm1, '0', ""); /*old CRdb for GetCatIRec*/
+	RdFileD(Nm1, rdb, ""); /*old CRdb for GetCatIRec*/
 	R->FD = CFile;
 	CRdb = R;
 	CFile->RecPtr = GetRecSpace();
@@ -916,7 +922,7 @@ longint MakeDbfDcl(pstring Nm)
 void* RdF(std::string FileName)
 {
 	std::string d, name, ext;
-	char FDTyp = '\0';
+	FileType FDTyp = rdb;
 	std::string s;
 	FieldDescr* IdF = nullptr; FieldDescr* TxtF = nullptr;
 	integer i = 0, n = 0;
@@ -1291,7 +1297,7 @@ void WrErrMsg630(std::string Nm)
 	SetMsgPar(Nm); WrLLF10Msg(630);
 }
 
-bool EditExecRdb(std::string Nm, std::string ProcNm, Instr_proc* ProcCall, wwmix* ww)
+bool EditExecRdb(std::string Nm, std::string proc_name, Instr_proc* proc_call, wwmix* ww)
 {
 	WORD Brk = 0, cc = 0;
 	void* p = nullptr;
@@ -1321,15 +1327,14 @@ bool EditExecRdb(std::string Nm, std::string ProcNm, Instr_proc* ProcCall, wwmix
 		EditRdbMode = false;
 		bool hasToCompileRdb = CompileRdb(false, true, false);
 		if (hasToCompileRdb) {
-			bool procedureFound = FindChpt('P', ProcNm, true, &RP);
-			if (procedureFound)
-			{
+			bool procedureFound = FindChpt('P', proc_name, true, &RP);
+			if (procedureFound) {
 				//NewExit(Ovr(), er2);
 				//goto label0;
 				IsCompileErr = false;
-				if (ProcCall != nullptr) {
-					ProcCall->PPos = RP;
-					CallProcedure(ProcCall);
+				if (proc_call != nullptr) {
+					proc_call->PPos = RP;
+					CallProcedure(proc_call);
 				}
 				else RunMainProc(RP, top);
 				result = true; goto label9;
@@ -1338,7 +1343,7 @@ bool EditExecRdb(std::string Nm, std::string ProcNm, Instr_proc* ProcCall, wwmix
 				goto label9;
 			}
 			else {
-				SetMsgPar(Nm, ProcNm);
+				SetMsgPar(Nm, proc_name);
 				WrLLF10Msg(632);
 			}
 		}
@@ -1380,7 +1385,7 @@ bool EditExecRdb(std::string Nm, std::string ProcNm, Instr_proc* ProcCall, wwmix
 	Chpt->WasRdOnly = false;
 	if (!top && (Chpt->NRecs > 0))
 		if (CompileRdb(true, false, false)) {
-			if (FindChpt('P', ProcNm, true, &RP)) GotoRecFld(RP.IRec, CFld);
+			if (FindChpt('P', proc_name, true, &RP)) GotoRecFld(RP.IRec, CFld);
 		}
 		else goto label4;
 	else if (ChptTF->IRec <= Chpt->NRecs) GotoRecFld(ChptTF->IRec, CFld);
@@ -1443,7 +1448,7 @@ label9:
 	RestoreExit(er);
 	if (!wasGraph && IsGraphMode) {
 		// ScrTextMode(false, false);
-		throw std::exception("CompRunChptRec() Graph <-> Text Mode not implemented.");
+		throw std::exception("CompRunChptRec() Graph <-> Text Mode switching not implemented.");
 	}
 	if (UserW != 0) PopW(UserW);
 	UserW = w;
@@ -1459,7 +1464,8 @@ void UpdateCat()
 {
 	CFile = CatFD;
 	if (CatFD->Handle == nullptr) OpenCreateF(Exclusive);
-	EditOpt* EO = new EditOpt(); EO->UserSelFlds = true; // GetEditOpt();
+	EditOpt* EO = new EditOpt();
+	EO->UserSelFlds = true;
 	EO->Flds = AllFldsList(CatFD, true);
 	EditDataFile(CatFD, EO);
 	ChDir(OldDir);
@@ -1487,7 +1493,8 @@ void UpdateUTxt()
 	TextAttr = screen.colors.tNorm;
 	OldPos = _T(ChptTxt);
 	S = _LongS(ChptTxt); b = false;
-	if (CRdb->Encrypted) CodingLongStr(S); // NewExit(Ovr, er);
+	if (CRdb->Encrypted) CodingLongStr(S);
+	// NewExit(Ovr, er);
 	goto label4;
 	SetInpLongStr(S, false);
 	MarkStore(p);

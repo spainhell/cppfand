@@ -1,4 +1,5 @@
 #include "XFile.h"
+#include <memory>
 #include "base.h"
 #include "FileD.h"
 #include "GlobalVariables.h"

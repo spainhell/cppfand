@@ -1571,7 +1571,6 @@ label1:
 	if (WasInitDrivers) {
 		// TODO? DoneMouseEvents();
 		// CrsIntrDone();
-		BreakIntrDone();
 		if (IsGraphMode) {
 			CloseGraph();
 			IsGraphMode = false;

@@ -1,4 +1,5 @@
 #include "WorkFile.h"
+#include <memory>
 #include "../cppfand/base.h"
 #include "../cppfand/GlobalVariables.h"
 #include "../cppfand/obaseww.h"

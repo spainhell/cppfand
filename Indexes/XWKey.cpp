@@ -1,4 +1,5 @@
 #include "XWKey.h"
+#include <memory>
 #include "../cppfand/access.h"
 #include "../cppfand/base.h"
 #include "../cppfand/FieldDescr.h"

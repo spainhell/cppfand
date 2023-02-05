@@ -4,7 +4,6 @@
 #include "XScan.h"
 #include "XXPage.h"
 
-
 class XWorkFile : public WorkFile
 {
 public:
