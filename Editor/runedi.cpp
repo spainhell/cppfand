@@ -2111,58 +2111,67 @@ void SetPointTo(LinkD* LD, std::string* s1, std::string* s2)
 	}
 }
 
-void GetSel2S(std::string* s, std::string* s2, char C, WORD wh)
+void GetSel2S(std::string& s, std::string& s2, char C, WORD wh)
 {
 	wwmix ww;
 
-	size_t i; pstring s1;
-	*s = ww.GetSelect();
-	*s2 = "";
-	i = s->find(C);
-	if (i != std::string::npos)
+	s = ww.GetSelect();
+	s2 = "";
+	size_t i = s.find(C);
+
+	if (i != std::string::npos) {
 		if (wh == 1) {
-			s1 = s->substr(i + 1, 255);
-			*s2 = s->substr(1, i - 1);
-			*s = s1;
+			std::string s1 = s.substr(i + 1, 255);
+			s2 = s.substr(0, i);
+			s = s1;
 		}
 		else {
-			*s2 = s->substr(i + 1, 255);
-			*s = s->substr(1, i - 1);
+			s2 = s.substr(i + 1, 255);
+			s = s.substr(0, i);
 		}
+	}
 }
 
 bool EquRoleName(pstring S, LinkD* LD)
 {
-	if (S == "") return LD->ToFD->Name == (std::string)LD->RoleName;
-	else return S == LD->RoleName;
+	if (S == "") {
+		return LD->ToFD->Name == LD->RoleName;
+	}
+	else {
+		return S == LD->RoleName;
+	}
 }
 
-bool EquFileViewName(FileD* FD, std::string S, EditOpt* EO)
+bool EquFileViewName(FileD* FD, std::string S, EditOpt** EO)
 {
-	StringListEl* SL; FileD* cf;
-	auto result = true; cf = CFile; CFile = FD;
+	auto result = true;
+	FileD* cf = CFile;
+	CFile = FD;
 	if (S[0] == 0x01) { // ^A
 		S = S.substr(1, 255);
-		SL = CFile->ViewNames;
+		StringListEl* SL = CFile->ViewNames;
 		while (SL != nullptr) {
 			if (SL->S == S) {
-				//EO = GetEditOpt();
-				EO->UserSelFlds = true;
-				RdUserView(S, EO);
-				goto label1;
+				*EO = new EditOpt();
+				(*EO)->UserSelFlds = true;
+				RdUserView(S, *EO);
+
+				CFile = cf;
+				return result;
 			}
-			SL = (StringListEl*)SL->pChain;
+			SL = SL->pChain;
 		}
 	}
 	else if (S == std::string(CFile->Name)) {
-		//EO = GetEditOpt();
-		EO->UserSelFlds = true;
-		EO->Flds = AllFldsList(CFile, false);
+		*EO = new EditOpt();
+		(*EO)->UserSelFlds = true;
+		(*EO)->Flds = AllFldsList(CFile, false);
 		return result;
 	}
-	result = false;
-label1:
+
 	CFile = cf;
+
+	result = false;
 	return result;
 }
 
@@ -2200,13 +2209,13 @@ void UpwEdit(LinkD* LkD)
 		ss.Abcd = true;
 		ww.SelectStr(0, 0, 35, "");
 		if (Event.Pressed.KeyCombination() == __ESC) goto label1;
-		GetSel2S(&s1, &s2, '.', 2);
+		GetSel2S(s1, s2, '.', 2);
 		//LD = LinkDRoot;
 		/*while (LD != nullptr && !(LD->FromFD == CFile && EquRoleName(s2, LD) && EquFileViewName(LD->ToFD, s1, EO)))
 			LD = LD->pChain;*/
 		LD = nullptr;
 		for (auto& ld : LinkDRoot) {
-			if (ld->FromFD == CFile && EquRoleName(s2, ld) && EquFileViewName(ld->ToFD, s1, EO)) {
+			if (ld->FromFD == CFile && EquRoleName(s2, ld) && EquFileViewName(ld->ToFD, s1, &EO)) {
 				LD = ld;
 				break;
 			}
@@ -2238,8 +2247,14 @@ void UpwEdit(LinkD* LkD)
 	px = &x;
 	K = LD->ToKey;
 	CFile = LD->ToFD;
-	if (EO->ViewKey == nullptr) EO->ViewKey = K;
-	else if (&EO->ViewKey != &K) px = nullptr;
+
+	if (EO->ViewKey == nullptr) {
+		EO->ViewKey = K;
+	}
+	else if (&EO->ViewKey != &K) {
+		px = nullptr;
+	}
+
 	if (SelFldsForEO(EO, nullptr)) {
 		NewEditD(CFile, EO);
 		E->ShiftF7LD = LkD;
@@ -2258,18 +2273,25 @@ label1:
 
 void DisplChkErr(ChkD* C)
 {
-	LinkD* LD = nullptr; FileD* cf = nullptr; void* cr = nullptr;
-	longint n = 0;
+	LinkD* LD = nullptr;
 
 	FindExistTest(C->Bool, &LD);
 	if (!C->Warning && (LD != nullptr) && ForNavigate(LD->ToFD) && CFld->Ed(IsNewRec)) {
-		cf = CFile; cr = CRecPtr;
+		FileD* cf = CFile;
+		void* cr = CRecPtr;
+		longint n = 0;
 		bool b = LinkUpw(LD, n, false);
 		ReleaseStore(CRecPtr);
 		CFile = cf; CRecPtr = cr;
-		if (!b)
-			if (NoShiftF7Msg) goto label1;
-			else F10SpecKey = __SHIFT_F7;
+		if (!b) {
+			if (NoShiftF7Msg) {
+				UpwEdit(LD);
+				return;
+			}
+			else {
+				F10SpecKey = __SHIFT_F7;
+			}
+		}
 	}
 	if (!C->HelpName.empty()) {
 		if (F10SpecKey == __SHIFT_F7) F10SpecKey = 0xfffe;
@@ -2277,10 +2299,12 @@ void DisplChkErr(ChkD* C)
 	}
 	SetMsgPar(RunShortStr(C->TxtZ));
 	WrLLF10Msg(110);
-	if (Event.Pressed.KeyCombination() == __F1) Help(CFile->ChptPos.R, C->HelpName, false);
-	else if (Event.Pressed.KeyCombination() == __SHIFT_F7)
-		label1:
-	UpwEdit(LD);
+	if (Event.Pressed.KeyCombination() == __F1) {
+		Help(CFile->ChptPos.R, C->HelpName, false);
+	}
+	else if (Event.Pressed.KeyCombination() == __SHIFT_F7) {
+		UpwEdit(LD);
+	}
 }
 
 bool OldRecDiffers()
@@ -2306,6 +2330,7 @@ bool OldRecDiffers()
 	}
 	else
 #endif
+
 		ReadRec(CFile, E->LockedRec, CRecPtr);
 	if (CompArea(CRecPtr, E->OldRecPtr, CFile->RecLen) != _equ) {
 	label1:
@@ -3563,7 +3588,7 @@ void ImbeddEdit()
 	wwmix ww;
 
 	void* p = nullptr;
-	std::string s, s1, s2;
+	std::string s1, s2;
 	WORD Brk; StringListEl* SL = nullptr;
 	EditOpt* EO = nullptr;
 	FileD* FD = nullptr;
@@ -3575,37 +3600,49 @@ void ImbeddEdit()
 	WrEStatus();
 	R = CRdb;
 	while (R != nullptr) {
-		FD = (FileD*)R->FD->pChain;
+		FD = R->FD->pChain;
 		while (FD != nullptr) {
 			if (ForNavigate(FD)) {
 				SL = FD->ViewNames;
 				do {
-					s = GetFileViewName(FD, &SL);
-					if (R != CRdb) s = R->FD->Name + "." + s;
+					std::string s = GetFileViewName(FD, &SL);
+					if (R != CRdb) {
+						s = R->FD->Name + "." + s;
+					}
 					ww.PutSelect(s);
 				} while (SL != nullptr);
 			}
-			FD = (FileD*)FD->pChain;
+			FD = FD->pChain;
 		}
 		R = R->ChainBack;
 	}
 	ss.Abcd = true; ww.SelectStr(0, 0, 35, "");
-	if (Event.Pressed.KeyCombination() == __ESC) goto label1;
-	GetSel2S(&s1, &s2, '.', 1);
-	R = CRdb;
-	if (!s2.empty()) {
-		std::string ss2 = s2;
-		do { R = R->ChainBack; } while (R->FD->Name != ss2);
+	if (Event.Pressed.KeyCombination() == __ESC) {
+		// do nothing
 	}
-	CFile = R->FD;
-	while (!EquFileViewName(CFile, s1, EO)) CFile = (FileD*)CFile->pChain;
-	if (SelFldsForEO(EO, nullptr)) {
-		NewEditD(CFile, EO);
-		if (OpenEditWw()) RunEdit(nullptr, Brk);
-		SaveFiles;
-		PopEdit();
+	else {
+		GetSel2S(s1, s2, '.', 1);
+		R = CRdb;
+		if (!s2.empty()) {
+			std::string ss2 = s2;
+			do {
+				R = R->ChainBack;
+			} while (R->FD->Name != ss2);
+		}
+		CFile = R->FD;
+		while (!EquFileViewName(CFile, s1, &EO)) {
+			CFile = CFile->pChain;
+		}
+		if (SelFldsForEO(EO, nullptr)) {
+			NewEditD(CFile, EO);
+			if (OpenEditWw()) {
+				RunEdit(nullptr, Brk);
+			}
+			SaveFiles();
+			PopEdit();
+		}
 	}
-label1:
+
 	PopW(w);
 	ReleaseStore(p);
 	RdEStatus();
@@ -3616,29 +3653,32 @@ void DownEdit()
 {
 	wwmix ww;
 
-	FileD* FD = nullptr; StringListEl* SL = nullptr; XKey* K = nullptr;
-	EditOpt* EO = nullptr; WORD Brk, i; void* p = nullptr;
-	std::string s, s1, s2; longint w;
+	EditOpt* EO = nullptr;
+	WORD Brk;
+	void* p = nullptr;
+	std::string s1, s2;
 	std::string ali;
 	//LinkD* LD = LinkDRoot;
 	MarkStore(p);
 
-	w = PushW1(1, 1, TxtCols, TxtRows, true, true);
+	longint w = PushW1(1, 1, TxtCols, TxtRows, true, true);
 	CFile->IRec = AbsRecNr(CRec());
 
 	WrEStatus();
 
 	for (auto& ld : LinkDRoot) { //while (LD != nullptr) {
-		FD = ld->FromFD;
-		if ((ld->ToFD == CFile) && ForNavigate(FD) && (ld->IndexRoot != 0))
+		FileD* FD = ld->FromFD;
+		StringListEl* SL;
+		if ((ld->ToFD == CFile) && ForNavigate(FD) && (ld->IndexRoot != 0)) {
 			/*own key with equal beginning*/
-		{
 			SL = FD->ViewNames;
-			K = GetFromKey(ld);
+			XKey* K = GetFromKey(ld);
 			do {
-				s = GetFileViewName(FD, &SL);
+				std::string s = GetFileViewName(FD, &SL);
 				std::string kali = K->Alias;
-				if (!K->Alias.empty()) s = s + "/" + kali;
+				if (!K->Alias.empty()) {
+					s += "/" + kali;
+				}
 				ww.PutSelect(s);
 			} while (SL != nullptr);
 		}
@@ -3646,30 +3686,38 @@ void DownEdit()
 	}
 	ss.Abcd = true;
 	ww.SelectStr(0, 0, 35, "");
-	LinkD* LD = *LinkDRoot.begin();
 
-	if (Event.Pressed.KeyCombination() == __ESC) goto label1;
+	if (Event.Pressed.KeyCombination() == __ESC) {
+		// do nothing;
+	}
+	else {
+		LinkD* LD = *LinkDRoot.begin();
+		GetSel2S(s1, s2, '/', 2);
+		ali = GetFromKey(LD)->Alias;
+		//while ((LD->ToFD != E->FD) || (LD->IndexRoot == 0) || (s2 != ali)
+		//	|| !EquFileViewName(LD->FromFD, s1, EO)) LD = LD->pChain;
+		for (auto& ld : LinkDRoot) {
+			if ((ld->ToFD != E->FD) || (ld->IndexRoot == 0) || (s2 != ali) || !EquFileViewName(ld->FromFD, s1, &EO)) {
+				continue;
+			}
+			else {
+				LD = ld;
+			}
+		}
 
-	GetSel2S(&s1, &s2, '/', 2);
-	ali = GetFromKey(LD)->Alias;
-	//while ((LD->ToFD != E->FD) || (LD->IndexRoot == 0) || (s2 != ali)
-	//	|| !EquFileViewName(LD->FromFD, s1, EO)) LD = LD->pChain;
-	for (auto& ld : LinkDRoot) {
-		if ((ld->ToFD != E->FD) || (ld->IndexRoot == 0) || (s2 != ali)
-			|| !EquFileViewName(ld->FromFD, s1, EO)) continue;
-		else LD = ld;
+		CFile = LD->FromFD;
+		if (SelFldsForEO(EO, LD)) {
+			EO->DownLD = LD;
+			EO->DownRecPtr = CRecPtr;
+			NewEditD(CFile, EO);
+			if (OpenEditWw()) {
+				RunEdit(nullptr, Brk);
+			}
+			SaveFiles();
+			PopEdit();
+		}
 	}
 
-	CFile = LD->FromFD;
-	if (SelFldsForEO(EO, LD)) {
-		EO->DownLD = LD;
-		EO->DownRecPtr = CRecPtr;
-		NewEditD(CFile, EO);
-		if (OpenEditWw()) RunEdit(nullptr, Brk);
-		SaveFiles();
-		PopEdit();
-	}
-label1:
 	PopW(w);
 	ReleaseStore(p);
 	RdEStatus();

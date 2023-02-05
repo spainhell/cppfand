@@ -521,7 +521,7 @@ bool SrchXKey(XKey* K, XString& X, longint& N)
 
 void DeleteRecProc(Instr_recs* PD)
 {
-	LockMode md; longint n; XString x;
+	longint n; XString x;
 	CFile = PD->RecFD;
 	CRecPtr = GetRecSpace();
 	if (PD->ByKey) {
@@ -530,22 +530,28 @@ void DeleteRecProc(Instr_recs* PD)
 		if (CFile->IsSQLFile) { Strm1->DeleteXRec(PD->Key, &x, PD->AdUpd); goto label2; }
 #endif
 	}
-	md = NewLMode(DelMode);
-	if (PD->ByKey)
-	{
-		if (!SrchXKey(PD->Key, x, n)) goto label1;
+	LockMode md = NewLMode(DelMode);
+	if (PD->ByKey) {
+		if (!SrchXKey(PD->Key, x, n)) {
+			goto label1;
+		}
 	}
-	else
-	{
+	else {
 		n = RunInt(PD->RecNr);
-		if ((n <= 0) || (n > CFile->NRecs)) goto label1;
+		if ((n <= 0) || (n > CFile->NRecs)) {
+			goto label1;
+		}
 	}
 	ReadRec(CFile, n, CRecPtr);
-	if (PD->AdUpd && !DeletedFlag()) LastExitCode = (!RunAddUpdte('-', nullptr, nullptr));
+	if (PD->AdUpd && !DeletedFlag()) {
+		LastExitCode = (!RunAddUpdte('-', nullptr, nullptr));
+	}
 	if (CFile->Typ == 'X') {
 		if (!DeletedFlag()) DeleteXRec(n, true);
 	}
-	else DeleteRec(n);
+	else {
+		DeleteRec(n);
+	}
 label1:
 	OldLMode(md);
 label2:

@@ -285,7 +285,7 @@ void XPage::SplitPage(XPage* P, longint ThisPage)
 	// 1st half of this XPage will be moved into P
 	P->IsLeaf = IsLeaf;
 	size_t origSize = this->ItemsSize();
-	size_t compareSize = (origSize + 4) / 2 + (origSize + 4) % 2; // contains +5, it is coefficient calculated from original code
+	size_t compareSize = (origSize + 5) / 2; // contains +5, it is coefficient calculated from original code
 	size_t actualSize;
 	size_t index; // last index that will be moved into P
 
@@ -321,7 +321,9 @@ void XPage::SplitPage(XPage* P, longint ThisPage)
 
 		for (index = 0, actualSize = 0; index < _nonLeafItems.size(); index++) {
 			actualSize += _nonLeafItems[index]->size();
-			if (actualSize > origSize / 2) break;
+			if (actualSize > compareSize) {
+				break;
+			}
 		}
 
 		// get new first key for this page
