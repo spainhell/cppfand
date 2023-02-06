@@ -15,23 +15,23 @@ struct GraphVD : public Chained<GraphVD>
 struct GraphWD : public Chained<GraphWD>
 {
 	//GraphWD* pChain;
-	FrmlPtr XZ, YZ, XK, YK; /*float*/
-	FrmlPtr BarPoz, BarPis, Text; /*pstring*/
+	FrmlElem* XZ, *YZ, *XK, *YK; /*float*/
+	FrmlElem* BarPoz, *BarPis, *Text; /*pstring*/
 };
 
 struct GraphRGBD : public Chained<GraphRGBD>
 {
 	// GraphRGBD* pChain;
-	FrmlPtr Barva; /*pstring*/
-	FrmlPtr R, G, B; /*float*/
+	FrmlElem* Barva; /*pstring*/
+	FrmlElem* R, *G, *B; /*float*/
 };
 
 struct WinG
 {
 	WRectFrml W;
 	WRect WR;
-	FrmlPtr ColFrame, ColBack, ColFor;  /*pstring*/
-	FrmlPtr Top;
+	FrmlElem* ColFrame, *ColBack, *ColFor;  /*pstring*/
+	FrmlElem* *Top;
 	BYTE WFlags;
 };
 

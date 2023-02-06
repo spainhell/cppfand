@@ -35,17 +35,12 @@ void* PushScr(WORD C1, WORD R1, WORD C2, WORD R2)
 	return nullptr;
 }
 
-longint PushW1(WORD C1, WORD R1, WORD C2, WORD R2, bool PushPixel, bool WW)
+longint PushW(WORD C1, WORD R1, WORD C2, WORD R2, bool push_pixel, bool ww)
 {
 	longint pos = 0;
-	WParam* wp = PushWParam(C1, R1, C2, R2, WW);
+	WParam* wp = PushWParam(C1, R1, C2, R2, ww);
 	wp->GrRoot = pos;
 	return screen.SaveScreen(wp, C1, R1, C2, R2);
-}
-
-longint PushW(WORD C1, WORD R1, WORD C2, WORD R2)
-{
-	return PushW1(C1, R1, C2, R2, false, true);
 }
 
 void PopScr(void* p, bool draw)
@@ -55,14 +50,9 @@ void PopScr(void* p, bool draw)
 	delete wp;
 }
 
-void PopW2(longint pos, bool draw)
+void PopW(longint pos, bool draw)
 {
 	PopScr(nullptr, draw);
-}
-
-void PopW(longint pos)
-{
-	PopScr(nullptr, true);
 }
 
 void WriteWFrame(BYTE WFlags, pstring top, pstring bottom)
@@ -127,7 +117,7 @@ longint PushWFramed(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, pstring top, 
 		x = MinW(2, TxtCols - C2);
 		y = MinW(1, TxtRows - R2);
 	}
-	auto result = PushW1(C1, R1, C2 + x, R2 + y, (WFlags & WPushPixel) != 0, true);
+	auto result = PushW(C1, R1, C2 + x, R2 + y, (WFlags & WPushPixel) != 0, true);
 	screen.CrsHide();
 	if (y == 1) screen.ScrColor(C1 + 1, R2, C2 - C1 + x - 1, screen.colors.ShadowAttr);
 	if (x > 0) for (i = R1; i <= R2; i++) screen.ScrColor(C2, i, x, screen.colors.ShadowAttr);
@@ -285,7 +275,6 @@ bool PromptYN(WORD NMsg)
 	WORD col = screen.WhereX(); 
 	WORD row = screen.WhereY();
 	TextAttr = screen.colors.pNorm;
-	// printf(" "); 
 	screen.ScrFormatWrText(col, row, " ");
 	screen.GotoXY(col, row); 
 	screen.CrsShow();
@@ -337,7 +326,7 @@ void RunMsgOn(char C, longint N)
 	}
 	CM->MsgKum = CM->MsgStep;
 	CM->MsgNN = N;
-	CM->W = PushW1(1, TxtRows, 8, TxtRows, true, true);
+	CM->W = PushW(1, TxtRows, 8, TxtRows, true, true);
 	TextAttr = screen.colors.zNorm;
 
 	screen.ScrFormatWrStyledText(1, 1, TextAttr, "%c%c", /*0xAF*/ 0x10, C);

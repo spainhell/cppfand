@@ -26,7 +26,7 @@ void DisplEditWw();
 bool OpenEditWw();
 void RunEdit(XString* PX, WORD& Brk);
 
-bool PromptB(std::string& S, FrmlPtr Impl, FieldDescr* F);
+bool PromptB(std::string& S, FrmlElem* Impl, FieldDescr* F);
 std::string PromptS(std::string& S, FrmlElem* Impl, FieldDescr* F);
 double PromptR(std::string& S, FrmlElem* Impl, FieldDescr* F);
 /*called from Proc && Projmgr */

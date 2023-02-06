@@ -101,7 +101,7 @@ void XScan::Reset(FrmlElem* ABool, bool SQLFilter)
 	SeekRec(0);
 }
 
-void XScan::ResetSort(KeyFldD* aSK, FrmlPtr& BoolZ, LockMode OldMd, bool SQLFilter)
+void XScan::ResetSort(KeyFldD* aSK, FrmlElem* BoolZ, LockMode OldMd, bool SQLFilter)
 {
 	LockMode m;
 	if (Kind == 4) {
@@ -184,11 +184,16 @@ bool EquKFlds(KeyFldD* KF1, KeyFldD* KF2)
 	return true;
 }
 
-void XScan::ResetOwnerIndex(LinkD* LD, LocVar* LV, FrmlPtr aBool)
+void XScan::ResetOwnerIndex(LinkD* LD, LocVar* LV, FrmlElem* aBool)
 {
-	WKeyDPtr k;
-	CFile = FD; TestXFExist(); Bool = aBool; OwnerLV = LV; Kind = 2;
-	if (!EquKFlds(WKeyDPtr(LV->RecPtr)->KFlds, LD->ToKey->KFlds)) RunError(1181);
+	CFile = FD;
+	TestXFExist();
+	Bool = aBool;
+	OwnerLV = LV;
+	Kind = 2;
+	if (!EquKFlds(((XWKey*)LV->RecPtr)->KFlds, LD->ToKey->KFlds)) {
+		RunError(1181);
+	}
 	SeekRec(0);
 }
 

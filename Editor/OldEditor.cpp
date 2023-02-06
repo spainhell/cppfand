@@ -3114,8 +3114,8 @@ void EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg, std::vecto
 	longint w2 = 0;
 	longint w3 = 0;
 	if (V != nullptr) {
-		w1 = PushW1(1, 1, TxtCols, 1, (WFlags & WPushPixel) != 0, false);
-		w2 = PushW1(1, TxtRows, TxtCols, TxtRows, (WFlags & WPushPixel) != 0, false);
+		w1 = PushW(1, 1, TxtCols, 1, (WFlags & WPushPixel) != 0, false);
+		w2 = PushW(1, TxtRows, TxtCols, TxtRows, (WFlags & WPushPixel) != 0, false);
 		w3 = PushWFramed(V->C1, V->R1, V->C2, V->R2, Atr, Hd, "", WFlags);
 	}
 	else {
@@ -3255,7 +3255,7 @@ void EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg, std::vecto
 				LS = nullptr;
 			}
 			if (w3 != 0) {
-				PopW2(w3, (WFlags & WNoPop) == 0);
+				PopW(w3, (WFlags & WNoPop) == 0);
 			}
 			if (w2 != 0) {
 				PopW(w2);

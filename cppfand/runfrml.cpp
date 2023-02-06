@@ -22,7 +22,7 @@
 #include "../textfunc/textfunc.h"
 #include "../FileSystem/directory.h"
 
-double Owned(FrmlPtr Bool, FrmlPtr Sum, LinkD* LD)
+double Owned(FrmlElem* Bool, FrmlElem* Sum, LinkD* LD)
 {
 	XScan* Scan; XKey* K; XString x; LockMode md; longint n, nBeg;
 	FileDPtr cf; void* cr; double r;
@@ -1137,7 +1137,7 @@ label1:
 	return result;
 }
 
-longint RunInt(FrmlPtr X)
+longint RunInt(FrmlElem* X)
 {
 	auto rr = RunReal(X);
 	return trunc(rr);

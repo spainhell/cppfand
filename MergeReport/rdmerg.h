@@ -8,7 +8,7 @@ extern OutpRD* RD;
 
 FileD* InpFD_M(WORD I); // InpFD exituje i v rdrprt.cpp -> pøejmenováno na *_M
 FrmlElem* FindIiandFldFrml_M(FileD** FD, char& FTyp); // exituje i v rdrprt.cpp -> pøejmenováno na *_M
-FrmlPtr RdFldNameFrmlM(char& FTyp);
+FrmlElem* RdFldNameFrmlM(char& FTyp);
 void RdDirFilVar_M(char& FTyp, FrmlElem** res, bool wasIiPrefix); // exituje i v rdrprt.cpp -> pøejmenováno na *_M
 void RdOutpFldName(char& FTyp, FrmlElem** res);
 void ChainSumElM();

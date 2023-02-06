@@ -2122,7 +2122,6 @@ Instr* RdDisplay()
 
 Instr_graph* RdGraphP()
 {
-	Instr_graph* PD;
 	FrmlElem* FrmlArr[15];
 	WORD i;
 	GraphVD* VD; GraphWD* WD; GraphRGBD* RGBD; WinG* Ww;
@@ -2130,10 +2129,10 @@ Instr_graph* RdGraphP()
 	pstring Nm1[11] = { "TYPE", "HEAD", "HEADX", "HEADY", "HEADZ", "FILL", "DIRX", "GRID", "PRINT", "PALETTE", "ASSIGN" };
 	pstring Nm2[6] = { "WIDTH", "RECNO", "NRECS", "MAX", "MIN", "GRPOLY" };
 
-	PD = new Instr_graph(); // GetPD(_graph, 4);
+	Instr_graph* PD = new Instr_graph();
 	RdLex();
-	PD->GD = new GraphD(); // GetZStore(sizeof(GraphD));
-	/* !!! with PD->GD^ do!!! */
+	PD->GD = new GraphD();
+
 	auto PDGD = PD->GD;
 	if (IsOpt("GF")) PDGD->GF = RdStrFrml();
 	else {
@@ -2155,10 +2154,14 @@ Instr_graph* RdGraphP()
 	while (Lexem == ',') {
 		RdLex();
 		for (i = 0; i < 11; i++) if (IsOpt(Nm1[i])) {
-			FrmlArr[0] = (FrmlPtr)(&PDGD->T); FrmlArr[i] = RdStrFrml(); goto label1;
+			FrmlArr[0] = (FrmlElem*)(&PDGD->T);
+			FrmlArr[i] = RdStrFrml();
+			goto label1;
 		}
 		for (i = 0; i < 6; i++) if (IsOpt(Nm2[i])) {
-			FrmlArr[0] = (FrmlPtr)(&PDGD->S); FrmlArr[i] = RdRealFrml(); goto label1;
+			FrmlArr[0] = (FrmlElem*)(&PDGD->S);
+			FrmlArr[i] = RdRealFrml();
+			goto label1;
 		}
 		if (IsDigitOpt("HEADZ", i)) PDGD->HZA[i] = RdStrFrml();
 		else if (IsKeyWord("INTERACT")) PDGD->Interact = true;
@@ -2185,7 +2188,6 @@ Instr_graph* RdGraphP()
 			WD = new GraphWD();
 			ChainLast(PDGD->W, WD);
 			{
-				/* !!! with WD^ do!!! */
 				Accept('('); WD->XZ = RdRealFrml(); Accept(','); WD->YZ = RdRealFrml(); Accept(',');
 				WD->XK = RdRealFrml(); Accept(','); WD->YK = RdRealFrml(); Accept(',');
 				WD->BarPoz = RdStrFrml(); Accept(','); WD->BarPis = RdStrFrml(); Accept(',');
@@ -2212,7 +2214,7 @@ Instr_graph* RdGraphP()
 			Accept('(');
 			if (Lexem == '(') { RdLex(); Ww->WFlags = WNoPop; }
 			RdW(Ww->W);
-			RdFrame(&Ww->Top, Ww->WFlags);
+			RdFrame(Ww->Top, Ww->WFlags);
 			if (Lexem == ',') {
 				RdLex(); Ww->ColBack = RdStrFrml(); Accept(',');
 				Ww->ColFor = RdStrFrml();

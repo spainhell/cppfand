@@ -47,7 +47,7 @@ void PutTxt(Instr_puttxt* PD);
 void AssgnCatFld(Instr_assign* PD);
 void AssgnAccRight(Instr_assign* PD);
 void AssgnUserName(Instr_assign* PD);
-void ReleaseDriveProc(FrmlPtr Z);
+void ReleaseDriveProc(FrmlElem* Z);
 void WithGraphicsProc(Instr* PD);
 
 #ifdef FandGraph

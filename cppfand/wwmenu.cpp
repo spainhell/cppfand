@@ -45,9 +45,9 @@ void TWindow::InitTWindow(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, std::st
 	}
 	WasCrsEnabled = Crs.Enabled;
 	screen.CrsHide();
-	SavedW = PushW1(Orig.X + 1, Orig.Y + 1, Orig.X + Size.X + Shadow.X, Orig.Y + Size.Y + Shadow.Y, true, false);
+	SavedW = PushW(Orig.X + 1, Orig.Y + 1, Orig.X + Size.X + Shadow.X, Orig.Y + Size.Y + Shadow.Y, true, false);
 	if (SaveLL) {
-		SavedLLW = PushW1(1, TxtRows, TxtCols, TxtRows, true, false);
+		SavedLLW = PushW(1, TxtRows, TxtCols, TxtRows, true, false);
 	}
 	else {
 		SavedLLW = 0;

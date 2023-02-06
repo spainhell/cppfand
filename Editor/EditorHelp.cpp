@@ -55,9 +55,9 @@ void Help(RdbD* R, pstring Name, bool InCWw)
 				r1 = 1;
 			}
 			w = PushW(1, TxtRows, TxtCols, TxtRows);
-			w2 = PushW1(c1, r1, c2, r2, true, true);
+			w2 = PushW(c1, r1, c2, r2, true, true);
 		}
-		else w = PushW1(1, 1, TxtCols, TxtRows, true, true);
+		else w = PushW(1, 1, TxtCols, TxtRows, true, true);
 		i = 1; frst = true; delta = 0;
 		if (backw) {
 			byName = false;

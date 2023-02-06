@@ -601,8 +601,7 @@ label1:
 	if ((Delta != 0) && (GetTickCount64() > t + Delta)) { result = 2; goto label2; }
 	if (pos != 0)
 	{
-		if (GetTickCount64() > t1 + MoveDelay)
-		{
+		if (GetTickCount64() > t1 + MoveDelay) {
 			screen.ScrWrStr(x, y, "       ", 7);
 			x = Random(TxtCols - 8); y = Random(TxtRows - 1);
 			screen.ScrWrStr(x, y, "PC FAND", 7);
@@ -615,7 +614,7 @@ label1:
 			l = TxtCols * TxtRows * 2 + 50;
 			ce = Crs.Enabled;
 			screen.CrsHide();
-			pos = PushW1(1, 1, TxtCols, TxtRows, true, true);
+			pos = PushW(1, 1, TxtCols, TxtRows, true, true);
 			TextAttr = 0; ClrScr(); vis = MausVisible; HideMouse(); l = 555;
 			t1 = GetTickCount() - MoveDelay;
 		}

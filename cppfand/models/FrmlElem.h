@@ -22,7 +22,6 @@ public:
 	instr_type Op = _notdefined;
 	//BYTE* buffer = nullptr;
 };
-typedef FrmlElem* FrmlPtr;
 
 class FrmlElem0 : public FrmlElem
 {

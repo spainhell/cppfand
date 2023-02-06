@@ -1733,9 +1733,9 @@ FrmlElem* RdComp(char& FTyp)
 }
 
 
-FrmlPtr RdBAnd(char& FTyp)
+FrmlElem* RdBAnd(char& FTyp)
 {
-	FrmlPtr Z = RdComp(FTyp);
+	FrmlElem* Z = RdComp(FTyp);
 	while (Lexem == '&') {
 		Z = BOperation(FTyp, _and, Z);
 		((FrmlElem0*)Z)->P2 = RdComp(FTyp);
@@ -1744,9 +1744,9 @@ FrmlPtr RdBAnd(char& FTyp)
 	return Z;
 }
 
-FrmlPtr RdBOr(char& FTyp)
+FrmlElem* RdBOr(char& FTyp)
 {
-	FrmlPtr Z = RdBAnd(FTyp);
+	FrmlElem* Z = RdBAnd(FTyp);
 	while (Lexem == '|')
 	{
 		Z = BOperation(FTyp, _or, Z);

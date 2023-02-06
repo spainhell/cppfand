@@ -31,7 +31,8 @@ FileD* InpFD_M(WORD I)
 
 FrmlElem* FindIiandFldFrml_M(FileD** FD, char& FTyp)
 {
-	integer i = 0; FrmlPtr z = nullptr;
+	integer i = 0;
+	FrmlElem* z = nullptr;
 	if (!Join && (WhatToRd == 'i')) {   /* for Oi search first in Ii*/
 		*FD = InpFD_M(Oi); z = TryRdFldFrml(*FD, FTyp);
 		if (z != nullptr) { Ii = Oi; goto label1; };
@@ -45,10 +46,10 @@ label1:
 	return z;
 }
 
-FrmlPtr RdFldNameFrmlM(char& FTyp)
+FrmlElem* RdFldNameFrmlM(char& FTyp)
 {
 	FieldDescr* F = nullptr;                         /*RdFldNameFrml - body*/
-	FrmlPtr Z = nullptr;
+	FrmlElem* Z = nullptr;
 	LocVar* LV = nullptr; FileD* FD = nullptr;
 	FrmlElem* result = nullptr;
 
@@ -128,7 +129,7 @@ void RdDirFilVar_M(char& FTyp, FrmlElem** res, bool wasIiPrefix)
 {
 	LinkD* LD = nullptr; FileD* FD = nullptr;
 	integer I = 0;
-	FrmlPtr Z = nullptr;
+	FrmlElem* Z = nullptr;
 	if (wasIiPrefix)
 	{
 		CFile = InpFD_M(Ii);

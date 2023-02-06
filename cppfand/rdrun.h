@@ -93,7 +93,7 @@ enum AutoRprtMode { _ALstg, _ARprt, _ATotal, _AErrRecs };
 struct RprtFDListEl
 {
 	RprtFDListEl* Chain; FileD* FD; XKey* ViewKey;
-	FrmlPtr Cond; KeyInD* KeyIn; bool SQLFilter;
+	FrmlElem* Cond; KeyInD* KeyIn; bool SQLFilter;
 	void* LVRecPtr;
 };
 

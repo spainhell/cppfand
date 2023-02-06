@@ -141,10 +141,10 @@ FrmlElem* RdFldNameFrmlR(char& FTyp)
 	return result;
 }
 
-FrmlPtr FindIiandFldFrml(FileD** FD, char& FTyp)
+FrmlElem* FindIiandFldFrml(FileD** FD, char& FTyp)
 {
 	integer i = 0;
-	FrmlPtr z = nullptr;;
+	FrmlElem* z = nullptr;;
 	if (WhatToRd == 'i') {       /* search first in Ii*/
 		*FD = InpFD(Oi);
 		z = TryRdFldFrml(*FD, FTyp);
@@ -171,7 +171,7 @@ void RdDirFilVar(char& FTyp, FrmlElem** res, bool wasIiPrefix)
 	LinkD* LD = nullptr;
 	FileD* FD = nullptr;
 	integer I = 0;
-	FrmlPtr Z = nullptr;
+	FrmlElem* Z = nullptr;
 	if (wasIiPrefix) {
 		CFile = InpFD(Ii);
 		if (!IsRoleName(true, &FD, &LD)) Error(9);

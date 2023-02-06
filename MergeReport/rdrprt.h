@@ -14,8 +14,8 @@ extern BlkD* CBlkSave;
 
 FileD* InpFD(WORD I);
 bool FindInLvBlk(LvDescr* L, BlkD** B, RFldD** RF);
-FrmlPtr RdFldNameFrmlR(char& FTyp);
-FrmlPtr FindIiandFldFrml(FileD** FD, char& FTyp);
+FrmlElem* RdFldNameFrmlR(char& FTyp);
+FrmlElem* FindIiandFldFrml(FileD** FD, char& FTyp);
 void RdDirFilVar(char& FTyp, FrmlElem** res, bool wasIiPrefix);
 bool OwnInBlock(char& FTyp, FrmlElem** res);
 void FindInRec(char& FTyp, FrmlElem** res, bool wasIiPrefix);

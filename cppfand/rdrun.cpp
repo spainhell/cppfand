@@ -286,7 +286,7 @@ bool Assign(AddD* AD)
 	longint Pos, N2; char Kind2;
 	if (!RunBool(AD->Bool)) return true;
 	FieldDescr* F = AD->Field;
-	FrmlPtr Z = AD->Frml;
+	FrmlElem* Z = AD->Frml;
 
 	switch (F->FrmlTyp) {
 	case 'R': {

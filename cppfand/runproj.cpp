@@ -819,7 +819,7 @@ label2:
 void RdUserId(bool Chk)
 {
 	wwmix ww;
-	FrmlPtr Z;
+	FrmlElem* Z;
 	pstring pw(20); pstring pw2(20); pstring name(20);
 	WORD code; pstring acc;
 
@@ -832,7 +832,7 @@ label1:
 	code = RdInteger(); Accept(',');
 	Z = RdStrFrml(); pw2 = RunShortStr(Z); ReleaseStore(Z);
 	if (Lexem == ',') { RdLex(); RdByteList(&acc); }
-	else { acc[0] = 1; acc[1] = char(code); }
+	else { acc[0] = 1; acc[1] = (char)code; }
 	if (Chk) {
 		if (EquUpCase(pw, pw2)) {
 			UserName = name; UserCode = code; UserPassWORD = pw2; AccRight = acc; return;

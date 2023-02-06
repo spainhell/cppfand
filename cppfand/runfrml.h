@@ -10,17 +10,13 @@
 #include "channel.h"
 #endif
 
-//extern FileD* TFD02;
-//extern TFile* TF02;
-//extern longint TF02Pos; // r33
-
-double Owned(FrmlPtr Bool, FrmlPtr Sum, LinkD* LD);
+double Owned(FrmlElem* Bool, FrmlElem* Sum, LinkD* LD);
 integer CompBool(bool B1, bool B2);
 integer CompReal(double R1, double R2, integer M); // r42
 LongStr* CopyToLongStr(pstring& SS);
 LongStr* CopyToLongStr(std::string& SS);
 pstring LeadChar(char C, pstring S); // r69
-bool RunBool(FrmlPtr X);
+bool RunBool(FrmlElem* X);
 bool InReal(FrmlElemIn* frml);
 bool LexInStr(std::string& S, FrmlElemIn* X);
 bool InStr(LongStr* S, FrmlElemIn* X);
@@ -28,10 +24,9 @@ bool InStr(std::string& S, FrmlElemIn* X);
 bool RunModulo(FrmlElem1* X);
 bool RunEquMask(FrmlElem0* X);
 double RunReal(FrmlElem* X);
-longint RunInt(FrmlPtr X);
-//void TestTFrml(FieldDescr* F, FrmlElem* Z);
+longint RunInt(FrmlElem* X);
 bool CanCopyT(FieldDescr* F, FrmlElem* Z, TFile** TF02, FileD** TFD02, longint& TF02Pos);
-bool TryCopyT(FieldDescr* F, TFile* TF, longint& pos, FrmlPtr Z);
+bool TryCopyT(FieldDescr* F, TFile* TF, longint& pos, FrmlElem1* Z);
 void AssgnFrml(FieldDescr* F, FrmlElem* X, bool Delete, bool Add);
 void LVAssignFrml(LocVar* LV, bool Add, FrmlElem* X);
 std::string DecodeFieldRSB(FieldDescr* F, WORD LWw, double R, std::string& T, bool B);
@@ -39,7 +34,6 @@ std::string DecodeField(FieldDescr* F, WORD LWw);
 void RunWFrml(WRectFrml& X, BYTE WFlags, WRect& W);
 WORD RunWordImpl(FrmlElem* Z, WORD Impl);
 bool FieldInList(FieldDescr* F, FieldListEl* FL);
-//bool FieldInList(FieldDescr* F, std::vector<FieldListEl*>& FL);
 bool FieldInList(FieldDescr* F, std::vector<FieldDescr*>& FL);
 bool FieldInList(FieldDescr* F, std::vector<FieldDescr*>* FL);
 XKey* GetFromKey(LinkD* LD);

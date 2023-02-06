@@ -2187,7 +2187,7 @@ void UpwEdit(LinkD* LkD)
 	StringListEl* SL, * SL1;
 	LinkD* LD;
 	MarkStore(p);
-	longint w = PushW1(1, 1, TxtCols, TxtRows, true, true);
+	longint w = PushW(1, 1, TxtCols, TxtRows, true, true);
 	CFile->IRec = AbsRecNr(CRec());
 	WrEStatus();
 
@@ -2681,7 +2681,7 @@ bool PromptSearch(bool Create)
 	FD = CFile; K = VK; if (Subset) K = WK; KF = K->KFlds;
 	RP = GetRecSpace(); CRecPtr = RP; ZeroAllFlds(); x.Clear();
 	li = F3LeadIn && !IsNewRec;
-	w = PushW1(1, TxtRows, TxtCols, TxtRows, true, false);
+	w = PushW(1, TxtRows, TxtCols, TxtRows, true, false);
 	if (KF == nullptr) goto label1;
 	if (HasIndex && E->DownSet && (VK == E->DownKey)) {
 		FD2 = E->DownLD->ToFD; RP2 = E->DownRecPtr; KF2 = E->DownLD->ToKey->KFlds;
@@ -3595,7 +3595,7 @@ void ImbeddEdit()
 	RdbD* R = nullptr; longint w = 0;
 
 	MarkStore(p);
-	w = PushW1(1, 1, TxtCols, TxtRows, true, true);
+	w = PushW(1, 1, TxtCols, TxtRows, true, true);
 	CFile->IRec = AbsRecNr(CRec());
 	WrEStatus();
 	R = CRdb;
@@ -3661,7 +3661,7 @@ void DownEdit()
 	//LinkD* LD = LinkDRoot;
 	MarkStore(p);
 
-	longint w = PushW1(1, 1, TxtCols, TxtRows, true, true);
+	longint w = PushW(1, 1, TxtCols, TxtRows, true, true);
 	CFile->IRec = AbsRecNr(CRec());
 
 	WrEStatus();
@@ -4743,7 +4743,8 @@ void EditDataFile(FileD* FD, EditOpt* EO)
 	void* p = nullptr;
 	longint w1 = 0, w2 = 0, w3 = 0;
 	WORD Brk = 0, r1 = 0, r2 = 0;
-	bool pix = false; ExitRecord er;
+	bool pix = false;
+	ExitRecord er;
 	MarkStore(p);
 	if (EO->SyntxChk) {
 		IsCompileErr = false;
@@ -4757,32 +4758,40 @@ void EditDataFile(FileD* FD, EditOpt* EO)
 			LastExitCode = CurrPos + 1;
 			IsCompileErr = false;
 		}
-		else LastExitCode = 0;
-		goto label2;
+		else {
+			LastExitCode = 0;
+		}
+		PopEdit();
+		return;
 	}
 	NewEditD(FD, EO);
-	w2 = 0; w3 = 0;
+	w2 = 0;
+	w3 = 0;
 	pix = (E->WFlags & WPushPixel) != 0;
-	if (E->WwPart) /* !!! with E^ do!!! */
-	{
-		if (E->WithBoolDispl) r2 = 2;
-		else r2 = 1;
+	if (E->WwPart) {
 		r1 = TxtRows;
-		if (E->Mode24) r1--;
-		w1 = PushW1(1, 1, TxtCols, r2, pix, true);
-		w2 = PushW1(1, r1, TxtCols, TxtRows, pix, true);
-		if ((E->WFlags & WNoPop) == 0)
-			w3 = PushW1(E->V.C1, E->V.R1, E->V.C2 + E->ShdwX, E->V.R2 + E->ShdwY, pix, true);
+		r2 = E->WithBoolDispl ? 2 : 1;
+		if (E->Mode24) {
+			r1--;
+		}
+		w1 = PushW(1, 1, TxtCols, r2, pix, true);
+		w2 = PushW(1, r1, TxtCols, TxtRows, pix, true);
+		if ((E->WFlags & WNoPop) == 0) {
+			w3 = PushW(E->V.C1, E->V.R1, E->V.C2 + E->ShdwX, E->V.R2 + E->ShdwY, pix, true);
+		}
 	}
-	else w1 = PushW1(1, 1, TxtCols, TxtRows, pix, true);
+	else {
+		w1 = PushW(1, 1, TxtCols, TxtRows, pix, true);
+	}
 	if (OpenEditWw()) {
-		if (OnlyAppend && !Append) SwitchToAppend();
+		if (OnlyAppend && !Append) {
+			SwitchToAppend();
+		}
 		RunEdit(nullptr, Brk);
 	}
 	if (w3 != 0) PopW(w3);
 	if (w2 != 0) PopW(w2);
 	PopW(w1);
-label2:
 	PopEdit();
 	ReleaseStore(p);
 }

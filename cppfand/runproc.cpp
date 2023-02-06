@@ -729,7 +729,7 @@ void ForAllProc(Instr_forall* PD)
 		case 'F': {
 			md = NewLMode(RdMode);
 			CRecPtr = GetRecSpace();
-			ReadRec(CFile, RunInt(FrmlPtr(PD->CLV)), CRecPtr);
+			ReadRec(CFile, RunInt((FrmlElem*)PD->CLV), CRecPtr);
 			xx.PackKF(KF);
 			ReleaseStore(p);
 			OldLMode(md);
@@ -877,7 +877,6 @@ void WithWindowProc(Instr_window* PD)
 	longint w1 = 0;
 	WRect v;
 
-	/* !!! with PD^ do!!! */
 	ProcAttr = RunWordImpl(PD->Attr, screen.colors.uNorm); // nacte barvy do ProcAttr
 	RunWFrml(PD->W, PD->WithWFlags, v); // nacte rozmery okna
 	auto top = RunShortStr(PD->Top); // nacte nadpis
@@ -887,7 +886,7 @@ void WithWindowProc(Instr_window* PD)
 	}
 	SetWwViewPort();
 	RunInstr(PD->WwInstr);
-	PopW2(w1, (PD->WithWFlags & WNoPop) == 0);
+	PopW(w1, (PD->WithWFlags & WNoPop) == 0);
 	SetWwViewPort();
 	ProcAttr = PAttr;
 }
@@ -1026,7 +1025,7 @@ void AssgnUserName(Instr_assign* PD)
 	UserName = RunShortStr(PD->Frml);
 }
 
-void ReleaseDriveProc(FrmlPtr Z)
+void ReleaseDriveProc(FrmlElem* Z)
 {
 	SaveFiles();
 	pstring s = RunShortStr(Z);

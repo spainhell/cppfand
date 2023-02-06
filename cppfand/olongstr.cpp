@@ -36,7 +36,7 @@ void GetTxtPrepare(FrmlElem* Z, FILE** h, longint& off, longint& len)
 	SeekH(*h, off);
 }
 
-LongStr* GetTxt(FrmlPtr Z)
+LongStr* GetTxt(FrmlElem* Z)
 {
 	FILE* h = nullptr;
 	longint len = 0, off = 0;
