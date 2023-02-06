@@ -79,7 +79,6 @@ void WorkFile::SortMerge()
 			n = 0;
 		}
 		auto r = std::make_unique<WRec>();
-		//r->Deserialize(&PW->A[offsetOfPwA]);
 		r->PutN(RecNr);
 		r->PutIR(IRec);
 		r->X.PackKF(KFRoot);
@@ -88,10 +87,11 @@ void WorkFile::SortMerge()
 		n++;
 		offsetOfPwA += RecLen;
 	}
-	//delete r; r = nullptr;
 	PW->Sort(n, RecLen);
 	WriteWPage(n, nxt, 0, 0);
-	if (NChains > 1) Merge();
+	if (NChains > 1) {
+		Merge();
+	}
 	RunMsgOff();
 }
 
@@ -153,7 +153,8 @@ label1:
 		NChains--;
 		Merge2Chains(pg1, pg2, newli, nxtnew);
 		npairs--;
-		pg1 = nxt; newli = nxtnew;
+		pg1 = nxt;
+		newli = nxtnew;
 	}
 	goto label1;
 }

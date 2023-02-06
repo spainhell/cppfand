@@ -135,6 +135,6 @@ void XWorkFile::FinishIndex()
 		xKey->NR = sum;
 	}
 	else {
-		xwFile->UpdLockCnt = sum;
+		((XFile*)xwFile)->NRecs = sum;
 	}
 }

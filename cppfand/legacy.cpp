@@ -533,6 +533,7 @@ const char* TextFile::c_str()
 
 void TextFile::Close(const char* data)
 {
+	/*
 	// ulozi data do souboru a zavre jej
 	// ukladame po 1 znaku, aby bylo mozno ukladat misto '\n' cely '\r\n'
 	char charCR = '\r';
@@ -542,8 +543,10 @@ void TextFile::Close(const char* data)
 		}
 		fwrite(&data[i], 1, 1, Handle);
 	}
+	*/
 	
-	//fwrite(data, 1, strlen(data), Handle);
+	fwrite(data, 1, strlen(data), Handle);
+
 	HandleError = ferror(Handle);
 	fclose(Handle);
 	Handle = nullptr;

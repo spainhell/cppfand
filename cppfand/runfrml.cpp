@@ -1249,18 +1249,23 @@ bool TryCopyT(FieldDescr* F, TFile* TF, longint& pos, FrmlElem* Z)
 
 void AssgnFrml(FieldDescr* F, FrmlElem* X, bool Delete, bool Add)
 {
-	std::string s; longint pos = 0; TFile* tf = nullptr;
+	longint pos = 0; 
 	switch (F->FrmlTyp) {
 	case 'S': {
 		if (F->Typ == 'T') {
-			if (HasTWorkFlag()) tf = &TWork;
-			else tf = CFile->TF;
+			TFile* tf;
+			if (HasTWorkFlag()) {
+				tf = &TWork;
+			}
+			else {
+				tf = CFile->TF;
+			}
 			if (TryCopyT(F, tf, pos, X)) {
 				if (Delete) DelTFld(F);
 				T_(F, pos);
 			}
 			else {
-				s = RunStdStr(X);
+				std::string s = RunStdStr(X);
 				if (Delete) DelTFld(F);
 				S_(F, s);
 			}

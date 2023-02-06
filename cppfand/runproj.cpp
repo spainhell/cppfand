@@ -775,7 +775,9 @@ bool CompRunChptRec(WORD CC)
 	WasError = false;
 label2:
 	MaxHp = nullptr;
-	ReleaseStore2(p2); Free = StoreAvail(); RestoreExit(er);
+	ReleaseStore2(p2);
+	Free = StoreAvail();
+	RestoreExit(er);
 	RunMsgClear();
 	if (WasError) {
 #ifdef FandSQL
@@ -787,16 +789,25 @@ label2:
 			// ScrTextMode(false, false);
 			throw std::exception("CompRunChptRec() Graph <-> Text Mode not implemented.");
 		}
-		else ClrScr();
+		else {
+			ClrScr();
+		}
 	}
-	if (uw) { UserW = 0;/*mem overflow*/UserW = PushW(1, 1, TxtCols, TxtRows); }
+	if (uw)	{
+		UserW = 0;/*mem overflow*/
+		UserW = PushW(1, 1, TxtCols, TxtRows);
+	}
 	SaveFiles();
-	if (mv) ShowMouse();
-	if (WasError) ForAllFDs(ClearXFUpdLock);
-	CFile = (FileD*)lstFD->pChain;
+	if (mv) {
+		ShowMouse();
+	}
+	if (WasError) {
+		ForAllFDs(ClearXFUpdLock);
+	}
+	CFile = lstFD->pChain;
 	while (CFile != nullptr) {
 		CloseFile();
-		CFile = (FileD*)CFile->pChain;
+		CFile = CFile->pChain;
 	}
 	lstFD->pChain = nullptr;
 	LinkDRoot = oldLd;
@@ -805,13 +816,19 @@ label2:
 	CRdb = RP.R;
 	PrevCompInp.clear();
 	ReadRec(CFile, CRec(), CRecPtr);
-	if (IsCompileErr) result = false;
+	if (IsCompileErr) {
+		result = false;
+	}
 	else {
 		result = true;
-		if (WasError) return result;
+		if (WasError) {
+			return result;
+		}
 		B_(ChptVerif, false);
 		WriteRec(CFile, CRec(), CRecPtr);
-		if (CC == __CTRL_F8) Diagnostics(MaxHp, Free, FD);
+		if (CC == __CTRL_F8) {
+			Diagnostics(MaxHp, Free, FD);
+		}
 	}
 	return result;
 }

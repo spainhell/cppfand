@@ -12,10 +12,10 @@
 
 double Owned(FrmlElem* Bool, FrmlElem* Sum, LinkD* LD);
 integer CompBool(bool B1, bool B2);
-integer CompReal(double R1, double R2, integer M); // r42
+integer CompReal(double R1, double R2, integer M);
 LongStr* CopyToLongStr(pstring& SS);
 LongStr* CopyToLongStr(std::string& SS);
-pstring LeadChar(char C, pstring S); // r69
+pstring LeadChar(char C, pstring S);
 bool RunBool(FrmlElem* X);
 bool InReal(FrmlElemIn* frml);
 bool LexInStr(std::string& S, FrmlElemIn* X);
@@ -66,5 +66,5 @@ longint RecNoFun(FrmlElem13* Z);
 longint AbsLogRecNoFun(FrmlElem13* Z);
 double LinkProc(FrmlElem15* X);
 WORD IntTSR(FrmlElem* X);
-WORD PortIn(bool IsWord, WORD Port); // ASM
+WORD PortIn(bool IsWord, WORD Port);
 
