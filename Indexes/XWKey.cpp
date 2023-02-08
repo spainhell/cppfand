@@ -103,21 +103,21 @@ void XWKey::AddToRecNr(longint RecNr, integer Dif)
 	if (NRecs() == 0) return;
 	NrToPath(1);
 	auto p = std::make_unique<XPage>();
-	longint pg = XPath[XPathN].Page;
-	integer j = XPath[XPathN].I;
-	size_t item = j;
+	size_t item = XPath[XPathN].I;
 	do {
-		GetXFile()->RdPage(p.get(), pg);
-		integer n = p->NItems - j + 1;
+		GetXFile()->RdPage(p.get(), XPath[XPathN].Page);
+		integer n = p->NItems - XPath[XPathN].I + 1;
 		while (n > 0) {
-			XItem* x = p->GetItem(j++);
+			XItem* x = p->GetItem(XPath[XPathN].I++);
 			longint nn = x->GetN();
-			if (nn >= RecNr) x->PutN(nn + Dif);
+			if (nn >= RecNr) {
+				x->PutN(nn + Dif);
+			}
 			n--;
 		}
-		GetXFile()->WrPage(p.get(), pg);
-		pg = p->GreaterPage;
-		j = 1;
-	} while (pg != 0);
+		GetXFile()->WrPage(p.get(), XPath[XPathN].Page);
+		XPath[XPathN].Page = p->GreaterPage;
+		XPath[XPathN].I = 1;
+	} while (XPath[XPathN].Page != 0);
 	//ReleaseStore(p);
 }

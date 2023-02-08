@@ -204,11 +204,11 @@ void XKey::NrToPath(longint I)
 
 longint XKey::PathToRecNr()
 {
-	auto X = XPath[XPathN];
+	structXPath* X = &XPath[XPathN];
 	auto p = std::make_unique<XPage>();
 
-	GetXFile()->RdPage(p.get(), X.Page);
-	auto pxi = p->GetItem(X.I);
+	GetXFile()->RdPage(p.get(), X->Page);
+	auto pxi = p->GetItem(X->I);
 
 	longint recnr = pxi->GetN();
 	longint result = recnr;
