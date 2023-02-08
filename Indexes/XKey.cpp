@@ -166,7 +166,6 @@ void XKey::NrToPath(longint I)
 	auto p = std::make_unique<XPage>();
 	longint page = IndexRoot;
 	XPathN = 0;
-	size_t item = 1;
 
 	while (true) {
 		GetXFile()->RdPage(p.get(), page);
@@ -184,7 +183,7 @@ void XKey::NrToPath(longint I)
 			// Non Leaf
 			bool next = false;
 			for (WORD j = 1; j <= p->NItems; j++) {
-				XItem* x = p->GetItem(item++);
+				XItem* x = p->GetItem(j);
 				if (I <= x->GetN()) {
 					XPath[XPathN].I = j;
 					page = ((XItemNonLeaf*)x)->DownPage;
@@ -193,7 +192,9 @@ void XKey::NrToPath(longint I)
 				}
 				I -= x->GetN();
 			}
-			if (next) continue;
+			if (next) {
+				continue;
+			}
 
 			XPath[XPathN].I = p->NItems + 1;
 			page = p->GreaterPage;
@@ -256,7 +257,9 @@ bool XKey::RecNrToPath(XString& XX, longint RecNr)
 		}
 		else {
 			x = p->GetItem(X->I);
-			if (x->GetL() != 0) return result;
+			if (x->GetL() != 0) {
+				return result;
+			}
 			continue;
 		}
 		break;
@@ -269,26 +272,32 @@ bool XKey::IncPath(WORD J, longint& Pg)
 {
 	auto p = std::make_unique<XPage>();
 	bool result = false;
-	auto X = XPath[J];
+	structXPath* X = &XPath[J];
 	if (J == 0) { goto label2; } /* !!! with XPath[J] do!!! */
 	{
 	label1:
-		GetXFile()->RdPage(p.get(), X.Page);
-		if (X.I > p->NItems)
-			if (IncPath(J - 1, X.Page)) { X.I = 0; goto label1; }
-			else goto label2;
-		X.I++;
-		if (X.I > p->NItems)
+		GetXFile()->RdPage(p.get(), X->Page);
+		if (X->I > p->NItems) {
+			if (IncPath(J - 1, X->Page)) {
+				X->I = 0;
+				goto label1;
+			}
+			else {
+				goto label2;
+			}
+		}
+		X->I++;
+		if (X->I > p->NItems)
 			if (p->GreaterPage == 0) {
-				X.I = 0;
-				if (IncPath(J - 1, X.Page)) goto label1;
+				X->I = 0;
+				if (IncPath(J - 1, X->Page)) goto label1;
 				goto label2;
 			}
 			else {
 				Pg = p->GreaterPage;
 			}
 		else {
-			XItem* item = p->GetItem(X.I);
+			XItem* item = p->GetItem(X->I);
 			Pg = ((XItemNonLeaf*)item)->DownPage;
 		}
 	}

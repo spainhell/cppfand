@@ -100,17 +100,6 @@ WORD ScrTextMode(bool Redraw, bool Switch)
 	return 0;
 }
 
-bool IsAT()
-{
-	// snad to zjistuje, jestli je to PC-XT nebo PC-AT :-)
-	return true;
-}
-
-void InitDrivers()
-{
-	ClrEvent();
-}
-
 void InitAccess()
 {
 	ResetCompilePars();
@@ -249,7 +238,7 @@ void RdCFG()
 	ReadH(CfgHandle, sizeof(spec.LockBeepAllowed), &spec.LockBeepAllowed);
 	ReadH(CfgHandle, sizeof(spec.XMSMaxKb), &spec.XMSMaxKb);
 	ReadH(CfgHandle, sizeof(spec.NoCheckBreak), &spec.NoCheckBreak);
-	ReadH(CfgHandle, 1, &spec.KbdTyp); // v C++ je enum 4B, originál 1B
+	ReadH(CfgHandle, 1, &spec.KbdTyp); // v C++ je enum 4B, original 1B
 	ReadH(CfgHandle, sizeof(spec.NoMouseSupport), &spec.NoMouseSupport);
 	ReadH(CfgHandle, sizeof(spec.MouseReverse), &spec.MouseReverse);
 	ReadH(CfgHandle, sizeof(spec.DoubleDelay), &spec.DoubleDelay);
@@ -411,7 +400,9 @@ void InitRunFand()
 	std::string txt;
 	double r;
 
-	InitDrivers();
+	
+	ClrEvent(); // instead of InitDrivers();
+
 	//ConsoleInit();
 	//WasInitDrivers = true;
 	InitAccess();

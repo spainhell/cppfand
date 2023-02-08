@@ -250,7 +250,7 @@ void PrintTxtFile(longint BegPos)
 		//text = std::string((std::istreambuf_iterator<char>(t)),	std::istreambuf_iterator<char>());
 		//t.close();
 		FILE* handle;
-		fopen_s(&handle, CPath.c_str(), "rb");
+		fopen_s(&handle, CPath.c_str(), "r");
 		fseek(handle, 0, std::ios::end);
 		size_t size = ftell(handle);
 		text = std::string(size, ' ');

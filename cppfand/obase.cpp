@@ -298,15 +298,18 @@ bool ResetTxt(TextFile* F)
 	return true;
 }
 
-bool RewriteTxt(TextFile* F, bool PrintCtrl)
+bool RewriteTxt(std::string path, TextFile* F, bool PrintCtrl)
 {
 	F->Assign(CPath.c_str());
 	if (CPath == "LPT1") F->openfunc = &OpenLPT1;
 	else {
 		PrintCtrlFlag = PrintCtrl;
 		F->openfunc = OpenTxt;
-		F->Handle = OpenH(_isoverwritefile, Exclusive);
-		if (HandleError != 0) { return false; }
+		//F->Handle = OpenH(_isoverwritefile, Exclusive);
+
+		errno_t err = fopen_s(&F->Handle, path.c_str(), "wt");
+
+		if (err != 0) { return false; }
 	}
 	F->Rewrite();
 	return true;

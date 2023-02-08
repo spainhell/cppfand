@@ -91,10 +91,7 @@ longint XWFile::NewPage(XPage* P)
 		if (MaxPage > 0x1fffff) Err(887);
 		result = MaxPage;
 	}
-	P->IsLeaf = false;
-	P->GreaterPage = 0;
-	P->NItems = 0;
-	memset(P->A, 0, sizeof(P->A));
+	P->Clean();
 	return result;
 }
 

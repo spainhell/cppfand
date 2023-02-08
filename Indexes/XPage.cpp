@@ -155,10 +155,10 @@ void XPage::InsertItem(unsigned int recordsCount, unsigned int downPage, WORD I,
 		// vkladany zaznam nebude posledni (nebude na konci)
 		// zjistime spolecne casti s nasledujicim zaznamem
 		WORD m2 = SLeadEqu(GetKey(I + 1), key);
-		integer d = m2 - newXi->GetM();
+		int d = m2 - newXi->GetM();
 		if (d > 0) {
 			// puvodni polozka je ted na pozici I (nova je na I - 1)
-			_cutItem(I, d);
+			_cutItem(I, (BYTE)d);
 		}
 	}
 }
@@ -191,10 +191,10 @@ void XPage::InsertItem(unsigned int recNr, size_t I, pstring& SS)
 		// vkladany zaznam nebude posledni (nebude na konci)
 		// zjistime spolecne casti s nasledujicim zaznamem
 		WORD m2 = SLeadEqu(GetKey(I + 1), key);
-		BYTE d = m2 - newXi->M;
+		int d = m2 - newXi->M;
 		if (d > 0) {
 			// puvodni polozka je ted na pozici I (nova je na I - 1)
-			_cutItem(I, d);
+			_cutItem(I, (BYTE)d);
 		}
 	}
 }
@@ -364,9 +364,18 @@ void XPage::Clean()
 size_t XPage::ItemsSize()
 {
 	size_t count = 0;
-	for (auto xi : _leafItems) {
-		count += xi->size();
+
+	if (IsLeaf) {
+		for (auto xi : _leafItems) {
+			count += xi->size();
+		}
 	}
+	else {
+		for (auto xi : _nonLeafItems) {
+			count += xi->size();
+		}
+	}
+
 	return count;
 }
 

@@ -130,8 +130,8 @@ bool XString::PackFrml(FrmlListEl* FL, KeyFldD* KF)
 			break;
 		}
 		}
-		KF = (KeyFldD*)KF->pChain;
-		FL = (FrmlListEl*)FL->pChain;
+		KF = KF->pChain;
+		FL = FL->pChain;
 	}
 	return KF != nullptr;
 }
@@ -188,11 +188,12 @@ void XString::StoreF(void* F, WORD len, bool descend)
 	unsigned char origLen = S[0];
 	if (origLen + len < len) return; // proc to v ASM je? kvuli preteceni?
 	S[0] = origLen + len;
-	if (data[0] <= 0x0F) {
-		S[origLen + 1] = data[0] | 0x80; // 1. bit bude '1'
+	// in original ASM code there is the negation of highest bit for all bytes
+	if (data[0] <= 0b01111111) {
+		S[origLen + 1] = data[0] | 0b10000000; // 1. bit will be '1'
 	}
 	else {
-		S[origLen + 1] = data[0] & 0x7F; // 1. bit bude '0'
+		S[origLen + 1] = data[0] & 0b01111111; // 1. bit will be '0'
 	}
 	unsigned char newIndex = origLen + 2; // zacneme zapisovat do S za puvodni data
 	// dokopirujeme zbytek dat (1. Byte uz mame, pokracujeme od 2.)

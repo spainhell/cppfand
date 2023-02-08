@@ -2413,9 +2413,8 @@ longint UpdateIndexes()
 	}
 
 	WORD result = N;
-	//K = CFile->Keys;
-	//while (K != nullptr) {
-	for (auto& K : CFile->Keys) {
+	for (size_t i = 0; i < CFile->Keys.size(); i++) {
+		auto K = CFile->Keys[i];
 		if (K != VK) {
 			if (!IsNewRec) {
 				CRecPtr = E->OldRecPtr;
@@ -2424,7 +2423,6 @@ longint UpdateIndexes()
 			CRecPtr = E->NewRecPtr;
 			K->Insert(NNew, true);
 		}
-		//K = K->Chain;
 	}
 	CRecPtr = E->NewRecPtr;
 	return result;

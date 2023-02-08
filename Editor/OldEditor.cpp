@@ -2752,12 +2752,12 @@ WORD WordNo2()
 
 void ClrWord()
 {
-	WORD k = 0;
-	k = FindCharPosition(T, LenT, 0x11, k);
-	while (k < LenT) {
-		T[k] = 0x13;
-		k = FindCharPosition(T, LenT, 0x11, k) + 1;
-	}
+	//WORD k = 0;
+	//k = FindCharPosition(T, LenT, 0x11, k);
+	//while (k < LenT) {
+	//	T[k] = 0x13;
+	//	k = FindCharPosition(T, LenT, 0x11, k) + 1;
+	//}
 }
 
 bool WordFind(WORD i, WORD& WB, integer& WE, WORD& LI)

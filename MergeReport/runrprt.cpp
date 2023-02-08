@@ -1032,13 +1032,13 @@ bool RewriteRprt(RprtOpt* RO, WORD pageLimit, WORD& Times, bool& IsLPT1)
 			CPath = "LPT1";
 			CVol = "";
 			IsLPT1 = true;
-			result = ResetPrinter(pageLimit, 0, true, true) && RewriteTxt(&Rprt, false);
+			result = ResetPrinter(pageLimit, 0, true, true) && RewriteTxt(CPath, &Rprt, false);
 			return result;
 		}
 		SetTxtPathVol(RO->Path, RO->CatIRec);
 	}
 	TestMountVol(CPath[0]);
-	if (!RewriteTxt(&Rprt, PrintCtrl))
+	if (!RewriteTxt(CPath, &Rprt, PrintCtrl))
 	{
 		SetMsgPar(CPath);
 		WrLLF10Msg(700 + HandleError);

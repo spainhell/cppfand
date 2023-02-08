@@ -30,6 +30,6 @@ integer OpenTxt(TextFile* F);
 integer OpenLPT1(TextFile* F);
 void Seek0Txt(TextFile* F); // r234
 bool ResetTxt(TextFile* F);
-bool RewriteTxt(TextFile* F, bool PrintCtrl);
+bool RewriteTxt(std::string path, TextFile* F, bool PrintCtrl);
 void SetPrintTxtPath();
 
