@@ -1020,12 +1020,17 @@ bool RewriteRprt(RprtOpt* RO, WORD pageLimit, WORD& Times, bool& IsLPT1)
 	WasLPTCancel = false;
 	IsLPT1 = false;
 	Times = 1;
-	bool PrintCtrl = RO->PrintCtrl;
-	if ((RO != nullptr) && (RO->Times != nullptr)) Times = (WORD)RunInt(RO->Times);
-	if ((RO == nullptr) || (RO->Path.empty()) && (RO->CatIRec == 0))
-	{
+	bool PrintCtrl = false;
+
+	if (RO != nullptr) {
+		PrintCtrl = RO->PrintCtrl;
+		if (RO->Times != nullptr) Times = (WORD)RunInt(RO->Times);
+	}
+
+	if (RO == nullptr || RO->Path.empty() && RO->CatIRec == 0) {
 		SetPrintTxtPath();
-		PrintView = true; PrintCtrl = false;
+		PrintView = true;
+		PrintCtrl = false;
 	}
 	else {
 		if (!RO->Path.empty() && EquUpCase(RO->Path, "LPT1")) {
@@ -1038,8 +1043,7 @@ bool RewriteRprt(RprtOpt* RO, WORD pageLimit, WORD& Times, bool& IsLPT1)
 		SetTxtPathVol(RO->Path, RO->CatIRec);
 	}
 	TestMountVol(CPath[0]);
-	if (!RewriteTxt(CPath, &Rprt, PrintCtrl))
-	{
+	if (!RewriteTxt(CPath, &Rprt, PrintCtrl)) {
 		SetMsgPar(CPath);
 		WrLLF10Msg(700 + HandleError);
 		PrintView = false;
@@ -1049,7 +1053,9 @@ bool RewriteRprt(RprtOpt* RO, WORD pageLimit, WORD& Times, bool& IsLPT1)
 		printf("%s.ti %1i\n", Rprt.c_str(), Times);
 		Times = 1;
 	}
-	if (pageLimit != 72) printf("%s.pl %i\n", Rprt.c_str(), pageLimit);
+	if (pageLimit != 72) {
+		printf("%s.pl %i\n", Rprt.c_str(), pageLimit);
+	}
 	result = true;
 	return result;
 }
