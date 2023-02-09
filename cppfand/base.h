@@ -115,7 +115,6 @@ void AlignLongStr();
 void StackOvr(WORD NewBP); // r216
 void NewExit(PProcedure POvr, ExitRecord Buf);  // r218
 void GoExit();
-void RestoreExit(ExitRecord& Buf);
 bool OSshell(std::string Path, std::string CmdLine, bool NoCancel, bool FreeMm, bool LdFont, bool TextMd);
 
 

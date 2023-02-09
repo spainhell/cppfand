@@ -676,8 +676,7 @@ bool CompRunChptRec(WORD CC)
 	ExitRecord er; EditD* OldE = nullptr;
 	RdbPos RP; longint Free; bool uw = false, mv = false;
 	FileD* FD = nullptr;
-	//LinkD* oldLd = nullptr;
-	//LinkD* ld = nullptr;
+
 	EditOpt* EO = nullptr;
 	WORD nStrm = 0;
 	auto result = false;
@@ -685,95 +684,120 @@ bool CompRunChptRec(WORD CC)
 	OldE = E;
 	MarkBoth(p, p2);
 	WrEStatus();
-	//NewExit(Ovr(), er);
-	//goto label2;
-	IsCompileErr = false; uw = false; mv = MausVisible;
-	FileD* lstFD = (FileD*)LastInChain(FileDRoot);
-	std::deque<LinkD*> oldLd = LinkDRoot;
+
 	bool WasError = true;
 	bool WasGraph = IsGraphMode;
-	FD = nullptr;
-	STyp = _ShortS(ChptTyp);
-	RP.R = CRdb;
-	RP.IRec = CRec();
+	FileD* lstFD = (FileD*)LastInChain(FileDRoot);
+	std::deque<LinkD*> oldLd = LinkDRoot;
+
+	try {
+		IsCompileErr = false;
+		uw = false;
+		mv = MausVisible;
+				
+		FD = nullptr;
+		STyp = _ShortS(ChptTyp);
+		RP.R = CRdb;
+		RP.IRec = CRec();
 #ifdef FandSQL
-	nStrm = nStreams;
+		nStrm = nStreams;
 #endif
-	if (CC == __ALT_F9) {
-		if (FindChpt('P', "MAIN", true, &RP)) goto label1;
-		else WrLLF10Msg(58);
-	}
-	else
-		switch (STyp[1]) {
-		case 'F': {
-			FD = FindFD();
-			if ((FD != nullptr) && (CC == __CTRL_F9)) {
-				EO = new EditOpt(); EO->UserSelFlds = true; // GetEditOpt();
-				CFile = FD;
-				EO->Flds = AllFldsList(CFile, false);
-				if (SelFldsForEO(EO, nullptr)) EditDataFile(FD, EO);
-			}
-			break;
-		}
-		case 'E': {
-			if (CC == __CTRL_F9) {
-				EO = new EditOpt(); EO->UserSelFlds = true; // GetEditOpt();
-				EO->FormPos = RP;
-				EditDataFile(nullptr, EO);
-			}
-			else {
-				PushEdit();
-				std::vector<FieldDescr*> unusedFD;
-				RdFormOrDesign(nullptr, unusedFD, RP);
-			}
-			break;
-		}
-		case 'M': {
-			SetInpTT(&RP, true);
-			ReadMerge();
-			if (CC == __CTRL_F9) RunMerge();
-			break;
-		}
-		case 'R': {
-			SetInpTT(&RP, true);
-			ReadReport(nullptr);
-			if (CC == __CTRL_F9) {
-				RunReport(nullptr);
-				SaveFiles();
-				ViewPrinterTxt();
-			}
-			break;
-		}
-		case 'P': {
-			if (CC == __CTRL_F9) {
-			label1:
-				if (UserW != 0) { PopW(UserW); uw = true; }
+		if (CC == __ALT_F9) {
+			if (FindChpt('P', "MAIN", true, &RP)) {
+				if (UserW != 0) {
+					PopW(UserW);
+					uw = true;
+				}
 				RunMainProc(RP, CRdb->ChainBack = nullptr);
+				WasError = false;
 			}
 			else {
-				lstFD = (FileD*)LastInChain(FileDRoot);
-				std::deque<LinkD*> ld = LinkDRoot;
+				WrLLF10Msg(58);
+			}
+		}
+		else {
+			switch (STyp[1]) {
+			case 'F': {
+				FD = FindFD();
+				if (FD != nullptr && CC == __CTRL_F9) {
+					EO = new EditOpt();
+					EO->UserSelFlds = true; // GetEditOpt();
+					CFile = FD;
+					EO->Flds = AllFldsList(CFile, false);
+					if (SelFldsForEO(EO, nullptr)) {
+						EditDataFile(FD, EO);
+					}
+				}
+				break;
+			}
+			case 'E': {
+				if (CC == __CTRL_F9) {
+					EO = new EditOpt();
+					EO->UserSelFlds = true; // GetEditOpt();
+					EO->FormPos = RP;
+					EditDataFile(nullptr, EO);
+				}
+				else {
+					PushEdit();
+					std::vector<FieldDescr*> unusedFD;
+					RdFormOrDesign(nullptr, unusedFD, RP);
+				}
+				break;
+			}
+			case 'M': {
 				SetInpTT(&RP, true);
-				ReadProcHead("");
-				ReadProcBody();
-				lstFD->pChain = nullptr;
-				LinkDRoot = ld;
+				ReadMerge();
+				if (CC == __CTRL_F9) RunMerge();
+				break;
 			}
-			break;
-		}
+			case 'R': {
+				SetInpTT(&RP, true);
+				ReadReport(nullptr);
+				if (CC == __CTRL_F9) {
+					RunReport(nullptr);
+					SaveFiles();
+					ViewPrinterTxt();
+				}
+				break;
+			}
+			case 'P': {
+				if (CC == __CTRL_F9) {
+					if (UserW != 0) {
+						PopW(UserW);
+						uw = true;
+					}
+					RunMainProc(RP, CRdb->ChainBack = nullptr);
+				}
+				else {
+					lstFD = (FileD*)LastInChain(FileDRoot);
+					std::deque<LinkD*> ld = LinkDRoot;
+					SetInpTT(&RP, true);
+					ReadProcHead("");
+					ReadProcBody();
+					lstFD->pChain = nullptr;
+					LinkDRoot = ld;
+				}
+				break;
+			}
 #ifdef FandProlog
-		case 'L': {
-			if (CC == __CTRL_F9) {
-				TextAttr = ProcAttr;
-				ClrScr();
-				RunProlog(&RP, nullptr);
+			case 'L': {
+				if (CC == __CTRL_F9) {
+					TextAttr = ProcAttr;
+					ClrScr();
+					RunProlog(&RP, "");
+				}
+				break;
 			}
-			break;
-		}
 #endif
+			default:;
+			}
+			WasError = false;
 		}
-	WasError = false;
-label2:
+	}
+	catch (std::exception& e) {
+		// TODO: log error
+	}
+
 	MaxHp = nullptr;
 	ReleaseStore2(p2);
 	Free = StoreAvail();
@@ -811,7 +835,9 @@ label2:
 	}
 	lstFD->pChain = nullptr;
 	LinkDRoot = oldLd;
-	ReleaseBoth(p, p2); E = OldE; EditDRoot = E;
+	ReleaseBoth(p, p2);
+	E = OldE;
+	EditDRoot = E;
 	RdEStatus();
 	CRdb = RP.R;
 	PrevCompInp.clear();
@@ -870,13 +896,13 @@ WORD CompileMsgOn(CHAR_INFO* Buf, longint& w)
 	if (IsTestRun) {
 		w = PushWFramed(0, 0, 30, 4, screen.colors.sNorm, MsgLine, "", WHasFrame + WDoubleFrame + WShadow);
 		RdMsg(117);
-		std::string ss = MsgLine;
-		s = GetNthLine(ss, 1, 1, '/');
+		std::string s1 = MsgLine;
+		s = GetNthLine(s1, 1, 1, '/');
 		screen.GotoXY(3, 2);
 		printf("%s", s.c_str());
 		result = s.length();
 		screen.GotoXY(3, 3);
-		printf("%s", GetNthLine(ss, 2, 1, '/').c_str());
+		printf("%s", GetNthLine(s1, 2, 1, '/').c_str());
 	}
 	else {
 		screen.ScrRdBuf(0, TxtRows - 1, Buf, 40);
@@ -890,8 +916,12 @@ WORD CompileMsgOn(CHAR_INFO* Buf, longint& w)
 
 void CompileMsgOff(CHAR_INFO* Buf, longint& w)
 {
-	if (w != 0) PopW(w);
-	else screen.ScrWrCharInfoBuf(1, TxtRows, Buf, 40);
+	if (w != 0) {
+		PopW(w);
+	}
+	else {
+		screen.ScrWrCharInfoBuf(1, TxtRows, Buf, 40);
+	}
 }
 
 longint MakeDbfDcl(pstring Nm)
@@ -963,56 +993,82 @@ void* RdF(std::string FileName)
 	return RdFileD(name, FDTyp, ext);
 }
 
-bool EquStoredF(FieldDPtr F1, FieldDPtr F2)
+bool EquStoredF(FieldDescr* F1, FieldDescr* F2)
 {
-	auto result = false;
-label1:
-	while ((F1 != nullptr) && (F1->Flg && f_Stored == 0)) F1 = (FieldDescr*)F1->pChain;
-	while ((F2 != nullptr) && (F2->Flg && f_Stored == 0)) F2 = (FieldDescr*)F2->pChain;
-	if (F1 == nullptr)
-	{
-		if (F2 != nullptr) return result;
-		result = true;
-		return result;
+	while (true) {
+		while (F1 != nullptr && (F1->Flg & f_Stored) == 0) {
+			F1 = F1->pChain;
+		}
+		while (F2 != nullptr && (F2->Flg & f_Stored) == 0) {
+			F2 = F2->pChain;
+		}
+		if (F1 == nullptr) {
+			if (F2 != nullptr) return false;
+			else return true;
+		}
+		if (F2 == nullptr || !FldTypIdentity(F1, F2) || (F1->Flg & ~f_Mask) != (F2->Flg & ~f_Mask)) return false;
+		F1 = F1->pChain;
+		F2 = F2->pChain;
 	}
-	if ((F2 == nullptr) || !FldTypIdentity(F1, F2) ||
-		(F1->Flg && (!f_Mask) != F2->Flg && (!f_Mask))) return result;
-	F1 = (FieldDescr*)F1->pChain; F2 = (FieldDescr*)F2->pChain;
-	goto label1;
 }
 
 void DeleteF()
 {
-	CloseFile(); SetCPathVol(); MyDeleteFile(CPath);
-	CExtToX(); if (CFile->XF != nullptr) MyDeleteFile(CPath);
-	CExtToT(); if (CFile->TF != nullptr) MyDeleteFile(CPath);
+	CloseFile();
+	SetCPathVol();
+	MyDeleteFile(CPath);
+	CExtToX();
+	if (CFile->XF != nullptr) {
+		MyDeleteFile(CPath);
+	}
+	CExtToT();
+	if (CFile->TF != nullptr) {
+		MyDeleteFile(CPath);
+	}
 }
 
-bool MergAndReplace(FileD* FDOld, FileD* FDNew)
+bool MergAndReplace(FileD* fd_old, FileD* fd_new)
 {
-	std::string s; ExitRecord er; std::string p;
-	auto result = false;
-	//NewExit(Ovr(), er);
-	//goto label1;
-	s = "#I1_";
-	s += FDOld->Name + " #O1_@";
-	SetInpStr(s);
-	SpecFDNameAllowed = true; ReadMerge(); SpecFDNameAllowed = false;
-	RunMerge(); SaveFiles(); RestoreExit(er);
-	CFile = FDOld; DeleteF(); CFile = FDNew; CloseFile(); FDOld->Typ = FDNew->Typ;
-	SetCPathVol(); p = CPath; CFile = FDOld; SetCPathVol();
-	RenameFile56(p, CPath, false);
-	CFile = FDNew;
-	/*TF->Format used*/
-	CExtToT(); p = CPath;
-	SetCPathVol();
-	CExtToT();
-	RenameFile56(CPath, p, false);
-	result = true;
-	return result;
-label1:
-	RestoreExit(er); CFile = FDOld; CloseFile(); CFile = FDNew; DeleteF();
-	SpecFDNameAllowed = false; result = false;
+	bool result;
+
+	try {
+		std::string s = "#I1_";
+		s += fd_old->Name + " #O1_@";
+		SetInpStr(s);
+		SpecFDNameAllowed = true;
+		ReadMerge();
+		SpecFDNameAllowed = false;
+		RunMerge();
+		SaveFiles();
+		CFile = fd_old;
+		DeleteF();
+		CFile = fd_new;
+		CloseFile();
+		fd_old->Typ = fd_new->Typ;
+		SetCPathVol();
+		std::string p = CPath;
+		CFile = fd_old;
+		SetCPathVol();
+		RenameFile56(p, CPath, false);
+		CFile = fd_new;
+		/*TF->Format used*/
+		CExtToT();
+		p = CPath;
+		SetCPathVol();
+		CExtToT();
+		RenameFile56(CPath, p, false);
+		result = true;
+	}
+	catch (std::exception& e) {
+		// TODO: log error
+		CFile = fd_old;
+		CloseFile();
+		CFile = fd_new;
+		DeleteF();
+		SpecFDNameAllowed = false;
+		result = false;
+	}
+
 	return result;
 }
 
@@ -1098,8 +1154,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 	EditD* OldE = E;
 	MarkBoth(p, p2);
 	p1 = p;
-	//NewExit(Ovr, er);
-	//goto label1;
+
 	try {
 		IsCompileErr = false; FDCompiled = false;
 		OldCRec = CRec(); RP.R = CRdb;
@@ -1158,7 +1213,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 #ifndef FandSQL
 					if (EquUpCase(ext, ".SQL")) GoCompileErr(I, 654);
 #endif
-					if (Verif || ChptTF->CompileAll || (OldTxt == 0)) {
+					if (Verif || ChptTF->CompileAll || OldTxt == 0) {
 					label2:
 						p1 = RdF(Name);
 						// TODO: toto se asi zase musi povolit !!! 
@@ -1189,7 +1244,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 					break;
 				}
 				case 'R': {
-					if ((Txt == 0) && IsTestRun) {
+					if (Txt == 0 && IsTestRun) {
 						RprtTxt = SelGenRprt(Name);
 						CFile = Chpt;
 						if (RprtTxt.empty()) GoCompileErr(I, 1145);
@@ -1203,8 +1258,12 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 					break;
 				}
 				case 'P': {
-					if (FileDRoot->pChain == nullptr) lstFD = FileDRoot;
-					else lstFD = (FileD*)LastInChain(FileDRoot);
+					if (FileDRoot->pChain == nullptr) {
+						lstFD = FileDRoot;
+					}
+					else {
+						lstFD = (FileD*)LastInChain(FileDRoot);
+					}
 					std::deque<LinkD*> ld = LinkDRoot;
 					SetInpTTPos(Txt, Encryp);
 					ReadProcHead(Name);
@@ -1255,7 +1314,6 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 				WriteRec(CFile, I, CRecPtr);
 			}
 		}
-		/* !!! with ChptTF^ do!!! */
 		if (ChptTF->CompileAll || ChptTF->CompileProc) {
 			ChptTF->CompileAll = false;
 			ChptTF->CompileProc = false;
@@ -1272,6 +1330,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 		log->log(loglevel::DEBUG, "finish CompileRdb()");
 	}
 	catch (std::exception& e) {
+		// TODO: log error
 		RestoreExit(er);
 		result = false;
 	}

@@ -446,6 +446,13 @@ void CExtToX()
 	CPath = CDir + CName + CExt;
 }
 
+
+std::string CExtToX(const std::string dir, const std::string name, std::string ext)
+{
+	ext[0] = 'X';
+	return dir + name + ext;
+}
+
 void TestCPathError()
 {
 	WORD n;
@@ -467,6 +474,21 @@ void CExtToT()
 			else CExt = ".DBT";
 		else CExt[1] = 'T';
 	CPath = CDir + CName + CExt;
+}
+
+std::string CExtToT(const std::string dir, const std::string name, std::string ext)
+{
+	if (EquUpCase(ext, ".RDB")) ext = ".TTT";
+	else if (EquUpCase(ext, ".DBF")) {
+		if (CFile->TF->Format == TFile::FptFormat) {
+			ext = ".FPT";
+		}
+		else {
+			ext = ".DBT";
+		}
+	}
+	else ext[0] = 'T';
+	return dir + name + ext;
 }
 
 void NegateESDI()

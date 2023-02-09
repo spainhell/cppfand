@@ -1463,10 +1463,6 @@ void GoExit()
 	log->log(loglevel::WARN, "GoExit(): Setting 'BreakP = true'", MsgLine.c_str());
 }
 
-void RestoreExit(ExitRecord& Buf)
-{
-}
-
 bool OSshell(std::string Path, std::string CmdLine, bool NoCancel, bool FreeMm, bool LdFont, bool TextMd)
 {
 	Logging* log = Logging::getInstance();

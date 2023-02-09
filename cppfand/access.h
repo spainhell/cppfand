@@ -31,18 +31,14 @@ const BYTE Ascend = 0; const BYTE Descend = 6; // {used in SortKey}
 const BYTE f_Stored = 1; const BYTE f_Encryp = 2; // {FieldD flags}
 const BYTE f_Mask = 4; const BYTE f_Comma = 8; // {FieldD flags}
 
-//typedef FuncD* FuncDPtr;
-//typedef XWKey* WKeyDPtr;
-
 struct DepD : Chained<DepD> // r122
 {
-	//DepD* pChain; 
 	FrmlElem* Bool = nullptr;
 	FrmlElem* Frml = nullptr;
 };
 typedef DepD* DepDPtr;
 
-struct FuncD // ø. 233
+struct FuncD
 {
 	FuncD* Chain = nullptr;
 	char FTyp = '\0';
@@ -65,7 +61,6 @@ WORD CompLexStrings(const std::string& S1, const std::string& S2);
 
 void RunErrorM(LockMode Md, WORD N); // r729
 void* GetRecSpace(); // r739
-//void* GetRecSpace2(); // r742
 WORD CFileRecSize(); // r744
 void SetTWorkFlag();  // r746 ASM
 bool HasTWorkFlag(); // r752 ASM
@@ -131,7 +126,9 @@ void CloseClearHCFile();
 void TestCPathError();
 void AssignNRecs(bool Add, longint N);
 void CExtToT();
+std::string CExtToT(std::string dir, std::string name, std::string ext);
 void CExtToX();
+std::string CExtToX(std::string dir, std::string name, std::string ext);
 void CloseGoExit();
 
 bool ChangeLMode(LockMode Mode, WORD Kind, bool RdPref);
