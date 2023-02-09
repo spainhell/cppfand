@@ -138,79 +138,95 @@ void TestCFileError()
 
 bool OpenF1(FileUseMode UM)
 {
-	bool b; WORD n;
-	/* !!! with CFile^ do!!! */
+	WORD n;
 	auto result = true;
 	CFile->LMode = NullMode;
 	SetCPathMountVolSetNet(UM);
-	b = (CFile == Chpt) || (CFile == CatFD);
+	bool b = (CFile == Chpt) || (CFile == CatFD);
 	if (b && (IsTestRun || IsInstallRun) && ((GetFileAttr() & 1/*RdOnly*/) != 0)) {
 		SetFileAttr(GetFileAttr() & 0x26);
 		if (HandleError == 5) HandleError = 79;
 		TestCFileError();
 		CFile->WasRdOnly = true;
 	}
-label1:
-	CFile->Handle = OpenH(_isoldfile, CFile->UMode);
-	if ((HandleError != 0) && CFile->WasRdOnly) {
-		SetFileAttr((GetFileAttr() & 0x27) | 0x1/*RdONly*/);
-		TestCFileError();
-	}
-	if ((HandleError == 5) && (CFile->UMode == Exclusive)) {
-		CFile->UMode = RdOnly;
-		goto label1;
-	}
-	if (HandleError == 2) {
-		result = false;
-		return result;
+	while (true) {
+		CFile->Handle = OpenH(_isoldfile, CFile->UMode);
+		if ((HandleError != 0) && CFile->WasRdOnly) {
+			SetFileAttr((GetFileAttr() & 0x27) | 0x1/*RdONly*/);
+			TestCFileError();
+		}
+		if ((HandleError == 5) && (CFile->UMode == Exclusive)) {
+			CFile->UMode = RdOnly;
+			continue;
+		}
+		if (HandleError == 2) {
+			result = false;
+			return result;
+		}
+		break;
 	}
 #ifndef FandNetV
 	if ((HandleError == 5 || HandleError == 0x21) &&
 		((CVol == '#') || (CVol == "##") || SEquUpcase(CVol, "#R"))) CFileError(842);
 #endif
 	TestCFileError();
-	if (CFile->TF != nullptr) /* !!! with TF^ do!!! */ {
+	if (CFile->TF != nullptr) {
 		CPath = CExtToT(CDir, CName, CExt);
 		if (CFile->WasRdOnly) {
 			SetFileAttr(GetFileAttr() & 0x26); // 0x26 = archive + hidden + system
 		}
-	label2:
-		CFile->TF->Handle = OpenH(_isoldfile, CFile->UMode);
-		if (HandleError == 2) {
-			if (CFile->TF->Format == CFile->TF->DbtFormat) {
-				CFile->TF->Format = CFile->TF->FptFormat;
-				CExt = ".FPT";
-				CPath = CDir + CName + CExt;
-				goto label2;
+		while (true) {
+			CFile->TF->Handle = OpenH(_isoldfile, CFile->UMode);
+			if (HandleError == 2) {
+				if (CFile->TF->Format == CFile->TF->DbtFormat) {
+					CFile->TF->Format = CFile->TF->FptFormat;
+					CExt = ".FPT";
+					CPath = CDir + CName + CExt;
+					continue;
+				}
+				if (CFile->IsDynFile) {
+					CloseClearH(&CFile->Handle);
+					result = false;
+					return result;
+				}
 			}
-			if (CFile->IsDynFile) {
-				CloseClearH(&CFile->Handle);
-				result = false;
-				return result;
-			}
-		}
-		if (HandleError != 0) goto label4;
-	}
-	if (CFile->Typ == 'X') /* !!! with GetXFile^ do!!! */ {
-		CPath = CExtToX(CDir, CName, CExt);
-	label3:
-		CFile->XF->Handle = OpenH(_isoldfile, CFile->UMode);
-		if (HandleError == 2) {
-			CFile->XF->Handle = OpenH(_isoverwritefile, Exclusive);
-			if (HandleError != 0) goto label4;
-			CFile->XF->SetNotValid();
-			CloseH(&CFile->XF->Handle);
-			goto label3;
+			break;
 		}
 		if (HandleError != 0) {
-		label4:
 			n = HandleError;
 			CloseClearHCFile();
 			HandleError = n;
 			TestCPathError();
+			return result;
 		}
-		if (CFile->XF != nullptr && FileSizeH(CFile->XF->Handle) < 512) {
-			CFile->XF->SetNotValid();
+	}
+	if (CFile->Typ == 'X') /* !!! with GetXFile^ do!!! */ {
+		CPath = CExtToX(CDir, CName, CExt);
+		while (true) {
+			CFile->XF->Handle = OpenH(_isoldfile, CFile->UMode);
+			if (HandleError == 2) {
+				CFile->XF->Handle = OpenH(_isoverwritefile, Exclusive);
+				if (HandleError != 0) {
+					n = HandleError;
+					CloseClearHCFile();
+					HandleError = n;
+					TestCPathError();
+					return result;
+				}
+				CFile->XF->SetNotValid();
+				CloseH(&CFile->XF->Handle);
+				continue;
+			}
+			if (HandleError != 0) {
+				n = HandleError;
+				CloseClearHCFile();
+				HandleError = n;
+				TestCPathError();
+			}
+			if (CFile->XF != nullptr && FileSizeH(CFile->XF->Handle) < 512) {
+				CFile->XF->SetNotValid();
+			}
+			break;
 		}
 	}
 	return result;
@@ -309,7 +325,7 @@ label3:
 	}
 	SeekRec(0);
 	return true;
-	}
+}
 
 bool OpenF(FileUseMode UM)
 {
@@ -533,10 +549,10 @@ WORD TestMountVol(char DriveC)
 	}
 
 	const std::string MountedVolD = MountedVol[D - 1];
-		if (CVol.empty() || EquUpCase(MountedVolD, CVol)) {
+	if (CVol.empty() || EquUpCase(MountedVolD, CVol)) {
 		goto label3;
 	}
-	
+
 	Drive[1] = DriveC;
 	if (ActiveRdbOnDrive(D)) {
 		SetMsgPar(Drive, CVol, MountedVol[D - 1]);
@@ -818,7 +834,7 @@ void SetCPathVol(char pathDelim)
 	case '8': CExt = ".DTA"; break;
 	case 'D': CExt = ".DBF"; break;
 	default: CExt = ".000";
-}
+	}
 	if (SetContextDir(CDir, isRdb)) goto label2;
 	if (CFile == HelpFD) {
 		CDir = FandDir;

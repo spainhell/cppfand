@@ -449,7 +449,7 @@ void CExtToX()
 
 std::string CExtToX(const std::string dir, const std::string name, std::string ext)
 {
-	ext[0] = 'X';
+	ext[1] = 'X';
 	return dir + name + ext;
 }
 
@@ -487,7 +487,7 @@ std::string CExtToT(const std::string dir, const std::string name, std::string e
 			ext = ".DBT";
 		}
 	}
-	else ext[0] = 'T';
+	else ext[1] = 'T';
 	return dir + name + ext;
 }
 
