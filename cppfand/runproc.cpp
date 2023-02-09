@@ -1210,7 +1210,7 @@ void RunInstr(Instr* PD)
 #ifdef FandProlog
 		case _lproc: {
 			auto iPD = (Instr_lproc*)PD;
-			RunProlog(&iPD->lpPos, iPD->lpName);
+			//RunProlog(&iPD->lpPos, iPD->lpName);
 			break;
 		}
 #endif
