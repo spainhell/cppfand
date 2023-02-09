@@ -29,7 +29,7 @@ public :
 	bool SelFieldList(WORD Nmsg, bool ImplAll, FieldListEl** FLRoot);
 	bool SelFieldList(WORD Nmsg, bool ImplAll, std::vector<FieldDescr*>& FLRoot);
 	std::string SelectDiskFile(std::string Path, WORD HdMsg, bool OnFace);
-	bool PromptFilter(std::string Txt, FrmlElem* Bool, std::string* BoolTxt);
+	bool PromptFilter(std::string Txt, FrmlElem** Bool, std::string* BoolTxt);
 	void PromptLL(WORD N, std::string& Txt, WORD I, bool Del);
 	pstring PassWord(bool TwoTimes);
 	void SetPassWord(FileD* FD, WORD Nr, std::string Pw);

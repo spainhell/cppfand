@@ -362,7 +362,6 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 	void* P1 = nullptr;
 	bool bb = false;
 
-	ExitRecord er;
 	//EdExitD* X = nullptr;
 
 	IsWrScreen = false;
@@ -427,7 +426,6 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 				}
 				ep = SaveParams();
 				screen.CrsHide();
-				RestoreExit(er);
 				if (TypeT == MemoT) {
 					StartExit(X, false);
 				}
@@ -1333,6 +1331,5 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 
 Nic:
 	//ClrEvent;
-	RestoreExit(er);
 	IsWrScreen = false;
 }

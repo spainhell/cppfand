@@ -14,12 +14,9 @@
 #include "runproc.h"
 #include "runproj.h"
 #include "../Prolog/RunProlog.h"
-#include "../Prolog/RdProlog.h"
 #include "TFile.h"
 #include "wwmenu.h"
 #include "XFile.h"
-#include <map>
-
 
 #include "compile.h"
 #include "../Editor/OldEditor.h"
@@ -207,10 +204,10 @@ bool ChptDelFor(RdbRecVars* X)
 			CName = X->Name; CExt = X->Ext;
 		}
 		MyDeleteFile(CDir + CName + CExt);
-		CExtToT();
+		CPath = CExtToT(CDir, CName, CExt);
 		MyDeleteFile(CPath);
 		if (X->FTyp == 'X') {
-			CExtToX();
+			CPath = CExtToX(CDir, CName, CExt);
 			MyDeleteFile(CPath);
 		}
 		break;
@@ -257,9 +254,9 @@ void RenameWithOldExt(RdbRecVars New, RdbRecVars Old)
 {
 	CExt = Old.Ext;
 	RenameFile56(Old.Name + CExt, New.Name + CExt, false);
-	CExtToT();
+	CPath = CExtToT(CDir, CName, CExt);
 	RenameFile56(Old.Name + CExt, New.Name + CExt, false);
-	CExtToX();
+	CPath = CExtToX(CDir, CName, CExt);
 	if (Old.FTyp == 'X') RenameFile56(Old.Name + CExt, New.Name + CExt, false);
 }
 
@@ -290,10 +287,10 @@ WORD ChptWriteCRec()
 			WrLLF10Msg(138); return result;
 		}
 	if (New.Typ == 'F') {
-		if (New.Name.length() > 8) { WrLLF10Msg(1002); return result;; }
-		if (New.FTyp == '?') { WrLLF10Msg(1067); return result;; }
-		if (IsDuplFileName(New.Name)) { WrLLF10Msg(1068); return result;; }
-		if ((New.FTyp == '0') && (New.Txt != 0)) { WrLLF10Msg(1083); return result;; }
+		if (New.Name.length() > 8) { WrLLF10Msg(1002); return result; }
+		if (New.FTyp == '?') { WrLLF10Msg(1067); return result; }
+		if (IsDuplFileName(New.Name)) { WrLLF10Msg(1068); return result; }
+		if ((New.FTyp == '0') && (New.Txt != 0)) { WrLLF10Msg(1083); return result; }
 		if (NetFileTest(&New) && !TestIsNewRec() &&
 			(Old.Typ == 'F') && (eq != _equ) && !PromptYN(824)) {
 			result = 2; return result;
@@ -673,7 +670,7 @@ void Diagnostics(void* MaxHp, longint Free, FileD* FD)
 bool CompRunChptRec(WORD CC)
 {
 	pstring STyp(1); void* p = nullptr; void* p2 = nullptr; void* MaxHp = nullptr;
-	ExitRecord er; EditD* OldE = nullptr;
+	EditD* OldE = nullptr;
 	RdbPos RP; longint Free; bool uw = false, mv = false;
 	FileD* FD = nullptr;
 
@@ -694,7 +691,7 @@ bool CompRunChptRec(WORD CC)
 		IsCompileErr = false;
 		uw = false;
 		mv = MausVisible;
-				
+
 		FD = nullptr;
 		STyp = _ShortS(ChptTyp);
 		RP.R = CRdb;
@@ -801,7 +798,6 @@ bool CompRunChptRec(WORD CC)
 	MaxHp = nullptr;
 	ReleaseStore2(p2);
 	Free = StoreAvail();
-	RestoreExit(er);
 	RunMsgClear();
 	if (WasError) {
 #ifdef FandSQL
@@ -817,7 +813,7 @@ bool CompRunChptRec(WORD CC)
 			ClrScr();
 		}
 	}
-	if (uw)	{
+	if (uw) {
 		UserW = 0;/*mem overflow*/
 		UserW = PushW(1, 1, TxtCols, TxtRows);
 	}
@@ -1017,11 +1013,11 @@ void DeleteF()
 	CloseFile();
 	SetCPathVol();
 	MyDeleteFile(CPath);
-	CExtToX();
+	CPath = CExtToX(CDir, CName, CExt);
 	if (CFile->XF != nullptr) {
 		MyDeleteFile(CPath);
 	}
-	CExtToT();
+	CPath = CExtToT(CDir, CName, CExt);
 	if (CFile->TF != nullptr) {
 		MyDeleteFile(CPath);
 	}
@@ -1052,10 +1048,10 @@ bool MergAndReplace(FileD* fd_old, FileD* fd_new)
 		RenameFile56(p, CPath, false);
 		CFile = fd_new;
 		/*TF->Format used*/
-		CExtToT();
+		CPath = CExtToT(CDir, CName, CExt);
 		p = CPath;
 		SetCPathVol();
-		CExtToT();
+		CPath = CExtToT(CDir, CName, CExt);
 		RenameFile56(CPath, p, false);
 		result = true;
 	}
@@ -1118,7 +1114,7 @@ bool MergeOldNew(bool Veriflongint, longint Pos)
 	}
 	else if ((FDOld->Typ == 'X') && !EquKeys(FDOld->Keys[0], FDNew->Keys[0])) {
 		SetCPathVol();
-		CExtToX();
+		CPath = CExtToX(CDir, CName, CExt);
 		MyDeleteFile(CPath);
 	}
 label1:
@@ -1144,7 +1140,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 	bool Verif = false, FDCompiled = false, Encryp = false;
 	char Mode = '\0'; RdbPos RP;
 	void* p = nullptr; void* p1 = nullptr; void* p2 = nullptr;
-	ExitRecord er; WORD lmsg = 0;
+	WORD lmsg = 0;
 	//LinkD* ld = nullptr;
 	std::string RprtTxt;
 	bool top = false;
@@ -1298,12 +1294,12 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 					break;
 				}
 #ifdef FandProlog
-				//case 'L': {
-				//	SetInpTTPos(Txt, Encryp);
-				//	TProgRoots* typeL = ReadProlog(I);
-				//	delete typeL; typeL = nullptr;
-				//	break;
-				//}
+						//case 'L': {
+						//	SetInpTTPos(Txt, Encryp);
+						//	TProgRoots* typeL = ReadProlog(I);
+						//	delete typeL; typeL = nullptr;
+						//	break;
+						//}
 #endif
 				}
 			}
@@ -1321,7 +1317,6 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 		}
 		CompileFD = false;
 		result = true;
-		RestoreExit(er);
 		if (!Run) { CRecPtr = E->NewRecPtr; ReadRec(CFile, CRec(), CRecPtr); }
 		CompileMsgOff(Buf, w);
 #ifdef FandSQL
@@ -1331,7 +1326,6 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 	}
 	catch (std::exception& e) {
 		// TODO: log error
-		RestoreExit(er);
 		result = false;
 	}
 	CompileMsgOff(Buf, w);
@@ -1379,7 +1373,6 @@ bool EditExecRdb(std::string Nm, std::string proc_name, Instr_proc* proc_call, w
 	void* p = nullptr;
 	pstring passw(20);
 	bool b = false;
-	ExitRecord er, er2;
 	RdbPos RP;
 	EditOpt* EO = nullptr;
 
@@ -1521,7 +1514,7 @@ label8:
 #endif
 
 label9:
-	RestoreExit(er);
+	//RestoreExit(er);
 	if (!wasGraph && IsGraphMode) {
 		// ScrTextMode(false, false);
 		throw std::exception("CompRunChptRec() Graph <-> Text Mode switching not implemented.");
@@ -1550,64 +1543,75 @@ void UpdateCat()
 
 void UpdateUTxt()
 {
-	longint w; WORD TxtPos, LicNr; LongStr* S = nullptr; LongStr* s2 = nullptr;
-	bool Srch, Upd, b;
-	longint OldPos, Pos; ExitRecord er; void* p = nullptr; void* p1 = nullptr;
+	bool Srch, Upd;
+	longint Pos;
+	void* p = nullptr;
+	void* p1 = nullptr;
 	size_t LL;
 	CFile = Chpt;
 	CRecPtr = Chpt->RecPtr;
-	LicNr = ChptTF->LicenseNr;
+	WORD LicNr = ChptTF->LicenseNr;
 	MarkStore(p1);
-	if (CFile->NRecs == 0) goto label1;
+	if (CFile->NRecs == 0) {
+		WrLLF10Msg(9); return;
+	}
 	ReadRec(CFile, 1, CRecPtr);
 	if (_ShortS(ChptTyp) != 'U') {
-	label1:
-		WrLLF10Msg(9); /*exit*/;
+		WrLLF10Msg(9); return;
 	}
-	w = PushW(1, 1, TxtCols, TxtRows - 1);
-	TxtPos = 1;
+	longint w = PushW(1, 1, TxtCols, TxtRows - 1);
+	WORD TxtPos = 1;
 	TextAttr = screen.colors.tNorm;
-	OldPos = _T(ChptTxt);
-	S = _LongS(ChptTxt); b = false;
-	if (CRdb->Encrypted) CodingLongStr(S);
-	// NewExit(Ovr, er);
-	goto label4;
-	SetInpLongStr(S, false);
-	MarkStore(p);
-	RdUserId(false);
-	ReleaseStore(p);
-	b = true;
-label2:
-	SimpleEditText('T', "", "", S, 0x7FFF, TxtPos, Upd);
-	SetInpLongStr(S, false);
-	MarkStore(p);
-	RdUserId(false);
-	ReleaseStore(p);
-	b = false;
-	if (Upd) {
-		StoreChptTxt(ChptTxt, S, true);
-		WriteRec(CFile, 1, CRecPtr);
+	longint OldPos = _T(ChptTxt);
+	LongStr* S = _LongS(ChptTxt);
+	
+	if (CRdb->Encrypted) {
+		CodingLongStr(S);
 	}
-label3:
+
+	SetInpLongStr(S, false);
+	MarkStore(p);
+	RdUserId(false);
+	ReleaseStore(p);
+	bool b = true;
+
+	while (true) {
+		try {
+			SimpleEditText('T', "", "", S, 0x7FFF, TxtPos, Upd);
+			SetInpLongStr(S, false);
+			MarkStore(p);
+			RdUserId(false);
+			ReleaseStore(p);
+			b = false;
+			if (Upd) {
+				StoreChptTxt(ChptTxt, S, true);
+				WriteRec(CFile, 1, CRecPtr);
+			}
+			break;
+		}
+		catch (std::exception& ex) {
+			if (b) {
+				WrLLF10MsgLine();
+				ReleaseStore(p);
+				if (PromptYN(59)) {
+					continue;
+				}
+			}
+			else {
+				WrLLF10Msg(9);
+			}
+			break;
+		}
+	}
+
 	PopW(w);
 	ReleaseStore(p1);
-	return;
-label4:
-	if (b) {
-		WrLLF10MsgLine();
-		ReleaseStore(p);
-		if (PromptYN(59)) goto label2;
-		goto label3;
-	}
-	WrLLF10Msg(9);
-	goto label3;
 }
 
 void InstallRdb(std::string n)
 {
 	wwmix ww;
 
-	ExitRecord er;
 	pstring passw(20);
 	TMenuBoxS* w = nullptr;
 	WORD i = 0;
@@ -1617,28 +1621,43 @@ void InstallRdb(std::string n)
 		passw = ww.PassWord(false);
 		if (!ww.HasPassWord(Chpt, 2, passw)) {
 			WrLLF10Msg(629);
-			goto label1;
+			CloseChpt();
+			return;
 		}
 	}
 	if (Chpt->UMode == RdOnly) {
 		UpdateCat();
-		goto label1;
+		CloseChpt();
+		return;
 	}
 	RdMsg(8);
 
 	i = 1;
 	w = new TMenuBoxS(43, 6, MsgLine);
-label0:
-	i = w->Exec(i);
-	switch (i) {
-	case 0: { delete w; w = nullptr; goto label1; }
-	case 1: { UpdateCat(); goto label0; }
-	case 2: { UpdateUTxt(); break; }
-	case 3: { ww.SetPassWord(Chpt, 2, ww.PassWord(true)); break; }
+
+	while (true) {
+		i = w->Exec(i);
+		switch (i) {
+		case 0: {
+			delete w;
+			w = nullptr;
+			CloseChpt();
+			return;
+		}
+		case 1: {
+				UpdateCat();
+				continue;
+			}
+		case 2: {
+				UpdateUTxt();
+				break;
+			}
+		case 3: {
+				ww.SetPassWord(Chpt, 2, ww.PassWord(true));
+				break;
+			}
+		default: ;
+		}
+		SetUpdHandle(ChptTF->Handle);
 	}
-	SetUpdHandle(ChptTF->Handle);
-	goto label0;
-label1:
-	RestoreExit(er);
-	CloseChpt();
 }

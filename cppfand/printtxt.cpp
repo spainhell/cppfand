@@ -138,7 +138,6 @@ void PrintTxtFBlk(std::string& text, longint BegPos, bool CtrlL)
 	WORD Ti = 0, Times = 0, Cp = 0, Pl = 0, MaxLine = 0;
 	pstring FoTxt, HeTxt;
 	pstring s(3);
-	ExitRecord er;
 	// NewExit(Ovr(), er);
 	// goto label3;
 	RunMsgOn('P', 0);
@@ -231,7 +230,7 @@ void PrintTxtFBlk(std::string& text, longint BegPos, bool CtrlL)
 	} while (Times != 0);
 	ClosePrinter(Po);
 label3:
-	RestoreExit(er);
+	//RestoreExit(er);
 	RunMsgOff();
 }
 

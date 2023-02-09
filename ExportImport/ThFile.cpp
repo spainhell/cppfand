@@ -198,7 +198,7 @@ void ThFile::ExtToT()
 {
 	CPath = Path;
 	FSplit(CPath, CDir, CName, CExt);
-	CExtToT();
+	CPath = CExtToT(CDir, CName, CExt);
 	Path = CPath;
 }
 

@@ -2022,7 +2022,6 @@ void Calculate()
 	wwmix ww;
 	FrmlElem* Z = nullptr;
 	std::string txt;
-	ExitRecord er;
 	WORD I; pstring Msg;
 	void* p = nullptr;
 	char FTyp;
@@ -2041,9 +2040,9 @@ void Calculate()
 		TxtEdCtrlUBrk = true; TxtEdCtrlF4Brk = true;
 		ww.PromptLL(114, txt, I, Del);
 		if (Event.Pressed.KeyCombination() == _U_) goto label0;
-		if ((Event.Pressed.KeyCombination() == __ESC) || (txt.length() == 0)) goto label3;
+		if (Event.Pressed.KeyCombination() == __ESC || txt.length() == 0) goto label3;
 		CalcTxt = txt;
-		if ((Event.Pressed.KeyCombination() == __CTRL_F4) && (Mode == TextM) && !bScroll) {
+		if (Event.Pressed.KeyCombination() == __CTRL_F4 && Mode == TextM && !bScroll) {
 			if (txt.length() > LineMaxSize - GetArrLineLength()) {
 				I = LineMaxSize - GetArrLineLength();
 				WrLLF10Msg(419);
@@ -2096,7 +2095,6 @@ void Calculate()
 	}
 label3:
 	ReleaseStore(p);
-	RestoreExit(er);
 }
 
 bool BlockExist()
@@ -3101,7 +3099,6 @@ void EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg, std::vecto
 	bool Srch = false, Upd = false;
 	longint Size = 0; // , L = 0;
 	longint w1 = 0;
-	ExitRecord er;
 	bool Loc = false;
 	WORD Ind = 0, oldInd = 0;
 	longint oldTxtxy = 0;
@@ -3262,13 +3259,11 @@ void EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg, std::vecto
 			}
 			PopW(w1);
 			LastTxtPos = Ind; // +Part.PosP;
-			RestoreExit(er);
 			break;
 		}
 	}
-	catch (std::exception& e)
-	{
-
+	catch (std::exception& e) {
+		// TODO: log error
 	}
 }
 

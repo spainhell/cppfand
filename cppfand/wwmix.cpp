@@ -734,45 +734,48 @@ label3:
 	return d + s;
 }
 
-bool wwmix::PromptFilter(std::string Txt, FrmlElem* Bool, std::string* BoolTxt)
+bool wwmix::PromptFilter(std::string Txt, FrmlElem** Bool, std::string* BoolTxt)
 {
 	void* p = nullptr;
-	ExitRecord er = {};
 	bool Del;
-	FileDPtr cf = nullptr;
+	FileD* cf = nullptr;
 	MarkStore(p);
 	size_t I = 1;
-	auto result = true;
-	//NewExit(Ovr(), er);
-	//goto label3;
+
 	Del = true;
 	ResetCompilePars();
 	cf = CFile;
-label1:
-	PromptLL(113, Txt, I, Del);
-	Bool = nullptr;
-	BoolTxt = nullptr;
-	if (Event.Pressed.KeyCombination() == __ESC) { result = false; goto label2; }
-	if (Txt.length() == 0) goto label2;
-	SetInpStr(Txt);
-	RdLex();
-	Bool = RdBool();
-	if (Lexem != 0x1A) Error(21);
-	BoolTxt = new std::string();
-	*BoolTxt = Txt;
-label2:
-	RestoreExit(er);
-	return result;
-label3:
-	pstring Msg = MsgLine;
-	I = CurrPos;
-	SetMsgPar(Msg);
-	WrLLF10Msg(110);
-	IsCompileErr = false;
-	ReleaseStore(p);
-	CFile = cf;
-	Del = false;
-	goto label1;
+
+	while (true) {
+		try {
+			PromptLL(113, Txt, I, Del);
+			*Bool = nullptr;
+			BoolTxt = nullptr;
+			if (Event.Pressed.KeyCombination() == __ESC) {
+				return false;
+			}
+			if (Txt.length() == 0) {
+				return true;
+			}
+			SetInpStr(Txt);
+			RdLex();
+			*Bool = RdBool();
+			if (Lexem != 0x1A) Error(21);
+			BoolTxt = new std::string();
+			*BoolTxt = Txt;
+			return true;
+		}
+		catch (std::exception& e) {
+			pstring Msg = MsgLine;
+			I = CurrPos;
+			SetMsgPar(Msg);
+			WrLLF10Msg(110);
+			IsCompileErr = false;
+			ReleaseStore(p);
+			CFile = cf;
+			Del = false;
+		}
+	}
 }
 
 void wwmix::PromptLL(WORD N, std::string& Txt, WORD I, bool Del)

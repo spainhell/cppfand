@@ -144,7 +144,7 @@ FrmlElem* RdFldNameFrmlR(char& FTyp)
 FrmlElem* FindIiandFldFrml(FileD** FD, char& FTyp)
 {
 	integer i = 0;
-	FrmlElem* z = nullptr;;
+	FrmlElem* z = nullptr;
 	if (WhatToRd == 'i') {       /* search first in Ii*/
 		*FD = InpFD(Oi);
 		z = TryRdFldFrml(*FD, FTyp);

@@ -1,8 +1,6 @@
 #include "EditorHelp.h"
 
 #include <stdexcept>
-
-
 #include "../cppfand/base.h"
 #include "../cppfand/FileD.h"
 #include "../cppfand/GlobalVariables.h"
@@ -10,14 +8,16 @@
 #include "../cppfand/wwmenu.h"
 
 // ***********HELP**********  // r351
-const BYTE maxStk = 15; WORD iStk = 0;
+const BYTE maxStk = 15;
+WORD iStk = 0;
 struct structStk { RdbD* Rdb; FileD* FD; WORD iR, iT; } Stk[maxStk];
 
 void ViewHelpText(std::string& S, WORD& TxtPos);
 
 void Help(RdbD* R, pstring Name, bool InCWw)
 {
-	void* p = nullptr; ExitRecord er; FileD* fd = nullptr;
+	void* p = nullptr;
+	FileD* fd = nullptr;
 	WORD i, l, l2; WORD iRec, oldIRec;
 	std::string s;
 	std::string s2;
@@ -31,7 +31,11 @@ void Help(RdbD* R, pstring Name, bool InCWw)
 		R = Stk[iStk].Rdb;
 		backw = true;
 	}
-	else { if (Name == "") return; backw = false; }
+	else {
+		if (Name == "") return;
+		backw = false;
+	}
+
 	if (R == (RdbD*)HelpFD) {
 		fd = HelpFD;
 		if (HelpFD->Handle == nullptr) {
@@ -43,41 +47,50 @@ void Help(RdbD* R, pstring Name, bool InCWw)
 		fd = R->HelpFD;
 		if (fd == nullptr) return;
 	}
+
 	MarkStore(p);
 	FileD* cf = CFile;
 	longint w = 0, w2 = 0;
 
 	try {
 		if (InCWw) {
-			WORD c1 = WindMin.X; WORD c2 = WindMax.X;
-			WORD r1 = WindMin.Y; WORD r2 = WindMax.Y;
-			if ((c1 == 1) && (c2 == TxtCols) && (r1 == 2) && (r2 == TxtRows)) {
+			WORD c1 = WindMin.X;
+			WORD c2 = WindMax.X;
+			WORD r1 = WindMin.Y;
+			WORD r2 = WindMax.Y;
+			if (c1 == 1 && c2 == TxtCols && r1 == 2 && r2 == TxtRows) {
 				r1 = 1;
 			}
 			w = PushW(1, TxtRows, TxtCols, TxtRows);
 			w2 = PushW(c1, r1, c2, r2, true, true);
 		}
-		else w = PushW(1, 1, TxtCols, TxtRows, true, true);
-		i = 1; frst = true; delta = 0;
+		else {
+			w = PushW(1, 1, TxtCols, TxtRows, true, true);
+		}
+		i = 1;
+		frst = true;
+		delta = 0;
 		if (backw) {
 			byName = false;
 			goto label3;
 		}
-	label1:
+
 		byName = true;
 	label2:
 		s = GetHlpText(R, Name, byName, iRec);
 		cf2 = CFile;
-		if (s.empty())
+		if (s.empty()) {
 			if (frst && (R == (RdbD*)(&HelpFD)) && (KbdChar == __CTRL_F1)) {
 				KbdChar = 0;
 				Name = "Ctrl-F1 error";
-				goto label1;
+				byName = true;
+				goto label2;
 			}
 			else {
 				SetMsgPar(Name, fd->Name);
 				WrLLF10Msg(146);
 			}
+		}
 		else {
 			frst = false;
 			byName = false;
@@ -152,17 +165,21 @@ void Help(RdbD* R, pstring Name, bool InCWw)
 				else {
 					Name = LexWord;
 				}
-				goto label1;
+				byName = true;
+				goto label2;
 			}
 			}
 		}
 	}
 	catch (std::exception& e) {
-		//label4:
-		RestoreExit(er);
+		// TODO: log error
 	}
-	if (w2 != 0) { PopW(w2); }
-	if (w != 0) { PopW(w); }
+	if (w2 != 0) {
+		PopW(w2);
+	}
+	if (w != 0)	{
+		PopW(w);
+	}
 	ReleaseStore(p);
 	CFile = cf;
 }

@@ -28,10 +28,8 @@ longint NLinesOutp;
 
 void RunReport(RprtOpt* RO)
 {
-	//return;
 	std::string ReportString;
 	wwmix ww;
-	ExitRecord er;
 	LvDescr* L = nullptr;
 	std::string* s = nullptr;
 	WORD i = 0;
@@ -43,7 +41,7 @@ void RunReport(RprtOpt* RO)
 	LockMode md;
 	if (SelQuest) /* !!! with IDA[1]^ do!!! */ {
 		CFile = IDA[1]->Scan->FD;
-		if (!ww.PromptFilter("", IDA[1]->Bool, s)) {
+		if (!ww.PromptFilter("", &IDA[1]->Bool, s)) {
 			PrintView = false;
 			return;
 		}
@@ -126,7 +124,7 @@ label1:
 		if (b) FormFeed(ReportString);
 		ex = false;
 	label3:
-		RestoreExit(er);
+		//RestoreExit(er);
 		if (PrintView && (NLinesOutp == 0) && (LineLenLst == 0)) {
 			RdMsg(159);
 			printf("%s\n", ReportString.c_str());

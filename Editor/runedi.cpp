@@ -1357,7 +1357,6 @@ void BuildWork()
 	FrmlElem* boolP = nullptr;
 	WORD l = 0;
 	FieldDescr* f = nullptr;
-	ExitRecord er;
 
 	if (!CFile->Keys.empty()) KF = CFile->Keys[0]->KFlds;
 	if (HasIndex) {
@@ -1424,7 +1423,6 @@ label1:
 		WK->KFlds = KF;
 		CFile->RecLen = l;
 	}
-	RestoreExit(er);
 	if (!ok) GoExit();
 	ReleaseStore(p);
 }
@@ -2795,21 +2793,26 @@ label1:
 
 void Sorting()
 {
-	KeyFldD* SKRoot = nullptr; void* p = nullptr; ExitRecord er; LockMode md;
-	SaveFiles(); MarkStore(p);
+	KeyFldD* SKRoot = nullptr;
+	void* p = nullptr;
+	LockMode md;
+	SaveFiles();
+	MarkStore(p);
 	if (!PromptSortKeys(E->Flds, SKRoot) || (SKRoot == nullptr)) goto label2;
 	if (!TryLMode(ExclMode, md, 1)) goto label2;
-	//NewExit(Ovr(), er);
-	//goto label1;
+
 	try {
 		SortAndSubst(SKRoot);
 		E->EdUpdated = true;
 	}
 	catch (std::exception&) {
-		RestoreExit(er); CFile = E->FD; OldLMode(md);
+		CFile = E->FD;
+		OldLMode(md);
 	}
 label2:
-	ReleaseStore(p); CRecPtr = E->NewRecPtr; DisplAllWwRecs();
+	ReleaseStore(p);
+	CRecPtr = E->NewRecPtr;
+	DisplAllWwRecs();
 }
 
 void AutoReport()
@@ -3470,7 +3473,7 @@ void PromptSelect()
 	else Txt = "";
 	if (IsCurrChpt()) ReleaseFDLDAfterChpt();
 	ReleaseStore(E->AfterE);
-	ww.PromptFilter(Txt, E->Bool, &E->BoolTxt);
+	ww.PromptFilter(Txt, &E->Bool, &E->BoolTxt);
 	if (E->Bool == nullptr) Select = false; else Select = true;
 	DisplBool();
 	SetNewWwRecAttr();
@@ -3774,7 +3777,8 @@ bool ShiftF7Duplicate()
 bool DuplToPrevEdit()
 {
 	LockMode md;
-	auto result = false; EditD* ee = (EditD*)E->pChain;
+	auto result = false;
+	EditD* ee = E->pChain;
 	if (ee == nullptr) return result;
 	FieldDescr* f1 = CFld->FldD;
 
@@ -3809,7 +3813,7 @@ void Calculate2()
 {
 	wwmix ww;
 
-	FrmlElem* Z; std::string txt; ExitRecord er; WORD I; pstring Msg;
+	FrmlElem* Z; std::string txt; WORD I; pstring Msg;
 	void* p = nullptr; char FTyp; double R; FieldDescr* F; bool Del;
 	//MarkStore(p);
 	//NewExit(Ovr(), er);
@@ -3892,7 +3896,7 @@ void Calculate2()
 	}
 label3:
 	//ReleaseStore(p);
-	RestoreExit(er);
+	{}
 }
 
 void DelNewRec()
@@ -4159,7 +4163,7 @@ void CtrlReadKbd()
 	BYTE flgs = 0;
 	longint TimeBeg = TimerRE;
 	WORD D = 0;
-	
+
 	if (F1Mode && Mode24 && CRdb->HelpFD != nullptr) {
 		DisplayLastLineHelp(CFile->ChptPos.R, CFile->Name + "." + CFld->FldD->Name, Mode24);
 	}
@@ -4742,15 +4746,17 @@ void EditDataFile(FileD* FD, EditOpt* EO)
 	longint w1 = 0, w2 = 0, w3 = 0;
 	WORD Brk = 0, r1 = 0, r2 = 0;
 	bool pix = false;
-	ExitRecord er;
 	MarkStore(p);
 	if (EO->SyntxChk) {
 		IsCompileErr = false;
-		//NewExit(Ovr(), er);
-		//goto label1; 
-		NewEditD(FD, EO);
-	label1:
-		RestoreExit(er);
+
+		try {
+			NewEditD(FD, EO);
+		}
+		catch (std::exception& e) {
+			// TODO: log error
+		}
+
 		if (IsCompileErr) {
 			EdRecKey = MsgLine;
 			LastExitCode = CurrPos + 1;

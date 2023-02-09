@@ -303,8 +303,7 @@ void CompileHelpCatDcl()
 bool SetTopDir(std::string& p, std::string& n)
 {
 	std::string e;
-	ExitRecord er;
-	auto result = false;
+	bool result = false;
 	try {
 		FSplit(FExpand(p), TopRdbDir, n, e);
 		if (!IsIdentifStr(n)) {
@@ -332,7 +331,7 @@ bool SetTopDir(std::string& p, std::string& n)
 		result = true;
 	}
 	catch (std::exception& e) {
-		RestoreExit(er);
+		// TODO: log error
 	}
 	return result;
 }
@@ -391,7 +390,6 @@ void InitRunFand()
 	FILE* h = nullptr;
 	std::string s;
 	BYTE nb, sec = 0;
-	ExitRecord* er = new ExitRecord();
 	integer i, j, MsgNr;
 	TMenuBoxS* mb = nullptr;
 	longint w = 0;

@@ -96,7 +96,6 @@ void CreateIndexFile()
 {
 	Logging* log = Logging::getInstance();
 
-	ExitRecord er;
 	void* cr = nullptr;
 	LockMode md = NullMode;
 	bool fail = false;
@@ -130,7 +129,7 @@ void CreateIndexFile()
 		fail = false;
 	}
 	catch (std::exception& e) {
-		RestoreExit(er);
+		// TODO: log error
 	}
 
 	CRecPtr = cr;

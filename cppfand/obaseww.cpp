@@ -297,10 +297,10 @@ void CFileMsg(WORD n, char Typ)
 {
 	SetCPathVol();
 	if (Typ == 'T') {
-		CExtToT();
+		CPath = CExtToT(CDir, CName, CExt);
 	}
 	else if (Typ == 'X') {
-		CExtToX();
+		CPath = CExtToX(CDir, CName, CExt);
 	}
 	std::string path = CPath;
 	ReplaceChar(path, '/', '\\');

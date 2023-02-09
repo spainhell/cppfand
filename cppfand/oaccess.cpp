@@ -170,7 +170,7 @@ label1:
 #endif
 	TestCFileError();
 	if (CFile->TF != nullptr) /* !!! with TF^ do!!! */ {
-		CExtToT();
+		CPath = CExtToT(CDir, CName, CExt);
 		if (CFile->WasRdOnly) {
 			SetFileAttr(GetFileAttr() & 0x26); // 0x26 = archive + hidden + system
 		}
@@ -192,7 +192,7 @@ label1:
 		if (HandleError != 0) goto label4;
 	}
 	if (CFile->Typ == 'X') /* !!! with GetXFile^ do!!! */ {
-		CExtToX();
+		CPath = CExtToX(CDir, CName, CExt);
 	label3:
 		CFile->XF->Handle = OpenH(_isoldfile, CFile->UMode);
 		if (HandleError == 2) {
@@ -339,11 +339,11 @@ void CreateF()
 	TestCFileError();
 	CFile->NRecs = 0;
 	if (CFile->TF != nullptr) {
-		CExtToT();
+		CPath = CExtToT(CDir, CName, CExt);
 		CFile->TF->Create();
 	}
 	if (CFile->Typ == 'X') {
-		CExtToX();
+		CPath = CExtToX(CDir, CName, CExt);
 		CFile->XF->Handle = OpenH(_isoverwritefile, Exclusive);
 		CFile->XF->TestErr(); /*SetNotValid*/
 		CFile->XF->SetEmpty();
@@ -433,7 +433,7 @@ void CloseFile()
 					CFile->NRecs = 0;
 				label1:
 					SetCPathVol();
-					CExtToX();
+					CPath = CExtToX(CDir, CName, CExt);
 					MyDeleteFile(CPath);
 				}
 			}
@@ -446,7 +446,7 @@ void CloseFile()
 			if (HandleError == 0) CFile->TF->Handle = nullptr; // soubor byl uspesne uzavren
 			if ((!CFile->IsShared()) && (CFile->NRecs == 0) && (CFile->Typ != 'D')) {
 				SetCPathVol();
-				CExtToT();
+				CPath = CExtToT(CDir, CName, CExt);
 				// MyDeleteFile(CPath);
 			}
 		}
@@ -463,7 +463,7 @@ void CloseFile()
 		SetCPathVol();
 		SetFileAttr((GetFileAttr() & 0x27) | 0x01); // {RdONly; }
 		if (CFile->TF != nullptr) {
-			CExtToT();
+			CPath = CExtToT(CDir, CName, CExt);
 			SetFileAttr((GetFileAttr() & 0x27) | 0x01); //  {RdONly; }
 		}
 	}
@@ -591,31 +591,34 @@ void SetCPathForH(FILE* handle)
 {
 	RdbD* RD = nullptr;
 	FileD* cf = nullptr;
-	cf = CFile; RD = CRdb;
-	while (RD != nullptr)
-	{
+	cf = CFile;
+	RD = CRdb;
+	while (RD != nullptr) {
 		CFile = RD->FD;
-		while (CFile != nullptr)
-		{
-			if (CFile->Handle == handle) { SetCPathVol(); goto label1; }
-			if ((CFile->XF != nullptr) && (CFile->XF->Handle == handle))
-			{
+		while (CFile != nullptr) {
+			if (CFile->Handle == handle) {
 				SetCPathVol();
-				CExtToX();
-				goto label1;
+				CFile = cf;
+				return;
 			}
-			if ((CFile->TF != nullptr) && (CFile->TF->Handle == handle))
-			{
+			if (CFile->XF != nullptr && CFile->XF->Handle == handle) {
 				SetCPathVol();
-				CExtToT();
-				goto label1;
+				CPath = CExtToX(CDir, CName, CExt);
+				CFile = cf;
+				return;
 			}
-			CFile = (FileD*)CFile->pChain;
-		} RD = RD->ChainBack;
+			if (CFile->TF != nullptr && CFile->TF->Handle == handle) {
+				SetCPathVol();
+				CPath = CExtToT(CDir, CName, CExt);
+				CFile = cf;
+				return;
+			}
+			CFile = CFile->pChain;
+		}
+		RD = RD->ChainBack;
 	}
 	RdMsg(799);
 	CPath = MsgLine;
-label1:
 	CFile = cf;
 }
 
@@ -985,7 +988,7 @@ void SubstDuplF(FileD* TempFD, bool DelTF)
 	SaveCache(0, CFile->Handle);
 	FileD* PrimFD = CFile;
 	std::string p = CPath;
-	CExtToT();
+	CPath = CExtToT(CDir, CName, CExt);
 	std::string pt = CPath;
 	/* !!! with PrimFD^ do!!! */ {
 		CloseClearH(&PrimFD->Handle);

@@ -2371,7 +2371,6 @@ void RunProlog(RdbPos* Pos, std::string PredName)
 	RdbD* ChptLRdb = nullptr;
 	WORD oldSg = 0; TInstance* oldCurrInst = nullptr;
 	WORD tl = 0, cl = 0;
-	ExitRecord er;
 	bool l_source_branch = false;
 	bool l_source_cmd = false;
 
@@ -2820,7 +2819,6 @@ label6:
 label7:
 	EdBreak = 2;
 label8_end:
-	RestoreExit(er);
 	/*writeln(AbsAdr(HeapPtr)-AbsAdr(pm1),'/',AbsAdr(pm2)-AbsAdr(Stack2Ptr)); */
 	//_Sg = oldSg;
 	CurrInst = oldCurrInst;

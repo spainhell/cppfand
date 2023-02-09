@@ -229,7 +229,6 @@ void VarFixExp(ThFile* F2, CpOption Opt)
 void ImportTxt(CopyD* CD)
 {
 	ThFile* F1 = nullptr;
-	ExitRecord er;
 	LockMode md;
 	auto FE = std::make_unique<FrmlElem4>(_const, 0);
 
@@ -273,7 +272,7 @@ void ImportTxt(CopyD* CD)
 		LastExitCode = 0;
 	}
 	catch (std::exception& e) {
-		RestoreExit(er);
+
 	}
 #ifdef FandSQL
 	if (q != nullptr) {
@@ -289,51 +288,63 @@ void ImportTxt(CopyD* CD)
 
 void ExportTxt(CopyD* CD)
 {
-	longint n; longint i;
-	pstring s;
-	ExitRecord er;
+	ThFile* F2 = nullptr;
+	LockMode md = NullMode;
+	XScan* Scan = nullptr;
 
-	//NewExit(Ovr, er);
-	//goto label2;
-	InOutMode m = InOutMode::_outp;
-	if (CD->Append) m = InOutMode::_append;
+	try {
+		InOutMode m;
+		if (CD->Append) {
+			m = InOutMode::_append;
+		}
+		else {
+			m = InOutMode::_outp;
+		}
 
-	ThFile* F2 = new ThFile(CD->Path2, CD->CatIRec2, m, 0, nullptr);
-	if (CD->HdFD != nullptr) {
-		LinkLastRec(CD->HdFD, n, true);
-		s = _ShortS(CD->HdF);
-		i = s.first('\r');
-		if (i > 0) s[0] = i - 1;
-		F2->WrString(s);
-		F2->WrString("\r\n");
-		ClearRecSpace(CRecPtr);
-		ReleaseStore(CRecPtr);
+		F2 = new ThFile(CD->Path2, CD->CatIRec2, m, 0, nullptr);
+		if (CD->HdFD != nullptr) {
+			longint n = 0;
+			LinkLastRec(CD->HdFD, n, true);
+			pstring s = _ShortS(CD->HdF);
+			longint i = s.first('\r');
+			if (i > 0) s[0] = i - 1;
+			F2->WrString(s);
+			F2->WrString("\r\n");
+			ClearRecSpace(CRecPtr);
+			ReleaseStore(CRecPtr);
+		}
+		CFile = CD->FD1;
+		CRecPtr = GetRecSpace();
+		md = NewLMode(RdMode);
+		Scan = new XScan(CFile, CD->ViewKey, nullptr, true);
+		Scan->Reset(nullptr, false);
+		RunMsgOn('C', Scan->NRecs);
+		while (true) {
+			Scan->GetRec();
+			if (!Scan->eof) {
+				VarFixExp(F2, CD->Opt2);
+				F2->WrString("\r\n");
+				RunMsgN(Scan->IRec);
+				continue;
+			}
+			break;
+		}
+		LastExitCode = 0;
+		RunMsgOff();
 	}
-	CFile = CD->FD1;
-	CRecPtr = GetRecSpace();
-	LockMode md = NewLMode(RdMode);
-	XScan* Scan = new XScan(CFile, CD->ViewKey, nullptr, true);
-	Scan->Reset(nullptr, false);
-	RunMsgOn('C', Scan->NRecs);
-label1:
-	Scan->GetRec();
-	if (!Scan->eof) {
-		VarFixExp(F2, CD->Opt2);
-		F2->WrString("\r\n");
-		RunMsgN(Scan->IRec);
-		goto label1;
+	catch (std::exception& e) {
+		// TODO: log error
 	}
-	LastExitCode = 0;
-	RunMsgOff();
-label2:
-	RestoreExit(er);
+
 	if (Scan != nullptr) {
 		Scan->Close();
 		ClearRecSpace(CRecPtr);
 		OldLMode(md);
 	}
-	if ((F2 != nullptr) && (F2->Handle != nullptr)) {
-		if (LastExitCode != 0) F2->ClearBuf();
+	if (F2 != nullptr && F2->Handle != nullptr) {
+		if (LastExitCode != 0) {
+			F2->ClearBuf();
+		}
 		delete F2;
 	}
 }
@@ -360,7 +371,6 @@ void Cpy(FILE* h, longint sz, ThFile* F2)
 
 void ExportFD(CopyD* CD)
 {
-	ExitRecord er;
 	ThFile* F2 = nullptr;
 	LockMode md = NullMode;
 
@@ -370,12 +380,15 @@ void ExportFD(CopyD* CD)
 		md = NewLMode(RdMode);
 		F2 = new ThFile(CD->Path2, CD->CatIRec2, InOutMode::_outp, 0, nullptr);
 		longint n = XNRecs(CD->FD1->Keys);
-		/* !!! with CFile^ do!!! */
+
 		if (n == 0) {
 			delete F2;
 			F2 = nullptr;
 		}
-		else Cpy(CFile->Handle, CFile->UsedFileSize(), F2);
+		else {
+			Cpy(CFile->Handle, CFile->UsedFileSize(), F2);
+		}
+
 		if (CFile->TF != nullptr) {
 			F2->RewriteT(); /* !!! with CFile->TF^ do!!! */
 			if (n == 0) {
@@ -384,6 +397,7 @@ void ExportFD(CopyD* CD)
 			}
 			else Cpy(CFile->TF->Handle, CFile->TF->UsedFileSize(), F2);
 		}
+
 		if (CD->WithX1) {
 			F2->RewriteX(); /* !!! with CFile->GetXFile^ do!!! */
 			if (n == 0) {
@@ -392,12 +406,12 @@ void ExportFD(CopyD* CD)
 			}
 			else Cpy(CFile->XF->Handle, CFile->XF->UsedFileSize(), F2);
 		}
-	label0:
+
 		LastExitCode = 0;
 	}
 
 	catch (std::exception& e) {
-		RestoreExit(er);
+		// TODO: log error
 	}
 
 	if ((F2 != nullptr) && (F2->Handle != nullptr)) {
@@ -409,7 +423,6 @@ void ExportFD(CopyD* CD)
 
 void TxtCtrlJ(CopyD* CD)
 {
-	ExitRecord er;
 	ThFile* F1 = nullptr;
 	ThFile* F2 = nullptr;
 	InOutMode m = InOutMode::_outp;
@@ -440,7 +453,7 @@ void TxtCtrlJ(CopyD* CD)
 		LastExitCode = 0;
 	}
 	catch (std::exception& e) {
-		RestoreExit(er);
+		// TODO: log error
 	}
 
 	if ((F1 != nullptr) && (F1->Handle != nullptr)) delete F1;
@@ -483,17 +496,17 @@ void MakeCopy(CopyD* CD)
 			}
 			case 5: {
 				std::string pKod = ResFile.Get(LatToWinCp);
-				ConvWinCp((unsigned char*)F2.Buf, (unsigned char*)pKod.c_str(), F2.lBuf);
+				ConvWinCp(F2.Buf, (unsigned char*)pKod.c_str(), F2.lBuf);
 				break;
 			}
 			case 6: {
 				std::string pKod = ResFile.Get(KamToWinCp);
-				ConvWinCp((unsigned char*)F2.Buf, (unsigned char*)pKod.c_str(), F2.lBuf);
+				ConvWinCp(F2.Buf, (unsigned char*)pKod.c_str(), F2.lBuf);
 				break;
 			}
 			case 7: {
 				std::string pKod = ResFile.Get(WinCpToLat);
-				ConvWinCp((unsigned char*)F2.Buf, (unsigned char*)pKod.c_str(), F2.lBuf);
+				ConvWinCp(F2.Buf, (unsigned char*)pKod.c_str(), F2.lBuf);
 				break;
 			}
 			default: break;
@@ -563,16 +576,14 @@ void MakeMerge(CopyD* CD)
 void Backup(bool IsBackup, bool NoCompress, WORD Ir, bool NoCancel)
 {
 	TbFile* F = new TbFile(NoCompress);
-	ExitRecord er;
 
 	try {
 		LastExitCode = 1;
 		F->Backup(IsBackup, Ir);
 		LastExitCode = 0;
 	}
-	catch (std::exception& e)
-	{
-		RestoreExit(er);
+	catch (std::exception& e) {
+		// TODO: log error
 	}
 
 	ReleaseStore(F);
@@ -584,7 +595,6 @@ void Backup(bool IsBackup, bool NoCompress, WORD Ir, bool NoCancel)
 
 void BackupM(Instr_backup* PD)
 {
-	ExitRecord er;
 	LongStr* s = nullptr;
 	void* p = nullptr;
 
@@ -599,7 +609,7 @@ void BackupM(Instr_backup* PD)
 		LastExitCode = 0;
 	}
 	catch (std::exception& e) {
-		RestoreExit(er);
+		// TODO: log error
 	}
 
 	F->Close();

@@ -89,22 +89,12 @@ struct CachePage { BYTE Pg3[3]{ 0 }; BYTE Handle = 0; longint HPage = 0; bool Up
 struct ProcStkD { ProcStkD* ChainBack; void* LVRoot; }; // r199
 typedef ProcStkD* ProcStkPtr;
 
-struct ExitRecord {
-	void* OvrEx = nullptr; void* mBP = nullptr;
-	WORD rBP = 0, rIP = 0, rCS = 0, rSP = 0, rDS = 0;
-	bool ExP = false, BrkP = false;
-};
-
 void* Normalize(longint L);
 longint AbsAdr(void* P);
-//void* GetStore(WORD Size);
-//void* GetZStore(WORD Size);
 void MarkStore(void* p);
 void ReleaseStore(void* pointer);
 void ReleaseAfterLongStr(void* p);
 int StoreAvail();
-//void* GetStore2(WORD Size);
-//void* GetZStore2(WORD Size);
 std::string* StoreStr(std::string S);
 void MarkStore2(void* p);
 void ReleaseStore2(void* p);
@@ -113,7 +103,7 @@ void ReleaseBoth(void* p, void* p2);
 void AlignLongStr();
 
 void StackOvr(WORD NewBP); // r216
-void NewExit(PProcedure POvr, ExitRecord Buf);  // r218
+//void NewExit(PProcedure POvr, ExitRecord Buf);  // r218
 void GoExit();
 bool OSshell(std::string Path, std::string CmdLine, bool NoCancel, bool FreeMm, bool LdFont, bool TextMd);
 

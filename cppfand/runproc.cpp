@@ -140,7 +140,7 @@ void PromptAutoRprt(RprtOpt* RO)
 	CFile = RO->FDL.FD;
 	if (!ww.SelFieldList(36, true, RO2->Flds)) return;
 	if ((RO->FDL.Cond == nullptr) &&
-		!ww.PromptFilter("", RO2->FDL.Cond, &RO2->CondTxt)) return;
+		!ww.PromptFilter("", &RO2->FDL.Cond, &RO2->CondTxt)) return;
 	if (SelForAutoRprt(RO2)) {
 		RunAutoReport(RO2);
 	}
@@ -412,19 +412,16 @@ void IndexfileProc(FileD* FD, bool Compress)
 
 void MountProc(WORD CatIRec, bool NoCancel)
 {
-	ExitRecord er;
-	//NewExit(Ovr, er);
-	goto label1;
-	SaveFiles();
-	RdCatPathVol(CatIRec);
-	TestMountVol(CPath[1]);
-	LastExitCode = 0;
-	RestoreExit(er);
-	return;
-label1:
-	RestoreExit(er);
-	if (NoCancel) LastExitCode = 1;
-	else GoExit();
+	try {
+		SaveFiles();
+		RdCatPathVol(CatIRec);
+		TestMountVol(CPath[1]);
+		LastExitCode = 0;
+	}
+	catch (std::exception& e) {
+		if (NoCancel) LastExitCode = 1;
+		else GoExit();
+	}
 }
 
 void EditProc(Instr_edit* PD)
