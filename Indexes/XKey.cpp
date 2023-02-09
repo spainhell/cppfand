@@ -92,9 +92,7 @@ bool XKey::Search(std::string const X, bool AfterEqu, longint& RecNr)
 			return searchResult;
 		}
 
-		// * PUVODNI ASM
-		result = XKeySearch2(p->A, X, iItem, iItemIndex, nItems, o, AfterEqu);
-		// * KONEC PUVODNIHO ASM
+		result = XKeySearch(p->A, X, iItem, iItemIndex, nItems, o, AfterEqu);
 
 		XPath[XPathN].I = iItem;
 
