@@ -125,10 +125,10 @@ void CopyRecWithT(void* p1, void* p2);
 void CloseClearHCFile();
 void TestCPathError();
 void AssignNRecs(bool Add, longint N);
-void CExtToT();
+
 std::string CExtToT(std::string dir, std::string name, std::string ext);
-void CExtToX();
 std::string CExtToX(std::string dir, std::string name, std::string ext);
+
 void CloseGoExit();
 
 bool ChangeLMode(LockMode Mode, WORD Kind, bool RdPref);

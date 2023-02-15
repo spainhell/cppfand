@@ -82,7 +82,7 @@ void WorkFile::SortMerge()
 		r->PutN(RecNr);
 		r->PutIR(IRec);
 		r->X.PackKF(KFRoot);
-		auto serLen = r->Serialize(buffer);
+		size_t serLen = r->Serialize(buffer);
 		memcpy(&PW->A[offsetOfPwA], buffer, serLen);
 		n++;
 		offsetOfPwA += RecLen;
@@ -264,7 +264,7 @@ void WorkFile::WriteWPage(WORD N, longint Pg, longint Nxt, longint Chn)
 			r.Deserialize(&PW->A[offset]);
 			Output(&r);
 			BYTE buffer[512]{ 0 };
-			auto len = r.Serialize(buffer);
+			size_t len = r.Serialize(buffer);
 			memcpy(&PW->A[offset], buffer, len);
 			offset += RecLen;
 		}

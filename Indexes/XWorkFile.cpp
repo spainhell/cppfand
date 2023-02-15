@@ -89,7 +89,7 @@ void XWorkFile::CopyIndex(XKey* K, KeyFldD* KF, char Typ)
 
 bool XWorkFile::GetCRec()
 {
-	auto result = false;
+	bool result = false;
 	xScan->GetRec();
 	result = !xScan->eof;
 	RecNr = xScan->RecNr;

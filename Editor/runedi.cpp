@@ -1375,55 +1375,60 @@ void BuildWork()
 	f = nullptr;
 	//NewExit(Ovr(), er);
 	//goto label1;
-	if (E->DownSet) {
-		//New(Scan, Init(CFile, E->DownKey, nullptr, false));
-		Scan = new XScan(CFile, E->DownKey, nullptr, false);
-		if (E->OwnerTyp == 'i') Scan->ResetOwnerIndex(E->DownLD, E->DownLV, boolP);
+	try {
+		if (E->DownSet) {
+			Scan = new XScan(CFile, E->DownKey, nullptr, false);
+			if (E->OwnerTyp == 'i') Scan->ResetOwnerIndex(E->DownLD, E->DownLV, boolP);
+			else {
+				CFile = E->DownLD->ToFD;
+				CRecPtr = E->DownRecPtr;
+				xx.PackKF(E->DownLD->ToKey->KFlds);
+				CFile = E->FD;
+				CRecPtr = E->NewRecPtr;
+				Scan->ResetOwner(&xx, boolP);
+			}
+			if (ki != nullptr) {
+				wk2 = new XWKey();
+				wk2->Open(KF, true, false);
+				CreateWIndex(Scan, wk2, 'W');
+				Scan2 = new XScan(CFile, wk2, ki, false);
+				Scan2->Reset(nullptr, false);
+				Scan = Scan2;
+			}
+		}
 		else {
-			CFile = E->DownLD->ToFD;
-			CRecPtr = E->DownRecPtr;
-			xx.PackKF(E->DownLD->ToKey->KFlds);
-			CFile = E->FD;
-			CRecPtr = E->NewRecPtr;
-			Scan->ResetOwner(&xx, boolP);
-		}
-		if (ki != nullptr) {
-			wk2 = new XWKey();
-			wk2->Open(KF, true, false);
-			CreateWIndex(Scan, wk2, 'W');
-			//New(Scan2, Init(CFile, wk2, ki, false));
-			Scan2 = new XScan(CFile, wk2, ki, false);
-			Scan2->Reset(nullptr, false);
-			Scan = Scan2;
-		}
-	}
-	else {
 #ifdef FandSQL
-		if (CFile->IsSQLFile && (boolP == nullptr)) {
-			l = CFile->RecLen; f = CFile->FldD; OnlyKeyArgFlds(WK);
-		}
+			if (CFile->IsSQLFile && (boolP == nullptr)) {
+				l = CFile->RecLen; f = CFile->FldD; OnlyKeyArgFlds(WK);
+			}
 #endif
-		if (
+			if (
 #ifdef FandSQL
-			CFile->IsSQLFile ||
+				CFile->IsSQLFile ||
 #endif
-			(boolP != nullptr))
-			if ((K != nullptr) && !K->InWork && (ki == nullptr)) K = nullptr;
-		Scan = new XScan(CFile, K, ki, false);
-		Scan->Reset(boolP, E->SQLFilter);
+				(boolP != nullptr))
+				if ((K != nullptr) && !K->InWork && (ki == nullptr)) K = nullptr;
+			Scan = new XScan(CFile, K, ki, false);
+			Scan->Reset(boolP, E->SQLFilter);
+		}
+		CreateWIndex(Scan, WK, 'W');
+		Scan->Close();
+		if (wk2 != nullptr) wk2->Close();
+		ok = true;
 	}
-	CreateWIndex(Scan, WK, 'W');
-	Scan->Close();
-	if (wk2 != nullptr) wk2->Close();
-	ok = true;
-label1:
+	catch (std::exception& e) {
+		// TODO: log error
+	}
+
 	if (f != nullptr) {
 		CFile->FldD.clear();
 		CFile->FldD.push_back(f);
 		WK->KFlds = KF;
 		CFile->RecLen = l;
 	}
-	if (!ok) GoExit();
+	if (!ok) {
+		GoExit();
+	}
 	ReleaseStore(p);
 }
 
@@ -1499,7 +1504,7 @@ bool OpenEditWw()
 		}
 		else if ((VK != nullptr) && VK->InWork) md = NoExclMode;
 	}
-	if (Subset || Only1Record) WK = new XWKey(); // GetZStore(sizeof(*WK));
+	if (Subset || Only1Record) WK = new XWKey();
 	if (!TryLMode(md, md1, 1)) {
 		EdBreak = 15;
 		goto label1;
@@ -1516,7 +1521,9 @@ bool OpenEditWw()
 		CFile = E->FD;
 		CRecPtr = E->NewRecPtr;
 	}
-	if (Subset) BuildWork();
+	if (Subset) {
+		BuildWork();
+	}
 	if (!Only1Record && HasIndex && VK->InWork) {
 		if (!Subset) WK = (XWKey*)VK;
 		if (!CFile->Keys.empty()) {

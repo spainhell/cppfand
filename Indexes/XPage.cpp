@@ -71,13 +71,13 @@ XItem* XPage::GetItem(WORD I)
 
 bool XPage::Underflow()
 {
-	const auto size = ItemsSize();
+	const size_t size = ItemsSize();
 	return size < (XPageSize - XPageOverHead) / 2;
 }
 
 bool XPage::Overflow()
 {
-	const auto size = ItemsSize();
+	const size_t size = ItemsSize();
 	return size > XPageSize - XPageOverHead;
 }
 
@@ -148,7 +148,7 @@ void XPage::InsertItem(unsigned int recordsCount, unsigned int downPage, WORD I,
 	WORD l = key.length() - m;
 
 	// vytvorime novou polozku s novym zaznamem a vlozime ji do vektoru
-	auto newXi = new XItemNonLeaf(recordsCount, downPage, m, l, key);
+	XItemNonLeaf* newXi = new XItemNonLeaf(recordsCount, downPage, m, l, key);
 	_addToNonLeafItems(newXi, I - 1);
 
 	if (I < NItems) {
@@ -184,7 +184,7 @@ void XPage::InsertItem(unsigned int recNr, size_t I, pstring& SS)
 	WORD l = key.length() - m;
 
 	// vytvorime novou polozku s novym zaznamem a vlozime ji do vektoru
-	auto newXi = new XItemLeaf(recNr, m, l, key);
+	XItemLeaf* newXi = new XItemLeaf(recNr, m, l, key);
 	_addToLeafItems(newXi, I - 1);
 
 	if (I < NItems) {
@@ -216,7 +216,7 @@ void XPage::Delete(WORD I)
 		Xi = _leafItems[I - 1];
 		if (I < NItems) {
 			// tato polozka (I - 1) neni posledni, bude se asi muset upravovat polozka za ni (I)
-			auto nextXi = _leafItems[I];
+			XItemLeaf* nextXi = _leafItems[I];
 			integer d = nextXi->M - Xi->M;
 			if (d > 0) {
 				// nasledujici polozku je nutne upravit
@@ -231,7 +231,7 @@ void XPage::Delete(WORD I)
 		Xi = _nonLeafItems[I - 1];
 		if (I < NItems) {
 			// tato polozka (I - 1) neni posledni, bude se asi muset upravovat polozka za ni (I)
-			auto nextXi = _nonLeafItems[I];
+			XItemNonLeaf* nextXi = _nonLeafItems[I];
 			integer d = nextXi->M - Xi->M;
 			if (d > 0) {
 				// nasledujici polozku je nutne upravit
@@ -300,7 +300,7 @@ void XPage::SplitPage(XPage* P, longint ThisPage)
 		}
 
 		// get new first key for this page
-		auto firstNewKey = GetKey(index + 1 + 1);
+		std::string firstNewKey = GetKey(index + 1 + 1);
 		XItemLeaf* firstXItem = this->_leafItems[index + 1];
 
 		// move first items into page P and remove them from this page
@@ -312,7 +312,7 @@ void XPage::SplitPage(XPage* P, longint ThisPage)
 		}
 
 		// replace 1st item of this page with full key
-		auto newFirstXItem = new XItemLeaf(firstXItem->RecNr, 0, firstNewKey.length(), firstNewKey);
+		XItemLeaf* newFirstXItem = new XItemLeaf(firstXItem->RecNr, 0, firstNewKey.length(), firstNewKey);
 		this->_leafItems.erase(_leafItems.begin());
 		this->_leafItems.insert(_leafItems.begin(), newFirstXItem);
 	}
@@ -327,7 +327,7 @@ void XPage::SplitPage(XPage* P, longint ThisPage)
 		}
 
 		// get new first key for this page
-		auto firstNewKey = GetKey(index + 1 + 1);
+		std::string firstNewKey = GetKey(index + 1 + 1);
 		XItemNonLeaf* firstXItem = this->_nonLeafItems[index + 1];
 
 		// move first items into page P and remove them from this page
@@ -339,7 +339,7 @@ void XPage::SplitPage(XPage* P, longint ThisPage)
 		}
 
 		// replace 1st item of this page with full key
-		auto newFirstXItem = new XItemNonLeaf(firstXItem->RecordsCount, firstXItem->DownPage, 0, firstNewKey.length(), firstNewKey);
+		XItemNonLeaf* newFirstXItem = new XItemNonLeaf(firstXItem->RecordsCount, firstXItem->DownPage, 0, firstNewKey.length(), firstNewKey);
 		this->_nonLeafItems.erase(_nonLeafItems.begin());
 		this->_nonLeafItems.insert(_nonLeafItems.begin(), newFirstXItem);
 	}
@@ -387,7 +387,7 @@ void XPage::Deserialize()
 	if (IsLeaf) {
 		size_t offset = 0;
 		for (WORD i = 0; i < NItems; i++) {
-			auto x = new XItemLeaf(&A[offset]);
+			XItemLeaf* x = new XItemLeaf(&A[offset]);
 			offset += x->size();
 			_leafItems.push_back(x);
 		}
@@ -395,7 +395,7 @@ void XPage::Deserialize()
 	else {
 		size_t offset = 0;
 		for (WORD i = 0; i < NItems; i++) {
-			auto x = new XItemNonLeaf(&A[offset]);
+			XItemNonLeaf* x = new XItemNonLeaf(&A[offset]);
 			offset += x->size();
 			_nonLeafItems.push_back(x);
 		}
@@ -429,7 +429,7 @@ void XPage::Serialize()
 	size_t offset = 0;
 	BYTE buffer[256];
 	if (IsLeaf) {
-		for (auto&& item : _leafItems) {
+		for (XItemLeaf* item : _leafItems) {
 			size_t len = item->Serialize(buffer, sizeof(buffer));
 			if (offset + len > sizeof(A)) {
 				throw std::exception("XPage::Serialize() buffer overflow.");
@@ -440,7 +440,7 @@ void XPage::Serialize()
 		NItems = _leafItems.size();
 	}
 	else {
-		for (auto&& item : _nonLeafItems) {
+		for (XItemNonLeaf* item : _nonLeafItems) {
 			size_t len = item->Serialize(buffer, sizeof(buffer));
 			if (offset + len > sizeof(A)) {
 				throw std::exception("XPage::Serialize() buffer overflow.");
@@ -478,7 +478,7 @@ bool XPage::_cutItem(size_t iIndex, BYTE length)
 
 	Xi->M += length;
 	Xi->L -= length;
-	auto origData = Xi->data;
+	BYTE* origData = Xi->data;
 	Xi->data = new BYTE[Xi->L];
 	memcpy(Xi->data, &origData[length], Xi->L);
 	delete origData; origData = nullptr;
@@ -503,7 +503,7 @@ bool XPage::_enhItem(size_t iIndex, BYTE length)
 
 	Xi->M -= length;
 	Xi->L += length;
-	auto origData = Xi->data;
+	BYTE* origData = Xi->data;
 	Xi->data = new BYTE[Xi->L];
 	memcpy(Xi->data, prevXi->data, length); // z predchoziho zaznamu zkopirujeme prvni Byty
 	memcpy(&Xi->data[length], origData, Xi->L - length); // a doplnime je puvodnimi daty

@@ -120,5 +120,7 @@ struct CompInpD // r402
 	CompInpD* ChainBack = nullptr;
 	CharArr* InpArrPtr = nullptr;
 	RdbPos InpRdbPos;
-	WORD InpArrLen = 0, CurrPos = 0, OldErrPos = 0;
+	size_t InpArrLen = 0;
+	size_t CurrPos = 0;
+	size_t OldErrPos = 0;
 };

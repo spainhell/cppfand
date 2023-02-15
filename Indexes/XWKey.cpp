@@ -86,7 +86,7 @@ longint XWKey::InsertGetNr(longint RecNr)
 	XString x; longint n;
 	NR++; x.PackKF(KFlds);
 	Search(x, true, n);
-	auto result = PathToNr();
+	longint result = PathToNr();
 	InsertOnPath(x, RecNr);
 	return result;
 }

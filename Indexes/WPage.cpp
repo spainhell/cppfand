@@ -24,12 +24,12 @@ void WPage::Sort(WORD N, WORD RecLen)
 	size_t offset2 = 0;
 	BYTE buffer[256]{ 0 };
 	for (size_t i = 0; i < N; i++) {
-		auto len = recs[i].Serialize(buffer);
+		size_t len = recs[i].Serialize(buffer);
 		memcpy(&A[offset2], buffer, len);
 		offset2 += RecLen;
 	}
 
-	// zkotrolujeme délky offsetu pri nacitani a pri ukladani
+	// zkotrolujeme delky offsetu pri nacitani a pri ukladani
 	// mely by byt stejne
 	if (offset1 != offset2) throw std::exception("WPage::Sort() error: Offset1 != Offset2");
 }

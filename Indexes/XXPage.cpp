@@ -92,7 +92,7 @@ void XXPage::AddToLeaf(WRec* R, XKey* KD)
 						XW->msgWritten = true;
 					}
 					ReadRec(CFile, n, CRecPtr);
-					for (auto& K : CFile->Keys) {
+					for (XKey* K : CFile->Keys) {
 						K->Delete(n);
 					}
 					SetDeletedFlag();

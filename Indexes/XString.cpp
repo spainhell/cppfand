@@ -16,7 +16,7 @@ void XString::StoreReal(double R, KeyFldD* KF)
 	BYTE A[20];
 	// pole urcuje pocet Bytu, ve kterych bude ulozeno cislo
 	const BYTE TabF[18] = { 1, 1, 2, 2, 3, 3, 4, 4, 4, 5, 5, 6, 6, 6, 7, 7, 8, 8 };
-	auto X = KF->FldD;
+	FieldDescr* X = KF->FldD;
 
 	if (X->Typ == 'R' || X->Typ == 'D') {
 		bool b = KF->Descend;
@@ -40,7 +40,7 @@ void XString::StoreReal(double R, KeyFldD* KF)
 void XString::StoreStr(std::string V, KeyFldD* KF)
 {
 	WORD n = 0;
-	auto X = KF->FldD;
+	FieldDescr* X = KF->FldD;
 	while (V.length() < X->L) {
 		if (X->M == LeftJust) {
 			V += ' ';
@@ -106,7 +106,7 @@ void XString::PackKF(KeyFldD* KF)
 void XString::PackKF(std::vector<KeyFldD*>& KF)
 {
 	Clear();
-	for (auto& k : KF) {
+	for (KeyFldD* k : KF) {
 		StoreKF(k);
 	}
 }
@@ -228,7 +228,7 @@ void XString::StoreA(void* A, WORD len, bool compLex, bool descend)
 	if (endSpaces > 1) {
 		len = len - (endSpaces - 1);
 	}
-	auto oldLen = S[0];
+	unsigned char oldLen = S[0];
 	S[0] = oldLen + len;
 	memcpy(&S[oldLen + 1], p, len);
 	

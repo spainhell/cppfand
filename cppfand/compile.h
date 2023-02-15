@@ -14,7 +14,9 @@ struct stSaveState
 	bool SpecFDNameAllowed = false, IdxLocVarAllowed = false, FDLocVarAllowed = false, IsCompileErr = false;
 	std::deque<CompInpD> PrevCompInp;
 	BYTE* InpArrPtr = nullptr; RdbPos InpRdbPos;
-	WORD InpArrLen = 0, CurrPos = 0, OldErrPos = 0;
+	size_t InpArrLen = 0;
+	size_t CurrPos = 0;
+	size_t OldErrPos = 0;
 	std::vector<FrmlElemSum*> *FrmlSumEl = nullptr;
 	bool FrstSumVar = false, FileVarsAllowed = false;
 	FrmlElem* (*RdFldNameFrml)(char&) = nullptr; // ukazatel na funkci

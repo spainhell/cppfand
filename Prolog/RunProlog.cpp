@@ -1968,10 +1968,10 @@ TFileScan* GetScan(TScanInf* SIOfs, TCommand* C, TInstance* Q)
 		kf = kf->pChain;
 		i++;
 	}
-	k->FindNr(xx, fs->IRec);
+	k->FindNr(xx.S, fs->IRec);
 	if ((f->Typ != 'A' | xx.S[xx.S.length()]) != 0x1f) xx.S[0]++;
 	xx.S[xx.S.length()] = 0xFF;
-	b = k->FindNr(xx, n);
+	b = k->FindNr(xx.S, n);
 	fs->Count = 0;
 	if (n >= fs->IRec) fs->Count = n - fs->IRec + b;
 label1:

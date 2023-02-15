@@ -79,14 +79,10 @@ void XScan::Reset(FrmlElem* ABool, bool SQLFilter)
 		NRecs = 0;
 		k = KIRoot;
 		while (k != nullptr) {
-			XString a1;
-			XString b2;
-			a1.S = k->X1;
-			b2.S = k->X2;
 			// vyhleda 1. zaznam odpovidajici klici 
-			Key->FindNr(a1, k->XNrBeg);
+			Key->FindNr(k->X1, k->XNrBeg);
 			// vyhleda posledni zaznam odpovidajici klici
-			b = Key->FindNr(b2, n);
+			b = Key->FindNr(k->X2, n);
 			k->N = 0;
 			if (n >= k->XNrBeg) k->N = n - k->XNrBeg + b;
 			NRecs += k->N;
@@ -162,9 +158,9 @@ void XScan::ResetOwner(XString* XX, FrmlElem* aBool)
 	{
 		TestXFExist();
 		KIRoot = new KeyInD(); // (KeyInD*)GetZStore(sizeof(*KIRoot));
-		Key->FindNr(*XX, KIRoot->XNrBeg);
+		Key->FindNr(XX->S, KIRoot->XNrBeg);
 		AddFFs(Key, XX->S);
-		b = Key->FindNr(*XX, n);
+		b = Key->FindNr(XX->S, n);
 		NRecs = n - KIRoot->XNrBeg + b;
 		KIRoot->N = NRecs; Kind = 2;
 	}
@@ -303,9 +299,9 @@ void XScan::NextIntvl()
 			CFile = OwnerLV->FD;
 			xx.S = k->NrToStr(iOKey);
 			CFile = FD;
-			Key->FindNr(xx, nBeg);
+			Key->FindNr(xx.S, nBeg);
 			AddFFs(Key, xx.S);
-			b = Key->FindNr(xx, n);
+			b = Key->FindNr(xx.S, n);
 			n = n - nBeg + b;
 			if (n > 0) {
 				NOfKI = n;

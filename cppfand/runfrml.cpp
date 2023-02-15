@@ -29,8 +29,8 @@ double Owned(FrmlElem* Bool, FrmlElem* Sum, LinkD* LD)
 	x.PackKF(LD->ToKey->KFlds); cf = CFile; cr = CRecPtr;
 	CFile = LD->FromFD; md = NewLMode(RdMode); TestXFExist(); K = GetFromKey(LD);
 	if ((Bool == nullptr) && (Sum == nullptr) && !CFile->IsSQLFile) {
-		K->FindNr(x, nBeg); x.S[0]; x.S[x.S.length()] = 0xFF;
-		K->FindNr(x, n); r = n - nBeg;
+		K->FindNr(x.S, nBeg); x.S[0]; x.S[x.S.length()] = 0xFF;
+		K->FindNr(x.S, n); r = n - nBeg;
 	}
 	else {
 		r = 0; CRecPtr = GetRecSpace();

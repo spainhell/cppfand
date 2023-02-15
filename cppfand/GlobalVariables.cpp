@@ -19,7 +19,7 @@ size_t InpArrLen, CurrPos, OldErrPos;
 
 pstring LockModeTxt[9] = { "NULL", "NOEXCL", "NODEL", "NOCR", "RD", "WR", "CR", "DEL", "EXCL" };
 
-structXPath XPath[100];
+structXPath XPath[20];
 WORD XPathN;
 
 XWFile XWork;

@@ -32,7 +32,7 @@ public:
 	longint NrToRecNr(longint I);
 	pstring NrToStr(longint I);
 	longint RecNrToNr(longint RecNr);
-	bool FindNr(XString& X, longint& IndexNr);
+	//bool FindNr(XString& X, longint& IndexNr);
 	bool FindNr(std::string X, longint& IndexNr);
 	void InsertOnPath(XString& XX, longint RecNr);
 	void InsertNonLeafItem(XString& XX, XPage* P, XPage* UpP, longint Page, WORD I, longint& UpPage, unsigned int upSum, unsigned int downPage);

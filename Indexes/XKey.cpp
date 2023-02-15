@@ -141,11 +141,11 @@ longint XKey::PathToNr()
 {
 	longint n = 0;
 	auto p = std::make_unique<XPage>();
-	size_t item = 1;
+	
 	for (WORD j = 1; j <= XPathN - 1; j++) {
 		GetXFile()->RdPage(p.get(), XPath[j].Page);
 		for (WORD i = 1; i <= XPath[j].I - 1; i++) {
-			XItem* x = p->GetItem(item++);
+			XItem* x = p->GetItem(i);
 			n += x->GetN();
 		}
 	}
@@ -206,7 +206,7 @@ longint XKey::PathToRecNr()
 	auto p = std::make_unique<XPage>();
 
 	GetXFile()->RdPage(p.get(), X->Page);
-	auto pxi = p->GetItem(X->I);
+	XItem* pxi = p->GetItem(X->I);
 
 	longint recnr = pxi->GetN();
 	longint result = recnr;
@@ -330,18 +330,18 @@ longint XKey::RecNrToNr(longint RecNr)
 	else return 0;
 }
 
-bool XKey::FindNr(XString& X, longint& IndexNr)
-{
-	longint n;
-	auto result = Search(X, false, n);
-	IndexNr = PathToNr();
-	return result;
-}
+//bool XKey::FindNr(XString& X, longint& IndexNr)
+//{
+//	longint n;
+//	bool result = Search(X, false, n);
+//	IndexNr = PathToNr();
+//	return result;
+//}
 
 bool XKey::FindNr(std::string const X, longint& IndexNr)
 {
 	longint n;
-	auto result = Search(X, false, n);
+	bool result = Search(X, false, n);
 	IndexNr = PathToNr();
 	return result;
 }
@@ -598,7 +598,7 @@ bool SearchKey(XString& XX, XKey* Key, longint& NN)
 	longint R = 0;
 	XString x;
 
-	auto bResult = false;
+	bool bResult = false;
 	longint L = 1;
 	integer Result = _gt;
 	NN = CFile->NRecs;

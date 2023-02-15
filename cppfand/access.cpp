@@ -439,20 +439,6 @@ void UnLockN(longint N)
 #endif
 }
 
-// zmeni priponu na .X__ a nastavi CPath
-void CExtToX()
-{
-	CExt[1] = 'X';
-	CPath = CDir + CName + CExt;
-}
-
-
-std::string CExtToX(const std::string dir, const std::string name, std::string ext)
-{
-	ext[1] = 'X';
-	return dir + name + ext;
-}
-
 void TestCPathError()
 {
 	WORD n;
@@ -464,16 +450,10 @@ void TestCPathError()
 	}
 }
 
-// zmeni priponu souboru a nastavi CPath
-void CExtToT()
+std::string CExtToX(const std::string dir, const std::string name, std::string ext)
 {
-	if (EquUpCase(CExt, ".RDB")) CExt = ".TTT";
-	else
-		if (EquUpCase(CExt, ".DBF"))
-			if (CFile->TF->Format == TFile::FptFormat) CExt = ".FPT";
-			else CExt = ".DBT";
-		else CExt[1] = 'T';
-	CPath = CDir + CName + CExt;
+	ext[1] = 'X';
+	return dir + name + ext;
 }
 
 std::string CExtToT(const std::string dir, const std::string name, std::string ext)
