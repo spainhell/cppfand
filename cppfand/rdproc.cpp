@@ -796,45 +796,53 @@ Instr* RdCase()
 	Instr_loops* PD1 = nullptr;
 	bool first = true;
 	Instr_loops* result = nullptr;
-label1:
-	PD1 = new Instr_loops(_ifthenelseP); // GetPInstr(_ifthenelseP, 12);
-	if (first) result = PD1;
-	else PD->ElseInstr1 = PD1;
-	PD = PD1;
-	first = false;
-	PD->Bool = RdBool();
-	Accept(':');
-	PD->Instr1 = RdPInstr();
-	bool b = Lexem == ';';
-	if (b) RdLex();
-	if (!IsKeyWord("END"))
-		if (IsKeyWord("ELSE"))
-			while (!IsKeyWord("END")) {
-				RdPInstrAndChain(&PD->ElseInstr1);
-				if (Lexem == ';') RdLex();
-				else goto label2;
+	while (true) {
+		PD1 = new Instr_loops(_ifthenelseP); // GetPInstr(_ifthenelseP, 12);
+		if (first) result = PD1;
+		else PD->ElseInstr1 = PD1;
+		PD = PD1;
+		first = false;
+		PD->Bool = RdBool();
+		Accept(':');
+		PD->Instr1 = RdPInstr();
+		bool b = Lexem == ';';
+		if (b) RdLex();
+		if (!IsKeyWord("END")) {
+			if (IsKeyWord("ELSE")) {
+				while (!IsKeyWord("END")) {
+					RdPInstrAndChain(&PD->ElseInstr1);
+					if (Lexem == ';') {
+						RdLex();
+					}
+					else {
+						AcceptKeyWord("END");
+					}
+				}
 			}
-		else if (b) goto label1;
-		else {
-		label2:
-			AcceptKeyWord("END");
+			else if (b) {
+				continue;
+			}
+			else {
+				AcceptKeyWord("END");
+			}
 		}
+		break;
+	}
 	return result;
 }
 
 Instr_loops* RdRepeatUntil()
 {
 	auto PD = new Instr_loops(_repeatuntil); // GetPInstr(_repeatuntil, 8);
-	auto result = PD;
+	Instr_loops* result = PD;
 	while (!IsKeyWord("UNTIL")) {
 		RdPInstrAndChain(&PD->Instr1);
 		if (Lexem == ';') RdLex();
 		else {
 			AcceptKeyWord("UNTIL");
-			goto label1;
+			break;
 		}
 	}
-label1:
 	PD->Bool = RdBool();
 	return result;
 }
@@ -911,16 +919,19 @@ Instr* RdBeginEnd()
 {
 	Instr* PD = nullptr;
 	if (!IsKeyWord("END")) {
-	label1:
-		//if (InpArrLen == 0x0f97 && CurrPos >= 0x0190) {
-		//	printf("RdBeginEnd()\n");
-		//}
-		RdPInstrAndChain(&PD);
-		if (Lexem == ';') {
-			RdLex();
-			if (!IsKeyWord("END")) goto label1;
+		while (true) {
+			RdPInstrAndChain(&PD);
+			if (Lexem == ';') {
+				RdLex();
+				if (!IsKeyWord("END")) {
+					continue;
+				}
+			}
+			else {
+				AcceptKeyWord("END");
+			}
+			break;
 		}
-		else AcceptKeyWord("END");
 	}
 	return PD;
 }
@@ -928,13 +939,12 @@ Instr* RdBeginEnd()
 Instr_proc* RdProcArg(char Caller)
 {
 	std::string ProcName = LexWord;
-	//if (ProcName == "MyCall1") {
-	//	printf("");
-	//}
 	RdbPos Pos;
 	TypAndFrml TArg[31];
 	LocVar* LV = nullptr;
-	if (Caller != 'C') RdChptName('P', &Pos, Caller == 'P' || Caller == 'E' || Caller == 'T');
+	if (Caller != 'C') {
+		RdChptName('P', &Pos, Caller == 'P' || Caller == 'E' || Caller == 'T');
+	}
 	WORD N = 0;
 	if (Caller != 'P') {
 		if (Lexem == '(') {
@@ -967,10 +977,14 @@ Instr_proc* RdProcArg(char Caller)
 				TArg[N].TxtFrml = z;
 				Accept(']');
 			}
-			else TArg[N].FD = RdFileName();
+			else {
+				TArg[N].FD = RdFileName();
+			}
 			TArg[N].FTyp = 'f';
 		}
-		else TArg[N].Frml = RdFrml(TArg[N].FTyp);
+		else {
+			TArg[N].Frml = RdFrml(TArg[N].FTyp);
+		}
 		if (Lexem == ',') {
 			RdLex();
 			goto label1;
@@ -2282,7 +2296,7 @@ Instr_recs* RdMixRecAcc(PInstrCode Op)
 			&& (Lexem == _equ || Lexem == _le || Lexem == _gt || Lexem == _lt || Lexem == _ge))
 		{
 			PD->CompOp = Lexem; RdLex();
-	}
+		}
 #endif
 		Z = RdFrml(FTyp);
 		PD->RecNr = Z;
@@ -2306,7 +2320,7 @@ Instr_recs* RdMixRecAcc(PInstrCode Op)
 		}
 #endif
 		}
-}
+	}
 	if ((Lexem == ',') && (Op == _writerec || Op == _deleterec || Op == _recallrec)) {
 		RdLex();
 		Accept('+');
@@ -2314,7 +2328,7 @@ Instr_recs* RdMixRecAcc(PInstrCode Op)
 	}
 	CFile = cf;
 	return PD;
-		}
+}
 
 Instr* RdLinkRec()
 {
