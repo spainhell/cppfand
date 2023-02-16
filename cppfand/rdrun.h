@@ -165,7 +165,8 @@ struct EdExitD
 {
 	std::vector<EdExKeyD> Keys;
 	bool AtWrRec = false, AtNewRec = false, NegFlds = false;
-	FieldList Flds = nullptr;    /*in edittxt !used*/
+	//FieldListEl* Flds = nullptr;    /*in edittxt !used*/
+	std::vector<FieldDescr*> Flds;    /*in edittxt !used*/
 	char Typ = 0;
 	void* RO = nullptr;
 	Instr_proc* Proc = nullptr;       /*in edittxt only "P","Q"*/

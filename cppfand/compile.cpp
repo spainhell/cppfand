@@ -1305,14 +1305,14 @@ void RdFldList(std::vector<FieldDescr*>* vFields)
 	}
 }
 
-void RdNegFldList(bool& Neg, FieldListEl** FLRoot)
-{
-	if (Lexem == '^') { RdLex(); Neg = true; }
-	Accept('(');
-	if (Lexem == ')') Neg = true;
-	else RdFldList(FLRoot);
-	Accept(')');
-}
+//void RdNegFldList(bool& Neg, FieldListEl** FLRoot)
+//{
+//	if (Lexem == '^') { RdLex(); Neg = true; }
+//	Accept('(');
+//	if (Lexem == ')') Neg = true;
+//	else RdFldList(FLRoot);
+//	Accept(')');
+//}
 
 void RdNegFldList(bool& Neg, std::vector<FieldDescr*>& vFields)
 {

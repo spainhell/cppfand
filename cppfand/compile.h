@@ -106,7 +106,7 @@ bool FldTypIdentity(FieldDescr* F1, FieldDescr* F2);
 void RdFldList(FieldListEl** FLRoot);
 void RdFldList(std::vector<FieldDescr*>& vFields);
 void RdFldList(std::vector<FieldDescr*>* vFields);
-void RdNegFldList(bool& Neg, FieldListEl** FLRoot); // r214
+//void RdNegFldList(bool& Neg, FieldListEl** FLRoot);
 void RdNegFldList(bool& Neg, std::vector<FieldDescr*>& vFields);
 void RdNegFldList(bool& Neg, std::vector<FieldDescr*>* vFields);
 void EditModeToFlags(pstring Mode, void* Flgs, bool Err); // r220

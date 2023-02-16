@@ -405,9 +405,9 @@ void PendingTT(std::string& text)
 				text += SL->S;
 				Col = TD->Col + GetLengthOfStyledString(SL->S);
 				TD->Ln--;
-				TD->SL = (StringList)SL->pChain;
+				TD->SL = SL->pChain;
 			}
-			TD = (TTD*)TD->pChain;
+			TD = TD->pChain;
 		}
 		Y.TLn--;
 		LineLenLst = lll;
@@ -429,7 +429,7 @@ void FinishTuple(std::string& text)
 
 void RunAProc(std::vector<AssignD*> vAssign)
 {
-	for (auto* A : vAssign) {
+	for (AssignD* A : vAssign) {
 		switch (A->Kind) {
 		case _locvar: { LVAssignFrml(A->LV, A->Add, A->Frml); break; }
 		case _parfile: { AsgnParFldFrml(A->FD, A->PFldD, A->Frml, A->Add); break; }
@@ -463,7 +463,7 @@ void PrintBlock(BlkD* B, std::string& text, BlkD* DH)
 					B1 = DH;
 					while (B1 != nullptr) {
 						if (RunBool(B1->Bool)) LAfter += B1->NTxtLines;
-						B1 = (BlkD*)B1->pChain;
+						B1 = B1->pChain;
 					}
 				}
 				if (B->FF1 || WasFF2 || FrstBlk && (B->NTxtLines > 0) ||
@@ -480,7 +480,7 @@ void PrintBlock(BlkD* B, std::string& text, BlkD* DH)
 			if ((DH == nullptr) && WasOutput) pdh = true;
 			SumUp(B->Sum);
 		}
-		B = (BlkD*)B->pChain;
+		B = B->pChain;
 	}
 	if (pdh) PrintDH = 2;
 }

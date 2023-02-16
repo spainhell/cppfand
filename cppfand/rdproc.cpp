@@ -977,7 +977,10 @@ Instr_proc* RdProcArg(char Caller)
 		}
 		Accept(')');
 	}
-	if (Caller == 'E') { N++; TArg[N].FTyp = 'r'; }
+	if (Caller == 'E') {
+		N++;
+		TArg[N].FTyp = 'r';
+	}
 	auto* PD = new Instr_proc(N);
 	PD->PPos = Pos;
 	PD->N = N;
@@ -1073,8 +1076,8 @@ bool RdViewOpt(EditOpt* EO)
 	RprtOpt* RO = nullptr;
 	bool Flgs[23]{ false };
 	auto result = false;
-	/* !!! with EO^ do!!! */
-	RdLex(); result = true;
+	RdLex();
+	result = true;
 	CViewKey = EO->ViewKey;
 	if (IsOpt("TAB")) {
 		RdNegFldList(EO->NegTab, EO->Tab);
@@ -1179,14 +1182,25 @@ bool RdViewOpt(EditOpt* EO)
 
 void RdKeyList(EdExitD* X)
 {
-label1:
-	if ((Lexem == '(') || (Lexem == '^')) RdNegFldList(X->NegFlds, &X->Flds);
-	else if (IsKeyWord("RECORD")) {
-		X->AtWrRec = true;
+	while (true) {
+		if ((Lexem == '(') || (Lexem == '^')) {
+			RdNegFldList(X->NegFlds, &X->Flds);
+		}
+		else if (IsKeyWord("RECORD")) {
+			X->AtWrRec = true;
+		}
+		else if (IsKeyWord("NEWREC")) {
+			X->AtNewRec = true;
+		}
+		else {
+			RdKeyCode(X);
+		}
+		if (Lexem == ',') {
+			RdLex();
+			continue;
+		}
+		break;
 	}
-	else if (IsKeyWord("NEWREC")) X->AtNewRec = true;
-	else RdKeyCode(X);
-	if (Lexem == ',') { RdLex(); goto label1; }
 	Accept(':');
 }
 
