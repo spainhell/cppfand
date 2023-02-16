@@ -193,8 +193,7 @@ void FormFeed(std::string& text)
 	integer I = 0;
 	if (NoFF) NoFF = false;
 	else {
-		//printf("%s%c", Rprt.c_str(), 0x0C);
-		text += '\r';
+		text += (char)0x0C; // ^L 012 0x0C Form feed
 		RprtLine = 1;
 		IncPage();
 	}
@@ -697,7 +696,7 @@ void PrintBlkChn(BlkD* B, std::string& text, bool ChkPg, bool ChkLine)
 			PrintTxt(B, text, ChkPg);
 			WasFF2 = B->FF2;
 		}
-		B = (BlkD*)B->pChain;
+		B = B->pChain;
 	}
 }
 
@@ -742,7 +741,6 @@ void Headings(LvDescr* L, LvDescr* L2, std::string& text)
 
 void ReadInpFile(InpD* ID)
 {
-	/* !!! with ID^ do!!! */
 	CRecPtr = ID->ForwRecPtr;
 label1:
 	ID->Scan->GetRec();
@@ -760,7 +758,6 @@ void OpenInp()
 {
 	NRecsAll = 0;
 	for (integer i = 1; i <= MaxIi; i++) {
-		/* !!! with IDA[i]^ do!!! */
 		CFile = IDA[i]->Scan->FD;
 		if (IDA[i]->Scan->Kind == 5) IDA[i]->Scan->SeekRec(0);
 		else {
@@ -773,11 +770,11 @@ void OpenInp()
 
 void CloseInp()
 {
-	WORD i;
-	for (i = 1; i < MaxIi; i++) {
-		/* !!! with IDA[i]^ do!!! */
+	for (WORD i = 1; i < MaxIi; i++) {
 		if (IDA[i]->Scan->Kind != 5) {
-			IDA[i]->Scan->Close(); ClearRecSpace(IDA[i]->ForwRecPtr); OldLMode(IDA[i]->Md);
+			IDA[i]->Scan->Close();
+			ClearRecSpace(IDA[i]->ForwRecPtr);
+			OldLMode(IDA[i]->Md);
 		}
 	}
 }
@@ -786,28 +783,26 @@ WORD CompMFlds(std::vector<ConstListEl>& C, KeyFldD* M, integer& NLv)
 {
 	integer res = 0; XString x;
 	NLv = 0;
-	for (auto& c : C) { //while (C != nullptr) {
+	for (auto& c : C) { 
 		NLv++;
 		x.Clear();
 		x.StoreKF(M);
 		std::string s = x.S;
 		res = CompStr(s, c.S);
 		if (res != _equ) { return res; }
-		//C = (ConstListEl*)C->pChain;
-		M = (KeyFldD*)M->pChain;
+		M = M->pChain;
 	}
 	return _equ;
 }
 
 void GetMFlds(std::vector<ConstListEl>& C, KeyFldD* M)
 {
-	for (auto& c : C) { //while (C != nullptr) {
+	for (auto& c : C) {
 		XString x;
 		x.Clear();
 		x.StoreKF(M);
 		c.S = x.S;
-		//C = (ConstListEl*)C->pChain;
-		M = (KeyFldD*)M->pChain;
+		M = M->pChain;
 	}
 }
 
@@ -852,8 +847,8 @@ void PutMFlds(KeyFldD* M)
 				break;
 			}
 		}
-		M = (KeyFldD*)M->pChain;
-		m1 = (KeyFldD*)m1->pChain;
+		M = M->pChain;
+		m1 = m1->pChain;
 	}
 }
 
@@ -862,7 +857,6 @@ void GetMinKey()
 	integer i, nlv;
 	integer mini = 0; NEof = 0;
 	for (i = 1; i <= MaxIi; i++) {
-		/* !!! with IDA[i]^ do!!! */
 		CFile = IDA[i]->Scan->FD;
 		if (IDA[i]->Scan->eof) NEof++;
 		if (OldMFlds.empty()) {
@@ -894,7 +888,9 @@ void GetMinKey()
 		}
 		MinID = IDA[mini];
 	}
-	else MinID = nullptr;
+	else {
+		MinID = nullptr;
+	}
 }
 
 void ZeroCount()
