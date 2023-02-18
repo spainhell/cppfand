@@ -58,49 +58,66 @@ void VarFixImp(ThFile* F1, CpOption Opt)
 {
 	pstring s;
 	longint pos;
-	char c; double r; WORD err;
+	double r; WORD err;
 
 	F1->IsEOL = false;
-	for (auto& F : CFile->FldD) { //while (F != nullptr) {
-		if ((F->Flg & f_Stored) != 0)
+	for (FieldDescr* F : CFile->FldD) {
+		if ((F->Flg & f_Stored) != 0) {
 			if (F1->IsEOL) {
 				switch (F->FrmlTyp) {
 				case 'R': R_(F, 0); break;
 				case 'B': B_(F, false); break;
 				case 'S': S_(F, ""); break;
+				default: ;
 				}
 			}
-			else
+			else {
 				switch (F->Typ) {
 				case 'F': {
-					if (Opt == CpOption::cpFix) s = F1->RdFix(F->L);
-					else s = F1->RdDelim(',');
+					if (Opt == CpOption::cpFix) {
+						s = F1->RdFix(F->L);
+					}
+					else {
+						s = F1->RdDelim(',');
+					}
 					val(LeadChar(' ', s), r, err);
-					if (F->Flg && f_Comma != 0) r = r * Power10[F->M]; R_(F, r);
+					if ((F->Flg & f_Comma) != 0) {
+						r = r * Power10[F->M]; R_(F, r);
+					}
 					break;
 				}
 				case 'A': {
-					if (Opt == CpOption::cpFix) S_(F, F1->RdFix(F->L));
+					if (Opt == CpOption::cpFix) {
+						S_(F, F1->RdFix(F->L));
+					}
 					else {
-						c = ForwChar;
+						char c = (char)ForwChar;
 						if (c == '\'' || c == '"') {
 							F1->RdChar();
 							s = F1->RdDelim(c);
 							F1->RdDelim(',');
 						}
-						else s = F1->RdDelim(',');
+						else {
+							s = F1->RdDelim(',');
+						}
 						S_(F, s);
 					}
 					break;
 				}
 				case 'N': {
-					if (Opt == CpOption::cpFix) S_(F, F1->RdFix(F->L));
-					else S_(F, F1->RdDelim(','));
+					if (Opt == CpOption::cpFix) {
+						S_(F, F1->RdFix(F->L));
+					}
+					else {
+						S_(F, F1->RdDelim(','));
+					}
 					break;
 				}
 				case 'D':
 				case 'R': {
-					if (Opt == CpOption::cpFix) s = F1->RdFix(F->L);
+					if (Opt == CpOption::cpFix) {
+						s = F1->RdFix(F->L);
+					}
 					else {
 						s = F1->RdDelim(',');
 						if (s[1] == '\'' || s[1] == '"') {
@@ -133,9 +150,15 @@ void VarFixImp(ThFile* F1, CpOption Opt)
 						s = F1->RdDelim(',');
 						S_(F, x);
 					}
-					else T_(F, 0);
+					else {
+						T_(F, 0);
+					}
+					break;
 				}
+				default: ;
 				}
+			}
+		}
 	}
 	if (!F1->IsEOL) F1->RdDelim('\r');
 }
