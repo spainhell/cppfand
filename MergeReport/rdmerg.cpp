@@ -459,18 +459,23 @@ void MakeImplAssign()
 	}
 }
 
-void TestIsOutpFile(FileDPtr FD)
+void TestIsOutpFile(FileD* FD)
 {
 	OutpFD* OFD = OutpFDRoot;
 	while (OFD != nullptr) {
-		if (OFD->FD == FD) OldError(173); OFD = (OutpFD*)OFD->pChain;
+		if (OFD->FD == FD) {
+			OldError(173);
+		}
+		OFD = OFD->pChain;
 	}
 }
 
 std::vector<AssignD*> RdAssign_M()
 {
-	FieldDescr* F = nullptr; FileD* FD = nullptr;
-	LocVar* LV = nullptr; AssignD* AD = nullptr;
+	FieldDescr* F = nullptr;
+	FileD* FD = nullptr;
+	LocVar* LV = nullptr;
+	AssignD* AD = nullptr;
 
 	std::vector<AssignD*> result;
 	if (IsKeyWord("BEGIN")) {
@@ -550,30 +555,35 @@ void RdOutpRD(OutpRD** RDRoot)
 	OutpRD* R = nullptr; FileD* FD = nullptr;
 	OutpFD* OD = nullptr; InpD* ID = nullptr;
 	integer I = 0;
-	//RD = (OutpRD*)GetStore(sizeof(*RD));
+
 	RD = new OutpRD();
 	if (*RDRoot == nullptr) *RDRoot = RD;
 	else ChainLast(*RDRoot, RD);
+
 	//RD->Ass = nullptr;
 	//RD->Bool = nullptr;
 	if (IsKeyWord("DUMMY")) RD->OD = nullptr;
 	else {
 		FD = RdFileName();
 		OD = OutpFDRoot;
-		while (OD != nullptr)
-		{
-			if (OD->FD == FD)
-			{
+		while (OD != nullptr) {
+			if (OD->FD == FD) {
 				if (Lexem == '+') {
-					if (OD->Append) RdLex();
-					else Error(31);
+					if (OD->Append) {
+						RdLex();
+					}
+					else {
+						Error(31);
+					}
 				}
-				else if (OD->Append) Error(31);
+				else if (OD->Append) {
+					Error(31);
+				}
 				goto label1;
 			}
-			OD = (OutpFD*)OD->pChain;
+			OD = OD->pChain;
 		}
-		//OD = (OutpFD*)GetStore(sizeof(*OD));
+
 		OD = new OutpFD();
 		OD->FD = FD;
 		CFile = FD;

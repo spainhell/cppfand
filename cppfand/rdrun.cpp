@@ -365,7 +365,7 @@ bool LockForAdd(FileD* FD, WORD Kind, bool Ta, LockMode& md)
 bool RunAddUpdte(char Kind, void* CRold, LinkD* notLD)
 {
 	LockMode md;
-	FileDPtr CF = CFile; LockForAdd(CF, 0, false, md);
+	FileD* CF = CFile; LockForAdd(CF, 0, false, md);
 	while (!LockForAdd(CF, 1, false, md)) {
 		SetCPathVol();
 		SetMsgPar(CPath, LockModeTxt[md]);

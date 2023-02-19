@@ -2703,7 +2703,7 @@ void CreateOrErr(bool Create, void* RP, longint N)
 bool PromptSearch(bool Create)
 {
 	auto result = false;
-	FieldDPtr F, F2; FileDPtr FD, FD2; void* RP; void* RP2; KeyFldDPtr KF, KF2;
+	FieldDPtr F, F2; FileD* FD, *FD2; void* RP; void* RP2; KeyFldDPtr KF, KF2;
 	longint n; std::string s; double r; bool b, li, found; LockMode md;
 	XString x, xOld; XKey* K; longint w; WORD Col, LWw, pos; EFldD* D;
 	FD = CFile; K = VK; if (Subset) K = WK; KF = K->KFlds;

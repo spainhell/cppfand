@@ -12,14 +12,17 @@
 
 void CodingRdb::CodeRdb(bool Rotate)
 {
-	WORD i, irec, pos; FileDPtr cf; void* cr; std::string s; bool compileAll;
-	cf = CFile; cr = CRecPtr; CFile = Chpt;
+	WORD pos;
+	std::string s;
+	FileD* cf = CFile;
+	void* cr = CRecPtr;
+	CFile = Chpt;
 
 	CRecPtr = GetRecSpace();
 	RunMsgOn('C', CFile->NRecs);
-	irec = ChptTF->IRec;
-	compileAll = ChptTF->CompileAll;
-	for (i = 1; i <= CFile->NRecs; i++) {
+	WORD irec = ChptTF->IRec;
+	bool compileAll = ChptTF->CompileAll;
+	for (int i = 1; i <= CFile->NRecs; i++) {
 		ReadRec(CFile, i, CRecPtr);
 		RunMsgN(i);
 		s = _ShortS(ChptTyp);
@@ -32,7 +35,7 @@ void CodingRdb::CodeRdb(bool Rotate)
 		}
 	}
 	if (Rotate) {
-		i = 1;
+		int i = 1;
 		while (i <= CFile->NRecs) {
 			ReadRec(CFile, i, CRecPtr);
 			s = _ShortS(ChptTyp);

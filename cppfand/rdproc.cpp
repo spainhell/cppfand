@@ -2615,8 +2615,12 @@ Instr* RdWith()
 		}
 		else {
 			Accept('(');
-			for (LockMode i = NoExclMode; i <= ExclMode; i = LockMode(i + 1))
-				if (IsKeyWord(LockModeTxt[i])) { ld->Md = i; goto label3; }
+			for (LockMode i = NoExclMode; i <= ExclMode; i = (LockMode)(i + 1)) {
+				if (IsKeyWord(LockModeTxt[i])) {
+					ld->Md = i;
+					goto label3;
+				}
+			}
 			Error(100);
 		label3:
 			Accept(')');

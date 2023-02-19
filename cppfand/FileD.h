@@ -59,7 +59,6 @@ public:
 	WORD GetNrKeys();
 	void Reset();
 };
-typedef FileD* FileDPtr;
 
 void ReadRec(FileD* file, longint N, void* record);
 void WriteRec(FileD* file, longint N, void* record);

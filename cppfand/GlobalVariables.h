@@ -4,7 +4,7 @@
 #include "pstring.h"
 #include "TFile.h"
 
-extern pstring LockModeTxt[9];
+extern std::string LockModeTxt[9];
 
 // r474
 extern FileD* FileDRoot; // { only current RDB }
@@ -70,8 +70,8 @@ extern BYTE ForwChar, ExpChar, Lexem;
 extern pstring LexWord;
 
 extern bool SpecFDNameAllowed, IdxLocVarAllowed, FDLocVarAllowed, IsCompileErr;
-//extern CompInpD* PrevCompInp;						// { saved at "include" }
-extern std::deque<CompInpD> PrevCompInp;						// { saved at "include" }
+//extern CompInpD* PrevCompInp;						    // { saved at "include" }
+extern std::deque<CompInpD> PrevCompInp;				// { saved at "include" }
 extern BYTE* InpArrPtr; extern RdbPos InpRdbPos;		// { "  "  }
 extern size_t InpArrLen;
 extern size_t CurrPos;
@@ -86,7 +86,6 @@ extern BYTE LstCompileVar; // { boundary }
 extern pstring Switches;
 extern WORD SwitchLevel;
 
-extern pstring LockModeTxt[9];
 
 // ***** BASE.H *****
 extern char Version[5];

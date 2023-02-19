@@ -24,25 +24,40 @@
 
 double Owned(FrmlElem* Bool, FrmlElem* Sum, LinkD* LD)
 {
-	XScan* Scan; XKey* K; XString x; LockMode md; longint n, nBeg;
-	FileDPtr cf; void* cr; double r;
-	x.PackKF(LD->ToKey->KFlds); cf = CFile; cr = CRecPtr;
-	CFile = LD->FromFD; md = NewLMode(CFile, RdMode);
-	TestXFExist(); K = GetFromKey(LD);
+	double r;
+	XString x;
+	x.PackKF(LD->ToKey->KFlds);
+	FileD* cf = CFile;
+	void* cr = CRecPtr;
+	CFile = LD->FromFD;
+	LockMode md = NewLMode(CFile, RdMode);
+	TestXFExist();
+	XKey* K = GetFromKey(LD);
+
 	if ((Bool == nullptr) && (Sum == nullptr) && !CFile->IsSQLFile) {
-		K->FindNr(x.S, nBeg); x.S[0]; x.S[x.S.length()] = 0xFF;
-		K->FindNr(x.S, n); r = n - nBeg;
+		longint n;
+		longint nBeg;
+		K->FindNr(x.S, nBeg);
+		x.S[0];
+		x.S[x.S.length()] = 0xFF;
+		K->FindNr(x.S, n);
+		r = n - nBeg;
 	}
 	else {
-		r = 0; CRecPtr = GetRecSpace();
-		Scan = new XScan(CFile, K, nullptr, true);
+		r = 0;
+		CRecPtr = GetRecSpace();
+		XScan* Scan = new XScan(CFile, K, nullptr, true);
 		Scan->ResetOwner(&x, nullptr);
 		while (true) {
 			Scan->GetRec();
 			if (!Scan->eof) {
 				if (RunBool(Bool)) {
-					if (Sum == nullptr) r = r + 1;
-					else r = r + RunReal(Sum);
+					if (Sum == nullptr) {
+						r = r + 1;
+					}
+					else {
+						r = r + RunReal(Sum);
+					}
 				}
 				continue;
 			}
@@ -51,7 +66,9 @@ double Owned(FrmlElem* Bool, FrmlElem* Sum, LinkD* LD)
 		Scan->Close();
 		ReleaseStore(CRecPtr);
 	}
-	OldLMode(CFile, md); CFile = cf; CRecPtr = cr;
+	OldLMode(CFile, md);
+	CFile = cf;
+	CRecPtr = cr;
 	return r;
 }
 

@@ -759,7 +759,7 @@ bool SetContextDir(std::string& D, bool& IsRdb)
 	RdbD* R = CRdb;
 	IsRdb = false;
 	while (R != nullptr) {
-		FileDPtr F = R->FD;
+		FileD* F = R->FD;
 		if ((CFile == F) && (CFile->CatIRec != 0)) {
 			D = R->RdbDir;
 			IsRdb = true;
@@ -772,7 +772,7 @@ bool SetContextDir(std::string& D, bool& IsRdb)
 				else D = R->DataDir;
 				return result;
 			}
-			F = (FileD*)F->pChain;
+			F = F->pChain;
 		}
 		R = R->ChainBack;
 	}
