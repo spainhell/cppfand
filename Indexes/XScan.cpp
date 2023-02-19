@@ -124,7 +124,7 @@ void XScan::ResetSort(KeyFldD* aSK, FrmlElem* BoolZ, LockMode OldMd, bool SQLFil
 		default: return;
 		}
 		m = LockMode(MaxW(m, OldMd));
-		if (m != OldMd) ChangeLMode(m, 0, true);
+		if (m != OldMd) ChangeLMode(CFile, m, 0, true);
 	}
 }
 

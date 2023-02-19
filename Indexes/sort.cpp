@@ -137,7 +137,7 @@ void GetIndexSort(Instr_getindex* PD)
 	LocVar* lv = PD->giLV;
 	CFile = lv->FD;
 	XWKey* k = (XWKey*)lv->RecPtr;
-	LockMode md = NewLMode(RdMode);
+	LockMode md = NewLMode(CFile, RdMode);
 	if (PD->giMode == ' ') {
 		ld = PD->giLD;
 		if (ld != nullptr) kf = ld->ToKey->KFlds;
@@ -160,12 +160,12 @@ void GetIndexSort(Instr_getindex* PD)
 		}
 		case 'F': {
 			CFile = ld->ToFD;
-			md = NewLMode(RdMode);
+			md = NewLMode(CFile, RdMode);
 			CRecPtr = GetRecSpace();
 			ReadRec(CFile, RunInt((FrmlElem*)PD->giLV2), CRecPtr);
 			x.PackKF(kf);
 			ReleaseStore(CRecPtr);
-			OldLMode(md);
+			OldLMode(CFile, md);
 
 			CFile = lv->FD;
 			Scan->ResetOwner(&x, cond);
@@ -205,7 +205,7 @@ void GetIndexSort(Instr_getindex* PD)
 			}
 		}
 	}
-	OldLMode(md);
+	OldLMode(CFile, md);
 	ReleaseStore(p);
 }
 
@@ -213,9 +213,9 @@ void CopyIndex(XWKey* K, XKey* FromK)
 {
 	XScan* Scan = nullptr;
 	K->Release();
-	LockMode md = NewLMode(RdMode);
+	LockMode md = NewLMode(CFile, RdMode);
 		Scan = new XScan(CFile, FromK, nullptr, false);
 	Scan->Reset(nullptr, false);
 	CreateWIndex(Scan, K, 'W');
-	OldLMode(md);
+	OldLMode(CFile, md);
 }

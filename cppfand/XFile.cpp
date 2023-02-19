@@ -108,7 +108,7 @@ void CreateIndexFile()
 		XF = CFile->XF;
 		cr = CRecPtr;
 		CRecPtr = GetRecSpace();
-		md = NewLMode(RdMode);
+		md = NewLMode(CFile, RdMode);
 		TryLockN(0, 0);
 		/*ClearCacheCFile;*/
 		if (XF->Handle == nullptr) RunError(903);
@@ -138,7 +138,7 @@ void CreateIndexFile()
 		XF->NoCreate = true;
 	}
 	UnLockN(0);
-	OldLMode(md);
+	OldLMode(CFile, md);
 	if (fail) GoExit();
 }
 

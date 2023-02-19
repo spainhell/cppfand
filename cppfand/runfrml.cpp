@@ -27,7 +27,8 @@ double Owned(FrmlElem* Bool, FrmlElem* Sum, LinkD* LD)
 	XScan* Scan; XKey* K; XString x; LockMode md; longint n, nBeg;
 	FileDPtr cf; void* cr; double r;
 	x.PackKF(LD->ToKey->KFlds); cf = CFile; cr = CRecPtr;
-	CFile = LD->FromFD; md = NewLMode(RdMode); TestXFExist(); K = GetFromKey(LD);
+	CFile = LD->FromFD; md = NewLMode(CFile, RdMode);
+	TestXFExist(); K = GetFromKey(LD);
 	if ((Bool == nullptr) && (Sum == nullptr) && !CFile->IsSQLFile) {
 		K->FindNr(x.S, nBeg); x.S[0]; x.S[x.S.length()] = 0xFF;
 		K->FindNr(x.S, n); r = n - nBeg;
@@ -50,7 +51,7 @@ double Owned(FrmlElem* Bool, FrmlElem* Sum, LinkD* LD)
 		Scan->Close();
 		ReleaseStore(CRecPtr);
 	}
-	OldLMode(md); CFile = cf; CRecPtr = cr;
+	OldLMode(CFile, md); CFile = cf; CRecPtr = cr;
 	return r;
 }
 
@@ -312,14 +313,15 @@ longint GetFileSize()
 
 longint RecNoFun(FrmlElem13* Z)
 {
-	bool b = false; longint n = 0;
+	bool b = false;
+	longint n = 0;
 	XString x;
 	GetRecNoXString(Z, x);
 	FileD* cf = CFile;
 	void* cr = CRecPtr;
 	XKey* k = Z->Key;
 	CFile = Z->FFD;
-	LockMode md = NewLMode(RdMode);
+	LockMode md = NewLMode(CFile, RdMode);
 	CRecPtr = GetRecSpace();
 	if (CFile->NRecs > 0) {
 		if (CFile->Typ == 'X') {
@@ -329,8 +331,10 @@ longint RecNoFun(FrmlElem13* Z)
 		else b = SearchKey(x, k, n);
 		if (!b) n = -n;
 	}
-	else n = -1;
-	OldLMode(md);
+	else {
+		n = -1;
+	}
+	OldLMode(CFile, md);
 	ReleaseStore(CRecPtr);
 	CFile = cf; CRecPtr = cr;
 	return n;
@@ -347,7 +351,7 @@ longint AbsLogRecNoFun(FrmlElem13* Z)
 	longint N = RunInt(Z->Arg[0]);
 	if (N <= 0) return result;
 	CFile = Z->FFD;
-	LockMode md = NewLMode(RdMode);
+	LockMode md = NewLMode(CFile, RdMode);
 	if (N > CFile->NRecs) goto label1;
 	if (CFile->Typ == 'X') {
 		TestXFExist();
@@ -362,9 +366,11 @@ longint AbsLogRecNoFun(FrmlElem13* Z)
 			result = k->NrToRecNr(N);
 		}
 	}
-	else result = N;
+	else {
+		result = N;
+	}
 label1:
-	OldLMode(md);
+	OldLMode(CFile, md);
 	ReleaseStore(p);
 	CFile = cf;	CRecPtr = cr;
 	return result;
@@ -382,14 +388,14 @@ double LinkProc(FrmlElem15* X)
 	if (X->LinkFromRec) CRecPtr = X->LinkLV->RecPtr;
 	else {
 		N = RunInt(X->LinkRecFrml);
-		LockMode md = NewLMode(RdMode);
+		LockMode md = NewLMode(CFile, RdMode);
 		if ((N <= 0) || (N > CFile->NRecs)) {
 			SetMsgPar(CFile->Name, LD->RoleName);
 			RunErrorM(md, 609);
 		}
 		CRecPtr = GetRecSpace();
 		ReadRec(CFile, N, CRecPtr);
-		OldLMode(md);
+		OldLMode(CFile, md);
 	}
 	if (!LinkUpw(LD, N, false)) N = -N;
 	auto result = N;
@@ -988,14 +994,14 @@ label1:
 		auto iX = (FrmlElem9*)X;
 		cf = CFile;
 		CFile = iX->FD;
-		md = NewLMode(RdMode);
+		md = NewLMode(CFile, RdMode);
 		if (X->Op == _nrecs) {
 			RecNo = XNRecs(CFile->Keys);
 		}
 		else {
 			RecNo = CFile->NRecs;
 		}
-		OldLMode(md);
+		OldLMode(CFile, md);
 		result = (int)RecNo;
 		CFile = cf;
 		break;
@@ -1187,7 +1193,7 @@ void TestTFrml(FieldDescr* F, FrmlElem* Z, TFile** TF02, FileD** TFD02, longint&
 		cf = CFile;
 		MarkStore(p);
 		CFile = iZ->File2;
-		md = NewLMode(RdMode);
+		md = NewLMode(CFile, RdMode);
 		if (iZ->LD != nullptr) {
 			CFile = cf;
 			LinkUpw(iZ->LD, n, true);
@@ -1197,7 +1203,7 @@ void TestTFrml(FieldDescr* F, FrmlElem* Z, TFile** TF02, FileD** TFD02, longint&
 		}
 		TestTFrml(F, iZ->P011, TF02, TFD02, TF02Pos);
 		CFile = iZ->File2;
-		OldLMode(md);
+		OldLMode(CFile, md);
 		ReleaseStore(p);
 		break;
 	}
@@ -1249,7 +1255,7 @@ bool TryCopyT(FieldDescr* F, TFile* TF, longint& pos, FrmlElem* Z)
 
 void AssgnFrml(FieldDescr* F, FrmlElem* X, bool Delete, bool Add)
 {
-	longint pos = 0; 
+	longint pos = 0;
 	switch (F->FrmlTyp) {
 	case 'S': {
 		if (F->Typ == 'T') {
@@ -1477,7 +1483,7 @@ LongStr* RunLongStr(FrmlElem* X)
 {
 	LongStr* S = nullptr;
 	bool b = false;
-	WORD I = 0;
+	//WORD I = 0;
 	longint RecNo = 0;
 	FileD* cf = nullptr;
 	void* cr = nullptr;
@@ -1507,14 +1513,16 @@ LongStr* RunLongStr(FrmlElem* X)
 			cf = CFile; cr = CRecPtr;
 			CFile = iX7->File2;
 			//*md = NewLMode(RdMode);
-			I = (WORD)NewLMode(RdMode);
+			LockMode lm = NewLMode(CFile, RdMode);
 			if (iX7->LD != nullptr) {
 				CFile = cf;
 				LinkUpw(iX7->LD, RecNo, true);
 			}
-			else LinkLastRec(iX7->File2, RecNo, true);
+			else {
+				LinkLastRec(iX7->File2, RecNo, true);
+			}
 			S = RunLongStr(iX7->P011);
-			OldLMode((LockMode)I);  /*possibly reading .T*/
+			OldLMode(CFile, lm);  /*possibly reading .T*/
 			ClearRecSpace(CRecPtr);
 			//memcpy(CRecPtr, &S->LL, sizeof(S->LL));
 			//memcpy(&((BYTE*)CRecPtr)[sizeof(S->LL)], S->A, S->LL);
@@ -1634,12 +1642,14 @@ LongStr* RunLongStr(FrmlElem* X)
 		}
 		case _copyline: {
 			auto iX0 = (FrmlElem0*)X;
-			I = 1;
-			if (iX0->P3 != nullptr) I = (WORD)RunInt(iX0->P3);
+			int i = 1;
+			if (iX0->P3 != nullptr) {
+				i = RunInt(iX0->P3);
+			}
 			auto* lstr = RunLongStr(iX0->P1);
 			std::string text = std::string(lstr->A, lstr->LL);
 			WORD start = RunInt(iX0->P2);
-			auto r = GetNthLine(text, start, I);
+			auto r = GetNthLine(text, start, i);
 			result = new LongStr(r.length());
 			result->LL = r.length();
 			memcpy(result->A, r.c_str(), r.length());
@@ -1696,9 +1706,18 @@ LongStr* RunLongStr(FrmlElem* X)
 			//SetMyBP((ProcStkD*)cr);
 			break;
 		}
-		case _selectstr: result = RunSelectStr((FrmlElem0*)X); break;
-		case _clipbd: result = TWork.Read(1, ClpBdPos); break;
-		default: result = RunS(X);
+		case _selectstr: {
+			result = RunSelectStr((FrmlElem0*)X);
+			break;
+		}
+		case _clipbd: {
+			result = TWork.Read(1, ClpBdPos);
+			break;
+		}
+		default: {
+			result = RunS(X);
+			break;
+		}
 		}
 
 		break; // end main while loop
@@ -1732,14 +1751,16 @@ label1:
 		cf = CFile; cr = CRecPtr;
 		CFile = iX7->File2;
 		//*md = NewLMode(RdMode);
-		I = (WORD)NewLMode(RdMode);
+		LockMode lm = NewLMode(CFile, RdMode);
 		if (iX7->LD != nullptr) {
 			CFile = cf;
 			LinkUpw(iX7->LD, RecNo, true);
 		}
-		else LinkLastRec(iX7->File2, RecNo, true);
+		else {
+			LinkLastRec(iX7->File2, RecNo, true);
+		}
 		result = RunStdStr(iX7->P011);
-		OldLMode((LockMode)I);  /*possibly reading .T*/
+		OldLMode(CFile, lm);  /*possibly reading .T*/
 		ClearRecSpace(CRecPtr);
 		ReleaseAfterLongStr(CRecPtr);
 		CFile = cf; CRecPtr = cr;
@@ -2296,7 +2317,7 @@ LongStr* RepeatStr(LongStr* S, integer N)
 void AccRecNoProc(FrmlElem14* X, WORD Msg)
 {
 	CFile = X->RecFD;
-	LockMode md = NewLMode(RdMode);
+	LockMode md = NewLMode(CFile, RdMode);
 	CRecPtr = GetRecSpace();
 	longint N = RunInt(X->PPPPP1);
 	if ((N <= 0) || (N > CFile->NRecs)) {
@@ -2304,7 +2325,7 @@ void AccRecNoProc(FrmlElem14* X, WORD Msg)
 		RunErrorM(md, Msg);
 	}
 	ReadRec(CFile, N, CRecPtr);
-	OldLMode(md);
+	OldLMode(CFile, md);
 }
 
 void GetRecNoXString(FrmlElem13* Z, XString& X)

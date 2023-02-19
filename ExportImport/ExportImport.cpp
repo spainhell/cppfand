@@ -305,7 +305,7 @@ void ImportTxt(CopyD* CD)
 #endif
 	if ((F1 != nullptr) && (F1->Handle != nullptr)) {
 		delete F1;
-		OldLMode(md);
+		OldLMode(CFile, md);
 	}
 }
 
@@ -338,7 +338,7 @@ void ExportTxt(CopyD* CD)
 		}
 		CFile = CD->FD1;
 		CRecPtr = GetRecSpace();
-		md = NewLMode(RdMode);
+		md = NewLMode(CFile, RdMode);
 		Scan = new XScan(CFile, CD->ViewKey, nullptr, true);
 		Scan->Reset(nullptr, false);
 		RunMsgOn('C', Scan->NRecs);
@@ -362,7 +362,7 @@ void ExportTxt(CopyD* CD)
 	if (Scan != nullptr) {
 		Scan->Close();
 		ClearRecSpace(CRecPtr);
-		OldLMode(md);
+		OldLMode(CFile, md);
 	}
 	if (F2 != nullptr && F2->Handle != nullptr) {
 		if (LastExitCode != 0) {
@@ -400,7 +400,7 @@ void ExportFD(CopyD* CD)
 	try {
 		CFile = CD->FD1;
 		SaveFiles();
-		md = NewLMode(RdMode);
+		md = NewLMode(CFile, RdMode);
 		F2 = new ThFile(CD->Path2, CD->CatIRec2, InOutMode::_outp, 0, nullptr);
 		longint n = XNRecs(CD->FD1->Keys);
 
@@ -440,7 +440,7 @@ void ExportFD(CopyD* CD)
 	if ((F2 != nullptr) && (F2->Handle != nullptr)) {
 		if (LastExitCode != 0) F2->ClearBuf();
 		delete F2; F2 = nullptr;
-		OldLMode(md);
+		OldLMode(CFile, md);
 	}
 }
 

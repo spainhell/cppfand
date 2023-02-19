@@ -332,7 +332,7 @@ bool RdFDSegment(WORD FromI, longint Pos)
 	return false;
 }
 
-WORD FindHelpRecNr(FileDPtr FD, std::string& txt)
+WORD FindHelpRecNr(FileD* FD, std::string& txt)
 {
 	FileD* cf = nullptr; void* cr = nullptr;
 	LockMode md = LockMode::NullMode;
@@ -343,7 +343,7 @@ WORD FindHelpRecNr(FileDPtr FD, std::string& txt)
 	cf = CFile; cr = CRecPtr;
 	CFile = FD;
 	CRecPtr = GetRecSpace();
-	md = NewLMode(RdMode);
+	md = NewLMode(CFile, RdMode);
 	if (CFile->Handle == nullptr) goto label1;
 	NmF = CFile->FldD.front();
 	TxtF = (FieldDescr*)NmF->pChain;
@@ -364,7 +364,7 @@ WORD FindHelpRecNr(FileDPtr FD, std::string& txt)
 label1:
 	result = 0;
 label2:
-	OldLMode(md);
+	OldLMode(CFile, md);
 	ReleaseStore(CRecPtr);
 	CFile = cf;
 	CRecPtr = cr;

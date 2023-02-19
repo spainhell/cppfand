@@ -98,15 +98,14 @@ void OpenFANDFiles(bool FromDML)
 		CFile = RD->FD;
 		if (IsTestRun) OpenF(Exclusive);
 		else OpenF(RdOnly);
-		CFile = (FileD*)CFile->pChain;
+		CFile = CFile->pChain;
 		while (!FromDML && (CFile != nullptr)) {
 			/*with CFile^*/
-			if (CFile->ExLMode != NullMode)
-			{
+			if (CFile->ExLMode != NullMode)	{
 				OpenF(Shared);
-				md = NewLMode(CFile->ExLMode);
+				md = NewLMode(CFile, CFile->ExLMode);
 			}
-			CFile = (FileD*)CFile->pChain;
+			CFile = CFile->pChain;
 		}
 		RD = RD->ChainBack;
 	}
@@ -116,7 +115,6 @@ void OpenFANDFiles(bool FromDML)
 void SetCPathMountVolSetNet(FileUseMode UM)
 {
 	SetCPathVol();
-	/* !!! with CFile^ do!!! */
 	CFile->UMode = UM;
 	CFile->Drive = (BYTE)TestMountVol(CPath[1]);
 	if (!IsNetCVol() || (CFile == Chpt))
@@ -275,7 +273,7 @@ bool OpenF2()
 			CFile->NRecs = n;
 		label1:
 			if (CFile->IsShared() && (CFile->LMode < ExclMode)) {
-				ChangeLMode(ExclMode, 0, false);
+				ChangeLMode(CFile, ExclMode, 0, false);
 			}
 			CFile->LMode = ExclMode;
 		label2:
@@ -316,14 +314,14 @@ label3:
 					CFileMsg(830, 'X');
 				}
 				if (CFile->IsShared() && (CFile->LMode < ExclMode)) {
-					ChangeLMode(ExclMode, 0, false);
+					ChangeLMode(CFile, ExclMode, 0, false);
 				}
 				CFile->LMode = ExclMode;
 				CFile->XF->SetNotValid();
 			}
 		}
 	}
-	SeekRec(0);
+	SeekRec(CFile, 0);
 	return true;
 }
 
@@ -331,18 +329,17 @@ bool OpenF(FileUseMode UM)
 {
 	bool result = true;
 	if (CFile->Handle != nullptr) return result;
-	if (OpenF1(UM))
-	{
+	if (OpenF1(UM))	{
 		if (
 #ifdef FandSQL
 			!IsSQLFile &&
 #endif
 			CFile->IsShared()) {
-			ChangeLMode(RdMode, 0, false);
+			ChangeLMode(CFile, RdMode, 0, false);
 			CFile->LMode = RdMode;
 		}
 		result = OpenF2();
-		OldLMode(NullMode);
+		OldLMode(CFile, NullMode);
 	}
 	else result = false;
 	return result;
@@ -364,7 +361,7 @@ void CreateF()
 		CFile->XF->TestErr(); /*SetNotValid*/
 		CFile->XF->SetEmpty();
 	}
-	SeekRec(0);
+	SeekRec(CFile, 0);
 	SetUpdHandle(CFile->Handle);
 }
 
@@ -391,17 +388,17 @@ LockMode RewriteF(const bool Append)
 	LockMode result;
 	/* !!! with CFile^ do!!! */
 	if (Append) {
-		result = NewLMode(CrMode);
-		SeekRec(CFile->NRecs);
+		result = NewLMode(CFile, CrMode);
+		SeekRec(CFile, CFile->NRecs);
 		if (CFile->XF != nullptr) {
 			CFile->XF->FirstDupl = true;
 			TestXFExist();
 		}
 		return result;
 	}
-	result = NewLMode(ExclMode);
+	result = NewLMode(CFile, ExclMode);
 	CFile->NRecs = 0;
-	SeekRec(0);
+	SeekRec(CFile, 0);
 	SetUpdHandle(CFile->Handle);
 	XFNotValid();
 	if (CFile->Typ == 'X') CFile->XF->NoCreate = true;
@@ -414,7 +411,7 @@ void TruncF()
 	/* with CFile^ */
 	LockMode md; longint sz;
 	if (CFile->UMode == RdOnly) return;
-	md = NewLMode(RdMode);
+	md = NewLMode(CFile, RdMode);
 	TruncH(CFile->Handle, CFile->UsedFileSize());
 	if (HandleError != 0) CFileMsg(700 + HandleError, '0');
 	if (CFile->TF != nullptr)  /*with TF^*/ {
@@ -427,7 +424,7 @@ void TruncF()
 		TruncH(CFile->XF->Handle, sz);
 		CFile->XF->TestErr();
 	}
-	OldLMode(md);
+	OldLMode(CFile, md);
 
 }
 
@@ -435,15 +432,18 @@ void CloseFile()
 {
 	//with CFile^ do {
 	if (CFile->Handle == nullptr) return;
-	if (CFile->IsShared()) OldLMode(NullMode);
-	else WrPrefixes();
+	if (CFile->IsShared()) {
+		OldLMode(CFile, NullMode);
+	}
+	else {
+		WrPrefixes();
+	}
 	SaveCache(0, CFile->Handle);
 	TruncF();
 	if (CFile->Typ == 'X') { /*with GetXFile^*/
 		if (CFile->XF->Handle != nullptr) {
 			CloseClearH(&CFile->XF->Handle);
-			if (!CFile->IsShared())
-			{
+			if (!CFile->IsShared())	{
 				if (CFile->XF->NotValid) goto label1;
 				if ((CFile->XF->NRecs == 0) || CFile->NRecs == 0) {
 					CFile->NRecs = 0;
@@ -456,7 +456,7 @@ void CloseFile()
 		}
 	}
 	// zavreni souboru volnych textu .T00
-	if (CFile->TF != nullptr) { /*with TF^*/
+	if (CFile->TF != nullptr) {
 		if (CFile->TF->Handle != nullptr) {
 			CloseClearH(&CFile->TF->Handle);
 			if (HandleError == 0) CFile->TF->Handle = nullptr; // soubor byl uspesne uzavren

@@ -150,8 +150,8 @@ void AssignField(Instr_assign* PD)
 {
 	WORD msg = 0;
 	CFile = PD->FD;
-	LockMode md = NewLMode(WrMode);
-	FieldDPtr F = PD->FldD;
+	LockMode md = NewLMode(CFile, WrMode);
+	FieldDescr* F = PD->FldD;
 	longint N = RunInt(PD->RecFrml);
 	if ((N <= 0) || (N > CFile->NRecs)) {
 		msg = 640;
@@ -168,7 +168,7 @@ void AssignField(Instr_assign* PD)
 	AssgnFrml(F, PD->Frml, true, PD->Add);
 	WriteRec(CFile, N, CRecPtr);
 	ReleaseStore(CRecPtr);
-	OldLMode(md);
+	OldLMode(CFile, md);
 }
 
 void AssignRecVar(LocVar* LV1, LocVar* LV2, AssignD* A)
@@ -219,10 +219,10 @@ void AssignRecFld(Instr_assign* PD)
 void SortProc(FileD* FD, KeyFldD* SK)
 {
 	CFile = FD;
-	LockMode md = NewLMode(ExclMode);
+	LockMode md = NewLMode(CFile, ExclMode);
 	SortAndSubst(SK);
 	CFile = FD;
-	OldLMode(md);
+	OldLMode(CFile, md);
 	SaveFiles();
 }
 
@@ -383,7 +383,7 @@ void IndexfileProc(FileD* FD, bool Compress)
 	LockMode md;
 	FileD* cf = CFile;
 	CFile = FD;
-	md = NewLMode(ExclMode);
+	md = NewLMode(CFile, ExclMode);
 	XFNotValid();
 	CRecPtr = GetRecSpace();
 	if (Compress) {
@@ -404,7 +404,7 @@ void IndexfileProc(FileD* FD, bool Compress)
 	}
 	CFile->XF->NoCreate = false;
 	TestXFExist();
-	OldLMode(md);
+	OldLMode(CFile, md);
 	SaveFiles();
 	ReleaseStore(CRecPtr);
 	CFile = cf;
@@ -527,7 +527,7 @@ void DeleteRecProc(Instr_recs* PD)
 		if (CFile->IsSQLFile) { Strm1->DeleteXRec(PD->Key, &x, PD->AdUpd); goto label2; }
 #endif
 	}
-	LockMode md = NewLMode(DelMode);
+	LockMode md = NewLMode(CFile, DelMode);
 	if (PD->ByKey) {
 		if (!SrchXKey(PD->Key, x, n)) {
 			goto label1;
@@ -550,21 +550,20 @@ void DeleteRecProc(Instr_recs* PD)
 		DeleteRec(n);
 	}
 label1:
-	OldLMode(md);
+	OldLMode(CFile, md);
 label2:
 	ReleaseStore(CRecPtr);
 }
 
 void AppendRecProc()
 {
-	LockMode md;
-	md = NewLMode(CrMode);
+	LockMode md = NewLMode(CFile, CrMode);
 	CRecPtr = GetRecSpace();
 	ZeroAllFlds();
 	SetDeletedFlag();
 	CreateRec(CFile->NRecs + 1);
 	ReleaseStore(CRecPtr);
-	OldLMode(md);
+	OldLMode(CFile, md);
 }
 
 void UpdRec(void* CR, longint N, bool AdUpd)
@@ -575,12 +574,22 @@ void UpdRec(void* CR, longint N, bool AdUpd)
 	bool del = DeletedFlag();
 	CRecPtr = CR;
 	if (AdUpd) {
-		if (del) LastExitCode = !RunAddUpdte('+', nullptr, nullptr);
-		else LastExitCode = !RunAddUpdte('d', cr2, nullptr);
+		if (del) {
+			LastExitCode = !RunAddUpdte('+', nullptr, nullptr);
+		}
+		else {
+			LastExitCode = !RunAddUpdte('d', cr2, nullptr);
+		}
 	}
-	if (CFile->Typ == 'X') OverWrXRec(N, cr2, CR);
-	else WriteRec(CFile, N, CRecPtr);
-	if (!del) DelAllDifTFlds(cr2, nullptr);
+	if (CFile->Typ == 'X') {
+		OverWrXRec(N, cr2, CR);
+	}
+	else {
+		WriteRec(CFile, N, CRecPtr);
+	}
+	if (!del) {
+		DelAllDifTFlds(cr2, nullptr);
+	}
 	ReleaseStore(cr2);
 }
 
@@ -611,7 +620,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 	else N = RunInt(PD->RecNr);
 	if (IsRead) {
 		if (N == 0) goto label0;
-		else NewLMode(RdMode);
+		else NewLMode(CFile, RdMode);
 	}
 	else if (N == 0) {
 
@@ -620,7 +629,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 #endif
 		goto label1;
 	}
-	else NewLMode(WrMode);
+	else NewLMode(CFile, WrMode);
 	if (PD->ByKey) {
 		if (k == nullptr/*IsParFile*/) {
 			if (CFile->NRecs == 0)
@@ -632,7 +641,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 				}
 				else {
 				label1:
-					NewLMode(CrMode);
+					NewLMode(CFile, CrMode);
 					TestXFExist();
 					IncNRecs(1);
 					app = true;
@@ -678,7 +687,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 	}
 label4:
 	ReleaseStore(cr);
-	OldLMode(md);
+	OldLMode(CFile, md);
 }
 
 void LinkRecProc(Instr_assign* PD)
@@ -724,12 +733,12 @@ void ForAllProc(Instr_forall* PD)
 			break;
 		}
 		case 'F': {
-			md = NewLMode(RdMode);
+			md = NewLMode(CFile, RdMode);
 			CRecPtr = GetRecSpace();
 			ReadRec(CFile, RunInt((FrmlElem*)PD->CLV), CRecPtr);
 			xx.PackKF(KF);
 			ReleaseStore(p);
-			OldLMode(md);
+			OldLMode(CFile, md);
 			break;
 		}
 		}
@@ -738,7 +747,7 @@ void ForAllProc(Instr_forall* PD)
 #ifdef FandSQL
 	sql = CFile->IsSQLFile;
 #endif
-	md = NewLMode(RdMode);
+	md = NewLMode(CFile, RdMode);
 	cr = GetRecSpace(); CRecPtr = cr; lr = cr;
 	xScan = new XScan(CFile, Key, KI, true);
 #ifdef FandSQL
@@ -815,10 +824,10 @@ label1:
 		{
 			OpenCreateF(Shared);
 			if ((LVr != nullptr) && (LVi == nullptr) && HasUpdFlag()) {
-				md1 = NewLMode(WrMode);
+				md1 = NewLMode(CFile, WrMode);
 				CopyRecWithT(lr, cr);
 				UpdRec(cr, xScan->RecNr, true);
-				OldLMode(md1);
+				OldLMode(CFile, md1);
 			}
 		}
 		if (!(ExitP || BreakP)) {
@@ -837,7 +846,7 @@ label1:
 		CFile->XF->UpdLockCnt--;
 	}
 	xScan->Close();
-	OldLMode(md);
+	OldLMode(CFile, md);
 	if (b) {
 		RunMsgOff();
 	}
@@ -906,21 +915,23 @@ label1:
 		CFile = ld->FD;
 		if (CFile->Handle == nullptr)
 			if (OpenF1(Shared))
-				if (TryLMode(RdMode, md, 2)) {
+				if (TryLMode(CFile, RdMode, md, 2)) {
 					OpenF2();
-					OldLMode(NullMode);
+					OldLMode(CFile, NullMode);
 				}
 				else {
 					CloseClearHCFile();
 					goto label2;
 				}
-			else OpenCreateF(Shared);
+			else {
+				OpenCreateF(Shared);
+			}
 		if (CFile->IsShared()) {
 			if (op == _withlocked) {
 				if (TryLockN(ld->N, 2)) goto label3;
 			}
 			else {
-				if (TryLMode(ld->Md, ld->OldMd, 2)) goto label3;
+				if (TryLMode(CFile, ld->Md, ld->OldMd, 2)) goto label3;
 			}
 		label2:
 			UnLck(PD, ld, op);
@@ -1077,12 +1088,13 @@ void PortOut(bool IsWord, WORD Port, WORD What)
 
 void RecallRecProc(Instr_recs* PD)
 {
-	LockMode md; longint N;
+	LockMode md;
+	longint N;
 	CFile = PD->RecFD;
 	if (CFile->Typ != 'X') return;
 	N = RunInt(PD->RecNr);
 	CRecPtr = GetRecSpace();
-	md = NewLMode(CrMode);
+	md = NewLMode(CFile, CrMode);
 	if ((N > 0) && (N <= CFile->NRecs)) {
 		ReadRec(CFile, N, CRecPtr);
 		if (DeletedFlag()) {
@@ -1090,7 +1102,7 @@ void RecallRecProc(Instr_recs* PD)
 			if (PD->AdUpd) LastExitCode = !RunAddUpdte('+', nullptr, nullptr);
 		}
 	}
-	OldLMode(md);
+	OldLMode(CFile, md);
 	ReleaseStore(CRecPtr);
 }
 
@@ -1101,7 +1113,7 @@ void UnLck(Instr_withshared* PD, LockD* Ld1, PInstrCode Op)
 		CFile = ld->FD;
 		if (CFile->IsShared()) {
 			if (Op == _withlocked) UnLockN(ld->N);
-			OldLMode(ld->OldMd);
+			OldLMode(CFile, ld->OldMd);
 		}
 		ld = ld->Chain;
 	}

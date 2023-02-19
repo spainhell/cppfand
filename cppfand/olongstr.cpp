@@ -75,7 +75,7 @@ longint CopyTFFromGetTxt(TFile* TF, FrmlElem* Z)
 		CloseH(&h);
 		exit;
 	}
-	if (!TF->IsWork) md = NewLMode(WrMode);
+	if (!TF->IsWork) md = NewLMode(CFile, WrMode);
 	if (len <= MPageSize - 2) { /* short text */
 		l = (WORD)len;
 		ReadH(h, l, X);
@@ -130,7 +130,7 @@ label3:
 	ReadH(h, l, &X[i]);
 	RdWrCache(false, TF->Handle, TF->NotCached(), pos, MPageSize, X);
 label4:
-	if (!TF->IsWork) OldLMode(md); 
+	if (!TF->IsWork) OldLMode(CFile, md);
 	CloseH(&h);
 	return result;
 }
@@ -155,9 +155,9 @@ longint CopyTFString(TFile* destT00File, FileD* srcFileDescr, TFile* scrT00File,
 		return 0; /*Mark****/
 	}
 	cf = CFile;
-	if (!destT00File->IsWork) md = NewLMode(WrMode);
+	if (!destT00File->IsWork) md = NewLMode(CFile, WrMode);
 	CFile = srcFileDescr;
-	if (!scrT00File->IsWork) md2 = NewLMode(RdMode);
+	if (!scrT00File->IsWork) md2 = NewLMode(CFile, RdMode);
 	RdWrCache(true, scrT00File->Handle, scrT00File->NotCached(), srcT00Pos, 2, &l);
 	if (l <= MPageSize - 2) { /* short text */
 		if (l == 0) goto label0; /*Mark****/
@@ -226,19 +226,17 @@ label3:
 	RdWrCache(false, destT00File->Handle, destT00File->NotCached(), pos, MPageSize, X);
 label4:
 	CFile = srcFileDescr;
-	if (!scrT00File->IsWork) OldLMode(md2);
+	if (!scrT00File->IsWork) OldLMode(CFile, md2);
 	CFile = cf;
-	if (!destT00File->IsWork) OldLMode(md);
+	if (!destT00File->IsWork) OldLMode(CFile, md);
 	return result;
 }
 
 void CopyTFStringToH(FILE* h, TFile* TF02, FileD* TFD02, longint& TF02Pos)
 {
-	FileD* cf = nullptr; TFilePtr tf = nullptr;
 	WORD i = 0;
 	bool isLongTxt = false;
 	longint pos = 0;
-	size_t l = 0;
 	size_t n = 0;
 	BYTE X[MPageSize + 1]{ 0 };
 	WORD* ll = (WORD*)X;
@@ -246,10 +244,11 @@ void CopyTFStringToH(FILE* h, TFile* TF02, FileD* TFD02, longint& TF02Pos)
 
 	pos = TF02Pos;
 	if (pos == 0) return;
-	cf = CFile;
+	FileD* cf = CFile;
 	CFile = TFD02;
-	tf = TF02;
-	if (!tf->IsWork) md2 = NewLMode(RdMode);
+	TFilePtr tf = TF02;
+	if (!tf->IsWork) md2 = NewLMode(CFile, RdMode);
+	size_t l = 0;
 	RdWrCache(true, tf->Handle, tf->NotCached(), pos, 2, &l);
 	if (l <= MPageSize - 2) { /* short text */
 		RdWrCache(true, tf->Handle, tf->NotCached(), pos + 2, l, X);
@@ -288,6 +287,6 @@ label3:
 	}
 	WriteH(h, l, &X[i]);
 label4:
-	if (!tf->IsWork) OldLMode(md2);
+	if (!tf->IsWork) OldLMode(CFile, md2);
 	CFile = cf;
 }

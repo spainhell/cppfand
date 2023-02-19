@@ -1667,7 +1667,7 @@ bool RunCommand(TCommand* COff/*PCommand*/)
 			//PtrRec(c->FldD).Seg = PtrRec(CFile).Seg;
 		}
 		if (c->Code == _SaveC) {
-			md = NewLMode(WrMode);
+			md = NewLMode(CFile, WrMode);
 			if (!LinkLastRec(CFile, n, true)) IncNRecs(1);
 			DelTFld(c->FldD);
 			std::string save = SaveDb(c->DbPred, 0);
@@ -1675,13 +1675,13 @@ bool RunCommand(TCommand* COff/*PCommand*/)
 			WriteRec(CFile, CFile->NRecs, CRecPtr);
 		}
 		else {
-			md = NewLMode(RdMode);
+			md = NewLMode(CFile, RdMode);
 			LinkLastRec(CFile, n, true);
 			s = _LongS(c->FldD);
 			if (c->Code == _ConsultC) ConsultDb(std::string(s->A, s->LL), c->DbPred);
 			else LoadLex(s);
 		}
-		OldLMode(md);
+		OldLMode(CFile, md);
 		ReleaseStore(p1);
 		break;
 	}
@@ -1849,7 +1849,7 @@ void AssertFand(TPredicate* P, TCommand* C)
 	LongStr* s = nullptr;
 
 	si = SiCFile(P->scanInf);
-	md = NewLMode(CrMode);
+	md = NewLMode(CFile, CrMode);
 	CRecPtr = GetRecSpace();
 	ZeroAllFlds();
 	//PtrRec(d).Seg = _Sg;
@@ -1904,7 +1904,7 @@ void AssertFand(TPredicate* P, TCommand* C)
 		if (CFile->Typ == 'X') RecallRec(CFile->NRecs);
 		else WriteRec(CFile, CFile->NRecs, CRecPtr);
 	}
-	OldLMode(md);
+	OldLMode(CFile, md);
 	ReleaseStore(CRecPtr);
 }
 
@@ -1926,7 +1926,7 @@ TFileScan* GetScan(TScanInf* SIOfs, TCommand* C, TInstance* Q)
 
 	TScanInf* si = SiCFile(SIOfs);
 	TFileScan* fs = new TFileScan();
-	md = NewLMode(RdMode);
+	md = NewLMode(CFile, RdMode);
 	k = nullptr;
 	if (C->KDOfs != nullptr) k = C->KDOfs;
 	if (k == nullptr) {
@@ -1975,7 +1975,7 @@ TFileScan* GetScan(TScanInf* SIOfs, TCommand* C, TInstance* Q)
 	fs->Count = 0;
 	if (n >= fs->IRec) fs->Count = n - fs->IRec + b;
 label1:
-	OldLMode(md);
+	OldLMode(CFile, md);
 	if (fs->Count == 0) fs = nullptr;
 	return fs;
 }
@@ -2021,7 +2021,7 @@ bool ScanFile(TInstance* Q)
 	//PtrRec(fl).Seg = _Sg;
 	CFile = si->FD;
 	CRecPtr = GetRecSpace();
-	md = NewLMode(RdMode);
+	md = NewLMode(CFile, RdMode);
 	k = nullptr;
 	if (c->KDOfs != nullptr) k = c->KDOfs;
 label1:
@@ -2134,7 +2134,7 @@ label1:
 	}
 	result = true;
 	if (c->Code == _RetractC) {
-		md1 = NewLMode(DelMode);
+		md1 = NewLMode(CFile, DelMode);
 		while ((Q != nullptr)) {
 			fs1 = (TFileScan*)Q->NextBranch;
 			if ((Q->Pred == p) && (fs1 != nullptr)) {
@@ -2160,10 +2160,10 @@ label1:
 		else {
 			DeleteRec(RecNr);
 		}
-		OldLMode(md1);
+		OldLMode(CFile, md1);
 	}
 label2:
-	OldLMode(md);
+	OldLMode(CFile, md);
 	ReleaseStore(CRecPtr);
 	return result;
 }
@@ -2175,7 +2175,7 @@ void SaveLMode()
 
 void SetOldLMode()
 {
-	OldLMode(CFile->ExLMode);
+	OldLMode(CFile, CFile->ExLMode);
 }
 
 void TraceCall(TInstance* Q, BYTE X)

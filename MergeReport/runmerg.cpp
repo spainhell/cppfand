@@ -223,8 +223,8 @@ void OpenInpM()
 	for (integer I = 1; I <= MaxIi; I++)
 		/* !!! with IDA[I]^ do!!! */ {
 		CFile = IDA[I]->Scan->FD;
-		if (IDA[I]->IsInplace) IDA[I]->Md = NewLMode(ExclMode);
-		else IDA[I]->Md = NewLMode(RdMode);
+		if (IDA[I]->IsInplace) IDA[I]->Md = NewLMode(CFile, ExclMode);
+		else IDA[I]->Md = NewLMode(CFile, RdMode);
 		IDA[I]->Scan->ResetSort(IDA[I]->SK, IDA[I]->Bool, IDA[I]->Md, IDA[I]->SQLFilter);
 		NRecsAll += IDA[I]->Scan->NRecs;
 	}
@@ -234,7 +234,6 @@ void OpenOutp()
 {
 	OutpFD* OD = OutpFDRoot;
 	while (OD != nullptr) {
-		/* !!! with OD^ do!!! */
 		CFile = OD->FD;
 #ifdef FandSQL
 		if (CFile->IsSQLFile) {
@@ -248,7 +247,7 @@ void OpenOutp()
 		{
 			if (OD->InplFD != nullptr) OD->FD = OpenDuplF(true);
 			else OD->Md = RewriteF(OD->Append);
-			OD = (OutpFD*)OD->pChain;
+			OD = OD->pChain;
 		}
 	}
 }
@@ -270,14 +269,14 @@ void CloseInpOutp()
 				CFile = OD->InplFD;
 				SubstDuplF(OD->FD, true);
 			}
-			else OldLMode(OD->Md);
+			else OldLMode(CFile, OD->Md);
 		}
 		OD = (OutpFD*)OD->pChain;
 	}
 	for (integer i = 1; i <= MaxIi; i++) /* !!! with IDA[i]^ do!!! */ {
 		IDA[i]->Scan->Close();
 		ClearRecSpace(IDA[i]->ForwRecPtr);
-		OldLMode(IDA[i]->Md);
+		OldLMode(CFile, IDA[i]->Md);
 	}
 	}
 

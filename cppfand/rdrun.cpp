@@ -342,12 +342,16 @@ bool LockForAdd(FileD* FD, WORD Kind, bool Ta, LockMode& md)
 			case 1: {
 				md = WrMode;
 				if (AD->Create > 0) md = CrMode;
-				if (!TryLMode(md, md1, 2)) return result;
+				if (!TryLMode(CFile, md, md1, 2)) return result;
 				break;
 			}
 			case 2: {
-				if (Ta)OldLMode(CFile->TaLMode);
-				else OldLMode(CFile->ExLMode);
+				if (Ta) {
+					OldLMode(CFile, CFile->TaLMode);
+				}
+				else {
+					OldLMode(CFile, CFile->ExLMode);
+				}
 				break;
 			}
 			}

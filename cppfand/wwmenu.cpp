@@ -967,11 +967,11 @@ std::string GetHlpText(RdbD* R, std::string S, bool ByName, WORD& IRec)
 		ConvToNoDiakr(&S[0], S.length(), fonts.VFont);
 	}
 label1:
-	md = NewLMode(RdMode);
+	md = NewLMode(CFile, RdMode);
 	if (CFile->Handle == nullptr) goto label5;
 	CRecPtr = new BYTE[CFile->RecLen + 2]{ '\0' };
 	NmF = CFile->FldD.front();
-	TxtF = (FieldDescr*)NmF->pChain;
+	TxtF = NmF->pChain;
 	if (!ByName) {
 		i = MaxW(1, MinW(IRec, CFile->NRecs));
 		ReadRec(CFile, i, CRecPtr);
@@ -998,7 +998,7 @@ label1:
 		}
 	}
 label3:
-	OldLMode(md);
+	OldLMode(CFile, md);
 	if ((result.empty()) && (CFile != HelpFD)) {
 	label4:
 		R = R->ChainBack;

@@ -149,22 +149,22 @@ void ModeLockBnds(LockMode Mode, longint& Pos, WORD& Len)
 	Len = n & 0xFFFF;
 }
 
-bool ChangeLMode(LockMode Mode, WORD Kind, bool RdPref)
+bool ChangeLMode(FileD* fileD, LockMode Mode, WORD Kind, bool RdPref)
 {
 	longint oldpos; WORD oldlen, d;
 	bool result = false;
-	if (!CFile->IsShared()) {         /*neu!!*/
+	if (!fileD->IsShared()) {         /*neu!!*/
 		result = true;
-		CFile->LMode = Mode;
+		fileD->LMode = Mode;
 		return result;
 	}
 	result = false;
-	LockMode oldmode = CFile->LMode;
-	FILE* h = CFile->Handle;
+	LockMode oldmode = fileD->LMode;
+	FILE* h = fileD->Handle;
 	if (oldmode >= WrMode) {
 		if (Mode < WrMode) WrPrefixes();
 		if (oldmode == ExclMode) {
-			SaveCache(0, CFile->Handle);
+			SaveCache(0, fileD->Handle);
 			ClearCacheCFile();
 		}
 		if (Mode < WrMode) ResetCFileUpdH();
@@ -207,39 +207,37 @@ label1:
 		UnLockH(h, TransLock, 1);
 	}
 	if (w != 0) PopW(w);
-	CFile->LMode = Mode;
+	fileD->LMode = Mode;
 	if ((oldmode < RdMode) && (Mode >= RdMode) && RdPref) RdPrefixes();
 	result = true;
 	return result;
 }
+
 #else
 bool ChangeLMode(LockMode Mode, WORD Kind, bool RdPref)
 {
-	CFile->LMode = Mode;
+	fileD->LMode = Mode;
 	return true;
 }
 #endif
 
-
-void OldLMode(LockMode Mode)
+void OldLMode(FileD* fileD, LockMode Mode)
 {
-	/* !!! with CFile^ do!!! */
 #ifdef FandSQL
-	if (CFile->IsSQLFile) { CFile->LMode = Mode; return; }
+	if (fileD->IsSQLFile) { fileD->LMode = Mode; return; }
 #endif
-	if (CFile->Handle == nullptr) return;
-	if (Mode != CFile->LMode) ChangeLMode(Mode, 0, true);
+	if (fileD->Handle == nullptr) return;
+	if (Mode != fileD->LMode) ChangeLMode(fileD, Mode, 0, true);
 }
 
 void RunErrorM(LockMode Md, WORD N)
 {
-	OldLMode(Md);
+	OldLMode(CFile, Md);
 	RunError(N);
 }
 
 void CloseClearHCFile()
 {
-	/* !!! with CFile^ do!!! */
 	CloseClearH(&CFile->Handle);
 	if (CFile->Typ == 'X') CloseClearH(&CFile->XF->Handle);
 	if (CFile->TF != nullptr) CloseClearH(&CFile->TF->Handle);
@@ -373,28 +371,27 @@ void FixFromReal(double r, void* FixNo, WORD FLen)
 	memcpy(FixNo, &ff[1], FLen);
 }
 
-bool TryLMode(LockMode Mode, LockMode& OldMode, WORD Kind)
+bool TryLMode(FileD* fileD, LockMode Mode, LockMode& OldMode, WORD Kind)
 {
-	/* !!! with CFile^ do!!! */
-	auto result = true;
+	bool result = true;
 #ifdef FandSQL
-	if (CFile->IsSQLFile) {
-		OldMode = CFile->LMode; if (Mode > CFile->LMode) CFile->LMode = Mode;
+	if (fileD->IsSQLFile) {
+		OldMode = fileD->LMode; if (Mode > fileD->LMode) fileD->LMode = Mode;
 	}
 	else
 #endif
 	{
-		if (CFile->Handle == nullptr) OpenCreateF(Shared);
-		OldMode = CFile->LMode;
-		if (Mode > CFile->LMode) result = ChangeLMode(Mode, Kind, true);
+		if (fileD->Handle == nullptr) OpenCreateF(Shared);
+		OldMode = fileD->LMode;
+		if (Mode > fileD->LMode) result = ChangeLMode(fileD, Mode, Kind, true);
 	}
 	return result;
 }
 
-LockMode NewLMode(LockMode Mode)
+LockMode NewLMode(FileD* fileD, LockMode Mode)
 {
 	LockMode md;
-	TryLMode(Mode, md, 0);
+	TryLMode(fileD, Mode, md, 0);
 	return md;
 }
 
@@ -557,9 +554,9 @@ void DelTFld(FieldDescr* F)
 		TWork.Delete(n);
 	}
 	else {
-		LockMode md = NewLMode(WrMode);
+		LockMode md = NewLMode(CFile, WrMode);
 		CFile->TF->Delete(n);
-		OldLMode(md);
+		OldLMode(CFile, md);
 	}
 	T_(F, 0);
 }
@@ -603,11 +600,11 @@ void DecNRecs(longint N)
 	CFile->WasWrRec = true;
 }
 
-void SeekRec(longint N)
+void SeekRec(FileD* fileD, longint N)
 {
-	CFile->IRec = N;
-	if (CFile->XF == nullptr) CFile->Eof = N >= CFile->NRecs;
-	else CFile->Eof = N >= CFile->XF->NRecs;
+	fileD->IRec = N;
+	if (fileD->XF == nullptr) fileD->Eof = N >= fileD->NRecs;
+	else fileD->Eof = N >= fileD->XF->NRecs;
 }
 
 void PutRec(FileD* dataFile, void* recordData)
@@ -656,7 +653,7 @@ bool LinkLastRec(FileD* FD, longint& N, bool WithT)
 {
 	CFile = FD;
 	CRecPtr = GetRecSpace();
-	LockMode md = NewLMode(RdMode);
+	LockMode md = NewLMode(CFile, RdMode);
 	auto result = true;
 #ifdef FandSQL
 	if (FD->IsSQLFile)
@@ -675,7 +672,7 @@ bool LinkLastRec(FileD* FD, longint& N, bool WithT)
 		}
 		else ReadRec(CFile, N, CRecPtr);
 	}
-	OldLMode(md);
+	OldLMode(CFile, md);
 	return result;
 }
 
@@ -696,14 +693,14 @@ void AsgnParFldFrml(FileD* FD, FieldDescr* F, FrmlElem* Z, bool Ad)
 	else
 #endif
 	{
-		md = NewLMode(WrMode);
+		md = NewLMode(CFile, WrMode);
 		if (!LinkLastRec(CFile, N, true)) {
 			IncNRecs(1);
 			WriteRec(CFile, N, CRecPtr);
 		}
 		AssgnFrml(F, Z, true, Ad);
 		WriteRec(CFile, N, CRecPtr);
-		OldLMode(md);
+		OldLMode(CFile, md);
 	}
 	ReleaseStore(CRecPtr);
 	CFile = cf; CRecPtr = cr;
@@ -991,11 +988,11 @@ std::string _StdS(FieldDescr* F)
 				delete ls;
 			}
 			else {
-				md = NewLMode(RdMode);
+				md = NewLMode(CFile, RdMode);
 				LongStr* ls = CFile->TF->Read(1, _T(F));
 				S = std::string(ls->A, ls->LL);
 				delete ls;
-				OldLMode(md);
+				OldLMode(CFile, md);
 			}
 			if ((F->Flg & f_Encryp) != 0) Code(S);
 			break;
@@ -1025,9 +1022,9 @@ void LongS_(FieldDescr* F, LongStr* S)
 					label1:
 			Pos = TWork.Store(S->A, S->LL);
 				else {
-					md = NewLMode(WrMode);
+					md = NewLMode(CFile, WrMode);
 					Pos = CFile->TF->Store(S->A, S->LL);
-					OldLMode(md);
+					OldLMode(CFile, md);
 				}
 			if ((F->Flg & f_Encryp) != 0) Code(S->A, S->LL);
 			T_(F, Pos);
@@ -1125,7 +1122,7 @@ bool LinkUpw(LinkD* LD, longint& N, bool WithT)
 		if (LU) goto label2; else goto label1;
 	}
 #endif
-	md = NewLMode(RdMode);
+	md = NewLMode(CFile, RdMode);
 	if (ToFD->Typ == 'X') {
 		TestXFExist();
 		LU = K->SearchInterval(x, false, N);
@@ -1179,7 +1176,7 @@ bool LinkUpw(LinkD* LD, longint& N, bool WithT)
 #ifdef FandSQL
 	if (!CFile->IsSQLFile)
 #endif
-		OldLMode(md);
+		OldLMode(CFile, md);
 	return result;
 }
 
@@ -1191,7 +1188,8 @@ void AssignNRecs(bool Add, longint N)
 		if ((N = 0) && !Add) Strm1->DeleteXRec(nullptr, nullptr, false); return;
 	}
 #endif
-	md = NewLMode(DelMode); OldNRecs = CFile->NRecs;
+	md = NewLMode(CFile, DelMode);
+	OldNRecs = CFile->NRecs;
 	if (Add) N = N + OldNRecs;
 	if ((N < 0) || (N == OldNRecs)) goto label1;
 	if ((N == 0) && (CFile->TF != nullptr)) CFile->TF->SetEmpty();
@@ -1219,7 +1217,7 @@ void AssignNRecs(bool Add, longint N)
 	}
 	ReleaseStore(CRecPtr);
 label1:
-	OldLMode(md);
+	OldLMode(CFile, md);
 	}
 
 void ClearRecSpace(void* p)

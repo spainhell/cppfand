@@ -92,6 +92,7 @@ std::string _StdS(FieldDescr* F);
 LongStr* _LongS(FieldDescr* F);
 longint _T(FieldDescr* F);
 longint _T(FieldDescr* F, unsigned char* data, char Typ);
+
 // * UKLADANI DO SOUBORU * / DO FRMLELEM *
 void B_(FieldDescr* F, bool B);
 void R_(FieldDescr* F, double R, void* record = nullptr);
@@ -104,9 +105,9 @@ void RecallRec(longint RecNr);
 bool LinkUpw(LinkD* LD, longint& N, bool WithT);
 bool LinkLastRec(FileD* FD, longint& N, bool WithT);
 void IncNRecs(longint N);
-bool TryLMode(LockMode Mode, LockMode& OldMode, WORD Kind);
-void OldLMode(LockMode Mode);
-LockMode NewLMode(LockMode Mode);
+bool TryLMode(FileD* fileD, LockMode Mode, LockMode& OldMode, WORD Kind);
+void OldLMode(FileD* fileD, LockMode Mode);
+LockMode NewLMode(FileD* fileD, LockMode Mode);
 bool TryLockN(longint N, WORD Kind);
 void UnLockN(longint N);
 void ClearRecSpace(void* p);
@@ -131,7 +132,7 @@ std::string CExtToX(std::string dir, std::string name, std::string ext);
 
 void CloseGoExit();
 
-bool ChangeLMode(LockMode Mode, WORD Kind, bool RdPref);
-void SeekRec(longint N);
+bool ChangeLMode(FileD* fileD, LockMode Mode, WORD Kind, bool RdPref);
+void SeekRec(FileD* fileD, longint N);
 
 void FixFromReal(double r, void* FixNo, WORD FLen);
