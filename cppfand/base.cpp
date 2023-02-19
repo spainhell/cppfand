@@ -139,12 +139,12 @@ void SetMsgPar(std::string s1, std::string s2, std::string s3, std::string s4)
 	MsgPar[3] = s4;
 }
 
-longint PosH(FILE* handle)
+long PosH(FILE* handle)
 {
 	if (handle == nullptr) return -1;
 	try
 	{
-		const auto result = ftell(handle);
+		const long result = ftell(handle);
 		HandleError = ferror(handle);
 		return static_cast<longint>(result);
 	}
@@ -155,15 +155,15 @@ longint PosH(FILE* handle)
 	}
 }
 
-longint MoveH(longint dist, WORD method, FILE* handle)
+long MoveH(long offset, int origin, FILE* handle)
 {
 	if (handle == nullptr) return -1;
-	// dist - hodnota offsetu
-	// method: 0 - od zacatku, 1 - od aktualni, 2 - od konce
+	// offset - hodnota offsetu
+	// origin: 0 - od zacatku, 1 - od aktualni, 2 - od konce
 	// handle - file handle
 	try
 	{
-		auto result = fseek(handle, dist, method);
+		auto result = fseek(handle, offset, origin);
 		if (result != 0) {
 			errno_t err;
 			_get_errno(&err);
@@ -180,23 +180,15 @@ longint MoveH(longint dist, WORD method, FILE* handle)
 	}
 }
 
-int SeekH(FILE* handle, longint pos)
+long SeekH(FILE* handle, longint offset)
 {
 	if (handle == nullptr) RunError(705);
-	return MoveH(pos, 0, handle);
+	return MoveH(offset, 0, handle);
 }
 
-size_t ReadH(FILE* handle, size_t bytes, void* buffer)
+size_t ReadH(FILE* handle, size_t length, void* buffer)
 {
-	//if (CFile != nullptr && CFile->Name == "DEALER")
-	//{
-	//	printf("ReadH() r160: DEALER\n");
-	//}
-	//if ((uintptr_t)handle == 0x0117d388)
-	//{
-	//	printf("");
-	//}
-	return fread_s(buffer, bytes, 1, bytes, handle);
+	return fread_s(buffer, length, 1, length, handle);
 }
 
 void RdMsg(integer N)
@@ -956,32 +948,18 @@ WORD ReadLongH(FILE* handle, longint bytes, void* buffer)
 	return WORD(readed);
 }
 
-void WriteLongH(FILE* handle, longint bytes, void* buffer)
+void WriteH(FILE* handle, size_t length, void* buffer)
 {
-	//if (CFile != nullptr && CFile->Name == "PARAM3")
-	//{
-	//	printf("");
-	//}
 	if (handle == nullptr) RunError(706);
-	if (bytes <= 0) return;
-	// uloží do souboru daný poèet Bytù z bufferu
-	fwrite(buffer, 1, bytes, handle);
+	if (length <= 0) return;
+	fwrite(buffer, 1, length, handle);
 	HandleError = ferror(handle);
 }
 
-void WriteH(FILE* handle, WORD bytes, void* buffer)
-{
-	//if ((uintptr_t)handle == 0x0117d388)
-	//{
-	//	printf("");
-	//}
-	WriteLongH(handle, bytes, buffer);
-}
-
-longint FileSizeH(FILE* handle)
+long FileSizeH(FILE* handle)
 {
 	longint pos = PosH(handle);
-	auto result = MoveH(0, 2, handle);
+	long result = MoveH(0, 2, handle);
 	SeekH(handle, pos);
 	return result;
 }
@@ -1080,12 +1058,7 @@ WORD GetFileAttr()
 	}
 }
 
-//CachePage* Cache(FILE* Handle, longint page_)
-//{
-//	return nullptr;
-//}
-
-void RdWrCache(bool ReadOp, FILE* Handle, bool NotCached, longint Pos, WORD N, void* Buf)
+void RdWrCache(bool ReadOp, FILE* Handle, bool NotCached, longint Pos, size_t N, void* Buf)
 {
 	Logging* log = Logging::getInstance();
 

@@ -1023,7 +1023,7 @@ void DeleteF()
 	}
 }
 
-bool MergAndReplace(FileD* fd_old, FileD* fd_new)
+bool MergeAndReplace(FileD* fd_old, FileD* fd_new)
 {
 	bool result;
 
@@ -1109,7 +1109,7 @@ bool MergeOldNew(bool Veriflongint, longint Pos)
 		&& !FDNew->IsSQLFile && !FDOld->IsSQLFile
 #endif
 		) {
-		MergAndReplace(FDOld, FDNew);
+		MergeAndReplace(FDOld, FDNew);
 		result = true;
 	}
 	else if ((FDOld->Typ == 'X') && !EquKeys(FDOld->Keys[0], FDNew->Keys[0])) {

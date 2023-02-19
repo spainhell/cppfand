@@ -919,6 +919,7 @@ FileD* OpenDuplF(bool CrTF)
 	{
 		SetTempCExt('0', net);
 		CVol = "";
+		FD->FullName = CPath;
 		FD->Handle = OpenH(_isoverwritefile, Exclusive);
 		TestCFileError();
 		FD->NRecs = 0;

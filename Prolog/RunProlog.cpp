@@ -167,7 +167,7 @@ LongStr* RdLongStr(longint Pos)
 	return p;
 }
 
-longint WrLongStrLP(WORD L, void* P)
+longint WrLongStrLP(size_t L, void* P)
 {
 	auto result = MaxWSize;
 	SeekH(WorkHandle, MaxWSize);

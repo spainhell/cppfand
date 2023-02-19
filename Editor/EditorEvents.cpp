@@ -1017,9 +1017,11 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 				}
 				if (HandleError != 0) { MyWrLLMsg(CPath); goto Nic; }
 				fs = 0; // {L1 =blocks->LineAbs(TextLineNr);I =positionOnActualLine;}
-				if (BlockHandle(fs, F1, 'W'))
-				{
-					WriteH(F1, 0, T); /*truncH*/ CloseH(&F1); HMsgExit(CPath);
+				if (BlockHandle(fs, F1, 'W')) {
+					WriteH(F1, 0, T);
+					/*truncH*/
+					CloseH(&F1);
+					HMsgExit(CPath);
 				}
 				// { PosDekFindLine(L1,I,true); }
 				blocks->BegBLn = I1; blocks->BegBPos = I2; blocks->EndBLn = I3; blocks->EndBPos = I; TypeB = bb;

@@ -1477,8 +1477,12 @@ bool OpenEditWw()
 	if (CFile != nullptr) OpenCreateF(Shared);
 	RdEStatus();
 	if (EdRecVar) {
-		if (OnlyAppend) goto label2;
-		else goto label3;
+		if (OnlyAppend) {
+			goto label2;
+		}
+		else {
+			goto label3;
+		}
 	}
 #ifdef FandSQL
 	if (!CFile->IsSQLFile)
@@ -1493,18 +1497,28 @@ bool OpenEditWw()
 	else
 #endif
 	{
-		if (HasIndex) TestXFExist();
+		if (HasIndex) {
+			TestXFExist();
+		}
 		md = NoDelMode;
 		if (OnlyAppend || (E->Cond != nullptr) || (E->KIRoot != nullptr) || E->DownSet ||
 			MakeWorkX && HasIndex && CFile->NotCached() && !Only1Record)
 		{
 			Subset = true;
-			if (HasIndex) md = NoExclMode;
-			else md = NoCrMode;
+			if (HasIndex) {
+				md = NoExclMode;
+			}
+			else {
+				md = NoCrMode;
+			}
 		}
-		else if ((VK != nullptr) && VK->InWork) md = NoExclMode;
+		else if ((VK != nullptr) && VK->InWork) {
+			md = NoExclMode;
+		}
 	}
-	if (Subset || Only1Record) WK = new XWKey();
+	if (Subset || Only1Record) {
+		WK = new XWKey();
+	}
 	if (!TryLMode(md, md1, 1)) {
 		EdBreak = 15;
 		goto label1;
@@ -1541,24 +1555,33 @@ bool OpenEditWw()
 	if (!OnlyAppend) SetStartRec();
 	if (CNRecs() == 0)
 		if (NoCreate) {
-			if (Subset) CFileMsg(107, '0');
-			else CFileMsg(115, '0');
+			if (Subset) {
+				CFileMsg(107, '0');
+			}
+			else {
+				CFileMsg(115, '0');
+			}
 			EdBreak = 13;
 		label1:
-			if (Subset && !WasWK) WK->Close();
+			if (Subset && !WasWK) {
+				WK->Close();
+			}
 			OldLMode(E->OldMd);
 			result = false;
 			return result;
 		}
 		else {
 		label2:
-			IsNewRec = true; Append = true;
+			IsNewRec = true;
+			Append = true;
 			LockRec(false);
 			ZeroAllFlds();
 			DuplOwnerKey();
 			SetWasUpdated();
 		}
-	else RdRec(CRec());
+	else {
+		RdRec(CRec());
+	}
 label3:
 	MarkStore(E->AfterE);
 	DisplEditWw();

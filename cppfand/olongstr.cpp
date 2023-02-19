@@ -235,7 +235,11 @@ label4:
 void CopyTFStringToH(FILE* h, TFile* TF02, FileD* TFD02, longint& TF02Pos)
 {
 	FileD* cf = nullptr; TFilePtr tf = nullptr;
-	WORD i = 0, l = 0, n = 0; bool isLongTxt = false; longint pos = 0;
+	WORD i = 0;
+	bool isLongTxt = false;
+	longint pos = 0;
+	size_t l = 0;
+	size_t n = 0;
 	BYTE X[MPageSize + 1]{ 0 };
 	WORD* ll = (WORD*)X;
 	LockMode md2;
