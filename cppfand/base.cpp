@@ -43,7 +43,7 @@ wdaystt* WDaysTab;
 char AbbrYes = 'Y';
 char AbbrNo = 'N';
 
-WORD HandleError;
+int HandleError;
 pstring OldDir;
 pstring FandDir;
 std::string WrkDir;
@@ -1037,7 +1037,7 @@ void CloseClearH(FILE** h)
 
 void SetFileAttr(WORD Attr)
 {
-	// nastaví atributy souboru/adresáøe
+	// nastavi atributy souboru/adresare
 	// 0 = read only, 1 = hidden file, 2 = system file, 3 = volume label, 4 = subdirectory,
 	// 5 = written since backup, 8 = shareable (Novell NetWare)
 	if (SetFileAttributesA(CPath.c_str(), Attr) == 0)
@@ -1054,8 +1054,7 @@ WORD GetFileAttr()
 		HandleError = GetLastError();
 		return 0;
 	}
-	else
-	{
+	else {
 		HandleError = 0;
 		return result;
 	}
@@ -1179,12 +1178,10 @@ WORD SkipCtrlMJ(std::string& s, WORD i)
 
 void FlushHandles()
 {
-	for (auto handle : UpdHandles)
-	{
+	for (auto handle : UpdHandles)	{
 		FlushH(handle);
 	}
-	for (auto handle : FlshHandles)
-	{
+	for (auto handle : FlshHandles) {
 		FlushH(handle);
 	}
 	ClearUpdHandles();
@@ -1194,8 +1191,8 @@ void FlushHandles()
 longint GetDateTimeH(FILE* handle)
 {
 	if (handle == nullptr) return -1;
-	// vrátí èas posledního zápisu souboru + datum posledního zápisu souboru
-	// 2 + 2 Byte (datum vlevo, èas vpravo)
+	// vrati cas posledniho zapisu souboru + datum posledniho zapisu souboru
+	// 2 + 2 Byte (datum vlevo, cas vpravo)
 	FILETIME ft;
 	auto result = GetFileTime(handle, nullptr, nullptr, &ft);
 	if (result == 0) HandleError = GetLastError();
@@ -1204,7 +1201,7 @@ longint GetDateTimeH(FILE* handle)
 
 void MyDeleteFile(pstring path)
 {
-	// smaže soubor - INT $41
+	// smaze soubor - INT $41
 	auto result = remove(path.c_str());
 	if (result != 0) HandleError = result;
 }
@@ -1296,16 +1293,6 @@ integer HeapErrFun(WORD Size)
 void AlignParagraph()
 {
 }
-
-//void* GetStore2(WORD Size)
-//{
-//	return nullptr;
-//}
-
-//void* GetZStore2(WORD Size)
-//{
-//	return nullptr;
-//}
 
 std::string* StoreStr(std::string S)
 {

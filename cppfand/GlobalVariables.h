@@ -95,7 +95,7 @@ extern void* AfterCatFD; // r108
 extern WORD BPBound; // r212
 extern bool ExitP, BreakP;
 extern longint LastExitCode; // r215
-extern WORD HandleError; // r229
+extern int HandleError; // r229
 extern pstring OldDir;
 extern pstring FandDir;
 extern std::string WrkDir;
