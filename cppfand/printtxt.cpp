@@ -91,7 +91,7 @@ FILE* OpenMgrOutput()
 	CVol = "";
 	if (CPath.length() == 0) h = nullptr;
 	else {
-		h = OpenH(_isoverwritefile, Exclusive);
+		h = OpenH(CPath, _isoverwritefile, Exclusive);
 		if (HandleError != 0) {
 			SetMsgPar(CPath);
 			WrLLF10Msg(700 + HandleError);

@@ -405,7 +405,7 @@ void TFile::SetEmpty()
 
 void TFile::Create()
 {
-	Handle = OpenH(_isoverwritefile, Exclusive);
+	Handle = OpenH(CPath, _isoverwritefile, Exclusive);
 	TestErr();
 	IRec = 1; LicenseNr = 0;
 

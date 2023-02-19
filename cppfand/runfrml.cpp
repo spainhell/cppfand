@@ -102,7 +102,7 @@ LongStr* CopyToLongStr(pstring& SS)
 
 LongStr* CopyToLongStr(std::string& SS)
 {
-	WORD l = SS.length();
+	size_t l = SS.length();
 	LongStr* s = new LongStr(l);
 	s->LL = l;
 	memcpy(s->A, SS.c_str(), l);
@@ -120,7 +120,6 @@ pstring LeadChar(char C, pstring S)
 
 double RunRealStr(FrmlElem* X)
 {
-	WORD N;
 	double R = 0.0;
 	LongStr* S = nullptr;
 	pstring Mask;
@@ -188,21 +187,6 @@ double RunRealStr(FrmlElem* X)
 		}
 		return offset + 1; // spoleha na to, ze se vraci PASCAL pozice v retezci
 		break;
-
-		//	J = 1;
-		//label1:
-		//	L = S->LL + 1 - J; I = 0;
-		//	if ((N > 0) && (L > 0)) {
-		//		I = FindTextE(Mask, iX->Options, (char*)(&S->A[J]), L);
-		//		if (I > 0) {
-		//			J = J + I - Mask.length();
-		//			N--;
-		//			if (N > 0) goto label1;
-		//			I = J - 1;
-		//		}
-		//	}
-		//	ReleaseStore(S);
-		//	result = I;
 	}
 	case _diskfree: {
 		auto iX = (FrmlElem0*)X;
@@ -294,19 +278,19 @@ double DifWDays(double R1, double R2, WORD d)
 			x1++;
 		}
 	if (neg) N = -N;
-	return int(N);
+	return (int)N;
 }
 
 longint GetFileSize()
 {
-	FILE* h; FileUseMode um;
-	TestMountVol(CPath[1]); um = RdOnly;
+	TestMountVol(CPath[1]);
+	FileUseMode um = RdOnly;
 	if (IsNetCVol()) um = Shared;
-	h = OpenH(_isoldfile, um);
+	FILE* h = OpenH(CPath, _isoldfile, um);
 	if (HandleError != 0) {
 		return -1;
 	}
-	auto result = FileSizeH(h);
+	long result = FileSizeH(h);
 	CloseH(&h);
 	return result;
 }
@@ -1084,10 +1068,24 @@ label1:
 	case _txtpos: result = LastTxtPos; break;
 	case _txtxy: result = TxtXY; break;
 	case _cprinter: result = prCurr; break;
-	case _mousex: {if (IsGraphMode) result = Event.WhereG.X;
-				else result = Event.Where.X + 1; break; }
-	case _mousey: {if (IsGraphMode) result = Event.WhereG.Y;
-				else result = Event.Where.Y + 1; break; }
+	case _mousex: {
+		if (IsGraphMode) {
+			result = Event.WhereG.X;
+		}
+		else {
+			result = (double)Event.Where.X + 1.0; break;
+		}
+		break;
+	}
+	case _mousey: {
+		if (IsGraphMode) {
+			result = Event.WhereG.Y;
+		}
+		else {
+			result = (double)Event.Where.Y + 1.0; break;
+		}
+		break;
+	}
 	case _filesize: {
 		auto iX = (FrmlElem16*)X;
 		SetTxtPathVol(iX->TxtPath, iX->TxtCatIRec);

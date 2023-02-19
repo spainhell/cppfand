@@ -19,7 +19,7 @@ void OpenXWorkH()
 	FileOpenMode m = _isoldnewfile;
 	if (XWork.MaxPage == 0) m = _isoverwritefile;
 	CPath = FandWorkXName;
-	XWork.Handle = OpenH(m, Exclusive);
+	XWork.Handle = OpenH(CPath, m, Exclusive);
 	XWork.TestErr();
 	if (FileSizeH(XWork.Handle) == 0) { XWork.FreeRoot = 0; XWork.MaxPage = 0; }
 }
@@ -32,7 +32,7 @@ void OpenTWorkH()
 	}
 	else {
 		CPath = FandWorkTName; CVol = "";
-		TWork.Handle = OpenH(_isoldnewfile, Exclusive); TWork.TestErr();
+		TWork.Handle = OpenH(CPath, _isoldnewfile, Exclusive); TWork.TestErr();
 	}
 }
 
@@ -148,7 +148,7 @@ bool OpenF1(FileUseMode UM)
 		CFile->WasRdOnly = true;
 	}
 	while (true) {
-		CFile->Handle = OpenH(_isoldfile, CFile->UMode);
+		CFile->Handle = OpenH(CPath, _isoldfile, CFile->UMode);
 		if ((HandleError != 0) && CFile->WasRdOnly) {
 			SetFileAttr((GetFileAttr() & 0x27) | 0x1/*RdONly*/);
 			TestCFileError();
@@ -174,7 +174,7 @@ bool OpenF1(FileUseMode UM)
 			SetFileAttr(GetFileAttr() & 0x26); // 0x26 = archive + hidden + system
 		}
 		while (true) {
-			CFile->TF->Handle = OpenH(_isoldfile, CFile->UMode);
+			CFile->TF->Handle = OpenH(CPath, _isoldfile, CFile->UMode);
 			if (HandleError == 2) {
 				if (CFile->TF->Format == CFile->TF->DbtFormat) {
 					CFile->TF->Format = CFile->TF->FptFormat;
@@ -201,9 +201,9 @@ bool OpenF1(FileUseMode UM)
 	if (CFile->Typ == 'X') /* !!! with GetXFile^ do!!! */ {
 		CPath = CExtToX(CDir, CName, CExt);
 		while (true) {
-			CFile->XF->Handle = OpenH(_isoldfile, CFile->UMode);
+			CFile->XF->Handle = OpenH(CPath, _isoldfile, CFile->UMode);
 			if (HandleError == 2) {
-				CFile->XF->Handle = OpenH(_isoverwritefile, Exclusive);
+				CFile->XF->Handle = OpenH(CPath, _isoverwritefile, Exclusive);
 				if (HandleError != 0) {
 					n = HandleError;
 					CloseClearHCFile();
@@ -348,7 +348,7 @@ bool OpenF(FileUseMode UM)
 void CreateF()
 {
 	SetCPathMountVolSetNet(Exclusive);
-	CFile->Handle = OpenH(_isoverwritefile, Exclusive);
+	CFile->Handle = OpenH(CPath, _isoverwritefile, Exclusive);
 	TestCFileError();
 	CFile->NRecs = 0;
 	if (CFile->TF != nullptr) {
@@ -357,7 +357,7 @@ void CreateF()
 	}
 	if (CFile->Typ == 'X') {
 		CPath = CExtToX(CDir, CName, CExt);
-		CFile->XF->Handle = OpenH(_isoverwritefile, Exclusive);
+		CFile->XF->Handle = OpenH(CPath, _isoverwritefile, Exclusive);
 		CFile->XF->TestErr(); /*SetNotValid*/
 		CFile->XF->SetEmpty();
 	}
@@ -920,7 +920,7 @@ FileD* OpenDuplF(bool CrTF)
 		SetTempCExt('0', net);
 		CVol = "";
 		FD->FullName = CPath;
-		FD->Handle = OpenH(_isoverwritefile, Exclusive);
+		FD->Handle = OpenH(CPath, _isoverwritefile, Exclusive);
 		TestCFileError();
 		FD->NRecs = 0;
 		FD->IRec = 0;
@@ -941,7 +941,7 @@ FileD* OpenDuplF(bool CrTF)
 		/* !!! with FD->TF^ do!!! */
 		{
 			SetTempCExt('T', net);
-			FD->TF->Handle = OpenH(_isoverwritefile, Exclusive);
+			FD->TF->Handle = OpenH(CPath, _isoverwritefile, Exclusive);
 			FD->TF->TestErr();
 			FD->TF->CompileAll = true;
 			FD->TF->SetEmpty();
@@ -1025,7 +1025,7 @@ void SubstDuplF(FileD* TempFD, bool DelTF)
 		pstring ptmp = CPath;
 		RenameFile56(ptmp, p, true);
 		CPath = p;
-		PrimFD->Handle = OpenH(_isoldfile, PrimFD->UMode);
+		PrimFD->Handle = OpenH(CPath, _isoldfile, PrimFD->UMode);
 		SetUpdHandle(PrimFD->Handle);
 		if ((MD != nullptr) && DelTF) {
 			CloseClearH(&MD->Handle);
@@ -1039,7 +1039,7 @@ void SubstDuplF(FileD* TempFD, bool DelTF)
 			SetTempCExt('T', false);
 			RenameFile56(CPath, pt, true);
 			CPath = pt;
-			MD->Handle = OpenH(_isoldfile, PrimFD->UMode);
+			MD->Handle = OpenH(CPath, _isoldfile, PrimFD->UMode);
 			SetUpdHandle(MD->Handle);
 		}
 		PrimFD->TF = MD;

@@ -178,7 +178,7 @@ void TzFile::Reset()
 {
 	CVol = Vol;
 	CPath = Path;
-	Handle = OpenH(_isoldfile, RdOnly);
+	Handle = OpenH(CPath, _isoldfile, RdOnly);
 	Continued = false;
 	/*if ((HandleError == 2) && Floppy) {
 		inc(CPath[l - 2], 5);
@@ -195,7 +195,7 @@ void TzFile::Rewrite()
 {
 	CVol = Vol;
 	CPath = Path;
-	Handle = OpenH(_isoverwritefile, Exclusive);
+	Handle = OpenH(CPath, _isoverwritefile, Exclusive);
 	TestCPathError();
 	SpaceOnDisk = MyDiskFree(Floppy, Drive);
 }
@@ -263,24 +263,24 @@ void TzFile::ProcFileList()
 			CPath = FExpand(FName);
 			CVol = "";
 			if (IsBackup) {
-				h = OpenH(_isoldfile, RdOnly);
+				h = OpenH(CPath, _isoldfile, RdOnly);
 				TestCPathError();
 				WrH(h, FileSizeH(h));
 			}
 			else {
 				bool skp = false;
 				if (!OverwrOpt) {
-					h = OpenH(_isnewfile, Exclusive);
+					h = OpenH(CPath, _isnewfile, Exclusive);
 					if (HandleError == 80) {
 						SetMsgPar(CPath);
-						if (PromptYN(780)) h = OpenH(_isoverwritefile, Exclusive);
+						if (PromptYN(780)) h = OpenH(CPath, _isoverwritefile, Exclusive);
 						else {
 							skp = true;
 							goto label1;
 						}
 					}
 				}
-				else h = OpenH(_isoverwritefile, Exclusive);
+				else h = OpenH(CPath, _isoverwritefile, Exclusive);
 				TestCPathError();
 			label1:
 				RdH(h, skp);

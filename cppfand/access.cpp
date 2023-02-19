@@ -1098,21 +1098,14 @@ void S_(FieldDescr* F, std::string S, void* record)
 // zrejme zajistuje pristup do jine tabulky (cizi klic)
 bool LinkUpw(LinkD* LD, longint& N, bool WithT)
 {
-	KeyFldD* KF;
-	FieldDescr* F, * F2;
-	bool LU = false; LockMode md;
-	//pstring s; 
-	double r = 0.0;
-	bool b = false;
-	//XString* x = (XString*)&s;
-	XString x;
-
 	FileD* ToFD = LD->ToFD;
 	FileD* CF = CFile;
 	void* CP = CRecPtr;
 	XKey* K = LD->ToKey;
-	//KeyFldD* Arg = LD->Args;
+
+	XString x;
 	x.PackKF(LD->Args);
+
 	CFile = ToFD;
 	void* RecPtr = GetRecSpace();
 	CRecPtr = RecPtr;
@@ -1122,27 +1115,31 @@ bool LinkUpw(LinkD* LD, longint& N, bool WithT)
 		if (LU) goto label2; else goto label1;
 	}
 #endif
-	md = NewLMode(CFile, RdMode);
+	const LockMode md = NewLMode(CFile, RdMode);
+	bool lu;
 	if (ToFD->Typ == 'X') {
 		TestXFExist();
-		LU = K->SearchInterval(x, false, N);
+		lu = K->SearchInterval(x, false, N);
 	}
 	else if (CFile->NRecs == 0) {
-		LU = false; N = 1;
+		lu = false;
+		N = 1;
 	}
 	else {
-		LU = SearchKey(x, K, N);
+		lu = SearchKey(x, K, N);
 	}
 
-	if (LU) {
+	if (lu) {
 		ReadRec(CFile, N, CRecPtr);
 	}
 	else {
+		bool b = false;
+		double r = 0.0;
 		ZeroAllFlds();
-		KF = K->KFlds;
+		const KeyFldD* KF = K->KFlds;
 		for (auto& arg : LD->Args) {
-			F = arg->FldD;
-			F2 = KF->FldD;
+			FieldDescr* F = arg->FldD;
+			FieldDescr* F2 = KF->FldD;
 			CFile = CF;
 			CRecPtr = CP;
 			if ((F2->Flg & f_Stored) != 0)
@@ -1172,7 +1169,7 @@ bool LinkUpw(LinkD* LD, longint& N, bool WithT)
 		CRecPtr = RecPtr;
 	}
 
-	auto result = LU;
+	auto result = lu;
 #ifdef FandSQL
 	if (!CFile->IsSQLFile)
 #endif
@@ -1241,7 +1238,9 @@ void ClearRecSpace(void* p)
 void DelTFlds()
 {
 	for (auto& F : CFile->FldD) {
-		if (((F->Flg & f_Stored) != 0) && (F->Typ == 'T')) DelTFld(F);
+		if (((F->Flg & f_Stored) != 0) && (F->Typ == 'T')) {
+			DelTFld(F);
+		}
 	}
 }
 
@@ -1348,7 +1347,9 @@ int CompStr(std::string& S1, std::string& S2)
 {
 	size_t cmpLen = min(S1.length(), S2.length());
 	for (size_t i = 0; i < cmpLen; i++) {
-		if (S1[i] == S2[i]) { continue; }
+		if (S1[i] == S2[i]) {
+			continue;
+		}
 		else {
 			if ((BYTE)S1[i] < (BYTE)S2[i]) return 2; // _lt
 			else return 4; // _gt

@@ -83,14 +83,6 @@ pstring HexPtr(void* p);
 void DispH(void* ad, integer NoBytes);
 #endif
 
-// *** MEMORY MANAGEMENT ***
-
-struct CachePage { BYTE Pg3[3]{ 0 }; BYTE Handle = 0; longint HPage = 0; bool Upd = false; BYTE Arr[4096]{ 0 }; };
-struct ProcStkD { ProcStkD* ChainBack; void* LVRoot; }; // r199
-typedef ProcStkD* ProcStkPtr;
-
-void* Normalize(longint L);
-longint AbsAdr(void* P);
 void MarkStore(void* p);
 void ReleaseStore(void* pointer);
 void ReleaseAfterLongStr(void* p);
@@ -122,7 +114,7 @@ bool IsUpdHandle(FILE* H);
 long PosH(FILE* handle);
 long SeekH(FILE* handle, longint pos);
 long FileSizeH(FILE* handle);
-FILE* OpenH(FileOpenMode Mode, FileUseMode UM);
+FILE* OpenH(std::string path, FileOpenMode Mode, FileUseMode UM);
 size_t ReadH(FILE* handle, size_t length, void* buffer);
 void WriteH(FILE* handle, size_t length, void* buffer);
 void TruncH(FILE* handle, longint N);

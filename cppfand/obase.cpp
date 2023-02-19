@@ -265,7 +265,7 @@ integer OpenTxt(TextFile* F)
 	else F->inoutfunc = OutputTxt;
 	F->flushfunc = FlushTxt;
 	F->closefunc = CloseTxt;
-	
+
 	if (PrintCtrlFlag) ResetCtrlFlags();
 	return 0;
 }
@@ -287,12 +287,9 @@ void Seek0Txt(TextFile* F)
 bool ResetTxt(TextFile* F)
 {
 	F->Assign(CPath.c_str());
-	/* !!! with TextRec(F) do!!! */
-	{
-		F->openfunc = OpenTxt;
-		F->Handle = nullptr; /* for error detection in OpenH */
-		F->Handle = OpenH(_isoldfile, RdOnly);
-	}
+	F->openfunc = OpenTxt;
+	F->Handle = nullptr; /* for error detection in OpenH */
+	F->Handle = OpenH(CPath, _isoldfile, RdOnly);
 	if (HandleError != 0) { return false; }
 	F->Reset();
 	return true;

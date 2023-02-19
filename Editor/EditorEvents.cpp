@@ -1008,11 +1008,11 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 				CPath = wwmix1.SelectDiskFile(".TXT", 401, false);
 				if (CPath.empty()) goto Nic;
 				CVol = "";
-				F1 = OpenH(_isnewfile, Exclusive);
+				F1 = OpenH(CPath, _isnewfile, Exclusive);
 				if (HandleError == 80)
 				{
 					SetMsgPar(CPath);
-					if (PromptYN(780)) F1 = OpenH(_isoverwritefile, Exclusive);
+					if (PromptYN(780)) F1 = OpenH(CPath, _isoverwritefile, Exclusive);
 					else goto Nic;
 				}
 				if (HandleError != 0) { MyWrLLMsg(CPath); goto Nic; }
@@ -1036,7 +1036,7 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 				CPath = wwmix1.SelectDiskFile(".TXT", 400, false);
 				if (CPath.empty()) goto Nic;
 				CVol = "";
-				F1 = OpenH(_isoldfile, RdOnly);
+				F1 = OpenH(CPath, _isoldfile, RdOnly);
 				if (HandleError != 0) { MyWrLLMsg(CPath); goto Nic; }
 				blocks->BegBLn = /* Part.LineP + */ TextLineNr;
 				blocks->BegBPos = positionOnActualLine;

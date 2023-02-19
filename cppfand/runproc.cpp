@@ -972,12 +972,11 @@ void HelpProc(Instr_help* PD)
 
 FILE* OpenHForPutTxt(Instr_puttxt* PD)
 {
-	FileOpenMode m; FILE* h;
 	SetTxtPathVol(PD->TxtPath1, PD->TxtCatIRec1);
 	TestMountVol(CPath[1]);
-	m = _isoverwritefile;
+	FileOpenMode m = _isoverwritefile;
 	if (PD->App) m = _isoldnewfile;
-	h = OpenH(m, Exclusive);
+	FILE* h = OpenH(CPath, m, Exclusive);
 	TestCPathError();
 	if (PD->App) SeekH(h, FileSizeH(h));
 	return h;
@@ -1088,18 +1087,18 @@ void PortOut(bool IsWord, WORD Port, WORD What)
 
 void RecallRecProc(Instr_recs* PD)
 {
-	LockMode md;
-	longint N;
 	CFile = PD->RecFD;
 	if (CFile->Typ != 'X') return;
-	N = RunInt(PD->RecNr);
+	longint N = RunInt(PD->RecNr);
 	CRecPtr = GetRecSpace();
-	md = NewLMode(CFile, CrMode);
+	LockMode md = NewLMode(CFile, CrMode);
 	if ((N > 0) && (N <= CFile->NRecs)) {
 		ReadRec(CFile, N, CRecPtr);
 		if (DeletedFlag()) {
 			RecallRec(N);
-			if (PD->AdUpd) LastExitCode = !RunAddUpdte('+', nullptr, nullptr);
+			if (PD->AdUpd) {
+				LastExitCode = !RunAddUpdte('+', nullptr, nullptr);
+			}
 		}
 	}
 	OldLMode(CFile, md);

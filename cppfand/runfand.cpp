@@ -210,7 +210,7 @@ void RdCFG()
 	char ver[5] = { 0,0,0,0,0 };
 	CVol = "";
 	CPath = MyFExpand("FAND.CFG", "FANDCFG");
-	CfgHandle = OpenH(_isoldfile, RdOnly);
+	CfgHandle = OpenH(CPath, _isoldfile, RdOnly);
 	if (HandleError != 0) { printf("%s !found", CPath.c_str()); wait(); Halt(-1); }
 	ReadH(CfgHandle, 4, ver);
 	if (strcmp(ver, CfgVersion) != 0) {

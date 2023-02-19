@@ -840,24 +840,24 @@ bool IsNetCVol()
 
 void ExtendHandles()
 {
-	// pøesouvá OldHTPtr na NewHT
+	// presouva OldHTPtr na NewHT
 }
 
 void UnExtendHandles()
 {
-	// zavøe všechny otevøené soubory, pøesune zpìt NewHT do Old... promìnných
+	// zavre vsechny otevrene soubory, presune zpet NewHT do Old... promennych
 }
 
-FILE* OpenH(FileOpenMode Mode, FileUseMode UM)
+FILE* OpenH(std::string path, FileOpenMode Mode, FileUseMode UM)
 {
-	// $3C vytvoøí nebo pøepíše soubor
-	// $3D otevírá exitující soubor
-	// $5B vytvoøí nový soubor - pokud již exituje, vyhodí chybu
+	// $3C vytvori nebo prepise soubor
+	// $3D otevira exitujici soubor
+	// $5B vytvori novy soubor - pokud jiz exituje, vyhodi chybu
 	//
 	// bit 0: read-only, 1: hidden, 2: system, 3: volume label, 4: reserved, must be zero (directory)
-	//        5: archive bit, 7: if set, file is shareable under Novell NetWare
+	//     5: archive bit, 7: if set, file is shareable under Novell NetWare
 	//
-	// pøi 'IsNetCVol' se chová jinak
+	// pri 'IsNetCVol' se chova jinak
 	// RdOnly $20, RdShared $40, Shared $42, Exclusive $12
 
 	std::string txt[] = { "Clos", "OpRd", "OpRs", "OpSh", "OpEx" };
@@ -865,73 +865,76 @@ FILE* OpenH(FileOpenMode Mode, FileUseMode UM)
 	//if (CardHandles == files) RunError(884);
 	longint w = 0;
 	std::string openFlags;
-label1:
-	switch (Mode) {
-	case _isoldfile:
-	case _isoldnewfile:
-	{
-		openFlags = UM == RdOnly ? "rb" : "r+b";
-		break;
-	}
-	case _isoverwritefile:
-	{
-		openFlags = "w+b";
-		break;
-	}
-	case _isnewfile:
-	{
-		openFlags = "w+b"; // UM == RdOnly ? "w+b" : "w+b";
-		break;
-	}
-	}
-
 	FILE* nFile = nullptr;
-	HandleError = (WORD)fopen_s(&nFile, CPath.c_str(), openFlags.c_str());
 
-	// https://docs.microsoft.com/en-us/cpp/c-runtime-library/errno-doserrno-sys-errlist-and-sys-nerr?view=vs-2019
-	if (IsNetCVol() && (HandleError == EACCES || HandleError == ENOLCK))
-	{
-		if (w == 0)
+	while (true) {
+		switch (Mode) {
+		case _isoldfile:
+		case _isoldnewfile:
 		{
-			SetMsgPar(CPath, txt[UM]);
-			w = PushWrLLMsg(825, false);
+			openFlags = UM == RdOnly ? "rb" : "r+b";
+			break;
 		}
-		LockBeep();
-		KbdTimer(spec.NetDelay, 0);
-		goto label1;
-	}
-
-	if (HandleError == 0)
-	{
-		SetHandle(nFile);
-		if (Mode != _isoldfile) SetUpdHandle(nFile);
-	}
-
-	else if (HandleError == ENOENT) // No such file or directory
-	{
-
-		if (/*Mode == _isoldfile ||*/ Mode == _isoldnewfile)
+		case _isoverwritefile:
 		{
-			Mode = _isnewfile;
-			goto label1;
+			openFlags = "w+b";
+			break;
 		}
+		case _isnewfile:
+		{
+			openFlags = "w+b"; // UM == RdOnly ? "w+b" : "w+b";
+			break;
+		}
+		}
+
+		HandleError = (WORD)fopen_s(&nFile, path.c_str(), openFlags.c_str());
+
+		// https://docs.microsoft.com/en-us/cpp/c-runtime-library/errno-doserrno-sys-errlist-and-sys-nerr?view=vs-2019
+		if (IsNetCVol() && (HandleError == EACCES || HandleError == ENOLCK))
+		{
+			if (w == 0) {
+				SetMsgPar(path, txt[UM]);
+				w = PushWrLLMsg(825, false);
+			}
+			LockBeep();
+			KbdTimer(spec.NetDelay, 0);
+			continue;
+		}
+
+		if (HandleError == 0)
+		{
+			SetHandle(nFile);
+			if (Mode != _isoldfile) SetUpdHandle(nFile);
+		}
+
+		else if (HandleError == ENOENT) // No such file or directory
+		{
+
+			if (/*Mode == _isoldfile ||*/ Mode == _isoldnewfile) {
+				Mode = _isnewfile;
+				continue;
+			}
+		}
+		if (w != 0) PopW(w);
+		break;
 	}
-	if (w != 0) PopW(w);
 
 	Logging* log = Logging::getInstance();
-	log->log(loglevel::DEBUG, "opening file  0x%p '%s', error %i", nFile, CPath.c_str(), HandleError);
+	log->log(loglevel::DEBUG, "opening file  0x%p '%s', error %i", nFile, path.c_str(), HandleError);
 
 	// pridani FILE* do vektoru kvuli 'WORD OvrHandle = h - 1;'
 	vOverHandle.push_back(nFile);
+
 #ifdef _DEBUG
-	if (filesMap.find(CPath) != filesMap.end()) {
+	if (filesMap.find(path) != filesMap.end()) {
 		// soubor uz v mape je, budeme aktualizovat
-		filesMap[CPath] = DataFile(CPath, CFile, nFile);
+		filesMap[path] = DataFile(path, CFile, nFile);
 	}
 	else {
-		filesMap.insert(std::pair<std::string, DataFile>(CPath, DataFile(CPath, CFile, nFile)));
+		filesMap.insert(std::pair(path, DataFile(path, CFile, nFile)));
 	}
 #endif
+
 	return nFile;
 }
 
@@ -1236,16 +1239,6 @@ std::string MyFExpand(std::string Nm, std::string EnvName)
 	std::string result = FExpand(p);
 	//ChDir(d);
 	return result;
-}
-
-void* Normalize(longint L)
-{
-	return nullptr;
-}
-
-longint AbsAdr(void* P)
-{
-	return 0;
 }
 
 WORD LogToAbsLenStyleStr(pstring s, WORD l)
@@ -1561,7 +1554,7 @@ void OpenResFile()
 {
 	CPath = FandResName;
 	CVol = "";
-	ResFile.Handle = OpenH(_isoldfile, RdOnly);
+	ResFile.Handle = OpenH(CPath, _isoldfile, RdOnly);
 	ResFile.FullName = CPath;
 	if (HandleError != 0) {
 		printf("can't open %s\n", FandResName.c_str());
@@ -1575,7 +1568,7 @@ void OpenWorkH()
 {
 	CPath = FandWorkName;
 	CVol = "";
-	WorkHandle = OpenH(_isoldnewfile, Exclusive);
+	WorkHandle = OpenH(CPath, _isoldnewfile, Exclusive);
 	if (HandleError != 0) {
 		printf("can't open %s", FandWorkName.c_str());
 		wait();

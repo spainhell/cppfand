@@ -128,7 +128,7 @@ label1:
 
 void TbFile::BackupH()
 {
-	FILE* h = OpenH(_isoldfile, RdOnly);
+	FILE* h = OpenH(CPath, _isoldfile, RdOnly);
 	if (HandleError == 2) {
 		Rewrite();
 		InitBufOutp();

@@ -661,7 +661,7 @@ void CheckFile(FileD* FD)
 		return;
 	}
 
-	h = OpenH(_isoldfile, RdShared);
+	h = OpenH(CPath, _isoldfile, RdShared);
 	LastExitCode = 0;
 	if (HandleError != 0) {
 		if (HandleError == 2) LastExitCode = 1;
@@ -683,7 +683,7 @@ void CheckFile(FileD* FD)
 	if (EquUpCase(e, ".RDB")) e = ".TTT";
 	else e[1] = 'T';
 	CPath = d + n + e;
-	h = OpenH(_isoldfile, RdShared);
+	h = OpenH(CPath, _isoldfile, RdShared);
 	if (HandleError == 0) CloseH(&h);
 	else LastExitCode = 4;
 }
@@ -705,7 +705,7 @@ void CopyH(FILE* H, pstring Nm)
 	BYTE* buf = new BYTE[MaxLStrLen]; // GetStore(MaxLStrLen);
 	CPath = Nm;
 	CVol = "";
-	h2 = OpenH(_isoverwritefile, Exclusive);
+	h2 = OpenH(CPath, _isoverwritefile, Exclusive);
 	longint sz = FileSizeH(H);
 	SeekH(H, 0);
 	while (sz > 0) {

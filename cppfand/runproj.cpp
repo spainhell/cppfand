@@ -927,8 +927,10 @@ longint MakeDbfDcl(pstring Nm)
 	pstring s(80); pstring s1(10); void* p;
 
 	CPath = FExpand(Nm + ".DBF"); CVol = "";
-	i = GetCatIRec(Nm, true); if (i != 0) RdCatPathVol(i);
-	h = OpenH(_isoldfile, RdOnly); TestCPathError();
+	i = GetCatIRec(Nm, true);
+	if (i != 0) RdCatPathVol(i);
+	h = OpenH(CPath, _isoldfile, RdOnly);
+	TestCPathError();
 	ReadH(h, 32, &Hd); n = (Hd.HdLen - 1) / 32 - 1; t = new LongStr(2); t->LL = 0;
 	for (i = 1; i < n; i++) {
 		ReadH(h, 32, &Fd);

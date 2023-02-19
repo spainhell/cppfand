@@ -510,7 +510,7 @@ void OpenTxtFh(char Mode)
 	TestMountVol(CPath[0]);
 	if (Mode == ViewM) UM = RdOnly;
 	else UM = Exclusive;
-	TxtFH = OpenH(_isoldnewfile, UM);
+	TxtFH = OpenH(CPath, _isoldnewfile, UM);
 	if (HandleError != 0) {
 		SetMsgPar(CPath);
 		RunError(700 + HandleError);

@@ -15,7 +15,7 @@ void GetTxtPrepare(FrmlElem* Z, FILE** h, longint& off, longint& len)
 	}
 	SetTxtPathVol(iZ->TxtPath, iZ->TxtCatIRec);
 	TestMountVol(CPath[1]);
-	*h = OpenH(_isoldfile, RdOnly);
+	*h = OpenH(CPath, _isoldfile, RdOnly);
 	if (HandleError != 0) {
 		if (HandleError == 2) {
 			*h = nullptr; 
