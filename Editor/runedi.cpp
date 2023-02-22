@@ -2370,15 +2370,15 @@ bool OldRecDiffers()
 		result = true;
 	}
 label2:
-	ClearRecSpace(CRecPtr); ReleaseStore(CRecPtr); CRecPtr = E->NewRecPtr;
+	ClearRecSpace(CRecPtr);
+	ReleaseStore(CRecPtr);
+	CRecPtr = E->NewRecPtr;
 	return result;
 }
 
 bool ExitCheck(bool MayDispl)
 {
 	auto result = false;
-	//X = E->ExD;
-	//while (X != nullptr) {
 	for (auto& X : E->ExD) {
 		if (X->AtWrRec) {
 			EdBreak = 16;
@@ -2392,7 +2392,6 @@ bool ExitCheck(bool MayDispl)
 				return result;
 			}
 		}
-		//X = (EdExitD*)X->pChain;
 	}
 	result = true;
 	return result;
@@ -2400,7 +2399,6 @@ bool ExitCheck(bool MayDispl)
 
 longint UpdateIndexes()
 {
-	//XKey* K = nullptr;
 	longint N = 0;
 	XString x;
 	longint NNew = E->LockedRec;
@@ -2423,7 +2421,9 @@ longint UpdateIndexes()
 	if (VK->RecNrToPath(x, E->LockedRec) && !WasWK) {
 		if (IsNewRec) {
 			VK->InsertOnPath(x, NNew);
-			if (Subset) WK->InsertAtNr(CRec(), NNew);
+			if (Subset) {
+				WK->InsertAtNr(CRec(), NNew);
+			}
 		}
 		N = CRec();
 	}
@@ -2431,15 +2431,21 @@ longint UpdateIndexes()
 		if (!IsNewRec) {
 			CRecPtr = E->OldRecPtr;
 			VK->Delete(E->LockedRec);
-			if (Subset) WK->DeleteAtNr(CRec());
+			if (Subset) {
+				WK->DeleteAtNr(CRec());
+			}
 			CRecPtr = E->NewRecPtr;
 			x.PackKF(VK->KFlds);
 			VK->Search(x, true, N);
 		}
 		N = VK->PathToNr();
 		VK->InsertOnPath(x, NNew);
-		if (VK->InWork) VK->NR++;
-		if (Subset) N = WK->InsertGetNr(NNew);
+		if (VK->InWork) {
+			VK->NR++;
+		}
+		if (Subset) {
+			N = WK->InsertGetNr(NNew);
+		}
 	}
 
 	WORD result = N;

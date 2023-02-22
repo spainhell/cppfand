@@ -45,8 +45,8 @@ integer CompLongShortStr(LongStr* S1, pstring* S2)
 	if ((*S2)[0] == 0) return result;
 	for (size_t i = 0; i < (*S2)[0]; i++)
 	{
-		if (S1->A[i] == (*S2)[i + 1]) continue;
-		if (S1->A[i] < (*S2)[i + 1]) return _lt;
+		if ((BYTE)S1->A[i] == (*S2)[i + 1]) continue;
+		if ((BYTE)S1->A[i] < (*S2)[i + 1]) return _lt;
 		return _gt;
 	}
 	return _equ;
@@ -54,22 +54,17 @@ integer CompLongShortStr(LongStr* S1, pstring* S2)
 
 integer CompArea(void* A, void* B, integer L)
 {
-	auto result = memcmp(A, B, L);
-
-	// 1 jsou si rovny
-	// 2 A<B
-	// 4 A>B
+	int result = memcmp(A, B, L);
 
 	if (result == 0) return _equ;
-	if (result < 0) return 2;
-	return 4;
+	if (result < 0) return _lt;
+	return _gt;
 }
 
 void ResetCFileUpdH()
 {
-	/* !!! with CFile^ do!!! */
 	ResetUpdHandle(CFile->Handle);
-	if (CFile->Typ == 'X') ResetUpdHandle(CFile->XF->Handle);
+	if (CFile->Typ == INDEX) ResetUpdHandle(CFile->XF->Handle);
 	if (CFile->TF != nullptr) ResetUpdHandle(CFile->TF->Handle);
 }
 
@@ -239,7 +234,7 @@ void RunErrorM(LockMode Md, WORD N)
 void CloseClearHCFile()
 {
 	CloseClearH(&CFile->Handle);
-	if (CFile->Typ == 'X') CloseClearH(&CFile->XF->Handle);
+	if (CFile->Typ == INDEX) CloseClearH(&CFile->XF->Handle);
 	if (CFile->TF != nullptr) CloseClearH(&CFile->TF->Handle);
 }
 
@@ -529,7 +524,7 @@ void T_(FieldDescr* F, longint Pos)
 	char* source = (char*)p + F->Displ;
 	longint* LP = (longint*)source;
 	if ((F->Typ == 'T') && ((F->Flg & f_Stored) != 0)) {
-		if (CFile->Typ == 'D') {
+		if (CFile->Typ == DBF) {
 			if (Pos == 0) {
 				FillChar(source, 10, ' ');
 			}
@@ -588,7 +583,7 @@ void IncNRecs(longint N)
 #endif
 	CFile->NRecs += N;
 	SetUpdHandle(CFile->Handle);
-	if (CFile->Typ == 'X') SetUpdHandle(CFile->XF->Handle);
+	if (CFile->Typ == INDEX) SetUpdHandle(CFile->XF->Handle);
 }
 
 void DecNRecs(longint N)
@@ -596,7 +591,7 @@ void DecNRecs(longint N)
 	/* !!! with CFile^ do!!! */
 	CFile->NRecs -= N;
 	SetUpdHandle(CFile->Handle);
-	if (CFile->Typ == 'X') SetUpdHandle(CFile->XF->Handle);
+	if (CFile->Typ == INDEX) SetUpdHandle(CFile->XF->Handle);
 	CFile->WasWrRec = true;
 }
 
@@ -757,7 +752,7 @@ bool _B(FieldDescr* F)
 	void* p = CRecPtr;
 	unsigned char* CP = (unsigned char*)p + F->Displ;
 	if ((F->Flg & f_Stored) != 0) {
-		if (CFile->Typ == 'D') result = *CP == 'Y' || *CP == 'y' || *CP == 'T' || *CP == 't';
+		if (CFile->Typ == DBF) result = *CP == 'Y' || *CP == 'y' || *CP == 'T' || *CP == 't';
 		else if ((*CP == '\0') || (*CP == 0xFF)) result = false;
 		else result = true;
 	}
@@ -771,7 +766,7 @@ void B_(FieldDescr* F, bool B)
 	void* p = CRecPtr;
 	char* pB = (char*)p + F->Displ;
 	if ((F->Typ == 'B') && ((F->Flg & f_Stored) != 0)) {
-		if (CFile->Typ == 'D')
+		if (CFile->Typ == DBF)
 		{
 			if (B) *pB = 'T';
 			else *pB = 'F';
@@ -789,7 +784,7 @@ double _R(FieldDescr* F)
 	double r;
 
 	if ((F->Flg & f_Stored) != 0) {
-		if (CFile->Typ == 'D') result = _RforD(F, source);
+		if (CFile->Typ == DBF) result = _RforD(F, source);
 		else switch (F->Typ) {
 		case 'F': { // FIX CISLO (M,N)
 			r = RealFromFix(source, F->NBytes);
@@ -798,7 +793,7 @@ double _R(FieldDescr* F)
 			break;
 		}
 		case 'D': { // DATUM DD.MM.YY
-			if (CFile->Typ == '8') {
+			if (CFile->Typ == FAND8) {
 				if (*(integer*)source == 0) result = 0.0;
 				else result = *(integer*)source + FirstDate;
 			}
@@ -836,7 +831,7 @@ void R_(FieldDescr* F, double R, void* record)
 		m = F->M;
 		switch (F->Typ) {
 		case 'F': {
-			if (CFile->Typ == 'D') {
+			if (CFile->Typ == DBF) {
 				if ((F->Flg & f_Comma) != 0) R = R / Power10[m];
 				str(F->NBytes, s);
 				Move(&s[1], pRec, F->NBytes);
@@ -849,12 +844,12 @@ void R_(FieldDescr* F, double R, void* record)
 		}
 		case 'D': {
 			switch (CFile->Typ) {
-			case '8': {
+			case FAND8: {
 				if (trunc(R) == 0) *(long*)&pRec = 0;
 				else *(long*)pRec = trunc(R - FirstDate);
 				break;
 			}
-			case 'D': {
+			case DBF: {
 				s = StrDate(R, "YYYYMMDD");
 				Move(&s[1], pRec, 8);
 				break;
@@ -1117,7 +1112,7 @@ bool LinkUpw(LinkD* LD, longint& N, bool WithT)
 #endif
 	const LockMode md = NewLMode(CFile, RdMode);
 	bool lu;
-	if (ToFD->Typ == 'X') {
+	if (ToFD->Typ == INDEX) {
 		TestXFExist();
 		lu = K->SearchInterval(x, false, N);
 	}
@@ -1190,7 +1185,7 @@ void AssignNRecs(bool Add, longint N)
 	if (Add) N = N + OldNRecs;
 	if ((N < 0) || (N == OldNRecs)) goto label1;
 	if ((N == 0) && (CFile->TF != nullptr)) CFile->TF->SetEmpty();
-	if (CFile->Typ == 'X')
+	if (CFile->Typ == INDEX)
 		if (N == 0) {
 			CFile->NRecs = 0;
 			SetUpdHandle(CFile->Handle);
@@ -1305,12 +1300,12 @@ LocVar* LocVarBlkD::FindByName(std::string Name)
 
 bool DeletedFlag()  // r771 ASM
 {
-	if (CFile->Typ == 'X') {
+	if (CFile->Typ == INDEX) {
 		if (((BYTE*)CRecPtr)[0] == 0) return false;
 		else return true;
 	}
 
-	if (CFile->Typ == 'D') {
+	if (CFile->Typ == DBF) {
 		if (((BYTE*)CRecPtr)[0] != '*') return false;
 		else return true;
 	}
@@ -1322,8 +1317,8 @@ void ClearDeletedFlag()
 {
 	BYTE* ptr = (BYTE*)CRecPtr;
 	switch (CFile->Typ) {
-	case 'X': { ptr[0] = 0; break; }
-	case 'D': { ptr[0] = ' '; break; }
+	case INDEX: { ptr[0] = 0; break; }
+	case DBF: { ptr[0] = ' '; break; }
 	}
 }
 
@@ -1331,8 +1326,8 @@ void SetDeletedFlag()
 {
 	BYTE* ptr = (BYTE*)CRecPtr;
 	switch (CFile->Typ) {
-	case 'X': { ptr[0] = 1; break; }
-	case 'D': { ptr[0] = '*'; break; }
+	case INDEX: { ptr[0] = 1; break; }
+	case DBF: { ptr[0] = '*'; break; }
 	}
 }
 
@@ -1672,7 +1667,7 @@ void ForAllFDs(void(*procedure)())
 		CFile = R->FD;
 		while (CFile != nullptr) {
 			procedure();
-			CFile = (FileD*)CFile->pChain;
+			CFile = CFile->pChain;
 		}
 		R = R->ChainBack;
 	}

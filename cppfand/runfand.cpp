@@ -278,15 +278,15 @@ void CompileHelpCatDcl()
 	std::string s = MsgLine;
 	SetInpStr(s);
 #if defined (FandRunV)
-	RdFileD("UFANDHLP", '6', "");
+	RdFileD("UFANDHLP", FAND16, "");
 #else
-	RdFileD("FANDHLP", '6', "");
+	RdFileD("FANDHLP", FAND16, "");
 #endif
 	HelpFD = CFile;
 	RdMsg(52);
 	s = MsgLine;
 	SetInpStr(s);
-	RdFileD("Catalog", 'C', "");
+	RdFileD("Catalog", CAT, "");
 	CatFD = CFile;
 	FileDRoot = nullptr;
 	Chpt = FileDRoot;

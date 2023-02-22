@@ -217,7 +217,7 @@ void AutoDesign(FieldListEl* FL)
 		D->FldD = F;
 		D->L = F->L;
 		if (D->L > maxcol) D->L = maxcol;
-		if ((E->FD->Typ == 'C') && (D->L > 44)) D->L = 44; /*catalog pathname*/
+		if ((E->FD->Typ == CAT) && (D->L > 44)) D->L = 44; /*catalog pathname*/
 		FldLen = D->L;
 		if (F->Typ == 'T') D->L = 1;
 		L = F->Name.length();
@@ -300,7 +300,7 @@ void AutoDesign(std::vector<FieldDescr*>& FL)
 		D->FldD = F;
 		D->L = F->L;
 		if (D->L > maxcol) D->L = maxcol;
-		if ((E->FD->Typ == 'C') && (D->L > 44)) D->L = 44; /*catalog pathname*/
+		if ((E->FD->Typ == CAT) && (D->L > 44)) D->L = 44; /*catalog pathname*/
 		FldLen = D->L;
 		if (F->Typ == 'T') D->L = 1;
 		L = F->Name.length();
@@ -598,7 +598,7 @@ void RdDepChkImpl()
 	std::string s;
 	CFile = E->FD;
 	switch (CFile->Typ) {
-	case '0': {
+	case RDB: {
 		RdMsg(53);
 		s = MsgLine;
 		ResetCompilePars();
@@ -606,7 +606,7 @@ void RdDepChkImpl()
 		RdUDLI();
 		break;
 	}
-	case 'C': {
+	case CAT: {
 		RdMsg(54); s = MsgLine;
 		if (spec.CPMdrive != ' ') s = s + ',' + spec.CPMdrive + ':';
 		RdMsg(55); s = s + MsgLine;
@@ -826,12 +826,12 @@ std::string StandardHead()
 	else {
 		s = E->FD->Name;
 		switch (E->FD->Typ) {
-		case 'X': {
+		case INDEX: {
 			if (!E->VK->Alias.empty()) s = s + "/" + E->VK->Alias;
 			break;
 		}
-		case '0': s += ".RDB"; break;
-		case '8': s += ".DTA"; break;
+		case RDB: s += ".RDB"; break;
+		case FAND8: s += ".DTA"; break;
 		}
 	}
 	//if (s.length() > 16) s[0] = 16;

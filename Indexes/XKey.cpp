@@ -644,7 +644,7 @@ bool SearchKey(XString& XX, XKey* Key, longint& NN)
 
 longint XNRecs(std::vector<XKey*>& K)
 {
-	if (CFile->Typ == 'X' && !K.empty()) {
+	if (CFile->Typ == INDEX && !K.empty()) {
 		TestXFExist();
 		return CFile->XF->NRecs;
 	}

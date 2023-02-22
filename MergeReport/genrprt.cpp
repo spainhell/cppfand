@@ -162,11 +162,11 @@ void WrLevel(std::string& report, int Level)
 	}
 	WrStr(report, ";\r\n");
 	int col = 1;
-	if (CFile->Typ == '0'/*RDB*/) WrChar(report, 0x11);
+	if (CFile->Typ == RDB) WrChar(report, 0x11);
 
-	for (size_t i = 0; i < PFldDs.size(); i++) /*while (d != nullptr)*/ {
+	for (size_t i = 0; i < PFldDs.size(); i++) {
 		PFldD* d = &PFldDs[i];
-		if ((CFile->Typ == '0') && (i + 1 == PFldDs.size())) {
+		if ((CFile->Typ == RDB) && (i + 1 == PFldDs.size())) {
 			WrChar(report, 0x11);
 		}
 		if (d->NxtLine) {
@@ -346,9 +346,9 @@ std::string GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 	}
 	WrStr(report, "\r\n");
 	if (KpLetter) WrChar(report, 0x05);
-	//d = PFldDs;
+
 	int col = 1;
-	for (size_t i = 0; i < PFldDs.size(); i++) /*while (d != nullptr)*/ {
+	for (size_t i = 0; i < PFldDs.size(); i++) {
 		PFldD* d = &PFldDs[i];
 		if (d->NxtLine) {
 			WrStr(report, "\r\n");
@@ -359,7 +359,6 @@ std::string GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 		ReplaceChar(s, '_', '-');
 		WrStr(report, s);
 		col = d->ColTxt + d->FldD->Name.length();
-		//d = d->pChain;
 	}
 
 	if (KpLetter) WrStr(report, "\r\n#PF;\r\n\x05");
@@ -371,11 +370,9 @@ std::string GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 	}
 	for (size_t i = 1; i <= NLevels; i++) {
 		WrStr(report, "\r\n#CF_");
-		//d = PFldDs;
-		for (size_t j = 0; j < PFldDs.size(); j++) /*while (d != nullptr)*/ {
+		for (size_t j = 0; j < PFldDs.size(); j++) {
 			PFldD* d = &PFldDs[j];
 			if (d->IsCtrl && (d->Level == i)) WrStr(report, d->FldD->Name);
-			//d = d->pChain;
 		}
 		WrChar(report, ' ');
 		WrLevel(report, i);
@@ -406,7 +403,6 @@ void RunAutoReport(RprtOpt* RO)
 	void* p = nullptr; void* p1 = nullptr;
 	p1 = RO->FDL.FD->RecPtr;
 	std::string txt = GenAutoRprt(RO, true);
-	// SetInpLongStr(txt, false);
 	SetInpStdStr(txt, false);
 	ReadReport(RO);
 	RunReport(RO);
@@ -417,28 +413,20 @@ bool SelForAutoRprt(RprtOpt* RO)
 {
 	wwmix ww;
 
-	//FieldListEl* FL;
-	WORD N;
 	auto result = false;
 	if ((RO->SK == nullptr) && !PromptSortKeys(RO->Flds, RO->SK)) return result;
-	N = Menu(4, 1);
+	WORD N = Menu(4, 1);
 	if (N == 0) return result;
-	RO->Mode = AutoRprtMode(N - 1);
+	RO->Mode = (AutoRprtMode)(N - 1);
 	CFile = RO->FDL.FD;
 	if (RO->Mode == _ARprt || RO->Mode == _ATotal) {
-		//FL = RO->Flds;
-		//while (FL != nullptr) {
 		for (auto& f : RO->Flds) {
 			if (f->Typ != 'T') ww.PutSelect(f->Name);
-			//FL = FL->pChain;
 		}
 		if (!ww.SelFieldList(37, false, RO->Ctrl)) return result; // TODO: RO->Ctrl[0] is probably bad idea
 
-		//FL = RO->Flds;
-		//while (FL != nullptr) {
 		for (auto& f : RO->Flds) {
 			if (f->FrmlTyp == 'R') ww.PutSelect(f->Name);
-			//FL = FL->pChain;
 		}
 		if (!ww.SelFieldList(38, true, RO->Sum)) return result;  // TODO: RO->Sum[0] is probably bad idea
 	}
@@ -497,21 +485,18 @@ std::string SelGenRprt(pstring RprtName)
 	if (ro->Flds.empty()) return result;
 	ro->Mode = _ARprt;
 
-	//fl = ro->Flds;
-	//while (fl != nullptr) {
 	for (auto& fl : ro->Flds) {
 		ww.PutSelect(fl->Name);
-		//fl = fl->pChain;
 	}
+
 	if (!ww.SelFieldList(37, false, ro->Ctrl)) return result;
 
-	//fl = ro->Flds;
-	//while (fl != nullptr) {
 	for (auto& fl : ro->Flds) {
 		if (fl->FrmlTyp == 'R') ww.PutSelect(fl->Name);
-		//fl = (FieldListEl*)fl->pChain;
 	}
+
 	if (!ww.SelFieldList(38, false, ro->Sum)) return result;
+
 	result = GenAutoRprt(ro, false);
 	return result;
 }

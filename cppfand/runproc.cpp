@@ -502,7 +502,7 @@ void PrintTxtProc(Instr_edittxt* PD)
 bool SrchXKey(XKey* K, XString& X, longint& N)
 {
 	void* cr;
-	if (CFile->Typ == 'X') {
+	if (CFile->Typ == INDEX) {
 		TestXFExist();
 		return K->SearchInterval(X, false, N);
 	}
@@ -543,7 +543,7 @@ void DeleteRecProc(Instr_recs* PD)
 	if (PD->AdUpd && !DeletedFlag()) {
 		LastExitCode = (!RunAddUpdte('-', nullptr, nullptr));
 	}
-	if (CFile->Typ == 'X') {
+	if (CFile->Typ == INDEX) {
 		if (!DeletedFlag()) DeleteXRec(n, true);
 	}
 	else {
@@ -581,7 +581,7 @@ void UpdRec(void* CR, longint N, bool AdUpd)
 			LastExitCode = !RunAddUpdte('d', cr2, nullptr);
 		}
 	}
-	if (CFile->Typ == 'X') {
+	if (CFile->Typ == INDEX) {
 		OverWrXRec(N, cr2, CR);
 	}
 	else {
@@ -677,7 +677,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 		CopyRecWithT(PD->LV->RecPtr, cr);
 		if (app) {
 			CRecPtr = cr;
-			if (CFile->Typ == 'X') {
+			if (CFile->Typ == INDEX) {
 				RecallRec(N);
 			}
 			else WriteRec(CFile, N, CRecPtr);
@@ -1069,7 +1069,7 @@ void ResetCatalog()
 		CFile = (FileD*)CRdb->FD->pChain;
 		while (CFile != nullptr) {
 			CloseFile();
-			CFile->CatIRec = GetCatIRec(CFile->Name, CFile->Typ == '0');
+			CFile->CatIRec = GetCatIRec(CFile->Name, CFile->Typ == RDB);
 #ifdef FandSQL
 			SetIsSQLFile();
 #endif
@@ -1088,7 +1088,7 @@ void PortOut(bool IsWord, WORD Port, WORD What)
 void RecallRecProc(Instr_recs* PD)
 {
 	CFile = PD->RecFD;
-	if (CFile->Typ != 'X') return;
+	if (CFile->Typ != INDEX) return;
 	longint N = RunInt(PD->RecNr);
 	CRecPtr = GetRecSpace();
 	LockMode md = NewLMode(CFile, CrMode);
@@ -1529,7 +1529,7 @@ void CallProcedure(Instr_proc* PD)
 				const auto state = SaveCompState();
 				std::string code = RunStdStr(PD->TArg[i].TxtFrml);
 				SetInpStdStr(code, true);
-				RdFileD(PD->TArg[i].Name, '6', "$");
+				RdFileD(PD->TArg[i].Name, FAND16, "$");
 				RestoreCompState(state);
 			}
 			else {

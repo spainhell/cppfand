@@ -862,13 +862,14 @@ void RdLocDcl(LocVarBlkD* LVB, bool IsParList, bool WithRecVar, char CTyp)
 	bool b = false;
 	double r = 0;
 	std::string s;
-	char typ = '\0', lx = '\0', fc = '\0';
-	WORD sz = 0, n = 0;
+	char typ = '\0';
+	BYTE lx = '\0', fc = '\0';
+	size_t sz = 0, n = 0;
 	FileD* cf = nullptr; FileD* fd = nullptr;
 	void* cr = nullptr; stSaveState* p = nullptr;
 	XWKey* k = nullptr; bool rp = false;
 	KeyFldD* kf = nullptr; KeyFldD* kf1 = nullptr;
-	char FDTyp = '0';
+	FileType FDTyp = UNKNOWN;
 	std::vector<LocVar*> newVars;
 label1:
 	rp = false;
@@ -903,9 +904,6 @@ label1:
 		if ((Lexem == _equ) && !IsParList) {
 			RdLex();
 			r = RdRealConst();
-			//if (r != 0) {
-			//	Z = new FrmlElem2(_const, 0, r); // GetOp(_const, sizeof(double));
-			//}
 			newVars[0]->R = r;
 		}
 		typ = 'R';
@@ -917,9 +915,6 @@ label1:
 			RdLex();
 			s = LexWord;
 			Accept(_quotedstr);
-			//if (s != "") {
-			//	Z = new FrmlElem4(_const, 0, s); // GetOp(_const, s.length() + 1);
-			//}
 			newVars[0]->S = s;
 		}
 		typ = 'S';
@@ -934,17 +929,6 @@ label1:
 			locvar->BPOfs = LVB->Size;
 			LVB->Size += sz;
 		}
-
-		//while (lv != nullptr) {
-		//	/* !!! with lv^ do!!! */
-		//	lv->FTyp = typ;
-		//	lv->Op = _getlocvar;
-		//	lv->IsRetPar = rp;
-		//	lv->Init = Z;
-		//	lv->BPOfs = LVB->Size;
-		//	LVB->Size += sz;
-		//	lv = (LocVar*)lv->pChain;
-		//}
 	}
 	else if (rp) Error(168);
 	else if (WithRecVar)
@@ -963,12 +947,12 @@ label1:
 			}
 			else {
 				if (fd != nullptr) OldError(26);
-				FDTyp = '6';
+				FDTyp = FAND16;
 				if (Lexem == '.') {
 					RdLex();
 					TestIdentif();
-					if (EquUpCase("X")) FDTyp = 'X';
-					else if (EquUpCase("DBF")) FDTyp = 'D';
+					if (EquUpCase("X")) FDTyp = INDEX;
+					else if (EquUpCase("DBF")) FDTyp = DBF;
 					else Error(185);
 					RdLex();
 				}
@@ -977,7 +961,9 @@ label1:
 				RdFileD(lv->Name, FDTyp, "$");
 				TestLex(']');
 				lv->FD = CFile;
-				n = CurrPos; lx = Lexem; fc = ForwChar;
+				n = CurrPos;
+				lx = Lexem;
+				fc = ForwChar;
 				RestoreCompState(p);
 				CurrPos = n; Lexem = lx; ForwChar = fc;
 				RdLex();
@@ -994,7 +980,7 @@ label1:
 			cf = CFile; cr = CRecPtr;
 			CFile = RdFileName();
 			if (typ == 'i') {
-				if (CFile->Typ != 'X') OldError(108);
+				if (CFile->Typ != INDEX) OldError(108);
 				kf1 = nullptr;
 				if (Lexem == '(') {
 					RdLex();
@@ -1002,28 +988,26 @@ label1:
 					Accept(')');
 				}
 			}
-			//while (lv != nullptr) {
-			for (LocVar* locvar : newVars)
-			{
+			for (LocVar* locvar : newVars) {
 				locvar->FTyp = typ;
 				locvar->FD = CFile;
 				if (typ == 'r') locvar->RecPtr = nullptr; // ptr(0,1) ??? /* for RdProc nullptr-tests + no Run*/
 				   /* frueher bei IsParList K = nullptr; warum? */
 				else {
-					k = new XWKey(); // (XWKey*)GetZStore(sizeof(*k));
+					k = new XWKey();
 					k->Duplic = true;
 					k->InWork = true;
 					k->KFlds = kf1;
 					kf = kf1;
 					while (kf != nullptr) {
 						k->IndexLen += kf->FldD->NBytes;
-						kf = (KeyFldD*)kf->pChain;
+						kf = kf->pChain;
 					}
 					locvar->RecPtr = k;
 				}
-				//lv = (LocVar*)lv->pChain;
 			}
-			CFile = cf; CRecPtr = cr;
+			CFile = cf;
+			CRecPtr = cr;
 		}
 		else Error(137);
 	else Error(39);
@@ -1401,7 +1385,7 @@ XKey* RdViewKey()
 	}
 	Error(109);
 label1:
-	if (CFile->Typ != 'X')
+	if (CFile->Typ != INDEX)
 #ifdef FandSQL
 		if (CFile->typSQLFile) Error(24); else
 #endif
@@ -1510,11 +1494,11 @@ void CompileRecLen()
 	/* !!! with CFile^ do!!! */
 	WORD l = 0;
 	WORD n = 0;
-	if ((CFile->Typ == 'X' || CFile->Typ == 'D')) l = 1;
+	if ((CFile->Typ == INDEX || CFile->Typ == DBF)) l = 1;
 	for (auto& F : CFile->FldD) {
 		switch (CFile->Typ) {
-		case '8': if (F->Typ == 'D') F->NBytes = 2; break;
-		case 'D': {
+		case FAND8: if (F->Typ == 'D') F->NBytes = 2; break;
+		case DBF: {
 			switch (F->Typ) {
 			case 'F': F->NBytes = F->L - 1; break;
 			case 'D': F->NBytes = 8; break;
@@ -1527,8 +1511,8 @@ void CompileRecLen()
 	}
 	CFile->RecLen = l;
 	switch (CFile->Typ) {
-	case '8': CFile->FrstDispl = 4; break;
-	case 'D': CFile->FrstDispl = (n + 1) * 32 + 1; break;
+	case FAND8: CFile->FrstDispl = 4; break;
+	case DBF: CFile->FrstDispl = (n + 1) * 32 + 1; break;
 	default:  CFile->FrstDispl = 6; break;
 	}
 }
@@ -2346,7 +2330,7 @@ FrmlElem* RdKeyInBool(KeyInD** KIRoot, bool NewMyBP, bool FromRdProc, bool& SQLF
 	}
 	if (IsKeyWord("KEY")) {
 		AcceptKeyWord("IN");
-		if ((CFile->Typ != 'X') || (CViewKey == nullptr)) OldError(118);
+		if ((CFile->Typ != INDEX) || (CViewKey == nullptr)) OldError(118);
 		if (CViewKey->KFlds == nullptr) OldError(176);
 		Accept('[');
 		l = CViewKey->IndexLen + 1;

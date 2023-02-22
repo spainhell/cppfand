@@ -50,7 +50,9 @@ struct RdbRecVars
 	std::string Name;
 	std::string Ext;
 	longint Txt = 0; longint OldTxt = 0;
-	char FTyp = 0; WORD CatIRec = 0; bool isSQL = false;
+	FileType FTyp = UNKNOWN;
+	WORD CatIRec = 0;
+	bool isSQL = false;
 };
 
 FileD* CFileF = nullptr;
@@ -61,19 +63,19 @@ bool IsCurrChpt()
 	return CRdb->FD == CFile;
 }
 
-char ExtToTyp(pstring Ext)
+FileType ExtToTyp(std::string Ext)
 {
 	if ((Ext == "") || EquUpCase(Ext, ".HLP")
 #ifdef FandSQL
 		|| SEquUpcase(Ext, ".SQL")
 #endif	
 		)
-		return '6';
-	else if (EquUpCase(Ext, ".X")) return 'X';
-	else if (EquUpCase(Ext, ".DTA")) return '8';
-	else if (EquUpCase(Ext, ".DBF")) return 'D';
-	else if (EquUpCase(Ext, ".RDB")) return '0';
-	else return '?';
+		return FAND16;
+	else if (EquUpCase(Ext, ".X")) return INDEX;
+	else if (EquUpCase(Ext, ".DTA")) return FAND8;
+	else if (EquUpCase(Ext, ".DBF")) return DBF;
+	else if (EquUpCase(Ext, ".RDB")) return RDB;
+	else return UNKNOWN;
 }
 
 void ReleaseFDLDAfterChpt()
@@ -548,7 +550,7 @@ void CreateOpenChpt(std::string Nm, bool create, wwmix* ww)
 	SetInpStr(s);
 	if ((Nm[0] == '\\')) Nm1 = Nm.substr(1, 8);
 	else Nm1 = Nm;
-	RdFileD(Nm1, '0', ""); /*old CRdb for GetCatIRec*/
+	RdFileD(Nm1, RDB, ""); /*old CRdb for GetCatIRec*/
 	R->FD = CFile;
 	CRdb = R;
 	CFile->RecPtr = GetRecSpace();
@@ -967,7 +969,7 @@ longint MakeDbfDcl(pstring Nm)
 void* RdF(std::string FileName)
 {
 	std::string d, name, ext;
-	char FDTyp = '0';
+	FileType FDTyp = UNKNOWN;
 	std::string s;
 	FieldDescr* IdF = nullptr; FieldDescr* TxtF = nullptr;
 	integer i = 0, n = 0;
@@ -1114,7 +1116,7 @@ bool MergeOldNew(bool Veriflongint, longint Pos)
 		MergeAndReplace(FDOld, FDNew);
 		result = true;
 	}
-	else if ((FDOld->Typ == 'X') && !EquKeys(FDOld->Keys[0], FDNew->Keys[0])) {
+	else if ((FDOld->Typ == INDEX) && !EquKeys(FDOld->Keys[0], FDNew->Keys[0])) {
 		SetCPathVol();
 		CPath = CExtToX(CDir, CName, CExt);
 		MyDeleteFile(CPath);

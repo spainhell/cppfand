@@ -26,7 +26,7 @@ bool OldToNewCat(longint& FilSz)
 
 	auto result = false;
 	bool cached = CFile->NotCached();
-	if (CFile->Typ != 'C') return result;
+	if (CFile->Typ != CAT) return result;
 	RdWrCache(true, CFile->Handle, cached, 0, 6, &x);
 	if (x.RecLen != 106) return result;
 	x.RecLen = 107;
@@ -289,7 +289,7 @@ void ImportTxt(CopyD* CD)
 #endif
 			{
 				PutRec(CFile, CRecPtr);
-				if (CD->Append && (CFile->Typ == 'X')) TryInsertAllIndexes(CFile->IRec);
+				if (CD->Append && (CFile->Typ == INDEX)) TryInsertAllIndexes(CFile->IRec);
 			}
 		}
 		LastExitCode = 0;
@@ -672,9 +672,9 @@ void CheckFile(FileD* FD)
 	ReadH(h, 2, &Prfx.RecLen);
 	fs = FileSizeH(h);
 	CloseH(&h);
-	if ((FD->RecLen != Prfx.RecLen) || (Prfx.NRecs < 0) && (FD->Typ != 'X') ||
+	if ((FD->RecLen != Prfx.RecLen) || (Prfx.NRecs < 0) && (FD->Typ != INDEX) ||
 		((fs - FD->FrstDispl) / Prfx.RecLen < Prfx.NRecs) ||
-		(Prfx.NRecs > 0) && (FD->Typ == 'X')) {
+		(Prfx.NRecs > 0) && (FD->Typ == INDEX)) {
 		LastExitCode = 3;
 		return;
 	}

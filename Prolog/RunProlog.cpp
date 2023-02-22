@@ -1094,7 +1094,7 @@ label1:
 		r = r->ChainBack;
 		if (r != nullptr) { FD = r->FD; goto label1; }
 	}
-	else if ((FD->Typ == '0') || (FD->ChptPos.R == nullptr)) goto label1;
+	else if ((FD->Typ == RDB) || (FD->ChptPos.R == nullptr)) goto label1;
 	return FD;
 }
 
@@ -1221,10 +1221,10 @@ bool RunBuildIn()
 		CurrInst->Vars[0] = GetStringTerm(fd->Name);
 		s[0] = 0;
 		switch (fd->Typ) {
-		case '6': if (fd->IsSQLFile) s = "SQL"; break;
-		case 'X': s = 'X'; break;
-		case 'D': s = "DBF"; break;
-		case '8': s = "DTA"; break;
+		case FAND16: if (fd->IsSQLFile) s = "SQL"; break;
+		case INDEX: s = 'X'; break;
+		case DBF: s = "DBF"; break;
+		case FAND8: s = "DTA"; break;
 		}
 		CurrInst->Vars[1] = GetStringTerm(s);
 		CurrInst->Vars[2] = GetStringTerm(fd->ChptPos.R->FD->Name);

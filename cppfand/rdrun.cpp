@@ -226,8 +226,13 @@ bool Link(AddD* AD, longint& N, char& Kind2)
 #endif
 		{
 			ClearDeletedFlag();
-			if ((LD != nullptr) && (CFile->Typ == 'X')) { CrIndRec(); N = CFile->NRecs; }
-			else CreateRec(N);
+			if ((LD != nullptr) && (CFile->Typ == INDEX)) {
+				CrIndRec();
+				N = CFile->NRecs;
+			}
+			else {
+				CreateRec(N);
+			}
 		}
 		return result;
 	}

@@ -325,7 +325,7 @@ longint RecNoFun(FrmlElem13* Z)
 	LockMode md = NewLMode(CFile, RdMode);
 	CRecPtr = GetRecSpace();
 	if (CFile->NRecs > 0) {
-		if (CFile->Typ == 'X') {
+		if (CFile->Typ == INDEX) {
 			TestXFExist();
 			b = k->SearchInterval(x, false, n);
 		}
@@ -354,7 +354,7 @@ longint AbsLogRecNoFun(FrmlElem13* Z)
 	CFile = Z->FFD;
 	LockMode md = NewLMode(CFile, RdMode);
 	if (N > CFile->NRecs) goto label1;
-	if (CFile->Typ == 'X') {
+	if (CFile->Typ == INDEX) {
 		TestXFExist();
 		if (Z->Op == _recnolog) {
 			CRecPtr = GetRecSpace();

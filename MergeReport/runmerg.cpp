@@ -209,7 +209,7 @@ void WriteOutp(OutpRD* RD)
 #endif
 				{
 					PutRec(CFile, CRecPtr);
-					if (OD->Append && (CFile->Typ == 'X')) TryInsertAllIndexes(CFile->IRec);
+					if (OD->Append && (CFile->Typ == INDEX)) TryInsertAllIndexes(CFile->IRec);
 				}
 			}
 }

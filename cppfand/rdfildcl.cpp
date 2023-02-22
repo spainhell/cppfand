@@ -413,7 +413,7 @@ void RdFieldDList(bool Stored)
 			Z = RdFrml(FTyp);
 		}
 		F = RdFieldDescr(name, Stored);
-		if ((CFile->Typ == 'D') && Stored && (F->Typ == 'R' || F->Typ == 'N')) {
+		if ((CFile->Typ == DBF) && Stored && (F->Typ == 'R' || F->Typ == 'N')) {
 			OldError(86);
 		}
 
@@ -421,7 +421,7 @@ void RdFieldDList(bool Stored)
 		ChainLast(CFile->FldD.front(), F);
 
 		if (Stored) {
-			if (CFile->Typ == '8') {
+			if (CFile->Typ == FAND8) {
 				if ((F->Typ == 'R' || F->Typ == 'B' || F->Typ == 'T')) OldError(35);
 				else if ((F->Typ == 'F') && (F->NBytes > 5)) OldError(36);
 			}
@@ -460,9 +460,7 @@ void SetLDIndexRoot(/*LinkD* L,*/ std::deque<LinkD*>& L2)
 		if (L == l2) {
 			break;
 		}
-		if (CFile->Typ == 'X') {
-			//XKey* K = CFile->Keys;
-			//while (K != nullptr) {
+		if (CFile->Typ == INDEX) {
 			for (auto& K : CFile->Keys) {
 				KeyFldD* KF = K->KFlds;
 				computed = false;
@@ -480,7 +478,6 @@ void SetLDIndexRoot(/*LinkD* L,*/ std::deque<LinkD*>& L2)
 					KF = KF->pChain;
 				}
 				if (continueWithNextK) {
-					//K = K->Chain;
 					continue;
 				}
 				L->IndexRoot = K->IndexRoot;
@@ -493,15 +490,11 @@ void SetLDIndexRoot(/*LinkD* L,*/ std::deque<LinkD*>& L2)
 			OldError(152);
 		}
 		CFile->nLDs++;
-
-		//if (CFile->Typ == 'X' && L->IndexRoot == 0) {
-		//	printf("");
-		//}
 	}
 }
 
 // z ulohy vycte kapilotu 'F', prip. dynamickou definici 'F'
-void* RdFileD(std::string FileName, char FDTyp, std::string Ext)
+void* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 {
 	std::string JournalFlds = "Upd:A,1;RecNr:F,8.0;User:F,4.0;TimeStamp:D,'DD.MM.YYYY hh:mm:ss'";
 	FileD* FD = nullptr;
@@ -523,7 +516,7 @@ void* RdFileD(std::string FileName, char FDTyp, std::string Ext)
 		FD = RdFileName();
 		if (Lexem == ';') RdLex();
 		SetMsgPar(FileName);
-		if (FDTyp != '6') OldError(103);
+		if (FDTyp != FAND16) OldError(103);
 		if (Lexem != 0x1A) Error(40);
 #ifdef FandSQL
 		if (issql || FD->typSQLFile) OldError(155);
@@ -597,7 +590,7 @@ void* RdFileD(std::string FileName, char FDTyp, std::string Ext)
 		}
 
 		CFile->IsHlpFile = false;
-		if (!(FDTyp == '6' || FDTyp == 'X') || !(CFile->Typ == '6' || CFile->Typ == 'X')) OldError(106);
+		if (!(FDTyp == '6' || FDTyp == 'X') || !(CFile->Typ == FAND16 || CFile->Typ == INDEX)) OldError(106);
 
 		//K = CFile->Keys;
 		//while (K != nullptr) {
@@ -648,12 +641,12 @@ label2:
 		goto label2;
 	}
 	if (issql && !CFile->Keys.empty()) {
-		CFile->Typ = 'X';
+		CFile->Typ = INDEX;
 	}
 	GetXFileD();
 	CompileRecLen();
 	SetLDIndexRoot(LDOld);
-	if ((CFile->Typ == 'X') && CFile->Keys.empty()) Error(107);
+	if ((CFile->Typ == INDEX) && CFile->Keys.empty()) Error(107);
 	if ((Lexem == '#') && (ForwChar == 'A')) {
 		RdLex();
 		RdKumul();
@@ -793,7 +786,7 @@ label2:
 	LinkDRoot.push_front(L);
 
 	if (Lexem == '!') {
-		if (CFile->Typ != 'X'
+		if (CFile->Typ != INDEX
 #ifdef FandSQL
 			&& !CFile->typSQLFile
 #endif
@@ -837,7 +830,7 @@ label6:
 
 void CheckDuplAlias(pstring Name)
 {
-	if (CFile->Typ != 'X'
+	if (CFile->Typ != INDEX
 #ifdef FandSQL
 		&& !CFile->typSQLFile
 #endif
@@ -854,11 +847,9 @@ void LookForK(pstring* Name, FileD* F)
 {
 	std::string name = *Name;
 	if (EquUpCase(F->Name, name)) Error(26);
-	//XKey* K = F->Keys;
-	//while (K != nullptr) {
+
 	for (auto& K : CFile->Keys) {
 		if (EquUpCase(K->Alias, *Name)) Error(26);
-		//K = K->Chain;
 	}
 }
 
@@ -1048,12 +1039,11 @@ void RdAssign(AddD* AD)
 }
 
 /// smaze CFile->Handle, nastavi typ na FDTyp a ziska CatIRec z GetCatIRec() - musi existovat CatFD
-void SetHCatTyp(char FDTyp)
+void SetHCatTyp(FileType FDTyp)
 {
-	/* !!! with CFile^ do!!! */
 	CFile->Handle = nullptr;
 	CFile->Typ = FDTyp;
-	CFile->CatIRec = GetCatIRec(CFile->Name, CFile->Typ == '0'/*multilevel*/);
+	CFile->CatIRec = GetCatIRec(CFile->Name, CFile->Typ == RDB/*multilevel*/);
 #ifdef FandSQL
 	typSQLFile = issql;
 	SetIsSQLFile();
@@ -1075,14 +1065,12 @@ void GetTFileD(char FDTyp)
 
 void GetXFileD()
 {
-	/* !!! with CFile^ do!!! */
-	if (CFile->Typ != 'X') {
+	if (CFile->Typ != INDEX) {
 		if (CFile->XF != nullptr) {
 			OldError(104);
 		}
 	}
 	else {
-		//if (CFile->GetXFile == nullptr) CFile->GetXFile = (XFile*)GetZStore(sizeof(XFile));
 		if (CFile->XF == nullptr) {
 			CFile->XF = new XFile();
 		}
@@ -1126,8 +1114,7 @@ CompInpD* OrigInp()
 	if (PrevCompInp.empty()) {
 		return nullptr;
 	}
-	else
-	{
+	else {
 		return &PrevCompInp.front();
 	}
 }

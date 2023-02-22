@@ -15,13 +15,12 @@ public:
 	FileD* HelpFD = nullptr; // { FD=FileDRoot and = Chpt for this RDB }
 	std::deque<LinkD*> OldLDRoot;
 	FuncD* OldFCRoot = nullptr;
-	// void* Mark2 = nullptr; // { markstore2 at beginning }
 	bool Encrypted = false;
 	std::string RdbDir;
 	std::string DataDir;
 };
 
-struct RdbPos // r. 113
+struct RdbPos
 {
 	RdbD* R = nullptr;
 	WORD IRec = 0;

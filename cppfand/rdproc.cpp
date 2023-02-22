@@ -1185,7 +1185,7 @@ bool RdViewOpt(EditOpt* EO)
 	else if (IsOpt("JOURNAL")) {
 		EO->Journal = RdFileName();
 		WORD l = EO->Journal->RecLen - 13;
-		if (CFile->Typ == 'X') l++;
+		if (CFile->Typ == INDEX) l++;
 		if (CFile->RecLen != l) OldError(111);
 	}
 	else if (IsOpt("SAVEAFTER")) EO->SaveAfterZ = RdRealFrml();
@@ -1399,7 +1399,7 @@ void RdProcCall(Instr** pinstr)
 		auto iPD = (Instr_checkfile*)*pinstr;
 		iPD->cfFD = RdFileName();
 		/* !!! with PD->cfFD^ do!!! */
-		if (iPD->cfFD != nullptr && (iPD->cfFD->Typ == '8' || iPD->cfFD->Typ == 'D')
+		if (iPD->cfFD != nullptr && (iPD->cfFD->Typ == FAND8 || iPD->cfFD->Typ == DBF)
 #ifdef FandSQL
 			|| PD->cfFD->typSQLFile
 #endif
@@ -1841,7 +1841,7 @@ bool RdX(FileD* FD)
 	if ((Lexem == '.') && (FD != nullptr)) {
 		RdLex();
 		AcceptKeyWord("X");
-		if (FD->Typ != 'X') OldError(108);
+		if (FD->Typ != INDEX) OldError(108);
 		result = true;
 	}
 	return result;
@@ -2036,7 +2036,7 @@ Instr* RdIndexfile()
 	auto PD = new Instr_indexfile(); // GetPD(_indexfile, 5);
 	RdLex();
 	PD->IndexFD = RdFileName();
-	if (PD->IndexFD->Typ != 'X') OldError(108);
+	if (PD->IndexFD->Typ != INDEX) OldError(108);
 	if (Lexem == ',') {
 		RdLex();
 		AcceptKeyWord("COMPRESS");
@@ -2476,12 +2476,11 @@ Instr_assign* RdAssign()
 			}
 			else if (FD == nullptr) OldError(9);
 			else if (IsKeyWord("NRECS")) {
-				//if (FName == "PGM") {
-				//	printf("RdAssign() rdproc.cpp 2280: soubor PGM, typ %c\n", FD->Typ);
-				//}
-				if (FD->Typ == '0') { OldError(127); }
+				if (FD->Typ == RDB) { OldError(127); }
 				PD = new Instr_assign(_asgnnrecs); // GetPInstr(_asgnnrecs, 9);
-				PD->FD = FD; FTyp = 'R'; goto label0;
+				PD->FD = FD;
+				FTyp = 'R';
+				goto label0;
 			}
 			else {
 				if (!FD->IsParFile) OldError(64);
@@ -2507,7 +2506,7 @@ Instr_assign* RdAssign()
 		F = RdFldName(FD);
 		PD->FldD = F;
 		if ((F->Flg & f_Stored) == 0) OldError(14);
-		PD->Indexarg = (FD->Typ == 'X') && IsKeyArg(F, FD);
+		PD->Indexarg = (FD->Typ == INDEX) && IsKeyArg(F, FD);
 		RdAssignFrml(F->FrmlTyp, PD->Add, &PD->Frml);
 	}
 	else if (FindLocVar(&LVBD, &LV)) {

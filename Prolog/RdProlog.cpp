@@ -1351,7 +1351,7 @@ TCommand* RdPredCommand(TCommandTyp Code, TPredicate* predicate)
 		sz += 10;
 		si = p->scanInf;
 		CFile = si->FD;
-		if (CFile->Typ == 'X') {
+		if (CFile->Typ == INDEX) {
 			k = CFile->Keys[0];
 			while (k != nullptr) {
 				kf = k->KFlds; inOut = false;

@@ -244,7 +244,7 @@ void TFile::RdPrefix(bool Chk)
 	}
 	if (IRec >= 0x6000) {
 		IRec = IRec - 0x2000;
-		if (!IsWork && (CFile->Typ == '0')) LicenseNr = T.LicNr;
+		if (!IsWork && (CFile->Typ == RDB)) LicenseNr = T.LicNr;
 	}
 	if (IRec >= 0x4000) {
 		IRec = IRec - 0x4000;
@@ -914,14 +914,14 @@ WORD RdPrefix()
 	/* !!! with CFile^ do!!! */
 	const bool not_cached = CFile->NotCached();
 	switch (CFile->Typ) {
-	case '8': {
+	case FAND8: {
 		RdWrCache(true, CFile->Handle, not_cached, 0, 2, &X8.NRs);
 		RdWrCache(true, CFile->Handle, not_cached, 2, 2, &X8.RLen);
 		CFile->NRecs = X8.NRs;
 		if (CFile->RecLen != X8.RLen) { return X8.RLen; }
 		break;
 	}
-	case 'D': {
+	case DBF: {
 		RdWrCache(true, CFile->Handle, not_cached, 0, 1, &XD.Ver);
 		RdWrCache(true, CFile->Handle, not_cached, 1, 1, &XD.Date[0]);
 		RdWrCache(true, CFile->Handle, not_cached, 2, 1, &XD.Date[1]);
@@ -938,7 +938,7 @@ WORD RdPrefix()
 		RdWrCache(true, CFile->Handle, not_cached, 0, 4, &X6.NRs);
 		RdWrCache(true, CFile->Handle, not_cached, 4, 2, &X6.RLen);
 		CFile->NRecs = abs(X6.NRs);
-		if ((X6.NRs < 0) && (CFile->Typ != 'X') || (X6.NRs > 0) && (CFile->Typ == 'X')
+		if ((X6.NRs < 0) && (CFile->Typ != INDEX) || (X6.NRs > 0) && (CFile->Typ == INDEX)
 			|| (CFile->RecLen != X6.RLen)) {
 			return X6.RLen;
 		}
@@ -1026,22 +1026,21 @@ void WrPrefix()
 	if (IsUpdHandle(CFile->Handle))
 	{
 		const bool not_cached = CFile->NotCached();
-		switch (CFile->Typ)
-		{
-		case '8': {
+		switch (CFile->Typ)	{
+		case FAND8: {
 			Pfx8.RLen = CFile->RecLen;
 			Pfx8.NRs = static_cast<WORD>(CFile->NRecs);
 			RdWrCache(false, CFile->Handle, not_cached, 0, 2, &Pfx8.NRs);
 			RdWrCache(false, CFile->Handle, not_cached, 2, 2, &Pfx8.RLen);
 			break;
 		}
-		case 'D': {
+		case DBF: {
 			WrDBaseHd();
 			break;
 		}
 		default: {
 			Pfx6.RLen = CFile->RecLen;
-			if (CFile->Typ == 'X') Pfx6.NRs = -CFile->NRecs;
+			if (CFile->Typ == INDEX) Pfx6.NRs = -CFile->NRecs;
 			else Pfx6.NRs = CFile->NRecs;
 			RdWrCache(false, CFile->Handle, not_cached, 0, 4, &Pfx6.NRs);
 			RdWrCache(false, CFile->Handle, not_cached, 4, 2, &Pfx6.RLen);
@@ -1055,7 +1054,7 @@ void WrPrefixes()
 	WrPrefix(); /*with CFile^ do begin*/
 	if (CFile->TF != nullptr && IsUpdHandle(CFile->TF->Handle))
 		CFile->TF->WrPrefix();
-	if (CFile->Typ == 'X' && CFile->XF->Handle != nullptr
+	if (CFile->Typ == INDEX && CFile->XF->Handle != nullptr
 		&& /*{ call from CopyDuplF }*/ (IsUpdHandle(CFile->XF->Handle) || IsUpdHandle(CFile->Handle)))
 		CFile->XF->WrPrefix();
 }

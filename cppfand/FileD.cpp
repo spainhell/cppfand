@@ -66,7 +66,7 @@ longint FileD::UsedFileSize()
 {
 	longint n;
 	n = longint(NRecs) * RecLen + FrstDispl;
-	if (Typ == 'D') n++;
+	if (Typ == DBF) n++;
 	return n;
 }
 
@@ -106,7 +106,7 @@ void FileD::Reset()
 	RecPtr = nullptr;
 	NRecs = 0;
 	WasWrRec = false; WasRdOnly = false; Eof = false;
-	Typ = '0' ;        // 8= Fand 8; 6= Fand 16; X= .X; 0= RDB; C= CAT 
+	Typ = UNKNOWN ;        // 8= Fand 8; 6= Fand 16; X= .X; 0= RDB; C= CAT 
 	Handle = nullptr;
 	IRec = 0;
 	FrstDispl = 0;
