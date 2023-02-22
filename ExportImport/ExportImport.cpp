@@ -755,10 +755,10 @@ bool PromptCodeRdb()
 		CFile = Chpt;
 		CRecPtr = GetRecSpace;
 		for (i = 1; i <= Chpt->NRecs; i++) {
-			ReadRec(CFile, i, CRecPtr);
+			CFile->ReadRec(i, CRecPtr);
 			AddLicNr(ChptOldTxt);
 			AddLicNr(ChptTxt);
-			WriteRec(CFile, i, CRecPtr);
+			CFile->WriteRec(i, CRecPtr);
 		}
 		ReleaseStore(CRecPtr);
 		CFile = cf;

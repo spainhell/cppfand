@@ -215,7 +215,7 @@ bool Link(AddD* AD, longint& N, char& Kind2)
 #endif
 			) {
 			IncNRecs(1);
-			WriteRec(CFile, 1, CRecPtr);
+			CFile->WriteRec(1, CRecPtr);
 		}
 		return result;
 	}
@@ -260,7 +260,7 @@ bool TransAdd(AddD* AD, FileD* FD, void* RP, void* CRnew, longint N, char Kind2,
 	}
 	else
 #endif
-		ReadRec(CFile, N, CRecPtr);
+		CFile->ReadRec(N, CRecPtr);
 	CRecPtr = CRnew;
 	auto result = RunAddUpdte1('d', CRold, Back, nullptr, nullptr);
 	ReleaseStore(CRold);
@@ -281,7 +281,7 @@ void WrUpdRec(AddD* AD, FileD* FD, void* RP, void* CRnew, longint N)
 	}
 	else
 #endif
-		WriteRec(CFile, N, CRecPtr);
+		CFile->WriteRec(N, CRecPtr);
 }
 
 bool Assign(AddD* AD)
@@ -325,7 +325,7 @@ bool Assign(AddD* AD)
 		break;
 	}
 	}
-	WriteRec(CFile, N2, CRecPtr);
+	CFile->WriteRec(N2, CRecPtr);
 	return true;
 }
 

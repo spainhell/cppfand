@@ -352,7 +352,7 @@ label1:
 			else if ((Kind == 2) && (NOfKI == 0)) NextIntvl();
 			else if (page_->GreaterPage > 0) SeekOnPage(page_->GreaterPage, 1);
 		label2:
-			ReadRec(CFile, RecNr, CRecPtr);
+			CFile->ReadRec(RecNr, CRecPtr);
 			if (DeletedFlag()) goto label1;
 		label3:
 			if (!RunBool(Bool)) goto label1;

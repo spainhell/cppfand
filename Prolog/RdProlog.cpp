@@ -2110,7 +2110,7 @@ TProgRoots* ReadProlog(WORD RecNr)
 	//if (RecNr != 0) {
 	//	CFile = Chpt; CRecPtr = cr;
 	//	StoreChptTxt(ChptOldTxt, ss, true);
-	//	WriteRec(CFile, RecNr, CRecPtr);
+	//	CFile->WriteRec(RecNr, CRecPtr);
 	//	ReleaseStore(p1);
 	//}
 	return Roots;

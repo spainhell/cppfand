@@ -160,7 +160,7 @@ void SetInpTT(RdbPos* RP, bool FromTxt)
 	CR = CRecPtr;
 	CFile = RP->R->FD;
 	CRecPtr = new BYTE[RP->R->FD->RecLen];
-	ReadRec(CFile, RP->IRec, CRecPtr);
+	CFile->ReadRec(RP->IRec, CRecPtr);
 	if (FromTxt) Pos = _T(ChptTxt, (unsigned char*)CRecPtr, CFile->Typ);
 	else Pos = _T(ChptOldTxt, (unsigned char*)CRecPtr, CFile->Typ);
 	SetInpTTPos(CFile, Pos, RP->R->Encrypted);
@@ -1056,7 +1056,7 @@ bool FindChpt(char Typ, const pstring& name, bool local, RdbPos* RP)
 	while (R != nullptr) {
 		CFile = R->FD;
 		for (WORD i = 1; i <= CFile->NRecs; i++) {
-			ReadRec(CFile, i, CRecPtr);
+			CFile->ReadRec(i, CRecPtr);
 			std::string chapterType = _StdS(ChptTyp);
 			std::string chapterName = _StdS(ChptName);
 			chapterName = TrailChar(chapterName, ' ');

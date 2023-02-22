@@ -180,7 +180,7 @@ long MoveH(long offset, int origin, FILE* handle)
 	}
 }
 
-long SeekH(FILE* handle, longint offset)
+long SeekH(FILE* handle, size_t offset)
 {
 	if (handle == nullptr) RunError(705);
 	return MoveH(offset, 0, handle);
@@ -972,7 +972,7 @@ longint SwapLong(longint N)
 	return 0;
 }
 
-void TruncH(FILE* handle, longint N)
+void TruncH(FILE* handle, size_t N)
 {
 	// cilem je zkratit delku souboru na N
 	if (handle == nullptr) return;
@@ -1060,55 +1060,56 @@ WORD GetFileAttr()
 	}
 }
 
-void RdWrCache(bool ReadOp, FILE* Handle, bool NotCached, longint Pos, size_t N, void* Buf)
+void RdWrCache(bool readOp, FILE* handle, bool not_cached, size_t position, size_t count, void* buf)
 {
 	Logging* log = Logging::getInstance();
 
-	bool Cached = !NotCached;
-	integer PgeIdx = 0, PgeRest = 0; WORD err = 0; longint PgeNo = 0;
+	bool Cached = !not_cached;
+	integer PgeIdx = 0, PgeRest = 0;
+	WORD err = 0; longint PgeNo = 0;
 	//CachePage* Z = nullptr;
 
-	if (Handle == nullptr) {
+	if (handle == nullptr) {
 		RunError(706);
 		return;
 	}
 
-	if (!ReadOp && (CFile != nullptr) && (CFile->UMode == RdOnly)) {
+	if (!readOp && (CFile != nullptr) && (CFile->UMode == RdOnly)) {
 		// snazime se zapsat do RdOnly souboru
 		// zapisem pouze do cache
 		// TODO: nutno doresit, co s tim dal ...
-		log->log(loglevel::ERR, "RdWrCache() trying to write to RdOnly file 0x%p!", Handle);
-		FileCache* c1 = cache.GetCache(Handle);
-		c1->Save(Pos, N, (unsigned char*)Buf);
+		log->log(loglevel::ERR, "RdWrCache() trying to write to RdOnly file 0x%p!", handle);
+		FileCache* c1 = cache.GetCache(handle);
+		c1->Save(position, count, (unsigned char*)buf);
 		return;
 	}
 
 	// writing to the file -> Set Update Flag
-	if (!ReadOp) {
-		SetUpdHandle(Handle);
+	if (!readOp) {
+		SetUpdHandle(handle);
 	}
 
 	if (Cached) {
-		//log->log(loglevel::DEBUG, "RdWrCache() 0x%p cached file operation.", Handle);
-		FileCache* c1 = cache.GetCache(Handle);
-		if (ReadOp) {
-			auto src = c1->Load(Pos);
+		//log->log(loglevel::DEBUG, "RdWrCache() 0x%p cached file operation.", handle);
+		FileCache* c1 = cache.GetCache(handle);
+		if (readOp) {
+			auto src = c1->Load(position);
 			if (src == nullptr) return;
-			memcpy(Buf, src, N);
+			memcpy(buf, src, count);
 		}
 		else {
-			c1->Save(Pos, N, (unsigned char*)Buf);
+			c1->Save(position, count, (unsigned char*)buf);
 		}
 	}
 	else {
 		// soubor nema cache, cteme (zapisujeme) primo z disku (na disk)
-		//log->log(loglevel::DEBUG, "RdWrCache() non cached file 0x%p operation.", Handle);
-		SeekH(Handle, Pos);
-		if (ReadOp) ReadH(Handle, N, Buf);
-		else WriteH(Handle, N, Buf);
+		//log->log(loglevel::DEBUG, "RdWrCache() non cached file 0x%p operation.", handle);
+		SeekH(handle, position);
+		if (readOp) ReadH(handle, count, buf);
+		else WriteH(handle, count, buf);
 		if (HandleError == 0) return;
 		err = HandleError;
-		SetCPathForH(Handle);
+		SetCPathForH(handle);
 		SetMsgPar(CPath);
 		RunError(700 + err);
 	}

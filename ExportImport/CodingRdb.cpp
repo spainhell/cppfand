@@ -23,7 +23,7 @@ void CodingRdb::CodeRdb(bool Rotate)
 	WORD irec = ChptTF->IRec;
 	bool compileAll = ChptTF->CompileAll;
 	for (int i = 1; i <= CFile->NRecs; i++) {
-		ReadRec(CFile, i, CRecPtr);
+		CFile->ReadRec(i, CRecPtr);
 		RunMsgN(i);
 		s = _ShortS(ChptTyp);
 		SetMsgPar(_ShortS(ChptName));
@@ -31,13 +31,13 @@ void CodingRdb::CodeRdb(bool Rotate)
 		else {
 			CodeF(Rotate, i, ChptTxt, s[0]);
 			CodeF(Rotate, i, ChptOldTxt, s[0]);
-			WriteRec(CFile, i, CRecPtr);
+			CFile->WriteRec(i, CRecPtr);
 		}
 	}
 	if (Rotate) {
 		int i = 1;
 		while (i <= CFile->NRecs) {
-			ReadRec(CFile, i, CRecPtr);
+			CFile->ReadRec(i, CRecPtr);
 			s = _ShortS(ChptTyp);
 			if (s[0] == ' ' || s[0] == 'I') DeleteRec(i);
 			else i++;
@@ -264,7 +264,7 @@ void CodingRdb::CompressCRdb()
 	Chpt->RecPtr = cr;
 	CFile = Chpt;
 	CRecPtr = E->NewRecPtr;
-	ReadRec(CFile, CRec(), CRecPtr);
+	CFile->ReadRec(CRec(), CRecPtr);
 
 	ChptTF->CompileAll = false;
 	ChptTF->CompileProc = false;

@@ -1672,7 +1672,7 @@ bool RunCommand(TCommand* COff/*PCommand*/)
 			DelTFld(c->FldD);
 			std::string save = SaveDb(c->DbPred, 0);
 			S_(c->FldD, save);
-			WriteRec(CFile, CFile->NRecs, CRecPtr);
+			CFile->WriteRec(CFile->NRecs, CRecPtr);
 		}
 		else {
 			md = NewLMode(CFile, RdMode);
@@ -1902,7 +1902,7 @@ void AssertFand(TPredicate* P, TCommand* C)
 		TestXFExist();
 		IncNRecs(1);
 		if (CFile->Typ == 'X') RecallRec(CFile->NRecs);
-		else WriteRec(CFile, CFile->NRecs, CRecPtr);
+		else CFile->WriteRec(CFile->NRecs, CRecPtr);
 	}
 	OldLMode(CFile, md);
 	ReleaseStore(CRecPtr);
@@ -2032,7 +2032,7 @@ label1:
 				CurrInst->NextBranch = nullptr;
 				goto label2;
 			}
-			ReadRec(CFile, RecNr, CRecPtr);
+			CFile->ReadRec(RecNr, CRecPtr);
 			(fs->IRec)++;
 		} while (DeletedFlag());
 		if (fs->IRec > CFile->NRecs) CurrInst->NextBranch = nullptr;
@@ -2043,7 +2043,7 @@ label1:
 			goto label2;
 		}
 		RecNr = k->NrToRecNr(fs->IRec);
-		ReadRec(CFile, RecNr, CRecPtr);
+		CFile->ReadRec(RecNr, CRecPtr);
 		fs->IRec++;
 		fs->Count--;
 		if ((fs->Count == 0) || (fs->IRec > k->NRecs())) CurrInst->NextBranch = nullptr;
@@ -2404,7 +2404,7 @@ void RunProlog(RdbPos* Pos, std::string PredName)
 		ChptLRdb = Pos->R;
 		CFile = ChptLRdb->FD;
 		CRecPtr = GetRecSpace();
-		ReadRec(CFile, Pos->IRec, CRecPtr);
+		CFile->ReadRec(Pos->IRec, CRecPtr);
 		longint hhh = _T(ChptTxt);
 		SetInpTTPos(hhh, ChptLRdb->Encrypted);
 		Roots = ReadProlog(Pos->IRec);

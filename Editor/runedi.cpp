@@ -656,7 +656,7 @@ longint LogRecNo(longint N)
 	longint result = 0;
 	if ((N <= 0) || (N > CFile->NRecs)) return result;
 	md = NewLMode(CFile, RdMode);
-	ReadRec(CFile, N, CRecPtr);
+	CFile->ReadRec(N, CRecPtr);
 	if (!DeletedFlag()) {
 		if (Subset) result = WK->RecNrToNr(N);
 		else if (HasIndex) {
@@ -706,7 +706,7 @@ void RdRec(longint N)
 #endif
 	{
 		md = NewLMode(CFile, RdMode);
-		ReadRec(CFile, AbsRecNr(N), CRecPtr);
+		CFile->ReadRec(AbsRecNr(N), CRecPtr);
 		OldLMode(CFile, md);
 	}
 }
@@ -770,7 +770,9 @@ bool ELockRec(EditD* E, longint N, bool IsNewRec, bool Subset)
 				result = false;
 				return result;
 			}
-			md = NewLMode(CFile, RdMode); ReadRec(CFile, N, CRecPtr); OldLMode(CFile, md);
+			md = NewLMode(CFile, RdMode);
+			CFile->ReadRec(N, CRecPtr);
+			OldLMode(CFile, md);
 			if (Subset && !
 				((NoCondCheck || RunBool(E->Cond) && CheckKeyIn(E)) && CheckOwner(E))) {
 				WrLLF10Msg(150); goto label1;
@@ -1530,7 +1532,7 @@ bool OpenEditWw()
 		md1 = NewLMode(CFile, RdMode);
 		n = E->OwnerRecNo;
 		if ((n == 0) || (n > CFile->NRecs)) RunErrorM(E->OldMd, 611);
-		ReadRec(CFile, n, CRecPtr);
+		CFile->ReadRec(n, CRecPtr);
 		OldLMode(CFile, md1);
 		CFile = E->FD;
 		CRecPtr = E->NewRecPtr;
@@ -1764,7 +1766,7 @@ void WrJournal(char Upd, void* RP, double Time)
 
 		LockMode md = NewLMode(CFile, CrMode);
 		IncNRecs(1);
-		WriteRec(CFile, CFile->NRecs, newData.get());
+		CFile->WriteRec(CFile->NRecs, newData.get());
 		OldLMode(CFile, md);
 		CFile = E->FD;
 		CRecPtr = E->NewRecPtr;
@@ -2001,7 +2003,7 @@ bool DeleteRecProc()
 		IRec = 1;
 		E->EdUpdated = true;
 		for (I = 1; I <= CFile->NRecs; I++) {
-			ReadRec(CFile, I, CRecPtr);
+			CFile->ReadRec(I, CRecPtr);
 			if (fail) goto label2;
 			if (Subset) /* !!! with WK^ do!!! */ {
 				if ((BaseRec > WK->NRecs()) || (WK->NrToRecNr(BaseRec) != J + 1)) goto label2;
@@ -2022,7 +2024,7 @@ bool DeleteRecProc()
 				if (Subset) BaseRec++;
 			label2:
 				J++;
-				WriteRec(CFile, J, CRecPtr);
+				CFile->WriteRec(J, CRecPtr);
 			}
 		}
 		DecNRecs(CFile->NRecs - J);
@@ -2361,7 +2363,7 @@ bool OldRecDiffers()
 	else
 #endif
 
-		ReadRec(CFile, E->LockedRec, CRecPtr);
+		CFile->ReadRec(E->LockedRec, CRecPtr);
 	if (CompArea(CRecPtr, E->OldRecPtr, CFile->RecLen) != _equ) {
 	label1:
 		DelAllDifTFlds(E->NewRecPtr, E->OldRecPtr);
@@ -2560,7 +2562,7 @@ bool WriteCRec(bool MayDispl, bool& Displ)
 				UpdMemberRef(E->OldRecPtr, CRecPtr);
 			}
 			CNew = UpdateIndexes();
-			WriteRec(CFile, E->LockedRec, CRecPtr);
+			CFile->WriteRec(E->LockedRec, CRecPtr);
 		}
 		if (CNew != CRec()) {
 			SetNewCRec(CNew, true);
@@ -2605,7 +2607,7 @@ bool WriteCRec(bool MayDispl, bool& Displ)
 			goto label1;
 		}
 		}
-		WriteRec(CFile, E->LockedRec, CRecPtr);
+		CFile->WriteRec(E->LockedRec, CRecPtr);
 	}
 	time = Today() + CurrTime();
 	if (IsNewRec) WrJournal('+', CRecPtr, time);
@@ -3170,7 +3172,7 @@ bool GetChpt(pstring Heslo, longint& NN)
 	pstring s(12);
 	auto result = true;
 	for (longint j = 1; j <= CFile->NRecs; j++) {
-		ReadRec(CFile, j, CRecPtr);
+		CFile->ReadRec(j, CRecPtr);
 		if (IsCurrChpt()) {
 			s = OldTrailChar(' ', _ShortS(ChptName));
 			integer i = s.first('.');
@@ -3509,7 +3511,7 @@ void PromptSelect()
 	std::string Txt;
 	if (Select) Txt = E->BoolTxt;
 	else Txt = "";
-	if (IsCurrChpt()) ReleaseFDLDAfterChpt();
+	if (IsCurrChpt()) ReleaseFilesAndLinksAfterChapter();
 	ReleaseStore(E->AfterE);
 	ww.PromptFilter(Txt, &E->Bool, &E->BoolTxt);
 	if (E->Bool == nullptr) Select = false; else Select = true;
@@ -3521,23 +3523,20 @@ void PromptSelect()
 void SwitchRecs(integer Delta)
 {
 	LockMode md; longint n1, n2; void* p1; void* p2; XString x1, x2;
-	//XKey* k;
 #ifdef FandSQL
 	if (CFile->IsSQLFile) return;
 #endif
 	if (NoCreate && NoDelete || WasWK) return;
 	if (!TryLMode(CFile, WrMode, md, 1)) return;
 	p1 = GetRecSpace(); p2 = GetRecSpace();
-	CRecPtr = p1; n1 = AbsRecNr(CRec()); ReadRec(CFile, n1, CRecPtr);
+	CRecPtr = p1; n1 = AbsRecNr(CRec()); CFile->ReadRec(n1, CRecPtr);
 	if (HasIndex) x1.PackKF(VK->KFlds);
-	CRecPtr = p2; n2 = AbsRecNr(CRec() + Delta); ReadRec(CFile, n2, CRecPtr);
+	CRecPtr = p2; n2 = AbsRecNr(CRec() + Delta); CFile->ReadRec(n2, CRecPtr);
 	if (HasIndex) { x2.PackKF(VK->KFlds); if (x1.S != x2.S) goto label1; }
-	WriteRec(CFile, n1, CRecPtr);
+	CFile->WriteRec(n1, CRecPtr);
 	CRecPtr = p1;
-	WriteRec(CFile, n2, CRecPtr);
+	CFile->WriteRec(n2, CRecPtr);
 	if (HasIndex) {
-		//k = CFile->Keys;
-		//while (k != nullptr) {
 		for (auto& k : CFile->Keys) {
 			if (k != VK) {
 				CRecPtr = p1; k->Delete(n1);
@@ -3545,7 +3544,6 @@ void SwitchRecs(integer Delta)
 				CRecPtr = p1; k->Insert(n2, true);
 				CRecPtr = p2; k->Insert(n1, true);
 			}
-			//k = k->Chain;
 		}
 	}
 	SetNewCRec(CRec() + Delta, true);

@@ -158,7 +158,7 @@ void AssignField(Instr_assign* PD)
 		goto label1;
 	}
 	CRecPtr = GetRecSpace();
-	ReadRec(CFile, N, CRecPtr);
+	CFile->ReadRec(N, CRecPtr);
 	if (PD->Indexarg && !DeletedFlag()) {
 		msg = 627;
 	label1:
@@ -166,7 +166,7 @@ void AssignField(Instr_assign* PD)
 		RunErrorM(md, msg);
 	}
 	AssgnFrml(F, PD->Frml, true, PD->Add);
-	WriteRec(CFile, N, CRecPtr);
+	CFile->WriteRec(N, CRecPtr);
 	ReleaseStore(CRecPtr);
 	OldLMode(CFile, md);
 }
@@ -316,7 +316,7 @@ void DisplayProc(RdbD* R, WORD IRec)
 	}
 	else {
 		CFile = R->FD; CRecPtr = Chpt->RecPtr;
-		ReadRec(CFile, IRec, CRecPtr);
+		CFile->ReadRec(IRec, CRecPtr);
 		LongStr* S = CFile->TF->Read(1, _T(ChptTxt));
 		if (R->Encrypted) CodingLongStr(S);
 		str = std::string(S->A, S->LL);
@@ -391,7 +391,7 @@ void IndexfileProc(FileD* FD, bool Compress)
 		for (longint I = 1; I < FD->NRecs; I++)
 		{
 			CFile = FD;
-			ReadRec(CFile, I, CRecPtr);
+			CFile->ReadRec(I, CRecPtr);
 			if (!DeletedFlag())
 			{
 				CFile = FD2;
@@ -539,7 +539,7 @@ void DeleteRecProc(Instr_recs* PD)
 			goto label1;
 		}
 	}
-	ReadRec(CFile, n, CRecPtr);
+	CFile->ReadRec(n, CRecPtr);
 	if (PD->AdUpd && !DeletedFlag()) {
 		LastExitCode = (!RunAddUpdte('-', nullptr, nullptr));
 	}
@@ -570,7 +570,7 @@ void UpdRec(void* CR, longint N, bool AdUpd)
 {
 	void* cr2 = GetRecSpace();
 	CRecPtr = cr2;
-	ReadRec(CFile, N, CRecPtr);
+	CFile->ReadRec(N, CRecPtr);
 	bool del = DeletedFlag();
 	CRecPtr = CR;
 	if (AdUpd) {
@@ -585,7 +585,7 @@ void UpdRec(void* CR, longint N, bool AdUpd)
 		OverWrXRec(N, cr2, CR);
 	}
 	else {
-		WriteRec(CFile, N, CRecPtr);
+		CFile->WriteRec(N, CRecPtr);
 	}
 	if (!del) {
 		DelAllDifTFlds(cr2, nullptr);
@@ -668,7 +668,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 	}
 	if (IsRead) {
 		CRecPtr = cr;
-		ReadRec(CFile, N, CRecPtr);
+		CFile->ReadRec(N, CRecPtr);
 		CRecPtr = PD->LV->RecPtr;
 		DelTFlds();
 		CopyRecWithT(cr, PD->LV->RecPtr);
@@ -680,7 +680,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 			if (CFile->Typ == INDEX) {
 				RecallRec(N);
 			}
-			else WriteRec(CFile, N, CRecPtr);
+			else CFile->WriteRec(N, CRecPtr);
 			if (ad) LastExitCode = !RunAddUpdte('+', nullptr, nullptr);
 		}
 		else UpdRec(cr, N, ad);
@@ -735,7 +735,7 @@ void ForAllProc(Instr_forall* PD)
 		case 'F': {
 			md = NewLMode(CFile, RdMode);
 			CRecPtr = GetRecSpace();
-			ReadRec(CFile, RunInt((FrmlElem*)PD->CLV), CRecPtr);
+			CFile->ReadRec(RunInt((FrmlElem*)PD->CLV), CRecPtr);
 			xx.PackKF(KF);
 			ReleaseStore(p);
 			OldLMode(CFile, md);
@@ -1093,7 +1093,7 @@ void RecallRecProc(Instr_recs* PD)
 	CRecPtr = GetRecSpace();
 	LockMode md = NewLMode(CFile, CrMode);
 	if ((N > 0) && (N <= CFile->NRecs)) {
-		ReadRec(CFile, N, CRecPtr);
+		CFile->ReadRec(N, CRecPtr);
 		if (DeletedFlag()) {
 			RecallRec(N);
 			if (PD->AdUpd) {

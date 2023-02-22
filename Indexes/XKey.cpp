@@ -614,7 +614,7 @@ bool SearchKey(XString& XX, XKey* Key, longint& NN)
 			L = N + 1;
 		}
 		N = (L + R) / 2;
-		ReadRec(CFile, N, CRecPtr);
+		CFile->ReadRec(N, CRecPtr);
 		x.PackKF(KF);
 		Result = CompStr(x.S, XX.S);
 	} while (!((L >= R) || (Result == _equ)));
@@ -624,17 +624,15 @@ bool SearchKey(XString& XX, XKey* Key, longint& NN)
 		if (Key->Duplic && (Result == _equ)) {
 			while (N > 1) {
 				N--;
-				ReadRec(CFile, N, CRecPtr);
+				CFile->ReadRec(N, CRecPtr);
 				x.PackKF(KF);
 				if (CompStr(x.S, XX.S) != _equ) {
 					N++;
-					ReadRec(CFile, N, CRecPtr);
-					//goto label1;
+					CFile->ReadRec(N, CRecPtr);
 					break;
 				}
 			}
 		}
-		//label1:
 		NN = N;
 	}
 	if ((Result == _equ) || Key->IntervalTest && (Result == _gt))
@@ -672,7 +670,7 @@ label1:
 		K1->Delete(RecNr);
 	}
 	SetDeletedFlag();
-	WriteRec(CFile, RecNr, CRecPtr);
+	CFile->WriteRec(RecNr, CRecPtr);
 
 	if (CFile->XF->FirstDupl) {
 		SetMsgPar(CFile->Name);
@@ -686,11 +684,8 @@ void DeleteAllIndexes(longint RecNr)
 	Logging* log = Logging::getInstance();
 	log->log(loglevel::DEBUG, "DeleteAllIndexes(%i)", RecNr);
 
-	//XKey* K = CFile->Keys;
-	//while (K != nullptr) {
 	for (auto& K : CFile->Keys) {
 		K->Delete(RecNr);
-		//K = K->Chain;
 	}
 }
 
@@ -702,7 +697,7 @@ void DeleteXRec(longint RecNr, bool DelT)
 	DeleteAllIndexes(RecNr);
 	if (DelT) DelAllDifTFlds(CRecPtr, nullptr);
 	SetDeletedFlag();
-	WriteRec(CFile, RecNr, CRecPtr);
+	CFile->WriteRec(RecNr, CRecPtr);
 	CFile->XF->NRecs--;
 }
 
@@ -716,8 +711,7 @@ void OverWrXRec(longint RecNr, void* P2, void* P)
 		return;
 	}
 	TestXFExist();
-	//XKey* K = CFile->Keys;
-	//while (K != nullptr) {
+
 	for (auto& K : CFile->Keys) {
 		CRecPtr = P;
 		x.PackKF(K->KFlds);
@@ -728,8 +722,8 @@ void OverWrXRec(longint RecNr, void* P2, void* P)
 			CRecPtr = P;
 			K->Insert(RecNr, false);
 		}
-		//K = K->Chain;
 	}
+
 	CRecPtr = P;
-	WriteRec(CFile, RecNr, CRecPtr);
+	CFile->WriteRec(RecNr, CRecPtr);
 }

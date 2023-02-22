@@ -162,7 +162,7 @@ void GetIndexSort(Instr_getindex* PD)
 			CFile = ld->ToFD;
 			md = NewLMode(CFile, RdMode);
 			CRecPtr = GetRecSpace();
-			ReadRec(CFile, RunInt((FrmlElem*)PD->giLV2), CRecPtr);
+			CFile->ReadRec(RunInt((FrmlElem*)PD->giLV2), CRecPtr);
 			x.PackKF(kf);
 			ReleaseStore(CRecPtr);
 			OldLMode(CFile, md);
@@ -188,7 +188,7 @@ void GetIndexSort(Instr_getindex* PD)
 		CRecPtr = GetRecSpace();
 		nr = RunInt(PD->giCond);
 		if ((nr > 0) && (nr <= CFile->NRecs)) {
-			ReadRec(CFile, nr, CRecPtr);
+			CFile->ReadRec(nr, CRecPtr);
 			if (PD->giMode == '+') {
 				if (!DeletedFlag()) {
 					x.PackKF(k->KFlds);

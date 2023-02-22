@@ -5,7 +5,7 @@
 #include "wwmix.h"
 
 bool IsCurrChpt();
-void ReleaseFDLDAfterChpt();
+void ReleaseFilesAndLinksAfterChapter();
 bool RdFDSegment(WORD FromI, longint Pos);
 bool ChptDel();
 WORD ChptWriteCRec(); /* 0-O.K., 1-fail, 2-fail && undo*/

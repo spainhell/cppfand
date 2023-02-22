@@ -12,13 +12,13 @@ class AddD;
 
 enum FileType
 {
-	FAND8 = '8',
-	FAND16 = '6',
-	INDEX = 'X',
-	RDB = '0',
-	CAT = 'C',
-	DBF = 'D',
-	UNKNOWN = -1
+	UNKNOWN,
+	FAND8,
+	FAND16,
+	INDEX,
+	RDB,
+	CAT,
+	DBF
 };
 
 class FileD : public Chained<FileD>
@@ -45,20 +45,19 @@ public:
 	std::vector<FieldDescr*> FldD;
 	bool IsParFile = false, IsJournal = false, IsHlpFile = false;
 	bool typSQLFile = false, IsSQLFile = false, IsDynFile = false;
-	FileUseMode UMode = FileUseMode::Closed;
+	FileUseMode UMode = Closed;
 	LockMode LMode = NullMode, ExLMode = NullMode, TaLMode = NullMode;
 	StringListEl* ViewNames = nullptr;  //after each string BYTE string with user codes 
 	XFile* XF = nullptr;
-	std::vector <XKey*> Keys;
+	std::vector<XKey*> Keys;
 	std::vector<AddD*> Add;
-	uintptr_t nLDs = 0, LiOfs = 0;
 	longint UsedFileSize();
 	bool IsShared();
 	bool NotCached();
 	bool Cached();
 	WORD GetNrKeys();
 	void Reset();
-};
 
-void ReadRec(FileD* file, longint N, void* record);
-void WriteRec(FileD* file, longint N, void* record);
+	void ReadRec(size_t rec_nr, void* record);
+	void WriteRec(size_t rec_nr, void* record);
+};

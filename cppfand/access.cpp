@@ -479,7 +479,7 @@ void RecallRec(longint RecNr)
 		//K = K->Chain;
 	}
 	ClearDeletedFlag();
-	WriteRec(CFile, RecNr, CRecPtr);
+	CFile->WriteRec(RecNr, CRecPtr);
 }
 
 bool IsNullValue(void* p, WORD l)
@@ -618,20 +618,20 @@ void CreateRec(longint N)
 	void* cr = CRecPtr;
 	CRecPtr = GetRecSpace();
 	for (longint i = CFile->NRecs - 1; i >= N; i--) {
-		ReadRec(CFile, i, CRecPtr);
-		WriteRec(CFile, i + 1, CRecPtr);
+		CFile->ReadRec(i, CRecPtr);
+		CFile->WriteRec(i + 1, CRecPtr);
 	}
 	ReleaseStore(CRecPtr);
 	CRecPtr = cr;
-	WriteRec(CFile, N, CRecPtr);
+	CFile->WriteRec(N, CRecPtr);
 }
 
 void DeleteRec(longint N)
 {
 	DelAllDifTFlds(CRecPtr, nullptr);
 	for (longint i = N; i < CFile->NRecs - 1; i++) {
-		ReadRec(CFile, i + 1, CRecPtr);
-		WriteRec(CFile, i, CRecPtr);
+		CFile->ReadRec(i + 1, CRecPtr);
+		CFile->WriteRec(i, CRecPtr);
 	}
 	DecNRecs(1);
 }
@@ -665,7 +665,7 @@ bool LinkLastRec(FileD* FD, longint& N, bool WithT)
 			result = false;
 			N = 1;
 		}
-		else ReadRec(CFile, N, CRecPtr);
+		else CFile->ReadRec(N, CRecPtr);
 	}
 	OldLMode(CFile, md);
 	return result;
@@ -691,10 +691,10 @@ void AsgnParFldFrml(FileD* FD, FieldDescr* F, FrmlElem* Z, bool Ad)
 		md = NewLMode(CFile, WrMode);
 		if (!LinkLastRec(CFile, N, true)) {
 			IncNRecs(1);
-			WriteRec(CFile, N, CRecPtr);
+			CFile->WriteRec(N, CRecPtr);
 		}
 		AssgnFrml(F, Z, true, Ad);
-		WriteRec(CFile, N, CRecPtr);
+		CFile->WriteRec(N, CRecPtr);
 		OldLMode(CFile, md);
 	}
 	ReleaseStore(CRecPtr);
@@ -1125,7 +1125,7 @@ bool LinkUpw(LinkD* LD, longint& N, bool WithT)
 	}
 
 	if (lu) {
-		ReadRec(CFile, N, CRecPtr);
+		CFile->ReadRec(N, CRecPtr);
 	}
 	else {
 		bool b = false;
@@ -1205,7 +1205,7 @@ void AssignNRecs(bool Add, longint N)
 	SetDeletedFlag();
 	IncNRecs(N - OldNRecs);
 	for (longint i = OldNRecs + 1; i < N; i++) {
-		WriteRec(CFile, i, CRecPtr);
+		CFile->WriteRec(i, CRecPtr);
 	}
 	ReleaseStore(CRecPtr);
 label1:

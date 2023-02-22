@@ -484,12 +484,9 @@ void CloseFile()
 }
 
 
-void CloseFAfter(FileD* FD)
+void CloseFilesAfter(FileD* FD)
 {
 	CFile = FD;
-
-	// timto preskocime aktualizaci RDB a TTT
-	//CFile = (FileD*)CFile->pChain;
 
 	while (CFile != nullptr) {
 		CloseFile();
@@ -588,7 +585,7 @@ label3:
 void ReleaseDrive(WORD D)
 {
 	pstring Drive(1);
-	if (MountedVol[D] == "") return;
+	if (MountedVol[D].empty()) return;
 	if (D == FloppyDrives) Drive = spec.CPMdrive;
 	else Drive = char(D + '@');
 	if (ActiveRdbOnDrive(D)) {
@@ -648,7 +645,7 @@ WORD GetCatIRec(pstring Name, bool MultiLevel)
 label1:
 	for (i = 1; i <= CatFD->NRecs; i++)
 	{
-		ReadRec(CFile, i, CRecPtr);
+		CFile->ReadRec(i, CRecPtr);
 		if (EquUpCase(OldTrailChar(' ', _ShortS(CatRdbName)), R->FD->Name) &&
 			EquUpCase(OldTrailChar(' ', _ShortS(CatFileName)), Name))
 		{
@@ -683,24 +680,24 @@ void TurnCat(WORD Frst, WORD N, integer I)
 	CRecPtr = q; last = Frst + N - 1;
 	if (I > 0)
 		while (I > 0) {
-			ReadRec(CFile, Frst, CRecPtr); CRecPtr = p;
+			CFile->ReadRec(Frst, CRecPtr); CRecPtr = p;
 			for (j = 1; j < N - 1; j++) {
-				ReadRec(CFile, Frst + j, CRecPtr);
-				WriteRec(CFile, Frst + j - 1, CRecPtr);
+				CFile->ReadRec(Frst + j, CRecPtr);
+				CFile->WriteRec(Frst + j - 1, CRecPtr);
 			}
 			CRecPtr = q;
-			WriteRec(CFile, last, CRecPtr);
+			CFile->WriteRec(last, CRecPtr);
 			I--;
 		}
 	else
 		while (I < 0) {
-			ReadRec(CFile, last, CRecPtr); CRecPtr = p;
+			CFile->ReadRec(last, CRecPtr); CRecPtr = p;
 			for (j = 1; j < N - 1; j++) {
-				ReadRec(CFile, last - j, CRecPtr);
-				WriteRec(CFile, last - j + 1, CRecPtr);
+				CFile->ReadRec(last - j, CRecPtr);
+				CFile->WriteRec(last - j + 1, CRecPtr);
 			}
 			CRecPtr = q;
-			WriteRec(CFile, Frst, CRecPtr);
+			CFile->WriteRec(Frst, CRecPtr);
 			I++;
 		}
 	ReleaseStore(p);
@@ -712,24 +709,24 @@ std::string RdCatField(WORD CatIRec, FieldDescr* CatF)
 	void* CR = CRecPtr;
 	CFile = CatFD;
 	CRecPtr = GetRecSpace();
-	ReadRec(CFile, CatIRec, CRecPtr);
-	auto stdS = _StdS(CatF);
-	auto result = TrailChar(stdS, ' ');
+	CFile->ReadRec(CatIRec, CRecPtr);
+	std::string stdS = _StdS(CatF);
+	std::string result = TrailChar(stdS, ' ');
 	ReleaseStore(CRecPtr);
 	CFile = CF;
 	CRecPtr = CR;
 	return result;
 }
 
-void WrCatField(WORD CatIRec, FieldDescr* CatF, pstring Txt)
+void WrCatField(WORD CatIRec, FieldDescr* CatF, std::string Txt)
 {
 	FileD* CF = CFile;
 	void* CR = CRecPtr;
 	CFile = CatFD;
 	CRecPtr = GetRecSpace();
-	ReadRec(CFile, CatIRec, CRecPtr);
+	CFile->ReadRec(CatIRec, CRecPtr);
 	S_(CatF, Txt);
-	WriteRec(CFile, CatIRec, CRecPtr);
+	CFile->WriteRec(CatIRec, CRecPtr);
 	ReleaseStore(CRecPtr);
 	CFile = CF;
 	CRecPtr = CR;
@@ -738,9 +735,9 @@ void WrCatField(WORD CatIRec, FieldDescr* CatF, pstring Txt)
 void WrCatField(FileD* catFD, WORD CatIRec, FieldDescr* CatF, const std::string& Txt)
 {
 	BYTE* record = new BYTE[catFD->RecLen];
-	ReadRec(catFD, CatIRec, record);
+	catFD->ReadRec(CatIRec, record);
 	S_(CatF, Txt, record);
-	WriteRec(catFD, CatIRec, record);
+	catFD->WriteRec(CatIRec, record);
 	delete[] record;
 }
 

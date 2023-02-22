@@ -78,13 +78,13 @@ FileType ExtToTyp(std::string Ext)
 	else return UNKNOWN;
 }
 
-void ReleaseFDLDAfterChpt()
+void ReleaseFilesAndLinksAfterChapter()
 {
 	FileD* FD = nullptr;
 	RdbD* R = nullptr;
 
 	if (Chpt->pChain != nullptr) {
-		CloseFAfter(Chpt->pChain);
+		CloseFilesAfter(Chpt->pChain);
 	}
 	Chpt->pChain = nullptr;
 	LinkDRoot = CRdb->OldLDRoot;
@@ -166,7 +166,7 @@ bool ChptDelFor(RdbRecVars* X)
 {
 	bool result = true;
 	SetUpdHandle(ChptTF->Handle);
-	ReleaseFDLDAfterChpt();
+	ReleaseFilesAndLinksAfterChapter();
 	switch (X->Typ) {
 	case ' ': {
 		result = true;
@@ -239,7 +239,7 @@ bool IsDuplFileName(std::string name)
 	CRecPtr = GetRecSpace();
 	for (WORD I = 1; I <= Chpt->NRecs; I++)
 		if (I != CRec()) {
-			ReadRec(CFile, I, CRecPtr);
+			CFile->ReadRec(I, CRecPtr);
 			if (_ShortS(ChptTyp) == 'F') {
 				GetSplitChptName(n, e);
 				if (EquUpCase(name, n)) goto label1;
@@ -301,24 +301,24 @@ WORD ChptWriteCRec()
 	if ((New.Typ == 'D' || New.Typ == 'I' || New.Typ == 'U')
 		|| !TestIsNewRec()
 		&& (Old.Typ == 'D' || Old.Typ == 'I' || Old.Typ == 'U')) {
-		ReleaseFDLDAfterChpt(); SetCompileAll();
+		ReleaseFilesAndLinksAfterChapter(); SetCompileAll();
 	}
-	if (TestIsNewRec()) { ReleaseFDLDAfterChpt(); goto label2; }
+	if (TestIsNewRec()) { ReleaseFilesAndLinksAfterChapter(); goto label2; }
 	if (New.Typ != Old.Typ) {
 	label1:
 		if (!ChptDelFor(&Old)) return result; T_(ChptOldTxt, 0);
-		if (New.Typ == 'F') ReleaseFDLDAfterChpt();
+		if (New.Typ == 'F') ReleaseFilesAndLinksAfterChapter();
 		goto label2;
 	}
 	if (New.Typ == ' ' || New.Typ == 'I') goto label2;
 	if (New.Typ != 'F') {
 		if (New.Name != Old.Name)
-			if (New.Typ == 'E' || New.Typ == 'P') { ReleaseFDLDAfterChpt(); SetCompileAll(); }
+			if (New.Typ == 'E' || New.Typ == 'P') { ReleaseFilesAndLinksAfterChapter(); SetCompileAll(); }
 			else ChptTF->CompileProc = true;
-		if ((New.Typ == 'R') && (New.Txt == 0)) ReleaseFDLDAfterChpt();
+		if ((New.Typ == 'R') && (New.Txt == 0)) ReleaseFilesAndLinksAfterChapter();
 		goto label2;
 	}
-	ReleaseFDLDAfterChpt(); SetCompileAll();
+	ReleaseFilesAndLinksAfterChapter(); SetCompileAll();
 	if ((New.OldTxt != 0) && (New.Name != Old.Name)) {
 		if (Old.CatIRec != 0) { WrCatField(Old.CatIRec, CatFileName, New.Name); }
 		else { if (!Old.isSQL) RenameWithOldExt(New, Old); }
@@ -350,14 +350,14 @@ WORD FindHelpRecNr(FileD* FD, std::string& txt)
 	NmF = CFile->FldD.front();
 	TxtF = (FieldDescr*)NmF->pChain;
 	for (i = 1; i < CFile->NRecs; i++) {
-		ReadRec(CFile, i, CRecPtr);
+		CFile->ReadRec(i, CRecPtr);
 		auto NmFtext = _StdS(NmF);
 		std::string nm = TrailChar(NmFtext, ' ');
 		ConvToNoDiakr(&nm[0], nm.length(), fonts.VFont);
 		if (EqualsMask(txt, nm)) {
 			while ((i < CFile->NRecs) && (_T(TxtF) == 0)) {
 				i++;
-				ReadRec(CFile, i, CRecPtr);
+				CFile->ReadRec(i, CRecPtr);
 			}
 			result = i;
 			goto label2;
@@ -603,7 +603,7 @@ void CloseChpt()
 	SaveFiles();
 	bool del = Chpt->NRecs == 0;
 	std::string d = CRdb->RdbDir;
-	CloseFAfter(FileDRoot);
+	CloseFilesAfter(FileDRoot);
 	LinkDRoot = CRdb->OldLDRoot;
 	FuncDRoot = CRdb->OldFCRoot;
 	void* p = CRdb;
@@ -839,7 +839,7 @@ bool CompRunChptRec(WORD CC)
 	RdEStatus();
 	CRdb = RP.R;
 	PrevCompInp.clear();
-	ReadRec(CFile, CRec(), CRecPtr);
+	CFile->ReadRec(CRec(), CRecPtr);
 	if (IsCompileErr) {
 		result = false;
 	}
@@ -849,7 +849,7 @@ bool CompRunChptRec(WORD CC)
 			return result;
 		}
 		B_(ChptVerif, false);
-		WriteRec(CFile, CRec(), CRecPtr);
+		CFile->WriteRec(CRec(), CRecPtr);
 		if (CC == __CTRL_F8) {
 			Diagnostics(MaxHp, Free, FD);
 		}
@@ -1142,10 +1142,12 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 	char Typ = '\0';
 	std::string Name, dir, nm, ext;
 	bool Verif = false, FDCompiled = false, Encryp = false;
-	char Mode = '\0'; RdbPos RP;
-	void* p = nullptr; void* p1 = nullptr; void* p2 = nullptr;
+	char Mode = '\0';
+	RdbPos RP;
+	void* p = nullptr;
+	void* p1 = nullptr;
+	void* p2 = nullptr;
 	WORD lmsg = 0;
-	//LinkD* ld = nullptr;
 	std::string RprtTxt;
 	bool top = false;
 	FileD* lstFD = nullptr;
@@ -1167,7 +1169,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 		CRecPtr = Chpt->RecPtr;
 		Encryp = CRdb->Encrypted;
 		for (I = 1; I <= Chpt->NRecs; I++) {
-			ReadRec(CFile, I, CRecPtr);
+			CFile->ReadRec(I, CRecPtr);
 			RP.IRec = I;
 			Verif = _B(ChptVerif);
 			STyp = _ShortS(ChptTyp);
@@ -1188,10 +1190,10 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 					printf("%*s%*s", 4, STyp.c_str(), 14, _ShortS(ChptName).c_str());
 					if (!(Typ == ' ' || Typ == 'D' || Typ == 'U')) { /* dupclicate name checking */
 						for (J = 1; J < I - 1; J++) {
-							ReadRec(CFile, J, CRecPtr);
+							CFile->ReadRec(J, CRecPtr);
 							if ((STyp == _ShortS(ChptTyp)) && EquUpCase(Name, OldTrailChar(' ', _ShortS(ChptName)))) GoCompileErr(I, 649);
 						}
-						ReadRec(CFile, I, CRecPtr);
+						CFile->ReadRec(I, CRecPtr);
 					}
 				}
 				switch (Typ) {
@@ -1207,7 +1209,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 							OldTxt = 0;
 							MakeDbfDcl(nm);
 							Txt = _T(ChptTxt);
-							WriteRec(CFile, I, CRecPtr);
+							CFile->WriteRec(I, CRecPtr);
 						}
 					}
 #ifndef FandSQL
@@ -1249,7 +1251,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 						CFile = Chpt;
 						if (RprtTxt.empty()) GoCompileErr(I, 1145);
 						S_(ChptTxt, RprtTxt);
-						WriteRec(CFile, I, CRecPtr);
+						CFile->WriteRec(I, CRecPtr);
 					}
 					else {
 						SetInpTTPos(Txt, Encryp);
@@ -1309,9 +1311,9 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 			}
 			ReleaseBoth(p1, p2); CFile = Chpt; CRecPtr = Chpt->RecPtr;
 			if (Verif) {
-				ReadRec(CFile, I, CRecPtr);
+				CFile->ReadRec(I, CRecPtr);
 				B_(ChptVerif, false);
-				WriteRec(CFile, I, CRecPtr);
+				CFile->WriteRec(I, CRecPtr);
 			}
 		}
 		if (ChptTF->CompileAll || ChptTF->CompileProc) {
@@ -1321,7 +1323,10 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 		}
 		CompileFD = false;
 		result = true;
-		if (!Run) { CRecPtr = E->NewRecPtr; ReadRec(CFile, CRec(), CRecPtr); }
+		if (!Run) {
+			CRecPtr = E->NewRecPtr;
+			CFile->ReadRec(CRec(), CRecPtr);
+		}
 		CompileMsgOff(Buf, w);
 #ifdef FandSQL
 		if (top && (Strm1 != nullptr)) Strm1->Login(UserName, UserPassWORD);
@@ -1329,11 +1334,11 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 		log->log(loglevel::DEBUG, "finish CompileRdb()");
 	}
 	catch (std::exception& e) {
-		// TODO: log error
+		log->log(loglevel::EXCEPTION, "CompileRdb() exception: ", e.what());
 		result = false;
 	}
 	CompileMsgOff(Buf, w);
-	//ReleaseFDLDAfterChpt();
+	//ReleaseFilesAndLinksAfterChapter();
 	//PrevCompInp.clear();
 	//ReleaseBoth(p, p2);
 	//E = OldE; EditDRoot = E;
@@ -1360,7 +1365,7 @@ void GotoErrPos(WORD& Brk)
 	CFld = E->LastFld;
 	SetNewCRec(InpRdbPos.IRec, true);
 	R_(ChptTxtPos, integer(CurrPos));
-	WriteRec(CFile, CRec(), CRecPtr);
+	CFile->WriteRec(CRec(), CRecPtr);
 	EditFreeTxt(ChptTxt, s, true, Brk);
 }
 
@@ -1424,7 +1429,7 @@ bool EditExecRdb(std::string Nm, std::string proc_name, Instr_proc* proc_call, w
 #ifndef FandRunV
 		if ((ChptTF->LicenseNr != 0) || CRdb->Encrypted
 			|| (Chpt->UMode == RdOnly)) goto label9;
-		ReleaseFDLDAfterChpt();
+		ReleaseFilesAndLinksAfterChapter();
 		ReleaseStore(p);
 	}
 	else if (!top) UserW = PushW(1, 1, TxtCols, TxtRows);
@@ -1469,7 +1474,7 @@ label2:
 	cc = Event.Pressed.KeyCombination();
 	SaveFiles();
 	if ((cc == __CTRL_F10) || ChptTF->CompileAll || CompileFD) {
-		ReleaseFDLDAfterChpt();
+		ReleaseFilesAndLinksAfterChapter();
 		SetSelectFalse();
 		E->Bool = nullptr;
 		ReleaseStore(E->AfterE);
@@ -1559,7 +1564,7 @@ void UpdateUTxt()
 	if (CFile->NRecs == 0) {
 		WrLLF10Msg(9); return;
 	}
-	ReadRec(CFile, 1, CRecPtr);
+	CFile->ReadRec(1, CRecPtr);
 	if (_ShortS(ChptTyp) != 'U') {
 		WrLLF10Msg(9); return;
 	}
@@ -1589,7 +1594,7 @@ void UpdateUTxt()
 			b = false;
 			if (Upd) {
 				StoreChptTxt(ChptTxt, S, true);
-				WriteRec(CFile, 1, CRecPtr);
+				CFile->WriteRec(1, CRecPtr);
 			}
 			break;
 		}

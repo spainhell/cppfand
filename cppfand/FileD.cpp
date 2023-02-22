@@ -1,34 +1,9 @@
 #include "FileD.h"
 #include "access.h"
-#include "AddD.h"
 #include "GlobalVariables.h"
-#include "KeyFldD.h"
 #include "XFile.h"
 #include "../Indexes/XKey.h"
 #include "../Logging/Logging.h"
-
-/// <summary>
-/// Vycte zaznam z datoveho souboru (.000)
-/// </summary>
-/// <param name="file">ukazatel na soubor</param>
-/// <param name="N">kolikaty zaznam (1 .. N)</param>
-/// <param name="record">ukazatel na buffer</param>
-void ReadRec(FileD* file, longint N, void* record)
-{
-	Logging* log = Logging::getInstance();
-	//log->log(loglevel::DEBUG, "ReadRec(), file 0x%p, RecNr %i", file, N);
-	RdWrCache(true, file->Handle, file->NotCached(),
-		(N - 1) * file->RecLen + file->FrstDispl, file->RecLen, record);
-}
-
-void WriteRec(FileD* file, longint N, void* record)
-{
-	Logging* log = Logging::getInstance();
-	//log->log(loglevel::DEBUG, "WriteRec(%i), CFile 0x%p", N, file->Handle);
-	RdWrCache(false, file->Handle, file->NotCached(),
-		(N - 1) * file->RecLen + file->FrstDispl, file->RecLen, record);
-	file->WasWrRec = true;
-}
 
 FileD::FileD()
 {
@@ -58,14 +33,11 @@ FileD::FileD(const FileD& orig)
 		}
 	}
 	Add = orig.Add;
-	nLDs = orig.nLDs;
-	LiOfs = orig.LiOfs;
 }
 
 longint FileD::UsedFileSize()
 {
-	longint n;
-	n = longint(NRecs) * RecLen + FrstDispl;
+	longint n = longint(NRecs) * RecLen + FrstDispl;
 	if (Typ == DBF) n++;
 	return n;
 }
@@ -126,5 +98,26 @@ void FileD::Reset()
 	XF = nullptr;
 	Keys.clear();
 	Add.clear();
-	nLDs = 0; LiOfs = 0;
+}
+
+/// <summary>
+/// Vycte zaznam z datoveho souboru (.000)
+/// </summary>
+/// <param name="rec_nr">kolikaty zaznam (1 .. N)</param>
+/// <param name="record">ukazatel na buffer</param>
+void FileD::ReadRec(size_t rec_nr, void* record)
+{
+	Logging* log = Logging::getInstance();
+	//log->log(loglevel::DEBUG, "ReadRec(), file 0x%p, RecNr %i", file, N);
+	RdWrCache(true, this->Handle, this->NotCached(),
+		(rec_nr - 1) * this->RecLen + this->FrstDispl, this->RecLen, record);
+}
+
+void FileD::WriteRec(size_t rec_nr, void* record)
+{
+	Logging* log = Logging::getInstance();
+	//log->log(loglevel::DEBUG, "WriteRec(%i), CFile 0x%p", N, file->Handle);
+	RdWrCache(false, this->Handle, this->NotCached(),
+		(rec_nr - 1) * this->RecLen + this->FrstDispl, this->RecLen, record);
+	this->WasWrRec = true;
 }

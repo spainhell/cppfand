@@ -2870,7 +2870,7 @@ Instr* RdBackup(char MTyp, bool IsBackup)
 	CFile = CatFD;
 	CRecPtr = GetRecSpace();
 	for (longint i = 1; i <= CatFD->NRecs; i++) {
-		ReadRec(CFile, i, CRecPtr);
+		CFile->ReadRec(i, CRecPtr);
 		if (EquUpCase(OldTrailChar(' ', _ShortS(CatRdbName)), "ARCHIVES")
 			&& EquUpCase(OldTrailChar(' ', _ShortS(CatFileName)), LexWord)) {
 			RdLex();
