@@ -1350,17 +1350,26 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 
 void GotoErrPos(WORD& Brk)
 {
-	pstring s;
-	IsCompileErr = false; s = MsgLine; if (InpRdbPos.R != CRdb) {
-		DisplEditWw(); SetMsgPar(s); WrLLF10Msg(110);
+	
+	IsCompileErr = false;
+	std::string s = MsgLine;
+	if (InpRdbPos.R != CRdb) {
+		DisplEditWw();
+		SetMsgPar(s);
+		WrLLF10Msg(110);
 		if (InpRdbPos.IRec == 0) SetMsgPar("");
 		else SetMsgPar(InpRdbPos.R->FD->Name);
-		WrLLF10Msg(622); Brk = 0; return;
+		WrLLF10Msg(622);
+		Brk = 0;
+		return;
 	}
 	if (CurrPos == 0) {
 		DisplEditWw();
-		GotoRecFld(InpRdbPos.IRec, (EFldD*)E->FirstFld->pChain);
-		SetMsgPar(s); WrLLF10Msg(110); Brk = 0; return;
+		GotoRecFld(InpRdbPos.IRec, E->FirstFld->pChain);
+		SetMsgPar(s);
+		WrLLF10Msg(110);
+		Brk = 0;
+		return;
 	}
 	CFld = E->LastFld;
 	SetNewCRec(InpRdbPos.IRec, true);
@@ -1372,8 +1381,10 @@ void GotoErrPos(WORD& Brk)
 void WrErrMsg630(std::string Nm)
 {
 	IsCompileErr = false;
-	SetMsgPar(MsgLine); WrLLF10Msg(110);
-	SetMsgPar(Nm); WrLLF10Msg(630);
+	SetMsgPar(MsgLine);
+	WrLLF10Msg(110);
+	SetMsgPar(Nm);
+	WrLLF10Msg(630);
 }
 
 bool EditExecRdb(std::string Nm, std::string proc_name, Instr_proc* proc_call, wwmix* ww)
@@ -1552,7 +1563,7 @@ void UpdateCat()
 
 void UpdateUTxt()
 {
-	bool Srch, Upd;
+	bool Upd;
 	longint Pos;
 	void* p = nullptr;
 	void* p1 = nullptr;
@@ -1562,11 +1573,13 @@ void UpdateUTxt()
 	WORD LicNr = ChptTF->LicenseNr;
 	MarkStore(p1);
 	if (CFile->NRecs == 0) {
-		WrLLF10Msg(9); return;
+		WrLLF10Msg(9);
+		return;
 	}
 	CFile->ReadRec(1, CRecPtr);
 	if (_ShortS(ChptTyp) != 'U') {
-		WrLLF10Msg(9); return;
+		WrLLF10Msg(9);
+		return;
 	}
 	longint w = PushW(1, 1, TxtCols, TxtRows - 1);
 	WORD TxtPos = 1;
@@ -1621,7 +1634,7 @@ void InstallRdb(std::string n)
 {
 	wwmix ww;
 
-	pstring passw(20);
+	std::string passw;
 	TMenuBoxS* w = nullptr;
 	WORD i = 0;
 

@@ -27,16 +27,20 @@ class FieldDescr;
 
 // ********** CONST **********
 const BYTE LeftJust = 1; // {RightJust=0  coded in M for Typ='N','A'}
-const BYTE Ascend = 0; const BYTE Descend = 6; // {used in SortKey}
-const BYTE f_Stored = 1; const BYTE f_Encryp = 2; // {FieldD flags}
-const BYTE f_Mask = 4; const BYTE f_Comma = 8; // {FieldD flags}
+const BYTE Ascend = 0;
+const BYTE Descend = 6; // {used in SortKey}
+const BYTE f_Stored = 1;
+const BYTE f_Encryp = 2; // {FieldD flags}
+const BYTE f_Mask = 4;
+const BYTE f_Comma = 8; // {FieldD flags}
 
 struct DepD : Chained<DepD> // r122
 {
 	FrmlElem* Bool = nullptr;
 	FrmlElem* Frml = nullptr;
 };
-typedef DepD* DepDPtr;
+
+using DepDPtr = DepD*;
 
 struct FuncD
 {
@@ -62,7 +66,7 @@ WORD CompLexStrings(const std::string& S1, const std::string& S2);
 void RunErrorM(LockMode Md, WORD N); // r729
 void* GetRecSpace(); // r739
 WORD CFileRecSize(); // r744
-void SetTWorkFlag();  // r746 ASM
+void SetTWorkFlag(); // r746 ASM
 bool HasTWorkFlag(); // r752 ASM
 void SetUpdFlag(); // r755 ASM
 void ClearUpdFlag(); // r758 ASM
@@ -78,7 +82,7 @@ void Code(void* A, WORD L); // r897 ASM
 void CodingLongStr(LongStr* S);
 longint StoreInTWork(LongStr* S);
 LongStr* ReadDelInTWork(longint Pos);
-void ForAllFDs(void(*procedure)()); // r935
+void ForAllFDs(void (*procedure)()); // r935
 bool IsActiveRdb(FileD* FD);
 void ResetCompilePars(); // r953 - posledni fce
 

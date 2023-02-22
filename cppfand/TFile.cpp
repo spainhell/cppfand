@@ -643,8 +643,7 @@ longint TFile::Store(char* s, size_t l)
 
 	SetUpdHandle(Handle);
 
-	switch (Format)
-	{
+	switch (Format)	{
 	case DbtFormat: {
 		pos = MaxPage + 1; N = pos << MPageShft; if (l > 0x7fff) l = 0x7fff;
 		RdWrCache(false, Handle, NotCached(), N, l, s);

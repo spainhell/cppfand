@@ -792,41 +792,43 @@ void wwmix::PromptLL(WORD N, std::string& Txt, WORD I, bool Del)
 	PopW(w);
 }
 
-pstring wwmix::PassWord(bool TwoTimes)
+std::string wwmix::PassWord(bool TwoTimes)
 {
 	std::string Txt, Txt1;
 	WORD col = (TxtCols - 21) >> 1;
 	longint w = PushW(col, TxtRows - 2, col + 21, TxtRows - 2);
 	WORD MsgNr = 628;
-label1:
-	TextAttr = screen.colors.pNorm | 0x80;
-	ClrEol();
-	RdMsg(MsgNr);
-	screen.ScrFormatWrText(1, 1, "%*s", (MsgLine.length() + 22) / 2, MsgLine.c_str());
-	keyboard.AddToFrontKeyBuf((char)ReadKbd());
-	TextAttr = screen.colors.pNorm;
-	screen.GotoXY(2, 1);
-	Txt = "";
-	EditTxt(Txt, 1, 20, 20, 'A', true, true, true, false, 0);
-	if (Event.Pressed.KeyCombination() == __ESC) {
+
+	while (true) {
+		TextAttr = screen.colors.pNorm | 0x80;
+		ClrEol();
+		RdMsg(MsgNr);
+		screen.ScrFormatWrText(1, 1, "%*s", (MsgLine.length() + 22) / 2, MsgLine.c_str());
+		keyboard.AddToFrontKeyBuf((char)ReadKbd());
+		TextAttr = screen.colors.pNorm;
+		screen.GotoXY(2, 1);
 		Txt = "";
-		goto label2;
-	}
-	if (TwoTimes) {
-		if (MsgNr == 628) {
-			MsgNr = 637;
-			Txt1 = Txt;
-			goto label1;
+		EditTxt(Txt, 1, 20, 20, 'A', true, true, true, false, 0);
+		if (Event.Pressed.KeyCombination() == __ESC) {
+			Txt = "";
+			break;
 		}
-		else {
-			if (Txt != Txt1) {
-				WrLLF10Msg(638);
-				MsgNr = 628;
-				goto label1;
+		if (TwoTimes) {
+			if (MsgNr == 628) {
+				MsgNr = 637;
+				Txt1 = Txt;
+				continue;
+			}
+			else {
+				if (Txt != Txt1) {
+					WrLLF10Msg(638);
+					MsgNr = 628;
+					continue;
+				}
 			}
 		}
+		break;
 	}
-label2:
 	PopW(w);
 	return Txt;
 }

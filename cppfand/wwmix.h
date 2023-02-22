@@ -1,7 +1,5 @@
 #pragma once
 #include "constants.h"
-#include "olongstr.h"
-#include "pstring.h"
 #include "runfrml.h"
 
 struct SS
@@ -31,7 +29,7 @@ public :
 	std::string SelectDiskFile(std::string Path, WORD HdMsg, bool OnFace);
 	bool PromptFilter(std::string Txt, FrmlElem** Bool, std::string* BoolTxt);
 	void PromptLL(WORD N, std::string& Txt, WORD I, bool Del);
-	pstring PassWord(bool TwoTimes);
+	std::string PassWord(bool TwoTimes);
 	void SetPassWord(FileD* FD, WORD Nr, std::string Pw);
 	bool HasPassWord(FileD* FD, WORD Nr, std::string Pw);
 
