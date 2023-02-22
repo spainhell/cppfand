@@ -302,7 +302,7 @@ label3:
 			CFile->XF->SetNotValid();
 		}
 		else {
-			RdWrCache(true, CFile->XF->Handle, CFile->XF->NotCached(), 0, 2, &Signum);
+			RdWrCache(READ, CFile->XF->Handle, CFile->XF->NotCached(), 0, 2, &Signum);
 			CFile->XF->RdPrefix();
 			if (
 				!CFile->XF->NotValid && ((Signum != 0x04FF) || (CFile->XF->NRecsAbs != CFile->NRecs)

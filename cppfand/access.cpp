@@ -606,7 +606,7 @@ void PutRec(FileD* dataFile, void* recordData)
 {
 	/* !!! with CFile^ do!!! */
 	dataFile->NRecs++;
-	RdWrCache(false, dataFile->Handle, dataFile->NotCached(),
+	RdWrCache(WRITE, dataFile->Handle, dataFile->NotCached(),
 		longint(dataFile->IRec) * dataFile->RecLen + dataFile->FrstDispl, dataFile->RecLen, recordData);
 	dataFile->IRec++;
 	dataFile->Eof = true;

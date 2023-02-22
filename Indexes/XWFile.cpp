@@ -49,10 +49,10 @@ void XWFile::RdPage(XPage* P, longint pageNr)
 	P->Clean();
 	if ((pageNr == 0) || (pageNr > MaxPage)) Err(831);
 	// puvodne se nacitalo celych XPageSize z P, bylo nutno to rozhodit na jednotlive tridni promenne
-	RdWrCache(true, Handle, NotCached(), pageNr << XPageShft, 1, &P->IsLeaf);
-	RdWrCache(true, Handle, NotCached(), (pageNr << XPageShft) + 1, 4, &P->GreaterPage);
-	RdWrCache(true, Handle, NotCached(), (pageNr << XPageShft) + 5, 2, &P->NItems);
-	RdWrCache(true, Handle, NotCached(), (pageNr << XPageShft) + 7, XPageSize - 7, P->A);
+	RdWrCache(READ, Handle, NotCached(), pageNr << XPageShft, 1, &P->IsLeaf);
+	RdWrCache(READ, Handle, NotCached(), (pageNr << XPageShft) + 1, 4, &P->GreaterPage);
+	RdWrCache(READ, Handle, NotCached(), (pageNr << XPageShft) + 5, 2, &P->NItems);
+	RdWrCache(READ, Handle, NotCached(), (pageNr << XPageShft) + 7, XPageSize - 7, P->A);
 	P->Deserialize();
 }
 
@@ -63,19 +63,19 @@ void XWFile::WrPage(XPage* P, longint pageNr, bool serialize)
 	}
 	if (UpdLockCnt > 0) Err(645);
 	// puvodne se zapisovalo celych XPageSize z P, bylo nutno to rozhodit na jednotlive tridni promenne
-	RdWrCache(false, Handle, NotCached(), pageNr << XPageShft, 1, &P->IsLeaf);
-	RdWrCache(false, Handle, NotCached(), (pageNr << XPageShft) + 1, 4, &P->GreaterPage);
-	RdWrCache(false, Handle, NotCached(), (pageNr << XPageShft) + 5, 2, &P->NItems);
-	RdWrCache(false, Handle, NotCached(), (pageNr << XPageShft) + 7, XPageSize - 7, P->A);
+	RdWrCache(WRITE, Handle, NotCached(), pageNr << XPageShft, 1, &P->IsLeaf);
+	RdWrCache(WRITE, Handle, NotCached(), (pageNr << XPageShft) + 1, 4, &P->GreaterPage);
+	RdWrCache(WRITE, Handle, NotCached(), (pageNr << XPageShft) + 5, 2, &P->NItems);
+	RdWrCache(WRITE, Handle, NotCached(), (pageNr << XPageShft) + 7, XPageSize - 7, P->A);
 }
 
 void XWFile::WrPage(XXPage* p, longint pageNr)
 {
 	if (UpdLockCnt > 0) Err(645);
-	RdWrCache(false, Handle, NotCached(), pageNr << XPageShft, 1, &p->IsLeaf);
-	RdWrCache(false, Handle, NotCached(), (pageNr << XPageShft) + 1, 4, &p->GreaterPage);
-	RdWrCache(false, Handle, NotCached(), (pageNr << XPageShft) + 5, 2, &p->NItems);
-	RdWrCache(false, Handle, NotCached(), (pageNr << XPageShft) + 7, XPageSize - 7, p->A);
+	RdWrCache(WRITE, Handle, NotCached(), pageNr << XPageShft, 1, &p->IsLeaf);
+	RdWrCache(WRITE, Handle, NotCached(), (pageNr << XPageShft) + 1, 4, &p->GreaterPage);
+	RdWrCache(WRITE, Handle, NotCached(), (pageNr << XPageShft) + 5, 2, &p->NItems);
+	RdWrCache(WRITE, Handle, NotCached(), (pageNr << XPageShft) + 7, XPageSize - 7, p->A);
 }
 
 longint XWFile::NewPage(XPage* P)

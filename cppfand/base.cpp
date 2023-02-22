@@ -1060,7 +1060,7 @@ WORD GetFileAttr()
 	}
 }
 
-void RdWrCache(bool readOp, FILE* handle, bool not_cached, size_t position, size_t count, void* buf)
+void RdWrCache(FileOperation operation, FILE* handle, bool not_cached, size_t position, size_t count, void* buf)
 {
 	Logging* log = Logging::getInstance();
 
@@ -1074,7 +1074,7 @@ void RdWrCache(bool readOp, FILE* handle, bool not_cached, size_t position, size
 		return;
 	}
 
-	if (!readOp && (CFile != nullptr) && (CFile->UMode == RdOnly)) {
+	if (operation == WRITE && (CFile != nullptr) && (CFile->UMode == RdOnly)) {
 		// snazime se zapsat do RdOnly souboru
 		// zapisem pouze do cache
 		// TODO: nutno doresit, co s tim dal ...
@@ -1085,14 +1085,14 @@ void RdWrCache(bool readOp, FILE* handle, bool not_cached, size_t position, size
 	}
 
 	// writing to the file -> Set Update Flag
-	if (!readOp) {
+	if (operation == WRITE) {
 		SetUpdHandle(handle);
 	}
 
 	if (Cached) {
 		//log->log(loglevel::DEBUG, "RdWrCache() 0x%p cached file operation.", handle);
 		FileCache* c1 = cache.GetCache(handle);
-		if (readOp) {
+		if (operation == READ) {
 			auto src = c1->Load(position);
 			if (src == nullptr) return;
 			memcpy(buf, src, count);
@@ -1105,7 +1105,7 @@ void RdWrCache(bool readOp, FILE* handle, bool not_cached, size_t position, size
 		// soubor nema cache, cteme (zapisujeme) primo z disku (na disk)
 		//log->log(loglevel::DEBUG, "RdWrCache() non cached file 0x%p operation.", handle);
 		SeekH(handle, position);
-		if (readOp) ReadH(handle, count, buf);
+		if (operation == READ) ReadH(handle, count, buf);
 		else WriteH(handle, count, buf);
 		if (HandleError == 0) return;
 		err = HandleError;

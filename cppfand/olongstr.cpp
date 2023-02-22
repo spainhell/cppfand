@@ -90,10 +90,10 @@ longint CopyTFFromGetTxt(TFile* TF, FrmlElem* Z)
 		else {
 			TF->FreePart += l + 2; 
 			rest = l + 4 - rest;
-			RdWrCache(false, TF->Handle, TF->NotCached(), TF->FreePart, 2, &rest);
+			RdWrCache(WRITE, TF->Handle, TF->NotCached(), TF->FreePart, 2, &rest);
 		}
-		RdWrCache(false, TF->Handle, TF->NotCached(), pos, 2, &l);
-		RdWrCache(false, TF->Handle, TF->NotCached(), pos + 2, l, X);
+		RdWrCache(WRITE, TF->Handle, TF->NotCached(), pos, 2, &l);
+		RdWrCache(WRITE, TF->Handle, TF->NotCached(), pos + 2, l, X);
 		result = pos;
 		goto label4;
 	}
@@ -121,14 +121,14 @@ label3:
 		i = 0;
 		nxtpos = TF->NewPage(false);
 		*(longint*)&X[MPageSize - 4] = nxtpos;
-		RdWrCache(false, TF->Handle, TF->NotCached(), pos, MPageSize, X);
+		RdWrCache(WRITE, TF->Handle, TF->NotCached(), pos, MPageSize, X);
 		pos = nxtpos;
 		l -= n;
 		if (continued && (l == 0)) goto label1;
 		goto label3;
 	}
 	ReadH(h, l, &X[i]);
-	RdWrCache(false, TF->Handle, TF->NotCached(), pos, MPageSize, X);
+	RdWrCache(WRITE, TF->Handle, TF->NotCached(), pos, MPageSize, X);
 label4:
 	if (!TF->IsWork) OldLMode(CFile, md);
 	CloseH(&h);
@@ -158,10 +158,10 @@ longint CopyTFString(TFile* destT00File, FileD* srcFileDescr, TFile* scrT00File,
 	if (!destT00File->IsWork) md = NewLMode(CFile, WrMode);
 	CFile = srcFileDescr;
 	if (!scrT00File->IsWork) md2 = NewLMode(CFile, RdMode);
-	RdWrCache(true, scrT00File->Handle, scrT00File->NotCached(), srcT00Pos, 2, &l);
+	RdWrCache(READ, scrT00File->Handle, scrT00File->NotCached(), srcT00Pos, 2, &l);
 	if (l <= MPageSize - 2) { /* short text */
 		if (l == 0) goto label0; /*Mark****/
-		RdWrCache(true, scrT00File->Handle, scrT00File->NotCached(), srcT00Pos + 2, l, X);
+		RdWrCache(READ, scrT00File->Handle, scrT00File->NotCached(), srcT00Pos + 2, l, X);
 		CFile = cf;
 		rest = MPageSize - destT00File->FreePart % MPageSize;
 		if (l + 2 <= rest) pos = destT00File->FreePart;
@@ -174,17 +174,17 @@ longint CopyTFString(TFile* destT00File, FileD* srcFileDescr, TFile* scrT00File,
 		else {
 			destT00File->FreePart += l + 2;
 			rest = l + 4 - rest;
-			RdWrCache(false, destT00File->Handle, destT00File->NotCached(), destT00File->FreePart, 2, &rest);
+			RdWrCache(WRITE, destT00File->Handle, destT00File->NotCached(), destT00File->FreePart, 2, &rest);
 		}
-		RdWrCache(false, destT00File->Handle, destT00File->NotCached(), pos, 2, &l);
-		RdWrCache(false, destT00File->Handle, destT00File->NotCached(), pos + 2, l, X);
+		RdWrCache(WRITE, destT00File->Handle, destT00File->NotCached(), pos, 2, &l);
+		RdWrCache(WRITE, destT00File->Handle, destT00File->NotCached(), pos + 2, l, X);
 		result = pos;
 		goto label4;
 	}
 	if ((srcT00Pos % MPageSize) != 0) {
 		goto label2;
 	}
-	RdWrCache(true, scrT00File->Handle, scrT00File->NotCached(), srcT00Pos, MPageSize, X);
+	RdWrCache(READ, scrT00File->Handle, scrT00File->NotCached(), srcT00Pos, MPageSize, X);
 	frst = true;
 label1:
 	if (l > MaxLStrLen + 1) {
@@ -207,7 +207,7 @@ label3:
 		srcT00Pos = *(longint*)&X[MPageSize - 4];
 		nxtpos = destT00File->NewPage(false);
 		*(longint*)&X[MPageSize - 4] = nxtpos;
-		RdWrCache(false, destT00File->Handle, destT00File->NotCached(), pos, MPageSize, X);
+		RdWrCache(WRITE, destT00File->Handle, destT00File->NotCached(), pos, MPageSize, X);
 		pos = nxtpos;
 		CFile = srcFileDescr;
 		if ((srcT00Pos < MPageSize) || (srcT00Pos + MPageSize > scrT00File->MLen) || (srcT00Pos % MPageSize != 0)) {
@@ -215,7 +215,7 @@ label3:
 			result = 0;
 			goto label4;
 		}
-		RdWrCache(true, scrT00File->Handle, scrT00File->NotCached(), srcT00Pos, MPageSize, X);
+		RdWrCache(READ, scrT00File->Handle, scrT00File->NotCached(), srcT00Pos, MPageSize, X);
 		if ((l <= MPageSize)) {
 			l = *ll;
 			goto label1;
@@ -223,7 +223,7 @@ label3:
 		l -= MPageSize - 4;
 		goto label3;
 	}
-	RdWrCache(false, destT00File->Handle, destT00File->NotCached(), pos, MPageSize, X);
+	RdWrCache(WRITE, destT00File->Handle, destT00File->NotCached(), pos, MPageSize, X);
 label4:
 	CFile = srcFileDescr;
 	if (!scrT00File->IsWork) OldLMode(CFile, md2);
@@ -249,14 +249,14 @@ void CopyTFStringToH(FILE* h, TFile* TF02, FileD* TFD02, longint& TF02Pos)
 	TFilePtr tf = TF02;
 	if (!tf->IsWork) md2 = NewLMode(CFile, RdMode);
 	size_t l = 0;
-	RdWrCache(true, tf->Handle, tf->NotCached(), pos, 2, &l);
+	RdWrCache(READ, tf->Handle, tf->NotCached(), pos, 2, &l);
 	if (l <= MPageSize - 2) { /* short text */
-		RdWrCache(true, tf->Handle, tf->NotCached(), pos + 2, l, X);
+		RdWrCache(READ, tf->Handle, tf->NotCached(), pos + 2, l, X);
 		WriteH(h, l, X);
 		goto label4;
 	}
 	if ((pos % MPageSize) != 0) goto label2;
-	RdWrCache(true, tf->Handle, tf->NotCached(), pos, MPageSize, X);
+	RdWrCache(READ, tf->Handle, tf->NotCached(), pos, MPageSize, X);
 label1:
 	if (l > MaxLStrLen + 1) {
 	label2:
@@ -276,7 +276,7 @@ label3:
 			tf->Err(888, false);
 			goto label4;
 		}
-		RdWrCache(true, tf->Handle, tf->NotCached(), pos, MPageSize, X);
+		RdWrCache(READ, tf->Handle, tf->NotCached(), pos, MPageSize, X);
 		if ((l <= MPageSize - i)) {
 			l = *ll;
 			goto label1;

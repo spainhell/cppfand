@@ -109,7 +109,7 @@ void FileD::ReadRec(size_t rec_nr, void* record)
 {
 	Logging* log = Logging::getInstance();
 	//log->log(loglevel::DEBUG, "ReadRec(), file 0x%p, RecNr %i", file, N);
-	RdWrCache(true, this->Handle, this->NotCached(),
+	RdWrCache(READ, this->Handle, this->NotCached(),
 		(rec_nr - 1) * this->RecLen + this->FrstDispl, this->RecLen, record);
 }
 
@@ -117,7 +117,7 @@ void FileD::WriteRec(size_t rec_nr, void* record)
 {
 	Logging* log = Logging::getInstance();
 	//log->log(loglevel::DEBUG, "WriteRec(%i), CFile 0x%p", N, file->Handle);
-	RdWrCache(false, this->Handle, this->NotCached(),
+	RdWrCache(WRITE, this->Handle, this->NotCached(),
 		(rec_nr - 1) * this->RecLen + this->FrstDispl, this->RecLen, record);
 	this->WasWrRec = true;
 }

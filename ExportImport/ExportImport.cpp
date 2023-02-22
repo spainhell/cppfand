@@ -27,18 +27,18 @@ bool OldToNewCat(longint& FilSz)
 	auto result = false;
 	bool cached = CFile->NotCached();
 	if (CFile->Typ != CAT) return result;
-	RdWrCache(true, CFile->Handle, cached, 0, 6, &x);
+	RdWrCache(READ, CFile->Handle, cached, 0, 6, &x);
 	if (x.RecLen != 106) return result;
 	x.RecLen = 107;
-	RdWrCache(false, CFile->Handle, cached, 0, 6, &x);
+	RdWrCache(WRITE, CFile->Handle, cached, 0, 6, &x);
 	for (longint i = x.NRecs; i >= 1; i--) {
 		off = 6 + (i - 1) * 106;
 		offNew = off + (i - 1);
-		RdWrCache(true, CFile->Handle, cached, off + 16, 90, a);
-		RdWrCache(false, CFile->Handle, cached, offNew + 17, 90, a);
+		RdWrCache(READ, CFile->Handle, cached, off + 16, 90, a);
+		RdWrCache(WRITE, CFile->Handle, cached, offNew + 17, 90, a);
 		a[17] = 0;
-		RdWrCache(true, CFile->Handle, cached, off, 16, a);
-		RdWrCache(false, CFile->Handle, cached, offNew, 17, a);
+		RdWrCache(READ, CFile->Handle, cached, off, 16, a);
+		RdWrCache(WRITE, CFile->Handle, cached, offNew, 17, a);
 	}
 	CFile->NRecs = x.NRecs;
 	FilSz = x.NRecs * 107 + 6;

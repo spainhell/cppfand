@@ -39,12 +39,12 @@ void XFile::RdPrefix()
 {
 	Logging* log = Logging::getInstance();
 	//log->log(loglevel::DEBUG, "XFile::RdPrefix() 0x%p reading 18 Bytes", Handle);
-	RdWrCache(true, Handle, NotCached(), 2, 4, &FreeRoot);
-	RdWrCache(true, Handle, NotCached(), 6, 4, &MaxPage);
-	RdWrCache(true, Handle, NotCached(), 10, 4, &NRecs);
-	RdWrCache(true, Handle, NotCached(), 14, 4, &NRecsAbs);
-	RdWrCache(true, Handle, NotCached(), 18, 1, &NotValid);
-	RdWrCache(true, Handle, NotCached(), 19, 1, &NrKeys);
+	RdWrCache(READ, Handle, NotCached(), 2, 4, &FreeRoot);
+	RdWrCache(READ, Handle, NotCached(), 6, 4, &MaxPage);
+	RdWrCache(READ, Handle, NotCached(), 10, 4, &NRecs);
+	RdWrCache(READ, Handle, NotCached(), 14, 4, &NRecsAbs);
+	RdWrCache(READ, Handle, NotCached(), 18, 1, &NotValid);
+	RdWrCache(READ, Handle, NotCached(), 19, 1, &NrKeys);
 }
 
 void XFile::WrPrefix()
@@ -53,15 +53,15 @@ void XFile::WrPrefix()
 	//log->log(loglevel::DEBUG, "XFile::WrPrefix() 0x%p writing 20 Bytes, NRecsAbs = %i, NrKeys = %i",
 	//	Handle, CFile->NRecs, CFile->GetNrKeys());
 	WORD Signum = 0x04FF;
-	RdWrCache(false, Handle, NotCached(), 0, 2, &Signum);
+	RdWrCache(WRITE, Handle, NotCached(), 0, 2, &Signum);
 	NRecsAbs = CFile->NRecs;
 	NrKeys = CFile->GetNrKeys();
-	RdWrCache(false, Handle, NotCached(), 2, 4, &FreeRoot);
-	RdWrCache(false, Handle, NotCached(), 6, 4, &MaxPage);
-	RdWrCache(false, Handle, NotCached(), 10, 4, &NRecs);
-	RdWrCache(false, Handle, NotCached(), 14, 4, &NRecsAbs);
-	RdWrCache(false, Handle, NotCached(), 18, 1, &NotValid);
-	RdWrCache(false, Handle, NotCached(), 19, 1, &NrKeys);
+	RdWrCache(WRITE, Handle, NotCached(), 2, 4, &FreeRoot);
+	RdWrCache(WRITE, Handle, NotCached(), 6, 4, &MaxPage);
+	RdWrCache(WRITE, Handle, NotCached(), 10, 4, &NRecs);
+	RdWrCache(WRITE, Handle, NotCached(), 14, 4, &NRecsAbs);
+	RdWrCache(WRITE, Handle, NotCached(), 18, 1, &NotValid);
+	RdWrCache(WRITE, Handle, NotCached(), 19, 1, &NrKeys);
 
 }
 
