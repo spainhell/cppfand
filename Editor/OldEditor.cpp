@@ -2315,7 +2315,7 @@ void DelStorClpBd(void* P1, LongStr* sp)
 void MarkRdClpBd(void* P1, LongStr* sp)
 {
 	MarkStore2(P1);
-	sp = TWork.Read(2, ClpBdPos);
+	sp = TWork.Read(ClpBdPos);
 }
 
 void MovePart(WORD Ind)

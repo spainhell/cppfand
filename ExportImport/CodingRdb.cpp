@@ -201,7 +201,7 @@ void CodingRdb::CodeF(bool rotate, WORD IRec, FieldDescr* F, char Typ)
 	longint pos = _T(F);
 	if (pos == 0) return;
 	MarkBoth(p, p2);
-	LongStr* s = ChptTF->Read(1, pos);
+	LongStr* s = ChptTF->Read(pos);
 	WORD l = s->LL;
 	ChptTF->Delete(pos);
 	if (l == 0) goto label2;

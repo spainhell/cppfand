@@ -978,13 +978,13 @@ std::string _StdS(FieldDescr* F)
 		}
 		case FieldType::TEXT: { // volny text max. 65k
 			if (HasTWorkFlag()) {
-				LongStr* ls = TWork.Read(1, _T(F));
+				LongStr* ls = TWork.Read(_T(F));
 				S = std::string(ls->A, ls->LL);
 				delete ls;
 			}
 			else {
 				md = NewLMode(CFile, RdMode);
-				LongStr* ls = CFile->TF->Read(1, _T(F));
+				LongStr* ls = CFile->TF->Read(_T(F));
 				S = std::string(ls->A, ls->LL);
 				delete ls;
 				OldLMode(CFile, md);
@@ -1654,7 +1654,7 @@ longint StoreInTWork(LongStr* S)
 
 LongStr* ReadDelInTWork(longint Pos)
 {
-	auto result = TWork.Read(1, Pos);
+	auto result = TWork.Read(Pos);
 	TWork.Delete(Pos);
 	return result;
 }

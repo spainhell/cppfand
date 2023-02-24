@@ -8,7 +8,7 @@ const WORD MPageSize = 512;
 const BYTE XPageShft = 10;
 const BYTE MPageShft = 9;
 
-class TFile // ø. 147
+class TFile
 {
 public:
 	TFile() {}
@@ -36,17 +36,13 @@ public:
 	void SetEmpty();
 	void Create();
 	longint NewPage(bool NegL);
-	void ReleasePage(longint PosPg);
-	void Delete(longint Pos);
-	LongStr* Read(WORD StackNr, longint Pos);
+	void ReleasePage(int PosPg);
+	void Delete(int Pos);
+	LongStr* Read(int Pos);
 	longint Store(char* s, size_t l);
-	// void AddLongStr(char* s, size_t l, int ls);
-	// void StoreShortStr(char* s, size_t l);
-protected:
-	// struct { long startPos, segPos, workPos; };	// StoreStr()
-	// struct { unsigned short size, length, rest; };	// ReadStr()
+
 private:
-	void RdWr(FileOperation operation, size_t position, size_t count, void* X);
+	void RdWr(FileOperation operation, size_t position, size_t count, char* buffer);
 	void GetMLen();
 	long eofPos = 0;
 };

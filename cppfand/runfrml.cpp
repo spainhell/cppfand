@@ -1726,7 +1726,7 @@ LongStr* RunLongStr(FrmlElem* X)
 			break;
 		}
 		case _clipbd: {
-			result = TWork.Read(1, ClpBdPos);
+			result = TWork.Read(ClpBdPos);
 			break;
 		}
 		default: {
@@ -1930,7 +1930,7 @@ label1:
 		break;
 	}
 	case _clipbd: {
-		auto s = TWork.Read(1, ClpBdPos);
+		auto s = TWork.Read(ClpBdPos);
 		result = std::string(s->A, s->LL);
 		delete s;
 		break;

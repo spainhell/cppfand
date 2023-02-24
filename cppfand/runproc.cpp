@@ -317,7 +317,7 @@ void DisplayProc(RdbD* R, WORD IRec)
 	else {
 		CFile = R->FD; CRecPtr = Chpt->RecPtr;
 		CFile->ReadRec(IRec, CRecPtr);
-		LongStr* S = CFile->TF->Read(1, _T(ChptTxt));
+		LongStr* S = CFile->TF->Read(_T(ChptTxt));
 		if (R->Encrypted) CodingLongStr(S);
 		str = std::string(S->A, S->LL);
 		delete S; S = nullptr;
@@ -327,13 +327,15 @@ void DisplayProc(RdbD* R, WORD IRec)
 
 void ClrWwProc(Instr_clrww* PD)
 {
-	WRect v; WORD a = 0; char c = '\0';
+	WRect v;
 	RunWFrml(PD->W2, 0, v);
-	a = RunWordImpl(PD->Attr2, screen.colors.uNorm);
-	c = ' ';
+	WORD a = RunWordImpl(PD->Attr2, screen.colors.uNorm);
+	char c = ' ';
 	if (PD->FillC != nullptr) {
 		std::string s = RunShortStr(PD->FillC);
-		if (s.length() > 0) c = s[0];
+		if (s.length() > 0) {
+			c = s[0];
+		}
 	}
 	screen.ScrClr(v.C1, v.R1, v.C2 - v.C1 + 1, v.R2 - v.R1 + 1, c, a);
 }
@@ -362,43 +364,46 @@ void ExecPgm(Instr_exec* PD)
 	PopW(w);
 	//screen.GotoXY(x - WindMin.X + 1, y - WindMin.Y + 1);
 	screen.GotoXY(1, 1);
-	if (!b) GoExit();
+	if (!b) {
+		GoExit();
+	}
 }
 
 void CallRdbProc(Instr_call* PD)
 {
-	bool b = false; void* p = nullptr;
+	bool b = false;
+	void* p = nullptr;
 	wwmix ww;
 	MarkStore(p);
 	// TODO: tady se ma ulozit stav (MyBP - ProcStkD)
 	b = EditExecRdb(PD->RdbNm, PD->ProcNm, PD->ProcCall, &ww);
 	// TODO: tady se ma obnovit stav (MyBP - ProcStkD)
 	ReleaseStore(p);
-	if (!b) GoExit();
+	if (!b) {
+		GoExit();
+	}
 }
 
 void IndexfileProc(FileD* FD, bool Compress)
 {
-	FileD* FD2 = nullptr;
-	LockMode md;
 	FileD* cf = CFile;
 	CFile = FD;
-	md = NewLMode(CFile, ExclMode);
+	LockMode md = NewLMode(CFile, ExclMode);
 	XFNotValid();
 	CRecPtr = GetRecSpace();
 	if (Compress) {
-		FD2 = OpenDuplF(false);
-		for (longint I = 1; I < FD->NRecs; I++)
-		{
+		FileD* FD2 = OpenDuplF(false);
+		for (longint I = 1; I < FD->NRecs; I++) {
 			CFile = FD;
 			CFile->ReadRec(I, CRecPtr);
-			if (!DeletedFlag())
-			{
+			if (!DeletedFlag()) {
 				CFile = FD2;
 				PutRec(CFile, CRecPtr);
 			}
 		}
-		if (!SaveCache(0, CFile->Handle)) GoExit();
+		if (!SaveCache(0, CFile->Handle)) {
+			GoExit();
+		}
 		CFile = FD;
 		SubstDuplF(FD2, false);
 	}

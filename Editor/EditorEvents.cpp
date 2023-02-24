@@ -451,7 +451,7 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 				case LocalT:
 				case MemoT:
 				{
-					if (TypeT == LocalT) sp = TWork.Read(1, *LocalPPtr);
+					if (TypeT == LocalT) sp = TWork.Read(*LocalPPtr);
 					else {
 						CRecPtr = EditDRoot->NewRecPtr;
 						sp = _LongS(CFld->FldD);
