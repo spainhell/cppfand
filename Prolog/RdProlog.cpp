@@ -916,17 +916,17 @@ label2:
 				d = nullptr;
 				AcceptP('/');
 				d = RdDomain();
-				switch (f->FrmlTyp) {
+				switch (f->frml_type) {
 				case 'B': {
 					if (d != BoolDom) OldError(510);
 					break;
 				}
 				case 'R': {
-					if ((d != RealDom) && ((f->Typ != 'F') || (d != IntDom))) OldError(510);
+					if ((d != RealDom) && ((f->field_type != FieldType::FIXED) || (d != IntDom))) OldError(510);
 					break;
 				}
 				default: {
-					if (f->Typ == 'T') {
+					if (f->field_type == FieldType::TEXT) {
 						if ((d != LongStrDom) && ((d->Typ != _FunD) || (d == BoolDom))) OldError(510);
 					}
 					else if (d != StrDom) OldError(510);
@@ -1262,7 +1262,7 @@ TCommand* RdCommand(std::map<int, TVarDcl*>& Vars) /*PCommand*/
 		if (fd->typSQLFile) OldError(155);
 		AcceptP('.');
 		c->FldD = RdFldName(fd);
-		if (c->FldD->Typ != 'T') OldError(537);
+		if (c->FldD->field_type != FieldType::TEXT) OldError(537);
 	label8:
 		AcceptP(')');
 	}
@@ -1351,7 +1351,7 @@ TCommand* RdPredCommand(TCommandTyp Code, TPredicate* predicate)
 		sz += 10;
 		si = p->scanInf;
 		CFile = si->FD;
-		if (CFile->Typ == INDEX) {
+		if (CFile->file_type == FileType::INDEX) {
 			k = CFile->Keys[0];
 			while (k != nullptr) {
 				kf = k->KFlds; inOut = false;
@@ -1364,7 +1364,7 @@ TCommand* RdPredCommand(TCommandTyp Code, TPredicate* predicate)
 							w = w | m;
 							a[i] = n;
 							if ((fl != nullptr) && (f == fl->FldD) && ((OutpMask & (m << 1)) != 0)
-								&& (f->Typ == 'A')) inOut = true;
+								&& (f->field_type == FieldType::ALFANUM)) inOut = true;
 							goto label1;
 						}
 						m = m << 1;

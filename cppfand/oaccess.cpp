@@ -39,7 +39,7 @@ void OpenTWorkH()
 void SaveFD()
 {
 	WrPrefixes();
-	if (CFile->Typ == INDEX) CFile->XF->NoCreate = false;
+	if (CFile->file_type == FileType::INDEX) CFile->XF->NoCreate = false;
 }
 
 void SaveFiles()
@@ -56,7 +56,7 @@ void SaveFiles()
 
 void ClosePassiveFD()
 {
-	if ((CFile->Typ != RDB) && (CFile->LMode == NullMode)) CloseFile();
+	if ((CFile->file_type != FileType::RDB) && (CFile->LMode == NullMode)) CloseFile();
 }
 
 void CloseFANDFiles(bool FromDML)
@@ -198,7 +198,7 @@ bool OpenF1(FileUseMode UM)
 			return result;
 		}
 	}
-	if (CFile->Typ == INDEX) {
+	if (CFile->file_type == FileType::INDEX) {
 		CPath = CExtToX(CDir, CName, CExt);
 		while (true) {
 			CFile->XF->Handle = OpenH(CPath, _isoldfile, CFile->UMode);
@@ -291,13 +291,13 @@ label3:
 		}
 		else {
 			CFile->TF->RdPrefix(true);
-			if ((CFile->Typ == RDB) && !IsActiveRdb(CFile) && !ww.HasPassWord(CFile, 1, "")) {
+			if ((CFile->file_type == FileType::RDB) && !IsActiveRdb(CFile) && !ww.HasPassWord(CFile, 1, "")) {
 				CFileMsg(616, ' ');
 				CloseGoExit();
 			}
 		}
 	}
-	if (CFile->Typ == INDEX) {
+	if (CFile->file_type == FileType::INDEX) {
 		if (FS < CFile->FrstDispl) {
 			CFile->XF->SetNotValid();
 		}
@@ -355,7 +355,7 @@ void CreateF()
 		CPath = CExtToT(CDir, CName, CExt);
 		CFile->TF->Create();
 	}
-	if (CFile->Typ == INDEX) {
+	if (CFile->file_type == FileType::INDEX) {
 		CPath = CExtToX(CDir, CName, CExt);
 		CFile->XF->Handle = OpenH(CPath, _isoverwritefile, Exclusive);
 		CFile->XF->TestErr(); /*SetNotValid*/
@@ -373,7 +373,7 @@ bool OpenCreateF(FileUseMode UM)
 			WrPrefixes();
 			SaveCache(0, CFile->Handle);
 			CloseClearH(&CFile->Handle);
-			if (CFile->Typ == INDEX) CloseClearH(&CFile->XF->Handle);
+			if (CFile->file_type == FileType::INDEX) CloseClearH(&CFile->XF->Handle);
 			if (CFile->TF != nullptr) CloseClearH(&CFile->TF->Handle);
 			OpenF(UM);
 		}
@@ -401,7 +401,7 @@ LockMode RewriteF(const bool Append)
 	SeekRec(CFile, 0);
 	SetUpdHandle(CFile->Handle);
 	XFNotValid();
-	if (CFile->Typ == INDEX) CFile->XF->NoCreate = true;
+	if (CFile->file_type == FileType::INDEX) CFile->XF->NoCreate = true;
 	if (CFile->TF != nullptr) CFile->TF->SetEmpty();
 	return result;
 }
@@ -416,7 +416,7 @@ void TruncF()
 		TruncH(CFile->TF->Handle, CFile->TF->UsedFileSize());
 		CFile->TF->TestErr();
 	}
-	if (CFile->Typ == INDEX) {
+	if (CFile->file_type == FileType::INDEX) {
 		longint sz = CFile->XF->UsedFileSize();
 		if (CFile->XF->NotValid) sz = 0;
 		TruncH(CFile->XF->Handle, sz);
@@ -438,7 +438,7 @@ void CloseFile()
 	}
 	SaveCache(0, CFile->Handle);
 	TruncF();
-	if (CFile->Typ == INDEX) {
+	if (CFile->file_type == FileType::INDEX) {
 		if (CFile->XF->Handle != nullptr) {
 			CloseClearH(&CFile->XF->Handle);
 			if (!CFile->IsShared()) {
@@ -458,7 +458,7 @@ void CloseFile()
 		if (CFile->TF->Handle != nullptr) {
 			CloseClearH(&CFile->TF->Handle);
 			if (HandleError == 0) CFile->TF->Handle = nullptr; // soubor byl uspesne uzavren
-			if ((!CFile->IsShared()) && (CFile->NRecs == 0) && (CFile->Typ != DBF)) {
+			if ((!CFile->IsShared()) && (CFile->NRecs == 0) && (CFile->file_type != FileType::DBF)) {
 				SetCPathVol();
 				CPath = CExtToT(CDir, CName, CExt);
 				// MyDeleteFile(CPath);
@@ -468,7 +468,7 @@ void CloseFile()
 	CloseClearH(&CFile->Handle);
 	if (HandleError == 0) CFile->Handle = nullptr;
 	CFile->LMode = NullMode;
-	if (!CFile->IsShared() && (CFile->NRecs == 0) && (CFile->Typ != DBF)) {
+	if (!CFile->IsShared() && (CFile->NRecs == 0) && (CFile->file_type != FileType::DBF)) {
 		SetCPathVol();
 		// MyDeleteFile(CPath);
 	}
@@ -762,7 +762,7 @@ bool SetContextDir(std::string& D, bool& IsRdb)
 		}
 		while (F != nullptr) {
 			if (CFile == F) {
-				if ((CFile == R->HelpFD) || (CFile->Typ == RDB))  //.RDB
+				if ((CFile == R->HelpFD) || (CFile->file_type == FileType::RDB))  //.RDB
 					D = R->RdbDir;
 				else D = R->DataDir;
 				return result;
@@ -808,7 +808,7 @@ void SetCPathVol(char pathDelim)
 	bool isRdb = false;
 
 	CVol = "";
-	if (CFile->Typ == CAT) {
+	if (CFile->file_type == FileType::CAT) {
 		CDir = GetEnv("FANDCAT");
 		if (CDir.empty()) {
 			CDir = TopDataDir.empty() ? TopRdbDir : TopDataDir;
@@ -824,10 +824,10 @@ void SetCPathVol(char pathDelim)
 		if (CFile->Name == "@") goto label3;
 		goto label4;
 	}
-	switch (CFile->Typ) {
-	case RDB: CExt = ".RDB"; break;
-	case FAND8: CExt = ".DTA"; break;
-	case DBF: CExt = ".DBF"; break;
+	switch (CFile->file_type) {
+	case FileType::RDB: CExt = ".RDB"; break;
+	case FileType::FAND8: CExt = ".DTA"; break;
+	case FileType::DBF: CExt = ".DBF"; break;
 	default: CExt = ".000";
 	}
 	if (SetContextDir(CDir, isRdb)) goto label2;
@@ -881,16 +881,16 @@ void SetTempCExt(char Typ, bool IsNet)
 	char Nr;
 	if (Typ == 'T') {
 		Nr = '2';
-		switch (CFile->Typ) {
-		case RDB: CExt = ".TTT"; break;
-		case DBF: CExt = ".DBT"; break;
+		switch (CFile->file_type) {
+		case FileType::RDB: CExt = ".TTT"; break;
+		case FileType::DBF: CExt = ".DBT"; break;
 		}
 	}
 	else {
 		Nr = '1';
-		switch (CFile->Typ) {
-		case RDB: CExt = ".RDB"; break;
-		case DBF: CExt = ".DBF"; break;
+		switch (CFile->file_type) {
+		case FileType::RDB: CExt = ".RDB"; break;
+		case FileType::DBF: CExt = ".DBF"; break;
 		}
 	}
 	if (CExt.length() < 2) CExt = ".0";
@@ -919,8 +919,7 @@ FileD* OpenDuplF(bool CrTF)
 	FD->IRec = 0;
 	FD->Eof = true;
 	FD->UMode = Exclusive;
-	if (FD->Typ == INDEX)
-	{
+	if (FD->file_type == FileType::INDEX) {
 		FD->XF = new XFile();
 		FD->XF->Handle = nullptr;
 		FD->XF->NoCreate = true;
@@ -930,7 +929,6 @@ FileD* OpenDuplF(bool CrTF)
 	if (CrTF && (FD->TF != nullptr)) {
 		FD->TF = new TFile();
 		*FD->TF = *OldFD->TF;
-
 		SetTempCExt('T', net);
 		FD->TF->Handle = OpenH(CPath, _isoverwritefile, Exclusive);
 		FD->TF->TestErr();

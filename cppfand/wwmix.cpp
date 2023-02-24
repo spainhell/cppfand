@@ -665,7 +665,7 @@ label1:
 label2:
 	screen.GotoXY(1, 1);
 	//EditTxt(&mask, 1, sizeof(mask) - 1, 22, 'A', true, false, true, false, 0);
-	EditTxt(mask, 1, sizeOfMask, 22, 'A', true, false, true, false, 0);
+	EditTxt(mask, 1, sizeOfMask, 22, FieldType::ALFANUM, true, false, true, false, 0);
 	if (Event.Pressed.KeyCombination() == __ESC) { PopW(w); return result; }
 	if (mask.find(' ') != std::string::npos) {
 		WrLLF10Msg(60);
@@ -788,7 +788,7 @@ void wwmix::PromptLL(WORD N, std::string& Txt, WORD I, bool Del)
 	screen.ScrWrStr(1, TxtRows, MsgLine, screen.colors.pTxt);
 	screen.GotoXY(MsgLine.length() + 1, TxtRows, ScrPosition::absolute);
 	TextAttr = screen.colors.pNorm;
-	EditTxt(Txt, I, 255, TxtCols - screen.WhereX(), 'A', Del, false, true, false, 0);
+	EditTxt(Txt, I, 255, TxtCols - screen.WhereX(), FieldType::ALFANUM, Del, false, true, false, 0);
 	PopW(w);
 }
 
@@ -808,7 +808,7 @@ std::string wwmix::PassWord(bool TwoTimes)
 		TextAttr = screen.colors.pNorm;
 		screen.GotoXY(2, 1);
 		Txt = "";
-		EditTxt(Txt, 1, 20, 20, 'A', true, true, true, false, 0);
+		EditTxt(Txt, 1, 20, 20, FieldType::ALFANUM, true, true, true, false, 0);
 		if (Event.Pressed.KeyCombination() == __ESC) {
 			Txt = "";
 			break;

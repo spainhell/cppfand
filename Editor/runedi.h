@@ -5,12 +5,13 @@
 #include "../cppfand/rdrun.h"
 #include "../cppfand/models/FrmlElem.h"
 
+enum class FieldType;
 class FieldDescr;
 struct EFldD;
 extern bool TxtEdCtrlUBrk, TxtEdCtrlF4Brk;
 extern EFldD* CFld;
 
-WORD EditTxt(std::string& s, WORD pos, WORD maxlen, WORD maxcol, char typ, bool del,
+WORD EditTxt(std::string& s, WORD pos, WORD maxlen, WORD maxcol, FieldType typ, bool del,
     bool star, bool upd, bool ret, WORD Delta); // r86
 
 longint CRec();

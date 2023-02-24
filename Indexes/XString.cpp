@@ -18,7 +18,7 @@ void XString::StoreReal(double R, KeyFldD* KF)
 	const BYTE TabF[18] = { 1, 1, 2, 2, 3, 3, 4, 4, 4, 5, 5, 6, 6, 6, 7, 7, 8, 8 };
 	FieldDescr* X = KF->FldD;
 
-	if (X->Typ == 'R' || X->Typ == 'D') {
+	if (X->field_type == FieldType::REAL || X->field_type == FieldType::DATE) {
 		bool b = KF->Descend;
 		if (R < 0) { b = !b; R = -R; }
 		auto r48 = DoubleToReal48(R);
@@ -49,7 +49,7 @@ void XString::StoreStr(std::string V, KeyFldD* KF)
 			V = " " + V;
 		}
 	}
-	if (X->Typ == 'N') {
+	if (X->field_type == FieldType::NUMERIC) {
 		for (size_t i = 0; i < X->L; i++) {
 			// kolikaty byte zapisujeme?
 			size_t iB = i / 2;
@@ -78,7 +78,7 @@ void XString::StoreBool(bool B, KeyFldD* KF)
 void XString::StoreKF(KeyFldD* KF)
 {
 	FieldDescr* F = KF->FldD;
-	switch (F->FrmlTyp) {
+	switch (F->frml_type) {
 	case 'S': {
 		StoreStr(_ShortS(F), KF);
 		break;
@@ -116,7 +116,7 @@ bool XString::PackFrml(FrmlListEl* FL, KeyFldD* KF)
 	Clear();
 	while (FL != nullptr) {
 		FrmlElem* Z = FL->Frml;
-		switch (KF->FldD->FrmlTyp) {
+		switch (KF->FldD->frml_type) {
 		case 'S': {
 			StoreStr(RunShortStr(Z), KF);
 			break;

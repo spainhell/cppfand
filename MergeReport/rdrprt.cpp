@@ -911,7 +911,7 @@ std::vector<AssignD*> RdAssign2()
 		F = RdFldName(FD);
 		A->PFldD = F;
 		if ((F->Flg & f_Stored) == 0) OldError(14);
-		RdAssignFrml(F->FrmlTyp, A->Add, &A->Frml);
+		RdAssignFrml(F->frml_type, A->Add, &A->Frml);
 	}
 	else if (FindLocVar(&LVBD, &LV)) {
 		RdLex();

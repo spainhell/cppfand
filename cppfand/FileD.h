@@ -10,7 +10,7 @@ class FieldDescr;
 struct StringListEl;
 class AddD;
 
-enum FileType
+enum class FileType
 {
 	UNKNOWN,
 	FAND8,
@@ -32,7 +32,7 @@ public:
 	void* RecPtr = nullptr;
 	longint NRecs = 0;
 	bool WasWrRec = false, WasRdOnly = false, Eof = false;
-	FileType Typ = UNKNOWN;       // 8 = Fand 8; 6 = Fand 16; X = .X; 0 = RDB; C = CAT 
+	FileType file_type = FileType::UNKNOWN;       // 8 = Fand 8; 6 = Fand 16; X = .X; 0 = RDB; C = CAT 
 	FILE* Handle = nullptr;
 	longint IRec = 0;
 	WORD FrstDispl = 0;

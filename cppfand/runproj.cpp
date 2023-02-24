@@ -50,7 +50,7 @@ struct RdbRecVars
 	std::string Name;
 	std::string Ext;
 	longint Txt = 0; longint OldTxt = 0;
-	FileType FTyp = UNKNOWN;
+	FileType FTyp = FileType::UNKNOWN;
 	WORD CatIRec = 0;
 	bool isSQL = false;
 };
@@ -70,12 +70,12 @@ FileType ExtToTyp(std::string Ext)
 		|| SEquUpcase(Ext, ".SQL")
 #endif	
 		)
-		return FAND16;
-	else if (EquUpCase(Ext, ".X")) return INDEX;
-	else if (EquUpCase(Ext, ".DTA")) return FAND8;
-	else if (EquUpCase(Ext, ".DBF")) return DBF;
-	else if (EquUpCase(Ext, ".RDB")) return RDB;
-	else return UNKNOWN;
+		return FileType::FAND16;
+	else if (EquUpCase(Ext, ".X")) return FileType::INDEX;
+	else if (EquUpCase(Ext, ".DTA")) return FileType::FAND8;
+	else if (EquUpCase(Ext, ".DBF")) return FileType::DBF;
+	else if (EquUpCase(Ext, ".RDB")) return FileType::RDB;
+	else return FileType::UNKNOWN;
 }
 
 void ReleaseFilesAndLinksAfterChapter()
@@ -123,7 +123,6 @@ void GetSplitChptName(std::string& Name, std::string& Ext)
 void GetRdbRecVars(void* RecPtr, RdbRecVars* X)
 {
 	void* p = nullptr; void* p2 = nullptr; void* cr = nullptr;
-	//LinkD* ld = nullptr;
 
 	cr = CRecPtr;
 	CRecPtr = RecPtr;
@@ -137,21 +136,19 @@ void GetRdbRecVars(void* RecPtr, RdbRecVars* X)
 		X->CatIRec = GetCatIRec(X->Name, false);
 		X->isSQL = false;
 		if (X->OldTxt != 0) {
-			//ld = LinkDRoot;
 			MarkBoth(p, p2);
 			if (RdFDSegment(0, X->OldTxt)) {
-				X->FTyp = CFile->Typ;
+				X->FTyp = CFile->file_type;
 				if (CFile->IsSQLFile) X->Ext = ".SQL";
 				else {
 					switch (X->FTyp) {
-					case '0': X->Ext = ".RDB"; break;
-					case 'D': X->Ext = ".DBF"; break;
-					case '8': X->Ext = ".DTA"; break;
+					case FileType::RDB: X->Ext = ".RDB"; break;
+					case FileType::DBF: X->Ext = ".DBF"; break;
+					case FileType::FAND8: X->Ext = ".DTA"; break;
 					default: X->Ext = ".000"; break;
 					}
 				}
 			}
-			//LinkDRoot = ld;
 			CFile = Chpt;
 			ReleaseBoth(p, p2);
 		}
@@ -208,7 +205,7 @@ bool ChptDelFor(RdbRecVars* X)
 		MyDeleteFile(CDir + CName + CExt);
 		CPath = CExtToT(CDir, CName, CExt);
 		MyDeleteFile(CPath);
-		if (X->FTyp == 'X') {
+		if (X->FTyp == FileType::INDEX) {
 			CPath = CExtToX(CDir, CName, CExt);
 			MyDeleteFile(CPath);
 		}
@@ -259,7 +256,7 @@ void RenameWithOldExt(RdbRecVars New, RdbRecVars Old)
 	CPath = CExtToT(CDir, CName, CExt);
 	RenameFile56(Old.Name + CExt, New.Name + CExt, false);
 	CPath = CExtToX(CDir, CName, CExt);
-	if (Old.FTyp == 'X') RenameFile56(Old.Name + CExt, New.Name + CExt, false);
+	if (Old.FTyp == FileType::INDEX) RenameFile56(Old.Name + CExt, New.Name + CExt, false);
 }
 
 WORD ChptWriteCRec()
@@ -290,9 +287,9 @@ WORD ChptWriteCRec()
 		}
 	if (New.Typ == 'F') {
 		if (New.Name.length() > 8) { WrLLF10Msg(1002); return result; }
-		if (New.FTyp == '?') { WrLLF10Msg(1067); return result; }
+		if (New.FTyp == FileType::UNKNOWN) { WrLLF10Msg(1067); return result; }
 		if (IsDuplFileName(New.Name)) { WrLLF10Msg(1068); return result; }
-		if ((New.FTyp == '0') && (New.Txt != 0)) { WrLLF10Msg(1083); return result; }
+		if ((New.FTyp == FileType::RDB) && (New.Txt != 0)) { WrLLF10Msg(1083); return result; }
 		if (NetFileTest(&New) && !TestIsNewRec() &&
 			(Old.Typ == 'F') && (eq != _equ) && !PromptYN(824)) {
 			result = 2; return result;
@@ -348,7 +345,7 @@ WORD FindHelpRecNr(FileD* FD, std::string& txt)
 	md = NewLMode(CFile, RdMode);
 	if (CFile->Handle == nullptr) goto label1;
 	NmF = CFile->FldD.front();
-	TxtF = (FieldDescr*)NmF->pChain;
+	TxtF = NmF->pChain;
 	for (i = 1; i < CFile->NRecs; i++) {
 		CFile->ReadRec(i, CRecPtr);
 		auto NmFtext = _StdS(NmF);
@@ -550,7 +547,7 @@ void CreateOpenChpt(std::string Nm, bool create, wwmix* ww)
 	SetInpStr(s);
 	if ((Nm[0] == '\\')) Nm1 = Nm.substr(1, 8);
 	else Nm1 = Nm;
-	RdFileD(Nm1, RDB, ""); /*old CRdb for GetCatIRec*/
+	RdFileD(Nm1, FileType::RDB, ""); /*old CRdb for GetCatIRec*/
 	R->FD = CFile;
 	CRdb = R;
 	CFile->RecPtr = GetRecSpace();
@@ -969,7 +966,7 @@ longint MakeDbfDcl(pstring Nm)
 void* RdF(std::string FileName)
 {
 	std::string d, name, ext;
-	FileType FDTyp = UNKNOWN;
+	FileType FDTyp = FileType::UNKNOWN;
 	std::string s;
 	FieldDescr* IdF = nullptr; FieldDescr* TxtF = nullptr;
 	integer i = 0, n = 0;
@@ -977,7 +974,7 @@ void* RdF(std::string FileName)
 	FSplit(FileName, d, name, ext);
 
 	FDTyp = ExtToTyp(ext);
-	if (FDTyp == '0') {
+	if (FDTyp == FileType::RDB) {
 		RdMsg(51);
 		s = MsgLine;
 		RdMsg(49);
@@ -1044,7 +1041,7 @@ bool MergeAndReplace(FileD* fd_old, FileD* fd_new)
 		DeleteF();
 		CFile = fd_new;
 		CloseFile();
-		fd_old->Typ = fd_new->Typ;
+		fd_old->file_type = fd_new->file_type;
 		SetCPathVol();
 		std::string p = CPath;
 		CFile = fd_old;
@@ -1108,7 +1105,7 @@ bool MergeOldNew(bool Veriflongint, longint Pos)
 	if (!RdFDSegment(0, Pos)) goto label1;
 	ChainLast(FileDRoot, CFile);
 	FDOld = CFile; FDOld->Name = Name;
-	if ((FDNew->Typ != FDOld->Typ) || !EquStoredF(FDNew->FldD.front(), FDOld->FldD.front())
+	if ((FDNew->file_type != FDOld->file_type) || !EquStoredF(FDNew->FldD.front(), FDOld->FldD.front())
 #ifdef FandSQL
 		&& !FDNew->IsSQLFile && !FDOld->IsSQLFile
 #endif
@@ -1116,7 +1113,7 @@ bool MergeOldNew(bool Veriflongint, longint Pos)
 		MergeAndReplace(FDOld, FDNew);
 		result = true;
 	}
-	else if ((FDOld->Typ == INDEX) && !EquKeys(FDOld->Keys[0], FDNew->Keys[0])) {
+	else if ((FDOld->file_type == FileType::INDEX) && !EquKeys(FDOld->Keys[0], FDNew->Keys[0])) {
 		SetCPathVol();
 		CPath = CExtToX(CDir, CName, CExt);
 		MyDeleteFile(CPath);

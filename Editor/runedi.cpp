@@ -98,7 +98,7 @@ void WriteStr(WORD& pos, WORD& base, WORD& maxLen, WORD& maxCol, BYTE sLen, std:
 	screen.GotoXY(cx + pos - base - 1, cy);
 }
 
-WORD EditTxt(std::string& text, WORD pos, WORD maxlen, WORD maxcol, char typ, bool del, bool star, bool upd, bool ret, WORD Delta)
+WORD EditTxt(std::string& text, WORD pos, WORD maxlen, WORD maxcol, FieldType typ, bool del, bool star, bool upd, bool ret, WORD Delta)
 {
 	WORD base = 0, cx = 0, cy = 0, cx1 = 0, cy1 = 0;
 	longint EndTime = 0; bool InsMode = false;
@@ -143,12 +143,12 @@ label1:
 			}
 			if (upd) {
 				switch (typ) {
-				case 'N': { if (KbdChar < '0' || KbdChar > '9') goto label7; }
-				case 'F': {
+				case FieldType::NUMERIC: { if (KbdChar < '0' || KbdChar > '9') goto label7; }
+				case FieldType::FIXED: {
 					if (!((KbdChar >= '0' && KbdChar <= '9') || KbdChar == '.' || KbdChar == ','
 						|| KbdChar == '-')) goto label7;
 				}
-				case 'R': {
+				case FieldType::REAL: {
 					if (!((KbdChar >= '0' && KbdChar <= '9') || KbdChar == '.' || KbdChar == ','
 						|| KbdChar == '-' || KbdChar == '+' || KbdChar == 'e' || KbdChar == 'E'))
 						goto label7;
@@ -253,7 +253,7 @@ label1:
 				break;
 			}
 			case __F4: {
-				if (upd && (typ == 'A') && (pos <= text.length())) {
+				if (upd && (typ == FieldType::ALFANUM) && (pos <= text.length())) {
 					text[pos - 1] = ToggleCS(text[pos - 1]);
 				}
 				break;
@@ -376,7 +376,7 @@ WORD FieldEdit(FieldDescr* F, FrmlElem* Impl, WORD LWw, WORD iPos, std::string& 
 	Col = screen.WhereX();
 	Row = screen.WhereY();
 	WORD KbdChar = Event.Pressed.KeyCombination();
-	if (F->Typ == 'B') {
+	if (F->field_type == FieldType::BOOL) {
 		screen.GotoXY(Col, Row);
 		if (Txt.empty()) screen.ScrWrStr(" ", TextAttr);
 		else screen.ScrWrStr(Txt, TextAttr);
@@ -423,14 +423,14 @@ WORD FieldEdit(FieldDescr* F, FrmlElem* Impl, WORD LWw, WORD iPos, std::string& 
 	WORD M = F->M;
 	//Mask = new pstring(FieldDMask(F));
 	Mask = new pstring(F->Mask.c_str());
-	if (((F->Flg & f_Mask) != 0) && (F->Typ == 'A')) {
+	if (((F->Flg & f_Mask) != 0) && (F->field_type == FieldType::ALFANUM)) {
 		Msk = *Mask;
 	}
 	else {
 		Msk = "";      /*!!!!*/
 	}
 label2:
-	iPos = EditTxt(Txt, iPos, L, LWw, F->Typ, del, false, upd, (F->FrmlTyp == 'S')
+	iPos = EditTxt(Txt, iPos, L, LWw, F->field_type, del, false, upd, (F->frml_type == 'S')
 		&& ret, Delta);
 	result = iPos;
 	if (iPos != 0) return result;
@@ -442,16 +442,16 @@ label2:
 		AssignFld(F, Impl);
 		Txt = DecodeField(F, L);
 	}
-	switch (F->Typ) {
-	case 'F':
-	case 'R': {
+	switch (F->field_type) {
+	case FieldType::FIXED:
+	case FieldType::REAL: {
 		T = LeadChar(' ', TrailChar(Txt, ' '));
 		WORD I = T.first(',');
 		if (I > 0) { T = copy(T, 1, I - 1) + "." + copy(T, I + 1, 255); }
 		if (T.length() == 0) r = 0.0;
 		else {
 			val(T, r, I);
-			if (F->Typ == 'F') {
+			if (F->field_type == FieldType::FIXED) {
 				WORD N = L - 2 - M;
 				if (M == 0) N++;
 				if ((I != 0) || (abs(r) >= Power10[N])) {
@@ -463,7 +463,7 @@ label2:
 			}
 			else /*'R'*/ if (I != 0) { WrLLF10Msg(639); goto label4; }
 		}
-		if (F->Typ == 'F') {
+		if (F->field_type == FieldType::FIXED) {
 			str(r, L, M, Txt);
 			if ((F->Flg & f_Comma) != 0) {
 				r = r * Power10[M];
@@ -476,12 +476,12 @@ label2:
 		RR = r;
 		break;
 	}
-	case 'A': {
+	case FieldType::ALFANUM: {
 		cc = ' ';
 		goto label3;
 		break;
 	}
-	case 'N': {
+	case FieldType::NUMERIC: {
 		cc = '0';
 	label3:
 		if (M == LeftJust) {
@@ -493,7 +493,7 @@ label2:
 		if ((!Msk.empty()) && !TestMask(Txt, Msk)) goto label4;
 		break;
 	}
-	case 'D': {
+	case FieldType::DATE: {
 		T = LeadChar(' ', TrailChar(Txt, ' '));
 		if (T == "") r = 0;
 		else {
@@ -531,7 +531,7 @@ void WrPromptTxt(std::string& S, FrmlElem* Impl, FieldDescr* F, std::string& Txt
 	else LWw = F->L;
 	TextAttr = screen.colors.dHili;
 	if (Impl != nullptr) {
-		switch (F->FrmlTyp) {
+		switch (F->frml_type) {
 		case 'R': RR = RunReal(Impl); break;
 		case 'S': SS = RunShortStr(Impl); break;
 		default: BB = RunBool(Impl); break;
@@ -580,15 +580,19 @@ std::string PromptS(std::string& S, FrmlElem* Impl, FieldDescr* F)
 	return result;
 }
 
-double PromptR(std::string& S, FrmlElem* Impl, FieldDPtr F)
+double PromptR(std::string& S, FrmlElem* Impl, FieldDescr* F)
 {
 	std::string Txt;
 	double R = 0.0;
 	WrPromptTxt(S, Impl, F, Txt, R);
 	auto result = R;
 	if (Event.Pressed.KeyCombination() == __ESC) {
-		if (Impl != nullptr) result = RunReal(Impl);
-		else result = 0;
+		if (Impl != nullptr) {
+			result = RunReal(Impl);
+		}
+		else {
+			result = 0;
+		}
 	}
 	return result;
 }
@@ -806,7 +810,7 @@ WORD FldRow(EFldD* D, WORD I)
 
 bool HasTTWw(FieldDescr* F)
 {
-	return (F->Typ == 'T') && (F->L > 1) && !E->IsUserForm;
+	return (F->field_type == FieldType::TEXT) && (F->L > 1) && !E->IsUserForm;
 }
 
 void DisplEmptyFld(EFldD* D, WORD I)
@@ -1050,9 +1054,9 @@ void DuplFld(FileD* FD1, FileD* FD2, void* RP1, void* RP2, void* RPt, FieldDescr
 	void* cr = CRecPtr;
 	CFile = FD1; CRecPtr = RP1;
 
-	switch (F1->FrmlTyp) {
+	switch (F1->frml_type) {
 	case 'S': {
-		if (F1->Typ == 'T') {
+		if (F1->field_type == FieldType::TEXT) {
 			ss = _LongS(F1);
 			CFile = FD2; CRecPtr = RP2;
 			if (RPt == nullptr) DelTFld(F2);
@@ -1876,7 +1880,7 @@ void UndoRecord()
 			if (NoDelTFlds) {
 				FieldDescr* f = CFile->FldD.front();
 				while (f != nullptr) {
-					if (((f->Flg & f_Stored) != 0) && (f->Typ == 'T'))
+					if (((f->Flg & f_Stored) != 0) && (f->field_type == FieldType::TEXT))
 						*(longint*)((char*)(E->OldRecPtr) + f->Displ) = *(longint*)(((char*)(CRecPtr)+f->Displ));
 					f = f->pChain;
 				}
@@ -2353,7 +2357,7 @@ bool OldRecDiffers()
 	if (CFile->IsSQLFile) {
 		x.S = WK->NrToStr(CRec); Strm1->KeyAcc(WK, @x); f = CFile->FldD;
 		while (f != nullptr) {
-			/* !!! with f^ do!!! */ if (Flg && f_Stored != 0) && (Typ != 'T') and
+			/* !!! with f^ do!!! */ if (Flg && f_Stored != 0) && (field_type != 'T') and
 				(CompArea(Pchar(CRecPtr) + Displ, Pchar(E->OldRecPtr) + Displ, NBytes) != ord(_equ)) then
 				goto label1;
 			f = f->pChain;
@@ -2630,10 +2634,10 @@ label1:
 
 void DuplFromPrevRec()
 {
-	FieldDPtr F; LockMode md; void* cr;
+	FieldDescr* F; LockMode md; void* cr;
 	if (CFld->Ed(IsNewRec)) {
 		F = CFld->FldD; md = RdMode;
-		if (F->Typ == 'T') md = WrMode;
+		if (F->field_type == FieldType::TEXT) md = WrMode;
 		md = NewLMode(CFile, md); SetWasUpdated();
 		cr = CRecPtr; CRecPtr = GetRecSpace(); RdRec(CRec() - 1);
 		DuplFld(CFile, CFile, CRecPtr, E->NewRecPtr, E->OldRecPtr, F, F);
@@ -2690,13 +2694,13 @@ bool GotoXRec(XString* PX, longint& N)
 	return result;
 }
 
-EFldD* FindEFld(FieldDPtr F)
+EFldD* FindEFld(FieldDescr* F)
 {
 
 	EFldD* D = E->FirstFld;
 	while (D != nullptr) {
 		if (D->FldD == F) goto label1;
-		D = (EFldD*)D->pChain;
+		D = D->pChain;
 	}
 label1:
 	return D;
@@ -2711,7 +2715,8 @@ void CreateOrErr(bool Create, void* RP, longint N)
 bool PromptSearch(bool Create)
 {
 	auto result = false;
-	FieldDPtr F, F2; FileD* FD, *FD2; void* RP; void* RP2; KeyFldDPtr KF, KF2;
+	FieldDescr* F; FieldDescr* F2;
+	FileD* FD, *FD2; void* RP; void* RP2; KeyFldD* KF, *KF2;
 	longint n; std::string s; double r; bool b, li, found; LockMode md;
 	XString x, xOld; XKey* K; longint w; WORD Col, LWw, pos; EFldD* D;
 	FD = CFile; K = VK; if (Subset) K = WK; KF = K->KFlds;
@@ -2724,7 +2729,7 @@ bool PromptSearch(bool Create)
 		CFile = FD2; CRecPtr = RP2;
 		while (KF2 != nullptr) {
 			CFile = FD2; CRecPtr = RP2; F = KF->FldD; F2 = KF2->FldD;
-			switch (F->FrmlTyp) {
+			switch (F->frml_type) {
 			case 'S': { s = _ShortS(F2); x.StoreStr(s, KF);
 				CFile = FD; CRecPtr = RP; S_(F, s); break; }
 			case 'R': { r = _R(F2); x.StoreReal(r, KF);
@@ -2761,14 +2766,14 @@ bool PromptSearch(bool Create)
 		if (Event.Pressed.KeyCombination() == __ESC || (Event.What == evKeyDown)) {
 			CRecPtr = E->NewRecPtr; goto label3;
 		}
-		switch (F->FrmlTyp) {
+		switch (F->frml_type) {
 		case 'S': { x.StoreStr(s, KF); S_(F, s); break; }
 		case 'R': { x.StoreReal(r, KF); R_(F, r); break; }
 		case 'B': { b = s[0] = AbbrYes; x.StoreBool(b, KF); B_(F, b); break; }
 		}
 		if (li) {
 			CRecPtr = E->NewRecPtr; found = GotoXRec(&x, n);
-			if ((pos == 0) && (F->FrmlTyp == 'S')) {
+			if ((pos == 0) && (F->frml_type == 'S')) {
 				x = xOld; x.StoreStr(_ShortS(F), KF);
 			}
 			CRecPtr = RP; if (pos != 0) { x = xOld; goto label2; };
@@ -2943,7 +2948,7 @@ bool CheckForExit(bool& Quit)
 	return result;
 }
 
-bool FldInModeF3Key(FieldDPtr F)
+bool FldInModeF3Key(FieldDescr* F)
 {
 	KeyFldD* KF;
 	auto result = false;
@@ -3415,7 +3420,7 @@ bool EditItemProc(bool del, bool ed, WORD& Brk)
 	double R = 0; bool b = false; ChkD* C = nullptr; WORD wd = 0;
 	FieldDescr* F = CFld->FldD;
 	auto result = true;
-	if (F->Typ == 'T') {
+	if (F->field_type == FieldType::TEXT) {
 		if (!EditFreeTxt(F, "", ed, Brk)) {
 			return false;
 		}
@@ -3433,7 +3438,7 @@ bool EditItemProc(bool del, bool ed, WORD& Brk)
 			return result;
 		}
 		SetWasUpdated();
-		switch (F->FrmlTyp) {
+		switch (F->frml_type) {
 		case 'B': B_(F, toupper(Txt[0]) == AbbrYes); break;
 		case 'S': S_(F, Txt); break;
 		case 'R': R_(F, R); break;
@@ -3820,7 +3825,7 @@ bool DuplToPrevEdit()
 
 	/* !!! with ee^ do!!! */
 	FieldDescr* f2 = CFld->FldD;
-	if ((f2->Flg && f_Stored == 0) || (f1->Typ != f2->Typ) || (f1->L != f2->L)
+	if ((f2->Flg && f_Stored == 0) || (f1->field_type != f2->field_type) || (f1->L != f2->L)
 		|| (f1->M != f2->M) || !CFld->Ed(IsNewRec)) {
 		WrLLF10Msg(140);
 		return result;
@@ -3874,9 +3879,9 @@ void Calculate2()
 		if (Lexem != 0x1A) Error(21);
 		if (Event.Pressed.KeyCombination() == __CTRL_F4) {
 			F = CFld->FldD;
-			if (CFld->Ed(IsNewRec) && (F->FrmlTyp == FTyp)) {
+			if (CFld->Ed(IsNewRec) && (F->frml_type == FTyp)) {
 				if (LockRec(true)) {
-					if ((F->Typ == 'F') && ((F->Flg & f_Comma) != 0)) {
+					if ((F->field_type == FieldType::FIXED) && ((F->Flg & f_Comma) != 0)) {
 						auto iZ0 = (FrmlElem0*)Z;
 						auto iZ02 = (FrmlElem2*)iZ0->P1;
 						if ((Z->Op = _const)) R = ((FrmlElem2*)Z)->R;
@@ -4050,7 +4055,7 @@ bool StartProc(Instr_proc* ExitProc, bool Displ)
 	result = true;
 	if (HasTF) {
 		for (auto& f : CFile->FldD) {
-			if ((f->Typ == 'T') && ((f->Flg & f_Stored) != 0) &&
+			if ((f->field_type == FieldType::TEXT) && ((f->Flg & f_Stored) != 0) &&
 				(*(longint*)(p + f->Displ) == *(longint*)(E->OldRecPtr) + f->Displ))
 				NoDelTFlds = true;
 		}
@@ -4419,7 +4424,7 @@ label81:
 		}
 		if (Event.Pressed.isChar()) {
 			// jedna se o tisknutelny znak
-			if (CFld->Ed(IsNewRec) && ((CFld->FldD->Typ != 'T') || (_T(CFld->FldD) == 0))
+			if (CFld->Ed(IsNewRec) && ((CFld->FldD->field_type != FieldType::TEXT) || (_T(CFld->FldD) == 0))
 				&& LockRec(true)) {
 				//keyboard.AddToFrontKeyBuf(KbdChar); // vrati znak znovu do bufferu
 				const bool res = !EditItemProc(true, true, Brk);

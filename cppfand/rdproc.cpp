@@ -262,7 +262,7 @@ FrmlElem* RdFldNameFrmlP(char& FTyp)
 		Accept('.');
 		F = RdFldName(FD);
 		A->RecFldD = F;
-		FTyp = F->FrmlTyp;
+		FTyp = F->frml_type;
 		return A;
 	}
 	if (IsKeyWord("KEYPRESSED")) { Op = _keypressed; goto label3; }
@@ -383,8 +383,8 @@ FrmlElem* RdFunctionP(char& FFTyp)
 		Z = new FrmlElem11(_prompt, 4); // GetOp(_prompt, 4);
 		((FrmlElem11*)Z)->PPP1 = RdStrFrml();
 		FieldDescr* F = RdFieldDescr("", true);
-		((FrmlElem11*)Z)->FldD = F; FTyp = F->FrmlTyp;
-		if (F->Typ == 'T') OldError(65);
+		((FrmlElem11*)Z)->FldD = F; FTyp = F->frml_type;
+		if (F->field_type == FieldType::TEXT) OldError(65);
 		if (Lexem == _assign) {
 			RdLex();
 			((FrmlElem11*)Z)->PP2 = RdFrml(Typ);
@@ -425,7 +425,7 @@ FrmlElem* RdFunctionP(char& FFTyp)
 				if (N > 29) Error(123);
 				Arg[N] = RdFrml(Typ);
 				N++;
-				if (Typ != KF->FldD->FrmlTyp) OldError(12);
+				if (Typ != KF->FldD->frml_type) OldError(12);
 				KF = (KeyFldD*)KF->pChain;
 			}
 		}
@@ -1187,7 +1187,7 @@ bool RdViewOpt(EditOpt* EO)
 	else if (IsOpt("JOURNAL")) {
 		EO->Journal = RdFileName();
 		WORD l = EO->Journal->RecLen - 13;
-		if (CFile->Typ == INDEX) l++;
+		if (CFile->file_type == FileType::INDEX) l++;
 		if (CFile->RecLen != l) OldError(111);
 	}
 	else if (IsOpt("SAVEAFTER")) EO->SaveAfterZ = RdRealFrml();
@@ -1401,7 +1401,7 @@ void RdProcCall(Instr** pinstr)
 		auto iPD = (Instr_checkfile*)*pinstr;
 		iPD->cfFD = RdFileName();
 		/* !!! with PD->cfFD^ do!!! */
-		if (iPD->cfFD != nullptr && (iPD->cfFD->Typ == FAND8 || iPD->cfFD->Typ == DBF)
+		if (iPD->cfFD != nullptr && (iPD->cfFD->file_type == FileType::FAND8 || iPD->cfFD->file_type == FileType::DBF)
 #ifdef FandSQL
 			|| PD->cfFD->typSQLFile
 #endif
@@ -1484,7 +1484,7 @@ label1:
 		RdLex();
 	}
 	FL->FldD = F;
-	if ((Opt == 'S') && (F->FrmlTyp != 'R')) OldError(20);
+	if ((Opt == 'S') && (F->frml_type != 'R')) OldError(20);
 	if (Lexem == ',') { RdLex(); goto label1; }
 	Accept(')');
 
@@ -1758,7 +1758,6 @@ Instr* RdExec()
 Instr* RdCopyFile()
 {
 	std::string ModeTxt[7] = { "KL","LK","KN","LN","LW","KW","WL" };
-	FieldDPtr* F = nullptr;
 	WORD i = 0;
 	CopyD* CD = nullptr;
 	bool noapp = false;
@@ -1797,7 +1796,7 @@ Instr* RdCopyFile()
 			CD->HdFD = RdFileName();
 			Accept('.');
 			CD->HdF = RdFldName(CD->HdFD);
-			if ((CD->HdF->FrmlTyp != 'S') || !CD->HdFD->IsParFile
+			if ((CD->HdF->frml_type != 'S') || !CD->HdFD->IsParFile
 				|| (CD->Opt1 == CpOption::cpFix || CD->Opt1 == CpOption::cpVar)
 				&& ((CD->HdF->Flg & f_Stored) == 0)) Error(52);
 		}
@@ -1843,7 +1842,7 @@ bool RdX(FileD* FD)
 	if ((Lexem == '.') && (FD != nullptr)) {
 		RdLex();
 		AcceptKeyWord("X");
-		if (FD->Typ != INDEX) OldError(108);
+		if (FD->file_type != FileType::INDEX) OldError(108);
 		result = true;
 	}
 	return result;
@@ -2038,7 +2037,7 @@ Instr* RdIndexfile()
 	auto PD = new Instr_indexfile(); // GetPD(_indexfile, 5);
 	RdLex();
 	PD->IndexFD = RdFileName();
-	if (PD->IndexFD->Typ != INDEX) OldError(108);
+	if (PD->IndexFD->file_type != FileType::INDEX) OldError(108);
 	if (Lexem == ',') {
 		RdLex();
 		AcceptKeyWord("COMPRESS");
@@ -2383,7 +2382,7 @@ FrmlElem* AdjustComma(FrmlElem* Z1, FieldDescr* F, instr_type Op)
 	FrmlElem0* Z = nullptr;
 	FrmlElem2* Z2 = nullptr;
 	auto result = Z1;
-	if (F->Typ != 'F') return result;
+	if (F->field_type != FieldType::FIXED) return result;
 	if ((F->Flg & f_Comma) == 0) return result;
 	Z2 = new FrmlElem2(_const, 0, Power10[F->M]); // GetOp(_const, sizeof(double));
 	//Z2->R = Power10[F->M];
@@ -2410,9 +2409,9 @@ AssignD* MakeImplAssign(FileD* FD1, FileD* FD2)
 				A = new AssignD();
 				if (ARoot == nullptr) ARoot = A;
 				else ChainLast(ARoot, A);
-				if ((F2->FrmlTyp != F1->FrmlTyp)
-					|| (F1->FrmlTyp == 'R')
-					&& (F1->Typ != F2->Typ)) {
+				if ((F2->frml_type != F1->frml_type)
+					|| (F1->frml_type == 'R')
+					&& (F1->field_type != F2->field_type)) {
 					A->Kind = _zero;
 					A->outputFldD = F1;
 				}
@@ -2453,7 +2452,7 @@ Instr_assign* RdAssign()
 				F = RdFldName(LV->FD);
 				PD->RecFldD = F;
 				if ((F->Flg & f_Stored) == 0) OldError(14);
-				FTyp = F->FrmlTyp;
+				FTyp = F->frml_type;
 			label0:
 				RdAssignFrml(FTyp, PD->Add, &PD->Frml);
 			}
@@ -2478,7 +2477,7 @@ Instr_assign* RdAssign()
 			}
 			else if (FD == nullptr) OldError(9);
 			else if (IsKeyWord("NRECS")) {
-				if (FD->Typ == RDB) { OldError(127); }
+				if (FD->file_type == FileType::RDB) { OldError(127); }
 				PD = new Instr_assign(_asgnnrecs); // GetPInstr(_asgnnrecs, 9);
 				PD->FD = FD;
 				FTyp = 'R';
@@ -2491,7 +2490,7 @@ Instr_assign* RdAssign()
 				F = RdFldName(FD);
 				PD->FldD = F;
 				if ((F->Flg & f_Stored) == 0) OldError(14);
-				FTyp = F->FrmlTyp;
+				FTyp = F->frml_type;
 				goto label0;
 			}
 		}
@@ -2508,8 +2507,8 @@ Instr_assign* RdAssign()
 		F = RdFldName(FD);
 		PD->FldD = F;
 		if ((F->Flg & f_Stored) == 0) OldError(14);
-		PD->Indexarg = (FD->Typ == INDEX) && IsKeyArg(F, FD);
-		RdAssignFrml(F->FrmlTyp, PD->Add, &PD->Frml);
+		PD->Indexarg = (FD->file_type == FileType::INDEX) && IsKeyArg(F, FD);
+		RdAssignFrml(F->frml_type, PD->Add, &PD->Frml);
 	}
 	else if (FindLocVar(&LVBD, &LV)) {
 		RdLex();
@@ -2910,7 +2909,7 @@ void RdSqlRdWrTxt(bool Rd)
 	Accept(','); CFile = RdFileName(); pd->sqlFD = CFile;
 	XKey* k = RdViewKey(); if (k == nullptr) k = CFile->Keys; pd->sqlKey = k; Accept(',');
 	pd->sqlFldD = RdFldName(CFile); Accept(','); pd->sqlXStr = RdStrFrml();
-	if (!pd->sqlFD->typSQLFile || (pd->sqlFldD->Typ != 'T')) OldError(170);
+	if (!pd->sqlFD->typSQLFile || (pd->sqlFldD->field_type != 'T')) OldError(170);
 }
 #endif
 

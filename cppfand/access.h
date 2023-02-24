@@ -2,6 +2,7 @@
 #include "access-structs.h"
 #include "base.h"
 #include "constants.h"
+#include "FileD.h"
 #include "LocVar.h"
 #include "Rdb.h"
 #include "switches.h"
@@ -95,7 +96,7 @@ pstring _ShortS(FieldDescr* F);
 std::string _StdS(FieldDescr* F);
 LongStr* _LongS(FieldDescr* F);
 longint _T(FieldDescr* F);
-longint _T(FieldDescr* F, unsigned char* data, char Typ);
+longint _T(FieldDescr* F, unsigned char* data, FileType file_type);
 
 // * UKLADANI DO SOUBORU * / DO FRMLELEM *
 void B_(FieldDescr* F, bool B);

@@ -1,10 +1,11 @@
 #pragma once
 #include "access.h"
 #include "AddD.h"
+#include "FieldDescr.h"
 #include "legacy.h"
 #include "models/FrmlElem.h"
 #include "../Indexes/XScan.h"
-//#include "models/Instr.h"
+
 
 struct LvDescr;
 class Instr;
@@ -106,8 +107,7 @@ struct RprtOpt
 	FrmlElem* Times = nullptr;
 	AutoRprtMode Mode;
 	RdbPos RprtPos;
-	//FieldListEl* Flds = nullptr;		 /* != nullptr => autoreport*/
-	std::vector<FieldDescr*> Flds;
+	std::vector<FieldDescr*> Flds;  // !empty => autoreport
 	std::vector<FieldDescr*> Ctrl;
 	std::vector<FieldDescr*> Sum;
 	KeyFldD* SK = nullptr;
@@ -121,7 +121,8 @@ struct RprtOpt
 
 struct RFldD : public Chained<RFldD>
 {
-	char FrmlTyp = '\0', Typ = '\0';    /*R,F,D,T*/
+	char FrmlTyp = '\0';    
+	char Typ = '\0'; /*R,F,D,T*/
 	bool BlankOrWrap = false; /*long date "DD.MM.YYYY"*/
 	FrmlElem* Frml = nullptr;
 	std::string Name; /*curr. length*/

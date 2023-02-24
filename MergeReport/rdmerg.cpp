@@ -358,8 +358,8 @@ void ImplAssign(OutpRD* outputRD, FieldDescr* outputField)
 	FieldDescr* inputField = FindIiandFldD(outputField->Name);
 	newAssign->inputFldD = inputField;
 	
-	if ((inputField == nullptr) || (inputField->FrmlTyp != outputField->FrmlTyp) ||
-		(inputField->FrmlTyp == 'R') && (inputField->Typ != outputField->Typ))
+	if ((inputField == nullptr) || (inputField->frml_type != outputField->frml_type) ||
+		(inputField->frml_type == 'R') && (inputField->field_type != outputField->field_type))
 	{
 		newAssign->Kind = MInstrCode::_zero;
 		newAssign->outputFldD = outputField;
@@ -367,7 +367,7 @@ void ImplAssign(OutpRD* outputRD, FieldDescr* outputField)
 	else {
 		FileD* inputFile = InpFD_M(Ii);
 		void* inputRecPointer = inputFile->RecPtr;
-		if ((inputFile->Typ == outputFile->Typ) && FldTypIdentity(inputField, outputField) && (inputField->Typ != 'T')
+		if ((inputFile->file_type == outputFile->file_type) && FldTypIdentity(inputField, outputField) && (inputField->field_type != FieldType::TEXT)
 			&& ((inputField->Flg & f_Stored) != 0) && (outputField->Flg == inputField->Flg))
 		{
 			newAssign->Kind = _move;
@@ -403,7 +403,7 @@ FrmlElem* AdjustComma_M(FrmlElem* Z1, FieldDescr* F, instr_type Op)
 	FrmlElem0* Z = nullptr;
 	FrmlElem2* Z2 = nullptr;
 	FrmlElem* result = Z1;
-	if (F->Typ != 'F') return result;
+	if (F->field_type != FieldType::FIXED) return result;
 	if ((F->Flg & f_Comma) == 0) return result;
 	Z2 = new FrmlElem2(_const, 0, Power10[F->M]); // GetOp(_const, sizeof(double));
 	//Z2->R = Power10[F->M];
@@ -503,7 +503,7 @@ std::vector<AssignD*> RdAssign_M()
 		F = RdFldName(FD);
 		AD->PFldD = F;
 		if ((F->Flg & f_Stored) == 0) OldError(14);
-		RdAssignFrml(F->FrmlTyp, AD->Add, &AD->Frml);
+		RdAssignFrml(F->frml_type, AD->Add, &AD->Frml);
 	}
 	else if (FindLocVar(&LVBD, &LV)) {
 		RdLex();
@@ -518,7 +518,7 @@ std::vector<AssignD*> RdAssign_M()
 			F = RdFldName(RD->OD->FD);
 			AD->OFldD = F;
 			if ((F->Flg & f_Stored) == 0) OldError(14);
-			RdAssignFrml(F->FrmlTyp, AD->Add, &AD->Frml);
+			RdAssignFrml(F->frml_type, AD->Add, &AD->Frml);
 		}
 	}
 	result.push_back(AD);

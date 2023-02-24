@@ -823,21 +823,21 @@ char* PrintPackedTerm(char* p, TDomain* D)
 	integer i = 0, n = 0;
 	TFunDcl* f = nullptr;
 	switch (D->Typ) {
-	case _IntD:	{
-			printf("%i", *(integer*)p);
-			p += 2;
-			break;
-		}
+	case _IntD: {
+		printf("%i", *(integer*)p);
+		p += 2;
+		break;
+	}
 	case _RealD: {
-			printf("%f", *(double*)p);
-			p += sizeof(double);
-			break;
-		}
+		printf("%f", *(double*)p);
+		p += sizeof(double);
+		break;
+	}
 	case _StrD: {
-			printf("'%s'", ((pstring*)p)->c_str());
-			p += *p + 1;
-			break;
-		}
+		printf("'%s'", ((pstring*)p)->c_str());
+		p += *p + 1;
+		break;
+	}
 	case _ListD: {
 		printf("[");
 		n = *(WORD*)p;
@@ -1094,7 +1094,7 @@ label1:
 		r = r->ChainBack;
 		if (r != nullptr) { FD = r->FD; goto label1; }
 	}
-	else if ((FD->Typ == RDB) || (FD->ChptPos.R == nullptr)) goto label1;
+	else if ((FD->file_type == FileType::RDB) || (FD->ChptPos.R == nullptr)) goto label1;
 	return FD;
 }
 
@@ -1220,11 +1220,11 @@ bool RunBuildIn()
 		}
 		CurrInst->Vars[0] = GetStringTerm(fd->Name);
 		s[0] = 0;
-		switch (fd->Typ) {
-		case FAND16: if (fd->IsSQLFile) s = "SQL"; break;
-		case INDEX: s = 'X'; break;
-		case DBF: s = "DBF"; break;
-		case FAND8: s = "DTA"; break;
+		switch (fd->file_type) {
+		case FileType::FAND16: if (fd->IsSQLFile) s = "SQL"; break;
+		case FileType::INDEX: s = 'X'; break;
+		case FileType::DBF: s = "DBF"; break;
+		case FileType::FAND8: s = "DTA"; break;
 		}
 		CurrInst->Vars[1] = GetStringTerm(s);
 		CurrInst->Vars[2] = GetStringTerm(fd->ChptPos.R->FD->Name);
@@ -1246,10 +1246,17 @@ bool RunBuildIn()
 			while ((f != nullptr) && !EquUpCase(f->Name, tmpSS)) f = (FieldDescr*)f->pChain;
 			if (f == nullptr) goto label1;
 		}
-		else CurrInst->Vars[1] = GetStringTerm(f->Name);
-		CurrInst->Vars[2] = GetStringTerm(f->Typ);
-		m = 0; l = f->L;
-		if (f->Typ == 'F') {
+		else {
+			CurrInst->Vars[1] = GetStringTerm(f->Name);
+		}
+
+		char fieldType = FieldDescr::GetFieldTypeChar(f->field_type);
+		std::string fieldTypeStr;
+		fieldTypeStr += fieldType;
+		CurrInst->Vars[2] = GetStringTerm(fieldTypeStr);
+
+			m = 0; l = f->L;
+		if (f->field_type == FieldType::FIXED) {
 			m = f->M;
 			l--;
 			if (m > 0) l -= (m + 1);
@@ -1257,7 +1264,7 @@ bool RunBuildIn()
 		CurrInst->Vars[3] = GetIntTerm(l);
 		CurrInst->Vars[4] = GetIntTerm(m);
 		m = f->Flg;
-		if ((f->Typ == 'N' || f->Typ == 'A')) m = m | (f->M << 4);
+		if ((f->field_type == FieldType::NUMERIC || f->field_type == FieldType::ALFANUM)) m = m | (f->M << 4);
 		CurrInst->Vars[5] = GetIntTerm(m);
 		//if ((f->Flg & f_Mask) != 0) mask = FieldDMask(f);
 		if ((f->Flg & f_Mask) != 0) mask = f->Mask;
@@ -1868,7 +1875,7 @@ void AssertFand(TPredicate* P, TCommand* C)
 				if (i > 0) printf(",");
 				PrintTerm(t, d);
 			}
-			switch (f->FrmlTyp) {
+			switch (f->frml_type) {
 			case 'B': {
 				B_(f, t->BB);
 				break;
@@ -1879,7 +1886,7 @@ void AssertFand(TPredicate* P, TCommand* C)
 				break;
 			}
 			default: {
-				if (f->Typ == 'T') {
+				if (f->field_type == FieldType::TEXT) {
 					if (d->Typ == _LongStrD) s = RdLongStr(t->Pos);
 					else s = GetPackedTerm(t);
 					LongS_(f, s);
@@ -1901,12 +1908,12 @@ void AssertFand(TPredicate* P, TCommand* C)
 	{
 		TestXFExist();
 		IncNRecs(1);
-		if (CFile->Typ == 'X') RecallRec(CFile->NRecs);
+		if (CFile->file_type == FileType::INDEX) RecallRec(CFile->NRecs);
 		else CFile->WriteRec(CFile->NRecs, CRecPtr);
 	}
 	OldLMode(CFile, md);
 	ReleaseStore(CRecPtr);
-}
+		}
 
 TFileScan* GetScan(TScanInf* SIOfs, TCommand* C, TInstance* Q)
 {
@@ -1941,7 +1948,7 @@ TFileScan* GetScan(TScanInf* SIOfs, TCommand* C, TInstance* Q)
 	while (kf != nullptr) {
 		f = kf->FldD;
 		t = Q->Vars[C->ArgI[i]];
-		switch (f->FrmlTyp) {
+		switch (f->frml_type) {
 		case 'R': {
 			if (t->Fun == prolog_func::_IntT) r = t->II;
 			else r = t->RR;
@@ -1969,7 +1976,9 @@ TFileScan* GetScan(TScanInf* SIOfs, TCommand* C, TInstance* Q)
 		i++;
 	}
 	k->FindNr(xx.S, fs->IRec);
-	if ((f->Typ != 'A' | xx.S[xx.S.length()]) != 0x1f) xx.S[0]++;
+	if ((f->field_type != FieldType::ALFANUM) || (xx.S[xx.S.length()] != 0x1f)) {
+		xx.S[0]++;
+	}
 	xx.S[xx.S.length()] = 0xFF;
 	b = k->FindNr(xx.S, n);
 	fs->Count = 0;
@@ -1982,7 +1991,7 @@ label1:
 
 std::string _MyS(FieldDescr* F)
 {
-	if (F->Typ == 'A') {
+	if (F->field_type == FieldType::ALFANUM) {
 		if (F->M == LeftJust) return OldTrailChar(' ', _ShortS(F));
 		else return LeadChar(' ', _ShortS(F));
 	}
@@ -2055,7 +2064,7 @@ label1:
 		if ((w & 1) != 0) {
 			t = CurrInst->Vars[i];
 			f = fl->FldD;
-			switch (f->FrmlTyp) {
+			switch (f->frml_type) {
 			case 'B': {
 				if (_B(f) != t->BB) goto label1;
 				break;
@@ -2069,7 +2078,7 @@ label1:
 				break;
 			}
 			default: {
-				if (f->Typ == 'T') {
+				if (f->field_type == FieldType::TEXT) {
 					d = p->ArgDomains[i];
 					if (d->Typ == _LongStrD) s = RdLongStr(t->Pos);
 					else s = GetPackedTerm(t);
@@ -2096,7 +2105,7 @@ label1:
 		if ((w & 1) != 0) {
 			f = fl->FldD;
 			d = p->ArgDomains[i];
-			switch (f->FrmlTyp) {
+			switch (f->frml_type) {
 			case 'B': {
 				CurrInst->Vars[i] = GetBoolTerm(_B(f));
 				break;
@@ -2111,7 +2120,7 @@ label1:
 				break;
 			}
 			default: {
-				if (f->Typ == 'T') {
+				if (f->field_type == FieldType::TEXT) {
 					s = _LongS(f);
 					if (d->Typ == _LongStrD) {
 						CurrInst->Vars[i] = GetLongStrTerm(WrLongStr(s));
@@ -2138,7 +2147,7 @@ label1:
 		while ((Q != nullptr)) {
 			fs1 = (TFileScan*)Q->NextBranch;
 			if ((Q->Pred == p) && (fs1 != nullptr)) {
-				if (CFile->Typ == 'X') {
+				if (CFile->file_type == FileType::INDEX) {
 					c = Q->RetCmd;
 					k = c->KDOfs;
 					if (k != 0) {
@@ -2153,7 +2162,7 @@ label1:
 			}
 			Q = Q->PrevInst;
 		}
-		if (CFile->Typ == 'X') {
+		if (CFile->file_type == FileType::INDEX) {
 			DeleteXRec(RecNr, true);
 			fs->IRec--;
 		}
@@ -2473,7 +2482,7 @@ label1:
 					q->Vars[i] = CopyTerm(branch_head_item->second);
 				}
 			}
-			
+
 			i++;
 			++branch_head_item;
 			w = w >> 1;

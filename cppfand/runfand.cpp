@@ -280,13 +280,13 @@ void CompileHelpCatDcl()
 #if defined (FandRunV)
 	RdFileD("UFANDHLP", FAND16, "");
 #else
-	RdFileD("FANDHLP", FAND16, "");
+	RdFileD("FANDHLP", FileType::FAND16, "");
 #endif
 	HelpFD = CFile;
 	RdMsg(52);
 	s = MsgLine;
 	SetInpStr(s);
-	RdFileD("Catalog", CAT, "");
+	RdFileD("Catalog", FileType::CAT, "");
 	CatFD = CFile;
 	FileDRoot = nullptr;
 	Chpt = FileDRoot;

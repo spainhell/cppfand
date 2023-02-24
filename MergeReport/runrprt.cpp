@@ -827,7 +827,7 @@ void PutMFlds(KeyFldD* M)
 		FieldDescr* f1 = m1->FldD;
 		CFile = cf1;
 		CRecPtr = cr1;
-		switch (f->FrmlTyp) {
+		switch (f->frml_type) {
 		case 'S': {
 				pstring s = _ShortS(f1);
 				CFile = cf; CRecPtr = cr;

@@ -26,7 +26,7 @@ bool OldToNewCat(longint& FilSz)
 
 	auto result = false;
 	bool cached = CFile->NotCached();
-	if (CFile->Typ != CAT) return result;
+	if (CFile->file_type != FileType::CAT) return result;
 	RdWrCache(READ, CFile->Handle, cached, 0, 6, &x);
 	if (x.RecLen != 106) return result;
 	x.RecLen = 107;
@@ -64,7 +64,7 @@ void VarFixImp(ThFile* F1, CpOption Opt)
 	for (FieldDescr* F : CFile->FldD) {
 		if ((F->Flg & f_Stored) != 0) {
 			if (F1->IsEOL) {
-				switch (F->FrmlTyp) {
+				switch (F->frml_type) {
 				case 'R': R_(F, 0); break;
 				case 'B': B_(F, false); break;
 				case 'S': S_(F, ""); break;
@@ -72,8 +72,8 @@ void VarFixImp(ThFile* F1, CpOption Opt)
 				}
 			}
 			else {
-				switch (F->Typ) {
-				case 'F': {
+				switch (F->field_type) {
+				case FieldType::FIXED: {
 					if (Opt == CpOption::cpFix) {
 						s = F1->RdFix(F->L);
 					}
@@ -86,7 +86,7 @@ void VarFixImp(ThFile* F1, CpOption Opt)
 					}
 					break;
 				}
-				case 'A': {
+				case FieldType::ALFANUM: {
 					if (Opt == CpOption::cpFix) {
 						S_(F, F1->RdFix(F->L));
 					}
@@ -104,7 +104,7 @@ void VarFixImp(ThFile* F1, CpOption Opt)
 					}
 					break;
 				}
-				case 'N': {
+				case FieldType::NUMERIC: {
 					if (Opt == CpOption::cpFix) {
 						S_(F, F1->RdFix(F->L));
 					}
@@ -113,8 +113,8 @@ void VarFixImp(ThFile* F1, CpOption Opt)
 					}
 					break;
 				}
-				case 'D':
-				case 'R': {
+				case FieldType::DATE:
+				case FieldType::REAL: {
 					if (Opt == CpOption::cpFix) {
 						s = F1->RdFix(F->L);
 					}
@@ -127,7 +127,7 @@ void VarFixImp(ThFile* F1, CpOption Opt)
 					if (s == "") {
 						R_(F, 0.0);
 					}
-					else if (F->Typ == 'R') {
+					else if (F->field_type == FieldType::REAL) {
 						val(s, r, err);
 						R_(F, r);
 					}
@@ -136,7 +136,7 @@ void VarFixImp(ThFile* F1, CpOption Opt)
 					}
 					break;
 				}
-				case 'B': {
+				case FieldType::BOOL: {
 					s = F1->RdFix(1);
 					B_(F, s[1] = 'A');
 					if (Opt == CpOption::cpVar) {
@@ -144,7 +144,7 @@ void VarFixImp(ThFile* F1, CpOption Opt)
 					}
 					break;
 				}
-				case 'T': {
+				case FieldType::TEXT: {
 					if (Opt == CpOption::cpVar) {
 						std::string x = F1->RdLongStr();
 						s = F1->RdDelim(',');
@@ -176,8 +176,8 @@ void VarFixExp(ThFile* F2, CpOption Opt)
 			if (first) first = false;
 			else if (Opt == CpOption::cpVar) F2->WrChar(',');
 
-			switch (F->Typ) {
-			case 'F': {
+			switch (F->field_type) {
+			case FieldType::FIXED: {
 				r = _R(F);
 				if ((F->Flg & f_Comma) != 0) r = r / Power10[F->M];
 				str(r, F->L, F->M, s);
@@ -196,7 +196,7 @@ void VarFixExp(ThFile* F2, CpOption Opt)
 				}
 				break;
 			}
-			case 'A': {
+			case FieldType::ALFANUM: {
 				s = _StdS(F);
 				if (Opt == CpOption::cpVar) {
 					if (F->M == 1) s = TrailChar(s, ' ');
@@ -210,7 +210,7 @@ void VarFixExp(ThFile* F2, CpOption Opt)
 				}
 				break;
 			}
-			case 'N': {
+			case FieldType::NUMERIC: {
 				s = _StdS(F);
 				if (Opt == CpOption::cpVar) {
 					if (F->M == 1) s = TrailChar(s, '0');
@@ -218,23 +218,23 @@ void VarFixExp(ThFile* F2, CpOption Opt)
 				}
 				break;
 			}
-			case 'D':
-			case 'R': {
+			case FieldType::DATE:
+			case FieldType::REAL: {
 				r = _R(F);
 				if ((r == 0.0) && (Opt == CpOption::cpVar)) s = "";
-				else if (F->Typ == 'R') str(r, F->L, s);
+				else if (F->field_type == FieldType::REAL) str(r, F->L, s);
 				else {
 					s = StrDate(r, F->Mask);
 					if (Opt == CpOption::cpVar) s = '\'' + s + '\'';
 				}
 				break;
 			}
-			case 'B': {
+			case FieldType::BOOL: {
 				if (_B(F)) s = 'A';
 				else s = 'N';
 				break;
 			}
-			case 'T': {
+			case FieldType::TEXT: {
 				if (Opt == CpOption::cpVar) {
 					x = _LongS(F);
 					F2->WrLongStr(x, true);
@@ -244,7 +244,7 @@ void VarFixExp(ThFile* F2, CpOption Opt)
 			}
 			}
 
-			if (F->Typ != 'T') F2->WrString(s);
+			if (F->field_type != FieldType::TEXT) F2->WrString(s);
 		}
 	}
 }
@@ -289,7 +289,7 @@ void ImportTxt(CopyD* CD)
 #endif
 			{
 				PutRec(CFile, CRecPtr);
-				if (CD->Append && (CFile->Typ == INDEX)) TryInsertAllIndexes(CFile->IRec);
+				if (CD->Append && (CFile->file_type == FileType::INDEX)) TryInsertAllIndexes(CFile->IRec);
 			}
 		}
 		LastExitCode = 0;
@@ -672,9 +672,9 @@ void CheckFile(FileD* FD)
 	ReadH(h, 2, &Prfx.RecLen);
 	fs = FileSizeH(h);
 	CloseH(&h);
-	if ((FD->RecLen != Prfx.RecLen) || (Prfx.NRecs < 0) && (FD->Typ != INDEX) ||
+	if ((FD->RecLen != Prfx.RecLen) || (Prfx.NRecs < 0) && (FD->file_type != FileType::INDEX) ||
 		((fs - FD->FrstDispl) / Prfx.RecLen < Prfx.NRecs) ||
-		(Prfx.NRecs > 0) && (FD->Typ == INDEX)) {
+		(Prfx.NRecs > 0) && (FD->file_type == FileType::INDEX)) {
 		LastExitCode = 3;
 		return;
 	}

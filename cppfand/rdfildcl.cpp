@@ -23,7 +23,7 @@ FieldDescr* RdFieldDescr(std::string name, bool Stored)
 	pstring* S = nullptr;
 	WORD L = 0, M = 0, NBytes = 0;
 	BYTE Flg = 0;
-	char Typ = 0, FrmlTyp = 0, c = 0;
+	char FrmlTyp = 0, c = 0;
 	WORD i = 0, n = 0, n1 = 0;
 	pstring ss;
 	std::string sstr;
@@ -33,15 +33,17 @@ FieldDescr* RdFieldDescr(std::string name, bool Stored)
 	else Flg = 0;
 	Accept(':');
 	if ((Lexem != _identifier) || (LexWord.length() > 1)) Error(10);
-	Typ = static_cast<char>(LexWord[1]);
+
+	FieldType Typ = FieldDescr::GetFieldType((char)LexWord[1]);
+
 	RdLex();
 	FrmlTyp = 'S'; M = 0;
-	if (Typ == 'N' || Typ == 'F') {
+	if (Typ == FieldType::NUMERIC || Typ == FieldType::FIXED) {
 		Accept(',');
 		L = RdInteger();
 	}
 	switch (Typ) {
-	case 'N': {
+	case FieldType::NUMERIC: {
 		NBytes = (L + 1) / 2;
 		if (CurrChar == 'L') {
 			RdLex();
@@ -49,7 +51,7 @@ FieldDescr* RdFieldDescr(std::string name, bool Stored)
 		}
 		break;
 	}
-	case 'F': {
+	case FieldType::FIXED: {
 		if (Lexem == ',') { Flg += f_Comma; RdLex(); }
 		else Accept('.');
 		M = RdInteger();
@@ -60,8 +62,8 @@ FieldDescr* RdFieldDescr(std::string name, bool Stored)
 		FrmlTyp = 'R';
 		break;
 	}
-	case 'R': { NBytes = 6; FrmlTyp = 'R'; L = 17; M = 5; break; }
-	case 'A': {
+	case FieldType::REAL: { NBytes = 6; FrmlTyp = 'R'; L = 17; M = 5; break; }
+	case FieldType::ALFANUM: {
 		Accept(',');
 		if (!Stored || (Lexem != _quotedstr)) {
 			L = RdInteger();
@@ -107,7 +109,7 @@ FieldDescr* RdFieldDescr(std::string name, bool Stored)
 		goto label2;
 		break;
 	}
-	case 'D': {
+	case FieldType::DATE: {
 		ss[0] = 0;
 		sstr = "";
 		if (Lexem == ',') {
@@ -122,11 +124,11 @@ FieldDescr* RdFieldDescr(std::string name, bool Stored)
 		L = sstr.length(); Flg += f_Mask;
 		break;
 	}
-	case 'B': {
+	case FieldType::BOOL: {
 		L = 1; NBytes = 1; FrmlTyp = 'B';
 		break;
 	}
-	case 'T': {
+	case FieldType::TEXT: {
 		if (Lexem == ',') {
 			RdLex();
 			L = RdInteger() + 2;
@@ -147,8 +149,10 @@ FieldDescr* RdFieldDescr(std::string name, bool Stored)
 	}
 	}
 	if (NBytes == 0) OldError(113);
-	if ((L > TxtCols - 1) && (Typ != 'A')) OldError(3);
-	F->Typ = Typ; F->FrmlTyp = FrmlTyp; F->L = L; F->M = M;
+	if ((L > TxtCols - 1) && (Typ != FieldType::ALFANUM)) OldError(3);
+	F->field_type = Typ;
+	F->frml_type = FrmlTyp;
+	F->L = L; F->M = M;
 	F->NBytes = NBytes;	F->Flg = Flg; F->Mask = sstr;
 	return F;
 }
@@ -413,7 +417,7 @@ void RdFieldDList(bool Stored)
 			Z = RdFrml(FTyp);
 		}
 		F = RdFieldDescr(name, Stored);
-		if ((CFile->Typ == DBF) && Stored && (F->Typ == 'R' || F->Typ == 'N')) {
+		if ((CFile->file_type == FileType::DBF) && Stored && (F->field_type == FieldType::REAL || F->field_type == FieldType::NUMERIC)) {
 			OldError(86);
 		}
 
@@ -421,14 +425,14 @@ void RdFieldDList(bool Stored)
 		ChainLast(CFile->FldD.front(), F);
 
 		if (Stored) {
-			if (CFile->Typ == FAND8) {
-				if ((F->Typ == 'R' || F->Typ == 'B' || F->Typ == 'T')) OldError(35);
-				else if ((F->Typ == 'F') && (F->NBytes > 5)) OldError(36);
+			if (CFile->file_type == FileType::FAND8) {
+				if ((F->field_type == FieldType::REAL || F->field_type == FieldType::BOOL || F->field_type == FieldType::TEXT)) OldError(35);
+				else if ((F->field_type == FieldType::FIXED) && (F->NBytes > 5)) OldError(36);
 			}
 		}
 		else {
 			F->Frml = Z;
-			if (FTyp != F->FrmlTyp) OldError(12);
+			if (FTyp != F->frml_type) OldError(12);
 		}
 		if (Lexem == ';') {
 			RdLex();
@@ -460,7 +464,7 @@ void SetLDIndexRoot(/*LinkD* L,*/ std::deque<LinkD*>& L2)
 		if (L == l2) {
 			break;
 		}
-		if (CFile->Typ == INDEX) {
+		if (CFile->file_type == FileType::INDEX) {
 			for (auto& K : CFile->Keys) {
 				KeyFldD* KF = K->KFlds;
 				computed = false;
@@ -515,7 +519,7 @@ void* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 		FD = RdFileName();
 		if (Lexem == ';') RdLex();
 		SetMsgPar(FileName);
-		if (FDTyp != FAND16) OldError(103);
+		if (FDTyp != FileType::FAND16) OldError(103);
 		if (Lexem != 0x1A) Error(40);
 #ifdef FandSQL
 		if (issql || FD->typSQLFile) OldError(155);
@@ -549,9 +553,9 @@ void* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 				CFile->FldD.push_back(F);
 				F2->pChain = F;
 				F2 = F;
-				if (F->Typ == 'T') {
-					F->FrmlTyp = 'R';
-					F->Typ = 'F';
+				if (F->field_type == FieldType::TEXT) {
+					F->frml_type = 'R';
+					F->field_type = FieldType::FIXED;
 					F->L = 10;
 					F->Flg = F->Flg & !f_Encryp;
 				}
@@ -589,7 +593,10 @@ void* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 		}
 
 		CFile->IsHlpFile = false;
-		if (!(FDTyp == FAND16 || FDTyp == INDEX) || !(CFile->Typ == FAND16 || CFile->Typ == INDEX)) {
+		if (!( FDTyp == FileType::FAND16 
+			|| FDTyp == FileType::INDEX) 
+			|| !(CFile->file_type == FileType::FAND16 || CFile->file_type == FileType::INDEX)
+			) {
 			OldError(106);
 		}
 
@@ -625,8 +632,8 @@ void* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 
 	if (isHlp) {
 		F = CFile->FldD.front();
-		F2 = (FieldDescr*)F->pChain;
-		if ((F->Typ != 'A') || (F2 == nullptr) || (F2->Typ != 'T') || (F2->pChain != nullptr)) OldError(128);
+		F2 = F->pChain;
+		if ((F->field_type != FieldType::ALFANUM) || (F2 == nullptr) || (F2->field_type != FieldType::TEXT) || (F2->pChain != nullptr)) OldError(128);
 		CFile->IsHlpFile = true;
 	}
 label2:
@@ -642,12 +649,12 @@ label2:
 		goto label2;
 	}
 	if (issql && !CFile->Keys.empty()) {
-		CFile->Typ = INDEX;
+		CFile->file_type = FileType::INDEX;
 	}
 	GetXFileD();
 	CompileRecLen();
 	SetLDIndexRoot(LDOld);
-	if ((CFile->Typ == INDEX) && CFile->Keys.empty()) Error(107);
+	if ((CFile->file_type == FileType::INDEX) && CFile->Keys.empty()) Error(107);
 	if ((Lexem == '#') && (ForwChar == 'A')) {
 		RdLex();
 		RdKumul();
@@ -786,7 +793,7 @@ label2:
 	LinkDRoot.push_front(L);
 
 	if (Lexem == '!') {
-		if (CFile->Typ != INDEX
+		if (CFile->file_type != FileType::INDEX
 #ifdef FandSQL
 			&& !CFile->typSQLFile
 #endif
@@ -805,7 +812,7 @@ label2:
 	KF = K->KFlds;
 label3:
 	F = RdFldName(CFile);
-	if (F->Typ == 'T') OldError(84);
+	if (F->field_type == FieldType::TEXT) OldError(84);
 	arg = new KeyFldD();
 	arg->FldD = F;
 	arg->CompLex = KF->CompLex;
@@ -813,8 +820,8 @@ label3:
 	L->Args.push_back(arg);
 
 	F2 = KF->FldD;
-	if ((F->Typ != F2->Typ) || (F->Typ != 'D') && (F->L != F2->L) ||
-		(F->Typ == 'F') && (F->M != F2->M)) OldError(12);
+	if ((F->field_type != F2->field_type) || (F->field_type != FieldType::DATE) && (F->L != F2->L) ||
+		(F->field_type == FieldType::FIXED) && (F->M != F2->M)) OldError(12);
 
 	KF = KF->pChain;
 	if (KF != nullptr) {
@@ -830,7 +837,7 @@ label6:
 
 void CheckDuplAlias(pstring Name)
 {
-	if (CFile->Typ != INDEX
+	if (CFile->file_type != FileType::INDEX
 #ifdef FandSQL
 		&& !CFile->typSQLFile
 #endif
@@ -912,7 +919,7 @@ label2:
 	if ((F->Flg & f_Stored) == 0) OldError(14);
 	Accept(_assign);
 	Z = RdFrml(FTyp);
-	if (F->FrmlTyp != FTyp) {
+	if (F->frml_type != FTyp) {
 		Error(12);
 	}
 	if (Lexem == ';') {
@@ -941,7 +948,7 @@ label1:
 	if ((F->Flg & f_Stored) == 0) OldError(14);
 	Accept(_assign);
 	Z = RdFrml(FTyp);
-	if (FTyp != F->FrmlTyp) OldError(12);
+	if (FTyp != F->frml_type) OldError(12);
 	//ID = (ImplD*)GetStore(sizeof(*ID)); 
 	ID = new ImplD();
 	ID->FldD = F;
@@ -987,7 +994,7 @@ void RdKumul()
 			else {
 				Accept(_addass);
 				AD->Assign = false;
-				TestReal(AD->Field->FrmlTyp);
+				TestReal(AD->Field->frml_type);
 				AD->Frml = RdRealFrml();
 			}
 		}
@@ -1035,37 +1042,32 @@ void RdAssign(AddD* AD)
 	Accept(_assign);
 	AD->Assign = true;
 	AD->Frml = RdFrml(FTyp);
-	if (FTyp != AD->Field->FrmlTyp) OldError(12);
+	if (FTyp != AD->Field->frml_type) OldError(12);
 }
 
 /// smaze CFile->Handle, nastavi typ na FDTyp a ziska CatIRec z GetCatIRec() - musi existovat CatFD
 void SetHCatTyp(FileType FDTyp)
 {
 	CFile->Handle = nullptr;
-	CFile->Typ = FDTyp;
-	CFile->CatIRec = GetCatIRec(CFile->Name, CFile->Typ == RDB/*multilevel*/);
+	CFile->file_type = FDTyp;
+	CFile->CatIRec = GetCatIRec(CFile->Name, CFile->file_type == FileType::RDB/*multilevel*/);
 #ifdef FandSQL
 	typSQLFile = issql;
 	SetIsSQLFile();
 #endif
 }
 
-void GetTFileD(char FDTyp)
+void GetTFileD(FileType file_type)
 {
-	//if ((uintptr_t)CFile->TF == 0x534b007f)
-	//{
-	//	return;
-	//}
-	/* !!! with CFile^ do!!! */
 	if (!HasTT && (CFile->TF == nullptr)) return;
 	if (CFile->TF == nullptr) CFile->TF = new TFile();
 	CFile->TF->Handle = nullptr;
-	if (FDTyp == 'D') CFile->TF->Format = TFile::DbtFormat;
+	if (file_type == FileType::DBF) CFile->TF->Format = TFile::DbtFormat;
 }
 
 void GetXFileD()
 {
-	if (CFile->Typ != INDEX) {
+	if (CFile->file_type != FileType::INDEX) {
 		if (CFile->XF != nullptr) {
 			OldError(104);
 		}

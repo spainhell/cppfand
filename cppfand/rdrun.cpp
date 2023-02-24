@@ -226,7 +226,7 @@ bool Link(AddD* AD, longint& N, char& Kind2)
 #endif
 		{
 			ClearDeletedFlag();
-			if ((LD != nullptr) && (CFile->Typ == INDEX)) {
+			if ((LD != nullptr) && (CFile->file_type == FileType::INDEX)) {
 				CrIndRec();
 				N = CFile->NRecs;
 			}
@@ -293,13 +293,13 @@ bool Assign(AddD* AD)
 	FieldDescr* F = AD->Field;
 	FrmlElem* Z = AD->Frml;
 
-	switch (F->FrmlTyp) {
+	switch (F->frml_type) {
 	case 'R': {
 		R = RunReal(Z);
 		break;
 	}
 	case 'S': {
-		if (F->Typ == 'T') S = RunStdStr(Z);
+		if (F->field_type == FieldType::TEXT) S = RunStdStr(Z);
 		else ss = RunShortStr(Z);
 		break;
 	}
@@ -310,13 +310,13 @@ bool Assign(AddD* AD)
 	}
 
 	if (!Link(AD, N2, Kind2)) { return false; }
-	switch (F->FrmlTyp) {
+	switch (F->frml_type) {
 	case 'R': {
 		R_(F, R);
 		break;
 	}
 	case 'S': {
-		if (F->Typ == 'T') S_(F, S);
+		if (F->field_type == FieldType::TEXT) S_(F, S);
 		else S_(F, ss);
 		break;
 	}

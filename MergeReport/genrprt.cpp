@@ -52,7 +52,7 @@ label1:
 		if (D->IsSum) L2 = 2;
 		else L2 = 0;
 		D->NxtLine = false;
-		if (LastTT || (F->Typ == 'T') || !frstOnLine && (Col + L2 + L > MaxCol + 1)) {
+		if (LastTT || (F->field_type == FieldType::TEXT) || !frstOnLine && (Col + L2 + L > MaxCol + 1)) {
 			D->NxtLine = true;
 			NLines++;
 			Col = 1;
@@ -61,9 +61,9 @@ label1:
 		frstOnLine = false;
 		Col = Col + L2;
 		D->ColItem = Col + (L - LItem + 1) / 2;
-		if ((F->Typ == 'A' || F->Typ == 'N') && (F->M == LeftJust)) D->ColTxt = Col;
+		if ((F->field_type == FieldType::ALFANUM || F->field_type == FieldType::NUMERIC) && (F->M == LeftJust)) D->ColTxt = Col;
 		else D->ColTxt = Col + L - LTxt;
-		if (F->Typ == 'T') {
+		if (F->field_type == FieldType::TEXT) {
 			D->ColItem = 1;
 			D->ColTxt = 1;
 			WasTT = true;
@@ -141,7 +141,7 @@ void WrLevel(std::string& report, int Level)
 			if ((Level != 0) && d->IsSum) {
 				s = "sum(" + s + ')';
 			}
-			if (f->Typ == 'D') {
+			if (f->field_type == FieldType::DATE) {
 				WrStr(report, "strdate(");
 				WrStr(report, s);
 				WrStr(report, ",'");
@@ -162,11 +162,11 @@ void WrLevel(std::string& report, int Level)
 	}
 	WrStr(report, ";\r\n");
 	int col = 1;
-	if (CFile->Typ == RDB) WrChar(report, 0x11);
+	if (CFile->file_type == FileType::RDB) WrChar(report, 0x11);
 
 	for (size_t i = 0; i < PFldDs.size(); i++) {
 		PFldD* d = &PFldDs[i];
-		if ((CFile->Typ == RDB) && (i + 1 == PFldDs.size())) {
+		if ((CFile->file_type == FileType::RDB) && (i + 1 == PFldDs.size())) {
 			WrChar(report, 0x11);
 		}
 		if (d->NxtLine) {
@@ -180,7 +180,7 @@ void WrLevel(std::string& report, int Level)
 		if ((Level == 0) || d->IsSum || d->IsCtrl && (d->Level >= Level)) {
 			if ((Level != 0) && d->IsSum) { n -= 2; l += 2; }
 			WrBlks(report, n);
-			if (f->Typ == 'F' || f->Typ == 'R') {
+			if (f->field_type == FieldType::FIXED || f->field_type == FieldType::REAL) {
 				int m = f->M;
 				if (m != 0) {
 					for (size_t j = 0; j < l - m - 1; j++) WrChar(report, '_');
@@ -264,7 +264,7 @@ std::string GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 			if (kf->CompLex) WrChar(report, '~');
 			kf = (KeyFldD*)kf->pChain;
 		}
-		else if (f->Typ == 'A') WrChar(report, '~');
+		else if (f->field_type == FieldType::ALFANUM) WrChar(report, '~');
 		WrStr(report, f->Name);
 		//fl2 = (FieldListEl*)fl2->pChain;
 		first = false;
@@ -421,12 +421,12 @@ bool SelForAutoRprt(RprtOpt* RO)
 	CFile = RO->FDL.FD;
 	if (RO->Mode == _ARprt || RO->Mode == _ATotal) {
 		for (auto& f : RO->Flds) {
-			if (f->Typ != 'T') ww.PutSelect(f->Name);
+			if (f->field_type != FieldType::TEXT) ww.PutSelect(f->Name);
 		}
 		if (!ww.SelFieldList(37, false, RO->Ctrl)) return result; // TODO: RO->Ctrl[0] is probably bad idea
 
 		for (auto& f : RO->Flds) {
-			if (f->FrmlTyp == 'R') ww.PutSelect(f->Name);
+			if (f->frml_type == 'R') ww.PutSelect(f->Name);
 		}
 		if (!ww.SelFieldList(38, true, RO->Sum)) return result;  // TODO: RO->Sum[0] is probably bad idea
 	}
@@ -492,7 +492,7 @@ std::string SelGenRprt(pstring RprtName)
 	if (!ww.SelFieldList(37, false, ro->Ctrl)) return result;
 
 	for (auto& fl : ro->Flds) {
-		if (fl->FrmlTyp == 'R') ww.PutSelect(fl->Name);
+		if (fl->frml_type == 'R') ww.PutSelect(fl->Name);
 	}
 
 	if (!ww.SelFieldList(38, false, ro->Sum)) return result;

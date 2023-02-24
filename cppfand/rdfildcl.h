@@ -33,6 +33,6 @@ void RdRoleField(AddD* AD);
 void RdImper(AddD* AD);
 void RdAssign(AddD* AD);
 void SetHCatTyp(FileType FDTyp);
-void GetTFileD(char FDTyp);
+void GetTFileD(FileType file_type);
 void GetXFileD();
 CompInpD* OrigInp();

@@ -187,7 +187,7 @@ void AssignRecVar(LocVar* LV1, LocVar* LV2, AssignD* A)
 			FieldDescr* F = A->outputFldD;
 			CFile = FD1;
 			CRecPtr = RP1;
-			switch (F->FrmlTyp) {
+			switch (F->frml_type) {
 			case 'S': { S_(F, EmptyStr); break; }
 			case 'R': { R_(F, 0.0); break; }
 			default: { B_(F, false); break; }
@@ -502,7 +502,7 @@ void PrintTxtProc(Instr_edittxt* PD)
 bool SrchXKey(XKey* K, XString& X, longint& N)
 {
 	void* cr;
-	if (CFile->Typ == INDEX) {
+	if (CFile->file_type == FileType::INDEX) {
 		TestXFExist();
 		return K->SearchInterval(X, false, N);
 	}
@@ -543,7 +543,7 @@ void DeleteRecProc(Instr_recs* PD)
 	if (PD->AdUpd && !DeletedFlag()) {
 		LastExitCode = (!RunAddUpdte('-', nullptr, nullptr));
 	}
-	if (CFile->Typ == INDEX) {
+	if (CFile->file_type == FileType::INDEX) {
 		if (!DeletedFlag()) DeleteXRec(n, true);
 	}
 	else {
@@ -581,7 +581,7 @@ void UpdRec(void* CR, longint N, bool AdUpd)
 			LastExitCode = !RunAddUpdte('d', cr2, nullptr);
 		}
 	}
-	if (CFile->Typ == INDEX) {
+	if (CFile->file_type == FileType::INDEX) {
 		OverWrXRec(N, cr2, CR);
 	}
 	else {
@@ -677,7 +677,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 		CopyRecWithT(PD->LV->RecPtr, cr);
 		if (app) {
 			CRecPtr = cr;
-			if (CFile->Typ == INDEX) {
+			if (CFile->file_type == FileType::INDEX) {
 				RecallRec(N);
 			}
 			else CFile->WriteRec(N, CRecPtr);
@@ -1069,7 +1069,7 @@ void ResetCatalog()
 		CFile = (FileD*)CRdb->FD->pChain;
 		while (CFile != nullptr) {
 			CloseFile();
-			CFile->CatIRec = GetCatIRec(CFile->Name, CFile->Typ == RDB);
+			CFile->CatIRec = GetCatIRec(CFile->Name, CFile->file_type == FileType::RDB);
 #ifdef FandSQL
 			SetIsSQLFile();
 #endif
@@ -1088,7 +1088,7 @@ void PortOut(bool IsWord, WORD Port, WORD What)
 void RecallRecProc(Instr_recs* PD)
 {
 	CFile = PD->RecFD;
-	if (CFile->Typ != INDEX) return;
+	if (CFile->file_type != FileType::INDEX) return;
 	longint N = RunInt(PD->RecNr);
 	CRecPtr = GetRecSpace();
 	LockMode md = NewLMode(CFile, CrMode);
@@ -1529,7 +1529,7 @@ void CallProcedure(Instr_proc* PD)
 				const auto state = SaveCompState();
 				std::string code = RunStdStr(PD->TArg[i].TxtFrml);
 				SetInpStdStr(code, true);
-				RdFileD(PD->TArg[i].Name, FAND16, "$");
+				RdFileD(PD->TArg[i].Name, FileType::FAND16, "$");
 				RestoreCompState(state);
 			}
 			else {

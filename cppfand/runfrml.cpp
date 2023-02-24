@@ -325,7 +325,7 @@ longint RecNoFun(FrmlElem13* Z)
 	LockMode md = NewLMode(CFile, RdMode);
 	CRecPtr = GetRecSpace();
 	if (CFile->NRecs > 0) {
-		if (CFile->Typ == INDEX) {
+		if (CFile->file_type == FileType::INDEX) {
 			TestXFExist();
 			b = k->SearchInterval(x, false, n);
 		}
@@ -354,7 +354,7 @@ longint AbsLogRecNoFun(FrmlElem13* Z)
 	CFile = Z->FFD;
 	LockMode md = NewLMode(CFile, RdMode);
 	if (N > CFile->NRecs) goto label1;
-	if (CFile->Typ == INDEX) {
+	if (CFile->file_type == FileType::INDEX) {
 		TestXFExist();
 		if (Z->Op == _recnolog) {
 			CRecPtr = GetRecSpace();
@@ -1181,7 +1181,7 @@ void TestTFrml(FieldDescr* F, FrmlElem* Z, TFile** TF02, FileD** TFD02, longint&
 	case _field: {
 		auto iZ = (FrmlElem7*)Z;
 		f1 = iZ->Field;
-		if ((f1->Typ != 'T') || ((f1->Flg & f_Stored) == 0)) return;
+		if ((f1->field_type != FieldType::TEXT) || ((f1->Flg & f_Stored) == 0)) return;
 		if (F == nullptr) {
 			if ((f1->Flg & f_Encryp) != 0) return;
 		}
@@ -1271,9 +1271,9 @@ bool TryCopyT(FieldDescr* F, TFile* TF, longint& pos, FrmlElem* Z)
 void AssgnFrml(FieldDescr* F, FrmlElem* X, bool Delete, bool Add)
 {
 	longint pos = 0;
-	switch (F->FrmlTyp) {
+	switch (F->frml_type) {
 	case 'S': {
-		if (F->Typ == 'T') {
+		if (F->field_type == FieldType::TEXT) {
 			TFile* tf;
 			if (HasTWorkFlag()) {
 				tf = &TWork;
@@ -1327,20 +1327,20 @@ void LVAssignFrml(LocVar* LV, bool Add, FrmlElem* X)
 
 std::string DecodeFieldRSB(FieldDescr* F, WORD LWw, double R, std::string& T, bool B)
 {
-	WORD L = 0, M = 0; char C = 0;
+	WORD L = 0, M = 0;
+	char C = 0;
 	L = F->L; M = F->M;
-	switch (F->Typ) {
-	case 'D': {
-		//T = StrDate(R, FieldDMask(F));
+	switch (F->field_type) {
+	case FieldType::DATE: {
 		T = StrDate(R, F->Mask);
 		break;
 	}
-	case 'N': {
+	case FieldType::NUMERIC: {
 		C = '0';
 		goto label1;
 		break;
 	}
-	case 'A': {
+	case FieldType::ALFANUM: {
 		C = ' ';
 	label1:
 		if (M == LeftJust)
@@ -1355,12 +1355,12 @@ std::string DecodeFieldRSB(FieldDescr* F, WORD LWw, double R, std::string& T, bo
 		}
 		break;
 	}
-	case 'B': {
+	case FieldType::BOOL: {
 		if (B) T = AbbrYes;
 		else T = AbbrNo;
 		break;
 	}
-	case 'R': {
+	case FieldType::REAL: {
 		str(R, L, T);
 		break;
 	}
@@ -1392,13 +1392,13 @@ std::string DecodeField(FieldDescr* F, WORD LWw)
 	double r = 0;
 	std::string s, Txt;
 	bool b = false;
-	switch (F->FrmlTyp) {
+	switch (F->frml_type) {
 	case 'R': {
 		r = _R(F);
 		break;
 	}
 	case 'S': {
-		if (F->Typ == 'T') {
+		if (F->field_type == FieldType::TEXT) {
 			if (((F->Flg & f_Stored) != 0) && (_R(F) == 0.0)) Txt = ".";
 			else Txt = "*";
 			return Txt;
@@ -2350,7 +2350,7 @@ void GetRecNoXString(FrmlElem13* Z, XString& X)
 	KeyFldD* kf = Z->Key->KFlds;
 	while (kf != nullptr) {
 		FrmlElem* zz = Z->Arg[i];
-		switch (kf->FldD->FrmlTyp) {
+		switch (kf->FldD->frml_type) {
 		case 'S': X.StoreStr(RunShortStr(zz), kf); break;
 		case 'R': X.StoreReal(RunReal(zz), kf); break;
 		case 'B': X.StoreBool(RunBool(zz), kf); break;

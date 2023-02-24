@@ -129,10 +129,10 @@ label5:
 			}
 			F = D->FldD; 
 			D->L = F->L;
-			if (F->Typ == 'T') {
+			if (F->field_type == FieldType::TEXT) {
 				D->L = 1;
 			}
-			if ((F->Typ == 'A') && (M < F->L)) {
+			if ((F->field_type == FieldType::ALFANUM) && (M < F->L)) {
 				D->L = M;
 			}
 			else if (M != D->L) {
@@ -217,9 +217,9 @@ void AutoDesign(FieldListEl* FL)
 		D->FldD = F;
 		D->L = F->L;
 		if (D->L > maxcol) D->L = maxcol;
-		if ((E->FD->Typ == CAT) && (D->L > 44)) D->L = 44; /*catalog pathname*/
+		if ((E->FD->file_type == FileType::CAT) && (D->L > 44)) D->L = 44; /*catalog pathname*/
 		FldLen = D->L;
-		if (F->Typ == 'T') D->L = 1;
+		if (F->field_type == FieldType::TEXT) D->L = 1;
 		L = F->Name.length();
 		if (FldLen > L) L = FldLen;
 		if (Col + L > E->LastCol) {
@@ -300,9 +300,9 @@ void AutoDesign(std::vector<FieldDescr*>& FL)
 		D->FldD = F;
 		D->L = F->L;
 		if (D->L > maxcol) D->L = maxcol;
-		if ((E->FD->Typ == CAT) && (D->L > 44)) D->L = 44; /*catalog pathname*/
+		if ((E->FD->file_type == FileType::CAT) && (D->L > 44)) D->L = 44; /*catalog pathname*/
 		FldLen = D->L;
-		if (F->Typ == 'T') D->L = 1;
+		if (F->field_type == FieldType::TEXT) D->L = 1;
 		L = F->Name.length();
 		if (FldLen > L) L = FldLen;
 		if (Col + L > E->LastCol) {
@@ -597,8 +597,8 @@ void RdDepChkImpl()
 {
 	std::string s;
 	CFile = E->FD;
-	switch (CFile->Typ) {
-	case RDB: {
+	switch (CFile->file_type) {
+	case FileType::RDB: {
 		RdMsg(53);
 		s = MsgLine;
 		ResetCompilePars();
@@ -606,7 +606,7 @@ void RdDepChkImpl()
 		RdUDLI();
 		break;
 	}
-	case CAT: {
+	case FileType::CAT: {
 		RdMsg(54); s = MsgLine;
 		if (spec.CPMdrive != ' ') s = s + ',' + spec.CPMdrive + ':';
 		RdMsg(55); s = s + MsgLine;
@@ -627,7 +627,7 @@ void RdDepChkImpl()
 void TestedFlagOff()
 {
 	for (auto& F : CFile->FldD) {
-		F->Typ = static_cast<char>(F->Typ & 0x7F);
+		F->field_flag = false;
 	}
 }
 
@@ -684,16 +684,20 @@ void SetFrmlFlags(FrmlElem* Z)
 
 void SetFlag(FieldDescr* F)
 {
-	if ((F->Typ & 0x80) != 0) return;
-	F->Typ = static_cast<char>(F->Typ | 0x80);
-	if ((F->Flg & f_Stored) != 0) {
-		EFldD* D = FindEFld_E(F);
-		if (D != nullptr) {
-			D->Used = true;
-		}
+	if (F->field_flag) {
+		return;
 	}
 	else {
-		SetFrmlFlags(F->Frml);
+		F->field_flag = true;
+		if ((F->Flg & f_Stored) != 0) {
+			EFldD* D = FindEFld_E(F);
+			if (D != nullptr) {
+				D->Used = true;
+			}
+		}
+		else {
+			SetFrmlFlags(F->Frml);
+		}
 	}
 }
 
@@ -825,13 +829,13 @@ std::string StandardHead()
 	else if (E->EdRecVar) s = "";
 	else {
 		s = E->FD->Name;
-		switch (E->FD->Typ) {
-		case INDEX: {
+		switch (E->FD->file_type) {
+		case FileType::INDEX: {
 			if (!E->VK->Alias.empty()) s = s + "/" + E->VK->Alias;
 			break;
 		}
-		case RDB: s += ".RDB"; break;
-		case FAND8: s += ".DTA"; break;
+		case FileType::RDB: s += ".RDB"; break;
+		case FileType::FAND8: s += ".DTA"; break;
 		}
 	}
 	//if (s.length() > 16) s[0] = 16;

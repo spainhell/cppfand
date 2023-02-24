@@ -244,7 +244,7 @@ void TFile::RdPrefix(bool Chk)
 	}
 	if (IRec >= 0x6000) {
 		IRec = IRec - 0x2000;
-		if (!IsWork && (CFile->Typ == RDB)) LicenseNr = T.LicNr;
+		if (!IsWork && (CFile->file_type == FileType::RDB)) LicenseNr = T.LicNr;
 	}
 	if (IRec >= 0x4000) {
 		IRec = IRec - 0x4000;
@@ -918,15 +918,15 @@ WORD RdPrefix()
 	auto result = 0xffff;
 	/* !!! with CFile^ do!!! */
 	const bool not_cached = CFile->NotCached();
-	switch (CFile->Typ) {
-	case FAND8: {
+	switch (CFile->file_type) {
+	case FileType::FAND8: {
 		RdWrCache(READ, CFile->Handle, not_cached, 0, 2, &X8.NRs);
 		RdWrCache(READ, CFile->Handle, not_cached, 2, 2, &X8.RLen);
 		CFile->NRecs = X8.NRs;
 		if (CFile->RecLen != X8.RLen) { return X8.RLen; }
 		break;
 	}
-	case DBF: {
+	case FileType::DBF: {
 		RdWrCache(READ, CFile->Handle, not_cached, 0, 1, &XD.Ver);
 		RdWrCache(READ, CFile->Handle, not_cached, 1, 1, &XD.Date[0]);
 		RdWrCache(READ, CFile->Handle, not_cached, 2, 1, &XD.Date[1]);
@@ -943,7 +943,7 @@ WORD RdPrefix()
 		RdWrCache(READ, CFile->Handle, not_cached, 0, 4, &X6.NRs);
 		RdWrCache(READ, CFile->Handle, not_cached, 4, 2, &X6.RLen);
 		CFile->NRecs = abs(X6.NRs);
-		if ((X6.NRs < 0) && (CFile->Typ != INDEX) || (X6.NRs > 0) && (CFile->Typ == INDEX)
+		if ((X6.NRs < 0) && (CFile->file_type != FileType::INDEX) || (X6.NRs > 0) && (CFile->file_type == FileType::INDEX)
 			|| (CFile->RecLen != X6.RLen)) {
 			return X6.RLen;
 		}
@@ -976,13 +976,13 @@ void WrDBaseHd()
 			n++;
 			{ // with P^.Flds[n]
 				auto actual = P->Flds[n];
-				switch (F->Typ) {
-				case 'F': { actual.Typ = 'N'; actual.Dec = F->M; break; }
-				case 'N': { actual.Typ = 'N'; break; }
-				case 'A': { actual.Typ = 'C'; break; }
-				case 'D': { actual.Typ = 'D'; break; }
-				case 'B': { actual.Typ = 'L'; break; }
-				case 'T': { actual.Typ = 'M'; break; }
+				switch (F->field_type) {
+				case FieldType::FIXED: { actual.Typ = 'N'; actual.Dec = F->M; break; }
+				case FieldType::NUMERIC: { actual.Typ = 'N'; break; }
+				case FieldType::ALFANUM: { actual.Typ = 'C'; break; }
+				case FieldType::DATE: { actual.Typ = 'D'; break; }
+				case FieldType::BOOL: { actual.Typ = 'L'; break; }
+				case FieldType::TEXT: { actual.Typ = 'M'; break; }
 				default:;
 				}
 				actual.Len = F->NBytes;
@@ -1031,21 +1031,21 @@ void WrPrefix()
 	if (IsUpdHandle(CFile->Handle))
 	{
 		const bool not_cached = CFile->NotCached();
-		switch (CFile->Typ) {
-		case FAND8: {
+		switch (CFile->file_type) {
+		case FileType::FAND8: {
 			Pfx8.RLen = CFile->RecLen;
 			Pfx8.NRs = static_cast<WORD>(CFile->NRecs);
 			RdWrCache(WRITE, CFile->Handle, not_cached, 0, 2, &Pfx8.NRs);
 			RdWrCache(WRITE, CFile->Handle, not_cached, 2, 2, &Pfx8.RLen);
 			break;
 		}
-		case DBF: {
+		case FileType::DBF: {
 			WrDBaseHd();
 			break;
 		}
 		default: {
 			Pfx6.RLen = CFile->RecLen;
-			if (CFile->Typ == INDEX) Pfx6.NRs = -CFile->NRecs;
+			if (CFile->file_type == FileType::INDEX) Pfx6.NRs = -CFile->NRecs;
 			else Pfx6.NRs = CFile->NRecs;
 			RdWrCache(WRITE, CFile->Handle, not_cached, 0, 4, &Pfx6.NRs);
 			RdWrCache(WRITE, CFile->Handle, not_cached, 4, 2, &Pfx6.RLen);
@@ -1059,7 +1059,7 @@ void WrPrefixes()
 	WrPrefix(); /*with CFile^ do begin*/
 	if (CFile->TF != nullptr && IsUpdHandle(CFile->TF->Handle))
 		CFile->TF->WrPrefix();
-	if (CFile->Typ == INDEX && CFile->XF->Handle != nullptr
+	if (CFile->file_type == FileType::INDEX && CFile->XF->Handle != nullptr
 		&& /*{ call from CopyDuplF }*/ (IsUpdHandle(CFile->XF->Handle) || IsUpdHandle(CFile->Handle)))
 		CFile->XF->WrPrefix();
 }

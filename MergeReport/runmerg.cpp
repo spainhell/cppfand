@@ -95,7 +95,7 @@ void SetOldMFlds(KeyFldD* M)
 	//C = OldMFlds;
 	for (auto& C : OldMFlds) { //while (C != nullptr) {
 		F = M->FldD;
-		switch (F->FrmlTyp) {
+		switch (F->frml_type) {
 		case 'S': {
 			C.S = _ShortS(F);
 			OldMXStr.StoreStr(C.S, M);
@@ -124,7 +124,7 @@ void SetMFlds(KeyFldD* M)
 	while (M != nullptr)
 	{
 		F = M->FldD;
-		switch (F->FrmlTyp) {
+		switch (F->frml_type) {
 		case 'S': { S_(F, it0->S); break; }
 		case 'R': { R_(F, it0->R); break; }
 		default: { B_(F, it0->B); break; }
@@ -159,7 +159,7 @@ void RunAssign(std::vector<AssignD*> Assigns)
 			break;
 		}
 		case _zero: {
-			switch (A->outputFldD->FrmlTyp) {
+			switch (A->outputFldD->frml_type) {
 			case 'S': { S_(A->outputFldD, ""); break; }
 			case 'R': { R_(A->outputFldD, 0); break; }
 			default: { B_(A->outputFldD, false); break; }
@@ -209,11 +209,11 @@ void WriteOutp(OutpRD* RD)
 #endif
 				{
 					PutRec(CFile, CRecPtr);
-					if (OD->Append && (CFile->Typ == INDEX)) TryInsertAllIndexes(CFile->IRec);
+					if (OD->Append && (CFile->file_type == FileType::INDEX)) TryInsertAllIndexes(CFile->IRec);
 				}
 			}
 }
-		RD = (OutpRD*)RD->pChain;
+		RD = RD->pChain;
 	}
 }
 

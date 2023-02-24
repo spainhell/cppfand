@@ -13,7 +13,7 @@ FileD::FileD(const FileD& orig)
 {
 	Name = orig.Name;
 	RecLen = orig.RecLen;
-	Typ = orig.Typ;
+	file_type = orig.file_type;
 	if (orig.TF != nullptr) TF = new TFile(*orig.TF);
 	ChptPos = orig.ChptPos;
 	//*OrigFD = orig;
@@ -38,7 +38,7 @@ FileD::FileD(const FileD& orig)
 longint FileD::UsedFileSize()
 {
 	longint n = longint(NRecs) * RecLen + FrstDispl;
-	if (Typ == DBF) n++;
+	if (file_type == FileType::DBF) n++;
 	return n;
 }
 
@@ -78,7 +78,7 @@ void FileD::Reset()
 	RecPtr = nullptr;
 	NRecs = 0;
 	WasWrRec = false; WasRdOnly = false; Eof = false;
-	Typ = UNKNOWN ;        // 8= Fand 8; 6= Fand 16; X= .X; 0= RDB; C= CAT 
+	file_type = FileType::UNKNOWN ;        // 8= Fand 8; 6= Fand 16; X= .X; 0= RDB; C= CAT 
 	Handle = nullptr;
 	IRec = 0;
 	FrstDispl = 0;

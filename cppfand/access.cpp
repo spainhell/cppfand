@@ -64,7 +64,7 @@ integer CompArea(void* A, void* B, integer L)
 void ResetCFileUpdH()
 {
 	ResetUpdHandle(CFile->Handle);
-	if (CFile->Typ == INDEX) ResetUpdHandle(CFile->XF->Handle);
+	if (CFile->file_type == FileType::INDEX) ResetUpdHandle(CFile->XF->Handle);
 	if (CFile->TF != nullptr) ResetUpdHandle(CFile->TF->Handle);
 }
 
@@ -74,7 +74,7 @@ void ClearCacheCFile()
 	return;
 	/* !!! with CFile^ do!!! */
 	/*ClearCacheH(CFile->Handle);
-	if (CFile->Typ == 'X') ClearCacheH(CFile->GetXFile->Handle);
+	if (CFile->file_type == INDEX) ClearCacheH(CFile->GetXFile->Handle);
 	if (CFile->TF != nullptr) ClearCacheH(CFile->TF->Handle);*/
 }
 
@@ -234,7 +234,7 @@ void RunErrorM(LockMode Md, WORD N)
 void CloseClearHCFile()
 {
 	CloseClearH(&CFile->Handle);
-	if (CFile->Typ == INDEX) CloseClearH(&CFile->XF->Handle);
+	if (CFile->file_type == FileType::INDEX) CloseClearH(&CFile->XF->Handle);
 	if (CFile->TF != nullptr) CloseClearH(&CFile->TF->Handle);
 }
 
@@ -472,11 +472,8 @@ void RecallRec(longint RecNr)
 {
 	TestXFExist();
 	CFile->XF->NRecs++;
-	//XKey* K = CFile->Keys;
-	//while (K != nullptr) {
 	for (auto& K : CFile->Keys) {
 		K->Insert(RecNr, false);
-		//K = K->Chain;
 	}
 	ClearDeletedFlag();
 	CFile->WriteRec(RecNr, CRecPtr);
@@ -494,16 +491,16 @@ bool IsNullValue(void* p, WORD l)
 // v CRecPtr vycte pozici zaznamu v .T00 souboru (ukazatel na zacatek textu)
 longint _T(FieldDescr* F)
 {
-	return _T(F, (unsigned char*)CRecPtr, CFile->Typ);
+	return _T(F, (unsigned char*)CRecPtr, CFile->file_type);
 }
 
-longint _T(FieldDescr* F, unsigned char* data, char Typ)
+longint _T(FieldDescr* F, unsigned char* data, FileType file_type)
 {
 	longint n = 0;
 	integer err = 0;
 	char* source = (char*)data + F->Displ;
 
-	if (Typ == 'D') {
+	if (file_type == FileType::DBF) {
 		// tváøíme se, že CRecPtr je pstring ...
 		// TODO: toto je asi blbì, nutno opravit pøed 1. použitím
 		pstring* s = (pstring*)CRecPtr;
@@ -523,8 +520,8 @@ void T_(FieldDescr* F, longint Pos)
 	void* p = CRecPtr;
 	char* source = (char*)p + F->Displ;
 	longint* LP = (longint*)source;
-	if ((F->Typ == 'T') && ((F->Flg & f_Stored) != 0)) {
-		if (CFile->Typ == DBF) {
+	if ((F->field_type == FieldType::TEXT) && ((F->Flg & f_Stored) != 0)) {
+		if (CFile->file_type == FileType::DBF) {
 			if (Pos == 0) {
 				FillChar(source, 10, ' ');
 			}
@@ -569,7 +566,7 @@ void DelDifTFld(void* Rec, void* CompRec, FieldDescr* F)
 void DelAllDifTFlds(void* Rec, void* CompRec)
 {
 	for (auto& F : CFile->FldD) {
-		if (F->Typ == 'T' && ((F->Flg & f_Stored) != 0)) DelDifTFld(Rec, CompRec, F);
+		if (F->field_type == FieldType::TEXT && ((F->Flg & f_Stored) != 0)) DelDifTFld(Rec, CompRec, F);
 	}
 }
 
@@ -583,7 +580,7 @@ void IncNRecs(longint N)
 #endif
 	CFile->NRecs += N;
 	SetUpdHandle(CFile->Handle);
-	if (CFile->Typ == INDEX) SetUpdHandle(CFile->XF->Handle);
+	if (CFile->file_type == FileType::INDEX) SetUpdHandle(CFile->XF->Handle);
 }
 
 void DecNRecs(longint N)
@@ -591,7 +588,7 @@ void DecNRecs(longint N)
 	/* !!! with CFile^ do!!! */
 	CFile->NRecs -= N;
 	SetUpdHandle(CFile->Handle);
-	if (CFile->Typ == INDEX) SetUpdHandle(CFile->XF->Handle);
+	if (CFile->file_type == FileType::INDEX) SetUpdHandle(CFile->XF->Handle);
 	CFile->WasWrRec = true;
 }
 
@@ -640,7 +637,7 @@ void ZeroAllFlds()
 {
 	FillChar(CRecPtr, CFile->RecLen, 0);
 	for (auto& F : CFile->FldD) {
-		if (((F->Flg & f_Stored) != 0) && (F->Typ == 'A')) S_(F, "");
+		if (((F->Flg & f_Stored) != 0) && (F->field_type == FieldType::ALFANUM)) S_(F, "");
 	}
 }
 
@@ -730,8 +727,8 @@ double _RforD(FieldDescr* F, void* P)
 	double r = 0;
 	s[0] = F->NBytes;
 	Move(P, &s[1], s.length());
-	switch (F->Typ) {
-	case 'F': {
+	switch (F->field_type) {
+	case FieldType::FIXED: {
 		ReplaceChar(s, ',', '.');
 		if ((F->Flg & f_Comma) != 0) {
 			size_t i = s.find('.');
@@ -740,7 +737,10 @@ double _RforD(FieldDescr* F, void* P)
 		val(LeadChar(' ', TrailChar(s, ' ')), r, err);
 		break;
 	}
-	case 'D': r = ValDate(s, "YYYYMMDD"); break;
+	case FieldType::DATE: {
+		r = ValDate(s, "YYYYMMDD");
+		break;
+	}
 	}
 	return r;
 }
@@ -752,7 +752,7 @@ bool _B(FieldDescr* F)
 	void* p = CRecPtr;
 	unsigned char* CP = (unsigned char*)p + F->Displ;
 	if ((F->Flg & f_Stored) != 0) {
-		if (CFile->Typ == DBF) result = *CP == 'Y' || *CP == 'y' || *CP == 'T' || *CP == 't';
+		if (CFile->file_type == FileType::DBF) result = *CP == 'Y' || *CP == 'y' || *CP == 'T' || *CP == 't';
 		else if ((*CP == '\0') || (*CP == 0xFF)) result = false;
 		else result = true;
 	}
@@ -765,8 +765,8 @@ void B_(FieldDescr* F, bool B)
 {
 	void* p = CRecPtr;
 	char* pB = (char*)p + F->Displ;
-	if ((F->Typ == 'B') && ((F->Flg & f_Stored) != 0)) {
-		if (CFile->Typ == DBF)
+	if ((F->field_type == FieldType::BOOL) && ((F->Flg & f_Stored) != 0)) {
+		if (CFile->file_type == FileType::DBF)
 		{
 			if (B) *pB = 'T';
 			else *pB = 'F';
@@ -784,23 +784,23 @@ double _R(FieldDescr* F)
 	double r;
 
 	if ((F->Flg & f_Stored) != 0) {
-		if (CFile->Typ == DBF) result = _RforD(F, source);
-		else switch (F->Typ) {
-		case 'F': { // FIX CISLO (M,N)
+		if (CFile->file_type == FileType::DBF) result = _RforD(F, source);
+		else switch (F->field_type) {
+		case FieldType::FIXED: { // FIX CISLO (M,N)
 			r = RealFromFix(source, F->NBytes);
 			if ((F->Flg & f_Comma) == 0) result = r / Power10[F->M];
 			else result = r;
 			break;
 		}
-		case 'D': { // DATUM DD.MM.YY
-			if (CFile->Typ == FAND8) {
+		case FieldType::DATE: { // DATUM DD.MM.YY
+			if (CFile->file_type == FileType::FAND8) {
 				if (*(integer*)source == 0) result = 0.0;
 				else result = *(integer*)source + FirstDate;
 			}
 			else goto label1;
 			break;
 		}
-		case 'R': {
+		case FieldType::REAL: {
 		label1:
 			if (P == nullptr) result = 0;
 			else {
@@ -808,7 +808,7 @@ double _R(FieldDescr* F)
 			}
 			break;
 		}
-		case 'T': {
+		case FieldType::TEXT: {
 			integer i = *(integer*)source;
 			result = i;
 			break;
@@ -829,9 +829,9 @@ void R_(FieldDescr* F, double R, void* record)
 		else { pRec = (BYTE*)record + F->Displ; }
 
 		m = F->M;
-		switch (F->Typ) {
-		case 'F': {
-			if (CFile->Typ == DBF) {
+		switch (F->field_type) {
+		case FieldType::FIXED: {
+			if (CFile->file_type == FileType::DBF) {
 				if ((F->Flg & f_Comma) != 0) R = R / Power10[m];
 				str(F->NBytes, s);
 				Move(&s[1], pRec, F->NBytes);
@@ -842,14 +842,14 @@ void R_(FieldDescr* F, double R, void* record)
 			}
 			break;
 		}
-		case 'D': {
-			switch (CFile->Typ) {
-			case FAND8: {
+		case FieldType::DATE: {
+			switch (CFile->file_type) {
+			case FileType::FAND8: {
 				if (trunc(R) == 0) *(long*)&pRec = 0;
 				else *(long*)pRec = trunc(R - FirstDate);
 				break;
 			}
-			case DBF: {
+			case FileType::DBF: {
 				s = StrDate(R, "YYYYMMDD");
 				Move(&s[1], pRec, 8);
 				break;
@@ -864,7 +864,7 @@ void R_(FieldDescr* F, double R, void* record)
 			}
 			break;
 		}
-		case 'R': {
+		case FieldType::REAL: {
 			auto r48 = DoubleToReal48(R);
 			for (size_t i = 0; i < 6; i++) {
 				pRec[i] = r48[i];
@@ -896,10 +896,10 @@ pstring _ShortS(FieldDescr* F)
 	if ((F->Flg & f_Stored) != 0) {
 		WORD l = F->L;
 		S[0] = l;
-		switch (F->Typ) {
-		case 'A':   	// znakovy retezec max. 255 znaku
-		case 'N': {		// ciselny retezec max. 79 znaku
-			if (F->Typ == 'A') {
+		switch (F->field_type) {
+		case FieldType::ALFANUM:   	// znakovy retezec max. 255 znaku
+		case FieldType::NUMERIC: {		// ciselny retezec max. 79 znaku
+			if (F->field_type == FieldType::ALFANUM) {
 				Move(source, &S[1], l);
 				if ((F->Flg & f_Encryp) != 0) Code(&S[1], l);
 				if (S[1] == '\0') memset(&S[1], ' ', l);
@@ -922,7 +922,7 @@ pstring _ShortS(FieldDescr* F)
 			}
 			break;
 		}
-		case 'T': {		// volny text max. 65k
+		case FieldType::TEXT: {		// volny text max. 65k
 			LongStr* ss = _LongS(F);
 			if (ss->LL > 255) S = S.substr(0, 255);
 			else S = S.substr(0, ss->LL);
@@ -948,11 +948,11 @@ std::string _StdS(FieldDescr* F)
 	LockMode md; WORD l = 0;
 	if ((F->Flg & f_Stored) != 0) {
 		l = F->L;
-		switch (F->Typ)
+		switch (F->field_type)
 		{
-		case 'A':		// znakovy retezec max. 255 znaku
-		case 'N': {		// ciselny retezec max. 79 znaku
-			if (F->Typ == 'A') {
+		case FieldType::ALFANUM:		// znakovy retezec max. 255 znaku
+		case FieldType::NUMERIC: {		// ciselny retezec max. 79 znaku
+			if (F->field_type == FieldType::ALFANUM) {
 				S = std::string(source, l);
 				if ((F->Flg & f_Encryp) != 0) Code(S);
 				if (!S.empty() && S[0] == '\0') {
@@ -976,7 +976,7 @@ std::string _StdS(FieldDescr* F)
 			}
 			break;
 		}
-		case 'T': { // volny text max. 65k
+		case FieldType::TEXT: { // volny text max. 65k
 			if (HasTWorkFlag()) {
 				LongStr* ls = TWork.Read(1, _T(F));
 				S = std::string(ls->A, ls->LL);
@@ -1038,8 +1038,8 @@ void S_(FieldDescr* F, std::string S, void* record)
 		else { pRec = (BYTE*)record + F->Displ; }
 		integer L = F->L;
 		integer M = F->M;
-		switch (F->Typ) {
-		case 'A': {
+		switch (F->field_type) {
+		case FieldType::ALFANUM: {
 			S = S.substr(0, F->L); // delka retezce je max. F->L
 			if (M == LeftJust) {
 				// doplnime mezery zprava
@@ -1056,7 +1056,7 @@ void S_(FieldDescr* F, std::string S, void* record)
 			}
 			break;
 		}
-		case 'N': {
+		case FieldType::NUMERIC: {
 			S = S.substr(0, F->L); // delka retezce je max. F->L
 			BYTE tmpArr[80]{ 0 };
 			if (M == LeftJust) {
@@ -1080,7 +1080,7 @@ void S_(FieldDescr* F, std::string S, void* record)
 			}
 			break;
 		}
-		case 'T': {
+		case FieldType::TEXT: {
 			LongStr* ss = CopyToLongStr(S);
 			LongS_(F, ss);
 			delete ss;
@@ -1112,7 +1112,7 @@ bool LinkUpw(LinkD* LD, longint& N, bool WithT)
 #endif
 	const LockMode md = NewLMode(CFile, RdMode);
 	bool lu;
-	if (ToFD->Typ == INDEX) {
+	if (ToFD->file_type == FileType::INDEX) {
 		TestXFExist();
 		lu = K->SearchInterval(x, false, N);
 	}
@@ -1138,7 +1138,7 @@ bool LinkUpw(LinkD* LD, longint& N, bool WithT)
 			CFile = CF;
 			CRecPtr = CP;
 			if ((F2->Flg & f_Stored) != 0)
-				switch (F->FrmlTyp) {
+				switch (F->frml_type) {
 				case 'S': {
 					x.S = _ShortS(F);
 					CFile = ToFD; CRecPtr = RecPtr;
@@ -1185,7 +1185,7 @@ void AssignNRecs(bool Add, longint N)
 	if (Add) N = N + OldNRecs;
 	if ((N < 0) || (N == OldNRecs)) goto label1;
 	if ((N == 0) && (CFile->TF != nullptr)) CFile->TF->SetEmpty();
-	if (CFile->Typ == INDEX)
+	if (CFile->file_type == FileType::INDEX)
 		if (N == 0) {
 			CFile->NRecs = 0;
 			SetUpdHandle(CFile->Handle);
@@ -1210,7 +1210,7 @@ void AssignNRecs(bool Add, longint N)
 	ReleaseStore(CRecPtr);
 label1:
 	OldLMode(CFile, md);
-	}
+}
 
 void ClearRecSpace(void* p)
 {
@@ -1220,7 +1220,7 @@ void ClearRecSpace(void* p)
 		CRecPtr = p;
 		if (HasTWorkFlag()) {
 			for (auto& f : CFile->FldD) {
-				if (((f->Flg & f_Stored) != 0) && (f->Typ == 'T')) {
+				if (((f->Flg & f_Stored) != 0) && (f->field_type == FieldType::TEXT)) {
 					TWork.Delete(_T(f));
 					T_(f, 0);
 				}
@@ -1233,7 +1233,7 @@ void ClearRecSpace(void* p)
 void DelTFlds()
 {
 	for (auto& F : CFile->FldD) {
-		if (((F->Flg & f_Stored) != 0) && (F->Typ == 'T')) {
+		if (((F->Flg & f_Stored) != 0) && (F->field_type == FieldType::TEXT)) {
 			DelTFld(F);
 		}
 	}
@@ -1243,7 +1243,7 @@ void CopyRecWithT(void* p1, void* p2)
 {
 	memcpy(p2, p1, CFile->RecLen);
 	for (auto& F : CFile->FldD) {
-		if ((F->Typ == 'T') && ((F->Flg & f_Stored) != 0)) {
+		if ((F->field_type == FieldType::TEXT) && ((F->Flg & f_Stored) != 0)) {
 			TFile* tf1 = CFile->TF;
 			TFile* tf2 = tf1;
 			CRecPtr = p1;
@@ -1300,12 +1300,12 @@ LocVar* LocVarBlkD::FindByName(std::string Name)
 
 bool DeletedFlag()  // r771 ASM
 {
-	if (CFile->Typ == INDEX) {
+	if (CFile->file_type == FileType::INDEX) {
 		if (((BYTE*)CRecPtr)[0] == 0) return false;
 		else return true;
 	}
 
-	if (CFile->Typ == DBF) {
+	if (CFile->file_type == FileType::DBF) {
 		if (((BYTE*)CRecPtr)[0] != '*') return false;
 		else return true;
 	}
@@ -1316,18 +1316,18 @@ bool DeletedFlag()  // r771 ASM
 void ClearDeletedFlag()
 {
 	BYTE* ptr = (BYTE*)CRecPtr;
-	switch (CFile->Typ) {
-	case INDEX: { ptr[0] = 0; break; }
-	case DBF: { ptr[0] = ' '; break; }
+	switch (CFile->file_type) {
+	case FileType::INDEX: { ptr[0] = 0; break; }
+	case FileType::DBF: { ptr[0] = ' '; break; }
 	}
 }
 
 void SetDeletedFlag()
 {
 	BYTE* ptr = (BYTE*)CRecPtr;
-	switch (CFile->Typ) {
-	case INDEX: { ptr[0] = 1; break; }
-	case DBF: { ptr[0] = '*'; break; }
+	switch (CFile->file_type) {
+	case FileType::INDEX: { ptr[0] = 1; break; }
+	case FileType::DBF: { ptr[0] = '*'; break; }
 	}
 }
 

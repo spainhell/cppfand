@@ -161,8 +161,8 @@ void SetInpTT(RdbPos* RP, bool FromTxt)
 	CFile = RP->R->FD;
 	CRecPtr = new BYTE[RP->R->FD->RecLen];
 	CFile->ReadRec(RP->IRec, CRecPtr);
-	if (FromTxt) Pos = _T(ChptTxt, (unsigned char*)CRecPtr, CFile->Typ);
-	else Pos = _T(ChptOldTxt, (unsigned char*)CRecPtr, CFile->Typ);
+	if (FromTxt) Pos = _T(ChptTxt, (unsigned char*)CRecPtr, CFile->file_type);
+	else Pos = _T(ChptOldTxt, (unsigned char*)CRecPtr, CFile->file_type);
 	SetInpTTPos(CFile, Pos, RP->R->Encrypted);
 	ReleaseStore(CRecPtr);
 	CFile = CF; CRecPtr = CR;
@@ -826,10 +826,10 @@ KeyFldD* RdKF(FileD* FD)
 	if (F == nullptr) {
 		return nullptr;
 	}
-	if (F->Typ == 'T') {
+	if (F->field_type == FieldType::TEXT) {
 		OldError(84);
 	}
-	if (KF->CompLex && (F->Typ != 'A')) {
+	if (KF->CompLex && (F->field_type != FieldType::ALFANUM)) {
 		OldError(94);
 	}
 	return KF;
@@ -869,7 +869,7 @@ void RdLocDcl(LocVarBlkD* LVB, bool IsParList, bool WithRecVar, char CTyp)
 	void* cr = nullptr; stSaveState* p = nullptr;
 	XWKey* k = nullptr; bool rp = false;
 	KeyFldD* kf = nullptr; KeyFldD* kf1 = nullptr;
-	FileType FDTyp = UNKNOWN;
+	FileType FDTyp = FileType::UNKNOWN;
 	std::vector<LocVar*> newVars;
 label1:
 	rp = false;
@@ -947,12 +947,12 @@ label1:
 			}
 			else {
 				if (fd != nullptr) OldError(26);
-				FDTyp = FAND16;
+				FDTyp = FileType::FAND16;
 				if (Lexem == '.') {
 					RdLex();
 					TestIdentif();
-					if (EquUpCase("X")) FDTyp = INDEX;
-					else if (EquUpCase("DBF")) FDTyp = DBF;
+					if (EquUpCase("X")) FDTyp = FileType::INDEX;
+					else if (EquUpCase("DBF")) FDTyp = FileType::DBF;
 					else Error(185);
 					RdLex();
 				}
@@ -980,7 +980,7 @@ label1:
 			cf = CFile; cr = CRecPtr;
 			CFile = RdFileName();
 			if (typ == 'i') {
-				if (CFile->Typ != INDEX) OldError(108);
+				if (CFile->file_type != FileType::INDEX) OldError(108);
 				kf1 = nullptr;
 				if (Lexem == '(') {
 					RdLex();
@@ -1182,7 +1182,7 @@ bool PromptSortKeys(FieldListEl* FL, KeyFldD* SKRoot)
 	SKRoot = nullptr;
 	while (FL != nullptr) {
 		/* !!! with FL->FldD^ do!!! */
-		if (FL->FldD->Typ != 'T') ww.PutSelect(FL->FldD->Name);
+		if (FL->FldD->field_type != FieldType::TEXT) ww.PutSelect(FL->FldD->Name);
 		FL = FL->pChain;
 	}
 	if (ss.Empty) return result;
@@ -1197,7 +1197,7 @@ label1:
 		ChainLast(SKRoot, SK);
 		SK->FldD = FindFldName(CFile);
 		if (ss.Tag == '>') SK->Descend = true;
-		if (SK->FldD->Typ == 'A') SK->CompLex = true;
+		if (SK->FldD->field_type == FieldType::ALFANUM) SK->CompLex = true;
 		goto label1;
 	}
 	return result;
@@ -1212,7 +1212,7 @@ bool PromptSortKeys(std::vector<FieldDescr*>& FL, KeyFldD* SKRoot)
 	SKRoot = nullptr;
 	//while (FL != nullptr) {
 	for (auto& fld : FL) {
-		if (fld->Typ != 'T') ww.PutSelect(fld->Name);
+		if (fld->field_type != FieldType::TEXT) ww.PutSelect(fld->Name);
 	}
 	if (ss.Empty) return result;
 	ss.AscDesc = true;
@@ -1226,7 +1226,7 @@ label1:
 		ChainLast(SKRoot, SK);
 		SK->FldD = FindFldName(CFile);
 		if (ss.Tag == '>') SK->Descend = true;
-		if (SK->FldD->Typ == 'A') SK->CompLex = true;
+		if (SK->FldD->field_type == FieldType::ALFANUM) SK->CompLex = true;
 		goto label1;
 	}
 	return result;
@@ -1244,9 +1244,9 @@ void RdAssignFrml(char FTyp, bool& Add, FrmlElem** Z)
 bool FldTypIdentity(FieldDescr* F1, FieldDescr* F2)
 {
 	auto result = false;
-	if (F1->Typ != F2->Typ) return result;
-	if ((F1->Typ == 'F') && (F1->M != F2->M)) return result;
-	if ((F1->Typ == 'N' || F1->Typ == 'A' || F1->Typ == 'F') && (F1->L != F2->L)) return result;
+	if (F1->field_type != F2->field_type) return result;
+	if ((F1->field_type == FieldType::FIXED) && (F1->M != F2->M)) return result;
+	if ((F1->field_type == FieldType::NUMERIC || F1->field_type == FieldType::ALFANUM || F1->field_type == FieldType::FIXED) && (F1->L != F2->L)) return result;
 	return true;
 }
 
@@ -1385,7 +1385,7 @@ XKey* RdViewKey()
 	}
 	Error(109);
 label1:
-	if (CFile->Typ != INDEX)
+	if (CFile->file_type != FileType::INDEX)
 #ifdef FandSQL
 		if (CFile->typSQLFile) Error(24); else
 #endif
@@ -1397,10 +1397,15 @@ label1:
 
 void SrchZ(FrmlElem* Z);
 
-void SrchF(FieldDPtr F)
+void SrchF(FieldDescr* F)
 {
-	if (F == KeyArgFld) { KeyArgFound = true; return; }
-	if ((F->Flg & f_Stored) == 0) SrchZ(F->Frml);
+	if (F == KeyArgFld) {
+		KeyArgFound = true;
+		return;
+	}
+	if ((F->Flg & f_Stored) == 0) {
+		SrchZ(F->Frml);
+	}
 }
 
 void SrchZ(FrmlElem* Z)
@@ -1474,8 +1479,6 @@ bool IsFun(std::map<std::string, int>& strs, std::string input, instr_type& FunC
 bool IsKeyArg(FieldDescr* F, FileD* FD)
 {
 	KeyArgFound = false;
-	//XKey* k = FD->Keys;
-	//while (k != nullptr) {
 	for (auto& k : FD->Keys) {
 		KeyArgFld = F;
 		KeyFldD* kf = k->KFlds;
@@ -1484,25 +1487,25 @@ bool IsKeyArg(FieldDescr* F, FileD* FD)
 			if (KeyArgFound) { return true; }
 			kf = kf->pChain;
 		}
-		//k = k->Chain;
 	}
 	return false;
 }
 
 void CompileRecLen()
 {
-	/* !!! with CFile^ do!!! */
 	WORD l = 0;
 	WORD n = 0;
-	if ((CFile->Typ == INDEX || CFile->Typ == DBF)) l = 1;
+	if ((CFile->file_type == FileType::INDEX || CFile->file_type == FileType::DBF)) {
+		l = 1;
+	}
 	for (auto& F : CFile->FldD) {
-		switch (CFile->Typ) {
-		case FAND8: if (F->Typ == 'D') F->NBytes = 2; break;
-		case DBF: {
-			switch (F->Typ) {
-			case 'F': F->NBytes = F->L - 1; break;
-			case 'D': F->NBytes = 8; break;
-			case 'T': F->NBytes = 10; break;
+		switch (CFile->file_type) {
+		case FileType::FAND8: if (F->field_type == FieldType::DATE) F->NBytes = 2; break;
+		case FileType::DBF: {
+			switch (F->field_type) {
+			case FieldType::FIXED: F->NBytes = F->L - 1; break;
+			case FieldType::DATE: F->NBytes = 8; break;
+			case FieldType::TEXT: F->NBytes = 10; break;
 			}
 			break;
 		}
@@ -1510,9 +1513,9 @@ void CompileRecLen()
 		if ((F->Flg & f_Stored) != 0) { F->Displ = l; l += F->NBytes; n++; }
 	}
 	CFile->RecLen = l;
-	switch (CFile->Typ) {
-	case FAND8: CFile->FrstDispl = 4; break;
-	case DBF: CFile->FrstDispl = (n + 1) * 32 + 1; break;
+	switch (CFile->file_type) {
+	case FileType::FAND8: CFile->FrstDispl = 4; break;
+	case FileType::DBF: CFile->FrstDispl = (n + 1) * 32 + 1; break;
 	default:  CFile->FrstDispl = 6; break;
 	}
 }
@@ -2300,7 +2303,7 @@ label1:
 	if (FLRoot == nullptr) FLRoot = FL;
 	else ChainLast(FLRoot, FL);
 	FL->Frml = RdFrml(FTyp); // MyBPContext(RdFrml(FTyp), NewMyBP);
-	if (FTyp != KF->FldD->FrmlTyp) OldError(12);
+	if (FTyp != KF->FldD->frml_type) OldError(12);
 	KF = (KeyFldD*)KF->pChain;
 	if (b) {
 		FL1 = (FrmlListEl*)FL1->pChain;
@@ -2330,7 +2333,7 @@ FrmlElem* RdKeyInBool(KeyInD** KIRoot, bool NewMyBP, bool FromRdProc, bool& SQLF
 	}
 	if (IsKeyWord("KEY")) {
 		AcceptKeyWord("IN");
-		if ((CFile->Typ != INDEX) || (CViewKey == nullptr)) OldError(118);
+		if ((CFile->file_type != FileType::INDEX) || (CViewKey == nullptr)) OldError(118);
 		if (CViewKey->KFlds == nullptr) OldError(176);
 		Accept('[');
 		l = CViewKey->IndexLen + 1;
@@ -2548,7 +2551,7 @@ FrmlElem* MakeFldFrml(FieldDescr* F, char& FTyp)
 {
 	auto Z = new FrmlElem7(_field, 4); // GetOp(_field, 4);
 	Z->Field = F;
-	FTyp = F->FrmlTyp;
+	FTyp = F->frml_type;
 	return Z;
 }
 
