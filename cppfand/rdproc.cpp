@@ -574,9 +574,11 @@ FrmlElem* RdFunctionP(char& FFTyp)
 		iZ->P1 = RdBool(); Accept(',');
 		iZ->P2 = RdRealFrml(); FTyp = 'R';
 	}
-	else Error(75);
+	else {
+		Error(75);
+	}
 	Accept(')');
-	auto result = Z;
+	FrmlElem* result = Z;
 	FFTyp = FTyp;
 	return result;
 }

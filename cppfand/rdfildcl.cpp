@@ -556,7 +556,7 @@ void* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 					F->Flg = F->Flg & !f_Encryp;
 				}
 			}
-			F = (FieldDescr*)F->pChain;
+			F = F->pChain;
 		}
 		F2->pChain = nullptr;
 		CompileRecLen();
@@ -589,7 +589,9 @@ void* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 		}
 
 		CFile->IsHlpFile = false;
-		if (!(FDTyp == '6' || FDTyp == 'X') || !(CFile->Typ == FAND16 || CFile->Typ == INDEX)) OldError(106);
+		if (!(FDTyp == FAND16 || FDTyp == INDEX) || !(CFile->Typ == FAND16 || CFile->Typ == INDEX)) {
+			OldError(106);
+		}
 
 		//K = CFile->Keys;
 		//while (K != nullptr) {

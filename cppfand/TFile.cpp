@@ -575,7 +575,9 @@ LongStr* TFile::Read(WORD StackNr, longint Pos)
 	int offset = 0;
 	struct stFptD { longint Typ = 0, Len = 0; } FptD;
 	Pos -= LicenseNr;
-	if (Pos <= 0 /*OldTxt=-1 in RDB!*/) goto label11;
+	if (Pos <= 0 /*OldTxt=-1 in RDB!*/) {
+		goto label11;
+	}
 	else {
 		switch (Format) {
 		case DbtFormat: {
@@ -591,16 +593,19 @@ LongStr* TFile::Read(WORD StackNr, longint Pos)
 			}
 			l--;
 		label0:
-			s->LL = l; ReleaseStore(&s->A[l + 1]);
+			s->LL = l;
+			ReleaseStore(&s->A[l + 1]);
 			break;
 		}
 		case FptFormat: {
 			Pos = Pos * BlockSize;
 			RdWrCache(READ, Handle, NotCached(), Pos, sizeof(FptD), &FptD);
-			if (SwapLong(FptD.Typ) != 1/*text*/) goto label11;
+			if (SwapLong(FptD.Typ) != 1/*text*/) {
+				goto label11;
+			}
 			else {
 				l = SwapLong(FptD.Len) & 0x7FFF;
-				s = new LongStr(l); //(LongStr*)GetStore(l + 2);
+				s = new LongStr(l);
 				s->LL = l;
 				RdWrCache(READ, Handle, NotCached(), Pos + sizeof(FptD), l, s->A);
 			}
@@ -613,14 +618,14 @@ LongStr* TFile::Read(WORD StackNr, longint Pos)
 			label1:
 				Err(891, false);
 			label11:
-				if (StackNr == 1) s = new LongStr(l); //(LongStr*)GetStore(2);
-				else s = new LongStr(l); //(LongStr*)GetStore2(2);
+				if (StackNr == 1) s = new LongStr(l);
+				else s = new LongStr(l);
 				s->LL = 0;
 				goto label2;
 			}
 			if (l == MaxLStrLen + 1) { l--; } // 65001
-			if (StackNr == 1) s = new LongStr(l); //(LongStr*)GetStore(l + 2);
-			else s = new LongStr(l + 2); //(LongStr*)GetStore2(l + 2);
+			if (StackNr == 1) s = new LongStr(l);
+			else s = new LongStr(l + 2);
 			s->LL = l;
 			RdWr(READ, Pos + 2, l, s->A);
 			break;
@@ -643,7 +648,7 @@ longint TFile::Store(char* s, size_t l)
 
 	SetUpdHandle(Handle);
 
-	switch (Format)	{
+	switch (Format) {
 	case DbtFormat: {
 		pos = MaxPage + 1; N = pos << MPageShft; if (l > 0x7fff) l = 0x7fff;
 		RdWrCache(WRITE, Handle, NotCached(), N, l, s);
@@ -733,7 +738,7 @@ longint TFile::Store(char* s, size_t l)
 		if (l > MPageSize - 2) {
 			// long text
 			pos = NewPage(false);
-		} 
+		}
 		else {
 			// short text
 			rest = MPageSize - FreePart % MPageSize;
@@ -868,30 +873,31 @@ longint TFile::Store(char* s, size_t l)
 //}
 
 
-void TFile::RdWr(FileOperation operation, longint Pos, WORD N, void* X)
+void TFile::RdWr(FileOperation operation, size_t position, size_t count, void* X)
 {
 	Logging* log = Logging::getInstance();
-	// log->log(loglevel::DEBUG, "TFile::RdWr() 0x%p %s pos: %i, len: %i", Handle, ReadOp ? "read" : "write", Pos, N);
+	// log->log(loglevel::DEBUG, "TFile::RdWr() 0x%p %s pos: %i, len: %i", Handle, ReadOp ? "read" : "write", position, count);
 	WORD Rest = 0, L = 0;
-	longint NxtPg = 0;
+	int NxtPg = 0;
 	char* source = (char*)X;
 	int offset = 0;
-	Rest = MPageSize - (WORD(Pos) & (MPageSize - 1));
-	while (N > Rest) {
+	Rest = MPageSize - (WORD(position) & (MPageSize - 1));
+	while (count > Rest) {
 		L = Rest - 4;
-		RdWrCache(operation, Handle, NotCached(), Pos, L, &source[offset]);
-		offset += L; N -= L;
-		if (!operation) NxtPg = NewPage(false);
-		RdWrCache(operation, Handle, NotCached(), Pos + L, 4, &NxtPg);
-		Pos = NxtPg;
-		if (operation && ((Pos < MPageSize) || (Pos + MPageSize > MLen))) {
+		RdWrCache(operation, Handle, NotCached(), position, L, &source[offset]);
+		offset += L;
+		count -= L;
+		if (operation == WRITE) NxtPg = NewPage(false);
+		RdWrCache(operation, Handle, NotCached(), position + L, 4, &NxtPg);
+		position = NxtPg;
+		if ((operation == READ) && ((position < MPageSize) || (position + MPageSize > MLen))) {
 			Err(890, false);
-			FillChar(&source[offset], N, ' ');
+			FillChar(&source[offset], count, ' ');
 			return;
 		}
 		Rest = MPageSize;
 	}
-	RdWrCache(operation, Handle, NotCached(), Pos, N, &source[offset]);
+	RdWrCache(operation, Handle, NotCached(), position, count, &source[offset]);
 }
 
 void TFile::GetMLen()
@@ -1025,7 +1031,7 @@ void WrPrefix()
 	if (IsUpdHandle(CFile->Handle))
 	{
 		const bool not_cached = CFile->NotCached();
-		switch (CFile->Typ)	{
+		switch (CFile->Typ) {
 		case FAND8: {
 			Pfx8.RLen = CFile->RecLen;
 			Pfx8.NRs = static_cast<WORD>(CFile->NRecs);

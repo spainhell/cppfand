@@ -46,7 +46,7 @@ protected:
 	// struct { long startPos, segPos, workPos; };	// StoreStr()
 	// struct { unsigned short size, length, rest; };	// ReadStr()
 private:
-	void RdWr(FileOperation operation, longint Pos, WORD N, void* X);
+	void RdWr(FileOperation operation, size_t position, size_t count, void* X);
 	void GetMLen();
 	long eofPos = 0;
 };
