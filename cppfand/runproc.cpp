@@ -315,7 +315,8 @@ void DisplayProc(RdbD* R, WORD IRec)
 		if (str.empty()) return;
 	}
 	else {
-		CFile = R->FD; CRecPtr = Chpt->RecPtr;
+		CFile = R->FD;
+		CRecPtr = Chpt->RecPtr;
 		CFile->ReadRec(IRec, CRecPtr);
 		LongStr* S = CFile->TF->Read(_T(ChptTxt));
 		if (R->Encrypted) CodingLongStr(S);

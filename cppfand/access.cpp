@@ -626,7 +626,7 @@ void CreateRec(longint N)
 void DeleteRec(longint N)
 {
 	DelAllDifTFlds(CRecPtr, nullptr);
-	for (longint i = N; i < CFile->NRecs - 1; i++) {
+	for (longint i = N; i <= CFile->NRecs - 1; i++) {
 		CFile->ReadRec(i + 1, CRecPtr);
 		CFile->WriteRec(i, CRecPtr);
 	}

@@ -473,7 +473,9 @@ void TFile::Delete(int pos)
 	// tak koncime a nic mazat nebudeme
 	if (CFile != nullptr) {
 		std::string name = upperCaseString(CFile->FullName);
-		if (name.find("ttt") != std::string::npos) return;
+		if (name.find("TTT") != std::string::npos) {
+			return;
+		}
 	}
 
 	if (pos <= 0) return;
@@ -484,88 +486,72 @@ void TFile::Delete(int pos)
 	}
 
 	SetUpdHandle(Handle);
-
-	long pospg;
-	short l;
-	unsigned short u;
-	char pg[MPageSize];
-	char* p, * p1;
-
 	if (pos < MPageSize || pos >= eofPos)
 		return;								// mimo datovou oblast souboru
-	//SeekH(pos); Read(&l, 2);					// delka stringu
-	RdWrCache(READ, Handle, NotCached(), pos, 2, &l);
-	if ((unsigned short)l < MPageSize - 2)					// short text?
-	{										// ANO, short na sdilene strance
-		u = (unsigned short)pos % MPageSize;// offset ve strance
-		pospg = pos - u;					// pozice stranky v souboru
-		//ReadPg(pospg, pg);					// nactu stranku
-		RdWrCache(READ, Handle, NotCached(), pospg, MPageSize, pg);
-		*(short*)(pg + u) = -l;				// zaporne delku
-		p = pg;
-		while (true)							// spojuji volne fragmenty (posledni je vzdy volny!)
-		{
-			// POZOR, fand v aktualni strance neudrzuje zbyvajici delku!!!, proto nasl. 2 radky
-			if (pospg + p - pg == FreePart)
-				break;						// pred freePart platny string n. prazdny aktualni
-			l = *(short*)p;
-			if (l <= 0)						// je-li fragment volny
-			{
-				p1 = p - l + 2;				// adresa nasledujiciho fragmentu
-				if (pospg + p1 - pg == FreePart)			// volna cast aktualniho segmentu
-				{
-					FreePart = pospg + p - pg;	// pripojim to k volne casti
-					break;
-				}
-				if (p1 >= pg + MPageSize - 2)	// byl posledni (fragment je alespon 3)
-					break;
-				if ((l = *(short*)p1) <= 0)	// je-li volny
-					*(short*)p += l - 2;    // pripojim ho k predchozimu
-				else
-					p = p1;					// jinak vezmu nasledujici (nebo dalsi? + l + 2)
+
+	BYTE X[MPageSize]{ 0 };
+	__int32 posPg = (__int32)pos & (0xFFFFFFFF << MPageShft);
+	__int32 PosI = (__int32)pos & (MPageSize - 1);
+
+	RdWrCache(READ, Handle, NotCached(), posPg, MPageSize, X);
+	void* wp = (WORD*)&X[PosI];
+	__int32 l = *(WORD*)wp;
+
+	if (l <= MPageSize - 2) {
+		// small text on 1 page
+		*(short*)&X[PosI] = (short)(-l);
+		__int32 N = 0;
+		wp = (short*)X;
+		while (N < MPageSize - 2) {
+			if (*(short*)wp > 0) {
+				memset(&X[PosI + 2], 0, l);
+				goto label1;
 			}
-			else
-				p += l + 2;					// preskocim obsazeny fragment
+			N = N - *(short*)wp + 2;
+			wp = (short*)&X[N];
 		}
-		//		if (freePart >= pospg && freePart < pospg + XPAGESIZE) // actual shared page?
-		//		{
-		//			WritePg(pospg, pg);			// zapis stranku
-		//			pospg += p - pg;			// pozice posledniho volneho segmentu ve strance
-		//			if (freePart > pospg)		// tohle je kvuli FANDu
-		//				freePart = pospg;		// zvetsim volny prostor pro FAND
-												// (lepsi by bylo mit jen adresu sdileneho segmentu)
-												// (a vkladat do libovolneho fragmentu ve strance)	
-		//		}
-		//		else
-		if (*(short*)pg <= -(MPageSize - 2)	// jediny volny fragment ve strance
-			&& pospg != FreePart)					// a neni to aktualni segment
-			ReleasePage(pospg);               // uvolnim stranku
-		else
-			//WritePg(pospg, pg);				// zapis stranku (celou, mohlo se slucovat)
-			RdWrCache(WRITE, Handle, NotCached(), pospg, MPageSize, pg);
+		if ((FreePart >= posPg) && (FreePart < posPg + MPageSize)) {
+			memset(X, 0, MPageSize);
+			*(short*)X = -510;
+			FreePart = posPg;
+		label1:
+			RdWrCache(WRITE, Handle, NotCached(), posPg, MPageSize, X);
+		}
+		else {
+			ReleasePage(posPg);
+		}
 	}
-	else                          	// NE, long text
-		while (!0) 						// cyklus uvolnovani segmentu
-		{
-			u = (unsigned short)l;
-			if (u == MaxLStrLen + 1)	// posledni segment?
-				--u;                    // ano, smazu priznak
-			u += 2;						// do 1. zapocitam delku
-			while (!0)					// cyklus uvolnovani stranek v segmentu
-			{
-				//SeekH(pos + MPageSize - 4); Read(&pospg, 4);	    // nactu adresu dalsi stranky
-				RdWrCache(READ, Handle, NotCached(), pos + MPageSize - 4, 4, &pospg);
-				ReleasePage(pos);
-				pos = pospg;
-				if (u <= MPageSize)		// posledni stranka v segmentu
-					break;
-				u -= MPageSize - 4;
-			}
-			if ((unsigned short)l != MaxLStrLen + 1)	// dalsi segment?
-				break;									// ne
-			//SeekH(pos); Read(&l, 2);		// delka segmentu
-			RdWrCache(READ, Handle, NotCached(), pos, 2, &l);
+	else {
+		// long text on more than 1 page
+		if (PosI != 0) {
+			goto label3;
 		}
+	label2:
+		l = *(WORD*)X;
+		if (l > MaxLStrLen + 1) {
+		label3:
+			Err(889, false);
+			return;
+		}
+		const bool IsLongTxt = (l == MaxLStrLen + 1);
+		l += 2;
+	label4:
+		ReleasePage(posPg);
+		if ((l > MPageSize) || IsLongTxt) {
+			posPg = *(__int32*)&X[MPageSize - 4];
+
+			if ((posPg < MPageSize) || (posPg + MPageSize > MLen)) {
+				Err(888, false);
+				return;
+			}
+			RdWrCache(READ, Handle, NotCached(), posPg, MPageSize, X);
+			if (l <= MPageSize) {
+				goto label2;
+			}
+			l = l - MPageSize - 4;
+			goto label4;
+		}
+	}
 }
 
 LongStr* TFile::Read(int Pos)
@@ -659,33 +645,6 @@ longint TFile::Store(char* s, size_t l)
 	SetUpdHandle(Handle);
 
 	switch (Format) {
-	case DbtFormat: {
-		pos = MaxPage + 1; N = pos << MPageShft; if (l > 0x7fff) l = 0x7fff;
-		RdWrCache(WRITE, Handle, NotCached(), N, l, s);
-		FillChar(X, MPageSize, ' '); X[0] = 0x1A; X[1] = 0x1A;
-		rest = MPageSize - (l + 2) % MPageSize;
-		RdWrCache(WRITE, Handle, NotCached(), N + l, rest + 2, X);
-		MaxPage += (l + 2 + rest) / MPageSize;
-		break;
-	}
-	case FptFormat: {
-		pos = FreePart; N = FreePart * BlockSize;
-		if (l > 0x7fff) l = 0x7fff;
-		FreePart = FreePart + (sizeof(FptD) + l - 1) / BlockSize + 1;
-		FptD.Typ = SwapLong(1); FptD.Len = SwapLong(l);
-		RdWrCache(WRITE, Handle, NotCached(), N, sizeof(FptD), &FptD);
-		N += sizeof(FptD);
-		RdWrCache(WRITE, Handle, NotCached(), N, l, s);
-		N += l;
-		l = FreePart * BlockSize - N;
-		if (l > 0) {
-			BYTE* p = new BYTE[l];
-			FillChar(p, l, ' ');
-			RdWrCache(WRITE, Handle, NotCached(), N, l, p);
-			ReleaseStore(p);
-		}
-		break;
-	}
 	case T00Format: {
 		if (l > MaxLStrLen) {
 			l = MaxLStrLen;
@@ -714,6 +673,33 @@ longint TFile::Store(char* s, size_t l)
 		}
 		RdWrCache(WRITE, Handle, NotCached(), pos, 2, &l);
 		RdWr(WRITE, pos + 2, l, s);
+		break;
+	}
+	case DbtFormat: {
+		pos = MaxPage + 1; N = pos << MPageShft; if (l > 0x7fff) l = 0x7fff;
+		RdWrCache(WRITE, Handle, NotCached(), N, l, s);
+		FillChar(X, MPageSize, ' '); X[0] = 0x1A; X[1] = 0x1A;
+		rest = MPageSize - (l + 2) % MPageSize;
+		RdWrCache(WRITE, Handle, NotCached(), N + l, rest + 2, X);
+		MaxPage += (l + 2 + rest) / MPageSize;
+		break;
+	}
+	case FptFormat: {
+		pos = FreePart; N = FreePart * BlockSize;
+		if (l > 0x7fff) l = 0x7fff;
+		FreePart = FreePart + (sizeof(FptD) + l - 1) / BlockSize + 1;
+		FptD.Typ = SwapLong(1); FptD.Len = SwapLong(l);
+		RdWrCache(WRITE, Handle, NotCached(), N, sizeof(FptD), &FptD);
+		N += sizeof(FptD);
+		RdWrCache(WRITE, Handle, NotCached(), N, l, s);
+		N += l;
+		l = FreePart * BlockSize - N;
+		if (l > 0) {
+			BYTE* p = new BYTE[l];
+			FillChar(p, l, ' ');
+			RdWrCache(WRITE, Handle, NotCached(), N, l, p);
+			ReleaseStore(p);
+		}
 		break;
 	}
 	default: break;

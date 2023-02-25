@@ -90,6 +90,7 @@ void ReleaseFilesAndLinksAfterChapter()
 	LinkDRoot = CRdb->OldLDRoot;
 	FuncDRoot = CRdb->OldFCRoot;
 	CFile = Chpt;
+
 	CRecPtr = E->NewRecPtr;
 	R = CRdb->ChainBack;
 	if (R != nullptr) {
