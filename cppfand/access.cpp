@@ -157,7 +157,9 @@ bool ChangeLMode(FileD* fileD, LockMode Mode, WORD Kind, bool RdPref)
 	LockMode oldmode = fileD->LMode;
 	FILE* h = fileD->Handle;
 	if (oldmode >= WrMode) {
-		if (Mode < WrMode) WrPrefixes();
+		if (Mode < WrMode) {
+			WrPrefixes();
+		}
 		if (oldmode == ExclMode) {
 			SaveCache(0, fileD->Handle);
 			ClearCacheCFile();
@@ -172,17 +174,25 @@ label1:
 		label2:
 			if (Kind == 2) return result; /*0 Kind-wait, 1-wait until ESC, 2-no wait*/
 			count++;
-			if (count <= spec.LockRetries) d = spec.LockDelay;
+			if (count <= spec.LockRetries) {
+				d = spec.LockDelay;
+			}
 			else {
 				d = spec.NetDelay;
 				SetCPathVol();
 				SetMsgPar(CPath, LockModeTxt[Mode]);
 				longint w1 = PushWrLLMsg(825, Kind == 1);
-				if (w == 0) w = w1;
-				else TWork.Delete(w1);
+				if (w == 0) {
+					w = w1;
+				}
+				else {
+					TWork.Delete(w1);
+				}
 				LockBeep();
 			}
-			if (KbdTimer(spec.NetDelay, Kind)) goto label1;
+			if (KbdTimer(spec.NetDelay, Kind)) {
+				goto label1;
+			}
 			if (w != 0) PopW(w);
 			return result;
 		}
@@ -195,15 +205,21 @@ label1:
 		longint pos;
 		ModeLockBnds(Mode, pos, len);
 		if (!TryLockH(h, pos, len)) {
-			if (oldmode != NullMode) TryLockH(h, oldpos, oldlen);
+			if (oldmode != NullMode) {
+				TryLockH(h, oldpos, oldlen);
+			}
 			UnLockH(h, TransLock, 1);
 			goto label2;
 		}
 		UnLockH(h, TransLock, 1);
 	}
-	if (w != 0) PopW(w);
+	if (w != 0) {
+		PopW(w);
+	}
 	fileD->LMode = Mode;
-	if ((oldmode < RdMode) && (Mode >= RdMode) && RdPref) RdPrefixes();
+	if ((oldmode < RdMode) && (Mode >= RdMode) && RdPref) {
+		RdPrefixes();
+	}
 	result = true;
 	return result;
 }

@@ -896,8 +896,12 @@ label1:
 		auto iX = (FrmlElem7*)X;
 		cf = CFile;
 		cr = CRecPtr;
-		if (iX->LD != nullptr) LinkUpw(iX->LD, RecNo, false);
-		else LinkLastRec(iX->File2, RecNo, false);
+		if (iX->LD != nullptr) {
+			LinkUpw(iX->LD, RecNo, false);
+		}
+		else {
+			LinkLastRec(iX->File2, RecNo, false);
+		}
 		result = RunReal(iX->P011);
 		ReleaseStore(CRecPtr);
 		CFile = cf;
