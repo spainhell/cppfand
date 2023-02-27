@@ -491,6 +491,11 @@ void InitRunFand()
 	//	}
 	//	else {
 	//		std::string s = "<message ID=\"" + std::to_string(iii) + "\">" + MsgLine + "</message>" + "\r\n";
+	//		for (int jj = 0; jj < s.length(); jj++) {
+	//			if (s[jj] < ' ') {
+	//				s.replace(jj, 1, "");
+	//			}
+	//		}
 	//		messages.push_back(s);
 	//	}
 	//}
