@@ -324,7 +324,9 @@ label1:
 		if (CurrChar == 'I') {
 			ReadChar();
 			if (isdigit(CurrChar)) {
-				if (Ii != CurrChar - '0') Error(61);
+				if (Ii != CurrChar - '0') {
+					Error(61);
+				}
 				ReadChar();
 				if (CurrChar == '_') goto label2;
 			}

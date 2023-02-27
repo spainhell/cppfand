@@ -169,7 +169,7 @@ void RdPrinter(FILE* CfgHandle)
 			printer[j].OpCls = true;
 			printer[j].TmOut = 0;
 			break;
-;			}
+			;			}
 		case 254: {
 			printer[j].ToHandle = true;
 			printer[j].TmOut = 0;
@@ -398,7 +398,7 @@ void InitRunFand()
 	std::string txt;
 	double r;
 
-	
+
 	ClrEvent(); // instead of InitDrivers();
 
 	//ConsoleInit();
@@ -472,16 +472,36 @@ void InitRunFand()
 
 	// *** NACTENI INFORMACI O ZPRAVACH Z FAND.RES
 	ReadH(h, 2, &MsgIdxN);
-	l = MsgIdxN;
-	MsgIdx = new TMsgIdxItem[l];
-	for (int readindexes = 0; readindexes < l; readindexes++)
-	{
-		ReadH(h, sizeof(MsgIdx->Nr), &MsgIdx[readindexes].Nr);
-		ReadH(h, sizeof(MsgIdx->Ofs), &MsgIdx[readindexes].Ofs);
-		ReadH(h, sizeof(MsgIdx->Count), &MsgIdx[readindexes].Count);
+	for (int ii = 0; ii < MsgIdxN; ii++) {
+		TMsgIdxItem newItem{ 0, 0, 0 };
+		ReadH(h, 2, &newItem.Nr);    // WORD
+		ReadH(h, 2, &newItem.Ofs);   // WORD
+		ReadH(h, 1, &newItem.Count); // BYTE
+		MsgIdx.push_back(newItem);
 	}
 	FrstMsgPos = PosH(h);
 	// *** konec ***
+
+
+	//std::vector<std::string> messages;
+	//for (size_t iii = 0; iii < 10000; iii++) {
+	//	RdMsg(iii);
+	//	if (MsgLine.length() == 26 && MsgLine.find("ve FAND.RES") == 15) {
+	//		printf("%i, ", iii);
+	//	}
+	//	else {
+	//		std::string s = "<message ID=\"" + std::to_string(iii) + "\">" + MsgLine + "</message>" + "\r\n";
+	//		messages.push_back(s);
+	//	}
+	//}
+
+	//FILE* hhh;
+	//fopen_s(&hhh, "c:\\PCFAND\\messages.txt", "wb");
+	//for (auto& s : messages) {
+	//	fwrite(s.c_str(), 1, s.length(), hhh);
+	//}
+	//fclose(hhh);
+
 
 	// NACTENI ZNAKU PRO 'ANO' A 'NE' - original je Y a N
 	RdMsg(50);
@@ -608,7 +628,7 @@ void InitRunFand()
 		if (txt[txt.length() - 1] == ',') txt = txt.substr(0, txt.length() - 1);
 		txt += ")";
 		MsgLine = MsgLine + "x (" + txt;
-}
+	}
 	else MsgLine += 'x';
 
 	screen.ScrWrText(5, TxtRows - 3, MsgLine.c_str());

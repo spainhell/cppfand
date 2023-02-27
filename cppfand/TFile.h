@@ -17,14 +17,14 @@ public:
 	longint FreePart = 0;
 	bool Reserved = false, CompileProc = false, CompileAll = false;
 	WORD IRec = 0;
-	longint FreeRoot = 0, MaxPage = 0;
+	__int32 FreeRoot = 0, MaxPage = 0;
 	double TimeStmp = 0.0;
 	integer LicenseNr = 0;
 	longint MLen = 0;
 	std::string PwCode;
 	std::string Pw2Code;
 	enum eFormat { T00Format, DbtFormat, FptFormat } Format = T00Format;
-	WORD BlockSize = 0; // FptFormat
+	WORD FptFormatBlockSize = 0;
 	bool IsWork = false;
 	void Err(WORD n, bool ex);
 	void TestErr();

@@ -1,6 +1,4 @@
 #include "TFile.h"
-
-
 #include "FieldDescr.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
@@ -169,7 +167,7 @@ void TFile::TestErr()
 
 longint TFile::UsedFileSize()
 {
-	if (Format == FptFormat) return FreePart * BlockSize;
+	if (Format == FptFormat) return FreePart * FptFormatBlockSize;
 	else return longint(MaxPage + 1) << MPageShft;
 }
 
@@ -214,7 +212,7 @@ void TFile::RdPrefix(bool Chk)
 	}
 	if (Format == FptFormat) {
 		FreePart = SwapLong((*FptHd).FreePart);
-		BlockSize = Swap((*FptHd).BlockSize);
+		FptFormatBlockSize = Swap((*FptHd).BlockSize);
 		return;
 	}
 
@@ -316,7 +314,7 @@ void TFile::WrPrefix()
 		stFptHd* FptHd = (stFptHd*)&T;
 		memset(&T, 0, sizeof(T));
 		(*FptHd).FreePart = SwapLong(FreePart);
-		(*FptHd).BlockSize = Swap(BlockSize);
+		(*FptHd).BlockSize = Swap(FptFormatBlockSize);
 		break;
 	}
 	case T00Format: {
@@ -397,7 +395,7 @@ void TFile::SetEmpty()
 		break;
 	}
 	case FptFormat: {
-		FreePart = 8; BlockSize = 64;
+		FreePart = 8; FptFormatBlockSize = 64;
 		WrPrefix();
 		break;
 	}
@@ -463,11 +461,8 @@ longint TFile::NewPage(bool NegL)
 
 void TFile::ReleasePage(int PosPg)
 {
-	BYTE X[MPageSize];
-	longint* Next = (longint*)&X;
-	//FillChar(X, MPageSize, 0);
-	memset(X, 0, MPageSize);
-	*Next = FreeRoot;
+	BYTE X[MPageSize]{ 0 };
+	*(__int32*)X = FreeRoot;
 	RdWrCache(WRITE, Handle, NotCached(), PosPg, MPageSize, X);
 	FreeRoot = PosPg >> MPageShft;
 }
@@ -529,7 +524,7 @@ LongStr* TFile::Read(int Pos)
 			break;
 		}
 		case FptFormat: {
-			Pos = Pos * BlockSize;
+			Pos = Pos * FptFormatBlockSize;
 			RdWrCache(READ, Handle, NotCached(), Pos, sizeof(FptD), &FptD);
 			if (SwapLong(FptD.Typ) != 1/*text*/) {
 				s = new LongStr(l);
@@ -607,15 +602,15 @@ longint TFile::Store(char* s, size_t l)
 	}
 	case FptFormat: {
 		pos = FreePart;
-		int N = FreePart * BlockSize;
+		int N = FreePart * FptFormatBlockSize;
 		if (l > 0x7fff) l = 0x7fff;
-		FreePart = FreePart + (sizeof(FptD) + l - 1) / BlockSize + 1;
+		FreePart = FreePart + (sizeof(FptD) + l - 1) / FptFormatBlockSize + 1;
 		FptD.Len = SwapLong(l);
 		RdWrCache(WRITE, Handle, NotCached(), N, sizeof(FptD), &FptD);
 		N += sizeof(FptD);
 		RdWrCache(WRITE, Handle, NotCached(), N, l, s);
 		N += l;
-		l = FreePart * BlockSize - N;
+		l = FreePart * FptFormatBlockSize - N;
 		if (l > 0) {
 			BYTE* p = new BYTE[l];
 			FillChar(p, l, ' ');

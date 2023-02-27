@@ -222,8 +222,9 @@ void ReadMerge()
 		Error(89);
 	label1:
 		Ii++;
-		if (I != Ii) OldError(61);
-		//ID = (InpD*)GetZStore(sizeof(*ID)); 
+		if (I != Ii) {
+			OldError(61);
+		}
 		ID = new InpD();
 		IDA[Ii] = ID;
 		FD = RdFileName();

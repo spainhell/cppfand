@@ -149,8 +149,7 @@ extern void (*CallCloseFandFiles)(); // r454
 
 extern double userToday;
 
-//TMsgIdxItem TMsgIdx[100];
 extern TResFile ResFile;
-extern TMsgIdxItem* MsgIdx;// = TMsgIdx;
+extern std::vector<TMsgIdxItem> MsgIdx;
 extern WORD MsgIdxN;
 extern longint FrstMsgPos;

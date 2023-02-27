@@ -3175,7 +3175,7 @@ label4:
 bool GetChpt(pstring Heslo, longint& NN)
 {
 	pstring s(12);
-	auto result = true;
+
 	for (longint j = 1; j <= CFile->NRecs; j++) {
 		CFile->ReadRec(j, CRecPtr);
 		if (IsCurrChpt()) {
@@ -3183,22 +3183,22 @@ bool GetChpt(pstring Heslo, longint& NN)
 			integer i = s.first('.');
 			if (i > 0) s.Delete(i, 255);
 			if (EquUpCase(Heslo, s)) {
-				goto label1;
+				NN = j;
+				return true;
 			}
 		}
 		else {
 			s = OldTrailChar(' ', _ShortS(CFile->FldD.front()));
 			ConvToNoDiakr((WORD*)s[1], s.length(), fonts.VFont);
 			if (EqualsMask(&Heslo[1], Heslo.length(), s)) {
-			label1:
 				NN = j;
-				return result;
+				return true;
 			}
 		}
 	}
 	RdRec(CRec());
-	result = false;
-	return result;
+
+	return false;
 }
 
 void SetCRec(longint I)

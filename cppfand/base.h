@@ -215,8 +215,7 @@ typedef std::array<BYTE, 4> TPrTimeOut; // ø. 418
 
 void OpenWorkH();
 
-//FILE* GetOverHandle(FILE* fptr, int diff);
-void NonameStartFunction(); // r639 BASE.PAS - kam to patøí?
+void NonameStartFunction();
 
 struct wdaystt { BYTE Typ = 0; WORD Nr = 0; };
 
@@ -235,4 +234,8 @@ public:
 	LongStr* GetStr(WORD Kod);
 };
 
-struct TMsgIdxItem { WORD Nr; WORD Ofs; BYTE Count; };
+struct TMsgIdxItem {
+	WORD Nr;
+	WORD Ofs;
+	BYTE Count;
+};

@@ -59,7 +59,7 @@ void Error(integer N)
 		//MarkStore(p1);
 		longint w = PushW(1, 1, TxtCols, TxtRows);
 		TextAttr = screen.colors.tNorm;
-		char* p = new char[l]; // GetStore(l);
+		char* p = new char[l];
 		memcpy(p, InpArrPtr, l);
 		if (!PrevCompInp.empty()) {
 			RdMsg(63);
@@ -75,6 +75,8 @@ void Error(integer N)
 		p = LS.A;
 		l = LS.LL;
 		PopW(w);
+		delete[] p;
+		p = nullptr;
 		//ReleaseStore(p1);
 	}
 	EdRecKey = ErrMsg;
@@ -161,8 +163,12 @@ void SetInpTT(RdbPos* RP, bool FromTxt)
 	CFile = RP->R->FD;
 	CRecPtr = new BYTE[RP->R->FD->RecLen];
 	CFile->ReadRec(RP->IRec, CRecPtr);
-	if (FromTxt) Pos = _T(ChptTxt, (unsigned char*)CRecPtr, CFile->file_type);
-	else Pos = _T(ChptOldTxt, (unsigned char*)CRecPtr, CFile->file_type);
+	if (FromTxt) {
+		Pos = _T(ChptTxt, (unsigned char*)CRecPtr, CFile->file_type);
+	}
+	else {
+		Pos = _T(ChptOldTxt, (unsigned char*)CRecPtr, CFile->file_type);
+	}
 	SetInpTTPos(CFile, Pos, RP->R->Encrypted);
 	ReleaseStore(CRecPtr);
 	CFile = CF; CRecPtr = CR;

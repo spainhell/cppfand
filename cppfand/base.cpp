@@ -59,7 +59,7 @@ std::string CExt;
 std::string CVol;
 
 TResFile ResFile;
-TMsgIdxItem* MsgIdx;// = TMsgIdx;
+std::vector<TMsgIdxItem> MsgIdx;
 WORD MsgIdxN;
 longint FrstMsgPos;
 
@@ -196,7 +196,7 @@ void RdMsg(integer N)
 	WORD j, o;
 	FILE* h;
 	pstring s;
-	for (int i = 1; i < MsgIdxN; i++) {
+	for (int i = 0; i < MsgIdxN; i++) {
 		auto Nr = MsgIdx[i].Nr;
 		auto Count = MsgIdx[i].Count;
 		auto Ofs = MsgIdx[i].Ofs;
@@ -207,15 +207,15 @@ void RdMsg(integer N)
 			goto label1;
 		}
 	}
-	o = 0; j = 1;
+	o = 0;
+	j = 1;
 	MsgPar[1] = std::to_string(N).c_str();
 
 label1:
 	h = ResFile.Handle;
 	SeekH(h, FrstMsgPos + o);
 
-	for (int i = 1; i <= j; i++)
-	{
+	for (int i = 1; i <= j; i++) {
 		ReadH(h, 1, &s[0]); // tady se ma zrejme jen vycist delka
 		ReadH(h, s.length(), &s[1]);
 	}
@@ -235,7 +235,7 @@ label1:
 			if (s[i] == '$') i++;
 		}
 	}
-
+	MsgLine = s;
 }
 
 void WriteMsg(WORD N)
