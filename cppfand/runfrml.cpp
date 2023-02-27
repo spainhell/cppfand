@@ -1890,13 +1890,13 @@ label1:
 	}
 	case _accrecno: {
 		auto iX = (FrmlElem14*)X;
-		cf = CFile; cr = CRecPtr;
+		cf = CFile;
+		cr = CRecPtr;
 		AccRecNoProc(iX, 640);
-		auto s = _LongS(iX->RecFldD);
+		result = _StdS(iX->RecFldD);
 		ReleaseAfterLongStr(CRecPtr);
-		CFile = cf; CRecPtr = cr;
-		result = std::string(s->A, s->LL);
-		delete s;
+		CFile = cf;
+		CRecPtr = cr;
 		break;
 	}
 	case _gettxt: {

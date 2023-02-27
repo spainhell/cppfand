@@ -989,7 +989,9 @@ std::string _StdS(FieldDescr* F)
 				delete ls;
 				OldLMode(CFile, md);
 			}
-			if ((F->Flg & f_Encryp) != 0) Code(S);
+			if ((F->Flg & f_Encryp) != 0) {
+				Code(S);
+			}
 			break;
 		}
 		}

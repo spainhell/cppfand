@@ -116,7 +116,7 @@ label5:
 	Col = E->FrstCol;
 	while (!(ForwChar == 0x0D || ForwChar == 0x1A || ForwChar == '\\' || ForwChar == '{'))
 		if (ForwChar == '_') {
-			if (D == nullptr) Error(30); 
+			if (D == nullptr) Error(30);
 			NFlds++;
 			D->Col = Col;
 			D->Ln = Ln;
@@ -127,7 +127,7 @@ label5:
 				M++; Col++;
 				ReadChar();
 			}
-			F = D->FldD; 
+			F = D->FldD;
 			D->L = F->L;
 			if (F->field_type == FieldType::TEXT) {
 				D->L = 1;
@@ -494,7 +494,7 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 				CFile = E->FD;
 				break;
 			}
-			default: ;
+			default:;
 			}
 		}
 		else if (E->VK == nullptr) {
@@ -510,7 +510,7 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 			else if (!EquKFlds(E->SelKey->KFlds, E->VK->KFlds)) {
 				RunError(663);
 			}
-	}
+		}
 	}
 	if (EO->StartFieldZ != nullptr) {
 		std::string rss = RunShortStr(EO->StartFieldZ);
@@ -608,10 +608,10 @@ void RdDepChkImpl()
 	}
 	case FileType::CAT: {
 		RdMsg(54);
-			s = MsgLine;
+		s = MsgLine;
 		if (spec.CPMdrive != ' ') s = s + ',' + spec.CPMdrive + ':';
 		RdMsg(55);
-			s = s + MsgLine;
+		s = s + MsgLine;
 		if (spec.CPMdrive != ' ') s = s + ',' + spec.CPMdrive + ':';
 		s = s + "'";
 		ResetCompilePars();
@@ -868,7 +868,7 @@ void NewChkKey()
 	EFldD* D = nullptr;
 	KeyListEl* KL = nullptr;
 	for (auto& K : CFile->Keys) {
-	//while (K != nullptr) {
+		//while (K != nullptr) {
 		if (!K->Duplic) {
 			ZeroUsed();
 			KF = K->KFlds;
