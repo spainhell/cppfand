@@ -7,6 +7,7 @@
 #include "obaseww.h"
 #include "../Logging/Logging.h"
 #include "../pascal/random.h"
+#include "../pascal/real48.h"
 #include "../textfunc/textfunc.h"
 
 struct TT1Page
@@ -48,8 +49,11 @@ void TT1Page::Load(BYTE* input512)
 	memcpy(&IRec, &input512[index], 2); index += 2;
 	memcpy(&FreeRoot, &input512[index], 4); index += 4;
 	memcpy(&MaxPage, &input512[index], 4); index += 4;
-	memcpy(&TimeStmp, &input512[index], 6); index += 6;
-	memset(&TimeStmp + 6, 0, 2); // v pascalu to bylo 6B, tady je to 8B
+
+	TimeStmp = Real48ToDouble(&input512[index]); index += 6;
+	//memcpy(&TimeStmp, &input512[index], 6); index += 6;
+	//memset(&TimeStmp + 6, 0, 2); // v pascalu to bylo 6B, tady je to 8B (posledni 2B nastavime na 0)
+
 	memcpy(&HasCoproc, &input512[index], 1); index++;
 	memcpy(&Rsrvd2, &input512[index], 25); index += 25;
 	memcpy(&Version, &input512[index], 4); index += 4;
@@ -77,8 +81,14 @@ void TT1Page::Save(BYTE* output512)
 	memcpy(&output512[index], &IRec, 2); index += 2;
 	memcpy(&output512[index], &FreeRoot, 4); index += 4;
 	memcpy(&output512[index], &MaxPage, 4); index += 4;
-	memcpy(&output512[index], &TimeStmp, 6); index += 6;
+
+	const std::array<unsigned char, 6> time_stamp = DoubleToReal48(TimeStmp);
+	for (size_t i = 0; i < 6; i++, index++) {
+		output512[index] = time_stamp[i];
+	}
+	//memcpy(&output512[index], &TimeStmp, 6); index += 6;
 	//memset(&TimeStmp + 6, 0, 2); // v pascalu to bylo 6B, tady je to 8B
+
 	memcpy(&output512[index], &HasCoproc, 1); index++;
 	memcpy(&output512[index], &Rsrvd2, 25); index += 25;
 	memcpy(&output512[index], &Version, 4); index += 4;
@@ -98,43 +108,39 @@ void RandIntByBytes(longint& nr)
 	BYTE* byte = (BYTE*)&nr;
 	for (size_t i = 0; i < 4; i++)
 	{
-		byte[i] = byte[i] ^ Random(255); //randomice6s4173[randIndex++];
+		byte[i] = byte[i] ^ Random(255);
 	}
 }
 
 void RandWordByBytes(WORD& nr)
 {
 	BYTE* byte = (BYTE*)&nr;
-	for (size_t i = 0; i < 2; i++)
-	{
-		byte[i] = byte[i] ^ Random(255); //randomice6s4173[randIndex++];
+	for (size_t i = 0; i < 2; i++) {
+		byte[i] = byte[i] ^ Random(255);
 	}
 }
 
 void RandReal48ByBytes(double& nr)
 {
 	BYTE* byte = (BYTE*)&nr;
-	for (size_t i = 0; i < 6; i++)
-	{
-		byte[i] = byte[i] ^ Random(255); //randomice6s4173[randIndex++];
+	for (size_t i = 0; i < 6; i++) {
+		byte[i] = byte[i] ^ Random(255);
 	}
 }
 
 void RandBooleanByBytes(bool& nr)
 {
 	BYTE* byte = (BYTE*)&nr;
-	for (size_t i = 0; i < sizeof(nr); i++)
-	{
-		byte[i] = byte[i] ^ Random(255); //randomice6s4173[randIndex++];
+	for (size_t i = 0; i < sizeof(nr); i++) {
+		byte[i] = byte[i] ^ Random(255);
 	}
 }
 
 void RandArrayByBytes(void* arr, size_t len)
 {
 	BYTE* byte = (BYTE*)arr;
-	for (size_t i = 0; i < len; i++)
-	{
-		byte[i] = byte[i] ^ Random(255); //randomice6s4173[randIndex++];
+	for (size_t i = 0; i < len; i++) {
+		byte[i] = byte[i] ^ Random(255);
 	}
 }
 
@@ -215,7 +221,6 @@ void TFile::RdPrefix(bool Chk)
 	// nactena data jsou porad v poli, je nutne je nahrat do T
 	T.Load(header512);
 
-	// Move(&T.FreePart, &FreePart, 23);
 	FreePart = T.FreePart; // 4B
 	Reserved = T.Rsrvd1; // 1B
 	CompileProc = T.CompileProc; // 1B
@@ -225,14 +230,19 @@ void TFile::RdPrefix(bool Chk)
 	MaxPage = T.MaxPage; // 4B
 	TimeStmp = T.TimeStmp; // 6B v Pascalu, 8B v C++ 
 
-	if (!IsWork && (CFile == Chpt) && ((T.HasCoproc != HasCoproc) ||
-		(CompArea(Version, T.Version, 4) != _equ))) CompileAll = true;
-	if (T.OldMaxPage == 0xffff) goto label1;
+	if (!IsWork && (CFile == Chpt) && ((T.HasCoproc != HasCoproc) || (CompArea(Version, T.Version, 4) != _equ))) {
+		CompileAll = true;
+	}
+	if (T.OldMaxPage == 0xffff) {
+		goto label1;
+	}
 	else {
 		FreeRoot = 0;
 		if (FreePart > 0) {
-			if (!Chk) FS = FileSizeH(Handle); ML = FS;
-			MaxPage = (FS - 1) >> MPageShft; GetMLen();
+			if (!Chk) FS = FileSizeH(Handle);
+			ML = FS;
+			MaxPage = (FS - 1) >> MPageShft;
+			GetMLen();
 		}
 		else {
 			FreePart = -FreePart; MaxPage = T.OldMaxPage;
@@ -323,7 +333,7 @@ void TFile::WrPrefix()
 			}
 		}
 		n = 0x4000;
-		// TODO: T.Time = Time;
+		T.Time = Random(100);
 		if (Pw.length() != 40) {
 			throw std::exception("Bad PwCode + Pw2Code length! Must be 40.");
 		}
@@ -462,6 +472,163 @@ void TFile::ReleasePage(int PosPg)
 	FreeRoot = PosPg >> MPageShft;
 }
 
+LongStr* TFile::Read(int Pos)
+{
+	LongStr* s = nullptr;
+	WORD i = 0, l = 0;
+	char* p = nullptr;
+	int offset = 0;
+	struct stFptD { longint Typ = 0, Len = 0; } FptD;
+	Pos -= LicenseNr;
+	if (Pos <= 0 /*OldTxt=-1 in RDB!*/) {
+		s = new LongStr(l);
+		s->LL = 0;
+		return s;
+	}
+	else {
+		switch (Format) {
+		case T00Format: {
+			if ((Pos < MPageSize) || (Pos >= MLen)) {
+				Err(891, false);
+				return s;
+			}
+			RdWrCache(READ, Handle, NotCached(), Pos, 2, &l);
+			if (l > MaxLStrLen + 1) {
+				Err(891, false);
+				s = new LongStr(l);
+				s->LL = 0;
+				return s;
+			}
+			if (l == MaxLStrLen + 1) { l--; } // 65001
+			s = new LongStr(l + 2);
+			s->LL = l;
+			RdWr(READ, Pos + 2, l, s->A);
+			break;
+		}
+		case DbtFormat: {
+			s = new LongStr(32768); //(LongStr*)GetStore(32770);
+			Pos = Pos << MPageShft;
+			p = s->A;
+			l = 0;
+			while (l <= 32768 - MPageSize) {
+				RdWrCache(READ, Handle, NotCached(), Pos, MPageSize, &p[offset]);
+				for (i = 1; i < MPageSize; i++) {
+					if (p[offset + i] == 0x1A) {
+						s->LL = l;
+						ReleaseStore(&s->A[l + 1]);
+						return s;
+					}
+					l++;
+				}
+				offset += MPageSize;
+				Pos += MPageSize;
+			}
+			l--;
+			s->LL = l;
+			ReleaseStore(&s->A[l + 1]);
+			break;
+		}
+		case FptFormat: {
+			Pos = Pos * BlockSize;
+			RdWrCache(READ, Handle, NotCached(), Pos, sizeof(FptD), &FptD);
+			if (SwapLong(FptD.Typ) != 1/*text*/) {
+				s = new LongStr(l);
+				s->LL = 0;
+				return s;
+			}
+			else {
+				l = SwapLong(FptD.Len) & 0x7FFF;
+				s = new LongStr(l);
+				s->LL = l;
+				RdWrCache(READ, Handle, NotCached(), Pos + sizeof(FptD), l, s->A);
+			}
+			break;
+		}
+		default: break;
+		}
+	}
+	return s;
+}
+
+longint TFile::Store(char* s, size_t l)
+{
+	longint pos = 0;
+	char X[MPageSize + 1]{ 0 };
+	struct stFptD { longint Typ = 0, Len = 0; } FptD;
+
+	if (l == 0) {
+		return pos;
+	}
+
+	SetUpdHandle(Handle);
+
+	switch (Format) {
+	case T00Format: {
+		if (l > MaxLStrLen) {
+			l = MaxLStrLen;
+		}
+		if (l > MPageSize - 2) {
+			// long text
+			pos = NewPage(false);
+		}
+		else {
+			// short text
+			int rest = MPageSize - FreePart % MPageSize;
+			if (l + 2 <= rest) {
+				pos = FreePart;
+			}
+			else {
+				pos = NewPage(false);
+				FreePart = pos;
+				rest = MPageSize;
+			}
+			if (l + 4 >= rest) FreePart = NewPage(false);
+			else {
+				FreePart += l + 2;
+				rest = l + 4 - rest;
+				RdWrCache(WRITE, Handle, NotCached(), FreePart, 2, &rest);
+			}
+		}
+		RdWrCache(WRITE, Handle, NotCached(), pos, 2, &l);
+		RdWr(WRITE, pos + 2, l, s);
+		break;
+	}
+	case DbtFormat: {
+		pos = MaxPage + 1;
+		int N = pos << MPageShft;
+		if (l > 0x7fff) l = 0x7fff;
+		RdWrCache(WRITE, Handle, NotCached(), N, l, s);
+		FillChar(X, MPageSize, ' ');
+		X[0] = 0x1A; X[1] = 0x1A;
+		int rest = MPageSize - (l + 2) % MPageSize;
+		RdWrCache(WRITE, Handle, NotCached(), N + l, rest + 2, X);
+		MaxPage += (l + 2 + rest) / MPageSize;
+		break;
+	}
+	case FptFormat: {
+		pos = FreePart;
+		int N = FreePart * BlockSize;
+		if (l > 0x7fff) l = 0x7fff;
+		FreePart = FreePart + (sizeof(FptD) + l - 1) / BlockSize + 1;
+		FptD.Len = SwapLong(l);
+		RdWrCache(WRITE, Handle, NotCached(), N, sizeof(FptD), &FptD);
+		N += sizeof(FptD);
+		RdWrCache(WRITE, Handle, NotCached(), N, l, s);
+		N += l;
+		l = FreePart * BlockSize - N;
+		if (l > 0) {
+			BYTE* p = new BYTE[l];
+			FillChar(p, l, ' ');
+			RdWrCache(WRITE, Handle, NotCached(), N, l, p);
+			ReleaseStore(p);
+		}
+		break;
+	}
+	default: break;
+	}
+	return pos;
+}
+
 void TFile::Delete(int pos)
 {
 	// funkce smaze cast T00 nebo TTT souboru
@@ -548,184 +715,33 @@ void TFile::Delete(int pos)
 			if (l <= MPageSize) {
 				goto label2;
 			}
-			l = l - MPageSize - 4;
+			l = l - (MPageSize - 4);
 			goto label4;
 		}
 	}
-}
-
-LongStr* TFile::Read(int Pos)
-{
-	LongStr* s = nullptr;
-	WORD i = 0, l = 0;
-	char* p = nullptr;
-	int offset = 0;
-	struct stFptD { longint Typ = 0, Len = 0; } FptD;
-	Pos -= LicenseNr;
-	if (Pos <= 0 /*OldTxt=-1 in RDB!*/) {
-		s = new LongStr(l);
-		s->LL = 0;
-		return s;
-	}
-	else {
-		switch (Format) {
-		case T00Format: {
-			if ((Pos < MPageSize) || (Pos >= MLen)) {
-				Err(891, false);
-				return s;
-			}
-			RdWrCache(READ, Handle, NotCached(), Pos, 2, &l);
-			if (l > MaxLStrLen + 1) {
-				Err(891, false);
-				s = new LongStr(l);
-				s->LL = 0;
-				return s;
-			}
-			if (l == MaxLStrLen + 1) { l--; } // 65001
-			s = new LongStr(l + 2);
-			s->LL = l;
-			RdWr(READ, Pos + 2, l, s->A);
-			break;
-		}
-		case DbtFormat: {
-			s = new LongStr(32768); //(LongStr*)GetStore(32770);
-			Pos = Pos << MPageShft;
-			p = s->A;
-			l = 0;
-			while (l <= 32768 - MPageSize) {
-				RdWrCache(READ, Handle, NotCached(), Pos, MPageSize, &p[offset]);
-				for (i = 1; i < MPageSize; i++) {
-					if (p[offset + i] == 0x1A) {
-						s->LL = l;
-						ReleaseStore(&s->A[l + 1]);
-						return s;
-					}
-					l++;
-				}
-				offset += MPageSize;
-				Pos += MPageSize;
-			}
-			l--;
-			s->LL = l;
-			ReleaseStore(&s->A[l + 1]);
-			break;
-		}
-		case FptFormat: {
-			Pos = Pos * BlockSize;
-			RdWrCache(READ, Handle, NotCached(), Pos, sizeof(FptD), &FptD);
-			if (SwapLong(FptD.Typ) != 1/*text*/) {
-				s = new LongStr(l);
-				s->LL = 0;
-				return s;
-			}
-			else {
-				l = SwapLong(FptD.Len) & 0x7FFF;
-				s = new LongStr(l);
-				s->LL = l;
-				RdWrCache(READ, Handle, NotCached(), Pos + sizeof(FptD), l, s->A);
-			}
-			break;
-		}
-		default: break;
-		}
-	}
-	return s;
-}
-
-longint TFile::Store(char* s, size_t l)
-{
-	integer rest;
-	longint N;
-	longint pos = 0;
-	char X[MPageSize + 1]{ 0 };
-	struct stFptD { longint Typ = 0, Len = 0; } FptD;
-	longint result = 0;
-	if (l == 0) { return result; }
-
-	SetUpdHandle(Handle);
-
-	switch (Format) {
-	case T00Format: {
-		if (l > MaxLStrLen) {
-			l = MaxLStrLen;
-		}
-		if (l > MPageSize - 2) {
-			// long text
-			pos = NewPage(false);
-		}
-		else {
-			// short text
-			rest = MPageSize - FreePart % MPageSize;
-			if (l + 2 <= rest) {
-				pos = FreePart;
-			}
-			else {
-				pos = NewPage(false);
-				FreePart = pos;
-				rest = MPageSize;
-			}
-			if (l + 4 >= rest) FreePart = NewPage(false);
-			else {
-				FreePart += l + 2;
-				rest = l + 4 - rest;
-				RdWrCache(WRITE, Handle, NotCached(), FreePart, 2, &rest);
-			}
-		}
-		RdWrCache(WRITE, Handle, NotCached(), pos, 2, &l);
-		RdWr(WRITE, pos + 2, l, s);
-		break;
-	}
-	case DbtFormat: {
-		pos = MaxPage + 1; N = pos << MPageShft; if (l > 0x7fff) l = 0x7fff;
-		RdWrCache(WRITE, Handle, NotCached(), N, l, s);
-		FillChar(X, MPageSize, ' '); X[0] = 0x1A; X[1] = 0x1A;
-		rest = MPageSize - (l + 2) % MPageSize;
-		RdWrCache(WRITE, Handle, NotCached(), N + l, rest + 2, X);
-		MaxPage += (l + 2 + rest) / MPageSize;
-		break;
-	}
-	case FptFormat: {
-		pos = FreePart; N = FreePart * BlockSize;
-		if (l > 0x7fff) l = 0x7fff;
-		FreePart = FreePart + (sizeof(FptD) + l - 1) / BlockSize + 1;
-		FptD.Typ = SwapLong(1); FptD.Len = SwapLong(l);
-		RdWrCache(WRITE, Handle, NotCached(), N, sizeof(FptD), &FptD);
-		N += sizeof(FptD);
-		RdWrCache(WRITE, Handle, NotCached(), N, l, s);
-		N += l;
-		l = FreePart * BlockSize - N;
-		if (l > 0) {
-			BYTE* p = new BYTE[l];
-			FillChar(p, l, ' ');
-			RdWrCache(WRITE, Handle, NotCached(), N, l, p);
-			ReleaseStore(p);
-		}
-		break;
-	}
-	default: break;
-	}
-	return pos;
 }
 
 void TFile::RdWr(FileOperation operation, size_t position, size_t count, char* buffer)
 {
 	Logging* log = Logging::getInstance();
 	// log->log(loglevel::DEBUG, "TFile::RdWr() 0x%p %s pos: %i, len: %i", Handle, ReadOp ? "read" : "write", position, count);
-	WORD Rest = 0, L = 0;
+	WORD L = 0;
 	int NxtPg = 0;
 	int offset = 0;
-	Rest = MPageSize - (WORD(position) & (MPageSize - 1));
+	WORD Rest = MPageSize - (WORD(position) & (MPageSize - 1));
 	while (count > Rest) {
 		L = Rest - 4;
 		RdWrCache(operation, Handle, NotCached(), position, L, &buffer[offset]);
 		offset += L;
 		count -= L;
-		if (operation == WRITE) NxtPg = NewPage(false);
+		if (operation == WRITE) {
+			NxtPg = NewPage(false);
+		}
 		RdWrCache(operation, Handle, NotCached(), position + L, 4, &NxtPg);
 		position = NxtPg;
 		if ((operation == READ) && ((position < MPageSize) || (position + MPageSize > MLen))) {
 			Err(890, false);
-			FillChar(&buffer[offset], count, ' ');
+			memset(&buffer[offset], ' ', count);
 			return;
 		}
 		Rest = MPageSize;
@@ -740,7 +756,8 @@ void TFile::GetMLen()
 
 WORD RdPrefix()
 {
-	// NRs - celkovy pocet zaznamu v souboru; RLen - delka 1 zaznamu
+	// NRs - celkovy pocet zaznamu v souboru;
+	// RLen - delka 1 zaznamu
 	struct x6 { longint NRs = 0; WORD RLen = 0; } X6;
 	struct x8 { WORD NRs = 0, RLen = 0; } X8;
 	struct xD {

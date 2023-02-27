@@ -2716,7 +2716,7 @@ bool PromptSearch(bool Create)
 {
 	auto result = false;
 	FieldDescr* F; FieldDescr* F2;
-	FileD* FD, *FD2; void* RP; void* RP2; KeyFldD* KF, *KF2;
+	FileD* FD, * FD2; void* RP; void* RP2; KeyFldD* KF, * KF2;
 	longint n; std::string s; double r; bool b, li, found; LockMode md;
 	XString x, xOld; XKey* K; longint w; WORD Col, LWw, pos; EFldD* D;
 	FD = CFile; K = VK; if (Subset) K = WK; KF = K->KFlds;
@@ -3182,14 +3182,18 @@ bool GetChpt(pstring Heslo, longint& NN)
 			s = OldTrailChar(' ', _ShortS(ChptName));
 			integer i = s.first('.');
 			if (i > 0) s.Delete(i, 255);
-			if (EquUpCase(Heslo, s)) goto label1;
+			if (EquUpCase(Heslo, s)) {
+				goto label1;
+			}
 		}
 		else {
 			s = OldTrailChar(' ', _ShortS(CFile->FldD.front()));
 			ConvToNoDiakr((WORD*)s[1], s.length(), fonts.VFont);
-			if (EqualsMask(&Heslo[1], Heslo.length(), s))
-				label1:
-			{ NN = j; return result; }
+			if (EqualsMask(&Heslo[1], Heslo.length(), s)) {
+			label1:
+				NN = j;
+				return result;
+			}
 		}
 	}
 	RdRec(CRec());
@@ -3201,7 +3205,8 @@ void SetCRec(longint I)
 {
 	if (I > BaseRec + E->NRecs - 1) BaseRec = I - E->NRecs + 1;
 	else if (I < BaseRec) BaseRec = I;
-	IRec = I - BaseRec + 1; RdRec(CRec());
+	IRec = I - BaseRec + 1;
+	RdRec(CRec());
 }
 
 void UpdateEdTFld(LongStr* S)
@@ -3263,8 +3268,7 @@ bool EditFreeTxt(FieldDescr* F, std::string ErrMsg, bool Ed, WORD& Brk)
 	auto result = true;
 	w = 0;
 	if (E->Head.empty()) w = PushW(1, 1, TxtCols, 1);
-	if (E->TTExit)
-		/* !!! with TxtMsgS do!!! */ {
+	if (E->TTExit) {
 		TxtMsgS.Head = nullptr;
 		TxtMsgS.Last = E->Last;
 		TxtMsgS.CtrlLast = E->CtrlLast;
@@ -3272,7 +3276,9 @@ bool EditFreeTxt(FieldDescr* F, std::string ErrMsg, bool Ed, WORD& Brk)
 		TxtMsgS.ShiftLast = E->ShiftLast;
 		PTxtMsgS = &TxtMsgS;
 	}
-	else PTxtMsgS = nullptr;
+	else {
+		PTxtMsgS = nullptr;
+	}
 label1:
 	HdTxt = "    ";
 	WasUpd = false;
@@ -3290,8 +3296,12 @@ label1:
 	}
 	else {
 		CtrlMsgNr = 151;
-		if (CFile == CRdb->HelpFD) Breaks = BreakKeys1;
-		else Breaks = BreakKeys;
+		if (CFile == CRdb->HelpFD) {
+			Breaks = BreakKeys1;
+		}
+		else {
+			Breaks = BreakKeys;
+		}
 	}
 	R1 = E->FrstRow;
 	if ((R1 == 3) && WithBoolDispl) R1 = 2;
@@ -3304,10 +3314,16 @@ label1:
 		S = _LongS(F);
 		if (Ed) Kind = 'T';
 	}
-	else S = RunLongStr(F->Frml);
+	else {
+		S = RunLongStr(F->Frml);
+	}
 label2:
-	if (TTExit) X = E->ExD;
-	else X.clear();
+	if (TTExit) {
+		X = E->ExD;
+	}
+	else {
+		X.clear();
+	}
 
 	Upd = false;
 	result =
@@ -3316,11 +3332,19 @@ label2:
 	ErrMsg = "";
 	heslo = LexWord;
 	LastLen = S->LL;
-	if (EdBreak == 0xffff) C = Event.Pressed.KeyCombination();
-	else C = 0;
+	if (EdBreak == 0xffff) {
+		C = Event.Pressed.KeyCombination();
+	}
+	else {
+		C = 0;
+	}
 
-	if (C == _AltEqual_) C = _ESC_;
-	else WasUpd = WasUpd || Upd;
+	if (C == _AltEqual_) {
+		C = _ESC_;
+	}
+	else {
+		WasUpd = WasUpd || Upd;
+	}
 
 	switch (C) {
 	case __ALT_F3: {
@@ -3335,34 +3359,57 @@ label2:
 		break; }
 	}
 	screen.Window(1, 1, TxtCols, TxtRows);
+
 	if (WasUpd) UpdateEdTFld(S);
 	if ((OldTxtPos != TxtPos) && !Srch) UpdateTxtPos(TxtPos);
 	ReleaseStore(S);
-	if (Ed && !WasUpdated) UnLockRec(E);
-	if (Srch) if (WriteCRec(false, Displ)) goto label31;
+
+	if (Ed && !WasUpdated) {
+		UnLockRec(E);
+	}
+	if (Srch) {
+		if (WriteCRec(false, Displ)) {
+			goto label31;
+		}
+	}
+
 	switch (C) {
 	case __F9: {
-		if (WriteCRec(false, Displ)) { SaveFiles; UpdCount = 0; }
+		if (WriteCRec(false, Displ)) {
+			SaveFiles();
+			UpdCount = 0;
+		}
 		goto label4;
 		break;
 	}
-	case __F1: { RdMsg(6); heslo = MsgLine; goto label3; break; }
-	case __CTRL_F1: goto label3; break;
+	case __F1: {
+		RdMsg(6);
+		heslo = MsgLine;
+		goto label3;
+		break;
+	}
+	case __CTRL_F1: {
+		goto label3;
+		break;
+	}
 	case __SHIFT_F1:
 		if (IsCurrChpt() || (CFile == CRdb->HelpFD)) {
 			if ((iStk < maxStk) && WriteCRec(false, Displ) && GetChpt(heslo, i)) {
-				Append = false; iStk++;
-				/* !!! with Stk[iStk] do!!! */ { Stk[iStk].N = CRec(); Stk[iStk].I = TxtPos; }
+				Append = false;
+				iStk++;
+				Stk[iStk].N = CRec();
+				Stk[iStk].I = TxtPos;
 				SetCRec(i);
 			}
-			TxtXY = 0; goto label4;
+			TxtXY = 0;
+			goto label4;
 			break;
 		}
 	case __F10: {
 		if ((iStk > 0) && WriteCRec(false, Displ)) {
 			Append = false;
-			/* !!! with Stk[iStk] do!!! */
-			{ SetCRec(Stk[iStk].N); TxtPos = Stk[iStk].I; }
+			SetCRec(Stk[iStk].N);
+			TxtPos = Stk[iStk].I;
 			iStk--;
 		}
 		TxtXY = 0;
@@ -3384,12 +3431,12 @@ label2:
 
 	if ((C > 0xFF) && WriteCRec(false, Displ)) {
 		Append = false;
-		if (C == _CtrlHome_) {
+		if (C == __CTRL_HOME) {
 			GoPrevNextRec(-1, false);
 			TxtXY = 0;
 			goto label4;
 		}
-		if (C == _CtrlEnd_) {
+		if (C == __CTRL_END) {
 		label31:
 			if (!GoPrevNextRec(+1, false) && Srch) {
 				UpdateTxtPos(LastLen);
@@ -3397,8 +3444,12 @@ label2:
 			}
 			TxtXY = 0;
 		label4:
-			if (!Ed || LockRec(false)) goto label1;
-			else goto label5;
+			if (!Ed || LockRec(false)) {
+				goto label1;
+			}
+			else {
+				goto label5;
+			}
 		}
 		WrEStatus();
 		Brk = 1;
@@ -4491,9 +4542,9 @@ label81:
 						if (CFile->IsSQLFile) Strm1->EndKeyAcc(WK);
 #endif
 						OldLMode(CFile, E->OldMd);
-					}
-					return;
 				}
+					return;
+			}
 				break;
 			}
 			case __ALT_EQUAL: {
@@ -4766,9 +4817,9 @@ label81:
 				}
 				//}
 			}
-			}
-			break;
 		}
+			break;
+	}
 		break;
 	}
 	default: {
@@ -4776,7 +4827,7 @@ label81:
 		ClrEvent();
 		break;
 	}
-	}
+}
 	Event.What = evNothing;
 	goto label1;
 }
