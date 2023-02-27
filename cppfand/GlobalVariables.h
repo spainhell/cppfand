@@ -148,6 +148,7 @@ extern void (*CallOpenFandFiles)(); // r453
 extern void (*CallCloseFandFiles)(); // r454
 
 extern double userToday;
+extern __int32 UserLicNr;
 
 extern TResFile ResFile;
 extern std::vector<TMsgIdxItem> MsgIdx;

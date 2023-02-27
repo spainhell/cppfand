@@ -390,7 +390,7 @@ void InitRunFand()
 	FILE* h = nullptr;
 	std::string s;
 	BYTE nb, sec = 0;
-	integer i, j, MsgNr;
+	integer j, MsgNr;
 	TMenuBoxS* mb = nullptr;
 	longint w = 0;
 	void* p = nullptr;
@@ -465,9 +465,9 @@ void InitRunFand()
 		wait(); Halt(0);
 	}
 
-	for (int readindexes = 0; readindexes < FandFace; readindexes++) {
-		ReadH(h, sizeof(ResFile.A->Pos), &ResFile.A[readindexes].Pos);
-		ReadH(h, sizeof(ResFile.A->Size), &ResFile.A[readindexes].Size);
+	for (int i = 0; i < FandFace; i++) {
+		ReadH(h, sizeof(ResFile.A->Pos), &ResFile.A[i].Pos);
+		ReadH(h, sizeof(ResFile.A->Size), &ResFile.A[i].Size);
 	}
 
 	// *** NACTENI INFORMACI O ZPRAVACH Z FAND.RES
@@ -490,16 +490,25 @@ void InitRunFand()
 	//		printf("%i, ", iii);
 	//	}
 	//	else {
-	//		std::string s = "<message ID=\"" + std::to_string(iii) + "\">" + MsgLine + "</message>" + "\r\n";
+	//		std::string s = MsgLine;
 	//		for (int jj = 0; jj < s.length(); jj++) {
-	//			if (s[jj] < ' ') {
-	//				s.replace(jj, 1, "");
+	//			if ((BYTE)s[jj] < ' ') {
+	//				std::string xxxx = std::format("{:#x}", s[jj]);
+	//				std::string hexString = "&#x" + xxxx.substr(2) + ";";
+	//				s.replace(jj, 1, hexString);
+	//			}
+	//			else if (s[jj] == '<')
+	//			{
+	//				s.replace(jj, 1, "&lt;");
+	//			}
+	//			else if (s[jj] == '>')
+	//			{
+	//				s.replace(jj, 1, "&gt;");
 	//			}
 	//		}
-	//		messages.push_back(s);
+	//		messages.push_back("<message ID=\"" + std::to_string(iii) + "\">" + s + "</message>" + "\r\n");
 	//	}
 	//}
-
 	//FILE* hhh;
 	//fopen_s(&hhh, "c:\\PCFAND\\messages.txt", "wb");
 	//for (auto& s : messages) {
@@ -525,7 +534,7 @@ void InitRunFand()
 	}
 
 	CRdb = nullptr;
-	for (i = 0; i < FloppyDrives; i++) { MountedVol[i] = ""; }
+	for (int i = 0; i < FloppyDrives; i++) { MountedVol[i] = ""; }
 	// Ww
 	ss.Empty = true;
 	ss.Pointto = nullptr;
@@ -646,9 +655,8 @@ void InitRunFand()
 
 #ifndef FandDemo
 	if (TxtCols >= 80) {
-		RdMsg(40);
-		screen.GotoXY(51, TxtRows - 3);
-		//printf(MsgLine, UserLicNrShow:7);
+		std::string license = RdMsg(40) + " " + std::to_string(UserLicNrShow).c_str();
+		screen.ScrWrText(51, TxtRows - 3, license.c_str());
 	}
 #endif
 
@@ -670,7 +678,7 @@ label2:
 
 	RdMsg(MsgNr);
 	mb = new TMenuBoxS(4, 3, MsgLine);
-	i = 1;
+	int i = 1;
 label1:
 	i = mb->Exec(i);
 	j = i;
@@ -680,14 +688,38 @@ label1:
 	w = PushW(1, 1, TxtCols, TxtRows);
 
 	switch (j) {
-	case 1: { IsTestRun = true; SelectRunRdb(true); IsTestRun = false; break; }
-	case 2: { SelectRunRdb(true); IsTestRun = false; break; }
-	case 3: { IsInstallRun = true; CallInstallRdb(); IsInstallRun = false; break; }
-	case 4: SelectEditTxt(".TXT", true); break;
-		//case 5: OSshell("", "", false, true, true, true); break;
-	case 5: OpenFileDialog(); break;
+	case 1: {
+		IsTestRun = true;
+		SelectRunRdb(true);
+		IsTestRun = false;
+		break;
+	}
+	case 2: {
+		SelectRunRdb(true);
+		IsTestRun = false;
+		break;
+	}
+	case 3: {
+		IsInstallRun = true;
+		CallInstallRdb();
+		IsInstallRun = false;
+		break; }
+	case 4: {
+		SelectEditTxt(".TXT", true);
+		break;
+	}
+		  //case 5: OSshell("", "", false, true, true, true); break;
+	case 5: {
+		OpenFileDialog();
+		break;
+	}
 	case 0:
-	case 6: { CloseH(&WorkHandle); CloseFANDFiles(false); return; break; }
+	case 6: {
+		CloseH(&WorkHandle);
+		CloseFANDFiles(false);
+		return;
+		break;
+	}
 	default:;
 	}
 	PopW(w);

@@ -538,10 +538,13 @@ void RdAutoSortSK(InpD* ID)
 LvDescr* NewLvS(LvDescr* L, InpD* ID)
 {
 	LvDescr* L1 = new LvDescr();
-	//L1 = (LvDescr*)GetZStore(sizeof(*L1));
 	L1->Chain = L;
-	if (L == nullptr) ID->LstLvS = L1;
-	else L->ChainBack = L1;
+	if (L == nullptr) {
+		ID->LstLvS = L1;
+	}
+	else {
+		L->ChainBack = L1;
+	}
 	return L1;
 }
 
@@ -551,7 +554,7 @@ void RdAssignBlk(std::vector<AssignD*>* ARoot)
 {
 	if (IsKeyWord("BEGIN")) RdBeginEnd(ARoot);
 	else {
-		auto A = RdAssign2();
+		std::vector<AssignD*> A = RdAssign2();
 		for (auto assign : A) {
 			ARoot->push_back(assign);
 		}
@@ -580,7 +583,6 @@ void RdBlock(BlkD** BB)
 	size_t offset = 0;
 
 	integer LineLen = 0;
-	//WORD* StrL = nullptr;
 	integer I = 0, N = 0, L = 0, M = 0;
 	bool RepeatedGrp = false;        /*RdBlock - body*/
 	RFldD* RF = nullptr;
@@ -588,7 +590,7 @@ void RdBlock(BlkD** BB)
 	BlkD* DummyB = nullptr;
 	char UC = 0;
 	LocVar* LV = nullptr;
-	//CBlk = (BlkD*)GetZStore(sizeof(BlkD)); 
+
 	CBlk = new BlkD();
 	if (*BB == nullptr) *BB = CBlk;
 	else ChainLast(*BB, CBlk);
@@ -598,7 +600,9 @@ void RdBlock(BlkD** BB)
 		RdBeginEnd(&CBlk->BeforeProc);
 		goto label1;
 	}
-	if (Lexem == ';') goto label2;     /*read var decl.*/
+	if (Lexem == ';') {
+		goto label2; // read var decl.
+	}
 label0:
 	if (IsKeyWord("BEGIN")) {
 		RdBeginEnd(&CBlk->AfterProc);
@@ -621,26 +625,33 @@ label0:
 			CBlk->SetPage = true;
 			CBlk->PageNo = RdRealFrml();
 		}
-		else if (IsKeyWord("NOTATEND")) CBlk->NotAtEnd = true;
-		else if (IsKeyWord("NOTSOLO")) CBlk->DHLevel = 1;
-		else Error(54);
+		else if (IsKeyWord("NOTATEND")) {
+			CBlk->NotAtEnd = true;
+		}
+		else if (IsKeyWord("NOTSOLO")) {
+			CBlk->DHLevel = 1;
+		}
+		else {
+			Error(54);
+		}
 	}
 	else {
-		//RF = (RFldD*)GetStore(sizeof(*RF) - 1); 
 		RF = new RFldD();
 		SkipBlank(false);
 		if (ForwChar == ':') {
 			TestIdentif();
 			RF->Name = LexWord;
-			if (FindInLvBlk(LstLvM, &DummyB, &RF1) || FindLocVar(&LVBD, &LV)) Error(26);
+			if (FindInLvBlk(LstLvM, &DummyB, &RF1) || FindLocVar(&LVBD, &LV)) {
+				Error(26);
+			}
 			RdLex();
 			Accept(_assign);
 		}
-		else RF->Name = "";
+		else {
+			RF->Name = "";
+		}
 		RF->Frml = RdFrml(RF->FrmlTyp);
 		RF->BlankOrWrap = false;
-		//if (CBlk->RFD == nullptr) CBlk->RFD = RF;
-		//else ChainLast(CBlk->RFD, RF);
 		CBlk->ReportFields.push_back(RF);
 	}
 label1:
@@ -662,7 +673,11 @@ label2:
 	RepeatedGrp = false;
 	SkipBlank(true);
 	switch (ForwChar) {
-	case 0x1A: /* ^Z */ goto label4; break;
+	case 0x1A: {
+		// ^Z
+		goto label4;
+		break;
+	}
 	case '\\': {
 		CBlk->FF1 = true;
 		ReadChar();
@@ -678,7 +693,9 @@ label3:
 	storedCh = "";
 	if (CBlk->NTxtLines == 0) {
 		CBlk->lineLength = 0;
-		while (ForwChar == ' ') RdCh(LineLen);
+		while (ForwChar == ' ') {
+			RdCh(LineLen);
+		}
 		CBlk->NBlksFrst = LineLen;
 	}
 	while (!(ForwChar == 0x0D || ForwChar == 0x1A))
@@ -686,7 +703,7 @@ label3:
 		case '_':
 		case '@':
 		case 0x10: {
-			UC = ForwChar;
+			UC = (char)ForwChar;
 			storedCh += static_cast<char>(0xFF);
 			rep[offset++] = 0xFF;
 			if (RF == nullptr) {
@@ -697,7 +714,7 @@ label3:
 					reportFieldsVectorIndex = 0;
 					RF = CBlk->ReportFields.at(reportFieldsVectorIndex);
 				}
-				
+
 				if (RF == nullptr) Error(30);
 				RepeatedGrp = true;
 			}

@@ -607,9 +607,11 @@ void RdDepChkImpl()
 		break;
 	}
 	case FileType::CAT: {
-		RdMsg(54); s = MsgLine;
+		RdMsg(54);
+			s = MsgLine;
 		if (spec.CPMdrive != ' ') s = s + ',' + spec.CPMdrive + ':';
-		RdMsg(55); s = s + MsgLine;
+		RdMsg(55);
+			s = s + MsgLine;
 		if (spec.CPMdrive != ' ') s = s + ',' + spec.CPMdrive + ':';
 		s = s + "'";
 		ResetCompilePars();

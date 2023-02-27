@@ -696,7 +696,9 @@ void CodingCRdb(bool Rotate)
 
 void AddLicNr(FieldDescr* F)
 {
-	if (_T(F) != 0) T_(F, _T(F) + (WORD(UserLicNrShow) & 0x7FFF));
+	if (_T(F) != 0) {
+		T_(F, _T(F) + (WORD(UserLicNrShow) & 0x7FFF));
+	}
 }
 
 void CopyH(FILE* H, pstring Nm)

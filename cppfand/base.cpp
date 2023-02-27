@@ -105,6 +105,7 @@ void (*CallOpenFandFiles)(); // r453
 void (*CallCloseFandFiles)(); // r454
 
 double userToday = 0;
+__int32 UserLicNr = 0;
 
 typedef FILE* filePtr;
 
@@ -191,7 +192,7 @@ size_t ReadH(FILE* handle, size_t length, void* buffer)
 	return fread_s(buffer, length, 1, length, handle);
 }
 
-void RdMsg(integer N)
+std::string RdMsg(integer N)
 {
 	WORD j, o;
 	FILE* h;
@@ -236,6 +237,7 @@ label1:
 		}
 	}
 	MsgLine = s;
+	return MsgLine;
 }
 
 void WriteMsg(WORD N)
@@ -1574,7 +1576,7 @@ void NonameStartFunction()
 	ExitSave = ExitProc;
 	ExitProc = MyExit;
 	//MyBP = nullptr;
-	// integer UserLicNr = WORD(UserLicNrShow) & 0x7FFF;
+	UserLicNr = WORD(UserLicNrShow) & 0x7FFF;
 	FandResName = MyFExpand("FAND.RES", "FANDRES");
 	OpenResFile();
 }
