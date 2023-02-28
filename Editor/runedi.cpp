@@ -2715,78 +2715,150 @@ void CreateOrErr(bool Create, void* RP, longint N)
 bool PromptSearch(bool Create)
 {
 	auto result = false;
-	FieldDescr* F; FieldDescr* F2;
-	FileD* FD, * FD2; void* RP; void* RP2; KeyFldD* KF, * KF2;
-	longint n; std::string s; double r; bool b, li, found; LockMode md;
-	XString x, xOld; XKey* K; longint w; WORD Col, LWw, pos; EFldD* D;
-	FD = CFile; K = VK; if (Subset) K = WK; KF = K->KFlds;
-	RP = GetRecSpace(); CRecPtr = RP; ZeroAllFlds(); x.Clear();
-	li = F3LeadIn && !IsNewRec;
-	w = PushW(1, TxtRows, TxtCols, TxtRows, true, false);
+	FieldDescr* F = nullptr;
+	longint n = 0;
+	std::string s;
+	double r = 0.0;
+	bool b = false;
+	bool found = false;
+	LockMode md;
+	XString x, xOld;
+	WORD Col = 0, LWw = 0, pos = 0;
+	FileD* FD = CFile;
+	XKey* K = VK;
+	if (Subset) K = WK;
+	KeyFldD* KF = K->KFlds;
+	void* RP = GetRecSpace();
+	CRecPtr = RP;
+	ZeroAllFlds();
+	x.Clear();
+	bool li = F3LeadIn && !IsNewRec;
+	longint w = PushW(1, TxtRows, TxtCols, TxtRows, true, false);
 	if (KF == nullptr) goto label1;
 	if (HasIndex && E->DownSet && (VK == E->DownKey)) {
-		FD2 = E->DownLD->ToFD; RP2 = E->DownRecPtr; KF2 = E->DownLD->ToKey->KFlds;
-		CFile = FD2; CRecPtr = RP2;
+		FileD* FD2 = E->DownLD->ToFD;
+		void* RP2 = E->DownRecPtr;
+		KeyFldD* KF2 = E->DownLD->ToKey->KFlds;
+		CFile = FD2;
+		CRecPtr = RP2;
 		while (KF2 != nullptr) {
-			CFile = FD2; CRecPtr = RP2; F = KF->FldD; F2 = KF2->FldD;
+			CFile = FD2;
+			CRecPtr = RP2;
+			F = KF->FldD;
+			FieldDescr* F2 = KF2->FldD;
 			switch (F->frml_type) {
-			case 'S': { s = _ShortS(F2); x.StoreStr(s, KF);
-				CFile = FD; CRecPtr = RP; S_(F, s); break; }
-			case 'R': { r = _R(F2); x.StoreReal(r, KF);
-				CFile = FD; CRecPtr = RP; R_(F, r); break; }
-			case 'B': { b = _B(F2); x.StoreBool(b, KF);
-				CFile = FD; CRecPtr = RP; B_(F, b); break; }
+			case 'S': {
+				s = _ShortS(F2);
+				x.StoreStr(s, KF);
+				CFile = FD;
+				CRecPtr = RP;
+				S_(F, s);
+				break;
 			}
-			KF2 = (KeyFldD*)KF2->pChain;
-			KF = (KeyFldD*)KF->pChain;
+			case 'R': {
+				r = _R(F2);
+				x.StoreReal(r, KF);
+				CFile = FD;
+				CRecPtr = RP;
+				R_(F, r);
+				break;
+			}
+			case 'B': {
+				b = _B(F2);
+				x.StoreBool(b, KF);
+				CFile = FD;
+				CRecPtr = RP;
+				B_(F, b);
+				break;
+			}
+			}
+			KF2 = KF2->pChain;
+			KF = KF->pChain;
 		}
 	}
 	if (KF == nullptr) {
 	label1:
-		result = true; CRecPtr = E->NewRecPtr;
+		result = true;
+		CRecPtr = E->NewRecPtr;
 		goto label3;
 	}
 	while (KF != nullptr) {
-		F = KF->FldD; if (li) {
-			D = FindEFld(F); if (D != nullptr) GotoRecFld(CRec(), D);
+		F = KF->FldD;
+		if (li) {
+			EFldD* D = FindEFld(F);
+			if (D != nullptr) {
+				GotoRecFld(CRec(), D);
+			}
 		}
 		screen.GotoXY(1, TxtRows);
 		TextAttr = screen.colors.pTxt;
 		ClrEol();
 		printf("%s:", F->Name.c_str());
-		s = ""; pos = 1;
+		s = "";
+		pos = 1;
 		Col = screen.WhereX();
-		if (Col + F->L > TxtCols) LWw = TxtCols - Col;
-		else LWw = F->L;
+		if (Col + F->L > TxtCols) {
+			LWw = TxtCols - Col;
+		}
+		else {
+			LWw = F->L;
+		}
 	label2:
 		TextAttr = screen.colors.pNorm;
 		screen.GotoXY(Col, TxtRows);
 		pos = FieldEdit(F, nullptr, LWw, pos, s, r, false, true, li, E->WatchDelay);
 		xOld = x;
 		if (Event.Pressed.KeyCombination() == __ESC || (Event.What == evKeyDown)) {
-			CRecPtr = E->NewRecPtr; goto label3;
+			CRecPtr = E->NewRecPtr;
+			goto label3;
 		}
 		switch (F->frml_type) {
-		case 'S': { x.StoreStr(s, KF); S_(F, s); break; }
-		case 'R': { x.StoreReal(r, KF); R_(F, r); break; }
-		case 'B': { b = s[0] = AbbrYes; x.StoreBool(b, KF); B_(F, b); break; }
+		case 'S': {
+				x.StoreStr(s, KF);
+				S_(F, s);
+				break;
+			}
+		case 'R': {
+				x.StoreReal(r, KF);
+				R_(F, r);
+				break;
+			}
+		case 'B': {
+				b = s[0] = AbbrYes;
+				x.StoreBool(b, KF);
+				B_(F, b);
+				break;
+			}
 		}
 		if (li) {
-			CRecPtr = E->NewRecPtr; found = GotoXRec(&x, n);
+			CRecPtr = E->NewRecPtr;
+			found = GotoXRec(&x, n);
 			if ((pos == 0) && (F->frml_type == 'S')) {
-				x = xOld; x.StoreStr(_ShortS(F), KF);
+				x = xOld;
+				x.StoreStr(_ShortS(F), KF);
 			}
-			CRecPtr = RP; if (pos != 0) { x = xOld; goto label2; };
+			CRecPtr = RP;
+			if (pos != 0) {
+				x = xOld;
+				goto label2;
+			}
 		}
-		KF = (KeyFldD*)KF->pChain;
+		KF = KF->pChain;
 	}
 	CRecPtr = E->NewRecPtr;
-	if (li) { if (!found) CreateOrErr(Create, RP, n); }
-	else if (IsNewRec) Move(RP, CRecPtr, CFile->RecLen);
-	else if (!GotoXRec(&x, n)) CreateOrErr(Create, RP, n);
+	if (li) {
+		if (!found) CreateOrErr(Create, RP, n);
+	}
+	else if (IsNewRec) {
+		Move(RP, CRecPtr, CFile->RecLen);
+	}
+	else if (!GotoXRec(&x, n)) {
+		CreateOrErr(Create, RP, n);
+	}
 	result = true;
 label3:
-	PopW(w); ReleaseStore(RP);
+	PopW(w);
+	ReleaseStore(RP);
 	return result;
 }
 
@@ -4542,9 +4614,9 @@ label81:
 						if (CFile->IsSQLFile) Strm1->EndKeyAcc(WK);
 #endif
 						OldLMode(CFile, E->OldMd);
-				}
+					}
 					return;
-			}
+				}
 				break;
 			}
 			case __ALT_EQUAL: {
@@ -4817,9 +4889,9 @@ label81:
 				}
 				//}
 			}
-		}
+			}
 			break;
-	}
+		}
 		break;
 	}
 	default: {
@@ -4827,7 +4899,7 @@ label81:
 		ClrEvent();
 		break;
 	}
-}
+	}
 	Event.What = evNothing;
 	goto label1;
 }
