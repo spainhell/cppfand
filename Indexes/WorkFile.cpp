@@ -17,18 +17,21 @@ WorkFile::~WorkFile()
 
 void WorkFile::Reset(KeyFldD* KF, longint RestBytes, char Typ, longint NRecs)
 {
-	longint BYTEs = 0; longint pages = 0;
+	longint BYTEs = 0;
+	longint pages = 0;
 	const WORD kB60 = 0x0F000;
-	KFRoot = KF; RecLen = 7;
+	KFRoot = KF;
+	RecLen = 7;
 	while (KF != nullptr) {
-		/* !!! with KF->FldD^ do!!! */
-		if (Typ == 'D') RecLen += 6;
+		if (Typ == 'D') {
+			RecLen += 6;
+		}
 		else {
 			if (KF->FldD != nullptr) {
 				RecLen += KF->FldD->NBytes;
 			}
 		}
-		KF = (KeyFldD*)KF->pChain;
+		KF = KF->pChain;
 	}
 	BYTEs = (StoreAvail() - RestBytes - sizeof(WRec)) / 3;
 	if (BYTEs < 4096) RunError(624);
@@ -38,7 +41,7 @@ void WorkFile::Reset(KeyFldD* KF, longint RestBytes, char Typ, longint NRecs)
 	MaxOnWPage = (WPageSize - 10 + 1) / RecLen; // 10B is size of WPage without array
 	if (MaxOnWPage < 4) RunError(624);
 	MaxWPage = 0; NFreeNr = 0;
-	PW = new WPage(); // (WPage*)GetStore(WPageSize);
+	PW = new WPage();
 	WRoot = GetFreeNr();
 	pages = (NRecs + MaxOnWPage - 1) / MaxOnWPage;
 
@@ -95,16 +98,16 @@ void WorkFile::SortMerge()
 	RunMsgOff();
 }
 
-bool WorkFile::GetCRec()
-{
-	// vola se pouze ze zdedenych trid
-	// tady nema vyznam
-	return false;
-}
+//bool WorkFile::GetCRec()
+//{
+//	// vola se pouze ze zdedenych trid
+//	// tady nema vyznam
+//	return false;
+//}
 
-void WorkFile::Output(WRec* R)
-{
-}
+//void WorkFile::Output(WRec* R)
+//{
+//}
 
 void WorkFile::TestErr()
 {
@@ -258,7 +261,6 @@ void WorkFile::WriteWPage(WORD N, longint Pg, longint Nxt, longint Chn)
 	PgWritten++;
 	RunMsgN(PgWritten);
 	if (NChains == 1) {
-		//r = (WRec*)(&PW->A);
 		for (size_t i = 0; i < N; i++) {
 			WRec r;
 			r.Deserialize(&PW->A[offset]);
@@ -270,7 +272,6 @@ void WorkFile::WriteWPage(WORD N, longint Pg, longint Nxt, longint Chn)
 		}
 	}
 	else {
-		/* !!! with PW^ do!!! */
 		PW->NRecs = N;
 		PW->NxtChain = Nxt;
 		PW->Chain = Chn;

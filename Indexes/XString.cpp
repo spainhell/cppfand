@@ -53,6 +53,10 @@ void XString::StoreStr(std::string V, KeyFldD* KF)
 		for (size_t i = 0; i < X->L; i++) {
 			// kolikaty byte zapisujeme?
 			size_t iB = i / 2;
+			// je znak cislo? pokud ne, nahradime nulou
+			if (!isdigit(V[i])) {
+				V[i] = '0';
+			}
 			// zapisujeme levou nebo pravou cast?
 			if (i % 2 == 0) {
 				V[iB] = static_cast<char>((V[i] - 0x30) << 4);

@@ -99,8 +99,6 @@ void CreateIndexFile()
 	void* cr = nullptr;
 	LockMode md = NullMode;
 	bool fail = false;
-	XWorkFile* XW = nullptr;
-	XScan* Scan = nullptr;
 	XFile* XF = nullptr;
 
 	try {
@@ -116,9 +114,9 @@ void CreateIndexFile()
 		XF->RdPrefix();
 		if (XF->NotValid) {
 			XF->SetEmpty();
-			Scan = new XScan(CFile, nullptr, nullptr, false);
+			XScan* Scan = new XScan(CFile, nullptr, nullptr, false);
 			Scan->Reset(nullptr, false);
-			XW = new XWorkFile(Scan, CFile->Keys[0]);
+			XWorkFile* XW = new XWorkFile(Scan, CFile->Keys[0]);
 			XW->Main('X');
 			delete XW; XW = nullptr;
 			XF->NotValid = false;

@@ -2681,16 +2681,20 @@ void AppendRecord(void* RP)
 
 bool GotoXRec(XString* PX, longint& N)
 {
-	LockMode md; XKey* k;
 	auto result = false;
-	md = NewLMode(CFile, RdMode); k = VK; if (Subset) k = WK;
+	LockMode md = NewLMode(CFile, RdMode);
+	XKey* k = VK;
+	if (Subset) k = WK;
 	if (Subset || HasIndex) {
 		result = k->SearchInterval(*PX, false, N);
 		N = k->PathToNr();
 	}
-	else result = SearchKey(*PX, k, N);
+	else {
+		result = SearchKey(*PX, k, N);
+	}
 	RdRec(CRec());
-	GotoRecFld(N, CFld); OldLMode(CFile, md);
+	GotoRecFld(N, CFld);
+	OldLMode(CFile, md);
 	return result;
 }
 

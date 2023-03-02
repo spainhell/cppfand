@@ -22,8 +22,8 @@ public:
 	KeyFldD* KFRoot = nullptr;
 	void Reset(KeyFldD* KF, longint RestBytes, char Typ, longint NRecs);
 	void SortMerge();
-	virtual bool GetCRec();
-	virtual void Output(WRec* R);
+	virtual bool GetCRec() = 0;
+	virtual void Output(WRec* R) = 0;
 private:
 	void TestErr();
 	longint GetFreeNr();
