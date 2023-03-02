@@ -98,17 +98,6 @@ void WorkFile::SortMerge()
 	RunMsgOff();
 }
 
-//bool WorkFile::GetCRec()
-//{
-//	// vola se pouze ze zdedenych trid
-//	// tady nema vyznam
-//	return false;
-//}
-
-//void WorkFile::Output(WRec* R)
-//{
-//}
-
 void WorkFile::TestErr()
 {
 	if (HandleError != 0) {
