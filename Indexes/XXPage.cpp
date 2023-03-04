@@ -121,8 +121,8 @@ void XXPage::AddToUpper(XXPage* P, longint DownPage)
 {
 	WORD l = 0, m = 0;
 	while (true) {
-		WORD m = 0;
-		WORD l = P->LastIndex.length();
+		m = 0;
+		l = P->LastIndex.length();
 		if ((l > 0) && (NItems > 0)) {
 			m = SLeadEqu(P->LastIndex, LastIndex);
 			l = l - m;

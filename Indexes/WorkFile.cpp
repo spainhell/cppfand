@@ -109,8 +109,15 @@ void WorkFile::TestErr()
 longint WorkFile::GetFreeNr()
 {
 	longint result = 0;
-	if (NFreeNr > 0) { result = FreeNr[NFreeNr]; NFreeNr--; }
-	else { MaxWPage++; MaxWSize += WPageSize; result = MaxWPage; }
+	if (NFreeNr > 0) {
+		result = FreeNr[NFreeNr];
+		NFreeNr--;
+	}
+	else {
+		MaxWPage++;
+		MaxWSize += WPageSize;
+		result = MaxWPage;
+	}
 	return result;
 }
 
@@ -140,8 +147,7 @@ label1:
 	label2:
 		ReadWPage(PW2, pg2);
 		nxt = PW2->NxtChain;
-		if (npairs == 1) nxtnew = 0;
-		else nxtnew = GetFreeNr();
+		nxtnew = (npairs == 1) ? 0 : GetFreeNr();
 		NChains--;
 		Merge2Chains(pg1, pg2, newli, nxtnew);
 		npairs--;
