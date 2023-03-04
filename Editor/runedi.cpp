@@ -2794,10 +2794,10 @@ bool PromptSearch(bool Create)
 				GotoRecFld(CRec(), D);
 			}
 		}
-		screen.GotoXY(1, TxtRows);
 		TextAttr = screen.colors.pTxt;
+		screen.ScrWrStr(1, TxtRows, F->Name + ":", TextAttr);
+		screen.GotoXY((WORD)F->Name.length() + 2, TxtRows);
 		ClrEol();
-		printf("%s:", F->Name.c_str());
 		s = "";
 		pos = 1;
 		Col = screen.WhereX();
@@ -2866,11 +2866,14 @@ label3:
 	return result;
 }
 
-bool PromptAndSearch(bool Create)
+bool PromptAndSearch(bool create)
 {
 	auto result = false;
-	if (VK == nullptr) { WrLLF10Msg(111); return result; }
-	result = PromptSearch(Create);
+	if (VK == nullptr) {
+		WrLLF10Msg(111);
+		return result;
+	}
+	result = PromptSearch(create);
 	GotoRecFld(CRec(), E->FirstFld);
 	return result;
 }

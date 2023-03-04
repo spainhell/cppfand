@@ -655,7 +655,7 @@ void InitRunFand()
 
 #ifndef FandDemo
 	if (TxtCols >= 80) {
-		std::string license = RdMsg(40) + " " + std::to_string(UserLicNrShow).c_str();
+		std::string license = RdMsg(40) + " " + std::to_string(UserLicNrShow);
 		screen.ScrWrText(51, TxtRows - 3, license.c_str());
 	}
 #endif
@@ -679,51 +679,53 @@ label2:
 	RdMsg(MsgNr);
 	mb = new TMenuBoxS(4, 3, MsgLine);
 	int i = 1;
-label1:
-	i = mb->Exec(i);
-	j = i;
-#ifdef FandRunV
-	if (j != 0) j++;
-#endif
-	w = PushW(1, 1, TxtCols, TxtRows);
 
-	switch (j) {
-	case 1: {
-		IsTestRun = true;
-		SelectRunRdb(true);
-		IsTestRun = false;
-		break;
+	while (true) {
+		i = mb->Exec(i);
+		j = i;
+#ifdef FandRunV
+		if (j != 0) j++;
+#endif
+		w = PushW(1, 1, TxtCols, TxtRows);
+
+		switch (j) {
+		case 1: {
+			IsTestRun = true;
+			SelectRunRdb(true);
+			IsTestRun = false;
+			break;
+		}
+		case 2: {
+			IsTestRun = false;
+			SelectRunRdb(true);
+			IsTestRun = false;
+			break;
+		}
+		case 3: {
+			IsInstallRun = true;
+			CallInstallRdb();
+			IsInstallRun = false;
+			break; }
+		case 4: {
+			SelectEditTxt(".TXT", true);
+			break;
+		}
+		case 5: {
+			// OSshell("", "", false, true, true, true);
+			OpenFileDialog();
+			break;
+		}
+		case 0:
+		case 6: {
+			CloseH(&WorkHandle);
+			CloseFANDFiles(false);
+			return;
+			break;
+		}
+		default:;
+		}
+		PopW(w);
 	}
-	case 2: {
-		SelectRunRdb(true);
-		IsTestRun = false;
-		break;
-	}
-	case 3: {
-		IsInstallRun = true;
-		CallInstallRdb();
-		IsInstallRun = false;
-		break; }
-	case 4: {
-		SelectEditTxt(".TXT", true);
-		break;
-	}
-		  //case 5: OSshell("", "", false, true, true, true); break;
-	case 5: {
-		OpenFileDialog();
-		break;
-	}
-	case 0:
-	case 6: {
-		CloseH(&WorkHandle);
-		CloseFANDFiles(false);
-		return;
-		break;
-	}
-	default:;
-	}
-	PopW(w);
-	goto label1;
 }
 
 void DeleteFandFiles()
