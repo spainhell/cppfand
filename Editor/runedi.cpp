@@ -2738,7 +2738,13 @@ bool PromptSearch(bool Create)
 	x.Clear();
 	bool li = F3LeadIn && !IsNewRec;
 	longint w = PushW(1, TxtRows, TxtCols, TxtRows, true, false);
-	if (KF == nullptr) goto label1;
+	if (KF == nullptr) {
+		result = true;
+		CRecPtr = E->NewRecPtr;
+		PopW(w);
+		ReleaseStore(RP);
+		return result;
+	}
 	if (HasIndex && E->DownSet && (VK == E->DownKey)) {
 		FileD* FD2 = E->DownLD->ToFD;
 		void* RP2 = E->DownRecPtr;
@@ -2781,10 +2787,11 @@ bool PromptSearch(bool Create)
 		}
 	}
 	if (KF == nullptr) {
-	label1:
 		result = true;
 		CRecPtr = E->NewRecPtr;
-		goto label3;
+		PopW(w);
+		ReleaseStore(RP);
+		return result;
 	}
 	while (KF != nullptr) {
 		F = KF->FldD;
@@ -2807,45 +2814,49 @@ bool PromptSearch(bool Create)
 		else {
 			LWw = F->L;
 		}
-	label2:
-		TextAttr = screen.colors.pNorm;
-		screen.GotoXY(Col, TxtRows);
-		pos = FieldEdit(F, nullptr, LWw, pos, s, r, false, true, li, E->WatchDelay);
-		xOld = x;
-		if (Event.Pressed.KeyCombination() == __ESC || (Event.What == evKeyDown)) {
-			CRecPtr = E->NewRecPtr;
-			goto label3;
-		}
-		switch (F->frml_type) {
-		case 'S': {
+		while (true) {
+			TextAttr = screen.colors.pNorm;
+			screen.GotoXY(Col, TxtRows);
+			pos = FieldEdit(F, nullptr, LWw, pos, s, r, false, true, li, E->WatchDelay);
+			xOld = x;
+			if (Event.Pressed.KeyCombination() == __ESC || (Event.What == evKeyDown)) {
+				CRecPtr = E->NewRecPtr;
+				PopW(w);
+				ReleaseStore(RP);
+				return result;
+			}
+			switch (F->frml_type) {
+			case 'S': {
 				x.StoreStr(s, KF);
 				S_(F, s);
 				break;
 			}
-		case 'R': {
+			case 'R': {
 				x.StoreReal(r, KF);
 				R_(F, r);
 				break;
 			}
-		case 'B': {
+			case 'B': {
 				b = s[0] = AbbrYes;
 				x.StoreBool(b, KF);
 				B_(F, b);
 				break;
 			}
-		}
-		if (li) {
-			CRecPtr = E->NewRecPtr;
-			found = GotoXRec(&x, n);
-			if ((pos == 0) && (F->frml_type == 'S')) {
-				x = xOld;
-				x.StoreStr(_ShortS(F), KF);
 			}
-			CRecPtr = RP;
-			if (pos != 0) {
-				x = xOld;
-				goto label2;
+			if (li) {
+				CRecPtr = E->NewRecPtr;
+				found = GotoXRec(&x, n);
+				if ((pos == 0) && (F->frml_type == 'S')) {
+					x = xOld;
+					x.StoreStr(_ShortS(F), KF);
+				}
+				CRecPtr = RP;
+				if (pos != 0) {
+					x = xOld;
+					continue;
+				}
 			}
+			break;
 		}
 		KF = KF->pChain;
 	}
@@ -2860,7 +2871,7 @@ bool PromptSearch(bool Create)
 		CreateOrErr(Create, RP, n);
 	}
 	result = true;
-label3:
+
 	PopW(w);
 	ReleaseStore(RP);
 	return result;
