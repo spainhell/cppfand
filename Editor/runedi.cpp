@@ -1235,7 +1235,7 @@ void MoveDispl(WORD From, WORD Where, WORD Number)
 			screen.ScrMove(D->Col - 1, r1, D->Col - 1, r2, D->L);
 			if (HasTTWw(D->FldD))
 				screen.ScrMove(D->Col + 1, r1, D->Col + 1, r2, D->FldD->L - 2);
-			D = (EFldD*)D->pChain;
+			D = D->pChain;
 		}
 		if (From < Where) {
 			From--;
@@ -1261,11 +1261,10 @@ void SetNewCRec(longint N, bool withRead)
 void WriteSL(StringListEl* SL)
 {
 	while (SL != nullptr) {
-		WORD Row = screen.WhereY();
-		// WrStyleStr(SL->S, E->Attr);
+		WORD row = screen.WhereY();
 		screen.WriteStyledStringToWindow(SL->S, E->Attr);
-		screen.GotoXY(E->FrstCol, Row + 1);
-		SL = (StringListEl*)SL->pChain;
+		screen.GotoXY(E->FrstCol, row + 1);
+		SL = SL->pChain;
 	}
 }
 
@@ -2681,7 +2680,7 @@ void AppendRecord(void* RP)
 
 bool GotoXRec(XString* PX, longint& N)
 {
-	auto result = false;
+	bool result = false;
 	LockMode md = NewLMode(CFile, RdMode);
 	XKey* k = VK;
 	if (Subset) k = WK;
@@ -2703,20 +2702,30 @@ EFldD* FindEFld(FieldDescr* F)
 
 	EFldD* D = E->FirstFld;
 	while (D != nullptr) {
-		if (D->FldD == F) goto label1;
+		if (D->FldD == F) {
+			break;
+		}
 		D = D->pChain;
 	}
-label1:
 	return D;
 }
 
-void CreateOrErr(bool Create, void* RP, longint N)
+void CreateOrErr(bool create, void* RP, longint N)
 {
-	if (Create) if (N > CNRecs()) AppendRecord(RP); else InsertRecProc(RP);
-	else if (!NoSrchMsg) WrLLF10Msg(118);
+	if (create) {
+		if (N > CNRecs()) {
+			AppendRecord(RP);
+		}
+		else {
+			InsertRecProc(RP);
+		}
+	}
+	else if (!NoSrchMsg) {
+		WrLLF10Msg(118);
+	}
 }
 
-bool PromptSearch(bool Create)
+bool PromptSearch(bool create)
 {
 	auto result = false;
 	FieldDescr* F = nullptr;
@@ -2862,13 +2871,13 @@ bool PromptSearch(bool Create)
 	}
 	CRecPtr = E->NewRecPtr;
 	if (li) {
-		if (!found) CreateOrErr(Create, RP, n);
+		if (!found) CreateOrErr(create, RP, n);
 	}
 	else if (IsNewRec) {
 		Move(RP, CRecPtr, CFile->RecLen);
 	}
 	else if (!GotoXRec(&x, n)) {
-		CreateOrErr(Create, RP, n);
+		CreateOrErr(create, RP, n);
 	}
 	result = true;
 
@@ -2906,24 +2915,41 @@ void PromptGotoRecNr()
 
 void CheckFromHere()
 {
-	longint N; EFldD* D; ChkD* C; LockMode md;
-	D = CFld; N = CRec(); md = NewLMode(CFile, RdMode);
-label1:
-	if (!DeletedFlag())
-		while (D != nullptr) {
-			C = CompChk(D, '?');
-			if (C != nullptr) {
-				if (BaseRec + E->NRecs - 1 < N) BaseRec = N;
-				IRec = N - BaseRec + 1; CFld = D; DisplWwRecsOrPage(); OldLMode(CFile, md);
-				DisplChkErr(C);
-				return;
+	EFldD* D = CFld;
+	longint N = CRec();
+	LockMode md = NewLMode(CFile, RdMode);
+
+	while (true) {
+		if (!DeletedFlag())
+			while (D != nullptr) {
+				ChkD* C = CompChk(D, '?');
+				if (C != nullptr) {
+					if (BaseRec + E->NRecs - 1 < N) {
+						BaseRec = N;
+					}
+					IRec = N - BaseRec + 1;
+					CFld = D;
+					DisplWwRecsOrPage();
+					OldLMode(CFile, md);
+					DisplChkErr(C);
+					return;
+				}
+				D = D->pChain;
 			}
-			D = D->pChain;
+		if (N < CNRecs()) {
+			N++;
+			DisplRecNr(N);
+			RdRec(N);
+			D = E->FirstFld;
+			continue;
 		}
-	if (N < CNRecs()) {
-		N++; DisplRecNr(N); RdRec(N); D = E->FirstFld; goto label1;
+		break;
 	}
-	RdRec(CRec()); DisplRecNr(CRec()); OldLMode(CFile, md); WrLLF10Msg(120);
+
+	RdRec(CRec());
+	DisplRecNr(CRec());
+	OldLMode(CFile, md);
+	WrLLF10Msg(120);
 }
 
 void Sorting()
@@ -2933,8 +2959,20 @@ void Sorting()
 	LockMode md;
 	SaveFiles();
 	MarkStore(p);
-	if (!PromptSortKeys(E->Flds, SKRoot) || (SKRoot == nullptr)) goto label2;
-	if (!TryLMode(CFile, ExclMode, md, 1)) goto label2;
+
+	if (!PromptSortKeys(E->Flds, SKRoot) || (SKRoot == nullptr)) {
+		ReleaseStore(p);
+		CRecPtr = E->NewRecPtr;
+		DisplAllWwRecs();
+		return;
+	}
+
+	if (!TryLMode(CFile, ExclMode, md, 1)) {
+		ReleaseStore(p);
+		CRecPtr = E->NewRecPtr;
+		DisplAllWwRecs();
+		return;
+	}
 
 	try {
 		SortAndSubst(SKRoot);
@@ -2944,7 +2982,7 @@ void Sorting()
 		CFile = E->FD;
 		OldLMode(CFile, md);
 	}
-label2:
+
 	ReleaseStore(p);
 	CRecPtr = E->NewRecPtr;
 	DisplAllWwRecs();
@@ -2961,8 +2999,12 @@ void AutoReport()
 		RO->FDL.Cond = E->Bool;
 		RO->CondTxt = E->BoolTxt;
 	}
-	if (Subset) RO->FDL.ViewKey = WK;
-	else if (HasIndex) RO->FDL.ViewKey = VK;
+	if (Subset) {
+		RO->FDL.ViewKey = WK;
+	}
+	else if (HasIndex) {
+		RO->FDL.ViewKey = VK;
+	}
 	PrintView = false;
 	if (SelForAutoRprt(RO)) {
 		SpecFDNameAllowed = IsCurrChpt();
@@ -2992,10 +3034,11 @@ bool IsDependItem()
 {
 	if (!IsNewRec && (E->NEdSet == 0)) return false;
 	DepD* Dp = CFld->Dep;
-	while (Dp != nullptr)
-	{
-		if (RunBool(Dp->Bool)) { return true; }
-		Dp = (DepD*)Dp->pChain;
+	while (Dp != nullptr) {
+		if (RunBool(Dp->Bool)) {
+			return true;
+		}
+		Dp = Dp->pChain;
 	}
 	return false;
 }
@@ -3004,7 +3047,10 @@ void SetDependItem()
 {
 	DepD* Dp = CFld->Dep;
 	while (Dp != nullptr) {
-		if (RunBool(Dp->Bool)) { AssignFld(CFld->FldD, Dp->Frml); return; }
+		if (RunBool(Dp->Bool)) {
+			AssignFld(CFld->FldD, Dp->Frml);
+			return;
+		}
 		Dp = Dp->pChain;
 	}
 }
@@ -3020,8 +3066,6 @@ void SwitchToAppend()
 bool CheckForExit(bool& Quit)
 {
 	auto result = false;
-	//EdExitD* X = E->ExD;
-	//while (X != nullptr) {
 	for (auto& X : E->ExD) {
 		bool b = FieldInList(CFld->FldD, X->Flds);
 		if (X->NegFlds) b = !b;
@@ -3032,7 +3076,6 @@ bool CheckForExit(bool& Quit)
 				if (!StartExit(X, true)) return result;
 			}
 		}
-		//X = (EdExitD*)X->pChain;
 	}
 	result = true;
 	return result;
@@ -3040,33 +3083,33 @@ bool CheckForExit(bool& Quit)
 
 bool FldInModeF3Key(FieldDescr* F)
 {
-	KeyFldD* KF;
 	auto result = false;
 	if ((F->Flg & f_Stored) == 0) return result;
-	KF = VK->KFlds;
+	KeyFldD* KF = VK->KFlds;
 	while (KF != nullptr) {
-		if (KF->FldD == F) { result = true; return result; }
-		KF = (KeyFldD*)KF->pChain;
+		if (KF->FldD == F) {
+			result = true;
+			return result;
+		}
+		KF = KF->pChain;
 	}
 	return result;
 }
 
 bool IsSkipFld(EFldD* D)
 {
-	/* !!! with D^ do!!! */
-	return (!D->Tab && ((E->NTabsSet > 0) || ((D->FldD->Flg & f_Stored) == 0)
-		|| OnlySearch && FldInModeF3Key(D->FldD)));
+	return !D->Tab && 
+		(E->NTabsSet > 0 || (D->FldD->Flg & f_Stored) == 0 || OnlySearch && FldInModeF3Key(D->FldD));
 }
 
 bool ExNotSkipFld()
 {
-	EFldD* D;
 	auto result = false;
 	if (E->NFlds == 1) return result;
-	D = E->FirstFld;
+	EFldD* D = E->FirstFld;
 	while (D != nullptr) {
 		if ((D != CFld) && !IsSkipFld(D)) { result = true; return result; }
-		D = (EFldD*)D->pChain;
+		D = D->pChain;
 	}
 	return result;
 }
