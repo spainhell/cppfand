@@ -143,7 +143,7 @@ void SetMsgPar(std::string s);
 void SetMsgPar(std::string s1, std::string s2);
 void SetMsgPar(std::string s1, std::string s2, std::string s3);
 void SetMsgPar(std::string s1, std::string s2, std::string s3, std::string s4);
-std::string RdMsg(integer N);
+std::string ReadMessage(int N);
 void WriteMsg(WORD N);
 void ClearLL(BYTE attr);
 

@@ -3516,7 +3516,7 @@ label2:
 		break;
 	}
 	case __F1: {
-		RdMsg(6);
+		ReadMessage(6);
 		heslo = MsgLine;
 		goto label3;
 		break;
@@ -4622,7 +4622,7 @@ label81:
 			switch (Event.Pressed.KeyCombination()) {
 			case __F1: {
 				// index napovedy
-				RdMsg(7);
+				ReadMessage(7);
 				Help((RdbD*)&HelpFD, MsgLine, false);
 				break;
 			}

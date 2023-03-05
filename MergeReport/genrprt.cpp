@@ -296,7 +296,7 @@ std::string GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 		WrChar(report, 0x11);
 		WrBlks(report, 14);
 		WrStr(report, "__.__.____");
-		RdMsg(17);
+		ReadMessage(17);
 		WrBlks(report, 12 - MsgLine.length());
 		WrStr(report, MsgLine);
 		WrStr(report, "___");
@@ -324,7 +324,7 @@ std::string GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 	}
 
 	if (ARMode == _AErrRecs) {
-		RdMsg(18);
+		ReadMessage(18);
 		WrStr(report, "\r\n\x17");
 		WrBlks(report, (38 - MsgLine.length()) / 2);
 		WrStr(report, MsgLine);
@@ -386,11 +386,11 @@ std::string GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 		if (ARMode == _AErrRecs) WrStr(report, "noErrRecs,");
 		WrStr(report, "sum(1);\r\n\r\n");
 		if (ARMode == _AErrRecs) {
-			RdMsg(18);
+			ReadMessage(18);
 			WrStr(report, MsgLine);
 			WrStr(report, ":_____\r\n");
 		}
-		RdMsg(20);
+		ReadMessage(20);
 		WrStr(report, MsgLine);
 		WrStr(report, "_______");
 	}

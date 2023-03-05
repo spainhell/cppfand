@@ -3208,7 +3208,7 @@ void EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg, std::vecto
 					break;
 				}
 				case __F1: {
-					RdMsg(6);
+					ReadMessage(6);
 					Help((RdbD*)HelpFD, MsgLine, false);
 				label2:
 					if (!Loc) {
@@ -3326,13 +3326,13 @@ void InitTxtEditor()
 	ColKey[6] = screen.colors.tCompressed;
 	ColKey[7] = screen.colors.tElite;
 
-	RdMsg(411); InsMsg = MsgLine;
-	RdMsg(412); nInsMsg = MsgLine;
-	RdMsg(413); IndMsg = MsgLine;
-	RdMsg(414); WrapMsg = MsgLine;
-	RdMsg(415); JustMsg = MsgLine;
-	RdMsg(417); BlockMsg = MsgLine;
-	RdMsg(416); ViewMsg = MsgLine;
+	ReadMessage(411); InsMsg = MsgLine;
+	ReadMessage(412); nInsMsg = MsgLine;
+	ReadMessage(413); IndMsg = MsgLine;
+	ReadMessage(414); WrapMsg = MsgLine;
+	ReadMessage(415); JustMsg = MsgLine;
+	ReadMessage(417); BlockMsg = MsgLine;
+	ReadMessage(416); ViewMsg = MsgLine;
 	Insert = true; Indent = true; Wrap = false; Just = false; TypeB = false;
 	LeftMarg = 1; RightMarg = 78;
 	CharPg = /*char(250)*/ spec.TxtCharPg;

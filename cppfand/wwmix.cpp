@@ -91,7 +91,7 @@ void wwmix::SelectStr(integer C1, integer R1, WORD NMsg, std::string LowTxt)
 	WORD rows = 5;
 	if (TxtCols > 52) cols = 50;
 	else cols = TxtCols - 2;
-	RdMsg(NMsg);
+	ReadMessage(NMsg);
 	WORD c2 = cols;
 	if (C1 != 0) c2 = C1 + cols + 1;
 	WORD r2 = rows;
@@ -660,7 +660,7 @@ std::string wwmix::SelectDiskFile(std::string Path, WORD HdMsg, bool OnFace)
 	}
 	mask = "*" + ext;
 label1:
-	RdMsg(HdMsg);
+	ReadMessage(HdMsg);
 	w = PushWFramed(c1, r1, c2, r2, screen.colors.sMask, MsgLine, "", WHasFrame + WShadow + WPushPixel);
 label2:
 	screen.GotoXY(1, 1);
@@ -784,7 +784,7 @@ void wwmix::PromptLL(WORD N, std::string& Txt, WORD I, bool Del)
 	screen.GotoXY(1, TxtRows, ScrPosition::absolute);
 	TextAttr = screen.colors.pTxt;
 	ClrEol();
-	RdMsg(N);
+	ReadMessage(N);
 	screen.ScrWrStr(1, TxtRows, MsgLine, screen.colors.pTxt);
 	screen.GotoXY(MsgLine.length() + 1, TxtRows, ScrPosition::absolute);
 	TextAttr = screen.colors.pNorm;
@@ -802,7 +802,7 @@ std::string wwmix::PassWord(bool TwoTimes)
 	while (true) {
 		TextAttr = screen.colors.pNorm | 0x80;
 		ClrEol();
-		RdMsg(MsgNr);
+		ReadMessage(MsgNr);
 		screen.ScrFormatWrText(1, 1, "%*s", (MsgLine.length() + 22) / 2, MsgLine.c_str());
 		keyboard.AddToFrontKeyBuf((char)ReadKbd());
 		TextAttr = screen.colors.pNorm;

@@ -226,12 +226,16 @@ bool XKey::RecNrToPath(XString& XX, longint RecNr)
 	auto p = std::make_unique<XPage>();
 	size_t item = 1;
 
-	structXPath* X = &XPath[XPathN];
+	structXPath* xPath = &XPath[XPathN];
 
-	GetXFile()->RdPage(p.get(), X->Page);
-	x = p->GetItem(X->I);
+	GetXFile()->RdPage(p.get(), xPath->Page);
+	x = p->GetItem(xPath->I);
+	if (x == nullptr) {
+		return result;
+	}
+
 	std::string xxS = XX.S;
-	if (p->GetKey(X->I) != xxS) {
+	if (p->GetKey(xPath->I) != xxS) {
 		return result;
 	}
 
@@ -240,21 +244,21 @@ bool XKey::RecNrToPath(XString& XX, longint RecNr)
 			result = true;
 			return result;
 		}
-		X->I++;
-		if (X->I > p->NItems) {
-			if (IncPath(XPathN - 1, X->Page)) {
-				X->I = 1;
-				GetXFile()->RdPage(p.get(), X->Page);
-				x = p->GetItem(X->I);
+		xPath->I++;
+		if (xPath->I > p->NItems) {
+			if (IncPath(XPathN - 1, xPath->Page)) {
+				xPath->I = 1;
+				GetXFile()->RdPage(p.get(), xPath->Page);
+				x = p->GetItem(xPath->I);
 				xxS = XX.S;
-				if (p->GetKey(X->I) != xxS) {
+				if (p->GetKey(xPath->I) != xxS) {
 					return result;
 				}
 				continue;
 			}
 		}
 		else {
-			x = p->GetItem(X->I);
+			x = p->GetItem(xPath->I);
 			if (x->GetL() != 0) {
 				return result;
 			}

@@ -599,7 +599,7 @@ void RdDepChkImpl()
 	CFile = E->FD;
 	switch (CFile->file_type) {
 	case FileType::RDB: {
-		RdMsg(53);
+		ReadMessage(53);
 		s = MsgLine;
 		ResetCompilePars();
 		SetInpStr(s);
@@ -607,10 +607,10 @@ void RdDepChkImpl()
 		break;
 	}
 	case FileType::CAT: {
-		RdMsg(54);
+		ReadMessage(54);
 		s = MsgLine;
 		if (spec.CPMdrive != ' ') s = s + ',' + spec.CPMdrive + ':';
-		RdMsg(55);
+		ReadMessage(55);
 		s = s + MsgLine;
 		if (spec.CPMdrive != ' ') s = s + ',' + spec.CPMdrive + ':';
 		s = s + "'";

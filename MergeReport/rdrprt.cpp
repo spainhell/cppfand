@@ -292,9 +292,12 @@ void ReadReport(RprtOpt* RO)
 	ResetCompilePars();
 	RdLex();
 	CBlkSave = nullptr;
-	PgeSizeZ = nullptr; PgeLimitZ = nullptr;
+	PgeSizeZ = nullptr;
+	PgeLimitZ = nullptr;
 	RprtFDListEl* FDL = nullptr;
-	if ((RO != nullptr) && (RO->FDL.FD != nullptr)) FDL = &RO->FDL;
+	if ((RO != nullptr) && (RO->FDL.FD != nullptr)) {
+		FDL = &RO->FDL;
+	}
 	ResetLVBD();
 	if (IsKeyWord("VAR")) RdLocDcl(&LVBD, false, false, 'R');
 label1:

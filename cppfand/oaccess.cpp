@@ -628,7 +628,7 @@ void SetCPathForH(FILE* handle)
 		}
 		RD = RD->ChainBack;
 	}
-	RdMsg(799);
+	ReadMessage(799);
 	CPath = MsgLine;
 	CFile = cf;
 }

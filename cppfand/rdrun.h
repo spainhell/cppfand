@@ -17,7 +17,6 @@ enum MInstrCode { _zero, _move, _output, _locvar, _parfile, _ifthenelseM };
 
 struct AssignD : public Chained<AssignD>
 {
-	//AssignD* pChain;
 	MInstrCode Kind = _zero;
 	FieldDescr* inputFldD = nullptr;
 	FieldDescr* outputFldD = nullptr;
@@ -93,9 +92,13 @@ struct InpD
 enum AutoRprtMode { _ALstg, _ARprt, _ATotal, _AErrRecs };
 struct RprtFDListEl
 {
-	RprtFDListEl* Chain; FileD* FD; XKey* ViewKey;
-	FrmlElem* Cond; KeyInD* KeyIn; bool SQLFilter;
-	void* LVRecPtr;
+	RprtFDListEl* Chain;
+	FileD* FD = nullptr;
+	XKey* ViewKey = nullptr;
+	FrmlElem* Cond = nullptr;
+	KeyInD* KeyIn = nullptr;
+	bool SQLFilter = false;
+	void* LVRecPtr = nullptr;
 };
 
 struct RprtOpt

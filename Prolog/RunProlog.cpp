@@ -1481,7 +1481,7 @@ label3:
 
 void SyntxError(WORD N, integer Ex)
 {
-	RdMsg(3000 + N);
+	ReadMessage(3000 + N);
 	EdRecKey = MsgLine;
 	LastExitCode = Ex;
 	GoExit();

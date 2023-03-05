@@ -539,9 +539,9 @@ void CreateOpenChpt(std::string Nm, bool create, wwmix* ww)
 	R->OldLDRoot = LinkDRoot;
 	R->OldFCRoot = FuncDRoot;
 	//MarkStore2(R->Mark2);
-	RdMsg(51);
+	ReadMessage(51);
 	s = MsgLine;
-	RdMsg(48);
+	ReadMessage(48);
 	val(MsgLine, n, i);
 	nr = std::to_string((TxtCols - n));
 	s = s + nr;
@@ -633,7 +633,7 @@ void GoCompileErr(WORD IRec, WORD N)
 	InpRdbPos.R = CRdb;
 	InpRdbPos.IRec = IRec;
 	CurrPos = 0;
-	RdMsg(N);
+	ReadMessage(N);
 	GoExit();
 }
 
@@ -888,10 +888,10 @@ WORD CompileMsgOn(CHAR_INFO* Buf, longint& w)
 {
 	pstring s;
 	WORD result = 0;
-	RdMsg(15);
+	ReadMessage(15);
 	if (IsTestRun) {
 		w = PushWFramed(0, 0, 30, 4, screen.colors.sNorm, MsgLine, "", WHasFrame + WDoubleFrame + WShadow);
-		RdMsg(117);
+		ReadMessage(117);
 		std::string s1 = MsgLine;
 		s = GetNthLine(s1, 1, 1, '/');
 		screen.GotoXY(3, 2);
@@ -976,9 +976,9 @@ void* RdF(std::string FileName)
 
 	FDTyp = ExtToTyp(ext);
 	if (FDTyp == FileType::RDB) {
-		RdMsg(51);
+		ReadMessage(51);
 		s = MsgLine;
-		RdMsg(49);
+		ReadMessage(49);
 		val(MsgLine, n, i);
 		nr = std::to_string(TxtCols - n);
 		s = s + nr;
@@ -1650,7 +1650,7 @@ void InstallRdb(std::string n)
 		CloseChpt();
 		return;
 	}
-	RdMsg(8);
+	ReadMessage(8);
 
 	i = 1;
 	w = new TMenuBoxS(43, 6, MsgLine);

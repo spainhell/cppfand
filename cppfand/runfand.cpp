@@ -274,7 +274,7 @@ void CompileHelpCatDcl()
 	Chpt = FileDRoot;
 	CRdb = nullptr;
 	MarkStore2(p2);
-	RdMsg(56);
+	ReadMessage(56);
 	std::string s = MsgLine;
 	SetInpStr(s);
 #if defined (FandRunV)
@@ -283,7 +283,7 @@ void CompileHelpCatDcl()
 	RdFileD("FANDHLP", FileType::FAND16, "");
 #endif
 	HelpFD = CFile;
-	RdMsg(52);
+	ReadMessage(52);
 	s = MsgLine;
 	SetInpStr(s);
 	RdFileD("Catalog", FileType::CAT, "");
@@ -485,7 +485,7 @@ void InitRunFand()
 
 	//std::vector<std::string> messages;
 	//for (size_t iii = 0; iii < 10000; iii++) {
-	//	RdMsg(iii);
+	//	ReadMessage(iii);
 	//	if (MsgLine.length() == 26 && MsgLine.find("ve FAND.RES") == 15) {
 	//		printf("%i, ", iii);
 	//	}
@@ -518,7 +518,7 @@ void InitRunFand()
 
 
 	// NACTENI ZNAKU PRO 'ANO' A 'NE' - original je Y a N
-	RdMsg(50);
+	ReadMessage(50);
 	AbbrYes = MsgLine[0];
 	AbbrNo = MsgLine[1];
 
@@ -603,13 +603,13 @@ void InitRunFand()
 	screen.ScrClr(4, TxtRows - 3, TxtCols - 6, 1, ' ', TextAttr);
 
 #if defined (Trial)
-	RdMsg(70);
+	ReadMessage(70);
 #elif defined (FandRunV)
-	RdMsg(42);
+	ReadMessage(42);
 #elif defined (FandDemo)
-	RdMsg(43);
+	ReadMessage(43);
 #else
-	RdMsg(41);
+	ReadMessage(41);
 #endif
 	txt = "";
 #ifdef FandNetV
@@ -655,7 +655,7 @@ void InitRunFand()
 
 #ifndef FandDemo
 	if (TxtCols >= 80) {
-		std::string license = RdMsg(40) + " " + std::to_string(UserLicNrShow);
+		std::string license = ReadMessage(40) + " " + std::to_string(UserLicNrShow);
 		screen.ScrWrText(51, TxtRows - 3, license.c_str());
 	}
 #endif
@@ -676,7 +676,7 @@ label2:
 	// if (today > 730210.0) { WrLLF10Msg(47); /*exit;*/ }
 #endif
 
-	RdMsg(MsgNr);
+	ReadMessage(MsgNr);
 	mb = new TMenuBoxS(4, 3, MsgLine);
 	int i = 1;
 

@@ -53,7 +53,7 @@ Instr_sort* RdSortCall();
 Instr_edit* RdEditCall();
 void RdEditOpt(EditOpt* EO);
 Instr* RdReportCall();
-void RdRprtOpt(RprtOpt* RO, bool HasFrst);
+void RdRprtOpt(RprtOpt* RO, bool has_first);
 Instr* RdRDBCall();
 Instr* RdExec();
 Instr* RdCopyFile();

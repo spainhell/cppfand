@@ -132,7 +132,6 @@ longint PushWFramed(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, pstring top, 
 
 longint PushWrLLMsg(WORD N, bool WithESC)
 {
-	WORD l;
 	auto result = PushW(1, TxtRows, TxtCols, TxtRows);
 	TextAttr = screen.colors.zNorm;
 	ClrEol();
@@ -141,8 +140,8 @@ longint PushWrLLMsg(WORD N, bool WithESC)
 	screen.ScrWrText(1, 1, "  ");
 	TextAttr = screen.colors.zNorm;
 	if (WithESC) screen.ScrWrText(6, 1, "(ESC) ");  //printf("(ESC) ");
-	RdMsg(N);
-	l = TxtCols - screen.WhereX();
+	ReadMessage(N);
+	WORD l = TxtCols - screen.WhereX();
 	if (MsgLine.length() > l) MsgLine[0] = (char)l;
 	//printf("%s", MsgLine.c_str());
 	screen.ScrWrText(WithESC ? 12 : 6, 1, MsgLine.c_str());
@@ -152,7 +151,7 @@ longint PushWrLLMsg(WORD N, bool WithESC)
 // nacteni a zapis posledniho radku s klavesovymi zkratkami
 void WrLLMsg(WORD N)
 {
-	RdMsg(N); 
+	ReadMessage(N); 
 	WrLLMsgTxt();
 }
 
@@ -252,7 +251,7 @@ label3:
 
 void WrLLF10Msg(WORD N)
 {
-	RdMsg(N);
+	ReadMessage(N);
 	WrLLF10MsgLine();
 }
 
@@ -269,7 +268,7 @@ bool PromptYN(WORD NMsg)
 	longint w = PushW(1, TxtRows, TxtCols, TxtRows); 
 	TextAttr = screen.colors.pTxt;
 	ClrEol();
-	RdMsg(NMsg);
+	ReadMessage(NMsg);
 	std::string tmp = MsgLine.substr(MaxI(MsgLine.length() - TxtCols + 3, 0), 255);
 	screen.ScrFormatWrText(screen.WhereX(), screen.WhereY(), "%s", tmp.c_str());
 	WORD col = screen.WhereX(); 

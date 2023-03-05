@@ -192,28 +192,30 @@ size_t ReadH(FILE* handle, size_t length, void* buffer)
 	return fread_s(buffer, length, 1, length, handle);
 }
 
-std::string RdMsg(integer N)
+std::string ReadMessage(int N)
 {
+	std::string message;
 	WORD j, o;
-	FILE* h;
 	pstring s;
+	bool found = false;
 	for (int i = 0; i < MsgIdxN; i++) {
-		auto Nr = MsgIdx[i].Nr;
-		auto Count = MsgIdx[i].Count;
-		auto Ofs = MsgIdx[i].Ofs;
-		if (N >= Nr && N < Nr + Count)
-		{
+		WORD Nr = MsgIdx[i].Nr;
+		BYTE Count = MsgIdx[i].Count;
+		WORD Ofs = MsgIdx[i].Ofs;
+		if (N >= Nr && N < Nr + Count) {
 			j = N - Nr + 1;
 			o = Ofs;
-			goto label1;
+			found = true;
+			break;
 		}
 	}
-	o = 0;
-	j = 1;
-	MsgPar[1] = std::to_string(N).c_str();
+	if (!found) {
+		o = 0;
+		j = 1;
+		MsgPar[0] = std::to_string(N);
+	}
 
-label1:
-	h = ResFile.Handle;
+	FILE* h = ResFile.Handle;
 	SeekH(h, FrstMsgPos + o);
 
 	for (int i = 1; i <= j; i++) {
@@ -221,23 +223,21 @@ label1:
 		ReadH(h, s.length(), &s[1]);
 	}
 	ConvKamenToCurr(&s[1], s.length());
-	MsgLine = "";
-	j = 0;
 	s[s.length() + 1] = 0x00;
+
+	size_t param_index = 0;
 	for (int i = 1; i <= s.length(); i++) {
-		if (s[i] == '$' && s[i + 1] != '$')
-		{
-			MsgLine += MsgPar[j];
-			j++;
+		if (s[i] == '$' && s[i + 1] != '$') {
+			message += MsgPar[param_index++];
 		}
-		else
-		{
-			MsgLine += s[i];
+		else {
+			message += (char)s[i];
 			if (s[i] == '$') i++;
 		}
 	}
-	MsgLine = s;
-	return MsgLine;
+
+	MsgLine = message;
+	return message;
 }
 
 void WriteMsg(WORD N)

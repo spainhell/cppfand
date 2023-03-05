@@ -126,7 +126,7 @@ label1:
 	label3:
 		//RestoreExit(er);
 		if (PrintView && (NLinesOutp == 0) && (LineLenLst == 0)) {
-			RdMsg(159);
+			ReadMessage(159);
 			printf("%s\n", ReportString.c_str());
 			printf("%s%s", ReportString.c_str(), MsgLine.c_str());
 		}
@@ -445,7 +445,6 @@ void RunAProc(std::vector<AssignD*> vAssign)
 		default: 
 			break;
 		}
-		//A = (AssignD*)A->pChain;
 	}
 }
 
@@ -781,15 +780,17 @@ void CloseInp()
 
 WORD CompMFlds(std::vector<ConstListEl>& C, KeyFldD* M, integer& NLv)
 {
-	integer res = 0; XString x;
+	XString x;
 	NLv = 0;
-	for (auto& c : C) { 
+	for (ConstListEl& c : C) { 
 		NLv++;
 		x.Clear();
 		x.StoreKF(M);
 		std::string s = x.S;
-		res = CompStr(s, c.S);
-		if (res != _equ) { return res; }
+		int res = CompStr(s, c.S);
+		if (res != _equ) {
+			return res;
+		}
 		M = M->pChain;
 	}
 	return _equ;

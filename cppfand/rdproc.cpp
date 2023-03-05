@@ -1581,43 +1581,55 @@ void RdEditOpt(EditOpt* EO)
 
 Instr* RdReportCall()
 {
-	Instr_report* PD = nullptr;
-	RprtOpt* RO = nullptr;
 	LocVar* lv = nullptr;
 	RprtFDListEl* FDL = nullptr;
-	bool b = false;
-	PD = new Instr_report(); // GetPD(_report, 4);
+	Instr_report* PD = new Instr_report();
 	RdLex();
-	RO = GetRprtOpt();
+	RprtOpt* RO = GetRprtOpt();
 	PD->RO = RO;
-	bool hasfrst = false;
-	if (Lexem == ',') goto label2;
-	hasfrst = true;
-	FDL = &RO->FDL;
-	b = false;
-	if (Lexem == '(') { RdLex(); b = true; }
-label1:
-	if (IsRecVar(&lv)) { FDL->LVRecPtr = lv->RecPtr; FDL->FD = lv->FD; }
-	else {
-		CFile = RdFileName();
-		FDL->FD = CFile;
-		CViewKey = RdViewKey();
-		FDL->ViewKey = CViewKey;
+	bool has_first = false;
+
+	if (Lexem != ',') {
+		has_first = true;
+		FDL = &RO->FDL;
+		bool b = false;
 		if (Lexem == '(') {
 			RdLex();
-			FDL->Cond = RdKeyInBool(&FDL->KeyIn, true, true, FDL->SQLFilter);
+			b = true;
+		}
+
+		while (true) {
+			if (IsRecVar(&lv)) {
+				FDL->LVRecPtr = lv->RecPtr;
+				FDL->FD = lv->FD;
+			}
+			else {
+				CFile = RdFileName();
+				FDL->FD = CFile;
+				CViewKey = RdViewKey();
+				FDL->ViewKey = CViewKey;
+				if (Lexem == '(') {
+					RdLex();
+					FDL->Cond = RdKeyInBool(&FDL->KeyIn, true, true, FDL->SQLFilter);
+					Accept(')');
+				}
+			}
+			if (b && (Lexem == ',')) {
+				RdLex();
+				FDL->Chain = new RprtFDListEl();
+				FDL = FDL->Chain;
+				continue;
+			}
+			break;
+		}
+
+		if (b) {
 			Accept(')');
 		}
+		CFile = RO->FDL.FD;
+		CViewKey = RO->FDL.ViewKey;
 	}
-	if (b && (Lexem == ',')) {
-		RdLex();
-		FDL->Chain = new RprtFDListEl(); // (RprtFDListEl*)GetZStore(sizeof(RprtFDListEl));
-		FDL = FDL->Chain;
-		goto label1;
-	}
-	if (b) Accept(')');
-	CFile = RO->FDL.FD; CViewKey = RO->FDL.ViewKey;
-label2:
+
 	Accept(',');
 	if (Lexem == '[') {
 		RdLex();
@@ -1626,45 +1638,76 @@ label2:
 		RO->FromStr = true;
 		Accept(']');
 	}
-	else if (!hasfrst || (Lexem == _identifier)) {
+	else if (!has_first || (Lexem == _identifier)) {
 		TestIdentif();
-		if (!FindChpt('R', LexWord, false, &RO->RprtPos)) Error(37);
+		if (!FindChpt('R', LexWord, false, &RO->RprtPos)) {
+			Error(37);
+		}
 		RdLex();
 	}
 	else {
 		Accept('(');
 		switch (Lexem) {
-		case '?': { RO->Flds = AllFldsList(CFile, false);
-			RdLex(); RO->UserSelFlds = true; break; }
-		case ')': RO->Flds = AllFldsList(CFile, true); break;
+		case '?': {
+			RO->Flds = AllFldsList(CFile, false);
+			RdLex();
+			RO->UserSelFlds = true;
+			break;
+		}
+		case ')': {
+			RO->Flds = AllFldsList(CFile, true);
+			break;
+		}
 		default: {
 			RO->Flds = RdFlds();
-			if (Lexem == '?') { RdLex(); RO->UserSelFlds = true; }
+			if (Lexem == '?') {
+				RdLex();
+				RO->UserSelFlds = true;
+			}
 			break;
 		}
 		}
 		Accept(')');
 	}
 	while (Lexem == ',') {
-		RdLex(); RdRprtOpt(RO, (hasfrst && (FDL->LVRecPtr == nullptr)));
+		RdLex();
+		RdRprtOpt(RO, (has_first && (FDL->LVRecPtr == nullptr)));
 	}
-	if ((RO->Mode == _ALstg) && ((!RO->Ctrl.empty()) || (!RO->Sum.empty())))
+	if ((RO->Mode == _ALstg) && ((!RO->Ctrl.empty()) || (!RO->Sum.empty()))) {
 		RO->Mode = _ARprt;
+	}
 	return PD;
 }
 
-void RdRprtOpt(RprtOpt* RO, bool HasFrst)
+void RdRprtOpt(RprtOpt* RO, bool has_first)
 {
 	FileD* FD = nullptr;
 	WORD N = 0;
-	/* !!! with RO^ do!!! */
-	if (IsOpt("ASSIGN")) RdPath(true, RO->Path, RO->CatIRec);
-	else if (IsOpt("TIMES")) RO->Times = RdRealFrml();
-	else if (IsOpt("MODE"))
-		if (IsKeyWord("ONLYSUM")) RO->Mode = _ATotal;
-		else if (IsKeyWord("ERRCHECK")) RO->Mode = _AErrRecs; else Error(49);
+
+	if (IsOpt("ASSIGN")) {
+		RdPath(true, RO->Path, RO->CatIRec);
+	}
+	else if (IsOpt("TIMES")) {
+		RO->Times = RdRealFrml();
+	}
+	else if (IsOpt("MODE")) {
+		if (IsKeyWord("ONLYSUM")) {
+			RO->Mode = _ATotal;
+		}
+		else if (IsKeyWord("ERRCHECK")) {
+			RO->Mode = _AErrRecs;
+		}
+		else {
+			Error(49);
+		}
+	}
 	else if (IsKeyWord("COND")) {
-		if (!HasFrst) goto label2;
+		if (!has_first) {
+			OldError(51);
+			Accept('(');
+			RdKFList(&RO->SK, CFile);
+			Accept(')');
+		}
 		WORD Low = CurrPos;
 		Accept(_equ);
 		bool br = false;
@@ -1672,41 +1715,80 @@ void RdRprtOpt(RprtOpt* RO, bool HasFrst)
 			Low = CurrPos;
 			RdLex();
 			br = true;
-			if (Lexem == '?') { RdLex(); RO->UserCondQuest = true; goto label1; }
+			if (Lexem == '?') {
+				RdLex();
+				RO->UserCondQuest = true;
+				if (br) {
+					Accept(')');
+				}
+				return;
+			}
 		}
 		RO->FDL.Cond = RdKeyInBool(&RO->FDL.KeyIn, true, true, RO->FDL.SQLFilter);
 		N = OldErrPos - Low;
-		RO->CondTxt = std::string((const char*)&InpArrPtr[Low], N); // (pstring*)GetStore(N + 1);
-		//Move(&InpArrPtr[Low], &(*RO->CondTxt)[1], N);
-		//(*RO->CondTxt)[0] = N;
-	label1:
-		if (br) Accept(')');
+		RO->CondTxt = std::string((const char*)&InpArrPtr[Low], N);
+
+		if (br) {
+			Accept(')');
+		}
 	}
 	else if (IsOpt("CTRL")) {
-		if (!HasFrst) goto label2;
+		if (!has_first) {
+			OldError(51);
+			Accept('(');
+			RdKFList(&RO->SK, CFile);
+			Accept(')');
+		}
 		RO->Ctrl = RdSubFldList(RO->Flds, 'C');
 	}
 	else if (IsOpt("SUM")) {
-		if (!HasFrst) goto label2;
+		if (!has_first) {
+			OldError(51);
+			Accept('(');
+			RdKFList(&RO->SK, CFile);
+			Accept(')');
+		}
 		RO->Sum = RdSubFldList(RO->Flds, 'S');
 	}
-	else if (IsOpt("WIDTH")) RO->WidthFrml = RdRealFrml();
-	else if (IsOpt("STYLE"))
-		if (IsKeyWord("COMPRESSED")) RO->Style = 'C'; else
-			if (IsKeyWord("NORMAL")) RO->Style = 'N'; else Error(50);
-	else if (IsKeyWord("EDIT")) RO->Edit = true;
-	else if (IsKeyWord("PRINTCTRL")) RO->PrintCtrl = true;
-	else if (IsKeyWord("CHECK")) RO->SyntxChk = true;
+	else if (IsOpt("WIDTH")) {
+		RO->WidthFrml = RdRealFrml();
+	}
+	else if (IsOpt("STYLE")) {
+		if (IsKeyWord("COMPRESSED")) {
+			RO->Style = 'C';
+		}
+		else {
+			if (IsKeyWord("NORMAL")) {
+				RO->Style = 'N';
+			}
+			else {
+				Error(50);
+			}
+		}
+	}
+	else if (IsKeyWord("EDIT")) {
+		RO->Edit = true;
+	}
+	else if (IsKeyWord("PRINTCTRL")) {
+		RO->PrintCtrl = true;
+	}
+	else if (IsKeyWord("CHECK")) {
+		RO->SyntxChk = true;
+	}
 	else if (IsOpt("SORT")) {
-		if (!HasFrst)
-			label2:
-		OldError(51);
+		if (!has_first) {
+			OldError(51);
+		}
 		Accept('(');
 		RdKFList(&RO->SK, CFile);
 		Accept(')');
 	}
-	else if (IsOpt("HEAD")) RO->Head = RdStrFrml();
-	else Error(45);
+	else if (IsOpt("HEAD")) {
+		RO->Head = RdStrFrml();
+	}
+	else {
+		Error(45);
+	}
 }
 
 Instr* RdRDBCall()
@@ -1789,7 +1871,7 @@ Instr* RdCopyFile()
 			if ((FD1 != nullptr) && (FD1->typSQLFile) || (FD2 != nullptr)
 				&& (FD2->typSQLFile)) OldError(155);
 #endif
-	}
+}
 	while (Lexem == ',') {
 		RdLex();
 		if (IsOpt("HEAD")) {
@@ -2321,7 +2403,7 @@ Instr_recs* RdMixRecAcc(PInstrCode Op)
 		}
 #endif
 		}
-	}
+		}
 	if ((Lexem == ',') && (Op == _writerec || Op == _deleterec || Op == _recallrec)) {
 		RdLex();
 		Accept('+');
@@ -2329,7 +2411,7 @@ Instr_recs* RdMixRecAcc(PInstrCode Op)
 	}
 	CFile = cf;
 	return PD;
-}
+	}
 
 Instr* RdLinkRec()
 {
@@ -2924,7 +3006,7 @@ Instr* RdCallLProc()
 		TestIdentif();
 		pd->lpName = LexWord;
 		RdLex();
-	}
+}
 	return pd;
 }
 #endif

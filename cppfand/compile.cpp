@@ -28,7 +28,7 @@ pstring LexWord;
 
 void Error(integer N)
 {
-	RdMsg(1000 + N);
+	ReadMessage(1000 + N);
 	std::string ErrMsg = MsgLine;
 
 	if (N == 1) {
@@ -40,9 +40,9 @@ void Error(integer N)
 			case _assign: MsgLine = ":="; break;
 			case _addass: MsgLine = "+="; break;
 			case _equ: MsgLine = "="; break;
-			case _number: RdMsg(1004); break;
-			case _identifier: RdMsg(1005); break;
-			case _quotedstr: RdMsg(1013); break;
+			case _number: ReadMessage(1004); break;
+			case _identifier: ReadMessage(1005); break;
+			case _quotedstr: ReadMessage(1013); break;
 			}
 			ErrMsg = ErrMsg + " " + MsgLine;
 		}
@@ -62,10 +62,10 @@ void Error(integer N)
 		char* p = new char[l];
 		memcpy(p, InpArrPtr, l);
 		if (!PrevCompInp.empty()) {
-			RdMsg(63);
+			ReadMessage(63);
 		}
 		else {
-			RdMsg(61);
+			ReadMessage(61);
 		}
 		std::string HdTxt = MsgLine;
 		LongStr LS;

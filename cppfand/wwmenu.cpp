@@ -792,7 +792,7 @@ TMenuBarS::TMenuBarS()
 
 TMenuBarS::TMenuBarS(WORD MsgNr)
 {
-	RdMsg(MsgNr);
+	ReadMessage(MsgNr);
 	MsgTxt = StoreStr(MsgLine);
 	HlpRdb = (RdbD*)HelpFD;
 	nTxt = (CountDLines(&MsgTxt[1], MsgTxt->length(), '/') - 1) / 2;
@@ -807,7 +807,7 @@ bool TMenuBarS::GetDownMenu(TMenuBox** W)
 	TNr = GetText(nTxt + iTxt);
 	val(TNr, n, err);
 	if ((TNr.length() == 0) || (err != 0)) return result;
-	RdMsg(n);
+	ReadMessage(n);
 	//New(p, Init(MenuX, MenuY, (pstring*)&MsgLine));
 	p = new TMenuBoxS(MenuX, MenuY, MsgLine);
 	p->parent = this;
@@ -903,7 +903,7 @@ WORD Menu(WORD MsgNr, WORD IStart)
 	TMenuBoxS* w = nullptr;
 	void* p = nullptr;
 	MarkStore(p);
-	RdMsg(MsgNr);
+	ReadMessage(MsgNr);
 	w = new TMenuBoxS(0, 0, MsgLine);
 	auto result = w->Exec(IStart);
 	delete w;
@@ -913,7 +913,7 @@ WORD Menu(WORD MsgNr, WORD IStart)
 
 bool PrinterMenu(WORD Msg)
 {
-	RdMsg(Msg);
+	ReadMessage(Msg);
 	for (WORD j = 0; j < prMax; j++) {
 		Printer* pr = &printer[j];
 		std::string nm = PrTab(j, prName);
