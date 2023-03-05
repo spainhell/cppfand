@@ -13,7 +13,6 @@
 #include "../cppfand/GlobalVariables.h"
 #include "../cppfand/KeyFldD.h"
 #include "../cppfand/obaseww.h"
-#include "../cppfand/runproc.h"
 #include "../cppfand/runproj.h"
 #include "../cppfand/models/Instr.h"
 #include "../Editor/OldEditor.h"

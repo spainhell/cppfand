@@ -1,7 +1,6 @@
 #include "FileD.h"
-#include "access.h"
-#include "GlobalVariables.h"
-#include "XFile.h"
+#include "../cppfand/access.h"
+#include "../fandio/FandXFile.h"
 #include "../Indexes/XKey.h"
 #include "../Logging/Logging.h"
 

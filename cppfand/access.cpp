@@ -12,8 +12,8 @@
 #include "olongstr.h"
 #include "runfrml.h"
 #include "../Indexes/sort.h"
-#include "TFile.h"
-#include "XFile.h"
+#include "../fandio/FandTFile.h"
+#include "../fandio/FandXFile.h"
 #include "../Indexes/XKey.h"
 #include "../Logging/Logging.h"
 #include "../textfunc/textfunc.h"
@@ -225,7 +225,7 @@ label1:
 }
 
 #else
-bool ChangeLMode(LockMode Mode, WORD Kind, bool RdPref)
+bool ChangeLMode(FileD* fileD, LockMode Mode, WORD Kind, bool RdPref)
 {
 	fileD->LMode = Mode;
 	return true;

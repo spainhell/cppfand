@@ -16,7 +16,7 @@
 #include "olongstr.h"
 #include "rdproc.h"
 #include "runproc.h"
-#include "TFile.h"
+#include "../fandio/FandTFile.h"
 #include "wwmix.h"
 #include "../Editor/runedi.h"
 #include "../textfunc/textfunc.h"

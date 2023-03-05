@@ -2,7 +2,7 @@
 
 #include "GlobalVariables.h"
 #include "oaccess.h"
-#include "TFile.h"
+#include "../fandio/FandTFile.h"
 
 void GetTxtPrepare(FrmlElem* Z, FILE** h, longint& off, longint& len)
 {

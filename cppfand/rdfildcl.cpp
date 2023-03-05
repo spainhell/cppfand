@@ -10,7 +10,7 @@
 #include "rdproc.h"
 #include "runfrml.h"
 #include "runproj.h"
-#include "XFile.h"
+#include "../fandio/FandXFile.h"
 #include "../Indexes/XPage.h"
 
 bool HasTT;

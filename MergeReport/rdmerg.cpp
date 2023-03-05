@@ -6,9 +6,7 @@
 #include "../cppfand/FileD.h"
 #include "../cppfand/GlobalVariables.h"
 #include "../cppfand/KeyFldD.h"
-#include "../cppfand/legacy.h"
 #include "../cppfand/rdfildcl.h"
-#include "../MergeReport/rdrprt.h"
 
 char WhatToRd = '\0'; /*i=Oi output FDs;O=O outp.FDs*/
 bool ReadingOutpBool = false;

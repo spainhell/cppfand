@@ -7,9 +7,9 @@
 #include "legacy.h"
 #include "obaseww.h"
 #include "runfrml.h"
-#include "TFile.h"
+#include "../fandio/FandTFile.h"
 #include "wwmix.h"
-#include "XFile.h"
+#include "../fandio/FandXFile.h"
 #include "../ExportImport/ExportImport.h"
 #include "../textfunc/textfunc.h"
 
@@ -141,7 +141,7 @@ bool OpenF1(FileUseMode UM)
 	CFile->LMode = NullMode;
 	SetCPathMountVolSetNet(UM);
 	bool b = (CFile == Chpt) || (CFile == CatFD);
-	if (b && (IsTestRun || IsInstallRun) && ((GetFileAttr() & 1/*RdOnly*/) != 0)) {
+	if (b && (IsTestRun || IsInstallRun) && ((GetFileAttr() & 0x1/*RdOnly*/) != 0)) {
 		SetFileAttr(GetFileAttr() & 0x26);
 		if (HandleError == 5) HandleError = 79;
 		TestCFileError();

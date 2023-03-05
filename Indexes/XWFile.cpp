@@ -3,7 +3,7 @@
 #include "../cppfand/FileD.h"
 #include "../cppfand/GlobalVariables.h"
 #include "../cppfand/obaseww.h"
-#include "../cppfand/XFile.h"
+#include "../fandio/FandXFile.h"
 
 void XWFile::Err(WORD N)
 {

@@ -14,9 +14,9 @@
 #include "runproc.h"
 #include "runproj.h"
 #include "../Prolog/RunProlog.h"
-#include "TFile.h"
+#include "../fandio/FandTFile.h"
 #include "wwmenu.h"
-#include "XFile.h"
+#include "../fandio/FandXFile.h"
 
 #include "compile.h"
 #include "../Editor/OldEditor.h"

@@ -6,7 +6,7 @@
 #include "GlobalVariables.h"
 #include "legacy.h"
 #include "obaseww.h"
-#include "TFile.h"
+#include "../fandio/FandTFile.h"
 #include "../Editor/runedi.h"
 #include "../FileSystem/directory.h"
 #include "../textfunc/textfunc.h"

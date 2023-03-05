@@ -90,13 +90,7 @@
     <ClCompile Include="GlobalVariables.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TFile.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="KeyFldD.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FileD.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Rdb.cpp">
@@ -111,10 +105,10 @@
     <ClCompile Include="ChkD.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="XFile.cpp">
+    <ClCompile Include="EditOpt.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="EditOpt.cpp">
+    <ClCompile Include="FileD.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -203,13 +197,7 @@
     <ClInclude Include="GlobalVariables.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TFile.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="KeyFldD.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FileD.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Rdb.h">
@@ -230,13 +218,13 @@
     <ClInclude Include="AddD.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="XFile.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="EditOpt.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Chained.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FileD.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -5,9 +5,8 @@
 #include "FileD.h"
 #include "LocVar.h"
 #include "Rdb.h"
-#include "switches.h"
 #include "../Indexes/XString.h"
-#include "../Indexes/XWFile.h"
+#include "switches.h"
 #ifdef FandSQL
 #include "channel.h"
 #endif

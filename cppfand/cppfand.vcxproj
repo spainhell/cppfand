@@ -166,9 +166,9 @@
     <ClCompile Include="compile.cpp" />
     <ClCompile Include="cppfand.cpp" />
     <ClCompile Include="EditOpt.cpp" />
+    <ClCompile Include="FileD.cpp" />
     <ClCompile Include="OldDrivers.cpp" />
     <ClCompile Include="FieldDescr.cpp" />
-    <ClCompile Include="FileD.cpp" />
     <ClCompile Include="GlobalVariables.cpp" />
     <ClCompile Include="Graph.cpp" />
     <ClCompile Include="KeyFldD.cpp" />
@@ -189,10 +189,8 @@
     <ClCompile Include="runfand.cpp" />
     <ClCompile Include="runfrml.cpp" />
     <ClCompile Include="runproc.cpp" />
-    <ClCompile Include="TFile.cpp" />
     <ClCompile Include="wwmenu.cpp" />
     <ClCompile Include="wwmix.cpp" />
-    <ClCompile Include="XFile.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="access-structs.h" />
@@ -204,10 +202,10 @@
     <ClInclude Include="compile.h" />
     <ClInclude Include="constants.h" />
     <ClInclude Include="EditOpt.h" />
+    <ClInclude Include="FileD.h" />
     <ClInclude Include="OldDrivers.h" />
     <ClInclude Include="fanddml.h" />
     <ClInclude Include="FieldDescr.h" />
-    <ClInclude Include="FileD.h" />
     <ClInclude Include="GlobalVariables.h" />
     <ClInclude Include="Graph.h" />
     <ClInclude Include="KeyFldD.h" />
@@ -231,10 +229,8 @@
     <ClInclude Include="runfrml.h" />
     <ClInclude Include="runproc.h" />
     <ClInclude Include="switches.h" />
-    <ClInclude Include="TFile.h" />
     <ClInclude Include="wwmenu.h" />
     <ClInclude Include="wwmix.h" />
-    <ClInclude Include="XFile.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="cppfand.rc" />

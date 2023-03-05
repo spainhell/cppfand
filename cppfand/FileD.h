@@ -1,10 +1,10 @@
 #pragma once
-#include "base.h"
-#include "Chained.h"
-#include "Rdb.h"
-#include "TFile.h"
+#include "../cppfand/base.h"
+#include "../cppfand/Chained.h"
+#include "../cppfand/Rdb.h"
+#include "../fandio/FandTFile.h"
 #include "../Indexes/XKey.h"
-#include "XFile.h"
+#include "../fandio/FandXFile.h"
 
 class FieldDescr;
 struct StringListEl;

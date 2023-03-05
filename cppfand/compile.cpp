@@ -7,7 +7,7 @@
 #include "obaseww.h"
 #include "rdfildcl.h"
 #include "runfrml.h"
-#include "TFile.h"
+#include "../fandio/FandTFile.h"
 #include "wwmix.h"
 #include "../Editor/OldEditor.h"
 #include "../textfunc/textfunc.h"

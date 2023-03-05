@@ -2,7 +2,7 @@
 #include "access.h"
 #include "constants.h"
 #include "pstring.h"
-#include "TFile.h"
+#include "../fandio/FandTFile.h"
 
 extern std::string LockModeTxt[9];
 

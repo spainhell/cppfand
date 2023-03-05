@@ -6,7 +6,6 @@
 #include "../cppfand/models/Instr.h"
 #include "../cppfand/FieldDescr.h"
 #include "../cppfand/FileD.h"
-#include "../cppfand/pstring.h"
 
 /*term fun*/
 const BYTE _CioMaskOpt = 0x80;
