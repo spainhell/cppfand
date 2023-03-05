@@ -4,8 +4,8 @@
 #include "OldDrivers.h"
 #include "pstring.h"
 
-typedef char CharArr[50];
-typedef CharArr* CharArrPtr;
+//typedef char CharArr[50];
+//typedef CharArr* CharArrPtr;
 
 class LongStr
 {
@@ -67,8 +67,8 @@ bool MouseInRectProc(WORD X, WORD Y, WORD XSize, WORD Size); // r182 ASM - rozde
 void SplitDate(double R, WORD& d, WORD& m, WORD& y);
 double AddMonth(double R, double RM);
 double DifMonth(double R1, double R2);
-double ValDate(pstring Txt, pstring Mask); // r276
-pstring StrDate(double R, pstring Mask); //r321
+double ValDate(pstring Txt, pstring Mask);
+pstring StrDate(double R, pstring Mask);
 std::string CppToday();
 double Today(); // r362
 double CurrTime();
@@ -94,8 +94,6 @@ void MarkBoth(void* p, void* p2);
 void ReleaseBoth(void* p, void* p2);
 void AlignLongStr();
 
-void StackOvr(WORD NewBP); // r216
-//void NewExit(PProcedure POvr, ExitRecord Buf);  // r218
 void GoExit();
 bool OSshell(std::string Path, std::string CmdLine, bool NoCancel, bool FreeMm, bool LdFont, bool TextMd);
 
@@ -132,12 +130,7 @@ std::string MyFExpand(std::string Nm, std::string EnvName);
 double RDate(WORD Y, WORD M, WORD D, WORD hh, WORD mm, WORD ss, WORD tt);
 
 // *** DISPLAY ***
-
-//WORD LenStyleStr(pstring s);
 WORD LogToAbsLenStyleStr(pstring s, WORD l);
-//void WrStyleStr(pstring s, WORD Attr);
-//void WrLongStyleStr(LongStr* S, WORD Attr);
-
 
 void SetMsgPar(std::string s);
 void SetMsgPar(std::string s1, std::string s2);
@@ -150,7 +143,7 @@ void ClearLL(BYTE attr);
 
 enum TKbdConv { OrigKbd, CsKbd, CaKbd, SlKbd, DtKbd };
 
-struct Spec // r.319
+struct Spec
 {
 	BYTE UpdCount;
 	BYTE AutoRprtWidth;
@@ -219,7 +212,7 @@ void NonameStartFunction();
 
 struct wdaystt { BYTE Typ = 0; WORD Nr = 0; };
 
-class TResFile // r. 440
+class TResFile
 {
 public:
 	std::string FullName;

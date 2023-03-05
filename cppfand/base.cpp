@@ -252,11 +252,10 @@ void ClearLL(BYTE attr)
 WORD TResFile::Get(WORD Kod, void** P)
 {
 	WORD l = A[Kod].Size;
-	//GetMem(P, l);
-	*P = new BYTE(l);
-	auto sizeF = FileSizeH(Handle);
-	auto seekF = SeekH(Handle, A[Kod - 1].Pos);
-	auto readF = ReadH(Handle, l, *P);
+	*P = new BYTE[l];
+	long sizeF = FileSizeH(Handle);
+	long seekF = SeekH(Handle, A[Kod - 1].Pos);
+	size_t readF = ReadH(Handle, l, *P);
 	return l;
 }
 
@@ -265,9 +264,9 @@ std::string TResFile::Get(WORD Kod)
 	char* tmpCh = new char[A[Kod].Size];
 	WORD l = A[Kod].Size;
 
-	auto sizeF = FileSizeH(Handle);
-	auto seekF = SeekH(Handle, A[Kod].Pos);
-	auto readF = ReadH(Handle, l, tmpCh);
+	long sizeF = FileSizeH(Handle);
+	long seekF = SeekH(Handle, A[Kod].Pos);
+	size_t readF = ReadH(Handle, l, tmpCh);
 	std::string result = std::string(tmpCh, l);
 	delete[] tmpCh;
 	return result;
@@ -280,49 +279,6 @@ LongStr* TResFile::GetStr(WORD Kod)
 	SeekH(Handle, A[Kod].Pos);
 	ReadH(Handle, A[Kod].Size, s->A);
 	return s;
-}
-
-//void* GetStore(WORD Size)
-//{
-//	return nullptr;
-//}
-
-//void* GetZStore(WORD Size)
-//{
-//	return nullptr;
-//}
-
-WORD StackOvr()
-{
-	/*
-	 procedure StackOvr(NewBP:word);
-	type SF=record BP:word; case byte of 0:(Ret:pointer); 1:(RetOfs:word) end;
-	var p,q:^SF;   pofs:word absolute p; qofs:word absolute q;
-	r,t:^word; rofs:word absolute r; tofs:word absolute t;
-	label 1;
-	begin
-	asm mov p.word,bp; mov p[2].word,ss end; pofs:=p^.BP;
-	while pofs<NewBP do begin r:=p^.ret; pofs:=p^.BP;
-	if (rofs=0) and (r^=$3fcd) then begin
-	q:=ptr(SSeg,NewBP); inc(rofs,2);
-	while qofs<BPBound do begin t:=q^.ret;
-	if (seg(t^)=seg(r^)) and (tofs<>0) then begin
-	   r^:=tofs; q^.retofs:=0; goto 1 end;
-	qofs:=q^.BP end end;
-	1:end;
-	end;
-	 */
-	return 0;
-}
-
-void NoOvr()
-{
-	/*
-		procedure NoOvr; far; assembler;
-		asm   pop ax; pop ax; pop ax{bp}; push ax; push ax; call StackOvr;
-			  pop bp; pop ds; pop ax; pop dx; pop sp; push dx; push ax;
-		end;
-	 */
 }
 
 bool CacheLocked = false; // r510

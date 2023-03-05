@@ -804,7 +804,8 @@ std::string wwmix::PassWord(bool TwoTimes)
 		ClrEol();
 		ReadMessage(MsgNr);
 		screen.ScrFormatWrText(1, 1, "%*s", (MsgLine.length() + 22) / 2, MsgLine.c_str());
-		keyboard.AddToFrontKeyBuf((char)ReadKbd());
+		WORD pressed_key = ReadKbd(); // wait for 1st char
+		keyboard.AddToFrontKeyBuf(pressed_key);
 		TextAttr = screen.colors.pNorm;
 		screen.GotoXY(2, 1);
 		Txt = "";

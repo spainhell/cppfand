@@ -1,18 +1,16 @@
 #include "printtxt.h"
 
 #include <fstream>
-
 #include "compile.h"
 #include "../textfunc/textfunc.h"
 #include "GlobalVariables.h"
 #include "legacy.h"
-#include "oaccess.h"
 #include "obase.h"
 #include "obaseww.h"
 #include "runfrml.h"
 #include "wwmenu.h"
 
-CharArr* pBlk;
+char* pBlk;
 WORD iBlk, nBlk, Po;
 longint charrd;
 bool printBlk, outpsw;
@@ -63,7 +61,7 @@ std::string replaceNo(std::string s, std::string sNew)
 	return s;
 }
 
-void ExecMgrPgm()
+void ExecPrintManagerProgram()
 {
 	BYTE x = 0, y = 0;
 	std::string pgmNm = PrTab(prCurr, prMgrProg);
@@ -77,12 +75,11 @@ void ExecMgrPgm()
 	WindMax = wmax;
 	screen.CrsSet(crs);
 	OSshell(pgmNm, param, true, true, false, false);
-	//asm mov ah, 3; mov bh, 0; push bp; int 10H; pop bp; mov x, dl; mov y, dh;
 	PopW(w);
 	screen.GotoXY(x - WindMin.X + 1, y - WindMin.Y + 1);
 }
 
-FILE* OpenMgrOutput()
+FILE* OpenPrintManagerOutput()
 {
 	FILE* h;
 	prFileNr = (prFileNr + 1) % 100;
@@ -101,12 +98,14 @@ FILE* OpenMgrOutput()
 	return h;
 }
 
-void CopyToMgr(std::string& text)
+void CopyToPrintManager(std::string& text)
 {
-	FILE* h2 = OpenMgrOutput();
+	FILE* h2 = OpenPrintManagerOutput();
 	if (h2 == nullptr) return;
 	//FileD* cf = CFile; void* cr = CRecPtr;
-	if (printBlk) WriteH(h2, nBlk, *pBlk);
+	if (printBlk) {
+		WriteH(h2, nBlk, pBlk);
+	}
 	else {
 		//longint n;
 		//FILE* h1 = Rprt.Handle;
@@ -129,7 +128,7 @@ void CopyToMgr(std::string& text)
 		WriteH(h2, text.length(), (void*)text.c_str());
 	}
 	CloseH(&h2);
-	ExecMgrPgm();
+	ExecPrintManagerProgram();
 	//CFile = cf; CRecPtr = cr;
 }
 
@@ -180,7 +179,7 @@ void PrintTxtFBlk(std::string& text, longint BegPos, bool CtrlL)
 		bool adj = FrstRun && !FFOpt && !NMOpt;
 		if (adj && spec.ChoosePrMsg) if (!PrinterMenu(62)) goto label3;
 		if (printer[prCurr].ToMgr) {
-			CopyToMgr(text);
+			CopyToPrintManager(text);
 			goto label3;
 		}
 		if (!ResetPrinter(Pl, Po, adj, FrstRun)) goto label3;
@@ -326,10 +325,11 @@ void RdLnInp()
 	if (printBlk) {
 		Ln = "";
 		while (iBlk <= nBlk) {
-			c = *pBlk[iBlk]; iBlk++;
+			c = pBlk[iBlk];
+			iBlk++;
 			if (c == 0x0D) {
 				charrd++;
-				if (*pBlk[iBlk] == 0x0A) { iBlk++; charrd++; }
+				if (pBlk[iBlk] == 0x0A) { iBlk++; charrd++; }
 				goto label1;
 			}
 			Ln = Ln + c;

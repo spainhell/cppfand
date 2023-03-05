@@ -204,9 +204,10 @@ WORD ReadKbd()
 	while (true) {
 		exists = keyboard.Get(key);
 		if (exists && key.bKeyDown) {
-			auto pressed = PressedKey(key);
-			Event.Pressed = pressed;
-			Event.What = evKeyDown;
+			PressedKey pressed = PressedKey(key);
+			/*Event.Pressed = pressed;
+			Event.What = evKeyDown;*/
+			ClrEvent();
 			return pressed.KeyCombination();
 		}
 		else {

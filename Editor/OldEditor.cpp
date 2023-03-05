@@ -2116,7 +2116,7 @@ void SetBlockBound(longint& BBPos, longint& EBPos)
 	BBPos = SetInd(T, LenT, nextLineIdx, blocks->BegBPos); // +Part.PosP;
 }
 
-void ResetPrint(char Oper, longint& fs, FILE* W1, longint LenPrint, ColorOrd* co, WORD& I1, bool isPrintFile, CharArr* p)
+void ResetPrint(char Oper, longint& fs, FILE* W1, longint LenPrint, ColorOrd* co, WORD& I1, bool isPrintFile, char* p)
 {
 	//*co = Part.ColorP;
 	*co = SetColorOrd(0, I1 - 1);
@@ -2126,7 +2126,7 @@ void ResetPrint(char Oper, longint& fs, FILE* W1, longint LenPrint, ColorOrd* co
 	if (Oper == 'p') LenPrint++;
 	if ((StoreAvail() > LenPrint) && (LenPrint < 0xFFF0)) {
 		char* t = new char[LenPrint];
-		p = (CharArr*)t;
+		p = t;
 		Move(&co[1], p, co->length());
 	}
 	else {
@@ -2158,7 +2158,7 @@ bool BlockHandle(longint& fs, FILE* W1, char Oper)
 	longint LL1, LL2;
 	ColorOrd co;
 	bool isPrintFile = false;
-	CharArr* p = nullptr;
+	char* p = nullptr;
 	bool tb; char c;
 
 	TestKod();
@@ -2212,7 +2212,7 @@ bool BlockHandle(longint& fs, FILE* W1, char Oper)
 					HMsgExit(CPath);
 				}
 				else {
-					Move(&T[I1], p[fs + 1], I2 - I1);
+					Move(&T[I1], &p[fs + 1], I2 - I1);
 					fs += I2 - I1; LL1 += I2 - I1;
 				}
 				break;
@@ -2270,7 +2270,7 @@ bool BlockHandle(longint& fs, FILE* W1, char Oper)
 				a[I1 + 1] = _CR;
 				a[I1 + 2] = _LF;
 				if ((Oper == 'P') && !isPrintFile) {
-					Move(a, p[fs + 1], I1 + 2);
+					Move(a, &p[fs + 1], I1 + 2);
 				}
 				else {
 					WriteH(W1, I1 + 2, a);

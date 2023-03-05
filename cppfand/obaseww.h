@@ -29,7 +29,7 @@ longint PushWrLLMsg(WORD N, bool WithESC);
 void WrLLMsg(WORD N);
 void WrLLMsgTxt();
 void WrLLF10MsgLine(); // stejna fce definovana v kbdww.cpp
-void WrLLF10Msg(WORD N); // stejna fce definovana v kbdww.cpp
+void WrLLF10Msg(int msgNr); // stejna fce definovana v kbdww.cpp
 bool PromptYN(WORD NMsg);
 extern WORD RunErrNr;
 void RunError(WORD N); // podobna fce definovana v kbdww.cpp

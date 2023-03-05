@@ -216,42 +216,54 @@ void WrLLF10MsgLine()
 		len = 0;
 	}
 	screen.ScrWrStr(6, row + 1, MsgLine, screen.colors.zNorm);
-label1:
-	GetEvent();
-	/*with Event*/
-	auto key = Event.Pressed.KeyCombination();
-	switch (Event.What) {
-	case evMouse:
-		if (MouseInRect(0, row, 3, 1)) {
-			Event.Pressed.UpdateKey(__F10);
-			goto label2;
+
+	bool end = false;
+	while (!end) {
+		GetEvent();
+		unsigned short key = Event.Pressed.KeyCombination();
+		switch (Event.What) {
+		case evMouse:
+			if (MouseInRect(0, row, 3, 1)) {
+				Event.Pressed.UpdateKey(__F10);
+				end = true;
+			}
+			if (len > 0 && MouseInRect(col, row, len, 1)) {
+				Event.Pressed.UpdateKey(F10SpecKey);
+				end = true;
+			}
+			break;
+		case evKeyDown:
+			if (key == __F10 || key == F10SpecKey || F10SpecKey == 0xffff
+				|| F10SpecKey == 0xfffe && (key == __SHIFT_F7 || key == __F1))
+			{
+				// TODO: je to potreba?
+				// KbdChar = Event.KeyCode;
+				ClrEvent();
+				end = true;
+			}
+			break;
 		}
-		if (len > 0 && MouseInRect(col, row, len, 1)) {
-			Event.Pressed.UpdateKey(F10SpecKey);
-			goto label2;
+
+		if (end) {
+			break;
 		}
-	case evKeyDown:
-		if (key == __F10 || key == F10SpecKey || F10SpecKey == 0xffff
-			|| F10SpecKey == 0xfffe && (key == __SHIFT_F7 || key == __F1))
-		{
-			// TODO: je to potreba?
-			// KbdChar = Event.KeyCode;
-		label2:
+		else {
 			ClrEvent();
-			goto label3;
 		}
 	}
-	ClrEvent();
-	goto label1;
-label3:
+
 	F10SpecKey = 0;
 	screen.ScrWrCharInfoBuf(1, row + 1, Buf, TxtCols);
 	delete[] Buf;
 }
 
-void WrLLF10Msg(WORD N)
+/**
+ * \brief Write F10 message in last line
+ * \param msgNr Message number
+ */
+void WrLLF10Msg(int msgNr)
 {
-	ReadMessage(N);
+	ReadMessage(msgNr);
 	WrLLF10MsgLine();
 }
 

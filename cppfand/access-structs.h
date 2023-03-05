@@ -53,7 +53,6 @@ struct structXPath
 
 struct ImplD : public Chained<ImplD>
 {
-	//ImplD* pChain; 
 	FieldDescr* FldD = nullptr;
 	FrmlElem* Frml = nullptr;
 };
@@ -118,7 +117,7 @@ struct WRectFrml // r251
 struct CompInpD // r402
 {
 	CompInpD* ChainBack = nullptr;
-	CharArr* InpArrPtr = nullptr;
+	char* InpArrPtr = nullptr;
 	RdbPos InpRdbPos;
 	size_t InpArrLen = 0;
 	size_t CurrPos = 0;

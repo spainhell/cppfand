@@ -3,7 +3,7 @@
 #include "constants.h"
 #include "pstring.h"
 
-extern CharArr* pBlk;
+extern char* pBlk;
 extern WORD iBlk, nBlk, Po;
 extern longint charrd;
 extern bool printBlk, outpsw;
@@ -11,9 +11,9 @@ extern WORD prFileNr;
 extern pstring Ln;
 
 std::string replaceNo(std::string s, std::string sNew);
-void ExecMgrPgm();
-FILE* OpenMgrOutput();
-void CopyToMgr(std::string& text);
+void ExecPrintManagerProgram();
+FILE* OpenPrintManagerOutput();
+void CopyToPrintManager(std::string& text);
 void PrintTxtFBlk(std::string& text, longint BegPos, bool CtrlL);
 void PrintChar_T(char c); // definován v obase -> pøidáno *_T
 void PrintStr(pstring s);
