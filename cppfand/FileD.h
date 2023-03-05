@@ -1,60 +1,53 @@
 #pragma once
-#include "../cppfand/base.h"
-#include "../cppfand/Chained.h"
-#include "../cppfand/Rdb.h"
-#include "../fandio/FandTFile.h"
+#include "base.h"
+#include "Chained.h"
+#include "Rdb.h"
+#include "../fandio/FandFile.h"
 #include "../Indexes/XKey.h"
-#include "../fandio/FandXFile.h"
 
 class FieldDescr;
 struct StringListEl;
 class AddD;
 
-enum class FileType
+enum class FType
 {
-	UNKNOWN,
-	FAND8,
-	FAND16,
-	INDEX,
-	RDB,
-	CAT,
-	DBF
+	FandFile,
+	SQLite,
+	PostgreSQL,
+	MSSQL,
+	MariaDB
 };
 
 class FileD : public Chained<FileD>
 {
 public:
-	FileD();
+	FileD(FType f_type);
 	FileD(const FileD& orig);
 	std::string Name;
-	std::string FullName;
-	WORD RecLen = 0;
-	void* RecPtr = nullptr;
-	longint NRecs = 0;
-	bool WasWrRec = false, WasRdOnly = false, Eof = false;
-	FileType file_type = FileType::UNKNOWN;       // 8 = Fand 8; 6 = Fand 16; X = .X; 0 = RDB; C = CAT 
-	FILE* Handle = nullptr;
+	std::string FullPath;
+
+	FType FileType;
+	FandFile* FF = nullptr;
+
 	longint IRec = 0;
-	WORD FrstDispl = 0;
-	TFile* TF = nullptr;
 	RdbPos ChptPos;           // zero for Rdb and FD translated from string 
 	WORD TxtPosUDLI = 0;      // =0 if not present; urcuje zacatek odstavcu #U #D #L #I
 	FileD* OrigFD = nullptr;  // like orig. or nil
-	BYTE Drive = 0;           // 1=A, 2=B, else 0
+	
 	WORD CatIRec = 0;
 	std::vector<FieldDescr*> FldD;
-	bool IsParFile = false, IsJournal = false, IsHlpFile = false;
-	bool typSQLFile = false, IsSQLFile = false, IsDynFile = false;
-	FileUseMode UMode = Closed;
-	LockMode LMode = NullMode, ExLMode = NullMode, TaLMode = NullMode;
+	bool IsParFile = false;
+	bool IsJournal = false;
+	bool IsHlpFile = false;
+	bool typSQLFile = false;
+	bool IsSQLFile = false;
+	bool IsDynFile = false;
+	
 	StringListEl* ViewNames = nullptr;  //after each string BYTE string with user codes 
-	XFile* XF = nullptr;
+	
 	std::vector<XKey*> Keys;
 	std::vector<AddD*> Add;
-	longint UsedFileSize();
-	bool IsShared();
-	bool NotCached();
-	bool Cached();
+
 	WORD GetNrKeys();
 	void Reset();
 

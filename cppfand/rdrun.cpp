@@ -193,8 +193,8 @@ fail:
 
 void CrIndRec()
 {
-	CreateRec(CFile->NRecs + 1);
-	RecallRec(CFile->NRecs);
+	CreateRec(CFile->FF->NRecs + 1);
+	RecallRec(CFile->FF->NRecs);
 }
 
 bool Link(AddD* AD, longint& N, char& Kind2)
@@ -226,9 +226,9 @@ bool Link(AddD* AD, longint& N, char& Kind2)
 #endif
 		{
 			ClearDeletedFlag();
-			if ((LD != nullptr) && (CFile->file_type == FileType::INDEX)) {
+			if ((LD != nullptr) && (CFile->FF->file_type == FileType::INDEX)) {
 				CrIndRec();
-				N = CFile->NRecs;
+				N = CFile->FF->NRecs;
 			}
 			else {
 				CreateRec(N);
@@ -340,8 +340,8 @@ bool LockForAdd(FileD* FD, WORD Kind, bool Ta, LockMode& md)
 			CFile = AD->File2;
 			switch (Kind) {
 			case 0: {
-				if (Ta) CFile->TaLMode = CFile->LMode;
-				else CFile->ExLMode = CFile->LMode;
+				if (Ta) CFile->FF->TaLMode = CFile->FF->LMode;
+				else CFile->FF->ExLMode = CFile->FF->LMode;
 				break;
 			}
 			case 1: {
@@ -352,10 +352,10 @@ bool LockForAdd(FileD* FD, WORD Kind, bool Ta, LockMode& md)
 			}
 			case 2: {
 				if (Ta) {
-					OldLMode(CFile, CFile->TaLMode);
+					OldLMode(CFile, CFile->FF->TaLMode);
 				}
 				else {
-					OldLMode(CFile, CFile->ExLMode);
+					OldLMode(CFile, CFile->FF->ExLMode);
 				}
 				break;
 			}

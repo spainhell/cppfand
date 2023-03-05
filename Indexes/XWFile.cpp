@@ -12,7 +12,7 @@ void XWFile::Err(WORD N)
 		RunError(N);
 	}
 	else {
-		CFile->XF->SetNotValid();
+		CFile->FF->XF->SetNotValid();
 		CFileMsg(N, 'X');
 		CloseGoExit();
 	}
@@ -30,7 +30,7 @@ longint XWFile::UsedFileSize()
 
 bool XWFile::NotCached()
 {
-	return (this != &XWork) && CFile->NotCached();
+	return (this != &XWork) && CFile->FF->NotCached();
 }
 
 
@@ -41,7 +41,7 @@ bool XWFile::NotCached()
 XWFile* XKey::GetXFile()
 {
 	if (InWork) return &XWork;
-	return CFile->XF;
+	return CFile->FF->XF;
 }
 
 void XWFile::RdPage(XPage* P, longint pageNr)

@@ -1094,7 +1094,7 @@ label1:
 		r = r->ChainBack;
 		if (r != nullptr) { FD = r->FD; goto label1; }
 	}
-	else if ((FD->file_type == FileType::RDB) || (FD->ChptPos.R == nullptr)) goto label1;
+	else if ((FD->FF->file_type == FileType::RDB) || (FD->ChptPos.R == nullptr)) goto label1;
 	return FD;
 }
 
@@ -1220,7 +1220,7 @@ bool RunBuildIn()
 		}
 		CurrInst->Vars[0] = GetStringTerm(fd->Name);
 		s[0] = 0;
-		switch (fd->file_type) {
+		switch (fd->FF->file_type) {
 		case FileType::FAND16: if (fd->IsSQLFile) s = "SQL"; break;
 		case FileType::INDEX: s = 'X'; break;
 		case FileType::DBF: s = "DBF"; break;
@@ -1679,7 +1679,7 @@ bool RunCommand(TCommand* COff/*PCommand*/)
 			DelTFld(c->FldD);
 			std::string save = SaveDb(c->DbPred, 0);
 			S_(c->FldD, save);
-			CFile->WriteRec(CFile->NRecs, CRecPtr);
+			CFile->WriteRec(CFile->FF->NRecs, CRecPtr);
 		}
 		else {
 			md = NewLMode(CFile, RdMode);
@@ -1908,8 +1908,8 @@ void AssertFand(TPredicate* P, TCommand* C)
 	{
 		TestXFExist();
 		IncNRecs(1);
-		if (CFile->file_type == FileType::INDEX) RecallRec(CFile->NRecs);
-		else CFile->WriteRec(CFile->NRecs, CRecPtr);
+		if (CFile->FF->file_type == FileType::INDEX) RecallRec(CFile->FF->NRecs);
+		else CFile->WriteRec(CFile->FF->NRecs, CRecPtr);
 	}
 	OldLMode(CFile, md);
 	ReleaseStore(CRecPtr);
@@ -1938,7 +1938,7 @@ TFileScan* GetScan(TScanInf* SIOfs, TCommand* C, TInstance* Q)
 	if (C->KDOfs != nullptr) k = C->KDOfs;
 	if (k == nullptr) {
 		fs->IRec = 1;
-		fs->Count = CFile->NRecs;
+		fs->Count = CFile->FF->NRecs;
 		goto label1;
 	}
 	TestXFExist();
@@ -2037,14 +2037,14 @@ label1:
 	if (k == nullptr) {
 		do {
 			RecNr = fs->IRec;
-			if (RecNr > CFile->NRecs) {
+			if (RecNr > CFile->FF->NRecs) {
 				CurrInst->NextBranch = nullptr;
 				goto label2;
 			}
 			CFile->ReadRec(RecNr, CRecPtr);
 			(fs->IRec)++;
 		} while (DeletedFlag());
-		if (fs->IRec > CFile->NRecs) CurrInst->NextBranch = nullptr;
+		if (fs->IRec > CFile->FF->NRecs) CurrInst->NextBranch = nullptr;
 	}
 	else {
 		if ((fs->Count == 0) || (fs->IRec > k->NRecs())) {
@@ -2147,7 +2147,7 @@ label1:
 		while ((Q != nullptr)) {
 			fs1 = (TFileScan*)Q->NextBranch;
 			if ((Q->Pred == p) && (fs1 != nullptr)) {
-				if (CFile->file_type == FileType::INDEX) {
+				if (CFile->FF->file_type == FileType::INDEX) {
 					c = Q->RetCmd;
 					k = c->KDOfs;
 					if (k != 0) {
@@ -2162,7 +2162,7 @@ label1:
 			}
 			Q = Q->PrevInst;
 		}
-		if (CFile->file_type == FileType::INDEX) {
+		if (CFile->FF->file_type == FileType::INDEX) {
 			DeleteXRec(RecNr, true);
 			fs->IRec--;
 		}
@@ -2179,12 +2179,12 @@ label2:
 
 void SaveLMode()
 {
-	CFile->ExLMode = CFile->LMode;
+	CFile->FF->ExLMode = CFile->FF->LMode;
 }
 
 void SetOldLMode()
 {
-	OldLMode(CFile, CFile->ExLMode);
+	OldLMode(CFile, CFile->FF->ExLMode);
 }
 
 void TraceCall(TInstance* Q, BYTE X)

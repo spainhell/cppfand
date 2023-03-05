@@ -38,7 +38,7 @@ void Help(RdbD* R, pstring Name, bool InCWw)
 
 	if (R == (RdbD*)HelpFD) {
 		fd = HelpFD;
-		if (HelpFD->Handle == nullptr) {
+		if (HelpFD->FF->Handle == nullptr) {
 			WrLLF10Msg(57);
 			return;
 		}

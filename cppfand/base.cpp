@@ -1032,7 +1032,7 @@ void RdWrCache(FileOperation operation, FILE* handle, bool not_cached, size_t po
 		return;
 	}
 
-	if (operation == WRITE && (CFile != nullptr) && (CFile->UMode == RdOnly)) {
+	if (operation == WRITE && (CFile != nullptr) && (CFile->FF->UMode == RdOnly)) {
 		// snazime se zapsat do RdOnly souboru
 		// zapisem pouze do cache
 		// TODO: nutno doresit, co s tim dal ...

@@ -63,9 +63,9 @@ integer CompArea(void* A, void* B, integer L)
 
 void ResetCFileUpdH()
 {
-	ResetUpdHandle(CFile->Handle);
-	if (CFile->file_type == FileType::INDEX) ResetUpdHandle(CFile->XF->Handle);
-	if (CFile->TF != nullptr) ResetUpdHandle(CFile->TF->Handle);
+	ResetUpdHandle(CFile->FF->Handle);
+	if (CFile->FF->file_type == FileType::INDEX) ResetUpdHandle(CFile->FF->XF->Handle);
+	if (CFile->FF->TF != nullptr) ResetUpdHandle(CFile->FF->TF->Handle);
 }
 
 void ClearCacheCFile()
@@ -148,20 +148,20 @@ bool ChangeLMode(FileD* fileD, LockMode Mode, WORD Kind, bool RdPref)
 {
 	longint oldpos; WORD oldlen, d;
 	bool result = false;
-	if (!fileD->IsShared()) {         /*neu!!*/
+	if (!fileD->FF->IsShared()) {         /*neu!!*/
 		result = true;
-		fileD->LMode = Mode;
+		fileD->FF->LMode = Mode;
 		return result;
 	}
 	result = false;
-	LockMode oldmode = fileD->LMode;
-	FILE* h = fileD->Handle;
+	LockMode oldmode = fileD->FF->LMode;
+	FILE* h = fileD->FF->Handle;
 	if (oldmode >= WrMode) {
 		if (Mode < WrMode) {
 			WrPrefixes();
 		}
 		if (oldmode == ExclMode) {
-			SaveCache(0, fileD->Handle);
+			SaveCache(0, fileD->FF->Handle);
 			ClearCacheCFile();
 		}
 		if (Mode < WrMode) ResetCFileUpdH();
@@ -216,7 +216,7 @@ label1:
 	if (w != 0) {
 		PopW(w);
 	}
-	fileD->LMode = Mode;
+	fileD->FF->LMode = Mode;
 	if ((oldmode < RdMode) && (Mode >= RdMode) && RdPref) {
 		RdPrefixes();
 	}
@@ -237,8 +237,8 @@ void OldLMode(FileD* fileD, LockMode Mode)
 #ifdef FandSQL
 	if (fileD->IsSQLFile) { fileD->LMode = Mode; return; }
 #endif
-	if (fileD->Handle == nullptr) return;
-	if (Mode != fileD->LMode) ChangeLMode(fileD, Mode, 0, true);
+	if (fileD->FF->Handle == nullptr) return;
+	if (Mode != fileD->FF->LMode) ChangeLMode(fileD, Mode, 0, true);
 }
 
 void RunErrorM(LockMode Md, WORD N)
@@ -249,9 +249,9 @@ void RunErrorM(LockMode Md, WORD N)
 
 void CloseClearHCFile()
 {
-	CloseClearH(&CFile->Handle);
-	if (CFile->file_type == FileType::INDEX) CloseClearH(&CFile->XF->Handle);
-	if (CFile->TF != nullptr) CloseClearH(&CFile->TF->Handle);
+	CloseClearH(&CFile->FF->Handle);
+	if (CFile->FF->file_type == FileType::INDEX) CloseClearH(&CFile->FF->XF->Handle);
+	if (CFile->FF->TF != nullptr) CloseClearH(&CFile->FF->TF->Handle);
 }
 
 void CloseGoExit()
@@ -392,9 +392,9 @@ bool TryLMode(FileD* fileD, LockMode Mode, LockMode& OldMode, WORD Kind)
 	else
 #endif
 	{
-		if (fileD->Handle == nullptr) OpenCreateF(Shared);
-		OldMode = fileD->LMode;
-		if (Mode > fileD->LMode) result = ChangeLMode(fileD, Mode, Kind, true);
+		if (fileD->FF->Handle == nullptr) OpenCreateF(Shared);
+		OldMode = fileD->FF->LMode;
+		if (Mode > fileD->FF->LMode) result = ChangeLMode(fileD, Mode, Kind, true);
 	}
 	return result;
 }
@@ -416,9 +416,9 @@ bool TryLockN(longint N, WORD Kind)
 #endif
 #ifdef FandNetV
 
-	if (!CFile->IsShared()) return result; w = 0;
+	if (!CFile->FF->IsShared()) return result; w = 0;
 label1:
-	if (!TryLockH(CFile->Handle, RecLock + N, 1)) {
+	if (!TryLockH(CFile->FF->Handle, RecLock + N, 1)) {
 		if (Kind != 2) {   /*0 Kind-wait, 1-wait until ESC, 2-no wait*/
 			m = 826;
 			if (N == 0) { SetCPathVol(); SetMsgPar(CPath, XTxt); m = 825; }
@@ -442,8 +442,8 @@ void UnLockN(longint N)
 	if (CFile->IsSQLFile) return;
 #endif
 #ifdef FandNetV
-	if ((CFile->Handle == nullptr) || !CFile->IsShared()) return;
-	UnLockH(CFile->Handle, RecLock + N, 1);
+	if ((CFile->FF->Handle == nullptr) || !CFile->FF->IsShared()) return;
+	UnLockH(CFile->FF->Handle, RecLock + N, 1);
 #endif
 }
 
@@ -468,7 +468,7 @@ std::string CExtToT(const std::string dir, const std::string name, std::string e
 {
 	if (EquUpCase(ext, ".RDB")) ext = ".TTT";
 	else if (EquUpCase(ext, ".DBF")) {
-		if (CFile->TF->Format == TFile::FptFormat) {
+		if (CFile->FF->TF->Format == FandTFile::FptFormat) {
 			ext = ".FPT";
 		}
 		else {
@@ -487,7 +487,7 @@ void NegateESDI()
 void RecallRec(longint RecNr)
 {
 	TestXFExist();
-	CFile->XF->NRecs++;
+	CFile->FF->XF->NRecs++;
 	for (auto& K : CFile->Keys) {
 		K->Insert(RecNr, false);
 	}
@@ -507,7 +507,7 @@ bool IsNullValue(void* p, WORD l)
 // v CRecPtr vycte pozici zaznamu v .T00 souboru (ukazatel na zacatek textu)
 longint _T(FieldDescr* F)
 {
-	return _T(F, (unsigned char*)CRecPtr, CFile->file_type);
+	return _T(F, (unsigned char*)CRecPtr, CFile->FF->file_type);
 }
 
 longint _T(FieldDescr* F, unsigned char* data, FileType file_type)
@@ -537,7 +537,7 @@ void T_(FieldDescr* F, longint Pos)
 	char* source = (char*)p + F->Displ;
 	longint* LP = (longint*)source;
 	if ((F->field_type == FieldType::TEXT) && ((F->Flg & f_Stored) != 0)) {
-		if (CFile->file_type == FileType::DBF) {
+		if (CFile->FF->file_type == FileType::DBF) {
 			if (Pos == 0) {
 				FillChar(source, 10, ' ');
 			}
@@ -563,7 +563,7 @@ void DelTFld(FieldDescr* F)
 	}
 	else {
 		LockMode md = NewLMode(CFile, WrMode);
-		CFile->TF->Delete(n);
+		CFile->FF->TF->Delete(n);
 		OldLMode(CFile, md);
 	}
 	T_(F, 0);
@@ -594,35 +594,35 @@ void IncNRecs(longint N)
 #ifdef FandDemo
 	if (NRecs > 100) RunError(884);
 #endif
-	CFile->NRecs += N;
-	SetUpdHandle(CFile->Handle);
-	if (CFile->file_type == FileType::INDEX) SetUpdHandle(CFile->XF->Handle);
+	CFile->FF->NRecs += N;
+	SetUpdHandle(CFile->FF->Handle);
+	if (CFile->FF->file_type == FileType::INDEX) SetUpdHandle(CFile->FF->XF->Handle);
 }
 
 void DecNRecs(longint N)
 {
 	/* !!! with CFile^ do!!! */
-	CFile->NRecs -= N;
-	SetUpdHandle(CFile->Handle);
-	if (CFile->file_type == FileType::INDEX) SetUpdHandle(CFile->XF->Handle);
-	CFile->WasWrRec = true;
+	CFile->FF->NRecs -= N;
+	SetUpdHandle(CFile->FF->Handle);
+	if (CFile->FF->file_type == FileType::INDEX) SetUpdHandle(CFile->FF->XF->Handle);
+	CFile->FF->WasWrRec = true;
 }
 
 void SeekRec(FileD* fileD, longint N)
 {
 	fileD->IRec = N;
-	if (fileD->XF == nullptr) fileD->Eof = N >= fileD->NRecs;
-	else fileD->Eof = N >= fileD->XF->NRecs;
+	if (fileD->FF->XF == nullptr) fileD->FF->Eof = N >= fileD->FF->NRecs;
+	else fileD->FF->Eof = N >= fileD->FF->XF->NRecs;
 }
 
 void PutRec(FileD* dataFile, void* recordData)
 {
 	/* !!! with CFile^ do!!! */
-	dataFile->NRecs++;
-	RdWrCache(WRITE, dataFile->Handle, dataFile->NotCached(),
-		longint(dataFile->IRec) * dataFile->RecLen + dataFile->FrstDispl, dataFile->RecLen, recordData);
+	dataFile->FF->NRecs++;
+	RdWrCache(WRITE, dataFile->FF->Handle, dataFile->FF->NotCached(),
+		longint(dataFile->IRec) * dataFile->FF->RecLen + dataFile->FF->FrstDispl, dataFile->FF->RecLen, recordData);
 	dataFile->IRec++;
-	dataFile->Eof = true;
+	dataFile->FF->Eof = true;
 }
 
 void CreateRec(longint N)
@@ -630,7 +630,7 @@ void CreateRec(longint N)
 	IncNRecs(1);
 	void* cr = CRecPtr;
 	CRecPtr = GetRecSpace();
-	for (longint i = CFile->NRecs - 1; i >= N; i--) {
+	for (longint i = CFile->FF->NRecs - 1; i >= N; i--) {
 		CFile->ReadRec(i, CRecPtr);
 		CFile->WriteRec(i + 1, CRecPtr);
 	}
@@ -642,7 +642,7 @@ void CreateRec(longint N)
 void DeleteRec(longint N)
 {
 	DelAllDifTFlds(CRecPtr, nullptr);
-	for (longint i = N; i <= CFile->NRecs - 1; i++) {
+	for (longint i = N; i <= CFile->FF->NRecs - 1; i++) {
 		CFile->ReadRec(i + 1, CRecPtr);
 		CFile->WriteRec(i, CRecPtr);
 	}
@@ -651,7 +651,7 @@ void DeleteRec(longint N)
 
 void ZeroAllFlds()
 {
-	FillChar(CRecPtr, CFile->RecLen, 0);
+	FillChar(CRecPtr, CFile->FF->RecLen, 0);
 	for (auto& F : CFile->FldD) {
 		if (((F->Flg & f_Stored) != 0) && (F->field_type == FieldType::ALFANUM)) S_(F, "");
 	}
@@ -671,7 +671,7 @@ bool LinkLastRec(FileD* FD, longint& N, bool WithT)
 	else
 #endif
 	{
-		N = CFile->NRecs;
+		N = CFile->FF->NRecs;
 		if (N == 0) {
 		label1:
 			ZeroAllFlds();
@@ -688,7 +688,7 @@ bool LinkLastRec(FileD* FD, longint& N, bool WithT)
 void AsgnParFldFrml(FileD* FD, FieldDescr* F, FrmlElem* Z, bool Ad)
 {
 	//#ifdef _DEBUG
-	std::string FileName = FD->FullName;
+	std::string FileName = FD->FullPath;
 	std::string Varible = F->Name;
 	//#endif
 	void* p = nullptr; longint N = 0; LockMode md; bool b = false;
@@ -768,7 +768,7 @@ bool _B(FieldDescr* F)
 	void* p = CRecPtr;
 	unsigned char* CP = (unsigned char*)p + F->Displ;
 	if ((F->Flg & f_Stored) != 0) {
-		if (CFile->file_type == FileType::DBF) result = *CP == 'Y' || *CP == 'y' || *CP == 'T' || *CP == 't';
+		if (CFile->FF->file_type == FileType::DBF) result = *CP == 'Y' || *CP == 'y' || *CP == 'T' || *CP == 't';
 		else if ((*CP == '\0') || (*CP == 0xFF)) result = false;
 		else result = true;
 	}
@@ -782,7 +782,7 @@ void B_(FieldDescr* F, bool B)
 	void* p = CRecPtr;
 	char* pB = (char*)p + F->Displ;
 	if ((F->field_type == FieldType::BOOL) && ((F->Flg & f_Stored) != 0)) {
-		if (CFile->file_type == FileType::DBF)
+		if (CFile->FF->file_type == FileType::DBF)
 		{
 			if (B) *pB = 'T';
 			else *pB = 'F';
@@ -800,7 +800,7 @@ double _R(FieldDescr* F)
 	double r;
 
 	if ((F->Flg & f_Stored) != 0) {
-		if (CFile->file_type == FileType::DBF) result = _RforD(F, source);
+		if (CFile->FF->file_type == FileType::DBF) result = _RforD(F, source);
 		else switch (F->field_type) {
 		case FieldType::FIXED: { // FIX CISLO (M,N)
 			r = RealFromFix(source, F->NBytes);
@@ -809,7 +809,7 @@ double _R(FieldDescr* F)
 			break;
 		}
 		case FieldType::DATE: { // DATUM DD.MM.YY
-			if (CFile->file_type == FileType::FAND8) {
+			if (CFile->FF->file_type == FileType::FAND8) {
 				if (*(integer*)source == 0) result = 0.0;
 				else result = *(integer*)source + FirstDate;
 			}
@@ -847,7 +847,7 @@ void R_(FieldDescr* F, double R, void* record)
 		m = F->M;
 		switch (F->field_type) {
 		case FieldType::FIXED: {
-			if (CFile->file_type == FileType::DBF) {
+			if (CFile->FF->file_type == FileType::DBF) {
 				if ((F->Flg & f_Comma) != 0) R = R / Power10[m];
 				str(F->NBytes, s);
 				Move(&s[1], pRec, F->NBytes);
@@ -859,7 +859,7 @@ void R_(FieldDescr* F, double R, void* record)
 			break;
 		}
 		case FieldType::DATE: {
-			switch (CFile->file_type) {
+			switch (CFile->FF->file_type) {
 			case FileType::FAND8: {
 				if (trunc(R) == 0) *(long*)&pRec = 0;
 				else *(long*)pRec = trunc(R - FirstDate);
@@ -1000,7 +1000,7 @@ std::string _StdS(FieldDescr* F)
 			}
 			else {
 				md = NewLMode(CFile, RdMode);
-				LongStr* ls = CFile->TF->Read(_T(F));
+				LongStr* ls = CFile->FF->TF->Read(_T(F));
 				S = std::string(ls->A, ls->LL);
 				delete ls;
 				OldLMode(CFile, md);
@@ -1036,7 +1036,7 @@ void LongS_(FieldDescr* F, LongStr* S)
 			Pos = TWork.Store(S->A, S->LL);
 				else {
 					md = NewLMode(CFile, WrMode);
-					Pos = CFile->TF->Store(S->A, S->LL);
+					Pos = CFile->FF->TF->Store(S->A, S->LL);
 					OldLMode(CFile, md);
 				}
 			if ((F->Flg & f_Encryp) != 0) Code(S->A, S->LL);
@@ -1130,11 +1130,11 @@ bool LinkUpw(LinkD* LD, longint& N, bool WithT)
 #endif
 	const LockMode md = NewLMode(CFile, RdMode);
 	bool lu;
-	if (ToFD->file_type == FileType::INDEX) {
+	if (ToFD->FF->file_type == FileType::INDEX) {
 		TestXFExist();
 		lu = K->SearchInterval(x, false, N);
 	}
-	else if (CFile->NRecs == 0) {
+	else if (CFile->FF->NRecs == 0) {
 		lu = false;
 		N = 1;
 	}
@@ -1199,14 +1199,14 @@ void AssignNRecs(bool Add, longint N)
 	}
 #endif
 	md = NewLMode(CFile, DelMode);
-	OldNRecs = CFile->NRecs;
+	OldNRecs = CFile->FF->NRecs;
 	if (Add) N = N + OldNRecs;
 	if ((N < 0) || (N == OldNRecs)) goto label1;
-	if ((N == 0) && (CFile->TF != nullptr)) CFile->TF->SetEmpty();
-	if (CFile->file_type == FileType::INDEX)
+	if ((N == 0) && (CFile->FF->TF != nullptr)) CFile->FF->TF->SetEmpty();
+	if (CFile->FF->file_type == FileType::INDEX)
 		if (N == 0) {
-			CFile->NRecs = 0;
-			SetUpdHandle(CFile->Handle);
+			CFile->FF->NRecs = 0;
+			SetUpdHandle(CFile->FF->Handle);
 			XFNotValid();
 			goto label1;
 		}
@@ -1233,7 +1233,7 @@ label1:
 void ClearRecSpace(void* p)
 {
 	void* cr = nullptr;
-	if (CFile->TF != nullptr) {
+	if (CFile->FF->TF != nullptr) {
 		cr = CRecPtr;
 		CRecPtr = p;
 		if (HasTWorkFlag()) {
@@ -1259,13 +1259,13 @@ void DelTFlds()
 
 void CopyRecWithT(void* p1, void* p2)
 {
-	memcpy(p2, p1, CFile->RecLen);
+	memcpy(p2, p1, CFile->FF->RecLen);
 	for (auto& F : CFile->FldD) {
 		if ((F->field_type == FieldType::TEXT) && ((F->Flg & f_Stored) != 0)) {
-			TFile* tf1 = CFile->TF;
-			TFile* tf2 = tf1;
+			FandTFile* tf1 = CFile->FF->TF;
+			FandTFile* tf2 = tf1;
 			CRecPtr = p1;
-			if ((tf1->Format != TFile::T00Format)) {
+			if ((tf1->Format != FandTFile::T00Format)) {
 				LongStr* s = _LongS(F);
 				CRecPtr = p2;
 				LongS_(F, s);
@@ -1318,12 +1318,12 @@ LocVar* LocVarBlkD::FindByName(std::string Name)
 
 bool DeletedFlag()  // r771 ASM
 {
-	if (CFile->file_type == FileType::INDEX) {
+	if (CFile->FF->file_type == FileType::INDEX) {
 		if (((BYTE*)CRecPtr)[0] == 0) return false;
 		else return true;
 	}
 
-	if (CFile->file_type == FileType::DBF) {
+	if (CFile->FF->file_type == FileType::DBF) {
 		if (((BYTE*)CRecPtr)[0] != '*') return false;
 		else return true;
 	}
@@ -1334,7 +1334,7 @@ bool DeletedFlag()  // r771 ASM
 void ClearDeletedFlag()
 {
 	BYTE* ptr = (BYTE*)CRecPtr;
-	switch (CFile->file_type) {
+	switch (CFile->FF->file_type) {
 	case FileType::INDEX: { ptr[0] = 0; break; }
 	case FileType::DBF: { ptr[0] = ' '; break; }
 	}
@@ -1343,7 +1343,7 @@ void ClearDeletedFlag()
 void SetDeletedFlag()
 {
 	BYTE* ptr = (BYTE*)CRecPtr;
-	switch (CFile->file_type) {
+	switch (CFile->FF->file_type) {
 	case FileType::INDEX: { ptr[0] = 1; break; }
 	case FileType::DBF: { ptr[0] = '*'; break; }
 	}
@@ -1506,7 +1506,7 @@ WORD CompLexStrings(const std::string& S1, const std::string& S2)
 
 void* GetRecSpace()
 {
-	size_t length = CFile->RecLen + 2;
+	size_t length = CFile->FF->RecLen + 2;
 	void* result = new BYTE[length];
 	memset(result, '\0', length);
 	return result;
@@ -1519,38 +1519,38 @@ void* GetRecSpace()
 
 WORD CFileRecSize()
 {
-	return CFile->RecLen;
+	return CFile->FF->RecLen;
 }
 
 void SetTWorkFlag()
 {
 	BYTE* p = (BYTE*)CRecPtr;
-	p[CFile->RecLen] = 1;
+	p[CFile->FF->RecLen] = 1;
 }
 
 bool HasTWorkFlag()
 {
 	BYTE* p = (BYTE*)CRecPtr;
-	const bool workFlag = p[CFile->RecLen] == 1;
+	const bool workFlag = p[CFile->FF->RecLen] == 1;
 	return workFlag;
 }
 
 void SetUpdFlag()
 {
 	BYTE* p = (BYTE*)CRecPtr;
-	p[CFile->RecLen + 1] = 1;
+	p[CFile->FF->RecLen + 1] = 1;
 }
 
 void ClearUpdFlag()
 {
 	BYTE* p = (BYTE*)CRecPtr;
-	p[CFile->RecLen + 1] = 0;
+	p[CFile->FF->RecLen + 1] = 0;
 }
 
 bool HasUpdFlag()
 {
 	BYTE* p = (BYTE*)CRecPtr;
-	return p[CFile->RecLen + 1] == 1;
+	return p[CFile->FF->RecLen + 1] == 1;
 }
 
 void* LocVarAd(LocVar* LV)
@@ -1656,7 +1656,7 @@ label4:
 
 void CodingLongStr(LongStr* S)
 {
-	if (CFile->TF->LicenseNr == 0) Code(S->A, S->LL);
+	if (CFile->FF->TF->LicenseNr == 0) Code(S->A, S->LL);
 	else XDecode(S); // musí mít o 2B víc - saha si tam XDecode!!!
 }
 

@@ -64,7 +64,7 @@ void XScan::Reset(FrmlElem* ABool, bool SQLFilter)
 		else Bool = nullptr;
 	}
 	switch (Kind) {
-	case 0: NRecs = CFile->NRecs; break;
+	case 0: NRecs = CFile->FF->NRecs; break;
 	case 1:
 	case 3: {
 		if (Key != nullptr) {
@@ -117,9 +117,9 @@ void XScan::ResetSort(KeyFldD* aSK, FrmlElem* BoolZ, LockMode OldMd, bool SQLFil
 	}
 	else Reset(nullptr, false);
 	/* !!! with CFile^ do!!! */
-	if (CFile->NotCached()) {
+	if (CFile->FF->NotCached()) {
 		switch (Kind) {
-		case 0: { m = NoCrMode; if (CFile->XF != nullptr) m = NoExclMode; break; }
+		case 0: { m = NoCrMode; if (CFile->FF->XF != nullptr) m = NoExclMode; break; }
 		case 1: { m = OldMd; if (Key->InWork) m = NoExclMode; break; }
 		default: return;
 		}
@@ -370,7 +370,7 @@ label1:
 #endif
 		case 5:
 		{
-			Move(Strm, CRecPtr, CFile->RecLen + 1);
+			Move(Strm, CRecPtr, CFile->FF->RecLen + 1);
 			break;
 		}
 		}

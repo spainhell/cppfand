@@ -13,8 +13,8 @@
 
 class FileD;
 class KeyFldD;
-class TFile;
-class XFile;
+class FandTFile;
+class FandXFile;
 struct FrmlListEl;
 class FrmlElem;
 class LocVar;

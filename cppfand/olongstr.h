@@ -1,9 +1,9 @@
 #pragma once
 #include "runfrml.h"
 
-class TFile;
+class FandTFile;
 
 LongStr* GetTxt(FrmlElem* Z);
-longint CopyTFFromGetTxt(TFile* TF, FrmlElem* Z);
-longint CopyTFString(TFile* destT00File, FileD* srcFileDescr, TFile* scrT00File, longint srcT00Pos);
-void CopyTFStringToH(FILE* h, TFile* TF02, FileD* TFD02, longint& TF02Pos);
+longint CopyTFFromGetTxt(FandTFile* TF, FrmlElem* Z);
+longint CopyTFString(FandTFile* destT00File, FileD* srcFileDescr, FandTFile* scrT00File, longint srcT00Pos);
+void CopyTFStringToH(FILE* h, FandTFile* TF02, FileD* TFD02, longint& TF02Pos);

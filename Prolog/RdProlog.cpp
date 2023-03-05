@@ -1350,7 +1350,7 @@ TCommand* RdPredCommand(TCommandTyp Code, TPredicate* predicate)
 		sz += 10;
 		si = p->scanInf;
 		CFile = si->FD;
-		if (CFile->file_type == FileType::INDEX) {
+		if (CFile->FF->file_type == FileType::INDEX) {
 			k = CFile->Keys[0];
 			while (k != nullptr) {
 				kf = k->KFlds; inOut = false;

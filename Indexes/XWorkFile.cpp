@@ -1,6 +1,6 @@
 #include "XWorkFile.h"
 
-#include "../cppfand/XFile.h"
+#include "../fandio/FandXFile.h"
 #include "../cppfand/access.h"
 #include "../cppfand/GlobalVariables.h"
 #include "../cppfand/obaseww.h"
@@ -135,6 +135,6 @@ void XWorkFile::FinishIndex()
 		xKey->NR = sum;
 	}
 	else {
-		((XFile*)xwFile)->NRecs = sum;
+		((FandXFile*)xwFile)->NRecs = sum;
 	}
 }

@@ -139,7 +139,7 @@ void GetRdbRecVars(void* RecPtr, RdbRecVars* X)
 		if (X->OldTxt != 0) {
 			MarkBoth(p, p2);
 			if (RdFDSegment(0, X->OldTxt)) {
-				X->FTyp = CFile->file_type;
+				X->FTyp = CFile->FF->file_type;
 				if (CFile->IsSQLFile) X->Ext = ".SQL";
 				else {
 					switch (X->FTyp) {
@@ -235,7 +235,7 @@ bool IsDuplFileName(std::string name)
 	if (EquUpCase(name, Chpt->Name)) return result;
 	cr = CRecPtr;
 	CRecPtr = GetRecSpace();
-	for (WORD I = 1; I <= Chpt->NRecs; I++)
+	for (WORD I = 1; I <= Chpt->FF->NRecs; I++)
 		if (I != CRec()) {
 			CFile->ReadRec(I, CRecPtr);
 			if (_ShortS(ChptTyp) == 'F') {
@@ -267,7 +267,7 @@ WORD ChptWriteCRec()
 	WORD result = 0;
 	if (!IsCurrChpt()) return result;
 	if (!TestIsNewRec()) {
-		eq = CompArea((char*)((uintptr_t)CRecPtr + 2), (char*)((uintptr_t)E->OldRecPtr + 2), CFile->RecLen - 2);
+		eq = CompArea((char*)((uintptr_t)CRecPtr + 2), (char*)((uintptr_t)E->OldRecPtr + 2), CFile->FF->RecLen - 2);
 		if (eq == _equ) return result;
 	}
 	GetRdbRecVars(E->NewRecPtr, &New);
@@ -344,16 +344,16 @@ WORD FindHelpRecNr(FileD* FD, std::string& txt)
 	CFile = FD;
 	CRecPtr = GetRecSpace();
 	md = NewLMode(CFile, RdMode);
-	if (CFile->Handle == nullptr) goto label1;
+	if (CFile->FF->Handle == nullptr) goto label1;
 	NmF = CFile->FldD.front();
 	TxtF = NmF->pChain;
-	for (i = 1; i < CFile->NRecs; i++) {
+	for (i = 1; i < CFile->FF->NRecs; i++) {
 		CFile->ReadRec(i, CRecPtr);
 		auto NmFtext = _StdS(NmF);
 		std::string nm = TrailChar(NmFtext, ' ');
 		ConvToNoDiakr(&nm[0], nm.length(), fonts.VFont);
 		if (EqualsMask(txt, nm)) {
-			while ((i < CFile->NRecs) && (_T(TxtF) == 0)) {
+			while ((i < CFile->FF->NRecs) && (_T(TxtF) == 0)) {
 				i++;
 				CFile->ReadRec(i, CRecPtr);
 			}
@@ -455,13 +455,13 @@ void SetChptFldDPtr()
 {
 	if (Chpt == nullptr) /*ChptTF = nullptr;*/ throw std::exception("SetChptFldDPtr: Chpt is NULL.");
 	else {
-		ChptTF = Chpt->TF;
+		ChptTF = Chpt->FF->TF;
 		ChptTxtPos = Chpt->FldD.front();
-		ChptVerif = (FieldDescr*)ChptTxtPos->pChain;
-		ChptOldTxt = (FieldDescr*)ChptVerif->pChain;
-		ChptTyp = (FieldDescr*)ChptOldTxt->pChain;
-		ChptName = (FieldDescr*)ChptTyp->pChain;
-		ChptTxt = (FieldDescr*)ChptName->pChain;
+		ChptVerif = ChptTxtPos->pChain;
+		ChptOldTxt = ChptVerif->pChain;
+		ChptTyp = ChptOldTxt->pChain;
+		ChptName = ChptTyp->pChain;
+		ChptTxt = ChptName->pChain;
 	}
 }
 
@@ -514,7 +514,7 @@ void SetRdbDir(char Typ, std::string* Nm)
 
 void ResetRdOnly()
 {
-	if (Chpt->UMode == RdOnly) {
+	if (Chpt->FF->UMode == RdOnly) {
 		CloseFile();
 		IsInstallRun = true;
 		OpenF(Exclusive);
@@ -534,7 +534,7 @@ void CreateOpenChpt(std::string Nm, bool create, wwmix* ww)
 	Chpt = nullptr;
 	//R = (RdbD*)GetZStore(sizeof(*R));
 	RdbD* R = new RdbD();
-	TFile* oldChptTF = ChptTF;
+	FandTFile* oldChptTF = ChptTF;
 	R->ChainBack = CRdb;
 	R->OldLDRoot = LinkDRoot;
 	R->OldFCRoot = FuncDRoot;
@@ -551,10 +551,10 @@ void CreateOpenChpt(std::string Nm, bool create, wwmix* ww)
 	RdFileD(Nm1, FileType::RDB, ""); /*old CRdb for GetCatIRec*/
 	R->FD = CFile;
 	CRdb = R;
-	CFile->RecPtr = GetRecSpace();
+	CFile->FF->RecPtr = GetRecSpace();
 	SetRdbDir(Nm[0], &Nm1);
 	p = CDir + Nm1 + ".RDB";
-	CFile->Drive = TestMountVol(CPath[0]);
+	CFile->FF->Drive = TestMountVol(CPath[0]);
 	SetChptFldDPtr();
 	if (!spec.RDBcomment) ChptTxt->L = 1;
 	SetMsgPar(p);
@@ -599,7 +599,7 @@ void CloseChpt()
 	if (CRdb == nullptr) return;
 	ClearHelpStkForCRdb();
 	SaveFiles();
-	bool del = Chpt->NRecs == 0;
+	bool del = Chpt->FF->NRecs == 0;
 	std::string d = CRdb->RdbDir;
 	CloseFilesAfter(FileDRoot);
 	LinkDRoot = CRdb->OldLDRoot;
@@ -1016,11 +1016,11 @@ void DeleteF()
 	SetCPathVol();
 	MyDeleteFile(CPath);
 	CPath = CExtToX(CDir, CName, CExt);
-	if (CFile->XF != nullptr) {
+	if (CFile->FF->XF != nullptr) {
 		MyDeleteFile(CPath);
 	}
 	CPath = CExtToT(CDir, CName, CExt);
-	if (CFile->TF != nullptr) {
+	if (CFile->FF->TF != nullptr) {
 		MyDeleteFile(CPath);
 	}
 }
@@ -1042,7 +1042,7 @@ bool MergeAndReplace(FileD* fd_old, FileD* fd_new)
 		DeleteF();
 		CFile = fd_new;
 		CloseFile();
-		fd_old->file_type = fd_new->file_type;
+		fd_old->FF->file_type = fd_new->FF->file_type;
 		SetCPathVol();
 		std::string p = CPath;
 		CFile = fd_old;
@@ -1106,7 +1106,7 @@ bool MergeOldNew(bool Veriflongint, longint Pos)
 	if (!RdFDSegment(0, Pos)) goto label1;
 	ChainLast(FileDRoot, CFile);
 	FDOld = CFile; FDOld->Name = Name;
-	if ((FDNew->file_type != FDOld->file_type) || !EquStoredF(FDNew->FldD.front(), FDOld->FldD.front())
+	if ((FDNew->FF->file_type != FDOld->FF->file_type) || !EquStoredF(FDNew->FldD.front(), FDOld->FldD.front())
 #ifdef FandSQL
 		&& !FDNew->IsSQLFile && !FDOld->IsSQLFile
 #endif
@@ -1114,7 +1114,7 @@ bool MergeOldNew(bool Veriflongint, longint Pos)
 		MergeAndReplace(FDOld, FDNew);
 		result = true;
 	}
-	else if ((FDOld->file_type == FileType::INDEX) && !EquKeys(FDOld->Keys[0], FDNew->Keys[0])) {
+	else if ((FDOld->FF->file_type == FileType::INDEX) && !EquKeys(FDOld->Keys[0], FDNew->Keys[0])) {
 		SetCPathVol();
 		CPath = CExtToX(CDir, CName, CExt);
 		MyDeleteFile(CPath);
@@ -1123,9 +1123,9 @@ label1:
 	FDNew->pChain = nullptr;
 	LinkDRoot = ld;
 	FDNew->Name = Name;
-	FDNew->FullName = CPath;
+	FDNew->FullPath = CPath;
 	CFile = FDNew;
-	CRecPtr = Chpt->RecPtr;
+	CRecPtr = Chpt->FF->RecPtr;
 	return result;
 }
 
@@ -1164,9 +1164,9 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 			if (ChptTF->CompileAll || CompileFD) Switches[0] = 0;
 		}
 		lmsg = CompileMsgOn(Buf, w);
-		CRecPtr = Chpt->RecPtr;
+		CRecPtr = Chpt->FF->RecPtr;
 		Encryp = CRdb->Encrypted;
-		for (I = 1; I <= Chpt->NRecs; I++) {
+		for (I = 1; I <= Chpt->FF->NRecs; I++) {
 			CFile->ReadRec(I, CRecPtr);
 			RP.IRec = I;
 			Verif = _B(ChptVerif);
@@ -1174,7 +1174,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 			Typ = STyp[1];
 			Name = OldTrailChar(' ', _ShortS(ChptName));
 			Txt = _T(ChptTxt);
-			if (Verif && ((ChptTF->LicenseNr != 0) || Encryp || (Chpt->UMode == RdOnly))) GoCompileErr(I, 647);
+			if (Verif && ((ChptTF->LicenseNr != 0) || Encryp || (Chpt->FF->UMode == RdOnly))) GoCompileErr(I, 647);
 			if (Verif || ChptTF->CompileAll || FromCtrlF10 || (Typ == 'U') ||
 				(Typ == 'F' || Typ == 'D') && CompileFD ||
 				(Typ == 'P') && ChptTF->CompileProc) {
@@ -1307,7 +1307,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 #endif
 				}
 			}
-			ReleaseBoth(p1, p2); CFile = Chpt; CRecPtr = Chpt->RecPtr;
+			ReleaseBoth(p1, p2); CFile = Chpt; CRecPtr = Chpt->FF->RecPtr;
 			if (Verif) {
 				CFile->ReadRec(I, CRecPtr);
 				B_(ChptVerif, false);
@@ -1437,7 +1437,7 @@ bool EditExecRdb(std::string Nm, std::string proc_name, Instr_proc* proc_call, w
 		else if (IsCompileErr) WrErrMsg630(Nm);
 #ifndef FandRunV
 		if ((ChptTF->LicenseNr != 0) || CRdb->Encrypted
-			|| (Chpt->UMode == RdOnly)) goto label9;
+			|| (Chpt->FF->UMode == RdOnly)) goto label9;
 		ReleaseFilesAndLinksAfterChapter();
 		ReleaseStore(p);
 	}
@@ -1469,13 +1469,13 @@ bool EditExecRdb(std::string Nm, std::string proc_name, Instr_proc* proc_call, w
 	}
 	if (!OpenEditWw()) goto label8;
 	result = true;
-	Chpt->WasRdOnly = false;
-	if (!top && (Chpt->NRecs > 0))
+	Chpt->FF->WasRdOnly = false;
+	if (!top && (Chpt->FF->NRecs > 0))
 		if (CompileRdb(true, false, false)) {
 			if (FindChpt('P', proc_name, true, &RP)) GotoRecFld(RP.IRec, CFld);
 		}
 		else goto label4;
-	else if (ChptTF->IRec <= Chpt->NRecs) GotoRecFld(ChptTF->IRec, CFld);
+	else if (ChptTF->IRec <= Chpt->FF->NRecs) GotoRecFld(ChptTF->IRec, CFld);
 label1:
 	RunEdit(nullptr, Brk);
 label2:
@@ -1492,7 +1492,7 @@ label2:
 		SetUpdHandle(ChptTF->Handle);
 		if (!CompileRdb(true, false, true)) goto label3;
 		if (!PromptCodeRdb()) goto label6;
-		Chpt->WasRdOnly = true;
+		Chpt->FF->WasRdOnly = true;
 		goto label8;
 	}
 	if (Brk != 0) {
@@ -1550,7 +1550,7 @@ label9:
 void UpdateCat()
 {
 	CFile = CatFD;
-	if (CatFD->Handle == nullptr) OpenCreateF(Exclusive);
+	if (CatFD->FF->Handle == nullptr) OpenCreateF(Exclusive);
 	EditOpt* EO = new EditOpt();
 	EO->UserSelFlds = true;
 	EO->Flds = AllFldsList(CatFD, true);
@@ -1567,10 +1567,10 @@ void UpdateUTxt()
 	void* p1 = nullptr;
 	size_t LL;
 	CFile = Chpt;
-	CRecPtr = Chpt->RecPtr;
+	CRecPtr = Chpt->FF->RecPtr;
 	WORD LicNr = ChptTF->LicenseNr;
 	MarkStore(p1);
-	if (CFile->NRecs == 0) {
+	if (CFile->FF->NRecs == 0) {
 		WrLLF10Msg(9);
 		return;
 	}
@@ -1645,7 +1645,7 @@ void InstallRdb(std::string n)
 			return;
 		}
 	}
-	if (Chpt->UMode == RdOnly) {
+	if (Chpt->FF->UMode == RdOnly) {
 		UpdateCat();
 		CloseChpt();
 		return;

@@ -119,7 +119,7 @@ FrmlElem* RdFldNameFrmlM(char& FTyp)
 		Error(8);
 	}
 	TestSetSumIi();
-	result = FrmlContxt(Z, FD, FD->RecPtr);
+	result = FrmlContxt(Z, FD, FD->FF->RecPtr);
 	return result;
 }
 
@@ -153,7 +153,7 @@ label2:
 	Accept('.');
 	Z = RdFAccess(FD, LD, FTyp);
 	if (LD == nullptr) Ii = 0;
-	else Z = FrmlContxt(Z, CFile, CFile->RecPtr);
+	else Z = FrmlContxt(Z, CFile, CFile->FF->RecPtr);
 	*res = Z;
 }
 
@@ -243,7 +243,7 @@ void ReadMerge()
 		ID->OpWarn = _const;
 		KI = nullptr;
 		ID->ForwRecPtr = GetRecSpace();
-		FD->RecPtr = GetRecSpace();
+		FD->FF->RecPtr = GetRecSpace();
 		if (Lexem == '(') {
 			RdLex();
 			ID->Bool = RdKeyInBool(&KI, false, false, ID->SQLFilter);
@@ -365,8 +365,8 @@ void ImplAssign(OutpRD* outputRD, FieldDescr* outputField)
 	}
 	else {
 		FileD* inputFile = InpFD_M(Ii);
-		void* inputRecPointer = inputFile->RecPtr;
-		if ((inputFile->file_type == outputFile->file_type) && FldTypIdentity(inputField, outputField) && (inputField->field_type != FieldType::TEXT)
+		void* inputRecPointer = inputFile->FF->RecPtr;
+		if ((inputFile->FF->file_type == outputFile->FF->file_type) && FldTypIdentity(inputField, outputField) && (inputField->field_type != FieldType::TEXT)
 			&& ((inputField->Flg & f_Stored) != 0) && (outputField->Flg == inputField->Flg))
 		{
 			newAssign->Kind = _move;
@@ -389,7 +389,7 @@ void ImplAssign(OutpRD* outputRD, FieldDescr* outputField)
 			FrmlElem* Z = MakeFldFrml(inputField, FTyp);
 			Z = AdjustComma_M(Z, inputField, _divide);
 			Z = AdjustComma_M(Z, outputField, _times);
-			newAssign->Frml = FrmlContxt(Z, inputFile, inputFile->RecPtr);
+			newAssign->Frml = FrmlContxt(Z, inputFile, inputFile->FF->RecPtr);
 		}
 	}
 	//newAssign->pChain = RD_Ass;

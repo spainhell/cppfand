@@ -22,13 +22,13 @@ extern FileD* CatFD, *HelpFD;
 extern structXPath XPath[20];
 extern WORD XPathN;
 extern XWFile XWork;
-extern TFile TWork;
+extern FandTFile TWork;
 extern longint ClpBdPos;
 extern bool IsTestRun;
 extern bool IsInstallRun;
 
 extern FileD* Chpt; // absolute FileDRoot;
-extern TFile* ChptTF;
+extern FandTFile* ChptTF;
 extern FieldDescr* ChptTxtPos;
 extern FieldDescr* ChptVerif; // { updated record }
 extern FieldDescr* ChptOldTxt; // { ChptTyp = 'F' : -1 = new unchecked record, else = old declaration }

@@ -1186,9 +1186,9 @@ bool RdViewOpt(EditOpt* EO)
 	}
 	else if (IsOpt("JOURNAL")) {
 		EO->Journal = RdFileName();
-		WORD l = EO->Journal->RecLen - 13;
-		if (CFile->file_type == FileType::INDEX) l++;
-		if (CFile->RecLen != l) OldError(111);
+		WORD l = EO->Journal->FF->RecLen - 13;
+		if (CFile->FF->file_type == FileType::INDEX) l++;
+		if (CFile->FF->RecLen != l) OldError(111);
 	}
 	else if (IsOpt("SAVEAFTER")) EO->SaveAfterZ = RdRealFrml();
 	else if (IsOpt("REFRESH")) EO->RefreshDelayZ = RdRealFrml();
@@ -1401,7 +1401,7 @@ void RdProcCall(Instr** pinstr)
 		auto iPD = (Instr_checkfile*)*pinstr;
 		iPD->cfFD = RdFileName();
 		/* !!! with PD->cfFD^ do!!! */
-		if (iPD->cfFD != nullptr && (iPD->cfFD->file_type == FileType::FAND8 || iPD->cfFD->file_type == FileType::DBF)
+		if (iPD->cfFD != nullptr && (iPD->cfFD->FF->file_type == FileType::FAND8 || iPD->cfFD->FF->file_type == FileType::DBF)
 #ifdef FandSQL
 			|| PD->cfFD->typSQLFile
 #endif
@@ -1924,7 +1924,7 @@ bool RdX(FileD* FD)
 	if ((Lexem == '.') && (FD != nullptr)) {
 		RdLex();
 		AcceptKeyWord("X");
-		if (FD->file_type != FileType::INDEX) OldError(108);
+		if (FD->FF->file_type != FileType::INDEX) OldError(108);
 		result = true;
 	}
 	return result;
@@ -2041,7 +2041,7 @@ Instr* RdTurnCat()
 	pstring RN = RdCatField(Frst, CatRdbName);
 	pstring FN = RdCatField(Frst, CatFileName);
 	WORD I = Frst + 1;
-	while ((CatFD->NRecs >= I) && EquUpCase(RN, RdCatField(I, CatRdbName))
+	while ((CatFD->FF->NRecs >= I) && EquUpCase(RN, RdCatField(I, CatRdbName))
 		&& EquUpCase(FN, RdCatField(I, CatFileName))) I++;
 	if (I == Frst + 1) OldError(98);
 	PD->NCatIRecs = I - Frst;
@@ -2119,7 +2119,7 @@ Instr* RdIndexfile()
 	auto PD = new Instr_indexfile(); // GetPD(_indexfile, 5);
 	RdLex();
 	PD->IndexFD = RdFileName();
-	if (PD->IndexFD->file_type != FileType::INDEX) OldError(108);
+	if (PD->IndexFD->FF->file_type != FileType::INDEX) OldError(108);
 	if (Lexem == ',') {
 		RdLex();
 		AcceptKeyWord("COMPRESS");
@@ -2559,7 +2559,7 @@ Instr_assign* RdAssign()
 			}
 			else if (FD == nullptr) OldError(9);
 			else if (IsKeyWord("NRECS")) {
-				if (FD->file_type == FileType::RDB) { OldError(127); }
+				if (FD->FF->file_type == FileType::RDB) { OldError(127); }
 				PD = new Instr_assign(_asgnnrecs); // GetPInstr(_asgnnrecs, 9);
 				PD->FD = FD;
 				FTyp = 'R';
@@ -2589,7 +2589,7 @@ Instr_assign* RdAssign()
 		F = RdFldName(FD);
 		PD->FldD = F;
 		if ((F->Flg & f_Stored) == 0) OldError(14);
-		PD->Indexarg = (FD->file_type == FileType::INDEX) && IsKeyArg(F, FD);
+		PD->Indexarg = (FD->FF->file_type == FileType::INDEX) && IsKeyArg(F, FD);
 		RdAssignFrml(F->frml_type, PD->Add, &PD->Frml);
 	}
 	else if (FindLocVar(&LVBD, &LV)) {
@@ -2952,7 +2952,7 @@ Instr* RdBackup(char MTyp, bool IsBackup)
 	void* cr = CRecPtr;
 	CFile = CatFD;
 	CRecPtr = GetRecSpace();
-	for (longint i = 1; i <= CatFD->NRecs; i++) {
+	for (longint i = 1; i <= CatFD->FF->NRecs; i++) {
 		CFile->ReadRec(i, CRecPtr);
 		if (EquUpCase(OldTrailChar(' ', _ShortS(CatRdbName)), "ARCHIVES")
 			&& EquUpCase(OldTrailChar(' ', _ShortS(CatFileName)), LexWord)) {

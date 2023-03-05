@@ -124,7 +124,7 @@ void SetInpLongStr(LongStr* S, bool ShowErr)
 // nastavi InpArrPtr a InptArrLen - retezec pro zpracovani
 void SetInpTTPos(longint Pos, bool Decode)
 {
-	LongStr* s = CFile->TF->Read(Pos);
+	LongStr* s = CFile->FF->TF->Read(Pos);
 	if (Decode) CodingLongStr(s);
 	InpArrLen = s->LL;
 	InpArrPtr = (BYTE*)&s->A[0];
@@ -135,7 +135,7 @@ void SetInpTTPos(longint Pos, bool Decode)
 
 void SetInpTTPos(FileD* file, longint Pos, bool Decode)
 {
-	LongStr* s = file->TF->Read(Pos);
+	LongStr* s = file->FF->TF->Read(Pos);
 	if (Decode) CodingLongStr(s);
 	InpArrLen = s->LL;
 	InpArrPtr = (BYTE*)&s->A[0];
@@ -161,13 +161,13 @@ void SetInpTT(RdbPos* RP, bool FromTxt)
 	CF = CFile;
 	CR = CRecPtr;
 	CFile = RP->R->FD;
-	CRecPtr = new BYTE[RP->R->FD->RecLen];
+	CRecPtr = new BYTE[RP->R->FD->FF->RecLen];
 	CFile->ReadRec(RP->IRec, CRecPtr);
 	if (FromTxt) {
-		Pos = _T(ChptTxt, (unsigned char*)CRecPtr, CFile->file_type);
+		Pos = _T(ChptTxt, (unsigned char*)CRecPtr, CFile->FF->file_type);
 	}
 	else {
-		Pos = _T(ChptOldTxt, (unsigned char*)CRecPtr, CFile->file_type);
+		Pos = _T(ChptOldTxt, (unsigned char*)CRecPtr, CFile->FF->file_type);
 	}
 	SetInpTTPos(CFile, Pos, RP->R->Encrypted);
 	ReleaseStore(CRecPtr);
@@ -986,7 +986,7 @@ label1:
 			cf = CFile; cr = CRecPtr;
 			CFile = RdFileName();
 			if (typ == 'i') {
-				if (CFile->file_type != FileType::INDEX) OldError(108);
+				if (CFile->FF->file_type != FileType::INDEX) OldError(108);
 				kf1 = nullptr;
 				if (Lexem == '(') {
 					RdLex();
@@ -1061,7 +1061,7 @@ bool FindChpt(char Typ, const pstring& name, bool local, RdbPos* RP)
 	auto result = false;
 	while (R != nullptr) {
 		CFile = R->FD;
-		for (WORD i = 1; i <= CFile->NRecs; i++) {
+		for (WORD i = 1; i <= CFile->FF->NRecs; i++) {
 			CFile->ReadRec(i, CRecPtr);
 			std::string chapterType = _StdS(ChptTyp);
 			std::string chapterName = _StdS(ChptName);
@@ -1391,7 +1391,7 @@ XKey* RdViewKey()
 	}
 	Error(109);
 label1:
-	if (CFile->file_type != FileType::INDEX)
+	if (CFile->FF->file_type != FileType::INDEX)
 #ifdef FandSQL
 		if (CFile->typSQLFile) Error(24); else
 #endif
@@ -1501,11 +1501,11 @@ void CompileRecLen()
 {
 	WORD l = 0;
 	WORD n = 0;
-	if ((CFile->file_type == FileType::INDEX || CFile->file_type == FileType::DBF)) {
+	if ((CFile->FF->file_type == FileType::INDEX || CFile->FF->file_type == FileType::DBF)) {
 		l = 1;
 	}
 	for (auto& F : CFile->FldD) {
-		switch (CFile->file_type) {
+		switch (CFile->FF->file_type) {
 		case FileType::FAND8: if (F->field_type == FieldType::DATE) F->NBytes = 2; break;
 		case FileType::DBF: {
 			switch (F->field_type) {
@@ -1518,11 +1518,11 @@ void CompileRecLen()
 		}
 		if ((F->Flg & f_Stored) != 0) { F->Displ = l; l += F->NBytes; n++; }
 	}
-	CFile->RecLen = l;
-	switch (CFile->file_type) {
-	case FileType::FAND8: CFile->FrstDispl = 4; break;
-	case FileType::DBF: CFile->FrstDispl = (n + 1) * 32 + 1; break;
-	default:  CFile->FrstDispl = 6; break;
+	CFile->FF->RecLen = l;
+	switch (CFile->FF->file_type) {
+	case FileType::FAND8: CFile->FF->FrstDispl = 4; break;
+	case FileType::DBF: CFile->FF->FrstDispl = (n + 1) * 32 + 1; break;
+	default:  CFile->FF->FrstDispl = 6; break;
 	}
 }
 
@@ -2339,7 +2339,7 @@ FrmlElem* RdKeyInBool(KeyInD** KIRoot, bool NewMyBP, bool FromRdProc, bool& SQLF
 	}
 	if (IsKeyWord("KEY")) {
 		AcceptKeyWord("IN");
-		if ((CFile->file_type != FileType::INDEX) || (CViewKey == nullptr)) OldError(118);
+		if ((CFile->FF->file_type != FileType::INDEX) || (CViewKey == nullptr)) OldError(118);
 		if (CViewKey->KFlds == nullptr) OldError(176);
 		Accept('[');
 		l = CViewKey->IndexLen + 1;

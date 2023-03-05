@@ -198,8 +198,11 @@ label2:
 	Z = RdFAccess(FD, LD, FTyp);
 	if (LD == nullptr) Ii = 0;
 	else {
-		Z = FrmlContxt(Z, CFile, CFile->RecPtr); TestSetSumIi();
-		if ((FrmlSumEl != nullptr) && !FrstSumVar && (CBlk != nullptr)) OldError(59);
+		Z = FrmlContxt(Z, CFile, CFile->FF->RecPtr);
+		TestSetSumIi();
+		if ((FrmlSumEl != nullptr) && !FrstSumVar && (CBlk != nullptr)) {
+			OldError(59);
+		}
 	}
 	*res = Z;
 }
@@ -236,7 +239,7 @@ void FindInRec(char& FTyp, FrmlElem** res, bool wasIiPrefix)
 	else Z = FindIiandFldFrml(&FD, FTyp);
 	if (Z == nullptr) Error(8);
 	TestSetSumIi();
-	*res = FrmlContxt(Z, FD, FD->RecPtr);
+	*res = FrmlContxt(Z, FD, FD->FF->RecPtr);
 }
 
 void ChainSumElR()
@@ -362,7 +365,7 @@ label1:
 		ID->OpWarn = _const;
 		KI = nullptr;
 		ID->ForwRecPtr = GetRecSpace();
-		FD->RecPtr = GetRecSpace();
+		FD->FF->RecPtr = GetRecSpace();
 		if (Lexem == '(') {
 			RdLex();
 			if ((Ii == 1) && (Lexem == '?')) {

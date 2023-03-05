@@ -59,7 +59,7 @@ label1:
 		IDA[I]->Exist = false;
 	}
 	if (NEof == MaxIi) {
-		b = SaveCache(0, CFile->Handle);
+		b = SaveCache(0, CFile->FF->Handle);
 		RunMsgOff();
 		if (!b) GoExit();
 		CloseInpOutp();
@@ -209,7 +209,7 @@ void WriteOutp(OutpRD* RD)
 #endif
 				{
 					PutRec(CFile, CRecPtr);
-					if (OD->Append && (CFile->file_type == FileType::INDEX)) TryInsertAllIndexes(CFile->IRec);
+					if (OD->Append && (CFile->FF->file_type == FileType::INDEX)) TryInsertAllIndexes(CFile->IRec);
 				}
 			}
 }
@@ -284,8 +284,8 @@ void MoveForwToRecM(InpD* ID)
 {
 	/* !!! with ID^ do!!! */
 	CFile = ID->Scan->FD;
-	CRecPtr = CFile->RecPtr;
-	Move(ID->ForwRecPtr, CRecPtr, CFile->RecLen + 1);
+	CRecPtr = CFile->FF->RecPtr;
+	Move(ID->ForwRecPtr, CRecPtr, CFile->FF->RecLen + 1);
 	ID->Count = ID->Count + 1;
 	ChkD* C = ID->Chk;
 	if (C != nullptr) {
@@ -323,7 +323,7 @@ void MergeProcM()
 			} while (res != _gt);
 		else {
 			CFile = ID->Scan->FD;
-			CRecPtr = CFile->RecPtr;
+			CRecPtr = CFile->FF->RecPtr;
 			ZeroAllFlds();
 			SetMFlds(ID->MFld);
 		}
@@ -363,7 +363,7 @@ void JoinProc(WORD Ii, bool& EmptyGroup)
 		}
 		else {
 			CFile = ID->Scan->FD;
-			CRecPtr = CFile->RecPtr;
+			CRecPtr = CFile->FF->RecPtr;
 			EmptyGroup = true;
 			ZeroAllFlds();
 			SetMFlds(ID->MFld);

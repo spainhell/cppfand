@@ -71,7 +71,7 @@ void TbFile::Backup(bool isBackup, WORD Ir)
 	SetInpStr(numbers);
 	RdLex();
 label1:
-	for (WORD i = 1; i <= CatFD->NRecs; i++) {
+	for (WORD i = 1; i <= CatFD->FF->NRecs; i++) {
 		if (!EquUpCase(RdCatField(i, CatRdbName), "ARCHIVES")) {
 			if (RdCatField(i, CatArchiv) == ArNr) {
 				FSplit(RdCatField(i, CatPathName), d, FName, e);
@@ -97,7 +97,7 @@ label1:
 				ForAllFDs(FindFDforI);
 				CFile = x_FD;
 				if (CFile != nullptr) {
-					FILE* h = CFile->Handle;
+					FILE* h = CFile->FF->Handle;
 					if (IsBackup) BackupFD();
 					else RestoreFD();
 					/*if (h == 0xff)*/ CloseFile();

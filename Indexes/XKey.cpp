@@ -57,7 +57,7 @@ XKey::XKey(BYTE* inputStr)
 longint XKey::NRecs()
 {
 	if (InWork) return NR;
-	return CFile->XF->NRecs;
+	return CFile->FF->XF->NRecs;
 }
 
 bool XKey::Search(XString& XX, bool AfterEqu, longint& RecNr)
@@ -85,7 +85,7 @@ bool XKey::Search(std::string const X, bool AfterEqu, longint& RecNr)
 		WORD o = p->Off();
 		WORD nItems = p->NItems;
 		if (nItems == 0) {
-			RecNr = CFile->NRecs + 1;
+			RecNr = CFile->FF->NRecs + 1;
 			XPath[1].I = 1;
 			searchResult = false;
 			delete x; x = nullptr;
@@ -99,13 +99,13 @@ bool XKey::Search(std::string const X, bool AfterEqu, longint& RecNr)
 		if (p->IsLeaf) {
 			x = new XItemLeaf(&p->A[iItemIndex]);
 			if (iItem > nItems) {
-				RecNr = CFile->NRecs + 1;
+				RecNr = CFile->FF->NRecs + 1;
 			}
 			else {
 				RecNr = x->GetN();
 			}
 			if (result == _equ) {
-				if (((RecNr == 0) || (RecNr > CFile->NRecs))) {
+				if (((RecNr == 0) || (RecNr > CFile->FF->NRecs))) {
 					GetXFile()->Err(833);
 				}
 				else {
@@ -134,7 +134,7 @@ bool XKey::Search(std::string const X, bool AfterEqu, longint& RecNr)
 
 bool XKey::SearchInterval(XString& XX, bool AfterEqu, longint& RecNr)
 {
-	return Search(XX, AfterEqu, RecNr) || IntervalTest && (RecNr <= CFile->NRecs);
+	return Search(XX, AfterEqu, RecNr) || IntervalTest && (RecNr <= CFile->FF->NRecs);
 }
 
 longint XKey::PathToNr()
@@ -210,7 +210,7 @@ longint XKey::PathToRecNr()
 
 	longint recnr = pxi->GetN();
 	longint result = recnr;
-	if ((recnr == 0) || (recnr > CFile->NRecs)) {
+	if ((recnr == 0) || (recnr > CFile->FF->NRecs)) {
 		GetXFile()->Err(835);
 	}
 	//ReleaseStore(p);
@@ -605,7 +605,7 @@ bool SearchKey(XString& XX, XKey* Key, longint& NN)
 	bool bResult = false;
 	longint L = 1;
 	integer Result = _gt;
-	NN = CFile->NRecs;
+	NN = CFile->FF->NRecs;
 	longint N = NN;
 	if (N == 0) return bResult;
 	KeyFldD* KF = Key->KFlds;
@@ -646,11 +646,11 @@ bool SearchKey(XString& XX, XKey* Key, longint& NN)
 
 longint XNRecs(std::vector<XKey*>& K)
 {
-	if (CFile->file_type == FileType::INDEX && !K.empty()) {
+	if (CFile->FF->file_type == FileType::INDEX && !K.empty()) {
 		TestXFExist();
-		return CFile->XF->NRecs;
+		return CFile->FF->XF->NRecs;
 	}
-	return CFile->NRecs;
+	return CFile->FF->NRecs;
 }
 
 void TryInsertAllIndexes(longint RecNr)
@@ -663,7 +663,7 @@ void TryInsertAllIndexes(longint RecNr)
 			goto label1;
 		}
 	}
-	CFile->XF->NRecs++;
+	CFile->FF->XF->NRecs++;
 	return;
 
 label1:
@@ -676,10 +676,10 @@ label1:
 	SetDeletedFlag();
 	CFile->WriteRec(RecNr, CRecPtr);
 
-	if (CFile->XF->FirstDupl) {
+	if (CFile->FF->XF->FirstDupl) {
 		SetMsgPar(CFile->Name);
 		WrLLF10Msg(828);
-		CFile->XF->FirstDupl = false;
+		CFile->FF->XF->FirstDupl = false;
 	}
 }
 
@@ -702,7 +702,7 @@ void DeleteXRec(longint RecNr, bool DelT)
 	if (DelT) DelAllDifTFlds(CRecPtr, nullptr);
 	SetDeletedFlag();
 	CFile->WriteRec(RecNr, CRecPtr);
-	CFile->XF->NRecs--;
+	CFile->FF->XF->NRecs--;
 }
 
 void OverWrXRec(longint RecNr, void* P2, void* P)

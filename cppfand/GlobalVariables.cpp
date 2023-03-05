@@ -23,12 +23,12 @@ structXPath XPath[20];
 WORD XPathN;
 
 XWFile XWork;
-TFile TWork;
+FandTFile TWork;
 longint ClpBdPos = 0;
 bool IsTestRun = false;
 bool IsInstallRun = false;
 FileD* Chpt = FileDRoot; // absolute FileDRoot;
-TFile* ChptTF;
+FandTFile* ChptTF;
 FieldDescr* ChptTxtPos;
 FieldDescr* ChptVerif; // { updated record }
 FieldDescr* ChptOldTxt; // { ChptTyp = 'F' : -1 = new unchecked record, else = old declaration }

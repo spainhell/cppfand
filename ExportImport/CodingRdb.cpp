@@ -19,10 +19,10 @@ void CodingRdb::CodeRdb(bool Rotate)
 	CFile = Chpt;
 
 	CRecPtr = GetRecSpace();
-	RunMsgOn('C', CFile->NRecs);
+	RunMsgOn('C', CFile->FF->NRecs);
 	WORD irec = ChptTF->IRec;
 	bool compileAll = ChptTF->CompileAll;
-	for (int i = 1; i <= CFile->NRecs; i++) {
+	for (int i = 1; i <= CFile->FF->NRecs; i++) {
 		CFile->ReadRec(i, CRecPtr);
 		RunMsgN(i);
 		s = _ShortS(ChptTyp);
@@ -36,7 +36,7 @@ void CodingRdb::CodeRdb(bool Rotate)
 	}
 	if (Rotate) {
 		int i = 1;
-		while (i <= CFile->NRecs) {
+		while (i <= CFile->FF->NRecs) {
 			CFile->ReadRec(i, CRecPtr);
 			s = _ShortS(ChptTyp);
 			if (s[0] == ' ' || s[0] == 'I') DeleteRec(i);
@@ -252,7 +252,7 @@ void CodingRdb::CompressCRdb()
 {
 	void* p = nullptr;
 	MarkStore(p);
-	void* cr = Chpt->RecPtr;
+	void* cr = Chpt->FF->RecPtr;
 	std::string s = "#I1_" + Chpt->Name + "#O1_" + Chpt->Name;
 	SetInpStr(s);
 	SpecFDNameAllowed = true;
@@ -261,7 +261,7 @@ void CodingRdb::CompressCRdb()
 	RunMerge();
 	SaveFiles();
 	ReleaseStore(p);
-	Chpt->RecPtr = cr;
+	Chpt->FF->RecPtr = cr;
 	CFile = Chpt;
 	CRecPtr = E->NewRecPtr;
 	CFile->ReadRec(CRec(), CRecPtr);

@@ -162,11 +162,11 @@ void WrLevel(std::string& report, int Level)
 	}
 	WrStr(report, ";\r\n");
 	int col = 1;
-	if (CFile->file_type == FileType::RDB) WrChar(report, 0x11);
+	if (CFile->FF->file_type == FileType::RDB) WrChar(report, 0x11);
 
 	for (size_t i = 0; i < PFldDs.size(); i++) {
 		PFldD* d = &PFldDs[i];
-		if ((CFile->file_type == FileType::RDB) && (i + 1 == PFldDs.size())) {
+		if ((CFile->FF->file_type == FileType::RDB) && (i + 1 == PFldDs.size())) {
 			WrChar(report, 0x11);
 		}
 		if (d->NxtLine) {
@@ -401,12 +401,12 @@ std::string GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 void RunAutoReport(RprtOpt* RO)
 {
 	void* p = nullptr; void* p1 = nullptr;
-	p1 = RO->FDL.FD->RecPtr;
+	p1 = RO->FDL.FD->FF->RecPtr;
 	std::string txt = GenAutoRprt(RO, true);
 	SetInpStdStr(txt, false);
 	ReadReport(RO);
 	RunReport(RO);
-	RO->FDL.FD->RecPtr = p1;
+	RO->FDL.FD->FF->RecPtr = p1;
 }
 
 bool SelForAutoRprt(RprtOpt* RO)

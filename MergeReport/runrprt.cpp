@@ -926,8 +926,8 @@ void MoveForwToRec(InpD* ID)
 {
 	/* !!! with ID^ do!!! */
 	CFile = ID->Scan->FD;
-	CRecPtr = CFile->RecPtr;
-	Move(ID->ForwRecPtr, CRecPtr, CFile->RecLen + 1);
+	CRecPtr = CFile->FF->RecPtr;
+	Move(ID->ForwRecPtr, CRecPtr, CFile->FF->RecLen + 1);
 	ID->Count = ID->Count + 1;
 	ChkD* C = ID->Chk;
 	if (C != nullptr) {
@@ -954,7 +954,7 @@ void MoveFrstRecs()
 		/* !!! with IDA[i]^ do!!! */
 		if (IDA[i]->Exist) MoveForwToRec(IDA[i]);
 		else {
-			CFile = IDA[i]->Scan->FD; CRecPtr = CFile->RecPtr; ZeroAllFlds();
+			CFile = IDA[i]->Scan->FD; CRecPtr = CFile->FF->RecPtr; ZeroAllFlds();
 			PutMFlds(IDA[i]->MFld);
 		}
 	}
@@ -969,7 +969,7 @@ void MergeProc(std::string& text)
 		/* !!! with ID^ do!!! */
 		{ if (ID->Exist) {
 			CFile = ID->Scan->FD;
-			CRecPtr = CFile->RecPtr;
+			CRecPtr = CFile->FF->RecPtr;
 			LvDescr* L = ID->LstLvS;
 		label1:
 			ZeroSumFlds(L);

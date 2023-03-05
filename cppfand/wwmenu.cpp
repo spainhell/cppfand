@@ -958,7 +958,7 @@ std::string GetHlpText(RdbD* R, std::string S, bool ByName, WORD& IRec)
 		//CFile = (FileD*)R;  // TODO: toto je nesmysl
 		CFile = R->HelpFD;
 		if (CFile == HelpFD) {
-			if (CFile->Handle == nullptr) goto label5;
+			if (CFile->FF->Handle == nullptr) goto label5;
 		}
 		else {
 			// CFile = R->HelpFD;
@@ -968,16 +968,16 @@ std::string GetHlpText(RdbD* R, std::string S, bool ByName, WORD& IRec)
 	}
 label1:
 	md = NewLMode(CFile, RdMode);
-	if (CFile->Handle == nullptr) goto label5;
-	CRecPtr = new BYTE[CFile->RecLen + 2]{ '\0' };
+	if (CFile->FF->Handle == nullptr) goto label5;
+	CRecPtr = new BYTE[CFile->FF->RecLen + 2]{ '\0' };
 	NmF = CFile->FldD.front();
 	TxtF = NmF->pChain;
 	if (!ByName) {
-		i = MaxW(1, MinW(IRec, CFile->NRecs));
+		i = MaxW(1, MinW(IRec, CFile->FF->NRecs));
 		CFile->ReadRec(i, CRecPtr);
 		goto label2;
 	}
-	for (i = 1; i <= CFile->NRecs; i++) {
+	for (i = 1; i <= CFile->FF->NRecs; i++) {
 		CFile->ReadRec(i, CRecPtr);
 		Nm = OldTrailChar(' ', _ShortS(NmF));
 		if (CFile == HelpFD) fo = TVideoFont::foKamen;
@@ -987,7 +987,7 @@ label1:
 		if (EqualsMask(S, Nm)) {
 		label2:
 			result = _StdS(TxtF);
-			if (!ByName || (result.length() > 0) || (i == CFile->NRecs)) {
+			if (!ByName || (result.length() > 0) || (i == CFile->FF->NRecs)) {
 				if (CFile == HelpFD) ConvKamenToCurr((void*)result.c_str(), result.length());
 				IRec = i;
 				goto label3;

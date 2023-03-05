@@ -25,22 +25,22 @@ bool OldToNewCat(longint& FilSz)
 	BYTE a[91]; // budeme cislovat od 1, jako v Pascalu (a:array[1..90] of byte;)
 
 	auto result = false;
-	bool cached = CFile->NotCached();
-	if (CFile->file_type != FileType::CAT) return result;
-	RdWrCache(READ, CFile->Handle, cached, 0, 6, &x);
+	bool cached = CFile->FF->NotCached();
+	if (CFile->FF->file_type != FileType::CAT) return result;
+	RdWrCache(READ, CFile->FF->Handle, cached, 0, 6, &x);
 	if (x.RecLen != 106) return result;
 	x.RecLen = 107;
-	RdWrCache(WRITE, CFile->Handle, cached, 0, 6, &x);
+	RdWrCache(WRITE, CFile->FF->Handle, cached, 0, 6, &x);
 	for (longint i = x.NRecs; i >= 1; i--) {
 		off = 6 + (i - 1) * 106;
 		offNew = off + (i - 1);
-		RdWrCache(READ, CFile->Handle, cached, off + 16, 90, a);
-		RdWrCache(WRITE, CFile->Handle, cached, offNew + 17, 90, a);
+		RdWrCache(READ, CFile->FF->Handle, cached, off + 16, 90, a);
+		RdWrCache(WRITE, CFile->FF->Handle, cached, offNew + 17, 90, a);
 		a[17] = 0;
-		RdWrCache(READ, CFile->Handle, cached, off, 16, a);
-		RdWrCache(WRITE, CFile->Handle, cached, offNew, 17, a);
+		RdWrCache(READ, CFile->FF->Handle, cached, off, 16, a);
+		RdWrCache(WRITE, CFile->FF->Handle, cached, offNew, 17, a);
 	}
-	CFile->NRecs = x.NRecs;
+	CFile->FF->NRecs = x.NRecs;
 	FilSz = x.NRecs * 107 + 6;
 	result = true;
 	return result;
@@ -289,7 +289,7 @@ void ImportTxt(CopyD* CD)
 #endif
 			{
 				PutRec(CFile, CRecPtr);
-				if (CD->Append && (CFile->file_type == FileType::INDEX)) TryInsertAllIndexes(CFile->IRec);
+				if (CD->Append && (CFile->FF->file_type == FileType::INDEX)) TryInsertAllIndexes(CFile->IRec);
 			}
 		}
 		LastExitCode = 0;
@@ -409,25 +409,29 @@ void ExportFD(CopyD* CD)
 			F2 = nullptr;
 		}
 		else {
-			Cpy(CFile->Handle, CFile->UsedFileSize(), F2);
+			Cpy(CFile->FF->Handle, CFile->FF->UsedFileSize(), F2);
 		}
 
-		if (CFile->TF != nullptr) {
-			F2->RewriteT(); /* !!! with CFile->TF^ do!!! */
+		if (CFile->FF->TF != nullptr) {
+			F2->RewriteT();
 			if (n == 0) {
 				delete F2;
 				F2 = nullptr;
 			}
-			else Cpy(CFile->TF->Handle, CFile->TF->UsedFileSize(), F2);
+			else {
+				Cpy(CFile->FF->TF->Handle, CFile->FF->TF->UsedFileSize(), F2);
+			}
 		}
 
 		if (CD->WithX1) {
-			F2->RewriteX(); /* !!! with CFile->GetXFile^ do!!! */
+			F2->RewriteX();
 			if (n == 0) {
 				delete F2;
 				F2 = nullptr;
 			}
-			else Cpy(CFile->XF->Handle, CFile->XF->UsedFileSize(), F2);
+			else {
+				Cpy(CFile->FF->XF->Handle, CFile->FF->XF->UsedFileSize(), F2);
+			}
 		}
 
 		LastExitCode = 0;
@@ -672,13 +676,13 @@ void CheckFile(FileD* FD)
 	ReadH(h, 2, &Prfx.RecLen);
 	fs = FileSizeH(h);
 	CloseH(&h);
-	if ((FD->RecLen != Prfx.RecLen) || (Prfx.NRecs < 0) && (FD->file_type != FileType::INDEX) ||
-		((fs - FD->FrstDispl) / Prfx.RecLen < Prfx.NRecs) ||
-		(Prfx.NRecs > 0) && (FD->file_type == FileType::INDEX)) {
+	if ((FD->FF->RecLen != Prfx.RecLen) || (Prfx.NRecs < 0) && (FD->FF->file_type != FileType::INDEX) ||
+		((fs - FD->FF->FrstDispl) / Prfx.RecLen < Prfx.NRecs) ||
+		(Prfx.NRecs > 0) && (FD->FF->file_type == FileType::INDEX)) {
 		LastExitCode = 3;
 		return;
 	}
-	if (FD->TF == nullptr) return;
+	if (FD->FF->TF == nullptr) return;
 	FSplit(CPath, d, n, e);
 	if (EquUpCase(e, ".RDB")) e = ".TTT";
 	else e[1] = 'T';
@@ -747,7 +751,7 @@ bool PromptCodeRdb()
 			std::string s = CRdb->RdbDir;
 			AddBackSlash(s);
 			s = s + Chpt->Name;
-			CopyH(Chpt->Handle, s + ".RD0x");
+			CopyH(Chpt->FF->Handle, s + ".RD0x");
 			CopyH(ChptTF->Handle, s + ".TT0x");
 		}
 		CodingCRdb(true);
@@ -756,7 +760,7 @@ bool PromptCodeRdb()
 		cr = CRecPtr;
 		CFile = Chpt;
 		CRecPtr = GetRecSpace;
-		for (i = 1; i <= Chpt->NRecs; i++) {
+		for (i = 1; i <= Chpt->FF->NRecs; i++) {
 			CFile->ReadRec(i, CRecPtr);
 			AddLicNr(ChptOldTxt);
 			AddLicNr(ChptTxt);

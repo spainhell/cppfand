@@ -56,7 +56,7 @@ LongStr* GetTxt(FrmlElem* Z)
 	return s;
 }
 
-longint CopyTFFromGetTxt(TFile* TF, FrmlElem* Z)
+longint CopyTFFromGetTxt(FandTFile* TF, FrmlElem* Z)
 {
 	LockMode md; 
 	longint len = 0, off = 0, pos = 0, nxtpos = 0; 
@@ -135,7 +135,7 @@ label4:
 	return result;
 }
 
-longint CopyTFString(TFile* destT00File, FileD* srcFileDescr, TFile* scrT00File, longint srcT00Pos)
+longint CopyTFString(FandTFile* destT00File, FileD* srcFileDescr, FandTFile* scrT00File, longint srcT00Pos)
 {
 	//if (destT00File == scrT00File) {
 	//	throw std::exception("CopyTFString() exception: Source and destination file is same.");
@@ -232,7 +232,7 @@ label4:
 	return result;
 }
 
-void CopyTFStringToH(FILE* h, TFile* TF02, FileD* TFD02, longint& TF02Pos)
+void CopyTFStringToH(FILE* h, FandTFile* TF02, FileD* TFD02, longint& TF02Pos)
 {
 	WORD i = 0;
 	bool isLongTxt = false;

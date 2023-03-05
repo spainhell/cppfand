@@ -217,7 +217,7 @@ void AutoDesign(FieldListEl* FL)
 		D->FldD = F;
 		D->L = F->L;
 		if (D->L > maxcol) D->L = maxcol;
-		if ((E->FD->file_type == FileType::CAT) && (D->L > 44)) D->L = 44; /*catalog pathname*/
+		if ((E->FD->FF->file_type == FileType::CAT) && (D->L > 44)) D->L = 44; /*catalog pathname*/
 		FldLen = D->L;
 		if (F->field_type == FieldType::TEXT) D->L = 1;
 		L = F->Name.length();
@@ -300,7 +300,7 @@ void AutoDesign(std::vector<FieldDescr*>& FL)
 		D->FldD = F;
 		D->L = F->L;
 		if (D->L > maxcol) D->L = maxcol;
-		if ((E->FD->file_type == FileType::CAT) && (D->L > 44)) D->L = 44; /*catalog pathname*/
+		if ((E->FD->FF->file_type == FileType::CAT) && (D->L > 44)) D->L = 44; /*catalog pathname*/
 		FldLen = D->L;
 		if (F->field_type == FieldType::TEXT) D->L = 1;
 		L = F->Name.length();
@@ -597,7 +597,7 @@ void RdDepChkImpl()
 {
 	std::string s;
 	CFile = E->FD;
-	switch (CFile->file_type) {
+	switch (CFile->FF->file_type) {
 	case FileType::RDB: {
 		ReadMessage(53);
 		s = MsgLine;
@@ -831,7 +831,7 @@ std::string StandardHead()
 	else if (E->EdRecVar) s = "";
 	else {
 		s = E->FD->Name;
-		switch (E->FD->file_type) {
+		switch (E->FD->FF->file_type) {
 		case FileType::INDEX: {
 			if (!E->VK->Alias.empty()) s = s + "/" + E->VK->Alias;
 			break;

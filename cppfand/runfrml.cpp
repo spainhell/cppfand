@@ -324,8 +324,8 @@ longint RecNoFun(FrmlElem13* Z)
 	CFile = Z->FFD;
 	LockMode md = NewLMode(CFile, RdMode);
 	CRecPtr = GetRecSpace();
-	if (CFile->NRecs > 0) {
-		if (CFile->file_type == FileType::INDEX) {
+	if (CFile->FF->NRecs > 0) {
+		if (CFile->FF->file_type == FileType::INDEX) {
 			TestXFExist();
 			b = k->SearchInterval(x, false, n);
 		}
@@ -353,8 +353,8 @@ longint AbsLogRecNoFun(FrmlElem13* Z)
 	if (N <= 0) return result;
 	CFile = Z->FFD;
 	LockMode md = NewLMode(CFile, RdMode);
-	if (N > CFile->NRecs) goto label1;
-	if (CFile->file_type == FileType::INDEX) {
+	if (N > CFile->FF->NRecs) goto label1;
+	if (CFile->FF->file_type == FileType::INDEX) {
 		TestXFExist();
 		if (Z->Op == _recnolog) {
 			CRecPtr = GetRecSpace();
@@ -390,7 +390,7 @@ double LinkProc(FrmlElem15* X)
 	else {
 		N = RunInt(X->LinkRecFrml);
 		LockMode md = NewLMode(CFile, RdMode);
-		if ((N <= 0) || (N > CFile->NRecs)) {
+		if ((N <= 0) || (N > CFile->FF->NRecs)) {
 			SetMsgPar(CFile->Name, LD->RoleName);
 			RunErrorM(md, 609);
 		}
@@ -1004,10 +1004,10 @@ label1:
 			RecNo = XNRecs(CFile->Keys);
 		}
 		else {
-			RecNo = CFile->NRecs;
+			RecNo = CFile->FF->NRecs;
 		}
 		OldLMode(CFile, md);
-		result = (int)RecNo;
+		result = RecNo;
 		CFile = cf;
 		break;
 	}
@@ -1024,7 +1024,7 @@ label1:
 		auto iX = (FrmlElem9*)X;
 		//CFile = iX->FD;
 		//md = NewLMode(RdMode);
-		result = LastUpdate(iX->FD->FullName);
+		result = LastUpdate(iX->FD->FullPath);
 		//OldLMode(md);
 		//CFile = cf;
 		break;
@@ -1168,7 +1168,7 @@ longint RunInt(FrmlElem* X)
 	return trunc(rr);
 }
 
-void TestTFrml(FieldDescr* F, FrmlElem* Z, TFile** TF02, FileD** TFD02, longint& TF02Pos)
+void TestTFrml(FieldDescr* F, FrmlElem* Z, FandTFile** TF02, FileD** TFD02, longint& TF02Pos)
 {
 	FileD* cf = nullptr;
 	void* p = nullptr;
@@ -1191,7 +1191,7 @@ void TestTFrml(FieldDescr* F, FrmlElem* Z, TFile** TF02, FileD** TFD02, longint&
 		}
 		else if ((F->Flg & f_Encryp) != (f1->Flg & f_Encryp)) return;
 		*TFD02 = CFile;
-		*TF02 = CFile->TF;
+		*TF02 = CFile->FF->TF;
 		if (HasTWorkFlag()) {
 			*TF02 = &TWork;
 		}
@@ -1236,7 +1236,7 @@ void TestTFrml(FieldDescr* F, FrmlElem* Z, TFile** TF02, FileD** TFD02, longint&
 	}
 }
 
-bool CanCopyT(FieldDescr* F, FrmlElem* Z, TFile** TF02, FileD** TFD02, longint& TF02Pos)
+bool CanCopyT(FieldDescr* F, FrmlElem* Z, FandTFile** TF02, FileD** TFD02, longint& TF02Pos)
 {
 	FileD* cf = CFile;
 	void* cr = CRecPtr;
@@ -1251,16 +1251,16 @@ bool CanCopyT(FieldDescr* F, FrmlElem* Z, TFile** TF02, FileD** TFD02, longint& 
 	return result;
 }
 
-bool TryCopyT(FieldDescr* F, TFile* TF, longint& pos, FrmlElem* Z)
+bool TryCopyT(FieldDescr* F, FandTFile* TF, longint& pos, FrmlElem* Z)
 {
 	LockMode md, md2;
 
 	FileD* TFD02;
-	TFile* TF02;
+	FandTFile* TF02;
 	longint TF02Pos;
 
 	bool result = false;
-	if (TF->Format == TFile::DbtFormat || TF->Format == TFile::FptFormat) return result;
+	if (TF->Format == FandTFile::DbtFormat || TF->Format == FandTFile::FptFormat) return result;
 	if (Z->Op == _gettxt) {
 		pos = CopyTFFromGetTxt(TF, Z);
 		result = true;
@@ -1278,12 +1278,12 @@ void AssgnFrml(FieldDescr* F, FrmlElem* X, bool Delete, bool Add)
 	switch (F->frml_type) {
 	case 'S': {
 		if (F->field_type == FieldType::TEXT) {
-			TFile* tf;
+			FandTFile* tf;
 			if (HasTWorkFlag()) {
 				tf = &TWork;
 			}
 			else {
-				tf = CFile->TF;
+				tf = CFile->FF->TF;
 			}
 			if (TryCopyT(F, tf, pos, X)) {
 				if (Delete) DelTFld(F);
@@ -2339,7 +2339,7 @@ void AccRecNoProc(FrmlElem14* X, WORD Msg)
 	LockMode md = NewLMode(CFile, RdMode);
 	CRecPtr = GetRecSpace();
 	longint N = RunInt(X->PPPPP1);
-	if ((N <= 0) || (N > CFile->NRecs)) {
+	if ((N <= 0) || (N > CFile->FF->NRecs)) {
 		SetMsgPar(CFile->Name, X->RecFldD->Name);
 		RunErrorM(md, Msg);
 	}

@@ -364,7 +364,10 @@ MigrationBackup/
 /cppfand/FANDWORK.X$$
 /cppfand/FANDWORK.T$$
 /cppfand/FANDWORK.$$$
-/fandio
+/fandio/cache.h
+/fandio/cache.cpp
+/fandio/fandio.h
+/fandio/fandio.cpp
 /ReleaseDebug
 /cppfand/ReleaseDebug
 /cppfand/RCa25348

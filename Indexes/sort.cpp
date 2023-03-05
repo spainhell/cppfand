@@ -66,26 +66,26 @@ void GenerateNew000File(FileD* f, XScan* x)
 
 	const WORD header000len = 6; // 4B pocet zaznamu, 2B delka 1 zaznamu
 	// z puvodniho .000 vycteme pocet zaznamu a jejich delku
-	const size_t totalLen = x->FD->NRecs * x->FD->RecLen + header000len;
+	const size_t totalLen = x->FD->FF->NRecs * x->FD->FF->RecLen + header000len;
 	BYTE* buffer = new BYTE[totalLen]{ 0 };
 	size_t offset = header000len; // zapisujeme nejdriv data; hlavicku az nakonec
 	
 	while (!x->eof) {
 		RunMsgN(x->IRec);
-		f->NRecs++;
-		memcpy(&buffer[offset], CRecPtr, f->RecLen);
-		offset += f->RecLen;
+		f->FF->NRecs++;
+		memcpy(&buffer[offset], CRecPtr, f->FF->RecLen);
+		offset += f->FF->RecLen;
 		f->IRec++;
-		f->Eof = true;
+		f->FF->Eof = true;
 		x->GetRec();
 	}
 
 	// zapiseme hlavicku
-	memcpy(&buffer[0], &f->NRecs, 4);
-	memcpy(&buffer[4], &f->RecLen, 2);
+	memcpy(&buffer[0], &f->FF->NRecs, 4);
+	memcpy(&buffer[4], &f->FF->RecLen, 2);
 
 	// provedeme primy zapis do souboru
-	WriteH(f->Handle, totalLen, buffer);
+	WriteH(f->FF->Handle, totalLen, buffer);
 
 	delete[] buffer; buffer = nullptr;
 }
@@ -187,7 +187,7 @@ void GetIndexSort(Instr_getindex* PD)
 	else {
 		CRecPtr = GetRecSpace();
 		nr = RunInt(PD->giCond);
-		if ((nr > 0) && (nr <= CFile->NRecs)) {
+		if ((nr > 0) && (nr <= CFile->FF->NRecs)) {
 			CFile->ReadRec(nr, CRecPtr);
 			if (PD->giMode == '+') {
 				if (!DeletedFlag()) {

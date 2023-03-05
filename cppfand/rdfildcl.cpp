@@ -417,7 +417,7 @@ void RdFieldDList(bool Stored)
 			Z = RdFrml(FTyp);
 		}
 		F = RdFieldDescr(name, Stored);
-		if ((CFile->file_type == FileType::DBF) && Stored && (F->field_type == FieldType::REAL || F->field_type == FieldType::NUMERIC)) {
+		if ((CFile->FF->file_type == FileType::DBF) && Stored && (F->field_type == FieldType::REAL || F->field_type == FieldType::NUMERIC)) {
 			OldError(86);
 		}
 
@@ -425,7 +425,7 @@ void RdFieldDList(bool Stored)
 		ChainLast(CFile->FldD.front(), F);
 
 		if (Stored) {
-			if (CFile->file_type == FileType::FAND8) {
+			if (CFile->FF->file_type == FileType::FAND8) {
 				if ((F->field_type == FieldType::REAL || F->field_type == FieldType::BOOL || F->field_type == FieldType::TEXT)) OldError(35);
 				else if ((F->field_type == FieldType::FIXED) && (F->NBytes > 5)) OldError(36);
 			}
@@ -464,7 +464,7 @@ void SetLDIndexRoot(/*LinkD* L,*/ std::deque<LinkD*>& L2)
 		if (L == l2) {
 			break;
 		}
-		if (CFile->file_type == FileType::INDEX) {
+		if (CFile->FF->file_type == FileType::INDEX) {
 			for (auto& K : CFile->Keys) {
 				KeyFldD* KF = K->KFlds;
 				computed = false;
@@ -593,15 +593,13 @@ void* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 		}
 
 		CFile->IsHlpFile = false;
-		if (!( FDTyp == FileType::FAND16 
-			|| FDTyp == FileType::INDEX) 
-			|| !(CFile->file_type == FileType::FAND16 || CFile->file_type == FileType::INDEX)
+		if (!(FDTyp == FileType::FAND16
+			|| FDTyp == FileType::INDEX)
+			|| !(CFile->FF->file_type == FileType::FAND16 || CFile->FF->file_type == FileType::INDEX)
 			) {
 			OldError(106);
 		}
 
-		//K = CFile->Keys;
-		//while (K != nullptr) {
 		for (auto& K : CFile->Keys) {
 			if (!K->Alias.empty()) {
 				s = K->Alias;
@@ -610,11 +608,10 @@ void* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 				s = Prefix + "_" + s;
 				K->Alias = s;
 			}
-			//K = K->Chain;
 		}
 	}
 	else {
-		CFile = new FileD();
+		CFile = new FileD(FType::FandFile);
 	}
 
 	CFile->Name = FileName;
@@ -636,25 +633,29 @@ void* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 		if ((F->field_type != FieldType::ALFANUM) || (F2 == nullptr) || (F2->field_type != FieldType::TEXT) || (F2->pChain != nullptr)) OldError(128);
 		CFile->IsHlpFile = true;
 	}
-label2:
-	if ((Lexem == '#') && (ForwChar == 'C')) {
-		RdLex();
-		RdLex();
-		RdFieldDList(false);
-		goto label2;
+
+	while (true) {
+		if ((Lexem == '#') && (ForwChar == 'C')) {
+			RdLex();
+			RdLex();
+			RdFieldDList(false);
+			continue;
+		}
+		if ((Lexem == '#') && (ForwChar == 'K')) {
+			RdLex();
+			RdKeyD();
+			continue;
+		}
+		break;
 	}
-	if ((Lexem == '#') && (ForwChar == 'K')) {
-		RdLex();
-		RdKeyD();
-		goto label2;
-	}
+
 	if (issql && !CFile->Keys.empty()) {
-		CFile->file_type = FileType::INDEX;
+		CFile->FF->file_type = FileType::INDEX;
 	}
 	GetXFileD();
 	CompileRecLen();
 	SetLDIndexRoot(LDOld);
-	if ((CFile->file_type == FileType::INDEX) && CFile->Keys.empty()) Error(107);
+	if ((CFile->FF->file_type == FileType::INDEX) && CFile->Keys.empty()) Error(107);
 	if ((Lexem == '#') && (ForwChar == 'A')) {
 		RdLex();
 		RdKumul();
@@ -668,7 +669,8 @@ label2:
 		ChainLast(FileDRoot, CFile);
 	}
 
-	if (Ext == "$"/*compile from text at run time*/) {
+	if (Ext == "$") {
+		// compile from text at run time
 		CFile->IsDynFile = true;
 		CFile->ChptPos.R = CRdb;
 		MarkStore(p);
@@ -693,7 +695,7 @@ label2:
 	//if (PtrRec(InpRdbPos.R).Seg == 0/*compiled from pstring*/) {
 	//	CFile->LiOfs = 0; ReleaseStore(p);
 	//}
-	if (/*Lexem != ']' &&*/ Lexem != 0x1A) Error(66); // !!! pridana podminka ']' oproti originalu
+	if (Lexem != 0x1A) Error(66);
 label1:
 	return p; // ma asi vracet HeapPtr
 }
@@ -793,7 +795,7 @@ label2:
 	LinkDRoot.push_front(L);
 
 	if (Lexem == '!') {
-		if (CFile->file_type != FileType::INDEX
+		if (CFile->FF->file_type != FileType::INDEX
 #ifdef FandSQL
 			&& !CFile->typSQLFile
 #endif
@@ -807,7 +809,7 @@ label2:
 			RdLex();
 			L->MemberRef = 2;
 		}
-	}
+}
 	//Arg = &L->Args;
 	KF = K->KFlds;
 label3:
@@ -837,7 +839,7 @@ label6:
 
 void CheckDuplAlias(pstring Name)
 {
-	if (CFile->file_type != FileType::INDEX
+	if (CFile->FF->file_type != FileType::INDEX
 #ifdef FandSQL
 		&& !CFile->typSQLFile
 #endif
@@ -889,7 +891,7 @@ void RdFileOrAlias(FileD** FD, XKey** KD)
 		while (f != nullptr) {
 			k = RdFileOrAlias1(f);
 			if (k != nullptr) goto label1;
-			f = (FileD*)f->pChain;
+			f = f->pChain;
 		}
 		r = r->ChainBack;
 	}
@@ -1048,9 +1050,9 @@ void RdAssign(AddD* AD)
 /// smaze CFile->Handle, nastavi typ na FDTyp a ziska CatIRec z GetCatIRec() - musi existovat CatFD
 void SetHCatTyp(FileType FDTyp)
 {
-	CFile->Handle = nullptr;
-	CFile->file_type = FDTyp;
-	CFile->CatIRec = GetCatIRec(CFile->Name, CFile->file_type == FileType::RDB/*multilevel*/);
+	CFile->FF->Handle = nullptr;
+	CFile->FF->file_type = FDTyp;
+	CFile->CatIRec = GetCatIRec(CFile->Name, CFile->FF->file_type == FileType::RDB/*multilevel*/);
 #ifdef FandSQL
 	typSQLFile = issql;
 	SetIsSQLFile();
@@ -1059,24 +1061,24 @@ void SetHCatTyp(FileType FDTyp)
 
 void GetTFileD(FileType file_type)
 {
-	if (!HasTT && (CFile->TF == nullptr)) return;
-	if (CFile->TF == nullptr) CFile->TF = new TFile();
-	CFile->TF->Handle = nullptr;
-	if (file_type == FileType::DBF) CFile->TF->Format = TFile::DbtFormat;
+	if (!HasTT && (CFile->FF->TF == nullptr)) return;
+	if (CFile->FF->TF == nullptr) CFile->FF->TF = new FandTFile();
+	CFile->FF->TF->Handle = nullptr;
+	if (file_type == FileType::DBF) CFile->FF->TF->Format = FandTFile::DbtFormat;
 }
 
 void GetXFileD()
 {
-	if (CFile->file_type != FileType::INDEX) {
-		if (CFile->XF != nullptr) {
+	if (CFile->FF->file_type != FileType::INDEX) {
+		if (CFile->FF->XF != nullptr) {
 			OldError(104);
 		}
 	}
 	else {
-		if (CFile->XF == nullptr) {
-			CFile->XF = new XFile();
+		if (CFile->FF->XF == nullptr) {
+			CFile->FF->XF = new FandXFile();
 		}
-		CFile->XF->Handle = nullptr;
+		CFile->FF->XF->Handle = nullptr;
 	}
 }
 
