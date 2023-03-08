@@ -393,7 +393,7 @@ void IndexfileProc(FileD* FD, bool Compress)
 	CRecPtr = GetRecSpace();
 	if (Compress) {
 		FileD* FD2 = OpenDuplF(false);
-		for (longint I = 1; I < FD->FF->NRecs; I++) {
+		for (longint I = 1; I <= FD->FF->NRecs; I++) {
 			CFile = FD;
 			CFile->ReadRec(I, CRecPtr);
 			if (!DeletedFlag()) {
