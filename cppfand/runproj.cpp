@@ -562,19 +562,26 @@ void CreateOpenChpt(std::string Nm, bool create, wwmix* ww)
 		UserName = "";
 		UserCode = 0;
 		AccRight[0] = 0;
-		goto label2;
 	}
-	if (CRdb->ChainBack != nullptr)	CRdb->HelpFD = CRdb->ChainBack->HelpFD;
-label1:
-	ChDir(R->RdbDir);
-	if (IOResult() != 0)
-		if (create && (IsTestRun || !top)) {
-			MkDir(R->RdbDir);
-			if (IOResult() != 0) RunError(620);
-			goto label1;
+	else {
+		if (CRdb->ChainBack != nullptr)	CRdb->HelpFD = CRdb->ChainBack->HelpFD;
+
+		while (true) {
+			ChDir(R->RdbDir);
+			if (IOResult() != 0) {
+				if (create && (IsTestRun || !top)) {
+					MkDir(R->RdbDir);
+					if (IOResult() != 0) RunError(620);
+					continue;
+				}
+				else {
+					RunError(631);
+				}
+			}
+			break;
 		}
-		else RunError(631);
-label2:
+	}
+
 	if (IsTestRun || !create) um = Exclusive;
 	else um = RdOnly;
 	if (OpenF(um)) {
@@ -584,12 +591,15 @@ label2:
 			ResetRdOnly();
 			SetCompileAll();
 		}
-		goto label3;
 	}
-	if (!create || (top && !IsTestRun)) RunError(631);
-	OpenCreateF(Exclusive);
-	SetCompileAll();
-label3:
+	else {
+		if (!create || (top && !IsTestRun)) {
+			RunError(631);
+		}
+		OpenCreateF(CFile, Exclusive);
+		SetCompileAll();
+	}
+
 	const bool hasPasswd = ww->HasPassWord(Chpt, 1, "");
 	CRdb->Encrypted = hasPasswd ? false : true;
 }
@@ -1350,7 +1360,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 
 void GotoErrPos(WORD& Brk)
 {
-	
+
 	IsCompileErr = false;
 	std::string s = MsgLine;
 	if (InpRdbPos.R != CRdb) {
@@ -1552,7 +1562,9 @@ label9:
 void UpdateCat()
 {
 	CFile = CatFD;
-	if (CatFD->FF->Handle == nullptr) OpenCreateF(Exclusive);
+	if (CatFD->FF->Handle == nullptr) {
+		OpenCreateF(CFile, Exclusive);
+	}
 	EditOpt* EO = new EditOpt();
 	EO->UserSelFlds = true;
 	EO->Flds = AllFldsList(CatFD, true);
@@ -1586,7 +1598,7 @@ void UpdateUTxt()
 	TextAttr = screen.colors.tNorm;
 	longint OldPos = _T(ChptTxt);
 	LongStr* S = _LongS(ChptTxt);
-	
+
 	if (CRdb->Encrypted) {
 		CodingLongStr(S);
 	}
@@ -1667,18 +1679,18 @@ void InstallRdb(std::string n)
 			return;
 		}
 		case 1: {
-				UpdateCat();
-				continue;
-			}
+			UpdateCat();
+			continue;
+		}
 		case 2: {
-				UpdateUTxt();
-				break;
-			}
+			UpdateUTxt();
+			break;
+		}
 		case 3: {
-				ww.SetPassWord(Chpt, 2, ww.PassWord(true));
-				break;
-			}
-		default: ;
+			ww.SetPassWord(Chpt, 2, ww.PassWord(true));
+			break;
+		}
+		default:;
 		}
 		SetUpdHandle(ChptTF->Handle);
 	}

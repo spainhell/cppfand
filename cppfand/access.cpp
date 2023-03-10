@@ -377,7 +377,7 @@ bool TryLMode(FileD* fileD, LockMode Mode, LockMode& OldMode, WORD Kind)
 	else
 #endif
 	{
-		if (fileD->FF->Handle == nullptr) OpenCreateF(Shared);
+		if (fileD->FF->Handle == nullptr) OpenCreateF(fileD, Shared);
 		OldMode = fileD->FF->LMode;
 		if (Mode > fileD->FF->LMode) result = ChangeLMode(fileD, Mode, Kind, true);
 	}

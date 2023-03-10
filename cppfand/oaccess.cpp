@@ -363,7 +363,7 @@ void CreateF()
 	SetUpdHandle(CFile->FF->Handle);
 }
 
-bool OpenCreateF(FileUseMode UM)
+bool OpenCreateF(FileD* fileD, FileUseMode UM)
 {
 	if (!OpenF(UM)) {
 		CreateF();
@@ -375,9 +375,7 @@ bool OpenCreateF(FileUseMode UM)
 			if (CFile->FF->TF != nullptr) CloseClearH(&CFile->FF->TF->Handle);
 			OpenF(UM);
 		}
-		else {}
 	}
-	else {}
 	return true;
 }
 
@@ -487,7 +485,7 @@ void CloseFilesAfter(FileD* FD)
 
 	while (CFile != nullptr) {
 		CloseFile();
-		CFile = (FileD*)CFile->pChain;
+		CFile = CFile->pChain;
 	}
 }
 
@@ -525,7 +523,8 @@ WORD TestMountVol(char DriveC)
 {
 	WORD D = 0, i = 0;
 	std::string Vol;
-	pstring Drive(1); Drive = "A";
+	pstring Drive(1);
+	Drive = "A";
 
 	if (IsNetCVol()) return 0;
 	D = toupper(DriveC) - '@';
@@ -588,9 +587,9 @@ void ReleaseDrive(WORD D)
 		RunError(813);
 	}
 	CloseFilesOnDrive(D);
-	SetMsgPar(MountedVol[D], Drive);
+	SetMsgPar(MountedVol[D - 1], Drive);
 	WrLLF10Msg(818);
-	MountedVol[D] = "";
+	MountedVol[D - 1] = "";
 }
 
 void SetCPathForH(FILE* handle)
@@ -784,7 +783,9 @@ void GetCPathForCat(WORD I)
 			CDir = d;
 			CPath = CDir + CName + CExt; return;
 		}
-		if (CPath[0] == '\\') CPath = copy(d, 1, 2) + CPath;
+		if (CPath[0] == '\\') {
+			CPath = d.substr(0, 2) + CPath;
+		}
 		else {
 			AddBackSlash(d);
 			CPath = d + CPath;
@@ -792,7 +793,6 @@ void GetCPathForCat(WORD I)
 	}
 	else {
 		CPath = FExpand(CPath);
-		//CPath = d + CPath.substr(3, 255);
 	}
 	FSplit(CPath, CDir, CName, CExt);
 }
@@ -896,13 +896,11 @@ void SetTempCExt(char Typ, bool IsNet)
 
 FileD* OpenDuplF(bool CrTF)
 {
-	FileD* OldFD = nullptr;
 	integer Len = 0;
 	SetCPathVol();
 	bool net = IsNetCVol();
-	OldFD = CFile;
-	FileD* FD = new FileD(FType::FandFile);
-	*FD = *OldFD;
+	FileD* OldFD = CFile;
+	FileD* FD = new FileD(*OldFD);
 	CFile = FD;
 
 	SetTempCExt('0', net);
@@ -915,6 +913,9 @@ FileD* OpenDuplF(bool CrTF)
 	FD->FF->Eof = true;
 	FD->FF->UMode = Exclusive;
 	if (FD->FF->file_type == FileType::INDEX) {
+		if (FD->FF->XF != nullptr) {
+			delete FD->FF->XF;
+		}
 		FD->FF->XF = new FandXFile();
 		FD->FF->XF->Handle = nullptr;
 		FD->FF->XF->NoCreate = true;

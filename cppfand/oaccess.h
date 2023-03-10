@@ -15,7 +15,7 @@ bool OpenF1(FileUseMode UM);
 bool OpenF2();
 bool OpenF(FileUseMode UM);
 void CreateF();
-bool OpenCreateF(FileUseMode UM);
+bool OpenCreateF(FileD* fileD, FileUseMode UM);
 LockMode RewriteF(bool Append);
 void TruncF();
 void CloseFile();

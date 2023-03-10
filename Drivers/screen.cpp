@@ -225,9 +225,7 @@ void Screen::ScrWrBuf(WORD X, WORD Y, void* Buf, WORD L)
 // vypise pole CHAR_INFO
 void Screen::ScrWrCharInfoBuf(short X, short Y, CHAR_INFO* Buf, short L)
 {
-	//X++; // v Pacalu to bylo od 1
-	//Y++; // --""--
-	SMALL_RECT XY = { (short)(X - 1), (short)(Y - 1), (short)(X + L), (short)(Y + 1) };
+	SMALL_RECT XY = { (short)(X - 1), (short)(Y - 1), (short)(X + L), (short)(Y - 1) };
 	COORD BufferSize = { (short)L, 1 };
 	WriteConsoleOutputA(_handle, Buf, BufferSize, { 0, 0 }, &XY);
 }
@@ -236,7 +234,6 @@ bool Screen::ScrRdBuf(WORD X, WORD Y, CHAR_INFO* Buf, WORD L)
 {
 	SMALL_RECT rect{ (short)X, (short)Y, (short)(X + L - 1), (short)Y };
 	COORD bufSize{ (short)(L), 1 };
-	//CHAR_INFO* buf = new CHAR_INFO[bufSize.X * bufSize.Y];
 	bool result = ReadConsoleOutput(_handle, Buf, bufSize, { 0, 0 }, &rect);
 	return result;
 }
@@ -257,7 +254,7 @@ void Screen::ScrMove(short X, short Y, short ToX, short ToY, short L)
 	COORD bufSize{ (short)L, 1 };
 	CHAR_INFO* buf = new CHAR_INFO[L * 1];
 	ReadConsoleOutput(_handle, buf, bufSize, { 0, 0 }, &rectFrom);
-	WriteConsoleOutputA(_handle, buf, bufSize, { 0, 0 }, &rectTo);
+	WriteConsoleOutput(_handle, buf, bufSize, { 0, 0 }, &rectTo);
 	CrsShow();
 }
 
@@ -394,7 +391,24 @@ size_t Screen::WriteStyledStringToWindow(std::string text, BYTE Attr)
 
 void Screen::LF()
 {
-	actualWindowRow++;
+	if (WindMax->Y - WindMin->Y + 1 == actualWindowRow) {
+		// cursor is on a last row in the window -> move everything up
+		short cols = WindMax->X - WindMin->X + 1;
+		short rows = WindMax->Y - WindMin->Y + 1;
+
+		SMALL_RECT src_rect{ (short)(WindMin->X - 1), (short)(WindMin->Y), (short)(WindMax->X - 1), (short)(WindMax->Y - 1) };
+		SMALL_RECT dst_rect{ (short)(WindMin->X - 1), (short)(WindMin->Y - 1), (short)(WindMax->X - 1), (short)(WindMax->Y - 2) };
+		COORD bufSize{ cols, (short)(rows - 1) };
+		CHAR_INFO* buf = new CHAR_INFO[bufSize.X * bufSize.Y];
+		ReadConsoleOutput(_handle, buf, bufSize, { 0, 0 }, &src_rect);
+		WriteConsoleOutput(_handle, buf, bufSize, { 0, 0 }, &dst_rect);
+		char* spaces = new char[cols + 1]{ '\0' };
+		size_t len = snprintf(spaces, cols, "%*c", cols, ' ');
+		ScrWrText(1, actualWindowRow, spaces);
+	}
+	else {
+		actualWindowRow++;
+	}
 	actualWindowCol = 1;
 	GotoXY(actualWindowCol, actualWindowRow);
 }

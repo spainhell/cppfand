@@ -257,7 +257,8 @@ void WritelnProc(Instr_writeln* PD)
 				std::string str = RunStdStr(W->Frml);
 				printS += str;
 			}
-			goto label1;
+			W = W->pChain;
+			continue;
 			break;
 		}
 		case 'B': {
@@ -273,34 +274,44 @@ void WritelnProc(Instr_writeln* PD)
 		}
 		case 'D': x = StrDate(RunReal(W->Frml), *W->Mask); break;
 		}
-		if (LF == WriteType::message || LF == WriteType::msgAndHelp) t = t + x;
-		else printS += x;
-	label1:
-		W = (WrLnD*)W->pChain;
+		if (LF == WriteType::message || LF == WriteType::msgAndHelp) {
+			t = t + x;
+		}
+		else {
+			printS += x;
+		}
+
+		W = W->pChain;
 	}
 	screen.WriteStyledStringToWindow(printS, ProcAttr);
-label2:
-	switch (LF) {
-	case WriteType::writeln: {
-		//printf("\n");
-		screen.LF();
-		break;
-	}
-	case WriteType::msgAndHelp: {
-		F10SpecKey = __F1;
-		goto label3;
-		break;
-	}
-	case WriteType::message: {
-	label3:
-		SetMsgPar(t);
-		WrLLF10Msg(110);
-		if (Event.Pressed.KeyCombination() == __F1) {
-			Help(PD->mHlpRdb, RunShortStr(PD->mHlpFrml), false);
-			goto label2;
+
+	while (true) {
+		switch (LF) {
+		case WriteType::writeln: {
+			screen.LF();
+			break;
+		}
+		case WriteType::msgAndHelp: {
+			F10SpecKey = __F1;
+			SetMsgPar(t);
+			WrLLF10Msg(110);
+			if (Event.Pressed.KeyCombination() == __F1) {
+				Help(PD->mHlpRdb, RunShortStr(PD->mHlpFrml), false);
+				continue;
+			}
+			break;
+		}
+		case WriteType::message: {
+			SetMsgPar(t);
+			WrLLF10Msg(110);
+			if (Event.Pressed.KeyCombination() == __F1) {
+				Help(PD->mHlpRdb, RunShortStr(PD->mHlpFrml), false);
+				continue;
+			}
+			break;
+		}
 		}
 		break;
-	}
 	}
 }
 
@@ -827,7 +838,7 @@ label1:
 		else
 #endif
 		{
-			OpenCreateF(Shared);
+			OpenCreateF(CFile, Shared);
 			if ((LVr != nullptr) && (LVi == nullptr) && HasUpdFlag()) {
 				md1 = NewLMode(CFile, WrMode);
 				CopyRecWithT(lr, cr);
@@ -919,7 +930,7 @@ label1:
 	while (ld != nullptr) {
 		CFile = ld->FD;
 		if (CFile->FF->Handle == nullptr)
-			if (OpenF1(Shared))
+			if (OpenF1(Shared)) {
 				if (TryLMode(CFile, RdMode, md, 2)) {
 					OpenF2();
 					OldLMode(CFile, NullMode);
@@ -928,8 +939,9 @@ label1:
 					CloseClearHCFile();
 					goto label2;
 				}
+			}
 			else {
-				OpenCreateF(Shared);
+				OpenCreateF(CFile, Shared);
 			}
 		if (CFile->FF->IsShared()) {
 			if (op == _withlocked) {

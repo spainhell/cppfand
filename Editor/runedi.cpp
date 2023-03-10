@@ -918,18 +918,23 @@ label1:
 bool LockRec(bool Displ)
 {
 
-	auto result = false;
-	if (E->IsLocked) { return true; }
+	bool result;
+	if (E->IsLocked) {
+		return true;
+	}
 	bool b = ELockRec(E, AbsRecNr(CRec()), IsNewRec, Subset);
 	result = b;
-	if (b && !IsNewRec && !EdRecVar && CFile->FF->NotCached() && Displ)
+	if (b && !IsNewRec && !EdRecVar && CFile->FF->NotCached() && Displ) {
 		DisplRec(IRec);
+	}
 	return result;
 }
 
 void UnLockRec(EditD* E)
 {
-	if (E->FD->FF->IsShared() && E->IsLocked && !E->EdRecVar) UnLockN(E->LockedRec);
+	if (E->FD->FF->IsShared() && E->IsLocked && !E->EdRecVar) {
+		UnLockN(E->LockedRec);
+	}
 	E->IsLocked = false;
 }
 
@@ -959,7 +964,6 @@ void DisplRecNr(longint N)
 	if (E->RecNrLen > 0) {
 		screen.GotoXY(E->RecNrPos, 1);
 		TextAttr = screen.colors.fNorm;
-		//printf("%*i", E->RecNrLen, N);
 		screen.ScrFormatWrText(E->RecNrPos, 1, "%*i", E->RecNrLen, N);
 	}
 }
@@ -981,7 +985,9 @@ void AdjustCRec()
 			SetWasUpdated();
 			NewRecExit();
 		}
-		else SetWasUpdated();
+		else {
+			SetWasUpdated();
+		}
 		NewDisplLL = true;
 	}
 	UnLockRec(E);
@@ -1035,7 +1041,7 @@ void RdEStatus()
 	if (VK == nullptr) OnlySearch = false;
 	CFile = E->FD;
 	CRecPtr = E->NewRecPtr;
-	CFld = E->CFld; // pokud je povoleno, spusteni spadne v SetCPage()
+	CFld = E->CFld;
 	if (CFile->FF->XF != nullptr) HasIndex = true;
 	else HasIndex = false;
 	if (CFile->FF->TF != nullptr) HasTF = true;
@@ -1478,7 +1484,7 @@ bool OpenEditWw()
 	longint n = 0;
 	auto result = false;
 	CFile = E->Journal;
-	if (CFile != nullptr) OpenCreateF(Shared);
+	if (CFile != nullptr) OpenCreateF(CFile, Shared);
 	RdEStatus();
 	if (EdRecVar) {
 		if (OnlyAppend) {
@@ -1491,7 +1497,7 @@ bool OpenEditWw()
 #ifdef FandSQL
 	if (!CFile->IsSQLFile)
 #endif
-		OpenCreateF(Shared);
+		OpenCreateF(CFile, Shared);
 	E->OldMd = E->FD->FF->LMode;
 	UpdCount = 0;
 #ifdef FandSQL
