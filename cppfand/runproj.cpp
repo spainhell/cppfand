@@ -347,7 +347,7 @@ WORD FindHelpRecNr(FileD* FD, std::string& txt)
 	if (CFile->FF->Handle == nullptr) goto label1;
 	NmF = CFile->FldD.front();
 	TxtF = NmF->pChain;
-	for (i = 1; i < CFile->FF->NRecs; i++) {
+	for (i = 1; i <= CFile->FF->NRecs; i++) {
 		CFile->ReadRec(i, CRecPtr);
 		auto NmFtext = _StdS(NmF);
 		std::string nm = TrailChar(NmFtext, ' ');
@@ -623,7 +623,9 @@ void CloseChpt()
 	}
 	else {
 		ChDir(OldDir);
-		for (WORD i = 1; i < FloppyDrives; i++) ReleaseDrive(i);
+		for (WORD i = 1; i <= FloppyDrives; i++) {
+			ReleaseDrive(i);
+		}
 	}
 }
 
@@ -932,7 +934,7 @@ longint MakeDbfDcl(pstring Nm)
 	h = OpenH(CPath, _isoldfile, RdOnly);
 	TestCPathError();
 	ReadH(h, 32, &Hd); n = (Hd.HdLen - 1) / 32 - 1; t = new LongStr(2); t->LL = 0;
-	for (i = 1; i < n; i++) {
+	for (i = 1; i <= n; i++) {
 		ReadH(h, 32, &Fd);
 		s = StrPas((char*)Fd.Name.c_str());
 		switch (Fd.Typ)
@@ -1187,7 +1189,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 					screen.GotoXY(3 + lmsg, 3);
 					printf("%*s%*s", 4, STyp.c_str(), 14, _ShortS(ChptName).c_str());
 					if (!(Typ == ' ' || Typ == 'D' || Typ == 'U')) { /* dupclicate name checking */
-						for (J = 1; J < I - 1; J++) {
+						for (J = 1; J <= I - 1; J++) {
 							CFile->ReadRec(J, CRecPtr);
 							if ((STyp == _ShortS(ChptTyp)) && EquUpCase(Name, OldTrailChar(' ', _ShortS(ChptName)))) GoCompileErr(I, 649);
 						}

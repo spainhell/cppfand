@@ -45,7 +45,7 @@ void EditorScreen::EditWrline(char* input_text, size_t text_len, int Row, BYTE C
 	integer LP = i - 1;  // index of last character (before CR)
 	nv1 = ' ';
 
-	for (i = LP + 1; i < BPos + LineS; i++) {
+	for (i = LP + 1; i <= BPos + LineS; i++) {
 		// all characters after last char will be spaces (to the end of screen)
 		if (i < 0 || i > 255) throw std::exception("Index");
 		BuffLine[i] = (nv2 << 8) + nv1;
@@ -62,7 +62,7 @@ void EditorScreen::EditWrline(char* input_text, size_t text_len, int Row, BYTE C
 				E = MinI(_blocks->EndBPos, LineS + BPos + 1);
 			}
 			else { E = LineS + BPos + 1; }
-			for (i = B; i < pred(E); i++) {
+			for (i = B; i <= pred(E); i++) {
 				if (i < 0 || i > 255) throw std::exception("Index");
 				BuffLine[i] = (BuffLine[i] & 0x00FF) + (BlockColor << 8);
 			}

@@ -268,21 +268,6 @@ BYTE Fix[FixS];
 BYTE RealMask[DblS + 1];
 BYTE Dbl[DblS];
 
-void UnPack(void* PackArr, void* NumArr, WORD NoDigits)
-{
-}
-
-void Pack(void* NumArr, void* PackArr, WORD NoDigits)
-{
-	BYTE* source = (BYTE*)NumArr;
-	BYTE* target = (BYTE*)PackArr;
-	WORD i;
-	for (i = 1; i < (NoDigits >> 1); i++)
-		target[i] = ((source[(i << 1) - 1] & 0x0F) << 4) || (source[i << 1] & 0x0F);
-	if (NoDigits % 2 == 1)
-		target[(NoDigits >> 1) + 1] = (source[NoDigits] & 0x0F) << 4;
-}
-
 double RealFromFix(void* FixNo, WORD FLen)
 {
 	unsigned char ff[9]{ 0 };
@@ -1203,7 +1188,7 @@ void AssignNRecs(bool Add, longint N)
 	if (Add) N = N + OldNRecs;
 	if ((N < 0) || (N == OldNRecs)) goto label1;
 	if ((N == 0) && (CFile->FF->TF != nullptr)) CFile->FF->TF->SetEmpty();
-	if (CFile->FF->file_type == FileType::INDEX)
+	if (CFile->FF->file_type == FileType::INDEX) {
 		if (N == 0) {
 			CFile->FF->NRecs = 0;
 			SetUpdHandle(CFile->FF->Handle);
@@ -1214,6 +1199,7 @@ void AssignNRecs(bool Add, longint N)
 			SetMsgPar(CFile->Name);
 			RunErrorM(md, 821);
 		}
+	}
 	if (N < OldNRecs) {
 		DecNRecs(OldNRecs - N);
 		goto label1;
@@ -1222,7 +1208,7 @@ void AssignNRecs(bool Add, longint N)
 	ZeroAllFlds();
 	SetDeletedFlag();
 	IncNRecs(N - OldNRecs);
-	for (longint i = OldNRecs + 1; i < N; i++) {
+	for (longint i = OldNRecs + 1; i <= N; i++) {
 		CFile->WriteRec(i, CRecPtr);
 	}
 	ReleaseStore(CRecPtr);

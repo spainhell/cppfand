@@ -676,7 +676,7 @@ void TurnCat(WORD Frst, WORD N, integer I)
 	if (I > 0)
 		while (I > 0) {
 			CFile->ReadRec(Frst, CRecPtr); CRecPtr = p;
-			for (j = 1; j < N - 1; j++) {
+			for (j = 1; j <= N - 1; j++) {
 				CFile->ReadRec(Frst + j, CRecPtr);
 				CFile->WriteRec(Frst + j - 1, CRecPtr);
 			}
@@ -687,7 +687,7 @@ void TurnCat(WORD Frst, WORD N, integer I)
 	else
 		while (I < 0) {
 			CFile->ReadRec(last, CRecPtr); CRecPtr = p;
-			for (j = 1; j < N - 1; j++) {
+			for (j = 1; j <= N - 1; j++) {
 				CFile->ReadRec(last - j, CRecPtr);
 				CFile->WriteRec(last - j + 1, CRecPtr);
 			}

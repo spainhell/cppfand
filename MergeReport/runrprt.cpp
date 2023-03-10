@@ -769,7 +769,7 @@ void OpenInp()
 
 void CloseInp()
 {
-	for (WORD i = 1; i < MaxIi; i++) {
+	for (WORD i = 1; i <= MaxIi; i++) {
 		if (IDA[i]->Scan->Kind != 5) {
 			IDA[i]->Scan->Close();
 			ClearRecSpace(IDA[i]->ForwRecPtr);

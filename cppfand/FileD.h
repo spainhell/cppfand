@@ -27,6 +27,7 @@ public:
 	std::string FullPath;
 
 	FType FileType;
+	/// FandFile reference
 	FandFile* FF = nullptr;
 
 	longint IRec = 0;

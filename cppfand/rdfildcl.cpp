@@ -264,7 +264,7 @@ void RdByteList(pstring* s)
 			if (i2 < i1) OldError(133);
 		}
 		if ((i2 > 255) || (l + i2 - i1 >= 255)) OldError(133);
-		for (integer i = i1; i < i2; i++) {
+		for (integer i = i1; i <= i2; i++) {
 			l++;
 			(*s)[l] = (char)i;
 		}

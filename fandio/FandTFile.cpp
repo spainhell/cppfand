@@ -500,7 +500,7 @@ LongStr* FandTFile::Read(int Pos)
 			l = 0;
 			while (l <= 32768 - MPageSize) {
 				RdWrCache(READ, Handle, NotCached(), Pos, MPageSize, &p[offset]);
-				for (i = 1; i < MPageSize; i++) {
+				for (i = 1; i <= MPageSize; i++) {
 					if (p[offset + i] == 0x1A) {
 						s->LL = l;
 						ReleaseStore(&s->A[l + 1]);
@@ -829,7 +829,7 @@ void WrDBaseHd()
 				actual.Len = F->NBytes;
 				actual.Displ = F->Displ;
 				pstring s = F->Name;
-				for (size_t i = 1; i < s.length(); i++) {
+				for (size_t i = 1; i <= s.length(); i++) {
 					s[i] = toupper(s[i]);
 				}
 				StrLPCopy((char*)&actual.Name[1], s, 11);

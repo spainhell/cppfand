@@ -118,7 +118,7 @@ longint XPage::SumN()
 	else {
 		longint n = 0;
 		WORD o = Off();
-		for (WORD i = 1; i < NItems; i++) {
+		for (WORD i = 1; i <= NItems; i++) {
 			XItem* x = this->GetItem(i);
 			n += x->GetN();
 		}

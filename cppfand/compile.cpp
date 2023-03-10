@@ -236,7 +236,7 @@ label1:
 			if (!(ForwChar >= 'A' && ForwChar <= 'Z')) Error(158);
 			ReadChar();
 			b = false;
-			for (WORD j = 1; j < Switches.length(); j++)
+			for (WORD j = 1; j <= Switches.length(); j++)
 				if (Switches[j] == CurrChar) b = true;
 			if (i == 2) b = !b;
 			i = 1;
@@ -2022,7 +2022,9 @@ FrmlElem* RdPrim(char& FTyp)
 				TestReal(Typ);
 				Accept(',');
 				TestLex(_identifier);
-				for (I = 1; I < LexWord.length(); I++) LexWord[I] = toupper(LexWord[I]);
+				for (I = 1; I <= LexWord.length(); I++) {
+					LexWord[I] = toupper(LexWord[I]);
+				}
 				goto label2;
 			}
 			else if (IsKeyWord("STRDATE"))

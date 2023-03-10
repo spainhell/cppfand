@@ -935,23 +935,22 @@ void UnLockRec(EditD* E)
 
 void NewRecExit()
 {
-	//EdExitD* X = E->ExD;
-	//while (X != nullptr) {
 	for (auto& X : E->ExD) {
 		if (X->AtNewRec) {
 			EdBreak = 18;
 			LastTxtPos = -1;
 			StartExit(X, false);
 		}
-		//X = (EdExitD*)X->pChain;
 	}
 }
 
-void SetCPage()
+void SetCPage(WORD* c_page, ERecTxtD** rt)
 {
-	CPage = CFld->Page;
-	RT = (ERecTxtD*)E->RecTxt;
-	for (WORD i = 1; i < CPage; i++) RT = (ERecTxtD*)RT->pChain;
+	*c_page = CFld->Page;
+	*rt = E->RecTxt;
+	for (WORD i = 1; i < *c_page; i++) {
+		*rt = (*rt)->pChain;
+	}
 }
 
 
@@ -1041,7 +1040,7 @@ void RdEStatus()
 	else HasIndex = false;
 	if (CFile->FF->TF != nullptr) HasTF = true;
 	else HasTF = false;
-	SetCPage();
+	SetCPage(&CPage, &RT);
 }
 
 void DuplFld(FileD* FD1, FileD* FD2, void* RP1, void* RP2, void* RPt, FieldDescr* F1, FieldDescr* F2)
@@ -1212,7 +1211,7 @@ void DisplAllWwRecs()
 void SetNewWwRecAttr()
 {
 	CRecPtr = GetRecSpace();
-	for (WORD I = 1; I < E->NRecs; I++) {
+	for (WORD I = 1; I <= E->NRecs; I++) {
 		if (BaseRec + I - 1 > CNRecs()) break;
 		if (!IsNewRec || (I != IRec)) {
 			RdRec(BaseRec + I - 1);
@@ -1285,7 +1284,7 @@ void DisplEditWw()
 		screen.ScrColor(EV.C1 + 1, EV.R2, EV.C2 - EV.C1 + E->ShdwX - 1, screen.colors.ShadowAttr);
 	}
 	if (E->ShdwX > 0)
-		for (i = EV.R1; i < EV.R2; i++) {
+		for (i = EV.R1; i <= EV.R2; i++) {
 			screen.ScrColor(EV.C2, i, E->ShdwX, screen.colors.ShadowAttr);
 		}
 	screen.Window(EV.C1, EV.R1, EV.C2, EV.R2);
@@ -1304,10 +1303,10 @@ void DisplEditWw()
 	DisplAllWwRecs(); // doplni do formularu data nebo tecky
 }
 
-void DisplWwRecsOrPage()
+void DisplWwRecsOrPage(WORD* c_page, ERecTxtD** rt)
 {
-	if (CPage != CFld->Page) {
-		SetCPage();
+	if (*c_page != CFld->Page) {
+		SetCPage(c_page, rt);
 		TextAttr = E->Attr;
 		Wind oldMin = WindMin;
 		Wind oldMax = WindMax;
@@ -1614,8 +1613,12 @@ void GotoRecFld(longint NewRec, EFldD* NewFld)
 	IVoff();
 	CFld = NewFld;
 	if (NewRec == CRec()) {
-		if (CPage != CFld->Page) DisplWwRecsOrPage();
-		else IVon();
+		if (CPage != CFld->Page) {
+			DisplWwRecsOrPage(&CPage, &RT);
+		}
+		else {
+			IVon();
+		}
 		return;
 	}
 	if (!EdRecVar) md = NewLMode(CFile, RdMode);
@@ -1639,7 +1642,7 @@ void GotoRecFld(longint NewRec, EFldD* NewFld)
 	BaseRec = NewBase;
 	RdRec(CRec());
 	if (abs(D) >= Max) {
-		DisplWwRecsOrPage();
+		DisplWwRecsOrPage(&CPage, &RT);
 		goto label2;
 	}
 	if (D > 0) {
@@ -2047,7 +2050,7 @@ bool DeleteRecProc()
 	AdjustCRec();
 	if (IsNewRec) { DuplOwnerKey(); }
 	else { RdRec(CRec()); }
-	DisplWwRecsOrPage();
+	DisplWwRecsOrPage(&CPage, &RT);
 	UnLockWithDep(OldMd);
 	result = true;
 	return result;
@@ -2671,7 +2674,7 @@ void AppendRecord(void* RP)
 	{
 		IRec++; MoveDispl(Max - 1, Max, Max - IRec); DisplRec(IRec); IVon();
 	}
-	else if (Max == 1) { BaseRec++; DisplWwRecsOrPage(); }
+	else if (Max == 1) { BaseRec++; DisplWwRecsOrPage(&CPage, &RT); }
 	else { BaseRec += Max - 1; IRec = 2; DisplAllWwRecs(); }
 	if (RP != nullptr) Move(RP, CRecPtr, CFile->FF->RecLen); else ZeroAllFlds();
 	DuplOwnerKey(); DisplRecNr(CRec()); SetWasUpdated(); LockRec(false);
@@ -2929,7 +2932,7 @@ void CheckFromHere()
 					}
 					IRec = N - BaseRec + 1;
 					CFld = D;
-					DisplWwRecsOrPage();
+					DisplWwRecsOrPage(&CPage, &RT);
 					OldLMode(CFile, md);
 					DisplChkErr(C);
 					return;
@@ -3192,7 +3195,7 @@ label1:
 			if (WasNewRec) NewDisplLL = true;
 			if (CRec() < CNRecs())
 				if (Select) {
-					for (i = CRec() + 1; i < CNRecs(); i++) {
+					for (i = CRec() + 1; i <= CNRecs(); i++) {
 						if (KeyPressed() && (ReadKey() != _M_) && PromptYN(23)) goto label4;
 						RdRec(i);
 						DisplRecNr(i);
@@ -3285,7 +3288,7 @@ label2:
 		Max = E->NRecs;
 		longint D = BaseRec - OldBaseRec;
 		if (abs(D) > 0) {
-			DisplWwRecsOrPage();
+			DisplWwRecsOrPage(&CPage, &RT);
 			goto label3;
 		}
 		if (D > 0) {
@@ -4137,7 +4140,7 @@ void DelNewRec()
 	}
 	RdRec(CRec());
 	NewDisplLL = true;
-	DisplWwRecsOrPage();
+	DisplWwRecsOrPage(&CPage, &RT);
 }
 
 EFldD* FrstFldOnPage(WORD Page)
@@ -4475,7 +4478,7 @@ void CtrlReadKbd()
 void MouseProc()
 {
 	WORD i; longint n; EFldD* D; bool Displ;
-	for (i = 1; i < E->NRecs; i++) {
+	for (i = 1; i <= E->NRecs; i++) {
 		n = BaseRec + i - 1; if (n > CNRecs()) goto label1;
 		D = E->FirstFld; while (D != nullptr) {
 			if (IsNewRec && (i == IRec) && (D == FirstEmptyFld)) goto label1;
@@ -4578,7 +4581,7 @@ label81:
 		if (Event.What == 0)
 			if ((E->WatchDelay > 0) && (OldTimeW + E->WatchDelay < Timer))
 				if (LongBeep < 3) {
-					for (i = 1; i < 4; i++) beep();
+					for (i = 1; i <= 4; i++) beep();
 					LongBeep++;
 					goto label8;
 				}

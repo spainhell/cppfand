@@ -62,7 +62,7 @@ void PrintByte(BYTE B)
 
 void PrintByteStr(pstring S)
 {
-	for (size_t i = 1; i < S.length(); i++) {
+	for (size_t i = 1; i <= S.length(); i++) {
 		PrintByte(S[i]);
 	}
 }

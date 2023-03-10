@@ -833,7 +833,7 @@ bool RunModulo(FrmlElem1* X)
 	if (S.length() != N) { return false; }
 	M = 0;
 	*B1 = X->W21;
-	for (I = 1; I < N - 1; I++) {
+	for (I = 1; I <= N - 1; I++) {
 		M = M + *B1 * (S[I] & 0x0F);
 		*B1Offs += 2;
 	}
@@ -2227,14 +2227,14 @@ LongStr* RunSelectStr(FrmlElem0* Z)
 
 	s = RunLongStr(Z->P3);
 	n = CountDLines(s->A, s->LL, Z->Delim);
-	for (i = 1; i < n; i++) {
+	for (i = 1; i <= n; i++) {
 		//x = GetDLine(s->A, s->LL, Z->Delim, i);
 		std::string std_s = std::string(s->A, s->LL);
 		x = GetNthLine(std_s, i, 1, Z->Delim);
 		if (x != "") ww.PutSelect(x);
 	}
 	mode = RunShortStr(Z->P6);
-	for (i = 1; i < mode.length(); i++)
+	for (i = 1; i <= mode.length(); i++)
 		switch (toupper(mode[i])) {
 		case 'A': ss.Abcd = true; break;
 		case 'S': ss.Subset = true; break;

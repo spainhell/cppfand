@@ -278,7 +278,7 @@ bool SEquOrder(pstring S1, pstring S2)
 {
 	integer i;
 	if (S1.length() != S2.length()) return false;
-	for (i = 1; i < S1.length(); i++)
+	for (i = 1; i <= S1.length(); i++)
 		if (CharOrdTab[S1[i]] != CharOrdTab[S2[i]]) return false;
 	return true;
 }
@@ -1917,7 +1917,7 @@ void Format(WORD& i, longint First, longint Last, WORD Posit, bool Rep)
 		ii1 = i; RelPos = 1;
 		if (Posit > 1) {
 			Move(&T[i], A, Posit);
-			for (ii = 1; ii < Posit - 1; i++) {
+			for (ii = 1; ii <= Posit - 1; i++) {
 				if (CtrlKey.find(T[i]) == std::string::npos) RelPos++;
 				if (T[i] == _CR) A[ii] = ' ';
 				else i++;
@@ -2196,12 +2196,12 @@ bool BlockHandle(longint& fs, FILE* W1, char Oper)
 				break;
 			}
 			case 'U': {
-				for (i = I1; i < I2 - 1; i++) T[i] = UpcCharTab[T[i]];
+				for (i = I1; i <= I2 - 1; i++) T[i] = UpcCharTab[T[i]];
 				LL1 += I2 - I1;
 				break;
 			}
 			case 'L': {
-				for (i = I1; i < I2 - 1; i++) LowCase(T[i]);
+				for (i = I1; i <= I2 - 1; i++) LowCase(T[i]);
 				LL1 += I2 - I1;
 				break;
 			}
@@ -2250,14 +2250,14 @@ bool BlockHandle(longint& fs, FILE* W1, char Oper)
 			switch (Oper) {
 			case 'Y': { TestLastPos(blocks->EndBPos, blocks->BegBPos); break; }
 			case 'U': {
-				for (i = blocks->BegBPos; i < blocks->EndBPos - 1; i++) {
+				for (i = blocks->BegBPos; i <= blocks->EndBPos - 1; i++) {
 					Arr[i] = UpcCharTab[Arr[i]];
 				}
 				UpdatedL = true;
 				break;
 			}
 			case 'L': {
-				for (i = blocks->BegBPos; i < blocks->EndBPos - 1; i++) {
+				for (i = blocks->BegBPos; i <= blocks->EndBPos - 1; i++) {
 					LowCase(Arr[i]);
 				}
 				UpdatedL = true;
