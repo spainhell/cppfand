@@ -819,6 +819,7 @@ Instr* RdCase()
 					}
 					else {
 						AcceptKeyWord("END");
+						break;
 					}
 				}
 			}
