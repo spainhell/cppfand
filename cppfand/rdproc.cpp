@@ -613,20 +613,14 @@ void RdSelectStr(FrmlElem0* Z)
 	}
 }
 
-//Instr* GetPInstr(PInstrCode Kind, WORD Size)
-//{
-//	Instr* PD = new Instr();
-//	PD->Kind = Kind;
-//	return PD;
-//}
-
 void RdPInstrAndChain(Instr** PD)
 {
-
 	Instr* PD1 = RdPInstr(); /*may be a chain itself*/
 	if (*PD != nullptr) {
 		Instr* last = *PD;
-		while (last->Chain != nullptr) last = (Instr*)last->Chain;
+		while (last->Chain != nullptr) {
+			last = last->Chain;
+		}
 		last->Chain = PD1;
 	}
 	else {
@@ -639,43 +633,48 @@ void RdChoices(Instr_menu* PD)
 	ChoiceD* CD = nullptr;
 	WORD N = 0, SumL = 0;
 	AcceptKeyWord("OF");
-label1:
-	if (IsKeyWord("ESCAPE")) {
-		Accept(':');
-		PD->WasESCBranch = true;
-		PD->ESCInstr = RdPInstr();
-	}
-	else {
-		CD = new ChoiceD();
-		PD->Choices.push_back(CD);
 
-		N++;
-		if ((PD->Kind == _menubar) && (N > 30)) Error(102);
-		CD->TxtFrml = RdStrFrml();
-		if (Lexem == ',') {
-			RdLex();
-			if (Lexem != ',') {
-				CD->HelpName = RdHelpName();
-				PD->HelpRdb = CRdb;
-			}
+	while (true) {
+		if (IsKeyWord("ESCAPE")) {
+			Accept(':');
+			PD->WasESCBranch = true;
+			PD->ESCInstr = RdPInstr();
+		}
+		else {
+			CD = new ChoiceD();
+			PD->Choices.push_back(CD);
+
+			N++;
+			if ((PD->Kind == _menubar) && (N > 30)) Error(102);
+			CD->TxtFrml = RdStrFrml();
 			if (Lexem == ',') {
 				RdLex();
 				if (Lexem != ',') {
-					CD->Condition = RdBool();
-					if (Lexem == '!') {
-						CD->DisplEver = true; RdLex();
+					CD->HelpName = RdHelpName();
+					PD->HelpRdb = CRdb;
+				}
+				if (Lexem == ',') {
+					RdLex();
+					if (Lexem != ',') {
+						CD->Condition = RdBool();
+						if (Lexem == '!') {
+							CD->DisplEver = true;
+							RdLex();
+						}
 					}
 				}
 			}
+			Accept(':');
+			CD->Instr = RdPInstr();
 		}
-		Accept(':');
-		CD->Instr = RdPInstr();
+		if (Lexem == ';') {
+			RdLex();
+			if (IsKeyWord("END")) return;
+			continue;
+		}
+		break;
 	}
-	if (Lexem == ';') {
-		RdLex();
-		if (IsKeyWord("END")) return;
-		goto label1;
-	}
+
 	AcceptKeyWord("END");
 }
 
@@ -683,11 +682,13 @@ void RdMenuAttr(Instr_menu* PD)
 {
 	if (Lexem != ';') return;
 	RdLex();
-	/* !!! with PD^ do!!! */
 	PD->mAttr[0] = RdAttr(); Accept(',');
 	PD->mAttr[1] = RdAttr(); Accept(',');
 	PD->mAttr[2] = RdAttr();
-	if (Lexem == ',') { RdLex(); PD->mAttr[3] = RdAttr(); }
+	if (Lexem == ',') {
+		RdLex();
+		PD->mAttr[3] = RdAttr();
+	}
 }
 
 Instr* RdMenuBox(bool Loop)
@@ -1304,9 +1305,7 @@ void RdProcCall(Instr** pinstr)
 	label2:
 		((Instr_assign*)*pinstr)->Frml = RdRealFrml();
 	}
-#ifdef FandProlog
 	else if (IsKeyWord("LPROC")) *pinstr = RdCallLProc();
-#endif
 
 #ifdef FandGraph
 	else if (IsKeyWord("GRAPH")) *pinstr = RdGraphP();
@@ -1871,7 +1870,7 @@ Instr* RdCopyFile()
 			if ((FD1 != nullptr) && (FD1->typSQLFile) || (FD2 != nullptr)
 				&& (FD2->typSQLFile)) OldError(155);
 #endif
-}
+	}
 	while (Lexem == ',') {
 		RdLex();
 		if (IsOpt("HEAD")) {
@@ -2403,7 +2402,7 @@ Instr_recs* RdMixRecAcc(PInstrCode Op)
 		}
 #endif
 		}
-		}
+	}
 	if ((Lexem == ',') && (Op == _writerec || Op == _deleterec || Op == _recallrec)) {
 		RdLex();
 		Accept('+');
@@ -2411,7 +2410,7 @@ Instr_recs* RdMixRecAcc(PInstrCode Op)
 	}
 	CFile = cf;
 	return PD;
-	}
+}
 
 Instr* RdLinkRec()
 {
@@ -2995,10 +2994,9 @@ void RdSqlRdWrTxt(bool Rd)
 }
 #endif
 
-#ifdef FandProlog
 Instr* RdCallLProc()
 {
-	auto pd = new Instr_lproc();
+	Instr_lproc* pd = new Instr_lproc();
 	RdLex();
 	RdChptName('L', &pd->lpPos, true);
 	if (Lexem == ',') {
@@ -3006,7 +3004,6 @@ Instr* RdCallLProc()
 		TestIdentif();
 		pd->lpName = LexWord;
 		RdLex();
-}
+	}
 	return pd;
 }
-#endif

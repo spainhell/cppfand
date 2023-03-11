@@ -579,7 +579,7 @@ label3:
 void ReleaseDrive(WORD D)
 {
 	pstring Drive(1);
-	if (MountedVol[D].empty()) return;
+	if (MountedVol[D - 1].empty()) return;
 	if (D == FloppyDrives) Drive = spec.CPMdrive;
 	else Drive = char(D + '@');
 	if (ActiveRdbOnDrive(D)) {

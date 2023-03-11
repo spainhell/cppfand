@@ -9,5 +9,5 @@
 //#define FandTest 6
 //#define FandAng 7
 //#define Trial	8  // trial version
-//#define FandProlog 9
-#define Coproc
+//#define FandProlog 9  // uz nikde nepouzito
+//#define Coproc        // uz nikde nepouzito

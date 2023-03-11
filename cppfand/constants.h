@@ -11,7 +11,7 @@ typedef int longint;
 typedef short integer;
 
 const BYTE FandFace = 17;
-const BYTE FloppyDrives = 3;
+const BYTE FloppyDrives = 2;
 
 // *** VIRTUAL KEYS ***
 const WORD VK_LBUTTON = 0x01;

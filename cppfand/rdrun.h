@@ -357,11 +357,10 @@ struct TypAndFrml
 	std::string Name; // if RecPtr != nullptr
 };
 
-class Instr /*: public Chained// POZOR konflikt názvù viz níže*/
+class Instr
 {
 public:
 	Instr(PInstrCode kind);
-	//Instr* pChain = nullptr;
 	PInstrCode Kind;
 	Instr* Chain = nullptr;
 };
@@ -375,7 +374,7 @@ extern OutpFD* OutpFDRoot;
 extern OutpRD* OutpRDs;
 extern bool Join;
 extern bool PrintView;                  /* Report */
-extern TextFile Rprt;		// pùvodnì text - souvisí s text. souborem
+extern TextFile Rprt;		// puvodne text - souvisi s text. souborem
 extern BlkD* RprtHd;
 extern BlkD* PageHd;
 extern BlkD* PageFt;
@@ -396,16 +395,11 @@ extern MergOpSt MergOpGroup;
 // *** IMPLEMENTATION ***
 
 void ResetLVBD();
-//void SetMyBP(ProcStkD* Bp);
-//void PushProcStk();
-//void PopProcStk();
-bool RunAddUpdte1(char Kind/*+,-,d*/, void* CRold, bool Back/*tracking*/,
-	AddD* StopAD, LinkD* notLD);
+bool RunAddUpdte1(char Kind/*+,-,d*/, void* CRold, bool Back/*tracking*/, AddD* StopAD, LinkD* notLD);
 
 void CrIndRec();
 bool Link(AddD* AD, longint& N, char& Kind2);
 bool TransAdd(AddD* AD, FileD* FD, void* RP, void* CRnew, longint N, char Kind2, bool Back);
-//bool Add(AddD* AD, void* RP, double R);
 void WrUpdRec(AddD* AD, FileD* FD, void* RP, void* CRnew, longint N);
 bool Assign(AddD* AD);
 bool LockForAdd(FileD* FD, WORD Kind, bool Ta, LockMode& md);

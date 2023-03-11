@@ -621,19 +621,18 @@ void InitRunFand()
 #ifndef FandGraph
 	txt += "~GRAPH,";
 #endif
-#ifndef FandProlog
+/*#ifndef FandProlog
 	txt += "~PRL,";
 #endif
 #ifndef FandDML
 	txt += "~DML,";
-#endif
-#ifdef Coproc
+#endif*/
+//#ifdef Coproc
 	txt = txt + "COPROC,";
-#endif
+//#endif
 #ifdef FandTest
 	txt = "test," + txt;
 #endif
-
 #ifdef FandAng
 	txt = txt + "En ";
 #endif

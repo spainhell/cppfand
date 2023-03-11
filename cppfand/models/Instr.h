@@ -3,12 +3,6 @@
 #include "../Graph.h"
 #include "../EditOpt.h"
 
-//class Chained;
-//class FrmlElem;
-//struct RdbD;
-//struct ChoiceD;
-//struct RdbPos;
-
 
 class Instr_menu : public Instr
 {
@@ -33,7 +27,7 @@ public:
 	Instr_loops(PInstrCode Kind);
 	FrmlElem* Bool = nullptr;
 	Instr* Instr1 = nullptr;
-	Instr* ElseInstr1 = nullptr;  // pùvodnì Instr a ElseInstr -> konflikt názvù
+	Instr* ElseInstr1 = nullptr;  // puvodne Instr a ElseInstr -> konflikt nazvu
 	void AddInstr(Instr* i);
 	void AddElseInstr(Instr* i);
 };

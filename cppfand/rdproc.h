@@ -87,13 +87,10 @@ void ReadProcHead(const std::string& name);
 Instr* ReadProcBody();
 void ReadDeclChpt();
 FrmlElem* GetEvalFrml(FrmlElem21* X);
+Instr* RdCallLProc();
 
 #ifdef FandGraph
 Instr_graph* RdGraphP();
-#endif
-
-#ifdef FandProlog
-Instr* RdCallLProc();
 #endif
 
 #ifndef FandSQL

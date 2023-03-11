@@ -1453,7 +1453,9 @@ bool EditExecRdb(std::string Nm, std::string proc_name, Instr_proc* proc_call, w
 		ReleaseFilesAndLinksAfterChapter();
 		ReleaseStore(p);
 	}
-	else if (!top) UserW = PushW(1, 1, TxtCols, TxtRows);
+	else if (!top) {
+		UserW = PushW(1, 1, TxtCols, TxtRows);
+	}
 	EditRdbMode = true;
 	if (CRdb->Encrypted) {
 		// ask for the project password

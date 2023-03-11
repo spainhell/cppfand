@@ -114,13 +114,13 @@ bool RunAddUpdte1(char Kind, void* CRold, bool Back, AddD* StopAD, LinkD* notLD)
 {
 	longint N2, N2old;
 	char Kind2, Kind2old;
-	void* CF2;
+	FileD* CF2 = nullptr;
 	void* CR2 = nullptr;
 	void* CR2old = nullptr; void* p = nullptr;
 	double R, Rold;
 	bool b;
 	auto result = true;
-	void* CF = CFile;
+	FileD* CF = CFile;
 	void* CR = CRecPtr;
 	MarkStore(p);
 	AddD* ADback = nullptr;
@@ -143,7 +143,8 @@ bool RunAddUpdte1(char Kind, void* CRold, bool Back, AddD* StopAD, LinkD* notLD)
 			CRecPtr = CRold;
 			Rold = RunReal(add->Frml);
 		}
-		ADback = add; CF2 = add->File2;
+		ADback = add;
+		CF2 = add->File2;
 		N2 = 0; N2old = 0;
 		if (R != 0.0) {
 			CRecPtr = CR;
@@ -151,7 +152,7 @@ bool RunAddUpdte1(char Kind, void* CRold, bool Back, AddD* StopAD, LinkD* notLD)
 			CR2 = CRecPtr;
 		}
 		if (Rold != 0.0) {
-			CFile = (FileD*)CF;
+			CFile = CF;
 			CRecPtr = CRold;
 			if (!Link(add, N2old, Kind2old)) goto fail;
 			CR2old = CRecPtr;
@@ -163,31 +164,34 @@ bool RunAddUpdte1(char Kind, void* CRold, bool Back, AddD* StopAD, LinkD* notLD)
 			}
 		}
 		if ((N2 == 0) && (N2old == 0)) goto label1;
-		CFile = (FileD*)CF2;
+		CFile = CF2;
 		if (N2old != 0) {
 			if (!Add(add, CR2old, -Rold, Back)) goto fail;
 		}
 		if (N2 != 0) {
 			if (!Add(add, CR2, R, Back)) goto fail;
 		}
-		if ((N2old != 0) && !TransAdd(add, (FileD*)CF, CR, CR2old, N2old, Kind2old, false)) goto fail;
-		if ((N2 != 0) && !TransAdd(add, (FileD*)CF, CR, CR2, N2, Kind2, false)) {
-			if (N2old != 0) b = TransAdd(add, (FileD*)CF, CR, CR2old, N2old, Kind2old, true);
+		if ((N2old != 0) && !TransAdd(add, CF, CR, CR2old, N2old, Kind2old, false)) goto fail;
+		if ((N2 != 0) && !TransAdd(add, CF, CR, CR2, N2, Kind2, false)) {
+			if (N2old != 0) b = TransAdd(add, CF, CR, CR2old, N2old, Kind2old, true);
 			goto fail;
 		}
-		if (N2old != 0) WrUpdRec(add, (FileD*)CF, CR, CR2old, N2old);
-		if (N2 != 0) WrUpdRec(add, (FileD*)CF, CR, CR2, N2);
+		if (N2old != 0) WrUpdRec(add, CF, CR, CR2old, N2old);
+		if (N2 != 0) WrUpdRec(add, CF, CR, CR2, N2);
 	label1:
 		ReleaseStore(p);
-		CFile = (FileD*)CF;
+		CFile = CF;
 		CRecPtr = CR;
 	}
 	return result;
 fail:
 	ReleaseStore(p);
-	CFile = (FileD*)CF; CRecPtr = CR;
+	CFile = CF;
+	CRecPtr = CR;
 	result = false;
-	if (ADback != nullptr) b = RunAddUpdte1(Kind, CRold, true, ADback, notLD);  /* backtracking */
+	if (ADback != nullptr) {
+		b = RunAddUpdte1(Kind, CRold, true, ADback, notLD);  /* backtracking */
+	}
 	return result;
 }
 

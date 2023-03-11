@@ -1218,20 +1218,47 @@ void RunInstr(Instr* PD)
 			ClrScr();
 			break;
 		}
-		case _clrww: { ClrWwProc((Instr_clrww*)PD); break; }
-		case _clreol: { TextAttr = ProcAttr; ClrEol(); break; }
-		case _exec: { ExecPgm((Instr_exec*)PD); break; }
-		case _proc: { CallProcedure((Instr_proc*)PD); break; }
-		case _call: { CallRdbProc((Instr_call*)PD); break; }
-		case _copyfile: { FileCopy(((Instr_copyfile*)PD)->CD); break; }
-		case _headline: { HeadLineProc(((Instr_assign*)PD)->Frml); break; }
-		case _setkeybuf: { SetKeyBufProc(((Instr_assign*)PD)->Frml); break; }
-		case _writeln: { WritelnProc((Instr_writeln*)PD); break; }
+		case _clrww: {
+			ClrWwProc((Instr_clrww*)PD);
+			break;
+		}
+		case _clreol: {
+			TextAttr = ProcAttr;
+			ClrEol();
+			break;
+		}
+		case _exec: {
+			ExecPgm((Instr_exec*)PD);
+			break;
+		}
+		case _proc: {
+			CallProcedure((Instr_proc*)PD);
+			break;
+		}
+		case _call: {
+			CallRdbProc((Instr_call*)PD);
+			break;
+		}
+		case _copyfile: {
+			FileCopy(((Instr_copyfile*)PD)->CD);
+			break;
+		}
+		case _headline: {
+			HeadLineProc(((Instr_assign*)PD)->Frml);
+			break;
+		}
+		case _setkeybuf: {
+			SetKeyBufProc(((Instr_assign*)PD)->Frml);
+			break;
+		}
+		case _writeln: {
+			WritelnProc((Instr_writeln*)PD);
+			break;
+		}
 		case _gotoxy: {
 			auto iPD = (Instr_gotoxy*)PD;
 			WORD x = RunInt(iPD->GoX);
 			WORD y = RunInt(iPD->GoY);
-			//screen.Window(1, 1, TxtCols, TxtRows);
 			screen.GotoXY(x + WindMin.X - 1, y + WindMin.Y - 1, absolute);
 			break;
 		}
@@ -1239,13 +1266,11 @@ void RunInstr(Instr* PD)
 			MergeProc((Instr_merge_display*)PD);
 			break;
 		}
-#ifdef FandProlog
 		case _lproc: {
 			auto iPD = (Instr_lproc*)PD;
-			//RunProlog(&iPD->lpPos, iPD->lpName);
+			RunProlog(&iPD->lpPos, iPD->lpName);
 			break;
 		}
-#endif
 		case _report: {
 			ReportProc(((Instr_report*)PD)->RO, true);
 			break;
@@ -1334,7 +1359,7 @@ void RunInstr(Instr* PD)
 			EdOk = RunBool(((Instr_assign*)PD)->Frml);
 			break;
 		}
-		case _turncat:/* !!! with PD^ do!!! */ {
+		case _turncat: {
 			auto iPD = (Instr_turncat*)PD;
 			CFile = iPD->NextGenFD;
 			TurnCat(iPD->FrstCatIRec, iPD->NCatIRecs, RunInt(iPD->TCFrml));
@@ -1479,8 +1504,8 @@ void RunInstr(Instr* PD)
 		}
 		}
 		PD = PD->Chain;
-		}
 	}
+}
 
 void RunProcedure(Instr* PDRoot)
 {
