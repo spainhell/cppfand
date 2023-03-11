@@ -117,9 +117,6 @@ extern BYTE ProcAttr;
 // extern bool SetStyleAttr(char c, BYTE& a); // je v KBDWW
 extern std::string MsgLine;
 extern std::string MsgPar[4];
-// ********** DML **********
-//extern void* FandInt3f; // r. 311
-//extern WORD Fand_ss, Fand_sp, Fand_bp, DML_ss, DML_sp, DML_bp;
 
 extern wdaystt WDaysTabType;
 extern WORD NWDaysTab;

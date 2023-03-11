@@ -47,7 +47,6 @@ int HandleError;
 pstring OldDir;
 pstring FandDir;
 std::string WrkDir;
-pstring FandOvrName;
 pstring FandResName;
 pstring FandWorkName;
 pstring FandWorkXName;
@@ -72,27 +71,16 @@ std::string MsgPar[4];
 WORD OldNumH; // r1 
 void* OldHTPtr = nullptr;
 
-//#ifdef FandDemo
-//WORD files = 30;
-//#else
-//WORD files = 250; // {files in CONFIG.SYS -3}
-//#endif
-//WORD CardHandles;
-
 Cache cache;
 //std::map<FILE*, FileCache*> Cache::cacheMap;
 WORD CachePageSize;
 void* AfterCatFD; // r108
-//ProcStkD* MyBP;
-//ProcStkD* ProcMyBP;
 WORD BPBound; // r212
 bool ExitP, BreakP;
 longint LastExitCode = 0; // r215
 bool WasLPTCancel;
 FILE* WorkHandle;
 longint MaxWSize = 0; // {currently occupied in FANDWORK.$$$}
-//void* FandInt3f; // r. 311
-//WORD Fand_ss, Fand_sp, Fand_bp, DML_ss, DML_sp, DML_bp;
 Printer printer[10];
 TPrTimeOut OldPrTimeOut;
 TPrTimeOut PrTimeOut;  // absolute 0:$478;
