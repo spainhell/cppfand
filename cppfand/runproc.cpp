@@ -915,16 +915,19 @@ void WithWindowProc(Instr_window* PD)
 
 void WithLockedProc(Instr_withshared* PD)
 {
-	PInstrCode op; LockD* ld; longint w, w1;
-	WORD msg; pstring ntxt(10); LockMode md;
-	op = PD->Kind;
+	LockD* ld;
+	longint w1;
+	WORD msg;
+	pstring ntxt(10);
+	LockMode md;
+	PInstrCode op = PD->Kind;
 	if (op == _withlocked) {
 		ld = &PD->WLD;
 		while (ld != nullptr) {
 			ld->N = RunInt(ld->Frml); ld = ld->Chain;
 		}
 	}
-	w = 0;
+	longint w = 0;
 label1:
 	ld = &PD->WLD;
 	while (ld != nullptr) {
@@ -945,10 +948,14 @@ label1:
 			}
 		if (CFile->FF->IsShared()) {
 			if (op == _withlocked) {
-				if (TryLockN(ld->N, 2)) goto label3;
+				if (TryLockN(ld->N, 2)) {
+					goto label3;
+				}
 			}
 			else {
-				if (TryLMode(CFile, ld->Md, ld->OldMd, 2)) goto label3;
+				if (TryLMode(CFile, ld->Md, ld->OldMd, 2)) {
+					goto label3;
+				}
 			}
 		label2:
 			UnLck(PD, ld, op);
