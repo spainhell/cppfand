@@ -204,7 +204,6 @@
     <ClInclude Include="EditOpt.h" />
     <ClInclude Include="FileD.h" />
     <ClInclude Include="OldDrivers.h" />
-    <ClInclude Include="fanddml.h" />
     <ClInclude Include="FieldDescr.h" />
     <ClInclude Include="GlobalVariables.h" />
     <ClInclude Include="Graph.h" />

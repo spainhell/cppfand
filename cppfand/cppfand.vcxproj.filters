@@ -131,9 +131,6 @@
     <ClInclude Include="OldDrivers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="fanddml.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="oaccess.h">
       <Filter>Header Files</Filter>
     </ClInclude>

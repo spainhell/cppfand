@@ -112,16 +112,14 @@ extern bool WasLPTCancel;
 extern FILE* WorkHandle;
 extern longint MaxWSize; // {currently occupied in FANDWORK.$$$}
 // *** MESSAGES ***
-extern WORD F10SpecKey; // ø. 293
+extern WORD F10SpecKey; // r. 293
 extern BYTE ProcAttr;
 // extern bool SetStyleAttr(char c, BYTE& a); // je v KBDWW
 extern std::string MsgLine;
 extern std::string MsgPar[4];
 // ********** DML **********
-extern void* FandInt3f; // ø. 311
-extern FILE* OvrHandle;
-extern WORD Fand_ss, Fand_sp, Fand_bp, DML_ss, DML_sp, DML_bp;
-extern longint _CallDMLAddr; // {passed to FANDDML by setting "DMLADDR="in env.}
+//extern void* FandInt3f; // r. 311
+//extern WORD Fand_ss, Fand_sp, Fand_bp, DML_ss, DML_sp, DML_bp;
 
 extern wdaystt WDaysTabType;
 extern WORD NWDaysTab;
@@ -132,8 +130,8 @@ extern wdaystt* WDaysTab;
 extern char AbbrYes;
 extern char AbbrNo;
 
-extern char CharOrdTab[256]; // after Colors /FANDDML/ // ø. 370
-extern char UpcCharTab[256]; // TODO: v obou øádcích bylo 'array[char] of char;' - WTF?
+extern char CharOrdTab[256];
+extern char UpcCharTab[256];
 extern WORD TxtCols, TxtRows;
 
 extern integer prCurr, prMax;
