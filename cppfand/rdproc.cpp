@@ -2785,8 +2785,11 @@ Instr* RdPInstr()
 void ReadProcHead(const std::string& name)
 {
 	ResetCompilePars();
-	RdFldNameFrml = RdFldNameFrmlP; RdFunction = RdFunctionP;
-	FileVarsAllowed = false; IdxLocVarAllowed = true; IsRdUserFunc = false;
+	RdFldNameFrml = RdFldNameFrmlP;
+	RdFunction = RdFunctionP;
+	FileVarsAllowed = false;
+	IdxLocVarAllowed = true;
+	IsRdUserFunc = false;
 	RdLex();
 	ResetLVBD();
 	LVBD.FceName = name;
@@ -2810,7 +2813,7 @@ Instr* ReadProcBody()
 }
 
 // metoda nacita funkce a procedury z InpArrPtr a postupne je zpracovava
-// nacte nazev, parametry, navr. hodnotu, promenne, konstanty i kód
+// nacte nazev, parametry, navr. hodnotu, promenne, konstanty i kod
 void ReadDeclChpt()
 {
 	FuncD* fc = nullptr;

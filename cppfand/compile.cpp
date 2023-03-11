@@ -1044,7 +1044,6 @@ bool FindLocVar(LocVar* LVRoot, LocVar** LV)
 
 bool FindLocVar(LocVarBlkD* LVB, LocVar** LV)
 {
-	//auto result = false;
 	if (Lexem != _identifier) return false;
 	*LV = LVB->FindByName(LexWord);
 	if (*LV == nullptr) return false;
