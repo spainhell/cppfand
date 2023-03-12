@@ -153,7 +153,7 @@ struct TScanInf {
 	TFldList* FL = nullptr; /*PFldList*/
 };
 
-struct TPredicate : public Chained<TPredicate> {
+struct TPredicate {
 	TPredicate* ChainDb = nullptr; /*PPredicate*/
 	std::string Name;              /*PString*/
 	std::vector<TBranch*> branch;
@@ -205,4 +205,4 @@ extern bool UnbdVarsInTerm, WasUnbd, WasOp;
 extern TProgRoots* Roots;
 extern char* PackedTermPtr;
 extern WORD PTPMaxOfs;
-extern TPredicate* ClausePreds;
+extern std::vector<TPredicate*> ClausePreds;

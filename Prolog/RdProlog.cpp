@@ -794,23 +794,18 @@ void RdConstants(std::vector<TVarDcl*>& Vars)
 
 TPredicate* GetPredicate(const std::string predicate_name)
 {
-	//TPredicate* p = Roots->Predicates;
-	//while (p != nullptr) {
-	for (auto& p : Roots->Predicates) {
+	for (TPredicate* p : Roots->Predicates) {
 		if (p->Name == predicate_name) {
 			RdLexP();
 			return p;
 		}
-		//p = p->pChain;
 	}
 
-	TPredicate* p = ClausePreds;
-	while (p != nullptr) {
+	for (TPredicate* p : ClausePreds) {
 		if (p->Name == predicate_name) {
 			RdLexP();
 			return p;
 		}
-		//p = p->pChain;
 	}
 
 	return nullptr;
@@ -945,14 +940,12 @@ label2:
 		}
 		AcceptP(')');
 	}
-	p = new TPredicate(); // GetZStor(sizeof(TPredicate) - 6 + 2 * n);
+	p = new TPredicate();
 
 	if (FromClauses) {
-		if (ClausePreds == nullptr) ClausePreds = p;
-		else ChainLast(ClausePreds, p);
+		ClausePreds.push_back(p);
 	}
 	else {
-		//ChainLast(Roots->Predicates, p);
 		Roots->Predicates.push_back(p);
 	}
 
@@ -1554,32 +1547,6 @@ void CheckPredicates(std::vector<TPredicate*>& P)
 	}
 }
 
-void CheckPredicates(TPredicate* P)
-{
-	TScanInf* si = nullptr;
-	TPredicate* p = P;
-	while (p != nullptr) {
-		if (((p->Opt & (_DbaseOpt + _FandCallOpt + _BuildInOpt)) == 0)
-			&& (p->branch.empty() && p->dbBranch == nullptr && p->scanInf == nullptr && p->instr == nullptr)) {
-			SetMsgPar(p->Name);
-			OldError(522);
-		}
-		if ((p->Opt & _DbaseOpt) != 0) {
-			if ((p->Opt & _FandCallOpt) != 0) {
-				si = p->scanInf;
-				// not needed -> FD is actual (not loaded from RDB file, but actually compiled)
-				//si->FD = nullptr;
-			}
-			else {
-				// not needed -> branches and instructions are actual (not loaded from RDB file, but actually compiled)
-				//p->dbBranch = nullptr;
-				//p->instr = nullptr;
-			}
-		}
-		p = p->pChain;
-	}
-}
-
 void RdAutoRecursionHead(TPredicate* p, TBranch* b)
 {
 	WORD w = 0;
@@ -1896,16 +1863,14 @@ void RdClauses()
 		//label4:
 		AcceptP('.');
 
-		//v = VarDcls;
-		//while (v != nullptr) {
 		for (TVarDcl* v : p->VarsCheck) {
 			if (!v->Used || !v->Bound) {
 				SetMsgPar(v->Name);
 				if (!v->Used) OldError(521);
 				else OldError(520);
 			}
-			//v = v->pChain;
 		}
+
 		p->InstSz = MaxW(p->InstSz, 4 * VarCount);
 		Mem1.Release(x);
 
@@ -1914,7 +1879,7 @@ void RdClauses()
 	}
 
 	CheckPredicates(ClausePreds);
-	ClausePreds = nullptr;
+	ClausePreds.clear();
 }
 
 TPredicate* MakePred(std::string PredName, std::string ArgTyp, proc_type PredKod, WORD PredMask)
@@ -1977,7 +1942,7 @@ TProgRoots* ReadProlog(WORD RecNr)
 		pp1 = Mem1.Mark(); pp2 = Mem2.Mark(); pp3 = Mem3.Mark();
 	}
 	AlignLongStr();
-	ClausePreds = 0;
+	ClausePreds.clear();
 	Roots = new TProgRoots();
 	UnderscoreTerm = new TTerm();
 	UnderscoreTerm->Fun = prolog_func::_UnderscT;

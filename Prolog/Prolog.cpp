@@ -1,6 +1,5 @@
 #include "Prolog.h"
 
-//TVarDcl* VarDcls = nullptr;
 integer VarCount = 0;
 TDomain* IntDom = nullptr;
 TDomain* RealDom = nullptr;
@@ -23,4 +22,4 @@ bool UnbdVarsInTerm = false, WasUnbd = false, WasOp = false;
 TProgRoots* Roots = nullptr;
 char* PackedTermPtr = nullptr;
 WORD PTPMaxOfs = 0;
-TPredicate* ClausePreds = nullptr;
+std::vector<TPredicate*> ClausePreds;

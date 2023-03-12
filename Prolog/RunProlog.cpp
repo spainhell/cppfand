@@ -85,7 +85,7 @@ TFunDcl* GetFunDcl(TDomain* D, BYTE I)
 /*  T T E R M  =============================================================*/
 TTerm* GetIntTerm(integer I)
 {
-	TTerm* t = new TTerm(); // (TTerm*)Mem1.Get(1 + sizeof(integer));
+	TTerm* t = new TTerm();
 	t->Fun = prolog_func::_IntT;
 	t->II = I;
 	return t;
@@ -93,7 +93,7 @@ TTerm* GetIntTerm(integer I)
 
 TTerm* GetRealTerm(double R)
 {
-	TTerm* t = new TTerm(); //(TTerm*)Mem1.Get(1 + sizeof(double));
+	TTerm* t = new TTerm();
 	t->Fun = prolog_func::_RealT;
 	t->RR = R;
 	return t;
@@ -101,14 +101,14 @@ TTerm* GetRealTerm(double R)
 
 TTerm* GetBoolTerm(bool B)
 {
-	TTerm* t = new TTerm(); // (TTerm*)Mem1.Get(1 + 1);
+	TTerm* t = new TTerm();
 	t->BB = B;
 	return t;
 }
 
 TTerm* GetStringTerm(pstring S)
 {
-	TTerm* t = new TTerm(); // (TTerm*)Mem1.Get(1 + 1 + S.length());
+	TTerm* t = new TTerm();
 	t->Fun = prolog_func::_StrT;
 	t->SS = S;
 	return t;
@@ -116,7 +116,7 @@ TTerm* GetStringTerm(pstring S)
 
 TTerm* GetLongStrTerm(longint N)
 {
-	TTerm* t = new TTerm(); // (TTerm*)Mem1.Get(1 + 4);
+	TTerm* t = new TTerm();
 	t->Fun = prolog_func::_LongStrT;
 	t->Pos = N;
 	return t;
@@ -124,7 +124,7 @@ TTerm* GetLongStrTerm(longint N)
 
 TTerm* GetListTerm(TTerm* aElem, TTerm* aNext)
 {
-	TTerm* t = new TTerm(); // (TTerm*)Mem1.Get(1 + 2 * 4);
+	TTerm* t = new TTerm();
 	t->Fun = prolog_func::_ListT;
 	t->Elem = aElem;
 	t->Next = aNext;
@@ -133,11 +133,21 @@ TTerm* GetListTerm(TTerm* aElem, TTerm* aNext)
 
 TTerm* GetFunTerm(BYTE aFun, BYTE aArity)
 {
-	TTerm* t = new TTerm(); // (TTerm*)Mem1.Get(1 + 1 + aArity * 4);
+	TTerm* t = new TTerm();
 	t->Fun = prolog_func::_undefined;
 	t->FunIdx = aFun;
 	t->Arity = aArity;
 	return t;
+}
+
+TPredicate* GetPredicateByName(std::string name)
+{
+	for (TPredicate* p : Roots->Predicates) {
+		if (p->Name == name) {
+			return p;
+		}
+	}
+	return nullptr;
 }
 
 void ChainList(TTerm** Frst, TTerm* New)
@@ -496,10 +506,11 @@ bool UnifyTermsCV(TTerm* T1, TTerm* T2/*PPTerm*/)
 
 bool UnifyVList(TTerm* TT1, TTerm* T2)
 {
-	TTerm* t = nullptr; TTerm* t1 = nullptr;
+	TTerm* t = nullptr;
+	TTerm* t1 = nullptr;
 	t1 = TT1;
 	auto result = false;
-	while (T2 != nullptr)
+	while (T2 != nullptr) {
 		switch (T2->Fun) {
 		case prolog_func::_VarT: {
 			if (T2->Bound) {
@@ -514,10 +525,12 @@ bool UnifyVList(TTerm* TT1, TTerm* T2)
 				CurrInst->Vars[T2->Idx] = t1;
 				t1 = nullptr;
 			}
-			goto label1;
 			break;
 		}
-		case prolog_func::_UnderscT: { t1 = nullptr; goto label1; break; }
+		case prolog_func::_UnderscT: {
+			t1 = nullptr;
+			break;
+		}
 		default: {
 			if ((t1 == nullptr) || !UnifyTermsCV(t1->Elem, T2->Elem)) return result;
 			t1 = t1->Next;
@@ -525,7 +538,8 @@ bool UnifyVList(TTerm* TT1, TTerm* T2)
 			break;
 		}
 		}
-label1:
+	}
+
 	result = true;
 	TT1 = t1;
 	return result;
@@ -1255,7 +1269,7 @@ bool RunBuildIn()
 		fieldTypeStr += fieldType;
 		CurrInst->Vars[2] = GetStringTerm(fieldTypeStr);
 
-			m = 0; l = f->L;
+		m = 0; l = f->L;
 		if (f->field_type == FieldType::FIXED) {
 			m = f->M;
 			l--;
@@ -1899,8 +1913,8 @@ void AssertFand(TPredicate* P, TCommand* C)
 			fl = fl->pChain;
 			++l; // iterator c->Arg
 			i++;
+			}
 		}
-	}
 #ifdef FandSQL
 	if (trace) { writeln("))"); waitC; }
 	if (CFile->IsSQLFile) Strm1->InsertRec(false, true); else
@@ -1913,7 +1927,7 @@ void AssertFand(TPredicate* P, TCommand* C)
 	}
 	OldLMode(CFile, md);
 	ReleaseStore(CRecPtr);
-		}
+	}
 
 TFileScan* GetScan(TScanInf* SIOfs, TCommand* C, TInstance* Q)
 {
@@ -2430,11 +2444,12 @@ void RunProlog(RdbPos* Pos, std::string PredName)
 
 	TopInst = nullptr;
 	CurrInst = nullptr;
-	TPredicate* p = Roots->Predicates[0]; /* main */
-	if (!PredName.empty()) {
-		while ((p != nullptr) && (p->Name != PredName)) {
-			p = p->pChain;
-		}
+	TPredicate* p;
+	if (PredName.empty()) {
+		p = Roots->Predicates[0]; /* main */
+	}
+	else {
+		p = GetPredicateByName(PredName);
 		if ((p == nullptr) || (p->Arity != 0)) {
 			SetMsgPar(Pos->R->FD->Name, PredName);
 			RunError(1545);
@@ -2697,7 +2712,7 @@ label23:
 			break;
 		}
 		}
-		label3:
+	label3:
 		continue;
 		/*       resume command   */
 	}
