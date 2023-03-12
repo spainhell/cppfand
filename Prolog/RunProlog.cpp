@@ -2370,12 +2370,11 @@ void RunProlog(RdbPos* Pos, std::string PredName)
 	LongStr* ss = nullptr; longint WMark = 0;
 	TPredicate* p1 = nullptr;
 	TCommand* c = nullptr;
-	TBranch* b = nullptr;
-	TBranch* b1 = nullptr;
+	TBranch* branch = nullptr;
+	TBranch* branch1 = nullptr;
+	std::vector<TBranch*>::iterator branch_item;
 	TDbBranch* bd = nullptr;
 	std::map<int, TTerm*>::iterator branch_head_item;
-	//TTermList* l = nullptr;
-	//TDatabase* db = nullptr;
 	TTerm* t = nullptr; TProgRoots* Roots = nullptr;
 	RdbD* ChptLRdb = nullptr;
 	WORD oldSg = 0; TInstance* oldCurrInst = nullptr;
@@ -2414,8 +2413,7 @@ void RunProlog(RdbPos* Pos, std::string PredName)
 		CFile = ChptLRdb->FD;
 		CRecPtr = GetRecSpace();
 		CFile->ReadRec(Pos->IRec, CRecPtr);
-		longint hhh = _T(ChptTxt);
-		SetInpTTPos(hhh, ChptLRdb->Encrypted);
+		SetInpTTPos(_T(ChptTxt), ChptLRdb->Encrypted);
 		Roots = ReadProlog(Pos->IRec);
 	}
 
@@ -2448,7 +2446,7 @@ label1:
 	q->PrevInst = TopInst;
 	TopInst = q;
 	q->RetInst = CurrInst;
-	q->RetBranch = b;
+	q->RetBranch = branch;
 	q->RetCmd = c;
 	//if (CurrInst != nullptr) {
 	//	for (int qi = 0; i < MAX_VARS_COUNT; i++) {
@@ -2460,13 +2458,14 @@ label1:
 		q->CallLevel = CallLevel;
 	}
 	/* copy input parameters */
-	b = p->branch;
+	branch_item = p->branch.begin();
+	branch = *branch_item;
 	i = 0;
 	if ((p->Opt & _CioMaskOpt) != 0) w = c->InpMask;
 	else w = p->InpMask;
 
 	if (l_source_branch) {
-		while (branch_head_item != b->Head.end()) {
+		while (branch_head_item != branch->Head.end()) {
 			if ((w & 1) != 0) {
 				if ((p->Opt & _PackInpOpt) != 0) {
 					pt = (char*)A;
@@ -2514,8 +2513,8 @@ label1:
 	}
 
 	if ((p->Opt & (_FandCallOpt + _DbaseOpt)) == _FandCallOpt + _DbaseOpt) {
-		b = (TBranch*)p->scanInf;
-		q->NextBranch = (TBranch*)GetScan((TScanInf*)b, c, q);
+		branch = (TBranch*)p->scanInf;
+		q->NextBranch = (TBranch*)GetScan((TScanInf*)branch, c, q);
 	}
 	if (Trace()) {
 		TraceCall(q, 1);
@@ -2576,16 +2575,19 @@ label2:
 	//PtrRec(b).Seg = _Sg;
 label23:
 	/* normal unify branch head predicates */
-	q->NextBranch = b->pChain;
+	;
+	q->NextBranch = *(++branch_item);
 	i = 0;
-	branch_head_item = b->Head.begin();
+	branch_head_item = branch->Head.begin();
 	l_source_branch = true;
 	l_source_cmd = false;
-	w = b->HeadIMask;
-	while (branch_head_item != b->Head.end()) {
+	w = branch->HeadIMask;
+	while (branch_head_item != branch->Head.end()) {
 		if (((w & 1) != 0) && !UnifyTermsCV(q->Vars[i], branch_head_item->second)) {
-			b = b->pChain;
-			if (b == nullptr) goto label5;
+			branch = *(++branch_item);
+			if (branch == nullptr) {
+				goto label5;
+			}
 			goto label23;
 		}
 		i++;
@@ -2593,7 +2595,7 @@ label23:
 		w = w >> 1;
 	}
 	/* execute all commands */
-	c = b->Cmd;
+	c = branch->Cmd;
 	while (c != nullptr) {
 		switch (c->Code) {
 		case _PredC:
@@ -2655,11 +2657,10 @@ label23:
 					++branch_head_item;
 				}
 				//n = PtrRec(pt).Ofs - Ofs(A);
-				b1 = new TBranch(); // Mem3.Alloc(4 + n);
-				Move(A, &b1/*->LL*/, n);
+				branch1 = new TBranch(); // Mem3.Alloc(4 + n);
+				Move(A, &branch1/*->LL*/, n);
 
-				if (p1->branch == nullptr) p1->branch = b1;
-				else ChainLast(p1->branch, b1);
+				p1->branch.push_back(branch1);
 
 				if (Trace()) PrintPackedPred(A, c->Pred);
 			}
@@ -2685,7 +2686,7 @@ label23:
 			Mem1.Release(q->StkMark);
 			MaxWSize = q->WMark;
 			p = q->Pred;
-			b = p->branch;
+			branch = *(++branch_item);
 			goto label6;
 			break;
 		}
@@ -2700,11 +2701,11 @@ label23:
 	}
 	/*           copy output parameters */
 	i = 0;
-	branch_head_item = b->Head.begin();
+	branch_head_item = branch->Head.begin();
 	l_source_branch = true;
 	l_source_cmd = false;
-	w = b->HeadOMask;
-	while (branch_head_item != b->Head.end()) {
+	w = branch->HeadOMask;
+	while (branch_head_item != branch->Head.end()) {
 		if ((w & 1) != 0) q->Vars[i] = CopyTerm(branch_head_item->second);
 		i++;
 		++branch_head_item;
@@ -2713,11 +2714,14 @@ label23:
 	/*       called predicate finished   */
 label4:
 	c = q->RetCmd;
-	if (c->Code == _NotC) { TopInst = q->PrevInst; goto label5; }
+	if (c->Code == _NotC) {
+		TopInst = q->PrevInst;
+		goto label5;
+	}
 label41:
 	if (Trace()) TraceCall(q, 0);
 	/*      unify output with caller terms */
-	b = q->RetBranch;
+	branch = q->RetBranch;
 	p = q->Pred;
 	q1 = q;
 	q = q->RetInst;
@@ -2784,7 +2788,7 @@ label5:
 	if (q->NextBranch == nullptr) {
 		q1 = q;
 		q = q1->RetInst;
-		b = q1->RetBranch;
+		branch = q1->RetBranch;
 		c = q1->RetCmd;
 		CurrInst = q;
 		TopInst = q1->PrevInst;
@@ -2813,7 +2817,7 @@ label5:
 	}
 	TopInst = q;
 	CurrInst = TopInst;
-	b = q->NextBranch;
+	branch = q->NextBranch;
 	p = q->Pred;
 	SetCallLevel(q->CallLevel);
 	if (q1 != nullptr) Mem2.Release(q1);

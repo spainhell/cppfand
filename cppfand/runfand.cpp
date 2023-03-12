@@ -273,7 +273,7 @@ void CompileHelpCatDcl()
 	FileDRoot = nullptr;
 	Chpt = FileDRoot;
 	CRdb = nullptr;
-	MarkStore2(p2);
+	MarkStore(p2);
 	ReadMessage(56);
 	std::string s = MsgLine;
 	SetInpStr(s);
@@ -291,13 +291,15 @@ void CompileHelpCatDcl()
 	FileDRoot = nullptr;
 	Chpt = FileDRoot;
 	CatRdbName = CatFD->FldD.front();
-	if (CatRdbName == nullptr) throw std::exception("CompileHelpCatDcl: CarRdbName is NULL");
+	if (CatRdbName == nullptr) {
+		throw std::exception("CompileHelpCatDcl: CarRdbName is NULL");
+	}
 	CatFileName = CatRdbName->pChain;
 	CatArchiv = CatFileName->pChain;
 	CatPathName = CatArchiv->pChain;
 	CatVolume = CatPathName->pChain;
 	MarkStore(AfterCatFD);
-	ReleaseStore2(p2);
+	ReleaseStore(p2);
 }
 
 bool SetTopDir(std::string& p, std::string& n)

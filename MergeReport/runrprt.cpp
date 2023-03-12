@@ -63,7 +63,7 @@ void RunReport(RprtOpt* RO)
 	if (PgeSize < 2) PgeSize = 2;
 	if ((PgeLimit > PgeSize) || (PgeLimit == 0)) PgeLimit = PgeSize - 1;
 	if (!RewriteRprt(RO, PgeSize, Times, isLPT1)) return;  // pouze zajisti otevreni souboru
-	MarkStore2(Store2Ptr);
+	MarkStore(Store2Ptr);
 	ex = true;
 	//PushProcStk();
 	//NewExit(Ovr(), er);
@@ -379,7 +379,7 @@ void CheckPgeLimit(std::string& text)
 	YRec YY;
 	if (Y.ChkPg && (RprtLine > PgeLimit) && (PgeLimit < PgeSize)) {
 		p2 = Store2Ptr;
-		MarkStore2(Store2Ptr);
+		MarkStore(Store2Ptr);
 		YY = Y;
 		ResetY();
 		NewPage(text);
@@ -414,7 +414,7 @@ void PendingTT(std::string& text)
 	}
 	WriteNBlks(text, LineLenLst + 1 - Col);
 	if (Y.TD != nullptr) {
-		ReleaseStore2(Store2Ptr);
+		ReleaseStore(Store2Ptr);
 		Y.TD = nullptr;
 		Y.TLn = 0;
 	}

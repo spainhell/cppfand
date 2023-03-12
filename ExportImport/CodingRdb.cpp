@@ -73,7 +73,7 @@ void CodingRdb::CompressTxt(WORD IRec, LongStr* s, char Typ)
 	SwitchLevel = 0;
 	void* cr = CRecPtr;
 	ss = new LongStr(MaxLStrLen + 2); // GetStore(MaxLStrLen + 2);
-	MarkStore2(p2);
+	MarkStore(p2);
 	l = 0;
 	if (Typ == 'E') {
 	label0:
@@ -115,7 +115,7 @@ label1:
 			s->LL = l;
 			MyMove(ss->A, s->A, l);
 			ReleaseAfterLongStr(s);
-			ReleaseStore2(p2);
+			ReleaseStore(p2);
 			CRecPtr = cr;
 			return;
 		}

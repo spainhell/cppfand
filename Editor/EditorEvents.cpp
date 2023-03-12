@@ -1075,7 +1075,7 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 				}
 				case ColBlock: {
 					blocks->EndBPos = positionOnActualLine; I2 = 0x1000;
-					MarkStore2(P1);
+					MarkStore(P1);
 					sp = new LongStr(I2 + 2); //ww =BegBPos;}
 					do {
 						if (fs - L2 < (longint)I2) I2 = fs - L2;
@@ -1083,7 +1083,7 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 						L2 += I2; sp->LL = I2; BlockCDrop('R', P1, sp);
 					} while (L2 != fs);
 					blocks->EndBLn = /*Part.LineP +*/ TextLineNr - 1;
-					ReleaseStore2(P1);
+					ReleaseStore(P1);
 					break;
 				}
 				}

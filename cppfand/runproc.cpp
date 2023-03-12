@@ -1537,7 +1537,7 @@ void CallProcedure(Instr_proc* PD)
 
 #ifdef _DEBUG
 	std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
-	if (srcCode.find("UKOLYS:file [") != std::string::npos) {
+	if (srcCode.find("FILE.Path:=ADR01.Path+'{GLOB}") != std::string::npos) {
 		printf("");
 	}
 #endif
@@ -1649,7 +1649,7 @@ void CallProcedure(Instr_proc* PD)
 		}
 		++it0;
 	}
-	ReleaseStore2(p2);
+	ReleaseStore(p2);
 
 	// **** RUN PROCEDURE **** //
 	RunProcedure(pd1);

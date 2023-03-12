@@ -2292,7 +2292,7 @@ bool BlockHandle(longint& fs, FILE* W1, char Oper)
 		}
 		else {
 			PrintArray(p, fs, false);
-			ReleaseStore2(p);
+			ReleaseStore(p);
 		}
 	}
 	if (Oper == 'p') { TypeB = tb; }
@@ -2309,12 +2309,12 @@ void DelStorClpBd(void* P1, LongStr* sp)
 {
 	TWork.Delete(ClpBdPos);
 	ClpBdPos = TWork.Store(sp->A, sp->LL);
-	ReleaseStore2(P1);
+	ReleaseStore(P1);
 }
 
 void MarkRdClpBd(void* P1, LongStr* sp)
 {
-	MarkStore2(P1);
+	MarkStore(P1);
 	sp = TWork.Read(ClpBdPos);
 }
 
@@ -2323,7 +2323,6 @@ void MovePart(WORD Ind)
 	if (TypeT != FileT) return;
 	TestUpdFile();
 	WrEndT();
-	/* !!! with Part do!!! */
 	{
 		//Part.MovI = CurrentLineFirstCharIndex(Ind) - 1;
 		//Part.MovL = GetLine(Part.MovI) - 1;
@@ -2349,7 +2348,7 @@ bool BlockGrasp(char Oper, void* P1, LongStr* sp)
 	L = L2 - L1; if (L > 0x7FFF) { WrLLF10Msg(418); return result; }
 	if (L2 > /*Part.PosP +*/ LenT) MovePart(L1 /* - Part.PosP*/);
 	I1 = L1 /* - Part.PosP*/;
-	MarkStore2(P1);
+	MarkStore(P1);
 	sp = new LongStr(L + 2);
 	sp->LL = L;
 	Move(&T[I1], sp->A, L);
@@ -2384,7 +2383,7 @@ void BlockDrop(char Oper, void* P1, LongStr* sp)
 	UpdatT = true;
 	//if (ChangePart) I -= Part.MovI;
 	Move(sp->A, &T[I], I2);
-	ReleaseStore2(P1);
+	ReleaseStore(P1);
 	TextLineNr = GetLineNumber(I + I2);
 	blocks->EndBLn = /*Part.LineP +*/ TextLineNr;
 	blocks->EndBPos = succ(I + I2 - textIndex);
@@ -2404,7 +2403,7 @@ bool BlockCGrasp(char Oper, void* P1, LongStr* sp)
 	if ((L >= blocks->BegBLn && L <= blocks->EndBLn) && (positionOnActualLine >= blocks->BegBPos + 1 && positionOnActualLine <= blocks->EndBPos - 1) && (Oper != 'G')) return result;
 	longint l1 = (blocks->EndBLn - blocks->BegBLn + 1) * (blocks->EndBPos - blocks->BegBPos + 2);
 	if (l1 > 0x7FFF) { WrLLF10Msg(418); return result; }
-	MarkStore2(P1);
+	MarkStore(P1);
 	sp = new LongStr(l1 + 2);
 	sp->LL = l1;
 	PosDekFindLine(blocks->BegBLn, positionOnActualLine, false);
@@ -2467,7 +2466,7 @@ void BlockCDrop(char Oper, void* P1, LongStr* sp)
 	if (I3 < I1) InsertLine(i, I1, I3, ww, sp);
 	if (Oper != 'R') {
 		blocks->EndBLn = /*Part.LineP +*/ TextLineNr - 1;
-		ReleaseStore2(P1);
+		ReleaseStore(P1);
 		PosDekFindLine(blocks->BegBLn, blocks->BegBPos, true);
 	}
 }

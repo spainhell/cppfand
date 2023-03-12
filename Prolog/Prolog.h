@@ -33,18 +33,15 @@ enum class proc_type
 enum TDomainTyp { _UndefD, _IntD, _RealD, _StrD, _LongStrD, _ListD, _FunD, _RedefD };
 
 struct TFunDcl;
-struct TDomain : public Chained<TDomain> {
-	//WORD pChain = 0;
+struct TDomain {
 	TDomainTyp Typ = _UndefD;
-	// case byte of
 	TDomain* ElemDom = nullptr;
-	std::string Name; // 0
-	TDomain* OrigDom = nullptr; // 1
-	TFunDcl* FunDcl = nullptr; // 2
+	std::string Name;             // 0
+	TDomain* OrigDom = nullptr;   // 1
+	std::vector<TFunDcl*> FunDcl; // 2
 };
 
-struct TFunDcl : public Chained<TFunDcl> {
-	//WORD pChain = 0;
+struct TFunDcl {
 	std::string Name;
 	BYTE Arity = 0;
 	std::vector<TDomain*> Arg;
@@ -77,11 +74,10 @@ struct TTerm {
 	bool Bound = false;
 };
 
-struct TConst : public Chained<TConst> {
-	//WORD pChain = 0;
+struct TConst {
 	std::string Name;
-	TDomain* Dom = nullptr;/*PDomain*/
-	TTerm* Expr = nullptr;/*PPTerm*/
+	TDomain* Dom = nullptr;  /*PDomain*/
+	TTerm* Expr = nullptr;   /*PPTerm*/
 };
 
 class TVarDcl {
@@ -134,12 +130,11 @@ struct TCommand : public Chained<TCommand> {
 	struct stPair { BYTE iInp = 0; BYTE iOutp = 0; } Pair[6];
 };
 
-struct TBranch : public Chained<TBranch> {
-	//WORD pChain = 0; /*PBranch*/
+struct TBranch {
 	WORD HeadIMask = 0;
 	WORD HeadOMask = 0;
 	std::map<int, TTerm*> Head; /*PTermList*/
-	TCommand* Cmd = nullptr; /*PCommand*/
+	TCommand* Cmd = nullptr;    /*PCommand*/
 };
 
 struct TDbBranch : public Chained<TDbBranch> {
@@ -160,8 +155,8 @@ struct TScanInf {
 
 struct TPredicate : public Chained<TPredicate> {
 	TPredicate* ChainDb = nullptr; /*PPredicate*/
-	std::string Name; /*PString*/
-	TBranch* branch = nullptr;
+	std::string Name;              /*PString*/
+	std::vector<TBranch*> branch;
 	TDbBranch* dbBranch = nullptr;
 	TScanInf* scanInf = nullptr;
 	Instr_proc* instr = nullptr;

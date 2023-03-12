@@ -88,8 +88,6 @@ void ReleaseStore(void* pointer);
 void ReleaseAfterLongStr(void* p);
 int StoreAvail();
 std::string* StoreStr(std::string S);
-void MarkStore2(void* p);
-void ReleaseStore2(void* p);
 void MarkBoth(void* p, void* p2);
 void ReleaseBoth(void* p, void* p2);
 void AlignLongStr();

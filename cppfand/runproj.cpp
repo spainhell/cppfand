@@ -808,7 +808,7 @@ bool CompRunChptRec(WORD CC)
 	}
 
 	MaxHp = nullptr;
-	ReleaseStore2(p2);
+	ReleaseStore(p2);
 	Free = StoreAvail();
 	RunMsgClear();
 	if (WasError) {

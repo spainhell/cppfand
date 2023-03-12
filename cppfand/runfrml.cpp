@@ -2242,7 +2242,7 @@ LongStr* RunSelectStr(FrmlElem0* Z)
 		}
 	SetMsgPar(RunShortStr(Z->P4));
 	ww.SelectStr(RunInt(Z->P1), RunInt(Z->P2), 110, RunShortStr(Z->P5));
-	MarkStore2(p2);
+	MarkStore(p2);
 	s2 = new LongStr(s->LL + 2); // GetStore2(s->LL + 2);
 	n = 1; LastExitCode = 0;
 	if (Event.Pressed.KeyCombination() == __ESC) LastExitCode = 1;
@@ -2259,7 +2259,7 @@ LongStr* RunSelectStr(FrmlElem0* Z)
 		s = new LongStr(n + 1);
 		s->LL = n - 1;
 		Move(s2->A, s->A, n - 1);
-		ReleaseStore2(p2);
+		ReleaseStore(p2);
 		return s;
 }
 

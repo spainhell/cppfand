@@ -1249,10 +1249,6 @@ void MarkStore(void* p)
 {
 }
 
-void MarkStore2(void* p)
-{
-}
-
 void MarkBoth(void* p, void* p2)
 {
 }
@@ -1326,14 +1322,10 @@ WORD ListLength(void* P)
 	return 0;
 }
 
-void ReleaseStore2(void* p)
-{
-}
-
 void ReleaseBoth(void* p, void* p2)
 {
 	ReleaseStore(p);
-	ReleaseStore2(p2);
+	ReleaseStore(p2);
 }
 
 int StoreAvail()
@@ -1344,10 +1336,6 @@ int StoreAvail()
 void AlignLongStr()
 {
 }
-
-//void NewExit(PProcedure POvr, ExitRecord* Buf)
-//{
-//}
 
 void GoExit()
 {
