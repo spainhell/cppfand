@@ -50,6 +50,7 @@ struct TFunDcl {
 struct TTerm {
 	std::string Name;
 	prolog_func Fun = prolog_func::_undefined;
+	int Idx = 0;
 	BYTE FunIdx = 0;
 	BYTE Arity = 0;
 	longint Pos = 0;
@@ -70,7 +71,6 @@ struct TTerm {
 	instr_type Op4 = _notdefined;
 	TTerm* Elem = nullptr;
 	TTerm* Next = nullptr; /*PPTerm*/
-	WORD Idx = 0;
 	bool Bound = false;
 };
 
@@ -108,13 +108,13 @@ enum TCommandTyp {
 struct TDatabase;
 struct TPredicate;
 
-struct TCommand : public Chained<TCommand> {
+struct TCommand {
 	std::string Name;
 	TCommandTyp Code;
-	std::map<int, TTerm*> Arg; /*PTermList*/
-	TPredicate* Pred = nullptr; /*PPredicate*/
-	WORD InpMask = 0, OutpMask = 0; /*only _CioMaskOpt*/
-	TDomain* ElemDomain = nullptr; /*_MemP..:ListDom else PPTerm*/
+	std::vector<TTerm*> Arg;         /*PTermList*/
+	TPredicate* Pred = nullptr;      /*PPredicate*/
+	WORD InpMask = 0, OutpMask = 0;  /*only _CioMaskOpt*/
+	TDomain* ElemDomain = nullptr;   /*_MemP..:ListDom else PPTerm*/
 	TTerm* ElemTerm = nullptr;
 	WORD Idx = 0; WORD Idx2 = 0; /*_AllC*/
 	WORD CompMask = 0; XKey* KDOfs = nullptr; BYTE ArgI[1]{ 0 }; /*only FAND-file*/
@@ -133,8 +133,8 @@ struct TCommand : public Chained<TCommand> {
 struct TBranch {
 	WORD HeadIMask = 0;
 	WORD HeadOMask = 0;
-	std::map<int, TTerm*> Head; /*PTermList*/
-	TCommand* Cmd = nullptr;    /*PCommand*/
+	std::vector<TTerm*> Heads;          /* PTermList */
+	std::vector<TCommand*> Commands;    /* PCommand  */
 };
 
 struct TDbBranch : public Chained<TDbBranch> {
@@ -165,7 +165,7 @@ struct TPredicate : public Chained<TPredicate> {
 	BYTE Opt = 0;
 	BYTE Arity = 0;
 	std::vector<TDomain*> ArgDomains; /*PDomain*/ // Domains for Arguments
-	std::map<int, TVarDcl*> VarsCheck;
+	std::vector<TVarDcl*> VarsCheck;
 };
 
 struct TDatabase : public Chained<TDatabase> {

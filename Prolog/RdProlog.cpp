@@ -188,38 +188,37 @@ bool RdConst(TDomain* D, TTerm** RT)
 	return false;
 }
 
-TVarDcl* FindVarDcl(const std::string name, std::map<int, TVarDcl*>& Vars)
+TVarDcl* FindVarDcl(const std::string name, std::vector<TVarDcl*>& Vars)
 {
 	TVarDcl* var = nullptr;
-	for (auto& v : Vars) {
-		if (v.second->Name == name) {
-			var = v.second;
+	for (TVarDcl* v : Vars) {
+		if (v->Name == name) {
+			var = v;
 			break;
 		}
 	}
 	return var;
 }
 
-TVarDcl* MakeVarDcl(TDomain* D, integer Idx)
+TVarDcl* MakeVarDcl(TDomain* D, integer Idx, std::vector<TVarDcl*>& Vars)
 {
 	TVarDcl* v = new TVarDcl();
 	v->Dom = D;
 	v->Name = LexWord;
 
 	if (Idx < 0) {
-		v->Idx = VarCount - 1;
-		VarCount++;
+		v->Idx = Vars.size();
 	}
 	else {
 		v->Idx = Idx;
 	}
-
+	Vars.push_back(v);
 	return v;
 }
 
 TTerm* GetOp1(TDomain* D, instr_type Op, TTerm* E1);
 
-bool RdVar(TDomain* D, integer Kind, integer Idx, TTerm** RT, WORD* kind5idx, std::map<int, TVarDcl*>& Vars) /*PTerm || idx*/
+bool RdVar(TDomain* D, integer Kind, integer Idx, TTerm** RT, WORD* kind5idx, std::vector<TVarDcl*>& Vars) /*PTerm || idx*/
 {
 	if (IsKeyWordP("_")) {
 		if (!(Kind >= 1 && Kind <= 4)) OldError(508);
@@ -237,8 +236,7 @@ bool RdVar(TDomain* D, integer Kind, integer Idx, TTerm** RT, WORD* kind5idx, st
 	TVarDcl* var_dcl = FindVarDcl(LexWord, Vars);
 	if (var_dcl == nullptr) {
 		// 1. vyskyt promenne, jeste neexistuje -> bude vytvorena
-		var_dcl = MakeVarDcl(D, Idx);
-		Vars.insert(std::pair(var_dcl->Idx, var_dcl));
+		var_dcl = MakeVarDcl(D, Idx, Vars);
 	}
 	else if ((var_dcl->Dom != D) &&
 		!((var_dcl->Dom == StrDom) && (D == LongStrDom)) &&
@@ -308,8 +306,8 @@ bool RdVar(TDomain* D, integer Kind, integer Idx, TTerm** RT, WORD* kind5idx, st
 	return true;
 }
 
-TTerm* RdTerm(TDomain* D, integer Kind, std::map<int, TVarDcl*>& Vars); /*PPTerm*/ // forward;
-TTerm* RdAddExpr(TDomain* D, integer Kind, std::map<int, TVarDcl*>& Vars); /*PPTerm*/ // forward;
+TTerm* RdTerm(TDomain* D, integer Kind, std::vector<TVarDcl*>& Vars); /*PPTerm*/ // forward;
+TTerm* RdAddExpr(TDomain* D, integer Kind, std::vector<TVarDcl*>& Vars); /*PPTerm*/ // forward;
 
 prolog_func DomFun(TDomain* D)
 {
@@ -340,7 +338,7 @@ TTerm* GetOp2(TDomain* D, instr_type Op, TTerm* E1, TTerm* E2)
 	return t;
 }
 
-TTerm* GetFunOp(TDomain* D, TDomain* ResD, instr_type Op, std::string ArgTyp, integer Kind, std::map<int, TVarDcl*>& Vars)
+TTerm* GetFunOp(TDomain* D, TDomain* ResD, instr_type Op, std::string ArgTyp, integer Kind, std::vector<TVarDcl*>& Vars)
 {
 	TTerm* t = nullptr;
 	TTerm* t1 = nullptr;
@@ -370,7 +368,7 @@ TTerm* GetFunOp(TDomain* D, TDomain* ResD, instr_type Op, std::string ArgTyp, in
 	return t;
 }
 
-TTerm* RdPrimExpr(TDomain* D, integer Kind, std::map<int, TVarDcl*>& Vars)
+TTerm* RdPrimExpr(TDomain* D, integer Kind, std::vector<TVarDcl*>& Vars)
 {
 	TTerm* t = nullptr;
 	instr_type op = _notdefined;
@@ -484,7 +482,7 @@ TTerm* RdPrimExpr(TDomain* D, integer Kind, std::map<int, TVarDcl*>& Vars)
 	return t;
 }
 
-TTerm* RdMultExpr(TDomain* D, integer Kind, std::map<int, TVarDcl*>& Vars)
+TTerm* RdMultExpr(TDomain* D, integer Kind, std::vector<TVarDcl*>& Vars)
 {
 	TTerm* t = RdPrimExpr(D, Kind, Vars);
 	while ((D != StrDom) && (D != LongStrDom) && ((Lexem == '*' || Lexem == '/') ||
@@ -497,7 +495,7 @@ TTerm* RdMultExpr(TDomain* D, integer Kind, std::map<int, TVarDcl*>& Vars)
 	return t;
 }
 
-TTerm* RdAddExpr(TDomain* D, integer Kind, std::map<int, TVarDcl*>& Vars)
+TTerm* RdAddExpr(TDomain* D, integer Kind, std::vector<TVarDcl*>& Vars)
 {
 	TTerm* t = RdMultExpr(D, Kind, Vars);
 	while ((Lexem == '+') || (Lexem == '-') && ((D == IntDom) || (D == RealDom))) {
@@ -509,7 +507,7 @@ TTerm* RdAddExpr(TDomain* D, integer Kind, std::map<int, TVarDcl*>& Vars)
 	return t;
 }
 
-TTerm* RdListTerm(TDomain* D, integer Kind, std::map<int, TVarDcl*>& Vars)
+TTerm* RdListTerm(TDomain* D, integer Kind, std::vector<TVarDcl*>& Vars)
 {
 	TTerm* t = nullptr;
 	TTerm* t1 = nullptr;
@@ -552,14 +550,13 @@ TTerm* RdListTerm(TDomain* D, integer Kind, std::map<int, TVarDcl*>& Vars)
 	return t;
 }
 
-TTerm* RdTerm(TDomain* D, integer Kind, std::map<int, TVarDcl*>& Vars)
+TTerm* RdTerm(TDomain* D, integer Kind, std::vector<TVarDcl*>& Vars)
 {
 	TTerm* t = nullptr;
 	TFunDcl* f = nullptr;
 	WORD i = 0, n = 0;
 	BYTE idx = 0;
-	bool wo = false, wu = false;
-	wo = WasOp; wu = WasUnbd;
+	bool wo = WasOp; bool wu = WasUnbd;
 	WasOp = false; WasUnbd = false;
 	switch (D->Typ) {
 	case _IntD:
@@ -759,7 +756,7 @@ label4:
 	}
 }
 
-void RdConstants(std::map<int, TVarDcl*>& Vars)
+void RdConstants(std::vector<TVarDcl*>& Vars)
 {
 	// read all variables
 	while (true) {
@@ -1035,13 +1032,13 @@ TCommand* GetCommand(TCommandTyp Code, WORD N)
 	return c;
 }
 
-void RdTermList(TCommand* C, TDomain* D, WORD Kind, std::map<int, TVarDcl*>& Vars)
+void RdTermList(TCommand* C, TDomain* D, WORD Kind, std::vector<TVarDcl*>& Vars)
 {
 	TTerm* t = RdTerm(D, Kind, Vars);
-	C->Arg.insert(std::pair(t->Idx, t));
+	C->Arg.push_back(t);
 }
 
-TCommand* RdCommand(std::map<int, TVarDcl*>& Vars) /*PCommand*/
+TCommand* RdCommand(std::vector<TVarDcl*>& Vars) /*PCommand*/
 {
 	TVarDcl* v = nullptr;
 	char cm = '\0'; /*PDomain d;*/
@@ -1068,7 +1065,7 @@ TCommand* RdCommand(std::map<int, TVarDcl*>& Vars) /*PCommand*/
 	else if (Lexem != _identifier) goto label9;
 	if (IsUpperIdentif()) {
 		v = FindVarDcl(LexWord, Vars);
-		if (v == nullptr) v = MakeVarDcl(0, -1);
+		if (v == nullptr) v = MakeVarDcl(0, -1, Vars);
 		RdLexP();
 		d = v->Dom;
 		if (v->Bound) {
@@ -1268,7 +1265,7 @@ TCommand* RdPredCommand(TCommandTyp Code, TPredicate* predicate)
 {
 	TCommand* c = nullptr;
 	WORD i = 0, n = 0, w = 0, m = 0, kind = 0, sz = 0, InpMask = 0, OutpMask = 0;
-	std::map<int, TTerm*> lRoot;
+	std::vector<TTerm*> lRoot;
 	TDomain* d = nullptr;
 	TTerm* t = nullptr;
 	TScanInf* si = nullptr;
@@ -1305,7 +1302,7 @@ TCommand* RdPredCommand(TCommandTyp Code, TPredicate* predicate)
 			d = p->ArgDomains[i];
 
 			auto l = RdTerm(d, kind, predicate->VarsCheck);
-			lRoot.insert(std::pair(l->Idx, l));
+			lRoot.push_back(l);
 
 			if ((p->Opt & _CioMaskOpt) != 0) {
 				if (UnbdVarsInTerm) {
@@ -1595,7 +1592,7 @@ void RdAutoRecursionHead(TPredicate* p, TBranch* b)
 	//PtrRec(c).Seg = _Sg; PtrRec(l).Seg = _Sg; PtrRec(l1).Seg = _Sg;
 	//PtrRec(t).Seg = _Sg; PtrRec(d).Seg = _Sg;
 	TCommand* c = GetCommand(_AutoC, 2 + 3 + 6 * 2);
-	b->Cmd = c;
+	b->Commands.push_back(c);
 	p->InstSz += 4;
 	c->iWrk = (p->InstSz / 4) - 1;
 	w = p->InpMask;
@@ -1604,13 +1601,14 @@ void RdAutoRecursionHead(TPredicate* p, TBranch* b)
 		else isInput = false;
 
 		t = new TTerm();
-		c->Arg.insert(std::pair(t->Idx, t));
+		c->Arg.push_back(t);
 		t->Fun = prolog_func::_VarT;
 		t->Idx = i;
 		t->Bound = isInput;
 
 		// TODO: proc je prvni zaznam "prazdny"?
-		b->Head.insert(std::pair(-1, new TTerm()));
+		TTerm* empty_term = new TTerm();
+		b->Heads.push_back(empty_term);
 		d = p->ArgDomains[i];
 		if (i > 0) AcceptP(',');
 		else if (!(d->Typ == _FunD || d->Typ == _ListD)) Error(556);
@@ -1630,7 +1628,7 @@ void RdAutoRecursionHead(TPredicate* p, TBranch* b)
 		else {
 			if (!IsUpperIdentif()) Error(511);
 			v = FindVarDcl(LexWord, p->VarsCheck);
-			if (v == nullptr) v = MakeVarDcl(d, i);
+			if (v == nullptr) v = MakeVarDcl(d, i, p->VarsCheck);
 			if (isInput) {
 				if (v->Bound) Error(553);
 				v->Bound = true;
@@ -1676,7 +1674,7 @@ void RdSemicolonClause(TPredicate* p, TBranch* b)
 		c = GetCommand(_AppPkC, 6);
 		c->apIdx = v->Idx;
 		c->apTerm = RdTerm(v->Dom, 2, p->VarsCheck);
-		ChainLast(b->Cmd, c);
+		b->Commands.push_back(c);
 		if (Lexem == ',') {
 			RdLexP();
 			AcceptPKeyWord("self");
@@ -1699,13 +1697,13 @@ void RdSemicolonClause(TPredicate* p, TBranch* b)
 		c = GetCommand(_FailC, 0);
 	}
 label2:
-	ChainLast(b->Cmd, c);
+	b->Commands.push_back(c);
 label3:
 	b = new TBranch();
 	p->branch.push_back(b);
 	switch (x) {
 	case 'e': {
-		b->Cmd = RdCommand(p->VarsCheck);
+		b->Commands.push_back(RdCommand(p->VarsCheck));
 		break;
 	}
 	case 'f': {
@@ -1713,14 +1711,14 @@ label3:
 		break;
 	}
 	case 's': {
-		b->Cmd = GetCommand(_SelfC, 0);
+		b->Commands.push_back(GetCommand(_SelfC, 0));
 		break;
 	}
 	case 'a': {
 		c = GetCommand(_AppUnpkC, 4);
 		c->apIdx = v->Idx;
 		c->apDom = (TTerm*)v->Dom;
-		b->Cmd = c;
+		b->Commands.push_back(c);
 		break;
 	}
 	default: break;
@@ -1761,7 +1759,7 @@ void RdClauses()
 		}
 
 		//VarDcls = nullptr;
-		VarCount = p->Arity;
+		VarCount = 0; // p->Arity;
 		x = Mem1.Mark();
 		b = new TBranch();
 		p->branch.push_back(b);
@@ -1774,8 +1772,7 @@ void RdClauses()
 
 				//v = VarDcls;
 				//while (v != nullptr) {
-				for (auto& var : p->VarsCheck) {
-					auto v = var.second;
+				for (TVarDcl* v : p->VarsCheck) {
 					if (!v->Used || !v->Bound) {
 						SetMsgPar(v->Name);
 						if (!v->Used) OldError(521);
@@ -1815,7 +1812,7 @@ void RdClauses()
 						t = RdTerm(d, kind, p->VarsCheck);
 					}
 					if (t != nullptr) {
-						b->Head.insert(std::pair(t->Idx, t));
+						b->Heads.push_back(t);
 					}
 				}
 				w = w >> 1;
@@ -1830,7 +1827,7 @@ void RdClauses()
 				WasNotC = false;
 				if (IsKeyWordP("self")) {
 					c = GetCommand(_SelfC, 0);
-					ChainLast(b->Cmd, c);
+					b->Commands.push_back(c);
 					break; // goto label4;
 				}
 				if (IsKeyWordP("not")) { AcceptP('('); WasNotC = true; }
@@ -1868,8 +1865,7 @@ void RdClauses()
 					}
 				}
 
-				if (b->Cmd == nullptr) b->Cmd = c;
-				else ChainLast(b->Cmd, c);
+				b->Commands.push_back(c);
 
 				if (WasNotC) {
 					if (c->Code != _PredC) OldError(546);
@@ -1878,9 +1874,9 @@ void RdClauses()
 					if ((p1->Opt & _CioMaskOpt) != 0) w = c->InpMask;
 					else w = p1->InpMask;
 
-					for (auto& t : c->Arg) {
+					for (TTerm* term : c->Arg) {
 						if ((w & 1) == 0) {
-							if ((t.second == nullptr) || (t.second->Fun != prolog_func::_UnderscT)) OldError(547);
+							if (t->Fun != prolog_func::_UnderscT) OldError(547);
 						}
 						w = w >> 1;
 					}
@@ -1902,8 +1898,7 @@ void RdClauses()
 
 		//v = VarDcls;
 		//while (v != nullptr) {
-		for (auto& var : p->VarsCheck) {
-			auto v = var.second;
+		for (TVarDcl* v : p->VarsCheck) {
 			if (!v->Used || !v->Bound) {
 				SetMsgPar(v->Name);
 				if (!v->Used) OldError(521);

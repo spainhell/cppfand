@@ -1869,7 +1869,7 @@ void AssertFand(TPredicate* P, TCommand* C)
 	while (fl != nullptr) {
 		f = fl->FldD;
 		if ((f->Flg & f_Stored) != 0) {
-			t = CopyTerm(l->second);
+			t = CopyTerm(*l);
 			d = P->ArgDomains[i];
 			if (Trace()) {
 				if (i > 0) printf(",");
@@ -2374,13 +2374,14 @@ void RunProlog(RdbPos* Pos, std::string PredName)
 	TBranch* branch1 = nullptr;
 	std::vector<TBranch*>::iterator branch_item;
 	TDbBranch* bd = nullptr;
-	std::map<int, TTerm*>::iterator branch_head_item;
+	std::vector<TTerm*>::iterator branch_head_item;
 	TTerm* t = nullptr; TProgRoots* Roots = nullptr;
 	RdbD* ChptLRdb = nullptr;
 	WORD oldSg = 0; TInstance* oldCurrInst = nullptr;
 	WORD tl = 0, cl = 0;
 	bool l_source_branch = false;
 	bool l_source_cmd = false;
+	size_t ci;
 
 	ProlgCallLevel++;
 	//NewExit(Ovr, er); 
@@ -2459,18 +2460,19 @@ label1:
 	}
 	/* copy input parameters */
 	branch_item = p->branch.begin();
-	branch = *branch_item;
+	branch = branch_item == p->branch.end() ? nullptr : *branch_item;
+
 	i = 0;
 	if ((p->Opt & _CioMaskOpt) != 0) w = c->InpMask;
 	else w = p->InpMask;
 
 	if (l_source_branch) {
-		while (branch_head_item != branch->Head.end()) {
+		while (branch_head_item != branch->Heads.end()) {
 			if ((w & 1) != 0) {
 				if ((p->Opt & _PackInpOpt) != 0) {
 					pt = (char*)A;
 					//PTPMaxOfs = ofs(A) + MaxPackedPredLen - 2;
-					PackTermV(branch_head_item->second);
+					PackTermV(*branch_head_item);
 					//n = PtrRec(pt).Ofs - ofs(A);
 					//s = new LongStr(2 + n); //(LongStr*)Mem1.Get(2 + n);
 					q->Vars[i] = new TTerm();
@@ -2478,7 +2480,7 @@ label1:
 					//memcpy(s->A, A, n);
 				}
 				else {
-					q->Vars[i] = CopyTerm(branch_head_item->second);
+					q->Vars[i] = CopyTerm(*branch_head_item);
 				}
 			}
 
@@ -2495,7 +2497,7 @@ label1:
 					// imported from DB
 					pt = (char*)A;
 					//PTPMaxOfs = ofs(A) + MaxPackedPredLen - 2;
-					PackTermV(branch_head_item->second);
+					PackTermV(*branch_head_item);
 					//n = PtrRec(pt).Ofs - ofs(A);
 					//s = new LongStr(2 + n); //(LongStr*)Mem1.Get(2 + n);
 					q->Vars[i] = new TTerm();
@@ -2503,7 +2505,7 @@ label1:
 					//memcpy(s->A, A, n);
 				}
 				else {
-					q->Vars[i] = CopyTerm(branch_head_item->second);
+					q->Vars[i] = CopyTerm(*branch_head_item);
 				}
 			}
 			i++;
@@ -2575,15 +2577,14 @@ label2:
 	//PtrRec(b).Seg = _Sg;
 label23:
 	/* normal unify branch head predicates */
-	;
-	q->NextBranch = *(++branch_item);
+	q->NextBranch = *(branch_item++);
 	i = 0;
-	branch_head_item = branch->Head.begin();
+	branch_head_item = branch->Heads.begin();
 	l_source_branch = true;
 	l_source_cmd = false;
 	w = branch->HeadIMask;
-	while (branch_head_item != branch->Head.end()) {
-		if (((w & 1) != 0) && !UnifyTermsCV(q->Vars[i], branch_head_item->second)) {
+	while (branch_head_item != branch->Heads.end()) {
+		if (((w & 1) != 0) && !UnifyTermsCV(q->Vars[i], *branch_head_item)) {
 			branch = *(++branch_item);
 			if (branch == nullptr) {
 				goto label5;
@@ -2595,8 +2596,9 @@ label23:
 		w = w >> 1;
 	}
 	/* execute all commands */
-	c = branch->Cmd;
-	while (c != nullptr) {
+	c = nullptr;
+	for (ci = 0; ci < branch->Commands.size(); ci++) {
+		c = branch->Commands[i];
 		switch (c->Code) {
 		case _PredC:
 		case _RetractC:
@@ -2652,7 +2654,7 @@ label23:
 				while (branch_head_item != c->Arg.end()) {
 					wp = (WORD*)pt;
 					pt += 2;
-					PackTermV(branch_head_item->second);
+					PackTermV(*branch_head_item);
 					//*wp = PtrRec(pt).Ofs - PtrRec(wp).Ofs - 2;
 					++branch_head_item;
 				}
@@ -2695,18 +2697,18 @@ label23:
 			break;
 		}
 		}
+		label3:
+		continue;
 		/*       resume command   */
-	label3:
-		c = c->pChain;
 	}
 	/*           copy output parameters */
 	i = 0;
-	branch_head_item = branch->Head.begin();
+	branch_head_item = branch->Heads.begin();
 	l_source_branch = true;
 	l_source_cmd = false;
 	w = branch->HeadOMask;
-	while (branch_head_item != branch->Head.end()) {
-		if ((w & 1) != 0) q->Vars[i] = CopyTerm(branch_head_item->second);
+	while (branch_head_item != branch->Heads.end()) {
+		if ((w & 1) != 0) q->Vars[i] = CopyTerm(*branch_head_item);
 		i++;
 		++branch_head_item;
 		w = w >> 1;
@@ -2714,7 +2716,7 @@ label23:
 	/*       called predicate finished   */
 label4:
 	c = q->RetCmd;
-	if (c->Code == _NotC) {
+	if (c != nullptr && c->Code == _NotC) {
 		TopInst = q->PrevInst;
 		goto label5;
 	}
@@ -2742,7 +2744,7 @@ label41:
 	l_source_branch = false;
 	l_source_cmd = true;
 	while (branch_head_item != c->Arg.end()) {
-		if (((w & 1) == 1) && !UnifyTermsCV(q1->Vars[i], branch_head_item->second)) goto label5;
+		if (((w & 1) == 1) && !UnifyTermsCV(q1->Vars[i], *branch_head_item)) goto label5;
 		i++;
 		++branch_head_item;
 		w = w >> 1;
@@ -2763,8 +2765,13 @@ label41:
 		Mem2.Release(q1);
 	}
 	SetCallLevel(q->CallLevel);
-	if (c->Code == _AutoC) goto label25;
-	else goto label3;
+	if (c->Code == _AutoC) {
+		goto label25;
+	}
+	else {
+		// TODO: toto je blbost, na label3 byl zmenen chain na vector
+		goto label3;
+	}
 
 	/*---------------------------------  backtracking  ---------------------------*/
 label5:
@@ -2809,6 +2816,7 @@ label5:
 		}
 		SetCallLevel(q->CallLevel);
 		p = q->Pred;
+		// TODO: toto je blbost, na label3 byl zmenen chain na vector
 		goto label3;
 	}
 	if (Trace()) {
