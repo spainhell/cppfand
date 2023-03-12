@@ -203,18 +203,17 @@ TVarDcl* FindVarDcl(const std::string name, std::map<int, TVarDcl*>& Vars)
 TVarDcl* MakeVarDcl(TDomain* D, integer Idx)
 {
 	TVarDcl* v = new TVarDcl();
-	//if (VarDcls == nullptr) VarDcls = v;
-	//else ChainLast(VarDcls, v);
-
 	v->Dom = D;
 	v->Name = LexWord;
+
 	if (Idx < 0) {
-		v->Idx = VarCount;
+		v->Idx = VarCount - 1;
 		VarCount++;
 	}
 	else {
 		v->Idx = Idx;
 	}
+
 	return v;
 }
 
