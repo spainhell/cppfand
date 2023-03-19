@@ -364,8 +364,8 @@ label1:
 		ID->OpErr = _const;
 		ID->OpWarn = _const;
 		KI = nullptr;
-		ID->ForwRecPtr = GetRecSpace();
-		FD->FF->RecPtr = GetRecSpace();
+		ID->ForwRecPtr = GetRecSpace(CFile->FF);
+		FD->FF->RecPtr = GetRecSpace(CFile->FF);
 		if (Lexem == '(') {
 			RdLex();
 			if ((Ii == 1) && (Lexem == '?')) {

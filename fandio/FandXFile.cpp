@@ -106,7 +106,7 @@ void CreateIndexFile()
 		fail = true;
 		XF = CFile->FF->XF;
 		cr = CRecPtr;
-		CRecPtr = GetRecSpace();
+		CRecPtr = GetRecSpace(CFile->FF);
 		md = NewLMode(CFile, RdMode);
 		TryLockN(0, 0);
 		/*ClearCacheCFile;*/

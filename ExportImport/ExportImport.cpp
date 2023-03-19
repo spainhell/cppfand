@@ -269,7 +269,7 @@ void ImportTxt(CopyD* CD)
 			AsgnParFldFrml(CD->HdFD, CD->HdF, FE.get(), false);
 		}
 		CFile = CD->FD2;
-		CRecPtr = GetRecSpace();
+		CRecPtr = GetRecSpace(CD->FD2->FF);
 #ifdef FandSQL
 		if (CFile->IsSQLFile) {
 			New(q, Init);
@@ -337,7 +337,7 @@ void ExportTxt(CopyD* CD)
 			ReleaseStore(CRecPtr);
 		}
 		CFile = CD->FD1;
-		CRecPtr = GetRecSpace();
+		CRecPtr = GetRecSpace(CD->FD1->FF);
 		md = NewLMode(CFile, RdMode);
 		Scan = new XScan(CFile, CD->ViewKey, nullptr, true);
 		Scan->Reset(nullptr, false);

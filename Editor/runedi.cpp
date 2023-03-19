@@ -879,7 +879,7 @@ void DisplRec(WORD I)
 	WORD a = E->dNorm;
 	longint N = BaseRec + I - 1;
 	bool IsCurrNewRec = IsNewRec && (I == IRec);
-	void* p = GetRecSpace();
+	void* p = GetRecSpace(CFile->FF);
 	if ((N > CNRecs()) && !IsCurrNewRec) {
 		NewFlds = true;
 		goto label1;
@@ -1216,7 +1216,7 @@ void DisplAllWwRecs()
 
 void SetNewWwRecAttr()
 {
-	CRecPtr = GetRecSpace();
+	CRecPtr = GetRecSpace(CFile->FF);
 	for (WORD I = 1; I <= E->NRecs; I++) {
 		if (BaseRec + I - 1 > CNRecs()) break;
 		if (!IsNewRec || (I != IRec)) {
@@ -1695,9 +1695,11 @@ void UpdMemberRef(void* POld, void* PNew)
 #endif
 			k = GetFromKey(LD);
 			kf1 = k->KFlds;
-			p = GetRecSpace();
+			p = GetRecSpace(CFile->FF);
 			CRecPtr = p;
-			if (PNew != nullptr) p2 = GetRecSpace();
+			if (PNew != nullptr) {
+				p2 = GetRecSpace(CFile->FF);
+			}
 			Scan = new XScan(CFile, k, nullptr, true);
 			Scan->ResetOwner(&xold, nullptr);
 #ifdef FandSQL
@@ -1777,7 +1779,7 @@ void WrJournal(char Upd, void* RP, double Time)
 		memcpy(&newData.get()[(*it)->Displ], &src[srcOffset], l);		// record data
 
 		LockMode md = NewLMode(CFile, CrMode);
-		IncNRecs(1);
+		IncNRecs(CFile, 1);
 		CFile->WriteRec(CFile->FF->NRecs, newData.get());
 		OldLMode(CFile, md);
 		CFile = E->FD;
@@ -2360,7 +2362,7 @@ bool OldRecDiffers()
 		!CFile->IsSQLFile &&
 #endif 
 		(!CFile->FF->NotCached()))) return result;
-	CRecPtr = GetRecSpace();
+	CRecPtr = GetRecSpace(CFile->FF);
 #ifdef FandSQL
 	if (CFile->IsSQLFile) {
 		x.S = WK->NrToStr(CRec); Strm1->KeyAcc(WK, @x); f = CFile->FldD;
@@ -2566,7 +2568,7 @@ bool WriteCRec(bool MayDispl, bool& Displ)
 		if (IsNewRec) {
 			if (AddSwitch && !RunAddUpdte1('+', nullptr, false, nullptr, nullptr)) goto label1;
 			CNew = UpdateIndexes();
-			CreateRec(CFile->FF->NRecs + 1);
+			CreateRec(CFile, CFile->FF->NRecs + 1);
 		}
 		else {
 			if (AddSwitch) {
@@ -2590,7 +2592,7 @@ bool WriteCRec(bool MayDispl, bool& Displ)
 		}
 		if (AddSwitch && !RunAddUpdte1('+', nullptr, false, nullptr, nullptr)) goto label1;
 		if (ChptWriteCRec() != 0) goto label1;
-		CreateRec(N);
+		CreateRec(CFile, N);
 		if (Subset) /* !!! with WK^ do!!! */ {
 			WK->AddToRecNr(N, 1);
 			WK->InsertAtNr(CRec(), N);
@@ -2647,7 +2649,7 @@ void DuplFromPrevRec()
 		F = CFld->FldD; md = RdMode;
 		if (F->field_type == FieldType::TEXT) md = WrMode;
 		md = NewLMode(CFile, md); SetWasUpdated();
-		cr = CRecPtr; CRecPtr = GetRecSpace(); RdRec(CRec() - 1);
+		cr = CRecPtr; CRecPtr = GetRecSpace(CFile->FF); RdRec(CRec() - 1);
 		DuplFld(CFile, CFile, CRecPtr, E->NewRecPtr, E->OldRecPtr, F, F);
 		ClearRecSpace(CRecPtr); ReleaseStore(CRecPtr); CRecPtr = cr; OldLMode(CFile, md);
 	}
@@ -2750,7 +2752,7 @@ bool PromptSearch(bool create)
 	XKey* K = VK;
 	if (Subset) K = WK;
 	KeyFldD* KF = K->KFlds;
-	void* RP = GetRecSpace();
+	void* RP = GetRecSpace(CFile->FF);
 	CRecPtr = RP;
 	ZeroAllFlds();
 	x.Clear();
@@ -3726,7 +3728,7 @@ void SwitchRecs(integer Delta)
 #endif
 	if (NoCreate && NoDelete || WasWK) return;
 	if (!TryLMode(CFile, WrMode, md, 1)) return;
-	p1 = GetRecSpace(); p2 = GetRecSpace();
+	p1 = GetRecSpace(CFile->FF); p2 = GetRecSpace(CFile->FF);
 	CRecPtr = p1; n1 = AbsRecNr(CRec()); CFile->ReadRec(n1, CRecPtr);
 	if (HasIndex) x1.PackKF(VK->KFlds);
 	CRecPtr = p2; n2 = AbsRecNr(CRec() + Delta); CFile->ReadRec(n2, CRecPtr);
@@ -4217,7 +4219,7 @@ bool StartProc(Instr_proc* ExitProc, bool Displ)
 	auto result = false;
 	CFile->FF->WasWrRec = false;
 	if (HasTF) {
-		p = (char*)GetRecSpace();
+		p = (char*)GetRecSpace(CFile->FF);
 		Move(CRecPtr, p, CFile->FF->RecLen);
 	}
 	SetEdRecNoEtc(0);

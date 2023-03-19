@@ -45,7 +45,7 @@ double Owned(FrmlElem* Bool, FrmlElem* Sum, LinkD* LD)
 	}
 	else {
 		r = 0;
-		CRecPtr = GetRecSpace();
+		CRecPtr = GetRecSpace(CFile->FF);
 		XScan* Scan = new XScan(CFile, K, nullptr, true);
 		Scan->ResetOwner(&x, nullptr);
 		while (true) {
@@ -323,7 +323,7 @@ longint RecNoFun(FrmlElem13* Z)
 	XKey* k = Z->Key;
 	CFile = Z->FFD;
 	LockMode md = NewLMode(CFile, RdMode);
-	CRecPtr = GetRecSpace();
+	CRecPtr = GetRecSpace(CFile->FF);
 	if (CFile->FF->NRecs > 0) {
 		if (CFile->FF->file_type == FileType::INDEX) {
 			TestXFExist();
@@ -357,7 +357,7 @@ longint AbsLogRecNoFun(FrmlElem13* Z)
 	if (CFile->FF->file_type == FileType::INDEX) {
 		TestXFExist();
 		if (Z->Op == _recnolog) {
-			CRecPtr = GetRecSpace();
+			CRecPtr = GetRecSpace(CFile->FF);
 			CFile->ReadRec(N, CRecPtr);
 			if (DeletedFlag()) goto label1;
 			result = k->RecNrToNr(N);
@@ -394,7 +394,7 @@ double LinkProc(FrmlElem15* X)
 			SetMsgPar(CFile->Name, LD->RoleName);
 			RunErrorM(md, 609);
 		}
-		CRecPtr = GetRecSpace();
+		CRecPtr = GetRecSpace(CFile->FF);
 		CFile->ReadRec(N, CRecPtr);
 		OldLMode(CFile, md);
 	}
@@ -2337,7 +2337,7 @@ void AccRecNoProc(FrmlElem14* X, WORD Msg)
 {
 	CFile = X->RecFD;
 	LockMode md = NewLMode(CFile, RdMode);
-	CRecPtr = GetRecSpace();
+	CRecPtr = GetRecSpace(CFile->FF);
 	longint N = RunInt(X->PPPPP1);
 	if ((N <= 0) || (N > CFile->FF->NRecs)) {
 		SetMsgPar(CFile->Name, X->RecFldD->Name);

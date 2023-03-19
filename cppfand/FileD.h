@@ -27,8 +27,8 @@ public:
 	std::string FullPath;
 
 	FType FileType;
-	/// FandFile reference
-	FandFile* FF = nullptr;
+	
+	FandFile* FF = nullptr;   // FandFile reference
 
 	longint IRec = 0;
 	RdbPos ChptPos;           // zero for Rdb and FD translated from string 
