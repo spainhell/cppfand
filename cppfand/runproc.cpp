@@ -164,7 +164,7 @@ void AssignField(Instr_assign* PD)
 		SetMsgPar(CFile->Name, F->Name);
 		RunErrorM(md, msg);
 	}
-	AssgnFrml(F, PD->Frml, true, PD->Add);
+	AssgnFrml(CFile, CRecPtr, F, PD->Frml, true, PD->Add);
 	CFile->WriteRec(N, CRecPtr);
 	ReleaseStore(CRecPtr);
 	OldLMode(CFile, md);
@@ -197,11 +197,11 @@ void AssignRecVar(LocVar* LV1, LocVar* LV2, AssignD* A)
 			CFile = FD1;
 			CRecPtr = RP1;
 			((FrmlElem8*)A->Frml)->NewRP = RP2;
-			AssgnFrml(A->OFldD, A->Frml, false, false);
+			AssgnFrml(CFile, CRecPtr, A->OFldD, A->Frml, false, false);
 			break;
 		}
 		}
-		A = (AssignD*)A->pChain;
+		A = A->pChain;
 	}
 	CFile = FD1; CRecPtr = RP1;
 	SetUpdFlag(CFile->FF, CRecPtr);
@@ -217,7 +217,7 @@ void AssignRecFld(Instr_assign* PD)
 	CRecPtr = PD->AssLV->RecPtr; // TODO: odstranit
 
 	SetUpdFlag(FD->FF, record);
-	AssgnFrml(F, PD->Frml, HasTWorkFlag(FD->FF, record), PD->Add);
+	AssgnFrml(CFile, CRecPtr, F, PD->Frml, HasTWorkFlag(FD->FF, record), PD->Add);
 }
 
 void SortProc(FileD* FD, KeyFldD* SK)

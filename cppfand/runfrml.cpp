@@ -1272,18 +1272,18 @@ bool TryCopyT(FieldDescr* F, FandTFile* TF, longint& pos, FrmlElem* Z)
 	return result;
 }
 
-void AssgnFrml(FieldDescr* F, FrmlElem* X, bool Delete, bool Add)
+void AssgnFrml(FileD* file_d, void* record, FieldDescr* F, FrmlElem* X, bool Delete, bool Add)
 {
 	longint pos = 0;
 	switch (F->frml_type) {
 	case 'S': {
 		if (F->field_type == FieldType::TEXT) {
 			FandTFile* tf;
-			if (HasTWorkFlag(CFile->FF, CRecPtr)) {
+			if (HasTWorkFlag(file_d->FF, record)) {
 				tf = &TWork;
 			}
 			else {
-				tf = CFile->FF->TF;
+				tf = file_d->FF->TF;
 			}
 			if (TryCopyT(F, tf, pos, X)) {
 				if (Delete) DelTFld(F);

@@ -359,7 +359,7 @@ void SetWasUpdated()
 void AssignFld(FieldDescr* F, FrmlElem* Z)
 {
 	SetWasUpdated();
-	AssgnFrml(F, Z, false, false);
+	AssgnFrml(CFile, CRecPtr, F, Z, false, false);
 }
 
 WORD FieldEdit(FieldDescr* F, FrmlElem* Impl, WORD LWw, WORD iPos, std::string& Txt, double& RR, bool del, bool upd, bool ret,
@@ -2505,8 +2505,8 @@ bool WriteCRec(bool MayDispl, bool& Displ)
 	if (IsNewRec) {
 		ID = E->Impl;
 		while (ID != nullptr) {
-			AssgnFrml(ID->FldD, ID->Frml, true, false);
-			ID = (ImplD*)ID->pChain;
+			AssgnFrml(CFile, CRecPtr, ID->FldD, ID->Frml, true, false);
+			ID = ID->pChain;
 		}
 	}
 	if (MustCheck) {   /* repeat field checking */

@@ -691,7 +691,7 @@ void AsgnParFldFrml(FileD* FD, FieldDescr* F, FrmlElem* Z, bool Ad)
 			IncNRecs(CFile, 1);
 			CFile->WriteRec(N, CRecPtr);
 		}
-		AssgnFrml(F, Z, true, Ad);
+		AssgnFrml(CFile, CRecPtr, F, Z, true, Ad);
 		CFile->WriteRec(N, CRecPtr);
 		OldLMode(CFile, md);
 	}
