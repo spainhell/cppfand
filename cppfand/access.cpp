@@ -543,7 +543,7 @@ void T_(FieldDescr* F, longint Pos)
 void DelTFld(FieldDescr* F)
 {
 	longint n = _T(F);
-	if (HasTWorkFlag()) {
+	if (HasTWorkFlag(CFile->FF, CRecPtr)) {
 		TWork.Delete(n);
 	}
 	else {
@@ -978,7 +978,7 @@ std::string _StdS(FieldDescr* F)
 			break;
 		}
 		case FieldType::TEXT: { // volny text max. 65k
-			if (HasTWorkFlag()) {
+			if (HasTWorkFlag(CFile->FF, CRecPtr)) {
 				LongStr* ls = TWork.Read(_T(F));
 				S = std::string(ls->A, ls->LL);
 				delete ls;
@@ -1016,7 +1016,7 @@ void LongS_(FieldDescr* F, LongStr* S)
 			if (CFile->IsSQLFile) { SetTWorkFlag; goto label1; }
 			else
 #endif
-				if (HasTWorkFlag())
+				if (HasTWorkFlag(CFile->FF, CRecPtr))
 					label1:
 			Pos = TWork.Store(S->A, S->LL);
 				else {
@@ -1222,7 +1222,7 @@ void ClearRecSpace(void* p)
 	if (CFile->FF->TF != nullptr) {
 		cr = CRecPtr;
 		CRecPtr = p;
-		if (HasTWorkFlag()) {
+		if (HasTWorkFlag(CFile->FF, CRecPtr)) {
 			for (auto& f : CFile->FldD) {
 				if (((f->Flg & f_Stored) != 0) && (f->field_type == FieldType::TEXT)) {
 					TWork.Delete(_T(f));
@@ -1258,12 +1258,12 @@ void CopyRecWithT(void* p1, void* p2)
 				ReleaseStore(s);
 			}
 			else {
-				if (HasTWorkFlag()) {
+				if (HasTWorkFlag(CFile->FF, CRecPtr)) {
 					tf1 = &TWork;
 				}
 				longint pos = _T(F);
 				CRecPtr = p2;
-				if (HasTWorkFlag()) {
+				if (HasTWorkFlag(CFile->FF, CRecPtr)) {
 					tf2 = &TWork;
 				}
 				pos = CopyTFString(tf2, CFile, tf1, pos);
@@ -1503,16 +1503,16 @@ WORD CFileRecSize()
 	return CFile->FF->RecLen;
 }
 
-void SetTWorkFlag()
+void SetTWorkFlag(FandFile* fand_file, void* record)
 {
-	BYTE* p = (BYTE*)CRecPtr;
-	p[CFile->FF->RecLen] = 1;
+	BYTE* p = (BYTE*)record;
+	p[fand_file->RecLen] = 1;
 }
 
-bool HasTWorkFlag()
+bool HasTWorkFlag(FandFile* fand_file, void* record)
 {
-	BYTE* p = (BYTE*)CRecPtr;
-	const bool workFlag = p[CFile->FF->RecLen] == 1;
+	BYTE* p = (BYTE*)record;
+	const bool workFlag = p[fand_file->RecLen] == 1;
 	return workFlag;
 }
 

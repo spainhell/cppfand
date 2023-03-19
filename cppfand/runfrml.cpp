@@ -1192,7 +1192,7 @@ void TestTFrml(FieldDescr* F, FrmlElem* Z, FandTFile** TF02, FileD** TFD02, long
 		else if ((F->Flg & f_Encryp) != (f1->Flg & f_Encryp)) return;
 		*TFD02 = CFile;
 		*TF02 = CFile->FF->TF;
-		if (HasTWorkFlag()) {
+		if (HasTWorkFlag(CFile->FF, CRecPtr)) {
 			*TF02 = &TWork;
 		}
 		TF02Pos = _T(f1);
@@ -1279,7 +1279,7 @@ void AssgnFrml(FieldDescr* F, FrmlElem* X, bool Delete, bool Add)
 	case 'S': {
 		if (F->field_type == FieldType::TEXT) {
 			FandTFile* tf;
-			if (HasTWorkFlag()) {
+			if (HasTWorkFlag(CFile->FF, CRecPtr)) {
 				tf = &TWork;
 			}
 			else {

@@ -66,8 +66,8 @@ WORD CompLexStrings(const std::string& S1, const std::string& S2);
 void RunErrorM(LockMode Md, WORD N); // r729
 void* GetRecSpace(FandFile* fand_file); // r739
 WORD CFileRecSize(); // r744
-void SetTWorkFlag(); // r746 ASM
-bool HasTWorkFlag(); // r752 ASM
+void SetTWorkFlag(FandFile* fand_file, void* record); // r746 ASM
+bool HasTWorkFlag(FandFile* fand_file, void* record); // r752 ASM
 void SetUpdFlag(); // r755 ASM
 void ClearUpdFlag(); // r758 ASM
 bool HasUpdFlag(); // r761 ASM

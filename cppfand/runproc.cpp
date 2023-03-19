@@ -210,9 +210,10 @@ void AssignRecVar(LocVar* LV1, LocVar* LV2, AssignD* A)
 void AssignRecFld(Instr_assign* PD)
 {
 	FieldDescr* F = PD->RecFldD;
-	CFile = PD->AssLV->FD; CRecPtr = PD->AssLV->RecPtr;
+	CFile = PD->AssLV->FD;
+	CRecPtr = PD->AssLV->RecPtr;
 	SetUpdFlag();
-	AssgnFrml(F, PD->Frml, HasTWorkFlag(), PD->Add);
+	AssgnFrml(F, PD->Frml, HasTWorkFlag(CFile->FF, CRecPtr), PD->Add);
 }
 
 void SortProc(FileD* FD, KeyFldD* SK)
@@ -1615,7 +1616,7 @@ void CallProcedure(Instr_proc* PD)
 		if ((*it0)->FTyp == 'r') {
 			CFile = (*it0)->FD;
 			CRecPtr = GetRecSpace(CFile->FF);
-			SetTWorkFlag();
+			SetTWorkFlag(CFile->FF, CRecPtr);
 			ZeroAllFlds();
 			ClearDeletedFlag();
 			(*it0)->RecPtr = CRecPtr;
