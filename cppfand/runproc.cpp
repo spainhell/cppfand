@@ -204,16 +204,20 @@ void AssignRecVar(LocVar* LV1, LocVar* LV2, AssignD* A)
 		A = (AssignD*)A->pChain;
 	}
 	CFile = FD1; CRecPtr = RP1;
-	SetUpdFlag();
+	SetUpdFlag(CFile->FF, CRecPtr);
 }
 
 void AssignRecFld(Instr_assign* PD)
 {
 	FieldDescr* F = PD->RecFldD;
-	CFile = PD->AssLV->FD;
-	CRecPtr = PD->AssLV->RecPtr;
-	SetUpdFlag();
-	AssgnFrml(F, PD->Frml, HasTWorkFlag(CFile->FF, CRecPtr), PD->Add);
+	FileD* FD = PD->AssLV->FD;
+	void* record = PD->AssLV->RecPtr;
+
+	CFile = PD->AssLV->FD; // TODO: odstranit
+	CRecPtr = PD->AssLV->RecPtr; // TODO: odstranit
+
+	SetUpdFlag(FD->FF, record);
+	AssgnFrml(F, PD->Frml, HasTWorkFlag(FD->FF, record), PD->Add);
 }
 
 void SortProc(FileD* FD, KeyFldD* SK)
@@ -820,7 +824,7 @@ label1:
 #endif
 			if (LVr != nullptr) {
 				CRecPtr = lr;
-				ClearUpdFlag();
+				ClearUpdFlag(CFile->FF, CRecPtr);
 				DelTFlds();
 				CopyRecWithT(cr, lr);
 			}
@@ -841,7 +845,7 @@ label1:
 #endif
 		{
 			OpenCreateF(CFile, Shared);
-			if ((LVr != nullptr) && (LVi == nullptr) && HasUpdFlag()) {
+			if ((LVr != nullptr) && (LVi == nullptr) && HasUpdFlag(CFile->FF, CRecPtr)) {
 				md1 = NewLMode(CFile, WrMode);
 				CopyRecWithT(lr, cr);
 				UpdRec(cr, xScan->RecNr, true);

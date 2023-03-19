@@ -348,7 +348,9 @@ label4:
 void SetWasUpdated()
 {
 	if (!WasUpdated) {
-		if (EdRecVar) SetUpdFlag();
+		if (EdRecVar) {
+			SetUpdFlag(CFile->FF, CRecPtr);
+		}
 		Move(E->NewRecPtr, E->OldRecPtr, CFileRecSize());
 		WasUpdated = true;
 	}
@@ -3998,7 +4000,7 @@ bool ShiftF7Duplicate()
 		kf2 = kf2->pChain;
 	}
 
-	SetUpdFlag();
+	SetUpdFlag(CFile->FF, CRecPtr);
 	CFile = E->FD;
 	CRecPtr = E->NewRecPtr;
 	result = true;
@@ -4033,7 +4035,7 @@ bool DuplToPrevEdit()
 		WasUpdated = true;
 	}
 	DuplFld(E->FD, CFile, E->NewRecPtr, CRecPtr, ee->OldRecPtr, f1, f2);
-	SetUpdFlag();
+	SetUpdFlag(CFile->FF, CRecPtr);
 
 	CFile = E->FD; CRecPtr = E->NewRecPtr;
 	result = true;
@@ -4227,9 +4229,9 @@ bool StartProc(Instr_proc* ExitProc, bool Displ)
 	if (!lkd && !LockRec(false)) return result;
 	b = WasUpdated;
 	EdUpdated = b;
-	b2 = HasUpdFlag();
+	b2 = HasUpdFlag(CFile->FF, CRecPtr);
 	SetWasUpdated();
-	ClearUpdFlag();
+	ClearUpdFlag(CFile->FF, CRecPtr);
 
 	// upravime argumenty exit procedury
 	ExitProc->TArg[ExitProc->N - 1].FD = CFile;
@@ -4241,9 +4243,9 @@ bool StartProc(Instr_proc* ExitProc, bool Displ)
 	RdEStatus();
 	NewLMode(CFile, md);
 	upd = CFile->FF->WasWrRec;      /*writeln(strdate(currtime-t,"ss mm.ttt"));wait;*/
-	if (HasUpdFlag()) { b = true; upd = true; }
+	if (HasUpdFlag(CFile->FF, CRecPtr)) { b = true; upd = true; }
 	WasUpdated = b;
-	if (b2) SetUpdFlag();
+	if (b2) SetUpdFlag(CFile->FF, CRecPtr);
 	if (!WasUpdated && !lkd) UnLockRec(E);
 	if (Displ && upd) DisplAllWwRecs();
 	if (Displ) NewDisplLL = true;

@@ -1516,22 +1516,22 @@ bool HasTWorkFlag(FandFile* fand_file, void* record)
 	return workFlag;
 }
 
-void SetUpdFlag()
+void SetUpdFlag(FandFile* fand_file, void* record)
 {
-	BYTE* p = (BYTE*)CRecPtr;
-	p[CFile->FF->RecLen + 1] = 1;
+	BYTE* p = (BYTE*)record;
+	p[fand_file->RecLen + 1] = 1;
 }
 
-void ClearUpdFlag()
+void ClearUpdFlag(FandFile* fand_file, void* record)
 {
-	BYTE* p = (BYTE*)CRecPtr;
-	p[CFile->FF->RecLen + 1] = 0;
+	BYTE* p = (BYTE*)record;
+	p[fand_file->RecLen + 1] = 0;
 }
 
-bool HasUpdFlag()
+bool HasUpdFlag(FandFile* fand_file, void* record)
 {
-	BYTE* p = (BYTE*)CRecPtr;
-	return p[CFile->FF->RecLen + 1] == 1;
+	BYTE* p = (BYTE*)record;
+	return p[fand_file->RecLen + 1] == 1;
 }
 
 void* LocVarAd(LocVar* LV)
