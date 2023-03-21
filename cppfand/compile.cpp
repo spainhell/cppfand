@@ -1055,7 +1055,7 @@ bool FindChpt(char Typ, const pstring& name, bool local, RdbPos* RP)
 	FileD* CF = CFile;
 	void* CR = CRecPtr;
 	CFile = Chpt;
-	CRecPtr = GetRecSpace();
+	CRecPtr = GetRecSpace(Chpt->FF);
 	RdbD* R = CRdb;
 	auto result = false;
 	while (R != nullptr) {

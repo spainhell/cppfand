@@ -167,7 +167,7 @@ void RunAssign(std::vector<AssignD*> Assigns)
 			break;
 		}
 		case _output: {
-			AssgnFrml(A->OFldD, A->Frml, false, A->Add);
+			AssgnFrml(CFile, CRecPtr, A->OFldD, A->Frml, false, A->Add);
 			break;
 		}
 		case _locvar: {

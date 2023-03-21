@@ -1689,7 +1689,7 @@ bool RunCommand(TCommand* COff/*PCommand*/)
 		}
 		if (c->Code == _SaveC) {
 			md = NewLMode(CFile, WrMode);
-			if (!LinkLastRec(CFile, n, true)) IncNRecs(1);
+			if (!LinkLastRec(CFile, n, true)) IncNRecs(CFile, 1);
 			DelTFld(c->FldD);
 			std::string save = SaveDb(c->DbPred, 0);
 			S_(c->FldD, save);
@@ -1871,7 +1871,7 @@ void AssertFand(TPredicate* P, TCommand* C)
 
 	si = SiCFile(P->scanInf);
 	md = NewLMode(CFile, CrMode);
-	CRecPtr = GetRecSpace();
+	CRecPtr = GetRecSpace(CFile->FF);
 	ZeroAllFlds();
 	//PtrRec(d).Seg = _Sg;
 	fl = si->FL;
@@ -1921,7 +1921,7 @@ void AssertFand(TPredicate* P, TCommand* C)
 #endif
 	{
 		TestXFExist();
-		IncNRecs(1);
+		IncNRecs(CFile, 1);
 		if (CFile->FF->file_type == FileType::INDEX) RecallRec(CFile->FF->NRecs);
 		else CFile->WriteRec(CFile->FF->NRecs, CRecPtr);
 	}
@@ -2043,7 +2043,7 @@ bool ScanFile(TInstance* Q)
 	si = p->scanInf;
 	//PtrRec(fl).Seg = _Sg;
 	CFile = si->FD;
-	CRecPtr = GetRecSpace();
+	CRecPtr = GetRecSpace(CFile->FF);
 	md = NewLMode(CFile, RdMode);
 	k = nullptr;
 	if (c->KDOfs != nullptr) k = c->KDOfs;
@@ -2426,7 +2426,7 @@ void RunProlog(RdbPos* Pos, std::string PredName)
 	else {
 		ChptLRdb = Pos->R;
 		CFile = ChptLRdb->FD;
-		CRecPtr = GetRecSpace();
+		CRecPtr = GetRecSpace(ChptLRdb->FD->FF);
 		CFile->ReadRec(Pos->IRec, CRecPtr);
 		SetInpTTPos(_T(ChptTxt), ChptLRdb->Encrypted);
 		Roots = ReadProlog(Pos->IRec);

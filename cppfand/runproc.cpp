@@ -156,7 +156,7 @@ void AssignField(Instr_assign* PD)
 		msg = 640;
 		goto label1;
 	}
-	CRecPtr = GetRecSpace();
+	CRecPtr = GetRecSpace(CFile->FF);
 	CFile->ReadRec(N, CRecPtr);
 	if (PD->Indexarg && !DeletedFlag()) {
 		msg = 627;
@@ -164,7 +164,7 @@ void AssignField(Instr_assign* PD)
 		SetMsgPar(CFile->Name, F->Name);
 		RunErrorM(md, msg);
 	}
-	AssgnFrml(F, PD->Frml, true, PD->Add);
+	AssgnFrml(CFile, CRecPtr, F, PD->Frml, true, PD->Add);
 	CFile->WriteRec(N, CRecPtr);
 	ReleaseStore(CRecPtr);
 	OldLMode(CFile, md);
@@ -197,22 +197,27 @@ void AssignRecVar(LocVar* LV1, LocVar* LV2, AssignD* A)
 			CFile = FD1;
 			CRecPtr = RP1;
 			((FrmlElem8*)A->Frml)->NewRP = RP2;
-			AssgnFrml(A->OFldD, A->Frml, false, false);
+			AssgnFrml(CFile, CRecPtr, A->OFldD, A->Frml, false, false);
 			break;
 		}
 		}
-		A = (AssignD*)A->pChain;
+		A = A->pChain;
 	}
 	CFile = FD1; CRecPtr = RP1;
-	SetUpdFlag();
+	SetUpdFlag(CFile->FF, CRecPtr);
 }
 
 void AssignRecFld(Instr_assign* PD)
 {
 	FieldDescr* F = PD->RecFldD;
-	CFile = PD->AssLV->FD; CRecPtr = PD->AssLV->RecPtr;
-	SetUpdFlag();
-	AssgnFrml(F, PD->Frml, HasTWorkFlag(), PD->Add);
+	FileD* FD = PD->AssLV->FD;
+	void* record = PD->AssLV->RecPtr;
+
+	CFile = PD->AssLV->FD; // TODO: odstranit
+	CRecPtr = PD->AssLV->RecPtr; // TODO: odstranit
+
+	SetUpdFlag(FD->FF, record);
+	AssgnFrml(CFile, CRecPtr, F, PD->Frml, HasTWorkFlag(FD->FF, record), PD->Add);
 }
 
 void SortProc(FileD* FD, KeyFldD* SK)
@@ -401,7 +406,7 @@ void IndexfileProc(FileD* FD, bool Compress)
 	CFile = FD;
 	LockMode md = NewLMode(CFile, ExclMode);
 	XFNotValid();
-	CRecPtr = GetRecSpace();
+	CRecPtr = GetRecSpace(CFile->FF);
 	if (Compress) {
 		FileD* FD2 = OpenDuplF(false);
 		for (longint I = 1; I <= FD->FF->NRecs; I++) {
@@ -524,7 +529,7 @@ bool SrchXKey(XKey* K, XString& X, longint& N)
 	}
 	else {
 		cr = CRecPtr;
-		CRecPtr = GetRecSpace();
+		CRecPtr = GetRecSpace(CFile->FF);
 		auto result = SearchKey(X, K, N);
 		ReleaseStore(CRecPtr);
 		CRecPtr = cr;
@@ -536,7 +541,7 @@ void DeleteRecProc(Instr_recs* PD)
 {
 	longint n; XString x;
 	CFile = PD->RecFD;
-	CRecPtr = GetRecSpace();
+	CRecPtr = GetRecSpace(PD->RecFD->FF);
 	if (PD->ByKey) {
 		x.S = RunShortStr(PD->RecNr);
 #ifdef FandSQL
@@ -574,17 +579,17 @@ label2:
 void AppendRecProc()
 {
 	LockMode md = NewLMode(CFile, CrMode);
-	CRecPtr = GetRecSpace();
+	CRecPtr = GetRecSpace(CFile->FF);
 	ZeroAllFlds();
 	SetDeletedFlag();
-	CreateRec(CFile->FF->NRecs + 1);
+	CreateRec(CFile, CFile->FF->NRecs + 1);
 	ReleaseStore(CRecPtr);
 	OldLMode(CFile, md);
 }
 
 void UpdRec(void* CR, longint N, bool AdUpd)
 {
-	void* cr2 = GetRecSpace();
+	void* cr2 = GetRecSpace(CFile->FF);
 	CRecPtr = cr2;
 	CFile->ReadRec(N, CRecPtr);
 	bool del = DeletedFlag();
@@ -623,7 +628,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 	bool ad = PD->AdUpd;
 	LockMode md = CFile->FF->LMode;
 	app = false;
-	void* cr = GetRecSpace();
+	void* cr = GetRecSpace(CFile->FF);
 	if (PD->ByKey) {
 		x.S = RunShortStr(PD->RecNr);
 #ifdef FandSQL
@@ -659,7 +664,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 				label1:
 					NewLMode(CFile, CrMode);
 					TestXFExist();
-					IncNRecs(1);
+					IncNRecs(CFile, 1);
 					app = true;
 				}
 			N = CFile->FF->NRecs;
@@ -750,7 +755,7 @@ void ForAllProc(Instr_forall* PD)
 		}
 		case 'F': {
 			md = NewLMode(CFile, RdMode);
-			CRecPtr = GetRecSpace();
+			CRecPtr = GetRecSpace(CFile->FF);
 			CFile->ReadRec(RunInt((FrmlElem*)PD->CLV), CRecPtr);
 			xx.PackKF(KF);
 			ReleaseStore(p);
@@ -764,7 +769,8 @@ void ForAllProc(Instr_forall* PD)
 	sql = CFile->IsSQLFile;
 #endif
 	md = NewLMode(CFile, RdMode);
-	cr = GetRecSpace(); CRecPtr = cr; lr = cr;
+	cr = GetRecSpace(CFile->FF);
+	CRecPtr = cr; lr = cr;
 	xScan = new XScan(CFile, Key, KI, true);
 #ifdef FandSQL
 	if (PD->inSQL) Scan->ResetSQLTxt(Bool); else
@@ -818,7 +824,7 @@ label1:
 #endif
 			if (LVr != nullptr) {
 				CRecPtr = lr;
-				ClearUpdFlag();
+				ClearUpdFlag(CFile->FF, CRecPtr);
 				DelTFlds();
 				CopyRecWithT(cr, lr);
 			}
@@ -839,7 +845,7 @@ label1:
 #endif
 		{
 			OpenCreateF(CFile, Shared);
-			if ((LVr != nullptr) && (LVi == nullptr) && HasUpdFlag()) {
+			if ((LVr != nullptr) && (LVi == nullptr) && HasUpdFlag(CFile->FF, CRecPtr)) {
 				md1 = NewLMode(CFile, WrMode);
 				CopyRecWithT(lr, cr);
 				UpdRec(cr, xScan->RecNr, true);
@@ -1114,7 +1120,7 @@ void RecallRecProc(Instr_recs* PD)
 	CFile = PD->RecFD;
 	if (CFile->FF->file_type != FileType::INDEX) return;
 	longint N = RunInt(PD->RecNr);
-	CRecPtr = GetRecSpace();
+	CRecPtr = GetRecSpace(CFile->FF);
 	LockMode md = NewLMode(CFile, CrMode);
 	if ((N > 0) && (N <= CFile->FF->NRecs)) {
 		CFile->ReadRec(N, CRecPtr);
@@ -1613,8 +1619,8 @@ void CallProcedure(Instr_proc* PD)
 	while (it0 != PD->variables.vLocVar.end()) {
 		if ((*it0)->FTyp == 'r') {
 			CFile = (*it0)->FD;
-			CRecPtr = GetRecSpace();
-			SetTWorkFlag();
+			CRecPtr = GetRecSpace(CFile->FF);
+			SetTWorkFlag(CFile->FF, CRecPtr);
 			ZeroAllFlds();
 			ClearDeletedFlag();
 			(*it0)->RecPtr = CRecPtr;

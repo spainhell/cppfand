@@ -64,13 +64,13 @@ WORD CompLexStr(const pstring& S1, const pstring& S2);
 WORD CompLexStrings(const std::string& S1, const std::string& S2);
 
 void RunErrorM(LockMode Md, WORD N); // r729
-void* GetRecSpace(); // r739
+void* GetRecSpace(FandFile* fand_file); // r739
 WORD CFileRecSize(); // r744
-void SetTWorkFlag(); // r746 ASM
-bool HasTWorkFlag(); // r752 ASM
-void SetUpdFlag(); // r755 ASM
-void ClearUpdFlag(); // r758 ASM
-bool HasUpdFlag(); // r761 ASM
+void SetTWorkFlag(FandFile* fand_file, void* record);
+bool HasTWorkFlag(FandFile* fand_file, void* record);
+void SetUpdFlag(FandFile* fand_file, void* record);
+void ClearUpdFlag(FandFile* fand_file, void* record);
+bool HasUpdFlag(FandFile* fand_file, void* record);
 void* LocVarAd(LocVar* LV); // r766 ASM
 bool DeletedFlag(); // r771 ASM
 void ClearDeletedFlag(); // r779 ASM
@@ -104,11 +104,11 @@ void S_(FieldDescr* F, std::string S, void* record = nullptr);
 void LongS_(FieldDescr* F, LongStr* S);
 void T_(FieldDescr* F, longint Pos);
 
-void CreateRec(longint N);
+void CreateRec(FileD* file_d, longint n);
 void RecallRec(longint RecNr);
 bool LinkUpw(LinkD* LD, longint& N, bool WithT);
 bool LinkLastRec(FileD* FD, longint& N, bool WithT);
-void IncNRecs(longint N);
+void IncNRecs(FileD* file_d, longint n);
 bool TryLMode(FileD* fileD, LockMode Mode, LockMode& OldMode, WORD Kind);
 void OldLMode(FileD* fileD, LockMode Mode);
 LockMode NewLMode(FileD* fileD, LockMode Mode);

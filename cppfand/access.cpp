@@ -543,7 +543,7 @@ void T_(FieldDescr* F, longint Pos)
 void DelTFld(FieldDescr* F)
 {
 	longint n = _T(F);
-	if (HasTWorkFlag()) {
+	if (HasTWorkFlag(CFile->FF, CRecPtr)) {
 		TWork.Delete(n);
 	}
 	else {
@@ -574,14 +574,16 @@ void DelAllDifTFlds(void* Rec, void* CompRec)
 const WORD Alloc = 2048;
 const double FirstDate = 6.97248E+5;
 
-void IncNRecs(longint N)
+void IncNRecs(FileD* file_d, longint n)
 {
 #ifdef FandDemo
 	if (NRecs > 100) RunError(884);
 #endif
-	CFile->FF->NRecs += N;
-	SetUpdHandle(CFile->FF->Handle);
-	if (CFile->FF->file_type == FileType::INDEX) SetUpdHandle(CFile->FF->XF->Handle);
+	file_d->FF->NRecs += n;
+	SetUpdHandle(file_d->FF->Handle);
+	if (file_d->FF->file_type == FileType::INDEX) {
+		SetUpdHandle(file_d->FF->XF->Handle);
+	}
 }
 
 void DecNRecs(longint N)
@@ -610,18 +612,16 @@ void PutRec(FileD* dataFile, void* recordData)
 	dataFile->FF->Eof = true;
 }
 
-void CreateRec(longint N)
+void CreateRec(FileD* file_d, longint n)
 {
-	IncNRecs(1);
-	void* cr = CRecPtr;
-	CRecPtr = GetRecSpace();
-	for (longint i = CFile->FF->NRecs - 1; i >= N; i--) {
-		CFile->ReadRec(i, CRecPtr);
-		CFile->WriteRec(i + 1, CRecPtr);
+	IncNRecs(file_d, 1);
+	void* record = GetRecSpace(file_d->FF);
+	for (longint i = file_d->FF->NRecs - 1; i >= n; i--) {
+		file_d->ReadRec(i, record);
+		file_d->WriteRec(i + 1, record);
 	}
-	ReleaseStore(CRecPtr);
-	CRecPtr = cr;
-	CFile->WriteRec(N, CRecPtr);
+	delete[] record; record = nullptr;
+	file_d->WriteRec(n, CRecPtr);
 }
 
 void DeleteRec(longint N)
@@ -645,7 +645,7 @@ void ZeroAllFlds()
 bool LinkLastRec(FileD* FD, longint& N, bool WithT)
 {
 	CFile = FD;
-	CRecPtr = GetRecSpace();
+	CRecPtr = GetRecSpace(FD->FF);
 	LockMode md = NewLMode(CFile, RdMode);
 	auto result = true;
 #ifdef FandSQL
@@ -688,10 +688,10 @@ void AsgnParFldFrml(FileD* FD, FieldDescr* F, FrmlElem* Z, bool Ad)
 	{
 		md = NewLMode(CFile, WrMode);
 		if (!LinkLastRec(CFile, N, true)) {
-			IncNRecs(1);
+			IncNRecs(CFile, 1);
 			CFile->WriteRec(N, CRecPtr);
 		}
-		AssgnFrml(F, Z, true, Ad);
+		AssgnFrml(CFile, CRecPtr, F, Z, true, Ad);
 		CFile->WriteRec(N, CRecPtr);
 		OldLMode(CFile, md);
 	}
@@ -978,7 +978,7 @@ std::string _StdS(FieldDescr* F)
 			break;
 		}
 		case FieldType::TEXT: { // volny text max. 65k
-			if (HasTWorkFlag()) {
+			if (HasTWorkFlag(CFile->FF, CRecPtr)) {
 				LongStr* ls = TWork.Read(_T(F));
 				S = std::string(ls->A, ls->LL);
 				delete ls;
@@ -1016,7 +1016,7 @@ void LongS_(FieldDescr* F, LongStr* S)
 			if (CFile->IsSQLFile) { SetTWorkFlag; goto label1; }
 			else
 #endif
-				if (HasTWorkFlag())
+				if (HasTWorkFlag(CFile->FF, CRecPtr))
 					label1:
 			Pos = TWork.Store(S->A, S->LL);
 				else {
@@ -1105,7 +1105,7 @@ bool LinkUpw(LinkD* LD, longint& N, bool WithT)
 	x.PackKF(LD->Args);
 
 	CFile = ToFD;
-	void* RecPtr = GetRecSpace();
+	void* RecPtr = GetRecSpace(CFile->FF);
 	CRecPtr = RecPtr;
 #ifdef FandSQL
 	if (CFile->IsSQLFile) {
@@ -1204,10 +1204,10 @@ void AssignNRecs(bool Add, longint N)
 		DecNRecs(OldNRecs - N);
 		goto label1;
 	}
-	CRecPtr = GetRecSpace();
+	CRecPtr = GetRecSpace(CFile->FF);
 	ZeroAllFlds();
 	SetDeletedFlag();
-	IncNRecs(N - OldNRecs);
+	IncNRecs(CFile, N - OldNRecs);
 	for (longint i = OldNRecs + 1; i <= N; i++) {
 		CFile->WriteRec(i, CRecPtr);
 	}
@@ -1222,7 +1222,7 @@ void ClearRecSpace(void* p)
 	if (CFile->FF->TF != nullptr) {
 		cr = CRecPtr;
 		CRecPtr = p;
-		if (HasTWorkFlag()) {
+		if (HasTWorkFlag(CFile->FF, CRecPtr)) {
 			for (auto& f : CFile->FldD) {
 				if (((f->Flg & f_Stored) != 0) && (f->field_type == FieldType::TEXT)) {
 					TWork.Delete(_T(f));
@@ -1258,12 +1258,12 @@ void CopyRecWithT(void* p1, void* p2)
 				ReleaseStore(s);
 			}
 			else {
-				if (HasTWorkFlag()) {
+				if (HasTWorkFlag(CFile->FF, CRecPtr)) {
 					tf1 = &TWork;
 				}
 				longint pos = _T(F);
 				CRecPtr = p2;
-				if (HasTWorkFlag()) {
+				if (HasTWorkFlag(CFile->FF, CRecPtr)) {
 					tf2 = &TWork;
 				}
 				pos = CopyTFString(tf2, CFile, tf1, pos);
@@ -1490,53 +1490,48 @@ WORD CompLexStrings(const std::string& S1, const std::string& S2)
 	return result;
 }
 
-void* GetRecSpace()
+void* GetRecSpace(FandFile* fand_file)
 {
-	size_t length = CFile->FF->RecLen + 2;
+	size_t length = fand_file->RecLen + 2;
 	void* result = new BYTE[length];
 	memset(result, '\0', length);
 	return result;
 }
-
-//void* GetRecSpace2()
-//{
-//	return GetZStore2(CFile->RecLen + 2);
-//}
 
 WORD CFileRecSize()
 {
 	return CFile->FF->RecLen;
 }
 
-void SetTWorkFlag()
+void SetTWorkFlag(FandFile* fand_file, void* record)
 {
-	BYTE* p = (BYTE*)CRecPtr;
-	p[CFile->FF->RecLen] = 1;
+	BYTE* p = (BYTE*)record;
+	p[fand_file->RecLen] = 1;
 }
 
-bool HasTWorkFlag()
+bool HasTWorkFlag(FandFile* fand_file, void* record)
 {
-	BYTE* p = (BYTE*)CRecPtr;
-	const bool workFlag = p[CFile->FF->RecLen] == 1;
+	BYTE* p = (BYTE*)record;
+	const bool workFlag = p[fand_file->RecLen] == 1;
 	return workFlag;
 }
 
-void SetUpdFlag()
+void SetUpdFlag(FandFile* fand_file, void* record)
 {
-	BYTE* p = (BYTE*)CRecPtr;
-	p[CFile->FF->RecLen + 1] = 1;
+	BYTE* p = (BYTE*)record;
+	p[fand_file->RecLen + 1] = 1;
 }
 
-void ClearUpdFlag()
+void ClearUpdFlag(FandFile* fand_file, void* record)
 {
-	BYTE* p = (BYTE*)CRecPtr;
-	p[CFile->FF->RecLen + 1] = 0;
+	BYTE* p = (BYTE*)record;
+	p[fand_file->RecLen + 1] = 0;
 }
 
-bool HasUpdFlag()
+bool HasUpdFlag(FandFile* fand_file, void* record)
 {
-	BYTE* p = (BYTE*)CRecPtr;
-	return p[CFile->FF->RecLen + 1] == 1;
+	BYTE* p = (BYTE*)record;
+	return p[fand_file->RecLen + 1] == 1;
 }
 
 void* LocVarAd(LocVar* LV)

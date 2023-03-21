@@ -234,7 +234,7 @@ bool IsDuplFileName(std::string name)
 	auto result = true;
 	if (EquUpCase(name, Chpt->Name)) return result;
 	cr = CRecPtr;
-	CRecPtr = GetRecSpace();
+	CRecPtr = GetRecSpace(CFile->FF);
 	for (WORD I = 1; I <= Chpt->FF->NRecs; I++)
 		if (I != CRec()) {
 			CFile->ReadRec(I, CRecPtr);
@@ -342,7 +342,7 @@ WORD FindHelpRecNr(FileD* FD, std::string& txt)
 	ConvToNoDiakr(&txt[0], txt.length(), fonts.VFont);
 	cf = CFile; cr = CRecPtr;
 	CFile = FD;
-	CRecPtr = GetRecSpace();
+	CRecPtr = GetRecSpace(FD->FF);
 	md = NewLMode(CFile, RdMode);
 	if (CFile->FF->Handle == nullptr) goto label1;
 	NmF = CFile->FldD.front();
@@ -551,7 +551,7 @@ void CreateOpenChpt(std::string Nm, bool create, wwmix* ww)
 	RdFileD(Nm1, FileType::RDB, ""); /*old CRdb for GetCatIRec*/
 	R->FD = CFile;
 	CRdb = R;
-	CFile->FF->RecPtr = GetRecSpace();
+	CFile->FF->RecPtr = GetRecSpace(CFile->FF);
 	SetRdbDir(Nm[0], &Nm1);
 	p = CDir + Nm1 + ".RDB";
 	CFile->FF->Drive = TestMountVol(CPath[0]);

@@ -634,7 +634,7 @@ WORD GetCatIRec(pstring Name, bool MultiLevel)
 	if (CatFD == nullptr || CatFD->FF->Handle == nullptr) return result;
 	if (CRdb == nullptr) return result;
 	CF = CFile; CR = CRecPtr; CFile = CatFD;
-	CRecPtr = GetRecSpace();
+	CRecPtr = GetRecSpace(CFile->FF);
 	R = CRdb;
 label1:
 	for (i = 1; i <= CatFD->FF->NRecs; i++)
@@ -670,7 +670,7 @@ void TurnCat(WORD Frst, WORD N, integer I)
 {
 	void* p; void* q; WORD j, last;
 	if (CFile != nullptr) CloseFile();
-	CFile = CatFD; p = GetRecSpace(); q = GetRecSpace();
+	CFile = CatFD; p = GetRecSpace(CFile->FF); q = GetRecSpace(CFile->FF);
 	CRecPtr = q; last = Frst + N - 1;
 	if (I > 0)
 		while (I > 0) {
@@ -702,7 +702,7 @@ std::string RdCatField(WORD CatIRec, FieldDescr* CatF)
 	FileD* CF = CFile;
 	void* CR = CRecPtr;
 	CFile = CatFD;
-	CRecPtr = GetRecSpace();
+	CRecPtr = GetRecSpace(CatFD->FF);
 	CFile->ReadRec(CatIRec, CRecPtr);
 	std::string stdS = _StdS(CatF);
 	std::string result = TrailChar(stdS, ' ');
@@ -717,7 +717,7 @@ void WrCatField(WORD CatIRec, FieldDescr* CatF, std::string Txt)
 	FileD* CF = CFile;
 	void* CR = CRecPtr;
 	CFile = CatFD;
-	CRecPtr = GetRecSpace();
+	CRecPtr = GetRecSpace(CatFD->FF);
 	CFile->ReadRec(CatIRec, CRecPtr);
 	S_(CatF, Txt);
 	CFile->WriteRec(CatIRec, CRecPtr);

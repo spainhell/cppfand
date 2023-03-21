@@ -242,8 +242,8 @@ void ReadMerge()
 		ID->OpErr = _const;
 		ID->OpWarn = _const;
 		KI = nullptr;
-		ID->ForwRecPtr = GetRecSpace();
-		FD->FF->RecPtr = GetRecSpace();
+		ID->ForwRecPtr = GetRecSpace(CFile->FF);
+		FD->FF->RecPtr = GetRecSpace(CFile->FF);
 		if (Lexem == '(') {
 			RdLex();
 			ID->Bool = RdKeyInBool(&KI, false, false, ID->SQLFilter);
@@ -586,7 +586,7 @@ void RdOutpRD(OutpRD** RDRoot)
 		OD = new OutpFD();
 		OD->FD = FD;
 		CFile = FD;
-		OD->RecPtr = GetRecSpace();
+		OD->RecPtr = GetRecSpace(FD->FF);
 		OD->InplFD = nullptr;
 		for (I = 1; I <= MaxIi; I++) {
 			if (InpFD_M(I) == FD) {

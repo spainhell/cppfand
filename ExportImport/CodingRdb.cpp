@@ -18,7 +18,7 @@ void CodingRdb::CodeRdb(bool Rotate)
 	void* cr = CRecPtr;
 	CFile = Chpt;
 
-	CRecPtr = GetRecSpace();
+	CRecPtr = GetRecSpace(CFile->FF);
 	RunMsgOn('C', CFile->FF->NRecs);
 	WORD irec = ChptTF->IRec;
 	bool compileAll = ChptTF->CompileAll;
