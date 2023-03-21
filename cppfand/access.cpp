@@ -247,16 +247,20 @@ void RunErrorM(LockMode Md, WORD N)
 	RunError(N);
 }
 
-void CloseClearHCFile()
+void CloseClearHCFile(FandFile* fand_file)
 {
-	CloseClearH(&CFile->FF->Handle);
-	if (CFile->FF->file_type == FileType::INDEX) CloseClearH(&CFile->FF->XF->Handle);
-	if (CFile->FF->TF != nullptr) CloseClearH(&CFile->FF->TF->Handle);
+	CloseClearH(&fand_file->Handle);
+	if (fand_file->file_type == FileType::INDEX) {
+		CloseClearH(&fand_file->XF->Handle);
+	}
+	if (fand_file->TF != nullptr) {
+		CloseClearH(&fand_file->TF->Handle);
+	}
 }
 
-void CloseGoExit()
+void CloseGoExit(FandFile* fand_file)
 {
-	CloseClearHCFile();
+	CloseClearHCFile(fand_file);
 	GoExit();
 }
 

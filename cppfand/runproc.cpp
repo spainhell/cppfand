@@ -945,7 +945,7 @@ label1:
 					OldLMode(CFile, NullMode);
 				}
 				else {
-					CloseClearHCFile();
+					CloseClearHCFile(CFile->FF);
 					goto label2;
 				}
 			}

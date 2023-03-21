@@ -87,7 +87,7 @@ void TestXFExist()
 	FandXFile* xf = CFile->FF->XF;
 	if ((xf != nullptr) && xf->NotValid) {
 		if (xf->NoCreate) {
-			CFileError(819);
+			CFileError(CFile, 819);
 		}
 		CreateIndexFile();
 	}
@@ -136,7 +136,7 @@ void CreateIndexFile()
 		XF->SetNotValid();
 		XF->NoCreate = true;
 	}
-	UnLockN(0);
+	UnLockN(CFile->FF, 0);
 	OldLMode(CFile, md);
 	if (fail) GoExit();
 }

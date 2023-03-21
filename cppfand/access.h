@@ -127,14 +127,14 @@ void PutRec(FileD* dataFile, void* recordData);
 
 void DelTFlds();
 void CopyRecWithT(void* p1, void* p2);
-void CloseClearHCFile();
+void CloseClearHCFile(FandFile* fand_file);
 void TestCPathError();
 void AssignNRecs(bool Add, longint N);
 
 std::string CExtToT(std::string dir, std::string name, std::string ext);
 std::string CExtToX(std::string dir, std::string name, std::string ext);
 
-void CloseGoExit();
+void CloseGoExit(FandFile* fand_file);
 
 bool ChangeLMode(FileD* fileD, LockMode Mode, WORD Kind, bool RdPref);
 void SeekRec(FileD* fileD, longint N);

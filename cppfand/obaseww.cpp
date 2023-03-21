@@ -319,10 +319,10 @@ void CFileMsg(WORD n, char Typ)
 	WrLLF10Msg(n);
 }
 
-void CFileError(WORD N)
+void CFileError(FileD* file_d, WORD N)
 {
 	CFileMsg(N, '0');
-	CloseGoExit();
+	CloseGoExit(file_d->FF);
 }
 
 void RunMsgOn(char C, longint N)

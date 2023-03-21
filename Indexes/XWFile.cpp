@@ -14,7 +14,7 @@ void XWFile::Err(WORD N)
 	else {
 		CFile->FF->XF->SetNotValid();
 		CFileMsg(N, 'X');
-		CloseGoExit();
+		CloseGoExit(CFile->FF);
 	}
 }
 

@@ -458,7 +458,7 @@ bool XKey::Insert(longint RecNr, bool Try)
 		}
 		else {
 			XFNotValid();
-			CFileError(822);
+			CFileError(CFile, 822);
 		}
 	}
 	InsertOnPath(x, RecNr);

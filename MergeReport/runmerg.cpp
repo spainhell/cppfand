@@ -318,7 +318,7 @@ void MergeProcM()
 				if (ID->Scan->eof) res = _gt;
 				else {
 					res = CompMFlds(ID->MFld);
-					if (res == _lt) CFileError(607);
+					if (res == _lt) CFileError(CFile, 607);
 				}
 			} while (res != _gt);
 		else {
@@ -357,7 +357,7 @@ void JoinProc(WORD Ii, bool& EmptyGroup)
 				}
 				else {
 					res = CompMFlds(ID->MFld);
-					if (res == _lt) CFileError(607);
+					if (res == _lt) CFileError(CFile, 607);
 				}
 			} while (res == _gt);
 		}

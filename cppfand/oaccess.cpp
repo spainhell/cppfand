@@ -129,7 +129,7 @@ void SetCPathMountVolSetNet(FileUseMode UM)
 void TestCFileError()
 {
 	if (HandleError != 0) {
-		CFileError(700 + HandleError);
+		CFileError(CFile, 700 + HandleError);
 	}
 }
 
@@ -191,7 +191,7 @@ bool OpenF1(FileUseMode UM)
 		}
 		if (HandleError != 0) {
 			n = HandleError;
-			CloseClearHCFile();
+			CloseClearHCFile(CFile->FF);
 			HandleError = n;
 			TestCPathError();
 			return result;
@@ -205,7 +205,7 @@ bool OpenF1(FileUseMode UM)
 				CFile->FF->XF->Handle = OpenH(CPath, _isoverwritefile, Exclusive);
 				if (HandleError != 0) {
 					n = HandleError;
-					CloseClearHCFile();
+					CloseClearHCFile(CFile->FF);
 					HandleError = n;
 					TestCPathError();
 					return result;
@@ -216,7 +216,7 @@ bool OpenF1(FileUseMode UM)
 			}
 			if (HandleError != 0) {
 				n = HandleError;
-				CloseClearHCFile();
+				CloseClearHCFile(CFile->FF);
 				HandleError = n;
 				TestCPathError();
 			}
@@ -244,7 +244,7 @@ bool OpenF2()
 	n = (FS - CFile->FF->FrstDispl) / CFile->FF->RecLen;
 	if (rLen != 0xffff) {
 		if (CFile->IsDynFile) {
-			CloseClearHCFile();
+			CloseClearHCFile(CFile->FF);
 			return result;
 		}
 		else {
@@ -254,7 +254,7 @@ bool OpenF2()
 			CFileMsg(883, ' ');
 			l = CFile->FF->NRecs * rLen + CFile->FF->FrstDispl;
 			if (l == FS || !PromptYN(885)) {
-				CloseGoExit();
+				CloseGoExit(CFile->FF);
 			}
 			if (CFile->FF->NRecs == 0 || l >> CachePageShft != FS >> CachePageShft) {
 				WrLLF10Msg(886);
@@ -279,7 +279,7 @@ bool OpenF2()
 			WrPrefix();
 		}
 		else {
-			CloseGoExit();
+			CloseGoExit(CFile->FF);
 		}
 	}
 label3:
@@ -291,7 +291,7 @@ label3:
 			CFile->FF->TF->RdPrefix(true);
 			if ((CFile->FF->file_type == FileType::RDB) && !IsActiveRdb(CFile) && !ww.HasPassWord(CFile, 1, "")) {
 				CFileMsg(616, ' ');
-				CloseGoExit();
+				CloseGoExit(CFile->FF);
 			}
 		}
 	}

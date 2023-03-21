@@ -1,5 +1,6 @@
 #pragma once
 #include "constants.h"
+#include "FileD.h"
 #include "OldDrivers.h"
 #include "pstring.h"
 
@@ -34,7 +35,7 @@ bool PromptYN(WORD NMsg);
 extern WORD RunErrNr;
 void RunError(WORD N); // podobna fce definovana v kbdww.cpp
 void CFileMsg(WORD n, char Typ); // podobna fce definovana v kbdww.cpp
-void CFileError(WORD N); // podobna fce definovana v kbdww.cpp
+void CFileError(FileD* file_d, WORD N); // podobna fce definovana v kbdww.cpp
 
 struct RunMsgD
 {

@@ -150,7 +150,7 @@ void FandTFile::Err(WORD n, bool ex)
 	}
 	else {
 		CFileMsg(n, 'T');
-		if (ex) CloseGoExit();
+		if (ex) CloseGoExit(CFile->FF);
 	}
 }
 
@@ -793,7 +793,7 @@ WORD RdPrefix()
 void RdPrefixes()
 {
 	if (RdPrefix() != 0xffff) {
-		CFileError(883);
+		CFileError(CFile, 883);
 	}
 	if ((CFile->FF->XF != nullptr) && (CFile->FF->XF->Handle != nullptr)) {
 		CFile->FF->XF->RdPrefix();
