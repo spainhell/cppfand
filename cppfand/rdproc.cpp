@@ -76,7 +76,7 @@ FrmlElem* RdRecVarFldFrml(LocVar* LV, char& FTyp)
 	Accept('.');
 	switch (LV->FTyp) {
 	case 'r': {
-		auto Z = new FrmlElem7(_recvarfld, 12); // GetOp(_recvarfld, 12);
+		auto Z = new FrmlElem7(_recvarfld, 12);
 		FileD* cf = CFile;
 		CFile = LV->FD;
 		Z->File2 = CFile;
@@ -90,7 +90,7 @@ FrmlElem* RdRecVarFldFrml(LocVar* LV, char& FTyp)
 		break;
 	}
 	case 'i': {
-		auto Z = new FrmlElem22(_indexnrecs, 4); // GetOp(_indexnrecs, 4);
+		auto Z = new FrmlElem22(_indexnrecs, 4);
 		Z->WKey = WKeyDPtr(LV->RecPtr);
 		pstring nrecs = "nrecs";
 		AcceptKeyWord(nrecs);

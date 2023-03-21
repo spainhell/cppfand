@@ -2311,7 +2311,7 @@ bool AutoRecursion(TInstance* q, TPredicate* p, TCommand* c)
 	if (w == nullptr) {
 		t = q->Vars[0];
 		f = GetFunDcl(d, t->FunIdx);
-		w = new TAutoR(); // (TAutoR*)Mem2.Get(sizeof(TAutoR) + 4 * f->Arity);
+		w = new TAutoR();
 		w->t = t; i = 0;
 		q->Vars[c->iWrk] = (TTerm*)w;
 	}

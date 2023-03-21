@@ -1274,7 +1274,7 @@ void RunInstr(Instr* PD)
 		}
 		case _lproc: {
 			auto iPD = (Instr_lproc*)PD;
-			// RunProlog(&iPD->lpPos, iPD->lpName);
+			RunProlog(&iPD->lpPos, iPD->lpName);
 			break;
 		}
 		case _report: {
