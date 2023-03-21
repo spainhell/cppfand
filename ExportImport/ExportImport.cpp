@@ -279,8 +279,8 @@ void ImportTxt(CopyD* CD)
 #endif
 			md = RewriteF(CD->Append);
 		while (!(F1->eof) && (F1->ForwChar() != 0x1A)) {
-			ZeroAllFlds();
-			ClearDeletedFlag();
+			ZeroAllFlds(CFile, CRecPtr);
+			ClearDeletedFlag(CFile->FF, CRecPtr);
 			VarFixImp(F1, CD->Opt1);
 			F1->ForwChar(); //{set IsEOF at End}
 #ifdef FandSQL

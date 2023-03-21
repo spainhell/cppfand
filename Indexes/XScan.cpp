@@ -353,7 +353,7 @@ label1:
 			else if (page_->GreaterPage > 0) SeekOnPage(page_->GreaterPage, 1);
 		label2:
 			CFile->ReadRec(RecNr, CRecPtr);
-			if (DeletedFlag()) goto label1;
+			if (DeletedFlag(CFile->FF, CRecPtr)) goto label1;
 		label3:
 			if (!RunBool(Bool)) goto label1;
 			break;

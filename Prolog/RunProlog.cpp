@@ -1872,7 +1872,7 @@ void AssertFand(TPredicate* P, TCommand* C)
 	si = SiCFile(P->scanInf);
 	md = NewLMode(CFile, CrMode);
 	CRecPtr = GetRecSpace(CFile->FF);
-	ZeroAllFlds();
+	ZeroAllFlds(CFile, CRecPtr);
 	//PtrRec(d).Seg = _Sg;
 	fl = si->FL;
 	auto l = C->Arg.begin();
@@ -2057,7 +2057,7 @@ label1:
 			}
 			CFile->ReadRec(RecNr, CRecPtr);
 			(fs->IRec)++;
-		} while (DeletedFlag());
+		} while (DeletedFlag(CFile->FF, CRecPtr));
 		if (fs->IRec > CFile->FF->NRecs) CurrInst->NextBranch = nullptr;
 	}
 	else {

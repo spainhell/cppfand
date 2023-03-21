@@ -35,7 +35,7 @@ std::string RdCatField(WORD CatIRec, FieldDescr* CatF);
 void WrCatField(FileD* catFD, WORD CatIRec, FieldDescr* CatF, const std::string& Txt);
 void WrCatField(WORD CatIRec, FieldDescr* CatF, std::string Txt);
 void RdCatPathVol(WORD CatIRec);
-bool SetContextDir(std::string& D, bool& IsRdb);
+bool SetContextDir(FileD* file_d, std::string& D, bool& IsRdb);
 void GetCPathForCat(WORD I);
 void SetCPathVol(char pathDelim = '\\');
 void SetTxtPathVol(pstring* Path, WORD CatIRec);

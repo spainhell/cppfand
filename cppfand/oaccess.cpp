@@ -742,21 +742,21 @@ void RdCatPathVol(WORD CatIRec)
 	CVol = RdCatField(CatIRec, CatVolume);
 }
 
-bool SetContextDir(std::string& D, bool& IsRdb)
+bool SetContextDir(FileD* file_d, std::string& D, bool& IsRdb)
 {
 	bool result = true;
 	RdbD* R = CRdb;
 	IsRdb = false;
 	while (R != nullptr) {
 		FileD* F = R->FD;
-		if ((CFile == F) && (CFile->CatIRec != 0)) {
+		if ((file_d == F) && (file_d->CatIRec != 0)) {
 			D = R->RdbDir;
 			IsRdb = true;
 			return result;
 		}
 		while (F != nullptr) {
-			if (CFile == F) {
-				if ((CFile == R->HelpFD) || (CFile->FF->file_type == FileType::RDB))  //.RDB
+			if (file_d == F) {
+				if ((file_d == R->HelpFD) || (file_d->FF->file_type == FileType::RDB))  //.RDB
 					D = R->RdbDir;
 				else D = R->DataDir;
 				return result;
@@ -775,13 +775,14 @@ void GetCPathForCat(WORD I)
 
 	CVol = RdCatField(I, CatVolume);
 	CPath = RdCatField(I, CatPathName);
-	const bool setContentDir = SetContextDir(d, isRdb);
+	const bool setContentDir = SetContextDir(CFile, d, isRdb);
 	if (setContentDir && CPath.length() > 1 && CPath[1] != ':') {
 		if (isRdb) {
 			FSplit(CPath, CDir, CName, CExt);
 			AddBackSlash(d);
 			CDir = d;
-			CPath = CDir + CName + CExt; return;
+			CPath = CDir + CName + CExt;
+			return;
 		}
 		if (CPath[0] == '\\') {
 			CPath = d.substr(0, 2) + CPath;
@@ -825,7 +826,7 @@ void SetCPathVol(char pathDelim)
 	case FileType::DBF: CExt = ".DBF"; break;
 	default: CExt = ".000";
 	}
-	if (SetContextDir(CDir, isRdb)) goto label2;
+	if (SetContextDir(CFile, CDir, isRdb)) goto label2;
 	if (CFile == HelpFD) {
 		CDir = FandDir;
 		CName =
@@ -848,6 +849,8 @@ label4:
 	if (pathDelim == '\\') ReplaceChar(CDir, '/', '\\');
 	CPath = CDir + CName + CExt;
 }
+
+
 
 void SetTxtPathVol(pstring* Path, WORD CatIRec)
 {

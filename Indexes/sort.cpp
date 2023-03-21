@@ -190,7 +190,7 @@ void GetIndexSort(Instr_getindex* PD)
 		if ((nr > 0) && (nr <= CFile->FF->NRecs)) {
 			CFile->ReadRec(nr, CRecPtr);
 			if (PD->giMode == '+') {
-				if (!DeletedFlag()) {
+				if (!DeletedFlag(CFile->FF, CRecPtr)) {
 					x.PackKF(k->KFlds);
 					if (!k->RecNrToPath(x, nr)) {
 						k->InsertOnPath(x, nr);

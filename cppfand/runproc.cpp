@@ -158,7 +158,7 @@ void AssignField(Instr_assign* PD)
 	}
 	CRecPtr = GetRecSpace(CFile->FF);
 	CFile->ReadRec(N, CRecPtr);
-	if (PD->Indexarg && !DeletedFlag()) {
+	if (PD->Indexarg && !DeletedFlag(CFile->FF, CRecPtr)) {
 		msg = 627;
 	label1:
 		SetMsgPar(CFile->Name, F->Name);
@@ -412,7 +412,7 @@ void IndexfileProc(FileD* FD, bool Compress)
 		for (longint I = 1; I <= FD->FF->NRecs; I++) {
 			CFile = FD;
 			CFile->ReadRec(I, CRecPtr);
-			if (!DeletedFlag()) {
+			if (!DeletedFlag(CFile->FF, CRecPtr)) {
 				CFile = FD2;
 				PutRec(CFile, CRecPtr);
 			}
@@ -561,11 +561,11 @@ void DeleteRecProc(Instr_recs* PD)
 		}
 	}
 	CFile->ReadRec(n, CRecPtr);
-	if (PD->AdUpd && !DeletedFlag()) {
+	if (PD->AdUpd && !DeletedFlag(CFile->FF, CRecPtr)) {
 		LastExitCode = (!RunAddUpdte('-', nullptr, nullptr));
 	}
 	if (CFile->FF->file_type == FileType::INDEX) {
-		if (!DeletedFlag()) DeleteXRec(n, true);
+		if (!DeletedFlag(CFile->FF, CRecPtr)) DeleteXRec(n, true);
 	}
 	else {
 		DeleteRec(n);
@@ -580,8 +580,8 @@ void AppendRecProc()
 {
 	LockMode md = NewLMode(CFile, CrMode);
 	CRecPtr = GetRecSpace(CFile->FF);
-	ZeroAllFlds();
-	SetDeletedFlag();
+	ZeroAllFlds(CFile, CRecPtr);
+	SetDeletedFlag(CFile->FF, CRecPtr);
 	CreateRec(CFile, CFile->FF->NRecs + 1);
 	ReleaseStore(CRecPtr);
 	OldLMode(CFile, md);
@@ -592,7 +592,7 @@ void UpdRec(void* CR, longint N, bool AdUpd)
 	void* cr2 = GetRecSpace(CFile->FF);
 	CRecPtr = cr2;
 	CFile->ReadRec(N, CRecPtr);
-	bool del = DeletedFlag();
+	bool del = DeletedFlag(CFile->FF, CRecPtr);
 	CRecPtr = CR;
 	if (AdUpd) {
 		if (del) {
@@ -657,7 +657,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 				if (IsRead) {
 				label0:
 					DelTFlds();
-					ZeroAllFlds();
+					ZeroAllFlds(CFile, CRecPtr);
 					goto label4;
 				}
 				else {
@@ -673,8 +673,8 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 		label2:
 			if (IsRead) {
 				DelTFlds();
-				ZeroAllFlds();
-				SetDeletedFlag();
+				ZeroAllFlds(CFile, CRecPtr);
+				SetDeletedFlag(CFile->FF, CRecPtr);
 				goto label4;
 			}
 			msg = 613;
@@ -954,7 +954,7 @@ label1:
 			}
 		if (CFile->FF->IsShared()) {
 			if (op == _withlocked) {
-				if (TryLockN(ld->N, 2)) {
+				if (TryLockN(CFile->FF, ld->N, 2)) {
 					goto label3;
 				}
 			}
@@ -1124,7 +1124,7 @@ void RecallRecProc(Instr_recs* PD)
 	LockMode md = NewLMode(CFile, CrMode);
 	if ((N > 0) && (N <= CFile->FF->NRecs)) {
 		CFile->ReadRec(N, CRecPtr);
-		if (DeletedFlag()) {
+		if (DeletedFlag(CFile->FF, CRecPtr)) {
 			RecallRec(N);
 			if (PD->AdUpd) {
 				LastExitCode = !RunAddUpdte('+', nullptr, nullptr);
@@ -1141,7 +1141,7 @@ void UnLck(Instr_withshared* PD, LockD* Ld1, PInstrCode Op)
 	while (ld != Ld1) {
 		CFile = ld->FD;
 		if (CFile->FF->IsShared()) {
-			if (Op == _withlocked) UnLockN(ld->N);
+			if (Op == _withlocked) UnLockN(CFile->FF, ld->N);
 			OldLMode(CFile, ld->OldMd);
 		}
 		ld = ld->Chain;
@@ -1621,8 +1621,8 @@ void CallProcedure(Instr_proc* PD)
 			CFile = (*it0)->FD;
 			CRecPtr = GetRecSpace(CFile->FF);
 			SetTWorkFlag(CFile->FF, CRecPtr);
-			ZeroAllFlds();
-			ClearDeletedFlag();
+			ZeroAllFlds(CFile, CRecPtr);
+			ClearDeletedFlag(CFile->FF, CRecPtr);
 			(*it0)->RecPtr = CRecPtr;
 		}
 		else if ((*it0)->FTyp == 'f') {

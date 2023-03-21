@@ -359,7 +359,7 @@ longint AbsLogRecNoFun(FrmlElem13* Z)
 		if (Z->Op == _recnolog) {
 			CRecPtr = GetRecSpace(CFile->FF);
 			CFile->ReadRec(N, CRecPtr);
-			if (DeletedFlag()) goto label1;
+			if (DeletedFlag(CFile->FF, CRecPtr)) goto label1;
 			result = k->RecNrToNr(N);
 		}
 		else /*_recnoabs*/ {
@@ -719,7 +719,7 @@ bool RunBool(FrmlElem* X)
 	case _isdeleted: {
 		cr = CRecPtr; cf = CFile;
 		AccRecNoProc((FrmlElem14*)X, 642);
-		result = DeletedFlag();
+		result = DeletedFlag(CFile->FF, CRecPtr);
 		ReleaseStore(CRecPtr);
 		CRecPtr = cr; CFile = cf;
 		break;
@@ -729,7 +729,7 @@ bool RunBool(FrmlElem* X)
 		cr = CRecPtr; cf = CFile;
 		CRecPtr = iX->LV->RecPtr;
 		CFile = iX->LV->FD;
-		result = DeletedFlag();
+		result = DeletedFlag(CFile->FF, CRecPtr);
 		CRecPtr = cr; CFile = cf;
 		break;
 	}

@@ -201,7 +201,7 @@ void WriteOutp(OutpRD* RD)
 			else {
 				CFile = OD->FD;
 				CRecPtr = OD->RecPtr;
-				ClearDeletedFlag();
+				ClearDeletedFlag(CFile->FF, CRecPtr);
 				RunAssign(RD->Ass);
 #ifdef FandSQL
 				if (CFile->IsSQLFile) OD->Strm->PutRec;
@@ -324,7 +324,7 @@ void MergeProcM()
 		else {
 			CFile = ID->Scan->FD;
 			CRecPtr = CFile->FF->RecPtr;
-			ZeroAllFlds();
+			ZeroAllFlds(CFile, CRecPtr);
 			SetMFlds(ID->MFld);
 		}
 	}
@@ -365,7 +365,7 @@ void JoinProc(WORD Ii, bool& EmptyGroup)
 			CFile = ID->Scan->FD;
 			CRecPtr = CFile->FF->RecPtr;
 			EmptyGroup = true;
-			ZeroAllFlds();
+			ZeroAllFlds(CFile, CRecPtr);
 			SetMFlds(ID->MFld);
 			JoinProc(Ii + 1, EmptyGroup);
 		}

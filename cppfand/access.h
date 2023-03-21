@@ -57,32 +57,32 @@ integer CompArea(void* A, void* B, integer L); // r575 ASM
 integer CompStr(pstring& S1, pstring& S2); // r792 ASM
 int CompStr(std::string& S1, std::string& S2);
 
-WORD CompLexLongStr(LongStr* S1, LongStr* S2); // r854 ASM
-WORD CompLexLongShortStr(LongStr* S1, pstring& S2); // r863 ASM
-WORD CompLexStr(pstring& S1, pstring& S2); // r871 ASM
+WORD CompLexLongStr(LongStr* S1, LongStr* S2);
+WORD CompLexLongShortStr(LongStr* S1, pstring& S2);
+WORD CompLexStr(pstring& S1, pstring& S2);
 WORD CompLexStr(const pstring& S1, const pstring& S2);
 WORD CompLexStrings(const std::string& S1, const std::string& S2);
 
-void RunErrorM(LockMode Md, WORD N); // r729
-void* GetRecSpace(FandFile* fand_file); // r739
-WORD CFileRecSize(); // r744
+void RunErrorM(LockMode Md, WORD N);
+void* GetRecSpace(FandFile* fand_file);
+size_t CFileRecSize(FandFile* fand_file);
 void SetTWorkFlag(FandFile* fand_file, void* record);
 bool HasTWorkFlag(FandFile* fand_file, void* record);
 void SetUpdFlag(FandFile* fand_file, void* record);
 void ClearUpdFlag(FandFile* fand_file, void* record);
 bool HasUpdFlag(FandFile* fand_file, void* record);
-void* LocVarAd(LocVar* LV); // r766 ASM
-bool DeletedFlag(); // r771 ASM
-void ClearDeletedFlag(); // r779 ASM
-void SetDeletedFlag(); // r785 ASM
+void* LocVarAd(LocVar* LV);
+bool DeletedFlag(FandFile* fand_file, void* record);
+void ClearDeletedFlag(FandFile* fand_file, void* record);
+void SetDeletedFlag(FandFile* fand_file, void* record);
 
-bool EquKFlds(KeyFldD* KF1, KeyFldD* KF2); // r881
+bool EquKFlds(KeyFldD* KF1, KeyFldD* KF2);
 void Code(std::string& data);
-void Code(void* A, WORD L); // r897 ASM
+void Code(void* A, WORD L);
 void CodingLongStr(LongStr* S);
 longint StoreInTWork(LongStr* S);
 LongStr* ReadDelInTWork(longint Pos);
-void ForAllFDs(void (*procedure)()); // r935
+void ForAllFDs(void (*procedure)());
 bool IsActiveRdb(FileD* FD);
 void ResetCompilePars(); // r953 - posledni fce
 
@@ -112,10 +112,10 @@ void IncNRecs(FileD* file_d, longint n);
 bool TryLMode(FileD* fileD, LockMode Mode, LockMode& OldMode, WORD Kind);
 void OldLMode(FileD* fileD, LockMode Mode);
 LockMode NewLMode(FileD* fileD, LockMode Mode);
-bool TryLockN(longint N, WORD Kind);
-void UnLockN(longint N);
+bool TryLockN(FandFile* fand_file, longint N, WORD Kind);
+void UnLockN(FandFile* fand_file, longint N);
 void ClearRecSpace(void* p);
-void ZeroAllFlds();
+void ZeroAllFlds(FileD* file_d, void* record);
 void DelTFld(FieldDescr* F);
 void DelDifTFld(void* Rec, void* CompRec, FieldDescr* F);
 

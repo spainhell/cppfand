@@ -391,27 +391,36 @@ LockMode NewLMode(FileD* fileD, LockMode Mode)
 	return md;
 }
 
-bool TryLockN(longint N, WORD Kind)
+bool TryLockN(FandFile* fand_file, longint N, WORD Kind)
 {
-	longint w, w1; WORD m;
-	pstring XTxt(3); XTxt = "CrX";
+	longint w, w1;
+	WORD m;
+	std::string XTxt = "CrX";
 	auto result = true;
 #ifdef FandSQL
 	if (CFile->IsSQLFile) return result;
 #endif
 #ifdef FandNetV
 
-	if (!CFile->FF->IsShared()) return result; w = 0;
+	if (!fand_file->IsShared()) return result;
+	w = 0;
 label1:
-	if (!TryLockH(CFile->FF->Handle, RecLock + N, 1)) {
+	if (!TryLockH(fand_file->Handle, RecLock + N, 1)) {
 		if (Kind != 2) {   /*0 Kind-wait, 1-wait until ESC, 2-no wait*/
 			m = 826;
-			if (N == 0) { SetCPathVol(); SetMsgPar(CPath, XTxt); m = 825; }
+			if (N == 0)
+			{
+				SetCPathVol();
+				SetMsgPar(CPath, XTxt);
+				m = 825;
+			}
 			w1 = PushWrLLMsg(m, Kind == 1);
 			if (w == 0) w = w1;
 			else TWork.Delete(w1);
 			/*beep; don't disturb*/
-			if (KbdTimer(spec.NetDelay, Kind)) goto label1;
+			if (KbdTimer(spec.NetDelay, Kind)) {
+				goto label1;
+			}
 		}
 		result = false;
 	}
@@ -420,15 +429,14 @@ label1:
 	return result;
 }
 
-void UnLockN(longint N)
+void UnLockN(FandFile* fand_file, longint N)
 {
-	/* !!! with CFile^ do!!! */
 #ifdef FandSQL
 	if (CFile->IsSQLFile) return;
 #endif
 #ifdef FandNetV
-	if ((CFile->FF->Handle == nullptr) || !CFile->FF->IsShared()) return;
-	UnLockH(CFile->FF->Handle, RecLock + N, 1);
+	if ((fand_file->Handle == nullptr) || !fand_file->IsShared()) return;
+	UnLockH(fand_file->Handle, RecLock + N, 1);
 #endif
 }
 
@@ -476,7 +484,7 @@ void RecallRec(longint RecNr)
 	for (auto& K : CFile->Keys) {
 		K->Insert(RecNr, false);
 	}
-	ClearDeletedFlag();
+	ClearDeletedFlag(CFile->FF, CRecPtr);
 	CFile->WriteRec(RecNr, CRecPtr);
 }
 
@@ -634,10 +642,10 @@ void DeleteRec(longint N)
 	DecNRecs(1);
 }
 
-void ZeroAllFlds()
+void ZeroAllFlds(FileD* file_d, void* record)
 {
-	FillChar(CRecPtr, CFile->FF->RecLen, 0);
-	for (auto& F : CFile->FldD) {
+	FillChar(record, file_d->FF->RecLen, 0);
+	for (auto& F : file_d->FldD) {
 		if (((F->Flg & f_Stored) != 0) && (F->field_type == FieldType::ALFANUM)) S_(F, "");
 	}
 }
@@ -659,7 +667,7 @@ bool LinkLastRec(FileD* FD, longint& N, bool WithT)
 		N = CFile->FF->NRecs;
 		if (N == 0) {
 		label1:
-			ZeroAllFlds();
+			ZeroAllFlds(CFile, CRecPtr);
 			result = false;
 			N = 1;
 		}
@@ -1133,7 +1141,7 @@ bool LinkUpw(LinkD* LD, longint& N, bool WithT)
 	else {
 		bool b = false;
 		double r = 0.0;
-		ZeroAllFlds();
+		ZeroAllFlds(CFile, CRecPtr);
 		const KeyFldD* KF = K->KFlds;
 		for (auto& arg : LD->Args) {
 			FieldDescr* F = arg->FldD;
@@ -1205,8 +1213,8 @@ void AssignNRecs(bool Add, longint N)
 		goto label1;
 	}
 	CRecPtr = GetRecSpace(CFile->FF);
-	ZeroAllFlds();
-	SetDeletedFlag();
+	ZeroAllFlds(CFile, CRecPtr);
+	SetDeletedFlag(CFile->FF, CRecPtr);
 	IncNRecs(CFile, N - OldNRecs);
 	for (longint i = OldNRecs + 1; i <= N; i++) {
 		CFile->WriteRec(i, CRecPtr);
@@ -1302,34 +1310,34 @@ LocVar* LocVarBlkD::FindByName(std::string Name)
 	return nullptr;
 }
 
-bool DeletedFlag()  // r771 ASM
+bool DeletedFlag(FandFile* fand_file, void* record)
 {
-	if (CFile->FF->file_type == FileType::INDEX) {
-		if (((BYTE*)CRecPtr)[0] == 0) return false;
+	if (fand_file->file_type == FileType::INDEX) {
+		if (((BYTE*)record)[0] == 0) return false;
 		else return true;
 	}
 
-	if (CFile->FF->file_type == FileType::DBF) {
-		if (((BYTE*)CRecPtr)[0] != '*') return false;
+	if (fand_file->file_type == FileType::DBF) {
+		if (((BYTE*)record)[0] != '*') return false;
 		else return true;
 	}
 
 	return false;
 }
 
-void ClearDeletedFlag()
+void ClearDeletedFlag(FandFile* fand_file, void* record)
 {
-	BYTE* ptr = (BYTE*)CRecPtr;
-	switch (CFile->FF->file_type) {
+	BYTE* ptr = (BYTE*)record;
+	switch (fand_file->file_type) {
 	case FileType::INDEX: { ptr[0] = 0; break; }
 	case FileType::DBF: { ptr[0] = ' '; break; }
 	}
 }
 
-void SetDeletedFlag()
+void SetDeletedFlag(FandFile* fand_file, void* record)
 {
-	BYTE* ptr = (BYTE*)CRecPtr;
-	switch (CFile->FF->file_type) {
+	BYTE* ptr = (BYTE*)record;
+	switch (fand_file->file_type) {
 	case FileType::INDEX: { ptr[0] = 1; break; }
 	case FileType::DBF: { ptr[0] = '*'; break; }
 	}
@@ -1498,9 +1506,9 @@ void* GetRecSpace(FandFile* fand_file)
 	return result;
 }
 
-WORD CFileRecSize()
+size_t CFileRecSize(FandFile* fand_file)
 {
-	return CFile->FF->RecLen;
+	return fand_file->RecLen;
 }
 
 void SetTWorkFlag(FandFile* fand_file, void* record)

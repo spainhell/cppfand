@@ -951,10 +951,11 @@ void MoveForwToRec(InpD* ID)
 void MoveFrstRecs()
 {
 	for (integer i = 1; i <= MaxIi; i++) {
-		/* !!! with IDA[i]^ do!!! */
 		if (IDA[i]->Exist) MoveForwToRec(IDA[i]);
 		else {
-			CFile = IDA[i]->Scan->FD; CRecPtr = CFile->FF->RecPtr; ZeroAllFlds();
+			CFile = IDA[i]->Scan->FD;
+			CRecPtr = CFile->FF->RecPtr;
+			ZeroAllFlds(CFile, CRecPtr);
 			PutMFlds(IDA[i]->MFld);
 		}
 	}
