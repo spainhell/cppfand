@@ -5,25 +5,11 @@
 #include "FileD.h"
 #include "LocVar.h"
 #include "Rdb.h"
-#include "../fandio/XString.h"
 #include "switches.h"
 #ifdef FandSQL
 #include "channel.h"
 #endif
 
-class FileD;
-class KeyFldD;
-class FandTFile;
-class FandXFile;
-struct FrmlListEl;
-class FrmlElem;
-class LocVar;
-struct FuncD;
-class XWKey;
-class XWFile;
-class XKey;
-class LinkD;
-class FieldDescr;
 
 // ********** CONST **********
 const BYTE LeftJust = 1; // {RightJust=0  coded in M for Typ='N','A'}

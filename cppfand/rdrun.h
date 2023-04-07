@@ -271,30 +271,6 @@ struct EditD : Chained<EditD>
 	void* AfterE = nullptr;
 };
 
-enum PInstrCode
-{
-	_menubox, _menubar, _ifthenelseP, _whiledo,
-	_repeatuntil, _break, _exitP, _cancel, _save, _closefds,
-	_window, _clrscr, _clrww, _clreol, _gotoxy, _display,
-	_writeln, _comment, _setkeybuf, _clearkeybuf, _headline,
-	_call, _exec, _copyfile, _proc, _lproc, _merge, _sort, _edit, _report,
-	_edittxt, _printtxt, _puttxt, _sql,
-	_asgnloc, _asgnpar, _asgnfield, _asgnedok, _asgnrand, _asgnusertoday,
-	_randomize,
-	_asgnusercode, _asgnusername,
-	_asgnaccright, _asgnxnrecs,
-	_asgnnrecs, _asgncatfield, _asgnrecfld, _asgnrecvar, _asgnclipbd,
-	_turncat, _appendrec, _deleterec, _recallrec, _readrec, _writerec,
-	_linkrec,
-	_releasedrive, _mount, _indexfile, _getindex, _forall,
-	_withshared, _withlocked, _withgraphics,
-	_memdiag, _wait, _delay, _beepP, _sound, _nosound, _help, _setprinter,
-	_graph, _putpixel, _line, _rectangle, _ellipse, _floodfill, _outtextxy,
-	_backup, _backupm, _resetcat,
-	_setedittxt, _setmouse, _checkfile, _login, _sqlrdwrtxt,
-	_portout
-};
-
 enum class CpOption {cpNo, cpFix, cpVar, cpTxt};
 
 struct CopyD
@@ -356,13 +332,6 @@ struct TypAndFrml
 	std::string Name; // if RecPtr != nullptr
 };
 
-class Instr
-{
-public:
-	Instr(PInstrCode kind);
-	PInstrCode Kind;
-	Instr* Chain = nullptr;
-};
 
 extern std::vector<ConstListEl> OldMFlds;
 extern std::vector<ConstListEl> NewMFlds;   /* Merge + Report*/

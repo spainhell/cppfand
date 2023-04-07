@@ -3,6 +3,37 @@
 #include "../Graph.h"
 #include "../EditOpt.h"
 
+enum PInstrCode
+{
+	_menubox, _menubar, _ifthenelseP, _whiledo,
+	_repeatuntil, _break, _exitP, _cancel, _save, _closefds,
+	_window, _clrscr, _clrww, _clreol, _gotoxy, _display,
+	_writeln, _comment, _setkeybuf, _clearkeybuf, _headline,
+	_call, _exec, _copyfile, _proc, _lproc, _merge, _sort, _edit, _report,
+	_edittxt, _printtxt, _puttxt, _sql,
+	_asgnloc, _asgnpar, _asgnfield, _asgnedok, _asgnrand, _asgnusertoday,
+	_randomize,
+	_asgnusercode, _asgnusername,
+	_asgnaccright, _asgnxnrecs,
+	_asgnnrecs, _asgncatfield, _asgnrecfld, _asgnrecvar, _asgnclipbd,
+	_turncat, _appendrec, _deleterec, _recallrec, _readrec, _writerec,
+	_linkrec,
+	_releasedrive, _mount, _indexfile, _getindex, _forall,
+	_withshared, _withlocked, _withgraphics,
+	_memdiag, _wait, _delay, _beepP, _sound, _nosound, _help, _setprinter,
+	_graph, _putpixel, _line, _rectangle, _ellipse, _floodfill, _outtextxy,
+	_backup, _backupm, _resetcat,
+	_setedittxt, _setmouse, _checkfile, _login, _sqlrdwrtxt,
+	_portout
+};
+
+class Instr
+{
+public:
+	Instr(PInstrCode kind);
+	PInstrCode Kind;
+	Instr* Chain = nullptr;
+};
 
 class Instr_menu : public Instr
 {
@@ -199,10 +230,17 @@ public:
 	char EdTxtMode = '\0';
 	std::vector<EdExitD*> ExD;
 	BYTE WFlags = 0;
-	FrmlElem* TxtPos = nullptr; FrmlElem* TxtXY = nullptr; FrmlElem* ErrMsg = nullptr;
-	WRectFrml Ww; FrmlElem* Atr = nullptr; FrmlElem* Hd = nullptr;
-	FrmlElem* Head = nullptr; FrmlElem* Last = nullptr; FrmlElem* CtrlLast = nullptr;
-	FrmlElem* AltLast = nullptr; FrmlElem* ShiftLast = nullptr;
+	FrmlElem* TxtPos = nullptr;
+	FrmlElem* TxtXY = nullptr;
+	FrmlElem* ErrMsg = nullptr;
+	WRectFrml Ww;
+	FrmlElem* Atr = nullptr;
+	FrmlElem* Hd = nullptr;
+	FrmlElem* Head = nullptr;
+	FrmlElem* Last = nullptr;
+	FrmlElem* CtrlLast = nullptr;
+	FrmlElem* AltLast = nullptr;
+	FrmlElem* ShiftLast = nullptr;
 };
 
 class Instr_puttxt : public Instr
@@ -242,10 +280,13 @@ public:
 	Instr_getindex();
 	LocVar* giLV = nullptr; char giMode = '\0'; /*+,-,blank*/
 	FrmlElem* giCond = nullptr; /* || RecNr-Frml */
-	XKey* giKD = nullptr; KeyFldD* giKFlds = nullptr;
-	KeyInD* giKIRoot = nullptr; bool giSQLFilter = false;
+	XKey* giKD = nullptr;
+	KeyFldD* giKFlds = nullptr;
+	KeyInD* giKIRoot = nullptr;
+	bool giSQLFilter = false;
 	char giOwnerTyp = '\0';
-	LinkD* giLD = nullptr; LocVar* giLV2 = nullptr;
+	LinkD* giLD = nullptr;
+	LocVar* giLV2 = nullptr;
 };
 
 class Instr_window : public Instr
@@ -326,7 +367,8 @@ public:
 	WORD BrCatIRec = 0;
 	bool IsBackup = false, NoCompress = false, BrNoCancel = false;
 	BYTE bmX[5]{ 0 };
-	FrmlElem* bmDir = nullptr; FrmlElem* bmMasks = nullptr; /*backup only*/
+	FrmlElem* bmDir = nullptr;
+	FrmlElem* bmMasks = nullptr; /*backup only*/
 	bool bmSubDir = false, bmOverwr = false;
 };
 
@@ -341,9 +383,13 @@ class Instr_setedittxt : public Instr
 {
 public:
 	Instr_setedittxt();
-	FrmlElem* Insert = nullptr; FrmlElem* Indent = nullptr;
-	FrmlElem* Wrap = nullptr; FrmlElem* Just = nullptr;
-	FrmlElem* ColBlk = nullptr; FrmlElem* Left = nullptr; FrmlElem* Right = nullptr;
+	FrmlElem* Insert = nullptr;
+	FrmlElem* Indent = nullptr;
+	FrmlElem* Wrap = nullptr;
+	FrmlElem* Just = nullptr;
+	FrmlElem* ColBlk = nullptr;
+	FrmlElem* Left = nullptr;
+	FrmlElem* Right = nullptr;
 };
 
 class Instr_setmouse : public Instr

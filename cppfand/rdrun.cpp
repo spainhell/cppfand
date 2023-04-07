@@ -9,6 +9,7 @@
 #include "oaccess.h"
 #include "obaseww.h"
 #include "runfrml.h"
+#include "models/Instr.h"
 
 std::vector<ConstListEl> OldMFlds;
 std::vector<ConstListEl> NewMFlds;   /* Merge + Report*/

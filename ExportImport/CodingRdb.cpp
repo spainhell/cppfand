@@ -12,7 +12,7 @@
 
 void CodingRdb::CodeRdb(bool Rotate)
 {
-	WORD pos;
+	//WORD pos;
 	std::string s;
 	FileD* cf = CFile;
 	void* cr = CRecPtr;
@@ -54,10 +54,11 @@ void CodingRdb::CodeRdb(bool Rotate)
 
 void CodingRdb::CompressTxt(WORD IRec, LongStr* s, char Typ)
 {
-	WORD i, n;
+	//WORD i;
+	WORD n;
 	bool b;
-	CompInpD* ci;
-	LongStr* s2;
+	//CompInpD* ci;
+	//LongStr* s2;
 	void* p2 = nullptr;
 
 	InpArrLen = s->LL;
@@ -72,7 +73,7 @@ void CodingRdb::CompressTxt(WORD IRec, LongStr* s, char Typ)
 	CurrPos = 1;
 	SwitchLevel = 0;
 	void* cr = CRecPtr;
-	ss = new LongStr(MaxLStrLen + 2); // GetStore(MaxLStrLen + 2);
+	ss = new LongStr(MaxLStrLen + 2);
 	MarkStore(p2);
 	l = 0;
 	if (Typ == 'E') {

@@ -15,7 +15,7 @@ SS ss;
 
 struct Item
 {
-	char Tag;
+	char Tag = '\0';
 	std::string S;
 
 	WORD Compare(const Item& i) const { return CompLexStrings(this->S, i.S); }
@@ -27,7 +27,13 @@ struct Item
 struct stSv
 {
 	std::vector<Item> items;
-	short NItems, MaxItemLen, Tabs, TabSize, WwSize, Base, iItem;
+	short NItems = 0;
+	short MaxItemLen = 0;
+	short Tabs = 0;
+	short TabSize = 0;
+	short WwSize = 0;
+	short Base = 0;
+	short iItem = 0;
 
 	void Reset() {
 		NItems = 0;

@@ -500,8 +500,6 @@ const BYTE KamToWinCp = 14;
 const BYTE WinCpToLat = 15;
 
 
-// ********** konstanty ACCESS.H ********** // r409
-
 enum instr_type
 {
 	_notdefined = 0x0,
@@ -572,5 +570,4 @@ enum instr_type
 	_selectstr = 0xf3, _copyline = 0xf4,  // {SSRR}
 	_pos = 0xf5, _replace = 0xf6, // {options}, // {options},   // {RSSR}
 	_mousein = 0xf7,  // {P4},
-	
 };
