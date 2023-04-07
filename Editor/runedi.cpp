@@ -2493,9 +2493,8 @@ bool WriteCRec(bool MayDispl, bool& Displ)
 	EFldD* D = nullptr;
 	ChkD* C = nullptr;
 	LockMode OldMd = LockMode::NullMode;
-	//XKey* K = nullptr;
 	Displ = false;
-	auto result = false;
+	bool result = false;
 
 	if (!WasUpdated || !IsNewRec && EquOldNewRec()) {
 		IsNewRec = false; WasUpdated = false; result = true;
@@ -2571,7 +2570,7 @@ bool WriteCRec(bool MayDispl, bool& Displ)
 		if (IsNewRec) {
 			if (AddSwitch && !RunAddUpdte1('+', nullptr, false, nullptr, nullptr)) goto label1;
 			CNew = UpdateIndexes();
-			CFile->CreateRec(CFile->FF->NRecs + 1);
+			CFile->CreateRec(CFile->FF->NRecs + 1, CRecPtr);
 		}
 		else {
 			if (AddSwitch) {
@@ -2595,7 +2594,7 @@ bool WriteCRec(bool MayDispl, bool& Displ)
 		}
 		if (AddSwitch && !RunAddUpdte1('+', nullptr, false, nullptr, nullptr)) goto label1;
 		if (ChptWriteCRec() != 0) goto label1;
-		CFile->CreateRec(N);
+		CFile->CreateRec(N, CRecPtr);
 		if (Subset) {
 			WK->AddToRecNr(N, 1);
 			WK->InsertAtNr(CRec(), N);

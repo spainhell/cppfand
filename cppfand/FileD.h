@@ -56,10 +56,10 @@ public:
 
 	void* GetRecSpace();
 
-	void IncNRecs(int i);
-	void DecNRecs(int i);
-	void SeekRec(int i);
-	void CreateRec(int i);
+	void IncNRecs(int n);
+	void DecNRecs(int n);
+	void SeekRec(int n);
+	void CreateRec(int n, void* record);
 	void PutRec(void* record);
 
 	// v CRecPtr vycte pozici zaznamu v .T00 souboru (ukazatel na zacatek textu)

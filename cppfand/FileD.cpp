@@ -96,37 +96,37 @@ void* FileD::GetRecSpace()
 	return result;
 }
 
-void FileD::IncNRecs(int i)
+void FileD::IncNRecs(int n)
 {
-	this->FF->IncNRecs(i);
+	this->FF->IncNRecs(n);
 }
 
-void FileD::DecNRecs(int i)
+void FileD::DecNRecs(int n)
 {
-	this->FF->DecNRecs(i);
+	this->FF->DecNRecs(n);
 }
 
-void FileD::SeekRec(int i)
+void FileD::SeekRec(int n)
 {
-	IRec = i;
+	IRec = n;
 	if (FF->XF == nullptr) {
-		FF->Eof = (i >= FF->NRecs);
+		FF->Eof = (n >= FF->NRecs);
 	}
 	else {
-		FF->Eof = i >= FF->XF->NRecs;
+		FF->Eof = (n >= FF->XF->NRecs);
 	}
 }
 
-void FileD::CreateRec(int n)
+void FileD::CreateRec(int n, void* record)
 {
 	IncNRecs(1);
-	void* record = GetRecSpace();
+	void* tmp = GetRecSpace();
 	for (int i = FF->NRecs - 1; i >= n; i--) {
-		ReadRec(i, record);
-		WriteRec(i + 1, record);
+		ReadRec(i, tmp);
+		WriteRec(i + 1, tmp);
 	}
-	delete[] record;
-	record = nullptr;
+	delete[] tmp;
+	tmp = nullptr;
 	WriteRec(n, record);
 }
 

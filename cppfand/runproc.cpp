@@ -539,25 +539,30 @@ bool SrchXKey(XKey* K, XString& X, int& N)
 
 void DeleteRecProc(Instr_recs* PD)
 {
-	int n; XString x;
+	int n;
+	XString x;
 	CFile = PD->RecFD;
 	CRecPtr = PD->RecFD->GetRecSpace();
 	if (PD->ByKey) {
 		x.S = RunShortStr(PD->RecNr);
 #ifdef FandSQL
-		if (CFile->IsSQLFile) { Strm1->DeleteXRec(PD->Key, &x, PD->AdUpd); goto label2; }
+		if (CFile->IsSQLFile) { Strm1->DeleteXRec(PD->Key, &x, PD->AdUpd); delete[] CRecPtr; return; }
 #endif
 	}
 	LockMode md = NewLMode(CFile, DelMode);
 	if (PD->ByKey) {
 		if (!SrchXKey(PD->Key, x, n)) {
-			goto label1;
+			OldLMode(CFile, md);
+			delete[] CRecPtr;
+			return;
 		}
 	}
 	else {
 		n = RunInt(PD->RecNr);
 		if ((n <= 0) || (n > CFile->FF->NRecs)) {
-			goto label1;
+			OldLMode(CFile, md);
+			delete[] CRecPtr;
+			return;
 		}
 	}
 	CFile->ReadRec(n, CRecPtr);
@@ -570,9 +575,7 @@ void DeleteRecProc(Instr_recs* PD)
 	else {
 		DeleteRec(n);
 	}
-label1:
 	OldLMode(CFile, md);
-label2:
 	ReleaseStore(CRecPtr);
 }
 
@@ -582,7 +585,7 @@ void AppendRecProc()
 	CRecPtr = CFile->GetRecSpace();
 	ZeroAllFlds(CFile, CRecPtr);
 	SetDeletedFlag(CFile->FF, CRecPtr);
-	CFile->CreateRec(CFile->FF->NRecs + 1);
+	CFile->CreateRec(CFile->FF->NRecs + 1, CRecPtr);
 	ReleaseStore(CRecPtr);
 	OldLMode(CFile, md);
 }
