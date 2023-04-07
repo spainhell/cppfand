@@ -164,10 +164,10 @@ void SetInpTT(RdbPos* RP, bool FromTxt)
 	CRecPtr = new BYTE[RP->R->FD->FF->RecLen];
 	CFile->ReadRec(RP->IRec, CRecPtr);
 	if (FromTxt) {
-		Pos = _T(ChptTxt, (unsigned char*)CRecPtr, CFile->FF->file_type);
+		Pos = CFile->_T(ChptTxt, CRecPtr);
 	}
 	else {
-		Pos = _T(ChptOldTxt, (unsigned char*)CRecPtr, CFile->FF->file_type);
+		Pos = CFile->_T(ChptOldTxt, CRecPtr);
 	}
 	SetInpTTPos(CFile, Pos, RP->R->Encrypted);
 	ReleaseStore(CRecPtr);
@@ -1055,7 +1055,7 @@ bool FindChpt(char Typ, const pstring& name, bool local, RdbPos* RP)
 	FileD* CF = CFile;
 	void* CR = CRecPtr;
 	CFile = Chpt;
-	CRecPtr = GetRecSpace(Chpt->FF);
+	CRecPtr = Chpt->GetRecSpace();
 	RdbD* R = CRdb;
 	auto result = false;
 	while (R != nullptr) {

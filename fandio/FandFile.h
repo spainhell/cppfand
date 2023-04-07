@@ -4,6 +4,7 @@
 #include "FandXFile.h"
 #include "../cppfand/switches.h"
 #include "../cppfand/base.h"
+#include "../cppfand/FieldDescr.h"
 #include "../Logging/Logging.h"
 
 enum class FileType
@@ -48,5 +49,9 @@ public:
 
 	void IncNRecs(int n);
 	void DecNRecs(int N);
+	void PutRec(void* record, int& i_rec);
+
+	// v CRecPtr vycte pozici zaznamu v .T00 souboru (ukazatel na zacatek textu)
+	int _T(FieldDescr* F, void* record);
 };
 

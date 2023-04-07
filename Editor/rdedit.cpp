@@ -448,7 +448,7 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 	E->ChkSwitch = true;
 	E->WarnSwitch = true;
 	CFile = E->FD;
-	CRecPtr = GetRecSpace(E->FD->FF);
+	CRecPtr = E->FD->GetRecSpace();
 	E->OldRecPtr = CRecPtr;
 #ifdef FandSQL
 	if (CFile->IsSQLFile) SetTWorkFlag;
@@ -461,7 +461,7 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 		E->KIRoot = nullptr;
 	}
 	else {
-		CRecPtr = GetRecSpace(CFile->FF);
+		CRecPtr = CFile->GetRecSpace();
 		E->NewRecPtr = CRecPtr;
 #ifdef FandSQL
 		if (CFile->IsSQLFile) SetTWorkFlag;
@@ -490,7 +490,7 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 			case 'F': {
 				E->OwnerRecNo = RunInt((FrmlElem*)EO->DownLV);
 				CFile = E->DownLD->ToFD;
-				E->DownRecPtr = GetRecSpace(E->DownLD->ToFD->FF);
+				E->DownRecPtr = E->DownLD->ToFD->GetRecSpace();
 				CFile = E->FD;
 				break;
 			}

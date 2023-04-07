@@ -1871,7 +1871,7 @@ void AssertFand(TPredicate* P, TCommand* C)
 
 	si = SiCFile(P->scanInf);
 	md = NewLMode(CFile, CrMode);
-	CRecPtr = GetRecSpace(CFile->FF);
+	CRecPtr = CFile->GetRecSpace();
 	ZeroAllFlds(CFile, CRecPtr);
 	//PtrRec(d).Seg = _Sg;
 	fl = si->FL;
@@ -2043,7 +2043,7 @@ bool ScanFile(TInstance* Q)
 	si = p->scanInf;
 	//PtrRec(fl).Seg = _Sg;
 	CFile = si->FD;
-	CRecPtr = GetRecSpace(CFile->FF);
+	CRecPtr = CFile->GetRecSpace();
 	md = NewLMode(CFile, RdMode);
 	k = nullptr;
 	if (c->KDOfs != nullptr) k = c->KDOfs;
@@ -2426,9 +2426,9 @@ void RunProlog(RdbPos* Pos, std::string PredName)
 	else {
 		ChptLRdb = Pos->R;
 		CFile = ChptLRdb->FD;
-		CRecPtr = GetRecSpace(ChptLRdb->FD->FF);
+		CRecPtr = ChptLRdb->FD->GetRecSpace();
 		CFile->ReadRec(Pos->IRec, CRecPtr);
-		SetInpTTPos(_T(ChptTxt), ChptLRdb->Encrypted);
+		SetInpTTPos(CFile->_T(ChptTxt, CRecPtr), ChptLRdb->Encrypted);
 		Roots = ReadProlog(Pos->IRec);
 	}
 

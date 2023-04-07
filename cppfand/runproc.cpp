@@ -156,7 +156,7 @@ void AssignField(Instr_assign* PD)
 		msg = 640;
 		goto label1;
 	}
-	CRecPtr = GetRecSpace(CFile->FF);
+	CRecPtr = CFile->GetRecSpace();
 	CFile->ReadRec(N, CRecPtr);
 	if (PD->Indexarg && !DeletedFlag(CFile->FF, CRecPtr)) {
 		msg = 627;
@@ -333,7 +333,7 @@ void DisplayProc(RdbD* R, WORD IRec)
 		CFile = R->FD;
 		CRecPtr = Chpt->FF->RecPtr;
 		CFile->ReadRec(IRec, CRecPtr);
-		LongStr* S = CFile->FF->TF->Read(_T(ChptTxt));
+		LongStr* S = CFile->FF->TF->Read(CFile->_T(ChptTxt, CRecPtr));
 		if (R->Encrypted) CodingLongStr(S);
 		str = std::string(S->A, S->LL);
 		delete S; S = nullptr;
@@ -406,7 +406,7 @@ void IndexfileProc(FileD* FD, bool Compress)
 	CFile = FD;
 	LockMode md = NewLMode(CFile, ExclMode);
 	XFNotValid();
-	CRecPtr = GetRecSpace(CFile->FF);
+	CRecPtr = CFile->GetRecSpace();
 	if (Compress) {
 		FileD* FD2 = OpenDuplF(false);
 		for (int I = 1; I <= FD->FF->NRecs; I++) {
@@ -414,7 +414,7 @@ void IndexfileProc(FileD* FD, bool Compress)
 			CFile->ReadRec(I, CRecPtr);
 			if (!DeletedFlag(CFile->FF, CRecPtr)) {
 				CFile = FD2;
-				PutRec(CFile, CRecPtr);
+				CFile->PutRec(CRecPtr);
 			}
 		}
 		if (!SaveCache(0, CFile->FF->Handle)) {
@@ -529,7 +529,7 @@ bool SrchXKey(XKey* K, XString& X, int& N)
 	}
 	else {
 		cr = CRecPtr;
-		CRecPtr = GetRecSpace(CFile->FF);
+		CRecPtr = CFile->GetRecSpace();
 		auto result = SearchKey(X, K, N);
 		ReleaseStore(CRecPtr);
 		CRecPtr = cr;
@@ -541,7 +541,7 @@ void DeleteRecProc(Instr_recs* PD)
 {
 	int n; XString x;
 	CFile = PD->RecFD;
-	CRecPtr = GetRecSpace(PD->RecFD->FF);
+	CRecPtr = PD->RecFD->GetRecSpace();
 	if (PD->ByKey) {
 		x.S = RunShortStr(PD->RecNr);
 #ifdef FandSQL
@@ -579,17 +579,17 @@ label2:
 void AppendRecProc()
 {
 	LockMode md = NewLMode(CFile, CrMode);
-	CRecPtr = GetRecSpace(CFile->FF);
+	CRecPtr = CFile->GetRecSpace();
 	ZeroAllFlds(CFile, CRecPtr);
 	SetDeletedFlag(CFile->FF, CRecPtr);
-	CreateRec(CFile, CFile->FF->NRecs + 1);
+	CFile->CreateRec(CFile->FF->NRecs + 1);
 	ReleaseStore(CRecPtr);
 	OldLMode(CFile, md);
 }
 
 void UpdRec(void* CR, int N, bool AdUpd)
 {
-	void* cr2 = GetRecSpace(CFile->FF);
+	void* cr2 = CFile->GetRecSpace();
 	CRecPtr = cr2;
 	CFile->ReadRec(N, CRecPtr);
 	bool del = DeletedFlag(CFile->FF, CRecPtr);
@@ -628,7 +628,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 	bool ad = PD->AdUpd;
 	LockMode md = CFile->FF->LMode;
 	app = false;
-	void* cr = GetRecSpace(CFile->FF);
+	void* cr = CFile->GetRecSpace();
 	if (PD->ByKey) {
 		x.S = RunShortStr(PD->RecNr);
 #ifdef FandSQL
@@ -755,7 +755,7 @@ void ForAllProc(Instr_forall* PD)
 		}
 		case 'F': {
 			md = NewLMode(CFile, RdMode);
-			CRecPtr = GetRecSpace(CFile->FF);
+			CRecPtr = CFile->GetRecSpace();
 			CFile->ReadRec(RunInt((FrmlElem*)PD->CLV), CRecPtr);
 			xx.PackKF(KF);
 			ReleaseStore(p);
@@ -769,7 +769,7 @@ void ForAllProc(Instr_forall* PD)
 	sql = CFile->IsSQLFile;
 #endif
 	md = NewLMode(CFile, RdMode);
-	cr = GetRecSpace(CFile->FF);
+	cr = CFile->GetRecSpace();
 	CRecPtr = cr; lr = cr;
 	xScan = new XScan(CFile, Key, KI, true);
 #ifdef FandSQL
@@ -1120,7 +1120,7 @@ void RecallRecProc(Instr_recs* PD)
 	CFile = PD->RecFD;
 	if (CFile->FF->file_type != FileType::INDEX) return;
 	int N = RunInt(PD->RecNr);
-	CRecPtr = GetRecSpace(CFile->FF);
+	CRecPtr = CFile->GetRecSpace();
 	LockMode md = NewLMode(CFile, CrMode);
 	if ((N > 0) && (N <= CFile->FF->NRecs)) {
 		CFile->ReadRec(N, CRecPtr);
@@ -1619,7 +1619,7 @@ void CallProcedure(Instr_proc* PD)
 	while (it0 != PD->variables.vLocVar.end()) {
 		if ((*it0)->FTyp == 'r') {
 			CFile = (*it0)->FD;
-			CRecPtr = GetRecSpace(CFile->FF);
+			CRecPtr = CFile->GetRecSpace();
 			SetTWorkFlag(CFile->FF, CRecPtr);
 			ZeroAllFlds(CFile, CRecPtr);
 			ClearDeletedFlag(CFile->FF, CRecPtr);

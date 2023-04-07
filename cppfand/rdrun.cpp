@@ -157,7 +157,7 @@ fail:
 
 void CrIndRec()
 {
-	CreateRec(CFile, CFile->FF->NRecs + 1);
+	CFile->CreateRec(CFile->FF->NRecs + 1);
 	RecallRec(CFile->FF->NRecs);
 }
 
@@ -195,7 +195,7 @@ bool Link(AddD* AD, int& N, char& Kind2)
 				N = CFile->FF->NRecs;
 			}
 			else {
-				CreateRec(CFile, N);
+				CFile->CreateRec(N);
 			}
 		}
 		return result;
@@ -213,7 +213,8 @@ bool TransAdd(AddD* AD, FileD* FD, void* RP, void* CRnew, int N, char Kind2, boo
 	{
 		CRecPtr = CRnew; return RunAddUpdte1('+', nullptr, Back, nullptr, nullptr);
 	}
-	CRold = GetRecSpace(CFile->FF); CRecPtr = CRold;
+	CRold = CFile->GetRecSpace();
+	CRecPtr = CRold;
 #ifdef FandSQL
 	if (CFile->IsSQLFile) {
 		ld = AD->LD; if (ld = nullptr) Strm1->SelectXRec(nullptr, nullptr, _equ, false)

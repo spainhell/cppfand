@@ -378,9 +378,13 @@ bool TryLMode(FileD* fileD, LockMode Mode, LockMode& OldMode, WORD Kind)
 	else
 #endif
 	{
-		if (fileD->FF->Handle == nullptr) OpenCreateF(fileD, Shared);
+		if (fileD->FF->Handle == nullptr) {
+			OpenCreateF(fileD, Shared);
+		}
 		OldMode = fileD->FF->LMode;
-		if (Mode > fileD->FF->LMode) result = ChangeLMode(fileD, Mode, Kind, true);
+		if (Mode > fileD->FF->LMode) {
+			result = ChangeLMode(fileD, Mode, Kind, true);
+		}
 	}
 	return result;
 }
@@ -498,30 +502,6 @@ bool IsNullValue(void* p, WORD l)
 	return true;
 }
 
-// v CRecPtr vycte pozici zaznamu v .T00 souboru (ukazatel na zacatek textu)
-int _T(FieldDescr* F)
-{
-	return _T(F, (unsigned char*)CRecPtr, CFile->FF->file_type);
-}
-
-int _T(FieldDescr* F, unsigned char* data, FileType file_type)
-{
-	int n = 0;
-	short err = 0;
-	char* source = (char*)data + F->Displ;
-
-	if (file_type == FileType::DBF) {
-		// tváøíme se, že CRecPtr je pstring ...
-		// TODO: toto je asi blbì, nutno opravit pøed 1. použitím
-		pstring* s = (pstring*)CRecPtr;
-		auto result = std::stoi(LeadChar(' ', *s));
-		return result;
-	}
-	else {
-		if (data == nullptr) return 0;
-		return *(int*)source;
-	}
-}
 
 void T_(FieldDescr* F, int Pos)
 {
@@ -551,7 +531,7 @@ void T_(FieldDescr* F, int Pos)
 
 void DelTFld(FieldDescr* F)
 {
-	int n = _T(F);
+	int n = CFile->_T(F, CRecPtr);
 	if (HasTWorkFlag(CFile->FF, CRecPtr)) {
 		TWork.Delete(n);
 	}
@@ -567,9 +547,9 @@ void DelDifTFld(void* Rec, void* CompRec, FieldDescr* F)
 {
 	void* cr = CRecPtr;
 	CRecPtr = CompRec;
-	int n = _T(F);
+	int n = CFile->_T(F, CRecPtr);
 	CRecPtr = Rec;
-	if (n != _T(F)) DelTFld(F);
+	if (n != CFile->_T(F, CRecPtr)) DelTFld(F);
 	CRecPtr = cr;
 }
 
@@ -582,29 +562,6 @@ void DelAllDifTFlds(void* Rec, void* CompRec)
 
 const WORD Alloc = 2048;
 const double FirstDate = 6.97248E+5;
-
-void PutRec(FileD* dataFile, void* recordData)
-{
-	/* !!! with CFile^ do!!! */
-	dataFile->FF->NRecs++;
-	RdWrCache(WRITE, dataFile->FF->Handle, dataFile->FF->NotCached(),
-		int(dataFile->IRec) * dataFile->FF->RecLen + dataFile->FF->FrstDispl, dataFile->FF->RecLen, recordData);
-	dataFile->IRec++;
-	dataFile->FF->Eof = true;
-}
-
-void CreateRec(FileD* file_d, int n)
-{
-	file_d->IncNRecs(1);
-	void* record = GetRecSpace(file_d->FF);
-	for (int i = file_d->FF->NRecs - 1; i >= n; i--) {
-		file_d->ReadRec(i, record);
-		file_d->WriteRec(i + 1, record);
-	}
-	delete[] record;
-	record = nullptr;
-	file_d->WriteRec(n, CRecPtr);
-}
 
 void DeleteRec(int N)
 {
@@ -627,7 +584,7 @@ void ZeroAllFlds(FileD* file_d, void* record)
 bool LinkLastRec(FileD* FD, int& N, bool WithT)
 {
 	CFile = FD;
-	CRecPtr = GetRecSpace(FD->FF);
+	CRecPtr = FD->GetRecSpace();
 	LockMode md = NewLMode(CFile, RdMode);
 	auto result = true;
 #ifdef FandSQL
@@ -961,13 +918,13 @@ std::string _StdS(FieldDescr* F)
 		}
 		case FieldType::TEXT: { // volny text max. 65k
 			if (HasTWorkFlag(CFile->FF, CRecPtr)) {
-				LongStr* ls = TWork.Read(_T(F));
+				LongStr* ls = TWork.Read(CFile->_T(F, CRecPtr));
 				S = std::string(ls->A, ls->LL);
 				delete ls;
 			}
 			else {
 				md = NewLMode(CFile, RdMode);
-				LongStr* ls = CFile->FF->TF->Read(_T(F));
+				LongStr* ls = CFile->FF->TF->Read(CFile->_T(F, CRecPtr));
 				S = std::string(ls->A, ls->LL);
 				delete ls;
 				OldLMode(CFile, md);
@@ -1087,7 +1044,7 @@ bool LinkUpw(LinkD* LD, int& N, bool WithT)
 	x.PackKF(LD->Args);
 
 	CFile = ToFD;
-	void* RecPtr = GetRecSpace(CFile->FF);
+	void* RecPtr = CFile->GetRecSpace();
 	CRecPtr = RecPtr;
 #ifdef FandSQL
 	if (CFile->IsSQLFile) {
@@ -1186,7 +1143,7 @@ void AssignNRecs(bool Add, int N)
 		CFile->DecNRecs(OldNRecs - N);
 		goto label1;
 	}
-	CRecPtr = GetRecSpace(CFile->FF);
+	CRecPtr = CFile->GetRecSpace();
 	ZeroAllFlds(CFile, CRecPtr);
 	SetDeletedFlag(CFile->FF, CRecPtr);
 	CFile->IncNRecs(N - OldNRecs);
@@ -1207,7 +1164,7 @@ void ClearRecSpace(void* p)
 		if (HasTWorkFlag(CFile->FF, CRecPtr)) {
 			for (auto& f : CFile->FldD) {
 				if (((f->Flg & f_Stored) != 0) && (f->field_type == FieldType::TEXT)) {
-					TWork.Delete(_T(f));
+					TWork.Delete(CFile->_T(f, CRecPtr));
 					T_(f, 0);
 				}
 			}
@@ -1243,7 +1200,7 @@ void CopyRecWithT(void* p1, void* p2)
 				if (HasTWorkFlag(CFile->FF, CRecPtr)) {
 					tf1 = &TWork;
 				}
-				int pos = _T(F);
+				int pos = CFile->_T(F, CRecPtr);
 				CRecPtr = p2;
 				if (HasTWorkFlag(CFile->FF, CRecPtr)) {
 					tf2 = &TWork;
@@ -1469,14 +1426,6 @@ WORD CompLexStrings(const std::string& S1, const std::string& S2)
 
 	delete[] b1;
 	delete[] b2;
-	return result;
-}
-
-void* GetRecSpace(FandFile* fand_file)
-{
-	size_t length = fand_file->RecLen + 2;
-	void* result = new BYTE[length];
-	memset(result, '\0', length);
 	return result;
 }
 

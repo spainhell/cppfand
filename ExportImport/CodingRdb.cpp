@@ -18,7 +18,7 @@ void CodingRdb::CodeRdb(bool Rotate)
 	void* cr = CRecPtr;
 	CFile = Chpt;
 
-	CRecPtr = GetRecSpace(CFile->FF);
+	CRecPtr = CFile->GetRecSpace();
 	RunMsgOn('C', CFile->FF->NRecs);
 	WORD irec = ChptTF->IRec;
 	bool compileAll = ChptTF->CompileAll;
@@ -199,7 +199,7 @@ void CodingRdb::CodeF(bool rotate, WORD IRec, FieldDescr* F, char Typ)
 	void* p = nullptr;
 	void* p2 = nullptr;
 
-	int pos = _T(F);
+	int pos = CFile->_T(F, CRecPtr);
 	if (pos == 0) return;
 	MarkBoth(p, p2);
 	LongStr* s = ChptTF->Read(pos);

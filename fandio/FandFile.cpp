@@ -77,3 +77,29 @@ void FandFile::DecNRecs(int N)
 	WasWrRec = true;
 }
 
+void FandFile::PutRec(void* record, int& i_rec)
+{
+	NRecs++;
+	RdWrCache(WRITE, Handle, NotCached(),i_rec * RecLen + FrstDispl, RecLen, record);
+	i_rec++;
+	Eof = true;
+}
+
+int FandFile::_T(FieldDescr* F, void* record)
+{
+	int n = 0;
+	short err = 0;
+	char* source = (char*)record + F->Displ;
+
+	if (file_type == FileType::DBF) {
+		// tvarime se, ze CRecPtr je pstring ...
+		// TODO: toto je asi blbe, nutno opravit pred 1. pouzitim
+		//pstring* s = (pstring*)CRecPtr;
+		//auto result = std::stoi(LeadChar(' ', *s));
+		return 0; // result;
+	}
+	else {
+		if (record == nullptr) return 0;
+		return *(int*)source;
+	}
+}

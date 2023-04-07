@@ -54,9 +54,16 @@ public:
 	void ReadRec(size_t rec_nr, void* record);
 	void WriteRec(size_t rec_nr, void* record);
 
+	void* GetRecSpace();
+
 	void IncNRecs(int i);
 	void DecNRecs(int i);
 	void SeekRec(int i);
-	void CreateRec();
-	void PutRec();
+	void CreateRec(int i);
+	void PutRec(void* record);
+
+	// v CRecPtr vycte pozici zaznamu v .T00 souboru (ukazatel na zacatek textu)
+	int _T(FieldDescr* F, void* record);
+	
+
 };

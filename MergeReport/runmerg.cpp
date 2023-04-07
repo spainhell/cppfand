@@ -208,7 +208,7 @@ void WriteOutp(OutpRD* RD)
 				else
 #endif
 				{
-					PutRec(CFile, CRecPtr);
+					CFile->PutRec(CRecPtr);
 					if (OD->Append && (CFile->FF->file_type == FileType::INDEX)) TryInsertAllIndexes(CFile->IRec);
 				}
 			}

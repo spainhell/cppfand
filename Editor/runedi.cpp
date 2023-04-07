@@ -882,7 +882,7 @@ void DisplRec(WORD I)
 	WORD a = E->dNorm;
 	int N = BaseRec + I - 1;
 	bool IsCurrNewRec = IsNewRec && (I == IRec);
-	void* p = GetRecSpace(CFile->FF);
+	void* p = CFile->GetRecSpace();
 	if ((N > CNRecs()) && !IsCurrNewRec) {
 		NewFlds = true;
 		goto label1;
@@ -1219,7 +1219,7 @@ void DisplAllWwRecs()
 
 void SetNewWwRecAttr()
 {
-	CRecPtr = GetRecSpace(CFile->FF);
+	CRecPtr = CFile->GetRecSpace();
 	for (WORD I = 1; I <= E->NRecs; I++) {
 		if (BaseRec + I - 1 > CNRecs()) break;
 		if (!IsNewRec || (I != IRec)) {
@@ -1698,10 +1698,10 @@ void UpdMemberRef(void* POld, void* PNew)
 #endif
 			k = GetFromKey(LD);
 			kf1 = k->KFlds;
-			p = GetRecSpace(CFile->FF);
+			p = CFile->GetRecSpace();
 			CRecPtr = p;
 			if (PNew != nullptr) {
-				p2 = GetRecSpace(CFile->FF);
+				p2 = CFile->GetRecSpace();
 			}
 			Scan = new XScan(CFile, k, nullptr, true);
 			Scan->ResetOwner(&xold, nullptr);
@@ -2365,7 +2365,7 @@ bool OldRecDiffers()
 		!CFile->IsSQLFile &&
 #endif 
 		(!CFile->FF->NotCached()))) return result;
-	CRecPtr = GetRecSpace(CFile->FF);
+	CRecPtr = CFile->GetRecSpace();
 #ifdef FandSQL
 	if (CFile->IsSQLFile) {
 		x.S = WK->NrToStr(CRec); Strm1->KeyAcc(WK, @x); f = CFile->FldD;
@@ -2571,7 +2571,7 @@ bool WriteCRec(bool MayDispl, bool& Displ)
 		if (IsNewRec) {
 			if (AddSwitch && !RunAddUpdte1('+', nullptr, false, nullptr, nullptr)) goto label1;
 			CNew = UpdateIndexes();
-			CreateRec(CFile, CFile->FF->NRecs + 1);
+			CFile->CreateRec(CFile->FF->NRecs + 1);
 		}
 		else {
 			if (AddSwitch) {
@@ -2595,8 +2595,8 @@ bool WriteCRec(bool MayDispl, bool& Displ)
 		}
 		if (AddSwitch && !RunAddUpdte1('+', nullptr, false, nullptr, nullptr)) goto label1;
 		if (ChptWriteCRec() != 0) goto label1;
-		CreateRec(CFile, N);
-		if (Subset) /* !!! with WK^ do!!! */ {
+		CFile->CreateRec(N);
+		if (Subset) {
 			WK->AddToRecNr(N, 1);
 			WK->InsertAtNr(CRec(), N);
 		}
@@ -2653,7 +2653,7 @@ void DuplFromPrevRec()
 		if (F->field_type == FieldType::TEXT) md = WrMode;
 		md = NewLMode(CFile, md);
 		SetWasUpdated(CFile->FF, CRecPtr);
-		cr = CRecPtr; CRecPtr = GetRecSpace(CFile->FF); RdRec(CRec() - 1);
+		cr = CRecPtr; CRecPtr = CFile->GetRecSpace(); RdRec(CRec() - 1);
 		DuplFld(CFile, CFile, CRecPtr, E->NewRecPtr, E->OldRecPtr, F, F);
 		ClearRecSpace(CRecPtr); ReleaseStore(CRecPtr); CRecPtr = cr; OldLMode(CFile, md);
 	}
@@ -2757,7 +2757,7 @@ bool PromptSearch(bool create)
 	XKey* K = VK;
 	if (Subset) K = WK;
 	KeyFldD* KF = K->KFlds;
-	void* RP = GetRecSpace(CFile->FF);
+	void* RP = CFile->GetRecSpace();
 	CRecPtr = RP;
 	ZeroAllFlds(CFile, CRecPtr);
 	x.Clear();
@@ -3733,7 +3733,8 @@ void SwitchRecs(short Delta)
 #endif
 	if (NoCreate && NoDelete || WasWK) return;
 	if (!TryLMode(CFile, WrMode, md, 1)) return;
-	p1 = GetRecSpace(CFile->FF); p2 = GetRecSpace(CFile->FF);
+	p1 = CFile->GetRecSpace();
+	p2 = CFile->GetRecSpace();
 	CRecPtr = p1; n1 = AbsRecNr(CRec()); CFile->ReadRec(n1, CRecPtr);
 	if (HasIndex) x1.PackKF(VK->KFlds);
 	CRecPtr = p2; n2 = AbsRecNr(CRec() + Delta); CFile->ReadRec(n2, CRecPtr);
@@ -4224,7 +4225,7 @@ bool StartProc(Instr_proc* ExitProc, bool Displ)
 	auto result = false;
 	CFile->FF->WasWrRec = false;
 	if (HasTF) {
-		p = (char*)GetRecSpace(CFile->FF);
+		p = (char*)CFile->GetRecSpace();
 		Move(CRecPtr, p, CFile->FF->RecLen);
 	}
 	SetEdRecNoEtc(0);
@@ -4624,7 +4625,7 @@ label81:
 		}
 		if (Event.Pressed.isChar()) {
 			// jedna se o tisknutelny znak
-			if (CFld->Ed(IsNewRec) && ((CFld->FldD->field_type != FieldType::TEXT) || (_T(CFld->FldD) == 0))
+			if (CFld->Ed(IsNewRec) && ((CFld->FldD->field_type != FieldType::TEXT) || (CFile->_T(CFld->FldD, CRecPtr) == 0))
 				&& LockRec(true)) {
 				//keyboard.AddToFrontKeyBuf(KbdChar); // vrati znak znovu do bufferu
 				const bool res = !EditItemProc(true, true, Brk);

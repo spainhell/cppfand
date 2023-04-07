@@ -269,7 +269,7 @@ void ImportTxt(CopyD* CD)
 			AsgnParFldFrml(CD->HdFD, CD->HdF, FE.get(), false);
 		}
 		CFile = CD->FD2;
-		CRecPtr = GetRecSpace(CD->FD2->FF);
+		CRecPtr = CD->FD2->GetRecSpace();
 #ifdef FandSQL
 		if (CFile->IsSQLFile) {
 			New(q, Init);
@@ -288,7 +288,7 @@ void ImportTxt(CopyD* CD)
 			else
 #endif
 			{
-				PutRec(CFile, CRecPtr);
+				CFile->PutRec(CRecPtr);
 				if (CD->Append && (CFile->FF->file_type == FileType::INDEX)) TryInsertAllIndexes(CFile->IRec);
 			}
 		}
@@ -337,7 +337,7 @@ void ExportTxt(CopyD* CD)
 			ReleaseStore(CRecPtr);
 		}
 		CFile = CD->FD1;
-		CRecPtr = GetRecSpace(CD->FD1->FF);
+		CRecPtr = CD->FD1->GetRecSpace();
 		md = NewLMode(CFile, RdMode);
 		Scan = new XScan(CFile, CD->ViewKey, nullptr, true);
 		Scan->Reset(nullptr, false);
@@ -700,8 +700,8 @@ void CodingCRdb(bool Rotate)
 
 void AddLicNr(FieldDescr* F)
 {
-	if (_T(F) != 0) {
-		T_(F, _T(F) + (WORD(UserLicNrShow) & 0x7FFF));
+	if (CFile->_T(F, CRecPtr) != 0) {
+		T_(F, CFile->_T(F, CRecPtr) + (WORD(UserLicNrShow) & 0x7FFF));
 	}
 }
 
@@ -728,7 +728,6 @@ void CopyH(FILE* H, pstring Nm)
 
 bool PromptCodeRdb()
 {
-	WORD i;
 	FileD* cf;
 	void* cr;
 	auto wx = std::make_unique<wwmix>();
@@ -759,8 +758,8 @@ bool PromptCodeRdb()
 		cf = CFile;
 		cr = CRecPtr;
 		CFile = Chpt;
-		CRecPtr = GetRecSpace;
-		for (i = 1; i <= Chpt->FF->NRecs; i++) {
+		CRecPtr = CFile->GetRecSpace();
+		for (int i = 1; i <= Chpt->FF->NRecs; i++) {
 			CFile->ReadRec(i, CRecPtr);
 			AddLicNr(ChptOldTxt);
 			AddLicNr(ChptTxt);

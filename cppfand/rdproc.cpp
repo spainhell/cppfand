@@ -2954,7 +2954,7 @@ Instr* RdBackup(char MTyp, bool IsBackup)
 	FileD* cf = CFile;
 	void* cr = CRecPtr;
 	CFile = CatFD;
-	CRecPtr = GetRecSpace(CatFD->FF);
+	CRecPtr = CatFD->GetRecSpace();
 	for (int i = 1; i <= CatFD->FF->NRecs; i++) {
 		CFile->ReadRec(i, CRecPtr);
 		if (EquUpCase(OldTrailChar(' ', _ShortS(CatRdbName)), "ARCHIVES")

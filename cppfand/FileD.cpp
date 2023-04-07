@@ -88,6 +88,14 @@ void FileD::WriteRec(size_t rec_nr, void* record)
 	this->FF->WasWrRec = true;
 }
 
+void* FileD::GetRecSpace()
+{
+	size_t length = FF->RecLen + 2;
+	void* result = new BYTE[length];
+	memset(result, '\0', length);
+	return result;
+}
+
 void FileD::IncNRecs(int i)
 {
 	this->FF->IncNRecs(i);
@@ -107,4 +115,27 @@ void FileD::SeekRec(int i)
 	else {
 		FF->Eof = i >= FF->XF->NRecs;
 	}
+}
+
+void FileD::CreateRec(int n)
+{
+	IncNRecs(1);
+	void* record = GetRecSpace();
+	for (int i = FF->NRecs - 1; i >= n; i--) {
+		ReadRec(i, record);
+		WriteRec(i + 1, record);
+	}
+	delete[] record;
+	record = nullptr;
+	WriteRec(n, record);
+}
+
+void FileD::PutRec(void* record)
+{
+	this->FF->PutRec(record, IRec);
+}
+
+int FileD::_T(FieldDescr* F, void* record)
+{
+	return FF->_T(F, record);
 }

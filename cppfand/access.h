@@ -50,7 +50,6 @@ WORD CompLexStr(const pstring& S1, const pstring& S2);
 WORD CompLexStrings(const std::string& S1, const std::string& S2);
 
 void RunErrorM(LockMode Md, WORD N);
-void* GetRecSpace(FandFile* fand_file);
 size_t CFileRecSize(FandFile* fand_file);
 void SetTWorkFlag(FandFile* fand_file, void* record);
 bool HasTWorkFlag(FandFile* fand_file, void* record);
@@ -80,8 +79,6 @@ double _R(FieldDescr* F);
 pstring _ShortS(FieldDescr* F);
 std::string _StdS(FieldDescr* F);
 LongStr* _LongS(FieldDescr* F);
-int _T(FieldDescr* F);
-int _T(FieldDescr* F, unsigned char* data, FileType file_type);
 
 // * UKLADANI DO SOUBORU * / DO FRMLELEM *
 void B_(FieldDescr* F, bool B);
@@ -90,7 +87,6 @@ void S_(FieldDescr* F, std::string S, void* record = nullptr);
 void LongS_(FieldDescr* F, LongStr* S);
 void T_(FieldDescr* F, int Pos);
 
-void CreateRec(FileD* file_d, int n);
 void RecallRec(int RecNr);
 bool LinkUpw(LinkD* LD, int& N, bool WithT);
 bool LinkLastRec(FileD* FD, int& N, bool WithT);
@@ -107,7 +103,6 @@ void DelDifTFld(void* Rec, void* CompRec, FieldDescr* F);
 void DelAllDifTFlds(void* Rec, void* CompRec);
 void DeleteRec(int N);
 void AsgnParFldFrml(FileD* FD, FieldDescr* F, FrmlElem* Z, bool Ad);
-void PutRec(FileD* dataFile, void* recordData);
 
 void DelTFlds();
 void CopyRecWithT(void* p1, void* p2);

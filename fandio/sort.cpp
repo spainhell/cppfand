@@ -16,7 +16,7 @@
 void CreateWIndex(XScan* Scan, XWKey* K, char Typ)
 {
 	void* cr = CRecPtr;
-	CRecPtr = GetRecSpace(CFile->FF);
+	CRecPtr = CFile->GetRecSpace();
 	XWorkFile* XW = new XWorkFile(Scan, K);
 	XW->Main(Typ);
 	delete XW; XW = nullptr;
@@ -95,8 +95,7 @@ void SortAndSubst(KeyFldD* SK)
 	void* p = nullptr;
 	MarkStore(p);
 	FileD* cf = CFile;
-	CRecPtr = GetRecSpace(CFile->FF);
-	//New(xScan, Init(CFile, nullptr, nullptr, false));
+	CRecPtr = CFile->GetRecSpace();
 	XScan* Scan = new XScan(CFile, nullptr, nullptr, false);
 	Scan->Reset(nullptr, false);
 	ScanSubstWIndex(Scan, SK, 'S');
@@ -161,7 +160,7 @@ void GetIndexSort(Instr_getindex* PD)
 		case 'F': {
 			CFile = ld->ToFD;
 			md = NewLMode(CFile, RdMode);
-			CRecPtr = GetRecSpace(CFile->FF);
+			CRecPtr = CFile->GetRecSpace();
 			CFile->ReadRec(RunInt((FrmlElem*)PD->giLV2), CRecPtr);
 			x.PackKF(kf);
 			ReleaseStore(CRecPtr);
@@ -185,7 +184,7 @@ void GetIndexSort(Instr_getindex* PD)
 		*k = *kNew;
 	}
 	else {
-		CRecPtr = GetRecSpace(CFile->FF);
+		CRecPtr = CFile->GetRecSpace();
 		nr = RunInt(PD->giCond);
 		if ((nr > 0) && (nr <= CFile->FF->NRecs)) {
 			CFile->ReadRec(nr, CRecPtr);
