@@ -11,7 +11,7 @@
 
 #include "GlobalVariables.h"
 #include "../textfunc/textfunc.h"
-#include "../FileSystem/directory.h"
+#include "../fandio/directory.h"
 
 std::vector<std::string> paramstr;
 longint ExitCode = 0; // exit kód -> OS

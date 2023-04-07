@@ -11,7 +11,7 @@
 #include "../Editor/rdedit.h"
 #include "../Editor/runedi.h"
 #include "../cppfand/wwmix.h"
-#include "../FileSystem/directory.h"
+#include "../fandio/directory.h"
 #include "../cppfand/compile.h"
 #include "../MergeReport/rdmerg.h"
 #include "../MergeReport/runmerg.h"

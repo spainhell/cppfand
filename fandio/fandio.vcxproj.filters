@@ -87,6 +87,12 @@
     <ClInclude Include="XPage.h">
       <Filter>Header Files\Indexes</Filter>
     </ClInclude>
+    <ClInclude Include="directory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TextFile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="cache.cpp">
@@ -148,6 +154,12 @@
     </ClCompile>
     <ClCompile Include="XWorkFile.cpp">
       <Filter>Source Files\Indexes</Filter>
+    </ClCompile>
+    <ClCompile Include="directory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TextFile.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

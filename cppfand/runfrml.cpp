@@ -20,7 +20,7 @@
 #include "wwmix.h"
 #include "../Editor/runedi.h"
 #include "../textfunc/textfunc.h"
-#include "../FileSystem/directory.h"
+#include "../fandio/directory.h"
 
 double Owned(FrmlElem* Bool, FrmlElem* Sum, LinkD* LD)
 {

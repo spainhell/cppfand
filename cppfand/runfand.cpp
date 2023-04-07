@@ -20,7 +20,7 @@
 #include "../Editor/OldEditor.h"
 #include "../Editor/runedi.h"
 #include "../textfunc/textfunc.h"
-#include "../FileSystem/directory.h"
+#include "../fandio/directory.h"
 
 
 void ScrGraphMode(bool Redraw, WORD OldScrSeg)

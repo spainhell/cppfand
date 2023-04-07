@@ -8,7 +8,7 @@
 #include "obaseww.h"
 #include "../fandio/FandTFile.h"
 #include "../Editor/runedi.h"
-#include "../FileSystem/directory.h"
+#include "../fandio/directory.h"
 #include "../textfunc/textfunc.h"
 
 SS ss;

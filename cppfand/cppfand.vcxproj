@@ -94,7 +94,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -127,7 +127,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -252,9 +252,6 @@
     </ProjectReference>
     <ProjectReference Include="..\fandio\fandio.vcxproj">
       <Project>{a75daab5-58e5-4886-b1f0-6d737afba4ab}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\FileSystem\FileSystem.vcxproj">
-      <Project>{0071ff96-1112-4351-bda4-7c419d354789}</Project>
     </ProjectReference>
     <ProjectReference Include="..\Logging\Logging.vcxproj">
       <Project>{431ccfda-764c-498c-ae07-276fb41ebbf9}</Project>

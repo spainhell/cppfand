@@ -91,6 +91,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -109,6 +110,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>
       </PrecompiledHeaderFile>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -156,11 +158,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="cache.h" />
+    <ClInclude Include="directory.h" />
     <ClInclude Include="FandFile.h" />
     <ClInclude Include="fandio.h" />
     <ClInclude Include="FandTFile.h" />
     <ClInclude Include="FandXFile.h" />
     <ClInclude Include="sort.h" />
+    <ClInclude Include="TextFile.h" />
     <ClInclude Include="WorkFile.h" />
     <ClInclude Include="WPage.h" />
     <ClInclude Include="WRec.h" />
@@ -178,11 +182,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="cache.cpp" />
+    <ClCompile Include="directory.cpp" />
     <ClCompile Include="FandFile.cpp" />
     <ClCompile Include="fandio.cpp" />
     <ClCompile Include="FandTFile.cpp" />
     <ClCompile Include="FandXFile.cpp" />
     <ClCompile Include="sort.cpp" />
+    <ClCompile Include="TextFile.cpp" />
     <ClCompile Include="WorkFile.cpp" />
     <ClCompile Include="WPage.cpp" />
     <ClCompile Include="WRec.cpp" />
