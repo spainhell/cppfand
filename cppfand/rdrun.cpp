@@ -13,7 +13,7 @@
 std::vector<ConstListEl> OldMFlds;
 std::vector<ConstListEl> NewMFlds;   /* Merge + Report*/
 InpD* IDA[30];
-integer MaxIi;
+short MaxIi;
 XString OldMXStr;                  /* Merge */
 OutpFD* OutpFDRoot;
 OutpRD* OutpRDs;
@@ -71,7 +71,7 @@ bool Add(AddD* AD, void* RP, double R, bool Back)
 
 bool RunAddUpdte1(char Kind, void* CRold, bool Back, AddD* StopAD, LinkD* notLD)
 {
-	longint N2, N2old;
+	int N2, N2old;
 	char Kind2, Kind2old;
 	FileD* CF2 = nullptr;
 	void* CR2 = nullptr;
@@ -160,7 +160,7 @@ void CrIndRec()
 	RecallRec(CFile->FF->NRecs);
 }
 
-bool Link(AddD* AD, longint& N, char& Kind2)
+bool Link(AddD* AD, int& N, char& Kind2)
 {
 	void* CR;
 	auto result = true;
@@ -204,7 +204,7 @@ bool Link(AddD* AD, longint& N, char& Kind2)
 	return result;
 }
 
-bool TransAdd(AddD* AD, FileD* FD, void* RP, void* CRnew, longint N, char Kind2, bool Back)
+bool TransAdd(AddD* AD, FileD* FD, void* RP, void* CRnew, int N, char Kind2, bool Back)
 {
 	void* CRold; XString x; LinkD* ld;
 	if (CFile->Add.empty() /*== nullptr*/) { return true; }
@@ -230,7 +230,7 @@ bool TransAdd(AddD* AD, FileD* FD, void* RP, void* CRnew, longint N, char Kind2,
 	return result;
 }
 
-void WrUpdRec(AddD* AD, FileD* FD, void* RP, void* CRnew, longint N)
+void WrUpdRec(AddD* AD, FileD* FD, void* RP, void* CRnew, int N)
 {
 	XString x; LinkD* ld;
 	CRecPtr = CRnew;
@@ -251,7 +251,7 @@ bool Assign(AddD* AD)
 {
 	double R; std::string S;
 	pstring ss; bool B;
-	longint Pos, N2; char Kind2;
+	int Pos, N2; char Kind2;
 	if (!RunBool(AD->Bool)) return true;
 	FieldDescr* F = AD->Field;
 	FrmlElem* Z = AD->Frml;
@@ -337,7 +337,7 @@ bool RunAddUpdte(char Kind, void* CRold, LinkD* notLD)
 	while (!LockForAdd(CF, 1, false, md)) {
 		SetCPathVol();
 		SetMsgPar(CPath, LockModeTxt[md]);
-		LockForAdd(CF, 2, false, md); longint w = PushWrLLMsg(825, false);
+		LockForAdd(CF, 2, false, md); int w = PushWrLLMsg(825, false);
 		KbdTimer(spec.NetDelay, 0); if (w != 0) PopW(w);
 	}
 	CFile = CF;

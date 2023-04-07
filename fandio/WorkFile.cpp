@@ -15,11 +15,11 @@ WorkFile::~WorkFile()
 	MaxWSize = WBaseSize; TruncH(Handle, MaxWSize); FlushH(Handle);
 }
 
-void WorkFile::Reset(KeyFldD* KF, longint RestBytes, char Typ, longint NRecs)
+void WorkFile::Reset(KeyFldD* KF, int RestBytes, char Typ, int NRecs)
 {
-	longint BYTEs = 0;
-	longint pages = 0;
-	const WORD kB60 = 0x0F000;
+	int BYTEs = 0;
+	int pages = 0;
+	const unsigned short kB60 = 0x0F000;
 	KFRoot = KF;
 	RecLen = 7;
 	while (KF != nullptr) {
@@ -35,7 +35,7 @@ void WorkFile::Reset(KeyFldD* KF, longint RestBytes, char Typ, longint NRecs)
 	}
 	BYTEs = (StoreAvail() - RestBytes - sizeof(WRec)) / 3;
 	if (BYTEs < 4096) RunError(624);
-	if (BYTEs < kB60) WPageSize = (WORD)BYTEs & 0xF000;
+	if (BYTEs < kB60) WPageSize = (unsigned short)BYTEs & 0xF000;
 	else WPageSize = kB60;
 	// MaxOnWPage = (WPageSize - (sizeof(WPage) - 65535 + 1)) / RecLen; // nebude se do toho pocitat delka pole 'A' (66535)
 	MaxOnWPage = (WPageSize - 10 + 1) / RecLen; // 10B is size of WPage without array
@@ -47,11 +47,11 @@ void WorkFile::Reset(KeyFldD* KF, longint RestBytes, char Typ, longint NRecs)
 
 	// nasledujici usek v ASM zrejme jen udela nejaky prepocet kvuli zobrazeni zpravy
 	// v RunMsgOn()
-	//asm mov dx, pages.WORD; mov bx, dx; mov cx, dx; mov ax, 1;
+	//asm mov dx, pages.unsigned short; mov bx, dx; mov cx, dx; mov ax, 1;
 	//@add cx 1, dx; test bx, 1; jz @2; sub cx, ax; shr bx, 1; add bx, 1; jmp @3;
 	//@shr bx 2, 1;            /* how many pages must be written ? */
 	//@shl ax 3, 1; cmp bx, 1; ja @1; cmp cx, 0; jne @4; mov cx, 1;
-	//@mov pages 4.WORD, cx;
+	//@mov pages 4.unsigned short, cx;
 
 	RunMsgOn(Typ, pages);
 }
@@ -64,9 +64,9 @@ void WorkFile::SortMerge()
 	// a zpatky se vraci na stejne misto do PW->A;
 
 	//WRec* r = new WRec();
-	BYTE buffer[512]{ 0 };
+	unsigned char buffer[512]{ 0 };
 	size_t offsetOfPwA = 0;
-	WORD n = 0; longint pg = 0, nxt = 0;
+	unsigned short n = 0; int pg = 0, nxt = 0;
 	PgWritten = 0;
 	nxt = WRoot;
 	NChains = 1;
@@ -106,9 +106,9 @@ void WorkFile::TestErr()
 	}
 }
 
-longint WorkFile::GetFreeNr()
+int WorkFile::GetFreeNr()
 {
-	longint result = 0;
+	int result = 0;
 	if (NFreeNr > 0) {
 		result = FreeNr[NFreeNr];
 		NFreeNr--;
@@ -123,8 +123,8 @@ longint WorkFile::GetFreeNr()
 
 void WorkFile::Merge()
 {
-	longint npairs, newli, nxtnew, pg1, pg2;
-	longint nxt = 0;
+	int npairs, newli, nxtnew, pg1, pg2;
+	int nxt = 0;
 	PW1 = new WPage();
 	PW2 = new WPage();
 label1:
@@ -157,7 +157,7 @@ label1:
 	goto label1;
 }
 
-void WorkFile::Merge2Chains(longint Pg1, longint Pg2, longint Pg, longint Nxt)
+void WorkFile::Merge2Chains(int Pg1, int Pg2, int Pg, int Nxt)
 {
 	bool eof1 = false;
 	bool eof2 = false;
@@ -170,13 +170,13 @@ void WorkFile::Merge2Chains(longint Pg1, longint Pg2, longint Pg, longint Nxt)
 	WRec* r2 = nullptr;
 	WRec* r = new WRec(&PW->A[rofs]);
 
-	WORD max1ofs = PW1->NRecs * RecLen;
-	WORD max2ofs = PW2->NRecs * RecLen;
-	const WORD maxofs = MaxOnWPage * RecLen;
+	unsigned short max1ofs = PW1->NRecs * RecLen;
+	unsigned short max2ofs = PW2->NRecs * RecLen;
+	const unsigned short maxofs = MaxOnWPage * RecLen;
 
 	while (true) {
 		if (rofs == maxofs) {
-			longint chn = GetFreeNr();
+			int chn = GetFreeNr();
 			WriteWPage(MaxOnWPage, Pg, Nxt, chn);
 			Pg = chn;
 			Nxt = 0;
@@ -234,13 +234,13 @@ void WorkFile::Merge2Chains(longint Pg1, longint Pg2, longint Pg, longint Nxt)
 	delete r; delete r1; delete r2;
 }
 
-void WorkFile::PutFreeNr(longint N)
+void WorkFile::PutFreeNr(int N)
 {
 	NFreeNr++;
 	FreeNr[NFreeNr] = N;
 }
 
-void WorkFile::ReadWPage(WPage* W, longint Pg)
+void WorkFile::ReadWPage(WPage* W, int Pg)
 {
 	SeekH(Handle, WBaseSize + (Pg - 1) * WPageSize);
 	ReadH(Handle, 4, &W->NxtChain);
@@ -250,7 +250,7 @@ void WorkFile::ReadWPage(WPage* W, longint Pg)
 	TestErr();
 }
 
-void WorkFile::WriteWPage(WORD N, longint Pg, longint Nxt, longint Chn)
+void WorkFile::WriteWPage(unsigned short N, int Pg, int Nxt, int Chn)
 {
 	size_t offset = 0;
 	PgWritten++;
@@ -260,7 +260,7 @@ void WorkFile::WriteWPage(WORD N, longint Pg, longint Nxt, longint Chn)
 			WRec r;
 			r.Deserialize(&PW->A[offset]);
 			Output(&r);
-			BYTE buffer[512]{ 0 };
+			unsigned char buffer[512]{ 0 };
 			size_t len = r.Serialize(buffer);
 			memcpy(&PW->A[offset], buffer, len);
 			offset += RecLen;

@@ -1,22 +1,21 @@
 #pragma once
-//#include "../cppfand/constants.h"
 #include "XPage.h"
 #include "XXPage.h"
 
 class XWFile
 {
 public:
-	WORD UpdLockCnt = 0;
+	unsigned short UpdLockCnt = 0;
 	FILE* Handle = nullptr;
-	longint FreeRoot = 0;
-	longint MaxPage = 0;
-	void Err(WORD N);
+	int FreeRoot = 0;
+	int MaxPage = 0;
+	void Err(unsigned short N);
 	void TestErr();
-	longint UsedFileSize();
+	int UsedFileSize();
 	bool NotCached();
-	void RdPage(XPage* P, longint pageNr);
-	void WrPage(XPage* P, longint pageNr, bool serialize = true);
-	void WrPage(XXPage* p, longint pageNr);
-	longint NewPage(XPage* P);
-	void ReleasePage(XPage* P, longint N);
+	void RdPage(XPage* P, int pageNr);
+	void WrPage(XPage* P, int pageNr, bool serialize = true);
+	void WrPage(XXPage* p, int pageNr);
+	int NewPage(XPage* P);
+	void ReleasePage(XPage* P, int N);
 };

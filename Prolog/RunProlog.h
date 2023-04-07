@@ -6,5 +6,5 @@
 
 //extern WORD _Sg;
 
-std::string SaveDb(TDatabase* Db, longint AA);
+std::string SaveDb(TDatabase* Db, int AA);
 void RunProlog(RdbPos* Pos, std::string PredName);

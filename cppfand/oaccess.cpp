@@ -237,7 +237,7 @@ bool OpenF2()
 {
 	wwmix ww;
 
-	longint FS = 0, n = 0, l = 0;
+	int FS = 0, n = 0, l = 0;
 	WORD Signum = 0, rLen = 0;
 	LockMode md = NullMode;
 	FS = FileSizeH(CFile->FF->Handle);
@@ -309,7 +309,7 @@ label3:
 			if (
 				!CFile->FF->XF->NotValid && ((Signum != 0x04FF) || (CFile->FF->XF->NRecsAbs != CFile->FF->NRecs)
 					|| (CFile->FF->XF->FreeRoot > CFile->FF->XF->MaxPage)
-					|| ((((longint)CFile->FF->XF->MaxPage + 1) << XPageShft) > FileSizeH(CFile->FF->XF->Handle)))
+					|| ((((int)CFile->FF->XF->MaxPage + 1) << XPageShft) > FileSizeH(CFile->FF->XF->Handle)))
 				|| (CFile->FF->XF->NrKeys != 0) && (CFile->FF->XF->NrKeys != CFile->GetNrKeys()))
 			{
 				if (!EquUpCase(GetEnv("FANDMSG830"), "NO")) {
@@ -417,7 +417,7 @@ void TruncF()
 		CFile->FF->TF->TestErr();
 	}
 	if (CFile->FF->file_type == FileType::INDEX) {
-		longint sz = CFile->FF->XF->UsedFileSize();
+		int sz = CFile->FF->XF->UsedFileSize();
 		if (CFile->FF->XF->NotValid) sz = 0;
 		TruncH(CFile->FF->XF->Handle, sz);
 		CFile->FF->XF->TestErr();
@@ -633,7 +633,7 @@ void SetCPathForH(FILE* handle)
 
 WORD GetCatIRec(pstring Name, bool MultiLevel)
 {
-	longint i = 0; FileD* CF = nullptr; RdbD* R = nullptr; void* CR = nullptr;
+	int i = 0; FileD* CF = nullptr; RdbD* R = nullptr; void* CR = nullptr;
 	WORD result = 0;
 	if (CatFD == nullptr || CatFD->FF->Handle == nullptr) return result;
 	if (CRdb == nullptr) return result;
@@ -670,7 +670,7 @@ WORD Generation()
 	return 0;
 }
 
-void TurnCat(WORD Frst, WORD N, integer I)
+void TurnCat(WORD Frst, WORD N, short I)
 {
 	void* p; void* q; WORD j, last;
 	if (CFile != nullptr) CloseFile();
@@ -903,7 +903,7 @@ void SetTempCExt(char Typ, bool IsNet)
 
 FileD* OpenDuplF(bool CrTF)
 {
-	integer Len = 0;
+	short Len = 0;
 	SetCPathVol();
 	bool net = IsNetCVol();
 	FileD* OldFD = CFile;
@@ -966,7 +966,7 @@ void CopyH(FILE* h1, FILE* h2)
 {
 	const WORD BufSize = 32768;
 	void* p = new BYTE[BufSize];
-	longint sz = FileSizeH(h1);
+	int sz = FileSizeH(h1);
 	SeekH(h1, 0);
 	SeekH(h2, 0);
 	while (sz > BufSize) {

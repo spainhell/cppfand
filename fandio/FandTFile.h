@@ -1,8 +1,6 @@
 #pragma once
-//#include "../cppfand/base.h"
 #include <cstdio>
 #include <string>
-//#include "../cppfand/constants.h"
 #include "../Common/FileEnums.h"
 #include "../Common/LongStr.h"
 

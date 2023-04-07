@@ -143,7 +143,7 @@ FrmlElem* RdFldNameFrmlR(char& FTyp)
 
 FrmlElem* FindIiandFldFrml(FileD** FD, char& FTyp)
 {
-	integer i = 0;
+	short i = 0;
 	FrmlElem* z = nullptr;
 	if (WhatToRd == 'i') {       /* search first in Ii*/
 		*FD = InpFD(Oi);
@@ -170,7 +170,7 @@ void RdDirFilVar(char& FTyp, FrmlElem** res, bool wasIiPrefix)
 {
 	LinkD* LD = nullptr;
 	FileD* FD = nullptr;
-	integer I = 0;
+	short I = 0;
 	FrmlElem* Z = nullptr;
 	if (wasIiPrefix) {
 		CFile = InpFD(Ii);
@@ -583,13 +583,13 @@ void RdBlock(BlkD** BB)
 {
 	// metoda pouzivala metodu StoreCh, ta byla nahrazena promennou storedCh, ktera slouzi k ukladani nactenych dat
 
-	std::string storedCh; // pridano pro zprovozneni StoreCh(char, &integer)
+	std::string storedCh; // pridano pro zprovozneni StoreCh(char, &short)
 
 	BYTE rep[256]{ 0 };
 	size_t offset = 0;
 
-	integer LineLen = 0;
-	integer I = 0, N = 0, L = 0, M = 0;
+	short LineLen = 0;
+	short I = 0, N = 0, L = 0, M = 0;
 	bool RepeatedGrp = false;        /*RdBlock - body*/
 	RFldD* RF = nullptr;
 	RFldD* RF1 = nullptr;
@@ -859,15 +859,15 @@ label4:
 	// vypada to, ze v EndString se se vstupem pracuje, string je mozna zbytecny
 }
 
-void RdCh(integer& LineLen)
+void RdCh(short& LineLen)
 {
 	if (!IsPrintCtrl(ForwChar)) LineLen++;
 	ReadChar();
 }
 
-integer NUnderscores(char C, integer& LineLen)
+short NUnderscores(char C, short& LineLen)
 {
-	integer N = 0;
+	short N = 0;
 	while (ForwChar == static_cast<BYTE>(C)) {
 		N++;
 		RdCh(LineLen);

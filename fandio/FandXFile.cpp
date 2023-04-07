@@ -8,7 +8,6 @@
 #include "sort.h"
 #include "XScan.h"
 #include "XWorkFile.h"
-#include "../Logging/Logging.h"
 
 
 FandXFile::FandXFile(const FandXFile& orig)
@@ -29,7 +28,7 @@ void FandXFile::SetEmpty()
 	FreeRoot = 0;
 	NRecs = 0;
 	for (auto& k : CFile->Keys) {
-		longint n = k->IndexRoot;
+		int n = k->IndexRoot;
 		MaxPage = n;
 		WrPage(p.get(), n);
 	}
@@ -53,7 +52,7 @@ void FandXFile::WrPrefix()
 	Logging* log = Logging::getInstance();
 	//log->log(loglevel::DEBUG, "FandXFile::WrPrefix() 0x%p writing 20 Bytes, NRecsAbs = %i, NrKeys = %i",
 	//	Handle, CFile->NRecs, CFile->GetNrKeys());
-	WORD Signum = 0x04FF;
+	unsigned short Signum = 0x04FF;
 	RdWrCache(WRITE, Handle, NotCached(), 0, 2, &Signum);
 	NRecsAbs = CFile->FF->NRecs;
 	NrKeys = CFile->GetNrKeys();

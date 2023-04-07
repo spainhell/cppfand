@@ -38,7 +38,7 @@ XPage::~XPage()
 	Clean();
 }
 
-WORD XPage::Off()
+unsigned short XPage::Off()
 {
 	if (IsLeaf) {
 		return oLeaf;
@@ -48,7 +48,7 @@ WORD XPage::Off()
 	}
 }
 
-XItem* XPage::GetItem(WORD I)
+XItem* XPage::GetItem(unsigned short I)
 {
 	if (this->IsLeaf) {
 		if (_leafItems.size() < I) {
@@ -64,7 +64,7 @@ XItem* XPage::GetItem(WORD I)
 	}
 }
 
-//WORD XPage::EndOff()
+//unsigned short XPage::EndOff()
 //{
 //	return sizeof(A);
 //}
@@ -110,15 +110,15 @@ std::string XPage::GetKey(size_t i)
 	}
 }
 
-longint XPage::SumN()
+int XPage::SumN()
 {
 	if (IsLeaf) {
 		return NItems;
 	}
 	else {
-		longint n = 0;
-		WORD o = Off();
-		for (WORD i = 1; i <= NItems; i++) {
+		int n = 0;
+		unsigned short o = Off();
+		for (unsigned short i = 1; i <= NItems; i++) {
 			XItem* x = this->GetItem(i);
 			n += x->GetN();
 		}
@@ -133,19 +133,19 @@ longint XPage::SumN()
 /// <param name="downPage">down page number</param>
 /// <param name="I">order of the inserted item</param>
 /// <param name="SS">key</param>
-void XPage::InsertItem(unsigned int recordsCount, unsigned int downPage, WORD I, pstring& SS)
+void XPage::InsertItem(unsigned int recordsCount, unsigned int downPage, unsigned short I, pstring& SS)
 {
 	std::string key = SS;
 
 	NItems++;
-	WORD m = 0;
+	unsigned short m = 0;
 
 	// zjistime spolecne casti s predchozim zaznamem
 	if (I > 1) {
 		std::string previousKey = GetKey(I - 1);
 		m = SLeadEqu(previousKey, key);
 	}
-	WORD l = key.length() - m;
+	unsigned short l = key.length() - m;
 
 	// vytvorime novou polozku s novym zaznamem a vlozime ji do vektoru
 	XItemNonLeaf* newXi = new XItemNonLeaf(recordsCount, downPage, m, l, key);
@@ -154,11 +154,11 @@ void XPage::InsertItem(unsigned int recordsCount, unsigned int downPage, WORD I,
 	if (I < NItems) {
 		// vkladany zaznam nebude posledni (nebude na konci)
 		// zjistime spolecne casti s nasledujicim zaznamem
-		WORD m2 = SLeadEqu(GetKey(I + 1), key);
+		unsigned short m2 = SLeadEqu(GetKey(I + 1), key);
 		int d = m2 - newXi->GetM();
 		if (d > 0) {
 			// puvodni polozka je ted na pozici I (nova je na I - 1)
-			_cutItem(I, (BYTE)d);
+			_cutItem(I, (unsigned char)d);
 		}
 	}
 }
@@ -174,14 +174,14 @@ void XPage::InsertItem(unsigned int recNr, size_t I, pstring& SS)
 	std::string key = SS;
 
 	NItems++;
-	WORD m = 0;
+	unsigned short m = 0;
 
 	// zjistime spolecne casti s predchozim zaznamem
 	if (I > 1) {
 		std::string previousKey = GetKey(I - 1);
 		m = SLeadEqu(previousKey, key);
 	}
-	WORD l = key.length() - m;
+	unsigned short l = key.length() - m;
 
 	// vytvorime novou polozku s novym zaznamem a vlozime ji do vektoru
 	XItemLeaf* newXi = new XItemLeaf(recNr, m, l, key);
@@ -190,16 +190,16 @@ void XPage::InsertItem(unsigned int recNr, size_t I, pstring& SS)
 	if (I < NItems) {
 		// vkladany zaznam nebude posledni (nebude na konci)
 		// zjistime spolecne casti s nasledujicim zaznamem
-		WORD m2 = SLeadEqu(GetKey(I + 1), key);
+		unsigned short m2 = SLeadEqu(GetKey(I + 1), key);
 		int d = m2 - newXi->M;
 		if (d > 0) {
 			// puvodni polozka je ted na pozici I (nova je na I - 1)
-			_cutItem(I, (BYTE)d);
+			_cutItem(I, (unsigned char)d);
 		}
 	}
 }
 
-void XPage::InsDownIndex(WORD I, longint Page, XPage* P)
+void XPage::InsDownIndex(unsigned short I, int Page, XPage* P)
 {
 	pstring s = P->GetKey(P->NItems);
 	size_t xLen = 0;
@@ -207,7 +207,7 @@ void XPage::InsDownIndex(WORD I, longint Page, XPage* P)
 	// TODO: memcpy(this->A, &x->RecordsCount, xLen);
 }
 
-void XPage::Delete(WORD I)
+void XPage::Delete(unsigned short I)
 {
 	// polozka ke smazani
 	XItem* Xi;
@@ -217,7 +217,7 @@ void XPage::Delete(WORD I)
 		if (I < NItems) {
 			// tato polozka (I - 1) neni posledni, bude se asi muset upravovat polozka za ni (I)
 			XItemLeaf* nextXi = _leafItems[I];
-			integer d = nextXi->M - Xi->M;
+			short d = nextXi->M - Xi->M;
 			if (d > 0) {
 				// nasledujici polozku je nutne upravit
 				_enhItem(I, d);
@@ -232,7 +232,7 @@ void XPage::Delete(WORD I)
 		if (I < NItems) {
 			// tato polozka (I - 1) neni posledni, bude se asi muset upravovat polozka za ni (I)
 			XItemNonLeaf* nextXi = _nonLeafItems[I];
-			integer d = nextXi->M - Xi->M;
+			short d = nextXi->M - Xi->M;
 			if (d > 0) {
 				// nasledujici polozku je nutne upravit
 				_enhItem(I, d);
@@ -253,7 +253,7 @@ void XPage::AddPage(XPage* P)
 	if (P->NItems == 0) return;
 
 	if (NItems > 0) {
-		WORD m = SLeadEqu(GetKey(NItems), P->GetKey(1));
+		unsigned short m = SLeadEqu(GetKey(NItems), P->GetKey(1));
 		if (m > 0) {
 			P->_cutItem(0, m);
 		}
@@ -280,7 +280,7 @@ void XPage::AddPage(XPage* P)
 /// </summary>
 /// <param name="P">destination page - have to be empty</param>
 /// <param name="ThisPage">this page number</param>
-void XPage::SplitPage(XPage* P, longint ThisPage)
+void XPage::SplitPage(XPage* P, int ThisPage)
 {
 	// 1st half of this XPage will be moved into P
 	P->IsLeaf = IsLeaf;
@@ -386,7 +386,7 @@ void XPage::Deserialize()
 
 	if (IsLeaf) {
 		size_t offset = 0;
-		for (WORD i = 0; i < NItems; i++) {
+		for (unsigned short i = 0; i < NItems; i++) {
 			XItemLeaf* x = new XItemLeaf(&A[offset]);
 			offset += x->size();
 			_leafItems.push_back(x);
@@ -394,7 +394,7 @@ void XPage::Deserialize()
 	}
 	else {
 		size_t offset = 0;
-		for (WORD i = 0; i < NItems; i++) {
+		for (unsigned short i = 0; i < NItems; i++) {
 			XItemNonLeaf* x = new XItemNonLeaf(&A[offset]);
 			offset += x->size();
 			_nonLeafItems.push_back(x);
@@ -427,7 +427,7 @@ void XPage::Serialize()
 {
 	memset(A, 0, sizeof(A));
 	size_t offset = 0;
-	BYTE buffer[256];
+	unsigned char buffer[256];
 	if (IsLeaf) {
 		for (XItemLeaf* item : _leafItems) {
 			size_t len = item->Serialize(buffer, sizeof(buffer));
@@ -462,7 +462,7 @@ std::vector<XItemNonLeaf*>::iterator XPage::_addToNonLeafItems(XItemNonLeaf* xi,
 	return _nonLeafItems.insert(_nonLeafItems.begin() + pos, std::move(xi));
 }
 
-bool XPage::_cutItem(size_t iIndex, BYTE length)
+bool XPage::_cutItem(size_t iIndex, unsigned char length)
 {
 	XItem* Xi;
 
@@ -478,14 +478,14 @@ bool XPage::_cutItem(size_t iIndex, BYTE length)
 
 	Xi->M += length;
 	Xi->L -= length;
-	BYTE* origData = Xi->data;
-	Xi->data = new BYTE[Xi->L];
+	unsigned char* origData = Xi->data;
+	Xi->data = new unsigned char[Xi->L];
 	memcpy(Xi->data, &origData[length], Xi->L);
 	delete origData; origData = nullptr;
 	return true;
 }
 
-bool XPage::_enhItem(size_t iIndex, BYTE length)
+bool XPage::_enhItem(size_t iIndex, unsigned char length)
 {
 	XItem* Xi;
 	XItem* prevXi;
@@ -503,8 +503,8 @@ bool XPage::_enhItem(size_t iIndex, BYTE length)
 
 	Xi->M -= length;
 	Xi->L += length;
-	BYTE* origData = Xi->data;
-	Xi->data = new BYTE[Xi->L];
+	unsigned char* origData = Xi->data;
+	Xi->data = new unsigned char[Xi->L];
 	memcpy(Xi->data, prevXi->data, length); // z predchoziho zaznamu zkopirujeme prvni Byty
 	memcpy(&Xi->data[length], origData, Xi->L - length); // a doplnime je puvodnimi daty
 	delete origData; origData = nullptr;

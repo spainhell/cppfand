@@ -15,12 +15,12 @@
 
 std::vector<PFldD> PFldDs;
 bool KpLetter = false;
-integer MaxCol = 0, MaxColOld = 0, MaxColUsed = 0, NLines = 0, NLevels = 0;
+short MaxCol = 0, MaxColOld = 0, MaxColUsed = 0, NLines = 0, NLevels = 0;
 AutoRprtMode ARMode = _ALstg;
 
 void Design(RprtOpt* RO)
 {
-	integer L, L2, LTxt, LItem, Col;
+	short L, L2, LTxt, LItem, Col;
 	size_t indexD1 = 0;
 	FieldDescr* F;
 	bool WasTT, LastTT, frstOnLine;

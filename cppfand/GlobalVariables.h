@@ -23,7 +23,7 @@ extern structXPath XPath[20];
 extern WORD XPathN;
 extern XWFile XWork;
 extern FandTFile TWork;
-extern longint ClpBdPos;
+extern int ClpBdPos;
 extern bool IsTestRun;
 extern bool IsInstallRun;
 
@@ -41,13 +41,13 @@ extern pstring UserName;
 extern pstring UserPassWORD;
 extern pstring AccRight;
 extern bool EdUpdated;
-extern longint EdRecNo;
+extern int EdRecNo;
 extern pstring EdRecKey;
 extern pstring EdKey;
 extern bool EdOk;
 extern pstring EdField;
-extern longint LastTxtPos;
-extern longint TxtXY;
+extern int LastTxtPos;
+extern int TxtXY;
 // { consecutive WORD - sized / for formula access / }
 extern WORD RprtLine; extern WORD RprtPage; extern WORD PgeLimit; // {report}
 extern WORD EdBreak;
@@ -93,7 +93,7 @@ extern WORD CachePageSize;
 extern void* AfterCatFD; // r108
 extern WORD BPBound; // r212
 extern bool ExitP, BreakP;
-extern longint LastExitCode; // r215
+extern int LastExitCode; // r215
 extern int HandleError; // r229
 extern pstring OldDir;
 extern pstring FandDir;
@@ -110,7 +110,7 @@ extern std::string CExt;
 extern std::string CVol;
 extern bool WasLPTCancel;
 extern FILE* WorkHandle;
-extern longint MaxWSize; // {currently occupied in FANDWORK.$$$}
+extern int MaxWSize; // {currently occupied in FANDWORK.$$$}
 // *** MESSAGES ***
 extern WORD F10SpecKey; // r. 293
 extern BYTE ProcAttr;
@@ -131,7 +131,7 @@ extern char CharOrdTab[256];
 extern char UpcCharTab[256];
 extern WORD TxtCols, TxtRows;
 
-extern integer prCurr, prMax;
+extern short prCurr, prMax;
 extern Printer printer[10];
 
 extern TPrTimeOut OldPrTimeOut;
@@ -148,4 +148,4 @@ extern __int32 UserLicNr;
 extern TResFile ResFile;
 extern std::vector<TMsgIdxItem> MsgIdx;
 extern WORD MsgIdxN;
-extern longint FrstMsgPos;
+extern int FrstMsgPos;

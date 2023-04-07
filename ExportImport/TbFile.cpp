@@ -137,9 +137,9 @@ void TbFile::BackupH()
 		TestCPathError();
 		Rewrite();
 		InitBufOutp();
-		longint sz = FileSizeH(h);
+		int sz = FileSizeH(h);
 		RunMsgOn('C', sz);
-		longint i = 0;
+		int i = 0;
 		while (i < sz) {
 			WORD n;
 			if (sz - i > BufSize) n = BufSize;

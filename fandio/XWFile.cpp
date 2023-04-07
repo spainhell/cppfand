@@ -5,7 +5,7 @@
 #include "../cppfand/obaseww.h"
 #include "../fandio/FandXFile.h"
 
-void XWFile::Err(WORD N)
+void XWFile::Err(unsigned short N)
 {
 	if (this == &XWork) {
 		SetMsgPar(FandWorkXName);
@@ -23,9 +23,9 @@ void XWFile::TestErr()
 	if (HandleError != 0) Err(700 + HandleError);
 }
 
-longint XWFile::UsedFileSize()
+int XWFile::UsedFileSize()
 {
-	return longint(MaxPage + 1) << XPageShft;
+	return int(MaxPage + 1) << XPageShft;
 }
 
 bool XWFile::NotCached()
@@ -44,7 +44,7 @@ XWFile* XKey::GetXFile()
 	return CFile->FF->XF;
 }
 
-void XWFile::RdPage(XPage* P, longint pageNr)
+void XWFile::RdPage(XPage* P, int pageNr)
 {
 	P->Clean();
 	if ((pageNr == 0) || (pageNr > MaxPage)) Err(831);
@@ -56,7 +56,7 @@ void XWFile::RdPage(XPage* P, longint pageNr)
 	P->Deserialize();
 }
 
-void XWFile::WrPage(XPage* P, longint pageNr, bool serialize)
+void XWFile::WrPage(XPage* P, int pageNr, bool serialize)
 {
 	if (serialize) {
 		P->Serialize();
@@ -69,7 +69,7 @@ void XWFile::WrPage(XPage* P, longint pageNr, bool serialize)
 	RdWrCache(WRITE, Handle, NotCached(), (pageNr << XPageShft) + 7, XPageSize - 7, P->A);
 }
 
-void XWFile::WrPage(XXPage* p, longint pageNr)
+void XWFile::WrPage(XXPage* p, int pageNr)
 {
 	if (UpdLockCnt > 0) Err(645);
 	RdWrCache(WRITE, Handle, NotCached(), pageNr << XPageShft, 1, &p->IsLeaf);
@@ -78,9 +78,9 @@ void XWFile::WrPage(XXPage* p, longint pageNr)
 	RdWrCache(WRITE, Handle, NotCached(), (pageNr << XPageShft) + 7, XPageSize - 7, p->A);
 }
 
-longint XWFile::NewPage(XPage* P)
+int XWFile::NewPage(XPage* P)
 {
-	longint result = 0;
+	int result = 0;
 	if (FreeRoot != 0) {
 		result = FreeRoot;
 		RdPage(P, FreeRoot);
@@ -95,7 +95,7 @@ longint XWFile::NewPage(XPage* P)
 	return result;
 }
 
-void XWFile::ReleasePage(XPage* P, longint N)
+void XWFile::ReleasePage(XPage* P, int N)
 {
 	P->Clean();
 	P->GreaterPage = FreeRoot;

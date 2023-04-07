@@ -22,7 +22,7 @@ class wwmix
 public :
 	wwmix();
 	void PutSelect(std::string s); // r57
-	void SelectStr(integer C1, integer R1, WORD NMsg, std::string LowTxt);
+	void SelectStr(short C1, short R1, WORD NMsg, std::string LowTxt);
 	std::string GetSelect();
 	bool SelFieldList(WORD Nmsg, bool ImplAll, FieldListEl** FLRoot);
 	bool SelFieldList(WORD Nmsg, bool ImplAll, std::vector<FieldDescr*>& FLRoot);
@@ -49,6 +49,6 @@ private:
 	void GraspAndMove(char schar);
 	void AbcdSort();
 	void SetFirstiItem();
-	bool MouseInItem(integer& I);
+	bool MouseInItem(short& I);
 	size_t lastItemIndex = 0;
 };

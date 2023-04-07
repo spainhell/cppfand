@@ -51,10 +51,10 @@ struct FuncD
 	pstring Name;
 };
 
-integer CompLongStr(LongStr* S1, LongStr* S2); // r529 ASM
-integer CompLongShortStr(LongStr* S1, pstring* S2); // r551 ASM
-integer CompArea(void* A, void* B, integer L); // r575 ASM
-integer CompStr(pstring& S1, pstring& S2); // r792 ASM
+short CompLongStr(LongStr* S1, LongStr* S2); // r529 ASM
+short CompLongShortStr(LongStr* S1, pstring* S2); // r551 ASM
+short CompArea(void* A, void* B, short L); // r575 ASM
+short CompStr(pstring& S1, pstring& S2); // r792 ASM
 int CompStr(std::string& S1, std::string& S2);
 
 WORD CompLexLongStr(LongStr* S1, LongStr* S2);
@@ -80,8 +80,8 @@ bool EquKFlds(KeyFldD* KF1, KeyFldD* KF2);
 void Code(std::string& data);
 void Code(void* A, WORD L);
 void CodingLongStr(LongStr* S);
-longint StoreInTWork(LongStr* S);
-LongStr* ReadDelInTWork(longint Pos);
+int StoreInTWork(LongStr* S);
+LongStr* ReadDelInTWork(int Pos);
 void ForAllFDs(void (*procedure)());
 bool IsActiveRdb(FileD* FD);
 void ResetCompilePars(); // r953 - posledni fce
@@ -94,34 +94,34 @@ double _R(FieldDescr* F);
 pstring _ShortS(FieldDescr* F);
 std::string _StdS(FieldDescr* F);
 LongStr* _LongS(FieldDescr* F);
-longint _T(FieldDescr* F);
-longint _T(FieldDescr* F, unsigned char* data, FileType file_type);
+int _T(FieldDescr* F);
+int _T(FieldDescr* F, unsigned char* data, FileType file_type);
 
 // * UKLADANI DO SOUBORU * / DO FRMLELEM *
 void B_(FieldDescr* F, bool B);
 void R_(FieldDescr* F, double R, void* record = nullptr);
 void S_(FieldDescr* F, std::string S, void* record = nullptr);
 void LongS_(FieldDescr* F, LongStr* S);
-void T_(FieldDescr* F, longint Pos);
+void T_(FieldDescr* F, int Pos);
 
-void CreateRec(FileD* file_d, longint n);
-void RecallRec(longint RecNr);
-bool LinkUpw(LinkD* LD, longint& N, bool WithT);
-bool LinkLastRec(FileD* FD, longint& N, bool WithT);
-void IncNRecs(FileD* file_d, longint n);
+void CreateRec(FileD* file_d, int n);
+void RecallRec(int RecNr);
+bool LinkUpw(LinkD* LD, int& N, bool WithT);
+bool LinkLastRec(FileD* FD, int& N, bool WithT);
+void IncNRecs(FileD* file_d, int n);
 bool TryLMode(FileD* fileD, LockMode Mode, LockMode& OldMode, WORD Kind);
 void OldLMode(FileD* fileD, LockMode Mode);
 LockMode NewLMode(FileD* fileD, LockMode Mode);
-bool TryLockN(FandFile* fand_file, longint N, WORD Kind);
-void UnLockN(FandFile* fand_file, longint N);
+bool TryLockN(FandFile* fand_file, int N, WORD Kind);
+void UnLockN(FandFile* fand_file, int N);
 void ClearRecSpace(void* p);
 void ZeroAllFlds(FileD* file_d, void* record);
 void DelTFld(FieldDescr* F);
 void DelDifTFld(void* Rec, void* CompRec, FieldDescr* F);
 
 void DelAllDifTFlds(void* Rec, void* CompRec);
-void DecNRecs(longint N);
-void DeleteRec(longint N);
+void DecNRecs(int N);
+void DeleteRec(int N);
 void AsgnParFldFrml(FileD* FD, FieldDescr* F, FrmlElem* Z, bool Ad);
 void PutRec(FileD* dataFile, void* recordData);
 
@@ -129,7 +129,7 @@ void DelTFlds();
 void CopyRecWithT(void* p1, void* p2);
 void CloseClearHCFile(FandFile* fand_file);
 void TestCPathError();
-void AssignNRecs(bool Add, longint N);
+void AssignNRecs(bool Add, int N);
 
 std::string CExtToT(std::string dir, std::string name, std::string ext);
 std::string CExtToX(std::string dir, std::string name, std::string ext);
@@ -137,6 +137,6 @@ std::string CExtToX(std::string dir, std::string name, std::string ext);
 void CloseGoExit(FandFile* fand_file);
 
 bool ChangeLMode(FileD* fileD, LockMode Mode, WORD Kind, bool RdPref);
-void SeekRec(FileD* fileD, longint N);
+void SeekRec(FileD* fileD, int N);
 
 void FixFromReal(double r, void* FixNo, WORD FLen);

@@ -5,18 +5,18 @@
 
 extern std::vector<std::string> paramstr;
 
-extern longint ExitCode; // exit kód -> OS
+extern int ExitCode; // exit kód -> OS
 extern void* ErrorAddr; // adresa chyby
 extern void (*ExitProc)(); // ukončovací procedura
 
 void val(pstring s, BYTE& b, WORD& err);
 void val(pstring s, WORD& b, WORD& err);
-void val(pstring s, integer& b, integer& err);
-void val(pstring s, double& b, integer& err);
+void val(pstring s, short& b, short& err);
+void val(pstring s, double& b, short& err);
 void val(pstring s, double& b, WORD& err);
-void val(pstring s, longint& b, WORD& err);
-void val(pstring s, longint& b, integer& err);
-double valDouble(std::string& s, integer& err);
+void val(pstring s, int& b, WORD& err);
+void val(pstring s, int& b, short& err);
+double valDouble(std::string& s, short& err);
 pstring copy(pstring source, size_t index, size_t count);
 void str(int input, pstring& output);
 void str(double input, int total, int right, pstring& output);
@@ -48,7 +48,7 @@ void CloseGraph(); // IGNORE
 //WORD Random(WORD rozsah);
 
 WORD ParamCount(); // vrací počet parametrů příkazové řádky
-pstring ParamStr(integer index);
+pstring ParamStr(short index);
 
 inline void Exit() { return; }
 
@@ -63,9 +63,9 @@ WORD Swap(WORD cislo);
 
 inline void OvrInit(pstring FileName) {}
 inline void OvrInitEMS() {}
-inline longint OvrGetBuf() { return 1024 * 1024; }
-inline void OvrSetBuf(longint Size) {}
-inline void OvrSetRetry(longint Size) {};
+inline int OvrGetBuf() { return 1024 * 1024; }
+inline void OvrSetBuf(int Size) {}
+inline void OvrSetRetry(int Size) {};
 
 inline void GetMem(void* pointer, int Size) { pointer = new unsigned char[Size]; }
 
@@ -89,11 +89,11 @@ public:
 	size_t _private = 0;
 	size_t bufpos = 0;
 	size_t bufend = 0;
-	integer (*openfunc)(TextFile* F) = nullptr; // function pointer
-	integer (*inoutfunc)(TextFile* F) = nullptr; // function pointer
-	integer (*flushfunc)(TextFile* F) = nullptr; // function pointer
-	integer (*closefunc)(TextFile* F) = nullptr; // function pointer
-	integer (*opentxt)(TextFile* F) = nullptr; // function pointer
+	short (*openfunc)(TextFile* F) = nullptr; // function pointer
+	short (*inoutfunc)(TextFile* F) = nullptr; // function pointer
+	short (*flushfunc)(TextFile* F) = nullptr; // function pointer
+	short (*closefunc)(TextFile* F) = nullptr; // function pointer
+	short (*opentxt)(TextFile* F) = nullptr; // function pointer
 	BYTE UserData[32] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 	std::string name;
 	std::string LineEnd;

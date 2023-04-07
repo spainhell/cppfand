@@ -35,9 +35,9 @@ void* PushScr(WORD C1, WORD R1, WORD C2, WORD R2)
 	return nullptr;
 }
 
-longint PushW(WORD C1, WORD R1, WORD C2, WORD R2, bool push_pixel, bool ww)
+int PushW(WORD C1, WORD R1, WORD C2, WORD R2, bool push_pixel, bool ww)
 {
-	longint pos = 0;
+	int pos = 0;
 	WParam* wp = PushWParam(C1, R1, C2, R2, ww);
 	wp->GrRoot = pos;
 	return screen.SaveScreen(wp, C1, R1, C2, R2);
@@ -50,7 +50,7 @@ void PopScr(void* p, bool draw)
 	delete wp;
 }
 
-void PopW(longint pos, bool draw)
+void PopW(int pos, bool draw)
 {
 	PopScr(nullptr, draw);
 }
@@ -91,7 +91,7 @@ void WrHd(pstring Hd, WORD Row, WORD MaxCols)
 
 void CenterWw(BYTE& C1, BYTE& R1, BYTE& C2, BYTE& R2, BYTE WFlags)
 {
-	integer Cols, Rows, M;
+	short Cols, Rows, M;
 	M = 0;
 	if ((WFlags & WHasFrame) != 0) M = 2;
 	Cols = C2 + M;
@@ -108,7 +108,7 @@ void CenterWw(BYTE& C1, BYTE& R1, BYTE& C2, BYTE& R2, BYTE WFlags)
 	R2 = R1 + Rows - 1;
 }
 
-longint PushWFramed(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, pstring top, pstring bottom, BYTE WFlags)
+int PushWFramed(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, pstring top, pstring bottom, BYTE WFlags)
 {
 	WORD i = 0;
 	CenterWw(C1, R1, C2, R2, WFlags);
@@ -130,7 +130,7 @@ longint PushWFramed(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, pstring top, 
 	return result;
 }
 
-longint PushWrLLMsg(WORD N, bool WithESC)
+int PushWrLLMsg(WORD N, bool WithESC)
 {
 	auto result = PushW(1, TxtRows, TxtCols, TxtRows);
 	TextAttr = screen.colors.zNorm;
@@ -277,7 +277,7 @@ void RunError(WORD N)
 
 bool PromptYN(WORD NMsg)
 {
-	longint w = PushW(1, TxtRows, TxtCols, TxtRows); 
+	int w = PushW(1, TxtRows, TxtCols, TxtRows); 
 	TextAttr = screen.colors.pTxt;
 	ClrEol();
 	ReadMessage(NMsg);
@@ -325,7 +325,7 @@ void CFileError(FileD* file_d, WORD N)
 	CloseGoExit(file_d->FF);
 }
 
-void RunMsgOn(char C, longint N)
+void RunMsgOn(char C, int N)
 {
 	RunMsgD* CM1 = new RunMsgD();
 #ifndef norunmsg
@@ -350,7 +350,7 @@ void RunMsgOn(char C, longint N)
 #endif
 }
 
-void RunMsgN(longint n)
+void RunMsgN(int n)
 {
 #ifndef norunmsg
 	if (n < CM->MsgKum) return;

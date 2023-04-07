@@ -15,9 +15,9 @@
 #include "../Logging/Logging.h"
 #include "../textfunc/textfunc.h"
 
-integer CompLongStr(LongStr* S1, LongStr* S2)
+short CompLongStr(LongStr* S1, LongStr* S2)
 {
-	integer result = 0;
+	short result = 0;
 	if (S1->LL != S2->LL) {
 		if (S1->LL < S2->LL) return _lt;
 		else return _gt;
@@ -32,9 +32,9 @@ integer CompLongStr(LongStr* S1, LongStr* S2)
 	return _equ;
 }
 
-integer CompLongShortStr(LongStr* S1, pstring* S2)
+short CompLongShortStr(LongStr* S1, pstring* S2)
 {
-	integer result = 0;
+	short result = 0;
 	if (S1->LL != (*S2)[0]) {
 		if (S1->LL < (*S2)[0]) result = _lt;
 		else result = _gt;
@@ -49,7 +49,7 @@ integer CompLongShortStr(LongStr* S1, pstring* S2)
 	return _equ;
 }
 
-integer CompArea(void* A, void* B, integer L)
+short CompArea(void* A, void* B, short L)
 {
 	int result = memcmp(A, B, L);
 
@@ -76,15 +76,15 @@ void ClearCacheCFile()
 }
 
 #ifdef FandNetV
-// const longint TransLock = 0x0A000501;  /* locked while state transition */
-const longint TransLock = 0x40000501; // MB160
-// const longint ModeLock = 0x0A000000;  /* base for mode locking */
-const longint ModeLock = 0x40000000;  // MB160
-// const longint RecLock = 0x0B000000;  /* base for record locking */
-const longint RecLock = 0x41000000;   // MB160
+// const int TransLock = 0x0A000501;  /* locked while state transition */
+const int TransLock = 0x40000501; // MB160
+// const int ModeLock = 0x0A000000;  /* base for mode locking */
+const int ModeLock = 0x40000000;  // MB160
+// const int RecLock = 0x0B000000;  /* base for record locking */
+const int RecLock = 0x41000000;   // MB160
 
 
-bool TryLockH(FILE* Handle, longint Pos, WORD Len)
+bool TryLockH(FILE* Handle, int Pos, WORD Len)
 {
 	OVERLAPPED sOverlapped;
 	sOverlapped.Offset = Pos;
@@ -104,7 +104,7 @@ bool TryLockH(FILE* Handle, longint Pos, WORD Len)
 	return true;
 }
 
-bool UnLockH(FILE* Handle, longint Pos, WORD Len)
+bool UnLockH(FILE* Handle, int Pos, WORD Len)
 {
 	OVERLAPPED sOverlapped;
 	sOverlapped.Offset = Pos;
@@ -124,9 +124,9 @@ bool UnLockH(FILE* Handle, longint Pos, WORD Len)
 	return true;
 }
 
-void ModeLockBnds(LockMode Mode, longint& Pos, WORD& Len)
+void ModeLockBnds(LockMode Mode, int& Pos, WORD& Len)
 {
-	longint n = 0;
+	int n = 0;
 	switch (Mode) {       /* hi=how much BYTEs, low= first BYTE */
 	case NoExclMode: n = 0x00010000 + LANNode; break;
 	case NoDelMode: n = 0x00010100 + LANNode; break;
@@ -143,7 +143,7 @@ void ModeLockBnds(LockMode Mode, longint& Pos, WORD& Len)
 
 bool ChangeLMode(FileD* fileD, LockMode Mode, WORD Kind, bool RdPref)
 {
-	longint oldpos; WORD oldlen, d;
+	int oldpos; WORD oldlen, d;
 	bool result = false;
 	if (!fileD->FF->IsShared()) {         /*neu!!*/
 		result = true;
@@ -163,7 +163,7 @@ bool ChangeLMode(FileD* fileD, LockMode Mode, WORD Kind, bool RdPref)
 		}
 		if (Mode < WrMode) ResetCFileUpdH();
 	}
-	longint w = 0;
+	int w = 0;
 	WORD count = 0;
 label1:
 	if (Mode != NullMode)
@@ -178,7 +178,7 @@ label1:
 				d = spec.NetDelay;
 				SetCPathVol();
 				SetMsgPar(CPath, LockModeTxt[Mode]);
-				longint w1 = PushWrLLMsg(825, Kind == 1);
+				int w1 = PushWrLLMsg(825, Kind == 1);
 				if (w == 0) {
 					w = w1;
 				}
@@ -199,7 +199,7 @@ label1:
 	}
 	if (Mode != NullMode) {
 		WORD len;
-		longint pos;
+		int pos;
 		ModeLockBnds(Mode, pos, len);
 		if (!TryLockH(h, pos, len)) {
 			if (oldmode != NullMode) {
@@ -291,22 +291,22 @@ double RealFromFix(void* FixNo, WORD FLen)
 			if (I > 0) ff[I]++;
 		}
 	}
-	integer first = 1;
+	short first = 1;
 	while (ff[first] == 0) first++;
 	if (first > FLen) return 0;
 
-	integer lef = 0;
+	short lef = 0;
 	unsigned char b = ff[first];
 	while ((b & 0x80) == 0) {
 		b = b << 1;
 		lef++;
 	}
 	ff[first] = ff[first] & (0x7F >> lef);
-	integer exp = ((FLen - first) << 3) - lef + 1030;
+	short exp = ((FLen - first) << 3) - lef + 1030;
 	if (lef == 7) first++;
 	lef = (lef + 5) & 0x07;
-	integer rig = 8 - lef;
-	integer i = 8 - 1; // velikost double - 1
+	short rig = 8 - lef;
+	short i = 8 - 1; // velikost double - 1
 	if ((rig <= 4) && (first <= FLen)) {
 		rr[i] = ff[first] >> rig;
 		i--;
@@ -335,7 +335,7 @@ void FixFromReal(double r, void* FixNo, WORD FLen)
 	else r -= 0.5;
 	memcpy(rr + 1, &r, 8);
 	bool neg = ((rr[8] & 0x80) != 0); // zaporne cislo urcuje 1 bit
-	integer exp = (rr[8 - 1] >> 4) + (WORD)((rr[8] & 0x7F) << 4);
+	short exp = (rr[8 - 1] >> 4) + (WORD)((rr[8] & 0x7F) << 4);
 	if (exp < 2047)
 	{
 		rr[8] = 0;
@@ -344,10 +344,10 @@ void FixFromReal(double r, void* FixNo, WORD FLen)
 		else exp++;
 		exp -= 1023;
 		if (exp > (FLen << 3) - 1) return; // OVERFLOW
-		longint lef = (exp + 4) & 0x0007;
-		longint rig = 8 - lef;
+		int lef = (exp + 4) & 0x0007;
+		int rig = 8 - lef;
 		if ((exp & 0x0007) > 3) exp += 4;
-		longint first = 7 - (exp >> 3);
+		int first = 7 - (exp >> 3);
 		int i = FLen;
 		while ((first < 8) && (i > 0)) {
 			ff[i] = (rr[first] >> rig) + (rr[first + 1] << lef);
@@ -392,9 +392,9 @@ LockMode NewLMode(FileD* fileD, LockMode Mode)
 	return md;
 }
 
-bool TryLockN(FandFile* fand_file, longint N, WORD Kind)
+bool TryLockN(FandFile* fand_file, int N, WORD Kind)
 {
-	longint w, w1;
+	int w, w1;
 	WORD m;
 	std::string XTxt = "CrX";
 	auto result = true;
@@ -430,7 +430,7 @@ label1:
 	return result;
 }
 
-void UnLockN(FandFile* fand_file, longint N)
+void UnLockN(FandFile* fand_file, int N)
 {
 #ifdef FandSQL
 	if (CFile->IsSQLFile) return;
@@ -478,7 +478,7 @@ void NegateESDI()
 	// asm  jcxz @2; @1:not es:[di].byte; inc di; loop @1; @2:
 }
 
-void RecallRec(longint RecNr)
+void RecallRec(int RecNr)
 {
 	TestXFExist();
 	CFile->FF->XF->NRecs++;
@@ -499,15 +499,15 @@ bool IsNullValue(void* p, WORD l)
 }
 
 // v CRecPtr vycte pozici zaznamu v .T00 souboru (ukazatel na zacatek textu)
-longint _T(FieldDescr* F)
+int _T(FieldDescr* F)
 {
 	return _T(F, (unsigned char*)CRecPtr, CFile->FF->file_type);
 }
 
-longint _T(FieldDescr* F, unsigned char* data, FileType file_type)
+int _T(FieldDescr* F, unsigned char* data, FileType file_type)
 {
-	longint n = 0;
-	integer err = 0;
+	int n = 0;
+	short err = 0;
 	char* source = (char*)data + F->Displ;
 
 	if (file_type == FileType::DBF) {
@@ -519,17 +519,17 @@ longint _T(FieldDescr* F, unsigned char* data, FileType file_type)
 	}
 	else {
 		if (data == nullptr) return 0;
-		return *(longint*)source;
+		return *(int*)source;
 	}
 }
 
-void T_(FieldDescr* F, longint Pos)
+void T_(FieldDescr* F, int Pos)
 {
 	// asi uklada data do CRecPtr
 	pstring s;
 	void* p = CRecPtr;
 	char* source = (char*)p + F->Displ;
-	longint* LP = (longint*)source;
+	int* LP = (int*)source;
 	if ((F->field_type == FieldType::TEXT) && ((F->Flg & f_Stored) != 0)) {
 		if (CFile->FF->file_type == FileType::DBF) {
 			if (Pos == 0) {
@@ -551,7 +551,7 @@ void T_(FieldDescr* F, longint Pos)
 
 void DelTFld(FieldDescr* F)
 {
-	longint n = _T(F);
+	int n = _T(F);
 	if (HasTWorkFlag(CFile->FF, CRecPtr)) {
 		TWork.Delete(n);
 	}
@@ -567,7 +567,7 @@ void DelDifTFld(void* Rec, void* CompRec, FieldDescr* F)
 {
 	void* cr = CRecPtr;
 	CRecPtr = CompRec;
-	longint n = _T(F);
+	int n = _T(F);
 	CRecPtr = Rec;
 	if (n != _T(F)) DelTFld(F);
 	CRecPtr = cr;
@@ -583,7 +583,7 @@ void DelAllDifTFlds(void* Rec, void* CompRec)
 const WORD Alloc = 2048;
 const double FirstDate = 6.97248E+5;
 
-void IncNRecs(FileD* file_d, longint n)
+void IncNRecs(FileD* file_d, int n)
 {
 #ifdef FandDemo
 	if (NRecs > 100) RunError(884);
@@ -595,7 +595,7 @@ void IncNRecs(FileD* file_d, longint n)
 	}
 }
 
-void DecNRecs(longint N)
+void DecNRecs(int N)
 {
 	/* !!! with CFile^ do!!! */
 	CFile->FF->NRecs -= N;
@@ -604,7 +604,7 @@ void DecNRecs(longint N)
 	CFile->FF->WasWrRec = true;
 }
 
-void SeekRec(FileD* fileD, longint N)
+void SeekRec(FileD* fileD, int N)
 {
 	fileD->IRec = N;
 	if (fileD->FF->XF == nullptr) fileD->FF->Eof = N >= fileD->FF->NRecs;
@@ -616,16 +616,16 @@ void PutRec(FileD* dataFile, void* recordData)
 	/* !!! with CFile^ do!!! */
 	dataFile->FF->NRecs++;
 	RdWrCache(WRITE, dataFile->FF->Handle, dataFile->FF->NotCached(),
-		longint(dataFile->IRec) * dataFile->FF->RecLen + dataFile->FF->FrstDispl, dataFile->FF->RecLen, recordData);
+		int(dataFile->IRec) * dataFile->FF->RecLen + dataFile->FF->FrstDispl, dataFile->FF->RecLen, recordData);
 	dataFile->IRec++;
 	dataFile->FF->Eof = true;
 }
 
-void CreateRec(FileD* file_d, longint n)
+void CreateRec(FileD* file_d, int n)
 {
 	IncNRecs(file_d, 1);
 	void* record = GetRecSpace(file_d->FF);
-	for (longint i = file_d->FF->NRecs - 1; i >= n; i--) {
+	for (int i = file_d->FF->NRecs - 1; i >= n; i--) {
 		file_d->ReadRec(i, record);
 		file_d->WriteRec(i + 1, record);
 	}
@@ -633,10 +633,10 @@ void CreateRec(FileD* file_d, longint n)
 	file_d->WriteRec(n, CRecPtr);
 }
 
-void DeleteRec(longint N)
+void DeleteRec(int N)
 {
 	DelAllDifTFlds(CRecPtr, nullptr);
-	for (longint i = N; i <= CFile->FF->NRecs - 1; i++) {
+	for (int i = N; i <= CFile->FF->NRecs - 1; i++) {
 		CFile->ReadRec(i + 1, CRecPtr);
 		CFile->WriteRec(i, CRecPtr);
 	}
@@ -651,7 +651,7 @@ void ZeroAllFlds(FileD* file_d, void* record)
 	}
 }
 
-bool LinkLastRec(FileD* FD, longint& N, bool WithT)
+bool LinkLastRec(FileD* FD, int& N, bool WithT)
 {
 	CFile = FD;
 	CRecPtr = GetRecSpace(FD->FF);
@@ -685,7 +685,7 @@ void AsgnParFldFrml(FileD* FD, FieldDescr* F, FrmlElem* Z, bool Ad)
 	std::string FileName = FD->FullPath;
 	std::string Varible = F->Name;
 	//#endif
-	void* p = nullptr; longint N = 0; LockMode md; bool b = false;
+	void* p = nullptr; int N = 0; LockMode md; bool b = false;
 	FileD* cf = CFile; void* cr = CRecPtr; CFile = FD;
 #ifdef FandSQL
 	if (CFile->IsSQLFile) {
@@ -733,7 +733,7 @@ void AsgnParFldFrml(FileD* FD, FieldDescr* F, FrmlElem* Z, bool Ad)
 double _RforD(FieldDescr* F, void* P)
 {
 	std::string s;
-	integer err;
+	short err;
 	double r = 0;
 	s[0] = F->NBytes;
 	Move(P, &s[1], s.length());
@@ -804,8 +804,8 @@ double _R(FieldDescr* F)
 		}
 		case FieldType::DATE: { // DATUM DD.MM.YY
 			if (CFile->FF->file_type == FileType::FAND8) {
-				if (*(integer*)source == 0) result = 0.0;
-				else result = *(integer*)source + FirstDate;
+				if (*(short*)source == 0) result = 0.0;
+				else result = *(short*)source + FirstDate;
 			}
 			else goto label1;
 			break;
@@ -819,7 +819,7 @@ double _R(FieldDescr* F)
 			break;
 		}
 		case FieldType::TEXT: {
-			integer i = *(integer*)source;
+			short i = *(short*)source;
 			result = i;
 			break;
 		}
@@ -833,7 +833,7 @@ double _R(FieldDescr* F)
 void R_(FieldDescr* F, double R, void* record)
 {
 	BYTE* pRec = nullptr;
-	pstring s; WORD m = 0; longint l = 0;
+	pstring s; WORD m = 0; int l = 0;
 	if ((F->Flg & f_Stored) != 0) {
 		if (record == nullptr) { pRec = (BYTE*)CRecPtr + F->Displ; }
 		else { pRec = (BYTE*)record + F->Displ; }
@@ -954,7 +954,7 @@ std::string _StdS(FieldDescr* F)
 	void* P = CRecPtr;
 	char* source = (char*)P + F->Displ;
 	std::string S;
-	longint Pos = 0; integer err = 0;
+	int Pos = 0; short err = 0;
 	LockMode md; WORD l = 0;
 	if ((F->Flg & f_Stored) != 0) {
 		l = F->L;
@@ -1015,7 +1015,7 @@ void LongS_(FieldDescr* F, LongStr* S)
 {
 	// asi se vzdy uklada do souboru (nebo pracovniho souboru)
 	// nakonec vola T_
-	longint Pos; LockMode md;
+	int Pos; LockMode md;
 
 	if ((F->Flg & f_Stored) != 0) {
 		if (S->LL == 0) T_(F, 0);
@@ -1048,8 +1048,8 @@ void S_(FieldDescr* F, std::string S, void* record)
 	if ((F->Flg & f_Stored) != 0) {
 		if (record == nullptr) { pRec = (BYTE*)CRecPtr + F->Displ; }
 		else { pRec = (BYTE*)record + F->Displ; }
-		integer L = F->L;
-		integer M = F->M;
+		short L = F->L;
+		short M = F->M;
 		switch (F->field_type) {
 		case FieldType::ALFANUM: {
 			S = S.substr(0, F->L); // delka retezce je max. F->L
@@ -1103,7 +1103,7 @@ void S_(FieldDescr* F, std::string S, void* record)
 }
 
 // zrejme zajistuje pristup do jine tabulky (cizi klic)
-bool LinkUpw(LinkD* LD, longint& N, bool WithT)
+bool LinkUpw(LinkD* LD, int& N, bool WithT)
 {
 	FileD* ToFD = LD->ToFD;
 	FileD* CF = CFile;
@@ -1184,9 +1184,9 @@ bool LinkUpw(LinkD* LD, longint& N, bool WithT)
 	return result;
 }
 
-void AssignNRecs(bool Add, longint N)
+void AssignNRecs(bool Add, int N)
 {
-	longint OldNRecs; LockMode md;
+	int OldNRecs; LockMode md;
 #ifdef FandSQL
 	if (CFile->IsSQLFile) {
 		if ((N = 0) && !Add) Strm1->DeleteXRec(nullptr, nullptr, false); return;
@@ -1217,7 +1217,7 @@ void AssignNRecs(bool Add, longint N)
 	ZeroAllFlds(CFile, CRecPtr);
 	SetDeletedFlag(CFile->FF, CRecPtr);
 	IncNRecs(CFile, N - OldNRecs);
-	for (longint i = OldNRecs + 1; i <= N; i++) {
+	for (int i = OldNRecs + 1; i <= N; i++) {
 		CFile->WriteRec(i, CRecPtr);
 	}
 	ReleaseStore(CRecPtr);
@@ -1270,7 +1270,7 @@ void CopyRecWithT(void* p1, void* p2)
 				if (HasTWorkFlag(CFile->FF, CRecPtr)) {
 					tf1 = &TWork;
 				}
-				longint pos = _T(F);
+				int pos = _T(F);
 				CRecPtr = p2;
 				if (HasTWorkFlag(CFile->FF, CRecPtr)) {
 					tf2 = &TWork;
@@ -1344,7 +1344,7 @@ void SetDeletedFlag(FandFile* fand_file, void* record)
 	}
 }
 
-integer CompStr(pstring& S1, pstring& S2)
+short CompStr(pstring& S1, pstring& S2)
 {
 	std::string s1 = S1;
 	std::string s2 = S2;
@@ -1655,12 +1655,12 @@ void DirMinusBackslash(pstring& D)
 	if ((D.length() > 3) && (D[D.length() - 1] == '\\')) D[0]--;
 }
 
-longint StoreInTWork(LongStr* S)
+int StoreInTWork(LongStr* S)
 {
 	return TWork.Store(S->A, S->LL);
 }
 
-LongStr* ReadDelInTWork(longint Pos)
+LongStr* ReadDelInTWork(int Pos)
 {
 	auto result = TWork.Read(Pos);
 	TWork.Delete(Pos);

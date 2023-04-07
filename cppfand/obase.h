@@ -20,14 +20,14 @@ void ClosePrinter(WORD LeftMargin); // r169
 extern bool PrintCtrlFlag;
 
 void TestTxtHError(TextFile* F);
-integer InputTxt(TextFile* F);
-integer OutputTxt(TextFile* F);
-integer OutputLPT1(TextFile* F);
-integer FlushTxt(TextFile* F);
-integer CloseTxt(TextFile* F);
-integer CloseLPT1(TextFile* F);
-integer OpenTxt(TextFile* F);
-integer OpenLPT1(TextFile* F);
+short InputTxt(TextFile* F);
+short OutputTxt(TextFile* F);
+short OutputLPT1(TextFile* F);
+short FlushTxt(TextFile* F);
+short CloseTxt(TextFile* F);
+short CloseLPT1(TextFile* F);
+short OpenTxt(TextFile* F);
+short OpenLPT1(TextFile* F);
 void Seek0Txt(TextFile* F); // r234
 bool ResetTxt(TextFile* F);
 bool RewriteTxt(std::string path, TextFile* F, bool PrintCtrl);

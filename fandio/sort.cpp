@@ -25,7 +25,7 @@ void CreateWIndex(XScan* Scan, XWKey* K, char Typ)
 
 void ScanSubstWIndex(XScan* Scan, KeyFldD* SK, char Typ)
 {
-	WORD n = 0;
+	unsigned short n = 0;
 	XWKey* k2 = new XWKey();
 	if (Scan->FD->IsSQLFile && (Scan->Kind == 3)) /*F6-autoreport & sort*/ {
 		XKey* k = Scan->Key;
@@ -64,10 +64,10 @@ void GenerateNew000File(FileD* f, XScan* x)
 	// vytvorime si novy buffer pro data,
 	// ten pak zapiseme do souboru naprimo (bez cache)
 
-	const WORD header000len = 6; // 4B pocet zaznamu, 2B delka 1 zaznamu
+	const unsigned short header000len = 6; // 4B pocet zaznamu, 2B delka 1 zaznamu
 	// z puvodniho .000 vycteme pocet zaznamu a jejich delku
 	const size_t totalLen = x->FD->FF->NRecs * x->FD->FF->RecLen + header000len;
-	BYTE* buffer = new BYTE[totalLen]{ 0 };
+	unsigned char* buffer = new unsigned char[totalLen]{ 0 };
 	size_t offset = header000len; // zapisujeme nejdriv data; hlavicku az nakonec
 	
 	while (!x->eof) {
@@ -127,7 +127,7 @@ void GetIndexSort(Instr_getindex* PD)
 	void* p = nullptr;
 	LocVar* lv2 = nullptr;
 	XWKey* kNew = nullptr;
-	longint nr = 0;
+	int nr = 0;
 	LockMode md1;
 	FrmlElem* cond = nullptr;
 	LinkD* ld = nullptr;

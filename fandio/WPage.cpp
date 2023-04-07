@@ -4,7 +4,7 @@
 #include <vector>
 #include "WRec.h"
 
-void WPage::Sort(WORD N, WORD RecLen)
+void WPage::Sort(unsigned short N, unsigned short RecLen)
 {
 	if (N <= 1) return;
 	// vytvorime vektor zaznamu a vsechny do nej nacteme z 'A'
@@ -22,7 +22,7 @@ void WPage::Sort(WORD N, WORD RecLen)
 
 	// setridene zaznamy vlozime zpet do 'A'
 	size_t offset2 = 0;
-	BYTE buffer[256]{ 0 };
+	unsigned char buffer[256]{ 0 };
 	for (size_t i = 0; i < N; i++) {
 		size_t len = recs[i].Serialize(buffer);
 		memcpy(&A[offset2], buffer, len);

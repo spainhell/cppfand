@@ -20,7 +20,7 @@
 #include "../textfunc/textfunc.h"
 
 const int TXTCOLS = 80;
-longint Timer = 0;
+int Timer = 0;
 bool Insert, Indent, Wrap, Just;
 
 // PROMENNE
@@ -39,9 +39,9 @@ std::string CtrlKey = "\x13\x17\x11\x04\x02\x05\x01";
 char Arr[SuccLineSize]{ '\0' };  // znaky pro 1 radek
 char* T = nullptr;               // ukazatel na vstupni retezec (cely editovany text)
 WORD NextLineStartIndex = 0;     // index prvniho znaku na dalsim radku
-integer TextLineNr = 0;          // cislo radku v celem textu (1 .. N)
-integer ScreenFirstLineNr = 0;   // cislo radku, ktery je na obrazovce zobrazen jako prvni (1 .. N)
-longint RScrL = 0;
+short TextLineNr = 0;          // cislo radku v celem textu (1 .. N)
+short ScreenFirstLineNr = 0;   // cislo radku, ktery je na obrazovce zobrazen jako prvni (1 .. N)
+int RScrL = 0;
 bool UpdatedL = false, CtrlL = false;
 bool HardL = false; // actual line (Arr) ended with CRLF "\r\n" - otherwise only with CR "\r"
 WORD columnOffset = 0;
@@ -55,13 +55,13 @@ WORD MinC = 0, MinR = 0, MaxC = 0, MaxR = 0;
 WORD MargLL[4]{ 0, 0, 0, 0 };
 WORD PageS = 0, LineS = 0;
 bool bScroll = false, FirstScroll = false, HelpScroll = false;
-longint PredScLn = 0;
+int PredScLn = 0;
 WORD PredScPos = 0; // {pozice pred Scroll}
 BYTE FrameDir = 0;
 WORD WordL = 0; // {Mode=HelpM & ctrl-word is on screen}
 bool Konec = false;
 WORD i1 = 0, i3 = 0;
-integer i2 = 0;
+short i2 = 0;
 // *** konec promennych
 
 const BYTE InterfL = 4; /*sizeof(Insert+Indent+Wrap+Just)*/
@@ -89,10 +89,10 @@ size_t LenT = 0; // delka editovaneho textu
 
 bool SrchT, UpdatT;
 WORD LastNr, CtrlLastNr;
-integer LeftMarg, RightMarg;
+short LeftMarg, RightMarg;
 bool TypeB;
 std::string LastS, CtrlLastS, ShiftLastS, AltLastS, HeadS;
-longint* LocalPPtr;
+int* LocalPPtr;
 bool EditT;
 
 // od r101
@@ -117,9 +117,9 @@ FILE* TxtFH = nullptr;
 pstring TxtPath;
 pstring TxtVol;
 //bool AllRd = false;
-longint AbsLenT = 0;
+int AbsLenT = 0;
 bool ChangePart, UpdPHead;
-void RestorePar(longint l);
+void RestorePar(int l);
 
 Blocks* blocks = nullptr;
 
@@ -276,7 +276,7 @@ WORD FindUpcChar(char C, WORD Pos, WORD Len)
 
 bool SEquOrder(pstring S1, pstring S2)
 {
-	integer i;
+	short i;
 	if (S1.length() != S2.length()) return false;
 	for (i = 1; i <= S1.length(); i++)
 		if (CharOrdTab[S1[i]] != CharOrdTab[S2[i]]) return false;
@@ -415,7 +415,7 @@ void FirstLine(WORD from, WORD num, WORD& Ind, WORD& Count)
 //{
 //	CharArr* ppa;
 //	WORD L1, L11, MI;
-//	longint BL, FSize, Rest, Max, Pos;
+//	int BL, FSize, Rest, Max, Pos;
 //	WORD Pass;
 //	Max = MinL(MaxLenT, StoreAvail() + LenT);
 //	Pass = Max - (Max >> 3);
@@ -640,7 +640,7 @@ void UpdStatLine(int Row, int Col, char mode)
 	char StatLine[] = "                                   ";
 
 	if (!HelpScroll) {
-		longint lRow = Row; // +Part.LineP;
+		int lRow = Row; // +Part.LineP;
 		snprintf(RowCol, sizeof(RowCol), "%5i:%-5i", lRow, Col);
 		memcpy(&StatLine[1], RowCol, 11); // 11 znaku ve format 'RRRRR:CCCCC'
 		switch (mode) { // uses parameter 'mode', not global variable 'Mode'
@@ -659,7 +659,7 @@ void UpdStatLine(int Row, int Col, char mode)
 		case DelFM: { StatLine[12] = '/'; break; }
 		default: break;
 		}
-		integer i = 1;
+		short i = 1;
 		if (HeadS.length() > 0) {
 			size_t find = HeadS.find('_');
 			if (find == std::string::npos) {
@@ -667,7 +667,7 @@ void UpdStatLine(int Row, int Col, char mode)
 			}
 			i = MaxW(1, find);
 			if (i > TxtCols - TStatL) {
-				i = MaxI((integer)(TxtCols)-TStatL, 1);
+				i = MaxI((short)(TxtCols)-TStatL, 1);
 			}
 		}
 		screen.ScrWrStr(i, 1, StatLine, SysLColor);
@@ -808,7 +808,7 @@ WORD CurrentLineFirstCharIndex(WORD index)
 void SmallerPart(WORD Ind, WORD FreeSize)
 {
 	WORD i, il, l;
-	longint lon;
+	int lon;
 	//NullChangePart();
 	if ((StoreAvail() > FreeSize) && (MaxLenT - LenT > FreeSize)) {
 		return;
@@ -906,7 +906,7 @@ void DekodLine(size_t lineStartIndex)
 			if (PromptYN(402)) {
 				WORD LL = lineStartIndex + LineMaxSize;
 				//NullChangePart();
-				//TestLenText(&T, LenT, LL, (longint)LL + 1);
+				//TestLenText(&T, LenT, LL, (int)LL + 1);
 				UpdatT = true;
 				//LL -= Part.MovI;
 				T[LL] = _CR;
@@ -1048,7 +1048,7 @@ size_t GetLineStartIndex(size_t lineNr)
 	return result;
 }
 
-void SetPart(longint Idx)
+void SetPart(int Idx)
 {
 	//if ((Idx > Part.PosP) && (Idx < Part.PosP + LenT) || (TypeT != FileT)) {
 	//	return;
@@ -1063,7 +1063,7 @@ void SetPart(longint Idx)
 	WrEndT();
 }
 
-void SetPartLine(longint Ln)
+void SetPartLine(int Ln)
 {
 	//while ((Ln <= Part.LineP) && (Part.PosP > 0)) {
 	//	PredPart();
@@ -1073,7 +1073,7 @@ void SetPartLine(longint Ln)
 	//}
 }
 
-void DekFindLine(longint Num)
+void DekFindLine(int Num)
 {
 	SetPartLine(Num);
 	TextLineNr = Num; // -Part.LineP;
@@ -1081,7 +1081,7 @@ void DekFindLine(longint Num)
 	DekodLine(textIndex);
 }
 
-void PosDekFindLine(longint Num, WORD Pos, bool ChScr)
+void PosDekFindLine(int Num, WORD Pos, bool ChScr)
 {
 	positionOnActualLine = Pos;
 	DekFindLine(Num);
@@ -1108,7 +1108,7 @@ void NextPartDek()
 	DekodLine(textIndex);
 }
 
-bool ModPage(longint RLine)
+bool ModPage(int RLine)
 {
 	return false;
 }
@@ -1139,7 +1139,7 @@ ColorOrd SetColorOrd(size_t first, size_t last)
 
 void UpdScreen()
 {
-	integer r; // row number, starts from 1
+	short r; // row number, starts from 1
 	ColorOrd co1;
 	WORD oldScreenIndex = ScreenIndex;
 	pstring PgStr;
@@ -1190,7 +1190,7 @@ void UpdScreen()
 
 	WORD index = ScreenIndex;
 	r = 1;
-	integer rr = 0;
+	short rr = 0;
 	WORD w = 1;
 	InsPage = false;
 	ColorOrd co2 = ColScr;
@@ -1332,12 +1332,12 @@ void TestKod()
 	if (UpdatedL) KodLine();
 }
 
-longint NewRL(int Line)
+int NewRL(int Line)
 {
 	return blocks->LineAbs(Line);
 }
 
-int NewL(longint RLine)
+int NewL(int RLine)
 {
 	return RLine; // -Part.LineP;
 }
@@ -1349,7 +1349,7 @@ void ScrollPress()
 	if (fyz == old) FirstScroll = false;
 	bScroll = (fyz || FirstScroll) && (Mode != HelpM);
 	HelpScroll = bScroll || (Mode == HelpM);
-	longint L1 = blocks->LineAbs(ScreenFirstLineNr);
+	int L1 = blocks->LineAbs(ScreenFirstLineNr);
 	if (old != bScroll) {
 		if (bScroll) {
 			WrStatusLine();
@@ -1890,10 +1890,10 @@ void WrCharE(char Ch)
 	}
 }
 
-void Format(WORD& i, longint First, longint Last, WORD Posit, bool Rep)
+void Format(WORD& i, int First, int Last, WORD Posit, bool Rep)
 {
 	WORD lst, ii1;
-	integer ii;
+	short ii;
 	char A[260];
 	bool bBool;
 	WORD rp, nb, nw, n;
@@ -1901,7 +1901,7 @@ void Format(WORD& i, longint First, longint Last, WORD Posit, bool Rep)
 
 	SetPart(First);
 	WORD fst = First; // -Part.PosP;
-	longint llst = Last; // -Part.PosP;
+	int llst = Last; // -Part.PosP;
 	if (llst > LenT) lst = LenT;
 	else lst = llst;
 	do {
@@ -2007,7 +2007,7 @@ void Format(WORD& i, longint First, longint Last, WORD Posit, bool Rep)
 			while (A[ii] == ' ') ii++;
 			if (ii >= Posit) Posit = 1;
 			if (i < lst) A[Posit] = _CR; else Posit--;
-			//TestLenText(&T, LenT, i, longint(ii1) + Posit);
+			//TestLenText(&T, LenT, i, int(ii1) + Posit);
 			UpdatT = true;
 			if (Posit > 0) Move(A, &T[ii1], Posit);
 			ii = ii1 + Posit - i; i = ii1 + Posit; lst += ii; llst += ii;
@@ -2109,10 +2109,10 @@ bool BlockExist()
 	return (blocks->BegBLn <= blocks->EndBLn) && (blocks->BegBPos < blocks->EndBPos);
 }
 
-void SetBlockBound(longint& BBPos, longint& EBPos)
+void SetBlockBound(int& BBPos, int& EBPos)
 {
 	SetPartLine(blocks->EndBLn);
-	integer i = blocks->EndBLn; // -Part.LineP;
+	short i = blocks->EndBLn; // -Part.LineP;
 	size_t nextLineIdx = GetLineStartIndex(i);
 	EBPos = SetInd(T, LenT, nextLineIdx, blocks->EndBPos); // +Part.PosP;
 	SetPartLine(blocks->BegBLn);
@@ -2121,7 +2121,7 @@ void SetBlockBound(longint& BBPos, longint& EBPos)
 	BBPos = SetInd(T, LenT, nextLineIdx, blocks->BegBPos); // +Part.PosP;
 }
 
-void ResetPrint(char Oper, longint& fs, FILE* W1, longint LenPrint, ColorOrd* co, WORD& I1, bool isPrintFile, char* p)
+void ResetPrint(char Oper, int& fs, FILE* W1, int LenPrint, ColorOrd* co, WORD& I1, bool isPrintFile, char* p)
 {
 	//*co = Part.ColorP;
 	*co = SetColorOrd(0, I1 - 1);
@@ -2157,17 +2157,17 @@ void LowCase(char& c)
 		if ((UpcCharTab[i] == c) && (i != c)) { c = i; return; }
 }
 
-bool BlockHandle(longint& fs, FILE* W1, char Oper)
+bool BlockHandle(int& fs, FILE* W1, char Oper)
 {
 	WORD i, I1;
-	longint LL1, LL2;
+	int LL1, LL2;
 	ColorOrd co;
 	bool isPrintFile = false;
 	char* p = nullptr;
 	bool tb; char c;
 
 	TestKod();
-	longint Ln = blocks->LineAbs(TextLineNr);
+	int Ln = blocks->LineAbs(TextLineNr);
 	WORD Ps = positionOnActualLine;
 	if (Oper == 'p') {
 		tb = TypeB;
@@ -2342,7 +2342,7 @@ void MovePart(WORD Ind)
 
 bool BlockGrasp(char Oper, void* P1, LongStr* sp)
 {
-	longint L, L1, L2, ln;
+	int L, L1, L2, ln;
 	WORD I1;
 	auto result = false;
 	if (!BlockExist()) return result;
@@ -2384,7 +2384,7 @@ void BlockDrop(char Oper, void* P1, LongStr* sp)
 	blocks->BegBLn = blocks->LineAbs(TextLineNr);
 	blocks->BegBPos = positionOnActualLine;
 	//NullChangePart();
-	//TestLenText(&T, LenT, I, longint(I) + I2);
+	//TestLenText(&T, LenT, I, int(I) + I2);
 	UpdatT = true;
 	//if (ChangePart) I -= Part.MovI;
 	Move(sp->A, &T[I], I2);
@@ -2398,7 +2398,7 @@ void BlockDrop(char Oper, void* P1, LongStr* sp)
 bool BlockCGrasp(char Oper, void* P1, LongStr* sp)
 {
 	WORD i, I2;
-	longint L;
+	int L;
 	char* a = nullptr;
 
 	auto result = false;
@@ -2406,7 +2406,7 @@ bool BlockCGrasp(char Oper, void* P1, LongStr* sp)
 	TestKod();
 	L = blocks->LineAbs(TextLineNr);
 	if ((L >= blocks->BegBLn && L <= blocks->EndBLn) && (positionOnActualLine >= blocks->BegBPos + 1 && positionOnActualLine <= blocks->EndBPos - 1) && (Oper != 'G')) return result;
-	longint l1 = (blocks->EndBLn - blocks->BegBLn + 1) * (blocks->EndBPos - blocks->BegBPos + 2);
+	int l1 = (blocks->EndBLn - blocks->BegBLn + 1) * (blocks->EndBPos - blocks->BegBPos + 2);
 	if (l1 > 0x7FFF) { WrLLF10Msg(418); return result; }
 	MarkStore(P1);
 	sp = new LongStr(l1 + 2);
@@ -2457,7 +2457,7 @@ void BlockCDrop(char Oper, void* P1, LongStr* sp)
 			InsertLine(i, I1, I3, ww, sp);
 			ww = blocks->BegBPos; blocks->EndBPos = MaxW(ww + i, blocks->EndBPos);
 			if ((NextLineStartIndex > LenT) && ((TypeT != FileT) || true /*AllRd*/)) {
-				//TestLenText(&T, LenT, LenT, (longint)LenT + 2);
+				//TestLenText(&T, LenT, LenT, (int)LenT + 2);
 				UpdatT = true;
 				T[LenT - 2] = _CR;
 				T[LenT - 1] = _LF;
@@ -2494,7 +2494,7 @@ bool ColBlockExist()
 	else return BlockExist();
 }
 
-void NewBlock1(WORD& I1, longint& L2)
+void NewBlock1(WORD& I1, int& L2)
 {
 	if (I1 != positionOnActualLine) {
 		blocks->BegBLn = L2;
@@ -2508,7 +2508,7 @@ void BlockLRShift(WORD I1)
 {
 	if (!bScroll && (Mode != HelpM) && ((KbdFlgs & 0x03) != 0))   /*Shift*/
 	{
-		longint L2 = blocks->LineAbs(TextLineNr);
+		int L2 = blocks->LineAbs(TextLineNr);
 		if (!ColBlockExist()) NewBlock1(I1, L2);
 		else
 			switch (TypeB) {
@@ -2536,7 +2536,7 @@ void BlockLRShift(WORD I1)
 	}
 }
 
-void NewBlock2(longint& L1, longint& L2)
+void NewBlock2(int& L1, int& L2)
 {
 	if (L1 != L2) {
 		blocks->BegBPos = positionOnActualLine; blocks->EndBPos = positionOnActualLine;
@@ -2544,9 +2544,9 @@ void NewBlock2(longint& L1, longint& L2)
 	}
 }
 
-void BlockUDShift(longint L1)
+void BlockUDShift(int L1)
 {
-	longint L2;
+	int L2;
 	if (!bScroll && (Mode != HelpM) && ((KbdFlgs & 0x03) != 0))   /*Shift*/
 	{
 		L2 = blocks->LineAbs(TextLineNr);
@@ -2610,7 +2610,7 @@ void SetScreen(WORD Ind, WORD ScrXY, WORD Pos)
 	if (bScroll) {
 		RScrL = NewRL(ScreenFirstLineNr);
 		TextLineNr = MaxI(PHNum + 1, blocks->LineAbs(TextLineNr)); // -Part.LineP;
-		longint rl = NewRL(TextLineNr);
+		int rl = NewRL(TextLineNr);
 		if ((rl >= RScrL + PageS) || (rl < RScrL)) {
 			if (rl > 10) RScrL = rl - 10;
 			else RScrL = 1;
@@ -2628,11 +2628,11 @@ void SetScreen(WORD Ind, WORD ScrXY, WORD Pos)
 	}
 }
 
-void ReplaceString(WORD& J, WORD& fst, WORD& lst, longint& Last)
+void ReplaceString(WORD& J, WORD& fst, WORD& lst, int& Last)
 {
 	size_t r = ReplaceStr.length();
 	size_t f = FindStr.length();
-	//TestLenText(&T, LenT, J, longint(J) + r - f);
+	//TestLenText(&T, LenT, J, int(J) + r - f);
 	UpdatT = true;
 	ChangeP(fst);
 	//if (TestLastPos(positionOnActualLine, positionOnActualLine + r - f));
@@ -2648,7 +2648,7 @@ char MyVerifyLL(WORD n, pstring s)
 	char cc;
 	WORD c2 = screen.WhereX() + FirstC - 1;
 	WORD r2 = screen.WhereY() + FirstR;
-	longint w = PushW(1, 1, TxtCols, TxtRows);
+	int w = PushW(1, 1, TxtCols, TxtRows);
 	screen.GotoXY(1, TxtRows);
 	TextAttr = screen.colors.pTxt;
 	ClrEol();
@@ -2659,7 +2659,7 @@ char MyVerifyLL(WORD n, pstring s)
 	TextAttr = screen.colors.pNorm;
 	printf(" ");
 	screen.CrsNorm();
-	longint t = Timer + 15;
+	int t = Timer + 15;
 	WORD r = r1;
 	do {
 		while (!KbdPressed())
@@ -2674,7 +2674,7 @@ char MyVerifyLL(WORD n, pstring s)
 	return cc;
 }
 
-void FindReplaceString(longint First, longint Last)
+void FindReplaceString(int First, int Last)
 {
 	WORD lst;
 	if (First >= Last) {
@@ -2762,7 +2762,7 @@ void ClrWord()
 	//}
 }
 
-bool WordFind(WORD i, WORD& WB, integer& WE, WORD& LI)
+bool WordFind(WORD i, WORD& WB, short& WE, WORD& LI)
 {
 	bool result = false;
 	if (i == 0) return result;
@@ -2794,7 +2794,7 @@ void SetWord(WORD WB, WORD WE)
 void HelpLU(char dir)
 {
 	WORD I = 0, I1 = 0, h1 = 0, h2 = 0;
-	integer I2 = 0;
+	short I2 = 0;
 	ClrWord();
 	h1 = WordNo2();
 	if (dir == 'U') {
@@ -2825,7 +2825,7 @@ void HelpLU(char dir)
 void HelpRD(char dir)
 {
 	WORD I = 0, I1 = 0, h1 = 0, h2 = 0;
-	integer I2 = 0;
+	short I2 = 0;
 	ClrWord();
 	h1 = WordNo2();
 	if (WordExist()) {
@@ -2982,7 +2982,7 @@ void Edit(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys)
 	IndexT = SetInd(T, LenT, textIndex, positionOnActualLine);
 	ScrT = ((TextLineNr - ScreenFirstLineNr + 1) << 8) + positionOnActualLine - BPos;
 	if (Mode != HelpM) {
-		TxtXY = ScrT + ((longint)positionOnActualLine << 16);
+		TxtXY = ScrT + ((int)positionOnActualLine << 16);
 		CursorWord();
 		if (Mode == HelpM) { ClrWord(); }
 	}
@@ -3005,14 +3005,14 @@ void SetEditTxt(Instr_setedittxt* PD)
 	if (PD->Right != nullptr) RightMarg = MaxI(LeftMarg, MinI(255, RunInt(PD->Right)));
 }
 
-void GetEditTxt(bool& pInsert, bool& pIndent, bool& pWrap, bool& pJust, bool& pColBlk, integer& pLeftMarg, integer& pRightMarg)
+void GetEditTxt(bool& pInsert, bool& pIndent, bool& pWrap, bool& pJust, bool& pColBlk, short& pLeftMarg, short& pRightMarg)
 {
 	pInsert = Insert; pIndent = Indent; pWrap = Wrap; pJust = Just; pColBlk = TypeB;
 	pLeftMarg = LeftMarg; pRightMarg = RightMarg;
 }
 
 bool EditText(char pMode, char pTxtType, std::string pName, std::string pErrMsg, LongStr* pLS, WORD pMaxLen,
-	WORD& pInd, longint& pScr, std::vector<WORD>& break_keys, std::vector<EdExitD*>& pExD, bool& pSrch, bool& pUpdat, WORD pLastNr,
+	WORD& pInd, int& pScr, std::vector<WORD>& break_keys, std::vector<EdExitD*>& pExD, bool& pSrch, bool& pUpdat, WORD pLastNr,
 	WORD pCtrlLastNr, MsgStr* pMsgS)
 {
 	bool oldEdOK = EdOk; EditT = true;
@@ -3060,7 +3060,7 @@ bool EditText(char pMode, char pTxtType, std::string pName, std::string pErrMsg,
 	pLS->LL = LenT;
 	pLS->A = T;
 	pInd = IndexT;
-	pScr = ScrT + ((longint)positionOnActualLine << 16);
+	pScr = ScrT + ((int)positionOnActualLine << 16);
 	EdOk = oldEdOK;
 	return EditT;
 }
@@ -3068,7 +3068,7 @@ bool EditText(char pMode, char pTxtType, std::string pName, std::string pErrMsg,
 void SimpleEditText(char pMode, std::string pErrMsg, std::string pName, LongStr* pLS, WORD MaxLen, WORD& Ind, bool& Updat)
 {
 	bool Srch = false;
-	longint Scr = 0;
+	int Scr = 0;
 	std::vector<WORD> emptyBreakKeys;
 	std::vector<EdExitD*> emptyExitD;
 	EditText(pMode, LocalT, std::move(pName), std::move(pErrMsg), pLS, MaxLen, Ind, Scr,
@@ -3097,23 +3097,23 @@ WORD FindTextE(const pstring& Pstr, pstring Popt, char* PTxtPtr, WORD PLen)
 }
 
 void EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg, std::vector<EdExitD*>& ExD,
-	longint TxtPos, longint Txtxy, WRect* V, WORD Atr,
+	int TxtPos, int Txtxy, WRect* V, WORD Atr,
 	const std::string Hd, BYTE WFlags, MsgStr* MsgS)
 {
 	bool Srch = false, Upd = false;
-	longint Size = 0; // , L = 0;
-	longint w1 = 0;
+	int Size = 0; // , L = 0;
+	int w1 = 0;
 	bool Loc = false;
 	WORD Ind = 0, oldInd = 0;
-	longint oldTxtxy = 0;
+	int oldTxtxy = 0;
 	LongStr* LS = nullptr;
 	pstring compErrTxt;
 
 	if (Atr == 0) {
 		Atr = screen.colors.tNorm;
 	}
-	longint w2 = 0;
-	longint w3 = 0;
+	int w2 = 0;
+	int w3 = 0;
 	if (V != nullptr) {
 		w1 = PushW(1, 1, TxtCols, 1, (WFlags & WPushPixel) != 0, false);
 		w2 = PushW(1, TxtRows, TxtCols, TxtRows, (WFlags & WPushPixel) != 0, false);
@@ -3289,7 +3289,7 @@ void ViewHelpText(std::string& s, WORD& TxtPos)
 		ColKey[1] = screen.colors.hMenu;
 		bool Srch = false;
 		bool Upd = false;
-		longint Scr = 0;
+		int Scr = 0;
 		while (true) {
 			std::vector<WORD> brkKeys;
 			brkKeys.push_back(__F1);

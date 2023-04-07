@@ -198,7 +198,7 @@ void CodingRdb::CodeF(bool rotate, WORD IRec, FieldDescr* F, char Typ)
 	void* p = nullptr;
 	void* p2 = nullptr;
 
-	longint pos = _T(F);
+	int pos = _T(F);
 	if (pos == 0) return;
 	MarkBoth(p, p2);
 	LongStr* s = ChptTF->Read(pos);

@@ -27,7 +27,7 @@ struct Item
 struct stSv
 {
 	std::vector<Item> items;
-	integer NItems, MaxItemLen, Tabs, TabSize, WwSize, Base, iItem;
+	short NItems, MaxItemLen, Tabs, TabSize, WwSize, Base, iItem;
 
 	void Reset() {
 		NItems = 0;
@@ -73,14 +73,14 @@ void wwmix::PutSelect(std::string s)
 	sv.MaxItemLen = MaxW(l, sv.MaxItemLen);
 }
 
-void wwmix::SelectStr(integer C1, integer R1, WORD NMsg, std::string LowTxt)
+void wwmix::SelectStr(short C1, short R1, WORD NMsg, std::string LowTxt)
 {
 	WORD cols = 0, MaxBase = 0;
 	WORD key;
 	char schar;
-	integer b = 0;
+	short b = 0;
 	Item* p = nullptr;
-	integer i = 0, iOld = 0;
+	short i = 0, iOld = 0;
 
 	void* pw = PushScr(1, TxtRows, TxtCols, TxtRows);
 	if (ss.Subset) {
@@ -97,7 +97,7 @@ void wwmix::SelectStr(integer C1, integer R1, WORD NMsg, std::string LowTxt)
 	WORD r2 = rows;
 	if (R1 != 0) r2 = R1 + rows + 1;
 	TextAttr = screen.colors.sNorm;
-	longint w2 = PushWFramed(C1, R1, c2, r2, TextAttr, MsgLine, LowTxt,
+	int w2 = PushWFramed(C1, R1, c2, r2, TextAttr, MsgLine, LowTxt,
 		WHasFrame + WDoubleFrame + WShadow + WPushPixel);
 	if (ss.Empty) {
 		do {
@@ -526,12 +526,12 @@ void wwmix::SetFirstiItem()
 	}
 }
 
-bool wwmix::MouseInItem(integer& I)
+bool wwmix::MouseInItem(short& I)
 {
 	auto result = false;
-	integer x = Event.Where.X - WindMin.X - 1;
+	short x = Event.Where.X - WindMin.X - 1;
 	if (x < 0) return result;
-	integer ix = x / sv.TabSize;
+	short ix = x / sv.TabSize;
 	if (ix >= sv.Tabs) return result;
 	if ((Event.Where.Y < WindMin.Y) || (Event.Where.Y > WindMax.Y)) return result;
 	I = (Event.Where.Y - WindMin.Y) * sv.Tabs + ix + sv.Base; if (I > sv.NItems) return result;
@@ -637,7 +637,7 @@ label1:
 std::string wwmix::SelectDiskFile(std::string Path, WORD HdMsg, bool OnFace)
 {
 	std::string mask, s;
-	longint w = 0; //SearchRec SR;
+	int w = 0; //SearchRec SR;
 	BYTE sizeOfMask = 255;
 	std::string p, d, n, ext, e, ne;
 
@@ -780,7 +780,7 @@ bool wwmix::PromptFilter(std::string Txt, FrmlElem** Bool, std::string* BoolTxt)
 
 void wwmix::PromptLL(WORD N, std::string& Txt, WORD I, bool Del)
 {
-	longint w = PushW(1, TxtRows, TxtCols, TxtRows);
+	int w = PushW(1, TxtRows, TxtCols, TxtRows);
 	screen.GotoXY(1, TxtRows, ScrPosition::absolute);
 	TextAttr = screen.colors.pTxt;
 	ClrEol();
@@ -796,7 +796,7 @@ std::string wwmix::PassWord(bool TwoTimes)
 {
 	std::string Txt, Txt1;
 	WORD col = (TxtCols - 21) >> 1;
-	longint w = PushW(col, TxtRows - 2, col + 21, TxtRows - 2);
+	int w = PushW(col, TxtRows - 2, col + 21, TxtRows - 2);
 	WORD MsgNr = 628;
 
 	while (true) {

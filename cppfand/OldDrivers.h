@@ -46,7 +46,7 @@ extern BYTE LLKeyFlags; // ř. 84
 
 enum class enVideoCard { viCga = 0, viHercules = 1, viEga = 2, viVga = 3 };
 extern enVideoCard VideoCard;// = enVideoCard::viVga;
-extern integer GraphDriver, GraphMode;
+extern short GraphDriver, GraphMode;
 extern WORD ScrSeg, ScrGrSeg;
 extern BYTE NrVFont, BytesPerChar;
 extern bool ChkSnow;
@@ -130,9 +130,9 @@ void WrDirect();
 void ScrollUp();
 void LineFeed();
 
-integer WrOutput(TextFile* F);
-integer DummyCrt(TextFile* F);
-integer OpenCrt(TextFile* F);
+short WrOutput(TextFile* F);
+short DummyCrt(TextFile* F);
+short OpenCrt(TextFile* F);
 
 unsigned long long getAvailPhysMemory();
 

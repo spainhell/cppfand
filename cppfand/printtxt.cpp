@@ -12,7 +12,7 @@
 
 char* pBlk;
 WORD iBlk, nBlk, Po;
-longint charrd;
+int charrd;
 bool printBlk, outpsw;
 WORD prFileNr;
 pstring Ln;
@@ -70,7 +70,7 @@ void ExecPrintManagerProgram()
 	Wind wmin = WindMin;
 	Wind wmax = WindMax;
 	TCrs crs = screen.CrsGet();
-	longint w = PushW(1, 1, TxtCols, 1);
+	int w = PushW(1, 1, TxtCols, 1);
 	WindMin = wmin;
 	WindMax = wmax;
 	screen.CrsSet(crs);
@@ -107,12 +107,12 @@ void CopyToPrintManager(std::string& text)
 		WriteH(h2, nBlk, pBlk);
 	}
 	else {
-		//longint n;
+		//int n;
 		//FILE* h1 = Rprt.Handle;
 		//SeekH(h1, 0);
-		//longint lbuf = 1000;
+		//int lbuf = 1000;
 		//void* buf = GetStore(lbuf);
-		//longint sz = FileSizeH(h1);
+		//int sz = FileSizeH(h1);
 		//while (sz > 0) {
 		//	if (sz > lbuf) n = lbuf;
 		//	else n = sz;
@@ -132,7 +132,7 @@ void CopyToPrintManager(std::string& text)
 	//CFile = cf; CRecPtr = cr;
 }
 
-void PrintTxtFBlk(std::string& text, longint BegPos, bool CtrlL)
+void PrintTxtFBlk(std::string& text, int BegPos, bool CtrlL)
 {
 	WORD Ti = 0, Times = 0, Cp = 0, Pl = 0, MaxLine = 0;
 	pstring FoTxt, HeTxt;
@@ -233,7 +233,7 @@ label3:
 	RunMsgOff();
 }
 
-void PrintTxtFile(longint BegPos)
+void PrintTxtFile(int BegPos)
 {
 	//TestMountVol(CPath[1]);
 	//if (!Rprt.ResetTxt())

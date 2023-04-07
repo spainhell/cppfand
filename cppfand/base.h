@@ -29,13 +29,13 @@ bool EqualsMask(void* p, WORD l, pstring Mask); // r86 ASM
 bool EqualsMask(std::string& value, std::string& mask);
 bool EquLongStr(LongStr* S1, LongStr* S2);
 bool EquArea(void* P1, void* P2, WORD L);
-integer MinI(integer X, integer Y);
-integer MaxI(integer X, integer Y);
+short MinI(short X, short Y);
+short MaxI(short X, short Y);
 WORD MinW(WORD X, WORD Y);
 WORD MaxW(WORD X, WORD Y);
-longint MinL(longint X, longint Y);
-longint MaxL(longint X, longint Y);
-longint SwapLong(longint N);
+int MinL(int X, int Y);
+int MaxL(int X, int Y);
+int SwapLong(int N);
 bool OverlapByteStr(void* p1, void* p2); // ASM
 WORD FindCtrlM(LongStr* s, WORD i, WORD n); // r152
 WORD FindCtrlM(std::string& s, WORD i, WORD n);
@@ -61,9 +61,9 @@ void wait();
 #ifndef FandRunV
 pstring HexB(BYTE b);
 pstring HexW(WORD i);
-pstring HexD(longint i);
+pstring HexD(int i);
 pstring HexPtr(void* p);
-void DispH(void* ad, integer NoBytes);
+void DispH(void* ad, short NoBytes);
 #endif
 
 void MarkStore(void* p);
@@ -174,7 +174,7 @@ struct Fonts // r350
 extern Fonts fonts;
 
 std::string PrTab(WORD printerNr, WORD value);
-void SetCurrPrinter(integer NewPr);
+void SetCurrPrinter(short NewPr);
 
 struct Printer {
 	std::string Strg; char Typ, Kod; BYTE Lpti, TmOut;
@@ -196,7 +196,7 @@ public:
 	FILE* Handle;
 	struct st
 	{
-		longint Pos;
+		int Pos;
 		WORD Size;
 	} A[FandFace];
 	WORD Get(WORD Kod, void** P);

@@ -9,8 +9,8 @@
 
 void AddFFs(XKey* K, pstring& s)
 {
-	WORD l = MinW(K->IndexLen + 1, 255);
-	for (WORD i = s.length() + 1; i <= l; i++) s[i] = 0xff;
+	unsigned short l = MinW(K->IndexLen + 1, 255);
+	for (unsigned short i = s.length() + 1; i <= l; i++) s[i] = 0xff;
 	s[0] = (char)l;
 }
 
@@ -56,7 +56,7 @@ XScan::XScan(FileD* aFD, XKey* aKey, KeyInD* aKIRoot, bool aWithT)
 
 void XScan::Reset(FrmlElem* ABool, bool SQLFilter)
 {
-	KeyInD* k = nullptr; longint n = 0; XString xx; bool b = false;
+	KeyInD* k = nullptr; int n = 0; XString xx; bool b = false;
 	CFile = FD;
 	Bool = ABool;
 	if (SQLFilter) {
@@ -143,7 +143,7 @@ void XScan::SubstWIndex(XWKey* WK)
 
 void XScan::ResetOwner(XString* XX, FrmlElem* aBool)
 {
-	longint n;
+	int n;
 	bool b;
 	CFile = FD;
 	Bool = aBool;
@@ -217,7 +217,7 @@ void XScan::Close()
 	if (TempWX) WKeyDPtr(Key)->Close();
 }
 
-void XScan::SeekRec(longint I)
+void XScan::SeekRec(int I)
 {
 	KeyInD* k = nullptr;
 	FrmlElem* z = nullptr;
@@ -264,7 +264,7 @@ void XScan::SeekRec(longint I)
 	}
 }
 
-void XScan::SeekOnKI(longint I)
+void XScan::SeekOnKI(int I)
 {
 	NOfKI = KI->N - I;
 	Key->NrToPath(KI->XNrBeg + I);
@@ -272,7 +272,7 @@ void XScan::SeekOnKI(longint I)
 	SeekOnPage(XPath[XPathN].Page, XPath[XPathN].I);
 }
 
-void XScan::SeekOnPage(longint pageNr, WORD i)
+void XScan::SeekOnPage(int pageNr, unsigned short i)
 {
 	Key->GetXFile()->RdPage(page_, pageNr);
 	items_on_page_ = page_->NItems - i + 1;
@@ -290,7 +290,7 @@ void XScan::NextIntvl()
 {
 	XString xx;
 	bool b = false;
-	longint n = 0, nBeg = 0;
+	int n = 0, nBeg = 0;
 
 	if (OwnerLV != nullptr) {
 		XWKey* k = (XWKey*)OwnerLV->RecPtr; // TODO: bude toto fungovat?

@@ -29,13 +29,13 @@ void ScrGraphMode(bool Redraw, WORD OldScrSeg)
 
 	//void* p; void* p1;
 	//WORD* pofs = (WORD*)p;
-	//WORD sz, cr, i; integer err;
+	//WORD sz, cr, i; short err;
 	//pstring s(4);
 	//if ((VideoCard == viCga) || (TxtCols != 80) || (TxtRows != 25)) RunError(643);
 	//DoneMouseEvents();
 	//bool b = Crs.Enabled;
 	//CrsHide();
-	//integer n = 80 * 25 * 2;
+	//short n = 80 * 25 * 2;
 	//if (OldScrSeg != 0) p = ptr(OldScrSeg, 0);
 	//else { AlignParagraph(); p = GetStore(n); }
 	//Move(ptr(ScrSeg, 0), p, n);
@@ -138,7 +138,7 @@ void RdPrinter(FILE* CfgHandle)
 	BYTE A[NPrintStrg * 256]{ '\0' };
 	ReadH(CfgHandle, 1, &prMax);
 
-	for (integer j = 0; j < prMax; j++) {
+	for (short j = 0; j < prMax; j++) {
 		WORD n = 0;
 		size_t index = 0;
 		for (int i = 0; i <= NPrintStrg; i++) {
@@ -392,9 +392,9 @@ void InitRunFand()
 	FILE* h = nullptr;
 	std::string s;
 	BYTE nb, sec = 0;
-	integer j, MsgNr;
+	short j, MsgNr;
 	TMenuBoxS* mb = nullptr;
-	longint w = 0;
+	int w = 0;
 	void* p = nullptr;
 	WORD xofs = 1;
 	std::string txt;

@@ -18,10 +18,10 @@
 #include "../textfunc/textfunc.h"
 
 
-bool OldToNewCat(longint& FilSz)
+bool OldToNewCat(int& FilSz)
 {
-	struct stX { longint NRecs; WORD  RecLen; } x;
-	longint off, offNew;
+	struct stX { int NRecs; WORD  RecLen; } x;
+	int off, offNew;
 	BYTE a[91]; // budeme cislovat od 1, jako v Pascalu (a:array[1..90] of byte;)
 
 	auto result = false;
@@ -31,7 +31,7 @@ bool OldToNewCat(longint& FilSz)
 	if (x.RecLen != 106) return result;
 	x.RecLen = 107;
 	RdWrCache(WRITE, CFile->FF->Handle, cached, 0, 6, &x);
-	for (longint i = x.NRecs; i >= 1; i--) {
+	for (int i = x.NRecs; i >= 1; i--) {
 		off = 6 + (i - 1) * 106;
 		offNew = off + (i - 1);
 		RdWrCache(READ, CFile->FF->Handle, cached, off + 16, 90, a);
@@ -57,7 +57,7 @@ void ConvWinCp(unsigned char* pBuf, unsigned char* pKod, WORD L)
 void VarFixImp(ThFile* F1, CpOption Opt)
 {
 	pstring s;
-	longint pos;
+	int pos;
 	double r; WORD err;
 
 	F1->IsEOL = false;
@@ -326,10 +326,10 @@ void ExportTxt(CopyD* CD)
 
 		F2 = new ThFile(CD->Path2, CD->CatIRec2, m, 0, nullptr);
 		if (CD->HdFD != nullptr) {
-			longint n = 0;
+			int n = 0;
 			LinkLastRec(CD->HdFD, n, true);
 			pstring s = _ShortS(CD->HdF);
-			longint i = s.first('\r');
+			int i = s.first('\r');
 			if (i > 0) s[0] = i - 1;
 			F2->WrString(s);
 			F2->WrString("\r\n");
@@ -372,10 +372,10 @@ void ExportTxt(CopyD* CD)
 	}
 }
 
-void Cpy(FILE* h, longint sz, ThFile* F2)
+void Cpy(FILE* h, int sz, ThFile* F2)
 {
 	SeekH(h, 0);
-	longint i = 0;
+	int i = 0;
 	RunMsgOn('C', sz);
 	while (i < sz) {
 		WORD n;
@@ -402,7 +402,7 @@ void ExportFD(CopyD* CD)
 		SaveFiles();
 		md = NewLMode(CFile, RdMode);
 		F2 = new ThFile(CD->Path2, CD->CatIRec2, InOutMode::_outp, 0, nullptr);
-		longint n = XNRecs(CD->FD1->Keys);
+		int n = XNRecs(CD->FD1->Keys);
 
 		if (n == 0) {
 			delete F2;
@@ -650,10 +650,10 @@ void BackupM(Instr_backup* PD)
 
 void CheckFile(FileD* FD)
 {
-	struct stPrfx { longint NRecs; WORD RecLen; } Prfx;
+	struct stPrfx { int NRecs; WORD RecLen; } Prfx;
 	FILE* h = nullptr;
 	std::string d, n, e;
-	longint fs = 0;
+	int fs = 0;
 
 	TestMountVol(CPath[0]);
 
@@ -712,7 +712,7 @@ void CopyH(FILE* H, pstring Nm)
 	CPath = Nm;
 	CVol = "";
 	h2 = OpenH(CPath, _isoverwritefile, Exclusive);
-	longint sz = FileSizeH(H);
+	int sz = FileSizeH(H);
 	SeekH(H, 0);
 	while (sz > 0) {
 		if (sz > MaxLStrLen) n = MaxLStrLen;

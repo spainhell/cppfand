@@ -6,7 +6,7 @@
 
 bool IsCurrChpt();
 void ReleaseFilesAndLinksAfterChapter();
-bool RdFDSegment(WORD FromI, longint Pos);
+bool RdFDSegment(WORD FromI, int Pos);
 bool ChptDel();
 WORD ChptWriteCRec(); /* 0-O.K., 1-fail, 2-fail && undo*/
 bool PromptHelpName(WORD& N);

@@ -17,13 +17,13 @@
 WORD PrintDH;
 YRec Y;
 bool FrstBlk, NoFF, WasFF2, SetPage, WasOutput;
-integer LineLenLst, PageNo, PgeSize;
+short LineLenLst, PageNo, PgeSize;
 void* Store2Ptr;
-longint RecCount;
+int RecCount;
 WORD NEof;
 InpD* MinID;
 bool FirstLines, WasDot;
-longint NLinesOutp;
+int NLinesOutp;
 
 
 void RunReport(RprtOpt* RO)
@@ -190,7 +190,7 @@ void NewLine(std::string& text)
 
 void FormFeed(std::string& text)
 {
-	integer I = 0;
+	short I = 0;
 	if (NoFF) NoFF = false;
 	else {
 		text += (char)0x0C; // ^L 012 0x0C Form feed
@@ -215,7 +215,7 @@ bool OutOfLineBound(BlkD* B)
 		|| B->AbsLine && (RunInt(B->LineNo) < RprtLine));
 }
 
-void WriteNBlks(std::string& text, integer N)
+void WriteNBlks(std::string& text, short N)
 {
 	if (N > 0) {
 		char buffer[256]{ '\0' };
@@ -283,14 +283,14 @@ std::string NewTxtCol(std::string S, WORD Col, WORD Width, bool Wrap)
 std::string GetLine(std::string& S, WORD Width, bool Wrap, bool& paragraph)
 {
 	WORD TAOff = 0;
-	integer j = 0, iWrdEnd = 0, i2WrdEnd = 0, wWrdEnd = 0, nWrdEnd = 0;
+	short j = 0, iWrdEnd = 0, i2WrdEnd = 0, wWrdEnd = 0, nWrdEnd = 0;
 	pstring s;
 	pstring s1;
 	char c = '\0';
-	integer i = 0; integer i2 = 0; integer w = 0;
+	short i = 0; short i2 = 0; short w = 0;
 
 	bool WasWrd = false;
-	integer nWords = 0;
+	short nWords = 0;
 	bool Fill = false;
 	while ((i < S.length()) && (i2 < 255)) {
 		c = S[TAOff + i];
@@ -336,17 +336,17 @@ label1:
 	}
 	TAOff += i;
 	S = S.erase(0, i); // TLen -= i;
-	integer l2 = i2;
+	short l2 = i2;
 	if (w < Width) l2 += (Width - w);
-	integer n = l2 - i2;
+	short n = l2 - i2;
 	if ((nWords <= 1) || (n == 0) || !Fill)
 	{
 		FillChar(&s[i2 + 1], n, ' ');
 		s[0] = (char)l2;
 	}
 	else {
-		integer n1 = n / (nWords - 1);
-		integer n2 = n % (nWords - 1);
+		short n1 = n / (nWords - 1);
+		short n2 = n % (nWords - 1);
 		s[0] = (char)i2;
 		s1 = s;
 		s[0] = (char)l2;
@@ -756,7 +756,7 @@ label1:
 void OpenInp()
 {
 	NRecsAll = 0;
-	for (integer i = 1; i <= MaxIi; i++) {
+	for (short i = 1; i <= MaxIi; i++) {
 		CFile = IDA[i]->Scan->FD;
 		if (IDA[i]->Scan->Kind == 5) IDA[i]->Scan->SeekRec(0);
 		else {
@@ -778,7 +778,7 @@ void CloseInp()
 	}
 }
 
-WORD CompMFlds(std::vector<ConstListEl>& C, KeyFldD* M, integer& NLv)
+WORD CompMFlds(std::vector<ConstListEl>& C, KeyFldD* M, short& NLv)
 {
 	XString x;
 	NLv = 0;
@@ -855,8 +855,8 @@ void PutMFlds(KeyFldD* M)
 
 void GetMinKey()
 {
-	integer i, nlv;
-	integer mini = 0; NEof = 0;
+	short i, nlv;
+	short mini = 0; NEof = 0;
 	for (i = 1; i <= MaxIi; i++) {
 		CFile = IDA[i]->Scan->FD;
 		if (IDA[i]->Scan->eof) NEof++;
@@ -896,7 +896,7 @@ void GetMinKey()
 
 void ZeroCount()
 {
-	for (integer i = 1; i <= MaxIi; i++) {
+	for (short i = 1; i <= MaxIi; i++) {
 		IDA[i]->Count = 0.0;
 	}
 }
@@ -950,7 +950,7 @@ void MoveForwToRec(InpD* ID)
 
 void MoveFrstRecs()
 {
-	for (integer i = 1; i <= MaxIi; i++) {
+	for (short i = 1; i <= MaxIi; i++) {
 		if (IDA[i]->Exist) MoveForwToRec(IDA[i]);
 		else {
 			CFile = IDA[i]->Scan->FD;
@@ -963,9 +963,9 @@ void MoveFrstRecs()
 
 void MergeProc(std::string& text)
 {
-	integer nlv = 0;
-	integer res = 0;
-	for (integer i = 1; i <= MaxIi; i++) {
+	short nlv = 0;
+	short res = 0;
+	for (short i = 1; i <= MaxIi; i++) {
 		InpD* ID = IDA[i];
 		/* !!! with ID^ do!!! */
 		{ if (ID->Exist) {

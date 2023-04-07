@@ -29,9 +29,9 @@ public:
 	WORD MatchPos = 0, MatchLen = 0; // set by InsertNode
 	BYTE CodeBuf[17]{ 0 }; // [0]=8 flags:"1"=unencoded byte,"0"=position/length word
 	TXBuf* XBuf = nullptr;
-	longint MyDiskFree(bool Floppy, BYTE Drive);
-	void InsertNode(integer r);
-	void DeleteNode(integer p);
+	int MyDiskFree(bool Floppy, BYTE Drive);
+	void InsertNode(short r);
+	void DeleteNode(short p);
 	void WriteCodeBuf();
 	void InitBufOutp();
 	virtual void WriteBuf(bool isLast);

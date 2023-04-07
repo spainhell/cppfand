@@ -1,18 +1,15 @@
 #pragma once
 #include <vector>
-
-#include "../cppfand/constants.h"
 #include "../cppfand/pstring.h"
 
 class KeyFldD;
 struct FrmlListEl;
 
-class XString // ø. 254
+class XString
 {
 public:
-	pstring S; // S:string255;
-	//BYTE S[256]{ 0 };
-	void Clear(); // index.pas ASM
+	pstring S;
+	void Clear();
 	void StoreReal(double R, KeyFldD* KF);
 	void StoreStr(std::string V, KeyFldD* KF);
 	void StoreBool(bool B, KeyFldD* KF);
@@ -21,15 +18,15 @@ public:
 	void PackKF(std::vector<KeyFldD*>& KF);
 	bool PackFrml(FrmlListEl* FL, KeyFldD* KF);
 #ifdef FandSQL
-	void GetF(WORD Off, WORD Len, bool Descend, void* Buf);
-	void GetD(WORD Off, bool Descend, void* R);
-	void GetN(WORD Off, WORD Len, bool Descend, void* Buf);
-	WORD GetA(WORD Off, WORD Len, bool CompLex, bool Descend, void* Buf);
+	void GetF(unsigned short Off, unsigned short Len, bool Descend, void* Buf);
+	void GetD(unsigned short Off, bool Descend, void* R);
+	void GetN(unsigned short Off, unsigned short Len, bool Descend, void* Buf);
+	unsigned short GetA(unsigned short Off, unsigned short Len, bool CompLex, bool Descend, void* Buf);
 #endif
 private:
-	void StoreD(void* R, bool descend); // index.pas r53 ASM
-	void StoreN(void* N, WORD len, bool descend); // index.pas r62 ASM
-	void StoreF(void* F, WORD len, bool descend); // index.pas r68 ASM
-	void StoreA(void* A, WORD len, bool compLex, bool descend); // index.pas r76 ASM
+	void StoreD(void* R, bool descend);
+	void StoreN(void* N, unsigned short len, bool descend);
+	void StoreF(void* F, unsigned short len, bool descend);
+	void StoreA(void* A, unsigned short len, bool compLex, bool descend);
 	void negate_esdi(void* data, size_t len);
 };

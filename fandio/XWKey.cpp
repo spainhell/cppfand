@@ -41,14 +41,14 @@ void XWKey::Release()
 	NR = 0;
 }
 
-void XWKey::ReleaseTree(longint Page, bool IsClose)
+void XWKey::ReleaseTree(int Page, bool IsClose)
 {
 	if ((Page == 0) || (Page > GetXFile()->MaxPage)) return;
 	auto p = std::make_unique<XPage>();
 	GetXFile()->RdPage(p.get(), Page);
 	if (!p->IsLeaf) {
-		WORD n = p->NItems;
-		for (WORD i = 1; i <= n; i++) {
+		unsigned short n = p->NItems;
+		for (unsigned short i = 1; i <= n; i++) {
 			XItemNonLeaf* item = (XItemNonLeaf*)p->GetItem(i);
 			ReleaseTree(item->DownPage, IsClose);
 			GetXFile()->RdPage(p.get(), Page);
@@ -65,14 +65,14 @@ void XWKey::ReleaseTree(longint Page, bool IsClose)
 	//ReleaseStore(p);
 }
 
-void XWKey::OneRecIdx(KeyFldD* KF, longint N)
+void XWKey::OneRecIdx(KeyFldD* KF, int N)
 {
 	Open(KF, true, false);
 	Insert(N, true);
 	NR++;
 }
 
-void XWKey::InsertAtNr(longint I, longint RecNr)
+void XWKey::InsertAtNr(int I, int RecNr)
 {
 	XString x;
 	x.PackKF(KFlds);
@@ -81,24 +81,24 @@ void XWKey::InsertAtNr(longint I, longint RecNr)
 	InsertOnPath(x, RecNr);
 }
 
-longint XWKey::InsertGetNr(longint RecNr)
+int XWKey::InsertGetNr(int RecNr)
 {
-	XString x; longint n;
+	XString x; int n;
 	NR++; x.PackKF(KFlds);
 	Search(x, true, n);
-	longint result = PathToNr();
+	int result = PathToNr();
 	InsertOnPath(x, RecNr);
 	return result;
 }
 
-void XWKey::DeleteAtNr(longint I)
+void XWKey::DeleteAtNr(int I)
 {
 	NrToPath(I);
 	DeleteOnPath();
 	NR--;
 }
 
-void XWKey::AddToRecNr(longint RecNr, integer Dif)
+void XWKey::AddToRecNr(int RecNr, short Dif)
 {
 	if (NRecs() == 0) return;
 	NrToPath(1);
@@ -106,10 +106,10 @@ void XWKey::AddToRecNr(longint RecNr, integer Dif)
 	size_t item = XPath[XPathN].I;
 	do {
 		GetXFile()->RdPage(p.get(), XPath[XPathN].Page);
-		integer n = p->NItems - XPath[XPathN].I + 1;
+		short n = p->NItems - XPath[XPathN].I + 1;
 		while (n > 0) {
 			XItem* x = p->GetItem(XPath[XPathN].I++);
-			longint nn = x->GetN();
+			int nn = x->GetN();
 			if (nn >= RecNr) {
 				x->PutN(nn + Dif);
 			}

@@ -133,7 +133,7 @@ FieldDescr* RdFieldDescr(std::string name, bool Stored)
 			L = RdInteger() + 2;
 		}
 		else L = 1;
-		NBytes = sizeof(longint);
+		NBytes = sizeof(int);
 		HasTT = true;
 	label2:
 		if (Stored && (Lexem == '!')) {
@@ -251,11 +251,11 @@ label1:
 void RdByteList(pstring* s)
 {
 	Accept('(');
-	integer l = 0;
+	short l = 0;
 
 	while (true) {
-		integer i1 = RdInteger();
-		integer i2 = i1;
+		short i1 = RdInteger();
+		short i2 = i1;
 		if (i1 < 0) OldError(133);
 		if (Lexem == _subrange) {
 			RdLex();
@@ -263,7 +263,7 @@ void RdByteList(pstring* s)
 			if (i2 < i1) OldError(133);
 		}
 		if ((i2 > 255) || (l + i2 - i1 >= 255)) OldError(133);
-		for (integer i = i1; i <= i2; i++) {
+		for (short i = i1; i <= i2; i++) {
 			l++;
 			(*s)[l] = (char)i;
 		}
@@ -525,7 +525,7 @@ void* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 #endif
 		//LDOld = LinkDRoot;
 
-		//	RdbD* rdb = nullptr; void* cr = nullptr; FileD* cf = nullptr; bool b = false; WORD i = 0; longint pos = 0;
+		//	RdbD* rdb = nullptr; void* cr = nullptr; FileD* cf = nullptr; bool b = false; WORD i = 0; int pos = 0;
 		//	if (Lexem != 0x1A) Accept(';');	rdb = CRdb; cr = CRecPtr; RdbD* r = FD->ChptPos.R;
 		//	if ((r == nullptr) || FD->IsDynFile) OldError(106); CRdb = r; i = FD->ChptPos.IRec;	CFile = CRdb->FD;
 		//	CRecPtr = CFile->RecPtr; CFile->ReadRec(i, CRecPtr); pos = _T(ChptOldTxt); if (pos <= 0) Error(25);
@@ -1087,7 +1087,7 @@ void GetXFileD()
 //	void* cr = nullptr;
 //	FileD* cf = nullptr;
 //	bool b = false;
-//	WORD i = 0; longint pos = 0;
+//	WORD i = 0; int pos = 0;
 //	if (Lexem != 0x1A) Accept(';');
 //	rdb = CRdb; cr = CRecPtr;
 //	RdbD* r = FD->ChptPos.R;

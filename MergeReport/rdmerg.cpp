@@ -29,7 +29,7 @@ FileD* InpFD_M(WORD I)
 
 FrmlElem* FindIiandFldFrml_M(FileD** FD, char& FTyp)
 {
-	integer i = 0;
+	short i = 0;
 	FrmlElem* z = nullptr;
 	if (!Join && (WhatToRd == 'i')) {   /* for Oi search first in Ii*/
 		*FD = InpFD_M(Oi); z = TryRdFldFrml(*FD, FTyp);
@@ -126,7 +126,7 @@ FrmlElem* RdFldNameFrmlM(char& FTyp)
 void RdDirFilVar_M(char& FTyp, FrmlElem** res, bool wasIiPrefix)
 {
 	LinkD* LD = nullptr; FileD* FD = nullptr;
-	integer I = 0;
+	short I = 0;
 	FrmlElem* Z = nullptr;
 	if (wasIiPrefix)
 	{
@@ -424,7 +424,7 @@ FieldDescr* FindIiandFldD(std::string fieldName)
 			return result;
 		}
 	}
-	for (integer i = 1; i <= MaxIi; i++) {    /* search in  I1 .. In, for Oi only I1 .. Ii*/
+	for (short i = 1; i <= MaxIi; i++) {    /* search in  I1 .. In, for Oi only I1 .. Ii*/
 		FileD* pFile = InpFD_M(i);
 		result = FindFldName(pFile, fieldName);
 		if (result != nullptr) {
@@ -553,7 +553,7 @@ void RdOutpRD(OutpRD** RDRoot)
 {
 	OutpRD* R = nullptr; FileD* FD = nullptr;
 	OutpFD* OD = nullptr; InpD* ID = nullptr;
-	integer I = 0;
+	short I = 0;
 
 	RD = new OutpRD();
 	if (*RDRoot == nullptr) *RDRoot = RD;

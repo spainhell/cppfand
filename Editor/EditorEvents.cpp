@@ -350,10 +350,10 @@ bool MyGetEvent(char& mode, BYTE SysLColor, std::string& LastS, WORD LastNr, boo
 void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS, WORD LastNr, std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys) {
 	wwmix wwmix1;
 	WORD I = 0, I1 = 0;
-	integer I2 = 0, I3 = 0;
+	short I2 = 0, I3 = 0;
 	FILE* F1 = nullptr;
 	WORD W1 = 0, W2 = 0;
-	longint L1 = 0, L2 = 0, fs = 0;
+	int L1 = 0, L2 = 0, fs = 0;
 	stEditorParams ep;
 	std::string ss;
 	int j = 0;
@@ -387,7 +387,7 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 				IndexT = SetInd(T, LenT, textIndex, positionOnActualLine);
 				ScrT = ((TextLineNr - ScreenFirstLineNr + 1) << 8) + positionOnActualLine - BPos;
 				LastTxtPos = IndexT; // +Part.PosP;
-				TxtXY = ScrT + ((longint)positionOnActualLine << 16);
+				TxtXY = ScrT + ((int)positionOnActualLine << 16);
 				if (X->Typ == 'Q') {
 					Event.Pressed.UpdateKey(key);
 					Konec = true; EditT = false;
@@ -413,7 +413,7 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 					sp->LL = (WORD)LenT;
 					if (TypeT == LocalT) {
 						TWork.Delete(*LocalPPtr);
-						LocalPPtr = (longint*)StoreInTWork(sp);
+						LocalPPtr = (int*)StoreInTWork(sp);
 					}
 					else if (UpdatT)
 					{
@@ -1047,7 +1047,7 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 				switch (TypeB) {
 				case TextBlock: {
 					do {
-						I2 = 0x1000; if (fs - L2 < longint(I2))  I2 = fs - L2;
+						I2 = 0x1000; if (fs - L2 < int(I2))  I2 = fs - L2;
 						if ((TypeT != FileT) && ((I2 >= MaxLenT - LenT) || (I2 >= StoreAvail()))) {
 							if (I2 >= StoreAvail()) {
 								I2 = StoreAvail();
@@ -1056,7 +1056,7 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 							WrLLF10Msg(404);
 						}
 						I1 = L1 + L2; // - Part.PosP;
-						//TestLenText(&T, LenT, I1, longint(I1) + I2);
+						//TestLenText(&T, LenT, I1, int(I1) + I2);
 						UpdatT = true;
 						//if (ChangePart) I1 -= Part.MovI;
 						SeekH(F1, L2); ReadH(F1, I2, &T[I1]); HMsgExit("");
@@ -1078,7 +1078,7 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 					MarkStore(P1);
 					sp = new LongStr(I2 + 2); //ww =BegBPos;}
 					do {
-						if (fs - L2 < (longint)I2) I2 = fs - L2;
+						if (fs - L2 < (int)I2) I2 = fs - L2;
 						SeekH(F1, L2); ReadH(F1, I2, sp->A); HMsgExit("");
 						L2 += I2; sp->LL = I2; BlockCDrop('R', P1, sp);
 					} while (L2 != fs);

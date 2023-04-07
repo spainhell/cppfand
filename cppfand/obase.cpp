@@ -199,14 +199,14 @@ void TestTxtHError(TextFile* F)
 	}
 }
 
-integer InputTxt(TextFile* F)
+short InputTxt(TextFile* F)
 {
 	F->bufend = ReadH(F->Handle, F->bufsize, F->buffer);
 	F->bufpos = 0;
 	TestTxtHError(F); return 0;
 }
 
-integer OutputTxt(TextFile* F)
+short OutputTxt(TextFile* F)
 {
 	/*void* p; WORD n; pstring s;
 	CharPtr x1; WORD absolute x1 x1ofs; CharPtr x2; WORD absolute x2 x2ofs;
@@ -228,7 +228,7 @@ integer OutputTxt(TextFile* F)
 	return 0;
 }
 
-integer OutputLPT1(TextFile* F)
+short OutputLPT1(TextFile* F)
 {
 	//CharPtr c; WORD absolute c COfs;
 	///* !!! with F do!!! */ {
@@ -239,25 +239,25 @@ integer OutputLPT1(TextFile* F)
 	return 0;
 }
 
-integer FlushTxt(TextFile* F)
+short FlushTxt(TextFile* F)
 {
 	return 0;
 }
 
-integer CloseTxt(TextFile* F)
+short CloseTxt(TextFile* F)
 {
 	CloseH(&F->Handle);
 	TestTxtHError(F);
 	return 0;
 }
 
-integer CloseLPT1(TextFile* F)
+short CloseLPT1(TextFile* F)
 {
 	if (!WasLPTCancel) PrintChar(0x0C);
 	return 0;
 }
 
-integer OpenTxt(TextFile* F)
+short OpenTxt(TextFile* F)
 {
 	/* !!! with F do!!! */
 	if (F->Mode == "rb" /*append*/) SeekH(F->Handle, FileSizeH(F->Handle));
@@ -270,7 +270,7 @@ integer OpenTxt(TextFile* F)
 	return 0;
 }
 
-integer OpenLPT1(TextFile* F)
+short OpenLPT1(TextFile* F)
 {
 	/* !!! with F do!!! */
 	// InOutFunc = @OutputLPT1; CloseFunc = @CloseLPT1;

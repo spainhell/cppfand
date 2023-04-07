@@ -2854,7 +2854,7 @@ void ReadDeclChpt()
 			}
 			else if (IsKeyWord("STRING")) {
 				typ = 'S';
-				n = sizeof(longint);
+				n = sizeof(int);
 			}
 			else if (IsKeyWord("BOOLEAN")) {
 				typ = 'B';
@@ -2955,7 +2955,7 @@ Instr* RdBackup(char MTyp, bool IsBackup)
 	void* cr = CRecPtr;
 	CFile = CatFD;
 	CRecPtr = GetRecSpace(CatFD->FF);
-	for (longint i = 1; i <= CatFD->FF->NRecs; i++) {
+	for (int i = 1; i <= CatFD->FF->NRecs; i++) {
 		CFile->ReadRec(i, CRecPtr);
 		if (EquUpCase(OldTrailChar(' ', _ShortS(CatRdbName)), "ARCHIVES")
 			&& EquUpCase(OldTrailChar(' ', _ShortS(CatFileName)), LexWord)) {

@@ -2,6 +2,7 @@
 #include <cstdio>
 #include "FandTFile.h"
 #include "FandXFile.h"
+#include "../Logging/Logging.h"
 
 enum class FileType
 {
@@ -32,12 +33,12 @@ public:
 	FandXFile* XF = nullptr;
 	FandTFile* TF = nullptr;
 
-	WORD FrstDispl = 0;
-	BYTE Drive = 0;           // 1=A, 2=B, else 0
+	unsigned short FrstDispl = 0;
+	unsigned char Drive = 0;           // 1=A, 2=B, else 0
 	FileUseMode UMode = Closed;
 	LockMode LMode = NullMode, ExLMode = NullMode, TaLMode = NullMode;
 
-	longint UsedFileSize();
+	int UsedFileSize();
 	bool IsShared();
 	bool NotCached();
 	bool Cached();

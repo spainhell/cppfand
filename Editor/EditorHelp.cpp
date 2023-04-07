@@ -21,7 +21,7 @@ void Help(RdbD* R, pstring Name, bool InCWw)
 	WORD i, l, l2; WORD iRec, oldIRec;
 	std::string s;
 	std::string s2;
-	integer delta;
+	short delta;
 	bool frst, byName, backw;
 	FileD* cf2;
 	WORD KbdChar = Event.Pressed.KeyCombination();
@@ -50,7 +50,7 @@ void Help(RdbD* R, pstring Name, bool InCWw)
 
 	MarkStore(p);
 	FileD* cf = CFile;
-	longint w = 0, w2 = 0;
+	int w = 0, w2 = 0;
 
 	try {
 		if (InCWw) {

@@ -568,7 +568,7 @@ std::string TMenuBoxS::GetHlpName()
 	return GetText(-1) + "_" + std::to_string(iTxt);
 }
 
-std::string TMenuBoxS::GetText(integer I)
+std::string TMenuBoxS::GetText(short I)
 {
 	// format: 'helpname/head/text1/text2/...'
 	std::string s = MsgTxt;
@@ -637,7 +637,7 @@ std::string TMenuBoxP::GetHlpName()
 	return helpName;
 }
 
-std::string TMenuBoxP::GetText(integer I)
+std::string TMenuBoxP::GetText(short I)
 {
 	if (I == 0) {
 		return HdTxt;
@@ -823,7 +823,7 @@ std::string TMenuBarS::GetHlpName()
 	return GetText(0) + "_" + s.c_str();
 }
 
-std::string TMenuBarS::GetText(integer I)
+std::string TMenuBarS::GetText(short I)
 {
 	std::string s = *MsgTxt;
 	return GetNthLine(s, I + 1, 1, '/');
@@ -892,7 +892,7 @@ std::string TMenuBarP::GetHlpName()
 	return helpName;
 }
 
-std::string TMenuBarP::GetText(integer I)
+std::string TMenuBarP::GetText(short I)
 {
 	ChoiceD* choice = getChoice(I);
 	return choice->Txt;
@@ -945,7 +945,7 @@ std::string GetHlpText(RdbD* R, std::string S, bool ByName, WORD& IRec)
 	FieldDescr* NmF = nullptr;
 	FieldDescr* TxtF = nullptr;
 	std::string Nm;
-	longint i = 0;
+	int i = 0;
 	TVideoFont fo;
 	//FileD* cf = nullptr;
 	void* p = nullptr;

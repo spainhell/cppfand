@@ -11,8 +11,8 @@
 #endif
 
 double Owned(FrmlElem* Bool, FrmlElem* Sum, LinkD* LD);
-integer CompBool(bool B1, bool B2);
-integer CompReal(double R1, double R2, integer M);
+short CompBool(bool B1, bool B2);
+short CompReal(double R1, double R2, short M);
 LongStr* CopyToLongStr(pstring& SS);
 LongStr* CopyToLongStr(std::string& SS);
 pstring LeadChar(char C, pstring S);
@@ -24,9 +24,9 @@ bool InStr(std::string& S, FrmlElemIn* X);
 bool RunModulo(FrmlElem1* X);
 bool RunEquMask(FrmlElem0* X);
 double RunReal(FrmlElem* X);
-longint RunInt(FrmlElem* X);
-bool CanCopyT(FieldDescr* F, FrmlElem* Z, FandTFile** TF02, FileD** TFD02, longint& TF02Pos);
-bool TryCopyT(FieldDescr* F, FandTFile* TF, longint& pos, FrmlElem1* Z);
+int RunInt(FrmlElem* X);
+bool CanCopyT(FieldDescr* F, FrmlElem* Z, FandTFile** TF02, FileD** TFD02, int& TF02Pos);
+bool TryCopyT(FieldDescr* F, FandTFile* TF, int& pos, FrmlElem1* Z);
 void AssgnFrml(FileD* file_d, void* record, FieldDescr* F, FrmlElem* X, bool Delete, bool Add);
 void LVAssignFrml(LocVar* LV, bool Add, FrmlElem* X);
 std::string DecodeFieldRSB(FieldDescr* F, WORD LWw, double R, std::string& T, bool B);
@@ -48,22 +48,22 @@ LongStr* RunS(FrmlElem* Z); // r469
 LongStr* RunSelectStr(FrmlElem0* Z); // r522
 void LowCase(LongStr* S); //543 ASM
 void LowCase(std::string& text);
-double RoundReal(double RR, integer M);
+double RoundReal(double RR, short M);
 LongStr* LongLeadChar(char C, char CNew, LongStr* S);
 LongStr* LongTrailChar(char C, char CNew, LongStr* S);
-LongStr* RepeatStr(LongStr* S, integer N);
+LongStr* RepeatStr(LongStr* S, short N);
 void AccRecNoProc(FrmlElem14* X, WORD Msg);
 void GetRecNoXString(FrmlElem13* Z, XString& X);
 double RunRealStr(FrmlElem* X);
 double RMod(FrmlElem0* X);
 double LastUpdate(const std::string& path);
 WORD TypeDay(double R);
-double AddWDays(double R, integer N, WORD d);
+double AddWDays(double R, short N, WORD d);
 
 double DifWDays(double R1, double R2, WORD d);
-longint GetFileSize();
-longint RecNoFun(FrmlElem13* Z);
-longint AbsLogRecNoFun(FrmlElem13* Z);
+int GetFileSize();
+int RecNoFun(FrmlElem13* Z);
+int AbsLogRecNoFun(FrmlElem13* Z);
 double LinkProc(FrmlElem15* X);
 WORD IntTSR(FrmlElem* X);
 WORD PortIn(bool IsWord, WORD Port);

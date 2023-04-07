@@ -60,9 +60,9 @@ void XWorkFile::CopyIndex(XKey* K, KeyFldD* KF, char Typ)
 	XPage* p = new XPage();
 
 	K->NrToPath(1);
-	longint page = XPath[XPathN].Page;
+	int page = XPath[XPathN].Page;
 	RunMsgOn(Typ, K->NRecs());
-	longint count = 0;
+	int count = 0;
 
 	while (page != 0) {
 		K->GetXFile()->RdPage(p, page);
@@ -104,8 +104,8 @@ void XWorkFile::Output(WRec* R)
 
 void XWorkFile::FinishIndex()
 {
-	longint sum = 0;
-	longint n = 0;
+	int sum = 0;
+	int n = 0;
 	XXPage* p = xxPage;
 
 	while (true) {

@@ -15,7 +15,7 @@ public:
 	std::string Dir;
 	std::string FName;
 	std::string Ext;
-    longint Size, OrigSize, SpaceOnDisk;
+    int Size, OrigSize, SpaceOnDisk;
 
     void TestErr();
     void Reset();

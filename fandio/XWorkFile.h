@@ -12,7 +12,7 @@ public:
 	XKey* xKey = nullptr;
 	XScan* xScan = nullptr;
 	bool msgWritten = false;
-	longint nextXPage = 0;
+	int nextXPage = 0;
 	XWFile* xwFile = nullptr;
 	XPage* xPage = nullptr;
 	void Main(char Typ);

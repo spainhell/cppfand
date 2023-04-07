@@ -53,7 +53,7 @@ struct TTerm {
 	int Idx = 0;
 	BYTE FunIdx = 0;
 	BYTE Arity = 0;
-	longint Pos = 0;
+	int Pos = 0;
 	TTerm* Arg[3]{ nullptr }; /*PPTerm*/
 	instr_type Op = _notdefined;
 	TTerm* E1 = nullptr;
@@ -63,7 +63,7 @@ struct TTerm {
 	TTerm* E[4]{ nullptr }; // puvodne 1..3
 	bool BB = false;
 	instr_type Op1 = _notdefined;
-	integer II = 0;
+	short II = 0;
 	instr_type Op2 = _notdefined;
 	double RR = 0.0;
 	instr_type Op3 = _notdefined;
@@ -85,7 +85,7 @@ public:
 	std::string Name;
 	TDomain* Dom = nullptr;
 	TTerm* term = nullptr;
-	integer Idx = 0;
+	short Idx = 0;
 	bool Bound = false;
 	bool Used = false;
 };
@@ -94,7 +94,7 @@ struct TWriteD : public Chained<TWriteD> {
 	// WORD pChain = 0; /*PWriteD*/
 	bool IsString = false;
 	std::string SS;
-	integer Idx = 0;
+	short Idx = 0;
 	TDomain* Dom = nullptr;
 };
 
@@ -120,7 +120,7 @@ struct TCommand {
 	WORD CompMask = 0; XKey* KDOfs = nullptr; BYTE ArgI[1]{ 0 }; /*only FAND-file*/
 	TWriteD* WrD = nullptr; /*PWriteD*/ bool NL = false;
 	WORD WrD1 = 0; WORD MsgNr = 0;
-	integer TrcLevel = 0;
+	short TrcLevel = 0;
 	TDomainTyp Typ; char CompOp = 0; WORD E1Idx = 0; TTerm* E2 = nullptr;/*PPTerm*/
 	TDatabase* DbPred = nullptr;  /* !_LoadLexC */
 	FileD* FD = nullptr; FieldDescr* FldD = nullptr;
@@ -183,7 +183,7 @@ struct TProgRoots {
 };
 
 //extern TVarDcl* VarDcls;
-extern integer VarCount;
+extern short VarCount;
 extern TDomain* IntDom;
 extern TDomain* RealDom;
 extern TDomain* StrDom;

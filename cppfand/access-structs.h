@@ -40,14 +40,14 @@ struct KeyInD : public Chained<KeyListEl>
 {
 	FrmlListEl* FL1 = nullptr;
 	FrmlListEl* FL2 = nullptr;
-	longint XNrBeg = 0, N = 0;
+	int XNrBeg = 0, N = 0;
 	std::string X1;
 	std::string X2;
 };
 
 struct structXPath
 {
-	longint Page = 0;
+	int Page = 0;
 	WORD I = 0;
 };
 
@@ -69,7 +69,7 @@ struct DBaseFld
 {
 	pstring Name;
 	char Typ = 0;
-	longint Displ = 0;
+	int Displ = 0;
 	BYTE Len = 0, Dec = 0;
 	BYTE x2[14];
 };
@@ -78,7 +78,7 @@ struct DBaseHd
 {
 	BYTE Ver = 0;
 	BYTE Date[4]{ 0,0,0,0 };
-	longint NRecs = 0;
+	int NRecs = 0;
 	WORD HdLen = 0, RecLen = 0;
 	DBaseFld Flds[1];
 };

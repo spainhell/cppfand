@@ -14,7 +14,7 @@
 #include "../fandio/directory.h"
 
 std::vector<std::string> paramstr;
-longint ExitCode = 0; // exit kód -> OS
+int ExitCode = 0; // exit kód -> OS
 void* ErrorAddr = nullptr; // adresa chyby
 void (*ExitProc)() { }; // ukončovací procedura
 BYTE OvrResult = 0; // vždy 0 OvrOK
@@ -40,7 +40,7 @@ void val(pstring s, WORD& b, WORD& err)
 	else { err = static_cast<WORD>(idx); }
 }
 
-void val(pstring s, integer& b, integer& err)
+void val(pstring s, short& b, short& err)
 {
 	if (s.empty()) return;
 	size_t idx;
@@ -48,7 +48,7 @@ void val(pstring s, integer& b, integer& err)
 		b = std::stoi(s.c_str(), &idx, 10);
 		// prelozil se cely retezec?
 		if (idx == s.length()) { err = 0; }
-		else { err = static_cast<integer>(idx); }
+		else { err = static_cast<short>(idx); }
 	}
 	catch (std::invalid_argument& e) {
 		b = 0;
@@ -56,14 +56,14 @@ void val(pstring s, integer& b, integer& err)
 	}
 }
 
-void val(pstring s, double& b, integer& err)
+void val(pstring s, double& b, short& err)
 {
 	size_t idx = 0;
 	try {
 		b = std::stod(s.c_str(), &idx);
 		// prelozil se cely retezec?
 		if (idx == s.length()) { err = 0; }
-		else { err = static_cast<integer>(idx); }
+		else { err = static_cast<short>(idx); }
 	}
 	catch (std::invalid_argument& e) {
 		b = 0;
@@ -90,7 +90,7 @@ void val(pstring s, double& b, WORD& err)
 	}
 }
 
-void val(pstring s, longint& b, WORD& err)
+void val(pstring s, int& b, WORD& err)
 {
 	if (s.length() == 0) { err = 1;	return;	}
 	size_t idx = 0;
@@ -106,7 +106,7 @@ void val(pstring s, longint& b, WORD& err)
 	}
 }
 
-void val(pstring s, longint& b, integer& err)
+void val(pstring s, int& b, short& err)
 {
 	if (s.length() == 0) { err = 1;	return; }
 	size_t idx = 0;
@@ -122,7 +122,7 @@ void val(pstring s, longint& b, integer& err)
 	}
 }
 
-double valDouble(std::string& s, integer& err)
+double valDouble(std::string& s, short& err)
 {
 	if (s.length() == 0) {
 		err = 0;
@@ -453,7 +453,7 @@ WORD ParamCount()
 	return (WORD)paramstr.size();
 }
 
-pstring ParamStr(integer index)
+pstring ParamStr(short index)
 {
 	if (index >= paramstr.size()) return "";
 	pstring ptmp = paramstr[index].c_str();

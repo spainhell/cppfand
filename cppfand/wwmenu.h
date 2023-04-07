@@ -30,7 +30,7 @@ public:
 	TPoint Orig;
 	TPoint Size;
 	TPoint Shadow;
-	longint SavedW = 0, SavedLLW = 0;
+	int SavedW = 0, SavedLLW = 0;
 	WORD State = 0;
 	bool WasCrsEnabled = false;
 	void Assign(BYTE C1, BYTE R1, BYTE C2, BYTE R2);
@@ -61,7 +61,7 @@ public:
 	bool FindChar(char c1);
 	virtual std::string GetHlpName() = 0;
 	virtual void GetItemRect(WORD I, TRect* R) = 0;
-	virtual std::string GetText(integer I) = 0;
+	virtual std::string GetText(short I) = 0;
 	void HandleEvent();
 	bool IsMenuBar();
 	void LeadIn(TPoint* T);
@@ -97,7 +97,7 @@ public:
 	bool Enabled(WORD I) override;
 	bool ExecItem(WORD& I) override;
 	std::string GetHlpName() override;
-	std::string GetText(integer I) override;
+	std::string GetText(short I) override;
 };
 
 class TMenuBoxP : public TMenuBox
@@ -109,7 +109,7 @@ public:
 	bool Enabled(WORD I) override;
 	bool ExecItem(WORD& I) override;
 	std::string GetHlpName() override;
-	std::string GetText(integer I) override;
+	std::string GetText(short I) override;
 	void call();
 };
 
@@ -134,7 +134,7 @@ public:
 	std::string* MsgTxt;
 	bool GetDownMenu(TMenuBox** W) override;
 	std::string GetHlpName() override;
-	std::string GetText(integer I) override;
+	std::string GetText(short I) override;
 };
 
 class TMenuBarP : public TMenuBar
@@ -147,7 +147,7 @@ public:
 	bool ExecItem(WORD& I) override;
 	bool GetDownMenu(TMenuBox** W) override;
 	std::string GetHlpName() override;
-	std::string GetText(integer I) override;
+	std::string GetText(short I) override;
 };
 
 WORD Menu(WORD MsgNr, WORD IStart);

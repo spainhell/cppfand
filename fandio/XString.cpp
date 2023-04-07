@@ -13,16 +13,16 @@ void XString::Clear()
 
 void XString::StoreReal(double R, KeyFldD* KF)
 {
-	BYTE A[20];
+	unsigned char A[20];
 	// pole urcuje pocet Bytu, ve kterych bude ulozeno cislo
-	const BYTE TabF[18] = { 1, 1, 2, 2, 3, 3, 4, 4, 4, 5, 5, 6, 6, 6, 7, 7, 8, 8 };
+	const unsigned char TabF[18] = { 1, 1, 2, 2, 3, 3, 4, 4, 4, 5, 5, 6, 6, 6, 7, 7, 8, 8 };
 	FieldDescr* X = KF->FldD;
 
 	if (X->field_type == FieldType::REAL || X->field_type == FieldType::DATE) {
 		bool b = KF->Descend;
 		if (R < 0) { b = !b; R = -R; }
 		auto r48 = DoubleToReal48(R);
-		BYTE date[6];
+		unsigned char date[6];
 		for (size_t i = 0; i < 6; i++) {
 			date[i] = r48[i];
 		}
@@ -30,7 +30,7 @@ void XString::StoreReal(double R, KeyFldD* KF)
 		return;
 	}
 	if ((X->Flg & f_Comma) == 0) R = R * Power10[X->M];
-	WORD n = X->L - 1;
+	unsigned short n = X->L - 1;
 	if (X->M > 0) n--;
 	n = TabF[n - 1];
 	FixFromReal(R, A, n);
@@ -39,7 +39,7 @@ void XString::StoreReal(double R, KeyFldD* KF)
 
 void XString::StoreStr(std::string V, KeyFldD* KF)
 {
-	WORD n = 0;
+	unsigned short n = 0;
 	FieldDescr* X = KF->FldD;
 	while (V.length() < X->L) {
 		if (X->M == LeftJust) {
@@ -174,7 +174,7 @@ void XString::StoreD(void* R, bool descend)
 	}
 }
 
-void XString::StoreN(void* N, WORD len, bool descend)
+void XString::StoreN(void* N, unsigned short len, bool descend)
 {
 	std::string inpStr((char*)N, len);
 	pstring inpPStr = inpStr;
@@ -186,7 +186,7 @@ void XString::StoreN(void* N, WORD len, bool descend)
 	S += inpPStr;
 }
 
-void XString::StoreF(void* F, WORD len, bool descend)
+void XString::StoreF(void* F, unsigned short len, bool descend)
 {
 	unsigned char* data = (unsigned char*)F;
 	unsigned char origLen = S[0];
@@ -210,7 +210,7 @@ void XString::StoreF(void* F, WORD len, bool descend)
 	}
 }
 
-void XString::StoreA(void* A, WORD len, bool compLex, bool descend)
+void XString::StoreA(void* A, unsigned short len, bool compLex, bool descend)
 {
 	int endSpaces = 0; // pocet mezer na konci retezce
 	char* p = (char*)A;

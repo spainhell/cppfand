@@ -4,10 +4,10 @@
 #include "oaccess.h"
 #include "../fandio/FandTFile.h"
 
-void GetTxtPrepare(FrmlElem* Z, FILE** h, longint& off, longint& len)
+void GetTxtPrepare(FrmlElem* Z, FILE** h, int& off, int& len)
 {
 	auto iZ = (FrmlElem16*)Z;
-	longint l = 0;
+	int l = 0;
 	off = 0;
 	if (iZ->PPPPPP1 != nullptr) { 
 		off = RunInt(iZ->PPPPPP1) - 1; 
@@ -39,7 +39,7 @@ void GetTxtPrepare(FrmlElem* Z, FILE** h, longint& off, longint& len)
 LongStr* GetTxt(FrmlElem* Z)
 {
 	FILE* h = nullptr;
-	longint len = 0, off = 0;
+	int len = 0, off = 0;
 	LongStr* s = nullptr;
 
 	GetTxtPrepare(Z, &h, off, len);
@@ -56,17 +56,17 @@ LongStr* GetTxt(FrmlElem* Z)
 	return s;
 }
 
-longint CopyTFFromGetTxt(FandTFile* TF, FrmlElem* Z)
+int CopyTFFromGetTxt(FandTFile* TF, FrmlElem* Z)
 {
 	LockMode md; 
-	longint len = 0, off = 0, pos = 0, nxtpos = 0; 
+	int len = 0, off = 0, pos = 0, nxtpos = 0; 
 	FILE* h = nullptr;
 	WORD n = 0, l = 0, i = 0; 
-	integer rest = 0;
+	short rest = 0;
 	BYTE X[MPageSize + 1]{ 0 };
 	WORD* ll = (WORD*)X; 
 	bool continued = false;
-	longint result = 0;
+	int result = 0;
 
 	GetTxtPrepare(Z, &h, off, len);
 	LastTxtPos = off + len;
@@ -120,7 +120,7 @@ label3:
 		ReadH(h, n, &X[i]);
 		i = 0;
 		nxtpos = TF->NewPage(false);
-		*(longint*)&X[MPageSize - 4] = nxtpos;
+		*(int*)&X[MPageSize - 4] = nxtpos;
 		RdWrCache(WRITE, TF->Handle, TF->NotCached(), pos, MPageSize, X);
 		pos = nxtpos;
 		l -= n;
@@ -135,20 +135,20 @@ label4:
 	return result;
 }
 
-longint CopyTFString(FandTFile* destT00File, FileD* srcFileDescr, FandTFile* scrT00File, longint srcT00Pos)
+int CopyTFString(FandTFile* destT00File, FileD* srcFileDescr, FandTFile* scrT00File, int srcT00Pos)
 {
 	//if (destT00File == scrT00File) {
 	//	throw std::exception("CopyTFString() exception: Source and destination file is same.");
 	//}
 	FileD* cf = nullptr;
 	WORD l = 0;
-	integer rest = 0;
+	short rest = 0;
 	bool isLongTxt = false, frst = false;
-	longint pos = 0, nxtpos = 0;
+	int pos = 0, nxtpos = 0;
 	LockMode md, md2;
 	BYTE X[MPageSize + 1]{ 0 };
 	WORD* ll = (WORD*)X;
-	longint result = 0;
+	int result = 0;
 
 	if (srcT00Pos == 0) {
 	label0:
@@ -204,9 +204,9 @@ label3:
 		frst = false;
 	}
 	if ((l > MPageSize) || isLongTxt) {
-		srcT00Pos = *(longint*)&X[MPageSize - 4];
+		srcT00Pos = *(int*)&X[MPageSize - 4];
 		nxtpos = destT00File->NewPage(false);
-		*(longint*)&X[MPageSize - 4] = nxtpos;
+		*(int*)&X[MPageSize - 4] = nxtpos;
 		RdWrCache(WRITE, destT00File->Handle, destT00File->NotCached(), pos, MPageSize, X);
 		pos = nxtpos;
 		CFile = srcFileDescr;
@@ -232,11 +232,11 @@ label4:
 	return result;
 }
 
-void CopyTFStringToH(FILE* h, FandTFile* TF02, FileD* TFD02, longint& TF02Pos)
+void CopyTFStringToH(FILE* h, FandTFile* TF02, FileD* TFD02, int& TF02Pos)
 {
 	WORD i = 0;
 	bool isLongTxt = false;
-	longint pos = 0;
+	int pos = 0;
 	size_t n = 0;
 	BYTE X[MPageSize + 1]{ 0 };
 	WORD* ll = (WORD*)X;
@@ -271,7 +271,7 @@ label3:
 		n = MPageSize - 4 - i;
 		if (n > l) n = l;
 		WriteH(h, n, &X[i]);
-		pos = *(longint*)&X[MPageSize - 4];
+		pos = *(int*)&X[MPageSize - 4];
 		if ((pos < MPageSize) || (pos + MPageSize > tf->MLen) || (pos % MPageSize != 0)) {
 			tf->Err(888, false);
 			goto label4;

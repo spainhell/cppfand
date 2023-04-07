@@ -1,11 +1,11 @@
 #include "XItemLeaf.h"
 
-XItemLeaf::XItemLeaf(BYTE* data)
+XItemLeaf::XItemLeaf(unsigned char* data)
 {
 	RecNr = *(int*)data & 0x00FFFFFF;
 	M = data[3];
 	L = data[4];
-	this->data = new BYTE[L];
+	this->data = new unsigned char[L];
 	memcpy(this->data, &data[5], L);
 }
 
@@ -14,16 +14,16 @@ XItemLeaf::XItemLeaf(const XItemLeaf& orig)
 	RecNr = orig.RecNr;
 	M = orig.M;
 	L = orig.L;
-	this->data = new BYTE[L];
+	this->data = new unsigned char[L];
 	memcpy(this->data, orig.data, L);
 }
 
-XItemLeaf::XItemLeaf(unsigned int RecNr, BYTE M, BYTE L, pstring& s)
+XItemLeaf::XItemLeaf(unsigned int RecNr, unsigned char M, unsigned char L, pstring& s)
 {
 	this->RecNr = RecNr;
 	this->M = M;
 	this->L = L;
-	this->data = new BYTE[L];
+	this->data = new unsigned char[L];
 	memcpy(this->data, &s[1 + M], L);
 
 #if _DEBUG
@@ -31,12 +31,12 @@ XItemLeaf::XItemLeaf(unsigned int RecNr, BYTE M, BYTE L, pstring& s)
 #endif
 }
 
-XItemLeaf::XItemLeaf(unsigned RecNr, BYTE M, BYTE L, std::string& s)
+XItemLeaf::XItemLeaf(unsigned RecNr, unsigned char M, unsigned char L, std::string& s)
 {
 	this->RecNr = RecNr;
 	this->M = M;
 	this->L = L;
-	this->data = new BYTE[L];
+	this->data = new unsigned char[L];
 	memcpy(this->data, &s.c_str()[M], L);
 
 #if _DEBUG
@@ -50,12 +50,12 @@ XItemLeaf::~XItemLeaf()
 	data = nullptr;
 }
 
-longint XItemLeaf::GetN()
+int XItemLeaf::GetN()
 {
 	return RecNr;
 }
 
-void XItemLeaf::PutN(longint N)
+void XItemLeaf::PutN(int N)
 {
 	this->RecNr = N;
 }
@@ -68,19 +68,19 @@ void XItemLeaf::PutN(longint N)
 //	return xi;
 //}
 
-size_t XItemLeaf::UpdStr(pstring* S)
-{
-	(*S)[0] = M + L; // nova delka retezce
-	memcpy(&(*S)[M + 1], data, L);
-	return L + 2;
-}
+//size_t XItemLeaf::UpdStr(pstring* S)
+//{
+//	(*S)[0] = M + L; // nova delka retezce
+//	memcpy(&(*S)[M + 1], data, L);
+//	return L + 2;
+//}
 
 size_t XItemLeaf::size()
 {
 	return 3 + 2 + L; // 3 cislo zaznamu, 2 L+M, delka zaznamu
 }
 
-size_t XItemLeaf::Serialize(BYTE* buffer, size_t bufferSize)
+size_t XItemLeaf::Serialize(unsigned char* buffer, size_t bufferSize)
 {
 	if (bufferSize < size()) return -1;
 	size_t offset = 0;

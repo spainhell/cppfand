@@ -26,15 +26,15 @@ struct YRec
 extern WORD PrintDH;
 extern YRec Y;
 extern bool FrstBlk, NoFF, WasFF2, SetPage, WasOutput;
-extern integer LineLenLst, PageNo, PgeSize;
+extern short LineLenLst, PageNo, PgeSize;
 extern void* Store2Ptr;
 
-//longint NRecsAll;
-extern longint RecCount;
+//int NRecsAll;
+extern int RecCount;
 extern WORD NEof;
 extern InpD* MinID;
 extern bool FirstLines, WasDot;
-extern longint NLinesOutp;
+extern int NLinesOutp;
 
 void RunReport(RprtOpt* RO);
 //void PrintPageHd; forward;
@@ -66,7 +66,7 @@ void Headings(LvDescr* L, LvDescr* L2, std::string& text);
 void ReadInpFile(InpD* ID);
 void OpenInp();
 void CloseInp();
-WORD CompMFlds(std::vector<ConstListEl>& C, KeyFldD* M, integer& NLv);
+WORD CompMFlds(std::vector<ConstListEl>& C, KeyFldD* M, short& NLv);
 void GetMFlds(std::vector<ConstListEl>& C, KeyFldD* M);
 void MoveMFlds(std::vector<ConstListEl>& C1, std::vector<ConstListEl>& C2);
 void PutMFlds(KeyFldD* M);

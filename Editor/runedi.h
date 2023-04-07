@@ -14,14 +14,14 @@ extern EFldD* CFld;
 WORD EditTxt(std::string& s, WORD pos, WORD maxlen, WORD maxcol, FieldType typ, bool del,
     bool star, bool upd, bool ret, WORD Delta); // r86
 
-longint CRec();
+int CRec();
 bool TestIsNewRec();
 void SetSelectFalse();
 void PopEdit();
 void WrEStatus();
 void RdEStatus();
-void SetNewCRec(longint N, bool withRead);
-void GotoRecFld(longint NewRec, EFldD* NewFld);
+void SetNewCRec(int N, bool withRead);
+void GotoRecFld(int NewRec, EFldD* NewFld);
 bool EditFreeTxt(FieldDescr* F, std::string ErrMsg, bool Ed, WORD& Brk);
 void DisplEditWw();
 bool OpenEditWw();

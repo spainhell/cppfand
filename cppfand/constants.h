@@ -1,14 +1,7 @@
 #pragma once
 
-enum LockMode {
-	NullMode = 0, NoExclMode = 1, NoDelMode = 2, NoCrMode = 3,
-	RdMode = 4, WrMode = 5, CrMode = 6, DelMode = 7, ExclMode = 8
-};
-
 typedef unsigned short WORD;
 typedef unsigned char BYTE;
-typedef int longint;
-typedef short integer;
 
 const BYTE FandFace = 17;
 const BYTE FloppyDrives = 2;
@@ -431,7 +424,7 @@ const WORD CrsTimeOn = 0x0003;
 const WORD CrsTimeOff = 0x0005;
 
 // *** BASE.H ***
-longint const UserLicNrShow = 999001; // 160188
+int const UserLicNrShow = 999001; // 160188
 const WORD FDVersion = 0x0411;
 const WORD ResVersion = 0x0420;
 const char CfgVersion[] = { '4', '.', '2', '0', '\0' };

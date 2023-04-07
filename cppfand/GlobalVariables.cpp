@@ -24,7 +24,7 @@ WORD XPathN;
 
 XWFile XWork;
 FandTFile TWork;
-longint ClpBdPos = 0;
+int ClpBdPos = 0;
 bool IsTestRun = false;
 bool IsInstallRun = false;
 FileD* Chpt = FileDRoot; // absolute FileDRoot;
@@ -38,13 +38,13 @@ pstring UserName = pstring(20);
 pstring UserPassWORD = pstring(20);
 pstring AccRight;
 bool EdUpdated = false;
-longint EdRecNo = 0;
+int EdRecNo = 0;
 pstring EdRecKey = "";
 pstring EdKey = pstring(32);
 bool EdOk = false;
 pstring EdField = pstring(32);
-longint LastTxtPos = 0;
-longint TxtXY = 0;
+int LastTxtPos = 0;
+int TxtXY = 0;
 // { consecutive WORD - sized / for formula access / }
 WORD RprtLine = 0; WORD RprtPage = 0; WORD PgeLimit = 0; // {report}
 WORD EdBreak = 0;

@@ -30,37 +30,37 @@ void TzFile::Close()
 	}
 }
 
-longint TzFile::GetWPtr()
+int TzFile::GetWPtr()
 {
-	longint result = WPos - WBase;
+	int result = WPos - WBase;
 	WPos += 4;
 	return result;
 }
 
-void TzFile::StoreWPtr(longint Pos, longint N)
+void TzFile::StoreWPtr(int Pos, int N)
 {
 	SeekH(WorkHandle, WBase + Pos);
 	WriteH(WorkHandle, 4, &N);
 }
 
-longint TzFile::StoreWStr(pstring s)
+int TzFile::StoreWStr(pstring s)
 {
 	SeekH(WorkHandle, WPos);
 	WriteH(WorkHandle, s.length() + 1, &s);
-	longint result = WPos - WBase;
+	int result = WPos - WBase;
 	WPos += s.length() + 1;
 	return result;
 }
 
-longint TzFile::ReadWPtr(longint Pos)
+int TzFile::ReadWPtr(int Pos)
 {
-	longint n;
+	int n;
 	SeekH(WorkHandle, WBase + Pos);
 	ReadH(WorkHandle, 4, &n);
 	return n;
 }
 
-pstring TzFile::ReadWStr(longint& Pos)
+pstring TzFile::ReadWStr(int& Pos)
 {
 	pstring s;
 	SeekH(WorkHandle, WBase + Pos);
@@ -70,9 +70,9 @@ pstring TzFile::ReadWStr(longint& Pos)
 	return s;
 }
 
-longint TzFile::StoreDirD(std::string RDir)
+int TzFile::StoreDirD(std::string RDir)
 {
-	longint result = GetWPtr();
+	int result = GetWPtr();
 	GetWPtr();
 	GetWPtr();
 	StoreWStr(RDir);
@@ -95,11 +95,11 @@ label1:
 		else RunError(703);
 }
 
-void TzFile::Get1Dir(StringList Msk, longint D, longint& DLast)
+void TzFile::Get1Dir(StringList Msk, int D, int& DLast)
 {
 	/*SearchRec SR;
 	PathStr p;
-	longint i, n;
+	int i, n;
 	pstring RDir;
 	StringList sl;
 
@@ -144,7 +144,7 @@ void TzFile::Get1Dir(StringList Msk, longint D, longint& DLast)
 
 void TzFile::GetDirs(LongStr* Mask)
 {
-	StringList slRoot, sl; pstring s; longint d, dLast; WORD l, i, j, n;
+	StringList slRoot, sl; pstring s; int d, dLast; WORD l, i, j, n;
 
 	slRoot = nullptr;
 	l = Mask->LL;
@@ -202,7 +202,7 @@ void TzFile::Rewrite()
 
 void TzFile::RdH(FILE* H, bool Skip)
 {
-	longint sz;
+	int sz;
 	BYTE* a = (BYTE*)&sz;
 
 	for (WORD i = 0; i <= 3; i++) {
@@ -220,13 +220,13 @@ void TzFile::RdH(FILE* H, bool Skip)
 	}
 }
 
-void TzFile::WrH(FILE* H, longint Sz)
+void TzFile::WrH(FILE* H, int Sz)
 {
 	Move(&Sz, Buf, 4);
 	WORD j = 4;
 	WORD max = BufSize - 4;
 	RunMsgOn('C', Sz);
-	longint i = 0;
+	int i = 0;
 	do {
 		WORD n;
 		if (Sz - i > max) n = max;
@@ -248,12 +248,12 @@ void TzFile::ProcFileList()
 	void* p = nullptr;
 	FILE* h = nullptr;
 
-	longint d = 0;
+	int d = 0;
 	MarkStore(p);
 	do {
-		longint dNext = ReadWPtr(d);
-		longint n = ReadWPtr(d + 8);
-		longint i = d + 12;
+		int dNext = ReadWPtr(d);
+		int n = ReadWPtr(d + 8);
+		int i = d + 12;
 		pstring RDir = ReadWStr(i);
 		SetDir(RDir);
 		i = ReadWPtr(d + 4);

@@ -65,7 +65,7 @@ void ReportProc(RprtOpt* RO, bool save)
 	//void* p = nullptr;
 	//void* p2 = nullptr;
 	char md = '\0';
-	longint w = 0;
+	int w = 0;
 	//ExitRecord er;
 	//MarkBoth(p, p2);
 	PrintView = false;
@@ -151,7 +151,7 @@ void AssignField(Instr_assign* PD)
 	CFile = PD->FD;
 	LockMode md = NewLMode(CFile, WrMode);
 	FieldDescr* F = PD->FldD;
-	longint N = RunInt(PD->RecFrml);
+	int N = RunInt(PD->RecFrml);
 	if ((N <= 0) || (N > CFile->FF->NRecs)) {
 		msg = 640;
 		goto label1;
@@ -361,7 +361,7 @@ void ExecPgm(Instr_exec* PD)
 	const Wind wmin = WindMin;
 	const Wind wmax = WindMax;
 	const TCrs crs = screen.CrsGet();
-	const longint w = PushW(1, 1, TxtCols, 1);
+	const int w = PushW(1, 1, TxtCols, 1);
 	WindMin = wmin;
 	WindMax = wmax;
 	screen.CrsSet(crs);
@@ -409,7 +409,7 @@ void IndexfileProc(FileD* FD, bool Compress)
 	CRecPtr = GetRecSpace(CFile->FF);
 	if (Compress) {
 		FileD* FD2 = OpenDuplF(false);
-		for (longint I = 1; I <= FD->FF->NRecs; I++) {
+		for (int I = 1; I <= FD->FF->NRecs; I++) {
 			CFile = FD;
 			CFile->ReadRec(I, CRecPtr);
 			if (!DeletedFlag(CFile->FF, CRecPtr)) {
@@ -472,7 +472,7 @@ std::string GetStr(FrmlElem* Z)
 
 void EditTxtProc(Instr_edittxt* PD)
 {
-	longint i = 0; WRect v;
+	int i = 0; WRect v;
 	WRect* pv = nullptr; BYTE a = 0;
 	std::string* lp = nullptr;
 	MsgStr MsgS; void* p = nullptr;
@@ -510,7 +510,7 @@ void PrintTxtProc(Instr_edittxt* PD)
 	LongStr* s = nullptr;
 	/* !!! with PD^ do!!! */
 	if (PD->TxtLV != nullptr) {
-		//s = TWork.Read(1, *(longint*)(uintptr_t(MyBP) + PD->TxtLV->BPOfs));
+		//s = TWork.Read(1, *(int*)(uintptr_t(MyBP) + PD->TxtLV->BPOfs));
 		PrintArray(s->A, s->LL, false);
 		ReleaseStore(s);
 	}
@@ -520,7 +520,7 @@ void PrintTxtProc(Instr_edittxt* PD)
 	}
 }
 
-bool SrchXKey(XKey* K, XString& X, longint& N)
+bool SrchXKey(XKey* K, XString& X, int& N)
 {
 	void* cr;
 	if (CFile->FF->file_type == FileType::INDEX) {
@@ -539,7 +539,7 @@ bool SrchXKey(XKey* K, XString& X, longint& N)
 
 void DeleteRecProc(Instr_recs* PD)
 {
-	longint n; XString x;
+	int n; XString x;
 	CFile = PD->RecFD;
 	CRecPtr = GetRecSpace(PD->RecFD->FF);
 	if (PD->ByKey) {
@@ -587,7 +587,7 @@ void AppendRecProc()
 	OldLMode(CFile, md);
 }
 
-void UpdRec(void* CR, longint N, bool AdUpd)
+void UpdRec(void* CR, int N, bool AdUpd)
 {
 	void* cr2 = GetRecSpace(CFile->FF);
 	CRecPtr = cr2;
@@ -616,7 +616,7 @@ void UpdRec(void* CR, longint N, bool AdUpd)
 
 void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 {
-	longint N = 0;
+	int N = 0;
 	bool app = false;
 	XString x;
 	WORD msg = 0;
@@ -714,7 +714,7 @@ label4:
 void LinkRecProc(Instr_assign* PD)
 {
 	void* p = nullptr; void* r2 = nullptr; void* lr2 = nullptr;
-	FileD* cf = nullptr; void* cr = nullptr; LinkD* ld = nullptr; longint n = 0;
+	FileD* cf = nullptr; void* cr = nullptr; LinkD* ld = nullptr; int n = 0;
 	cf = CFile; cr = CRecPtr; MarkStore(p);
 	ld = PD->LinkLD; CRecPtr = PD->RecLV1->RecPtr;
 	lr2 = PD->RecLV2->RecPtr;
@@ -902,7 +902,7 @@ void SetWwViewPort()
 void WithWindowProc(Instr_window* PD)
 {
 	BYTE PAttr = ProcAttr;
-	longint w1 = 0;
+	int w1 = 0;
 	WRect v;
 
 	ProcAttr = RunWordImpl(PD->Attr, screen.colors.uNorm); // nacte barvy do ProcAttr
@@ -922,7 +922,7 @@ void WithWindowProc(Instr_window* PD)
 void WithLockedProc(Instr_withshared* PD)
 {
 	LockD* ld;
-	longint w1;
+	int w1;
 	WORD msg;
 	pstring ntxt(10);
 	LockMode md;
@@ -933,7 +933,7 @@ void WithLockedProc(Instr_withshared* PD)
 			ld->N = RunInt(ld->Frml); ld = ld->Chain;
 		}
 	}
-	longint w = 0;
+	int w = 0;
 label1:
 	ld = &PD->WLD;
 	while (ld != nullptr) {
@@ -1020,7 +1020,7 @@ void PutTxt(Instr_puttxt* PD)
 
 	FileD* TFD02;
 	FandTFile* TF02;
-	longint TF02Pos;
+	int TF02Pos;
 
 	// TODO: this causes problem, file is never saved
 	// const bool canCopyT = false;
@@ -1119,7 +1119,7 @@ void RecallRecProc(Instr_recs* PD)
 {
 	CFile = PD->RecFD;
 	if (CFile->FF->file_type != FileType::INDEX) return;
-	longint N = RunInt(PD->RecNr);
+	int N = RunInt(PD->RecNr);
 	CRecPtr = GetRecSpace(CFile->FF);
 	LockMode md = NewLMode(CFile, CrMode);
 	if ((N > 0) && (N <= CFile->FF->NRecs)) {
@@ -1530,7 +1530,7 @@ void CallProcedure(Instr_proc* PD)
 	std::_Vector_iterator<std::_Vector_val<std::_Simple_types<LocVar*>>> it1;
 
 	WORD i = 0, j = 0, n = 0;
-	longint l = 0; Instr* pd1 = nullptr;
+	int l = 0; Instr* pd1 = nullptr;
 	FileD* lstFD = nullptr;
 	KeyFldD* kf1 = nullptr; KeyFldD* kf2 = nullptr;
 

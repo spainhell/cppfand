@@ -126,9 +126,9 @@ void AcceptPKeyWord(pstring s)
 	if (!IsKeyWordP(s)) { SetMsgPar(s); Error(33); }
 }
 
-integer RdIntegerP()
+short RdIntegerP()
 {
-	integer i = 0, j = 0;
+	short i = 0, j = 0;
 	if (Lexem != _number) Error(525);
 	val(LexWord, i, j);
 	RdLexP();
@@ -200,7 +200,7 @@ TVarDcl* FindVarDcl(const std::string name, std::vector<TVarDcl*>& Vars)
 	return var;
 }
 
-TVarDcl* MakeVarDcl(TDomain* D, integer Idx, std::vector<TVarDcl*>& Vars)
+TVarDcl* MakeVarDcl(TDomain* D, short Idx, std::vector<TVarDcl*>& Vars)
 {
 	TVarDcl* v = new TVarDcl();
 	v->Dom = D;
@@ -218,7 +218,7 @@ TVarDcl* MakeVarDcl(TDomain* D, integer Idx, std::vector<TVarDcl*>& Vars)
 
 TTerm* GetOp1(TDomain* D, instr_type Op, TTerm* E1);
 
-bool RdVar(TDomain* D, integer Kind, integer Idx, TTerm** RT, WORD* kind5idx, std::vector<TVarDcl*>& Vars) /*PTerm || idx*/
+bool RdVar(TDomain* D, short Kind, short Idx, TTerm** RT, WORD* kind5idx, std::vector<TVarDcl*>& Vars) /*PTerm || idx*/
 {
 	if (IsKeyWordP("_")) {
 		if (!(Kind >= 1 && Kind <= 4)) OldError(508);
@@ -306,8 +306,8 @@ bool RdVar(TDomain* D, integer Kind, integer Idx, TTerm** RT, WORD* kind5idx, st
 	return true;
 }
 
-TTerm* RdTerm(TDomain* D, integer Kind, std::vector<TVarDcl*>& Vars); /*PPTerm*/ // forward;
-TTerm* RdAddExpr(TDomain* D, integer Kind, std::vector<TVarDcl*>& Vars); /*PPTerm*/ // forward;
+TTerm* RdTerm(TDomain* D, short Kind, std::vector<TVarDcl*>& Vars); /*PPTerm*/ // forward;
+TTerm* RdAddExpr(TDomain* D, short Kind, std::vector<TVarDcl*>& Vars); /*PPTerm*/ // forward;
 
 prolog_func DomFun(TDomain* D)
 {
@@ -338,7 +338,7 @@ TTerm* GetOp2(TDomain* D, instr_type Op, TTerm* E1, TTerm* E2)
 	return t;
 }
 
-TTerm* GetFunOp(TDomain* D, TDomain* ResD, instr_type Op, std::string ArgTyp, integer Kind, std::vector<TVarDcl*>& Vars)
+TTerm* GetFunOp(TDomain* D, TDomain* ResD, instr_type Op, std::string ArgTyp, short Kind, std::vector<TVarDcl*>& Vars)
 {
 	TTerm* t = nullptr;
 	TTerm* t1 = nullptr;
@@ -368,12 +368,12 @@ TTerm* GetFunOp(TDomain* D, TDomain* ResD, instr_type Op, std::string ArgTyp, in
 	return t;
 }
 
-TTerm* RdPrimExpr(TDomain* D, integer Kind, std::vector<TVarDcl*>& Vars)
+TTerm* RdPrimExpr(TDomain* D, short Kind, std::vector<TVarDcl*>& Vars)
 {
 	TTerm* t = nullptr;
 	instr_type op = _notdefined;
 	bool minus = false; double r = 0.0;
-	pstring s; integer i = 0; longint n = 0;
+	pstring s; short i = 0; int n = 0;
 
 	// PtrRec(t).Seg = _Sg;
 	switch (Lexem) {
@@ -416,7 +416,7 @@ TTerm* RdPrimExpr(TDomain* D, integer Kind, std::vector<TVarDcl*>& Vars)
 			if (i == 0) Error(504);
 			s[0] = (char)i;
 			char* p;
-			n = (longint)strtoul(s.c_str(), &p, 16);
+			n = (int)strtoul(s.c_str(), &p, 16);
 			RdLexP();
 			goto label2;
 		}
@@ -439,7 +439,7 @@ TTerm* RdPrimExpr(TDomain* D, integer Kind, std::vector<TVarDcl*>& Vars)
 			if (minus) n = -n;
 		label2:
 			t = new TTerm();
-			//tofs = GetZStor(1 + 1 + sizeof(integer));
+			//tofs = GetZStor(1 + 1 + sizeof(short));
 			t->Fun = prolog_func::_IntT;
 			t->II = n;
 		}
@@ -482,7 +482,7 @@ TTerm* RdPrimExpr(TDomain* D, integer Kind, std::vector<TVarDcl*>& Vars)
 	return t;
 }
 
-TTerm* RdMultExpr(TDomain* D, integer Kind, std::vector<TVarDcl*>& Vars)
+TTerm* RdMultExpr(TDomain* D, short Kind, std::vector<TVarDcl*>& Vars)
 {
 	TTerm* t = RdPrimExpr(D, Kind, Vars);
 	while ((D != StrDom) && (D != LongStrDom) && ((Lexem == '*' || Lexem == '/') ||
@@ -495,7 +495,7 @@ TTerm* RdMultExpr(TDomain* D, integer Kind, std::vector<TVarDcl*>& Vars)
 	return t;
 }
 
-TTerm* RdAddExpr(TDomain* D, integer Kind, std::vector<TVarDcl*>& Vars)
+TTerm* RdAddExpr(TDomain* D, short Kind, std::vector<TVarDcl*>& Vars)
 {
 	TTerm* t = RdMultExpr(D, Kind, Vars);
 	while ((Lexem == '+') || (Lexem == '-') && ((D == IntDom) || (D == RealDom))) {
@@ -507,7 +507,7 @@ TTerm* RdAddExpr(TDomain* D, integer Kind, std::vector<TVarDcl*>& Vars)
 	return t;
 }
 
-TTerm* RdListTerm(TDomain* D, integer Kind, std::vector<TVarDcl*>& Vars)
+TTerm* RdListTerm(TDomain* D, short Kind, std::vector<TVarDcl*>& Vars)
 {
 	TTerm* t = nullptr;
 	TTerm* t1 = nullptr;
@@ -550,7 +550,7 @@ TTerm* RdListTerm(TDomain* D, integer Kind, std::vector<TVarDcl*>& Vars)
 	return t;
 }
 
-TTerm* RdTerm(TDomain* D, integer Kind, std::vector<TVarDcl*>& Vars)
+TTerm* RdTerm(TDomain* D, short Kind, std::vector<TVarDcl*>& Vars)
 {
 	TTerm* t = nullptr;
 	TFunDcl* f = nullptr;
@@ -668,7 +668,7 @@ void RdDomains()
 	std::vector<TDomain*> a;
 	std::string nm;
 	BYTE n = 0;
-	integer i = 0;
+	short i = 0;
 	//PtrRec(d).Seg = _Sg;
 	//PtrRec(fd).Seg = _Sg;
 label1:
@@ -831,7 +831,7 @@ void RdPredicateDcl(bool FromClauses, TDatabase* Db)
 	TFldList* fl = nullptr;
 	Instr_proc* ip = nullptr;
 	std::string nm; /*PString*/
-	integer n = 0;
+	short n = 0;
 	WORD w = 0, m = 0;
 	std::vector<TDomain*> a; /*PDomain*/
 	RdbPos pos;
@@ -982,7 +982,7 @@ label2:
 					z = new FrmlElem18(_getlocvar, 2); // GetOp(_getlocvar, 2);
 					//((FrmlElem18*)z)->BPOfs = bpOfs;
 					switch (typ) {
-					case 'S': bpOfs += sizeof(longint); break;
+					case 'S': bpOfs += sizeof(int); break;
 					case 'R': bpOfs += sizeof(double); break;
 					default: bpOfs += sizeof(bool); break;
 					}
@@ -998,7 +998,7 @@ label2:
 						//else {
 						//	z = new FrmlElem18(_getlocvar, 2); // GetOp(_getlocvar, 2);
 						//	//((FrmlElem18*)z)->BPOfs = bpOfs;
-						//	bpOfs += sizeof(longint);
+						//	bpOfs += sizeof(int);
 						//}
 						break;
 					}
@@ -1046,7 +1046,7 @@ TCommand* RdCommand(std::vector<TVarDcl*>& Vars) /*PCommand*/
 	TDomain* d = nullptr;
 	WORD n = 0;
 	pstring s;
-	integer i = 0;
+	short i = 0;
 
 	/*PtrRec(p).Seg = _Sg; c = ptr(_Sg, 0); PtrRec(w).Seg = _Sg; PtrRec(d).Seg = _Sg;
 	PtrRec(l).Seg = _Sg;*/
@@ -1442,7 +1442,7 @@ void RdDbTerm(TDomain* D)
 			val(s, n, i);
 			if (minus) n = -n;
 		label2:
-			*(integer*)p = n;
+			*(short*)p = n;
 			p += 2;
 		}
 		else {
@@ -1554,7 +1554,7 @@ void RdAutoRecursionHead(TPredicate* p, TBranch* b)
 	TDomain* d = nullptr;
 	TVarDcl* v = nullptr;
 	bool isInput = false;
-	integer i = 0, j = 0, k = 0;
+	short i = 0, j = 0, k = 0;
 	if (p->Opt != 0) Error(550);
 	//PtrRec(c).Seg = _Sg; PtrRec(l).Seg = _Sg; PtrRec(l1).Seg = _Sg;
 	//PtrRec(t).Seg = _Sg; PtrRec(d).Seg = _Sg;
@@ -1695,7 +1695,7 @@ label3:
 void RdClauses()
 {
 	TBranch* b = nullptr;
-	WORD w = 0, m = 0, mp = 0; integer i = 0, kind = 0;
+	WORD w = 0, m = 0, mp = 0; short i = 0, kind = 0;
 	bool iserr = false;
 	TDomain* d = nullptr;
 	TDomain* dEl = nullptr;
@@ -1929,7 +1929,7 @@ TProgRoots* ReadProlog(WORD RecNr)
 	RdbPos pos;
 	void* p1 = nullptr; void* p2 = nullptr; void* pp1 = nullptr;
 	void* pp2 = nullptr; void* pp3 = nullptr;
-	longint AA = 0;
+	int AA = 0;
 	WORD result = 0;
 
 	MarkBoth(p1, p2);

@@ -42,21 +42,21 @@ void* OCF(void* p) // ASM
 	return p;
 }
 
-longint UserW = 0;
+int UserW = 0;
 
 struct RdbRecVars
 {
 	char Typ = 0;
 	std::string Name;
 	std::string Ext;
-	longint Txt = 0; longint OldTxt = 0;
+	int Txt = 0; int OldTxt = 0;
 	FileType FTyp = FileType::UNKNOWN;
 	WORD CatIRec = 0;
 	bool isSQL = false;
 };
 
 FileD* CFileF = nullptr;
-longint sz = 0; WORD nTb = 0; void* Tb = nullptr;
+int sz = 0; WORD nTb = 0; void* Tb = nullptr;
 
 bool IsCurrChpt()
 {
@@ -263,7 +263,7 @@ void RenameWithOldExt(RdbRecVars New, RdbRecVars Old)
 WORD ChptWriteCRec()
 {
 	RdbRecVars New, Old;
-	integer eq;
+	short eq;
 	WORD result = 0;
 	if (!IsCurrChpt()) return result;
 	if (!TestIsNewRec()) {
@@ -327,7 +327,7 @@ label2:
 	return result;
 }
 
-bool RdFDSegment(WORD FromI, longint Pos)
+bool RdFDSegment(WORD FromI, int Pos)
 {
 	return false;
 }
@@ -432,7 +432,7 @@ void EditHelpOrCat(WORD cc, WORD kind, std::string txt)
 void StoreChptTxt(FieldDescr* F, LongStr* S, bool Del)
 {
 	LongStr* s2 = nullptr; void* p = nullptr;
-	WORD LicNr; longint oldpos, pos;
+	WORD LicNr; int oldpos, pos;
 	LicNr = ChptTF->LicenseNr;
 	oldpos = _T(F);
 	MarkStore(p);
@@ -525,7 +525,7 @@ void ResetRdOnly()
 void CreateOpenChpt(std::string Nm, bool create, wwmix* ww)
 {
 	std::string p; std::string s;
-	integer i = 0, n = 0;
+	short i = 0, n = 0;
 	std::string nr; std::string Nm1;
 	FileUseMode um = Closed;
 
@@ -663,7 +663,7 @@ FileD* FindFD()
 	return FD;
 }
 
-void Diagnostics(void* MaxHp, longint Free, FileD* FD)
+void Diagnostics(void* MaxHp, int Free, FileD* FD)
 {
 	std::string s1 = "---";
 	std::string s2 = "---";
@@ -683,7 +683,7 @@ bool CompRunChptRec(WORD CC)
 {
 	pstring STyp(1); void* p = nullptr; void* p2 = nullptr; void* MaxHp = nullptr;
 	EditD* OldE = nullptr;
-	RdbPos RP; longint Free; bool uw = false, mv = false;
+	RdbPos RP; int Free; bool uw = false, mv = false;
 	FileD* FD = nullptr;
 
 	EditOpt* EO = nullptr;
@@ -896,7 +896,7 @@ label1:
 	if (Chk) RunError(629);
 }
 
-WORD CompileMsgOn(CHAR_INFO* Buf, longint& w)
+WORD CompileMsgOn(CHAR_INFO* Buf, int& w)
 {
 	pstring s;
 	WORD result = 0;
@@ -922,7 +922,7 @@ WORD CompileMsgOn(CHAR_INFO* Buf, longint& w)
 	return result;
 }
 
-void CompileMsgOff(CHAR_INFO* Buf, longint& w)
+void CompileMsgOff(CHAR_INFO* Buf, int& w)
 {
 	if (w != 0) {
 		PopW(w);
@@ -932,7 +932,7 @@ void CompileMsgOff(CHAR_INFO* Buf, longint& w)
 	}
 }
 
-longint MakeDbfDcl(pstring Nm)
+int MakeDbfDcl(pstring Nm)
 {
 	DBaseHd Hd; DBaseFld Fd; WORD i, n;
 	FILE* h; LongStr* t; char c;
@@ -982,7 +982,7 @@ void* RdF(std::string FileName)
 	FileType FDTyp = FileType::UNKNOWN;
 	std::string s;
 	FieldDescr* IdF = nullptr; FieldDescr* TxtF = nullptr;
-	integer i = 0, n = 0;
+	short i = 0, n = 0;
 	std::string nr;
 	FSplit(FileName, d, name, ext);
 
@@ -997,7 +997,7 @@ void* RdF(std::string FileName)
 		SetInpStr(s);
 	}
 	else {
-		longint pos = _T(ChptTxt);
+		int pos = _T(ChptTxt);
 		SetInpTTPos(pos, CRdb->Encrypted);
 	}
 	return RdFileD(name, FDTyp, ext);
@@ -1104,7 +1104,7 @@ bool EquKeys(XKey* K1, XKey* K2)
 	return result;
 }
 
-bool MergeOldNew(bool Veriflongint, longint Pos)
+bool MergeOldNew(bool Veriflongint, int Pos)
 {
 	std::string Name;
 	std::deque<LinkD*> ld = LinkDRoot;
@@ -1146,8 +1146,8 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 	Logging* log = Logging::getInstance();
 	log->log(loglevel::DEBUG, "starting CompileRdb()");
 	CHAR_INFO Buf[40];
-	longint w = 0;
-	longint I = 0, J = 0, OldTxt = 0, Txt = 0, OldCRec = 0;
+	int w = 0;
+	int I = 0, J = 0, OldTxt = 0, Txt = 0, OldCRec = 0;
 	pstring STyp(1);
 	char Typ = '\0';
 	std::string Name, dir, nm, ext;
@@ -1383,7 +1383,7 @@ void GotoErrPos(WORD& Brk)
 	}
 	CFld = E->LastFld;
 	SetNewCRec(InpRdbPos.IRec, true);
-	R_(ChptTxtPos, integer(CurrPos));
+	R_(ChptTxtPos, short(CurrPos));
 	CFile->WriteRec(CRec(), CRecPtr);
 	EditFreeTxt(ChptTxt, s, true, Brk);
 }
@@ -1409,7 +1409,7 @@ bool EditExecRdb(std::string Nm, std::string proc_name, Instr_proc* proc_call, w
 	auto result = false;
 	bool top = CRdb == nullptr;
 	bool EscCode = false;
-	longint w = UserW; UserW = 0;
+	int w = UserW; UserW = 0;
 	bool wasGraph = IsGraphMode;
 #ifdef FandSQL
 	if (top) SQLConnect();
@@ -1578,7 +1578,7 @@ void UpdateCat()
 void UpdateUTxt()
 {
 	bool Upd;
-	longint Pos;
+	int Pos;
 	void* p = nullptr;
 	void* p1 = nullptr;
 	size_t LL;
@@ -1595,10 +1595,10 @@ void UpdateUTxt()
 		WrLLF10Msg(9);
 		return;
 	}
-	longint w = PushW(1, 1, TxtCols, TxtRows - 1);
+	int w = PushW(1, 1, TxtCols, TxtRows - 1);
 	WORD TxtPos = 1;
 	TextAttr = screen.colors.tNorm;
-	longint OldPos = _T(ChptTxt);
+	int OldPos = _T(ChptTxt);
 	LongStr* S = _LongS(ChptTxt);
 
 	if (CRdb->Encrypted) {

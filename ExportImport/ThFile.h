@@ -18,7 +18,7 @@ public:
 	InOutMode Mode = InOutMode::_inp;
 	bool Floppy = false, IsEOL = false, Continued = false;
 	//BYTE compress = 0;
-	longint Size = 0, OrigSize = 0, SpaceOnDisk = 0;
+	int Size = 0, OrigSize = 0, SpaceOnDisk = 0;
 	FileD* FD = nullptr;
 
 	//bool eof = false;
@@ -30,9 +30,9 @@ public:
 	void Delete();
 	char ForwChar();
 	char RdChar();
-	std::string RdDM(char Delim, integer Max);
+	std::string RdDM(char Delim, short Max);
 	std::string RdDelim(char Delim);
-	std::string RdFix(integer N);
+	std::string RdFix(short N);
 	std::string RdLongStr();
 	//void ReadBuf2();
 	//void Reset();

@@ -32,7 +32,7 @@ EFldD* CFld;
 EFldD* FirstEmptyFld;
 XKey* VK;
 XWKey* WK;
-longint BaseRec;
+int BaseRec;
 BYTE IRec;
 bool IsNewRec, Append, Select, WasUpdated, EdRecVar;
 bool AddSwitch, ChkSwitch, WarnSwitch, Subset, NoDelTFlds, WasWK;
@@ -101,7 +101,7 @@ void WriteStr(WORD& pos, WORD& base, WORD& maxLen, WORD& maxCol, BYTE sLen, std:
 WORD EditTxt(std::string& text, WORD pos, WORD maxlen, WORD maxcol, FieldType typ, bool del, bool star, bool upd, bool ret, WORD Delta)
 {
 	WORD base = 0, cx = 0, cy = 0, cx1 = 0, cy1 = 0;
-	longint EndTime = 0; bool InsMode = false;
+	int EndTime = 0; bool InsMode = false;
 	InsMode = true; base = 0;
 	bool delPreviousState = del;
 	if (pos > maxlen + 1) pos = maxlen + 1;
@@ -600,15 +600,15 @@ double PromptR(std::string& S, FrmlElem* Impl, FieldDescr* F)
 	return result;
 }
 
-longint CRec()
+int CRec()
 {
 	return BaseRec + IRec - 1;
 	//return 0;
 }
 
-longint CNRecs()
+int CNRecs()
 {
-	longint n = 0;
+	int n = 0;
 	if (EdRecVar) { return 1; }
 	if (Subset) n = WK->NRecs();
 	else {
@@ -624,12 +624,12 @@ longint CNRecs()
 /// </summary>
 /// <param name="N">Cislo polozky v indexovem souboru (poradi)</param>
 /// <returns>Cislo polozky v datovem souboru (poradi)</returns>
-longint AbsRecNr(longint N)
+int AbsRecNr(int N)
 {
 	Logging* log = Logging::getInstance();
 	//log->log(loglevel::DEBUG, "AbsRecNr(%i), CFile 0x%p", N, CFile->Handle);
 	LockMode md;
-	longint result = 0;
+	int result = 0;
 	if (EdRecVar
 #ifdef FandSQL
 		|| CFile->IsSQLFile
@@ -657,10 +657,10 @@ longint AbsRecNr(longint N)
 	return result;
 }
 
-longint LogRecNo(longint N)
+int LogRecNo(int N)
 {
 	LockMode md;
-	longint result = 0;
+	int result = 0;
 	if ((N <= 0) || (N > CFile->FF->NRecs)) return result;
 	md = NewLMode(CFile, RdMode);
 	CFile->ReadRec(N, CRecPtr);
@@ -681,7 +681,7 @@ bool IsSelectedRec(WORD I)
 	XString x;
 	auto result = false;
 	if ((E->SelKey == nullptr) || (I == IRec) && IsNewRec) return result;
-	longint n = AbsRecNr(BaseRec + I - 1);
+	int n = AbsRecNr(BaseRec + I - 1);
 	void* cr = CRecPtr;
 	if ((I == IRec) && WasUpdated) CRecPtr = E->OldRecPtr;
 	result = E->SelKey->RecNrToPath(x, n);
@@ -700,7 +700,7 @@ bool EquOldNewRec()
 /// Nejedna se o fyzicke cislo zaznamu v souboru
 /// </summary>
 /// <param name="N">kolikaty zaznam</param>
-void RdRec(longint N)
+void RdRec(int N)
 {
 	LockMode md; XString x;
 	if (EdRecVar) return;
@@ -760,7 +760,7 @@ bool CheckKeyIn(EditD* E)
 	return result;
 }
 
-bool ELockRec(EditD* E, longint N, bool IsNewRec, bool Subset)
+bool ELockRec(EditD* E, int N, bool IsNewRec, bool Subset)
 {
 	LockMode md;
 	auto result = true;
@@ -880,7 +880,7 @@ void DisplRec(WORD I)
 	EFldD* D = nullptr;
 	bool NewFlds = false;
 	WORD a = E->dNorm;
-	longint N = BaseRec + I - 1;
+	int N = BaseRec + I - 1;
 	bool IsCurrNewRec = IsNewRec && (I == IRec);
 	void* p = GetRecSpace(CFile->FF);
 	if ((N > CNRecs()) && !IsCurrNewRec) {
@@ -962,7 +962,7 @@ void SetCPage(WORD* c_page, ERecTxtD** rt)
 }
 
 
-void DisplRecNr(longint N)
+void DisplRecNr(int N)
 {
 	if (E->RecNrLen > 0) {
 		screen.GotoXY(E->RecNrPos, 1);
@@ -1256,9 +1256,9 @@ void MoveDispl(WORD From, WORD Where, WORD Number)
 	}
 }
 
-void SetNewCRec(longint N, bool withRead)
+void SetNewCRec(int N, bool withRead)
 {
-	longint Max, I;
+	int Max, I;
 	Max = E->NRecs; I = N - BaseRec + 1;
 	if (I > Max) { BaseRec += I - Max; IRec = Max; }
 	else if (I <= 0) { BaseRec -= abs(I) + 1; IRec = 1; }
@@ -1347,7 +1347,7 @@ void DuplOwnerKey()
 bool TestDuplKey(XKey* K)
 {
 	XString x;
-	longint N = 0;
+	int N = 0;
 	x.PackKF(K->KFlds);
 	return K->Search(x, false, N) && (IsNewRec || (E->LockedRec != N));
 }
@@ -1447,7 +1447,7 @@ void BuildWork()
 
 void SetStartRec()
 {
-	longint n = 0;
+	int n = 0;
 	KeyFldD* kf = nullptr;
 	XKey* k = VK;
 	if (Subset) k = WK;
@@ -1484,7 +1484,7 @@ void SetStartRec()
 bool OpenEditWw()
 {
 	LockMode md, md1, md2;
-	longint n = 0;
+	int n = 0;
 	auto result = false;
 	CFile = E->Journal;
 	if (CFile != nullptr) OpenCreateF(CFile, Shared);
@@ -1615,9 +1615,9 @@ void RefreshSubset()
 	OldLMode(CFile, md);
 }
 
-void GotoRecFld(longint NewRec, EFldD* NewFld)
+void GotoRecFld(int NewRec, EFldD* NewFld)
 {
-	longint NewIRec = 0, NewBase = 0, D = 0, Delta = 0;
+	int NewIRec = 0, NewBase = 0, D = 0, Delta = 0;
 	WORD i = 0, Max = 0; LockMode md;
 	IVoff();
 	CFld = NewFld;
@@ -1761,7 +1761,7 @@ void WrJournal(char Upd, void* RP, double Time)
 	size_t srcOffset = 0;
 	if (E->Journal != nullptr) {
 		WORD l = CFile->FF->RecLen;
-		longint n = AbsRecNr(CRec());
+		int n = AbsRecNr(CRec());
 		if (CFile->FF->XF != nullptr) {
 			srcOffset += 2;
 			l--;
@@ -1831,12 +1831,12 @@ bool LockWithDep(LockMode CfMd, LockMode MembMd, LockMode& OldMd)
 {
 	FileD* cf2 = nullptr;
 	bool b = false;
-	longint w1 = 0;
+	int w1 = 0;
 	LockMode md;
 	auto result = true;
 	if (EdRecVar) return result;
 	FileD* cf = CFile;
-	longint w = 0;
+	int w = 0;
 	LockForAdd(cf, 0, true, md);
 	LockForMemb(cf, 0, MembMd, md);
 label1:
@@ -1894,7 +1894,7 @@ void UndoRecord()
 				FieldDescr* f = CFile->FldD.front();
 				while (f != nullptr) {
 					if (((f->Flg & f_Stored) != 0) && (f->field_type == FieldType::TEXT))
-						*(longint*)((char*)(E->OldRecPtr) + f->Displ) = *(longint*)(((char*)(CRecPtr)+f->Displ));
+						*(int*)((char*)(E->OldRecPtr) + f->Displ) = *(int*)(((char*)(CRecPtr)+f->Displ));
 					f = f->pChain;
 				}
 			}
@@ -1943,7 +1943,7 @@ bool CleanUp()
 	return true;
 }
 
-bool DelIndRec(longint I, longint N)
+bool DelIndRec(int I, int N)
 {
 	auto result = false;
 	if (CleanUp()) {
@@ -1963,7 +1963,7 @@ bool DeleteRecProc()
 	Logging* log = Logging::getInstance();
 	//log->log(loglevel::DEBUG, "DeleteRecProc() deleting item (CFile '%c')", CFile->Name.c_str());
 
-	longint I = 0, J = 0, N = 0, oBaseRec = 0;
+	int I = 0, J = 0, N = 0, oBaseRec = 0;
 	WORD oIRec = 0;
 	bool Group = false, fail = false; LockMode OldMd;
 	bool b = false;
@@ -2236,7 +2236,7 @@ void UpwEdit(LinkD* LkD)
 	StringListEl* SL, * SL1;
 	LinkD* LD;
 	MarkStore(p);
-	longint w = PushW(1, 1, TxtCols, TxtRows, true, true);
+	int w = PushW(1, 1, TxtCols, TxtRows, true, true);
 	CFile->IRec = AbsRecNr(CRec());
 	WrEStatus();
 
@@ -2328,7 +2328,7 @@ void DisplChkErr(ChkD* C)
 	if (!C->Warning && (LD != nullptr) && ForNavigate(LD->ToFD) && CFld->Ed(IsNewRec)) {
 		FileD* cf = CFile;
 		void* cr = CRecPtr;
-		longint n = 0;
+		int n = 0;
 		bool b = LinkUpw(LD, n, false);
 		ReleaseStore(CRecPtr);
 		CFile = cf; CRecPtr = cr;
@@ -2416,11 +2416,11 @@ bool ExitCheck(bool MayDispl)
 	return result;
 }
 
-longint UpdateIndexes()
+int UpdateIndexes()
 {
-	longint N = 0;
+	int N = 0;
 	XString x;
-	longint NNew = E->LockedRec;
+	int NNew = E->LockedRec;
 	XWKey* KSel = E->SelKey;
 
 	if (IsNewRec) {
@@ -2486,7 +2486,7 @@ longint UpdateIndexes()
 
 bool WriteCRec(bool MayDispl, bool& Displ)
 {
-	longint N = 0, CNew = 0;
+	int N = 0, CNew = 0;
 	ImplD* ID = nullptr;
 	double time = 0.0;
 	LongStr* s = nullptr;
@@ -2614,7 +2614,7 @@ bool WriteCRec(bool MayDispl, bool& Displ)
 		}
 		case 2: {
 			// are old and new text positions same?
-			if ((*(longint*)((char*)E->OldRecPtr + ChptTxt->Displ) == *(longint*)((char*)CRecPtr + ChptTxt->Displ)) && PromptYN(157)) {
+			if ((*(int*)((char*)E->OldRecPtr + ChptTxt->Displ) == *(int*)((char*)CRecPtr + ChptTxt->Displ)) && PromptYN(157)) {
 				s = _LongS(ChptTxt);
 				TWork.Delete(ClpBdPos);
 				ClpBdPos = TWork.Store(s->A, s->LL);
@@ -2694,7 +2694,7 @@ void AppendRecord(void* RP)
 	NewRecExit();
 }
 
-bool GotoXRec(XString* PX, longint& N)
+bool GotoXRec(XString* PX, int& N)
 {
 	bool result = false;
 	LockMode md = NewLMode(CFile, RdMode);
@@ -2726,7 +2726,7 @@ EFldD* FindEFld(FieldDescr* F)
 	return D;
 }
 
-void CreateOrErr(bool create, void* RP, longint N)
+void CreateOrErr(bool create, void* RP, int N)
 {
 	if (create) {
 		if (N > CNRecs()) {
@@ -2745,7 +2745,7 @@ bool PromptSearch(bool create)
 {
 	auto result = false;
 	FieldDescr* F = nullptr;
-	longint n = 0;
+	int n = 0;
 	std::string s;
 	double r = 0.0;
 	bool b = false;
@@ -2762,7 +2762,7 @@ bool PromptSearch(bool create)
 	ZeroAllFlds(CFile, CRecPtr);
 	x.Clear();
 	bool li = F3LeadIn && !IsNewRec;
-	longint w = PushW(1, TxtRows, TxtCols, TxtRows, true, false);
+	int w = PushW(1, TxtRows, TxtCols, TxtRows, true, false);
 	if (KF == nullptr) {
 		result = true;
 		CRecPtr = E->NewRecPtr;
@@ -2918,7 +2918,7 @@ void PromptGotoRecNr()
 {
 	wwmix ww;
 
-	WORD I; std::string Txt; longint N; bool Del;
+	WORD I; std::string Txt; int N; bool Del;
 	I = 1; Txt = ""; Del = true;
 	do {
 		ww.PromptLL(122, Txt, I, Del);
@@ -2932,7 +2932,7 @@ void PromptGotoRecNr()
 void CheckFromHere()
 {
 	EFldD* D = CFld;
-	longint N = CRec();
+	int N = CRec();
 	LockMode md = NewLMode(CFile, RdMode);
 
 	while (true) {
@@ -3132,7 +3132,7 @@ bool ExNotSkipFld()
 
 bool CtrlMProc(WORD Mode)
 {
-	longint i = 0;
+	int i = 0;
 	bool b = false;
 	ChkD* C = nullptr;
 	EdExitD* X = nullptr;
@@ -3142,7 +3142,7 @@ bool CtrlMProc(WORD Mode)
 	LockMode md;
 	char Typ = '\0';
 
-	longint OldCRec = CRec();
+	int OldCRec = CRec();
 	EFldD* OldCFld = CFld;
 
 	auto result = true;
@@ -3262,10 +3262,10 @@ label2:
 	return result;
 }
 
-bool GoPrevNextRec(integer Delta, bool Displ)
+bool GoPrevNextRec(short Delta, bool Displ)
 {
-	longint i = 0; LockMode md; WORD w = 0, Max = 0;
-	longint OldBaseRec = 0;
+	int i = 0; LockMode md; WORD w = 0, Max = 0;
+	int OldBaseRec = 0;
 	auto result = false;
 	if (EdRecVar) return result;
 	md = NewLMode(CFile, RdMode);
@@ -3299,7 +3299,7 @@ label2:
 	SetNewCRec(i, false);
 	if (Displ) {
 		Max = E->NRecs;
-		longint D = BaseRec - OldBaseRec;
+		int D = BaseRec - OldBaseRec;
 		if (abs(D) > 0) {
 			DisplWwRecsOrPage(&CPage, &RT);
 			goto label3;
@@ -3321,15 +3321,15 @@ label4:
 	return result;
 }
 
-bool GetChpt(pstring Heslo, longint& NN)
+bool GetChpt(pstring Heslo, int& NN)
 {
 	pstring s(12);
 
-	for (longint j = 1; j <= CFile->FF->NRecs; j++) {
+	for (int j = 1; j <= CFile->FF->NRecs; j++) {
 		CFile->ReadRec(j, CRecPtr);
 		if (IsCurrChpt()) {
 			s = OldTrailChar(' ', _ShortS(ChptName));
-			integer i = s.first('.');
+			short i = s.first('.');
 			if (i > 0) s.Delete(i, 255);
 			if (EquUpCase(Heslo, s)) {
 				NN = j;
@@ -3350,7 +3350,7 @@ bool GetChpt(pstring Heslo, longint& NN)
 	return false;
 }
 
-void SetCRec(longint I)
+void SetCRec(int I)
 {
 	if (I > BaseRec + E->NRecs - 1) BaseRec = I - E->NRecs + 1;
 	else if (I < BaseRec) BaseRec = I;
@@ -3375,7 +3375,7 @@ void UpdateTxtPos(WORD TxtPos)
 	if (IsCurrChpt()) {
 		md = NewLMode(CFile, WrMode);
 		SetWasUpdated(CFile->FF, CRecPtr);
-		R_(ChptTxtPos, (integer)TxtPos);
+		R_(ChptTxtPos, (short)TxtPos);
 		OldLMode(CFile, md);
 	}
 }
@@ -3403,13 +3403,13 @@ bool EditFreeTxt(FieldDescr* F, std::string ErrMsg, bool Ed, WORD& Brk)
 	std::string HdTxt;
 	MsgStr TxtMsgS;
 	MsgStr* PTxtMsgS;
-	longint TxtXY = 0;
+	int TxtXY = 0;
 	WORD R1 = 0, OldTxtPos = 0, TxtPos = 0, CtrlMsgNr = 0, C = 0, LastLen = 0;
 	LongStr* S = nullptr;
-	char Kind = '\0'; LockMode md; void* p = nullptr; longint i = 0, w = 0;
+	char Kind = '\0'; LockMode md; void* p = nullptr; int i = 0, w = 0;
 	std::vector<EdExitD*> X;
 	WORD iStk = 0;
-	struct { longint N = 0; longint I = 0; } Stk[maxStk];
+	struct { int N = 0; int I = 0; } Stk[maxStk];
 	std::string heslo;
 
 	MarkStore(p);
@@ -3725,9 +3725,9 @@ void PromptSelect()
 	NewDisplLL = true;
 }
 
-void SwitchRecs(integer Delta)
+void SwitchRecs(short Delta)
 {
-	LockMode md; longint n1, n2; void* p1; void* p2; XString x1, x2;
+	LockMode md; int n1, n2; void* p1; void* p2; XString x1, x2;
 #ifdef FandSQL
 	if (CFile->IsSQLFile) return;
 #endif
@@ -3834,7 +3834,7 @@ void ImbeddEdit()
 	WORD Brk; StringListEl* SL = nullptr;
 	EditOpt* EO = nullptr;
 	FileD* FD = nullptr;
-	RdbD* R = nullptr; longint w = 0;
+	RdbD* R = nullptr; int w = 0;
 
 	MarkStore(p);
 	w = PushW(1, 1, TxtCols, TxtRows, true, true);
@@ -3903,7 +3903,7 @@ void DownEdit()
 	//LinkD* LD = LinkDRoot;
 	MarkStore(p);
 
-	longint w = PushW(1, 1, TxtCols, TxtRows, true, true);
+	int w = PushW(1, 1, TxtCols, TxtRows, true, true);
 	CFile->IRec = AbsRecNr(CRec());
 
 	WrEStatus();
@@ -4181,14 +4181,14 @@ void F6Proc()
 	}
 }
 
-longint GetEdRecNo()
+int GetEdRecNo()
 {
 	if (IsNewRec) return 0;
 	if (E->IsLocked) return E->LockedRec;
 	return AbsRecNr(CRec());
 }
 
-void SetEdRecNoEtc(longint RNr)
+void SetEdRecNoEtc(int RNr)
 {
 	XString x;
 	x.S = EdRecKey;
@@ -4256,7 +4256,7 @@ bool StartProc(Instr_proc* ExitProc, bool Displ)
 	if (HasTF) {
 		for (auto& f : CFile->FldD) {
 			if ((f->field_type == FieldType::TEXT) && ((f->Flg & f_Stored) != 0) &&
-				(*(longint*)(p + f->Displ) == *(longint*)(E->OldRecPtr) + f->Displ))
+				(*(int*)(p + f->Displ) == *(int*)(E->OldRecPtr) + f->Displ))
 				NoDelTFlds = true;
 		}
 		ReleaseStore(p);
@@ -4402,7 +4402,7 @@ void DisplCtrlAltLL(WORD Flags)
 void CtrlReadKbd()
 {
 	BYTE flgs = 0;
-	longint TimeBeg = TimerRE;
+	int TimeBeg = TimerRE;
 	WORD D = 0;
 
 	if (F1Mode && Mode24 && CRdb->HelpFD != nullptr) {
@@ -4490,7 +4490,7 @@ void CtrlReadKbd()
 
 void MouseProc()
 {
-	WORD i; longint n; EFldD* D; bool Displ;
+	WORD i; int n; EFldD* D; bool Displ;
 	for (i = 1; i <= E->NRecs; i++) {
 		n = BaseRec + i - 1; if (n > CNRecs()) goto label1;
 		D = E->FirstFld; while (D != nullptr) {
@@ -4518,7 +4518,7 @@ void ToggleSelectRec()
 {
 	XString x; LockMode md;
 	XWKey* k = E->SelKey;
-	longint n = AbsRecNr(CRec());
+	int n = AbsRecNr(CRec());
 	if (k->RecNrToPath(x, n)) {
 		k->NR--;
 		k->DeleteOnPath();
@@ -4564,9 +4564,9 @@ void RunEdit(XString* PX, WORD& Brk)
 	WORD i = 0, LongBeep = 0;
 	bool Displ = false, b = false;
 	EdExitD* X = nullptr;
-	longint OldTimeW = 0, OldTimeR = 0, n = 0;
+	int OldTimeW = 0, OldTimeR = 0, n = 0;
 	BYTE EdBr = 0;
-	longint Timer = 0; // pùvodnì: Timer:longint absolute 0:$46C;
+	int Timer = 0; // pùvodnì: Timer:int absolute 0:$46C;
 	WORD KbdChar;
 
 	Brk = 0;
@@ -4984,7 +4984,7 @@ label81:
 void EditDataFile(FileD* FD, EditOpt* EO)
 {
 	void* p = nullptr;
-	longint w1 = 0, w2 = 0, w3 = 0;
+	int w1 = 0, w2 = 0, w3 = 0;
 	WORD Brk = 0, r1 = 0, r2 = 0;
 	bool pix = false;
 	MarkStore(p);

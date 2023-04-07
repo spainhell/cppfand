@@ -33,7 +33,7 @@ void EditorScreen::EditWrline(char* input_text, size_t text_len, int Row, BYTE C
 	else {
 		nv2 = TxtColor;
 	}
-	integer i = 0;
+	short i = 0;
 	while (i < text_len && input_text[i] != '\0' && !(input_text[i] == _CR || input_text[i] == _LF) && i < LineMaxSize - 1) {
 		nv1 = input_text[i];
 		if (i < 0 || i > 255) throw std::exception("Index");
@@ -42,7 +42,7 @@ void EditorScreen::EditWrline(char* input_text, size_t text_len, int Row, BYTE C
 		i++;
 	}
 
-	integer LP = i - 1;  // index of last character (before CR)
+	short LP = i - 1;  // index of last character (before CR)
 	nv1 = ' ';
 
 	for (i = LP + 1; i <= BPos + LineS; i++) {
@@ -53,7 +53,7 @@ void EditorScreen::EditWrline(char* input_text, size_t text_len, int Row, BYTE C
 
 	if (_blocks->BegBLn <= _blocks->EndBLn) {
 		if (_blocks->LineBndBlock(Line) || ((TypeB == ColBlock) && _blocks->LineInBlock(Line))) {
-			integer B, E;
+			short B, E;
 			if ((_blocks->BegBLn == _blocks->LineAbs(Line)) || (TypeB == ColBlock)) {
 				B = MinI(_blocks->BegBPos, LineS + BPos + 1);
 			}
@@ -95,8 +95,8 @@ void EditorScreen::ScrollWrline(char* P, size_t offsetX, int Row, ColorOrd& CO, 
 	BYTE Col = Color(CO, ColKey, TxtColor);
 	nv2 = Col;
 
-	integer I = 0;
-	integer J = 0;
+	short I = 0;
+	short J = 0;
 	char cc = P[I];
 	while (cc != '\0' && !(cc == _CR || cc == _LF) && I < LineMaxSize && !InsPage) {
 		if (((BYTE)cc >= 32) || (GrafCtrl.count(cc) > 0)) {
@@ -114,7 +114,7 @@ void EditorScreen::ScrollWrline(char* P, size_t offsetX, int Row, ColorOrd& CO, 
 		cc = P[I];
 	}
 
-	integer LP = I - 1;   // index of last character (before CR)
+	short LP = I - 1;   // index of last character (before CR)
 	nv1 = ' ';
 
 	while (J < offsetX + LineS) {

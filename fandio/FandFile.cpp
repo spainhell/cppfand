@@ -15,9 +15,9 @@ FandFile::FandFile(const FandFile& orig)
 }
 
 
-longint FandFile::UsedFileSize()
+int FandFile::UsedFileSize()
 {
-	longint n = longint(NRecs) * RecLen + FrstDispl;
+	int n = int(NRecs) * RecLen + FrstDispl;
 	if (file_type == FileType::DBF) n++;
 	return n;
 }

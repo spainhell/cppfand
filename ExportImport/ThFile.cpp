@@ -128,7 +128,7 @@ label1:
 	return result;
 }
 
-std::string ThFile::RdDM(char Delim, integer Max)
+std::string ThFile::RdDM(char Delim, short Max)
 {
 	std::string s;
 	IsEOL = false;
@@ -163,7 +163,7 @@ std::string ThFile::RdDelim(char Delim)
 	return RdDM(Delim, 255);
 }
 
-std::string ThFile::RdFix(integer N)
+std::string ThFile::RdFix(short N)
 {
 	return RdDM('\r', N);
 }

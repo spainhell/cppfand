@@ -26,7 +26,7 @@ BYTE CurrChar; // { Compile }
 BYTE ForwChar, ExpChar, Lexem;
 pstring LexWord;
 
-void Error(integer N)
+void Error(short N)
 {
 	ReadMessage(1000 + N);
 	std::string ErrMsg = MsgLine;
@@ -57,7 +57,7 @@ void Error(integer N)
 	{
 		bool upd;
 		//MarkStore(p1);
-		longint w = PushW(1, 1, TxtCols, TxtRows);
+		int w = PushW(1, 1, TxtCols, TxtRows);
 		TextAttr = screen.colors.tNorm;
 		char* p = new char[l];
 		memcpy(p, InpArrPtr, l);
@@ -122,7 +122,7 @@ void SetInpLongStr(LongStr* S, bool ShowErr)
 
 // vycte z CFile->TF blok dat
 // nastavi InpArrPtr a InptArrLen - retezec pro zpracovani
-void SetInpTTPos(longint Pos, bool Decode)
+void SetInpTTPos(int Pos, bool Decode)
 {
 	LongStr* s = CFile->FF->TF->Read(Pos);
 	if (Decode) CodingLongStr(s);
@@ -133,7 +133,7 @@ void SetInpTTPos(longint Pos, bool Decode)
 	CurrPos = 0;
 }
 
-void SetInpTTPos(FileD* file, longint Pos, bool Decode)
+void SetInpTTPos(FileD* file, int Pos, bool Decode)
 {
 	LongStr* s = file->FF->TF->Read(Pos);
 	if (Decode) CodingLongStr(s);
@@ -146,7 +146,7 @@ void SetInpTTPos(FileD* file, longint Pos, bool Decode)
 
 void SetInpTT(RdbPos* RP, bool FromTxt)
 {
-	longint Pos = 0;
+	int Pos = 0;
 	FileD* CF = nullptr;
 	void* CR = nullptr;
 	LongStr* s = nullptr;
@@ -400,7 +400,7 @@ label1:
 	CurrChar = CC;
 }
 
-void OldError(integer N)
+void OldError(short N)
 {
 	CurrPos = OldErrPos;
 	Error(N);
@@ -537,9 +537,9 @@ void Accept(char X)
 	}
 }
 
-integer RdInteger()
+short RdInteger()
 {
-	integer I, J;
+	short I, J;
 	val(LexWord, I, J);
 	if (J != 0) Lexem = 0 /* != _number*/;
 	Accept(_number);
@@ -548,7 +548,7 @@ integer RdInteger()
 
 double ValofS(pstring& S)
 {
-	integer I = 0; double R = 0.0;
+	short I = 0; double R = 0.0;
 
 	val(S, R, I);
 	if (I != 0) {
@@ -924,7 +924,7 @@ label1:
 			newVars[0]->S = s;
 		}
 		typ = 'S';
-		sz = sizeof(longint);
+		sz = sizeof(int);
 	label2:
 		for (LocVar* locvar : newVars)
 		{
@@ -1650,7 +1650,7 @@ FrmlElem* RdComp(char& FTyp)
 {
 	pstring S;
 	BYTE* B = nullptr;
-	integer N = 0;
+	short N = 0;
 	FrmlElem* Z1 = nullptr;
 	FrmlElem* Z = RdAdd(FTyp);
 	Z1 = Z;
@@ -1883,7 +1883,7 @@ FrmlElem* RdPrim(char& FTyp)
 	instr_type FunCode = _notdefined;
 	FrmlElem* Z = nullptr; FrmlElem* Z1 = nullptr; FrmlElem* Z2 = nullptr; FrmlElem* Z3 = nullptr;
 	char Typ = '\0';
-	integer I = 0, N = 0; BYTE* B = nullptr;
+	short I = 0, N = 0; BYTE* B = nullptr;
 	pstring Options;
 
 	switch (Lexem) {
@@ -2408,7 +2408,7 @@ FrmlElem* RdStrFrml()
 //int ElemCount = 0;
 //int ElemTotalSize = 0;
 
-//FrmlPtr GetOp(BYTE Op, integer BytesAfter)
+//FrmlPtr GetOp(BYTE Op, short BytesAfter)
 //{
 //	WORD l = 0;
 //	if (Op < 0x60) l = 1;	// bude uložen jen "Op"

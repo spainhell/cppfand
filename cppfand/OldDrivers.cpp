@@ -27,7 +27,7 @@ TEvent Event; // r39
 BYTE KbdFlgs; // TODO: absolute $417
 //pstring KbdBuffer; // r. 83
 BYTE LLKeyFlags = 0; // r. 84
-integer GraphDriver, GraphMode;
+short GraphDriver, GraphMode;
 WORD ScrSeg, ScrGrSeg;
 BYTE NrVFont, BytesPerChar;
 bool ChkSnow;
@@ -367,7 +367,7 @@ label1:
 
 
 #ifdef Trial
-longint getSec()
+int getSec()
 {
 	WORD h, m, s, ss;
 	getTime(h, m, s, ss);
@@ -376,7 +376,7 @@ longint getSec()
 
 void TestTrial()
 {
-	longint now;
+	int now;
 	if ((trialStartFand = 0)) { trialStartFand = getSec(); trialInterval = 900; }
 	else {
 		now = getSec();
@@ -584,7 +584,7 @@ void ScrBeep()
 WORD WaitEvent(WORD Delta)
 {
 	ULONGLONG t = 0;
-	longint t1 = 0, pos = 0, l = 555;
+	int t1 = 0, pos = 0, l = 555;
 	BYTE Flgs = 0;
 	WORD x = 0, y = 0;
 	bool vis = false, ce = false;
@@ -703,17 +703,17 @@ void LineFeed()
 {
 }
 
-integer WrOutput(TextFile* F)
+short WrOutput(TextFile* F)
 {
 	return 0;
 }
 
-integer DummyCrt(TextFile* F)
+short DummyCrt(TextFile* F)
 {
 	return 0;
 }
 
-integer OpenCrt(TextFile* F)
+short OpenCrt(TextFile* F)
 {
 	/* !!! with F do!!! */
 	F->inoutfunc = WrOutput;

@@ -1,21 +1,21 @@
 #include "XItem.h"
 
-WORD XItem::GetM()
+unsigned short XItem::GetM()
 {
 	return M;
 }
 
-void XItem::PutM(WORD M)
+void XItem::PutM(unsigned short M)
 {
 	this->M = M;
 }
 
-WORD XItem::GetL()
+unsigned short XItem::GetL()
 {
 	return L;
 }
 
-void XItem::PutL(WORD L)
+void XItem::PutL(unsigned short L)
 {
 	this->L = L;
 }

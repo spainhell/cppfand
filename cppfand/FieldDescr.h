@@ -29,8 +29,8 @@ public:
 	bool field_flag = false;
 	char frml_type = 0;
 	BYTE L = 0, M = 0, NBytes = 0, Flg = 0;
-	// case boolean {Stored} of True:(Displ:integer); False:(Frml:FrmlPtr; Name:string[1]{ curr.length });
-	integer Displ = 0;
+	// case boolean {Stored} of True:(Displ:short); False:(Frml:FrmlPtr; Name:string[1]{ curr.length });
+	short Displ = 0;
 	FrmlElem* Frml = nullptr;
 	std::string Name;
 	std::string Mask; // added! mask for item 'A' or 'D'

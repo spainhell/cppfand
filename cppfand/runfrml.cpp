@@ -35,8 +35,8 @@ double Owned(FrmlElem* Bool, FrmlElem* Sum, LinkD* LD)
 	XKey* K = GetFromKey(LD);
 
 	if ((Bool == nullptr) && (Sum == nullptr) && !CFile->IsSQLFile) {
-		longint n;
-		longint nBeg;
+		int n;
+		int nBeg;
 		K->FindNr(x.S, nBeg);
 		x.S[0];
 		x.S[x.S.length()] = 0xFF;
@@ -72,14 +72,14 @@ double Owned(FrmlElem* Bool, FrmlElem* Sum, LinkD* LD)
 	return r;
 }
 
-integer CompBool(bool B1, bool B2)
+short CompBool(bool B1, bool B2)
 {
 	if (B1 > B2) return _gt;
 	if (B1 < B2) return _lt;
 	return _equ;
 }
 
-integer CompReal(double R1, double R2, integer M)
+short CompReal(double R1, double R2, short M)
 {
 	// porovname nejdriv celou cast
 	auto tR1 = trunc(R1);
@@ -153,7 +153,7 @@ double RunRealStr(FrmlElem* X)
 		auto valS = RunShortStr(iX->PP1);
 		valS = TrailChar(valS, ' ');
 		valS = LeadChar(valS, ' ');
-		integer i;
+		short i;
 		result = valDouble(valS, i);
 		break;
 	}
@@ -253,7 +253,7 @@ WORD TypeDay(double R)
 				return WDaysTab[i].Typ;
 			}
 	}
-	d = (longint)trunc(R) % 7;
+	d = (int)trunc(R) % 7;
 	switch (d) {
 	case 0: d = 2/*Su*/; break;
 	case 6: d = 1/*Sa*/; break;
@@ -262,7 +262,7 @@ WORD TypeDay(double R)
 	return d;
 }
 
-double AddWDays(double R, integer N, WORD d)
+double AddWDays(double R, short N, WORD d)
 {
 	if (N > 0) {
 		while ((N > 0) && (R <= 748383.0/*2050*/)) {
@@ -281,7 +281,7 @@ double AddWDays(double R, integer N, WORD d)
 
 double DifWDays(double R1, double R2, WORD d)
 {
-	integer N = 0;
+	short N = 0;
 	double x1 = R1; double x2 = R2;
 	bool neg = false;
 	if (x1 > x2) {
@@ -298,7 +298,7 @@ double DifWDays(double R1, double R2, WORD d)
 	return (int)N;
 }
 
-longint GetFileSize()
+int GetFileSize()
 {
 	TestMountVol(CPath[1]);
 	FileUseMode um = RdOnly;
@@ -312,10 +312,10 @@ longint GetFileSize()
 	return result;
 }
 
-longint RecNoFun(FrmlElem13* Z)
+int RecNoFun(FrmlElem13* Z)
 {
 	bool b = false;
-	longint n = 0;
+	int n = 0;
 	XString x;
 	GetRecNoXString(Z, x);
 	FileD* cf = CFile;
@@ -341,15 +341,15 @@ longint RecNoFun(FrmlElem13* Z)
 	return n;
 }
 
-longint AbsLogRecNoFun(FrmlElem13* Z)
+int AbsLogRecNoFun(FrmlElem13* Z)
 {
-	longint result = 0;
+	int result = 0;
 	void* p = nullptr;
 	FileD* cf = CFile;
 	void* cr = CRecPtr;
 	MarkStore(p);
 	XKey* k = Z->Key;
-	longint N = RunInt(Z->Arg[0]);
+	int N = RunInt(Z->Arg[0]);
 	if (N <= 0) return result;
 	CFile = Z->FFD;
 	LockMode md = NewLMode(CFile, RdMode);
@@ -380,7 +380,7 @@ label1:
 double LinkProc(FrmlElem15* X)
 {
 	void* p = nullptr;
-	longint N;
+	int N;
 	FileD* cf = CFile;
 	void* cr = CRecPtr;
 	MarkStore(p);
@@ -452,7 +452,7 @@ WORD IntTSR(FrmlElem* X)
 		case 'R': { p = &r; break; }
 		case 'S': {
 			ss = CopyToLongStr(s);
-			TWork.Delete((longint)p);
+			TWork.Delete((int)p);
 			auto tmp = TWork.Store(ss->A, ss->LL);
 			p = &tmp;
 			ReleaseStore(ss);
@@ -545,7 +545,7 @@ LocVar* RunUserFunc(FrmlElem19* X)
 
 bool RunBool(FrmlElem* X)
 {
-	longint RecNo;
+	int RecNo;
 	LongStr* S = nullptr;
 	WORD* w1 = (WORD*)&RecNo;
 	WORD* w2 = (WORD*)S;
@@ -827,7 +827,7 @@ bool InStr(std::string& S, FrmlElemIn* X)
 
 bool RunModulo(FrmlElem1* X)
 {
-	pstring S; integer I, M, N; WORD* B1 = nullptr; WORD* B1Offs = B1;
+	pstring S; short I, M, N; WORD* B1 = nullptr; WORD* B1Offs = B1;
 	N = X->W11;
 	S = RunShortStr(((FrmlElem0*)X)->P1);
 	if (S.length() != N) { return false; }
@@ -857,7 +857,7 @@ double RunReal(FrmlElem* X)
 	double R = 0.0;
 	FileD* cf = nullptr;
 	LockMode md;
-	longint RecNo = 0;
+	int RecNo = 0;
 	void* p = &RecNo;
 	void* cr = nullptr;
 #ifdef FandGraph
@@ -1162,17 +1162,17 @@ label1:
 	return result;
 }
 
-longint RunInt(FrmlElem* X)
+int RunInt(FrmlElem* X)
 {
 	auto rr = RunReal(X);
 	return trunc(rr);
 }
 
-void TestTFrml(FieldDescr* F, FrmlElem* Z, FandTFile** TF02, FileD** TFD02, longint& TF02Pos)
+void TestTFrml(FieldDescr* F, FrmlElem* Z, FandTFile** TF02, FileD** TFD02, int& TF02Pos)
 {
 	FileD* cf = nullptr;
 	void* p = nullptr;
-	longint n; LockMode md;
+	int n; LockMode md;
 	FieldDescr* f1 = nullptr;
 	switch (Z->Op) {
 	case _newfile: {
@@ -1204,7 +1204,7 @@ void TestTFrml(FieldDescr* F, FrmlElem* Z, FandTFile** TF02, FileD** TFD02, long
 		//if ((F != nullptr) && ((F->Flg & f_Encryp) != 0)) return;
 		//*TFD02 = CFile;
 		//*TF02 = &TWork;
-		//TF02Pos = (longint)((FrmlElem18*)Z)->locvar->R;
+		//TF02Pos = (int)((FrmlElem18*)Z)->locvar->R;
 		//break;
 	}
 	case _access: {
@@ -1236,7 +1236,7 @@ void TestTFrml(FieldDescr* F, FrmlElem* Z, FandTFile** TF02, FileD** TFD02, long
 	}
 }
 
-bool CanCopyT(FieldDescr* F, FrmlElem* Z, FandTFile** TF02, FileD** TFD02, longint& TF02Pos)
+bool CanCopyT(FieldDescr* F, FrmlElem* Z, FandTFile** TF02, FileD** TFD02, int& TF02Pos)
 {
 	FileD* cf = CFile;
 	void* cr = CRecPtr;
@@ -1251,13 +1251,13 @@ bool CanCopyT(FieldDescr* F, FrmlElem* Z, FandTFile** TF02, FileD** TFD02, longi
 	return result;
 }
 
-bool TryCopyT(FieldDescr* F, FandTFile* TF, longint& pos, FrmlElem* Z)
+bool TryCopyT(FieldDescr* F, FandTFile* TF, int& pos, FrmlElem* Z)
 {
 	LockMode md, md2;
 
 	FileD* TFD02;
 	FandTFile* TF02;
-	longint TF02Pos;
+	int TF02Pos;
 
 	bool result = false;
 	if (TF->Format == FandTFile::DbtFormat || TF->Format == FandTFile::FptFormat) return result;
@@ -1274,7 +1274,7 @@ bool TryCopyT(FieldDescr* F, FandTFile* TF, longint& pos, FrmlElem* Z)
 
 void AssgnFrml(FileD* file_d, void* record, FieldDescr* F, FrmlElem* X, bool Delete, bool Add)
 {
-	longint pos = 0;
+	int pos = 0;
 	switch (F->frml_type) {
 	case 'S': {
 		if (F->field_type == FieldType::TEXT) {
@@ -1503,7 +1503,7 @@ LongStr* RunLongStr(FrmlElem* X)
 	LongStr* S = nullptr;
 	bool b = false;
 	//WORD I = 0;
-	longint RecNo = 0;
+	int RecNo = 0;
 	FileD* cf = nullptr;
 	void* cr = nullptr;
 	void* p = &RecNo;
@@ -1519,7 +1519,7 @@ LongStr* RunLongStr(FrmlElem* X)
 			break;
 		}
 		case _getlocvar: {
-			//result = TWork.Read(1, *(longint*)(MyBP + ((FrmlElem18*)X)->BPOfs));
+			//result = TWork.Read(1, *(int*)(MyBP + ((FrmlElem18*)X)->BPOfs));
 			auto str = ((FrmlElem18*)X)->locvar->S;
 			result = new LongStr(max(256, str.length()));
 			result->LL = str.length();
@@ -1710,8 +1710,8 @@ LongStr* RunLongStr(FrmlElem* X)
 			ls->LL = lv->S.length();
 			memcpy(ls->A, lv->S.c_str(), lv->S.length());
 			result = ls;
-			/**L1 = *(longint*)(cr);
-			*(longint*)cr = 0;
+			/**L1 = *(int*)(cr);
+			*(int*)cr = 0;
 			cr = MyBP; PopProcStk();
 			ReleaseStore(cr);
 			result = TWork.Read(1, *L1);
@@ -1749,7 +1749,7 @@ std::string RunStdStr(FrmlElem* X)
 {
 	bool b = false;
 	WORD I = 0;
-	longint RecNo = 0;
+	int RecNo = 0;
 	FileD* cf = nullptr;
 	void* cr = nullptr;
 	std::string result;
@@ -2273,7 +2273,7 @@ void LowCase(std::string& text)
 	for (auto& c : text) { c = static_cast<char>(tolower(c)); }
 }
 
-double RoundReal(double RR, integer M)
+double RoundReal(double RR, short M)
 {
 	M = MaxI(0, MinI(M, 10));
 	double R = RR * Power10[M];
@@ -2316,7 +2316,7 @@ label1:
 	return S;
 }
 
-LongStr* RepeatStr(LongStr* S, integer N)
+LongStr* RepeatStr(LongStr* S, short N)
 {
 	WORD l = S->LL;
 	if (l == 0) return S;
@@ -2338,7 +2338,7 @@ void AccRecNoProc(FrmlElem14* X, WORD Msg)
 	CFile = X->RecFD;
 	LockMode md = NewLMode(CFile, RdMode);
 	CRecPtr = GetRecSpace(CFile->FF);
-	longint N = RunInt(X->PPPPP1);
+	int N = RunInt(X->PPPPP1);
 	if ((N <= 0) || (N > CFile->FF->NRecs)) {
 		SetMsgPar(CFile->Name, X->RecFldD->Name);
 		RunErrorM(md, Msg);

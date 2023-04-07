@@ -3,39 +3,38 @@
 #include "../cppfand/FileD.h"
 #include "../cppfand/GlobalVariables.h"
 #include "../cppfand/obaseww.h"
-#include "../Logging/Logging.h"
 #include "../pascal/random.h"
 #include "../pascal/real48.h"
 #include "../textfunc/textfunc.h"
 
 struct TT1Page
 {
-	WORD Signum = 0;
-	WORD OldMaxPage = 0;
-	longint FreePart = 0;
+	unsigned short Signum = 0;
+	unsigned short OldMaxPage = 0;
+	int FreePart = 0;
 	bool Rsrvd1 = false, CompileProc = false, CompileAll = false;
-	WORD IRec = 0;
+	unsigned short IRec = 0;
 	// potud se to nekoduje (13B)
 	// odtud jsou polozky prohnany XORem
-	longint FreeRoot = 0, MaxPage = 0;   /*eldest version=>array Pw[1..40] of char;*/
+	int FreeRoot = 0, MaxPage = 0;   /*eldest version=>array Pw[1..40] of char;*/
 	double TimeStmp = 0.0;
 	bool HasCoproc = false;
 	char Rsrvd2[25]{ '\0' };
 	char Version[4]{ '\0' };
-	BYTE LicText[105]{ 0 };
-	BYTE Sum = 0;
+	unsigned char LicText[105]{ 0 };
+	unsigned char Sum = 0;
 	char X1[295]{ '\0' };
-	WORD LicNr = 0;
+	unsigned short LicNr = 0;
 	char X2[11]{ '\0' };
 	char PwNew[40]{ '\0' };
-	BYTE Time = 0;
+	unsigned char Time = 0;
 
-	void Load(BYTE* input512);
-	void Save(BYTE* output512);
+	void Load(unsigned char* input512);
+	void Save(unsigned char* output512);
 };
 
 // nahraje nactenych 512B ze souboru do struktury
-void TT1Page::Load(BYTE* input512)
+void TT1Page::Load(unsigned char* input512)
 {
 	size_t index = 0;
 	memcpy(&Signum, &input512[index], 2); index += 2;
@@ -63,7 +62,7 @@ void TT1Page::Load(BYTE* input512)
 }
 
 // ulozi strukturu 512B do souboru
-void TT1Page::Save(BYTE* output512)
+void TT1Page::Save(unsigned char* output512)
 {
 	size_t index = 0;
 	memcpy(&output512[index], &Signum, 2); index += 2;
@@ -95,18 +94,18 @@ void TT1Page::Save(BYTE* output512)
 	if (index != 512) throw std::exception("Error in TT1Page::Load");
 }
 
-void RandIntByBytes(longint& nr)
+void RandIntByBytes(int& nr)
 {
-	BYTE* byte = (BYTE*)&nr;
+	unsigned char* byte = (unsigned char*)&nr;
 	for (size_t i = 0; i < 4; i++)
 	{
 		byte[i] = byte[i] ^ Random(255);
 	}
 }
 
-void RandWordByBytes(WORD& nr)
+void RandByteByBytes(unsigned short& nr)
 {
-	BYTE* byte = (BYTE*)&nr;
+	unsigned char* byte = (unsigned char*)&nr;
 	for (size_t i = 0; i < 2; i++) {
 		byte[i] = byte[i] ^ Random(255);
 	}
@@ -114,7 +113,7 @@ void RandWordByBytes(WORD& nr)
 
 void RandReal48ByBytes(double& nr)
 {
-	BYTE* byte = (BYTE*)&nr;
+	unsigned char* byte = (unsigned char*)&nr;
 	for (size_t i = 0; i < 6; i++) {
 		byte[i] = byte[i] ^ Random(255);
 	}
@@ -122,7 +121,7 @@ void RandReal48ByBytes(double& nr)
 
 void RandBooleanByBytes(bool& nr)
 {
-	BYTE* byte = (BYTE*)&nr;
+	unsigned char* byte = (unsigned char*)&nr;
 	for (size_t i = 0; i < sizeof(nr); i++) {
 		byte[i] = byte[i] ^ Random(255);
 	}
@@ -130,7 +129,7 @@ void RandBooleanByBytes(bool& nr)
 
 void RandArrayByBytes(void* arr, size_t len)
 {
-	BYTE* byte = (BYTE*)arr;
+	unsigned char* byte = (unsigned char*)arr;
 	for (size_t i = 0; i < len; i++) {
 		byte[i] = byte[i] ^ Random(255);
 	}
@@ -141,7 +140,7 @@ FandTFile::FandTFile(const FandTFile& orig)
 	Format = orig.Format;
 }
 
-void FandTFile::Err(WORD n, bool ex)
+void FandTFile::Err(unsigned short n, bool ex)
 {
 	if (IsWork) {
 		SetMsgPar(FandWorkTName);
@@ -159,10 +158,10 @@ void FandTFile::TestErr()
 	if (HandleError != 0) Err(700 + HandleError, true);
 }
 
-longint FandTFile::UsedFileSize()
+int FandTFile::UsedFileSize()
 {
 	if (Format == FptFormat) return FreePart * FptFormatBlockSize;
-	else return longint(MaxPage + 1) << MPageShft;
+	else return int(MaxPage + 1) << MPageShft;
 }
 
 bool FandTFile::NotCached()
@@ -178,12 +177,12 @@ bool FandTFile::Cached()
 void FandTFile::RdPrefix(bool Chk)
 {
 	TT1Page T;
-	longint* TNxtAvailPage = (longint*)&T; /* .DBT */
-	struct stFptHd { longint FreePart = 0; WORD X = 0, BlockSize = 0; }; /* .FPT */
+	int* TNxtAvailPage = (int*)&T; /* .DBT */
+	struct stFptHd { int FreePart = 0; unsigned short X = 0, BlockSize = 0; }; /* .FPT */
 	stFptHd* FptHd = (stFptHd*)&T;
-	BYTE sum = 0;
-	longint FS = 0, ML = 0, RS = 0;
-	WORD i = 0, n = 0;
+	unsigned char sum = 0;
+	int FS = 0, ML = 0, RS = 0;
+	unsigned short i = 0, n = 0;
 	if (Chk) {
 		FS = FileSizeH(Handle);
 		if (FS <= 512) {
@@ -195,7 +194,7 @@ void FandTFile::RdPrefix(bool Chk)
 			return;
 		}
 	}
-	BYTE header512[512];
+	unsigned char header512[512];
 	RdWrCache(READ, Handle, NotCached(), 0, 512, header512);
 	srand(RS);
 	LicenseNr = 0;
@@ -260,7 +259,7 @@ void FandTFile::RdPrefix(bool Chk)
 		RandArrayByBytes(T.LicText, 105);
 		RandArrayByBytes(&T.Sum, 1);
 		RandArrayByBytes(T.X1, 295);
-		RandWordByBytes(T.LicNr);
+		RandByteByBytes(T.LicNr);
 		RandArrayByBytes(T.X2, 11);
 		RandArrayByBytes(T.PwNew, 40);
 		PwCode = std::string(&T.PwNew[0], 20);
@@ -297,13 +296,13 @@ void FandTFile::WrPrefix()
 
 	switch (Format) {
 	case DbtFormat: {
-		longint* TNxtAvailPage = (longint*)&T;		/* .DBT */
+		int* TNxtAvailPage = (int*)&T;		/* .DBT */
 		memset(&T, ' ', sizeof(T));
 		*TNxtAvailPage = MaxPage + 1;
 		break;
 	}
 	case FptFormat: {
-		struct stFptHd { longint FreePart = 0; WORD X = 0, BlockSize = 0; }; /* .FPT */
+		struct stFptHd { int FreePart = 0; unsigned short X = 0, BlockSize = 0; }; /* .FPT */
 		stFptHd* FptHd = (stFptHd*)&T;
 		memset(&T, 0, sizeof(T));
 		(*FptHd).FreePart = SwapLong(FreePart);
@@ -311,9 +310,9 @@ void FandTFile::WrPrefix()
 		break;
 	}
 	case T00Format: {
-		longint RS = 0;
-		WORD n = 0;
-		WORD i = 0;
+		int RS = 0;
+		unsigned short n = 0;
+		unsigned short i = 0;
 		memset(&T, '@', sizeof(T));
 		std::string Pw = PwCode + Pw2Code;
 		Code(Pw);
@@ -340,13 +339,13 @@ void FandTFile::WrPrefix()
 		RandArrayByBytes(T.LicText, 105);
 		RandArrayByBytes(&T.Sum, 1);
 		RandArrayByBytes(T.X1, 295);
-		RandWordByBytes(T.LicNr);
+		RandByteByBytes(T.LicNr);
 		RandArrayByBytes(T.X2, 11);
 		RandArrayByBytes(T.PwNew, 40);
 
 		T.LicNr = LicenseNr;
 		if (LicenseNr != 0) {
-			BYTE sum = 0;
+			unsigned char sum = 0;
 			n = 0x6000;
 			sum = T.LicNr;
 			for (i = 0; i < 105; i++) sum += T.LicText[i];
@@ -372,15 +371,15 @@ void FandTFile::WrPrefix()
 	default:;
 	}
 
-	BYTE header512[512]{ 0 };
+	unsigned char header512[512]{ 0 };
 	T.Save(header512);
 	RdWrCache(WRITE, Handle, NotCached(), 0, 512, header512);
 }
 
 void FandTFile::SetEmpty()
 {
-	BYTE X[MPageSize];
-	integer* XL = (integer*)&X;
+	unsigned char X[MPageSize];
+	short* XL = (short*)&X;
 	switch (Format) {
 	case DbtFormat: {
 		MaxPage = 0;
@@ -423,11 +422,11 @@ void FandTFile::Create()
 	SetEmpty();
 }
 
-longint FandTFile::NewPage(bool NegL)
+int FandTFile::NewPage(bool NegL)
 {
-	longint PosPg;
-	BYTE X[MPageSize]{ 0 };
-	longint* L = (longint*)&X;
+	int PosPg;
+	unsigned char X[MPageSize]{ 0 };
+	int* L = (int*)&X;
 	if (FreeRoot != 0) {
 		PosPg = FreeRoot << MPageShft;
 		RdWrCache(READ, Handle, NotCached(), PosPg, 4, &FreeRoot);
@@ -454,7 +453,7 @@ longint FandTFile::NewPage(bool NegL)
 
 void FandTFile::ReleasePage(int PosPg)
 {
-	BYTE X[MPageSize]{ 0 };
+	unsigned char X[MPageSize]{ 0 };
 	*(__int32*)X = FreeRoot;
 	RdWrCache(WRITE, Handle, NotCached(), PosPg, MPageSize, X);
 	FreeRoot = PosPg >> MPageShft;
@@ -463,10 +462,10 @@ void FandTFile::ReleasePage(int PosPg)
 LongStr* FandTFile::Read(int Pos)
 {
 	LongStr* s = nullptr;
-	WORD i = 0, l = 0;
+	unsigned short i = 0, l = 0;
 	char* p = nullptr;
 	int offset = 0;
-	struct stFptD { longint Typ = 0, Len = 0; } FptD;
+	struct stFptD { int Typ = 0, Len = 0; } FptD;
 	Pos -= LicenseNr;
 	if (Pos <= 0 /*OldTxt=-1 in RDB!*/) {
 		s = new LongStr(l);
@@ -538,11 +537,11 @@ LongStr* FandTFile::Read(int Pos)
 	return s;
 }
 
-longint FandTFile::Store(char* s, size_t l)
+int FandTFile::Store(char* s, size_t l)
 {
-	longint pos = 0;
+	int pos = 0;
 	char X[MPageSize + 1]{ 0 };
-	struct stFptD { longint Typ = 0, Len = 0; } FptD;
+	struct stFptD { int Typ = 0, Len = 0; } FptD;
 
 	if (l == 0) {
 		return pos;
@@ -605,7 +604,7 @@ longint FandTFile::Store(char* s, size_t l)
 		N += l;
 		l = FreePart * FptFormatBlockSize - N;
 		if (l > 0) {
-			BYTE* p = new BYTE[l];
+			unsigned char* p = new unsigned char[l];
 			FillChar(p, l, ' ');
 			RdWrCache(WRITE, Handle, NotCached(), N, l, p);
 			ReleaseStore(p);
@@ -644,13 +643,13 @@ void FandTFile::Delete(int pos)
 	if (pos < MPageSize || pos >= eofPos)
 		return;								// mimo datovou oblast souboru
 
-	BYTE X[MPageSize]{ 0 };
+	unsigned char X[MPageSize]{ 0 };
 	__int32 posPg = (__int32)pos & (0xFFFFFFFF << MPageShft);
 	__int32 PosI = (__int32)pos & (MPageSize - 1);
 
 	RdWrCache(READ, Handle, NotCached(), posPg, MPageSize, X);
-	void* wp = (WORD*)&X[PosI];
-	__int32 l = *(WORD*)wp;
+	void* wp = (unsigned short*)&X[PosI];
+	__int32 l = *(unsigned short*)wp;
 
 	if (l <= MPageSize - 2) {
 		// small text on 1 page
@@ -682,7 +681,7 @@ void FandTFile::Delete(int pos)
 			goto label3;
 		}
 	label2:
-		l = *(WORD*)X;
+		l = *(unsigned short*)X;
 		if (l > MaxLStrLen + 1) {
 		label3:
 			Err(889, false);
@@ -713,10 +712,10 @@ void FandTFile::RdWr(FileOperation operation, size_t position, size_t count, cha
 {
 	Logging* log = Logging::getInstance();
 	// log->log(loglevel::DEBUG, "FandTFile::RdWr() 0x%p %s pos: %i, len: %i", Handle, ReadOp ? "read" : "write", position, count);
-	WORD L = 0;
+	unsigned short L = 0;
 	int NxtPg = 0;
 	int offset = 0;
-	WORD Rest = MPageSize - (WORD(position) & (MPageSize - 1));
+	unsigned short Rest = MPageSize - (unsigned short(position) & (MPageSize - 1));
 	while (count > Rest) {
 		L = Rest - 4;
 		RdWrCache(operation, Handle, NotCached(), position, L, &buffer[offset]);
@@ -742,16 +741,16 @@ void FandTFile::GetMLen()
 	MLen = (MaxPage + 1) << MPageShft;
 }
 
-WORD RdPrefix()
+unsigned short RdPrefix()
 {
 	// NRs - celkovy pocet zaznamu v souboru;
 	// RLen - delka 1 zaznamu
-	struct x6 { longint NRs = 0; WORD RLen = 0; } X6;
-	struct x8 { WORD NRs = 0, RLen = 0; } X8;
+	struct x6 { int NRs = 0; unsigned short RLen = 0; } X6;
+	struct x8 { unsigned short NRs = 0, RLen = 0; } X8;
 	struct xD {
-		BYTE Ver = 0; BYTE Date[3] = { 0,0,0 };
-		longint NRecs = 0;
-		WORD HdLen = 0; WORD RecLen = 0;
+		unsigned char Ver = 0; unsigned char Date[3] = { 0,0,0 };
+		int NRecs = 0;
+		unsigned short HdLen = 0; unsigned short RecLen = 0;
 	} XD;
 	auto result = 0xffff;
 	const bool not_cached = CFile->FF->NotCached();
@@ -805,13 +804,13 @@ void RdPrefixes()
 
 void WrDBaseHd()
 {
-	WORD m, d, w;
+	unsigned short m, d, w;
 	const char CtrlZ = '\x1a';
 
 	DBaseHd* P = new DBaseHd();
 	char* PA = (char*)&P; // PA:CharArrPtr absolute P;
 	FieldDescr* F = CFile->FldD.front();
-	WORD n = 0;
+	unsigned short n = 0;
 	while (F != nullptr) {
 		if ((F->Flg & f_Stored) != 0) {
 			n++;
@@ -838,7 +837,7 @@ void WrDBaseHd()
 		F = F->pChain;
 	}
 
-	WORD y;
+	unsigned short y;
 	if (CFile->FF->TF != nullptr) {
 		if (CFile->FF->TF->Format == FandTFile::FptFormat) P->Ver = 0xf5;
 		else P->Ver = 0x83;
@@ -847,9 +846,9 @@ void WrDBaseHd()
 
 	P->RecLen = CFile->FF->RecLen;
 	SplitDate(Today(), d, m, y);
-	P->Date[1] = BYTE(y - 1900);
-	P->Date[2] = (BYTE)m;
-	P->Date[3] = (BYTE)d;
+	P->Date[1] = unsigned char(y - 1900);
+	P->Date[2] = (unsigned char)m;
+	P->Date[3] = (unsigned char)d;
 	P->NRecs = CFile->FF->NRecs;
 	P->HdLen = CFile->FF->FrstDispl;
 	PA[(P->HdLen / 32) * 32 + 1] = m;
@@ -857,15 +856,15 @@ void WrDBaseHd()
 	bool cached = CFile->FF->NotCached();
 	RdWrCache(WRITE, CFile->FF->Handle, cached, 0, CFile->FF->FrstDispl, (void*)&P);
 	RdWrCache(WRITE, CFile->FF->Handle, cached,
-		longint(CFile->FF->NRecs) * CFile->FF->RecLen + CFile->FF->FrstDispl, 1, (void*)&CtrlZ);
+		int(CFile->FF->NRecs) * CFile->FF->RecLen + CFile->FF->FrstDispl, 1, (void*)&CtrlZ);
 
 	ReleaseStore(P);
 }
 
 void WrPrefix()
 {
-	struct { longint NRs; WORD RLen; } Pfx6 = { 0, 0 };
-	struct { WORD NRs; WORD RLen; } Pfx8 = { 0, 0 };
+	struct { int NRs; unsigned short RLen; } Pfx6 = { 0, 0 };
+	struct { unsigned short NRs; unsigned short RLen; } Pfx8 = { 0, 0 };
 
 	if (IsUpdHandle(CFile->FF->Handle))
 	{
@@ -873,7 +872,7 @@ void WrPrefix()
 		switch (CFile->FF->file_type) {
 		case FileType::FAND8: {
 			Pfx8.RLen = CFile->FF->RecLen;
-			Pfx8.NRs = static_cast<WORD>(CFile->FF->NRecs);
+			Pfx8.NRs = static_cast<unsigned short>(CFile->FF->NRecs);
 			RdWrCache(WRITE, CFile->FF->Handle, not_cached, 0, 2, &Pfx8.NRs);
 			RdWrCache(WRITE, CFile->FF->Handle, not_cached, 2, 2, &Pfx8.RLen);
 			break;

@@ -32,7 +32,7 @@ char UpcCharTab[256];
 WORD TxtCols = 80;
 WORD TxtRows = 25;
 
-integer prCurr, prMax;
+short prCurr, prMax;
 
 wdaystt WDaysTabType;
 WORD NWDaysTab;
@@ -60,7 +60,7 @@ std::string CVol;
 TResFile ResFile;
 std::vector<TMsgIdxItem> MsgIdx;
 WORD MsgIdxN;
-longint FrstMsgPos;
+int FrstMsgPos;
 
 WORD F10SpecKey; // r. 293
 BYTE ProcAttr;
@@ -77,10 +77,10 @@ WORD CachePageSize;
 void* AfterCatFD; // r108
 WORD BPBound; // r212
 bool ExitP, BreakP;
-longint LastExitCode = 0; // r215
+int LastExitCode = 0; // r215
 bool WasLPTCancel;
 FILE* WorkHandle;
-longint MaxWSize = 0; // {currently occupied in FANDWORK.$$$}
+int MaxWSize = 0; // {currently occupied in FANDWORK.$$$}
 Printer printer[10];
 TPrTimeOut OldPrTimeOut;
 TPrTimeOut PrTimeOut;  // absolute 0:$478;
@@ -133,7 +133,7 @@ long PosH(FILE* handle)
 	{
 		const long result = ftell(handle);
 		HandleError = ferror(handle);
-		return static_cast<longint>(result);
+		return static_cast<int>(result);
 	}
 	catch (const std::exception& e)
 	{
@@ -306,13 +306,13 @@ void StrLPCopy(char* Dest, pstring s, WORD MaxL)
 	Move((void*)s.c_str(), Dest, len);
 }
 
-integer MinI(integer X, integer Y)
+short MinI(short X, short Y)
 {
 	if (X < Y) return X;
 	return Y;
 }
 
-integer MaxI(integer X, integer Y)
+short MaxI(short X, short Y)
 {
 	if (X > Y) return X;
 	return Y;
@@ -330,13 +330,13 @@ WORD MaxW(WORD X, WORD Y)
 	return Y;
 }
 
-longint MinL(longint X, longint Y)
+int MinL(int X, int Y)
 {
 	if (X < Y) return X;
 	return Y;
 }
 
-longint MaxL(longint X, longint Y)
+int MaxL(int X, int Y)
 {
 	if (X > Y) return X;
 	return Y;
@@ -357,7 +357,7 @@ WORD OlympYears(WORD year)
 void SplitDate(double R, WORD& d, WORD& m, WORD& y)
 {
 	WORD i, j;
-	longint l = (longint)trunc(R);
+	int l = (int)trunc(R);
 
 	if (l == 0) { y = 1; m = 1; d = 1; }
 	else {
@@ -413,15 +413,15 @@ void AnalDateMask(pstring& Mask, WORD& I, WORD& IDate, WORD& N)
 
 double RDate(WORD Y, WORD M, WORD D, WORD hh, WORD mm, WORD ss, WORD tt)
 {
-	WORD i = 0; longint l = 0, n = 0; double r = 0;
+	WORD i = 0; int l = 0, n = 0; double r = 0;
 	if ((D > NoDayInMonth[M]) && ((M != 2) || (D != 29) || !(OlympYear(Y)))) { return 0; }
 	if (Y + M + D == 0) l = 0;
 	else {
-		l = longint(Y - 1) * 365 + OlympYears(Y) + D;
+		l = int(Y - 1) * 365 + OlympYears(Y) + D;
 		for (i = 1; i <= M - 1; i++) l = l + NoDayInMonth[i];
 		if ((M > 2) && OlympYear(Y)) l++;
 	}
-	n = tt + 100 * ss + 6000 * longint(mm); r = (n + 360000.0 * hh) / (8640000.0);
+	n = tt + 100 * ss + 6000 * int(mm); r = (n + 360000.0 * hh) / (8640000.0);
 	return l + r;
 }
 
@@ -454,11 +454,11 @@ double CurrTime()
 
 double ValDate(pstring Txt, pstring Mask)
 {
-	struct Z { longint Y = 0, M = 0, D = 0, hh = 0, mm = 0, ss = 0, tt = 0; } z;
-	longint* Date = &z.Y;
+	struct Z { int Y = 0, M = 0, D = 0, hh = 0, mm = 0, ss = 0, tt = 0; } z;
+	int* Date = &z.Y;
 	WORD i = 0, j = 0, k = 0, min = 0, max = 0, iDate = 0,
 		n = 0, Ylength = 0, Year = 0, y = 0, Month = 0, Day = 0;
-	pstring s; bool WasYMD = false, WasMinus = false; double R = 0; longint nl = 0;
+	pstring s; bool WasYMD = false, WasMinus = false; double R = 0; int nl = 0;
 
 	double result = 0.0;
 	Ylength = 0; z.Y = -1; z.M = -1; z.D = -1;
@@ -492,7 +492,7 @@ label1:
 label2:
 	if ((min == 2) && (max >= 3)) {
 		if (z.D < 0) z.D = 0;
-		R = z.D + (z.tt + 100 * z.ss + 6000 * longint(z.mm) + 360000.0 * z.hh) / 8640000.0;
+		R = z.D + (z.tt + 100 * z.ss + 6000 * int(z.mm) + 360000.0 * z.hh) / 8640000.0;
 		goto label3;
 	}
 	if (WasYMD) {
@@ -539,13 +539,13 @@ bool ExCode(WORD N, pstring Mask)
 pstring StrDate(double R, pstring Mask)
 {
 	struct stD { WORD Y = 0; WORD M = 0; WORD D = 0; } d;
-	struct stT { longint hh = 0, mm = 0, ss = 0, tt = 0; } t;
+	struct stT { int hh = 0, mm = 0, ss = 0, tt = 0; } t;
 	pstring x;
 	WORD i = 0, iDate = 0, n = 0, m = 0, min = 0, max = 0;
-	longint f = 0, l = 0; bool First = false, WasMinus = false; char c = 0;
+	int f = 0, l = 0; bool First = false, WasMinus = false; char c = 0;
 
 	double MultX[7]{ 0, 0, 0, 24, 1440, 86400, 8640000 };
-	longint DivX[12]{ 0, 0, 0, 1, 60, 3600, 360000, 1, 60, 6000, 1, 100 };
+	int DivX[12]{ 0, 0, 0, 1, 60, 3600, 360000, 1, 60, 6000, 1, 100 };
 
 	pstring s = "";
 	EncodeMask(Mask, min, max);
@@ -626,7 +626,7 @@ double AddMonth(double R, double RM)
 {
 	WORD d, m, y;
 	SplitDate(R, d, m, y);
-	const longint l = y * 12 + m - 1 + static_cast<longint>(trunc(RM));
+	const int l = y * 12 + m - 1 + static_cast<int>(trunc(RM));
 	double intpart;
 	const double RTime = modf(R, &intpart);
 	y = static_cast<WORD>(l / 12);
@@ -807,7 +807,7 @@ FILE* OpenH(std::string path, FileOpenMode Mode, FileUseMode UM)
 	std::string txt[] = { "Clos", "OpRd", "OpRs", "OpSh", "OpEx" };
 
 	//if (CardHandles == files) RunError(884);
-	longint w = 0;
+	int w = 0;
 	std::string openFlags;
 	FILE* nFile = nullptr;
 
@@ -882,7 +882,7 @@ FILE* OpenH(std::string path, FileOpenMode Mode, FileUseMode UM)
 	return nFile;
 }
 
-WORD ReadLongH(FILE* handle, longint bytes, void* buffer)
+WORD ReadLongH(FILE* handle, int bytes, void* buffer)
 {
 	if (handle == nullptr) RunError(706);
 	if (bytes <= 0) return 0;
@@ -905,13 +905,13 @@ void WriteH(FILE* handle, size_t length, void* buffer)
 
 long FileSizeH(FILE* handle)
 {
-	longint pos = PosH(handle);
+	int pos = PosH(handle);
 	long result = MoveH(0, 2, handle);
 	SeekH(handle, pos);
 	return result;
 }
 
-longint SwapLong(longint N)
+int SwapLong(int N)
 {
 	return 0;
 }
@@ -1009,8 +1009,8 @@ void RdWrCache(FileOperation operation, FILE* handle, bool not_cached, size_t po
 	Logging* log = Logging::getInstance();
 
 	bool Cached = !not_cached;
-	integer PgeIdx = 0, PgeRest = 0;
-	WORD err = 0; longint PgeNo = 0;
+	short PgeIdx = 0, PgeRest = 0;
+	WORD err = 0; int PgeNo = 0;
 	//CachePage* Z = nullptr;
 
 	if (handle == nullptr) {
@@ -1133,7 +1133,7 @@ void FlushHandles()
 	ClearFlshHandles();
 }
 
-longint GetDateTimeH(FILE* handle)
+int GetDateTimeH(FILE* handle)
 {
 	if (handle == nullptr) return -1;
 	// vrati cas posledniho zapisu souboru + datum posledniho zapisu souboru
@@ -1206,7 +1206,7 @@ void SetMyHeapEnd()
 	// MyHeapEnd = ptr(PtrRec(CacheEnd).Seg - CachePageSz, PtrRec(CacheEnd).Ofs);
 }
 
-bool WrCPage(FILE* Handle, longint N, void* Buf, WORD ErrH)
+bool WrCPage(FILE* Handle, int N, void* Buf, WORD ErrH)
 {
 	return true;
 }
@@ -1230,7 +1230,7 @@ void SubstHandle(WORD h1, WORD h2)
 {
 }
 
-integer HeapErrFun(WORD Size)
+short HeapErrFun(WORD Size)
 {
 	return 0;
 }
@@ -1391,7 +1391,7 @@ std::string PrTab(WORD printerNr, WORD value)
 	return result;
 }
 
-void SetCurrPrinter(integer NewPr)
+void SetCurrPrinter(short NewPr)
 {
 	if (NewPr >= prMax) return;
 	if (prCurr >= 0) {/* !!! with printer[prCurr] do!!! */

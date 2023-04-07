@@ -26,15 +26,15 @@ struct stEditorParams
 };
 
 bool EditText(char pMode, char pTxtType, std::string pName, std::string pErrMsg,
-	LongStr* pLS, WORD pMaxLen, WORD& pInd, longint& pScr,
+	LongStr* pLS, WORD pMaxLen, WORD& pInd, int& pScr,
 	std::vector<WORD>& break_keys, std::vector<EdExitD*>& pExD, bool& pSrch, bool& pUpdat,
 	WORD pLastNr, WORD pCtrlLastNr, MsgStr* pMsgS); // r169
 void SimpleEditText(char pMode, std::string pErrMsg, std::string pName, LongStr* TxtPtr,
 	WORD MaxLen, WORD& Ind, bool& Updat); // r202
 WORD FindTextE(const pstring& PstrScreenStr, pstring Popt, char* PTxtPtr, WORD PLen); // r209
 void InitTxtEditor();
-void EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg, std::vector<EdExitD*>& ExD, longint TxtPos,
-	longint Txtxy, WRect* V, WORD Atr, std::string Hd, BYTE WFlags, MsgStr* MsgS);
+void EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg, std::vector<EdExitD*>& ExD, int TxtPos,
+	int Txtxy, WRect* V, WORD Atr, std::string Hd, BYTE WFlags, MsgStr* MsgS);
 void ViewPrinterTxt(); // r353
 void SetEditTxt(Instr_setedittxt* PD);
 
@@ -57,8 +57,8 @@ void HelpLU(char dir);
 void BlockLRShift(WORD I1);
 void FrameStep(BYTE& odir, PressedKey EvKeyC);
 void WrCharE(char Ch);
-void Format(WORD& i, longint First, longint Last, WORD Posit, bool Rep);
-void SetPart(longint Idx);
+void Format(WORD& i, int First, int Last, WORD Posit, bool Rep);
+void SetPart(int Idx);
 bool WordExist();
 void NextPartDek();
 void NewLine(char Mode);
@@ -67,14 +67,14 @@ void HelpRD(char dir);
 WORD Position(WORD n);
 WORD Column(WORD p);
 void PreviousLine();
-void BlockUDShift(longint L1);
+void BlockUDShift(int L1);
 void TestKod();
 void ClrWord();
-bool ModPage(longint RLine);
-int NewL(longint RLine);
-void DekFindLine(longint Num);
-longint NewRL(int Line);
-bool WordFind(WORD i, WORD& WB, integer& WE, WORD& LI);
+bool ModPage(int RLine);
+int NewL(int RLine);
+void DekFindLine(int Num);
+int NewRL(int Line);
+bool WordFind(WORD i, WORD& WB, short& WE, WORD& LI);
 void SetWord(WORD WB, WORD WE);
 WORD WordNo2();
 WORD GetArrLineLength();
@@ -90,17 +90,17 @@ void CopyCurrentLineToArr(size_t Ind);
 //void TestLenText(char** text, size_t& textLength, size_t i, size_t j);
 bool TestOptStr(char c);
 bool BlockExist();
-void SetBlockBound(longint& BBPos, longint& EBPos);
-void FindReplaceString(longint First, longint Last);
-void PosDekFindLine(longint Num, WORD Pos, bool ChScr);
-bool BlockHandle(longint& fs, FILE* W1, char Oper);
+void SetBlockBound(int& BBPos, int& EBPos);
+void FindReplaceString(int First, int Last);
+void PosDekFindLine(int Num, WORD Pos, bool ChScr);
+bool BlockHandle(int& fs, FILE* W1, char Oper);
 void BlockCopyMove(char Oper, void* P1, LongStr* sp);
 bool BlockGrasp(char Oper, void* P1, LongStr* sp);
 bool BlockCGrasp(char Oper, void* P1, LongStr* sp);
 void BlockDrop(char Oper, void* P1, LongStr* sp);
 void BlockCDrop(char Oper, void* P1, LongStr* sp);
 void FillBlank();
-void SetPartLine(longint Ln);
+void SetPartLine(int Ln);
 void MyWrLLMsg(pstring s);
 void HMsgExit(pstring s);
 void Calculate();
@@ -123,19 +123,19 @@ extern WORD MaxLenT, IndexT, ScrT;
 extern WORD ScreenIndex;
 extern WORD textIndex, positionOnActualLine, BPos;
 extern WORD NextLineStartIndex, PageS, LineS;
-extern integer TextLineNr, ScreenFirstLineNr;
-extern longint RScrL;
+extern short TextLineNr, ScreenFirstLineNr;
+extern int RScrL;
 extern bool Konec;
 extern bool EditT, ChangeScr;
 extern char TypeT;
 extern bool SrchT, UpdatT;
-extern longint* LocalPPtr;
+extern int* LocalPPtr;
 extern FILE* TxtFH;
 //extern bool AllRd;
-extern longint AbsLenT;
+extern int AbsLenT;
 extern BYTE FrameDir;
 extern bool Insert, Indent, Wrap, Just;
-extern integer LeftMarg, RightMarg;
+extern short LeftMarg, RightMarg;
 extern WORD columnOffset, Colu, Row;
 extern bool InsPg, ChangePart, TypeB;
 extern WORD WordL, LastC, FirstC, FirstR, LastR;

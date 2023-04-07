@@ -12,11 +12,11 @@
 #include "../cppfand/obaseww.h"
 #include "../cppfand/runfrml.h"
 
-longint NRecsAll;
+int NRecsAll;
 
 void RunMerge()
 {
-	integer I = 0, MinIi = 0, res = 0, NEof = 0;      /*RunMerge - body*/
+	short I = 0, MinIi = 0, res = 0, NEof = 0;      /*RunMerge - body*/
 	bool EmptyGroup = false, b = false;
 	//PushProcStk();
 	OpenInpM();
@@ -220,7 +220,7 @@ void WriteOutp(OutpRD* RD)
 void OpenInpM()
 {
 	NRecsAll = 0;
-	for (integer I = 1; I <= MaxIi; I++)
+	for (short I = 1; I <= MaxIi; I++)
 		/* !!! with IDA[I]^ do!!! */ {
 		CFile = IDA[I]->Scan->FD;
 		if (IDA[I]->IsInplace) IDA[I]->Md = NewLMode(CFile, ExclMode);
@@ -273,7 +273,7 @@ void CloseInpOutp()
 		}
 		OD = (OutpFD*)OD->pChain;
 	}
-	for (integer i = 1; i <= MaxIi; i++) /* !!! with IDA[i]^ do!!! */ {
+	for (short i = 1; i <= MaxIi; i++) /* !!! with IDA[i]^ do!!! */ {
 		IDA[i]->Scan->Close();
 		ClearRecSpace(IDA[i]->ForwRecPtr);
 		OldLMode(CFile, IDA[i]->Md);

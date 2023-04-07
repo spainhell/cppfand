@@ -14,19 +14,19 @@ void XXPage::Reset(XWorkFile* OwnerXW)
 	Off = 0;
 }
 
-void XXPage::PutN(longint N)
+void XXPage::PutN(int N)
 {
 	memcpy(&A[Off], &N, 3); // kopirujeme 3 nejnizsi Byty, posledni se ignoruje
 	Off += 3;
 }
 
-void XXPage::PutDownPage(longint DownPage)
+void XXPage::PutDownPage(int DownPage)
 {
 	memcpy(&A[Off], &DownPage, 4);
 	Off += 4;
 }
 
-void XXPage::PutMLX(BYTE M, BYTE L)
+void XXPage::PutMLX(unsigned char M, unsigned char L)
 {
 	A[Off++] = M;
 	A[Off++] = L;
@@ -44,7 +44,7 @@ void XXPage::ClearRest()
 
 void XXPage::PageFull()
 {
-	longint n = 0;
+	int n = 0;
 	ClearRest();
 	if (Chain == nullptr) {
 		Chain = new XXPage();
@@ -67,8 +67,8 @@ void XXPage::PageFull()
 
 void XXPage::AddToLeaf(WRec* R, XKey* KD)
 {
-	BYTE m, l;
-	longint n;
+	unsigned char m, l;
+	int n;
 
 	while (true) {
 		m = 0;
@@ -117,9 +117,9 @@ void XXPage::AddToLeaf(WRec* R, XKey* KD)
 	PutMLX(m, l);
 }
 
-void XXPage::AddToUpper(XXPage* P, longint DownPage)
+void XXPage::AddToUpper(XXPage* P, int DownPage)
 {
-	WORD l = 0, m = 0;
+	unsigned short l = 0, m = 0;
 	while (true) {
 		m = 0;
 		l = P->LastIndex.length();

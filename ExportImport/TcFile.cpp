@@ -27,15 +27,15 @@ TcFile::~TcFile()
 	}
 }
 
-longint TcFile::MyDiskFree(bool Floppy, BYTE Drive)
+int TcFile::MyDiskFree(bool Floppy, BYTE Drive)
 {
 	if (spec.WithDiskFree || Floppy) return DiskFree(Drive);
 	return 0x7fffffff;
 }
 
-void TcFile::InsertNode(integer r)
+void TcFile::InsertNode(short r)
 {
-	integer res = 1;
+	short res = 1;
 	size_t i = 0;
 	auto key = &XBuf->RingBuf[r];
 	auto p = RingBufSz + 1 + key[0];
@@ -76,9 +76,9 @@ label2:
 	XBuf->Dad[p] = Leer;
 }
 
-void TcFile::DeleteNode(integer p)
+void TcFile::DeleteNode(short p)
 {
-	integer q = 0;
+	short q = 0;
 	if (XBuf->Dad[p] == Leer) return;
 	if (XBuf->RSon[p] == Leer) q = XBuf->LSon[p];
 	else if (XBuf->LSon[p] == Leer) q = XBuf->RSon[p];
@@ -133,7 +133,7 @@ void TcFile::InitBufOutp()
 
 void TcFile::WriteBuf(bool isLast)
 {
-	integer i = 0, j = 0; BYTE c = 0;
+	short i = 0, j = 0; BYTE c = 0;
 
 	if (Compress == 0) {
 		lBuf2 = lBuf;
@@ -224,7 +224,7 @@ void TcFile::InitBufInp()
 
 void TcFile::ReadBuf()
 {
-	integer i = 0, j = 0, k = 0, r = 0;
+	short i = 0, j = 0, k = 0, r = 0;
 	BYTE c = 0; WORD wLo = 0, wHi = 0;
 
 	lBuf = 0; iBuf = 0;

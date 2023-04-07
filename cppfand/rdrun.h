@@ -63,7 +63,7 @@ struct InpD
 	bool AutoSort = false;
 	KeyFldD* SK = nullptr;
 	LockMode Md = NullMode;
-	longint IRec = 0;
+	int IRec = 0;
 	void* ForwRecPtr = nullptr;
 	FrmlElem* Bool = nullptr;
 	bool SQLFilter = false;
@@ -234,7 +234,7 @@ struct EditD : Chained<EditD>
 	EFldD* StartFld = nullptr;
 	EFldD* CFld = nullptr; EFldD* FirstEmptyFld = nullptr;    /*copied*/
 	XKey* VK = nullptr; XWKey* WK = nullptr;                  /*  "   */
-	longint BaseRec = 0; BYTE IRec = 0;                       /*  "   */
+	int BaseRec = 0; BYTE IRec = 0;                       /*  "   */
 	bool IsNewRec = false, Append = false, Select = false,    /*  "   */
 		 WasUpdated = false, EdRecVar = false,                /*  "   */
 		 AddSwitch = false, ChkSwitch = false,                /*  "   */
@@ -255,7 +255,7 @@ struct EditD : Chained<EditD>
 	bool MustCheck = false, SelMode = false;                  /*  "   */
 	bool DownSet = false, IsLocked = false, WwPart = false;    
 	XKey* DownKey = nullptr;
-	longint LockedRec = 0;
+	int LockedRec = 0;
 	FrmlElem* Cond = nullptr; FrmlElem* Bool = nullptr;
 	std::string BoolTxt;
 	std::string Head; std::string Last;
@@ -263,10 +263,10 @@ struct EditD : Chained<EditD>
 	WORD NFlds = 0, NTabsSet = 0, NDuplSet = 0, NEdSet = 0;
 	bool EdUpdated = false;
 	ImplD* Impl = nullptr;
-	longint StartRecNo = 0;
+	int StartRecNo = 0;
 	std::string StartRecKey;
-	integer StartIRec = 0;
-	longint OwnerRecNo = 0;
+	short StartIRec = 0;
+	int OwnerRecNo = 0;
 	LinkD* ShiftF7LD = nullptr;
 	void* AfterE = nullptr;
 };
@@ -342,7 +342,7 @@ struct LockD
 	FileD* FD = nullptr;
 	FrmlElem* Frml = nullptr;
 	LockMode Md, OldMd;
-	longint N = 0;
+	int N = 0;
 };
 
 struct TypAndFrml
@@ -367,7 +367,7 @@ public:
 extern std::vector<ConstListEl> OldMFlds;
 extern std::vector<ConstListEl> NewMFlds;   /* Merge + Report*/
 extern InpD* IDA[30];
-extern integer MaxIi;
+extern short MaxIi;
 extern XString OldMXStr;                  /* Merge */
 extern OutpFD* OutpFDRoot;
 extern OutpRD* OutpRDs;
@@ -397,9 +397,9 @@ void ResetLVBD();
 bool RunAddUpdte1(char Kind/*+,-,d*/, void* CRold, bool Back/*tracking*/, AddD* StopAD, LinkD* notLD);
 
 void CrIndRec();
-bool Link(AddD* AD, longint& N, char& Kind2);
-bool TransAdd(AddD* AD, FileD* FD, void* RP, void* CRnew, longint N, char Kind2, bool Back);
-void WrUpdRec(AddD* AD, FileD* FD, void* RP, void* CRnew, longint N);
+bool Link(AddD* AD, int& N, char& Kind2);
+bool TransAdd(AddD* AD, FileD* FD, void* RP, void* CRnew, int N, char Kind2, bool Back);
+void WrUpdRec(AddD* AD, FileD* FD, void* RP, void* CRnew, int N);
 bool Assign(AddD* AD);
 bool LockForAdd(FileD* FD, WORD Kind, bool Ta, LockMode& md);
 bool RunAddUpdte(char Kind, void* CRold, LinkD* notLD);

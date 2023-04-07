@@ -28,12 +28,12 @@ struct stSaveState
 bool EquUpCase(pstring& S1, pstring& S2); // r274 ASM
 bool EquUpCase(std::string S1, std::string S2);
 bool EquUpCase(const char* S);
-void Error(integer N); // r1
+void Error(short N); // r1
 void SetInpStr(std::string& s); //r31
 void SetInpStdStr(std::string& s, bool ShowErr);
 void SetInpLongStr(LongStr* S, bool ShowErr); // r37
-void SetInpTTPos(longint Pos, bool Decode); // r46
-void SetInpTTPos(FileD* file, longint Pos, bool Decode);
+void SetInpTTPos(int Pos, bool Decode); // r46
+void SetInpTTPos(FileD* file, int Pos, bool Decode);
 void SetInpTT(RdbPos* RP, bool FromTxt); // r53
 void SetInpTTxtPos(FileD* FD);
 void ReadChar(); // r73
@@ -41,14 +41,14 @@ WORD RdDirective(bool& b); // r81
 void RdForwName(pstring& s); // r82
 void SkipLevel(bool withElse); // r113
 void SkipBlank(bool toNextLine); // r134
-void OldError(integer N); // r167
+void OldError(short N); // r167
 void RdBackSlashCode(); // r170
 void RdLex(); // r179
 bool IsForwPoint(); // r233
 void TestIdentif(); // r235
 void TestLex(char X); // r237
 void Accept(char X); // r239 ASM
-integer RdInteger(); // r245
+short RdInteger(); // r245
 double RdRealConst(); // r250
 bool IsKeyWord(std::string S); // r284 ASM
 //bool TestKeyWord(pstring S); // r282
@@ -68,7 +68,7 @@ bool FindChpt(char Typ, const pstring& name, bool local, RdbPos* RP);
 void RdChptName(char C, RdbPos* Pos, bool TxtExpr); // r108
 std::vector<FieldDescr*> AllFldsList(FileD* FD, bool OnlyStored); // r118
 RprtOpt* GetRprtOpt(); // r132
-//FrmlPtr GetOp(BYTE Op, integer BytesAfter); // r1
+//FrmlPtr GetOp(BYTE Op, short BytesAfter); // r1
 FieldDescr* FindFldName(FileD* FD, std::string fieldName = ""); // r7
 FieldDescr* RdFldName(FileD* FD); // r17
 FileD* FindFileD(); // r22
