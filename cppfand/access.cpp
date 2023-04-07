@@ -11,10 +11,7 @@
 #include "obaseww.h"
 #include "olongstr.h"
 #include "runfrml.h"
-#include "../Indexes/sort.h"
-#include "../fandio/FandTFile.h"
-#include "../fandio/FandXFile.h"
-#include "../Indexes/XKey.h"
+#include "../fandio/FandFile.h"
 #include "../Logging/Logging.h"
 #include "../textfunc/textfunc.h"
 

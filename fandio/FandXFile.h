@@ -1,6 +1,6 @@
 #pragma once
-#include "../cppfand/constants.h"
-#include "../Indexes/XWFile.h"
+//#include "../cppfand/constants.h"
+#include "XWFile.h"
 
 class FandXFile : public XWFile // r357
 {

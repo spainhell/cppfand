@@ -5,9 +5,9 @@
 #include "../cppfand/base.h"
 #include "../cppfand/GlobalVariables.h"
 #include "../cppfand/obaseww.h"
-#include "../Indexes/sort.h"
-#include "../Indexes/XScan.h"
-#include "../Indexes/XWorkFile.h"
+#include "sort.h"
+#include "XScan.h"
+#include "XWorkFile.h"
 #include "../Logging/Logging.h"
 
 

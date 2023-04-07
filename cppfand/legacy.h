@@ -71,7 +71,7 @@ inline void GetMem(void* pointer, int Size) { pointer = new unsigned char[Size];
 
 void beep();
 
-extern BYTE OvrResult; // vždy 0 OvrOK
+extern BYTE OvrResult; // vzdy 0 OvrOK
 
 std::string GetEnv(const char* name);
 

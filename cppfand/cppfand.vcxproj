@@ -256,9 +256,6 @@
     <ProjectReference Include="..\FileSystem\FileSystem.vcxproj">
       <Project>{0071ff96-1112-4351-bda4-7c419d354789}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\Indexes\Indexes.vcxproj">
-      <Project>{6b2a68c7-24e2-4045-bdd5-5379645f8bbd}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\Logging\Logging.vcxproj">
       <Project>{431ccfda-764c-498c-ae07-276fb41ebbf9}</Project>
     </ProjectReference>

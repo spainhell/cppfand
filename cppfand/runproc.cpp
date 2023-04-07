@@ -20,7 +20,7 @@
 #include "wwmenu.h"
 #include "wwmix.h"
 #include "../Prolog/RunProlog.h"
-#include "../Indexes/sort.h"
+#include "../fandio/sort.h"
 #include "../fandio/FandXFile.h"
 #include "../Editor/OldEditor.h"
 #include "../Editor/EditorHelp.h"

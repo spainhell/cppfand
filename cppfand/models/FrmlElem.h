@@ -3,7 +3,7 @@
 
 #include "../constants.h"
 #include "../pstring.h"
-#include "../../Indexes/XKey.h"
+#include "../../fandio/XKey.h"
 
 struct MergOpSt;
 struct InpD;

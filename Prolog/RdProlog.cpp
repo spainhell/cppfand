@@ -8,7 +8,6 @@
 #include "../cppfand/FieldDescr.h"
 #include "../cppfand/FileD.h"
 #include "../cppfand/pstring.h"
-#include "../Indexes/XKey.h"
 #include "../cppfand/compile.h"
 #include "../cppfand/GlobalVariables.h"
 #include "../cppfand/KeyFldD.h"
@@ -16,6 +15,7 @@
 #include "../cppfand/runproj.h"
 #include "../cppfand/models/Instr.h"
 #include "../Editor/OldEditor.h"
+#include "../fandio/XKey.h"
 
 /*  L E X A N A L  =========================================================*/
 bool IsCharUpper2(unsigned char C)

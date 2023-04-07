@@ -2,7 +2,7 @@
 #include "base.h"
 #include "Chained.h"
 #include "Rdb.h"
-#include "../Indexes/XKey.h"
+#include "../fandio/XKey.h"
 
 
 class Instr;

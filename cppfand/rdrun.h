@@ -1,10 +1,9 @@
 #pragma once
 #include "access.h"
-#include "AddD.h"
 #include "FieldDescr.h"
 #include "legacy.h"
 #include "models/FrmlElem.h"
-#include "../Indexes/XScan.h"
+#include "../fandio/XScan.h"
 
 
 struct LvDescr;

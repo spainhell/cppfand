@@ -13,6 +13,18 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\FandFiles">
+      <UniqueIdentifier>{fec6bb6b-c33e-45bf-ab7c-2d677aec2dee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\FandFiles">
+      <UniqueIdentifier>{8376e8ad-0e44-4a74-8af0-3dfe56061037}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Indexes">
+      <UniqueIdentifier>{a01e3360-b093-46cc-a3d9-74e61b8852d7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Indexes">
+      <UniqueIdentifier>{b4ba9f3a-148e-4e2a-a510-277cbbb5e1a3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="fandio.h">
@@ -22,13 +34,58 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="FandFile.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\FandFiles</Filter>
     </ClInclude>
     <ClInclude Include="FandTFile.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\FandFiles</Filter>
     </ClInclude>
     <ClInclude Include="FandXFile.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\FandFiles</Filter>
+    </ClInclude>
+    <ClInclude Include="XScan.h">
+      <Filter>Header Files\Indexes</Filter>
+    </ClInclude>
+    <ClInclude Include="XString.h">
+      <Filter>Header Files\Indexes</Filter>
+    </ClInclude>
+    <ClInclude Include="XWFile.h">
+      <Filter>Header Files\Indexes</Filter>
+    </ClInclude>
+    <ClInclude Include="XWKey.h">
+      <Filter>Header Files\Indexes</Filter>
+    </ClInclude>
+    <ClInclude Include="XWorkFile.h">
+      <Filter>Header Files\Indexes</Filter>
+    </ClInclude>
+    <ClInclude Include="XXPage.h">
+      <Filter>Header Files\Indexes</Filter>
+    </ClInclude>
+    <ClInclude Include="sort.h">
+      <Filter>Header Files\Indexes</Filter>
+    </ClInclude>
+    <ClInclude Include="WorkFile.h">
+      <Filter>Header Files\Indexes</Filter>
+    </ClInclude>
+    <ClInclude Include="WPage.h">
+      <Filter>Header Files\Indexes</Filter>
+    </ClInclude>
+    <ClInclude Include="WRec.h">
+      <Filter>Header Files\Indexes</Filter>
+    </ClInclude>
+    <ClInclude Include="XItem.h">
+      <Filter>Header Files\Indexes</Filter>
+    </ClInclude>
+    <ClInclude Include="XItemLeaf.h">
+      <Filter>Header Files\Indexes</Filter>
+    </ClInclude>
+    <ClInclude Include="XItemNonLeaf.h">
+      <Filter>Header Files\Indexes</Filter>
+    </ClInclude>
+    <ClInclude Include="XKey.h">
+      <Filter>Header Files\Indexes</Filter>
+    </ClInclude>
+    <ClInclude Include="XPage.h">
+      <Filter>Header Files\Indexes</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -39,13 +96,58 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FandFile.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\FandFiles</Filter>
     </ClCompile>
     <ClCompile Include="FandTFile.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\FandFiles</Filter>
     </ClCompile>
     <ClCompile Include="FandXFile.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\FandFiles</Filter>
+    </ClCompile>
+    <ClCompile Include="XXPage.cpp">
+      <Filter>Source Files\Indexes</Filter>
+    </ClCompile>
+    <ClCompile Include="sort.cpp">
+      <Filter>Source Files\Indexes</Filter>
+    </ClCompile>
+    <ClCompile Include="WorkFile.cpp">
+      <Filter>Source Files\Indexes</Filter>
+    </ClCompile>
+    <ClCompile Include="WPage.cpp">
+      <Filter>Source Files\Indexes</Filter>
+    </ClCompile>
+    <ClCompile Include="WRec.cpp">
+      <Filter>Source Files\Indexes</Filter>
+    </ClCompile>
+    <ClCompile Include="XItem.cpp">
+      <Filter>Source Files\Indexes</Filter>
+    </ClCompile>
+    <ClCompile Include="XItemLeaf.cpp">
+      <Filter>Source Files\Indexes</Filter>
+    </ClCompile>
+    <ClCompile Include="XItemNonLeaf.cpp">
+      <Filter>Source Files\Indexes</Filter>
+    </ClCompile>
+    <ClCompile Include="XKey.cpp">
+      <Filter>Source Files\Indexes</Filter>
+    </ClCompile>
+    <ClCompile Include="XPage.cpp">
+      <Filter>Source Files\Indexes</Filter>
+    </ClCompile>
+    <ClCompile Include="XScan.cpp">
+      <Filter>Source Files\Indexes</Filter>
+    </ClCompile>
+    <ClCompile Include="XString.cpp">
+      <Filter>Source Files\Indexes</Filter>
+    </ClCompile>
+    <ClCompile Include="XWFile.cpp">
+      <Filter>Source Files\Indexes</Filter>
+    </ClCompile>
+    <ClCompile Include="XWKey.cpp">
+      <Filter>Source Files\Indexes</Filter>
+    </ClCompile>
+    <ClCompile Include="XWorkFile.cpp">
+      <Filter>Source Files\Indexes</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

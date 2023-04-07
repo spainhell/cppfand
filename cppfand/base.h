@@ -1,4 +1,7 @@
 #pragma once
+
+#include "../Common/FileEnums.h"
+#include "../Common/LongStr.h"
 #include <array>
 #include "constants.h"
 #include "OldDrivers.h"
@@ -7,27 +10,7 @@
 //typedef char CharArr[50];
 //typedef CharArr* CharArrPtr;
 
-class LongStr
-{
-public:
-	LongStr() { A = new char[50]{ 0 }; allocated = 50; LL = 0; }
-	LongStr(size_t size) {
-		if (size == 0) size = 50;
-		A = new char[size] {0};
-		allocated = size;
-		LL = 0;
-	}
-	LongStr(char* data, size_t size) {
-		A = data;
-		allocated = size;
-		LL = size;
-	}
-	~LongStr() { delete[] A; }
-	size_t LL;
-	char* A;
-private:
-	size_t allocated = 0;
-};
+
 
 struct WRect { BYTE C1 = 0, R1 = 0, C2 = 0, R2 = 0; }; // r34
 struct WordRec { BYTE Lo = 0, Hi = 0; };
@@ -97,9 +80,6 @@ bool OSshell(std::string Path, std::string CmdLine, bool NoCancel, bool FreeMm, 
 
 
 // ***  VIRTUAL HANDLES  ***
-enum FileOpenMode { _isnewfile = 0, _isoldfile = 1, _isoverwritefile = 2, _isoldnewfile = 3 }; // poradi se nesmi zmenit!!!
-enum FileUseMode { Closed = 0, RdOnly = 1, RdShared = 2, Shared = 3, Exclusive = 4 }; // poradi se nesmi zmenit!!!
-
 bool IsNetCVol();
 bool CacheExist();
 bool SaveCache(WORD ErrH, FILE* f);
@@ -120,7 +100,6 @@ void CloseH(FILE** handle);
 void CloseClearH(FILE** h);
 void SetFileAttr(WORD Attr);
 WORD GetFileAttr();
-enum FileOperation { READ, WRITE };
 void RdWrCache(FileOperation operation, FILE* handle, bool not_cached, size_t position, size_t count, void* buf);
 void MyDeleteFile(pstring path);
 void RenameFile56(pstring OldPath, pstring NewPath, bool Msg);

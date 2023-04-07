@@ -160,6 +160,21 @@
     <ClInclude Include="fandio.h" />
     <ClInclude Include="FandTFile.h" />
     <ClInclude Include="FandXFile.h" />
+    <ClInclude Include="sort.h" />
+    <ClInclude Include="WorkFile.h" />
+    <ClInclude Include="WPage.h" />
+    <ClInclude Include="WRec.h" />
+    <ClInclude Include="XItem.h" />
+    <ClInclude Include="XItemLeaf.h" />
+    <ClInclude Include="XItemNonLeaf.h" />
+    <ClInclude Include="XKey.h" />
+    <ClInclude Include="XPage.h" />
+    <ClInclude Include="XScan.h" />
+    <ClInclude Include="XString.h" />
+    <ClInclude Include="XWFile.h" />
+    <ClInclude Include="XWKey.h" />
+    <ClInclude Include="XWorkFile.h" />
+    <ClInclude Include="XXPage.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="cache.cpp" />
@@ -167,6 +182,21 @@
     <ClCompile Include="fandio.cpp" />
     <ClCompile Include="FandTFile.cpp" />
     <ClCompile Include="FandXFile.cpp" />
+    <ClCompile Include="sort.cpp" />
+    <ClCompile Include="WorkFile.cpp" />
+    <ClCompile Include="WPage.cpp" />
+    <ClCompile Include="WRec.cpp" />
+    <ClCompile Include="XItem.cpp" />
+    <ClCompile Include="XItemLeaf.cpp" />
+    <ClCompile Include="XItemNonLeaf.cpp" />
+    <ClCompile Include="XKey.cpp" />
+    <ClCompile Include="XPage.cpp" />
+    <ClCompile Include="XScan.cpp" />
+    <ClCompile Include="XString.cpp" />
+    <ClCompile Include="XWFile.cpp" />
+    <ClCompile Include="XWKey.cpp" />
+    <ClCompile Include="XWorkFile.cpp" />
+    <ClCompile Include="XXPage.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Logging\Logging.vcxproj">

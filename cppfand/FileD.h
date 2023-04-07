@@ -3,7 +3,6 @@
 #include "Chained.h"
 #include "Rdb.h"
 #include "../fandio/FandFile.h"
-#include "../Indexes/XKey.h"
 
 class FieldDescr;
 struct StringListEl;
