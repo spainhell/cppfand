@@ -120,6 +120,10 @@ void SetCPathMountVolSetNet(FileUseMode UM)
 		switch (UM) {
 		case RdShared: CFile->FF->UMode = RdOnly; break;
 		case Shared: CFile->FF->UMode = Exclusive; break;
+
+		case Closed:
+		case RdOnly:
+		case Exclusive: break;
 		}
 	else if ((UM == Shared) && EquUpCase(CVol, "#R")) {
 		CFile->FF->UMode = RdShared;
@@ -161,7 +165,7 @@ bool OpenF1(FileUseMode UM)
 			return result;
 		}
 		break;
-	}
+		}
 #ifndef FandNetV
 	if ((HandleError == 5 || HandleError == 0x21) &&
 		((CVol == '#') || (CVol == "##") || SEquUpcase(CVol, "#R"))) CFileError(842);
@@ -227,7 +231,7 @@ bool OpenF1(FileUseMode UM)
 		}
 	}
 	return result;
-}
+	}
 
 bool OpenF2()
 {
@@ -836,7 +840,7 @@ void SetCPathVol(char pathDelim)
 			"FANDHLP";
 #endif
 		goto label4;
-	}
+}
 	CExt = ".100";
 	if (CRdb != nullptr) CDir = CRdb->DataDir;
 	else CDir = "";

@@ -1650,7 +1650,7 @@ label4:
 void CodingLongStr(LongStr* S)
 {
 	if (CFile->FF->TF->LicenseNr == 0) Code(S->A, S->LL);
-	else XDecode(S); // musí mít o 2B víc - saha si tam XDecode!!!
+	else XDecode(S); // musi mit o 2B vic - saha si tam XDecode!!!
 }
 
 void DirMinusBackslash(pstring& D)

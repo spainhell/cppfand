@@ -64,7 +64,7 @@ void NextPartDek();
 void NewLine(char Mode);
 bool TestLastPos(WORD F, WORD T);
 void HelpRD(char dir);
-WORD Position(WORD c);
+WORD Position(WORD n);
 WORD Column(WORD p);
 void PreviousLine();
 void BlockUDShift(longint L1);

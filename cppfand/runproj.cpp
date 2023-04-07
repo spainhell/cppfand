@@ -1514,7 +1514,7 @@ label2:
 		label3:
 			if (IsCompileErr) goto label4;
 			if (Brk == 1) DisplEditWw();
-			GotoRecFld(InpRdbPos.IRec, (EFldD*)E->FirstFld->pChain);
+			GotoRecFld(InpRdbPos.IRec, E->FirstFld->pChain);
 			goto label1;
 		}
 		if (cc == __ALT_F2) {

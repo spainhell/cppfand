@@ -299,31 +299,34 @@ bool FindString(WORD& I, WORD Len)
 			i1 = FindCharPosition(T, Len, c, I);
 		}
 		I = i1;
-		if (I + FindStr.length() > Len) return result;
+		if (I + FindStr.length() > Len) {
+			return result;
+		}
 		s2 = FindStr;
 		Move(&T[I], &s1[1], FindStr.length());
 		s1[0] = FindStr.length();
-		if (TestOptStr('~'))
-		{
-			if (!SEquOrder(s1, s2))
-			{
-				I++; goto label1;
-			}
-		}
-		else if (TestOptStr('u'))
-		{
-			if (!EquUpCase(s1, s2))
-			{
-				I++; goto label1;
-			}
-		}
-		else if (s1 != s2) { I++; goto label1; }
-		if (TestOptStr('w'))
-			if (I > 1 && !Separ.count(T[I - 1]) || !Separ.count(T[I + FindStr.length()]))
-			{
+		if (TestOptStr('~')) {
+			if (!SEquOrder(s1, s2)) {
 				I++;
 				goto label1;
 			}
+		}
+		else if (TestOptStr('u')) {
+			if (!EquUpCase(s1, s2)) {
+				I++;
+				goto label1;
+			}
+		}
+		else if (s1 != s2) {
+			I++;
+			goto label1;
+		}
+		if (TestOptStr('w')) {
+			if (I > 1 && !Separ.count(T[I - 1]) || !Separ.count(T[I + FindStr.length()])) {
+				I++;
+				goto label1;
+			}
+		}
 		result = true;
 		I += FindStr.length();
 	}
@@ -397,11 +400,13 @@ void FirstLine(WORD from, WORD num, WORD& Ind, WORD& Count)
 {
 	char* C = nullptr;
 	WORD* COfs = (WORD*)C;
-	WORD i;
 	Count = 0; Ind = from - 1; C = &T[from];
-	for (i = 0; i < num - 1; i++)
-	{
-		COfs--; if (*C == _CR) { Count++; Ind = from - i; };
+	for (WORD i = 0; i < num - 1; i++) {
+		COfs--;
+		if (*C == _CR) {
+			Count++;
+			Ind = from - i;
+		}
 	}
 	if ((Count > 0) && (T[Ind + 1] == _LF)) Ind++;
 }
