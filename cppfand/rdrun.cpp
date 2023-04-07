@@ -178,7 +178,7 @@ bool Link(AddD* AD, int& N, char& Kind2)
 			&& !CFile->IsSQLFile
 #endif
 			) {
-			IncNRecs(CFile, 1);
+			CFile->IncNRecs(1);
 			CFile->WriteRec(1, CRecPtr);
 		}
 		return result;

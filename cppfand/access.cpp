@@ -583,34 +583,6 @@ void DelAllDifTFlds(void* Rec, void* CompRec)
 const WORD Alloc = 2048;
 const double FirstDate = 6.97248E+5;
 
-void IncNRecs(FileD* file_d, int n)
-{
-#ifdef FandDemo
-	if (NRecs > 100) RunError(884);
-#endif
-	file_d->FF->NRecs += n;
-	SetUpdHandle(file_d->FF->Handle);
-	if (file_d->FF->file_type == FileType::INDEX) {
-		SetUpdHandle(file_d->FF->XF->Handle);
-	}
-}
-
-void DecNRecs(int N)
-{
-	/* !!! with CFile^ do!!! */
-	CFile->FF->NRecs -= N;
-	SetUpdHandle(CFile->FF->Handle);
-	if (CFile->FF->file_type == FileType::INDEX) SetUpdHandle(CFile->FF->XF->Handle);
-	CFile->FF->WasWrRec = true;
-}
-
-void SeekRec(FileD* fileD, int N)
-{
-	fileD->IRec = N;
-	if (fileD->FF->XF == nullptr) fileD->FF->Eof = N >= fileD->FF->NRecs;
-	else fileD->FF->Eof = N >= fileD->FF->XF->NRecs;
-}
-
 void PutRec(FileD* dataFile, void* recordData)
 {
 	/* !!! with CFile^ do!!! */
@@ -623,13 +595,14 @@ void PutRec(FileD* dataFile, void* recordData)
 
 void CreateRec(FileD* file_d, int n)
 {
-	IncNRecs(file_d, 1);
+	file_d->IncNRecs(1);
 	void* record = GetRecSpace(file_d->FF);
 	for (int i = file_d->FF->NRecs - 1; i >= n; i--) {
 		file_d->ReadRec(i, record);
 		file_d->WriteRec(i + 1, record);
 	}
-	delete[] record; record = nullptr;
+	delete[] record;
+	record = nullptr;
 	file_d->WriteRec(n, CRecPtr);
 }
 
@@ -640,7 +613,7 @@ void DeleteRec(int N)
 		CFile->ReadRec(i + 1, CRecPtr);
 		CFile->WriteRec(i, CRecPtr);
 	}
-	DecNRecs(1);
+	CFile->DecNRecs(1);
 }
 
 void ZeroAllFlds(FileD* file_d, void* record)
@@ -697,7 +670,7 @@ void AsgnParFldFrml(FileD* FD, FieldDescr* F, FrmlElem* Z, bool Ad)
 	{
 		md = NewLMode(CFile, WrMode);
 		if (!LinkLastRec(CFile, N, true)) {
-			IncNRecs(CFile, 1);
+			CFile->IncNRecs(1);
 			CFile->WriteRec(N, CRecPtr);
 		}
 		AssgnFrml(CFile, CRecPtr, F, Z, true, Ad);
@@ -1210,13 +1183,13 @@ void AssignNRecs(bool Add, int N)
 		}
 	}
 	if (N < OldNRecs) {
-		DecNRecs(OldNRecs - N);
+		CFile->DecNRecs(OldNRecs - N);
 		goto label1;
 	}
 	CRecPtr = GetRecSpace(CFile->FF);
 	ZeroAllFlds(CFile, CRecPtr);
 	SetDeletedFlag(CFile->FF, CRecPtr);
-	IncNRecs(CFile, N - OldNRecs);
+	CFile->IncNRecs(N - OldNRecs);
 	for (int i = OldNRecs + 1; i <= N; i++) {
 		CFile->WriteRec(i, CRecPtr);
 	}

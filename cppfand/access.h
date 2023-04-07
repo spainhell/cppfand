@@ -94,7 +94,6 @@ void CreateRec(FileD* file_d, int n);
 void RecallRec(int RecNr);
 bool LinkUpw(LinkD* LD, int& N, bool WithT);
 bool LinkLastRec(FileD* FD, int& N, bool WithT);
-void IncNRecs(FileD* file_d, int n);
 bool TryLMode(FileD* fileD, LockMode Mode, LockMode& OldMode, WORD Kind);
 void OldLMode(FileD* fileD, LockMode Mode);
 LockMode NewLMode(FileD* fileD, LockMode Mode);
@@ -106,7 +105,6 @@ void DelTFld(FieldDescr* F);
 void DelDifTFld(void* Rec, void* CompRec, FieldDescr* F);
 
 void DelAllDifTFlds(void* Rec, void* CompRec);
-void DecNRecs(int N);
 void DeleteRec(int N);
 void AsgnParFldFrml(FileD* FD, FieldDescr* F, FrmlElem* Z, bool Ad);
 void PutRec(FileD* dataFile, void* recordData);
@@ -123,6 +121,6 @@ std::string CExtToX(std::string dir, std::string name, std::string ext);
 void CloseGoExit(FandFile* fand_file);
 
 bool ChangeLMode(FileD* fileD, LockMode Mode, WORD Kind, bool RdPref);
-void SeekRec(FileD* fileD, int N);
+
 
 void FixFromReal(double r, void* FixNo, WORD FLen);

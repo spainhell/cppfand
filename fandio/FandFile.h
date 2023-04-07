@@ -2,6 +2,8 @@
 #include <cstdio>
 #include "FandTFile.h"
 #include "FandXFile.h"
+#include "../cppfand/switches.h"
+#include "../cppfand/base.h"
 #include "../Logging/Logging.h"
 
 enum class FileType
@@ -43,5 +45,8 @@ public:
 	bool NotCached();
 	bool Cached();
 	void Reset();
+
+	void IncNRecs(int n);
+	void DecNRecs(int N);
 };
 

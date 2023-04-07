@@ -1782,7 +1782,7 @@ void WrJournal(char Upd, void* RP, double Time)
 		memcpy(&newData.get()[(*it)->Displ], &src[srcOffset], l);		// record data
 
 		LockMode md = NewLMode(CFile, CrMode);
-		IncNRecs(CFile, 1);
+		CFile->IncNRecs(1);
 		CFile->WriteRec(CFile->FF->NRecs, newData.get());
 		OldLMode(CFile, md);
 		CFile = E->FD;
@@ -2044,7 +2044,7 @@ bool DeleteRecProc()
 				CFile->WriteRec(J, CRecPtr);
 			}
 		}
-		DecNRecs(CFile->FF->NRecs - J);
+		CFile->DecNRecs(CFile->FF->NRecs - J);
 	}
 	else if (CleanUp()) {
 		E->EdUpdated = true;

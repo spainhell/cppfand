@@ -1689,7 +1689,7 @@ bool RunCommand(TCommand* COff/*PCommand*/)
 		}
 		if (c->Code == _SaveC) {
 			md = NewLMode(CFile, WrMode);
-			if (!LinkLastRec(CFile, n, true)) IncNRecs(CFile, 1);
+			if (!LinkLastRec(CFile, n, true)) CFile->IncNRecs(1);
 			DelTFld(c->FldD);
 			std::string save = SaveDb(c->DbPred, 0);
 			S_(c->FldD, save);
@@ -1921,7 +1921,7 @@ void AssertFand(TPredicate* P, TCommand* C)
 #endif
 	{
 		TestXFExist();
-		IncNRecs(CFile, 1);
+		CFile->IncNRecs(1);
 		if (CFile->FF->file_type == FileType::INDEX) RecallRec(CFile->FF->NRecs);
 		else CFile->WriteRec(CFile->FF->NRecs, CRecPtr);
 	}

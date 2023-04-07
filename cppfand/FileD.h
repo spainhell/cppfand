@@ -53,4 +53,10 @@ public:
 
 	void ReadRec(size_t rec_nr, void* record);
 	void WriteRec(size_t rec_nr, void* record);
+
+	void IncNRecs(int i);
+	void DecNRecs(int i);
+	void SeekRec(int i);
+	void CreateRec();
+	void PutRec();
 };

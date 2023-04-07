@@ -323,7 +323,7 @@ label3:
 			}
 		}
 	}
-	SeekRec(CFile, 0);
+	CFile->SeekRec(0);
 	return true;
 }
 
@@ -363,7 +363,7 @@ void CreateF()
 		CFile->FF->XF->TestErr(); /*SetNotValid*/
 		CFile->FF->XF->SetEmpty();
 	}
-	SeekRec(CFile, 0);
+	CFile->SeekRec(0);
 	SetUpdHandle(CFile->FF->Handle);
 }
 
@@ -389,7 +389,7 @@ LockMode RewriteF(const bool Append)
 	/* !!! with CFile^ do!!! */
 	if (Append) {
 		result = NewLMode(CFile, CrMode);
-		SeekRec(CFile, CFile->FF->NRecs);
+		CFile->SeekRec(CFile->FF->NRecs);
 		if (CFile->FF->XF != nullptr) {
 			CFile->FF->XF->FirstDupl = true;
 			TestXFExist();
@@ -398,7 +398,7 @@ LockMode RewriteF(const bool Append)
 	}
 	result = NewLMode(CFile, ExclMode);
 	CFile->FF->NRecs = 0;
-	SeekRec(CFile, 0);
+	CFile->SeekRec(0);
 	SetUpdHandle(CFile->FF->Handle);
 	XFNotValid();
 	if (CFile->FF->file_type == FileType::INDEX) CFile->FF->XF->NoCreate = true;

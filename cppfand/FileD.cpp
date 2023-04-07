@@ -87,3 +87,24 @@ void FileD::WriteRec(size_t rec_nr, void* record)
 		(rec_nr - 1) * this->FF->RecLen + this->FF->FrstDispl, this->FF->RecLen, record);
 	this->FF->WasWrRec = true;
 }
+
+void FileD::IncNRecs(int i)
+{
+	this->FF->IncNRecs(i);
+}
+
+void FileD::DecNRecs(int i)
+{
+	this->FF->DecNRecs(i);
+}
+
+void FileD::SeekRec(int i)
+{
+	IRec = i;
+	if (FF->XF == nullptr) {
+		FF->Eof = (i >= FF->NRecs);
+	}
+	else {
+		FF->Eof = i >= FF->XF->NRecs;
+	}
+}

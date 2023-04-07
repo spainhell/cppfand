@@ -664,7 +664,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 				label1:
 					NewLMode(CFile, CrMode);
 					TestXFExist();
-					IncNRecs(CFile, 1);
+					CFile->IncNRecs(1);
 					app = true;
 				}
 			N = CFile->FF->NRecs;

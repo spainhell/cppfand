@@ -56,3 +56,24 @@ void FandFile::Reset()
 	LMode = NullMode; ExLMode = NullMode; TaLMode = NullMode;
 	XF = nullptr;
 }
+
+void FandFile::IncNRecs(int n)
+{
+#ifdef FandDemo
+	if (NRecs > 100) RunError(884);
+#endif
+	NRecs += n;
+	SetUpdHandle(Handle);
+	if (file_type == FileType::INDEX) {
+		SetUpdHandle(XF->Handle);
+	}
+}
+
+void FandFile::DecNRecs(int N)
+{
+	NRecs -= N;
+	SetUpdHandle(Handle);
+	if (file_type == FileType::INDEX) SetUpdHandle(XF->Handle);
+	WasWrRec = true;
+}
+
