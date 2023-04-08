@@ -35,18 +35,18 @@ public:
 	FileD* OrigFD = nullptr;  // like orig. or nil
 	
 	WORD CatIRec = 0;
-	std::vector<FieldDescr*> FldD;
 	bool IsParFile = false;
 	bool IsJournal = false;
 	bool IsHlpFile = false;
 	bool typSQLFile = false;
 	bool IsSQLFile = false;
 	bool IsDynFile = false;
-	
-	StringListEl* ViewNames = nullptr;  //after each string BYTE string with user codes 
-	
+
+	std::vector<FieldDescr*> FldD;
 	std::vector<XKey*> Keys;
 	std::vector<AddD*> Add;
+	StringListEl* ViewNames = nullptr;  //after each string BYTE string with user codes 
+
 
 	WORD GetNrKeys();
 	void Reset();
@@ -61,9 +61,10 @@ public:
 	void SeekRec(int n);
 	void CreateRec(int n, void* record);
 	void PutRec(void* record);
+	void DeleteRec(int n, void* record);
+	void DelAllDifTFlds(void* Rec, void* CompRec);
+	void RecallRec(int recNr, void* record);
 
 	// v CRecPtr vycte pozici zaznamu v .T00 souboru (ukazatel na zacatek textu)
 	int _T(FieldDescr* F, void* record);
-	
-
 };

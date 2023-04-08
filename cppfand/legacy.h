@@ -1,6 +1,6 @@
 #pragma once
 #include "constants.h"
-#include "pstring.h"
+#include "../Common/pstring.h"
 #include <vector>
 
 extern std::vector<std::string> paramstr;

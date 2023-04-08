@@ -1,7 +1,7 @@
 #pragma once
 #include "base.h"
 #include "constants.h"
-#include "pstring.h"
+#include "../Common/pstring.h"
 
 extern char* pBlk;
 extern WORD iBlk, nBlk, Po;

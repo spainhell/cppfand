@@ -1,6 +1,5 @@
 #pragma once
 #include <string>
-#include "../cppfand/pstring.h"
 
 class XItem
 {

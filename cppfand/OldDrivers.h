@@ -2,7 +2,6 @@
 
 #include "constants.h"
 #include "legacy.h"
-#include "pstring.h"
 #include "../Drivers/screen.h"
 #include "../Drivers/keyboard.h"
 

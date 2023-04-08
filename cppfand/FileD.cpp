@@ -135,6 +135,34 @@ void FileD::PutRec(void* record)
 	this->FF->PutRec(record, IRec);
 }
 
+void FileD::DeleteRec(int n, void* record)
+{
+	DelAllDifTFlds(record, nullptr);
+	for (int i = n; i <= FF->NRecs - 1; i++) {
+		ReadRec(i + 1, record);
+		WriteRec(i, record);
+	}
+	DecNRecs(1);
+}
+
+void FileD::DelAllDifTFlds(void* Rec, void* CompRec)
+{
+	for (auto& F : FldD) {
+		if (F->field_type == FieldType::TEXT && ((F->Flg & f_Stored) != 0)) DelDifTFld(Rec, CompRec, F);
+	}
+}
+
+void FileD::RecallRec(int recNr, void* record)
+{
+	TestXFExist();
+	FF->XF->NRecs++;
+	for (auto& K : Keys) {
+		K->Insert(recNr, false);
+	}
+	ClearDeletedFlag(FF, record);
+	WriteRec(recNr, record);
+}
+
 int FileD::_T(FieldDescr* F, void* record)
 {
 	return FF->_T(F, record);

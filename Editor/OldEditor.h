@@ -6,7 +6,7 @@
 #include "Blocks.h"
 #include "../cppfand/base.h"
 #include "../cppfand/constants.h"
-#include "../cppfand/pstring.h"
+#include "../Common/pstring.h"
 
 class Instr;
 struct EdExitD;

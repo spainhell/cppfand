@@ -53,5 +53,8 @@ public:
 
 	// v CRecPtr vycte pozici zaznamu v .T00 souboru (ukazatel na zacatek textu)
 	int _T(FieldDescr* F, void* record);
+
+	std::string CExtToT(std::string dir, std::string name, std::string ext);
+	std::string CExtToX(std::string dir, std::string name, std::string ext);
 };
 

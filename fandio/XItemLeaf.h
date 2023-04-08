@@ -1,5 +1,6 @@
 #pragma once
 #include "XItem.h"
+#include "../Common/pstring.h"
 
 /// implementace XItem pro kratky zaznam
 class XItemLeaf : public XItem

@@ -23,6 +23,7 @@
 #include "../Logging/Logging.h"
 #include "../MergeReport/genrprt.h"
 #include "../Common/textfunc.h"
+#include "../Common/compare.h"
 
 int TimerRE = 0;
 bool TxtEdCtrlUBrk, TxtEdCtrlF4Brk;
@@ -1900,7 +1901,7 @@ void UndoRecord()
 			}
 		}
 		else { // je toto spravne zanorene???
-			DelAllDifTFlds(E->NewRecPtr, E->OldRecPtr);
+			CFile->DelAllDifTFlds(E->NewRecPtr, E->OldRecPtr);
 		}
 
 		Move(E->OldRecPtr, E->NewRecPtr, CFile->FF->RecLen);
@@ -2035,7 +2036,7 @@ bool DeleteRecProc()
 					WK->DeleteAtNr(BaseRec);
 					WK->AddToRecNr(J + 1, -1);
 				}
-				DelAllDifTFlds(CRecPtr, nullptr);
+				CFile->DelAllDifTFlds(CRecPtr, nullptr);
 			}
 			else {
 				if (Subset) BaseRec++;
@@ -2052,7 +2053,7 @@ bool DeleteRecProc()
 			WK->DeleteAtNr(CRec());
 			WK->AddToRecNr(N, -1);
 		}
-		DeleteRec(N);
+		CFile->DeleteRec(N, CRecPtr);
 	}
 	CFld = E->FirstFld;
 	IRec = (BYTE)oIRec;
@@ -2383,7 +2384,7 @@ bool OldRecDiffers()
 		CFile->ReadRec(E->LockedRec, CRecPtr);
 	if (CompArea(CRecPtr, E->OldRecPtr, CFile->FF->RecLen) != _equ) {
 	label1:
-		DelAllDifTFlds(E->NewRecPtr, E->OldRecPtr);
+		CFile->DelAllDifTFlds(E->NewRecPtr, E->OldRecPtr);
 		Move(CRecPtr, E->NewRecPtr, CFile->FF->RecLen);
 		WasUpdated = false;
 		result = true;
@@ -2632,7 +2633,7 @@ bool WriteCRec(bool MayDispl, bool& Displ)
 		WrJournal('N', CRecPtr, time);
 	}
 label2:
-	if (!IsNewRec && !NoDelTFlds) DelAllDifTFlds(E->OldRecPtr, E->NewRecPtr);
+	if (!IsNewRec && !NoDelTFlds) CFile->DelAllDifTFlds(E->OldRecPtr, E->NewRecPtr);
 	E->EdUpdated = true;
 	NoDelTFlds = false;
 	IsNewRec = false;
@@ -4143,7 +4144,7 @@ label3:
 void DelNewRec()
 {
 	LockMode md;
-	DelAllDifTFlds(CRecPtr, nullptr);
+	CFile->DelAllDifTFlds(CRecPtr, nullptr);
 	if (CNRecs() == 1) return;
 	IsNewRec = false; Append = false;
 	WasUpdated = false; CFld = E->FirstFld;

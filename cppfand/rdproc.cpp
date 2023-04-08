@@ -9,7 +9,8 @@
 #include "rdfildcl.h"
 #include "rdrun.h"
 #include "runfrml.h"
-#include "../exprcmp/exprcmp.h"
+#include "../Common/exprcmp.h"
+#include "../Common/compare.h"
 #include "models/Instr.h"
 
 bool IsRdUserFunc;

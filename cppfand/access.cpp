@@ -14,6 +14,7 @@
 #include "../fandio/FandFile.h"
 #include "../Logging/Logging.h"
 #include "../Common/textfunc.h"
+#include "../Common/compare.h"
 
 short CompLongStr(LongStr* S1, LongStr* S2)
 {
@@ -456,41 +457,9 @@ void TestCPathError()
 	}
 }
 
-std::string CExtToX(const std::string dir, const std::string name, std::string ext)
-{
-	ext[1] = 'X';
-	return dir + name + ext;
-}
-
-std::string CExtToT(const std::string dir, const std::string name, std::string ext)
-{
-	if (EquUpCase(ext, ".RDB")) ext = ".TTT";
-	else if (EquUpCase(ext, ".DBF")) {
-		if (CFile->FF->TF->Format == FandTFile::FptFormat) {
-			ext = ".FPT";
-		}
-		else {
-			ext = ".DBT";
-		}
-	}
-	else ext[1] = 'T';
-	return dir + name + ext;
-}
-
 void NegateESDI()
 {
 	// asm  jcxz @2; @1:not es:[di].byte; inc di; loop @1; @2:
-}
-
-void RecallRec(int RecNr)
-{
-	TestXFExist();
-	CFile->FF->XF->NRecs++;
-	for (auto& K : CFile->Keys) {
-		K->Insert(RecNr, false);
-	}
-	ClearDeletedFlag(CFile->FF, CRecPtr);
-	CFile->WriteRec(RecNr, CRecPtr);
 }
 
 bool IsNullValue(void* p, WORD l)
@@ -553,25 +522,9 @@ void DelDifTFld(void* Rec, void* CompRec, FieldDescr* F)
 	CRecPtr = cr;
 }
 
-void DelAllDifTFlds(void* Rec, void* CompRec)
-{
-	for (auto& F : CFile->FldD) {
-		if (F->field_type == FieldType::TEXT && ((F->Flg & f_Stored) != 0)) DelDifTFld(Rec, CompRec, F);
-	}
-}
-
 const WORD Alloc = 2048;
 const double FirstDate = 6.97248E+5;
 
-void DeleteRec(int N)
-{
-	DelAllDifTFlds(CRecPtr, nullptr);
-	for (int i = N; i <= CFile->FF->NRecs - 1; i++) {
-		CFile->ReadRec(i + 1, CRecPtr);
-		CFile->WriteRec(i, CRecPtr);
-	}
-	CFile->DecNRecs(1);
-}
 
 void ZeroAllFlds(FileD* file_d, void* record)
 {

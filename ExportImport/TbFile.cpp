@@ -4,6 +4,7 @@
 #include "../cppfand/GlobalVariables.h"
 #include "../cppfand/oaccess.h"
 #include "../cppfand/obaseww.h"
+#include "../Common/compare.h"
 
 FileD* x_FD = nullptr;
 WORD x_I = 0;

@@ -3,7 +3,7 @@
 #include "constants.h"
 #include "models/FrmlElem.h"
 #include "models/Instr.h"
-#include "pstring.h"
+#include "../Common/pstring.h"
 #include "rdrun.h"
 #include "switches.h"
 

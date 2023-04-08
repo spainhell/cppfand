@@ -699,7 +699,7 @@ void DeleteXRec(int RecNr, bool DelT)
 	//log->log(loglevel::DEBUG, "DeleteXRec(%i, %s)", RecNr, DelT ? "true" : "false");
 	TestXFExist();
 	DeleteAllIndexes(RecNr);
-	if (DelT) DelAllDifTFlds(CRecPtr, nullptr);
+	if (DelT) CFile->DelAllDifTFlds(CRecPtr, nullptr);
 	SetDeletedFlag(CFile->FF, CRecPtr);
 	CFile->WriteRec(RecNr, CRecPtr);
 	CFile->FF->XF->NRecs--;
@@ -711,7 +711,7 @@ void OverWrXRec(int RecNr, void* P2, void* P)
 	CRecPtr = P2;
 	if (DeletedFlag(CFile->FF, CRecPtr)) {
 		CRecPtr = P;
-		RecallRec(RecNr);
+		CFile->RecallRec(RecNr, CRecPtr);
 		return;
 	}
 	TestXFExist();

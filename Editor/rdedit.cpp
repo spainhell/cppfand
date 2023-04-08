@@ -9,6 +9,7 @@
 #include "../cppfand/rdfildcl.h"
 #include "../cppfand/rdrun.h"
 #include "../Common/textfunc.h"
+#include "../Common/compare.h"
 
 EditD* E = EditDRoot;
 

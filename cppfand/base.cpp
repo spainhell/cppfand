@@ -17,7 +17,8 @@
 #include "FileD.h"
 #include "GlobalVariables.h"
 #include "../datafiles/datafiles.h"
-#include "../exprcmp/exprcmp.h"
+#include "../Common/exprcmp.h"
+#include "../Common/compare.h"
 #include "../fandio/cache.h"
 #include "../Logging/Logging.h"
 
@@ -27,8 +28,6 @@ Spec spec;
 Fonts fonts;
 Colors colors;
 
-char CharOrdTab[256];
-char UpcCharTab[256];
 WORD TxtCols = 80;
 WORD TxtRows = 25;
 

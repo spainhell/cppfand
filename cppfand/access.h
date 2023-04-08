@@ -87,7 +87,6 @@ void S_(FieldDescr* F, std::string S, void* record = nullptr);
 void LongS_(FieldDescr* F, LongStr* S);
 void T_(FieldDescr* F, int Pos);
 
-void RecallRec(int RecNr);
 bool LinkUpw(LinkD* LD, int& N, bool WithT);
 bool LinkLastRec(FileD* FD, int& N, bool WithT);
 bool TryLMode(FileD* fileD, LockMode Mode, LockMode& OldMode, WORD Kind);
@@ -97,21 +96,19 @@ bool TryLockN(FandFile* fand_file, int N, WORD Kind);
 void UnLockN(FandFile* fand_file, int N);
 void ClearRecSpace(void* p);
 void ZeroAllFlds(FileD* file_d, void* record);
+
 void DelTFld(FieldDescr* F);
+void DelTFlds();
 void DelDifTFld(void* Rec, void* CompRec, FieldDescr* F);
 
-void DelAllDifTFlds(void* Rec, void* CompRec);
-void DeleteRec(int N);
+
 void AsgnParFldFrml(FileD* FD, FieldDescr* F, FrmlElem* Z, bool Ad);
 
-void DelTFlds();
+
 void CopyRecWithT(void* p1, void* p2);
 void CloseClearHCFile(FandFile* fand_file);
 void TestCPathError();
 void AssignNRecs(bool Add, int N);
-
-std::string CExtToT(std::string dir, std::string name, std::string ext);
-std::string CExtToX(std::string dir, std::string name, std::string ext);
 
 void CloseGoExit(FandFile* fand_file);
 

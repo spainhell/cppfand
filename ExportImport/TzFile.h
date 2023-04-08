@@ -1,6 +1,6 @@
 #pragma once
 #include "TyFile.h"
-#include "../cppfand/pstring.h"
+#include "../Common/pstring.h"
 #include "../cppfand/olongstr.h"
 
 class TzFile : public TyFile

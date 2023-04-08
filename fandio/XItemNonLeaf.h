@@ -1,5 +1,5 @@
 #pragma once
-#include "../cppfand/pstring.h"
+#include "../Common/pstring.h"
 #include "XItem.h"
 
 /// implementace XItem pro delsi zaznam

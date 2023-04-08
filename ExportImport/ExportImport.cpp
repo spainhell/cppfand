@@ -16,6 +16,7 @@
 #include "../MergeReport/rdmerg.h"
 #include "../MergeReport/runmerg.h"
 #include "../Common/textfunc.h"
+#include "../Common/compare.h"
 
 
 bool OldToNewCat(int& FilSz)

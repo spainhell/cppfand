@@ -2,7 +2,7 @@
 #include "constants.h"
 #include "FileD.h"
 #include "OldDrivers.h"
-#include "pstring.h"
+#include "../Common/pstring.h"
 
 
 struct WGrBuf

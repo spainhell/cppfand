@@ -10,6 +10,7 @@
 #include "rdproc.h"
 #include "runfrml.h"
 #include "runproj.h"
+#include "../Common/compare.h"
 #include "../fandio/FandXFile.h"
 
 bool HasTT;

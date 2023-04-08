@@ -158,7 +158,7 @@ fail:
 void CrIndRec()
 {
 	CFile->CreateRec(CFile->FF->NRecs + 1, CRecPtr);
-	RecallRec(CFile->FF->NRecs);
+	CFile->RecallRec(CFile->FF->NRecs, CRecPtr);
 }
 
 bool Link(AddD* AD, int& N, char& Kind2)

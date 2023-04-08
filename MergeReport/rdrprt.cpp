@@ -8,6 +8,7 @@
 #include "../cppfand/KeyFldD.h"
 #include "../cppfand/obase.h"
 #include "../cppfand/rdfildcl.h"
+#include "../Common/compare.h"
 
 
 BlkD* CBlk;

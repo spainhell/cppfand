@@ -18,6 +18,7 @@
 #include "../cppfand/wwmix.h"
 #include "../cppfand/models/FrmlElem.h"
 #include "../Common/textfunc.h"
+#include "../Common/compare.h"
 
 const int TXTCOLS = 80;
 int Timer = 0;

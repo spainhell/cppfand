@@ -1,6 +1,6 @@
 #include "runfrml.h"
 #include <memory>
-#include "pstring.h"
+#include "../Common/pstring.h"
 #include "legacy.h"
 #include "rdrun.h"
 #include <cmath>

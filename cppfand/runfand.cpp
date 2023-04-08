@@ -3,7 +3,8 @@
 #include <Windows.h>
 #include "base.h"
 #include "legacy.h"
-#include "pstring.h"
+#include "../Common/pstring.h"
+#include "../Common/compare.h"
 #include "../pascal/real48.h"
 #include "OldDrivers.h"
 #include "access.h"

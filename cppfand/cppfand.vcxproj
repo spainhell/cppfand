@@ -183,7 +183,6 @@
     <ClCompile Include="Rdb.cpp" />
     <ClCompile Include="rdfildcl.cpp" />
     <ClCompile Include="runproj.cpp" />
-    <ClCompile Include="pstring.cpp" />
     <ClCompile Include="rdproc.cpp" />
     <ClCompile Include="rdrun.cpp" />
     <ClCompile Include="runfand.cpp" />
@@ -219,7 +218,6 @@
     <ClInclude Include="printtxt.h" />
     <ClInclude Include="Rdb.h" />
     <ClInclude Include="runproj.h" />
-    <ClInclude Include="pstring.h" />
     <ClInclude Include="rdfildcl.h" />
     <ClInclude Include="rdproc.h" />
     <ClInclude Include="rdrun.h" />
@@ -249,9 +247,6 @@
     </ProjectReference>
     <ProjectReference Include="..\ExportImport\ExportImport.vcxproj">
       <Project>{b84d55f3-9189-4319-b73d-d3ee0dd4b0f1}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\exprcmp\exprcmp.vcxproj">
-      <Project>{f5de7ca0-3e83-42c1-9602-54cfea2e5378}</Project>
     </ProjectReference>
     <ProjectReference Include="..\fandio\fandio.vcxproj">
       <Project>{a75daab5-58e5-4886-b1f0-6d737afba4ab}</Project>

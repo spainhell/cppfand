@@ -13,6 +13,7 @@
 #include "shared.h"
 #include "../cppfand/wwmix.h"
 #include "../Common/textfunc.h"
+#include "../Common/compare.h"
 
 WORD PrintDH;
 YRec Y;

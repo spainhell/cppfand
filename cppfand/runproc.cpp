@@ -573,7 +573,7 @@ void DeleteRecProc(Instr_recs* PD)
 		if (!DeletedFlag(CFile->FF, CRecPtr)) DeleteXRec(n, true);
 	}
 	else {
-		DeleteRec(n);
+		CFile->DeleteRec(n, CRecPtr);
 	}
 	OldLMode(CFile, md);
 	ReleaseStore(CRecPtr);
@@ -612,7 +612,7 @@ void UpdRec(void* CR, int N, bool AdUpd)
 		CFile->WriteRec(N, CRecPtr);
 	}
 	if (!del) {
-		DelAllDifTFlds(cr2, nullptr);
+		CFile->DelAllDifTFlds(cr2, nullptr);
 	}
 	ReleaseStore(cr2);
 }
@@ -649,7 +649,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 	else if (N == 0) {
 
 #ifdef FandSQL
-		if (CFile->IsSQLFile) { Strm1->InsertRec(ad, true); goto label4; }
+		if (CFile->IsSQLFile) { Strm1->InsertRec(ad, true); ReleaseStore(cr); OldLMode(CFile, md); return; }
 #endif
 		goto label1;
 	}
@@ -661,7 +661,9 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 				label0:
 					DelTFlds();
 					ZeroAllFlds(CFile, CRecPtr);
-					goto label4;
+					ReleaseStore(cr);
+					OldLMode(CFile, md);
+					return;
 				}
 				else {
 				label1:
@@ -673,22 +675,25 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 			N = CFile->FF->NRecs;
 		}
 		else if (!SrchXKey(k, x, N)) {
-		label2:
 			if (IsRead) {
 				DelTFlds();
 				ZeroAllFlds(CFile, CRecPtr);
 				SetDeletedFlag(CFile->FF, CRecPtr);
-				goto label4;
+				ReleaseStore(cr);
+				OldLMode(CFile, md);
+				return;
 			}
 			msg = 613;
-			goto label3;
+			SetMsgPar(PD->LV->Name);
+			RunErrorM(md, msg);
 		}
 	}
-	else if ((N <= 0) || (N > CFile->FF->NRecs)) {
-		msg = 641;
-	label3:
-		SetMsgPar(PD->LV->Name);
-		RunErrorM(md, msg);
+	else {
+		if ((N <= 0) || (N > CFile->FF->NRecs)) {
+			msg = 641;
+			SetMsgPar(PD->LV->Name);
+			RunErrorM(md, msg);
+		}
 	}
 	if (IsRead) {
 		CRecPtr = cr;
@@ -702,14 +707,20 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 		if (app) {
 			CRecPtr = cr;
 			if (CFile->FF->file_type == FileType::INDEX) {
-				RecallRec(N);
+				CFile->RecallRec(N, CRecPtr);
 			}
-			else CFile->WriteRec(N, CRecPtr);
-			if (ad) LastExitCode = !RunAddUpdte('+', nullptr, nullptr);
+			else {
+				CFile->WriteRec(N, CRecPtr);
+			}
+			if (ad) {
+				LastExitCode = !RunAddUpdte('+', nullptr, nullptr);
+			}
 		}
-		else UpdRec(cr, N, ad);
+		else {
+			UpdRec(cr, N, ad);
+		}
 	}
-label4:
+
 	ReleaseStore(cr);
 	OldLMode(CFile, md);
 }
@@ -1128,7 +1139,7 @@ void RecallRecProc(Instr_recs* PD)
 	if ((N > 0) && (N <= CFile->FF->NRecs)) {
 		CFile->ReadRec(N, CRecPtr);
 		if (DeletedFlag(CFile->FF, CRecPtr)) {
-			RecallRec(N);
+			CFile->RecallRec(N, CRecPtr);
 			if (PD->AdUpd) {
 				LastExitCode = !RunAddUpdte('+', nullptr, nullptr);
 			}

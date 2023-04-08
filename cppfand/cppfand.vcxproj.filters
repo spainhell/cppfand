@@ -27,9 +27,6 @@
     <ClCompile Include="runfand.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="pstring.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="OldDrivers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -150,9 +147,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="wwmix.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="pstring.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="access.h">

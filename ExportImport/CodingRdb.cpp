@@ -39,7 +39,7 @@ void CodingRdb::CodeRdb(bool Rotate)
 		while (i <= CFile->FF->NRecs) {
 			CFile->ReadRec(i, CRecPtr);
 			s = _ShortS(ChptTyp);
-			if (s[0] == ' ' || s[0] == 'I') DeleteRec(i);
+			if (s[0] == ' ' || s[0] == 'I') CFile->DeleteRec(i, CRecPtr);
 			else i++;
 		}
 	}

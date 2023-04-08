@@ -10,6 +10,7 @@
 #include "../fandio/FandTFile.h"
 #include "wwmix.h"
 #include "../Editor/OldEditor.h"
+#include "../Common/compare.h"
 #include "../Common/textfunc.h"
 
 
@@ -594,47 +595,6 @@ label1:
 	return ValofS(S);
 }
 
-bool EquUpCase(pstring& S1, pstring& S2)
-{
-	if (S1.length() != S2.length()) return false;
-	for (size_t i = 1; i <= S1.length(); i++) // Pascal. string -> index od 1
-	{
-		BYTE c1 = S1[i]; BYTE c2 = S2[i];
-		BYTE upC1 = UpcCharTab[c1]; BYTE upC2 = UpcCharTab[c2];
-		if (upC1 != upC2) return false;
-	}
-	return true;
-
-	/*asm  lea si, LexWord; les di, S; cld;xor ch, ch; mov cl, [si]; cmpsb; jnz @3;
-	jcxz @2;xor bh, bh;
-	@1:  mov bl, [si]; mov al, BYTE PTR UpcCharTab[bx]; mov bl, es: [di] ;
-	cmp al, BYTE PTR UpcCharTab[bx]; jnz @3; inc si; inc di; loop @1;
-	@2:  mov ax, 1; jmp @4;
-	@3: xor ax, ax;
-	@4:  end;*/
-	//return false;
-}
-
-bool EquUpCase(std::string S1, std::string S2)
-{
-	if (S1.length() != S2.length()) return false;
-	for (size_t i = 0; i <= S1.length(); i++)
-	{
-		BYTE c1 = S1[i];
-		BYTE c2 = S2[i];
-		BYTE upC1 = UpcCharTab[c1];
-		BYTE upC2 = UpcCharTab[c2];
-		if (upC1 != upC2) return false;
-	}
-	return true;
-}
-
-bool EquUpCase(const char* S)
-{
-	pstring temp = S;
-	return EquUpCase(temp, LexWord);
-}
-
 //bool TestKeyWord(pstring S)
 //{
 //	return (Lexem == _identifier) && EquUpCase(S, LexWord);
@@ -958,8 +918,8 @@ label1:
 				if (Lexem == '.') {
 					RdLex();
 					TestIdentif();
-					if (EquUpCase("X")) FDTyp = FileType::INDEX;
-					else if (EquUpCase("DBF")) FDTyp = FileType::DBF;
+					if (EquUpCase("X", LexWord)) FDTyp = FileType::INDEX;
+					else if (EquUpCase("DBF", LexWord)) FDTyp = FileType::DBF;
 					else Error(185);
 					RdLex();
 				}
@@ -1926,7 +1886,7 @@ FrmlElem* RdPrim(char& FTyp)
 			Z = new FrmlElem5(_const, 1, false); // GetOp(_const, 1);
 			FTyp = 'B';
 		}
-		else if (!EquUpCase("OWNED") && (ForwChar == '(')) {
+		else if (!EquUpCase("OWNED", LexWord) && (ForwChar == '(')) {
 			if (FindFuncD(&Z)) FTyp = ((FrmlElem19*)Z)->FC->FTyp;
 			else if (IsFun(S3Fun, LexWord, FunCode))
 			{
@@ -2336,7 +2296,7 @@ FrmlElem* RdKeyInBool(KeyInD** KIRoot, bool NewMyBP, bool FromRdProc, bool& SQLF
 		FileVarsAllowed = true;
 		if ((Lexem == _identifier)
 			&& (ForwChar == '(')
-			&& (EquUpCase("EVALB") || EquUpCase("EVALS") || EquUpCase("EVALR")))
+			&& (EquUpCase("EVALB", LexWord) || EquUpCase("EVALS", LexWord) || EquUpCase("EVALR", LexWord)))
 			FileVarsAllowed = false;
 	}
 	if (IsKeyWord("KEY")) {
@@ -2470,7 +2430,7 @@ FileD* FindFileD()
 		}
 		R = R->ChainBack;
 	}
-	if (EquUpCase("CATALOG")) return CatFD;
+	if (EquUpCase("CATALOG", LexWord)) return CatFD;
 	return nullptr;
 }
 
@@ -2530,10 +2490,13 @@ bool IsRoleName(bool Both, FileD** FD, LinkD** LD)
 FrmlElem* RdFAccess(FileD* FD, LinkD* LD, char& FTyp)
 {
 	TestIdentif();
-	auto Z = new FrmlElem7(_access, 12); // GetOp(_access, 12);
+	auto Z = new FrmlElem7(_access, 12);
 	Z->File2 = FD;
 	Z->LD = LD;
-	if ((LD != nullptr) && EquUpCase("EXIST")) { RdLex(); FTyp = 'B'; }
+	if ((LD != nullptr) && EquUpCase("EXIST", LexWord)) {
+		RdLex();
+		FTyp = 'B';
+	}
 	else {
 		FileD* cf = CFile;
 		CFile = FD;
@@ -2548,7 +2511,7 @@ FrmlElem* RdFAccess(FileD* FD, LinkD* LD, char& FTyp)
 
 FrmlElem* FrmlContxt(FrmlElem* Z, FileD* FD, void* RP)
 {
-	auto Z1 = new FrmlElem8(_newfile, 8); // GetOp(_newfile, 8);
+	auto Z1 = new FrmlElem8(_newfile, 8);
 	Z1->Frml = Z;
 	Z1->NewFile = FD;
 	Z1->NewRP = RP;
@@ -2557,7 +2520,7 @@ FrmlElem* FrmlContxt(FrmlElem* Z, FileD* FD, void* RP)
 
 FrmlElem* MakeFldFrml(FieldDescr* F, char& FTyp)
 {
-	auto Z = new FrmlElem7(_field, 4); // GetOp(_field, 4);
+	auto Z = new FrmlElem7(_field, 4);
 	Z->Field = F;
 	FTyp = F->frml_type;
 	return Z;

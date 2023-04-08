@@ -176,6 +176,11 @@
     <ClInclude Include="TyFile.h" />
     <ClInclude Include="TzFile.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\fandio\fandio.vcxproj">
+      <Project>{a75daab5-58e5-4886-b1f0-6d737afba4ab}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

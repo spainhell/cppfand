@@ -24,9 +24,33 @@
     <ClInclude Include="textfunc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="exprcmp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="codePages.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="compare.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pstring.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="textfunc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="exprcmp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="compare.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pstring.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="codePages.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

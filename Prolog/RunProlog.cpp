@@ -13,6 +13,7 @@
 #include "../cppfand/runproj.h"
 #include "../cppfand/models/Instr.h"
 #include "../Editor/OldEditor.h"
+#include "../Common/compare.h"
 
 const WORD MaxPackedPredLen = 4000;
 
@@ -1922,8 +1923,12 @@ void AssertFand(TPredicate* P, TCommand* C)
 	{
 		TestXFExist();
 		CFile->IncNRecs(1);
-		if (CFile->FF->file_type == FileType::INDEX) RecallRec(CFile->FF->NRecs);
-		else CFile->WriteRec(CFile->FF->NRecs, CRecPtr);
+		if (CFile->FF->file_type == FileType::INDEX) {
+			CFile->RecallRec(CFile->FF->NRecs, CRecPtr);
+		}
+		else {
+			CFile->WriteRec(CFile->FF->NRecs, CRecPtr);
+		}
 	}
 	OldLMode(CFile, md);
 	ReleaseStore(CRecPtr);
@@ -2181,7 +2186,7 @@ label1:
 			fs->IRec--;
 		}
 		else {
-			DeleteRec(RecNr);
+			CFile->DeleteRec(RecNr, CRecPtr);
 		}
 		OldLMode(CFile, md1);
 	}

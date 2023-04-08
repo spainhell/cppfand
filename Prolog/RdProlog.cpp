@@ -7,7 +7,7 @@
 #include "../cppfand/Chained.h"
 #include "../cppfand/FieldDescr.h"
 #include "../cppfand/FileD.h"
-#include "../cppfand/pstring.h"
+#include "../Common/pstring.h"
 #include "../cppfand/compile.h"
 #include "../cppfand/GlobalVariables.h"
 #include "../cppfand/KeyFldD.h"
