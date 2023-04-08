@@ -1,5 +1,4 @@
 #include "FandFile.h"
-#include "../Common/compare.h"
 
 FandFile::FandFile()
 {
@@ -103,25 +102,4 @@ int FandFile::_T(FieldDescr* F, void* record)
 		if (record == nullptr) return 0;
 		return *(int*)source;
 	}
-}
-
-std::string FandFile::CExtToT(std::string dir, std::string name, std::string ext)
-{
-	ext[1] = 'X';
-	return dir + name + ext;
-}
-
-std::string FandFile::CExtToX(std::string dir, std::string name, std::string ext)
-{
-	if (EquUpCase(ext, ".RDB")) ext = ".TTT";
-	else if (EquUpCase(ext, ".DBF")) {
-		if (TF->Format == FandTFile::FptFormat) {
-			ext = ".FPT";
-		}
-		else {
-			ext = ".DBT";
-		}
-	}
-	else ext[1] = 'T';
-	return dir + name + ext;
 }

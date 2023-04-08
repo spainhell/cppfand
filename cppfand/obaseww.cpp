@@ -308,10 +308,10 @@ void CFileMsg(WORD n, char Typ)
 {
 	SetCPathVol();
 	if (Typ == 'T') {
-		CPath = CFile->FF->CExtToT(CDir, CName, CExt);
+		CPath = CExtToT(CDir, CName, CExt);
 	}
 	else if (Typ == 'X') {
-		CPath = CFile->FF->CExtToX(CDir, CName, CExt);
+		CPath = CExtToX(CDir, CName, CExt);
 	}
 	std::string path = CPath;
 	ReplaceChar(path, '/', '\\');

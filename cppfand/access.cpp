@@ -1595,3 +1595,24 @@ std::string TranslateOrd(std::string text)
 	}
 	return trans;
 }
+
+std::string CExtToX(const std::string dir, const std::string name, std::string ext)
+{
+	ext[1] = 'X';
+	return dir + name + ext;
+}
+
+std::string CExtToT(const std::string dir, const std::string name, std::string ext)
+{
+	if (EquUpCase(ext, ".RDB")) ext = ".TTT";
+	else if (EquUpCase(ext, ".DBF")) {
+		if (CFile->FF->TF->Format == FandTFile::FptFormat) {
+			ext = ".FPT";
+		}
+		else {
+			ext = ".DBT";
+		}
+	}
+	else ext[1] = 'T';
+	return dir + name + ext;
+}

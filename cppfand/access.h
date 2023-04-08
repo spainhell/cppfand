@@ -114,5 +114,7 @@ void CloseGoExit(FandFile* fand_file);
 
 bool ChangeLMode(FileD* fileD, LockMode Mode, WORD Kind, bool RdPref);
 
-
 void FixFromReal(double r, void* FixNo, WORD FLen);
+
+std::string CExtToT(std::string dir, std::string name, std::string ext);
+std::string CExtToX(std::string dir, std::string name, std::string ext);
