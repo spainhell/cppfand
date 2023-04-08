@@ -8,7 +8,7 @@
 #include "../cppfand/obaseww.h"
 #include "../cppfand/rdfildcl.h"
 #include "../cppfand/rdrun.h"
-#include "../textfunc/textfunc.h"
+#include "../Common/textfunc.h"
 
 EditD* E = EditDRoot;
 

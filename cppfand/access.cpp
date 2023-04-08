@@ -13,7 +13,7 @@
 #include "runfrml.h"
 #include "../fandio/FandFile.h"
 #include "../Logging/Logging.h"
-#include "../textfunc/textfunc.h"
+#include "../Common/textfunc.h"
 
 short CompLongStr(LongStr* S1, LongStr* S2)
 {

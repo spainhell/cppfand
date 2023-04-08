@@ -1,5 +1,4 @@
 #include "textfunc.h"
-
 #include <algorithm>
 
 /// <summary>

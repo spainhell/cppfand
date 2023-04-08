@@ -19,7 +19,7 @@
 #include "../fandio/FandTFile.h"
 #include "wwmix.h"
 #include "../Editor/runedi.h"
-#include "../textfunc/textfunc.h"
+#include "../Common/textfunc.h"
 #include "../fandio/directory.h"
 
 double Owned(FrmlElem* Bool, FrmlElem* Sum, LinkD* LD)

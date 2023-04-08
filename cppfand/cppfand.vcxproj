@@ -235,6 +235,9 @@
     <ResourceCompile Include="cppfand.rc" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Common\Common.vcxproj">
+      <Project>{193522ab-6765-4a9f-a665-6917ac7bbbeb}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\datafiles\datafiles.vcxproj">
       <Project>{4175a73a-df08-4f11-b715-cbe5408af874}</Project>
     </ProjectReference>
@@ -264,9 +267,6 @@
     </ProjectReference>
     <ProjectReference Include="..\Prolog\Prolog.vcxproj">
       <Project>{3e78a386-79ee-4c49-8798-22553c6c40bf}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\textfunc\textfunc.vcxproj">
-      <Project>{4ce9c1c6-998b-48ae-b5a1-3403b2e02fbe}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

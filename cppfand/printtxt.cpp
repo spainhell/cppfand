@@ -2,7 +2,7 @@
 
 #include <fstream>
 #include "compile.h"
-#include "../textfunc/textfunc.h"
+#include "../Common/textfunc.h"
 #include "GlobalVariables.h"
 #include "legacy.h"
 #include "obase.h"

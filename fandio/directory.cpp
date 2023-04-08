@@ -4,7 +4,7 @@
 #include <chrono>
 
 #include "../exprcmp/exprcmp.h"
-#include "../textfunc/textfunc.h"
+#include "../Common/textfunc.h"
 
 namespace fs = std::filesystem;
 using namespace std::chrono_literals;

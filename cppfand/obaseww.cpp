@@ -1,6 +1,6 @@
 #include "obaseww.h"
 
-#include "../textfunc/textfunc.h"
+#include "../Common/textfunc.h"
 #include "base.h"
 #include "OldDrivers.h"
 #include "GlobalVariables.h"

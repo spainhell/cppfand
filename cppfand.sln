@@ -5,33 +5,50 @@ VisualStudioVersion = 17.1.32407.343
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cppfand", "cppfand\cppfand.vcxproj", "{8360D42B-FEC4-4A1A-A23A-AB63304A90DC}"
 	ProjectSection(ProjectDependencies) = postProject
+		{193522AB-6765-4A9F-A665-6917AC7BBBEB} = {193522AB-6765-4A9F-A665-6917AC7BBBEB}
 		{1DCA247B-35EC-434D-9E3B-66C507E4AC95} = {1DCA247B-35EC-434D-9E3B-66C507E4AC95}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pascal", "pascal\pascal.vcxproj", "{1DCA247B-35EC-434D-9E3B-66C507E4AC95}"
-	ProjectSection(ProjectDependencies) = postProject
-		{4CE9C1C6-998B-48AE-B5A1-3403B2E02FBE} = {4CE9C1C6-998B-48AE-B5A1-3403B2E02FBE}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "textfunc", "textfunc\textfunc.vcxproj", "{4CE9C1C6-998B-48AE-B5A1-3403B2E02FBE}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "datafiles", "datafiles\datafiles.vcxproj", "{4175A73A-DF08-4F11-B715-CBE5408AF874}"
+	ProjectSection(ProjectDependencies) = postProject
+		{193522AB-6765-4A9F-A665-6917AC7BBBEB} = {193522AB-6765-4A9F-A665-6917AC7BBBEB}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "exprcmp", "exprcmp\exprcmp.vcxproj", "{F5DE7CA0-3E83-42C1-9602-54CFEA2E5378}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "fandio", "fandio\fandio.vcxproj", "{A75DAAB5-58E5-4886-B1F0-6D737AFBA4AB}"
+	ProjectSection(ProjectDependencies) = postProject
+		{193522AB-6765-4A9F-A665-6917AC7BBBEB} = {193522AB-6765-4A9F-A665-6917AC7BBBEB}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Logging", "Logging\Logging.vcxproj", "{431CCFDA-764C-498C-AE07-276FB41EBBF9}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Editor", "Editor\Editor.vcxproj", "{A08457D5-2848-4FB1-AE40-EC55EF69B5DA}"
+	ProjectSection(ProjectDependencies) = postProject
+		{193522AB-6765-4A9F-A665-6917AC7BBBEB} = {193522AB-6765-4A9F-A665-6917AC7BBBEB}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MergeReport", "MergeReport\MergeReport.vcxproj", "{B945B1F8-EB80-4BCF-A75F-58AEA36353ED}"
+	ProjectSection(ProjectDependencies) = postProject
+		{193522AB-6765-4A9F-A665-6917AC7BBBEB} = {193522AB-6765-4A9F-A665-6917AC7BBBEB}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Prolog", "Prolog\Prolog.vcxproj", "{3E78A386-79EE-4C49-8798-22553C6C40BF}"
+	ProjectSection(ProjectDependencies) = postProject
+		{193522AB-6765-4A9F-A665-6917AC7BBBEB} = {193522AB-6765-4A9F-A665-6917AC7BBBEB}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Drivers", "Drivers\Drivers.vcxproj", "{EFF16929-F4E0-4B93-A05A-E6BCFEA36A68}"
+	ProjectSection(ProjectDependencies) = postProject
+		{193522AB-6765-4A9F-A665-6917AC7BBBEB} = {193522AB-6765-4A9F-A665-6917AC7BBBEB}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ExportImport", "ExportImport\ExportImport.vcxproj", "{B84D55F3-9189-4319-B73D-D3EE0DD4B0F1}"
+	ProjectSection(ProjectDependencies) = postProject
+		{193522AB-6765-4A9F-A665-6917AC7BBBEB} = {193522AB-6765-4A9F-A665-6917AC7BBBEB}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Common", "Common\Common.vcxproj", "{193522AB-6765-4A9F-A665-6917AC7BBBEB}"
 EndProject
@@ -59,14 +76,6 @@ Global
 		{1DCA247B-35EC-434D-9E3B-66C507E4AC95}.Release|x64.Build.0 = Release|x64
 		{1DCA247B-35EC-434D-9E3B-66C507E4AC95}.Release|x86.ActiveCfg = Release|Win32
 		{1DCA247B-35EC-434D-9E3B-66C507E4AC95}.Release|x86.Build.0 = Release|Win32
-		{4CE9C1C6-998B-48AE-B5A1-3403B2E02FBE}.Debug|x64.ActiveCfg = Debug|x64
-		{4CE9C1C6-998B-48AE-B5A1-3403B2E02FBE}.Debug|x64.Build.0 = Debug|x64
-		{4CE9C1C6-998B-48AE-B5A1-3403B2E02FBE}.Debug|x86.ActiveCfg = Debug|Win32
-		{4CE9C1C6-998B-48AE-B5A1-3403B2E02FBE}.Debug|x86.Build.0 = Debug|Win32
-		{4CE9C1C6-998B-48AE-B5A1-3403B2E02FBE}.Release|x64.ActiveCfg = Release|x64
-		{4CE9C1C6-998B-48AE-B5A1-3403B2E02FBE}.Release|x64.Build.0 = Release|x64
-		{4CE9C1C6-998B-48AE-B5A1-3403B2E02FBE}.Release|x86.ActiveCfg = Release|Win32
-		{4CE9C1C6-998B-48AE-B5A1-3403B2E02FBE}.Release|x86.Build.0 = Release|Win32
 		{4175A73A-DF08-4F11-B715-CBE5408AF874}.Debug|x64.ActiveCfg = Debug|x64
 		{4175A73A-DF08-4F11-B715-CBE5408AF874}.Debug|x64.Build.0 = Debug|x64
 		{4175A73A-DF08-4F11-B715-CBE5408AF874}.Debug|x86.ActiveCfg = Debug|Win32

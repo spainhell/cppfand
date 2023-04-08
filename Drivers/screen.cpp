@@ -2,7 +2,7 @@
 #include <exception>
 #include <stdarg.h>
 #include <vector>
-#include "../textfunc/textfunc.h"
+#include "../Common/textfunc.h"
 
 const unsigned int BUFFSIZE = 128 * 1024;
 

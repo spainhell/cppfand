@@ -15,7 +15,7 @@
 #include "../cppfand/compile.h"
 #include "../MergeReport/rdmerg.h"
 #include "../MergeReport/runmerg.h"
-#include "../textfunc/textfunc.h"
+#include "../Common/textfunc.h"
 
 
 bool OldToNewCat(int& FilSz)

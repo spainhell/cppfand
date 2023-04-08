@@ -10,7 +10,7 @@
 #include "../cppfand/runfrml.h"
 #include "../cppfand/wwmenu.h"
 #include "../cppfand/wwmix.h"
-#include "../textfunc/textfunc.h"
+#include "../Common/textfunc.h"
 
 
 std::vector<PFldD> PFldDs;

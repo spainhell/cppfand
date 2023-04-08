@@ -11,7 +11,7 @@
 #include "wwmix.h"
 #include "../fandio/FandXFile.h"
 #include "../ExportImport/ExportImport.h"
-#include "../textfunc/textfunc.h"
+#include "../Common/textfunc.h"
 
 void OpenXWorkH()
 {

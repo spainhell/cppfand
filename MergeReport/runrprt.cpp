@@ -12,7 +12,7 @@
 #include "runmerg.h"
 #include "shared.h"
 #include "../cppfand/wwmix.h"
-#include "../textfunc/textfunc.h"
+#include "../Common/textfunc.h"
 
 WORD PrintDH;
 YRec Y;

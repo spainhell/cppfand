@@ -31,7 +31,7 @@
 #include "../MergeReport/rdrprt.h"
 #include "../MergeReport/runmerg.h"
 #include "../MergeReport/runrprt.h"
-#include "../textfunc/textfunc.h"
+#include "../Common/textfunc.h"
 
 
 void UserHeadLine(std::string UserHeader)

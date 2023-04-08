@@ -9,7 +9,7 @@
 #include "../fandio/FandTFile.h"
 #include "../Editor/runedi.h"
 #include "../fandio/directory.h"
-#include "../textfunc/textfunc.h"
+#include "../Common/textfunc.h"
 
 SS ss;
 

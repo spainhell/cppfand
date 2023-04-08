@@ -10,7 +10,7 @@
 #include "runproj.h"
 #include "../Editor/OldEditor.h"
 #include "../Editor/EditorHelp.h"
-#include "../textfunc/textfunc.h"
+#include "../Common/textfunc.h"
 
 
 bool TRect::Contains(TPoint* P)

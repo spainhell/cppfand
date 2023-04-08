@@ -21,6 +21,10 @@
   <ItemGroup>
     <ClInclude Include="FileEnums.h" />
     <ClInclude Include="LongStr.h" />
+    <ClInclude Include="textfunc.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="textfunc.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

@@ -17,7 +17,7 @@
 #include "../cppfand/wwmenu.h"
 #include "../cppfand/wwmix.h"
 #include "../cppfand/models/FrmlElem.h"
-#include "../textfunc/textfunc.h"
+#include "../Common/textfunc.h"
 
 const int TXTCOLS = 80;
 int Timer = 0;

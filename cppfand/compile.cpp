@@ -10,7 +10,8 @@
 #include "../fandio/FandTFile.h"
 #include "wwmix.h"
 #include "../Editor/OldEditor.h"
-#include "../textfunc/textfunc.h"
+#include "../Common/textfunc.h"
+
 
 const BYTE MaxLen = 9;
 RdbPos ChptIPos; // used in LexAnal & ProjMgr

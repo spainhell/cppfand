@@ -22,7 +22,7 @@
 #include "../cppfand/wwmenu.h"
 #include "../Logging/Logging.h"
 #include "../MergeReport/genrprt.h"
-#include "../textfunc/textfunc.h"
+#include "../Common/textfunc.h"
 
 int TimerRE = 0;
 bool TxtEdCtrlUBrk, TxtEdCtrlF4Brk;

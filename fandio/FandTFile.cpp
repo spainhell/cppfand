@@ -5,7 +5,7 @@
 #include "../cppfand/obaseww.h"
 #include "../pascal/random.h"
 #include "../pascal/real48.h"
-#include "../textfunc/textfunc.h"
+#include "../Common/textfunc.h"
 
 struct TT1Page
 {

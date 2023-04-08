@@ -10,7 +10,7 @@
 #include <fstream>
 
 #include "GlobalVariables.h"
-#include "../textfunc/textfunc.h"
+#include "../Common/textfunc.h"
 #include "../fandio/directory.h"
 
 std::vector<std::string> paramstr;

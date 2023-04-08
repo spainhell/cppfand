@@ -19,8 +19,8 @@
 #include "wwmix.h"
 #include "../Editor/OldEditor.h"
 #include "../Editor/runedi.h"
-#include "../textfunc/textfunc.h"
 #include "../fandio/directory.h"
+#include "../Common/textfunc.h"
 
 
 void ScrGraphMode(bool Redraw, WORD OldScrSeg)
