@@ -51,6 +51,8 @@ public:
 	void DecNRecs(int N);
 	void PutRec(void* record, int& i_rec);
 
+	size_t RecordSize();
+
 	// v CRecPtr vycte pozici zaznamu v .T00 souboru (ukazatel na zacatek textu)
 	int _T(FieldDescr* F, void* record);
 };

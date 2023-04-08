@@ -85,6 +85,11 @@ void FandFile::PutRec(void* record, int& i_rec)
 	Eof = true;
 }
 
+size_t FandFile::RecordSize()
+{
+	return RecLen;
+}
+
 int FandFile::_T(FieldDescr* F, void* record)
 {
 	int n = 0;

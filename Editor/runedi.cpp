@@ -353,7 +353,7 @@ void SetWasUpdated(FandFile* fand_file, void* record)
 			SetUpdFlag(fand_file, record);
 		}
 		//Move(E->NewRecPtr, E->OldRecPtr, CFileRecSize(CFile->FF));
-		memcpy(E->OldRecPtr, E->NewRecPtr, CFileRecSize(fand_file));
+		memcpy(E->OldRecPtr, E->NewRecPtr, fand_file->RecordSize());
 		WasUpdated = true;
 	}
 }

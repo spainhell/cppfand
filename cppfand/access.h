@@ -50,7 +50,6 @@ WORD CompLexStr(const pstring& S1, const pstring& S2);
 WORD CompLexStrings(const std::string& S1, const std::string& S2);
 
 void RunErrorM(LockMode Md, WORD N);
-size_t CFileRecSize(FandFile* fand_file);
 void SetTWorkFlag(FandFile* fand_file, void* record);
 bool HasTWorkFlag(FandFile* fand_file, void* record);
 void SetUpdFlag(FandFile* fand_file, void* record);

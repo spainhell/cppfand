@@ -1382,11 +1382,6 @@ WORD CompLexStrings(const std::string& S1, const std::string& S2)
 	return result;
 }
 
-size_t CFileRecSize(FandFile* fand_file)
-{
-	return fand_file->RecLen;
-}
-
 void SetTWorkFlag(FandFile* fand_file, void* record)
 {
 	BYTE* p = (BYTE*)record;

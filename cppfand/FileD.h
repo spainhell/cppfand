@@ -64,7 +64,7 @@ public:
 	void DeleteRec(int n, void* record);
 	void DelAllDifTFlds(void* Rec, void* CompRec);
 	void RecallRec(int recNr, void* record);
-
+	
 	// v CRecPtr vycte pozici zaznamu v .T00 souboru (ukazatel na zacatek textu)
 	int _T(FieldDescr* F, void* record);
 };
