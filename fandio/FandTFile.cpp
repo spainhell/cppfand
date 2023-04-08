@@ -6,6 +6,7 @@
 #include "../pascal/random.h"
 #include "../pascal/real48.h"
 #include "../Common/textfunc.h"
+#include "../Common/compare.h"
 
 struct TT1Page
 {

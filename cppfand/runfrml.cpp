@@ -5,7 +5,6 @@
 #include "rdrun.h"
 #include <cmath>
 #include <ctime>
-
 #include "FieldDescr.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
@@ -20,6 +19,7 @@
 #include "wwmix.h"
 #include "../Editor/runedi.h"
 #include "../Common/textfunc.h"
+#include "../Common/compare.h"
 #include "../fandio/directory.h"
 
 double Owned(FrmlElem* Bool, FrmlElem* Sum, LinkD* LD)

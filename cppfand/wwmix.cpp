@@ -1,5 +1,4 @@
 #include "wwmix.h"
-
 #include "compile.h"
 #include "FieldDescr.h"
 #include "FileD.h"
@@ -10,6 +9,7 @@
 #include "../Editor/runedi.h"
 #include "../fandio/directory.h"
 #include "../Common/textfunc.h"
+#include "../Common/compare.h"
 
 SS ss;
 

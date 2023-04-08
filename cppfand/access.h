@@ -20,13 +20,11 @@ const BYTE f_Encryp = 2; // {FieldD flags}
 const BYTE f_Mask = 4;
 const BYTE f_Comma = 8; // {FieldD flags}
 
-struct DepD : Chained<DepD> // r122
+struct DepD : Chained<DepD>
 {
 	FrmlElem* Bool = nullptr;
 	FrmlElem* Frml = nullptr;
 };
-
-using DepDPtr = DepD*;
 
 struct FuncD
 {
@@ -36,18 +34,6 @@ struct FuncD
 	Instr* pInstr = nullptr; // {InstrPtr}
 	pstring Name;
 };
-
-short CompLongStr(LongStr* S1, LongStr* S2); // r529 ASM
-short CompLongShortStr(LongStr* S1, pstring* S2); // r551 ASM
-short CompArea(void* A, void* B, short L); // r575 ASM
-short CompStr(pstring& S1, pstring& S2); // r792 ASM
-int CompStr(std::string& S1, std::string& S2);
-
-WORD CompLexLongStr(LongStr* S1, LongStr* S2);
-WORD CompLexLongShortStr(LongStr* S1, pstring& S2);
-WORD CompLexStr(pstring& S1, pstring& S2);
-WORD CompLexStr(const pstring& S1, const pstring& S2);
-WORD CompLexStrings(const std::string& S1, const std::string& S2);
 
 void RunErrorM(LockMode Md, WORD N);
 void SetTWorkFlag(FandFile* fand_file, void* record);

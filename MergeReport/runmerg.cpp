@@ -1,6 +1,4 @@
 #include "runmerg.h"
-
-
 #include "shared.h"
 #include "../cppfand/ChkD.h"
 #include "../cppfand/FieldDescr.h"
@@ -11,6 +9,7 @@
 #include "../cppfand/oaccess.h"
 #include "../cppfand/obaseww.h"
 #include "../cppfand/runfrml.h"
+#include "../Common/compare.h"
 
 int NRecsAll;
 

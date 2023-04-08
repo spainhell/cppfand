@@ -8,6 +8,7 @@
 #include "XPage.h"
 #include "../Logging/Logging.h"
 #include "../pascal/asm.h"
+#include "../Common/compare.h"
 
 XKey::XKey()
 {
