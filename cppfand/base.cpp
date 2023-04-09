@@ -1,6 +1,7 @@
 #pragma once
 
 #include "base.h"
+
 #include <windows.h>
 #include <errhandlingapi.h>
 #include <fileapi.h>
@@ -920,10 +921,13 @@ void TruncH(FILE* handle, size_t N)
 	// cilem je zkratit delku souboru na N
 	if (handle == nullptr) return;
 	if (FileSizeH(handle) > N) {
+		//_chsize((int)handle, N);
 		SeekH(handle, N);
-		SetEndOfFile(handle);
-		SeekH(handle, 0);
-		SetFileValidData(handle, N);
+		int result = SetEndOfFile(handle);
+		//SeekH(handle, 0);
+		//SetFileValidData(handle, N);
+		DWORD error = GetLastError();
+		printf("%i", result);
 	}
 }
 

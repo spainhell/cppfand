@@ -379,10 +379,10 @@ void CallEditTxt()
 	EditTxtFile(nullptr, 'T', errMessage, emptyEdExit, 0, 0, nullptr, 0, "", 0, nullptr);
 }
 
-void SelectEditTxt(pstring e, bool OnFace)
+void SelectEditTxt(const std::string& ext, bool OnFace)
 {
 	wwmix ww;
-	CPath = ww.SelectDiskFile(e, 35, OnFace);
+	CPath = ww.SelectDiskFile(ext, 35, OnFace);
 	if (CPath.empty()) return;
 	CallEditTxt();
 }
@@ -564,7 +564,7 @@ void InitRunFand()
 			if (paramstr.size() > 2 && EquUpCase(paramstr.at(2), "T")) {
 				CPath = paramstr.at(1);
 				if (copy(CPath, 1, 2) == "*.")
-					SelectEditTxt(copy(CPath, 2, 4), false);
+					SelectEditTxt(CPath.substr(1, 4), false);
 				else CallEditTxt();
 				return;
 			}

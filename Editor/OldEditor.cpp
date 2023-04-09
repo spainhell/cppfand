@@ -157,8 +157,9 @@ char* GetTfromLines(std::vector<std::string>& lines, size_t& len)
 			throw std::exception("Bad string size - OldEditor.cpp, method GetT");
 		}
 		// create c_str
-		output = new char[len];
+		output = new char[len + 1];
 		memcpy(output, txt.c_str(), len);
+		output[len] = '\0';
 	}
 	return output;
 }
@@ -512,10 +513,15 @@ void UpdateFile()
 void OpenTxtFh(char Mode)
 {
 	FileUseMode UM;
-	CPath = TxtPath; CVol = TxtVol;
+	CPath = TxtPath;
+	CVol = TxtVol;
 	TestMountVol(CPath[0]);
-	if (Mode == ViewM) UM = RdOnly;
-	else UM = Exclusive;
+	if (Mode == ViewM) {
+		UM = RdOnly;
+	}
+	else {
+		UM = Exclusive;
+	}
 	TxtFH = OpenH(CPath, _isoldnewfile, UM);
 	if (HandleError != 0) {
 		SetMsgPar(CPath);
@@ -712,7 +718,10 @@ void DelEndT()
 
 void TestUpdFile()
 {
-	DelEndT();
+	// DelEndT();
+	if (UpdatT) {
+		UpdateFile();
+	}
 	//if (Part.UpdP) { UpdateFile(); }
 }
 
@@ -722,7 +731,7 @@ void WrEndT()
 	// puvodni pole se do nej prekopiruje a na konec se vlozi '\0'
 	if (LenT == 0) {
 		delete[] T;
-		T = new char[2]; // udelame pole o delce 3 -> bude zakoncene "\r\n\0"
+		T = new char[2]; // udelame pole o delce 2 -> mezera zakoncena \0
 		T[0] = ' ';
 		T[1] = '\0';
 		LenT = 1;
@@ -1301,17 +1310,24 @@ void Background()
 
 void KodLine()
 {
-	size_t ArrLineLen = GetArrLineLength();
+	size_t ArrLineLen = GetArrLineLength(); // Arr bez koncovych mezer
 	std::string ArrLine = std::string(Arr, ArrLineLen);
-	if (HardL) {
-		ArrLine += "\r\n";
-	}
-	else {
-		ArrLine += "\r";
-	}
 
 	// create vector of strings from T
-	auto allLines = GetLinesFromT();
+	std::vector<std::string>allLines = GetLinesFromT();
+
+	if (TextLineNr == allLines.size()) {
+		// posledni radek (nepridavame konec radku)
+	}
+	else {
+		if (HardL) {
+			ArrLine += "\r\n";
+		}
+		else {
+			ArrLine += "\r";
+		}
+	}
+
 	allLines[TextLineNr - 1] = ArrLine;
 
 	//TestLenText(&T, LenT, NextLineStartIndex, textIndex + LP);
@@ -1501,7 +1517,7 @@ void NextLine(bool WrScr)
 {
 	TestKod();
 	//if ((NextLineStartIndex >= LenT) && !AllRd) NextPartDek();
-	if (NextLineStartIndex <= LenT) {
+	if (NextLineStartIndex < LenT) {
 		textIndex = NextLineStartIndex;
 		DekodLine(textIndex);
 		TextLineNr++;
@@ -1777,6 +1793,7 @@ void FillBlank()
 void DeleteLine()
 {
 	FillBlank();
+	if (LenT == 0) return;
 	if (blocks->LineAbs(TextLineNr) + 1 <= blocks->BegBLn)
 	{
 		blocks->BegBLn--;
@@ -1802,9 +1819,14 @@ void DeleteLine()
 			lines.erase(lines.begin() + TextLineNr);
 		}
 		else {
-			if (TextLineNr < 1) return;
-			lines[TextLineNr - 1] = lines[TextLineNr - 1].substr(0, lines[TextLineNr - 1].length() - EoL_length) + lines[TextLineNr];
-			lines.erase(lines.begin() + TextLineNr);
+			if (TextLineNr < 1 || TextLineNr == lines.size()) {
+				// cursor is on the last line, there is nothing more to move
+				return;
+			}
+			else {
+				lines[TextLineNr - 1] = lines[TextLineNr - 1].substr(0, lines[TextLineNr - 1].length() - EoL_length) + lines[TextLineNr];
+				lines.erase(lines.begin() + TextLineNr);
+			}
 		}
 
 		auto newT = GetTfromLines(lines, LenT);

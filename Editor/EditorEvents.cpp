@@ -402,7 +402,7 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 				}
 				case LocalT:
 				case MemoT: {
-					DelEndT();
+					//DelEndT();
 
 					char* T2 = new char[LenT + 2];
 					memcpy(&T2[2], T, LenT);
