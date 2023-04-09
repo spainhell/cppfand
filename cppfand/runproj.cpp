@@ -440,7 +440,8 @@ void StoreChptTxt(FieldDescr* F, LongStr* S, bool Del)
 	if (CRdb->Encrypted) {
 		if (LicNr != 0) {
 			s2 = new LongStr(0x8100); /*possibly longer*/
-			XEncode(S, s2); S = s2;
+			XEncode(S, s2);
+			S = s2;
 		}
 		else CodingLongStr(S);
 	}
