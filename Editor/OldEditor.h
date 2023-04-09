@@ -130,7 +130,7 @@ extern bool EditT, ChangeScr;
 extern char TypeT;
 extern bool SrchT, UpdatT;
 extern int* LocalPPtr;
-extern FILE* TxtFH;
+extern HANDLE TxtFH;
 //extern bool AllRd;
 extern int AbsLenT;
 extern BYTE FrameDir;

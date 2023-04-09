@@ -397,7 +397,9 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 				case FileT: {
 					TestUpdFile();
 					ReleaseStore(T);
-					CloseH(&TxtFH);
+					//CloseH(&TxtFH);
+					CloseHandle(TxtFH);
+					TxtFH = NULL;
 					break;
 				}
 				case LocalT:

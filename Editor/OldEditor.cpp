@@ -114,7 +114,7 @@ pstring OptionStr;
 bool FirstEvent = false;
 WORD PHNum = 0, PPageS = 0; // {strankovani ve Scroll}
 
-FILE* TxtFH = nullptr;
+HANDLE TxtFH = nullptr;
 pstring TxtPath;
 pstring TxtVol;
 //bool AllRd = false;
@@ -389,12 +389,29 @@ void LastLine(char* input, WORD from, WORD num, WORD& Ind, WORD& Count)
 bool ReadTextFile()
 {
 	// kompletne prepsano -> vycte cely soubor do promenne T
-	auto fileSize = FileSizeH(TxtFH);
+
+	//auto fileSize = FileSizeH(TxtFH);
+	//T = new char[fileSize];
+	//SeekH(TxtFH, 0);
+	//ReadH(TxtFH, fileSize, T);
+	//LenT = fileSize;
+
+	auto fileSize = GetFileSize(TxtFH, NULL);
 	T = new char[fileSize];
-	SeekH(TxtFH, 0);
-	ReadH(TxtFH, fileSize, T);
-	LenT = fileSize;
-	//AllRd = true;
+
+	DWORD dwBytesRead;
+	bool readResult = ReadFile(TxtFH, T, fileSize, &dwBytesRead, NULL);
+	if (!readResult) {
+		LenT = 0;
+		HandleError = GetLastError();
+		SetMsgPar(TxtPath);
+		WrLLF10Msg(700 + HandleError);
+	}
+	else {
+		LenT = fileSize;
+		HandleError = 0;
+	}
+
 	return false; // return ChangePart
 }
 
@@ -471,18 +488,50 @@ void FirstLine(WORD from, WORD num, WORD& Ind, WORD& Count)
 
 void UpdateFile()
 {
-	SeekH(TxtFH, 0);
-	WriteH(TxtFH, LenT, T);
-	if (HandleError != 0) {
+	//SeekH(TxtFH, 0);
+	//WriteH(TxtFH, LenT, T);
+	//if (HandleError != 0) {
+	//	SetMsgPar(TxtPath);
+	//	WrLLF10Msg(700 + HandleError);
+	//}
+	//FlushH(TxtFH);
+	//TruncH(TxtFH, LenT);
+	//AbsLenT = FileSizeH(TxtFH);
+	//if (HandleError != 0) {
+	//	SetMsgPar(TxtPath);
+	//	WrLLF10Msg(700 + HandleError);
+	//}
+
+	DWORD seekResult = SetFilePointer(TxtFH, 0, NULL, FILE_BEGIN);
+	if (seekResult == INVALID_SET_FILE_POINTER) {
+		HandleError = GetLastError();
 		SetMsgPar(TxtPath);
 		WrLLF10Msg(700 + HandleError);
+		return;
 	}
-	FlushH(TxtFH);
-	TruncH(TxtFH, LenT);
-	AbsLenT = FileSizeH(TxtFH);
-	if (HandleError != 0) {
+	bool writeFile = WriteFile(TxtFH, T, LenT, NULL, NULL);
+	if (!writeFile) {
+		HandleError = GetLastError();
 		SetMsgPar(TxtPath);
 		WrLLF10Msg(700 + HandleError);
+		return;
+	}
+	bool setEOF = SetEndOfFile(TxtFH);
+	if (!setEOF) {
+		HandleError = GetLastError();
+		SetMsgPar(TxtPath);
+		WrLLF10Msg(700 + HandleError);
+		return;
+	}
+	DWORD fileSize = GetFileSize(TxtFH, NULL);
+	if (fileSize != INVALID_FILE_SIZE) {
+		AbsLenT = fileSize;
+	}
+	else {
+		HandleError = GetLastError();
+		SetMsgPar(TxtPath);
+		WrLLF10Msg(700 + HandleError);
+		return;
 	}
 }
 
@@ -522,12 +571,23 @@ void OpenTxtFh(char Mode)
 	else {
 		UM = Exclusive;
 	}
-	TxtFH = OpenH(CPath, _isoldnewfile, UM);
-	if (HandleError != 0) {
+	//TxtFH = OpenH(CPath, _isoldnewfile, UM);
+	TxtFH = CreateFile(
+		CPath.c_str(),                        // file name
+		GENERIC_READ | GENERIC_WRITE,         // write access
+		0,                                    // no sharing
+		NULL,                                 // default security attributes
+		OPEN_ALWAYS,                          // open file or create new
+		FILE_ATTRIBUTE_NORMAL,                // normal file
+		NULL);                    // no template file
+
+	if (TxtFH == INVALID_HANDLE_VALUE) {
+		HandleError = GetLastError();
 		SetMsgPar(CPath);
 		RunError(700 + HandleError);
 	}
-	AbsLenT = FileSizeH(TxtFH);
+	//AbsLenT = FileSizeH(TxtFH);
+	AbsLenT = GetFileSize(TxtFH, NULL);
 }
 
 pstring ShortName(pstring Name)
@@ -3246,8 +3306,11 @@ void EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg, std::vecto
 				}
 			}
 			if (!Loc) {
-				Size = FileSizeH(TxtFH);
-				CloseH(&TxtFH);
+				//Size = FileSizeH(TxtFH);
+				Size = GetFileSize(TxtFH, NULL);
+				//CloseH(&TxtFH);
+				CloseHandle(TxtFH);
+				TxtFH = NULL;
 			}
 			if ((EdBreak == 0xFFFF) && (KbdChar == __F6)) {
 				if (Loc) {
