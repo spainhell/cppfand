@@ -1184,7 +1184,7 @@ void UpdScreen()
 		eScr->ScrollWrline(Arr, columnOffset, TextLineNr - ScreenFirstLineNr + 2, co1, ColKey, TxtColor, InsPage);
 	}
 	else {
-		eScr->EditWrline(Arr, LenT, TextLineNr - ScreenFirstLineNr + 1, ColKey, TxtColor, BlockColor);
+		eScr->EditWrline(Arr, 255, TextLineNr - ScreenFirstLineNr + 1, ColKey, TxtColor, BlockColor);
 	}
 	WrEndL(HardL, TextLineNr - ScreenFirstLineNr + 1);
 	if (MyTestEvent()) return;
