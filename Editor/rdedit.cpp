@@ -706,8 +706,11 @@ void SetFlag(FieldDescr* F)
 
 void RdDep()
 {
-	FrmlElem* Bool = nullptr; FrmlElem* Z = nullptr;
-	EFldD* D = nullptr; char FTyp = '\0'; DepD* Dp = nullptr;
+	FrmlElem* Bool = nullptr;
+	FrmlElem* Z = nullptr;
+	EFldD* D = nullptr;
+	char FTyp = '\0';
+	DepD* Dp = nullptr;
 
 	RdLex();
 label1:
@@ -718,13 +721,11 @@ label2:
 	D = FindEFld_E(RdFldName(CFile));
 	Accept(_assign);
 	Z = RdFrml(FTyp);
-	if (D != nullptr)
-	{
+	if (D != nullptr) {
 		Dp = new DepD();
 		Dp->Bool = Bool;
 		Dp->Frml = Z;
-		if (D->Dep == nullptr) D->Dep = Dp;
-		else ChainLast(D->Dep, Dp);
+		D->Dep.push_back(Dp);
 	}
 	if (Lexem == ';')
 	{

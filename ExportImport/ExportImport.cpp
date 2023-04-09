@@ -686,7 +686,7 @@ void CheckFile(FileD* FD)
 	if (FD->FF->TF == nullptr) return;
 	FSplit(CPath, d, n, e);
 	if (EquUpCase(e, ".RDB")) e = ".TTT";
-	else e[1] = 'T';
+	else e[1] = 'T'; // .T__
 	CPath = d + n + e;
 	h = OpenH(CPath, _isoldfile, RdShared);
 	if (HandleError == 0) CloseH(&h);

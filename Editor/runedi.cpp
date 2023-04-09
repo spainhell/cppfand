@@ -2918,14 +2918,17 @@ void PromptGotoRecNr()
 {
 	wwmix ww;
 
-	WORD I; std::string Txt; int N; bool Del;
-	I = 1; Txt = ""; Del = true;
+	int N;
+	WORD I = 1;
+	std::string Txt;
+	bool Del = true;
 	do {
 		ww.PromptLL(122, Txt, I, Del);
 		if (Event.Pressed.KeyCombination() == __ESC) return;
 		val(Txt, N, I);
 		Del = false;
 	} while (I != 0);
+
 	GotoRecFld(N, CFld);
 }
 
@@ -3049,25 +3052,39 @@ void AutoGraph()
 bool IsDependItem()
 {
 	if (!IsNewRec && (E->NEdSet == 0)) return false;
-	DepD* Dp = CFld->Dep;
-	while (Dp != nullptr) {
-		if (RunBool(Dp->Bool)) {
+	//DepD* Dp = CFld->Dep;
+	//while (Dp != nullptr) {
+	//	if (RunBool(Dp->Bool)) {
+	//		return true;
+	//	}
+	//	Dp = Dp->pChain;
+	//}
+
+	for (const DepD* dep : CFld->Dep) {
+		if (RunBool(dep->Bool)) {
 			return true;
 		}
-		Dp = Dp->pChain;
 	}
+
 	return false;
 }
 
 void SetDependItem()
 {
-	DepD* Dp = CFld->Dep;
-	while (Dp != nullptr) {
-		if (RunBool(Dp->Bool)) {
-			AssignFld(CFld->FldD, Dp->Frml);
+	//DepD* Dp = CFld->Dep;
+	//while (Dp != nullptr) {
+	//	if (RunBool(Dp->Bool)) {
+	//		AssignFld(CFld->FldD, Dp->Frml);
+	//		return;
+	//	}
+	//	Dp = Dp->pChain;
+	//}
+
+	for (const DepD* dep : CFld->Dep) {
+		if (RunBool(dep->Bool)) {
+			AssignFld(CFld->FldD, dep->Frml);
 			return;
 		}
-		Dp = Dp->pChain;
 	}
 }
 
@@ -3088,8 +3105,11 @@ bool CheckForExit(bool& Quit)
 		if (b) {
 			if (X->Typ == 'Q') Quit = true;
 			else {
-				EdBreak = 12; LastTxtPos = -1;
-				if (!StartExit(X, true)) return result;
+				EdBreak = 12;
+				LastTxtPos = -1;
+				if (!StartExit(X, true)) {
+					return result;
+				}
 			}
 		}
 	}
@@ -3124,7 +3144,10 @@ bool ExNotSkipFld()
 	if (E->NFlds == 1) return result;
 	EFldD* D = E->FirstFld;
 	while (D != nullptr) {
-		if ((D != CFld) && !IsSkipFld(D)) { result = true; return result; }
+		if ((D != CFld) && !IsSkipFld(D)) {
+			result = true;
+			return result;
+		}
 		D = D->pChain;
 	}
 	return result;

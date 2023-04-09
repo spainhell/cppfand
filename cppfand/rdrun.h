@@ -182,7 +182,7 @@ struct EFldD : public Chained<EFldD>
 	FieldDescr* FldD = nullptr;
 	ChkD* Chk = nullptr;
 	FrmlElem* Impl = nullptr;
-	DepD* Dep = nullptr;
+	std::vector<DepD*> Dep;
 	KeyListEl* KL = nullptr;
 	BYTE Page = 0, Col = 0, Ln = 0, L = 0;
 	WORD ScanNr = 0;

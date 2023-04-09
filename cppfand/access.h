@@ -20,7 +20,7 @@ const BYTE f_Encryp = 2; // {FieldD flags}
 const BYTE f_Mask = 4;
 const BYTE f_Comma = 8; // {FieldD flags}
 
-struct DepD : Chained<DepD>
+struct DepD
 {
 	FrmlElem* Bool = nullptr;
 	FrmlElem* Frml = nullptr;
