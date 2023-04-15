@@ -108,6 +108,9 @@
     <ClCompile Include="FileD.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ResFile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base.h">
@@ -216,6 +219,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="FileD.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ResFile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

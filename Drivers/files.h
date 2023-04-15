@@ -29,6 +29,14 @@ bool WriteF(HANDLE hFile, void* buffer, size_t length, DWORD& error);
 bool SeekF(HANDLE hFile, DWORD& error, long distance, DWORD method = 0);
 
 /**
+ * \brief Get File Position
+ * \param hFile File Handle
+ * \param error Operation error - 0 if SUCCESS
+ * \return pointer position
+ */
+long PosF(HANDLE hFile, DWORD& error);
+
+/**
  * \brief Truncate File
  * \param hFile File Handle
  * \param error Operation error - 0 if SUCCESS

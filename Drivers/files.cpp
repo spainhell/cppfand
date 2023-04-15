@@ -66,6 +66,21 @@ bool SeekF(HANDLE hFile, DWORD& error, long distance, DWORD method)
 	return result;
 }
 
+long PosF(HANDLE hFile, DWORD& error)
+{
+	long result;
+	const DWORD seekResult = SetFilePointer(hFile, 0, NULL, 1);
+	if (seekResult == INVALID_SET_FILE_POINTER) {
+		error = GetLastError();
+		result = -1;
+	}
+	else {
+		error = 0;
+		result = seekResult;
+	}
+	return result;
+}
+
 bool TruncF(HANDLE hFile, DWORD& error, long distance)
 {
 	bool result;

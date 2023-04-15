@@ -409,22 +409,19 @@ char CurrToKamen(char C)
 	return C;
 }
 
-void ConvKamenToCurr(void* Buf, WORD L)
+void ConvKamenToCurr(std::string& text)
 {
-	BYTE* bBuf = (BYTE*)Buf;
 	BYTE* tab = TabKtN;
 	if (!fonts.NoDiakrSupported) {
 		tab = TabKtL;
 		if (fonts.VFont != TVideoFont::foLatin2) return;
 	}
-	for (WORD i = 0; i < L; i++) {
-		// v ES a DI budou segment a offset na Buf
-		short index = (BYTE)bBuf[i] - 0x80;
-		if (index > 0)
-		{
-			BYTE kam = bBuf[i];
+	for (size_t i = 0; i < text.length(); i++) {
+		short index = (BYTE)text[i] - 0x80;
+		if (index > 0) {
+			BYTE kam = text[i];
 			BYTE lat = tab[kam];
-			bBuf[i] = lat;
+			text[i] = (char)lat;
 		}
 	}
 }

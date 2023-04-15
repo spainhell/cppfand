@@ -432,7 +432,7 @@ void InitRunFand()
 	if (!GetEnv("DMLADDR").empty()) {
 		printf("type 'exit' to return to FAND");
 		wait();
-		return; // pùvodnì wait;
+		return; // puvodne wait;
 	}
 
 	WrkDir = GetEnv("FANDWORK");
@@ -458,33 +458,32 @@ void InitRunFand()
 #endif 
 	}
 	printf("LANNODE: %s\n", s.c_str());
+	
+	//h = ResFile.Handle;
+	//ReadH(h, 2, &n);
+	//if (n != ResVersion) {
+	//	printf("FAND.RES incorr. version\n");
+	//	system("pause");
+	//	wait(); Halt(0);
+	//}
 
+	//for (int i = 0; i < FandFace; i++) {
+	//	ReadH(h, sizeof(resFile.A->Pos), &resFile.A[i].Pos);
+	//	ReadH(h, sizeof(resFile.A->Size), &resFile.A[i].Size);
+	//}
 
-	h = ResFile.Handle;
-	ReadH(h, 2, &n);
-	if (n != ResVersion) {
-		printf("FAND.RES incorr. version\n");
-		system("pause");
-		wait(); Halt(0);
-	}
-
-	for (int i = 0; i < FandFace; i++) {
-		ReadH(h, sizeof(ResFile.A->Pos), &ResFile.A[i].Pos);
-		ReadH(h, sizeof(ResFile.A->Size), &ResFile.A[i].Size);
-	}
-
-	// *** NACTENI INFORMACI O ZPRAVACH Z FAND.RES
-	ReadH(h, 2, &MsgIdxN);
-	for (int ii = 0; ii < MsgIdxN; ii++) {
-		TMsgIdxItem newItem{ 0, 0, 0 };
-		ReadH(h, 2, &newItem.Nr);    // WORD
-		ReadH(h, 2, &newItem.Ofs);   // WORD
-		ReadH(h, 1, &newItem.Count); // BYTE
-		MsgIdx.push_back(newItem);
-	}
-	FrstMsgPos = PosH(h);
-	// *** konec ***
-
+	//// *** NACTENI INFORMACI O ZPRAVACH Z FAND.RES
+	//ReadH(h, 2, &MsgIdxN);
+	//for (int ii = 0; ii < MsgIdxN; ii++) {
+	//	TMsgIdxItem newItem{ 0, 0, 0 };
+	//	ReadH(h, 2, &newItem.Nr);    // WORD
+	//	ReadH(h, 2, &newItem.Ofs);   // WORD
+	//	ReadH(h, 1, &newItem.Count); // BYTE
+	//	MsgIdx.push_back(newItem);
+	//}
+	//FrstMsgPos = PosH(h);
+	//// *** konec ***
+	resFile.ReadInfo();
 
 	//std::vector<std::string> messages;
 	//for (size_t iii = 0; iii < 10000; iii++) {
@@ -594,7 +593,7 @@ void InitRunFand()
 	screen.ScrClr(2, 2, TxtCols - 2, TxtRows - 13, (char)0xB1, TextAttr);
 	screen.ScrClr(2, TxtRows - 11, TxtCols - 2, 10, (char)0xb2, TextAttr);
 
-	std::string ResText = ResFile.Get(FandFace - 1);
+	std::string ResText = resFile.Get(FandFace - 1);
 
 	xofs++;
 	for (int ii = -11; ii <= -6; ii++) {

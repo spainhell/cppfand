@@ -1,6 +1,7 @@
 #pragma once
 #include "access.h"
 #include "constants.h"
+#include "ResFile.h"
 #include "../fandio/FandTFile.h"
 
 extern std::string LockModeTxt[9];
@@ -98,7 +99,7 @@ extern pstring OldDir;
 extern pstring FandDir;
 extern std::string WrkDir;
 extern pstring FandOvrName;
-extern pstring FandResName;
+extern std::string FandResName;
 extern pstring FandWorkName;
 extern pstring FandWorkXName;
 extern pstring FandWorkTName;
@@ -137,14 +138,11 @@ extern TPrTimeOut OldPrTimeOut;
 extern TPrTimeOut PrTimeOut;  // absolute 0:$478;
 extern bool WasInitDrivers;
 extern bool WasInitPgm;
-extern WORD LANNode; // ø. 431
+extern WORD LANNode;
 extern void (*CallOpenFandFiles)(); // r453
 extern void (*CallCloseFandFiles)(); // r454
 
 extern double userToday;
 extern __int32 UserLicNr;
 
-extern TResFile ResFile;
-extern std::vector<TMsgIdxItem> MsgIdx;
-extern WORD MsgIdxN;
-extern int FrstMsgPos;
+extern ResFile resFile;

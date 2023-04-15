@@ -523,17 +523,17 @@ void MakeCopy(CopyD* CD)
 				break;
 			}
 			case 5: {
-				std::string pKod = ResFile.Get(LatToWinCp);
+				std::string pKod = resFile.Get(LatToWinCp);
 				ConvWinCp(F2.Buf, (unsigned char*)pKod.c_str(), F2.lBuf);
 				break;
 			}
 			case 6: {
-				std::string pKod = ResFile.Get(KamToWinCp);
+				std::string pKod = resFile.Get(KamToWinCp);
 				ConvWinCp(F2.Buf, (unsigned char*)pKod.c_str(), F2.lBuf);
 				break;
 			}
 			case 7: {
-				std::string pKod = ResFile.Get(WinCpToLat);
+				std::string pKod = resFile.Get(WinCpToLat);
 				ConvWinCp(F2.Buf, (unsigned char*)pKod.c_str(), F2.lBuf);
 				break;
 			}

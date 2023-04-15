@@ -3,7 +3,6 @@
 typedef unsigned short WORD;
 typedef unsigned char BYTE;
 
-const BYTE FandFace = 17;
 const BYTE FloppyDrives = 2;
 
 // *** VIRTUAL KEYS ***

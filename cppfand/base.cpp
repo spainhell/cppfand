@@ -47,7 +47,7 @@ int HandleError;
 pstring OldDir;
 pstring FandDir;
 std::string WrkDir;
-pstring FandResName;
+std::string FandResName;
 pstring FandWorkName;
 pstring FandWorkXName;
 pstring FandWorkTName;
@@ -57,10 +57,7 @@ std::string CName;
 std::string CExt;
 std::string CVol;
 
-TResFile ResFile;
-std::vector<TMsgIdxItem> MsgIdx;
-WORD MsgIdxN;
-int FrstMsgPos;
+ResFile resFile;
 
 WORD F10SpecKey; // r. 293
 BYTE ProcAttr;
@@ -180,44 +177,22 @@ size_t ReadH(FILE* handle, size_t length, void* buffer)
 
 std::string ReadMessage(int N)
 {
-	std::string message;
-	WORD j, o;
-	pstring s;
-	bool found = false;
-	for (int i = 0; i < MsgIdxN; i++) {
-		WORD Nr = MsgIdx[i].Nr;
-		BYTE Count = MsgIdx[i].Count;
-		WORD Ofs = MsgIdx[i].Ofs;
-		if (N >= Nr && N < Nr + Count) {
-			j = N - Nr + 1;
-			o = Ofs;
-			found = true;
-			break;
-		}
-	}
-	if (!found) {
-		o = 0;
-		j = 1;
+	std::string s;
+	bool result = resFile.ReadMessage(N, s);
+	if (!result) {
 		MsgPar[0] = std::to_string(N);
 	}
 
-	FILE* h = ResFile.Handle;
-	SeekH(h, FrstMsgPos + o);
+	ConvKamenToCurr(s);
 
-	for (int i = 1; i <= j; i++) {
-		ReadH(h, 1, &s[0]); // tady se ma zrejme jen vycist delka
-		ReadH(h, s.length(), &s[1]);
-	}
-	ConvKamenToCurr(&s[1], s.length());
-	s[s.length() + 1] = 0x00;
-
+	std::string message;
 	size_t param_index = 0;
-	for (int i = 1; i <= s.length(); i++) {
+	for (size_t i = 0; i < s.length(); i++) {
 		if (s[i] == '$' && s[i + 1] != '$') {
 			message += MsgPar[param_index++];
 		}
 		else {
-			message += (char)s[i];
+			message += s[i];
 			if (s[i] == '$') i++;
 		}
 	}
@@ -233,38 +208,6 @@ void WriteMsg(WORD N)
 void ClearLL(BYTE attr)
 {
 	screen.ScrClr(1, TxtRows, TxtCols, 1, ' ', colors.uNorm);
-}
-
-WORD TResFile::Get(WORD Kod, void** P)
-{
-	WORD l = A[Kod].Size;
-	*P = new BYTE[l];
-	long sizeF = FileSizeH(Handle);
-	long seekF = SeekH(Handle, A[Kod - 1].Pos);
-	size_t readF = ReadH(Handle, l, *P);
-	return l;
-}
-
-std::string TResFile::Get(WORD Kod)
-{
-	char* tmpCh = new char[A[Kod].Size];
-	WORD l = A[Kod].Size;
-
-	long sizeF = FileSizeH(Handle);
-	long seekF = SeekH(Handle, A[Kod].Pos);
-	size_t readF = ReadH(Handle, l, tmpCh);
-	std::string result = std::string(tmpCh, l);
-	delete[] tmpCh;
-	return result;
-}
-
-LongStr* TResFile::GetStr(WORD Kod)
-{
-	LongStr* s = new LongStr(A[Kod].Size + 2);
-	s->LL = A[Kod].Size;
-	SeekH(Handle, A[Kod].Pos);
-	ReadH(Handle, A[Kod].Size, s->A);
-	return s;
 }
 
 bool CacheLocked = false; // r510
@@ -1473,20 +1416,6 @@ label1:
 	}
 }
 
-void OpenResFile()
-{
-	CPath = FandResName;
-	CVol = "";
-	ResFile.Handle = OpenH(CPath, _isoldfile, RdOnly);
-	ResFile.FullName = CPath;
-	if (HandleError != 0) {
-		printf("can't open %s\n", FandResName.c_str());
-		system("pause");
-		wait();
-		Halt(0);
-	}
-}
-
 void OpenWorkH()
 {
 	CPath = FandWorkName;
@@ -1511,5 +1440,5 @@ void NonameStartFunction()
 	//MyBP = nullptr;
 	UserLicNr = WORD(UserLicNrShow) & 0x7FFF;
 	FandResName = MyFExpand("FAND.RES", "FANDRES");
-	OpenResFile();
+	resFile.Open(FandResName);
 }

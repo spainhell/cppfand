@@ -11,7 +11,6 @@
 //typedef CharArr* CharArrPtr;
 
 
-
 struct WRect { BYTE C1 = 0, R1 = 0, C2 = 0, R2 = 0; }; // r34
 struct WordRec { BYTE Lo = 0, Hi = 0; };
 struct LongRec { WORD Lo = 0, Hi = 0; };
@@ -188,24 +187,3 @@ void OpenWorkH();
 void NonameStartFunction();
 
 struct wdaystt { BYTE Typ = 0; WORD Nr = 0; };
-
-class TResFile
-{
-public:
-	std::string FullName;
-	FILE* Handle;
-	struct st
-	{
-		int Pos;
-		WORD Size;
-	} A[FandFace];
-	WORD Get(WORD Kod, void** P);
-	std::string Get(WORD Kod);
-	LongStr* GetStr(WORD Kod);
-};
-
-struct TMsgIdxItem {
-	WORD Nr;
-	WORD Ofs;
-	BYTE Count;
-};

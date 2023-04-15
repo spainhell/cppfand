@@ -988,7 +988,9 @@ label1:
 		label2:
 			result = _StdS(TxtF);
 			if (!ByName || (result.length() > 0) || (i == CFile->FF->NRecs)) {
-				if (CFile == HelpFD) ConvKamenToCurr((void*)result.c_str(), result.length());
+				if (CFile == HelpFD) {
+					ConvKamenToCurr(result);
+				}
 				IRec = i;
 				goto label3;
 			}
