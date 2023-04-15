@@ -14,6 +14,7 @@
 #include <ctime>
 #include <iostream>
 
+#include "Cfg.h"
 #include "compile.h"
 #include "FileD.h"
 #include "GlobalVariables.h"

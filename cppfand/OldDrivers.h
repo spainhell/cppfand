@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include "Cfg.h"
 #include "constants.h"
 #include "legacy.h"
 #include "../Drivers/screen.h"
@@ -38,13 +39,12 @@ extern TEvent Event; // r39
 extern BYTE KbdFlgs; // TODO: absolute $417
 
 // ******** Konstanty *********
-const bool DemoAutoRd = false; // ř. 82
-//extern pstring KbdBuffer; // ř. 83
+const bool DemoAutoRd = false; // r. 82
+//extern pstring KbdBuffer; // r. 83
 extern Keyboard keyboard;
-extern BYTE LLKeyFlags; // ř. 84
+extern BYTE LLKeyFlags; // r. 84
 
-enum class enVideoCard { viCga = 0, viHercules = 1, viEga = 2, viVga = 3 };
-extern enVideoCard VideoCard;// = enVideoCard::viVga;
+extern enVideoCard VideoCard;
 extern short GraphDriver, GraphMode;
 extern WORD ScrSeg, ScrGrSeg;
 extern BYTE NrVFont, BytesPerChar;
@@ -73,8 +73,6 @@ const TPoint MouseWhere;
 const TPoint MouseWhereG;
 const bool MausVisible = true;
 const bool MausRefresh = false;
-
-enum class TVideoFont { foAscii = 0, foLatin2 = 1, foKamen = 2 };
 
 extern int trialInterval;
 	// příznaky klávesnice - původně 0:$417 (is used to make control to keys(Num, Caps, Scroll, Alt, ShR, ShL, CtrlL, CtrlR)

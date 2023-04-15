@@ -162,6 +162,7 @@
     <ClCompile Include="access.cpp" />
     <ClCompile Include="AddD.cpp" />
     <ClCompile Include="base.cpp" />
+    <ClCompile Include="CfgFile.cpp" />
     <ClCompile Include="ChkD.cpp" />
     <ClCompile Include="compile.cpp" />
     <ClCompile Include="cppfand.cpp" />
@@ -197,6 +198,7 @@
     <ClInclude Include="access.h" />
     <ClInclude Include="AddD.h" />
     <ClInclude Include="base.h" />
+    <ClInclude Include="CfgFile.h" />
     <ClInclude Include="Chained.h" />
     <ClInclude Include="ChkD.h" />
     <ClInclude Include="compile.h" />
@@ -227,6 +229,7 @@
     <ClInclude Include="runfand.h" />
     <ClInclude Include="runfrml.h" />
     <ClInclude Include="runproc.h" />
+    <ClInclude Include="Cfg.h" />
     <ClInclude Include="switches.h" />
     <ClInclude Include="wwmenu.h" />
     <ClInclude Include="wwmix.h" />

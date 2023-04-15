@@ -8,6 +8,7 @@
 #include "../pascal/real48.h"
 #include "OldDrivers.h"
 #include "access.h"
+#include "CfgFile.h"
 #include "compile.h"
 #include "FieldDescr.h"
 #include "FileD.h"
@@ -16,6 +17,7 @@
 #include "obaseww.h"
 #include "rdfildcl.h"
 #include "runproj.h"
+#include "Cfg.h"
 #include "wwmenu.h"
 #include "wwmix.h"
 #include "../Editor/OldEditor.h"
@@ -108,164 +110,24 @@ void InitAccess()
 	FillChar(&XWork, sizeof(XWork), 0);
 }
 
-void RdVideoAndColors(FILE* CfgHandle)
-{
-	WORD typ;
-	if (StartMode == 7) typ = 1;
-	else if (VideoCard >= enVideoCard::viEga) typ = 3;
-	else typ = 2;
-	//SeekH(CfgHandle, PosH(CfgHandle) + (sizeof(video) + sizeof(colors)) * (typ - 1));
-	int sizeVideo = sizeof(video); // 10
-	int sizeColors = sizeof(screen.colors); // 54
-	SeekH(CfgHandle, PosH(CfgHandle) + (sizeVideo + sizeColors) * (typ - 1));
-	ReadH(CfgHandle, sizeof(video), &video);
-	ReadH(CfgHandle, sizeof(screen.colors), &screen.colors);
-	SeekH(CfgHandle, PosH(CfgHandle) + (sizeof(video) + sizeof(screen.colors)) * (3 - typ));
-
-	// Text Rows from CFG
-	if (video.TxtRows != 0) {
-		TxtRows = video.TxtRows;
-	}
-	// Text Columns from Video Address CFG
-	if (video.address < 0xFF) {
-		TxtCols = video.address;
-	}
-}
-
-void RdPrinter(FILE* CfgHandle)
-{
-	BYTE L;
-	const int NPrintStrg = 32;
-	BYTE A[NPrintStrg * 256]{ '\0' };
-	ReadH(CfgHandle, 1, &prMax);
-
-	for (short j = 0; j < prMax; j++) {
-		WORD n = 0;
-		size_t index = 0;
-		for (int i = 0; i <= NPrintStrg; i++) {
-			ReadH(CfgHandle, 1, &L);
-			if (L == 255) goto label1;
-			A[index++] = L;
-			ReadH(CfgHandle, L, &A[index]);
-			index += L;
-			n += L + 1;
-		}
-		ReadH(CfgHandle, 1, &L);
-		if (L != 255) {
-		label1:
-			printf("Invalid FAND.CFG");
-			wait();
-			exit(-1);
-		}
-		printer[j].Strg = std::string((char*)A, n);
-		ReadH(CfgHandle, 1, &printer[j].Typ);
-		ReadH(CfgHandle, 1, &printer[j].Kod);
-		ReadH(CfgHandle, 1, &printer[j].Lpti);
-		ReadH(CfgHandle, 1, &printer[j].TmOut);
-		printer[j].OpCls = false;
-		printer[j].ToHandle = false;
-		printer[j].ToMgr = false;
-		switch (printer[j].TmOut) {
-		case 255: {
-			printer[j].OpCls = true;
-			printer[j].TmOut = 0;
-			break;
-			;			}
-		case 254: {
-			printer[j].ToHandle = true;
-			printer[j].TmOut = 0;
-			break;
-		}
-		case 253: {
-			printer[j].ToMgr = true;
-			printer[j].TmOut = 0;
-			break;
-		}
-		default: break;
-		}
-	}
-
-	// jeste jsou tam nejaka data a datum v nasl. konfiguraci je posunuty -> nutno rucne posunout:
-	// SeekH(CfgHandle, PosH(CfgHandle) + 4);
-	SetCurrPrinter(0);
-}
-
-void RdWDaysTab(FILE* CfgHandle)
-{
-	ReadH(CfgHandle, 2, &NWDaysTab); // je to WORD - pocet zaznamu v kalendari
-	ReadH(CfgHandle, 6, &WDaysFirst);  // v Pascalu real 6B
-	WDaysFirst = Real48ToDouble(&WDaysFirst);
-	ReadH(CfgHandle, 6, &WDaysLast);  // v Pascalu real 6B
-	WDaysLast = Real48ToDouble(&WDaysLast);
-
-	WDaysTab = new wdaystt[NWDaysTab];
-	for (int i = 0; i < NWDaysTab; i++) {
-		ReadH(CfgHandle, sizeof(WDaysTab[i].Typ), &WDaysTab[i].Typ);
-		ReadH(CfgHandle, sizeof(WDaysTab[i].Nr), &WDaysTab[i].Nr);
-	}
-}
-
 void RdCFG()
 {
-	FILE* CfgHandle;
-	char ver[5] = { 0,0,0,0,0 };
-	CVol = "";
+	// open CFG file
+	CfgFile cfgFile;
 	CPath = MyFExpand("FAND.CFG", "FANDCFG");
-	CfgHandle = OpenH(CPath, _isoldfile, RdOnly);
-	if (HandleError != 0) { printf("%s !found", CPath.c_str()); wait(); Halt(-1); }
-	ReadH(CfgHandle, 4, ver);
-	if (strcmp(ver, CfgVersion) != 0) {
-		printf("Invalid version of FAND.CFG"); wait(); Halt(-1);
-	}
-	// nacteni SPEC
-	ReadH(CfgHandle, sizeof(spec.UpdCount), &spec.UpdCount);
-	ReadH(CfgHandle, sizeof(spec.AutoRprtWidth), &spec.AutoRprtWidth);
-	ReadH(CfgHandle, sizeof(spec.AutoRprtLimit), &spec.AutoRprtLimit);
-	ReadH(CfgHandle, sizeof(spec.CpLines), &spec.CpLines);
-	ReadH(CfgHandle, sizeof(spec.AutoRprtPrint), &spec.AutoRprtPrint);
-	ReadH(CfgHandle, sizeof(spec.ChoosePrMsg), &spec.ChoosePrMsg);
-	ReadH(CfgHandle, sizeof(spec.TxtInsPg), &spec.TxtInsPg);
-	ReadH(CfgHandle, sizeof(spec.TxtCharPg), &spec.TxtCharPg);
-	ReadH(CfgHandle, sizeof(spec.ESCverify), &spec.ESCverify);
-	ReadH(CfgHandle, sizeof(spec.Prompt158), &spec.Prompt158);
-	ReadH(CfgHandle, sizeof(spec.F10Enter), &spec.F10Enter);
-	ReadH(CfgHandle, sizeof(spec.RDBcomment), &spec.RDBcomment);
-	ReadH(CfgHandle, sizeof(spec.CPMdrive), &spec.CPMdrive);
-	ReadH(CfgHandle, sizeof(spec.RefreshDelay), &spec.RefreshDelay);
-	ReadH(CfgHandle, sizeof(spec.NetDelay), &spec.NetDelay);
-	ReadH(CfgHandle, sizeof(spec.LockDelay), &spec.LockDelay);
-	ReadH(CfgHandle, sizeof(spec.LockRetries), &spec.LockRetries);
-	ReadH(CfgHandle, sizeof(spec.Beep), &spec.Beep);
-	ReadH(CfgHandle, sizeof(spec.LockBeepAllowed), &spec.LockBeepAllowed);
-	ReadH(CfgHandle, sizeof(spec.XMSMaxKb), &spec.XMSMaxKb);
-	ReadH(CfgHandle, sizeof(spec.NoCheckBreak), &spec.NoCheckBreak);
-	ReadH(CfgHandle, 1, &spec.KbdTyp); // v C++ je enum 4B, original 1B
-	ReadH(CfgHandle, sizeof(spec.NoMouseSupport), &spec.NoMouseSupport);
-	ReadH(CfgHandle, sizeof(spec.MouseReverse), &spec.MouseReverse);
-	ReadH(CfgHandle, sizeof(spec.DoubleDelay), &spec.DoubleDelay);
-	ReadH(CfgHandle, sizeof(spec.RepeatDelay), &spec.RepeatDelay);
-	ReadH(CfgHandle, sizeof(spec.CtrlDelay), &spec.CtrlDelay);
-	ReadH(CfgHandle, sizeof(spec.OverwrLabeledDisk), &spec.OverwrLabeledDisk);
-	ReadH(CfgHandle, sizeof(spec.ScreenDelay), &spec.ScreenDelay);
-	ReadH(CfgHandle, sizeof(spec.OffDefaultYear), &spec.OffDefaultYear);
-	ReadH(CfgHandle, sizeof(spec.WithDiskFree), &spec.WithDiskFree);
-	// konec SPEC
+	cfgFile.Open(CPath);
 
-	RdVideoAndColors(CfgHandle); // nacteni konfigurace (VGA + barvy)
+	cfgFile.ReadSpec(spec);
+	cfgFile.ReadVideoAndColors(video, StartMode, VideoCard, screen, TxtCols, TxtRows); // nacteni konfigurace (VGA + barvy)
+	cfgFile.ReadFonts(fonts);          // nacteni fontu
+	cfgFile.ReadCodeTables(); 
 
-	// Nacteni fontu
-	ReadH(CfgHandle, 1, &fonts.VFont); // enum orginál 1B
-	ReadH(CfgHandle, sizeof(fonts.LoadVideoAllowed), &fonts.LoadVideoAllowed);
-	ReadH(CfgHandle, sizeof(fonts.NoDiakrSupported), &fonts.NoDiakrSupported);
+	cfgFile.RdPrinter(prMax, printer);
+	SetCurrPrinter(0);
 
-	ReadH(CfgHandle, sizeof(CharOrdTab), CharOrdTab);
-	ReadH(CfgHandle, sizeof(UpcCharTab), UpcCharTab);
+	cfgFile.RdWDaysTab(&WDaysTab, NWDaysTab, WDaysFirst, WDaysLast);
 
-	RdPrinter(CfgHandle);
-
-	RdWDaysTab(CfgHandle);
-
-	CloseH(&CfgHandle);
+	cfgFile.Close();
 }
 
 void CompileHelpCatDcl()

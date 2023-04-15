@@ -116,69 +116,13 @@ std::string ReadMessage(int N);
 void WriteMsg(WORD N);
 void ClearLL(BYTE attr);
 
-
-enum TKbdConv { OrigKbd, CsKbd, CaKbd, SlKbd, DtKbd };
-
-struct Spec
-{
-	BYTE UpdCount;
-	BYTE AutoRprtWidth;
-	BYTE AutoRprtLimit;
-	BYTE CpLines;
-	bool AutoRprtPrint;
-	bool ChoosePrMsg;
-	bool TxtInsPg;
-	char TxtCharPg;
-	bool ESCverify;
-	bool Prompt158;
-	bool F10Enter;
-	bool RDBcomment;
-	char CPMdrive;
-	WORD RefreshDelay;
-	WORD NetDelay;
-	BYTE LockDelay;
-	BYTE LockRetries;
-	bool Beep;
-	bool LockBeepAllowed;
-	WORD XMSMaxKb;
-	bool NoCheckBreak;
-	TKbdConv KbdTyp;
-	bool NoMouseSupport;
-	bool MouseReverse;
-	BYTE DoubleDelay;
-	BYTE RepeatDelay;
-	BYTE CtrlDelay;
-	bool OverwrLabeledDisk;
-	WORD ScreenDelay;
-	BYTE OffDefaultYear;
-	bool WithDiskFree;
-};
 extern Spec spec;
-
-struct Video // r. 345
-{
-	WORD address;
-	BYTE TxtRows;
-	bool ChkSnow;	// {not used }
-	WORD CursOn, CursOff, CursBig;
-};
 extern Video video;
-
-struct Fonts // r350
-{
-	TVideoFont VFont = TVideoFont::foLatin2;
-	bool LoadVideoAllowed = false;
-	bool NoDiakrSupported = false;
-};
 extern Fonts fonts;
-
 std::string PrTab(WORD printerNr, WORD value);
 void SetCurrPrinter(short NewPr);
 
-struct Printer {
-	std::string Strg; char Typ, Kod; BYTE Lpti, TmOut;
-	bool OpCls, ToHandle, ToMgr; WORD Handle;
-};
+
 
 typedef std::array<BYTE, 4> TPrTimeOut; // ø. 418
 
@@ -186,4 +130,3 @@ void OpenWorkH();
 
 void NonameStartFunction();
 
-struct wdaystt { BYTE Typ = 0; WORD Nr = 0; };

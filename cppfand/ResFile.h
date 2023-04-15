@@ -15,15 +15,19 @@ struct TMsgIdxItem {
 	BYTE Count;
 };
 
+struct st {
+	int Pos = 0;
+	WORD Size = 0;
+};
+
 class ResFile
 {
 public:
+	ResFile();
+	~ResFile();
 	std::string FullName;
 	HANDLE Handle = nullptr;
-	struct st {
-		int Pos;
-		WORD Size;
-	} A[FandFace];
+	st A[FandFace];
 
 	void Open(std::string path);
 	WORD Get(WORD Kod, void** P);

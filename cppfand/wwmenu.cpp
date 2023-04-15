@@ -983,7 +983,6 @@ label1:
 		if (CFile == HelpFD) fo = TVideoFont::foKamen;
 		else fo = fonts.VFont;
 		ConvToNoDiakr(&Nm[0], Nm.length(), fo);
-		//printf("comp: %s <=> %s\n", S.c_str(), Nm.c_str());
 		if (EqualsMask(S, Nm)) {
 		label2:
 			result = _StdS(TxtF);

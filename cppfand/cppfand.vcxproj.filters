@@ -111,6 +111,9 @@
     <ClCompile Include="ResFile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CfgFile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base.h">
@@ -222,6 +225,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ResFile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CfgFile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Cfg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

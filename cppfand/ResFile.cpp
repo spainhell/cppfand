@@ -1,10 +1,15 @@
 #include "ResFile.h"
 
+ResFile::ResFile()
+= default;
+
+ResFile::~ResFile()
+{
+	CloseF(Handle, error);
+}
+
 void ResFile::Open(std::string path)
 {
-	//CPath = FandResName;
-	//CVol = "";
-	DWORD error;
 	Handle = OpenF(path, error, GENERIC_READ, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL);
 	FullName = path;
 	if (error != 0) {
