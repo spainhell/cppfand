@@ -68,7 +68,7 @@ void VarFixImp(ThFile* F1, CpOption Opt)
 				switch (F->frml_type) {
 				case 'R': R_(F, 0); break;
 				case 'B': B_(F, false); break;
-				case 'S': S_(F, ""); break;
+				case 'S': S_(CFile, F, ""); break;
 				default: ;
 				}
 			}
@@ -89,7 +89,7 @@ void VarFixImp(ThFile* F1, CpOption Opt)
 				}
 				case FieldType::ALFANUM: {
 					if (Opt == CpOption::cpFix) {
-						S_(F, F1->RdFix(F->L));
+						S_(CFile, F, F1->RdFix(F->L));
 					}
 					else {
 						char c = (char)ForwChar;
@@ -101,16 +101,16 @@ void VarFixImp(ThFile* F1, CpOption Opt)
 						else {
 							s = F1->RdDelim(',');
 						}
-						S_(F, s);
+						S_(CFile, F, s);
 					}
 					break;
 				}
 				case FieldType::NUMERIC: {
 					if (Opt == CpOption::cpFix) {
-						S_(F, F1->RdFix(F->L));
+						S_(CFile, F, F1->RdFix(F->L));
 					}
 					else {
-						S_(F, F1->RdDelim(','));
+						S_(CFile, F, F1->RdDelim(','));
 					}
 					break;
 				}
@@ -149,7 +149,7 @@ void VarFixImp(ThFile* F1, CpOption Opt)
 					if (Opt == CpOption::cpVar) {
 						std::string x = F1->RdLongStr();
 						s = F1->RdDelim(',');
-						S_(F, x);
+						S_(CFile, F, x);
 					}
 					else {
 						T_(F, 0);

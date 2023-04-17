@@ -192,7 +192,7 @@ bool ChptDelFor(RdbRecVars* X)
 			break;
 		}
 		if (X->CatIRec != 0) {
-			WrCatField(X->CatIRec, CatFileName, "");
+			WrCatField(CFile, X->CatIRec, CatFileName, "");
 			if (!PromptYN(815)) {
 				result = true;
 				break;
@@ -202,7 +202,8 @@ bool ChptDelFor(RdbRecVars* X)
 		}
 		else {
 			CDir = "";
-			CName = X->Name; CExt = X->Ext;
+			CName = X->Name;
+			CExt = X->Ext;
 		}
 		MyDeleteFile(CDir + CName + CExt);
 		CPath = CExtToT(CDir, CName, CExt);
@@ -319,8 +320,12 @@ WORD ChptWriteCRec()
 	}
 	ReleaseFilesAndLinksAfterChapter(); SetCompileAll();
 	if ((New.OldTxt != 0) && (New.Name != Old.Name)) {
-		if (Old.CatIRec != 0) { WrCatField(Old.CatIRec, CatFileName, New.Name); }
-		else { if (!Old.isSQL) RenameWithOldExt(New, Old); }
+		if (Old.CatIRec != 0) {
+			WrCatField(CFile, Old.CatIRec, CatFileName, New.Name);
+		}
+		else {
+			if (!Old.isSQL) RenameWithOldExt(New, Old);
+		}
 	}
 label2:
 	B_(ChptVerif, true); result = 0;
@@ -973,7 +978,7 @@ int MakeDbfDcl(pstring Nm)
 		Move(&s[1], p, s.length());
 		t->LL += s.length();
 	}
-	LongS_(ChptTxt, t);
+	LongS_(CFile, ChptTxt, t);
 	CloseH(&h);
 	return 0;
 }
@@ -1262,7 +1267,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 						RprtTxt = SelGenRprt(Name);
 						CFile = Chpt;
 						if (RprtTxt.empty()) GoCompileErr(I, 1145);
-						S_(ChptTxt, RprtTxt);
+						S_(CFile, ChptTxt, RprtTxt);
 						CFile->WriteRec(I, CRecPtr);
 					}
 					else {

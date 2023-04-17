@@ -7,10 +7,6 @@
 #include "OldDrivers.h"
 #include "../Common/pstring.h"
 
-//typedef char CharArr[50];
-//typedef CharArr* CharArrPtr;
-
-
 struct WRect { BYTE C1 = 0, R1 = 0, C2 = 0, R2 = 0; }; // r34
 struct WordRec { BYTE Lo = 0, Hi = 0; };
 struct LongRec { WORD Lo = 0, Hi = 0; };

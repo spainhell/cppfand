@@ -487,7 +487,9 @@ void ZeroAllFlds(FileD* file_d, void* record)
 {
 	FillChar(record, file_d->FF->RecLen, 0);
 	for (auto& F : file_d->FldD) {
-		if (((F->Flg & f_Stored) != 0) && (F->field_type == FieldType::ALFANUM)) S_(F, "");
+		if (((F->Flg & f_Stored) != 0) && (F->field_type == FieldType::ALFANUM)) {
+			S_(CFile, F, "");
+		}
 	}
 }
 
@@ -850,7 +852,7 @@ std::string _StdS(FieldDescr* F, void* record)
 }
 
 /// Save LONG STRING to the record
-void LongS_(FieldDescr* F, LongStr* S)
+void LongS_(FileD* file_d, FieldDescr* F, LongStr* S)
 {
 	// asi se vzdy uklada do souboru (nebo pracovniho souboru)
 	// nakonec vola T_
@@ -861,16 +863,16 @@ void LongS_(FieldDescr* F, LongStr* S)
 		else {
 			if ((F->Flg & f_Encryp) != 0) Code(S->A, S->LL);
 #ifdef FandSQL
-			if (CFile->IsSQLFile) { SetTWorkFlag; goto label1; }
+			if (file_d->IsSQLFile) { SetTWorkFlag; goto label1; }
 			else
 #endif
-				if (HasTWorkFlag(CFile->FF, CRecPtr))
+				if (HasTWorkFlag(file_d->FF, CRecPtr))
 					label1:
 			Pos = TWork.Store(S->A, S->LL);
 				else {
-					md = NewLMode(CFile, WrMode);
-					Pos = CFile->FF->TF->Store(S->A, S->LL);
-					OldLMode(CFile, md);
+					md = NewLMode(file_d, WrMode);
+					Pos = file_d->FF->TF->Store(S->A, S->LL);
+					OldLMode(file_d, md);
 				}
 			if ((F->Flg & f_Encryp) != 0) Code(S->A, S->LL);
 			T_(F, Pos);
@@ -879,7 +881,7 @@ void LongS_(FieldDescr* F, LongStr* S)
 }
 
 /// Save STD::STRING to the record
-void S_(FieldDescr* F, std::string S, void* record)
+void S_(FileD* file_d, FieldDescr* F, std::string S, void* record)
 {
 	const BYTE LeftJust = 1;
 	BYTE* pRec = nullptr;
@@ -933,7 +935,7 @@ void S_(FieldDescr* F, std::string S, void* record)
 		}
 		case FieldType::TEXT: {
 			LongStr* ss = CopyToLongStr(S);
-			LongS_(F, ss);
+			LongS_(file_d, F, ss);
 			delete ss;
 			break;
 		}
@@ -993,7 +995,7 @@ bool LinkUpw(LinkD* LD, int& N, bool WithT)
 				case 'S': {
 					x.S = _ShortS(F);
 					CFile = ToFD; CRecPtr = RecPtr;
-					S_(F2, x.S);
+					S_(CFile, F2, x.S);
 					break;
 				}
 				case 'R': {
@@ -1102,7 +1104,7 @@ void CopyRecWithT(void* p1, void* p2)
 			if ((tf1->Format != FandTFile::T00Format)) {
 				LongStr* s = _LongS(F);
 				CRecPtr = p2;
-				LongS_(F, s);
+				LongS_(CFile, F, s);
 				ReleaseStore(s);
 			}
 			else {

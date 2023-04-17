@@ -1292,10 +1292,10 @@ void AssgnFrml(FileD* file_d, void* record, FieldDescr* F, FrmlElem* X, bool Del
 			else {
 				std::string s = RunStdStr(X);
 				if (Delete) DelTFld(F);
-				S_(F, s);
+				S_(CFile, F, s);
 			}
 		}
-		else S_(F, RunShortStr(X));
+		else S_(CFile, F, RunShortStr(X));
 		break;
 	}
 	case 'R': {

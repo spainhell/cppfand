@@ -68,8 +68,8 @@ LongStr* _LongS(FieldDescr* F);
 // * UKLADANI DO SOUBORU * / DO FRMLELEM *
 void B_(FieldDescr* F, bool B);
 void R_(FieldDescr* F, double R, void* record = nullptr);
-void S_(FieldDescr* F, std::string S, void* record = nullptr);
-void LongS_(FieldDescr* F, LongStr* S);
+void S_(FileD* file_d, FieldDescr* F, std::string S, void* record = nullptr);
+void LongS_(FileD* file_d, FieldDescr* F, LongStr* S);
 void T_(FieldDescr* F, int Pos);
 
 bool LinkUpw(LinkD* LD, int& N, bool WithT);

@@ -723,27 +723,18 @@ std::string RdCatField(FileD* catalog, WORD cat_IRec, FieldDescr* cat_field)
 	return result;
 }
 
-void WrCatField(WORD CatIRec, FieldDescr* CatF, std::string Txt)
+void WrCatField(FileD* catalog, WORD CatIRec, FieldDescr* CatF, const std::string& Txt)
 {
-	FileD* CF = CFile;
-	void* CR = CRecPtr;
-	CFile = CatFD;
-	CRecPtr = CatFD->GetRecSpace();
-	CFile->ReadRec(CatIRec, CRecPtr);
-	S_(CatF, Txt);
-	CFile->WriteRec(CatIRec, CRecPtr);
-	ReleaseStore(CRecPtr);
-	CFile = CF;
-	CRecPtr = CR;
-}
-
-void WrCatField(FileD* catFD, WORD CatIRec, FieldDescr* CatF, const std::string& Txt)
-{
-	BYTE* record = new BYTE[catFD->FF->RecLen];
-	catFD->ReadRec(CatIRec, record);
-	S_(CatF, Txt, record);
-	catFD->WriteRec(CatIRec, record);
-	delete[] record;
+	//FileD* CF = CFile;
+	//void* CR = CRecPtr;
+	//CFile = CatFD;
+	void* record = CatFD->GetRecSpace();
+	catalog->ReadRec(CatIRec, record);
+	S_(catalog, CatF, Txt, record);
+	catalog->WriteRec(CatIRec, record);
+	ReleaseStore(record);
+	//CFile = CF;
+	//CRecPtr = CR;
 }
 
 void RdCatPathVol(WORD CatIRec)

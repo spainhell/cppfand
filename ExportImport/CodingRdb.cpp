@@ -245,7 +245,7 @@ void CodingRdb::CodeF(bool rotate, WORD IRec, FieldDescr* F, char Typ)
 		Code(s->A, l);
 	}
 label2:
-	LongS_(F, s);
+	LongS_(CFile, F, s);
 	ReleaseBoth(p, p2);
 }
 

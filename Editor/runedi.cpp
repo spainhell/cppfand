@@ -1070,13 +1070,13 @@ void DuplFld(FileD* FD1, FileD* FD2, void* RP1, void* RP2, void* RPt, FieldDescr
 			CFile = FD2; CRecPtr = RP2;
 			if (RPt == nullptr) DelTFld(F2);
 			else DelDifTFld(RP2, RPt, F2);
-			LongS_(F2, ss);
+			LongS_(CFile, F2, ss);
 			ReleaseStore(ss);
 		}
 		else {
 			s = _ShortS(F1);
 			CFile = FD2; CRecPtr = RP2;
-			S_(F2, s);
+			S_(CFile, F2, s);
 		}
 		break;
 	}
@@ -1774,7 +1774,7 @@ void WrJournal(char Upd, void* RP, double Time)
 
 		auto it = CFile->FldD.begin();
 
-		S_(*it++, std::string(1, Upd), newData.get());	// change type
+		S_(CFile, *it++, std::string(1, Upd), newData.get());	// change type
 		R_(*it++, int(n), newData.get());						// record number
 		R_(*it++, int(UserCode), newData.get());				// user code
 		R_(*it++, Time, newData.get());							// timestamp
@@ -2787,7 +2787,7 @@ bool PromptSearch(bool create)
 				x.StoreStr(s, KF);
 				CFile = FD;
 				CRecPtr = RP;
-				S_(F, s);
+				S_(CFile, F, s);
 				break;
 			}
 			case 'R': {
@@ -2853,7 +2853,7 @@ bool PromptSearch(bool create)
 			switch (F->frml_type) {
 			case 'S': {
 				x.StoreStr(s, KF);
-				S_(F, s);
+				S_(CFile, F, s);
 				break;
 			}
 			case 'R': {
@@ -3388,7 +3388,7 @@ void UpdateEdTFld(LongStr* S)
 	if (!EdRecVar) md = NewLMode(CFile, WrMode);
 	SetWasUpdated(CFile->FF, CRecPtr);
 	DelDifTFld(E->NewRecPtr, E->OldRecPtr, CFld->FldD);
-	LongS_(CFld->FldD, S);
+	LongS_(CFile, CFld->FldD, S);
 	if (!EdRecVar) OldLMode(CFile, md);
 }
 
@@ -3663,7 +3663,7 @@ bool EditItemProc(bool del, bool ed, WORD& Brk)
 		SetWasUpdated(CFile->FF, CRecPtr);
 		switch (F->frml_type) {
 		case 'B': B_(F, toupper(Txt[0]) == AbbrYes); break;
-		case 'S': S_(F, Txt); break;
+		case 'S': S_(CFile, F, Txt); break;
 		case 'R': R_(F, R); break;
 		}
 	}

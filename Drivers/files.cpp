@@ -151,6 +151,7 @@ long GetFileAttr(const std::string& path, DWORD& error)
 bool SetFileAttr(const std::string& path, DWORD& error, long attributes)
 {
 	// nastavi atributy souboru/adresare
+	// TODO: toto je nesmysl, neodpovida WinAPI!!! :
 	// 0 = read only, 1 = hidden file, 2 = system file, 3 = volume label, 4 = subdirectory,
 	// 5 = written since backup, 8 = shareable (Novell NetWare)
 	if (SetFileAttributesA(path.c_str(), attributes) == 0) {
