@@ -985,7 +985,7 @@ label1:
 		ConvToNoDiakr(&Nm[0], Nm.length(), fo);
 		if (EqualsMask(S, Nm)) {
 		label2:
-			result = _StdS(TxtF);
+			result = _StdS(TxtF, CRecPtr);
 			if (!ByName || (result.length() > 0) || (i == CFile->FF->NRecs)) {
 				if (CFile == HelpFD) {
 					ConvKamenToCurr(result);

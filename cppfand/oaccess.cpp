@@ -708,18 +708,18 @@ void TurnCat(WORD Frst, WORD N, short I)
 	ReleaseStore(p);
 }
 
-std::string RdCatField(WORD CatIRec, FieldDescr* CatF)
+std::string RdCatField(FileD* catalog, WORD cat_IRec, FieldDescr* cat_field)
 {
-	FileD* CF = CFile;
-	void* CR = CRecPtr;
-	CFile = CatFD;
-	CRecPtr = CatFD->GetRecSpace();
-	CFile->ReadRec(CatIRec, CRecPtr);
-	std::string stdS = _StdS(CatF);
+	//FileD* CF = CFile;
+	//void* CR = CRecPtr;
+	//CFile = CatFD;
+	void* record = catalog->GetRecSpace();
+	catalog->ReadRec(cat_IRec, record);
+	std::string stdS = _StdS(cat_field, record);
 	std::string result = TrailChar(stdS, ' ');
-	ReleaseStore(CRecPtr);
-	CFile = CF;
-	CRecPtr = CR;
+	ReleaseStore(record);
+	//CFile = CF;
+	//CRecPtr = CR;
 	return result;
 }
 
@@ -748,9 +748,9 @@ void WrCatField(FileD* catFD, WORD CatIRec, FieldDescr* CatF, const std::string&
 
 void RdCatPathVol(WORD CatIRec)
 {
-	CPath = FExpand(RdCatField(CatIRec, CatPathName));
+	CPath = FExpand(RdCatField(CatFD, CatIRec, CatPathName));
 	FSplit(CPath, CDir, CName, CExt);
-	CVol = RdCatField(CatIRec, CatVolume);
+	CVol = RdCatField(CatFD, CatIRec, CatVolume);
 }
 
 bool SetContextDir(FileD* file_d, std::string& D, bool& IsRdb)
@@ -784,8 +784,8 @@ void GetCPathForCat(WORD I)
 	std::string d;
 	bool isRdb;
 
-	CVol = RdCatField(I, CatVolume);
-	CPath = RdCatField(I, CatPathName);
+	CVol = RdCatField(CatFD, I, CatVolume);
+	CPath = RdCatField(CatFD, I, CatPathName);
 	const bool setContentDir = SetContextDir(CFile, d, isRdb);
 	if (setContentDir && CPath.length() > 1 && CPath[1] != ':') {
 		if (isRdb) {

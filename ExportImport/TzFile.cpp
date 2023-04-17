@@ -12,8 +12,8 @@ TzFile::TzFile(bool BkUp, bool NoCompr, bool SubDirO, bool OverwrO, WORD Ir, pst
 	SubDirOpt = SubDirO;
 	OverwrOpt = OverwrO;
 	OldDir = GetDir(0);
-	Vol = RdCatField(Ir, CatVolume);
-	CPath = RdCatField(Ir, CatPathName); Path = FExpand(CPath); DrvNm = Path[0];
+	Vol = RdCatField(CatFD, Ir, CatVolume);
+	CPath = RdCatField(CatFD, Ir, CatPathName); Path = FExpand(CPath); DrvNm = Path[0];
 	Dir = aDir; AddBackSlash(Dir);
 	WBase = MaxWSize;
 	WPos = WBase;

@@ -370,7 +370,7 @@ void ExecPgm(Instr_exec* PD)
 	CVol = "";
 	std::string prog;
 	if (i != 0) {
-		prog = RdCatField(i, CatPathName);
+		prog = RdCatField(CatFD, i, CatPathName);
 	}
 	else {
 		prog = PD->ProgPath;
@@ -944,7 +944,8 @@ void WithLockedProc(Instr_withshared* PD)
 	if (op == _withlocked) {
 		ld = &PD->WLD;
 		while (ld != nullptr) {
-			ld->N = RunInt(ld->Frml); ld = ld->Chain;
+			ld->N = RunInt(ld->Frml);
+			ld = ld->Chain;
 		}
 	}
 	int w = 0;

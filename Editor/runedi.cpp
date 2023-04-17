@@ -832,7 +832,7 @@ void Wr1Line(FieldDescr* F)
 {
 	auto X = screen.WhereX();
 	auto Y = screen.WhereY();
-	std::string ls = _StdS(F);
+	std::string ls = _StdS(F, CRecPtr);
 	ls = GetNthLine(ls, 1, 1);
 	WORD max = F->L - 2;
 	ls = GetStyledStringOfLength(ls, 0, max);
@@ -3461,7 +3461,7 @@ label1:
 		HdTxt[3] = 0x19; // ^Y
 	}
 	if (IsCurrChpt()) {
-		HdTxt = _StdS(ChptTyp) + ':' + _StdS(ChptName) + HdTxt;
+		HdTxt = _StdS(ChptTyp, CRecPtr) + ':' + _StdS(ChptName, CRecPtr) + HdTxt;
 		TxtPos = trunc(_R(ChptTxtPos));
 		Breaks = BreakKeys2;
 		CtrlMsgNr = 131;

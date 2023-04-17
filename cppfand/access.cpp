@@ -728,7 +728,7 @@ void R_(FieldDescr* F, double R, void* record)
 /// Read LONG STRING from the record
 LongStr* _LongS(FieldDescr* F)
 {
-	std::string s = _StdS(F);
+	std::string s = _StdS(F, CRecPtr);
 
 	LongStr* result = new LongStr(s.length());
 	result->LL = s.length();
@@ -789,10 +789,9 @@ pstring _ShortS(FieldDescr* F)
 }
 
 /// Read STD::STRING from the record
-std::string _StdS(FieldDescr* F)
+std::string _StdS(FieldDescr* F, void* record)
 {
-	void* P = CRecPtr;
-	char* source = (char*)P + F->Displ;
+	char* source = (char*)record + F->Displ;
 	std::string S;
 	int Pos = 0; short err = 0;
 	LockMode md; WORD l = 0;

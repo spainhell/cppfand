@@ -114,7 +114,7 @@ bool NetFileTest(RdbRecVars* X)
 void GetSplitChptName(std::string& Name, std::string& Ext)
 {
 	Ext = "";
-	std::string chptName = _StdS(ChptName);
+	std::string chptName = _StdS(ChptName, CRecPtr);
 	Name = TrailChar(chptName, ' ');
 	size_t i = Name.find('.');
 	if (i == std::string::npos) return;
@@ -128,7 +128,7 @@ void GetRdbRecVars(void* RecPtr, RdbRecVars* X)
 
 	cr = CRecPtr;
 	CRecPtr = RecPtr;
-	std::string s1 = _StdS(ChptTyp);
+	std::string s1 = _StdS(ChptTyp, CRecPtr);
 	X->Typ = s1[0];
 	GetSplitChptName(X->Name, X->Ext);
 	X->Txt = CFile->_T(ChptTxt, CRecPtr);
@@ -350,7 +350,7 @@ WORD FindHelpRecNr(FileD* FD, std::string& txt)
 	TxtF = NmF->pChain;
 	for (i = 1; i <= CFile->FF->NRecs; i++) {
 		CFile->ReadRec(i, CRecPtr);
-		auto NmFtext = _StdS(NmF);
+		std::string NmFtext = _StdS(NmF, CRecPtr);
 		std::string nm = TrailChar(NmFtext, ' ');
 		ConvToNoDiakr(&nm[0], nm.length(), fonts.VFont);
 		if (EqualsMask(txt, nm)) {
@@ -484,7 +484,7 @@ void SetRdbDir(char Typ, std::string* Nm)
 		CRdb = r;
 	}
 	if (CFile->CatIRec != 0) {
-		CPath = RdCatField(CFile->CatIRec, CatPathName);
+		CPath = RdCatField(CatFD, CFile->CatIRec, CatPathName);
 		if (CPath[1] != ':') {
 			d = rb->RdbDir;
 			if (CPath[1] == '\\') CPath = copy(d, 1, 2) + CPath;

@@ -198,7 +198,7 @@ void VarFixExp(ThFile* F2, CpOption Opt)
 				break;
 			}
 			case FieldType::ALFANUM: {
-				s = _StdS(F);
+				s = _StdS(F, CRecPtr);
 				if (Opt == CpOption::cpVar) {
 					if (F->M == 1) s = TrailChar(s, ' ');
 					else s = LeadChar(' ', s);
@@ -212,7 +212,7 @@ void VarFixExp(ThFile* F2, CpOption Opt)
 				break;
 			}
 			case FieldType::NUMERIC: {
-				s = _StdS(F);
+				s = _StdS(F, CRecPtr);
 				if (Opt == CpOption::cpVar) {
 					if (F->M == 1) s = TrailChar(s, '0');
 					else s = LeadChar('0', s);

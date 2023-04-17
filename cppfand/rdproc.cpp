@@ -2039,11 +2039,11 @@ Instr* RdTurnCat()
 	TestCatError(Frst, LexWord, true);
 	RdLex();
 	PD->FrstCatIRec = Frst;
-	pstring RN = RdCatField(Frst, CatRdbName);
-	pstring FN = RdCatField(Frst, CatFileName);
+	pstring RN = RdCatField(CatFD, Frst, CatRdbName);
+	pstring FN = RdCatField(CatFD, Frst, CatFileName);
 	WORD I = Frst + 1;
-	while ((CatFD->FF->NRecs >= I) && EquUpCase(RN, RdCatField(I, CatRdbName))
-		&& EquUpCase(FN, RdCatField(I, CatFileName))) I++;
+	while ((CatFD->FF->NRecs >= I) && EquUpCase(RN, RdCatField(CatFD, I, CatRdbName))
+		&& EquUpCase(FN, RdCatField(CatFD, I, CatFileName))) I++;
 	if (I == Frst + 1) OldError(98);
 	PD->NCatIRecs = I - Frst;
 	Accept(',');

@@ -1408,7 +1408,7 @@ std::string DecodeField(FieldDescr* F, WORD LWw)
 			return Txt;
 		}
 		else {
-			s = _StdS(F);
+			s = _StdS(F, CRecPtr);
 		}
 		break;
 	}
@@ -1759,7 +1759,7 @@ label1:
 	switch (X->Op) {
 	case _field: {
 		auto iX7 = (FrmlElem7*)X;
-		result = _StdS(iX7->Field);
+		result = _StdS(iX7->Field, CRecPtr);
 		break;
 	}
 	case _getlocvar: {
@@ -1897,7 +1897,7 @@ label1:
 		cf = CFile;
 		cr = CRecPtr;
 		AccRecNoProc(iX, 640);
-		result = _StdS(iX->RecFldD);
+		result = _StdS(iX->RecFldD, CRecPtr);
 		ReleaseAfterLongStr(CRecPtr);
 		CFile = cf;
 		CRecPtr = cr;
@@ -2143,7 +2143,7 @@ LongStr* RunS(FrmlElem* Z)
 	}
 	case _catfield: {
 		auto iZ = (FrmlElem10*)Z;
-		std::string stdS = RdCatField(iZ->CatIRec, iZ->CatFld);
+		std::string stdS = RdCatField(CatFD, iZ->CatIRec, iZ->CatFld);
 		bool empty = stdS.empty(); // bude se jednat jen o cestu, bez nazvu souboru
 		if (iZ->CatFld == CatPathName) {
 			stdS = FExpand(stdS);
