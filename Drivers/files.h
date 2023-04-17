@@ -53,4 +53,17 @@ bool TruncF(HANDLE hFile, DWORD& error, long distance = -1);
  */
 long SizeF(HANDLE hFile, DWORD& error);
 
+/**
+ *
+ */
 bool CloseF(HANDLE& hFile, DWORD& error);
+
+/**
+ *
+ */
+long GetFileAttr(const std::string& path, DWORD& error);
+
+/**
+ *
+ */
+bool SetFileAttr(const std::string& path, DWORD& error, long attributes);

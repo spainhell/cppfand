@@ -192,7 +192,7 @@ bool SetTopDir(std::string& p, std::string& n)
 		//NewExit(Ovr(), er);
 		//goto label1;
 		CFile = CatFD;
-		OpenF(Exclusive);
+		OpenF(CPath, Exclusive);
 		result = true;
 	}
 	catch (std::exception& e) {

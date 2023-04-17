@@ -44,7 +44,7 @@ wdaystt* WDaysTab;
 char AbbrYes = 'Y';
 char AbbrNo = 'N';
 
-int HandleError;
+unsigned long HandleError;
 pstring OldDir;
 pstring FandDir;
 std::string WrkDir;
@@ -924,31 +924,6 @@ void CloseClearH(FILE** h)
 	if (h == nullptr) return;
 	ClearCacheH(*h);
 	CloseH(h);
-}
-
-void SetFileAttr(WORD Attr)
-{
-	// nastavi atributy souboru/adresare
-	// 0 = read only, 1 = hidden file, 2 = system file, 3 = volume label, 4 = subdirectory,
-	// 5 = written since backup, 8 = shareable (Novell NetWare)
-	if (SetFileAttributesA(CPath.c_str(), Attr) == 0)
-	{
-		HandleError = GetLastError();
-	}
-}
-
-WORD GetFileAttr()
-{
-	// ziska atributy souboru / adresare
-	auto result = GetFileAttributesA(CPath.c_str());
-	if (result == INVALID_FILE_ATTRIBUTES) {
-		HandleError = GetLastError();
-		return 0;
-	}
-	else {
-		HandleError = 0;
-		return result;
-	}
 }
 
 void RdWrCache(FileOperation operation, FILE* handle, bool not_cached, size_t position, size_t count, void* buf)

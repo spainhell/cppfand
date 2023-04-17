@@ -134,7 +134,7 @@ label1:
 			}
 			else {
 				d = spec.NetDelay;
-				SetCPathVol();
+				SetCPathVol(CFile);
 				SetMsgPar(CPath, LockModeTxt[Mode]);
 				int w1 = PushWrLLMsg(825, Kind == 1);
 				if (w == 0) {
@@ -373,7 +373,7 @@ label1:
 			m = 826;
 			if (N == 0)
 			{
-				SetCPathVol();
+				SetCPathVol(CFile);
 				SetMsgPar(CPath, XTxt);
 				m = 825;
 			}
@@ -1220,7 +1220,7 @@ void* LocVarAd(LocVar* LV)
 	return nullptr;
 }
 
-void rol(BYTE& input, size_t count)
+void rotateByteLeft(BYTE& input, size_t count)
 {
 	for (size_t i = 0; i < count; i++) {
 		input = input << 1 | input >> 7;
@@ -1254,7 +1254,7 @@ void XDecode(LongStr* origS)
 
 	WORD offset = 0;
 
-	BYTE* DS = S; // ukazuje na delku pred retezcem
+	BYTE* DS = S;     // ukazuje na delku pred retezcem
 	BYTE* ES = &S[2]; // ukazuje na zacatek retezce
 	WORD SI = 0;
 	*BX = SI;
@@ -1270,7 +1270,7 @@ void XDecode(LongStr* origS)
 	*CL = S[*BX];
 	*CL = *CL & 3;
 	*AL = 0x9C;
-	rol(*AL, *CL);
+	rotateByteLeft(*AL, *CL);
 	RMask = *AL;
 	*CH = 0;
 
@@ -1284,7 +1284,7 @@ label2:
 	if ((*DH & 1) == 0) goto label1;
 	if ((*DL & 1) != 0) goto label3;
 	*AL = DS[SI]; SI++; // lodsb
-	rol(RMask, 1);
+	rotateByteLeft(RMask, 1);
 	*AL = *AL ^ RMask;
 	ES[DI] = *AL; DI++; // stosb
 	*DX = *DX >> 1;
@@ -1304,13 +1304,6 @@ label3:
 label4:
 	origS->LL = DI;
 	memcpy(origS->A, &S[2], DI);
-
-	/**AX = DI;
-	DI = *len;
-	*AX -= DI;
-	*AX -= 2;
-	ES[DI] = *AL; DI++;
-	ES[DI] = *AH; DI++;*/
 
 	delete AX; delete BX; delete CX; delete DX;
 	delete[] S;
@@ -1381,9 +1374,9 @@ std::string TranslateOrd(std::string text)
 	for (size_t i = 0; i < text.length(); i++) {
 		char c = CharOrdTab[(BYTE)text[i]];
 #ifndef FandAng
-		if (c == 0x49 && trans.length() > 0) { // znak 'H'
+		if (c == 0x49 && trans.length() > 0) {       // znak 'H'
 			if (trans[trans.length() - 1] == 0x43) { // posledni znak ve vystupnim retezci je 'C' ?
-				trans[trans.length() - 1] = 0x4A; // na vstupu bude 'J' jako 'CH'
+				trans[trans.length() - 1] = 0x4A;    // na vstupu bude 'J' jako 'CH'
 				continue;
 			}
 		}

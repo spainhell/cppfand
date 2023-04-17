@@ -519,7 +519,7 @@ void ResetRdOnly()
 	if (Chpt->FF->UMode == RdOnly) {
 		CloseFile();
 		IsInstallRun = true;
-		OpenF(Exclusive);
+		OpenF(CPath, Exclusive);
 		IsInstallRun = false;
 	}
 }
@@ -586,7 +586,7 @@ void CreateOpenChpt(std::string Nm, bool create, wwmix* ww)
 
 	if (IsTestRun || !create) um = Exclusive;
 	else um = RdOnly;
-	if (OpenF(um)) {
+	if (OpenF(CPath, um)) {
 		if (ChptTF->CompileAll) ResetRdOnly();
 		else if (!top && oldChptTF != nullptr && (ChptTF->TimeStmp < oldChptTF->TimeStmp)) {
 			// TODO: oldChptTF != nullptr je v podmince navic, protoze dalsi podminka vzdy vyhorela 
@@ -1027,7 +1027,7 @@ bool EquStoredF(FieldDescr* F1, FieldDescr* F2)
 void DeleteF()
 {
 	CloseFile();
-	SetCPathVol();
+	SetCPathVol(CFile);
 	MyDeleteFile(CPath);
 	CPath = CExtToX(CDir, CName, CExt);
 	if (CFile->FF->XF != nullptr) {
@@ -1057,16 +1057,16 @@ bool MergeAndReplace(FileD* fd_old, FileD* fd_new)
 		CFile = fd_new;
 		CloseFile();
 		fd_old->FF->file_type = fd_new->FF->file_type;
-		SetCPathVol();
+		SetCPathVol(CFile);
 		std::string p = CPath;
 		CFile = fd_old;
-		SetCPathVol();
+		SetCPathVol(CFile);
 		RenameFile56(p, CPath, false);
 		CFile = fd_new;
 		/*TF->Format used*/
 		CPath = CExtToT(CDir, CName, CExt);
 		p = CPath;
-		SetCPathVol();
+		SetCPathVol(CFile);
 		CPath = CExtToT(CDir, CName, CExt);
 		RenameFile56(CPath, p, false);
 		result = true;
@@ -1113,7 +1113,7 @@ bool MergeOldNew(bool Veriflongint, int Pos)
 	auto result = false;
 	FileD* FDOld = nullptr;
 	FileD* FDNew = CFile;
-	SetCPathVol();
+	SetCPathVol(CFile);
 	Name = FDNew->Name;
 	FDNew->Name = "@";
 	CFile = Chpt;
@@ -1129,7 +1129,7 @@ bool MergeOldNew(bool Veriflongint, int Pos)
 		result = true;
 	}
 	else if ((FDOld->FF->file_type == FileType::INDEX) && !EquKeys(FDOld->Keys[0], FDNew->Keys[0])) {
-		SetCPathVol();
+		SetCPathVol(CFile);
 		CPath = CExtToX(CDir, CName, CExt);
 		MyDeleteFile(CPath);
 	}

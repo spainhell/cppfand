@@ -953,9 +953,9 @@ label1:
 	while (ld != nullptr) {
 		CFile = ld->FD;
 		if (CFile->FF->Handle == nullptr)
-			if (OpenF1(Shared)) {
+			if (OpenF1(CPath, Shared)) {
 				if (TryLMode(CFile, RdMode, md, 2)) {
-					OpenF2();
+					OpenF2(CPath);
 					OldLMode(CFile, NullMode);
 				}
 				else {
@@ -984,7 +984,7 @@ label1:
 				return;
 			}
 			CFile = ld->FD;
-			SetCPathVol();
+			SetCPathVol(CFile);
 			if (op == _withlocked) {
 				msg = 839;
 				str(ld->N, ntxt);

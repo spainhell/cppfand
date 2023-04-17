@@ -11,9 +11,11 @@ void CloseFANDFiles(bool FromDML);
 void OpenFANDFiles(bool FromDML);
 void SetCPathMountVolSetNet(FileUseMode UM);
 void TestCFileError();
-bool OpenF1(FileUseMode UM);
-bool OpenF2();
-bool OpenF(FileUseMode UM);
+
+bool OpenF(const std::string& path, FileUseMode UM);
+bool OpenF1(const std::string& path, FileUseMode UM);
+bool OpenF2(const std::string& path);
+
 void CreateF();
 bool OpenCreateF(FileD* fileD, FileUseMode UM);
 LockMode RewriteF(bool Append);
@@ -37,7 +39,7 @@ void WrCatField(WORD CatIRec, FieldDescr* CatF, std::string Txt);
 void RdCatPathVol(WORD CatIRec);
 bool SetContextDir(FileD* file_d, std::string& D, bool& IsRdb);
 void GetCPathForCat(WORD I);
-void SetCPathVol(char pathDelim = '\\');
+std::string SetCPathVol(FileD* file_d, char pathDelim = '\\');
 void SetTxtPathVol(pstring* Path, WORD CatIRec);
 void SetTxtPathVol(std::string& Path, WORD CatIRec);
 void SetTempCExt(char Typ, bool IsNet);

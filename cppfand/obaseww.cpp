@@ -306,7 +306,7 @@ bool PromptYN(WORD NMsg)
 
 void CFileMsg(WORD n, char Typ)
 {
-	SetCPathVol();
+	SetCPathVol(CFile);
 	if (Typ == 'T') {
 		CPath = CExtToT(CDir, CName, CExt);
 	}

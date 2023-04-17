@@ -97,8 +97,6 @@ void FlushH(FILE* handle);
 void FlushHandles();
 void CloseH(FILE** handle);
 void CloseClearH(FILE** h);
-void SetFileAttr(WORD Attr);
-WORD GetFileAttr();
 void RdWrCache(FileOperation operation, FILE* handle, bool not_cached, size_t position, size_t count, void* buf);
 void MyDeleteFile(pstring path);
 void RenameFile56(pstring OldPath, pstring NewPath, bool Msg);

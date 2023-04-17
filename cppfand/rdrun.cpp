@@ -335,15 +335,18 @@ bool LockForAdd(FileD* FD, WORD Kind, bool Ta, LockMode& md)
 bool RunAddUpdte(char Kind, void* CRold, LinkD* notLD)
 {
 	LockMode md;
-	FileD* CF = CFile; LockForAdd(CF, 0, false, md);
+	FileD* CF = CFile;
+	LockForAdd(CF, 0, false, md);
 	while (!LockForAdd(CF, 1, false, md)) {
-		SetCPathVol();
+		SetCPathVol(CFile);
 		SetMsgPar(CPath, LockModeTxt[md]);
-		LockForAdd(CF, 2, false, md); int w = PushWrLLMsg(825, false);
-		KbdTimer(spec.NetDelay, 0); if (w != 0) PopW(w);
+		LockForAdd(CF, 2, false, md);
+		int w = PushWrLLMsg(825, false);
+		KbdTimer(spec.NetDelay, 0);
+		if (w != 0) PopW(w);
 	}
 	CFile = CF;
-	auto result = RunAddUpdte1(Kind, CRold, false, nullptr, notLD);
+	bool result = RunAddUpdte1(Kind, CRold, false, nullptr, notLD);
 	LockForAdd(CF, 2, false, md);
 	CFile = CF;
 	return result;
@@ -351,8 +354,7 @@ bool RunAddUpdte(char Kind, void* CRold, LinkD* notLD)
 
 bool TestExitKey(WORD KeyCode, EdExitD* X)
 {
-	for (auto& key : X->Keys)
-	{
+	for (auto& key : X->Keys) {
 		if (KeyCode == key.KeyCode) {
 			EdBreak = key.Break;
 			return true;

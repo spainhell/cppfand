@@ -1860,7 +1860,7 @@ label1:
 		OldLMode(CFile, OldMd);
 		CFile = cf2;
 	label3:
-		SetCPathVol();
+		SetCPathVol(CFile);
 		SetMsgPar(CPath, LockModeTxt[md]);
 		w1 = PushWrLLMsg(825, true);
 		if (w == 0) w = w1;

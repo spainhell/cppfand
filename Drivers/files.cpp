@@ -133,3 +133,32 @@ bool CloseF(HANDLE& hFile, DWORD& error)
 	hFile = nullptr;
 	return result;
 }
+
+long GetFileAttr(const std::string& path, DWORD& error)
+{
+	// ziska atributy souboru / adresare
+	DWORD result = GetFileAttributesA(path.c_str());
+	if (result == INVALID_FILE_ATTRIBUTES) {
+		error = GetLastError();
+		return -1;
+	}
+	else {
+		error = 0;
+		return (long)result;
+	}
+}
+
+bool SetFileAttr(const std::string& path, DWORD& error, long attributes)
+{
+	// nastavi atributy souboru/adresare
+	// 0 = read only, 1 = hidden file, 2 = system file, 3 = volume label, 4 = subdirectory,
+	// 5 = written since backup, 8 = shareable (Novell NetWare)
+	if (SetFileAttributesA(path.c_str(), attributes) == 0) {
+		error = GetLastError();
+		return false;
+	}
+	else {
+		error = 0;
+		return true;
+	}
+}
