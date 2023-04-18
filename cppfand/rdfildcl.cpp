@@ -501,7 +501,6 @@ void* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 {
 	std::string JournalFlds = "Upd:A,1;RecNr:F,8.0;User:F,4.0;TimeStamp:D,'DD.MM.YYYY hh:mm:ss'";
 	FileD* FD = nullptr;
-	//XKey* K = nullptr;
 	FieldDescr* F = nullptr; FieldDescr* F2 = nullptr;
 	void* p = nullptr;
 	ChkD* C = nullptr;

@@ -222,10 +222,16 @@ FrmlElem* RdFldNameFrmlP(char& FTyp)
 				F = nullptr;
 				goto label1;
 			}
-			if (IsKeyWord("ARCHIVES")) { F = CatArchiv; goto label0; }
-			if (IsKeyWord("PATH")) { F = CatPathName; goto label0; }
+			if (IsKeyWord("ARCHIVES")) 	{
+				F = CatFD->CatArchiv;
+				goto label0;
+			}
+			if (IsKeyWord("PATH")) 	{
+				F = CatFD->cat_path_name_;
+				goto label0;
+			}
 			if (IsKeyWord("VOLUME")) {
-				F = CatVolume;
+				F = CatFD->cat_volume_;
 			label0:
 				FTyp = 'S';
 			label1:
@@ -2039,11 +2045,11 @@ Instr* RdTurnCat()
 	TestCatError(Frst, LexWord, true);
 	RdLex();
 	PD->FrstCatIRec = Frst;
-	pstring RN = RdCatField(CatFD, Frst, CatRdbName);
-	pstring FN = RdCatField(CatFD, Frst, CatFileName);
+	pstring RN = CatFD->ReadField(Frst, CatFD->cat_rdb_name_);
+	pstring FN = CatFD->ReadField(Frst, CatFD->cat_file_name_);
 	WORD I = Frst + 1;
-	while ((CatFD->FF->NRecs >= I) && EquUpCase(RN, RdCatField(CatFD, I, CatRdbName))
-		&& EquUpCase(FN, RdCatField(CatFD, I, CatFileName))) I++;
+	while ((CatFD->GetCatalogFile()->FF->NRecs >= I) && EquUpCase(RN, CatFD->ReadField(I, CatFD->cat_rdb_name_))
+		&& EquUpCase(FN, CatFD->ReadField(I, CatFD->cat_file_name_))) I++;
 	if (I == Frst + 1) OldError(98);
 	PD->NCatIRecs = I - Frst;
 	Accept(',');
@@ -2545,10 +2551,16 @@ Instr_assign* RdAssign()
 			FD = FindFileD();
 			if (IsActiveRdb(FD)) Error(121);
 			RdLex(); RdLex();
-			if (IsKeyWord("ARCHIVES")) { F = CatArchiv; goto label1; }
-			if (IsKeyWord("PATH")) { F = CatPathName; goto label1; }
+			if (IsKeyWord("ARCHIVES")) 	{
+				F = CatFD->CatArchiv;
+				goto label1;
+			}
+			if (IsKeyWord("PATH")) 	{
+				F = CatFD->cat_path_name_;
+				goto label1;
+			}
 			if (IsKeyWord("VOLUME")) {
-				F = CatVolume;
+				F = CatFD->cat_volume_;
 			label1:
 				PD = new Instr_assign(_asgncatfield); // GetPInstr(_asgncatfield, 16);
 				PD->FD3 = FD;
@@ -2954,12 +2966,12 @@ Instr* RdBackup(char MTyp, bool IsBackup)
 	TestIdentif();
 	FileD* cf = CFile;
 	void* cr = CRecPtr;
-	CFile = CatFD;
-	CRecPtr = CatFD->GetRecSpace();
-	for (int i = 1; i <= CatFD->FF->NRecs; i++) {
+	CFile = CatFD->GetCatalogFile();
+	CRecPtr = CatFD->GetCatalogFile()->GetRecSpace();
+	for (int i = 1; i <= CatFD->GetCatalogFile()->FF->NRecs; i++) {
 		CFile->ReadRec(i, CRecPtr);
-		if (EquUpCase(OldTrailChar(' ', _ShortS(CatRdbName)), "ARCHIVES")
-			&& EquUpCase(OldTrailChar(' ', _ShortS(CatFileName)), LexWord)) {
+		if (EquUpCase(OldTrailChar(' ', _ShortS(CatFD->cat_rdb_name_)), "ARCHIVES")
+			&& EquUpCase(OldTrailChar(' ', _ShortS(CatFD->cat_file_name_)), LexWord)) {
 			RdLex();
 			PD->BrCatIRec = i;
 			ReleaseStore(CRecPtr);

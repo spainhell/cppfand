@@ -50,7 +50,8 @@ void SaveFD()
 void SaveFiles()
 {
 	if (!CacheExist()) return;
-	FileD* cf = CFile; CFile = CatFD;
+	FileD* cf = CFile;
+	CFile = CatFD->GetCatalogFile();
 	WrPrefixes();
 	ForAllFDs(SaveFD);
 	bool b = SaveCache(0, CFile->FF->Handle);
@@ -70,14 +71,16 @@ void CloseFANDFiles(bool FromDML)
 	while (RD != nullptr) {
 		CFile = RD->FD;
 		while (CFile != nullptr) {
-			if (!FromDML) CFile->FF->ExLMode = CFile->FF->LMode;
+			if (!FromDML) {
+				CFile->FF->ExLMode = CFile->FF->LMode;
+			}
 			CloseFile();
 			CFile = CFile->pChain;
 		}
 		RD = RD->ChainBack;
 	}
 	if (CRdb != nullptr) {
-		CFile = CatFD;
+		CFile = CatFD->GetCatalogFile();
 		CloseFile();
 	}
 	CFile = HelpFD;
@@ -96,13 +99,17 @@ void OpenFANDFiles(bool FromDML)
 	CFile = HelpFD;
 	OpenF(CPath, RdOnly);
 	if (CRdb == nullptr) return;
-	CFile = CatFD;
+	CFile = CatFD->GetCatalogFile();
 	OpenF(CPath, Exclusive);
 	RD = CRdb;
 	while (RD != nullptr) {
 		CFile = RD->FD;
-		if (IsTestRun) OpenF(CPath, Exclusive);
-		else OpenF(CPath, RdOnly);
+		if (IsTestRun) {
+			OpenF(CPath, Exclusive);
+		}
+		else {
+			OpenF(CPath, RdOnly);
+		}
 		CFile = CFile->pChain;
 		while (!FromDML && (CFile != nullptr)) {
 			if (CFile->FF->ExLMode != NullMode) {
@@ -148,7 +155,7 @@ bool OpenF1(const std::string& path, FileUseMode UM)
 	auto result = true;
 	CFile->FF->LMode = NullMode;
 	SetCPathMountVolSetNet(UM);
-	bool b = (CFile == Chpt) || (CFile == CatFD);
+	bool b = (CFile == Chpt) || (CFile == CatFD->GetCatalogFile());
 	if (b && (IsTestRun || IsInstallRun) && ((GetFileAttr(CPath, HandleError) & 0x1/*RdOnly*/) != 0)) {
 		SetFileAttr(CPath, HandleError, GetFileAttr(CPath, HandleError) & 0x26);
 		if (HandleError == 5) HandleError = 79;
@@ -640,17 +647,17 @@ WORD GetCatIRec(pstring Name, bool MultiLevel)
 {
 	int i = 0; FileD* CF = nullptr; RdbD* R = nullptr; void* CR = nullptr;
 	WORD result = 0;
-	if (CatFD == nullptr || CatFD->FF->Handle == nullptr) return result;
+	if (CatFD == nullptr || CatFD->GetCatalogFile()->FF->Handle == nullptr) return result;
 	if (CRdb == nullptr) return result;
-	CF = CFile; CR = CRecPtr; CFile = CatFD;
+	CF = CFile; CR = CRecPtr; CFile = CatFD->GetCatalogFile();
 	CRecPtr = CFile->GetRecSpace();
 	R = CRdb;
 label1:
-	for (i = 1; i <= CatFD->FF->NRecs; i++)
+	for (i = 1; i <= CatFD->GetCatalogFile()->FF->NRecs; i++)
 	{
 		CFile->ReadRec(i, CRecPtr);
-		if (EquUpCase(OldTrailChar(' ', _ShortS(CatRdbName)), R->FD->Name) &&
-			EquUpCase(OldTrailChar(' ', _ShortS(CatFileName)), Name))
+		if (EquUpCase(OldTrailChar(' ', _ShortS(CatFD->cat_rdb_name_)), R->FD->Name) &&
+			EquUpCase(OldTrailChar(' ', _ShortS(CatFD->cat_file_name_)), Name))
 		{
 			result = i; goto label2;
 		}
@@ -666,9 +673,14 @@ label2:
 
 WORD Generation()
 {
-	WORD i, j; pstring s(2);
+	WORD i, j;
+	pstring s(2);
 	if (CFile->CatIRec == 0) return 0;
-	RdCatPathVol(CFile->CatIRec);
+
+	CVol = CatFD->GetVolume(CFile->CatIRec);
+	CPath = FExpand(CatFD->GetPathName(CFile->CatIRec));
+	FSplit(CPath, CDir, CName, CExt);
+
 	s = CExt.substr(3, 2);
 	val(s, i, j);
 	if (j == 0) return i;
@@ -677,16 +689,17 @@ WORD Generation()
 
 void TurnCat(WORD Frst, WORD N, short I)
 {
-	void* p; void* q; WORD j, last;
 	if (CFile != nullptr) CloseFile();
-	CFile = CatFD;
-	p = CFile->GetRecSpace();
-	q = CFile->GetRecSpace();
-	CRecPtr = q; last = Frst + N - 1;
+	CFile = CatFD->GetCatalogFile();
+	void* p = CFile->GetRecSpace();
+	void* q = CFile->GetRecSpace();
+	CRecPtr = q;
+	WORD last = Frst + N - 1;
 	if (I > 0)
 		while (I > 0) {
-			CFile->ReadRec(Frst, CRecPtr); CRecPtr = p;
-			for (j = 1; j <= N - 1; j++) {
+			CFile->ReadRec(Frst, CRecPtr);
+			CRecPtr = p;
+			for (WORD j = 1; j <= N - 1; j++) {
 				CFile->ReadRec(Frst + j, CRecPtr);
 				CFile->WriteRec(Frst + j - 1, CRecPtr);
 			}
@@ -696,8 +709,9 @@ void TurnCat(WORD Frst, WORD N, short I)
 		}
 	else
 		while (I < 0) {
-			CFile->ReadRec(last, CRecPtr); CRecPtr = p;
-			for (j = 1; j <= N - 1; j++) {
+			CFile->ReadRec(last, CRecPtr);
+			CRecPtr = p;
+			for (WORD j = 1; j <= N - 1; j++) {
 				CFile->ReadRec(last - j, CRecPtr);
 				CFile->WriteRec(last - j + 1, CRecPtr);
 			}
@@ -708,40 +722,9 @@ void TurnCat(WORD Frst, WORD N, short I)
 	ReleaseStore(p);
 }
 
-std::string RdCatField(FileD* catalog, WORD cat_IRec, FieldDescr* cat_field)
-{
-	//FileD* CF = CFile;
-	//void* CR = CRecPtr;
-	//CFile = CatFD;
-	void* record = catalog->GetRecSpace();
-	catalog->ReadRec(cat_IRec, record);
-	std::string stdS = _StdS(cat_field, record);
-	std::string result = TrailChar(stdS, ' ');
-	ReleaseStore(record);
-	//CFile = CF;
-	//CRecPtr = CR;
-	return result;
-}
-
-void WrCatField(FileD* catalog, WORD CatIRec, FieldDescr* CatF, const std::string& Txt)
-{
-	//FileD* CF = CFile;
-	//void* CR = CRecPtr;
-	//CFile = CatFD;
-	void* record = CatFD->GetRecSpace();
-	catalog->ReadRec(CatIRec, record);
-	S_(catalog, CatF, Txt, record);
-	catalog->WriteRec(CatIRec, record);
-	ReleaseStore(record);
-	//CFile = CF;
-	//CRecPtr = CR;
-}
-
 void RdCatPathVol(WORD CatIRec)
 {
-	CPath = FExpand(RdCatField(CatFD, CatIRec, CatPathName));
-	FSplit(CPath, CDir, CName, CExt);
-	CVol = RdCatField(CatFD, CatIRec, CatVolume);
+	
 }
 
 bool SetContextDir(FileD* file_d, std::string& D, bool& IsRdb)
@@ -775,8 +758,8 @@ void GetCPathForCat(WORD I)
 	std::string d;
 	bool isRdb;
 
-	CVol = RdCatField(CatFD, I, CatVolume);
-	CPath = RdCatField(CatFD, I, CatPathName);
+	CVol = CatFD->ReadField(I, CatFD->cat_volume_);
+	CPath = CatFD->ReadField(I, CatFD->cat_path_name_);
 	const bool setContentDir = SetContextDir(CFile, d, isRdb);
 	if (setContentDir && CPath.length() > 1 && CPath[1] != ':') {
 		if (isRdb) {
@@ -858,7 +841,9 @@ label4:
 void SetTxtPathVol(pstring* Path, WORD CatIRec)
 {
 	if (CatIRec != 0) {
-		RdCatPathVol(CatIRec);
+		CVol = CatFD->GetVolume(CatIRec);
+		CPath = FExpand(CatFD->GetPathName(CatIRec));
+		FSplit(CPath, CDir, CName, CExt);
 	}
 	else {
 		CPath = FExpand(*Path);
@@ -869,7 +854,9 @@ void SetTxtPathVol(pstring* Path, WORD CatIRec)
 void SetTxtPathVol(std::string& Path, WORD CatIRec)
 {
 	if (CatIRec != 0) {
-		RdCatPathVol(CatIRec);
+		CVol = CatFD->GetVolume(CatIRec);
+		CPath = FExpand(CatFD->GetPathName(CatIRec));
+		FSplit(CPath, CDir, CName, CExt);
 	}
 	else {
 		CPath = FExpand(Path);
@@ -921,6 +908,7 @@ FileD* OpenDuplF(bool CrTF)
 	if (FD->FF->file_type == FileType::INDEX) {
 		if (FD->FF->XF != nullptr) {
 			delete FD->FF->XF;
+			FD->FF->XF = nullptr;
 		}
 		FD->FF->XF = new FandXFile();
 		FD->FF->XF->Handle = nullptr;

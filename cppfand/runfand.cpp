@@ -132,37 +132,28 @@ void RdCFG()
 
 void CompileHelpCatDcl()
 {
-	void* p2 = nullptr;
 	FileDRoot = nullptr;
 	Chpt = FileDRoot;
 	CRdb = nullptr;
-	MarkStore(p2);
-	ReadMessage(56);
-	std::string s = MsgLine;
-	SetInpStr(s);
+
+	// process help
+	std::string help_definition = ReadMessage(56);
+	SetInpStr(help_definition);
 #if defined (FandRunV)
-	RdFileD("UFANDHLP", FAND16, "");
+	RdFileD("UFANDHLP", FileType::FAND16, "");
 #else
 	RdFileD("FANDHLP", FileType::FAND16, "");
 #endif
 	HelpFD = CFile;
-	ReadMessage(52);
-	s = MsgLine;
-	SetInpStr(s);
+
+	// process catalog
+	std::string catalog_definition = ReadMessage(52);
+	SetInpStr(catalog_definition);
 	RdFileD("Catalog", FileType::CAT, "");
-	CatFD = CFile;
+	
 	FileDRoot = nullptr;
 	Chpt = FileDRoot;
-	CatRdbName = CatFD->FldD.front();
-	if (CatRdbName == nullptr) {
-		throw std::exception("CompileHelpCatDcl: CarRdbName is NULL");
-	}
-	CatFileName = CatRdbName->pChain;
-	CatArchiv = CatFileName->pChain;
-	CatPathName = CatArchiv->pChain;
-	CatVolume = CatPathName->pChain;
-	MarkStore(AfterCatFD);
-	ReleaseStore(p2);
+	CatFD = new Catalog(CFile);
 }
 
 bool SetTopDir(std::string& p, std::string& n)
@@ -181,7 +172,9 @@ bool SetTopDir(std::string& p, std::string& n)
 		TopDataDir = GetEnv("FANDDATA");
 		DelBackSlash(TopRdbDir);
 		DelBackSlash(TopDataDir);
-		if (!TopDataDir.empty()) TopDataDir = FExpand(TopDataDir);
+		if (!TopDataDir.empty()) {
+			TopDataDir = FExpand(TopDataDir);
+		}
 		ChDir(TopRdbDir);
 		if (IOResult() != 0) {
 			SetMsgPar(p);
@@ -191,7 +184,7 @@ bool SetTopDir(std::string& p, std::string& n)
 		CatFDName = n;
 		//NewExit(Ovr(), er);
 		//goto label1;
-		CFile = CatFD;
+		CFile = CatFD->GetCatalogFile();
 		OpenF(CPath, Exclusive);
 		result = true;
 	}
@@ -207,7 +200,7 @@ void RunRdb(std::string p)
 	if (!p.empty() && SetTopDir(p, n)) {
 		wwmix ww;
 		EditExecRdb(n, "main", nullptr, &ww);
-		CFile = CatFD;
+		CFile = CatFD->GetCatalogFile();
 		CloseFile();
 	}
 }
@@ -227,7 +220,7 @@ void CallInstallRdb()
 	if ((!p.empty()) && SetTopDir(p, n))
 	{
 		InstallRdb(n);
-		CFile = CatFD;
+		CFile = CatFD->GetCatalogFile();
 		CloseFile();
 	}
 }

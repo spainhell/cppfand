@@ -54,7 +54,7 @@ public:
 	void ReadRec(size_t rec_nr, void* record);
 	void WriteRec(size_t rec_nr, void* record);
 
-	void* GetRecSpace();
+	BYTE* GetRecSpace();
 
 	void IncNRecs(int n);
 	void DecNRecs(int n);

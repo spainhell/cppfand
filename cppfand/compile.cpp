@@ -2425,12 +2425,16 @@ FileD* FindFileD()
 		FD = R->FD;
 		while (FD != nullptr) {
 			std::string lw = LexWord;
-			if (EquUpCase(FD->Name, lw)) { return FD; }
-			FD = (FileD*)FD->pChain;
+			if (EquUpCase(FD->Name, lw)) {
+				return FD;
+			}
+			FD = FD->pChain;
 		}
 		R = R->ChainBack;
 	}
-	if (EquUpCase("CATALOG", LexWord)) return CatFD;
+	if (EquUpCase("CATALOG", LexWord)) {
+		return CatFD->GetCatalogFile();
+	}
 	return nullptr;
 }
 

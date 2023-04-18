@@ -1573,8 +1573,12 @@ void SetCFile(const pstring Name)
 		}
 		r = r->ChainBack;
 	}
-	if (EquUpCase(Name, "CATALOG")) CFile = CatFD;
-	else RunError(1539);
+	if (EquUpCase(Name, "CATALOG")) {
+		CFile = CatFD->GetCatalogFile();
+	}
+	else {
+		RunError(1539);
+	}
 }
 
 void RetractDbEntry(TInstance* Q, TPredicate* P, TDbBranch* B)

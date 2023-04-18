@@ -4942,7 +4942,7 @@ label81:
 									goto fin;
 								}
 							}
-							else if (IsTestRun && (CFile != CatFD) && (KbdChar == _AltF2_)) {
+							else if (IsTestRun && (CFile != CatFD->GetCatalogFile()) && (KbdChar == _AltF2)) {
 								EditHelpOrCat(KbdChar, 1, CFile->Name + "." + CFld->FldD->Name);
 							}
 							break;

@@ -370,7 +370,7 @@ void ExecPgm(Instr_exec* PD)
 	CVol = "";
 	std::string prog;
 	if (i != 0) {
-		prog = RdCatField(CatFD, i, CatPathName);
+		prog = CatFD->ReadField(i, CatFD->cat_path_name_);
 	}
 	else {
 		prog = PD->ProgPath;
@@ -435,7 +435,9 @@ void MountProc(WORD CatIRec, bool NoCancel)
 {
 	try {
 		SaveFiles();
-		RdCatPathVol(CatIRec);
+		CVol = CatFD->GetVolume(CatIRec);
+		CPath = FExpand(CatFD->GetPathName(CatIRec));
+		FSplit(CPath, CDir, CName, CExt);
 		TestMountVol(CPath[1]);
 		LastExitCode = 0;
 	}
@@ -1058,13 +1060,13 @@ void PutTxt(Instr_puttxt* PD)
 	CloseH(&h);
 }
 
-// ulozi do souboru hodnotu promenne
+// ulozi do katalogu hodnotu promenne
 void AssgnCatFld(Instr_assign* PD)
 {
 	CFile = PD->FD3;
 	if (CFile != nullptr) CloseFile();
 	std::string data = RunShortStr(PD->Frml3);
-	WrCatField(CatFD, PD->CatIRec, PD->CatFld, data);
+	CatFD->WriteField(PD->CatIRec, PD->CatFld, data);
 }
 
 void AssgnAccRight(Instr_assign* PD)
@@ -1111,7 +1113,7 @@ void ResetCatalog()
 	FileD* cf = CFile;
 	RdbD* r = CRdb;
 	while (CRdb != nullptr) {
-		CFile = (FileD*)CRdb->FD->pChain;
+		CFile = CRdb->FD->pChain;
 		while (CFile != nullptr) {
 			CloseFile();
 			CFile->CatIRec = GetCatIRec(CFile->Name, CFile->FF->file_type == FileType::RDB);

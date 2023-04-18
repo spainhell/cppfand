@@ -5,16 +5,16 @@ class FileD;
 WORD randIndex = 0;
 
 FileD* CFile;
-FieldDescr* CatRdbName, * CatFileName, * CatArchiv, * CatPathName, * CatVolume;
-FileD* FileDRoot; // { only current RDB }
-std::deque<LinkD*> LinkDRoot; // { for all RDBs     }
+FileD* FileDRoot;             // only current RDB
+std::deque<LinkD*> LinkDRoot; // for all RDBs
 FuncD* FuncDRoot;
 void* CRecPtr;
 XKey* CViewKey;
 std::string TopRdbDir, TopDataDir;
 pstring CatFDName;
 RdbD* CRdb, *TopRdb;
-FileD* CatFD, *HelpFD;
+Catalog* CatFD = nullptr;
+FileD* HelpFD;
 size_t InpArrLen, CurrPos, OldErrPos;
 
 std::string LockModeTxt[9] = { "NULL", "NOEXCL", "NODEL", "NOCR", "RD", "WR", "CR", "DEL", "EXCL" };

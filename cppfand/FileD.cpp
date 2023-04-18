@@ -88,10 +88,10 @@ void FileD::WriteRec(size_t rec_nr, void* record)
 	this->FF->WasWrRec = true;
 }
 
-void* FileD::GetRecSpace()
+BYTE* FileD::GetRecSpace()
 {
 	size_t length = FF->RecLen + 2;
-	void* result = new BYTE[length];
+	BYTE* result = new BYTE[length];
 	memset(result, '\0', length);
 	return result;
 }

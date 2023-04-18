@@ -261,46 +261,46 @@ void FSplit(const std::string& fullname, std::string& dir, std::string& name, st
 
 	return;
 
-	size_t foundBackslash = fullname.find_last_of("/\\");
-	dir = fullname.substr(0, foundBackslash + 1);
+	//size_t foundBackslash = fullname.find_last_of("/\\");
+	//dir = fullname.substr(0, foundBackslash + 1);
 
-	if (foundBackslash < fullname.length() - 1) // jeste nejsme na konci -> existuje nazev nebo nazev s priponou
-	{
-		std::string filename = fullname.substr(foundBackslash + 1);
+	//if (foundBackslash < fullname.length() - 1) // jeste nejsme na konci -> existuje nazev nebo nazev s priponou
+	//{
+	//	std::string filename = fullname.substr(foundBackslash + 1);
 
-		size_t foundDot = filename.find_last_of('.');
-		if (foundDot < filename.length()) // pripona existuje
-		{
-			name = filename.substr(0, foundDot);
-			ext = filename.substr(foundDot);
-		}
-		else
-		{
-			name = filename;
-			ext = "";
-		}
-	}
-	else
-	{
-		if (foundBackslash != std::string::npos) {
-			// lomitko je na konci, existuje jen adresar
-			name = ""; ext = "";
-			return;
-		}
+	//	size_t foundDot = filename.find_last_of('.');
+	//	if (foundDot < filename.length()) // pripona existuje
+	//	{
+	//		name = filename.substr(0, foundDot);
+	//		ext = filename.substr(foundDot);
+	//	}
+	//	else
+	//	{
+	//		name = filename;
+	//		ext = "";
+	//	}
+	//}
+	//else
+	//{
+	//	if (foundBackslash != std::string::npos) {
+	//		// lomitko je na konci, existuje jen adresar
+	//		name = ""; ext = "";
+	//		return;
+	//	}
 
-		// lomitko nebylo nalezeno, bude exitovat jen nazev a mozna pripona
-		size_t foundDot = fullname.find_last_of('.');
-		if (foundDot < fullname.length()) // pripona existuje
-		{
-			name = fullname.substr(0, foundDot);
-			ext = fullname.substr(foundDot);
-		}
-		else
-		{ // pripona neexistuje, cele je to nazev souboru
-			name = fullname;
-			ext = "";
-		}
-	}
+	//	// lomitko nebylo nalezeno, bude exitovat jen nazev a mozna pripona
+	//	size_t foundDot = fullname.find_last_of('.');
+	//	if (foundDot < fullname.length()) // pripona existuje
+	//	{
+	//		name = fullname.substr(0, foundDot);
+	//		ext = fullname.substr(foundDot);
+	//	}
+	//	else
+	//	{ // pripona neexistuje, cele je to nazev souboru
+	//		name = fullname;
+	//		ext = "";
+	//	}
+	//}
 }
 
 pstring FSearch(pstring& path, pstring& dirlist)

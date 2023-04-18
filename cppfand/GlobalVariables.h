@@ -1,5 +1,6 @@
 #pragma once
 #include "access.h"
+#include "Catalog.h"
 #include "constants.h"
 #include "ResFile.h"
 #include "../fandio/FandTFile.h"
@@ -7,7 +8,7 @@
 extern std::string LockModeTxt[9];
 
 // r474
-extern FileD* FileDRoot; // { only current RDB }
+extern FileD* FileDRoot;             // { only current RDB }
 extern std::deque<LinkD*> LinkDRoot; // { for all RDBs     }
 extern FuncD* FuncDRoot;
 extern FileD* CFile;
@@ -16,7 +17,8 @@ extern XKey* CViewKey;
 extern std::string TopRdbDir, TopDataDir;
 extern pstring CatFDName;
 extern RdbD* CRdb, *TopRdb;
-extern FileD* CatFD, *HelpFD;
+extern Catalog* CatFD;
+extern FileD* HelpFD;
 
 // r483
 extern structXPath XPath[20];
@@ -57,7 +59,6 @@ extern WORD UserCode;
 // **********
 
 // extern WORD* WordVarArr;
-extern FieldDescr* CatRdbName, *CatFileName, *CatArchiv, *CatPathName, *CatVolume;
 extern std::string MountedVol[FloppyDrives];
 
 extern pstring SQLDateMask;

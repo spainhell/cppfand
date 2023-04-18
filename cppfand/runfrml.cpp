@@ -1031,7 +1031,10 @@ label1:
 	}
 	case _catfield: {
 		auto iX = (FrmlElem10*)X;
-		RdCatPathVol(iX->CatIRec);
+
+		CVol = CatFD->GetVolume(iX->CatIRec);
+		CPath = FExpand(CatFD->GetPathName(iX->CatIRec));
+		FSplit(CPath, CDir, CName, CExt);
 		TestMountVol(CPath[0]);
 		result = LastUpdate(CPath);
 		break;
@@ -2143,9 +2146,9 @@ LongStr* RunS(FrmlElem* Z)
 	}
 	case _catfield: {
 		auto iZ = (FrmlElem10*)Z;
-		std::string stdS = RdCatField(CatFD, iZ->CatIRec, iZ->CatFld);
+		std::string stdS = CatFD->ReadField(iZ->CatIRec, iZ->CatFld);
 		bool empty = stdS.empty(); // bude se jednat jen o cestu, bez nazvu souboru
-		if (iZ->CatFld == CatPathName) {
+		if (iZ->CatFld == CatFD->cat_path_name_) {
 			stdS = FExpand(stdS);
 			if (empty) AddBackSlash(stdS); // za cestu pridame '\'
 		}

@@ -105,8 +105,13 @@ void ReleaseFilesAndLinksAfterChapter()
 
 bool NetFileTest(RdbRecVars* X)
 {
-	if ((X->Typ != 'F') || (X->CatIRec == 0) || X->isSQL) return false;
-	RdCatPathVol(X->CatIRec);
+	if ((X->Typ != 'F') || (X->CatIRec == 0) || X->isSQL) {
+		return false;
+	}
+	CVol = CatFD->GetVolume(X->CatIRec);
+	CPath = FExpand(CatFD->GetPathName(X->CatIRec));
+	FSplit(CPath, CDir, CName, CExt);
+
 	if (IsNetCVol()) return true;
 	return false;
 }
@@ -192,13 +197,15 @@ bool ChptDelFor(RdbRecVars* X)
 			break;
 		}
 		if (X->CatIRec != 0) {
-			WrCatField(CFile, X->CatIRec, CatFileName, "");
+			CatFD->WriteField(X->CatIRec, CatFD->cat_file_name_, "");
 			if (!PromptYN(815)) {
 				result = true;
 				break;
 			}
-			RdCatPathVol(X->CatIRec);
-			TestMountVol(CPath[1]);
+			CVol = CatFD->GetVolume(X->CatIRec);
+			CPath = FExpand(CatFD->GetPathName(X->CatIRec));
+			FSplit(CPath, CDir, CName, CExt);
+			TestMountVol(CPath[0]);
 		}
 		else {
 			CDir = "";
@@ -318,17 +325,21 @@ WORD ChptWriteCRec()
 		if ((New.Typ == 'R') && (New.Txt == 0)) ReleaseFilesAndLinksAfterChapter();
 		goto label2;
 	}
-	ReleaseFilesAndLinksAfterChapter(); SetCompileAll();
+	ReleaseFilesAndLinksAfterChapter();
+	SetCompileAll();
 	if ((New.OldTxt != 0) && (New.Name != Old.Name)) {
 		if (Old.CatIRec != 0) {
-			WrCatField(CFile, Old.CatIRec, CatFileName, New.Name);
+			CatFD->WriteField(Old.CatIRec, CatFD->cat_file_name_, New.Name);
 		}
 		else {
-			if (!Old.isSQL) RenameWithOldExt(New, Old);
+			if (!Old.isSQL) {
+				RenameWithOldExt(New, Old);
+			}
 		}
 	}
 label2:
-	B_(ChptVerif, true); result = 0;
+	B_(ChptVerif, true);
+	result = 0;
 	SetUpdHandle(ChptTF->Handle);
 	return result;
 }
@@ -408,7 +419,7 @@ void EditHelpOrCat(WORD cc, WORD kind, std::string txt)
 		}
 	}
 	else {
-		FD = CatFD;
+		FD = CatFD->GetCatalogFile();
 		i = iCat;
 		n = nCat;
 	}
@@ -489,7 +500,7 @@ void SetRdbDir(char Typ, std::string* Nm)
 		CRdb = r;
 	}
 	if (CFile->CatIRec != 0) {
-		CPath = RdCatField(CatFD, CFile->CatIRec, CatPathName);
+		CPath = CatFD->ReadField(CFile->CatIRec, CatFD->cat_path_name_);
 		if (CPath[1] != ':') {
 			d = rb->RdbDir;
 			if (CPath[1] == '\\') CPath = copy(d, 1, 2) + CPath;
@@ -941,16 +952,20 @@ void CompileMsgOff(CHAR_INFO* Buf, int& w)
 
 int MakeDbfDcl(pstring Nm)
 {
-	DBaseHd Hd; DBaseFld Fd; WORD i, n;
-	FILE* h; LongStr* t; char c;
+	DBaseHd Hd; DBaseFld Fd;
+	LongStr* t; char c;
 	pstring s(80); pstring s1(10); void* p;
 
 	CPath = FExpand(Nm + ".DBF"); CVol = "";
-	i = GetCatIRec(Nm, true);
-	if (i != 0) RdCatPathVol(i);
-	h = OpenH(CPath, _isoldfile, RdOnly);
+	WORD i = GetCatIRec(Nm, true);
+	if (i != 0) {
+		CVol = CatFD->GetVolume(i);
+		CPath = FExpand(CatFD->GetPathName(i));
+		FSplit(CPath, CDir, CName, CExt);
+	}
+	FILE* h = OpenH(CPath, _isoldfile, RdOnly);
 	TestCPathError();
-	ReadH(h, 32, &Hd); n = (Hd.HdLen - 1) / 32 - 1; t = new LongStr(2); t->LL = 0;
+	ReadH(h, 32, &Hd); WORD n = (Hd.HdLen - 1) / 32 - 1; t = new LongStr(2); t->LL = 0;
 	for (i = 1; i <= n; i++) {
 		ReadH(h, 32, &Fd);
 		s = StrPas((char*)Fd.Name.c_str());
@@ -1570,14 +1585,14 @@ label9:
 
 void UpdateCat()
 {
-	CFile = CatFD;
-	if (CatFD->FF->Handle == nullptr) {
+	CFile = CatFD->GetCatalogFile();
+	if (CatFD->GetCatalogFile()->FF->Handle == nullptr) {
 		OpenCreateF(CFile, Exclusive);
 	}
 	EditOpt* EO = new EditOpt();
 	EO->UserSelFlds = true;
-	EO->Flds = AllFldsList(CatFD, true);
-	EditDataFile(CatFD, EO);
+	EO->Flds = AllFldsList(CatFD->GetCatalogFile(), true);
+	EditDataFile(CatFD->GetCatalogFile(), EO);
 	ChDir(OldDir);
 	ReleaseStore(EO);
 }
