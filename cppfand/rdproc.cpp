@@ -37,14 +37,16 @@ kNames KeyNames[NKeyNames] = {
 	{"ESC", 81, VK_ESCAPE},
 	{"CTRLP", 82, CTRL + 'P'} };
 
-Instr* RdPInstr();
-
-void TestCatError(WORD I, pstring Nm, bool Old)
+void TestCatError(int i, const std::string& name, bool old)
 {
-	if (I == 0) {
-		SetMsgPar(Nm);
-		if (Old) OldError(96);
-		else Error(96);
+	if (i == 0) {
+		SetMsgPar(name);
+		if (old) {
+			OldError(96);
+		}
+		else {
+			Error(96);
+		}
 	}
 }
 
@@ -2199,7 +2201,6 @@ Instr* RdClrWw()
 {
 	auto PD = new Instr_clrww(); // GetPD(_clrww, 24);
 	RdLex();
-	/* !!! with PD^ do!!! */
 	RdW(PD->W2);
 	if (Lexem == ',') {
 		RdLex();
@@ -2213,14 +2214,18 @@ Instr* RdMount()
 {
 	auto PD = new Instr_mount(); // GetPD(_mount, 3);
 	RdLex();
-	WORD I = 0;
+	int i = 0;
 	TestIdentif();
 	FileD* FD = FindFileD();
-	if (FD == nullptr) I = GetCatalogIRec(LexWord, true);
-	else I = FD->CatIRec;
-	TestCatError(I, LexWord, false);
+	if (FD == nullptr) {
+		i = GetCatalogIRec(LexWord, true);
+	}
+	else {
+		i = FD->CatIRec;
+	}
+	TestCatError(i, LexWord, false);
 	RdLex();
-	PD->MountCatIRec = I;
+	PD->MountCatIRec = i;
 	if (Lexem == ',') {
 		RdLex();
 		AcceptKeyWord("NOCANCEL");

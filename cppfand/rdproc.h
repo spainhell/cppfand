@@ -9,7 +9,7 @@
 
 extern bool IsRdUserFunc;
 
-void TestCatError(WORD I, pstring Nm, bool Old);
+void TestCatError(int i, const std::string& name, bool old);
 bool IsRecVar(LocVar** LV);
 LocVar* RdRecVar();
 LocVar* RdIdxVar();
@@ -21,7 +21,7 @@ FrmlElem* RdFunctionP(char& FFTyp);
 XKey* RdViewKeyImpl(FileD* FD);
 void RdSelectStr(FrmlElem0* Z);
 
-Instr* RdPInstr(); // hlavní funkce
+Instr* RdPInstr();
 
 void RdPInstrAndChain(Instr** PD);
 void RdChoices(Instr* PD);

@@ -263,7 +263,7 @@ class Instr_mount : public Instr
 {
 public:
 	Instr_mount();
-	WORD MountCatIRec = 0;
+	int MountCatIRec = 0;
 	bool MountNoCancel = false;
 };
 

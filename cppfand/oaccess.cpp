@@ -678,10 +678,14 @@ WORD Generation()
 	CPath = FExpand(CatFD->GetPathName(CFile->CatIRec));
 	FSplit(CPath, CDir, CName, CExt);
 
-	s = CExt.substr(3, 2);
+	s = CExt.substr(2, 2);
 	val(s, i, j);
-	if (j == 0) return i;
-	return 0;
+	if (j == 0) {
+		return i;
+	}
+	else {
+		return 0;
+	}
 }
 
 void TurnCat(WORD Frst, WORD N, short I)
@@ -717,11 +721,6 @@ void TurnCat(WORD Frst, WORD N, short I)
 			I++;
 		}
 	ReleaseStore(p);
-}
-
-void RdCatPathVol(WORD CatIRec)
-{
-	
 }
 
 bool SetContextDir(FileD* file_d, std::string& D, bool& IsRdb)
