@@ -31,10 +31,10 @@ public:
 
 	int IRec = 0;
 	RdbPos ChptPos;           // zero for Rdb and FD translated from string 
-	size_t TxtPosUDLI = 0;      // =0 if not present; urcuje zacatek odstavcu #U #D #L #I
+	size_t TxtPosUDLI = 0;    // =0 if not present; urcuje zacatek odstavcu #U #D #L #I
 	FileD* OrigFD = nullptr;  // like orig. or nil
 	
-	WORD CatIRec = 0;
+	int CatIRec = 0;          // cislo zaznamu v katalogu
 	bool IsParFile = false;
 	bool IsJournal = false;
 	bool IsHlpFile = false;

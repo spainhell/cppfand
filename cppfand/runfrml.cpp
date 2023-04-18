@@ -2146,9 +2146,9 @@ LongStr* RunS(FrmlElem* Z)
 	}
 	case _catfield: {
 		auto iZ = (FrmlElem10*)Z;
-		std::string stdS = CatFD->ReadField(iZ->CatIRec, iZ->CatFld);
+		std::string stdS = CatFD->GetField(iZ->CatIRec, iZ->CatFld);
 		bool empty = stdS.empty(); // bude se jednat jen o cestu, bez nazvu souboru
-		if (iZ->CatFld == CatFD->cat_path_name_) {
+		if (iZ->CatFld == CatFD->CatalogPathNameField()) {
 			stdS = FExpand(stdS);
 			if (empty) AddBackSlash(stdS); // za cestu pridame '\'
 		}

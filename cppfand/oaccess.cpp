@@ -643,31 +643,28 @@ void SetCPathForH(FILE* handle)
 	CFile = cf;
 }
 
-WORD GetCatIRec(pstring Name, bool MultiLevel)
+int GetCatalogIRec(const std::string& name, bool multilevel)
 {
-	int i = 0; FileD* CF = nullptr; RdbD* R = nullptr; void* CR = nullptr;
-	WORD result = 0;
-	if (CatFD == nullptr || CatFD->GetCatalogFile()->FF->Handle == nullptr) return result;
-	if (CRdb == nullptr) return result;
-	CF = CFile; CR = CRecPtr; CFile = CatFD->GetCatalogFile();
-	CRecPtr = CFile->GetRecSpace();
-	R = CRdb;
+	int result = 0;
+
+	if (CatFD == nullptr || CatFD->GetCatalogFile()->FF->Handle == nullptr) {
+		return result;
+	}
+	if (CRdb == nullptr) {
+		return result;
+	}
+
+	RdbD* R = CRdb;
 label1:
-	for (i = 1; i <= CatFD->GetCatalogFile()->FF->NRecs; i++)
-	{
-		CFile->ReadRec(i, CRecPtr);
-		if (EquUpCase(OldTrailChar(' ', _ShortS(CatFD->cat_rdb_name_)), R->FD->Name) &&
-			EquUpCase(OldTrailChar(' ', _ShortS(CatFD->cat_file_name_)), Name))
-		{
-			result = i; goto label2;
+	for (int i = 1; i <= CatFD->GetCatalogFile()->FF->NRecs; i++) {
+		if (EquUpCase(CatFD->GetRdbName(i), R->FD->Name) &&	EquUpCase(CatFD->GetFileName(i), name)) {
+			result = i;
+			return result;
 		}
 	}
 	R = R->ChainBack;
-	if ((R != nullptr) && MultiLevel) goto label1;
-label2:
-	CFile = CF;
-	ReleaseStore(CRecPtr);
-	CRecPtr = CR;
+	if ((R != nullptr) && multilevel) goto label1;
+
 	return result;
 }
 
@@ -758,8 +755,8 @@ void GetCPathForCat(WORD I)
 	std::string d;
 	bool isRdb;
 
-	CVol = CatFD->ReadField(I, CatFD->cat_volume_);
-	CPath = CatFD->ReadField(I, CatFD->cat_path_name_);
+	CVol = CatFD->GetVolume(I);
+	CPath = CatFD->GetPathName(I);
 	const bool setContentDir = SetContextDir(CFile, d, isRdb);
 	if (setContentDir && CPath.length() > 1 && CPath[1] != ':') {
 		if (isRdb) {

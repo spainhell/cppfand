@@ -140,7 +140,7 @@ void GetRdbRecVars(void* RecPtr, RdbRecVars* X)
 	X->OldTxt = CFile->_T(ChptOldTxt, CRecPtr);
 	if (X->Typ == 'F') {
 		X->FTyp = ExtToTyp(X->Ext);
-		X->CatIRec = GetCatIRec(X->Name, false);
+		X->CatIRec = GetCatalogIRec(X->Name, false);
 		X->isSQL = false;
 		if (X->OldTxt != 0) {
 			MarkBoth(p, p2);
@@ -197,7 +197,7 @@ bool ChptDelFor(RdbRecVars* X)
 			break;
 		}
 		if (X->CatIRec != 0) {
-			CatFD->WriteField(X->CatIRec, CatFD->cat_file_name_, "");
+			CatFD->SetFileName(X->CatIRec, "");
 			if (!PromptYN(815)) {
 				result = true;
 				break;
@@ -329,7 +329,7 @@ WORD ChptWriteCRec()
 	SetCompileAll();
 	if ((New.OldTxt != 0) && (New.Name != Old.Name)) {
 		if (Old.CatIRec != 0) {
-			CatFD->WriteField(Old.CatIRec, CatFD->cat_file_name_, New.Name);
+			CatFD->SetFileName(Old.CatIRec, New.Name);
 		}
 		else {
 			if (!Old.isSQL) {
@@ -496,16 +496,19 @@ void SetRdbDir(char Typ, std::string* Nm)
 	if (Typ == '\\') {
 		rb = TopRdb;
 		CRdb = rb;
-		CFile->CatIRec = GetCatIRec(*Nm, false);
+		CFile->CatIRec = GetCatalogIRec(*Nm, false);
 		CRdb = r;
 	}
 	if (CFile->CatIRec != 0) {
-		CPath = CatFD->ReadField(CFile->CatIRec, CatFD->cat_path_name_);
+		CPath = CatFD->GetPathName(CFile->CatIRec);
 		if (CPath[1] != ':') {
 			d = rb->RdbDir;
-			if (CPath[1] == '\\') CPath = copy(d, 1, 2) + CPath;
+			if (CPath[1] == '\\') {
+				CPath = copy(d, 1, 2) + CPath;
+			}
 			else {
-				AddBackSlash(d); CPath = d + CPath;
+				AddBackSlash(d);
+				CPath = d + CPath;
 			}
 		}
 		FSplit(CPath, CDir, CName, CExt);
@@ -566,7 +569,7 @@ void CreateOpenChpt(std::string Nm, bool create, wwmix* ww)
 	SetInpStr(s);
 	if ((Nm[0] == '\\')) Nm1 = Nm.substr(1, 8);
 	else Nm1 = Nm;
-	RdFileD(Nm1, FileType::RDB, ""); /*old CRdb for GetCatIRec*/
+	RdFileD(Nm1, FileType::RDB, ""); /*old CRdb for GetCatalogIRec*/
 	R->FD = CFile;
 	CRdb = R;
 	CFile->FF->RecPtr = CFile->GetRecSpace();
@@ -957,7 +960,7 @@ int MakeDbfDcl(pstring Nm)
 	pstring s(80); pstring s1(10); void* p;
 
 	CPath = FExpand(Nm + ".DBF"); CVol = "";
-	WORD i = GetCatIRec(Nm, true);
+	WORD i = GetCatalogIRec(Nm, true);
 	if (i != 0) {
 		CVol = CatFD->GetVolume(i);
 		CPath = FExpand(CatFD->GetPathName(i));

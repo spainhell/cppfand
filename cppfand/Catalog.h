@@ -16,12 +16,18 @@ public:
 	std::string GetArchive(size_t rec_nr);
 	std::string GetPathName(size_t rec_nr);
 	std::string GetVolume(size_t rec_nr);
+	std::string GetField(size_t rec_nr, FieldDescr* field);
 
 	void SetRdbName(size_t rec_nr, const std::string& rdb_name);
 	void SetFileName(size_t rec_nr, const std::string& file_name);
 	void SetArchive(size_t rec_nr, const std::string& archive);
 	void SetPathName(size_t rec_nr, const std::string& path_name);
 	void SetVolume(size_t rec_nr, const std::string& volume);
+	void SetField(size_t rec_nr, FieldDescr* field, const std::string& value);
+
+	FieldDescr* CatalogArchiveField();
+	FieldDescr* CatalogPathNameField();
+	FieldDescr* CatalogVolumeField();
 
 private:
 	FileD* cat_file_;

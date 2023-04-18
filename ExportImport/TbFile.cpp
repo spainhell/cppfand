@@ -56,9 +56,9 @@ void TbFile::Backup(bool isBackup, WORD Ir)
 
 	IsBackup = isBackup;
 	SaveFiles();
-	std::string ArNr = CatFD->ReadField(Ir, CatFD->CatArchiv);
-	Vol = CatFD->ReadField(Ir, CatFD->cat_volume_);
-	Path = CatFD->ReadField(Ir, CatFD->cat_path_name_);
+	std::string ArNr = CatFD->GetArchive(Ir);
+	Vol = CatFD->GetVolume(Ir);
+	Path = CatFD->GetPathName(Ir);
 	size_t j = Path.find(' ');
 	std::string numbers;
 	if (j != std::string::npos) {
@@ -73,9 +73,9 @@ void TbFile::Backup(bool isBackup, WORD Ir)
 	RdLex();
 label1:
 	for (WORD i = 1; i <= CatFD->GetCatalogFile()->FF->NRecs; i++) {
-		if (!EquUpCase(CatFD->ReadField(i, CatFD->cat_rdb_name_), "ARCHIVES")) {
-			if (CatFD->ReadField(i, CatFD->CatArchiv) == ArNr) {
-				FSplit(CatFD->ReadField(i, CatFD->cat_path_name_), d, FName, e);
+		if (!EquUpCase(CatFD->GetRdbName(i), "ARCHIVES")) {
+			if (CatFD->GetArchive(i) == ArNr) {
+				FSplit(CatFD->GetPathName(i), d, FName, e);
 				Ext[1] = '0';
 				switch (Ext[3]) {
 				case '9': {
@@ -104,8 +104,8 @@ label1:
 					/*if (h == 0xff)*/ CloseFile();
 				}
 				else {
-					CPath = FExpand(CatFD->ReadField(i, CatFD->cat_path_name_));
-					CVol = CatFD->ReadField(i, CatFD->cat_volume_);
+					CPath = FExpand(CatFD->GetPathName(i));
+					CVol = CatFD->GetVolume(i);
 					TestMountVol(CPath[1]);
 					if (IsBackup) BackupH();
 					else RestoreH();

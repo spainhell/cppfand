@@ -30,7 +30,7 @@ void SetCPathForH(FILE* handle);
 #ifdef FandSQL
 void SetIsSQLFile();
 #endif
-WORD GetCatIRec(pstring Name, bool MultiLevel);
+int GetCatalogIRec(const std::string& name, bool multilevel);
 WORD Generation();
 void TurnCat(WORD Frst, WORD N, short I);
 bool SetContextDir(FileD* file_d, std::string& D, bool& IsRdb);

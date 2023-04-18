@@ -192,7 +192,8 @@ class Instr_turncat : public Instr
 public:
 	Instr_turncat();
 	FileD* NextGenFD = nullptr;
-	WORD FrstCatIRec = 0, NCatIRecs = 0;
+	int FrstCatIRec = 0;
+	int NCatIRecs = 0;
 	FrmlElem* TCFrml = nullptr;
 };
 
@@ -364,7 +365,7 @@ class Instr_backup : public Instr
 {
 public:
 	Instr_backup(PInstrCode Kind);
-	WORD BrCatIRec = 0;
+	int BrCatIRec = 0;
 	bool IsBackup = false, NoCompress = false, BrNoCancel = false;
 	BYTE bmX[5]{ 0 };
 	FrmlElem* bmDir = nullptr;

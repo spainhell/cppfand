@@ -66,6 +66,11 @@ std::string Catalog::GetVolume(size_t rec_nr)
 	return getValue(rec_nr, cat_volume_);
 }
 
+std::string Catalog::GetField(size_t rec_nr, FieldDescr* field)
+{
+	return getValue(rec_nr, field);
+}
+
 void Catalog::SetRdbName(size_t rec_nr, const std::string& rdb_name)
 {
 	setValue(rec_nr, cat_rdb_name_, rdb_name);
@@ -89,6 +94,26 @@ void Catalog::SetPathName(size_t rec_nr, const std::string& path_name)
 void Catalog::SetVolume(size_t rec_nr, const std::string& volume)
 {
 	setValue(rec_nr, cat_volume_, volume);
+}
+
+void Catalog::SetField(size_t rec_nr, FieldDescr* field, const std::string& value)
+{
+	setValue(rec_nr, field, value);
+}
+
+FieldDescr* Catalog::CatalogArchiveField()
+{
+	return cat_archive_;
+}
+
+FieldDescr* Catalog::CatalogPathNameField()
+{
+	return cat_path_name_;
+}
+
+FieldDescr* Catalog::CatalogVolumeField()
+{
+	return cat_volume_;
 }
 
 std::string Catalog::getValue(size_t rec_nr, FieldDescr* field)

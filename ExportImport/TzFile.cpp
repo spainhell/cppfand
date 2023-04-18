@@ -12,8 +12,8 @@ TzFile::TzFile(bool BkUp, bool NoCompr, bool SubDirO, bool OverwrO, WORD Ir, pst
 	SubDirOpt = SubDirO;
 	OverwrOpt = OverwrO;
 	OldDir = GetDir(0);
-	Vol = CatFD->ReadField(Ir, CatFD->cat_volume_);
-	CPath = CatFD->ReadField(Ir, CatFD->cat_path_name_);
+	Vol = CatFD->GetVolume(Ir);
+	CPath = CatFD->GetPathName(Ir);
 	Path = FExpand(CPath);
 	DrvNm = Path[0];
 	Dir = aDir;

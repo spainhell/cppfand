@@ -222,22 +222,22 @@ FrmlElem* RdFldNameFrmlP(char& FTyp)
 				F = nullptr;
 				goto label1;
 			}
-			if (IsKeyWord("ARCHIVES")) 	{
-				F = CatFD->CatArchiv;
+			if (IsKeyWord("ARCHIVES")) {
+				F = CatFD->CatalogArchiveField();
 				goto label0;
 			}
-			if (IsKeyWord("PATH")) 	{
-				F = CatFD->cat_path_name_;
+			if (IsKeyWord("PATH")) {
+				F = CatFD->CatalogPathNameField();
 				goto label0;
 			}
 			if (IsKeyWord("VOLUME")) {
-				F = CatFD->cat_volume_;
+				F = CatFD->CatalogVolumeField();
 			label0:
 				FTyp = 'S';
 			label1:
 				auto S = new FrmlElem10(_catfield, 6); // Z = GetOp(_catfield, 6);
 				S->CatFld = F;
-				S->CatIRec = GetCatIRec(FName, true);
+				S->CatIRec = GetCatalogIRec(FName, true);
 				TestCatError(S->CatIRec, FName, true);
 				return S;
 			}
@@ -316,7 +316,7 @@ FrmlElem* RdFldNameFrmlP(char& FTyp)
 //		TestIdentif();
 //		fd = FindFileD();
 //		if (fd == nullptr) {
-//			CatIRec = GetCatIRec(LexWord, true);
+//			CatIRec = GetCatalogIRec(LexWord, true);
 //			TestCatError(CatIRec, LexWord, false);
 //		}
 //		else if (NoFD) Error(97);
@@ -340,7 +340,7 @@ FileD* RdPath(bool NoFD, std::string& Path, WORD& CatIRec)
 		TestIdentif();
 		fd = FindFileD();
 		if (fd == nullptr) {
-			CatIRec = GetCatIRec(LexWord, true);
+			CatIRec = GetCatalogIRec(LexWord, true);
 			TestCatError(CatIRec, LexWord, false);
 		}
 		else if (NoFD) Error(97);
@@ -2037,21 +2037,26 @@ Instr* RdPutTxt()
 
 Instr* RdTurnCat()
 {
-	auto PD = new Instr_turncat(); // GetPD(_turncat, 12);
+	Instr_turncat* PD = new Instr_turncat();
 	RdLex();
 	TestIdentif();
 	PD->NextGenFD = FindFileD();
-	WORD Frst = GetCatIRec(LexWord, true);
-	TestCatError(Frst, LexWord, true);
+	const int first = GetCatalogIRec(LexWord, true);
+	TestCatError(first, LexWord, true);
 	RdLex();
-	PD->FrstCatIRec = Frst;
-	pstring RN = CatFD->ReadField(Frst, CatFD->cat_rdb_name_);
-	pstring FN = CatFD->ReadField(Frst, CatFD->cat_file_name_);
-	WORD I = Frst + 1;
-	while ((CatFD->GetCatalogFile()->FF->NRecs >= I) && EquUpCase(RN, CatFD->ReadField(I, CatFD->cat_rdb_name_))
-		&& EquUpCase(FN, CatFD->ReadField(I, CatFD->cat_file_name_))) I++;
-	if (I == Frst + 1) OldError(98);
-	PD->NCatIRecs = I - Frst;
+	PD->FrstCatIRec = first;
+	const std::string rdb_name = CatFD->GetRdbName(first);
+	const std::string file_name = CatFD->GetFileName(first);
+	int i = first + 1;
+	while (CatFD->GetCatalogFile()->FF->NRecs >= i
+		&& EquUpCase(rdb_name, CatFD->GetRdbName(i))
+		&& EquUpCase(file_name, CatFD->GetFileName(i))) {
+		i++;
+	}
+	if (i == first + 1) {
+		OldError(98);
+	}
+	PD->NCatIRecs = i - first;
 	Accept(',');
 	PD->TCFrml = RdRealFrml();
 	return PD;
@@ -2211,7 +2216,7 @@ Instr* RdMount()
 	WORD I = 0;
 	TestIdentif();
 	FileD* FD = FindFileD();
-	if (FD == nullptr) I = GetCatIRec(LexWord, true);
+	if (FD == nullptr) I = GetCatalogIRec(LexWord, true);
 	else I = FD->CatIRec;
 	TestCatError(I, LexWord, false);
 	RdLex();
@@ -2551,20 +2556,20 @@ Instr_assign* RdAssign()
 			FD = FindFileD();
 			if (IsActiveRdb(FD)) Error(121);
 			RdLex(); RdLex();
-			if (IsKeyWord("ARCHIVES")) 	{
-				F = CatFD->CatArchiv;
+			if (IsKeyWord("ARCHIVES")) {
+				F = CatFD->CatalogArchiveField();
 				goto label1;
 			}
-			if (IsKeyWord("PATH")) 	{
-				F = CatFD->cat_path_name_;
+			if (IsKeyWord("PATH")) {
+				F = CatFD->CatalogPathNameField();
 				goto label1;
 			}
 			if (IsKeyWord("VOLUME")) {
-				F = CatFD->cat_volume_;
+				F = CatFD->CatalogVolumeField();
 			label1:
 				PD = new Instr_assign(_asgncatfield); // GetPInstr(_asgncatfield, 16);
 				PD->FD3 = FD;
-				PD->CatIRec = GetCatIRec(FName, true);
+				PD->CatIRec = GetCatalogIRec(FName, true);
 				PD->CatFld = F;
 				TestCatError(PD->CatIRec, FName, true);
 				Accept(_assign);
@@ -2941,8 +2946,7 @@ label1:
 	RestoreCompState(p);
 	if (LastExitCode != 0) {
 		LastTxtPos = cpos;
-		if (X->EvalTyp == 'B')
-		{
+		if (X->EvalTyp == 'B') {
 			z = new FrmlElem5(_const, 0, false); // GetOp(_const, 1);
 			// z->B = false;
 		}
@@ -2958,44 +2962,63 @@ label2:
 
 Instr* RdBackup(char MTyp, bool IsBackup)
 {
-	Instr_backup* PD = nullptr;
-	if (MTyp == 'M') PD = new Instr_backup(_backupm);
-	else PD = new Instr_backup(_backup);
+	Instr_backup* PD;
+	if (MTyp == 'M') {
+		PD = new Instr_backup(_backupm);
+	}
+	else {
+		PD = new Instr_backup(_backup);
+	}
+
 	RdLex();
 	PD->IsBackup = IsBackup;
 	TestIdentif();
-	FileD* cf = CFile;
-	void* cr = CRecPtr;
-	CFile = CatFD->GetCatalogFile();
-	CRecPtr = CatFD->GetCatalogFile()->GetRecSpace();
+
+	bool found = false;
 	for (int i = 1; i <= CatFD->GetCatalogFile()->FF->NRecs; i++) {
-		CFile->ReadRec(i, CRecPtr);
-		if (EquUpCase(OldTrailChar(' ', _ShortS(CatFD->cat_rdb_name_)), "ARCHIVES")
-			&& EquUpCase(OldTrailChar(' ', _ShortS(CatFD->cat_file_name_)), LexWord)) {
+		if (EquUpCase(CatFD->GetRdbName(i), "ARCHIVES") && EquUpCase(CatFD->GetFileName(i), LexWord)) {
 			RdLex();
 			PD->BrCatIRec = i;
-			ReleaseStore(CRecPtr);
-			CFile = cf; CRecPtr = cr;
-			goto label1;
+			found = true;
 		}
 	}
-	Error(88);
-label1:
-	if (MTyp == 'M') {
-		Accept(','); PD->bmDir = RdStrFrml();
-		if (IsBackup) { Accept(','); PD->bmMasks = RdStrFrml(); }
+
+	if (!found) {
+		Error(88);
+		return nullptr;
 	}
-	while (Lexem == ',') {
-		RdLex();
+	else {
 		if (MTyp == 'M') {
-			if (!IsBackup && IsKeyWord("OVERWRITE")) { PD->bmOverwr = true; goto label2; }
-			if (IsKeyWord("SUBDIR")) { PD->bmSubDir = true; goto label2; };
+			Accept(',');
+			PD->bmDir = RdStrFrml();
+			if (IsBackup) {
+				Accept(',');
+				PD->bmMasks = RdStrFrml();
+			}
 		}
-		if (IsKeyWord("NOCOMPRESS")) PD->NoCompress = true;
-		else { AcceptKeyWord("NOCANCEL"); PD->BrNoCancel = true; }
-	label2: {}
+		while (Lexem == ',') {
+			RdLex();
+			if (MTyp == 'M') {
+				if (!IsBackup && IsKeyWord("OVERWRITE")) {
+					PD->bmOverwr = true;
+					continue;
+				}
+				if (IsKeyWord("SUBDIR")) {
+					PD->bmSubDir = true;
+					continue;
+				}
+			}
+			if (IsKeyWord("NOCOMPRESS"))
+			{
+				PD->NoCompress = true;
+			}
+			else {
+				AcceptKeyWord("NOCANCEL");
+				PD->BrNoCancel = true;
+			}
+		}
+		return PD;
 	}
-	return PD;
 }
 
 #ifdef FandSQL

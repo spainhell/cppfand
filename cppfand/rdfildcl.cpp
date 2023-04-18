@@ -1046,12 +1046,12 @@ void RdAssign(AddD* AD)
 	if (FTyp != AD->Field->frml_type) OldError(12);
 }
 
-/// smaze CFile->Handle, nastavi typ na FDTyp a ziska CatIRec z GetCatIRec() - musi existovat CatFD
+/// smaze CFile->Handle, nastavi typ na FDTyp a ziska CatIRec z GetCatalogIRec() - musi existovat CatFD
 void SetHCatTyp(FileType FDTyp)
 {
 	CFile->FF->Handle = nullptr;
 	CFile->FF->file_type = FDTyp;
-	CFile->CatIRec = GetCatIRec(CFile->Name, CFile->FF->file_type == FileType::RDB/*multilevel*/);
+	CFile->CatIRec = GetCatalogIRec(CFile->Name, CFile->FF->file_type == FileType::RDB/*multilevel*/);
 #ifdef FandSQL
 	typSQLFile = issql;
 	SetIsSQLFile();

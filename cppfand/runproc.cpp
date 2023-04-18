@@ -370,7 +370,7 @@ void ExecPgm(Instr_exec* PD)
 	CVol = "";
 	std::string prog;
 	if (i != 0) {
-		prog = CatFD->ReadField(i, CatFD->cat_path_name_);
+		prog = CatFD->GetPathName(i);
 	}
 	else {
 		prog = PD->ProgPath;
@@ -1066,7 +1066,7 @@ void AssgnCatFld(Instr_assign* PD)
 	CFile = PD->FD3;
 	if (CFile != nullptr) CloseFile();
 	std::string data = RunShortStr(PD->Frml3);
-	CatFD->WriteField(PD->CatIRec, PD->CatFld, data);
+	CatFD->SetField(PD->CatIRec, PD->CatFld, data);
 }
 
 void AssgnAccRight(Instr_assign* PD)
@@ -1116,7 +1116,7 @@ void ResetCatalog()
 		CFile = CRdb->FD->pChain;
 		while (CFile != nullptr) {
 			CloseFile();
-			CFile->CatIRec = GetCatIRec(CFile->Name, CFile->FF->file_type == FileType::RDB);
+			CFile->CatIRec = GetCatalogIRec(CFile->Name, CFile->FF->file_type == FileType::RDB);
 #ifdef FandSQL
 			SetIsSQLFile();
 #endif
