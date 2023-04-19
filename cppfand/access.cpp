@@ -113,7 +113,7 @@ bool ChangeLMode(FileD* fileD, LockMode Mode, WORD Kind, bool RdPref)
 	FILE* h = fileD->FF->Handle;
 	if (oldmode >= WrMode) {
 		if (Mode < WrMode) {
-			WrPrefixes();
+			CFile->FF->WrPrefixes();
 		}
 		if (oldmode == ExclMode) {
 			SaveCache(0, fileD->FF->Handle);
@@ -173,7 +173,10 @@ label1:
 	}
 	fileD->FF->LMode = Mode;
 	if ((oldmode < RdMode) && (Mode >= RdMode) && RdPref) {
-		RdPrefixes();
+		int rp = CFile->FF->RdPrefixes();
+		if (rp != 0) {
+			CFileError(CFile, rp);
+		}
 	}
 	result = true;
 	return result;
@@ -371,8 +374,7 @@ label1:
 	if (!TryLockH(fand_file->Handle, RecLock + N, 1)) {
 		if (Kind != 2) {   /*0 Kind-wait, 1-wait until ESC, 2-no wait*/
 			m = 826;
-			if (N == 0)
-			{
+			if (N == 0)	{
 				SetCPathVol(CFile);
 				SetMsgPar(CPath, XTxt);
 				m = 825;

@@ -7,7 +7,7 @@ class FileD;
 class LinkD;
 struct FuncD;
 
-class RdbD // r. 243
+class RdbD
 {
 public:
 	RdbD* ChainBack = nullptr;
@@ -23,5 +23,5 @@ public:
 struct RdbPos
 {
 	RdbD* R = nullptr;
-	WORD IRec = 0;
+	int IRec = 0;
 };

@@ -158,6 +158,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="cache.h" />
+    <ClInclude Include="DbfFile.h" />
     <ClInclude Include="directory.h" />
     <ClInclude Include="FandFile.h" />
     <ClInclude Include="fandio.h" />
@@ -182,6 +183,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="cache.cpp" />
+    <ClCompile Include="DbfFile.cpp" />
     <ClCompile Include="directory.cpp" />
     <ClCompile Include="FandFile.cpp" />
     <ClCompile Include="fandio.cpp" />

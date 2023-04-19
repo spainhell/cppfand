@@ -167,3 +167,10 @@ int FileD::_T(FieldDescr* F, void* record)
 {
 	return FF->_T(F, record);
 }
+
+void FileD::Close()
+{
+	if (FF != nullptr) {
+		FF->CloseFile();
+	}
+}

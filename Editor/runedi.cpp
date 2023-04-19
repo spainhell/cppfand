@@ -1570,10 +1570,10 @@ bool OpenEditWw()
 	if (CNRecs() == 0)
 		if (NoCreate) {
 			if (Subset) {
-				CFileMsg(107, '0');
+				CFileMsg(CFile, 107, '0');
 			}
 			else {
-				CFileMsg(115, '0');
+				CFileMsg(CFile, 115, '0');
 			}
 			EdBreak = 13;
 		label1:

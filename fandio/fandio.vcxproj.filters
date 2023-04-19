@@ -25,6 +25,12 @@
     <Filter Include="Source Files\Indexes">
       <UniqueIdentifier>{b4ba9f3a-148e-4e2a-a510-277cbbb5e1a3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\DbfFiles">
+      <UniqueIdentifier>{7923cfdc-b4aa-42f2-870e-79acd7d1b97a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\DbfFiles">
+      <UniqueIdentifier>{d851878a-5463-4cb8-94a6-454b95cac386}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="fandio.h">
@@ -93,6 +99,9 @@
     <ClInclude Include="TextFile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DbfFile.h">
+      <Filter>Header Files\DbfFiles</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="cache.cpp">
@@ -160,6 +169,9 @@
     </ClCompile>
     <ClCompile Include="TextFile.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DbfFile.cpp">
+      <Filter>Source Files\DbfFiles</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

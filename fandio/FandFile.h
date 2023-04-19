@@ -55,5 +55,12 @@ public:
 
 	// v CRecPtr vycte pozici zaznamu v .T00 souboru (ukazatel na zacatek textu)
 	int _T(FieldDescr* F, void* record);
+
+	unsigned short RdPrefix();
+	int RdPrefixes();
+	void WrPrefix();
+	void WrPrefixes();
+
+	void CloseFile();
 };
 

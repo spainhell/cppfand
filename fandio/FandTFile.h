@@ -49,8 +49,3 @@ private:
 	long eofPos = 0;
 };
 typedef FandTFile* TFilePtr;
-
-unsigned short RdPrefix();
-void RdPrefixes();
-void WrPrefix();
-void WrPrefixes();

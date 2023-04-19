@@ -34,8 +34,8 @@ void WrLLF10Msg(int msgNr); // stejna fce definovana v kbdww.cpp
 bool PromptYN(WORD NMsg);
 extern WORD RunErrNr;
 void RunError(WORD N); // podobna fce definovana v kbdww.cpp
-void CFileMsg(WORD n, char Typ); // podobna fce definovana v kbdww.cpp
-void CFileError(FileD* file_d, WORD N); // podobna fce definovana v kbdww.cpp
+void CFileMsg(FileD* file_d, int n, char Typ); // podobna fce definovana v kbdww.cpp
+void CFileError(FileD* file_d, int n); // podobna fce definovana v kbdww.cpp
 
 struct RunMsgD
 {

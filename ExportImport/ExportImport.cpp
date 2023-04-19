@@ -384,7 +384,7 @@ void Cpy(FILE* h, int sz, ThFile* F2)
 		else n = sz - i;
 		i += n;
 		ReadH(h, n, F2->Buf);
-		TestCFileError();
+		TestCFileError(CFile);
 		F2->lBuf = n;
 		F2->WriteBuf(false);
 		RunMsgN(i);
@@ -746,7 +746,7 @@ bool PromptCodeRdb()
 		if (KbdChar == __ESC) goto label1;
 		if (b) {
 			CFile = Chpt;
-			WrPrefixes();
+			CFile->FF->WrPrefixes();
 			// TODO: SaveCache(0);
 			std::string s = CRdb->RdbDir;
 			AddBackSlash(s);

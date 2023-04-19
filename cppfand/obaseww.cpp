@@ -304,9 +304,9 @@ bool PromptYN(WORD NMsg)
 	return cc == AbbrYes;
 }
 
-void CFileMsg(WORD n, char Typ)
+void CFileMsg(FileD* file_d, int n, char Typ)
 {
-	SetCPathVol(CFile);
+	SetCPathVol(file_d);
 	if (Typ == 'T') {
 		CPath = CExtToT(CDir, CName, CExt);
 	}
@@ -319,9 +319,9 @@ void CFileMsg(WORD n, char Typ)
 	WrLLF10Msg(n);
 }
 
-void CFileError(FileD* file_d, WORD N)
+void CFileError(FileD* file_d, int N)
 {
-	CFileMsg(N, '0');
+	CFileMsg(file_d, N, '0');
 	CloseGoExit(file_d->FF);
 }
 

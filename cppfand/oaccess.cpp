@@ -43,7 +43,7 @@ void OpenTWorkH()
 
 void SaveFD()
 {
-	WrPrefixes();
+	CFile->FF->WrPrefixes();
 	if (CFile->FF->file_type == FileType::INDEX) CFile->FF->XF->NoCreate = false;
 }
 
@@ -52,7 +52,7 @@ void SaveFiles()
 	if (!CacheExist()) return;
 	FileD* cf = CFile;
 	CFile = CatFD->GetCatalogFile();
-	WrPrefixes();
+	CFile->FF->WrPrefixes();
 	ForAllFDs(SaveFD);
 	bool b = SaveCache(0, CFile->FF->Handle);
 	FlushHandles();
@@ -127,7 +127,7 @@ void SetCPathMountVolSetNet(FileUseMode UM)
 {
 	SetCPathVol(CFile);
 	CFile->FF->UMode = UM;
-	CFile->FF->Drive = (BYTE)TestMountVol(CPath[1]);
+	CFile->FF->Drive = (BYTE)TestMountVol(CPath[0]);
 	if (!IsNetCVol() || (CFile == Chpt))
 		switch (UM) {
 		case RdShared: CFile->FF->UMode = RdOnly; break;
@@ -142,10 +142,10 @@ void SetCPathMountVolSetNet(FileUseMode UM)
 	}
 }
 
-void TestCFileError()
+void TestCFileError(FileD* file_d)
 {
 	if (HandleError != 0) {
-		CFileError(CFile, 700 + HandleError);
+		CFileError(file_d, 700 + HandleError);
 	}
 }
 
@@ -159,14 +159,14 @@ bool OpenF1(const std::string& path, FileUseMode UM)
 	if (b && (IsTestRun || IsInstallRun) && ((GetFileAttr(CPath, HandleError) & 0x1/*RdOnly*/) != 0)) {
 		SetFileAttr(CPath, HandleError, GetFileAttr(CPath, HandleError) & 0x26);
 		if (HandleError == 5) HandleError = 79;
-		TestCFileError();
+		TestCFileError(CFile);
 		CFile->FF->WasRdOnly = true;
 	}
 	while (true) {
 		CFile->FF->Handle = OpenH(CPath, _isoldfile, CFile->FF->UMode);
 		if ((HandleError != 0) && CFile->FF->WasRdOnly) {
 			SetFileAttr(CPath, HandleError, (GetFileAttr(CPath, HandleError) & 0x27) | 0x1 /*RdONly*/);
-			TestCFileError();
+			TestCFileError(CFile);
 		}
 		if ((HandleError == 5) && (CFile->FF->UMode == Exclusive)) {
 			CFile->FF->UMode = RdOnly;
@@ -182,7 +182,7 @@ bool OpenF1(const std::string& path, FileUseMode UM)
 	if ((HandleError == 5 || HandleError == 0x21) &&
 		((CVol == '#') || (CVol == "##") || SEquUpcase(CVol, "#R"))) CFileError(842);
 #endif
-	TestCFileError();
+	TestCFileError(CFile);
 	if (CFile->FF->TF != nullptr) {
 		CPath = CExtToT(CDir, CName, CExt);
 		if (CFile->FF->WasRdOnly) {
@@ -256,7 +256,7 @@ bool OpenF2(const std::string& path)
 	CFile->FF->NRecs = 0;
 	auto result = false;
 	if (FS < CFile->FF->FrstDispl) goto label1;
-	rLen = RdPrefix();
+	rLen = CFile->FF->RdPrefix();
 	n = (FS - CFile->FF->FrstDispl) / CFile->FF->RecLen;
 	if (rLen != 0xffff) {
 		if (CFile->IsDynFile) {
@@ -267,7 +267,7 @@ bool OpenF2(const std::string& path)
 			if (OldToNewCat(FS)) {
 				goto label3;
 			}
-			CFileMsg(883, ' ');
+			CFileMsg(CFile, 883, ' ');
 			l = CFile->FF->NRecs * rLen + CFile->FF->FrstDispl;
 			if (l == FS || !PromptYN(885)) {
 				CloseGoExit(CFile->FF);
@@ -293,7 +293,7 @@ bool OpenF2(const std::string& path)
 			CFile->FF->LMode = ExclMode;
 		label2:
 			SetUpdHandle(CFile->FF->Handle);
-			WrPrefix();
+			CFile->FF->WrPrefix();
 		}
 		else {
 			CloseGoExit(CFile->FF);
@@ -307,7 +307,7 @@ label3:
 		else {
 			CFile->FF->TF->RdPrefix(true);
 			if ((CFile->FF->file_type == FileType::RDB) && !IsActiveRdb(CFile) && !ww.HasPassWord(CFile, 1, "")) {
-				CFileMsg(616, ' ');
+				CFileMsg(CFile, 616, ' ');
 				CloseGoExit(CFile->FF);
 			}
 		}
@@ -326,7 +326,7 @@ label3:
 				|| (CFile->FF->XF->NrKeys != 0) && (CFile->FF->XF->NrKeys != CFile->GetNrKeys()))
 			{
 				if (!EquUpCase(GetEnv("FANDMSG830"), "NO")) {
-					CFileMsg(830, 'X');
+					CFileMsg(CFile, 830, 'X');
 				}
 				if (CFile->FF->IsShared() && (CFile->FF->LMode < ExclMode)) {
 					ChangeLMode(CFile, ExclMode, 0, false);
@@ -364,7 +364,7 @@ void CreateF()
 {
 	SetCPathMountVolSetNet(Exclusive);
 	CFile->FF->Handle = OpenH(CPath, _isoverwritefile, Exclusive);
-	TestCFileError();
+	TestCFileError(CFile);
 	CFile->FF->NRecs = 0;
 	if (CFile->FF->TF != nullptr) {
 		CPath = CExtToT(CDir, CName, CExt);
@@ -385,7 +385,7 @@ bool OpenCreateF(FileD* fileD, FileUseMode UM)
 	if (!OpenF(CPath, UM)) {
 		CreateF();
 		if ((UM == Shared) || (UM == RdShared)) {
-			WrPrefixes();
+			CFile->FF->WrPrefixes();
 			SaveCache(0, CFile->FF->Handle);
 			CloseClearH(&CFile->FF->Handle);
 			if (CFile->FF->file_type == FileType::INDEX) CloseClearH(&CFile->FF->XF->Handle);
@@ -423,7 +423,9 @@ void TruncF()
 	if (CFile->FF->UMode == RdOnly) return;
 	LockMode md = NewLMode(CFile, RdMode);
 	TruncH(CFile->FF->Handle, CFile->FF->UsedFileSize());
-	if (HandleError != 0) CFileMsg(700 + HandleError, '0');
+	if (HandleError != 0) {
+		CFileMsg(CFile, 700 + HandleError, '0');
+	}
 	if (CFile->FF->TF != nullptr) {
 		TruncH(CFile->FF->TF->Handle, CFile->FF->TF->UsedFileSize());
 		CFile->FF->TF->TestErr();
@@ -445,7 +447,7 @@ void CloseFile()
 		OldLMode(CFile, NullMode);
 	}
 	else {
-		WrPrefixes();
+		CFile->FF->WrPrefixes();
 	}
 	SaveCache(0, CFile->FF->Handle);
 	TruncF();
@@ -453,10 +455,13 @@ void CloseFile()
 		if (CFile->FF->XF->Handle != nullptr) {
 			CloseClearH(&CFile->FF->XF->Handle);
 			if (!CFile->FF->IsShared()) {
-				if (CFile->FF->XF->NotValid) goto label1;
-				if ((CFile->FF->XF->NRecs == 0) || CFile->FF->NRecs == 0) {
+				if (CFile->FF->XF->NotValid) {
+					SetCPathVol(CFile);
+					CPath = CExtToX(CDir, CName, CExt);
+					MyDeleteFile(CPath);
+				}
+				else if ((CFile->FF->XF->NRecs == 0) || CFile->FF->NRecs == 0) {
 					CFile->FF->NRecs = 0;
-				label1:
 					SetCPathVol(CFile);
 					CPath = CExtToX(CDir, CName, CExt);
 					MyDeleteFile(CPath);
@@ -472,7 +477,7 @@ void CloseFile()
 			if ((!CFile->FF->IsShared()) && (CFile->FF->NRecs == 0) && (CFile->FF->file_type != FileType::DBF)) {
 				SetCPathVol(CFile);
 				CPath = CExtToT(CDir, CName, CExt);
-				// MyDeleteFile(CPath);
+				MyDeleteFile(CPath);
 			}
 		}
 	}
@@ -481,15 +486,15 @@ void CloseFile()
 	CFile->FF->LMode = NullMode;
 	if (!CFile->FF->IsShared() && (CFile->FF->NRecs == 0) && (CFile->FF->file_type != FileType::DBF)) {
 		SetCPathVol(CFile);
-		// MyDeleteFile(CPath);
+		MyDeleteFile(CPath);
 	}
 	if (CFile->FF->WasRdOnly) {
 		CFile->FF->WasRdOnly = false;
 		SetCPathVol(CFile);
-		SetFileAttr(CPath, HandleError, (GetFileAttr(CPath, HandleError) & 0x27) | 0x01); // {RdONly; }
+		SetFileAttr(CPath, HandleError, (GetFileAttr(CPath, HandleError) & 0x27) | 0x01); // {RdOnly; }
 		if (CFile->FF->TF != nullptr) {
 			CPath = CExtToT(CDir, CName, CExt);
-			SetFileAttr(CPath, HandleError, (GetFileAttr(CPath, HandleError) & 0x27) | 0x01); //  {RdONly; }
+			SetFileAttr(CPath, HandleError, (GetFileAttr(CPath, HandleError) & 0x27) | 0x01); //  {RdOnly; }
 		}
 	}
 }
@@ -663,7 +668,9 @@ label1:
 		}
 	}
 	R = R->ChainBack;
-	if ((R != nullptr) && multilevel) goto label1;
+	if ((R != nullptr) && multilevel) {
+		goto label1;
+	}
 
 	return result;
 }
@@ -749,13 +756,13 @@ bool SetContextDir(FileD* file_d, std::string& D, bool& IsRdb)
 	return false;
 }
 
-void GetCPathForCat(WORD I)
+void GetCPathForCat(int i)
 {
 	std::string d;
 	bool isRdb;
 
-	CVol = CatFD->GetVolume(I);
-	CPath = CatFD->GetPathName(I);
+	CVol = CatFD->GetVolume(i);
+	CPath = CatFD->GetPathName(i);
 	const bool setContentDir = SetContextDir(CFile, d, isRdb);
 	if (setContentDir && CPath.length() > 1 && CPath[1] != ':') {
 		if (isRdb) {
@@ -781,7 +788,7 @@ void GetCPathForCat(WORD I)
 
 std::string SetCPathVol(FileD* file_d, char pathDelim)
 {
-	WORD i = 0;
+	int i = 0;
 	bool isRdb = false;
 
 	CVol = "";
@@ -834,20 +841,7 @@ label4:
 
 
 
-void SetTxtPathVol(pstring* Path, WORD CatIRec)
-{
-	if (CatIRec != 0) {
-		CVol = CatFD->GetVolume(CatIRec);
-		CPath = FExpand(CatFD->GetPathName(CatIRec));
-		FSplit(CPath, CDir, CName, CExt);
-	}
-	else {
-		CPath = FExpand(*Path);
-		CVol = "";
-	}
-}
-
-void SetTxtPathVol(std::string& Path, WORD CatIRec)
+void SetTxtPathVol(std::string& Path, int CatIRec)
 {
 	if (CatIRec != 0) {
 		CVol = CatFD->GetVolume(CatIRec);
@@ -896,7 +890,7 @@ FileD* OpenDuplF(bool CrTF)
 	CVol = "";
 	FD->FullPath = CPath;
 	FD->FF->Handle = OpenH(CPath, _isoverwritefile, Exclusive);
-	TestCFileError();
+	TestCFileError(CFile);
 	FD->FF->NRecs = 0;
 	FD->IRec = 0;
 	FD->FF->Eof = true;
@@ -929,7 +923,7 @@ void CopyDuplF(FileD* TempFD, bool DelTF)
 {
 	FileD* cf = CFile;
 	CFile = TempFD;
-	WrPrefixes();
+	CFile->FF->WrPrefixes();
 	CFile = cf;
 	SaveCache(0, CFile->FF->Handle);
 	SetTempCExt('0', true);
@@ -942,7 +936,10 @@ void CopyDuplF(FileD* TempFD, bool DelTF)
 		CFile->FF->TF->Handle = h2;
 		CopyH(h1, h2);
 	}
-	RdPrefixes();
+	int rp = CFile->FF->RdPrefixes();
+	if (rp != 0) {
+		CFileError(CFile, rp);
+	}
 }
 
 void CopyH(FILE* h1, FILE* h2)
