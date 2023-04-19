@@ -761,7 +761,7 @@ void OpenInp()
 		CFile = IDA[i]->Scan->FD;
 		if (IDA[i]->Scan->Kind == 5) IDA[i]->Scan->SeekRec(0);
 		else {
-			IDA[i]->Md = NewLMode(CFile, RdMode);
+			IDA[i]->Md = CFile->NewLockMode(RdMode);
 			IDA[i]->Scan->ResetSort(IDA[i]->SK, IDA[i]->Bool, IDA[i]->Md, IDA[i]->SQLFilter);
 		}
 		NRecsAll += IDA[i]->Scan->NRecs;
@@ -774,7 +774,7 @@ void CloseInp()
 		if (IDA[i]->Scan->Kind != 5) {
 			IDA[i]->Scan->Close();
 			ClearRecSpace(IDA[i]->ForwRecPtr);
-			OldLMode(CFile, IDA[i]->Md);
+			CFile->OldLockMode(IDA[i]->Md);
 		}
 	}
 }

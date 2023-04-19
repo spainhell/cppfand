@@ -102,6 +102,9 @@
     <ClInclude Include="DbfFile.h">
       <Filter>Header Files\DbfFiles</Filter>
     </ClInclude>
+    <ClInclude Include="locks.h">
+      <Filter>Header Files\FandFiles</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="cache.cpp">
@@ -172,6 +175,9 @@
     </ClCompile>
     <ClCompile Include="DbfFile.cpp">
       <Filter>Source Files\DbfFiles</Filter>
+    </ClCompile>
+    <ClCompile Include="locks.cpp">
+      <Filter>Source Files\FandFiles</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

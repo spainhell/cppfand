@@ -360,7 +360,7 @@ WORD FindHelpRecNr(FileD* FD, std::string& txt)
 	cf = CFile; cr = CRecPtr;
 	CFile = FD;
 	CRecPtr = FD->GetRecSpace();
-	md = NewLMode(CFile, RdMode);
+	md = CFile->NewLockMode(RdMode);
 	if (CFile->FF->Handle == nullptr) goto label1;
 	NmF = CFile->FldD.front();
 	TxtF = NmF->pChain;
@@ -381,7 +381,7 @@ WORD FindHelpRecNr(FileD* FD, std::string& txt)
 label1:
 	result = 0;
 label2:
-	OldLMode(CFile, md);
+	CFile->OldLockMode(md);
 	ReleaseStore(CRecPtr);
 	CFile = cf;
 	CRecPtr = cr;

@@ -33,177 +33,7 @@ void ClearCacheCFile()
 	if (CFile->TF != nullptr) ClearCacheH(CFile->TF->Handle);*/
 }
 
-#ifdef FandNetV
-// const int TransLock = 0x0A000501;  /* locked while state transition */
-const int TransLock = 0x40000501; // MB160
-// const int ModeLock = 0x0A000000;  /* base for mode locking */
-const int ModeLock = 0x40000000;  // MB160
-// const int RecLock = 0x0B000000;  /* base for record locking */
-const int RecLock = 0x41000000;   // MB160
 
-
-bool TryLockH(FILE* Handle, int Pos, WORD Len)
-{
-	OVERLAPPED sOverlapped;
-	sOverlapped.Offset = Pos;
-	sOverlapped.OffsetHigh = 0;
-	auto fSuccess = LockFileEx(Handle, LOCKFILE_EXCLUSIVE_LOCK | LOCKFILE_FAIL_IMMEDIATELY, 0, Len, 0, &sOverlapped);
-
-	if (!fSuccess) {
-		LPVOID lpMsgBuf;
-		LPVOID lpDisplayBuf;
-		DWORD dw = GetLastError();
-
-		FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-			NULL, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR)&lpMsgBuf, 0, NULL);
-
-		return false;
-	}
-	return true;
-}
-
-bool UnLockH(FILE* Handle, int Pos, WORD Len)
-{
-	OVERLAPPED sOverlapped;
-	sOverlapped.Offset = Pos;
-	sOverlapped.OffsetHigh = 0;
-	auto fSuccess = UnlockFileEx(Handle, 0, Len, 0, &sOverlapped);
-
-	if (!fSuccess) {
-		LPVOID lpMsgBuf;
-		LPVOID lpDisplayBuf;
-		DWORD dw = GetLastError();
-
-		FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-			NULL, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR)&lpMsgBuf, 0, NULL);
-
-		return false;
-	}
-	return true;
-}
-
-void ModeLockBnds(LockMode Mode, int& Pos, WORD& Len)
-{
-	int n = 0;
-	switch (Mode) {       /* hi=how much BYTEs, low= first BYTE */
-	case NoExclMode: n = 0x00010000 + LANNode; break;
-	case NoDelMode: n = 0x00010100 + LANNode; break;
-	case NoCrMode: n = 0x00010200 + LANNode; break;
-	case RdMode: n = 0x00010300 + LANNode; break;
-	case WrMode: n = 0x00FF0300; break;
-	case CrMode: n = 0x01FF0200; break;
-	case DelMode: n = 0x02FF0100; break;
-	case ExclMode: n = 0x03FF0000; break;
-	}
-	Pos = ModeLock + (n >> 16);
-	Len = n & 0xFFFF;
-}
-
-bool ChangeLMode(FileD* fileD, LockMode Mode, WORD Kind, bool RdPref)
-{
-	int oldpos; WORD oldlen, d;
-	bool result = false;
-	if (!fileD->FF->IsShared()) {         /*neu!!*/
-		result = true;
-		fileD->FF->LMode = Mode;
-		return result;
-	}
-	result = false;
-	LockMode oldmode = fileD->FF->LMode;
-	FILE* h = fileD->FF->Handle;
-	if (oldmode >= WrMode) {
-		if (Mode < WrMode) {
-			CFile->FF->WrPrefixes();
-		}
-		if (oldmode == ExclMode) {
-			SaveCache(0, fileD->FF->Handle);
-			ClearCacheCFile();
-		}
-		if (Mode < WrMode) ResetCFileUpdH();
-	}
-	int w = 0;
-	WORD count = 0;
-label1:
-	if (Mode != NullMode)
-		if (!TryLockH(h, TransLock, 1)) {
-		label2:
-			if (Kind == 2) return result; /*0 Kind-wait, 1-wait until ESC, 2-no wait*/
-			count++;
-			if (count <= spec.LockRetries) {
-				d = spec.LockDelay;
-			}
-			else {
-				d = spec.NetDelay;
-				SetCPathVol(CFile);
-				SetMsgPar(CPath, LockModeTxt[Mode]);
-				int w1 = PushWrLLMsg(825, Kind == 1);
-				if (w == 0) {
-					w = w1;
-				}
-				else {
-					TWork.Delete(w1);
-				}
-				LockBeep();
-			}
-			if (KbdTimer(spec.NetDelay, Kind)) {
-				goto label1;
-			}
-			if (w != 0) PopW(w);
-			return result;
-		}
-	if (oldmode != NullMode) {
-		ModeLockBnds(oldmode, oldpos, oldlen);
-		UnLockH(h, oldpos, oldlen);
-	}
-	if (Mode != NullMode) {
-		WORD len;
-		int pos;
-		ModeLockBnds(Mode, pos, len);
-		if (!TryLockH(h, pos, len)) {
-			if (oldmode != NullMode) {
-				TryLockH(h, oldpos, oldlen);
-			}
-			UnLockH(h, TransLock, 1);
-			goto label2;
-		}
-		UnLockH(h, TransLock, 1);
-	}
-	if (w != 0) {
-		PopW(w);
-	}
-	fileD->FF->LMode = Mode;
-	if ((oldmode < RdMode) && (Mode >= RdMode) && RdPref) {
-		int rp = CFile->FF->RdPrefixes();
-		if (rp != 0) {
-			CFileError(CFile, rp);
-		}
-	}
-	result = true;
-	return result;
-}
-
-#else
-bool ChangeLMode(FileD* fileD, LockMode Mode, WORD Kind, bool RdPref)
-{
-	fileD->LMode = Mode;
-	return true;
-}
-#endif
-
-void OldLMode(FileD* fileD, LockMode Mode)
-{
-#ifdef FandSQL
-	if (fileD->IsSQLFile) { fileD->LMode = Mode; return; }
-#endif
-	if (fileD->FF->Handle == nullptr) return;
-	if (Mode != fileD->FF->LMode) ChangeLMode(fileD, Mode, 0, true);
-}
-
-void RunErrorM(LockMode Md, WORD N)
-{
-	OldLMode(CFile, Md);
-	RunError(N);
-}
 
 void CloseClearHCFile(FandFile* fand_file)
 {
@@ -329,81 +159,7 @@ void FixFromReal(double r, void* FixNo, WORD FLen)
 	memcpy(FixNo, &ff[1], FLen);
 }
 
-bool TryLMode(FileD* fileD, LockMode Mode, LockMode& OldMode, WORD Kind)
-{
-	bool result = true;
-#ifdef FandSQL
-	if (fileD->IsSQLFile) {
-		OldMode = fileD->LMode; if (Mode > fileD->LMode) fileD->LMode = Mode;
-	}
-	else
-#endif
-	{
-		if (fileD->FF->Handle == nullptr) {
-			OpenCreateF(fileD, Shared);
-		}
-		OldMode = fileD->FF->LMode;
-		if (Mode > fileD->FF->LMode) {
-			result = ChangeLMode(fileD, Mode, Kind, true);
-		}
-	}
-	return result;
-}
 
-LockMode NewLMode(FileD* fileD, LockMode Mode)
-{
-	LockMode md;
-	TryLMode(fileD, Mode, md, 0);
-	return md;
-}
-
-bool TryLockN(FandFile* fand_file, int N, WORD Kind)
-{
-	int w, w1;
-	WORD m;
-	std::string XTxt = "CrX";
-	auto result = true;
-#ifdef FandSQL
-	if (CFile->IsSQLFile) return result;
-#endif
-#ifdef FandNetV
-
-	if (!fand_file->IsShared()) return result;
-	w = 0;
-label1:
-	if (!TryLockH(fand_file->Handle, RecLock + N, 1)) {
-		if (Kind != 2) {   /*0 Kind-wait, 1-wait until ESC, 2-no wait*/
-			m = 826;
-			if (N == 0)	{
-				SetCPathVol(CFile);
-				SetMsgPar(CPath, XTxt);
-				m = 825;
-			}
-			w1 = PushWrLLMsg(m, Kind == 1);
-			if (w == 0) w = w1;
-			else TWork.Delete(w1);
-			/*beep; don't disturb*/
-			if (KbdTimer(spec.NetDelay, Kind)) {
-				goto label1;
-			}
-		}
-		result = false;
-	}
-	if (w != 0) PopW(w);
-#endif
-	return result;
-}
-
-void UnLockN(FandFile* fand_file, int N)
-{
-#ifdef FandSQL
-	if (CFile->IsSQLFile) return;
-#endif
-#ifdef FandNetV
-	if ((fand_file->Handle == nullptr) || !fand_file->IsShared()) return;
-	UnLockH(fand_file->Handle, RecLock + N, 1);
-#endif
-}
 
 void TestCPathError()
 {
@@ -464,9 +220,9 @@ void DelTFld(FieldDescr* F)
 		TWork.Delete(n);
 	}
 	else {
-		LockMode md = NewLMode(CFile, WrMode);
+		LockMode md = CFile->NewLockMode(WrMode);
 		CFile->FF->TF->Delete(n);
-		OldLMode(CFile, md);
+		CFile->OldLockMode(md);
 	}
 	T_(F, 0);
 }
@@ -499,7 +255,7 @@ bool LinkLastRec(FileD* FD, int& N, bool WithT)
 {
 	CFile = FD;
 	CRecPtr = FD->GetRecSpace();
-	LockMode md = NewLMode(CFile, RdMode);
+	LockMode md = CFile->NewLockMode(RdMode);
 	auto result = true;
 #ifdef FandSQL
 	if (FD->IsSQLFile)
@@ -518,7 +274,7 @@ bool LinkLastRec(FileD* FD, int& N, bool WithT)
 		}
 		else CFile->ReadRec(N, CRecPtr);
 	}
-	OldLMode(CFile, md);
+	CFile->OldLockMode(md);
 	return result;
 }
 
@@ -539,14 +295,14 @@ void AsgnParFldFrml(FileD* FD, FieldDescr* F, FrmlElem* Z, bool Ad)
 	else
 #endif
 	{
-		md = NewLMode(CFile, WrMode);
+		md = CFile->NewLockMode(WrMode);
 		if (!LinkLastRec(CFile, N, true)) {
 			CFile->IncNRecs(1);
 			CFile->WriteRec(N, CRecPtr);
 		}
 		AssgnFrml(CFile, CRecPtr, F, Z, true, Ad);
 		CFile->WriteRec(N, CRecPtr);
-		OldLMode(CFile, md);
+		CFile->OldLockMode(md);
 	}
 	ReleaseStore(CRecPtr);
 	CFile = cf; CRecPtr = cr;
@@ -836,11 +592,11 @@ std::string _StdS(FieldDescr* F, void* record)
 				delete ls;
 			}
 			else {
-				md = NewLMode(CFile, RdMode);
+				md = CFile->NewLockMode(RdMode);
 				LongStr* ls = CFile->FF->TF->Read(CFile->_T(F, CRecPtr));
 				S = std::string(ls->A, ls->LL);
 				delete ls;
-				OldLMode(CFile, md);
+				CFile->OldLockMode(md);
 			}
 			if ((F->Flg & f_Encryp) != 0) {
 				Code(S);
@@ -872,9 +628,9 @@ void LongS_(FileD* file_d, FieldDescr* F, LongStr* S)
 					label1:
 			Pos = TWork.Store(S->A, S->LL);
 				else {
-					md = NewLMode(file_d, WrMode);
+					md = CFile->NewLockMode(WrMode);
 					Pos = file_d->FF->TF->Store(S->A, S->LL);
-					OldLMode(file_d, md);
+					CFile->OldLockMode(md);
 				}
 			if ((F->Flg & f_Encryp) != 0) Code(S->A, S->LL);
 			T_(F, Pos);
@@ -965,7 +721,7 @@ bool LinkUpw(LinkD* LD, int& N, bool WithT)
 		if (LU) goto label2; else goto label1;
 	}
 #endif
-	const LockMode md = NewLMode(CFile, RdMode);
+	const LockMode md = CFile->NewLockMode(RdMode);
 	bool lu;
 	if (ToFD->FF->file_type == FileType::INDEX) {
 		TestXFExist();
@@ -1023,7 +779,7 @@ bool LinkUpw(LinkD* LD, int& N, bool WithT)
 #ifdef FandSQL
 	if (!CFile->IsSQLFile)
 #endif
-		OldLMode(CFile, md);
+		CFile->OldLockMode(md);
 	return result;
 }
 
@@ -1035,7 +791,7 @@ void AssignNRecs(bool Add, int N)
 		if ((N = 0) && !Add) Strm1->DeleteXRec(nullptr, nullptr, false); return;
 	}
 #endif
-	md = NewLMode(CFile, DelMode);
+	md = CFile->NewLockMode(DelMode);
 	OldNRecs = CFile->FF->NRecs;
 	if (Add) N = N + OldNRecs;
 	if ((N < 0) || (N == OldNRecs)) goto label1;
@@ -1049,7 +805,8 @@ void AssignNRecs(bool Add, int N)
 		}
 		else {
 			SetMsgPar(CFile->Name);
-			RunErrorM(md, 821);
+			CFile->RunErrorM(md);
+			RunError(821);
 		}
 	}
 	if (N < OldNRecs) {
@@ -1065,7 +822,7 @@ void AssignNRecs(bool Add, int N)
 	}
 	ReleaseStore(CRecPtr);
 label1:
-	OldLMode(CFile, md);
+	CFile->OldLockMode(md);
 }
 
 void ClearRecSpace(void* p)

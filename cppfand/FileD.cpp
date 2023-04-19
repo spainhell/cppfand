@@ -2,6 +2,7 @@
 #include "../cppfand/access.h"
 #include "../fandio/XKey.h"
 #include "../Logging/Logging.h"
+#include "../fandio/locks.h"
 
 
 FileD::FileD(FType f_type)
@@ -173,4 +174,39 @@ void FileD::Close()
 	if (FF != nullptr) {
 		FF->CloseFile();
 	}
+}
+
+void FileD::OldLockMode(LockMode mode)
+{
+	OldLMode(this, mode);
+}
+
+LockMode FileD::NewLockMode(LockMode mode)
+{
+	return NewLMode(this, mode);
+}
+
+bool FileD::TryLockMode(LockMode mode, LockMode& old_mode, WORD kind)
+{
+	return TryLMode(this, mode, old_mode, kind);
+}
+
+bool FileD::ChangeLockMode(LockMode mode, WORD kind, bool rd_pref)
+{
+	return ChangeLMode(this, mode, kind, rd_pref);
+}
+
+bool FileD::Lock(int n, WORD kind)
+{
+	return TryLockN(this->FF, n, kind);
+}
+
+void FileD::Unlock(int n)
+{
+	UnLockN(this->FF, n);
+}
+
+void FileD::RunErrorM(LockMode mode)
+{
+	OldLockMode(mode);
 }

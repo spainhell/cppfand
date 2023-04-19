@@ -106,8 +106,8 @@ void CreateIndexFile()
 		XF = CFile->FF->XF;
 		cr = CRecPtr;
 		CRecPtr = CFile->GetRecSpace();
-		md = NewLMode(CFile, RdMode);
-		TryLockN(CFile->FF, 0, 0);
+		md = CFile->NewLockMode(RdMode);
+		CFile->Lock(0, 0);
 		/*ClearCacheCFile;*/
 		if (XF->Handle == nullptr) RunError(903);
 		log->log(loglevel::DEBUG, "CreateIndexFile() file 0x%p name '%s'", XF->Handle, CFile->Name.c_str());
@@ -135,8 +135,8 @@ void CreateIndexFile()
 		XF->SetNotValid();
 		XF->NoCreate = true;
 	}
-	UnLockN(CFile->FF, 0);
-	OldLMode(CFile, md);
+	CFile->Unlock(0);
+	CFile->OldLockMode(md);
 	if (fail) GoExit();
 }
 

@@ -222,8 +222,8 @@ void OpenInpM()
 	for (short I = 1; I <= MaxIi; I++)
 		/* !!! with IDA[I]^ do!!! */ {
 		CFile = IDA[I]->Scan->FD;
-		if (IDA[I]->IsInplace) IDA[I]->Md = NewLMode(CFile, ExclMode);
-		else IDA[I]->Md = NewLMode(CFile, RdMode);
+		if (IDA[I]->IsInplace) IDA[I]->Md = CFile->NewLockMode(ExclMode);
+		else IDA[I]->Md = CFile->NewLockMode(RdMode);
 		IDA[I]->Scan->ResetSort(IDA[I]->SK, IDA[I]->Bool, IDA[I]->Md, IDA[I]->SQLFilter);
 		NRecsAll += IDA[I]->Scan->NRecs;
 	}
@@ -268,14 +268,14 @@ void CloseInpOutp()
 				CFile = OD->InplFD;
 				SubstDuplF(OD->FD, true);
 			}
-			else OldLMode(CFile, OD->Md);
+			else CFile->OldLockMode(OD->Md);
 		}
 		OD = (OutpFD*)OD->pChain;
 	}
 	for (short i = 1; i <= MaxIi; i++) /* !!! with IDA[i]^ do!!! */ {
 		IDA[i]->Scan->Close();
 		ClearRecSpace(IDA[i]->ForwRecPtr);
-		OldLMode(CFile, IDA[i]->Md);
+		CFile->OldLockMode(IDA[i]->Md);
 	}
 	}
 

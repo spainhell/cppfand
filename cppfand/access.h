@@ -35,7 +35,7 @@ struct FuncD
 	pstring Name;
 };
 
-void RunErrorM(LockMode Md, WORD N);
+
 void SetTWorkFlag(FandFile* fand_file, void* record);
 bool HasTWorkFlag(FandFile* fand_file, void* record);
 void SetUpdFlag(FandFile* fand_file, void* record);
@@ -74,11 +74,7 @@ void T_(FieldDescr* F, int Pos);
 
 bool LinkUpw(LinkD* LD, int& N, bool WithT);
 bool LinkLastRec(FileD* FD, int& N, bool WithT);
-bool TryLMode(FileD* fileD, LockMode Mode, LockMode& OldMode, WORD Kind);
-void OldLMode(FileD* fileD, LockMode Mode);
-LockMode NewLMode(FileD* fileD, LockMode Mode);
-bool TryLockN(FandFile* fand_file, int N, WORD Kind);
-void UnLockN(FandFile* fand_file, int N);
+
 void ClearRecSpace(void* p);
 void ZeroAllFlds(FileD* file_d, void* record);
 
@@ -97,7 +93,9 @@ void AssignNRecs(bool Add, int N);
 
 void CloseGoExit(FandFile* fand_file);
 
-bool ChangeLMode(FileD* fileD, LockMode Mode, WORD Kind, bool RdPref);
+void ClearCacheCFile();
+void ResetCFileUpdH();
+
 
 void FixFromReal(double r, void* FixNo, WORD FLen);
 

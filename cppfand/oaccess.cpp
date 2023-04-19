@@ -114,7 +114,7 @@ void OpenFANDFiles(bool FromDML)
 		while (!FromDML && (CFile != nullptr)) {
 			if (CFile->FF->ExLMode != NullMode) {
 				OpenF(CPath, Shared);
-				md = NewLMode(CFile, CFile->FF->ExLMode);
+				md = CFile->NewLockMode(CFile->FF->ExLMode);
 			}
 			CFile = CFile->pChain;
 		}
@@ -288,7 +288,7 @@ bool OpenF2(const std::string& path)
 			CFile->FF->NRecs = n;
 		label1:
 			if (CFile->FF->IsShared() && (CFile->FF->LMode < ExclMode)) {
-				ChangeLMode(CFile, ExclMode, 0, false);
+				CFile->ChangeLockMode(ExclMode, 0, false);
 			}
 			CFile->FF->LMode = ExclMode;
 		label2:
@@ -322,14 +322,14 @@ label3:
 			if (
 				!CFile->FF->XF->NotValid && ((Signum != 0x04FF) || (CFile->FF->XF->NRecsAbs != CFile->FF->NRecs)
 					|| (CFile->FF->XF->FreeRoot > CFile->FF->XF->MaxPage)
-					|| ((((int)CFile->FF->XF->MaxPage + 1) << XPageShft) > FileSizeH(CFile->FF->XF->Handle)))
+					|| (((CFile->FF->XF->MaxPage + 1) << XPageShft) > FileSizeH(CFile->FF->XF->Handle)))
 				|| (CFile->FF->XF->NrKeys != 0) && (CFile->FF->XF->NrKeys != CFile->GetNrKeys()))
 			{
 				if (!EquUpCase(GetEnv("FANDMSG830"), "NO")) {
 					CFileMsg(CFile, 830, 'X');
 				}
 				if (CFile->FF->IsShared() && (CFile->FF->LMode < ExclMode)) {
-					ChangeLMode(CFile, ExclMode, 0, false);
+					CFile->ChangeLockMode(ExclMode, 0, false);
 				}
 				CFile->FF->LMode = ExclMode;
 				CFile->FF->XF->SetNotValid();
@@ -350,11 +350,11 @@ bool OpenF(const std::string& path, FileUseMode UM)
 			!IsSQLFile &&
 #endif
 			CFile->FF->IsShared()) {
-			ChangeLMode(CFile, RdMode, 0, false);
+			CFile->ChangeLockMode(RdMode, 0, false);
 			CFile->FF->LMode = RdMode;
 		}
 		result = OpenF2(path);
-		OldLMode(CFile, NullMode);
+		CFile->OldLockMode(NullMode);
 	}
 	else result = false;
 	return result;
@@ -400,7 +400,7 @@ LockMode RewriteF(const bool Append)
 {
 	LockMode result;
 	if (Append) {
-		result = NewLMode(CFile, CrMode);
+		result = CFile->NewLockMode(CrMode);
 		CFile->SeekRec(CFile->FF->NRecs);
 		if (CFile->FF->XF != nullptr) {
 			CFile->FF->XF->FirstDupl = true;
@@ -408,7 +408,7 @@ LockMode RewriteF(const bool Append)
 		}
 		return result;
 	}
-	result = NewLMode(CFile, ExclMode);
+	result = CFile->NewLockMode(ExclMode);
 	CFile->FF->NRecs = 0;
 	CFile->SeekRec(0);
 	SetUpdHandle(CFile->FF->Handle);
@@ -421,7 +421,7 @@ LockMode RewriteF(const bool Append)
 void TruncF()
 {
 	if (CFile->FF->UMode == RdOnly) return;
-	LockMode md = NewLMode(CFile, RdMode);
+	LockMode md = CFile->NewLockMode(RdMode);
 	TruncH(CFile->FF->Handle, CFile->FF->UsedFileSize());
 	if (HandleError != 0) {
 		CFileMsg(CFile, 700 + HandleError, '0');
@@ -436,7 +436,7 @@ void TruncF()
 		TruncH(CFile->FF->XF->Handle, sz);
 		CFile->FF->XF->TestErr();
 	}
-	OldLMode(CFile, md);
+	CFile->OldLockMode(md);
 
 }
 
@@ -444,7 +444,7 @@ void CloseFile()
 {
 	if (CFile->FF->Handle == nullptr) return;
 	if (CFile->FF->IsShared()) {
-		OldLMode(CFile, NullMode);
+		CFile->OldLockMode(NullMode);
 	}
 	else {
 		CFile->FF->WrPrefixes();

@@ -649,10 +649,10 @@ int AbsRecNr(int N)
 	}
 	if (Subset) N = WK->NrToRecNr(N);
 	else if (HasIndex) {
-		md = NewLMode(CFile, RdMode);
+		md = CFile->NewLockMode(RdMode);
 		TestXFExist();
 		N = VK->NrToRecNr(N);
-		OldLMode(CFile, md);
+		CFile->OldLockMode(md);
 	}
 	result = N;
 	return result;
@@ -663,7 +663,7 @@ int LogRecNo(int N)
 	LockMode md;
 	int result = 0;
 	if ((N <= 0) || (N > CFile->FF->NRecs)) return result;
-	md = NewLMode(CFile, RdMode);
+	md = CFile->NewLockMode(RdMode);
 	CFile->ReadRec(N, CRecPtr);
 	if (!DeletedFlag(CFile->FF, CRecPtr)) {
 		if (Subset) result = WK->RecNrToNr(N);
@@ -673,7 +673,7 @@ int LogRecNo(int N)
 		}
 		else result = N;
 	}
-	OldLMode(CFile, md);
+	CFile->OldLockMode(md);
 	return result;
 }
 
@@ -713,9 +713,9 @@ void RdRec(int N)
 	else
 #endif
 	{
-		md = NewLMode(CFile, RdMode);
+		md = CFile->NewLockMode(RdMode);
 		CFile->ReadRec(AbsRecNr(N), CRecPtr);
-		OldLMode(CFile, md);
+		CFile->OldLockMode(md);
 	}
 }
 
@@ -774,13 +774,13 @@ bool ELockRec(EditD* E, int N, bool IsNewRec, bool Subset)
 #endif
 		) {
 		if (CFile->FF->NotCached()) {
-			if (!TryLockN(CFile->FF, N, 1/*withESC*/)) {
+			if (!CFile->Lock(N, 1/*withESC*/)) {
 				result = false;
 				return result;
 			}
-			md = NewLMode(CFile, RdMode);
+			md = CFile->NewLockMode(RdMode);
 			CFile->ReadRec(N, CRecPtr);
-			OldLMode(CFile, md);
+			CFile->OldLockMode(md);
 			if (Subset && !
 				((NoCondCheck || RunBool(E->Cond) && CheckKeyIn(E)) && CheckOwner(E))) {
 				WrLLF10Msg(150); goto label1;
@@ -789,7 +789,7 @@ bool ELockRec(EditD* E, int N, bool IsNewRec, bool Subset)
 		else if (DeletedFlag(CFile->FF, CRecPtr)) {
 			WrLLF10Msg(148);
 		label1:
-			UnLockN(CFile->FF, N);
+			CFile->Unlock(N);
 			result = false;
 			return result;
 		}
@@ -937,7 +937,7 @@ bool LockRec(bool Displ)
 void UnLockRec(EditD* E)
 {
 	if (E->FD->FF->IsShared() && E->IsLocked && !E->EdRecVar) {
-		UnLockN(CFile->FF, E->LockedRec);
+		CFile->Unlock(E->LockedRec);
 	}
 	E->IsLocked = false;
 }
@@ -1208,14 +1208,14 @@ void DisplAllWwRecs()
 {
 	LockMode md = NullMode;
 	WORD n = E->NRecs; // pocet zaznamu k zobrazeni (na strance)
-	if ((n > 1) && !EdRecVar) md = NewLMode(CFile, RdMode);
+	if ((n > 1) && !EdRecVar) md = CFile->NewLockMode(RdMode);
 	AdjustCRec();
 	if (!IsNewRec && !WasUpdated) RdRec(CRec());
 	for (WORD i = 1; i <= n; i++) {
 		DisplRec(i);
 	}
 	IVon();
-	if ((n > 1) && !EdRecVar) OldLMode(CFile, md);
+	if ((n > 1) && !EdRecVar) CFile->OldLockMode(md);
 }
 
 void SetNewWwRecAttr()
@@ -1533,19 +1533,22 @@ bool OpenEditWw()
 	if (Subset || Only1Record) {
 		WK = new XWKey();
 	}
-	if (!TryLMode(CFile, md, md1, 1)) {
+	if (!CFile->TryLockMode(md, md1, 1)) {
 		EdBreak = 15;
 		goto label1;
 	}
-	md2 = NewLMode(CFile, RdMode);
+	md2 = CFile->NewLockMode(RdMode);
 	if (E->DownSet && (E->OwnerTyp == 'F')) {
 		CFile = E->DownLD->ToFD;
 		CRecPtr = E->DownRecPtr;
-		md1 = NewLMode(CFile, RdMode);
+		md1 = CFile->NewLockMode(RdMode);
 		n = E->OwnerRecNo;
-		if ((n == 0) || (n > CFile->FF->NRecs)) RunErrorM(E->OldMd, 611);
+		if ((n == 0) || (n > CFile->FF->NRecs)) {
+			CFile->RunErrorM(E->OldMd);
+			RunError(611);
+		}
 		CFile->ReadRec(n, CRecPtr);
-		OldLMode(CFile, md1);
+		CFile->OldLockMode(md1);
 		CFile = E->FD;
 		CRecPtr = E->NewRecPtr;
 	}
@@ -1580,7 +1583,7 @@ bool OpenEditWw()
 			if (Subset && !WasWK) {
 				WK->Close();
 			}
-			OldLMode(CFile, E->OldMd);
+			CFile->OldLockMode(E->OldMd);
 			result = false;
 			return result;
 		}
@@ -1600,20 +1603,20 @@ label3:
 	MarkStore(E->AfterE);
 	DisplEditWw();
 	result = true;
-	if (!EdRecVar) OldLMode(CFile, md2);
+	if (!EdRecVar) CFile->OldLockMode(md2);
 	if (IsNewRec) NewRecExit();
 	return result;
 }
 
 void RefreshSubset()
 {
-	LockMode md = NewLMode(CFile, RdMode);
+	LockMode md = CFile->NewLockMode(RdMode);
 	if (Subset && !(OnlyAppend || Only1Record || WasWK)) {
 		WK->Close();
 		BuildWork();
 	}
 	DisplAllWwRecs();
-	OldLMode(CFile, md);
+	CFile->OldLockMode(md);
 }
 
 void GotoRecFld(int NewRec, EFldD* NewFld)
@@ -1631,7 +1634,7 @@ void GotoRecFld(int NewRec, EFldD* NewFld)
 		}
 		return;
 	}
-	if (!EdRecVar) md = NewLMode(CFile, RdMode);
+	if (!EdRecVar) md = CFile->NewLockMode(RdMode);
 	if (NewRec > CNRecs()) NewRec = CNRecs();
 	if (NewRec <= 0) NewRec = 1;
 	if (Select) SetRecAttr(IRec);
@@ -1669,7 +1672,7 @@ label1:
 	IVon();
 label2:
 	if (!EdRecVar) {
-		OldLMode(CFile, md);
+		CFile->OldLockMode(md);
 	}
 }
 
@@ -1782,10 +1785,10 @@ void WrJournal(char Upd, void* RP, double Time)
 		char* src = (char*)RP;
 		memcpy(&newData.get()[(*it)->Displ], &src[srcOffset], l);		// record data
 
-		LockMode md = NewLMode(CFile, CrMode);
+		LockMode md = CFile->NewLockMode(CrMode);
 		CFile->IncNRecs(1);
 		CFile->WriteRec(CFile->FF->NRecs, newData.get());
-		OldLMode(CFile, md);
+		CFile->OldLockMode(md);
 		CFile = E->FD;
 		CRecPtr = E->NewRecPtr;
 	}
@@ -1812,11 +1815,11 @@ bool LockForMemb(FileD* FD, WORD Kind, LockMode NewMd, LockMode& md)
 			}
 			case 1: {
 				md = NewMd;
-				if (!TryLMode(CFile, NewMd, md1, 2)) return result;
+				if (!CFile->TryLockMode(NewMd, md1, 2)) return result;
 				break;
 			}
 			case 2: {
-				OldLMode(CFile, CFile->FF->TaLMode);
+				CFile->OldLockMode(CFile->FF->TaLMode);
 				break;
 			}
 			}
@@ -1842,7 +1845,7 @@ bool LockWithDep(LockMode CfMd, LockMode MembMd, LockMode& OldMd)
 	LockForMemb(cf, 0, MembMd, md);
 label1:
 	CFile = cf;
-	if (!TryLMode(CFile, CfMd, OldMd, 1)) {
+	if (!CFile->TryLockMode(CfMd, OldMd, 1)) {
 		md = CfMd;
 		goto label3;
 	}
@@ -1857,7 +1860,7 @@ label1:
 	label2:
 		LockForAdd(cf, 2, true, md);
 		CFile = cf;
-		OldLMode(CFile, OldMd);
+		CFile->OldLockMode(OldMd);
 		CFile = cf2;
 	label3:
 		SetCPathVol(CFile);
@@ -1880,7 +1883,7 @@ void UnLockWithDep(LockMode OldMd)
 	LockMode md;
 	if (EdRecVar) return;
 	FileD* cf = CFile;
-	OldLMode(CFile, OldMd);
+	CFile->OldLockMode(OldMd);
 	LockForAdd(cf, 2, true, md);
 	LockForMemb(cf, 2, md, md);
 	CFile = cf;
@@ -2651,11 +2654,12 @@ void DuplFromPrevRec()
 	if (CFld->Ed(IsNewRec)) {
 		F = CFld->FldD; md = RdMode;
 		if (F->field_type == FieldType::TEXT) md = WrMode;
-		md = NewLMode(CFile, md);
+		md = CFile->NewLockMode(md);
 		SetWasUpdated(CFile->FF, CRecPtr);
 		cr = CRecPtr; CRecPtr = CFile->GetRecSpace(); RdRec(CRec() - 1);
 		DuplFld(CFile, CFile, CRecPtr, E->NewRecPtr, E->OldRecPtr, F, F);
-		ClearRecSpace(CRecPtr); ReleaseStore(CRecPtr); CRecPtr = cr; OldLMode(CFile, md);
+		ClearRecSpace(CRecPtr); ReleaseStore(CRecPtr); CRecPtr = cr;
+		CFile->OldLockMode(md);
 	}
 }
 
@@ -2697,7 +2701,7 @@ void AppendRecord(void* RP)
 bool GotoXRec(XString* PX, int& N)
 {
 	bool result = false;
-	LockMode md = NewLMode(CFile, RdMode);
+	LockMode md = CFile->NewLockMode(RdMode);
 	XKey* k = VK;
 	if (Subset) k = WK;
 	if (Subset || HasIndex) {
@@ -2709,7 +2713,7 @@ bool GotoXRec(XString* PX, int& N)
 	}
 	RdRec(CRec());
 	GotoRecFld(N, CFld);
-	OldLMode(CFile, md);
+	CFile->OldLockMode(md);
 	return result;
 }
 
@@ -2936,7 +2940,7 @@ void CheckFromHere()
 {
 	EFldD* D = CFld;
 	int N = CRec();
-	LockMode md = NewLMode(CFile, RdMode);
+	LockMode md = CFile->NewLockMode(RdMode);
 
 	while (true) {
 		if (!DeletedFlag(CFile->FF, CRecPtr))
@@ -2949,7 +2953,7 @@ void CheckFromHere()
 					IRec = N - BaseRec + 1;
 					CFld = D;
 					DisplWwRecsOrPage(&CPage, &RT);
-					OldLMode(CFile, md);
+					CFile->OldLockMode(md);
 					DisplChkErr(C);
 					return;
 				}
@@ -2967,7 +2971,7 @@ void CheckFromHere()
 
 	RdRec(CRec());
 	DisplRecNr(CRec());
-	OldLMode(CFile, md);
+	CFile->OldLockMode(md);
 	WrLLF10Msg(120);
 }
 
@@ -2986,7 +2990,7 @@ void Sorting()
 		return;
 	}
 
-	if (!TryLMode(CFile, ExclMode, md, 1)) {
+	if (!CFile->TryLockMode(ExclMode, md, 1)) {
 		ReleaseStore(p);
 		CRecPtr = E->NewRecPtr;
 		DisplAllWwRecs();
@@ -2999,7 +3003,7 @@ void Sorting()
 	}
 	catch (std::exception&) {
 		CFile = E->FD;
-		OldLMode(CFile, md);
+		CFile->OldLockMode(md);
 	}
 
 	ReleaseStore(p);
@@ -3188,9 +3192,9 @@ label1:
 	if (WasUpdated && !EdRecVar && HasIndex) {
 		KL = CFld->KL;
 		while (KL != nullptr) {
-			md = NewLMode(CFile, RdMode);
+			md = CFile->NewLockMode(RdMode);
 			b = TestDuplKey(KL->Key);
-			OldLMode(CFile, md);
+			CFile->OldLockMode(md);
 			if (b) {
 				DuplKeyMsg(KL->Key);
 				return result;
@@ -3291,7 +3295,7 @@ bool GoPrevNextRec(short Delta, bool Displ)
 	int OldBaseRec = 0;
 	auto result = false;
 	if (EdRecVar) return result;
-	md = NewLMode(CFile, RdMode);
+	md = CFile->NewLockMode(RdMode);
 	i = CRec();
 	if (Displ) IVoff();
 label0:
@@ -3340,7 +3344,7 @@ label2:
 label3:
 	if (Displ)IVon();
 label4:
-	OldLMode(CFile, md);
+	CFile->OldLockMode(md);
 	return result;
 }
 
@@ -3385,21 +3389,21 @@ void UpdateEdTFld(LongStr* S)
 {
 	LockMode md;
 	CRecPtr = E->NewRecPtr;
-	if (!EdRecVar) md = NewLMode(CFile, WrMode);
+	if (!EdRecVar) md = CFile->NewLockMode(WrMode);
 	SetWasUpdated(CFile->FF, CRecPtr);
 	DelDifTFld(E->NewRecPtr, E->OldRecPtr, CFld->FldD);
 	LongS_(CFile, CFld->FldD, S);
-	if (!EdRecVar) OldLMode(CFile, md);
+	if (!EdRecVar) CFile->OldLockMode(md);
 }
 
 void UpdateTxtPos(WORD TxtPos)
 {
 	LockMode md;
 	if (IsCurrChpt()) {
-		md = NewLMode(CFile, WrMode);
+		md = CFile->NewLockMode(WrMode);
 		SetWasUpdated(CFile->FF, CRecPtr);
 		R_(ChptTxtPos, (short)TxtPos);
-		OldLMode(CFile, md);
+		CFile->OldLockMode(md);
 	}
 }
 
@@ -3755,7 +3759,7 @@ void SwitchRecs(short Delta)
 	if (CFile->IsSQLFile) return;
 #endif
 	if (NoCreate && NoDelete || WasWK) return;
-	if (!TryLMode(CFile, WrMode, md, 1)) return;
+	if (!CFile->TryLockMode(WrMode, md, 1)) return;
 	p1 = CFile->GetRecSpace();
 	p2 = CFile->GetRecSpace();
 	CRecPtr = p1; n1 = AbsRecNr(CRec()); CFile->ReadRec(n1, CRecPtr);
@@ -3781,7 +3785,7 @@ void SwitchRecs(short Delta)
 	E->EdUpdated = true;
 	if (IsCurrChpt()) SetCompileAll();
 label1:
-	OldLMode(CFile, md);
+	CFile->OldLockMode(md);
 	ReleaseStore(p1);
 	CRecPtr = E->NewRecPtr;
 }
@@ -4268,7 +4272,7 @@ bool StartProc(Instr_proc* ExitProc, bool Displ)
 	WrEStatus();                            /*t = currtime;*/
 	CallProcedure(ExitProc);
 	RdEStatus();
-	NewLMode(CFile, md);
+	CFile->NewLockMode(md);
 	upd = CFile->FF->WasWrRec;      /*writeln(strdate(currtime-t,"ss mm.ttt"));wait;*/
 	if (HasUpdFlag(CFile->FF, CRecPtr)) { b = true; upd = true; }
 	WasUpdated = b;
@@ -4714,7 +4718,7 @@ label81:
 #ifdef FandSQL
 						if (CFile->IsSQLFile) Strm1->EndKeyAcc(WK);
 #endif
-						OldLMode(CFile, E->OldMd);
+						CFile->OldLockMode(E->OldMd);
 					}
 					return;
 				}

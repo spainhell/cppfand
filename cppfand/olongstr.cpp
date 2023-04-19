@@ -75,7 +75,7 @@ int CopyTFFromGetTxt(FandTFile* TF, FrmlElem* Z)
 		CloseH(&h);
 		exit;
 	}
-	if (!TF->IsWork) md = NewLMode(CFile, WrMode);
+	if (!TF->IsWork) md = CFile->NewLockMode(WrMode);
 	if (len <= MPageSize - 2) { /* short text */
 		l = (WORD)len;
 		ReadH(h, l, X);
@@ -130,7 +130,7 @@ label3:
 	ReadH(h, l, &X[i]);
 	RdWrCache(WRITE, TF->Handle, TF->NotCached(), pos, MPageSize, X);
 label4:
-	if (!TF->IsWork) OldLMode(CFile, md);
+	if (!TF->IsWork) CFile->OldLockMode(md);
 	CloseH(&h);
 	return result;
 }
@@ -155,9 +155,9 @@ int CopyTFString(FandTFile* destT00File, FileD* srcFileDescr, FandTFile* scrT00F
 		return 0; /*Mark****/
 	}
 	cf = CFile;
-	if (!destT00File->IsWork) md = NewLMode(CFile, WrMode);
+	if (!destT00File->IsWork) md = CFile->NewLockMode(WrMode);
 	CFile = srcFileDescr;
-	if (!scrT00File->IsWork) md2 = NewLMode(CFile, RdMode);
+	if (!scrT00File->IsWork) md2 = CFile->NewLockMode(RdMode);
 	RdWrCache(READ, scrT00File->Handle, scrT00File->NotCached(), srcT00Pos, 2, &l);
 	if (l <= MPageSize - 2) { /* short text */
 		if (l == 0) goto label0; /*Mark****/
@@ -226,9 +226,9 @@ label3:
 	RdWrCache(WRITE, destT00File->Handle, destT00File->NotCached(), pos, MPageSize, X);
 label4:
 	CFile = srcFileDescr;
-	if (!scrT00File->IsWork) OldLMode(CFile, md2);
+	if (!scrT00File->IsWork) CFile->OldLockMode(md2);
 	CFile = cf;
-	if (!destT00File->IsWork) OldLMode(CFile, md);
+	if (!destT00File->IsWork) CFile->OldLockMode(md);
 	return result;
 }
 
@@ -247,7 +247,7 @@ void CopyTFStringToH(FILE* h, FandTFile* TF02, FileD* TFD02, int& TF02Pos)
 	FileD* cf = CFile;
 	CFile = TFD02;
 	TFilePtr tf = TF02;
-	if (!tf->IsWork) md2 = NewLMode(CFile, RdMode);
+	if (!tf->IsWork) md2 = CFile->NewLockMode(RdMode);
 	size_t l = 0;
 	RdWrCache(READ, tf->Handle, tf->NotCached(), pos, 2, &l);
 	if (l <= MPageSize - 2) { /* short text */
@@ -287,6 +287,6 @@ label3:
 	}
 	WriteH(h, l, &X[i]);
 label4:
-	if (!tf->IsWork) OldLMode(CFile, md2);
+	if (!tf->IsWork) CFile->OldLockMode(md2);
 	CFile = cf;
 }

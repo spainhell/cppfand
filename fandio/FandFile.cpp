@@ -2,6 +2,7 @@
 
 #include "DbfFile.h"
 
+
 FandFile::FandFile()
 {
 }
@@ -71,9 +72,9 @@ void FandFile::IncNRecs(int n)
 	}
 }
 
-void FandFile::DecNRecs(int N)
+void FandFile::DecNRecs(int n)
 {
-	NRecs -= N;
+	NRecs -= n;
 	SetUpdHandle(Handle);
 	if (file_type == FileType::INDEX) SetUpdHandle(XF->Handle);
 	WasWrRec = true;

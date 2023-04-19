@@ -48,7 +48,7 @@ public:
 	void Reset();
 
 	void IncNRecs(int n);
-	void DecNRecs(int N);
+	void DecNRecs(int n);
 	void PutRec(void* record, int& i_rec);
 
 	size_t RecordSize();

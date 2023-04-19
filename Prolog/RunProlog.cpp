@@ -1693,7 +1693,7 @@ bool RunCommand(TCommand* COff/*PCommand*/)
 			//PtrRec(c->FldD).Seg = PtrRec(CFile).Seg;
 		}
 		if (c->Code == _SaveC) {
-			md = NewLMode(CFile, WrMode);
+			md = CFile->NewLockMode(WrMode);
 			if (!LinkLastRec(CFile, n, true)) CFile->IncNRecs(1);
 			DelTFld(c->FldD);
 			std::string save = SaveDb(c->DbPred, 0);
@@ -1701,13 +1701,13 @@ bool RunCommand(TCommand* COff/*PCommand*/)
 			CFile->WriteRec(CFile->FF->NRecs, CRecPtr);
 		}
 		else {
-			md = NewLMode(CFile, RdMode);
+			md = CFile->NewLockMode(RdMode);
 			LinkLastRec(CFile, n, true);
 			s = _LongS(c->FldD);
 			if (c->Code == _ConsultC) ConsultDb(std::string(s->A, s->LL), c->DbPred);
 			else LoadLex(s);
 		}
-		OldLMode(CFile, md);
+		CFile->OldLockMode(md);
 		ReleaseStore(p1);
 		break;
 	}
@@ -1875,7 +1875,7 @@ void AssertFand(TPredicate* P, TCommand* C)
 	LongStr* s = nullptr;
 
 	si = SiCFile(P->scanInf);
-	md = NewLMode(CFile, CrMode);
+	md = CFile->NewLockMode(CrMode);
 	CRecPtr = CFile->GetRecSpace();
 	ZeroAllFlds(CFile, CRecPtr);
 	//PtrRec(d).Seg = _Sg;
@@ -1934,7 +1934,7 @@ void AssertFand(TPredicate* P, TCommand* C)
 			CFile->WriteRec(CFile->FF->NRecs, CRecPtr);
 		}
 	}
-	OldLMode(CFile, md);
+	CFile->OldLockMode(md);
 	ReleaseStore(CRecPtr);
 	}
 
@@ -1956,7 +1956,7 @@ TFileScan* GetScan(TScanInf* SIOfs, TCommand* C, TInstance* Q)
 
 	TScanInf* si = SiCFile(SIOfs);
 	TFileScan* fs = new TFileScan();
-	md = NewLMode(CFile, RdMode);
+	md = CFile->NewLockMode(RdMode);
 	k = nullptr;
 	if (C->KDOfs != nullptr) k = C->KDOfs;
 	if (k == nullptr) {
@@ -2007,7 +2007,7 @@ TFileScan* GetScan(TScanInf* SIOfs, TCommand* C, TInstance* Q)
 	fs->Count = 0;
 	if (n >= fs->IRec) fs->Count = n - fs->IRec + b;
 label1:
-	OldLMode(CFile, md);
+	CFile->OldLockMode(md);
 	if (fs->Count == 0) fs = nullptr;
 	return fs;
 }
@@ -2053,7 +2053,7 @@ bool ScanFile(TInstance* Q)
 	//PtrRec(fl).Seg = _Sg;
 	CFile = si->FD;
 	CRecPtr = CFile->GetRecSpace();
-	md = NewLMode(CFile, RdMode);
+	md = CFile->NewLockMode(RdMode);
 	k = nullptr;
 	if (c->KDOfs != nullptr) k = c->KDOfs;
 label1:
@@ -2166,7 +2166,7 @@ label1:
 	}
 	result = true;
 	if (c->Code == _RetractC) {
-		md1 = NewLMode(CFile, DelMode);
+		md1 = CFile->NewLockMode(DelMode);
 		while ((Q != nullptr)) {
 			fs1 = (TFileScan*)Q->NextBranch;
 			if ((Q->Pred == p) && (fs1 != nullptr)) {
@@ -2192,10 +2192,10 @@ label1:
 		else {
 			CFile->DeleteRec(RecNr, CRecPtr);
 		}
-		OldLMode(CFile, md1);
+		CFile->OldLockMode(md1);
 	}
 label2:
-	OldLMode(CFile, md);
+	CFile->OldLockMode(md);
 	ReleaseStore(CRecPtr);
 	return result;
 }
@@ -2205,9 +2205,9 @@ void SaveLMode()
 	CFile->FF->ExLMode = CFile->FF->LMode;
 }
 
-void SetOldLMode()
+void SetOldLockMode()
 {
-	OldLMode(CFile, CFile->FF->ExLMode);
+	CFile->OldLockMode(CFile->FF->ExLMode);
 }
 
 void TraceCall(TInstance* Q, BYTE X)
@@ -2867,7 +2867,7 @@ label8_end:
 	/*writeln(AbsAdr(HeapPtr)-AbsAdr(pm1),'/',AbsAdr(pm2)-AbsAdr(Stack2Ptr)); */
 	//_Sg = oldSg;
 	CurrInst = oldCurrInst;
-	ForAllFDs(SetOldLMode);
+	ForAllFDs(SetOldLockMode);
 	MaxWSize = WMark;
 	if (ProlgCallLevel == 1) ReleaseBoth(pm1, pm2);
 	else {

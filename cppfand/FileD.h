@@ -69,4 +69,12 @@ public:
 	int _T(FieldDescr* F, void* record);
 
 	void Close();
+
+	void OldLockMode(LockMode mode);
+	LockMode NewLockMode(LockMode mode);
+	bool TryLockMode(LockMode mode, LockMode& old_mode, WORD kind);
+	bool ChangeLockMode(LockMode mode, WORD kind, bool rd_pref);
+	bool Lock(int n, WORD kind);
+	void Unlock(int n);
+	void RunErrorM(LockMode mode);
 };
