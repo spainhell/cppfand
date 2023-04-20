@@ -201,7 +201,7 @@ void WriteOutp(OutpRD* RD)
 			else {
 				CFile = OD->FD;
 				CRecPtr = OD->RecPtr;
-				ClearDeletedFlag(CFile->FF, CRecPtr);
+				CFile->ClearDeletedFlag(CRecPtr);
 				RunAssign(RD->Ass);
 #ifdef FandSQL
 				if (CFile->IsSQLFile) OD->Strm->PutRec;

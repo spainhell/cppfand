@@ -35,17 +35,7 @@ struct FuncD
 	pstring Name;
 };
 
-
-void SetTWorkFlag(FandFile* fand_file, void* record);
-bool HasTWorkFlag(FandFile* fand_file, void* record);
-void SetUpdFlag(FandFile* fand_file, void* record);
-void ClearUpdFlag(FandFile* fand_file, void* record);
-bool HasUpdFlag(FandFile* fand_file, void* record);
 void* LocVarAd(LocVar* LV);
-bool DeletedFlag(FandFile* fand_file, void* record);
-void ClearDeletedFlag(FandFile* fand_file, void* record);
-void SetDeletedFlag(FandFile* fand_file, void* record);
-
 bool EquKFlds(KeyFldD* KF1, KeyFldD* KF2);
 int StoreInTWork(LongStr* S);
 LongStr* ReadDelInTWork(int Pos);
@@ -67,7 +57,6 @@ LongStr* _LongS(FieldDescr* F);
 void R_(FieldDescr* F, double R, void* record = nullptr);
 void S_(FileD* file_d, FieldDescr* F, std::string S, void* record = nullptr);
 void LongS_(FileD* file_d, FieldDescr* F, LongStr* S);
-void T_(FieldDescr* F, int Pos);
 
 bool LinkUpw(LinkD* LD, int& N, bool WithT);
 bool LinkLastRec(FileD* FD, int& N, bool WithT);

@@ -189,7 +189,7 @@ bool Link(AddD* AD, int& N, char& Kind2)
 		if (CFile->IsSQLFile) Strm1->InsertRec(false, true) else
 #endif
 		{
-			ClearDeletedFlag(CFile->FF, CRecPtr);
+			CFile->ClearDeletedFlag(CRecPtr);
 			if ((LD != nullptr) && (CFile->FF->file_type == FileType::INDEX)) {
 				CrIndRec();
 				N = CFile->FF->NRecs;

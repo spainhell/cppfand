@@ -311,13 +311,20 @@ WORD ChptWriteCRec()
 	if ((New.Typ == 'D' || New.Typ == 'I' || New.Typ == 'U')
 		|| !TestIsNewRec()
 		&& (Old.Typ == 'D' || Old.Typ == 'I' || Old.Typ == 'U')) {
-		ReleaseFilesAndLinksAfterChapter(); SetCompileAll();
+		ReleaseFilesAndLinksAfterChapter();
+		SetCompileAll();
 	}
-	if (TestIsNewRec()) { ReleaseFilesAndLinksAfterChapter(); goto label2; }
+	if (TestIsNewRec())	{
+		ReleaseFilesAndLinksAfterChapter();
+		goto label2;
+	}
 	if (New.Typ != Old.Typ) {
 	label1:
-		if (!ChptDelFor(&Old)) return result; T_(ChptOldTxt, 0);
-		if (New.Typ == 'F') ReleaseFilesAndLinksAfterChapter();
+		if (!ChptDelFor(&Old)) return result;
+		CFile->T_(ChptOldTxt, 0, CRecPtr);
+		if (New.Typ == 'F') {
+			ReleaseFilesAndLinksAfterChapter();
+		}
 		goto label2;
 	}
 	if (New.Typ == ' ' || New.Typ == 'I') goto label2;
@@ -473,8 +480,12 @@ void StoreChptTxt(FieldDescr* F, LongStr* S, bool Del)
 	if (Del) if (LicNr == 0) ChptTF->Delete(oldpos);
 	else if (oldpos != 0) ChptTF->Delete(oldpos - LicNr);
 	pos = ChptTF->Store(S->A, S->LL);
-	if (LicNr == 0) T_(F, pos);
-	else T_(F, pos + LicNr);
+	if (LicNr == 0) {
+		CFile->T_(F, pos, CRecPtr);
+	}
+	else {
+		CFile->T_(F, pos + LicNr, CRecPtr);
+	}
 	ReleaseStore(p);
 }
 
@@ -1249,7 +1260,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 					if ((Txt == 0) && IsTestRun) {
 						SetMsgPar(Name);
 						if (EquUpCase(ext, ".DBF") && PromptYN(39)) {
-							T_(ChptOldTxt, 0);
+							CFile->T_(ChptOldTxt, 0, CRecPtr);
 							OldTxt = 0;
 							MakeDbfDcl(nm);
 							Txt = CFile->_T(ChptTxt, CRecPtr);

@@ -188,37 +188,10 @@ bool IsNullValue(void* p, WORD l)
 	return true;
 }
 
-
-void T_(FieldDescr* F, int Pos)
-{
-	// asi uklada data do CRecPtr
-	pstring s;
-	void* p = CRecPtr;
-	char* source = (char*)p + F->Displ;
-	int* LP = (int*)source;
-	if ((F->field_type == FieldType::TEXT) && ((F->Flg & f_Stored) != 0)) {
-		if (CFile->FF->file_type == FileType::DBF) {
-			if (Pos == 0) {
-				FillChar(source, 10, ' ');
-			}
-			else {
-				str(Pos, s);
-				Move(&s[1], source, 10);
-			}
-		}
-		else {
-			*LP = Pos;
-		}
-	}
-	else {
-		RunError(906);
-	}
-}
-
 void DelTFld(FieldDescr* F)
 {
 	int n = CFile->_T(F, CRecPtr);
-	if (HasTWorkFlag(CFile->FF, CRecPtr)) {
+	if (CFile->HasTWorkFlag(CRecPtr)) {
 		TWork.Delete(n);
 	}
 	else {
@@ -226,7 +199,7 @@ void DelTFld(FieldDescr* F)
 		CFile->FF->TF->Delete(n);
 		CFile->OldLockMode(md);
 	}
-	T_(F, 0);
+	CFile->T_(F, 0, CRecPtr);
 }
 
 void DelDifTFld(void* Rec, void* CompRec, FieldDescr* F)
@@ -573,7 +546,7 @@ std::string _StdS(FieldDescr* F, void* record)
 			break;
 		}
 		case FieldType::TEXT: { // volny text max. 65k
-			if (HasTWorkFlag(CFile->FF, CRecPtr)) {
+			if (CFile->HasTWorkFlag(CRecPtr)) {
 				LongStr* ls = TWork.Read(CFile->_T(F, CRecPtr));
 				S = std::string(ls->A, ls->LL);
 				delete ls;
@@ -604,14 +577,14 @@ void LongS_(FileD* file_d, FieldDescr* F, LongStr* S)
 	int Pos; LockMode md;
 
 	if ((F->Flg & f_Stored) != 0) {
-		if (S->LL == 0) T_(F, 0);
+		if (S->LL == 0) file_d->T_(F, 0, CRecPtr);
 		else {
 			if ((F->Flg & f_Encryp) != 0) Coding::Code(S->A, S->LL);
 #ifdef FandSQL
 			if (file_d->IsSQLFile) { SetTWorkFlag; goto label1; }
 			else
 #endif
-				if (HasTWorkFlag(file_d->FF, CRecPtr))
+				if (CFile->HasTWorkFlag(CRecPtr))
 					label1:
 			Pos = TWork.Store(S->A, S->LL);
 				else {
@@ -620,7 +593,7 @@ void LongS_(FileD* file_d, FieldDescr* F, LongStr* S)
 					CFile->OldLockMode(md);
 				}
 			if ((F->Flg & f_Encryp) != 0) Coding::Code(S->A, S->LL);
-			T_(F, Pos);
+			file_d->T_(F, Pos, CRecPtr);
 		}
 	}
 }
@@ -802,7 +775,7 @@ void AssignNRecs(bool Add, int N)
 	}
 	CRecPtr = CFile->GetRecSpace();
 	ZeroAllFlds(CFile, CRecPtr);
-	SetDeletedFlag(CFile->FF, CRecPtr);
+	CFile->SetDeletedFlag(CRecPtr);
 	CFile->IncNRecs(N - OldNRecs);
 	for (int i = OldNRecs + 1; i <= N; i++) {
 		CFile->WriteRec(i, CRecPtr);
@@ -818,11 +791,11 @@ void ClearRecSpace(void* p)
 	if (CFile->FF->TF != nullptr) {
 		cr = CRecPtr;
 		CRecPtr = p;
-		if (HasTWorkFlag(CFile->FF, CRecPtr)) {
+		if (CFile->HasTWorkFlag(CRecPtr)) {
 			for (auto& f : CFile->FldD) {
 				if (((f->Flg & f_Stored) != 0) && (f->field_type == FieldType::TEXT)) {
 					TWork.Delete(CFile->_T(f, CRecPtr));
-					T_(f, 0);
+					CFile->T_(f, 0, CRecPtr);
 				}
 			}
 		}
@@ -854,16 +827,16 @@ void CopyRecWithT(void* p1, void* p2)
 				ReleaseStore(s);
 			}
 			else {
-				if (HasTWorkFlag(CFile->FF, CRecPtr)) {
+				if (CFile->HasTWorkFlag(CRecPtr)) {
 					tf1 = &TWork;
 				}
 				int pos = CFile->_T(F, CRecPtr);
 				CRecPtr = p2;
-				if (HasTWorkFlag(CFile->FF, CRecPtr)) {
+				if (CFile->HasTWorkFlag(CRecPtr)) {
 					tf2 = &TWork;
 				}
 				pos = CopyTFString(tf2, CFile, tf1, pos);
-				T_(F, pos);
+				CFile->T_(F, pos, CRecPtr);
 			}
 		}
 	}
@@ -881,70 +854,6 @@ LocVar* LocVarBlkD::FindByName(std::string Name)
 		if (EquUpCase(Name, i->Name)) return i;
 	}
 	return nullptr;
-}
-
-bool DeletedFlag(FandFile* fand_file, void* record)
-{
-	if (fand_file->file_type == FileType::INDEX) {
-		if (((BYTE*)record)[0] == 0) return false;
-		else return true;
-	}
-
-	if (fand_file->file_type == FileType::DBF) {
-		if (((BYTE*)record)[0] != '*') return false;
-		else return true;
-	}
-
-	return false;
-}
-
-void ClearDeletedFlag(FandFile* fand_file, void* record)
-{
-	BYTE* ptr = (BYTE*)record;
-	switch (fand_file->file_type) {
-	case FileType::INDEX: { ptr[0] = 0; break; }
-	case FileType::DBF: { ptr[0] = ' '; break; }
-	}
-}
-
-void SetDeletedFlag(FandFile* fand_file, void* record)
-{
-	BYTE* ptr = (BYTE*)record;
-	switch (fand_file->file_type) {
-	case FileType::INDEX: { ptr[0] = 1; break; }
-	case FileType::DBF: { ptr[0] = '*'; break; }
-	}
-}
-
-void SetTWorkFlag(FandFile* fand_file, void* record)
-{
-	BYTE* p = (BYTE*)record;
-	p[fand_file->RecLen] = 1;
-}
-
-bool HasTWorkFlag(FandFile* fand_file, void* record)
-{
-	BYTE* p = (BYTE*)record;
-	const bool workFlag = p[fand_file->RecLen] == 1;
-	return workFlag;
-}
-
-void SetUpdFlag(FandFile* fand_file, void* record)
-{
-	BYTE* p = (BYTE*)record;
-	p[fand_file->RecLen + 1] = 1;
-}
-
-void ClearUpdFlag(FandFile* fand_file, void* record)
-{
-	BYTE* p = (BYTE*)record;
-	p[fand_file->RecLen + 1] = 0;
-}
-
-bool HasUpdFlag(FandFile* fand_file, void* record)
-{
-	BYTE* p = (BYTE*)record;
-	return p[fand_file->RecLen + 1] == 1;
 }
 
 void* LocVarAd(LocVar* LV)

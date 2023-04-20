@@ -57,6 +57,7 @@ public:
 	int _T(FieldDescr* F, void* record);
 
 	void B_(FieldDescr* field_descr, bool b, void* record);
+	int T_(FieldDescr* field_d, int pos, void* record);
 
 	unsigned short RdPrefix();
 	int RdPrefixes();
@@ -65,5 +66,14 @@ public:
 
 	void SaveFile();
 	void CloseFile();
+
+	void SetTWorkFlag(void* record);
+	bool HasTWorkFlag(void* record);
+	void SetUpdFlag(void* record);
+	void ClearUpdFlag(void* record);
+	bool HasUpdFlag(void* record);
+	bool DeletedFlag(void* record);
+	void ClearDeletedFlag(void* record);
+	void SetDeletedFlag(void* record);
 };
 

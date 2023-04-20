@@ -2066,7 +2066,7 @@ label1:
 			}
 			CFile->ReadRec(RecNr, CRecPtr);
 			(fs->IRec)++;
-		} while (DeletedFlag(CFile->FF, CRecPtr));
+		} while (CFile->DeletedFlag(CRecPtr));
 		if (fs->IRec > CFile->FF->NRecs) CurrInst->NextBranch = nullptr;
 	}
 	else {

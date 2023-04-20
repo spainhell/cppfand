@@ -676,7 +676,7 @@ label1:
 		}
 		K1->Delete(RecNr);
 	}
-	SetDeletedFlag(CFile->FF, CRecPtr);
+	CFile->SetDeletedFlag(CRecPtr);
 	CFile->WriteRec(RecNr, CRecPtr);
 
 	if (CFile->FF->XF->FirstDupl) {
@@ -703,7 +703,7 @@ void DeleteXRec(int RecNr, bool DelT)
 	TestXFExist();
 	DeleteAllIndexes(RecNr);
 	if (DelT) CFile->DelAllDifTFlds(CRecPtr, nullptr);
-	SetDeletedFlag(CFile->FF, CRecPtr);
+	CFile->SetDeletedFlag(CRecPtr);
 	CFile->WriteRec(RecNr, CRecPtr);
 	CFile->FF->XF->NRecs--;
 }
@@ -712,7 +712,7 @@ void OverWrXRec(int RecNr, void* P2, void* P)
 {
 	XString x, x2;
 	CRecPtr = P2;
-	if (DeletedFlag(CFile->FF, CRecPtr)) {
+	if (CFile->DeletedFlag(CRecPtr)) {
 		CRecPtr = P;
 		CFile->RecallRec(RecNr, CRecPtr);
 		return;

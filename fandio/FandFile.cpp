@@ -125,6 +125,32 @@ void FandFile::B_(FieldDescr* field_descr, bool b, void* record)
 	}
 }
 
+int FandFile::T_(FieldDescr* field_d, int pos, void* record)
+{
+	char* source = (char*)record + field_d->Displ;
+	int* LP = (int*)source;
+	if ((field_d->field_type == FieldType::TEXT) && ((field_d->Flg & f_Stored) != 0)) {
+		if (file_type == FileType::DBF) {
+			if (pos == 0) {
+				FillChar(source, 10, ' ');
+			}
+			else {
+				pstring s;
+				str(pos, s);
+				memcpy(source, &s[1], 10);
+			}
+		}
+		else {
+			*LP = pos;
+		}
+		return 0;
+	}
+	else {
+		//RunError(906);
+		return 906;
+	}
+}
+
 unsigned short FandFile::RdPrefix()
 {
 	// NRs - celkovy pocet zaznamu v souboru;
@@ -241,4 +267,68 @@ void FandFile::SaveFile()
 void FandFile::CloseFile()
 {
 
+}
+
+void FandFile::SetTWorkFlag(void* record)
+{
+	BYTE* p = (BYTE*)record;
+	p[RecLen] = 1;
+}
+
+bool FandFile::HasTWorkFlag(void* record)
+{
+	BYTE* p = (BYTE*)record;
+	const bool workFlag = p[RecLen] == 1;
+	return workFlag;
+}
+
+void FandFile::SetUpdFlag(void* record)
+{
+	BYTE* p = (BYTE*)record;
+	p[RecLen + 1] = 1;
+}
+
+void FandFile::ClearUpdFlag(void* record)
+{
+	BYTE* p = (BYTE*)record;
+	p[RecLen + 1] = 0;
+}
+
+bool FandFile::HasUpdFlag(void* record)
+{
+	BYTE* p = (BYTE*)record;
+	return p[RecLen + 1] == 1;
+}
+
+bool FandFile::DeletedFlag(void* record)
+{
+	if (file_type == FileType::INDEX) {
+		if (((BYTE*)record)[0] == 0) return false;
+		else return true;
+	}
+
+	if (file_type == FileType::DBF) {
+		if (((BYTE*)record)[0] != '*') return false;
+		else return true;
+	}
+
+	return false;
+}
+
+void FandFile::ClearDeletedFlag(void* record)
+{
+	BYTE* ptr = (BYTE*)record;
+	switch (file_type) {
+	case FileType::INDEX: { ptr[0] = 0; break; }
+	case FileType::DBF: { ptr[0] = ' '; break; }
+	}
+}
+
+void FandFile::SetDeletedFlag(void* record)
+{
+	BYTE* ptr = (BYTE*)record;
+	switch (file_type) {
+	case FileType::INDEX: { ptr[0] = 1; break; }
+	case FileType::DBF: { ptr[0] = '*'; break; }
+	}
 }

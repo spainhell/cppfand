@@ -160,7 +160,7 @@ void FileD::RecallRec(int recNr, void* record)
 	for (auto& K : Keys) {
 		K->Insert(recNr, false);
 	}
-	ClearDeletedFlag(FF, record);
+	FF->ClearDeletedFlag(record);
 	WriteRec(recNr, record);
 }
 
@@ -172,6 +172,11 @@ int FileD::_T(FieldDescr* F, void* record)
 void FileD::B_(FieldDescr* F, bool B, void* record)
 {
 	FF->B_(F, B, record);
+}
+
+int FileD::T_(FieldDescr* field_d, int pos, void* record)
+{
+	return FF->T_(field_d, pos, record);
 }
 
 void FileD::Close()
@@ -219,4 +224,44 @@ void FileD::Unlock(int n)
 void FileD::RunErrorM(LockMode mode)
 {
 	OldLockMode(mode);
+}
+
+void FileD::SetTWorkFlag(void* record)
+{
+	FF->SetTWorkFlag(record);
+}
+
+bool FileD::HasTWorkFlag(void* record)
+{
+	return FF->HasTWorkFlag(record);
+}
+
+void FileD::SetUpdFlag(void* record)
+{
+	FF->SetUpdFlag(record);
+}
+
+void FileD::ClearUpdFlag(void* record)
+{
+	FF->ClearUpdFlag(record);
+}
+
+bool FileD::HasUpdFlag(void* record)
+{
+	return FF->HasUpdFlag(record);
+}
+
+bool FileD::DeletedFlag(void* record)
+{
+	return FF->DeletedFlag(record);
+}
+
+void FileD::ClearDeletedFlag(void* record)
+{
+	FF->ClearDeletedFlag(record);
+}
+
+void FileD::SetDeletedFlag(void* record)
+{
+	FF->SetDeletedFlag(record);
 }

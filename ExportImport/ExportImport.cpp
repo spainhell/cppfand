@@ -126,7 +126,7 @@ void VarFixImp(ThFile* F1, CpOption Opt)
 						S_(CFile, F, x);
 					}
 					else {
-						T_(F, 0);
+						CFile->T_(F, 0, CRecPtr);
 					}
 					break;
 				}
@@ -255,7 +255,7 @@ void ImportTxt(CopyD* CD)
 			md = RewriteF(CD->Append);
 		while (!(F1->eof) && (F1->ForwChar() != 0x1A)) {
 			ZeroAllFlds(CFile, CRecPtr);
-			ClearDeletedFlag(CFile->FF, CRecPtr);
+			CFile->ClearDeletedFlag(CRecPtr);
 			VarFixImp(F1, CD->Opt1);
 			F1->ForwChar(); //{set IsEOF at End}
 #ifdef FandSQL
@@ -676,7 +676,7 @@ void CodingCRdb(bool Rotate)
 void AddLicNr(FieldDescr* F)
 {
 	if (CFile->_T(F, CRecPtr) != 0) {
-		T_(F, CFile->_T(F, CRecPtr) + (WORD(UserLicNrShow) & 0x7FFF));
+		CFile->T_(F, CFile->_T(F, CRecPtr) + (WORD(UserLicNrShow) & 0x7FFF), CRecPtr);
 	}
 }
 

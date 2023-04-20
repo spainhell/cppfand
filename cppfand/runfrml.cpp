@@ -359,7 +359,7 @@ int AbsLogRecNoFun(FrmlElem13* Z)
 		if (Z->Op == _recnolog) {
 			CRecPtr = CFile->GetRecSpace();
 			CFile->ReadRec(N, CRecPtr);
-			if (DeletedFlag(CFile->FF, CRecPtr)) goto label1;
+			if (CFile->DeletedFlag(CRecPtr)) goto label1;
 			result = k->RecNrToNr(N);
 		}
 		else /*_recnoabs*/ {
@@ -720,22 +720,18 @@ bool RunBool(FrmlElem* X)
 	case _isdeleted: {
 		cr = CRecPtr; cf = CFile;
 		AccRecNoProc((FrmlElem14*)X, 642);
-		result = DeletedFlag(CFile->FF, CRecPtr);
+		result = CFile->DeletedFlag(CRecPtr);
 		ReleaseStore(CRecPtr);
 		CRecPtr = cr; CFile = cf;
 		break;
 	}
 	case _lvdeleted: {
-		auto iX = (FrmlElem20*)X;
-		cr = CRecPtr; cf = CFile;
-		CRecPtr = iX->LV->RecPtr;
-		CFile = iX->LV->FD;
-		result = DeletedFlag(CFile->FF, CRecPtr);
-		CRecPtr = cr; CFile = cf;
+		FrmlElem20* iX = (FrmlElem20*)X;
+		result = iX->LV->FD->DeletedFlag(iX->LV->RecPtr);
 		break;
 	}
 	case _trust: {
-		auto iX1 = (FrmlElem1*)X;
+		FrmlElem1* iX1 = (FrmlElem1*)X;
 		result = (UserCode == 0) || OverlapByteStr(&iX1->N01, &AccRight);
 		break;
 	}
@@ -1196,7 +1192,7 @@ void TestTFrml(FieldDescr* F, FrmlElem* Z, FandTFile** TF02, FileD** TFD02, int&
 		else if ((F->Flg & f_Encryp) != (f1->Flg & f_Encryp)) return;
 		*TFD02 = CFile;
 		*TF02 = CFile->FF->TF;
-		if (HasTWorkFlag(CFile->FF, CRecPtr)) {
+		if (CFile->HasTWorkFlag(CRecPtr)) {
 			*TF02 = &TWork;
 		}
 		TF02Pos = CFile->_T(f1, CRecPtr);
@@ -1283,7 +1279,7 @@ void AssgnFrml(FileD* file_d, void* record, FieldDescr* F, FrmlElem* X, bool Del
 	case 'S': {
 		if (F->field_type == FieldType::TEXT) {
 			FandTFile* tf;
-			if (HasTWorkFlag(file_d->FF, record)) {
+			if (file_d->FF->HasTWorkFlag(record)) {
 				tf = &TWork;
 			}
 			else {
@@ -1291,15 +1287,15 @@ void AssgnFrml(FileD* file_d, void* record, FieldDescr* F, FrmlElem* X, bool Del
 			}
 			if (TryCopyT(F, tf, pos, X)) {
 				if (Delete) DelTFld(F);
-				T_(F, pos);
+				file_d->T_(F, pos, record);
 			}
 			else {
 				std::string s = RunStdStr(X);
 				if (Delete) DelTFld(F);
-				S_(CFile, F, s);
+				S_(CFile, F, s, record);
 			}
 		}
-		else S_(CFile, F, RunShortStr(X));
+		else S_(CFile, F, RunShortStr(X), record);
 		break;
 	}
 	case 'R': {
@@ -1308,7 +1304,7 @@ void AssgnFrml(FileD* file_d, void* record, FieldDescr* F, FrmlElem* X, bool Del
 		break;
 	}
 	case 'B': {
-		CFile->B_(F, RunBool(X), CRecPtr);
+		CFile->B_(F, RunBool(X), record);
 		break;
 	}
 	}

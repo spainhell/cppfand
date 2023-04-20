@@ -70,6 +70,7 @@ public:
 
 	// ulozi boolean do zaznamu
 	void B_(FieldDescr* F, bool B, void* record);
+	int T_(FieldDescr* field_d, int pos, void* record);
 
 	void Close();
 	void Save();
@@ -81,4 +82,13 @@ public:
 	bool Lock(int n, WORD kind);
 	void Unlock(int n);
 	void RunErrorM(LockMode mode);
+
+	void SetTWorkFlag(void* record);
+	bool HasTWorkFlag(void* record);
+	void SetUpdFlag(void* record);
+	void ClearUpdFlag(void* record);
+	bool HasUpdFlag(void* record);
+	bool DeletedFlag(void* record);
+	void ClearDeletedFlag(void* record);
+	void SetDeletedFlag(void* record);
 };
