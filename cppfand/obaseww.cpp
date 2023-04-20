@@ -319,12 +319,6 @@ void FileMsg(FileD* file_d, int n, char Typ)
 	WrLLF10Msg(n);
 }
 
-void CFileError(FileD* file_d, int N)
-{
-	FileMsg(file_d, N, '0');
-	CloseGoExit(file_d->FF);
-}
-
 void RunMsgOn(char C, int N)
 {
 	RunMsgD* CM1 = new RunMsgD();

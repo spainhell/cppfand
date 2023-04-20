@@ -1,6 +1,8 @@
 #include "runproc.h"
 
 #include <fstream>
+
+#include "Coding.h"
 #include "../pascal/random.h"
 #include "compile.h"
 #include "OldDrivers.h"
@@ -21,6 +23,7 @@
 #include "wwmix.h"
 #include "../Prolog/RunProlog.h"
 #include "../fandio/sort.h"
+#include "../fandio/files.h"
 #include "../fandio/FandXFile.h"
 #include "../Editor/OldEditor.h"
 #include "../Editor/EditorHelp.h"
@@ -335,7 +338,7 @@ void DisplayProc(RdbD* R, WORD IRec)
 		CRecPtr = Chpt->FF->RecPtr;
 		CFile->ReadRec(IRec, CRecPtr);
 		LongStr* S = CFile->FF->TF->Read(CFile->_T(ChptTxt, CRecPtr));
-		if (R->Encrypted) CodingLongStr(S);
+		if (R->Encrypted) Coding::CodingLongStr(CFile, S);
 		str = std::string(S->A, S->LL);
 		delete S; S = nullptr;
 	}

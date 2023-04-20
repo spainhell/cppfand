@@ -1,5 +1,6 @@
 #include "CodingRdb.h"
 #include "../cppfand/compile.h"
+#include "../cppfand/Coding.h"
 #include "../cppfand/FileD.h"
 #include "../cppfand/GlobalVariables.h"
 #include "../cppfand/oaccess.h"
@@ -242,7 +243,7 @@ void CodingRdb::CodeF(bool rotate, WORD IRec, FieldDescr* F, char Typ)
 		s = s2;
 	}
 	else {
-		Code(s->A, l);
+		Coding::Code(s->A, l);
 	}
 label2:
 	LongS_(CFile, F, s);

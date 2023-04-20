@@ -9,12 +9,8 @@ void SaveFiles();
 void ClosePassiveFD();
 void CloseFANDFiles(bool FromDML);
 void OpenFANDFiles(bool FromDML);
-void SetCPathMountVolSetNet(FileUseMode UM);
-void TestCFileError(FileD* file_d);
 
-bool OpenF(FileD* file_d, const std::string& path, FileUseMode UM);
-bool OpenF1(FileD* file_d, const std::string& path, FileUseMode UM);
-bool OpenF2(FileD* file_d, const std::string& path);
+
 
 void CreateF();
 bool OpenCreateF(FileD* fileD, FileUseMode UM);

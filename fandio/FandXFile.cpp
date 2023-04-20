@@ -1,6 +1,8 @@
 #include "FandXFile.h"
 
 #include <memory>
+
+#include "files.h"
 #include "../cppfand/FileD.h"
 #include "../cppfand/base.h"
 #include "../cppfand/GlobalVariables.h"

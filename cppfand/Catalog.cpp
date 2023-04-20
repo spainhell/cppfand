@@ -116,6 +116,34 @@ FieldDescr* Catalog::CatalogVolumeField()
 	return cat_volume_;
 }
 
+bool Catalog::OldToNewCat(int& FilSz)
+{
+	struct stX { int NRecs; WORD  RecLen; } x;
+	int off, offNew;
+	BYTE a[91]; // budeme cislovat od 1, jako v Pascalu (a:array[1..90] of byte;)
+
+	auto result = false;
+	bool cached = cat_file_->FF->NotCached();
+	if (cat_file_->FF->file_type != FileType::CAT) return result;
+	RdWrCache(READ, cat_file_->FF->Handle, cached, 0, 6, &x);
+	if (x.RecLen != 106) return result;
+	x.RecLen = 107;
+	RdWrCache(WRITE, cat_file_->FF->Handle, cached, 0, 6, &x);
+	for (int i = x.NRecs; i >= 1; i--) {
+		off = 6 + (i - 1) * 106;
+		offNew = off + (i - 1);
+		RdWrCache(READ, cat_file_->FF->Handle, cached, off + 16, 90, a);
+		RdWrCache(WRITE, cat_file_->FF->Handle, cached, offNew + 17, 90, a);
+		a[17] = 0;
+		RdWrCache(READ, cat_file_->FF->Handle, cached, off, 16, a);
+		RdWrCache(WRITE, cat_file_->FF->Handle, cached, offNew, 17, a);
+	}
+	cat_file_->FF->NRecs = x.NRecs;
+	FilSz = x.NRecs * 107 + 6;
+	result = true;
+	return result;
+}
+
 std::string Catalog::getValue(size_t rec_nr, FieldDescr* field)
 {
 	cat_file_->ReadRec(rec_nr, record_);

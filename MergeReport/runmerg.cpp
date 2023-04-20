@@ -10,6 +10,7 @@
 #include "../cppfand/obaseww.h"
 #include "../cppfand/runfrml.h"
 #include "../Common/compare.h"
+#include "../fandio/files.h"
 
 int NRecsAll;
 

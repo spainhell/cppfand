@@ -164,6 +164,7 @@
     <ClInclude Include="fandio.h" />
     <ClInclude Include="FandTFile.h" />
     <ClInclude Include="FandXFile.h" />
+    <ClInclude Include="files.h" />
     <ClInclude Include="locks.h" />
     <ClInclude Include="sort.h" />
     <ClInclude Include="TextFile.h" />
@@ -190,6 +191,7 @@
     <ClCompile Include="fandio.cpp" />
     <ClCompile Include="FandTFile.cpp" />
     <ClCompile Include="FandXFile.cpp" />
+    <ClCompile Include="files.cpp" />
     <ClCompile Include="locks.cpp" />
     <ClCompile Include="sort.cpp" />
     <ClCompile Include="TextFile.cpp" />

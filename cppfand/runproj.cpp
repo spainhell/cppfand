@@ -13,9 +13,12 @@
 #include "rdrun.h"
 #include "runproc.h"
 #include "runproj.h"
+
+#include "Coding.h"
 #include "../Prolog/RunProlog.h"
 #include "../fandio/FandTFile.h"
 #include "wwmenu.h"
+#include "../fandio/files.h"
 #include "../fandio/FandXFile.h"
 
 #include "compile.h"
@@ -465,7 +468,7 @@ void StoreChptTxt(FieldDescr* F, LongStr* S, bool Del)
 			XEncode(S, s2);
 			S = s2;
 		}
-		else CodingLongStr(S);
+		else Coding::CodingLongStr(CFile, S);
 	}
 	if (Del) if (LicNr == 0) ChptTF->Delete(oldpos);
 	else if (oldpos != 0) ChptTF->Delete(oldpos - LicNr);
@@ -549,7 +552,7 @@ void ResetRdOnly()
 	}
 }
 
-void CreateOpenChpt(std::string Nm, bool create, wwmix* ww)
+void CreateOpenChpt(std::string Nm, bool create)
 {
 	std::string p; std::string s;
 	short i = 0, n = 0;
@@ -627,7 +630,7 @@ void CreateOpenChpt(std::string Nm, bool create, wwmix* ww)
 		SetCompileAll();
 	}
 
-	const bool hasPasswd = ww->HasPassWord(Chpt, 1, "");
+	const bool hasPasswd = Coding::HasPassword(Chpt, 1, "");
 	CRdb->Encrypted = hasPasswd ? false : true;
 }
 
@@ -1447,7 +1450,7 @@ bool EditExecRdb(std::string Nm, std::string proc_name, Instr_proc* proc_call, w
 #endif
 	//NewExit(Ovr(), er);
 	//goto label9;
-	CreateOpenChpt(Nm, true, ww);
+	CreateOpenChpt(Nm, true);
 	CompileFD = true;
 #ifndef FandRunV
 	if (!IsTestRun || (ChptTF->LicenseNr != 0) ||
@@ -1502,9 +1505,9 @@ bool EditExecRdb(std::string Nm, std::string proc_name, Instr_proc* proc_call, w
 	NewEditD(Chpt, EO);
 	E->MustCheck = true; /*ChptTyp*/
 	if (CRdb->Encrypted) {
-		if (ww->HasPassWord(Chpt, 1, passw)) {
+		if (Coding::HasPassword(Chpt, 1, passw)) {
 			CRdb->Encrypted = false;
-			ww->SetPassWord(Chpt, 1, "");
+			Coding::SetPassword(Chpt, 1, "");
 			CodingCRdb(false);
 		}
 		else {
@@ -1633,7 +1636,7 @@ void UpdateUTxt()
 	LongStr* S = _LongS(ChptTxt);
 
 	if (CRdb->Encrypted) {
-		CodingLongStr(S);
+		Coding::CodingLongStr(CFile, S);
 	}
 
 	SetInpLongStr(S, false);
@@ -1683,10 +1686,10 @@ void InstallRdb(std::string n)
 	TMenuBoxS* w = nullptr;
 	WORD i = 0;
 
-	CreateOpenChpt(n, false, &ww);
-	if (!ww.HasPassWord(Chpt, 1, "") && !ww.HasPassWord(Chpt, 2, "")) {
+	CreateOpenChpt(n, false);
+	if (!Coding::HasPassword(Chpt, 1, "") && !Coding::HasPassword(Chpt, 2, "")) {
 		passw = ww.PassWord(false);
-		if (!ww.HasPassWord(Chpt, 2, passw)) {
+		if (!Coding::HasPassword(Chpt, 2, passw)) {
 			WrLLF10Msg(629);
 			CloseChpt();
 			return;
@@ -1720,7 +1723,7 @@ void InstallRdb(std::string n)
 			break;
 		}
 		case 3: {
-			ww.SetPassWord(Chpt, 2, ww.PassWord(true));
+			Coding::SetPassword(Chpt, 2, ww.PassWord(true));
 			break;
 		}
 		default:;

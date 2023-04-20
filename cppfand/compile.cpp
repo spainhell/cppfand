@@ -1,5 +1,7 @@
 #include "compile.h"
 #include <map>
+
+#include "Coding.h"
 #include "FieldDescr.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
@@ -127,7 +129,7 @@ void SetInpLongStr(LongStr* S, bool ShowErr)
 void SetInpTTPos(int Pos, bool Decode)
 {
 	LongStr* s = CFile->FF->TF->Read(Pos);
-	if (Decode) CodingLongStr(s);
+	if (Decode) Coding::CodingLongStr(CFile, s);
 	InpArrLen = s->LL;
 	InpArrPtr = (BYTE*)&s->A[0];
 	if (InpArrLen == 0) ForwChar = 0x1A;
@@ -138,7 +140,7 @@ void SetInpTTPos(int Pos, bool Decode)
 void SetInpTTPos(FileD* file, int Pos, bool Decode)
 {
 	LongStr* s = file->FF->TF->Read(Pos);
-	if (Decode) CodingLongStr(s);
+	if (Decode) Coding::CodingLongStr(CFile, s);
 	InpArrLen = s->LL;
 	InpArrPtr = (BYTE*)&s->A[0];
 	if (InpArrLen == 0) ForwChar = 0x1A;

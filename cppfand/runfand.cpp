@@ -10,7 +10,6 @@
 #include "access.h"
 #include "CfgFile.h"
 #include "compile.h"
-#include "FieldDescr.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
 #include "oaccess.h"
@@ -23,6 +22,7 @@
 #include "../Editor/OldEditor.h"
 #include "../Editor/runedi.h"
 #include "../fandio/directory.h"
+#include "../fandio/files.h"
 #include "../Common/textfunc.h"
 
 

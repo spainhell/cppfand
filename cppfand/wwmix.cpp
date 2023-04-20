@@ -839,37 +839,3 @@ std::string wwmix::PassWord(bool TwoTimes)
 	PopW(w);
 	return Txt;
 }
-
-/// <summary>
-/// Set password in FandTFile (set field PwCode or Pw2Code)
-/// </summary>
-/// <param name="FD">FileD pointer</param>
-/// <param name="Nr">Password type</param>
-/// <param name="Pw">Password</param>
-void wwmix::SetPassWord(FileD* FD, WORD Nr, std::string Pw)
-{
-	if (Nr == 1) {
-		FD->FF->TF->PwCode = Pw;
-		FD->FF->TF->PwCode = AddTrailChars(FD->FF->TF->PwCode, '@', 20);
-		Code(FD->FF->TF->PwCode);
-	}
-	else {
-		FD->FF->TF->Pw2Code = Pw;
-		FD->FF->TF->PwCode = AddTrailChars(FD->FF->TF->Pw2Code, '@', 20);
-		Code(FD->FF->TF->Pw2Code);
-	}
-}
-
-bool wwmix::HasPassWord(FileD* FD, WORD Nr, std::string Pw)
-{
-	std::string filePwd;
-	if (Nr == 1) {
-		filePwd = FD->FF->TF->PwCode;
-		Code(filePwd);
-	}
-	else {
-		filePwd = FD->FF->TF->Pw2Code;
-		Code(filePwd);
-	}
-	return Pw == TrailChar(filePwd, '@');
-}

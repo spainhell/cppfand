@@ -165,6 +165,7 @@
     <ClCompile Include="Catalog.cpp" />
     <ClCompile Include="CfgFile.cpp" />
     <ClCompile Include="ChkD.cpp" />
+    <ClCompile Include="Coding.cpp" />
     <ClCompile Include="compile.cpp" />
     <ClCompile Include="cppfand.cpp" />
     <ClCompile Include="EditOpt.cpp" />
@@ -203,6 +204,7 @@
     <ClInclude Include="CfgFile.h" />
     <ClInclude Include="Chained.h" />
     <ClInclude Include="ChkD.h" />
+    <ClInclude Include="Coding.h" />
     <ClInclude Include="compile.h" />
     <ClInclude Include="constants.h" />
     <ClInclude Include="EditOpt.h" />

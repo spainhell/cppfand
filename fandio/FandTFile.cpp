@@ -1,5 +1,5 @@
 #include "FandTFile.h"
-#include "../cppfand/FieldDescr.h"
+#include "../cppfand/Coding.h"
 #include "../cppfand/FileD.h"
 #include "../cppfand/GlobalVariables.h"
 #include "../cppfand/obaseww.h"
@@ -190,7 +190,7 @@ void FandTFile::RdPrefix(bool Chk)
 			//FillChar(PwCode, 40, '@');
 			PwCode = "";
 			PwCode = AddTrailChars(PwCode, '@', 40);
-			Code(PwCode);
+			Coding::Code(PwCode);
 			SetEmpty();
 			return;
 		}
@@ -276,8 +276,8 @@ void FandTFile::RdPrefix(bool Chk)
 		PwCode = std::string(&T.PwNew[0], 20);
 		Pw2Code = std::string(&T.PwNew[20], 20);
 	}
-	Code(PwCode);
-	Code(Pw2Code);
+	Coding::Code(PwCode);
+	Coding::Code(Pw2Code);
 	if ((FreePart < MPageSize) || (FreePart > ML) || (FS < ML) ||
 		(FreeRoot > MaxPage) || (MaxPage == 0)) {
 		Err(893, false);
@@ -316,7 +316,7 @@ void FandTFile::WrPrefix()
 		unsigned short i = 0;
 		memset(&T, '@', sizeof(T));
 		std::string Pw = PwCode + Pw2Code;
-		Code(Pw);
+		Coding::Code(Pw);
 		RandSeed = RS;
 		if (LicenseNr != 0) {
 			for (i = 0; i < 20; i++) {
@@ -412,11 +412,11 @@ void FandTFile::Create()
 
 	PwCode = "";
 	PwCode = AddTrailChars(PwCode, '@', 20);
-	Code(PwCode);
+	Coding::Code(PwCode);
 
 	Pw2Code = "";
 	Pw2Code = AddTrailChars(Pw2Code, '@', 20);
-	Code(Pw2Code);
+	Coding::Code(Pw2Code);
 
 	eofPos = 2 * MPageSize;
 

@@ -1,4 +1,6 @@
 #include "locks.h"
+
+#include "files.h"
 #include "../cppfand/GlobalVariables.h"
 #include "../cppfand/access.h"
 #include "../cppfand/oaccess.h"

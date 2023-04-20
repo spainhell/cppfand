@@ -47,9 +47,6 @@ void ClearDeletedFlag(FandFile* fand_file, void* record);
 void SetDeletedFlag(FandFile* fand_file, void* record);
 
 bool EquKFlds(KeyFldD* KF1, KeyFldD* KF2);
-void Code(std::string& data);
-void Code(void* A, WORD L);
-void CodingLongStr(LongStr* S);
 int StoreInTWork(LongStr* S);
 LongStr* ReadDelInTWork(int Pos);
 void ForAllFDs(void (*procedure)());
@@ -82,9 +79,7 @@ void DelTFld(FieldDescr* F);
 void DelTFlds();
 void DelDifTFld(void* Rec, void* CompRec, FieldDescr* F);
 
-
 void AsgnParFldFrml(FileD* FD, FieldDescr* F, FrmlElem* Z, bool Ad);
-
 
 void CopyRecWithT(void* p1, void* p2);
 void CloseClearHCFile(FandFile* fand_file);
@@ -95,7 +90,6 @@ void CloseGoExit(FandFile* fand_file);
 
 void ClearCacheCFile();
 void ResetCFileUpdH();
-
 
 void FixFromReal(double r, void* FixNo, WORD FLen);
 

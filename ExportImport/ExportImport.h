@@ -5,8 +5,6 @@
 #include "../cppfand/models/Instr.h"
 
 
-bool OldToNewCat(int& FilSz);
-
 void FileCopy(CopyD* CD);
 void MakeMerge(CopyD* CD);
 

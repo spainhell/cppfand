@@ -29,6 +29,8 @@ public:
 	FieldDescr* CatalogPathNameField();
 	FieldDescr* CatalogVolumeField();
 
+	bool OldToNewCat(int& FilSz);
+
 private:
 	FileD* cat_file_;
 	BYTE* record_;

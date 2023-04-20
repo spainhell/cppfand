@@ -3,6 +3,7 @@
 #include "TbFile.h"
 #include "ThFile.h"
 #include "TzFile.h"
+#include "../cppfand/Coding.h"
 #include "../cppfand/FileD.h"
 #include "../cppfand/FieldDescr.h"
 #include "../cppfand/GlobalVariables.h"
@@ -17,35 +18,8 @@
 #include "../MergeReport/runmerg.h"
 #include "../Common/textfunc.h"
 #include "../Common/compare.h"
+#include "../fandio/files.h"
 
-
-bool OldToNewCat(int& FilSz)
-{
-	struct stX { int NRecs; WORD  RecLen; } x;
-	int off, offNew;
-	BYTE a[91]; // budeme cislovat od 1, jako v Pascalu (a:array[1..90] of byte;)
-
-	auto result = false;
-	bool cached = CFile->FF->NotCached();
-	if (CFile->FF->file_type != FileType::CAT) return result;
-	RdWrCache(READ, CFile->FF->Handle, cached, 0, 6, &x);
-	if (x.RecLen != 106) return result;
-	x.RecLen = 107;
-	RdWrCache(WRITE, CFile->FF->Handle, cached, 0, 6, &x);
-	for (int i = x.NRecs; i >= 1; i--) {
-		off = 6 + (i - 1) * 106;
-		offNew = off + (i - 1);
-		RdWrCache(READ, CFile->FF->Handle, cached, off + 16, 90, a);
-		RdWrCache(WRITE, CFile->FF->Handle, cached, offNew + 17, 90, a);
-		a[17] = 0;
-		RdWrCache(READ, CFile->FF->Handle, cached, off, 16, a);
-		RdWrCache(WRITE, CFile->FF->Handle, cached, offNew, 17, a);
-	}
-	CFile->FF->NRecs = x.NRecs;
-	FilSz = x.NRecs * 107 + 6;
-	result = true;
-	return result;
-}
 
 void ConvWinCp(unsigned char* pBuf, unsigned char* pKod, WORD L)
 {
@@ -732,8 +706,8 @@ bool PromptCodeRdb()
 	FileD* cf;
 	void* cr;
 	auto wx = std::make_unique<wwmix>();
-	wx->SetPassWord(Chpt, 1, "");
-	wx->SetPassWord(Chpt, 2, "");
+	Coding::SetPassword(Chpt, 1, "");
+	Coding::SetPassword(Chpt, 2, "");
 	bool result = true;
 
 	F10SpecKey = __ALT_F10;
@@ -772,8 +746,8 @@ bool PromptCodeRdb()
 		return result;
 	}
 	if (b) {
-		wx->SetPassWord(Chpt, 1, wx->PassWord(true));
-		if (wx->HasPassWord(Chpt, 1, "")) {
+		Coding::SetPassword(Chpt, 1, wx->PassWord(true));
+		if (Coding::HasPassword(Chpt, 1, "")) {
 			goto label1;
 		}
 		CodingCRdb(false);

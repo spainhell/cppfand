@@ -1,4 +1,6 @@
 #include "access.h"
+
+#include "Coding.h"
 #include "../pascal/real48.h"
 #include "../pascal/asm.h"
 #include "compile.h"
@@ -496,7 +498,7 @@ pstring _ShortS(FieldDescr* F)
 		case FieldType::NUMERIC: {		// ciselny retezec max. 79 znaku
 			if (F->field_type == FieldType::ALFANUM) {
 				Move(source, &S[1], l);
-				if ((F->Flg & f_Encryp) != 0) Code(&S[1], l);
+				if ((F->Flg & f_Encryp) != 0) Coding::Code(&S[1], l);
 				if (S[1] == '\0') memset(&S[1], ' ', l);
 			}
 			else if (IsNullValue(source, F->NBytes)) {
@@ -548,7 +550,7 @@ std::string _StdS(FieldDescr* F, void* record)
 		case FieldType::NUMERIC: {		// ciselny retezec max. 79 znaku
 			if (F->field_type == FieldType::ALFANUM) {
 				S = std::string(source, l);
-				if ((F->Flg & f_Encryp) != 0) Code(S);
+				if ((F->Flg & f_Encryp) != 0) Coding::Code(S);
 				if (!S.empty() && S[0] == '\0') {
 					S = RepeatString(' ', l);
 				}
@@ -584,7 +586,7 @@ std::string _StdS(FieldDescr* F, void* record)
 				CFile->OldLockMode(md);
 			}
 			if ((F->Flg & f_Encryp) != 0) {
-				Code(S);
+				Coding::Code(S);
 			}
 			break;
 		}
@@ -604,7 +606,7 @@ void LongS_(FileD* file_d, FieldDescr* F, LongStr* S)
 	if ((F->Flg & f_Stored) != 0) {
 		if (S->LL == 0) T_(F, 0);
 		else {
-			if ((F->Flg & f_Encryp) != 0) Code(S->A, S->LL);
+			if ((F->Flg & f_Encryp) != 0) Coding::Code(S->A, S->LL);
 #ifdef FandSQL
 			if (file_d->IsSQLFile) { SetTWorkFlag; goto label1; }
 			else
@@ -617,7 +619,7 @@ void LongS_(FileD* file_d, FieldDescr* F, LongStr* S)
 					Pos = file_d->FF->TF->Store(S->A, S->LL);
 					CFile->OldLockMode(md);
 				}
-			if ((F->Flg & f_Encryp) != 0) Code(S->A, S->LL);
+			if ((F->Flg & f_Encryp) != 0) Coding::Code(S->A, S->LL);
 			T_(F, Pos);
 		}
 	}
@@ -648,7 +650,7 @@ void S_(FileD* file_d, FieldDescr* F, std::string S, void* record)
 				memcpy(&pRec[F->L - S.length()], S.c_str(), S.length());
 			}
 			if ((F->Flg & f_Encryp) != 0) {
-				Code(pRec, L);
+				Coding::Code(pRec, L);
 			}
 			break;
 		}
@@ -867,21 +869,6 @@ void CopyRecWithT(void* p1, void* p2)
 	}
 }
 
-void Code(std::string& data)
-{
-	for (char& i : data) {
-		i = (char)(i ^ 0xAA);
-	}
-}
-
-void Code(void* A, WORD L)
-{
-	BYTE* pb = (BYTE*)A;
-	for (int i = 0; i < L; i++) {
-		pb[i] = pb[i] ^ 0xAA;
-	}
-}
-
 LocVar* LocVarBlkD::GetRoot()
 {
 	if (this->vLocVar.size() > 0) return this->vLocVar[0];
@@ -963,101 +950,6 @@ bool HasUpdFlag(FandFile* fand_file, void* record)
 void* LocVarAd(LocVar* LV)
 {
 	return nullptr;
-}
-
-void rotateByteLeft(BYTE& input, size_t count)
-{
-	for (size_t i = 0; i < count; i++) {
-		input = input << 1 | input >> 7;
-	}
-}
-
-void XDecode(LongStr* origS)
-{
-	BYTE RMask = 0;
-	WORD* AX = new WORD();
-	BYTE* AL = (BYTE*)AX;
-	BYTE* AH = AL + 1;
-
-	WORD* BX = new WORD();
-	BYTE* BL = (BYTE*)BX;
-	BYTE* BH = BL + 1;
-
-	WORD* CX = new WORD();
-	BYTE* CL = (BYTE*)CX;
-	BYTE* CH = CL + 1;
-
-	WORD* DX = new WORD();
-	BYTE* DL = (BYTE*)DX;
-	BYTE* DH = DL + 1;
-
-	if (origS->LL == 0) return;
-	BYTE* S = new BYTE[origS->LL + 2];
-	WORD* len = (WORD*)&S[0];
-	*len = origS->LL;
-	memcpy(&S[2], &origS->A[0], origS->LL);
-
-	WORD offset = 0;
-
-	BYTE* DS = S;     // ukazuje na delku pred retezcem
-	BYTE* ES = &S[2]; // ukazuje na zacatek retezce
-	WORD SI = 0;
-	*BX = SI;
-	*AX = *(WORD*)&DS[SI];
-	if (*AX == 0) return;
-	SI = 2;
-	WORD DI = 0;
-	*BX += *AX;
-	*AX = *(WORD*)&S[*BX];
-	*AX = *AX ^ 0xCCCC;
-	SI += *AX;
-	(*BX)--;
-	*CL = S[*BX];
-	*CL = *CL & 3;
-	*AL = 0x9C;
-	rotateByteLeft(*AL, *CL);
-	RMask = *AL;
-	*CH = 0;
-
-label1:
-	*AL = DS[SI]; SI++; // lodsb
-	*DH = 0xFF;
-	*DL = *AL;
-
-label2:
-	if (SI >= *BX) goto label4;
-	if ((*DH & 1) == 0) goto label1;
-	if ((*DL & 1) != 0) goto label3;
-	*AL = DS[SI]; SI++; // lodsb
-	rotateByteLeft(RMask, 1);
-	*AL = *AL ^ RMask;
-	ES[DI] = *AL; DI++; // stosb
-	*DX = *DX >> 1;
-	goto label2;
-
-label3:
-	*AL = DS[SI]; SI++; // lodsb
-	*CL = *AL;
-	*AX = *(WORD*)&DS[SI]; SI++; SI++; // lodsw
-	offset = *AX;
-	for (size_t i = 0; i < *CX; i++) { // rep
-		ES[DI] = DS[offset]; offset++; DI++; // movsb
-	}
-	*DX = *DX >> 1;
-	goto label2;
-
-label4:
-	origS->LL = DI;
-	memcpy(origS->A, &S[2], DI);
-
-	delete AX; delete BX; delete CX; delete DX;
-	delete[] S;
-}
-
-void CodingLongStr(LongStr* S)
-{
-	if (CFile->FF->TF->LicenseNr == 0) Code(S->A, S->LL);
-	else XDecode(S); // musi mit o 2B vic - saha si tam XDecode!!!
 }
 
 void DirMinusBackslash(pstring& D)
