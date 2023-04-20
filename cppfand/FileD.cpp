@@ -169,11 +169,21 @@ int FileD::_T(FieldDescr* F, void* record)
 	return FF->_T(F, record);
 }
 
+void FileD::B_(FieldDescr* F, bool B, void* record)
+{
+	FF->B_(F, B, record);
+}
+
 void FileD::Close()
 {
 	if (FF != nullptr) {
 		FF->CloseFile();
 	}
+}
+
+void FileD::Save()
+{
+	FF->SaveFile();
 }
 
 void FileD::OldLockMode(LockMode mode)

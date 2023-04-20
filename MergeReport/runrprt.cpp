@@ -845,7 +845,7 @@ void PutMFlds(KeyFldD* M)
 		default: {
 				bool b = _B(f1);
 				CFile = cf; CRecPtr = cr;
-				B_(f, b);
+				CFile->B_(f, b, CRecPtr);
 				break;
 			}
 		}

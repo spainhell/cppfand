@@ -338,7 +338,7 @@ WORD ChptWriteCRec()
 		}
 	}
 label2:
-	B_(ChptVerif, true);
+	CFile->B_(ChptVerif, true, CRecPtr);
 	result = 0;
 	SetUpdHandle(ChptTF->Handle);
 	return result;
@@ -404,8 +404,12 @@ void EditHelpOrCat(WORD cc, WORD kind, std::string txt)
 {
 	FileD* FD;
 	WORD i, n;
-	WORD nCat = 1; WORD iCat = 1; WORD nHelp = 1; WORD iHelp = 1;
+	WORD nCat = 1;
+	WORD iCat = 1;
+	WORD nHelp = 1;
+	WORD iHelp = 1;
 	struct niFrml { char Op; double R; } nFrml{ 0,0 }, iFrml{ 0,0 };
+
 	if (cc == __ALT_F2) {
 		FD = CRdb->HelpFD;
 		if (kind == 1) FD = CFile->ChptPos.R->HelpFD;
@@ -424,11 +428,13 @@ void EditHelpOrCat(WORD cc, WORD kind, std::string txt)
 		n = nCat;
 	}
 	if (kind != 2) WrEStatus();
-	EditOpt* EO = new EditOpt(); EO->UserSelFlds = true; // GetEditOpt();
+	EditOpt* EO = new EditOpt();
+	EO->UserSelFlds = true; // GetEditOpt();
 	EO->Flds = AllFldsList(FD, false);
 	EO->WFlags = EO->WFlags | WPushPixel;
 	if ((kind == 0) || (n != 0)) {
-		iFrml.R = i; nFrml.R = n;
+		iFrml.R = i;
+		nFrml.R = n;
 		EO->StartRecNoZ = (FrmlElem*)(&nFrml);
 		EO->StartIRecZ = (FrmlElem*)(&iFrml);
 	}
@@ -538,7 +544,7 @@ void ResetRdOnly()
 	if (Chpt->FF->UMode == RdOnly) {
 		CloseFile();
 		IsInstallRun = true;
-		OpenF(CPath, Exclusive);
+		OpenF(CFile, CPath, Exclusive);
 		IsInstallRun = false;
 	}
 }
@@ -605,7 +611,7 @@ void CreateOpenChpt(std::string Nm, bool create, wwmix* ww)
 
 	if (IsTestRun || !create) um = Exclusive;
 	else um = RdOnly;
-	if (OpenF(CPath, um)) {
+	if (OpenF(CFile, CPath, um)) {
 		if (ChptTF->CompileAll) ResetRdOnly();
 		else if (!top && oldChptTF != nullptr && (ChptTF->TimeStmp < oldChptTF->TimeStmp)) {
 			// TODO: oldChptTF != nullptr je v podmince navic, protoze dalsi podminka vzdy vyhorela 
@@ -879,7 +885,7 @@ bool CompRunChptRec(WORD CC)
 		if (WasError) {
 			return result;
 		}
-		B_(ChptVerif, false);
+		CFile->B_(ChptVerif, false, CRecPtr);
 		CFile->WriteRec(CRec(), CRecPtr);
 		if (CC == __CTRL_F8) {
 			Diagnostics(MaxHp, Free, FD);
@@ -1347,7 +1353,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 			ReleaseBoth(p1, p2); CFile = Chpt; CRecPtr = Chpt->FF->RecPtr;
 			if (Verif) {
 				CFile->ReadRec(I, CRecPtr);
-				B_(ChptVerif, false);
+				CFile->B_(ChptVerif, false, CRecPtr);
 				CFile->WriteRec(I, CRecPtr);
 			}
 		}

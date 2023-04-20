@@ -13,7 +13,7 @@ void XWFile::Err(unsigned short N)
 	}
 	else {
 		CFile->FF->XF->SetNotValid();
-		CFileMsg(CFile, N, 'X');
+		FileMsg(CFile, N, 'X');
 		CloseGoExit(CFile->FF);
 	}
 }

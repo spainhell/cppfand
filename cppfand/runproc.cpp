@@ -190,7 +190,7 @@ void AssignRecVar(LocVar* LV1, LocVar* LV2, AssignD* A)
 			switch (F->frml_type) {
 			case 'S': { S_(CFile, F, EmptyStr); break; }
 			case 'R': { R_(F, 0.0); break; }
-			default: { B_(F, false); break; }
+			default: { CFile->B_(F, false, CRecPtr); break; }
 			}
 			break;
 		}
@@ -959,9 +959,9 @@ label1:
 	while (ld != nullptr) {
 		CFile = ld->FD;
 		if (CFile->FF->Handle == nullptr)
-			if (OpenF1(CPath, Shared)) {
+			if (OpenF1(CFile, CPath, Shared)) {
 				if (CFile->TryLockMode(RdMode, md, 2)) {
-					OpenF2(CPath);
+					OpenF2(CFile, CPath);
 					CFile->OldLockMode(NullMode);
 				}
 				else {
@@ -1123,7 +1123,7 @@ void ResetCatalog()
 #ifdef FandSQL
 			SetIsSQLFile();
 #endif
-			CFile = (FileD*)CFile->pChain;
+			CFile = CFile->pChain;
 		}
 		CRdb = CRdb->ChainBack;
 	}

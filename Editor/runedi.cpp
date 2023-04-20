@@ -1089,7 +1089,7 @@ void DuplFld(FileD* FD1, FileD* FD2, void* RP1, void* RP2, void* RPt, FieldDescr
 	case 'B': {
 		b = _B(F1);
 		CFile = FD2; CRecPtr = RP2;
-		B_(F2, b);
+		CFile->B_(F2, b, CRecPtr);
 		break;
 	}
 	}
@@ -1573,10 +1573,10 @@ bool OpenEditWw()
 	if (CNRecs() == 0)
 		if (NoCreate) {
 			if (Subset) {
-				CFileMsg(CFile, 107, '0');
+				FileMsg(CFile, 107, '0');
 			}
 			else {
-				CFileMsg(CFile, 115, '0');
+				FileMsg(CFile, 115, '0');
 			}
 			EdBreak = 13;
 		label1:
@@ -2807,7 +2807,7 @@ bool PromptSearch(bool create)
 				x.StoreBool(b, KF);
 				CFile = FD;
 				CRecPtr = RP;
-				B_(F, b);
+				CFile->B_(F, b, CRecPtr);
 				break;
 			}
 			}
@@ -2868,7 +2868,7 @@ bool PromptSearch(bool create)
 			case 'B': {
 				b = s[0] = AbbrYes;
 				x.StoreBool(b, KF);
-				B_(F, b);
+				CFile->B_(F, b, CRecPtr);
 				break;
 			}
 			}
@@ -3666,7 +3666,7 @@ bool EditItemProc(bool del, bool ed, WORD& Brk)
 		}
 		SetWasUpdated(CFile->FF, CRecPtr);
 		switch (F->frml_type) {
-		case 'B': B_(F, toupper(Txt[0]) == AbbrYes); break;
+		case 'B': CFile->B_(F, toupper(Txt[0]) == AbbrYes, CRecPtr); break;
 		case 'S': S_(CFile, F, Txt); break;
 		case 'R': R_(F, R); break;
 		}

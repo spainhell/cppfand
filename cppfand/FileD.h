@@ -65,10 +65,14 @@ public:
 	void DelAllDifTFlds(void* Rec, void* CompRec);
 	void RecallRec(int recNr, void* record);
 	
-	// v CRecPtr vycte pozici zaznamu v .T00 souboru (ukazatel na zacatek textu)
+	// vycte ze zanamu pozici textu v .T00 souboru (ukazatel na zacatek textu)
 	int _T(FieldDescr* F, void* record);
 
+	// ulozi boolean do zaznamu
+	void B_(FieldDescr* F, bool B, void* record);
+
 	void Close();
+	void Save();
 
 	void OldLockMode(LockMode mode);
 	LockMode NewLockMode(LockMode mode);

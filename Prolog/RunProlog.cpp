@@ -1896,7 +1896,7 @@ void AssertFand(TPredicate* P, TCommand* C)
 			}
 			switch (f->frml_type) {
 			case 'B': {
-				B_(f, t->BB);
+				CFile->B_(f, t->BB, CRecPtr);
 				break;
 			}
 			case 'R': {

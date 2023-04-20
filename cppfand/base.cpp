@@ -795,9 +795,8 @@ FILE* OpenH(std::string path, FileOpenMode Mode, FileUseMode UM)
 			if (Mode != _isoldfile) SetUpdHandle(nFile);
 		}
 
-		else if (HandleError == ENOENT) // No such file or directory
-		{
-
+		else if (HandleError == ENOENT) {
+			// No such file or directory
 			if (/*Mode == _isoldfile ||*/ Mode == _isoldnewfile) {
 				Mode = _isnewfile;
 				continue;

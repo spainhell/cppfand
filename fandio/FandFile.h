@@ -53,14 +53,17 @@ public:
 
 	size_t RecordSize();
 
-	// v CRecPtr vycte pozici zaznamu v .T00 souboru (ukazatel na zacatek textu)
+	
 	int _T(FieldDescr* F, void* record);
+
+	void B_(FieldDescr* field_descr, bool b, void* record);
 
 	unsigned short RdPrefix();
 	int RdPrefixes();
 	void WrPrefix();
 	void WrPrefixes();
 
+	void SaveFile();
 	void CloseFile();
 };
 

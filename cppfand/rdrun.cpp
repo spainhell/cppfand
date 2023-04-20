@@ -286,7 +286,7 @@ bool Assign(AddD* AD)
 		break;
 	}
 	default: {
-		B_(F, B);
+		CFile->B_(F, B, CRecPtr);
 		break;
 	}
 	}

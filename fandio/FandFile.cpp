@@ -2,6 +2,7 @@
 
 #include "DbfFile.h"
 
+const BYTE f_Stored = 1;
 
 FandFile::FandFile()
 {
@@ -112,6 +113,18 @@ int FandFile::_T(FieldDescr* F, void* record)
 	}
 }
 
+void FandFile::B_(FieldDescr* field_descr, bool b, void* record)
+{
+	char* pB = (char*)record + field_descr->Displ;
+	if ((field_descr->field_type == FieldType::BOOL) && ((field_descr->Flg & f_Stored) != 0)) {
+		if (file_type == FileType::DBF) {
+			if (b) *pB = 'T';
+			else *pB = 'F';
+		}
+		else *pB = b ? 1 : 0;
+	}
+}
+
 unsigned short FandFile::RdPrefix()
 {
 	// NRs - celkovy pocet zaznamu v souboru;
@@ -214,6 +227,14 @@ void FandFile::WrPrefixes()
 	if (file_type == FileType::INDEX && XF->Handle != nullptr
 		&& /*{ call from CopyDuplF }*/ (IsUpdHandle(XF->Handle) || IsUpdHandle(Handle))) {
 		XF->WrPrefix();
+	}
+}
+
+void FandFile::SaveFile()
+{
+	WrPrefixes();
+	if (file_type == FileType::INDEX) {
+		XF->NoCreate = false;
 	}
 }
 

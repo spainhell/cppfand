@@ -66,7 +66,7 @@ std::string _StdS(FieldDescr* F, void* record);
 LongStr* _LongS(FieldDescr* F);
 
 // * UKLADANI DO SOUBORU * / DO FRMLELEM *
-void B_(FieldDescr* F, bool B);
+
 void R_(FieldDescr* F, double R, void* record = nullptr);
 void S_(FileD* file_d, FieldDescr* F, std::string S, void* record = nullptr);
 void LongS_(FileD* file_d, FieldDescr* F, LongStr* S);

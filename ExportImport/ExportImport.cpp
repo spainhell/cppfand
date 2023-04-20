@@ -67,7 +67,7 @@ void VarFixImp(ThFile* F1, CpOption Opt)
 			if (F1->IsEOL) {
 				switch (F->frml_type) {
 				case 'R': R_(F, 0); break;
-				case 'B': B_(F, false); break;
+				case 'B': CFile->B_(F, false, CRecPtr); break;
 				case 'S': S_(CFile, F, ""); break;
 				default: ;
 				}
@@ -139,7 +139,7 @@ void VarFixImp(ThFile* F1, CpOption Opt)
 				}
 				case FieldType::BOOL: {
 					s = F1->RdFix(1);
-					B_(F, s[1] = 'A');
+					CFile->B_(F, s[1] = 'A', CRecPtr);
 					if (Opt == CpOption::cpVar) {
 						F1->RdDelim(',');
 					}

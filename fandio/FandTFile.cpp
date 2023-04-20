@@ -149,7 +149,7 @@ void FandTFile::Err(unsigned short n, bool ex)
 		if (ex) GoExit();
 	}
 	else {
-		CFileMsg(CFile, n, 'T');
+		FileMsg(CFile, n, 'T');
 		if (ex) CloseGoExit(CFile->FF);
 	}
 }

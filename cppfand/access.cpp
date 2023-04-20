@@ -370,21 +370,6 @@ bool _B(FieldDescr* F)
 	return result;
 }
 
-/// Save BOOL into the record
-void B_(FieldDescr* F, bool B)
-{
-	void* p = CRecPtr;
-	char* pB = (char*)p + F->Displ;
-	if ((F->field_type == FieldType::BOOL) && ((F->Flg & f_Stored) != 0)) {
-		if (CFile->FF->file_type == FileType::DBF)
-		{
-			if (B) *pB = 'T';
-			else *pB = 'F';
-		}
-		else *pB = B;
-	}
-}
-
 /// Read NUMBER from the record
 double _R(FieldDescr* F)
 {
@@ -765,7 +750,7 @@ bool LinkUpw(LinkD* LD, int& N, bool WithT)
 				case 'B': {
 					b = _B(F);
 					CFile = ToFD; CRecPtr = RecPtr;
-					B_(F2, b);
+					CFile->B_(F2, b, CRecPtr);
 					break;
 				}
 				}
