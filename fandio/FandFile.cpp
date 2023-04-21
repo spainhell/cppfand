@@ -125,11 +125,11 @@ void FandFile::B_(FieldDescr* field_descr, bool b, void* record)
 	}
 }
 
-int FandFile::T_(FieldDescr* field_d, int pos, void* record)
+int FandFile::T_(FieldDescr* field_descr, int pos, void* record)
 {
-	char* source = (char*)record + field_d->Displ;
+	char* source = (char*)record + field_descr->Displ;
 	int* LP = (int*)source;
-	if ((field_d->field_type == FieldType::TEXT) && ((field_d->Flg & f_Stored) != 0)) {
+	if ((field_descr->field_type == FieldType::TEXT) && ((field_descr->Flg & f_Stored) != 0)) {
 		if (file_type == FileType::DBF) {
 			if (pos == 0) {
 				FillChar(source, 10, ' ');

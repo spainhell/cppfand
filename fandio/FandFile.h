@@ -57,7 +57,7 @@ public:
 	int _T(FieldDescr* F, void* record);
 
 	void B_(FieldDescr* field_descr, bool b, void* record);
-	int T_(FieldDescr* field_d, int pos, void* record);
+	int T_(FieldDescr* field_descr, int pos, void* record);
 
 	unsigned short RdPrefix();
 	int RdPrefixes();
