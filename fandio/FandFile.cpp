@@ -1,8 +1,8 @@
 #include "FandFile.h"
 
 #include "DbfFile.h"
-
-const BYTE f_Stored = 1;
+#include "../cppfand/GlobalVariables.h"
+#include "../pascal/real48.h"
 
 FandFile::FandFile()
 {
@@ -113,10 +113,10 @@ int FandFile::_T(FieldDescr* F, void* record)
 	}
 }
 
-void FandFile::B_(FieldDescr* field_descr, bool b, void* record)
+void FandFile::B_(FieldDescr* field_d, bool b, void* record)
 {
-	char* pB = (char*)record + field_descr->Displ;
-	if ((field_descr->field_type == FieldType::BOOL) && ((field_descr->Flg & f_Stored) != 0)) {
+	char* pB = (char*)record + field_d->Displ;
+	if ((field_d->field_type == FieldType::BOOL) && ((field_d->Flg & f_Stored) != 0)) {
 		if (file_type == FileType::DBF) {
 			if (b) *pB = 'T';
 			else *pB = 'F';
@@ -125,11 +125,11 @@ void FandFile::B_(FieldDescr* field_descr, bool b, void* record)
 	}
 }
 
-int FandFile::T_(FieldDescr* field_descr, int pos, void* record)
+int FandFile::T_(FieldDescr* field_d, int pos, void* record)
 {
-	char* source = (char*)record + field_descr->Displ;
+	char* source = (char*)record + field_d->Displ;
 	int* LP = (int*)source;
-	if ((field_descr->field_type == FieldType::TEXT) && ((field_descr->Flg & f_Stored) != 0)) {
+	if ((field_d->field_type == FieldType::TEXT) && ((field_d->Flg & f_Stored) != 0)) {
 		if (file_type == FileType::DBF) {
 			if (pos == 0) {
 				FillChar(source, 10, ' ');
@@ -148,6 +148,59 @@ int FandFile::T_(FieldDescr* field_descr, int pos, void* record)
 	else {
 		//RunError(906);
 		return 906;
+	}
+}
+
+void FandFile::R_(FieldDescr* field_d, double r, void* record)
+{
+	BYTE* pRec = (BYTE*)record + field_d->Displ;
+	int l = 0;
+	if ((field_d->Flg & f_Stored) != 0) {
+		WORD m = field_d->M;
+		switch (field_d->field_type) {
+		case FieldType::FIXED: {
+			if (file_type == FileType::DBF) {
+				pstring s;
+				if ((field_d->Flg & f_Comma) != 0) r = r / Power10[m];
+				str(field_d->NBytes, s);
+				Move(&s[1], pRec, field_d->NBytes);
+			}
+			else {
+				if ((field_d->Flg & f_Comma) == 0) r = r * Power10[m];
+				FixFromReal(r, pRec, field_d->NBytes);
+			}
+			break;
+		}
+		case FieldType::DATE: {
+			switch (file_type) {
+			case FileType::FAND8: {
+				if (trunc(r) == 0) *(long*)&pRec = 0;
+				else *(long*)pRec = trunc(r - FirstDate);
+				break;
+			}
+			case FileType::DBF: {
+				pstring s = StrDate(r, "YYYYMMDD");
+				Move(&s[1], pRec, 8);
+				break;
+			}
+			default: {
+				auto r48 = DoubleToReal48(r);
+				for (size_t i = 0; i < 6; i++) {
+					pRec[i] = r48[i];
+				}
+				break;
+			}
+			}
+			break;
+		}
+		case FieldType::REAL: {
+			auto r48 = DoubleToReal48(r);
+			for (size_t i = 0; i < 6; i++) {
+				pRec[i] = r48[i];
+			}
+			break;
+		}
+		}
 	}
 }
 

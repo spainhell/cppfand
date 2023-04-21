@@ -1083,7 +1083,7 @@ void DuplFld(FileD* FD1, FileD* FD2, void* RP1, void* RP2, void* RPt, FieldDescr
 	case 'R': {
 		r = _R(F1);
 		CFile = FD2; CRecPtr = RP2;
-		R_(F2, r);
+		CFile->R_(F2, r, CRecPtr);
 		break;
 	}
 	case 'B': {
@@ -1778,9 +1778,9 @@ void WrJournal(char Upd, void* RP, double Time)
 		auto it = CFile->FldD.begin();
 
 		S_(CFile, *it++, std::string(1, Upd), newData.get());	// change type
-		R_(*it++, int(n), newData.get());						// record number
-		R_(*it++, int(UserCode), newData.get());				// user code
-		R_(*it++, Time, newData.get());							// timestamp
+		CFile->R_(*it++, int(n), newData.get());						// record number
+		CFile->R_(*it++, int(UserCode), newData.get());				// user code
+		CFile->R_(*it++, Time, newData.get());							// timestamp
 
 		char* src = (char*)RP;
 		memcpy(&newData.get()[(*it)->Displ], &src[srcOffset], l);		// record data
@@ -2799,7 +2799,7 @@ bool PromptSearch(bool create)
 				x.StoreReal(r, KF);
 				CFile = FD;
 				CRecPtr = RP;
-				R_(F, r);
+				CFile->R_(F, r, CRecPtr);
 				break;
 			}
 			case 'B': {
@@ -2862,7 +2862,7 @@ bool PromptSearch(bool create)
 			}
 			case 'R': {
 				x.StoreReal(r, KF);
-				R_(F, r);
+				CFile->R_(F, r, CRecPtr);
 				break;
 			}
 			case 'B': {
@@ -3402,7 +3402,7 @@ void UpdateTxtPos(WORD TxtPos)
 	if (IsCurrChpt()) {
 		md = CFile->NewLockMode(WrMode);
 		SetWasUpdated(CFile->FF, CRecPtr);
-		R_(ChptTxtPos, (short)TxtPos);
+		CFile->R_(ChptTxtPos, (short)TxtPos, CRecPtr);
 		CFile->OldLockMode(md);
 	}
 }
@@ -3668,7 +3668,7 @@ bool EditItemProc(bool del, bool ed, WORD& Brk)
 		switch (F->frml_type) {
 		case 'B': CFile->B_(F, toupper(Txt[0]) == AbbrYes, CRecPtr); break;
 		case 'S': S_(CFile, F, Txt); break;
-		case 'R': R_(F, R); break;
+		case 'R': CFile->R_(F, R, CRecPtr); break;
 		}
 	}
 	if (Brk == 0) result = CtrlMProc(1);
@@ -4116,7 +4116,7 @@ void Calculate2()
 						else if ((Z->Op == _unminus) && (iZ02->Op == _const)) R = -iZ02->R;
 						else goto label5;
 						SetWasUpdated(CFile->FF, CRecPtr);
-						R_(F, R * Power10[F->M]);
+						CFile->R_(F, R * Power10[F->M], CRecPtr);
 					}
 					else
 						label5:

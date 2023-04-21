@@ -11,15 +11,6 @@
 #endif
 
 
-// ********** CONST **********
-const BYTE LeftJust = 1;  // {RightJust=0  coded in M for Typ='N','A'}
-const BYTE Ascend = 0;
-const BYTE Descend = 6;   // {used in SortKey}
-const BYTE f_Stored = 1;
-const BYTE f_Encryp = 2;  // {FieldD flags}
-const BYTE f_Mask = 4;
-const BYTE f_Comma = 8;   // {FieldD flags}
-
 struct DepD
 {
 	FrmlElem* Bool = nullptr;
@@ -54,7 +45,6 @@ LongStr* _LongS(FieldDescr* F);
 
 // * UKLADANI DO SOUBORU * / DO FRMLELEM *
 
-void R_(FieldDescr* F, double R, void* record = nullptr);
 void S_(FileD* file_d, FieldDescr* F, std::string S, void* record = nullptr);
 void LongS_(FileD* file_d, FieldDescr* F, LongStr* S);
 

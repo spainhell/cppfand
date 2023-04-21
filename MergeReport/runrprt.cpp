@@ -839,7 +839,7 @@ void PutMFlds(KeyFldD* M)
 		case 'R': {
 				double r = _R(f1);
 				CFile = cf; CRecPtr = cr;
-				R_(f, r);
+				CFile->R_(f, r, CRecPtr);
 				break;
 			}
 		default: {

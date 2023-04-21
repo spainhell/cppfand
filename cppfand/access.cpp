@@ -213,7 +213,7 @@ void DelDifTFld(void* Rec, void* CompRec, FieldDescr* F)
 }
 
 const WORD Alloc = 2048;
-const double FirstDate = 6.97248E+5;
+
 
 
 void ZeroAllFlds(FileD* file_d, void* record)
@@ -392,57 +392,7 @@ double _R(FieldDescr* F)
 /// Save NUMBER to the record
 void R_(FieldDescr* F, double R, void* record)
 {
-	BYTE* pRec = nullptr;
-	pstring s; WORD m = 0; int l = 0;
-	if ((F->Flg & f_Stored) != 0) {
-		if (record == nullptr) { pRec = (BYTE*)CRecPtr + F->Displ; }
-		else { pRec = (BYTE*)record + F->Displ; }
-
-		m = F->M;
-		switch (F->field_type) {
-		case FieldType::FIXED: {
-			if (CFile->FF->file_type == FileType::DBF) {
-				if ((F->Flg & f_Comma) != 0) R = R / Power10[m];
-				str(F->NBytes, s);
-				Move(&s[1], pRec, F->NBytes);
-			}
-			else {
-				if ((F->Flg & f_Comma) == 0) R = R * Power10[m];
-				FixFromReal(R, pRec, F->NBytes);
-			}
-			break;
-		}
-		case FieldType::DATE: {
-			switch (CFile->FF->file_type) {
-			case FileType::FAND8: {
-				if (trunc(R) == 0) *(long*)&pRec = 0;
-				else *(long*)pRec = trunc(R - FirstDate);
-				break;
-			}
-			case FileType::DBF: {
-				s = StrDate(R, "YYYYMMDD");
-				Move(&s[1], pRec, 8);
-				break;
-			}
-			default: {
-				auto r48 = DoubleToReal48(R);
-				for (size_t i = 0; i < 6; i++) {
-					pRec[i] = r48[i];
-				}
-				break;
-			}
-			}
-			break;
-		}
-		case FieldType::REAL: {
-			auto r48 = DoubleToReal48(R);
-			for (size_t i = 0; i < 6; i++) {
-				pRec[i] = r48[i];
-			}
-			break;
-		}
-		}
-	}
+	
 }
 
 /// Read LONG STRING from the record
@@ -719,7 +669,7 @@ bool LinkUpw(LinkD* LD, int& N, bool WithT)
 				case 'R': {
 					r = _R(F);
 					CFile = ToFD; CRecPtr = RecPtr;
-					R_(F2, r);
+					CFile->R_(F2, r, CRecPtr);
 					break;
 				}
 				case 'B': {

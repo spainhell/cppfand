@@ -71,6 +71,7 @@ public:
 	// ulozi boolean do zaznamu
 	void B_(FieldDescr* F, bool B, void* record);
 	int T_(FieldDescr* field_d, int pos, void* record);
+	void R_(FieldDescr* field_d, double r, void* record);
 
 	void Close();
 	void Save();

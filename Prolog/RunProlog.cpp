@@ -1900,8 +1900,12 @@ void AssertFand(TPredicate* P, TCommand* C)
 				break;
 			}
 			case 'R': {
-				if (t->Fun == prolog_func::_IntT) R_(f, t->II);
-				else R_(f, t->RR);
+				if (t->Fun == prolog_func::_IntT) {
+					CFile->R_(f, t->II, CRecPtr);
+				}
+				else {
+					CFile->R_(f, t->RR, CRecPtr);
+				}
 				break;
 			}
 			default: {

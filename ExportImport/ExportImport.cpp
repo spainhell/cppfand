@@ -40,7 +40,7 @@ void VarFixImp(ThFile* F1, CpOption Opt)
 		if ((F->Flg & f_Stored) != 0) {
 			if (F1->IsEOL) {
 				switch (F->frml_type) {
-				case 'R': R_(F, 0); break;
+				case 'R': CFile->R_(F, 0, CRecPtr); break;
 				case 'B': CFile->B_(F, false, CRecPtr); break;
 				case 'S': S_(CFile, F, ""); break;
 				default: ;
@@ -57,7 +57,8 @@ void VarFixImp(ThFile* F1, CpOption Opt)
 					}
 					val(LeadChar(' ', s), r, err);
 					if ((F->Flg & f_Comma) != 0) {
-						r = r * Power10[F->M]; R_(F, r);
+						r = r * Power10[F->M];
+						CFile->R_(F, r, CRecPtr);
 					}
 					break;
 				}
@@ -100,14 +101,14 @@ void VarFixImp(ThFile* F1, CpOption Opt)
 						}
 					}
 					if (s == "") {
-						R_(F, 0.0);
+						CFile->R_(F, 0.0, CRecPtr);
 					}
 					else if (F->field_type == FieldType::REAL) {
 						val(s, r, err);
-						R_(F, r);
+						CFile->R_(F, r, CRecPtr);
 					}
 					else {
-						R_(F, ValDate(s, F->Mask));
+						CFile->R_(F, ValDate(s, F->Mask), CRecPtr);
 					}
 					break;
 				}

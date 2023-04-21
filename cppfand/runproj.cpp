@@ -1428,7 +1428,7 @@ void GotoErrPos(WORD& Brk)
 	}
 	CFld = E->LastFld;
 	SetNewCRec(InpRdbPos.IRec, true);
-	R_(ChptTxtPos, short(CurrPos));
+	CFile->R_(ChptTxtPos, short(CurrPos), CRecPtr);
 	CFile->WriteRec(CRec(), CRecPtr);
 	EditFreeTxt(ChptTxt, s, true, Brk);
 }

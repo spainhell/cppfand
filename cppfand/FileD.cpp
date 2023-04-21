@@ -1,4 +1,6 @@
 #include "FileD.h"
+
+#include "GlobalVariables.h"
 #include "../cppfand/access.h"
 #include "../fandio/XKey.h"
 #include "../Logging/Logging.h"
@@ -177,6 +179,11 @@ void FileD::B_(FieldDescr* F, bool B, void* record)
 int FileD::T_(FieldDescr* field_d, int pos, void* record)
 {
 	return FF->T_(field_d, pos, record);
+}
+
+void FileD::R_(FieldDescr* field_d, double r, void* record)
+{
+	FF->R_(field_d, r, record);
 }
 
 void FileD::Close()

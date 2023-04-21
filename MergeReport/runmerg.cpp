@@ -126,7 +126,7 @@ void SetMFlds(KeyFldD* M)
 		F = M->FldD;
 		switch (F->frml_type) {
 		case 'S': { S_(CFile, F, it0->S); break; }
-		case 'R': { R_(F, it0->R); break; }
+		case 'R': { CFile->R_(F, it0->R, CRecPtr); break; }
 		default: { CFile->B_(F, it0->B, CRecPtr); break; }
 		}
 		M = (KeyFldD*)M->pChain;
@@ -161,7 +161,7 @@ void RunAssign(std::vector<AssignD*> Assigns)
 		case _zero: {
 			switch (A->outputFldD->frml_type) {
 			case 'S': { S_(CFile, A->outputFldD, ""); break; }
-			case 'R': { R_(A->outputFldD, 0); break; }
+			case 'R': { CFile->R_(A->outputFldD, 0, CRecPtr); break; }
 			default: { CFile->B_(A->outputFldD, false, CRecPtr); break; }
 			}
 			break;

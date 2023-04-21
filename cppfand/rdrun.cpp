@@ -59,7 +59,7 @@ bool Add(AddD* AD, void* RP, double R, bool Back)
 	auto result = true;
 	CRecPtr = RP;
 	if (Back) R = -R;
-	R_(AD->Field, _R(AD->Field) + R);
+	CFile->R_(AD->Field, _R(AD->Field) + R, CRecPtr);
 	if (AD->Chk == nullptr) return result;
 	if (!Back && !RunBool(AD->Chk->Bool))
 	{
@@ -277,7 +277,7 @@ bool Assign(AddD* AD)
 	if (!Link(AD, N2, Kind2)) { return false; }
 	switch (F->frml_type) {
 	case 'R': {
-		R_(F, R);
+		CFile->R_(F, R, CRecPtr);
 		break;
 	}
 	case 'S': {

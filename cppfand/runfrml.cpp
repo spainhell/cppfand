@@ -1299,8 +1299,8 @@ void AssgnFrml(FileD* file_d, void* record, FieldDescr* F, FrmlElem* X, bool Del
 		break;
 	}
 	case 'R': {
-		if (Add) R_(F, _R(F) + RunReal(X));
-		else R_(F, RunReal(X));
+		if (Add) CFile->R_(F, _R(F) + RunReal(X), CRecPtr);
+		else CFile->R_(F, RunReal(X), CRecPtr);
 		break;
 	}
 	case 'B': {
