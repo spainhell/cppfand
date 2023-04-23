@@ -155,6 +155,6 @@ std::string Catalog::getValue(size_t rec_nr, FieldDescr* field)
 void Catalog::setValue(size_t rec_nr, FieldDescr* field, const std::string& value)
 {
 	cat_file_->ReadRec(rec_nr, record_);
-	S_(cat_file_, field, value, record_);
+	cat_file_->saveS(field, value, record_);
 	cat_file_->WriteRec(rec_nr, record_);
 }

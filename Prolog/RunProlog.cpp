@@ -1697,7 +1697,7 @@ bool RunCommand(TCommand* COff/*PCommand*/)
 			if (!LinkLastRec(CFile, n, true)) CFile->IncNRecs(1);
 			DelTFld(c->FldD);
 			std::string save = SaveDb(c->DbPred, 0);
-			S_(CFile, c->FldD, save, CRecPtr);
+			CFile->saveS(c->FldD, save, CRecPtr);
 			CFile->WriteRec(CFile->FF->NRecs, CRecPtr);
 		}
 		else {
@@ -1896,15 +1896,15 @@ void AssertFand(TPredicate* P, TCommand* C)
 			}
 			switch (f->frml_type) {
 			case 'B': {
-				CFile->B_(f, t->BB, CRecPtr);
+				CFile->saveB(f, t->BB, CRecPtr);
 				break;
 			}
 			case 'R': {
 				if (t->Fun == prolog_func::_IntT) {
-					CFile->R_(f, t->II, CRecPtr);
+					CFile->saveR(f, t->II, CRecPtr);
 				}
 				else {
-					CFile->R_(f, t->RR, CRecPtr);
+					CFile->saveR(f, t->RR, CRecPtr);
 				}
 				break;
 			}
@@ -1912,10 +1912,10 @@ void AssertFand(TPredicate* P, TCommand* C)
 				if (f->field_type == FieldType::TEXT) {
 					if (d->Typ == _LongStrD) s = RdLongStr(t->Pos);
 					else s = GetPackedTerm(t);
-					LongS_(CFile, f, s);
+					CFile->saveLongS(f, s, CRecPtr);
 					ReleaseStore(s);
 				}
-				else S_(CFile, f, t->SS, CRecPtr);
+				else CFile->saveS(f, t->SS, CRecPtr);
 				break;
 			}
 			}
@@ -2093,11 +2093,11 @@ label1:
 			f = fl->FldD;
 			switch (f->frml_type) {
 			case 'B': {
-				if (CFile->_B(f, CRecPtr) != t->BB) goto label1;
+				if (CFile->loadB(f, CRecPtr) != t->BB) goto label1;
 				break;
 			}
 			case 'R': {
-				r = _R(f);
+				r = CFile->_R(f, CRecPtr);
 				if (t->Fun == prolog_func::_IntT) {
 					if (r != t->II) goto label1;
 				}
@@ -2134,15 +2134,15 @@ label1:
 			d = p->ArgDomains[i];
 			switch (f->frml_type) {
 			case 'B': {
-				CurrInst->Vars[i] = GetBoolTerm(CFile->_B(f, CRecPtr));
+				CurrInst->Vars[i] = GetBoolTerm(CFile->loadB(f, CRecPtr));
 				break;
 			}
 			case 'R': {
 				if (d->Typ == _RealD) {
-					CurrInst->Vars[i] = GetRealTerm(_R(f));
+					CurrInst->Vars[i] = GetRealTerm(CFile->_R(f, CRecPtr));
 				}
 				else {
-					CurrInst->Vars[i] = GetIntTerm(trunc(_R(f)));
+					CurrInst->Vars[i] = GetIntTerm(trunc(CFile->_R(f, CRecPtr)));
 				}
 				break;
 			}
@@ -2441,7 +2441,7 @@ void RunProlog(RdbPos* Pos, std::string PredName)
 		CFile = ChptLRdb->FD;
 		CRecPtr = ChptLRdb->FD->GetRecSpace();
 		CFile->ReadRec(Pos->IRec, CRecPtr);
-		SetInpTTPos(CFile->_T(ChptTxt, CRecPtr), ChptLRdb->Encrypted);
+		SetInpTTPos(CFile->loadT(ChptTxt, CRecPtr), ChptLRdb->Encrypted);
 		Roots = ReadProlog(Pos->IRec);
 	}
 

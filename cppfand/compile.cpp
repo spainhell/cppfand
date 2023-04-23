@@ -168,10 +168,10 @@ void SetInpTT(RdbPos* RP, bool FromTxt)
 	CRecPtr = new BYTE[RP->R->FD->FF->RecLen];
 	CFile->ReadRec(RP->IRec, CRecPtr);
 	if (FromTxt) {
-		Pos = CFile->_T(ChptTxt, CRecPtr);
+		Pos = CFile->loadT(ChptTxt, CRecPtr);
 	}
 	else {
-		Pos = CFile->_T(ChptOldTxt, CRecPtr);
+		Pos = CFile->loadT(ChptOldTxt, CRecPtr);
 	}
 	SetInpTTPos(CFile, Pos, RP->R->Encrypted);
 	ReleaseStore(CRecPtr);

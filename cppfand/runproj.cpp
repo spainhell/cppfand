@@ -139,8 +139,8 @@ void GetRdbRecVars(void* RecPtr, RdbRecVars* X)
 	std::string s1 = _StdS(ChptTyp, CRecPtr);
 	X->Typ = s1[0];
 	GetSplitChptName(X->Name, X->Ext);
-	X->Txt = CFile->_T(ChptTxt, CRecPtr);
-	X->OldTxt = CFile->_T(ChptOldTxt, CRecPtr);
+	X->Txt = CFile->loadT(ChptTxt, CRecPtr);
+	X->OldTxt = CFile->loadT(ChptOldTxt, CRecPtr);
 	if (X->Typ == 'F') {
 		X->FTyp = ExtToTyp(X->Ext);
 		X->CatIRec = GetCatalogIRec(X->Name, false);
@@ -321,7 +321,7 @@ WORD ChptWriteCRec()
 	if (New.Typ != Old.Typ) {
 	label1:
 		if (!ChptDelFor(&Old)) return result;
-		CFile->T_(ChptOldTxt, 0, CRecPtr);
+		CFile->saveT(ChptOldTxt, 0, CRecPtr);
 		if (New.Typ == 'F') {
 			ReleaseFilesAndLinksAfterChapter();
 		}
@@ -348,7 +348,7 @@ WORD ChptWriteCRec()
 		}
 	}
 label2:
-	CFile->B_(ChptVerif, true, CRecPtr);
+	CFile->saveB(ChptVerif, true, CRecPtr);
 	result = 0;
 	SetUpdHandle(ChptTF->Handle);
 	return result;
@@ -380,7 +380,7 @@ WORD FindHelpRecNr(FileD* FD, std::string& txt)
 		std::string nm = TrailChar(NmFtext, ' ');
 		ConvToNoDiakr(&nm[0], nm.length(), fonts.VFont);
 		if (EqualsMask(txt, nm)) {
-			while ((i < CFile->FF->NRecs) && (CFile->_T(TxtF, CRecPtr) == 0)) {
+			while ((i < CFile->FF->NRecs) && (CFile->loadT(TxtF, CRecPtr) == 0)) {
 				i++;
 				CFile->ReadRec(i, CRecPtr);
 			}
@@ -467,7 +467,7 @@ void StoreChptTxt(FieldDescr* F, LongStr* S, bool Del)
 	LongStr* s2 = nullptr; void* p = nullptr;
 	WORD LicNr; int oldpos, pos;
 	LicNr = ChptTF->LicenseNr;
-	oldpos = CFile->_T(F, CRecPtr);
+	oldpos = CFile->loadT(F, CRecPtr);
 	MarkStore(p);
 	if (CRdb->Encrypted) {
 		if (LicNr != 0) {
@@ -481,10 +481,10 @@ void StoreChptTxt(FieldDescr* F, LongStr* S, bool Del)
 	else if (oldpos != 0) ChptTF->Delete(oldpos - LicNr);
 	pos = ChptTF->Store(S->A, S->LL);
 	if (LicNr == 0) {
-		CFile->T_(F, pos, CRecPtr);
+		CFile->saveT(F, pos, CRecPtr);
 	}
 	else {
-		CFile->T_(F, pos + LicNr, CRecPtr);
+		CFile->saveT(F, pos + LicNr, CRecPtr);
 	}
 	ReleaseStore(p);
 }
@@ -899,7 +899,7 @@ bool CompRunChptRec(WORD CC)
 		if (WasError) {
 			return result;
 		}
-		CFile->B_(ChptVerif, false, CRecPtr);
+		CFile->saveB(ChptVerif, false, CRecPtr);
 		CFile->WriteRec(CRec(), CRecPtr);
 		if (CC == __CTRL_F8) {
 			Diagnostics(MaxHp, Free, FD);
@@ -1016,7 +1016,7 @@ int MakeDbfDcl(pstring Nm)
 		Move(&s[1], p, s.length());
 		t->LL += s.length();
 	}
-	LongS_(CFile, ChptTxt, t);
+	CFile->saveLongS(ChptTxt, t, CRecPtr);
 	CloseH(&h);
 	return 0;
 }
@@ -1042,7 +1042,7 @@ void* RdF(std::string FileName)
 		SetInpStr(s);
 	}
 	else {
-		int pos = CFile->_T(ChptTxt, CRecPtr);
+		int pos = CFile->loadT(ChptTxt, CRecPtr);
 		SetInpTTPos(pos, CRdb->Encrypted);
 	}
 	return RdFileD(name, FDTyp, ext);
@@ -1226,16 +1226,16 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 		for (I = 1; I <= Chpt->FF->NRecs; I++) {
 			CFile->ReadRec(I, CRecPtr);
 			RP.IRec = I;
-			Verif = CFile->_B(ChptVerif, CRecPtr);
+			Verif = CFile->loadB(ChptVerif, CRecPtr);
 			STyp = _ShortS(ChptTyp);
 			Typ = STyp[1];
 			Name = OldTrailChar(' ', _ShortS(ChptName));
-			Txt = CFile->_T(ChptTxt, CRecPtr);
+			Txt = CFile->loadT(ChptTxt, CRecPtr);
 			if (Verif && ((ChptTF->LicenseNr != 0) || Encryp || (Chpt->FF->UMode == RdOnly))) GoCompileErr(I, 647);
 			if (Verif || ChptTF->CompileAll || FromCtrlF10 || (Typ == 'U') ||
 				(Typ == 'F' || Typ == 'D') && CompileFD ||
 				(Typ == 'P') && ChptTF->CompileProc) {
-				OldTxt = CFile->_T(ChptOldTxt, CRecPtr);
+				OldTxt = CFile->loadT(ChptOldTxt, CRecPtr);
 				InpRdbPos = RP;
 				if (IsTestRun) {
 					ClrScr();
@@ -1260,10 +1260,10 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 					if ((Txt == 0) && IsTestRun) {
 						SetMsgPar(Name);
 						if (EquUpCase(ext, ".DBF") && PromptYN(39)) {
-							CFile->T_(ChptOldTxt, 0, CRecPtr);
+							CFile->saveT(ChptOldTxt, 0, CRecPtr);
 							OldTxt = 0;
 							MakeDbfDcl(nm);
-							Txt = CFile->_T(ChptTxt, CRecPtr);
+							Txt = CFile->loadT(ChptTxt, CRecPtr);
 							CFile->WriteRec(I, CRecPtr);
 						}
 					}
@@ -1305,7 +1305,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 						RprtTxt = SelGenRprt(Name);
 						CFile = Chpt;
 						if (RprtTxt.empty()) GoCompileErr(I, 1145);
-						S_(CFile, ChptTxt, RprtTxt, CRecPtr);
+						CFile->saveS(ChptTxt, RprtTxt, CRecPtr);
 						CFile->WriteRec(I, CRecPtr);
 					}
 					else {
@@ -1367,7 +1367,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 			ReleaseBoth(p1, p2); CFile = Chpt; CRecPtr = Chpt->FF->RecPtr;
 			if (Verif) {
 				CFile->ReadRec(I, CRecPtr);
-				CFile->B_(ChptVerif, false, CRecPtr);
+				CFile->saveB(ChptVerif, false, CRecPtr);
 				CFile->WriteRec(I, CRecPtr);
 			}
 		}
@@ -1428,7 +1428,7 @@ void GotoErrPos(WORD& Brk)
 	}
 	CFld = E->LastFld;
 	SetNewCRec(InpRdbPos.IRec, true);
-	CFile->R_(ChptTxtPos, short(CurrPos), CRecPtr);
+	CFile->saveR(ChptTxtPos, short(CurrPos), CRecPtr);
 	CFile->WriteRec(CRec(), CRecPtr);
 	EditFreeTxt(ChptTxt, s, true, Brk);
 }
@@ -1643,7 +1643,7 @@ void UpdateUTxt()
 	int w = PushW(1, 1, TxtCols, TxtRows - 1);
 	WORD TxtPos = 1;
 	TextAttr = screen.colors.tNorm;
-	int OldPos = CFile->_T(ChptTxt, CRecPtr);
+	int OldPos = CFile->loadT(ChptTxt, CRecPtr);
 	LongStr* S = _LongS(ChptTxt);
 
 	if (CRdb->Encrypted) {

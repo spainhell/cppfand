@@ -102,12 +102,12 @@ void SetOldMFlds(KeyFldD* M)
 			break;
 		}
 		case 'R': {
-			C.R = _R(F);
+			C.R = CFile->_R(F, CRecPtr);
 			OldMXStr.StoreReal(C.R, M);
 			break;
 		}
 		default: {
-			C.B = CFile->_B(F, CRecPtr);
+			C.B = CFile->loadB(F, CRecPtr);
 			OldMXStr.StoreBool(C.B, M);
 			break;
 		}
@@ -125,9 +125,9 @@ void SetMFlds(KeyFldD* M)
 	{
 		F = M->FldD;
 		switch (F->frml_type) {
-		case 'S': { S_(CFile, F, it0->S, CRecPtr); break; }
-		case 'R': { CFile->R_(F, it0->R, CRecPtr); break; }
-		default: { CFile->B_(F, it0->B, CRecPtr); break; }
+		case 'S': { CFile->saveS(F, it0->S, CRecPtr); break; }
+		case 'R': { CFile->saveR(F, it0->R, CRecPtr); break; }
+		default: { CFile->saveB(F, it0->B, CRecPtr); break; }
 		}
 		M = (KeyFldD*)M->pChain;
 		
@@ -160,9 +160,9 @@ void RunAssign(std::vector<AssignD*> Assigns)
 		}
 		case _zero: {
 			switch (A->outputFldD->frml_type) {
-			case 'S': { S_(CFile, A->outputFldD, "", CRecPtr); break; }
-			case 'R': { CFile->R_(A->outputFldD, 0, CRecPtr); break; }
-			default: { CFile->B_(A->outputFldD, false, CRecPtr); break; }
+			case 'S': { CFile->saveS(A->outputFldD, "", CRecPtr); break; }
+			case 'R': { CFile->saveR(A->outputFldD, 0, CRecPtr); break; }
+			default: { CFile->saveB(A->outputFldD, false, CRecPtr); break; }
 			}
 			break;
 		}

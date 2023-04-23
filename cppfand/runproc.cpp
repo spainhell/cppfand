@@ -191,9 +191,9 @@ void AssignRecVar(LocVar* LV1, LocVar* LV2, AssignD* A)
 			CFile = FD1;
 			CRecPtr = RP1;
 			switch (F->frml_type) {
-			case 'S': { S_(CFile, F, EmptyStr, CRecPtr); break; }
-			case 'R': { CFile->R_(F, 0.0, CRecPtr); break; }
-			default: { CFile->B_(F, false, CRecPtr); break; }
+			case 'S': { CFile->saveS(F, EmptyStr, CRecPtr); break; }
+			case 'R': { CFile->saveR(F, 0.0, CRecPtr); break; }
+			default: { CFile->saveB(F, false, CRecPtr); break; }
 			}
 			break;
 		}
@@ -337,7 +337,7 @@ void DisplayProc(RdbD* R, WORD IRec)
 		CFile = R->FD;
 		CRecPtr = Chpt->FF->RecPtr;
 		CFile->ReadRec(IRec, CRecPtr);
-		LongStr* S = CFile->FF->TF->Read(CFile->_T(ChptTxt, CRecPtr));
+		LongStr* S = CFile->FF->TF->Read(CFile->loadT(ChptTxt, CRecPtr));
 		if (R->Encrypted) Coding::CodingLongStr(CFile, S);
 		str = std::string(S->A, S->LL);
 		delete S; S = nullptr;

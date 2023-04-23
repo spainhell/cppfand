@@ -7,6 +7,8 @@
 #include "../cppfand/FieldDescr.h"
 #include "../Logging/Logging.h"
 
+class FileD;
+
 enum class FileType
 {
 	UNKNOWN,
@@ -53,12 +55,15 @@ public:
 
 	size_t RecordSize();
 
-	bool _B(FieldDescr* field_d, void* record);
-	int _T(FieldDescr* F, void* record);
+	bool loadB(FieldDescr* field_d, void* record);
+	double loadR(FieldDescr* field_d, void* record);
+	int loadT(FieldDescr* F, void* record);
 
-	void B_(FieldDescr* field_d, bool b, void* record);
-	int T_(FieldDescr* field_d, int pos, void* record);
-	void R_(FieldDescr* field_d, double r, void* record);
+	void saveB(FieldDescr* field_d, bool b, void* record);
+	void saveR(FieldDescr* field_d, double r, void* record);
+	void saveS(FileD* parent, FieldDescr* field_d, std::string s, void* record);
+	void saveLongS(FileD* parent, FieldDescr* field_d, LongStr* ls, void* record);
+	int saveT(FieldDescr* field_d, int pos, void* record);
 
 	unsigned short RdPrefix();
 	int RdPrefixes();
@@ -76,5 +81,8 @@ public:
 	bool DeletedFlag(void* record);
 	void ClearDeletedFlag(void* record);
 	void SetDeletedFlag(void* record);
+
+private:
+	double _RforD(FieldDescr* F, void* P);
 };
 

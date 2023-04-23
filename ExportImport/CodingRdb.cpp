@@ -200,7 +200,7 @@ void CodingRdb::CodeF(bool rotate, WORD IRec, FieldDescr* F, char Typ)
 	void* p = nullptr;
 	void* p2 = nullptr;
 
-	int pos = CFile->_T(F, CRecPtr);
+	int pos = CFile->loadT(F, CRecPtr);
 	if (pos == 0) return;
 	MarkBoth(p, p2);
 	LongStr* s = ChptTF->Read(pos);
@@ -246,7 +246,7 @@ void CodingRdb::CodeF(bool rotate, WORD IRec, FieldDescr* F, char Typ)
 		Coding::Code(s->A, l);
 	}
 label2:
-	LongS_(CFile, F, s);
+	CFile->saveLongS(F, s, CRecPtr);
 	ReleaseBoth(p, p2);
 }
 

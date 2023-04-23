@@ -528,7 +528,7 @@ void* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 		//	RdbD* rdb = nullptr; void* cr = nullptr; FileD* cf = nullptr; bool b = false; WORD i = 0; int pos = 0;
 		//	if (Lexem != 0x1A) Accept(';');	rdb = CRdb; cr = CRecPtr; RdbD* r = FD->ChptPos.R;
 		//	if ((r == nullptr) || FD->IsDynFile) OldError(106); CRdb = r; i = FD->ChptPos.IRec;	CFile = CRdb->FD;
-		//	CRecPtr = CFile->RecPtr; CFile->ReadRec(i, CRecPtr); pos = _T(ChptOldTxt); if (pos <= 0) Error(25);
+		//	CRecPtr = CFile->RecPtr; CFile->ReadRec(i, CRecPtr); pos = loadT(ChptOldTxt); if (pos <= 0) Error(25);
 		//	b = RdFDSegment(i, pos); cf = CFile; CRdb = rdb; if (InpRdbPos.IRec != 0) {	CFile = rdb->FD;
 		//		CFile->ReadRec(InpRdbPos.IRec, CRecPtr); CFile = cf; }
 		//	CRecPtr = cr; if (!b) Error(25); CFile->OrigFD = FD; CFile->TxtPosUDLI = 0;
@@ -1097,7 +1097,7 @@ void GetXFileD()
 //	CFile = CRdb->FD;
 //	CRecPtr = CFile->RecPtr;
 //	CFile->ReadRec(i, CRecPtr);
-//	pos = _T(ChptOldTxt);
+//	pos = loadT(ChptOldTxt);
 //	if (pos <= 0) Error(25);
 //	b = RdFDSegment(i, pos);
 //	cf = CFile; CRdb = rdb;

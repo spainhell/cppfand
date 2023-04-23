@@ -6,10 +6,12 @@ class FandXFile : public XWFile
 public:
 	FandXFile() {}
 	FandXFile(const FandXFile& orig);
-	int NRecs = 0, NRecsAbs = 0; // {FreeRoot..NrKeys read / written by 1 instr.}
+	int NRecs = 0;     // valid records count
+	int NRecsAbs = 0;  // all record count (include deleted from .000 file)
 	bool NotValid = false;
 	unsigned char NrKeys = 0;
-	bool NoCreate = false, FirstDupl = false;
+	bool NoCreate = false;
+	bool FirstDupl = false;
 	void SetEmpty();
 	void RdPrefix();
 	void WrPrefix();

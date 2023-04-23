@@ -26,14 +26,14 @@ public:
 	std::string FullPath;
 
 	FType FileType;
-	
+
 	FandFile* FF = nullptr;   // FandFile reference
 
 	int IRec = 0;
 	RdbPos ChptPos;           // zero for Rdb and FD translated from string 
 	size_t TxtPosUDLI = 0;    // =0 if not present; urcuje zacatek odstavcu #U #D #L #I
 	FileD* OrigFD = nullptr;  // like orig. or nil
-	
+
 	int CatIRec = 0;          // cislo zaznamu v katalogu
 	bool IsParFile = false;
 	bool IsJournal = false;
@@ -64,15 +64,17 @@ public:
 	void DeleteRec(int n, void* record);
 	void DelAllDifTFlds(void* Rec, void* CompRec);
 	void RecallRec(int recNr, void* record);
-	
-	// vycte ze zanamu pozici textu v .T00 souboru (ukazatel na zacatek textu)
-	bool _B(FieldDescr* field_d, void* record);
-	int _T(FieldDescr* field_d, void* record);
 
-	// ulozi boolean do zaznamu
-	void B_(FieldDescr* F, bool B, void* record);
-	int T_(FieldDescr* field_d, int pos, void* record);
-	void R_(FieldDescr* field_d, double r, void* record);
+	
+	bool loadB(FieldDescr* field_d, void* record);
+	double _R(FieldDescr* field_d, void* record);
+	int loadT(FieldDescr* field_d, void* record); // pozice textu v .T00 souboru (ukazatel na zacatek textu)
+
+	void saveB(FieldDescr* field_d, bool b, void* record);
+	void saveR(FieldDescr* field_d, double r, void* record);
+	void saveS(FieldDescr* field_d, std::string s, void* record);
+	void saveLongS(FieldDescr* field_d, LongStr* ls, void* record);
+	int saveT(FieldDescr* field_d, int pos, void* record);
 
 	void Close();
 	void Save();

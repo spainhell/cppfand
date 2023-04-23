@@ -1070,26 +1070,26 @@ void DuplFld(FileD* FD1, FileD* FD2, void* RP1, void* RP2, void* RPt, FieldDescr
 			CFile = FD2; CRecPtr = RP2;
 			if (RPt == nullptr) DelTFld(F2);
 			else DelDifTFld(RP2, RPt, F2);
-			LongS_(CFile, F2, ss);
+			CFile->saveLongS(F2, ss, CRecPtr);
 			ReleaseStore(ss);
 		}
 		else {
 			s = _ShortS(F1);
 			CFile = FD2; CRecPtr = RP2;
-			S_(CFile, F2, s, CRecPtr);
+			CFile->saveS(F2, s, CRecPtr);
 		}
 		break;
 	}
 	case 'R': {
-		r = _R(F1);
+		r = CFile->_R(F1, CRecPtr);
 		CFile = FD2; CRecPtr = RP2;
-		CFile->R_(F2, r, CRecPtr);
+		CFile->saveR(F2, r, CRecPtr);
 		break;
 	}
 	case 'B': {
-		b = CFile->_B(F1, CRecPtr);
+		b = CFile->loadB(F1, CRecPtr);
 		CFile = FD2; CRecPtr = RP2;
-		CFile->B_(F2, b, CRecPtr);
+		CFile->saveB(F2, b, CRecPtr);
 		break;
 	}
 	}
@@ -1777,10 +1777,10 @@ void WrJournal(char Upd, void* RP, double Time)
 
 		auto it = CFile->FldD.begin();
 
-		S_(CFile, *it++, std::string(1, Upd), newData.get());	// change type
-		CFile->R_(*it++, int(n), newData.get());						// record number
-		CFile->R_(*it++, int(UserCode), newData.get());				// user code
-		CFile->R_(*it++, Time, newData.get());							// timestamp
+		CFile->saveS(*it++, std::string(1, Upd), newData.get());	// change type
+		CFile->saveR(*it++, int(n), newData.get());						// record number
+		CFile->saveR(*it++, int(UserCode), newData.get());				// user code
+		CFile->saveR(*it++, Time, newData.get());							// timestamp
 
 		char* src = (char*)RP;
 		memcpy(&newData.get()[(*it)->Displ], &src[srcOffset], l);		// record data
@@ -2791,23 +2791,23 @@ bool PromptSearch(bool create)
 				x.StoreStr(s, KF);
 				CFile = FD;
 				CRecPtr = RP;
-				S_(CFile, F, s, CRecPtr);
+				CFile->saveS(F, s, CRecPtr);
 				break;
 			}
 			case 'R': {
-				r = _R(F2);
+				r = CFile->_R(F2, CRecPtr);
 				x.StoreReal(r, KF);
 				CFile = FD;
 				CRecPtr = RP;
-				CFile->R_(F, r, CRecPtr);
+				CFile->saveR(F, r, CRecPtr);
 				break;
 			}
 			case 'B': {
-				b = CFile->_B(F2, CRecPtr);
+				b = CFile->loadB(F2, CRecPtr);
 				x.StoreBool(b, KF);
 				CFile = FD;
 				CRecPtr = RP;
-				CFile->B_(F, b, CRecPtr);
+				CFile->saveB(F, b, CRecPtr);
 				break;
 			}
 			}
@@ -2857,18 +2857,18 @@ bool PromptSearch(bool create)
 			switch (F->frml_type) {
 			case 'S': {
 				x.StoreStr(s, KF);
-				S_(CFile, F, s, CRecPtr);
+				CFile->saveS(F, s, CRecPtr);
 				break;
 			}
 			case 'R': {
 				x.StoreReal(r, KF);
-				CFile->R_(F, r, CRecPtr);
+				CFile->saveR(F, r, CRecPtr);
 				break;
 			}
 			case 'B': {
 				b = s[0] = AbbrYes;
 				x.StoreBool(b, KF);
-				CFile->B_(F, b, CRecPtr);
+				CFile->saveB(F, b, CRecPtr);
 				break;
 			}
 			}
@@ -3392,7 +3392,7 @@ void UpdateEdTFld(LongStr* S)
 	if (!EdRecVar) md = CFile->NewLockMode(WrMode);
 	SetWasUpdated(CFile->FF, CRecPtr);
 	DelDifTFld(E->NewRecPtr, E->OldRecPtr, CFld->FldD);
-	LongS_(CFile, CFld->FldD, S);
+	CFile->saveLongS(CFld->FldD, S, CRecPtr);
 	if (!EdRecVar) CFile->OldLockMode(md);
 }
 
@@ -3402,7 +3402,7 @@ void UpdateTxtPos(WORD TxtPos)
 	if (IsCurrChpt()) {
 		md = CFile->NewLockMode(WrMode);
 		SetWasUpdated(CFile->FF, CRecPtr);
-		CFile->R_(ChptTxtPos, (short)TxtPos, CRecPtr);
+		CFile->saveR(ChptTxtPos, (short)TxtPos, CRecPtr);
 		CFile->OldLockMode(md);
 	}
 }
@@ -3466,7 +3466,7 @@ label1:
 	}
 	if (IsCurrChpt()) {
 		HdTxt = _StdS(ChptTyp, CRecPtr) + ':' + _StdS(ChptName, CRecPtr) + HdTxt;
-		TxtPos = trunc(_R(ChptTxtPos));
+		TxtPos = trunc(CFile->_R(ChptTxtPos, CRecPtr));
 		Breaks = BreakKeys2;
 		CtrlMsgNr = 131;
 	}
@@ -3666,9 +3666,9 @@ bool EditItemProc(bool del, bool ed, WORD& Brk)
 		}
 		SetWasUpdated(CFile->FF, CRecPtr);
 		switch (F->frml_type) {
-		case 'B': CFile->B_(F, toupper(Txt[0]) == AbbrYes, CRecPtr); break;
-		case 'S': S_(CFile, F, Txt, CRecPtr); break;
-		case 'R': CFile->R_(F, R, CRecPtr); break;
+		case 'B': CFile->saveB(F, toupper(Txt[0]) == AbbrYes, CRecPtr); break;
+		case 'S': CFile->saveS(F, Txt, CRecPtr); break;
+		case 'R': CFile->saveR(F, R, CRecPtr); break;
 		}
 	}
 	if (Brk == 0) result = CtrlMProc(1);
@@ -4116,7 +4116,7 @@ void Calculate2()
 						else if ((Z->Op == _unminus) && (iZ02->Op == _const)) R = -iZ02->R;
 						else goto label5;
 						SetWasUpdated(CFile->FF, CRecPtr);
-						CFile->R_(F, R * Power10[F->M], CRecPtr);
+						CFile->saveR(F, R * Power10[F->M], CRecPtr);
 					}
 					else
 						label5:
@@ -4652,7 +4652,7 @@ label81:
 		}
 		if (Event.Pressed.isChar()) {
 			// jedna se o tisknutelny znak
-			if (CFld->Ed(IsNewRec) && ((CFld->FldD->field_type != FieldType::TEXT) || (CFile->_T(CFld->FldD, CRecPtr) == 0))
+			if (CFld->Ed(IsNewRec) && ((CFld->FldD->field_type != FieldType::TEXT) || (CFile->loadT(CFld->FldD, CRecPtr) == 0))
 				&& LockRec(true)) {
 				//keyboard.AddToFrontKeyBuf(KbdChar); // vrati znak znovu do bufferu
 				const bool res = !EditItemProc(true, true, Brk);

@@ -666,7 +666,7 @@ bool RunBool(FrmlElem* X)
 		break;
 	}
 	case _field: {
-		result = CFile->_B(((FrmlElem7*)X)->Field, CRecPtr);
+		result = CFile->loadB(((FrmlElem7*)X)->Field, CRecPtr);
 		break;
 	}
 	case _access: {
@@ -721,7 +721,7 @@ bool RunBool(FrmlElem* X)
 		cf = CFile;
 		cr = CRecPtr;
 		AccRecNoProc(iX, 640);
-		result = CFile->_B(iX->RecFldD, CRecPtr);
+		result = CFile->loadB(iX->RecFldD, CRecPtr);
 		ReleaseStore(CRecPtr);
 		CFile = cf;
 		CRecPtr = cr;
@@ -879,7 +879,7 @@ label1:
 	switch (X->Op) {
 	case _field: {
 		auto iX = (FrmlElem7*)X;
-		result = _R(iX->Field);
+		result = CFile->_R(iX->Field, CRecPtr);
 		break;
 	}
 	case _getlocvar: {
@@ -1069,7 +1069,7 @@ label1:
 		auto iX = (FrmlElem14*)X;
 		cf = CFile; cr = CRecPtr;
 		AccRecNoProc(iX, 640);
-		result = _R(iX->RecFldD);
+		result = CFile->_R(iX->RecFldD, CRecPtr);
 		ReleaseStore(CRecPtr);
 		CFile = cf;
 		CRecPtr = cr;
@@ -1208,7 +1208,7 @@ void TestTFrml(FieldDescr* F, FrmlElem* Z, FandTFile** TF02, FileD** TFD02, int&
 		if (CFile->HasTWorkFlag(CRecPtr)) {
 			*TF02 = &TWork;
 		}
-		TF02Pos = CFile->_T(f1, CRecPtr);
+		TF02Pos = CFile->loadT(f1, CRecPtr);
 		break;
 	}
 	case _getlocvar: {
@@ -1300,24 +1300,24 @@ void AssgnFrml(FileD* file_d, void* record, FieldDescr* F, FrmlElem* X, bool Del
 			}
 			if (TryCopyT(F, tf, pos, X)) {
 				if (Delete) DelTFld(F);
-				file_d->T_(F, pos, record);
+				file_d->saveT(F, pos, record);
 			}
 			else {
 				std::string s = RunStdStr(X);
 				if (Delete) DelTFld(F);
-				S_(CFile, F, s, record);
+				CFile->saveS(F, s, record);
 			}
 		}
-		else S_(CFile, F, RunShortStr(X), record);
+		else CFile->saveS(F, RunShortStr(X), record);
 		break;
 	}
 	case 'R': {
-		if (Add) CFile->R_(F, _R(F) + RunReal(X), CRecPtr);
-		else CFile->R_(F, RunReal(X), CRecPtr);
+		if (Add) CFile->saveR(F, CFile->_R(F, CRecPtr) + RunReal(X), CRecPtr);
+		else CFile->saveR(F, RunReal(X), CRecPtr);
 		break;
 	}
 	case 'B': {
-		CFile->B_(F, RunBool(X), record);
+		CFile->saveB(F, RunBool(X), record);
 		break;
 	}
 	}
@@ -1411,12 +1411,12 @@ std::string DecodeField(FieldDescr* F, WORD LWw)
 	bool b = false;
 	switch (F->frml_type) {
 	case 'R': {
-		r = _R(F);
+		r = CFile->_R(F, CRecPtr);
 		break;
 	}
 	case 'S': {
 		if (F->field_type == FieldType::TEXT) {
-			if (((F->Flg & f_Stored) != 0) && (_R(F) == 0.0)) Txt = ".";
+			if (((F->Flg & f_Stored) != 0) && (CFile->_R(F, CRecPtr) == 0.0)) Txt = ".";
 			else Txt = "*";
 			return Txt;
 		}
@@ -1426,7 +1426,7 @@ std::string DecodeField(FieldDescr* F, WORD LWw)
 		break;
 	}
 	default: {
-		b = CFile->_B(F, CRecPtr);
+		b = CFile->loadB(F, CRecPtr);
 		break;
 	}
 	}

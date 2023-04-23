@@ -56,110 +56,10 @@ void CloseGoExit(FandFile* fand_file)
 
 BYTE ByteMask[_MAX_INT_DIG];
 
-const BYTE DblS = 8;
-const BYTE FixS = 8;
-BYTE Fix[FixS];
-BYTE RealMask[DblS + 1];
-BYTE Dbl[DblS];
 
-double RealFromFix(void* FixNo, WORD FLen)
-{
-	unsigned char ff[9]{ 0 };
-	unsigned char rr[9]{ 0 };
-	memcpy(ff + 1, FixNo, FLen); // zacneme na indexu 1 podle Pascal. kodu
-
-	bool neg = ((ff[1] & 0x80) != 0); // zaporne cislo urcuje 1 bit
-	if (neg) {
-		if (ff[1] == 0x80) {
-			for (size_t i = 2; i <= FLen; i++) {
-				if (ff[i] != 0x00) break;
-				return 0.0;
-			}
-		}
-		for (size_t i = 1; i <= FLen; i++) ff[i] = ~ff[i];
-		ff[FLen]++;
-		WORD I = FLen;
-		while (ff[I] == 0) {
-			I--;
-			if (I > 0) ff[I]++;
-		}
-	}
-	short first = 1;
-	while (ff[first] == 0) first++;
-	if (first > FLen) return 0;
-
-	short lef = 0;
-	unsigned char b = ff[first];
-	while ((b & 0x80) == 0) {
-		b = b << 1;
-		lef++;
-	}
-	ff[first] = ff[first] & (0x7F >> lef);
-	short exp = ((FLen - first) << 3) - lef + 1030;
-	if (lef == 7) first++;
-	lef = (lef + 5) & 0x07;
-	short rig = 8 - lef;
-	short i = 8 - 1; // velikost double - 1
-	if ((rig <= 4) && (first <= FLen)) {
-		rr[i] = ff[first] >> rig;
-		i--;
-	}
-	while ((i > 0) && (first < FLen)) {
-		rr[i] = (ff[first] << lef) + (ff[first + 1] >> rig);
-		i--;
-		first++;
-	}
-	if ((first == FLen) && (i > 0)) {
-		unsigned char t = ff[first] << lef;
-		rr[i] = t;
-	}
-	rr[DblS - 1] = (rr[DblS - 1] & 0x0F) + ((exp & 0x0F) << 4);
-	rr[DblS] = exp >> 4;
-	if (neg) rr[DblS] = rr[DblS] | 0x80;
-	return *(double*)&rr[1];
-}
-
-void FixFromReal(double r, void* FixNo, WORD FLen)
-{
-	unsigned char ff[9]{ 0 };
-	unsigned char rr[9]{ 0 };
-	// memcpy(ff + 1, FixNo, FLen); // zacneme na indexu 1 podle Pascal. kodu
-	if (r > 0) r += 0.5;
-	else r -= 0.5;
-	memcpy(rr + 1, &r, 8);
-	bool neg = ((rr[8] & 0x80) != 0); // zaporne cislo urcuje 1 bit
-	short exp = (rr[8 - 1] >> 4) + (WORD)((rr[8] & 0x7F) << 4);
-	if (exp < 2047)
-	{
-		rr[8] = 0;
-		rr[8 - 1] = rr[8 - 1] & 0x0F;
-		if (exp > 0) rr[8 - 1] = rr[8 - 1] | 0x10;
-		else exp++;
-		exp -= 1023;
-		if (exp > (FLen << 3) - 1) return; // OVERFLOW
-		int lef = (exp + 4) & 0x0007;
-		int rig = 8 - lef;
-		if ((exp & 0x0007) > 3) exp += 4;
-		int first = 7 - (exp >> 3);
-		int i = FLen;
-		while ((first < 8) && (i > 0)) {
-			ff[i] = (rr[first] >> rig) + (rr[first + 1] << lef);
-			i--;
-			first++;
-		}
-		if (i > 0) ff[i] = rr[first] >> rig;
-		if (neg) {
-			for (i = 1; i <= FLen; i++) ff[i] = ~ff[i];
-			ff[FLen]++;
-			i = FLen;
-			while (ff[i] == 0) {
-				i--;
-				if (i > 0) ff[i]++;
-			}
-		}
-	}
-	memcpy(FixNo, &ff[1], FLen);
-}
+//const BYTE FixS = 8;
+//BYTE Fix[FixS];
+//BYTE RealMask[DblS + 1];
 
 
 
@@ -190,7 +90,7 @@ bool IsNullValue(void* p, WORD l)
 
 void DelTFld(FieldDescr* F)
 {
-	int n = CFile->_T(F, CRecPtr);
+	int n = CFile->loadT(F, CRecPtr);
 	if (CFile->HasTWorkFlag(CRecPtr)) {
 		TWork.Delete(n);
 	}
@@ -199,16 +99,16 @@ void DelTFld(FieldDescr* F)
 		CFile->FF->TF->Delete(n);
 		CFile->OldLockMode(md);
 	}
-	CFile->T_(F, 0, CRecPtr);
+	CFile->saveT(F, 0, CRecPtr);
 }
 
 void DelDifTFld(void* Rec, void* CompRec, FieldDescr* F)
 {
 	void* cr = CRecPtr;
 	CRecPtr = CompRec;
-	int n = CFile->_T(F, CRecPtr);
+	int n = CFile->loadT(F, CRecPtr);
 	CRecPtr = Rec;
-	if (n != CFile->_T(F, CRecPtr)) DelTFld(F);
+	if (n != CFile->loadT(F, CRecPtr)) DelTFld(F);
 	CRecPtr = cr;
 }
 
@@ -221,7 +121,7 @@ void ZeroAllFlds(FileD* file_d, void* record)
 	FillChar(record, file_d->FF->RecLen, 0);
 	for (auto& F : file_d->FldD) {
 		if (((F->Flg & f_Stored) != 0) && (F->field_type == FieldType::ALFANUM)) {
-			S_(CFile, F, "", CRecPtr);
+			CFile->saveS(F, "", CRecPtr);
 		}
 	}
 }
@@ -281,103 +181,6 @@ void AsgnParFldFrml(FileD* FD, FieldDescr* F, FrmlElem* Z, bool Ad)
 	}
 	ReleaseStore(CRecPtr);
 	CFile = cf; CRecPtr = cr;
-}
-
-//std::string UnPack(char* input, WORD length)
-//{
-//	std::string result;
-//	size_t i = 0;
-//
-//	while (length > 0) {
-//		char c = input[i++];
-//		char c16 = c >> 4;
-//		c16 += 0x30;
-//		result += c16;
-//		length--;
-//		if (length == 0) break;
-//		c16 = c;
-//		c16 = c16 & 0x0F;
-//		c16 += 0x30;
-//		result += c16;
-//		length--;
-//	}
-//
-//	return result;
-//}
-
-double _RforD(FieldDescr* F, void* P)
-{
-	std::string s;
-	short err;
-	double r = 0;
-	s[0] = F->NBytes;
-	Move(P, &s[1], s.length());
-	switch (F->field_type) {
-	case FieldType::FIXED: {
-		ReplaceChar(s, ',', '.');
-		if ((F->Flg & f_Comma) != 0) {
-			size_t i = s.find('.');
-			if (i != std::string::npos) s.erase(i, 1);
-		}
-		val(LeadChar(' ', TrailChar(s, ' ')), r, err);
-		break;
-	}
-	case FieldType::DATE: {
-		r = ValDate(s, "YYYYMMDD");
-		break;
-	}
-	}
-	return r;
-}
-
-/// Read NUMBER from the record
-double _R(FieldDescr* F)
-{
-	void* P = CRecPtr;
-	char* source = (char*)P + F->Displ;
-	double result = 0.0;
-	double r;
-
-	if ((F->Flg & f_Stored) != 0) {
-		if (CFile->FF->file_type == FileType::DBF) result = _RforD(F, source);
-		else switch (F->field_type) {
-		case FieldType::FIXED: { // FIX CISLO (M,N)
-			r = RealFromFix(source, F->NBytes);
-			if ((F->Flg & f_Comma) == 0) result = r / Power10[F->M];
-			else result = r;
-			break;
-		}
-		case FieldType::DATE: { // DATUM DD.MM.YY
-			if (CFile->FF->file_type == FileType::FAND8) {
-				if (*(short*)source == 0) result = 0.0;
-				else result = *(short*)source + FirstDate;
-			}
-			else goto label1;
-			break;
-		}
-		case FieldType::REAL: {
-		label1:
-			if (P == nullptr) result = 0;
-			else {
-				result = Real48ToDouble(source);
-			}
-			break;
-		}
-		case FieldType::TEXT: {
-			short i = *(short*)source;
-			result = i;
-			break;
-		}
-		}
-	}
-	else return RunReal(F->Frml);
-	return result;
-}
-
-/// Save NUMBER to the record
-void R_(FieldDescr* F, double R, void* record)
-{
-	
 }
 
 /// Read LONG STRING from the record
@@ -482,13 +285,13 @@ std::string _StdS(FieldDescr* F, void* record)
 		}
 		case FieldType::TEXT: { // volny text max. 65k
 			if (CFile->HasTWorkFlag(CRecPtr)) {
-				LongStr* ls = TWork.Read(CFile->_T(F, CRecPtr));
+				LongStr* ls = TWork.Read(CFile->loadT(F, CRecPtr));
 				S = std::string(ls->A, ls->LL);
 				delete ls;
 			}
 			else {
 				md = CFile->NewLockMode(RdMode);
-				LongStr* ls = CFile->FF->TF->Read(CFile->_T(F, CRecPtr));
+				LongStr* ls = CFile->FF->TF->Read(CFile->loadT(F, CRecPtr));
 				S = std::string(ls->A, ls->LL);
 				delete ls;
 				CFile->OldLockMode(md);
@@ -502,96 +305,6 @@ std::string _StdS(FieldDescr* F, void* record)
 		return S;
 	}
 	return RunStdStr(F->Frml);
-}
-
-/// Save LONG STRING to the record
-void LongS_(FileD* file_d, FieldDescr* F, LongStr* S)
-{
-	// asi se vzdy uklada do souboru (nebo pracovniho souboru)
-	// nakonec vola T_
-	int Pos; LockMode md;
-
-	if ((F->Flg & f_Stored) != 0) {
-		if (S->LL == 0) file_d->T_(F, 0, CRecPtr);
-		else {
-			if ((F->Flg & f_Encryp) != 0) Coding::Code(S->A, S->LL);
-#ifdef FandSQL
-			if (file_d->IsSQLFile) { SetTWorkFlag; goto label1; }
-			else
-#endif
-				if (CFile->HasTWorkFlag(CRecPtr))
-					label1:
-			Pos = TWork.Store(S->A, S->LL);
-				else {
-					md = CFile->NewLockMode(WrMode);
-					Pos = file_d->FF->TF->Store(S->A, S->LL);
-					CFile->OldLockMode(md);
-				}
-			if ((F->Flg & f_Encryp) != 0) Coding::Code(S->A, S->LL);
-			file_d->T_(F, Pos, CRecPtr);
-		}
-	}
-}
-
-/// Save STD::STRING to the record
-void S_(FileD* file_d, FieldDescr* F, std::string S, void* record)
-{
-	const BYTE LeftJust = 1;
-	BYTE* pRec = (BYTE*)record + F->Displ;
-
-	if ((F->Flg & f_Stored) != 0) {
-		short L = F->L;
-		short M = F->M;
-		switch (F->field_type) {
-		case FieldType::ALFANUM: {
-			S = S.substr(0, F->L); // delka retezce je max. F->L
-			if (M == LeftJust) {
-				// doplnime mezery zprava
-				memcpy(pRec, S.c_str(), S.length()); // probiha kontrola max. delky retezce
-				memset(&pRec[S.length()], ' ', F->L - S.length());
-			}
-			else {
-				// doplnime mezery zleva
-				memset(pRec, ' ', F->L - S.length());
-				memcpy(&pRec[F->L - S.length()], S.c_str(), S.length());
-			}
-			if ((F->Flg & f_Encryp) != 0) {
-				Coding::Code(pRec, L);
-			}
-			break;
-		}
-		case FieldType::NUMERIC: {
-			S = S.substr(0, F->L); // delka retezce je max. F->L
-			BYTE tmpArr[80]{ 0 };
-			if (M == LeftJust) {
-				// doplnime nuly zprava
-				memcpy(tmpArr, S.c_str(), S.length());
-				memset(&tmpArr[S.length()], '0', F->L - S.length());
-			}
-			else {
-				// doplnime nuly zleva
-				memset(tmpArr, '0', F->L - S.length());
-				memcpy(&tmpArr[F->L - S.length()], S.c_str(), S.length());
-			}
-			bool odd = F->L % 2 == 1; // lichy pocet znaku
-			for (size_t i = 0; i < F->NBytes; i++) {
-				if (odd && i == F->NBytes - 1) {
-					pRec[i] = ((tmpArr[2 * i] - 0x30) << 4);
-				}
-				else {
-					pRec[i] = ((tmpArr[2 * i] - 0x30) << 4) + (tmpArr[2 * i + 1] - 0x30);
-				}
-			}
-			break;
-		}
-		case FieldType::TEXT: {
-			LongStr* ss = CopyToLongStr(S);
-			LongS_(file_d, F, ss);
-			delete ss;
-			break;
-		}
-		}
-	}
 }
 
 // zrejme zajistuje pristup do jine tabulky (cizi klic)
@@ -645,20 +358,21 @@ bool LinkUpw(LinkD* LD, int& N, bool WithT)
 				switch (F->frml_type) {
 				case 'S': {
 					x.S = _ShortS(F);
-					CFile = ToFD; CRecPtr = RecPtr;
-					S_(CFile, F2, x.S, CRecPtr);
+					CFile = ToFD;
+					CRecPtr = RecPtr;
+					CFile->saveS(F2, x.S, CRecPtr);
 					break;
 				}
 				case 'R': {
-					r = _R(F);
+					r = CFile->_R(F, CRecPtr);
 					CFile = ToFD; CRecPtr = RecPtr;
-					CFile->R_(F2, r, CRecPtr);
+					CFile->saveR(F2, r, CRecPtr);
 					break;
 				}
 				case 'B': {
-					b = CFile->_B(F, CRecPtr);
+					b = CFile->loadB(F, CRecPtr);
 					CFile = ToFD; CRecPtr = RecPtr;
-					CFile->B_(F2, b, CRecPtr);
+					CFile->saveB(F2, b, CRecPtr);
 					break;
 				}
 				}
@@ -682,7 +396,7 @@ void AssignNRecs(bool Add, int N)
 #ifdef FandSQL
 	if (CFile->IsSQLFile) {
 		if ((N = 0) && !Add) Strm1->DeleteXRec(nullptr, nullptr, false); return;
-	}
+}
 #endif
 	md = CFile->NewLockMode(DelMode);
 	OldNRecs = CFile->FF->NRecs;
@@ -727,8 +441,8 @@ void ClearRecSpace(void* p)
 		if (CFile->HasTWorkFlag(CRecPtr)) {
 			for (auto& f : CFile->FldD) {
 				if (((f->Flg & f_Stored) != 0) && (f->field_type == FieldType::TEXT)) {
-					TWork.Delete(CFile->_T(f, CRecPtr));
-					CFile->T_(f, 0, CRecPtr);
+					TWork.Delete(CFile->loadT(f, CRecPtr));
+					CFile->saveT(f, 0, CRecPtr);
 				}
 			}
 		}
@@ -756,20 +470,20 @@ void CopyRecWithT(void* p1, void* p2)
 			if ((tf1->Format != FandTFile::T00Format)) {
 				LongStr* s = _LongS(F);
 				CRecPtr = p2;
-				LongS_(CFile, F, s);
+				CFile->saveLongS(F, s, CRecPtr);
 				ReleaseStore(s);
 			}
 			else {
 				if (CFile->HasTWorkFlag(CRecPtr)) {
 					tf1 = &TWork;
 				}
-				int pos = CFile->_T(F, CRecPtr);
+				int pos = CFile->loadT(F, CRecPtr);
 				CRecPtr = p2;
 				if (CFile->HasTWorkFlag(CRecPtr)) {
 					tf2 = &TWork;
 				}
 				pos = CopyTFString(tf2, CFile, tf1, pos);
-				CFile->T_(F, pos, CRecPtr);
+				CFile->saveT(F, pos, CRecPtr);
 			}
 		}
 	}

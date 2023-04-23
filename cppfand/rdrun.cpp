@@ -59,7 +59,7 @@ bool Add(AddD* AD, void* RP, double R, bool Back)
 	auto result = true;
 	CRecPtr = RP;
 	if (Back) R = -R;
-	CFile->R_(AD->Field, _R(AD->Field) + R, CRecPtr);
+	CFile->saveR(AD->Field, CFile->_R(AD->Field, CRecPtr) + R, CRecPtr);
 	if (AD->Chk == nullptr) return result;
 	if (!Back && !RunBool(AD->Chk->Bool))
 	{
@@ -277,16 +277,16 @@ bool Assign(AddD* AD)
 	if (!Link(AD, N2, Kind2)) { return false; }
 	switch (F->frml_type) {
 	case 'R': {
-		CFile->R_(F, R, CRecPtr);
+		CFile->saveR(F, R, CRecPtr);
 		break;
 	}
 	case 'S': {
-		if (F->field_type == FieldType::TEXT) S_(CFile, F, S, CRecPtr);
-		else S_(CFile, F, ss, CRecPtr);
+		if (F->field_type == FieldType::TEXT) CFile->saveS(F, S, CRecPtr);
+		else CFile->saveS(F, ss, CRecPtr);
 		break;
 	}
 	default: {
-		CFile->B_(F, B, CRecPtr);
+		CFile->saveB(F, B, CRecPtr);
 		break;
 	}
 	}

@@ -40,9 +40,9 @@ void VarFixImp(ThFile* F1, CpOption Opt)
 		if ((F->Flg & f_Stored) != 0) {
 			if (F1->IsEOL) {
 				switch (F->frml_type) {
-				case 'R': CFile->R_(F, 0, CRecPtr); break;
-				case 'B': CFile->B_(F, false, CRecPtr); break;
-				case 'S': S_(CFile, F, "", CRecPtr); break;
+				case 'R': CFile->saveR(F, 0, CRecPtr); break;
+				case 'B': CFile->saveB(F, false, CRecPtr); break;
+				case 'S': CFile->saveS(F, "", CRecPtr); break;
 				default: ;
 				}
 			}
@@ -58,13 +58,13 @@ void VarFixImp(ThFile* F1, CpOption Opt)
 					val(LeadChar(' ', s), r, err);
 					if ((F->Flg & f_Comma) != 0) {
 						r = r * Power10[F->M];
-						CFile->R_(F, r, CRecPtr);
+						CFile->saveR(F, r, CRecPtr);
 					}
 					break;
 				}
 				case FieldType::ALFANUM: {
 					if (Opt == CpOption::cpFix) {
-						S_(CFile, F, F1->RdFix(F->L), CRecPtr);
+						CFile->saveS(F, F1->RdFix(F->L), CRecPtr);
 					}
 					else {
 						char c = (char)ForwChar;
@@ -76,16 +76,16 @@ void VarFixImp(ThFile* F1, CpOption Opt)
 						else {
 							s = F1->RdDelim(',');
 						}
-						S_(CFile, F, s, CRecPtr);
+						CFile->saveS(F, s, CRecPtr);
 					}
 					break;
 				}
 				case FieldType::NUMERIC: {
 					if (Opt == CpOption::cpFix) {
-						S_(CFile, F, F1->RdFix(F->L), CRecPtr);
+						CFile->saveS(F, F1->RdFix(F->L), CRecPtr);
 					}
 					else {
-						S_(CFile, F, F1->RdDelim(','), CRecPtr);
+						CFile->saveS(F, F1->RdDelim(','), CRecPtr);
 					}
 					break;
 				}
@@ -101,20 +101,20 @@ void VarFixImp(ThFile* F1, CpOption Opt)
 						}
 					}
 					if (s == "") {
-						CFile->R_(F, 0.0, CRecPtr);
+						CFile->saveR(F, 0.0, CRecPtr);
 					}
 					else if (F->field_type == FieldType::REAL) {
 						val(s, r, err);
-						CFile->R_(F, r, CRecPtr);
+						CFile->saveR(F, r, CRecPtr);
 					}
 					else {
-						CFile->R_(F, ValDate(s, F->Mask), CRecPtr);
+						CFile->saveR(F, ValDate(s, F->Mask), CRecPtr);
 					}
 					break;
 				}
 				case FieldType::BOOL: {
 					s = F1->RdFix(1);
-					CFile->B_(F, s[1] = 'A', CRecPtr);
+					CFile->saveB(F, s[1] = 'A', CRecPtr);
 					if (Opt == CpOption::cpVar) {
 						F1->RdDelim(',');
 					}
@@ -124,10 +124,10 @@ void VarFixImp(ThFile* F1, CpOption Opt)
 					if (Opt == CpOption::cpVar) {
 						std::string x = F1->RdLongStr();
 						s = F1->RdDelim(',');
-						S_(CFile, F, x, CRecPtr);
+						CFile->saveS(F, x, CRecPtr);
 					}
 					else {
-						CFile->T_(F, 0, CRecPtr);
+						CFile->saveT(F, 0, CRecPtr);
 					}
 					break;
 				}
@@ -154,7 +154,7 @@ void VarFixExp(ThFile* F2, CpOption Opt)
 
 			switch (F->field_type) {
 			case FieldType::FIXED: {
-				r = _R(F);
+				r = CFile->_R(F, CRecPtr);
 				if ((F->Flg & f_Comma) != 0) r = r / Power10[F->M];
 				str(r, F->L, F->M, s);
 				if (s.length() > F->L) {
@@ -196,7 +196,7 @@ void VarFixExp(ThFile* F2, CpOption Opt)
 			}
 			case FieldType::DATE:
 			case FieldType::REAL: {
-				r = _R(F);
+				r = CFile->_R(F, CRecPtr);
 				if ((r == 0.0) && (Opt == CpOption::cpVar)) s = "";
 				else if (F->field_type == FieldType::REAL) str(r, F->L, s);
 				else {
@@ -206,7 +206,7 @@ void VarFixExp(ThFile* F2, CpOption Opt)
 				break;
 			}
 			case FieldType::BOOL: {
-				if (CFile->_B(F, CRecPtr)) s = 'A';
+				if (CFile->loadB(F, CRecPtr)) s = 'A';
 				else s = 'N';
 				break;
 			}
@@ -676,8 +676,8 @@ void CodingCRdb(bool Rotate)
 
 void AddLicNr(FieldDescr* F)
 {
-	if (CFile->_T(F, CRecPtr) != 0) {
-		CFile->T_(F, CFile->_T(F, CRecPtr) + (WORD(UserLicNrShow) & 0x7FFF), CRecPtr);
+	if (CFile->loadT(F, CRecPtr) != 0) {
+		CFile->saveT(F, CFile->loadT(F, CRecPtr) + (WORD(UserLicNrShow) & 0x7FFF), CRecPtr);
 	}
 }
 

@@ -166,29 +166,44 @@ void FileD::RecallRec(int recNr, void* record)
 	WriteRec(recNr, record);
 }
 
-bool FileD::_B(FieldDescr* field_d, void* record)
+bool FileD::loadB(FieldDescr* field_d, void* record)
 {
-	return FF->_B(field_d, record);
+	return FF->loadB(field_d, record);
 }
 
-int FileD::_T(FieldDescr* field_d, void* record)
+double FileD::_R(FieldDescr* field_d, void* record)
 {
-	return FF->_T(field_d, record);
+	return FF->loadR(field_d, record);
 }
 
-void FileD::B_(FieldDescr* field_d, bool B, void* record)
+int FileD::loadT(FieldDescr* field_d, void* record)
 {
-	FF->B_(field_d, B, record);
+	return FF->loadT(field_d, record);
 }
 
-int FileD::T_(FieldDescr* field_d, int pos, void* record)
+void FileD::saveB(FieldDescr* field_d, bool b, void* record)
 {
-	return FF->T_(field_d, pos, record);
+	FF->saveB(field_d, b, record);
 }
 
-void FileD::R_(FieldDescr* field_d, double r, void* record)
+void FileD::saveR(FieldDescr* field_d, double r, void* record)
 {
-	FF->R_(field_d, r, record);
+	FF->saveR(field_d, r, record);
+}
+
+void FileD::saveS(FieldDescr* field_d, std::string s, void* record)
+{
+	FF->saveS(this, field_d, s, record);
+}
+
+void FileD::saveLongS(FieldDescr* field_d, LongStr* ls, void* record)
+{
+	FF->saveLongS(this, field_d, ls, record);
+}
+
+int FileD::saveT(FieldDescr* field_d, int pos, void* record)
+{
+	return FF->saveT(field_d, pos, record);
 }
 
 void FileD::Close()

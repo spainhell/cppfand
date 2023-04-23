@@ -833,19 +833,19 @@ void PutMFlds(KeyFldD* M)
 		case 'S': {
 				pstring s = _ShortS(f1);
 				CFile = cf; CRecPtr = cr;
-				S_(CFile, f, s, CRecPtr);
+				CFile->saveS(f, s, CRecPtr);
 				break;
 			}
 		case 'R': {
-				double r = _R(f1);
+				double r = CFile->_R(f1, CRecPtr);
 				CFile = cf; CRecPtr = cr;
-				CFile->R_(f, r, CRecPtr);
+				CFile->saveR(f, r, CRecPtr);
 				break;
 			}
 		default: {
-				bool b = CFile->_B(f1, CRecPtr);
+				bool b = CFile->loadB(f1, CRecPtr);
 				CFile = cf; CRecPtr = cr;
-				CFile->B_(f, b, CRecPtr);
+				CFile->saveB(f, b, CRecPtr);
 				break;
 			}
 		}

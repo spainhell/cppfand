@@ -37,14 +37,11 @@ void ResetCompilePars(); // r953 - posledni fce
 std::string TranslateOrd(std::string text);
 
 // * NACITANI ZE SOUBORU / Z FRMLELEM *
-double _R(FieldDescr* F);
+
 pstring _ShortS(FieldDescr* F);
 std::string _StdS(FieldDescr* F, void* record);
 LongStr* _LongS(FieldDescr* F);
 
-// * UKLADANI DO SOUBORU * / DO FRMLELEM *
-void S_(FileD* file_d, FieldDescr* F, std::string S, void* record);
-void LongS_(FileD* file_d, FieldDescr* F, LongStr* S);
 
 
 bool LinkUpw(LinkD* LD, int& N, bool WithT);
@@ -69,7 +66,7 @@ void CloseGoExit(FandFile* fand_file);
 void ClearCacheCFile();
 void ResetCFileUpdH();
 
-void FixFromReal(double r, void* FixNo, WORD FLen);
+
 
 std::string CExtToT(std::string dir, std::string name, std::string ext);
 std::string CExtToX(std::string dir, std::string name, std::string ext);
