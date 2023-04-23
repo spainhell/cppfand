@@ -246,7 +246,7 @@ void OpenOutp()
 #endif
 		{
 			if (OD->InplFD != nullptr) OD->FD = OpenDuplF(true);
-			else OD->Md = RewriteF(OD->Append);
+			else OD->Md = RewriteF(CFile, OD->Append);
 			OD = OD->pChain;
 		}
 	}

@@ -558,7 +558,7 @@ void SetRdbDir(char Typ, std::string* Nm)
 void ResetRdOnly()
 {
 	if (Chpt->FF->UMode == RdOnly) {
-		CloseFile();
+		CloseFile(CFile);
 		IsInstallRun = true;
 		OpenF(CFile, CPath, Exclusive);
 		IsInstallRun = false;
@@ -881,7 +881,7 @@ bool CompRunChptRec(WORD CC)
 	}
 	CFile = lstFD->pChain;
 	while (CFile != nullptr) {
-		CloseFile();
+		CloseFile(CFile);
 		CFile = CFile->pChain;
 	}
 	lstFD->pChain = nullptr;
@@ -1071,7 +1071,7 @@ bool EquStoredF(FieldDescr* F1, FieldDescr* F2)
 
 void DeleteF()
 {
-	CloseFile();
+	CloseFile(CFile);
 	SetCPathVol(CFile);
 	MyDeleteFile(CPath);
 	CPath = CExtToX(CDir, CName, CExt);
@@ -1100,7 +1100,7 @@ bool MergeAndReplace(FileD* fd_old, FileD* fd_new)
 		CFile = fd_old;
 		DeleteF();
 		CFile = fd_new;
-		CloseFile();
+		CloseFile(CFile);
 		fd_old->FF->file_type = fd_new->FF->file_type;
 		SetCPathVol(CFile);
 		std::string p = CPath;
@@ -1119,7 +1119,7 @@ bool MergeAndReplace(FileD* fd_old, FileD* fd_new)
 	catch (std::exception& e) {
 		// TODO: log error
 		CFile = fd_old;
-		CloseFile();
+		CloseFile(CFile);
 		CFile = fd_new;
 		DeleteF();
 		SpecFDNameAllowed = false;

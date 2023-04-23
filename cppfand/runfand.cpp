@@ -201,27 +201,26 @@ void RunRdb(std::string p)
 		wwmix ww;
 		EditExecRdb(n, "main", nullptr, &ww);
 		CFile = CatFD->GetCatalogFile();
-		CloseFile();
+		CloseFile(CFile);
 	}
 }
 
 void SelectRunRdb(bool OnFace)
 {
 	wwmix ww;
-	auto p = ww.SelectDiskFile(".RDB", 34, OnFace);
+	std::string p = ww.SelectDiskFile(".RDB", 34, OnFace);
 	RunRdb(p);
 }
 
 void CallInstallRdb()
 {
 	wwmix ww;
-	std::string p; std::string n;
-	p = ww.SelectDiskFile(".RDB", 35, true);
-	if ((!p.empty()) && SetTopDir(p, n))
-	{
+	std::string p = ww.SelectDiskFile(".RDB", 35, true);
+	std::string n;
+	if ((!p.empty()) && SetTopDir(p, n)) {
 		InstallRdb(n);
 		CFile = CatFD->GetCatalogFile();
-		CloseFile();
+		CloseFile(CFile);
 	}
 }
 
@@ -424,8 +423,6 @@ void InitRunFand()
 			}
 			else {
 			label0:
-				//pstring maska = "*.";
-				//pstring podretez = copy(paramstr.at(1), 1, 2);
 				//if (maska == podretez) {
 				if (paramstr.at(1).substr(0, 2) == "*.") {
 					SelectRunRdb(false);
@@ -478,10 +475,10 @@ void InitRunFand()
 #ifndef FandGraph
 	txt += "~GRAPH,";
 #endif
-/*#ifndef FandProlog
+#ifndef FandProlog
 	txt += "~PRL,";
 #endif
-#ifndef FandDML
+/*#ifndef FandDML
 	txt += "~DML,";
 #endif*/
 //#ifdef Coproc

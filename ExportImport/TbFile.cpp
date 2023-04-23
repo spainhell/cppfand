@@ -101,7 +101,7 @@ label1:
 					FILE* h = CFile->FF->Handle;
 					if (IsBackup) BackupFD();
 					else RestoreFD();
-					/*if (h == 0xff)*/ CloseFile();
+					/*if (h == 0xff)*/ CloseFile(CFile);
 				}
 				else {
 					CPath = FExpand(CatFD->GetPathName(i));

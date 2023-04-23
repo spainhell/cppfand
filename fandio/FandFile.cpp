@@ -581,7 +581,6 @@ void FandFile::SaveFile()
 
 void FandFile::CloseFile()
 {
-
 }
 
 void FandFile::SetTWorkFlag(void* record)

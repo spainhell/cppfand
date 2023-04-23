@@ -14,9 +14,9 @@ void OpenFANDFiles(bool FromDML);
 
 void CreateF();
 bool OpenCreateF(FileD* fileD, FileUseMode UM);
-LockMode RewriteF(bool Append);
-void TruncF();
-void CloseFile();
+LockMode RewriteF(FileD* file_d, bool Append);
+void TruncF(FileD* file_d);
+void CloseFile(FileD* file_d);
 void CloseFilesAfter(FileD* FD);
 bool ActiveRdbOnDrive(WORD D);
 void CloseFilesOnDrive(WORD D);

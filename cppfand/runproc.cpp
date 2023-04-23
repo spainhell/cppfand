@@ -1070,7 +1070,7 @@ void PutTxt(Instr_puttxt* PD)
 void AssgnCatFld(Instr_assign* PD)
 {
 	CFile = PD->FD3;
-	if (CFile != nullptr) CloseFile();
+	if (CFile != nullptr) CloseFile(CFile);
 	std::string data = RunShortStr(PD->Frml3);
 	CatFD->SetField(PD->CatIRec, PD->CatFld, data);
 }
@@ -1121,7 +1121,7 @@ void ResetCatalog()
 	while (CRdb != nullptr) {
 		CFile = CRdb->FD->pChain;
 		while (CFile != nullptr) {
-			CloseFile();
+			CloseFile(CFile);
 			CFile->CatIRec = GetCatalogIRec(CFile->Name, CFile->FF->file_type == FileType::RDB);
 #ifdef FandSQL
 			SetIsSQLFile();
@@ -1473,8 +1473,12 @@ void RunInstr(Instr* PD)
 		case _closefds: {
 			// zavre soubor
 			CFile = ((Instr_closefds*)PD)->clFD;
-			if (CFile == nullptr) ForAllFDs(ClosePassiveFD);
-			else if (!CFile->FF->IsShared() || (CFile->FF->LMode == NullMode)) CloseFile();
+			if (CFile == nullptr) {
+				ForAllFDs(ClosePassiveFD);
+			}
+			else if (!CFile->FF->IsShared() || (CFile->FF->LMode == NullMode)) {
+				CloseFile(CFile);
+			}
 			break;
 		}
 		case _backup: {
@@ -1731,7 +1735,7 @@ void CallProcedure(Instr_proc* PD)
 
 	CFile = lstFD->pChain;
 	while (CFile != nullptr) {
-		CloseFile();
+		CloseFile(CFile);
 		CFile = CFile->pChain;
 	}
 	lstFD->pChain = nullptr;

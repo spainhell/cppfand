@@ -257,13 +257,15 @@ int FileD::saveT(FieldDescr* field_d, int pos, void* record)
 void FileD::Close()
 {
 	if (FF != nullptr) {
-		FF->CloseFile();
+		FF->SaveFile();
 	}
 }
 
 void FileD::Save()
 {
-	FF->SaveFile();
+	if (FF != nullptr) {
+		FF->SaveFile();
+	}
 }
 
 void FileD::OldLockMode(LockMode mode)
