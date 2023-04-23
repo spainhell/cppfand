@@ -59,7 +59,7 @@ bool Add(AddD* AD, void* RP, double R, bool Back)
 	auto result = true;
 	CRecPtr = RP;
 	if (Back) R = -R;
-	CFile->saveR(AD->Field, CFile->_R(AD->Field, CRecPtr) + R, CRecPtr);
+	CFile->saveR(AD->Field, CFile->loadR(AD->Field, CRecPtr) + R, CRecPtr);
 	if (AD->Chk == nullptr) return result;
 	if (!Back && !RunBool(AD->Chk->Bool))
 	{

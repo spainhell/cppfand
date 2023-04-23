@@ -4,7 +4,6 @@
 #include "../Common/textfunc.h"
 #include "../cppfand/Coding.h"
 #include "../cppfand/GlobalVariables.h"
-#include "../cppfand/runfrml.h"
 #include "../pascal/real48.h"
 
 FandFile::FandFile()
@@ -87,7 +86,7 @@ void FandFile::DecNRecs(int n)
 void FandFile::PutRec(void* record, int& i_rec)
 {
 	NRecs++;
-	RdWrCache(WRITE, Handle, NotCached(),i_rec * RecLen + FrstDispl, RecLen, record);
+	RdWrCache(WRITE, Handle, NotCached(), i_rec * RecLen + FrstDispl, RecLen, record);
 	i_rec++;
 	Eof = true;
 }
@@ -101,18 +100,15 @@ bool FandFile::loadB(FieldDescr* field_d, void* record)
 {
 	bool result = false;
 	unsigned char* CP = (unsigned char*)record + field_d->Displ;
-	if ((field_d->Flg & f_Stored) != 0) {
-		if (CFile->FF->file_type == FileType::DBF) {
-			result = *CP == 'Y' || *CP == 'y' || *CP == 'T' || *CP == 't';
-		}
-		else if ((*CP == '\0') || (*CP == 0xFF)) {
-			result = false;
-		}
-		else result = true;
+
+	if (CFile->FF->file_type == FileType::DBF) {
+		result = *CP == 'Y' || *CP == 'y' || *CP == 'T' || *CP == 't';
 	}
-	else {
-		result = RunBool(field_d->Frml);
+	else if ((*CP == '\0') || (*CP == 0xFF)) {
+		result = false;
 	}
+	else result = true;
+
 	return result;
 }
 
@@ -122,39 +118,148 @@ double FandFile::loadR(FieldDescr* field_d, void* record)
 	double result = 0.0;
 	double r;
 
-	if ((field_d->Flg & f_Stored) != 0) {
-		if (CFile->FF->file_type == FileType::DBF) result = _RforD(field_d, source);
-		else switch (field_d->field_type) {
-		case FieldType::FIXED: { // FIX CISLO (M,N)
-			r = RealFromFix(source, field_d->NBytes);
-			if ((field_d->Flg & f_Comma) == 0) result = r / Power10[field_d->M];
-			else result = r;
-			break;
-		}
-		case FieldType::DATE: { // DATUM DD.MM.YY
-			if (CFile->FF->file_type == FileType::FAND8) {
-				if (*(short*)source == 0) result = 0.0;
-				else result = *(short*)source + FirstDate;
-			}
-			else goto label1;
-			break;
-		}
-		case FieldType::REAL: {
-		label1:
-			if (record == nullptr) result = 0;
-			else {
-				result = Real48ToDouble(source);
-			}
-			break;
-		}
-		case FieldType::TEXT: {
-			short i = *(short*)source;
-			result = i;
-			break;
-		}
-		}
+	if (CFile->FF->file_type == FileType::DBF) result = _RforD(field_d, source);
+	else switch (field_d->field_type) {
+	case FieldType::FIXED: { // FIX CISLO (M,N)
+		r = RealFromFix(source, field_d->NBytes);
+		if ((field_d->Flg & f_Comma) == 0) result = r / Power10[field_d->M];
+		else result = r;
+		break;
 	}
-	else return RunReal(field_d->Frml);
+	case FieldType::DATE: { // DATUM DD.MM.YY
+		if (CFile->FF->file_type == FileType::FAND8) {
+			if (*(short*)source == 0) result = 0.0;
+			else result = *(short*)source + FirstDate;
+		}
+		else goto label1;
+		break;
+	}
+	case FieldType::REAL: {
+	label1:
+		if (record == nullptr) result = 0;
+		else {
+			result = Real48ToDouble(source);
+		}
+		break;
+	}
+	case FieldType::TEXT: {
+		short i = *(short*)source;
+		result = i;
+		break;
+	}
+	}
+
+	return result;
+}
+
+std::string FandFile::loadS(FileD* parent, FieldDescr* field_d, void* record)
+{
+	char* source = (char*)record + field_d->Displ;
+	std::string S;
+	int Pos = 0; short err = 0;
+	LockMode md; WORD l = 0;
+	l = field_d->L;
+	switch (field_d->field_type)
+	{
+	case FieldType::ALFANUM:		// znakovy retezec max. 255 znaku
+	case FieldType::NUMERIC: {		// ciselny retezec max. 79 znaku
+		if (field_d->field_type == FieldType::ALFANUM) {
+			S = std::string(source, l);
+			if ((field_d->Flg & f_Encryp) != 0) Coding::Code(S);
+			if (!S.empty() && S[0] == '\0') {
+				S = RepeatString(' ', l);
+			}
+		}
+		else if (IsNullValue(source, field_d->NBytes)) {
+			S = RepeatString(' ', l);
+		}
+		else {
+			//jedna je o typ N - prevedeme cislo na znaky
+			for (BYTE i = 0; i < field_d->L; i++) {
+				bool upper = (i % 2) == 0; // jde o "levou" cislici
+				BYTE j = i / 2;
+				if (upper) { S += ((BYTE)source[j] >> 4) + 0x30; }
+				else { S += ((BYTE)source[j] & 0x0F) + 0x30; }
+			}
+		}
+		break;
+	}
+	case FieldType::TEXT: { // volny text max. 65k
+		if (HasTWorkFlag(record)) {
+			LongStr* ls = TWork.Read(loadT(field_d, record));
+			S = std::string(ls->A, ls->LL);
+			delete ls;
+		}
+		else {
+			md = parent->NewLockMode(RdMode);
+			LongStr* ls = TF->Read(loadT(field_d, record));
+			S = std::string(ls->A, ls->LL);
+			delete ls;
+			parent->OldLockMode(md);
+		}
+		if ((field_d->Flg & f_Encryp) != 0) {
+			Coding::Code(S);
+		}
+		break;
+	}
+	}
+	return S;
+}
+
+pstring FandFile::loadOldS(FieldDescr* field_d, void* record)
+{
+	char* source = (char*)record + field_d->Displ;
+	pstring S;
+	WORD l = field_d->L;
+	S[0] = l;
+	switch (field_d->field_type) {
+	case FieldType::ALFANUM:   	  // znakovy retezec max. 255 znaku
+	case FieldType::NUMERIC: {	  // ciselny retezec max. 79 znaku
+		if (field_d->field_type == FieldType::ALFANUM) {
+			Move(source, &S[1], l);
+			if ((field_d->Flg & f_Encryp) != 0) Coding::Code(&S[1], l);
+			if (S[1] == '\0') memset(&S[1], ' ', l);
+		}
+		else if (IsNullValue(source, field_d->NBytes)) {
+			FillChar(&S[0], l, ' ');
+		}
+		else {
+			for (size_t i = 0; i < l; i++) {
+				// kolikaty byte?
+				size_t iB = i / 2;
+				// leva nebo prava cislice?
+				if (i % 2 == 0) {
+					S[i + 1] = ((unsigned char)source[iB] >> 4) + 0x30;
+				}
+				else {
+					S[i + 1] = (source[iB] & 0x0F) + 0x30;
+				}
+			}
+		}
+		break;
+	}
+	case FieldType::TEXT: {		// volny text max. 65k
+		LongStr* ss = loadLongS(field_d, record);
+		if (ss->LL > 255) S = S.substr(0, 255);
+		else S = S.substr(0, ss->LL);
+		Move(&ss[0], &S[0], S.length());
+		ReleaseStore(ss);
+		break;
+	}
+	default:
+		break;
+	}
+	return S;
+}
+
+LongStr* FandFile::loadLongS(FieldDescr* field_d, void* record)
+{
+	std::string s = CFile->loadS(field_d, record);
+
+	LongStr* result = new LongStr(s.length());
+	result->LL = s.length();
+	memcpy(result->A, s.c_str(), s.length());
+
 	return result;
 }
 
@@ -293,9 +398,12 @@ void FandFile::saveS(FileD* parent, FieldDescr* field_d, std::string s, void* re
 			break;
 		}
 		case FieldType::TEXT: {
-			LongStr* ss = CopyToLongStr(s);
-			saveLongS(parent, field_d, ss, record);
-			delete ss;
+			size_t l = s.length();
+			LongStr* ls = new LongStr(l);
+			ls->LL = l;
+			memcpy(ls->A, s.c_str(), l);
+			saveLongS(parent, field_d, ls, record);
+			delete ls;
 			break;
 		}
 		}
@@ -540,21 +648,23 @@ void FandFile::SetDeletedFlag(void* record)
 	}
 }
 
-double FandFile::_RforD(FieldDescr* F, void* P)
+double FandFile::_RforD(FieldDescr* field_d, void* record)
 {
-	std::string s;
+	unsigned char* ptr = (unsigned char*)record;
 	short err;
 	double r = 0;
-	s[0] = F->NBytes;
-	Move(P, &s[1], s.length());
-	switch (F->field_type) {
+	std::string s = std::string((char*)&ptr[1], ptr[0]);
+
+	switch (field_d->field_type) {
 	case FieldType::FIXED: {
 		ReplaceChar(s, ',', '.');
-		if ((F->Flg & f_Comma) != 0) {
+		if ((field_d->Flg & f_Comma) != 0) {
 			size_t i = s.find('.');
 			if (i != std::string::npos) s.erase(i, 1);
 		}
-		val(LeadChar(' ', TrailChar(s, ' ')), r, err);
+		s = TrailChar(s, ' ');
+		s = LeadChar(s, ' ');
+		val(s, r, err);
 		break;
 	}
 	case FieldType::DATE: {
@@ -563,4 +673,13 @@ double FandFile::_RforD(FieldDescr* F, void* P)
 	}
 	}
 	return r;
+}
+
+bool FandFile::IsNullValue(void* record, WORD l)
+{
+	BYTE* pb = (BYTE*)record;
+	for (size_t i = 0; i < l; i++) {
+		if (pb[i] != 0xFF) return false;
+	}
+	return true;
 }

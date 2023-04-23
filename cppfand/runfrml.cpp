@@ -879,7 +879,7 @@ label1:
 	switch (X->Op) {
 	case _field: {
 		auto iX = (FrmlElem7*)X;
-		result = CFile->_R(iX->Field, CRecPtr);
+		result = CFile->loadR(iX->Field, CRecPtr);
 		break;
 	}
 	case _getlocvar: {
@@ -1069,7 +1069,7 @@ label1:
 		auto iX = (FrmlElem14*)X;
 		cf = CFile; cr = CRecPtr;
 		AccRecNoProc(iX, 640);
-		result = CFile->_R(iX->RecFldD, CRecPtr);
+		result = CFile->loadR(iX->RecFldD, CRecPtr);
 		ReleaseStore(CRecPtr);
 		CFile = cf;
 		CRecPtr = cr;
@@ -1312,7 +1312,7 @@ void AssgnFrml(FileD* file_d, void* record, FieldDescr* F, FrmlElem* X, bool Del
 		break;
 	}
 	case 'R': {
-		if (Add) CFile->saveR(F, CFile->_R(F, CRecPtr) + RunReal(X), CRecPtr);
+		if (Add) CFile->saveR(F, CFile->loadR(F, CRecPtr) + RunReal(X), CRecPtr);
 		else CFile->saveR(F, RunReal(X), CRecPtr);
 		break;
 	}
@@ -1411,17 +1411,17 @@ std::string DecodeField(FieldDescr* F, WORD LWw)
 	bool b = false;
 	switch (F->frml_type) {
 	case 'R': {
-		r = CFile->_R(F, CRecPtr);
+		r = CFile->loadR(F, CRecPtr);
 		break;
 	}
 	case 'S': {
 		if (F->field_type == FieldType::TEXT) {
-			if (((F->Flg & f_Stored) != 0) && (CFile->_R(F, CRecPtr) == 0.0)) Txt = ".";
+			if (((F->Flg & f_Stored) != 0) && (CFile->loadR(F, CRecPtr) == 0.0)) Txt = ".";
 			else Txt = "*";
 			return Txt;
 		}
 		else {
-			s = _StdS(F, CRecPtr);
+			s = CFile->loadS(F, CRecPtr);
 		}
 		break;
 	}
@@ -1528,7 +1528,7 @@ LongStr* RunLongStr(FrmlElem* X)
 		switch (X->Op) {
 		case _field: {
 			auto iX7 = (FrmlElem7*)X;
-			result = _LongS(iX7->Field);
+			result = CFile->loadLongS(iX7->Field, CRecPtr);
 			break;
 		}
 		case _getlocvar: {
@@ -1702,7 +1702,7 @@ LongStr* RunLongStr(FrmlElem* X)
 			auto iX = (FrmlElem14*)X;
 			cf = CFile; cr = CRecPtr;
 			AccRecNoProc(iX, 640);
-			S = _LongS(iX->RecFldD);
+			S = CFile->loadLongS(iX->RecFldD, CRecPtr);
 			//MyMove(S, CRecPtr, S->LL + 2);
 			ReleaseAfterLongStr(CRecPtr);
 			result = S;
@@ -1772,7 +1772,7 @@ label1:
 	switch (X->Op) {
 	case _field: {
 		auto iX7 = (FrmlElem7*)X;
-		result = _StdS(iX7->Field, CRecPtr);
+		result = CFile->loadS(iX7->Field, CRecPtr);
 		break;
 	}
 	case _getlocvar: {
@@ -1910,7 +1910,7 @@ label1:
 		cf = CFile;
 		cr = CRecPtr;
 		AccRecNoProc(iX, 640);
-		result = _StdS(iX->RecFldD, CRecPtr);
+		result = CFile->loadS(iX->RecFldD, CRecPtr);
 		ReleaseAfterLongStr(CRecPtr);
 		CFile = cf;
 		CRecPtr = cr;

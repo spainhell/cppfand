@@ -456,7 +456,7 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 					if (TypeT == LocalT) sp = TWork.Read(*LocalPPtr);
 					else {
 						CRecPtr = EditDRoot->NewRecPtr;
-						sp = _LongS(CFld->FldD);
+						sp = CFile->loadLongS(CFld->FldD, CRecPtr);
 					}
 					LenT = sp->LL;
 					// T = (CharArr*)(sp)

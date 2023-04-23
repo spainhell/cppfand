@@ -1025,8 +1025,8 @@ bool FindChpt(char Typ, const pstring& name, bool local, RdbPos* RP)
 		CFile = R->FD;
 		for (WORD i = 1; i <= CFile->FF->NRecs; i++) {
 			CFile->ReadRec(i, CRecPtr);
-			std::string chapterType = _StdS(ChptTyp, CRecPtr);
-			std::string chapterName = _StdS(ChptName, CRecPtr);
+			std::string chapterType = CFile->loadS(ChptTyp, CRecPtr);
+			std::string chapterName = CFile->loadS(ChptName, CRecPtr);
 			chapterName = TrailChar(chapterName, ' ');
 
 			if (chapterType.length() == 1

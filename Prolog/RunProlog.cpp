@@ -1703,7 +1703,7 @@ bool RunCommand(TCommand* COff/*PCommand*/)
 		else {
 			md = CFile->NewLockMode(RdMode);
 			LinkLastRec(CFile, n, true);
-			s = _LongS(c->FldD);
+			s = CFile->loadLongS(c->FldD, CRecPtr);
 			if (c->Code == _ConsultC) ConsultDb(std::string(s->A, s->LL), c->DbPred);
 			else LoadLex(s);
 		}
@@ -2019,10 +2019,10 @@ label1:
 std::string _MyS(FieldDescr* F)
 {
 	if (F->field_type == FieldType::ALFANUM) {
-		if (F->M == LeftJust) return OldTrailChar(' ', _ShortS(F));
-		else return LeadChar(' ', _ShortS(F));
+		if (F->M == LeftJust) return OldTrailChar(' ', CFile->loadOldS(F, CRecPtr));
+		else return LeadChar(' ', CFile->loadOldS(F, CRecPtr));
 	}
-	return _ShortS(F);
+	return CFile->loadOldS(F, CRecPtr);
 }
 
 bool ScanFile(TInstance* Q)
@@ -2097,7 +2097,7 @@ label1:
 				break;
 			}
 			case 'R': {
-				r = CFile->_R(f, CRecPtr);
+				r = CFile->loadR(f, CRecPtr);
 				if (t->Fun == prolog_func::_IntT) {
 					if (r != t->II) goto label1;
 				}
@@ -2109,7 +2109,7 @@ label1:
 					d = p->ArgDomains[i];
 					if (d->Typ == _LongStrD) s = RdLongStr(t->Pos);
 					else s = GetPackedTerm(t);
-					b = EquLongStr(s, _LongS(f));
+					b = EquLongStr(s, CFile->loadLongS(f, CRecPtr));
 					ReleaseStore(s);
 					if (!b) goto label1;
 				}
@@ -2139,16 +2139,16 @@ label1:
 			}
 			case 'R': {
 				if (d->Typ == _RealD) {
-					CurrInst->Vars[i] = GetRealTerm(CFile->_R(f, CRecPtr));
+					CurrInst->Vars[i] = GetRealTerm(CFile->loadR(f, CRecPtr));
 				}
 				else {
-					CurrInst->Vars[i] = GetIntTerm(trunc(CFile->_R(f, CRecPtr)));
+					CurrInst->Vars[i] = GetIntTerm(trunc(CFile->loadR(f, CRecPtr)));
 				}
 				break;
 			}
 			default: {
 				if (f->field_type == FieldType::TEXT) {
-					s = _LongS(f);
+					s = CFile->loadLongS(f, CRecPtr);
 					if (d->Typ == _LongStrD) {
 						CurrInst->Vars[i] = GetLongStrTerm(WrLongStr(s));
 					}

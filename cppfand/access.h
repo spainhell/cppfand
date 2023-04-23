@@ -36,14 +36,6 @@ void ResetCompilePars(); // r953 - posledni fce
 
 std::string TranslateOrd(std::string text);
 
-// * NACITANI ZE SOUBORU / Z FRMLELEM *
-
-pstring _ShortS(FieldDescr* F);
-std::string _StdS(FieldDescr* F, void* record);
-LongStr* _LongS(FieldDescr* F);
-
-
-
 bool LinkUpw(LinkD* LD, int& N, bool WithT);
 bool LinkLastRec(FileD* FD, int& N, bool WithT);
 

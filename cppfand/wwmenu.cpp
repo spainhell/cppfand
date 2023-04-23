@@ -979,13 +979,13 @@ label1:
 	}
 	for (i = 1; i <= CFile->FF->NRecs; i++) {
 		CFile->ReadRec(i, CRecPtr);
-		Nm = OldTrailChar(' ', _ShortS(NmF));
+		Nm = OldTrailChar(' ', CFile->loadOldS(NmF, CRecPtr));
 		if (CFile == HelpFD) fo = TVideoFont::foKamen;
 		else fo = fonts.VFont;
 		ConvToNoDiakr(&Nm[0], Nm.length(), fo);
 		if (EqualsMask(S, Nm)) {
 		label2:
-			result = _StdS(TxtF, CRecPtr);
+			result = CFile->loadS(TxtF, CRecPtr);
 			if (!ByName || (result.length() > 0) || (i == CFile->FF->NRecs)) {
 				if (CFile == HelpFD) {
 					ConvKamenToCurr(result);

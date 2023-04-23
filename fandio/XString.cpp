@@ -84,11 +84,11 @@ void XString::StoreKF(KeyFldD* KF)
 	FieldDescr* F = KF->FldD;
 	switch (F->frml_type) {
 	case 'S': {
-		StoreStr(_ShortS(F), KF);
+		StoreStr(CFile->loadOldS(F, CRecPtr), KF);
 		break;
 	}
 	case 'R': {
-		StoreReal(CFile->_R(F, CRecPtr), KF);
+		StoreReal(CFile->loadR(F, CRecPtr), KF);
 		break;
 	}
 	case 'B': {

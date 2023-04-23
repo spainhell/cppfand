@@ -154,7 +154,7 @@ void VarFixExp(ThFile* F2, CpOption Opt)
 
 			switch (F->field_type) {
 			case FieldType::FIXED: {
-				r = CFile->_R(F, CRecPtr);
+				r = CFile->loadR(F, CRecPtr);
 				if ((F->Flg & f_Comma) != 0) r = r / Power10[F->M];
 				str(r, F->L, F->M, s);
 				if (s.length() > F->L) {
@@ -173,7 +173,7 @@ void VarFixExp(ThFile* F2, CpOption Opt)
 				break;
 			}
 			case FieldType::ALFANUM: {
-				s = _StdS(F, CRecPtr);
+				s = CFile->loadS(F, CRecPtr);
 				if (Opt == CpOption::cpVar) {
 					if (F->M == 1) s = TrailChar(s, ' ');
 					else s = LeadChar(' ', s);
@@ -187,7 +187,7 @@ void VarFixExp(ThFile* F2, CpOption Opt)
 				break;
 			}
 			case FieldType::NUMERIC: {
-				s = _StdS(F, CRecPtr);
+				s = CFile->loadS(F, CRecPtr);
 				if (Opt == CpOption::cpVar) {
 					if (F->M == 1) s = TrailChar(s, '0');
 					else s = LeadChar('0', s);
@@ -196,7 +196,7 @@ void VarFixExp(ThFile* F2, CpOption Opt)
 			}
 			case FieldType::DATE:
 			case FieldType::REAL: {
-				r = CFile->_R(F, CRecPtr);
+				r = CFile->loadR(F, CRecPtr);
 				if ((r == 0.0) && (Opt == CpOption::cpVar)) s = "";
 				else if (F->field_type == FieldType::REAL) str(r, F->L, s);
 				else {
@@ -212,7 +212,7 @@ void VarFixExp(ThFile* F2, CpOption Opt)
 			}
 			case FieldType::TEXT: {
 				if (Opt == CpOption::cpVar) {
-					x = _LongS(F);
+					x = CFile->loadLongS(F, CRecPtr);
 					F2->WrLongStr(x, true);
 					delete x;
 				}
@@ -304,7 +304,7 @@ void ExportTxt(CopyD* CD)
 		if (CD->HdFD != nullptr) {
 			int n = 0;
 			LinkLastRec(CD->HdFD, n, true);
-			pstring s = _ShortS(CD->HdF);
+			pstring s = CFile->loadOldS(CD->HdF, CRecPtr);
 			int i = s.first('\r');
 			if (i > 0) s[0] = i - 1;
 			F2->WrString(s);

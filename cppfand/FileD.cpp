@@ -1,6 +1,7 @@
 #include "FileD.h"
 
 #include "GlobalVariables.h"
+#include "runfrml.h"
 #include "../cppfand/access.h"
 #include "../fandio/XKey.h"
 #include "../Logging/Logging.h"
@@ -93,7 +94,10 @@ void FileD::WriteRec(size_t rec_nr, void* record)
 
 BYTE* FileD::GetRecSpace()
 {
-	size_t length = FF->RecLen + 2;
+	size_t length = FF->RecLen + 3;
+	// 0. BYTE in front (.X00) -> Valid Record Flag
+	// 1. BYTE in the end -> Work Flag
+	// 2. BYTE in the end -> Update Flag
 	BYTE* result = new BYTE[length];
 	memset(result, '\0', length);
 	return result;
@@ -168,12 +172,56 @@ void FileD::RecallRec(int recNr, void* record)
 
 bool FileD::loadB(FieldDescr* field_d, void* record)
 {
-	return FF->loadB(field_d, record);
+	bool result;
+	if ((field_d->Flg & f_Stored) != 0) {
+		result = FF->loadB(field_d, record);
+	}
+	else
+	{
+		result = RunBool(field_d->Frml);
+	}
+	return result;
 }
 
-double FileD::_R(FieldDescr* field_d, void* record)
+double FileD::loadR(FieldDescr* field_d, void* record)
 {
-	return FF->loadR(field_d, record);
+	double result;
+	if ((field_d->Flg & f_Stored) != 0) {
+		result = FF->loadR(field_d, record);
+	}
+	else {
+		result = RunReal(field_d->Frml);
+	}
+	return result;
+}
+
+std::string FileD::loadS(FieldDescr* field_d, void* record)
+{
+	std::string result;
+	if ((field_d->Flg & f_Stored) != 0) {
+		result = FF->loadS(this, field_d, record);
+	}
+	else {
+		result = RunStdStr(field_d->Frml);
+	}
+	return result;
+}
+
+pstring FileD::loadOldS(FieldDescr* field_d, void* record)
+{
+	pstring s;
+	if ((field_d->Flg & f_Stored) != 0) {
+		s = FF->loadOldS(field_d, record);
+	}
+	else {
+		s = RunShortStr(field_d->Frml);
+	}
+	return s;
+}
+
+LongStr* FileD::loadLongS(FieldDescr* field_d, void* record)
+{
+	return FF->loadLongS(field_d, record);
 }
 
 int FileD::loadT(FieldDescr* field_d, void* record)

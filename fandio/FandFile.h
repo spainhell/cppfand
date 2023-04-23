@@ -57,6 +57,9 @@ public:
 
 	bool loadB(FieldDescr* field_d, void* record);
 	double loadR(FieldDescr* field_d, void* record);
+	std::string loadS(FileD* parent, FieldDescr* field_d, void* record);
+	pstring loadOldS(FieldDescr* field_d, void* record);
+	LongStr* loadLongS(FieldDescr* field_d, void* record);
 	int loadT(FieldDescr* F, void* record);
 
 	void saveB(FieldDescr* field_d, bool b, void* record);
@@ -83,6 +86,7 @@ public:
 	void SetDeletedFlag(void* record);
 
 private:
-	double _RforD(FieldDescr* F, void* P);
+	double _RforD(FieldDescr* field_d, void* record);
+	bool IsNullValue(void* record, WORD l);
 };
 

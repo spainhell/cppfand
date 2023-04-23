@@ -95,7 +95,9 @@ void ReleaseFilesAndLinksAfterChapter()
 	FuncDRoot = CRdb->OldFCRoot;
 	CFile = Chpt;
 
-	CRecPtr = E->NewRecPtr;
+	if (E != nullptr) {
+		CRecPtr = E->NewRecPtr;
+	}
 	R = CRdb->ChainBack;
 	if (R != nullptr) {
 		CRdb->HelpFD = R->HelpFD;
@@ -122,7 +124,7 @@ bool NetFileTest(RdbRecVars* X)
 void GetSplitChptName(std::string& Name, std::string& Ext)
 {
 	Ext = "";
-	std::string chptName = _StdS(ChptName, CRecPtr);
+	std::string chptName = CFile->loadS(ChptName, CRecPtr);
 	Name = TrailChar(chptName, ' ');
 	size_t i = Name.find('.');
 	if (i == std::string::npos) return;
@@ -136,7 +138,7 @@ void GetRdbRecVars(void* RecPtr, RdbRecVars* X)
 
 	cr = CRecPtr;
 	CRecPtr = RecPtr;
-	std::string s1 = _StdS(ChptTyp, CRecPtr);
+	std::string s1 = CFile->loadS(ChptTyp, CRecPtr);
 	X->Typ = s1[0];
 	GetSplitChptName(X->Name, X->Ext);
 	X->Txt = CFile->loadT(ChptTxt, CRecPtr);
@@ -250,7 +252,7 @@ bool IsDuplFileName(std::string name)
 	for (WORD I = 1; I <= Chpt->FF->NRecs; I++)
 		if (I != CRec()) {
 			CFile->ReadRec(I, CRecPtr);
-			if (_ShortS(ChptTyp) == 'F') {
+			if (CFile->loadOldS(ChptTyp, CRecPtr) == 'F') {
 				GetSplitChptName(n, e);
 				if (EquUpCase(name, n)) goto label1;
 			}
@@ -376,7 +378,7 @@ WORD FindHelpRecNr(FileD* FD, std::string& txt)
 	TxtF = NmF->pChain;
 	for (i = 1; i <= CFile->FF->NRecs; i++) {
 		CFile->ReadRec(i, CRecPtr);
-		std::string NmFtext = _StdS(NmF, CRecPtr);
+		std::string NmFtext = CFile->loadS(NmF, CRecPtr);
 		std::string nm = TrailChar(NmFtext, ' ');
 		ConvToNoDiakr(&nm[0], nm.length(), fonts.VFont);
 		if (EqualsMask(txt, nm)) {
@@ -694,7 +696,7 @@ FileD* FindFD()
 {
 	FileD* FD = nullptr; std::string FName; std::string d;
 	std::string name; std::string ext;
-	FName = OldTrailChar(' ', _ShortS(ChptName));
+	FName = OldTrailChar(' ', CFile->loadOldS(ChptName, CRecPtr));
 	FSplit(FName, d, name, ext);
 	FD = FileDRoot;
 	while (FD != nullptr) {
@@ -746,7 +748,7 @@ bool CompRunChptRec(WORD CC)
 		mv = MausVisible;
 
 		FD = nullptr;
-		STyp = _ShortS(ChptTyp);
+		STyp = CFile->loadOldS(ChptTyp, CRecPtr);
 		RP.R = CRdb;
 		RP.IRec = CRec();
 #ifdef FandSQL
@@ -1227,9 +1229,9 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 			CFile->ReadRec(I, CRecPtr);
 			RP.IRec = I;
 			Verif = CFile->loadB(ChptVerif, CRecPtr);
-			STyp = _ShortS(ChptTyp);
+			STyp = CFile->loadOldS(ChptTyp, CRecPtr);
 			Typ = STyp[1];
-			Name = OldTrailChar(' ', _ShortS(ChptName));
+			Name = OldTrailChar(' ', CFile->loadOldS(ChptName, CRecPtr));
 			Txt = CFile->loadT(ChptTxt, CRecPtr);
 			if (Verif && ((ChptTF->LicenseNr != 0) || Encryp || (Chpt->FF->UMode == RdOnly))) GoCompileErr(I, 647);
 			if (Verif || ChptTF->CompileAll || FromCtrlF10 || (Typ == 'U') ||
@@ -1242,11 +1244,14 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 					screen.GotoXY(3 + lmsg, 2);
 					printf("%*i", 4, I);
 					screen.GotoXY(3 + lmsg, 3);
-					printf("%*s%*s", 4, STyp.c_str(), 14, _ShortS(ChptName).c_str());
+					printf("%*s%*s", 4, STyp.c_str(), 14, CFile->loadOldS(ChptName, CRecPtr).c_str());
 					if (!(Typ == ' ' || Typ == 'D' || Typ == 'U')) { /* dupclicate name checking */
 						for (J = 1; J <= I - 1; J++) {
 							CFile->ReadRec(J, CRecPtr);
-							if ((STyp == _ShortS(ChptTyp)) && EquUpCase(Name, OldTrailChar(' ', _ShortS(ChptName)))) GoCompileErr(I, 649);
+							if ((STyp == CFile->loadOldS(ChptTyp, CRecPtr))
+								&& EquUpCase(Name, OldTrailChar(' ', CFile->loadOldS(ChptName, CRecPtr)))) {
+								GoCompileErr(I, 649);
+							}
 						}
 						CFile->ReadRec(I, CRecPtr);
 					}
@@ -1636,7 +1641,7 @@ void UpdateUTxt()
 		return;
 	}
 	CFile->ReadRec(1, CRecPtr);
-	if (_ShortS(ChptTyp) != 'U') {
+	if (CFile->loadOldS(ChptTyp, CRecPtr) != 'U') {
 		WrLLF10Msg(9);
 		return;
 	}
@@ -1644,7 +1649,7 @@ void UpdateUTxt()
 	WORD TxtPos = 1;
 	TextAttr = screen.colors.tNorm;
 	int OldPos = CFile->loadT(ChptTxt, CRecPtr);
-	LongStr* S = _LongS(ChptTxt);
+	LongStr* S = CFile->loadLongS(ChptTxt, CRecPtr);
 
 	if (CRdb->Encrypted) {
 		Coding::CodingLongStr(CFile, S);

@@ -147,7 +147,7 @@ bool Catalog::OldToNewCat(int& FilSz)
 std::string Catalog::getValue(size_t rec_nr, FieldDescr* field)
 {
 	cat_file_->ReadRec(rec_nr, record_);
-	std::string value = _StdS(field, record_);
+	std::string value = cat_file_->loadS(field, record_);
 	std::string result = TrailChar(value, ' ');
 	return result;
 }

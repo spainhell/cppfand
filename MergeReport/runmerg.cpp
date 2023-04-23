@@ -97,12 +97,12 @@ void SetOldMFlds(KeyFldD* M)
 		F = M->FldD;
 		switch (F->frml_type) {
 		case 'S': {
-			C.S = _ShortS(F);
+			C.S = CFile->loadOldS(F, CRecPtr);
 			OldMXStr.StoreStr(C.S, M);
 			break;
 		}
 		case 'R': {
-			C.R = CFile->_R(F, CRecPtr);
+			C.R = CFile->loadR(F, CRecPtr);
 			OldMXStr.StoreReal(C.R, M);
 			break;
 		}

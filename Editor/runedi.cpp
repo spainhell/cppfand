@@ -832,7 +832,7 @@ void Wr1Line(FieldDescr* F)
 {
 	auto X = screen.WhereX();
 	auto Y = screen.WhereY();
-	std::string ls = _StdS(F, CRecPtr);
+	std::string ls = CFile->loadS(F, CRecPtr);
 	ls = GetNthLine(ls, 1, 1);
 	WORD max = F->L - 2;
 	ls = GetStyledStringOfLength(ls, 0, max);
@@ -841,7 +841,7 @@ void Wr1Line(FieldDescr* F)
 	if (chars < max) screen.ScrFormatWrStyledText(X + chars, Y, E->dNorm, "%*c", max - chars, ' ');
 
 	/*pstring Txt;
-	LongStr* s = CopyLine(_LongS(F), 1, 1);
+	LongStr* s = CopyLine(loadLongS(F), 1, 1);
 	WORD max = F->L - 2;
 	WORD l = s->LL;
 	if (l > 255) l = 255;
@@ -1066,7 +1066,7 @@ void DuplFld(FileD* FD1, FileD* FD2, void* RP1, void* RP2, void* RPt, FieldDescr
 	switch (F1->frml_type) {
 	case 'S': {
 		if (F1->field_type == FieldType::TEXT) {
-			ss = _LongS(F1);
+			ss = CFile->loadLongS(F1, CRecPtr);
 			CFile = FD2; CRecPtr = RP2;
 			if (RPt == nullptr) DelTFld(F2);
 			else DelDifTFld(RP2, RPt, F2);
@@ -1074,14 +1074,14 @@ void DuplFld(FileD* FD1, FileD* FD2, void* RP1, void* RP2, void* RPt, FieldDescr
 			ReleaseStore(ss);
 		}
 		else {
-			s = _ShortS(F1);
+			s = CFile->loadOldS(F1, CRecPtr);
 			CFile = FD2; CRecPtr = RP2;
 			CFile->saveS(F2, s, CRecPtr);
 		}
 		break;
 	}
 	case 'R': {
-		r = CFile->_R(F1, CRecPtr);
+		r = CFile->loadR(F1, CRecPtr);
 		CFile = FD2; CRecPtr = RP2;
 		CFile->saveR(F2, r, CRecPtr);
 		break;
@@ -2618,7 +2618,7 @@ bool WriteCRec(bool MayDispl, bool& Displ)
 		case 2: {
 			// are old and new text positions same?
 			if ((*(int*)((char*)E->OldRecPtr + ChptTxt->Displ) == *(int*)((char*)CRecPtr + ChptTxt->Displ)) && PromptYN(157)) {
-				s = _LongS(ChptTxt);
+				s = CFile->loadLongS(ChptTxt, CRecPtr);
 				TWork.Delete(ClpBdPos);
 				ClpBdPos = TWork.Store(s->A, s->LL);
 				ReleaseStore(s);
@@ -2787,7 +2787,7 @@ bool PromptSearch(bool create)
 			FieldDescr* F2 = KF2->FldD;
 			switch (F->frml_type) {
 			case 'S': {
-				s = _ShortS(F2);
+				s = CFile->loadOldS(F2, CRecPtr);
 				x.StoreStr(s, KF);
 				CFile = FD;
 				CRecPtr = RP;
@@ -2795,7 +2795,7 @@ bool PromptSearch(bool create)
 				break;
 			}
 			case 'R': {
-				r = CFile->_R(F2, CRecPtr);
+				r = CFile->loadR(F2, CRecPtr);
 				x.StoreReal(r, KF);
 				CFile = FD;
 				CRecPtr = RP;
@@ -2877,7 +2877,7 @@ bool PromptSearch(bool create)
 				found = GotoXRec(&x, n);
 				if ((pos == 0) && (F->frml_type == 'S')) {
 					x = xOld;
-					x.StoreStr(_ShortS(F), KF);
+					x.StoreStr(CFile->loadOldS(F, CRecPtr), KF);
 				}
 				CRecPtr = RP;
 				if (pos != 0) {
@@ -3355,7 +3355,7 @@ bool GetChpt(pstring Heslo, int& NN)
 	for (int j = 1; j <= CFile->FF->NRecs; j++) {
 		CFile->ReadRec(j, CRecPtr);
 		if (IsCurrChpt()) {
-			s = OldTrailChar(' ', _ShortS(ChptName));
+			s = OldTrailChar(' ', CFile->loadOldS(ChptName, CRecPtr));
 			short i = s.first('.');
 			if (i > 0) s.Delete(i, 255);
 			if (EquUpCase(Heslo, s)) {
@@ -3364,7 +3364,7 @@ bool GetChpt(pstring Heslo, int& NN)
 			}
 		}
 		else {
-			s = OldTrailChar(' ', _ShortS(CFile->FldD.front()));
+			s = OldTrailChar(' ', CFile->loadOldS(CFile->FldD.front(), CRecPtr));
 			ConvToNoDiakr((WORD*)s[1], s.length(), fonts.VFont);
 			if (EqualsMask(&Heslo[1], Heslo.length(), s)) {
 				NN = j;
@@ -3465,8 +3465,8 @@ label1:
 		HdTxt[3] = 0x19; // ^Y
 	}
 	if (IsCurrChpt()) {
-		HdTxt = _StdS(ChptTyp, CRecPtr) + ':' + _StdS(ChptName, CRecPtr) + HdTxt;
-		TxtPos = trunc(CFile->_R(ChptTxtPos, CRecPtr));
+		HdTxt = CFile->loadS(ChptTyp, CRecPtr) + ':' + CFile->loadS(ChptName, CRecPtr) + HdTxt;
+		TxtPos = trunc(CFile->loadR(ChptTxtPos, CRecPtr));
 		Breaks = BreakKeys2;
 		CtrlMsgNr = 131;
 	}
@@ -3487,7 +3487,7 @@ label1:
 	OldTxtPos = TxtPos;
 	if (Ed) LockRec(false);
 	if ((F->Flg & f_Stored) != 0) {
-		S = _LongS(F);
+		S = CFile->loadLongS(F, CRecPtr);
 		if (Ed) Kind = 'T';
 	}
 	else {
@@ -3597,7 +3597,7 @@ label2:
 		goto label4;
 		break; }
 	case __ALT_F1: {
-		heslo = _ShortS(ChptTyp);
+		heslo = CFile->loadOldS(ChptTyp, CRecPtr);
 	label3:
 		Help((RdbD*)&HelpFD, heslo, false);
 		goto label4;

@@ -183,130 +183,6 @@ void AsgnParFldFrml(FileD* FD, FieldDescr* F, FrmlElem* Z, bool Ad)
 	CFile = cf; CRecPtr = cr;
 }
 
-/// Read LONG STRING from the record
-LongStr* _LongS(FieldDescr* F)
-{
-	std::string s = _StdS(F, CRecPtr);
-
-	LongStr* result = new LongStr(s.length());
-	result->LL = s.length();
-	memcpy(result->A, s.c_str(), s.length());
-
-	return result;
-}
-
-/// Read PASCAL STRING from the record
-pstring _ShortS(FieldDescr* F)
-{
-	void* P = CRecPtr;
-	char* source = (char*)P + F->Displ;
-	pstring S;
-	if ((F->Flg & f_Stored) != 0) {
-		WORD l = F->L;
-		S[0] = l;
-		switch (F->field_type) {
-		case FieldType::ALFANUM:   	// znakovy retezec max. 255 znaku
-		case FieldType::NUMERIC: {		// ciselny retezec max. 79 znaku
-			if (F->field_type == FieldType::ALFANUM) {
-				Move(source, &S[1], l);
-				if ((F->Flg & f_Encryp) != 0) Coding::Code(&S[1], l);
-				if (S[1] == '\0') memset(&S[1], ' ', l);
-			}
-			else if (IsNullValue(source, F->NBytes)) {
-				FillChar(&S[0], l, ' ');
-			}
-			else {
-				for (size_t i = 0; i < l; i++) {
-					// kolikaty byte?
-					size_t iB = i / 2;
-					// leva nebo prava cislice?
-					if (i % 2 == 0) {
-						S[i + 1] = ((unsigned char)source[iB] >> 4) + 0x30;
-					}
-					else {
-						S[i + 1] = (source[iB] & 0x0F) + 0x30;
-					}
-				}
-			}
-			break;
-		}
-		case FieldType::TEXT: {		// volny text max. 65k
-			LongStr* ss = _LongS(F);
-			if (ss->LL > 255) S = S.substr(0, 255);
-			else S = S.substr(0, ss->LL);
-			Move(&ss[0], &S[0], S.length());
-			ReleaseStore(ss);
-			break;
-		}
-		default:
-			break;
-		}
-		return S;
-	}
-	return RunShortStr(F->Frml);
-}
-
-/// Read STD::STRING from the record
-std::string _StdS(FieldDescr* F, void* record)
-{
-	char* source = (char*)record + F->Displ;
-	std::string S;
-	int Pos = 0; short err = 0;
-	LockMode md; WORD l = 0;
-	if ((F->Flg & f_Stored) != 0) {
-		l = F->L;
-		switch (F->field_type)
-		{
-		case FieldType::ALFANUM:		// znakovy retezec max. 255 znaku
-		case FieldType::NUMERIC: {		// ciselny retezec max. 79 znaku
-			if (F->field_type == FieldType::ALFANUM) {
-				S = std::string(source, l);
-				if ((F->Flg & f_Encryp) != 0) Coding::Code(S);
-				if (!S.empty() && S[0] == '\0') {
-					S = RepeatString(' ', l);
-				}
-			}
-			else if (IsNullValue(source, F->NBytes)) {
-				S = RepeatString(' ', l);
-			}
-			else
-			{
-				//jedna je o typ N - prevedeme cislo na znaky
-				//UnPack(P, S->A, l);
-				for (BYTE i = 0; i < F->L; i++) {
-					bool upper = (i % 2) == 0; // jde o "levou" cislici
-					BYTE j = i / 2;
-					if (upper) { S += ((BYTE)source[j] >> 4) + 0x30; }
-					else { S += ((BYTE)source[j] & 0x0F) + 0x30; }
-				}
-				//S = UnPack(source, l);
-			}
-			break;
-		}
-		case FieldType::TEXT: { // volny text max. 65k
-			if (CFile->HasTWorkFlag(CRecPtr)) {
-				LongStr* ls = TWork.Read(CFile->loadT(F, CRecPtr));
-				S = std::string(ls->A, ls->LL);
-				delete ls;
-			}
-			else {
-				md = CFile->NewLockMode(RdMode);
-				LongStr* ls = CFile->FF->TF->Read(CFile->loadT(F, CRecPtr));
-				S = std::string(ls->A, ls->LL);
-				delete ls;
-				CFile->OldLockMode(md);
-			}
-			if ((F->Flg & f_Encryp) != 0) {
-				Coding::Code(S);
-			}
-			break;
-		}
-		}
-		return S;
-	}
-	return RunStdStr(F->Frml);
-}
-
 // zrejme zajistuje pristup do jine tabulky (cizi klic)
 bool LinkUpw(LinkD* LD, int& N, bool WithT)
 {
@@ -357,14 +233,14 @@ bool LinkUpw(LinkD* LD, int& N, bool WithT)
 			if ((F2->Flg & f_Stored) != 0)
 				switch (F->frml_type) {
 				case 'S': {
-					x.S = _ShortS(F);
+					x.S = CFile->loadOldS(F, CRecPtr);
 					CFile = ToFD;
 					CRecPtr = RecPtr;
 					CFile->saveS(F2, x.S, CRecPtr);
 					break;
 				}
 				case 'R': {
-					r = CFile->_R(F, CRecPtr);
+					r = CFile->loadR(F, CRecPtr);
 					CFile = ToFD; CRecPtr = RecPtr;
 					CFile->saveR(F2, r, CRecPtr);
 					break;
@@ -468,7 +344,7 @@ void CopyRecWithT(void* p1, void* p2)
 			FandTFile* tf2 = tf1;
 			CRecPtr = p1;
 			if ((tf1->Format != FandTFile::T00Format)) {
-				LongStr* s = _LongS(F);
+				LongStr* s = CFile->loadLongS(F, CRecPtr);
 				CRecPtr = p2;
 				CFile->saveLongS(F, s, CRecPtr);
 				ReleaseStore(s);

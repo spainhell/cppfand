@@ -64,10 +64,12 @@ public:
 	void DeleteRec(int n, void* record);
 	void DelAllDifTFlds(void* Rec, void* CompRec);
 	void RecallRec(int recNr, void* record);
-
-	
+		
 	bool loadB(FieldDescr* field_d, void* record);
-	double _R(FieldDescr* field_d, void* record);
+	double loadR(FieldDescr* field_d, void* record);
+	std::string loadS(FieldDescr* field_d, void* record);
+	pstring loadOldS(FieldDescr* field_d, void* record);
+	LongStr* loadLongS(FieldDescr* field_d, void* record);
 	int loadT(FieldDescr* field_d, void* record); // pozice textu v .T00 souboru (ukazatel na zacatek textu)
 
 	void saveB(FieldDescr* field_d, bool b, void* record);

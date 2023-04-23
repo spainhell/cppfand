@@ -831,13 +831,13 @@ void PutMFlds(KeyFldD* M)
 		CRecPtr = cr1;
 		switch (f->frml_type) {
 		case 'S': {
-				pstring s = _ShortS(f1);
+				pstring s = CFile->loadOldS(f1, CRecPtr);
 				CFile = cf; CRecPtr = cr;
 				CFile->saveS(f, s, CRecPtr);
 				break;
 			}
 		case 'R': {
-				double r = CFile->_R(f1, CRecPtr);
+				double r = CFile->loadR(f1, CRecPtr);
 				CFile = cf; CRecPtr = cr;
 				CFile->saveR(f, r, CRecPtr);
 				break;
