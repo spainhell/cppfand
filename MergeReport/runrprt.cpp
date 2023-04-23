@@ -833,7 +833,7 @@ void PutMFlds(KeyFldD* M)
 		case 'S': {
 				pstring s = _ShortS(f1);
 				CFile = cf; CRecPtr = cr;
-				S_(CFile, f, s);
+				S_(CFile, f, s, CRecPtr);
 				break;
 			}
 		case 'R': {

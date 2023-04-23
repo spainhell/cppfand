@@ -221,7 +221,7 @@ void ZeroAllFlds(FileD* file_d, void* record)
 	FillChar(record, file_d->FF->RecLen, 0);
 	for (auto& F : file_d->FldD) {
 		if (((F->Flg & f_Stored) != 0) && (F->field_type == FieldType::ALFANUM)) {
-			S_(CFile, F, "");
+			S_(CFile, F, "", CRecPtr);
 		}
 	}
 }
@@ -537,11 +537,9 @@ void LongS_(FileD* file_d, FieldDescr* F, LongStr* S)
 void S_(FileD* file_d, FieldDescr* F, std::string S, void* record)
 {
 	const BYTE LeftJust = 1;
-	BYTE* pRec = nullptr;
+	BYTE* pRec = (BYTE*)record + F->Displ;
 
 	if ((F->Flg & f_Stored) != 0) {
-		if (record == nullptr) { pRec = (BYTE*)CRecPtr + F->Displ; }
-		else { pRec = (BYTE*)record + F->Displ; }
 		short L = F->L;
 		short M = F->M;
 		switch (F->field_type) {
@@ -648,7 +646,7 @@ bool LinkUpw(LinkD* LD, int& N, bool WithT)
 				case 'S': {
 					x.S = _ShortS(F);
 					CFile = ToFD; CRecPtr = RecPtr;
-					S_(CFile, F2, x.S);
+					S_(CFile, F2, x.S, CRecPtr);
 					break;
 				}
 				case 'R': {

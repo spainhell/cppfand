@@ -34,7 +34,7 @@ void ForAllFDs(void (*procedure)());
 bool IsActiveRdb(FileD* FD);
 void ResetCompilePars(); // r953 - posledni fce
 
-std::string TranslateOrd(std::string text); // r804 ASM
+std::string TranslateOrd(std::string text);
 
 // * NACITANI ZE SOUBORU / Z FRMLELEM *
 double _R(FieldDescr* F);
@@ -43,9 +43,9 @@ std::string _StdS(FieldDescr* F, void* record);
 LongStr* _LongS(FieldDescr* F);
 
 // * UKLADANI DO SOUBORU * / DO FRMLELEM *
-
-void S_(FileD* file_d, FieldDescr* F, std::string S, void* record = nullptr);
+void S_(FileD* file_d, FieldDescr* F, std::string S, void* record);
 void LongS_(FileD* file_d, FieldDescr* F, LongStr* S);
+
 
 bool LinkUpw(LinkD* LD, int& N, bool WithT);
 bool LinkLastRec(FileD* FD, int& N, bool WithT);

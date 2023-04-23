@@ -1076,7 +1076,7 @@ void DuplFld(FileD* FD1, FileD* FD2, void* RP1, void* RP2, void* RPt, FieldDescr
 		else {
 			s = _ShortS(F1);
 			CFile = FD2; CRecPtr = RP2;
-			S_(CFile, F2, s);
+			S_(CFile, F2, s, CRecPtr);
 		}
 		break;
 	}
@@ -2791,7 +2791,7 @@ bool PromptSearch(bool create)
 				x.StoreStr(s, KF);
 				CFile = FD;
 				CRecPtr = RP;
-				S_(CFile, F, s);
+				S_(CFile, F, s, CRecPtr);
 				break;
 			}
 			case 'R': {
@@ -2857,7 +2857,7 @@ bool PromptSearch(bool create)
 			switch (F->frml_type) {
 			case 'S': {
 				x.StoreStr(s, KF);
-				S_(CFile, F, s);
+				S_(CFile, F, s, CRecPtr);
 				break;
 			}
 			case 'R': {
@@ -3667,7 +3667,7 @@ bool EditItemProc(bool del, bool ed, WORD& Brk)
 		SetWasUpdated(CFile->FF, CRecPtr);
 		switch (F->frml_type) {
 		case 'B': CFile->B_(F, toupper(Txt[0]) == AbbrYes, CRecPtr); break;
-		case 'S': S_(CFile, F, Txt); break;
+		case 'S': S_(CFile, F, Txt, CRecPtr); break;
 		case 'R': CFile->R_(F, R, CRecPtr); break;
 		}
 	}

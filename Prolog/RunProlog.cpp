@@ -1697,7 +1697,7 @@ bool RunCommand(TCommand* COff/*PCommand*/)
 			if (!LinkLastRec(CFile, n, true)) CFile->IncNRecs(1);
 			DelTFld(c->FldD);
 			std::string save = SaveDb(c->DbPred, 0);
-			S_(CFile, c->FldD, save);
+			S_(CFile, c->FldD, save, CRecPtr);
 			CFile->WriteRec(CFile->FF->NRecs, CRecPtr);
 		}
 		else {
@@ -1915,7 +1915,7 @@ void AssertFand(TPredicate* P, TCommand* C)
 					LongS_(CFile, f, s);
 					ReleaseStore(s);
 				}
-				else S_(CFile, f, t->SS);
+				else S_(CFile, f, t->SS, CRecPtr);
 				break;
 			}
 			}

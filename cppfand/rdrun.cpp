@@ -281,8 +281,8 @@ bool Assign(AddD* AD)
 		break;
 	}
 	case 'S': {
-		if (F->field_type == FieldType::TEXT) S_(CFile, F, S);
-		else S_(CFile, F, ss);
+		if (F->field_type == FieldType::TEXT) S_(CFile, F, S, CRecPtr);
+		else S_(CFile, F, ss, CRecPtr);
 		break;
 	}
 	default: {

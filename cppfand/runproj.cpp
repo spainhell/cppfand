@@ -1305,7 +1305,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 						RprtTxt = SelGenRprt(Name);
 						CFile = Chpt;
 						if (RprtTxt.empty()) GoCompileErr(I, 1145);
-						S_(CFile, ChptTxt, RprtTxt);
+						S_(CFile, ChptTxt, RprtTxt, CRecPtr);
 						CFile->WriteRec(I, CRecPtr);
 					}
 					else {

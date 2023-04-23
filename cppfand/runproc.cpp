@@ -191,7 +191,7 @@ void AssignRecVar(LocVar* LV1, LocVar* LV2, AssignD* A)
 			CFile = FD1;
 			CRecPtr = RP1;
 			switch (F->frml_type) {
-			case 'S': { S_(CFile, F, EmptyStr); break; }
+			case 'S': { S_(CFile, F, EmptyStr, CRecPtr); break; }
 			case 'R': { CFile->R_(F, 0.0, CRecPtr); break; }
 			default: { CFile->B_(F, false, CRecPtr); break; }
 			}
