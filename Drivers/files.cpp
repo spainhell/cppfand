@@ -140,7 +140,7 @@ long GetFileAttr(const std::string& path, DWORD& error)
 	DWORD result = GetFileAttributesA(path.c_str());
 	if (result == INVALID_FILE_ATTRIBUTES) {
 		error = GetLastError();
-		return -1;
+		return 0;
 	}
 	else {
 		error = 0;

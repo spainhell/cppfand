@@ -778,11 +778,9 @@ void DelEndT()
 
 void TestUpdFile()
 {
-	// DelEndT();
-	if (UpdatT) {
+	if (TxtFH != nullptr && UpdatT) {
 		UpdateFile();
 	}
-	//if (Part.UpdP) { UpdateFile(); }
 }
 
 void WrEndT()
