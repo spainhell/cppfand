@@ -6,12 +6,14 @@
 #include "../cppfand/GlobalVariables.h"
 #include "../pascal/real48.h"
 
-FandFile::FandFile()
+FandFile::FandFile(FileD* parent)
 {
+	_parent = parent;
 }
 
 FandFile::FandFile(const FandFile& orig)
 {
+	_parent = orig._parent;
 	RecLen = orig.RecLen;
 	file_type = orig.file_type;
 	Drive = orig.Drive;
@@ -645,6 +647,18 @@ void FandFile::SetDeletedFlag(void* record)
 	case FileType::INDEX: { ptr[0] = 1; break; }
 	case FileType::DBF: { ptr[0] = '*'; break; }
 	}
+}
+
+void FandFile::ClearXFUpdLock()
+{
+	if (XF != nullptr) {
+		XF->ClearUpdLock();
+	}
+}
+
+FileD* FandFile::GetFileD()
+{
+	return _parent;
 }
 
 double FandFile::_RforD(FieldDescr* field_d, void* record)

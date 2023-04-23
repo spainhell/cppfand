@@ -2,9 +2,12 @@
 #include "XPage.h"
 #include "XXPage.h"
 
+class FandFile;
+
 class XWFile
 {
 public:
+	XWFile(FandFile* parent);
 	unsigned short UpdLockCnt = 0;
 	FILE* Handle = nullptr;
 	int FreeRoot = 0;
@@ -18,4 +21,7 @@ public:
 	void WrPage(XXPage* p, int pageNr);
 	int NewPage(XPage* P);
 	void ReleasePage(XPage* P, int N);
+
+protected:
+	FandFile* _parent;
 };

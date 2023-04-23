@@ -272,7 +272,7 @@ void AssignNRecs(bool Add, int N)
 #ifdef FandSQL
 	if (CFile->IsSQLFile) {
 		if ((N = 0) && !Add) Strm1->DeleteXRec(nullptr, nullptr, false); return;
-}
+	}
 #endif
 	md = CFile->NewLockMode(DelMode);
 	OldNRecs = CFile->FF->NRecs;
@@ -401,14 +401,47 @@ LongStr* ReadDelInTWork(int Pos)
 	return result;
 }
 
-void ForAllFDs(void(*procedure)())
+void ForAllFDs(ForAllFilesOperation op, FileD** file_d, WORD i)
 {
 	FileD* cf = CFile;
 	RdbD* R = CRdb;
 	while (R != nullptr) {
 		CFile = R->FD;
 		while (CFile != nullptr) {
-			procedure();
+			switch (op) {
+			case ForAllFilesOperation::close: {
+				CFile->Close();
+				break;
+			}
+			case ForAllFilesOperation::save: {
+				break;
+			}
+			case ForAllFilesOperation::clear_xf_update_lock: {
+				CFile->FF->ClearXFUpdLock();
+				break;
+			}
+			case ForAllFilesOperation::save_l_mode: {
+				CFile->FF->ExLMode = CFile->FF->LMode;
+				break;
+			}
+			case ForAllFilesOperation::set_old_lock_mode: {
+				CFile->OldLockMode(CFile->FF->ExLMode);
+				break;
+			}
+			case ForAllFilesOperation::close_passive_fd: {
+				if ((CFile->FF->file_type != FileType::RDB) && (CFile->FF->LMode == NullMode)) {
+					CloseFile(CFile);
+				}
+				break;
+			}
+			case ForAllFilesOperation::find_fd_for_i: {
+				if ((*file_d == nullptr) && (CFile->CatIRec == i)) {
+					*file_d = CFile;
+				}
+				break;
+			}
+			default:;
+			}
 			CFile = CFile->pChain;
 		}
 		R = R->ChainBack;

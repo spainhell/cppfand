@@ -13,7 +13,7 @@ FileD::FileD(FType f_type)
 	this->FileType = f_type;
 	switch (f_type) {
 	case FType::FandFile: {
-		this->FF = new FandFile();
+		this->FF = new FandFile(this);
 		break;
 	}
 	default:;

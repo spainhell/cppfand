@@ -9,12 +9,6 @@
 FileD* x_FD = nullptr;
 WORD x_I = 0;
 
-void FindFDforI() {
-	if ((x_FD == nullptr) && (CFile->CatIRec == x_I)) {
-		x_FD = CFile;
-	}
-}
-
 TbFile::TbFile(bool noCompress) : TyFile()
 {
 	Size = 0;
@@ -95,7 +89,7 @@ label1:
 				}
 				x_FD = nullptr;
 				x_I = i;
-				ForAllFDs(FindFDforI);
+				ForAllFDs(ForAllFilesOperation::find_fd_for_i, &x_FD, x_I);
 				CFile = x_FD;
 				if (CFile != nullptr) {
 					FILE* h = CFile->FF->Handle;

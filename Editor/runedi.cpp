@@ -4938,7 +4938,7 @@ label81:
 						case __ALT_F3:
 							if (IsCurrChpt()) {
 								if (KbdChar == __ALT_F3) {
-									ForAllFDs(ClosePassiveFD);
+									ForAllFDs(ForAllFilesOperation::close_passive_fd);
 									EditHelpOrCat(KbdChar, 0, "");
 								}
 								else {

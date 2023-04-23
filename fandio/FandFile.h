@@ -23,7 +23,7 @@ enum class FileType
 class FandFile
 {
 public:
-	FandFile();
+	FandFile(FileD* parent);
 	FandFile(const FandFile& orig);
 
 	unsigned short RecLen = 0;
@@ -85,7 +85,12 @@ public:
 	void ClearDeletedFlag(void* record);
 	void SetDeletedFlag(void* record);
 
+	void ClearXFUpdLock();
+
+	FileD* GetFileD();
+
 private:
+	FileD* _parent;
 	double _RforD(FieldDescr* field_d, void* record);
 	bool IsNullValue(void* record, WORD l);
 };

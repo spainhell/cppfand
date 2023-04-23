@@ -5,6 +5,11 @@
 #include "../cppfand/obaseww.h"
 #include "../fandio/FandXFile.h"
 
+XWFile::XWFile(FandFile* parent)
+{
+	_parent = parent;
+}
+
 void XWFile::Err(unsigned short N)
 {
 	if (this == &XWork) {
@@ -30,7 +35,7 @@ int XWFile::UsedFileSize()
 
 bool XWFile::NotCached()
 {
-	return (this != &XWork) && CFile->FF->NotCached();
+	return (this != &XWork) && _parent->NotCached();
 }
 
 

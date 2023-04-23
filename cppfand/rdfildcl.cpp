@@ -1061,9 +1061,13 @@ void SetHCatTyp(FileType FDTyp)
 void GetTFileD(FileType file_type)
 {
 	if (!HasTT && (CFile->FF->TF == nullptr)) return;
-	if (CFile->FF->TF == nullptr) CFile->FF->TF = new FandTFile();
+	if (CFile->FF->TF == nullptr) {
+		CFile->FF->TF = new FandTFile(CFile->FF);
+	}
 	CFile->FF->TF->Handle = nullptr;
-	if (file_type == FileType::DBF) CFile->FF->TF->Format = FandTFile::DbtFormat;
+	if (file_type == FileType::DBF) {
+		CFile->FF->TF->Format = FandTFile::DbtFormat;
+	}
 }
 
 void GetXFileD()
@@ -1075,7 +1079,7 @@ void GetXFileD()
 	}
 	else {
 		if (CFile->FF->XF == nullptr) {
-			CFile->FF->XF = new FandXFile();
+			CFile->FF->XF = new FandXFile(CFile->FF);
 		}
 		CFile->FF->XF->Handle = nullptr;
 	}

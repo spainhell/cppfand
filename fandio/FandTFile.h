@@ -4,6 +4,7 @@
 #include "../Common/FileEnums.h"
 #include "../Common/LongStr.h"
 
+class FandFile;
 typedef char PwCodeArr[20];
 
 const unsigned short MPageSize = 512;
@@ -13,7 +14,7 @@ const unsigned char MPageShft = 9;
 class FandTFile
 {
 public:
-	FandTFile() {}
+	FandTFile(FandFile* parent);
 	FandTFile(const FandTFile& orig);
 	FILE* Handle = nullptr;
 	int FreePart = 0;
@@ -44,6 +45,7 @@ public:
 	int Store(char* s, size_t l);
 
 private:
+	FandFile* _parent;
 	void RdWr(FileOperation operation, size_t position, size_t count, char* buffer);
 	void GetMLen();
 	long eofPos = 0;

@@ -47,27 +47,12 @@ void SaveFiles()
 	FileD* catalog_file = CatFD->GetCatalogFile();
 	catalog_file->FF->WrPrefixes();
 	
-	RdbD* R = CRdb;
-	while (R != nullptr) {
-		FileD* file_d = R->FD;
-		while (file_d != nullptr) {
-			file_d->Close();
-			file_d = file_d->pChain;
-		}
-		R = R->ChainBack;
-	}
+	ForAllFDs(ForAllFilesOperation::close);
 	
 	bool b = SaveCache(0, catalog_file->FF->Handle);
 	FlushHandles();
 
 	if (!b) GoExit();
-}
-
-void ClosePassiveFD()
-{
-	if ((CFile->FF->file_type != FileType::RDB) && (CFile->FF->LMode == NullMode)) {
-		CloseFile(CFile);
-	}
 }
 
 void CloseFANDFiles(bool FromDML)
@@ -671,14 +656,14 @@ FileD* OpenDuplF(bool CrTF)
 			delete FD->FF->XF;
 			FD->FF->XF = nullptr;
 		}
-		FD->FF->XF = new FandXFile();
+		FD->FF->XF = new FandXFile(FD->FF);
 		FD->FF->XF->Handle = nullptr;
 		FD->FF->XF->NoCreate = true;
 		/*else xfile name identical with orig file*/
 	}
 
 	if (CrTF && (FD->FF->TF != nullptr)) {
-		FD->FF->TF = new FandTFile();
+		FD->FF->TF = new FandTFile(FD->FF);
 		*FD->FF->TF = *OldFD->FF->TF;
 		SetTempCExt('T', net);
 		FD->FF->TF->Handle = OpenH(CPath, _isoverwritefile, Exclusive);

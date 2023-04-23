@@ -6,7 +6,7 @@
 TzFile::TzFile(bool BkUp, bool NoCompr, bool SubDirO, bool OverwrO, WORD Ir, pstring aDir)
 {
 	SaveFiles();
-	ForAllFDs(ClosePassiveFD);
+	ForAllFDs(ForAllFilesOperation::close_passive_fd);
 	//if NoCompr then inherited Init(0) else inherited Init(1);
 	IsBackup = BkUp;
 	SubDirOpt = SubDirO;

@@ -26,11 +26,16 @@ struct FuncD
 	pstring Name;
 };
 
+enum class ForAllFilesOperation {
+	close, save, save_l_mode, set_old_lock_mode, close_passive_fd, clear_xf_update_lock, find_fd_for_i
+};
+
 void* LocVarAd(LocVar* LV);
 bool EquKFlds(KeyFldD* KF1, KeyFldD* KF2);
 int StoreInTWork(LongStr* S);
 LongStr* ReadDelInTWork(int Pos);
-void ForAllFDs(void (*procedure)());
+void ForAllFDs(ForAllFilesOperation op, FileD** file_d = nullptr, WORD i = 0);
+
 bool IsActiveRdb(FileD* FD);
 void ResetCompilePars(); // r953 - posledni fce
 

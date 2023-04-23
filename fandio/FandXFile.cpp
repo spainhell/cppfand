@@ -12,7 +12,11 @@
 #include "XWorkFile.h"
 
 
-FandXFile::FandXFile(const FandXFile& orig)
+FandXFile::FandXFile(FandFile* parent): XWFile(parent)
+{
+}
+
+FandXFile::FandXFile(const FandXFile& orig): XWFile(orig._parent)
 {
 	NRecs = orig.NRecs;
 	NRecsAbs = orig.NRecsAbs;
@@ -29,7 +33,7 @@ void FandXFile::SetEmpty()
 	p->IsLeaf = true;
 	FreeRoot = 0;
 	NRecs = 0;
-	for (auto& k : CFile->Keys) {
+	for (auto& k : _parent->GetFileD()->Keys) {
 		int n = k->IndexRoot;
 		MaxPage = n;
 		WrPage(p.get(), n);
@@ -56,8 +60,8 @@ void FandXFile::WrPrefix()
 	//	Handle, CFile->NRecs, CFile->GetNrKeys());
 	unsigned short Signum = 0x04FF;
 	RdWrCache(WRITE, Handle, NotCached(), 0, 2, &Signum);
-	NRecsAbs = CFile->FF->NRecs;
-	NrKeys = CFile->GetNrKeys();
+	NRecsAbs = _parent->NRecs;
+	NrKeys = (unsigned char)_parent->GetFileD()->GetNrKeys();
 	RdWrCache(WRITE, Handle, NotCached(), 2, 4, &FreeRoot);
 	RdWrCache(WRITE, Handle, NotCached(), 6, 4, &MaxPage);
 	RdWrCache(WRITE, Handle, NotCached(), 10, 4, &NRecs);
@@ -72,7 +76,12 @@ void FandXFile::SetNotValid()
 	NotValid = true;
 	MaxPage = 0;
 	WrPrefix();
-	SaveCache(0, CFile->FF->Handle);
+	SaveCache(0, _parent->Handle);
+}
+
+void FandXFile::ClearUpdLock()
+{
+	UpdLockCnt = 0;
 }
 
 void XFNotValid()
@@ -140,11 +149,4 @@ void CreateIndexFile()
 	CFile->Unlock(0);
 	CFile->OldLockMode(md);
 	if (fail) GoExit();
-}
-
-void ClearXFUpdLock()
-{
-	if (CFile->FF->XF != nullptr) {
-		CFile->FF->XF->UpdLockCnt = 0;
-	}
 }

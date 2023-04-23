@@ -1474,7 +1474,7 @@ void RunInstr(Instr* PD)
 			// zavre soubor
 			CFile = ((Instr_closefds*)PD)->clFD;
 			if (CFile == nullptr) {
-				ForAllFDs(ClosePassiveFD);
+				ForAllFDs(ForAllFilesOperation::close_passive_fd);
 			}
 			else if (!CFile->FF->IsShared() || (CFile->FF->LMode == NullMode)) {
 				CloseFile(CFile);

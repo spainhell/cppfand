@@ -121,10 +121,10 @@ bool NetFileTest(RdbRecVars* X)
 	return false;
 }
 
-void GetSplitChptName(std::string& Name, std::string& Ext)
+void GetSplitChapterName(FileD* file_d, void* record, std::string& Name, std::string& Ext)
 {
 	Ext = "";
-	std::string chptName = CFile->loadS(ChptName, CRecPtr);
+	std::string chptName = file_d->loadS(ChptName, record);
 	Name = TrailChar(chptName, ' ');
 	size_t i = Name.find('.');
 	if (i == std::string::npos) return;
@@ -140,7 +140,7 @@ void GetRdbRecVars(void* RecPtr, RdbRecVars* X)
 	CRecPtr = RecPtr;
 	std::string s1 = CFile->loadS(ChptTyp, CRecPtr);
 	X->Typ = s1[0];
-	GetSplitChptName(X->Name, X->Ext);
+	GetSplitChapterName(CFile, CRecPtr, X->Name, X->Ext);
 	X->Txt = CFile->loadT(ChptTxt, CRecPtr);
 	X->OldTxt = CFile->loadT(ChptOldTxt, CRecPtr);
 	if (X->Typ == 'F') {
@@ -244,23 +244,31 @@ bool ChptDel()
 
 bool IsDuplFileName(std::string name)
 {
-	std::string n; std::string e; void* cr;
-	auto result = true;
-	if (EquUpCase(name, Chpt->Name)) return result;
-	cr = CRecPtr;
-	CRecPtr = CFile->GetRecSpace();
-	for (WORD I = 1; I <= Chpt->FF->NRecs; I++)
-		if (I != CRec()) {
-			CFile->ReadRec(I, CRecPtr);
-			if (CFile->loadOldS(ChptTyp, CRecPtr) == 'F') {
-				GetSplitChptName(n, e);
-				if (EquUpCase(name, n)) goto label1;
+	bool result;
+
+	if (EquUpCase(name, Chpt->Name)) {
+		result = true;
+	}
+	else {
+		result = false;
+		std::string n; std::string e;
+		BYTE* record = CFile->GetRecSpace();
+		for (int i = 1; i <= Chpt->FF->NRecs; i++) {
+			if (i != CRec()) {
+				CFile->ReadRec(i, record);
+				if (CFile->loadOldS(ChptTyp, record) == 'F') {
+					GetSplitChapterName(CFile, record, n, e);
+					if (EquUpCase(name, n)) {
+						result = true;
+						break;
+					}
+				}
 			}
 		}
-	result = false;
-label1:
-	ReleaseStore(CRecPtr);
-	CRecPtr = cr;
+		delete[] record;
+		record = nullptr;
+	}
+
 	return result;
 }
 
@@ -303,7 +311,10 @@ WORD ChptWriteCRec()
 	if (New.Typ == 'F') {
 		if (New.Name.length() > 8) { WrLLF10Msg(1002); return result; }
 		if (New.FTyp == FileType::UNKNOWN) { WrLLF10Msg(1067); return result; }
-		if (IsDuplFileName(New.Name)) { WrLLF10Msg(1068); return result; }
+		if (IsDuplFileName(New.Name)) {
+			WrLLF10Msg(1068);
+			return result;
+		}
 		if ((New.FTyp == FileType::RDB) && (New.Txt != 0)) { WrLLF10Msg(1083); return result; }
 		if (NetFileTest(&New) && !TestIsNewRec() &&
 			(Old.Typ == 'F') && (eq != _equ) && !PromptYN(824)) {
@@ -877,7 +888,7 @@ bool CompRunChptRec(WORD CC)
 		ShowMouse();
 	}
 	if (WasError) {
-		ForAllFDs(ClearXFUpdLock);
+		ForAllFDs(ForAllFilesOperation::clear_xf_update_lock);
 	}
 	CFile = lstFD->pChain;
 	while (CFile != nullptr) {
@@ -1536,10 +1547,16 @@ bool EditExecRdb(std::string Nm, std::string proc_name, Instr_proc* proc_call, w
 	Chpt->FF->WasRdOnly = false;
 	if (!top && (Chpt->FF->NRecs > 0))
 		if (CompileRdb(true, false, false)) {
-			if (FindChpt('P', proc_name, true, &RP)) GotoRecFld(RP.IRec, CFld);
+			if (FindChpt('P', proc_name, true, &RP)) {
+				GotoRecFld(RP.IRec, CFld);
+			}
 		}
-		else goto label4;
-	else if (ChptTF->IRec <= Chpt->FF->NRecs) GotoRecFld(ChptTF->IRec, CFld);
+		else {
+			goto label4;
+		}
+	else if (ChptTF->IRec <= Chpt->FF->NRecs) {
+		GotoRecFld(ChptTF->IRec, CFld);
+	}
 label1:
 	RunEdit(nullptr, Brk);
 label2:

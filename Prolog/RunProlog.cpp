@@ -2204,16 +2204,6 @@ label2:
 	return result;
 }
 
-void SaveLMode()
-{
-	CFile->FF->ExLMode = CFile->FF->LMode;
-}
-
-void SetOldLockMode()
-{
-	CFile->OldLockMode(CFile->FF->ExLMode);
-}
-
 void TraceCall(TInstance* Q, BYTE X)
 {
 	WORD i = 0, w = 0;
@@ -2416,7 +2406,7 @@ void RunProlog(RdbPos* Pos, std::string PredName)
 	LastExitCode = 1;
 	//oldSg = _Sg;
 	oldCurrInst = CurrInst;
-	ForAllFDs(SaveLMode);
+	ForAllFDs(ForAllFilesOperation::save_l_mode);
 	WMark = MaxWSize;
 	if (ProlgCallLevel == 1) {
 		MarkBoth(pm1, pm2);
@@ -2871,7 +2861,7 @@ label8_end:
 	/*writeln(AbsAdr(HeapPtr)-AbsAdr(pm1),'/',AbsAdr(pm2)-AbsAdr(Stack2Ptr)); */
 	//_Sg = oldSg;
 	CurrInst = oldCurrInst;
-	ForAllFDs(SetOldLockMode);
+	ForAllFDs(ForAllFilesOperation::set_old_lock_mode);
 	MaxWSize = WMark;
 	if (ProlgCallLevel == 1) ReleaseBoth(pm1, pm2);
 	else {

@@ -136,8 +136,14 @@ void RandArrayByBytes(void* arr, size_t len)
 	}
 }
 
+FandTFile::FandTFile(FandFile* parent)
+{
+	_parent = parent;
+}
+
 FandTFile::FandTFile(const FandTFile& orig)
 {
+	_parent = orig._parent;
 	Format = orig.Format;
 }
 
@@ -167,7 +173,7 @@ int FandTFile::UsedFileSize()
 
 bool FandTFile::NotCached()
 {
-	return !IsWork && CFile->FF->NotCached();
+	return !IsWork && _parent->NotCached();
 }
 
 bool FandTFile::Cached()
