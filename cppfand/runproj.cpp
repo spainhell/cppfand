@@ -1226,7 +1226,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 		for (I = 1; I <= Chpt->FF->NRecs; I++) {
 			CFile->ReadRec(I, CRecPtr);
 			RP.IRec = I;
-			Verif = _B(ChptVerif);
+			Verif = CFile->_B(ChptVerif, CRecPtr);
 			STyp = _ShortS(ChptTyp);
 			Typ = STyp[1];
 			Name = OldTrailChar(' ', _ShortS(ChptName));

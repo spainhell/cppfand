@@ -2,6 +2,7 @@
 
 #include "DbfFile.h"
 #include "../cppfand/GlobalVariables.h"
+#include "../cppfand/runfrml.h"
 #include "../pascal/real48.h"
 
 FandFile::FandFile()
@@ -92,6 +93,25 @@ void FandFile::PutRec(void* record, int& i_rec)
 size_t FandFile::RecordSize()
 {
 	return RecLen;
+}
+
+bool FandFile::_B(FieldDescr* field_d, void* record)
+{
+	bool result = false;
+	unsigned char* CP = (unsigned char*)record + field_d->Displ;
+	if ((field_d->Flg & f_Stored) != 0) {
+		if (CFile->FF->file_type == FileType::DBF) {
+			result = *CP == 'Y' || *CP == 'y' || *CP == 'T' || *CP == 't';
+		}
+		else if ((*CP == '\0') || (*CP == 0xFF)) {
+			result = false;
+		}
+		else result = true;
+	}
+	else {
+		result = RunBool(field_d->Frml);
+	}
+	return result;
 }
 
 int FandFile::_T(FieldDescr* F, void* record)

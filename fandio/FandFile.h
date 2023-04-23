@@ -53,7 +53,7 @@ public:
 
 	size_t RecordSize();
 
-	
+	bool _B(FieldDescr* field_d, void* record);
 	int _T(FieldDescr* F, void* record);
 
 	void B_(FieldDescr* field_d, bool b, void* record);

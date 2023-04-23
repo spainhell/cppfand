@@ -2093,7 +2093,7 @@ label1:
 			f = fl->FldD;
 			switch (f->frml_type) {
 			case 'B': {
-				if (_B(f) != t->BB) goto label1;
+				if (CFile->_B(f, CRecPtr) != t->BB) goto label1;
 				break;
 			}
 			case 'R': {
@@ -2134,7 +2134,7 @@ label1:
 			d = p->ArgDomains[i];
 			switch (f->frml_type) {
 			case 'B': {
-				CurrInst->Vars[i] = GetBoolTerm(_B(f));
+				CurrInst->Vars[i] = GetBoolTerm(CFile->_B(f, CRecPtr));
 				break;
 			}
 			case 'R': {

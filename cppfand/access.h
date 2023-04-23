@@ -37,7 +37,6 @@ void ResetCompilePars(); // r953 - posledni fce
 std::string TranslateOrd(std::string text); // r804 ASM
 
 // * NACITANI ZE SOUBORU / Z FRMLELEM *
-bool _B(FieldDescr* F);
 double _R(FieldDescr* F);
 pstring _ShortS(FieldDescr* F);
 std::string _StdS(FieldDescr* F, void* record);

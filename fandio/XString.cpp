@@ -92,7 +92,7 @@ void XString::StoreKF(KeyFldD* KF)
 		break;
 	}
 	case 'B': {
-		StoreBool(_B(F), KF);
+		StoreBool(CFile->_B(F, CRecPtr), KF);
 		break;
 	}
 	}

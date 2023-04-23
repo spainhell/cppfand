@@ -1087,7 +1087,7 @@ void DuplFld(FileD* FD1, FileD* FD2, void* RP1, void* RP2, void* RPt, FieldDescr
 		break;
 	}
 	case 'B': {
-		b = _B(F1);
+		b = CFile->_B(F1, CRecPtr);
 		CFile = FD2; CRecPtr = RP2;
 		CFile->B_(F2, b, CRecPtr);
 		break;
@@ -2803,7 +2803,7 @@ bool PromptSearch(bool create)
 				break;
 			}
 			case 'B': {
-				b = _B(F2);
+				b = CFile->_B(F2, CRecPtr);
 				x.StoreBool(b, KF);
 				CFile = FD;
 				CRecPtr = RP;

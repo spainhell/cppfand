@@ -206,7 +206,7 @@ void VarFixExp(ThFile* F2, CpOption Opt)
 				break;
 			}
 			case FieldType::BOOL: {
-				if (_B(F)) s = 'A';
+				if (CFile->_B(F, CRecPtr)) s = 'A';
 				else s = 'N';
 				break;
 			}

@@ -166,14 +166,19 @@ void FileD::RecallRec(int recNr, void* record)
 	WriteRec(recNr, record);
 }
 
-int FileD::_T(FieldDescr* F, void* record)
+bool FileD::_B(FieldDescr* field_d, void* record)
 {
-	return FF->_T(F, record);
+	return FF->_B(field_d, record);
 }
 
-void FileD::B_(FieldDescr* F, bool B, void* record)
+int FileD::_T(FieldDescr* field_d, void* record)
 {
-	FF->B_(F, B, record);
+	return FF->_T(field_d, record);
+}
+
+void FileD::B_(FieldDescr* field_d, bool B, void* record)
+{
+	FF->B_(field_d, B, record);
 }
 
 int FileD::T_(FieldDescr* field_d, int pos, void* record)

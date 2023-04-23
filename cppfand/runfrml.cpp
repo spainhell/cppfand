@@ -657,9 +657,18 @@ bool RunBool(FrmlElem* X)
 		result = MouseInRectProc(*w1, *w2, RunInt(iX0->P3) - *w1 + 1, RunInt(iX0->P4) - *w2 + 1);
 		break;
 	}
-	case _getlocvar: result = ((FrmlElem20*)X)->LV->B; break;
-	case _modulo: result = RunModulo((FrmlElem1*)X); break;
-	case _field: result = _B(((FrmlElem7*)X)->Field); break;
+	case _getlocvar: {
+		result = ((FrmlElem20*)X)->LV->B;
+		break;
+	}
+	case _modulo: {
+		result = RunModulo((FrmlElem1*)X);
+		break;
+	}
+	case _field: {
+		result = CFile->_B(((FrmlElem7*)X)->Field, CRecPtr);
+		break;
+	}
 	case _access: {
 		// nacita hodnotu ze souboru
 		auto iX = (FrmlElem7*)X;
@@ -709,9 +718,13 @@ bool RunBool(FrmlElem* X)
 	}
 	case _accrecno: {
 		auto iX = (FrmlElem14*)X;
-		cf = CFile; cr = CRecPtr; AccRecNoProc(iX, 640);
-		result = _B(iX->RecFldD); ReleaseStore(CRecPtr);
-		CFile = cf; CRecPtr = cr;
+		cf = CFile;
+		cr = CRecPtr;
+		AccRecNoProc(iX, 640);
+		result = CFile->_B(iX->RecFldD, CRecPtr);
+		ReleaseStore(CRecPtr);
+		CFile = cf;
+		CRecPtr = cr;
 		break;
 	}
 	case _edupdated: result = EdUpdated; break;
@@ -1413,7 +1426,7 @@ std::string DecodeField(FieldDescr* F, WORD LWw)
 		break;
 	}
 	default: {
-		b = _B(F);
+		b = CFile->_B(F, CRecPtr);
 		break;
 	}
 	}

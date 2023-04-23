@@ -66,7 +66,8 @@ public:
 	void RecallRec(int recNr, void* record);
 	
 	// vycte ze zanamu pozici textu v .T00 souboru (ukazatel na zacatek textu)
-	int _T(FieldDescr* F, void* record);
+	bool _B(FieldDescr* field_d, void* record);
+	int _T(FieldDescr* field_d, void* record);
 
 	// ulozi boolean do zaznamu
 	void B_(FieldDescr* F, bool B, void* record);

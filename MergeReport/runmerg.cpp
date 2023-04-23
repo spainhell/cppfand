@@ -107,7 +107,7 @@ void SetOldMFlds(KeyFldD* M)
 			break;
 		}
 		default: {
-			C.B = _B(F);
+			C.B = CFile->_B(F, CRecPtr);
 			OldMXStr.StoreBool(C.B, M);
 			break;
 		}

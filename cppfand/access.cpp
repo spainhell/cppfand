@@ -330,21 +330,6 @@ double _RforD(FieldDescr* F, void* P)
 	return r;
 }
 
-/// Read BOOL from the record
-bool _B(FieldDescr* F)
-{
-	bool result = false;
-	void* p = CRecPtr;
-	unsigned char* CP = (unsigned char*)p + F->Displ;
-	if ((F->Flg & f_Stored) != 0) {
-		if (CFile->FF->file_type == FileType::DBF) result = *CP == 'Y' || *CP == 'y' || *CP == 'T' || *CP == 't';
-		else if ((*CP == '\0') || (*CP == 0xFF)) result = false;
-		else result = true;
-	}
-	else result = RunBool(F->Frml);
-	return result;
-}
-
 /// Read NUMBER from the record
 double _R(FieldDescr* F)
 {
@@ -673,7 +658,7 @@ bool LinkUpw(LinkD* LD, int& N, bool WithT)
 					break;
 				}
 				case 'B': {
-					b = _B(F);
+					b = CFile->_B(F, CRecPtr);
 					CFile = ToFD; CRecPtr = RecPtr;
 					CFile->B_(F2, b, CRecPtr);
 					break;
