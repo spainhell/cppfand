@@ -25,6 +25,6 @@ public:
 	void PutMLX(unsigned char M, unsigned char L); // ASM
 	void ClearRest(); // ASM
 	void PageFull();
-	void AddToLeaf(WRec* R, XKey* KD);
+	void AddToLeaf(FileD* file_d, WRec* R, XKey* KD, void* record);
 	void AddToUpper(XXPage* P, int DownPage);
 };

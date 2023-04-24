@@ -743,7 +743,7 @@ void ReadInpFile(InpD* ID)
 {
 	CRecPtr = ID->ForwRecPtr;
 label1:
-	ID->Scan->GetRec();
+	ID->Scan->GetRec(CRecPtr);
 	if (ID->Scan->eof) return;
 	if (ESCPressed() && PromptYN(24)) {
 		WasLPTCancel = true;
@@ -786,7 +786,7 @@ WORD CompMFlds(std::vector<ConstListEl>& C, KeyFldD* M, short& NLv)
 	for (ConstListEl& c : C) { 
 		NLv++;
 		x.Clear();
-		x.StoreKF(M);
+		x.StoreKF(M, CRecPtr);
 		std::string s = x.S;
 		int res = CompStr(s, c.S);
 		if (res != _equ) {
@@ -802,7 +802,7 @@ void GetMFlds(std::vector<ConstListEl>& C, KeyFldD* M)
 	for (auto& c : C) {
 		XString x;
 		x.Clear();
-		x.StoreKF(M);
+		x.StoreKF(M, CRecPtr);
 		c.S = x.S;
 		M = M->pChain;
 	}

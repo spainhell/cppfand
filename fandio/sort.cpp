@@ -12,28 +12,17 @@
 #include "../Logging/Logging.h"
 #include "../cppfand/models/Instr.h"
 
-
-void CreateWIndex(XScan* Scan, XWKey* K, char Typ)
-{
-	void* cr = CRecPtr;
-	CRecPtr = CFile->GetRecSpace();
-	XWorkFile* XW = new XWorkFile(Scan, K);
-	XW->Main(Typ);
-	delete XW; XW = nullptr;
-	CRecPtr = cr;
-}
-
-void ScanSubstWIndex(XScan* Scan, KeyFldD* SK, char Typ)
+void ScanSubstWIndex(FileD* file_d, XScan* Scan, KeyFldD* SK, char Typ)
 {
 	unsigned short n = 0;
-	XWKey* k2 = new XWKey();
+	XWKey* k2 = new XWKey(file_d);
 	if (Scan->FD->IsSQLFile && (Scan->Kind == 3)) /*F6-autoreport & sort*/ {
 		XKey* k = Scan->Key;
 		n = k->IndexLen;
 		KeyFldD* kf = SK;
 		while (kf != nullptr) {
 			n += kf->FldD->NBytes;
-			kf = (KeyFldD*)kf->pChain;
+			kf = kf->pChain;
 		}
 		if (n > 255) {
 			WrLLF10Msg(155);
@@ -44,80 +33,39 @@ void ScanSubstWIndex(XScan* Scan, KeyFldD* SK, char Typ)
 		KeyFldD* kfroot = nullptr;
 		KeyFldD* kf2 = nullptr;
 		while (kf != nullptr) {
-			//kf2 = (KeyFldD*)GetStore(sizeof(KeyFldD));
 			kf2 = new KeyFldD();
 			*kf2 = *kf;
 			ChainLast(kfroot, kf2);
-			kf = (KeyFldD*)kf->pChain;
+			kf = kf->pChain;
 		}
 		if (kf2 != nullptr)	kf2->pChain = SK;
 		SK = kfroot;
 	}
-	k2->Open(SK, true, false);
-	CreateWIndex(Scan, k2, Typ);
+	k2->Open(CFile, SK, true, false);
+	file_d->FF->CreateWIndex(Scan, k2, Typ);
 
 	Scan->SubstWIndex(k2);
 }
 
-void GenerateNew000File(FileD* f, XScan* x)
+void SortAndSubst(FileD* file_d, KeyFldD* SK)
 {
-	// vytvorime si novy buffer pro data,
-	// ten pak zapiseme do souboru naprimo (bez cache)
+	BYTE* record = file_d->GetRecSpace();
 
-	const unsigned short header000len = 6; // 4B pocet zaznamu, 2B delka 1 zaznamu
-	// z puvodniho .000 vycteme pocet zaznamu a jejich delku
-	const size_t totalLen = x->FD->FF->NRecs * x->FD->FF->RecLen + header000len;
-	unsigned char* buffer = new unsigned char[totalLen]{ 0 };
-	size_t offset = header000len; // zapisujeme nejdriv data; hlavicku az nakonec
-	
-	while (!x->eof) {
-		RunMsgN(x->IRec);
-		f->FF->NRecs++;
-		memcpy(&buffer[offset], CRecPtr, f->FF->RecLen);
-		offset += f->FF->RecLen;
-		f->IRec++;
-		f->FF->Eof = true;
-		x->GetRec();
-	}
-
-	// zapiseme hlavicku
-	memcpy(&buffer[0], &f->FF->NRecs, 4);
-	memcpy(&buffer[4], &f->FF->RecLen, 2);
-
-	// provedeme primy zapis do souboru
-	WriteH(f->FF->Handle, totalLen, buffer);
-
-	delete[] buffer; buffer = nullptr;
-}
-
-void SortAndSubst(KeyFldD* SK)
-{
-	void* p = nullptr;
-	MarkStore(p);
-	FileD* cf = CFile;
-	CRecPtr = CFile->GetRecSpace();
-	XScan* Scan = new XScan(CFile, nullptr, nullptr, false);
+	XScan* Scan = new XScan(file_d, nullptr, nullptr, false);
 	Scan->Reset(nullptr, false);
-	ScanSubstWIndex(Scan, SK, 'S');
-	FileD* FD2 = OpenDuplF(false);
+	ScanSubstWIndex(file_d, Scan, SK, 'S');
+	FileD* FD2 = OpenDuplicateF(file_d, false);
 	RunMsgOn('S', Scan->NRecs);
-	Scan->GetRec();
+	Scan->GetRec(record);
 
 	// zapiseme data do souboru .100
-	GenerateNew000File(FD2, Scan);
-	//while (!xScan->eof) {
-	//	RunMsgN(xScan->IRec);
-	//	CFile = FD2;
-	//	PutRec();
-	//	xScan->GetRec();
-	//}
-	//if (!SaveCache(0, CFile->Handle)) GoExit();
+	FD2->FF->GenerateNew000File(Scan, record);
 
-	CFile = cf;
 	SubstDuplF(FD2, false);
 	Scan->Close();
 	RunMsgOff();
-	ReleaseStore(p);
+
+	delete[] record; record = nullptr;
 }
 
 void GetIndexSort(Instr_getindex* PD)
@@ -134,14 +82,14 @@ void GetIndexSort(Instr_getindex* PD)
 	XString x;
 	MarkStore(p);
 	LocVar* lv = PD->giLV;
-	CFile = lv->FD;
+	FileD* file_d = lv->FD;
 	XWKey* k = (XWKey*)lv->RecPtr;
-	LockMode md = CFile->NewLockMode(RdMode);
+	LockMode md = file_d->NewLockMode(RdMode);
 	if (PD->giMode == ' ') {
 		ld = PD->giLD;
 		if (ld != nullptr) kf = ld->ToKey->KFlds;
 		if (PD != nullptr) lv2 = PD->giLV2;
-		Scan = new XScan(CFile, PD->giKD, PD->giKIRoot, false);
+		Scan = new XScan(file_d, PD->giKD, PD->giKIRoot, false);
 		cond = RunEvalFrml(PD->giCond);
 		switch (PD->giOwnerTyp) {
 		case 'i': {
@@ -149,24 +97,24 @@ void GetIndexSort(Instr_getindex* PD)
 			break;
 		}
 		case 'r': {
-			CFile = ld->ToFD;
+			file_d = ld->ToFD;
 			CRecPtr = lv2->RecPtr;
 			x.PackKF(kf);
 
-			CFile = lv->FD;
+			file_d = lv->FD;
 			Scan->ResetOwner(&x, cond);
 			break;
 		}
 		case 'F': {
-			CFile = ld->ToFD;
-			md = CFile->NewLockMode(RdMode);
-			CRecPtr = CFile->GetRecSpace();
-			CFile->ReadRec(RunInt((FrmlElem*)PD->giLV2), CRecPtr);
+			file_d = ld->ToFD;
+			md = file_d->NewLockMode(RdMode);
+			CRecPtr = file_d->GetRecSpace();
+			file_d->ReadRec(RunInt((FrmlElem*)PD->giLV2), CRecPtr);
 			x.PackKF(kf);
 			ReleaseStore(CRecPtr);
-			CFile->OldLockMode(md);
+			file_d->OldLockMode(md);
 
-			CFile = lv->FD;
+			file_d = lv->FD;
 			Scan->ResetOwner(&x, cond);
 			break;
 		}
@@ -177,44 +125,44 @@ void GetIndexSort(Instr_getindex* PD)
 		}
 		kf = PD->giKFlds;
 		if (kf == nullptr) kf = k->KFlds;
-		kNew = new XWKey();
-		kNew->Open(kf, true, false);
-		CreateWIndex(Scan, kNew, 'X');
-		k->Close();
+		kNew = new XWKey(file_d);
+		kNew->Open(file_d, kf, true, false);
+		file_d->FF->CreateWIndex(Scan, kNew, 'X');
+		k->Close(file_d);
 		*k = *kNew;
 	}
 	else {
-		CRecPtr = CFile->GetRecSpace();
+		CRecPtr = file_d->GetRecSpace();
 		nr = RunInt(PD->giCond);
-		if ((nr > 0) && (nr <= CFile->FF->NRecs)) {
-			CFile->ReadRec(nr, CRecPtr);
+		if ((nr > 0) && (nr <= file_d->FF->NRecs)) {
+			file_d->ReadRec(nr, CRecPtr);
 			if (PD->giMode == '+') {
-				if (!CFile->DeletedFlag(CRecPtr)) {
+				if (!file_d->DeletedFlag(CRecPtr)) {
 					x.PackKF(k->KFlds);
-					if (!k->RecNrToPath(x, nr)) {
-						k->InsertOnPath(x, nr);
+					if (!k->RecNrToPath(file_d, x, nr)) {
+						k->InsertOnPath(file_d, x, nr);
 						k->NR++;
 					}
 				}
 			}
 			else {
-				if (k->Delete(nr)) {
+				if (k->Delete(file_d, nr)) {
 					k->NR--;
 				}
 			}
 		}
 	}
-	CFile->OldLockMode(md);
+	file_d->OldLockMode(md);
 	ReleaseStore(p);
 }
 
-void CopyIndex(XWKey* K, XKey* FromK)
+void CopyIndex(FileD* file_d, XWKey* K, XKey* FromK)
 {
 	XScan* Scan = nullptr;
-	K->Release();
-	LockMode md = CFile->NewLockMode(RdMode);
-	Scan = new XScan(CFile, FromK, nullptr, false);
+	K->Release(file_d);
+	LockMode md = file_d->NewLockMode(RdMode);
+	Scan = new XScan(file_d, FromK, nullptr, false);
 	Scan->Reset(nullptr, false);
-	CreateWIndex(Scan, K, 'W');
-	CFile->OldLockMode(md);
+	file_d->FF->CreateWIndex(Scan, K, 'W');
+	file_d->OldLockMode(md);
 }

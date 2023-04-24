@@ -725,7 +725,7 @@ void RdKeyD()
 		label1:
 			if (CFile->Keys.empty()) {
 				N = 1;
-				K = new XKey();
+				K = new XKey(CFile);
 				CFile->Keys.push_back(K);
 			}
 			else {
@@ -735,7 +735,7 @@ void RdKeyD()
 					K1 = K1->Chain;
 					N++;
 				}
-				K = new XKey();
+				K = new XKey(CFile);
 				K1->Chain = K;
 				CFile->Keys.push_back(K);
 			}

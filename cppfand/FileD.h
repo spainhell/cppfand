@@ -47,7 +47,6 @@ public:
 	std::vector<AddD*> Add;
 	StringListEl* ViewNames = nullptr;  //after each string BYTE string with user codes 
 
-
 	WORD GetNrKeys();
 	void Reset();
 
@@ -97,4 +96,6 @@ public:
 	bool DeletedFlag(void* record);
 	void ClearDeletedFlag(void* record);
 	void SetDeletedFlag(void* record);
+
+	bool SearchKey(XString& XX, XKey* Key, int& NN);
 };

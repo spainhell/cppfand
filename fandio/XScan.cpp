@@ -36,7 +36,10 @@ XScan::~XScan()
 
 XScan::XScan(FileD* aFD, XKey* aKey, KeyInD* aKIRoot, bool aWithT)
 {
-	FD = aFD; Key = aKey; KIRoot = aKIRoot; withT = aWithT;
+	FD = aFD;
+	Key = aKey;
+	KIRoot = aKIRoot;
+	withT = aWithT;
 #ifdef FandSQL
 	if (aFD->IsSQLFile) {
 		if ((aKey != nullptr) && aKey->InWork) { P = (XPage*)GetStore(XPageSize); Kind = 3; }
@@ -46,7 +49,6 @@ XScan::XScan(FileD* aFD, XKey* aKey, KeyInD* aKIRoot, bool aWithT)
 #endif
 	{
 		if (aKey != nullptr) {
-			//P = (XPage*)GetStore(XPageSize);
 			page_ = new XPage();
 			Kind = 1;
 			if (aKIRoot != nullptr) Kind = 2;
@@ -57,32 +59,31 @@ XScan::XScan(FileD* aFD, XKey* aKey, KeyInD* aKIRoot, bool aWithT)
 void XScan::Reset(FrmlElem* ABool, bool SQLFilter)
 {
 	KeyInD* k = nullptr; int n = 0; XString xx; bool b = false;
-	CFile = FD;
 	Bool = ABool;
 	if (SQLFilter) {
-		if (CFile->IsSQLFile) hasSQLFilter = true;
+		if (FD->IsSQLFile) hasSQLFilter = true;
 		else Bool = nullptr;
 	}
 	switch (Kind) {
-	case 0: NRecs = CFile->FF->NRecs; break;
+	case 0: NRecs = FD->FF->NRecs; break;
 	case 1:
 	case 3: {
 		if (Key != nullptr) {
-			if (!Key->InWork) TestXFExist();
+			if (!Key->InWork) FD->FF->TestXFExist();
 			NRecs = Key->NRecs();
 		}
 		break;
 	}
 	case 2: {
-		if (!Key->InWork) TestXFExist();
+		if (!Key->InWork) FD->FF->TestXFExist();
 		CompKIFrml(Key, KIRoot, true);
 		NRecs = 0;
 		k = KIRoot;
 		while (k != nullptr) {
 			// vyhleda 1. zaznam odpovidajici klici 
-			Key->FindNr(k->X1, k->XNrBeg);
+			Key->FindNr(CFile, k->X1, k->XNrBeg);
 			// vyhleda posledni zaznam odpovidajici klici
-			b = Key->FindNr(k->X2, n);
+			b = Key->FindNr(CFile, k->X2, n);
 			k->N = 0;
 			if (n >= k->XNrBeg) k->N = n - k->XNrBeg + b;
 			NRecs += k->N;
@@ -102,29 +103,42 @@ void XScan::ResetSort(KeyFldD* aSK, FrmlElem* BoolZ, LockMode OldMd, bool SQLFil
 	LockMode m;
 	if (Kind == 4) {
 		SK = aSK;
-		if (SQLFilter)
-		{
+		if (SQLFilter) {
 			Reset(BoolZ, true);
 			BoolZ = nullptr;
 		}
-		else Reset(nullptr, false);
+		else {
+			Reset(nullptr, false);
+		}
 		return;
 	}
 	if (aSK != nullptr) {
 		Reset(BoolZ, false);
-		ScanSubstWIndex(this, aSK, 'S');
+		ScanSubstWIndex(FD, this, aSK, 'S');
 		BoolZ = nullptr;
 	}
-	else Reset(nullptr, false);
-	/* !!! with CFile^ do!!! */
-	if (CFile->FF->NotCached()) {
+	else {
+		Reset(nullptr, false);
+	}
+
+	if (FD->FF->NotCached()) {
 		switch (Kind) {
-		case 0: { m = NoCrMode; if (CFile->FF->XF != nullptr) m = NoExclMode; break; }
-		case 1: { m = OldMd; if (Key->InWork) m = NoExclMode; break; }
+		case 0: {
+				m = NoCrMode;
+				if (FD->FF->XF != nullptr) m = NoExclMode;
+				break;
+			}
+		case 1: {
+				m = OldMd;
+				if (Key->InWork) m = NoExclMode;
+				break;
+			}
 		default: return;
 		}
 		m = LockMode(MaxW(m, OldMd));
-		if (m != OldMd) CFile->ChangeLockMode(m, 0, true);
+		if (m != OldMd) {
+			FD->ChangeLockMode(m, 0, true);
+		}
 	}
 }
 
@@ -145,7 +159,7 @@ void XScan::ResetOwner(XString* XX, FrmlElem* aBool)
 {
 	int n;
 	bool b;
-	CFile = FD;
+	
 	Bool = aBool;
 #ifdef FandSQL
 	if (Kind = 4) {           /* !on .SQL with Workindex */
@@ -156,11 +170,11 @@ void XScan::ResetOwner(XString* XX, FrmlElem* aBool)
 	else
 #endif
 	{
-		TestXFExist();
+		FD->FF->TestXFExist();
 		KIRoot = new KeyInD(); // (KeyInD*)GetZStore(sizeof(*KIRoot));
-		Key->FindNr(XX->S, KIRoot->XNrBeg);
+		Key->FindNr(CFile, XX->S, KIRoot->XNrBeg);
 		AddFFs(Key, XX->S);
-		b = Key->FindNr(XX->S, n);
+		b = Key->FindNr(CFile, XX->S, n);
 		NRecs = n - KIRoot->XNrBeg + b;
 		KIRoot->N = NRecs; Kind = 2;
 	}
@@ -182,8 +196,7 @@ bool EquKFlds(KeyFldD* KF1, KeyFldD* KF2)
 
 void XScan::ResetOwnerIndex(LinkD* LD, LocVar* LV, FrmlElem* aBool)
 {
-	CFile = FD;
-	TestXFExist();
+	FD->FF->TestXFExist();
 	Bool = aBool;
 	OwnerLV = LV;
 	Kind = 2;
@@ -210,18 +223,18 @@ void XScan::ResetLV(void* aRP)
 
 void XScan::Close()
 {
-	CFile = FD;
 #ifdef FandSQL
 	if (Kind = 4) /* !!! with SQLStreamPtr(Strm)^ do!!! */ { InpClose; Done; }
 #endif
-	if (TempWX) WKeyDPtr(Key)->Close();
+	if (TempWX) {
+		((XWKey*)Key)->Close(FD);
+	}
 }
 
 void XScan::SeekRec(int I)
 {
 	KeyInD* k = nullptr;
 	FrmlElem* z = nullptr;
-	CFile = FD;
 
 #ifdef FandSQL
 	if (Kind == 4) {
@@ -249,7 +262,7 @@ void XScan::SeekRec(int I)
 		switch (Kind) {
 		case 1:
 		case 3: {
-			Key->NrToPath(I + 1); /* !!! with XPath[XPathN] do!!! */
+			Key->NrToPath(FD, I + 1); /* !!! with XPath[XPathN] do!!! */
 			SeekOnPage(XPath[XPathN].Page, XPath[XPathN].I);
 			break;
 		}
@@ -267,14 +280,13 @@ void XScan::SeekRec(int I)
 void XScan::SeekOnKI(int I)
 {
 	NOfKI = KI->N - I;
-	Key->NrToPath(KI->XNrBeg + I);
-	/* !!! with XPath[XPathN] do!!! */
+	Key->NrToPath(CFile, KI->XNrBeg + I);
 	SeekOnPage(XPath[XPathN].Page, XPath[XPathN].I);
 }
 
 void XScan::SeekOnPage(int pageNr, unsigned short i)
 {
-	Key->GetXFile()->RdPage(page_, pageNr);
+	Key->GetXFile(CFile)->RdPage(page_, pageNr);
 	items_on_page_ = page_->NItems - i + 1;
 	if (Kind == 2) {
 		if (items_on_page_ > NOfKI) {
@@ -296,16 +308,14 @@ void XScan::NextIntvl()
 		XWKey* k = (XWKey*)OwnerLV->RecPtr; // TODO: bude toto fungovat?
 		while (iOKey < k->NRecs()) {
 			iOKey++;
-			CFile = OwnerLV->FD;
-			xx.S = k->NrToStr(iOKey);
-			CFile = FD;
-			Key->FindNr(xx.S, nBeg);
+			xx.S = k->NrToStr(OwnerLV->FD, iOKey);
+			Key->FindNr(FD, xx.S, nBeg);
 			AddFFs(Key, xx.S);
-			b = Key->FindNr(xx.S, n);
+			b = Key->FindNr(FD, xx.S, n);
 			n = n - nBeg + b;
 			if (n > 0) {
 				NOfKI = n;
-				Key->NrToPath(nBeg);
+				Key->NrToPath(FD, nBeg);
 				SeekOnPage(XPath[XPathN].Page, XPath[XPathN].I);
 				return;
 			}
@@ -324,10 +334,9 @@ void XScan::NextIntvl()
 	}
 }
 
-void XScan::GetRec()
+void XScan::GetRec(void* record)
 {
 	XString xx;
-	CFile = FD;
 	size_t item = 0;
 #ifdef FandSQL
 	if (Kind == 4) {
@@ -352,8 +361,8 @@ label1:
 			else if ((Kind == 2) && (NOfKI == 0)) NextIntvl();
 			else if (page_->GreaterPage > 0) SeekOnPage(page_->GreaterPage, 1);
 		label2:
-			CFile->ReadRec(RecNr, CRecPtr);
-			if (CFile->DeletedFlag(CRecPtr)) goto label1;
+			FD->ReadRec(RecNr, record);
+			if (FD->DeletedFlag(record)) goto label1;
 		label3:
 			if (!RunBool(Bool)) goto label1;
 			break;
@@ -370,7 +379,7 @@ label1:
 #endif
 		case 5:
 		{
-			Move(Strm, CRecPtr, CFile->FF->RecLen + 1);
+			Move(Strm, record, FD->FF->RecLen + 1);
 			break;
 		}
 		}

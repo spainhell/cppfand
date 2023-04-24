@@ -1929,7 +1929,7 @@ void AssertFand(TPredicate* P, TCommand* C)
 	if (CFile->IsSQLFile) Strm1->InsertRec(false, true); else
 #endif
 	{
-		TestXFExist();
+		CFile->FF->TestXFExist();
 		CFile->IncNRecs(1);
 		if (CFile->FF->file_type == FileType::INDEX) {
 			CFile->RecallRec(CFile->FF->NRecs, CRecPtr);
@@ -1968,7 +1968,7 @@ TFileScan* GetScan(TScanInf* SIOfs, TCommand* C, TInstance* Q)
 		fs->Count = CFile->FF->NRecs;
 		goto label1;
 	}
-	TestXFExist();
+	CFile->FF->TestXFExist();
 	xx.Clear();
 	i = 0;
 	kf = k->KFlds;
@@ -2002,12 +2002,12 @@ TFileScan* GetScan(TScanInf* SIOfs, TCommand* C, TInstance* Q)
 		kf = kf->pChain;
 		i++;
 	}
-	k->FindNr(xx.S, fs->IRec);
+	k->FindNr(CFile, xx.S, fs->IRec);
 	if ((f->field_type != FieldType::ALFANUM) || (xx.S[xx.S.length()] != 0x1f)) {
 		xx.S[0]++;
 	}
 	xx.S[xx.S.length()] = 0xFF;
-	b = k->FindNr(xx.S, n);
+	b = k->FindNr(CFile, xx.S, n);
 	fs->Count = 0;
 	if (n >= fs->IRec) fs->Count = n - fs->IRec + b;
 label1:
@@ -2078,7 +2078,7 @@ label1:
 			CurrInst->NextBranch = nullptr;
 			goto label2;
 		}
-		RecNr = k->NrToRecNr(fs->IRec);
+		RecNr = k->NrToRecNr(CFile, fs->IRec);
 		CFile->ReadRec(RecNr, CRecPtr);
 		fs->IRec++;
 		fs->Count--;
@@ -2179,8 +2179,8 @@ label1:
 					k = c->KDOfs;
 					if (k != 0) {
 						xx.PackKF(k->KFlds);
-						k->RecNrToPath(xx, RecNr);
-						if (k->PathToNr() <= fs1->IRec) fs1->IRec--;
+						k->RecNrToPath(CFile, xx, RecNr);
+						if (k->PathToNr(CFile) <= fs1->IRec) fs1->IRec--;
 					}
 				}
 				else if (RecNr <= fs1->IRec) {
@@ -2190,7 +2190,7 @@ label1:
 			Q = Q->PrevInst;
 		}
 		if (CFile->FF->file_type == FileType::INDEX) {
-			DeleteXRec(RecNr, true);
+			CFile->FF->DeleteXRec(RecNr, true, CRecPtr);
 			fs->IRec--;
 		}
 		else {

@@ -113,11 +113,9 @@ void OpenFANDFiles(bool FromDML)
 
 }
 
-
-
 void CreateF()
 {
-	SetCPathMountVolSetNet(Exclusive);
+	SetCPathMountVolSetNet(CFile, Exclusive);
 	CFile->FF->Handle = OpenH(CPath, _isoverwritefile, Exclusive);
 	TestCFileError(CFile);
 	CFile->FF->NRecs = 0;
@@ -129,7 +127,7 @@ void CreateF()
 		CPath = CExtToX(CDir, CName, CExt);
 		CFile->FF->XF->Handle = OpenH(CPath, _isoverwritefile, Exclusive);
 		CFile->FF->XF->TestErr(); /*SetNotValid*/
-		CFile->FF->XF->SetEmpty();
+		CFile->FF->XF->SetEmpty(CFile->FF->NRecs, CFile->GetNrKeys());
 	}
 	CFile->SeekRec(0);
 	SetUpdHandle(CFile->FF->Handle);
@@ -159,7 +157,7 @@ LockMode RewriteF(FileD* file_d, const bool Append)
 		file_d->SeekRec(file_d->FF->NRecs);
 		if (file_d->FF->XF != nullptr) {
 			file_d->FF->XF->FirstDupl = true;
-			TestXFExist();
+			CFile->FF->TestXFExist();
 		}
 		return result;
 	}
@@ -167,7 +165,12 @@ LockMode RewriteF(FileD* file_d, const bool Append)
 	file_d->FF->NRecs = 0;
 	file_d->SeekRec(0);
 	SetUpdHandle(file_d->FF->Handle);
-	XFNotValid();
+
+	int notValid = file_d->FF->XFNotValid();
+	if (notValid != 0) {
+		RunError(notValid);
+	}
+
 	if (file_d->FF->file_type == FileType::INDEX) file_d->FF->XF->NoCreate = true;
 	if (file_d->FF->TF != nullptr) file_d->FF->TF->SetEmpty();
 	return result;
@@ -633,46 +636,47 @@ void SetTempCExt(char Typ, bool IsNet)
 	else CPath = CDir + CName + CExt;
 }
 
-FileD* OpenDuplF(bool CrTF)
+FileD* OpenDuplicateF(FileD* orig, bool createTextFile)
 {
 	short Len = 0;
-	SetCPathVol(CFile);
+	SetCPathVol(orig);
 	bool net = IsNetCVol();
-	FileD* OldFD = CFile;
-	FileD* FD = new FileD(*OldFD);
-	CFile = FD;
+	FileD* newFile = new FileD(*orig);
 
 	SetTempCExt('0', net);
 	CVol = "";
-	FD->FullPath = CPath;
-	FD->FF->Handle = OpenH(CPath, _isoverwritefile, Exclusive);
-	TestCFileError(CFile);
-	FD->FF->NRecs = 0;
-	FD->IRec = 0;
-	FD->FF->Eof = true;
-	FD->FF->UMode = Exclusive;
-	if (FD->FF->file_type == FileType::INDEX) {
-		if (FD->FF->XF != nullptr) {
-			delete FD->FF->XF;
-			FD->FF->XF = nullptr;
+	newFile->FullPath = CPath;
+	newFile->FF->Handle = OpenH(CPath, _isoverwritefile, Exclusive);
+	TestCFileError(newFile);
+	newFile->FF->NRecs = 0;
+	newFile->IRec = 0;
+	newFile->FF->Eof = true;
+	newFile->FF->UMode = Exclusive;
+
+	// create index file
+	if (newFile->FF->file_type == FileType::INDEX) {
+		if (newFile->FF->XF != nullptr) {
+			delete newFile->FF->XF;
+			newFile->FF->XF = nullptr;
 		}
-		FD->FF->XF = new FandXFile(FD->FF);
-		FD->FF->XF->Handle = nullptr;
-		FD->FF->XF->NoCreate = true;
+		newFile->FF->XF = new FandXFile(newFile->FF);
+		newFile->FF->XF->Handle = nullptr;
+		newFile->FF->XF->NoCreate = true;
 		/*else xfile name identical with orig file*/
 	}
 
-	if (CrTF && (FD->FF->TF != nullptr)) {
-		FD->FF->TF = new FandTFile(FD->FF);
-		*FD->FF->TF = *OldFD->FF->TF;
+	// create text file
+	if (createTextFile && (newFile->FF->TF != nullptr)) {
+		newFile->FF->TF = new FandTFile(newFile->FF);
+		*newFile->FF->TF = *orig->FF->TF;
 		SetTempCExt('T', net);
-		FD->FF->TF->Handle = OpenH(CPath, _isoverwritefile, Exclusive);
-		FD->FF->TF->TestErr();
-		FD->FF->TF->CompileAll = true;
-		FD->FF->TF->SetEmpty();
+		newFile->FF->TF->Handle = OpenH(CPath, _isoverwritefile, Exclusive);
+		newFile->FF->TF->TestErr();
+		newFile->FF->TF->CompileAll = true;
+		newFile->FF->TF->SetEmpty();
 
 	}
-	return FD;
+	return newFile;
 }
 
 void CopyDuplF(FileD* TempFD, bool DelTF)
@@ -720,7 +724,11 @@ void CopyH(FILE* h1, FILE* h2)
 void SubstDuplF(FileD* TempFD, bool DelTF)
 {
 	//bool net;
-	XFNotValid();
+	int result = CFile->FF->XFNotValid();
+	if (result != 0) {
+		RunError(result);
+	}
+
 	SetCPathVol(CFile);
 	if (IsNetCVol()) {
 		CopyDuplF(TempFD, DelTF);

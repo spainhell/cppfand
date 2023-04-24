@@ -246,7 +246,7 @@ void CopyTFStringToH(FILE* h, FandTFile* TF02, FileD* TFD02, int& TF02Pos)
 	if (pos == 0) return;
 	FileD* cf = CFile;
 	CFile = TFD02;
-	TFilePtr tf = TF02;
+	FandTFile* tf = TF02;
 	if (!tf->IsWork) md2 = CFile->NewLockMode(RdMode);
 	size_t l = 0;
 	RdWrCache(READ, tf->Handle, tf->NotCached(), pos, 2, &l);

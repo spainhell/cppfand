@@ -4,15 +4,18 @@
 #include "../cppfand/GlobalVariables.h"
 #include "../cppfand/obaseww.h"
 
-WorkFile::WorkFile()
+WorkFile::WorkFile(FileD* parent)
 {
+	_parent = parent;
 	WBaseSize = MaxWSize;
 	Handle = WorkHandle;
 }
 
 WorkFile::~WorkFile()
 {
-	MaxWSize = WBaseSize; TruncH(Handle, MaxWSize); FlushH(Handle);
+	MaxWSize = WBaseSize;
+	TruncH(Handle, MaxWSize);
+	FlushH(Handle);
 }
 
 void WorkFile::Reset(KeyFldD* KF, int RestBytes, char Typ, int NRecs)
@@ -57,7 +60,7 @@ void WorkFile::Reset(KeyFldD* KF, int RestBytes, char Typ, int NRecs)
 }
 
 /// precte zaznamy, vytvori uplnou delku klice, setridi zaznamy
-void WorkFile::SortMerge()
+void WorkFile::SortMerge(void* record)
 {
 	// z 'PW->A' se postupne berou jednotlive WRec;
 	// ty pak projdou upravou;
@@ -70,13 +73,13 @@ void WorkFile::SortMerge()
 	PgWritten = 0;
 	nxt = WRoot;
 	NChains = 1;
-	while (GetCRec()) {
+	while (GetCRec(record)) {
 		if (n == MaxOnWPage) {
 			PW->Sort(n, RecLen);
 			pg = nxt;
 			nxt = GetFreeNr();
 			NChains++;
-			WriteWPage(n, pg, nxt, 0);
+			WriteWPage(n, pg, nxt, 0, record);
 			memset(PW->A, '0', sizeof(PW->A));
 			offsetOfPwA = 0;
 			n = 0;
@@ -91,9 +94,9 @@ void WorkFile::SortMerge()
 		offsetOfPwA += RecLen;
 	}
 	PW->Sort(n, RecLen);
-	WriteWPage(n, nxt, 0, 0);
+	WriteWPage(n, nxt, 0, 0, record);
 	if (NChains > 1) {
-		Merge();
+		Merge(record);
 	}
 	RunMsgOff();
 }
@@ -121,7 +124,7 @@ int WorkFile::GetFreeNr()
 	return result;
 }
 
-void WorkFile::Merge()
+void WorkFile::Merge(void* record)
 {
 	int npairs, newli, nxtnew, pg1, pg2;
 	int nxt = 0;
@@ -149,7 +152,7 @@ label1:
 		nxt = PW2->NxtChain;
 		nxtnew = (npairs == 1) ? 0 : GetFreeNr();
 		NChains--;
-		Merge2Chains(pg1, pg2, newli, nxtnew);
+		Merge2Chains(pg1, pg2, newli, nxtnew, record);
 		npairs--;
 		pg1 = nxt;
 		newli = nxtnew;
@@ -157,7 +160,7 @@ label1:
 	goto label1;
 }
 
-void WorkFile::Merge2Chains(int Pg1, int Pg2, int Pg, int Nxt)
+void WorkFile::Merge2Chains(int Pg1, int Pg2, int Pg, int Nxt, void* record)
 {
 	bool eof1 = false;
 	bool eof2 = false;
@@ -177,7 +180,7 @@ void WorkFile::Merge2Chains(int Pg1, int Pg2, int Pg, int Nxt)
 	while (true) {
 		if (rofs == maxofs) {
 			int chn = GetFreeNr();
-			WriteWPage(MaxOnWPage, Pg, Nxt, chn);
+			WriteWPage(MaxOnWPage, Pg, Nxt, chn, record);
 			Pg = chn;
 			Nxt = 0;
 			delete r;
@@ -230,7 +233,7 @@ void WorkFile::Merge2Chains(int Pg1, int Pg2, int Pg, int Nxt)
 		continue;
 	}
 
-	WriteWPage(rofs / RecLen, Pg, Nxt, 0);
+	WriteWPage(rofs / RecLen, Pg, Nxt, 0, record);
 	delete r; delete r1; delete r2;
 }
 
@@ -250,7 +253,7 @@ void WorkFile::ReadWPage(WPage* W, int Pg)
 	TestErr();
 }
 
-void WorkFile::WriteWPage(unsigned short N, int Pg, int Nxt, int Chn)
+void WorkFile::WriteWPage(unsigned short N, int Pg, int Nxt, int Chn, void* record)
 {
 	size_t offset = 0;
 	PgWritten++;
@@ -259,7 +262,7 @@ void WorkFile::WriteWPage(unsigned short N, int Pg, int Nxt, int Chn)
 		for (size_t i = 0; i < N; i++) {
 			WRec r;
 			r.Deserialize(&PW->A[offset]);
-			Output(&r);
+			Output(&r, record);
 			unsigned char buffer[512]{ 0 };
 			size_t len = r.Serialize(buffer);
 			memcpy(&PW->A[offset], buffer, len);

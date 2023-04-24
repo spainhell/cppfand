@@ -31,16 +31,16 @@ double Owned(FrmlElem* Bool, FrmlElem* Sum, LinkD* LD)
 	void* cr = CRecPtr;
 	CFile = LD->FromFD;
 	LockMode md = CFile->NewLockMode(RdMode);
-	TestXFExist();
+	CFile->FF->TestXFExist();
 	XKey* K = GetFromKey(LD);
 
 	if ((Bool == nullptr) && (Sum == nullptr) && !CFile->IsSQLFile) {
 		int n;
 		int nBeg;
-		K->FindNr(x.S, nBeg);
+		K->FindNr(CFile, x.S, nBeg);
 		x.S[0];
 		x.S[x.S.length()] = 0xFF;
-		K->FindNr(x.S, n);
+		K->FindNr(CFile, x.S, n);
 		r = n - nBeg;
 	}
 	else {
@@ -49,7 +49,7 @@ double Owned(FrmlElem* Bool, FrmlElem* Sum, LinkD* LD)
 		XScan* Scan = new XScan(CFile, K, nullptr, true);
 		Scan->ResetOwner(&x, nullptr);
 		while (true) {
-			Scan->GetRec();
+			Scan->GetRec(CRecPtr);
 			if (!Scan->eof) {
 				if (RunBool(Bool)) {
 					if (Sum == nullptr) {
@@ -326,10 +326,10 @@ int RecNoFun(FrmlElem13* Z)
 	CRecPtr = CFile->GetRecSpace();
 	if (CFile->FF->NRecs > 0) {
 		if (CFile->FF->file_type == FileType::INDEX) {
-			TestXFExist();
-			b = k->SearchInterval(x, false, n);
+			CFile->FF->TestXFExist();
+			b = k->SearchInterval(CFile, x, false, n);
 		}
-		else b = SearchKey(x, k, n);
+		else b = CFile->SearchKey(x, k, n);
 		if (!b) n = -n;
 	}
 	else {
@@ -355,16 +355,16 @@ int AbsLogRecNoFun(FrmlElem13* Z)
 	LockMode md = CFile->NewLockMode(RdMode);
 	if (N > CFile->FF->NRecs) goto label1;
 	if (CFile->FF->file_type == FileType::INDEX) {
-		TestXFExist();
+		CFile->FF->TestXFExist();
 		if (Z->Op == _recnolog) {
 			CRecPtr = CFile->GetRecSpace();
 			CFile->ReadRec(N, CRecPtr);
 			if (CFile->DeletedFlag(CRecPtr)) goto label1;
-			result = k->RecNrToNr(N);
+			result = k->RecNrToNr(CFile, N);
 		}
 		else /*_recnoabs*/ {
 			if (N > k->NRecs()) goto label1;
-			result = k->NrToRecNr(N);
+			result = k->NrToRecNr(CFile, N);
 		}
 	}
 	else {
@@ -1011,7 +1011,7 @@ label1:
 		CFile = iX->FD;
 		md = CFile->NewLockMode(RdMode);
 		if (X->Op == _nrecs) {
-			RecNo = XNRecs(CFile->Keys);
+			RecNo = CFile->FF->XNRecs(CFile->Keys);
 		}
 		else {
 			RecNo = CFile->FF->NRecs;

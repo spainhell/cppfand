@@ -226,11 +226,9 @@ void AssignRecFld(Instr_assign* PD)
 
 void SortProc(FileD* FD, KeyFldD* SK)
 {
-	CFile = FD;
-	LockMode md = CFile->NewLockMode(ExclMode);
-	SortAndSubst(SK);
-	CFile = FD;
-	CFile->OldLockMode(md);
+	LockMode md = FD->NewLockMode(ExclMode);
+	SortAndSubst(FD, SK);
+	FD->OldLockMode(md);
 	SaveFiles();
 }
 
@@ -409,10 +407,15 @@ void IndexfileProc(FileD* FD, bool Compress)
 	FileD* cf = CFile;
 	CFile = FD;
 	LockMode md = CFile->NewLockMode(ExclMode);
-	XFNotValid();
+
+	int result = CFile->FF->XFNotValid();
+	if (result != 0) {
+		RunError(result);
+	}
+
 	CRecPtr = CFile->GetRecSpace();
 	if (Compress) {
-		FileD* FD2 = OpenDuplF(false);
+		FileD* FD2 = OpenDuplicateF(CFile, false);
 		for (int I = 1; I <= FD->FF->NRecs; I++) {
 			CFile = FD;
 			CFile->ReadRec(I, CRecPtr);
@@ -428,7 +431,7 @@ void IndexfileProc(FileD* FD, bool Compress)
 		SubstDuplF(FD2, false);
 	}
 	CFile->FF->XF->NoCreate = false;
-	TestXFExist();
+	CFile->FF->TestXFExist();
 	CFile->OldLockMode(md);
 	SaveFiles();
 	ReleaseStore(CRecPtr);
@@ -530,13 +533,13 @@ bool SrchXKey(XKey* K, XString& X, int& N)
 {
 	void* cr;
 	if (CFile->FF->file_type == FileType::INDEX) {
-		TestXFExist();
-		return K->SearchInterval(X, false, N);
+		CFile->FF->TestXFExist();
+		return K->SearchInterval(CFile, X, false, N);
 	}
 	else {
 		cr = CRecPtr;
 		CRecPtr = CFile->GetRecSpace();
-		auto result = SearchKey(X, K, N);
+		auto result = CFile->SearchKey(X, K, N);
 		ReleaseStore(CRecPtr);
 		CRecPtr = cr;
 		return result;
@@ -576,7 +579,7 @@ void DeleteRecProc(Instr_recs* PD)
 		LastExitCode = (!RunAddUpdte('-', nullptr, nullptr));
 	}
 	if (CFile->FF->file_type == FileType::INDEX) {
-		if (!CFile->DeletedFlag(CRecPtr)) DeleteXRec(n, true);
+		if (!CFile->DeletedFlag(CRecPtr)) CFile->FF->DeleteXRec(n, true, CRecPtr);
 	}
 	else {
 		CFile->DeleteRec(n, CRecPtr);
@@ -612,7 +615,7 @@ void UpdRec(void* CR, int N, bool AdUpd)
 		}
 	}
 	if (CFile->FF->file_type == FileType::INDEX) {
-		OverWrXRec(N, cr2, CR);
+		CFile->FF->OverWrXRec(N, cr2, CR, CRecPtr);
 	}
 	else {
 		CFile->WriteRec(N, CRecPtr);
@@ -674,7 +677,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 				else {
 				label1:
 					CFile->NewLockMode(CrMode);
-					TestXFExist();
+					CFile->FF->TestXFExist();
 					CFile->IncNRecs(1);
 					app = true;
 				}
@@ -813,7 +816,7 @@ void ForAllProc(Instr_forall* PD)
 #endif
 		if (Key != nullptr) {
 			if (PD->CWIdx) {
-				ScanSubstWIndex(xScan, Key->KFlds, 'W');
+				ScanSubstWIndex(CFile, xScan, Key->KFlds, 'W');
 			}
 			else {
 				CFile->FF->XF->UpdLockCnt++;
@@ -834,7 +837,7 @@ label1:
 	else
 #endif
 		CRecPtr = cr;
-	xScan->GetRec();
+	xScan->GetRec(CRecPtr);
 	if (b) {
 		RunMsgN(xScan->IRec);
 	}
@@ -1527,7 +1530,7 @@ void RunInstr(Instr* PD)
 			break;
 		}
 		case _asgnxnrecs: {
-			((Instr_assign*)PD)->xnrIdx->Release();
+			((Instr_assign*)PD)->xnrIdx->Release(CFile);
 			break;
 		}
 		case _portout: {
@@ -1678,7 +1681,7 @@ void CallProcedure(Instr_proc* PD)
 			auto hX = (XWKey*)(*it0)->RecPtr;
 			if (hX->KFlds == nullptr) hX->KFlds = (*it0)->FD->Keys[0]->KFlds;
 			auto tmp = (XWKey*)(*it0)->RecPtr;
-			tmp->Open(hX->KFlds, true, false);
+			tmp->Open(CFile, hX->KFlds, true, false);
 		}
 		++it0;
 	}
@@ -1719,7 +1722,7 @@ void CallProcedure(Instr_proc* PD)
 			}
 			case 'i': {
 				CFile = (*it0)->FD;
-				((XWKey*)(*it0)->RecPtr)->Close();
+				((XWKey*)(*it0)->RecPtr)->Close(CFile);
 				break;
 			}
 			}

@@ -6,7 +6,7 @@
 #include "channel.h"
 #endif
 
-void RunErrorM(LockMode Md, WORD N);
+void RunErrorM(FileD* file_d, LockMode Md, WORD N);
 bool TryLMode(FileD* fileD, LockMode Mode, LockMode& OldMode, WORD Kind);
 void OldLMode(FileD* fileD, LockMode Mode);
 LockMode NewLMode(FileD* fileD, LockMode Mode);

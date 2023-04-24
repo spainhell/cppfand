@@ -161,10 +161,10 @@ void FileD::DelAllDifTFlds(void* Rec, void* CompRec)
 
 void FileD::RecallRec(int recNr, void* record)
 {
-	TestXFExist();
+	FF->TestXFExist();
 	FF->XF->NRecs++;
 	for (auto& K : Keys) {
-		K->Insert(recNr, false);
+		K->Insert(this, recNr, false);
 	}
 	FF->ClearDeletedFlag(record);
 	WriteRec(recNr, record);
@@ -341,4 +341,9 @@ void FileD::ClearDeletedFlag(void* record)
 void FileD::SetDeletedFlag(void* record)
 {
 	FF->SetDeletedFlag(record);
+}
+
+bool FileD::SearchKey(XString& XX, XKey* Key, int& NN)
+{
+	return FF->SearchKey(XX, Key, NN);
 }

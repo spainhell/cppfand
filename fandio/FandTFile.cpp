@@ -155,8 +155,8 @@ void FandTFile::Err(unsigned short n, bool ex)
 		if (ex) GoExit();
 	}
 	else {
-		FileMsg(CFile, n, 'T');
-		if (ex) CloseGoExit(CFile->FF);
+		FileMsg(_parent->GetFileD(), n, 'T');
+		if (ex) CloseGoExit(_parent->GetFileD()->FF);
 	}
 }
 
@@ -228,7 +228,9 @@ void FandTFile::RdPrefix(bool Chk)
 	MaxPage = T.MaxPage; // 4B
 	TimeStmp = T.TimeStmp; // 6B v Pascalu, 8B v C++ 
 
-	if (!IsWork && (CFile == Chpt) && ((T.HasCoproc != HasCoproc) || (CompArea(Version, T.Version, 4) != _equ))) {
+	if (!IsWork 
+		&& (_parent->GetFileD() == Chpt) 
+		&& ((T.HasCoproc != HasCoproc) || (CompArea(Version, T.Version, 4) != _equ))) {
 		CompileAll = true;
 	}
 	if (T.OldMaxPage == 0xffff) {
@@ -252,7 +254,7 @@ void FandTFile::RdPrefix(bool Chk)
 	}
 	if (IRec >= 0x6000) {
 		IRec = IRec - 0x2000;
-		if (!IsWork && (CFile->FF->file_type == FileType::RDB)) LicenseNr = T.LicNr;
+		if (!IsWork && (_parent->file_type == FileType::RDB)) LicenseNr = T.LicNr;
 	}
 	if (IRec >= 0x4000) {
 		IRec = IRec - 0x4000;
@@ -632,12 +634,13 @@ void FandTFile::Delete(int pos)
 
 	// proto budeme kontrolovat, zda se jedna o TTT soubor a pokud ano,
 	// tak koncime a nic mazat nebudeme
-	if (CFile != nullptr) {
-		std::string name = upperCaseString(CFile->FullPath);
+
+	/*if (_parent->GetFileD() != nullptr) {
+		std::string name = upperCaseString(_parent->GetFileD()->FullPath);
 		if (name.find("TTT") != std::string::npos) {
 			return;
 		}
-	}
+	}*/
 
 	if (pos <= 0) return;
 	if ((Format != T00Format) || NotCached()) return;

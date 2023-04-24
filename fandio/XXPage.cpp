@@ -65,7 +65,7 @@ void XXPage::PageFull()
 	XW->xwFile->WrPage(this, n);
 }
 
-void XXPage::AddToLeaf(WRec* R, XKey* KD)
+void XXPage::AddToLeaf(FileD* file_d, WRec* R, XKey* KD, void* record)
 {
 	unsigned char m, l;
 	int n;
@@ -80,7 +80,7 @@ void XXPage::AddToLeaf(WRec* R, XKey* KD)
 				if (n == LastRecNr) return; /* overlapping intervals from  key in .. */
 				if (!KD->InWork && !KD->Duplic) {
 					if (!XW->msgWritten) {
-						SetMsgPar(CFile->Name);
+						SetMsgPar(file_d->Name);
 						if (IsTestRun) {
 							if (!PromptYN(832)) {
 								GoExit();
@@ -91,12 +91,12 @@ void XXPage::AddToLeaf(WRec* R, XKey* KD)
 						}
 						XW->msgWritten = true;
 					}
-					CFile->ReadRec(n, CRecPtr);
-					for (XKey* K : CFile->Keys) {
-						K->Delete(n);
+					file_d->ReadRec(n, record);
+					for (XKey* K : file_d->Keys) {
+						K->Delete(file_d, n);
 					}
-					CFile->SetDeletedFlag(CRecPtr);
-					CFile->WriteRec(n, CRecPtr);
+					file_d->SetDeletedFlag(record);
+					file_d->WriteRec(n, record);
 					return;
 				}
 			}

@@ -140,7 +140,7 @@ void ReadInpFileM(InpD* ID)
 	/* !!! with ID^ do!!! */
 	CRecPtr = ID->ForwRecPtr;
 label1:
-	ID->Scan->GetRec();
+	ID->Scan->GetRec(CRecPtr);
 	if (ID->Scan->eof) return;
 	NRecsAll++;
 	RunMsgN(NRecsAll);
@@ -209,7 +209,9 @@ void WriteOutp(OutpRD* RD)
 #endif
 				{
 					CFile->PutRec(CRecPtr);
-					if (OD->Append && (CFile->FF->file_type == FileType::INDEX)) TryInsertAllIndexes(CFile->IRec);
+					if (OD->Append && (CFile->FF->file_type == FileType::INDEX)) {
+						CFile->FF->TryInsertAllIndexes(CFile->IRec, CRecPtr);
+					}
 				}
 			}
 }
@@ -245,7 +247,7 @@ void OpenOutp()
 		else
 #endif
 		{
-			if (OD->InplFD != nullptr) OD->FD = OpenDuplF(true);
+			if (OD->InplFD != nullptr) OD->FD = OpenDuplicateF(CFile, true);
 			else OD->Md = RewriteF(CFile, OD->Append);
 			OD = OD->pChain;
 		}
@@ -346,7 +348,7 @@ void JoinProc(WORD Ii, bool& EmptyGroup)
 			ID->Scan->SeekRec(ID->IRec - 1);
 			ID->Count = 0.0;
 			CRecPtr = ID->ForwRecPtr;
-			ID->Scan->GetRec();
+			ID->Scan->GetRec(CRecPtr);
 			WORD res;
 			do {
 				MoveForwToRecM(ID);

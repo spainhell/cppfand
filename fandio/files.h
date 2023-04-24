@@ -8,4 +8,4 @@ bool OpenF2(FileD* file_d, const std::string& path);
 
 void CFileError(FileD* file_d, int N);
 void TestCFileError(FileD* file_d);
-void SetCPathMountVolSetNet(FileUseMode UM);
+void SetCPathMountVolSetNet(FileD* file_d, FileUseMode UM);

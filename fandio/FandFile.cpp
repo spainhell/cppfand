@@ -1,10 +1,15 @@
 #include "FandFile.h"
 
 #include "DbfFile.h"
+#include "XScan.h"
+#include "XWorkFile.h"
+#include "files.h"
 #include "../Common/textfunc.h"
+#include "../Common/compare.h"
 #include "../cppfand/Coding.h"
 #include "../cppfand/GlobalVariables.h"
 #include "../pascal/real48.h"
+#include "../cppfand/obaseww.h"
 
 FandFile::FandFile(FileD* parent)
 {
@@ -103,7 +108,7 @@ bool FandFile::loadB(FieldDescr* field_d, void* record)
 	bool result = false;
 	unsigned char* CP = (unsigned char*)record + field_d->Displ;
 
-	if (CFile->FF->file_type == FileType::DBF) {
+	if (file_type == FileType::DBF) {
 		result = *CP == 'Y' || *CP == 'y' || *CP == 'T' || *CP == 't';
 	}
 	else if ((*CP == '\0') || (*CP == 0xFF)) {
@@ -120,7 +125,7 @@ double FandFile::loadR(FieldDescr* field_d, void* record)
 	double result = 0.0;
 	double r;
 
-	if (CFile->FF->file_type == FileType::DBF) result = _RforD(field_d, source);
+	if (file_type == FileType::DBF) result = _RforD(field_d, source);
 	else switch (field_d->field_type) {
 	case FieldType::FIXED: { // FIX CISLO (M,N)
 		r = RealFromFix(source, field_d->NBytes);
@@ -129,7 +134,7 @@ double FandFile::loadR(FieldDescr* field_d, void* record)
 		break;
 	}
 	case FieldType::DATE: { // DATUM DD.MM.YY
-		if (CFile->FF->file_type == FileType::FAND8) {
+		if (file_type == FileType::FAND8) {
 			if (*(short*)source == 0) result = 0.0;
 			else result = *(short*)source + FirstDate;
 		}
@@ -172,7 +177,7 @@ std::string FandFile::loadS(FileD* parent, FieldDescr* field_d, void* record)
 				S = RepeatString(' ', l);
 			}
 		}
-		else if (IsNullValue(source, field_d->NBytes)) {
+		else if (is_null_value(source, field_d->NBytes)) {
 			S = RepeatString(' ', l);
 		}
 		else {
@@ -222,7 +227,7 @@ pstring FandFile::loadOldS(FieldDescr* field_d, void* record)
 			if ((field_d->Flg & f_Encryp) != 0) Coding::Code(&S[1], l);
 			if (S[1] == '\0') memset(&S[1], ' ', l);
 		}
-		else if (IsNullValue(source, field_d->NBytes)) {
+		else if (is_null_value(source, field_d->NBytes)) {
 			FillChar(&S[0], l, ' ');
 		}
 		else {
@@ -256,7 +261,7 @@ pstring FandFile::loadOldS(FieldDescr* field_d, void* record)
 
 LongStr* FandFile::loadLongS(FieldDescr* field_d, void* record)
 {
-	std::string s = CFile->loadS(field_d, record);
+	std::string s = loadS(_parent, field_d, record);
 
 	LongStr* result = new LongStr(s.length());
 	result->LL = s.length();
@@ -569,7 +574,7 @@ void FandFile::WrPrefixes()
 	}
 	if (file_type == FileType::INDEX && XF->Handle != nullptr
 		&& /*{ call from CopyDuplF }*/ (IsUpdHandle(XF->Handle) || IsUpdHandle(Handle))) {
-		XF->WrPrefix();
+		XF->WrPrefix(NRecs, _parent->GetNrKeys());
 	}
 }
 
@@ -656,9 +661,262 @@ void FandFile::ClearXFUpdLock()
 	}
 }
 
+int FandFile::XFNotValid()
+{
+	if (XF == nullptr) {
+		return 0;
+	}
+	else {
+		return XF->XFNotValid(NRecs, _parent->GetNrKeys());
+	}
+}
+
+int FandFile::CreateIndexFile()
+{
+	Logging* log = Logging::getInstance();
+
+	LockMode md = NullMode;
+	bool fail = false;
+
+	try {
+		fail = true;
+		BYTE* record = _parent->GetRecSpace();
+		md = _parent->NewLockMode(RdMode);
+		_parent->Lock(0, 0);
+		/*ClearCacheCFile;*/
+		if (XF->Handle == nullptr) {
+			//RunError(903);
+			return 903;
+		}
+		log->log(loglevel::DEBUG, "CreateIndexFile() file 0x%p name '%s'", XF->Handle, _parent->Name.c_str());
+		XF->RdPrefix();
+		if (XF->NotValid) {
+			XF->SetEmpty(NRecs, _parent->GetNrKeys());
+			XScan* scan = new XScan(_parent, nullptr, nullptr, false);
+			scan->Reset(nullptr, false);
+			XWorkFile* XW = new XWorkFile(_parent, scan, _parent->Keys[0]);
+			BYTE* record = _parent->GetRecSpace();
+			XW->Main('X', record);
+			delete[] record; record = nullptr;
+			delete XW; XW = nullptr;
+			XF->NotValid = false;
+			XF->WrPrefix(NRecs, _parent->GetNrKeys());
+			if (!SaveCache(0, Handle)) GoExit();
+			/*FlushHandles; */
+		}
+		fail = false;
+	}
+	catch (std::exception& e) {
+		// TODO: log error
+	}
+
+	if (fail) {
+		XF->SetNotValid(NRecs, _parent->GetNrKeys());
+		XF->NoCreate = true;
+	}
+	_parent->Unlock(0);
+	_parent->OldLockMode(md);
+	if (fail) GoExit();
+
+	return 0;
+}
+
+int FandFile::TestXFExist()
+{
+	if ((XF != nullptr) && XF->NotValid) {
+		if (XF->NoCreate) {
+			CFileError(_parent, 819);
+			return 819;
+		}
+		int a = CreateIndexFile();
+		if (a != 0) {
+			RunError(a);
+			return a;
+		}
+	}
+	return 0;
+}
+
 FileD* FandFile::GetFileD()
 {
 	return _parent;
+}
+
+bool FandFile::SearchKey(XString& XX, XKey* Key, int& NN)
+{
+	int R = 0;
+	XString x;
+
+	bool bResult = false;
+	int L = 1;
+	short Result = _gt;
+	NN = NRecs;
+	int N = NN;
+	if (N == 0) return bResult;
+	KeyFldD* KF = Key->KFlds;
+
+	do {
+		if (Result == _gt) {
+			R = N;
+		}
+		else {
+			L = N + 1;
+		}
+		N = (L + R) / 2;
+		_parent->ReadRec(N, CRecPtr);
+		x.PackKF(KF);
+		Result = CompStr(x.S, XX.S);
+	} while (!((L >= R) || (Result == _equ)));
+
+	if ((N == NN) && (Result == _lt)) NN++;
+	else {
+		if (Key->Duplic && (Result == _equ)) {
+			while (N > 1) {
+				N--;
+				_parent->ReadRec(N, CRecPtr);
+				x.PackKF(KF);
+				if (CompStr(x.S, XX.S) != _equ) {
+					N++;
+					_parent->ReadRec(N, CRecPtr);
+					break;
+				}
+			}
+		}
+		NN = N;
+	}
+	if ((Result == _equ) || Key->IntervalTest && (Result == _gt))
+		bResult = true;
+	return bResult;
+}
+
+int FandFile::XNRecs(std::vector<XKey*>& K)
+{
+	if (file_type == FileType::INDEX && !K.empty()) {
+		TestXFExist();
+		return XF->NRecs;
+	}
+	else {
+		return NRecs;
+	}
+}
+
+void FandFile::TryInsertAllIndexes(int RecNr, void* record)
+{
+	TestXFExist();
+	XKey* lastK = nullptr;
+	for (auto& K : _parent->Keys) {
+		lastK = K;
+		if (!K->Insert(_parent, RecNr, true)) {
+			goto label1;
+		}
+	}
+	XF->NRecs++;
+	return;
+
+label1:
+	for (auto& K1 : _parent->Keys) {
+		if (K1 == lastK) {
+			break;
+		}
+		K1->Delete(_parent, RecNr);
+	}
+	_parent->SetDeletedFlag(record);
+	_parent->WriteRec(RecNr, record);
+
+	if (XF->FirstDupl) {
+		SetMsgPar(_parent->Name);
+		WrLLF10Msg(828);
+		XF->FirstDupl = false;
+	}
+}
+
+void FandFile::DeleteAllIndexes(int RecNr)
+{
+	Logging* log = Logging::getInstance();
+	log->log(loglevel::DEBUG, "DeleteAllIndexes(%i)", RecNr);
+
+	for (auto& K : _parent->Keys) {
+		K->Delete(_parent, RecNr);
+	}
+}
+
+void FandFile::DeleteXRec(int RecNr, bool DelT, void* record)
+{
+	Logging* log = Logging::getInstance();
+	//log->log(loglevel::DEBUG, "DeleteXRec(%i, %s)", RecNr, DelT ? "true" : "false");
+	TestXFExist();
+	DeleteAllIndexes(RecNr);
+	if (DelT) _parent->DelAllDifTFlds(record, nullptr);
+	SetDeletedFlag(record);
+	_parent->WriteRec(RecNr, record);
+	XF->NRecs--;
+}
+
+void FandFile::OverWrXRec(int RecNr, void* P2, void* P, void* record)
+{
+	XString x, x2;
+	record = P2;
+	if (_parent->DeletedFlag(record)) {
+		record = P;
+		_parent->RecallRec(RecNr, record);
+		return;
+	}
+	TestXFExist();
+
+	for (auto& K : _parent->Keys) {
+		record = P;
+		x.PackKF(K->KFlds);
+		record = P2;
+		x2.PackKF(K->KFlds);
+		if (x.S != x2.S) {
+			K->Delete(_parent, RecNr);
+			record = P;
+			K->Insert(_parent, RecNr, false);
+		}
+	}
+
+	record = P;
+	_parent->WriteRec(RecNr, record);
+}
+
+void FandFile::GenerateNew000File(XScan* x, void* record)
+{
+	// vytvorime si novy buffer pro data,
+	// ten pak zapiseme do souboru naprimo (bez cache)
+
+	const unsigned short header000len = 6; // 4B pocet zaznamu, 2B delka 1 zaznamu
+	// z puvodniho .000 vycteme pocet zaznamu a jejich delku
+	const size_t totalLen = x->FD->FF->NRecs * x->FD->FF->RecLen + header000len;
+	unsigned char* buffer = new unsigned char[totalLen] { 0 };
+	size_t offset = header000len; // zapisujeme nejdriv data; hlavicku az nakonec
+
+	while (!x->eof) {
+		RunMsgN(x->IRec);
+		NRecs++;
+		memcpy(&buffer[offset], record, RecLen);
+		offset += RecLen;
+		_parent->IRec++;
+		Eof = true;
+		x->GetRec(record);
+	}
+
+	// zapiseme hlavicku
+	memcpy(&buffer[0], &NRecs, 4);
+	memcpy(&buffer[4], &RecLen, 2);
+
+	// provedeme primy zapis do souboru
+	WriteH(Handle, totalLen, buffer);
+
+	delete[] buffer; buffer = nullptr;
+}
+
+void FandFile::CreateWIndex(XScan* Scan, XWKey* K, char Typ)
+{
+	BYTE* record = _parent->GetRecSpace();
+	XWorkFile* XW = new XWorkFile(_parent, Scan, K);
+	XW->Main(Typ, record);
+	delete XW; XW = nullptr;
+	delete[] record; record = nullptr;
 }
 
 double FandFile::_RforD(FieldDescr* field_d, void* record)
@@ -688,7 +946,7 @@ double FandFile::_RforD(FieldDescr* field_d, void* record)
 	return r;
 }
 
-bool FandFile::IsNullValue(void* record, WORD l)
+bool FandFile::is_null_value(void* record, WORD l)
 {
 	BYTE* pb = (BYTE*)record;
 	for (size_t i = 0; i < l; i++) {

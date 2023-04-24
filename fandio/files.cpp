@@ -20,22 +20,22 @@ void TestCFileError(FileD* file_d)
 	}
 }
 
-void SetCPathMountVolSetNet(FileUseMode UM)
+void SetCPathMountVolSetNet(FileD* file_d, FileUseMode UM)
 {
-	SetCPathVol(CFile);
-	CFile->FF->UMode = UM;
-	CFile->FF->Drive = (BYTE)TestMountVol(CPath[0]);
-	if (!IsNetCVol() || (CFile == Chpt))
+	SetCPathVol(file_d);
+	file_d->FF->UMode = UM;
+	file_d->FF->Drive = (BYTE)TestMountVol(CPath[0]);
+	if (!IsNetCVol() || (file_d == Chpt))
 		switch (UM) {
-		case RdShared: CFile->FF->UMode = RdOnly; break;
-		case Shared: CFile->FF->UMode = Exclusive; break;
+		case RdShared: file_d->FF->UMode = RdOnly; break;
+		case Shared: file_d->FF->UMode = Exclusive; break;
 
 		case Closed:
 		case RdOnly:
 		case Exclusive: break;
 		}
 	else if ((UM == Shared) && EquUpCase(CVol, "#R")) {
-		CFile->FF->UMode = RdShared;
+		file_d->FF->UMode = RdShared;
 	}
 }
 
@@ -44,7 +44,7 @@ bool OpenF1(FileD* file_d, const std::string& path, FileUseMode UM)
 	WORD n;
 	bool result = true;
 	file_d->FF->LMode = NullMode;
-	SetCPathMountVolSetNet(UM);
+	SetCPathMountVolSetNet(file_d, UM);
 	const bool b = (file_d == Chpt) || (file_d == CatFD->GetCatalogFile());
 	if (b && (IsTestRun || IsInstallRun) && ((GetFileAttr(CPath, HandleError) & 0b00000001/*RdOnly*/) != 0)) {
 		SetFileAttr(CPath, HandleError, GetFileAttr(CPath, HandleError) & 0b00100110);
@@ -120,7 +120,7 @@ bool OpenF1(FileD* file_d, const std::string& path, FileUseMode UM)
 					TestCPathError();
 					return result;
 				}
-				file_d->FF->XF->SetNotValid();
+				file_d->FF->XF->SetNotValid(file_d->FF->NRecs, file_d->GetNrKeys());
 				CloseH(&file_d->FF->XF->Handle);
 				continue;
 			}
@@ -131,7 +131,7 @@ bool OpenF1(FileD* file_d, const std::string& path, FileUseMode UM)
 				TestCPathError();
 			}
 			if (file_d->FF->XF != nullptr && FileSizeH(file_d->FF->XF->Handle) < 512) {
-				file_d->FF->XF->SetNotValid();
+				file_d->FF->XF->SetNotValid(file_d->FF->NRecs, file_d->GetNrKeys());
 			}
 			break;
 		}
@@ -208,7 +208,7 @@ label3:
 	}
 	if (file_d->FF->file_type == FileType::INDEX) {
 		if (FS < file_d->FF->FrstDispl) {
-			file_d->FF->XF->SetNotValid();
+			file_d->FF->XF->SetNotValid(file_d->FF->NRecs, file_d->GetNrKeys());
 		}
 		else {
 			RdWrCache(READ, file_d->FF->XF->Handle, file_d->FF->XF->NotCached(), 0, 2, &Signum);
@@ -226,7 +226,7 @@ label3:
 					file_d->ChangeLockMode(ExclMode, 0, false);
 				}
 				file_d->FF->LMode = ExclMode;
-				file_d->FF->XF->SetNotValid();
+				file_d->FF->XF->SetNotValid(file_d->FF->NRecs, file_d->GetNrKeys());
 			}
 		}
 	}

@@ -6,9 +6,9 @@
 #include "../cppfand/oaccess.h"
 #include "../cppfand/obaseww.h"
 
-void RunErrorM(LockMode Md, WORD N)
+void RunErrorM(FileD* file_d, LockMode Md, WORD N)
 {
-	OldLMode(CFile, Md);
+	OldLMode(file_d, Md);
 	RunError(N);
 }
 
@@ -91,7 +91,7 @@ bool ChangeLMode(FileD* fileD, LockMode Mode, WORD Kind, bool RdPref)
 	FILE* h = fileD->FF->Handle;
 	if (oldmode >= WrMode) {
 		if (Mode < WrMode) {
-			CFile->FF->WrPrefixes();
+			fileD->FF->WrPrefixes();
 		}
 		if (oldmode == ExclMode) {
 			SaveCache(0, fileD->FF->Handle);
@@ -112,7 +112,7 @@ label1:
 			}
 			else {
 				d = spec.NetDelay;
-				SetCPathVol(CFile);
+				SetCPathVol(fileD);
 				SetMsgPar(CPath, LockModeTxt[Mode]);
 				int w1 = PushWrLLMsg(825, Kind == 1);
 				if (w == 0) {
@@ -151,9 +151,9 @@ label1:
 	}
 	fileD->FF->LMode = Mode;
 	if ((oldmode < RdMode) && (Mode >= RdMode) && RdPref) {
-		int rp = CFile->FF->RdPrefixes();
+		int rp = fileD->FF->RdPrefixes();
 		if (rp != 0) {
-			CFileError(CFile, rp);
+			CFileError(fileD, rp);
 		}
 	}
 	result = true;
@@ -212,7 +212,7 @@ bool TryLockN(FandFile* fand_file, int N, WORD Kind)
 	std::string XTxt = "CrX";
 	auto result = true;
 #ifdef FandSQL
-	if (CFile->IsSQLFile) return result;
+	if (fand_file->_parent->IsSQLFile) return result;
 #endif
 #ifdef FandNetV
 
@@ -223,7 +223,7 @@ label1:
 		if (Kind != 2) {   /*0 Kind-wait, 1-wait until ESC, 2-no wait*/
 			m = 826;
 			if (N == 0) {
-				SetCPathVol(CFile);
+				SetCPathVol(fand_file->GetFileD());
 				SetMsgPar(CPath, XTxt);
 				m = 825;
 			}
@@ -245,7 +245,7 @@ label1:
 void UnLockN(FandFile* fand_file, int N)
 {
 #ifdef FandSQL
-	if (CFile->IsSQLFile) return;
+	if (fand_file->GetFileD()->IsSQLFile) return;
 #endif
 #ifdef FandNetV
 	if ((fand_file->Handle == nullptr) || !fand_file->IsShared()) return;

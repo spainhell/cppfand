@@ -206,15 +206,15 @@ bool LinkUpw(LinkD* LD, int& N, bool WithT)
 	const LockMode md = CFile->NewLockMode(RdMode);
 	bool lu;
 	if (ToFD->FF->file_type == FileType::INDEX) {
-		TestXFExist();
-		lu = K->SearchInterval(x, false, N);
+		CFile->FF->TestXFExist();
+		lu = K->SearchInterval(CFile, x, false, N);
 	}
 	else if (CFile->FF->NRecs == 0) {
 		lu = false;
 		N = 1;
 	}
 	else {
-		lu = SearchKey(x, K, N);
+		lu = CFile->FF->SearchKey(x, K, N);
 	}
 
 	if (lu) {
@@ -283,7 +283,10 @@ void AssignNRecs(bool Add, int N)
 		if (N == 0) {
 			CFile->FF->NRecs = 0;
 			SetUpdHandle(CFile->FF->Handle);
-			XFNotValid();
+			int result = CFile->FF->XFNotValid();
+			if (result != 0) {
+				RunError(result);
+			}
 			goto label1;
 		}
 		else {

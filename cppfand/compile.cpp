@@ -963,7 +963,7 @@ label1:
 				if (typ == 'r') locvar->RecPtr = nullptr; // ptr(0,1) ??? /* for RdProc nullptr-tests + no Run*/
 				   /* frueher bei IsParList K = nullptr; warum? */
 				else {
-					k = new XWKey();
+					k = new XWKey(CFile);
 					k->Duplic = true;
 					k->InWork = true;
 					k->KFlds = kf1;

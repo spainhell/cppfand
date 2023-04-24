@@ -17,9 +17,9 @@ void XWFile::Err(unsigned short N)
 		RunError(N);
 	}
 	else {
-		CFile->FF->XF->SetNotValid();
-		FileMsg(CFile, N, 'X');
-		CloseGoExit(CFile->FF);
+		_parent->XF->SetNotValid(_parent->NRecs, _parent->GetFileD()->GetNrKeys());
+		FileMsg(_parent->GetFileD(), N, 'X');
+		CloseGoExit(_parent);
 	}
 }
 
@@ -36,17 +36,6 @@ int XWFile::UsedFileSize()
 bool XWFile::NotCached()
 {
 	return (this != &XWork) && _parent->NotCached();
-}
-
-
-/**
- * \brief Returns working or regular index file
- * \return Pointer to working or regular index file
- */
-XWFile* XKey::GetXFile()
-{
-	if (InWork) return &XWork;
-	return CFile->FF->XF;
 }
 
 void XWFile::RdPage(XPage* P, int pageNr)

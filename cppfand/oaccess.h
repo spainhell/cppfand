@@ -34,7 +34,7 @@ void GetCPathForCat(int i);
 std::string SetCPathVol(FileD* file_d, char pathDelim = '\\');
 void SetTxtPathVol(std::string& Path, int CatIRec);
 void SetTempCExt(char Typ, bool IsNet);
-FileD* OpenDuplF(bool CrTF);
+FileD* OpenDuplicateF(FileD* orig, bool createTextFile);
 void CopyDuplF(FileD* TempFD, bool DelTF);
 void CopyH(FILE* h1, FILE* h2);
 void SubstDuplF(FileD* TempFD, bool DelTF);

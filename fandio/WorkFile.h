@@ -2,12 +2,13 @@
 #include "WPage.h"
 #include "WRec.h"
 #include "../cppfand/KeyFldD.h"
-#include "../cppfand/FieldDescr.h"
+
+class FileD;
 
 class WorkFile
 {
 public:
-	WorkFile();
+	WorkFile(FileD* parent);
 	virtual ~WorkFile();
 	FILE* Handle = nullptr;
 	unsigned short RecLen = 0, MaxOnWPage = 0, WPageSize = 0;
@@ -21,15 +22,17 @@ public:
 	int IRec = 0, RecNr = 0;
 	KeyFldD* KFRoot = nullptr;
 	void Reset(KeyFldD* KF, int RestBytes, char Typ, int NRecs);
-	void SortMerge();
-	virtual bool GetCRec() = 0;
-	virtual void Output(WRec* R) = 0;
+	void SortMerge(void* record);
+	virtual bool GetCRec(void* record) = 0;
+	virtual void Output(WRec* R, void* record) = 0;
+protected:
+	FileD* _parent;
 private:
 	void TestErr();
 	int GetFreeNr();
-	void Merge();
-	void Merge2Chains(int Pg1, int Pg2, int Pg, int Nxt);
+	void Merge(void* record);
+	void Merge2Chains(int Pg1, int Pg2, int Pg, int Nxt, void* record);
 	void PutFreeNr(int N);
 	void ReadWPage(WPage* W, int Pg);
-	void WriteWPage(unsigned short N, int Pg, int Nxt, int Chn);
+	void WriteWPage(unsigned short N, int Pg, int Nxt, int Chn, void* record);
 };

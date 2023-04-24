@@ -14,7 +14,7 @@ public:
 	void StoreReal(double R, KeyFldD* KF);
 	void StoreStr(std::string V, KeyFldD* KF);
 	void StoreBool(bool B, KeyFldD* KF);
-	void StoreKF(KeyFldD* KF);
+	void StoreKF(KeyFldD* KF, void* record);
 	void PackKF(KeyFldD* KF);
 	void PackKF(std::vector<KeyFldD*>& KF);
 	bool PackFrml(FrmlListEl* FL, KeyFldD* KF);

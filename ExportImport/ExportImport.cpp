@@ -265,7 +265,9 @@ void ImportTxt(CopyD* CD)
 #endif
 			{
 				CFile->PutRec(CRecPtr);
-				if (CD->Append && (CFile->FF->file_type == FileType::INDEX)) TryInsertAllIndexes(CFile->IRec);
+				if (CD->Append && (CFile->FF->file_type == FileType::INDEX)) {
+					CFile->FF->TryInsertAllIndexes(CFile->IRec, CRecPtr);
+				}
 			}
 		}
 		LastExitCode = 0;
@@ -319,7 +321,7 @@ void ExportTxt(CopyD* CD)
 		Scan->Reset(nullptr, false);
 		RunMsgOn('C', Scan->NRecs);
 		while (true) {
-			Scan->GetRec();
+			Scan->GetRec(CRecPtr);
 			if (!Scan->eof) {
 				VarFixExp(F2, CD->Opt2);
 				F2->WrString("\r\n");
@@ -378,7 +380,7 @@ void ExportFD(CopyD* CD)
 		SaveFiles();
 		md = CFile->NewLockMode(RdMode);
 		F2 = new ThFile(CD->Path2, CD->CatIRec2, InOutMode::_outp, 0, nullptr);
-		int n = XNRecs(CD->FD1->Keys);
+		int n = CFile->FF->XNRecs(CD->FD1->Keys);
 
 		if (n == 0) {
 			delete F2;

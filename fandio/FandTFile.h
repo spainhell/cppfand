@@ -50,4 +50,3 @@ private:
 	void GetMLen();
 	long eofPos = 0;
 };
-typedef FandTFile* TFilePtr;

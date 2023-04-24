@@ -6,15 +6,15 @@
 #include "../cppfand/obaseww.h"
 
 
-XWorkFile::XWorkFile(XScan* AScan, XKey* AK)
+XWorkFile::XWorkFile(FileD* parent, XScan* AScan, XKey* AK): WorkFile(parent)
 {
 	xScan = AScan;
 	CFile = xScan->FD;
 	xKey = AK;
-	xwFile = AK->GetXFile();
+	xwFile = AK->GetXFile(parent);
 }
 
-void XWorkFile::Main(char Typ)
+void XWorkFile::Main(char Typ, void* record)
 {
 	xPage = new XPage();
 	nextXPage = xwFile->NewPage(xPage);
@@ -32,7 +32,7 @@ void XWorkFile::Main(char Typ)
 			!xScan->FD->IsSQLFile &&
 #endif
 			(xScan->Bool == nullptr && (kf == nullptr || EquKFlds(k->KFlds, kf)))) {
-			CopyIndex(k, kf, Typ);
+			CopyIndex(k, kf, Typ, record);
 		}
 		else {
 			if (frst) {
@@ -42,7 +42,7 @@ void XWorkFile::Main(char Typ)
 				xScan->SeekRec(0);
 			}
 			Reset(xKey->KFlds, sizeof(XXPage) * 9, Typ, xScan->NRecs);
-			SortMerge();
+			SortMerge(record);
 		}
 		FinishIndex();
 		delete xxPage; xxPage = nullptr;
@@ -52,20 +52,20 @@ void XWorkFile::Main(char Typ)
 	delete xPage; xPage = nullptr;
 }
 
-void XWorkFile::CopyIndex(XKey* K, KeyFldD* KF, char Typ)
+void XWorkFile::CopyIndex(XKey* K, KeyFldD* KF, char Typ, void* record)
 {
 
 	WRec* r = new WRec();
 	// r->X.S = ""; pstring is always "" at the beginning
 	XPage* p = new XPage();
 
-	K->NrToPath(1);
+	K->NrToPath(_parent, 1);
 	int page = XPath[XPathN].Page;
 	RunMsgOn(Typ, K->NRecs());
 	int count = 0;
 
 	while (page != 0) {
-		K->GetXFile()->RdPage(p, page);
+		K->GetXFile(_parent)->RdPage(p, page);
 		for (size_t i = 1; i <= p->NItems; i++) {
 			XItem* x = p->GetItem(i);
 			r->PutN(x->GetN());
@@ -78,7 +78,7 @@ void XWorkFile::CopyIndex(XKey* K, KeyFldD* KF, char Typ)
 				s = x->GetKey(s);
 				r->X.S = s;
 			}
-			Output(r);
+			Output(r, record);
 		}
 		count += p->NItems;
 		RunMsgN(count);
@@ -87,19 +87,19 @@ void XWorkFile::CopyIndex(XKey* K, KeyFldD* KF, char Typ)
 	RunMsgOff();
 }
 
-bool XWorkFile::GetCRec()
+bool XWorkFile::GetCRec(void* record)
 {
 	bool result = false;
-	xScan->GetRec();
+	xScan->GetRec(record);
 	result = !xScan->eof;
 	RecNr = xScan->RecNr;
 	IRec = xScan->IRec;
 	return result;
 }
 
-void XWorkFile::Output(WRec* R)
+void XWorkFile::Output(WRec* R, void* record)
 {
-	xxPage->AddToLeaf(R, xKey);
+	xxPage->AddToLeaf(_parent, R, xKey, record);
 }
 
 void XWorkFile::FinishIndex()

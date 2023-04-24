@@ -27,7 +27,7 @@ public:
 	void ResetLV(void* aRP);
 	void Close();
 	void SeekRec(int I);
-	void GetRec();
+	void GetRec(void* record);
 private:
 	KeyInD* KIRoot = nullptr;
 	LocVar* OwnerLV = nullptr;

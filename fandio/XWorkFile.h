@@ -7,7 +7,7 @@
 class XWorkFile : public WorkFile
 {
 public:
-	XWorkFile(XScan* AScan, XKey* AK);
+	XWorkFile(FileD* parent, XScan* AScan, XKey* AK);
 	XXPage* xxPage = nullptr;
 	XKey* xKey = nullptr;
 	XScan* xScan = nullptr;
@@ -15,10 +15,11 @@ public:
 	int nextXPage = 0;
 	XWFile* xwFile = nullptr;
 	XPage* xPage = nullptr;
-	void Main(char Typ);
-	void CopyIndex(XKey* K, KeyFldD* KF, char Typ);
-	bool GetCRec() override;
-	void Output(WRec* R) override;
+	void Main(char Typ, void* record);
+	void CopyIndex(XKey* K, KeyFldD* KF, char Typ, void* record);
+	bool GetCRec(void* record) override;
+	void Output(WRec* R, void* record) override;
 private:
+	
 	void FinishIndex();
 };

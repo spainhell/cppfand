@@ -12,13 +12,11 @@ public:
 	unsigned char NrKeys = 0;
 	bool NoCreate = false;
 	bool FirstDupl = false;
-	void SetEmpty();
+	void SetEmpty(int recs, unsigned char keys);
 	void RdPrefix();
-	void WrPrefix();
-	void SetNotValid();
+	void WrPrefix(int recs, unsigned char keys);
+	void SetNotValid(int recs, unsigned char keys);
 	void ClearUpdLock();
+	int XFNotValid(int recs, unsigned char keys);
 };
 
-void XFNotValid();
-void TestXFExist();
-void CreateIndexFile();

@@ -7,6 +7,8 @@
 #include "../cppfand/FieldDescr.h"
 #include "../Logging/Logging.h"
 
+class XWKey;
+class XScan;
 class FileD;
 
 enum class FileType
@@ -86,12 +88,25 @@ public:
 	void SetDeletedFlag(void* record);
 
 	void ClearXFUpdLock();
+	int XFNotValid();
+	int CreateIndexFile();
+	int TestXFExist();
 
 	FileD* GetFileD();
+
+	bool SearchKey(XString& XX, XKey* Key, int& NN);
+	int XNRecs(std::vector<XKey*>& K);
+	void TryInsertAllIndexes(int RecNr, void* record);
+	void DeleteAllIndexes(int RecNr);
+	void DeleteXRec(int RecNr, bool DelT, void* record);
+	void OverWrXRec(int RecNr, void* P2, void* P, void* record);
+
+	void GenerateNew000File(XScan* x, void* record);
+	void CreateWIndex(XScan* Scan, XWKey* K, char Typ);
 
 private:
 	FileD* _parent;
 	double _RforD(FieldDescr* field_d, void* record);
-	bool IsNullValue(void* record, WORD l);
+	bool is_null_value(void* record, WORD l);
 };
 
