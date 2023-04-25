@@ -114,7 +114,7 @@ void XScan::ResetSort(KeyFldD* aSK, FrmlElem* BoolZ, LockMode OldMd, bool SQLFil
 	}
 	if (aSK != nullptr) {
 		Reset(BoolZ, false);
-		ScanSubstWIndex(FD, this, aSK, 'S');
+		FD->FF->ScanSubstWIndex(this, aSK, 'S');
 		BoolZ = nullptr;
 	}
 	else {

@@ -87,7 +87,7 @@ void WorkFile::SortMerge(void* record)
 		auto r = std::make_unique<WRec>();
 		r->PutN(RecNr);
 		r->PutIR(IRec);
-		r->X.PackKF(KFRoot);
+		r->X.PackKF(KFRoot, record);
 		size_t serLen = r->Serialize(buffer);
 		memcpy(&PW->A[offsetOfPwA], buffer, serLen);
 		n++;

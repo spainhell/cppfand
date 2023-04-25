@@ -83,7 +83,7 @@ label1:
 WORD CompMFlds(KeyFldD* M)
 {
 	XString x;
-	x.PackKF(M);
+	x.PackKF(M, CRecPtr);
 	return CompStr(x.S, OldMXStr.S);
 }
 

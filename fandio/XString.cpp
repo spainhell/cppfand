@@ -98,20 +98,20 @@ void XString::StoreKF(KeyFldD* KF, void* record)
 	}
 }
 
-void XString::PackKF(KeyFldD* KF)
+void XString::PackKF(KeyFldD* KF, void* record)
 {
 	Clear();
 	while (KF != nullptr) {
-		StoreKF(KF, CRecPtr);
+		StoreKF(KF, record);
 		KF = KF->pChain;
 	}
 }
 
-void XString::PackKF(std::vector<KeyFldD*>& KF)
+void XString::PackKF(std::vector<KeyFldD*>& KF, void* record)
 {
 	Clear();
 	for (KeyFldD* k : KF) {
-		StoreKF(k, CRecPtr);
+		StoreKF(k, record);
 	}
 }
 

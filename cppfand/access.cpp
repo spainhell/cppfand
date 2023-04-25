@@ -192,7 +192,7 @@ bool LinkUpw(LinkD* LD, int& N, bool WithT)
 	XKey* K = LD->ToKey;
 
 	XString x;
-	x.PackKF(LD->Args);
+	x.PackKF(LD->Args, CRecPtr);
 
 	CFile = ToFD;
 	void* RecPtr = CFile->GetRecSpace();

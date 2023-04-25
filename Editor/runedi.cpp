@@ -666,10 +666,10 @@ int LogRecNo(int N)
 	md = CFile->NewLockMode(RdMode);
 	CFile->ReadRec(N, CRecPtr);
 	if (!CFile->DeletedFlag(CRecPtr)) {
-		if (Subset) result = WK->RecNrToNr(CFile, N);
+		if (Subset) result = WK->RecNrToNr(CFile, N, CRecPtr);
 		else if (HasIndex) {
 			CFile->FF->TestXFExist();
-			result = VK->RecNrToNr(CFile, N);
+			result = VK->RecNrToNr(CFile, N, CRecPtr);
 		}
 		else result = N;
 	}
@@ -685,7 +685,7 @@ bool IsSelectedRec(WORD I)
 	int n = AbsRecNr(BaseRec + I - 1);
 	void* cr = CRecPtr;
 	if ((I == IRec) && WasUpdated) CRecPtr = E->OldRecPtr;
-	result = E->SelKey->RecNrToPath(CFile, x, n);
+	result = E->SelKey->RecNrToPath(CFile, x, n, CRecPtr);
 	CRecPtr = cr;
 	return result;
 }
@@ -724,10 +724,10 @@ bool CheckOwner(EditD* E)
 	XString X, X1;
 	auto result = true;
 	if (E->DownSet && (E->OwnerTyp != 'i')) {
-		X.PackKF(E->DownKey->KFlds);
+		X.PackKF(E->DownKey->KFlds, CRecPtr);
 		CFile = E->DownLD->ToFD;
 		CRecPtr = E->DownRecPtr;
-		X1.PackKF(E->DownLD->ToKey->KFlds);
+		X1.PackKF(E->DownLD->ToKey->KFlds, CRecPtr);
 		X.S[0] = (char)(MinW(X.S.length(), X1.S.length()));
 		if (X.S != X1.S) result = false;
 		CFile = E->FD;
@@ -744,7 +744,7 @@ bool CheckKeyIn(EditD* E)
 	//pstring* p2;
 	auto result = true;
 	if (k == nullptr) return result;
-	X.PackKF(E->VK->KFlds);
+	X.PackKF(E->VK->KFlds, CRecPtr);
 	while (k != nullptr) {
 		//p1 = k->X1; p2 = k->X2;
 		//if (p2 == nullptr) p2 = p1;
@@ -1349,7 +1349,7 @@ bool TestDuplKey(FileD* file_d, XKey* K)
 {
 	XString x;
 	int N = 0;
-	x.PackKF(K->KFlds);
+	x.PackKF(K->KFlds, CRecPtr);
 	return K->Search(file_d, x, false, N) && (IsNewRec || (E->LockedRec != N));
 }
 
@@ -1396,7 +1396,7 @@ void BuildWork()
 			else {
 				CFile = E->DownLD->ToFD;
 				CRecPtr = E->DownRecPtr;
-				xx.PackKF(E->DownLD->ToKey->KFlds);
+				xx.PackKF(E->DownLD->ToKey->KFlds, CRecPtr);
 				CFile = E->FD;
 				CRecPtr = E->NewRecPtr;
 				Scan->ResetOwner(&xx, boolP);
@@ -1690,10 +1690,10 @@ void UpdMemberRef(void* POld, void* PNew)
 			CFile = cf;
 			kf2 = LD->ToKey->KFlds;
 			CRecPtr = POld;
-			xold.PackKF(kf2);
+			xold.PackKF(kf2, CRecPtr);
 			if (PNew != nullptr) {
 				CRecPtr = PNew;
-				xnew.PackKF(kf2);
+				xnew.PackKF(kf2, CRecPtr);
 				if (xnew.S == xold.S) continue;
 			}
 			CFile = LD->FromFD;
@@ -1712,7 +1712,7 @@ void UpdMemberRef(void* POld, void* PNew)
 #ifdef FandSQL
 			if (!sql)
 #endif
-				ScanSubstWIndex(CFile, Scan, kf1, 'W');
+				CFile->FF->ScanSubstWIndex(Scan, kf1, 'W');
 		label1:
 			CRecPtr = p;
 			Scan->GetRec(CRecPtr);
@@ -1954,7 +1954,7 @@ bool DelIndRec(int I, int N)
 		CFile->FF->DeleteXRec(N, true, CRecPtr);
 		SetUpdHandle(CFile->FF->Handle); // navic
 		SetUpdHandle(CFile->FF->XF->Handle); // navic
-		if ((E->SelKey != nullptr) && E->SelKey->Delete(CFile, N)) E->SelKey->NR--;
+		if ((E->SelKey != nullptr) && E->SelKey->Delete(CFile, N, CRecPtr)) E->SelKey->NR--;
 		if (Subset) WK->DeleteAtNr(CFile, I);
 		result = true;
 		E->EdUpdated = true;
@@ -2296,7 +2296,7 @@ void UpwEdit(LinkD* LkD)
 		EO->SetOnlyView = true;
 	}
 	CFile = E->FD;
-	x.PackKF(LD->Args);
+	x.PackKF(LD->Args, CRecPtr);
 	px = &x;
 	K = LD->ToKey;
 	CFile = LD->ToFD;
@@ -2433,19 +2433,19 @@ int UpdateIndexes()
 	}
 	else if (KSel != nullptr) {
 		CRecPtr = E->OldRecPtr;
-		if (KSel->RecNrToPath(CFile, x, NNew)) {
+		if (KSel->RecNrToPath(CFile, x, NNew, CRecPtr)) {
 			KSel->DeleteOnPath(CFile);
 			CRecPtr = E->NewRecPtr;
-			KSel->Insert(CFile, NNew, false);
+			KSel->Insert(CFile, NNew, false, CRecPtr);
 		}
 		CRecPtr = E->NewRecPtr;
 	}
 
-	if (VK->RecNrToPath(CFile, x, E->LockedRec) && !WasWK) {
+	if (VK->RecNrToPath(CFile, x, E->LockedRec, CRecPtr) && !WasWK) {
 		if (IsNewRec) {
 			VK->InsertOnPath(CFile, x, NNew);
 			if (Subset) {
-				WK->InsertAtNr(CFile, CRec(), NNew);
+				WK->InsertAtNr(CFile, CRec(), NNew, CRecPtr);
 			}
 		}
 		N = CRec();
@@ -2453,12 +2453,12 @@ int UpdateIndexes()
 	else {
 		if (!IsNewRec) {
 			CRecPtr = E->OldRecPtr;
-			VK->Delete(CFile, E->LockedRec);
+			VK->Delete(CFile, E->LockedRec, CRecPtr);
 			if (Subset) {
 				WK->DeleteAtNr(CFile, CRec());
 			}
 			CRecPtr = E->NewRecPtr;
-			x.PackKF(VK->KFlds);
+			x.PackKF(VK->KFlds, CRecPtr);
 			VK->Search(CFile, x, true, N);
 		}
 		N = VK->PathToNr(CFile);
@@ -2467,7 +2467,7 @@ int UpdateIndexes()
 			VK->NR++;
 		}
 		if (Subset) {
-			N = WK->InsertGetNr(CFile, NNew);
+			N = WK->InsertGetNr(CFile, NNew, CRecPtr);
 		}
 	}
 
@@ -2477,10 +2477,10 @@ int UpdateIndexes()
 		if (K != VK) {
 			if (!IsNewRec) {
 				CRecPtr = E->OldRecPtr;
-				K->Delete(CFile, E->LockedRec);
+				K->Delete(CFile, E->LockedRec, CRecPtr);
 			}
 			CRecPtr = E->NewRecPtr;
-			K->Insert(CFile, NNew, true);
+			K->Insert(CFile, NNew, true, CRecPtr);
 		}
 	}
 	CRecPtr = E->NewRecPtr;
@@ -2601,7 +2601,7 @@ bool WriteCRec(bool MayDispl, bool& Displ)
 		CFile->CreateRec(N, CRecPtr);
 		if (Subset) {
 			WK->AddToRecNr(CFile, N, 1);
-			WK->InsertAtNr(CFile, CRec(), N);
+			WK->InsertAtNr(CFile, CRec(), N, CRecPtr);
 		}
 	}
 	else {
@@ -2998,7 +2998,7 @@ void Sorting()
 	}
 
 	try {
-		SortAndSubst(CFile, SKRoot);
+		CFile->FF->SortAndSubst(SKRoot);
 		E->EdUpdated = true;
 	}
 	catch (std::exception&) {
@@ -3762,20 +3762,22 @@ void SwitchRecs(short Delta)
 	if (!CFile->TryLockMode(WrMode, md, 1)) return;
 	p1 = CFile->GetRecSpace();
 	p2 = CFile->GetRecSpace();
-	CRecPtr = p1; n1 = AbsRecNr(CRec()); CFile->ReadRec(n1, CRecPtr);
-	if (HasIndex) x1.PackKF(VK->KFlds);
-	CRecPtr = p2; n2 = AbsRecNr(CRec() + Delta); CFile->ReadRec(n2, CRecPtr);
-	if (HasIndex) { x2.PackKF(VK->KFlds); if (x1.S != x2.S) goto label1; }
+	CRecPtr = p1; n1 = AbsRecNr(CRec());
+	CFile->ReadRec(n1, CRecPtr);
+	if (HasIndex) x1.PackKF(VK->KFlds, CRecPtr);
+	CRecPtr = p2; n2 = AbsRecNr(CRec() + Delta);
+	CFile->ReadRec(n2, CRecPtr);
+	if (HasIndex) { x2.PackKF(VK->KFlds, CRecPtr); if (x1.S != x2.S) goto label1; }
 	CFile->WriteRec(n1, CRecPtr);
 	CRecPtr = p1;
 	CFile->WriteRec(n2, CRecPtr);
 	if (HasIndex) {
 		for (auto& k : CFile->Keys) {
 			if (k != VK) {
-				CRecPtr = p1; k->Delete(CFile, n1);
-				CRecPtr = p2; k->Delete(CFile, n2);
-				CRecPtr = p1; k->Insert(CFile, n2, true);
-				CRecPtr = p2; k->Insert(CFile, n1, true);
+				CRecPtr = p1; k->Delete(CFile, n1, CRecPtr);
+				CRecPtr = p2; k->Delete(CFile, n2, CRecPtr);
+				CRecPtr = p1; k->Insert(CFile, n2, true, CRecPtr);
+				CRecPtr = p2; k->Insert(CFile, n1, true, CRecPtr);
 			}
 		}
 	}
@@ -4236,7 +4238,7 @@ void SetEdRecNoEtc(int RNr)
 		if (WasUpdated) CRecPtr = E->OldRecPtr;
 		XKey* k = VK;
 		if (Subset) k = WK;
-		x.PackKF(k->KFlds);
+		x.PackKF(k->KFlds, CRecPtr);
 		CRecPtr = cr;
 	}
 	EdRecKey = x.S;
@@ -4547,13 +4549,13 @@ void ToggleSelectRec()
 	XString x; LockMode md;
 	XWKey* k = E->SelKey;
 	int n = AbsRecNr(CRec());
-	if (k->RecNrToPath(CFile, x, n)) {
+	if (k->RecNrToPath(CFile, x, n, CRecPtr)) {
 		k->NR--;
 		k->DeleteOnPath(CFile);
 	}
 	else {
 		k->NR++;
-		k->Insert(CFile, n, false);
+		k->Insert(CFile, n, false, CRecPtr);
 	}
 	SetRecAttr(IRec);
 	IVon();
@@ -4567,10 +4569,10 @@ void ToggleSelectAll()
 		k->Release(CFile);
 	}
 	else if (Subset) {
-		CopyIndex(CFile, k, WK);
+		CFile->FF->CopyIndex(k, WK);
 	}
 	else {
-		CopyIndex(CFile, k, VK);
+		CFile->FF->CopyIndex(k, VK);
 	}
 	DisplAllWwRecs();
 }

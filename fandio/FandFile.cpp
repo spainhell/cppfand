@@ -8,6 +8,7 @@
 #include "../Common/compare.h"
 #include "../cppfand/Coding.h"
 #include "../cppfand/GlobalVariables.h"
+#include "../cppfand/oaccess.h"
 #include "../pascal/real48.h"
 #include "../cppfand/obaseww.h"
 
@@ -764,7 +765,7 @@ bool FandFile::SearchKey(XString& XX, XKey* Key, int& NN)
 		}
 		N = (L + R) / 2;
 		_parent->ReadRec(N, CRecPtr);
-		x.PackKF(KF);
+		x.PackKF(KF, CRecPtr);
 		Result = CompStr(x.S, XX.S);
 	} while (!((L >= R) || (Result == _equ)));
 
@@ -774,7 +775,7 @@ bool FandFile::SearchKey(XString& XX, XKey* Key, int& NN)
 			while (N > 1) {
 				N--;
 				_parent->ReadRec(N, CRecPtr);
-				x.PackKF(KF);
+				x.PackKF(KF, CRecPtr);
 				if (CompStr(x.S, XX.S) != _equ) {
 					N++;
 					_parent->ReadRec(N, CRecPtr);
@@ -806,7 +807,7 @@ void FandFile::TryInsertAllIndexes(int RecNr, void* record)
 	XKey* lastK = nullptr;
 	for (auto& K : _parent->Keys) {
 		lastK = K;
-		if (!K->Insert(_parent, RecNr, true)) {
+		if (!K->Insert(_parent, RecNr, true, record)) {
 			goto label1;
 		}
 	}
@@ -818,7 +819,7 @@ label1:
 		if (K1 == lastK) {
 			break;
 		}
-		K1->Delete(_parent, RecNr);
+		K1->Delete(_parent, RecNr, record);
 	}
 	_parent->SetDeletedFlag(record);
 	_parent->WriteRec(RecNr, record);
@@ -830,13 +831,13 @@ label1:
 	}
 }
 
-void FandFile::DeleteAllIndexes(int RecNr)
+void FandFile::DeleteAllIndexes(int RecNr, void* record)
 {
 	Logging* log = Logging::getInstance();
 	log->log(loglevel::DEBUG, "DeleteAllIndexes(%i)", RecNr);
 
 	for (auto& K : _parent->Keys) {
-		K->Delete(_parent, RecNr);
+		K->Delete(_parent, RecNr, record);
 	}
 }
 
@@ -845,7 +846,7 @@ void FandFile::DeleteXRec(int RecNr, bool DelT, void* record)
 	Logging* log = Logging::getInstance();
 	//log->log(loglevel::DEBUG, "DeleteXRec(%i, %s)", RecNr, DelT ? "true" : "false");
 	TestXFExist();
-	DeleteAllIndexes(RecNr);
+	DeleteAllIndexes(RecNr, record);
 	if (DelT) _parent->DelAllDifTFlds(record, nullptr);
 	SetDeletedFlag(record);
 	_parent->WriteRec(RecNr, record);
@@ -865,13 +866,13 @@ void FandFile::OverWrXRec(int RecNr, void* P2, void* P, void* record)
 
 	for (auto& K : _parent->Keys) {
 		record = P;
-		x.PackKF(K->KFlds);
+		x.PackKF(K->KFlds, record);
 		record = P2;
-		x2.PackKF(K->KFlds);
+		x2.PackKF(K->KFlds, record);
 		if (x.S != x2.S) {
-			K->Delete(_parent, RecNr);
+			K->Delete(_parent, RecNr, record);
 			record = P;
-			K->Insert(_parent, RecNr, false);
+			K->Insert(_parent, RecNr, false, record);
 		}
 	}
 
@@ -917,6 +918,73 @@ void FandFile::CreateWIndex(XScan* Scan, XWKey* K, char Typ)
 	XW->Main(Typ, record);
 	delete XW; XW = nullptr;
 	delete[] record; record = nullptr;
+}
+
+void FandFile::ScanSubstWIndex(XScan* Scan, KeyFldD* SK, char Typ)
+{
+	unsigned short n = 0;
+	XWKey* k2 = new XWKey(_parent);
+	if (Scan->FD->IsSQLFile && (Scan->Kind == 3)) /*F6-autoreport & sort*/ {
+		XKey* k = Scan->Key;
+		n = k->IndexLen;
+		KeyFldD* kf = SK;
+		while (kf != nullptr) {
+			n += kf->FldD->NBytes;
+			kf = kf->pChain;
+		}
+		if (n > 255) {
+			WrLLF10Msg(155);
+			ReleaseStore(k2);
+			return;
+		}
+		kf = k->KFlds;
+		KeyFldD* kfroot = nullptr;
+		KeyFldD* kf2 = nullptr;
+		while (kf != nullptr) {
+			kf2 = new KeyFldD();
+			*kf2 = *kf;
+			ChainLast(kfroot, kf2);
+			kf = kf->pChain;
+		}
+		if (kf2 != nullptr)	kf2->pChain = SK;
+		SK = kfroot;
+	}
+	k2->Open(CFile, SK, true, false);
+	CreateWIndex(Scan, k2, Typ);
+
+	Scan->SubstWIndex(k2);
+}
+
+void FandFile::SortAndSubst(KeyFldD* SK)
+{
+	BYTE* record = _parent->GetRecSpace();
+
+	XScan* Scan = new XScan(_parent, nullptr, nullptr, false);
+	Scan->Reset(nullptr, false);
+	ScanSubstWIndex(Scan, SK, 'S');
+	FileD* FD2 = OpenDuplicateF(_parent, false);
+	RunMsgOn('S', Scan->NRecs);
+	Scan->GetRec(record);
+
+	// zapiseme data do souboru .100
+	FD2->FF->GenerateNew000File(Scan, record);
+
+	SubstDuplF(FD2, false);
+	Scan->Close();
+	RunMsgOff();
+
+	delete[] record; record = nullptr;
+}
+
+void FandFile::CopyIndex(XWKey* K, XKey* FromK)
+{
+	XScan* Scan = nullptr;
+	K->Release(_parent);
+	LockMode md = _parent->NewLockMode(RdMode);
+	Scan = new XScan(_parent, FromK, nullptr, false);
+	Scan->Reset(nullptr, false);
+	CreateWIndex(Scan, K, 'W');
+	_parent->OldLockMode(md);
 }
 
 double FandFile::_RforD(FieldDescr* field_d, void* record)

@@ -233,11 +233,11 @@ int XKey::PathToRecNr(FileD* file_d)
 	return result;
 }
 
-bool XKey::RecNrToPath(FileD* file_d, XString& XX, int RecNr)
+bool XKey::RecNrToPath(FileD* file_d, XString& XX, int RecNr, void* record)
 {
 	bool result = false;
 	XItem* x = nullptr; int n = 0;
-	XX.PackKF(KFlds);
+	XX.PackKF(KFlds, record);
 	Search(file_d, XX, false, n);
 	auto p = std::make_unique<XPage>();
 	size_t item = 1;
@@ -341,10 +341,10 @@ std::string XKey::NrToStr(FileD* file_d, int I)
 	return p->GetKey(I);
 }
 
-int XKey::RecNrToNr(FileD* file_d, int RecNr)
+int XKey::RecNrToNr(FileD* file_d, int RecNr, void* record)
 {
 	XString x;
-	if (RecNrToPath(file_d, x, RecNr)) return PathToNr(file_d);
+	if (RecNrToPath(file_d, x, RecNr, record)) return PathToNr(file_d);
 	else return 0;
 }
 
@@ -462,10 +462,10 @@ void XKey::ChainPrevLeaf(FileD* file_d, XPage* P, int N)
 		}
 }
 
-bool XKey::Insert(FileD* file_d, int RecNr, bool Try)
+bool XKey::Insert(FileD* file_d, int RecNr, bool Try, void* record)
 {
 	int N = 0, XNr = 0; XString x;
-	x.PackKF(KFlds);
+	x.PackKF(KFlds, record);
 	if (Search(file_d, x, true, N)) {
 		if (Try) {
 			return false;
@@ -606,10 +606,10 @@ void XKey::XIDown(FileD* file_d, XPage* p, XPage* p1, unsigned short i, int& pag
 	GetXFile(file_d)->RdPage(p1, page1);
 }
 
-bool XKey::Delete(FileD* file_d, int RecNr)
+bool XKey::Delete(FileD* file_d, int RecNr, void* record)
 {
 	XString xx;
-	bool b = RecNrToPath(file_d, xx, RecNr);
+	bool b = RecNrToPath(file_d, xx, RecNr, record);
 	if (b) DeleteOnPath(file_d);
 	return b;
 }

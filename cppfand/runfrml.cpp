@@ -26,7 +26,7 @@ double Owned(FrmlElem* Bool, FrmlElem* Sum, LinkD* LD)
 {
 	double r;
 	XString x;
-	x.PackKF(LD->ToKey->KFlds);
+	x.PackKF(LD->ToKey->KFlds, CRecPtr);
 	FileD* cf = CFile;
 	void* cr = CRecPtr;
 	CFile = LD->FromFD;
@@ -360,7 +360,7 @@ int AbsLogRecNoFun(FrmlElem13* Z)
 			CRecPtr = CFile->GetRecSpace();
 			CFile->ReadRec(N, CRecPtr);
 			if (CFile->DeletedFlag(CRecPtr)) goto label1;
-			result = k->RecNrToNr(CFile, N);
+			result = k->RecNrToNr(CFile, N, CRecPtr);
 		}
 		else /*_recnoabs*/ {
 			if (N > k->NRecs()) goto label1;
@@ -2206,7 +2206,7 @@ LongStr* RunS(FrmlElem* Z)
 		/* !!! with Z->LV^ do!!! */
 		CFile = iZ->LV->FD;
 		CRecPtr = iZ->LV->RecPtr;
-		x->PackKF(iZ->PackKey->KFlds);
+		x->PackKF(iZ->PackKey->KFlds, CRecPtr);
 		CFile = cf; CRecPtr = cr;
 		break;
 	}

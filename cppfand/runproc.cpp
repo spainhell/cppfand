@@ -227,7 +227,7 @@ void AssignRecFld(Instr_assign* PD)
 void SortProc(FileD* FD, KeyFldD* SK)
 {
 	LockMode md = FD->NewLockMode(ExclMode);
-	SortAndSubst(FD, SK);
+	FD->FF->SortAndSubst(SK);
 	FD->OldLockMode(md);
 	SaveFiles();
 }
@@ -775,14 +775,14 @@ void ForAllProc(Instr_forall* PD)
 		switch (PD->COwnerTyp) {
 		case 'r': {
 			CRecPtr = PD->CLV->RecPtr;
-			xx.PackKF(KF);
+			xx.PackKF(KF, CRecPtr);
 			break;
 		}
 		case 'F': {
 			md = CFile->NewLockMode(RdMode);
 			CRecPtr = CFile->GetRecSpace();
 			CFile->ReadRec(RunInt((FrmlElem*)PD->CLV), CRecPtr);
-			xx.PackKF(KF);
+			xx.PackKF(KF, CRecPtr);
 			ReleaseStore(p);
 			CFile->OldLockMode(md);
 			break;
@@ -816,7 +816,7 @@ void ForAllProc(Instr_forall* PD)
 #endif
 		if (Key != nullptr) {
 			if (PD->CWIdx) {
-				ScanSubstWIndex(CFile, xScan, Key->KFlds, 'W');
+				CFile->FF->ScanSubstWIndex(xScan, Key->KFlds, 'W');
 			}
 			else {
 				CFile->FF->XF->UpdLockCnt++;
@@ -1502,7 +1502,7 @@ void RunInstr(Instr* PD)
 			break;
 		}
 		case _getindex: {
-			GetIndexSort((Instr_getindex*)PD);
+			GetIndex((Instr_getindex*)PD);
 			break;
 		}
 		case _setmouse: {

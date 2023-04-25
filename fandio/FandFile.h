@@ -97,12 +97,15 @@ public:
 	bool SearchKey(XString& XX, XKey* Key, int& NN);
 	int XNRecs(std::vector<XKey*>& K);
 	void TryInsertAllIndexes(int RecNr, void* record);
-	void DeleteAllIndexes(int RecNr);
+	void DeleteAllIndexes(int RecNr, void* record);
 	void DeleteXRec(int RecNr, bool DelT, void* record);
 	void OverWrXRec(int RecNr, void* P2, void* P, void* record);
 
 	void GenerateNew000File(XScan* x, void* record);
 	void CreateWIndex(XScan* Scan, XWKey* K, char Typ);
+	void ScanSubstWIndex(XScan* Scan, KeyFldD* SK, char Typ);
+	void SortAndSubst(KeyFldD* SK);
+	void CopyIndex(XWKey* K, XKey* FromK);
 
 private:
 	FileD* _parent;

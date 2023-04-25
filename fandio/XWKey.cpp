@@ -68,23 +68,23 @@ void XWKey::ReleaseTree(FileD* file_d, int Page, bool IsClose)
 void XWKey::OneRecIdx(FileD* file_d, KeyFldD* KF, int N)
 {
 	Open(file_d, KF, true, false);
-	Insert(file_d, N, true);
+	Insert(file_d, N, true, CRecPtr);
 	NR++;
 }
 
-void XWKey::InsertAtNr(FileD* file_d, int I, int RecNr)
+void XWKey::InsertAtNr(FileD* file_d, int I, int RecNr, void* record)
 {
 	XString x;
-	x.PackKF(KFlds);
+	x.PackKF(KFlds, record);
 	NR++;
 	NrToPath(file_d, I);
 	InsertOnPath(file_d, x, RecNr);
 }
 
-int XWKey::InsertGetNr(FileD* file_d, int RecNr)
+int XWKey::InsertGetNr(FileD* file_d, int RecNr, void* record)
 {
 	XString x; int n;
-	NR++; x.PackKF(KFlds);
+	NR++; x.PackKF(KFlds, record);
 	Search(file_d, x, true, n);
 	int result = PathToNr(file_d);
 	InsertOnPath(file_d, x, RecNr);

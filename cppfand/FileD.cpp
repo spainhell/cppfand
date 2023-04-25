@@ -164,7 +164,7 @@ void FileD::RecallRec(int recNr, void* record)
 	FF->TestXFExist();
 	FF->XF->NRecs++;
 	for (auto& K : Keys) {
-		K->Insert(this, recNr, false);
+		K->Insert(this, recNr, false, record);
 	}
 	FF->ClearDeletedFlag(record);
 	WriteRec(recNr, record);
