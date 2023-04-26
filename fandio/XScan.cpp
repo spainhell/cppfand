@@ -81,9 +81,9 @@ void XScan::Reset(FrmlElem* ABool, bool SQLFilter)
 		k = KIRoot;
 		while (k != nullptr) {
 			// vyhleda 1. zaznam odpovidajici klici 
-			Key->FindNr(CFile, k->X1, k->XNrBeg);
+			Key->FindNr(FD, k->X1, k->XNrBeg);
 			// vyhleda posledni zaznam odpovidajici klici
-			b = Key->FindNr(CFile, k->X2, n);
+			b = Key->FindNr(FD, k->X2, n);
 			k->N = 0;
 			if (n >= k->XNrBeg) k->N = n - k->XNrBeg + b;
 			NRecs += k->N;
@@ -172,9 +172,9 @@ void XScan::ResetOwner(XString* XX, FrmlElem* aBool)
 	{
 		FD->FF->TestXFExist();
 		KIRoot = new KeyInD(); // (KeyInD*)GetZStore(sizeof(*KIRoot));
-		Key->FindNr(CFile, XX->S, KIRoot->XNrBeg);
+		Key->FindNr(FD, XX->S, KIRoot->XNrBeg);
 		AddFFs(Key, XX->S);
-		b = Key->FindNr(CFile, XX->S, n);
+		b = Key->FindNr(FD, XX->S, n);
 		NRecs = n - KIRoot->XNrBeg + b;
 		KIRoot->N = NRecs; Kind = 2;
 	}
@@ -280,13 +280,13 @@ void XScan::SeekRec(int I)
 void XScan::SeekOnKI(int I)
 {
 	NOfKI = KI->N - I;
-	Key->NrToPath(CFile, KI->XNrBeg + I);
+	Key->NrToPath(FD, KI->XNrBeg + I);
 	SeekOnPage(XPath[XPathN].Page, XPath[XPathN].I);
 }
 
 void XScan::SeekOnPage(int pageNr, unsigned short i)
 {
-	Key->GetXFile(CFile)->RdPage(page_, pageNr);
+	Key->GetXFile(FD)->RdPage(page_, pageNr);
 	items_on_page_ = page_->NItems - i + 1;
 	if (Kind == 2) {
 		if (items_on_page_ > NOfKI) {

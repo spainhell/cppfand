@@ -40,7 +40,7 @@ void GetIndex(Instr_getindex* PD)
 		case 'r': {
 			file_d = ld->ToFD;
 			BYTE* record = (BYTE*)lv2->RecPtr;
-			x.PackKF(kf, record);
+			x.PackKF(file_d, kf, record);
 
 			file_d = lv->FD;
 			Scan->ResetOwner(&x, cond);
@@ -51,7 +51,7 @@ void GetIndex(Instr_getindex* PD)
 			md = file_d->NewLockMode(RdMode);
 			BYTE* record = file_d->GetRecSpace();
 			file_d->ReadRec(RunInt((FrmlElem*)PD->giLV2), record);
-			x.PackKF(kf, record);
+			x.PackKF(file_d, kf, record);
 			delete[] record; record = nullptr;
 			file_d->OldLockMode(md);
 			file_d = lv->FD;
@@ -78,7 +78,7 @@ void GetIndex(Instr_getindex* PD)
 			file_d->ReadRec(nr, record);
 			if (PD->giMode == '+') {
 				if (!file_d->DeletedFlag(record)) {
-					x.PackKF(k->KFlds, record);
+					x.PackKF(file_d, k->KFlds, record);
 					if (!k->RecNrToPath(file_d, x, nr, CRecPtr)) {
 						k->InsertOnPath(file_d, x, nr);
 						k->NR++;

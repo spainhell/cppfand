@@ -79,39 +79,39 @@ void XString::StoreBool(bool B, KeyFldD* KF)
 	StoreN(&B, 1, KF->Descend);
 }
 
-void XString::StoreKF(KeyFldD* KF, void* record)
+void XString::StoreKF(FileD* file_d, KeyFldD* KF, void* record)
 {
 	FieldDescr* F = KF->FldD;
 	switch (F->frml_type) {
 	case 'S': {
-		StoreStr(CFile->loadOldS(F, record), KF);
+		StoreStr(file_d->loadOldS(F, record), KF);
 		break;
 	}
 	case 'R': {
-		StoreReal(CFile->loadR(F, record), KF);
+		StoreReal(file_d->loadR(F, record), KF);
 		break;
 	}
 	case 'B': {
-		StoreBool(CFile->loadB(F, record), KF);
+		StoreBool(file_d->loadB(F, record), KF);
 		break;
 	}
 	}
 }
 
-void XString::PackKF(KeyFldD* KF, void* record)
+void XString::PackKF(FileD* file_d, KeyFldD* KF, void* record)
 {
 	Clear();
 	while (KF != nullptr) {
-		StoreKF(KF, record);
+		StoreKF(file_d, KF, record);
 		KF = KF->pChain;
 	}
 }
 
-void XString::PackKF(std::vector<KeyFldD*>& KF, void* record)
+void XString::PackKF(FileD* file_d, std::vector<KeyFldD*>& KF, void* record)
 {
 	Clear();
 	for (KeyFldD* k : KF) {
-		StoreKF(k, record);
+		StoreKF(file_d, k, record);
 	}
 }
 

@@ -15,7 +15,8 @@ class FandTFile
 {
 public:
 	FandTFile(FandFile* parent);
-	FandTFile(const FandTFile& orig);
+	FandTFile(const FandTFile& orig) = delete;
+	FandTFile(const FandTFile& orig, FandFile* parent);
 	FILE* Handle = nullptr;
 	int FreePart = 0;
 	bool Reserved = false, CompileProc = false, CompileAll = false;

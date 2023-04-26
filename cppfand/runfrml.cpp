@@ -26,7 +26,7 @@ double Owned(FrmlElem* Bool, FrmlElem* Sum, LinkD* LD)
 {
 	double r;
 	XString x;
-	x.PackKF(LD->ToKey->KFlds, CRecPtr);
+	x.PackKF(CFile, LD->ToKey->KFlds, CRecPtr);
 	FileD* cf = CFile;
 	void* cr = CRecPtr;
 	CFile = LD->FromFD;
@@ -329,7 +329,7 @@ int RecNoFun(FrmlElem13* Z)
 			CFile->FF->TestXFExist();
 			b = k->SearchInterval(CFile, x, false, n);
 		}
-		else b = CFile->SearchKey(x, k, n);
+		else b = CFile->SearchKey(x, k, n, CRecPtr);
 		if (!b) n = -n;
 	}
 	else {
@@ -2206,7 +2206,7 @@ LongStr* RunS(FrmlElem* Z)
 		/* !!! with Z->LV^ do!!! */
 		CFile = iZ->LV->FD;
 		CRecPtr = iZ->LV->RecPtr;
-		x->PackKF(iZ->PackKey->KFlds, CRecPtr);
+		x->PackKF(CFile, iZ->PackKey->KFlds, CRecPtr);
 		CFile = cf; CRecPtr = cr;
 		break;
 	}

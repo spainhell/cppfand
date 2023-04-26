@@ -12,7 +12,7 @@ FandXFile::FandXFile(FandFile* parent): XWFile(parent)
 {
 }
 
-FandXFile::FandXFile(const FandXFile& orig): XWFile(orig._parent)
+FandXFile::FandXFile(const FandXFile& orig, FandFile* parent): XWFile(parent)
 {
 	NRecs = orig.NRecs;
 	NRecsAbs = orig.NRecsAbs;

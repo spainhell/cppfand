@@ -179,8 +179,8 @@ void AssignRecVar(LocVar* LV1, LocVar* LV2, AssignD* A)
 	pstring EmptyStr(1);
 	EmptyStr = "";
 	pstring ss;
-	FileD* FD1 = LV1->FD;
-	FileD* FD2 = LV2->FD;
+	FileD* FD1 = LV1->FD;  // destination record
+	FileD* FD2 = LV2->FD;  // source record
 	void* RP1 = LV1->RecPtr;
 	void* RP2 = LV2->RecPtr;
 
@@ -531,17 +531,14 @@ void PrintTxtProc(Instr_edittxt* PD)
 
 bool SrchXKey(XKey* K, XString& X, int& N)
 {
-	void* cr;
 	if (CFile->FF->file_type == FileType::INDEX) {
 		CFile->FF->TestXFExist();
 		return K->SearchInterval(CFile, X, false, N);
 	}
 	else {
-		cr = CRecPtr;
-		CRecPtr = CFile->GetRecSpace();
-		auto result = CFile->SearchKey(X, K, N);
-		ReleaseStore(CRecPtr);
-		CRecPtr = cr;
+		BYTE* record = CFile->GetRecSpace();
+		bool result = CFile->SearchKey(X, K, N, record);
+		delete[] record; record = nullptr;
 		return result;
 	}
 }
@@ -775,14 +772,14 @@ void ForAllProc(Instr_forall* PD)
 		switch (PD->COwnerTyp) {
 		case 'r': {
 			CRecPtr = PD->CLV->RecPtr;
-			xx.PackKF(KF, CRecPtr);
+			xx.PackKF(CFile, KF, CRecPtr);
 			break;
 		}
 		case 'F': {
 			md = CFile->NewLockMode(RdMode);
 			CRecPtr = CFile->GetRecSpace();
 			CFile->ReadRec(RunInt((FrmlElem*)PD->CLV), CRecPtr);
-			xx.PackKF(KF, CRecPtr);
+			xx.PackKF(CFile, KF, CRecPtr);
 			ReleaseStore(p);
 			CFile->OldLockMode(md);
 			break;

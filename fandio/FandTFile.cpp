@@ -141,9 +141,9 @@ FandTFile::FandTFile(FandFile* parent)
 	_parent = parent;
 }
 
-FandTFile::FandTFile(const FandTFile& orig)
+FandTFile::FandTFile(const FandTFile& orig, FandFile* parent)
 {
-	_parent = orig._parent;
+	_parent = parent;
 	Format = orig.Format;
 }
 

@@ -97,5 +97,5 @@ public:
 	void ClearDeletedFlag(void* record);
 	void SetDeletedFlag(void* record);
 
-	bool SearchKey(XString& XX, XKey* Key, int& NN);
+	bool SearchKey(XString& XX, XKey* Key, int& NN, void* record);
 };

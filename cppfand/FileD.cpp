@@ -34,7 +34,7 @@ FileD::FileD(const FileD& orig)
 	IsDynFile = orig.IsDynFile;
 
 	if (orig.FF != nullptr) {
-		FF = new FandFile(*orig.FF);
+		FF = new FandFile(*orig.FF, this);
 	}
 
 	if (!orig.Keys.empty()) {
@@ -343,7 +343,7 @@ void FileD::SetDeletedFlag(void* record)
 	FF->SetDeletedFlag(record);
 }
 
-bool FileD::SearchKey(XString& XX, XKey* Key, int& NN)
+bool FileD::SearchKey(XString& XX, XKey* Key, int& NN, void* record)
 {
-	return FF->SearchKey(XX, Key, NN);
+	return FF->SearchKey(XX, Key, NN, record);
 }

@@ -17,17 +17,16 @@ FandFile::FandFile(FileD* parent)
 	_parent = parent;
 }
 
-FandFile::FandFile(const FandFile& orig)
+FandFile::FandFile(const FandFile& orig, FileD* parent)
 {
-	_parent = orig._parent;
+	_parent = parent;
 	RecLen = orig.RecLen;
 	file_type = orig.file_type;
 	Drive = orig.Drive;
 
-	if (orig.TF != nullptr) TF = new FandTFile(*orig.TF);
-	if (orig.XF != nullptr) XF = new FandXFile(*orig.XF);
+	if (orig.TF != nullptr) TF = new FandTFile(*orig.TF, this);
+	if (orig.XF != nullptr) XF = new FandXFile(*orig.XF, this);
 }
-
 
 int FandFile::UsedFileSize()
 {
@@ -743,7 +742,7 @@ FileD* FandFile::GetFileD()
 	return _parent;
 }
 
-bool FandFile::SearchKey(XString& XX, XKey* Key, int& NN)
+bool FandFile::SearchKey(XString& XX, XKey* Key, int& NN, void* record)
 {
 	int R = 0;
 	XString x;
@@ -764,8 +763,8 @@ bool FandFile::SearchKey(XString& XX, XKey* Key, int& NN)
 			L = N + 1;
 		}
 		N = (L + R) / 2;
-		_parent->ReadRec(N, CRecPtr);
-		x.PackKF(KF, CRecPtr);
+		_parent->ReadRec(N, record);
+		x.PackKF(_parent, KF, record);
 		Result = CompStr(x.S, XX.S);
 	} while (!((L >= R) || (Result == _equ)));
 
@@ -774,11 +773,11 @@ bool FandFile::SearchKey(XString& XX, XKey* Key, int& NN)
 		if (Key->Duplic && (Result == _equ)) {
 			while (N > 1) {
 				N--;
-				_parent->ReadRec(N, CRecPtr);
-				x.PackKF(KF, CRecPtr);
+				_parent->ReadRec(N, record);
+				x.PackKF(_parent, KF, record);
 				if (CompStr(x.S, XX.S) != _equ) {
 					N++;
-					_parent->ReadRec(N, CRecPtr);
+					_parent->ReadRec(N, record);
 					break;
 				}
 			}
@@ -866,9 +865,9 @@ void FandFile::OverWrXRec(int RecNr, void* P2, void* P, void* record)
 
 	for (auto& K : _parent->Keys) {
 		record = P;
-		x.PackKF(K->KFlds, record);
+		x.PackKF(_parent, K->KFlds, record);
 		record = P2;
-		x2.PackKF(K->KFlds, record);
+		x2.PackKF(_parent, K->KFlds, record);
 		if (x.S != x2.S) {
 			K->Delete(_parent, RecNr, record);
 			record = P;
@@ -949,7 +948,7 @@ void FandFile::ScanSubstWIndex(XScan* Scan, KeyFldD* SK, char Typ)
 		if (kf2 != nullptr)	kf2->pChain = SK;
 		SK = kfroot;
 	}
-	k2->Open(CFile, SK, true, false);
+	k2->Open(_parent, SK, true, false);
 	CreateWIndex(Scan, k2, Typ);
 
 	Scan->SubstWIndex(k2);

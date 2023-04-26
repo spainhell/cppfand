@@ -786,7 +786,7 @@ WORD CompMFlds(std::vector<ConstListEl>& C, KeyFldD* M, short& NLv)
 	for (ConstListEl& c : C) { 
 		NLv++;
 		x.Clear();
-		x.StoreKF(M, CRecPtr);
+		x.StoreKF(CFile, M, CRecPtr);
 		std::string s = x.S;
 		int res = CompStr(s, c.S);
 		if (res != _equ) {
@@ -802,7 +802,7 @@ void GetMFlds(std::vector<ConstListEl>& C, KeyFldD* M)
 	for (auto& c : C) {
 		XString x;
 		x.Clear();
-		x.StoreKF(M, CRecPtr);
+		x.StoreKF(CFile, M, CRecPtr);
 		c.S = x.S;
 		M = M->pChain;
 	}

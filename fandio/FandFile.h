@@ -26,7 +26,8 @@ class FandFile
 {
 public:
 	FandFile(FileD* parent);
-	FandFile(const FandFile& orig);
+	FandFile(const FandFile& orig) = delete;
+	FandFile(const FandFile& orig, FileD* parent);
 
 	unsigned short RecLen = 0;
 	void* RecPtr = nullptr;
@@ -94,7 +95,7 @@ public:
 
 	FileD* GetFileD();
 
-	bool SearchKey(XString& XX, XKey* Key, int& NN);
+	bool SearchKey(XString& XX, XKey* Key, int& NN, void* record);
 	int XNRecs(std::vector<XKey*>& K);
 	void TryInsertAllIndexes(int RecNr, void* record);
 	void DeleteAllIndexes(int RecNr, void* record);

@@ -17,7 +17,6 @@
 #include "../cppfand/rdrun.h"
 #include "../cppfand/runproc.h"
 #include "../cppfand/runproj.h"
-#include "../fandio/sort.h"
 #include "../fandio/XKey.h"
 #include "../cppfand/wwmenu.h"
 #include "../Logging/Logging.h"
@@ -724,10 +723,10 @@ bool CheckOwner(EditD* E)
 	XString X, X1;
 	auto result = true;
 	if (E->DownSet && (E->OwnerTyp != 'i')) {
-		X.PackKF(E->DownKey->KFlds, CRecPtr);
+		X.PackKF(CFile, E->DownKey->KFlds, CRecPtr);
 		CFile = E->DownLD->ToFD;
 		CRecPtr = E->DownRecPtr;
-		X1.PackKF(E->DownLD->ToKey->KFlds, CRecPtr);
+		X1.PackKF(CFile, E->DownLD->ToKey->KFlds, CRecPtr);
 		X.S[0] = (char)(MinW(X.S.length(), X1.S.length()));
 		if (X.S != X1.S) result = false;
 		CFile = E->FD;
@@ -744,7 +743,7 @@ bool CheckKeyIn(EditD* E)
 	//pstring* p2;
 	auto result = true;
 	if (k == nullptr) return result;
-	X.PackKF(E->VK->KFlds, CRecPtr);
+	X.PackKF(CFile, E->VK->KFlds, CRecPtr);
 	while (k != nullptr) {
 		//p1 = k->X1; p2 = k->X2;
 		//if (p2 == nullptr) p2 = p1;
@@ -1349,7 +1348,7 @@ bool TestDuplKey(FileD* file_d, XKey* K)
 {
 	XString x;
 	int N = 0;
-	x.PackKF(K->KFlds, CRecPtr);
+	x.PackKF(file_d, K->KFlds, CRecPtr);
 	return K->Search(file_d, x, false, N) && (IsNewRec || (E->LockedRec != N));
 }
 
@@ -1396,7 +1395,7 @@ void BuildWork()
 			else {
 				CFile = E->DownLD->ToFD;
 				CRecPtr = E->DownRecPtr;
-				xx.PackKF(E->DownLD->ToKey->KFlds, CRecPtr);
+				xx.PackKF(CFile, E->DownLD->ToKey->KFlds, CRecPtr);
 				CFile = E->FD;
 				CRecPtr = E->NewRecPtr;
 				Scan->ResetOwner(&xx, boolP);
@@ -1690,10 +1689,10 @@ void UpdMemberRef(void* POld, void* PNew)
 			CFile = cf;
 			kf2 = LD->ToKey->KFlds;
 			CRecPtr = POld;
-			xold.PackKF(kf2, CRecPtr);
+			xold.PackKF(CFile, kf2, CRecPtr);
 			if (PNew != nullptr) {
 				CRecPtr = PNew;
-				xnew.PackKF(kf2, CRecPtr);
+				xnew.PackKF(CFile, kf2, CRecPtr);
 				if (xnew.S == xold.S) continue;
 			}
 			CFile = LD->FromFD;
@@ -2296,7 +2295,7 @@ void UpwEdit(LinkD* LkD)
 		EO->SetOnlyView = true;
 	}
 	CFile = E->FD;
-	x.PackKF(LD->Args, CRecPtr);
+	x.PackKF(CFile, LD->Args, CRecPtr);
 	px = &x;
 	K = LD->ToKey;
 	CFile = LD->ToFD;
@@ -2458,7 +2457,7 @@ int UpdateIndexes()
 				WK->DeleteAtNr(CFile, CRec());
 			}
 			CRecPtr = E->NewRecPtr;
-			x.PackKF(VK->KFlds, CRecPtr);
+			x.PackKF(CFile, VK->KFlds, CRecPtr);
 			VK->Search(CFile, x, true, N);
 		}
 		N = VK->PathToNr(CFile);
@@ -2650,15 +2649,19 @@ label1:
 
 void DuplFromPrevRec()
 {
-	FieldDescr* F; LockMode md; void* cr;
 	if (CFld->Ed(IsNewRec)) {
-		F = CFld->FldD; md = RdMode;
+		FieldDescr* F = CFld->FldD;
+		LockMode md = RdMode;
 		if (F->field_type == FieldType::TEXT) md = WrMode;
 		md = CFile->NewLockMode(md);
 		SetWasUpdated(CFile->FF, CRecPtr);
-		cr = CRecPtr; CRecPtr = CFile->GetRecSpace(); RdRec(CRec() - 1);
+		void* cr = CRecPtr;
+		CRecPtr = CFile->GetRecSpace();
+		RdRec(CRec() - 1);
 		DuplFld(CFile, CFile, CRecPtr, E->NewRecPtr, E->OldRecPtr, F, F);
-		ClearRecSpace(CRecPtr); ReleaseStore(CRecPtr); CRecPtr = cr;
+		ClearRecSpace(CRecPtr);
+		ReleaseStore(CRecPtr);
+		CRecPtr = cr;
 		CFile->OldLockMode(md);
 	}
 }
@@ -2709,7 +2712,7 @@ bool GotoXRec(XString* PX, int& N)
 		N = k->PathToNr(CFile);
 	}
 	else {
-		result = CFile->SearchKey(*PX, k, N);
+		result = CFile->SearchKey(*PX, k, N, CRecPtr);
 	}
 	RdRec(CRec());
 	GotoRecFld(N, CFld);
@@ -3764,10 +3767,10 @@ void SwitchRecs(short Delta)
 	p2 = CFile->GetRecSpace();
 	CRecPtr = p1; n1 = AbsRecNr(CRec());
 	CFile->ReadRec(n1, CRecPtr);
-	if (HasIndex) x1.PackKF(VK->KFlds, CRecPtr);
+	if (HasIndex) x1.PackKF(CFile, VK->KFlds, CRecPtr);
 	CRecPtr = p2; n2 = AbsRecNr(CRec() + Delta);
 	CFile->ReadRec(n2, CRecPtr);
-	if (HasIndex) { x2.PackKF(VK->KFlds, CRecPtr); if (x1.S != x2.S) goto label1; }
+	if (HasIndex) { x2.PackKF(CFile, VK->KFlds, CRecPtr); if (x1.S != x2.S) goto label1; }
 	CFile->WriteRec(n1, CRecPtr);
 	CRecPtr = p1;
 	CFile->WriteRec(n2, CRecPtr);
@@ -4238,7 +4241,7 @@ void SetEdRecNoEtc(int RNr)
 		if (WasUpdated) CRecPtr = E->OldRecPtr;
 		XKey* k = VK;
 		if (Subset) k = WK;
-		x.PackKF(k->KFlds, CRecPtr);
+		x.PackKF(CFile, k->KFlds, CRecPtr);
 		CRecPtr = cr;
 	}
 	EdRecKey = x.S;

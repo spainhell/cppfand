@@ -2178,7 +2178,7 @@ label1:
 					c = Q->RetCmd;
 					k = c->KDOfs;
 					if (k != 0) {
-						xx.PackKF(k->KFlds, CRecPtr);
+						xx.PackKF(CFile, k->KFlds, CRecPtr);
 						k->RecNrToPath(CFile, xx, RecNr, CRecPtr);
 						if (k->PathToNr(CFile) <= fs1->IRec) fs1->IRec--;
 					}

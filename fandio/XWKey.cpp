@@ -75,7 +75,7 @@ void XWKey::OneRecIdx(FileD* file_d, KeyFldD* KF, int N)
 void XWKey::InsertAtNr(FileD* file_d, int I, int RecNr, void* record)
 {
 	XString x;
-	x.PackKF(KFlds, record);
+	x.PackKF(file_d, KFlds, record);
 	NR++;
 	NrToPath(file_d, I);
 	InsertOnPath(file_d, x, RecNr);
@@ -84,7 +84,7 @@ void XWKey::InsertAtNr(FileD* file_d, int I, int RecNr, void* record)
 int XWKey::InsertGetNr(FileD* file_d, int RecNr, void* record)
 {
 	XString x; int n;
-	NR++; x.PackKF(KFlds, record);
+	NR++; x.PackKF(file_d, KFlds, record);
 	Search(file_d, x, true, n);
 	int result = PathToNr(file_d);
 	InsertOnPath(file_d, x, RecNr);
