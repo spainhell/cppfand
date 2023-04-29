@@ -1482,9 +1482,9 @@ void CompileRecLen()
 	}
 	CFile->FF->RecLen = l;
 	switch (CFile->FF->file_type) {
-	case FileType::FAND8: CFile->FF->FrstDispl = 4; break;
-	case FileType::DBF: CFile->FF->FrstDispl = (n + 1) * 32 + 1; break;
-	default:  CFile->FF->FrstDispl = 6; break;
+	case FileType::FAND8: CFile->FF->FirstRecPos = 4; break;
+	case FileType::DBF: CFile->FF->FirstRecPos = (n + 1) * 32 + 1; break;
+	default:  CFile->FF->FirstRecPos = 6; break;
 	}
 }
 

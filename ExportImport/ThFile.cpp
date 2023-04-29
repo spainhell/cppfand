@@ -206,7 +206,7 @@ void ThFile::Rewrite()
 {
 	Delete();
 	CPath = Path;
-	CVol = Vol; Handle = OpenH(CPath, _isoverwritefile, Exclusive);
+	CVol = Vol; Handle = OpenH(CPath, _isOverwriteFile, Exclusive);
 	TestCPathError();
 	SpaceOnDisk = MyDiskFree(Floppy, Path[0] - '@');
 	Size = 0;

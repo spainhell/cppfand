@@ -269,7 +269,7 @@ void CloseInpOutp()
 		{
 			if (OD->InplFD != nullptr) {
 				CFile = OD->InplFD;
-				SubstDuplF(OD->FD, true);
+				CFile->FF->SubstDuplF(OD->FD, true);
 			}
 			else CFile->OldLockMode(OD->Md);
 		}

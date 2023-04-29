@@ -8,10 +8,10 @@ enum FileOperation
 
 enum FileOpenMode
 {
-	_isnewfile = 0,
-	_isoldfile = 1,
-	_isoverwritefile = 2,
-	_isoldnewfile = 3
+	_isNewFile = 0,
+	_isOldFile = 1,
+	_isOverwriteFile = 2,
+	_isOldNewFile = 3
 }; // poradi se nesmi zmenit!!!
 
 enum FileUseMode

@@ -402,42 +402,6 @@ void CallRdbProc(Instr_call* PD)
 	}
 }
 
-void IndexfileProc(FileD* FD, bool Compress)
-{
-	FileD* cf = CFile;
-	CFile = FD;
-	LockMode md = CFile->NewLockMode(ExclMode);
-
-	int result = CFile->FF->XFNotValid();
-	if (result != 0) {
-		RunError(result);
-	}
-
-	CRecPtr = CFile->GetRecSpace();
-	if (Compress) {
-		FileD* FD2 = OpenDuplicateF(CFile, false);
-		for (int I = 1; I <= FD->FF->NRecs; I++) {
-			CFile = FD;
-			CFile->ReadRec(I, CRecPtr);
-			if (!CFile->DeletedFlag(CRecPtr)) {
-				CFile = FD2;
-				CFile->PutRec(CRecPtr);
-			}
-		}
-		if (!SaveCache(0, CFile->FF->Handle)) {
-			GoExit();
-		}
-		CFile = FD;
-		SubstDuplF(FD2, false);
-	}
-	CFile->FF->XF->NoCreate = false;
-	CFile->FF->TestXFExist();
-	CFile->OldLockMode(md);
-	SaveFiles();
-	ReleaseStore(CRecPtr);
-	CFile = cf;
-}
-
 void MountProc(WORD CatIRec, bool NoCancel)
 {
 	try {
@@ -1027,8 +991,8 @@ FILE* OpenHForPutTxt(Instr_puttxt* PD)
 {
 	SetTxtPathVol(PD->TxtPath1, PD->TxtCatIRec1);
 	TestMountVol(CPath[1]);
-	FileOpenMode m = _isoverwritefile;
-	if (PD->App) m = _isoldnewfile;
+	FileOpenMode m = _isOverwriteFile;
+	if (PD->App) m = _isOldNewFile;
 	FILE* h = OpenH(CPath, m, Exclusive);
 	TestCPathError();
 	if (PD->App) SeekH(h, FileSizeH(h));
@@ -1404,7 +1368,7 @@ void RunInstr(Instr* PD)
 		}
 		case _indexfile: {
 			auto iPD = (Instr_indexfile*)PD;
-			IndexfileProc(iPD->IndexFD, iPD->Compress);
+			iPD->IndexFD->FF->IndexFileProc(iPD->Compress);
 			break;
 		}
 		case _display: {

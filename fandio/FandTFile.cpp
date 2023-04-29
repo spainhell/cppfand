@@ -414,7 +414,7 @@ void FandTFile::SetEmpty()
 
 void FandTFile::Create()
 {
-	Handle = OpenH(CPath, _isoverwritefile, Exclusive);
+	Handle = OpenH(CPath, _isOverwriteFile, Exclusive);
 	TestErr();
 	IRec = 1; LicenseNr = 0;
 

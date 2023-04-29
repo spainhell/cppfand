@@ -55,13 +55,13 @@ void DbfFile::WrDBaseHd()
 	P->Date[2] = (unsigned char)m;
 	P->Date[3] = (unsigned char)d;
 	P->NRecs = CFile->FF->NRecs;
-	P->HdLen = CFile->FF->FrstDispl;
+	P->HdLen = CFile->FF->FirstRecPos;
 	PA[(P->HdLen / 32) * 32 + 1] = m;
 
 	bool cached = CFile->FF->NotCached();
-	RdWrCache(WRITE, CFile->FF->Handle, cached, 0, CFile->FF->FrstDispl, (void*)&P);
+	RdWrCache(WRITE, CFile->FF->Handle, cached, 0, CFile->FF->FirstRecPos, (void*)&P);
 	RdWrCache(WRITE, CFile->FF->Handle, cached,
-		int(CFile->FF->NRecs) * CFile->FF->RecLen + CFile->FF->FrstDispl, 1, (void*)&CtrlZ);
+		int(CFile->FF->NRecs) * CFile->FF->RecLen + CFile->FF->FirstRecPos, 1, (void*)&CtrlZ);
 
 	ReleaseStore(P);
 }

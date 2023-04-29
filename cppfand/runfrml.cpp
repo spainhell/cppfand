@@ -303,7 +303,7 @@ int GetFileSize()
 	TestMountVol(CPath[1]);
 	FileUseMode um = RdOnly;
 	if (IsNetCVol()) um = Shared;
-	FILE* h = OpenH(CPath, _isoldfile, um);
+	FILE* h = OpenH(CPath, _isOldFile, um);
 	if (HandleError != 0) {
 		return -1;
 	}

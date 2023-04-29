@@ -123,7 +123,7 @@ label1:
 
 void TbFile::BackupH()
 {
-	FILE* h = OpenH(CPath, _isoldfile, RdOnly);
+	FILE* h = OpenH(CPath, _isOldFile, RdOnly);
 	if (HandleError == 2) {
 		Rewrite();
 		InitBufOutp();

@@ -20,7 +20,6 @@ void DisplayProc(RdbD* R, WORD IRec);
 void ClrWwProc(Instr_clrww* PD);
 void ExecPgm(Instr_exec* PD);
 void CallRdbProc(Instr_call* PD);
-void IndexfileProc(FileD* FD, bool Compress);
 void MountProc(WORD CatIRec, bool NoCancel);
 void EditProc(Instr_edit* PD);
 void EditTxtProc(Instr_edittxt* PD);

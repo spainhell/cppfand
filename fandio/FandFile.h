@@ -41,7 +41,7 @@ public:
 	FandXFile* XF = nullptr;
 	FandTFile* TF = nullptr;
 
-	unsigned short FrstDispl = 0;
+	unsigned short FirstRecPos = 0;    // in original 'FrstDispl' - in Fand 16 it's 6th BYTE (first 5 Bytes is file header)
 	unsigned char Drive = 0;           // 1=A, 2=B, else 0
 	FileUseMode UMode = Closed;
 	LockMode LMode = NullMode, ExLMode = NullMode, TaLMode = NullMode;
@@ -107,6 +107,9 @@ public:
 	void ScanSubstWIndex(XScan* Scan, KeyFldD* SK, char Typ);
 	void SortAndSubst(KeyFldD* SK);
 	void CopyIndex(XWKey* K, XKey* FromK);
+
+	void SubstDuplF(FileD* TempFD, bool DelTF);
+	void IndexFileProc(bool Compress);
 
 private:
 	FileD* _parent;

@@ -643,7 +643,7 @@ void CheckFile(FileD* FD)
 		return;
 	}
 
-	h = OpenH(CPath, _isoldfile, RdShared);
+	h = OpenH(CPath, _isOldFile, RdShared);
 	LastExitCode = 0;
 	if (HandleError != 0) {
 		if (HandleError == 2) LastExitCode = 1;
@@ -655,7 +655,7 @@ void CheckFile(FileD* FD)
 	fs = FileSizeH(h);
 	CloseH(&h);
 	if ((FD->FF->RecLen != Prfx.RecLen) || (Prfx.NRecs < 0) && (FD->FF->file_type != FileType::INDEX) ||
-		((fs - FD->FF->FrstDispl) / Prfx.RecLen < Prfx.NRecs) ||
+		((fs - FD->FF->FirstRecPos) / Prfx.RecLen < Prfx.NRecs) ||
 		(Prfx.NRecs > 0) && (FD->FF->file_type == FileType::INDEX)) {
 		LastExitCode = 3;
 		return;
@@ -665,7 +665,7 @@ void CheckFile(FileD* FD)
 	if (EquUpCase(e, ".RDB")) e = ".TTT";
 	else e[1] = 'T'; // .T__
 	CPath = d + n + e;
-	h = OpenH(CPath, _isoldfile, RdShared);
+	h = OpenH(CPath, _isOldFile, RdShared);
 	if (HandleError == 0) CloseH(&h);
 	else LastExitCode = 4;
 }
@@ -689,7 +689,7 @@ void CopyH(FILE* H, pstring Nm)
 	BYTE* buf = new BYTE[MaxLStrLen]; // GetStore(MaxLStrLen);
 	CPath = Nm;
 	CVol = "";
-	h2 = OpenH(CPath, _isoverwritefile, Exclusive);
+	h2 = OpenH(CPath, _isOverwriteFile, Exclusive);
 	int sz = FileSizeH(H);
 	SeekH(H, 0);
 	while (sz > 0) {

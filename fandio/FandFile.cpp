@@ -19,10 +19,12 @@ FandFile::FandFile(FileD* parent)
 
 FandFile::FandFile(const FandFile& orig, FileD* parent)
 {
-	_parent = parent;
 	RecLen = orig.RecLen;
 	file_type = orig.file_type;
+	FirstRecPos = orig.FirstRecPos;
 	Drive = orig.Drive;
+	
+	_parent = parent;
 
 	if (orig.TF != nullptr) TF = new FandTFile(*orig.TF, this);
 	if (orig.XF != nullptr) XF = new FandXFile(*orig.XF, this);
@@ -30,7 +32,7 @@ FandFile::FandFile(const FandFile& orig, FileD* parent)
 
 int FandFile::UsedFileSize()
 {
-	int n = int(NRecs) * RecLen + FrstDispl;
+	int n = int(NRecs) * RecLen + FirstRecPos;
 	if (file_type == FileType::DBF) n++;
 	return n;
 }
@@ -59,7 +61,7 @@ void FandFile::Reset()
 	RecLen = 0;
 	RecPtr = nullptr;
 	NRecs = 0;
-	FrstDispl = 0;
+	FirstRecPos = 0;
 	WasWrRec = false; WasRdOnly = false; Eof = false;
 	file_type = FileType::UNKNOWN;        // 8= Fand 8; 6= Fand 16; X= .X; 0= RDB; C= CAT 
 	Handle = nullptr;
@@ -93,7 +95,7 @@ void FandFile::DecNRecs(int n)
 void FandFile::PutRec(void* record, int& i_rec)
 {
 	NRecs++;
-	RdWrCache(WRITE, Handle, NotCached(), i_rec * RecLen + FrstDispl, RecLen, record);
+	RdWrCache(WRITE, Handle, NotCached(), i_rec * RecLen + FirstRecPos, RecLen, record);
 	i_rec++;
 	Eof = true;
 }
@@ -504,7 +506,7 @@ unsigned short FandFile::RdPrefix()
 		RdWrCache(READ, Handle, not_cached, 10, 2, &XD.RecLen);
 		NRecs = XD.NRecs;
 		if ((RecLen != XD.RecLen)) { return XD.RecLen; }
-		FrstDispl = XD.HdLen;
+		FirstRecPos = XD.HdLen;
 		break;
 	}
 	default: {
@@ -984,6 +986,91 @@ void FandFile::CopyIndex(XWKey* K, XKey* FromK)
 	Scan->Reset(nullptr, false);
 	CreateWIndex(Scan, K, 'W');
 	_parent->OldLockMode(md);
+}
+
+void FandFile::SubstDuplF(FileD* TempFD, bool DelTF)
+{
+	//bool net;
+	int result = XFNotValid();
+	if (result != 0) {
+		RunError(result);
+	}
+
+	SetCPathVol(_parent);
+	if (IsNetCVol()) {
+		CopyDuplF(TempFD, DelTF);
+		return;
+	}
+	SaveCache(0, Handle);
+	FileD* PrimFD = _parent;
+	std::string p = CPath;
+	CPath = CExtToT(CDir, CName, CExt);
+	std::string pt = CPath;
+
+	CloseClearH(&PrimFD->FF->Handle);
+	MyDeleteFile(p);
+	TestDelErr(p);
+	FileD* FD = PrimFD->pChain;
+	FandTFile* MD = PrimFD->FF->TF;
+	FandXFile* xf2 = PrimFD->FF->XF;
+	FileUseMode um = PrimFD->FF->UMode;
+	*PrimFD = *TempFD;
+	PrimFD->pChain = FD;
+	PrimFD->FF->XF = xf2;
+	PrimFD->FF->UMode = um;
+	CloseClearH(&PrimFD->FF->Handle);
+	SetTempCExt('0', false);
+	pstring ptmp = CPath;
+	RenameFile56(ptmp, p, true);
+	CPath = p;
+	PrimFD->FF->Handle = OpenH(CPath, _isOldFile, PrimFD->FF->UMode);
+	SetUpdHandle(PrimFD->FF->Handle);
+
+	if ((MD != nullptr) && DelTF) {
+		CloseClearH(&MD->Handle);
+		MyDeleteFile(pt);
+		TestDelErr(pt);
+		*MD = *PrimFD->FF->TF;
+		PrimFD->FF->TF = MD;
+		CloseClearH(&MD->Handle);
+		CPath = ptmp;
+		SetTempCExt('T', false);
+		RenameFile56(CPath, pt, true);
+		CPath = pt;
+		MD->Handle = OpenH(CPath, _isOldFile, PrimFD->FF->UMode);
+		SetUpdHandle(MD->Handle);
+	}
+	PrimFD->FF->TF = MD;
+}
+
+void FandFile::IndexFileProc(bool Compress)
+{
+	LockMode md = _parent->NewLockMode(ExclMode);
+
+	int result = XFNotValid();
+	if (result != 0) {
+		RunError(result);
+	}
+
+	BYTE* record = _parent->GetRecSpace();
+	if (Compress) {
+		FileD* FD2 = OpenDuplicateF(_parent, false);
+		for (int ren_nr = 1; ren_nr <= NRecs; ren_nr++) {
+			_parent->ReadRec(ren_nr, record);
+			if (!_parent->DeletedFlag(record)) {
+				FD2->PutRec(record);
+			}
+		}
+		if (!SaveCache(0, Handle)) {
+			GoExit();
+		}
+		SubstDuplF(FD2, false);
+	}
+	XF->NoCreate = false;
+	TestXFExist();
+	_parent->OldLockMode(md);
+	SaveFiles();
+	delete[] record; record = nullptr;
 }
 
 double FandFile::_RforD(FieldDescr* field_d, void* record)

@@ -999,7 +999,7 @@ int MakeDbfDcl(pstring Nm)
 		CPath = FExpand(CatFD->GetPathName(i));
 		FSplit(CPath, CDir, CName, CExt);
 	}
-	FILE* h = OpenH(CPath, _isoldfile, RdOnly);
+	FILE* h = OpenH(CPath, _isOldFile, RdOnly);
 	TestCPathError();
 	ReadH(h, 32, &Hd); WORD n = (Hd.HdLen - 1) / 32 - 1; t = new LongStr(2); t->LL = 0;
 	for (i = 1; i <= n; i++) {

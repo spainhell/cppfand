@@ -37,6 +37,5 @@ void SetTempCExt(char Typ, bool IsNet);
 FileD* OpenDuplicateF(FileD* orig, bool createTextFile);
 void CopyDuplF(FileD* TempFD, bool DelTF);
 void CopyH(FILE* h1, FILE* h2);
-void SubstDuplF(FileD* TempFD, bool DelTF);
 void TestDelErr(std::string& P);
 void DelDuplF(FileD* TempFD);

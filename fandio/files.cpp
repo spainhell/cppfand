@@ -53,7 +53,7 @@ bool OpenF1(FileD* file_d, const std::string& path, FileUseMode UM)
 		file_d->FF->WasRdOnly = true;
 	}
 	while (true) {
-		file_d->FF->Handle = OpenH(CPath, _isoldfile, file_d->FF->UMode);
+		file_d->FF->Handle = OpenH(CPath, _isOldFile, file_d->FF->UMode);
 		if ((HandleError != 0) && file_d->FF->WasRdOnly) {
 			SetFileAttr(CPath, HandleError, (GetFileAttr(CPath, HandleError) & 0b00100111) | 0b00000001 /*RdONly*/);
 			TestCFileError(file_d);
@@ -81,7 +81,7 @@ bool OpenF1(FileD* file_d, const std::string& path, FileUseMode UM)
 			SetFileAttr(CPath, HandleError, GetFileAttr(CPath, HandleError) & 0b00100110); // 0x26 = archive + hidden + system
 		}
 		while (true) {
-			file_d->FF->TF->Handle = OpenH(CPath, _isoldfile, file_d->FF->UMode);
+			file_d->FF->TF->Handle = OpenH(CPath, _isOldFile, file_d->FF->UMode);
 			if (HandleError == 2) {
 				if (file_d->FF->TF->Format == file_d->FF->TF->DbtFormat) {
 					file_d->FF->TF->Format = file_d->FF->TF->FptFormat;
@@ -110,9 +110,9 @@ bool OpenF1(FileD* file_d, const std::string& path, FileUseMode UM)
 	if (file_d->FF->file_type == FileType::INDEX) {
 		CPath = CExtToX(CDir, CName, CExt);
 		while (true) {
-			file_d->FF->XF->Handle = OpenH(CPath, _isoldfile, file_d->FF->UMode);
+			file_d->FF->XF->Handle = OpenH(CPath, _isOldFile, file_d->FF->UMode);
 			if (HandleError == 2) {
-				file_d->FF->XF->Handle = OpenH(CPath, _isoverwritefile, Exclusive);
+				file_d->FF->XF->Handle = OpenH(CPath, _isOverwriteFile, Exclusive);
 				if (HandleError != 0) {
 					n = HandleError;
 					CloseClearHCFile(file_d->FF);
@@ -149,9 +149,9 @@ bool OpenF2(FileD* file_d, const std::string& path)
 	FS = FileSizeH(file_d->FF->Handle);
 	file_d->FF->NRecs = 0;
 	bool result = false;
-	if (FS < file_d->FF->FrstDispl) goto label1;
+	if (FS < file_d->FF->FirstRecPos) goto label1;
 	rLen = file_d->FF->RdPrefix();
-	n = (FS - file_d->FF->FrstDispl) / file_d->FF->RecLen;
+	n = (FS - file_d->FF->FirstRecPos) / file_d->FF->RecLen;
 	if (rLen != 0xffff) {
 		if (file_d->IsDynFile) {
 			CloseClearHCFile(file_d->FF);
@@ -162,7 +162,7 @@ bool OpenF2(FileD* file_d, const std::string& path)
 				goto label3;
 			}
 			FileMsg(file_d, 883, ' ');
-			l = file_d->FF->NRecs * rLen + file_d->FF->FrstDispl;
+			l = file_d->FF->NRecs * rLen + file_d->FF->FirstRecPos;
 			if (l == FS || !PromptYN(885)) {
 				CloseGoExit(file_d->FF);
 			}
@@ -195,7 +195,7 @@ bool OpenF2(FileD* file_d, const std::string& path)
 	}
 label3:
 	if (file_d->FF->TF != nullptr) {
-		if (FS < file_d->FF->FrstDispl) {
+		if (FS < file_d->FF->FirstRecPos) {
 			file_d->FF->TF->SetEmpty();
 		}
 		else {
@@ -207,7 +207,7 @@ label3:
 		}
 	}
 	if (file_d->FF->file_type == FileType::INDEX) {
-		if (FS < file_d->FF->FrstDispl) {
+		if (FS < file_d->FF->FirstRecPos) {
 			file_d->FF->XF->SetNotValid(file_d->FF->NRecs, file_d->GetNrKeys());
 		}
 		else {

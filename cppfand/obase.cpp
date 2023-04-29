@@ -289,7 +289,7 @@ bool ResetTxt(TextFile* F)
 	F->Assign(CPath.c_str());
 	F->openfunc = OpenTxt;
 	F->Handle = nullptr; /* for error detection in OpenH */
-	F->Handle = OpenH(CPath, _isoldfile, RdOnly);
+	F->Handle = OpenH(CPath, _isOldFile, RdOnly);
 	if (HandleError != 0) { return false; }
 	F->Reset();
 	return true;
@@ -302,7 +302,7 @@ bool RewriteTxt(std::string path, TextFile* F, bool PrintCtrl)
 	else {
 		PrintCtrlFlag = PrintCtrl;
 		F->openfunc = OpenTxt;
-		//F->Handle = OpenH(_isoverwritefile, Exclusive);
+		//F->Handle = OpenH(_isOverwriteFile, Exclusive);
 
 		errno_t err = fopen_s(&F->Handle, path.c_str(), "wt");
 

@@ -571,7 +571,7 @@ void OpenTxtFh(char Mode)
 	else {
 		UM = Exclusive;
 	}
-	//TxtFH = OpenH(CPath, _isoldnewfile, UM);
+	//TxtFH = OpenH(CPath, _isOldNewFile, UM);
 	TxtFH = CreateFile(
 		CPath.c_str(),                        // file name
 		GENERIC_READ | GENERIC_WRITE,         // write access

@@ -757,18 +757,18 @@ FILE* OpenH(std::string path, FileOpenMode Mode, FileUseMode UM)
 
 	while (true) {
 		switch (Mode) {
-		case _isoldfile:
-		case _isoldnewfile:
+		case _isOldFile:
+		case _isOldNewFile:
 		{
 			openFlags = UM == RdOnly ? "rb" : "r+b";
 			break;
 		}
-		case _isoverwritefile:
+		case _isOverwriteFile:
 		{
 			openFlags = "w+b";
 			break;
 		}
-		case _isnewfile:
+		case _isNewFile:
 		{
 			openFlags = "w+b"; // UM == RdOnly ? "w+b" : "w+b";
 			break;
@@ -792,13 +792,13 @@ FILE* OpenH(std::string path, FileOpenMode Mode, FileUseMode UM)
 		if (HandleError == 0)
 		{
 			SetHandle(nFile);
-			if (Mode != _isoldfile) SetUpdHandle(nFile);
+			if (Mode != _isOldFile) SetUpdHandle(nFile);
 		}
 
 		else if (HandleError == ENOENT) {
 			// No such file or directory
-			if (/*Mode == _isoldfile ||*/ Mode == _isoldnewfile) {
-				Mode = _isnewfile;
+			if (/*Mode == _isOldFile ||*/ Mode == _isOldNewFile) {
+				Mode = _isNewFile;
 				continue;
 			}
 		}
@@ -816,6 +816,7 @@ FILE* OpenH(std::string path, FileOpenMode Mode, FileUseMode UM)
 	if (filesMap.find(path) != filesMap.end()) {
 		// soubor uz v mape je, budeme aktualizovat
 		filesMap[path] = DataFile(path, CFile, nFile);
+		CFile->FullPath = CPath;
 	}
 	else {
 		filesMap.insert(std::pair(path, DataFile(path, CFile, nFile)));
@@ -1395,7 +1396,7 @@ void OpenWorkH()
 {
 	CPath = FandWorkName;
 	CVol = "";
-	WorkHandle = OpenH(CPath, _isoldnewfile, Exclusive);
+	WorkHandle = OpenH(CPath, _isOldNewFile, Exclusive);
 	if (HandleError != 0) {
 		printf("can't open %s", FandWorkName.c_str());
 		wait();
