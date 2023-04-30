@@ -177,52 +177,56 @@ int Catalog::GetCatalogIRec(const std::string& name, bool multilevel)
 	return result;
 }
 
-void Catalog::GetPathAndVolume(FileD* file_d, int i, std::string& path, std::string& volume)
+void Catalog::GetPathAndVolume(FileD* file_d, int rec_nr, std::string& path, std::string& volume) const
 {
-	std::string d;
 	bool isRdb;
 
 	std::string dir;
 	std::string name;
 	std::string ext;
+	std::string content_dir;
 
-	volume = CatFD->GetVolume(i);
-	path = CatFD->GetPathName(i);
-	const bool setContentDir = SetContextDir(file_d, d, isRdb);
+	volume = CatFD->GetVolume(rec_nr);
+	path = CatFD->GetPathName(rec_nr);
+	const bool setContentDir = SetContextDir(file_d, content_dir, isRdb);
 	if (setContentDir && path.length() > 1 && path[1] != ':') {
 		if (isRdb) {
 			FSplit(path, dir, name, ext);
-			AddBackSlash(d);
-			dir = d;
+			AddBackSlash(content_dir);
+			dir = content_dir;
 			path = dir + name + ext;
 			return;
 		}
 		if (path[0] == '\\') {
-			path = d.substr(0, 2) + path;
+			path = content_dir.substr(0, 2) + path;
 		}
 		else {
-			AddBackSlash(d);
-			path = d + path;
+			AddBackSlash(content_dir);
+			path = content_dir + path;
 		}
 	}
 	else {
 		path = FExpand(path);
 	}
-	FSplit(path, dir, name, ext);
 }
 
-WORD Catalog::Generation(FileD* file_d)
+WORD Catalog::Generation(FileD* file_d, std::string& path, std::string& volume)
 {
-	WORD i, j;
-	pstring s(2);
 	if (file_d->CatIRec == 0) return 0;
 
-	CVol = CatFD->GetVolume(file_d->CatIRec);
-	CPath = FExpand(CatFD->GetPathName(file_d->CatIRec));
-	FSplit(CPath, CDir, CName, CExt);
+	std::string dir;
+	std::string name;
+	std::string ext;
 
-	s = CExt.substr(2, 2);
+	volume = CatFD->GetVolume(file_d->CatIRec);
+	path = FExpand(CatFD->GetPathName(file_d->CatIRec));
+	FSplit(path, dir, name, ext);
+
+	WORD i, j;
+	pstring s(2);
+	s = ext.substr(2, 2);
 	val(s, i, j);
+
 	if (j == 0) {
 		return i;
 	}

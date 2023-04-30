@@ -549,15 +549,15 @@ void DeleteRecProc(Instr_recs* PD)
 	ReleaseStore(CRecPtr);
 }
 
-void AppendRecProc()
+void AppendRecProc(FileD* file_d)
 {
-	LockMode md = CFile->NewLockMode(CrMode);
-	CRecPtr = CFile->GetRecSpace();
-	ZeroAllFlds(CFile, CRecPtr);
-	CFile->SetDeletedFlag(CRecPtr);
-	CFile->CreateRec(CFile->FF->NRecs + 1, CRecPtr);
-	ReleaseStore(CRecPtr);
-	CFile->OldLockMode(md);
+	LockMode md = file_d->NewLockMode(CrMode);
+	BYTE* record = file_d->GetRecSpace();
+	file_d->ZeroAllFlds(record);
+	file_d->SetDeletedFlag(record);
+	file_d->CreateRec(file_d->FF->NRecs + 1, record);
+	delete[] record; record = nullptr;
+	file_d->OldLockMode(md);
 }
 
 void UpdRec(void* CR, int N, bool AdUpd)
@@ -630,7 +630,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 				if (IsRead) {
 				label0:
 					CFile->DelTFlds(CRecPtr);
-					ZeroAllFlds(CFile, CRecPtr);
+					CFile->ZeroAllFlds(CRecPtr);
 					ReleaseStore(cr);
 					CFile->OldLockMode(md);
 					return;
@@ -647,7 +647,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 		else if (!SrchXKey(k, x, N)) {
 			if (IsRead) {
 				CFile->DelTFlds(CRecPtr);
-				ZeroAllFlds(CFile, CRecPtr);
+				CFile->ZeroAllFlds(CRecPtr);
 				CFile->SetDeletedFlag(CRecPtr);
 				ReleaseStore(cr);
 				CFile->OldLockMode(md);
@@ -672,10 +672,10 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 		CFile->ReadRec(N, CRecPtr);
 		CRecPtr = PD->LV->RecPtr;
 		CFile->DelTFlds(CRecPtr);
-		CopyRecWithT(cr, PD->LV->RecPtr);
+		CFile->CopyRecWithT(cr, PD->LV->RecPtr);
 	}
 	else {
-		CopyRecWithT(PD->LV->RecPtr, cr);
+		CFile->CopyRecWithT(PD->LV->RecPtr, cr);
 		if (app) {
 			CRecPtr = cr;
 			if (CFile->FF->file_type == FileType::INDEX) {
@@ -699,18 +699,36 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 
 void LinkRecProc(Instr_assign* PD)
 {
-	void* p = nullptr; void* r2 = nullptr; void* lr2 = nullptr;
-	FileD* cf = nullptr; void* cr = nullptr; LinkD* ld = nullptr; int n = 0;
-	cf = CFile; cr = CRecPtr; MarkStore(p);
-	ld = PD->LinkLD; CRecPtr = PD->RecLV1->RecPtr;
+	void* p = nullptr;
+	void* r2 = nullptr;
+	void* lr2 = nullptr;
+	FileD* cf = nullptr;
+	void* cr = nullptr;
+	LinkD* ld = nullptr;
+
+	int n = 0;
+	cf = CFile;
+	cr = CRecPtr;
+	MarkStore(p);
+	ld = PD->LinkLD;
+	CRecPtr = PD->RecLV1->RecPtr;
 	lr2 = PD->RecLV2->RecPtr;
-	CFile = ld->ToFD; CFile->ClearRecSpace(lr2); CFile = ld->FromFD;
-	if (LinkUpw(ld, n, true)) LastExitCode = 0;
-	else LastExitCode = 1;
-	r2 = CRecPtr; CRecPtr = lr2;
+	CFile = ld->ToFD;
+	CFile->ClearRecSpace(lr2);
+	CFile = ld->FromFD;
+	if (LinkUpw(ld, n, true)) {
+		LastExitCode = 0;
+	}
+	else {
+		LastExitCode = 1;
+	}
+	r2 = CRecPtr;
+	CRecPtr = lr2;
 	CFile->DelTFlds(CRecPtr);
-	CopyRecWithT(r2, lr2);
-	ReleaseStore(p); CFile = cf; CRecPtr = cr;
+	CFile->CopyRecWithT(r2, lr2);
+	ReleaseStore(p);
+	CFile = cf;
+	CRecPtr = cr;
 }
 
 void ForAllProc(Instr_forall* PD)
@@ -814,7 +832,7 @@ label1:
 				CRecPtr = lr;
 				CFile->ClearUpdFlag(CRecPtr);
 				CFile->DelTFlds(CRecPtr);
-				CopyRecWithT(cr, lr);
+				CFile->CopyRecWithT(cr, lr);
 			}
 		//if (LVi != nullptr) *(double*)(LocVarAd(LVi)) = Scan->RecNr;
 		if (LVi != nullptr) {
@@ -835,7 +853,7 @@ label1:
 			OpenCreateF(CFile, Shared);
 			if ((LVr != nullptr) && (LVi == nullptr) && CFile->HasUpdFlag(CRecPtr)) {
 				md1 = CFile->NewLockMode(WrMode);
-				CopyRecWithT(lr, cr);
+				CFile->CopyRecWithT(lr, cr);
 				UpdRec(cr, xScan->RecNr, true);
 				CFile->OldLockMode(md1);
 			}
@@ -1310,8 +1328,8 @@ void RunInstr(Instr* PD)
 			break;
 		}
 		case _appendrec: {
-			CFile = ((Instr_recs*)PD)->RecFD;
-			AppendRecProc();
+			FileD* rec_file = ((Instr_recs*)PD)->RecFD;
+			AppendRecProc(rec_file);
 			break;
 		}
 		case _deleterec: { DeleteRecProc((Instr_recs*)PD); break; }
@@ -1613,7 +1631,7 @@ void CallProcedure(Instr_proc* PD)
 			CFile = (*it0)->FD;
 			CRecPtr = CFile->GetRecSpace();
 			CFile->SetTWorkFlag(CRecPtr);
-			ZeroAllFlds(CFile, CRecPtr);
+			CFile->ZeroAllFlds(CRecPtr);
 			CFile->ClearDeletedFlag(CRecPtr);
 			(*it0)->RecPtr = CRecPtr;
 		}

@@ -254,8 +254,9 @@ void ImportTxt(CopyD* CD)
 		else
 #endif
 			md = RewriteF(CFile, CD->Append);
+
 		while (!(F1->eof) && (F1->ForwChar() != 0x1A)) {
-			ZeroAllFlds(CFile, CRecPtr);
+			CFile->ZeroAllFlds(CRecPtr);
 			CFile->ClearDeletedFlag(CRecPtr);
 			VarFixImp(F1, CD->Opt1);
 			F1->ForwChar(); //{set IsEOF at End}
@@ -270,6 +271,7 @@ void ImportTxt(CopyD* CD)
 				}
 			}
 		}
+
 		LastExitCode = 0;
 	}
 	catch (std::exception& e) {

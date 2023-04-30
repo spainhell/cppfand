@@ -1006,24 +1006,22 @@ label1:
 	}
 	case _nrecs:
 	case _nrecsabs: {
-		auto iX = (FrmlElem9*)X;
-		cf = CFile;
-		CFile = iX->FD;
-		md = CFile->NewLockMode(RdMode);
+		FileD* fX = ((FrmlElem9*)X)->FD;
+		md = fX->NewLockMode(RdMode);
 		if (X->Op == _nrecs) {
-			RecNo = CFile->FF->XNRecs(CFile->Keys);
+			RecNo = fX->FF->XNRecs(fX->Keys);
 		}
 		else {
-			RecNo = CFile->FF->NRecs;
+			RecNo = fX->FF->NRecs;
 		}
-		CFile->OldLockMode(md);
+		fX->OldLockMode(md);
 		result = RecNo;
-		CFile = cf;
 		break;
 	}
 	case _generation: {
 		auto iX = (FrmlElem9*)X;
-		result = (int)CatFD->Generation(iX->FD);
+		result = CatFD->Generation(iX->FD, CPath, CVol);
+		FSplit(CPath, CDir, CName, CExt);
 		break;
 	}
 	case _lastupdate: {

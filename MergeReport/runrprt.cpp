@@ -956,7 +956,7 @@ void MoveFrstRecs()
 		else {
 			CFile = IDA[i]->Scan->FD;
 			CRecPtr = CFile->FF->RecPtr;
-			ZeroAllFlds(CFile, CRecPtr);
+			CFile->ZeroAllFlds(CRecPtr);
 			PutMFlds(IDA[i]->MFld);
 		}
 	}

@@ -330,7 +330,7 @@ void MergeProcM()
 		else {
 			CFile = ID->Scan->FD;
 			CRecPtr = CFile->FF->RecPtr;
-			ZeroAllFlds(CFile, CRecPtr);
+			CFile->ZeroAllFlds(CRecPtr);
 			SetMFlds(ID->MFld);
 		}
 	}
@@ -371,7 +371,7 @@ void JoinProc(WORD Ii, bool& EmptyGroup)
 			CFile = ID->Scan->FD;
 			CRecPtr = CFile->FF->RecPtr;
 			EmptyGroup = true;
-			ZeroAllFlds(CFile, CRecPtr);
+			CFile->ZeroAllFlds(CRecPtr);
 			SetMFlds(ID->MFld);
 			JoinProc(Ii + 1, EmptyGroup);
 		}

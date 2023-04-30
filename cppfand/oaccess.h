@@ -25,7 +25,7 @@ void SetCPathForH(FILE* handle);
 void SetIsSQLFile();
 #endif
 
-bool SetContextDir(FileD* file_d, std::string& D, bool& IsRdb);
+bool SetContextDir(FileD* file_d, std::string& dir, bool& isRdb);
 
 std::string SetCPathVol(FileD* file_d, char pathDelim = '\\');
 void SetTxtPathVol(std::string& Path, int CatIRec);

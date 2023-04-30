@@ -3,6 +3,7 @@
 #include "GlobalVariables.h"
 #include "oaccess.h"
 #include "obaseww.h"
+#include "olongstr.h"
 #include "runfrml.h"
 #include "../cppfand/access.h"
 #include "../fandio/files.h"
@@ -223,7 +224,7 @@ void FileD::AssignNRecs(bool Add, int N)
 		return;
 	}
 	BYTE* record = GetRecSpace();
-	ZeroAllFlds(this, record);
+	ZeroAllFlds(record);
 	SetDeletedFlag(record);
 	IncNRecs(N - OldNRecs);
 	for (int i = OldNRecs + 1; i <= N; i++) {
@@ -461,6 +462,44 @@ void FileD::DeleteDuplicateF(FileD* TempFD)
 	SetCPathVol(this);
 	SetTempCExt('0', FF->IsShared());
 	MyDeleteFile(CPath);
+}
+
+void FileD::ZeroAllFlds(void* record)
+{
+	FillChar(record, FF->RecLen, 0);
+	memset(record, 0, FF->RecLen);
+	for (FieldDescr* F : FldD) {
+		if (((F->Flg & f_Stored) != 0) && (F->field_type == FieldType::ALFANUM)) {
+			saveS(F, "", record);
+		}
+	}
+}
+
+void FileD::CopyRecWithT(void* record1, void* record2)
+{
+	memcpy(record2, record1, FF->RecLen);
+	for (auto& F : FldD) {
+		if ((F->field_type == FieldType::TEXT) && ((F->Flg & f_Stored) != 0)) {
+			FandTFile* tf1 = FF->TF;
+			FandTFile* tf2 = tf1;
+			if ((tf1->Format != FandTFile::T00Format)) {
+				LongStr* s = loadLongS(F, record1);
+				saveLongS(F, s, record2);
+				delete s; s = nullptr;
+			}
+			else {
+				if (HasTWorkFlag(record1)) {
+					tf1 = &TWork;
+				}
+				int pos = loadT(F, record1);
+				if (HasTWorkFlag(record2)) {
+					tf2 = &TWork;
+				}
+				pos = CopyTFString(tf2, this, tf1, pos);
+				saveT(F, pos, record2);
+			}
+		}
+	}
 }
 
 void FileD::DelTFlds(void* record)

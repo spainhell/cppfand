@@ -42,11 +42,8 @@ std::string TranslateOrd(std::string text);
 bool LinkUpw(LinkD* LD, int& N, bool WithT);
 bool LinkLastRec(FileD* FD, int& N, bool WithT);
 
-void ZeroAllFlds(FileD* file_d, void* record);
-
 void AsgnParFldFrml(FileD* FD, FieldDescr* F, FrmlElem* Z, bool Ad);
 
-void CopyRecWithT(void* p1, void* p2);
 void CloseClearHCFile(FandFile* fand_file);
 void TestCPathError();
 

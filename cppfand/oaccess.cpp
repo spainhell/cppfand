@@ -409,23 +409,27 @@ void SetCPathForH(FILE* handle)
 	CFile = cf;
 }
 
-bool SetContextDir(FileD* file_d, std::string& D, bool& IsRdb)
+bool SetContextDir(FileD* file_d, std::string& dir, bool& isRdb)
 {
 	bool result = true;
 	RdbD* R = CRdb;
-	IsRdb = false;
+	isRdb = false;
 	while (R != nullptr) {
 		FileD* F = R->FD;
 		if ((file_d == F) && (file_d->CatIRec != 0)) {
-			D = R->RdbDir;
-			IsRdb = true;
+			dir = R->RdbDir;
+			isRdb = true;
 			return result;
 		}
 		while (F != nullptr) {
 			if (file_d == F) {
-				if ((file_d == R->HelpFD) || (file_d->FF->file_type == FileType::RDB))  //.RDB
-					D = R->RdbDir;
-				else D = R->DataDir;
+				if ((file_d == R->HelpFD) || (file_d->FF->file_type == FileType::RDB)) {
+					//.RDB
+					dir = R->RdbDir;
+				}
+				else {
+					dir = R->DataDir;
+				}
 				return result;
 			}
 			F = F->pChain;

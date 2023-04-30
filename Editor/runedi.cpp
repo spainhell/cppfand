@@ -984,7 +984,7 @@ void AdjustCRec()
 			IsNewRec = true;
 			Append = true;
 			FirstEmptyFld = CFld;
-			ZeroAllFlds(CFile, CRecPtr);
+			CFile->ZeroAllFlds(CRecPtr);
 			SetWasUpdated(CFile->FF, CRecPtr);
 			NewRecExit();
 		}
@@ -1595,7 +1595,7 @@ bool OpenEditWw()
 			IsNewRec = true;
 			Append = true;
 			LockRec(false);
-			ZeroAllFlds(CFile, CRecPtr);
+			CFile->ZeroAllFlds(CRecPtr);
 			DuplOwnerKey();
 			SetWasUpdated(CFile->FF, CRecPtr);
 		}
@@ -2675,8 +2675,12 @@ void InsertRecProc(void* RP)
 	GotoRecFld(CRec(), E->FirstFld);
 	IsNewRec = true;
 	LockRec(false);
-	if (RP != nullptr) Move(RP, CRecPtr, CFile->FF->RecLen);
-	else ZeroAllFlds(CFile, CRecPtr);
+	if (RP != nullptr) {
+		Move(RP, CRecPtr, CFile->FF->RecLen);
+	}
+	else {
+		CFile->ZeroAllFlds(CRecPtr);
+	}
 	DuplOwnerKey();
 	SetWasUpdated(CFile->FF, CRecPtr);
 	IVoff();
@@ -2691,17 +2695,36 @@ void InsertRecProc(void* RP)
 void AppendRecord(void* RP)
 {
 	WORD Max;
-	IVoff(); IsNewRec = true; Max = E->NRecs;
-	CFld = E->FirstFld; FirstEmptyFld = CFld;
-	if (IRec < Max)
-	{
-		IRec++; MoveDispl(Max - 1, Max, Max - IRec); DisplRec(IRec); IVon();
+	IVoff();
+	IsNewRec = true;
+	Max = E->NRecs;
+	CFld = E->FirstFld;
+	FirstEmptyFld = CFld;
+	if (IRec < Max)	{
+		IRec++;
+		MoveDispl(Max - 1, Max, Max - IRec);
+		DisplRec(IRec);
+		IVon();
 	}
-	else if (Max == 1) { BaseRec++; DisplWwRecsOrPage(&CPage, &RT); }
-	else { BaseRec += Max - 1; IRec = 2; DisplAllWwRecs(); }
-	if (RP != nullptr) Move(RP, CRecPtr, CFile->FF->RecLen);
-	else ZeroAllFlds(CFile, CRecPtr);
-	DuplOwnerKey(); DisplRecNr(CRec()); SetWasUpdated(CFile->FF, CRecPtr); LockRec(false);
+	else if (Max == 1) {
+		BaseRec++;
+		DisplWwRecsOrPage(&CPage, &RT);
+	}
+	else {
+		BaseRec += Max - 1;
+		IRec = 2;
+		DisplAllWwRecs();
+	}
+	if (RP != nullptr) {
+		Move(RP, CRecPtr, CFile->FF->RecLen);
+	}
+	else {
+		CFile->ZeroAllFlds(CRecPtr);
+	}
+	DuplOwnerKey();
+	DisplRecNr(CRec());
+	SetWasUpdated(CFile->FF, CRecPtr);
+	LockRec(false);
 	NewRecExit();
 }
 
@@ -2770,7 +2793,7 @@ bool PromptSearch(bool create)
 	KeyFldD* KF = K->KFlds;
 	void* RP = CFile->GetRecSpace();
 	CRecPtr = RP;
-	ZeroAllFlds(CFile, CRecPtr);
+	CFile->ZeroAllFlds(CRecPtr);
 	x.Clear();
 	bool li = F3LeadIn && !IsNewRec;
 	int w = PushW(1, TxtRows, TxtCols, TxtRows, true, false);

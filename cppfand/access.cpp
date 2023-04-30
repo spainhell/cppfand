@@ -74,16 +74,6 @@ void TestCPathError()
 	}
 }
 
-void ZeroAllFlds(FileD* file_d, void* record)
-{
-	FillChar(record, file_d->FF->RecLen, 0);
-	for (auto& F : file_d->FldD) {
-		if (((F->Flg & f_Stored) != 0) && (F->field_type == FieldType::ALFANUM)) {
-			CFile->saveS(F, "", CRecPtr);
-		}
-	}
-}
-
 bool LinkLastRec(FileD* FD, int& N, bool WithT)
 {
 	CFile = FD;
@@ -101,7 +91,7 @@ bool LinkLastRec(FileD* FD, int& N, bool WithT)
 		N = CFile->FF->NRecs;
 		if (N == 0) {
 		label1:
-			ZeroAllFlds(CFile, CRecPtr);
+			CFile->ZeroAllFlds(CRecPtr);
 			result = false;
 			N = 1;
 		}
@@ -181,7 +171,7 @@ bool LinkUpw(LinkD* LD, int& N, bool WithT)
 	else {
 		bool b = false;
 		double r = 0.0;
-		ZeroAllFlds(CFile, CRecPtr);
+		CFile->ZeroAllFlds(CRecPtr);
 		const KeyFldD* KF = K->KFlds;
 		for (auto& arg : LD->Args) {
 			FieldDescr* F = arg->FldD;
@@ -222,36 +212,6 @@ bool LinkUpw(LinkD* LD, int& N, bool WithT)
 #endif
 		CFile->OldLockMode(md);
 	return result;
-}
-
-void CopyRecWithT(void* p1, void* p2)
-{
-	memcpy(p2, p1, CFile->FF->RecLen);
-	for (auto& F : CFile->FldD) {
-		if ((F->field_type == FieldType::TEXT) && ((F->Flg & f_Stored) != 0)) {
-			FandTFile* tf1 = CFile->FF->TF;
-			FandTFile* tf2 = tf1;
-			CRecPtr = p1;
-			if ((tf1->Format != FandTFile::T00Format)) {
-				LongStr* s = CFile->loadLongS(F, CRecPtr);
-				CRecPtr = p2;
-				CFile->saveLongS(F, s, CRecPtr);
-				ReleaseStore(s);
-			}
-			else {
-				if (CFile->HasTWorkFlag(CRecPtr)) {
-					tf1 = &TWork;
-				}
-				int pos = CFile->loadT(F, CRecPtr);
-				CRecPtr = p2;
-				if (CFile->HasTWorkFlag(CRecPtr)) {
-					tf2 = &TWork;
-				}
-				pos = CopyTFString(tf2, CFile, tf1, pos);
-				CFile->saveT(F, pos, CRecPtr);
-			}
-		}
-	}
 }
 
 LocVar* LocVarBlkD::GetRoot()
