@@ -1554,17 +1554,27 @@ label1:
 	case  '/': {
 		Z = new FrmlElem0(_divide, 0); // GetOp(_divide, 0);
 	label2:
-		TestReal(FTyp); RdLex();
-		Z->P1 = Z1; Z->P2 = RdPrim(FTyp);
-		TestReal(FTyp); goto label1;
+		TestReal(FTyp);
+		RdLex();
+		Z->P1 = Z1;
+		Z->P2 = RdPrim(FTyp);
+		TestReal(FTyp);
+		goto label1;
 		break;
 	}
 	case _identifier: {
-		if (EquUpCase(QQdiv, LexWord)) { Z = new FrmlElem0(_div, 0); /*GetOp(_div, 0);*/ goto label2; }
-		else if (EquUpCase(QQmod, LexWord)) { Z = new FrmlElem0(_mod, 0); /*GetOp(_mod, 0);*/ goto label2; }
+		if (EquUpCase(QQdiv, LexWord)) {
+			Z = new FrmlElem0(_div, 0); /*GetOp(_div, 0);*/
+			goto label2;
+		}
+		else if (EquUpCase(QQmod, LexWord)) {
+			Z = new FrmlElem0(_mod, 0); /*GetOp(_mod, 0);*/
+			goto label2;
+		}
 		else if (EquUpCase(QQround, LexWord)) {
 			TestReal(FTyp);
-			Z = new FrmlElem0(_round, 0); /*GetOp(_round, 0);*/ RdLex();
+			Z = new FrmlElem0(_round, 0); /*GetOp(_round, 0);*/
+			RdLex();
 			Z->P1 = Z1;
 			Z->P2 = RdPrim(FTyp);
 			TestReal(FTyp);
