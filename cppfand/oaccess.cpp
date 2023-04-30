@@ -113,37 +113,41 @@ void OpenFANDFiles(bool FromDML)
 
 }
 
-void CreateF()
+void CreateF(FileD* file_d)
 {
-	SetCPathMountVolSetNet(CFile, Exclusive);
-	CFile->FF->Handle = OpenH(CPath, _isOverwriteFile, Exclusive);
-	TestCFileError(CFile);
-	CFile->FF->NRecs = 0;
-	if (CFile->FF->TF != nullptr) {
+	SetCPathMountVolSetNet(file_d, Exclusive);
+	file_d->FF->Handle = OpenH(CPath, _isOverwriteFile, Exclusive);
+	TestCFileError(file_d);
+	file_d->FF->NRecs = 0;
+	if (file_d->FF->TF != nullptr) {
 		CPath = CExtToT(CDir, CName, CExt);
-		CFile->FF->TF->Create();
+		file_d->FF->TF->Create();
 	}
-	if (CFile->FF->file_type == FileType::INDEX) {
+	if (file_d->FF->file_type == FileType::INDEX) {
 		CPath = CExtToX(CDir, CName, CExt);
-		CFile->FF->XF->Handle = OpenH(CPath, _isOverwriteFile, Exclusive);
-		CFile->FF->XF->TestErr(); /*SetNotValid*/
-		CFile->FF->XF->SetEmpty(CFile->FF->NRecs, CFile->GetNrKeys());
+		file_d->FF->XF->Handle = OpenH(CPath, _isOverwriteFile, Exclusive);
+		file_d->FF->XF->TestErr(); /*SetNotValid*/
+		file_d->FF->XF->SetEmpty(file_d->FF->NRecs, file_d->GetNrKeys());
 	}
-	CFile->SeekRec(0);
-	SetUpdHandle(CFile->FF->Handle);
+	file_d->SeekRec(0);
+	SetUpdHandle(file_d->FF->Handle);
 }
 
-bool OpenCreateF(FileD* fileD, FileUseMode UM)
+bool OpenCreateF(FileD* file_d, FileUseMode UM)
 {
-	if (!OpenF(CFile, CPath, UM)) {
-		CreateF();
+	if (!OpenF(file_d, CPath, UM)) {
+		CreateF(file_d);
 		if ((UM == Shared) || (UM == RdShared)) {
-			CFile->FF->WrPrefixes();
-			SaveCache(0, CFile->FF->Handle);
-			CloseClearH(&CFile->FF->Handle);
-			if (CFile->FF->file_type == FileType::INDEX) CloseClearH(&CFile->FF->XF->Handle);
-			if (CFile->FF->TF != nullptr) CloseClearH(&CFile->FF->TF->Handle);
-			OpenF(CFile, CPath, UM);
+			file_d->FF->WrPrefixes();
+			SaveCache(0, file_d->FF->Handle);
+			CloseClearH(&file_d->FF->Handle);
+			if (file_d->FF->file_type == FileType::INDEX) {
+				CloseClearH(&file_d->FF->XF->Handle);
+			}
+			if (file_d->FF->TF != nullptr) {
+				CloseClearH(&file_d->FF->TF->Handle);
+			}
+			OpenF(file_d, CPath, UM);
 		}
 	}
 	return true;

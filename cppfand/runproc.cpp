@@ -1535,7 +1535,7 @@ void CallProcedure(Instr_proc* PD)
 
 #ifdef _DEBUG
 	std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
-	if (srcCode.find("FILE.Path:=ADR01.Path+'{GLOB}") != std::string::npos) {
+	if (srcCode.find("VERZE.UUU") != std::string::npos) {
 		printf("");
 	}
 #endif

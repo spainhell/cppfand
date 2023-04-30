@@ -11,9 +11,7 @@ void CloseFANDFiles(bool FromDML);
 void OpenFANDFiles(bool FromDML);
 
 
-
-void CreateF();
-bool OpenCreateF(FileD* fileD, FileUseMode UM);
+bool OpenCreateF(FileD* file_d, FileUseMode UM);
 LockMode RewriteF(FileD* file_d, bool Append);
 void TruncF(FileD* file_d);
 void CloseFile(FileD* file_d);
