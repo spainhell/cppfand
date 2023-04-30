@@ -26,14 +26,13 @@ void SetCPathForH(FILE* handle);
 #ifdef FandSQL
 void SetIsSQLFile();
 #endif
-int GetCatalogIRec(const std::string& name, bool multilevel);
 
 bool SetContextDir(FileD* file_d, std::string& D, bool& IsRdb);
-void GetCPathForCat(int i);
+
 std::string SetCPathVol(FileD* file_d, char pathDelim = '\\');
 void SetTxtPathVol(std::string& Path, int CatIRec);
 void SetTempCExt(char Typ, bool IsNet);
 
 void CopyH(FILE* h1, FILE* h2);
 void TestDelErr(std::string& P);
-void DelDuplF(FileD* TempFD);
+

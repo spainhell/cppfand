@@ -1086,7 +1086,7 @@ void ResetCatalog()
 		CFile = CRdb->FD->pChain;
 		while (CFile != nullptr) {
 			CloseFile(CFile);
-			CFile->CatIRec = GetCatalogIRec(CFile->Name, CFile->FF->file_type == FileType::RDB);
+			CFile->CatIRec = CatFD->GetCatalogIRec(CFile->Name, CFile->FF->file_type == FileType::RDB);
 #ifdef FandSQL
 			SetIsSQLFile();
 #endif

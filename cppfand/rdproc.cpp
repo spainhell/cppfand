@@ -239,7 +239,7 @@ FrmlElem* RdFldNameFrmlP(char& FTyp)
 			label1:
 				auto S = new FrmlElem10(_catfield, 6); // Z = GetOp(_catfield, 6);
 				S->CatFld = F;
-				S->CatIRec = GetCatalogIRec(FName, true);
+				S->CatIRec = CatFD->GetCatalogIRec(FName, true);
 				TestCatError(S->CatIRec, FName, true);
 				return S;
 			}
@@ -342,7 +342,7 @@ FileD* RdPath(bool NoFD, std::string& Path, WORD& CatIRec)
 		TestIdentif();
 		fd = FindFileD();
 		if (fd == nullptr) {
-			CatIRec = GetCatalogIRec(LexWord, true);
+			CatIRec = CatFD->GetCatalogIRec(LexWord, true);
 			TestCatError(CatIRec, LexWord, false);
 		}
 		else if (NoFD) Error(97);
@@ -2043,7 +2043,7 @@ Instr* RdTurnCat()
 	RdLex();
 	TestIdentif();
 	PD->NextGenFD = FindFileD();
-	const int first = GetCatalogIRec(LexWord, true);
+	const int first = CatFD->GetCatalogIRec(LexWord, true);
 	TestCatError(first, LexWord, true);
 	RdLex();
 	PD->FrstCatIRec = first;
@@ -2218,7 +2218,7 @@ Instr* RdMount()
 	TestIdentif();
 	FileD* FD = FindFileD();
 	if (FD == nullptr) {
-		i = GetCatalogIRec(LexWord, true);
+		i = CatFD->GetCatalogIRec(LexWord, true);
 	}
 	else {
 		i = FD->CatIRec;
@@ -2574,7 +2574,7 @@ Instr_assign* RdAssign()
 			label1:
 				PD = new Instr_assign(_asgncatfield); // GetPInstr(_asgncatfield, 16);
 				PD->FD3 = FD;
-				PD->CatIRec = GetCatalogIRec(FName, true);
+				PD->CatIRec = CatFD->GetCatalogIRec(FName, true);
 				PD->CatFld = F;
 				TestCatError(PD->CatIRec, FName, true);
 				Accept(_assign);

@@ -3,6 +3,7 @@
 #include "GlobalVariables.h"
 #include "oaccess.h"
 #include "../Common/textfunc.h"
+#include "../Common/compare.h"
 
 Catalog::Catalog()
 {
@@ -144,6 +145,70 @@ bool Catalog::OldToNewCat(int& FilSz)
 	FilSz = x.NRecs * 107 + 6;
 	result = true;
 	return result;
+}
+
+int Catalog::GetCatalogIRec(const std::string& name, bool multilevel)
+{
+	int result = 0;
+
+	if (CatFD == nullptr || CatFD->GetCatalogFile()->FF->Handle == nullptr) {
+		return result;
+	}
+	if (CRdb == nullptr) {
+		return result;
+	}
+
+	RdbD* R = CRdb;
+
+	while (true) {
+		for (int i = 1; i <= CatFD->GetCatalogFile()->FF->NRecs; i++) {
+			if (EquUpCase(CatFD->GetRdbName(i), R->FD->Name) && EquUpCase(CatFD->GetFileName(i), name)) {
+				result = i;
+				return result;
+			}
+		}
+		R = R->ChainBack;
+		if ((R != nullptr) && multilevel) {
+			continue;
+		}
+		break;
+	}
+
+	return result;
+}
+
+void Catalog::GetCPathForCat(FileD* file_d, int i, std::string& path, std::string& volume)
+{
+	std::string d;
+	bool isRdb;
+
+	std::string dir;
+	std::string name;
+	std::string ext;
+
+	volume = CatFD->GetVolume(i);
+	path = CatFD->GetPathName(i);
+	const bool setContentDir = SetContextDir(file_d, d, isRdb);
+	if (setContentDir && path.length() > 1 && path[1] != ':') {
+		if (isRdb) {
+			FSplit(path, dir, name, ext);
+			AddBackSlash(d);
+			dir = d;
+			path = dir + name + ext;
+			return;
+		}
+		if (path[0] == '\\') {
+			path = d.substr(0, 2) + path;
+		}
+		else {
+			AddBackSlash(d);
+			path = d + path;
+		}
+	}
+	else {
+		path = FExpand(path);
+	}
+	FSplit(path, dir, name, ext);
 }
 
 WORD Catalog::Generation(FileD* file_d)

@@ -145,7 +145,7 @@ void GetRdbRecVars(void* RecPtr, RdbRecVars* X)
 	X->OldTxt = CFile->loadT(ChptOldTxt, CRecPtr);
 	if (X->Typ == 'F') {
 		X->FTyp = ExtToTyp(X->Ext);
-		X->CatIRec = GetCatalogIRec(X->Name, false);
+		X->CatIRec = CatFD->GetCatalogIRec(X->Name, false);
 		X->isSQL = false;
 		if (X->OldTxt != 0) {
 			MarkBoth(p, p2);
@@ -529,7 +529,7 @@ void SetRdbDir(char Typ, std::string* Nm)
 	if (Typ == '\\') {
 		rb = TopRdb;
 		CRdb = rb;
-		CFile->CatIRec = GetCatalogIRec(*Nm, false);
+		CFile->CatIRec = CatFD->GetCatalogIRec(*Nm, false);
 		CRdb = r;
 	}
 	if (CFile->CatIRec != 0) {
@@ -993,7 +993,7 @@ int MakeDbfDcl(pstring Nm)
 	pstring s(80); pstring s1(10); void* p;
 
 	CPath = FExpand(Nm + ".DBF"); CVol = "";
-	WORD i = GetCatalogIRec(Nm, true);
+	WORD i = CatFD->GetCatalogIRec(Nm, true);
 	if (i != 0) {
 		CVol = CatFD->GetVolume(i);
 		CPath = FExpand(CatFD->GetPathName(i));

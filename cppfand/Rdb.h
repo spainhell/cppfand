@@ -1,7 +1,6 @@
 #pragma once
 #include <deque>
 #include <string>
-#include "constants.h"
 
 class FileD;
 class LinkD;

@@ -46,9 +46,9 @@ void SaveFiles()
 	// save catalog
 	FileD* catalog_file = CatFD->GetCatalogFile();
 	catalog_file->FF->WrPrefixes();
-	
+
 	ForAllFDs(ForAllFilesOperation::close);
-	
+
 	bool b = SaveCache(0, catalog_file->FF->Handle);
 	FlushHandles();
 
@@ -405,33 +405,6 @@ void SetCPathForH(FILE* handle)
 	CFile = cf;
 }
 
-int GetCatalogIRec(const std::string& name, bool multilevel)
-{
-	int result = 0;
-
-	if (CatFD == nullptr || CatFD->GetCatalogFile()->FF->Handle == nullptr) {
-		return result;
-	}
-	if (CRdb == nullptr) {
-		return result;
-	}
-
-	RdbD* R = CRdb;
-label1:
-	for (int i = 1; i <= CatFD->GetCatalogFile()->FF->NRecs; i++) {
-		if (EquUpCase(CatFD->GetRdbName(i), R->FD->Name) &&	EquUpCase(CatFD->GetFileName(i), name)) {
-			result = i;
-			return result;
-		}
-	}
-	R = R->ChainBack;
-	if ((R != nullptr) && multilevel) {
-		goto label1;
-	}
-
-	return result;
-}
-
 bool SetContextDir(FileD* file_d, std::string& D, bool& IsRdb)
 {
 	bool result = true;
@@ -458,36 +431,6 @@ bool SetContextDir(FileD* file_d, std::string& D, bool& IsRdb)
 	return false;
 }
 
-void GetCPathForCat(int i)
-{
-	std::string d;
-	bool isRdb;
-
-	CVol = CatFD->GetVolume(i);
-	CPath = CatFD->GetPathName(i);
-	const bool setContentDir = SetContextDir(CFile, d, isRdb);
-	if (setContentDir && CPath.length() > 1 && CPath[1] != ':') {
-		if (isRdb) {
-			FSplit(CPath, CDir, CName, CExt);
-			AddBackSlash(d);
-			CDir = d;
-			CPath = CDir + CName + CExt;
-			return;
-		}
-		if (CPath[0] == '\\') {
-			CPath = d.substr(0, 2) + CPath;
-		}
-		else {
-			AddBackSlash(d);
-			CPath = d + CPath;
-		}
-	}
-	else {
-		CPath = FExpand(CPath);
-	}
-	FSplit(CPath, CDir, CName, CExt);
-}
-
 std::string SetCPathVol(FileD* file_d, char pathDelim)
 {
 	int i = 0;
@@ -506,7 +449,7 @@ std::string SetCPathVol(FileD* file_d, char pathDelim)
 	}
 	i = file_d->CatIRec;
 	if (i != 0) {
-		GetCPathForCat(i);
+		CatFD->GetCPathForCat(file_d, i, CPath, CVol);
 		if (file_d->Name == "@") goto label3;
 		goto label4;
 	}
@@ -526,7 +469,7 @@ std::string SetCPathVol(FileD* file_d, char pathDelim)
 			"FANDHLP";
 #endif
 		goto label4;
-}
+	}
 	CExt = ".100";
 	if (CRdb != nullptr) CDir = CRdb->DataDir;
 	else CDir = "";
@@ -604,12 +547,4 @@ void TestDelErr(std::string& P)
 		SetMsgPar(P);
 		RunError(827);
 	}
-}
-
-void DelDuplF(FileD* TempFD)
-{
-	CloseClearH(&TempFD->FF->Handle);
-	SetCPathVol(CFile);
-	SetTempCExt('0', CFile->FF->IsShared());
-	MyDeleteFile(CPath);
 }

@@ -392,3 +392,11 @@ FileD* FileD::OpenDuplicateF(bool createTextFile)
 	}
 	return newFile;
 }
+
+void FileD::DeleteDuplicateF(FileD* TempFD)
+{
+	CloseClearH(&TempFD->FF->Handle);
+	SetCPathVol(this);
+	SetTempCExt('0', FF->IsShared());
+	MyDeleteFile(CPath);
+}
