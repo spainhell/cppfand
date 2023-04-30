@@ -485,7 +485,7 @@ std::string SetCPathVol(FileD* file_d, char pathDelim)
 label2:
 	AddBackSlash(CDir);
 label3:
-	CName = CFile->Name;
+	CName = file_d->Name;
 label4:
 	if (pathDelim == '/') ReplaceChar(CDir, '\\', '/');
 	if (pathDelim == '\\') ReplaceChar(CDir, '/', '\\');
