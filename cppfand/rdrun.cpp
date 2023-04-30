@@ -10,6 +10,7 @@
 #include "obaseww.h"
 #include "runfrml.h"
 #include "models/Instr.h"
+#include "../fandio/files.h"
 
 std::vector<ConstListEl> OldMFlds;
 std::vector<ConstListEl> NewMFlds;   /* Merge + Report*/
@@ -338,7 +339,7 @@ bool RunAddUpdte(char Kind, void* CRold, LinkD* notLD)
 	FileD* CF = CFile;
 	LockForAdd(CF, 0, false, md);
 	while (!LockForAdd(CF, 1, false, md)) {
-		SetCPathVol(CFile);
+		SetPathAndVolume(CFile);
 		SetMsgPar(CPath, LockModeTxt[md]);
 		LockForAdd(CF, 2, false, md);
 		int w = PushWrLLMsg(825, false);

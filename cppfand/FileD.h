@@ -79,6 +79,7 @@ public:
 	int saveT(FieldDescr* field_d, int pos, void* record);
 
 	void Close();
+	void CloseFile();
 	void Save();
 
 	void OldLockMode(LockMode mode);

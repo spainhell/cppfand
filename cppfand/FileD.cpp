@@ -326,6 +326,14 @@ void FileD::Close()
 	}
 }
 
+void FileD::CloseFile()
+{
+	if (FF->Handle == nullptr) return;
+	
+	FF->CloseFile();
+
+}
+
 void FileD::Save()
 {
 	if (FF != nullptr) {
@@ -416,11 +424,11 @@ bool FileD::SearchKey(XString& XX, XKey* Key, int& NN, void* record)
 FileD* FileD::OpenDuplicateF(bool createTextFile)
 {
 	short Len = 0;
-	SetCPathVol(this);
+	SetPathAndVolume(this);
 	bool net = IsNetCVol();
 	FileD* newFile = new FileD(*this);
 
-	SetTempCExt('0', net);
+	SetTempCExt(this, '0', net);
 	CVol = "";
 	newFile->FullPath = CPath;
 	newFile->FF->Handle = OpenH(CPath, _isOverwriteFile, Exclusive);
@@ -446,7 +454,7 @@ FileD* FileD::OpenDuplicateF(bool createTextFile)
 	if (createTextFile && (newFile->FF->TF != nullptr)) {
 		newFile->FF->TF = new FandTFile(newFile->FF);
 		*newFile->FF->TF = *FF->TF;
-		SetTempCExt('T', net);
+		SetTempCExt(this, 'T', net);
 		newFile->FF->TF->Handle = OpenH(CPath, _isOverwriteFile, Exclusive);
 		newFile->FF->TF->TestErr();
 		newFile->FF->TF->CompileAll = true;
@@ -459,8 +467,8 @@ FileD* FileD::OpenDuplicateF(bool createTextFile)
 void FileD::DeleteDuplicateF(FileD* TempFD)
 {
 	CloseClearH(&TempFD->FF->Handle);
-	SetCPathVol(this);
-	SetTempCExt('0', FF->IsShared());
+	SetPathAndVolume(this);
+	SetTempCExt(this, '0', FF->IsShared());
 	MyDeleteFile(CPath);
 }
 

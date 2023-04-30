@@ -107,7 +107,7 @@ void ReportProc(RprtOpt* RO, bool save)
 	if (RO->Edit) md = 'T';
 	else md = 'V';
 	if (save) {
-		SaveFiles();
+		SaveAndCloseAllFiles();
 	}
 	if (PrintView) {
 		w = PushW(1, 1, TxtCols, TxtRows);
@@ -229,7 +229,7 @@ void SortProc(FileD* FD, KeyFldD* SK)
 	LockMode md = FD->NewLockMode(ExclMode);
 	FD->FF->SortAndSubst(SK);
 	FD->OldLockMode(md);
-	SaveFiles();
+	SaveAndCloseAllFiles();
 }
 
 void MergeProc(Instr_merge_display* PD)
@@ -239,7 +239,7 @@ void MergeProc(Instr_merge_display* PD)
 	SetInpTT(&PD->Pos, true);
 	ReadMerge();
 	RunMerge();
-	SaveFiles();
+	SaveAndCloseAllFiles();
 	ReleaseBoth(p, p2);
 }
 
@@ -405,7 +405,7 @@ void CallRdbProc(Instr_call* PD)
 void MountProc(WORD CatIRec, bool NoCancel)
 {
 	try {
-		SaveFiles();
+		SaveAndCloseAllFiles();
 		CVol = CatFD->GetVolume(CatIRec);
 		CPath = FExpand(CatFD->GetPathName(CatIRec));
 		FSplit(CPath, CDir, CName, CExt);
@@ -421,7 +421,7 @@ void MountProc(WORD CatIRec, bool NoCancel)
 void EditProc(Instr_edit* PD)
 {
 	EdUpdated = false;
-	SaveFiles();
+	SaveAndCloseAllFiles();
 	CFile = PD->EditFD;
 
 	// TODO: is needed to make copy of EditOptions before call edit?
@@ -430,7 +430,7 @@ void EditProc(Instr_edit* PD)
 	if (!PD->EO.UserSelFlds || selFlds) {
 		EditDataFile(CFile, &PD->EO);
 	}
-	SaveFiles();
+	SaveAndCloseAllFiles();
 
 	// TODO: and here delete copy?
 }
@@ -850,7 +850,7 @@ label1:
 		else
 #endif
 		{
-			OpenCreateF(CFile, Shared);
+			OpenCreateF(CFile, CPath, Shared);
 			if ((LVr != nullptr) && (LVi == nullptr) && CFile->HasUpdFlag(CRecPtr)) {
 				md1 = CFile->NewLockMode(WrMode);
 				CFile->CopyRecWithT(lr, cr);
@@ -957,7 +957,7 @@ label1:
 				}
 			}
 			else {
-				OpenCreateF(CFile, Shared);
+				OpenCreateF(CFile, CPath, Shared);
 			}
 		if (CFile->FF->IsShared()) {
 			if (op == _withlocked) {
@@ -977,7 +977,7 @@ label1:
 				return;
 			}
 			CFile = ld->FD;
-			SetCPathVol(CFile);
+			SetPathAndVolume(CFile);
 			if (op == _withlocked) {
 				msg = 839;
 				str(ld->N, ntxt);
@@ -1054,7 +1054,7 @@ void PutTxt(Instr_puttxt* PD)
 void AssgnCatFld(Instr_assign* PD)
 {
 	CFile = PD->FD3;
-	if (CFile != nullptr) CloseFile(CFile);
+	if (CFile != nullptr) CFile->CloseFile();
 	std::string data = RunShortStr(PD->Frml3);
 	CatFD->SetField(PD->CatIRec, PD->CatFld, data);
 }
@@ -1071,7 +1071,7 @@ void AssgnUserName(Instr_assign* PD)
 
 void ReleaseDriveProc(FrmlElem* Z)
 {
-	SaveFiles();
+	SaveAndCloseAllFiles();
 	pstring s = RunShortStr(Z);
 	char c = (char)toupper((char)s[1]);
 	if (c == spec.CPMdrive) ReleaseDrive(FloppyDrives);
@@ -1105,7 +1105,7 @@ void ResetCatalog()
 	while (CRdb != nullptr) {
 		CFile = CRdb->FD->pChain;
 		while (CFile != nullptr) {
-			CloseFile(CFile);
+			CFile->CloseFile();
 			CFile->CatIRec = CatFD->GetCatalogIRec(CFile->Name, CFile->FF->file_type == FileType::RDB);
 #ifdef FandSQL
 			SetIsSQLFile();
@@ -1225,7 +1225,7 @@ void RunInstr(Instr* PD)
 			//GoExit();
 			break;
 		}
-		case _save: { SaveFiles(); break; }
+		case _save: { SaveAndCloseAllFiles(); break; }
 		case _clrscr: {
 			TextAttr = ProcAttr;
 			ClrScr();
@@ -1460,7 +1460,7 @@ void RunInstr(Instr* PD)
 				ForAllFDs(ForAllFilesOperation::close_passive_fd);
 			}
 			else if (!CFile->FF->IsShared() || (CFile->FF->LMode == NullMode)) {
-				CloseFile(CFile);
+				CFile->CloseFile();
 			}
 			break;
 		}
@@ -1718,7 +1718,7 @@ void CallProcedure(Instr_proc* PD)
 
 	CFile = lstFD->pChain;
 	while (CFile != nullptr) {
-		CloseFile(CFile);
+		CFile->CloseFile();
 		CFile = CFile->pChain;
 	}
 	lstFD->pChain = nullptr;

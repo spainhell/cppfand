@@ -17,6 +17,7 @@
 #include "../cppfand/rdrun.h"
 #include "../cppfand/runproc.h"
 #include "../cppfand/runproj.h"
+#include "../fandio/files.h"
 #include "../fandio/XKey.h"
 #include "../cppfand/wwmenu.h"
 #include "../Logging/Logging.h"
@@ -1491,7 +1492,7 @@ bool OpenEditWw()
 	int n = 0;
 	auto result = false;
 	CFile = E->Journal;
-	if (CFile != nullptr) OpenCreateF(CFile, Shared);
+	if (CFile != nullptr) OpenCreateF(CFile, CPath, Shared);
 	RdEStatus();
 	if (EdRecVar) {
 		if (OnlyAppend) {
@@ -1504,7 +1505,7 @@ bool OpenEditWw()
 #ifdef FandSQL
 	if (!CFile->IsSQLFile)
 #endif
-		OpenCreateF(CFile, Shared);
+		OpenCreateF(CFile, CPath, Shared);
 	E->OldMd = E->FD->FF->LMode;
 	UpdCount = 0;
 #ifdef FandSQL
@@ -1797,7 +1798,7 @@ void WrJournal(char Upd, void* RP, double Time)
 	}
 	UpdCount++;
 	if (UpdCount == E->SaveAfter) {
-		SaveFiles();
+		SaveAndCloseAllFiles();
 		UpdCount = 0;
 	}
 }
@@ -1866,7 +1867,7 @@ label1:
 		CFile->OldLockMode(OldMd);
 		CFile = cf2;
 	label3:
-		SetCPathVol(CFile);
+		SetPathAndVolume(CFile);
 		SetMsgPar(CPath, LockModeTxt[md]);
 		w1 = PushWrLLMsg(825, true);
 		if (w == 0) w = w1;
@@ -2317,7 +2318,7 @@ void UpwEdit(LinkD* LkD)
 		if (OpenEditWw()) {
 			RunEdit(px, Brk);
 		}
-		SaveFiles();
+		SaveAndCloseAllFiles();
 		PopEdit();
 	}
 label1:
@@ -3010,7 +3011,7 @@ void Sorting()
 	KeyFldD* SKRoot = nullptr;
 	void* p = nullptr;
 	LockMode md;
-	SaveFiles();
+	SaveAndCloseAllFiles();
 	MarkStore(p);
 
 	if (!PromptSortKeys(E->Flds, SKRoot) || (SKRoot == nullptr)) {
@@ -3582,7 +3583,7 @@ label2:
 	switch (C) {
 	case __F9: {
 		if (WriteCRec(false, Displ)) {
-			SaveFiles();
+			SaveAndCloseAllFiles();
 			UpdCount = 0;
 		}
 		goto label4;
@@ -3940,7 +3941,7 @@ void ImbeddEdit()
 			if (OpenEditWw()) {
 				RunEdit(nullptr, Brk);
 			}
-			SaveFiles();
+			SaveAndCloseAllFiles();
 			PopEdit();
 		}
 	}
@@ -4015,7 +4016,7 @@ void DownEdit()
 			if (OpenEditWw()) {
 				RunEdit(nullptr, Brk);
 			}
-			SaveFiles();
+			SaveAndCloseAllFiles();
 			PopEdit();
 		}
 	}
@@ -4889,7 +4890,7 @@ label81:
 						switch (KbdChar) {
 						case __F9: {
 							// uloz
-							SaveFiles();
+							SaveAndCloseAllFiles();
 							UpdCount = 0;
 							break;
 						}

@@ -251,7 +251,7 @@ void OpenOutp()
 				OD->FD = CFile->OpenDuplicateF(true);
 			}
 			else {
-				OD->Md = RewriteF(CFile, OD->Append);
+				OD->Md = CFile->FF->RewriteFile(OD->Append);
 			}
 			OD = OD->pChain;
 		}

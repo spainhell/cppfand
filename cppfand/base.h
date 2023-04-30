@@ -85,7 +85,7 @@ bool IsUpdHandle(FILE* H);
 long PosH(FILE* handle);
 long SeekH(FILE* handle, size_t pos);
 long FileSizeH(FILE* handle);
-FILE* OpenH(std::string path, FileOpenMode Mode, FileUseMode UM);
+FILE* OpenH(const std::string& path, FileOpenMode Mode, FileUseMode UM);
 size_t ReadH(FILE* handle, size_t length, void* buffer);
 void WriteH(FILE* handle, size_t length, void* buffer);
 void TruncH(FILE* handle, size_t N);

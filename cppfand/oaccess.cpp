@@ -29,7 +29,7 @@ void OpenTWorkH()
 	if (TWork.MaxPage == 0) {
 		CPath = FandWorkTName;
 		TWork.IsWork = true;
-		TWork.Create();
+		TWork.Create(CPath);
 	}
 	else {
 		CPath = FandWorkTName;
@@ -39,7 +39,7 @@ void OpenTWorkH()
 	}
 }
 
-void SaveFiles()
+void SaveAndCloseAllFiles()
 {
 	if (!CacheExist()) return;
 
@@ -64,17 +64,17 @@ void CloseFANDFiles(bool FromDML)
 			if (!FromDML) {
 				CFile->FF->ExLMode = CFile->FF->LMode;
 			}
-			CloseFile(CFile);
+			CFile->CloseFile();
 			CFile = CFile->pChain;
 		}
 		RD = RD->ChainBack;
 	}
 	if (CRdb != nullptr) {
 		CFile = CatFD->GetCatalogFile();
-		CloseFile(CFile);
+		CFile->CloseFile();
 	}
 	CFile = HelpFD;
-	CloseFile(CFile);
+	CFile->CloseFile();
 	CloseH(&TWork.Handle);
 	CloseH(&XWork.Handle);
 }
@@ -113,160 +113,12 @@ void OpenFANDFiles(bool FromDML)
 
 }
 
-void CreateF(FileD* file_d)
-{
-	SetCPathMountVolSetNet(file_d, Exclusive);
-	file_d->FF->Handle = OpenH(CPath, _isOverwriteFile, Exclusive);
-	TestCFileError(file_d);
-	file_d->FF->NRecs = 0;
-	if (file_d->FF->TF != nullptr) {
-		CPath = CExtToT(CDir, CName, CExt);
-		file_d->FF->TF->Create();
-	}
-	if (file_d->FF->file_type == FileType::INDEX) {
-		CPath = CExtToX(CDir, CName, CExt);
-		file_d->FF->XF->Handle = OpenH(CPath, _isOverwriteFile, Exclusive);
-		file_d->FF->XF->TestErr(); /*SetNotValid*/
-		file_d->FF->XF->SetEmpty(file_d->FF->NRecs, file_d->GetNrKeys());
-	}
-	file_d->SeekRec(0);
-	SetUpdHandle(file_d->FF->Handle);
-}
-
-bool OpenCreateF(FileD* file_d, FileUseMode UM)
-{
-	if (!OpenF(file_d, CPath, UM)) {
-		CreateF(file_d);
-		if ((UM == Shared) || (UM == RdShared)) {
-			file_d->FF->WrPrefixes();
-			SaveCache(0, file_d->FF->Handle);
-			CloseClearH(&file_d->FF->Handle);
-			if (file_d->FF->file_type == FileType::INDEX) {
-				CloseClearH(&file_d->FF->XF->Handle);
-			}
-			if (file_d->FF->TF != nullptr) {
-				CloseClearH(&file_d->FF->TF->Handle);
-			}
-			OpenF(file_d, CPath, UM);
-		}
-	}
-	return true;
-}
-
-LockMode RewriteF(FileD* file_d, const bool Append)
-{
-	LockMode result;
-	if (Append) {
-		result = file_d->NewLockMode(CrMode);
-		file_d->SeekRec(file_d->FF->NRecs);
-		if (file_d->FF->XF != nullptr) {
-			file_d->FF->XF->FirstDupl = true;
-			CFile->FF->TestXFExist();
-		}
-		return result;
-	}
-	result = file_d->NewLockMode(ExclMode);
-	file_d->FF->NRecs = 0;
-	file_d->SeekRec(0);
-	SetUpdHandle(file_d->FF->Handle);
-
-	int notValid = file_d->FF->XFNotValid();
-	if (notValid != 0) {
-		RunError(notValid);
-	}
-
-	if (file_d->FF->file_type == FileType::INDEX) file_d->FF->XF->NoCreate = true;
-	if (file_d->FF->TF != nullptr) file_d->FF->TF->SetEmpty();
-	return result;
-}
-
-void TruncF(FileD* file_d)
-{
-	if (file_d->FF->UMode == RdOnly) return;
-	LockMode md = file_d->NewLockMode(RdMode);
-	TruncH(file_d->FF->Handle, file_d->FF->UsedFileSize());
-	if (HandleError != 0) {
-		FileMsg(CFile, 700 + HandleError, '0');
-	}
-	if (file_d->FF->TF != nullptr) {
-		TruncH(file_d->FF->TF->Handle, file_d->FF->TF->UsedFileSize());
-		file_d->FF->TF->TestErr();
-	}
-	if (file_d->FF->file_type == FileType::INDEX) {
-		int sz = file_d->FF->XF->UsedFileSize();
-		if (file_d->FF->XF->NotValid) sz = 0;
-		TruncH(file_d->FF->XF->Handle, sz);
-		file_d->FF->XF->TestErr();
-	}
-	file_d->OldLockMode(md);
-}
-
-void CloseFile(FileD* file_d)
-{
-	if (file_d->FF->Handle == nullptr) return;
-	if (file_d->FF->IsShared()) {
-		file_d->OldLockMode(NullMode);
-	}
-	else {
-		file_d->FF->WrPrefixes();
-	}
-	SaveCache(0, file_d->FF->Handle);
-	TruncF(file_d);
-	if (file_d->FF->file_type == FileType::INDEX) {
-		if (file_d->FF->XF->Handle != nullptr) {
-			CloseClearH(&file_d->FF->XF->Handle);
-			if (!file_d->FF->IsShared()) {
-				if (file_d->FF->XF->NotValid) {
-					SetCPathVol(file_d);
-					CPath = CExtToX(CDir, CName, CExt);
-					MyDeleteFile(CPath);
-				}
-				else if ((file_d->FF->XF->NRecs == 0) || file_d->FF->NRecs == 0) {
-					file_d->FF->NRecs = 0;
-					SetCPathVol(file_d);
-					CPath = CExtToX(CDir, CName, CExt);
-					MyDeleteFile(CPath);
-				}
-			}
-		}
-	}
-	// zavreni souboru volnych textu .T00
-	if (file_d->FF->TF != nullptr) {
-		if (file_d->FF->TF->Handle != nullptr) {
-			CloseClearH(&file_d->FF->TF->Handle);
-			if (HandleError == 0) file_d->FF->TF->Handle = nullptr; // soubor byl uspesne uzavren
-			if ((!file_d->FF->IsShared()) && (file_d->FF->NRecs == 0) && (file_d->FF->file_type != FileType::DBF)) {
-				SetCPathVol(file_d);
-				CPath = CExtToT(CDir, CName, CExt);
-				MyDeleteFile(CPath);
-			}
-		}
-	}
-	CloseClearH(&file_d->FF->Handle);
-	if (HandleError == 0) file_d->FF->Handle = nullptr;
-	file_d->FF->LMode = NullMode;
-	if (!file_d->FF->IsShared() && (file_d->FF->NRecs == 0) && (file_d->FF->file_type != FileType::DBF)) {
-		SetCPathVol(file_d);
-		MyDeleteFile(CPath);
-	}
-	if (file_d->FF->WasRdOnly) {
-		file_d->FF->WasRdOnly = false;
-		SetCPathVol(file_d);
-		SetFileAttr(CPath, HandleError, (GetFileAttr(CPath, HandleError) & 0x27) | 0x01); // {RdOnly; }
-		if (file_d->FF->TF != nullptr) {
-			CPath = CExtToT(CDir, CName, CExt);
-			SetFileAttr(CPath, HandleError, (GetFileAttr(CPath, HandleError) & 0x27) | 0x01); //  {RdOnly; }
-		}
-	}
-}
-
-
 void CloseFilesAfter(FileD* FD)
 {
 	CFile = FD;
 
 	while (CFile != nullptr) {
-		CloseFile(CFile);
+		CFile->CloseFile();
 		CFile = CFile->pChain;
 	}
 }
@@ -292,7 +144,7 @@ void CloseFilesOnDrive(WORD D)
 		CFile = R->FD;
 		while (CFile != nullptr) {
 			if (CFile->FF->Drive == D) {
-				CloseFile(CFile);
+				CFile->CloseFile();
 			}
 			CFile = CFile->pChain;
 		}
@@ -374,41 +226,6 @@ void ReleaseDrive(WORD D)
 	MountedVol[D - 1] = "";
 }
 
-void SetCPathForH(FILE* handle)
-{
-	RdbD* RD = nullptr;
-	FileD* cf = nullptr;
-	cf = CFile;
-	RD = CRdb;
-	while (RD != nullptr) {
-		CFile = RD->FD;
-		while (CFile != nullptr) {
-			if (CFile->FF->Handle == handle) {
-				SetCPathVol(CFile);
-				CFile = cf;
-				return;
-			}
-			if (CFile->FF->XF != nullptr && CFile->FF->XF->Handle == handle) {
-				SetCPathVol(CFile);
-				CPath = CExtToX(CDir, CName, CExt);
-				CFile = cf;
-				return;
-			}
-			if (CFile->FF->TF != nullptr && CFile->FF->TF->Handle == handle) {
-				SetCPathVol(CFile);
-				CPath = CExtToT(CDir, CName, CExt);
-				CFile = cf;
-				return;
-			}
-			CFile = CFile->pChain;
-		}
-		RD = RD->ChainBack;
-	}
-	ReadMessage(799);
-	CPath = MsgLine;
-	CFile = cf;
-}
-
 bool SetContextDir(FileD* file_d, std::string& dir, bool& isRdb)
 {
 	bool result = true;
@@ -439,60 +256,6 @@ bool SetContextDir(FileD* file_d, std::string& dir, bool& isRdb)
 	return false;
 }
 
-std::string SetCPathVol(FileD* file_d, char pathDelim)
-{
-	int i = 0;
-	bool isRdb = false;
-
-	CVol = "";
-	if (file_d->FF->file_type == FileType::CAT) {
-		CDir = GetEnv("FANDCAT");
-		if (CDir.empty()) {
-			CDir = TopDataDir.empty() ? TopRdbDir : TopDataDir;
-		}
-		AddBackSlash(CDir);
-		CName = CatFDName;
-		CExt = ".CAT";
-		goto label4;
-	}
-	i = file_d->CatIRec;
-	if (i != 0) {
-		CatFD->GetPathAndVolume(file_d, i, CPath, CVol);
-		FSplit(CPath, CDir, CName, CExt);
-		if (file_d->Name == "@") goto label3;
-		goto label4;
-	}
-	switch (file_d->FF->file_type) {
-	case FileType::RDB: CExt = ".RDB"; break;
-	case FileType::FAND8: CExt = ".DTA"; break;
-	case FileType::DBF: CExt = ".DBF"; break;
-	default: CExt = ".000";
-	}
-	if (SetContextDir(file_d, CDir, isRdb)) goto label2;
-	if (file_d == HelpFD) {
-		CDir = FandDir;
-		CName =
-#ifdef FandRunV
-			"UFANDHLP";
-#else
-			"FANDHLP";
-#endif
-		goto label4;
-	}
-	CExt = ".100";
-	if (CRdb != nullptr) CDir = CRdb->DataDir;
-	else CDir = "";
-label2:
-	AddBackSlash(CDir);
-label3:
-	CName = file_d->Name;
-label4:
-	if (pathDelim == '/') ReplaceChar(CDir, '\\', '/');
-	if (pathDelim == '\\') ReplaceChar(CDir, '/', '\\');
-	CPath = CDir + CName + CExt;
-	return CPath;
-}
-
 void SetTxtPathVol(std::string& Path, int CatIRec)
 {
 	if (CatIRec != 0) {
@@ -506,47 +269,7 @@ void SetTxtPathVol(std::string& Path, int CatIRec)
 	}
 }
 
-void SetTempCExt(char Typ, bool IsNet)
-{
-	char Nr;
-	if (Typ == 'T') {
-		Nr = '2';
-		switch (CFile->FF->file_type) {
-		case FileType::RDB: CExt = ".TTT"; break;
-		case FileType::DBF: CExt = ".DBT"; break;
-		}
-	}
-	else {
-		Nr = '1';
-		switch (CFile->FF->file_type) {
-		case FileType::RDB: CExt = ".RDB"; break;
-		case FileType::DBF: CExt = ".DBF"; break;
-		}
-	}
-	if (CExt.length() < 2) CExt = ".0";
-	CExt[1] = Nr;
-	if (IsNet) CPath = WrkDir + CName + CExt; /* work files are local */
-	else CPath = CDir + CName + CExt;
-}
 
-void CopyH(FILE* h1, FILE* h2)
-{
-	const WORD BufSize = 32768;
-	void* p = new BYTE[BufSize];
-	int sz = FileSizeH(h1);
-	SeekH(h1, 0);
-	SeekH(h2, 0);
-	while (sz > BufSize) {
-		ReadH(h1, BufSize, p);
-		WriteH(h2, BufSize, p);
-		sz -= BufSize;
-	}
-	ReadH(h1, sz, p);
-	WriteH(h2, sz, p);
-	CloseH(&h1);
-	MyDeleteFile(CPath);
-	ReleaseStore(p);
-}
 
 void TestDelErr(std::string& P)
 {

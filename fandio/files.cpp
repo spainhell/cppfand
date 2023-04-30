@@ -5,38 +5,27 @@
 #include "../cppfand/oaccess.h"
 #include "../cppfand/wwmix.h"
 #include "../Common/compare.h"
+#include "../Common/textfunc.h"
 
 
-void CFileError(FileD* file_d, int N)
+bool OpenF(FileD* file_d, const std::string& path, FileUseMode UM)
 {
-	FileMsg(file_d, N, '0');
-	CloseGoExit(file_d->FF);
-}
-
-void TestCFileError(FileD* file_d)
-{
-	if (HandleError != 0) {
-		CFileError(file_d, 700 + HandleError);
-	}
-}
-
-void SetCPathMountVolSetNet(FileD* file_d, FileUseMode UM)
-{
-	SetCPathVol(file_d);
-	file_d->FF->UMode = UM;
-	file_d->FF->Drive = (BYTE)TestMountVol(CPath[0]);
-	if (!IsNetCVol() || (file_d == Chpt))
-		switch (UM) {
-		case RdShared: file_d->FF->UMode = RdOnly; break;
-		case Shared: file_d->FF->UMode = Exclusive; break;
-
-		case Closed:
-		case RdOnly:
-		case Exclusive: break;
+	bool result = true;
+	if (file_d->FF->Handle != nullptr) return result;
+	if (OpenF1(file_d, path, UM)) {
+		if (
+#ifdef FandSQL
+			!IsSQLFile &&
+#endif
+			file_d->FF->IsShared()) {
+			file_d->ChangeLockMode(RdMode, 0, false);
+			file_d->FF->LMode = RdMode;
 		}
-	else if ((UM == Shared) && EquUpCase(CVol, "#R")) {
-		file_d->FF->UMode = RdShared;
+		result = OpenF2(file_d, path);
+		file_d->OldLockMode(NullMode);
 	}
+	else result = false;
+	return result;
 }
 
 bool OpenF1(FileD* file_d, const std::string& path, FileUseMode UM)
@@ -44,7 +33,7 @@ bool OpenF1(FileD* file_d, const std::string& path, FileUseMode UM)
 	WORD n;
 	bool result = true;
 	file_d->FF->LMode = NullMode;
-	SetCPathMountVolSetNet(file_d, UM);
+	SetPathMountVolumeSetNet(file_d, UM);
 	const bool b = (file_d == Chpt) || (file_d == CatFD->GetCatalogFile());
 	if (b && (IsTestRun || IsInstallRun) && ((GetFileAttr(CPath, HandleError) & 0b00000001/*RdOnly*/) != 0)) {
 		SetFileAttr(CPath, HandleError, GetFileAttr(CPath, HandleError) & 0b00100110);
@@ -176,7 +165,7 @@ bool OpenF2(FileD* file_d, const std::string& path)
 	else {
 	}
 	if (n < file_d->FF->NRecs) {
-		SetCPathVol(file_d);
+		SetPathAndVolume(file_d);
 		SetMsgPar(CPath);
 		if (PromptYN(882)) {
 			file_d->FF->NRecs = n;
@@ -237,22 +226,215 @@ label3:
 	return true;
 }
 
-bool OpenF(FileD* file_d, const std::string& path, FileUseMode UM)
+void CreateF(FileD* file_d)
 {
-	bool result = true;
-	if (file_d->FF->Handle != nullptr) return result;
-	if (OpenF1(file_d, path, UM)) {
-		if (
-#ifdef FandSQL
-			!IsSQLFile &&
-#endif
-			file_d->FF->IsShared()) {
-			file_d->ChangeLockMode(RdMode, 0, false);
-			file_d->FF->LMode = RdMode;
-		}
-		result = OpenF2(file_d, path);
-		file_d->OldLockMode(NullMode);
+	std::string path = SetPathMountVolumeSetNet(file_d, Exclusive);
+	file_d->FF->Handle = OpenH(path, _isOverwriteFile, Exclusive);
+	TestCFileError(file_d);
+	file_d->FF->NRecs = 0;
+	if (file_d->FF->TF != nullptr) {
+		path = CExtToT(CDir, CName, CExt);
+		file_d->FF->TF->Create(path);
 	}
-	else result = false;
-	return result;
+	if (file_d->FF->file_type == FileType::INDEX) {
+		path = CExtToX(CDir, CName, CExt);
+		file_d->FF->XF->Handle = OpenH(path, _isOverwriteFile, Exclusive);
+		file_d->FF->XF->TestErr(); /*SetNotValid*/
+		file_d->FF->XF->SetEmpty(file_d->FF->NRecs, file_d->GetNrKeys());
+	}
+	file_d->SeekRec(0);
+	SetUpdHandle(file_d->FF->Handle);
+}
+
+bool OpenCreateF(FileD* file_d, const std::string& path, FileUseMode UM)
+{
+	if (!OpenF(file_d, path, UM)) {
+		CreateF(file_d);
+		if ((UM == Shared) || (UM == RdShared)) {
+			file_d->FF->WrPrefixes();
+			SaveCache(0, file_d->FF->Handle);
+			CloseClearH(&file_d->FF->Handle);
+			if (file_d->FF->file_type == FileType::INDEX) {
+				CloseClearH(&file_d->FF->XF->Handle);
+			}
+			if (file_d->FF->TF != nullptr) {
+				CloseClearH(&file_d->FF->TF->Handle);
+			}
+			OpenF(file_d, path, UM);
+		}
+	}
+	return true;
+}
+
+void CopyH(FILE* h1, FILE* h2)
+{
+	const WORD BufSize = 32768;
+	void* p = new BYTE[BufSize];
+	int sz = FileSizeH(h1);
+	SeekH(h1, 0);
+	SeekH(h2, 0);
+	while (sz > BufSize) {
+		ReadH(h1, BufSize, p);
+		WriteH(h2, BufSize, p);
+		sz -= BufSize;
+	}
+	ReadH(h1, sz, p);
+	WriteH(h2, sz, p);
+	CloseH(&h1);
+	MyDeleteFile(CPath);
+	ReleaseStore(p);
+}
+
+void CFileError(FileD* file_d, int N)
+{
+	FileMsg(file_d, N, '0');
+	CloseGoExit(file_d->FF);
+}
+
+void TestCFileError(FileD* file_d)
+{
+	if (HandleError != 0) {
+		CFileError(file_d, 700 + HandleError);
+	}
+}
+
+std::string SetPathMountVolumeSetNet(FileD* file_d, FileUseMode UM)
+{
+	std::string path = SetPathAndVolume(file_d);
+	file_d->FF->UMode = UM;
+	file_d->FF->Drive = (BYTE)TestMountVol(path[0]);
+	if (!IsNetCVol() || (file_d == Chpt))
+		switch (UM) {
+		case RdShared: file_d->FF->UMode = RdOnly; break;
+		case Shared: file_d->FF->UMode = Exclusive; break;
+
+		case Closed:
+		case RdOnly:
+		case Exclusive: break;
+		}
+	else if ((UM == Shared) && EquUpCase(CVol, "#R")) {
+		file_d->FF->UMode = RdShared;
+	}
+	CPath = path;
+	return path;
+}
+
+std::string SetPathAndVolume(FileD* file_d, char pathDelim)
+{
+	int i = 0;
+	bool isRdb = false;
+
+	CVol = "";
+	if (file_d->FF->file_type == FileType::CAT) {
+		CDir = GetEnv("FANDCAT");
+		if (CDir.empty()) {
+			CDir = TopDataDir.empty() ? TopRdbDir : TopDataDir;
+		}
+		AddBackSlash(CDir);
+		CName = CatFDName;
+		CExt = ".CAT";
+		goto label4;
+	}
+	i = file_d->CatIRec;
+	if (i != 0) {
+		CatFD->GetPathAndVolume(file_d, i, CPath, CVol);
+		FSplit(CPath, CDir, CName, CExt);
+		if (file_d->Name == "@") goto label3;
+		goto label4;
+	}
+	switch (file_d->FF->file_type) {
+	case FileType::RDB: CExt = ".RDB"; break;
+	case FileType::FAND8: CExt = ".DTA"; break;
+	case FileType::DBF: CExt = ".DBF"; break;
+	default: CExt = ".000";
+	}
+	if (SetContextDir(file_d, CDir, isRdb)) goto label2;
+	if (file_d == HelpFD) {
+		CDir = FandDir;
+#ifdef FandRunV 
+		CName = "UFANDHLP";
+#else
+		CName = "FANDHLP";
+#endif
+		goto label4;
+	}
+	CExt = ".100";
+	if (CRdb != nullptr) {
+		CDir = CRdb->DataDir;
+	}
+	else {
+		CDir = "";
+	}
+label2:
+	AddBackSlash(CDir);
+label3:
+	CName = file_d->Name;
+label4:
+	if (pathDelim == '/') ReplaceChar(CDir, '\\', '/');
+	if (pathDelim == '\\') ReplaceChar(CDir, '/', '\\');
+	CPath = CDir + CName + CExt;
+	return CPath;
+}
+
+std::string SetPathForH(FILE* handle)
+{
+	RdbD* RD = nullptr;
+	FileD* cf = nullptr;
+	cf = CFile;
+	RD = CRdb;
+	while (RD != nullptr) {
+		CFile = RD->FD;
+		while (CFile != nullptr) {
+			if (CFile->FF->Handle == handle) {
+				SetPathAndVolume(CFile);
+				CFile = cf;
+				return CPath;
+			}
+			if (CFile->FF->XF != nullptr && CFile->FF->XF->Handle == handle) {
+				SetPathAndVolume(CFile);
+				CPath = CExtToX(CDir, CName, CExt);
+				CFile = cf;
+				return CPath;
+			}
+			if (CFile->FF->TF != nullptr && CFile->FF->TF->Handle == handle) {
+				SetPathAndVolume(CFile);
+				CPath = CExtToT(CDir, CName, CExt);
+				CFile = cf;
+				return CPath;
+			}
+			CFile = CFile->pChain;
+		}
+		RD = RD->ChainBack;
+	}
+	ReadMessage(799);
+	CPath = MsgLine;
+	CFile = cf;
+	return CPath;
+}
+
+void SetTempCExt(FileD* file_d, char typ, bool isNet)
+{
+	char Nr;
+	if (typ == 'T') {
+		Nr = '2';
+		switch (file_d->FF->file_type) {
+		case FileType::RDB: CExt = ".TTT"; break;
+		case FileType::DBF: CExt = ".DBT"; break;
+		}
+	}
+	else {
+		Nr = '1';
+		switch (file_d->FF->file_type) {
+		case FileType::RDB: CExt = ".RDB"; break;
+		case FileType::DBF: CExt = ".DBF"; break;
+		}
+	}
+	if (CExt.length() < 2) CExt = ".0";
+	CExt[1] = Nr;
+	if (isNet) {
+		CPath = WrkDir + CName + CExt; /* work files are local */
+	}
+	else {
+		CPath = CDir + CName + CExt;
+	}
 }

@@ -28,6 +28,7 @@ public:
 	FandFile(FileD* parent);
 	FandFile(const FandFile& orig) = delete;
 	FandFile(const FandFile& orig, FileD* parent);
+	~FandFile();
 
 	unsigned short RecLen = 0;
 	void* RecPtr = nullptr;
@@ -79,6 +80,8 @@ public:
 	void WrPrefix();
 	void WrPrefixes();
 
+	void TruncFile();
+	LockMode RewriteFile(bool append);
 	void SaveFile();
 	void CloseFile();
 

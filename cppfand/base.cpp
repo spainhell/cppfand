@@ -22,6 +22,7 @@
 #include "../Common/exprcmp.h"
 #include "../Common/compare.h"
 #include "../fandio/cache.h"
+#include "../fandio/files.h"
 #include "../Logging/Logging.h"
 
 
@@ -736,7 +737,7 @@ void UnExtendHandles()
 	// zavre vsechny otevrene soubory, presune zpet NewHT do Old... promennych
 }
 
-FILE* OpenH(std::string path, FileOpenMode Mode, FileUseMode UM)
+FILE* OpenH(const std::string& path, FileOpenMode Mode, FileUseMode UM)
 {
 	// $3C vytvori nebo prepise soubor
 	// $3D otevira exitujici soubor
@@ -977,7 +978,7 @@ void RdWrCache(FileOperation operation, FILE* handle, bool not_cached, size_t po
 		else WriteH(handle, count, buf);
 		if (HandleError == 0) return;
 		err = HandleError;
-		SetCPathForH(handle);
+		SetPathForH(handle);
 		SetMsgPar(CPath);
 		RunError(700 + err);
 	}

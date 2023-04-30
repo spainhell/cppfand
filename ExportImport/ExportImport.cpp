@@ -253,7 +253,7 @@ void ImportTxt(CopyD* CD)
 		}
 		else
 #endif
-			md = RewriteF(CFile, CD->Append);
+			md = CFile->FF->RewriteFile(CD->Append);
 
 		while (!(F1->eof) && (F1->ForwChar() != 0x1A)) {
 			CFile->ZeroAllFlds(CRecPtr);
@@ -379,7 +379,7 @@ void ExportFD(CopyD* CD)
 
 	try {
 		CFile = CD->FD1;
-		SaveFiles();
+		SaveAndCloseAllFiles();
 		md = CFile->NewLockMode(RdMode);
 		F2 = new ThFile(CD->Path2, CD->CatIRec2, InOutMode::_outp, 0, nullptr);
 		int n = CFile->FF->XNRecs(CD->FD1->Keys);
@@ -553,7 +553,7 @@ void FileCopy(CopyD* CD)
 	else {
 		MakeCopy(CD);
 	}
-	SaveFiles();
+	SaveAndCloseAllFiles();
 	RunMsgOff();
 	if (LastExitCode != 0 && !CD->NoCancel) GoExit();
 }

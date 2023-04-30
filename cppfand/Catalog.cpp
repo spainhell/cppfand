@@ -238,7 +238,7 @@ WORD Catalog::Generation(FileD* file_d, std::string& path, std::string& volume)
 void Catalog::TurnCat(FileD* file_d, WORD Frst, WORD N, short I)
 {
 	if (file_d != nullptr) {
-		CloseFile(file_d);
+		file_d->CloseFile();
 	}
 	file_d = CatFD->GetCatalogFile();
 	BYTE* p = file_d->GetRecSpace();

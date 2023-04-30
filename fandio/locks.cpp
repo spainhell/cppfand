@@ -112,7 +112,7 @@ label1:
 			}
 			else {
 				d = spec.NetDelay;
-				SetCPathVol(fileD);
+				SetPathAndVolume(fileD);
 				SetMsgPar(CPath, LockModeTxt[Mode]);
 				int w1 = PushWrLLMsg(825, Kind == 1);
 				if (w == 0) {
@@ -188,7 +188,7 @@ bool TryLMode(FileD* fileD, LockMode Mode, LockMode& OldMode, WORD Kind)
 #endif
 	{
 		if (fileD->FF->Handle == nullptr) {
-			OpenCreateF(fileD, Shared);
+			OpenCreateF(fileD, CPath, Shared);
 		}
 		OldMode = fileD->FF->LMode;
 		if (Mode > fileD->FF->LMode) {
@@ -223,7 +223,7 @@ label1:
 		if (Kind != 2) {   /*0 Kind-wait, 1-wait until ESC, 2-no wait*/
 			m = 826;
 			if (N == 0) {
-				SetCPathVol(fand_file->GetFileD());
+				SetPathAndVolume(fand_file->GetFileD());
 				SetMsgPar(CPath, XTxt);
 				m = 825;
 			}

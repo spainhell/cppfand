@@ -1,6 +1,7 @@
 #include "obaseww.h"
 
 #include "../Common/textfunc.h"
+#include "../fandio/files.h"
 #include "base.h"
 #include "OldDrivers.h"
 #include "GlobalVariables.h"
@@ -306,7 +307,7 @@ bool PromptYN(WORD NMsg)
 
 void FileMsg(FileD* file_d, int n, char Typ)
 {
-	SetCPathVol(file_d);
+	SetPathAndVolume(file_d);
 	if (Typ == 'T') {
 		CPath = CExtToT(CDir, CName, CExt);
 	}

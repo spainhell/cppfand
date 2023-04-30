@@ -267,7 +267,7 @@ void ForAllFDs(ForAllFilesOperation op, FileD** file_d, WORD i)
 			}
 			case ForAllFilesOperation::close_passive_fd: {
 				if ((CFile->FF->file_type != FileType::RDB) && (CFile->FF->LMode == NullMode)) {
-					CloseFile(CFile);
+					CFile->CloseFile();
 				}
 				break;
 			}

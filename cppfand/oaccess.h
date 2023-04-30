@@ -5,32 +5,24 @@
 void OpenXWorkH();
 void OpenTWorkH();
 
-void SaveFiles();
+void SaveAndCloseAllFiles();
 void ClosePassiveFD();
 void CloseFANDFiles(bool FromDML);
 void OpenFANDFiles(bool FromDML);
 
 
-bool OpenCreateF(FileD* file_d, FileUseMode UM);
-LockMode RewriteF(FileD* file_d, bool Append);
-void TruncF(FileD* file_d);
-void CloseFile(FileD* file_d);
 void CloseFilesAfter(FileD* FD);
 bool ActiveRdbOnDrive(WORD D);
 void CloseFilesOnDrive(WORD D);
 WORD TestMountVol(char DriveC);
 void ReleaseDrive(WORD D);
-void SetCPathForH(FILE* handle);
+
 #ifdef FandSQL
 void SetIsSQLFile();
 #endif
 
 bool SetContextDir(FileD* file_d, std::string& dir, bool& isRdb);
 
-std::string SetCPathVol(FileD* file_d, char pathDelim = '\\');
 void SetTxtPathVol(std::string& Path, int CatIRec);
-void SetTempCExt(char Typ, bool IsNet);
 
-void CopyH(FILE* h1, FILE* h2);
 void TestDelErr(std::string& P);
-

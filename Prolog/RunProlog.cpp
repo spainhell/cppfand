@@ -12,6 +12,7 @@
 #include "../cppfand/runproc.h"
 #include "../cppfand/runproj.h"
 #include "../cppfand/models/Instr.h"
+#include "../fandio/files.h"
 #include "../Editor/OldEditor.h"
 #include "../Common/compare.h"
 
@@ -1244,7 +1245,7 @@ bool RunBuildIn()
 		CurrInst->Vars[1] = GetStringTerm(s);
 		CurrInst->Vars[2] = GetStringTerm(fd->ChptPos.R->FD->Name);
 		CFile = fd;
-		SetCPathVol(CFile);
+		SetPathAndVolume(CFile);
 		CurrInst->Vars[3] = GetStringTerm(CPath);
 		CurrInst->NextBranch = (TBranch*)NextFD(fd);
 		break;

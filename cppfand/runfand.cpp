@@ -201,7 +201,7 @@ void RunRdb(std::string p)
 		wwmix ww;
 		EditExecRdb(n, "main", nullptr, &ww);
 		CFile = CatFD->GetCatalogFile();
-		CloseFile(CFile);
+		CFile->CloseFile();
 	}
 }
 
@@ -220,7 +220,7 @@ void CallInstallRdb()
 	if ((!p.empty()) && SetTopDir(p, n)) {
 		InstallRdb(n);
 		CFile = CatFD->GetCatalogFile();
-		CloseFile(CFile);
+		CFile->CloseFile();
 	}
 }
 
