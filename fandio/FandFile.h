@@ -71,6 +71,9 @@ public:
 	void saveLongS(FileD* parent, FieldDescr* field_d, LongStr* ls, void* record);
 	int saveT(FieldDescr* field_d, int pos, void* record);
 
+	void DelTFld(FieldDescr* field_d, void* record);
+	void DelDifTFld(FieldDescr* field_d, void* record, void* comp_record);
+
 	unsigned short RdPrefix();
 	int RdPrefixes();
 	void WrPrefix();

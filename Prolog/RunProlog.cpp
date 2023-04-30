@@ -1349,7 +1349,7 @@ bool RunBuildIn()
 		break;
 	}
 	case proc_type::_FandKeyFieldP: {
-		kf = KeyFldDPtr(CurrInst->NextBranch);
+		kf = (KeyFldD*)CurrInst->NextBranch;
 		if (kf == nullptr) {
 			fd = FindFD(CurrInst->Vars[0]->SS);
 			if (fd == nullptr) goto label1;
@@ -1695,7 +1695,7 @@ bool RunCommand(TCommand* COff/*PCommand*/)
 		if (c->Code == _SaveC) {
 			md = CFile->NewLockMode(WrMode);
 			if (!LinkLastRec(CFile, n, true)) CFile->IncNRecs(1);
-			DelTFld(c->FldD);
+			CFile->FF->DelTFld(c->FldD, CRecPtr);
 			std::string save = SaveDb(c->DbPred, 0);
 			CFile->saveS(c->FldD, save, CRecPtr);
 			CFile->WriteRec(CFile->FF->NRecs, CRecPtr);

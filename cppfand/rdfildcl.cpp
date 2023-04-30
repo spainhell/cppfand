@@ -1024,7 +1024,7 @@ void RdImper(AddD* AD)
 	if (Lexem == '!') {
 		RdLex(); AD->Create = 1;
 		if (AD->LD != nullptr) {
-			KeyFldDPtr KF = AD->LD->ToKey->KFlds;
+			KeyFldD* KF = AD->LD->ToKey->KFlds;
 			while (KF != nullptr) {
 				if ((KF->FldD->Flg & f_Stored) == 0) OldError(148);
 				KF = (KeyFldD*)KF->pChain;

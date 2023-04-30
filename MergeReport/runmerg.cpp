@@ -263,7 +263,7 @@ void CloseInpOutp()
 	OutpFD* OD = OutpFDRoot;
 	while (OD != nullptr) /* !!! with OD^ do!!! */ {
 		CFile = OD->FD;
-		ClearRecSpace(OD->RecPtr);
+		OD->FD->ClearRecSpace(OD->RecPtr);
 #ifdef FandSQL
 		if (CFile->IsSQLFile) /* !!! with Strm^ do!!! */ {
 			OutpClose(); Done();
@@ -277,11 +277,11 @@ void CloseInpOutp()
 			}
 			else CFile->OldLockMode(OD->Md);
 		}
-		OD = (OutpFD*)OD->pChain;
+		OD = OD->pChain;
 	}
 	for (short i = 1; i <= MaxIi; i++) /* !!! with IDA[i]^ do!!! */ {
 		IDA[i]->Scan->Close();
-		ClearRecSpace(IDA[i]->ForwRecPtr);
+		CFile->ClearRecSpace(IDA[i]->ForwRecPtr);
 		CFile->OldLockMode(IDA[i]->Md);
 	}
 	}

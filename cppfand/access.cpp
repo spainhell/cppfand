@@ -74,48 +74,6 @@ void TestCPathError()
 	}
 }
 
-void NegateESDI()
-{
-	// asm  jcxz @2; @1:not es:[di].byte; inc di; loop @1; @2:
-}
-
-bool IsNullValue(void* p, WORD l)
-{
-	BYTE* pb = (BYTE*)p;
-	for (size_t i = 0; i < l; i++) {
-		if (pb[i] != 0xFF) return false;
-	}
-	return true;
-}
-
-void DelTFld(FieldDescr* F)
-{
-	int n = CFile->loadT(F, CRecPtr);
-	if (CFile->HasTWorkFlag(CRecPtr)) {
-		TWork.Delete(n);
-	}
-	else {
-		LockMode md = CFile->NewLockMode(WrMode);
-		CFile->FF->TF->Delete(n);
-		CFile->OldLockMode(md);
-	}
-	CFile->saveT(F, 0, CRecPtr);
-}
-
-void DelDifTFld(void* Rec, void* CompRec, FieldDescr* F)
-{
-	void* cr = CRecPtr;
-	CRecPtr = CompRec;
-	int n = CFile->loadT(F, CRecPtr);
-	CRecPtr = Rec;
-	if (n != CFile->loadT(F, CRecPtr)) DelTFld(F);
-	CRecPtr = cr;
-}
-
-const WORD Alloc = 2048;
-
-
-
 void ZeroAllFlds(FileD* file_d, void* record)
 {
 	FillChar(record, file_d->FF->RecLen, 0);
@@ -266,78 +224,6 @@ bool LinkUpw(LinkD* LD, int& N, bool WithT)
 	return result;
 }
 
-void AssignNRecs(bool Add, int N)
-{
-	int OldNRecs; LockMode md;
-#ifdef FandSQL
-	if (CFile->IsSQLFile) {
-		if ((N = 0) && !Add) Strm1->DeleteXRec(nullptr, nullptr, false); return;
-	}
-#endif
-	md = CFile->NewLockMode(DelMode);
-	OldNRecs = CFile->FF->NRecs;
-	if (Add) N = N + OldNRecs;
-	if ((N < 0) || (N == OldNRecs)) goto label1;
-	if ((N == 0) && (CFile->FF->TF != nullptr)) CFile->FF->TF->SetEmpty();
-	if (CFile->FF->file_type == FileType::INDEX) {
-		if (N == 0) {
-			CFile->FF->NRecs = 0;
-			SetUpdHandle(CFile->FF->Handle);
-			int result = CFile->FF->XFNotValid();
-			if (result != 0) {
-				RunError(result);
-			}
-			goto label1;
-		}
-		else {
-			SetMsgPar(CFile->Name);
-			CFile->RunErrorM(md);
-			RunError(821);
-		}
-	}
-	if (N < OldNRecs) {
-		CFile->DecNRecs(OldNRecs - N);
-		goto label1;
-	}
-	CRecPtr = CFile->GetRecSpace();
-	ZeroAllFlds(CFile, CRecPtr);
-	CFile->SetDeletedFlag(CRecPtr);
-	CFile->IncNRecs(N - OldNRecs);
-	for (int i = OldNRecs + 1; i <= N; i++) {
-		CFile->WriteRec(i, CRecPtr);
-	}
-	ReleaseStore(CRecPtr);
-label1:
-	CFile->OldLockMode(md);
-}
-
-void ClearRecSpace(void* p)
-{
-	void* cr = nullptr;
-	if (CFile->FF->TF != nullptr) {
-		cr = CRecPtr;
-		CRecPtr = p;
-		if (CFile->HasTWorkFlag(CRecPtr)) {
-			for (auto& f : CFile->FldD) {
-				if (((f->Flg & f_Stored) != 0) && (f->field_type == FieldType::TEXT)) {
-					TWork.Delete(CFile->loadT(f, CRecPtr));
-					CFile->saveT(f, 0, CRecPtr);
-				}
-			}
-		}
-		CRecPtr = cr;
-	}
-}
-
-void DelTFlds()
-{
-	for (auto& F : CFile->FldD) {
-		if (((F->Flg & f_Stored) != 0) && (F->field_type == FieldType::TEXT)) {
-			DelTFld(F);
-		}
-	}
-}
-
 void CopyRecWithT(void* p1, void* p2)
 {
 	memcpy(p2, p1, CFile->FF->RecLen);
@@ -392,18 +278,6 @@ void DirMinusBackslash(pstring& D)
 	if ((D.length() > 3) && (D[D.length() - 1] == '\\')) D[0]--;
 }
 
-int StoreInTWork(LongStr* S)
-{
-	return TWork.Store(S->A, S->LL);
-}
-
-LongStr* ReadDelInTWork(int Pos)
-{
-	auto result = TWork.Read(Pos);
-	TWork.Delete(Pos);
-	return result;
-}
-
 void ForAllFDs(ForAllFilesOperation op, FileD** file_d, WORD i)
 {
 	FileD* cf = CFile;
@@ -450,16 +324,6 @@ void ForAllFDs(ForAllFilesOperation op, FileD** file_d, WORD i)
 		R = R->ChainBack;
 	}
 	CFile = cf;
-}
-
-bool IsActiveRdb(FileD* FD)
-{
-	RdbD* R = CRdb;
-	while (R != nullptr) {
-		if (FD == R->FD) return true;
-		R = R->ChainBack;
-	}
-	return false;
 }
 
 void ResetCompilePars()

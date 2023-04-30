@@ -816,7 +816,9 @@ FILE* OpenH(std::string path, FileOpenMode Mode, FileUseMode UM)
 	if (filesMap.find(path) != filesMap.end()) {
 		// soubor uz v mape je, budeme aktualizovat
 		filesMap[path] = DataFile(path, CFile, nFile);
-		CFile->FullPath = CPath;
+		if (CFile != nullptr) {
+			CFile->FullPath = CPath;
+		}
 	}
 	else {
 		filesMap.insert(std::pair(path, DataFile(path, CFile, nFile)));

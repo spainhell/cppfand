@@ -415,7 +415,7 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 					sp->LL = (WORD)LenT;
 					if (TypeT == LocalT) {
 						TWork.Delete(*LocalPPtr);
-						LocalPPtr = (int*)StoreInTWork(sp);
+						*LocalPPtr = TWork.Store(sp->A, sp->LL);
 					}
 					else if (UpdatT)
 					{

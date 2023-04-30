@@ -200,7 +200,10 @@ label3:
 		}
 		else {
 			file_d->FF->TF->RdPrefix(true);
-			if ((file_d->FF->file_type == FileType::RDB) && !IsActiveRdb(file_d) && !Coding::HasPassword(file_d, 1, "")) {
+			if ((file_d->FF->file_type == FileType::RDB) 
+				&& !file_d->IsActiveRdb() 
+				&& !Coding::HasPassword(file_d, 1, "")) 
+			{
 				FileMsg(file_d, 616, ' ');
 				CloseGoExit(file_d->FF);
 			}

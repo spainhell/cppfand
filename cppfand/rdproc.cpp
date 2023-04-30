@@ -137,9 +137,9 @@ char RdOwner(LinkD** LLD, LocVar** LLV)
 		}
 		else {
 			if (lv->FTyp == 'i') {
-				KeyFldD* kf = WKeyDPtr(lv->RecPtr)->KFlds;
+				KeyFldD* kf = ((XWKey*)lv->RecPtr)->KFlds;
 				if (ld->FromFD->IsSQLFile || ld->ToFD->IsSQLFile) OldError(155);
-				if ((kf != nullptr) && !EquKFlds(kf, ld->ToKey->KFlds)) OldError(181);
+				if ((kf != nullptr) && !KeyFldD::EquKFlds(kf, ld->ToKey->KFlds)) OldError(181);
 			}
 			*LLV = lv;
 			*LLD = ld;
@@ -163,7 +163,7 @@ char RdOwner(LinkD** LLD, LocVar** LLV)
 				if (lv->FTyp == 'i') {
 					KeyFldD* kf = WKeyDPtr(lv->RecPtr)->KFlds;
 					if (ld->FromFD->IsSQLFile || ld->ToFD->IsSQLFile) OldError(155);
-					if ((kf != nullptr) && !EquKFlds(kf, ld->ToKey->KFlds)) OldError(181);
+					if ((kf != nullptr) && !KeyFldD::EquKFlds(kf, ld->ToKey->KFlds)) OldError(181);
 				}
 				*LLV = lv;
 				*LLD = ld;
@@ -1583,7 +1583,7 @@ void RdEditOpt(EditOpt* EO)
 		if (EO->ViewKey == EO->SelKey) OldError(184);
 		if ((EO->ViewKey->KFlds != nullptr)
 			&& (EO->SelKey->KFlds != nullptr)
-			&& !EquKFlds(EO->SelKey->KFlds, EO->ViewKey->KFlds)) OldError(178);
+			&& !KeyFldD::EquKFlds(EO->SelKey->KFlds, EO->ViewKey->KFlds)) OldError(178);
 	}
 	else Error(125);
 }
@@ -2559,7 +2559,7 @@ Instr_assign* RdAssign()
 		else {
 			FName = LexWord;
 			FD = FindFileD();
-			if (IsActiveRdb(FD)) Error(121);
+			if (FD->IsActiveRdb()) Error(121);
 			RdLex(); RdLex();
 			if (IsKeyWord("ARCHIVES")) {
 				F = CatFD->CatalogArchiveField();
@@ -2572,7 +2572,7 @@ Instr_assign* RdAssign()
 			if (IsKeyWord("VOLUME")) {
 				F = CatFD->CatalogVolumeField();
 			label1:
-				PD = new Instr_assign(_asgncatfield); // GetPInstr(_asgncatfield, 16);
+				PD = new Instr_assign(_asgncatfield);
 				PD->FD3 = FD;
 				PD->CatIRec = CatFD->GetCatalogIRec(FName, true);
 				PD->CatFld = F;
@@ -2583,7 +2583,7 @@ Instr_assign* RdAssign()
 			else if (FD == nullptr) OldError(9);
 			else if (IsKeyWord("NRECS")) {
 				if (FD->FF->file_type == FileType::RDB) { OldError(127); }
-				PD = new Instr_assign(_asgnnrecs); // GetPInstr(_asgnnrecs, 9);
+				PD = new Instr_assign(_asgnnrecs);
 				PD->FD = FD;
 				FTyp = 'R';
 				goto label0;

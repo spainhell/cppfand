@@ -508,7 +508,7 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 			if (E->SelKey->KFlds == nullptr) {
 				E->SelKey->KFlds = E->VK->KFlds;
 			}
-			else if (!EquKFlds(E->SelKey->KFlds, E->VK->KFlds)) {
+			else if (!KeyFldD::EquKFlds(E->SelKey->KFlds, E->VK->KFlds)) {
 				RunError(663);
 			}
 		}

@@ -2,6 +2,7 @@
 
 #include "GlobalVariables.h"
 #include "oaccess.h"
+#include "obaseww.h"
 #include "runfrml.h"
 #include "../cppfand/access.h"
 #include "../fandio/files.h"
@@ -105,6 +106,20 @@ BYTE* FileD::GetRecSpace()
 	return result;
 }
 
+void FileD::ClearRecSpace(void* record)
+{
+	if (FF->TF != nullptr) {
+		if (HasTWorkFlag(record)) {
+			for (FieldDescr* f : FldD) {
+				if (((f->Flg & f_Stored) != 0) && (f->field_type == FieldType::TEXT)) {
+					TWork.Delete(loadT(f, record));
+					saveT(f, 0, record);
+				}
+			}
+		}
+	}
+}
+
 void FileD::IncNRecs(int n)
 {
 	this->FF->IncNRecs(n);
@@ -154,13 +169,6 @@ void FileD::DeleteRec(int n, void* record)
 	DecNRecs(1);
 }
 
-void FileD::DelAllDifTFlds(void* Rec, void* CompRec)
-{
-	for (auto& F : FldD) {
-		if (F->field_type == FieldType::TEXT && ((F->Flg & f_Stored) != 0)) DelDifTFld(Rec, CompRec, F);
-	}
-}
-
 void FileD::RecallRec(int recNr, void* record)
 {
 	FF->TestXFExist();
@@ -170,6 +178,60 @@ void FileD::RecallRec(int recNr, void* record)
 	}
 	FF->ClearDeletedFlag(record);
 	WriteRec(recNr, record);
+}
+
+void FileD::AssignNRecs(bool Add, int N)
+{
+	int OldNRecs; LockMode md;
+#ifdef FandSQL
+	if (IsSQLFile) {
+		if ((N = 0) && !Add) Strm1->DeleteXRec(nullptr, nullptr, false); return;
+	}
+#endif
+	md = NewLockMode(DelMode);
+	OldNRecs = FF->NRecs;
+	if (Add) {
+		N = N + OldNRecs;
+	}
+	if ((N < 0) || (N == OldNRecs)) {
+		OldLockMode(md);
+		return;
+	}
+	if ((N == 0) && (FF->TF != nullptr)) {
+		FF->TF->SetEmpty();
+	}
+	if (FF->file_type == FileType::INDEX) {
+		if (N == 0) {
+			FF->NRecs = 0;
+			SetUpdHandle(FF->Handle);
+			int result = FF->XFNotValid();
+			if (result != 0) {
+				RunError(result);
+			}
+			OldLockMode(md);
+			return;
+		}
+		else {
+			SetMsgPar(Name);
+			RunErrorM(md);
+			RunError(821);
+		}
+	}
+	if (N < OldNRecs) {
+		DecNRecs(OldNRecs - N);
+		OldLockMode(md);
+		return;
+	}
+	BYTE* record = GetRecSpace();
+	ZeroAllFlds(this, record);
+	SetDeletedFlag(record);
+	IncNRecs(N - OldNRecs);
+	for (int i = OldNRecs + 1; i <= N; i++) {
+		WriteRec(i, record);
+	}
+	delete[] record; record = nullptr;
+
+	OldLockMode(md);
 }
 
 bool FileD::loadB(FieldDescr* field_d, void* record)
@@ -399,4 +461,32 @@ void FileD::DeleteDuplicateF(FileD* TempFD)
 	SetCPathVol(this);
 	SetTempCExt('0', FF->IsShared());
 	MyDeleteFile(CPath);
+}
+
+void FileD::DelTFlds(void* record)
+{
+	for (auto& F : FldD) {
+		if (((F->Flg & f_Stored) != 0) && (F->field_type == FieldType::TEXT)) {
+			FF->DelTFld(F, record);
+		}
+	}
+}
+
+void FileD::DelAllDifTFlds(void* record, void* comp_record)
+{
+	for (auto& F : FldD) {
+		if (F->field_type == FieldType::TEXT && ((F->Flg & f_Stored) != 0)) {
+			FF->DelDifTFld(F, record, comp_record);
+		}
+	}
+}
+
+bool FileD::IsActiveRdb()
+{
+	RdbD* R = CRdb;
+	while (R != nullptr) {
+		if (this == R->FD) return true;
+		R = R->ChainBack;
+	}
+	return false;
 }

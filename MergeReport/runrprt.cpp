@@ -773,7 +773,7 @@ void CloseInp()
 	for (WORD i = 1; i <= MaxIi; i++) {
 		if (IDA[i]->Scan->Kind != 5) {
 			IDA[i]->Scan->Close();
-			ClearRecSpace(IDA[i]->ForwRecPtr);
+			CFile->ClearRecSpace(IDA[i]->ForwRecPtr);
 			CFile->OldLockMode(IDA[i]->Md);
 		}
 	}

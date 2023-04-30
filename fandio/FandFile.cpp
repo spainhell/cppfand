@@ -475,6 +475,28 @@ int FandFile::saveT(FieldDescr* field_d, int pos, void* record)
 	}
 }
 
+void FandFile::DelTFld(FieldDescr* field_d, void* record)
+{
+	int n = loadT(field_d, record);
+	if (HasTWorkFlag(record)) {
+		TWork.Delete(n);
+	}
+	else {
+		LockMode md = _parent->NewLockMode(WrMode);
+		TF->Delete(n);
+		_parent->OldLockMode(md);
+	}
+	saveT(field_d, 0, record);
+}
+
+void FandFile::DelDifTFld(FieldDescr* field_d, void* record, void* comp_record)
+{
+	const int n = loadT(field_d, comp_record);
+	if (n != loadT(field_d, record)) {
+		DelTFld(field_d, record);
+	}
+}
+
 unsigned short FandFile::RdPrefix()
 {
 	// NRs - celkovy pocet zaznamu v souboru;

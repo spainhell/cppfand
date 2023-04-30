@@ -311,7 +311,7 @@ void ExportTxt(CopyD* CD)
 			if (i > 0) s[0] = i - 1;
 			F2->WrString(s);
 			F2->WrString("\r\n");
-			ClearRecSpace(CRecPtr);
+			CFile->ClearRecSpace(CRecPtr);
 			ReleaseStore(CRecPtr);
 		}
 		CFile = CD->FD1;
@@ -339,7 +339,7 @@ void ExportTxt(CopyD* CD)
 
 	if (Scan != nullptr) {
 		Scan->Close();
-		ClearRecSpace(CRecPtr);
+		CFile->ClearRecSpace(CRecPtr);
 		CFile->OldLockMode(md);
 	}
 	if (F2 != nullptr && F2->Handle != nullptr) {

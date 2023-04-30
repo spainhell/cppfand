@@ -913,7 +913,7 @@ label1:
 		if (IsCurrNewRec && (D == FirstEmptyFld)) NewFlds = true;
 		D = D->pChain;
 	}
-	ClearRecSpace(p);
+	CFile->ClearRecSpace(p);
 	ReleaseStore(p);
 	CRecPtr = E->NewRecPtr;
 }
@@ -1067,8 +1067,12 @@ void DuplFld(FileD* FD1, FileD* FD2, void* RP1, void* RP2, void* RPt, FieldDescr
 		if (F1->field_type == FieldType::TEXT) {
 			ss = CFile->loadLongS(F1, CRecPtr);
 			CFile = FD2; CRecPtr = RP2;
-			if (RPt == nullptr) DelTFld(F2);
-			else DelDifTFld(RP2, RPt, F2);
+			if (RPt == nullptr) {
+				CFile->FF->DelTFld(F2, CRecPtr);
+			}
+			else {
+				CFile->FF->DelDifTFld(F2, RP2, RPt);
+			}
 			CFile->saveLongS(F2, ss, CRecPtr);
 			ReleaseStore(ss);
 		}
@@ -1228,7 +1232,7 @@ void SetNewWwRecAttr()
 		}
 	}
 	IVon();
-	ClearRecSpace(CRecPtr);
+	CFile->ClearRecSpace(CRecPtr);
 	ReleaseStore(CRecPtr);
 	CRecPtr = E->NewRecPtr;
 }
@@ -1749,7 +1753,7 @@ void UpdMemberRef(void* POld, void* PNew)
 				goto label1;
 			}
 			Scan->Close();
-			ClearRecSpace(p);
+			CFile->ClearRecSpace(p);
 			ReleaseStore(p);
 		}
 	}
@@ -2392,7 +2396,7 @@ bool OldRecDiffers()
 		result = true;
 	}
 label2:
-	ClearRecSpace(CRecPtr);
+	CFile->ClearRecSpace(CRecPtr);
 	ReleaseStore(CRecPtr);
 	CRecPtr = E->NewRecPtr;
 	return result;
@@ -2659,7 +2663,7 @@ void DuplFromPrevRec()
 		CRecPtr = CFile->GetRecSpace();
 		RdRec(CRec() - 1);
 		DuplFld(CFile, CFile, CRecPtr, E->NewRecPtr, E->OldRecPtr, F, F);
-		ClearRecSpace(CRecPtr);
+		CFile->ClearRecSpace(CRecPtr);
 		ReleaseStore(CRecPtr);
 		CRecPtr = cr;
 		CFile->OldLockMode(md);
@@ -3394,7 +3398,7 @@ void UpdateEdTFld(LongStr* S)
 	CRecPtr = E->NewRecPtr;
 	if (!EdRecVar) md = CFile->NewLockMode(WrMode);
 	SetWasUpdated(CFile->FF, CRecPtr);
-	DelDifTFld(E->NewRecPtr, E->OldRecPtr, CFld->FldD);
+	CFile->FF->DelDifTFld(CFld->FldD, E->NewRecPtr, E->OldRecPtr);
 	CFile->saveLongS(CFld->FldD, S, CRecPtr);
 	if (!EdRecVar) CFile->OldLockMode(md);
 }
@@ -4717,7 +4721,7 @@ label81:
 					if (IsNewRec && !EdRecVar) DelNewRec();
 					IVoff();
 					EdUpdated = E->EdUpdated;
-					if (!EdRecVar) ClearRecSpace(E->NewRecPtr);
+					if (!EdRecVar) CFile->ClearRecSpace(E->NewRecPtr);
 					if (Subset && !WasWK) WK->Close(CFile);
 					if (!EdRecVar) {
 #ifdef FandSQL

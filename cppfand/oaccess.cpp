@@ -484,8 +484,6 @@ label4:
 	return CPath;
 }
 
-
-
 void SetTxtPathVol(std::string& Path, int CatIRec)
 {
 	if (CatIRec != 0) {

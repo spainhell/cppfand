@@ -629,7 +629,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 			if (CFile->FF->NRecs == 0)
 				if (IsRead) {
 				label0:
-					DelTFlds();
+					CFile->DelTFlds(CRecPtr);
 					ZeroAllFlds(CFile, CRecPtr);
 					ReleaseStore(cr);
 					CFile->OldLockMode(md);
@@ -646,7 +646,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 		}
 		else if (!SrchXKey(k, x, N)) {
 			if (IsRead) {
-				DelTFlds();
+				CFile->DelTFlds(CRecPtr);
 				ZeroAllFlds(CFile, CRecPtr);
 				CFile->SetDeletedFlag(CRecPtr);
 				ReleaseStore(cr);
@@ -671,7 +671,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 		CRecPtr = cr;
 		CFile->ReadRec(N, CRecPtr);
 		CRecPtr = PD->LV->RecPtr;
-		DelTFlds();
+		CFile->DelTFlds(CRecPtr);
 		CopyRecWithT(cr, PD->LV->RecPtr);
 	}
 	else {
@@ -704,10 +704,12 @@ void LinkRecProc(Instr_assign* PD)
 	cf = CFile; cr = CRecPtr; MarkStore(p);
 	ld = PD->LinkLD; CRecPtr = PD->RecLV1->RecPtr;
 	lr2 = PD->RecLV2->RecPtr;
-	CFile = ld->ToFD; ClearRecSpace(lr2); CFile = ld->FromFD;
+	CFile = ld->ToFD; CFile->ClearRecSpace(lr2); CFile = ld->FromFD;
 	if (LinkUpw(ld, n, true)) LastExitCode = 0;
 	else LastExitCode = 1;
-	r2 = CRecPtr; CRecPtr = lr2; DelTFlds(); CopyRecWithT(r2, lr2);
+	r2 = CRecPtr; CRecPtr = lr2;
+	CFile->DelTFlds(CRecPtr);
+	CopyRecWithT(r2, lr2);
 	ReleaseStore(p); CFile = cf; CRecPtr = cr;
 }
 
@@ -811,7 +813,7 @@ label1:
 			if (LVr != nullptr) {
 				CRecPtr = lr;
 				CFile->ClearUpdFlag(CRecPtr);
-				DelTFlds();
+				CFile->DelTFlds(CRecPtr);
 				CopyRecWithT(cr, lr);
 			}
 		//if (LVi != nullptr) *(double*)(LocVarAd(LVi)) = Scan->RecNr;
@@ -1304,7 +1306,7 @@ void RunInstr(Instr* PD)
 		case _asgnnrecs: /* !!! with PD^ do!!! */ {
 			auto iPD = (Instr_assign*)PD;
 			CFile = iPD->FD;
-			AssignNRecs(iPD->Add, RunInt(iPD->Frml));
+			CFile->AssignNRecs(iPD->Add, RunInt(iPD->Frml));
 			break;
 		}
 		case _appendrec: {
@@ -1677,7 +1679,7 @@ void CallProcedure(Instr_proc* PD)
 			switch ((*it0)->FTyp) {
 			case 'r': {
 				CFile = (*it0)->FD;
-				ClearRecSpace((*it0)->RecPtr);
+				CFile->ClearRecSpace((*it0)->RecPtr);
 				break;
 			}
 			case 'i': {
