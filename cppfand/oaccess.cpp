@@ -432,63 +432,6 @@ label1:
 	return result;
 }
 
-WORD Generation()
-{
-	WORD i, j;
-	pstring s(2);
-	if (CFile->CatIRec == 0) return 0;
-
-	CVol = CatFD->GetVolume(CFile->CatIRec);
-	CPath = FExpand(CatFD->GetPathName(CFile->CatIRec));
-	FSplit(CPath, CDir, CName, CExt);
-
-	s = CExt.substr(2, 2);
-	val(s, i, j);
-	if (j == 0) {
-		return i;
-	}
-	else {
-		return 0;
-	}
-}
-
-void TurnCat(WORD Frst, WORD N, short I)
-{
-	if (CFile != nullptr) {
-		CloseFile(CFile);
-	}
-	CFile = CatFD->GetCatalogFile();
-	void* p = CFile->GetRecSpace();
-	void* q = CFile->GetRecSpace();
-	CRecPtr = q;
-	WORD last = Frst + N - 1;
-	if (I > 0)
-		while (I > 0) {
-			CFile->ReadRec(Frst, CRecPtr);
-			CRecPtr = p;
-			for (WORD j = 1; j <= N - 1; j++) {
-				CFile->ReadRec(Frst + j, CRecPtr);
-				CFile->WriteRec(Frst + j - 1, CRecPtr);
-			}
-			CRecPtr = q;
-			CFile->WriteRec(last, CRecPtr);
-			I--;
-		}
-	else
-		while (I < 0) {
-			CFile->ReadRec(last, CRecPtr);
-			CRecPtr = p;
-			for (WORD j = 1; j <= N - 1; j++) {
-				CFile->ReadRec(last - j, CRecPtr);
-				CFile->WriteRec(last - j + 1, CRecPtr);
-			}
-			CRecPtr = q;
-			CFile->WriteRec(Frst, CRecPtr);
-			I++;
-		}
-	ReleaseStore(p);
-}
-
 bool SetContextDir(FileD* file_d, std::string& D, bool& IsRdb)
 {
 	bool result = true;
@@ -634,72 +577,6 @@ void SetTempCExt(char Typ, bool IsNet)
 	CExt[1] = Nr;
 	if (IsNet) CPath = WrkDir + CName + CExt; /* work files are local */
 	else CPath = CDir + CName + CExt;
-}
-
-FileD* OpenDuplicateF(FileD* orig, bool createTextFile)
-{
-	short Len = 0;
-	SetCPathVol(orig);
-	bool net = IsNetCVol();
-	FileD* newFile = new FileD(*orig);
-
-	SetTempCExt('0', net);
-	CVol = "";
-	newFile->FullPath = CPath;
-	newFile->FF->Handle = OpenH(CPath, _isOverwriteFile, Exclusive);
-	TestCFileError(newFile);
-	newFile->FF->NRecs = 0;
-	newFile->IRec = 0;
-	newFile->FF->Eof = true;
-	newFile->FF->UMode = Exclusive;
-
-	// create index file
-	if (newFile->FF->file_type == FileType::INDEX) {
-		if (newFile->FF->XF != nullptr) {
-			delete newFile->FF->XF;
-			newFile->FF->XF = nullptr;
-		}
-		newFile->FF->XF = new FandXFile(newFile->FF);
-		newFile->FF->XF->Handle = nullptr;
-		newFile->FF->XF->NoCreate = true;
-		/*else xfile name identical with orig file*/
-	}
-
-	// create text file
-	if (createTextFile && (newFile->FF->TF != nullptr)) {
-		newFile->FF->TF = new FandTFile(newFile->FF);
-		*newFile->FF->TF = *orig->FF->TF;
-		SetTempCExt('T', net);
-		newFile->FF->TF->Handle = OpenH(CPath, _isOverwriteFile, Exclusive);
-		newFile->FF->TF->TestErr();
-		newFile->FF->TF->CompileAll = true;
-		newFile->FF->TF->SetEmpty();
-
-	}
-	return newFile;
-}
-
-void CopyDuplF(FileD* TempFD, bool DelTF)
-{
-	FileD* cf = CFile;
-	CFile = TempFD;
-	CFile->FF->WrPrefixes();
-	CFile = cf;
-	SaveCache(0, CFile->FF->Handle);
-	SetTempCExt('0', true);
-	CopyH(TempFD->FF->Handle, CFile->FF->Handle);
-	if ((CFile->FF->TF != nullptr) && DelTF) {
-		FILE* h1 = TempFD->FF->TF->Handle;
-		FILE* h2 = CFile->FF->TF->Handle;
-		SetTempCExt('T', true);
-		*CFile->FF->TF = *TempFD->FF->TF;
-		CFile->FF->TF->Handle = h2;
-		CopyH(h1, h2);
-	}
-	int rp = CFile->FF->RdPrefixes();
-	if (rp != 0) {
-		CFileError(CFile, rp);
-	}
 }
 
 void CopyH(FILE* h1, FILE* h2)

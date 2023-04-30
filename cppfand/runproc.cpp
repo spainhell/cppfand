@@ -1354,8 +1354,7 @@ void RunInstr(Instr* PD)
 		}
 		case _turncat: {
 			auto iPD = (Instr_turncat*)PD;
-			CFile = iPD->NextGenFD;
-			TurnCat(iPD->FrstCatIRec, iPD->NCatIRecs, RunInt(iPD->TCFrml));
+			CatFD->TurnCat(iPD->NextGenFD, iPD->FrstCatIRec, iPD->NCatIRecs, RunInt(iPD->TCFrml));
 			break;
 		}
 		case _releasedrive: {

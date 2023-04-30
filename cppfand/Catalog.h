@@ -31,6 +31,9 @@ public:
 
 	bool OldToNewCat(int& FilSz);
 
+	WORD Generation(FileD* file_d);
+	void TurnCat(FileD* file_d, WORD Frst, WORD N, short I);
+
 private:
 	FileD* cat_file_;
 	BYTE* record_;

@@ -1,5 +1,7 @@
 #include "Catalog.h"
 #include "access.h"
+#include "GlobalVariables.h"
+#include "oaccess.h"
 #include "../Common/textfunc.h"
 
 Catalog::Catalog()
@@ -142,6 +144,59 @@ bool Catalog::OldToNewCat(int& FilSz)
 	FilSz = x.NRecs * 107 + 6;
 	result = true;
 	return result;
+}
+
+WORD Catalog::Generation(FileD* file_d)
+{
+	WORD i, j;
+	pstring s(2);
+	if (file_d->CatIRec == 0) return 0;
+
+	CVol = CatFD->GetVolume(file_d->CatIRec);
+	CPath = FExpand(CatFD->GetPathName(file_d->CatIRec));
+	FSplit(CPath, CDir, CName, CExt);
+
+	s = CExt.substr(2, 2);
+	val(s, i, j);
+	if (j == 0) {
+		return i;
+	}
+	else {
+		return 0;
+	}
+}
+
+void Catalog::TurnCat(FileD* file_d, WORD Frst, WORD N, short I)
+{
+	if (file_d != nullptr) {
+		CloseFile(file_d);
+	}
+	file_d = CatFD->GetCatalogFile();
+	BYTE* p = file_d->GetRecSpace();
+	BYTE* q = file_d->GetRecSpace();
+	WORD last = Frst + N - 1;
+	if (I > 0)
+		while (I > 0) {
+			file_d->ReadRec(Frst, q);
+			for (WORD j = 1; j <= N - 1; j++) {
+				file_d->ReadRec(Frst + j, p);
+				file_d->WriteRec(Frst + j - 1, p);
+			}
+			file_d->WriteRec(last, q);
+			I--;
+		}
+	else
+		while (I < 0) {
+			file_d->ReadRec(last, q);
+			for (WORD j = 1; j <= N - 1; j++) {
+				file_d->ReadRec(last - j, p);
+				file_d->WriteRec(last - j + 1, p);
+			}
+			file_d->WriteRec(Frst, q);
+			I++;
+		}
+	delete[] p; p = nullptr;
+	delete[] q; q = nullptr;
 }
 
 std::string Catalog::getValue(size_t rec_nr, FieldDescr* field)

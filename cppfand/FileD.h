@@ -98,4 +98,5 @@ public:
 	void SetDeletedFlag(void* record);
 
 	bool SearchKey(XString& XX, XKey* Key, int& NN, void* record);
+	FileD* OpenDuplicateF(bool createTextFile);
 };

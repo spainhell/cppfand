@@ -1,8 +1,10 @@
 #include "FileD.h"
 
 #include "GlobalVariables.h"
+#include "oaccess.h"
 #include "runfrml.h"
 #include "../cppfand/access.h"
+#include "../fandio/files.h"
 #include "../fandio/XKey.h"
 #include "../Logging/Logging.h"
 #include "../fandio/locks.h"
@@ -346,4 +348,47 @@ void FileD::SetDeletedFlag(void* record)
 bool FileD::SearchKey(XString& XX, XKey* Key, int& NN, void* record)
 {
 	return FF->SearchKey(XX, Key, NN, record);
+}
+
+FileD* FileD::OpenDuplicateF(bool createTextFile)
+{
+	short Len = 0;
+	SetCPathVol(this);
+	bool net = IsNetCVol();
+	FileD* newFile = new FileD(*this);
+
+	SetTempCExt('0', net);
+	CVol = "";
+	newFile->FullPath = CPath;
+	newFile->FF->Handle = OpenH(CPath, _isOverwriteFile, Exclusive);
+	TestCFileError(newFile);
+	newFile->FF->NRecs = 0;
+	newFile->IRec = 0;
+	newFile->FF->Eof = true;
+	newFile->FF->UMode = Exclusive;
+
+	// create index file
+	if (newFile->FF->file_type == FileType::INDEX) {
+		if (newFile->FF->XF != nullptr) {
+			delete newFile->FF->XF;
+			newFile->FF->XF = nullptr;
+		}
+		newFile->FF->XF = new FandXFile(newFile->FF);
+		newFile->FF->XF->Handle = nullptr;
+		newFile->FF->XF->NoCreate = true;
+		/*else xfile name identical with orig file*/
+	}
+
+	// create text file
+	if (createTextFile && (newFile->FF->TF != nullptr)) {
+		newFile->FF->TF = new FandTFile(newFile->FF);
+		*newFile->FF->TF = *FF->TF;
+		SetTempCExt('T', net);
+		newFile->FF->TF->Handle = OpenH(CPath, _isOverwriteFile, Exclusive);
+		newFile->FF->TF->TestErr();
+		newFile->FF->TF->CompileAll = true;
+		newFile->FF->TF->SetEmpty();
+
+	}
+	return newFile;
 }

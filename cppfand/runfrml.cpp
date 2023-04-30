@@ -1023,10 +1023,7 @@ label1:
 	}
 	case _generation: {
 		auto iX = (FrmlElem9*)X;
-		cf = CFile;
-		CFile = iX->FD;
-		result = (int)Generation();
-		CFile = cf;
+		result = (int)CatFD->Generation(iX->FD);
 		break;
 	}
 	case _lastupdate: {

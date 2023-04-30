@@ -27,15 +27,13 @@ void SetCPathForH(FILE* handle);
 void SetIsSQLFile();
 #endif
 int GetCatalogIRec(const std::string& name, bool multilevel);
-WORD Generation();
-void TurnCat(WORD Frst, WORD N, short I);
+
 bool SetContextDir(FileD* file_d, std::string& D, bool& IsRdb);
 void GetCPathForCat(int i);
 std::string SetCPathVol(FileD* file_d, char pathDelim = '\\');
 void SetTxtPathVol(std::string& Path, int CatIRec);
 void SetTempCExt(char Typ, bool IsNet);
-FileD* OpenDuplicateF(FileD* orig, bool createTextFile);
-void CopyDuplF(FileD* TempFD, bool DelTF);
+
 void CopyH(FILE* h1, FILE* h2);
 void TestDelErr(std::string& P);
 void DelDuplF(FileD* TempFD);

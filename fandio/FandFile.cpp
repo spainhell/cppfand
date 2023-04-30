@@ -963,7 +963,7 @@ void FandFile::SortAndSubst(KeyFldD* SK)
 	XScan* Scan = new XScan(_parent, nullptr, nullptr, false);
 	Scan->Reset(nullptr, false);
 	ScanSubstWIndex(Scan, SK, 'S');
-	FileD* FD2 = OpenDuplicateF(_parent, false);
+	FileD* FD2 = _parent->OpenDuplicateF(false);
 	RunMsgOn('S', Scan->NRecs);
 	Scan->GetRec(record);
 
@@ -1043,6 +1043,26 @@ void FandFile::SubstDuplF(FileD* TempFD, bool DelTF)
 	PrimFD->FF->TF = MD;
 }
 
+void FandFile::CopyDuplF(FileD* TempFD, bool DelTF)
+{
+	TempFD->FF->WrPrefixes();
+	SaveCache(0, Handle);
+	SetTempCExt('0', true);
+	CopyH(TempFD->FF->Handle, Handle);
+	if ((TF != nullptr) && DelTF) {
+		FILE* h1 = TempFD->FF->TF->Handle;
+		FILE* h2 = TF->Handle;
+		SetTempCExt('T', true);
+		*TF = *TempFD->FF->TF;
+		TF->Handle = h2;
+		CopyH(h1, h2);
+	}
+	int rp = RdPrefixes();
+	if (rp != 0) {
+		CFileError(_parent, rp);
+	}
+}
+
 void FandFile::IndexFileProc(bool Compress)
 {
 	LockMode md = _parent->NewLockMode(ExclMode);
@@ -1054,7 +1074,7 @@ void FandFile::IndexFileProc(bool Compress)
 
 	BYTE* record = _parent->GetRecSpace();
 	if (Compress) {
-		FileD* FD2 = OpenDuplicateF(_parent, false);
+		FileD* FD2 = _parent->OpenDuplicateF(false);
 		for (int ren_nr = 1; ren_nr <= NRecs; ren_nr++) {
 			_parent->ReadRec(ren_nr, record);
 			if (!_parent->DeletedFlag(record)) {

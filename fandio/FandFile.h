@@ -109,6 +109,7 @@ public:
 	void CopyIndex(XWKey* K, XKey* FromK);
 
 	void SubstDuplF(FileD* TempFD, bool DelTF);
+	void CopyDuplF(FileD* TempFD, bool DelTF);
 	void IndexFileProc(bool Compress);
 
 private:
