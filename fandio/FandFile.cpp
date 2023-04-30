@@ -400,11 +400,13 @@ void FandFile::saveS(FileD* parent, FieldDescr* field_d, std::string s, void* re
 			BYTE tmpArr[80]{ 0 };
 			if (M == LeftJust) {
 				// doplnime nuly zprava
+				s = TrailChar(s, ' ');
 				memcpy(tmpArr, s.c_str(), s.length());
 				memset(&tmpArr[s.length()], '0', field_d->L - s.length());
 			}
 			else {
 				// doplnime nuly zleva
+				s = LeadChar(s, ' ');
 				memset(tmpArr, '0', field_d->L - s.length());
 				memcpy(&tmpArr[field_d->L - s.length()], s.c_str(), s.length());
 			}

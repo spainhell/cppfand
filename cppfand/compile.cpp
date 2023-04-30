@@ -961,7 +961,7 @@ label1:
 				locvar->FTyp = typ;
 				locvar->FD = CFile;
 				if (typ == 'r') locvar->RecPtr = nullptr; // ptr(0,1) ??? /* for RdProc nullptr-tests + no Run*/
-				   /* frueher bei IsParList K = nullptr; warum? */
+				/* frueher bei IsParList K = nullptr; warum? */
 				else {
 					k = new XWKey(CFile);
 					k->Duplic = true;
@@ -1468,23 +1468,48 @@ void CompileRecLen()
 	}
 	for (auto& F : CFile->FldD) {
 		switch (CFile->FF->file_type) {
-		case FileType::FAND8: if (F->field_type == FieldType::DATE) F->NBytes = 2; break;
+		case FileType::FAND8: {
+			if (F->field_type == FieldType::DATE) F->NBytes = 2;
+			break;
+		}
 		case FileType::DBF: {
 			switch (F->field_type) {
-			case FieldType::FIXED: F->NBytes = F->L - 1; break;
-			case FieldType::DATE: F->NBytes = 8; break;
-			case FieldType::TEXT: F->NBytes = 10; break;
+			case FieldType::FIXED: {
+				F->NBytes = F->L - 1;
+				break;
+			}
+			case FieldType::DATE: {
+				F->NBytes = 8;
+				break;
+			}
+			case FieldType::TEXT: {
+				F->NBytes = 10;
+				break;
+			}
 			}
 			break;
 		}
 		}
-		if ((F->Flg & f_Stored) != 0) { F->Displ = l; l += F->NBytes; n++; }
+		if ((F->Flg & f_Stored) != 0) {
+			F->Displ = l;
+			l += F->NBytes;
+			n++;
+		}
 	}
 	CFile->FF->RecLen = l;
 	switch (CFile->FF->file_type) {
-	case FileType::FAND8: CFile->FF->FirstRecPos = 4; break;
-	case FileType::DBF: CFile->FF->FirstRecPos = (n + 1) * 32 + 1; break;
-	default:  CFile->FF->FirstRecPos = 6; break;
+	case FileType::FAND8: {
+		CFile->FF->FirstRecPos = 4;
+		break;
+	}
+	case FileType::DBF: {
+		CFile->FF->FirstRecPos = (n + 1) * 32 + 1;
+		break;
+	}
+	default: {
+		CFile->FF->FirstRecPos = 6;
+		break;
+	}
 	}
 }
 

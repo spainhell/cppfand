@@ -29,13 +29,17 @@ FileD::FileD(const FileD& orig)
 	Name = orig.Name;
 	FileType = orig.FileType;
 	ChptPos = orig.ChptPos;
-	FldD = orig.FldD;
 	IsParFile = orig.IsParFile;
 	IsJournal = orig.IsJournal;
 	IsHlpFile = orig.IsHlpFile;
 	typSQLFile = orig.typSQLFile;
 	IsSQLFile = orig.IsSQLFile;
 	IsDynFile = orig.IsDynFile;
+
+	for (FieldDescr* f : orig.FldD) {
+		FieldDescr* new_field_d = new FieldDescr(*f);
+		FldD.push_back(new_field_d);
+	}
 
 	if (orig.FF != nullptr) {
 		FF = new FandFile(*orig.FF, this);
@@ -49,6 +53,15 @@ FileD::FileD(const FileD& orig)
 	}
 
 	Add = orig.Add;
+}
+
+FileD::~FileD()
+{
+	delete FF;
+
+	for (FieldDescr* field_d : FldD) {
+		delete field_d;
+	}
 }
 
 WORD FileD::GetNrKeys()
@@ -98,8 +111,8 @@ void FileD::WriteRec(size_t rec_nr, void* record)
 
 BYTE* FileD::GetRecSpace()
 {
-	size_t length = FF->RecLen + 3;
-	// 0. BYTE in front (.X00) -> Valid Record Flag
+	size_t length = FF->RecLen + 2;
+	// 0. BYTE in front (.X00) -> Valid Record Flag (but it's calculated in RecLen for index file)
 	// 1. BYTE in the end -> Work Flag
 	// 2. BYTE in the end -> Update Flag
 	BYTE* result = new BYTE[length];
@@ -474,7 +487,6 @@ void FileD::DeleteDuplicateF(FileD* TempFD)
 
 void FileD::ZeroAllFlds(void* record)
 {
-	FillChar(record, FF->RecLen, 0);
 	memset(record, 0, FF->RecLen);
 	for (FieldDescr* F : FldD) {
 		if (((F->Flg & f_Stored) != 0) && (F->field_type == FieldType::ALFANUM)) {

@@ -22,6 +22,8 @@ class FileD : public Chained<FileD>
 public:
 	FileD(FType f_type);
 	FileD(const FileD& orig);
+	~FileD();
+
 	std::string Name;
 	std::string FullPath;
 

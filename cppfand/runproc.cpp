@@ -213,15 +213,12 @@ void AssignRecVar(LocVar* LV1, LocVar* LV2, AssignD* A)
 
 void AssignRecFld(Instr_assign* PD)
 {
-	FieldDescr* F = PD->RecFldD;
-	FileD* FD = PD->AssLV->FD;
+	FieldDescr* field_d = PD->RecFldD;
+	FileD* file_d = PD->AssLV->FD;
 	void* record = PD->AssLV->RecPtr;
 
-	CFile = PD->AssLV->FD; // TODO: odstranit
-	CRecPtr = PD->AssLV->RecPtr; // TODO: odstranit
-
-	FD->SetUpdFlag(record);
-	AssgnFrml(CFile, CRecPtr, F, PD->Frml, FD->HasTWorkFlag(record), PD->Add);
+	file_d->SetUpdFlag(record);
+	AssgnFrml(file_d, record, field_d, PD->Frml, file_d->HasTWorkFlag(record), PD->Add);
 }
 
 void SortProc(FileD* FD, KeyFldD* SK)
