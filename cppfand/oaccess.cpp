@@ -453,7 +453,8 @@ std::string SetCPathVol(FileD* file_d, char pathDelim)
 	}
 	i = file_d->CatIRec;
 	if (i != 0) {
-		CatFD->GetCPathForCat(file_d, i, CPath, CVol);
+		CatFD->GetPathAndVolume(file_d, i, CPath, CVol);
+		FSplit(CPath, CDir, CName, CExt);
 		if (file_d->Name == "@") goto label3;
 		goto label4;
 	}

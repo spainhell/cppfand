@@ -177,7 +177,7 @@ int Catalog::GetCatalogIRec(const std::string& name, bool multilevel)
 	return result;
 }
 
-void Catalog::GetCPathForCat(FileD* file_d, int i, std::string& path, std::string& volume)
+void Catalog::GetPathAndVolume(FileD* file_d, int i, std::string& path, std::string& volume)
 {
 	std::string d;
 	bool isRdb;
