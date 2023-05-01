@@ -1030,9 +1030,9 @@ label1:
 		//cf = CFile;
 		auto iX = (FrmlElem9*)X;
 		//CFile = iX->FD;
-		//md = NewLockMode(RdMode);
+		md = iX->FD->NewLockMode(RdMode);
 		result = LastUpdate(iX->FD->FullPath);
-		//OldLockMode(md);
+		iX->FD->OldLockMode(md);
 		//CFile = cf;
 		break;
 	}
