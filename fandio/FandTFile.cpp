@@ -1,4 +1,6 @@
 #include "FandTFile.h"
+
+#include "files.h"
 #include "../cppfand/Coding.h"
 #include "../cppfand/FileD.h"
 #include "../cppfand/GlobalVariables.h"
@@ -145,6 +147,13 @@ FandTFile::FandTFile(const FandTFile& orig, FandFile* parent)
 {
 	_parent = parent;
 	Format = orig.Format;
+}
+
+FandTFile::~FandTFile()
+{
+	if (Handle != nullptr) {
+		CloseH(&Handle);
+	}
 }
 
 void FandTFile::Err(unsigned short n, bool ex)
@@ -412,9 +421,9 @@ void FandTFile::SetEmpty()
 	}
 }
 
-void FandTFile::Create()
+void FandTFile::Create(const std::string& path)
 {
-	Handle = OpenH(CPath, _isOverwriteFile, Exclusive);
+	Handle = OpenH(path, _isOverwriteFile, Exclusive);
 	TestErr();
 	IRec = 1; LicenseNr = 0;
 
@@ -623,6 +632,19 @@ int FandTFile::Store(char* s, size_t l)
 	default: break;
 	}
 	return pos;
+}
+
+void FandTFile::CloseFile()
+{
+	if (Handle != nullptr) {
+		CloseClearH(&Handle);
+		if (HandleError == 0) Handle = nullptr;
+		if ((!_parent->IsShared()) && (_parent->NRecs == 0) && (_parent->file_type != FileType::DBF)) {
+			SetPathAndVolume(_parent->GetFileD());
+			CPath = CExtToT(CDir, CName, CExt);
+			MyDeleteFile(CPath);
+		}
+	}
 }
 
 void FandTFile::Delete(int pos)

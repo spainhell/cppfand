@@ -9,7 +9,7 @@
 XWorkFile::XWorkFile(FileD* parent, XScan* AScan, XKey* AK): WorkFile(parent)
 {
 	xScan = AScan;
-	CFile = xScan->FD;
+	// CFile = xScan->FD;
 	xKey = AK;
 	xwFile = AK->GetXFile(parent);
 }
@@ -31,7 +31,7 @@ void XWorkFile::Main(char Typ, void* record)
 #ifdef FandSQL
 			!xScan->FD->IsSQLFile &&
 #endif
-			(xScan->Bool == nullptr && (kf == nullptr || EquKFlds(k->KFlds, kf)))) {
+			(xScan->Bool == nullptr && (kf == nullptr || KeyFldD::EquKFlds(k->KFlds, kf)))) {
 			CopyIndex(k, kf, Typ, record);
 		}
 		else {

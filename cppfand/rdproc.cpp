@@ -137,9 +137,9 @@ char RdOwner(LinkD** LLD, LocVar** LLV)
 		}
 		else {
 			if (lv->FTyp == 'i') {
-				KeyFldD* kf = WKeyDPtr(lv->RecPtr)->KFlds;
+				KeyFldD* kf = ((XWKey*)lv->RecPtr)->KFlds;
 				if (ld->FromFD->IsSQLFile || ld->ToFD->IsSQLFile) OldError(155);
-				if ((kf != nullptr) && !EquKFlds(kf, ld->ToKey->KFlds)) OldError(181);
+				if ((kf != nullptr) && !KeyFldD::EquKFlds(kf, ld->ToKey->KFlds)) OldError(181);
 			}
 			*LLV = lv;
 			*LLD = ld;
@@ -163,7 +163,7 @@ char RdOwner(LinkD** LLD, LocVar** LLV)
 				if (lv->FTyp == 'i') {
 					KeyFldD* kf = WKeyDPtr(lv->RecPtr)->KFlds;
 					if (ld->FromFD->IsSQLFile || ld->ToFD->IsSQLFile) OldError(155);
-					if ((kf != nullptr) && !EquKFlds(kf, ld->ToKey->KFlds)) OldError(181);
+					if ((kf != nullptr) && !KeyFldD::EquKFlds(kf, ld->ToKey->KFlds)) OldError(181);
 				}
 				*LLV = lv;
 				*LLD = ld;
@@ -239,7 +239,7 @@ FrmlElem* RdFldNameFrmlP(char& FTyp)
 			label1:
 				auto S = new FrmlElem10(_catfield, 6); // Z = GetOp(_catfield, 6);
 				S->CatFld = F;
-				S->CatIRec = GetCatalogIRec(FName, true);
+				S->CatIRec = CatFD->GetCatalogIRec(FName, true);
 				TestCatError(S->CatIRec, FName, true);
 				return S;
 			}
@@ -342,7 +342,7 @@ FileD* RdPath(bool NoFD, std::string& Path, WORD& CatIRec)
 		TestIdentif();
 		fd = FindFileD();
 		if (fd == nullptr) {
-			CatIRec = GetCatalogIRec(LexWord, true);
+			CatIRec = CatFD->GetCatalogIRec(LexWord, true);
 			TestCatError(CatIRec, LexWord, false);
 		}
 		else if (NoFD) Error(97);
@@ -1583,7 +1583,7 @@ void RdEditOpt(EditOpt* EO)
 		if (EO->ViewKey == EO->SelKey) OldError(184);
 		if ((EO->ViewKey->KFlds != nullptr)
 			&& (EO->SelKey->KFlds != nullptr)
-			&& !EquKFlds(EO->SelKey->KFlds, EO->ViewKey->KFlds)) OldError(178);
+			&& !KeyFldD::EquKFlds(EO->SelKey->KFlds, EO->ViewKey->KFlds)) OldError(178);
 	}
 	else Error(125);
 }
@@ -2043,7 +2043,7 @@ Instr* RdTurnCat()
 	RdLex();
 	TestIdentif();
 	PD->NextGenFD = FindFileD();
-	const int first = GetCatalogIRec(LexWord, true);
+	const int first = CatFD->GetCatalogIRec(LexWord, true);
 	TestCatError(first, LexWord, true);
 	RdLex();
 	PD->FrstCatIRec = first;
@@ -2218,7 +2218,7 @@ Instr* RdMount()
 	TestIdentif();
 	FileD* FD = FindFileD();
 	if (FD == nullptr) {
-		i = GetCatalogIRec(LexWord, true);
+		i = CatFD->GetCatalogIRec(LexWord, true);
 	}
 	else {
 		i = FD->CatIRec;
@@ -2559,7 +2559,7 @@ Instr_assign* RdAssign()
 		else {
 			FName = LexWord;
 			FD = FindFileD();
-			if (IsActiveRdb(FD)) Error(121);
+			if (FD->IsActiveRdb()) Error(121);
 			RdLex(); RdLex();
 			if (IsKeyWord("ARCHIVES")) {
 				F = CatFD->CatalogArchiveField();
@@ -2572,9 +2572,9 @@ Instr_assign* RdAssign()
 			if (IsKeyWord("VOLUME")) {
 				F = CatFD->CatalogVolumeField();
 			label1:
-				PD = new Instr_assign(_asgncatfield); // GetPInstr(_asgncatfield, 16);
+				PD = new Instr_assign(_asgncatfield);
 				PD->FD3 = FD;
-				PD->CatIRec = GetCatalogIRec(FName, true);
+				PD->CatIRec = CatFD->GetCatalogIRec(FName, true);
 				PD->CatFld = F;
 				TestCatError(PD->CatIRec, FName, true);
 				Accept(_assign);
@@ -2583,7 +2583,7 @@ Instr_assign* RdAssign()
 			else if (FD == nullptr) OldError(9);
 			else if (IsKeyWord("NRECS")) {
 				if (FD->FF->file_type == FileType::RDB) { OldError(127); }
-				PD = new Instr_assign(_asgnnrecs); // GetPInstr(_asgnnrecs, 9);
+				PD = new Instr_assign(_asgnnrecs);
 				PD->FD = FD;
 				FTyp = 'R';
 				goto label0;

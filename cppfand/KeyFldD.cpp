@@ -19,3 +19,16 @@ KeyFldD::KeyFldD(BYTE* inputStr)
 	CompLex = *(bool*)&inputStr[index]; index++;
 	Descend = *(bool*)&inputStr[index]; index++;
 }
+
+bool KeyFldD::EquKFlds(KeyFldD* KF1, KeyFldD* KF2)
+{
+	bool result = false;
+	while (KF1 != nullptr) {
+		if ((KF2 == nullptr) || (KF1->CompLex != KF2->CompLex) || (KF1->Descend != KF2->Descend)
+			|| (KF1->FldD->Name != KF2->FldD->Name)) return result;
+		KF1 = KF1->pChain;
+		KF2 = KF2->pChain;
+	}
+	if (KF2 != nullptr) return false;
+	return true;
+}

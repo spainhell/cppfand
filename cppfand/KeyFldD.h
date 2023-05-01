@@ -12,5 +12,5 @@ public:
 	KeyFldD(BYTE* inputStr);
 	FieldDescr* FldD = nullptr;
 	bool CompLex = false, Descend = false;
+	bool static EquKFlds(KeyFldD* KF1, KeyFldD* KF2);
 };
-typedef KeyFldD* KeyFldDPtr;

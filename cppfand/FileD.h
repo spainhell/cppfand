@@ -22,6 +22,8 @@ class FileD : public Chained<FileD>
 public:
 	FileD(FType f_type);
 	FileD(const FileD& orig);
+	~FileD();
+
 	std::string Name;
 	std::string FullPath;
 
@@ -54,6 +56,7 @@ public:
 	void WriteRec(size_t rec_nr, void* record);
 
 	BYTE* GetRecSpace();
+	void ClearRecSpace(void* record);
 
 	void IncNRecs(int n);
 	void DecNRecs(int n);
@@ -61,8 +64,8 @@ public:
 	void CreateRec(int n, void* record);
 	void PutRec(void* record);
 	void DeleteRec(int n, void* record);
-	void DelAllDifTFlds(void* Rec, void* CompRec);
 	void RecallRec(int recNr, void* record);
+	void AssignNRecs(bool Add, int N);
 		
 	bool loadB(FieldDescr* field_d, void* record);
 	double loadR(FieldDescr* field_d, void* record);
@@ -78,6 +81,7 @@ public:
 	int saveT(FieldDescr* field_d, int pos, void* record);
 
 	void Close();
+	void CloseFile();
 	void Save();
 
 	void OldLockMode(LockMode mode);
@@ -99,4 +103,11 @@ public:
 
 	bool SearchKey(XString& XX, XKey* Key, int& NN, void* record);
 	FileD* OpenDuplicateF(bool createTextFile);
+	void DeleteDuplicateF(FileD* TempFD);
+	void ZeroAllFlds(void* record);
+	void CopyRecWithT(void* record1, void* record2);
+	void DelTFlds(void* record);
+	void DelAllDifTFlds(void* record, void* comp_record);
+
+	bool IsActiveRdb();
 };

@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include "files.h"
 #include "../cppfand/FileD.h"
 #include "../cppfand/base.h"
 #include "../cppfand/GlobalVariables.h"
@@ -20,6 +21,13 @@ FandXFile::FandXFile(const FandXFile& orig, FandFile* parent): XWFile(parent)
 	NrKeys = orig.NrKeys;
 	NoCreate = orig.NoCreate;
 	FirstDupl = orig.FirstDupl;
+}
+
+FandXFile::~FandXFile()
+{
+	if (Handle != nullptr) {
+		CloseH(&Handle);
+	}
 }
 
 void FandXFile::SetEmpty(int recs, unsigned char keys)
@@ -88,5 +96,25 @@ int FandXFile::XFNotValid(int recs, unsigned char keys)
 	else {
 		SetNotValid(recs, keys);
 		return 0;
+	}
+}
+
+void FandXFile::CloseFile()
+{
+	if (Handle != nullptr) {
+		CloseClearH(&Handle);
+		if (!_parent->IsShared()) {
+			if (NotValid) {
+				SetPathAndVolume(_parent->GetFileD());
+				CPath = CExtToX(CDir, CName, CExt);
+				MyDeleteFile(CPath);
+			}
+			else if ((NRecs == 0) || _parent->NRecs == 0) {
+				NRecs = 0;
+				SetPathAndVolume(_parent->GetFileD());
+				CPath = CExtToX(CDir, CName, CExt);
+				MyDeleteFile(CPath);
+			}
+		}
 	}
 }

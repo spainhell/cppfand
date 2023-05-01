@@ -7,6 +7,8 @@ public:
 	FandXFile(FandFile* parent);
 	FandXFile(const FandXFile& orig) = delete;
 	FandXFile(const FandXFile& orig, FandFile* parent);
+	~FandXFile();
+
 	int NRecs = 0;     // valid records count
 	int NRecsAbs = 0;  // all record count (include deleted from .000 file)
 	bool NotValid = false;
@@ -19,5 +21,6 @@ public:
 	void SetNotValid(int recs, unsigned char keys);
 	void ClearUpdLock();
 	int XFNotValid(int recs, unsigned char keys);
+	void CloseFile();
 };
 
