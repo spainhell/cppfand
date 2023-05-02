@@ -175,7 +175,7 @@ void RunAssign(std::vector<AssignD*> Assigns)
 			break;
 		}
 		case _parfile: {
-			AsgnParFldFrml(A->FD, A->PFldD, A->Frml, A->Add);
+			A->FD->AsgnParFldFrml(A->PFldD, A->Frml, A->Add, CRecPtr);
 			break;
 		}
 		case _ifthenelseM: {

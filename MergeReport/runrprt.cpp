@@ -433,7 +433,10 @@ void RunAProc(std::vector<AssignD*> vAssign)
 	for (AssignD* A : vAssign) {
 		switch (A->Kind) {
 		case _locvar: { LVAssignFrml(A->LV, A->Add, A->Frml); break; }
-		case _parfile: { AsgnParFldFrml(A->FD, A->PFldD, A->Frml, A->Add); break; }
+		case _parfile: {
+			A->FD->AsgnParFldFrml(A->PFldD, A->Frml, A->Add, CRecPtr);
+			break;
+		}
 		case _ifthenelseM: {
 			if (RunBool(A->Bool)) {
 				RunAProc(A->Instr);
@@ -443,7 +446,7 @@ void RunAProc(std::vector<AssignD*> vAssign)
 			}
 			break;
 		}
-		default: 
+		default:
 			break;
 		}
 	}
@@ -551,7 +554,7 @@ label1:
 				if (reportFieldsIt == Y.Blk->ReportFields.end()) return;
 				RF = *reportFieldsIt;
 			}
-			
+
 			L = (BYTE)Y.P[Y.I + 1];
 			WORD M = (BYTE)Y.P[Y.I + 2];
 			if (RF->FrmlTyp == 'R') {
@@ -783,7 +786,7 @@ WORD CompMFlds(std::vector<ConstListEl>& C, KeyFldD* M, short& NLv)
 {
 	XString x;
 	NLv = 0;
-	for (ConstListEl& c : C) { 
+	for (ConstListEl& c : C) {
 		NLv++;
 		x.Clear();
 		x.StoreKF(CFile, M, CRecPtr);
@@ -831,23 +834,23 @@ void PutMFlds(KeyFldD* M)
 		CRecPtr = cr1;
 		switch (f->frml_type) {
 		case 'S': {
-				pstring s = CFile->loadOldS(f1, CRecPtr);
-				CFile = cf; CRecPtr = cr;
-				CFile->saveS(f, s, CRecPtr);
-				break;
-			}
+			pstring s = CFile->loadOldS(f1, CRecPtr);
+			CFile = cf; CRecPtr = cr;
+			CFile->saveS(f, s, CRecPtr);
+			break;
+		}
 		case 'R': {
-				double r = CFile->loadR(f1, CRecPtr);
-				CFile = cf; CRecPtr = cr;
-				CFile->saveR(f, r, CRecPtr);
-				break;
-			}
+			double r = CFile->loadR(f1, CRecPtr);
+			CFile = cf; CRecPtr = cr;
+			CFile->saveR(f, r, CRecPtr);
+			break;
+		}
 		default: {
-				bool b = CFile->loadB(f1, CRecPtr);
-				CFile = cf; CRecPtr = cr;
-				CFile->saveB(f, b, CRecPtr);
-				break;
-			}
+			bool b = CFile->loadB(f1, CRecPtr);
+			CFile = cf; CRecPtr = cr;
+			CFile->saveB(f, b, CRecPtr);
+			break;
+		}
 		}
 		M = M->pChain;
 		m1 = m1->pChain;

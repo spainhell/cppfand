@@ -94,36 +94,6 @@ bool LinkLastRec(FileD* FD, int& N, bool WithT)
 	return result;
 }
 
-// ulozi hodnotu parametru do souboru
-void AsgnParFldFrml(FileD* FD, FieldDescr* F, FrmlElem* Z, bool Ad)
-{
-	//#ifdef _DEBUG
-	std::string FileName = FD->FullPath;
-	std::string Varible = F->Name;
-	//#endif
-	void* p = nullptr; int N = 0; LockMode md; bool b = false;
-	FileD* cf = CFile; void* cr = CRecPtr; CFile = FD;
-#ifdef FandSQL
-	if (CFile->IsSQLFile) {
-		CRecPtr = GetRecSpace; ZeroAllFlds; AssgnFrml(F, Z, true, Ad);
-		Strm1->UpdateXFld(nullptr, nullptr, F); ClearRecSpace(CRecPtr)
-	}
-	else
-#endif
-	{
-		md = CFile->NewLockMode(WrMode);
-		if (!LinkLastRec(CFile, N, true)) {
-			CFile->IncNRecs(1);
-			CFile->WriteRec(N, CRecPtr);
-		}
-		AssgnFrml(CFile, CRecPtr, F, Z, true, Ad);
-		CFile->WriteRec(N, CRecPtr);
-		CFile->OldLockMode(md);
-	}
-	ReleaseStore(CRecPtr);
-	CFile = cf; CRecPtr = cr;
-}
-
 // zrejme zajistuje pristup do jine tabulky (cizi klic)
 bool LinkUpw(LinkD* LD, int& N, bool WithT)
 {
