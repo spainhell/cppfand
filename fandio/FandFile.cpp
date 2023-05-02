@@ -6,15 +6,16 @@
 #include "files.h"
 #include "../Common/textfunc.h"
 #include "../Common/compare.h"
+#include "../cppfand/GlobalVariables.h"
 #include "../cppfand/Coding.h"
 #include "../cppfand/oaccess.h"
 #include "../pascal/real48.h"
 #include "../cppfand/obaseww.h"
 
-// ***** CONSTANTS ***********************************************************
-double Power10[21] = { 1E0, 1E1, 1E2, 1E3, 1E4, 1E5, 1E6, 1E7, 1E8, 1E9, 1E10,
-	1E11, 1E12, 1E13, 1E14, 1E15, 1E16, 1E17, 1E18, 1E19, 1E20 };
-const double FirstDate = 6.97248E+5;
+// ****************************** CONSTANTS **********************************
+//double Power10[21] = { 1E0, 1E1, 1E2, 1E3, 1E4, 1E5, 1E6, 1E7, 1E8, 1E9, 1E10,
+//	1E11, 1E12, 1E13, 1E14, 1E15, 1E16, 1E17, 1E18, 1E19, 1E20 };
+//const double FirstDate = 6.97248E+5;
 // ***************************************************************************
 
 FandFile::FandFile(FileD* parent)
@@ -509,10 +510,17 @@ void FandFile::DelTFld(FieldDescr* field_d, void* record)
 	saveT(field_d, 0, record);
 }
 
+/**
+ * \brief Pokud zaznamy odkazuji na ruzne texty, je text z 'record' smazan
+ * \param field_d popis pole
+ * \param record 1. zaznam (ktery je pripadne smazan)
+ * \param comp_record 2. zaznam
+ */
 void FandFile::DelDifTFld(FieldDescr* field_d, void* record, void* comp_record)
 {
-	const int n = loadT(field_d, comp_record);
-	if (n != loadT(field_d, record)) {
+	const int n1 = loadT(field_d, comp_record);
+	const int n2 = loadT(field_d, record);
+	if (n1 != n2) {
 		DelTFld(field_d, record);
 	}
 }
@@ -628,7 +636,7 @@ void FandFile::TruncFile()
 	LockMode md = _parent->NewLockMode(RdMode);
 	TruncH(Handle, UsedFileSize());
 	if (HandleError != 0) {
-		FileMsg(CFile, 700 + HandleError, '0');
+		FileMsg(_parent, 700 + HandleError, '0');
 	}
 	if (TF != nullptr) {
 		TruncH(TF->Handle, TF->UsedFileSize());
@@ -704,17 +712,17 @@ void FandFile::CloseFile()
 	LMode = NullMode;
 
 	if (!IsShared() && (NRecs == 0) && (file_type != FileType::DBF)) {
-		SetPathAndVolume(_parent);
-		MyDeleteFile(CPath);
+		std::string path = SetPathAndVolume(_parent);
+		MyDeleteFile(path);
 	}
 
 	if (WasRdOnly) {
 		WasRdOnly = false;
-		SetPathAndVolume(_parent);
-		SetFileAttr(CPath, HandleError, (GetFileAttr(CPath, HandleError) & 0x27) | 0x01); // {RdOnly; }
+		std::string path = SetPathAndVolume(_parent);
+		SetFileAttr(path, HandleError, (GetFileAttr(CPath, HandleError) & 0x27) | 0x01); // {RdOnly; }
 		if (TF != nullptr) {
-			CPath = CExtToT(CDir, CName, CExt);
-			SetFileAttr(CPath, HandleError, (GetFileAttr(CPath, HandleError) & 0x27) | 0x01); //  {RdOnly; }
+			path = CExtToT(CDir, CName, CExt);
+			SetFileAttr(path, HandleError, (GetFileAttr(CPath, HandleError) & 0x27) | 0x01); //  {RdOnly; }
 		}
 	}
 }
@@ -1162,7 +1170,7 @@ void FandFile::SubstDuplF(FileD* TempFD, bool DelTF)
 		PrimFD->FF->TF = MD;
 		CloseClearH(&MD->Handle);
 		path = ptmp;
-		SetTempCExt('T', false);
+		SetTempCExt(_parent, 'T', false);
 		RenameFile56(path, pt, true);
 		path = pt;
 		MD->Handle = OpenH(path, _isOldFile, PrimFD->FF->UMode);

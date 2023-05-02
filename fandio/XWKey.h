@@ -14,4 +14,3 @@ public:
 	void DeleteAtNr(FileD* file_d, int I);
 	void AddToRecNr(FileD* file_d, int RecNr, short Dif);
 };
-typedef XWKey* WKeyDPtr;

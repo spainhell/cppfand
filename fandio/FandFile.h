@@ -44,7 +44,9 @@ public:
 	unsigned short FirstRecPos = 0;    // for Fand 16 it's 6th BYTE (first 5 Bytes is file header)
 	unsigned char Drive = 0;           // 1=A, 2=B, else 0
 	FileUseMode UMode = Closed;
-	LockMode LMode = NullMode, ExLMode = NullMode, TaLMode = NullMode;
+	LockMode LMode = NullMode;
+	LockMode ExLMode = NullMode;
+	LockMode TaLMode = NullMode;
 
 	int UsedFileSize();
 	bool IsShared();

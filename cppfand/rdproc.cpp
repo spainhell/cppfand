@@ -94,7 +94,7 @@ FrmlElem* RdRecVarFldFrml(LocVar* LV, char& FTyp)
 	}
 	case 'i': {
 		auto Z = new FrmlElem22(_indexnrecs, 4);
-		Z->WKey = WKeyDPtr(LV->RecPtr);
+		Z->WKey = (XWKey*)LV->RecPtr;
 		pstring nrecs = "nrecs";
 		AcceptKeyWord(nrecs);
 		FTyp = 'R';
@@ -161,7 +161,7 @@ char RdOwner(LinkD** LLD, LocVar** LLV)
 				Accept(')');
 				if (lv->FD != fd) OldError(149);
 				if (lv->FTyp == 'i') {
-					KeyFldD* kf = WKeyDPtr(lv->RecPtr)->KFlds;
+					KeyFldD* kf = ((XWKey*)lv->RecPtr)->KFlds;
 					if (ld->FromFD->IsSQLFile || ld->ToFD->IsSQLFile) OldError(155);
 					if ((kf != nullptr) && !KeyFldD::EquKFlds(kf, ld->ToKey->KFlds)) OldError(181);
 				}
@@ -2495,17 +2495,14 @@ FrmlElem* AdjustComma(FrmlElem* Z1, FieldDescr* F, instr_type Op)
 AssignD* MakeImplAssign(FileD* FD1, FileD* FD2)
 {
 	AssignD* ARoot = nullptr;
-	AssignD* A = nullptr;
 	char FTyp;
 	pstring S = LexWord;
-	ARoot = nullptr;
-	for (auto& F1 : FD1->FldD) {
+	for (FieldDescr* F1 : FD1->FldD) {
 		if ((F1->Flg & f_Stored) != 0) {
 			LexWord = F1->Name;
 			FieldDescr* F2 = FindFldName(FD2);
 			if (F2 != nullptr) {
-				//A = (AssignD*)GetZStore(sizeof(*A));
-				A = new AssignD();
+				AssignD* A = new AssignD();
 				if (ARoot == nullptr) ARoot = A;
 				else ChainLast(ARoot, A);
 				if ((F2->frml_type != F1->frml_type)
@@ -2543,7 +2540,7 @@ Instr_assign* RdAssign()
 				if ((Lexem != _number) || (LexWord != "0")) Error(183);
 				RdLex();
 				PD = new Instr_assign(_asgnxnrecs); // GetPInstr(_asgnxnrecs, 4);
-				PD->xnrIdx = (WKeyDPtr)LV->RecPtr;
+				PD->xnrIdx = (XWKey*)LV->RecPtr;
 			}
 			else {
 				PD = new Instr_assign(_asgnrecfld); // GetPInstr(_asgnrecfld, 13);

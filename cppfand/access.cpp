@@ -1,17 +1,12 @@
 #include "access.h"
 
-#include "Coding.h"
-#include "../pascal/real48.h"
 #include "../pascal/asm.h"
 #include "compile.h"
 #include "FieldDescr.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
 #include "KeyFldD.h"
-#include "legacy.h"
-#include "oaccess.h"
 #include "obaseww.h"
-#include "olongstr.h"
 #include "runfrml.h"
 #include "../fandio/FandFile.h"
 #include "../Logging/Logging.h"
@@ -34,8 +29,6 @@ void ClearCacheCFile()
 	if (CFile->file_type == INDEX) ClearCacheH(CFile->GetXFile->Handle);
 	if (CFile->TF != nullptr) ClearCacheH(CFile->TF->Handle);*/
 }
-
-
 
 void CloseClearHCFile(FandFile* fand_file)
 {

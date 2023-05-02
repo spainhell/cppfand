@@ -1053,51 +1053,43 @@ void RdEStatus()
 	SetCPage(&CPage, &RT);
 }
 
-void DuplFld(FileD* FD1, FileD* FD2, void* RP1, void* RP2, void* RPt, FieldDescr* F1, FieldDescr* F2)
+void DuplFld(FileD* file_d1, FileD* file_d2, void* record1, void* record2, void* RPt, FieldDescr* field_d1, FieldDescr* field_d2)
 {
 	LongStr* ss;
 	pstring s;
 	double r = 0.0;
 	bool b = false;
-	FileD* cf = CFile;
-	void* cr = CRecPtr;
-	CFile = FD1; CRecPtr = RP1;
 
-	switch (F1->frml_type) {
+	switch (field_d1->frml_type) {
 	case 'S': {
-		if (F1->field_type == FieldType::TEXT) {
-			ss = CFile->loadLongS(F1, CRecPtr);
-			CFile = FD2; CRecPtr = RP2;
+		if (field_d1->field_type == FieldType::TEXT) {
+			ss = file_d1->loadLongS(field_d1, record1);
 			if (RPt == nullptr) {
-				CFile->FF->DelTFld(F2, CRecPtr);
+				file_d2->FF->DelTFld(field_d2, record2);
 			}
 			else {
-				CFile->FF->DelDifTFld(F2, RP2, RPt);
+				file_d2->FF->DelDifTFld(field_d2, record2, RPt);
 			}
-			CFile->saveLongS(F2, ss, CRecPtr);
+			file_d2->saveLongS(field_d2, ss, record2);
 			ReleaseStore(ss);
 		}
 		else {
-			s = CFile->loadOldS(F1, CRecPtr);
-			CFile = FD2; CRecPtr = RP2;
-			CFile->saveS(F2, s, CRecPtr);
+			s = file_d1->loadOldS(field_d1, record1);
+			file_d2->saveS(field_d2, s, record2);
 		}
 		break;
 	}
 	case 'R': {
-		r = CFile->loadR(F1, CRecPtr);
-		CFile = FD2; CRecPtr = RP2;
-		CFile->saveR(F2, r, CRecPtr);
+		r = file_d1->loadR(field_d1, record1);
+		file_d2->saveR(field_d2, r, record2);
 		break;
 	}
 	case 'B': {
-		b = CFile->loadB(F1, CRecPtr);
-		CFile = FD2; CRecPtr = RP2;
-		CFile->saveB(F2, b, CRecPtr);
+		b = file_d1->loadB(field_d1, record1);
+		file_d2->saveB(field_d2, b, record2);
 		break;
 	}
 	}
-	CFile = cf; CRecPtr = cr;
 }
 
 bool IsFirstEmptyFld()
@@ -1428,12 +1420,12 @@ void BuildWork()
 				if ((K != nullptr) && !K->InWork && (ki == nullptr)) K = nullptr;
 			Scan = new XScan(CFile, K, ki, false);
 			Scan->Reset(boolP, E->SQLFilter);
-		}
+			}
 		CFile->FF->CreateWIndex(Scan, WK, 'W');
 		Scan->Close();
 		if (wk2 != nullptr) wk2->Close(CFile);
 		ok = true;
-	}
+			}
 	catch (std::exception& e) {
 		// TODO: log error
 	}
@@ -1448,7 +1440,7 @@ void BuildWork()
 		GoExit();
 	}
 	ReleaseStore(p);
-}
+		}
 
 void SetStartRec()
 {
@@ -1500,8 +1492,8 @@ bool OpenEditWw()
 		}
 		else {
 			goto label3;
-		}
 	}
+}
 #ifdef FandSQL
 	if (!CFile->IsSQLFile)
 #endif
@@ -1569,7 +1561,7 @@ bool OpenEditWw()
 		}
 		WasWK = true;
 		Subset = true;
-	}
+		}
 #ifdef FandSQL
 	if (CFile->IsSQLFile) Strm1->DefKeyAcc(WK);
 #endif
@@ -1610,7 +1602,7 @@ label3:
 	if (!EdRecVar) CFile->OldLockMode(md2);
 	if (IsNewRec) NewRecExit();
 	return result;
-}
+	}
 
 void RefreshSubset()
 {
@@ -1732,7 +1724,7 @@ void UpdMemberRef(void* POld, void* PNew)
 					else
 #endif
 						CFile->FF->DeleteXRec(Scan->RecNr, true, CRecPtr);
-				}
+			}
 				else {
 					Move(CRecPtr, p2, CFile->FF->RecLen);
 					CRecPtr = p2;
@@ -1750,16 +1742,16 @@ void UpdMemberRef(void* POld, void* PNew)
 					if (sql) Strm1->UpdateXRec(k, @x, false) else
 #endif
 						CFile->FF->OverWrXRec(Scan->RecNr, p, p2, CRecPtr);
-				}
+					}
 				goto label1;
-			}
+				}
 			Scan->Close();
 			CFile->ClearRecSpace(p);
 			ReleaseStore(p);
+			}
 		}
-	}
 	CFile = cf; CRecPtr = cr;
-}
+	}
 
 void WrJournal(char Upd, void* RP, double Time)
 {
@@ -2382,7 +2374,7 @@ bool OldRecDiffers()
 				(CompArea(Pchar(CRecPtr) + Displ, Pchar(E->OldRecPtr) + Displ, NBytes) != ord(_equ)) then
 				goto label1;
 			f = f->pChain;
-		}
+}
 		goto label2;
 	}
 	else
@@ -2650,7 +2642,7 @@ label2:
 label1:
 	UnLockWithDep(OldMd);
 	return result;
-}
+	}
 
 void DuplFromPrevRec()
 {
@@ -2701,7 +2693,7 @@ void AppendRecord(void* RP)
 	Max = E->NRecs;
 	CFld = E->FirstFld;
 	FirstEmptyFld = CFld;
-	if (IRec < Max)	{
+	if (IRec < Max) {
 		IRec++;
 		MoveDispl(Max - 1, Max, Max - IRec);
 		DisplRec(IRec);
@@ -3169,7 +3161,7 @@ bool FldInModeF3Key(FieldDescr* F)
 
 bool IsSkipFld(EFldD* D)
 {
-	return !D->Tab && 
+	return !D->Tab &&
 		(E->NTabsSet > 0 || (D->FldD->Flg & f_Stored) == 0 || OnlySearch && FldInModeF3Key(D->FldD));
 }
 
@@ -3419,12 +3411,13 @@ void SetCRec(int I)
 void UpdateEdTFld(LongStr* S)
 {
 	LockMode md;
-	CRecPtr = E->NewRecPtr;
 	if (!EdRecVar) md = CFile->NewLockMode(WrMode);
-	SetWasUpdated(CFile->FF, CRecPtr);
+	SetWasUpdated(CFile->FF, E->NewRecPtr);
 	CFile->FF->DelDifTFld(CFld->FldD, E->NewRecPtr, E->OldRecPtr);
-	CFile->saveLongS(CFld->FldD, S, CRecPtr);
-	if (!EdRecVar) CFile->OldLockMode(md);
+	CFile->saveLongS(CFld->FldD, S, E->NewRecPtr);
+	if (!EdRecVar) {
+		CFile->OldLockMode(md);
+	}
 }
 
 void UpdateTxtPos(WORD TxtPos)
