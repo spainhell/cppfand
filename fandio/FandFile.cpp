@@ -7,10 +7,15 @@
 #include "../Common/textfunc.h"
 #include "../Common/compare.h"
 #include "../cppfand/Coding.h"
-#include "../cppfand/GlobalVariables.h"
 #include "../cppfand/oaccess.h"
 #include "../pascal/real48.h"
 #include "../cppfand/obaseww.h"
+
+// ***** CONSTANTS ***********************************************************
+double Power10[21] = { 1E0, 1E1, 1E2, 1E3, 1E4, 1E5, 1E6, 1E7, 1E8, 1E9, 1E10,
+	1E11, 1E12, 1E13, 1E14, 1E15, 1E16, 1E17, 1E18, 1E19, 1E20 };
+const double FirstDate = 6.97248E+5;
+// ***************************************************************************
 
 FandFile::FandFile(FileD* parent)
 {
@@ -990,6 +995,7 @@ void FandFile::CopyIndex(XWKey* K, XKey* FromK)
 
 void FandFile::SubstDuplF(FileD* TempFD, bool DelTF)
 {
+	std::string path, dir, name, ext;
 	//bool net;
 	int result = XFNotValid();
 	if (result != 0) {
@@ -1003,9 +1009,9 @@ void FandFile::SubstDuplF(FileD* TempFD, bool DelTF)
 	}
 	SaveCache(0, Handle);
 	FileD* PrimFD = _parent;
-	std::string p = CPath;
-	CPath = CExtToT(CDir, CName, CExt);
-	std::string pt = CPath;
+	std::string p = path;
+	path = _extToT(dir, name, ext);
+	std::string pt = path;
 
 	CloseClearH(&PrimFD->FF->Handle);
 	MyDeleteFile(p);
@@ -1020,10 +1026,10 @@ void FandFile::SubstDuplF(FileD* TempFD, bool DelTF)
 	PrimFD->FF->UMode = um;
 	CloseClearH(&PrimFD->FF->Handle);
 	SetTempCExt('0', false);
-	pstring ptmp = CPath;
+	pstring ptmp = path;
 	RenameFile56(ptmp, p, true);
-	CPath = p;
-	PrimFD->FF->Handle = OpenH(CPath, _isOldFile, PrimFD->FF->UMode);
+	path = p;
+	PrimFD->FF->Handle = OpenH(path, _isOldFile, PrimFD->FF->UMode);
 	SetUpdHandle(PrimFD->FF->Handle);
 
 	if ((MD != nullptr) && DelTF) {
@@ -1033,11 +1039,11 @@ void FandFile::SubstDuplF(FileD* TempFD, bool DelTF)
 		*MD = *PrimFD->FF->TF;
 		PrimFD->FF->TF = MD;
 		CloseClearH(&MD->Handle);
-		CPath = ptmp;
+		path = ptmp;
 		SetTempCExt('T', false);
-		RenameFile56(CPath, pt, true);
-		CPath = pt;
-		MD->Handle = OpenH(CPath, _isOldFile, PrimFD->FF->UMode);
+		RenameFile56(path, pt, true);
+		path = pt;
+		MD->Handle = OpenH(path, _isOldFile, PrimFD->FF->UMode);
 		SetUpdHandle(MD->Handle);
 	}
 	PrimFD->FF->TF = MD;
@@ -1107,4 +1113,25 @@ bool FandFile::is_null_value(void* record, WORD l)
 		if (pb[i] != 0xFF) return false;
 	}
 	return true;
+}
+
+std::string FandFile::_extToT(const std::string& dir, const std::string& name, std::string ext)
+{
+	if (EquUpCase(ext, ".RDB")) ext = ".TTT";
+	else if (EquUpCase(ext, ".DBF")) {
+		if (TF->Format == FandTFile::FptFormat) {
+			ext = ".FPT";
+		}
+		else {
+			ext = ".DBT";
+		}
+	}
+	else ext[1] = 'T';
+	return dir + name + ext;
+}
+
+std::string FandFile::_extToX(const std::string& dir, const std::string& name, std::string ext)
+{
+	ext[1] = 'X';
+	return dir + name + ext;
 }

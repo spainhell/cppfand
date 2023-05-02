@@ -497,7 +497,7 @@ std::string CExtToX(const std::string dir, const std::string name, std::string e
 	return dir + name + ext;
 }
 
-std::string CExtToT(const std::string dir, const std::string name, std::string ext)
+std::string CExtToT(const std::string& dir, const std::string& name, std::string ext)
 {
 	if (EquUpCase(ext, ".RDB")) ext = ".TTT";
 	else if (EquUpCase(ext, ".DBF")) {

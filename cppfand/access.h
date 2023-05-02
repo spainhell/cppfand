@@ -64,6 +64,5 @@ void ClearCacheCFile();
 void ResetCFileUpdH();
 
 
-
-std::string CExtToT(std::string dir, std::string name, std::string ext);
+std::string CExtToT(const std::string& dir, const std::string& name, std::string ext);
 std::string CExtToX(std::string dir, std::string name, std::string ext);

@@ -3,7 +3,6 @@
 #include "FandTFile.h"
 #include "FandXFile.h"
 #include "../cppfand/switches.h"
-#include "../cppfand/base.h"
 #include "../cppfand/FieldDescr.h"
 #include "../Logging/Logging.h"
 
@@ -41,7 +40,7 @@ public:
 	FandXFile* XF = nullptr;
 	FandTFile* TF = nullptr;
 
-	unsigned short FirstRecPos = 0;    // in original 'FrstDispl' - in Fand 16 it's 6th BYTE (first 5 Bytes is file header)
+	unsigned short FirstRecPos = 0;    // for Fand 16 it's 6th BYTE (first 5 Bytes is file header)
 	unsigned char Drive = 0;           // 1=A, 2=B, else 0
 	FileUseMode UMode = Closed;
 	LockMode LMode = NullMode, ExLMode = NullMode, TaLMode = NullMode;
@@ -115,5 +114,8 @@ private:
 	FileD* _parent;
 	double _RforD(FieldDescr* field_d, void* record);
 	bool is_null_value(void* record, WORD l);
+
+	std::string _extToT(const std::string& dir, const std::string& name, std::string ext);
+	std::string _extToX(const std::string& dir, const std::string& name, std::string ext);
 };
 
