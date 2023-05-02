@@ -17,6 +17,8 @@ public:
 	FandTFile(FandFile* parent);
 	FandTFile(const FandTFile& orig) = delete;
 	FandTFile(const FandTFile& orig, FandFile* parent);
+	~FandTFile();
+
 	FILE* Handle = nullptr;
 	int FreePart = 0;
 	bool Reserved = false, CompileProc = false, CompileAll = false;
@@ -38,12 +40,13 @@ public:
 	void RdPrefix(bool Chk);
 	void WrPrefix();
 	void SetEmpty();
-	void Create();
+	void Create(const std::string& path);
 	int NewPage(bool NegL);
 	void ReleasePage(int PosPg);
 	void Delete(int Pos);
 	LongStr* Read(int Pos);
 	int Store(char* s, size_t l);
+	void CloseFile();
 
 private:
 	FandFile* _parent;

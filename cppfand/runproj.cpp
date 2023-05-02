@@ -145,7 +145,7 @@ void GetRdbRecVars(void* RecPtr, RdbRecVars* X)
 	X->OldTxt = CFile->loadT(ChptOldTxt, CRecPtr);
 	if (X->Typ == 'F') {
 		X->FTyp = ExtToTyp(X->Ext);
-		X->CatIRec = GetCatalogIRec(X->Name, false);
+		X->CatIRec = CatFD->GetCatalogIRec(X->Name, false);
 		X->isSQL = false;
 		if (X->OldTxt != 0) {
 			MarkBoth(p, p2);
@@ -529,7 +529,7 @@ void SetRdbDir(char Typ, std::string* Nm)
 	if (Typ == '\\') {
 		rb = TopRdb;
 		CRdb = rb;
-		CFile->CatIRec = GetCatalogIRec(*Nm, false);
+		CFile->CatIRec = CatFD->GetCatalogIRec(*Nm, false);
 		CRdb = r;
 	}
 	if (CFile->CatIRec != 0) {
@@ -569,7 +569,7 @@ void SetRdbDir(char Typ, std::string* Nm)
 void ResetRdOnly()
 {
 	if (Chpt->FF->UMode == RdOnly) {
-		CloseFile(CFile);
+		CFile->CloseFile();
 		IsInstallRun = true;
 		OpenF(CFile, CPath, Exclusive);
 		IsInstallRun = false;
@@ -650,7 +650,7 @@ void CreateOpenChpt(std::string Nm, bool create)
 		if (!create || (top && !IsTestRun)) {
 			RunError(631);
 		}
-		OpenCreateF(CFile, Exclusive);
+		OpenCreateF(CFile, CPath, Exclusive);
 		SetCompileAll();
 	}
 
@@ -662,7 +662,7 @@ void CloseChpt()
 {
 	if (CRdb == nullptr) return;
 	ClearHelpStkForCRdb();
-	SaveFiles();
+	SaveAndCloseAllFiles();
 	bool del = Chpt->FF->NRecs == 0;
 	std::string d = CRdb->RdbDir;
 	CloseFilesAfter(FileDRoot);
@@ -818,7 +818,7 @@ bool CompRunChptRec(WORD CC)
 				ReadReport(nullptr);
 				if (CC == __CTRL_F9) {
 					RunReport(nullptr);
-					SaveFiles();
+					SaveAndCloseAllFiles();
 					ViewPrinterTxt();
 				}
 				break;
@@ -883,7 +883,7 @@ bool CompRunChptRec(WORD CC)
 		UserW = 0;/*mem overflow*/
 		UserW = PushW(1, 1, TxtCols, TxtRows);
 	}
-	SaveFiles();
+	SaveAndCloseAllFiles();
 	if (mv) {
 		ShowMouse();
 	}
@@ -892,7 +892,7 @@ bool CompRunChptRec(WORD CC)
 	}
 	CFile = lstFD->pChain;
 	while (CFile != nullptr) {
-		CloseFile(CFile);
+		CFile->CloseFile();
 		CFile = CFile->pChain;
 	}
 	lstFD->pChain = nullptr;
@@ -993,7 +993,7 @@ int MakeDbfDcl(pstring Nm)
 	pstring s(80); pstring s1(10); void* p;
 
 	CPath = FExpand(Nm + ".DBF"); CVol = "";
-	WORD i = GetCatalogIRec(Nm, true);
+	WORD i = CatFD->GetCatalogIRec(Nm, true);
 	if (i != 0) {
 		CVol = CatFD->GetVolume(i);
 		CPath = FExpand(CatFD->GetPathName(i));
@@ -1082,8 +1082,8 @@ bool EquStoredF(FieldDescr* F1, FieldDescr* F2)
 
 void DeleteF()
 {
-	CloseFile(CFile);
-	SetCPathVol(CFile);
+	CFile->CloseFile();
+	SetPathAndVolume(CFile);
 	MyDeleteFile(CPath);
 	CPath = CExtToX(CDir, CName, CExt);
 	if (CFile->FF->XF != nullptr) {
@@ -1107,22 +1107,22 @@ bool MergeAndReplace(FileD* fd_old, FileD* fd_new)
 		ReadMerge();
 		SpecFDNameAllowed = false;
 		RunMerge();
-		SaveFiles();
+		SaveAndCloseAllFiles();
 		CFile = fd_old;
 		DeleteF();
 		CFile = fd_new;
-		CloseFile(CFile);
+		CFile->CloseFile();
 		fd_old->FF->file_type = fd_new->FF->file_type;
-		SetCPathVol(CFile);
+		SetPathAndVolume(CFile);
 		std::string p = CPath;
 		CFile = fd_old;
-		SetCPathVol(CFile);
+		SetPathAndVolume(CFile);
 		RenameFile56(p, CPath, false);
 		CFile = fd_new;
 		/*TF->Format used*/
 		CPath = CExtToT(CDir, CName, CExt);
 		p = CPath;
-		SetCPathVol(CFile);
+		SetPathAndVolume(CFile);
 		CPath = CExtToT(CDir, CName, CExt);
 		RenameFile56(CPath, p, false);
 		result = true;
@@ -1130,7 +1130,7 @@ bool MergeAndReplace(FileD* fd_old, FileD* fd_new)
 	catch (std::exception& e) {
 		// TODO: log error
 		CFile = fd_old;
-		CloseFile(CFile);
+		CFile->CloseFile();
 		CFile = fd_new;
 		DeleteF();
 		SpecFDNameAllowed = false;
@@ -1169,7 +1169,7 @@ bool MergeOldNew(bool Veriflongint, int Pos)
 	auto result = false;
 	FileD* FDOld = nullptr;
 	FileD* FDNew = CFile;
-	SetCPathVol(CFile);
+	SetPathAndVolume(CFile);
 	Name = FDNew->Name;
 	FDNew->Name = "@";
 	CFile = Chpt;
@@ -1185,7 +1185,7 @@ bool MergeOldNew(bool Veriflongint, int Pos)
 		result = true;
 	}
 	else if ((FDOld->FF->file_type == FileType::INDEX) && !EquKeys(FDOld->Keys[0], FDNew->Keys[0])) {
-		SetCPathVol(CFile);
+		SetPathAndVolume(CFile);
 		CPath = CExtToX(CDir, CName, CExt);
 		MyDeleteFile(CPath);
 	}
@@ -1562,7 +1562,7 @@ label1:
 label2:
 	// TODO: je to potreba?
 	cc = Event.Pressed.KeyCombination();
-	SaveFiles();
+	SaveAndCloseAllFiles();
 	if ((cc == __CTRL_F10) || ChptTF->CompileAll || CompileFD) {
 		ReleaseFilesAndLinksAfterChapter();
 		SetSelectFalse();
@@ -1632,7 +1632,7 @@ void UpdateCat()
 {
 	CFile = CatFD->GetCatalogFile();
 	if (CatFD->GetCatalogFile()->FF->Handle == nullptr) {
-		OpenCreateF(CFile, Exclusive);
+		OpenCreateF(CFile, CPath, Exclusive);
 	}
 	EditOpt* EO = new EditOpt();
 	EO->UserSelFlds = true;

@@ -107,7 +107,7 @@ void ReportProc(RprtOpt* RO, bool save)
 	if (RO->Edit) md = 'T';
 	else md = 'V';
 	if (save) {
-		SaveFiles();
+		SaveAndCloseAllFiles();
 	}
 	if (PrintView) {
 		w = PushW(1, 1, TxtCols, TxtRows);
@@ -213,15 +213,12 @@ void AssignRecVar(LocVar* LV1, LocVar* LV2, AssignD* A)
 
 void AssignRecFld(Instr_assign* PD)
 {
-	FieldDescr* F = PD->RecFldD;
-	FileD* FD = PD->AssLV->FD;
+	FieldDescr* field_d = PD->RecFldD;
+	FileD* file_d = PD->AssLV->FD;
 	void* record = PD->AssLV->RecPtr;
 
-	CFile = PD->AssLV->FD; // TODO: odstranit
-	CRecPtr = PD->AssLV->RecPtr; // TODO: odstranit
-
-	FD->SetUpdFlag(record);
-	AssgnFrml(CFile, CRecPtr, F, PD->Frml, FD->HasTWorkFlag(record), PD->Add);
+	file_d->SetUpdFlag(record);
+	AssgnFrml(file_d, record, field_d, PD->Frml, file_d->HasTWorkFlag(record), PD->Add);
 }
 
 void SortProc(FileD* FD, KeyFldD* SK)
@@ -229,7 +226,7 @@ void SortProc(FileD* FD, KeyFldD* SK)
 	LockMode md = FD->NewLockMode(ExclMode);
 	FD->FF->SortAndSubst(SK);
 	FD->OldLockMode(md);
-	SaveFiles();
+	SaveAndCloseAllFiles();
 }
 
 void MergeProc(Instr_merge_display* PD)
@@ -239,7 +236,7 @@ void MergeProc(Instr_merge_display* PD)
 	SetInpTT(&PD->Pos, true);
 	ReadMerge();
 	RunMerge();
-	SaveFiles();
+	SaveAndCloseAllFiles();
 	ReleaseBoth(p, p2);
 }
 
@@ -405,7 +402,7 @@ void CallRdbProc(Instr_call* PD)
 void MountProc(WORD CatIRec, bool NoCancel)
 {
 	try {
-		SaveFiles();
+		SaveAndCloseAllFiles();
 		CVol = CatFD->GetVolume(CatIRec);
 		CPath = FExpand(CatFD->GetPathName(CatIRec));
 		FSplit(CPath, CDir, CName, CExt);
@@ -421,7 +418,7 @@ void MountProc(WORD CatIRec, bool NoCancel)
 void EditProc(Instr_edit* PD)
 {
 	EdUpdated = false;
-	SaveFiles();
+	SaveAndCloseAllFiles();
 	CFile = PD->EditFD;
 
 	// TODO: is needed to make copy of EditOptions before call edit?
@@ -430,7 +427,7 @@ void EditProc(Instr_edit* PD)
 	if (!PD->EO.UserSelFlds || selFlds) {
 		EditDataFile(CFile, &PD->EO);
 	}
-	SaveFiles();
+	SaveAndCloseAllFiles();
 
 	// TODO: and here delete copy?
 }
@@ -549,15 +546,15 @@ void DeleteRecProc(Instr_recs* PD)
 	ReleaseStore(CRecPtr);
 }
 
-void AppendRecProc()
+void AppendRecProc(FileD* file_d)
 {
-	LockMode md = CFile->NewLockMode(CrMode);
-	CRecPtr = CFile->GetRecSpace();
-	ZeroAllFlds(CFile, CRecPtr);
-	CFile->SetDeletedFlag(CRecPtr);
-	CFile->CreateRec(CFile->FF->NRecs + 1, CRecPtr);
-	ReleaseStore(CRecPtr);
-	CFile->OldLockMode(md);
+	LockMode md = file_d->NewLockMode(CrMode);
+	BYTE* record = file_d->GetRecSpace();
+	file_d->ZeroAllFlds(record);
+	file_d->SetDeletedFlag(record);
+	file_d->CreateRec(file_d->FF->NRecs + 1, record);
+	delete[] record; record = nullptr;
+	file_d->OldLockMode(md);
 }
 
 void UpdRec(void* CR, int N, bool AdUpd)
@@ -629,8 +626,8 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 			if (CFile->FF->NRecs == 0)
 				if (IsRead) {
 				label0:
-					DelTFlds();
-					ZeroAllFlds(CFile, CRecPtr);
+					CFile->DelTFlds(CRecPtr);
+					CFile->ZeroAllFlds(CRecPtr);
 					ReleaseStore(cr);
 					CFile->OldLockMode(md);
 					return;
@@ -646,8 +643,8 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 		}
 		else if (!SrchXKey(k, x, N)) {
 			if (IsRead) {
-				DelTFlds();
-				ZeroAllFlds(CFile, CRecPtr);
+				CFile->DelTFlds(CRecPtr);
+				CFile->ZeroAllFlds(CRecPtr);
 				CFile->SetDeletedFlag(CRecPtr);
 				ReleaseStore(cr);
 				CFile->OldLockMode(md);
@@ -671,11 +668,11 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 		CRecPtr = cr;
 		CFile->ReadRec(N, CRecPtr);
 		CRecPtr = PD->LV->RecPtr;
-		DelTFlds();
-		CopyRecWithT(cr, PD->LV->RecPtr);
+		CFile->DelTFlds(CRecPtr);
+		CFile->CopyRecWithT(cr, PD->LV->RecPtr);
 	}
 	else {
-		CopyRecWithT(PD->LV->RecPtr, cr);
+		CFile->CopyRecWithT(PD->LV->RecPtr, cr);
 		if (app) {
 			CRecPtr = cr;
 			if (CFile->FF->file_type == FileType::INDEX) {
@@ -699,16 +696,36 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 
 void LinkRecProc(Instr_assign* PD)
 {
-	void* p = nullptr; void* r2 = nullptr; void* lr2 = nullptr;
-	FileD* cf = nullptr; void* cr = nullptr; LinkD* ld = nullptr; int n = 0;
-	cf = CFile; cr = CRecPtr; MarkStore(p);
-	ld = PD->LinkLD; CRecPtr = PD->RecLV1->RecPtr;
+	void* p = nullptr;
+	void* r2 = nullptr;
+	void* lr2 = nullptr;
+	FileD* cf = nullptr;
+	void* cr = nullptr;
+	LinkD* ld = nullptr;
+
+	int n = 0;
+	cf = CFile;
+	cr = CRecPtr;
+	MarkStore(p);
+	ld = PD->LinkLD;
+	CRecPtr = PD->RecLV1->RecPtr;
 	lr2 = PD->RecLV2->RecPtr;
-	CFile = ld->ToFD; ClearRecSpace(lr2); CFile = ld->FromFD;
-	if (LinkUpw(ld, n, true)) LastExitCode = 0;
-	else LastExitCode = 1;
-	r2 = CRecPtr; CRecPtr = lr2; DelTFlds(); CopyRecWithT(r2, lr2);
-	ReleaseStore(p); CFile = cf; CRecPtr = cr;
+	CFile = ld->ToFD;
+	CFile->ClearRecSpace(lr2);
+	CFile = ld->FromFD;
+	if (LinkUpw(ld, n, true)) {
+		LastExitCode = 0;
+	}
+	else {
+		LastExitCode = 1;
+	}
+	r2 = CRecPtr;
+	CRecPtr = lr2;
+	CFile->DelTFlds(CRecPtr);
+	CFile->CopyRecWithT(r2, lr2);
+	ReleaseStore(p);
+	CFile = cf;
+	CRecPtr = cr;
 }
 
 void ForAllProc(Instr_forall* PD)
@@ -811,8 +828,8 @@ label1:
 			if (LVr != nullptr) {
 				CRecPtr = lr;
 				CFile->ClearUpdFlag(CRecPtr);
-				DelTFlds();
-				CopyRecWithT(cr, lr);
+				CFile->DelTFlds(CRecPtr);
+				CFile->CopyRecWithT(cr, lr);
 			}
 		//if (LVi != nullptr) *(double*)(LocVarAd(LVi)) = Scan->RecNr;
 		if (LVi != nullptr) {
@@ -830,10 +847,10 @@ label1:
 		else
 #endif
 		{
-			OpenCreateF(CFile, Shared);
+			OpenCreateF(CFile, CPath, Shared);
 			if ((LVr != nullptr) && (LVi == nullptr) && CFile->HasUpdFlag(CRecPtr)) {
 				md1 = CFile->NewLockMode(WrMode);
-				CopyRecWithT(lr, cr);
+				CFile->CopyRecWithT(lr, cr);
 				UpdRec(cr, xScan->RecNr, true);
 				CFile->OldLockMode(md1);
 			}
@@ -937,7 +954,7 @@ label1:
 				}
 			}
 			else {
-				OpenCreateF(CFile, Shared);
+				OpenCreateF(CFile, CPath, Shared);
 			}
 		if (CFile->FF->IsShared()) {
 			if (op == _withlocked) {
@@ -957,7 +974,7 @@ label1:
 				return;
 			}
 			CFile = ld->FD;
-			SetCPathVol(CFile);
+			SetPathAndVolume(CFile);
 			if (op == _withlocked) {
 				msg = 839;
 				str(ld->N, ntxt);
@@ -1034,7 +1051,7 @@ void PutTxt(Instr_puttxt* PD)
 void AssgnCatFld(Instr_assign* PD)
 {
 	CFile = PD->FD3;
-	if (CFile != nullptr) CloseFile(CFile);
+	if (CFile != nullptr) CFile->CloseFile();
 	std::string data = RunShortStr(PD->Frml3);
 	CatFD->SetField(PD->CatIRec, PD->CatFld, data);
 }
@@ -1051,7 +1068,7 @@ void AssgnUserName(Instr_assign* PD)
 
 void ReleaseDriveProc(FrmlElem* Z)
 {
-	SaveFiles();
+	SaveAndCloseAllFiles();
 	pstring s = RunShortStr(Z);
 	char c = (char)toupper((char)s[1]);
 	if (c == spec.CPMdrive) ReleaseDrive(FloppyDrives);
@@ -1085,8 +1102,8 @@ void ResetCatalog()
 	while (CRdb != nullptr) {
 		CFile = CRdb->FD->pChain;
 		while (CFile != nullptr) {
-			CloseFile(CFile);
-			CFile->CatIRec = GetCatalogIRec(CFile->Name, CFile->FF->file_type == FileType::RDB);
+			CFile->CloseFile();
+			CFile->CatIRec = CatFD->GetCatalogIRec(CFile->Name, CFile->FF->file_type == FileType::RDB);
 #ifdef FandSQL
 			SetIsSQLFile();
 #endif
@@ -1205,7 +1222,7 @@ void RunInstr(Instr* PD)
 			//GoExit();
 			break;
 		}
-		case _save: { SaveFiles(); break; }
+		case _save: { SaveAndCloseAllFiles(); break; }
 		case _clrscr: {
 			TextAttr = ProcAttr;
 			ClrScr();
@@ -1304,12 +1321,12 @@ void RunInstr(Instr* PD)
 		case _asgnnrecs: /* !!! with PD^ do!!! */ {
 			auto iPD = (Instr_assign*)PD;
 			CFile = iPD->FD;
-			AssignNRecs(iPD->Add, RunInt(iPD->Frml));
+			CFile->AssignNRecs(iPD->Add, RunInt(iPD->Frml));
 			break;
 		}
 		case _appendrec: {
-			CFile = ((Instr_recs*)PD)->RecFD;
-			AppendRecProc();
+			FileD* rec_file = ((Instr_recs*)PD)->RecFD;
+			AppendRecProc(rec_file);
 			break;
 		}
 		case _deleterec: { DeleteRecProc((Instr_recs*)PD); break; }
@@ -1354,8 +1371,7 @@ void RunInstr(Instr* PD)
 		}
 		case _turncat: {
 			auto iPD = (Instr_turncat*)PD;
-			CFile = iPD->NextGenFD;
-			TurnCat(iPD->FrstCatIRec, iPD->NCatIRecs, RunInt(iPD->TCFrml));
+			CatFD->TurnCat(iPD->NextGenFD, iPD->FrstCatIRec, iPD->NCatIRecs, RunInt(iPD->TCFrml));
 			break;
 		}
 		case _releasedrive: {
@@ -1441,7 +1457,7 @@ void RunInstr(Instr* PD)
 				ForAllFDs(ForAllFilesOperation::close_passive_fd);
 			}
 			else if (!CFile->FF->IsShared() || (CFile->FF->LMode == NullMode)) {
-				CloseFile(CFile);
+				CFile->CloseFile();
 			}
 			break;
 		}
@@ -1534,7 +1550,7 @@ void CallProcedure(Instr_proc* PD)
 
 #ifdef _DEBUG
 	std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
-	if (srcCode.find("FILE.Path:=ADR01.Path+'{GLOB}") != std::string::npos) {
+	if (srcCode.find("VERZE.UUU") != std::string::npos) {
 		printf("");
 	}
 #endif
@@ -1612,7 +1628,7 @@ void CallProcedure(Instr_proc* PD)
 			CFile = (*it0)->FD;
 			CRecPtr = CFile->GetRecSpace();
 			CFile->SetTWorkFlag(CRecPtr);
-			ZeroAllFlds(CFile, CRecPtr);
+			CFile->ZeroAllFlds(CRecPtr);
 			CFile->ClearDeletedFlag(CRecPtr);
 			(*it0)->RecPtr = CRecPtr;
 		}
@@ -1678,7 +1694,7 @@ void CallProcedure(Instr_proc* PD)
 			switch ((*it0)->FTyp) {
 			case 'r': {
 				CFile = (*it0)->FD;
-				ClearRecSpace((*it0)->RecPtr);
+				CFile->ClearRecSpace((*it0)->RecPtr);
 				break;
 			}
 			case 'i': {
@@ -1699,7 +1715,7 @@ void CallProcedure(Instr_proc* PD)
 
 	CFile = lstFD->pChain;
 	while (CFile != nullptr) {
-		CloseFile(CFile);
+		CFile->CloseFile();
 		CFile = CFile->pChain;
 	}
 	lstFD->pChain = nullptr;

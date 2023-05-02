@@ -261,7 +261,7 @@ void CodingRdb::CompressCRdb()
 	ReadMerge();
 	SpecFDNameAllowed = false;
 	RunMerge();
-	SaveFiles();
+	SaveAndCloseAllFiles();
 	ReleaseStore(p);
 	Chpt->FF->RecPtr = cr;
 	CFile = Chpt;

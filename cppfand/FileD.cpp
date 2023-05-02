@@ -1,8 +1,12 @@
 #include "FileD.h"
 
 #include "GlobalVariables.h"
+#include "oaccess.h"
+#include "obaseww.h"
+#include "olongstr.h"
 #include "runfrml.h"
 #include "../cppfand/access.h"
+#include "../fandio/files.h"
 #include "../fandio/XKey.h"
 #include "../Logging/Logging.h"
 #include "../fandio/locks.h"
@@ -25,13 +29,17 @@ FileD::FileD(const FileD& orig)
 	Name = orig.Name;
 	FileType = orig.FileType;
 	ChptPos = orig.ChptPos;
-	FldD = orig.FldD;
 	IsParFile = orig.IsParFile;
 	IsJournal = orig.IsJournal;
 	IsHlpFile = orig.IsHlpFile;
 	typSQLFile = orig.typSQLFile;
 	IsSQLFile = orig.IsSQLFile;
 	IsDynFile = orig.IsDynFile;
+
+	for (FieldDescr* f : orig.FldD) {
+		FieldDescr* new_field_d = new FieldDescr(*f);
+		FldD.push_back(new_field_d);
+	}
 
 	if (orig.FF != nullptr) {
 		FF = new FandFile(*orig.FF, this);
@@ -45,6 +53,15 @@ FileD::FileD(const FileD& orig)
 	}
 
 	Add = orig.Add;
+}
+
+FileD::~FileD()
+{
+	delete FF;
+
+	for (FieldDescr* field_d : FldD) {
+		delete field_d;
+	}
 }
 
 WORD FileD::GetNrKeys()
@@ -94,13 +111,27 @@ void FileD::WriteRec(size_t rec_nr, void* record)
 
 BYTE* FileD::GetRecSpace()
 {
-	size_t length = FF->RecLen + 3;
-	// 0. BYTE in front (.X00) -> Valid Record Flag
+	size_t length = FF->RecLen + 2;
+	// 0. BYTE in front (.X00) -> Valid Record Flag (but it's calculated in RecLen for index file)
 	// 1. BYTE in the end -> Work Flag
 	// 2. BYTE in the end -> Update Flag
 	BYTE* result = new BYTE[length];
 	memset(result, '\0', length);
 	return result;
+}
+
+void FileD::ClearRecSpace(void* record)
+{
+	if (FF->TF != nullptr) {
+		if (HasTWorkFlag(record)) {
+			for (FieldDescr* f : FldD) {
+				if (((f->Flg & f_Stored) != 0) && (f->field_type == FieldType::TEXT)) {
+					TWork.Delete(loadT(f, record));
+					saveT(f, 0, record);
+				}
+			}
+		}
+	}
 }
 
 void FileD::IncNRecs(int n)
@@ -152,13 +183,6 @@ void FileD::DeleteRec(int n, void* record)
 	DecNRecs(1);
 }
 
-void FileD::DelAllDifTFlds(void* Rec, void* CompRec)
-{
-	for (auto& F : FldD) {
-		if (F->field_type == FieldType::TEXT && ((F->Flg & f_Stored) != 0)) DelDifTFld(Rec, CompRec, F);
-	}
-}
-
 void FileD::RecallRec(int recNr, void* record)
 {
 	FF->TestXFExist();
@@ -168,6 +192,60 @@ void FileD::RecallRec(int recNr, void* record)
 	}
 	FF->ClearDeletedFlag(record);
 	WriteRec(recNr, record);
+}
+
+void FileD::AssignNRecs(bool Add, int N)
+{
+	int OldNRecs; LockMode md;
+#ifdef FandSQL
+	if (IsSQLFile) {
+		if ((N = 0) && !Add) Strm1->DeleteXRec(nullptr, nullptr, false); return;
+	}
+#endif
+	md = NewLockMode(DelMode);
+	OldNRecs = FF->NRecs;
+	if (Add) {
+		N = N + OldNRecs;
+	}
+	if ((N < 0) || (N == OldNRecs)) {
+		OldLockMode(md);
+		return;
+	}
+	if ((N == 0) && (FF->TF != nullptr)) {
+		FF->TF->SetEmpty();
+	}
+	if (FF->file_type == FileType::INDEX) {
+		if (N == 0) {
+			FF->NRecs = 0;
+			SetUpdHandle(FF->Handle);
+			int result = FF->XFNotValid();
+			if (result != 0) {
+				RunError(result);
+			}
+			OldLockMode(md);
+			return;
+		}
+		else {
+			SetMsgPar(Name);
+			RunErrorM(md);
+			RunError(821);
+		}
+	}
+	if (N < OldNRecs) {
+		DecNRecs(OldNRecs - N);
+		OldLockMode(md);
+		return;
+	}
+	BYTE* record = GetRecSpace();
+	ZeroAllFlds(record);
+	SetDeletedFlag(record);
+	IncNRecs(N - OldNRecs);
+	for (int i = OldNRecs + 1; i <= N; i++) {
+		WriteRec(i, record);
+	}
+	delete[] record; record = nullptr;
+
+	OldLockMode(md);
 }
 
 bool FileD::loadB(FieldDescr* field_d, void* record)
@@ -261,6 +339,14 @@ void FileD::Close()
 	}
 }
 
+void FileD::CloseFile()
+{
+	if (FF->Handle == nullptr) return;
+	
+	FF->CloseFile();
+
+}
+
 void FileD::Save()
 {
 	if (FF != nullptr) {
@@ -346,4 +432,120 @@ void FileD::SetDeletedFlag(void* record)
 bool FileD::SearchKey(XString& XX, XKey* Key, int& NN, void* record)
 {
 	return FF->SearchKey(XX, Key, NN, record);
+}
+
+FileD* FileD::OpenDuplicateF(bool createTextFile)
+{
+	short Len = 0;
+	SetPathAndVolume(this);
+	bool net = IsNetCVol();
+	FileD* newFile = new FileD(*this);
+
+	SetTempCExt(this, '0', net);
+	CVol = "";
+	newFile->FullPath = CPath;
+	newFile->FF->Handle = OpenH(CPath, _isOverwriteFile, Exclusive);
+	TestCFileError(newFile);
+	newFile->FF->NRecs = 0;
+	newFile->IRec = 0;
+	newFile->FF->Eof = true;
+	newFile->FF->UMode = Exclusive;
+
+	// create index file
+	if (newFile->FF->file_type == FileType::INDEX) {
+		if (newFile->FF->XF != nullptr) {
+			delete newFile->FF->XF;
+			newFile->FF->XF = nullptr;
+		}
+		newFile->FF->XF = new FandXFile(newFile->FF);
+		newFile->FF->XF->Handle = nullptr;
+		newFile->FF->XF->NoCreate = true;
+		/*else xfile name identical with orig file*/
+	}
+
+	// create text file
+	if (createTextFile && (newFile->FF->TF != nullptr)) {
+		newFile->FF->TF = new FandTFile(newFile->FF);
+		*newFile->FF->TF = *FF->TF;
+		SetTempCExt(this, 'T', net);
+		newFile->FF->TF->Handle = OpenH(CPath, _isOverwriteFile, Exclusive);
+		newFile->FF->TF->TestErr();
+		newFile->FF->TF->CompileAll = true;
+		newFile->FF->TF->SetEmpty();
+
+	}
+	return newFile;
+}
+
+void FileD::DeleteDuplicateF(FileD* TempFD)
+{
+	CloseClearH(&TempFD->FF->Handle);
+	SetPathAndVolume(this);
+	SetTempCExt(this, '0', FF->IsShared());
+	MyDeleteFile(CPath);
+}
+
+void FileD::ZeroAllFlds(void* record)
+{
+	memset(record, 0, FF->RecLen);
+	for (FieldDescr* F : FldD) {
+		if (((F->Flg & f_Stored) != 0) && (F->field_type == FieldType::ALFANUM)) {
+			saveS(F, "", record);
+		}
+	}
+}
+
+void FileD::CopyRecWithT(void* record1, void* record2)
+{
+	memcpy(record2, record1, FF->RecLen);
+	for (auto& F : FldD) {
+		if ((F->field_type == FieldType::TEXT) && ((F->Flg & f_Stored) != 0)) {
+			FandTFile* tf1 = FF->TF;
+			FandTFile* tf2 = tf1;
+			if ((tf1->Format != FandTFile::T00Format)) {
+				LongStr* s = loadLongS(F, record1);
+				saveLongS(F, s, record2);
+				delete s; s = nullptr;
+			}
+			else {
+				if (HasTWorkFlag(record1)) {
+					tf1 = &TWork;
+				}
+				int pos = loadT(F, record1);
+				if (HasTWorkFlag(record2)) {
+					tf2 = &TWork;
+				}
+				pos = CopyTFString(tf2, this, tf1, pos);
+				saveT(F, pos, record2);
+			}
+		}
+	}
+}
+
+void FileD::DelTFlds(void* record)
+{
+	for (auto& F : FldD) {
+		if (((F->Flg & f_Stored) != 0) && (F->field_type == FieldType::TEXT)) {
+			FF->DelTFld(F, record);
+		}
+	}
+}
+
+void FileD::DelAllDifTFlds(void* record, void* comp_record)
+{
+	for (auto& F : FldD) {
+		if (F->field_type == FieldType::TEXT && ((F->Flg & f_Stored) != 0)) {
+			FF->DelDifTFld(F, record, comp_record);
+		}
+	}
+}
+
+bool FileD::IsActiveRdb()
+{
+	RdbD* R = CRdb;
+	while (R != nullptr) {
+		if (this == R->FD) return true;
+		R = R->ChainBack;
+	}
+	return false;
 }

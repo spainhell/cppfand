@@ -12,6 +12,7 @@
 #include "../cppfand/runproc.h"
 #include "../cppfand/runproj.h"
 #include "../cppfand/models/Instr.h"
+#include "../fandio/files.h"
 #include "../Editor/OldEditor.h"
 #include "../Common/compare.h"
 
@@ -1244,7 +1245,7 @@ bool RunBuildIn()
 		CurrInst->Vars[1] = GetStringTerm(s);
 		CurrInst->Vars[2] = GetStringTerm(fd->ChptPos.R->FD->Name);
 		CFile = fd;
-		SetCPathVol(CFile);
+		SetPathAndVolume(CFile);
 		CurrInst->Vars[3] = GetStringTerm(CPath);
 		CurrInst->NextBranch = (TBranch*)NextFD(fd);
 		break;
@@ -1349,7 +1350,7 @@ bool RunBuildIn()
 		break;
 	}
 	case proc_type::_FandKeyFieldP: {
-		kf = KeyFldDPtr(CurrInst->NextBranch);
+		kf = (KeyFldD*)CurrInst->NextBranch;
 		if (kf == nullptr) {
 			fd = FindFD(CurrInst->Vars[0]->SS);
 			if (fd == nullptr) goto label1;
@@ -1695,7 +1696,7 @@ bool RunCommand(TCommand* COff/*PCommand*/)
 		if (c->Code == _SaveC) {
 			md = CFile->NewLockMode(WrMode);
 			if (!LinkLastRec(CFile, n, true)) CFile->IncNRecs(1);
-			DelTFld(c->FldD);
+			CFile->FF->DelTFld(c->FldD, CRecPtr);
 			std::string save = SaveDb(c->DbPred, 0);
 			CFile->saveS(c->FldD, save, CRecPtr);
 			CFile->WriteRec(CFile->FF->NRecs, CRecPtr);
@@ -1877,7 +1878,7 @@ void AssertFand(TPredicate* P, TCommand* C)
 	si = SiCFile(P->scanInf);
 	md = CFile->NewLockMode(CrMode);
 	CRecPtr = CFile->GetRecSpace();
-	ZeroAllFlds(CFile, CRecPtr);
+	CFile->ZeroAllFlds(CRecPtr);
 	//PtrRec(d).Seg = _Sg;
 	fl = si->FL;
 	auto l = C->Arg.begin();

@@ -27,6 +27,7 @@ public:
 	FandFile(FileD* parent);
 	FandFile(const FandFile& orig) = delete;
 	FandFile(const FandFile& orig, FileD* parent);
+	~FandFile();
 
 	unsigned short RecLen = 0;
 	void* RecPtr = nullptr;
@@ -70,11 +71,16 @@ public:
 	void saveLongS(FileD* parent, FieldDescr* field_d, LongStr* ls, void* record);
 	int saveT(FieldDescr* field_d, int pos, void* record);
 
+	void DelTFld(FieldDescr* field_d, void* record);
+	void DelDifTFld(FieldDescr* field_d, void* record, void* comp_record);
+
 	unsigned short RdPrefix();
 	int RdPrefixes();
 	void WrPrefix();
 	void WrPrefixes();
 
+	void TruncFile();
+	LockMode RewriteFile(bool append);
 	void SaveFile();
 	void CloseFile();
 
@@ -108,6 +114,7 @@ public:
 	void CopyIndex(XWKey* K, XKey* FromK);
 
 	void SubstDuplF(FileD* TempFD, bool DelTF);
+	void CopyDuplF(FileD* TempFD, bool DelTF);
 	void IndexFileProc(bool Compress);
 
 private:

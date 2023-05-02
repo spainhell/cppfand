@@ -1,6 +1,9 @@
 #include "Catalog.h"
 #include "access.h"
+#include "GlobalVariables.h"
+#include "oaccess.h"
 #include "../Common/textfunc.h"
+#include "../Common/compare.h"
 
 Catalog::Catalog()
 {
@@ -142,6 +145,127 @@ bool Catalog::OldToNewCat(int& FilSz)
 	FilSz = x.NRecs * 107 + 6;
 	result = true;
 	return result;
+}
+
+int Catalog::GetCatalogIRec(const std::string& name, bool multilevel)
+{
+	int result = 0;
+
+	if (CatFD == nullptr || CatFD->GetCatalogFile()->FF->Handle == nullptr) {
+		return result;
+	}
+	if (CRdb == nullptr) {
+		return result;
+	}
+
+	RdbD* R = CRdb;
+
+	while (true) {
+		for (int i = 1; i <= CatFD->GetCatalogFile()->FF->NRecs; i++) {
+			if (EquUpCase(CatFD->GetRdbName(i), R->FD->Name) && EquUpCase(CatFD->GetFileName(i), name)) {
+				result = i;
+				return result;
+			}
+		}
+		R = R->ChainBack;
+		if ((R != nullptr) && multilevel) {
+			continue;
+		}
+		break;
+	}
+
+	return result;
+}
+
+void Catalog::GetPathAndVolume(FileD* file_d, int rec_nr, std::string& path, std::string& volume) const
+{
+	bool isRdb;
+
+	std::string dir;
+	std::string name;
+	std::string ext;
+	std::string content_dir;
+
+	volume = CatFD->GetVolume(rec_nr);
+	path = CatFD->GetPathName(rec_nr);
+	const bool setContentDir = SetContextDir(file_d, content_dir, isRdb);
+	if (setContentDir && path.length() > 1 && path[1] != ':') {
+		if (isRdb) {
+			FSplit(path, dir, name, ext);
+			AddBackSlash(content_dir);
+			dir = content_dir;
+			path = dir + name + ext;
+			return;
+		}
+		if (path[0] == '\\') {
+			path = content_dir.substr(0, 2) + path;
+		}
+		else {
+			AddBackSlash(content_dir);
+			path = content_dir + path;
+		}
+	}
+	else {
+		path = FExpand(path);
+	}
+}
+
+WORD Catalog::Generation(FileD* file_d, std::string& path, std::string& volume)
+{
+	if (file_d->CatIRec == 0) return 0;
+
+	std::string dir;
+	std::string name;
+	std::string ext;
+
+	volume = CatFD->GetVolume(file_d->CatIRec);
+	path = FExpand(CatFD->GetPathName(file_d->CatIRec));
+	FSplit(path, dir, name, ext);
+
+	WORD i, j;
+	pstring s(2);
+	s = ext.substr(2, 2);
+	val(s, i, j);
+
+	if (j == 0) {
+		return i;
+	}
+	else {
+		return 0;
+	}
+}
+
+void Catalog::TurnCat(FileD* file_d, WORD Frst, WORD N, short I)
+{
+	if (file_d != nullptr) {
+		file_d->CloseFile();
+	}
+	file_d = CatFD->GetCatalogFile();
+	BYTE* p = file_d->GetRecSpace();
+	BYTE* q = file_d->GetRecSpace();
+	WORD last = Frst + N - 1;
+	if (I > 0)
+		while (I > 0) {
+			file_d->ReadRec(Frst, q);
+			for (WORD j = 1; j <= N - 1; j++) {
+				file_d->ReadRec(Frst + j, p);
+				file_d->WriteRec(Frst + j - 1, p);
+			}
+			file_d->WriteRec(last, q);
+			I--;
+		}
+	else
+		while (I < 0) {
+			file_d->ReadRec(last, q);
+			for (WORD j = 1; j <= N - 1; j++) {
+				file_d->ReadRec(last - j, p);
+				file_d->WriteRec(last - j + 1, p);
+			}
+			file_d->WriteRec(Frst, q);
+			I++;
+		}
+	delete[] p; p = nullptr;
+	delete[] q; q = nullptr;
 }
 
 std::string Catalog::getValue(size_t rec_nr, FieldDescr* field)

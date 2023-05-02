@@ -10,6 +10,7 @@
 #include "channel.h"
 #endif
 
+const WORD Alloc = 2048;
 
 struct DepD
 {
@@ -31,12 +32,9 @@ enum class ForAllFilesOperation {
 };
 
 void* LocVarAd(LocVar* LV);
-bool EquKFlds(KeyFldD* KF1, KeyFldD* KF2);
-int StoreInTWork(LongStr* S);
-LongStr* ReadDelInTWork(int Pos);
+
 void ForAllFDs(ForAllFilesOperation op, FileD** file_d = nullptr, WORD i = 0);
 
-bool IsActiveRdb(FileD* FD);
 void ResetCompilePars(); // r953 - posledni fce
 
 std::string TranslateOrd(std::string text);
@@ -44,19 +42,10 @@ std::string TranslateOrd(std::string text);
 bool LinkUpw(LinkD* LD, int& N, bool WithT);
 bool LinkLastRec(FileD* FD, int& N, bool WithT);
 
-void ClearRecSpace(void* p);
-void ZeroAllFlds(FileD* file_d, void* record);
-
-void DelTFld(FieldDescr* F);
-void DelTFlds();
-void DelDifTFld(void* Rec, void* CompRec, FieldDescr* F);
-
 void AsgnParFldFrml(FileD* FD, FieldDescr* F, FrmlElem* Z, bool Ad);
 
-void CopyRecWithT(void* p1, void* p2);
 void CloseClearHCFile(FandFile* fand_file);
 void TestCPathError();
-void AssignNRecs(bool Add, int N);
 
 void CloseGoExit(FandFile* fand_file);
 

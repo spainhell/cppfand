@@ -49,7 +49,7 @@ void TbFile::Backup(bool isBackup, WORD Ir)
 	std::string e;
 
 	IsBackup = isBackup;
-	SaveFiles();
+	SaveAndCloseAllFiles();
 	std::string ArNr = CatFD->GetArchive(Ir);
 	Vol = CatFD->GetVolume(Ir);
 	Path = CatFD->GetPathName(Ir);
@@ -95,7 +95,7 @@ label1:
 					FILE* h = CFile->FF->Handle;
 					if (IsBackup) BackupFD();
 					else RestoreFD();
-					/*if (h == 0xff)*/ CloseFile(CFile);
+					/*if (h == 0xff)*/ CFile->CloseFile();
 				}
 				else {
 					CPath = FExpand(CatFD->GetPathName(i));

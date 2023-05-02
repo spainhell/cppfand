@@ -31,6 +31,12 @@ public:
 
 	bool OldToNewCat(int& FilSz);
 
+	int GetCatalogIRec(const std::string& name, bool multilevel);
+	void GetPathAndVolume(FileD* file_d, int rec_nr, std::string& path, std::string& volume) const;
+
+	WORD Generation(FileD* file_d, std::string& path, std::string& volume);
+	void TurnCat(FileD* file_d, WORD Frst, WORD N, short I);
+
 private:
 	FileD* cat_file_;
 	BYTE* record_;

@@ -1006,36 +1006,31 @@ label1:
 	}
 	case _nrecs:
 	case _nrecsabs: {
-		auto iX = (FrmlElem9*)X;
-		cf = CFile;
-		CFile = iX->FD;
-		md = CFile->NewLockMode(RdMode);
+		FileD* fX = ((FrmlElem9*)X)->FD;
+		md = fX->NewLockMode(RdMode);
 		if (X->Op == _nrecs) {
-			RecNo = CFile->FF->XNRecs(CFile->Keys);
+			RecNo = fX->FF->XNRecs(fX->Keys);
 		}
 		else {
-			RecNo = CFile->FF->NRecs;
+			RecNo = fX->FF->NRecs;
 		}
-		CFile->OldLockMode(md);
+		fX->OldLockMode(md);
 		result = RecNo;
-		CFile = cf;
 		break;
 	}
 	case _generation: {
 		auto iX = (FrmlElem9*)X;
-		cf = CFile;
-		CFile = iX->FD;
-		result = (int)Generation();
-		CFile = cf;
+		result = CatFD->Generation(iX->FD, CPath, CVol);
+		FSplit(CPath, CDir, CName, CExt);
 		break;
 	}
 	case _lastupdate: {
 		//cf = CFile;
 		auto iX = (FrmlElem9*)X;
 		//CFile = iX->FD;
-		//md = NewLockMode(RdMode);
+		md = iX->FD->NewLockMode(RdMode);
 		result = LastUpdate(iX->FD->FullPath);
-		//OldLockMode(md);
+		iX->FD->OldLockMode(md);
 		//CFile = cf;
 		break;
 	}
@@ -1299,25 +1294,35 @@ void AssgnFrml(FileD* file_d, void* record, FieldDescr* F, FrmlElem* X, bool Del
 				tf = file_d->FF->TF;
 			}
 			if (TryCopyT(F, tf, pos, X)) {
-				if (Delete) DelTFld(F);
+				if (Delete) {
+					file_d->FF->DelTFld(F, record);
+				}
 				file_d->saveT(F, pos, record);
 			}
 			else {
 				std::string s = RunStdStr(X);
-				if (Delete) DelTFld(F);
-				CFile->saveS(F, s, record);
+				if (Delete) {
+					file_d->FF->DelTFld(F, record);
+				}
+				file_d->saveS(F, s, record);
 			}
 		}
-		else CFile->saveS(F, RunShortStr(X), record);
+		else {
+			file_d->saveS(F, RunShortStr(X), record);
+		}
 		break;
 	}
 	case 'R': {
-		if (Add) CFile->saveR(F, CFile->loadR(F, CRecPtr) + RunReal(X), CRecPtr);
-		else CFile->saveR(F, RunReal(X), CRecPtr);
+		if (Add) {
+			file_d->saveR(F, file_d->loadR(F, record) + RunReal(X), record);
+		}
+		else {
+			file_d->saveR(F, RunReal(X), record);
+		}
 		break;
 	}
 	case 'B': {
-		CFile->saveB(F, RunBool(X), record);
+		file_d->saveB(F, RunBool(X), record);
 		break;
 	}
 	}
@@ -1555,7 +1560,7 @@ LongStr* RunLongStr(FrmlElem* X)
 			}
 			S = RunLongStr(iX7->P011);
 			CFile->OldLockMode(lm);  /*possibly reading .T*/
-			ClearRecSpace(CRecPtr);
+			CFile->ClearRecSpace(CRecPtr);
 			//memcpy(CRecPtr, &S->LL, sizeof(S->LL));
 			//memcpy(&((BYTE*)CRecPtr)[sizeof(S->LL)], S->A, S->LL);
 			//MyMove(S, CRecPtr, S->LL + 2);
@@ -1793,7 +1798,7 @@ label1:
 		}
 		result = RunStdStr(iX7->P011);
 		CFile->OldLockMode(lm);  /*possibly reading .T*/
-		ClearRecSpace(CRecPtr);
+		CFile->ClearRecSpace(CRecPtr);
 		ReleaseAfterLongStr(CRecPtr);
 		CFile = cf; CRecPtr = cr;
 		break;

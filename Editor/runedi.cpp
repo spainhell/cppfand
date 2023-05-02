@@ -17,6 +17,7 @@
 #include "../cppfand/rdrun.h"
 #include "../cppfand/runproc.h"
 #include "../cppfand/runproj.h"
+#include "../fandio/files.h"
 #include "../fandio/XKey.h"
 #include "../cppfand/wwmenu.h"
 #include "../Logging/Logging.h"
@@ -913,7 +914,7 @@ label1:
 		if (IsCurrNewRec && (D == FirstEmptyFld)) NewFlds = true;
 		D = D->pChain;
 	}
-	ClearRecSpace(p);
+	CFile->ClearRecSpace(p);
 	ReleaseStore(p);
 	CRecPtr = E->NewRecPtr;
 }
@@ -984,7 +985,7 @@ void AdjustCRec()
 			IsNewRec = true;
 			Append = true;
 			FirstEmptyFld = CFld;
-			ZeroAllFlds(CFile, CRecPtr);
+			CFile->ZeroAllFlds(CRecPtr);
 			SetWasUpdated(CFile->FF, CRecPtr);
 			NewRecExit();
 		}
@@ -1067,8 +1068,12 @@ void DuplFld(FileD* FD1, FileD* FD2, void* RP1, void* RP2, void* RPt, FieldDescr
 		if (F1->field_type == FieldType::TEXT) {
 			ss = CFile->loadLongS(F1, CRecPtr);
 			CFile = FD2; CRecPtr = RP2;
-			if (RPt == nullptr) DelTFld(F2);
-			else DelDifTFld(RP2, RPt, F2);
+			if (RPt == nullptr) {
+				CFile->FF->DelTFld(F2, CRecPtr);
+			}
+			else {
+				CFile->FF->DelDifTFld(F2, RP2, RPt);
+			}
 			CFile->saveLongS(F2, ss, CRecPtr);
 			ReleaseStore(ss);
 		}
@@ -1228,7 +1233,7 @@ void SetNewWwRecAttr()
 		}
 	}
 	IVon();
-	ClearRecSpace(CRecPtr);
+	CFile->ClearRecSpace(CRecPtr);
 	ReleaseStore(CRecPtr);
 	CRecPtr = E->NewRecPtr;
 }
@@ -1487,7 +1492,7 @@ bool OpenEditWw()
 	int n = 0;
 	auto result = false;
 	CFile = E->Journal;
-	if (CFile != nullptr) OpenCreateF(CFile, Shared);
+	if (CFile != nullptr) OpenCreateF(CFile, CPath, Shared);
 	RdEStatus();
 	if (EdRecVar) {
 		if (OnlyAppend) {
@@ -1500,7 +1505,7 @@ bool OpenEditWw()
 #ifdef FandSQL
 	if (!CFile->IsSQLFile)
 #endif
-		OpenCreateF(CFile, Shared);
+		OpenCreateF(CFile, CPath, Shared);
 	E->OldMd = E->FD->FF->LMode;
 	UpdCount = 0;
 #ifdef FandSQL
@@ -1591,7 +1596,7 @@ bool OpenEditWw()
 			IsNewRec = true;
 			Append = true;
 			LockRec(false);
-			ZeroAllFlds(CFile, CRecPtr);
+			CFile->ZeroAllFlds(CRecPtr);
 			DuplOwnerKey();
 			SetWasUpdated(CFile->FF, CRecPtr);
 		}
@@ -1749,7 +1754,7 @@ void UpdMemberRef(void* POld, void* PNew)
 				goto label1;
 			}
 			Scan->Close();
-			ClearRecSpace(p);
+			CFile->ClearRecSpace(p);
 			ReleaseStore(p);
 		}
 	}
@@ -1793,7 +1798,7 @@ void WrJournal(char Upd, void* RP, double Time)
 	}
 	UpdCount++;
 	if (UpdCount == E->SaveAfter) {
-		SaveFiles();
+		SaveAndCloseAllFiles();
 		UpdCount = 0;
 	}
 }
@@ -1862,7 +1867,7 @@ label1:
 		CFile->OldLockMode(OldMd);
 		CFile = cf2;
 	label3:
-		SetCPathVol(CFile);
+		SetPathAndVolume(CFile);
 		SetMsgPar(CPath, LockModeTxt[md]);
 		w1 = PushWrLLMsg(825, true);
 		if (w == 0) w = w1;
@@ -2313,7 +2318,7 @@ void UpwEdit(LinkD* LkD)
 		if (OpenEditWw()) {
 			RunEdit(px, Brk);
 		}
-		SaveFiles();
+		SaveAndCloseAllFiles();
 		PopEdit();
 	}
 label1:
@@ -2392,7 +2397,7 @@ bool OldRecDiffers()
 		result = true;
 	}
 label2:
-	ClearRecSpace(CRecPtr);
+	CFile->ClearRecSpace(CRecPtr);
 	ReleaseStore(CRecPtr);
 	CRecPtr = E->NewRecPtr;
 	return result;
@@ -2659,7 +2664,7 @@ void DuplFromPrevRec()
 		CRecPtr = CFile->GetRecSpace();
 		RdRec(CRec() - 1);
 		DuplFld(CFile, CFile, CRecPtr, E->NewRecPtr, E->OldRecPtr, F, F);
-		ClearRecSpace(CRecPtr);
+		CFile->ClearRecSpace(CRecPtr);
 		ReleaseStore(CRecPtr);
 		CRecPtr = cr;
 		CFile->OldLockMode(md);
@@ -2671,8 +2676,12 @@ void InsertRecProc(void* RP)
 	GotoRecFld(CRec(), E->FirstFld);
 	IsNewRec = true;
 	LockRec(false);
-	if (RP != nullptr) Move(RP, CRecPtr, CFile->FF->RecLen);
-	else ZeroAllFlds(CFile, CRecPtr);
+	if (RP != nullptr) {
+		Move(RP, CRecPtr, CFile->FF->RecLen);
+	}
+	else {
+		CFile->ZeroAllFlds(CRecPtr);
+	}
 	DuplOwnerKey();
 	SetWasUpdated(CFile->FF, CRecPtr);
 	IVoff();
@@ -2687,17 +2696,36 @@ void InsertRecProc(void* RP)
 void AppendRecord(void* RP)
 {
 	WORD Max;
-	IVoff(); IsNewRec = true; Max = E->NRecs;
-	CFld = E->FirstFld; FirstEmptyFld = CFld;
-	if (IRec < Max)
-	{
-		IRec++; MoveDispl(Max - 1, Max, Max - IRec); DisplRec(IRec); IVon();
+	IVoff();
+	IsNewRec = true;
+	Max = E->NRecs;
+	CFld = E->FirstFld;
+	FirstEmptyFld = CFld;
+	if (IRec < Max)	{
+		IRec++;
+		MoveDispl(Max - 1, Max, Max - IRec);
+		DisplRec(IRec);
+		IVon();
 	}
-	else if (Max == 1) { BaseRec++; DisplWwRecsOrPage(&CPage, &RT); }
-	else { BaseRec += Max - 1; IRec = 2; DisplAllWwRecs(); }
-	if (RP != nullptr) Move(RP, CRecPtr, CFile->FF->RecLen);
-	else ZeroAllFlds(CFile, CRecPtr);
-	DuplOwnerKey(); DisplRecNr(CRec()); SetWasUpdated(CFile->FF, CRecPtr); LockRec(false);
+	else if (Max == 1) {
+		BaseRec++;
+		DisplWwRecsOrPage(&CPage, &RT);
+	}
+	else {
+		BaseRec += Max - 1;
+		IRec = 2;
+		DisplAllWwRecs();
+	}
+	if (RP != nullptr) {
+		Move(RP, CRecPtr, CFile->FF->RecLen);
+	}
+	else {
+		CFile->ZeroAllFlds(CRecPtr);
+	}
+	DuplOwnerKey();
+	DisplRecNr(CRec());
+	SetWasUpdated(CFile->FF, CRecPtr);
+	LockRec(false);
 	NewRecExit();
 }
 
@@ -2766,7 +2794,7 @@ bool PromptSearch(bool create)
 	KeyFldD* KF = K->KFlds;
 	void* RP = CFile->GetRecSpace();
 	CRecPtr = RP;
-	ZeroAllFlds(CFile, CRecPtr);
+	CFile->ZeroAllFlds(CRecPtr);
 	x.Clear();
 	bool li = F3LeadIn && !IsNewRec;
 	int w = PushW(1, TxtRows, TxtCols, TxtRows, true, false);
@@ -2983,7 +3011,7 @@ void Sorting()
 	KeyFldD* SKRoot = nullptr;
 	void* p = nullptr;
 	LockMode md;
-	SaveFiles();
+	SaveAndCloseAllFiles();
 	MarkStore(p);
 
 	if (!PromptSortKeys(E->Flds, SKRoot) || (SKRoot == nullptr)) {
@@ -3394,7 +3422,7 @@ void UpdateEdTFld(LongStr* S)
 	CRecPtr = E->NewRecPtr;
 	if (!EdRecVar) md = CFile->NewLockMode(WrMode);
 	SetWasUpdated(CFile->FF, CRecPtr);
-	DelDifTFld(E->NewRecPtr, E->OldRecPtr, CFld->FldD);
+	CFile->FF->DelDifTFld(CFld->FldD, E->NewRecPtr, E->OldRecPtr);
 	CFile->saveLongS(CFld->FldD, S, CRecPtr);
 	if (!EdRecVar) CFile->OldLockMode(md);
 }
@@ -3555,7 +3583,7 @@ label2:
 	switch (C) {
 	case __F9: {
 		if (WriteCRec(false, Displ)) {
-			SaveFiles();
+			SaveAndCloseAllFiles();
 			UpdCount = 0;
 		}
 		goto label4;
@@ -3913,7 +3941,7 @@ void ImbeddEdit()
 			if (OpenEditWw()) {
 				RunEdit(nullptr, Brk);
 			}
-			SaveFiles();
+			SaveAndCloseAllFiles();
 			PopEdit();
 		}
 	}
@@ -3988,7 +4016,7 @@ void DownEdit()
 			if (OpenEditWw()) {
 				RunEdit(nullptr, Brk);
 			}
-			SaveFiles();
+			SaveAndCloseAllFiles();
 			PopEdit();
 		}
 	}
@@ -4717,7 +4745,7 @@ label81:
 					if (IsNewRec && !EdRecVar) DelNewRec();
 					IVoff();
 					EdUpdated = E->EdUpdated;
-					if (!EdRecVar) ClearRecSpace(E->NewRecPtr);
+					if (!EdRecVar) CFile->ClearRecSpace(E->NewRecPtr);
 					if (Subset && !WasWK) WK->Close(CFile);
 					if (!EdRecVar) {
 #ifdef FandSQL
@@ -4862,7 +4890,7 @@ label81:
 						switch (KbdChar) {
 						case __F9: {
 							// uloz
-							SaveFiles();
+							SaveAndCloseAllFiles();
 							UpdCount = 0;
 							break;
 						}

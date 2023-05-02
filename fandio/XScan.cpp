@@ -181,26 +181,13 @@ void XScan::ResetOwner(XString* XX, FrmlElem* aBool)
 	SeekRec(0);
 }
 
-bool EquKFlds(KeyFldD* KF1, KeyFldD* KF2)
-{
-	bool result = false;
-	while (KF1 != nullptr) {
-		if ((KF2 == nullptr) || (KF1->CompLex != KF2->CompLex) || (KF1->Descend != KF2->Descend)
-			|| (KF1->FldD->Name != KF2->FldD->Name)) return result;
-		KF1 = (KeyFldD*)KF1->pChain;
-		KF2 = (KeyFldD*)KF2->pChain;
-	}
-	if (KF2 != nullptr) return false;
-	return true;
-}
-
 void XScan::ResetOwnerIndex(LinkD* LD, LocVar* LV, FrmlElem* aBool)
 {
 	FD->FF->TestXFExist();
 	Bool = aBool;
 	OwnerLV = LV;
 	Kind = 2;
-	if (!EquKFlds(((XWKey*)LV->RecPtr)->KFlds, LD->ToKey->KFlds)) {
+	if (!KeyFldD::EquKFlds(((XWKey*)LV->RecPtr)->KFlds, LD->ToKey->KFlds)) {
 		RunError(1181);
 	}
 	SeekRec(0);
