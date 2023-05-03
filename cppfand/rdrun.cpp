@@ -97,12 +97,12 @@ bool RunAddUpdte1(char Kind, void* CRold, bool Back, AddD* StopAD, LinkD* notLD)
 			else goto fail;
 		}
 
-		R = RunReal(add->Frml);
+		R = RunReal(CFile, add->Frml, CRecPtr);
 		if (Kind == '-') R = -R;
 		Rold = 0;
 		if (Kind == 'd') {
 			CRecPtr = CRold;
-			Rold = RunReal(add->Frml);
+			Rold = RunReal(CFile, add->Frml, CRecPtr);
 		}
 		ADback = add;
 		CF2 = add->File2;
@@ -261,7 +261,7 @@ bool Assign(AddD* AD)
 
 	switch (F->frml_type) {
 	case 'R': {
-		R = RunReal(Z);
+		R = RunReal(CFile, Z, CRecPtr);
 		break;
 	}
 	case 'S': {

@@ -137,6 +137,6 @@ void SumUp(std::vector<FrmlElemSum*>* S)
 {
 	if (S == nullptr) return;
 	for (size_t i = 0; i < S->size(); i++) {
-		S->at(i)->R += RunReal(S->at(i)->Frml);
+		S->at(i)->R += RunReal(CFile, S->at(i)->Frml, CRecPtr);
 	}
 }

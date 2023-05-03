@@ -10,7 +10,7 @@ void GetTxtPrepare(FrmlElem* Z, FILE** h, int& off, int& len)
 	int l = 0;
 	off = 0;
 	if (iZ->PPPPPP1 != nullptr) { 
-		off = RunInt(iZ->PPPPPP1) - 1; 
+		off = RunInt(CFile, iZ->PPPPPP1, CRecPtr) - 1;
 		if (off < 0) off = 0; 
 	}
 	SetTxtPathVol(iZ->TxtPath, iZ->TxtCatIRec);
@@ -29,7 +29,7 @@ void GetTxtPrepare(FrmlElem* Z, FILE** h, int& off, int& len)
 	if (off >= len) off = len;
 	len -= off;
 	if (iZ->PPPP2 != nullptr) {
-		l = RunInt(iZ->PPPP2);
+		l = RunInt(CFile, iZ->PPPP2, CRecPtr);
 		if (l < 0) l = 0;
 		if (l < len) len = l;
 	}

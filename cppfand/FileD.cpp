@@ -268,7 +268,7 @@ double FileD::loadR(FieldDescr* field_d, void* record)
 		result = FF->loadR(field_d, record);
 	}
 	else {
-		result = RunReal(field_d->Frml);
+		result = RunReal(CFile, field_d->Frml, CRecPtr);
 	}
 	return result;
 }

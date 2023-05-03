@@ -536,7 +536,7 @@ void WrPromptTxt(std::string& S, FrmlElem* Impl, FieldDescr* F, std::string& Txt
 	TextAttr = screen.colors.dHili;
 	if (Impl != nullptr) {
 		switch (F->frml_type) {
-		case 'R': RR = RunReal(Impl); break;
+		case 'R': RR = RunReal(CFile, Impl, CRecPtr); break;
 		case 'S': SS = RunShortStr(Impl); break;
 		default: BB = RunBool(Impl); break;
 		}
@@ -592,7 +592,7 @@ double PromptR(std::string& S, FrmlElem* Impl, FieldDescr* F)
 	auto result = R;
 	if (Event.Pressed.KeyCombination() == __ESC) {
 		if (Impl != nullptr) {
-			result = RunReal(Impl);
+			result = RunReal(CFile, Impl, CRecPtr);
 		}
 		else {
 			result = 0;
@@ -4156,7 +4156,7 @@ void Calculate2()
 		}
 		switch (FTyp) {
 		case 'R': {
-			R = RunReal(Z);
+			R = RunReal(CFile, Z, CRecPtr);
 			str(R, 30, 10, txt);
 			txt = LeadChar(' ', TrailChar(txt, '0'));
 			if (txt[txt.length() - 1] == '.') {

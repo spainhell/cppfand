@@ -586,8 +586,8 @@ TMenuBoxP::TMenuBoxP(WORD C1, WORD R1, TMenu* aParent, Instr_menu* aPD)
 	this->insertChoices(aPD->Choices, false);
 	SetPalette(aPD);
 	if (aPD->X != nullptr) {
-		C1 = RunInt(aPD->X);
-		R1 = RunInt(aPD->Y);
+		C1 = RunInt(CFile, aPD->X, CRecPtr);
+		R1 = RunInt(CFile, aPD->Y, CRecPtr);
 	}
 	else if (aPD->PullDown && aParent == nullptr) {
 		C1 = MenuX;
@@ -843,12 +843,12 @@ TMenuBarP::TMenuBarP(Instr_menu* aPD)
 	this->insertChoices(aPD->Choices, true);
 	SetPalette(PD);
 	y1 = 1;
-	if (PD->Y != nullptr) y1 = RunInt(PD->Y);
+	if (PD->Y != nullptr) y1 = RunInt(CFile, PD->Y, CRecPtr);
 	x1 = 1;
 	l1 = TxtCols;
 	if (PD->X != nullptr) {
-		x1 = RunInt(PD->X);
-		l1 = RunInt(PD->XSz);
+		x1 = RunInt(CFile, PD->X, CRecPtr);
+		l1 = RunInt(CFile, PD->XSz, CRecPtr);
 	}
 	InitTMenuBar(x1, y1, l1);
 }

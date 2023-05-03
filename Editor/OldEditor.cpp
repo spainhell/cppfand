@@ -2146,7 +2146,7 @@ void Calculate()
 
 		switch (FTyp) {
 		case 'R': {
-			R = RunReal(Z);
+			R = RunReal(CFile, Z, CRecPtr);
 			str(R, 30, 10, txt);
 			txt = LeadChar(' ', TrailChar(txt, '0'));
 			if (txt[txt.length() - 1] == '.') {
@@ -3082,8 +3082,8 @@ void SetEditTxt(Instr_setedittxt* PD)
 	if (PD->Wrap != nullptr) Wrap = RunBool(PD->Wrap);
 	if (PD->Just != nullptr) Just = RunBool(PD->Just);
 	if (PD->ColBlk != nullptr) TypeB = RunBool(PD->ColBlk);
-	if (PD->Left != nullptr) LeftMarg = MaxI(1, RunInt(PD->Left));
-	if (PD->Right != nullptr) RightMarg = MaxI(LeftMarg, MinI(255, RunInt(PD->Right)));
+	if (PD->Left != nullptr) LeftMarg = MaxI(1, RunInt(CFile, PD->Left, CRecPtr));
+	if (PD->Right != nullptr) RightMarg = MaxI(LeftMarg, MinI(255, RunInt(CFile, PD->Right, CRecPtr)));
 }
 
 void GetEditTxt(bool& pInsert, bool& pIndent, bool& pWrap, bool& pJust, bool& pColBlk, short& pLeftMarg, short& pRightMarg)

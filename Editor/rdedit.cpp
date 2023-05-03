@@ -474,8 +474,8 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 		if (EO->StartRecKeyZ != nullptr) {
 			E->StartRecKey = RunShortStr(EO->StartRecKeyZ);
 		}
-		E->StartRecNo = RunInt(EO->StartRecNoZ);
-		E->StartIRec = RunInt(EO->StartIRecZ);
+		E->StartRecNo = RunInt(CFile, EO->StartRecNoZ, CRecPtr);
+		E->StartIRec = RunInt(CFile, EO->StartIRecZ, CRecPtr);
 		E->VK = EO->ViewKey;
 		if (E->DownLD != nullptr) {
 			E->DownSet = true;
@@ -489,7 +489,7 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 				break;
 			}
 			case 'F': {
-				E->OwnerRecNo = RunInt((FrmlElem*)EO->DownLV);
+				E->OwnerRecNo = RunInt(CFile, (FrmlElem*)EO->DownLV, CRecPtr);
 				CFile = E->DownLD->ToFD;
 				E->DownRecPtr = E->DownLD->ToFD->GetRecSpace();
 				CFile = E->FD;
@@ -522,7 +522,7 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 			D = (EFldD*)D->pChain;
 		}
 	}
-	E->WatchDelay = RunInt(EO->WatchDelayZ) * 18;
+	E->WatchDelay = RunInt(CFile, EO->WatchDelayZ, CRecPtr) * 18;
 	if (EO->Head == nullptr) {
 		E->Head = StandardHead();
 	}

@@ -126,7 +126,7 @@ bool XString::PackFrml(FrmlListEl* FL, KeyFldD* KF)
 			break;
 		}
 		case 'R': {
-			StoreReal(RunReal(Z), KF);
+			StoreReal(RunReal(CFile, Z, CRecPtr), KF);
 			break;
 		}
 		case 'B': {

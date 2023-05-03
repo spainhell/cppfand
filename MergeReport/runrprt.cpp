@@ -48,14 +48,14 @@ void RunReport(RprtOpt* RO)
 		}
 	}
 	if (PgeLimitZ != nullptr) {
-		PgeLimit = RunInt(PgeLimitZ);
+		PgeLimit = RunInt(CFile, PgeLimitZ, CRecPtr);
 	}
 	else {
 		PgeLimit = spec.AutoRprtLimit;
 	}
 
 	if (PgeSizeZ != nullptr) {
-		PgeSize = RunInt(PgeSizeZ);
+		PgeSize = RunInt(CFile, PgeSizeZ, CRecPtr);
 	}
 	else {
 		PgeSize = spec.AutoRprtLimit + spec.CpLines;
@@ -212,8 +212,8 @@ void NewPage(std::string& text)
 
 bool OutOfLineBound(BlkD* B)
 {
-	return ((B->LineBound != nullptr) && (RprtLine > RunReal(B->LineBound))
-		|| B->AbsLine && (RunInt(B->LineNo) < RprtLine));
+	return ((B->LineBound != nullptr) && (RprtLine > RunReal(CFile, B->LineBound, CRecPtr))
+		|| B->AbsLine && (RunInt(CFile, B->LineNo, CRecPtr) < RprtLine));
 }
 
 void WriteNBlks(std::string& text, short N)
@@ -489,13 +489,13 @@ void PrintTxt(BlkD* B, std::string& text, bool ChkPg)
 {
 	if (B == nullptr) return;
 	if (B->SetPage) {
-		PageNo = RunInt(B->PageNo);
+		PageNo = RunInt(CFile, B->PageNo, CRecPtr);
 		SetPage = true;
 	}
 	if (B != Y.Blk) {
 		FinishTuple(text);
 		if (B->AbsLine) {
-			for (int i = RprtLine; i <= RunInt(B->LineNo) - 1; i++) {
+			for (int i = RprtLine; i <= RunInt(CFile, B->LineNo, CRecPtr) - 1; i++) {
 				NewLine(text);
 			}
 		}
@@ -555,7 +555,7 @@ label1:
 			L = (BYTE)Y.P[Y.I + 1];
 			WORD M = (BYTE)Y.P[Y.I + 2];
 			if (RF->FrmlTyp == 'R') {
-				if (!Skip) R = RunReal(RF->Frml);
+				if (!Skip) R = RunReal(CFile, RF->Frml, CRecPtr);
 				switch (RF->Typ) {
 				case 'R':
 				case 'F': {
@@ -1021,7 +1021,7 @@ bool RewriteRprt(RprtOpt* RO, WORD pageLimit, WORD& Times, bool& IsLPT1)
 
 	if (RO != nullptr) {
 		PrintCtrl = RO->PrintCtrl;
-		if (RO->Times != nullptr) Times = (WORD)RunInt(RO->Times);
+		if (RO->Times != nullptr) Times = (WORD)RunInt(CFile, RO->Times, CRecPtr);
 	}
 
 	if (RO == nullptr || RO->Path.empty() && RO->CatIRec == 0) {

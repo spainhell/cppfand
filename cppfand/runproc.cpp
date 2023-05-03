@@ -92,7 +92,7 @@ void ReportProc(RprtOpt* RO, bool save)
 	}
 	else {
 		if (RO->WidthFrml != nullptr) {
-			RO->Width = RunInt(RO->WidthFrml);
+			RO->Width = RunInt(CFile, RO->WidthFrml, CRecPtr);
 		}
 		if (RO->Head != nullptr) {
 			RO->HeadTxt = RunStdStr(RO->Head);
@@ -154,7 +154,7 @@ void AssignField(Instr_assign* PD)
 	CFile = PD->FD;
 	LockMode md = CFile->NewLockMode(WrMode);
 	FieldDescr* F = PD->FldD;
-	int N = RunInt(PD->RecFrml);
+	int N = RunInt(CFile, PD->RecFrml, CRecPtr);
 	if ((N <= 0) || (N > CFile->FF->NRecs)) {
 		msg = 640;
 		goto label1;
@@ -271,12 +271,12 @@ void WritelnProc(Instr_writeln* PD)
 			break;
 		}
 		case 'F': {
-			r = RunReal(W->Frml);
+			r = RunReal(CFile, W->Frml, CRecPtr);
 			if (W->M == 255) str(r, W->N, x);
 			else str(r, W->N, W->M, x);
 			break;
 		}
-		case 'D': x = StrDate(RunReal(W->Frml), *W->Mask); break;
+		case 'D': x = StrDate(RunReal(CFile, W->Frml, CRecPtr), *W->Mask); break;
 		}
 		if (LF == WriteType::message || LF == WriteType::msgAndHelp) {
 			t = t + x;
@@ -448,7 +448,7 @@ void EditTxtProc(Instr_edittxt* PD)
 	MsgStr MsgS; void* p = nullptr;
 	MarkStore(p);
 	i = 1;
-	if (PD->TxtPos != nullptr) i = RunInt(PD->TxtPos);
+	if (PD->TxtPos != nullptr) i = RunInt(CFile, PD->TxtPos, CRecPtr);
 	EdUpdated = false;
 	a = RunWordImpl(PD->Atr, 0);
 	pv = nullptr;
@@ -471,7 +471,7 @@ void EditTxtProc(Instr_edittxt* PD)
 	}
 	std::string msg;
 	if (PD->ErrMsg != nullptr) msg = RunStdStr(PD->ErrMsg);
-	EditTxtFile(lp, PD->EdTxtMode, msg, PD->ExD, i, RunInt(PD->TxtXY), pv, a, RunShortStr(PD->Hd), PD->WFlags, &MsgS);
+	EditTxtFile(lp, PD->EdTxtMode, msg, PD->ExD, i, RunInt(CFile, PD->TxtXY, CRecPtr), pv, a, RunShortStr(PD->Hd), PD->WFlags, &MsgS);
 	ReleaseStore(p);
 }
 
@@ -525,7 +525,7 @@ void DeleteRecProc(Instr_recs* PD)
 		}
 	}
 	else {
-		n = RunInt(PD->RecNr);
+		n = RunInt(CFile, PD->RecNr, CRecPtr);
 		if ((n <= 0) || (n > CFile->FF->NRecs)) {
 			CFile->OldLockMode(md);
 			delete[] CRecPtr;
@@ -608,7 +608,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 		}
 #endif
 	}
-	else N = RunInt(PD->RecNr);
+	else N = RunInt(CFile, PD->RecNr, CRecPtr);
 	if (IsRead) {
 		if (N == 0) goto label0;
 		else CFile->NewLockMode(RdMode);
@@ -759,7 +759,7 @@ void ForAllProc(Instr_forall* PD)
 		case 'F': {
 			md = CFile->NewLockMode(RdMode);
 			CRecPtr = CFile->GetRecSpace();
-			CFile->ReadRec(RunInt((FrmlElem*)PD->CLV), CRecPtr);
+			CFile->ReadRec(RunInt(CFile, (FrmlElem*)PD->CLV, CRecPtr), CRecPtr);
 			xx.PackKF(CFile, KF, CRecPtr);
 			ReleaseStore(p);
 			CFile->OldLockMode(md);
@@ -933,7 +933,7 @@ void WithLockedProc(Instr_withshared* PD)
 	if (op == _withlocked) {
 		ld = &PD->WLD;
 		while (ld != nullptr) {
-			ld->N = RunInt(ld->Frml);
+			ld->N = RunInt(CFile, ld->Frml, CRecPtr);
 			ld = ld->Chain;
 		}
 	}
@@ -1123,7 +1123,7 @@ void RecallRecProc(Instr_recs* PD)
 {
 	CFile = PD->RecFD;
 	if (CFile->FF->file_type != FileType::INDEX) return;
-	int N = RunInt(PD->RecNr);
+	int N = RunInt(CFile, PD->RecNr, CRecPtr);
 	CRecPtr = CFile->GetRecSpace();
 	LockMode md = CFile->NewLockMode(CrMode);
 	if ((N > 0) && (N <= CFile->FF->NRecs)) {
@@ -1267,8 +1267,8 @@ void RunInstr(Instr* PD)
 		}
 		case _gotoxy: {
 			auto iPD = (Instr_gotoxy*)PD;
-			WORD x = RunInt(iPD->GoX);
-			WORD y = RunInt(iPD->GoY);
+			WORD x = RunInt(CFile, iPD->GoX, CRecPtr);
+			WORD y = RunInt(CFile, iPD->GoY, CRecPtr);
 			screen.GotoXY(x + WindMin.X - 1, y + WindMin.Y - 1, absolute);
 			break;
 		}
@@ -1321,7 +1321,7 @@ void RunInstr(Instr* PD)
 		case _asgnnrecs: /* !!! with PD^ do!!! */ {
 			auto iPD = (Instr_assign*)PD;
 			CFile = iPD->FD;
-			CFile->AssignNRecs(iPD->Add, RunInt(iPD->Frml));
+			CFile->AssignNRecs(iPD->Add, RunInt(CFile, iPD->Frml, CRecPtr));
 			break;
 		}
 		case _appendrec: {
@@ -1341,7 +1341,7 @@ void RunInstr(Instr* PD)
 		case _puttxt: { PutTxt((Instr_puttxt*)PD); break; }
 		case _asgncatfield: { AssgnCatFld((Instr_assign*)PD); break; }
 		case _asgnusercode: {
-			UserCode = RunInt(((Instr_assign*)PD)->Frml);
+			UserCode = RunInt(CFile, ((Instr_assign*)PD)->Frml, CRecPtr);
 			AccRight[0] = 0x01;
 			AccRight[1] = (char)UserCode;
 			break;
@@ -1355,7 +1355,7 @@ void RunInstr(Instr* PD)
 			break;
 		}
 		case _asgnusertoday: {
-			userToday = RunReal(((Instr_assign*)PD)->Frml);
+			userToday = RunReal(CFile, ((Instr_assign*)PD)->Frml, CRecPtr);
 			break;
 		}
 		case _asgnclipbd: {
@@ -1371,7 +1371,7 @@ void RunInstr(Instr* PD)
 		}
 		case _turncat: {
 			auto iPD = (Instr_turncat*)PD;
-			CatFD->TurnCat(iPD->NextGenFD, iPD->FrstCatIRec, iPD->NCatIRecs, RunInt(iPD->TCFrml));
+			CatFD->TurnCat(iPD->NextGenFD, iPD->FrstCatIRec, iPD->NCatIRecs, RunInt(CFile, iPD->TCFrml, CRecPtr));
 			break;
 		}
 		case _releasedrive: {
@@ -1379,7 +1379,7 @@ void RunInstr(Instr* PD)
 			break;
 		}
 		case _setprinter: {
-			SetCurrPrinter(abs(RunInt(((Instr_assign*)PD)->Frml)));
+			SetCurrPrinter(abs(RunInt(CFile, ((Instr_assign*)PD)->Frml, CRecPtr)));
 			break;
 		}
 		case _indexfile: {
@@ -1414,11 +1414,11 @@ void RunInstr(Instr* PD)
 			break;
 		}
 		case _delay: {
-			Delay((RunInt(((Instr_assign*)PD)->Frml) + 27) / 55);
+			Delay((RunInt(CFile, ((Instr_assign*)PD)->Frml, CRecPtr) + 27) / 55);
 			break;
 		}
 		case _sound: {
-			Sound(RunInt(((Instr_assign*)PD)->Frml));
+			Sound(RunInt(CFile, ((Instr_assign*)PD)->Frml, CRecPtr));
 			break;
 		}
 		case _nosound: {
@@ -1484,7 +1484,7 @@ void RunInstr(Instr* PD)
 		}
 		case _setmouse: {
 			auto iPD = (Instr_setmouse*)PD;
-			SetMouse(RunInt(iPD->MouseX), RunInt(iPD->MouseY), RunBool(iPD->Show));
+			SetMouse(RunInt(CFile, iPD->MouseX, CRecPtr), RunInt(CFile, iPD->MouseY, CRecPtr), RunBool(iPD->Show));
 			break;
 		}
 		case _checkfile: {
@@ -1499,7 +1499,7 @@ void RunInstr(Instr* PD)
 		case _sqlrdwrtxt: SQLRdWrTxt(PD); break;
 #endif
 		case _asgnrand: {
-			srand(RunInt(((Instr_assign*)PD)->Frml));
+			srand(RunInt(CFile, ((Instr_assign*)PD)->Frml, CRecPtr));
 			break;
 		}
 		case _randomize: {
@@ -1512,7 +1512,7 @@ void RunInstr(Instr* PD)
 		}
 		case _portout: {
 			auto iPD = (Instr_portout*)PD;
-			PortOut(RunBool(iPD->IsWord), (WORD)(RunInt(iPD->Port)), (WORD)(RunInt(iPD->PortWhat)));
+			PortOut(RunBool(iPD->IsWord), (WORD)(RunInt(CFile, iPD->Port, CRecPtr)), (WORD)(RunInt(CFile, iPD->PortWhat, CRecPtr)));
 			break;
 		}
 		}

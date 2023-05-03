@@ -50,7 +50,7 @@ void GetIndex(Instr_getindex* PD)
 			file_d = ld->ToFD;
 			md = file_d->NewLockMode(RdMode);
 			BYTE* record = file_d->GetRecSpace();
-			file_d->ReadRec(RunInt((FrmlElem*)PD->giLV2), record);
+			file_d->ReadRec(RunInt(CFile, (FrmlElem*)PD->giLV2, CRecPtr), record);
 			x.PackKF(file_d, kf, record);
 			delete[] record; record = nullptr;
 			file_d->OldLockMode(md);
@@ -73,7 +73,7 @@ void GetIndex(Instr_getindex* PD)
 	}
 	else {
 		BYTE* record = file_d->GetRecSpace();
-		int nr = RunInt(PD->giCond);
+		int nr = RunInt(CFile, PD->giCond, CRecPtr);
 		if ((nr > 0) && (nr <= file_d->FF->NRecs)) {
 			file_d->ReadRec(nr, record);
 			if (PD->giMode == '+') {

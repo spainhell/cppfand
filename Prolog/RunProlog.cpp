@@ -1829,8 +1829,8 @@ void CallFandProc(TCommand* cmd)
 				break;
 			}
 			case 'R': {
-				if (d->Typ == _IntD) CurrInst->Vars[i] = GetIntTerm(RunInt(ta->Frml));
-				else CurrInst->Vars[i] = GetRealTerm(RunReal(ta->Frml));
+				if (d->Typ == _IntD) CurrInst->Vars[i] = GetIntTerm(RunInt(CFile, ta->Frml, CRecPtr));
+				else CurrInst->Vars[i] = GetRealTerm(RunReal(CFile, ta->Frml, CRecPtr));
 				break;
 			}
 			default: {
