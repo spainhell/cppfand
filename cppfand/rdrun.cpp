@@ -265,7 +265,7 @@ bool Assign(AddD* AD)
 		break;
 	}
 	case 'S': {
-		if (F->field_type == FieldType::TEXT) S = RunStdStr(Z);
+		if (F->field_type == FieldType::TEXT) S = RunStdStr(CFile, Z, CRecPtr);
 		else ss = RunShortStr(Z);
 		break;
 	}

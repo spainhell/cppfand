@@ -159,20 +159,20 @@ double RunRealStr(FrmlElem* X)
 	}
 	case _length: {
 		auto iX = (FrmlElem6*)X;
-		std::string s = RunStdStr(iX->PP1);
+		std::string s = RunStdStr(CFile, iX->PP1, CRecPtr);
 		result = s.length();
 		break;
 	}
 	case _linecnt: {
 		// get line counts of input text
 		auto iX = (FrmlElem6*)X;
-		std::string s = RunStdStr(iX->PP1);
+		std::string s = RunStdStr(CFile, iX->PP1, CRecPtr);
 		result = CountLines(s, '\r'); // 0x0D, #13
 		break;
 	}
 	case _ord: {
 		auto iX = (FrmlElem6*)X;
-		std::string s = RunStdStr(iX->PP1);
+		std::string s = RunStdStr(CFile, iX->PP1, CRecPtr);
 		if (s.empty()) result = 0;
 		else result = s[0];
 		break;
@@ -185,7 +185,7 @@ double RunRealStr(FrmlElem* X)
 	}
 	case _pos: {
 		FrmlElem12* iX = (FrmlElem12*)X;
-		const std::string strS = RunStdStr(iX->PPP2);
+		const std::string strS = RunStdStr(CFile, iX->PPP2, CRecPtr);
 		const std::string strMask = RunShortStr(iX->PPPP1);
 		size_t n = 1; // kolikaty vyskyt najit
 		if (iX->PP3 != nullptr) {
@@ -207,7 +207,7 @@ double RunRealStr(FrmlElem* X)
 	}
 	case _diskfree: {
 		auto iX = (FrmlElem0*)X;
-		std::string s = RunStdStr(iX->P1);
+		std::string s = RunStdStr(CFile, iX->P1, CRecPtr);
 		result = DiskFree(toupper(s[0]) - '@');
 		break;
 	}
@@ -589,7 +589,7 @@ bool RunBool(FrmlElem* X)
 	}
 	case _instr: {
 		auto iX0 = (FrmlElemIn*)X;
-		std::string s = RunStdStr(iX0->P1);
+		std::string s = RunStdStr(CFile, iX0->P1, CRecPtr);
 		switch (iX0->param1)
 		{
 		case 0:
@@ -620,8 +620,8 @@ bool RunBool(FrmlElem* X)
 	}
 	case _compstr: {
 		auto iX0 = (FrmlElem0*)X;
-		std::string s1 = RunStdStr(iX0->P1);
-		std::string s2 = RunStdStr(iX0->P2);
+		std::string s1 = RunStdStr(CFile, iX0->P1, CRecPtr);
+		std::string s2 = RunStdStr(CFile, iX0->P2, CRecPtr);
 		WORD cmpRes = 0;
 		if (iX0->N22 == 1) {
 			cmpRes = CompLexStrings(TrailChar(s1, ' '), TrailChar(s2, ' '));
@@ -854,7 +854,7 @@ bool RunModulo(FrmlElem1* X)
 
 bool RunEquMask(FrmlElem0* X)
 {
-	auto value = RunStdStr(X->P1);
+	auto value = RunStdStr(CFile, X->P1, CRecPtr);
 	auto mask = RunShortStr(X->P2);
 	auto result = EqualsMask(value, mask);
 	return result;
@@ -1304,7 +1304,7 @@ void AssgnFrml(FileD* file_d, void* record, FieldDescr* F, FrmlElem* X, bool Del
 				file_d->saveT(F, pos, record);
 			}
 			else {
-				std::string s = RunStdStr(X);
+				std::string s = RunStdStr(CFile, X, CRecPtr);
 				if (Delete) {
 					file_d->FF->DelTFld(F, record);
 				}
@@ -1336,7 +1336,7 @@ void LVAssignFrml(LocVar* LV, bool Add, FrmlElem* X)
 {
 	switch (LV->FTyp) {
 	case 'S': {
-		LV->S = RunStdStr(X);
+		LV->S = RunStdStr(CFile, X, CRecPtr);
 		break;
 	}
 	case 'R': {
@@ -1639,8 +1639,8 @@ LongStr* RunLongStr(FrmlElem* X)
 		}
 		case _concat: {
 			auto iX0 = (FrmlElem0*)X;
-			auto S1 = RunStdStr(iX0->P1);
-			auto S2 = RunStdStr(iX0->P2);
+			auto S1 = RunStdStr(CFile, iX0->P1, CRecPtr);
+			auto S2 = RunStdStr(CFile, iX0->P2, CRecPtr);
 			auto S12 = S1 + S2;
 			result = new LongStr(S12.length());
 			result->LL = S12.length();
@@ -1699,7 +1699,7 @@ LongStr* RunLongStr(FrmlElem* X)
 		case _repeatstr: {
 			auto iX0 = (FrmlElem0*)X;
 			size_t i = RunInt(CFile, iX0->P2, CRecPtr);
-			std::string input = RunStdStr(iX0->P1);
+			std::string input = RunStdStr(CFile, iX0->P1, CRecPtr);
 			std::string output = RepeatString(input, i);
 
 			result = new LongStr(output.length());
@@ -1767,7 +1767,7 @@ LongStr* RunLongStr(FrmlElem* X)
 	return result;
 }
 
-std::string RunStdStr(FrmlElem* X)
+std::string RunStdStr(FileD* file_d, FrmlElem* X, void* record)
 {
 	bool b = false;
 	WORD I = 0;
@@ -1800,7 +1800,7 @@ label1:
 		else {
 			LinkLastRec(iX7->File2, RecNo, true);
 		}
-		result = RunStdStr(iX7->P011);
+		result = RunStdStr(CFile, iX7->P011, CRecPtr);
 		CFile->OldLockMode(lm);  /*possibly reading .T*/
 		CFile->ClearRecSpace(CRecPtr);
 		ReleaseAfterLongStr(CRecPtr);
@@ -1811,19 +1811,19 @@ label1:
 		auto iX7 = (FrmlElem7*)X;
 		cf = CFile; cr = CRecPtr;
 		CFile = iX7->File2; CRecPtr = iX7->LD;
-		result = RunStdStr(iX7->P011);
+		result = RunStdStr(CFile, iX7->P011, CRecPtr);
 		CFile = cf; CRecPtr = cr;
 		break;
 	}
 	case _eval: {
-		return RunStdStr(GetEvalFrml((FrmlElem21*)X));
+		return RunStdStr(CFile, GetEvalFrml((FrmlElem21*)X), CRecPtr);
 		break;
 	}
 	case _newfile: {
 		auto iX8 = (FrmlElem8*)X;
 		cf = CFile; cr = CRecPtr;
 		CFile = iX8->NewFile; CRecPtr = iX8->NewRP;
-		result = RunStdStr(iX8->Frml);
+		result = RunStdStr(CFile, iX8->Frml, CRecPtr);
 		CFile = cf; CRecPtr = cr;
 		break;
 	}
@@ -1845,7 +1845,7 @@ label1:
 	}
 	case _copy: {
 		const auto iX0 = static_cast<FrmlElem0*>(X);
-		auto str = RunStdStr(iX0->P1);
+		auto str = RunStdStr(CFile, iX0->P1, CRecPtr);
 		const auto L1 = RunInt(CFile, iX0->P2, CRecPtr) - 1;
 		const auto L2 = RunInt(CFile, iX0->P3, CRecPtr);
 
@@ -1859,8 +1859,8 @@ label1:
 	}
 	case _concat: {
 		auto iX0 = (FrmlElem0*)X;
-		auto S1 = RunStdStr(iX0->P1);
-		auto S2 = RunStdStr(iX0->P2);
+		auto S1 = RunStdStr(CFile, iX0->P1, CRecPtr);
+		auto S2 = RunStdStr(CFile, iX0->P2, CRecPtr);
 		result = S1 + S2;
 		break;
 	}
@@ -1872,7 +1872,7 @@ label1:
 		auto iX0 = (FrmlElem0*)X;
 		char c = iX0->N11;
 		char cnew = iX0->N12;
-		auto sp1 = RunStdStr(iX0->P1);
+		auto sp1 = RunStdStr(CFile, iX0->P1, CRecPtr);
 		result = LeadChar(sp1, c, cnew);
 		break;
 	}
@@ -1880,13 +1880,13 @@ label1:
 		auto iX0 = (FrmlElem0*)X;
 		char c = iX0->N11;
 		char cnew = iX0->N12;
-		auto sp1 = RunStdStr(iX0->P1);
+		auto sp1 = RunStdStr(CFile, iX0->P1, CRecPtr);
 		result = TrailChar(sp1, c, cnew);
 		break;
 	}
 	case _upcase: {
 		auto iX0 = (FrmlElem0*)X;
-		result = RunStdStr(iX0->P1);
+		result = RunStdStr(CFile, iX0->P1, CRecPtr);
 		for (WORD i = 0; i < result.length(); i++) {
 			result[i] = UpcCharTab[(BYTE)result[i]];
 		}
@@ -1894,7 +1894,7 @@ label1:
 	}
 	case _lowcase: {
 		auto iX0 = (FrmlElem0*)X;
-		result = RunStdStr(iX0->P1);
+		result = RunStdStr(CFile, iX0->P1, CRecPtr);
 		LowCase(result);
 		break;
 	}
@@ -1902,7 +1902,7 @@ label1:
 		auto iX0 = (FrmlElem0*)X;
 		size_t i = 1;
 		if (iX0->P3 != nullptr) i = RunInt(CFile, iX0->P3, CRecPtr);
-		std::string s = RunStdStr(iX0->P1);
+		std::string s = RunStdStr(CFile, iX0->P1, CRecPtr);
 		size_t start = RunInt(CFile, iX0->P2, CRecPtr);
 		result = GetNthLine(s, start, i);
 		break;
@@ -1910,7 +1910,7 @@ label1:
 	case _repeatstr: {
 		auto iX0 = (FrmlElem0*)X;
 		size_t i = RunInt(CFile, iX0->P2, CRecPtr);
-		std::string input = RunStdStr(iX0->P1);
+		std::string input = RunStdStr(CFile, iX0->P1, CRecPtr);
 		result = RepeatString(input, i);
 		break;
 	}
@@ -1946,7 +1946,7 @@ label1:
 	}
 	case _setmybp: {
 		auto iX0 = (FrmlElem0*)X;
-		result = RunStdStr(iX0->P1);
+		result = RunStdStr(CFile, iX0->P1, CRecPtr);
 		break;
 	}
 	case _selectstr: {
@@ -1972,7 +1972,7 @@ label1:
 
 std::string RunShortStr(FrmlElem* X)
 {
-	auto s = RunStdStr(X);
+	auto s = RunStdStr(CFile, X, CRecPtr);
 	if (s.length() > 255) s = s.substr(0, 255);
 	return s;
 }
@@ -2141,9 +2141,9 @@ LongStr* RunS(FrmlElem* Z)
 	}
 	case _replace: {
 		auto iZ = (FrmlElem12*)Z;
-		std::string text = RunStdStr(iZ->PPP2);
-		std::string oldText = RunStdStr(iZ->PPPP1); //j = 1;
-		std::string newText = RunStdStr(iZ->PP3);
+		std::string text = RunStdStr(CFile, iZ->PPP2, CRecPtr);
+		std::string oldText = RunStdStr(CFile, iZ->PPPP1, CRecPtr); //j = 1;
+		std::string newText = RunStdStr(CFile, iZ->PP3, CRecPtr);
 
 		auto res = Replace(text, oldText, newText, iZ->Options);
 		auto result = new LongStr(res.length());

@@ -413,7 +413,7 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 	E->dDel = RunWordImpl(EO->ZdDel, screen.colors.dDeleted);
 	E->dTab = RunWordImpl(EO->ZdTab, E->Attr | 0x08);
 	E->dSelect = RunWordImpl(EO->ZdSelect, screen.colors.dSelect);
-	E->Top = RunStdStr(EO->Top);
+	E->Top = RunStdStr(CFile, EO->Top, CRecPtr);
 	if (EO->Mode != nullptr) EditModeToFlags(RunShortStr(EO->Mode), &E->NoDelete, false);
 	if (spec.Prompt158) E->Prompt158 = true;
 	if (EO->SetOnlyView /*UpwEdit*/) {

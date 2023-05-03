@@ -38,15 +38,15 @@ bool FieldInList(FieldDescr* F, std::vector<FieldDescr*>& FL);
 bool FieldInList(FieldDescr* F, std::vector<FieldDescr*>* FL);
 XKey* GetFromKey(LinkD* LD);
 FrmlElem* RunEvalFrml(FrmlElem* Z);
-LongStr* RunLongStr(FrmlElem* X);  // r417 zacina od 555
-std::string RunStdStr(FrmlElem* X);  // nove, vraci std::string
-std::string RunShortStr(FrmlElem* X); // r629 ASM
-void CopyLongStr(LongStr* S, WORD From, WORD Number); // r425 
-void AddToLongStr(LongStr* S, void* P, WORD L); // r433
-void StrMask(double R, pstring& Mask); // r438
-LongStr* RunS(FrmlElem* Z); // r469
-LongStr* RunSelectStr(FrmlElem0* Z); // r522
-void LowCase(LongStr* S); //543 ASM
+LongStr* RunLongStr(FrmlElem* X);
+std::string RunStdStr(FileD* file_d, FrmlElem* X, void* record);
+std::string RunShortStr(FrmlElem* X);
+void CopyLongStr(LongStr* S, WORD From, WORD Number);
+void AddToLongStr(LongStr* S, void* P, WORD L);
+void StrMask(double R, pstring& Mask);
+LongStr* RunS(FrmlElem* Z);
+LongStr* RunSelectStr(FrmlElem0* Z);
+void LowCase(LongStr* S);
 void LowCase(std::string& text);
 double RoundReal(double RR, short M);
 LongStr* LongLeadChar(char C, char CNew, LongStr* S);

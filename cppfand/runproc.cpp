@@ -95,7 +95,7 @@ void ReportProc(RprtOpt* RO, bool save)
 			RO->Width = RunInt(CFile, RO->WidthFrml, CRecPtr);
 		}
 		if (RO->Head != nullptr) {
-			RO->HeadTxt = RunStdStr(RO->Head);
+			RO->HeadTxt = RunStdStr(CFile, RO->Head, CRecPtr);
 		}
 		if (RO->UserSelFlds) {
 			PromptAutoRprt(RO);
@@ -258,7 +258,7 @@ void WritelnProc(Instr_writeln* PD)
 				t = t + RunShortStr(W->Frml);
 			}
 			else {
-				std::string str = RunStdStr(W->Frml);
+				std::string str = RunStdStr(CFile, W->Frml, CRecPtr);
 				printS += str;
 			}
 			W = W->pChain;
@@ -364,7 +364,7 @@ void ExecPgm(Instr_exec* PD)
 	WindMin = wmin;
 	WindMax = wmax;
 	screen.CrsSet(crs);
-	std::string s = RunStdStr(PD->Param);
+	std::string s = RunStdStr(CFile, PD->Param, CRecPtr);
 	WORD i = PD->ProgCatIRec;
 	CVol = "";
 	std::string prog;
@@ -470,7 +470,7 @@ void EditTxtProc(Instr_edittxt* PD)
 		lp = nullptr;
 	}
 	std::string msg;
-	if (PD->ErrMsg != nullptr) msg = RunStdStr(PD->ErrMsg);
+	if (PD->ErrMsg != nullptr) msg = RunStdStr(CFile, PD->ErrMsg, CRecPtr);
 	EditTxtFile(lp, PD->EdTxtMode, msg, PD->ExD, i, RunInt(CFile, PD->TxtXY, CRecPtr), pv, a, RunShortStr(PD->Hd), PD->WFlags, &MsgS);
 	ReleaseStore(p);
 }
@@ -1037,7 +1037,7 @@ void PutTxt(Instr_puttxt* PD)
 		CPath = pth;
 	}
 	else {
-		std::string s = RunStdStr(z);
+		std::string s = RunStdStr(CFile, z, CRecPtr);
 		h = OpenHForPutTxt(PD);
 		WriteH(h, s.length(), (void*)s.c_str());
 	}
@@ -1589,7 +1589,7 @@ void CallProcedure(Instr_proc* PD)
 		case 'f': {
 			if (PD->TArg[i].RecPtr != nullptr) {
 				const auto state = SaveCompState();
-				std::string code = RunStdStr(PD->TArg[i].TxtFrml);
+				std::string code = RunStdStr(CFile, PD->TArg[i].TxtFrml, CRecPtr);
 				SetInpStdStr(code, true);
 				RdFileD(PD->TArg[i].Name, FileType::FAND16, "$");
 				RestoreCompState(state);

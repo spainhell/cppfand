@@ -631,7 +631,7 @@ label1:
 				else
 					switch (RF->FrmlTyp) {
 					case 'S': {
-						std::string S = RunStdStr(RF->Frml);
+						std::string S = RunStdStr(CFile, RF->Frml, CRecPtr);
 						S = TrailChar(S, ' ');
 						text += NewTxtCol(S, M, L, RF->BlankOrWrap);
 						break;

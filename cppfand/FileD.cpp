@@ -280,7 +280,7 @@ std::string FileD::loadS(FieldDescr* field_d, void* record)
 		result = FF->loadS(this, field_d, record);
 	}
 	else {
-		result = RunStdStr(field_d->Frml);
+		result = RunStdStr(CFile, field_d->Frml, CRecPtr);
 	}
 	return result;
 }

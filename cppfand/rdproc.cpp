@@ -2920,7 +2920,7 @@ FrmlElem* GetEvalFrml(FrmlElem21* X)
 	FrmlElem* z = nullptr;
 	FileD* cf = CFile;
 	cr = CRecPtr;
-	auto s = RunStdStr(X->EvalP1);
+	auto s = RunStdStr(CFile, X->EvalP1, CRecPtr);
 	if (s.empty()) {
 		LastExitCode = 0;
 		goto label2;
