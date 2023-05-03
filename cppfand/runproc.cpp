@@ -1311,7 +1311,7 @@ void RunInstr(Instr* PD)
 		case _asgnpar: {
 			// ulozi globalni parametr - do souboru
 			auto iPD = (Instr_assign*)PD;
-			iPD->FD->AsgnParFldFrml(iPD->FldD, iPD->Frml, iPD->Add, CRecPtr);
+			AsgnParFldFrml(iPD->FD, iPD->FldD, iPD->Frml, iPD->Add);
 			break;
 		}
 		case _asgnfield: {

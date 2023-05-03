@@ -42,7 +42,7 @@ std::string TranslateOrd(std::string text);
 bool LinkUpw(LinkD* LD, int& N, bool WithT);
 bool LinkLastRec(FileD* FD, int& N, bool WithT);
 
-
+void AsgnParFldFrml(FileD* FD, FieldDescr* F, FrmlElem* Z, bool Ad);
 
 void CloseClearHCFile(FandFile* fand_file);
 void TestCPathError();

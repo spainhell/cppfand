@@ -248,35 +248,6 @@ void FileD::AssignNRecs(bool Add, int N)
 	OldLockMode(md);
 }
 
-/// ulozi hodnotu parametru do souboru
-void FileD::AsgnParFldFrml(FieldDescr* field_d, FrmlElem* form, bool add, void* record)
-{
-	//#ifdef _DEBUG
-	std::string FileName = FullPath;
-	std::string Varible = field_d->Name;
-	//#endif
-	void* p = nullptr; int N = 0; LockMode md; bool b = false;
-
-#ifdef FandSQL
-	if (CFile->IsSQLFile) {
-		record = GetRecSpace; ZeroAllFlds; AssgnFrml(F, Z, true, Ad);
-		Strm1->UpdateXFld(nullptr, nullptr, F); ClearRecSpace(record)
-	}
-	else
-#endif
-	{
-		md = NewLockMode(WrMode);
-		if (!LinkLastRec(this, N, true)) {
-			IncNRecs(1);
-			WriteRec(N, record);
-		}
-		AssgnFrml(this, record, field_d, form, true, add);
-		WriteRec(N, record);
-		OldLockMode(md);
-	}
-	ReleaseStore(record);
-}
-
 bool FileD::loadB(FieldDescr* field_d, void* record)
 {
 	bool result;

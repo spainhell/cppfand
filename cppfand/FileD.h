@@ -66,7 +66,6 @@ public:
 	void DeleteRec(int n, void* record);
 	void RecallRec(int recNr, void* record);
 	void AssignNRecs(bool Add, int N);
-	void AsgnParFldFrml(FieldDescr* field_d, FrmlElem* form, bool add, void* record);
 		
 	bool loadB(FieldDescr* field_d, void* record);
 	double loadR(FieldDescr* field_d, void* record);

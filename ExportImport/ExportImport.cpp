@@ -242,7 +242,7 @@ void ImportTxt(CopyD* CD)
 		if (CD->HdFD != nullptr) {
 			FE->Op = _const;
 			FE->S = F1->RdDelim(0x1A); //^Z
-			CD->HdFD->AsgnParFldFrml(CD->HdF, FE.get(), false, CRecPtr);
+			AsgnParFldFrml(CD->HdFD, CD->HdF, FE.get(), false);
 		}
 		CFile = CD->FD2;
 		CRecPtr = CD->FD2->GetRecSpace();
