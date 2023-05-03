@@ -401,7 +401,7 @@ void TMenu::countChoices(bool isMenuBar)
 		if (b || C->DisplEver) {
 			C->Displ = true;
 			nTxt++;
-			s = RunShortStr(C->TxtFrml);
+			s = RunShortStr(CFile, C->TxtFrml, CRecPtr);
 			if (s.length() != 0) {
 				short maxLen = min(s.length(), TxtCols - 6);
 				if (s.length() > maxLen) s = s.substr(0, maxLen);
@@ -579,7 +579,7 @@ TMenuBoxP::TMenuBoxP(WORD C1, WORD R1, TMenu* aParent, Instr_menu* aPD)
 {
 	PD = aPD;
 	parent = aParent;
-	pstring s = RunShortStr(aPD->HdLine);
+	pstring s = RunShortStr(CFile, aPD->HdLine, CRecPtr);
 	s[0] = (char)MinI(s.length(), TxtCols - 6);
 	HdTxt = s;
 	HlpRdb = aPD->HelpRdb;

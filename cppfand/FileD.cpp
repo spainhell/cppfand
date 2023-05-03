@@ -292,7 +292,7 @@ pstring FileD::loadOldS(FieldDescr* field_d, void* record)
 		s = FF->loadOldS(field_d, record);
 	}
 	else {
-		s = RunShortStr(field_d->Frml);
+		s = RunShortStr(CFile, field_d->Frml, CRecPtr);
 	}
 	return s;
 }

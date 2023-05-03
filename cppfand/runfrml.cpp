@@ -145,12 +145,12 @@ double RunRealStr(FrmlElem* X)
 	switch (X->Op) {
 	case _valdate: {
 		auto iX = (FrmlElem6*)X;
-		result = ValDate(RunShortStr(iX->PP1), iX->Mask);
+		result = ValDate(RunShortStr(CFile, iX->PP1, CRecPtr), iX->Mask);
 		break;
 	}
 	case _val: {
 		auto iX = (FrmlElem6*)X;
-		auto valS = RunShortStr(iX->PP1);
+		auto valS = RunShortStr(CFile, iX->PP1, CRecPtr);
 		valS = TrailChar(valS, ' ');
 		valS = LeadChar(valS, ' ');
 		short i;
@@ -179,14 +179,14 @@ double RunRealStr(FrmlElem* X)
 	}
 	case _prompt: {
 		auto iX = (FrmlElem11*)X;
-		auto s = RunShortStr(iX->PPP1);
+		auto s = RunShortStr(CFile, iX->PPP1, CRecPtr);
 		result = PromptR(s, iX->PP2, iX->FldD);
 		break;
 	}
 	case _pos: {
 		FrmlElem12* iX = (FrmlElem12*)X;
 		const std::string strS = RunStdStr(CFile, iX->PPP2, CRecPtr);
-		const std::string strMask = RunShortStr(iX->PPPP1);
+		const std::string strMask = RunShortStr(CFile, iX->PPPP1, CRecPtr);
 		size_t n = 1; // kolikaty vyskyt najit
 		if (iX->PP3 != nullptr) {
 			n = RunInt(CFile, iX->PP3, CRecPtr);
@@ -421,7 +421,7 @@ WORD IntTSR(FrmlElem* X)
 
 	switch (iX0->N31) {
 	case 'r': { p = z; break; }
-	case 'S': { s = RunShortStr(z); p = &s; break; }
+	case 'S': { s = RunShortStr(CFile, z, CRecPtr); p = &s; break; }
 	case 'B': { b = RunBool(z); p = &b; break; }
 	case 'R': { r = RunReal(CFile, z, CRecPtr); p = &r; break; }
 	}
@@ -706,13 +706,13 @@ bool RunBool(FrmlElem* X)
 	}
 	case _prompt: {
 		auto iX = (FrmlElem11*)X;
-		auto s = RunShortStr(iX->PPP1);
+		auto s = RunShortStr(CFile, iX->PPP1, CRecPtr);
 		result = PromptB(s, iX->PP2, iX->FldD);
 		break;
 	}
 	case _promptyn: {
 		auto iX0 = (FrmlElem0*)X;
-		SetMsgPar(RunShortStr(iX0->P1));
+		SetMsgPar(RunShortStr(CFile, iX0->P1, CRecPtr));
 		result = PromptYN(110);
 		break;
 	}
@@ -839,7 +839,7 @@ bool RunModulo(FrmlElem1* X)
 {
 	pstring S; short I, M, N; WORD* B1 = nullptr; WORD* B1Offs = B1;
 	N = X->W11;
-	S = RunShortStr(((FrmlElem0*)X)->P1);
+	S = RunShortStr(CFile, ((FrmlElem0*)X)->P1, CRecPtr);
 	if (S.length() != N) { return false; }
 	M = 0;
 	*B1 = X->W21;
@@ -855,7 +855,7 @@ bool RunModulo(FrmlElem1* X)
 bool RunEquMask(FrmlElem0* X)
 {
 	auto value = RunStdStr(CFile, X->P1, CRecPtr);
-	auto mask = RunShortStr(X->P2);
+	auto mask = RunShortStr(CFile, X->P2, CRecPtr);
 	auto result = EqualsMask(value, mask);
 	return result;
 }
@@ -1312,7 +1312,7 @@ void AssgnFrml(FileD* file_d, void* record, FieldDescr* F, FrmlElem* X, bool Del
 			}
 		}
 		else {
-			file_d->saveS(F, RunShortStr(X), record);
+			file_d->saveS(F, RunShortStr(CFile, X, CRecPtr), record);
 		}
 		break;
 	}
@@ -1970,9 +1970,9 @@ label1:
 	return result;
 }
 
-std::string RunShortStr(FrmlElem* X)
+std::string RunShortStr(FileD* file_d, FrmlElem* X, void* record)
 {
-	auto s = RunStdStr(CFile, X, CRecPtr);
+	auto s = RunStdStr(file_d, X, record);
 	if (s.length() > 255) s = s.substr(0, 255);
 	return s;
 }
@@ -2134,7 +2134,7 @@ LongStr* RunS(FrmlElem* Z)
 			else str(r, l, m, s);
 		}
 		else {
-			s = RunShortStr(iZ0->P2);
+			s = RunShortStr(CFile, iZ0->P2, CRecPtr);
 			StrMask(RunReal(CFile, iZ0->P1, CRecPtr), s);
 		}
 		break;
@@ -2153,13 +2153,13 @@ LongStr* RunS(FrmlElem* Z)
 	}
 	case _prompt: {
 		auto iZ = (FrmlElem11*)Z;
-		auto s0 = RunShortStr(iZ->PPP1);
+		auto s0 = RunShortStr(CFile, iZ->PPP1, CRecPtr);
 		s = PromptS(s0, iZ->PP2, iZ->FldD);
 		break;
 	}
 	case _getpath: {
 		s = ".*";
-		if (iZ0->P1 != nullptr) s = RunShortStr(iZ0->P1);
+		if (iZ0->P1 != nullptr) s = RunShortStr(CFile, iZ0->P1, CRecPtr);
 		s = ww.SelectDiskFile(s, 35, false);
 		break;
 	}
@@ -2203,7 +2203,7 @@ LongStr* RunS(FrmlElem* Z)
 	case _edkey: s = EdKey; break;
 	case _edreckey: s = EdRecKey; break;
 	case _getenv: {
-		s = RunShortStr(iZ0->P1);
+		s = RunShortStr(CFile, iZ0->P1, CRecPtr);
 		if (s == "") s = paramstr[0];
 		else s = GetEnv(s.c_str());
 		break;
@@ -2255,15 +2255,15 @@ LongStr* RunSelectStr(FrmlElem0* Z)
 		x = GetNthLine(std_s, i, 1, Z->Delim);
 		if (x != "") ww.PutSelect(x);
 	}
-	mode = RunShortStr(Z->P6);
+	mode = RunShortStr(CFile, Z->P6, CRecPtr);
 	for (i = 1; i <= mode.length(); i++)
 		switch (toupper(mode[i])) {
 		case 'A': ss.Abcd = true; break;
 		case 'S': ss.Subset = true; break;
 		case 'I': ss.ImplAll = true; break;
 		}
-	SetMsgPar(RunShortStr(Z->P4));
-	ww.SelectStr(RunInt(CFile, Z->P1, CRecPtr), RunInt(CFile, Z->P2, CRecPtr), 110, RunShortStr(Z->P5));
+	SetMsgPar(RunShortStr(CFile, Z->P4, CRecPtr));
+	ww.SelectStr(RunInt(CFile, Z->P1, CRecPtr), RunInt(CFile, Z->P2, CRecPtr), 110, RunShortStr(CFile, Z->P5, CRecPtr));
 	MarkStore(p2);
 	s2 = new LongStr(s->LL + 2); // GetStore2(s->LL + 2);
 	n = 1; LastExitCode = 0;
@@ -2378,7 +2378,7 @@ void GetRecNoXString(FrmlElem13* Z, XString& X)
 	while (kf != nullptr) {
 		FrmlElem* zz = Z->Arg[i];
 		switch (kf->FldD->frml_type) {
-		case 'S': X.StoreStr(RunShortStr(zz), kf); break;
+		case 'S': X.StoreStr(RunShortStr(CFile, zz, CRecPtr), kf); break;
 		case 'R': X.StoreReal(RunReal(CFile, zz, CRecPtr), kf); break;
 		case 'B': X.StoreBool(RunBool(zz), kf); break;
 		}

@@ -414,7 +414,7 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 	E->dTab = RunWordImpl(EO->ZdTab, E->Attr | 0x08);
 	E->dSelect = RunWordImpl(EO->ZdSelect, screen.colors.dSelect);
 	E->Top = RunStdStr(CFile, EO->Top, CRecPtr);
-	if (EO->Mode != nullptr) EditModeToFlags(RunShortStr(EO->Mode), &E->NoDelete, false);
+	if (EO->Mode != nullptr) EditModeToFlags(RunShortStr(CFile, EO->Mode, CRecPtr), &E->NoDelete, false);
 	if (spec.Prompt158) E->Prompt158 = true;
 	if (EO->SetOnlyView /*UpwEdit*/) {
 		EO->Tab.clear();
@@ -472,7 +472,7 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 		E->RefreshDelay = RunWordImpl(EO->RefreshDelayZ, spec.RefreshDelay) * 18;
 		E->SaveAfter = RunWordImpl(EO->SaveAfterZ, spec.UpdCount);
 		if (EO->StartRecKeyZ != nullptr) {
-			E->StartRecKey = RunShortStr(EO->StartRecKeyZ);
+			E->StartRecKey = RunShortStr(CFile, EO->StartRecKeyZ, CRecPtr);
 		}
 		E->StartRecNo = RunInt(CFile, EO->StartRecNoZ, CRecPtr);
 		E->StartIRec = RunInt(CFile, EO->StartIRecZ, CRecPtr);
@@ -514,7 +514,7 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 		}
 	}
 	if (EO->StartFieldZ != nullptr) {
-		std::string rss = RunShortStr(EO->StartFieldZ);
+		std::string rss = RunShortStr(CFile, EO->StartFieldZ, CRecPtr);
 		std::string s = TrailChar(rss, ' ');
 		D = E->FirstFld;
 		while (D != nullptr) {
@@ -853,7 +853,7 @@ pstring GetStr_E(FrmlElem* Z)
 {
 	if (Z == nullptr) return "";
 	else {
-		std::string s = RunShortStr(Z);
+		std::string s = RunShortStr(CFile, Z, CRecPtr);
 		//while (GetLengthOfStyledString(s) > TxtCols) {
 		//	// smaz posledni znak z retezce
 		//	s.erase(s.length() - 1);

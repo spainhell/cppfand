@@ -537,7 +537,7 @@ void WrPromptTxt(std::string& S, FrmlElem* Impl, FieldDescr* F, std::string& Txt
 	if (Impl != nullptr) {
 		switch (F->frml_type) {
 		case 'R': RR = RunReal(CFile, Impl, CRecPtr); break;
-		case 'S': SS = RunShortStr(Impl); break;
+		case 'S': SS = RunShortStr(CFile, Impl, CRecPtr); break;
 		default: BB = RunBool(Impl); break;
 		}
 		T = DecodeFieldRSB(F, F->L, RR, SS, BB);
@@ -578,7 +578,7 @@ std::string PromptS(std::string& S, FrmlElem* Impl, FieldDescr* F)
 	WrPromptTxt(S, Impl, F, Txt, R);
 	auto result = Txt;
 	if (Event.Pressed.KeyCombination() == __ESC) {
-		if (Impl != nullptr) result = RunShortStr(Impl);
+		if (Impl != nullptr) result = RunShortStr(CFile, Impl, CRecPtr);
 		else result = "";
 	}
 	return result;
@@ -2346,7 +2346,7 @@ void DisplChkErr(ChkD* C)
 		if (F10SpecKey == __SHIFT_F7) F10SpecKey = 0xfffe;
 		else F10SpecKey = __F1;
 	}
-	SetMsgPar(RunShortStr(C->TxtZ));
+	SetMsgPar(RunShortStr(CFile, C->TxtZ, CRecPtr));
 	WrLLF10Msg(110);
 	if (Event.Pressed.KeyCombination() == __F1) {
 		Help(CFile->ChptPos.R, C->HelpName, false);
@@ -4166,7 +4166,7 @@ void Calculate2()
 		}
 		case 'S': {
 			/* wie RdMode fuer T ??*/
-			txt = RunShortStr(Z);
+			txt = RunShortStr(CFile, Z, CRecPtr);
 			break;
 		}
 		case 'B': {

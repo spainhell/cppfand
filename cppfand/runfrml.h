@@ -40,7 +40,7 @@ XKey* GetFromKey(LinkD* LD);
 FrmlElem* RunEvalFrml(FrmlElem* Z);
 LongStr* RunLongStr(FrmlElem* X);
 std::string RunStdStr(FileD* file_d, FrmlElem* X, void* record);
-std::string RunShortStr(FrmlElem* X);
+std::string RunShortStr(FileD* file_d, FrmlElem* X, void* record);
 void CopyLongStr(LongStr* S, WORD From, WORD Number);
 void AddToLongStr(LongStr* S, void* P, WORD L);
 void StrMask(double R, pstring& Mask);

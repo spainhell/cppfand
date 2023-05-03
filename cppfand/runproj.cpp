@@ -935,7 +935,7 @@ void RdUserId(bool Chk)
 label1:
 	TestLex(_quotedstr); name = LexWord; RdLex(); Accept(',');
 	code = RdInteger(); Accept(',');
-	Z = RdStrFrml(); pw2 = RunShortStr(Z); ReleaseStore(Z);
+	Z = RdStrFrml(); pw2 = RunShortStr(CFile, Z, CRecPtr); ReleaseStore(Z);
 	if (Lexem == ',') { RdLex(); RdByteList(&acc); }
 	else { acc[0] = 1; acc[1] = (char)code; }
 	if (Chk) {

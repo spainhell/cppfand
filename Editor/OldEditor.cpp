@@ -2156,7 +2156,7 @@ void Calculate()
 		}
 		case 'S': {
 			/* wie RdMode fuer T ??*/
-			txt = RunShortStr(Z);
+			txt = RunShortStr(CFile, Z, CRecPtr);
 			break;
 		}
 		case 'B': {

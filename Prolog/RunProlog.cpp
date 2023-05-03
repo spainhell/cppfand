@@ -1811,7 +1811,7 @@ void CallFandProc(TCommand* cmd)
 			case 'S': {
 				if ((w & 1) == 0) {
 					if (d->Typ == _StrD) {
-						CurrInst->Vars[i] = GetStringTerm(RunShortStr(ta->Frml));
+						CurrInst->Vars[i] = GetStringTerm(RunShortStr(CFile, ta->Frml, CRecPtr));
 					}
 					else {
 						s = RunLongStr(ta->Frml);

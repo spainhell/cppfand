@@ -122,7 +122,7 @@ bool XString::PackFrml(FrmlListEl* FL, KeyFldD* KF)
 		FrmlElem* Z = FL->Frml;
 		switch (KF->FldD->frml_type) {
 		case 'S': {
-			StoreStr(RunShortStr(Z), KF);
+			StoreStr(RunShortStr(CFile, Z, CRecPtr), KF);
 			break;
 		}
 		case 'R': {

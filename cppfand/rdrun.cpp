@@ -64,7 +64,7 @@ bool Add(AddD* AD, void* RP, double R, bool Back)
 	if (AD->Chk == nullptr) return result;
 	if (!Back && !RunBool(AD->Chk->Bool))
 	{
-		SetMsgPar(RunShortStr(AD->Chk->TxtZ));
+		SetMsgPar(RunShortStr(CFile, AD->Chk->TxtZ, CRecPtr));
 		WrLLF10Msg(110);
 		result = false;
 	}
@@ -266,7 +266,7 @@ bool Assign(AddD* AD)
 	}
 	case 'S': {
 		if (F->field_type == FieldType::TEXT) S = RunStdStr(CFile, Z, CRecPtr);
-		else ss = RunShortStr(Z);
+		else ss = RunShortStr(CFile, Z, CRecPtr);
 		break;
 	}
 	default: {

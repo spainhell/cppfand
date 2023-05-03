@@ -301,7 +301,7 @@ void MoveForwToRecM(InpD* ID)
 		while (C != nullptr) {
 			if (!RunBool(C->Bool)) {
 				ID->Warning = true;
-				ID->ErrTxtFrml->S = RunShortStr(C->TxtZ);
+				ID->ErrTxtFrml->S = RunShortStr(CFile, C->TxtZ, CRecPtr);
 				if (!C->Warning) { ID->Error = true; return; }
 			}
 			C = (ChkD*)C->pChain;

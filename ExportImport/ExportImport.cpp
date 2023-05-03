@@ -608,7 +608,7 @@ void BackupM(Instr_backup* PD)
 	MarkStore(p);
 	if (PD->IsBackup) s = RunLongStr(PD->bmMasks);
 	TzFile* F = new TzFile(PD->IsBackup, PD->NoCompress, PD->bmSubDir, PD->bmOverwr,
-		PD->BrCatIRec, RunShortStr(PD->bmDir));
+		PD->BrCatIRec, RunShortStr(CFile, PD->bmDir, CRecPtr));
 	try {
 		LastExitCode = 1;
 		if (PD->IsBackup) F->Backup(s);
