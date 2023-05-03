@@ -538,7 +538,7 @@ void WrPromptTxt(std::string& S, FrmlElem* Impl, FieldDescr* F, std::string& Txt
 		switch (F->frml_type) {
 		case 'R': RR = RunReal(CFile, Impl, CRecPtr); break;
 		case 'S': SS = RunShortStr(CFile, Impl, CRecPtr); break;
-		default: BB = RunBool(Impl); break;
+		default: BB = RunBool(CFile, Impl, CRecPtr); break;
 		}
 		T = DecodeFieldRSB(F, F->L, RR, SS, BB);
 	}
@@ -565,7 +565,7 @@ bool PromptB(std::string& S, FrmlElem* Impl, FieldDescr* F)
 	WrPromptTxt(S, Impl, F, Txt, R);
 	bool result = (Txt[0] == AbbrYes);
 	if (Event.Pressed.KeyCombination() == __ESC) {
-		if (Impl != nullptr) result = RunBool(Impl);
+		if (Impl != nullptr) result = RunBool(CFile, Impl, CRecPtr);
 		else result = false;
 	}
 	return result;
@@ -782,7 +782,7 @@ bool ELockRec(EditD* E, int N, bool IsNewRec, bool Subset)
 			CFile->ReadRec(N, CRecPtr);
 			CFile->OldLockMode(md);
 			if (Subset && !
-				((NoCondCheck || RunBool(E->Cond) && CheckKeyIn(E)) && CheckOwner(E))) {
+				((NoCondCheck || RunBool(CFile, E->Cond, CRecPtr) && CheckKeyIn(E)) && CheckOwner(E))) {
 				WrLLF10Msg(150); goto label1;
 			}
 		}
@@ -802,7 +802,7 @@ WORD RecAttr(WORD I)
 {
 	bool b = (I != IRec) || !IsNewRec;
 	if (!IsNewRec && CFile->DeletedFlag(CRecPtr)) return E->dDel;
-	else if (b && Select && RunBool(E->Bool)) return E->dSubSet;
+	else if (b && Select && RunBool(CFile, E->Bool, CRecPtr)) return E->dSubSet;
 	else if (b && IsSelectedRec(I)) return E->dSelect;
 	else return E->dNorm;
 }
@@ -1996,7 +1996,7 @@ bool DeleteRecProc()
 				CFile->ClearDeletedFlag(CRecPtr); /*prevent err msg 148*/
 				if (!ELockRec(E, N, false, Subset)) goto label1;
 				RdRec(BaseRec);
-				if (RunBool(E->Bool)) b = DelIndRec(BaseRec, N);
+				if (RunBool(CFile, E->Bool, CRecPtr)) b = DelIndRec(BaseRec, N);
 				else {
 					b = true;
 					BaseRec++;
@@ -2026,7 +2026,7 @@ bool DeleteRecProc()
 				if ((BaseRec > WK->NRecs()) || (WK->NrToRecNr(CFile, BaseRec) != J + 1)) goto label2;
 			}
 			else BaseRec = I;
-			if (RunBool(E->Bool)) {
+			if (RunBool(CFile, E->Bool, CRecPtr)) {
 				if (!CleanUp()) {
 					fail = true;
 					goto label2;
@@ -2074,7 +2074,7 @@ ChkD* CompChk(EFldD* D, char Typ)
 	ChkD* C = D->Chk;
 	ChkD* result = nullptr;
 	while (C != nullptr) {
-		if ((w && C->Warning || f && !C->Warning) && !RunBool(C->Bool)) {
+		if ((w && C->Warning || f && !C->Warning) && !RunBool(CFile, C->Bool, CRecPtr)) {
 			result = C;
 			return result;
 		}
@@ -2536,7 +2536,7 @@ bool WriteCRec(bool MayDispl, bool& Displ)
 			return result;
 		}
 	}
-	if (Subset && !(NoCondCheck || RunBool(E->Cond) && CheckKeyIn(E))) {
+	if (Subset && !(NoCondCheck || RunBool(CFile, E->Cond, CRecPtr) && CheckKeyIn(E))) {
 		UnLockWithDep(OldMd);
 		WrLLF10Msg(823);
 		return result;
@@ -3088,7 +3088,7 @@ bool IsDependItem()
 	//}
 
 	for (const DepD* dep : CFld->Dep) {
-		if (RunBool(dep->Bool)) {
+		if (RunBool(CFile, dep->Bool, CRecPtr)) {
 			return true;
 		}
 	}
@@ -3108,7 +3108,7 @@ void SetDependItem()
 	//}
 
 	for (const DepD* dep : CFld->Dep) {
-		if (RunBool(dep->Bool)) {
+		if (RunBool(CFile, dep->Bool, CRecPtr)) {
 			AssignFld(CFld->FldD, dep->Frml);
 			return;
 		}
@@ -3262,7 +3262,7 @@ label1:
 						if (KeyPressed() && (ReadKey() != _M_) && PromptYN(23)) goto label4;
 						RdRec(i);
 						DisplRecNr(i);
-						if (!CFile->DeletedFlag(CRecPtr) && RunBool(E->Bool)) {
+						if (!CFile->DeletedFlag(CRecPtr) && RunBool(CFile, E->Bool, CRecPtr)) {
 							RdRec(CRec());
 							GotoRecFld(i, E->FirstFld);
 							goto label2;
@@ -3326,7 +3326,7 @@ label0:
 	if ((i > 0) && (i <= CNRecs())) {
 		RdRec(i);
 		if (Displ) DisplRecNr(i); // zobrazi cislo zaznamu v hlavicce
-		if (!Select || !CFile->DeletedFlag(CRecPtr) && RunBool(E->Bool)) goto label2;
+		if (!Select || !CFile->DeletedFlag(CRecPtr) && RunBool(CFile, E->Bool, CRecPtr)) goto label2;
 		if (KeyPressed()) {
 			w = ReadKey();
 			if (((Delta > 0) && (w != _down_) && (w != _CtrlEnd_) && (w != _PgDn_)
@@ -4170,7 +4170,7 @@ void Calculate2()
 			break;
 		}
 		case 'B': {
-			if (RunBool(Z)) txt = AbbrYes;
+			if (RunBool(CFile, Z, CRecPtr)) txt = AbbrYes;
 			else txt = AbbrNo;
 			break;
 		}
@@ -4627,7 +4627,7 @@ void RunEdit(XString* PX, WORD& Brk)
 	DisplLL();
 	if (OnlySearch) goto label2;
 	if (!IsNewRec && (PX != nullptr)) GotoXRec(PX, n);
-	if (Select && !RunBool(E->Bool)) GoPrevNextRec(+1, true);
+	if (Select && !RunBool(CFile, E->Bool, CRecPtr)) GoPrevNextRec(+1, true);
 	//if (/*E->StartFld != nullptr*/ true) { GoStartFld(&E->StartFld); goto label1; }
 	if (E->StartFld != nullptr) {
 		GoStartFld(E->StartFld);

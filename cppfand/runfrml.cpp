@@ -51,7 +51,7 @@ double Owned(FrmlElem* Bool, FrmlElem* Sum, LinkD* LD)
 		while (true) {
 			Scan->GetRec(CRecPtr);
 			if (!Scan->eof) {
-				if (RunBool(Bool)) {
+				if (RunBool(CFile, Bool, CFile)) {
 					if (Sum == nullptr) {
 						r = r + 1;
 					}
@@ -422,7 +422,7 @@ WORD IntTSR(FrmlElem* X)
 	switch (iX0->N31) {
 	case 'r': { p = z; break; }
 	case 'S': { s = RunShortStr(CFile, z, CRecPtr); p = &s; break; }
-	case 'B': { b = RunBool(z); p = &b; break; }
+	case 'B': { b = RunBool(CFile, z, CRecPtr); p = &b; break; }
 	case 'R': { r = RunReal(CFile, z, CRecPtr); p = &r; break; }
 	}
 
@@ -544,7 +544,7 @@ LocVar* RunUserFunc(FrmlElem19* X)
 	return return_lv;
 }
 
-bool RunBool(FrmlElem* X)
+bool RunBool(FileD* file_d, FrmlElem* X, void* record)
 {
 	int RecNo;
 	LongStr* S = nullptr;
@@ -558,32 +558,32 @@ bool RunBool(FrmlElem* X)
 	switch (X->Op) {
 	case _and: {
 		auto iX0 = (FrmlElem0*)X;
-		if (RunBool(iX0->P1)) {
-			result = RunBool(iX0->P2);
+		if (RunBool(CFile, iX0->P1, CRecPtr)) {
+			result = RunBool(CFile, iX0->P2, CRecPtr);
 		}
 		else result = false;
 		break;
 	}
 	case _or: {
 		auto iX0 = (FrmlElem0*)X;
-		if (RunBool(iX0->P1)) result = true;
-		else result = RunBool(iX0->P2);
+		if (RunBool(CFile, iX0->P1, CRecPtr)) result = true;
+		else result = RunBool(CFile, iX0->P2, CRecPtr);
 		break;
 	}
 	case _lneg: {
 		auto iX0 = (FrmlElem0*)X;
-		result = !RunBool(iX0->P1);
+		result = !RunBool(CFile, iX0->P1, CRecPtr);
 		break;
 	}
 	case _limpl: {
 		auto iX0 = (FrmlElem0*)X;
-		if (RunBool(iX0->P1)) result = RunBool(iX0->P2);
+		if (RunBool(CFile, iX0->P1, CRecPtr)) result = RunBool(CFile, iX0->P2, CRecPtr);
 		else result = true;
 		break;
 	}
 	case _lequ: {
 		auto iX0 = (FrmlElem0*)X;
-		if (RunBool(iX0->P1) == RunBool(iX0->P2)) result = true;
+		if (RunBool(CFile, iX0->P1, CRecPtr) == RunBool(CFile, iX0->P2, CRecPtr)) result = true;
 		else result = false;
 		break;
 	}
@@ -677,7 +677,7 @@ bool RunBool(FrmlElem* X)
 		if (iX->LD != nullptr) b7 = LinkUpw(iX->LD, RecNo, false);
 		else b7 = LinkLastRec(iX->File2, RecNo, false);
 		if ((iX->P011 == nullptr)) result = b7;
-		else result = RunBool(iX->P011);
+		else result = RunBool(CFile, iX->P011, CRecPtr);
 		ReleaseStore(CRecPtr);
 		CFile = cf; CRecPtr = cr;
 		break;
@@ -685,14 +685,14 @@ bool RunBool(FrmlElem* X)
 	case _recvarfld: {
 		auto iX = (FrmlElem7*)X;
 		cf = CFile; cr = CRecPtr;
-		CFile = iX->File2; CRecPtr = iX->LD; result = RunBool(iX->P011);
+		CFile = iX->File2; CRecPtr = iX->LD; result = RunBool(CFile, iX->P011, CRecPtr);
 		CFile = cf; CRecPtr = cr;
 		break;
 	}
 	case _eval: {
 		//MarkStore(p);
 		auto gef = GetEvalFrml((FrmlElem21*)X);
-		result = RunBool(gef);
+		result = RunBool(CFile, gef, CRecPtr);
 		//ReleaseStore(p);
 		break;
 	}
@@ -700,7 +700,7 @@ bool RunBool(FrmlElem* X)
 		auto iX = (FrmlElem8*)X;
 		cf = CFile; cr = CRecPtr;
 		CFile = iX->NewFile; CRecPtr = iX->NewRP;
-		result = RunBool(iX->Frml);
+		result = RunBool(CFile, iX->Frml, CRecPtr);
 		CFile = cf; CRecPtr = cr;
 		break;
 	}
@@ -767,7 +767,7 @@ bool RunBool(FrmlElem* X)
 		auto iX0 = (FrmlElem0*)X;
 		//cr = MyBP;
 		//SetMyBP(ProcMyBP);
-		result = RunBool(iX0->P1);
+		result = RunBool(CFile, iX0->P1, CRecPtr);
 		//SetMyBP((ProcStkD*)cr);
 		break;
 	}
@@ -945,7 +945,7 @@ label1:
 	label2:
 		auto iX = (FrmlElem0*)X;
 		if (iX->P1 != nullptr)
-			if (!RunBool(iX->P1))
+			if (!RunBool(CFile, iX->P1, CRecPtr))
 			{
 				if (iX->P3 == nullptr) { result = 0; return result; }
 				X = iX->P3;
@@ -1151,7 +1151,7 @@ label1:
 		break;
 	}
 	case _portin: {
-		result = PortIn(RunBool(iX0->P1), WORD(RunInt(CFile, iX0->P2, CRecPtr)));
+		result = PortIn(RunBool(CFile, iX0->P1, CRecPtr), WORD(RunInt(CFile, iX0->P2, CRecPtr)));
 		break;
 	}
 	case _setmybp: {
@@ -1304,7 +1304,7 @@ void AssgnFrml(FileD* file_d, void* record, FieldDescr* F, FrmlElem* X, bool Del
 				file_d->saveT(F, pos, record);
 			}
 			else {
-				std::string s = RunStdStr(CFile, X, CRecPtr);
+				std::string s = RunStdStr(file_d, X, record);
 				if (Delete) {
 					file_d->FF->DelTFld(F, record);
 				}
@@ -1312,21 +1312,21 @@ void AssgnFrml(FileD* file_d, void* record, FieldDescr* F, FrmlElem* X, bool Del
 			}
 		}
 		else {
-			file_d->saveS(F, RunShortStr(CFile, X, CRecPtr), record);
+			file_d->saveS(F, RunShortStr(file_d, X, record), record);
 		}
 		break;
 	}
 	case 'R': {
 		if (Add) {
-			file_d->saveR(F, file_d->loadR(F, record) + RunReal(CFile, X, CRecPtr), record);
+			file_d->saveR(F, file_d->loadR(F, record) + RunReal(file_d, X, record), record);
 		}
 		else {
-			file_d->saveR(F, RunReal(CFile, X, CRecPtr), record);
+			file_d->saveR(F, RunReal(file_d, X, record), record);
 		}
 		break;
 	}
 	case 'B': {
-		file_d->saveB(F, RunBool(X), record);
+		file_d->saveB(F, RunBool(file_d, X, record), record);
 		break;
 	}
 	}
@@ -1345,7 +1345,7 @@ void LVAssignFrml(LocVar* LV, bool Add, FrmlElem* X)
 		break;
 	}
 	case 'B': {
-		LV->B = RunBool(X);
+		LV->B = RunBool(CFile, X, CRecPtr);
 		break;
 	}
 	}
@@ -1463,7 +1463,7 @@ bool FieldInList(FieldDescr* F, FieldListEl* FL)
 	auto result = false;
 	while (FL != nullptr) {
 		if (FL->FldD == F) result = true;
-		FL = (FieldListEl*)FL->pChain;
+		FL = FL->pChain;
 	}
 	return result;
 }
@@ -1601,7 +1601,7 @@ LongStr* RunLongStr(FrmlElem* X)
 		case _cond: {
 			while (true) {
 				if (((FrmlElem0*)X)->P1 != nullptr)
-					if (!RunBool(((FrmlElem0*)X)->P1))
+					if (!RunBool(CFile, ((FrmlElem0*)X)->P1, CRecPtr))
 					{
 						if (((FrmlElem0*)X)->P3 == nullptr)
 						{
@@ -1830,7 +1830,7 @@ label1:
 	case _cond: {
 	label2:
 		if (((FrmlElem0*)X)->P1 != nullptr)
-			if (!RunBool(((FrmlElem0*)X)->P1))
+			if (!RunBool(CFile, ((FrmlElem0*)X)->P1, CRecPtr))
 			{
 				if (((FrmlElem0*)X)->P3 == nullptr)
 				{
@@ -2380,7 +2380,7 @@ void GetRecNoXString(FrmlElem13* Z, XString& X)
 		switch (kf->FldD->frml_type) {
 		case 'S': X.StoreStr(RunShortStr(CFile, zz, CRecPtr), kf); break;
 		case 'R': X.StoreReal(RunReal(CFile, zz, CRecPtr), kf); break;
-		case 'B': X.StoreBool(RunBool(zz), kf); break;
+		case 'B': X.StoreBool(RunBool(CFile, zz, CRecPtr), kf); break;
 		}
 		kf = (KeyFldD*)kf->pChain;
 		i++;

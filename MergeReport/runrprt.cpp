@@ -435,7 +435,7 @@ void RunAProc(std::vector<AssignD*> vAssign)
 		case _locvar: { LVAssignFrml(A->LV, A->Add, A->Frml); break; }
 		case _parfile: { AsgnParFldFrml(A->FD, A->PFldD, A->Frml, A->Add); break; }
 		case _ifthenelseM: {
-			if (RunBool(A->Bool)) {
+			if (RunBool(CFile, A->Bool, CRecPtr)) {
 				RunAProc(A->Instr);
 			}
 			else {
@@ -454,7 +454,7 @@ void PrintBlock(BlkD* B, std::string& text, BlkD* DH)
 	WORD LAfter = 0; BlkD* B1 = nullptr;
 	bool pdh = false;
 	while (B != nullptr) {
-		if (RunBool(B->Bool)) {
+		if (RunBool(CFile, B->Bool, CRecPtr)) {
 			if (B != Y.Blk) {
 				if ((B->NTxtLines > 0) && (B->NBlksFrst < LineLenLst)) TruncLine(text);
 				if (OutOfLineBound(B)) WasFF2 = true;
@@ -462,7 +462,7 @@ void PrintBlock(BlkD* B, std::string& text, BlkD* DH)
 				if ((DH != nullptr) && (PrintDH >= DH->DHLevel + 1)) {
 					B1 = DH;
 					while (B1 != nullptr) {
-						if (RunBool(B1->Bool)) LAfter += B1->NTxtLines;
+						if (RunBool(CFile, B1->Bool, CRecPtr)) LAfter += B1->NTxtLines;
 						B1 = B1->pChain;
 					}
 				}
@@ -637,7 +637,7 @@ label1:
 						break;
 					}
 					case 'B':
-						if (RunBool(RF->Frml)) {
+						if (RunBool(CFile, RF->Frml, CRecPtr)) {
 							//printf("%s%c", Rprt.c_str(), AbbrYes);
 							text += AbbrYes;
 						}
@@ -688,7 +688,7 @@ void TruncLine(std::string& text)
 void PrintBlkChn(BlkD* B, std::string& text, bool ChkPg, bool ChkLine)
 {
 	while (B != nullptr) {
-		if (RunBool(B->Bool)) {
+		if (RunBool(CFile, B->Bool, CRecPtr)) {
 			if (ChkLine) {
 				if (OutOfLineBound(B)) WasFF2 = true;
 				if (B->FF1 || WasFF2) NewPage(text);
@@ -751,7 +751,7 @@ label1:
 	}
 	RecCount++;
 	RunMsgN(RecCount);
-	if (!RunBool(ID->Bool)) goto label1;
+	if (!RunBool(CFile, ID->Bool, CRecPtr)) goto label1;
 }
 
 void OpenInp()
@@ -936,7 +936,7 @@ void MoveForwToRec(InpD* ID)
 		ID->Warning = false;
 		ID->ErrTxtFrml->S[0] = 0;
 		while (C != nullptr) {
-			if (!RunBool(C->Bool)) {
+			if (!RunBool(CFile, C->Bool, CRecPtr)) {
 				ID->Warning = true;
 				ID->ErrTxtFrml->S = RunShortStr(CFile, C->TxtZ, CRecPtr);
 				if (!C->Warning) {

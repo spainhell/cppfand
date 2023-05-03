@@ -351,7 +351,7 @@ label1:
 			FD->ReadRec(RecNr, record);
 			if (FD->DeletedFlag(record)) goto label1;
 		label3:
-			if (!RunBool(Bool)) goto label1;
+			if (!RunBool(CFile, Bool, CRecPtr)) goto label1;
 			break;
 		}
 #ifdef FandSQL

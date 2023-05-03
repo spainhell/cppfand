@@ -266,7 +266,7 @@ void WritelnProc(Instr_writeln* PD)
 			break;
 		}
 		case 'B': {
-			if (RunBool(W->Frml)) x = AbbrYes;
+			if (RunBool(CFile, W->Frml, CRecPtr)) x = AbbrYes;
 			else x = AbbrNo;
 			break;
 		}
@@ -1174,7 +1174,7 @@ void RunInstr(Instr* PD)
 		switch (PD->Kind) {
 		case _ifthenelseP: {
 			auto iPD = (Instr_loops*)PD;
-			if (RunBool(iPD->Bool)) {
+			if (RunBool(CFile, iPD->Bool, CRecPtr)) {
 				RunInstr(iPD->Instr1);
 			}
 			else {
@@ -1184,7 +1184,7 @@ void RunInstr(Instr* PD)
 		}
 		case _whiledo: {
 			auto iPD = (Instr_loops*)PD;
-			while (!ExitP && !BreakP && RunBool(iPD->Bool)) {
+			while (!ExitP && !BreakP && RunBool(CFile, iPD->Bool, CRecPtr)) {
 				RunInstr(iPD->Instr1);
 			}
 			BreakP = false;
@@ -1194,7 +1194,7 @@ void RunInstr(Instr* PD)
 			auto iPD = (Instr_loops*)PD;
 			do {
 				RunInstr(iPD->Instr1);
-			} while (!(ExitP || BreakP || RunBool(iPD->Bool)));
+			} while (!(ExitP || BreakP || RunBool(CFile, iPD->Bool, CRecPtr)));
 			BreakP = false;
 			break;
 		}
@@ -1368,7 +1368,7 @@ void RunInstr(Instr* PD)
 			break;
 		}
 		case _asgnedok: {
-			EdOk = RunBool(((Instr_assign*)PD)->Frml);
+			EdOk = RunBool(CFile, ((Instr_assign*)PD)->Frml, CRecPtr);
 			break;
 		}
 		case _turncat: {
@@ -1486,7 +1486,9 @@ void RunInstr(Instr* PD)
 		}
 		case _setmouse: {
 			auto iPD = (Instr_setmouse*)PD;
-			SetMouse(RunInt(CFile, iPD->MouseX, CRecPtr), RunInt(CFile, iPD->MouseY, CRecPtr), RunBool(iPD->Show));
+			SetMouse(RunInt(CFile, iPD->MouseX, CRecPtr), 
+				RunInt(CFile, iPD->MouseY, CRecPtr), 
+				RunBool(CFile, iPD->Show, CRecPtr));
 			break;
 		}
 		case _checkfile: {
@@ -1514,7 +1516,9 @@ void RunInstr(Instr* PD)
 		}
 		case _portout: {
 			auto iPD = (Instr_portout*)PD;
-			PortOut(RunBool(iPD->IsWord), (WORD)(RunInt(CFile, iPD->Port, CRecPtr)), (WORD)(RunInt(CFile, iPD->PortWhat, CRecPtr)));
+			PortOut(RunBool(CFile, iPD->IsWord, CRecPtr),
+				(WORD)(RunInt(CFile, iPD->Port, CRecPtr)), 
+				(WORD)(RunInt(CFile, iPD->PortWhat, CRecPtr)));
 			break;
 		}
 		}

@@ -62,7 +62,7 @@ bool Add(AddD* AD, void* RP, double R, bool Back)
 	if (Back) R = -R;
 	CFile->saveR(AD->Field, CFile->loadR(AD->Field, CRecPtr) + R, CRecPtr);
 	if (AD->Chk == nullptr) return result;
-	if (!Back && !RunBool(AD->Chk->Bool))
+	if (!Back && !RunBool(CFile, AD->Chk->Bool, CRecPtr))
 	{
 		SetMsgPar(RunShortStr(CFile, AD->Chk->TxtZ, CRecPtr));
 		WrLLF10Msg(110);
@@ -255,7 +255,7 @@ bool Assign(AddD* AD)
 	double R; std::string S;
 	pstring ss; bool B;
 	int Pos, N2; char Kind2;
-	if (!RunBool(AD->Bool)) return true;
+	if (!RunBool(CFile, AD->Bool, CRecPtr)) return true;
 	FieldDescr* F = AD->Field;
 	FrmlElem* Z = AD->Frml;
 
@@ -270,7 +270,7 @@ bool Assign(AddD* AD)
 		break;
 	}
 	default: {
-		B = RunBool(Z);
+		B = RunBool(CFile, Z, CRecPtr);
 		break;
 	}
 	}

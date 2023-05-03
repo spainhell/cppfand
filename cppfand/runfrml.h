@@ -16,7 +16,7 @@ short CompReal(double R1, double R2, short M);
 LongStr* CopyToLongStr(pstring& SS);
 LongStr* CopyToLongStr(std::string& SS);
 pstring LeadChar(char C, pstring S);
-bool RunBool(FrmlElem* X);
+bool RunBool(FileD* file_d, FrmlElem* X, void* record);
 bool InReal(FrmlElemIn* frml);
 bool LexInStr(std::string& S, FrmlElemIn* X);
 bool InStr(LongStr* S, FrmlElemIn* X);

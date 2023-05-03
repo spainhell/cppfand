@@ -144,7 +144,7 @@ label1:
 	if (ID->Scan->eof) return;
 	NRecsAll++;
 	RunMsgN(NRecsAll);
-	if (!RunBool(ID->Bool)) goto label1;
+	if (!RunBool(CFile, ID->Bool, CRecPtr)) goto label1;
 }
 
 void RunAssign(std::vector<AssignD*> Assigns)
@@ -179,7 +179,7 @@ void RunAssign(std::vector<AssignD*> Assigns)
 			break;
 		}
 		case _ifthenelseM: {
-			if (RunBool(A->Bool)) {
+			if (RunBool(CFile, A->Bool, CRecPtr)) {
 				RunAssign(A->Instr);
 			}
 			else {
@@ -195,7 +195,7 @@ void WriteOutp(OutpRD* RD)
 {
 	OutpFD* OD;
 	while (RD != nullptr) {
-		if (RunBool(RD->Bool)) {
+		if (RunBool(CFile, RD->Bool, CRecPtr)) {
 			OD = RD->OD;
 			if (OD == nullptr /*dummy */) RunAssign(RD->Ass);
 			else {
@@ -299,7 +299,7 @@ void MoveForwToRecM(InpD* ID)
 		ID->Warning = false;
 		ID->ErrTxtFrml->S[0] = 0;
 		while (C != nullptr) {
-			if (!RunBool(C->Bool)) {
+			if (!RunBool(CFile, C->Bool, CRecPtr)) {
 				ID->Warning = true;
 				ID->ErrTxtFrml->S = RunShortStr(CFile, C->TxtZ, CRecPtr);
 				if (!C->Warning) { ID->Error = true; return; }

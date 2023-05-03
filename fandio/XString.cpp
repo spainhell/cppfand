@@ -130,7 +130,7 @@ bool XString::PackFrml(FrmlListEl* FL, KeyFldD* KF)
 			break;
 		}
 		case 'B': {
-			StoreBool(RunBool(Z), KF);
+			StoreBool(RunBool(CFile, Z, CRecPtr), KF);
 			break;
 		}
 		}

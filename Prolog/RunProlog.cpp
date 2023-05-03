@@ -1834,7 +1834,7 @@ void CallFandProc(TCommand* cmd)
 				break;
 			}
 			default: {
-				CurrInst->Vars[i] = GetBoolTerm(RunBool(ta->Frml));
+				CurrInst->Vars[i] = GetBoolTerm(RunBool(CFile, ta->Frml, CRecPtr));
 				break;
 			}
 			}

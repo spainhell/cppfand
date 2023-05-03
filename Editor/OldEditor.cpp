@@ -2160,7 +2160,7 @@ void Calculate()
 			break;
 		}
 		case 'B': {
-			if (RunBool(Z)) txt = AbbrYes;
+			if (RunBool(CFile, Z, CRecPtr)) txt = AbbrYes;
 			else txt = AbbrNo;
 			break;
 		}
@@ -3077,11 +3077,11 @@ void Edit(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys)
 
 void SetEditTxt(Instr_setedittxt* PD)
 {
-	if (PD->Insert != nullptr) Insert = !RunBool(PD->Insert);
-	if (PD->Indent != nullptr) Indent = RunBool(PD->Indent);
-	if (PD->Wrap != nullptr) Wrap = RunBool(PD->Wrap);
-	if (PD->Just != nullptr) Just = RunBool(PD->Just);
-	if (PD->ColBlk != nullptr) TypeB = RunBool(PD->ColBlk);
+	if (PD->Insert != nullptr) Insert = !RunBool(CFile, PD->Insert, CRecPtr);
+	if (PD->Indent != nullptr) Indent = RunBool(CFile, PD->Indent, CRecPtr);
+	if (PD->Wrap != nullptr) Wrap = RunBool(CFile, PD->Wrap, CRecPtr);
+	if (PD->Just != nullptr) Just = RunBool(CFile, PD->Just, CRecPtr);
+	if (PD->ColBlk != nullptr) TypeB = RunBool(CFile, PD->ColBlk, CRecPtr);
 	if (PD->Left != nullptr) LeftMarg = MaxI(1, RunInt(CFile, PD->Left, CRecPtr));
 	if (PD->Right != nullptr) RightMarg = MaxI(LeftMarg, MinI(255, RunInt(CFile, PD->Right, CRecPtr)));
 }

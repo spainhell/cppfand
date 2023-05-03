@@ -256,7 +256,7 @@ bool FileD::loadB(FieldDescr* field_d, void* record)
 	}
 	else
 	{
-		result = RunBool(field_d->Frml);
+		result = RunBool(CFile, field_d->Frml, CRecPtr);
 	}
 	return result;
 }

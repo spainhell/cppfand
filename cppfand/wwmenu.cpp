@@ -396,7 +396,7 @@ void TMenu::countChoices(bool isMenuBar)
 	std::string s;
 	bool b = false;
 	for (auto& C : choices) {
-		b = RunBool(C->Condition);
+		b = RunBool(CFile, C->Condition, CRecPtr);
 		C->Displ = false;
 		if (b || C->DisplEver) {
 			C->Displ = true;
