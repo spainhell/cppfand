@@ -17,7 +17,7 @@ LongStr* CopyToLongStr(pstring& SS);
 LongStr* CopyToLongStr(std::string& SS);
 pstring LeadChar(char C, pstring S);
 bool RunBool(FileD* file_d, FrmlElem* X, void* record);
-bool InReal(FrmlElemIn* frml);
+bool InReal(FileD* file_d, FrmlElemIn* frml, void* record);
 bool LexInStr(std::string& S, FrmlElemIn* X);
 bool InStr(LongStr* S, FrmlElemIn* X);
 bool InStr(std::string& S, FrmlElemIn* X);

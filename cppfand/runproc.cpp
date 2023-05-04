@@ -1030,7 +1030,7 @@ void PutTxt(Instr_puttxt* PD)
 
 	// TODO: this causes problem, file is never saved
 	// const bool canCopyT = false;
-	const bool canCopyT = CanCopyT(nullptr, z, &TF02, &TFD02, TF02Pos);
+	const bool canCopyT = CanCopyT(CFile, nullptr, z, &TF02, &TFD02, TF02Pos, CRecPtr);
 
 	if (canCopyT) {
 		h = OpenHForPutTxt(PD);

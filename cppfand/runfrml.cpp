@@ -603,7 +603,7 @@ bool RunBool(FileD* file_d, FrmlElem* X, void* record)
 		break;
 	}
 	case _inreal: {
-		result = InReal((FrmlElemIn*)X);
+		result = InReal(CFile, (FrmlElemIn*)X, CRecPtr);
 		break;
 	}
 	case _compreal: {
@@ -775,7 +775,7 @@ bool RunBool(FileD* file_d, FrmlElem* X, void* record)
 	return result;
 }
 
-bool InReal(FrmlElemIn* frml)
+bool InReal(FileD* file_d, FrmlElemIn* frml, void* record)
 {
 	double R = RunReal(CFile, frml->P1, CRecPtr);
 	for (auto r : frml->reals) {
