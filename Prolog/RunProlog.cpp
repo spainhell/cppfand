@@ -1814,7 +1814,7 @@ void CallFandProc(TCommand* cmd)
 						CurrInst->Vars[i] = GetStringTerm(RunShortStr(CFile, ta->Frml, CRecPtr));
 					}
 					else {
-						s = RunLongStr(ta->Frml);
+						s = RunLongStr(CFile, ta->Frml, CRecPtr);
 						if (d->Typ == _LongStrD) {
 							CurrInst->Vars[i] = GetLongStrTerm(WrLongStr(s));
 						}
@@ -2423,7 +2423,7 @@ void RunProlog(RdbPos* Pos, std::string PredName)
 		cl = CallLevel;
 	}
 	if (Pos->IRec == 0) {
-		SetInpLongStr(RunLongStr((FrmlElem*)Pos->R), true);
+		SetInpLongStr(RunLongStr(CFile, (FrmlElem*)Pos->R, CRecPtr), true);
 		Roots = ReadProlog(0);
 		ChptLRdb = CRdb;
 	}

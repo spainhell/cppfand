@@ -1930,7 +1930,7 @@ bool CleanUp()
 	}
 	if (AddSwitch) {
 		for (auto& ld : LinkDRoot) {
-			if ((ld->MemberRef == 2) && (ld->ToFD == CFile) && Owned(nullptr, nullptr, ld) > 0) {
+			if ((ld->MemberRef == 2) && (ld->ToFD == CFile) && Owned(CFile, nullptr, nullptr, ld, CRecPtr) > 0) {
 				WrLLF10Msg(662);
 				return false;
 			}
@@ -3515,7 +3515,7 @@ label1:
 		if (Ed) Kind = 'T';
 	}
 	else {
-		S = RunLongStr(F->Frml);
+		S = RunLongStr(CFile, F->Frml, CRecPtr);
 	}
 label2:
 	if (TTExit) {

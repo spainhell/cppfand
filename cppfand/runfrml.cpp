@@ -22,7 +22,7 @@
 #include "../Common/compare.h"
 #include "../fandio/directory.h"
 
-double Owned(FrmlElem* Bool, FrmlElem* Sum, LinkD* LD)
+double Owned(FileD* file_d, FrmlElem* Bool, FrmlElem* Sum, LinkD* LD, void* record)
 {
 	double r;
 	XString x;
@@ -135,7 +135,7 @@ pstring LeadChar(char C, pstring S)
 	return S;
 }
 
-double RunRealStr(FrmlElem* X)
+double RunRealStr(FileD* file_d, FrmlElem* X, void* record)
 {
 	double R = 0.0;
 	LongStr* S = nullptr;
@@ -1140,7 +1140,7 @@ label1:
 	}
 	case _owned: {
 		auto iX = (FrmlElem23*)X;
-		result = Owned(iX->ownBool, iX->ownSum, iX->ownLD);
+		result = Owned(CFile, iX->ownBool, iX->ownSum, iX->ownLD, CRecPtr);
 		break;
 	}
 	case _color: {
@@ -1169,7 +1169,7 @@ label1:
 		result = ((FrmlElemMerge*)X)->merge->Group;
 		break;
 	}
-	default: { result = RunRealStr(X); break; }
+	default: { result = RunRealStr(CFile, X, CRecPtr); break; }
 	}
 	return result;
 }
@@ -1520,7 +1520,7 @@ LongStr* ConcatLongStr(LongStr* S1, LongStr* S2)
 	return result;
 }
 
-LongStr* RunLongStr(FrmlElem* X)
+LongStr* RunLongStr(FileD* file_d, FrmlElem* X, void* record)
 {
 	LongStr* S = nullptr;
 	bool b = false;
@@ -1562,7 +1562,7 @@ LongStr* RunLongStr(FrmlElem* X)
 			else {
 				LinkLastRec(iX7->File2, RecNo, true);
 			}
-			S = RunLongStr(iX7->P011);
+			S = RunLongStr(CFile, iX7->P011, CRecPtr);
 			CFile->OldLockMode(lm);  /*possibly reading .T*/
 			CFile->ClearRecSpace(CRecPtr);
 			//memcpy(CRecPtr, &S->LL, sizeof(S->LL));
@@ -1578,13 +1578,13 @@ LongStr* RunLongStr(FrmlElem* X)
 			auto iX7 = (FrmlElem7*)X;
 			cf = CFile; cr = CRecPtr;
 			CFile = iX7->File2; CRecPtr = iX7->LD;
-			result = RunLongStr(iX7->P011);
+			result = RunLongStr(CFile, iX7->P011, CRecPtr);
 			CFile = cf; CRecPtr = cr;
 			break;
 		}
 		case _eval: {
 			//MarkStore(p);
-			S = RunLongStr(GetEvalFrml((FrmlElem21*)X));
+			S = RunLongStr(CFile, GetEvalFrml((FrmlElem21*)X), CRecPtr);
 			//MyMove(S, p, S->LL + 2);
 			//ReleaseAfterLongStr(p);
 			result = S;
@@ -1594,7 +1594,7 @@ LongStr* RunLongStr(FrmlElem* X)
 			auto iX8 = (FrmlElem8*)X;
 			cf = CFile; cr = CRecPtr;
 			CFile = iX8->NewFile; CRecPtr = iX8->NewRP;
-			result = RunLongStr(iX8->Frml);
+			result = RunLongStr(CFile, iX8->Frml, CRecPtr);
 			CFile = cf; CRecPtr = cr;
 			break;
 		}
@@ -1618,7 +1618,7 @@ LongStr* RunLongStr(FrmlElem* X)
 		}
 		case _copy: {
 			const auto iX0 = static_cast<FrmlElem0*>(X);
-			S = RunLongStr(iX0->P1);
+			S = RunLongStr(CFile, iX0->P1, CRecPtr);
 			std::string str = std::string(S->A, S->LL);
 
 			const auto L1 = RunInt(CFile, iX0->P2, CRecPtr) - 1;
@@ -1653,7 +1653,7 @@ LongStr* RunLongStr(FrmlElem* X)
 		}
 		case _leadchar: {
 			auto iX0 = (FrmlElem0*)X;
-			auto s = RunLongStr(iX0->P1);
+			auto s = RunLongStr(CFile, iX0->P1, CRecPtr);
 			result = LongLeadChar((char)iX0->N11, (char)iX0->N12, s);
 			break;
 		}
@@ -1661,13 +1661,13 @@ LongStr* RunLongStr(FrmlElem* X)
 			auto iX0 = (FrmlElem0*)X;
 			char c = iX0->N11;
 			char cnew = iX0->N12;
-			auto sp1 = RunLongStr(iX0->P1);
+			auto sp1 = RunLongStr(CFile, iX0->P1, CRecPtr);
 			result = LongTrailChar(c, cnew, sp1);
 			break;
 		}
 		case _upcase: {
 			auto iX0 = (FrmlElem0*)X;
-			S = RunLongStr(iX0->P1);
+			S = RunLongStr(CFile, iX0->P1, CRecPtr);
 			for (WORD i = 0; i < S->LL; i++) {
 				S->A[i] = UpcCharTab[(BYTE)S->A[i]];
 			}
@@ -1676,7 +1676,7 @@ LongStr* RunLongStr(FrmlElem* X)
 		}
 		case _lowcase: {
 			auto iX0 = (FrmlElem0*)X;
-			S = RunLongStr(iX0->P1);
+			S = RunLongStr(CFile, iX0->P1, CRecPtr);
 			LowCase(S);
 			result = S;
 			break;
@@ -1687,7 +1687,7 @@ LongStr* RunLongStr(FrmlElem* X)
 			if (iX0->P3 != nullptr) {
 				i = RunInt(CFile, iX0->P3, CRecPtr);
 			}
-			auto* lstr = RunLongStr(iX0->P1);
+			auto* lstr = RunLongStr(CFile, iX0->P1, CRecPtr);
 			std::string text = std::string(lstr->A, lstr->LL);
 			WORD start = RunInt(CFile, iX0->P2, CRecPtr);
 			auto r = GetNthLine(text, start, i);
@@ -1721,7 +1721,7 @@ LongStr* RunLongStr(FrmlElem* X)
 		case _gettxt: result = GetTxt(X); break;
 		case _nodiakr: {
 			auto iX0 = (FrmlElem0*)X;
-			S = RunLongStr(iX0->P1);
+			S = RunLongStr(CFile, iX0->P1, CRecPtr);
 			ConvToNoDiakr((WORD*)S->A[0], S->LL, fonts.VFont);
 			result = S;
 			break;
@@ -1743,7 +1743,7 @@ LongStr* RunLongStr(FrmlElem* X)
 		case _setmybp: {
 			auto iX0 = (FrmlElem0*)X;
 			//cr = MyBP; SetMyBP(ProcMyBP);
-			result = RunLongStr(iX0->P1);
+			result = RunLongStr(CFile, iX0->P1, CRecPtr);
 			//SetMyBP((ProcStkD*)cr);
 			break;
 		}
@@ -1933,7 +1933,7 @@ label1:
 	}
 	case _nodiakr: {
 		auto iX0 = (FrmlElem0*)X;
-		auto s = RunLongStr(iX0->P1);
+		auto s = RunLongStr(CFile, iX0->P1, CRecPtr);
 		ConvToNoDiakr((WORD*)&s->A[0], s->LL, fonts.VFont);
 		result = std::string(s->A, s->LL);
 		delete s;
@@ -2247,7 +2247,7 @@ LongStr* RunSelectStr(FrmlElem0* Z)
 	void* p2 = nullptr; void* pl = nullptr;
 	WORD i, n;
 
-	s = RunLongStr(Z->P3);
+	s = RunLongStr(CFile, Z->P3, CRecPtr);
 	n = CountDLines(s->A, s->LL, Z->Delim);
 	for (i = 1; i <= n; i++) {
 		//x = GetDLine(s->A, s->LL, Z->Delim, i);

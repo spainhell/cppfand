@@ -10,7 +10,7 @@
 #include "channel.h"
 #endif
 
-double Owned(FrmlElem* Bool, FrmlElem* Sum, LinkD* LD);
+double Owned(FileD* file_d, FrmlElem* Bool, FrmlElem* Sum, LinkD* LD, void* record);
 short CompBool(bool B1, bool B2);
 short CompReal(double R1, double R2, short M);
 LongStr* CopyToLongStr(pstring& SS);
@@ -38,7 +38,7 @@ bool FieldInList(FieldDescr* F, std::vector<FieldDescr*>& FL);
 bool FieldInList(FieldDescr* F, std::vector<FieldDescr*>* FL);
 XKey* GetFromKey(LinkD* LD);
 FrmlElem* RunEvalFrml(FrmlElem* Z);
-LongStr* RunLongStr(FrmlElem* X);
+LongStr* RunLongStr(FileD* file_d, FrmlElem* X, void* record);
 std::string RunStdStr(FileD* file_d, FrmlElem* X, void* record);
 std::string RunShortStr(FileD* file_d, FrmlElem* X, void* record);
 void CopyLongStr(LongStr* S, WORD From, WORD Number);
@@ -54,7 +54,7 @@ LongStr* LongTrailChar(char C, char CNew, LongStr* S);
 LongStr* RepeatStr(LongStr* S, short N);
 void AccRecNoProc(FrmlElem14* X, WORD Msg);
 void GetRecNoXString(FrmlElem13* Z, XString& X);
-double RunRealStr(FrmlElem* X);
+double RunRealStr(FileD* file_d, FrmlElem* X, void* record);
 double RMod(FrmlElem0* X);
 double LastUpdate(const std::string& path);
 WORD TypeDay(double R);

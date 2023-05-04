@@ -612,7 +612,7 @@ label1:
 			}
 			else {
 				if (RF->Typ == 'P') {
-					S = RunLongStr(RF->Frml);
+					S = RunLongStr(CFile, RF->Frml, CRecPtr);
 					//printf("%s%c", Rprt.c_str(), 0x10);
 					text += 0x10;
 					for (WORD i = 0; i <= S->LL + 1; i++) {
