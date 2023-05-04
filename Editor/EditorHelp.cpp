@@ -180,7 +180,7 @@ void Help(RdbD* R, pstring Name, bool InCWw)
 	if (w != 0)	{
 		PopW(w);
 	}
-	ReleaseStore(p);
+	ReleaseStore(&p);
 	CFile = cf;
 }
 

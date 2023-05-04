@@ -291,7 +291,7 @@ void TzFile::ProcFileList()
 			CloseH(&h);
 		}
 		d = dNext;
-		ReleaseStore(p);
+		ReleaseStore(&p);
 	} while (d != 0);
 }
 

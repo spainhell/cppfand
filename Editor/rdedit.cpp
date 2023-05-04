@@ -406,13 +406,13 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 	E->SelKey = (XWKey*)EO->SelKey;
 	//rectxt
 
-	E->Attr = RunWordImpl(EO->ZAttr, screen.colors.dTxt);
-	E->dNorm = RunWordImpl(EO->ZdNorm, screen.colors.dNorm);
-	E->dHiLi = RunWordImpl(EO->ZdHiLi, screen.colors.dHili);
-	E->dSubSet = RunWordImpl(EO->ZdSubset, screen.colors.dSubset);
-	E->dDel = RunWordImpl(EO->ZdDel, screen.colors.dDeleted);
-	E->dTab = RunWordImpl(EO->ZdTab, E->Attr | 0x08);
-	E->dSelect = RunWordImpl(EO->ZdSelect, screen.colors.dSelect);
+	E->Attr = RunWordImpl(CFile, EO->ZAttr, screen.colors.dTxt, CRecPtr);
+	E->dNorm = RunWordImpl(CFile, EO->ZdNorm, screen.colors.dNorm, CRecPtr);
+	E->dHiLi = RunWordImpl(CFile, EO->ZdHiLi, screen.colors.dHili, CRecPtr);
+	E->dSubSet = RunWordImpl(CFile, EO->ZdSubset, screen.colors.dSubset, CRecPtr);
+	E->dDel = RunWordImpl(CFile, EO->ZdDel, screen.colors.dDeleted, CRecPtr);
+	E->dTab = RunWordImpl(CFile, EO->ZdTab, E->Attr | 0x08, CRecPtr);
+	E->dSelect = RunWordImpl(CFile, EO->ZdSelect, screen.colors.dSelect, CRecPtr);
 	E->Top = RunStdStr(CFile, EO->Top, CRecPtr);
 	if (EO->Mode != nullptr) EditModeToFlags(RunShortStr(CFile, EO->Mode, CRecPtr), &E->NoDelete, false);
 	if (spec.Prompt158) E->Prompt158 = true;
@@ -424,7 +424,7 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 	if (E->LVRecPtr != nullptr) { E->EdRecVar = true; E->Only1Record = true; }
 	if (E->Only1Record) E->OnlySearch = false;
 	if (EO->W.C1 != nullptr) {
-		RunWFrml(EO->W, E->WFlags, E->V);
+		RunWFrml(CFile, EO->W, E->WFlags, E->V, CRecPtr);
 		E->WwPart = true;
 		if ((E->WFlags & WShadow) != 0) {
 			E->ShdwX = MinW(2, TxtCols - E->V.C2);
@@ -468,9 +468,9 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 		if (CFile->IsSQLFile) SetTWorkFlag;
 #endif
 		E->AddSwitch = true;
-		E->Cond = RunEvalFrml(EO->Cond);
-		E->RefreshDelay = RunWordImpl(EO->RefreshDelayZ, spec.RefreshDelay) * 18;
-		E->SaveAfter = RunWordImpl(EO->SaveAfterZ, spec.UpdCount);
+		E->Cond = RunEvalFrml(CFile, EO->Cond, CRecPtr);
+		E->RefreshDelay = RunWordImpl(CFile, EO->RefreshDelayZ, spec.RefreshDelay, CRecPtr) * 18;
+		E->SaveAfter = RunWordImpl(CFile, EO->SaveAfterZ, spec.UpdCount, CRecPtr);
 		if (EO->StartRecKeyZ != nullptr) {
 			E->StartRecKey = RunShortStr(CFile, EO->StartRecKeyZ, CRecPtr);
 		}
@@ -753,7 +753,9 @@ void RdCheck()
 			if (D->Chk == nullptr) D->Chk = C;
 			else ChainLast(D->Chk, C);
 		}
-		else ReleaseStore(C);
+		else {
+			delete C; C = nullptr;
+		}
 		if (Lexem == ';')
 		{
 			SkipBlank(false);

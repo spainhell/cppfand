@@ -170,7 +170,7 @@ void AssignField(Instr_assign* PD)
 	}
 	AssgnFrml(CFile, CRecPtr, F, PD->Frml, true, PD->Add);
 	CFile->WriteRec(N, CRecPtr);
-	ReleaseStore(CRecPtr);
+	ReleaseStore(&CRecPtr);
 	CFile->OldLockMode(md);
 }
 
@@ -237,7 +237,8 @@ void MergeProc(Instr_merge_display* PD)
 	ReadMerge();
 	RunMerge();
 	SaveAndCloseAllFiles();
-	ReleaseBoth(p, p2);
+	ReleaseStore(&p);
+	ReleaseStore(&p2);
 }
 
 void WritelnProc(Instr_writeln* PD)
@@ -343,8 +344,8 @@ void DisplayProc(RdbD* R, WORD IRec)
 void ClrWwProc(Instr_clrww* PD)
 {
 	WRect v;
-	RunWFrml(PD->W2, 0, v);
-	WORD a = RunWordImpl(PD->Attr2, screen.colors.uNorm);
+	RunWFrml(CFile, PD->W2, 0, v, CRecPtr);
+	WORD a = RunWordImpl(CFile, PD->Attr2, screen.colors.uNorm, CRecPtr);
 	char c = ' ';
 	if (PD->FillC != nullptr) {
 		std::string s = RunShortStr(CFile, PD->FillC, CRecPtr);
@@ -393,7 +394,7 @@ void CallRdbProc(Instr_call* PD)
 	// TODO: tady se ma ulozit stav (MyBP - ProcStkD)
 	b = EditExecRdb(PD->RdbNm, PD->ProcNm, PD->ProcCall, &ww);
 	// TODO: tady se ma obnovit stav (MyBP - ProcStkD)
-	ReleaseStore(p);
+	ReleaseStore(&p);
 	if (!b) {
 		GoExit();
 	}
@@ -450,10 +451,10 @@ void EditTxtProc(Instr_edittxt* PD)
 	i = 1;
 	if (PD->TxtPos != nullptr) i = RunInt(CFile, PD->TxtPos, CRecPtr);
 	EdUpdated = false;
-	a = RunWordImpl(PD->Atr, 0);
+	a = RunWordImpl(CFile, PD->Atr, 0, CRecPtr);
 	pv = nullptr;
 	if (PD->Ww.C1 != nullptr) {
-		RunWFrml(PD->Ww, PD->WFlags, v);
+		RunWFrml(CFile, PD->Ww, PD->WFlags, v, CRecPtr);
 		pv = &v;
 	}
 	MsgS.Head = GetStr(PD->Head);
@@ -474,7 +475,7 @@ void EditTxtProc(Instr_edittxt* PD)
 	EditTxtFile(lp, PD->EdTxtMode, msg, PD->ExD, i, 
 		RunInt(CFile, PD->TxtXY, CRecPtr), pv, a, 
 		RunShortStr(CFile, PD->Hd, CRecPtr), PD->WFlags, &MsgS);
-	ReleaseStore(p);
+	ReleaseStore(&p);
 }
 
 void PrintTxtProc(Instr_edittxt* PD)
@@ -484,7 +485,7 @@ void PrintTxtProc(Instr_edittxt* PD)
 	if (PD->TxtLV != nullptr) {
 		//s = TWork.Read(1, *(int*)(uintptr_t(MyBP) + PD->TxtLV->BPOfs));
 		PrintArray(s->A, s->LL, false);
-		ReleaseStore(s);
+		delete s; s = nullptr;
 	}
 	else {
 		SetTxtPathVol(PD->TxtPath, PD->TxtCatIRec);
@@ -545,7 +546,7 @@ void DeleteRecProc(Instr_recs* PD)
 		CFile->DeleteRec(n, CRecPtr);
 	}
 	CFile->OldLockMode(md);
-	ReleaseStore(CRecPtr);
+	ReleaseStore(&CRecPtr);
 }
 
 void AppendRecProc(FileD* file_d)
@@ -583,7 +584,7 @@ void UpdRec(void* CR, int N, bool AdUpd)
 	if (!del) {
 		CFile->DelAllDifTFlds(cr2, nullptr);
 	}
-	ReleaseStore(cr2);
+	ReleaseStore(&cr2);
 }
 
 void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
@@ -630,7 +631,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 				label0:
 					CFile->DelTFlds(CRecPtr);
 					CFile->ZeroAllFlds(CRecPtr);
-					ReleaseStore(cr);
+					ReleaseStore(&cr);
 					CFile->OldLockMode(md);
 					return;
 				}
@@ -648,7 +649,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 				CFile->DelTFlds(CRecPtr);
 				CFile->ZeroAllFlds(CRecPtr);
 				CFile->SetDeletedFlag(CRecPtr);
-				ReleaseStore(cr);
+				ReleaseStore(&cr);
 				CFile->OldLockMode(md);
 				return;
 			}
@@ -692,7 +693,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 		}
 	}
 
-	ReleaseStore(cr);
+	ReleaseStore(&cr);
 	CFile->OldLockMode(md);
 }
 
@@ -715,17 +716,18 @@ void LinkRecProc(Instr_assign* PD)
 	CFile = ld->ToFD;
 	CFile->ClearRecSpace(lr2);
 	CFile = ld->FromFD;
-	if (LinkUpw(ld, n, true)) {
+	BYTE* rec = nullptr;
+	if (LinkUpw(CFile, ld, n, true, CRecPtr, &rec)) {
 		LastExitCode = 0;
 	}
 	else {
 		LastExitCode = 1;
 	}
-	r2 = CRecPtr;
-	CRecPtr = lr2;
-	CFile->DelTFlds(CRecPtr);
-	CFile->CopyRecWithT(r2, lr2);
-	ReleaseStore(p);
+	CFile->DelTFlds(lr2);
+	CFile->CopyRecWithT(rec, lr2);
+	delete[] rec; rec = nullptr;
+
+	ReleaseStore(&p);
 	CFile = cf;
 	CRecPtr = cr;
 }
@@ -745,7 +747,7 @@ void ForAllProc(Instr_forall* PD)
 	FD = PD->CFD; Key = PD->CKey;
 	LVi = PD->CVar; LVr = PD->CRecVar;
 	LD = PD->CLD; KI = PD->CKIRoot;
-	Bool = RunEvalFrml(PD->CBool);
+	Bool = RunEvalFrml(CFile, PD->CBool, CRecPtr);
 	lk = false;
 #ifdef FandSQL
 	if (PD->inSQL && !FD->IsSQLFile) return;
@@ -763,7 +765,7 @@ void ForAllProc(Instr_forall* PD)
 			CRecPtr = CFile->GetRecSpace();
 			CFile->ReadRec(RunInt(CFile, (FrmlElem*)PD->CLV, CRecPtr), CRecPtr);
 			xx.PackKF(CFile, KF, CRecPtr);
-			ReleaseStore(p);
+			ReleaseStore(&p);
 			CFile->OldLockMode(md);
 			break;
 		}
@@ -877,7 +879,7 @@ label1:
 	if (b) {
 		RunMsgOff();
 	}
-	ReleaseStore(p);
+	ReleaseStore(&p);
 	BreakP = false;
 }
 
@@ -910,8 +912,8 @@ void WithWindowProc(Instr_window* PD)
 	int w1 = 0;
 	WRect v;
 
-	ProcAttr = RunWordImpl(PD->Attr, screen.colors.uNorm); // nacte barvy do ProcAttr
-	RunWFrml(PD->W, PD->WithWFlags, v); // nacte rozmery okna
+	ProcAttr = RunWordImpl(CFile, PD->Attr, screen.colors.uNorm, CRecPtr); // nacte barvy do ProcAttr
+	RunWFrml(CFile, PD->W, PD->WithWFlags, v, CRecPtr); // nacte rozmery okna
 	auto top = RunShortStr(CFile, PD->Top, CRecPtr); // nacte nadpis
 	w1 = PushWFramed(v.C1, v.R1, v.C2, v.R2, ProcAttr, top, "", PD->WithWFlags); // vykresli oramovane okno s nadpisem
 	if ((PD->WithWFlags & WNoClrScr) == 0) {
@@ -1035,7 +1037,7 @@ void PutTxt(Instr_puttxt* PD)
 	if (canCopyT) {
 		h = OpenHForPutTxt(PD);
 		pth = CPath;
-		CopyTFStringToH(h, TF02, TFD02, TF02Pos);
+		CopyTFStringToH(CFile, h, TF02, TFD02, TF02Pos);
 		CPath = pth;
 	}
 	else {
@@ -1138,7 +1140,7 @@ void RecallRecProc(Instr_recs* PD)
 		}
 	}
 	CFile->OldLockMode(md);
-	ReleaseStore(CRecPtr);
+	ReleaseStore(&CRecPtr);
 }
 
 void UnLck(Instr_withshared* PD, LockD* Ld1, PInstrCode Op)
@@ -1298,7 +1300,7 @@ void RunInstr(Instr* PD)
 		}
 		case _asgnloc:/* !!! with PD^ do!!! */ {
 			auto iPD = (Instr_assign*)PD;
-			LVAssignFrml(iPD->AssLV, iPD->Add, iPD->Frml);
+			LVAssignFrml(CFile, iPD->AssLV, iPD->Add, iPD->Frml, CRecPtr);
 			break;
 		}
 		case _asgnrecfld: {
@@ -1364,7 +1366,7 @@ void RunInstr(Instr* PD)
 			LongStr* s = RunLongStr(CFile, ((Instr_assign*)PD)->Frml, CRecPtr);
 			TWork.Delete(ClpBdPos);
 			ClpBdPos = TWork.Store(s->A, s->LL);
-			ReleaseStore(s);
+			delete s; s = nullptr;
 			break;
 		}
 		case _asgnedok: {
@@ -1622,7 +1624,7 @@ void CallProcedure(Instr_proc* PD)
 				CurrPos = 0;
 				Error(119);
 			}
-			LVAssignFrml(lv, false, PD->TArg[i].Frml);
+			LVAssignFrml(CFile, lv, false, PD->TArg[i].Frml, CRecPtr);
 			break;
 		}
 		}
@@ -1668,7 +1670,7 @@ void CallProcedure(Instr_proc* PD)
 		}
 		++it0;
 	}
-	ReleaseStore(p2);
+	ReleaseStore(&p2);
 
 	// **** RUN PROCEDURE **** //
 	RunProcedure(pd1);
@@ -1725,7 +1727,8 @@ void CallProcedure(Instr_proc* PD)
 		CFile = CFile->pChain;
 	}
 	lstFD->pChain = nullptr;
-	ReleaseBoth(p1, p2);
+	ReleaseStore(&p1);
+	ReleaseStore(&p2);
 }
 
 void RunMainProc(RdbPos RP, bool NewWw)
@@ -1741,6 +1744,6 @@ void RunMainProc(RdbPos RP, bool NewWw)
 	auto PD = new Instr_proc(0);
 	PD->PPos = RP;
 	CallProcedure(PD);
-	ReleaseStore(PD);
+	delete PD; PD = nullptr;
 	if (NewWw) screen.Window(1, 1, TxtCols, TxtRows);
 }

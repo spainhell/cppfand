@@ -88,7 +88,7 @@ bool RunAddUpdte1(char Kind, void* CRold, bool Back, AddD* StopAD, LinkD* notLD)
 
 	for (AddD* add : CFile->Add) {
 		if (add == StopAD) {
-			ReleaseStore(p);
+			ReleaseStore(&p);
 			return result;
 		}
 		if ((notLD != nullptr) && (add->LD == notLD)) goto label1;
@@ -140,13 +140,13 @@ bool RunAddUpdte1(char Kind, void* CRold, bool Back, AddD* StopAD, LinkD* notLD)
 		if (N2old != 0) WrUpdRec(add, CF, CR, CR2old, N2old);
 		if (N2 != 0) WrUpdRec(add, CF, CR, CR2, N2);
 	label1:
-		ReleaseStore(p);
+		ReleaseStore(&p);
 		CFile = CF;
 		CRecPtr = CR;
 	}
 	return result;
 fail:
-	ReleaseStore(p);
+	ReleaseStore(&p);
 	CFile = CF;
 	CRecPtr = CR;
 	result = false;
@@ -156,10 +156,10 @@ fail:
 	return result;
 }
 
-void CrIndRec()
+void CrIndRec(FileD* file_d, void* record)
 {
-	CFile->CreateRec(CFile->FF->NRecs + 1, CRecPtr);
-	CFile->RecallRec(CFile->FF->NRecs, CRecPtr);
+	file_d->CreateRec(file_d->FF->NRecs + 1, record);
+	file_d->RecallRec(file_d->FF->NRecs, record);
 }
 
 bool Link(AddD* AD, int& N, char& Kind2)
@@ -170,18 +170,27 @@ bool Link(AddD* AD, int& N, char& Kind2)
 	Kind2 = 'd';
 
 	if (LD != nullptr) {
-		if (LinkUpw(LD, N, false)) return result;
+		BYTE* rec = nullptr;
+		if (LinkUpw(CFile, LD, N, false, CRecPtr, &rec)) {
+			delete[] rec; rec = nullptr;
+			return result;
+		}
+		else {
+			delete[] rec; rec = nullptr;
+		}
 		SetMsgPar(LD->RoleName);
 	}
 	else {
-		if (!LinkLastRec(AD->File2, N, false)
+		BYTE* rec = nullptr;
+		if (!LinkLastRec(AD->File2, N, false, &rec)
 #ifdef FandSQL
 			&& !CFile->IsSQLFile
 #endif
 			) {
 			CFile->IncNRecs(1);
-			CFile->WriteRec(1, CRecPtr);
+			CFile->WriteRec(1, rec);
 		}
+		delete[] rec; rec = nullptr;
 		return result;
 	}
 	Kind2 = '+';
@@ -192,7 +201,7 @@ bool Link(AddD* AD, int& N, char& Kind2)
 		{
 			CFile->ClearDeletedFlag(CRecPtr);
 			if ((LD != nullptr) && (CFile->FF->file_type == FileType::INDEX)) {
-				CrIndRec();
+				CrIndRec(CFile, CRecPtr);
 				N = CFile->FF->NRecs;
 			}
 			else {
@@ -229,7 +238,7 @@ bool TransAdd(AddD* AD, FileD* FD, void* RP, void* CRnew, int N, char Kind2, boo
 		CFile->ReadRec(N, CRecPtr);
 	CRecPtr = CRnew;
 	auto result = RunAddUpdte1('d', CRold, Back, nullptr, nullptr);
-	ReleaseStore(CRold);
+	ReleaseStore(&CRold);
 	return result;
 }
 

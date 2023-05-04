@@ -282,7 +282,7 @@ void CopyH(FILE* h1, FILE* h2)
 	WriteH(h2, sz, p);
 	CloseH(&h1);
 	MyDeleteFile(CPath);
-	ReleaseStore(p);
+	ReleaseStore(&p);
 }
 
 void CFileError(FileD* file_d, int N)

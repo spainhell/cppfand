@@ -396,7 +396,7 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 				switch (TypeT) {
 				case FileT: {
 					TestUpdFile();
-					ReleaseStore(T);
+					delete[] T; T = nullptr;
 					//CloseH(&TxtFH);
 					CloseHandle(TxtFH);
 					TxtFH = NULL;
@@ -422,7 +422,7 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 						UpdateEdTFld(sp);
 						UpdatT = false;
 					}
-					ReleaseStore(sp);
+					delete sp; sp = nullptr;
 					break;
 				}
 				}
@@ -1085,7 +1085,7 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 						L2 += I2; sp->LL = I2; BlockCDrop('R', P1, sp);
 					} while (L2 != fs);
 					blocks->EndBLn = /*Part.LineP +*/ TextLineNr - 1;
-					ReleaseStore(P1);
+					ReleaseStore(&P1);
 					break;
 				}
 				}

@@ -307,14 +307,15 @@ void ExportTxt(CopyD* CD)
 		F2 = new ThFile(CD->Path2, CD->CatIRec2, m, 0, nullptr);
 		if (CD->HdFD != nullptr) {
 			int n = 0;
-			LinkLastRec(CD->HdFD, n, true);
-			pstring s = CFile->loadOldS(CD->HdF, CRecPtr);
+			BYTE* rec = nullptr;
+			LinkLastRec(CD->HdFD, n, true, &rec);
+			pstring s = CFile->loadOldS(CD->HdF, rec);
 			int i = s.first('\r');
 			if (i > 0) s[0] = i - 1;
 			F2->WrString(s);
 			F2->WrString("\r\n");
-			CFile->ClearRecSpace(CRecPtr);
-			ReleaseStore(CRecPtr);
+			CFile->ClearRecSpace(rec);
+			delete[] rec; rec = nullptr;
 		}
 		CFile = CD->FD1;
 		CRecPtr = CD->FD1->GetRecSpace();
@@ -593,7 +594,7 @@ void Backup(bool IsBackup, bool NoCompress, WORD Ir, bool NoCancel)
 		// TODO: log error
 	}
 
-	ReleaseStore(F);
+	delete F; F = nullptr;
 	if (LastExitCode != 0) {
 		RunMsgOff();
 		if (!NoCancel) GoExit();
@@ -624,7 +625,7 @@ void BackupM(Instr_backup* PD)
 		RunMsgOff();
 		if (!PD->BrNoCancel) GoExit();
 	}
-	ReleaseStore(p);
+	ReleaseStore(&p);
 }
 
 
@@ -745,7 +746,7 @@ bool PromptCodeRdb()
 			AddLicNr(ChptTxt);
 			CFile->WriteRec(i, CRecPtr);
 		}
-		ReleaseStore(CRecPtr);
+		ReleaseStore(&CRecPtr);
 		CFile = cf;
 		CRecPtr = cr;
 		return result;

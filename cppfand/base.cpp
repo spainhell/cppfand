@@ -1178,14 +1178,14 @@ void MarkBoth(void* p, void* p2)
 {
 }
 
-void ReleaseStore(void* pointer)
+void ReleaseStore(void** pointer)
 {
-	delete[] pointer;
+	delete[] *pointer; *pointer = nullptr;
 }
 
-void ReleaseAfterLongStr(void* pointer)
+void ReleaseAfterLongStr(void** pointer)
 {
-	delete[] pointer;
+	delete[] *pointer; *pointer = nullptr;
 }
 
 bool OverlapByteStr(void* p1, void* p2)
@@ -1245,12 +1245,6 @@ bool EquArea(void* P1, void* P2, WORD L)
 WORD ListLength(void* P)
 {
 	return 0;
-}
-
-void ReleaseBoth(void* p, void* p2)
-{
-	ReleaseStore(p);
-	ReleaseStore(p2);
 }
 
 int StoreAvail()

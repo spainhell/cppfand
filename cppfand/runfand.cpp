@@ -514,7 +514,7 @@ void InitRunFand()
 #endif
 
 label2:
-	ReleaseStore(p);
+	ReleaseStore(&p);
 	MsgNr = 2;
 
 #ifdef FandRunV

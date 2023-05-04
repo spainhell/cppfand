@@ -45,7 +45,7 @@ void CodingRdb::CodeRdb(bool Rotate)
 		}
 	}
 	RunMsgOff();
-	ReleaseStore(CRecPtr);
+	ReleaseStore(&CRecPtr);
 	CFile = cf;
 	CRecPtr = cr;
 	CompressCRdb();
@@ -116,8 +116,8 @@ label1:
 		else {
 			s->LL = l;
 			MyMove(ss->A, s->A, l);
-			ReleaseAfterLongStr(s);
-			ReleaseStore(p2);
+			delete s; s = nullptr;
+			ReleaseStore(&p2);
 			CRecPtr = cr;
 			return;
 		}
@@ -247,7 +247,8 @@ void CodingRdb::CodeF(bool rotate, WORD IRec, FieldDescr* F, char Typ)
 	}
 label2:
 	CFile->saveLongS(F, s, CRecPtr);
-	ReleaseBoth(p, p2);
+	ReleaseStore(&p);
+	ReleaseStore(&p2);
 }
 
 void CodingRdb::CompressCRdb()
@@ -262,7 +263,7 @@ void CodingRdb::CompressCRdb()
 	SpecFDNameAllowed = false;
 	RunMerge();
 	SaveAndCloseAllFiles();
-	ReleaseStore(p);
+	ReleaseStore(&p);
 	Chpt->FF->RecPtr = cr;
 	CFile = Chpt;
 	CRecPtr = E->NewRecPtr;

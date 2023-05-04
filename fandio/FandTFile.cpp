@@ -520,7 +520,7 @@ LongStr* FandTFile::Read(int Pos)
 				for (i = 1; i <= MPageSize; i++) {
 					if (p[offset + i] == 0x1A) {
 						s->LL = l;
-						ReleaseStore(&s->A[l + 1]);
+						//ReleaseStore(&s->A[l + 1]);
 						return s;
 					}
 					l++;
@@ -530,7 +530,7 @@ LongStr* FandTFile::Read(int Pos)
 			}
 			l--;
 			s->LL = l;
-			ReleaseStore(&s->A[l + 1]);
+			//ReleaseStore(&s->A[l + 1]);
 			break;
 		}
 		case FptFormat: {
@@ -625,7 +625,7 @@ int FandTFile::Store(char* s, size_t l)
 			unsigned char* p = new unsigned char[l];
 			FillChar(p, l, ' ');
 			RdWrCache(WRITE, Handle, NotCached(), N, l, p);
-			ReleaseStore(p);
+			delete[] p; p = nullptr;
 		}
 		break;
 	}

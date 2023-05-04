@@ -433,7 +433,7 @@ bool UnifyTermsCC(TTerm* T1, TTerm* T2)
 		p1 = RdLongStr(T1->Pos);
 		p2 = RdLongStr(T2->Pos);
 		result = EquLongStr(p1, p2);
-		ReleaseStore(p1);
+		delete p1; p1 = nullptr;
 		return result;
 	}
 	case prolog_func::_ListT: return UnifyTermsCC(T1->Elem, T2->Elem) && UnifyTermsCC(T1->Next, T2->Next);
@@ -918,7 +918,7 @@ void PrintTerm(TTerm* T, TDomain* D)
 			printf("'");
 			for (i = 1; i <= p->LL; i++) printf("%c", p->A[i]);
 			printf("'");
-			ReleaseStore(p);
+			delete p; p = nullptr;
 			break;
 		}
 		case prolog_func::_ListT: {
@@ -1687,6 +1687,7 @@ bool RunCommand(TCommand* COff/*PCommand*/)
 	case _ConsultC:
 	case _LoadLexC: {
 		MarkStore(p1);
+		BYTE* rec = nullptr;
 		CFile = c->FD;
 		if (CFile == nullptr) {
 			SetCFile(c->Name);
@@ -1695,21 +1696,22 @@ bool RunCommand(TCommand* COff/*PCommand*/)
 		}
 		if (c->Code == _SaveC) {
 			md = CFile->NewLockMode(WrMode);
-			if (!LinkLastRec(CFile, n, true)) CFile->IncNRecs(1);
-			CFile->FF->DelTFld(c->FldD, CRecPtr);
+			if (!LinkLastRec(CFile, n, true, &rec)) CFile->IncNRecs(1);
+			CFile->FF->DelTFld(c->FldD, rec);
 			std::string save = SaveDb(c->DbPred, 0);
-			CFile->saveS(c->FldD, save, CRecPtr);
-			CFile->WriteRec(CFile->FF->NRecs, CRecPtr);
+			CFile->saveS(c->FldD, save, rec);
+			CFile->WriteRec(CFile->FF->NRecs, rec);
 		}
 		else {
 			md = CFile->NewLockMode(RdMode);
-			LinkLastRec(CFile, n, true);
-			s = CFile->loadLongS(c->FldD, CRecPtr);
+			LinkLastRec(CFile, n, true, &rec);
+			s = CFile->loadLongS(c->FldD, rec);
 			if (c->Code == _ConsultC) ConsultDb(std::string(s->A, s->LL), c->DbPred);
 			else LoadLex(s);
 		}
+		delete[] rec; rec = nullptr;
 		CFile->OldLockMode(md);
-		ReleaseStore(p1);
+		ReleaseStore(&p1);
 		break;
 	}
 	case _ErrorC: {
@@ -1791,7 +1793,7 @@ void CallFandProc(TCommand* cmd)
 						s = GetPackedTerm(t);
 					}
 					//*(int*)(pp + ((FrmlElem18*)ta->Frml)->BPOfs) = TWork.Store(s);
-					ReleaseStore(s);
+					delete s; s = nullptr;
 				}
 				break;
 			}
@@ -1822,7 +1824,7 @@ void CallFandProc(TCommand* cmd)
 							PackedTermPtr = s->A;
 							CurrInst->Vars[i] = UnpackTerm(d);
 						}
-						ReleaseStore(s);
+						delete s; s = nullptr;
 					}
 				}
 				//TWork.Delete(LongintPtr(Ptr(Seg(MyBP), Ofs(MyBP) + ta->Frml->BPOfs)));
@@ -1914,7 +1916,7 @@ void AssertFand(TPredicate* P, TCommand* C)
 					if (d->Typ == _LongStrD) s = RdLongStr(t->Pos);
 					else s = GetPackedTerm(t);
 					CFile->saveLongS(f, s, CRecPtr);
-					ReleaseStore(s);
+					delete s; s = nullptr;
 				}
 				else CFile->saveS(f, t->SS, CRecPtr);
 				break;
@@ -1940,7 +1942,7 @@ void AssertFand(TPredicate* P, TCommand* C)
 		}
 	}
 	CFile->OldLockMode(md);
-	ReleaseStore(CRecPtr);
+	ReleaseStore(&CRecPtr);
 	}
 
 TFileScan* GetScan(TScanInf* SIOfs, TCommand* C, TInstance* Q)
@@ -1995,7 +1997,7 @@ TFileScan* GetScan(TScanInf* SIOfs, TCommand* C, TInstance* Q)
 				//ss = ptr(PtrRec(s).Seg, PtrRec(s).Ofs + 1);
 				ss[0] = (char)MinW(s->LL, 255);
 				xx.StoreStr(*ss, kf);
-				ReleaseStore(s);
+				delete s; s = nullptr;
 			}
 			break;
 		}
@@ -2111,7 +2113,7 @@ label1:
 					if (d->Typ == _LongStrD) s = RdLongStr(t->Pos);
 					else s = GetPackedTerm(t);
 					b = EquLongStr(s, CFile->loadLongS(f, CRecPtr));
-					ReleaseStore(s);
+					delete s; s = nullptr;
 					if (!b) goto label1;
 				}
 				else if (t->SS != _MyS(f)) {
@@ -2157,7 +2159,7 @@ label1:
 						pt = s->A;
 						CurrInst->Vars[i] = UnpackTerm(d);
 					}
-					ReleaseStore(s);
+					delete s; s = nullptr;
 				}
 				else {
 					CurrInst->Vars[i] = GetStringTerm(_MyS(f));
@@ -2201,7 +2203,7 @@ label1:
 	}
 label2:
 	CFile->OldLockMode(md);
-	ReleaseStore(CRecPtr);
+	ReleaseStore(&CRecPtr);
 	return result;
 }
 
@@ -2864,9 +2866,12 @@ label8_end:
 	CurrInst = oldCurrInst;
 	ForAllFDs(ForAllFilesOperation::set_old_lock_mode);
 	MaxWSize = WMark;
-	if (ProlgCallLevel == 1) ReleaseBoth(pm1, pm2);
+	if (ProlgCallLevel == 1) {
+		ReleaseStore(&pm1);
+		ReleaseStore(&pm2);
+	}
 	else {
-		ReleaseStore(pp);
+		ReleaseStore(&pp);
 		Mem1.Release(pp1);
 		Mem2.Release(pp2);
 		Mem3.Release(pp3);

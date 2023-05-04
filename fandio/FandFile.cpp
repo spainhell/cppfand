@@ -271,7 +271,7 @@ pstring FandFile::loadOldS(FieldDescr* field_d, void* record)
 		if (ss->LL > 255) S = S.substr(0, 255);
 		else S = S.substr(0, ss->LL);
 		Move(&ss[0], &S[0], S.length());
-		ReleaseStore(ss);
+		delete ss; ss = nullptr;
 		break;
 	}
 	default:
@@ -1070,7 +1070,7 @@ void FandFile::ScanSubstWIndex(XScan* Scan, KeyFldD* SK, char Typ)
 		}
 		if (n > 255) {
 			WrLLF10Msg(155);
-			ReleaseStore(k2);
+			delete k2; k2 = nullptr;
 			return;
 		}
 		kf = k->KFlds;

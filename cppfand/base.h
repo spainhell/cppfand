@@ -62,12 +62,11 @@ void DispH(void* ad, short NoBytes);
 #endif
 
 void MarkStore(void* p);
-void ReleaseStore(void* pointer);
-void ReleaseAfterLongStr(void* p);
+void ReleaseStore(void** pointer);
+void ReleaseAfterLongStr(void** pointer);
 int StoreAvail();
 std::string* StoreStr(std::string S);
 void MarkBoth(void* p, void* p2);
-void ReleaseBoth(void* p, void* p2);
 void AlignLongStr();
 
 void GoExit();

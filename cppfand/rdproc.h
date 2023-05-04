@@ -86,7 +86,7 @@ Instr_assign* RdUserFuncAssign();
 void ReadProcHead(const std::string& name);
 Instr* ReadProcBody();
 void ReadDeclChpt();
-FrmlElem* GetEvalFrml(FrmlElem21* X);
+FrmlElem* GetEvalFrml(FileD* file_d, FrmlElem21* X, void* record);
 Instr* RdCallLProc();
 
 #ifdef FandGraph

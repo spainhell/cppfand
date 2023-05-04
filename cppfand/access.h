@@ -39,10 +39,10 @@ void ResetCompilePars(); // r953 - posledni fce
 
 std::string TranslateOrd(std::string text);
 
-bool LinkUpw(LinkD* LD, int& N, bool WithT);
-bool LinkLastRec(FileD* FD, int& N, bool WithT);
+bool LinkUpw(FileD* file_d, LinkD* LD, int& N, bool WithT, void* record, BYTE** newRecord);
+bool LinkLastRec(FileD* file_d, int& N, bool WithT, BYTE** newRecord);
 
-void AsgnParFldFrml(FileD* FD, FieldDescr* F, FrmlElem* Z, bool Ad);
+void AsgnParFldFrml(FileD* file_d, FieldDescr* field_d, FrmlElem* frml, bool add);
 
 void CloseClearHCFile(FandFile* fand_file);
 void TestCPathError();

@@ -444,7 +444,7 @@ label2:
 	r = 0;
 	if ((Txt.length() == 0) && (Impl != nullptr)) {
 		AssignFld(F, Impl);
-		Txt = DecodeField(F, L);
+		Txt = DecodeField(CFile, F, L, CRecPtr);
 	}
 	switch (F->field_type) {
 	case FieldType::FIXED:
@@ -865,7 +865,7 @@ void DisplFld(EFldD* D, WORD I, BYTE Color)
 	WORD r = FldRow(D, I);
 	auto F = D->FldD;
 	screen.GotoXY(D->Col, r);
-	std::string Txt = DecodeField(F, D->L);
+	std::string Txt = DecodeField(CFile, F, D->L, CRecPtr);
 	for (size_t j = 0; j < Txt.length(); j++)
 		if ((unsigned char)Txt[j] < ' ') Txt[j] = Txt[j] + 0x40;
 	screen.WriteStyledStringToWindow(Txt, Color);
@@ -915,7 +915,7 @@ label1:
 		D = D->pChain;
 	}
 	CFile->ClearRecSpace(p);
-	ReleaseStore(p);
+	ReleaseStore(&p);
 	CRecPtr = E->NewRecPtr;
 }
 
@@ -1071,7 +1071,7 @@ void DuplFld(FileD* file_d1, FileD* file_d2, void* record1, void* record2, void*
 				file_d2->FF->DelDifTFld(field_d2, record2, RPt);
 			}
 			file_d2->saveLongS(field_d2, ss, record2);
-			ReleaseStore(ss);
+			delete ss; ss = nullptr;
 		}
 		else {
 			s = file_d1->loadOldS(field_d1, record1);
@@ -1226,7 +1226,7 @@ void SetNewWwRecAttr()
 	}
 	IVon();
 	CFile->ClearRecSpace(CRecPtr);
-	ReleaseStore(CRecPtr);
+	ReleaseStore(&CRecPtr);
 	CRecPtr = E->NewRecPtr;
 }
 
@@ -1439,7 +1439,7 @@ void BuildWork()
 	if (!ok) {
 		GoExit();
 	}
-	ReleaseStore(p);
+	ReleaseStore(&p);
 		}
 
 void SetStartRec()
@@ -1747,7 +1747,7 @@ void UpdMemberRef(void* POld, void* PNew)
 				}
 			Scan->Close();
 			CFile->ClearRecSpace(p);
-			ReleaseStore(p);
+			ReleaseStore(&p);
 			}
 		}
 	CFile = cf; CRecPtr = cr;
@@ -2315,7 +2315,7 @@ void UpwEdit(LinkD* LkD)
 	}
 label1:
 	PopW(w);
-	ReleaseStore(p);
+	ReleaseStore(&p);
 	RdEStatus();
 	DisplEditWw();
 }
@@ -2329,9 +2329,12 @@ void DisplChkErr(ChkD* C)
 		FileD* cf = CFile;
 		void* cr = CRecPtr;
 		int n = 0;
-		bool b = LinkUpw(LD, n, false);
-		ReleaseStore(CRecPtr);
+
+		BYTE* rec = nullptr;
+		bool b = LinkUpw(CFile, LD, n, false, CRecPtr, &rec);
+		delete[] rec; rec = nullptr;
 		CFile = cf; CRecPtr = cr;
+
 		if (!b) {
 			if (NoShiftF7Msg) {
 				UpwEdit(LD);
@@ -2390,7 +2393,7 @@ bool OldRecDiffers()
 	}
 label2:
 	CFile->ClearRecSpace(CRecPtr);
-	ReleaseStore(CRecPtr);
+	ReleaseStore(&CRecPtr);
 	CRecPtr = E->NewRecPtr;
 	return result;
 }
@@ -2617,7 +2620,7 @@ bool WriteCRec(bool MayDispl, bool& Displ)
 				s = CFile->loadLongS(ChptTxt, CRecPtr);
 				TWork.Delete(ClpBdPos);
 				ClpBdPos = TWork.Store(s->A, s->LL);
-				ReleaseStore(s);
+				delete s; s = nullptr;
 			}
 			UndoRecord();
 			goto label1;
@@ -2657,7 +2660,7 @@ void DuplFromPrevRec()
 		RdRec(CRec() - 1);
 		DuplFld(CFile, CFile, CRecPtr, E->NewRecPtr, E->OldRecPtr, F, F);
 		CFile->ClearRecSpace(CRecPtr);
-		ReleaseStore(CRecPtr);
+		ReleaseStore(&CRecPtr);
 		CRecPtr = cr;
 		CFile->OldLockMode(md);
 	}
@@ -2794,7 +2797,7 @@ bool PromptSearch(bool create)
 		result = true;
 		CRecPtr = E->NewRecPtr;
 		PopW(w);
-		ReleaseStore(RP);
+		ReleaseStore(&RP);
 		return result;
 	}
 	if (HasIndex && E->DownSet && (VK == E->DownKey)) {
@@ -2842,7 +2845,7 @@ bool PromptSearch(bool create)
 		result = true;
 		CRecPtr = E->NewRecPtr;
 		PopW(w);
-		ReleaseStore(RP);
+		ReleaseStore(&RP);
 		return result;
 	}
 	while (KF != nullptr) {
@@ -2874,7 +2877,7 @@ bool PromptSearch(bool create)
 			if (Event.Pressed.KeyCombination() == __ESC || (Event.What == evKeyDown)) {
 				CRecPtr = E->NewRecPtr;
 				PopW(w);
-				ReleaseStore(RP);
+				ReleaseStore(&RP);
 				return result;
 			}
 			switch (F->frml_type) {
@@ -2925,7 +2928,7 @@ bool PromptSearch(bool create)
 	result = true;
 
 	PopW(w);
-	ReleaseStore(RP);
+	ReleaseStore(&RP);
 	return result;
 }
 
@@ -3007,14 +3010,14 @@ void Sorting()
 	MarkStore(p);
 
 	if (!PromptSortKeys(E->Flds, SKRoot) || (SKRoot == nullptr)) {
-		ReleaseStore(p);
+		ReleaseStore(&p);
 		CRecPtr = E->NewRecPtr;
 		DisplAllWwRecs();
 		return;
 	}
 
 	if (!CFile->TryLockMode(ExclMode, md, 1)) {
-		ReleaseStore(p);
+		ReleaseStore(&p);
 		CRecPtr = E->NewRecPtr;
 		DisplAllWwRecs();
 		return;
@@ -3029,7 +3032,7 @@ void Sorting()
 		CFile->OldLockMode(md);
 	}
 
-	ReleaseStore(p);
+	ReleaseStore(&p);
 	CRecPtr = E->NewRecPtr;
 	DisplAllWwRecs();
 }
@@ -3057,7 +3060,7 @@ void AutoReport()
 		RunAutoReport(RO);
 		SpecFDNameAllowed = false;
 	}
-	ReleaseStore(p);
+	ReleaseStore(&p);
 	ViewPrinterTxt();
 	CRecPtr = E->NewRecPtr;
 }
@@ -3553,7 +3556,7 @@ label2:
 		break;
 	}
 	case _U_: {
-		ReleaseStore(S);
+		delete S; S = nullptr;
 		TxtXY = 0;
 		goto label1;
 		break; }
@@ -3562,7 +3565,7 @@ label2:
 
 	if (WasUpd) UpdateEdTFld(S);
 	if ((OldTxtPos != TxtPos) && !Srch) UpdateTxtPos(TxtPos);
-	ReleaseStore(S);
+	delete S; S = nullptr;
 
 	if (Ed && !WasUpdated) {
 		UnLockRec(E);
@@ -3658,7 +3661,7 @@ label2:
 
 	}
 label5:
-	ReleaseStore(p);
+	ReleaseStore(&p);
 	DisplEditWw();
 label6:
 	if (w != 0) PopW(w);
@@ -3678,7 +3681,7 @@ bool EditItemProc(bool del, bool ed, WORD& Brk)
 	}
 	else {
 		TextAttr = E->dHiLi;
-		Txt = DecodeField(F, CFld->FldD->L);
+		Txt = DecodeField(CFile, F, CFld->FldD->L, CRecPtr);
 		screen.GotoXY(CFld->Col, FldRow(CFld, IRec));
 		wd = 0;
 		if (CFile->FF->NotCached()) wd = E->WatchDelay;
@@ -3768,7 +3771,7 @@ void PromptSelect()
 	if (Select) Txt = E->BoolTxt;
 	else Txt = "";
 	if (IsCurrChpt()) ReleaseFilesAndLinksAfterChapter();
-	ReleaseStore(E->AfterE);
+	ReleaseStore(&E->AfterE);
 	ww.PromptFilter(Txt, &E->Bool, &E->BoolTxt);
 	if (E->Bool == nullptr) Select = false; else Select = true;
 	DisplBool();
@@ -3812,7 +3815,7 @@ void SwitchRecs(short Delta)
 	if (IsCurrChpt()) SetCompileAll();
 label1:
 	CFile->OldLockMode(md);
-	ReleaseStore(p1);
+	ReleaseStore(&p1);
 	CRecPtr = E->NewRecPtr;
 }
 
@@ -3873,7 +3876,7 @@ bool SelFldsForEO(EditOpt* EO, LinkD* LD)
 		ww.SelFieldList(36, true, EO->Flds);
 	}
 	if (EO->Flds.empty()) {
-		ReleaseStore(p);
+		ReleaseStore(&p);
 		result = false;
 	}
 	return result;
@@ -3940,7 +3943,7 @@ void ImbeddEdit()
 	}
 
 	PopW(w);
-	ReleaseStore(p);
+	ReleaseStore(&p);
 	RdEStatus();
 	DisplEditWw();
 }
@@ -4015,7 +4018,7 @@ void DownEdit()
 	}
 
 	PopW(w);
-	ReleaseStore(p);
+	ReleaseStore(&p);
 	RdEStatus();
 	DisplEditWw();
 }
@@ -4186,7 +4189,7 @@ void Calculate2()
 		IsCompileErr = false;
 		Del = false;
 		CFile = E->FD;
-		ReleaseStore(p);
+		ReleaseStore(&p);
 		// TODO: goto label1;
 	}
 label3:
@@ -4313,7 +4316,7 @@ bool StartProc(Instr_proc* ExitProc, bool Displ)
 				(*(int*)(p + f->Displ) == *(int*)(E->OldRecPtr) + f->Displ))
 				NoDelTFlds = true;
 		}
-		ReleaseStore(p);
+		delete[] p; p = nullptr;
 	}
 	return result;
 }
@@ -5092,7 +5095,7 @@ void EditDataFile(FileD* FD, EditOpt* EO)
 	if (w2 != 0) PopW(w2);
 	PopW(w1);
 	PopEdit();
-	ReleaseStore(p);
+	ReleaseStore(&p);
 }
 
 void ViewPrinterTxt()

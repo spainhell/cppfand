@@ -173,7 +173,7 @@ label1:
 			ClrEvent();
 			PopW(w2);
 			PopScr(pw, true);
-			ReleaseStore(pw);
+			ReleaseStore(&pw);
 			if (ss.Empty) return;
 			ss.Empty = true;
 			ss.Pointto = nullptr;
@@ -777,7 +777,7 @@ bool wwmix::PromptFilter(std::string Txt, FrmlElem** Bool, std::string* BoolTxt)
 			SetMsgPar(Msg);
 			WrLLF10Msg(110);
 			IsCompileErr = false;
-			ReleaseStore(p);
+			ReleaseStore(&p);
 			CFile = cf;
 			Del = false;
 		}

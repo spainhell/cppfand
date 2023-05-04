@@ -934,7 +934,7 @@ label2:
 			}
 		}
 	}
-	ReleaseStore(p);
+	ReleaseStore(&p);
 }
 
 void RdImpl(ImplD** IDRoot)

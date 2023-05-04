@@ -63,5 +63,5 @@ void DbfFile::WrDBaseHd()
 	RdWrCache(WRITE, CFile->FF->Handle, cached,
 		int(CFile->FF->NRecs) * CFile->FF->RecLen + CFile->FF->FirstRecPos, 1, (void*)&CtrlZ);
 
-	ReleaseStore(P);
+	delete P; P = nullptr;
 }

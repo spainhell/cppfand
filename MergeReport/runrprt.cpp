@@ -415,7 +415,7 @@ void PendingTT(std::string& text)
 	}
 	WriteNBlks(text, LineLenLst + 1 - Col);
 	if (Y.TD != nullptr) {
-		ReleaseStore(Store2Ptr);
+		ReleaseStore(&Store2Ptr);
 		Y.TD = nullptr;
 		Y.TLn = 0;
 	}
@@ -432,7 +432,7 @@ void RunAProc(std::vector<AssignD*> vAssign)
 {
 	for (AssignD* A : vAssign) {
 		switch (A->Kind) {
-		case _locvar: { LVAssignFrml(A->LV, A->Add, A->Frml); break; }
+		case _locvar: { LVAssignFrml(CFile, A->LV, A->Add, A->Frml, CRecPtr); break; }
 		case _parfile: { AsgnParFldFrml(A->FD, A->PFldD, A->Frml, A->Add); break; }
 		case _ifthenelseM: {
 			if (RunBool(CFile, A->Bool, CRecPtr)) {
@@ -619,7 +619,7 @@ label1:
 						//printf("%s%c", Rprt.c_str(), *(char*)(S->A[i]));
 						text += S->A[i];
 					}
-					ReleaseStore(S);
+					delete S; S = nullptr;
 					goto label3;
 				}
 				Y.I += 2;

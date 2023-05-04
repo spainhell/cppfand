@@ -4,13 +4,13 @@
 #include "oaccess.h"
 #include "../fandio/FandTFile.h"
 
-void GetTxtPrepare(FrmlElem* Z, FILE** h, int& off, int& len)
+void GetTxtPrepare(FileD* file_d, FrmlElem* Z, FILE** h, int& off, int& len, void* record)
 {
 	auto iZ = (FrmlElem16*)Z;
 	int l = 0;
 	off = 0;
 	if (iZ->PPPPPP1 != nullptr) { 
-		off = RunInt(CFile, iZ->PPPPPP1, CRecPtr) - 1;
+		off = RunInt(file_d, iZ->PPPPPP1, record) - 1;
 		if (off < 0) off = 0; 
 	}
 	SetTxtPathVol(iZ->TxtPath, iZ->TxtCatIRec);
@@ -29,20 +29,20 @@ void GetTxtPrepare(FrmlElem* Z, FILE** h, int& off, int& len)
 	if (off >= len) off = len;
 	len -= off;
 	if (iZ->PPPP2 != nullptr) {
-		l = RunInt(CFile, iZ->PPPP2, CRecPtr);
+		l = RunInt(file_d, iZ->PPPP2, record);
 		if (l < 0) l = 0;
 		if (l < len) len = l;
 	}
 	SeekH(*h, off);
 }
 
-LongStr* GetTxt(FrmlElem* Z)
+LongStr* GetTxt(FileD* file_d, FrmlElem* Z, void* record)
 {
 	FILE* h = nullptr;
 	int len = 0, off = 0;
 	LongStr* s = nullptr;
 
-	GetTxtPrepare(Z, &h, off, len);
+	GetTxtPrepare(file_d, Z, &h, off, len, record);
 
 	if (len > MaxLStrLen) {
 		len = MaxLStrLen; 
@@ -56,7 +56,7 @@ LongStr* GetTxt(FrmlElem* Z)
 	return s;
 }
 
-int CopyTFFromGetTxt(FandTFile* TF, FrmlElem* Z)
+int CopyTFFromGetTxt(FileD* file_d, FandTFile* TF, FrmlElem* Z, void* record)
 {
 	LockMode md; 
 	int len = 0, off = 0, pos = 0, nxtpos = 0; 
@@ -68,14 +68,14 @@ int CopyTFFromGetTxt(FandTFile* TF, FrmlElem* Z)
 	bool continued = false;
 	int result = 0;
 
-	GetTxtPrepare(Z, &h, off, len);
+	GetTxtPrepare(file_d, Z, &h, off, len, record);
 	LastTxtPos = off + len;
 	if (len == 0) {
 		result = 0;
 		CloseH(&h);
 		exit;
 	}
-	if (!TF->IsWork) md = CFile->NewLockMode(WrMode);
+	if (!TF->IsWork) md = file_d->NewLockMode(WrMode);
 	if (len <= MPageSize - 2) { /* short text */
 		l = (WORD)len;
 		ReadH(h, l, X);
@@ -130,17 +130,18 @@ label3:
 	ReadH(h, l, &X[i]);
 	RdWrCache(WRITE, TF->Handle, TF->NotCached(), pos, MPageSize, X);
 label4:
-	if (!TF->IsWork) CFile->OldLockMode(md);
+	if (!TF->IsWork) file_d->OldLockMode(md);
 	CloseH(&h);
 	return result;
 }
 
-int CopyTFString(FandTFile* destT00File, FileD* srcFileDescr, FandTFile* scrT00File, int srcT00Pos)
+int CopyTFString(FileD* file_d, FandTFile* destT00File, FileD* srcFileDescr, FandTFile* scrT00File, int srcT00Pos)
 {
 	//if (destT00File == scrT00File) {
 	//	throw std::exception("CopyTFString() exception: Source and destination file is same.");
 	//}
-	FileD* cf = nullptr;
+	CFile = file_d;
+	FileD* origCFile = nullptr;
 	WORD l = 0;
 	short rest = 0;
 	bool isLongTxt = false, frst = false;
@@ -154,15 +155,15 @@ int CopyTFString(FandTFile* destT00File, FileD* srcFileDescr, FandTFile* scrT00F
 	label0:
 		return 0; /*Mark****/
 	}
-	cf = CFile;
-	if (!destT00File->IsWork) md = CFile->NewLockMode(WrMode);
+	origCFile = CFile;
+	if (!destT00File->IsWork) md = file_d->NewLockMode(WrMode);
 	CFile = srcFileDescr;
-	if (!scrT00File->IsWork) md2 = CFile->NewLockMode(RdMode);
+	if (!scrT00File->IsWork) md2 = srcFileDescr->NewLockMode(RdMode);
 	RdWrCache(READ, scrT00File->Handle, scrT00File->NotCached(), srcT00Pos, 2, &l);
 	if (l <= MPageSize - 2) { /* short text */
 		if (l == 0) goto label0; /*Mark****/
 		RdWrCache(READ, scrT00File->Handle, scrT00File->NotCached(), srcT00Pos + 2, l, X);
-		CFile = cf;
+		CFile = origCFile;
 		rest = MPageSize - destT00File->FreePart % MPageSize;
 		if (l + 2 <= rest) pos = destT00File->FreePart;
 		else {
@@ -197,7 +198,7 @@ label1:
 	if (isLongTxt) l--;
 	l += 2;
 label3:
-	CFile = cf;
+	CFile = origCFile;
 	if (frst) {
 		pos = destT00File->NewPage(false);
 		result = pos;
@@ -225,15 +226,16 @@ label3:
 	}
 	RdWrCache(WRITE, destT00File->Handle, destT00File->NotCached(), pos, MPageSize, X);
 label4:
-	CFile = srcFileDescr;
-	if (!scrT00File->IsWork) CFile->OldLockMode(md2);
-	CFile = cf;
-	if (!destT00File->IsWork) CFile->OldLockMode(md);
+	if (!scrT00File->IsWork) srcFileDescr->OldLockMode(md2);
+	if (!destT00File->IsWork) file_d->OldLockMode(md);
+
 	return result;
 }
 
-void CopyTFStringToH(FILE* h, FandTFile* TF02, FileD* TFD02, int& TF02Pos)
+void CopyTFStringToH(FileD* file_d, FILE* h, FandTFile* TF02, FileD* TFD02, int& TF02Pos)
 {
+	CFile = file_d;
+
 	WORD i = 0;
 	bool isLongTxt = false;
 	int pos = 0;
@@ -244,10 +246,8 @@ void CopyTFStringToH(FILE* h, FandTFile* TF02, FileD* TFD02, int& TF02Pos)
 
 	pos = TF02Pos;
 	if (pos == 0) return;
-	FileD* cf = CFile;
-	CFile = TFD02;
 	FandTFile* tf = TF02;
-	if (!tf->IsWork) md2 = CFile->NewLockMode(RdMode);
+	if (!tf->IsWork) md2 = TFD02->NewLockMode(RdMode);
 	size_t l = 0;
 	RdWrCache(READ, tf->Handle, tf->NotCached(), pos, 2, &l);
 	if (l <= MPageSize - 2) { /* short text */
@@ -287,6 +287,6 @@ label3:
 	}
 	WriteH(h, l, &X[i]);
 label4:
-	if (!tf->IsWork) CFile->OldLockMode(md2);
-	CFile = cf;
+	if (!tf->IsWork) TFD02->OldLockMode(md2);
+	CFile = file_d;
 }

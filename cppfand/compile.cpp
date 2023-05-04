@@ -174,7 +174,7 @@ void SetInpTT(RdbPos* RP, bool FromTxt)
 		Pos = CFile->loadT(ChptOldTxt, CRecPtr);
 	}
 	SetInpTTPos(CFile, Pos, RP->R->Encrypted);
-	ReleaseStore(CRecPtr);
+	ReleaseStore(&CRecPtr);
 	CFile = CF; CRecPtr = CR;
 }
 
@@ -1043,7 +1043,8 @@ bool FindChpt(char Typ, const pstring& name, bool local, RdbPos* RP)
 		R = R->ChainBack;
 	}
 label1:
-	ReleaseStore(CRecPtr); CFile = CF; CRecPtr = CR;
+	ReleaseStore(&CRecPtr);
+	CFile = CF; CRecPtr = CR;
 	return result;
 }
 

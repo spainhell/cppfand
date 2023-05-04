@@ -380,7 +380,7 @@ label1:
 		}
 		if ((FDL != nullptr) && (FDL->LVRecPtr == nullptr) &&
 			((FDL->Cond != nullptr) || (FDL->KeyIn != nullptr) || (Ii == 1) && RO->UserCondQuest)) {
-			ID->Bool = RunEvalFrml(FDL->Cond);
+			ID->Bool = RunEvalFrml(CFile, FDL->Cond, CRecPtr);
 			KI = FDL->KeyIn;
 			ID->SQLFilter = FDL->SQLFilter;
 			if (Ii == 1) SelQuest = RO->UserCondQuest;

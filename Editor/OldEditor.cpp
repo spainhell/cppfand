@@ -908,7 +908,7 @@ void SmallerPart(WORD Ind, WORD FreeSize)
 		LenT -= il;
 		Move(&T[il + 1], T, LenT);
 		T[LenT] = _CR;
-		ReleaseStore(&T[LenT + 1]);
+		//ReleaseStore(&T[LenT + 1]);
 		ChangePart = true;
 		MoveIdx(1);
 	}
@@ -933,7 +933,7 @@ void SmallerPart(WORD Ind, WORD FreeSize)
 		//Part.LenP = il;
 		LenT = il + 1;
 		T[LenT] = _CR;
-		ReleaseStore(&T[LenT + 1]);
+		//ReleaseStore(&T[LenT + 1]);
 	}
 }
 
@@ -1122,7 +1122,7 @@ void SetPart(int Idx)
 	//	return;
 	//}
 	TestUpdFile();
-	ReleaseStore(T);
+	delete[] T; T = nullptr;
 	ReadTextFile();
 	//while ((Idx > Part.PosP + Part.LenP) && !AllRd)
 	//{
@@ -2175,12 +2175,12 @@ void Calculate()
 		SetMsgPar(Msg);
 		WrLLF10Msg(110);
 		IsCompileErr = false;
-		ReleaseStore(p);
+		ReleaseStore(&p);
 		Del = false;
 		// TODO: goto label1;
 	}
 label3:
-	ReleaseStore(p);
+	ReleaseStore(&p);
 }
 
 bool BlockExist()
@@ -2378,7 +2378,7 @@ bool BlockHandle(int& fs, FILE* W1, char Oper)
 		}
 		else {
 			PrintArray(p, fs, false);
-			ReleaseStore(p);
+			delete[] p; p = nullptr;
 		}
 	}
 	if (Oper == 'p') { TypeB = tb; }
@@ -2395,7 +2395,7 @@ void DelStorClpBd(void* P1, LongStr* sp)
 {
 	TWork.Delete(ClpBdPos);
 	ClpBdPos = TWork.Store(sp->A, sp->LL);
-	ReleaseStore(P1);
+	ReleaseStore(&P1);
 }
 
 void MarkRdClpBd(void* P1, LongStr* sp)
@@ -2469,7 +2469,7 @@ void BlockDrop(char Oper, void* P1, LongStr* sp)
 	UpdatT = true;
 	//if (ChangePart) I -= Part.MovI;
 	Move(sp->A, &T[I], I2);
-	ReleaseStore(P1);
+	ReleaseStore(&P1);
 	TextLineNr = GetLineNumber(I + I2);
 	blocks->EndBLn = /*Part.LineP +*/ TextLineNr;
 	blocks->EndBPos = succ(I + I2 - textIndex);
@@ -2552,7 +2552,7 @@ void BlockCDrop(char Oper, void* P1, LongStr* sp)
 	if (I3 < I1) InsertLine(i, I1, I3, ww, sp);
 	if (Oper != 'R') {
 		blocks->EndBLn = /*Part.LineP +*/ TextLineNr - 1;
-		ReleaseStore(P1);
+		ReleaseStore(&P1);
 		PosDekFindLine(blocks->BegBLn, blocks->BegBPos, true);
 	}
 }

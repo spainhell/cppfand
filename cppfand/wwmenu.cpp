@@ -366,10 +366,10 @@ void TMenu::SetPalette(Instr_menu* aPD)
 {
 	WORD i;
 	/* !!! with aPD^ do!!! */
-	Palette[0] = RunWordImpl(aPD->mAttr[0], screen.colors.mNorm);
-	Palette[1] = RunWordImpl(aPD->mAttr[1], screen.colors.mHili);
-	Palette[2] = RunWordImpl(aPD->mAttr[2], screen.colors.mFirst);
-	Palette[3] = RunWordImpl(aPD->mAttr[3], screen.colors.mDisabled);
+	Palette[0] = RunWordImpl(CFile, aPD->mAttr[0], screen.colors.mNorm, CRecPtr);
+	Palette[1] = RunWordImpl(CFile, aPD->mAttr[1], screen.colors.mHili, CRecPtr);
+	Palette[2] = RunWordImpl(CFile, aPD->mAttr[2], screen.colors.mFirst, CRecPtr);
+	Palette[3] = RunWordImpl(CFile, aPD->mAttr[3], screen.colors.mDisabled, CRecPtr);
 }
 
 ChoiceD* TMenu::getChoice(size_t order)
@@ -907,7 +907,7 @@ WORD Menu(WORD MsgNr, WORD IStart)
 	w = new TMenuBoxS(0, 0, MsgLine);
 	auto result = w->Exec(IStart);
 	delete w;
-	ReleaseStore(p);
+	ReleaseStore(&p);
 	return result;
 }
 
@@ -937,7 +937,7 @@ void MenuBarProc(Instr_menu* PD)
 	w = new TMenuBarP(PD);
 	w->Exec();
 	delete w;
-	ReleaseStore(p);
+	ReleaseStore(&p);
 }
 
 std::string GetHlpText(RdbD* R, std::string S, bool ByName, WORD& IRec)

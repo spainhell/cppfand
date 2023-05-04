@@ -67,144 +67,132 @@ void TestCPathError()
 	}
 }
 
-bool LinkLastRec(FileD* FD, int& N, bool WithT)
+bool LinkLastRec(FileD* file_d, int& N, bool WithT, BYTE** newRecord)
 {
-	CFile = FD;
-	CRecPtr = FD->GetRecSpace();
-	LockMode md = CFile->NewLockMode(RdMode);
+	*newRecord = file_d->GetRecSpace();
+	LockMode md = file_d->NewLockMode(RdMode);
 	auto result = true;
 #ifdef FandSQL
-	if (FD->IsSQLFile)
+	if (file_d->IsSQLFile)
 	{
 		if (Strm1->SelectXRec(nullptr, nullptr, _equ, WithT)) N = 1; else goto label1;
 	}
 	else
 #endif
 	{
-		N = CFile->FF->NRecs;
+		N = file_d->FF->NRecs;
 		if (N == 0) {
 		label1:
-			CFile->ZeroAllFlds(CRecPtr);
+			file_d->ZeroAllFlds(*newRecord);
 			result = false;
 			N = 1;
 		}
-		else CFile->ReadRec(N, CRecPtr);
+		else {
+			file_d->ReadRec(N, *newRecord);
+		}
 	}
-	CFile->OldLockMode(md);
+	file_d->OldLockMode(md);
 	return result;
 }
 
 // ulozi hodnotu parametru do souboru
-void AsgnParFldFrml(FileD* FD, FieldDescr* F, FrmlElem* Z, bool Ad)
+void AsgnParFldFrml(FileD* file_d, FieldDescr* field_d, FrmlElem* frml, bool add)
 {
 	//#ifdef _DEBUG
-	std::string FileName = FD->FullPath;
-	std::string Varible = F->Name;
+	std::string FileName = file_d->FullPath;
+	std::string Varible = field_d->Name;
 	//#endif
-	void* p = nullptr; int N = 0; LockMode md; bool b = false;
-	FileD* cf = CFile; void* cr = CRecPtr; CFile = FD;
+
 #ifdef FandSQL
-	if (CFile->IsSQLFile) {
-		CRecPtr = GetRecSpace; ZeroAllFlds; AssgnFrml(F, Z, true, Ad);
-		Strm1->UpdateXFld(nullptr, nullptr, F); ClearRecSpace(CRecPtr)
+	if (file_d->IsSQLFile) {
+		CRecPtr = GetRecSpace; ZeroAllFlds; AssgnFrml(field_d, frml, true, add);
+		Strm1->UpdateXFld(nullptr, nullptr, field_d); ClearRecSpace(CRecPtr)
 	}
 	else
 #endif
 	{
-		md = CFile->NewLockMode(WrMode);
-		if (!LinkLastRec(CFile, N, true)) {
-			CFile->IncNRecs(1);
-			CFile->WriteRec(N, CRecPtr);
+		int n = 0;
+		LockMode md = file_d->NewLockMode(WrMode);
+		BYTE* rec = nullptr;
+		if (!LinkLastRec(file_d, n, true, &rec)) {
+			file_d->IncNRecs(1);
+			file_d->WriteRec(n, rec);
 		}
-		AssgnFrml(CFile, CRecPtr, F, Z, true, Ad);
-		CFile->WriteRec(N, CRecPtr);
-		CFile->OldLockMode(md);
+		AssgnFrml(file_d, rec, field_d, frml, true, add);
+		file_d->WriteRec(n, rec);
+		file_d->OldLockMode(md);
+		delete[] rec; rec = nullptr;
 	}
-	ReleaseStore(CRecPtr);
-	CFile = cf; CRecPtr = cr;
 }
 
 // zrejme zajistuje pristup do jine tabulky (cizi klic)
-bool LinkUpw(LinkD* LD, int& N, bool WithT)
+bool LinkUpw(FileD* file_d, LinkD* LD, int& N, bool WithT, void* record, BYTE** newRecord)
 {
 	FileD* ToFD = LD->ToFD;
-	FileD* CF = CFile;
-	void* CP = CRecPtr;
+	*newRecord = ToFD->GetRecSpace();
+
 	XKey* K = LD->ToKey;
-
 	XString x;
-	x.PackKF(CFile, LD->Args, CRecPtr);
+	x.PackKF(file_d, LD->Args, record);
 
-	CFile = ToFD;
-	void* RecPtr = CFile->GetRecSpace();
-	CRecPtr = RecPtr;
+
 #ifdef FandSQL
-	if (CFile->IsSQLFile) {
+	if (ToFD->IsSQLFile) {
 		LU = Strm1->SelectXRec(K, @X, _equ, WithT); N = 1;
 		if (LU) goto label2; else goto label1;
 	}
 #endif
-	const LockMode md = CFile->NewLockMode(RdMode);
+	const LockMode md = ToFD->NewLockMode(RdMode);
 	bool lu;
 	if (ToFD->FF->file_type == FileType::INDEX) {
-		CFile->FF->TestXFExist();
-		lu = K->SearchInterval(CFile, x, false, N);
+		ToFD->FF->TestXFExist();
+		lu = K->SearchInterval(ToFD, x, false, N);
 	}
-	else if (CFile->FF->NRecs == 0) {
+	else if (ToFD->FF->NRecs == 0) {
 		lu = false;
 		N = 1;
 	}
 	else {
-		lu = CFile->FF->SearchKey(x, K, N, CRecPtr);
+		lu = ToFD->FF->SearchKey(x, K, N, *newRecord);
 	}
 
 	if (lu) {
-		CFile->ReadRec(N, CRecPtr);
+		ToFD->ReadRec(N, *newRecord);
 	}
 	else {
-		bool b = false;
-		double r = 0.0;
-		CFile->ZeroAllFlds(CRecPtr);
+		ToFD->ZeroAllFlds(*newRecord);
 		const KeyFldD* KF = K->KFlds;
 		for (auto& arg : LD->Args) {
 			FieldDescr* F = arg->FldD;
 			FieldDescr* F2 = KF->FldD;
-			CFile = CF;
-			CRecPtr = CP;
 			if ((F2->Flg & f_Stored) != 0)
 				switch (F->frml_type) {
 				case 'S': {
-					x.S = CFile->loadOldS(F, CRecPtr);
-					CFile = ToFD;
-					CRecPtr = RecPtr;
-					CFile->saveS(F2, x.S, CRecPtr);
+					x.S = file_d->loadOldS(F, record);
+					ToFD->saveS(F2, x.S, newRecord);
 					break;
 				}
 				case 'R': {
-					r = CFile->loadR(F, CRecPtr);
-					CFile = ToFD; CRecPtr = RecPtr;
-					CFile->saveR(F2, r, CRecPtr);
+					const double r = file_d->loadR(F, record);
+					ToFD->saveR(F2, r, *newRecord);
 					break;
 				}
 				case 'B': {
-					b = CFile->loadB(F, CRecPtr);
-					CFile = ToFD; CRecPtr = RecPtr;
-					CFile->saveB(F2, b, CRecPtr);
+					const bool b = file_d->loadB(F, record);
+					ToFD->saveB(F2, b, *newRecord);
 					break;
 				}
 				}
 			KF = KF->pChain;
 		}
-		CFile = ToFD;
-		CRecPtr = RecPtr;
 	}
 
-	auto result = lu;
 #ifdef FandSQL
-	if (!CFile->IsSQLFile)
+	if (!ToFD->IsSQLFile)
 #endif
-		CFile->OldLockMode(md);
-	return result;
+		ToFD->OldLockMode(md);
+
+	return lu;
 }
 
 LocVar* LocVarBlkD::GetRoot()

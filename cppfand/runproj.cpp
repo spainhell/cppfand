@@ -162,7 +162,8 @@ void GetRdbRecVars(void* RecPtr, RdbRecVars* X)
 				}
 			}
 			CFile = Chpt;
-			ReleaseBoth(p, p2);
+			ReleaseStore(&p);
+			ReleaseStore(&p2);
 		}
 #ifdef FandSQL
 		if (X->Ext == ".SQL") X->isSQL = true;
@@ -405,7 +406,7 @@ label1:
 	result = 0;
 label2:
 	CFile->OldLockMode(md);
-	ReleaseStore(CRecPtr);
+	ReleaseStore(&CRecPtr);
 	CFile = cf;
 	CRecPtr = cr;
 	return result;
@@ -462,7 +463,7 @@ void EditHelpOrCat(WORD cc, WORD kind, std::string txt)
 		EO->StartIRecZ = (FrmlElem*)(&iFrml);
 	}
 	EditDataFile(FD, EO);
-	ReleaseStore(EO);
+	delete EO; EO = nullptr;
 	if (cc == __ALT_F2) {
 		nHelp = EdRecNo;
 		iHelp = EdIRec;
@@ -499,7 +500,7 @@ void StoreChptTxt(FieldDescr* F, LongStr* S, bool Del)
 	else {
 		CFile->saveT(F, pos + LicNr, CRecPtr);
 	}
-	ReleaseStore(p);
+	ReleaseStore(&p);
 }
 
 void SetChptFldDPtr()
@@ -862,7 +863,7 @@ bool CompRunChptRec(WORD CC)
 	}
 
 	MaxHp = nullptr;
-	ReleaseStore(p2);
+	ReleaseStore(&p2);
 	Free = StoreAvail();
 	RunMsgClear();
 	if (WasError) {
@@ -897,7 +898,8 @@ bool CompRunChptRec(WORD CC)
 	}
 	lstFD->pChain = nullptr;
 	LinkDRoot = oldLd;
-	ReleaseBoth(p, p2);
+	ReleaseStore(&p);
+	ReleaseStore(&p2);
 	E = OldE;
 	EditDRoot = E;
 	RdEStatus();
@@ -935,7 +937,9 @@ void RdUserId(bool Chk)
 label1:
 	TestLex(_quotedstr); name = LexWord; RdLex(); Accept(',');
 	code = RdInteger(); Accept(',');
-	Z = RdStrFrml(); pw2 = RunShortStr(CFile, Z, CRecPtr); ReleaseStore(Z);
+	Z = RdStrFrml();
+	pw2 = RunShortStr(CFile, Z, CRecPtr);
+	delete Z; Z = nullptr;
 	if (Lexem == ',') { RdLex(); RdByteList(&acc); }
 	else { acc[0] = 1; acc[1] = (char)code; }
 	if (Chk) {
@@ -1293,7 +1297,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 						//WrFDSegment(I);
 						if (CFile->IsHlpFile) CRdb->HelpFD = CFile;
 						if (OldTxt > 0) MergeOldNew(Verif, OldTxt);
-						ReleaseStore(p1);
+						ReleaseStore(&p1);
 						CFile = Chpt;
 						// Odmazani dat z TTT souboru nebudeme provadet!
 						/*if (ChptTF->LicenseNr == 0) ChptTF->Delete(OldTxt);
@@ -1301,7 +1305,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 					}
 					else if (!RdFDSegment(I, OldTxt)) {
 						LinkDRoot = ld;
-						ReleaseStore(p1);
+						ReleaseStore(&p1);
 						CFile = Chpt;
 						goto label2;
 					}
@@ -1380,7 +1384,9 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 #endif
 				}
 			}
-			ReleaseBoth(p1, p2); CFile = Chpt; CRecPtr = Chpt->FF->RecPtr;
+			ReleaseStore(&p1);
+			ReleaseStore(&p2);
+			CFile = Chpt; CRecPtr = Chpt->FF->RecPtr;
 			if (Verif) {
 				CFile->ReadRec(I, CRecPtr);
 				CFile->saveB(ChptVerif, false, CRecPtr);
@@ -1512,7 +1518,7 @@ bool EditExecRdb(std::string Nm, std::string proc_name, Instr_proc* proc_call, w
 		if ((ChptTF->LicenseNr != 0) || CRdb->Encrypted
 			|| (Chpt->FF->UMode == RdOnly)) goto label9;
 		ReleaseFilesAndLinksAfterChapter();
-		ReleaseStore(p);
+		ReleaseStore(&p);
 	}
 	else if (!top) {
 		UserW = PushW(1, 1, TxtCols, TxtRows);
@@ -1567,7 +1573,7 @@ label2:
 		ReleaseFilesAndLinksAfterChapter();
 		SetSelectFalse();
 		E->Bool = nullptr;
-		ReleaseStore(E->AfterE);
+		ReleaseStore(&E->AfterE);
 	}
 	if (cc == __CTRL_F10) {
 		SetUpdHandle(ChptTF->Handle);
@@ -1639,7 +1645,7 @@ void UpdateCat()
 	EO->Flds = AllFldsList(CatFD->GetCatalogFile(), true);
 	EditDataFile(CatFD->GetCatalogFile(), EO);
 	ChDir(OldDir);
-	ReleaseStore(EO);
+	delete EO; EO = nullptr;
 }
 
 void UpdateUTxt()
@@ -1675,7 +1681,7 @@ void UpdateUTxt()
 	SetInpLongStr(S, false);
 	MarkStore(p);
 	RdUserId(false);
-	ReleaseStore(p);
+	ReleaseStore(&p);
 	bool b = true;
 
 	while (true) {
@@ -1684,7 +1690,7 @@ void UpdateUTxt()
 			SetInpLongStr(S, false);
 			MarkStore(p);
 			RdUserId(false);
-			ReleaseStore(p);
+			ReleaseStore(&p);
 			b = false;
 			if (Upd) {
 				StoreChptTxt(ChptTxt, S, true);
@@ -1695,7 +1701,7 @@ void UpdateUTxt()
 		catch (std::exception& ex) {
 			if (b) {
 				WrLLF10MsgLine();
-				ReleaseStore(p);
+				ReleaseStore(&p);
 				if (PromptYN(59)) {
 					continue;
 				}
@@ -1708,7 +1714,7 @@ void UpdateUTxt()
 	}
 
 	PopW(w);
-	ReleaseStore(p1);
+	ReleaseStore(&p1);
 }
 
 void InstallRdb(std::string n)

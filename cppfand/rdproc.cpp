@@ -2905,7 +2905,7 @@ void ReadDeclChpt()
 	}
 }
 
-FrmlElem* GetEvalFrml(FrmlElem21* X)
+FrmlElem* GetEvalFrml(FileD* file_d, FrmlElem21* X, void* record)
 {
 	stSaveState* p = nullptr;
 	void* cr = nullptr;

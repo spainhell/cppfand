@@ -31,7 +31,7 @@ void GetIndex(Instr_getindex* PD)
 			lv2 = PD->giLV2;
 		}
 		XScan* Scan = new XScan(file_d, PD->giKD, PD->giKIRoot, false);
-		cond = RunEvalFrml(PD->giCond);
+		cond = RunEvalFrml(CFile, PD->giCond, CRecPtr);
 		switch (PD->giOwnerTyp) {
 		case 'i': {
 			Scan->ResetOwnerIndex(ld, lv2, cond);

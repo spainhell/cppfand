@@ -2052,7 +2052,7 @@ TProgRoots* ReadProlog(WORD RecNr)
 
 	CheckPredicates(Roots->Predicates);
 	//ss->LL = AbsAdr(HeapPtr) - AA;
-	if (ProlgCallLevel == 0) ReleaseStore(p2);
+	if (ProlgCallLevel == 0) ReleaseStore(&p2);
 	else {
 		Mem1.Release(pp1);
 		Mem2.Release(pp2);

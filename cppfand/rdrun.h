@@ -365,7 +365,7 @@ extern MergOpSt MergOpGroup;
 void ResetLVBD();
 bool RunAddUpdte1(char Kind/*+,-,d*/, void* CRold, bool Back/*tracking*/, AddD* StopAD, LinkD* notLD);
 
-void CrIndRec();
+void CrIndRec(FileD* file_d, void* record);
 bool Link(AddD* AD, int& N, char& Kind2);
 bool TransAdd(AddD* AD, FileD* FD, void* RP, void* CRnew, int N, char Kind2, bool Back);
 void WrUpdRec(AddD* AD, FileD* FD, void* RP, void* CRnew, int N);
