@@ -26,37 +26,36 @@ double Owned(FileD* file_d, FrmlElem* Bool, FrmlElem* Sum, LinkD* LD, void* reco
 {
 	double r;
 	XString x;
-	x.PackKF(CFile, LD->ToKey->KFlds, CRecPtr);
-	FileD* cf = CFile;
-	void* cr = CRecPtr;
-	CFile = LD->FromFD;
-	LockMode md = CFile->NewLockMode(RdMode);
-	CFile->FF->TestXFExist();
+	x.PackKF(file_d, LD->ToKey->KFlds, record);
+
+	FileD* fromFD = LD->FromFD;
+	LockMode md = fromFD->NewLockMode(RdMode);
+	fromFD->FF->TestXFExist();
 	XKey* K = GetFromKey(LD);
 
-	if ((Bool == nullptr) && (Sum == nullptr) && !CFile->IsSQLFile) {
+	if ((Bool == nullptr) && (Sum == nullptr) && !fromFD->IsSQLFile) {
 		int n;
 		int nBeg;
-		K->FindNr(CFile, x.S, nBeg);
+		K->FindNr(fromFD, x.S, nBeg);
 		x.S[0];
 		x.S[x.S.length()] = 0xFF;
-		K->FindNr(CFile, x.S, n);
+		K->FindNr(fromFD, x.S, n);
 		r = n - nBeg;
 	}
 	else {
 		r = 0;
-		CRecPtr = CFile->GetRecSpace();
-		XScan* Scan = new XScan(CFile, K, nullptr, true);
+		BYTE* newRecord = fromFD->GetRecSpace();
+		XScan* Scan = new XScan(fromFD, K, nullptr, true);
 		Scan->ResetOwner(&x, nullptr);
 		while (true) {
-			Scan->GetRec(CRecPtr);
+			Scan->GetRec(newRecord);
 			if (!Scan->eof) {
-				if (RunBool(CFile, Bool, CFile)) {
+				if (RunBool(fromFD, Bool, newRecord)) {
 					if (Sum == nullptr) {
 						r = r + 1;
 					}
 					else {
-						r = r + RunReal(CFile, Sum, CRecPtr);
+						r = r + RunReal(fromFD, Sum, newRecord);
 					}
 				}
 				continue;
@@ -64,11 +63,10 @@ double Owned(FileD* file_d, FrmlElem* Bool, FrmlElem* Sum, LinkD* LD, void* reco
 			break;
 		}
 		Scan->Close();
-		ReleaseStore(&CRecPtr);
+		delete[] newRecord; newRecord = nullptr;
 	}
-	CFile->OldLockMode(md);
-	CFile = cf;
-	CRecPtr = cr;
+	fromFD->OldLockMode(md);
+
 	return r;
 }
 
@@ -144,13 +142,13 @@ double RunRealStr(FileD* file_d, FrmlElem* X, void* record)
 	double result;
 	switch (X->Op) {
 	case _valdate: {
-		auto iX = (FrmlElem6*)X;
-		result = ValDate(RunShortStr(CFile, iX->PP1, CRecPtr), iX->Mask);
+		FrmlElem6* iX = (FrmlElem6*)X;
+		result = ValDate(RunShortStr(file_d, iX->PP1, record), iX->Mask);
 		break;
 	}
 	case _val: {
-		auto iX = (FrmlElem6*)X;
-		auto valS = RunShortStr(CFile, iX->PP1, CRecPtr);
+		FrmlElem6* iX = (FrmlElem6*)X;
+		std::string valS = RunShortStr(file_d, iX->PP1, record);
 		valS = TrailChar(valS, ' ');
 		valS = LeadChar(valS, ' ');
 		short i;
@@ -158,38 +156,38 @@ double RunRealStr(FileD* file_d, FrmlElem* X, void* record)
 		break;
 	}
 	case _length: {
-		auto iX = (FrmlElem6*)X;
-		std::string s = RunStdStr(CFile, iX->PP1, CRecPtr);
+		FrmlElem6* iX = (FrmlElem6*)X;
+		std::string s = RunStdStr(file_d, iX->PP1, record);
 		result = s.length();
 		break;
 	}
 	case _linecnt: {
 		// get line counts of input text
-		auto iX = (FrmlElem6*)X;
-		std::string s = RunStdStr(CFile, iX->PP1, CRecPtr);
+		FrmlElem6* iX = (FrmlElem6*)X;
+		std::string s = RunStdStr(file_d, iX->PP1, record);
 		result = CountLines(s, '\r'); // 0x0D, #13
 		break;
 	}
 	case _ord: {
-		auto iX = (FrmlElem6*)X;
-		std::string s = RunStdStr(CFile, iX->PP1, CRecPtr);
+		FrmlElem6* iX = (FrmlElem6*)X;
+		std::string s = RunStdStr(file_d, iX->PP1, record);
 		if (s.empty()) result = 0;
 		else result = s[0];
 		break;
 	}
 	case _prompt: {
-		auto iX = (FrmlElem11*)X;
-		auto s = RunShortStr(CFile, iX->PPP1, CRecPtr);
+		FrmlElem11* iX = (FrmlElem11*)X;
+		std::string s = RunShortStr(file_d, iX->PPP1, record);
 		result = PromptR(s, iX->PP2, iX->FldD);
 		break;
 	}
 	case _pos: {
 		FrmlElem12* iX = (FrmlElem12*)X;
-		const std::string strS = RunStdStr(CFile, iX->PPP2, CRecPtr);
-		const std::string strMask = RunShortStr(CFile, iX->PPPP1, CRecPtr);
+		const std::string strS = RunStdStr(file_d, iX->PPP2, record);
+		const std::string strMask = RunShortStr(file_d, iX->PPPP1, record);
 		size_t n = 1; // kolikaty vyskyt najit
 		if (iX->PP3 != nullptr) {
-			n = RunInt(CFile, iX->PP3, CRecPtr);
+			n = RunInt(file_d, iX->PP3, record);
 			if (n < 1) return 0; // 0 - nenalezeno
 		}
 		size_t offset = 0;
@@ -202,12 +200,12 @@ double RunRealStr(FileD* file_d, FrmlElem* X, void* record)
 			offset = found;
 			if (i < n - 1) offset += strMask.length(); // next search behind last found 
 		}
-		return offset + 1; // spoleha na to, ze se vraci PASCAL pozice v retezci
+		return offset + 1; // vraci se PASCAL pozice v retezci (1 .. N);
 		break;
 	}
 	case _diskfree: {
 		auto iX = (FrmlElem0*)X;
-		std::string s = RunStdStr(CFile, iX->P1, CRecPtr);
+		std::string s = RunStdStr(file_d, iX->P1, record);
 		result = DiskFree(toupper(s[0]) - '@');
 		break;
 	}
@@ -218,16 +216,19 @@ double RunRealStr(FileD* file_d, FrmlElem* X, void* record)
 	}
 #endif
 
-	default: result = 0; break;
+	default: {
+		result = 0;
+		break;
+	}
 	}
 	return result;
-}
+	}
 
-double RMod(FrmlElem0* X)
+double RMod(FileD* file_d, FrmlElem0* X, void* record)
 {
 	double R1, R2;
-	R1 = RunReal(CFile, X->P1, CRecPtr);
-	R2 = RunReal(CFile, X->P2, CRecPtr);
+	R1 = RunReal(file_d, X->P1, record);
+	R2 = RunReal(file_d, X->P2, record);
 	return int(R1 - int(R1 / R2) * R2);
 }
 
@@ -312,7 +313,7 @@ int GetFileSize()
 	return result;
 }
 
-int RecNoFun(FrmlElem13* Z)
+int RecNoFun(FileD* file_d, FrmlElem13* Z, void* record)
 {
 	bool b = false;
 	int n = 0;
@@ -341,7 +342,7 @@ int RecNoFun(FrmlElem13* Z)
 	return n;
 }
 
-int AbsLogRecNoFun(FrmlElem13* Z)
+int AbsLogRecNoFun(FileD* file_d, FrmlElem13* Z, void* record)
 {
 	int result = 0;
 	void* p = nullptr;
@@ -353,17 +354,23 @@ int AbsLogRecNoFun(FrmlElem13* Z)
 	if (N <= 0) return result;
 	CFile = Z->FFD;
 	LockMode md = CFile->NewLockMode(RdMode);
-	if (N > CFile->FF->NRecs) goto label1;
+	if (N > CFile->FF->NRecs) {
+		goto label1;
+	}
 	if (CFile->FF->file_type == FileType::INDEX) {
 		CFile->FF->TestXFExist();
 		if (Z->Op == _recnolog) {
 			CRecPtr = CFile->GetRecSpace();
 			CFile->ReadRec(N, CRecPtr);
-			if (CFile->DeletedFlag(CRecPtr)) goto label1;
+			if (CFile->DeletedFlag(CRecPtr)) {
+				goto label1;
+			}
 			result = k->RecNrToNr(CFile, N, CRecPtr);
 		}
 		else /*_recnoabs*/ {
-			if (N > k->NRecs()) goto label1;
+			if (N > k->NRecs()) {
+				goto label1;
+			}
 			result = k->NrToRecNr(CFile, N);
 		}
 	}
@@ -377,34 +384,32 @@ label1:
 	return result;
 }
 
-double LinkProc(FrmlElem15* X)
+double LinkProc(FrmlElem15* X, void* record)
 {
-	void* p = nullptr;
 	int N;
-	FileD* cf = CFile;
-	void* cr = CRecPtr;
-	MarkStore(p);
+	BYTE* rec = nullptr;
+
 	LinkD* LD = X->LinkLD;
-	CFile = LD->FromFD;
-	if (X->LinkFromRec) CRecPtr = X->LinkLV->RecPtr;
+	FileD* fromFD = LD->FromFD;
+	if (X->LinkFromRec) {
+		if (!LinkUpw(fromFD, LD, N, false, X->LinkLV->RecPtr, &rec)) N = -N;
+	}
 	else {
-		N = RunInt(CFile, X->LinkRecFrml, CRecPtr);
-		LockMode md = CFile->NewLockMode(RdMode);
-		if ((N <= 0) || (N > CFile->FF->NRecs)) {
-			SetMsgPar(CFile->Name, LD->RoleName);
-			CFile->RunErrorM(md);
+		N = RunInt(fromFD, X->LinkRecFrml, record);
+		LockMode md = fromFD->NewLockMode(RdMode);
+		if ((N <= 0) || (N > fromFD->FF->NRecs)) {
+			SetMsgPar(fromFD->Name, LD->RoleName);
+			fromFD->RunErrorM(md);
 			RunError(609);
 		}
-		CRecPtr = CFile->GetRecSpace();
-		CFile->ReadRec(N, CRecPtr);
-		CFile->OldLockMode(md);
+		BYTE* newRecord = fromFD->GetRecSpace();
+		fromFD->ReadRec(N, newRecord);
+		fromFD->OldLockMode(md);
+		if (!LinkUpw(fromFD, LD, N, false, newRecord, &rec)) N = -N;
+		delete[] newRecord; newRecord = nullptr;
 	}
-	BYTE* rec = nullptr;
-	if (!LinkUpw(CFile, LD, N, false, CRecPtr, &rec)) N = -N;
+
 	delete[] rec; rec = nullptr;
-	ReleaseStore(&p);
-	CFile = cf;
-	CRecPtr = cr;
 	return N;
 }
 
@@ -513,15 +518,15 @@ WORD PortIn(bool IsWord, WORD Port)
 //	return S;
 //}
 
-LocVar* RunUserFunc(FrmlElem19* X)
+LocVar* RunUserFunc(FileD* file_d, FrmlElem19* X, void* record)
 {
 	LocVar* return_lv = nullptr; // tady je pak ulozena posledni promenna, ktera je pak navratovou hodnotou
 	FrmlListEl* fl = X->FrmlL;
 
-	for (auto& lv : X->FC->LVB.vLocVar) {
+	for (LocVar* lv : X->FC->LVB.vLocVar) {
 		if (lv->IsPar || lv->IsRetPar) {
 			// parameter or return parameter variable -> assign value
-			LVAssignFrml(CFile, lv, false, fl->Frml, CRecPtr);
+			LVAssignFrml(file_d, lv, false, fl->Frml, record);
 		}
 		else if (lv->IsRetValue) {
 			// it's return value -> initialize it and mark it
@@ -539,7 +544,7 @@ LocVar* RunUserFunc(FrmlElem19* X)
 		if (fl != nullptr) fl = fl->pChain;
 	}
 
-	auto instr = X->FC->pInstr;
+	Instr* instr = X->FC->pInstr;
 	RunProcedure(instr);
 
 	return return_lv;
@@ -677,15 +682,21 @@ bool RunBool(FileD* file_d, FrmlElem* X, void* record)
 		BYTE* newRecord = nullptr;
 		if (iX->LD != nullptr) {
 			b7 = LinkUpw(file_d, iX->LD, RecNo, false, record, &newRecord);
+			if ((iX->P011 == nullptr)) {
+				result = b7;
+			}
+			else {
+				result = RunBool(file_d, iX->P011, newRecord);
+			}
 		}
 		else {
 			b7 = LinkLastRec(iX->File2, RecNo, false, &newRecord);
-		}
-		if ((iX->P011 == nullptr)) {
-			result = b7;
-		}
-		else {
-			result = RunBool(file_d, iX->P011, newRecord);
+			if ((iX->P011 == nullptr)) {
+				result = b7;
+			}
+			else {
+				result = RunBool(iX->File2, iX->P011, newRecord);
+			}
 		}
 		delete[] newRecord; newRecord = nullptr;
 		break;
@@ -696,34 +707,32 @@ bool RunBool(FileD* file_d, FrmlElem* X, void* record)
 		break;
 	}
 	case _eval: {
-		//MarkStore(p);
-		auto gef = GetEvalFrml(file_d, (FrmlElem21*)X, record);
+		FrmlElem* gef = GetEvalFrml(file_d, (FrmlElem21*)X, record);
 		result = RunBool(file_d, gef, record);
-		//ReleaseStore(p);
 		break;
 	}
 	case _newfile: {
-		auto iX = (FrmlElem8*)X;
+		FrmlElem8* iX = (FrmlElem8*)X;
 		result = RunBool(iX->NewFile, iX->Frml, iX->NewRP);
 		break;
 	}
 	case _prompt: {
-		auto iX = (FrmlElem11*)X;
+		FrmlElem11* iX = (FrmlElem11*)X;
 		auto s = RunShortStr(file_d, iX->PPP1, record);
 		result = PromptB(s, iX->PP2, iX->FldD);
 		break;
 	}
 	case _promptyn: {
-		auto iX0 = (FrmlElem0*)X;
+		FrmlElem0* iX0 = (FrmlElem0*)X;
 		SetMsgPar(RunShortStr(file_d, iX0->P1, record));
 		result = PromptYN(110);
 		break;
 	}
 	case _accrecno: {
-		auto iX = (FrmlElem14*)X;
+		FrmlElem14* iX = (FrmlElem14*)X;
 		BYTE* rec = nullptr;
 		AccRecNoProc(iX, 640, &rec);
-		result = CFile->loadB(iX->RecFldD, rec);
+		result = iX->RecFD->loadB(iX->RecFldD, rec);
 		delete[] rec; rec = nullptr;
 		break;
 	}
@@ -757,7 +766,7 @@ bool RunBool(FileD* file_d, FrmlElem* X, void* record)
 		break;
 	}
 	case _userfunc: {
-		result = RunUserFunc((FrmlElem19*)X)->B;
+		result = RunUserFunc(file_d, (FrmlElem19*)X, record)->B;
 		break;
 	}
 	case _setmybp: {
@@ -835,7 +844,7 @@ bool RunModulo(FileD* file_d, FrmlElem1* X, void* record)
 	WORD* B1 = nullptr;
 	WORD* B1Offs = B1;
 	N = X->W11;
-	S = RunShortStr(CFile, ((FrmlElem0*)X)->P1, CRecPtr);
+	S = RunShortStr(file_d, ((FrmlElem0*)X)->P1, record);
 	if (S.length() != N) {
 		return false;
 	}
@@ -852,8 +861,8 @@ bool RunModulo(FileD* file_d, FrmlElem1* X, void* record)
 
 bool RunEquMask(FileD* file_d, FrmlElem0* X, void* record)
 {
-	auto value = RunStdStr(CFile, X->P1, CRecPtr);
-	auto mask = RunShortStr(CFile, X->P2, CRecPtr);
+	auto value = RunStdStr(file_d, X->P1, record);
+	auto mask = RunShortStr(file_d, X->P2, record);
 	auto result = EqualsMask(value, mask);
 	return result;
 }
@@ -877,7 +886,7 @@ label1:
 	switch (X->Op) {
 	case _field: {
 		auto iX = (FrmlElem7*)X;
-		result = CFile->loadR(iX->Field, CRecPtr);
+		result = file_d->loadR(iX->Field, record);
 		break;
 	}
 	case _getlocvar: {
@@ -889,50 +898,46 @@ label1:
 		result = ((FrmlElem2*)X)->R; break;
 	}
 	case _plus: {
-		result = RunReal(CFile, iX0->P1, CRecPtr) + RunReal(CFile, iX0->P2, CRecPtr); break;
+		result = RunReal(file_d, iX0->P1, record) + RunReal(file_d, iX0->P2, record); break;
 	}
 	case _minus: {
-		auto d1 = RunReal(CFile, iX0->P1, CRecPtr);
-		auto d2 = RunReal(CFile, iX0->P2, CRecPtr);
+		auto d1 = RunReal(file_d, iX0->P1, record);
+		auto d2 = RunReal(file_d, iX0->P2, record);
 		result = d1 - d2;
 		break;
 	}
 	case _times: {
-		result = RunReal(CFile, iX0->P1, CRecPtr) * RunReal(CFile, iX0->P2, CRecPtr); break;
+		result = RunReal(file_d, iX0->P1, record) * RunReal(file_d, iX0->P2, record); break;
 	}
 	case _access: {
 		auto iX = (FrmlElem7*)X;
 		BYTE* newRecord = nullptr;
 		if (iX->LD != nullptr) {
 			LinkUpw(file_d, iX->LD, RecNo, false, record, &newRecord);
+			result = RunReal(file_d, iX->P011, newRecord);
 		}
 		else {
 			LinkLastRec(iX->File2, RecNo, false, &newRecord);
+			result = RunReal(iX->File2, iX->P011, newRecord);
 		}
-		result = RunReal(file_d, iX->P011, newRecord);
+
 		delete[] newRecord; newRecord = nullptr;
 		break;
 	}
 	case _recvarfld: {
 		auto iX = (FrmlElem7*)X;
-		cf = CFile;
-		cr = CRecPtr;
-		CFile = iX->File2;
-		CRecPtr = iX->LD;
-		result = RunReal(CFile, iX->P011, CRecPtr);
-		CFile = cf;
-		CRecPtr = cr;
+		result = RunReal(iX->File2, iX->P011, iX->LD);
 		break;
 	}
 	case _eval: {
 		// MarkStore(p);
-		result = RunReal(CFile, GetEvalFrml(CFile, (FrmlElem21*)X, CRecPtr), CRecPtr);
+		result = RunReal(file_d, GetEvalFrml(file_d, (FrmlElem21*)X, record), record);
 		// ReleaseStore(p);
 		break;
 	}
 	case _divide: {
-		double a = RunReal(CFile, iX0->P1, CRecPtr);
-		double b = RunReal(CFile, iX0->P2, CRecPtr);
+		double a = RunReal(file_d, iX0->P1, record);
+		double b = RunReal(file_d, iX0->P2, record);
 		result = (b == 0.0) ? 0 : a / b;
 		break;
 	}
@@ -940,7 +945,7 @@ label1:
 	label2:
 		auto iX = (FrmlElem0*)X;
 		if (iX->P1 != nullptr)
-			if (!RunBool(CFile, iX->P1, CRecPtr))
+			if (!RunBool(file_d, iX->P1, record))
 			{
 				if (iX->P3 == nullptr) { result = 0; return result; }
 				X = iX->P3;
@@ -951,11 +956,7 @@ label1:
 	}
 	case _newfile: {
 		auto iX = (FrmlElem8*)X;
-		cf = CFile; cr = CRecPtr;
-		CFile = iX->NewFile;
-		CRecPtr = iX->NewRP;
-		result = RunReal(CFile, iX->Frml, CRecPtr);
-		CFile = cf; CRecPtr = cr;
+		result = RunReal(iX->NewFile, iX->Frml, iX->NewRP);
 		break;
 	}
 	case _getWORDvar: {
@@ -973,28 +974,28 @@ label1:
 		}
 		break;
 	}
-	case _div: result = (int)(RunReal(CFile, iX0->P1, CRecPtr) / RunReal(CFile, iX0->P2, CRecPtr)); break;
-	case _mod: result = RMod((FrmlElem0*)X); break;
-	case _unminus: result = -RunReal(CFile, iX0->P1, CRecPtr); break;
+	case _div: result = (int)(RunReal(file_d, iX0->P1, record) / RunReal(file_d, iX0->P2, record)); break;
+	case _mod: result = RMod(file_d, (FrmlElem0*)X, record); break;
+	case _unminus: result = -RunReal(file_d, iX0->P1, record); break;
 	case _today: result = Today(); break;
 	case _pi: result = atan(1.0) * 4; break;
 	case _random: result = Random(); break;
-	case _round: result = RoundReal(RunReal(CFile, iX0->P1, CRecPtr), RunInt(CFile, iX0->P2, CRecPtr)); break;
-	case _abs: result = abs(RunReal(CFile, iX0->P1, CRecPtr)); break;
-	case _int: result = (int)(RunReal(CFile, iX0->P1, CRecPtr)); break;
+	case _round: result = RoundReal(RunReal(file_d, iX0->P1, record), RunInt(file_d, iX0->P2, record)); break;
+	case _abs: result = abs(RunReal(file_d, iX0->P1, record)); break;
+	case _int: result = (int)(RunReal(file_d, iX0->P1, record)); break;
 	case _frac: {
 		double dx;
-		result = modf(RunReal(CFile, iX0->P1, CRecPtr), &dx);
+		result = modf(RunReal(file_d, iX0->P1, record), &dx);
 		break;
 	}
-	case _sqr: result = pow(RunReal(CFile, iX0->P1, CRecPtr), 2); break;
-	case _sqrt: result = sqrt(RunReal(CFile, iX0->P1, CRecPtr)); break;
-	case _sin: result = sin(RunReal(CFile, iX0->P1, CRecPtr)); break;
-	case _cos: result = cos(RunReal(CFile, iX0->P1, CRecPtr)); break;
-	case _arctan: result = atan(RunReal(CFile, iX0->P1, CRecPtr)); break;
-	case _ln: result = log(RunReal(CFile, iX0->P1, CRecPtr)); break;
+	case _sqr: result = pow(RunReal(file_d, iX0->P1, record), 2); break;
+	case _sqrt: result = sqrt(RunReal(file_d, iX0->P1, record)); break;
+	case _sin: result = sin(RunReal(file_d, iX0->P1, record)); break;
+	case _cos: result = cos(RunReal(file_d, iX0->P1, record)); break;
+	case _arctan: result = atan(RunReal(file_d, iX0->P1, record)); break;
+	case _ln: result = log(RunReal(file_d, iX0->P1, record)); break;
 	case _exp: {
-		R = RunReal(CFile, iX0->P1, CRecPtr);
+		R = RunReal(file_d, iX0->P1, record);
 		if ((R <= -50) || (R > 88)) result = 0;
 		else result = exp(R);
 		break;
@@ -1018,24 +1019,20 @@ label1:
 		break;
 	}
 	case _generation: {
-		auto iX = (FrmlElem9*)X;
+		FrmlElem9* iX = (FrmlElem9*)X;
 		result = CatFD->Generation(iX->FD, CPath, CVol);
 		FSplit(CPath, CDir, CName, CExt);
 		break;
 	}
 	case _lastupdate: {
-		//cf = CFile;
-		auto iX = (FrmlElem9*)X;
-		//CFile = iX->FD;
+		FrmlElem9* iX = (FrmlElem9*)X;
 		md = iX->FD->NewLockMode(RdMode);
 		result = LastUpdate(iX->FD->FullPath);
 		iX->FD->OldLockMode(md);
-		//CFile = cf;
 		break;
 	}
 	case _catfield: {
-		auto iX = (FrmlElem10*)X;
-
+		FrmlElem10* iX = (FrmlElem10*)X;
 		CVol = CatFD->GetVolume(iX->CatIRec);
 		CPath = FExpand(CatFD->GetPathName(iX->CatIRec));
 		FSplit(CPath, CDir, CName, CExt);
@@ -1048,30 +1045,26 @@ label1:
 		break;
 	}
 	case _typeday: {
-		auto rr = RunReal(CFile, iX0->P1, CRecPtr);
+		auto rr = RunReal(file_d, iX0->P1, record);
 		result = TypeDay(rr);
 		break;
 	}
-	case _addwdays: result = AddWDays(RunReal(CFile, iX0->P1, CRecPtr), RunInt(CFile, iX0->P2, CRecPtr), iX0->N21); break;
-	case _difwdays: result = DifWDays(RunReal(CFile, iX0->P1, CRecPtr), RunReal(CFile, iX0->P2, CRecPtr), iX0->N21); break;
-	case _addmonth: result = AddMonth(RunReal(CFile, iX0->P1, CRecPtr), RunReal(CFile, iX0->P2, CRecPtr)); break;
-	case _difmonth: result = DifMonth(RunReal(CFile, iX0->P1, CRecPtr), RunReal(CFile, iX0->P2, CRecPtr)); break;
-	case _recno: result = RecNoFun((FrmlElem13*)X); break;
+	case _addwdays: result = AddWDays(RunReal(file_d, iX0->P1, record), RunInt(file_d, iX0->P2, record), iX0->N21); break;
+	case _difwdays: result = DifWDays(RunReal(file_d, iX0->P1, record), RunReal(file_d, iX0->P2, record), iX0->N21); break;
+	case _addmonth: result = AddMonth(RunReal(file_d, iX0->P1, record), RunReal(file_d, iX0->P2, record)); break;
+	case _difmonth: result = DifMonth(RunReal(file_d, iX0->P1, record), RunReal(file_d, iX0->P2, record)); break;
+	case _recno: result = RecNoFun(file_d, (FrmlElem13*)X, record); break;
 	case _recnoabs:
-	case _recnolog: result = AbsLogRecNoFun((FrmlElem13*)X); break;
+	case _recnolog: result = AbsLogRecNoFun(file_d, (FrmlElem13*)X, record); break;
 	case _accrecno: {
-		cf = CFile; cr = CRecPtr;
-
-		auto iX = (FrmlElem14*)X;
+		FrmlElem14* iX = (FrmlElem14*)X;
 		BYTE* rec = nullptr;
 		AccRecNoProc(iX, 640, &rec);
-		result = CFile->loadR(iX->RecFldD, rec);
+		result = iX->RecFD->loadR(iX->RecFldD, rec);
 		delete[] rec; rec = nullptr;
-
-		CFile = cf;	CRecPtr = cr;
 		break;
 	}
-	case _link: result = LinkProc((FrmlElem15*)X); break;
+	case _link: result = LinkProc((FrmlElem15*)X, record); break;
 	case _memavail: result = StoreAvail(); break;
 	case _maxcol: result = TxtCols; break;
 	case _maxrow: result = TxtRows; break;
@@ -1124,10 +1117,7 @@ label1:
 	}
 	case _inttsr: result = IntTSR(X); break;
 	case _userfunc: {
-		result = RunUserFunc((FrmlElem19*)X)->R;
-		//cr = MyBP;
-		//PopProcStk();
-		ReleaseStore(&cr);
+		result = RunUserFunc(file_d, (FrmlElem19*)X, record)->R;
 		break;
 	}
 	case _indexnrecs: {
@@ -1137,25 +1127,22 @@ label1:
 	}
 	case _owned: {
 		auto iX = (FrmlElem23*)X;
-		result = Owned(CFile, iX->ownBool, iX->ownSum, iX->ownLD, CRecPtr);
+		result = Owned(file_d, iX->ownBool, iX->ownSum, iX->ownLD, record);
 		break;
 	}
 	case _color: {
 		// Colors ma 54 prvku (BYTE)
-		size_t colorFromFrml = RunInt(CFile, iX0->P1, CRecPtr);
+		size_t colorFromFrml = RunInt(file_d, iX0->P1, record);
 		BYTE* AColors = (BYTE*)&screen.colors;
 		result = AColors[min(colorFromFrml, 53)];
 		break;
 	}
 	case _portin: {
-		result = PortIn(RunBool(CFile, iX0->P1, CRecPtr), WORD(RunInt(CFile, iX0->P2, CRecPtr)));
+		result = PortIn(RunBool(file_d, iX0->P1, record), WORD(RunInt(file_d, iX0->P2, record)));
 		break;
 	}
 	case _setmybp: {
-		//cr = MyBP;
-		//SetMyBP(ProcMyBP);
-		result = RunReal(CFile, iX0->P1, CRecPtr);
-		//SetMyBP((ProcStkD*)cr);
+		result = RunReal(file_d, iX0->P1, record);
 		break;
 	}
 	case _count: {
@@ -1166,7 +1153,10 @@ label1:
 		result = ((FrmlElemMerge*)X)->merge->Group;
 		break;
 	}
-	default: { result = RunRealStr(CFile, X, CRecPtr); break; }
+	default: {
+		result = RunRealStr(file_d, X, record);
+		break;
+	}
 	}
 	return result;
 }
@@ -1185,10 +1175,8 @@ void TestTFrml(FileD* file_d, FieldDescr* F, FrmlElem* Z, FandTFile** TF02, File
 	FieldDescr* f1 = nullptr;
 	switch (Z->Op) {
 	case _newfile: {
-		auto iZ = (FrmlElem8*)Z;
-		CFile = iZ->NewFile;
-		CRecPtr = iZ->NewRP;
-		TestTFrml(CFile, F, iZ->Frml, TF02, TFD02, TF02Pos, CRecPtr);
+		FrmlElem8* iZ = (FrmlElem8*)Z;
+		TestTFrml(iZ->NewFile, F, iZ->Frml, TF02, TFD02, TF02Pos, iZ->NewRP);
 		break;
 	}
 	case _field: {
@@ -1199,12 +1187,12 @@ void TestTFrml(FileD* file_d, FieldDescr* F, FrmlElem* Z, FandTFile** TF02, File
 			if ((f1->Flg & f_Encryp) != 0) return;
 		}
 		else if ((F->Flg & f_Encryp) != (f1->Flg & f_Encryp)) return;
-		*TFD02 = CFile;
-		*TF02 = CFile->FF->TF;
-		if (CFile->HasTWorkFlag(CRecPtr)) {
+		*TFD02 = file_d;
+		*TF02 = file_d->FF->TF;
+		if (file_d->HasTWorkFlag(record)) {
 			*TF02 = &TWork;
 		}
-		TF02Pos = CFile->loadT(f1, CRecPtr);
+		TF02Pos = file_d->loadT(f1, record);
 		break;
 	}
 	case _getlocvar: {
@@ -1241,15 +1229,11 @@ void TestTFrml(FileD* file_d, FieldDescr* F, FrmlElem* Z, FandTFile** TF02, File
 
 bool CanCopyT(FileD* file_d, FieldDescr* F, FrmlElem* Z, FandTFile** TF02, FileD** TFD02, int& TF02Pos, void* record)
 {
-	FileD* cf = CFile;
-	void* cr = CRecPtr;
-	auto result = false;
+	bool result = false;
 	*TF02 = nullptr;
 
-	TestTFrml(CFile, F, Z, TF02, TFD02, TF02Pos, CRecPtr);
+	TestTFrml(file_d, F, Z, TF02, TFD02, TF02Pos, record);
 
-	CFile = cf;
-	CRecPtr = cr;
 	result = (*TF02) != nullptr;
 	return result;
 }
@@ -1419,22 +1403,22 @@ std::string DecodeField(FileD* file_d, FieldDescr* F, WORD LWw, void* record)
 	bool b = false;
 	switch (F->frml_type) {
 	case 'R': {
-		r = CFile->loadR(F, CRecPtr);
+		r = file_d->loadR(F, record);
 		break;
 	}
 	case 'S': {
 		if (F->field_type == FieldType::TEXT) {
-			if (((F->Flg & f_Stored) != 0) && (CFile->loadR(F, CRecPtr) == 0.0)) Txt = ".";
+			if (((F->Flg & f_Stored) != 0) && (file_d->loadR(F, record) == 0.0)) Txt = ".";
 			else Txt = "*";
 			return Txt;
 		}
 		else {
-			s = CFile->loadS(F, CRecPtr);
+			s = file_d->loadS(F, record);
 		}
 		break;
 	}
 	default: {
-		b = CFile->loadB(F, CRecPtr);
+		b = file_d->loadB(F, record);
 		break;
 	}
 	}
@@ -1443,16 +1427,16 @@ std::string DecodeField(FileD* file_d, FieldDescr* F, WORD LWw, void* record)
 
 void RunWFrml(FileD* file_d, WRectFrml& X, BYTE WFlags, WRect& W, void* record)
 {
-	W.C1 = RunInt(CFile, X.C1, CRecPtr);
-	W.R1 = RunInt(CFile, X.R1, CRecPtr);
-	W.C2 = RunInt(CFile, X.C2, CRecPtr);
-	W.R2 = RunInt(CFile, X.R2, CRecPtr);
+	W.C1 = RunInt(file_d, X.C1, record);
+	W.R1 = RunInt(file_d, X.R1, record);
+	W.C2 = RunInt(file_d, X.C2, record);
+	W.R2 = RunInt(file_d, X.R2, record);
 	CenterWw(W.C1, W.R1, W.C2, W.R2, WFlags);
 }
 
 WORD RunWordImpl(FileD* file_d, FrmlElem* Z, WORD Impl, void* record)
 {
-	WORD n = RunInt(CFile, Z, CRecPtr);
+	WORD n = RunInt(file_d, Z, record);
 	if (n == 0) n = Impl;
 	return n;
 }
@@ -1505,7 +1489,7 @@ XKey* GetFromKey(LinkD* LD)
 FrmlElem* RunEvalFrml(FileD* file_d, FrmlElem* Z, void* record)
 {
 	if ((Z != nullptr) && (Z->Op == _eval)) {
-		Z = GetEvalFrml(CFile, (FrmlElem21*)Z, CRecPtr);
+		Z = GetEvalFrml(file_d, (FrmlElem21*)Z, record);
 	}
 	return Z;
 }
@@ -1538,7 +1522,7 @@ LongStr* RunLongStr(FileD* file_d, FrmlElem* X, void* record)
 		switch (X->Op) {
 		case _field: {
 			auto iX7 = (FrmlElem7*)X;
-			result = CFile->loadLongS(iX7->Field, CRecPtr);
+			result = file_d->loadLongS(iX7->Field, record);
 			break;
 		}
 		case _getlocvar: {
@@ -1552,9 +1536,6 @@ LongStr* RunLongStr(FileD* file_d, FrmlElem* X, void* record)
 		}
 		case _access: {
 			FrmlElem7* iX7 = (FrmlElem7*)X;
-			cf = CFile; cr = CRecPtr;
-			CFile = iX7->File2;
-			//*md = NewLockMode(RdMode);
 			LockMode lm = iX7->File2->NewLockMode(RdMode);
 			BYTE* newRecord = nullptr;
 			if (iX7->LD != nullptr) {
@@ -1570,7 +1551,7 @@ LongStr* RunLongStr(FileD* file_d, FrmlElem* X, void* record)
 				iX7->File2->ClearRecSpace(newRecord);
 			}
 			delete[] newRecord; newRecord = nullptr;
-			ReleaseAfterLongStr(&CRecPtr);
+			//ReleaseAfterLongStr(&CRecPtr);
 			result = S;
 			break;
 		}
@@ -1586,16 +1567,13 @@ LongStr* RunLongStr(FileD* file_d, FrmlElem* X, void* record)
 		}
 		case _newfile: {
 			auto iX8 = (FrmlElem8*)X;
-			cf = CFile; cr = CRecPtr;
-			CFile = iX8->NewFile; CRecPtr = iX8->NewRP;
-			result = RunLongStr(CFile, iX8->Frml, CRecPtr);
-			CFile = cf; CRecPtr = cr;
+			result = RunLongStr(iX8->NewFile, iX8->Frml, iX8->NewRP);
 			break;
 		}
 		case _cond: {
 			while (true) {
 				if (((FrmlElem0*)X)->P1 != nullptr)
-					if (!RunBool(CFile, ((FrmlElem0*)X)->P1, CRecPtr))
+					if (!RunBool(file_d, ((FrmlElem0*)X)->P1, record))
 					{
 						if (((FrmlElem0*)X)->P3 == nullptr)
 						{
@@ -1612,11 +1590,11 @@ LongStr* RunLongStr(FileD* file_d, FrmlElem* X, void* record)
 		}
 		case _copy: {
 			const auto iX0 = static_cast<FrmlElem0*>(X);
-			S = RunLongStr(CFile, iX0->P1, CRecPtr);
+			S = RunLongStr(file_d, iX0->P1, record);
 			std::string str = std::string(S->A, S->LL);
 
-			const auto L1 = RunInt(CFile, iX0->P2, CRecPtr) - 1;
-			const auto L2 = RunInt(CFile, iX0->P3, CRecPtr);
+			const auto L1 = RunInt(file_d, iX0->P2, record) - 1;
+			const auto L2 = RunInt(file_d, iX0->P3, record);
 
 			if ((L1 < 0) || (L2 < 0)) S->LL = 0;
 			else {
@@ -1633,8 +1611,8 @@ LongStr* RunLongStr(FileD* file_d, FrmlElem* X, void* record)
 		}
 		case _concat: {
 			auto iX0 = (FrmlElem0*)X;
-			auto S1 = RunStdStr(CFile, iX0->P1, CRecPtr);
-			auto S2 = RunStdStr(CFile, iX0->P2, CRecPtr);
+			auto S1 = RunStdStr(file_d, iX0->P1, record);
+			auto S2 = RunStdStr(file_d, iX0->P2, record);
 			auto S12 = S1 + S2;
 			result = new LongStr(S12.length());
 			result->LL = S12.length();
@@ -1647,7 +1625,7 @@ LongStr* RunLongStr(FileD* file_d, FrmlElem* X, void* record)
 		}
 		case _leadchar: {
 			auto iX0 = (FrmlElem0*)X;
-			auto s = RunLongStr(CFile, iX0->P1, CRecPtr);
+			auto s = RunLongStr(file_d, iX0->P1, record);
 			result = LongLeadChar((char)iX0->N11, (char)iX0->N12, s);
 			break;
 		}
@@ -1655,13 +1633,13 @@ LongStr* RunLongStr(FileD* file_d, FrmlElem* X, void* record)
 			auto iX0 = (FrmlElem0*)X;
 			char c = iX0->N11;
 			char cnew = iX0->N12;
-			auto sp1 = RunLongStr(CFile, iX0->P1, CRecPtr);
+			auto sp1 = RunLongStr(file_d, iX0->P1, record);
 			result = LongTrailChar(c, cnew, sp1);
 			break;
 		}
 		case _upcase: {
 			auto iX0 = (FrmlElem0*)X;
-			S = RunLongStr(CFile, iX0->P1, CRecPtr);
+			S = RunLongStr(file_d, iX0->P1, record);
 			for (WORD i = 0; i < S->LL; i++) {
 				S->A[i] = UpcCharTab[(BYTE)S->A[i]];
 			}
@@ -1670,7 +1648,7 @@ LongStr* RunLongStr(FileD* file_d, FrmlElem* X, void* record)
 		}
 		case _lowcase: {
 			auto iX0 = (FrmlElem0*)X;
-			S = RunLongStr(CFile, iX0->P1, CRecPtr);
+			S = RunLongStr(file_d, iX0->P1, record);
 			LowCase(S);
 			result = S;
 			break;
@@ -1679,11 +1657,11 @@ LongStr* RunLongStr(FileD* file_d, FrmlElem* X, void* record)
 			auto iX0 = (FrmlElem0*)X;
 			int i = 1;
 			if (iX0->P3 != nullptr) {
-				i = RunInt(CFile, iX0->P3, CRecPtr);
+				i = RunInt(file_d, iX0->P3, record);
 			}
-			auto* lstr = RunLongStr(CFile, iX0->P1, CRecPtr);
+			auto* lstr = RunLongStr(file_d, iX0->P1, record);
 			std::string text = std::string(lstr->A, lstr->LL);
-			WORD start = RunInt(CFile, iX0->P2, CRecPtr);
+			WORD start = RunInt(file_d, iX0->P2, record);
 			auto r = GetNthLine(text, start, i);
 			result = new LongStr(r.length());
 			result->LL = r.length();
@@ -1692,8 +1670,8 @@ LongStr* RunLongStr(FileD* file_d, FrmlElem* X, void* record)
 		}
 		case _repeatstr: {
 			auto iX0 = (FrmlElem0*)X;
-			size_t i = RunInt(CFile, iX0->P2, CRecPtr);
-			std::string input = RunStdStr(CFile, iX0->P1, CRecPtr);
+			size_t i = RunInt(file_d, iX0->P2, record);
+			std::string input = RunStdStr(file_d, iX0->P1, record);
 			std::string output = RepeatString(input, i);
 
 			result = new LongStr(output.length());
@@ -1702,52 +1680,40 @@ LongStr* RunLongStr(FileD* file_d, FrmlElem* X, void* record)
 			break;
 		}
 		case _accrecno: {
-			cf = CFile; cr = CRecPtr;
-
 			auto iX = (FrmlElem14*)X;
 			BYTE* rec = nullptr;
 			AccRecNoProc(iX, 640, &rec);
-			S = CFile->loadLongS(iX->RecFldD, rec);
+			S = iX->RecFD->loadLongS(iX->RecFldD, rec);
 			delete[] rec; rec = nullptr;
-
 			result = S;
-			CFile = cf; CRecPtr = cr;
 			break;
 		}
 		case _gettxt: {
-			result = GetTxt(CFile, X, CRecPtr);
+			result = GetTxt(file_d, X, record);
 			break;
 		}
 		case _nodiakr: {
 			auto iX0 = (FrmlElem0*)X;
-			S = RunLongStr(CFile, iX0->P1, CRecPtr);
+			S = RunLongStr(file_d, iX0->P1, record);
 			ConvToNoDiakr((WORD*)S->A[0], S->LL, fonts.VFont);
 			result = S;
 			break;
 		}
 		case _userfunc: {
-			LocVar* lv = RunUserFunc((FrmlElem19*)X);
+			LocVar* lv = RunUserFunc(file_d, (FrmlElem19*)X, record);
 			auto ls = new LongStr(lv->S.length());
 			ls->LL = lv->S.length();
 			memcpy(ls->A, lv->S.c_str(), lv->S.length());
 			result = ls;
-			/**L1 = *(int*)(cr);
-			*(int*)cr = 0;
-			cr = MyBP; PopProcStk();
-			ReleaseStore(cr);
-			result = TWork.Read(1, *L1);
-			TWork.Delete(*L1);*/
 			break;
 		}
 		case _setmybp: {
 			auto iX0 = (FrmlElem0*)X;
-			//cr = MyBP; SetMyBP(ProcMyBP);
-			result = RunLongStr(CFile, iX0->P1, CRecPtr);
-			//SetMyBP((ProcStkD*)cr);
+			result = RunLongStr(file_d, iX0->P1, record);
 			break;
 		}
 		case _selectstr: {
-			result = RunSelectStr(CFile, (FrmlElem0*)X, CRecPtr);
+			result = RunSelectStr(file_d, (FrmlElem0*)X, record);
 			break;
 		}
 		case _clipbd: {
@@ -1755,7 +1721,7 @@ LongStr* RunLongStr(FileD* file_d, FrmlElem* X, void* record)
 			break;
 		}
 		default: {
-			result = RunS(CFile, X, CRecPtr);
+			result = RunS(file_d, X, record);
 			break;
 		}
 		}
@@ -1793,13 +1759,14 @@ label1:
 		LockMode lm = iX7->File2->NewLockMode(RdMode);
 		BYTE* newRecord = nullptr;
 		if (iX7->LD != nullptr) {
-			iX7->File2 = file_d;
-			LinkUpw(iX7->File2, iX7->LD, RecNo, true, record, &newRecord);
+			LinkUpw(file_d, iX7->LD, RecNo, true, record, &newRecord);
+			result = RunStdStr(file_d, iX7->P011, newRecord);
 		}
 		else {
 			LinkLastRec(iX7->File2, RecNo, true, &newRecord);
+			result = RunStdStr(iX7->File2, iX7->P011, newRecord);
 		}
-		result = RunStdStr(iX7->File2, iX7->P011, newRecord);
+
 		iX7->File2->OldLockMode(lm);  /*possibly reading .T*/
 		iX7->File2->ClearRecSpace(newRecord);
 		delete[] newRecord; newRecord = nullptr;
@@ -1928,7 +1895,7 @@ label1:
 		break;
 	}
 	case _userfunc: {
-		LocVar* lv = RunUserFunc((FrmlElem19*)X);
+		LocVar* lv = RunUserFunc(file_d, (FrmlElem19*)X, record);
 		result = lv->S;
 		break;
 	}
@@ -2105,33 +2072,33 @@ LongStr* RunS(FileD* file_d, FrmlElem* Z, void* record)
 	switch (Z->Op) {
 	case _char: {
 		s[0] = 1;
-		s[1] = trunc(RunReal(CFile, iZ0->P1, CRecPtr));
+		s[1] = trunc(RunReal(file_d, iZ0->P1, record));
 		break;
 	}
 	case _strdate1: {
 		auto iZ = (FrmlElem6*)Z;
-		s = StrDate(RunReal(CFile, iZ->PP1, CRecPtr), iZ->Mask);
+		s = StrDate(RunReal(file_d, iZ->PP1, record), iZ->Mask);
 		break;
 	}
 	case _str: {
 		if (iZ0->P3 != nullptr) {
-			r = RunReal(CFile, iZ0->P1, CRecPtr);
-			l = RunInt(CFile, iZ0->P2, CRecPtr);
-			m = RunInt(CFile, iZ0->P3, CRecPtr);
+			r = RunReal(file_d, iZ0->P1, record);
+			l = RunInt(file_d, iZ0->P2, record);
+			m = RunInt(file_d, iZ0->P3, record);
 			if (m == 255) str(r, s);
 			else str(r, l, m, s);
 		}
 		else {
-			s = RunShortStr(CFile, iZ0->P2, CRecPtr);
-			StrMask(RunReal(CFile, iZ0->P1, CRecPtr), s);
+			s = RunShortStr(file_d, iZ0->P2, record);
+			StrMask(RunReal(file_d, iZ0->P1, record), s);
 		}
 		break;
 	}
 	case _replace: {
 		auto iZ = (FrmlElem12*)Z;
-		std::string text = RunStdStr(CFile, iZ->PPP2, CRecPtr);
-		std::string oldText = RunStdStr(CFile, iZ->PPPP1, CRecPtr); //j = 1;
-		std::string newText = RunStdStr(CFile, iZ->PP3, CRecPtr);
+		std::string text = RunStdStr(file_d, iZ->PPP2, record);
+		std::string oldText = RunStdStr(file_d, iZ->PPPP1, record); //j = 1;
+		std::string newText = RunStdStr(file_d, iZ->PP3, record);
 
 		auto res = Replace(text, oldText, newText, iZ->Options);
 		auto result = new LongStr(res.length());
@@ -2141,13 +2108,13 @@ LongStr* RunS(FileD* file_d, FrmlElem* Z, void* record)
 	}
 	case _prompt: {
 		auto iZ = (FrmlElem11*)Z;
-		auto s0 = RunShortStr(CFile, iZ->PPP1, CRecPtr);
+		auto s0 = RunShortStr(file_d, iZ->PPP1, record);
 		s = PromptS(s0, iZ->PP2, iZ->FldD);
 		break;
 	}
 	case _getpath: {
 		s = ".*";
-		if (iZ0->P1 != nullptr) s = RunShortStr(CFile, iZ0->P1, CRecPtr);
+		if (iZ0->P1 != nullptr) s = RunShortStr(file_d, iZ0->P1, record);
 		s = ww.SelectDiskFile(s, 35, false);
 		break;
 	}
@@ -2191,20 +2158,14 @@ LongStr* RunS(FileD* file_d, FrmlElem* Z, void* record)
 	case _edkey: s = EdKey; break;
 	case _edreckey: s = EdRecKey; break;
 	case _getenv: {
-		s = RunShortStr(CFile, iZ0->P1, CRecPtr);
+		s = RunShortStr(file_d, iZ0->P1, record);
 		if (s == "") s = paramstr[0];
 		else s = GetEnv(s.c_str());
 		break;
 	}
 	case _keyof: {
 		auto iZ = (FrmlElem20*)Z;
-		cf = CFile;
-		cr = CRecPtr;
-		/* !!! with Z->LV^ do!!! */
-		CFile = iZ->LV->FD;
-		CRecPtr = iZ->LV->RecPtr;
-		x->PackKF(CFile, iZ->PackKey->KFlds, CRecPtr);
-		CFile = cf; CRecPtr = cr;
+		x->PackKF(iZ->LV->FD, iZ->PackKey->KFlds, iZ->LV->RecPtr);
 		break;
 	}
 	case _keybuf: {
@@ -2213,7 +2174,7 @@ LongStr* RunS(FileD* file_d, FrmlElem* Z, void* record)
 		break;
 	}
 	case _recno: {
-		GetRecNoXString(CFile, (FrmlElem13*)Z, *x, CRecPtr);
+		GetRecNoXString(file_d, (FrmlElem13*)Z, *x, record);
 		break;
 	}
 	case _edbool: {
@@ -2235,7 +2196,7 @@ LongStr* RunSelectStr(FileD* file_d, FrmlElem0* Z, void* record)
 	void* p2 = nullptr; void* pl = nullptr;
 	WORD i, n;
 
-	s = RunLongStr(CFile, Z->P3, CRecPtr);
+	s = RunLongStr(file_d, Z->P3, record);
 	n = CountDLines(s->A, s->LL, Z->Delim);
 	for (i = 1; i <= n; i++) {
 		//x = GetDLine(s->A, s->LL, Z->Delim, i);
@@ -2243,15 +2204,15 @@ LongStr* RunSelectStr(FileD* file_d, FrmlElem0* Z, void* record)
 		x = GetNthLine(std_s, i, 1, Z->Delim);
 		if (x != "") ww.PutSelect(x);
 	}
-	mode = RunShortStr(CFile, Z->P6, CRecPtr);
+	mode = RunShortStr(file_d, Z->P6, record);
 	for (i = 1; i <= mode.length(); i++)
 		switch (toupper(mode[i])) {
 		case 'A': ss.Abcd = true; break;
 		case 'S': ss.Subset = true; break;
 		case 'I': ss.ImplAll = true; break;
 		}
-	SetMsgPar(RunShortStr(CFile, Z->P4, CRecPtr));
-	ww.SelectStr(RunInt(CFile, Z->P1, CRecPtr), RunInt(CFile, Z->P2, CRecPtr), 110, RunShortStr(CFile, Z->P5, CRecPtr));
+	SetMsgPar(RunShortStr(file_d, Z->P4, record));
+	ww.SelectStr(RunInt(file_d, Z->P1, record), RunInt(file_d, Z->P2, record), 110, RunShortStr(file_d, Z->P5, record));
 	MarkStore(p2);
 	s2 = new LongStr(s->LL + 2); // GetStore2(s->LL + 2);
 	n = 1; LastExitCode = 0;
@@ -2343,6 +2304,7 @@ LongStr* RepeatStr(LongStr* S, short N)
 	return newS;
 }
 
+/// meni CFile na X->RecFD!
 void AccRecNoProc(FrmlElem14* X, WORD Msg, BYTE** record)
 {
 	CFile = X->RecFD;

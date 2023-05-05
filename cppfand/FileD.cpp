@@ -256,7 +256,7 @@ bool FileD::loadB(FieldDescr* field_d, void* record)
 	}
 	else
 	{
-		result = RunBool(CFile, field_d->Frml, CRecPtr);
+		result = RunBool(this, field_d->Frml, record);
 	}
 	return result;
 }
@@ -268,7 +268,7 @@ double FileD::loadR(FieldDescr* field_d, void* record)
 		result = FF->loadR(field_d, record);
 	}
 	else {
-		result = RunReal(CFile, field_d->Frml, CRecPtr);
+		result = RunReal(this, field_d->Frml, record);
 	}
 	return result;
 }
@@ -280,7 +280,7 @@ std::string FileD::loadS(FieldDescr* field_d, void* record)
 		result = FF->loadS(this, field_d, record);
 	}
 	else {
-		result = RunStdStr(CFile, field_d->Frml, CRecPtr);
+		result = RunStdStr(this, field_d->Frml, record);
 	}
 	return result;
 }
@@ -292,7 +292,7 @@ pstring FileD::loadOldS(FieldDescr* field_d, void* record)
 		s = FF->loadOldS(field_d, record);
 	}
 	else {
-		s = RunShortStr(CFile, field_d->Frml, CRecPtr);
+		s = RunShortStr(this, field_d->Frml, record);
 	}
 	return s;
 }

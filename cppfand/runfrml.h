@@ -55,16 +55,15 @@ LongStr* RepeatStr(LongStr* S, short N);
 void AccRecNoProc(FrmlElem14* X, WORD Msg, BYTE** record);
 void GetRecNoXString(FileD* file_d, FrmlElem13* Z, XString& X, void* record);
 double RunRealStr(FileD* file_d, FrmlElem* X, void* record);
-double RMod(FrmlElem0* X);
 double LastUpdate(const std::string& path);
 WORD TypeDay(double R);
 double AddWDays(double R, short N, WORD d);
 
 double DifWDays(double R1, double R2, WORD d);
 int GetFileSize();
-int RecNoFun(FrmlElem13* Z);
-int AbsLogRecNoFun(FrmlElem13* Z);
-double LinkProc(FrmlElem15* X);
+//int RecNoFun(FileD* file_d, FrmlElem13* Z, void* record);
+//int AbsLogRecNoFun(FileD* file_d, FrmlElem13* Z, void* record);
+double LinkProc(FrmlElem15* X, void* record);
 WORD IntTSR(FrmlElem* X);
 WORD PortIn(bool IsWord, WORD Port);
 
