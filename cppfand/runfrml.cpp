@@ -746,7 +746,7 @@ bool RunBool(FileD* file_d, FrmlElem* X, void* record)
 		BYTE* rec = nullptr;
 
 		AccRecNoProc(iX, 642, &rec);
-		result = file_d->DeletedFlag(rec);
+		result = iX->RecFD->DeletedFlag(rec);
 		delete[] rec; rec = nullptr;
 
 		break;
@@ -1005,10 +1005,6 @@ label1:
 	case _nrecs:
 	case _nrecsabs: {
 		FileD* fX = ((FrmlElem9*)X)->FD;
-
-		// TODO: toto tady musi zustat, vetsina navaznych metod pouziva CFile :-(
-		CFile = fX;
-
 		md = fX->NewLockMode(RdMode);
 		if (X->Op == _nrecs) {
 			RecNo = fX->FF->XNRecs(fX->Keys);
@@ -1263,8 +1259,6 @@ bool TryCopyT(FileD* file_d, FieldDescr* F, FandTFile* TF, int& pos, FrmlElem* Z
 
 void AssgnFrml(FileD* file_d, void* record, FieldDescr* F, FrmlElem* X, bool Delete, bool Add)
 {
-	CFile = file_d;
-
 	int pos = 0;
 	switch (F->frml_type) {
 	case 'S': {
@@ -1313,8 +1307,6 @@ void AssgnFrml(FileD* file_d, void* record, FieldDescr* F, FrmlElem* X, bool Del
 
 void LVAssignFrml(FileD* file_d, LocVar* LV, bool Add, FrmlElem* X, void* record)
 {
-	CFile = file_d;
-
 	switch (LV->FTyp) {
 	case 'S': {
 		LV->S = RunStdStr(file_d, X, record);
@@ -1735,8 +1727,6 @@ LongStr* RunLongStr(FileD* file_d, FrmlElem* X, void* record)
 
 std::string RunStdStr(FileD* file_d, FrmlElem* X, void* record)
 {
-	CFile = file_d;
-
 	bool b = false;
 	WORD I = 0;
 	int RecNo = 0;
@@ -1877,7 +1867,7 @@ label1:
 		FrmlElem14* iX = (FrmlElem14*)X;
 		BYTE* rec = nullptr;
 		AccRecNoProc(iX, 640, &rec);
-		result = file_d->loadS(iX->RecFldD, rec);
+		result = iX->RecFD->loadS(iX->RecFldD, rec);
 		delete[] rec; rec = nullptr;
 		break;
 	}
@@ -2305,11 +2295,8 @@ LongStr* RepeatStr(LongStr* S, short N)
 	return newS;
 }
 
-/// meni CFile na X->RecFD!
 void AccRecNoProc(FrmlElem14* X, WORD Msg, BYTE** record)
 {
-	CFile = X->RecFD;
-
 	FileD* fd = X->RecFD;
 	LockMode md = fd->NewLockMode(RdMode);
 
@@ -2330,9 +2317,6 @@ void AccRecNoProc(FrmlElem14* X, WORD Msg, BYTE** record)
 
 void GetRecNoXString(FileD* file_d, FrmlElem13* Z, XString& X, void* record)
 {
-	CFile = file_d;
-	CRecPtr = record;
-
 	WORD i = 0;
 	X.Clear();
 	KeyFldD* kf = Z->Key->KFlds;
