@@ -674,7 +674,8 @@ bool RunBool(FileD* file_d, FrmlElem* X, void* record)
 		break;
 	}
 	case _field: {
-		result = file_d->loadB(((FrmlElem7*)X)->Field, record);
+		FrmlElem7* x7 = (FrmlElem7*)X;
+		result = file_d->loadB(x7->Field, record);
 		break;
 	}
 	case _access: {
@@ -744,11 +745,9 @@ bool RunBool(FileD* file_d, FrmlElem* X, void* record)
 	case _isdeleted: {
 		auto iX = (FrmlElem14*)X;
 		BYTE* rec = nullptr;
-
 		AccRecNoProc(iX, 642, &rec);
 		result = iX->RecFD->DeletedFlag(rec);
 		delete[] rec; rec = nullptr;
-
 		break;
 	}
 	case _lvdeleted: {
@@ -772,7 +771,7 @@ bool RunBool(FileD* file_d, FrmlElem* X, void* record)
 		break;
 	}
 	case _setmybp: {
-		auto iX0 = (FrmlElem0*)X;
+		FrmlElem0* iX0 = (FrmlElem0*)X;
 		result = RunBool(file_d, iX0->P1, record);
 		break;
 	}
