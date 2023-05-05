@@ -315,72 +315,74 @@ int GetFileSize()
 
 int RecNoFun(FileD* file_d, FrmlElem13* Z, void* record)
 {
-	bool b = false;
 	int n = 0;
 	XString x;
-	GetRecNoXString(CFile, Z, x, CRecPtr);
-	FileD* cf = CFile;
-	void* cr = CRecPtr;
+	GetRecNoXString(file_d, Z, x, record);
+
 	XKey* k = Z->Key;
-	CFile = Z->FFD;
-	LockMode md = CFile->NewLockMode(RdMode);
-	CRecPtr = CFile->GetRecSpace();
-	if (CFile->FF->NRecs > 0) {
-		if (CFile->FF->file_type == FileType::INDEX) {
-			CFile->FF->TestXFExist();
-			b = k->SearchInterval(CFile, x, false, n);
+	FileD* funcFD = Z->FFD;
+
+	LockMode md = funcFD->NewLockMode(RdMode);
+	BYTE* newRecord = funcFD->GetRecSpace();
+	if (funcFD->FF->NRecs > 0) {
+		bool b;
+		if (funcFD->FF->file_type == FileType::INDEX) {
+			funcFD->FF->TestXFExist();
+			b = k->SearchInterval(funcFD, x, false, n);
 		}
-		else b = CFile->SearchKey(x, k, n, CRecPtr);
+		else b = funcFD->SearchKey(x, k, n, newRecord);
 		if (!b) n = -n;
 	}
 	else {
 		n = -1;
 	}
-	CFile->OldLockMode(md);
-	ReleaseStore(&CRecPtr);
-	CFile = cf; CRecPtr = cr;
+	funcFD->OldLockMode(md);
+	delete[] newRecord; newRecord = nullptr;
+
 	return n;
 }
 
 int AbsLogRecNoFun(FileD* file_d, FrmlElem13* Z, void* record)
 {
 	int result = 0;
-	void* p = nullptr;
-	FileD* cf = CFile;
-	void* cr = CRecPtr;
-	MarkStore(p);
+
 	XKey* k = Z->Key;
-	int N = RunInt(CFile, Z->Arg[0], CRecPtr);
-	if (N <= 0) return result;
-	CFile = Z->FFD;
-	LockMode md = CFile->NewLockMode(RdMode);
-	if (N > CFile->FF->NRecs) {
-		goto label1;
+	int N = RunInt(file_d, Z->Arg[0], record);
+	if (N <= 0) {
+		return result;
 	}
-	if (CFile->FF->file_type == FileType::INDEX) {
-		CFile->FF->TestXFExist();
+
+	FileD* funcFD = Z->FFD;
+	LockMode md = funcFD->NewLockMode(RdMode);
+	if (N > funcFD->FF->NRecs) {
+		funcFD->OldLockMode(md);
+		return result;
+	}
+	if (funcFD->FF->file_type == FileType::INDEX) {
+		funcFD->FF->TestXFExist();
 		if (Z->Op == _recnolog) {
-			CRecPtr = CFile->GetRecSpace();
-			CFile->ReadRec(N, CRecPtr);
-			if (CFile->DeletedFlag(CRecPtr)) {
-				goto label1;
+			BYTE* newRecord = funcFD->GetRecSpace();
+			funcFD->ReadRec(N, newRecord);
+			if (funcFD->DeletedFlag(newRecord)) {
+				funcFD->OldLockMode(md);
+				return result;
 			}
-			result = k->RecNrToNr(CFile, N, CRecPtr);
+			result = k->RecNrToNr(funcFD, N, newRecord);
+			delete[] newRecord; newRecord = nullptr;
 		}
 		else /*_recnoabs*/ {
 			if (N > k->NRecs()) {
-				goto label1;
+				funcFD->OldLockMode(md);
+				return result;
 			}
-			result = k->NrToRecNr(CFile, N);
+			result = k->NrToRecNr(funcFD, N);
 		}
 	}
 	else {
 		result = N;
 	}
-label1:
-	CFile->OldLockMode(md);
-	ReleaseStore(&p);
-	CFile = cf;	CRecPtr = cr;
+
+	funcFD->OldLockMode(md);
 	return result;
 }
 
@@ -413,7 +415,7 @@ double LinkProc(FrmlElem15* X, void* record)
 	return N;
 }
 
-WORD IntTSR(FrmlElem* X)
+WORD IntTSR(FileD* file_d, FrmlElem* X, void* record)
 {
 	void* p;
 	pstring s;
@@ -421,15 +423,15 @@ WORD IntTSR(FrmlElem* X)
 	LongStr* ss = nullptr;
 
 	auto iX0 = (FrmlElem0*)X;
-	BYTE IntNr = RunInt(CFile, iX0->P1, CRecPtr);
-	WORD FunNr = RunInt(CFile, iX0->P2, CRecPtr);
+	BYTE IntNr = RunInt(file_d, iX0->P1, record);
+	WORD FunNr = RunInt(file_d, iX0->P2, record);
 	FrmlElem* z = iX0->P3;
 
 	switch (iX0->N31) {
 	case 'r': { p = z; break; }
-	case 'S': { s = RunShortStr(CFile, z, CRecPtr); p = &s; break; }
-	case 'B': { b = RunBool(CFile, z, CRecPtr); p = &b; break; }
-	case 'R': { r = RunReal(CFile, z, CRecPtr); p = &r; break; }
+	case 'S': { s = RunShortStr(file_d, z, record); p = &s; break; }
+	case 'B': { b = RunBool(file_d, z, record); p = &b; break; }
+	case 'R': { r = RunReal(file_d, z, record); p = &r; break; }
 	}
 
 	if (IntNr == 0x16 && FunNr == 0x200 && iX0->N31 == 'R' && r == 0.0) {
@@ -1115,7 +1117,7 @@ label1:
 		result = GetFileSize();
 		break;
 	}
-	case _inttsr: result = IntTSR(X); break;
+	case _inttsr: result = IntTSR(file_d, X, record); break;
 	case _userfunc: {
 		result = RunUserFunc(file_d, (FrmlElem19*)X, record)->R;
 		break;
@@ -1542,7 +1544,7 @@ LongStr* RunLongStr(FileD* file_d, FrmlElem* X, void* record)
 				LinkUpw(file_d, iX7->LD, RecNo, true, record, &newRecord);
 				S = RunLongStr(file_d, iX7->P011, newRecord);
 				file_d->OldLockMode(lm);  /*possibly reading .T*/
-				file_d->ClearRecSpace(CRecPtr);
+				file_d->ClearRecSpace(newRecord);
 			}
 			else {
 				LinkLastRec(iX7->File2, RecNo, true, &newRecord);
@@ -1551,7 +1553,6 @@ LongStr* RunLongStr(FileD* file_d, FrmlElem* X, void* record)
 				iX7->File2->ClearRecSpace(newRecord);
 			}
 			delete[] newRecord; newRecord = nullptr;
-			//ReleaseAfterLongStr(&CRecPtr);
 			result = S;
 			break;
 		}

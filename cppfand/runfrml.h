@@ -63,7 +63,7 @@ double DifWDays(double R1, double R2, WORD d);
 int GetFileSize();
 //int RecNoFun(FileD* file_d, FrmlElem13* Z, void* record);
 //int AbsLogRecNoFun(FileD* file_d, FrmlElem13* Z, void* record);
-double LinkProc(FrmlElem15* X, void* record);
-WORD IntTSR(FrmlElem* X);
-WORD PortIn(bool IsWord, WORD Port);
+//double LinkProc(FrmlElem15* X, void* record);
+//WORD IntTSR(FrmlElem* X);
+//WORD PortIn(bool IsWord, WORD Port);
 
