@@ -35,17 +35,6 @@
 #include "../Common/textfunc.h"
 #include "../Common/compare.h"
 
-
-void* O(void* p) // ASM
-{
-	return p;
-}
-
-void* OCF(void* p) // ASM
-{
-	return p;
-}
-
 int UserW = 0;
 
 struct RdbRecVars
@@ -55,11 +44,10 @@ struct RdbRecVars
 	std::string Ext;
 	int Txt = 0; int OldTxt = 0;
 	FileType FTyp = FileType::UNKNOWN;
-	WORD CatIRec = 0;
+	int CatIRec = 0;
 	bool isSQL = false;
 };
 
-FileD* CFileF = nullptr;
 int sz = 0; WORD nTb = 0; void* Tb = nullptr;
 
 bool IsCurrChpt()
@@ -290,7 +278,7 @@ WORD ChptWriteCRec()
 	WORD result = 0;
 	if (!IsCurrChpt()) return result;
 	if (!TestIsNewRec()) {
-		eq = CompArea((char*)((uintptr_t)CRecPtr + 2), (char*)((uintptr_t)E->OldRecPtr + 2), CFile->FF->RecLen - 2);
+		eq = CompArea(&((BYTE*)CRecPtr)[2], &((BYTE*)E->OldRecPtr)[2], CFile->FF->RecLen - 2);
 		if (eq == _equ) return result;
 	}
 	GetRdbRecVars(E->NewRecPtr, &New);

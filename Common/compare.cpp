@@ -18,7 +18,7 @@ bool EquUpCase(pstring& S1, pstring& S2)
 	return true;
 }
 
-bool EquUpCase(std::string S1, std::string S2)
+bool EquUpCase(const std::string& S1, const std::string& S2)
 {
 	if (S1.length() != S2.length()) return false;
 	for (size_t i = 0; i <= S1.length(); i++) {
@@ -69,7 +69,7 @@ short CompLongShortStr(LongStr* S1, pstring* S2)
 	return equ;
 }
 
-short CompArea(void* A, void* B, short L)
+short CompArea(void* A, void* B, size_t L)
 {
 	int result = memcmp(A, B, L);
 
