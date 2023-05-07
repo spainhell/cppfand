@@ -1,39 +1,38 @@
+#include "runproj.h"
+
+#include "../Common/compare.h"
+#include "../Common/textfunc.h"
+#include "../Editor/EditorHelp.h"
+#include "../Editor/OldEditor.h"
+#include "../Editor/rdedit.h"
+#include "../Editor/runedi.h"
+#include "../ExportImport/ExportImport.h"
+#include "../fandio/FandTFile.h"
+#include "../fandio/FandXFile.h"
+#include "../fandio/files.h"
+#include "../Logging/Logging.h"
+#include "../MergeReport/genrprt.h"
+#include "../MergeReport/rdmerg.h"
+#include "../MergeReport/rdrprt.h"
+#include "../MergeReport/runmerg.h"
+#include "../MergeReport/runrprt.h"
+#include "../Prolog/RunProlog.h"
 #include "access.h"
-#include "ChkD.h"
+#include "Coding.h"
+#include "compile.h"
 #include "FieldDescr.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
+#include "ChkD.h"
 #include "KeyFldD.h"
 #include "legacy.h"
-#include "../Logging/Logging.h"
 #include "oaccess.h"
 #include "obaseww.h"
 #include "rdfildcl.h"
 #include "rdproc.h"
 #include "rdrun.h"
 #include "runproc.h"
-#include "runproj.h"
-
-#include "Coding.h"
-#include "../Prolog/RunProlog.h"
-#include "../fandio/FandTFile.h"
 #include "wwmenu.h"
-#include "../fandio/files.h"
-#include "../fandio/FandXFile.h"
-
-#include "compile.h"
-#include "../Editor/OldEditor.h"
-#include "../Editor/EditorHelp.h"
-#include "../Editor/rdedit.h"
-#include "../Editor/runedi.h"
-#include "../ExportImport/ExportImport.h"
-#include "../MergeReport/genrprt.h"
-#include "../MergeReport/rdmerg.h"
-#include "../MergeReport/rdrprt.h"
-#include "../MergeReport/runmerg.h"
-#include "../MergeReport/runrprt.h"
-#include "../Common/textfunc.h"
-#include "../Common/compare.h"
 
 int UserW = 0;
 
@@ -55,18 +54,18 @@ bool IsCurrChpt()
 	return CRdb->FD == CFile;
 }
 
-FileType ExtToTyp(std::string Ext)
+FileType ExtToTyp(const std::string& ext)
 {
-	if ((Ext == "") || EquUpCase(Ext, ".HLP")
+	if ((ext.empty()) || EquUpCase(ext, ".HLP")
 #ifdef FandSQL
 		|| SEquUpcase(Ext, ".SQL")
 #endif	
 		)
 		return FileType::FAND16;
-	else if (EquUpCase(Ext, ".X")) return FileType::INDEX;
-	else if (EquUpCase(Ext, ".DTA")) return FileType::FAND8;
-	else if (EquUpCase(Ext, ".DBF")) return FileType::DBF;
-	else if (EquUpCase(Ext, ".RDB")) return FileType::RDB;
+	else if (EquUpCase(ext, ".X")) return FileType::INDEX;
+	else if (EquUpCase(ext, ".DTA")) return FileType::FAND8;
+	else if (EquUpCase(ext, ".DBF")) return FileType::DBF;
+	else if (EquUpCase(ext, ".RDB")) return FileType::RDB;
 	else return FileType::UNKNOWN;
 }
 
