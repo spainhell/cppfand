@@ -108,15 +108,19 @@ bool NetFileTest(RdbRecVars* X)
 	return false;
 }
 
-void GetSplitChapterName(FileD* file_d, void* record, std::string& Name, std::string& Ext)
+void GetSplitChapterName(FileD* file_d, void* record, std::string& name, std::string& ext)
 {
-	Ext = "";
-	std::string chptName = file_d->loadS(ChptName, record);
-	Name = TrailChar(chptName, ' ');
-	size_t i = Name.find('.');
-	if (i == std::string::npos) return;
-	Ext = Name.substr(i, 255);
-	Name = Name.substr(1, i - 1);
+	
+	std::string chapter_name = file_d->loadS(ChptName, record);
+	name = TrailChar(chapter_name, ' ');
+	const size_t i = name.find('.');
+	if (i == std::string::npos) {
+		ext = "";
+	}
+	else {
+		ext = name.substr(i, 255);
+		name = name.substr(1, i - 1);
+	}
 }
 
 void GetRdbRecVars(void* RecPtr, RdbRecVars* X)

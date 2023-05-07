@@ -169,7 +169,7 @@ bool LinkUpw(FileD* file_d, LinkD* LD, int& N, bool WithT, void* record, BYTE** 
 				switch (F->frml_type) {
 				case 'S': {
 					x.S = file_d->loadOldS(F, record);
-					ToFD->saveS(F2, x.S, newRecord);
+					ToFD->saveS(F2, x.S, *newRecord);
 					break;
 				}
 				case 'R': {
