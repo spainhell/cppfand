@@ -11,8 +11,6 @@
 #endif
 
 double Owned(FileD* file_d, FrmlElem* Bool, FrmlElem* Sum, LinkD* LD, void* record);
-short CompBool(bool B1, bool B2);
-short CompReal(double R1, double R2, short M);
 LongStr* CopyToLongStr(pstring& SS);
 LongStr* CopyToLongStr(std::string& SS);
 pstring LeadChar(char C, pstring S);
@@ -35,7 +33,6 @@ void RunWFrml(FileD* file_d, WRectFrml& X, BYTE WFlags, WRect& W, void* record);
 WORD RunWordImpl(FileD* file_d, FrmlElem* Z, WORD Impl, void* record);
 bool FieldInList(FieldDescr* F, FieldListEl* FL);
 bool FieldInList(FieldDescr* F, std::vector<FieldDescr*>& FL);
-bool FieldInList(FieldDescr* F, std::vector<FieldDescr*>* FL);
 XKey* GetFromKey(LinkD* LD);
 FrmlElem* RunEvalFrml(FileD* file_d, FrmlElem* Z, void* record);
 LongStr* RunLongStr(FileD* file_d, FrmlElem* X, void* record);
@@ -55,15 +52,10 @@ LongStr* RepeatStr(LongStr* S, short N);
 void AccRecNoProc(FrmlElem14* X, WORD Msg, BYTE** record);
 void GetRecNoXString(FileD* file_d, FrmlElem13* Z, XString& X, void* record);
 double RunRealStr(FileD* file_d, FrmlElem* X, void* record);
-double LastUpdate(const std::string& path);
+
 WORD TypeDay(double R);
 double AddWDays(double R, short N, WORD d);
-
 double DifWDays(double R1, double R2, WORD d);
-int GetFileSize();
-//int RecNoFun(FileD* file_d, FrmlElem13* Z, void* record);
-//int AbsLogRecNoFun(FileD* file_d, FrmlElem13* Z, void* record);
-//double LinkProc(FrmlElem15* X, void* record);
-//WORD IntTSR(FrmlElem* X);
-//WORD PortIn(bool IsWord, WORD Port);
+double LastUpdate(const std::string& path);
 
+int GetFileSize();

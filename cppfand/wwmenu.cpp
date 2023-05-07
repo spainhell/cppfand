@@ -364,8 +364,6 @@ void TMenu::WrText(WORD I)
 
 void TMenu::SetPalette(Instr_menu* aPD)
 {
-	WORD i;
-	/* !!! with aPD^ do!!! */
 	Palette[0] = RunWordImpl(CFile, aPD->mAttr[0], screen.colors.mNorm, CRecPtr);
 	Palette[1] = RunWordImpl(CFile, aPD->mAttr[1], screen.colors.mHili, CRecPtr);
 	Palette[2] = RunWordImpl(CFile, aPD->mAttr[2], screen.colors.mFirst, CRecPtr);

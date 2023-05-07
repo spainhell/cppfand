@@ -1,26 +1,29 @@
 #include "runfrml.h"
-#include <memory>
-#include "../Common/pstring.h"
-#include "legacy.h"
-#include "rdrun.h"
+
 #include <cmath>
 #include <ctime>
+#include <memory>
+
+#include "../Common/compare.h"
+#include "../Common/pstring.h"
+#include "../Common/textfunc.h"
+#include "../Editor/runedi.h"
+#include "../fandio/directory.h"
+#include "../fandio/FandTFile.h"
+#include "../pascal/random.h"
+
 #include "FieldDescr.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
 #include "KeyFldD.h"
-#include "../pascal/random.h"
+#include "legacy.h"
 #include "oaccess.h"
 #include "obaseww.h"
 #include "olongstr.h"
 #include "rdproc.h"
+#include "rdrun.h"
 #include "runproc.h"
-#include "../fandio/FandTFile.h"
 #include "wwmix.h"
-#include "../Editor/runedi.h"
-#include "../Common/textfunc.h"
-#include "../Common/compare.h"
-#include "../fandio/directory.h"
 
 double Owned(FileD* file_d, FrmlElem* Bool, FrmlElem* Sum, LinkD* LD, void* record)
 {
@@ -647,8 +650,15 @@ bool RunBool(FileD* file_d, FrmlElem* X, void* record)
 		auto iX1 = (FrmlElem1*)X;
 		Event.What = evNothing;
 		GetMouseEvent();
-		if (Event.What == 0) result = false;
-		else { if ((Event.What && iX1->W01) == 0) goto label2; result = true; }
+		if (Event.What == 0) {
+			result = false;
+		}
+		else {
+			if ((Event.What && iX1->W01) == 0) {
+				goto label2;
+			}
+			result = true;
+		}
 		break;
 	}
 	case _ismouse: {
@@ -1166,10 +1176,6 @@ int RunInt(FileD* file_d, FrmlElem* X, void* record)
 
 void TestTFrml(FileD* file_d, FieldDescr* F, FrmlElem* Z, FandTFile** TF02, FileD** TFD02, int& TF02Pos, void* record)
 {
-	FileD* cf = nullptr;
-	void* p = nullptr;
-	int n; LockMode md;
-	FieldDescr* f1 = nullptr;
 	switch (Z->Op) {
 	case _newfile: {
 		FrmlElem8* iZ = (FrmlElem8*)Z;
@@ -1178,7 +1184,7 @@ void TestTFrml(FileD* file_d, FieldDescr* F, FrmlElem* Z, FandTFile** TF02, File
 	}
 	case _field: {
 		auto iZ = (FrmlElem7*)Z;
-		f1 = iZ->Field;
+		FieldDescr* f1 = iZ->Field;
 		if ((f1->field_type != FieldType::TEXT) || ((f1->Flg & f_Stored) == 0)) return;
 		if (F == nullptr) {
 			if ((f1->Flg & f_Encryp) != 0) return;
@@ -1202,8 +1208,9 @@ void TestTFrml(FileD* file_d, FieldDescr* F, FrmlElem* Z, FandTFile** TF02, File
 		//break;
 	}
 	case _access: {
+		int n;
 		FrmlElem7* iZ = (FrmlElem7*)Z;
-		md = iZ->File2->NewLockMode(RdMode);
+		LockMode md = iZ->File2->NewLockMode(RdMode);
 		BYTE* newRecord = nullptr;
 		if (iZ->LD != nullptr) {
 			LinkUpw(file_d, iZ->LD, n, true, record, &newRecord);
@@ -1327,6 +1334,20 @@ void LVAssignFrml(FileD* file_d, LocVar* LV, bool Add, FrmlElem* X, void* record
 	}
 }
 
+void JustifyString(std::string& T, WORD L, WORD M, char C)
+{
+	if (M == LeftJust)
+		while (T.length() < L) T += C;
+	else {
+		if (T.length() < L) {
+			char buf[256]{ 0 };
+			sprintf_s(buf, 256, "%*s", L, T.c_str());
+			std::string s(buf, L);
+			T = s;
+		}
+	}
+}
+
 std::string DecodeFieldRSB(FieldDescr* F, WORD LWw, double R, std::string& T, bool B)
 {
 	WORD L = 0, M = 0;
@@ -1339,22 +1360,12 @@ std::string DecodeFieldRSB(FieldDescr* F, WORD LWw, double R, std::string& T, bo
 	}
 	case FieldType::NUMERIC: {
 		C = '0';
-		goto label1;
+		JustifyString(T, L, M, C);
 		break;
 	}
 	case FieldType::ALFANUM: {
 		C = ' ';
-	label1:
-		if (M == LeftJust)
-			while (T.length() < L) T += C;
-		else {
-			if (T.length() < L) {
-				char buf[256]{ 0 };
-				sprintf_s(buf, 256, "%*s", L, T.c_str());
-				std::string s(buf, L);
-				T = s;
-			}
-		}
+		JustifyString(T, L, M, C);
 		break;
 	}
 	case FieldType::BOOL: {
@@ -1388,11 +1399,10 @@ std::string DecodeFieldRSB(FieldDescr* F, WORD LWw, double R, std::string& T, bo
 	return T;
 }
 
-
 std::string DecodeField(FileD* file_d, FieldDescr* F, WORD LWw, void* record)
 {
 	double r = 0;
-	std::string s, Txt;
+	std::string s;
 	bool b = false;
 	switch (F->frml_type) {
 	case 'R': {
@@ -1401,8 +1411,13 @@ std::string DecodeField(FileD* file_d, FieldDescr* F, WORD LWw, void* record)
 	}
 	case 'S': {
 		if (F->field_type == FieldType::TEXT) {
-			if (((F->Flg & f_Stored) != 0) && (file_d->loadR(F, record) == 0.0)) Txt = ".";
-			else Txt = "*";
+			std::string Txt;
+			if (((F->Flg & f_Stored) != 0) && (file_d->loadR(F, record) == 0.0)) {
+				Txt = ".";
+			}
+			else {
+				Txt = "*";
+			}
 			return Txt;
 		}
 		else {
@@ -1444,26 +1459,10 @@ bool FieldInList(FieldDescr* F, FieldListEl* FL)
 	return result;
 }
 
-//bool FieldInList(FieldDescr* F, std::vector<FieldListEl*>& FL)
-//{
-//	bool result = false;
-//	if (std::find(FL.begin(), FL.end(), F) != FL.end())
-//		result = true;
-//	return result;
-//}
-
 bool FieldInList(FieldDescr* F, std::vector<FieldDescr*>& FL)
 {
 	bool result = false;
 	if (std::find(FL.begin(), FL.end(), F) != FL.end())
-		result = true;
-	return result;
-}
-
-bool FieldInList(FieldDescr* F, std::vector<FieldDescr*>* FL)
-{
-	bool result = false;
-	if (std::find(FL->begin(), FL->end(), F) != FL->end())
 		result = true;
 	return result;
 }

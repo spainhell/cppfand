@@ -1,17 +1,15 @@
 #include "rdfildcl.h"
-#include "ChkD.h"
+
+#include "../Common/compare.h"
+#include "../fandio/FandXFile.h"
 #include "compile.h"
 #include "FieldDescr.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
+#include "ChkD.h"
 #include "KeyFldD.h"
-#include "legacy.h"
-#include "oaccess.h"
 #include "rdproc.h"
 #include "runfrml.h"
-#include "runproj.h"
-#include "../Common/compare.h"
-#include "../fandio/FandXFile.h"
 
 bool HasTT;
 bool issql;
@@ -19,15 +17,13 @@ bool issql;
 FieldDescr* RdFieldDescr(std::string name, bool Stored)
 {
 	const BYTE TabF[19] = { 0, 1, 1, 2, 2, 3, 3, 4, 4, 4, 5, 5, 6, 6, 6, 7, 7, 8, 8 };
-	FieldDescr* F = new FieldDescr();
-	pstring* S = nullptr;
+	
 	WORD L = 0, M = 0, NBytes = 0;
 	BYTE Flg = 0;
 	char FrmlTyp = 0, c = 0;
-	WORD i = 0, n = 0, n1 = 0;
-	pstring ss;
 	std::string sstr;
 
+	FieldDescr* F = new FieldDescr();
 	F->Name = name;
 	if (Stored) Flg = f_Stored;
 	else Flg = 0;
@@ -37,7 +33,8 @@ FieldDescr* RdFieldDescr(std::string name, bool Stored)
 	FieldType Typ = FieldDescr::GetFieldType((char)LexWord[1]);
 
 	RdLex();
-	FrmlTyp = 'S'; M = 0;
+	FrmlTyp = 'S';
+	M = 0;
 	if (Typ == FieldType::NUMERIC || Typ == FieldType::FIXED) {
 		Accept(',');
 		L = RdInteger();
@@ -62,7 +59,13 @@ FieldDescr* RdFieldDescr(std::string name, bool Stored)
 		FrmlTyp = 'R';
 		break;
 	}
-	case FieldType::REAL: { NBytes = 6; FrmlTyp = 'R'; L = 17; M = 5; break; }
+	case FieldType::REAL: {
+		NBytes = 6;
+		FrmlTyp = 'R';
+		L = 17;
+		M = 5;
+		break;
+	}
 	case FieldType::ALFANUM: {
 		Accept(',');
 		if (!Stored || (Lexem != _quotedstr)) {
@@ -72,31 +75,53 @@ FieldDescr* RdFieldDescr(std::string name, bool Stored)
 			else M = LeftJust;
 		}
 		else {
-			S = RdStrConst();
-			sstr = *S;
+			WORD n1 = 0;
+			WORD n = 0;
+			sstr = LexWord;
+			Accept(_quotedstr);
 			L = 0; c = '?'; n = 0;
-			for (i = 1; i <= S->length(); i++) {
-				switch ((*S)[i]) {
-				case '[': { if (c == '?') c = '['; else goto label1; break; }
-				case ']': { if (c == '[') c = '?'; else goto label1; break; }
+			for (size_t i = 0; i < sstr.length(); i++) {
+				switch (sstr[i]) {
+				case '[': {
+					if (c == '?') c = '[';
+					else goto label1;
+					break;
+				}
+				case ']': {
+					if (c == '[') c = '?';
+					else goto label1;
+					break;
+				}
 				case '(': {
-					if (c == '?') { c = '('; n1 = 0; n = 0; }
+					if (c == '?') {
+						c = '(';
+						n1 = 0;
+						n = 0;
+					}
 					else goto label1;
 					break;
 				}
 				case ')': {
 					if ((c == '(') && (n1 > 0) && (n > 0)) {
-						c = '?'; L += MaxW(n1, n);
+						c = '?';
+						L += MaxW(n1, n);
 					}
 					else goto label1;
 					break;
 				}
 				case '|': {
-					if ((c == '(') && (n1 > 0)) { n = MaxW(n1, n); n1 = 0; }
+					if ((c == '(') && (n1 > 0)) {
+						n = MaxW(n1, n);
+						n1 = 0;
+					}
 					else goto label1;
 					break;
 				}
-				default: { if (c == '(') n1++; else L++; break; }
+				default: {
+					if (c == '(') n1++;
+					else L++;
+					break;
+				}
 				}
 			}
 			Flg += f_Mask;
@@ -106,11 +131,13 @@ FieldDescr* RdFieldDescr(std::string name, bool Stored)
 			Error(171);
 		}
 		NBytes = L;
-		goto label2;
+		if (Stored && (Lexem == '!')) {
+			RdLex();
+			Flg += f_Encryp;
+		}
 		break;
 	}
 	case FieldType::DATE: {
-		ss[0] = 0;
 		sstr = "";
 		if (Lexem == ',') {
 			RdLex();
@@ -121,11 +148,14 @@ FieldDescr* RdFieldDescr(std::string name, bool Stored)
 		// UPDATE: stejne to nefunguje, pri spusteni ulohy se to odnekud nacita znovu, tezko rict odkud
 		// nazev se pak zpetne vytahne pomoci funkce FieldDMask()
 		FrmlTyp = 'R'; NBytes = 6; // sizeof(float); // v Pascalu je to 6B
-		L = sstr.length(); Flg += f_Mask;
+		L = sstr.length();
+		Flg += f_Mask;
 		break;
 	}
 	case FieldType::BOOL: {
-		L = 1; NBytes = 1; FrmlTyp = 'B';
+		L = 1;
+		NBytes = 1;
+		FrmlTyp = 'B';
 		break;
 	}
 	case FieldType::TEXT: {
@@ -133,10 +163,11 @@ FieldDescr* RdFieldDescr(std::string name, bool Stored)
 			RdLex();
 			L = RdInteger() + 2;
 		}
-		else L = 1;
+		else {
+			L = 1;
+		}
 		NBytes = sizeof(int);
 		HasTT = true;
-	label2:
 		if (Stored && (Lexem == '!')) {
 			RdLex();
 			Flg += f_Encryp;
@@ -152,8 +183,11 @@ FieldDescr* RdFieldDescr(std::string name, bool Stored)
 	if ((L > TxtCols - 1) && (Typ != FieldType::ALFANUM)) OldError(3);
 	F->field_type = Typ;
 	F->frml_type = FrmlTyp;
-	F->L = L; F->M = M;
-	F->NBytes = NBytes;	F->Flg = Flg; F->Mask = sstr;
+	F->L = L;
+	F->M = M;
+	F->NBytes = NBytes;
+	F->Flg = Flg;
+	F->Mask = sstr;
 	return F;
 }
 
@@ -727,7 +761,7 @@ void RdKeyD()
 				N = 1;
 				K = new XKey(CFile);
 				CFile->Keys.push_back(K);
-			}
+		}
 			else {
 				K1 = CFile->Keys[0];
 				N = 2;
@@ -759,9 +793,9 @@ void RdKeyD()
 			if (K->IndexLen > MaxIndexLen) {
 				OldError(105);
 			}
-		}
-		goto label6;
 	}
+		goto label6;
+}
 label2:
 	TestIdentif();
 	Name = LexWord;
@@ -808,7 +842,7 @@ label2:
 			RdLex();
 			L->MemberRef = 2;
 		}
-}
+	}
 	//Arg = &L->Args;
 	KF = K->KFlds;
 label3:
@@ -1031,8 +1065,8 @@ void RdImper(AddD* AD)
 			}
 		}
 		if (Lexem == '!') { RdLex(); AD->Create = 2; }
-	}
-}
+			}
+		}
 
 void RdAssign(AddD* AD)
 {
