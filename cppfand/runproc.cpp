@@ -1558,7 +1558,7 @@ void CallProcedure(Instr_proc* PD)
 
 #ifdef _DEBUG
 	std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
-	if (srcCode.find("proc(Hlaseni,('Program '+FILE.Path+' neexistuje'));") != std::string::npos) {
+	if (srcCode.find("proc(BHC1,(PAR01A4.BHCHead));") != std::string::npos) {
 		printf("");
 	}
 #endif

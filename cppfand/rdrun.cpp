@@ -73,16 +73,18 @@ bool Add(AddD* AD, void* RP, double R, bool Back)
 
 bool RunAddUpdte1(char Kind, void* CRold, bool Back, AddD* StopAD, LinkD* notLD)
 {
-	int N2, N2old;
-	char Kind2, Kind2old;
-	FileD* CF2 = nullptr;
-	void* CR2 = nullptr;
-	void* CR2old = nullptr; void* p = nullptr;
-	double R, Rold;
+	int n2, n2_old;
+	char kind2, kind2_old;
+	FileD* cf2 = nullptr;
+	BYTE* cr2 = nullptr;
+	BYTE* cr2_old = nullptr;
+	void* p = nullptr;
 	bool b;
-	auto result = true;
-	FileD* CF = CFile;
-	void* CR = CRecPtr;
+	bool result = true;
+	double r;
+	double r_old;
+	FileD* originalCFile = CFile;
+	void* originalCRecPtr = CRecPtr;
 	MarkStore(p);
 	AddD* ADback = nullptr;
 
@@ -91,64 +93,96 @@ bool RunAddUpdte1(char Kind, void* CRold, bool Back, AddD* StopAD, LinkD* notLD)
 			ReleaseStore(&p);
 			return result;
 		}
-		if ((notLD != nullptr) && (add->LD == notLD)) goto label1;
+		if ((notLD != nullptr) && (add->LD == notLD)) {
+			goto label1;
+		}
 		if (add->Assign) {
-			if (Assign(add)) goto label1;
-			else goto fail;
-		}
-
-		R = RunReal(CFile, add->Frml, CRecPtr);
-		if (Kind == '-') R = -R;
-		Rold = 0;
-		if (Kind == 'd') {
-			CRecPtr = CRold;
-			Rold = RunReal(CFile, add->Frml, CRecPtr);
-		}
-		ADback = add;
-		CF2 = add->File2;
-		N2 = 0; N2old = 0;
-		if (R != 0.0) {
-			CRecPtr = CR;
-			if (!Link(add, N2, Kind2)) goto fail;
-			CR2 = CRecPtr;
-		}
-		if (Rold != 0.0) {
-			CFile = CF;
-			CRecPtr = CRold;
-			if (!Link(add, N2old, Kind2old)) goto fail;
-			CR2old = CRecPtr;
-			if (N2old == N2)
-			{
-				R = R - Rold;
-				if (R == 0.0) goto label1;
-				N2old = 0;
+			if (Assign(add)) {
+				goto label1;
+			}
+			else {
+				goto fail;
 			}
 		}
-		if ((N2 == 0) && (N2old == 0)) goto label1;
-		CFile = CF2;
-		if (N2old != 0) {
-			if (!Add(add, CR2old, -Rold, Back)) goto fail;
+
+		r = RunReal(CFile, add->Frml, CRecPtr);
+		if (Kind == '-') {
+			r = -r;
 		}
-		if (N2 != 0) {
-			if (!Add(add, CR2, R, Back)) goto fail;
+		r_old = 0;
+		if (Kind == 'd') {
+			CRecPtr = CRold;
+			r_old = RunReal(CFile, add->Frml, CRecPtr);
 		}
-		if ((N2old != 0) && !TransAdd(add, CF, CR, CR2old, N2old, Kind2old, false)) goto fail;
-		if ((N2 != 0) && !TransAdd(add, CF, CR, CR2, N2, Kind2, false)) {
-			if (N2old != 0) b = TransAdd(add, CF, CR, CR2old, N2old, Kind2old, true);
+		ADback = add;
+		cf2 = add->File2;
+		n2 = 0;
+		n2_old = 0;
+		if (r != 0.0) {
+			CRecPtr = originalCRecPtr;
+			if (!Link(CFile, add, n2, kind2, originalCRecPtr, &cr2)) {
+				goto fail;
+			}
+			//CR2 = (BYTE*)CRecPtr;
+		}
+		if (r_old != 0.0) {
+			CFile = originalCFile;
+			CRecPtr = CRold;
+			if (!Link(originalCFile, add, n2_old, kind2_old, CRold, &cr2_old)) {
+				goto fail;
+			}
+			//CR2old = (BYTE*)CRecPtr;
+			if (n2_old == n2) {
+				r = r - r_old;
+				if (r == 0.0) {
+					goto label1;
+				}
+				n2_old = 0;
+			}
+		}
+		if ((n2 == 0) && (n2_old == 0)) {
+			goto label1;
+		}
+		CFile = cf2;
+		if (n2_old != 0) {
+			if (!Add(add, cr2_old, -r_old, Back)) {
+				goto fail;
+			}
+		}
+		if (n2 != 0) {
+			if (!Add(add, cr2, r, Back)) {
+				goto fail;
+			}
+		}
+		if ((n2_old != 0) && !TransAdd(add, originalCFile, originalCRecPtr, cr2_old, n2_old, kind2_old, false)) {
 			goto fail;
 		}
-		if (N2old != 0) WrUpdRec(add, CF, CR, CR2old, N2old);
-		if (N2 != 0) WrUpdRec(add, CF, CR, CR2, N2);
+		if ((n2 != 0) && !TransAdd(add, originalCFile, originalCRecPtr, cr2, n2, kind2, false)) {
+			if (n2_old != 0) {
+				b = TransAdd(add, originalCFile, originalCRecPtr, cr2_old, n2_old, kind2_old, true);
+			}
+			goto fail;
+		}
+		if (n2_old != 0) {
+			WrUpdRec(add, originalCFile, originalCRecPtr, cr2_old, n2_old);
+		}
+		if (n2 != 0) {
+			WrUpdRec(add, originalCFile, originalCRecPtr, cr2, n2);
+		}
 	label1:
 		ReleaseStore(&p);
-		CFile = CF;
-		CRecPtr = CR;
+		delete[] cr2; cr2 = nullptr;
+		delete[] cr2_old; cr2_old = nullptr;
+		CFile = originalCFile;
+		CRecPtr = originalCRecPtr;
 	}
 	return result;
 fail:
 	ReleaseStore(&p);
-	CFile = CF;
-	CRecPtr = CR;
+	delete[] cr2; cr2 = nullptr;
+	delete[] cr2_old; cr2_old = nullptr;
+	CFile = originalCFile;
+	CRecPtr = originalCRecPtr;
 	result = false;
 	if (ADback != nullptr) {
 		b = RunAddUpdte1(Kind, CRold, true, ADback, notLD);  /* backtracking */
@@ -162,50 +196,42 @@ void CrIndRec(FileD* file_d, void* record)
 	file_d->RecallRec(file_d->FF->NRecs, record);
 }
 
-bool Link(AddD* AD, int& N, char& Kind2)
+bool Link(FileD* file_d, AddD* add_d, int& n, char& kind2, void* record, BYTE** linkedRecord)
 {
-	void* CR;
-	auto result = true;
-	LinkD* LD = AD->LD;
-	Kind2 = 'd';
+	bool result = true;
+	LinkD* ld = add_d->LD;
+	kind2 = 'd';
 
-	if (LD != nullptr) {
-		BYTE* rec = nullptr;
-		if (LinkUpw(CFile, LD, N, false, CRecPtr, &rec)) {
-			delete[] rec; rec = nullptr;
+	if (ld != nullptr) {
+		if (LinkUpw(file_d, ld, n, false, record, linkedRecord)) {
 			return result;
 		}
-		else {
-			delete[] rec; rec = nullptr;
-		}
-		SetMsgPar(LD->RoleName);
+		SetMsgPar(ld->RoleName);
 	}
 	else {
-		BYTE* rec = nullptr;
-		if (!LinkLastRec(AD->File2, N, false, &rec)
+		if (!LinkLastRec(add_d->File2, n, false, linkedRecord)
 #ifdef FandSQL
-			&& !CFile->IsSQLFile
+			&& !file_d->IsSQLFile
 #endif
 			) {
-			CFile->IncNRecs(1);
-			CFile->WriteRec(1, rec);
+			file_d->IncNRecs(1);
+			file_d->WriteRec(1, *linkedRecord);
 		}
-		delete[] rec; rec = nullptr;
 		return result;
 	}
-	Kind2 = '+';
-	if ((AD->Create == 2) || (AD->Create == 1) && PromptYN(132)) {
+	kind2 = '+';
+	if ((add_d->Create == 2) || (add_d->Create == 1) && PromptYN(132)) {
 #ifdef FandSQL
-		if (CFile->IsSQLFile) Strm1->InsertRec(false, true) else
+		if (file_d->IsSQLFile) Strm1->InsertRec(false, true) else
 #endif
 		{
-			CFile->ClearDeletedFlag(CRecPtr);
-			if ((LD != nullptr) && (CFile->FF->file_type == FileType::INDEX)) {
-				CrIndRec(CFile, CRecPtr);
-				N = CFile->FF->NRecs;
+			file_d->ClearDeletedFlag(*linkedRecord);
+			if ((ld != nullptr) && (file_d->FF->file_type == FileType::INDEX)) {
+				CrIndRec(file_d, *linkedRecord);
+				n = file_d->FF->NRecs;
 			}
 			else {
-				CFile->CreateRec(N, CRecPtr);
+				file_d->CreateRec(n, *linkedRecord);
 			}
 		}
 		return result;
@@ -283,24 +309,32 @@ bool Assign(AddD* AD)
 		break;
 	}
 	}
+	
+	BYTE* linkedRecord = nullptr;
 
-	if (!Link(AD, N2, Kind2)) { return false; }
+	if (!Link(CFile, AD, N2, Kind2, CRecPtr, &linkedRecord)) {
+		delete[] linkedRecord; linkedRecord = nullptr;
+		return false;
+	}
+
 	switch (F->frml_type) {
 	case 'R': {
-		CFile->saveR(F, R, CRecPtr);
+		CFile->saveR(F, R, linkedRecord);
 		break;
 	}
 	case 'S': {
-		if (F->field_type == FieldType::TEXT) CFile->saveS(F, S, CRecPtr);
-		else CFile->saveS(F, ss, CRecPtr);
+		if (F->field_type == FieldType::TEXT) CFile->saveS(F, S, linkedRecord);
+		else CFile->saveS(F, ss, linkedRecord);
 		break;
 	}
 	default: {
-		CFile->saveB(F, B, CRecPtr);
+		CFile->saveB(F, B, linkedRecord);
 		break;
 	}
 	}
-	CFile->WriteRec(N2, CRecPtr);
+	CFile->WriteRec(N2, linkedRecord);
+
+	delete[] linkedRecord; linkedRecord = nullptr;
 	return true;
 }
 

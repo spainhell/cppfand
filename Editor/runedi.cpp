@@ -4629,8 +4629,12 @@ void RunEdit(XString* PX, WORD& Brk)
 	Brk = 0;
 	DisplLL();
 	if (OnlySearch) goto label2;
-	if (!IsNewRec && (PX != nullptr)) GotoXRec(PX, n);
-	if (Select && !RunBool(CFile, E->Bool, CRecPtr)) GoPrevNextRec(+1, true);
+	if (!IsNewRec && (PX != nullptr)) {
+		GotoXRec(PX, n);
+	}
+	if (Select && !RunBool(CFile, E->Bool, CRecPtr)) {
+		GoPrevNextRec(+1, true);
+	}
 	//if (/*E->StartFld != nullptr*/ true) { GoStartFld(&E->StartFld); goto label1; }
 	if (E->StartFld != nullptr) {
 		GoStartFld(E->StartFld);

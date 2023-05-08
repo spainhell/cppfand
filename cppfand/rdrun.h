@@ -366,7 +366,7 @@ void ResetLVBD();
 bool RunAddUpdte1(char Kind/*+,-,d*/, void* CRold, bool Back/*tracking*/, AddD* StopAD, LinkD* notLD);
 
 void CrIndRec(FileD* file_d, void* record);
-bool Link(AddD* AD, int& N, char& Kind2);
+bool Link(FileD* file_d, AddD* add_d, int& n, char& kind2, void* record, BYTE** linkedRecord);
 bool TransAdd(AddD* AD, FileD* FD, void* RP, void* CRnew, int N, char Kind2, bool Back);
 void WrUpdRec(AddD* AD, FileD* FD, void* RP, void* CRnew, int N);
 bool Assign(AddD* AD);
