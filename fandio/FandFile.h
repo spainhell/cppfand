@@ -124,7 +124,7 @@ private:
 	double _RforD(FieldDescr* field_d, void* record);
 	bool is_null_value(void* record, WORD l);
 
-	std::string _extToT(const std::string& dir, const std::string& name, std::string ext);
+	std::string _extToT(const std::string& input_path);
 	std::string _extToX(const std::string& dir, const std::string& name, std::string ext);
 };
 

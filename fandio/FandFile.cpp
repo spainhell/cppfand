@@ -1125,27 +1125,26 @@ void FandFile::CopyIndex(XWKey* K, XKey* FromK)
 
 void FandFile::SubstDuplF(FileD* TempFD, bool DelTF)
 {
-	std::string path, dir, name, ext;
 	//bool net;
 	int result = XFNotValid();
 	if (result != 0) {
 		RunError(result);
 	}
 
-	SetPathAndVolume(_parent);
+	std::string path = SetPathAndVolume(_parent);
 	if (IsNetCVol()) {
 		CopyDuplF(TempFD, DelTF);
 		return;
 	}
 	SaveCache(0, Handle);
 	FileD* PrimFD = _parent;
-	std::string p = path;
-	path = _extToT(dir, name, ext);
+	std::string orig_path = path;
+	path = _extToT(path);
 	std::string pt = path;
 
 	CloseClearH(&PrimFD->FF->Handle);
-	MyDeleteFile(p);
-	TestDelErr(p);
+	MyDeleteFile(orig_path);
+	TestDelErr(orig_path);
 	FileD* FD = PrimFD->pChain;
 	FandTFile* MD = PrimFD->FF->TF;
 	FandXFile* xf2 = PrimFD->FF->XF;
@@ -1157,8 +1156,8 @@ void FandFile::SubstDuplF(FileD* TempFD, bool DelTF)
 	CloseClearH(&PrimFD->FF->Handle);
 	SetTempCExt(_parent, '0', false);
 	pstring ptmp = path;
-	RenameFile56(ptmp, p, true);
-	path = p;
+	RenameFile56(ptmp, orig_path, true);
+	path = orig_path;
 	PrimFD->FF->Handle = OpenH(path, _isOldFile, PrimFD->FF->UMode);
 	SetUpdHandle(PrimFD->FF->Handle);
 
@@ -1265,8 +1264,10 @@ bool FandFile::is_null_value(void* record, WORD l)
 	return true;
 }
 
-std::string FandFile::_extToT(const std::string& dir, const std::string& name, std::string ext)
+std::string FandFile::_extToT(const std::string& input_path)
 {
+	std::string dir, name, ext;
+	FSplit(input_path, dir, name, ext);
 	if (EquUpCase(ext, ".RDB")) ext = ".TTT";
 	else if (EquUpCase(ext, ".DBF")) {
 		if (TF->Format == FandTFile::FptFormat) {
@@ -1276,7 +1277,13 @@ std::string FandFile::_extToT(const std::string& dir, const std::string& name, s
 			ext = ".DBT";
 		}
 	}
-	else ext[1] = 'T';
+	else if (ext.length() > 1) {
+		// at least '._'
+		ext[1] = 'T';
+	}
+	else {
+		ext = "___";
+	}
 	return dir + name + ext;
 }
 
