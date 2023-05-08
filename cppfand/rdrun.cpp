@@ -8,7 +8,6 @@
 #include "legacy.h"
 #include "obaseww.h"
 #include "runfrml.h"
-#include "models/Instr.h"
 #include "../fandio/files.h"
 
 std::vector<ConstListEl> OldMFlds;
@@ -38,11 +37,6 @@ MergOpSt MergOpGroup = { _const, 0.0 };
 bool EFldD::Ed(bool IsNewRec)
 {
 	return ((FldD->Flg & f_Stored) != 0) && (EdU || IsNewRec && EdN);
-}
-
-Instr::Instr(PInstrCode kind)
-{
-	this->Kind = kind;
 }
 
 void ResetLVBD()
@@ -96,7 +90,7 @@ bool RunAddUpdate(FileD* file_d, char kind, void* old_record, bool back, AddD* s
 				continue;
 			}
 			if (add->Assign) {
-				if (Assign(CFile, add, record)) {
+				if (Assign(file_d, add, record)) {
 					delete[] cr2; cr2 = nullptr;
 					delete[] cr2_old; cr2_old = nullptr;
 					continue;
@@ -106,20 +100,20 @@ bool RunAddUpdate(FileD* file_d, char kind, void* old_record, bool back, AddD* s
 				}
 			}
 
-			double r = RunReal(CFile, add->Frml, record);
+			double r = RunReal(file_d, add->Frml, record);
 			if (kind == '-') {
 				r = -r;
 			}
 			double r_old = 0;
 			if (kind == 'd') {
-				r_old = RunReal(CFile, add->Frml, old_record);
+				r_old = RunReal(file_d, add->Frml, old_record);
 			}
 			add_d_back = add;
 
 			int n2 = 0;
 			int n2_old = 0;
 			if (r != 0.0) {
-				if (!Link(CFile, add, n2, kind2, record, &cr2)) {
+				if (!Link(file_d, add, n2, kind2, record, &cr2)) {
 					throw std::exception("fail");
 				}
 			}
@@ -238,17 +232,13 @@ bool Link(FileD* file_d, AddD* add_d, int& n, char& kind2, void* record, BYTE** 
 
 bool TransAdd(FileD* file_d, AddD* AD, FileD* FD, void* RP, void* new_record, int N, char Kind2, bool Back)
 {
-	XString x;
-	LinkD* ld;
 	if (file_d->Add.empty()) {
 		return true;
 	}
 	if (Kind2 == '+') {
-		//CRecPtr = new_record;
 		return RunAddUpdate(file_d, '+', nullptr, Back, nullptr, nullptr, new_record);
 	}
 	BYTE* rec = file_d->GetRecSpace();
-	//CRecPtr = rec;
 #ifdef FandSQL
 	// TODO: cele pripadne predelat, po refactoringu uz to nesedi
 	if (CFile->IsSQLFile) {
@@ -261,7 +251,6 @@ bool TransAdd(FileD* file_d, AddD* AD, FileD* FD, void* RP, void* new_record, in
 	else
 #endif
 		file_d->ReadRec(N, rec);
-	//CRecPtr = new_record;
 
 	bool result = RunAddUpdate(file_d, 'd', rec, Back, nullptr, nullptr, new_record);
 
@@ -273,7 +262,6 @@ void WrUpdRec(FileD* file_d, AddD* add_d, FileD* fd, void* rp, void* new_record,
 {
 	//XString x;
 	//LinkD* ld;
-	CRecPtr = new_record; // TODO: pro jistotu, mozno asi odstranit
 #ifdef FandSQL
 	if (CFile->IsSQLFile) {
 		ld = add_d->LD; if (ld = nullptr) Strm1->UpdateXFld(nullptr, nullptr, add_d->Field)
@@ -353,88 +341,85 @@ bool Assign(FileD* file_d, AddD* add_d, void* record)
 	return true;
 }
 
-bool LockForAdd(FileD* FD, WORD Kind, bool Ta, LockMode& md)
+bool LockForAdd(FileD* file_d, WORD kind, bool Ta, LockMode& md)
 {
 	LockMode md1; /*0-ExLMode,1-lock,2-unlock*/
-	auto result = false;
-	CFile = FD;
-	for (AddD* AD : FD->Add) {
-		/* !!! with AD^ do!!! */
-		if (CFile != AD->File2) {
-			CFile = AD->File2;
-			switch (Kind) {
+	bool result = false;
+
+	for (AddD* AD : file_d->Add) {
+		if (file_d != AD->File2) {
+			switch (kind) {
 			case 0: {
-				if (Ta) CFile->FF->TaLMode = CFile->FF->LMode;
-				else CFile->FF->ExLMode = CFile->FF->LMode;
+				if (Ta) {
+					AD->File2->FF->TaLMode = AD->File2->FF->LMode;
+				}
+				else {
+					AD->File2->FF->ExLMode = AD->File2->FF->LMode;
+				}
 				break;
 			}
 			case 1: {
 				md = WrMode;
-				if (AD->Create > 0) md = CrMode;
-				if (!CFile->TryLockMode(md, md1, 2)) return result;
+				if (AD->Create > 0) {
+					md = CrMode;
+				}
+				if (!AD->File2->TryLockMode(md, md1, 2)) {
+					return result;
+				}
 				break;
 			}
 			case 2: {
 				if (Ta) {
-					CFile->OldLockMode(CFile->FF->TaLMode);
+					AD->File2->OldLockMode(AD->File2->FF->TaLMode);
 				}
 				else {
-					CFile->OldLockMode(CFile->FF->ExLMode);
+					AD->File2->OldLockMode(AD->File2->FF->ExLMode);
 				}
 				break;
 			}
 			}
-			if (!LockForAdd(CFile, Kind, Ta, md)) return result;
+			if (!LockForAdd(AD->File2, kind, Ta, md)) {
+				return result;
+			}
+		}
+		else {
+			continue;
 		}
 	}
 	result = true;
 	return result;
 }
 
-bool RunAddUpdate(char Kind, void* CRold, LinkD* notLD)
+bool RunAddUpdate(FileD* file_d, char kind, void* old_record, LinkD* not_link_d, void* record)
 {
 	LockMode md;
-	FileD* CF = CFile;
-	LockForAdd(CF, 0, false, md);
-	while (!LockForAdd(CF, 1, false, md)) {
-		SetPathAndVolume(CFile);
+	LockForAdd(file_d, 0, false, md);
+	while (!LockForAdd(file_d, 1, false, md)) {
+		SetPathAndVolume(file_d);
 		SetMsgPar(CPath, LockModeTxt[md]);
-		LockForAdd(CF, 2, false, md);
+		LockForAdd(file_d, 2, false, md);
 		int w = PushWrLLMsg(825, false);
 		KbdTimer(spec.NetDelay, 0);
 		if (w != 0) PopW(w);
 	}
-	CFile = CF;
-	bool result = RunAddUpdate(CF, Kind, CRold, false, nullptr, notLD, CRecPtr);
-	LockForAdd(CF, 2, false, md);
-	CFile = CF;
+	const bool result = RunAddUpdate(file_d, kind, old_record, false, nullptr, not_link_d, record);
+	LockForAdd(file_d, 2, false, md);
 	return result;
 }
 
 bool TestExitKey(WORD KeyCode, EdExitD* X)
 {
-	for (auto& key : X->Keys) {
+	for (const EdExKeyD& key : X->Keys) {
 		if (KeyCode == key.KeyCode) {
 			EdBreak = key.Break;
 			return true;
 		}
 	}
 	return false;
-
-	/*EdExKeyD* E = X->Keys;
-	while (E != nullptr) {
-		if (KeyCode == E->KeyCode) {
-			EdBreak = E->Break;
-			return true;
-		}
-		E = E->pChain;
-	}
-	return false;*/
 }
 
 void SetCompileAll()
 {
-	/* !!! with ChptTF^ do!!! */
 	ChptTF->CompileAll = true;
 	ChptTF->TimeStmp = Today() + CurrTime();
 	SetUpdHandle(ChptTF->Handle);

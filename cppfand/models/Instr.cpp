@@ -1,5 +1,10 @@
 #include "Instr.h"
 
+Instr::Instr(PInstrCode kind)
+{
+	this->Kind = kind;
+}
+
 Instr_menu::Instr_menu(PInstrCode Kind): Instr(Kind)
 {
 }

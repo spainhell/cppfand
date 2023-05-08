@@ -366,19 +366,19 @@ bool Link(FileD* file_d, AddD* add_d, int& n, char& kind2, void* record, BYTE** 
 bool TransAdd(FileD* file_d, AddD* AD, FileD* FD, void* RP, void* new_record, int N, char Kind2, bool Back);
 void WrUpdRec(FileD* file_d, AddD* add_d, FileD* fd, void* rp, void* new_record, int n);
 bool Assign(FileD* file_d, AddD* add_d, void* record);
-bool LockForAdd(FileD* FD, WORD Kind, bool Ta, LockMode& md);
+bool LockForAdd(FileD* file_d, WORD kind, bool Ta, LockMode& md);
 
-bool RunAddUpdate(char Kind, void* CRold, LinkD* notLD);
+bool RunAddUpdate(FileD* file_d, char kind, void* old_record, LinkD* not_link_d, void* record);
 
 /**
- * \brief 
- * \param file_d 
+ * \brief What does it do?
+ * \param file_d file
  * \param kind +, -, d
- * \param old_record 
+ * \param old_record old record
  * \param back backtracking
- * \param stop_add_d 
- * \param not_link_d 
- * \param record 
+ * \param stop_add_d stop AddD object
+ * \param not_link_d not LinkD
+ * \param record record
  * \return bool
  */
 bool RunAddUpdate(FileD* file_d, char kind, void* old_record, bool back, AddD* stop_add_d, LinkD* not_link_d, void* record);

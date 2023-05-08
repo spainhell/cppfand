@@ -472,8 +472,8 @@ void EditTxtProc(Instr_edittxt* PD)
 	}
 	std::string msg;
 	if (PD->ErrMsg != nullptr) msg = RunStdStr(CFile, PD->ErrMsg, CRecPtr);
-	EditTxtFile(lp, PD->EdTxtMode, msg, PD->ExD, i, 
-		RunInt(CFile, PD->TxtXY, CRecPtr), pv, a, 
+	EditTxtFile(lp, PD->EdTxtMode, msg, PD->ExD, i,
+		RunInt(CFile, PD->TxtXY, CRecPtr), pv, a,
 		RunShortStr(CFile, PD->Hd, CRecPtr), PD->WFlags, &MsgS);
 	ReleaseStore(&p);
 }
@@ -537,7 +537,7 @@ void DeleteRecProc(Instr_recs* PD)
 	}
 	CFile->ReadRec(n, CRecPtr);
 	if (PD->AdUpd && !CFile->DeletedFlag(CRecPtr)) {
-		LastExitCode = (!RunAddUpdate('-', nullptr, nullptr));
+		LastExitCode = (!RunAddUpdate(CFile, '-', nullptr, nullptr, CRecPtr));
 	}
 	if (CFile->FF->file_type == FileType::INDEX) {
 		if (!CFile->DeletedFlag(CRecPtr)) CFile->FF->DeleteXRec(n, true, CRecPtr);
@@ -569,10 +569,10 @@ void UpdRec(void* CR, int N, bool AdUpd)
 	CRecPtr = CR;
 	if (AdUpd) {
 		if (del) {
-			LastExitCode = !RunAddUpdate('+', nullptr, nullptr);
+			LastExitCode = !RunAddUpdate(CFile, '+', nullptr, nullptr, CRecPtr);
 		}
 		else {
-			LastExitCode = !RunAddUpdate('d', cr2, nullptr);
+			LastExitCode = !RunAddUpdate(CFile, 'd', cr2, nullptr, CRecPtr);
 		}
 	}
 	if (CFile->FF->file_type == FileType::INDEX) {
@@ -685,7 +685,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 				CFile->WriteRec(N, CRecPtr);
 			}
 			if (ad) {
-				LastExitCode = !RunAddUpdate('+', nullptr, nullptr);
+				LastExitCode = !RunAddUpdate(CFile, '+', nullptr, nullptr, CRecPtr);
 			}
 		}
 		else {
@@ -1135,7 +1135,7 @@ void RecallRecProc(Instr_recs* PD)
 		if (CFile->DeletedFlag(CRecPtr)) {
 			CFile->RecallRec(N, CRecPtr);
 			if (PD->AdUpd) {
-				LastExitCode = !RunAddUpdate('+', nullptr, nullptr);
+				LastExitCode = !RunAddUpdate(CFile, '+', nullptr, nullptr, CRecPtr);
 			}
 		}
 	}
@@ -1175,7 +1175,7 @@ void RunInstr(Instr* PD)
 	while (!ExitP && !BreakP && (PD != nullptr)) {
 		switch (PD->Kind) {
 		case _ifthenelseP: {
-			auto iPD = (Instr_loops*)PD;
+			Instr_loops* iPD = (Instr_loops*)PD;
 			if (RunBool(CFile, iPD->Bool, CRecPtr)) {
 				RunInstr(iPD->Instr1);
 			}
@@ -1185,7 +1185,7 @@ void RunInstr(Instr* PD)
 			break;
 		}
 		case _whiledo: {
-			auto iPD = (Instr_loops*)PD;
+			Instr_loops* iPD = (Instr_loops*)PD;
 			while (!ExitP && !BreakP && RunBool(CFile, iPD->Bool, CRecPtr)) {
 				RunInstr(iPD->Instr1);
 			}
@@ -1193,7 +1193,7 @@ void RunInstr(Instr* PD)
 			break;
 		}
 		case _repeatuntil: {
-			auto iPD = (Instr_loops*)PD;
+			Instr_loops* iPD = (Instr_loops*)PD;
 			do {
 				RunInstr(iPD->Instr1);
 			} while (!(ExitP || BreakP || RunBool(CFile, iPD->Bool, CRecPtr)));
@@ -1226,7 +1226,10 @@ void RunInstr(Instr* PD)
 			//GoExit();
 			break;
 		}
-		case _save: { SaveAndCloseAllFiles(); break; }
+		case _save: {
+			SaveAndCloseAllFiles();
+			break;
+		}
 		case _clrscr: {
 			TextAttr = ProcAttr;
 			ClrScr();
@@ -1488,8 +1491,8 @@ void RunInstr(Instr* PD)
 		}
 		case _setmouse: {
 			auto iPD = (Instr_setmouse*)PD;
-			SetMouse(RunInt(CFile, iPD->MouseX, CRecPtr), 
-				RunInt(CFile, iPD->MouseY, CRecPtr), 
+			SetMouse(RunInt(CFile, iPD->MouseX, CRecPtr),
+				RunInt(CFile, iPD->MouseY, CRecPtr),
 				RunBool(CFile, iPD->Show, CRecPtr));
 			break;
 		}
@@ -1519,14 +1522,14 @@ void RunInstr(Instr* PD)
 		case _portout: {
 			auto iPD = (Instr_portout*)PD;
 			PortOut(RunBool(CFile, iPD->IsWord, CRecPtr),
-				(WORD)(RunInt(CFile, iPD->Port, CRecPtr)), 
+				(WORD)(RunInt(CFile, iPD->Port, CRecPtr)),
 				(WORD)(RunInt(CFile, iPD->PortWhat, CRecPtr)));
 			break;
 		}
 		}
 		PD = PD->Chain;
+		}
 	}
-}
 
 void RunProcedure(Instr* PDRoot)
 {
