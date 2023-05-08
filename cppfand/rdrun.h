@@ -363,13 +363,13 @@ extern MergOpSt MergOpGroup;
 // *** IMPLEMENTATION ***
 
 void ResetLVBD();
-bool RunAddUpdte1(char Kind/*+,-,d*/, void* CRold, bool Back/*tracking*/, AddD* StopAD, LinkD* notLD);
+bool RunAddUpdte1(char kind/*+,-,d*/, void* old_record, bool back/*tracking*/, AddD* stop_add_d, LinkD* not_link_d);
 
 void CrIndRec(FileD* file_d, void* record);
 bool Link(FileD* file_d, AddD* add_d, int& n, char& kind2, void* record, BYTE** linkedRecord);
-bool TransAdd(AddD* AD, FileD* FD, void* RP, void* CRnew, int N, char Kind2, bool Back);
-void WrUpdRec(AddD* AD, FileD* FD, void* RP, void* CRnew, int N);
-bool Assign(AddD* AD);
+bool TransAdd(FileD* file_d, AddD* AD, FileD* FD, void* RP, void* new_record, int N, char Kind2, bool Back);
+void WrUpdRec(FileD* file_d, AddD* add_d, FileD* fd, void* rp, void* new_record, int n);
+bool Assign(FileD* file_d, AddD* add_d, void* record);
 bool LockForAdd(FileD* FD, WORD Kind, bool Ta, LockMode& md);
 bool RunAddUpdte(char Kind, void* CRold, LinkD* notLD);
 bool TestExitKey(WORD KeyCode, EdExitD* X);

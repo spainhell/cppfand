@@ -55,23 +55,27 @@ void ResetLVBD()
 	LVBD.FceName = "";
 }
 
-bool Add(AddD* AD, void* RP, double R, bool Back)
+bool Add(FileD* file_d, AddD* add_d, void* record, double value, bool back)
 {
-	auto result = true;
-	CRecPtr = RP;
-	if (Back) R = -R;
-	CFile->saveR(AD->Field, CFile->loadR(AD->Field, CRecPtr) + R, CRecPtr);
-	if (AD->Chk == nullptr) return result;
-	if (!Back && !RunBool(CFile, AD->Chk->Bool, CRecPtr))
-	{
-		SetMsgPar(RunShortStr(CFile, AD->Chk->TxtZ, CRecPtr));
+	bool result = true;
+
+	if (back) value = -value;
+
+	const double new_value = file_d->loadR(add_d->Field, record) + value;
+	file_d->saveR(add_d->Field, new_value, record);
+
+	if (add_d->Chk == nullptr) return result;
+
+	if (!back && !RunBool(file_d, add_d->Chk->Bool, record)) {
+		SetMsgPar(RunShortStr(file_d, add_d->Chk->TxtZ, record));
 		WrLLF10Msg(110);
 		result = false;
 	}
+
 	return result;
 }
 
-bool RunAddUpdte1(char Kind, void* CRold, bool Back, AddD* StopAD, LinkD* notLD)
+bool RunAddUpdte1(char kind, void* old_record, bool back, AddD* stop_add_d, LinkD* not_link_d)
 {
 	int n2, n2_old;
 	char kind2, kind2_old;
@@ -89,15 +93,15 @@ bool RunAddUpdte1(char Kind, void* CRold, bool Back, AddD* StopAD, LinkD* notLD)
 	AddD* ADback = nullptr;
 
 	for (AddD* add : CFile->Add) {
-		if (add == StopAD) {
+		if (add == stop_add_d) {
 			ReleaseStore(&p);
 			return result;
 		}
-		if ((notLD != nullptr) && (add->LD == notLD)) {
+		if ((not_link_d != nullptr) && (add->LD == not_link_d)) {
 			goto label1;
 		}
 		if (add->Assign) {
-			if (Assign(add)) {
+			if (Assign(CFile, add, CRecPtr)) {
 				goto label1;
 			}
 			else {
@@ -106,12 +110,12 @@ bool RunAddUpdte1(char Kind, void* CRold, bool Back, AddD* StopAD, LinkD* notLD)
 		}
 
 		r = RunReal(CFile, add->Frml, CRecPtr);
-		if (Kind == '-') {
+		if (kind == '-') {
 			r = -r;
 		}
 		r_old = 0;
-		if (Kind == 'd') {
-			CRecPtr = CRold;
+		if (kind == 'd') {
+			CRecPtr = old_record;
 			r_old = RunReal(CFile, add->Frml, CRecPtr);
 		}
 		ADback = add;
@@ -127,8 +131,8 @@ bool RunAddUpdte1(char Kind, void* CRold, bool Back, AddD* StopAD, LinkD* notLD)
 		}
 		if (r_old != 0.0) {
 			CFile = originalCFile;
-			CRecPtr = CRold;
-			if (!Link(originalCFile, add, n2_old, kind2_old, CRold, &cr2_old)) {
+			CRecPtr = old_record;
+			if (!Link(originalCFile, add, n2_old, kind2_old, old_record, &cr2_old)) {
 				goto fail;
 			}
 			//CR2old = (BYTE*)CRecPtr;
@@ -145,29 +149,29 @@ bool RunAddUpdte1(char Kind, void* CRold, bool Back, AddD* StopAD, LinkD* notLD)
 		}
 		CFile = cf2;
 		if (n2_old != 0) {
-			if (!Add(add, cr2_old, -r_old, Back)) {
+			if (!Add(CFile, add, cr2_old, -r_old, back)) {
 				goto fail;
 			}
 		}
 		if (n2 != 0) {
-			if (!Add(add, cr2, r, Back)) {
+			if (!Add(CFile, add, cr2, r, back)) {
 				goto fail;
 			}
 		}
-		if ((n2_old != 0) && !TransAdd(add, originalCFile, originalCRecPtr, cr2_old, n2_old, kind2_old, false)) {
+		if ((n2_old != 0) && !TransAdd(CFile, add, originalCFile, originalCRecPtr, cr2_old, n2_old, kind2_old, false)) {
 			goto fail;
 		}
-		if ((n2 != 0) && !TransAdd(add, originalCFile, originalCRecPtr, cr2, n2, kind2, false)) {
+		if ((n2 != 0) && !TransAdd(CFile, add, originalCFile, originalCRecPtr, cr2, n2, kind2, false)) {
 			if (n2_old != 0) {
-				b = TransAdd(add, originalCFile, originalCRecPtr, cr2_old, n2_old, kind2_old, true);
+				b = TransAdd(CFile, add, originalCFile, originalCRecPtr, cr2_old, n2_old, kind2_old, true);
 			}
 			goto fail;
 		}
 		if (n2_old != 0) {
-			WrUpdRec(add, originalCFile, originalCRecPtr, cr2_old, n2_old);
+			WrUpdRec(CFile, add, originalCFile, originalCRecPtr, cr2_old, n2_old);
 		}
 		if (n2 != 0) {
-			WrUpdRec(add, originalCFile, originalCRecPtr, cr2, n2);
+			WrUpdRec(CFile, add, originalCFile, originalCRecPtr, cr2, n2);
 		}
 	label1:
 		ReleaseStore(&p);
@@ -185,7 +189,7 @@ fail:
 	CRecPtr = originalCRecPtr;
 	result = false;
 	if (ADback != nullptr) {
-		b = RunAddUpdte1(Kind, CRold, true, ADback, notLD);  /* backtracking */
+		b = RunAddUpdte1(kind, old_record, true, ADback, not_link_d);  /* backtracking */
 	}
 	return result;
 }
@@ -241,19 +245,23 @@ bool Link(FileD* file_d, AddD* add_d, int& n, char& kind2, void* record, BYTE** 
 	return result;
 }
 
-bool TransAdd(AddD* AD, FileD* FD, void* RP, void* CRnew, int N, char Kind2, bool Back)
+bool TransAdd(FileD* file_d, AddD* AD, FileD* FD, void* RP, void* new_record, int N, char Kind2, bool Back)
 {
-	void* CRold; XString x; LinkD* ld;
-	if (CFile->Add.empty() /*== nullptr*/) { return true; }
-	if (Kind2 == '+')
-	{
-		CRecPtr = CRnew; return RunAddUpdte1('+', nullptr, Back, nullptr, nullptr);
+	XString x;
+	LinkD* ld;
+	if (file_d->Add.empty()) {
+		return true;
 	}
-	CRold = CFile->GetRecSpace();
-	CRecPtr = CRold;
+	if (Kind2 == '+') {
+		CRecPtr = new_record;
+		return RunAddUpdte1('+', nullptr, Back, nullptr, nullptr);
+	}
+	BYTE* rec = file_d->GetRecSpace();
+	CRecPtr = rec;
 #ifdef FandSQL
+	// TODO: cele pripadne predelat, po refactoringu uz to nesedi
 	if (CFile->IsSQLFile) {
-		ld = AD->LD; if (ld = nullptr) Strm1->SelectXRec(nullptr, nullptr, _equ, false)
+		ld = AD->LD; if (ld == nullptr) Strm1->SelectXRec(nullptr, nullptr, _equ, false)
 		else {
 			CFile = FD; CRecPtr = RP; x.PackKF(ld->Args);
 			CFile = ld->ToFD; CRecPtr = CRold; Strm1->SelectXRec(ld->ToKey, @x, _equ, false)
@@ -261,78 +269,93 @@ bool TransAdd(AddD* AD, FileD* FD, void* RP, void* CRnew, int N, char Kind2, boo
 	}
 	else
 #endif
-		CFile->ReadRec(N, CRecPtr);
-	CRecPtr = CRnew;
-	auto result = RunAddUpdte1('d', CRold, Back, nullptr, nullptr);
-	ReleaseStore(&CRold);
+		file_d->ReadRec(N, rec);
+	CRecPtr = new_record;
+	bool result = RunAddUpdte1('d', rec, Back, nullptr, nullptr);
+
+	delete[] rec; rec = nullptr;
 	return result;
 }
 
-void WrUpdRec(AddD* AD, FileD* FD, void* RP, void* CRnew, int N)
+void WrUpdRec(FileD* file_d, AddD* add_d, FileD* fd, void* rp, void* new_record, int n)
 {
-	XString x; LinkD* ld;
-	CRecPtr = CRnew;
+	//XString x;
+	//LinkD* ld;
+	CRecPtr = new_record; // TODO: pro jistotu, mozno asi odstranit
 #ifdef FandSQL
 	if (CFile->IsSQLFile) {
-		ld = AD->LD; if (ld = nullptr) Strm1->UpdateXFld(nullptr, nullptr, AD->Field)
+		ld = add_d->LD; if (ld = nullptr) Strm1->UpdateXFld(nullptr, nullptr, add_d->Field)
 		else {
-			CFile = FD; CRecPtr = RP; x.PackKF(ld->Args);
-			CFile = ld->ToFD; CRecPtr = CRnew; Strm1->UpdateXFld(ld->ToKey, @x, AD->Field)
+			CFile = fd; CRecPtr = rp; x.PackKF(ld->Args);
+			CFile = ld->ToFD; CRecPtr = new_record; Strm1->UpdateXFld(ld->ToKey, @x, add_d->Field)
 		}
 	}
 	else
 #endif
-		CFile->WriteRec(N, CRecPtr);
+		file_d->WriteRec(n, new_record);
 }
 
-bool Assign(AddD* AD)
+bool Assign(FileD* file_d, AddD* add_d, void* record)
 {
-	double R; std::string S;
-	pstring ss; bool B;
-	int Pos, N2; char Kind2;
-	if (!RunBool(CFile, AD->Bool, CRecPtr)) return true;
-	FieldDescr* F = AD->Field;
-	FrmlElem* Z = AD->Frml;
+	double r = 0.0;
+	std::string s;
+	bool b = false;
+	int n2;
+	char kind2;
 
-	switch (F->frml_type) {
+	if (!RunBool(file_d, add_d->Bool, record)) {
+		return true;
+	}
+	FieldDescr* f = add_d->Field;
+	FrmlElem* z = add_d->Frml;
+
+	switch (f->frml_type) {
 	case 'R': {
-		R = RunReal(CFile, Z, CRecPtr);
+		r = RunReal(file_d, z, record);
 		break;
 	}
 	case 'S': {
-		if (F->field_type == FieldType::TEXT) S = RunStdStr(CFile, Z, CRecPtr);
-		else ss = RunShortStr(CFile, Z, CRecPtr);
+		if (f->field_type == FieldType::TEXT) {
+			s = RunStdStr(file_d, z, record);
+		}
+		else {
+			s = RunShortStr(file_d, z, record);
+		}
 		break;
 	}
 	default: {
-		B = RunBool(CFile, Z, CRecPtr);
+		b = RunBool(file_d, z, record);
 		break;
 	}
 	}
 	
 	BYTE* linkedRecord = nullptr;
 
-	if (!Link(CFile, AD, N2, Kind2, CRecPtr, &linkedRecord)) {
+	if (!Link(file_d, add_d, n2, kind2, record, &linkedRecord)) {
 		delete[] linkedRecord; linkedRecord = nullptr;
 		return false;
 	}
 
-	switch (F->frml_type) {
+	switch (f->frml_type) {
 	case 'R': {
-		CFile->saveR(F, R, linkedRecord);
+		file_d->saveR(f, r, linkedRecord);
 		break;
 	}
 	case 'S': {
-		if (F->field_type == FieldType::TEXT) CFile->saveS(F, S, linkedRecord);
-		else CFile->saveS(F, ss, linkedRecord);
+		if (f->field_type == FieldType::TEXT) {
+			file_d->saveS(f, s, linkedRecord);
+		}
+		else {
+			file_d->saveS(f, s, linkedRecord);
+		}
 		break;
 	}
 	default: {
-		CFile->saveB(F, B, linkedRecord);
+		file_d->saveB(f, b, linkedRecord);
 		break;
 	}
 	}
-	CFile->WriteRec(N2, linkedRecord);
+	file_d->WriteRec(n2, linkedRecord);
 
 	delete[] linkedRecord; linkedRecord = nullptr;
 	return true;
