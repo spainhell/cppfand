@@ -6,7 +6,6 @@ void OpenXWorkH();
 void OpenTWorkH();
 
 void SaveAndCloseAllFiles();
-void ClosePassiveFD();
 void CloseFANDFiles(bool FromDML);
 void OpenFANDFiles(bool FromDML);
 
