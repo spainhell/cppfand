@@ -1717,7 +1717,7 @@ void UpdMemberRef(void* POld, void* PNew)
 				if (sql) x.PackKF(kf1);
 #endif
 				if (PNew == nullptr) {
-					RunAddUpdte1('-', nullptr, false, nullptr, LD);
+					RunAddUpdate(CFile, '-', nullptr, false, nullptr, LD, CRecPtr);
 					UpdMemberRef(p, nullptr);
 #ifdef FandSQL
 					if (sql) Strm1->DeleteXRec(k, @x, false);
@@ -1736,7 +1736,7 @@ void UpdMemberRef(void* POld, void* PNew)
 						//Arg = Arg->pChain;
 						kf = kf->pChain;
 					}
-					RunAddUpdte1('d', p, false, nullptr, LD);
+					RunAddUpdate(CFile, 'd', p, false, nullptr, LD, CRecPtr);
 					UpdMemberRef(p, p2);
 #ifdef FandSQL
 					if (sql) Strm1->UpdateXRec(k, @x, false) else
@@ -1935,7 +1935,7 @@ bool CleanUp()
 				return false;
 			}
 		}
-		if (!RunAddUpdte1('-', nullptr, false, nullptr, nullptr)) return false;
+		if (!RunAddUpdate(CFile, '-', nullptr, false, nullptr, nullptr, CRecPtr)) return false;
 		UpdMemberRef(CRecPtr, nullptr);
 	}
 	if (!ChptDel()) return false;
@@ -2571,13 +2571,13 @@ bool WriteCRec(bool MayDispl, bool& Displ)
 	if (HasIndex) {
 		CFile->FF->TestXFExist();
 		if (IsNewRec) {
-			if (AddSwitch && !RunAddUpdte1('+', nullptr, false, nullptr, nullptr)) goto label1;
+			if (AddSwitch && !RunAddUpdate(CFile, '+', nullptr, false, nullptr, nullptr, CRecPtr)) goto label1;
 			CNew = UpdateIndexes();
 			CFile->CreateRec(CFile->FF->NRecs + 1, CRecPtr);
 		}
 		else {
 			if (AddSwitch) {
-				if (!RunAddUpdte1('d', E->OldRecPtr, false, nullptr, nullptr)) goto label1;
+				if (!RunAddUpdate(CFile, 'd', E->OldRecPtr, false, nullptr, nullptr, CRecPtr)) goto label1;
 				UpdMemberRef(E->OldRecPtr, CRecPtr);
 			}
 			CNew = UpdateIndexes();
@@ -2595,7 +2595,7 @@ bool WriteCRec(bool MayDispl, bool& Displ)
 			if (N == CNRecs()) N = CFile->FF->NRecs + 1;
 			else if (Subset) N = WK->NrToRecNr(CFile, N);
 		}
-		if (AddSwitch && !RunAddUpdte1('+', nullptr, false, nullptr, nullptr)) goto label1;
+		if (AddSwitch && !RunAddUpdate(CFile, '+', nullptr, false, nullptr, nullptr, CRecPtr)) goto label1;
 		if (ChptWriteCRec() != 0) goto label1;
 		CFile->CreateRec(N, CRecPtr);
 		if (Subset) {
@@ -2605,7 +2605,7 @@ bool WriteCRec(bool MayDispl, bool& Displ)
 	}
 	else {
 		if (AddSwitch) {
-			if (!RunAddUpdte1('d', E->OldRecPtr, false, nullptr, nullptr)) goto label1;
+			if (!RunAddUpdate(CFile, 'd', E->OldRecPtr, false, nullptr, nullptr, CRecPtr)) goto label1;
 			UpdMemberRef(E->OldRecPtr, CRecPtr);
 		}
 		WORD chptWrite = ChptWriteCRec();

@@ -6,7 +6,6 @@
 #include "FileD.h"
 #include "GlobalVariables.h"
 #include "legacy.h"
-#include "oaccess.h"
 #include "obaseww.h"
 #include "runfrml.h"
 #include "models/Instr.h"
@@ -75,122 +74,114 @@ bool Add(FileD* file_d, AddD* add_d, void* record, double value, bool back)
 	return result;
 }
 
-bool RunAddUpdte1(char kind, void* old_record, bool back, AddD* stop_add_d, LinkD* not_link_d)
+bool RunAddUpdate(FileD* file_d, char kind, void* old_record, bool back, AddD* stop_add_d, LinkD* not_link_d, void* record)
 {
-	int n2, n2_old;
-	char kind2, kind2_old;
-	FileD* cf2 = nullptr;
 	BYTE* cr2 = nullptr;
 	BYTE* cr2_old = nullptr;
-	void* p = nullptr;
-	bool b;
 	bool result = true;
-	double r;
-	double r_old;
-	FileD* originalCFile = CFile;
-	void* originalCRecPtr = CRecPtr;
-	MarkStore(p);
-	AddD* ADback = nullptr;
+	AddD* add_d_back = nullptr;
 
-	for (AddD* add : CFile->Add) {
-		if (add == stop_add_d) {
-			ReleaseStore(&p);
-			return result;
-		}
-		if ((not_link_d != nullptr) && (add->LD == not_link_d)) {
-			goto label1;
-		}
-		if (add->Assign) {
-			if (Assign(CFile, add, CRecPtr)) {
-				goto label1;
+	try {
+		char kind2_old = 0;
+		char kind2 = 0;
+		for (AddD* add : file_d->Add) {
+			if (add == stop_add_d) {
+				// TODO: tady se nema CFile a CRecPtr vracet zpet, ale asi ma zustat !!!
+				//ReleaseStore(&p);
+				return result;
 			}
-			else {
-				goto fail;
+			if ((not_link_d != nullptr) && (add->LD == not_link_d)) {
+				delete[] cr2; cr2 = nullptr;
+				delete[] cr2_old; cr2_old = nullptr;
+				continue;
 			}
-		}
-
-		r = RunReal(CFile, add->Frml, CRecPtr);
-		if (kind == '-') {
-			r = -r;
-		}
-		r_old = 0;
-		if (kind == 'd') {
-			CRecPtr = old_record;
-			r_old = RunReal(CFile, add->Frml, CRecPtr);
-		}
-		ADback = add;
-		cf2 = add->File2;
-		n2 = 0;
-		n2_old = 0;
-		if (r != 0.0) {
-			CRecPtr = originalCRecPtr;
-			if (!Link(CFile, add, n2, kind2, originalCRecPtr, &cr2)) {
-				goto fail;
-			}
-			//CR2 = (BYTE*)CRecPtr;
-		}
-		if (r_old != 0.0) {
-			CFile = originalCFile;
-			CRecPtr = old_record;
-			if (!Link(originalCFile, add, n2_old, kind2_old, old_record, &cr2_old)) {
-				goto fail;
-			}
-			//CR2old = (BYTE*)CRecPtr;
-			if (n2_old == n2) {
-				r = r - r_old;
-				if (r == 0.0) {
-					goto label1;
+			if (add->Assign) {
+				if (Assign(CFile, add, record)) {
+					delete[] cr2; cr2 = nullptr;
+					delete[] cr2_old; cr2_old = nullptr;
+					continue;
 				}
-				n2_old = 0;
+				else {
+					throw std::exception("fail");
+				}
 			}
-		}
-		if ((n2 == 0) && (n2_old == 0)) {
-			goto label1;
-		}
-		CFile = cf2;
-		if (n2_old != 0) {
-			if (!Add(CFile, add, cr2_old, -r_old, back)) {
-				goto fail;
+
+			double r = RunReal(CFile, add->Frml, record);
+			if (kind == '-') {
+				r = -r;
 			}
-		}
-		if (n2 != 0) {
-			if (!Add(CFile, add, cr2, r, back)) {
-				goto fail;
+			double r_old = 0;
+			if (kind == 'd') {
+				r_old = RunReal(CFile, add->Frml, old_record);
 			}
-		}
-		if ((n2_old != 0) && !TransAdd(CFile, add, originalCFile, originalCRecPtr, cr2_old, n2_old, kind2_old, false)) {
-			goto fail;
-		}
-		if ((n2 != 0) && !TransAdd(CFile, add, originalCFile, originalCRecPtr, cr2, n2, kind2, false)) {
+			add_d_back = add;
+
+			int n2 = 0;
+			int n2_old = 0;
+			if (r != 0.0) {
+				if (!Link(CFile, add, n2, kind2, record, &cr2)) {
+					throw std::exception("fail");
+				}
+			}
+			if (r_old != 0.0) {
+				if (!Link(file_d, add, n2_old, kind2_old, old_record, &cr2_old)) {
+					throw std::exception("fail");
+				}
+				if (n2_old == n2) {
+					r = r - r_old;
+					if (r == 0.0) {
+						delete[] cr2; cr2 = nullptr;
+						delete[] cr2_old; cr2_old = nullptr;
+						continue;
+					}
+					n2_old = 0;
+				}
+			}
+			if ((n2 == 0) && (n2_old == 0)) {
+				delete[] cr2; cr2 = nullptr;
+				delete[] cr2_old; cr2_old = nullptr;
+				continue;
+			}
 			if (n2_old != 0) {
-				b = TransAdd(CFile, add, originalCFile, originalCRecPtr, cr2_old, n2_old, kind2_old, true);
+				if (!Add(add->File2, add, cr2_old, -r_old, back)) {
+					throw std::exception("fail");
+				}
 			}
-			goto fail;
+			if (n2 != 0) {
+				if (!Add(add->File2, add, cr2, r, back)) {
+					throw std::exception("fail");
+				}
+			}
+			if ((n2_old != 0) && !TransAdd(add->File2, add, file_d, record, cr2_old, n2_old, kind2_old, false)) {
+				throw std::exception("fail");
+			}
+			if ((n2 != 0) && !TransAdd(add->File2, add, file_d, record, cr2, n2, kind2, false)) {
+				if (n2_old != 0) {
+					bool b = TransAdd(add->File2, add, file_d, record, cr2_old, n2_old, kind2_old, true);
+				}
+				throw std::exception("fail");
+			}
+			if (n2_old != 0) {
+				WrUpdRec(add->File2, add, file_d, record, cr2_old, n2_old);
+			}
+			if (n2 != 0) {
+				WrUpdRec(add->File2, add, file_d, record, cr2, n2);
+			}
+
+			delete[] cr2; cr2 = nullptr;
+			delete[] cr2_old; cr2_old = nullptr;
 		}
-		if (n2_old != 0) {
-			WrUpdRec(CFile, add, originalCFile, originalCRecPtr, cr2_old, n2_old);
-		}
-		if (n2 != 0) {
-			WrUpdRec(CFile, add, originalCFile, originalCRecPtr, cr2, n2);
-		}
-	label1:
-		ReleaseStore(&p);
+	}
+
+	catch (std::exception&) {
 		delete[] cr2; cr2 = nullptr;
 		delete[] cr2_old; cr2_old = nullptr;
-		CFile = originalCFile;
-		CRecPtr = originalCRecPtr;
+		result = false;
+		if (add_d_back != nullptr) {
+			bool b = RunAddUpdate(file_d, kind, old_record, true, add_d_back, not_link_d, record);  /* backtracking */
+		}
 	}
-	return result;
-fail:
-	ReleaseStore(&p);
-	delete[] cr2; cr2 = nullptr;
-	delete[] cr2_old; cr2_old = nullptr;
-	CFile = originalCFile;
-	CRecPtr = originalCRecPtr;
-	result = false;
-	if (ADback != nullptr) {
-		b = RunAddUpdte1(kind, old_record, true, ADback, not_link_d);  /* backtracking */
-	}
+
 	return result;
 }
 
@@ -253,11 +244,11 @@ bool TransAdd(FileD* file_d, AddD* AD, FileD* FD, void* RP, void* new_record, in
 		return true;
 	}
 	if (Kind2 == '+') {
-		CRecPtr = new_record;
-		return RunAddUpdte1('+', nullptr, Back, nullptr, nullptr);
+		//CRecPtr = new_record;
+		return RunAddUpdate(file_d, '+', nullptr, Back, nullptr, nullptr, new_record);
 	}
 	BYTE* rec = file_d->GetRecSpace();
-	CRecPtr = rec;
+	//CRecPtr = rec;
 #ifdef FandSQL
 	// TODO: cele pripadne predelat, po refactoringu uz to nesedi
 	if (CFile->IsSQLFile) {
@@ -270,8 +261,9 @@ bool TransAdd(FileD* file_d, AddD* AD, FileD* FD, void* RP, void* new_record, in
 	else
 #endif
 		file_d->ReadRec(N, rec);
-	CRecPtr = new_record;
-	bool result = RunAddUpdte1('d', rec, Back, nullptr, nullptr);
+	//CRecPtr = new_record;
+
+	bool result = RunAddUpdate(file_d, 'd', rec, Back, nullptr, nullptr, new_record);
 
 	delete[] rec; rec = nullptr;
 	return result;
@@ -399,7 +391,7 @@ bool LockForAdd(FileD* FD, WORD Kind, bool Ta, LockMode& md)
 	return result;
 }
 
-bool RunAddUpdte(char Kind, void* CRold, LinkD* notLD)
+bool RunAddUpdate(char Kind, void* CRold, LinkD* notLD)
 {
 	LockMode md;
 	FileD* CF = CFile;
@@ -413,7 +405,7 @@ bool RunAddUpdte(char Kind, void* CRold, LinkD* notLD)
 		if (w != 0) PopW(w);
 	}
 	CFile = CF;
-	bool result = RunAddUpdte1(Kind, CRold, false, nullptr, notLD);
+	bool result = RunAddUpdate(CF, Kind, CRold, false, nullptr, notLD, CRecPtr);
 	LockForAdd(CF, 2, false, md);
 	CFile = CF;
 	return result;

@@ -537,7 +537,7 @@ void DeleteRecProc(Instr_recs* PD)
 	}
 	CFile->ReadRec(n, CRecPtr);
 	if (PD->AdUpd && !CFile->DeletedFlag(CRecPtr)) {
-		LastExitCode = (!RunAddUpdte('-', nullptr, nullptr));
+		LastExitCode = (!RunAddUpdate('-', nullptr, nullptr));
 	}
 	if (CFile->FF->file_type == FileType::INDEX) {
 		if (!CFile->DeletedFlag(CRecPtr)) CFile->FF->DeleteXRec(n, true, CRecPtr);
@@ -569,10 +569,10 @@ void UpdRec(void* CR, int N, bool AdUpd)
 	CRecPtr = CR;
 	if (AdUpd) {
 		if (del) {
-			LastExitCode = !RunAddUpdte('+', nullptr, nullptr);
+			LastExitCode = !RunAddUpdate('+', nullptr, nullptr);
 		}
 		else {
-			LastExitCode = !RunAddUpdte('d', cr2, nullptr);
+			LastExitCode = !RunAddUpdate('d', cr2, nullptr);
 		}
 	}
 	if (CFile->FF->file_type == FileType::INDEX) {
@@ -685,7 +685,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 				CFile->WriteRec(N, CRecPtr);
 			}
 			if (ad) {
-				LastExitCode = !RunAddUpdte('+', nullptr, nullptr);
+				LastExitCode = !RunAddUpdate('+', nullptr, nullptr);
 			}
 		}
 		else {
@@ -1135,7 +1135,7 @@ void RecallRecProc(Instr_recs* PD)
 		if (CFile->DeletedFlag(CRecPtr)) {
 			CFile->RecallRec(N, CRecPtr);
 			if (PD->AdUpd) {
-				LastExitCode = !RunAddUpdte('+', nullptr, nullptr);
+				LastExitCode = !RunAddUpdate('+', nullptr, nullptr);
 			}
 		}
 	}

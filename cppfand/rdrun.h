@@ -360,17 +360,27 @@ extern std::string CalcTxt;
 struct MergOpSt { char Op; double Group; };
 extern MergOpSt MergOpGroup;
 
-// *** IMPLEMENTATION ***
-
 void ResetLVBD();
-bool RunAddUpdte1(char kind/*+,-,d*/, void* old_record, bool back/*tracking*/, AddD* stop_add_d, LinkD* not_link_d);
-
 void CrIndRec(FileD* file_d, void* record);
 bool Link(FileD* file_d, AddD* add_d, int& n, char& kind2, void* record, BYTE** linkedRecord);
 bool TransAdd(FileD* file_d, AddD* AD, FileD* FD, void* RP, void* new_record, int N, char Kind2, bool Back);
 void WrUpdRec(FileD* file_d, AddD* add_d, FileD* fd, void* rp, void* new_record, int n);
 bool Assign(FileD* file_d, AddD* add_d, void* record);
 bool LockForAdd(FileD* FD, WORD Kind, bool Ta, LockMode& md);
-bool RunAddUpdte(char Kind, void* CRold, LinkD* notLD);
+
+bool RunAddUpdate(char Kind, void* CRold, LinkD* notLD);
+
+/**
+ * \brief 
+ * \param file_d 
+ * \param kind +, -, d
+ * \param old_record 
+ * \param back backtracking
+ * \param stop_add_d 
+ * \param not_link_d 
+ * \param record 
+ * \return bool
+ */
+bool RunAddUpdate(FileD* file_d, char kind, void* old_record, bool back, AddD* stop_add_d, LinkD* not_link_d, void* record);
 bool TestExitKey(WORD KeyCode, EdExitD* X);
 void SetCompileAll();
