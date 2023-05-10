@@ -15,4 +15,4 @@ std::string SetPathMountVolumeSetNet(FileD* file_d, FileUseMode UM);
 std::string SetPathAndVolume(FileD* file_d, char pathDelim = '\\');
 std::string SetPathForH(FILE* handle);
 
-void SetTempCExt(FileD* file_d, char typ, bool isNet);
+std::string SetTempCExt(FileD* file_d, char typ, bool isNet);

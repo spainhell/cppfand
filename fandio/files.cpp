@@ -412,7 +412,7 @@ std::string SetPathForH(FILE* handle)
 	return CPath;
 }
 
-void SetTempCExt(FileD* file_d, char typ, bool isNet)
+std::string SetTempCExt(FileD* file_d, char typ, bool isNet)
 {
 	char Nr;
 	if (typ == 'T') {
@@ -437,4 +437,5 @@ void SetTempCExt(FileD* file_d, char typ, bool isNet)
 	else {
 		CPath = CDir + CName + CExt;
 	}
+	return CPath;
 }

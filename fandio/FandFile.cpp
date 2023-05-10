@@ -1140,7 +1140,7 @@ void FandFile::SubstDuplF(FileD* TempFD, bool DelTF)
 	FileD* PrimFD = _parent;
 	std::string orig_path = path;
 	path = _extToT(path);
-	std::string pt = path;
+	std::string path_T = path;
 
 	CloseClearH(&PrimFD->FF->Handle);
 	MyDeleteFile(orig_path);
@@ -1154,8 +1154,7 @@ void FandFile::SubstDuplF(FileD* TempFD, bool DelTF)
 	PrimFD->FF->XF = xf2;
 	PrimFD->FF->UMode = um;
 	CloseClearH(&PrimFD->FF->Handle);
-	SetTempCExt(_parent, '0', false);
-	pstring ptmp = path;
+	std::string ptmp = SetTempCExt(_parent, '0', false);
 	RenameFile56(ptmp, orig_path, true);
 	path = orig_path;
 	PrimFD->FF->Handle = OpenH(path, _isOldFile, PrimFD->FF->UMode);
@@ -1163,15 +1162,15 @@ void FandFile::SubstDuplF(FileD* TempFD, bool DelTF)
 
 	if ((MD != nullptr) && DelTF) {
 		CloseClearH(&MD->Handle);
-		MyDeleteFile(pt);
-		TestDelErr(pt);
+		MyDeleteFile(path_T);
+		TestDelErr(path_T);
 		*MD = *PrimFD->FF->TF;
 		PrimFD->FF->TF = MD;
 		CloseClearH(&MD->Handle);
 		path = ptmp;
 		SetTempCExt(_parent, 'T', false);
-		RenameFile56(path, pt, true);
-		path = pt;
+		RenameFile56(path, path_T, true);
+		path = path_T;
 		MD->Handle = OpenH(path, _isOldFile, PrimFD->FF->UMode);
 		SetUpdHandle(MD->Handle);
 	}
