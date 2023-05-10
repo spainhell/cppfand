@@ -441,10 +441,10 @@ FileD* FileD::OpenDuplicateF(bool createTextFile)
 	bool net = IsNetCVol();
 	FileD* newFile = new FileD(*this);
 
-	SetTempCExt(this, '0', net);
+	std::string path = SetTempCExt(this, '0', net);
 	CVol = "";
-	newFile->FullPath = CPath;
-	newFile->FF->Handle = OpenH(CPath, _isOverwriteFile, Exclusive);
+	newFile->FullPath = path;
+	newFile->FF->Handle = OpenH(path, _isOverwriteFile, Exclusive);
 	TestCFileError(newFile);
 	newFile->FF->NRecs = 0;
 	newFile->IRec = 0;
@@ -467,8 +467,8 @@ FileD* FileD::OpenDuplicateF(bool createTextFile)
 	if (createTextFile && (newFile->FF->TF != nullptr)) {
 		newFile->FF->TF = new FandTFile(newFile->FF);
 		*newFile->FF->TF = *FF->TF;
-		SetTempCExt(this, 'T', net);
-		newFile->FF->TF->Handle = OpenH(CPath, _isOverwriteFile, Exclusive);
+		std::string path_t = SetTempCExt(this, 'T', net);
+		newFile->FF->TF->Handle = OpenH(path_t, _isOverwriteFile, Exclusive);
 		newFile->FF->TF->TestErr();
 		newFile->FF->TF->CompileAll = true;
 		newFile->FF->TF->SetEmpty();

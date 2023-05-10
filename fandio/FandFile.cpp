@@ -1109,6 +1109,7 @@ void FandFile::SortAndSubst(KeyFldD* SK)
 	Scan->Close();
 	RunMsgOff();
 
+	delete FD2; FD2 = nullptr;
 	delete[] record; record = nullptr;
 }
 
@@ -1131,50 +1132,60 @@ void FandFile::SubstDuplF(FileD* TempFD, bool DelTF)
 		RunError(result);
 	}
 
-	std::string path = SetPathAndVolume(_parent);
+	std::string orig_path = SetPathAndVolume(_parent);
+	std::string orig_path_T = _extToT(orig_path);
+
 	if (IsNetCVol()) {
 		CopyDuplF(TempFD, DelTF);
 		return;
 	}
-	SaveCache(0, Handle);
-	FileD* PrimFD = _parent;
-	std::string orig_path = path;
-	path = _extToT(path);
-	std::string path_T = path;
 
-	CloseClearH(&PrimFD->FF->Handle);
+	// close and delete this FandFile physical file
+	SaveCache(0, Handle);
+	CloseClearH(&Handle);
 	MyDeleteFile(orig_path);
 	TestDelErr(orig_path);
-	FileD* FD = PrimFD->pChain;
-	FandTFile* MD = PrimFD->FF->TF;
-	FandXFile* xf2 = PrimFD->FF->XF;
-	FileUseMode um = PrimFD->FF->UMode;
-	*PrimFD = *TempFD;
-	PrimFD->pChain = FD;
-	PrimFD->FF->XF = xf2;
-	PrimFD->FF->UMode = um;
-	CloseClearH(&PrimFD->FF->Handle);
-	std::string ptmp = SetTempCExt(_parent, '0', false);
-	RenameFile56(ptmp, orig_path, true);
-	path = orig_path;
-	PrimFD->FF->Handle = OpenH(path, _isOldFile, PrimFD->FF->UMode);
-	SetUpdHandle(PrimFD->FF->Handle);
 
-	if ((MD != nullptr) && DelTF) {
-		CloseClearH(&MD->Handle);
-		MyDeleteFile(path_T);
-		TestDelErr(path_T);
-		*MD = *PrimFD->FF->TF;
-		PrimFD->FF->TF = MD;
-		CloseClearH(&MD->Handle);
-		path = ptmp;
-		SetTempCExt(_parent, 'T', false);
-		RenameFile56(path, path_T, true);
-		path = path_T;
-		MD->Handle = OpenH(path, _isOldFile, PrimFD->FF->UMode);
-		SetUpdHandle(MD->Handle);
+	// copy data from TempFD
+	RecLen = TempFD->FF->RecLen;
+	file_type = TempFD->FF->file_type;
+	FirstRecPos = TempFD->FF->FirstRecPos;
+	Drive = TempFD->FF->Drive;
+	
+	// rename temp file to regular
+	std::string temp_path = SetTempCExt(_parent, '0', false);
+	SaveCache(0, TempFD->FF->Handle);
+	CloseClearH(&TempFD->FF->Handle);
+	RenameFile56(temp_path, orig_path, true);
+	Handle = OpenH(orig_path, _isOldFile, UMode);
+	_parent->FullPath = orig_path;
+	SetUpdHandle(Handle);
+
+	//// copy Index File
+	//delete XF; XF = nullptr;
+	//if (TempFD->FF->XF != nullptr) {
+	//	XF = new FandXFile(*TempFD->FF->XF, this);
+	//}
+
+	//// copy Text File
+	//delete TF; TF = nullptr;
+	//if (TempFD->FF->TF != nullptr) {
+	//	TF = new FandTFile(*TempFD->FF->TF, this);
+	//}
+
+	if ((TempFD->FF->TF != nullptr) && DelTF) {
+		CloseClearH(&TF->Handle);
+		MyDeleteFile(orig_path_T);
+		TestDelErr(orig_path_T);
+		//*parent_tf = *ref_to_parent->FF->TF;
+		//ref_to_parent->FF->TF = parent_tf;
+		//CloseClearH(&parent_tf->Handle);
+		std::string temp_path_t = SetTempCExt(_parent, 'T', false);
+		RenameFile56(temp_path_t, orig_path_T, true);
+		TF->Handle = OpenH(orig_path_T, _isOldFile, UMode);
+		SetUpdHandle(TF->Handle);
+		//if (orig.TF != nullptr) TF = new FandTFile(*orig.TF, this);
 	}
-	PrimFD->FF->TF = MD;
 }
 
 void FandFile::CopyDuplF(FileD* TempFD, bool DelTF)
@@ -1219,6 +1230,7 @@ void FandFile::IndexFileProc(bool Compress)
 			GoExit();
 		}
 		SubstDuplF(FD2, false);
+		delete FD2; FD2 = nullptr;
 	}
 	XF->NoCreate = false;
 	TestXFExist();
