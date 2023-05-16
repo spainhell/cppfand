@@ -1179,7 +1179,7 @@ void FandFile::SubstDuplF(FileD* TempFD, bool DelTF)
 		TestDelErr(orig_path_T);
 		//*parent_tf = *ref_to_parent->FF->TF;
 		//ref_to_parent->FF->TF = parent_tf;
-		//CloseClearH(&parent_tf->Handle);
+		CloseClearH(&TempFD->FF->TF->Handle);
 		std::string temp_path_t = SetTempCExt(_parent, 'T', false);
 		RenameFile56(temp_path_t, orig_path_T, true);
 		TF->Handle = OpenH(orig_path_T, _isOldFile, UMode);

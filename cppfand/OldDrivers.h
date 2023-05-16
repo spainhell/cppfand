@@ -85,10 +85,6 @@ extern void* OldIntr08;
 	end;
  EventQLast:record end;*/
 
-
-
-
-
 void ClearKbdBuf();
 bool KbdPressed(); // { buffer + Bios }
 bool ESCPressed(); // { other Bios input lost }
