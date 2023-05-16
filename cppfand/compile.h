@@ -26,7 +26,7 @@ struct stSaveState
 
 // funkce dle COMPILE.PAS
 
-void Error(short N); // r1
+std::string Error(short N); // r1
 void SetInpStr(std::string& s); //r31
 void SetInpStdStr(std::string& s, bool ShowErr);
 void SetInpLongStr(LongStr* S, bool ShowErr); // r37

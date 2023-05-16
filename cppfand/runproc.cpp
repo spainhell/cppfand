@@ -835,7 +835,7 @@ label1:
 				CFile->DelTFlds(CRecPtr);
 				CFile->CopyRecWithT(cr, lr);
 			}
-		//if (LVi != nullptr) *(double*)(LocVarAd(LVi)) = Scan->RecNr;
+		//if (LVi != nullptr) *(double*)(LocVarAd(LVi)) = Scan->RecNr; // metoda LocVarAd byla odstranena z access.cpp
 		if (LVi != nullptr) {
 			LVi->R = xScan->RecNr;
 		}

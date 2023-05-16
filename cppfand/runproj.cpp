@@ -1404,15 +1404,16 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 	catch (std::exception& e) {
 		log->log(loglevel::EXCEPTION, "CompileRdb() exception: ", e.what());
 		result = false;
+		ReleaseFilesAndLinksAfterChapter();
+		PrevCompInp.clear();
+		//ReleaseBoth(p, p2);
+		E = OldE; EditDRoot = E;
+		CFile = Chpt;
+		if (!Run) CRecPtr = E->NewRecPtr;
+		if (!IsCompileErr) { InpRdbPos.IRec = I; }
 	}
+
 	CompileMsgOff(Buf, w);
-	//ReleaseFilesAndLinksAfterChapter();
-	//PrevCompInp.clear();
-	//ReleaseBoth(p, p2);
-	//E = OldE; EditDRoot = E;
-	//CFile = Chpt;
-	//if (!Run) CRecPtr = E->NewRecPtr;
-	//if (!IsCompileErr) { InpRdbPos.IRec = I; }
 	return result;
 }
 

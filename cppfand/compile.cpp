@@ -30,7 +30,7 @@ BYTE CurrChar; // { Compile }
 BYTE ForwChar, ExpChar, Lexem;
 pstring LexWord;
 
-void Error(short N)
+std::string Error(short N)
 {
 	ReadMessage(1000 + N);
 	std::string ErrMsg = MsgLine;
@@ -88,6 +88,7 @@ void Error(short N)
 	IsCompileErr = true;
 	MsgLine = ErrMsg;
 	GoExit();
+	return ErrMsg;
 }
 
 void SetInpStr(std::string& s)

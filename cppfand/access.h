@@ -31,8 +31,6 @@ enum class ForAllFilesOperation {
 	close, save, save_l_mode, set_old_lock_mode, close_passive_fd, clear_xf_update_lock, find_fd_for_i
 };
 
-void* LocVarAd(LocVar* LV);
-
 void ForAllFDs(ForAllFilesOperation op, FileD** file_d = nullptr, WORD i = 0);
 
 void ResetCompilePars(); // r953 - posledni fce

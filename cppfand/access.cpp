@@ -49,12 +49,9 @@ void CloseGoExit(FandFile* fand_file)
 
 BYTE ByteMask[_MAX_INT_DIG];
 
-
 //const BYTE FixS = 8;
 //BYTE Fix[FixS];
 //BYTE RealMask[DblS + 1];
-
-
 
 void TestCPathError()
 {
@@ -206,11 +203,6 @@ LocVar* LocVarBlkD::FindByName(std::string Name)
 	for (auto& i : vLocVar) {
 		if (EquUpCase(Name, i->Name)) return i;
 	}
-	return nullptr;
-}
-
-void* LocVarAd(LocVar* LV)
-{
 	return nullptr;
 }
 

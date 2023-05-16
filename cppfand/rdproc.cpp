@@ -2829,7 +2829,11 @@ Instr* ReadProcBody()
 	AcceptKeyWord("BEGIN");
 	Instr* result = RdBeginEnd();
 	Accept(';');
-	if (Lexem != 0x1A) Error(40);
+	if (Lexem != 0x1A) {
+		std::string error40 = Error(40);
+		std::string err_msg = "ReadProcBody exception: " + error40;
+		throw std::exception(err_msg.c_str());
+	}
 	return result;
 }
 
