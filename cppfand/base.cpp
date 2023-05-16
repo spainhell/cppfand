@@ -21,6 +21,7 @@
 #include "../datafiles/datafiles.h"
 #include "../Common/exprcmp.h"
 #include "../Common/compare.h"
+#include "../Common/codePages.h"
 #include "../fandio/cache.h"
 #include "../fandio/files.h"
 #include "../Logging/Logging.h"
@@ -185,7 +186,7 @@ std::string ReadMessage(int N)
 		MsgPar[0] = std::to_string(N);
 	}
 
-	ConvKamenToCurr(s);
+	ConvKamenToCurr(s, !fonts.NoDiakrSupported);
 
 	std::string message;
 	size_t param_index = 0;

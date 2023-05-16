@@ -10,6 +10,7 @@
 #include "runproj.h"
 #include "../Editor/OldEditor.h"
 #include "../Editor/EditorHelp.h"
+#include "../Common/codePages.h"
 #include "../Common/textfunc.h"
 
 
@@ -171,7 +172,7 @@ bool TMenu::FindChar(char c1)
 				char c2;
 				if (k != std::string::npos) c2 = s[k + 1];
 				else c2 = s[0];
-				if (toupper(NoDiakr(c2)) == toupper(NoDiakr(c1))) {
+				if (toupper(NoDiakr(c2, fonts.VFont)) == toupper(NoDiakr(c1, fonts.VFont))) {
 					iTxt = j;
 					WrText(i);
 					return true;
@@ -986,7 +987,7 @@ label1:
 			result = CFile->loadS(TxtF, CRecPtr);
 			if (!ByName || (result.length() > 0) || (i == CFile->FF->NRecs)) {
 				if (CFile == HelpFD) {
-					ConvKamenToCurr(result);
+					ConvKamenToCurr(result, !fonts.NoDiakrSupported);
 				}
 				IRec = i;
 				goto label3;

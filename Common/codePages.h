@@ -1,4 +1,10 @@
 #pragma once
+#include <string>
+
+typedef unsigned short WORD;
+typedef unsigned char BYTE;
+
+enum class TVideoFont { foAscii = 0, foLatin2 = 1, foKamen = 2 };
 
 extern char CharOrdTab[256];
 extern char UpcCharTab[256];
@@ -69,3 +75,11 @@ inline unsigned char toggleLatin2[] = {
 	153, 'b', 'O', 'N', 'n', 228, 151, 152, 'R', 222, 'r', 'U', 'y', 'Y',   0,   0,  // 224 - 239
 	  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 'u', 232, 234, ' ',   0,  // 240 - 255
 };
+
+
+char NoDiakr(char C, TVideoFont fromFont);
+char CurrToKamen(char C);
+void ConvToNoDiakr(void* Buf, WORD L, TVideoFont FromFont);
+void ConvKamenToCurr(std::string& text, bool diacritic);
+void ConvKamenLatin(void* Buf, WORD L, bool ToLatin);
+char ToggleCS(char C);

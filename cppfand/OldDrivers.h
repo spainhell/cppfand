@@ -86,12 +86,9 @@ extern void* OldIntr08;
  EventQLast:record end;*/
 
 
-char CurrToKamen(char C);
-void ConvKamenToCurr(std::string& text);
-void ConvKamenLatin(void* Buf, WORD L, bool ToLatin);
-char ToggleCS(char C);
-char NoDiakr(char C);
-void ConvToNoDiakr(void* Buf, WORD L, TVideoFont FromFont);
+
+
+
 void ClearKbdBuf();
 bool KbdPressed(); // { buffer + Bios }
 bool ESCPressed(); // { other Bios input lost }

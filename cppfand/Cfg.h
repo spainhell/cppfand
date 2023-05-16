@@ -1,10 +1,11 @@
 #pragma once
 #include "constants.h"
+#include "../Common/codePages.h"
 #include <string>
 
 enum class enVideoCard { viCga = 0, viHercules = 1, viEga = 2, viVga = 3 };
 enum TKbdConv { OrigKbd, CsKbd, CaKbd, SlKbd, DtKbd };
-enum class TVideoFont { foAscii = 0, foLatin2 = 1, foKamen = 2 };
+
 
 class Spec
 {

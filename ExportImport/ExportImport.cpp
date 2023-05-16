@@ -18,6 +18,7 @@
 #include "../MergeReport/runmerg.h"
 #include "../Common/textfunc.h"
 #include "../Common/compare.h"
+#include "../Common/codePages.h"
 #include "../fandio/files.h"
 
 
