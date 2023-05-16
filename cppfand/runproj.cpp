@@ -1473,142 +1473,148 @@ bool EditExecRdb(std::string Nm, std::string proc_name, Instr_proc* proc_call, w
 #ifdef FandSQL
 	if (top) SQLConnect();
 #endif
-	//NewExit(Ovr(), er);
-	//goto label9;
-	CreateOpenChpt(Nm, true);
-	CompileFD = true;
+	try {
+		CreateOpenChpt(Nm, true);
+		CompileFD = true;
 #ifndef FandRunV
-	if (!IsTestRun || (ChptTF->LicenseNr != 0) ||
-		!top && CRdb->Encrypted) {
+		if (!IsTestRun || (ChptTF->LicenseNr != 0) ||
+			!top && CRdb->Encrypted) {
 #endif
-		MarkStore(p);
-		EditRdbMode = false;
-		bool hasToCompileRdb = CompileRdb(false, true, false);
-		if (hasToCompileRdb) {
-			bool procedureFound = FindChpt('P', proc_name, true, &RP);
-			if (procedureFound) {
-				//NewExit(Ovr(), er2);
-				//goto label0;
-				IsCompileErr = false;
-				if (proc_call != nullptr) {
-					proc_call->PPos = RP;
-					CallProcedure(proc_call);
+			MarkStore(p);
+			EditRdbMode = false;
+			bool hasToCompileRdb = CompileRdb(false, true, false);
+			if (hasToCompileRdb) {
+				bool procedureFound = FindChpt('P', proc_name, true, &RP);
+				if (procedureFound) {
+					try {
+						IsCompileErr = false;
+						if (proc_call != nullptr) {
+							proc_call->PPos = RP;
+							CallProcedure(proc_call);
+						}
+						else RunMainProc(RP, top);
+						result = true;
+						goto label9;
+					}
+					catch (std::exception& e) {
+						if (IsCompileErr) WrErrMsg630(Nm);
+						goto label9;
+					}
 				}
-				else RunMainProc(RP, top);
-				result = true; goto label9;
-			label0:
-				if (IsCompileErr) WrErrMsg630(Nm);
-				goto label9;
+				else {
+					SetMsgPar(Nm, proc_name);
+					WrLLF10Msg(632);
+				}
+			}
+			else if (IsCompileErr) WrErrMsg630(Nm);
+#ifndef FandRunV
+			if ((ChptTF->LicenseNr != 0) || CRdb->Encrypted
+				|| (Chpt->FF->UMode == RdOnly)) goto label9;
+			ReleaseFilesAndLinksAfterChapter();
+			ReleaseStore(&p);
+		}
+		else if (!top) {
+			UserW = PushW(1, 1, TxtCols, TxtRows);
+		}
+		EditRdbMode = true;
+		if (CRdb->Encrypted) {
+			// ask for the project password
+			passw = ww->PassWord(false);
+		}
+		IsTestRun = true;
+		EO = new EditOpt();
+		EO->UserSelFlds = true; //EO = GetEditOpt();
+		EO->Flds = AllFldsList(Chpt, true);
+		//EO->Flds = EO->Flds->pChain->pChain->pChain;
+		EO->Flds.erase(EO->Flds.begin(), EO->Flds.begin() + 3);
+
+		NewEditD(Chpt, EO);
+		E->MustCheck = true; /*ChptTyp*/
+		if (CRdb->Encrypted) {
+			if (Coding::HasPassword(Chpt, 1, passw)) {
+				CRdb->Encrypted = false;
+				Coding::SetPassword(Chpt, 1, "");
+				CodingCRdb(false);
 			}
 			else {
-				SetMsgPar(Nm, proc_name);
-				WrLLF10Msg(632);
+				WrLLF10Msg(629);
+				goto label9;
 			}
 		}
-		else if (IsCompileErr) WrErrMsg630(Nm);
-#ifndef FandRunV
-		if ((ChptTF->LicenseNr != 0) || CRdb->Encrypted
-			|| (Chpt->FF->UMode == RdOnly)) goto label9;
-		ReleaseFilesAndLinksAfterChapter();
-		ReleaseStore(&p);
-	}
-	else if (!top) {
-		UserW = PushW(1, 1, TxtCols, TxtRows);
-	}
-	EditRdbMode = true;
-	if (CRdb->Encrypted) {
-		// ask for the project password
-		passw = ww->PassWord(false);
-	}
-	IsTestRun = true;
-	EO = new EditOpt();
-	EO->UserSelFlds = true; //EO = GetEditOpt();
-	EO->Flds = AllFldsList(Chpt, true);
-	//EO->Flds = EO->Flds->pChain->pChain->pChain;
-	EO->Flds.erase(EO->Flds.begin(), EO->Flds.begin() + 3);
-
-	NewEditD(Chpt, EO);
-	E->MustCheck = true; /*ChptTyp*/
-	if (CRdb->Encrypted) {
-		if (Coding::HasPassword(Chpt, 1, passw)) {
-			CRdb->Encrypted = false;
-			Coding::SetPassword(Chpt, 1, "");
-			CodingCRdb(false);
+		if (!OpenEditWw()) goto label8;
+		result = true;
+		Chpt->FF->WasRdOnly = false;
+		if (!top && (Chpt->FF->NRecs > 0))
+			if (CompileRdb(true, false, false)) {
+				if (FindChpt('P', proc_name, true, &RP)) {
+					GotoRecFld(RP.IRec, CFld);
+				}
+			}
+			else {
+				goto label4;
+			}
+		else if (ChptTF->IRec <= Chpt->FF->NRecs) {
+			GotoRecFld(ChptTF->IRec, CFld);
 		}
-		else {
-			WrLLF10Msg(629);
-			goto label9;
+	label1:
+		RunEdit(nullptr, Brk);
+	label2:
+		// TODO: je to potreba?
+		cc = Event.Pressed.KeyCombination();
+		SaveAndCloseAllFiles();
+		if ((cc == __CTRL_F10) || ChptTF->CompileAll || CompileFD) {
+			ReleaseFilesAndLinksAfterChapter();
+			SetSelectFalse();
+			E->Bool = nullptr;
+			ReleaseStore(&E->AfterE);
 		}
-	}
-	if (!OpenEditWw()) goto label8;
-	result = true;
-	Chpt->FF->WasRdOnly = false;
-	if (!top && (Chpt->FF->NRecs > 0))
-		if (CompileRdb(true, false, false)) {
-			if (FindChpt('P', proc_name, true, &RP)) {
-				GotoRecFld(RP.IRec, CFld);
+		if (cc == __CTRL_F10) {
+			SetUpdHandle(ChptTF->Handle);
+			if (!CompileRdb(true, false, true)) goto label3;
+			if (!PromptCodeRdb()) goto label6;
+			Chpt->FF->WasRdOnly = true;
+			goto label8;
+		}
+		if (Brk != 0) {
+			if (!CompileRdb(Brk == 2, false, false)) {
+			label3:
+				if (IsCompileErr) goto label4;
+				if (Brk == 1) DisplEditWw();
+				GotoRecFld(InpRdbPos.IRec, E->FirstFld->pChain);
+				goto label1;
+			}
+			if (cc == __ALT_F2) {
+				EditHelpOrCat(cc, 0, "");
+				goto label41;
+			}
+			if (!CompRunChptRec(cc)) {
+			label4:
+				GotoErrPos(Brk);
+				goto label5;
+			}
+		label41:
+			if (Brk == 1) {
+				EditFreeTxt(ChptTxt, "", true, Brk);
+			label5:
+				if (Brk != 0) goto label2;
+				else goto label1;
+			}
+			else {
+			label6:
+				DisplEditWw();
+				goto label1;
 			}
 		}
-		else {
-			goto label4;
-		}
-	else if (ChptTF->IRec <= Chpt->FF->NRecs) {
-		GotoRecFld(ChptTF->IRec, CFld);
-	}
-label1:
-	RunEdit(nullptr, Brk);
-label2:
-	// TODO: je to potreba?
-	cc = Event.Pressed.KeyCombination();
-	SaveAndCloseAllFiles();
-	if ((cc == __CTRL_F10) || ChptTF->CompileAll || CompileFD) {
-		ReleaseFilesAndLinksAfterChapter();
-		SetSelectFalse();
-		E->Bool = nullptr;
-		ReleaseStore(&E->AfterE);
-	}
-	if (cc == __CTRL_F10) {
+		ChptTF->IRec = CRec();
 		SetUpdHandle(ChptTF->Handle);
-		if (!CompileRdb(true, false, true)) goto label3;
-		if (!PromptCodeRdb()) goto label6;
-		Chpt->FF->WasRdOnly = true;
-		goto label8;
-	}
-	if (Brk != 0) {
-		if (!CompileRdb(Brk == 2, false, false)) {
-		label3:
-			if (IsCompileErr) goto label4;
-			if (Brk == 1) DisplEditWw();
-			GotoRecFld(InpRdbPos.IRec, E->FirstFld->pChain);
-			goto label1;
-		}
-		if (cc == __ALT_F2) {
-			EditHelpOrCat(cc, 0, "");
-			goto label41;
-		}
-		if (!CompRunChptRec(cc)) {
-		label4:
-			GotoErrPos(Brk);
-			goto label5;
-		}
-	label41:
-		if (Brk == 1) {
-			EditFreeTxt(ChptTxt, "", true, Brk);
-		label5:
-			if (Brk != 0) goto label2;
-			else goto label1;
-		}
-		else {
-		label6:
-			DisplEditWw();
-			goto label1;
-		}
-	}
-	ChptTF->IRec = CRec();
-	SetUpdHandle(ChptTF->Handle);
-label8:
-	PopEdit();
+	label8:
+		PopEdit();
 #endif
+	}
+	catch (std::exception& e)
+	{
+		
+	}
 
 label9:
 	//RestoreExit(er);

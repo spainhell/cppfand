@@ -2158,7 +2158,9 @@ LongStr* RunS(FileD* file_d, FrmlElem* Z, void* record)
 		break;
 	}
 	case _keybuf: {
-		while (KeyPressed()) AddToKbdBuf(ReadKey());
+		while (KeyPressed()) {
+			AddToKbdBuf(ReadKey());
+		}
 		s = keyboard.GetKeyBufAsString(); // KbdBuffer;
 		break;
 	}

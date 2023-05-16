@@ -85,8 +85,7 @@ extern void* OldIntr08;
 	end;
  EventQLast:record end;*/
 
-void Assign(WORD XX, WORD YY);
-void Assign(pstring XX, pstring YY);
+
 char CurrToKamen(char C);
 void ConvKamenToCurr(std::string& text);
 void ConvKamenLatin(void* Buf, WORD L, bool ToLatin);
@@ -102,10 +101,6 @@ void Sound(WORD N);
 void NoSound();
 void ClrScr();
 void ClrEol();
-void TextBackGround(BYTE Color);
-void TextColor(BYTE Color);
-//void InsLine();
-//void DelLine();
 void Beep();
 void LockBeep();
 void ScrBeep();
@@ -118,8 +113,6 @@ extern void* OldBreakIntr;
 extern void* OldKbdIntr;
 
 void GetMonoColor();
-void EgaWriteArr(WORD X, WORD Y, WORD L, void* From);
-void EgaScroll(WORD X, WORD Y, WORD SizeX, WORD SizeY, bool Up);
 void CrsDraw();
 void HideMausIn();
 void Scroll(WORD X, WORD Y, WORD SizeX, WORD SizeY, bool Up);

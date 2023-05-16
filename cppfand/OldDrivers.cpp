@@ -77,20 +77,11 @@ void BreakCheck()
 	}
 }
 
-unsigned char CurrToKamen(unsigned char C)
-{
-	return C;
-}
-
 unsigned char NoDiakr(unsigned char C)
 {
 	if (C < 0x80 || fonts.VFont == TVideoFont::foAscii) return C;
 	if (fonts.VFont == TVideoFont::foLatin2) return TabLtN[C];
 	return TabKtN[C];
-}
-
-void ConvToNoDiakr(unsigned char* Buf, WORD L, TVideoFont FromFont)
-{
 }
 
 void AddToKbdBuf(WORD KeyCode)
@@ -105,11 +96,6 @@ bool KeyPressed()
 WORD ReadKey()
 {
 	return ReadKbd();
-}
-
-WORD ConvHCU()
-{
-	return 0;
 }
 
 void GetKeyEvent()
@@ -228,15 +214,15 @@ void GetMouseKeyEvent()
 
 void TestGlobalKey()
 {
-	WORD i;
-	bool InMenu6 = false; bool InMenu8 = false;
+	bool InMenu6 = false;
+	bool InMenu8 = false;
 	if (Event.What != evKeyDown) return;
 	if (Event.Pressed.isChar()) return;
 	switch (Event.Pressed.KeyCombination()) {
 	case __ALT_F8: {
 		if (!InMenu8) {
 			ClrEvent(); InMenu8 = true;
-			i = Menu(45, spec.KbdTyp + 1);
+			WORD i = Menu(45, spec.KbdTyp + 1);
 			if (i != 0) spec.KbdTyp = TKbdConv(i - 1);
 			InMenu8 = false;
 		}
@@ -250,7 +236,10 @@ void TestGlobalKey()
 		break;
 	}
 	case __ESC: {
-		if (LLKeyFlags != 0) { LLKeyFlags = 0; ClrEvent(); }
+		if (LLKeyFlags != 0) {
+			LLKeyFlags = 0;
+			ClrEvent();
+		}
 		break;
 	}
 	default: break;
@@ -334,14 +323,6 @@ void TPoint::Assign(WORD XX, WORD YY)
 	// mov ax, YY; mov es : [di] .TPoint.Y, ax end;
 }
 
-void Assign(WORD XX, WORD YY)
-{
-}
-
-void Assign(pstring XX, pstring YY)
-{
-}
-
 char CurrToKamen(char C)
 {
 	return C;
@@ -405,7 +386,7 @@ char NoDiakr(char C)
 
 void ConvToNoDiakr(void* Buf, WORD L, TVideoFont FromFont)
 {
-	auto c = static_cast<BYTE*>(Buf);
+	BYTE* c = static_cast<BYTE*>(Buf);
 	if (FromFont == TVideoFont::foAscii) return;
 	if (FromFont == TVideoFont::foLatin2) {
 		for (size_t i = 0; i < L; i++) {
@@ -432,8 +413,7 @@ bool KbdPressed()
 	if (KeyPressed()) return true;
 	Event.What = evNothing;
 	GetMouseKeyEvent();
-	if (Event.What == evKeyDown)
-	{
+	if (Event.What == evKeyDown) {
 		AddToKbdBuf(Event.Pressed.KeyCombination());
 		ClrEvent();
 		return true;
@@ -450,7 +430,8 @@ bool ESCPressed()
 		GetMouseKeyEvent();
 		if (Event.What == evKeyDown) {
 			if (Event.Pressed.KeyCombination() == __ESC) {
-				ClrEvent(); return true;
+				ClrEvent();
+				return true;
 			}
 		}
 		ClrEvent();
@@ -472,35 +453,16 @@ void NoSound()
 
 void ClrScr()
 {
-	//screen.ScrClr(WindMin.X - 1, WindMin.Y - 1, WindMax.X - WindMin.X + 1, WindMax.Y - WindMin.Y + 1, ' ', TextAttr);
 	screen.ScrClr(WindMin.X, WindMin.Y, WindMax.X - WindMin.X + 1, WindMax.Y - WindMin.Y + 1, ' ', TextAttr);
 	screen.GotoXY(WindMin.X, WindMin.Y, absolute);
 }
 
 void ClrEol()
 {
-	auto X = screen.WhereXabs();
-	auto Y = screen.WhereYabs();
+	short X = screen.WhereXabs();
+	short Y = screen.WhereYabs();
 	screen.ScrClr(X, Y, WindMax.X - X + 1, 1, ' ', TextAttr);
 }
-
-void TextBackGround(BYTE Color)
-{
-}
-
-void TextColor(BYTE Color)
-{
-}
-
-//void InsLine()
-//{
-//	Scroll(WindMin.X, Crs.Y, WindMax.X - WindMin.X + 1, WindMax.Y - Crs.Y + 1, false);
-//}
-
-//void DelLine()
-//{
-//	Scroll(WindMin.X, Crs.Y, WindMax.X - WindMin.X + 1, WindMax.Y - Crs.Y + 1, true);
-//}
 
 void Beep()
 {
@@ -528,24 +490,24 @@ WORD WaitEvent(WORD Delta)
 
 	Flgs = KbdFlgs;
 label0:
-	pos = 0; t = GetTickCount64();
+	pos = 0;
+	t = GetTickCount64();
 label1:
 	if (Event.What == 0) { GetMouseKeyEvent(); }
 	if (Event.What == 0) { GetKeyEvent(); }
 	if (Event.What != 0) { result = 0; goto label2; }
 	if (Flgs != KbdFlgs) { result = 1; goto label2; }
 	if ((Delta != 0) && (GetTickCount64() > t + Delta)) { result = 2; goto label2; }
-	if (pos != 0)
-	{
+	if (pos != 0) {
 		if (GetTickCount64() > t1 + MoveDelay) {
 			screen.ScrWrStr(x, y, "       ", 7);
-			x = Random(TxtCols - 8); y = Random(TxtRows - 1);
+			x = Random(TxtCols - 8);
+			y = Random(TxtRows - 1);
 			screen.ScrWrStr(x, y, "PC FAND", 7);
 			t1 = GetTickCount64();
 		}
 	}
-	else
-	{
+	else {
 		if ((spec.ScreenDelay > 0) && (GetTickCount() > t + spec.ScreenDelay)) {
 			l = TxtCols * TxtRows * 2 + 50;
 			ce = Crs.Enabled;
@@ -557,14 +519,12 @@ label1:
 	}
 	goto label1;
 label2:
-	if (pos != 0)
-	{
+	if (pos != 0) {
 		srand(l);
 		if (vis) ShowMouse();
 		PopW(pos);
 		if (ce) screen.CrsShow();
-		if (Event.What != 0)
-		{
+		if (Event.What != 0) {
 			Event.What = evNothing;
 			goto label0;
 		}
@@ -581,7 +541,10 @@ label2:
 
 void GetEvent()
 {
-	do { WaitEvent(0); } while (Event.What == 0);
+	do {
+		WaitEvent(0);
+	}
+	while (Event.What == 0);
 }
 
 void ClrEvent()
@@ -592,7 +555,6 @@ void ClrEvent()
 void AssignCrt(pstring* filepath)
 {
 	TextFile* F = (TextFile*)filepath;
-	/* !!! with F do!!! */
 	F->Mode = "fmClosed";
 	F->bufsize = 128; //BufPtr = buffer;
 	F->openfunc = OpenCrt;
@@ -603,14 +565,6 @@ void GetMonoColor()
 {
 }
 
-void EgaWriteArr(WORD X, WORD Y, WORD L, void* From)
-{
-}
-
-void EgaScroll(WORD X, WORD Y, WORD SizeX, WORD SizeY, bool Up)
-{
-}
-
 void CrsDraw()
 {
 }
@@ -618,7 +572,6 @@ void CrsDraw()
 void HideMausIn()
 {
 }
-
 
 void Scroll(WORD X, WORD Y, WORD SizeX, WORD SizeY, bool Up)
 {
@@ -650,7 +603,6 @@ short DummyCrt(TextFile* F)
 
 short OpenCrt(TextFile* F)
 {
-	/* !!! with F do!!! */
 	F->inoutfunc = WrOutput;
 	F->flushfunc = WrOutput;
 	F->closefunc = DummyCrt;
