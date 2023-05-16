@@ -1,0 +1,17 @@
+---
+name: CI
+on:
+  pull_request_target:
+    types:
+      - closed
+jobs:
+  repo-init:
+    if: github.event.pull_request.merged == true
+    runs-on: self-hosted
+    steps:
+      - name: Checkout PR repo state
+        uses: actions/checkout@v3
+      - name: Run GIT preparation commands
+        run: C:\SCRIPTS\0-clean.cmd
+      - name: Run another GIT commands
+        run: C:\SCRIPTS\1-git.cmd
