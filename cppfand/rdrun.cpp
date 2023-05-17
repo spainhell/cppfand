@@ -44,7 +44,6 @@ void ResetLVBD()
 	LVBD.pChain = nullptr;
 	LVBD.vLocVar.clear();
 	LVBD.NParam = 0;
-	LVBD.Size = 2 * 4;
 	LVBD.FceName = "";
 }
 

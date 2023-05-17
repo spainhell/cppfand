@@ -2729,7 +2729,7 @@ Instr* RdWith()
 		}
 		if (Lexem == ',') {
 			RdLex();
-			ld->Chain = new LockD(); // GetZStore(sizeof(LockD));
+			ld->Chain = new LockD();
 			ld = ld->Chain;
 			goto label2;
 		}
@@ -2741,21 +2741,24 @@ Instr* RdWith()
 		}
 	}
 	else if (IsKeyWord("GRAPHICS")) {
-		P = new Instr_withshared(_withgraphics); // GetPInstr(_withgraphics, 4);
+		P = new Instr_withshared(_withgraphics);
 		AcceptKeyWord("DO");
 		((Instr_withshared*)P)->WDoInstr = RdPInstr();
 	}
-	else Error(131);
+	else {
+		Error(131);
+	}
 	return P;
 }
 
 Instr_assign* RdUserFuncAssign()
 {
-	Instr_assign* pd = nullptr;
 	LocVar* lv = nullptr;
-	if (!FindLocVar(&LVBD, &lv)) Error(34);
+	if (!FindLocVar(&LVBD, &lv)) {
+		Error(34);
+	}
 	RdLex();
-	pd = new Instr_assign(_asgnloc); // GetPInstr(_asgnloc, 9);
+	Instr_assign* pd = new Instr_assign(_asgnloc);
 	pd->AssLV = lv;
 	RdAssignFrml(lv->FTyp, pd->Add, &pd->Frml);
 	return pd;
@@ -2889,9 +2892,9 @@ void ReadDeclChpt()
 			LVBD.vLocVar.push_back(lv);
 			lv->Name = fc->Name;
 			lv->IsRetValue = true;
-			lv->FTyp = typ; lv->Op = _getlocvar; lv->BPOfs = LVBD.Size;
+			lv->FTyp = typ;
+			lv->Op = _getlocvar;
 			fc->FTyp = typ;
-			LVBD.Size += n;
 			Accept(';');
 			// nacte promenne
 			if (IsKeyWord("VAR")) RdLocDcl(&LVBD, false, false, 'D');

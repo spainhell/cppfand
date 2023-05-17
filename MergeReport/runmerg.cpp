@@ -14,72 +14,6 @@
 
 int NRecsAll;
 
-void RunMerge()
-{
-	short I = 0, MinIi = 0, res = 0, NEof = 0;      /*RunMerge - body*/
-	bool EmptyGroup = false, b = false;
-	//PushProcStk();
-	OpenInpM();
-	OpenOutp();
-	MergOpGroup.Group = 1.0;
-	RunMsgOn('M', NRecsAll);
-	NRecsAll = 0;
-	for (I = 1; I <= MaxIi; I++) ReadInpFileM(IDA[I]);
-label1:
-	MinIi = 0; NEof = 0;
-	for (I = 1; I <= MaxIi; I++) /* !!! with IDA[I]^ do!!! */ {
-		CFile = IDA[I]->Scan->FD;
-		IDA[I]->IRec = IDA[I]->Scan->IRec;
-		ZeroSumFlds(IDA[I]->Sum);
-		if (IDA[I]->Scan->eof) NEof++;
-		if (OldMFlds.empty()) {
-			IDA[I]->Exist = !IDA[I]->Scan->eof;
-			MinIi = 1;
-		}
-		else {
-			CRecPtr = IDA[I]->ForwRecPtr;
-			IDA[I]->Exist = false;
-			IDA[I]->Count = 0.0;
-			if (!IDA[I]->Scan->eof) {
-				if (MinIi == 0) goto label2;
-				res = CompMFlds(IDA[I]->MFld);
-				if (res != _gt) {
-					if (res == _lt)
-					{
-					label2:
-						SetOldMFlds(IDA[I]->MFld);
-						MinIi = I;
-					}
-					IDA[I]->Exist = true;
-				}
-			}
-		}
-	}
-	for (I = 1; I <= MinIi - 1; I++) {
-		IDA[I]->Exist = false;
-	}
-	if (NEof == MaxIi) {
-		b = SaveCache(0, CFile->FF->Handle);
-		RunMsgOff();
-		if (!b) GoExit();
-		CloseInpOutp();
-		//PopProcStk();
-		return;
-	}
-	EmptyGroup = false;
-	if (Join) {
-		JoinProc(1, EmptyGroup);
-	}
-	else {
-		MergeProcM();
-	}
-	if (!EmptyGroup) {
-		WriteOutp(OutpRDs);
-		MergOpGroup.Group = MergOpGroup.Group + 1.0;
-	}
-	goto label1;
-}
-
 WORD CompMFlds(KeyFldD* M)
 {
 	XString x;
@@ -113,31 +47,12 @@ void SetOldMFlds(KeyFldD* M)
 		}
 		}
 		//C = (ConstListEl*)C->pChain;
-		M = (KeyFldD*)M->pChain;
-	}
-}
-
-void SetMFlds(KeyFldD* M)
-{
-	FieldDescr* F = nullptr;
-	std::vector<ConstListEl>::iterator it0 = OldMFlds.begin();
-	while (M != nullptr)
-	{
-		F = M->FldD;
-		switch (F->frml_type) {
-		case 'S': { CFile->saveS(F, it0->S, CRecPtr); break; }
-		case 'R': { CFile->saveR(F, it0->R, CRecPtr); break; }
-		default: { CFile->saveB(F, it0->B, CRecPtr); break; }
-		}
-		M = (KeyFldD*)M->pChain;
-
-		if (it0 != OldMFlds.end()) it0++;
+		M = M->pChain;
 	}
 }
 
 void ReadInpFileM(InpD* ID)
 {
-	/* !!! with ID^ do!!! */
 	CRecPtr = ID->ForwRecPtr;
 label1:
 	ID->Scan->GetRec(CRecPtr);
@@ -311,12 +226,28 @@ void MoveForwToRecM(InpD* ID)
 	}
 }
 
+void SetMFlds(KeyFldD* M)
+{
+	FieldDescr* F = nullptr;
+	std::vector<ConstListEl>::iterator it0 = OldMFlds.begin();
+	while (M != nullptr) {
+		F = M->FldD;
+		switch (F->frml_type) {
+		case 'S': { CFile->saveS(F, it0->S, CRecPtr); break; }
+		case 'R': { CFile->saveR(F, it0->R, CRecPtr); break; }
+		default: { CFile->saveB(F, it0->B, CRecPtr); break; }
+		}
+		M = M->pChain;
+
+		if (it0 != OldMFlds.end()) it0++;
+	}
+}
+
 void MergeProcM()
 {
 	WORD res = 0;
 	for (WORD i = 1; i <= MaxIi; i++) {
 		InpD* ID = IDA[i];
-		/* !!! with ID^ do!!! */
 		if (ID->Exist)
 			do {
 				MoveForwToRecM(ID);
@@ -349,7 +280,7 @@ void JoinProc(WORD Ii, bool& EmptyGroup)
 		}
 	}
 	else {
-		InpD* ID = IDA[Ii]; /* !!! with ID^ do!!! */
+		InpD* ID = IDA[Ii];
 		if (ID->Exist) {
 			ID->Scan->SeekRec(ID->IRec - 1);
 			ID->Count = 0.0;
@@ -378,4 +309,72 @@ void JoinProc(WORD Ii, bool& EmptyGroup)
 			JoinProc(Ii + 1, EmptyGroup);
 		}
 	}
+}
+
+void RunMerge()
+{
+	short MinIi = 0, res = 0, NEof = 0;      /*RunMerge - body*/
+	bool EmptyGroup = false, b = false;
+	//PushProcStk();
+	OpenInpM();
+	OpenOutp();
+	MergOpGroup.Group = 1.0;
+	RunMsgOn('M', NRecsAll);
+	NRecsAll = 0;
+	for (short i = 1; i <= MaxIi; i++) {
+		ReadInpFileM(IDA[i]);
+	}
+label1:
+	MinIi = 0; NEof = 0;
+	for (short i = 1; i <= MaxIi; i++) /* !!! with IDA[I]^ do!!! */ {
+		CFile = IDA[i]->Scan->FD;
+		IDA[i]->IRec = IDA[i]->Scan->IRec;
+		ZeroSumFlds(IDA[i]->Sum);
+		if (IDA[i]->Scan->eof) NEof++;
+		if (OldMFlds.empty()) {
+			IDA[i]->Exist = !IDA[i]->Scan->eof;
+			MinIi = 1;
+		}
+		else {
+			CRecPtr = IDA[i]->ForwRecPtr;
+			IDA[i]->Exist = false;
+			IDA[i]->Count = 0.0;
+			if (!IDA[i]->Scan->eof) {
+				if (MinIi == 0) goto label2;
+				res = CompMFlds(IDA[i]->MFld);
+				if (res != _gt) {
+					if (res == _lt)
+					{
+					label2:
+						SetOldMFlds(IDA[i]->MFld);
+						MinIi = i;
+					}
+					IDA[i]->Exist = true;
+				}
+			}
+		}
+	}
+	for (short i = 1; i <= MinIi - 1; i++) {
+		IDA[i]->Exist = false;
+	}
+	if (NEof == MaxIi) {
+		b = SaveCache(0, CFile->FF->Handle);
+		RunMsgOff();
+		if (!b) GoExit();
+		CloseInpOutp();
+		//PopProcStk();
+		return;
+	}
+	EmptyGroup = false;
+	if (Join) {
+		JoinProc(1, EmptyGroup);
+	}
+	else {
+		MergeProcM();
+	}
+	if (!EmptyGroup) {
+		WriteOutp(OutpRDs);
+		MergOpGroup.Group = MergOpGroup.Group + 1.0;
+	}
+	goto label1;
 }

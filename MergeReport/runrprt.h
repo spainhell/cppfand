@@ -37,9 +37,6 @@ extern bool FirstLines, WasDot;
 extern int NLinesOutp;
 
 void RunReport(RprtOpt* RO);
-//void PrintPageHd; forward;
-//void PrintPageFt; forward;
-//void TruncLine; forward;
 void ResetY();
 void IncPage();
 void NewLine(std::string& text);
@@ -53,14 +50,6 @@ void PendingTT(std::string& text);
 void FinishTuple(std::string& text);
 void RunAProc(std::vector<AssignD*> A);
 
-void PrintBlock(BlkD* B, std::string& text, BlkD* DH);
-void PrintTxt(BlkD* B, std::string& text, bool ChkPg);
-void Print1NTupel(std::string& text, bool Skip);
-
-void TruncLine(std::string& text);
-void PrintBlkChn(BlkD* B, std::string& text, bool ChkPg, bool ChkLine);
-void PrintPageFt(std::string& text);
-void PrintPageHd(std::string& text);
 void Footings(LvDescr* L, LvDescr* L2, std::string& text);
 void Headings(LvDescr* L, LvDescr* L2, std::string& text);
 void ReadInpFile(InpD* ID);

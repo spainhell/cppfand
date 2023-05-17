@@ -890,14 +890,11 @@ label1:
 		typ = 'S';
 		sz = sizeof(int);
 	label2:
-		for (LocVar* locvar : newVars)
-		{
+		for (LocVar* locvar : newVars) {
 			locvar->FTyp = typ;
 			locvar->Op = _getlocvar;
 			locvar->IsRetPar = rp;
 			locvar->Init = Z;
-			locvar->BPOfs = LVB->Size;
-			LVB->Size += sz;
 		}
 	}
 	else if (rp) Error(168);
