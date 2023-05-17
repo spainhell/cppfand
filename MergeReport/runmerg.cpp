@@ -130,7 +130,7 @@ void SetMFlds(KeyFldD* M)
 		default: { CFile->saveB(F, it0->B, CRecPtr); break; }
 		}
 		M = (KeyFldD*)M->pChain;
-		
+
 		if (it0 != OldMFlds.end()) it0++;
 	}
 }
@@ -214,7 +214,7 @@ void WriteOutp(OutpRD* RD)
 					}
 				}
 			}
-}
+		}
 		RD = RD->pChain;
 	}
 }
@@ -261,7 +261,7 @@ void OpenOutp()
 void CloseInpOutp()
 {
 	OutpFD* OD = OutpFDRoot;
-	while (OD != nullptr) /* !!! with OD^ do!!! */ {
+	while (OD != nullptr) {
 		CFile = OD->FD;
 		OD->FD->ClearRecSpace(OD->RecPtr);
 #ifdef FandSQL
@@ -279,32 +279,34 @@ void CloseInpOutp()
 		}
 		OD = OD->pChain;
 	}
-	for (short i = 1; i <= MaxIi; i++) /* !!! with IDA[i]^ do!!! */ {
+	for (short i = 1; i <= MaxIi; i++) {
 		IDA[i]->Scan->Close();
 		CFile->ClearRecSpace(IDA[i]->ForwRecPtr);
 		CFile->OldLockMode(IDA[i]->Md);
 	}
-	}
+}
 
 void MoveForwToRecM(InpD* ID)
 {
-	/* !!! with ID^ do!!! */
 	CFile = ID->Scan->FD;
 	CRecPtr = CFile->FF->RecPtr;
-	Move(ID->ForwRecPtr, CRecPtr, CFile->FF->RecLen + 1);
+	memcpy(CRecPtr, ID->ForwRecPtr, CFile->FF->RecLen + 1);
 	ID->Count = ID->Count + 1;
 	ChkD* C = ID->Chk;
 	if (C != nullptr) {
 		ID->Error = false;
 		ID->Warning = false;
-		ID->ErrTxtFrml->S[0] = 0;
+		ID->ErrTxtFrml->S = "";  // ID->ErrTxtFrml->S[0] = 0;
 		while (C != nullptr) {
 			if (!RunBool(CFile, C->Bool, CRecPtr)) {
 				ID->Warning = true;
 				ID->ErrTxtFrml->S = RunShortStr(CFile, C->TxtZ, CRecPtr);
-				if (!C->Warning) { ID->Error = true; return; }
+				if (!C->Warning) {
+					ID->Error = true;
+					return;
+				}
 			}
-			C = (ChkD*)C->pChain;
+			C = C->pChain;
 		}
 	}
 }

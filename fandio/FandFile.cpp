@@ -817,7 +817,7 @@ int FandFile::CreateIndexFile()
 
 	try {
 		fail = true;
-		BYTE* record = _parent->GetRecSpace();
+		//BYTE* record = _parent->GetRecSpace();
 		md = _parent->NewLockMode(RdMode);
 		_parent->Lock(0, 0);
 		/*ClearCacheCFile;*/
@@ -1021,7 +1021,7 @@ void FandFile::GenerateNew000File(XScan* x, void* record)
 	// vytvorime si novy buffer pro data,
 	// ten pak zapiseme do souboru naprimo (bez cache)
 
-	const unsigned short header000len = 6; // 4B pocet zaznamu, 2B delka 1 zaznamu
+	const unsigned short header000len = 6; // 4B pocet zaznamu, 2B delka jednoho zaznamu
 	// z puvodniho .000 vycteme pocet zaznamu a jejich delku
 	const size_t totalLen = x->FD->FF->NRecs * x->FD->FF->RecLen + header000len;
 	unsigned char* buffer = new unsigned char[totalLen] { 0 };
@@ -1115,10 +1115,9 @@ void FandFile::SortAndSubst(KeyFldD* SK)
 
 void FandFile::CopyIndex(XWKey* K, XKey* FromK)
 {
-	XScan* Scan = nullptr;
 	K->Release(_parent);
 	LockMode md = _parent->NewLockMode(RdMode);
-	Scan = new XScan(_parent, FromK, nullptr, false);
+	XScan* Scan = new XScan(_parent, FromK, nullptr, false);
 	Scan->Reset(nullptr, false);
 	CreateWIndex(Scan, K, 'W');
 	_parent->OldLockMode(md);
