@@ -859,11 +859,6 @@ long FileSizeH(FILE* handle)
 	return result;
 }
 
-int SwapLong(int N)
-{
-	return 0;
-}
-
 void TruncH(FILE* handle, size_t N)
 {
 	// cilem je zkratit delku souboru na N
@@ -997,10 +992,6 @@ void FlushH(FILE* handle)
 	//CloseH(handle);
 }
 
-void DeleteFile(pstring path)
-{
-}
-
 WORD FindCtrlM(LongStr* s, WORD i, WORD n)
 {
 	WORD l = s->LL;
@@ -1083,8 +1074,7 @@ void RenameFile56(pstring OldPath, pstring NewPath, bool Msg)
 	// potom:
 	auto result = rename(OldPath.c_str(), NewPath.c_str());
 	if (result != 0) HandleError = result;
-	if (Msg && HandleError != 0)
-	{
+	if (Msg && HandleError != 0) {
 		SetMsgPar(OldPath, NewPath);
 		RunError(829);
 	}
@@ -1112,8 +1102,7 @@ std::string MyFExpand(std::string Nm, std::string EnvName)
 WORD LogToAbsLenStyleStr(pstring s, WORD l)
 {
 	WORD i = 1;
-	while ((i <= s.length()) && (l > 0))
-	{
+	while ((i <= s.length()) && (l > 0)) {
 		if (!(s[i] == 0x13 || s[i] == 0x17 || s[i] == 0x11 || s[i] == 0x04
 			|| s[i] == 0x02 || s[i] == 0x05 || s[i] == 0x01)) l--;
 		i++;
@@ -1125,11 +1114,6 @@ bool CacheExist()
 {
 	return true;
 	//return !cache.Empty();
-}
-
-void SetMyHeapEnd()
-{
-	// MyHeapEnd = ptr(PtrRec(CacheEnd).Seg - CachePageSz, PtrRec(CacheEnd).Ofs);
 }
 
 bool WrCPage(FILE* Handle, int N, void* Buf, WORD ErrH)

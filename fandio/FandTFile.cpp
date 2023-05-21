@@ -220,7 +220,7 @@ void FandTFile::RdPrefix(bool Chk)
 		return;
 	}
 	if (Format == FptFormat) {
-		FreePart = SwapLong((*FptHd).FreePart);
+		//FreePart = SwapLong((*FptHd).FreePart);
 		FptFormatBlockSize = Swap((*FptHd).BlockSize);
 		return;
 	}
@@ -323,8 +323,8 @@ void FandTFile::WrPrefix()
 		struct stFptHd { int FreePart = 0; unsigned short X = 0, BlockSize = 0; }; /* .FPT */
 		stFptHd* FptHd = (stFptHd*)&T;
 		memset(&T, 0, sizeof(T));
-		(*FptHd).FreePart = SwapLong(FreePart);
-		(*FptHd).BlockSize = Swap(FptFormatBlockSize);
+		//(*FptHd).FreePart = SwapLong(FreePart);
+		//(*FptHd).BlockSize = Swap(FptFormatBlockSize);
 		break;
 	}
 	case T00Format: {
@@ -536,17 +536,17 @@ LongStr* FandTFile::Read(int Pos)
 		case FptFormat: {
 			Pos = Pos * FptFormatBlockSize;
 			RdWrCache(READ, Handle, NotCached(), Pos, sizeof(FptD), &FptD);
-			if (SwapLong(FptD.Typ) != 1/*text*/) {
-				s = new LongStr(l);
-				s->LL = 0;
-				return s;
-			}
-			else {
-				l = SwapLong(FptD.Len) & 0x7FFF;
-				s = new LongStr(l);
-				s->LL = l;
-				RdWrCache(READ, Handle, NotCached(), Pos + sizeof(FptD), l, s->A);
-			}
+			//if (SwapLong(FptD.Typ) != 1/*text*/) {
+			//	s = new LongStr(l);
+			//	s->LL = 0;
+			//	return s;
+			//}
+			//else {
+			//	l = SwapLong(FptD.Len) & 0x7FFF;
+			//	s = new LongStr(l);
+			//	s->LL = l;
+			//	RdWrCache(READ, Handle, NotCached(), Pos + sizeof(FptD), l, s->A);
+			//}
 			break;
 		}
 		default: break;
@@ -615,7 +615,7 @@ int FandTFile::Store(char* s, size_t l)
 		int N = FreePart * FptFormatBlockSize;
 		if (l > 0x7fff) l = 0x7fff;
 		FreePart = FreePart + (sizeof(FptD) + l - 1) / FptFormatBlockSize + 1;
-		FptD.Len = SwapLong(l);
+		//FptD.Len = SwapLong(l);
 		RdWrCache(WRITE, Handle, NotCached(), N, sizeof(FptD), &FptD);
 		N += sizeof(FptD);
 		RdWrCache(WRITE, Handle, NotCached(), N, l, s);

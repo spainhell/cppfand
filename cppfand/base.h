@@ -30,7 +30,6 @@ WORD MinW(WORD X, WORD Y);
 WORD MaxW(WORD X, WORD Y);
 int MinL(int X, int Y);
 int MaxL(int X, int Y);
-int SwapLong(int N);
 bool OverlapByteStr(void* p1, void* p2); // ASM
 WORD FindCtrlM(LongStr* s, WORD i, WORD n); // r152
 WORD FindCtrlM(std::string& s, WORD i, WORD n);

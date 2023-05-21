@@ -1,19 +1,19 @@
 #include "runrprt.h"
 
+#include "../Common/compare.h"
+#include "../Common/textfunc.h"
 #include "../cppfand/compile.h"
-#include "../cppfand/ChkD.h"
 #include "../cppfand/FieldDescr.h"
 #include "../cppfand/FileD.h"
 #include "../cppfand/GlobalVariables.h"
+#include "../cppfand/ChkD.h"
 #include "../cppfand/KeyFldD.h"
 #include "../cppfand/oaccess.h"
 #include "../cppfand/obase.h"
 #include "../cppfand/obaseww.h"
+#include "../cppfand/wwmix.h"
 #include "runmerg.h"
 #include "shared.h"
-#include "../cppfand/wwmix.h"
-#include "../Common/textfunc.h"
-#include "../Common/compare.h"
 
 WORD PrintDH;
 YRec Y;
@@ -26,23 +26,10 @@ InpD* MinID;
 bool FirstLines, WasDot;
 int NLinesOutp;
 
-void TruncLine(std::string& text)
-{
-	FinishTuple(text);
-	if (LineLenLst > 0) NewLine(text);
-}
-
-void ResetY()
-{
-	Y.Blk = nullptr;
-	Y.ChkPg = false;
-	Y.I = 0;
-	Y.Ln = 0;
-	Y.P = nullptr;
-	Y.Sz = 0;
-	Y.TD = nullptr;
-	Y.TLn = 0;
-}
+void PendingTT(std::string& text);
+void CheckPgeLimit(std::string& text);
+std::string NewTxtCol(std::string S, WORD Col, WORD Width, bool Wrap);
+void Print1NTupel(std::string& text, bool Skip);
 
 void IncPage()
 {
@@ -68,6 +55,31 @@ void NewLine(std::string& text)
 		RprtLine -= PgeSize;
 		IncPage();
 	}
+}
+
+void FinishTuple(std::string& text)
+{
+	while (Y.Blk != nullptr) {
+		Print1NTupel(text, true);
+	}
+}
+
+void TruncLine(std::string& text)
+{
+	FinishTuple(text);
+	if (LineLenLst > 0) NewLine(text);
+}
+
+void ResetY()
+{
+	Y.Blk = nullptr;
+	Y.ChkPg = false;
+	Y.I = 0;
+	Y.Ln = 0;
+	Y.P = nullptr;
+	Y.Sz = 0;
+	Y.TD = nullptr;
+	Y.TLn = 0;
 }
 
 void FormFeed(std::string& text)
@@ -237,6 +249,27 @@ label1:
 	Y.Blk = nullptr;
 }
 
+void RunAProc(std::vector<AssignD*> vAssign)
+{
+	for (AssignD* A : vAssign) {
+		switch (A->Kind) {
+		case _locvar: { LVAssignFrml(CFile, A->LV, A->Add, A->Frml, CRecPtr); break; }
+		case _parfile: { AsgnParFldFrml(A->FD, A->PFldD, A->Frml, A->Add); break; }
+		case _ifthenelseM: {
+			if (RunBool(CFile, A->Bool, CRecPtr)) {
+				RunAProc(A->Instr);
+			}
+			else {
+				RunAProc(A->ElseInstr);
+			}
+			break;
+		}
+		default:
+			break;
+		}
+	}
+}
+
 void PrintTxt(BlkD* B, std::string& text, bool ChkPg)
 {
 	if (B == nullptr) return;
@@ -276,6 +309,14 @@ void PrintTxt(BlkD* B, std::string& text, bool ChkPg)
 	Print1NTupel(text, false);
 	RunAProc(B->AfterProc);
 }
+
+bool OutOfLineBound(BlkD* B)
+{
+	return ((B->LineBound != nullptr) && (RprtLine > RunReal(CFile, B->LineBound, CRecPtr))
+		|| B->AbsLine && (RunInt(CFile, B->LineNo, CRecPtr) < RprtLine));
+}
+
+void NewPage(std::string& text);
 
 void PrintBlkChn(BlkD* B, std::string& text, bool ChkPg, bool ChkLine)
 {
@@ -322,12 +363,6 @@ void NewPage(std::string& text)
 	FrstBlk = false;
 }
 
-bool OutOfLineBound(BlkD* B)
-{
-	return ((B->LineBound != nullptr) && (RprtLine > RunReal(CFile, B->LineBound, CRecPtr))
-		|| B->AbsLine && (RunInt(CFile, B->LineNo, CRecPtr) < RprtLine));
-}
-
 void WriteNBlks(std::string& text, short N)
 {
 	if (N > 0) {
@@ -336,53 +371,6 @@ void WriteNBlks(std::string& text, short N)
 		//printf("%s%*c", Rprt.c_str(), N, ' ');
 		text += buffer;
 	}
-}
-
-/// <summary>
-/// Vlozi text na dany radek na dane misto o max. definovane delce
-/// </summary>
-/// <param name="S">Vstupni text</param>
-/// <param name="Col">Pozice, kam text vlozit</param>
-/// <param name="Width">Delka textu</param>
-/// <param name="Wrap"></param>
-/// <returns></returns>
-std::string NewTxtCol(std::string S, WORD Col, WORD Width, bool Wrap)
-{
-	WORD i = 0, Ln = 0;
-	TTD* TD = nullptr;
-	std::string ss;
-	StringListEl* SL = nullptr;
-
-	Ln = 0;
-	bool Absatz = true;
-	if (Wrap) for (i = 0; i < S.length(); i++) {
-		if ((S[i] == 0x0D) && ((i == S.length()) || (S[i + 1] != 0x0A))) S[i] = ' ';
-	}
-
-	ss = GetLine(S, Width, Wrap, Absatz);
-	//printf("%s%s", Rprt.c_str(), ss.c_str());
-
-	while (S.length() > 0) {
-		std::string strLine = GetLine(S, Width, Wrap, Absatz);
-		Ln++;
-		if (Ln == 1) {
-			TD = new TTD(); // (TTD*)GetStore2(sizeof(*TD));
-			TD->SL = nullptr;
-			TD->Col = Col;
-			TD->Width = Width;
-		}
-		SL = new StringListEl(); // (StringListEl*)GetStore2(ss.length() + 5);
-		SL->S = strLine;
-		if (TD->SL == nullptr) TD->SL = SL;
-		else ChainLast(TD->SL, SL);
-	}
-	if (Ln > 0) {
-		TD->Ln = Ln;
-		if (Y.TD == nullptr) Y.TD = TD;
-		else ChainLast(Y.TD, TD);
-		if (Ln > Y.TLn) Y.TLn = Ln;
-	}
-	return ss;
 }
 
 /// <summary>
@@ -486,6 +474,53 @@ label1:
 	return s;
 }
 
+/// <summary>
+/// Vlozi text na dany radek na dane misto o max. definovane delce
+/// </summary>
+/// <param name="S">Vstupni text</param>
+/// <param name="Col">Pozice, kam text vlozit</param>
+/// <param name="Width">Delka textu</param>
+/// <param name="Wrap"></param>
+/// <returns></returns>
+std::string NewTxtCol(std::string S, WORD Col, WORD Width, bool Wrap)
+{
+	WORD i = 0, Ln = 0;
+	TTD* TD = nullptr;
+	std::string ss;
+	StringListEl* SL = nullptr;
+
+	Ln = 0;
+	bool Absatz = true;
+	if (Wrap) for (i = 0; i < S.length(); i++) {
+		if ((S[i] == 0x0D) && ((i == S.length()) || (S[i + 1] != 0x0A))) S[i] = ' ';
+	}
+
+	ss = GetLine(S, Width, Wrap, Absatz);
+	//printf("%s%s", Rprt.c_str(), ss.c_str());
+
+	while (S.length() > 0) {
+		std::string strLine = GetLine(S, Width, Wrap, Absatz);
+		Ln++;
+		if (Ln == 1) {
+			TD = new TTD(); // (TTD*)GetStore2(sizeof(*TD));
+			TD->SL = nullptr;
+			TD->Col = Col;
+			TD->Width = Width;
+		}
+		SL = new StringListEl(); // (StringListEl*)GetStore2(ss.length() + 5);
+		SL->S = strLine;
+		if (TD->SL == nullptr) TD->SL = SL;
+		else ChainLast(TD->SL, SL);
+	}
+	if (Ln > 0) {
+		TD->Ln = Ln;
+		if (Y.TD == nullptr) Y.TD = TD;
+		else ChainLast(Y.TD, TD);
+		if (Ln > Y.TLn) Y.TLn = Ln;
+	}
+	return ss;
+}
+
 void CheckPgeLimit(std::string& text)
 {
 	void* p2;
@@ -530,34 +565,6 @@ void PendingTT(std::string& text)
 		ReleaseStore(&Store2Ptr);
 		Y.TD = nullptr;
 		Y.TLn = 0;
-	}
-}
-
-void FinishTuple(std::string& text)
-{
-	while (Y.Blk != nullptr) {
-		Print1NTupel(text, true);
-	}
-}
-
-void RunAProc(std::vector<AssignD*> vAssign)
-{
-	for (AssignD* A : vAssign) {
-		switch (A->Kind) {
-		case _locvar: { LVAssignFrml(CFile, A->LV, A->Add, A->Frml, CRecPtr); break; }
-		case _parfile: { AsgnParFldFrml(A->FD, A->PFldD, A->Frml, A->Add); break; }
-		case _ifthenelseM: {
-			if (RunBool(CFile, A->Bool, CRecPtr)) {
-				RunAProc(A->Instr);
-			}
-			else {
-				RunAProc(A->ElseInstr);
-			}
-			break;
-		}
-		default: 
-			break;
-		}
 	}
 }
 
