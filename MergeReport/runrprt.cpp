@@ -502,12 +502,12 @@ std::string NewTxtCol(std::string S, WORD Col, WORD Width, bool Wrap)
 		std::string strLine = GetLine(S, Width, Wrap, Absatz);
 		Ln++;
 		if (Ln == 1) {
-			TD = new TTD(); // (TTD*)GetStore2(sizeof(*TD));
+			TD = new TTD();
 			TD->SL = nullptr;
 			TD->Col = Col;
 			TD->Width = Width;
 		}
-		SL = new StringListEl(); // (StringListEl*)GetStore2(ss.length() + 5);
+		SL = new StringListEl();
 		SL->S = strLine;
 		if (TD->SL == nullptr) TD->SL = SL;
 		else ChainLast(TD->SL, SL);

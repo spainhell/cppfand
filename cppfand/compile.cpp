@@ -84,7 +84,7 @@ std::string Error(short N)
 		//ReleaseStore(p1);
 	}
 	EdRecKey = ErrMsg;
-	LastExitCode = i + 1;
+	LastExitCode = i + 1 + 1;
 	IsCompileErr = true;
 	MsgLine = ErrMsg;
 	GoExit();
