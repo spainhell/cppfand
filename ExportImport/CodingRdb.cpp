@@ -1,4 +1,7 @@
 #include "CodingRdb.h"
+
+#include <memory>
+
 #include "../cppfand/compile.h"
 #include "../cppfand/Coding.h"
 #include "../cppfand/FileD.h"
@@ -261,7 +264,10 @@ void CodingRdb::CompressCRdb()
 	SpecFDNameAllowed = true;
 	ReadMerge();
 	SpecFDNameAllowed = false;
-	RunMerge();
+
+	const std::unique_ptr merge = std::make_unique<Merge>();
+	merge->Run();
+
 	SaveAndCloseAllFiles();
 	ReleaseStore(&p);
 	Chpt->FF->RecPtr = cr;

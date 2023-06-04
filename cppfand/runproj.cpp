@@ -1,5 +1,7 @@
 #include "runproj.h"
 
+#include <memory>
+
 #include "../Common/compare.h"
 #include "../Common/textfunc.h"
 #include "../Editor/EditorHelp.h"
@@ -802,7 +804,10 @@ bool CompRunChptRec(WORD CC)
 			case 'M': {
 				SetInpTT(&RP, true);
 				ReadMerge();
-				if (CC == __CTRL_F9) RunMerge();
+				if (CC == __CTRL_F9) {
+					const std::unique_ptr merge = std::make_unique<Merge>();
+					merge->Run();
+				}
 				break;
 			}
 			case 'R': {
@@ -1101,7 +1106,10 @@ bool MergeAndReplace(FileD* fd_old, FileD* fd_new)
 		SpecFDNameAllowed = true;
 		ReadMerge();
 		SpecFDNameAllowed = false;
-		RunMerge();
+
+		const std::unique_ptr merge = std::make_unique<Merge>();
+		merge->Run();
+
 		SaveAndCloseAllFiles();
 		CFile = fd_old;
 		DeleteF();

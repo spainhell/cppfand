@@ -236,7 +236,10 @@ void MergeProc(Instr_merge_display* PD)
 	MarkBoth(p, p2);
 	SetInpTT(&PD->Pos, true);
 	ReadMerge();
-	RunMerge();
+
+	const std::unique_ptr merge = std::make_unique<Merge>();
+	merge->Run();
+
 	SaveAndCloseAllFiles();
 	ReleaseStore(&p);
 	ReleaseStore(&p2);

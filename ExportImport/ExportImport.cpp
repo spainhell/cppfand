@@ -574,7 +574,10 @@ void MakeMerge(CopyD* CD)
 
 		SetInpStr(s);
 		ReadMerge();
-		RunMerge();
+
+		const std::unique_ptr merge = std::make_unique<Merge>();
+		merge->Run();
+
 		LastExitCode = 0;
 	}
 

@@ -15,7 +15,7 @@ FileD* InpFD_M(WORD I)
 {
 	// tady si to sahalo na neexistujici polozky
 	// proto je to cele prepsane
-	// velikost IDA je 9, z toho [0] se nepoužívá, max. index je tedy 8
+	// velikost IDA je 9, z toho [0] se nepouziva, max. index je tedy 8
 	// if (I > 8) return nullptr;
 	if (IDA[I] != nullptr) return IDA[I]->Scan->FD;
 	if (IDA[I + 1] != nullptr) {
@@ -31,7 +31,7 @@ FrmlElem* FindIiandFldFrml_M(FileD** FD, char& FTyp)
 	FrmlElem* z = nullptr;
 	if (!Join && (WhatToRd == 'i')) {   /* for Oi search first in Ii*/
 		*FD = InpFD_M(Oi); z = TryRdFldFrml(*FD, FTyp);
-		if (z != nullptr) { Ii = Oi; goto label1; };
+		if (z != nullptr) { Ii = Oi; goto label1; }
 	}
 	for (i = 1; i <= MaxIi; i++) {     /* search in  I1 .. In, for Oi only I1 .. Ii*/
 		*FD = InpFD_M(i); z = TryRdFldFrml(*FD, FTyp);
