@@ -8,7 +8,7 @@ public:
 	void Close(FileD* file_d);
 	void Release(FileD* file_d);
 	void ReleaseTree(FileD* file_d, int Page, bool IsClose);
-	void OneRecIdx(FileD* file_d, KeyFldD* KF, int N);
+	void OneRecIdx(FileD* file_d, KeyFldD* KF, int N, void* record);
 	void InsertAtNr(FileD* file_d, int I, int RecNr, void* record);
 	int InsertGetNr(FileD* file_d, int RecNr, void* record);
 	void DeleteAtNr(FileD* file_d, int I);

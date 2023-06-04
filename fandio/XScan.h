@@ -15,8 +15,8 @@ public:
 	int NRecs = 0, IRec = 0, RecNr = 0;
 	bool hasSQLFilter = false, eof = false;
 	XScan(FileD* aFD, XKey* aKey, KeyInD* aKIRoot, bool aWithT);
-	void Reset(FrmlElem* ABool, bool SQLFilter);
-	void ResetSort(KeyFldD* aSK, FrmlElem* BoolZ, LockMode OldMd, bool SQLFilter);
+	void Reset(FrmlElem* ABool, bool SQLFilter, void* record);
+	void ResetSort(KeyFldD* aSK, FrmlElem* BoolZ, LockMode OldMd, bool SQLFilter, void* record);
 	void SubstWIndex(XWKey* WK);
 	void ResetOwner(XString* XX, FrmlElem* aBool);
 	void ResetOwnerIndex(LinkD* LD, LocVar* LV, FrmlElem* aBool);

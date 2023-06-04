@@ -17,13 +17,13 @@ void AddFFs(XKey* K, pstring& s)
 
 /// asi vytvori XStringy pro zacatek a konec (rozsah) vyhledavani
 /// pokud se hleda interval v klici
-void CompKIFrml(XKey* K, KeyInD* KI, bool AddFF)
+void CompKIFrml(FileD* file_d, XKey* K, KeyInD* KI, bool AddFF, void* record)
 {
 	XString x;
 	while (KI != nullptr) {
-		bool b = x.PackFrml(KI->FL1, K->KFlds);
+		bool b = x.PackFrml(file_d, KI->FL1, K->KFlds, record);
 		KI->X1 = x.S;
-		if (KI->FL2 != nullptr) x.PackFrml(KI->FL2, K->KFlds);
+		if (KI->FL2 != nullptr) x.PackFrml(file_d, KI->FL2, K->KFlds, record);
 		if (AddFF) AddFFs(K, x.S);
 		KI->X2 = x.S;
 		KI = (KeyInD*)KI->pChain;
@@ -57,7 +57,7 @@ XScan::XScan(FileD* aFD, XKey* aKey, KeyInD* aKIRoot, bool aWithT)
 	}
 }
 
-void XScan::Reset(FrmlElem* ABool, bool SQLFilter)
+void XScan::Reset(FrmlElem* ABool, bool SQLFilter, void* record)
 {
 	KeyInD* k = nullptr;
 	int n = 0;
@@ -69,7 +69,10 @@ void XScan::Reset(FrmlElem* ABool, bool SQLFilter)
 		else Bool = nullptr;
 	}
 	switch (Kind) {
-	case 0: NRecs = FD->FF->NRecs; break;
+	case 0: {
+		NRecs = FD->FF->NRecs;
+		break;
+	}
 	case 1:
 	case 3: {
 		if (Key != nullptr) {
@@ -80,7 +83,7 @@ void XScan::Reset(FrmlElem* ABool, bool SQLFilter)
 	}
 	case 2: {
 		if (!Key->InWork) FD->FF->TestXFExist();
-		CompKIFrml(Key, KIRoot, true);
+		CompKIFrml(FD, Key, KIRoot, true, record);
 		NRecs = 0;
 		k = KIRoot;
 		while (k != nullptr) {
@@ -94,35 +97,35 @@ void XScan::Reset(FrmlElem* ABool, bool SQLFilter)
 			k = (KeyInD*)k->pChain;
 		}
 		break;
-	}
+		}
 #ifdef FandSQL
 	case 4: { CompKIFrml(Key, KIRoot, false); New(SQLStreamPtr(Strm), Init); IRec = 1; break; }
 #endif
 	}
 	SeekRec(0);
-}
+	}
 
-void XScan::ResetSort(KeyFldD* aSK, FrmlElem* BoolZ, LockMode OldMd, bool SQLFilter)
+void XScan::ResetSort(KeyFldD* aSK, FrmlElem* BoolZ, LockMode OldMd, bool SQLFilter, void* record)
 {
 	LockMode m;
 	if (Kind == 4) {
 		SK = aSK;
 		if (SQLFilter) {
-			Reset(BoolZ, true);
+			Reset(BoolZ, true, record);
 			BoolZ = nullptr;
 		}
 		else {
-			Reset(nullptr, false);
+			Reset(nullptr, false, record);
 		}
 		return;
 	}
 	if (aSK != nullptr) {
-		Reset(BoolZ, false);
+		Reset(BoolZ, false, record);
 		FD->FF->ScanSubstWIndex(this, aSK, 'S');
 		BoolZ = nullptr;
 	}
 	else {
-		Reset(nullptr, false);
+		Reset(nullptr, false, record);
 	}
 
 	if (FD->FF->NotCached()) {
@@ -170,7 +173,7 @@ void XScan::ResetOwner(XString* XX, FrmlElem* aBool)
 		KIRoot = GetZStore(sizeof(KIRoot^));
 		KIRoot->X1 = StoreStr(XX->S); KIRoot->X2 = StoreStr(XX->S);
 		New(SQLStreamPtr(Strm), Init); IRec = 1
-	}
+}
 	else
 #endif
 	{
@@ -235,7 +238,7 @@ void XScan::SeekRec(int I)
 			if (hasSQLFilter) z = Bool else z = nullptr;
 			InpReset(Key, SK, KIRoot, z, withT);
 			EOF = AtEnd; IRec = 0; NRecs = 0x20000000;
-		}
+}
 		return;
 	}
 #endif

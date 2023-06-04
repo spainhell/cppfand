@@ -1403,7 +1403,7 @@ void BuildWork()
 				wk2->Open(CFile, KF, true, false);
 				CFile->FF->CreateWIndex(Scan, wk2, 'W');
 				Scan2 = new XScan(CFile, wk2, ki, false);
-				Scan2->Reset(nullptr, false);
+				Scan2->Reset(nullptr, false, CRecPtr);
 				Scan = Scan2;
 			}
 		}
@@ -1420,7 +1420,7 @@ void BuildWork()
 				(boolP != nullptr))
 				if ((K != nullptr) && !K->InWork && (ki == nullptr)) K = nullptr;
 			Scan = new XScan(CFile, K, ki, false);
-			Scan->Reset(boolP, E->SQLFilter);
+			Scan->Reset(boolP, E->SQLFilter, CRecPtr);
 			}
 		CFile->FF->CreateWIndex(Scan, WK, 'W');
 		Scan->Close();
@@ -1473,7 +1473,7 @@ void SetStartRec()
 		if (Subset) WK->Close(CFile);
 		Subset = true;
 		if (n == 0) WK->Open(CFile, nullptr, true, false);
-		else WK->OneRecIdx(CFile, kf, n);
+		else WK->OneRecIdx(CFile, kf, n, CRecPtr);
 		BaseRec = 1;
 		IRec = 1;
 	}
@@ -4331,7 +4331,7 @@ void StartRprt(RprtOpt* RO)
 	kf = nullptr;
 	if (VK != nullptr) kf = VK->KFlds;
 	k = new XWKey(CFile);
-	k->OneRecIdx(CFile, kf, AbsRecNr(CRec()));
+	k->OneRecIdx(CFile, kf, AbsRecNr(CRec()), CRecPtr);
 	RO->FDL.FD = CFile;
 	RO->FDL.ViewKey = k;
 	ReportProc(RO, false);

@@ -831,9 +831,9 @@ int FandFile::CreateIndexFile()
 		if (XF->NotValid) {
 			XF->SetEmpty(NRecs, _parent->GetNrKeys());
 			XScan* scan = new XScan(_parent, nullptr, nullptr, false);
-			scan->Reset(nullptr, false);
-			XWorkFile* XW = new XWorkFile(_parent, scan, _parent->Keys[0]);
 			BYTE* record = _parent->GetRecSpace();
+			scan->Reset(nullptr, false, record);
+			XWorkFile* XW = new XWorkFile(_parent, scan, _parent->Keys[0]);
 			XW->Main('X', record);
 			delete[] record; record = nullptr;
 			delete XW; XW = nullptr;
@@ -1099,7 +1099,7 @@ void FandFile::SortAndSubst(KeyFldD* SK)
 	BYTE* record = _parent->GetRecSpace();
 
 	XScan* Scan = new XScan(_parent, nullptr, nullptr, false);
-	Scan->Reset(nullptr, false);
+	Scan->Reset(nullptr, false, record);
 	ScanSubstWIndex(Scan, SK, 'S');
 	FileD* FD2 = _parent->OpenDuplicateF(false);
 	RunMsgOn('S', Scan->NRecs);
@@ -1118,12 +1118,16 @@ void FandFile::SortAndSubst(KeyFldD* SK)
 
 void FandFile::CopyIndex(XWKey* K, XKey* FromK)
 {
+	BYTE* record = _parent->GetRecSpace();
+
 	K->Release(_parent);
 	LockMode md = _parent->NewLockMode(RdMode);
 	XScan* Scan = new XScan(_parent, FromK, nullptr, false);
-	Scan->Reset(nullptr, false);
+	Scan->Reset(nullptr, false, record);
 	CreateWIndex(Scan, K, 'W');
 	_parent->OldLockMode(md);
+
+	delete[] record; record = nullptr;
 }
 
 void FandFile::SubstDuplF(FileD* TempFD, bool DelTF)

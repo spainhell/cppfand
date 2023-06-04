@@ -60,7 +60,7 @@ void GetIndex(Instr_getindex* PD)
 			break;
 		}
 		default: {
-			Scan->Reset(cond, PD->giSQLFilter);
+			Scan->Reset(cond, PD->giSQLFilter, CRecPtr);
 			break;
 		}
 		}

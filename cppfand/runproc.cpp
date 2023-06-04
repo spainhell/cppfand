@@ -792,7 +792,7 @@ void ForAllProc(Instr_forall* PD)
 			}
 		}
 		else {
-			xScan->Reset(Bool, PD->CSQLFilter);
+			xScan->Reset(Bool, PD->CSQLFilter, CRecPtr);
 		}
 #ifdef FandSQL
 	if (!CFile->IsSQLFile)

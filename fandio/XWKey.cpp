@@ -65,10 +65,10 @@ void XWKey::ReleaseTree(FileD* file_d, int Page, bool IsClose)
 	//ReleaseStore(p);
 }
 
-void XWKey::OneRecIdx(FileD* file_d, KeyFldD* KF, int N)
+void XWKey::OneRecIdx(FileD* file_d, KeyFldD* KF, int N, void* record)
 {
 	Open(file_d, KF, true, false);
-	Insert(file_d, N, true, CRecPtr);
+	Insert(file_d, N, true, record);
 	NR++;
 }
 

@@ -644,7 +644,7 @@ void OpenInp()
 		if (IDA[i]->Scan->Kind == 5) IDA[i]->Scan->SeekRec(0);
 		else {
 			IDA[i]->Md = CFile->NewLockMode(RdMode);
-			IDA[i]->Scan->ResetSort(IDA[i]->SK, IDA[i]->Bool, IDA[i]->Md, IDA[i]->SQLFilter);
+			IDA[i]->Scan->ResetSort(IDA[i]->SK, IDA[i]->Bool, IDA[i]->Md, IDA[i]->SQLFilter, CRecPtr);
 		}
 		NRecsAll += IDA[i]->Scan->NRecs;
 	}

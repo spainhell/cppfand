@@ -142,7 +142,7 @@ void OpenInpM()
 		CFile = IDA[I]->Scan->FD;
 		if (IDA[I]->IsInplace) IDA[I]->Md = CFile->NewLockMode(ExclMode);
 		else IDA[I]->Md = CFile->NewLockMode(RdMode);
-		IDA[I]->Scan->ResetSort(IDA[I]->SK, IDA[I]->Bool, IDA[I]->Md, IDA[I]->SQLFilter);
+		IDA[I]->Scan->ResetSort(IDA[I]->SK, IDA[I]->Bool, IDA[I]->Md, IDA[I]->SQLFilter, CRecPtr);
 		NRecsAll += IDA[I]->Scan->NRecs;
 	}
 }

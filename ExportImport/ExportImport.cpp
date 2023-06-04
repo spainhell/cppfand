@@ -322,7 +322,7 @@ void ExportTxt(CopyD* CD)
 		CRecPtr = CD->FD1->GetRecSpace();
 		md = CFile->NewLockMode(RdMode);
 		Scan = new XScan(CFile, CD->ViewKey, nullptr, true);
-		Scan->Reset(nullptr, false);
+		Scan->Reset(nullptr, false, CRecPtr);
 		RunMsgOn('C', Scan->NRecs);
 		while (true) {
 			Scan->GetRec(CRecPtr);

@@ -115,22 +115,22 @@ void XString::PackKF(FileD* file_d, std::vector<KeyFldD*>& KF, void* record)
 	}
 }
 
-bool XString::PackFrml(FrmlListEl* FL, KeyFldD* KF)
+bool XString::PackFrml(FileD* file_d, FrmlListEl* FL, KeyFldD* KF, void* record)
 {
 	Clear();
 	while (FL != nullptr) {
 		FrmlElem* Z = FL->Frml;
 		switch (KF->FldD->frml_type) {
 		case 'S': {
-			StoreStr(RunShortStr(CFile, Z, CRecPtr), KF);
+			StoreStr(RunShortStr(file_d, Z, record), KF);
 			break;
 		}
 		case 'R': {
-			StoreReal(RunReal(CFile, Z, CRecPtr), KF);
+			StoreReal(RunReal(file_d, Z, record), KF);
 			break;
 		}
 		case 'B': {
-			StoreBool(RunBool(CFile, Z, CRecPtr), KF);
+			StoreBool(RunBool(file_d, Z, record), KF);
 			break;
 		}
 		}
