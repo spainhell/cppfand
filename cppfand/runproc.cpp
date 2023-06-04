@@ -25,6 +25,7 @@
 #include "../fandio/sort.h"
 #include "../fandio/files.h"
 #include "../fandio/FandXFile.h"
+#include "../fandio/XWKey.h"
 #include "../Editor/OldEditor.h"
 #include "../Editor/EditorHelp.h"
 #include "../Editor/runedi.h"

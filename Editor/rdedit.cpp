@@ -10,6 +10,7 @@
 #include "../cppfand/rdrun.h"
 #include "../Common/textfunc.h"
 #include "../Common/compare.h"
+#include "../fandio/XWKey.h"
 
 EditD* E = EditDRoot;
 

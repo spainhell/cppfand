@@ -1,9 +1,10 @@
 #include "FandFile.h"
 
 #include "DbfFile.h"
+#include "files.h"
 #include "XScan.h"
 #include "XWorkFile.h"
-#include "files.h"
+#include "XWKey.h"
 #include "../Common/textfunc.h"
 #include "../Common/compare.h"
 #include "../cppfand/GlobalVariables.h"
@@ -1082,7 +1083,9 @@ void FandFile::ScanSubstWIndex(XScan* Scan, KeyFldD* SK, char Typ)
 			ChainLast(kfroot, kf2);
 			kf = kf->pChain;
 		}
-		if (kf2 != nullptr)	kf2->pChain = SK;
+		if (kf2 != nullptr) {
+			kf2->pChain = SK;
+		}
 		SK = kfroot;
 	}
 	k2->Open(_parent, SK, true, false);

@@ -1,11 +1,12 @@
 #include "XScan.h"
+#include "XWKey.h"
 #include "../cppfand/FieldDescr.h"
 #include "../cppfand/FileD.h"
 #include "../cppfand/GlobalVariables.h"
 #include "../cppfand/KeyFldD.h"
 #include "../cppfand/obaseww.h"
 #include "../cppfand/runfrml.h"
-#include "sort.h"
+
 
 void AddFFs(XKey* K, pstring& s)
 {
@@ -58,7 +59,10 @@ XScan::XScan(FileD* aFD, XKey* aKey, KeyInD* aKIRoot, bool aWithT)
 
 void XScan::Reset(FrmlElem* ABool, bool SQLFilter)
 {
-	KeyInD* k = nullptr; int n = 0; XString xx; bool b = false;
+	KeyInD* k = nullptr;
+	int n = 0;
+	XString xx;
+	bool b = false;
 	Bool = ABool;
 	if (SQLFilter) {
 		if (FD->IsSQLFile) hasSQLFilter = true;
@@ -124,15 +128,15 @@ void XScan::ResetSort(KeyFldD* aSK, FrmlElem* BoolZ, LockMode OldMd, bool SQLFil
 	if (FD->FF->NotCached()) {
 		switch (Kind) {
 		case 0: {
-				m = NoCrMode;
-				if (FD->FF->XF != nullptr) m = NoExclMode;
-				break;
-			}
+			m = NoCrMode;
+			if (FD->FF->XF != nullptr) m = NoExclMode;
+			break;
+		}
 		case 1: {
-				m = OldMd;
-				if (Key->InWork) m = NoExclMode;
-				break;
-			}
+			m = OldMd;
+			if (Key->InWork) m = NoExclMode;
+			break;
+		}
 		default: return;
 		}
 		m = LockMode(MaxW(m, OldMd));
@@ -159,7 +163,7 @@ void XScan::ResetOwner(XString* XX, FrmlElem* aBool)
 {
 	int n;
 	bool b;
-	
+
 	Bool = aBool;
 #ifdef FandSQL
 	if (Kind = 4) {           /* !on .SQL with Workindex */
@@ -312,8 +316,7 @@ void XScan::NextIntvl()
 	else {
 		do {
 			KI = (KeyInD*)KI->pChain;
-		}
-		while (!((KI == nullptr) || (KI->N > 0)));
+		} while (!((KI == nullptr) || (KI->N > 0)));
 
 		if (KI != nullptr) {
 			SeekOnKI(0);
@@ -332,43 +335,53 @@ void XScan::GetRec(void* record)
 		inc(IRec); return;
 	}
 #endif
-label1:
-	eof = IRec >= NRecs;
-	if (!eof) {
-		IRec++;
-		switch (Kind) {
-		case 0: { RecNr = IRec; goto label2; break; }
-		case 1:
-		case 2: {
-			RecNr = page_->GetItem(_item)->GetN();
-			items_on_page_--;
-			if (items_on_page_ > 0) {
-				_item++;
+
+	while (true) {
+		eof = IRec >= NRecs;
+		if (!eof) {
+			IRec++;
+			switch (Kind) {
+			case 0: {
+				RecNr = IRec;
+				FD->ReadRec(RecNr, record);
+				if (FD->DeletedFlag(record)) continue;
+				if (!RunBool(FD, Bool, record)) continue;
+				break;
 			}
-			else if ((Kind == 2) && (NOfKI == 0)) NextIntvl();
-			else if (page_->GreaterPage > 0) SeekOnPage(page_->GreaterPage, 1);
-		label2:
-			FD->ReadRec(RecNr, record);
-			if (FD->DeletedFlag(record)) goto label1;
-		label3:
-			if (!RunBool(CFile, Bool, CRecPtr)) goto label1;
-			break;
-		}
+			case 1:
+			case 2: {
+				RecNr = page_->GetItem(_item)->GetN();
+				items_on_page_--;
+				if (items_on_page_ > 0) {
+					_item++;
+				}
+				else if ((Kind == 2) && (NOfKI == 0)) {
+					NextIntvl();
+				}
+				else if (page_->GreaterPage > 0) {
+					SeekOnPage(page_->GreaterPage, 1);
+				}
+				FD->ReadRec(RecNr, record);
+				if (FD->DeletedFlag(record)) continue;
+				if (!RunBool(FD, Bool, record)) continue;
+				break;
+			}
 #ifdef FandSQL
-		case 3: {
-			NOnPg--;
-			xx.S = P->StrI(P->NItems - NOnPg);
-			if ((NOnPg == 0) && (P->GreaterPage > 0)) SeekOnPage(P->GreaterPage, 1);
-			if (!Strm1->SelectXRec(Key, @xx, _equ, withT)) goto label1;
-			goto label3;
-			break;
-		}
+			case 3: {
+				NOnPg--;
+				xx.S = P->StrI(P->NItems - NOnPg);
+				if ((NOnPg == 0) && (P->GreaterPage > 0)) SeekOnPage(P->GreaterPage, 1);
+				if (!Strm1->SelectXRec(Key, @xx, _equ, withT)) goto label1;
+				if (!RunBool(FD, Bool, record)) goto label1;
+				break;
+			}
 #endif
-		case 5:
-		{
-			Move(Strm, record, FD->FF->RecLen + 1);
-			break;
+			case 5: {
+				memcpy(record, Strm, FD->FF->RecLen + 1);
+				break;
+			}
+			}
 		}
-		}
+		break;
 	}
 }

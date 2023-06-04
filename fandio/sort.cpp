@@ -1,6 +1,7 @@
 #include "sort.h"
 #include <queue>
 
+#include "XWKey.h"
 #include "XWorkFile.h"
 #include "../cppfand/FieldDescr.h"
 #include "../cppfand/FileD.h"

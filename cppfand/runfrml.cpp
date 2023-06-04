@@ -10,6 +10,7 @@
 #include "../Editor/runedi.h"
 #include "../fandio/directory.h"
 #include "../fandio/FandTFile.h"
+#include "../fandio/XWKey.h"
 #include "../pascal/random.h"
 
 #include "FieldDescr.h"

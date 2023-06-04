@@ -19,6 +19,7 @@
 #include "../cppfand/runproj.h"
 #include "../fandio/files.h"
 #include "../fandio/XKey.h"
+#include "../fandio/XWKey.h"
 #include "../cppfand/wwmenu.h"
 #include "../Logging/Logging.h"
 #include "../MergeReport/genrprt.h"

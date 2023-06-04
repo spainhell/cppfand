@@ -10,6 +10,7 @@
 #include "rdfildcl.h"
 #include "runfrml.h"
 #include "../fandio/FandTFile.h"
+#include "../fandio/XWKey.h"
 #include "wwmix.h"
 #include "../Editor/OldEditor.h"
 #include "../Common/compare.h"
