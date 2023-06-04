@@ -378,37 +378,30 @@ label4:
 
 std::string SetPathForH(FILE* handle)
 {
-	RdbD* RD = nullptr;
-	FileD* cf = nullptr;
-	cf = CFile;
-	RD = CRdb;
+	RdbD* RD = CRdb;
 	while (RD != nullptr) {
-		CFile = RD->FD;
-		while (CFile != nullptr) {
-			if (CFile->FF->Handle == handle) {
-				SetPathAndVolume(CFile);
-				CFile = cf;
+		FileD* fd = RD->FD;
+		while (fd != nullptr) {
+			if (fd->FF->Handle == handle) {
+				SetPathAndVolume(fd);
 				return CPath;
 			}
-			if (CFile->FF->XF != nullptr && CFile->FF->XF->Handle == handle) {
-				SetPathAndVolume(CFile);
+			if (fd->FF->XF != nullptr && fd->FF->XF->Handle == handle) {
+				SetPathAndVolume(fd);
 				CPath = CExtToX(CDir, CName, CExt);
-				CFile = cf;
 				return CPath;
 			}
-			if (CFile->FF->TF != nullptr && CFile->FF->TF->Handle == handle) {
-				SetPathAndVolume(CFile);
+			if (fd->FF->TF != nullptr && fd->FF->TF->Handle == handle) {
+				SetPathAndVolume(fd);
 				CPath = CExtToT(CDir, CName, CExt);
-				CFile = cf;
 				return CPath;
 			}
-			CFile = CFile->pChain;
+			fd = fd->pChain;
 		}
 		RD = RD->ChainBack;
 	}
 	ReadMessage(799);
 	CPath = MsgLine;
-	CFile = cf;
 	return CPath;
 }
 

@@ -9,7 +9,6 @@
 XWorkFile::XWorkFile(FileD* parent, XScan* AScan, XKey* AK): WorkFile(parent)
 {
 	xScan = AScan;
-	// CFile = xScan->FD;
 	xKey = AK;
 	xwFile = AK->GetXFile(parent);
 }
