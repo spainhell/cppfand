@@ -1,11 +1,17 @@
 #include "shared.h"
-
-#include "rdmerg.h"
-#include "rdrprt.h"
 #include "../cppfand/compile.h"
 #include "../cppfand/FieldDescr.h"
 #include "../cppfand/GlobalVariables.h"
+#include "../cppfand/KeyFldD.h"
 
+WORD Ii = 0, Oi = 0, SumIi = 0;
+char WhatToRd = '\0'; /*i=Oi output FDs;O=O outp.FDs*/
+int NRecsAll = 0;
+
+FileD* InpFD(WORD I)
+{
+	return IDA[I]->Scan->FD;
+}
 
 void TestNotSum()
 {
@@ -43,29 +49,31 @@ void SetIi_Report(bool wasIiPrefix)
 
 bool RdIiPrefix()
 {
-	auto result = false;
+	bool result;
 	if ((ForwChar == '.') && (LexWord.length() == 2) && (LexWord[1] == 'I') &&
 		(isdigit(LexWord[2]) && LexWord[2] != '0')) {
 		Ii = LexWord[2] - '0';
-		if ((Ii > MaxIi) || (WhatToRd == 'i') && (Ii > Oi)) Error(9);
-		RdLex(); RdLex(); result = true;
+		if ((Ii > MaxIi) || (WhatToRd == 'i') && (Ii > Oi)) {
+			Error(9);
+		}
+		RdLex(); RdLex();
+		result = true;
 	}
 	else {
-		Ii = 0; result = false;
+		Ii = 0;
+		result = false;
 	}
 	return result;
 }
 
 void CopyPrevMFlds()
 {
-	KeyFldD* MNew = nullptr; FieldDescr* F = nullptr;
-	pstring s = LexWord;
 	KeyFldD* M = IDA[Ii - 1]->MFld;
 	//std::vector<std::string> vFieldNames;
 	//std::vector<std::string>::iterator it;
 	while (M != nullptr) {
-		LexWord = M->FldD->Name;
-		std::string LexWordString = LexWord;
+		std::string fld_name = M->FldD->Name;
+		// std::string LexWordString = LexWord;
 		// toto je pridano navic, protoze se metoda cyklila
 		// - zkontrolumeme, jestli uz uvedena polozka nebyla pridana
 		// - je mozne, ze v nekterych sestavach bude nutne toto osetrit jinak
@@ -76,10 +84,14 @@ void CopyPrevMFlds()
 		if (it != vFieldNames.end()) break;
 		vFieldNames.push_back(LexWordString);*/
 
-		F = FindFldName(InpFD(Ii));
-		if (F == nullptr) OldError(8);
-		if (!FldTypIdentity(M->FldD, F)) OldError(12);
-		MNew = new KeyFldD(); // (KeyFldD*)GetStore(sizeof(*MNew));
+		FieldDescr* F = FindFldName(InpFD(Ii), fld_name);
+		if (F == nullptr) {
+			OldError(8);
+		}
+		if (!FldTypIdentity(M->FldD, F)) {
+			OldError(12);
+		}
+		KeyFldD* MNew = new KeyFldD(); // (KeyFldD*)GetStore(sizeof(*MNew));
 		MNew->pChain = nullptr; // M->pChain;
 		MNew->CompLex = M->CompLex;
 		MNew->Descend = M->Descend;
@@ -88,9 +100,8 @@ void CopyPrevMFlds()
 		if (IDA[Ii]->MFld == nullptr) IDA[Ii]->MFld = MNew;
 		else ChainLast(IDA[Ii]->MFld, MNew);
 
-		M = (KeyFldD*)M->pChain;
+		M = M->pChain;
 	}
-	LexWord = s;
 }
 
 void CheckMFlds(KeyFldD* M1, KeyFldD* M2)
@@ -101,8 +112,8 @@ void CheckMFlds(KeyFldD* M1, KeyFldD* M2)
 			|| (M1->Descend != M2->Descend)
 			|| (M1->CompLex != M2->CompLex))
 			OldError(12);
-		M1 = (KeyFldD*)M1->pChain;
-		M2 = (KeyFldD*)M2->pChain;
+		M1 = M1->pChain;
+		M2 = M2->pChain;
 	}
 	if (M2 != nullptr) OldError(30);
 }
@@ -133,10 +144,10 @@ void ZeroSumFlds(std::vector<FrmlElemSum*>* sum)
 	}
 }
 
-void SumUp(std::vector<FrmlElemSum*>* S)
+void SumUp(FileD* file_d, std::vector<FrmlElemSum*>* S, void* record)
 {
 	if (S == nullptr) return;
 	for (size_t i = 0; i < S->size(); i++) {
-		S->at(i)->R += RunReal(CFile, S->at(i)->Frml, CRecPtr);
+		S->at(i)->R += RunReal(file_d, S->at(i)->Frml, record);
 	}
 }

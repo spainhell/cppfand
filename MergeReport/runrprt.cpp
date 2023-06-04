@@ -12,7 +12,6 @@
 #include "../cppfand/obase.h"
 #include "../cppfand/obaseww.h"
 #include "../cppfand/wwmix.h"
-#include "runmerg.h"
 #include "shared.h"
 
 WORD PrintDH;
@@ -597,7 +596,7 @@ void PrintBlock(BlkD* B, std::string& text, BlkD* DH)
 			PrintTxt(B, text, true);
 			WasFF2 = B->FF2;
 			if ((DH == nullptr) && WasOutput) pdh = true;
-			SumUp(B->Sum);
+			SumUp(CFile, B->Sum, CRecPtr);
 		}
 		B = B->pChain;
 	}
@@ -863,7 +862,7 @@ void MergeProc(std::string& text)
 			if (PrintDH == 0) PrintDH = 1;
 		label2:
 			PrintBlock(ID->FrstLvS->Ft, text, ID->FrstLvS->Hd); /*DE*/
-			SumUp(ID->Sum);
+			SumUp(CFile, ID->Sum, CRecPtr);
 			ReadInpFile(ID);
 			if (ID->Scan->eof) goto label4;
 			res = CompMFlds(NewMFlds, ID->MFld, nlv);
@@ -952,7 +951,7 @@ void RunReport(RprtOpt* RO)
 	BlkD* BD = nullptr;
 	BlkD* RFb = nullptr;
 	LockMode md;
-	if (SelQuest) /* !!! with IDA[1]^ do!!! */ {
+	if (SelQuest) {
 		CFile = IDA[1]->Scan->FD;
 		if (!ww.PromptFilter("", &IDA[1]->Bool, s)) {
 			PrintView = false;

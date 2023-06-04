@@ -1,7 +1,11 @@
 #pragma once
-#include "../cppfand/KeyFldD.h"
 #include "../cppfand/rdrun.h"
 
+extern WORD Ii, Oi, SumIi;
+extern char WhatToRd; /*i=Oi output FDs;O=O outp.FDs*/
+extern int NRecsAll;
+
+FileD* InpFD(WORD I);
 void TestNotSum();
 void Err(char source, bool wasIiPrefix);
 void SetIi_Merge(bool wasIiPrefix);
@@ -12,4 +16,4 @@ void CheckMFlds(KeyFldD* M1, KeyFldD* M2);
 void TestSetSumIi();
 void ZeroSumFlds(LvDescr* L);
 void ZeroSumFlds(std::vector<FrmlElemSum*>* sum);
-void SumUp(std::vector<FrmlElemSum*>* S);
+void SumUp(FileD* file_d, std::vector<FrmlElemSum*>* S, void* record);

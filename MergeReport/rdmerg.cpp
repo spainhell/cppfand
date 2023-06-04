@@ -8,9 +8,7 @@
 #include "../cppfand/KeyFldD.h"
 #include "../cppfand/rdfildcl.h"
 
-char WhatToRd = '\0'; /*i=Oi output FDs;O=O outp.FDs*/
 bool ReadingOutpBool = false;
-WORD Ii = 0, Oi = 0, SumIi = 0;
 OutpRD* RD = nullptr;
 
 FileD* InpFD_M(WORD I)

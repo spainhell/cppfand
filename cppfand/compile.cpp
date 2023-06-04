@@ -1211,10 +1211,11 @@ void RdAssignFrml(char FTyp, bool& Add, FrmlElem** Z)
 
 bool FldTypIdentity(FieldDescr* F1, FieldDescr* F2)
 {
-	auto result = false;
+	bool result = false;
 	if (F1->field_type != F2->field_type) return result;
 	if ((F1->field_type == FieldType::FIXED) && (F1->M != F2->M)) return result;
-	if ((F1->field_type == FieldType::NUMERIC || F1->field_type == FieldType::ALFANUM || F1->field_type == FieldType::FIXED) && (F1->L != F2->L)) return result;
+	if ((F1->field_type == FieldType::NUMERIC || F1->field_type == FieldType::ALFANUM || F1->field_type == FieldType::FIXED) 
+		&& (F1->L != F2->L)) return result;
 	return true;
 }
 

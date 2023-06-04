@@ -5,14 +5,10 @@
 #include "../cppfand/FileD.h"
 #include "../cppfand/GlobalVariables.h"
 #include "../cppfand/KeyFldD.h"
-#include "../cppfand/legacy.h"
-#include "../cppfand/oaccess.h"
 #include "../cppfand/obaseww.h"
 #include "../cppfand/runfrml.h"
 #include "../Common/compare.h"
 #include "../fandio/files.h"
-
-int NRecsAll;
 
 WORD CompMFlds(KeyFldD* M)
 {
@@ -251,7 +247,7 @@ void MergeProcM()
 		if (ID->Exist)
 			do {
 				MoveForwToRecM(ID);
-				SumUp(ID->Sum);
+				SumUp(CFile, ID->Sum, CRecPtr);
 				WriteOutp(ID->RD);
 				ReadInpFileM(ID);
 				if (ID->Scan->eof) res = _gt;
@@ -274,7 +270,7 @@ void JoinProc(WORD Ii, bool& EmptyGroup)
 	if (Ii > MaxIi) {
 		if (!EmptyGroup) {
 			for (WORD I = 1; I <= MaxIi; I++) {
-				SumUp(IDA[I]->Sum);
+				SumUp(CFile, IDA[I]->Sum, CRecPtr);
 			}
 			WriteOutp(IDA[MaxIi]->RD);
 		}

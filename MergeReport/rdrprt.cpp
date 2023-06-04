@@ -16,11 +16,6 @@ std::vector<FrmlElemSum*>* CZeroLst = nullptr;
 LvDescr* LvToRd;           /*all used while translating frml*/
 BlkD* CBlkSave;
 
-FileD* InpFD(WORD I)
-{
-	return IDA[I]->Scan->FD;
-}
-
 bool FindInLvBlk(LvDescr* L, BlkD** B, RFldD** RF)
 {
 	bool first = true;
