@@ -19,13 +19,13 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="genrprt.h" />
+    <ClInclude Include="ReportGenerator.h" />
     <ClInclude Include="Merge.h" />
     <ClInclude Include="Report.h" />
     <ClInclude Include="MergeReportBase.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="genrprt.cpp" />
+    <ClCompile Include="ReportGenerator.cpp" />
     <ClCompile Include="Merge.cpp" />
     <ClCompile Include="Report.cpp" />
     <ClCompile Include="MergeReportBase.cpp" />

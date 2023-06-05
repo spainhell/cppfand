@@ -18,7 +18,7 @@
     <ClInclude Include="Report.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="genrprt.h">
+    <ClInclude Include="ReportGenerator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Merge.h">
@@ -32,7 +32,7 @@
     <ClCompile Include="Report.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="genrprt.cpp">
+    <ClCompile Include="ReportGenerator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Merge.cpp">

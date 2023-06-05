@@ -22,7 +22,7 @@
 #include "../fandio/XWKey.h"
 #include "../cppfand/wwmenu.h"
 #include "../Logging/Logging.h"
-#include "../MergeReport/genrprt.h"
+#include "..\MergeReport\ReportGenerator.h"
 #include "../Common/textfunc.h"
 #include "../Common/compare.h"
 
@@ -3056,9 +3056,10 @@ void AutoReport()
 		RO->FDL.ViewKey = VK;
 	}
 	PrintView = false;
-	if (SelForAutoRprt(RO)) {
+	const std::unique_ptr auto_report = std::make_unique<ReportGenerator>();
+	if (auto_report->SelForAutoRprt(RO)) {
 		SpecFDNameAllowed = IsCurrChpt();
-		RunAutoReport(RO);
+		auto_report->RunAutoReport(RO);
 		SpecFDNameAllowed = false;
 	}
 	ReleaseStore(&p);

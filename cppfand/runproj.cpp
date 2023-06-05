@@ -13,9 +13,9 @@
 #include "../fandio/FandXFile.h"
 #include "../fandio/files.h"
 #include "../Logging/Logging.h"
-#include "../MergeReport/genrprt.h"
-#include "..\MergeReport\Merge.h"
-#include "..\MergeReport\Report.h"
+#include "..\MergeReport\ReportGenerator.h"
+#include "../MergeReport/Merge.h"
+#include "../MergeReport/Report.h"
 #include "../Prolog/RunProlog.h"
 #include "access.h"
 #include "Coding.h"
@@ -1321,7 +1321,8 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 				}
 				case 'R': {
 					if (Txt == 0 && IsTestRun) {
-						RprtTxt = SelGenRprt(Name);
+						const std::unique_ptr auto_report = std::make_unique<ReportGenerator>();
+						RprtTxt = auto_report->SelGenRprt(Name);
 						CFile = Chpt;
 						if (RprtTxt.empty()) GoCompileErr(I, 1145);
 						CFile->saveS(ChptTxt, RprtTxt, CRecPtr);

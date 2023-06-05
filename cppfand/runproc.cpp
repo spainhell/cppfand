@@ -30,7 +30,7 @@
 #include "../Editor/EditorHelp.h"
 #include "../Editor/runedi.h"
 #include "../ExportImport/ExportImport.h"
-#include "../MergeReport/genrprt.h"
+#include "..\MergeReport\ReportGenerator.h"
 #include "..\MergeReport\Merge.h"
 #include "..\MergeReport\Report.h"
 #include "../Common/textfunc.h"
@@ -101,7 +101,8 @@ void ReportProc(RprtOpt* RO, bool save)
 			PromptAutoRprt(RO);
 		}
 		else {
-			RunAutoReport(RO);
+			const std::unique_ptr auto_report = std::make_unique<ReportGenerator>();
+			auto_report->RunAutoReport(RO);
 		}
 	}
 	if (RO->Edit) md = 'T';
@@ -143,8 +144,10 @@ void PromptAutoRprt(RprtOpt* RO)
 	if (!ww.SelFieldList(36, true, RO2->Flds)) return;
 	if ((RO->FDL.Cond == nullptr) &&
 		!ww.PromptFilter("", &RO2->FDL.Cond, &RO2->CondTxt)) return;
-	if (SelForAutoRprt(RO2)) {
-		RunAutoReport(RO2);
+
+	const std::unique_ptr auto_report = std::make_unique<ReportGenerator>();
+	if (auto_report->SelForAutoRprt(RO2)) {
+		auto_report->RunAutoReport(RO2);
 	}
 }
 
