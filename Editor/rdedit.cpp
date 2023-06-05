@@ -716,12 +716,12 @@ void RdDep()
 	RdLex();
 label1:
 	Accept('(');
-	Bool = RdBool();
+	Bool = RdBool(nullptr);
 	Accept(')');
 label2:
 	D = FindEFld_E(RdFldName(CFile));
 	Accept(_assign);
-	Z = RdFrml(FTyp);
+	Z = RdFrml(FTyp, nullptr);
 	if (D != nullptr) {
 		Dp = new DepD();
 		Dp->Bool = Bool;
@@ -776,7 +776,7 @@ void RdImpl()
 	while (true) {
 		FieldDescr* F = RdFldName(CFile);
 		Accept(_assign);
-		FrmlElem* Z = RdFrml(FTyp);
+		FrmlElem* Z = RdFrml(FTyp, nullptr);
 		EFldD* D = FindEFld_E(F);
 		if (D != nullptr) D->Impl = Z;
 		else {

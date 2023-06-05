@@ -1,5 +1,7 @@
 #include "genrprt.h"
 
+#include <memory>
+
 #include "rdrprt.h"
 #include "runrprt.h"
 #include "../cppfand/compile.h"
@@ -404,8 +406,9 @@ void RunAutoReport(RprtOpt* RO)
 	p1 = RO->FDL.FD->FF->RecPtr;
 	std::string txt = GenAutoRprt(RO, true);
 	SetInpStdStr(txt, false);
-	ReadReport(RO);
-	RunReport(RO);
+	std::unique_ptr report = std::make_unique<Report>();
+	report->Read(RO);
+	report->Run(RO);
 	RO->FDL.FD->FF->RecPtr = p1;
 }
 

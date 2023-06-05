@@ -765,7 +765,7 @@ bool wwmix::PromptFilter(std::string Txt, FrmlElem** Bool, std::string* BoolTxt)
 			}
 			SetInpStr(Txt);
 			RdLex();
-			*Bool = RdBool();
+			*Bool = RdBool(nullptr);
 			if (Lexem != 0x1A) Error(21);
 			BoolTxt = new std::string();
 			*BoolTxt = Txt;

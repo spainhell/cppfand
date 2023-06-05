@@ -76,11 +76,12 @@ void ReportProc(RprtOpt* RO, bool save)
 	/* !!! with RO^ do!!! */
 	if (RO->Flds.empty()) {
 		SetInpTT(&RO->RprtPos, true);
+		const std::unique_ptr report = std::make_unique<Report>();
 		if (RO->SyntxChk) {
 			IsCompileErr = false;
 			//NewExit(Ovr(), er);
 			//goto label1;
-			ReadReport(RO);
+			report->Read(RO);
 			LastExitCode = 0;
 			//label1:
 				//RestoreExit(er);
@@ -88,8 +89,8 @@ void ReportProc(RprtOpt* RO, bool save)
 			//goto label2;
 			return;
 		}
-		ReadReport(RO);
-		RunReport(RO);
+		report->Read(RO);
+		report->Run(RO);
 	}
 	else {
 		if (RO->WidthFrml != nullptr) {
@@ -235,9 +236,9 @@ void MergeProc(Instr_merge_display* PD)
 	void* p = nullptr; void* p2 = nullptr;
 	MarkBoth(p, p2);
 	SetInpTT(&PD->Pos, true);
-	ReadMerge();
-
+	
 	const std::unique_ptr merge = std::make_unique<Merge>();
+	merge->Read();
 	merge->Run();
 
 	SaveAndCloseAllFiles();

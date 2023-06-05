@@ -44,9 +44,6 @@
     <ClCompile Include="rdrprt.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="rdmerg.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="runmerg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

@@ -189,7 +189,7 @@ void RestoreParams(stEditorParams& editorParams)
 	NameT = editorParams.NameT;
 }
 
-FrmlElem* RdFldNameFrmlT(char& FTyp)
+FrmlElem* RdFldNameFrmlT(char& FTyp, MergeReportBase* caller)
 {
 	Error(8);
 	return nullptr;
@@ -2118,7 +2118,7 @@ void Calculate()
 	//goto label2;
 	try {
 		ResetCompilePars();
-		RdFldNameFrml = RdFldNameFrmlT;
+		ptrRdFldNameFrml = RdFldNameFrmlT;
 	label0:
 		txt = CalcTxt;
 		Del = true; I = 1;
@@ -2141,7 +2141,7 @@ void Calculate()
 		}
 		SetInpStr(txt);
 		RdLex();
-		Z = RdFrml(FTyp);
+		Z = RdFrml(FTyp, nullptr);
 		if (Lexem != 0x1A) Error(21);
 
 		switch (FTyp) {

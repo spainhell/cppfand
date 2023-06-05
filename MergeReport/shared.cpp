@@ -4,21 +4,31 @@
 #include "../cppfand/GlobalVariables.h"
 #include "../cppfand/KeyFldD.h"
 
-WORD Ii = 0, Oi = 0, SumIi = 0;
-char WhatToRd = '\0'; /*i=Oi output FDs;O=O outp.FDs*/
-int NRecsAll = 0;
+MergeReportBase::MergeReportBase()
+{
+	ChainSum = false;
+	Ii = 0;
+	Oi = 0;
+	SumIi = 0;
+	WhatToRd = '\0'; /*i=Oi output FDs;O=O outp.FDs*/
+	NRecsAll = 0;
+}
 
-FileD* InpFD(WORD I)
+MergeReportBase::~MergeReportBase()
+{
+}
+
+FileD* MergeReportBase::InpFD(WORD I)
 {
 	return IDA[I]->Scan->FD;
 }
 
-void TestNotSum()
+void MergeReportBase::TestNotSum()
 {
 	if (FrmlSumEl != nullptr) OldError(41);
 }
 
-void Err(char source, bool wasIiPrefix)
+void MergeReportBase::Err(char source, bool wasIiPrefix)
 {
 	TestNotSum();
 	switch (source) {
@@ -31,7 +41,7 @@ void Err(char source, bool wasIiPrefix)
 	}
 }
 
-void SetIi_Merge(bool wasIiPrefix)
+void MergeReportBase::SetIi_Merge(bool wasIiPrefix)
 {
 	if (!wasIiPrefix) {
 		if (!Join && (WhatToRd == 'i')) Ii = Oi;
@@ -39,7 +49,7 @@ void SetIi_Merge(bool wasIiPrefix)
 	}
 }
 
-void SetIi_Report(bool wasIiPrefix)
+void MergeReportBase::SetIi_Report(bool wasIiPrefix)
 {
 	if (!wasIiPrefix) {
 		if (WhatToRd == 'i') Ii = Oi;
@@ -47,7 +57,7 @@ void SetIi_Report(bool wasIiPrefix)
 	}
 }
 
-bool RdIiPrefix()
+bool MergeReportBase::RdIiPrefix()
 {
 	bool result;
 	if ((ForwChar == '.') && (LexWord.length() == 2) && (LexWord[1] == 'I') &&
@@ -66,7 +76,7 @@ bool RdIiPrefix()
 	return result;
 }
 
-void CopyPrevMFlds()
+void MergeReportBase::CopyPrevMFlds()
 {
 	KeyFldD* M = IDA[Ii - 1]->MFld;
 	//std::vector<std::string> vFieldNames;
@@ -104,7 +114,7 @@ void CopyPrevMFlds()
 	}
 }
 
-void CheckMFlds(KeyFldD* M1, KeyFldD* M2)
+void MergeReportBase::CheckMFlds(KeyFldD* M1, KeyFldD* M2)
 {
 	while (M1 != nullptr) {
 		if (M2 == nullptr) OldError(30);
@@ -118,14 +128,14 @@ void CheckMFlds(KeyFldD* M1, KeyFldD* M2)
 	if (M2 != nullptr) OldError(30);
 }
 
-void TestSetSumIi()
+void MergeReportBase::TestSetSumIi()
 {
 	if ((FrmlSumEl != nullptr) && (Ii != 0))
 		if (FrstSumVar || (SumIi == 0)) SumIi = Ii;
 		else if (SumIi != Ii) OldError(27);
 }
 
-void ZeroSumFlds(LvDescr* L)
+void MergeReportBase::ZeroSumFlds(LvDescr* L)
 {
 	while (L != nullptr) {
 		for (FrmlElemSum* el : L->ZeroLst) {
@@ -135,7 +145,7 @@ void ZeroSumFlds(LvDescr* L)
 	}
 }
 
-void ZeroSumFlds(std::vector<FrmlElemSum*>* sum)
+void MergeReportBase::ZeroSumFlds(std::vector<FrmlElemSum*>* sum)
 {
 	if (sum != nullptr) {
 		for (FrmlElemSum* el : *sum) {
@@ -144,7 +154,7 @@ void ZeroSumFlds(std::vector<FrmlElemSum*>* sum)
 	}
 }
 
-void SumUp(FileD* file_d, std::vector<FrmlElemSum*>* S, void* record)
+void MergeReportBase::SumUp(FileD* file_d, std::vector<FrmlElemSum*>* S, void* record)
 {
 	if (S == nullptr) return;
 	for (size_t i = 0; i < S->size(); i++) {

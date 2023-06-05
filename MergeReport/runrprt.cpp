@@ -1,5 +1,5 @@
 #include "runrprt.h"
-
+#include "shared.h"
 #include "../Common/compare.h"
 #include "../Common/textfunc.h"
 #include "../cppfand/compile.h"
@@ -12,25 +12,1097 @@
 #include "../cppfand/obase.h"
 #include "../cppfand/obaseww.h"
 #include "../cppfand/wwmix.h"
-#include "shared.h"
+#include "../cppfand/rdfildcl.h"
 
-WORD PrintDH;
-YRec Y;
-bool FrstBlk, NoFF, WasFF2, SetPage, WasOutput;
-short LineLenLst, PageNo, PgeSize;
-void* Store2Ptr;
-int RecCount;
-WORD NEof;
-InpD* MinID;
-bool FirstLines, WasDot;
-int NLinesOutp;
 
-void PendingTT(std::string& text);
-void CheckPgeLimit(std::string& text);
-std::string NewTxtCol(std::string S, WORD Col, WORD Width, bool Wrap);
-void Print1NTupel(std::string& text, bool Skip);
+Report::Report()
+{
+}
 
-void IncPage()
+Report::~Report()
+{
+}
+
+void Report::Read(RprtOpt* RO)
+{
+	FileD* FD = nullptr; KeyInD* KI = nullptr; BlkD* B = nullptr; WORD i = 0;
+	InpD* ID = nullptr; LvDescr* L = nullptr;
+	std::string s;
+
+	ResetCompilePars();
+	RdLex();
+	CBlkSave = nullptr;
+	PgeSizeZ = nullptr;
+	PgeLimitZ = nullptr;
+	RprtFDListEl* FDL = nullptr;
+	if ((RO != nullptr) && (RO->FDL.FD != nullptr)) {
+		FDL = &RO->FDL;
+	}
+	ResetLVBD();
+	if (IsKeyWord("VAR")) RdLocDcl(&LVBD, false, false, 'R');
+label1:
+	if (Lexem == '.') {
+		RdLex();
+		TestIdentif();
+		if (IsKeyWord("PAGESIZE")) {
+			Accept(_assign);
+			PgeSizeZ = RdRealFrml(this);
+		}
+		else if (IsKeyWord("PAGELIMIT")) {
+			Accept(_assign);
+			PgeLimitZ = RdRealFrml(this);
+		}
+		else Error(56);
+		if (Lexem == ';') {
+			RdLex();
+			goto label1;
+		}
+	}
+	SelQuest = false;
+	Ii = 0;
+	TestLex('#');
+	do {
+		Ii++;
+		ReadChar();
+		if (CurrChar == 'I') {
+			ReadChar();
+			if (isdigit(CurrChar)) {
+				if (Ii != CurrChar - '0') {
+					Error(61);
+				}
+				ReadChar();
+				if (CurrChar == '_') goto label2;
+			}
+			else if (Ii == 1) goto label2;
+		}
+		Error(89);
+	label2:
+		ID = new InpD();
+		IDA[Ii] = ID;
+		RdLex();
+		FD = RdFileName();
+		CFile = FD;
+		for (i = 1; i <= Ii - 1; i++) {
+			if (InpFD(i) == FD) OldError(26);
+		}
+		if ((FDL != nullptr)) {
+			CFile = FDL->FD;
+			FD = CFile;
+		}
+		CViewKey = RdViewKey();
+		if ((FDL != nullptr)) {
+			if (FDL->ViewKey != nullptr) CViewKey = FDL->ViewKey;
+		}
+		if (Lexem == '!') {
+			RdLex();
+			ID->AutoSort = true;
+		}
+		ID->Op = _const;
+		ID->OpErr = _const;
+		ID->OpWarn = _const;
+		KI = nullptr;
+		ID->ForwRecPtr = CFile->GetRecSpace();
+		FD->FF->RecPtr = CFile->GetRecSpace();
+		if (Lexem == '(') {
+			RdLex();
+			if ((Ii == 1) && (Lexem == '?')) {
+				SelQuest = true;
+				RdLex();
+			}
+			else {
+				ID->Bool = RdKeyInBool(&KI, false, false, ID->SQLFilter, this);
+			}
+			Accept(')');
+		}
+		if ((FDL != nullptr) && (FDL->LVRecPtr == nullptr) &&
+			((FDL->Cond != nullptr) || (FDL->KeyIn != nullptr) || (Ii == 1) && RO->UserCondQuest)) {
+			ID->Bool = RunEvalFrml(CFile, FDL->Cond, CRecPtr);
+			KI = FDL->KeyIn;
+			ID->SQLFilter = FDL->SQLFilter;
+			if (Ii == 1) SelQuest = RO->UserCondQuest;
+		}
+		//New(ID->Scan, Init(FD, CViewKey, KI, true));
+		ID->Scan = new XScan(FD, CViewKey, KI, true);
+		if ((FDL != nullptr) && (FDL->LVRecPtr != nullptr)) ID->Scan->ResetLV(FDL->LVRecPtr);
+		if (!(Lexem == ';' || Lexem == '#' || Lexem == 0x1A)) {
+			RdKFList(&ID->MFld, FD);
+		}
+		if (Ii > 1) {
+			if (IDA[Ii - 1]->MFld == nullptr) {
+				if (ID->MFld != nullptr) OldError(22);
+			}
+			else if (ID->MFld == nullptr) {
+				CopyPrevMFlds();
+			}
+			else {
+				CheckMFlds(IDA[Ii - 1]->MFld, ID->MFld);
+			}
+		}
+		RdAutoSortSK(ID);
+		TestLex('#');
+		if (FDL != nullptr) FDL = FDL->Chain;
+	} while (ForwChar == 'I');
+	MaxIi = Ii;
+	FrstLvM = MakeOldMLvD();
+
+	PageHd = nullptr; RprtHd = nullptr; PageFt = nullptr;
+	PFZeroLst.clear();
+	while (true) {
+		ReadChar();
+		s = toupper(CurrChar);
+		ReadChar();
+		s += toupper(CurrChar);
+		ChainSum = false;
+		ptrRdFldNameFrml = nullptr; // RdFldNameFrml;
+		WhatToRd = 'O';
+		if (s == "DE") { // detailni vystup
+			Rd_Oi();
+			RdLex();
+			WhatToRd = 'i';
+			RdBlock(&IDA[Oi]->FrstLvS->Ft);
+		}
+		else if (s == "RH") { // hlavicka sestavy
+			RdLex();
+			RdBlock(&RprtHd);
+		}
+		else if (s == "PH") { // hlavicka stranky
+			RdLex();
+			RdBlock(&PageHd);
+		}
+		else if (s == "DH") { // hlavicka detailu
+			Rd_Oi();
+			RdLex();
+			WhatToRd = 'i';
+			RdBlock(&IDA[Oi]->FrstLvS->Hd);
+		}
+		else if (s == "CH") { // hlavicka skupiny
+			Rd_Oi();
+			L = RdKeyName();
+			RdBlock(&L->Hd);
+		}
+		else if (s == "RF") { // paticka sestavy
+			ChainSum = true;
+			RdLex();
+			LvToRd = LstLvM;
+			CZeroLst = &LvToRd->ZeroLst;
+			RdBlock(&LvToRd->Ft);
+		}
+		else if (s == "CF") { // paticka skupiny
+			ChainSum = true;
+			Rd_Oi();
+			LvToRd = RdKeyName();
+			CZeroLst = &LvToRd->ZeroLst;
+			RdBlock(&LvToRd->Ft);
+		}
+		else if (s == "PF") { // paticka stranky
+			ChainSum = true;
+			RdLex();
+			LvToRd = LstLvM;
+			CZeroLst = &PFZeroLst;
+			RdBlock(&PageFt);
+		}
+		else {
+			Error(57);
+		}
+
+		if (Lexem != 0x1A) {
+			TestLex('#');
+			continue;
+		}
+		break;
+	}
+
+	for (i = 1; i <= MaxIi; i++) {
+		ID = IDA[i];
+		if (ID->ErrTxtFrml != nullptr) {
+			RdChkDsFromPos(ID->Scan->FD, ID->Chk);
+		}
+	}
+}
+
+void Report::Run(RprtOpt* RO)
+{
+	std::string ReportString;
+	wwmix ww;
+	LvDescr* L = nullptr;
+	std::string* s = nullptr;
+	WORD i = 0;
+	bool frst = false, isLPT1 = false;
+	WORD Times = 0;
+	bool ex = false, b = false;
+	BlkD* BD = nullptr;
+	BlkD* RFb = nullptr;
+	LockMode md;
+	if (SelQuest) {
+		CFile = IDA[1]->Scan->FD;
+		if (!ww.PromptFilter("", &IDA[1]->Bool, s)) {
+			PrintView = false;
+			return;
+		}
+	}
+	if (PgeLimitZ != nullptr) {
+		PgeLimit = RunInt(CFile, PgeLimitZ, CRecPtr);
+	}
+	else {
+		PgeLimit = spec.AutoRprtLimit;
+	}
+
+	if (PgeSizeZ != nullptr) {
+		PgeSize = RunInt(CFile, PgeSizeZ, CRecPtr);
+	}
+	else {
+		PgeSize = spec.AutoRprtLimit + spec.CpLines;
+	}
+
+	if (PgeSize < 2) PgeSize = 2;
+	if ((PgeLimit > PgeSize) || (PgeLimit == 0)) PgeLimit = PgeSize - 1;
+	if (!RewriteRprt(RO, PgeSize, Times, isLPT1)) return;  // pouze zajisti otevreni souboru
+	MarkStore(Store2Ptr);
+	ex = true;
+	//PushProcStk();
+	//NewExit(Ovr(), er);
+	//goto label3;
+	OpenInp();
+	MergOpGroup.Group = 1.0; frst = true; NLinesOutp = 0; PrintDH = 2;
+label0:
+	RunMsgOn('R', NRecsAll);
+	RecCount = 0;
+	for (i = 1; i <= MaxIi; i++) {
+		if (frst) frst = false;
+		else IDA[i]->Scan->SeekRec(0);
+		ReadInpFile(IDA[i]);
+	}
+	RprtPage = 1; RprtLine = 1; SetPage = false; FirstLines = true; WasDot = false;
+	WasFF2 = false; NoFF = false; LineLenLst = 0; FrstBlk = true;
+	ResetY();
+	L = LstLvM;
+	RFb = LstLvM->Ft;
+	ZeroSumFlds(L);
+	GetMinKey();
+	ZeroCount();
+	MoveFrstRecs();
+	if (RprtHd != nullptr) {
+		if (RprtHd->FF1) FormFeed(ReportString);
+		RprtPage = 1;
+		PrintBlkChn(RprtHd, ReportString, false, false);
+		TruncLine(ReportString);
+		if (WasFF2) FormFeed(ReportString);
+		if (SetPage) {
+			SetPage = false;
+			RprtPage = PageNo;
+		}
+		else RprtPage = 1;
+	}
+	if (NEof == MaxIi) goto label2;
+label1:
+	if (WasFF2) PrintPageHd(ReportString);
+	Headings(L, nullptr, ReportString);
+	MergeProc(ReportString);
+	MoveMFlds(NewMFlds, OldMFlds);
+	GetMinKey();
+	if (NEof == MaxIi) {
+		if (FrstLvM != LstLvM) Footings(FrstLvM, LstLvM->ChainBack, ReportString);
+	label2:
+		WasFF2 = false;
+		TruncLine(ReportString);
+		PrintBlkChn(RFb, ReportString, false, true);
+		b = WasFF2;
+		if ((PageFt != nullptr) && !PageFt->NotAtEnd) PrintPageFt(ReportString);
+		TruncLine(ReportString);
+		RunMsgOff();
+		if (Times > 1 /*only LPT1*/) {
+			Times--;
+			printf("%s%c", Rprt.c_str(), 0x0C);
+			goto label0;
+		}
+		if (b) FormFeed(ReportString);
+		ex = false;
+	label3:
+		//RestoreExit(er);
+		if (PrintView && (NLinesOutp == 0) && (LineLenLst == 0)) {
+			ReadMessage(159);
+			printf("%s\n", ReportString.c_str());
+			printf("%s%s", ReportString.c_str(), MsgLine.c_str());
+		}
+		Rprt.Close(ReportString.c_str());
+		// if (isLPT1) ClosePrinter(0);
+		CloseInp();
+		//PopProcStk();
+		if (ex) {
+			RunMsgOff();
+			if (!WasLPTCancel) GoExit();
+		}
+		return;
+	}
+	L = GetDifLevel();
+	Footings(FrstLvM, L, ReportString);
+	if (WasFF2) PrintPageFt(ReportString);
+	ZeroSumFlds(L);
+	ZeroCount();
+	MoveFrstRecs();
+	MergOpGroup.Group = MergOpGroup.Group + 1.0;
+	goto label1;
+}
+
+FrmlElem* Report::RdFldNameFrml(char& FTyp)
+{
+	LinkD* LD = nullptr; FileD* FD = nullptr; RFldD* RF = nullptr; LocVar* LV = nullptr;
+	WORD n = 0;
+	FrmlElem* Z = nullptr;
+	FrmlElem* result = nullptr;
+	bool WasIiPrefix = RdIiPrefix();
+	if ((FrmlSumEl != nullptr) && FrstSumVar && (CBlk != nullptr)) {
+		SumIi = 0; CBlkSave = CBlk; CBlk = nullptr;
+	}
+	if (IsForwPoint()) {
+		RdDirFilVar(FTyp, &result, WasIiPrefix);
+		return result;
+	}
+	if (!WasIiPrefix && FindLocVar(&LVBD, &LV)) {
+		RdLex();
+		TestNotSum();
+		result = new FrmlElem18(_getlocvar, LV);
+		FTyp = LV->FTyp;
+		return result;
+	}
+	if (IsKeyWord("COUNT")) {
+		TestNotSum();
+		SetIi_Report(WasIiPrefix);
+		result = new FrmlElemInp(_count, IDA[Ii]);
+		FTyp = 'R';
+		return result;
+	}
+	if (IsKeyWord("GROUP")) {
+		TestNotSum();
+		if (WasIiPrefix) OldError(41);
+		result = new FrmlElemMerge(_mergegroup, &MergOpGroup);
+		FTyp = 'R';
+		return result;
+	}
+	if (IsKeyWord("LINE")) { n = 0; goto label1; }
+	if (IsKeyWord("PAGE")) { n = 1; goto label1; }
+	if (IsKeyWord("PAGELIMIT")) {
+		n = 2;
+	label1:
+		if ((FrmlSumEl == nullptr) && !WasIiPrefix) {
+			Z = new FrmlElem1(_getWORDvar, 0); // GetOp(_getWORDvar, 1);
+			((FrmlElem1*)Z)->N01 = n;
+			result = Z;
+			FTyp = 'R';
+			return result;
+		}
+	}
+	if (IsKeyWord("ERROR")) {
+		Err('r', WasIiPrefix);
+		result = (FrmlElem*)(&IDA[Ii]->OpErr);
+		FTyp = 'B';
+		return result;
+	}
+	if (IsKeyWord("WARNING")) {
+		Err('r', WasIiPrefix);
+		result = (FrmlElem*)(&IDA[Ii]->OpWarn);
+		FTyp = 'B';
+		return result;
+	}
+	if (IsKeyWord("ERRORTEXT")) {
+		Err('r', WasIiPrefix);
+		result = IDA[Ii]->ErrTxtFrml;
+		FTyp = 'S';
+		return result;
+	}
+	if (FrmlSumEl != nullptr) {
+		//if (InpArrLen == 1099) {
+		//	printf("");
+		//}
+		if (FrstSumVar) {
+			if (FindInLvBlk(LvToRd->ChainBack, &CBlk, &RF)) {
+				FTyp = RF->FrmlTyp;
+				result = RF->Frml;
+				return result;
+			}
+			FindInRec(FTyp, &result, WasIiPrefix);
+			return result;
+		}
+		else if (CBlk == nullptr) { FindInRec(FTyp, &result, WasIiPrefix); return result; }
+		else if (OwnInBlock(FTyp, &result)) return result;
+		else OldError(8);
+	}
+	if (OwnInBlock(FTyp, &result)) return result;
+	FindInRec(FTyp, &result, WasIiPrefix);
+	return result;
+}
+
+void Report::ChainSumEl()
+{
+	CZeroLst->push_back(FrmlSumEl->at(0));
+
+	if (FrstSumVar || (SumIi == 0)) SumIi = 1;
+
+	if (FrstSumVar || (CBlk == nullptr)) {
+		if (IDA[SumIi]->Sum == nullptr) {
+			IDA[SumIi]->Sum = FrmlSumEl;
+		}
+		else {
+			for (size_t i = 0; i < FrmlSumEl->size(); i++) {
+				auto* el = FrmlSumEl->at(i);
+				IDA[SumIi]->Sum->push_back(el);
+			}
+			FrmlSumEl->clear();
+		}
+	}
+	else if (CBlk != nullptr && CBlk->Sum != nullptr) {
+		//std::vector<FrmlElemSum*>* S = CBlk->Sum;
+		for (size_t i = 0; i < CBlk->Sum->size(); i++) {
+			auto* el = CBlk->Sum->at(i);
+			FrmlSumEl->push_back(el);
+			CBlk->Sum->clear();
+		}
+	}
+
+	if (CBlkSave != nullptr) {
+		CBlk = CBlkSave;
+		CBlkSave = nullptr;
+	}
+}
+
+bool Report::FindInLvBlk(LvDescr* L, BlkD** B, RFldD** RF)
+{
+	bool first = true;
+	auto result = false;
+label1:
+	while (L != nullptr) {
+		BlkD* B1 = L->Ft;
+		while (B1 != nullptr) {
+			//RFldD* RF1 = B1->RFD;
+			//while (RF1 != nullptr) {
+			for (auto rf : B1->ReportFields) {
+				std::string sLexWord = LexWord;
+				if ((Lexem == _identifier) && EquUpCase(rf->Name, sLexWord)) {
+					RdLex();
+					result = true;
+					*RF = rf;
+					*B = B1;
+					return result;
+				}
+				//RF1 = (RFldD*)RF1->pChain;
+			}
+			B1 = (BlkD*)B1->pChain;
+		}
+		L = L->ChainBack;
+	}
+	if (first) {
+		first = false;
+		L = IDA[1]->FrstLvS;/*DE*/
+		goto label1;
+	}
+	return result;
+}
+
+FrmlElem* Report::FindIiandFldFrml(FileD** FD, char& FTyp)
+{
+	short i = 0;
+	FrmlElem* z = nullptr;
+	if (WhatToRd == 'i') {       /* search first in Ii*/
+		*FD = InpFD(Oi);
+		z = TryRdFldFrml(*FD, FTyp, this);
+		if (z != nullptr) {
+			Ii = Oi;
+			goto label1;
+		}
+	}
+	for (i = 1; i <= MaxIi; i++) {       /* search in  I1 .. Imax resp. Oi*/
+		*FD = InpFD(i);
+		z = TryRdFldFrml(*FD, FTyp, this);
+		if (z != nullptr) {
+			Ii = i;
+			goto label1;
+		}
+		if ((WhatToRd == 'i') && (i == Oi)) goto label1;
+	}
+label1:
+	return z;
+}
+
+void Report::RdDirFilVar(char& FTyp, FrmlElem** res, bool wasIiPrefix)
+{
+	LinkD* LD = nullptr;
+	FileD* FD = nullptr;
+	short I = 0;
+	FrmlElem* Z = nullptr;
+	if (wasIiPrefix) {
+		CFile = InpFD(Ii);
+		if (!IsRoleName(true, &FD, &LD)) Error(9);
+	}
+	else {
+		if (!Join && (WhatToRd == 'i')) {
+			Ii = Oi;
+			CFile = InpFD(Ii);
+			if (IsRoleName(true, &FD, &LD)) goto label2;
+		}
+		for (I = 1; I <= MaxIi; I++) {
+			CFile = InpFD(I);
+			if (IsRoleName(true, &FD, &LD)) {
+				Ii = I;
+				goto label2;
+			}
+			if ((WhatToRd == 'i') && (I == Oi)) goto label1;
+		}
+	label1:
+		Error(9);
+	}
+label2:
+	RdLex();/*'.'*/
+	Z = RdFAccess(FD, LD, FTyp);
+	if (LD == nullptr) Ii = 0;
+	else {
+		Z = FrmlContxt(Z, CFile, CFile->FF->RecPtr);
+		TestSetSumIi();
+		if ((FrmlSumEl != nullptr) && !FrstSumVar && (CBlk != nullptr)) {
+			OldError(59);
+		}
+	}
+	*res = Z;
+}
+
+bool Report::OwnInBlock(char& FTyp, FrmlElem** res)
+{
+	// RFldD* RF;
+	auto result = false;
+	// RF = CBlk->RFD;
+	// while (RF != nullptr) {
+	for (auto rf : CBlk->ReportFields) {
+		std::string sLexWord = LexWord;
+		if (EquUpCase(rf->Name, sLexWord)) {
+			RdLex();
+			FTyp = rf->FrmlTyp;
+			*res = rf->Frml;
+			result = true;
+			return result;
+		}
+		// RF = (RFldD*)RF->pChain;
+	}
+	return result;
+}
+
+void Report::FindInRec(char& FTyp, FrmlElem** res, bool wasIiPrefix)
+{
+	FileD* FD = nullptr;
+	FieldDescr* F = nullptr;
+	FrmlElem* Z = nullptr;
+	if (wasIiPrefix) {
+		FD = InpFD(Ii);
+		Z = TryRdFldFrml(FD, FTyp, this);
+	}
+	else Z = FindIiandFldFrml(&FD, FTyp);
+	if (Z == nullptr) Error(8);
+	TestSetSumIi();
+	*res = FrmlContxt(Z, FD, FD->FF->RecPtr);
+}
+
+void Report::Rd_Oi()
+{
+	Oi = 1;
+	if (isdigit(ForwChar)) {
+		ReadChar();
+		Oi = CurrChar - '0';
+		if ((Oi == 0) || (Oi > MaxIi)) Error(62);
+		WhatToRd = 'i';
+	}
+}
+
+LvDescr* Report::MakeOldMLvD()
+{
+	LvDescr* L1 = nullptr; WORD n = 0;
+	OldMFlds.clear();
+	NewMFlds.clear();
+	//LvDescr* L = (LvDescr*)GetZStore(sizeof(*L)); 
+	LvDescr* L = new LvDescr();
+	LstLvM = L;
+	KeyFldD* M = IDA[1]->MFld;
+	while (M != nullptr) {
+		OldMFlds.push_back(ConstListEl());
+		NewMFlds.push_back(ConstListEl());
+		L1 = new LvDescr();
+		L->ChainBack = L1;
+		L1->Chain = L;
+		L = L1;
+		L->Fld = M->FldD;
+		M = (KeyFldD*)M->pChain;
+	}
+	return L;
+}
+
+void Report::RdAutoSortSK(InpD* ID)
+{
+	KeyFldD* M = nullptr; KeyFldD* SK = nullptr; LvDescr* L = nullptr;
+	WORD n = 0; bool as = false;
+	if (Lexem == ';') { RdLex(); RdKFList(&ID->SFld, CFile); }
+	L = nullptr;
+	as = ID->AutoSort;
+	if (as) {
+		SK = (KeyFldD*)(&ID->SK);
+		M = ID->MFld;
+		while (M != nullptr) {
+			//SK->pChain = (KeyFldD*)GetStore(sizeof(*SK)); 
+			SK->pChain = new KeyFldD();
+			SK = (KeyFldD*)SK->pChain;
+			//Move(M, SK, sizeof(*SK)); 
+			*SK = *M;
+			M = (KeyFldD*)M->pChain;
+		}
+	}
+	M = ID->SFld;
+	while (M != nullptr) {
+		L = NewLvS(L, ID);
+		L->Fld = M->FldD;
+		n = sizeof(void*) + M->FldD->NBytes + 1;
+		ID->OldSFlds.push_back(ConstListEl());
+		if (as) {
+			SK->pChain = new KeyFldD();
+			SK = (KeyFldD*)SK->pChain;
+			*SK = *M;
+		}
+		M = (KeyFldD*)M->pChain;
+	}
+	if (as && (ID->SK == nullptr)) OldError(60);
+	ID->FrstLvS = NewLvS(L, ID);
+}
+
+LvDescr* Report::NewLvS(LvDescr* L, InpD* ID)
+{
+	LvDescr* L1 = new LvDescr();
+	L1->Chain = L;
+	if (L == nullptr) {
+		ID->LstLvS = L1;
+	}
+	else {
+		L->ChainBack = L1;
+	}
+	return L1;
+}
+
+void Report::RdAssignBlk(std::vector<AssignD*>* ARoot)
+{
+	if (IsKeyWord("BEGIN")) RdBeginEnd(ARoot);
+	else {
+		std::vector<AssignD*> A = RdAssign2();
+		for (auto assign : A) {
+			ARoot->push_back(assign);
+		}
+	}
+}
+
+void Report::RdBeginEnd(std::vector<AssignD*>* ARoot)
+{
+label1:
+	if (IsKeyWord("END")) return;
+	RdAssignBlk(ARoot);
+	if (Lexem == ';') {
+		RdLex();
+		goto label1;
+	}
+	AcceptKeyWord("END");
+}
+
+void Report::RdBlock(BlkD** BB)
+{
+	// metoda pouzivala metodu StoreCh, ta byla nahrazena promennou storedCh, ktera slouzi k ukladani nactenych dat
+
+	std::string storedCh; // pridano pro zprovozneni StoreCh(char, &short)
+
+	BYTE rep[256]{ 0 };
+	size_t offset = 0;
+
+	short LineLen = 0;
+	short I = 0, N = 0, L = 0, M = 0;
+	bool RepeatedGrp = false;        /*RdBlock - body*/
+	RFldD* RF = nullptr;
+	RFldD* RF1 = nullptr;
+	BlkD* DummyB = nullptr;
+	char UC = 0;
+	LocVar* LV = nullptr;
+
+	CBlk = new BlkD();
+	if (*BB == nullptr) *BB = CBlk;
+	else ChainLast(*BB, CBlk);
+	size_t reportFieldsVectorIndex = 0;
+	RdCond();
+	if (IsKeyWord("BEGIN")) {
+		RdBeginEnd(&CBlk->BeforeProc);
+		goto label1;
+	}
+	if (Lexem == ';') {
+		goto label2; // read var decl.
+	}
+label0:
+	if (IsKeyWord("BEGIN")) {
+		RdBeginEnd(&CBlk->AfterProc);
+		goto label2;
+	}
+	if (Lexem == '.') {
+		RdLex();
+		if (IsKeyWord("LINE"))
+			if (Lexem == _le) {
+				RdLex();
+				CBlk->LineBound = RdRealFrml(this);
+			}
+			else {
+				Accept(_assign);
+				CBlk->AbsLine = true;
+				CBlk->LineNo = RdRealFrml(this);
+			}
+		else if (IsKeyWord("PAGE")) {
+			Accept(_assign);
+			CBlk->SetPage = true;
+			CBlk->PageNo = RdRealFrml(this);
+		}
+		else if (IsKeyWord("NOTATEND")) {
+			CBlk->NotAtEnd = true;
+		}
+		else if (IsKeyWord("NOTSOLO")) {
+			CBlk->DHLevel = 1;
+		}
+		else {
+			Error(54);
+		}
+	}
+	else {
+		RF = new RFldD();
+		SkipBlank(false);
+		if (ForwChar == ':') {
+			TestIdentif();
+			RF->Name = LexWord;
+			if (FindInLvBlk(LstLvM, &DummyB, &RF1) || FindLocVar(&LVBD, &LV)) {
+				Error(26);
+			}
+			RdLex();
+			Accept(_assign);
+		}
+		else {
+			RF->Name = "";
+		}
+		RF->Frml = RdFrml(RF->FrmlTyp, this);
+		RF->BlankOrWrap = false;
+		CBlk->ReportFields.push_back(RF);
+	}
+label1:
+	if (Lexem != ';') {
+		Accept(',');
+		goto label0;
+	}
+label2:
+	//RF = CBlk->RFD;
+	reportFieldsVectorIndex = 0;
+	if (CBlk->ReportFields.empty()) {
+		RF = nullptr;
+	}
+	else {
+		reportFieldsVectorIndex = 0;
+		RF = CBlk->ReportFields.at(reportFieldsVectorIndex);
+	}
+
+	RepeatedGrp = false;
+	SkipBlank(true);
+	switch (ForwChar) {
+	case 0x1A: {
+		// ^Z
+		goto label4;
+		break;
+	}
+	case '\\': {
+		CBlk->FF1 = true;
+		ReadChar();
+		break;
+	}
+	}
+label3:
+	//LnL = (BYTE*)GetZStore(1);
+	//LnL = new BYTE;
+	//StrL = (WORD*)GetZStore(2);
+	//StrL = new WORD;
+	LineLen = 0;
+	storedCh = "";
+	if (CBlk->NTxtLines == 0) {
+		CBlk->lineLength = 0;
+		while (ForwChar == ' ') {
+			RdCh(LineLen);
+		}
+		CBlk->NBlksFrst = LineLen;
+	}
+	while (!(ForwChar == 0x0D || ForwChar == 0x1A))
+		switch (ForwChar) {
+		case '_':
+		case '@':
+		case 0x10: {
+			UC = (char)ForwChar;
+			storedCh += static_cast<char>(0xFF);
+			rep[offset++] = 0xFF;
+			if (RF == nullptr) {
+				if (CBlk->ReportFields.empty()) {
+					RF = nullptr;
+				}
+				else {
+					reportFieldsVectorIndex = 0;
+					RF = CBlk->ReportFields.at(reportFieldsVectorIndex);
+				}
+
+				if (RF == nullptr) Error(30);
+				RepeatedGrp = true;
+			}
+			if (UC == 0x10) {
+				if (RF->FrmlTyp != 'S') Error(12);
+				if (!RepeatedGrp) RF->Typ = 'P';
+				else if (RF->Typ != 'P') Error(73);
+				ReadChar();
+				goto label5;
+			}
+			L = NUnderscores(UC, LineLen);
+			switch (ForwChar) {
+			case ',': {
+				RdCh(LineLen);
+				if (RF->FrmlTyp != 'R') Error(12);
+				M = NUnderscores(UC, LineLen);
+				L = L + M + 1;
+				storedCh += static_cast<char>(L);
+				rep[offset++] = L;
+				storedCh += static_cast<char>(M);
+				rep[offset++] = M;
+				TestSetRFTyp('F', RepeatedGrp, RF);
+				break;
+			}
+			case '.': {
+				RdCh(LineLen);
+				if (RF->FrmlTyp != 'R') Error(12);
+				M = NUnderscores(UC, LineLen);
+				if (ForwChar == '.')
+				{
+					RdCh(LineLen);
+					N = NUnderscores(UC, LineLen);
+					if ((L != 2) || (M != 2) || !(N == 2 || N == 4)) Error(71);
+					TestSetRFTyp('D', RepeatedGrp, RF);
+					if (N == 4) RF->BlankOrWrap = true;
+				}
+				else {
+					L = L + M + 1;
+					storedCh += static_cast<char>(L);
+					rep[offset++] = L;
+					storedCh += static_cast<char>(M);
+					rep[offset++] = M;
+					TestSetRFTyp('R', RepeatedGrp, RF);
+				}
+				break;
+			}
+			case ':': {
+				RdCh(LineLen);
+				if (RF->FrmlTyp != 'R') Error(12);
+				M = NUnderscores(UC, LineLen);
+				if (M != 2) Error(69);
+				M = 3;
+				if (ForwChar == ':') {
+					RdCh(LineLen);
+					N = NUnderscores(UC, LineLen);
+					if (N != 2) Error(69);
+					M = 6;
+					if (ForwChar == '.') {
+						RdCh(LineLen);
+						N = NUnderscores(UC, LineLen);
+						if (N != 2) Error(69);
+						M = 9;
+					}
+				}
+				storedCh += static_cast<char>(L);
+				rep[offset++] = L;
+				storedCh += static_cast<char>(M);
+				rep[offset++] = M;
+				TestSetRFTyp('T', RepeatedGrp, RF);
+				break;
+			}
+			default: {
+				storedCh += (char)L;
+				rep[offset++] = L;
+				TestSetRFTyp(RF->FrmlTyp, RepeatedGrp, RF);
+				M = 0;
+				if (RF->Typ == 'S') M = LineLen - L + 1; /*current column*/
+				storedCh += static_cast<char>(M);
+				rep[offset++] = M;
+				break;
+			}
+			}
+			TestSetBlankOrWrap(RepeatedGrp, UC, RF);
+		label5:
+			//RF = (RFldD*)RF->pChain;
+			if (reportFieldsVectorIndex < CBlk->ReportFields.size() - 1) {
+				RF = CBlk->ReportFields.at(++reportFieldsVectorIndex);
+			}
+			else {
+				RF = nullptr;
+			}
+
+			break;
+		}
+		case '\\': {
+			CBlk->FF2 = true;
+			EndString(CBlk, rep, LineLen, storedCh.length());
+			offset = 0;
+			ReadChar();
+			goto label4;
+			break;
+		}
+		case '{':
+		case '#': {
+			//ReleaseStore(LnL);
+			goto label4;
+			break;
+		}
+		default: {
+			if (ForwChar == 0xff) {
+				storedCh += ' ';
+				rep[offset++] = ' ';
+			}
+			else {
+				storedCh += ForwChar;
+				rep[offset++] = ForwChar;
+			}
+			RdCh(LineLen);
+			break;
+		}
+		}
+	EndString(CBlk, rep, LineLen, storedCh.length());
+	offset = 0;
+	SkipBlank(true);
+	if (ForwChar != 0x1A) goto label3;
+label4:
+	if ((CBlk->NTxtLines == 1) && (CBlk->lineLength == 0) && CBlk->FF1) {
+		CBlk->NTxtLines = 0;
+		CBlk->FF1 = false;
+		CBlk->FF2 = true;
+	}
+	if (RF != nullptr) Error(30);
+	RdLex();
+
+	// TODO: co bude se storedCh? ulozi se nekam?
+	// vypada to, ze v EndString se se vstupem pracuje, string je mozna zbytecny
+}
+
+void Report::RdCh(short& LineLen)
+{
+	if (!IsPrintCtrl(ForwChar)) LineLen++;
+	ReadChar();
+}
+
+short Report::NUnderscores(char C, short& LineLen)
+{
+	short N = 0;
+	while (ForwChar == static_cast<BYTE>(C)) {
+		N++;
+		RdCh(LineLen);
+	}
+	return N;
+}
+
+void Report::EndString(BlkD* block, BYTE* buffer, size_t LineLen, size_t NBytesStored)
+{
+	// vlozime buffer do vectoru stringu
+	block->lines.push_back(std::string((char*)buffer, NBytesStored));
+
+	//*StrL = NBytesStored;
+	CBlk->NTxtLines++;
+	if (LineLen == 0) {
+		block->lineLength = 255;
+	}
+	else {
+		block->lineLength = LineLen;
+	}
+}
+
+void Report::TestSetRFTyp(char Typ, bool RepeatedGrp, RFldD* RF)
+{
+	if (RepeatedGrp) { if (RF->Typ != Typ) Error(73); }
+	else RF->Typ = Typ;
+	if (ForwChar == '.' || ForwChar == ',' || ForwChar == ':') Error(95);
+}
+
+void Report::TestSetBlankOrWrap(bool RepeatedGrp, char UC, RFldD* RF)
+{
+	if (RF->Typ == 'R' || RF->Typ == 'F' || RF->Typ == 'S') {
+		if (!RepeatedGrp) {
+			RF->BlankOrWrap = (UC == '@');
+		}
+		else {
+			if (RF->BlankOrWrap && (UC == '_')) Error(73);
+		}
+	}
+	else if (UC == '@') Error(80);
+}
+
+std::vector<AssignD*> Report::RdAssign2()
+{
+	LocVar* LV = nullptr; char FTyp = 0;
+	FileD* FD = nullptr; FieldDescr* F = nullptr;
+
+	std::vector<AssignD*> result;
+	AssignD* A = new AssignD();
+
+	if (IsKeyWord("IF")) {
+		A->Kind = _ifthenelseM;
+		A->Bool = RdBool(this);
+		AcceptKeyWord("THEN");
+		RdAssignBlk(&A->Instr);
+		if (IsKeyWord("ELSE")) {
+			RdAssignBlk(&A->ElseInstr);
+		}
+	}
+	else if (ForwChar == '.') {
+		A->Kind = _parfile;
+		FD = RdFileName();
+		if (!FD->IsParFile) OldError(9);
+		Accept('.');
+		A->FD = FD;
+		F = RdFldName(FD);
+		A->PFldD = F;
+		if ((F->Flg & f_Stored) == 0) OldError(14);
+		RdAssignFrml(F->frml_type, A->Add, &A->Frml);
+	}
+	else if (FindLocVar(&LVBD, &LV)) {
+		RdLex();
+		A->Kind = _locvar;
+		A->LV = LV;
+		RdAssignFrml(LV->FTyp, A->Add, &A->Frml);
+	}
+	else Error(147);
+
+	result.push_back(A);
+	return result;
+}
+
+void Report::RdCond()
+{
+	if (Lexem == '(') {
+		RdLex();
+		CBlk->Bool = RdBool(this);
+		Accept(')');
+	}
+}
+
+LvDescr* Report::RdKeyName()
+{
+	LvDescr* L = nullptr;
+	FieldDescr* F = nullptr;
+	ReadChar();
+	Lexem = CurrChar;
+	Accept('_');
+	if (WhatToRd == 'O') L = FrstLvM;
+	else L = IDA[Oi]->FrstLvS;
+	F = RdFldName(InpFD(Oi));
+	while (L != nullptr) {
+		if (L->Fld == F) { return L; }
+		L = L->Chain;
+	}
+	OldError(46);
+	return nullptr;
+}
+
+void Report::IncPage()
 {
 	if (SetPage) {
 		SetPage = false;
@@ -39,7 +1111,7 @@ void IncPage()
 	else RprtPage++;
 }
 
-void NewLine(std::string& text)
+void Report::NewLine(std::string& text)
 {
 	//printf("%s\n", Rprt.c_str());
 	text += '\n';
@@ -56,20 +1128,20 @@ void NewLine(std::string& text)
 	}
 }
 
-void FinishTuple(std::string& text)
+void Report::FinishTuple(std::string& text)
 {
 	while (Y.Blk != nullptr) {
 		Print1NTupel(text, true);
 	}
 }
 
-void TruncLine(std::string& text)
+void Report::TruncLine(std::string& text)
 {
 	FinishTuple(text);
 	if (LineLenLst > 0) NewLine(text);
 }
 
-void ResetY()
+void Report::ResetY()
 {
 	Y.Blk = nullptr;
 	Y.ChkPg = false;
@@ -81,7 +1153,7 @@ void ResetY()
 	Y.TLn = 0;
 }
 
-void FormFeed(std::string& text)
+void Report::FormFeed(std::string& text)
 {
 	short I = 0;
 	if (NoFF) NoFF = false;
@@ -94,7 +1166,7 @@ void FormFeed(std::string& text)
 	WasFF2 = false;
 }
 
-void Print1NTupel(std::string& text, bool Skip)
+void Report::Print1NTupel(std::string& text, bool Skip)
 {
 	WORD L;
 	double R = 0.0;
@@ -248,7 +1320,7 @@ label1:
 	Y.Blk = nullptr;
 }
 
-void RunAProc(std::vector<AssignD*> vAssign)
+void Report::RunAProc(std::vector<AssignD*> vAssign)
 {
 	for (AssignD* A : vAssign) {
 		switch (A->Kind) {
@@ -269,7 +1341,7 @@ void RunAProc(std::vector<AssignD*> vAssign)
 	}
 }
 
-void PrintTxt(BlkD* B, std::string& text, bool ChkPg)
+void Report::PrintTxt(BlkD* B, std::string& text, bool ChkPg)
 {
 	if (B == nullptr) return;
 	if (B->SetPage) {
@@ -309,15 +1381,13 @@ void PrintTxt(BlkD* B, std::string& text, bool ChkPg)
 	RunAProc(B->AfterProc);
 }
 
-bool OutOfLineBound(BlkD* B)
+bool Report::OutOfLineBound(BlkD* B)
 {
 	return ((B->LineBound != nullptr) && (RprtLine > RunReal(CFile, B->LineBound, CRecPtr))
 		|| B->AbsLine && (RunInt(CFile, B->LineNo, CRecPtr) < RprtLine));
 }
 
-void NewPage(std::string& text);
-
-void PrintBlkChn(BlkD* B, std::string& text, bool ChkPg, bool ChkLine)
+void Report::PrintBlkChn(BlkD* B, std::string& text, bool ChkPg, bool ChkLine)
 {
 	while (B != nullptr) {
 		if (RunBool(CFile, B->Bool, CRecPtr)) {
@@ -332,7 +1402,7 @@ void PrintBlkChn(BlkD* B, std::string& text, bool ChkPg, bool ChkLine)
 	}
 }
 
-void PrintPageFt(std::string& text)
+void Report::PrintPageFt(std::string& text)
 {
 	if (!FrstBlk) {
 		bool b = WasFF2;
@@ -346,7 +1416,7 @@ void PrintPageFt(std::string& text)
 	}
 }
 
-void PrintPageHd(std::string& text)
+void Report::PrintPageHd(std::string& text)
 {
 	bool b = FrstBlk;
 	if (!b) FormFeed(text);
@@ -354,7 +1424,7 @@ void PrintPageHd(std::string& text)
 	if (!b) PrintDH = 2;
 }
 
-void NewPage(std::string& text)
+void Report::NewPage(std::string& text)
 {
 	PrintPageFt(text);
 	PrintPageHd(text);
@@ -362,7 +1432,7 @@ void NewPage(std::string& text)
 	FrstBlk = false;
 }
 
-void WriteNBlks(std::string& text, short N)
+void Report::WriteNBlks(std::string& text, short N)
 {
 	if (N > 0) {
 		char buffer[256]{ '\0' };
@@ -380,7 +1450,7 @@ void WriteNBlks(std::string& text, short N)
 /// <param name="Wrap"></param>
 /// <param name="paragraph">odstavec (v originale Absatz)</param>
 /// <returns></returns>
-std::string GetLine(std::string& S, WORD Width, bool Wrap, bool& paragraph)
+std::string Report::GetLine(std::string& S, WORD Width, bool Wrap, bool& paragraph)
 {
 	WORD TAOff = 0;
 	short j = 0, iWrdEnd = 0, i2WrdEnd = 0, wWrdEnd = 0, nWrdEnd = 0;
@@ -481,7 +1551,7 @@ label1:
 /// <param name="Width">Delka textu</param>
 /// <param name="Wrap"></param>
 /// <returns></returns>
-std::string NewTxtCol(std::string S, WORD Col, WORD Width, bool Wrap)
+std::string Report::NewTxtCol(std::string S, WORD Col, WORD Width, bool Wrap)
 {
 	WORD i = 0, Ln = 0;
 	TTD* TD = nullptr;
@@ -520,7 +1590,7 @@ std::string NewTxtCol(std::string S, WORD Col, WORD Width, bool Wrap)
 	return ss;
 }
 
-void CheckPgeLimit(std::string& text)
+void Report::CheckPgeLimit(std::string& text)
 {
 	void* p2;
 	YRec YY;
@@ -535,7 +1605,7 @@ void CheckPgeLimit(std::string& text)
 	}
 }
 
-void PendingTT(std::string& text)
+void Report::PendingTT(std::string& text)
 {
 	StringListEl* SL = nullptr;
 	WORD lll = LineLenLst;
@@ -567,7 +1637,7 @@ void PendingTT(std::string& text)
 	}
 }
 
-void PrintBlock(BlkD* B, std::string& text, BlkD* DH)
+void Report::PrintBlock(BlkD* B, std::string& text, BlkD* DH)
 {
 	WORD LAfter = 0; BlkD* B1 = nullptr;
 	bool pdh = false;
@@ -603,7 +1673,7 @@ void PrintBlock(BlkD* B, std::string& text, BlkD* DH)
 	if (pdh) PrintDH = 2;
 }
 
-void Footings(LvDescr* L, LvDescr* L2, std::string& text)
+void Report::Footings(LvDescr* L, LvDescr* L2, std::string& text)
 {
 	while (L != nullptr) {
 		PrintBlock(L->Ft, text, nullptr);
@@ -612,7 +1682,7 @@ void Footings(LvDescr* L, LvDescr* L2, std::string& text)
 	}
 }
 
-void Headings(LvDescr* L, LvDescr* L2, std::string& text)
+void Report::Headings(LvDescr* L, LvDescr* L2, std::string& text)
 {
 	while ((L != nullptr) && (L != L2)) {
 		PrintBlock(L->Hd, text, nullptr);
@@ -620,7 +1690,7 @@ void Headings(LvDescr* L, LvDescr* L2, std::string& text)
 	}
 }
 
-void ReadInpFile(InpD* ID)
+void Report::ReadInpFile(InpD* ID)
 {
 	CRecPtr = ID->ForwRecPtr;
 label1:
@@ -635,7 +1705,7 @@ label1:
 	if (!RunBool(CFile, ID->Bool, CRecPtr)) goto label1;
 }
 
-void OpenInp()
+void Report::OpenInp()
 {
 	NRecsAll = 0;
 	for (short i = 1; i <= MaxIi; i++) {
@@ -649,7 +1719,7 @@ void OpenInp()
 	}
 }
 
-void CloseInp()
+void Report::CloseInp()
 {
 	for (WORD i = 1; i <= MaxIi; i++) {
 		if (IDA[i]->Scan->Kind != 5) {
@@ -660,7 +1730,7 @@ void CloseInp()
 	}
 }
 
-WORD CompMFlds(std::vector<ConstListEl>& C, KeyFldD* M, short& NLv)
+WORD Report::CompMFlds(std::vector<ConstListEl>& C, KeyFldD* M, short& NLv)
 {
 	XString x;
 	NLv = 0;
@@ -678,7 +1748,7 @@ WORD CompMFlds(std::vector<ConstListEl>& C, KeyFldD* M, short& NLv)
 	return _equ;
 }
 
-void GetMFlds(std::vector<ConstListEl>& C, KeyFldD* M)
+void Report::GetMFlds(std::vector<ConstListEl>& C, KeyFldD* M)
 {
 	for (auto& c : C) {
 		XString x;
@@ -689,7 +1759,7 @@ void GetMFlds(std::vector<ConstListEl>& C, KeyFldD* M)
 	}
 }
 
-void MoveMFlds(std::vector<ConstListEl>& C1, std::vector<ConstListEl>& C2)
+void Report::MoveMFlds(std::vector<ConstListEl>& C1, std::vector<ConstListEl>& C2)
 {
 	for (size_t i = 0; i < C2.size(); i++) {
 		// puvodne se kopiroval jen pstring z C1 do C2
@@ -697,7 +1767,7 @@ void MoveMFlds(std::vector<ConstListEl>& C1, std::vector<ConstListEl>& C2)
 	}
 }
 
-void PutMFlds(KeyFldD* M)
+void Report::PutMFlds(KeyFldD* M)
 {
 	if (MinID == nullptr) return;
 	FileD* cf = CFile;
@@ -735,7 +1805,7 @@ void PutMFlds(KeyFldD* M)
 	}
 }
 
-void GetMinKey()
+void Report::GetMinKey()
 {
 	short i, nlv;
 	short mini = 0; NEof = 0;
@@ -776,14 +1846,14 @@ void GetMinKey()
 	}
 }
 
-void ZeroCount()
+void Report::ZeroCount()
 {
 	for (short i = 1; i <= MaxIi; i++) {
 		IDA[i]->Count = 0.0;
 	}
 }
 
-LvDescr* GetDifLevel()
+LvDescr* Report::GetDifLevel()
 {
 	//ConstListEl* C1 = NewMFlds;
 	//ConstListEl* C2 = OldMFlds;
@@ -804,7 +1874,7 @@ LvDescr* GetDifLevel()
 	return nullptr;
 }
 
-void MoveForwToRec(InpD* ID)
+void Report::MoveForwToRec(InpD* ID)
 {
 	/* !!! with ID^ do!!! */
 	CFile = ID->Scan->FD;
@@ -830,7 +1900,7 @@ void MoveForwToRec(InpD* ID)
 	}
 }
 
-void MoveFrstRecs()
+void Report::MoveFrstRecs()
 {
 	for (short i = 1; i <= MaxIi; i++) {
 		if (IDA[i]->Exist) MoveForwToRec(IDA[i]);
@@ -843,7 +1913,7 @@ void MoveFrstRecs()
 	}
 }
 
-void MergeProc(std::string& text)
+void Report::MergeProc(std::string& text)
 {
 	short nlv = 0;
 	short res = 0;
@@ -892,7 +1962,7 @@ void MergeProc(std::string& text)
 	}
 }
 
-bool RewriteRprt(RprtOpt* RO, WORD pageLimit, WORD& Times, bool& IsLPT1)
+bool Report::RewriteRprt(RprtOpt* RO, WORD pageLimit, WORD& Times, bool& IsLPT1)
 {
 	auto result = false;
 	WasLPTCancel = false;
@@ -936,128 +2006,4 @@ bool RewriteRprt(RprtOpt* RO, WORD pageLimit, WORD& Times, bool& IsLPT1)
 	}
 	result = true;
 	return result;
-}
-
-void RunReport(RprtOpt* RO)
-{
-	std::string ReportString;
-	wwmix ww;
-	LvDescr* L = nullptr;
-	std::string* s = nullptr;
-	WORD i = 0;
-	bool frst = false, isLPT1 = false;
-	WORD Times = 0;
-	bool ex = false, b = false;
-	BlkD* BD = nullptr;
-	BlkD* RFb = nullptr;
-	LockMode md;
-	if (SelQuest) {
-		CFile = IDA[1]->Scan->FD;
-		if (!ww.PromptFilter("", &IDA[1]->Bool, s)) {
-			PrintView = false;
-			return;
-		}
-	}
-	if (PgeLimitZ != nullptr) {
-		PgeLimit = RunInt(CFile, PgeLimitZ, CRecPtr);
-	}
-	else {
-		PgeLimit = spec.AutoRprtLimit;
-	}
-
-	if (PgeSizeZ != nullptr) {
-		PgeSize = RunInt(CFile, PgeSizeZ, CRecPtr);
-	}
-	else {
-		PgeSize = spec.AutoRprtLimit + spec.CpLines;
-	}
-
-	if (PgeSize < 2) PgeSize = 2;
-	if ((PgeLimit > PgeSize) || (PgeLimit == 0)) PgeLimit = PgeSize - 1;
-	if (!RewriteRprt(RO, PgeSize, Times, isLPT1)) return;  // pouze zajisti otevreni souboru
-	MarkStore(Store2Ptr);
-	ex = true;
-	//PushProcStk();
-	//NewExit(Ovr(), er);
-	//goto label3;
-	OpenInp();
-	MergOpGroup.Group = 1.0; frst = true; NLinesOutp = 0; PrintDH = 2;
-label0:
-	RunMsgOn('R', NRecsAll);
-	RecCount = 0;
-	for (i = 1; i <= MaxIi; i++) {
-		if (frst) frst = false;
-		else IDA[i]->Scan->SeekRec(0);
-		ReadInpFile(IDA[i]);
-	}
-	RprtPage = 1; RprtLine = 1; SetPage = false; FirstLines = true; WasDot = false;
-	WasFF2 = false; NoFF = false; LineLenLst = 0; FrstBlk = true;
-	ResetY();
-	L = LstLvM;
-	RFb = LstLvM->Ft;
-	ZeroSumFlds(L);
-	GetMinKey();
-	ZeroCount();
-	MoveFrstRecs();
-	if (RprtHd != nullptr) {
-		if (RprtHd->FF1) FormFeed(ReportString);
-		RprtPage = 1;
-		PrintBlkChn(RprtHd, ReportString, false, false);
-		TruncLine(ReportString);
-		if (WasFF2) FormFeed(ReportString);
-		if (SetPage) {
-			SetPage = false;
-			RprtPage = PageNo;
-		}
-		else RprtPage = 1;
-	}
-	if (NEof == MaxIi) goto label2;
-label1:
-	if (WasFF2) PrintPageHd(ReportString);
-	Headings(L, nullptr, ReportString);
-	MergeProc(ReportString);
-	MoveMFlds(NewMFlds, OldMFlds);
-	GetMinKey();
-	if (NEof == MaxIi) {
-		if (FrstLvM != LstLvM) Footings(FrstLvM, LstLvM->ChainBack, ReportString);
-	label2:
-		WasFF2 = false;
-		TruncLine(ReportString);
-		PrintBlkChn(RFb, ReportString, false, true);
-		b = WasFF2;
-		if ((PageFt != nullptr) && !PageFt->NotAtEnd) PrintPageFt(ReportString);
-		TruncLine(ReportString);
-		RunMsgOff();
-		if (Times > 1 /*only LPT1*/) {
-			Times--;
-			printf("%s%c", Rprt.c_str(), 0x0C);
-			goto label0;
-		}
-		if (b) FormFeed(ReportString);
-		ex = false;
-	label3:
-		//RestoreExit(er);
-		if (PrintView && (NLinesOutp == 0) && (LineLenLst == 0)) {
-			ReadMessage(159);
-			printf("%s\n", ReportString.c_str());
-			printf("%s%s", ReportString.c_str(), MsgLine.c_str());
-		}
-		Rprt.Close(ReportString.c_str());
-		// if (isLPT1) ClosePrinter(0);
-		CloseInp();
-		//PopProcStk();
-		if (ex) {
-			RunMsgOff();
-			if (!WasLPTCancel) GoExit();
-		}
-		return;
-	}
-	L = GetDifLevel();
-	Footings(FrstLvM, L, ReportString);
-	if (WasFF2) PrintPageFt(ReportString);
-	ZeroSumFlds(L);
-	ZeroCount();
-	MoveFrstRecs();
-	MergOpGroup.Group = MergOpGroup.Group + 1.0;
-	goto label1;
 }

@@ -28,7 +28,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="genrprt.cpp" />
-    <ClCompile Include="rdmerg.cpp" />
     <ClCompile Include="rdrprt.cpp" />
     <ClCompile Include="runmerg.cpp" />
     <ClCompile Include="runrprt.cpp" />

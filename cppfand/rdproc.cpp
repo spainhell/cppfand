@@ -87,7 +87,7 @@ FrmlElem* RdRecVarFldFrml(LocVar* LV, char& FTyp)
 		Z->LD = (LinkD*)LV->RecPtr;
 		bool fa = FileVarsAllowed;
 		FileVarsAllowed = true;
-		Z->P011 = RdFldNameFrmlF(FTyp);
+		Z->P011 = RdFldNameFrmlF(FTyp, nullptr);
 		FileVarsAllowed = fa;
 		CFile = cf;
 		return Z;
@@ -130,7 +130,7 @@ char RdOwner(LinkD** LLD, LocVar** LLV)
 			if (ld->ToFD->typSQLFile) Error(155);
 #endif
 			Accept('[');
-			*LLV = (LocVar*)RdRealFrml();
+			*LLV = (LocVar*)RdRealFrml(nullptr);
 			Accept(']');
 			result = 'F';
 			*LLD = ld;
@@ -176,7 +176,7 @@ char RdOwner(LinkD** LLD, LocVar** LLV)
 				if (ld->ToFD->typSQLFile) Error(155);
 #endif
 				Accept('[');
-				*LLV = (LocVar*)RdRealFrml();
+				*LLV = (LocVar*)RdRealFrml(nullptr);
 				Accept(']');
 				result = 'F';
 				*LLD = ld;
@@ -189,7 +189,7 @@ char RdOwner(LinkD** LLD, LocVar** LLV)
 	return result;
 }
 
-FrmlElem* RdFldNameFrmlP(char& FTyp)
+FrmlElem* RdFldNameFrmlP(char& FTyp, MergeReportBase* caller)
 {
 	FileD* FD = nullptr; FrmlElem* Z = nullptr; LocVar* LV = nullptr;
 	instr_type Op = _notdefined;
@@ -267,7 +267,7 @@ FrmlElem* RdFldNameFrmlP(char& FTyp)
 #ifdef FandSQL
 		if (FD->typSQLFile) OldError(155);
 #endif
-		A->PPPPP1 = RdRealFrml();
+		A->PPPPP1 = RdRealFrml(nullptr);
 		Accept(']');
 		Accept('.');
 		F = RdFldName(FD);
@@ -298,7 +298,7 @@ FrmlElem* RdFldNameFrmlP(char& FTyp)
 		return result;
 	}
 	if (FileVarsAllowed) {
-		Z = TryRdFldFrml(CFile, FTyp);
+		Z = TryRdFldFrml(CFile, FTyp, nullptr);
 		if (Z == nullptr) Error(8);
 		result = Z;
 		return result;
@@ -385,19 +385,19 @@ FrmlElem* RdFunctionP(char& FFTyp)
 		RdLex();
 		Z = new FrmlElem21(_eval, 5); // GetOp(_eval, 5);
 		((FrmlElem21*)Z)->EvalTyp = FTyp;
-		((FrmlElem21*)Z)->EvalP1 = RdStrFrml();
+		((FrmlElem21*)Z)->EvalP1 = RdStrFrml(nullptr);
 	}
 	else if (FileVarsAllowed) Error(75);
 	else if (IsKeyWord("PROMPT")) {
 		RdLex();
 		Z = new FrmlElem11(_prompt, 4); // GetOp(_prompt, 4);
-		((FrmlElem11*)Z)->PPP1 = RdStrFrml();
+		((FrmlElem11*)Z)->PPP1 = RdStrFrml(nullptr);
 		FieldDescr* F = RdFieldDescr("", true);
 		((FrmlElem11*)Z)->FldD = F; FTyp = F->frml_type;
 		if (F->field_type == FieldType::TEXT) OldError(65);
 		if (Lexem == _assign) {
 			RdLex();
-			((FrmlElem11*)Z)->PP2 = RdFrml(Typ);
+			((FrmlElem11*)Z)->PP2 = RdFrml(Typ, nullptr);
 			if (Typ != FTyp) OldError(12);
 		}
 	}
@@ -433,7 +433,7 @@ FrmlElem* RdFunctionP(char& FFTyp)
 			while (KF != nullptr) {
 				Accept(',');
 				if (N > 29) Error(123);
-				Arg[N] = RdFrml(Typ);
+				Arg[N] = RdFrml(Typ, nullptr);
 				N++;
 				if (Typ != KF->FldD->frml_type) OldError(12);
 				KF = (KeyFldD*)KF->pChain;
@@ -442,7 +442,7 @@ FrmlElem* RdFunctionP(char& FFTyp)
 		else {
 			Accept(',');
 			N = 1;
-			Arg[0] = RdRealFrml();
+			Arg[0] = RdRealFrml(nullptr);
 		}
 		Z = new FrmlElem13(Op, (N + 2) * 4); // GetOp(Op, (N + 2) * 4);
 		auto iZ = (FrmlElem13*)Z;
@@ -465,7 +465,7 @@ FrmlElem* RdFunctionP(char& FFTyp)
 		else {
 			FD = RdFileName();
 			Accept('[');
-			iZ->LinkRecFrml = RdRealFrml();
+			iZ->LinkRecFrml = RdRealFrml(nullptr);
 			Accept(']');
 		}
 		Accept(',');
@@ -492,7 +492,7 @@ FrmlElem* RdFunctionP(char& FFTyp)
 			FD = RdFileName();
 			((FrmlElem14*)Z)->RecFD = FD;
 			Accept(',');
-			((FrmlElem14*)Z)->PPPPP1 = RdRealFrml();
+			((FrmlElem14*)Z)->PPPPP1 = RdRealFrml(nullptr);
 		label2: {}
 #ifdef FandSQL
 			if (FD->typSQLFile) Error(155);
@@ -502,7 +502,7 @@ FrmlElem* RdFunctionP(char& FFTyp)
 	else if (IsKeyWord("GETPATH")) {
 		RdLex();
 		Z = new FrmlElem0(_getpath, 0); // GetOp(_getpath, 0);
-		((FrmlElem0*)Z)->P1 = RdStrFrml();
+		((FrmlElem0*)Z)->P1 = RdStrFrml(nullptr);
 		FTyp = 'S';
 	}
 	else if (IsKeyWord("GETTXT")) {
@@ -520,10 +520,10 @@ FrmlElem* RdFunctionP(char& FFTyp)
 		RdPath(true, iZ->TxtPath, iZ->TxtCatIRec);
 		if ((Z->Op == _gettxt) && (Lexem == ',')) {
 			RdLex();
-			iZ->PPPPPP1 = RdRealFrml();
+			iZ->PPPPPP1 = RdRealFrml(nullptr);
 			if (Lexem == ',') {
 				RdLex();
-				iZ->PPPP2 = RdRealFrml();
+				iZ->PPPP2 = RdRealFrml(nullptr);
 			}
 		}
 	}
@@ -531,11 +531,11 @@ FrmlElem* RdFunctionP(char& FFTyp)
 		RdLex();
 		Z = new FrmlElem0(_inttsr, 5); // GetOp(_inttsr, 5);
 		auto iZ = (FrmlElem0*)Z;
-		iZ->P1 = RdRealFrml(); Accept(',');
-		iZ->P2 = RdRealFrml(); Accept(',');
+		iZ->P1 = RdRealFrml(nullptr); Accept(',');
+		iZ->P2 = RdRealFrml(nullptr); Accept(',');
 		Typ = 'r';
 		if (IsRecVar(&LV)) iZ->P3 = (FrmlElem*)LV->RecPtr;
-		else iZ->P3 = RdFrml(Typ);
+		else iZ->P3 = RdFrml(Typ, nullptr);
 		iZ->N31 = Typ;
 		FTyp = 'R';
 	}
@@ -553,7 +553,7 @@ FrmlElem* RdFunctionP(char& FFTyp)
 	else if (IsKeyWord("PROMPTYN")) {
 		RdLex();
 		Z = new FrmlElem0(_promptyn, 0); // GetOp(_promptyn, 0);
-		((FrmlElem0*)Z)->P1 = RdStrFrml();
+		((FrmlElem0*)Z)->P1 = RdStrFrml(nullptr);
 		FTyp = 'B';
 	}
 	else if (IsKeyWord("MOUSEEVENT")) {
@@ -572,17 +572,17 @@ FrmlElem* RdFunctionP(char& FFTyp)
 		RdLex();
 		Z = new FrmlElem0(_mousein, 4); // GetOp(_mousein, 4);
 		auto iZ = (FrmlElem0*)Z;
-		iZ->P1 = RdRealFrml(); Accept(',');
-		iZ->P2 = RdRealFrml(); Accept(',');
-		iZ->P3 = RdRealFrml(); Accept(',');
-		iZ->P4 = RdRealFrml(); FTyp = 'B';
+		iZ->P1 = RdRealFrml(nullptr); Accept(',');
+		iZ->P2 = RdRealFrml(nullptr); Accept(',');
+		iZ->P3 = RdRealFrml(nullptr); Accept(',');
+		iZ->P4 = RdRealFrml(nullptr); FTyp = 'B';
 	}
 	else if (IsKeyWord("PORTIN")) {
 		RdLex();
 		Z = new FrmlElem0(_portin, 0); // GetOp(_portin, 0);
 		auto iZ = (FrmlElem0*)Z;
-		iZ->P1 = RdBool(); Accept(',');
-		iZ->P2 = RdRealFrml(); FTyp = 'R';
+		iZ->P1 = RdBool(nullptr); Accept(',');
+		iZ->P2 = RdRealFrml(nullptr); FTyp = 'R';
 	}
 	else {
 		Error(75);
@@ -610,14 +610,14 @@ XKey* RdViewKeyImpl(FileD* FD)
 void RdSelectStr(FrmlElem0* Z)
 {
 	Z->Delim = 0x0D; // CTRL+M
-	Z->P1 = RdRealFrml(); Accept(',');
-	Z->P2 = RdRealFrml(); Accept(',');
-	Z->P3 = RdStrFrml();
+	Z->P1 = RdRealFrml(nullptr); Accept(',');
+	Z->P2 = RdRealFrml(nullptr); Accept(',');
+	Z->P3 = RdStrFrml(nullptr);
 	while (Lexem == ',') {
 		RdLex();
-		if (IsOpt("HEAD")) Z->P4 = RdStrFrml();
-		else if (IsOpt("FOOT")) Z->P5 = RdStrFrml();
-		else if (IsOpt("MODE")) Z->P6 = RdStrFrml();
+		if (IsOpt("HEAD")) Z->P4 = RdStrFrml(nullptr);
+		else if (IsOpt("FOOT")) Z->P5 = RdStrFrml(nullptr);
+		else if (IsOpt("MODE")) Z->P6 = RdStrFrml(nullptr);
 		else if (IsOpt("DELIM")) Z->Delim = RdQuotedChar();
 		else Error(157);
 	}
@@ -656,7 +656,7 @@ void RdChoices(Instr_menu* PD)
 
 			N++;
 			if ((PD->Kind == _menubar) && (N > 30)) Error(102);
-			CD->TxtFrml = RdStrFrml();
+			CD->TxtFrml = RdStrFrml(nullptr);
 			if (Lexem == ',') {
 				RdLex();
 				if (Lexem != ',') {
@@ -666,7 +666,7 @@ void RdChoices(Instr_menu* PD)
 				if (Lexem == ',') {
 					RdLex();
 					if (Lexem != ',') {
-						CD->Condition = RdBool();
+						CD->Condition = RdBool(nullptr);
 						if (Lexem == '!') {
 							CD->DisplEver = true;
 							RdLex();
@@ -710,16 +710,16 @@ Instr* RdMenuBox(bool Loop)
 	if (Lexem == '(') {
 		RdLex();
 		if (Lexem != ';') {
-			PD->X = RdRealFrml();
+			PD->X = RdRealFrml(nullptr);
 			Accept(',');
-			PD->Y = RdRealFrml();
+			PD->Y = RdRealFrml(nullptr);
 		}
 		RdMenuAttr(PD);
 		Accept(')');
 	}
 	if (Lexem == '!') { RdLex(); PD->Shdw = true; }
 	if (IsKeyWord("PULLDOWN")) PD->PullDown = true;
-	if (!TestKeyWord("OF")) PD->HdLine = RdStrFrml();
+	if (!TestKeyWord("OF")) PD->HdLine = RdStrFrml(nullptr);
 	RdChoices(PD);
 	return result;
 }
@@ -731,11 +731,11 @@ Instr* RdMenuBar()
 	if (Lexem == '(') {
 		RdLex();
 		if (Lexem != ';') {
-			PD->Y = RdRealFrml();
+			PD->Y = RdRealFrml(nullptr);
 			if (Lexem == ',') {
 				RdLex();
-				PD->X = RdRealFrml();	Accept(',');
-				PD->XSz = RdRealFrml();
+				PD->X = RdRealFrml(nullptr);	Accept(',');
+				PD->XSz = RdRealFrml(nullptr);
 			}
 		}
 		RdMenuAttr(PD);
@@ -749,7 +749,7 @@ Instr_loops* RdIfThenElse()
 {
 	auto PD = new Instr_loops(_ifthenelseP); // GetPInstr(_ifthenelseP, 12);
 	auto result = PD;
-	PD->Bool = RdBool();
+	PD->Bool = RdBool(nullptr);
 	AcceptKeyWord("THEN");
 	PD->Instr1 = RdPInstr();
 	if (IsKeyWord("ELSE")) PD->ElseInstr1 = RdPInstr();
@@ -760,7 +760,7 @@ Instr_loops* RdWhileDo()
 {
 	auto PD = new Instr_loops(_whiledo); // GetPInstr(_whiledo, 8);
 	auto result = PD;
-	PD->Bool = RdBool();
+	PD->Bool = RdBool(nullptr);
 	AcceptKeyWord("DO");
 	PD->Instr1 = RdPInstr();
 	return result;
@@ -775,7 +775,7 @@ Instr* RdFor()
 	auto result = PD;
 	PD->AssLV = LV;
 	Accept(_assign);
-	PD->Frml = RdRealFrml();
+	PD->Frml = RdRealFrml(nullptr);
 
 	AcceptKeyWord("TO");
 	auto iLoop = new Instr_loops(_whiledo); // GetPInstr(_whiledo, 8);
@@ -786,7 +786,7 @@ Instr* RdFor()
 	Z1->LV1 = LV;
 	Z1->N21 = _le;
 	Z1->N22 = 5;
-	Z1->P2 = RdRealFrml();
+	Z1->P2 = RdRealFrml(nullptr);
 	iLoop->Bool = Z1;
 
 	AcceptKeyWord("DO");
@@ -815,7 +815,7 @@ Instr* RdCase()
 		else PD->ElseInstr1 = PD1;
 		PD = PD1;
 		first = false;
-		PD->Bool = RdBool();
+		PD->Bool = RdBool(nullptr);
 		Accept(':');
 		PD->Instr1 = RdPInstr();
 		bool b = Lexem == ';';
@@ -857,7 +857,7 @@ Instr_loops* RdRepeatUntil()
 			break;
 		}
 	}
-	PD->Bool = RdBool();
+	PD->Bool = RdBool(nullptr);
 	return result;
 }
 
@@ -916,7 +916,7 @@ Instr_forall* RdForAll()
 	}
 	if (Lexem == '(') {
 		RdLex();
-		PD->CBool = RdKeyInBool(&PD->CKIRoot, false, true, PD->CSQLFilter);
+		PD->CBool = RdKeyInBool(&PD->CKIRoot, false, true, PD->CSQLFilter, nullptr);
 		if ((PD->CKIRoot != nullptr) && (PD->CLV != nullptr)) OldError(118);
 		Accept(')');
 	}
@@ -987,7 +987,7 @@ Instr_proc* RdProcArg(char Caller)
 				Accept(_identifier);
 				Accept(',');
 				auto z = new FrmlElem0(_setmybp, 0); // GetOp(_setmybp, 0);
-				z->P1 = RdStrFrml();
+				z->P1 = RdStrFrml(nullptr);
 				TArg[N].TxtFrml = z;
 				Accept(']');
 			}
@@ -997,7 +997,7 @@ Instr_proc* RdProcArg(char Caller)
 			TArg[N].FTyp = 'f';
 		}
 		else {
-			TArg[N].Frml = RdFrml(TArg[N].FTyp);
+			TArg[N].Frml = RdFrml(TArg[N].FTyp, nullptr);
 		}
 		if (Lexem == ',') {
 			RdLex();
@@ -1077,11 +1077,11 @@ void RdKeyCode(EdExitD* X)
 bool RdHeadLast(EditOpt* EO)
 {
 	auto result = true;
-	if (IsOpt("HEAD")) EO->Head = RdStrFrml();
-	else if (IsOpt("LAST")) EO->Last = RdStrFrml();
-	else if (IsOpt("CTRL")) EO->CtrlLast = RdStrFrml();
-	else if (IsOpt("ALT")) EO->AltLast = RdStrFrml();
-	else if (IsOpt("SHIFT")) EO->ShiftLast = RdStrFrml();
+	if (IsOpt("HEAD")) EO->Head = RdStrFrml(nullptr);
+	else if (IsOpt("LAST")) EO->Last = RdStrFrml(nullptr);
+	else if (IsOpt("CTRL")) EO->CtrlLast = RdStrFrml(nullptr);
+	else if (IsOpt("ALT")) EO->AltLast = RdStrFrml(nullptr);
+	else if (IsOpt("SHIFT")) EO->ShiftLast = RdStrFrml(nullptr);
 	else result = false;
 	return result;
 }
@@ -1089,11 +1089,11 @@ bool RdHeadLast(EditOpt* EO)
 bool RdHeadLast(Instr_edittxt* IE)
 {
 	auto result = true;
-	if (IsOpt("HEAD")) IE->Head = RdStrFrml();
-	else if (IsOpt("LAST")) IE->Last = RdStrFrml();
-	else if (IsOpt("CTRL")) IE->CtrlLast = RdStrFrml();
-	else if (IsOpt("ALT")) IE->AltLast = RdStrFrml();
-	else if (IsOpt("SHIFT")) IE->ShiftLast = RdStrFrml();
+	if (IsOpt("HEAD")) IE->Head = RdStrFrml(nullptr);
+	else if (IsOpt("LAST")) IE->Last = RdStrFrml(nullptr);
+	else if (IsOpt("CTRL")) IE->CtrlLast = RdStrFrml(nullptr);
+	else if (IsOpt("ALT")) IE->AltLast = RdStrFrml(nullptr);
+	else if (IsOpt("SHIFT")) IE->ShiftLast = RdStrFrml(nullptr);
 	else result = false;
 	return result;
 }
@@ -1124,10 +1124,10 @@ bool RdViewOpt(EditOpt* EO)
 			((FrmlElem4*)EO->Mode)->S = LexWord;
 			RdLex();
 		}
-		else EO->Mode = RdStrFrml();
+		else EO->Mode = RdStrFrml(nullptr);
 	}
 	else if (RdHeadLast(EO)) return result;
-	else if (IsOpt("WATCH")) EO->WatchDelayZ = RdRealFrml();
+	else if (IsOpt("WATCH")) EO->WatchDelayZ = RdRealFrml(nullptr);
 	else if (IsOpt("WW")) {
 		Accept('('); EO->WFlags = 0;
 		if (Lexem == '(') { RdLex(); EO->WFlags = WNoPop; }
@@ -1191,10 +1191,10 @@ bool RdViewOpt(EditOpt* EO)
 	else if (IsOpt("COND")) {
 		if (Lexem == '(') {
 			RdLex();
-			EO->Cond = RdKeyInBool(&EO->KIRoot, false, true, EO->SQLFilter);
+			EO->Cond = RdKeyInBool(&EO->KIRoot, false, true, EO->SQLFilter, nullptr);
 			Accept(')');
 		}
-		else EO->Cond = RdKeyInBool(&EO->KIRoot, false, true, EO->SQLFilter);
+		else EO->Cond = RdKeyInBool(&EO->KIRoot, false, true, EO->SQLFilter, nullptr);
 	}
 	else if (IsOpt("JOURNAL")) {
 		EO->Journal = RdFileName();
@@ -1202,8 +1202,8 @@ bool RdViewOpt(EditOpt* EO)
 		if (CFile->FF->file_type == FileType::INDEX) l++;
 		if (CFile->FF->RecLen != l) OldError(111);
 	}
-	else if (IsOpt("SAVEAFTER")) EO->SaveAfterZ = RdRealFrml();
-	else if (IsOpt("REFRESH")) EO->RefreshDelayZ = RdRealFrml();
+	else if (IsOpt("SAVEAFTER")) EO->SaveAfterZ = RdRealFrml(nullptr);
+	else if (IsOpt("REFRESH")) EO->RefreshDelayZ = RdRealFrml(nullptr);
 	else result = false;
 	return result;
 }
@@ -1270,7 +1270,7 @@ void RdProcCall(Instr** pinstr)
 		if (CRdb->HelpFD == nullptr) OldError(132);
 		((Instr_help*)*pinstr)->HelpRdb0 = CRdb;
 	label1:
-		((Instr_help*)*pinstr)->Frml0 = RdStrFrml();
+		((Instr_help*)*pinstr)->Frml0 = RdStrFrml(nullptr);
 	}
 	else if (IsKeyWord("MESSAGE")) RdWriteln(WriteType::message, (Instr_writeln**)pinstr);
 	else if (IsKeyWord("GOTOXY")) *pinstr = RdGotoXY();
@@ -1314,7 +1314,7 @@ void RdProcCall(Instr** pinstr)
 		*pinstr = new Instr_assign(_sound); // GetPD(_sound, 4);
 		RdLex();
 	label2:
-		((Instr_assign*)*pinstr)->Frml = RdRealFrml();
+		((Instr_assign*)*pinstr)->Frml = RdRealFrml(nullptr);
 	}
 	else if (IsKeyWord("LPROC")) *pinstr = RdCallLProc();
 
@@ -1345,45 +1345,45 @@ void RdProcCall(Instr** pinstr)
 	label3:
 		RdLex(); // read '('
 		auto iPutPixel = (Instr_putpixel*)(*pinstr);
-		iPutPixel->Par1 = RdRealFrml();
+		iPutPixel->Par1 = RdRealFrml(nullptr);
 		Accept(',');
-		iPutPixel->Par2 = RdRealFrml();
+		iPutPixel->Par2 = RdRealFrml(nullptr);
 		Accept(',');
 		if (iPutPixel->Kind == _outtextxy) {
-			iPutPixel->Par3 = RdStrFrml();
+			iPutPixel->Par3 = RdStrFrml(nullptr);
 			Accept(',');
-			iPutPixel->Par4 = RdRealFrml();
+			iPutPixel->Par4 = RdRealFrml(nullptr);
 			Accept(',');
 			iPutPixel->Par5 = RdAttr();
 			if (Lexem == ',') {
 				RdLex();
-				iPutPixel->Par6 = RdRealFrml();
+				iPutPixel->Par6 = RdRealFrml(nullptr);
 				if (Lexem == ',') {
 					RdLex();
-					iPutPixel->Par7 = RdRealFrml();
+					iPutPixel->Par7 = RdRealFrml(nullptr);
 					if (Lexem == ',') {
 						RdLex();
-						iPutPixel->Par8 = RdRealFrml(); Accept(',');
-						iPutPixel->Par9 = RdRealFrml(); Accept(',');
-						iPutPixel->Par10 = RdRealFrml(); Accept(',');
-						iPutPixel->Par11 = RdRealFrml();
+						iPutPixel->Par8 = RdRealFrml(nullptr); Accept(',');
+						iPutPixel->Par9 = RdRealFrml(nullptr); Accept(',');
+						iPutPixel->Par10 = RdRealFrml(nullptr); Accept(',');
+						iPutPixel->Par11 = RdRealFrml(nullptr);
 					}
 				}
 			}
 		}
 		else if (iPutPixel->Kind == _putpixel) iPutPixel->Par3 = RdAttr();
 		else {
-			iPutPixel->Par3 = RdRealFrml();
+			iPutPixel->Par3 = RdRealFrml(nullptr);
 			Accept(',');
 			if (iPutPixel->Kind == _floodfill) iPutPixel->Par4 = RdAttr();
-			else iPutPixel->Par4 = RdRealFrml();
+			else iPutPixel->Par4 = RdRealFrml(nullptr);
 			Accept(',');
 			iPutPixel->Par5 = RdAttr();
 			if ((iPutPixel->Kind == _ellipse) && (Lexem == ',')) {
 				RdLex();
-				iPutPixel->Par6 = RdRealFrml();
+				iPutPixel->Par6 = RdRealFrml(nullptr);
 				Accept(',');
-				iPutPixel->Par7 = RdRealFrml();
+				iPutPixel->Par7 = RdRealFrml(nullptr);
 			}
 		}
 	}
@@ -1401,9 +1401,9 @@ void RdProcCall(Instr** pinstr)
 	else if (IsKeyWord("SETMOUSE")) {
 		*pinstr = new Instr_setmouse(); // GetPD(_setmouse, 12);
 		RdLex();
-		((Instr_setmouse*)*pinstr)->MouseX = RdRealFrml(); Accept(',');
-		((Instr_setmouse*)*pinstr)->MouseY = RdRealFrml(); Accept(',');
-		((Instr_setmouse*)*pinstr)->Show = RdBool();
+		((Instr_setmouse*)*pinstr)->MouseX = RdRealFrml(nullptr); Accept(',');
+		((Instr_setmouse*)*pinstr)->MouseY = RdRealFrml(nullptr); Accept(',');
+		((Instr_setmouse*)*pinstr)->Show = RdBool(nullptr);
 	}
 	else if (IsKeyWord("CHECKFILE")) {
 		*pinstr = new Instr_checkfile(); // GetPD(_checkfile, 10);
@@ -1436,9 +1436,9 @@ void RdProcCall(Instr** pinstr)
 		auto iPD = (Instr_portout*)*pinstr;
 		/* !!! with PD^ do!!! */
 		{
-			iPD->IsWord = RdBool(); Accept(',');
-			iPD->Port = RdRealFrml(); Accept(',');
-			iPD->PortWhat = RdRealFrml();
+			iPD->IsWord = RdBool(nullptr); Accept(',');
+			iPD->Port = RdRealFrml(nullptr); Accept(',');
+			iPD->PortWhat = RdRealFrml(nullptr);
 		}
 	}
 	else Error(34);
@@ -1563,19 +1563,19 @@ Instr_edit* RdEditCall()
 void RdEditOpt(EditOpt* EO)
 {
 	/* !!! with EO^ do!!! */
-	if (IsOpt("FIELD")) EO->StartFieldZ = RdStrFrml();
+	if (IsOpt("FIELD")) EO->StartFieldZ = RdStrFrml(nullptr);
 	else if (EO->LVRecPtr != nullptr) Error(125);
 	else if (IsOpt("OWNER")) {
 		if (EO->SQLFilter || (EO->KIRoot != nullptr)) OldError(179);
 		EO->OwnerTyp = RdOwner(&EO->DownLD, &EO->DownLV);
 	}
-	else if (IsOpt("RECKEY")) EO->StartRecKeyZ = RdStrFrml();
+	else if (IsOpt("RECKEY")) EO->StartRecKeyZ = RdStrFrml(nullptr);
 	else if (
 #ifdef FandSQL
 		!CFile->typSQLFile &&
 #endif
-		IsOpt("RECNO")) EO->StartRecNoZ = RdRealFrml();
-	else if (IsOpt("IREC")) EO->StartIRecZ = RdRealFrml();
+		IsOpt("RECNO")) EO->StartRecNoZ = RdRealFrml(nullptr);
+	else if (IsOpt("IREC")) EO->StartIRecZ = RdRealFrml(nullptr);
 	else if (IsKeyWord("CHECK")) EO->SyntxChk = true;
 	else if (IsOpt("SEL")) {
 		LocVar* lv = RdIdxVar();
@@ -1620,7 +1620,7 @@ Instr* RdReportCall()
 				FDL->ViewKey = CViewKey;
 				if (Lexem == '(') {
 					RdLex();
-					FDL->Cond = RdKeyInBool(&FDL->KeyIn, true, true, FDL->SQLFilter);
+					FDL->Cond = RdKeyInBool(&FDL->KeyIn, true, true, FDL->SQLFilter, nullptr);
 					Accept(')');
 				}
 			}
@@ -1643,7 +1643,7 @@ Instr* RdReportCall()
 	Accept(',');
 	if (Lexem == '[') {
 		RdLex();
-		RO->RprtPos.R = (RdbD*)RdStrFrml();
+		RO->RprtPos.R = (RdbD*)RdStrFrml(nullptr);
 		RO->RprtPos.IRec = 0;
 		RO->FromStr = true;
 		Accept(']');
@@ -1698,7 +1698,7 @@ void RdRprtOpt(RprtOpt* RO, bool has_first)
 		RdPath(true, RO->Path, RO->CatIRec);
 	}
 	else if (IsOpt("TIMES")) {
-		RO->Times = RdRealFrml();
+		RO->Times = RdRealFrml(nullptr);
 	}
 	else if (IsOpt("MODE")) {
 		if (IsKeyWord("ONLYSUM")) {
@@ -1734,7 +1734,7 @@ void RdRprtOpt(RprtOpt* RO, bool has_first)
 				return;
 			}
 		}
-		RO->FDL.Cond = RdKeyInBool(&RO->FDL.KeyIn, true, true, RO->FDL.SQLFilter);
+		RO->FDL.Cond = RdKeyInBool(&RO->FDL.KeyIn, true, true, RO->FDL.SQLFilter, nullptr);
 		N = OldErrPos - Low;
 		RO->CondTxt = std::string((const char*)&InpArrPtr[Low], N);
 
@@ -1761,7 +1761,7 @@ void RdRprtOpt(RprtOpt* RO, bool has_first)
 		RO->Sum = RdSubFldList(RO->Flds, 'S');
 	}
 	else if (IsOpt("WIDTH")) {
-		RO->WidthFrml = RdRealFrml();
+		RO->WidthFrml = RdRealFrml(nullptr);
 	}
 	else if (IsOpt("STYLE")) {
 		if (IsKeyWord("COMPRESSED")) {
@@ -1794,7 +1794,7 @@ void RdRprtOpt(RprtOpt* RO, bool has_first)
 		Accept(')');
 	}
 	else if (IsOpt("HEAD")) {
-		RO->Head = RdStrFrml();
+		RO->Head = RdStrFrml(nullptr);
 	}
 	else {
 		Error(45);
@@ -1835,7 +1835,7 @@ Instr* RdExec()
 	RdLex();
 	RdPath(true, PD->ProgPath, PD->ProgCatIRec);
 	Accept(',');
-	PD->Param = RdStrFrml();
+	PD->Param = RdStrFrml(nullptr);
 	while (Lexem == ',') {
 		RdLex();
 		if (IsKeyWord("NOCANCEL")) PD->NoCancel = true;
@@ -1995,9 +1995,9 @@ Instr* RdEditTxt()
 			if ((PD->WFlags & WNoPop) != 0) Accept(')');
 		}
 		else
-			if (IsOpt("TXTPOS")) PD->TxtPos = RdRealFrml();
-			else if (IsOpt("TXTXY")) PD->TxtXY = RdRealFrml();
-			else if (IsOpt("ERRMSG")) PD->ErrMsg = RdStrFrml();
+			if (IsOpt("TXTPOS")) PD->TxtPos = RdRealFrml(nullptr);
+			else if (IsOpt("TXTXY")) PD->TxtXY = RdRealFrml(nullptr);
+			else if (IsOpt("ERRMSG")) PD->ErrMsg = RdStrFrml(nullptr);
 			else if (IsOpt("EXIT")) {
 				Accept('(');
 			label1:
@@ -2029,7 +2029,7 @@ Instr* RdPutTxt()
 	RdLex();
 	RdPath(true, PD->TxtPath1, PD->TxtCatIRec1);
 	Accept(',');
-	PD->Txt = RdStrFrml();
+	PD->Txt = RdStrFrml(nullptr);
 	if (Lexem == ',') {
 		RdLex();
 		AcceptKeyWord("APPEND");
@@ -2061,7 +2061,7 @@ Instr* RdTurnCat()
 	}
 	PD->NCatIRecs = i - first;
 	Accept(',');
-	PD->TCFrml = RdRealFrml();
+	PD->TCFrml = RdRealFrml(nullptr);
 	return PD;
 }
 
@@ -2074,7 +2074,7 @@ void RdWriteln(WriteType OpKind, Instr_writeln** pinstr)
 	WrLnD* w = d;
 label1:
 	/* !!! with w^ do!!! */
-	w->Frml = RdFrml(w->Typ);
+	w->Frml = RdFrml(w->Typ, nullptr);
 	if (w->Typ == 'R') {
 		w->Typ = 'F';
 		if (Lexem == ':') {
@@ -2099,7 +2099,7 @@ label1:
 	}
 	if (Lexem == ',') {
 		RdLex();
-		if ((OpKind == WriteType::message) && IsOpt("HELP")) z = RdStrFrml();
+		if ((OpKind == WriteType::message) && IsOpt("HELP")) z = RdStrFrml(nullptr);
 		else {
 			//w = (WrLnD*)GetZStore(sizeof(d));
 			w = new WrLnD();
@@ -2125,7 +2125,7 @@ Instr* RdReleaseDrive()
 {
 	auto PD = new Instr_releasedrive(); // GetPD(_releasedrive, 4);
 	RdLex();
-	PD->Drive = RdStrFrml();
+	PD->Drive = RdStrFrml(nullptr);
 	return PD;
 }
 
@@ -2155,7 +2155,7 @@ Instr* RdGetIndex()
 		PD->giMode = Lexem;
 		RdLex();
 		Accept(',');
-		PD->giCond = RdRealFrml(); /*RecNr*/
+		PD->giCond = RdRealFrml(nullptr); /*RecNr*/
 		return PD;
 	}
 	CFile = RdFileName();
@@ -2172,7 +2172,7 @@ Instr* RdGetIndex()
 		}
 		else if (IsOpt("COND")) {
 			Accept('(');
-			PD->giCond = RdKeyInBool(&PD->giKIRoot, false, true, PD->giSQLFilter);
+			PD->giCond = RdKeyInBool(&PD->giKIRoot, false, true, PD->giSQLFilter, nullptr);
 			Accept(')');
 		}
 		else if (IsOpt("OWNER")) {
@@ -2192,9 +2192,9 @@ Instr* RdGotoXY()
 {
 	auto PD = new Instr_gotoxy(); // GetPD(_gotoxy, 8);
 	RdLex();
-	PD->GoX = RdRealFrml();
+	PD->GoX = RdRealFrml(nullptr);
 	Accept(',');
-	PD->GoY = RdRealFrml();
+	PD->GoY = RdRealFrml(nullptr);
 	return PD;
 }
 
@@ -2206,7 +2206,7 @@ Instr* RdClrWw()
 	if (Lexem == ',') {
 		RdLex();
 		if (Lexem != ',') PD->Attr2 = RdAttr();
-		if (Lexem == ',') { RdLex(); PD->FillC = RdStrFrml(); }
+		if (Lexem == ',') { RdLex(); PD->FillC = RdStrFrml(nullptr); }
 	}
 	return PD;
 }
@@ -2243,7 +2243,7 @@ Instr* RdDisplay()
 	if ((Lexem == _identifier) && FindChpt('H', LexWord, false, &PD->Pos)) RdLex();
 	else {
 		/* !!! with PD->Pos do!!! */
-		PD->Pos.R = (RdbD*)RdStrFrml();
+		PD->Pos.R = (RdbD*)RdStrFrml(nullptr);
 		PD->Pos.IRec = 0;
 	}
 	return PD;
@@ -2263,7 +2263,7 @@ Instr_graph* RdGraphP()
 	PD->GD = new GraphD();
 
 	auto PDGD = PD->GD;
-	if (IsOpt("GF")) PDGD->GF = RdStrFrml();
+	if (IsOpt("GF")) PDGD->GF = RdStrFrml(nullptr);
 	else {
 		PDGD->FD = RdFileName();
 		CFile = PDGD->FD;
@@ -2284,43 +2284,43 @@ Instr_graph* RdGraphP()
 		RdLex();
 		for (i = 0; i < 11; i++) if (IsOpt(Nm1[i])) {
 			FrmlArr[0] = (FrmlElem*)(&PDGD->T);
-			FrmlArr[i] = RdStrFrml();
+			FrmlArr[i] = RdStrFrml(nullptr);
 			goto label1;
 		}
 		for (i = 0; i < 6; i++) if (IsOpt(Nm2[i])) {
 			FrmlArr[0] = (FrmlElem*)(&PDGD->S);
-			FrmlArr[i] = RdRealFrml();
+			FrmlArr[i] = RdRealFrml(nullptr);
 			goto label1;
 		}
-		if (IsDigitOpt("HEADZ", i)) PDGD->HZA[i] = RdStrFrml();
+		if (IsDigitOpt("HEADZ", i)) PDGD->HZA[i] = RdStrFrml(nullptr);
 		else if (IsKeyWord("INTERACT")) PDGD->Interact = true;
 		else if (IsOpt("COND")) {
 			if (Lexem == '(')
 			{
 				RdLex();
-				PDGD->Cond = RdKeyInBool(&PDGD->KeyIn, false, true, PDGD->SQLFilter);
+				PDGD->Cond = RdKeyInBool(&PDGD->KeyIn, false, true, PDGD->SQLFilter, nullptr);
 				Accept(')');
 			}
-			else PDGD->Cond = RdKeyInBool(&PDGD->KeyIn, false, true, PDGD->SQLFilter);
+			else PDGD->Cond = RdKeyInBool(&PDGD->KeyIn, false, true, PDGD->SQLFilter, nullptr);
 		}
 		else if (IsOpt("TXT")) {
 			VD = new GraphVD();
 			ChainLast(PDGD->V, VD);
 			{
 				/* !!! with VD^ do!!! */
-				Accept('('); VD->XZ = RdRealFrml(); Accept(','); VD->YZ = RdRealFrml(); Accept(',');
-				VD->Velikost = RdRealFrml(); Accept(','); VD->BarPis = RdStrFrml(); Accept(',');
-				VD->Text = RdStrFrml(); Accept(')');
+				Accept('('); VD->XZ = RdRealFrml(nullptr); Accept(','); VD->YZ = RdRealFrml(nullptr); Accept(',');
+				VD->Velikost = RdRealFrml(nullptr); Accept(','); VD->BarPis = RdStrFrml(nullptr); Accept(',');
+				VD->Text = RdStrFrml(nullptr); Accept(')');
 			}
 		}
 		else if (IsOpt("TXTWIN")) {
 			WD = new GraphWD();
 			ChainLast(PDGD->W, WD);
 			{
-				Accept('('); WD->XZ = RdRealFrml(); Accept(','); WD->YZ = RdRealFrml(); Accept(',');
-				WD->XK = RdRealFrml(); Accept(','); WD->YK = RdRealFrml(); Accept(',');
-				WD->BarPoz = RdStrFrml(); Accept(','); WD->BarPis = RdStrFrml(); Accept(',');
-				WD->Text = RdStrFrml(); Accept(')');
+				Accept('('); WD->XZ = RdRealFrml(nullptr); Accept(','); WD->YZ = RdRealFrml(nullptr); Accept(',');
+				WD->XK = RdRealFrml(nullptr); Accept(','); WD->YK = RdRealFrml(nullptr); Accept(',');
+				WD->BarPoz = RdStrFrml(nullptr); Accept(','); WD->BarPis = RdStrFrml(nullptr); Accept(',');
+				WD->Text = RdStrFrml(nullptr); Accept(')');
 			}
 		}
 		else if (IsOpt("RGB")) {
@@ -2328,13 +2328,13 @@ Instr_graph* RdGraphP()
 			ChainLast(PDGD->RGB, RGBD);
 			{
 				Accept('(');
-				RGBD->Barva = RdStrFrml();
+				RGBD->Barva = RdStrFrml(nullptr);
 				Accept(',');
-				RGBD->R = RdRealFrml();
+				RGBD->R = RdRealFrml(nullptr);
 				Accept(',');
-				RGBD->G = RdRealFrml();
+				RGBD->G = RdRealFrml(nullptr);
 				Accept(',');
-				RGBD->B = RdRealFrml();
+				RGBD->B = RdRealFrml(nullptr);
 				Accept(')');
 			}
 		}
@@ -2345,9 +2345,9 @@ Instr_graph* RdGraphP()
 			RdW(Ww->W);
 			RdFrame(Ww->Top, Ww->WFlags);
 			if (Lexem == ',') {
-				RdLex(); Ww->ColBack = RdStrFrml(); Accept(',');
-				Ww->ColFor = RdStrFrml();
-				Accept(','); Ww->ColFrame = RdStrFrml();
+				RdLex(); Ww->ColBack = RdStrFrml(nullptr); Accept(',');
+				Ww->ColFor = RdStrFrml(nullptr);
+				Accept(','); Ww->ColFrame = RdStrFrml(nullptr);
 			}
 			Accept(')');
 			if ((Ww->WFlags & WNoPop) != 0) Accept(')');
@@ -2375,7 +2375,7 @@ Instr_recs* RdMixRecAcc(PInstrCode Op)
 #endif
 		if (Op == _recallrec) {
 			Accept(',');
-			PD->RecNr = RdRealFrml();
+			PD->RecNr = RdRealFrml(nullptr);
 		}
 	}
 	else {
@@ -2399,7 +2399,7 @@ Instr_recs* RdMixRecAcc(PInstrCode Op)
 			PD->CompOp = Lexem; RdLex();
 		}
 #endif
-		Z = RdFrml(FTyp);
+		Z = RdFrml(FTyp, nullptr);
 		PD->RecNr = Z;
 		switch (FTyp) {
 		case 'B': OldError(12); break;
@@ -2465,13 +2465,13 @@ Instr* RdSetEditTxt()
 	RdLex();
 	/* !!! with PD^ do!!! */
 label1:
-	if (IsOpt("OVERWR")) PD->Insert = RdBool();
-	else if (IsOpt("INDENT")) PD->Indent = RdBool();
-	else if (IsOpt("WRAP")) PD->Wrap = RdBool();
-	else if (IsOpt("ALIGN")) PD->Just = RdBool();
-	else if (IsOpt("COLBLK")) PD->ColBlk = RdBool();
-	else if (IsOpt("LEFT")) PD->Left = RdRealFrml();
-	else if (IsOpt("RIGHT")) PD->Right = RdRealFrml();
+	if (IsOpt("OVERWR")) PD->Insert = RdBool(nullptr);
+	else if (IsOpt("INDENT")) PD->Indent = RdBool(nullptr);
+	else if (IsOpt("WRAP")) PD->Wrap = RdBool(nullptr);
+	else if (IsOpt("ALIGN")) PD->Just = RdBool(nullptr);
+	else if (IsOpt("COLBLK")) PD->ColBlk = RdBool(nullptr);
+	else if (IsOpt("LEFT")) PD->Left = RdRealFrml(nullptr);
+	else if (IsOpt("RIGHT")) PD->Right = RdRealFrml(nullptr);
 	else Error(160);
 	if (Lexem == ',') { RdLex(); goto label1; }
 	return PD;
@@ -2576,7 +2576,7 @@ Instr_assign* RdAssign()
 				PD->CatFld = F;
 				TestCatError(PD->CatIRec, FName, true);
 				Accept(_assign);
-				PD->Frml3 = RdStrFrml();
+				PD->Frml3 = RdStrFrml(nullptr);
 			}
 			else if (FD == nullptr) OldError(9);
 			else if (IsKeyWord("NRECS")) {
@@ -2604,7 +2604,7 @@ Instr_assign* RdAssign()
 #ifdef FandSQL
 		if (FD->typSQLFile) OldError(155);
 #endif
-		PD->RecFrml = RdRealFrml();
+		PD->RecFrml = RdRealFrml(nullptr);
 		Accept(']');
 		Accept('.');
 		F = RdFldName(FD);
@@ -2649,12 +2649,12 @@ Instr_assign* RdAssign()
 		PD = new Instr_assign(_asgnaccright); // GetPInstr(_asgnaccright, 4);
 	label2:
 		Accept(_assign);
-		PD->Frml = RdStrFrml();
+		PD->Frml = RdStrFrml(nullptr);
 	}
 	else if (IsKeyWord("EDOK")) {
 		PD = new Instr_assign(_asgnedok); // GetPInstr(_asgnedok, 4);
 		Accept(_assign);
-		PD->Frml = RdBool();
+		PD->Frml = RdBool(nullptr);
 	}
 	else if (IsKeyWord("RANDSEED"))
 	{
@@ -2670,7 +2670,7 @@ Instr_assign* RdAssign()
 		PD = new Instr_assign(_asgnusercode); // GetPInstr(_asgnusercode, 4);
 	label3:
 		Accept(_assign);
-		PD->Frml = RdRealFrml();
+		PD->Frml = RdRealFrml(nullptr);
 	}
 	else {
 		RdLex();
@@ -2713,7 +2713,7 @@ Instr* RdWith()
 		ld->FD = RdFileName();
 		if (Op == _withlocked) {
 			Accept('[');
-			ld->Frml = RdRealFrml();
+			ld->Frml = RdRealFrml(nullptr);
 			Accept(']');
 		}
 		else {
@@ -2810,7 +2810,7 @@ Instr* RdPInstr()
 void ReadProcHead(const std::string& name)
 {
 	ResetCompilePars();
-	RdFldNameFrml = RdFldNameFrmlP;
+	ptrRdFldNameFrml = RdFldNameFrmlP;
 	RdFunction = RdFunctionP;
 	FileVarsAllowed = false;
 	IdxLocVarAllowed = true;
@@ -2864,9 +2864,9 @@ void ReadDeclChpt()
 			FuncDRoot = fc;
 			//Move(&LexWord, &fc->Name, LexWord.length() + 1);
 			fc->Name = LexWord;
-			RdFldNameFrml = RdFldNameFrmlP;
+			ptrRdFldNameFrml = RdFldNameFrmlP;
 			RdFunction = RdFunctionP;
-			ChainSumEl = nullptr;
+			//ptrChainSumEl = nullptr;
 			FileVarsAllowed = false; IsRdUserFunc = true;
 			RdLex();
 			ResetLVBD();
@@ -2936,7 +2936,7 @@ FrmlElem* GetEvalFrml(FileD* file_d, FrmlElem21* X, void* record)
 	LastExitCode = 1;
 	p = SaveCompState();
 	ResetCompilePars();
-	RdFldNameFrml = RdFldNameFrmlP;
+	ptrRdFldNameFrml = RdFldNameFrmlP;
 	RdFunction = RdFunctionP;
 	if (X->EvalFD == nullptr) FileVarsAllowed = false;
 	else {
@@ -2947,7 +2947,7 @@ FrmlElem* GetEvalFrml(FileD* file_d, FrmlElem21* X, void* record)
 	//goto label1;
 	SetInpStdStr(s, false);
 	RdLex();
-	z = RdFrml(fTyp);
+	z = RdFrml(fTyp, nullptr);
 	if ((fTyp != X->EvalTyp) || (Lexem != 0x1A)) z = nullptr;
 	else LastExitCode = 0;
 label1:
@@ -3000,10 +3000,10 @@ Instr* RdBackup(char MTyp, bool IsBackup)
 	else {
 		if (MTyp == 'M') {
 			Accept(',');
-			PD->bmDir = RdStrFrml();
+			PD->bmDir = RdStrFrml(nullptr);
 			if (IsBackup) {
 				Accept(',');
-				PD->bmMasks = RdStrFrml();
+				PD->bmMasks = RdStrFrml(nullptr);
 			}
 		}
 		while (Lexem == ',') {

@@ -7,6 +7,7 @@
 #include "rdrun.h"
 #include "switches.h"
 
+class MergeReportBase;
 extern bool IsRdUserFunc;
 
 void TestCatError(int i, const std::string& name, bool old);
@@ -15,7 +16,7 @@ LocVar* RdRecVar();
 LocVar* RdIdxVar();
 FrmlElem* RdRecVarFldFrml(LocVar* LV, char& FTyp);
 char RdOwner(LinkD** LLD, LocVar** LLV); // 'r','i','F'
-FrmlElem* RdFldNameFrmlP(char& FTyp);
+FrmlElem* RdFldNameFrmlP(char& FTyp, MergeReportBase*);
 FileD* RdPath(bool NoFD, std::string& Path, WORD& CatIRec);
 FrmlElem* RdFunctionP(char& FFTyp);
 XKey* RdViewKeyImpl(FileD* FD);

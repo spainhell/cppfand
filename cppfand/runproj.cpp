@@ -112,7 +112,7 @@ bool NetFileTest(RdbRecVars* X)
 
 void GetSplitChapterName(FileD* file_d, void* record, std::string& name, std::string& ext)
 {
-	
+
 	std::string chapter_name = file_d->loadS(ChptName, record);
 	name = TrailChar(chapter_name, ' ');
 	const size_t i = name.find('.');
@@ -321,7 +321,7 @@ WORD ChptWriteCRec()
 		ReleaseFilesAndLinksAfterChapter();
 		SetCompileAll();
 	}
-	if (TestIsNewRec())	{
+	if (TestIsNewRec()) {
 		ReleaseFilesAndLinksAfterChapter();
 		goto label2;
 	}
@@ -425,7 +425,7 @@ void EditHelpOrCat(WORD cc, WORD kind, std::string txt)
 	WORD iCat = 1;
 	WORD nHelp = 1;
 	WORD iHelp = 1;
-	struct niFrml { char Op; double R; } nFrml{ 0,0 }, iFrml{ 0,0 };
+	struct niFrml { char Op; double R; } nFrml{ 0, 0 }, iFrml{ 0,0 };
 
 	if (cc == __ALT_F2) {
 		FD = CRdb->HelpFD;
@@ -803,18 +803,19 @@ bool CompRunChptRec(WORD CC)
 			}
 			case 'M': {
 				SetInpTT(&RP, true);
-				ReadMerge();
+				const std::unique_ptr merge = std::make_unique<Merge>();
+				merge->Read();
 				if (CC == __CTRL_F9) {
-					const std::unique_ptr merge = std::make_unique<Merge>();
 					merge->Run();
 				}
 				break;
 			}
 			case 'R': {
 				SetInpTT(&RP, true);
-				ReadReport(nullptr);
+				const std::unique_ptr report = std::make_unique<Report>();
+				report->Read(nullptr);
 				if (CC == __CTRL_F9) {
-					RunReport(nullptr);
+					report->Run(nullptr);
 					SaveAndCloseAllFiles();
 					ViewPrinterTxt();
 				}
@@ -926,14 +927,14 @@ void RdUserId(bool Chk)
 	pstring pw(20); pstring pw2(20); pstring name(20);
 	WORD code; pstring acc;
 
-	RdFldNameFrml = nullptr;
+	ptrRdFldNameFrml = nullptr;
 	RdLex();
 	if (Lexem == 0x1A) return;
 	if (Chk) pw = ww.PassWord(false);
 label1:
 	TestLex(_quotedstr); name = LexWord; RdLex(); Accept(',');
 	code = RdInteger(); Accept(',');
-	Z = RdStrFrml();
+	Z = RdStrFrml(nullptr);
 	pw2 = RunShortStr(CFile, Z, CRecPtr);
 	delete Z; Z = nullptr;
 	if (Lexem == ',') { RdLex(); RdByteList(&acc); }
@@ -1103,11 +1104,11 @@ bool MergeAndReplace(FileD* fd_old, FileD* fd_new)
 		std::string s = "#I1_";
 		s += fd_old->Name + " #O1_@";
 		SetInpStr(s);
-		SpecFDNameAllowed = true;
-		ReadMerge();
-		SpecFDNameAllowed = false;
 
+		SpecFDNameAllowed = true;
 		const std::unique_ptr merge = std::make_unique<Merge>();
+		merge->Read();
+		SpecFDNameAllowed = false;
 		merge->Run();
 
 		SaveAndCloseAllFiles();
@@ -1316,7 +1317,8 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 				}
 				case 'M': {
 					SetInpTTPos(Txt, Encryp);
-					ReadMerge();
+					const std::unique_ptr merge = std::make_unique<Merge>();
+					merge->Read();
 					break;
 				}
 				case 'R': {
@@ -1329,7 +1331,8 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 					}
 					else {
 						SetInpTTPos(Txt, Encryp);
-						ReadReport(nullptr);
+						const std::unique_ptr report = std::make_unique<Report>();
+						report->Read(nullptr);
 					}
 					break;
 				}
@@ -1621,7 +1624,7 @@ bool EditExecRdb(std::string Nm, std::string proc_name, Instr_proc* proc_call, w
 	}
 	catch (std::exception& e)
 	{
-		
+
 	}
 
 label9:

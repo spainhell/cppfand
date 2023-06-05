@@ -5,6 +5,7 @@
 #include "ResFile.h"
 #include "../fandio/FandTFile.h"
 
+class MergeReportBase;
 const double FirstDate = 6.97248E+5;
 
 extern std::string LockModeTxt[9];
@@ -81,9 +82,9 @@ extern size_t CurrPos;
 extern size_t OldErrPos;			// { "  "  }
 extern std::vector<FrmlElemSum*> *FrmlSumEl;				//{ set while reading sum / count argument }
 extern bool FrstSumVar, FileVarsAllowed;
-extern FrmlElem* (*RdFldNameFrml)(char&); // ukazatel na funkci
+extern FrmlElem* (*ptrRdFldNameFrml)(char&, MergeReportBase*); // ukazatel na funkci
 extern FrmlElem* (*RdFunction)(char&); // ukazatel na funkci
-extern void(*ChainSumEl)(); // {set by user}
+//extern void (*ptrChainSumEl)(); // {set by user}
 extern BYTE LstCompileVar; // { boundary }
 
 extern pstring Switches;

@@ -261,9 +261,8 @@ void ForAllFDs(ForAllFilesOperation op, FileD** file_d, WORD i)
 
 void ResetCompilePars()
 {
-	RdFldNameFrml = RdFldNameFrmlF;
+	ptrRdFldNameFrml = RdFldNameFrmlF;
 	RdFunction = nullptr;
-	ChainSumEl = nullptr;
 	FileVarsAllowed = true;
 	FDLocVarAllowed = false;
 	IdxLocVarAllowed = false;

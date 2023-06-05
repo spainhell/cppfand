@@ -3,6 +3,7 @@
 #include "olongstr.h"
 #include "../Common/pstring.h"
 #include "rdrun.h"
+#include "../MergeReport/shared.h"
 
 extern RdbPos ChptIPos; // usen in LexAnal & ProjMgr
 
@@ -19,9 +20,8 @@ struct stSaveState
 	size_t OldErrPos = 0;
 	std::vector<FrmlElemSum*> *FrmlSumEl = nullptr;
 	bool FrstSumVar = false, FileVarsAllowed = false;
-	FrmlElem* (*RdFldNameFrml)(char&) = nullptr; // ukazatel na funkci
+	FrmlElem* (*ptrRdFldNameFrml)(char&, MergeReportBase*) = nullptr; // ukazatel na funkci
 	FrmlElem* (*RdFunction)(char&) = nullptr; // ukazatel na funkci
-	void(*ChainSumEl)() = nullptr; // {set by user}
 };
 
 // funkce dle COMPILE.PAS
@@ -74,17 +74,17 @@ FileD* RdFileName(); // r34
 LinkD* FindLD(std::string RoleName); // r41
 bool IsRoleName(bool Both, FileD** FD, LinkD** LD); // r49
 FrmlElem* RdFAccess(FileD* FD, LinkD* LD, char& FTyp); // r58
-FrmlElem* TryRdFldFrml(FileD* FD, char& FTyp); // r76
-FrmlElem* RdFldNameFrmlF(char& FTyp); // r111
+FrmlElem* TryRdFldFrml(FileD* FD, char& FTyp, MergeReportBase* caller); // r76
+FrmlElem* RdFldNameFrmlF(char& FTyp, MergeReportBase* caller); // r111
 FrmlElem* FrmlContxt(FrmlElem* Z, FileD* FD, void* RP); // r68
 FrmlElem* MakeFldFrml(FieldDescr* F, char& FTyp); // r72
 void TestString(char FTyp);
 void TestReal(char FTyp);
-FrmlElem* RdFrml(char& FTyp);
-FrmlElem* RdKeyInBool(KeyInD** KIRoot, bool NewMyBP, bool FromRdProc, bool& SQLFilter);
-FrmlElem* RdBool();
-FrmlElem* RdRealFrml();
-FrmlElem* RdStrFrml();
+FrmlElem* RdFrml(char& FTyp, MergeReportBase* caller);
+FrmlElem* RdKeyInBool(KeyInD** KIRoot, bool NewMyBP, bool FromRdProc, bool& SQLFilter, MergeReportBase* caller);
+FrmlElem* RdBool(MergeReportBase* caller);
+FrmlElem* RdRealFrml(MergeReportBase* caller);
+FrmlElem* RdStrFrml(MergeReportBase* caller);
 XKey* RdViewKey(); // r238
 KeyFldD* RdKF(FileD* FD);
 WORD RdKFList(KeyFldD** KFRoot, FileD* FD); // r298

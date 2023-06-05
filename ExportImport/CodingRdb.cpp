@@ -262,10 +262,10 @@ void CodingRdb::CompressCRdb()
 	std::string s = "#I1_" + Chpt->Name + "#O1_" + Chpt->Name;
 	SetInpStr(s);
 	SpecFDNameAllowed = true;
-	ReadMerge();
-	SpecFDNameAllowed = false;
 
 	const std::unique_ptr merge = std::make_unique<Merge>();
+	merge->Read();
+	SpecFDNameAllowed = false;
 	merge->Run();
 
 	SaveAndCloseAllFiles();

@@ -4133,7 +4133,7 @@ void Calculate2()
 		CalcTxt = txt;
 		SetInpStr(txt);
 		RdLex();
-		Z = RdFrml(FTyp);
+		Z = RdFrml(FTyp, nullptr);
 		if (Lexem != 0x1A) Error(21);
 		if (Event.Pressed.KeyCombination() == __CTRL_F4) {
 			F = CFld->FldD;

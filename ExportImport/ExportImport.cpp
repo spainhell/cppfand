@@ -573,9 +573,9 @@ void MakeMerge(CopyD* CD)
 		if (CD->Append) s = s + '+';
 
 		SetInpStr(s);
-		ReadMerge();
 
 		const std::unique_ptr merge = std::make_unique<Merge>();
+		merge->Read();
 		merge->Run();
 
 		LastExitCode = 0;

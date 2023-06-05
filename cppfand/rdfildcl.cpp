@@ -195,10 +195,10 @@ ChkD* RdChkD(WORD Low)
 {
 	ChkD* C = new ChkD();
 	ChkD* result = C;
-	C->Bool = RdBool();
+	C->Bool = RdBool(nullptr);
 	WORD Upper = OldErrPos;
 	if (Lexem == '?') { RdLex(); C->Warning = true; }
-	if (Lexem == ':') { RdLex(); C->TxtZ = RdStrFrml(); }
+	if (Lexem == ':') { RdLex(); C->TxtZ = RdStrFrml(nullptr); }
 	else {
 		WORD N = Upper - Low;
 		//if (N > sizeof(pstring)) N = pred(sizeof(pstring));
@@ -448,7 +448,7 @@ void RdFieldDList(bool Stored)
 		RdLex();
 		if (!Stored) {
 			Accept(_assign);
-			Z = RdFrml(FTyp);
+			Z = RdFrml(FTyp, nullptr);
 		}
 		F = RdFieldDescr(name, Stored);
 		if ((CFile->FF->file_type == FileType::DBF) && Stored && (F->field_type == FieldType::REAL || F->field_type == FieldType::NUMERIC)) {
@@ -947,13 +947,13 @@ void TestDepend()
 	MarkStore(p);
 label1:
 	Accept('(');
-	ZBool = RdBool();
+	ZBool = RdBool(nullptr);
 	Accept(')');
 label2:
 	F = RdFldName(CFile);
 	if ((F->Flg & f_Stored) == 0) OldError(14);
 	Accept(_assign);
-	Z = RdFrml(FTyp);
+	Z = RdFrml(FTyp, nullptr);
 	if (F->frml_type != FTyp) {
 		Error(12);
 	}
@@ -982,7 +982,7 @@ label1:
 	F = RdFldName(CFile);
 	if ((F->Flg & f_Stored) == 0) OldError(14);
 	Accept(_assign);
-	Z = RdFrml(FTyp);
+	Z = RdFrml(FTyp, nullptr);
 	if (FTyp != F->frml_type) OldError(12);
 	//ID = (ImplD*)GetStore(sizeof(*ID)); 
 	ID = new ImplD();
@@ -1006,7 +1006,7 @@ void RdKumul()
 		CFile->Add.push_back(AD);
 
 		if (IsKeyWord("IF")) {
-			AD->Bool = RdBool();
+			AD->Bool = RdBool(nullptr);
 			AcceptKeyWord("THEN");
 			RdRoleField(AD);
 			RdImper(AD);
@@ -1030,7 +1030,7 @@ void RdKumul()
 				Accept(_addass);
 				AD->Assign = false;
 				TestReal(AD->Field->frml_type);
-				AD->Frml = RdRealFrml();
+				AD->Frml = RdRealFrml(nullptr);
 			}
 		}
 		if (Lexem == ';') {
@@ -1076,7 +1076,7 @@ void RdAssign(AddD* AD)
 #endif
 	Accept(_assign);
 	AD->Assign = true;
-	AD->Frml = RdFrml(FTyp);
+	AD->Frml = RdFrml(FTyp, nullptr);
 	if (FTyp != AD->Field->frml_type) OldError(12);
 }
 
