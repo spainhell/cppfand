@@ -1,4 +1,4 @@
-#include "runmerg.h"
+#include "Merge.h"
 #include "../Common/compare.h"
 #include "../cppfand/compile.h"
 #include "../cppfand/FieldDescr.h"

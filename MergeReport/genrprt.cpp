@@ -2,8 +2,7 @@
 
 #include <memory>
 
-#include "rdrprt.h"
-#include "runrprt.h"
+#include "Report.h"
 #include "../cppfand/compile.h"
 #include "../cppfand/FieldDescr.h"
 #include "../cppfand/FileD.h"

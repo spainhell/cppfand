@@ -31,10 +31,8 @@
 #include "../Editor/runedi.h"
 #include "../ExportImport/ExportImport.h"
 #include "../MergeReport/genrprt.h"
-#include "../MergeReport/rdmerg.h"
-#include "../MergeReport/rdrprt.h"
-#include "../MergeReport/runmerg.h"
-#include "../MergeReport/runrprt.h"
+#include "..\MergeReport\Merge.h"
+#include "..\MergeReport\Report.h"
 #include "../Common/textfunc.h"
 
 

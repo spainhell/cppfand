@@ -4,9 +4,8 @@
 
 class FieldDescr;
 
-struct PFldD //: public Chained
+struct PFldD
 {
-	//PFldD* pChain = nullptr; 
 	FieldDescr* FldD = nullptr;
 	short ColTxt = 0, ColItem = 0;
 	bool IsCtrl = false, IsSum = false, NxtLine = false;
@@ -19,10 +18,6 @@ extern short MaxCol, MaxColOld, MaxColUsed, NLines, NLevels;
 extern AutoRprtMode ARMode;
 
 void Design(RprtOpt* RO);
-//void WrChar(char C); // existuje i v EDEVPROC!
-//void WrBlks(short N);
-//void WrStr(pstring S);
-//void WrLevel(short Level);
 std::string GenAutoRprt(RprtOpt* RO, bool WithNRecs);
 void RunAutoReport(RprtOpt* RO); // r223
 bool SelForAutoRprt(RprtOpt* RO); // r232

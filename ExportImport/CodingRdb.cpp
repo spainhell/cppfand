@@ -10,8 +10,7 @@
 #include "../cppfand/obaseww.h"
 #include "../Editor/rdedit.h"
 #include "../Editor/runedi.h"
-#include "../MergeReport/rdmerg.h"
-#include "../MergeReport/runmerg.h"
+#include "..\MergeReport\Merge.h"
 
 
 void CodingRdb::CodeRdb(bool Rotate)

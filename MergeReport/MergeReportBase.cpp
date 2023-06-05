@@ -1,4 +1,4 @@
-#include "shared.h"
+#include "MergeReportBase.h"
 #include "../cppfand/compile.h"
 #include "../cppfand/FieldDescr.h"
 #include "../cppfand/GlobalVariables.h"

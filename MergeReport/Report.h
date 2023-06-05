@@ -1,5 +1,5 @@
 #pragma once
-#include "shared.h"
+#include "MergeReportBase.h"
 #include "../cppfand/access-structs.h"
 #include "../cppfand/rdrun.h"
 

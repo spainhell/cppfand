@@ -1,5 +1,5 @@
 #pragma once
-#include "shared.h"
+#include "MergeReportBase.h"
 #include "../cppfand/FileD.h"
 #include "../cppfand/GlobalVariables.h"
 #include "../cppfand/runfrml.h"

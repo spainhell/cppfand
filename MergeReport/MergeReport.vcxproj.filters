@@ -15,39 +15,30 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="runrprt.h">
+    <ClInclude Include="Report.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="genrprt.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="rdrprt.h">
+    <ClInclude Include="Merge.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="rdmerg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="runmerg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="shared.h">
+    <ClInclude Include="MergeReportBase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="runrprt.cpp">
+    <ClCompile Include="Report.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="genrprt.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="rdrprt.cpp">
+    <ClCompile Include="Merge.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="runmerg.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="shared.cpp">
+    <ClCompile Include="MergeReportBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

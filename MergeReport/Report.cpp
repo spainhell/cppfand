@@ -1,5 +1,5 @@
-#include "runrprt.h"
-#include "shared.h"
+#include "Report.h"
+#include "MergeReportBase.h"
 #include "../Common/compare.h"
 #include "../Common/textfunc.h"
 #include "../cppfand/compile.h"

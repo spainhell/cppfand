@@ -20,18 +20,15 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="genrprt.h" />
-    <ClInclude Include="rdmerg.h" />
-    <ClInclude Include="rdrprt.h" />
-    <ClInclude Include="runmerg.h" />
-    <ClInclude Include="runrprt.h" />
-    <ClInclude Include="shared.h" />
+    <ClInclude Include="Merge.h" />
+    <ClInclude Include="Report.h" />
+    <ClInclude Include="MergeReportBase.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="genrprt.cpp" />
-    <ClCompile Include="rdrprt.cpp" />
-    <ClCompile Include="runmerg.cpp" />
-    <ClCompile Include="runrprt.cpp" />
-    <ClCompile Include="shared.cpp" />
+    <ClCompile Include="Merge.cpp" />
+    <ClCompile Include="Report.cpp" />
+    <ClCompile Include="MergeReportBase.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

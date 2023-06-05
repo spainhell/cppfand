@@ -3,7 +3,7 @@
 #include "olongstr.h"
 #include "../Common/pstring.h"
 #include "rdrun.h"
-#include "../MergeReport/shared.h"
+#include "..\MergeReport\MergeReportBase.h"
 
 extern RdbPos ChptIPos; // usen in LexAnal & ProjMgr
 
