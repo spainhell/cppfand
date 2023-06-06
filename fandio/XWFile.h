@@ -2,6 +2,7 @@
 #include "XPage.h"
 #include "XXPage.h"
 
+typedef void* HANDLE;
 class FandFile;
 
 class XWFile
@@ -9,7 +10,7 @@ class XWFile
 public:
 	XWFile(FandFile* parent);
 	unsigned short UpdLockCnt = 0;
-	FILE* Handle = nullptr;
+	HANDLE Handle = nullptr;
 	int FreeRoot = 0;
 	int MaxPage = 0;
 	void Err(unsigned short N);

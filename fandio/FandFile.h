@@ -35,7 +35,7 @@ public:
 	bool WasWrRec = false;
 	bool WasRdOnly = false;
 	bool Eof = false;
-	FILE* Handle = nullptr;
+	HANDLE Handle = nullptr;
 	FileType file_type = FileType::UNKNOWN;       // 8 = Fand 8; 6 = Fand 16; X = .X; 0 = RDB; C = CAT 
 
 	FandXFile* XF = nullptr;

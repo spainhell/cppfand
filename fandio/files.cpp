@@ -266,7 +266,7 @@ bool OpenCreateF(FileD* file_d, const std::string& path, FileUseMode UM)
 	return true;
 }
 
-void CopyH(FILE* h1, FILE* h2)
+void CopyH(HANDLE h1, HANDLE h2)
 {
 	const WORD BufSize = 32768;
 	void* p = new BYTE[BufSize];
@@ -376,7 +376,7 @@ label4:
 	return CPath;
 }
 
-std::string SetPathForH(FILE* handle)
+std::string SetPathForH(HANDLE handle)
 {
 	RdbD* RD = CRdb;
 	while (RD != nullptr) {

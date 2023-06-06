@@ -20,7 +20,7 @@ const int ModeLock = 0x40000000;  // MB160
 // const int RecLock = 0x0B000000;  /* base for record locking */
 const int RecLock = 0x41000000;   // MB160
 
-bool TryLockH(FILE* Handle, int Pos, WORD Len)
+bool TryLockH(HANDLE Handle, int Pos, WORD Len)
 {
 	OVERLAPPED sOverlapped;
 	sOverlapped.Offset = Pos;
@@ -40,7 +40,7 @@ bool TryLockH(FILE* Handle, int Pos, WORD Len)
 	return true;
 }
 
-bool UnLockH(FILE* Handle, int Pos, WORD Len)
+bool UnLockH(HANDLE Handle, int Pos, WORD Len)
 {
 	OVERLAPPED sOverlapped;
 	sOverlapped.Offset = Pos;
@@ -88,7 +88,7 @@ bool ChangeLMode(FileD* fileD, LockMode Mode, WORD Kind, bool RdPref)
 	}
 	result = false;
 	LockMode oldmode = fileD->FF->LMode;
-	FILE* h = fileD->FF->Handle;
+	HANDLE h = fileD->FF->Handle;
 	if (oldmode >= WrMode) {
 		if (Mode < WrMode) {
 			fileD->FF->WrPrefixes();

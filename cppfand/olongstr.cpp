@@ -4,7 +4,7 @@
 #include "oaccess.h"
 #include "../fandio/FandTFile.h"
 
-void GetTxtPrepare(FileD* file_d, FrmlElem* Z, FILE** h, int& off, int& len, void* record)
+void GetTxtPrepare(FileD* file_d, FrmlElem* Z, HANDLE* h, int& off, int& len, void* record)
 {
 	auto iZ = (FrmlElem16*)Z;
 	int l = 0;
@@ -38,7 +38,7 @@ void GetTxtPrepare(FileD* file_d, FrmlElem* Z, FILE** h, int& off, int& len, voi
 
 LongStr* GetTxt(FileD* file_d, FrmlElem* Z, void* record)
 {
-	FILE* h = nullptr;
+	HANDLE h = nullptr;
 	int len = 0, off = 0;
 	LongStr* s = nullptr;
 
@@ -60,7 +60,7 @@ int CopyTFFromGetTxt(FileD* file_d, FandTFile* TF, FrmlElem* Z, void* record)
 {
 	LockMode md; 
 	int len = 0, off = 0, pos = 0, nxtpos = 0; 
-	FILE* h = nullptr;
+	HANDLE h = nullptr;
 	WORD n = 0, l = 0, i = 0; 
 	short rest = 0;
 	BYTE X[MPageSize + 1]{ 0 };
@@ -232,7 +232,7 @@ label4:
 	return result;
 }
 
-void CopyTFStringToH(FileD* file_d, FILE* h, FandTFile* TF02, FileD* TFD02, int& TF02Pos)
+void CopyTFStringToH(FileD* file_d, HANDLE h, FandTFile* TF02, FileD* TFD02, int& TF02Pos)
 {
 	CFile = file_d;
 

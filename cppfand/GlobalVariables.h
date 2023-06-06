@@ -113,7 +113,7 @@ extern std::string CName;
 extern std::string CExt;
 extern std::string CVol;
 extern bool WasLPTCancel;
-extern FILE* WorkHandle;
+extern HANDLE WorkHandle;
 extern int MaxWSize; // {currently occupied in FANDWORK.$$$}
 // *** MESSAGES ***
 extern WORD F10SpecKey; // r. 293

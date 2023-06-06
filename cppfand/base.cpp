@@ -79,7 +79,7 @@ WORD BPBound; // r212
 bool ExitP, BreakP;
 int LastExitCode = 0; // r215
 bool WasLPTCancel;
-FILE* WorkHandle;
+HANDLE WorkHandle;
 int MaxWSize = 0; // {currently occupied in FANDWORK.$$$}
 Printer printer[10];
 TPrTimeOut OldPrTimeOut;
@@ -95,13 +95,13 @@ __int32 UserLicNr = 0;
 
 typedef FILE* filePtr;
 
-std::set<FILE*> Handles;
-std::set<FILE*> UpdHandles;
-std::set<FILE*> FlshHandles;
+std::set<HANDLE> Handles;
+std::set<HANDLE> UpdHandles;
+std::set<HANDLE> FlshHandles;
 
 //map<WORD, FILE*> fileMap;
 // nahrada za 'WORD OvrHandle = h - 1' - zjisteni predchoziho otevreneho souboru;
-std::vector<FILE*> vOverHandle;
+std::vector<HANDLE> vOverHandle;
 
 void SetMsgPar(std::string s)
 {
@@ -126,21 +126,21 @@ void SetMsgPar(std::string s1, std::string s2, std::string s3, std::string s4)
 	MsgPar[3] = s4;
 }
 
-long PosH(FILE* handle)
-{
-	if (handle == nullptr) return -1;
-	try
-	{
-		const long result = ftell(handle);
-		HandleError = ferror(handle);
-		return static_cast<int>(result);
-	}
-	catch (const std::exception& e)
-	{
-		std::cout << e.what() << "\n";
-		return -1;
-	}
-}
+//long PosH(FILE* handle)
+//{
+//	if (handle == nullptr) return -1;
+//	try
+//	{
+//		const long result = ftell(handle);
+//		HandleError = ferror(handle);
+//		return static_cast<int>(result);
+//	}
+//	catch (const std::exception& e)
+//	{
+//		std::cout << e.what() << "\n";
+//		return -1;
+//	}
+//}
 
 long MoveH(long offset, int origin, FILE* handle)
 {
@@ -167,15 +167,17 @@ long MoveH(long offset, int origin, FILE* handle)
 	}
 }
 
-long SeekH(FILE* handle, size_t offset)
+long SeekH(HANDLE handle, size_t offset)
 {
 	if (handle == nullptr) RunError(705);
-	return MoveH(offset, 0, handle);
+	return SeekF(handle, HandleError, offset, 0);
 }
 
-size_t ReadH(FILE* handle, size_t length, void* buffer)
+size_t ReadH(HANDLE handle, size_t length, void* buffer)
 {
-	return fread_s(buffer, length, 1, length, handle);
+	ReadF(handle, buffer, length, HandleError);
+	//return fread_s(buffer, length, 1, length, handle);
+	return length;
 }
 
 std::string ReadMessage(int N)
@@ -608,7 +610,7 @@ void MyMove(void* A1, void* A2, WORD N)
 	memcpy(A2, A1, N);
 }
 
-FILE* GetOverHandle(FILE* fptr, int diff)
+HANDLE GetOverHandle(HANDLE fptr, int diff)
 {
 	ptrdiff_t pos = find(vOverHandle.begin(), vOverHandle.end(), fptr) - vOverHandle.begin();
 	int newPos = pos + diff;
@@ -616,32 +618,32 @@ FILE* GetOverHandle(FILE* fptr, int diff)
 	return nullptr;
 }
 
-bool IsHandle(FILE* H)
+bool IsHandle(HANDLE H)
 {
 	if (H == nullptr) return false;
 	return Handles.count(H) > 0;
 }
 
-bool IsUpdHandle(FILE* H)
+bool IsUpdHandle(HANDLE H)
 {
 	if (H == nullptr) return false;
 	return UpdHandles.count(H) > 0;
 }
 
-bool IsFlshHandle(FILE* H)
+bool IsFlshHandle(HANDLE H)
 {
 	if (H == nullptr) return false;
 	return FlshHandles.count(H) > 0;
 }
 
-void SetHandle(FILE* H)
+void SetHandle(HANDLE H)
 {
 	if (H == nullptr) return;
 	Handles.insert(H);
 	//CardHandles++;
 }
 
-void SetUpdHandle(FILE* H)
+void SetUpdHandle(HANDLE H)
 {
 	if (H == nullptr) return;
 	UpdHandles.insert(H);
@@ -678,26 +680,26 @@ WORD SLeadEqu(const std::string& s1, const std::string& s2)
 	return count;
 }
 
-void SetFlshHandle(FILE* H)
+void SetFlshHandle(HANDLE H)
 {
 	if (H == nullptr) return;
 	FlshHandles.insert(H);
 }
 
-void ResetHandle(FILE* H)
+void ResetHandle(HANDLE H)
 {
 	if (H == nullptr) return;
 	Handles.erase(H);
 	//CardHandles--;
 }
 
-void ResetUpdHandle(FILE* H)
+void ResetUpdHandle(HANDLE H)
 {
 	if (H == nullptr) return;
 	UpdHandles.erase(H);
 }
 
-void ResetFlshHandle(FILE* H)
+void ResetFlshHandle(HANDLE H)
 {
 	if (H == nullptr) return;
 	FlshHandles.erase(H);
@@ -738,7 +740,7 @@ void UnExtendHandles()
 	// zavre vsechny otevrene soubory, presune zpet NewHT do Old... promennych
 }
 
-FILE* OpenH(const std::string& path, FileOpenMode Mode, FileUseMode UM)
+HANDLE OpenH(const std::string& path, FileOpenMode Mode, FileUseMode UM)
 {
 	// $3C vytvori nebo prepise soubor
 	// $3D otevira exitujici soubor
@@ -755,7 +757,10 @@ FILE* OpenH(const std::string& path, FileOpenMode Mode, FileUseMode UM)
 	//if (CardHandles == files) RunError(884);
 	int w = 0;
 	std::string openFlags;
-	FILE* nFile = nullptr;
+	//FILE* nFile = nullptr;
+	HANDLE handle;
+	DWORD create_mode = 0;
+	DWORD access_mode = 0;
 
 	while (true) {
 		switch (Mode) {
@@ -763,25 +768,31 @@ FILE* OpenH(const std::string& path, FileOpenMode Mode, FileUseMode UM)
 		case _isOldNewFile:
 		{
 			openFlags = UM == RdOnly ? "rb" : "r+b";
+			create_mode = OPEN_EXISTING;
+			access_mode = UM == RdOnly ? GENERIC_READ : GENERIC_READ | GENERIC_WRITE;
 			break;
 		}
 		case _isOverwriteFile:
 		{
 			openFlags = "w+b";
+			create_mode = CREATE_ALWAYS;
+			access_mode = GENERIC_READ | GENERIC_WRITE;
 			break;
 		}
 		case _isNewFile:
 		{
 			openFlags = "w+b"; // UM == RdOnly ? "w+b" : "w+b";
+			create_mode = CREATE_NEW;
+			access_mode = GENERIC_READ | GENERIC_WRITE;
 			break;
 		}
 		}
 
-		HandleError = (WORD)fopen_s(&nFile, path.c_str(), openFlags.c_str());
+		//HandleError = (WORD)fopen_s(&nFile, path.c_str(), openFlags.c_str());
+		handle = OpenF(path, HandleError, access_mode, 0, create_mode, 128);
 
 		// https://docs.microsoft.com/en-us/cpp/c-runtime-library/errno-doserrno-sys-errlist-and-sys-nerr?view=vs-2019
-		if (IsNetCVol() && (HandleError == EACCES || HandleError == ENOLCK))
-		{
+		if (IsNetCVol() && (HandleError == EACCES || HandleError == ENOLCK)) {
 			if (w == 0) {
 				SetMsgPar(path, txt[UM]);
 				w = PushWrLLMsg(825, false);
@@ -793,8 +804,8 @@ FILE* OpenH(const std::string& path, FileOpenMode Mode, FileUseMode UM)
 
 		if (HandleError == 0)
 		{
-			SetHandle(nFile);
-			if (Mode != _isOldFile) SetUpdHandle(nFile);
+			SetHandle((FILE*)handle);
+			if (Mode != _isOldFile) SetUpdHandle((FILE*)handle);
 		}
 
 		else if (HandleError == ENOENT) {
@@ -809,25 +820,25 @@ FILE* OpenH(const std::string& path, FileOpenMode Mode, FileUseMode UM)
 	}
 
 	Logging* log = Logging::getInstance();
-	log->log(loglevel::DEBUG, "opening file  0x%p '%s', error %i", nFile, path.c_str(), HandleError);
+	log->log(loglevel::DEBUG, "opening file  0x%p '%s', error %i", handle, path.c_str(), HandleError);
 
 	// pridani FILE* do vektoru kvuli 'WORD OvrHandle = h - 1;'
-	vOverHandle.push_back(nFile);
+	vOverHandle.push_back((FILE*)handle);
 
 #ifdef _DEBUG
 	if (filesMap.find(path) != filesMap.end()) {
 		// soubor uz v mape je, budeme aktualizovat
-		filesMap[path] = DataFile(path, CFile, nFile);
+		filesMap[path] = DataFile(path, CFile, (FILE*)handle);
 		if (CFile != nullptr) {
 			CFile->FullPath = CPath;
 		}
 	}
 	else {
-		filesMap.insert(std::pair(path, DataFile(path, CFile, nFile)));
+		filesMap.insert(std::pair(path, DataFile(path, CFile, (FILE*)handle)));
 	}
 #endif
 
-	return nFile;
+	return (FILE*)handle;
 }
 
 WORD ReadLongH(FILE* handle, int bytes, void* buffer)
@@ -843,49 +854,50 @@ WORD ReadLongH(FILE* handle, int bytes, void* buffer)
 	return WORD(readed);
 }
 
-void WriteH(FILE* handle, size_t length, void* buffer)
+void WriteH(HANDLE handle, size_t length, void* buffer)
 {
 	if (handle == nullptr) RunError(706);
 	if (length <= 0) return;
-	fwrite(buffer, 1, length, handle);
-	HandleError = ferror(handle);
+	//fwrite(buffer, 1, length, handle);
+	//HandleError = ferror(handle);
+	WriteF(handle, buffer, length, HandleError);
 }
 
-long FileSizeH(FILE* handle)
+long FileSizeH(HANDLE handle)
 {
-	int pos = PosH(handle);
-	long result = MoveH(0, 2, handle);
-	SeekH(handle, pos);
-	return result;
+	//int pos = PosH(handle);
+	//long result = MoveH(0, 2, handle);
+	//SeekH(handle, pos);
+	long size = SizeF(handle, HandleError);
+	return size;
 }
 
-void TruncH(FILE* handle, size_t N)
-{
-	// cilem je zkratit delku souboru na N
-	if (handle == nullptr) return;
-	if (FileSizeH(handle) > N) {
-		//_chsize((int)handle, N);
-		SeekH(handle, N);
-		int result = SetEndOfFile(handle);
-		//SeekH(handle, 0);
-		//SetFileValidData(handle, N);
-		DWORD error = GetLastError();
-		printf("%i", result);
-	}
-}
+//void TruncH(FILE* handle, size_t N)
+//{
+//	// cilem je zkratit delku souboru na N
+//	if (handle == nullptr) return;
+//	if (FileSizeH(handle) > N) {
+//		//_chsize((int)handle, N);
+//		SeekH(handle, N);
+//		int result = SetEndOfFile(handle);
+//		//SeekH(handle, 0);
+//		//SetFileValidData(handle, N);
+//		DWORD error = GetLastError();
+//		printf("%i", result);
+//	}
+//}
 
-void CloseH(FILE** handle)
+void CloseH(HANDLE* handle)
 {
 	Logging* log = Logging::getInstance();
 	DataFile* fileForClose = nullptr;
-	if (*handle == nullptr) return;
+	if (handle == nullptr) return;
 	// uzavre soubor
-	auto res = fclose(*handle);
-	WORD HandleError = res;
+	bool res = CloseF(*handle, HandleError);
 	log->log(loglevel::DEBUG, "closing file 0x%p '%s', error %i",
 		*handle, fileForClose == nullptr ? "nullptr" : fileForClose->Name.c_str(), res);
 
-	if (res != 0) {
+	if (!res) {
 		throw std::exception("Cannot close file!");
 	}
 
@@ -905,10 +917,10 @@ void CloseH(FILE** handle)
 	}
 #endif
 
-	* handle = nullptr;
+	*handle = nullptr;
 }
 
-void ClearCacheH(FILE* h)
+void ClearCacheH(HANDLE h)
 {
 	Logging* log = Logging::getInstance();
 	//log->log(loglevel::DEBUG, "ClearCacheH() 0x%p", h);
@@ -916,7 +928,7 @@ void ClearCacheH(FILE* h)
 	cache.SaveRemoveCache(h);
 }
 
-void CloseClearH(FILE** h)
+void CloseClearH(HANDLE* h)
 {
 	Logging* log = Logging::getInstance();
 	//log->log(loglevel::DEBUG, "CloseClearH() 0x%p", h);
@@ -925,7 +937,7 @@ void CloseClearH(FILE** h)
 	CloseH(h);
 }
 
-void RdWrCache(FileOperation operation, FILE* handle, bool not_cached, size_t position, size_t count, void* buf)
+void RdWrCache(FileOperation operation, HANDLE handle, bool not_cached, size_t position, size_t count, void* buf)
 {
 	Logging* log = Logging::getInstance();
 
@@ -980,17 +992,17 @@ void RdWrCache(FileOperation operation, FILE* handle, bool not_cached, size_t po
 	}
 }
 
-void FlushH(FILE* handle)
-{
-	Logging* log = Logging::getInstance();
-	//log->log(loglevel::DEBUG, "FlushH()      0x%p", handle);
-	if (handle == nullptr) return;
-	auto result = fflush(handle);
-	if (result == EOF) { HandleError = result; }
-	//SetHandle(handle);
-	SetUpdHandle(handle);
-	//CloseH(handle);
-}
+//void FlushH(FILE* handle)
+//{
+//	Logging* log = Logging::getInstance();
+//	//log->log(loglevel::DEBUG, "FlushH()      0x%p", handle);
+//	if (handle == nullptr) return;
+//	auto result = fflush(handle);
+//	if (result == EOF) { HandleError = result; }
+//	//SetHandle(handle);
+//	SetUpdHandle(handle);
+//	//CloseH(handle);
+//}
 
 WORD FindCtrlM(LongStr* s, WORD i, WORD n)
 {
@@ -1041,10 +1053,10 @@ WORD SkipCtrlMJ(std::string& s, WORD i)
 void FlushHandles()
 {
 	for (auto handle : UpdHandles)	{
-		FlushH(handle);
+		FlushF(handle, HandleError);
 	}
 	for (auto handle : FlshHandles) {
-		FlushH(handle);
+		FlushF(handle, HandleError);
 	}
 	ClearUpdHandles();
 	ClearFlshHandles();
@@ -1129,7 +1141,7 @@ void UnLockCache()
 {
 }
 
-bool SaveCache(WORD ErrH, FILE* f)
+bool SaveCache(WORD ErrH, HANDLE f)
 {
 	// ulozi cache do souboru
 	cache.SaveRemoveCache(f);

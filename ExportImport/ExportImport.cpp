@@ -352,7 +352,7 @@ void ExportTxt(CopyD* CD)
 	}
 }
 
-void Cpy(FILE* h, int sz, ThFile* F2)
+void Cpy(HANDLE h, int sz, ThFile* F2)
 {
 	SeekH(h, 0);
 	int i = 0;
@@ -634,7 +634,7 @@ void BackupM(Instr_backup* PD)
 void CheckFile(FileD* FD)
 {
 	struct stPrfx { int NRecs; WORD RecLen; } Prfx;
-	FILE* h = nullptr;
+	HANDLE h = nullptr;
 	std::string d, n, e;
 	int fs = 0;
 
@@ -688,13 +688,13 @@ void AddLicNr(FieldDescr* F)
 	}
 }
 
-void CopyH(FILE* H, pstring Nm)
+void CopyH(HANDLE H, pstring Nm)
 {
-	WORD n; FILE* h2;
+	WORD n;
 	BYTE* buf = new BYTE[MaxLStrLen]; // GetStore(MaxLStrLen);
 	CPath = Nm;
 	CVol = "";
-	h2 = OpenH(CPath, _isOverwriteFile, Exclusive);
+	HANDLE h2 = OpenH(CPath, _isOverwriteFile, Exclusive);
 	int sz = FileSizeH(H);
 	SeekH(H, 0);
 	while (sz > 0) {

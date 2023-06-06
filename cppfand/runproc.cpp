@@ -1014,13 +1014,13 @@ void HelpProc(Instr_help* PD)
 	Help(PD->HelpRdb0, RunShortStr(CFile, PD->Frml0, CRecPtr), true);
 }
 
-FILE* OpenHForPutTxt(Instr_puttxt* PD)
+HANDLE OpenHForPutTxt(Instr_puttxt* PD)
 {
 	SetTxtPathVol(PD->TxtPath1, PD->TxtCatIRec1);
 	TestMountVol(CPath[1]);
 	FileOpenMode m = _isOverwriteFile;
 	if (PD->App) m = _isOldNewFile;
-	FILE* h = OpenH(CPath, m, Exclusive);
+	HANDLE h = OpenH(CPath, m, Exclusive);
 	TestCPathError();
 	if (PD->App) SeekH(h, FileSizeH(h));
 	return h;
@@ -1028,7 +1028,7 @@ FILE* OpenHForPutTxt(Instr_puttxt* PD)
 
 void PutTxt(Instr_puttxt* PD)
 {
-	FILE* h = nullptr;
+	HANDLE h = nullptr;
 	FrmlElem* z = nullptr; pstring pth;
 	z = PD->Txt;
 
@@ -1567,7 +1567,7 @@ void CallProcedure(Instr_proc* PD)
 
 #ifdef _DEBUG
 	std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
-	if (srcCode.find("proc(BHC1,(PAR01A4.BHCHead));") != std::string::npos) {
+	if (srcCode.find("PARAM1.nrecs>1: PARAM1.nrecs:=1; end; close(PARAM1);") != std::string::npos) {
 		printf("");
 	}
 #endif

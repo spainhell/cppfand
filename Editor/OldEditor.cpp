@@ -2202,7 +2202,7 @@ void SetBlockBound(int& BBPos, int& EBPos)
 	BBPos = SetInd(T, LenT, nextLineIdx, blocks->BegBPos); // +Part.PosP;
 }
 
-void ResetPrint(char Oper, int& fs, FILE* W1, int LenPrint, ColorOrd* co, WORD& I1, bool isPrintFile, char* p)
+void ResetPrint(char Oper, int& fs, HANDLE W1, int LenPrint, ColorOrd* co, WORD& I1, bool isPrintFile, char* p)
 {
 	//*co = Part.ColorP;
 	*co = SetColorOrd(0, I1 - 1);
@@ -2238,7 +2238,7 @@ void LowCase(char& c)
 		if ((UpcCharTab[i] == c) && (i != c)) { c = i; return; }
 }
 
-bool BlockHandle(int& fs, FILE* W1, char Oper)
+bool BlockHandle(int& fs, HANDLE W1, char Oper)
 {
 	WORD i, I1;
 	int LL1, LL2;

@@ -93,7 +93,7 @@ bool BlockExist();
 void SetBlockBound(int& BBPos, int& EBPos);
 void FindReplaceString(int First, int Last);
 void PosDekFindLine(int Num, WORD Pos, bool ChScr);
-bool BlockHandle(int& fs, FILE* W1, char Oper);
+bool BlockHandle(int& fs, HANDLE W1, char Oper);
 void BlockCopyMove(char Oper, void* P1, LongStr* sp);
 bool BlockGrasp(char Oper, void* P1, LongStr* sp);
 bool BlockCGrasp(char Oper, void* P1, LongStr* sp);

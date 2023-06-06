@@ -10,7 +10,7 @@ class WorkFile
 public:
 	WorkFile(FileD* parent);
 	virtual ~WorkFile();
-	FILE* Handle = nullptr;
+	HANDLE Handle = nullptr;
 	unsigned short RecLen = 0, MaxOnWPage = 0, WPageSize = 0;
 	int MaxWPage = 0, WRoot = 0, NChains = 0, PgWritten = 0;
 	int WBaseSize = 0;

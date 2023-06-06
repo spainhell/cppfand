@@ -247,7 +247,9 @@ short FlushTxt(TextFile* F)
 
 short CloseTxt(TextFile* F)
 {
-	CloseH(&F->Handle);
+	//CloseH(&F->Handle);
+	fclose(F->Handle);
+	F->Handle = nullptr;
 	TestTxtHError(F);
 	return 0;
 }
@@ -285,16 +287,16 @@ void Seek0Txt(TextFile* F)
 	F->bufpos = F->bufend;
 }
 
-bool ResetTxt(TextFile* F)
-{
-	F->Assign(CPath.c_str());
-	F->openfunc = OpenTxt;
-	F->Handle = nullptr; /* for error detection in OpenH */
-	F->Handle = OpenH(CPath, _isOldFile, RdOnly);
-	if (HandleError != 0) { return false; }
-	F->Reset();
-	return true;
-}
+//bool ResetTxt(TextFile* F)
+//{
+//	F->Assign(CPath.c_str());
+//	F->openfunc = OpenTxt;
+//	F->Handle = nullptr; /* for error detection in OpenH */
+//	F->Handle = OpenH(CPath, _isOldFile, RdOnly);
+//	if (HandleError != 0) { return false; }
+//	F->Reset();
+//	return true;
+//}
 
 bool RewriteTxt(std::string path, TextFile* F, bool PrintCtrl)
 {

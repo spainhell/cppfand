@@ -54,6 +54,14 @@ bool TruncF(HANDLE hFile, DWORD& error, long distance = -1);
 long SizeF(HANDLE hFile, DWORD& error);
 
 /**
+ * \brief 
+ * \param hFile 
+ * \param error 
+ * \return 
+ */
+bool FlushF(HANDLE hFile, DWORD& error);
+
+/**
  *
  */
 bool CloseF(HANDLE& hFile, DWORD& error);

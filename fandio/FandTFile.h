@@ -1,9 +1,9 @@
 #pragma once
-#include <cstdio>
 #include <string>
 #include "../Common/FileEnums.h"
 #include "../Common/LongStr.h"
 
+typedef void* HANDLE;
 class FandFile;
 typedef char PwCodeArr[20];
 
@@ -19,7 +19,7 @@ public:
 	FandTFile(const FandTFile& orig, FandFile* parent);
 	~FandTFile();
 
-	FILE* Handle = nullptr;
+	HANDLE Handle = nullptr;
 	int FreePart = 0;
 	bool Reserved = false, CompileProc = false, CompileAll = false;
 	unsigned short IRec = 0;

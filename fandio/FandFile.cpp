@@ -635,18 +635,18 @@ void FandFile::TruncFile()
 {
 	if (UMode == RdOnly) return;
 	LockMode md = _parent->NewLockMode(RdMode);
-	TruncH(Handle, UsedFileSize());
+	TruncF(Handle, HandleError, UsedFileSize());
 	if (HandleError != 0) {
 		FileMsg(_parent, 700 + HandleError, '0');
 	}
 	if (TF != nullptr) {
-		TruncH(TF->Handle, TF->UsedFileSize());
+		TruncF(TF->Handle, HandleError, TF->UsedFileSize());
 		TF->TestErr();
 	}
 	if (file_type == FileType::INDEX) {
 		int sz = XF->UsedFileSize();
 		if (XF->NotValid) sz = 0;
-		TruncH(XF->Handle, sz);
+		TruncF(XF->Handle, HandleError, sz);
 		XF->TestErr();
 	}
 	_parent->OldLockMode(md);
@@ -1201,8 +1201,8 @@ void FandFile::CopyDuplF(FileD* TempFD, bool DelTF)
 	SetTempCExt(_parent, '0', true);
 	CopyH(TempFD->FF->Handle, Handle);
 	if ((TF != nullptr) && DelTF) {
-		FILE* h1 = TempFD->FF->TF->Handle;
-		FILE* h2 = TF->Handle;
+		HANDLE h1 = TempFD->FF->TF->Handle;
+		HANDLE h2 = TF->Handle;
 		SetTempCExt(_parent, 'T', true);
 		*TF = *TempFD->FF->TF;
 		TF->Handle = h2;

@@ -92,7 +92,7 @@ label1:
 				ForAllFDs(ForAllFilesOperation::find_fd_for_i, &x_FD, x_I);
 				CFile = x_FD;
 				if (CFile != nullptr) {
-					FILE* h = CFile->FF->Handle;
+					HANDLE h = CFile->FF->Handle;
 					if (IsBackup) BackupFD();
 					else RestoreFD();
 					/*if (h == 0xff)*/ CFile->CloseFile();
@@ -123,7 +123,7 @@ label1:
 
 void TbFile::BackupH()
 {
-	FILE* h = OpenH(CPath, _isOldFile, RdOnly);
+	HANDLE h = OpenH(CPath, _isOldFile, RdOnly);
 	if (HandleError == 2) {
 		Rewrite();
 		InitBufOutp();

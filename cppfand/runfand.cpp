@@ -585,7 +585,7 @@ void DeleteFandFiles()
 {
 	if (WorkHandle != nullptr) {
 		try {
-			fclose(WorkHandle);
+			CloseF(WorkHandle, HandleError);
 			deleteFile(FandWorkName);
 		}
 		catch (std::exception&) {}
@@ -594,7 +594,7 @@ void DeleteFandFiles()
 
 	if (XWork.Handle != nullptr) {
 		try {
-			fclose(XWork.Handle);
+			CloseF(XWork.Handle, HandleError);
 			deleteFile(FandWorkXName);
 		}
 		catch (std::exception&) {}
@@ -603,7 +603,7 @@ void DeleteFandFiles()
 
 	if (TWork.Handle != nullptr) {
 		try {
-			fclose(TWork.Handle);
+			CloseF(TWork.Handle, HandleError);
 			deleteFile(FandWorkTName);
 		}
 		catch (std::exception&) {}

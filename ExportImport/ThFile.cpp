@@ -38,7 +38,8 @@ ThFile::ThFile(std::string APath, WORD CatIRec, InOutMode AMode, byte aCompress,
 	FSplit(CPath, d, Nm, e);
 	//ForAllFDs(CloseEqualFD);
 
-	HandleError = fopen_s(&Handle, CPath.c_str(), mode.c_str());
+	Handle = OpenF(CPath, HandleError, GENERIC_READ | GENERIC_WRITE);
+	//HandleError = fopen_s(&Handle, CPath.c_str(), mode.c_str());
 	if (Handle != nullptr) {
 		this->ReadBuf();
 	}
@@ -59,7 +60,7 @@ ThFile::~ThFile()
 	//delete[] Buf;
 
 	if (Handle != nullptr) {
-		fclose(Handle);
+		CloseH(&Handle);
 	}
 	Handle = nullptr;
 }
@@ -67,7 +68,10 @@ ThFile::~ThFile()
 void ThFile::ReadBuf()
 {
 	if (Handle != nullptr) {
-		lBuf = fread_s(Buf, BUFFER_SIZE, 1, BUFFER_SIZE, Handle);
+		//lBuf = fread_s(Buf, BUFFER_SIZE, 1, BUFFER_SIZE, Handle);
+		lBuf = BUFFER_SIZE;
+		ReadH(Handle, BUFFER_SIZE, Buf);
+
 		if (lBuf == 0) this->eof = true;
 		Size = lBuf;
 	}
@@ -80,7 +84,8 @@ void ThFile::ReadBuf()
 void ThFile::WriteBuf(bool cond)
 {
 	if (Handle != nullptr) {
-		lBuf = fwrite(Buf, 1, lBuf, Handle);
+		//lBuf = fwrite(Buf, 1, lBuf, Handle);
+		WriteH(Handle, lBuf, Buf);
 	}
 }
 

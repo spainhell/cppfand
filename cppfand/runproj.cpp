@@ -998,7 +998,7 @@ int MakeDbfDcl(pstring Nm)
 		CPath = FExpand(CatFD->GetPathName(i));
 		FSplit(CPath, CDir, CName, CExt);
 	}
-	FILE* h = OpenH(CPath, _isOldFile, RdOnly);
+	HANDLE h = OpenH(CPath, _isOldFile, RdOnly);
 	TestCPathError();
 	ReadH(h, 32, &Hd); WORD n = (Hd.HdLen - 1) / 32 - 1; t = new LongStr(2); t->LL = 0;
 	for (i = 1; i <= n; i++) {
@@ -1502,12 +1502,16 @@ bool EditExecRdb(std::string Nm, std::string proc_name, Instr_proc* proc_call, w
 							proc_call->PPos = RP;
 							CallProcedure(proc_call);
 						}
-						else RunMainProc(RP, top);
+						else {
+							RunMainProc(RP, top);
+						}
 						result = true;
 						goto label9;
 					}
 					catch (std::exception& e) {
-						if (IsCompileErr) WrErrMsg630(Nm);
+						if (IsCompileErr) {
+							WrErrMsg630(Nm);
+						}
 						goto label9;
 					}
 				}

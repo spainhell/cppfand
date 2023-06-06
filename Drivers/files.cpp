@@ -121,6 +121,20 @@ long SizeF(HANDLE hFile, DWORD& error)
 	return result;
 }
 
+bool FlushF(HANDLE hFile, DWORD& error)
+{
+	bool result = FlushFileBuffers(hFile);
+	if (!result) {
+		error = GetLastError();
+		result = false;
+	}
+	else {
+		error = 0;
+		result = true;
+	}
+	return result;
+}
+
 bool CloseF(HANDLE& hFile, DWORD& error)
 {
 	const bool result = CloseHandle(hFile);

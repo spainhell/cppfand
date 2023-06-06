@@ -351,7 +351,7 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 	wwmix wwmix1;
 	WORD I = 0, I1 = 0;
 	short I2 = 0, I3 = 0;
-	FILE* F1 = nullptr;
+	HANDLE F1 = nullptr;
 	WORD W1 = 0, W2 = 0;
 	int L1 = 0, L2 = 0, fs = 0;
 	stEditorParams ep;

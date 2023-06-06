@@ -14,8 +14,8 @@ WorkFile::WorkFile(FileD* parent)
 WorkFile::~WorkFile()
 {
 	MaxWSize = WBaseSize;
-	TruncH(Handle, MaxWSize);
-	FlushH(Handle);
+	TruncF(Handle, HandleError, MaxWSize);
+	FlushF(Handle, HandleError);
 }
 
 void WorkFile::Reset(KeyFldD* KF, int RestBytes, char Typ, int NRecs)

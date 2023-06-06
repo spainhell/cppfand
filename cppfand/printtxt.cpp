@@ -80,9 +80,9 @@ void ExecPrintManagerProgram()
 	screen.GotoXY(x - WindMin.X + 1, y - WindMin.Y + 1);
 }
 
-FILE* OpenPrintManagerOutput()
+HANDLE OpenPrintManagerOutput()
 {
-	FILE* h;
+	HANDLE h;
 	prFileNr = (prFileNr + 1) % 100;
 	std::string s = std::to_string(prFileNr);
 	CPath = replaceNo(PrTab(prCurr, prMgrFileNm), s);
@@ -101,7 +101,7 @@ FILE* OpenPrintManagerOutput()
 
 void CopyToPrintManager(std::string& text)
 {
-	FILE* h2 = OpenPrintManagerOutput();
+	HANDLE h2 = OpenPrintManagerOutput();
 	if (h2 == nullptr) return;
 	//FileD* cf = CFile; void* cr = CRecPtr;
 	if (printBlk) {

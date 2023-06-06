@@ -12,7 +12,7 @@ public:
 	ThFile(std::string APath, WORD CatIRec, InOutMode AMode, BYTE aCompress, ThFile* F);
 	~ThFile();
 
-	FILE* Handle = nullptr;
+	HANDLE Handle = nullptr;
 	std::string Path;
 	std::string Vol;
 	InOutMode Mode = InOutMode::_inp;

@@ -41,7 +41,7 @@ void WithLockedProc(Instr_withshared* PD);
 void UnLck(Instr_withshared* PD, LockD* Ld1, PInstrCode Op);
 
 void HelpProc(Instr_help* PD);
-FILE* OpenHForPutTxt(Instr_puttxt* PD);
+HANDLE OpenHForPutTxt(Instr_puttxt* PD);
 void PutTxt(Instr_puttxt* PD);
 void AssgnCatFld(Instr_assign* PD);
 void AssgnAccRight(Instr_assign* PD);

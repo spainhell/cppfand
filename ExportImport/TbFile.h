@@ -1,9 +1,10 @@
 #pragma once
 
-#include <cstdio>
 #include <string>
 #include "TyFile.h"
 #include "../cppfand/constants.h"
+
+typedef void* HANDLE;
 
 class TbFile : TyFile
 {
@@ -11,7 +12,7 @@ public:
 	TbFile(bool noCompress);
 	~TbFile();
 
-	FILE* Handle = nullptr;
+	HANDLE Handle = nullptr;
 	std::string Dir;
 	std::string FName;
 	std::string Ext;

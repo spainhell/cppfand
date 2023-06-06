@@ -24,12 +24,12 @@ short InputTxt(TextFile* F);
 short OutputTxt(TextFile* F);
 short OutputLPT1(TextFile* F);
 short FlushTxt(TextFile* F);
-short CloseTxt(TextFile* F);
+//short CloseTxt(TextFile* F);
 short CloseLPT1(TextFile* F);
-short OpenTxt(TextFile* F);
+//short OpenTxt(TextFile* F);
 short OpenLPT1(TextFile* F);
 void Seek0Txt(TextFile* F); // r234
-bool ResetTxt(TextFile* F);
+//bool ResetTxt(TextFile* F);
 bool RewriteTxt(std::string path, TextFile* F, bool PrintCtrl);
 void SetPrintTxtPath();
 

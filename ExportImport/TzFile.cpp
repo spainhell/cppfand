@@ -26,8 +26,8 @@ void TzFile::Close()
 {
 	if (Handle != nullptr) {
 		MaxWSize = WBase;
-		TruncH(WorkHandle, MaxWSize);
-		FlushH(WorkHandle);
+		TruncF(WorkHandle, HandleError, MaxWSize);
+		FlushF(WorkHandle, HandleError);
 		CloseH(&Handle);
 		ChDir(OldDir);
 	}
@@ -203,7 +203,7 @@ void TzFile::Rewrite()
 	SpaceOnDisk = MyDiskFree(Floppy, Drive);
 }
 
-void TzFile::RdH(FILE* H, bool Skip)
+void TzFile::RdH(HANDLE H, bool Skip)
 {
 	int sz;
 	BYTE* a = (BYTE*)&sz;
@@ -223,7 +223,7 @@ void TzFile::RdH(FILE* H, bool Skip)
 	}
 }
 
-void TzFile::WrH(FILE* H, int Sz)
+void TzFile::WrH(HANDLE H, int Sz)
 {
 	Move(&Sz, Buf, 4);
 	WORD j = 4;
@@ -249,7 +249,7 @@ void TzFile::WrH(FILE* H, int Sz)
 void TzFile::ProcFileList()
 {
 	void* p = nullptr;
-	FILE* h = nullptr;
+	HANDLE h = nullptr;
 
 	int d = 0;
 	MarkStore(p);

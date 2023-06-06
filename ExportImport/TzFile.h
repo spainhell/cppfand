@@ -8,7 +8,7 @@ class TzFile : public TyFile
 public:
     TzFile(bool BkUp, bool NoCompr, bool SubDirO, bool OverwrO, WORD Ir, pstring aDir);
     int WBase, WPos;
-    FILE* Handle;
+    HANDLE Handle;
     int SpaceOnDisk, Size, OrigSize;
     std::string OldDir, Dir;
     bool SubDirOpt, OverwrOpt;
@@ -26,8 +26,8 @@ public:
     void Rewrite();
     //void ReadBuf2() override;
     //void WriteBuf2() override;
-    void RdH(FILE* H, bool Skip);
-    void WrH(FILE* H, int Sz);
+    void RdH(HANDLE H, bool Skip);
+    void WrH(HANDLE H, int Sz);
     void ProcFileList();
     void Backup(LongStr* aMsk);
     void Restore();

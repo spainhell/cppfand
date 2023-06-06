@@ -79,6 +79,8 @@ WORD IOResult();
 WORD DosError();
 double DiskFree(char disk);
 
+//typedef void* HANDLE;
+
 class TextFile
 {
 public:

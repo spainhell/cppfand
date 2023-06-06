@@ -546,10 +546,11 @@ void TextFile::Close(const char* data)
 	*/
 	
 	fwrite(data, 1, strlen(data), Handle);
-
 	HandleError = ferror(Handle);
 	fclose(Handle);
 	Handle = nullptr;
+	//WriteF(Handle, (void*)data, strlen(data), HandleError);
+	//CloseF(Handle, HandleError);
 }
 
 void TextFile::Assign(std::string FullPath)
