@@ -752,44 +752,62 @@ HANDLE OpenH(const std::string& path, FileOpenMode Mode, FileUseMode UM)
 	// pri 'IsNetCVol' se chova jinak
 	// RdOnly $20, RdShared $40, Shared $42, Exclusive $12
 
-	std::string txt[] = { "Clos", "OpRd", "OpRs", "OpSh", "OpEx" };
+	std::string txt[] = { "Close", "OpRd", "OpRs", "OpSh", "OpEx" };
 
 	//if (CardHandles == files) RunError(884);
 	int w = 0;
-	std::string openFlags;
-	//FILE* nFile = nullptr;
+
 	HANDLE handle;
-	DWORD create_mode = 0;
 	DWORD access_mode = 0;
+	DWORD share_mode = 0;
+	DWORD create_mode = 0;
+	
+	switch (Mode) {
+	case _isOldFile: {
+		create_mode = OPEN_EXISTING;
+		break;
+		}
+	case _isOldNewFile: {
+		create_mode = OPEN_EXISTING;
+		break;
+	}
+	case _isOverwriteFile: {
+		create_mode = CREATE_ALWAYS;
+		break;
+	}
+	case _isNewFile: {
+		create_mode = CREATE_NEW;
+		break;
+	}
+	}
+
+	switch (UM) {
+	case RdOnly: {
+		access_mode = GENERIC_READ;
+		share_mode = FILE_SHARE_READ;
+		break;
+	}
+	case RdShared: {
+		access_mode = GENERIC_READ;
+		share_mode = FILE_SHARE_READ;
+		break;
+	}
+	case Shared: {
+		access_mode = GENERIC_READ | GENERIC_WRITE;
+		share_mode = FILE_SHARE_WRITE;
+		break;
+	}
+	case Exclusive: {
+		access_mode = GENERIC_READ | GENERIC_WRITE;
+		share_mode = 0;
+		break;
+	}
+	default: ;
+	}
 
 	while (true) {
-		switch (Mode) {
-		case _isOldFile:
-		case _isOldNewFile:
-		{
-			openFlags = UM == RdOnly ? "rb" : "r+b";
-			create_mode = OPEN_EXISTING;
-			access_mode = UM == RdOnly ? GENERIC_READ : GENERIC_READ | GENERIC_WRITE;
-			break;
-		}
-		case _isOverwriteFile:
-		{
-			openFlags = "w+b";
-			create_mode = CREATE_ALWAYS;
-			access_mode = GENERIC_READ | GENERIC_WRITE;
-			break;
-		}
-		case _isNewFile:
-		{
-			openFlags = "w+b"; // UM == RdOnly ? "w+b" : "w+b";
-			create_mode = CREATE_NEW;
-			access_mode = GENERIC_READ | GENERIC_WRITE;
-			break;
-		}
-		}
-
 		//HandleError = (WORD)fopen_s(&nFile, path.c_str(), openFlags.c_str());
-		handle = OpenF(path, HandleError, access_mode, 0, create_mode, 128);
+		handle = OpenF(path, HandleError, access_mode, share_mode, create_mode, 128);
 
 		// https://docs.microsoft.com/en-us/cpp/c-runtime-library/errno-doserrno-sys-errlist-and-sys-nerr?view=vs-2019
 		if (IsNetCVol() && (HandleError == EACCES || HandleError == ENOLCK)) {
@@ -804,14 +822,15 @@ HANDLE OpenH(const std::string& path, FileOpenMode Mode, FileUseMode UM)
 
 		if (HandleError == 0)
 		{
-			SetHandle((FILE*)handle);
-			if (Mode != _isOldFile) SetUpdHandle((FILE*)handle);
+			SetHandle(handle);
+			if (Mode != _isOldFile) SetUpdHandle(handle);
 		}
 
 		else if (HandleError == ENOENT) {
 			// No such file or directory
 			if (/*Mode == _isOldFile ||*/ Mode == _isOldNewFile) {
 				Mode = _isNewFile;
+				create_mode = CREATE_NEW;
 				continue;
 			}
 		}
