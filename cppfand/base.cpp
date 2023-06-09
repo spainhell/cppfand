@@ -808,6 +808,9 @@ HANDLE OpenH(const std::string& path, FileOpenMode Mode, FileUseMode UM)
 	while (true) {
 		//HandleError = (WORD)fopen_s(&nFile, path.c_str(), openFlags.c_str());
 		handle = OpenF(path, HandleError, access_mode, share_mode, create_mode, 128);
+		if (handle == INVALID_HANDLE_VALUE) {
+			handle = nullptr;
+		}
 
 		// https://docs.microsoft.com/en-us/cpp/c-runtime-library/errno-doserrno-sys-errlist-and-sys-nerr?view=vs-2019
 		if (IsNetCVol() && (HandleError == EACCES || HandleError == ENOLCK)) {
@@ -1268,10 +1271,6 @@ int StoreAvail()
 	return 512 * 1024;
 }
 
-void AlignLongStr()
-{
-}
-
 void GoExit()
 {
 	Logging* log = Logging::getInstance();
@@ -1329,13 +1328,13 @@ std::string PrTab(WORD printerNr, WORD value)
 void SetCurrPrinter(short NewPr)
 {
 	if (NewPr >= prMax) return;
-	if (prCurr >= 0) {/* !!! with printer[prCurr] do!!! */
+	if (prCurr >= 0) {
 		if (printer[prCurr].TmOut != 0) {
 			PrTimeOut[printer[prCurr].Lpti] = OldPrTimeOut[printer[prCurr].Lpti];
 		}
 	}
 	prCurr = NewPr;
-	if (prCurr >= 0) { /* !!! with printer[prCurr] do!!! */
+	if (prCurr >= 0) {
 		if (printer[prCurr].TmOut != 0) {
 			PrTimeOut[printer[prCurr].Lpti] = printer[prCurr].TmOut;
 		}

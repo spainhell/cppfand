@@ -66,7 +66,6 @@ void ReleaseAfterLongStr(void** pointer);
 int StoreAvail();
 std::string* StoreStr(std::string S);
 void MarkBoth(void* p, void* p2);
-void AlignLongStr();
 
 void GoExit();
 bool OSshell(std::string Path, std::string CmdLine, bool NoCancel, bool FreeMm, bool LdFont, bool TextMd);
@@ -76,18 +75,14 @@ bool OSshell(std::string Path, std::string CmdLine, bool NoCancel, bool FreeMm, 
 bool IsNetCVol();
 bool CacheExist();
 bool SaveCache(WORD ErrH, HANDLE f);
-//void ClearCacheH(FILE* h);
 void SetUpdHandle(HANDLE H);
 void ResetUpdHandle(HANDLE H);
 bool IsUpdHandle(HANDLE H);
-//long PosH(FILE* handle);
 long SeekH(HANDLE handle, size_t pos);
 long FileSizeH(HANDLE handle);
 HANDLE OpenH(const std::string& path, FileOpenMode Mode, FileUseMode UM);
 size_t ReadH(HANDLE handle, size_t length, void* buffer);
 void WriteH(HANDLE handle, size_t length, void* buffer);
-//void TruncH(FILE* handle, size_t N);
-//void FlushH(FILE* handle);
 void FlushHandles();
 void CloseH(HANDLE* handle);
 void CloseClearH(HANDLE* h);
@@ -116,7 +111,7 @@ void SetCurrPrinter(short NewPr);
 
 
 
-typedef std::array<BYTE, 4> TPrTimeOut; // ø. 418
+typedef std::array<BYTE, 4> TPrTimeOut;
 
 void OpenWorkH();
 

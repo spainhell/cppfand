@@ -1920,6 +1920,10 @@ TPredicate* MakePred(std::string PredName, std::string ArgTyp, proc_type PredKod
 	return p;
 }
 
+void AlignLongStr()
+{
+}
+
 TProgRoots* ReadProlog(WORD RecNr)
 {
 	pstring Booln = "Boolean";

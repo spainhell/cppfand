@@ -18,7 +18,7 @@ extern FileD* CFile;
 extern void* CRecPtr;
 extern XKey* CViewKey;
 extern std::string TopRdbDir, TopDataDir;
-extern pstring CatFDName;
+extern std::string CatFDName;
 extern RdbD* CRdb, *TopRdb;
 extern Catalog* CatFD;
 extern FileD* HelpFD;

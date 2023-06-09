@@ -11,7 +11,7 @@ FuncD* FuncDRoot;
 void* CRecPtr;
 XKey* CViewKey;
 std::string TopRdbDir, TopDataDir;
-pstring CatFDName;
+std::string CatFDName;
 RdbD* CRdb, *TopRdb;
 Catalog* CatFD = nullptr;
 FileD* HelpFD;

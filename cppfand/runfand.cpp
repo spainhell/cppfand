@@ -182,10 +182,8 @@ bool SetTopDir(std::string& p, std::string& n)
 			return result;
 		}
 		CatFDName = n;
-		//NewExit(Ovr(), er);
-		//goto label1;
-		CFile = CatFD->GetCatalogFile();
-		OpenF(CFile, CPath, Exclusive);
+		FileD* catalog = CatFD->GetCatalogFile();
+		OpenF(catalog, CPath, Exclusive);
 		result = true;
 	}
 	catch (std::exception& e) {
@@ -416,14 +414,15 @@ void InitRunFand()
 #endif
 			if (paramstr.size() > 2 && EquUpCase(paramstr.at(2), "T")) {
 				CPath = paramstr.at(1);
-				if (copy(CPath, 1, 2) == "*.")
+				if (CPath.substr(0, 2) == "*.")
 					SelectEditTxt(CPath.substr(1, 4), false);
-				else CallEditTxt();
+				else {
+					CallEditTxt();
+				}
 				return;
 			}
 			else {
 			label0:
-				//if (maska == podretez) {
 				if (paramstr.at(1).substr(0, 2) == "*.") {
 					SelectRunRdb(false);
 				}
