@@ -100,6 +100,7 @@ public:
 
 	int ScrPush1(WORD X, WORD Y, WORD SizeX, WORD SizeY, void* P);
 
+	size_t ScreenCount();
 	void pushScreen(storeWindow sw);
 	storeWindow popScreen();
 	int SaveScreen(WParam* wp, short c1, short r1, short c2, short r2);

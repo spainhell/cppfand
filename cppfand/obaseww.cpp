@@ -44,7 +44,7 @@ int PushW(WORD C1, WORD R1, WORD C2, WORD R2, bool push_pixel, bool ww)
 	return screen.SaveScreen(wp, C1, R1, C2, R2);
 }
 
-void PopScr(void* p, bool draw)
+void PopScr(bool draw)
 {
 	WParam* wp = screen.LoadScreen(draw);
 	PopWParam(wp);
@@ -53,10 +53,19 @@ void PopScr(void* p, bool draw)
 
 void PopW(int pos, bool draw)
 {
-	PopScr(nullptr, draw);
+	int count = (int)screen.ScreenCount();
+	if (pos > count) {
+		return;
+	}
+
+	for (int i = 0; i < count - pos; i++) {
+		PopScr(false);
+	}
+
+	PopScr(draw);
 }
 
-void WriteWFrame(BYTE WFlags, pstring top, pstring bottom)
+void WriteWFrame(BYTE WFlags, std::string top, std::string bottom)
 {
 	WORD i, cols, rows, n;
 	if ((WFlags & WHasFrame) == 0) return;
@@ -78,16 +87,12 @@ void WriteWFrame(BYTE WFlags, pstring top, pstring bottom)
 	WrHd(bottom, rows, cols - 2);
 }
 
-void WrHd(pstring Hd, WORD Row, WORD MaxCols)
+void WrHd(std::string header, WORD row, WORD maxCols)
 {
-	pstring s;
-	if (Hd == "") return;
-	s = " ";
-	s += Hd + " ";
-	if (s.length() > MaxCols) s[0] = char(MaxCols);
-	//GotoXY((MaxCols - s.length()) / 2 + 2, Row);
-	screen.ScrWrText((MaxCols - s.length()) / 2 + 2, Row, s.c_str());
-	//printf("%s", s.c_str());
+	if (header.empty()) return;
+	header = " " + header + " ";
+	if (header.length() > maxCols) header = header.substr(0, maxCols);
+	screen.ScrWrText((maxCols - header.length()) / 2 + 2, row, header.c_str());
 }
 
 void CenterWw(BYTE& C1, BYTE& R1, BYTE& C2, BYTE& R2, BYTE WFlags)
@@ -109,7 +114,7 @@ void CenterWw(BYTE& C1, BYTE& R1, BYTE& C2, BYTE& R2, BYTE WFlags)
 	R2 = R1 + Rows - 1;
 }
 
-int PushWFramed(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, pstring top, pstring bottom, BYTE WFlags)
+int PushWFramed(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, std::string top, std::string bottom, BYTE WFlags)
 {
 	WORD i = 0;
 	CenterWw(C1, R1, C2, R2, WFlags);
@@ -152,7 +157,7 @@ int PushWrLLMsg(WORD N, bool WithESC)
 // nacteni a zapis posledniho radku s klavesovymi zkratkami
 void WrLLMsg(WORD N)
 {
-	ReadMessage(N); 
+	ReadMessage(N);
 	WrLLMsgTxt();
 }
 
@@ -185,7 +190,7 @@ void WrLLMsgTxt()
 		j++;
 	}
 	screen.ScrWrBuf(0, TxtRows - 1, Buf, TxtCols);
-	PopWParam(p); 
+	PopWParam(p);
 	delete p;
 }
 
@@ -278,17 +283,17 @@ void RunError(WORD N)
 
 bool PromptYN(WORD NMsg)
 {
-	int w = PushW(1, TxtRows, TxtCols, TxtRows); 
+	int w = PushW(1, TxtRows, TxtCols, TxtRows);
 	TextAttr = screen.colors.pTxt;
 	ClrEol();
 	ReadMessage(NMsg);
 	std::string tmp = MsgLine.substr(MaxI(MsgLine.length() - TxtCols + 3, 0), 255);
 	screen.ScrFormatWrText(screen.WhereX(), screen.WhereY(), "%s", tmp.c_str());
-	WORD col = screen.WhereX(); 
+	WORD col = screen.WhereX();
 	WORD row = screen.WhereY();
 	TextAttr = screen.colors.pNorm;
 	screen.ScrFormatWrText(col, row, " ");
-	screen.GotoXY(col, row); 
+	screen.GotoXY(col, row);
 	screen.CrsShow();
 
 	char cc;
@@ -300,7 +305,7 @@ bool PromptYN(WORD NMsg)
 		break;
 	}
 
-	F10SpecKey = 0; 
+	F10SpecKey = 0;
 	PopW(w);
 	return cc == AbbrYes;
 }
@@ -324,7 +329,7 @@ void RunMsgOn(char C, int N)
 {
 	RunMsgD* CM1 = new RunMsgD();
 #ifndef norunmsg
-	CM1->Last = CM; 
+	CM1->Last = CM;
 	CM = CM1;
 	CM->MsgStep = N / 100;
 	if (CM->MsgStep == 0) {

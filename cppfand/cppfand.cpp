@@ -24,7 +24,7 @@ int main(int argc, char* argv[])
 	{
 		InitRunFand();
 	}
-	catch (std::exception ex)
+	catch (std::exception& ex)
 	{
 		log->log(loglevel::EXCEPTION, "%s", ex.what());
 	}

@@ -19,13 +19,13 @@ WParam* PushWParam(WORD C1, WORD R1, WORD C2, WORD R2, bool WW);
 void PopWParam(WParam* wp);
 void* PushScr(WORD C1, WORD R1, WORD C2, WORD R2);
 int PushW(WORD C1, WORD R1, WORD C2, WORD R2, bool push_pixel = false, bool ww = true);
-void PopScr(void* p, bool draw);
+void PopScr(bool draw);
 void PopW(int pos, bool draw = true);
-void WriteWFrame(BYTE WFlags, pstring top, pstring bottom); // r142
-void WrHd(pstring Hd, WORD Row, WORD MaxCols);
+void WriteWFrame(BYTE WFlags, std::string top, std::string bottom); // r142
+void WrHd(std::string header, WORD row, WORD maxCols);
 void CenterWw(BYTE& C1, BYTE& R1, BYTE& C2, BYTE& R2, BYTE WFlags);
 int PushWFramed(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, 
-	pstring top, pstring bottom, BYTE WFlags); // r176
+	std::string top, std::string bottom, BYTE WFlags); // r176
 int PushWrLLMsg(WORD N, bool WithESC);
 void WrLLMsg(WORD N);
 void WrLLMsgTxt();

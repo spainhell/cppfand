@@ -25,9 +25,9 @@ bool Keyboard::Exists()
 
 bool Keyboard::Empty()
 {
-	if (_inBuffer > 0) return true;
+	if (_inBuffer == 0) return true;
 	_read();
-	return _inBuffer > 0;
+	return _inBuffer == 0;
 }
 
 size_t Keyboard::BufSize()

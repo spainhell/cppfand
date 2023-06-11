@@ -583,6 +583,11 @@ int Screen::ScrPush1(WORD X, WORD Y, WORD SizeX, WORD SizeY, void* P)
 	return SizeX * SizeY;
 }
 
+size_t Screen::ScreenCount()
+{
+	return _windowStack.size();
+}
+
 void Screen::pushScreen(storeWindow sw)
 {
 	_windowStack.push(sw);

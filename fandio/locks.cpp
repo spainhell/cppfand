@@ -71,7 +71,7 @@ void ModeLockBnds(LockMode Mode, int& Pos, WORD& Len)
 	case CrMode: n = 0x01FF0200; break;
 	case DelMode: n = 0x02FF0100; break;
 	case ExclMode: n = 0x03FF0000; break;
-	default: ;
+	default:;
 	}
 	Pos = ModeLock + (n & 0xFFFF);
 	Len = n >> 16;
@@ -119,7 +119,7 @@ label1:
 					w = w1;
 				}
 				else {
-					TWork.Delete(w1);
+					PopW(w1, false);
 				}
 				LockBeep();
 			}
@@ -207,38 +207,48 @@ LockMode NewLMode(FileD* fileD, LockMode Mode)
 
 bool TryLockN(FandFile* fand_file, int N, WORD Kind)
 {
-	int w, w1;
+	int w1;
 	WORD m;
 	std::string XTxt = "CrX";
 	auto result = true;
+
 #ifdef FandSQL
 	if (fand_file->_parent->IsSQLFile) return result;
 #endif
-#ifdef FandNetV
 
+#ifdef FandNetV
 	if (!fand_file->IsShared()) return result;
-	w = 0;
-label1:
-	if (!TryLockH(fand_file->Handle, RecLock + N, 1)) {
-		if (Kind != 2) {   /*0 Kind-wait, 1-wait until ESC, 2-no wait*/
-			m = 826;
-			if (N == 0) {
-				SetPathAndVolume(fand_file->GetFileD());
-				SetMsgPar(CPath, XTxt);
-				m = 825;
+	int w = 0;
+	while (true) {
+		if (!TryLockH(fand_file->Handle, RecLock + N, 1)) {
+			if (Kind != 2) {   /*0 Kind-wait, 1-wait until ESC, 2-no wait*/
+				m = 826;
+				if (N == 0) {
+					SetPathAndVolume(fand_file->GetFileD());
+					SetMsgPar(CPath, XTxt);
+					m = 825;
+				}
+				w1 = PushWrLLMsg(m, Kind == 1);
+				if (w == 0) {
+					w = w1;
+				}
+				else {
+					PopW(w1, false);
+				}
+				/*beep; don't disturb*/
+				if (KbdTimer(spec.NetDelay, Kind)) {
+					continue;
+				}
 			}
-			w1 = PushWrLLMsg(m, Kind == 1);
-			if (w == 0) w = w1;
-			else TWork.Delete(w1);
-			/*beep; don't disturb*/
-			if (KbdTimer(spec.NetDelay, Kind)) {
-				goto label1;
-			}
+			result = false;
 		}
-		result = false;
+		if (w != 0) {
+			PopW(w);
+		}
+		break;
 	}
-	if (w != 0) PopW(w);
 #endif
+
 	return result;
 }
 
@@ -248,7 +258,9 @@ void UnLockN(FandFile* fand_file, int N)
 	if (fand_file->GetFileD()->IsSQLFile) return;
 #endif
 #ifdef FandNetV
-	if ((fand_file->Handle == nullptr) || !fand_file->IsShared()) return;
+	if ((fand_file->Handle == nullptr) || !fand_file->IsShared()) {
+		return;
+	}
 	UnLockH(fand_file->Handle, RecLock + N, 1);
 #endif
-}
+	}

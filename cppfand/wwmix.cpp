@@ -172,7 +172,7 @@ label1:
 		label3:
 			ClrEvent();
 			PopW(w2);
-			PopScr(pw, true);
+			PopScr(true);
 			ReleaseStore(&pw);
 			if (ss.Empty) return;
 			ss.Empty = true;
