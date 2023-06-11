@@ -20,9 +20,8 @@ Keyboard::~Keyboard()
 
 bool Keyboard::Exists()
 {
-	if (_inBuffer > 0 && _inBuffer > _actualIndex) return true;
-	_read();
-	return _inBuffer > 0;
+	KEY_EVENT_RECORD k;
+	return Get(k, true);
 }
 
 bool Keyboard::Empty()
@@ -52,12 +51,14 @@ size_t Keyboard::FreeSpace()
 	return 128 - _inBuffer;
 }
 
-bool Keyboard::Get(KEY_EVENT_RECORD& key)
+bool Keyboard::Get(KEY_EVENT_RECORD& key, bool only_check)
 {
 	// nejdrive zkontrolujeme primarni buffer
 	if (!_priorBuffer.empty()) {
 		key = _priorBuffer.front();
-		_priorBuffer.pop_front();
+		if (!only_check) {
+			_priorBuffer.pop_front();
+		}
 		return true;
 	}
 	// pokud jsme na konci bufferu, nacteme jej znovu
@@ -76,7 +77,11 @@ bool Keyboard::Get(KEY_EVENT_RECORD& key)
 		return false;
 	}
 		
-	key = _kbdBuf[_actualIndex++].Event.KeyEvent;
+	key = _kbdBuf[_actualIndex].Event.KeyEvent;
+	if (!only_check) {
+		_actualIndex++;
+	}
+
 
 #if _DEBUG
 	auto a = MapVirtualKey(key.wVirtualKeyCode, MAPVK_VK_TO_VSC);
@@ -271,8 +276,16 @@ std::string Keyboard::GetKeyBufAsString()
 
 void Keyboard::_read()
 {
-	ReadConsoleInput(_handle, _kbdBuf, 128, &_inBuffer);
-	_actualIndex = 0;
+	DWORD events_count;
+	GetNumberOfConsoleInputEvents(_handle, &events_count);
+	if (events_count > 0) {
+		ReadConsoleInput(_handle, _kbdBuf, 128, &_inBuffer);
+		_actualIndex = 0;
+	}
+	else {
+		_inBuffer = 0;
+	}
+
 }
 
 PressedKey::PressedKey(KEY_EVENT_RECORD& key)

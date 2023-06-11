@@ -98,10 +98,10 @@ WORD ReadKey()
 	return ReadKbd();
 }
 
-void GetKeyEvent()
+bool GetKeyEvent()
 {
 	KEY_EVENT_RECORD key;
-	bool exists = false;
+	bool exists;
 
 	do {
 		exists = keyboard.Get(key);
@@ -109,36 +109,46 @@ void GetKeyEvent()
 		{
 			Event.Pressed = PressedKey(key);
 			Event.What = evKeyDown;
-			return;
+			return true;
 		}
 	} while (exists);
+	return false;
 }
 
 WORD ReadKbd()
 {
+	bool exists = GetKeyEvent();
+	if (exists) {
+		return Event.Pressed.KeyCombination();
+	}
+	else {
+		ClrEvent();
+		return 0;
+	}
+
 	// KEYBD.PAS r606
 	// v puvodnim kodu cekala, dokud neexistovala udalost Event.What == evKeyDown
 	// dokola volala ClrEvent + GetEvent
 	// pak vratila KeyCode a do KbdChar ulozila take KeyCode
 	// na konci zavolala ClrEvent
 
-	KEY_EVENT_RECORD key;
-	bool exists = false;
+	//KEY_EVENT_RECORD key;
+	//bool exists = false;
 
-	while (true) {
-		exists = keyboard.Get(key);
-		if (exists && key.bKeyDown) {
-			PressedKey pressed = PressedKey(key);
-			/*Event.Pressed = pressed;
-			Event.What = evKeyDown;*/
-			ClrEvent();
-			return pressed.KeyCombination();
-		}
-		else {
-			Sleep(100);
-			ClrEvent();
-		}
-	}
+	//while (true) {
+	//	exists = keyboard.Get(key);
+	//	if (exists && key.bKeyDown) {
+	//		PressedKey pressed = PressedKey(key);
+	//		/*Event.Pressed = pressed;
+	//		Event.What = evKeyDown;*/
+	//		ClrEvent();
+	//		return pressed.KeyCombination();
+	//	}
+	//	else {
+	//		Sleep(100);
+	//		ClrEvent();
+	//	}
+	//}
 }
 
 uint64_t getMillisecondsNow()
@@ -369,8 +379,8 @@ bool KbdPressed()
 
 bool ESCPressed()
 {
-	if (KeyPressed()) {
-		GetKeyEvent();
+	if (ReadKbd()) {
+		// GetKeyEvent();
 		if (Event.What == evKeyDown && Event.Pressed.KeyCombination() == __ESC) {
 			return true;
 		}
