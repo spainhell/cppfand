@@ -1,9 +1,9 @@
 #include "Logging.h"
 
-
 #include <cstdarg>
 #include <ctime>
 #include <string>
+#include "../cppfand/legacy.h"
 
 Logging* Logging::_instance = nullptr;
 FILE* Logging::_file = nullptr;
@@ -52,7 +52,18 @@ void Logging::finish()
 
 Logging::Logging()
 {
+	std::string path = GetEnv("FANDWORK");
+	if (path.empty() || path.ends_with("\\"))
+	{
+		path += "fand.log";
+	}
+	else
+	{
+		path += "\\";
+		path += "fand.log";
+	}
+
 	static loglevel _level = loglevel::DEBUG;
-	auto err = fopen_s(&_file, "fand.log", "a");
+	auto err = fopen_s(&_file, path.c_str(), "a");
 	fprintf_s(_file, "\n");
 }

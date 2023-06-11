@@ -15,6 +15,11 @@ int main(int argc, char* argv[])
 		paramstr.push_back(argv[i]);
 	}
 
+#ifdef _DEBUG
+	while (!::IsDebuggerPresent())
+		::Sleep(1000);
+#endif
+
 	try 
 	{
 		InitRunFand();

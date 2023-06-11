@@ -27,8 +27,7 @@ DWORD cNumRead = 0;
 
 TEvent Event; // r39
 BYTE KbdFlgs; // TODO: absolute $417
-//pstring KbdBuffer; // r. 83
-BYTE LLKeyFlags = 0; // r. 84
+BYTE LLKeyFlags = 0;
 short GraphDriver, GraphMode;
 WORD ScrSeg, ScrGrSeg;
 BYTE NrVFont, BytesPerChar;
@@ -59,7 +58,6 @@ BYTE ofsTailKeyBuf = 0x1C; /*Bios*/
 bool BreakFlag = false;
 BYTE diHacek = 1; const BYTE diCarka = 2; const BYTE diUmlaut = 3;
 char Diak = 0; /*diHacek, diCarka*/
-
 
 
 const BYTE CsKbdSize = 67;

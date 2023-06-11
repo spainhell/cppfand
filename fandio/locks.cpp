@@ -3,7 +3,6 @@
 #include "files.h"
 #include "../cppfand/GlobalVariables.h"
 #include "../cppfand/access.h"
-#include "../cppfand/oaccess.h"
 #include "../cppfand/obaseww.h"
 
 void RunErrorM(FileD* file_d, LockMode Md, WORD N)
@@ -62,7 +61,7 @@ bool UnLockH(HANDLE Handle, int Pos, WORD Len)
 
 void ModeLockBnds(LockMode Mode, int& Pos, WORD& Len)
 {
-	int n = 0;
+	__int32 n = 0;
 	switch (Mode) {       /* hi=how much BYTEs, low= first BYTE */
 	case NoExclMode: n = 0x00010000 + LANNode; break;
 	case NoDelMode: n = 0x00010100 + LANNode; break;
@@ -72,9 +71,10 @@ void ModeLockBnds(LockMode Mode, int& Pos, WORD& Len)
 	case CrMode: n = 0x01FF0200; break;
 	case DelMode: n = 0x02FF0100; break;
 	case ExclMode: n = 0x03FF0000; break;
+	default: ;
 	}
-	Pos = ModeLock + (n >> 16);
-	Len = n & 0xFFFF;
+	Pos = ModeLock + (n & 0xFFFF);
+	Len = n >> 16;
 }
 
 bool ChangeLMode(FileD* fileD, LockMode Mode, WORD Kind, bool RdPref)
@@ -135,7 +135,7 @@ label1:
 	}
 	if (Mode != NullMode) {
 		WORD len;
-		int pos;
+		__int32 pos;
 		ModeLockBnds(Mode, pos, len);
 		if (!TryLockH(h, pos, len)) {
 			if (oldmode != NullMode) {

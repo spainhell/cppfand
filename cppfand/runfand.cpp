@@ -119,7 +119,7 @@ void RdCFG()
 
 	cfgFile.ReadSpec(spec);
 	cfgFile.ReadVideoAndColors(video, StartMode, VideoCard, screen, TxtCols, TxtRows); // nacteni konfigurace (VGA + barvy)
-	cfgFile.ReadFonts(fonts);          // nacteni fontu
+	cfgFile.ReadFonts(fonts);
 	cfgFile.ReadCodeTables(); 
 
 	cfgFile.RdPrinter(prMax, printer);
@@ -249,7 +249,6 @@ void InitRunFand()
 	TMenuBoxS* mb = nullptr;
 	int w = 0;
 	void* p = nullptr;
-	WORD xofs = 1;
 	std::string txt;
 	double r;
 
@@ -281,11 +280,11 @@ void InitRunFand()
 	video.CursOn = 0x0607; // {if exit before reading.CFG}
 	keyboard.DeleteKeyBuf(); // KbdBuffer[0] = 0x0;
 	F10SpecKey = 0;
-	if (!GetEnv("DMLADDR").empty()) {
-		printf("type 'exit' to return to FAND");
-		wait();
-		return; // puvodne wait;
-	}
+	//if (!GetEnv("DMLADDR").empty()) {
+	//	printf("type 'exit' to return to FAND");
+	//	wait();
+	//	return; // puvodne wait;
+	//}
 
 	WrkDir = GetEnv("FANDWORK");
 	if (WrkDir.empty()) WrkDir = FandDir;
@@ -300,16 +299,14 @@ void InitRunFand()
 	s = GetEnv("LANNODE");
 	s = TrailChar(s, ' ');
 	if (!s.empty()) {
-		val(s, nb, err);
-#ifndef FandRunV
-		if (nb <= 3) {
-#endif 
-			if (err == 0) LANNode = nb;
-#ifndef FandRunV
-		}
-#endif 
+		LANNode = (WORD)std::stoi(s, nullptr, 10);
 	}
-	printf("LANNODE: %s\n", s.c_str());
+	printf("LANNODE: %i\n", LANNode);
+
+	Logging* log = Logging::getInstance();
+	log->log(loglevel::INFO, "LANNODE: %i", LANNode);
+
+	
 	
 	//h = ResFile.Handle;
 	//ReadH(h, 2, &n);
@@ -446,7 +443,7 @@ void InitRunFand()
 
 	std::string ResText = resFile.Get(FandFace - 1);
 
-	xofs++;
+	WORD xofs = 2;
 	for (int ii = -11; ii <= -6; ii++) {
 		std::string sPrint = ResText.substr(xofs, TxtCols - 2);
 		screen.ScrWrStr(2, TxtRows + ii + 1, sPrint, TextAttr);

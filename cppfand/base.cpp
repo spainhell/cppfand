@@ -794,7 +794,7 @@ HANDLE OpenH(const std::string& path, FileOpenMode Mode, FileUseMode UM)
 	}
 	case Shared: {
 		access_mode = GENERIC_READ | GENERIC_WRITE;
-		share_mode = FILE_SHARE_WRITE;
+		share_mode = FILE_SHARE_READ | FILE_SHARE_WRITE;
 		break;
 	}
 	case Exclusive: {

@@ -6,7 +6,7 @@
 void CfgFile::Open(std::string path)
 {
 	DWORD error;
-	Handle = OpenF(path, error, GENERIC_READ, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL);
+	Handle = OpenF(path, error, GENERIC_READ, FILE_SHARE_READ, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL);
 	FullName = path;
 	if (error != 0) {
 		printf("can't open %s\n", path.c_str());
