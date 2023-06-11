@@ -119,7 +119,7 @@ short OpenCrt(TextFile* F);
 
 unsigned long long getAvailPhysMemory();
 
-bool KbdTimer(WORD Delta, BYTE Kind);
+bool KbdTimer(int cpu_delta, BYTE kind);
 bool TestEvent();
 WORD AddCtrlAltShift(BYTE Flgs);
 void AddToKbdBuf(WORD KeyCode);

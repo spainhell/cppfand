@@ -15,6 +15,8 @@
 #include "obaseww.h"
 #include "../Drivers/screen.h"
 #include "wwmenu.h"
+#include <chrono>
+#include <thread>
 
 // *** KONZOLA ***
 Screen screen(TxtCols, TxtRows, &WindMin, &WindMax, &Crs);
@@ -139,26 +141,50 @@ WORD ReadKbd()
 	}
 }
 
-bool KbdTimer(WORD Delta, BYTE Kind)
+uint64_t getMillisecondsNow()
 {
-	ULONGLONG EndTime;
-	auto result = false;
-	EndTime = GetTickCount64() + Delta;
-	result = false;
-label1:
-	switch (Kind) {          /* 0 - wait, 1 - wait || ESC, 2 - wait || any key */
-	case 1: {
-		if (KeyPressed() && (ReadKey() == __ESC)) return result;
+	return std::chrono::duration_cast<std::chrono::milliseconds>(
+		std::chrono::system_clock::now().time_since_epoch()
+	).count();
+}
+
+bool KbdTimer(int cpu_delta, BYTE kind)
+{
+	// CPU = cca 55 ms, 1 sec = 18.2 CPU)
+	const uint64_t end_time = getMillisecondsNow() + cpu_delta * 55;
+
+	while (true) {
+		switch (kind) {
+		case 1: {
+			// wait or break on ESC
+			if (ESCPressed()) {
+				return false;
+				break;
+			}
+			break;
+		}
+		case 2: {
+			// wait or break on any key
+			if (KbdPressed()) {
+				ReadKbd();
+				return false;
+				break;
+			}
+			break;
+		}
+		default: {
+			// always wait
+			break;
+		}
+		}
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));
+		if (getMillisecondsNow() < end_time) {
+			continue;
+		}
 		break;
 	}
-	case 2: {
-		if (KbdPressed()) { ReadKbd(); return result; }
-		break;
-	}
-	}
-	if (GetTickCount64() < EndTime) goto label1;
-	result = true;
-	return result;
+
+	return true;
 }
 
 void ShowMouse()
@@ -344,7 +370,10 @@ bool KbdPressed()
 bool ESCPressed()
 {
 	if (KeyPressed()) {
-		if (ReadKey() == __ESC) return true;
+		GetKeyEvent();
+		if (Event.What == evKeyDown && Event.Pressed.KeyCombination() == __ESC) {
+			return true;
+		}
 	}
 	else {
 		GetMouseKeyEvent();
@@ -457,14 +486,13 @@ label2:
 
 	//GetKeyEvent();
 	//return ReadKey();
-}
+	}
 
 void GetEvent()
 {
 	do {
 		WaitEvent(0);
-	}
-	while (Event.What == 0);
+	} while (Event.What == 0);
 }
 
 void ClrEvent()

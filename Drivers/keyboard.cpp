@@ -20,14 +20,14 @@ Keyboard::~Keyboard()
 
 bool Keyboard::Exists()
 {
-	return !Empty();
+	if (_inBuffer > 0 && _inBuffer > _actualIndex) return true;
+	_read();
+	return _inBuffer > 0;
 }
 
 bool Keyboard::Empty()
 {
-	if (_inBuffer == 0) return true;
-	_read();
-	return _inBuffer == 0;
+	return !Exists();
 }
 
 size_t Keyboard::BufSize()
