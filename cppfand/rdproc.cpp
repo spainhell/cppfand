@@ -2551,7 +2551,7 @@ Instr_assign* RdAssign()
 				if ((F->Flg & f_Stored) == 0) OldError(14);
 				FTyp = F->frml_type;
 			label0:
-				RdAssignFrml(FTyp, PD->Add, &PD->Frml);
+				RdAssignFrml(FTyp, PD->Add, &PD->Frml, nullptr);
 			}
 		}
 		else {
@@ -2611,7 +2611,7 @@ Instr_assign* RdAssign()
 		PD->FldD = F;
 		if ((F->Flg & f_Stored) == 0) OldError(14);
 		PD->Indexarg = (FD->FF->file_type == FileType::INDEX) && IsKeyArg(F, FD);
-		RdAssignFrml(F->frml_type, PD->Add, &PD->Frml);
+		RdAssignFrml(F->frml_type, PD->Add, &PD->Frml, nullptr);
 	}
 	else if (FindLocVar(&LVBD, &LV)) {
 		RdLex();
@@ -2761,7 +2761,7 @@ Instr_assign* RdUserFuncAssign()
 	RdLex();
 	Instr_assign* pd = new Instr_assign(_asgnloc);
 	pd->AssLV = lv;
-	RdAssignFrml(lv->FTyp, pd->Add, &pd->Frml);
+	RdAssignFrml(lv->FTyp, pd->Add, &pd->Frml, nullptr);
 	return pd;
 }
 

@@ -99,7 +99,7 @@ void RdW(WRectFrml& W); // r161
 void RdFrame(FrmlElem** Z, BYTE& WFlags); // r166
 bool PromptSortKeys(FieldListEl* FL, KeyFldD* SKRoot);
 bool PromptSortKeys(std::vector<FieldDescr*>& FL, KeyFldD* SKRoot);
-void RdAssignFrml(char FTyp, bool& Add, FrmlElem** Z); // r193
+void RdAssignFrml(char FTyp, bool& Add, FrmlElem** Z, MergeReportBase* caller);
 bool FldTypIdentity(FieldDescr* F1, FieldDescr* F2);
 void RdFldList(FieldListEl** FLRoot);
 void RdFldList(std::vector<FieldDescr*>& vFields);

@@ -577,13 +577,13 @@ std::vector<AssignD*> Merge::RdAssign_M()
 		F = RdFldName(FD);
 		AD->PFldD = F;
 		if ((F->Flg & f_Stored) == 0) OldError(14);
-		RdAssignFrml(F->frml_type, AD->Add, &AD->Frml);
+		RdAssignFrml(F->frml_type, AD->Add, &AD->Frml, this);
 	}
 	else if (FindLocVar(&LVBD, &LV)) {
 		RdLex();
 		AD->Kind = _locvar;
 		AD->LV = LV;
-		RdAssignFrml(LV->FTyp, AD->Add, &AD->Frml);
+		RdAssignFrml(LV->FTyp, AD->Add, &AD->Frml, this);
 	}
 	else {
 		if (RD->OD == nullptr) Error(72);  /*dummy*/
@@ -592,7 +592,7 @@ std::vector<AssignD*> Merge::RdAssign_M()
 			F = RdFldName(RD->OD->FD);
 			AD->OFldD = F;
 			if ((F->Flg & f_Stored) == 0) OldError(14);
-			RdAssignFrml(F->frml_type, AD->Add, &AD->Frml);
+			RdAssignFrml(F->frml_type, AD->Add, &AD->Frml, this);
 		}
 	}
 	result.push_back(AD);

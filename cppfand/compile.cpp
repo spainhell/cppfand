@@ -1196,12 +1196,12 @@ label1:
 	return result;
 }
 
-void RdAssignFrml(char FTyp, bool& Add, FrmlElem** Z)
+void RdAssignFrml(char FTyp, bool& Add, FrmlElem** Z, MergeReportBase* caller)
 {
 	char Typ = '\0';
 	if (Lexem == _addass) { RdLex(); Add = true; }
 	else Accept(_assign);
-	*Z = RdFrml(Typ, nullptr);
+	*Z = RdFrml(Typ, caller);
 	if ((FTyp != Typ) || Add && (Typ != 'R')) OldError(12);
 }
 

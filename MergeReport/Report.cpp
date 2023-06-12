@@ -1061,13 +1061,13 @@ std::vector<AssignD*> Report::RdAssign2()
 		F = RdFldName(FD);
 		A->PFldD = F;
 		if ((F->Flg & f_Stored) == 0) OldError(14);
-		RdAssignFrml(F->frml_type, A->Add, &A->Frml);
+		RdAssignFrml(F->frml_type, A->Add, &A->Frml, this);
 	}
 	else if (FindLocVar(&LVBD, &LV)) {
 		RdLex();
 		A->Kind = _locvar;
 		A->LV = LV;
-		RdAssignFrml(LV->FTyp, A->Add, &A->Frml);
+		RdAssignFrml(LV->FTyp, A->Add, &A->Frml, this);
 	}
 	else Error(147);
 
