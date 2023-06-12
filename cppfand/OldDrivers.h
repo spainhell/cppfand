@@ -97,7 +97,7 @@ void ClrEol();
 void Beep();
 void LockBeep();
 void ScrBeep();
-WORD WaitEvent(WORD Delta);
+WORD WaitEvent(uint64_t Delta);
 void GetEvent();
 void ClrEvent();
 void AssignCrt(pstring* filepath);
@@ -119,6 +119,7 @@ short OpenCrt(TextFile* F);
 
 unsigned long long getAvailPhysMemory();
 
+uint64_t getMillisecondsNow();
 bool KbdTimer(int cpu_delta, BYTE kind);
 bool TestEvent();
 WORD AddCtrlAltShift(BYTE Flgs);

@@ -437,7 +437,7 @@ void ScrBeep()
 {
 }
 
-WORD WaitEvent(WORD Delta)
+WORD WaitEvent(uint64_t Delta)
 {
 	ULONGLONG t = 0;
 	int t1 = 0, pos = 0, l = 555;

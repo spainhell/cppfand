@@ -26,7 +26,6 @@
 #include "../Common/textfunc.h"
 #include "../Common/compare.h"
 
-int TimerRE = 0;
 bool TxtEdCtrlUBrk, TxtEdCtrlF4Brk;
 EFldD* CFld;
 
@@ -3236,7 +3235,7 @@ label1:
 		return result;
 	}
 	if (CFld->pChain != nullptr) {
-		GotoRecFld(CRec(), (EFldD*)CFld->pChain);
+		GotoRecFld(CRec(), CFld->pChain);
 		if (Mode == 1 || Mode == 3) Mode = 0;
 	}
 	else {
@@ -4461,7 +4460,7 @@ void DisplCtrlAltLL(WORD Flags)
 void CtrlReadKbd()
 {
 	BYTE flgs = 0;
-	int TimeBeg = TimerRE;
+	uint64_t TimeBeg = getMillisecondsNow();
 	WORD D = 0;
 
 	if (F1Mode && Mode24 && CRdb->HelpFD != nullptr) {
@@ -4519,12 +4518,12 @@ void CtrlReadKbd()
 		}
 
 		if (D > 0) {
-			if (TimerRE >= TimeBeg + D) {
+			if (getMillisecondsNow() >= TimeBeg + D) {
 				//goto label2;
 				break;
 			}
 			else {
-				WaitEvent(TimeBeg + D - TimerRE);
+				WaitEvent(TimeBeg + D - getMillisecondsNow());
 			}
 		}
 		else {
@@ -4623,9 +4622,10 @@ void RunEdit(XString* PX, WORD& Brk)
 	WORD i = 0, LongBeep = 0;
 	bool Displ = false, b = false;
 	EdExitD* X = nullptr;
-	int OldTimeW = 0, OldTimeR = 0, n = 0;
+	uint64_t OldTimeW = 0;
+	uint64_t OldTimeR = 0;
+	int n = 0;
 	BYTE EdBr = 0;
-	int Timer = 0; // pùvodnì: Timer:int absolute 0:$46C;
 	WORD KbdChar;
 
 	Brk = 0;
@@ -4643,30 +4643,36 @@ void RunEdit(XString* PX, WORD& Brk)
 		goto label1;
 	}
 label0:
-	if (!CtrlMProc(0)) goto label7;
+	if (!CtrlMProc(0)) {
+		goto label7;
+	}
 label1:
 	LongBeep = 0;
-label8:
-	OldTimeW = Timer;
+	OldTimeW = getMillisecondsNow();
 label81:
-	OldTimeR = Timer;
+	OldTimeR = getMillisecondsNow();
 	CtrlReadKbd();
 	if (CFile->FF->NotCached()) {
-		if (!EdRecVar && (E->RefreshDelay > 0) && (OldTimeR + E->RefreshDelay < Timer))
+		if (!EdRecVar && (E->RefreshDelay > 0) && (OldTimeR + E->RefreshDelay < getMillisecondsNow())) {
 			DisplAllWwRecs();
-		if (Event.What == 0)
-			if ((E->WatchDelay > 0) && (OldTimeW + E->WatchDelay < Timer))
+		}
+		if (Event.What == 0) {
+			if ((E->WatchDelay > 0) && (OldTimeW + E->WatchDelay < getMillisecondsNow()))
 				if (LongBeep < 3) {
 					for (i = 1; i <= 4; i++) beep();
 					LongBeep++;
-					goto label8;
+					OldTimeW = getMillisecondsNow();
+					goto label81;
 				}
 				else {
 					UndoRecord();
 					EdBreak = 11;
 					goto label7;
 				}
-			else goto label81;
+			else {
+				goto label81;
+			}
+		}
 	}
 	switch (Event.What) {
 	case evMouseDown: {
