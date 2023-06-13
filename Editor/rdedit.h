@@ -1,9 +1,9 @@
 #pragma once
 
-#include "../cppfand/access-structs.h"
-#include "../cppfand/EditOpt.h"
-#include "../cppfand/FieldDescr.h"
-#include "../cppfand/rdrun.h"
+#include "../CppFand/access-structs.h"
+#include "../CppFand/EditOpt.h"
+#include "../CppFand/FieldDescr.h"
+#include "../CppFand/rdrun.h"
 
 struct EFldD;
 struct StringListEl;

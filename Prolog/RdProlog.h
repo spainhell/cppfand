@@ -1,5 +1,5 @@
 #pragma once
 #include "Prolog.h"
-#include "../cppfand/constants.h"
+#include "../CppFand/constants.h"
 
 TProgRoots* ReadProlog(WORD RecNr);

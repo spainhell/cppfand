@@ -2,9 +2,9 @@
 #include <queue>
 
 #include "XWKey.h"
-#include "../cppfand/runfrml.h"
+#include "../CppFand/runfrml.h"
 #include "../Logging/Logging.h"
-#include "../cppfand/models/Instr.h"
+#include "../CppFand/models/Instr.h"
 
 
 void GetIndex(Instr_getindex* PD)

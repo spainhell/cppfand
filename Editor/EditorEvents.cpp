@@ -1,17 +1,17 @@
 #include "EditorEvents.h"
 
 
-#include "../cppfand/wwmix.h"
-#include "../cppfand/GlobalVariables.h"
-#include "../cppfand/runproc.h"
+#include "../CppFand/wwmix.h"
+#include "../CppFand/GlobalVariables.h"
+#include "../CppFand/runproc.h"
 
 #include <cstdio>
 #include <set>
 
 #include "OldEditor.h"
 #include "runedi.h"
-#include "../cppfand/obaseww.h"
-#include "../cppfand/wwmenu.h"
+#include "../CppFand/obaseww.h"
+#include "../CppFand/wwmenu.h"
 
 
 void CtrlShiftAlt(char mode, std::string& LastS, WORD LastNr, bool IsWrScreen)

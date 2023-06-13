@@ -1,8 +1,8 @@
 #pragma once
 #include "MergeReportBase.h"
-#include "../cppfand/FileD.h"
-#include "../cppfand/GlobalVariables.h"
-#include "../cppfand/runfrml.h"
+#include "../CppFand/FileD.h"
+#include "../CppFand/GlobalVariables.h"
+#include "../CppFand/runfrml.h"
 
 
 class Merge : public MergeReportBase

@@ -1,11 +1,11 @@
 #pragma once
 #include <map>
 
-#include "../cppfand/Chained.h"
-#include "../cppfand/constants.h"
-#include "../cppfand/models/Instr.h"
-#include "../cppfand/FieldDescr.h"
-#include "../cppfand/FileD.h"
+#include "../CppFand/Chained.h"
+#include "../CppFand/constants.h"
+#include "../CppFand/models/Instr.h"
+#include "../CppFand/FieldDescr.h"
+#include "../CppFand/FileD.h"
 
 /*term fun*/
 const BYTE _CioMaskOpt = 0x80;

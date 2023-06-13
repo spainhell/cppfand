@@ -1,9 +1,9 @@
 #include "XWorkFile.h"
 
 #include "../fandio/FandXFile.h"
-#include "../cppfand/access.h"
-#include "../cppfand/GlobalVariables.h"
-#include "../cppfand/obaseww.h"
+#include "../CppFand/access.h"
+#include "../CppFand/GlobalVariables.h"
+#include "../CppFand/obaseww.h"
 
 
 XWorkFile::XWorkFile(FileD* parent, XScan* AScan, XKey* AK): WorkFile(parent)

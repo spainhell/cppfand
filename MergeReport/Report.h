@@ -1,7 +1,7 @@
 #pragma once
 #include "MergeReportBase.h"
-#include "../cppfand/access-structs.h"
-#include "../cppfand/rdrun.h"
+#include "../CppFand/access-structs.h"
+#include "../CppFand/rdrun.h"
 
 struct InpD;
 struct BlkD;

@@ -1,11 +1,11 @@
 #include "XWKey.h"
 #include <memory>
-#include "../cppfand/access.h"
-#include "../cppfand/base.h"
-#include "../cppfand/FieldDescr.h"
-#include "../cppfand/GlobalVariables.h"
-#include "../cppfand/KeyFldD.h"
-#include "../cppfand/legacy.h"
+#include "../CppFand/access.h"
+#include "../CppFand/base.h"
+#include "../CppFand/FieldDescr.h"
+#include "../CppFand/GlobalVariables.h"
+#include "../CppFand/KeyFldD.h"
+#include "../CppFand/legacy.h"
 #include "XPage.h"
 
 

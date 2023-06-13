@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-#include "../cppfand/FileD.h"
+#include "../CppFand/FileD.h"
 
 bool OpenF(FileD* file_d, const std::string& path, FileUseMode UM);
 bool OpenF1(FileD* file_d, const std::string& path, FileUseMode UM);

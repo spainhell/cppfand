@@ -2,12 +2,12 @@
 
 #include <memory>
 
-#include "../cppfand/compile.h"
-#include "../cppfand/Coding.h"
-#include "../cppfand/FileD.h"
-#include "../cppfand/GlobalVariables.h"
-#include "../cppfand/oaccess.h"
-#include "../cppfand/obaseww.h"
+#include "../CppFand/compile.h"
+#include "../CppFand/Coding.h"
+#include "../CppFand/FileD.h"
+#include "../CppFand/GlobalVariables.h"
+#include "../CppFand/oaccess.h"
+#include "../CppFand/obaseww.h"
 #include "../Editor/rdedit.h"
 #include "../Editor/runedi.h"
 #include "..\MergeReport\Merge.h"

@@ -1,8 +1,8 @@
 #include "XWFile.h"
 
-#include "../cppfand/FileD.h"
-#include "../cppfand/GlobalVariables.h"
-#include "../cppfand/obaseww.h"
+#include "../CppFand/FileD.h"
+#include "../CppFand/GlobalVariables.h"
+#include "../CppFand/obaseww.h"
 #include "../fandio/FandXFile.h"
 
 XWFile::XWFile(FandFile* parent)

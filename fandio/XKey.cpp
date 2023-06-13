@@ -2,10 +2,10 @@
 #include <memory>
 
 #include "files.h"
-#include "../cppfand/FileD.h"
-#include "../cppfand/GlobalVariables.h"
-#include "../cppfand/KeyFldD.h"
-#include "../cppfand/obaseww.h"
+#include "../CppFand/FileD.h"
+#include "../CppFand/GlobalVariables.h"
+#include "../CppFand/KeyFldD.h"
+#include "../CppFand/obaseww.h"
 #include "../fandio/FandXFile.h"
 #include "XPage.h"
 #include "../Logging/Logging.h"

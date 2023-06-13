@@ -1,6 +1,6 @@
 #pragma once
-#include "../cppfand/base.h"
-#include "../cppfand/rdrun.h"
+#include "../CppFand/base.h"
+#include "../CppFand/rdrun.h"
 
 class FieldDescr;
 

@@ -1,8 +1,8 @@
 #include "WorkFile.h"
 #include <memory>
-#include "../cppfand/base.h"
-#include "../cppfand/GlobalVariables.h"
-#include "../cppfand/obaseww.h"
+#include "../CppFand/base.h"
+#include "../CppFand/GlobalVariables.h"
+#include "../CppFand/obaseww.h"
 
 WorkFile::WorkFile(FileD* parent)
 {

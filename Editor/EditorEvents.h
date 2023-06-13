@@ -1,6 +1,6 @@
 #pragma once
-#include "../cppfand/constants.h"
-#include "../cppfand/rdrun.h"
+#include "../CppFand/constants.h"
+#include "../CppFand/rdrun.h"
 #include <string>
 
 void HandleEvent(char& Mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS, WORD LastNr, std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys);

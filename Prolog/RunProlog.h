@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Prolog.h"
-#include "../cppfand/constants.h"
-#include "../cppfand/FileD.h"
+#include "../CppFand/constants.h"
+#include "../CppFand/FileD.h"
 
 //extern WORD _Sg;
 

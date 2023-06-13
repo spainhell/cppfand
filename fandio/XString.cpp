@@ -1,9 +1,9 @@
 #include "XString.h"
-#include "../cppfand/access.h"
-#include "../cppfand/FieldDescr.h"
-#include "../cppfand/GlobalVariables.h"
-#include "../cppfand/KeyFldD.h"
-#include "../cppfand/runfrml.h"
+#include "../CppFand/access.h"
+#include "../CppFand/FieldDescr.h"
+#include "../CppFand/GlobalVariables.h"
+#include "../CppFand/KeyFldD.h"
+#include "../CppFand/runfrml.h"
 #include "../pascal/real48.h"
 
 void XString::Clear()

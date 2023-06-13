@@ -3,9 +3,9 @@
 #include <memory>
 
 #include "files.h"
-#include "../cppfand/FileD.h"
-#include "../cppfand/base.h"
-#include "../cppfand/GlobalVariables.h"
+#include "../CppFand/FileD.h"
+#include "../CppFand/base.h"
+#include "../CppFand/GlobalVariables.h"
 #include "XWorkFile.h"
 
 

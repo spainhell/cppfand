@@ -1,6 +1,6 @@
 ﻿#include <vector>
-#include "OldDrivers.h"
-#include "runfand.h"
+#include "../CppFand/OldDrivers.h"
+#include "../CppFand/runfand.h"
 #include "../Logging/Logging.h"
 
 int main(int argc, char* argv[])
@@ -16,6 +16,7 @@ int main(int argc, char* argv[])
 	}
 
 #ifdef _DEBUG
+	printf("WAITING FOR DEBUGGER !!!");
 	while (!::IsDebuggerPresent())
 		::Sleep(1000);
 #endif

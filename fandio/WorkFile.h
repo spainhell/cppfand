@@ -1,7 +1,7 @@
 #pragma once
 #include "WPage.h"
 #include "WRec.h"
-#include "../cppfand/KeyFldD.h"
+#include "../CppFand/KeyFldD.h"
 
 class FileD;
 

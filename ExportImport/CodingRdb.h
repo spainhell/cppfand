@@ -1,7 +1,7 @@
 #pragma once
-#include "../cppfand/constants.h"
-#include "../cppfand/base.h"
-#include "../cppfand/FieldDescr.h"
+#include "../CppFand/constants.h"
+#include "../CppFand/base.h"
+#include "../CppFand/FieldDescr.h"
 
 class CodingRdb
 {

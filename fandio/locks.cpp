@@ -1,9 +1,9 @@
 #include "locks.h"
 
 #include "files.h"
-#include "../cppfand/GlobalVariables.h"
-#include "../cppfand/access.h"
-#include "../cppfand/obaseww.h"
+#include "../CppFand/GlobalVariables.h"
+#include "../CppFand/access.h"
+#include "../CppFand/obaseww.h"
 
 void RunErrorM(FileD* file_d, LockMode Md, WORD N)
 {

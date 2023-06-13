@@ -1,6 +1,6 @@
 #pragma once
-#include "../cppfand/Chained.h"
-#include "../cppfand/constants.h"
+#include "../CppFand/Chained.h"
+#include "../CppFand/constants.h"
 #include "../Common/pstring.h"
 
 struct TMemBlkHd : public Chained<TMemBlkHd>

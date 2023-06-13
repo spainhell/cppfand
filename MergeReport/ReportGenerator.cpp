@@ -3,14 +3,14 @@
 #include <memory>
 
 #include "Report.h"
-#include "../cppfand/compile.h"
-#include "../cppfand/FieldDescr.h"
-#include "../cppfand/FileD.h"
-#include "../cppfand/GlobalVariables.h"
-#include "../cppfand/KeyFldD.h"
-#include "../cppfand/runfrml.h"
-#include "../cppfand/wwmenu.h"
-#include "../cppfand/wwmix.h"
+#include "../CppFand/compile.h"
+#include "../CppFand/FieldDescr.h"
+#include "../CppFand/FileD.h"
+#include "../CppFand/GlobalVariables.h"
+#include "../CppFand/KeyFldD.h"
+#include "../CppFand/runfrml.h"
+#include "../CppFand/wwmenu.h"
+#include "../CppFand/wwmix.h"
 #include "../Common/textfunc.h"
 
 

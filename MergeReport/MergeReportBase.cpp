@@ -1,8 +1,8 @@
 #include "MergeReportBase.h"
-#include "../cppfand/compile.h"
-#include "../cppfand/FieldDescr.h"
-#include "../cppfand/GlobalVariables.h"
-#include "../cppfand/KeyFldD.h"
+#include "../CppFand/compile.h"
+#include "../CppFand/FieldDescr.h"
+#include "../CppFand/GlobalVariables.h"
+#include "../CppFand/KeyFldD.h"
 
 MergeReportBase::MergeReportBase()
 {
