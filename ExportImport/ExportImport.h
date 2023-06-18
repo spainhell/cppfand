@@ -1,8 +1,8 @@
 #pragma once
 #include "CodingRdb.h"
-#include "../CppFand/constants.h"
-#include "../CppFand/rdrun.h"
-#include "../CppFand/models/Instr.h"
+#include "../Core/constants.h"
+#include "../Core/rdrun.h"
+#include "../Core/models/Instr.h"
 
 
 void FileCopy(CopyD* CD);

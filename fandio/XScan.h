@@ -1,6 +1,6 @@
 #pragma once
-#include "../CppFand/access-structs.h"
-#include "../CppFand/models/FrmlElem.h"
+#include "../Core/access-structs.h"
+#include "../Core/models/FrmlElem.h"
 
 struct KeyInD;
 

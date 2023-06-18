@@ -1,7 +1,7 @@
 #pragma once
-#include "../CppFand/constants.h"
-#include "../CppFand/EditOpt.h"
-#include "../CppFand/rdrun.h"
+#include "../Core/constants.h"
+#include "../Core/EditOpt.h"
+#include "../Core/rdrun.h"
 
 enum class FieldType;
 class FieldDescr;

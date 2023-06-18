@@ -1,9 +1,9 @@
 #include "DbfFile.h"
 #include "../Common/FileEnums.h"
-#include "../CppFand/FieldDescr.h"
-#include "../CppFand/FileD.h"
-#include "../CppFand/GlobalVariables.h"
-#include "../CppFand/obaseww.h"
+#include "../Core/FieldDescr.h"
+#include "../Core/FileD.h"
+#include "../Core/GlobalVariables.h"
+#include "../Core/obaseww.h"
 #include "../pascal/real48.h"
 #include "../Common/textfunc.h"
 

@@ -1,7 +1,7 @@
 #pragma once
 #include "FandFile.h"
-#include "../CppFand/FileD.h"
-#include "../CppFand/switches.h"
+#include "../Core/FileD.h"
+#include "../Core/switches.h"
 #ifdef FandSQL
 #include "channel.h"
 #endif

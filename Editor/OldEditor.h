@@ -4,8 +4,8 @@
 #include <string>
 
 #include "Blocks.h"
-#include "../CppFand/base.h"
-#include "../CppFand/constants.h"
+#include "../Core/base.h"
+#include "../Core/constants.h"
 #include "../Common/pstring.h"
 
 class Instr;

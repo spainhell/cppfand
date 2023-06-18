@@ -50,7 +50,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ExportImport", "ExportImpor
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Common", "Common\Common.vcxproj", "{193522AB-6765-4A9F-A665-6917AC7BBBEB}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CppFand", "CppFand\CppFand.vcxproj", "{1A9EB346-F313-4783-A8C6-86AE13718B18}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Core", "Core\Core.vcxproj", "{1A9EB346-F313-4783-A8C6-86AE13718B18}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DynamicLibrary", "DynamicLibrary\DynamicLibrary.vcxproj", "{B2AA9AF8-03E5-4384-A5EB-14CA1B3D9A46}"
 EndProject

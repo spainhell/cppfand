@@ -1,6 +1,6 @@
 #include "XPage.h"
 
-#include "../CppFand/base.h"
+#include "../Core/base.h"
 
 
 XPage::XPage()

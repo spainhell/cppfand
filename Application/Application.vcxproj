@@ -73,19 +73,21 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <TargetName>$(ProjectName)</TargetName>
+    <TargetName>cppfand</TargetName>
     <IncludePath>C:\Users\OEM\source\repos\spdlog\include\spdlog;$(IncludePath)</IncludePath>
     <LibraryPath>$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <TargetName>cppfand</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <TargetName>$(ProjectName)</TargetName>
+    <TargetName>cppfand</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <TargetName>cppfand</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -173,7 +175,7 @@
     <ResourceCompile Include="Application.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CppFand\CppFand.vcxproj">
+    <ProjectReference Include="..\Core\Core.vcxproj">
       <Project>{1a9eb346-f313-4783-a8c6-86ae13718b18}</Project>
     </ProjectReference>
   </ItemGroup>

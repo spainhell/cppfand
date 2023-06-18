@@ -1,11 +1,11 @@
 #include "EditorHelp.h"
 
 #include <stdexcept>
-#include "../CppFand/base.h"
-#include "../CppFand/FileD.h"
-#include "../CppFand/GlobalVariables.h"
-#include "../CppFand/obaseww.h"
-#include "../CppFand/wwmenu.h"
+#include "../Core/base.h"
+#include "../Core/FileD.h"
+#include "../Core/GlobalVariables.h"
+#include "../Core/obaseww.h"
+#include "../Core/wwmenu.h"
 
 // ***********HELP**********  // r351
 const BYTE maxStk = 15;

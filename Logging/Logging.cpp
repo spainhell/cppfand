@@ -3,7 +3,7 @@
 #include <cstdarg>
 #include <ctime>
 #include <string>
-#include "../CppFand/legacy.h"
+#include "../Core/legacy.h"
 
 Logging* Logging::_instance = nullptr;
 FILE* Logging::_file = nullptr;

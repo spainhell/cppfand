@@ -1,7 +1,7 @@
 #pragma once
 #include "TyFile.h"
 #include "../Common/pstring.h"
-#include "../CppFand/olongstr.h"
+#include "../Core/olongstr.h"
 
 class TzFile : public TyFile
 {

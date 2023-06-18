@@ -1,6 +1,6 @@
 #include "TcFile.h"
-#include "../CppFand/legacy.h"
-#include "../CppFand/base.h"
+#include "../Core/legacy.h"
+#include "../Core/base.h"
 
 
 TcFile::TcFile(BYTE aCompress)

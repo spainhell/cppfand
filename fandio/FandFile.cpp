@@ -7,11 +7,11 @@
 #include "XWKey.h"
 #include "../Common/textfunc.h"
 #include "../Common/compare.h"
-#include "../CppFand/GlobalVariables.h"
-#include "../CppFand/Coding.h"
-#include "../CppFand/oaccess.h"
+#include "../Core/GlobalVariables.h"
+#include "../Core/Coding.h"
+#include "../Core/oaccess.h"
 #include "../pascal/real48.h"
-#include "../CppFand/obaseww.h"
+#include "../Core/obaseww.h"
 
 // ****************************** CONSTANTS **********************************
 //double Power10[21] = { 1E0, 1E1, 1E2, 1E3, 1E4, 1E5, 1E6, 1E7, 1E8, 1E9, 1E10,

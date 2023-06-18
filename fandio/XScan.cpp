@@ -1,11 +1,11 @@
 #include "XScan.h"
 #include "XWKey.h"
-#include "../CppFand/FieldDescr.h"
-#include "../CppFand/FileD.h"
-#include "../CppFand/GlobalVariables.h"
-#include "../CppFand/KeyFldD.h"
-#include "../CppFand/obaseww.h"
-#include "../CppFand/runfrml.h"
+#include "../Core/FieldDescr.h"
+#include "../Core/FileD.h"
+#include "../Core/GlobalVariables.h"
+#include "../Core/KeyFldD.h"
+#include "../Core/obaseww.h"
+#include "../Core/runfrml.h"
 
 
 void AddFFs(XKey* K, pstring& s)

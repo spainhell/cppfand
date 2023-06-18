@@ -1,6 +1,6 @@
 ﻿#include <vector>
-#include "../CppFand/OldDrivers.h"
-#include "../CppFand/runfand.h"
+#include "../Core/OldDrivers.h"
+#include "../Core/runfand.h"
 #include "../Logging/Logging.h"
 
 int main(int argc, char* argv[])

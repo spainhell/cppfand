@@ -2,9 +2,9 @@
 
 #include "XWFile.h"
 #include "XWorkFile.h"
-#include "../CppFand/FileD.h"
-#include "../CppFand/GlobalVariables.h"
-#include "../CppFand/obaseww.h"
+#include "../Core/FileD.h"
+#include "../Core/GlobalVariables.h"
+#include "../Core/obaseww.h"
 
 
 void XXPage::Reset(XWorkFile* OwnerXW)

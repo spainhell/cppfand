@@ -2,8 +2,8 @@
 #include <cstdio>
 #include "FandTFile.h"
 #include "FandXFile.h"
-#include "../CppFand/switches.h"
-#include "../CppFand/FieldDescr.h"
+#include "../Core/switches.h"
+#include "../Core/FieldDescr.h"
 #include "../Logging/Logging.h"
 
 class XWKey;

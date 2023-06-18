@@ -1,7 +1,7 @@
 #include "TzFile.h"
-#include "../CppFand/GlobalVariables.h"
-#include "../CppFand/oaccess.h"
-#include "../CppFand/obaseww.h"
+#include "../Core/GlobalVariables.h"
+#include "../Core/oaccess.h"
+#include "../Core/obaseww.h"
 
 TzFile::TzFile(bool BkUp, bool NoCompr, bool SubDirO, bool OverwrO, WORD Ir, pstring aDir)
 {

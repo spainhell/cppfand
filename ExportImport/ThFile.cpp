@@ -1,7 +1,7 @@
 #include "ThFile.h"
-#include "../CppFand/GlobalVariables.h"
-#include "../CppFand/oaccess.h"
-#include "../CppFand/obaseww.h"
+#include "../Core/GlobalVariables.h"
+#include "../Core/oaccess.h"
+#include "../Core/obaseww.h"
 
 WORD iBuf = 0;
 
