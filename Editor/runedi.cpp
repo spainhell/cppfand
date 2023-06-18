@@ -4354,8 +4354,6 @@ WORD ExitKeyProc()
 {
 	WORD w = 0;
 	WORD c = Event.Pressed.KeyCombination();
-	//EdExitD* X = E->ExD;
-	//while (X != nullptr) {
 	for (auto& X : E->ExD) {
 		if (TestExitKey(c, X)) {
 			ClrEvent();
@@ -4372,7 +4370,6 @@ WORD ExitKeyProc()
 				EdOk = ok;
 			}
 		}
-		//X = (EdExitD*)X->pChain;
 	}
 	if (((w == 0) || (w == 3)) && (c == _ShiftF7_) && CFld->Ed(IsNewRec)) {
 		ShiftF7Proc();
@@ -4398,7 +4395,6 @@ void DisplLASwitches()
 void DisplLL()
 {
 	WORD n;
-	//if (E->Last != nullptr) {
 	if (!E->Last.empty()) {
 		MsgLine = E->Last;
 		if (MsgLine.length() > 0) {

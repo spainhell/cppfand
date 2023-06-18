@@ -90,7 +90,9 @@ void AddToKbdBuf(WORD KeyCode)
 
 bool KeyPressed()
 {
-	return keyboard.Exists();
+	KEY_EVENT_RECORD key;
+	bool exists = keyboard.Get(key, true);
+	return exists && key.bKeyDown;
 }
 
 WORD ReadKey()
