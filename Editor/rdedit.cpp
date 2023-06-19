@@ -523,7 +523,7 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 			D = (EFldD*)D->pChain;
 		}
 	}
-	E->WatchDelay = RunInt(CFile, EO->WatchDelayZ, CRecPtr) * 18;
+	E->WatchDelay = RunInt(CFile, EO->WatchDelayZ, CRecPtr) * 1000;
 	if (EO->Head == nullptr) {
 		E->Head = StandardHead();
 	}
