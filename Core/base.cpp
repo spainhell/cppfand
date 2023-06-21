@@ -175,9 +175,7 @@ long SeekH(HANDLE handle, size_t offset)
 
 size_t ReadH(HANDLE handle, size_t length, void* buffer)
 {
-	ReadF(handle, buffer, length, HandleError);
-	//return fread_s(buffer, length, 1, length, handle);
-	return length;
+	return ReadF(handle, buffer, length, HandleError);
 }
 
 std::string ReadMessage(int N)

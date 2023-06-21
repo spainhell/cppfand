@@ -19,20 +19,17 @@ HANDLE OpenF(const std::string& path, DWORD& error, DWORD access_mode, DWORD sha
 	return hFile;
 }
 
-bool ReadF(HANDLE hFile, void* buffer, size_t length, DWORD& error)
+DWORD ReadF(HANDLE hFile, void* buffer, size_t length, DWORD& error)
 {
-	bool result;
 	DWORD dwBytesRead;
 	const bool readResult = ReadFile(hFile, buffer, length, &dwBytesRead, NULL);
 	if (!readResult) {
 		error = GetLastError();
-		result = false;
 	}
 	else {
 		error = 0;
-		result = true;
 	}
-	return result;
+	return dwBytesRead;
 }
 
 bool WriteF(HANDLE hFile, void* buffer, size_t length, DWORD& error)

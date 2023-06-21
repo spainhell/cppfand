@@ -14,7 +14,7 @@
  */
 HANDLE OpenF(const std::string& path, DWORD& error, DWORD access_mode, DWORD share_mode = 0, DWORD create_mode = OPEN_ALWAYS, DWORD file_attr = FILE_ATTRIBUTE_NORMAL);
 
-bool ReadF(HANDLE hFile, void* buffer, size_t length, DWORD& error);
+DWORD ReadF(HANDLE hFile, void* buffer, size_t length, DWORD& error);
 
 bool WriteF(HANDLE hFile, void* buffer, size_t length, DWORD& error);
 

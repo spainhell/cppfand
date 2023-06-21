@@ -7,19 +7,24 @@ WORD iBuf = 0;
 
 ThFile::ThFile(std::string APath, WORD CatIRec, InOutMode AMode, byte aCompress, ThFile* F) : TcFile(aCompress)
 {
-	std::string mode;
+	DWORD access_mode = 0;
+	DWORD create_mode = 0;
 	std::string d, Nm, e;
+
 	switch (AMode) {
 	case InOutMode::_inp: {
-		mode = "r";
+		access_mode = GENERIC_READ;
+		create_mode = OPEN_EXISTING;
 		break;
 	}
 	case InOutMode::_outp: {
-		mode = "w";
+		access_mode = GENERIC_READ | GENERIC_WRITE;
+		create_mode = CREATE_NEW;
 		break;
 	}
 	case InOutMode::_append: {
-		mode = "a+";
+		access_mode = GENERIC_READ | GENERIC_WRITE;
+		create_mode = OPEN_ALWAYS;
 		break;
 	}
 	default: break;
@@ -27,7 +32,9 @@ ThFile::ThFile(std::string APath, WORD CatIRec, InOutMode AMode, byte aCompress,
 
 	Compress = aCompress;
 
-	SetTxtPathVol(APath, CatIRec); Path = CPath; Vol = CVol;
+	SetTxtPathVol(APath, CatIRec);
+	Path = CPath;
+	Vol = CVol;
 
 	if (F != nullptr && F->Path == CPath) {
 		SetMsgPar(CPath);
@@ -38,9 +45,12 @@ ThFile::ThFile(std::string APath, WORD CatIRec, InOutMode AMode, byte aCompress,
 	FSplit(CPath, d, Nm, e);
 	//ForAllFDs(CloseEqualFD);
 
-	Handle = OpenF(CPath, HandleError, GENERIC_READ | GENERIC_WRITE);
-	//HandleError = fopen_s(&Handle, CPath.c_str(), mode.c_str());
-	if (Handle != nullptr) {
+	Handle = OpenF(CPath, HandleError, access_mode, 0, create_mode);
+
+	if (Handle != INVALID_HANDLE_VALUE) {
+		if (HandleError == ERROR_ALREADY_EXISTS) {
+			HandleError = 0;
+		}
 		this->ReadBuf();
 	}
 	else {
@@ -53,25 +63,23 @@ ThFile::ThFile(std::string APath, WORD CatIRec, InOutMode AMode, byte aCompress,
 	if (AMode == InOutMode::_inp) {
 		RunMsgOn('C', Size);
 	}
+	if (AMode == InOutMode::_append) {
+		SeekF(Handle, HandleError, 0, FILE_END);
+	}
 }
 
 ThFile::~ThFile()
 {
-	//delete[] Buf;
-
-	if (Handle != nullptr) {
+	if (Handle != INVALID_HANDLE_VALUE) {
 		CloseH(&Handle);
 	}
-	Handle = nullptr;
+	Handle = INVALID_HANDLE_VALUE;
 }
 
 void ThFile::ReadBuf()
 {
-	if (Handle != nullptr) {
-		//lBuf = fread_s(Buf, BUFFER_SIZE, 1, BUFFER_SIZE, Handle);
-		lBuf = BUFFER_SIZE;
-		ReadH(Handle, BUFFER_SIZE, Buf);
-
+	if (Handle != INVALID_HANDLE_VALUE) {
+		lBuf = ReadH(Handle, BUFFER_SIZE, Buf);
 		if (lBuf == 0) this->eof = true;
 		Size = lBuf;
 	}
@@ -83,7 +91,7 @@ void ThFile::ReadBuf()
 
 void ThFile::WriteBuf(bool cond)
 {
-	if (Handle != nullptr) {
+	if (Handle != INVALID_HANDLE_VALUE) {
 		//lBuf = fwrite(Buf, 1, lBuf, Handle);
 		WriteH(Handle, lBuf, Buf);
 	}
