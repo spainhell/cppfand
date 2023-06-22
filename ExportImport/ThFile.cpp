@@ -19,7 +19,7 @@ ThFile::ThFile(std::string APath, WORD CatIRec, InOutMode AMode, byte aCompress,
 	}
 	case InOutMode::_outp: {
 		access_mode = GENERIC_READ | GENERIC_WRITE;
-		create_mode = CREATE_NEW;
+		create_mode = CREATE_ALWAYS;
 		break;
 	}
 	case InOutMode::_append: {
