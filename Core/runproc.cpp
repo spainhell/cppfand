@@ -13,6 +13,7 @@
 #include "oaccess.h"
 #include "obase.h"
 #include "obaseww.h"
+#include "RunMessage.h"
 #include "olongstr.h"
 #include "printtxt.h"
 #include "rdfildcl.h"
@@ -30,9 +31,9 @@
 #include "../Editor/EditorHelp.h"
 #include "../Editor/runedi.h"
 #include "../ExportImport/ExportImport.h"
-#include "..\MergeReport\ReportGenerator.h"
-#include "..\MergeReport\Merge.h"
-#include "..\MergeReport\Report.h"
+#include "../MergeReport/ReportGenerator.h"
+#include "../MergeReport/Merge.h"
+#include "../MergeReport/Report.h"
 #include "../Common/textfunc.h"
 
 

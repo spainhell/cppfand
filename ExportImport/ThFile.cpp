@@ -2,6 +2,7 @@
 #include "../Core/GlobalVariables.h"
 #include "../Core/oaccess.h"
 #include "../Core/obaseww.h"
+#include "../Core/RunMessage.h"
 
 WORD iBuf = 0;
 

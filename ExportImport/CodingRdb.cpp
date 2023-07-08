@@ -8,9 +8,10 @@
 #include "../Core/GlobalVariables.h"
 #include "../Core/oaccess.h"
 #include "../Core/obaseww.h"
+#include "../Core/RunMessage.h"
 #include "../Editor/rdedit.h"
 #include "../Editor/runedi.h"
-#include "..\MergeReport\Merge.h"
+#include "../MergeReport/Merge.h"
 
 
 void CodingRdb::CodeRdb(bool Rotate)

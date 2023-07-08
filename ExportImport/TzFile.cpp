@@ -2,6 +2,7 @@
 #include "../Core/GlobalVariables.h"
 #include "../Core/oaccess.h"
 #include "../Core/obaseww.h"
+#include "../Core/RunMessage.h"
 
 TzFile::TzFile(bool BkUp, bool NoCompr, bool SubDirO, bool OverwrO, int Ir, pstring aDir)
 {

@@ -77,6 +77,7 @@
     <ClCompile Include="Rdb.cpp" />
     <ClCompile Include="rdfildcl.cpp" />
     <ClCompile Include="ResFile.cpp" />
+    <ClCompile Include="RunMessage.cpp" />
     <ClCompile Include="runproj.cpp" />
     <ClCompile Include="rdproc.cpp" />
     <ClCompile Include="rdrun.cpp" />
@@ -116,6 +117,7 @@
     <ClInclude Include="printtxt.h" />
     <ClInclude Include="Rdb.h" />
     <ClInclude Include="ResFile.h" />
+    <ClInclude Include="RunMessage.h" />
     <ClInclude Include="runproj.h" />
     <ClInclude Include="rdfildcl.h" />
     <ClInclude Include="rdproc.h" />

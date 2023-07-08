@@ -4,6 +4,7 @@
 #include "../Core/access.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/obaseww.h"
+#include "../Core/RunMessage.h"
 
 
 XWorkFile::XWorkFile(FileD* parent, XScan* AScan, XKey* AK): WorkFile(parent)

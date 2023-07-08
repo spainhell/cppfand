@@ -3,6 +3,7 @@
 #include "../Core/base.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/obaseww.h"
+#include "../Core/RunMessage.h"
 
 WorkFile::WorkFile(FileD* parent)
 {
