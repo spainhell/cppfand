@@ -287,7 +287,7 @@ bool PromptYN(WORD NMsg)
 	TextAttr = screen.colors.pTxt;
 	ClrEol();
 	ReadMessage(NMsg);
-	std::string tmp = MsgLine.substr(MaxI(MsgLine.length() - TxtCols + 3, 0), 255);
+	std::string tmp = MsgLine.substr(max(MsgLine.length() - TxtCols + 3, 0), 255);
 	screen.ScrFormatWrText(screen.WhereX(), screen.WhereY(), "%s", tmp.c_str());
 	WORD col = screen.WhereX();
 	WORD row = screen.WhereY();

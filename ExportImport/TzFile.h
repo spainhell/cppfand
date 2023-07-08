@@ -6,7 +6,7 @@
 class TzFile : public TyFile
 {
 public:
-    TzFile(bool BkUp, bool NoCompr, bool SubDirO, bool OverwrO, WORD Ir, pstring aDir);
+    TzFile(bool BkUp, bool NoCompr, bool SubDirO, bool OverwrO, int Ir, pstring aDir);
     int WBase, WPos;
     HANDLE Handle;
     int SpaceOnDisk, Size, OrigSize;
