@@ -1476,7 +1476,7 @@ void RunInstr(Instr* PD)
 		}
 		case _backup: {
 			auto iPD = (Instr_backup*)PD;
-			Backup(iPD->IsBackup, iPD->NoCompress, iPD->BrCatIRec, iPD->BrNoCancel);
+			BackUp(iPD->IsBackup, iPD->NoCompress, iPD->BrCatIRec, iPD->BrNoCancel);
 			break;
 		}
 		case _backupm: {

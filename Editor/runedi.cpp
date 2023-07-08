@@ -2782,7 +2782,7 @@ bool PromptSearch(bool create)
 	bool b = false;
 	bool found = false;
 	LockMode md;
-	XString x, xOld;
+	XString x;
 	WORD Col = 0, LWw = 0, pos = 0;
 	FileD* FD = CFile;
 	XKey* K = VK;
@@ -2874,7 +2874,7 @@ bool PromptSearch(bool create)
 			TextAttr = screen.colors.pNorm;
 			screen.GotoXY(Col, TxtRows);
 			pos = FieldEdit(F, nullptr, LWw, pos, s, r, false, true, li, E->WatchDelay);
-			xOld = x;
+			const XString x_old = x;
 			if (Event.Pressed.KeyCombination() == __ESC || (Event.What == evKeyDown)) {
 				CRecPtr = E->NewRecPtr;
 				PopW(w);
@@ -2903,12 +2903,12 @@ bool PromptSearch(bool create)
 				CRecPtr = E->NewRecPtr;
 				found = GotoXRec(&x, n);
 				if ((pos == 0) && (F->frml_type == 'S')) {
-					x = xOld;
+					x = x_old;
 					x.StoreStr(CFile->loadOldS(F, CRecPtr), KF);
 				}
 				CRecPtr = RP;
 				if (pos != 0) {
-					x = xOld;
+					x = x_old;
 					continue;
 				}
 			}
@@ -2935,7 +2935,7 @@ bool PromptSearch(bool create)
 
 bool PromptAndSearch(bool create)
 {
-	auto result = false;
+	bool result = false;
 	if (VK == nullptr) {
 		WrLLF10Msg(111);
 		return result;
@@ -2949,18 +2949,18 @@ void PromptGotoRecNr()
 {
 	wwmix ww;
 
-	int N;
-	WORD I = 1;
-	std::string Txt;
-	bool Del = true;
+	int n;
+	WORD i = 1;
+	std::string text;
+	bool del = true;
 	do {
-		ww.PromptLL(122, Txt, I, Del);
+		ww.PromptLL(122, text, i, del);
 		if (Event.Pressed.KeyCombination() == __ESC) return;
-		val(Txt, N, I);
-		Del = false;
-	} while (I != 0);
+		val(text, n, i);
+		del = false;
+	} while (i != 0);
 
-	GotoRecFld(N, CFld);
+	GotoRecFld(n, CFld);
 }
 
 void CheckFromHere()
