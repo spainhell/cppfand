@@ -223,7 +223,7 @@ struct EditD : Chained<EditD>
 	bool SQLFilter = false;                      /*      "         */
 	XWKey* SelKey = nullptr;                     /*      "         */
 	StringListEl* HdTxt = nullptr; BYTE NHdTxt = 0;
-	WORD SaveAfter = 0, WatchDelay = 0, RefreshDelay = 0;
+	unsigned int SaveAfter = 0, WatchDelay = 0, RefreshDelay = 0;
 	BYTE RecNrPos = 0, RecNrLen = 0;
 	BYTE NPages = 0;
 	//std::vector<std::string> RecTxt;

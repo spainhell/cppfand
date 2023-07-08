@@ -99,7 +99,8 @@ void WriteStr(WORD& pos, WORD& base, WORD& maxLen, WORD& maxCol, BYTE sLen, std:
 	screen.GotoXY(cx + pos - base - 1, cy);
 }
 
-WORD EditTxt(std::string& text, WORD pos, WORD maxlen, WORD maxcol, FieldType typ, bool del, bool star, bool upd, bool ret, WORD Delta)
+WORD EditTxt(std::string& text, WORD pos, WORD maxlen, WORD maxcol, 
+	FieldType typ, bool del, bool star, bool upd, bool ret, unsigned int Delta)
 {
 	WORD base = 0, cx = 0, cy = 0, cx1 = 0, cy1 = 0;
 	int EndTime = 0; bool InsMode = false;
@@ -364,8 +365,8 @@ void AssignFld(FieldDescr* F, FrmlElem* Z)
 	AssgnFrml(CFile, CRecPtr, F, Z, false, false);
 }
 
-WORD FieldEdit(FieldDescr* F, FrmlElem* Impl, WORD LWw, WORD iPos, std::string& Txt, double& RR, bool del, bool upd, bool ret,
-	WORD Delta)
+WORD FieldEdit(FieldDescr* F, FrmlElem* Impl, WORD LWw, WORD iPos, std::string& Txt, 
+	double& RR, bool del, bool upd, bool ret, unsigned int Delta)
 {
 	short Col = 0, Row = 0;
 	char cc = '\0';
@@ -3685,7 +3686,9 @@ bool EditItemProc(bool del, bool ed, WORD& Brk)
 		Txt = DecodeField(CFile, F, CFld->FldD->L, CRecPtr);
 		screen.GotoXY(CFld->Col, FldRow(CFld, IRec));
 		wd = 0;
-		if (CFile->FF->NotCached()) wd = E->WatchDelay;
+		if (CFile->FF->NotCached()) {
+			wd = E->WatchDelay;
+		}
 		FieldEdit(F, CFld->Impl, CFld->L, 1, Txt, R, del, ed, false, wd);
 		if (Event.Pressed.KeyCombination() == __ESC || !ed) {
 			DisplFld(CFld, IRec, TextAttr);

@@ -10,7 +10,7 @@ extern bool TxtEdCtrlUBrk, TxtEdCtrlF4Brk;
 extern EFldD* CFld;
 
 WORD EditTxt(std::string& s, WORD pos, WORD maxlen, WORD maxcol, FieldType typ, bool del,
-    bool star, bool upd, bool ret, WORD Delta); // r86
+    bool star, bool upd, bool ret, unsigned int Delta); // r86
 
 int CRec();
 bool TestIsNewRec();

@@ -1124,12 +1124,17 @@ bool RdViewOpt(EditOpt* EO)
 			((FrmlElem4*)EO->Mode)->S = LexWord;
 			RdLex();
 		}
-		else EO->Mode = RdStrFrml(nullptr);
+		else {
+			EO->Mode = RdStrFrml(nullptr);
+		}
 	}
 	else if (RdHeadLast(EO)) return result;
-	else if (IsOpt("WATCH")) EO->WatchDelayZ = RdRealFrml(nullptr);
+	else if (IsOpt("WATCH")) {
+		EO->WatchDelayZ = RdRealFrml(nullptr);
+	}
 	else if (IsOpt("WW")) {
-		Accept('('); EO->WFlags = 0;
+		Accept('(');
+		EO->WFlags = 0;
 		if (Lexem == '(') { RdLex(); EO->WFlags = WNoPop; }
 		RdW(EO->W);
 		RdFrame(&EO->Top, EO->WFlags);

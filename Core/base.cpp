@@ -1088,7 +1088,7 @@ int GetDateTimeH(FILE* handle)
 	// vrati cas posledniho zapisu souboru + datum posledniho zapisu souboru
 	// 2 + 2 Byte (datum vlevo, cas vpravo)
 	FILETIME ft;
-	auto result = GetFileTime(handle, nullptr, nullptr, &ft);
+	bool result = GetFileTime(handle, nullptr, nullptr, &ft);
 	if (result == 0) HandleError = GetLastError();
 	return (ft.dwHighDateTime << 16) + ft.dwLowDateTime;
 }
@@ -1170,17 +1170,9 @@ bool SaveCache(WORD ErrH, HANDLE f)
 	return true;
 }
 
-void SubstHandle(WORD h1, WORD h2)
-{
-}
-
 short HeapErrFun(WORD Size)
 {
 	return 0;
-}
-
-void AlignParagraph()
-{
 }
 
 std::string* StoreStr(std::string S)
