@@ -1155,15 +1155,17 @@ bool WrCPage(FILE* Handle, int N, void* Buf, WORD ErrH)
 
 void LockCache()
 {
+	// implementation is empty in the file MEMORY.PAS too
 }
 
 void UnLockCache()
 {
+	// implementation is empty in the file MEMORY.PAS too
 }
 
 bool SaveCache(WORD ErrH, HANDLE f)
 {
-	// ulozi cache do souboru
+	// saves cache to the file
 	cache.SaveRemoveCache(f);
 	return true;
 }
@@ -1241,8 +1243,7 @@ bool EquLongStr(LongStr* S1, LongStr* S2)
 {
 	if (S1->LL != S2->LL) return false;
 	if (S1->LL == 0) return true;
-	for (size_t i = 0; i < S1->LL; i++)
-	{
+	for (size_t i = 0; i < S1->LL; i++)	{
 		if (S1->A[i] != S2->A[i]) return false;
 	}
 	return true;
@@ -1252,8 +1253,7 @@ bool EquArea(void* P1, void* P2, WORD L)
 {
 	auto* c1 = static_cast<unsigned char*>(P1);
 	auto* c2 = static_cast<unsigned char*>(P2);
-	for (size_t i = 0; i < L; i++)
-	{
+	for (size_t i = 0; i < L; i++) {
 		if (c1[i] != c2[i]) return false;
 	}
 	return true;
