@@ -80,6 +80,7 @@ public:
 	int saveT(FieldDescr* field_d, int pos, void* record);
 
 	void DelTFld(FieldDescr* field_d, void* record);
+	void DelTFlds(void* record);
 	void DelDifTFld(FieldDescr* field_d, void* record, void* comp_record);
 
 	unsigned short RdPrefix();

@@ -503,11 +503,7 @@ void FileD::CopyRecWithT(void* record1, void* record2)
 
 void FileD::DelTFlds(void* record)
 {
-	for (auto& F : FldD) {
-		if (((F->Flg & f_Stored) != 0) && (F->field_type == FieldType::TEXT)) {
-			FF->DelTFld(F, record);
-		}
-	}
+	this->FF->DelTFlds(record);
 }
 
 void FileD::DelAllDifTFlds(void* record, void* comp_record)

@@ -565,6 +565,15 @@ void FandFile::DelTFld(FieldDescr* field_d, void* record)
 	saveT(field_d, 0, record);
 }
 
+void FandFile::DelTFlds(void* record)
+{
+	for (auto& field : _parent->FldD) {
+		if (((field->Flg & f_Stored) != 0) && (field->field_type == FieldType::TEXT)) {
+			DelTFld(field, record);
+		}
+	}
+}
+
 /**
  * \brief Pokud zaznamy odkazuji na ruzne texty, je text z 'record' smazan
  * \param field_d popis pole

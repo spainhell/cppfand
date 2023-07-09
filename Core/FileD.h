@@ -105,6 +105,7 @@ public:
 	void DeleteDuplicateF(FileD* TempFD);
 	void ZeroAllFlds(void* record);
 	void CopyRecWithT(void* record1, void* record2);
+
 	void DelTFlds(void* record);
 	void DelAllDifTFlds(void* record, void* comp_record);
 
