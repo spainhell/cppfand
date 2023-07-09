@@ -157,14 +157,14 @@ label1:
 				}
 				}
 			label5:
-				if (pos > maxlen) { beep(); goto label7; }
+				if (pos > maxlen) { Beep(); goto label7; }
 				if (InsMode) {
 					if (text.length() == maxlen) {
 						if (text[text.length() - 1] == ' ') {
 							text = text.substr(0, text.length() - 1);
 						}
 						else {
-							beep();
+							Beep();
 							goto label7;
 						}
 					}
@@ -3279,14 +3279,14 @@ label1:
 					RdRec(CRec());
 					DisplRecNr(CRec());
 					GotoRecFld(OldCRec, OldCFld);
-					beep(); beep();
+					Beep(); Beep();
 					return result;
 				}
 				else GotoRecFld(CRec() + 1, E->FirstFld);
 			else {
 			label3:
 				GotoRecFld(CRec(), OldCFld);
-				beep(); beep();
+				Beep(); Beep();
 				return result;
 			}
 		}
@@ -4660,7 +4660,9 @@ label81:
 		if (Event.What == 0) {
 			if ((E->WatchDelay > 0) && (OldTimeW + E->WatchDelay < getMillisecondsNow()))
 				if (LongBeep < 3) {
-					for (i = 1; i <= 4; i++) beep();
+					for (i = 1; i <= 4; i++) {
+						Beep();
+					}
 					LongBeep++;
 					OldTimeW = getMillisecondsNow();
 					goto label81;

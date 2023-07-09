@@ -485,10 +485,6 @@ WORD Swap(WORD cislo)
 	return ((cislo & 0x00FF) << 4) + (cislo >> 4);
 }
 
-void beep()
-{
-}
-
 std::string GetEnv(const char* name)
 {
 	std::string result;

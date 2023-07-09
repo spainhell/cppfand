@@ -69,8 +69,6 @@ inline void OvrSetRetry(int Size) {};
 
 inline void GetMem(void* pointer, int Size) { pointer = new unsigned char[Size]; }
 
-void beep();
-
 extern BYTE OvrResult; // vzdy 0 OvrOK
 
 std::string GetEnv(const char* name);

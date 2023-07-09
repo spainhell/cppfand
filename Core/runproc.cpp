@@ -238,7 +238,7 @@ void MergeProc(Instr_merge_display* PD)
 	void* p = nullptr; void* p2 = nullptr;
 	MarkBoth(p, p2);
 	SetInpTT(&PD->Pos, true);
-	
+
 	const std::unique_ptr merge = std::make_unique<Merge>();
 	merge->Read();
 	merge->Run();
@@ -998,7 +998,7 @@ label1:
 			w1 = PushWrLLMsg(msg, false);
 			if (w == 0) w = w1;
 			else TWork.Delete(w1);
-			beep();
+			Beep();
 			KbdTimer(spec.NetDelay, 0);
 			goto label1;
 		}
@@ -1224,13 +1224,17 @@ void RunInstr(Instr* PD)
 			WithWindowProc((Instr_window*)PD);
 			break;
 		}
-		case _break: { BreakP = true; break; }
-		case _exitP: { ExitP = true; break; }
+		case _break: {
+			BreakP = true;
+			break;
+		}
+		case _exitP: {
+			ExitP = true;
+			break;
+		}
 		case _cancel: {
-			// TODO: procedure GoExit; assembler; - was called here
-			BreakP = true; // from ExitBuf.BrkP
-			ExitP = true; // from ExitBuf.ExP
-			//GoExit();
+			// ukonceni ulohy - navrat do OS nebo do hlavniho menu
+			throw std::exception("CANCEL");
 			break;
 		}
 		case _save: {
@@ -1424,11 +1428,12 @@ void RunInstr(Instr* PD)
 			break;
 		}
 		case _beepP: {
-			beep();
+			Beep();
 			break;
 		}
 		case _delay: {
-			Delay((RunInt(CFile, ((Instr_assign*)PD)->Frml, CRecPtr) + 27) / 55);
+			const int value = RunInt(CFile, ((Instr_assign*)PD)->Frml, CRecPtr);
+			Delay((value + 27) / 55);
 			break;
 		}
 		case _sound: {
@@ -1533,9 +1538,9 @@ void RunInstr(Instr* PD)
 				(WORD)(RunInt(CFile, iPD->PortWhat, CRecPtr)));
 			break;
 		}
-		}
+	}
 		PD = PD->Chain;
-		}
+}
 	}
 
 void RunProcedure(Instr* PDRoot)

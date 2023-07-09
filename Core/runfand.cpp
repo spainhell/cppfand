@@ -116,8 +116,8 @@ void RdCFG()
 	CfgFile cfgFile;
 	CPath = MyFExpand("FAND.CFG", "FANDCFG");
 	cfgFile.Open(CPath);
-
 	cfgFile.ReadSpec(spec);
+	spec.RefreshDelay = spec.RefreshDelay * 18; // 1 CPU = 0.0182 ms
 	cfgFile.ReadVideoAndColors(video, StartMode, VideoCard, screen, TxtCols, TxtRows); // nacteni konfigurace (VGA + barvy)
 	cfgFile.ReadFonts(fonts);
 	cfgFile.ReadCodeTables(); 

@@ -470,8 +470,8 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 #endif
 		E->AddSwitch = true;
 		E->Cond = RunEvalFrml(CFile, EO->Cond, CRecPtr);
-		E->RefreshDelay = RunWordImpl(CFile, EO->RefreshDelayZ, spec.RefreshDelay, CRecPtr) * 18;
-		E->SaveAfter = RunWordImpl(CFile, EO->SaveAfterZ, spec.UpdCount, CRecPtr);
+		E->RefreshDelay = RunWordImpl(CFile, EO->RefreshDelayZ, spec.RefreshDelay, CRecPtr) * 1000;
+		E->SaveAfter = RunWordImpl(CFile, EO->SaveAfterZ, spec.UpdCount, CRecPtr) * 1000;
 		if (EO->StartRecKeyZ != nullptr) {
 			E->StartRecKey = RunShortStr(CFile, EO->StartRecKeyZ, CRecPtr);
 		}
