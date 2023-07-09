@@ -41,7 +41,7 @@ public:
 	FandXFile* XF = nullptr;
 	FandTFile* TF = nullptr;
 
-	unsigned short FirstRecPos = 0;    // for Fand 16 it's 6th BYTE (first 5 Bytes is file header)
+	unsigned short FirstRecPos = 0;    // for Fand 16 it's 6th BYTE (first 5 Bytes are file header)
 	unsigned char Drive = 0;           // 1=A, 2=B, else 0
 	FileUseMode UMode = Closed;
 	LockMode LMode = NullMode;

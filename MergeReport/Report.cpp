@@ -1908,7 +1908,7 @@ void Report::MoveFrstRecs()
 		else {
 			CFile = IDA[i]->Scan->FD;
 			CRecPtr = CFile->FF->RecPtr;
-			CFile->ZeroAllFlds(CRecPtr);
+			CFile->ZeroAllFlds(CRecPtr, false);
 			PutMFlds(IDA[i]->MFld);
 		}
 	}

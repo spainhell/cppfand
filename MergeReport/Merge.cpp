@@ -945,7 +945,7 @@ void Merge::MergeProcM()
 		else {
 			CFile = ID->Scan->FD;
 			CRecPtr = CFile->FF->RecPtr;
-			CFile->ZeroAllFlds(CRecPtr);
+			CFile->ZeroAllFlds(CRecPtr, false);
 			SetMFlds(ID->MFld);
 		}
 	}
@@ -986,7 +986,7 @@ void Merge::JoinProc(WORD Ii, bool& EmptyGroup)
 			CFile = ID->Scan->FD;
 			CRecPtr = CFile->FF->RecPtr;
 			EmptyGroup = true;
-			CFile->ZeroAllFlds(CRecPtr);
+			CFile->ZeroAllFlds(CRecPtr, false);
 			SetMFlds(ID->MFld);
 			JoinProc(Ii + 1, EmptyGroup);
 		}

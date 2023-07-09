@@ -216,7 +216,7 @@ void FileD::AssignNRecs(bool Add, int N)
 		return;
 	}
 	BYTE* record = GetRecSpace();
-	ZeroAllFlds(record);
+	ZeroAllFlds(record, false);
 	SetDeletedFlag(record);
 	IncNRecs(N - OldNRecs);
 	for (int i = OldNRecs + 1; i <= N; i++) {
@@ -464,8 +464,12 @@ void FileD::DeleteDuplicateF(FileD* TempFD)
 	MyDeleteFile(CPath);
 }
 
-void FileD::ZeroAllFlds(void* record)
+void FileD::ZeroAllFlds(void* record, bool delTFields)
 {
+	if (delTFields) {
+		this->FF->DelTFlds(record);
+	}
+
 	memset(record, 0, FF->RecLen);
 	for (FieldDescr* F : FldD) {
 		if (((F->Flg & f_Stored) != 0) && (F->field_type == FieldType::ALFANUM)) {
@@ -474,8 +478,12 @@ void FileD::ZeroAllFlds(void* record)
 	}
 }
 
-void FileD::CopyRecWithT(void* record1, void* record2)
+void FileD::CopyRecWithT(void* record1, void* record2, bool delTFields)
 {
+	if (delTFields)	{
+		this->FF->DelTFlds(record2);
+	}
+
 	memcpy(record2, record1, FF->RecLen);
 	for (auto& F : FldD) {
 		if ((F->field_type == FieldType::TEXT) && ((F->Flg & f_Stored) != 0)) {
@@ -501,10 +509,10 @@ void FileD::CopyRecWithT(void* record1, void* record2)
 	}
 }
 
-void FileD::DelTFlds(void* record)
-{
-	this->FF->DelTFlds(record);
-}
+//void FileD::DelTFlds(void* record)
+//{
+//	this->FF->DelTFlds(record);
+//}
 
 void FileD::DelAllDifTFlds(void* record, void* comp_record)
 {

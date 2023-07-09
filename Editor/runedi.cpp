@@ -986,7 +986,7 @@ void AdjustCRec()
 			IsNewRec = true;
 			Append = true;
 			FirstEmptyFld = CFld;
-			CFile->ZeroAllFlds(CRecPtr);
+			CFile->ZeroAllFlds(CRecPtr, false);
 			SetWasUpdated(CFile->FF, CRecPtr);
 			NewRecExit();
 		}
@@ -1589,7 +1589,7 @@ bool OpenEditWw()
 			IsNewRec = true;
 			Append = true;
 			LockRec(false);
-			CFile->ZeroAllFlds(CRecPtr);
+			CFile->ZeroAllFlds(CRecPtr, false);
 			DuplOwnerKey();
 			SetWasUpdated(CFile->FF, CRecPtr);
 		}
@@ -2676,7 +2676,7 @@ void InsertRecProc(void* RP)
 		Move(RP, CRecPtr, CFile->FF->RecLen);
 	}
 	else {
-		CFile->ZeroAllFlds(CRecPtr);
+		CFile->ZeroAllFlds(CRecPtr, false);
 	}
 	DuplOwnerKey();
 	SetWasUpdated(CFile->FF, CRecPtr);
@@ -2716,7 +2716,7 @@ void AppendRecord(void* RP)
 		Move(RP, CRecPtr, CFile->FF->RecLen);
 	}
 	else {
-		CFile->ZeroAllFlds(CRecPtr);
+		CFile->ZeroAllFlds(CRecPtr, false);
 	}
 	DuplOwnerKey();
 	DisplRecNr(CRec());
@@ -2790,7 +2790,7 @@ bool PromptSearch(bool create)
 	KeyFldD* KF = K->KFlds;
 	void* RP = CFile->GetRecSpace();
 	CRecPtr = RP;
-	CFile->ZeroAllFlds(CRecPtr);
+	CFile->ZeroAllFlds(CRecPtr, false);
 	x.Clear();
 	bool li = F3LeadIn && !IsNewRec;
 	int w = PushW(1, TxtRows, TxtCols, TxtRows, true, false);

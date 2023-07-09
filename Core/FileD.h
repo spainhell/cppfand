@@ -103,10 +103,10 @@ public:
 	bool SearchKey(XString& XX, XKey* Key, int& NN, void* record);
 	FileD* OpenDuplicateF(bool createTextFile);
 	void DeleteDuplicateF(FileD* TempFD);
-	void ZeroAllFlds(void* record);
-	void CopyRecWithT(void* record1, void* record2);
+	void ZeroAllFlds(void* record, bool delTFields);
+	void CopyRecWithT(void* record1, void* record2, bool delTFields);
 
-	void DelTFlds(void* record);
+	//void DelTFlds(void* record);
 	void DelAllDifTFlds(void* record, void* comp_record);
 
 	bool IsActiveRdb();

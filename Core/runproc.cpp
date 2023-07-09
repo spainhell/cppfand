@@ -560,7 +560,7 @@ void AppendRecProc(FileD* file_d)
 {
 	LockMode md = file_d->NewLockMode(CrMode);
 	BYTE* record = file_d->GetRecSpace();
-	file_d->ZeroAllFlds(record);
+	file_d->ZeroAllFlds(record, false);
 	file_d->SetDeletedFlag(record);
 	file_d->CreateRec(file_d->FF->NRecs + 1, record);
 	delete[] record; record = nullptr;
@@ -636,8 +636,8 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 			if (CFile->FF->NRecs == 0)
 				if (IsRead) {
 				label0:
-					CFile->DelTFlds(CRecPtr);
-					CFile->ZeroAllFlds(CRecPtr);
+					//CFile->DelTFlds(CRecPtr);
+					CFile->ZeroAllFlds(CRecPtr, true);
 					ReleaseStore(&cr);
 					CFile->OldLockMode(md);
 					return;
@@ -653,8 +653,8 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 		}
 		else if (!SrchXKey(k, x, N)) {
 			if (IsRead) {
-				CFile->DelTFlds(CRecPtr);
-				CFile->ZeroAllFlds(CRecPtr);
+				//CFile->DelTFlds(CRecPtr);
+				CFile->ZeroAllFlds(CRecPtr, true);
 				CFile->SetDeletedFlag(CRecPtr);
 				ReleaseStore(&cr);
 				CFile->OldLockMode(md);
@@ -676,13 +676,13 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 	}
 	if (IsRead) {
 		CRecPtr = cr;
-		CFile->ReadRec(N, CRecPtr);
+		CFile->ReadRec(N, cr);
 		CRecPtr = PD->LV->RecPtr;
-		CFile->DelTFlds(CRecPtr);
-		CFile->CopyRecWithT(cr, PD->LV->RecPtr);
+		//CFile->DelTFlds(PD->LV->RecPtr);
+		CFile->CopyRecWithT(cr, PD->LV->RecPtr, true);
 	}
 	else {
-		CFile->CopyRecWithT(PD->LV->RecPtr, cr);
+		CFile->CopyRecWithT(PD->LV->RecPtr, cr, false);
 		if (app) {
 			CRecPtr = cr;
 			if (CFile->FF->file_type == FileType::INDEX) {
@@ -730,8 +730,8 @@ void LinkRecProc(Instr_assign* PD)
 	else {
 		LastExitCode = 1;
 	}
-	CFile->DelTFlds(lr2);
-	CFile->CopyRecWithT(rec, lr2);
+	//CFile->DelTFlds(lr2);
+	CFile->CopyRecWithT(rec, lr2, true);
 	delete[] rec; rec = nullptr;
 
 	ReleaseStore(&p);
@@ -838,9 +838,9 @@ label1:
 #endif
 			if (LVr != nullptr) {
 				CRecPtr = lr;
-				CFile->ClearUpdFlag(CRecPtr);
-				CFile->DelTFlds(CRecPtr);
-				CFile->CopyRecWithT(cr, lr);
+				CFile->ClearUpdFlag(lr);
+				//CFile->DelTFlds(lr);
+				CFile->CopyRecWithT(cr, lr, true);
 			}
 		//if (LVi != nullptr) *(double*)(LocVarAd(LVi)) = Scan->RecNr; // metoda LocVarAd byla odstranena z access.cpp
 		if (LVi != nullptr) {
@@ -861,7 +861,7 @@ label1:
 			OpenCreateF(CFile, CPath, Shared);
 			if ((LVr != nullptr) && (LVi == nullptr) && CFile->HasUpdFlag(CRecPtr)) {
 				md1 = CFile->NewLockMode(WrMode);
-				CFile->CopyRecWithT(lr, cr);
+				CFile->CopyRecWithT(lr, cr, false);
 				UpdRec(cr, xScan->RecNr, true);
 				CFile->OldLockMode(md1);
 			}
@@ -1646,7 +1646,7 @@ void CallProcedure(Instr_proc* PD)
 			CFile = (*it0)->FD;
 			CRecPtr = CFile->GetRecSpace();
 			CFile->SetTWorkFlag(CRecPtr);
-			CFile->ZeroAllFlds(CRecPtr);
+			CFile->ZeroAllFlds(CRecPtr, false);
 			CFile->ClearDeletedFlag(CRecPtr);
 			(*it0)->RecPtr = CRecPtr;
 		}

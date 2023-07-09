@@ -1881,7 +1881,7 @@ void AssertFand(TPredicate* P, TCommand* C)
 	si = SiCFile(P->scanInf);
 	md = CFile->NewLockMode(CrMode);
 	CRecPtr = CFile->GetRecSpace();
-	CFile->ZeroAllFlds(CRecPtr);
+	CFile->ZeroAllFlds(CRecPtr, false);
 	//PtrRec(d).Seg = _Sg;
 	fl = si->FL;
 	auto l = C->Arg.begin();

@@ -80,7 +80,7 @@ bool LinkLastRec(FileD* file_d, int& N, bool WithT, BYTE** newRecord)
 		N = file_d->FF->NRecs;
 		if (N == 0) {
 		label1:
-			file_d->ZeroAllFlds(*newRecord);
+			file_d->ZeroAllFlds(*newRecord, false);
 			result = false;
 			N = 1;
 		}
@@ -157,7 +157,7 @@ bool LinkUpw(FileD* file_d, LinkD* LD, int& N, bool WithT, void* record, BYTE** 
 		ToFD->ReadRec(N, *newRecord);
 	}
 	else {
-		ToFD->ZeroAllFlds(*newRecord);
+		ToFD->ZeroAllFlds(*newRecord, false);
 		const KeyFldD* KF = K->KFlds;
 		for (auto& arg : LD->Args) {
 			FieldDescr* F = arg->FldD;

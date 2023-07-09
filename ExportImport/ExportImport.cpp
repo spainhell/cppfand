@@ -256,7 +256,7 @@ void ImportTxt(CopyD* CD)
 			md = CFile->FF->RewriteFile(CD->Append);
 
 		while (!(F1->eof) && (F1->ForwChar() != 0x1A)) {
-			CFile->ZeroAllFlds(CRecPtr);
+			CFile->ZeroAllFlds(CRecPtr, false);
 			CFile->ClearDeletedFlag(CRecPtr);
 			VarFixImp(F1, CD->Opt1);
 			F1->ForwChar(); //{set IsEOF at End}
