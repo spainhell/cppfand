@@ -519,8 +519,10 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 		std::string s = TrailChar(rss, ' ');
 		D = E->FirstFld;
 		while (D != nullptr) {
-			if (EquUpCase(D->FldD->Name, s)) E->StartFld = D;
-			D = (EFldD*)D->pChain;
+			if (EquUpCase(D->FldD->Name, s)) {
+				E->StartFld = D;
+			}
+			D = D->pChain;
 		}
 	}
 	E->WatchDelay = RunInt(CFile, EO->WatchDelayZ, CRecPtr) * 1000;

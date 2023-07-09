@@ -3673,7 +3673,7 @@ label6:
 bool EditItemProc(bool del, bool ed, WORD& Brk)
 {
 	std::string Txt;
-	double R = 0; bool b = false; ChkD* C = nullptr; WORD wd = 0;
+	double R = 0; bool b = false; ChkD* C = nullptr;
 	FieldDescr* F = CFld->FldD;
 	auto result = true;
 	if (F->field_type == FieldType::TEXT) {
@@ -3685,7 +3685,7 @@ bool EditItemProc(bool del, bool ed, WORD& Brk)
 		TextAttr = E->dHiLi;
 		Txt = DecodeField(CFile, F, CFld->FldD->L, CRecPtr);
 		screen.GotoXY(CFld->Col, FldRow(CFld, IRec));
-		wd = 0;
+		unsigned int wd = 0;
 		if (CFile->FF->NotCached()) {
 			wd = E->WatchDelay;
 		}
@@ -4460,7 +4460,7 @@ void CtrlReadKbd()
 {
 	BYTE flgs = 0;
 	uint64_t TimeBeg = getMillisecondsNow();
-	WORD D = 0;
+	unsigned int D = 0;
 
 	if (F1Mode && Mode24 && CRdb->HelpFD != nullptr) {
 		DisplayLastLineHelp(CFile->ChptPos.R, CFile->Name + "." + CFld->FldD->Name, Mode24);
@@ -4492,7 +4492,7 @@ void CtrlReadKbd()
 				D = E->WatchDelay;
 			}
 			else {
-				D = MinW(D, E->WatchDelay);
+				D = min(D, E->WatchDelay);
 			}
 		}
 	}
@@ -4903,8 +4903,7 @@ label81:
 						}
 						case __CTRL_N: {
 							// vloz novou vetu pred aktualni
-							if (!NoCreate && !Only1Record)
-							{
+							if (!NoCreate && !Only1Record) {
 								InsertRecProc(nullptr);
 								goto label0;
 							}
