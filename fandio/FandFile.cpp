@@ -106,7 +106,7 @@ void FandFile::DelAllDifTFlds(void* record, void* comp_record)
 
 int FandFile::UsedFileSize()
 {
-	int n = int(NRecs) * RecLen + FirstRecPos;
+	int n = NRecs * RecLen + FirstRecPos;
 	if (file_type == FileType::DBF) n++;
 	return n;
 }
@@ -1047,7 +1047,9 @@ void FandFile::DeleteXRec(int RecNr, bool DelT, void* record)
 	//log->log(loglevel::DEBUG, "DeleteXRec(%i, %s)", RecNr, DelT ? "true" : "false");
 	TestXFExist();
 	DeleteAllIndexes(RecNr, record);
-	if (DelT) _parent->DelAllDifTFlds(record, nullptr);
+	if (DelT) {
+		_parent->DelAllDifTFlds(record, nullptr);
+	}
 	SetDeletedFlag(record);
 	_parent->WriteRec(RecNr, record);
 	XF->NRecs--;

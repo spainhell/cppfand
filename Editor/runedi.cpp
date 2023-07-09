@@ -99,7 +99,7 @@ void WriteStr(WORD& pos, WORD& base, WORD& maxLen, WORD& maxCol, BYTE sLen, std:
 	screen.GotoXY(cx + pos - base - 1, cy);
 }
 
-WORD EditTxt(std::string& text, WORD pos, WORD maxlen, WORD maxcol, 
+WORD EditTxt(std::string& text, WORD pos, WORD maxlen, WORD maxcol,
 	FieldType typ, bool del, bool star, bool upd, bool ret, unsigned int Delta)
 {
 	WORD base = 0, cx = 0, cy = 0, cx1 = 0, cy1 = 0;
@@ -365,7 +365,7 @@ void AssignFld(FieldDescr* F, FrmlElem* Z)
 	AssgnFrml(CFile, CRecPtr, F, Z, false, false);
 }
 
-WORD FieldEdit(FieldDescr* F, FrmlElem* Impl, WORD LWw, WORD iPos, std::string& Txt, 
+WORD FieldEdit(FieldDescr* F, FrmlElem* Impl, WORD LWw, WORD iPos, std::string& Txt,
 	double& RR, bool del, bool upd, bool ret, unsigned int Delta)
 {
 	short Col = 0, Row = 0;
@@ -1421,12 +1421,12 @@ void BuildWork()
 				if ((K != nullptr) && !K->InWork && (ki == nullptr)) K = nullptr;
 			Scan = new XScan(CFile, K, ki, false);
 			Scan->Reset(boolP, E->SQLFilter, CRecPtr);
-			}
+		}
 		CFile->FF->CreateWIndex(Scan, WK, 'W');
 		Scan->Close();
 		if (wk2 != nullptr) wk2->Close(CFile);
 		ok = true;
-			}
+	}
 	catch (std::exception& e) {
 		// TODO: log error
 	}
@@ -1441,7 +1441,7 @@ void BuildWork()
 		GoExit();
 	}
 	ReleaseStore(&p);
-		}
+}
 
 void SetStartRec()
 {
@@ -1493,8 +1493,8 @@ bool OpenEditWw()
 		}
 		else {
 			goto label3;
+		}
 	}
-}
 #ifdef FandSQL
 	if (!CFile->IsSQLFile)
 #endif
@@ -1562,7 +1562,7 @@ bool OpenEditWw()
 		}
 		WasWK = true;
 		Subset = true;
-		}
+	}
 #ifdef FandSQL
 	if (CFile->IsSQLFile) Strm1->DefKeyAcc(WK);
 #endif
@@ -1603,7 +1603,7 @@ label3:
 	if (!EdRecVar) CFile->OldLockMode(md2);
 	if (IsNewRec) NewRecExit();
 	return result;
-	}
+}
 
 void RefreshSubset()
 {
@@ -1725,7 +1725,7 @@ void UpdMemberRef(void* POld, void* PNew)
 					else
 #endif
 						CFile->FF->DeleteXRec(Scan->RecNr, true, CRecPtr);
-			}
+				}
 				else {
 					Move(CRecPtr, p2, CFile->FF->RecLen);
 					CRecPtr = p2;
@@ -1743,16 +1743,16 @@ void UpdMemberRef(void* POld, void* PNew)
 					if (sql) Strm1->UpdateXRec(k, @x, false) else
 #endif
 						CFile->FF->OverWrXRec(Scan->RecNr, p, p2, CRecPtr);
-					}
-				goto label1;
 				}
+				goto label1;
+			}
 			Scan->Close();
 			CFile->ClearRecSpace(p);
 			ReleaseStore(&p);
-			}
 		}
-	CFile = cf; CRecPtr = cr;
 	}
+	CFile = cf; CRecPtr = cr;
+}
 
 void WrJournal(char Upd, void* RP, double Time)
 {
@@ -2378,7 +2378,7 @@ bool OldRecDiffers()
 				(CompArea(Pchar(CRecPtr) + Displ, Pchar(E->OldRecPtr) + Displ, NBytes) != ord(_equ)) then
 				goto label1;
 			f = f->pChain;
-}
+		}
 		goto label2;
 	}
 	else
@@ -2636,7 +2636,9 @@ bool WriteCRec(bool MayDispl, bool& Displ)
 		WrJournal('N', CRecPtr, time);
 	}
 label2:
-	if (!IsNewRec && !NoDelTFlds) CFile->DelAllDifTFlds(E->OldRecPtr, E->NewRecPtr);
+	if (!IsNewRec && !NoDelTFlds) {
+		CFile->DelAllDifTFlds(E->OldRecPtr, E->NewRecPtr);
+	}
 	E->EdUpdated = true;
 	NoDelTFlds = false;
 	IsNewRec = false;
@@ -2646,7 +2648,7 @@ label2:
 label1:
 	UnLockWithDep(OldMd);
 	return result;
-	}
+}
 
 void DuplFromPrevRec()
 {
@@ -4759,9 +4761,9 @@ label81:
 						if (CFile->IsSQLFile) Strm1->EndKeyAcc(WK);
 #endif
 						CFile->OldLockMode(E->OldMd);
-					}
-					return;
 				}
+					return;
+			}
 				break;
 			}
 			case __ALT_EQUAL: {
@@ -5033,9 +5035,9 @@ label81:
 				}
 				//}
 			}
-			}
-			break;
 		}
+			break;
+	}
 		break;
 	}
 	default: {
@@ -5043,7 +5045,7 @@ label81:
 		ClrEvent();
 		break;
 	}
-	}
+}
 	Event.What = evNothing;
 	goto label1;
 }

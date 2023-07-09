@@ -198,7 +198,7 @@ void PrintTxtFBlk(std::string& text, int BegPos, bool CtrlL)
 		}
 		PrintStr(Ln);
 		NewLine();
-		while (!EofInp)
+		while (!EofInp())
 		{
 			RdLnInp();
 			if (AutoFF && ((RprtLine > MaxLine) || (Ln[1] == 0x0C))) {

@@ -73,7 +73,7 @@ int CopyTFFromGetTxt(FileD* file_d, FandTFile* TF, FrmlElem* Z, void* record)
 	if (len == 0) {
 		result = 0;
 		CloseH(&h);
-		exit;
+		exit(-1);
 	}
 	if (!TF->IsWork) md = file_d->NewLockMode(WrMode);
 	if (len <= MPageSize - 2) { /* short text */
