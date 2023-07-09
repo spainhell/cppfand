@@ -147,17 +147,9 @@ void FileD::SeekRec(int n)
 	}
 }
 
-void FileD::CreateRec(int n, void* record)
+void FileD::CreateRec(int n, void* record) const
 {
-	IncNRecs(1);
-	BYTE* tmp = GetRecSpace();
-	for (int i = FF->NRecs - 1; i >= n; i--) {
-		ReadRec(i, tmp);
-		WriteRec(i + 1, tmp);
-	}
-	delete[] tmp;
-	tmp = nullptr;
-	WriteRec(n, record);
+	this->FF->CreateRec(n, record);
 }
 
 void FileD::PutRec(void* record)
@@ -165,14 +157,9 @@ void FileD::PutRec(void* record)
 	this->FF->PutRec(record, IRec);
 }
 
-void FileD::DeleteRec(int n, void* record)
+void FileD::DeleteRec(int n, void* record) const
 {
-	DelAllDifTFlds(record, nullptr);
-	for (int i = n; i <= FF->NRecs - 1; i++) {
-		ReadRec(i + 1, record);
-		WriteRec(i, record);
-	}
-	DecNRecs(1);
+	this->FF->DeleteRec(n, record);
 }
 
 void FileD::RecallRec(int recNr, void* record)
@@ -525,11 +512,7 @@ void FileD::DelTFlds(void* record)
 
 void FileD::DelAllDifTFlds(void* record, void* comp_record)
 {
-	for (auto& F : FldD) {
-		if (F->field_type == FieldType::TEXT && ((F->Flg & f_Stored) != 0)) {
-			FF->DelDifTFld(F, record, comp_record);
-		}
-	}
+	this->FF->DelAllDifTFlds(record, comp_record);
 }
 
 bool FileD::IsActiveRdb()

@@ -50,6 +50,9 @@ public:
 
 	void ReadRec(size_t rec_nr, void* record);
 	void WriteRec(size_t rec_nr, void* record);
+	void CreateRec(int n, void* record);
+	void DeleteRec(int n, void* record);
+	void DelAllDifTFlds(void* record, void* comp_record);
 
 	int UsedFileSize();
 	bool IsShared();

@@ -72,6 +72,38 @@ void FandFile::WriteRec(size_t rec_nr, void* record)
 	WasWrRec = true;
 }
 
+void FandFile::CreateRec(int n, void* record)
+{
+	IncNRecs(1);
+	BYTE* tmp = _parent->GetRecSpace();
+	for (int i = NRecs - 1; i >= n; i--) {
+		ReadRec(i, tmp);
+		WriteRec(i + 1, tmp);
+	}
+	delete[] tmp;
+	tmp = nullptr;
+	WriteRec(n, record);
+}
+
+void FandFile::DeleteRec(int n, void* record)
+{
+	DelAllDifTFlds(record, nullptr);
+	for (int i = n; i <= NRecs - 1; i++) {
+		ReadRec(i + 1, record);
+		WriteRec(i, record);
+	}
+	DecNRecs(1);
+}
+
+void FandFile::DelAllDifTFlds(void* record, void* comp_record)
+{
+	for (auto& F : _parent->FldD) {
+		if (F->field_type == FieldType::TEXT && ((F->Flg & f_Stored) != 0)) {
+			DelDifTFld(F, record, comp_record);
+		}
+	}
+}
+
 int FandFile::UsedFileSize()
 {
 	int n = int(NRecs) * RecLen + FirstRecPos;

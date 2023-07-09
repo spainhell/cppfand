@@ -60,9 +60,9 @@ public:
 	void IncNRecs(int n);
 	void DecNRecs(int n);
 	void SeekRec(int n);
-	void CreateRec(int n, void* record);
+	void CreateRec(int n, void* record) const;
 	void PutRec(void* record);
-	void DeleteRec(int n, void* record);
+	void DeleteRec(int n, void* record) const;
 	void RecallRec(int recNr, void* record);
 	void AssignNRecs(bool Add, int N);
 		
