@@ -51,6 +51,27 @@ FandFile::~FandFile()
 	}
 }
 
+/// <summary>
+/// Vycte zaznam z datoveho souboru (.000)
+/// </summary>
+/// <param name="rec_nr">kolikaty zaznam (1 .. N)</param>
+/// <param name="record">ukazatel na buffer</param>
+void FandFile::ReadRec(size_t rec_nr, void* record)
+{
+	Logging* log = Logging::getInstance();
+	//log->log(loglevel::DEBUG, "ReadRec(), file 0x%p, RecNr %i", file, N);
+	RdWrCache(READ, Handle, NotCached(), (rec_nr - 1) * RecLen + FirstRecPos, RecLen, record);
+}
+
+void FandFile::WriteRec(size_t rec_nr, void* record)
+{
+	Logging* log = Logging::getInstance();
+	//log->log(loglevel::DEBUG, "WriteRec(%i), CFile 0x%p", N, file->Handle);
+	RdWrCache(WRITE, Handle, NotCached(),
+		(rec_nr - 1) * RecLen + FirstRecPos, RecLen, record);
+	WasWrRec = true;
+}
+
 int FandFile::UsedFileSize()
 {
 	int n = int(NRecs) * RecLen + FirstRecPos;

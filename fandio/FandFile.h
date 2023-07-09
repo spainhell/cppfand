@@ -48,6 +48,9 @@ public:
 	LockMode ExLMode = NullMode;
 	LockMode TaLMode = NullMode;
 
+	void ReadRec(size_t rec_nr, void* record);
+	void WriteRec(size_t rec_nr, void* record);
+
 	int UsedFileSize();
 	bool IsShared();
 	bool NotCached();

@@ -1,7 +1,6 @@
 #include "FileD.h"
 
 #include "GlobalVariables.h"
-#include "oaccess.h"
 #include "obaseww.h"
 #include "olongstr.h"
 #include "runfrml.h"
@@ -92,21 +91,14 @@ void FileD::Reset()
 /// </summary>
 /// <param name="rec_nr">kolikaty zaznam (1 .. N)</param>
 /// <param name="record">ukazatel na buffer</param>
-void FileD::ReadRec(size_t rec_nr, void* record)
+void FileD::ReadRec(size_t rec_nr, void* record) const
 {
-	Logging* log = Logging::getInstance();
-	//log->log(loglevel::DEBUG, "ReadRec(), file 0x%p, RecNr %i", file, N);
-	RdWrCache(READ, this->FF->Handle, this->FF->NotCached(),
-		(rec_nr - 1) * this->FF->RecLen + this->FF->FirstRecPos, this->FF->RecLen, record);
+	this->FF->ReadRec(rec_nr, record);
 }
 
-void FileD::WriteRec(size_t rec_nr, void* record)
+void FileD::WriteRec(size_t rec_nr, void* record) const
 {
-	Logging* log = Logging::getInstance();
-	//log->log(loglevel::DEBUG, "WriteRec(%i), CFile 0x%p", N, file->Handle);
-	RdWrCache(WRITE, this->FF->Handle, this->FF->NotCached(),
-		(rec_nr - 1) * this->FF->RecLen + this->FF->FirstRecPos, this->FF->RecLen, record);
-	this->FF->WasWrRec = true;
+	this->FF->WriteRec(rec_nr, record);
 }
 
 BYTE* FileD::GetRecSpace()
@@ -158,7 +150,7 @@ void FileD::SeekRec(int n)
 void FileD::CreateRec(int n, void* record)
 {
 	IncNRecs(1);
-	void* tmp = GetRecSpace();
+	BYTE* tmp = GetRecSpace();
 	for (int i = FF->NRecs - 1; i >= n; i--) {
 		ReadRec(i, tmp);
 		WriteRec(i + 1, tmp);

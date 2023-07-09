@@ -1,5 +1,4 @@
 #pragma once
-#include "base.h"
 #include "Chained.h"
 #include "Rdb.h"
 #include "../fandio/FandFile.h"
@@ -52,8 +51,8 @@ public:
 	WORD GetNrKeys();
 	void Reset();
 
-	void ReadRec(size_t rec_nr, void* record);
-	void WriteRec(size_t rec_nr, void* record);
+	void ReadRec(size_t rec_nr, void* record) const;
+	void WriteRec(size_t rec_nr, void* record) const;
 
 	BYTE* GetRecSpace();
 	void ClearRecSpace(void* record);
