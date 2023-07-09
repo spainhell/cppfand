@@ -19,6 +19,7 @@ int main(int argc, char* argv[])
 	printf("WAITING FOR DEBUGGER !!!");
 	while (!::IsDebuggerPresent())
 		::Sleep(1000);
+	printf(" ... DONE\n");
 #endif
 
 	try 
