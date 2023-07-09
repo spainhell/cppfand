@@ -25,7 +25,7 @@ double RunReal(FileD* file_d, FrmlElem* X, void* record);
 int RunInt(FileD* file_d, FrmlElem* X, void* record);
 bool CanCopyT(FileD* file_d, FieldDescr* F, FrmlElem* Z, FandTFile** TF02, FileD** TFD02, int& TF02Pos, void* record);
 bool TryCopyT(FieldDescr* F, FandTFile* TF, int& pos, FrmlElem1* Z);
-void AssgnFrml(FileD* file_d, void* record, FieldDescr* F, FrmlElem* X, bool Delete, bool Add);
+void AssgnFrml(FileD* file_d, void* record, FieldDescr* field_d, FrmlElem* X, bool Delete, bool Add);
 void LVAssignFrml(FileD* file_d, LocVar* LV, bool Add, FrmlElem* X, void* record);
 std::string DecodeFieldRSB(FieldDescr* F, WORD LWw, double R, std::string& T, bool B);
 std::string DecodeField(FileD* file_d, FieldDescr* F, WORD LWw, void* record);

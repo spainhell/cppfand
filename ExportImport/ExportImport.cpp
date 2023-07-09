@@ -9,22 +9,23 @@
 #include "../Core/GlobalVariables.h"
 #include "../Core/oaccess.h"
 #include "../Core/obaseww.h"
+#include "../Core/RunMessage.h"
 #include "../Editor/rdedit.h"
 #include "../Core/wwmix.h"
 #include "../fandio/directory.h"
 #include "../Core/compile.h"
-#include "..\MergeReport\Merge.h"
+#include "../MergeReport/Merge.h"
 #include "../Common/textfunc.h"
 #include "../Common/compare.h"
 #include "../Common/codePages.h"
 #include "../fandio/files.h"
 
 
-void ConvWinCp(unsigned char* pBuf, unsigned char* pKod, WORD L)
+void ConvWinCp(unsigned char* buffer, const std::string& code_table, size_t length)
 {
-	for (size_t i = 0; i < L; i++) {
-		if (pBuf[i] < 0x80) continue;
-		pBuf[i] = pKod[pBuf[i] - 0x80];
+	for (size_t i = 0; i < length; i++) {
+		if (buffer[i] < 0x80) continue;
+		buffer[i] = code_table[buffer[i] - 0x80];
 	}
 }
 
@@ -358,7 +359,7 @@ void Cpy(HANDLE h, int sz, ThFile* F2)
 	int i = 0;
 	RunMsgOn('C', sz);
 	while (i < sz) {
-		WORD n;
+		int n;
 		if (sz - i > F2->BufSize) n = F2->BufSize;
 		else n = sz - i;
 		i += n;
@@ -502,18 +503,18 @@ void MakeCopy(CopyD* CD)
 				break;
 			}
 			case 5: {
-				std::string pKod = resFile.Get(LatToWinCp);
-				ConvWinCp(F2.Buf, (unsigned char*)pKod.c_str(), F2.lBuf);
+				std::string code_table = resFile.Get(LatToWinCp);
+				ConvWinCp(F2.Buf, code_table, F2.lBuf);
 				break;
 			}
 			case 6: {
-				std::string pKod = resFile.Get(KamToWinCp);
-				ConvWinCp(F2.Buf, (unsigned char*)pKod.c_str(), F2.lBuf);
+				std::string code_table = resFile.Get(KamToWinCp);
+				ConvWinCp(F2.Buf, code_table, F2.lBuf);
 				break;
 			}
 			case 7: {
-				std::string pKod = resFile.Get(WinCpToLat);
-				ConvWinCp(F2.Buf, (unsigned char*)pKod.c_str(), F2.lBuf);
+				std::string code_table = resFile.Get(WinCpToLat);
+				ConvWinCp(F2.Buf, code_table, F2.lBuf);
 				break;
 			}
 			default: break;
@@ -583,7 +584,7 @@ void MakeMerge(CopyD* CD)
 	}
 }
 
-void Backup(bool IsBackup, bool NoCompress, WORD Ir, bool NoCancel)
+void BackUp(bool IsBackup, bool NoCompress, WORD Ir, bool NoCancel)
 {
 	TbFile* F = new TbFile(NoCompress);
 
@@ -681,10 +682,10 @@ void CodingCRdb(bool Rotate)
 	crdb->CodeRdb(Rotate);
 }
 
-void AddLicNr(FieldDescr* F)
+void AddLicNr(FileD* file_d, FieldDescr* field_d, void* record)
 {
-	if (CFile->loadT(F, CRecPtr) != 0) {
-		CFile->saveT(F, CFile->loadT(F, CRecPtr) + (WORD(UserLicNrShow) & 0x7FFF), CRecPtr);
+	if (file_d->loadT(field_d, record) != 0) {
+		file_d->saveT(field_d, file_d->loadT(field_d, record) + ((WORD)UserLicNrShow & 0x7FFF), record);
 	}
 }
 
@@ -723,9 +724,11 @@ bool PromptCodeRdb()
 	bool b = PromptYN(133);
 	WORD KbdChar = Event.Pressed.KeyCombination();
 	if (KbdChar == __ALT_F10) {
-		F10SpecKey = _ESC_;
+		F10SpecKey = __ESC;
 		b = PromptYN(147);
-		if (KbdChar == __ESC) goto label1;
+		if (KbdChar == __ESC) {
+			goto label1;
+		}
 		if (b) {
 			CFile = Chpt;
 			CFile->FF->WrPrefixes();
@@ -737,15 +740,15 @@ bool PromptCodeRdb()
 			CopyH(ChptTF->Handle, s + ".TT0x");
 		}
 		CodingCRdb(true);
-		ChptTF->LicenseNr = WORD(UserLicNrShow) & 0x7FFF;
+		ChptTF->LicenseNr = (WORD)UserLicNrShow & 0x7FFF;
 		cf = CFile;
 		cr = CRecPtr;
 		CFile = Chpt;
 		CRecPtr = CFile->GetRecSpace();
 		for (int i = 1; i <= Chpt->FF->NRecs; i++) {
 			CFile->ReadRec(i, CRecPtr);
-			AddLicNr(ChptOldTxt);
-			AddLicNr(ChptTxt);
+			AddLicNr(CFile, ChptOldTxt, CRecPtr);
+			AddLicNr(CFile, ChptTxt, CRecPtr);
 			CFile->WriteRec(i, CRecPtr);
 		}
 		ReleaseStore(&CRecPtr);

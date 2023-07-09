@@ -35,15 +35,3 @@ bool PromptYN(WORD NMsg);
 extern WORD RunErrNr;
 void RunError(WORD N); // podobna fce definovana v kbdww.cpp
 void FileMsg(FileD* file_d, int n, char Typ); // podobna fce definovana v kbdww.cpp
-
-struct RunMsgD
-{
-	RunMsgD* Last = nullptr;
-	int MsgNN = 0, MsgStep = 0, MsgKum = 0;
-	int W = 0;
-};
-
-void RunMsgOn(char C, int N);
-void RunMsgN(int N);
-void RunMsgOff();
-void RunMsgClear();

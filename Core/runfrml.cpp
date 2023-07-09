@@ -1264,12 +1264,12 @@ bool TryCopyT(FileD* file_d, FieldDescr* F, FandTFile* TF, int& pos, FrmlElem* Z
 	return result;
 }
 
-void AssgnFrml(FileD* file_d, void* record, FieldDescr* F, FrmlElem* X, bool Delete, bool Add)
+void AssgnFrml(FileD* file_d, void* record, FieldDescr* field_d, FrmlElem* X, bool Delete, bool Add)
 {
 	int pos = 0;
-	switch (F->frml_type) {
+	switch (field_d->frml_type) {
 	case 'S': {
-		if (F->field_type == FieldType::TEXT) {
+		if (field_d->field_type == FieldType::TEXT) {
 			FandTFile* tf;
 			if (file_d->FF->HasTWorkFlag(record)) {
 				tf = &TWork;
@@ -1277,38 +1277,39 @@ void AssgnFrml(FileD* file_d, void* record, FieldDescr* F, FrmlElem* X, bool Del
 			else {
 				tf = file_d->FF->TF;
 			}
-			if (TryCopyT(file_d, F, tf, pos, X, record)) {
+			if (TryCopyT(file_d, field_d, tf, pos, X, record)) {
 				if (Delete) {
-					file_d->FF->DelTFld(F, record);
+					file_d->FF->DelTFld(field_d, record);
 				}
-				file_d->saveT(F, pos, record);
+				file_d->saveT(field_d, pos, record);
 			}
 			else {
 				std::string s = RunStdStr(file_d, X, record);
 				if (Delete) {
-					file_d->FF->DelTFld(F, record);
+					file_d->FF->DelTFld(field_d, record);
 				}
-				file_d->saveS(F, s, record);
+				file_d->saveS(field_d, s, record);
 			}
 		}
 		else {
-			file_d->saveS(F, RunShortStr(file_d, X, record), record);
+			file_d->saveS(field_d, RunShortStr(file_d, X, record), record);
 		}
 		break;
 	}
 	case 'R': {
 		if (Add) {
-			file_d->saveR(F, file_d->loadR(F, record) + RunReal(file_d, X, record), record);
+			file_d->saveR(field_d, file_d->loadR(field_d, record) + RunReal(file_d, X, record), record);
 		}
 		else {
-			file_d->saveR(F, RunReal(file_d, X, record), record);
+			file_d->saveR(field_d, RunReal(file_d, X, record), record);
 		}
 		break;
 	}
 	case 'B': {
-		file_d->saveB(F, RunBool(file_d, X, record), record);
+		file_d->saveB(field_d, RunBool(file_d, X, record), record);
 		break;
 	}
+	default: ;
 	}
 }
 

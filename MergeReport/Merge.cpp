@@ -6,7 +6,7 @@
 #include "../Core/GlobalVariables.h"
 #include "../Core/ChkD.h"
 #include "../Core/KeyFldD.h"
-#include "../Core/obaseww.h"
+#include "../Core/RunMessage.h"
 #include "../Core/rdfildcl.h"
 #include "../fandio/files.h"
 

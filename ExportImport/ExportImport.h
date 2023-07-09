@@ -8,7 +8,7 @@
 void FileCopy(CopyD* CD);
 void MakeMerge(CopyD* CD);
 
-void Backup(bool IsBackup, bool NoCompress, WORD Ir, bool NoCancel);
+void BackUp(bool IsBackup, bool NoCompress, WORD Ir, bool NoCancel);
 void BackupM(Instr_backup* PD);
 
 void CheckFile(FileD* FD);

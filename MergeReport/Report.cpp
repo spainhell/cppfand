@@ -11,6 +11,7 @@
 #include "../Core/oaccess.h"
 #include "../Core/obase.h"
 #include "../Core/obaseww.h"
+#include "../Core/RunMessage.h"
 #include "../Core/wwmix.h"
 #include "../Core/rdfildcl.h"
 

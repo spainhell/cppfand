@@ -2,8 +2,9 @@
 #include "../Core/GlobalVariables.h"
 #include "../Core/oaccess.h"
 #include "../Core/obaseww.h"
+#include "../Core/RunMessage.h"
 
-TzFile::TzFile(bool BkUp, bool NoCompr, bool SubDirO, bool OverwrO, WORD Ir, pstring aDir)
+TzFile::TzFile(bool BkUp, bool NoCompr, bool SubDirO, bool OverwrO, int Ir, pstring aDir)
 {
 	SaveAndCloseAllFiles();
 	ForAllFDs(ForAllFilesOperation::close_passive_fd);
@@ -89,13 +90,16 @@ void TzFile::SetDir(std::string RDir)
 	DelBackSlash(d);
 label1:
 	ChDir(d);
-	if (IOResult() != 0)
+	if (IOResult() != 0) {
 		if (!IsBackup && SubDirOpt) {
 			MkDir(d);
 			if (IOResult() != 0) RunError(644);
 			goto label1;
 		}
-		else RunError(703);
+	}
+	else {
+		RunError(703);
+	}
 }
 
 void TzFile::Get1Dir(StringList Msk, int D, int& DLast)
@@ -147,7 +151,10 @@ void TzFile::Get1Dir(StringList Msk, int D, int& DLast)
 
 void TzFile::GetDirs(LongStr* Mask)
 {
-	StringList slRoot, sl; pstring s; int d, dLast; WORD l, i, j, n;
+	StringList slRoot, sl;
+	pstring s;
+	int d, dLast;
+	WORD l, i, j, n;
 
 	slRoot = nullptr;
 	l = Mask->LL;

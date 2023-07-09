@@ -8,6 +8,7 @@
 #include "legacy.h"
 #include "obase.h"
 #include "obaseww.h"
+#include "RunMessage.h"
 #include "runfrml.h"
 #include "wwmenu.h"
 
