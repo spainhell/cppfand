@@ -949,11 +949,12 @@ void WithLockedProc(Instr_withshared* PD)
 		}
 	}
 	int w = 0;
-label1:
+
 	ld = &PD->WLD;
+
 	while (ld != nullptr) {
 		CFile = ld->FD;
-		if (CFile->FF->Handle == nullptr)
+		if (CFile->FF->Handle == nullptr) {
 			if (OpenF1(CFile, CPath, Shared)) {
 				if (CFile->TryLockMode(RdMode, md, 2)) {
 					OpenF2(CFile, CPath);
@@ -967,15 +968,18 @@ label1:
 			else {
 				OpenCreateF(CFile, CPath, Shared);
 			}
+		}
 		if (CFile->FF->IsShared()) {
 			if (op == _withlocked) {
 				if (CFile->Lock(ld->N, 2)) {
-					goto label3;
+					ld = ld->Chain;
+					continue;
 				}
 			}
 			else {
 				if (CFile->TryLockMode(ld->Md, ld->OldMd, 2)) {
-					goto label3;
+					ld = ld->Chain;
+					continue;
 				}
 			}
 		label2:
@@ -996,16 +1000,25 @@ label1:
 				SetMsgPar(CPath, LockModeTxt[ld->Md]);
 			}
 			w1 = PushWrLLMsg(msg, false);
-			if (w == 0) w = w1;
-			else TWork.Delete(w1);
+			if (w == 0) {
+				w = w1;
+			}
+			else {
+				TWork.Delete(w1);
+			}
 			Beep();
 			KbdTimer(spec.NetDelay, 0);
-			goto label1;
+			ld = &PD->WLD;
+			continue;
 		}
-	label3:
+	//label3:
 		ld = ld->Chain;
 	}
-	if (w != 0) PopW(w);
+
+
+	if (w != 0) {
+		PopW(w);
+	}
 	RunInstr(PD->WDoInstr);
 	UnLck(PD, nullptr, op);
 }
@@ -1538,9 +1551,9 @@ void RunInstr(Instr* PD)
 				(WORD)(RunInt(CFile, iPD->PortWhat, CRecPtr)));
 			break;
 		}
-	}
+		}
 		PD = PD->Chain;
-}
+		}
 	}
 
 void RunProcedure(Instr* PDRoot)
