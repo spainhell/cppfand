@@ -29,12 +29,12 @@ TWindow::TWindow()
 	Shadow.Y = 0;
 }
 
-TWindow::TWindow(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, pstring top, pstring bottom, bool SaveLL)
-{
-	//InitTWindow(C1, R1, C2, R2, Attr, top, bottom, SaveLL);
-}
+//TWindow::TWindow(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, pstring top, pstring bottom, bool SaveLL)
+//{
+//	//InitTWindow(C1, R1, C2, R2, Attr, top, bottom, SaveLL);
+//}
 
-void TWindow::InitTWindow(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, std::string top, std::string bottom, bool SaveLL)
+void TWindow::InitTWindow(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, const std::string& top, const std::string& bottom, bool SaveLL)
 {
 	WORD i = 0, n = 0, m = 0;
 	//pstring s;
@@ -427,23 +427,28 @@ TMenuBox::TMenuBox() : TMenu()
 
 void TMenuBox::InitTMenuBox(WORD C1, WORD R1)
 {
-	WORD cols = 0, c2 = 0, r2 = 0, i = 0, l = 0;
+	WORD l = 0;
 
 	std::string hd = GetText(0);
-	cols = hd.length();
-	for (i = 1; i <= nTxt; i++) {
+	WORD cols = hd.length();
+	for (WORD i = 1; i <= nTxt; i++) {
 		std::string s = GetText(i);
 		l = GetLengthOfStyledString(s);
 		if (l > cols) cols = l;
 	}
 	cols += 4;
-	if ((cols + 2 > TxtCols) || (nTxt + 2 > TxtRows)) RunError(636);
-	c2 = cols; r2 = nTxt;
+	if ((cols + 2 > TxtCols) || (nTxt + 2 > TxtRows)) {
+		RunError(636);
+	}
+	WORD c2 = cols;
+	WORD r2 = nTxt;
 	if (C1 != 0) c2 += C1 + 1;
 	if (R1 != 0) r2 += R1 + 1;
 	SetState(sfFramed, true);
 	InitTWindow(C1, R1, c2, r2, Palette[0], hd, "", HlpRdb != nullptr);
-	for (i = 1; i <= nTxt; i++) { WrText(i); }
+	for (WORD i = 1; i <= nTxt; i++) {
+		WrText(i);
+	}
 }
 
 WORD TMenuBox::Exec(WORD IStart)

@@ -24,8 +24,8 @@ class TWindow
 {
 public:
 	TWindow();
-	TWindow(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, pstring top, pstring bottom, bool SaveLL);
-	void InitTWindow(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, std::string top, std::string bottom, bool SaveLL);
+	//TWindow(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, pstring top, pstring bottom, bool SaveLL);
+	void InitTWindow(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, const std::string& top, const std::string& bottom, bool SaveLL);
 	virtual ~TWindow();
 	TPoint Orig;
 	TPoint Size;
