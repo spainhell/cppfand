@@ -230,7 +230,7 @@ label1:
 			}
 			break;
 		}
-		case _Z_: {
+		case 'Z': {
 			if (sv.Base < MaxBase) {
 				IVOff();
 				sv.Base = sv.Base + sv.Tabs;
@@ -241,7 +241,7 @@ label1:
 			}
 			break;
 		}
-		case _W_: {
+		case 'W': {
 			if (sv.Base > 1) {
 				IVOff();
 				sv.Base = sv.Base - sv.Tabs;

@@ -208,11 +208,11 @@ void WrLLF10MsgLine()
 	}
 	WORD col = MsgLine.length() + 5;
 	WORD len = 0;
-	if ((F10SpecKey == 0xfffe) || (F10SpecKey == _F1_)) {
+	if ((F10SpecKey == 0xfffe) || (F10SpecKey == __F1)) {
 		MsgLine = MsgLine + " " + "F1";
 		len = 2;
 	}
-	if ((F10SpecKey == 0xfffe) || (F10SpecKey == _ShiftF7_)) {
+	if ((F10SpecKey == 0xfffe) || (F10SpecKey == __SHIFT_F7)) {
 		MsgLine = MsgLine + " " + "ShiftF7";
 		len += 7;
 	}

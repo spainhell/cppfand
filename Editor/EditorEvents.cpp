@@ -77,14 +77,14 @@ bool HelpEvent(std::vector<WORD>& breakKeys)
 	bool result = false;
 	if (Event.What == evKeyDown) {
 		switch (key) {
-		case _ESC_:
-		case _left_:
-		case _right_:
-		case _up_:
-		case _down_:
-		case _PgDn_:
-		case _PgUp_:
-		case _M_: {
+		case __ESC:
+		case __LEFT:
+		case __RIGHT:
+		case __UP:
+		case __DOWN:
+		case __PAGEDOWN:
+		case __PAGEUP:
+		case 'M': {
 			result = true;
 			break;
 		}
@@ -166,24 +166,24 @@ bool ViewEvent(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys)
 	if (Event.What != evKeyDown) return result;
 	switch (Event.Pressed.KeyCombination()) {
 	case _QF_:
-	case _L_:
-	case _F7_:
-	case _F8_:
+	case 'L':
+	case __F7:
+	case __F8:
 	case _KP_:
 	case _QB_:
 	case _QK_:
-	case _CtrlF5_:
-	case _AltF8_:
-	case _CtrlF3_:
-	case _Home_:
-	case _End_:
-	case _CtrlLeft_:
-	case _CtrlRight_:
+	case __CTRL_F5:
+	case __ALT_F8:
+	case __CTRL_F3:
+	case __HOME:
+	case __END:
+	case __CTRL_LEFT:
+	case __CTRL_RIGHT:
 	case _QX_:
 	case _QE_:
-	case _Z_:
-	case _W_:
-	case _CtrlF6_:
+	case 'Z':
+	case 'W':
+	case __CTRL_F6:
 	case _KW_:
 	case _KB_:
 	case _KK_:
@@ -207,15 +207,15 @@ bool MyGetEvent(char& mode, BYTE SysLColor, std::string& LastS, WORD LastNr, boo
 	GetEvent();
 	if (Event.What == evKeyDown)
 		switch (Event.Pressed.KeyCombination()) {
-		case _S_: Event.Pressed.Key()->wVirtualKeyCode = VK_LEFT; break;
-		case _D_: Event.Pressed.Key()->wVirtualKeyCode = VK_RIGHT; break;
-		case _E_: Event.Pressed.Key()->wVirtualKeyCode = VK_UP; break;
-		case _X_: Event.Pressed.Key()->wVirtualKeyCode = VK_DOWN; break;
-		case _R_: Event.Pressed.Key()->wVirtualKeyCode = VK_PRIOR; break;
-		case _C_: Event.Pressed.Key()->wVirtualKeyCode = VK_NEXT; break;
-		case _A_: Event.Pressed.Key()->wVirtualKeyCode = _CtrlLeft_; break;
-		case _F_: Event.Pressed.Key()->wVirtualKeyCode = _CtrlRight_; break;
-		case _V_: Event.Pressed.Key()->wVirtualKeyCode = VK_INSERT; break;
+		case 'S': Event.Pressed.Key()->wVirtualKeyCode = VK_LEFT; break;
+		case 'D': Event.Pressed.Key()->wVirtualKeyCode = VK_RIGHT; break;
+		case 'E': Event.Pressed.Key()->wVirtualKeyCode = VK_UP; break;
+		case 'X': Event.Pressed.Key()->wVirtualKeyCode = VK_DOWN; break;
+		case 'R': Event.Pressed.Key()->wVirtualKeyCode = VK_PRIOR; break;
+		case 'C': Event.Pressed.Key()->wVirtualKeyCode = VK_NEXT; break;
+		//case 'A': Event.Pressed.Key()->wVirtualKeyCode = _CtrlLeft_; break;
+		//case 'F': Event.Pressed.Key()->wVirtualKeyCode = _CtrlRight_; break;
+		case 'V': Event.Pressed.Key()->wVirtualKeyCode = VK_INSERT; break;
 		case __CTRL_P:
 		{
 			Wr("^P", OrigS, mode, SysLColor);
@@ -238,14 +238,14 @@ bool MyGetEvent(char& mode, BYTE SysLColor, std::string& LastS, WORD LastNr, boo
 			{
 				Wr("", OrigS, mode, SysLColor);
 				switch (Event.Pressed.KeyCombination()) {
-				case _S_: Event.Pressed.Key()->wVirtualKeyCode = _Home_; break;
-				case _D_: Event.Pressed.Key()->wVirtualKeyCode = _End_; break;
-				case _R_: Event.Pressed.Key()->wVirtualKeyCode = _CtrlPgUp_; break;
-				case _C_: Event.Pressed.Key()->wVirtualKeyCode = _CtrlPgDn_; break;
+				case 'S': Event.Pressed.Key()->wVirtualKeyCode = __HOME; break;
+				case 'D': Event.Pressed.Key()->wVirtualKeyCode = __END; break;
+				case 'R': Event.Pressed.Key()->wVirtualKeyCode = __CTRL_PAGEUP; break;
+				case 'C': Event.Pressed.Key()->wVirtualKeyCode = __CTRL_PAGEDOWN; break;
 
-				case _E_: case _X_: case _Y_:
-				case _L_: case _B_: case _K_:
-				case _I_: case _F_: case _A_: {
+				case 'E': case 'X': case 'Y':
+				case 'L': case 'B': case 'K':
+				case 'I': case 'F': case 'A': {
 					break;
 				}
 
@@ -287,7 +287,7 @@ bool MyGetEvent(char& mode, BYTE SysLColor, std::string& LastS, WORD LastNr, boo
 			if (My2GetEvent())
 			{
 				Wr("", OrigS, mode, SysLColor);
-				std::set<char> setKc = { _B_, _K_, _H_, _S_, _Y_, _C_, _V_, _W_, _R_, _P_, _F_, _U_, _L_, _N_ };
+				std::set<char> setKc = { 'B', 'K', 'H', 'S', 'Y', 'C', 'V', 'W', 'R', 'P', 'F', 'U', 'L', 'N' };
 				if (setKc.count((char)Event.Pressed.KeyCombination()) > 0) {
 					//Event.KeyCode = (ww << 8) | Event.KeyCode;
 				}
@@ -305,7 +305,7 @@ bool MyGetEvent(char& mode, BYTE SysLColor, std::string& LastS, WORD LastNr, boo
 			{
 				Wr("", OrigS, mode, SysLColor);
 				switch (Event.Pressed.KeyCombination()) {
-				case _W_: case  _R_: case  _L_: case  _J_: case  _C_:
+				case 'W': case  'R': case  'L': case  'J': case  'C':
 				{
 					//Event.KeyCode = (ww << 8) | Event.KeyCode;
 					break;
@@ -536,8 +536,8 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 						if (Indent) {
 							I1 = SetPredI();
 							I = I1;
-							while ((T[I] == ' ') && (T[I] != _CR)) { I++; } // tento radek je nesmyslny
-							if (T[I] != _CR) { positionOnActualLine = I - I1 + 1; }
+							while ((T[I] == ' ') && (T[I] != __CR)) { I++; } // tento radek je nesmyslny
+							if (T[I] != __CR) { positionOnActualLine = I - I1 + 1; }
 						}
 						else if (Wrap) {
 							positionOnActualLine = LeftMarg;
@@ -742,11 +742,11 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 				}
 			label2:
 				break; }
-			case _Z_: {
+			case 'Z': {
 				RollNext();
 				break;
 			}
-			case _W_: {
+			case 'W': {
 				RollPred();
 				break;
 			}
@@ -802,7 +802,7 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 				DekFindLine(L1);
 				break;
 			}
-			case _N_: {
+			case 'N': {
 				NewLine('n');
 				ClrEol();
 				screen.GotoXY(1, TextLineNr - ScreenFirstLineNr + 2);
@@ -815,7 +815,7 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 				break;
 			}
 			case __DELETE:
-			case _G_: {
+			case 'G': {
 				if (positionOnActualLine <= GetArrLineLength()) {
 					DelChar();
 				}
@@ -845,7 +845,7 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 				}
 				break;
 			}
-			case _Y_: {
+			case 'Y': {
 				// if ((NextLineStartIndex >= LenT) && !AllRd) NextPartDek();
 				NextLineStartIndex = MinW(NextLineStartIndex, LenT);
 				//TestLenText(&T, LenT, NextLineStartIndex, textIndex);
@@ -871,7 +871,7 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 				positionOnActualLine = 1;
 				break;
 			}
-			case _T_: {
+			case 'T': {
 				if (positionOnActualLine > GetArrLineLength()) {
 					DeleteLine();
 				}
@@ -888,7 +888,7 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 					while ((I <= GetArrLineLength()) && (Arr[I] == ' ')) {
 						I++;
 					}
-					// TODO: k èemu to tady je? if ((I>positionOnActualLine) and TestLastPos(I,positionOnActualLine))
+					// TODO: k cemu to tady je? if ((I>positionOnActualLine) and TestLastPos(I,positionOnActualLine))
 				}
 				break;
 			}
@@ -920,7 +920,7 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 				if (!Konec) { FirstEvent = false; Background(); }
 				break;
 			}
-			case _L_: {
+			case 'L': {
 				if (!FindStr.empty()) {
 					TestKod();
 					if (TestOptStr('l') && (!BlockExist() || (TypeB == ColBlock))) goto Nic;
@@ -934,23 +934,23 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 				}
 				break;
 			}
-			case _I_: {
+			case 'I': {
 				I1 = SetPredI() + positionOnActualLine;
 				if (I1 >= textIndex - 1) goto Nic;
 				I = I1;
-				while ((T[I] != ' ') && (T[I] != _CR)) { I++; }
+				while ((T[I] != ' ') && (T[I] != __CR)) { I++; }
 				while (T[I] == ' ') { I++; }
 				I2 = I - I1 + 1;
 				if (TestLastPos(positionOnActualLine, positionOnActualLine + I2)) FillChar(&Arr[positionOnActualLine], I2, 32);
 				positionOnActualLine += I2;
 				break;
 			}
-			case _J_: {
+			case 'J': {
 				I1 = SetPredI() + positionOnActualLine - 2;
 				if ((I1 >= textIndex - 1) || (I1 == 0)) goto Nic;
 				I = I1;
 				while (T[I] == ' ') { I++; }
-				while ((T[I] != ' ') && (T[I] != _CR)) { I++; }
+				while ((T[I] != ' ') && (T[I] != __CR)) { I++; }
 				if (I == I1) goto Nic;
 				I2 = I - I1 - 1;
 				I = positionOnActualLine;
@@ -1171,7 +1171,7 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 				positionOnActualLine = MinW(LineMaxSize, GetArrLineLength() + 1);
 				break;
 			}
-			case _B_: {
+			case 'B': {
 				TestKod();
 				L1 = /*Part.PosP +*/ textIndex;
 				Format(I, L1, AbsLenT + LenT /* - Part.LenP*/, MinI(LeftMarg, positionOnActualLine), false);
@@ -1199,7 +1199,7 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 					//	FrameDir = 0;
 					//	break;
 					//}
-			case _F4_: {
+			case __F4: {
 				char c = ToggleCS(Arr[positionOnActualLine]);
 				UpdatedL = c != Arr[positionOnActualLine];
 				Arr[positionOnActualLine] = c;
@@ -1238,7 +1238,7 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 				SetScreen(textIndex, 0, 0);
 				break;
 			}
-			case _U_: { // previous state recovery
+			case 'U': { // previous state recovery
 				if (TypeT != FileT)
 					if (PromptYN(108)) {
 						IndexT = 1;
@@ -1297,7 +1297,8 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 			ClrEvent();
 			goto Nic;
 		}
-		I3 = textIndex; j = positionOnActualLine;
+		I3 = textIndex;
+		j = positionOnActualLine;
 		W1 = Event.Where.Y - WindMin.Y + ScreenFirstLineNr;
 		if (mode == HelpM) W2 = WordNo2() + 1;
 		DekFindLine(blocks->LineAbs(W1));
@@ -1311,7 +1312,7 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 				WordFind(WordNo(I + 1), I1, I2, W1);
 				if ((I1 <= I) && (I2 >= I)) {
 					SetWord(I1, I2);
-					Event.Pressed.UpdateKey(_M_);
+					Event.Pressed.UpdateKey('M');
 					Konec = true;
 				}
 				else if (WordExist()) {

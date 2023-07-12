@@ -190,8 +190,8 @@ label1:
 			// non-printable
 			switch (KbdChar) {
 			case __INSERT:
-			case _V_: InsMode = !InsMode; break;
-			case _U_: if (TxtEdCtrlUBrk) goto label6; break;
+			case 'V': InsMode = !InsMode; break;
+			case 'U': if (TxtEdCtrlUBrk) goto label6; break;
 			case __CTRL_F4: if (TxtEdCtrlF4Brk) goto label6; break;
 			case __ESC:
 			case __ENTER: {
@@ -203,21 +203,21 @@ label1:
 				return 0;
 			}
 			case __LEFT:
-			case _S_: {
+			case 'S': {
 				if ((pos > 1)) pos--;
 				break;
 			}
 			case __RIGHT:
-			case _D_: {
+			case 'D': {
 				if (pos <= maxlen) {
 					if ((pos > text.length()) && (text.length() < maxlen)) text += ' ';
 					pos++;
 				}
 				break;
 			}
-			case _Q_: {
-				if (ReadKbd() == _S_) goto label3;
-				if (ReadKbd() == _D_) goto label4;
+			case 'Q': {
+				if (ReadKbd() == 'S') goto label3;
+				if (ReadKbd() == 'D') goto label4;
 				break;
 			}
 			case __HOME: {
@@ -238,7 +238,7 @@ label1:
 				break;
 			}
 			case __DELETE:
-			case _G_: {
+			case 'G': {
 				if (upd && (pos <= text.length())) {
 				label2:
 					if (text.length() >= pos) {
@@ -247,7 +247,7 @@ label1:
 				}
 				break;
 			}
-			case _P_: {
+			case 'P': {
 				if (upd) {
 					ReadKbd();
 					if (KbdChar >= 0 && KbdChar <= 31) goto label5;
@@ -3266,7 +3266,7 @@ label1:
 			if (CRec() < CNRecs())
 				if (Select) {
 					for (i = CRec() + 1; i <= CNRecs(); i++) {
-						if (KeyPressed() && (ReadKey() != _M_) && PromptYN(23)) goto label4;
+						if (KeyPressed() && (ReadKey() != 'M') && PromptYN(23)) goto label4;
 						RdRec(i);
 						DisplRecNr(i);
 						if (!CFile->DeletedFlag(CRecPtr) && RunBool(CFile, E->Bool, CRecPtr)) {
@@ -3336,8 +3336,8 @@ label0:
 		if (!Select || !CFile->DeletedFlag(CRecPtr) && RunBool(CFile, E->Bool, CRecPtr)) goto label2;
 		if (KeyPressed()) {
 			w = ReadKey();
-			if (((Delta > 0) && (w != _down_) && (w != _CtrlEnd_) && (w != _PgDn_)
-				|| (Delta < 0) && (w != _up_) && (w != _CtrlHome_) && (w != _PgUp_))
+			if (((Delta > 0) && (w != __DOWN) && (w != __CTRL_END) && (w != __PAGEDOWN)
+				|| (Delta < 0) && (w != __UP) && (w != __CTRL_HOME) && (w != __PAGEUP))
 				&& PromptYN(23)) goto label1;
 		}
 		goto label0;
@@ -3546,8 +3546,8 @@ label2:
 		C = 0;
 	}
 
-	if (C == _AltEqual_) {
-		C = _ESC_;
+	if (C == __ALT_EQUAL) {
+		C = __ESC;
 	}
 	else {
 		WasUpd = WasUpd || Upd;
@@ -3559,7 +3559,7 @@ label2:
 		goto label2;
 		break;
 	}
-	case _U_: {
+	case 'U': {
 		delete S; S = nullptr;
 		TxtXY = 0;
 		goto label1;
@@ -4376,7 +4376,7 @@ WORD ExitKeyProc()
 			}
 		}
 	}
-	if (((w == 0) || (w == 3)) && (c == _ShiftF7_) && CFld->Ed(IsNewRec)) {
+	if (((w == 0) || (w == 3)) && (c == __SHIFT_F7) && CFld->Ed(IsNewRec)) {
 		ShiftF7Proc();
 		w = 2;
 	}
@@ -4558,8 +4558,8 @@ void MouseProc()
 				if ((i != IRec) && (IsNewRec || !WriteCRec(true, Displ))) goto label1;
 				GotoRecFld(n, D);
 				if ((Event.Buttons & mbDoubleClick) != 0) {
-					if (MouseEnter) Event.Pressed.UpdateKey(_M_);
-					else Event.Pressed.UpdateKey(_Ins_);
+					if (MouseEnter) Event.Pressed.UpdateKey('M');
+					else Event.Pressed.UpdateKey(__INSERT);
 					Event.What = evKeyDown;
 					return;
 				}
@@ -4935,7 +4935,7 @@ label81:
 							break;
 						}
 						case __PAGEUP:
-						case _R_: {
+						case 'R': {
 							// o obrazovku vzad
 							if (E->NPages == 1)
 								if (E->NRecs == 1) GoPrevNextRec(-1, true);
@@ -4944,7 +4944,7 @@ label81:
 							break;
 						}
 						case __PAGEDOWN:
-						case _C_: {
+						case 'C': {
 							// o obrazovku vpred
 							if (E->NPages == 1)
 								if (E->NRecs == 1) GoPrevNextRec(+1, true);
@@ -4952,13 +4952,13 @@ label81:
 							else if (CPage < E->NPages) GotoRecFld(CRec(), FrstFldOnPage(CPage + 1));
 							break;
 						}
-						case _Q_:
+						case 'Q':
 							switch (ReadKbd())
 							{
-							case _S_: goto label3;
-							case _D_: goto label4;
-							case _R_: goto label5;
-							case _C_: goto label6;
+							case 'S': goto label3;
+							case 'D': goto label4;
+							case 'R': goto label5;
+							case 'C': goto label6;
 							}
 							break;
 						case __CTRL_PAGEUP:
@@ -4989,7 +4989,7 @@ label81:
 									goto fin;
 								}
 							}
-							else if (IsTestRun && (CFile != CatFD->GetCatalogFile()) && (KbdChar == _AltF2)) {
+							else if (IsTestRun && (CFile != CatFD->GetCatalogFile()) && (KbdChar == __ALT_F2)) {
 								EditHelpOrCat(KbdChar, 1, CFile->Name + "." + CFld->FldD->Name);
 							}
 							break;

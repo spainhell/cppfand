@@ -34,7 +34,7 @@ void EditorScreen::EditWrline(char* input_text, size_t text_len, int Row, BYTE C
 		nv2 = TxtColor;
 	}
 	short i = 0;
-	while (i < text_len && input_text[i] != '\0' && !(input_text[i] == _CR || input_text[i] == _LF) && i < LineMaxSize - 1) {
+	while (i < text_len && input_text[i] != '\0' && !(input_text[i] == __CR || input_text[i] == __LF) && i < LineMaxSize - 1) {
 		nv1 = input_text[i];
 		if (i < 0 || i > 255) throw std::exception("Index");
 		BuffLine[i] = (nv2 << 8) + nv1;
@@ -98,7 +98,7 @@ void EditorScreen::ScrollWrline(char* P, size_t offsetX, int Row, ColorOrd& CO, 
 	short I = 0;
 	short J = 0;
 	char cc = P[I];
-	while (cc != '\0' && !(cc == _CR || cc == _LF) && I < LineMaxSize && !InsPage) {
+	while (cc != '\0' && !(cc == __CR || cc == __LF) && I < LineMaxSize && !InsPage) {
 		if (((BYTE)cc >= 32) || (GrafCtrl.count(cc) > 0)) {
 			nv1 = cc;
 			BuffLine[J] = (nv2 << 8) + nv1;
