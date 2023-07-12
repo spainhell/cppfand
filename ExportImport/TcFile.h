@@ -1,5 +1,5 @@
 #pragma once
-#include "../Core/constants.h"
+#include "../Common/typeDef.h"
 
 const size_t BUFFER_SIZE = 16384;
 

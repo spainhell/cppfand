@@ -35,6 +35,7 @@
 #include "../MergeReport/Merge.h"
 #include "../MergeReport/Report.h"
 #include "../Common/textfunc.h"
+#include "../Drivers/constants.h"
 
 
 void UserHeadLine(std::string UserHeader)

@@ -26,6 +26,7 @@
     <ClInclude Include="LongStr.h" />
     <ClInclude Include="pstring.h" />
     <ClInclude Include="textfunc.h" />
+    <ClInclude Include="typeDef.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="codePages.cpp" />

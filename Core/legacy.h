@@ -1,6 +1,7 @@
 #pragma once
-#include "constants.h"
+
 #include "../Common/pstring.h"
+#include "../Common/typeDef.h"
 #include <vector>
 
 extern std::vector<std::string> paramstr;

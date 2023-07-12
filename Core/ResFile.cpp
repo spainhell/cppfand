@@ -1,5 +1,7 @@
 #include "ResFile.h"
 
+#include "constants.h"
+
 ResFile::ResFile()
 = default;
 

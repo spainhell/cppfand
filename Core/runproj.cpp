@@ -17,6 +17,7 @@
 #include "../MergeReport/Merge.h"
 #include "../MergeReport/Report.h"
 #include "../Prolog/RunProlog.h"
+#include "../Drivers/constants.h"
 #include "access.h"
 #include "Coding.h"
 #include "compile.h"

@@ -1,3 +1,4 @@
+#include "../Drivers/constants.h"
 #include "EditorScreen.h"
 
 EditorScreen::EditorScreen(size_t TextColumns, Blocks* blocks, std::string ctrlKey)

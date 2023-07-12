@@ -14,6 +14,7 @@
 #include "legacy.h"
 #include "obaseww.h"
 #include "../Drivers/screen.h"
+#include "../Drivers/constants.h"
 #include "wwmenu.h"
 #include <chrono>
 #include <thread>

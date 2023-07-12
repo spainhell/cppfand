@@ -2,7 +2,7 @@
 
 #include <string>
 #include "TyFile.h"
-#include "../Core/constants.h"
+
 
 typedef void* HANDLE;
 

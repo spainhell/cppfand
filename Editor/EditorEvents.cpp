@@ -1,6 +1,6 @@
 #include "EditorEvents.h"
 
-
+#include "../Drivers/constants.h"
 #include "../Core/wwmix.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/runproc.h"

@@ -1,6 +1,6 @@
 #pragma once
 #include "base.h"
-#include "constants.h"
+
 #include "../Common/pstring.h"
 
 extern char* pBlk;

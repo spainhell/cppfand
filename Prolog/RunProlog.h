@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Prolog.h"
-#include "../Core/constants.h"
+
 #include "../Core/FileD.h"
 
 //extern WORD _Sg;

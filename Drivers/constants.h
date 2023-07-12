@@ -1,0 +1,90 @@
+#pragma once
+#include <Windows.h>
+
+const WORD VIRTUAL = 0x8000;
+const WORD ALT = 0x0400;
+const WORD CTRL = 0x0200;
+const WORD SHIFT = 0x0100;
+
+const WORD __ESC = VK_ESCAPE;
+const WORD __ENTER = VK_RETURN;
+const WORD __LEFT = VIRTUAL + VK_LEFT;
+const WORD __CTRL_LEFT = VIRTUAL + CTRL + VK_LEFT;
+const WORD __RIGHT = VIRTUAL + VK_RIGHT;
+const WORD __CTRL_RIGHT = VIRTUAL + CTRL + VK_RIGHT;
+const WORD __UP = VIRTUAL + VK_UP;
+const WORD __DOWN = VIRTUAL + VK_DOWN;
+const WORD __PAGEUP = VIRTUAL + VK_PRIOR;
+const WORD __PAGEDOWN = VIRTUAL + VK_NEXT;
+const WORD __HOME = VIRTUAL + VK_HOME;
+const WORD __END = VIRTUAL + VK_END;
+const WORD __INSERT = VIRTUAL + VK_INSERT;
+const WORD __DELETE = VIRTUAL + VK_DELETE;
+const WORD __BACK = VK_BACK;
+
+const WORD __F1 = VIRTUAL + VK_F1;
+const WORD __ALT_F1 = VIRTUAL + ALT + VK_F1;
+const WORD __CTRL_F1 = VIRTUAL + CTRL + VK_F1;
+const WORD __SHIFT_F1 = VIRTUAL + SHIFT + VK_F1;
+
+const WORD __F2 = VIRTUAL + VK_F2;
+const WORD __ALT_F2 = VIRTUAL + ALT + VK_F2;
+const WORD __CTRL_F2 = VIRTUAL + CTRL + VK_F2;
+
+const WORD __F3 = VIRTUAL + VK_F3;
+const WORD __ALT_F3 = VIRTUAL + ALT + VK_F3;
+const WORD __CTRL_F3 = VIRTUAL + CTRL + VK_F3;
+
+const WORD __F4 = VIRTUAL + VK_F4;
+const WORD __CTRL_F4 = VIRTUAL + CTRL + VK_F4;
+
+const WORD __F5 = VIRTUAL + VK_F5;
+const WORD __CTRL_F5 = VIRTUAL + CTRL + VK_F5;
+
+const WORD __F6 = VIRTUAL + VK_F6;
+const WORD __ALT_F6 = VIRTUAL + ALT + VK_F6;
+const WORD __CTRL_F6 = VIRTUAL + CTRL + VK_F6;
+const WORD __SHIFT_F6 = VIRTUAL + SHIFT + VK_F6;
+
+const WORD __F7 = VIRTUAL + VK_F7;
+const WORD __ALT_F7 = VIRTUAL + ALT + VK_F7;
+const WORD __CTRL_F7 = VIRTUAL + CTRL + VK_F7;
+const WORD __SHIFT_F7 = VIRTUAL + SHIFT + VK_F7;
+
+const WORD __F8 = VIRTUAL + VK_F8;
+const WORD __ALT_F8 = VIRTUAL + ALT + VK_F8;
+const WORD __CTRL_F8 = VIRTUAL + CTRL + VK_F8;
+const WORD __SHIFT_F8 = VIRTUAL + SHIFT + VK_F8;
+
+const WORD __F9 = VIRTUAL + VK_F9;
+const WORD __ALT_F9 = VIRTUAL + ALT + VK_F9;
+const WORD __CTRL_F9 = VIRTUAL + CTRL + VK_F9;
+
+const WORD __F10 = VIRTUAL + VK_F10;
+const WORD __ALT_F10 = VIRTUAL + ALT + VK_F10;
+const WORD __CTRL_F10 = VIRTUAL + CTRL + VK_F10;
+const WORD __SHIFT_F10 = VIRTUAL + SHIFT + VK_F10;
+
+const WORD __F11 = VIRTUAL + VK_F11;
+
+const WORD __F12 = VIRTUAL + VK_F12;
+
+const WORD __CTRL_C = VIRTUAL + CTRL + 'C';
+const WORD __CTRL_D = VIRTUAL + CTRL + 'D';
+const WORD __CTRL_K = VIRTUAL + CTRL + 'K';
+const WORD __CTRL_N = VIRTUAL + CTRL + 'N';
+const WORD __CTRL_O = VIRTUAL + CTRL + 'O';
+const WORD __CTRL_P = VIRTUAL + CTRL + 'P';
+const WORD __CTRL_Q = VIRTUAL + CTRL + 'Q';
+const WORD __CTRL_X = VIRTUAL + CTRL + 'X';
+const WORD __CTRL_Y = VIRTUAL + CTRL + 'Y';
+const WORD __CTRL_Z = VIRTUAL + CTRL + 'Z';
+
+const WORD __CTRL_HOME = VIRTUAL + CTRL + VK_HOME;
+const WORD __CTRL_END = VIRTUAL + CTRL + VK_END;
+const WORD __CTRL_PAGEUP = VIRTUAL + CTRL + VK_PRIOR;
+const WORD __CTRL_PAGEDOWN = VIRTUAL + CTRL + VK_NEXT;
+
+const WORD __ALT_EQUAL = ALT + '=';
+const WORD __CR = 0x0D;
+const WORD __LF = 0x0A;

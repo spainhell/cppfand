@@ -1,5 +1,5 @@
 #pragma once
-#include "../Core/constants.h"
+
 #include "../Core/base.h"
 #include "../Core/FieldDescr.h"
 

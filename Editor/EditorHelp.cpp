@@ -1,6 +1,7 @@
 #include "EditorHelp.h"
 
 #include <stdexcept>
+#include "../Drivers/constants.h"
 #include "../Core/base.h"
 #include "../Core/FileD.h"
 #include "../Core/GlobalVariables.h"

@@ -12,6 +12,7 @@
 #include "../Core/wwmenu.h"
 #include "../Core/wwmix.h"
 #include "../Common/textfunc.h"
+#include "../Drivers/constants.h"
 
 
 ReportGenerator::ReportGenerator()

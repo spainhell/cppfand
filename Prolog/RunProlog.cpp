@@ -15,6 +15,7 @@
 #include "../fandio/files.h"
 #include "../Editor/OldEditor.h"
 #include "../Common/compare.h"
+#include "../Drivers/constants.h"
 #include "../Common/codePages.h"
 
 const WORD MaxPackedPredLen = 4000;

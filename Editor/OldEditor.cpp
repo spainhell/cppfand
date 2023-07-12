@@ -8,6 +8,7 @@
 #include "../Core/compile.h"
 #include "EditorHelp.h"
 #include "EditorScreen.h"
+#include "../Drivers/constants.h"
 #include "../Core/GlobalVariables.h"
 #include "../Drivers/keyboard.h"
 #include "../Core/oaccess.h"

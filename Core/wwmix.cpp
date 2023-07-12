@@ -5,11 +5,10 @@
 #include "GlobalVariables.h"
 #include "legacy.h"
 #include "obaseww.h"
-#include "../fandio/FandTFile.h"
 #include "../Editor/runedi.h"
 #include "../fandio/directory.h"
-#include "../Common/textfunc.h"
 #include "../Common/compare.h"
+#include "../Drivers/constants.h"
 
 SS ss;
 

@@ -1,5 +1,6 @@
 #pragma once
-#include "constants.h"
+
+#include "../Common/typeDef.h"
 
 class FrmlElem;
 class LinkD;

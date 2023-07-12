@@ -12,6 +12,7 @@
 #include "../Editor/EditorHelp.h"
 #include "../Common/codePages.h"
 #include "../Common/textfunc.h"
+#include "../Drivers/constants.h"
 
 
 bool TRect::Contains(TPoint* P)

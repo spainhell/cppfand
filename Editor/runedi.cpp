@@ -25,6 +25,7 @@
 #include "../MergeReport/ReportGenerator.h"
 #include "../Common/textfunc.h"
 #include "../Common/compare.h"
+#include "../Drivers/constants.h"
 
 bool TxtEdCtrlUBrk, TxtEdCtrlF4Brk;
 EFldD* CFld;

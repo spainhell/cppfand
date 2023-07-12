@@ -11,6 +11,7 @@
 #include "../Common/compare.h"
 #include "models/Instr.h"
 #include "../fandio/XWKey.h"
+#include "../Drivers/constants.h"
 
 bool IsRdUserFunc;
 kNames KeyNames[NKeyNames] = {

@@ -6,6 +6,7 @@
 #include "OldDrivers.h"
 #include "GlobalVariables.h"
 #include "oaccess.h"
+#include "../Drivers/constants.h"
 
 WORD RunErrNr = 0;
 

@@ -1,8 +1,6 @@
 #pragma once
 #include <string>
-
-typedef unsigned short WORD;
-typedef unsigned char BYTE;
+#include "typeDef.h"
 
 enum class TVideoFont { foAscii = 0, foLatin2 = 1, foKamen = 2 };
 

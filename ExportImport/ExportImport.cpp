@@ -19,6 +19,7 @@
 #include "../Common/compare.h"
 #include "../Common/codePages.h"
 #include "../fandio/files.h"
+#include "../Drivers/constants.h"
 
 
 void ConvWinCp(unsigned char* buffer, const std::string& code_table, size_t length)

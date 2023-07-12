@@ -11,6 +11,7 @@
 #include "../Common/textfunc.h"
 #include "../Common/compare.h"
 #include "../fandio/files.h"
+#include "../Drivers/constants.h"
 
 void OpenXWorkH()
 {

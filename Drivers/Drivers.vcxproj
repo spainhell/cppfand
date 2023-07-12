@@ -24,6 +24,7 @@
     <ClCompile Include="screen.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="constants.h" />
     <ClInclude Include="files.h" />
     <ClInclude Include="keyboard.h" />
     <ClInclude Include="screen.h" />

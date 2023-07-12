@@ -1,6 +1,7 @@
 #pragma once
-#include "constants.h"
+
 #include "switches.h"
+#include "../Common/typeDef.h"
 
 void ScrGraphMode(bool Redraw, WORD OldScrSeg);
 WORD ScrTextMode(bool Redraw, bool Switch);

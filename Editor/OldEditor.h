@@ -5,7 +5,7 @@
 
 #include "Blocks.h"
 #include "../Core/base.h"
-#include "../Core/constants.h"
+
 #include "../Common/pstring.h"
 
 class Instr;

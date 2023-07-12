@@ -12,6 +12,7 @@
 #include "../fandio/FandTFile.h"
 #include "../fandio/XWKey.h"
 #include "../pascal/random.h"
+#include "../Drivers/constants.h"
 
 #include "FieldDescr.h"
 #include "FileD.h"

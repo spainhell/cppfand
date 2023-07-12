@@ -1,4 +1,5 @@
 #include "CfgFile.h"
+#include "constants.h"
 #include "../pascal/real48.h"
 #include "../Common/codePages.h"
 #include "../Drivers/files.h"

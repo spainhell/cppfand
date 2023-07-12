@@ -1,5 +1,5 @@
 #pragma once
-#include "constants.h"
+
 #include "olongstr.h"
 #include "../Common/pstring.h"
 #include "rdrun.h"

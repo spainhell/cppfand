@@ -1,5 +1,5 @@
 #pragma once
-#include "../Core/constants.h"
+#include "../Common/typeDef.h"
 
 class Blocks
 {
