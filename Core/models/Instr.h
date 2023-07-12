@@ -3,28 +3,18 @@
 #include "../Graph.h"
 #include "../EditOpt.h"
 
-enum PInstrCode
+enum class PInstrCode
 {
-	_menubox, _menubar, _ifthenelseP, _whiledo,
-	_repeatuntil, _break, _exitP, _cancel, _save, _closefds,
-	_window, _clrscr, _clrww, _clreol, _gotoxy, _display,
-	_writeln, _comment, _setkeybuf, _clearkeybuf, _headline,
-	_call, _exec, _copyfile, _proc, _lproc, _merge, _sort, _edit, _report,
-	_edittxt, _printtxt, _puttxt, _sql,
-	_asgnloc, _asgnpar, _asgnfield, _asgnedok, _asgnrand, _asgnusertoday,
-	_randomize,
-	_asgnusercode, _asgnusername,
-	_asgnaccright, _asgnxnrecs,
-	_asgnnrecs, _asgncatfield, _asgnrecfld, _asgnrecvar, _asgnclipbd,
-	_turncat, _appendrec, _deleterec, _recallrec, _readrec, _writerec,
-	_linkrec,
-	_releasedrive, _mount, _indexfile, _getindex, _forall,
-	_withshared, _withlocked, _withgraphics,
-	_memdiag, _wait, _delay, _beepP, _sound, _nosound, _help, _setprinter,
-	_graph, _putpixel, _line, _rectangle, _ellipse, _floodfill, _outtextxy,
-	_backup, _backupm, _resetcat,
-	_setedittxt, _setmouse, _checkfile, _login, _sqlrdwrtxt,
-	_portout
+	_appendRec, _asgnAccRight, _asgnCatField, _asgnClipbd, _asgnEdOk, _asgnField, _asgnloc, _asgnnrecs,
+	_asgnpar, _asgnrand, _asgnrecfld, _asgnrecvar, _asgnusercode, _asgnusername, _asgnusertoday, _asgnxnrecs,
+	_backup, _backupm, _beepP, _break, _call, _cancel, _clearkeybuf, _closefds, _clreol, _clrscr, _clrww,
+	_comment, _copyfile, _delay, _deleterec, _display, _edit, _edittxt, _ellipse, _exec, _exitP,
+	_floodfill, _forall, _getindex, _gotoxy, _graph, _headline, _help, _checkfile, _ifthenelseP, _indexfile,
+	_line, _linkrec, _login, _lproc, _memdiag, _menubar, _menubox, _merge, _mount, _nosound, _outtextxy,
+	_portout, _printtxt, _proc, _putpixel, _puttxt, _randomize, _readrec, _recallrec, _rectangle, _releasedrive,
+	_repeatuntil, _report, _resetcat, _save, _setedittxt, _setkeybuf, _setmouse, _setprinter, _sort, _sound,
+	_sql, _sqlrdwrtxt, _turncat, _wait, _whiledo, _window, _withgraphics, _withlocked, _withshared,
+	_writeln, _writerec,
 };
 
 class Instr

@@ -941,7 +941,7 @@ void WithLockedProc(Instr_withshared* PD)
 	pstring ntxt(10);
 	LockMode md;
 	PInstrCode op = PD->Kind;
-	if (op == _withlocked) {
+	if (op == PInstrCode::_withlocked) {
 		ld = &PD->WLD;
 		while (ld != nullptr) {
 			ld->N = RunInt(CFile, ld->Frml, CRecPtr);
@@ -970,7 +970,7 @@ void WithLockedProc(Instr_withshared* PD)
 			}
 		}
 		if (CFile->FF->IsShared()) {
-			if (op == _withlocked) {
+			if (op == PInstrCode::_withlocked) {
 				if (CFile->Lock(ld->N, 2)) {
 					ld = ld->Chain;
 					continue;
@@ -990,7 +990,7 @@ void WithLockedProc(Instr_withshared* PD)
 			}
 			CFile = ld->FD;
 			SetPathAndVolume(CFile);
-			if (op == _withlocked) {
+			if (op == PInstrCode::_withlocked) {
 				msg = 839;
 				str(ld->N, ntxt);
 				SetMsgPar(ntxt, CPath);
@@ -1169,7 +1169,7 @@ void UnLck(Instr_withshared* PD, LockD* Ld1, PInstrCode Op)
 	while (ld != Ld1) {
 		CFile = ld->FD;
 		if (CFile->FF->IsShared()) {
-			if (Op == _withlocked) CFile->Unlock(ld->N);
+			if (Op == PInstrCode::_withlocked) CFile->Unlock(ld->N);
 			CFile->OldLockMode(ld->OldMd);
 		}
 		ld = ld->Chain;
@@ -1194,7 +1194,7 @@ void RunInstr(Instr* PD)
 {
 	while (!ExitP && !BreakP && (PD != nullptr)) {
 		switch (PD->Kind) {
-		case _ifthenelseP: {
+		case PInstrCode::_ifthenelseP: {
 			Instr_loops* iPD = (Instr_loops*)PD;
 			if (RunBool(CFile, iPD->Bool, CRecPtr)) {
 				RunInstr(iPD->Instr1);
@@ -1204,7 +1204,7 @@ void RunInstr(Instr* PD)
 			}
 			break;
 		}
-		case _whiledo: {
+		case PInstrCode::_whiledo: {
 			Instr_loops* iPD = (Instr_loops*)PD;
 			while (!ExitP && !BreakP && RunBool(CFile, iPD->Bool, CRecPtr)) {
 				RunInstr(iPD->Instr1);
@@ -1212,7 +1212,7 @@ void RunInstr(Instr* PD)
 			BreakP = false;
 			break;
 		}
-		case _repeatuntil: {
+		case PInstrCode::_repeatuntil: {
 			Instr_loops* iPD = (Instr_loops*)PD;
 			do {
 				RunInstr(iPD->Instr1);
@@ -1220,269 +1220,269 @@ void RunInstr(Instr* PD)
 			BreakP = false;
 			break;
 		}
-		case _menubox: {
+		case PInstrCode::_menubox: {
 			auto menu = std::make_unique<TMenuBoxP>(0, 0, nullptr, (Instr_menu*)PD);
 			menu->call();
 			break;
 		}
-		case _menubar: {
+		case PInstrCode::_menubar: {
 			MenuBarProc((Instr_menu*)PD);
 			break;
 		}
-		case _forall: {
+		case PInstrCode::_forall: {
 			ForAllProc((Instr_forall*)PD);
 			break;
 		}
-		case _window: {
+		case PInstrCode::_window: {
 			WithWindowProc((Instr_window*)PD);
 			break;
 		}
-		case _break: {
+		case PInstrCode::_break: {
 			BreakP = true;
 			break;
 		}
-		case _exitP: {
+		case PInstrCode::_exitP: {
 			ExitP = true;
 			break;
 		}
-		case _cancel: {
+		case PInstrCode::_cancel: {
 			// ukonceni ulohy - navrat do OS nebo do hlavniho menu
 			throw std::exception("CANCEL");
 			break;
 		}
-		case _save: {
+		case PInstrCode::_save: {
 			SaveAndCloseAllFiles();
 			break;
 		}
-		case _clrscr: {
+		case PInstrCode::_clrscr: {
 			TextAttr = ProcAttr;
 			ClrScr();
 			break;
 		}
-		case _clrww: {
+		case PInstrCode::_clrww: {
 			ClrWwProc((Instr_clrww*)PD);
 			break;
 		}
-		case _clreol: {
+		case PInstrCode::_clreol: {
 			TextAttr = ProcAttr;
 			ClrEol();
 			break;
 		}
-		case _exec: {
+		case PInstrCode::_exec: {
 			ExecPgm((Instr_exec*)PD);
 			break;
 		}
-		case _proc: {
+		case PInstrCode::_proc: {
 			CallProcedure((Instr_proc*)PD);
 			break;
 		}
-		case _call: {
+		case PInstrCode::_call: {
 			CallRdbProc((Instr_call*)PD);
 			break;
 		}
-		case _copyfile: {
+		case PInstrCode::_copyfile: {
 			FileCopy(((Instr_copyfile*)PD)->CD);
 			break;
 		}
-		case _headline: {
+		case PInstrCode::_headline: {
 			HeadLineProc(((Instr_assign*)PD)->Frml);
 			break;
 		}
-		case _setkeybuf: {
+		case PInstrCode::_setkeybuf: {
 			SetKeyBufProc(((Instr_assign*)PD)->Frml);
 			break;
 		}
-		case _writeln: {
+		case PInstrCode::_writeln: {
 			WritelnProc((Instr_writeln*)PD);
 			break;
 		}
-		case _gotoxy: {
+		case PInstrCode::_gotoxy: {
 			auto iPD = (Instr_gotoxy*)PD;
 			WORD x = RunInt(CFile, iPD->GoX, CRecPtr);
 			WORD y = RunInt(CFile, iPD->GoY, CRecPtr);
 			screen.GotoXY(x + WindMin.X - 1, y + WindMin.Y - 1, absolute);
 			break;
 		}
-		case _merge: {
+		case PInstrCode::_merge: {
 			MergeProc((Instr_merge_display*)PD);
 			break;
 		}
-		case _lproc: {
+		case PInstrCode::_lproc: {
 			auto iPD = (Instr_lproc*)PD;
 			RunProlog(&iPD->lpPos, iPD->lpName);
 			break;
 		}
-		case _report: {
+		case PInstrCode::_report: {
 			ReportProc(((Instr_report*)PD)->RO, true);
 			break;
 		}
-		case _sort: {
+		case PInstrCode::_sort: {
 			auto iPD = (Instr_sort*)PD;
 			SortProc(iPD->SortFD, iPD->SK);
 			break;
 		}
-		case _edit: {
+		case PInstrCode::_edit: {
 			EditProc((Instr_edit*)PD);
 			break;
 		}
-		case _asgnloc:/* !!! with PD^ do!!! */ {
+		case PInstrCode::_asgnloc:/* !!! with PD^ do!!! */ {
 			auto iPD = (Instr_assign*)PD;
 			LVAssignFrml(CFile, iPD->AssLV, iPD->Add, iPD->Frml, CRecPtr);
 			break;
 		}
-		case _asgnrecfld: {
+		case PInstrCode::_asgnrecfld: {
 			AssignRecFld((Instr_assign*)PD);
 			break;
 		}
-		case _asgnrecvar: {
+		case PInstrCode::_asgnrecvar: {
 			auto iPD = (Instr_assign*)PD;
 			AssignRecVar(iPD->RecLV1, iPD->RecLV2, iPD->Ass);
 			break;
 		}
-		case _asgnpar: {
+		case PInstrCode::_asgnpar: {
 			// ulozi globalni parametr - do souboru
 			auto iPD = (Instr_assign*)PD;
 			AsgnParFldFrml(iPD->FD, iPD->FldD, iPD->Frml, iPD->Add);
 			break;
 		}
-		case _asgnfield: {
+		case PInstrCode::_asgnField: {
 			AssignField((Instr_assign*)PD);
 			break;
 		}
-		case _asgnnrecs: /* !!! with PD^ do!!! */ {
+		case PInstrCode::_asgnnrecs: /* !!! with PD^ do!!! */ {
 			auto iPD = (Instr_assign*)PD;
 			CFile = iPD->FD;
 			CFile->AssignNRecs(iPD->Add, RunInt(CFile, iPD->Frml, CRecPtr));
 			break;
 		}
-		case _appendrec: {
+		case PInstrCode::_appendRec: {
 			FileD* rec_file = ((Instr_recs*)PD)->RecFD;
 			AppendRecProc(rec_file);
 			break;
 		}
-		case _deleterec: { DeleteRecProc((Instr_recs*)PD); break; }
-		case _recallrec: { RecallRecProc((Instr_recs*)PD); break; }
-		case _readrec: { ReadWriteRecProc(true, (Instr_recs*)PD); break; }
-		case _writerec: { ReadWriteRecProc(false, (Instr_recs*)PD); break; }
-		case _linkrec: { LinkRecProc((Instr_assign*)PD); break; }
-		case _withshared:
-		case _withlocked: { WithLockedProc((Instr_withshared*)PD); break; }
-		case _edittxt: { EditTxtProc((Instr_edittxt*)PD); break; }
-		case _printtxt: { PrintTxtProc((Instr_edittxt*)PD); break; }
-		case _puttxt: { PutTxt((Instr_puttxt*)PD); break; }
-		case _asgncatfield: { AssgnCatFld((Instr_assign*)PD); break; }
-		case _asgnusercode: {
+		case PInstrCode::_deleterec: { DeleteRecProc((Instr_recs*)PD); break; }
+		case PInstrCode::_recallrec: { RecallRecProc((Instr_recs*)PD); break; }
+		case PInstrCode::_readrec: { ReadWriteRecProc(true, (Instr_recs*)PD); break; }
+		case PInstrCode::_writerec: { ReadWriteRecProc(false, (Instr_recs*)PD); break; }
+		case PInstrCode::_linkrec: { LinkRecProc((Instr_assign*)PD); break; }
+		case PInstrCode::_withshared:
+		case PInstrCode::_withlocked: { WithLockedProc((Instr_withshared*)PD); break; }
+		case PInstrCode::_edittxt: { EditTxtProc((Instr_edittxt*)PD); break; }
+		case PInstrCode::_printtxt: { PrintTxtProc((Instr_edittxt*)PD); break; }
+		case PInstrCode::_puttxt: { PutTxt((Instr_puttxt*)PD); break; }
+		case PInstrCode::_asgnCatField: { AssgnCatFld((Instr_assign*)PD); break; }
+		case PInstrCode::_asgnusercode: {
 			UserCode = RunInt(CFile, ((Instr_assign*)PD)->Frml, CRecPtr);
 			AccRight[0] = 0x01;
 			AccRight[1] = (char)UserCode;
 			break;
 		}
-		case _asgnaccright: {
+		case PInstrCode::_asgnAccRight: {
 			AssgnAccRight((Instr_assign*)PD);
 			break;
 		}
-		case _asgnusername: {
+		case PInstrCode::_asgnusername: {
 			AssgnUserName((Instr_assign*)PD);
 			break;
 		}
-		case _asgnusertoday: {
+		case PInstrCode::_asgnusertoday: {
 			userToday = RunReal(CFile, ((Instr_assign*)PD)->Frml, CRecPtr);
 			break;
 		}
-		case _asgnclipbd: {
+		case PInstrCode::_asgnClipbd: {
 			LongStr* s = RunLongStr(CFile, ((Instr_assign*)PD)->Frml, CRecPtr);
 			TWork.Delete(ClpBdPos);
 			ClpBdPos = TWork.Store(s->A, s->LL);
 			delete s; s = nullptr;
 			break;
 		}
-		case _asgnedok: {
+		case PInstrCode::_asgnEdOk: {
 			EdOk = RunBool(CFile, ((Instr_assign*)PD)->Frml, CRecPtr);
 			break;
 		}
-		case _turncat: {
+		case PInstrCode::_turncat: {
 			auto iPD = (Instr_turncat*)PD;
 			CatFD->TurnCat(iPD->NextGenFD, iPD->FrstCatIRec, iPD->NCatIRecs, RunInt(CFile, iPD->TCFrml, CRecPtr));
 			break;
 		}
-		case _releasedrive: {
+		case PInstrCode::_releasedrive: {
 			ReleaseDriveProc(((Instr_releasedrive*)PD)->Drive);
 			break;
 		}
-		case _setprinter: {
+		case PInstrCode::_setprinter: {
 			SetCurrPrinter(abs(RunInt(CFile, ((Instr_assign*)PD)->Frml, CRecPtr)));
 			break;
 		}
-		case _indexfile: {
+		case PInstrCode::_indexfile: {
 			auto iPD = (Instr_indexfile*)PD;
 			iPD->IndexFD->FF->IndexFileProc(iPD->Compress);
 			break;
 		}
-		case _display: {
+		case PInstrCode::_display: {
 			auto iPD = (Instr_merge_display*)PD;
 			DisplayProc(iPD->Pos.R, iPD->Pos.IRec);
 			break;
 		}
-		case _mount: {
+		case PInstrCode::_mount: {
 			auto iPD = (Instr_mount*)PD;
 			MountProc(iPD->MountCatIRec, iPD->MountNoCancel);
 			break;
 		}
-		case _clearkeybuf: {
+		case PInstrCode::_clearkeybuf: {
 			ClearKbdBuf();
 			break;
 		}
-		case _help: {
+		case PInstrCode::_help: {
 			HelpProc((Instr_help*)PD);
 			break;
 		}
-		case _wait: {
+		case PInstrCode::_wait: {
 			WaitProc();
 			break;
 		}
-		case _beepP: {
+		case PInstrCode::_beepP: {
 			Beep();
 			break;
 		}
-		case _delay: {
+		case PInstrCode::_delay: {
 			const int value = RunInt(CFile, ((Instr_assign*)PD)->Frml, CRecPtr);
 			Delay((value + 27) / 55);
 			break;
 		}
-		case _sound: {
+		case PInstrCode::_sound: {
 			Sound(RunInt(CFile, ((Instr_assign*)PD)->Frml, CRecPtr));
 			break;
 		}
-		case _nosound: {
+		case PInstrCode::_nosound: {
 			NoSound();
 			break;
 		}
 #ifdef FandGraph
-		case _graph: {
+		case PInstrCode::_graph: {
 			RunBGraph(((Instr_graph*)PD)->GD, false);
 			break;
 		}
-		case _putpixel:
-		case _line:
-		case _rectangle:
-		case _ellipse:
-		case _floodfill:
-		case _outtextxy: {
+		case PInstrCode::_putpixel:
+		case PInstrCode::_line:
+		case PInstrCode::_rectangle:
+		case PInstrCode::_ellipse:
+		case PInstrCode::_floodfill:
+		case PInstrCode::_outtextxy: {
 			DrawProc((Instr_graph*)PD);
 			break;
 		}
 #endif
-		case _withgraphics: {
+		case PInstrCode::_withgraphics: {
 			WithGraphicsProc(((Instr_withshared*)PD)->WDoInstr);
 			break;
 		}
 #ifndef FandRunV
-		case _memdiag: {
+		case PInstrCode::_memdiag: {
 			MemDiagProc();
 			break;
 		}
 #endif 
-		case _closefds: {
+		case PInstrCode::_closefds: {
 			// zavre soubor
 			CFile = ((Instr_closefds*)PD)->clFD;
 			if (CFile == nullptr) {
@@ -1493,35 +1493,35 @@ void RunInstr(Instr* PD)
 			}
 			break;
 		}
-		case _backup: {
+		case PInstrCode::_backup: {
 			auto iPD = (Instr_backup*)PD;
 			BackUp(iPD->IsBackup, iPD->NoCompress, iPD->BrCatIRec, iPD->BrNoCancel);
 			break;
 		}
-		case _backupm: {
+		case PInstrCode::_backupm: {
 			BackupM((Instr_backup*)PD);
 			break;
 		}
-		case _resetcat: {
+		case PInstrCode::_resetcat: {
 			ResetCatalog();
 			break;
 		}
-		case _setedittxt: {
+		case PInstrCode::_setedittxt: {
 			SetEditTxt((Instr_setedittxt*)PD);
 			break;
 		}
-		case _getindex: {
+		case PInstrCode::_getindex: {
 			GetIndex((Instr_getindex*)PD);
 			break;
 		}
-		case _setmouse: {
+		case PInstrCode::_setmouse: {
 			auto iPD = (Instr_setmouse*)PD;
 			SetMouse(RunInt(CFile, iPD->MouseX, CRecPtr),
 				RunInt(CFile, iPD->MouseY, CRecPtr),
 				RunBool(CFile, iPD->Show, CRecPtr));
 			break;
 		}
-		case _checkfile: {
+		case PInstrCode::_checkfile: {
 			auto iPD = (Instr_checkfile*)PD;
 			SetTxtPathVol(iPD->cfPath, iPD->cfCatIRec);
 			CheckFile(iPD->cfFD);
@@ -1532,19 +1532,19 @@ void RunInstr(Instr* PD)
 		case _login: /* !!! with PD^ do!!! */ StartLogIn(liName, liPassWord); break;
 		case _sqlrdwrtxt: SQLRdWrTxt(PD); break;
 #endif
-		case _asgnrand: {
+		case PInstrCode::_asgnrand: {
 			srand(RunInt(CFile, ((Instr_assign*)PD)->Frml, CRecPtr));
 			break;
 		}
-		case _randomize: {
+		case PInstrCode::_randomize: {
 			Random();
 			break;
 		}
-		case _asgnxnrecs: {
+		case PInstrCode::_asgnxnrecs: {
 			((Instr_assign*)PD)->xnrIdx->Release(CFile);
 			break;
 		}
-		case _portout: {
+		case PInstrCode::_portout: {
 			auto iPD = (Instr_portout*)PD;
 			PortOut(RunBool(CFile, iPD->IsWord, CRecPtr),
 				(WORD)(RunInt(CFile, iPD->Port, CRecPtr)),

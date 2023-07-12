@@ -883,7 +883,7 @@ bool TMenuBarP::GetDownMenu(TMenuBox** W)
 	auto result = false;
 	auto PD1 = (Instr_menu*)getChoice(iTxt)->Instr;
 	if ((PD1 == nullptr) || (PD1->Chain != nullptr)
-		|| (PD1->Kind != _menubox) || !PD1->PullDown) return result;
+		|| (PD1->Kind != PInstrCode::_menubox) || !PD1->PullDown) return result;
 	auto p = new TMenuBoxP(MenuX, MenuY, this, PD1);
 	*W = p;
 	result = true;

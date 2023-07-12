@@ -655,7 +655,7 @@ void RdChoices(Instr_menu* PD)
 			PD->Choices.push_back(CD);
 
 			N++;
-			if ((PD->Kind == _menubar) && (N > 30)) Error(102);
+			if ((PD->Kind == PInstrCode::_menubar) && (N > 30)) Error(102);
 			CD->TxtFrml = RdStrFrml(nullptr);
 			if (Lexem == ',') {
 				RdLex();
@@ -704,7 +704,7 @@ void RdMenuAttr(Instr_menu* PD)
 Instr* RdMenuBox(bool Loop)
 {
 	Instr_menu* PD = nullptr; pstring* S = nullptr;
-	PD = new Instr_menu(_menubox); // GetPInstr(_menubox, 48);
+	PD = new Instr_menu(PInstrCode::_menubox); // GetPInstr(_menubox, 48);
 	auto result = PD;
 	PD->Loop = Loop;
 	if (Lexem == '(') {
@@ -726,7 +726,7 @@ Instr* RdMenuBox(bool Loop)
 
 Instr* RdMenuBar()
 {
-	Instr_menu* PD = new Instr_menu(_menubar); // GetPInstr(_menubar, 48);
+	Instr_menu* PD = new Instr_menu(PInstrCode::_menubar); // GetPInstr(_menubar, 48);
 	auto result = PD;
 	if (Lexem == '(') {
 		RdLex();
@@ -747,7 +747,7 @@ Instr* RdMenuBar()
 
 Instr_loops* RdIfThenElse()
 {
-	auto PD = new Instr_loops(_ifthenelseP); // GetPInstr(_ifthenelseP, 12);
+	auto PD = new Instr_loops(PInstrCode::_ifthenelseP); // GetPInstr(_ifthenelseP, 12);
 	auto result = PD;
 	PD->Bool = RdBool(nullptr);
 	AcceptKeyWord("THEN");
@@ -758,7 +758,7 @@ Instr_loops* RdIfThenElse()
 
 Instr_loops* RdWhileDo()
 {
-	auto PD = new Instr_loops(_whiledo); // GetPInstr(_whiledo, 8);
+	auto PD = new Instr_loops(PInstrCode::_whiledo); // GetPInstr(_whiledo, 8);
 	auto result = PD;
 	PD->Bool = RdBool(nullptr);
 	AcceptKeyWord("DO");
@@ -771,14 +771,14 @@ Instr* RdFor()
 	LocVar* LV = nullptr;
 	if (!FindLocVar(&LVBD, &LV) || (LV->FTyp != 'R')) Error(146);
 	RdLex();
-	auto* PD = new Instr_assign(_asgnloc); // GetPInstr(_asgnloc, 9);
+	auto* PD = new Instr_assign(PInstrCode::_asgnloc); // GetPInstr(_asgnloc, 9);
 	auto result = PD;
 	PD->AssLV = LV;
 	Accept(_assign);
 	PD->Frml = RdRealFrml(nullptr);
 
 	AcceptKeyWord("TO");
-	auto iLoop = new Instr_loops(_whiledo); // GetPInstr(_whiledo, 8);
+	auto iLoop = new Instr_loops(PInstrCode::_whiledo); // GetPInstr(_whiledo, 8);
 	PD->Chain = iLoop;
 	//PD = (Instr_assign*)PD->pChain;
 	auto Z1 = new FrmlElem0(_compreal, 2); // GetOp(_compreal, 2);
@@ -792,7 +792,7 @@ Instr* RdFor()
 	AcceptKeyWord("DO");
 	iLoop->Instr1 = RdPInstr();
 
-	auto iAsg = new Instr_assign(_asgnloc); // GetPInstr(_asgnloc, 9);
+	auto iAsg = new Instr_assign(PInstrCode::_asgnloc); // GetPInstr(_asgnloc, 9);
 	//ChainLast(iLoop->Instr1, iAsg);
 	iLoop->AddInstr(iAsg);
 	iAsg->Add = true;
@@ -810,7 +810,7 @@ Instr* RdCase()
 	bool first = true;
 	Instr_loops* result = nullptr;
 	while (true) {
-		PD1 = new Instr_loops(_ifthenelseP); // GetPInstr(_ifthenelseP, 12);
+		PD1 = new Instr_loops(PInstrCode::_ifthenelseP); // GetPInstr(_ifthenelseP, 12);
 		if (first) result = PD1;
 		else PD->ElseInstr1 = PD1;
 		PD = PD1;
@@ -847,7 +847,7 @@ Instr* RdCase()
 
 Instr_loops* RdRepeatUntil()
 {
-	auto PD = new Instr_loops(_repeatuntil); // GetPInstr(_repeatuntil, 8);
+	auto PD = new Instr_loops(PInstrCode::_repeatuntil); // GetPInstr(_repeatuntil, 8);
 	Instr_loops* result = PD;
 	while (!IsKeyWord("UNTIL")) {
 		RdPInstrAndChain(&PD->Instr1);
@@ -1260,12 +1260,12 @@ void RdProcCall(Instr** pinstr)
 	else if (IsKeyWord("WRITELN")) RdWriteln(WriteType::writeln, (Instr_writeln**)pinstr);
 	else if (IsKeyWord("WRITE")) RdWriteln(WriteType::write, (Instr_writeln**)pinstr);
 	else if (IsKeyWord("HEADLINE")) {
-		*pinstr = new Instr_assign(_headline); // GetPD(_headline, 4);
+		*pinstr = new Instr_assign(PInstrCode::_headline); // GetPD(_headline, 4);
 		RdLex();
 		goto label1;
 	}
 	else if (IsKeyWord("SETKEYBUF")) {
-		*pinstr = new Instr_assign(_setkeybuf); //GetPD(_setkeybuf, 4);
+		*pinstr = new Instr_assign(PInstrCode::_setkeybuf); //GetPD(_setkeybuf, 4);
 		RdLex();
 		goto label1;
 	}
@@ -1281,7 +1281,7 @@ void RdProcCall(Instr** pinstr)
 	else if (IsKeyWord("GOTOXY")) *pinstr = RdGotoXY();
 	else if (IsKeyWord("MERGE")) {
 		// PD = (Instr_merge_display*)GetPD(_merge, sizeof(RdbPos));
-		*pinstr = new Instr_merge_display(_merge);
+		*pinstr = new Instr_merge_display(PInstrCode::_merge);
 		RdLex();
 		RdbPos rp;
 		RdChptName('M', &rp, true);
@@ -1296,7 +1296,7 @@ void RdProcCall(Instr** pinstr)
 	else if (IsKeyWord("TURNCAT")) *pinstr = RdTurnCat();
 	else if (IsKeyWord("RELEASEDRIVE")) *pinstr = RdReleaseDrive();
 	else if (IsKeyWord("SETPRINTER")) {
-		*pinstr = new Instr_assign(_setprinter); // GetPD(_setprinter, 4);
+		*pinstr = new Instr_assign(PInstrCode::_setprinter); // GetPD(_setprinter, 4);
 		RdLex();
 		goto label2;
 	}
@@ -1304,19 +1304,19 @@ void RdProcCall(Instr** pinstr)
 	else if (IsKeyWord("GETINDEX"))*pinstr = RdGetIndex();
 	else if (IsKeyWord("MOUNT")) *pinstr = RdMount();
 	else if (IsKeyWord("CLRSCR")) *pinstr = RdClrWw();
-	else if (IsKeyWord("APPENDREC")) *pinstr = RdMixRecAcc(_appendrec);
-	else if (IsKeyWord("DELETEREC")) *pinstr = RdMixRecAcc(_deleterec);
-	else if (IsKeyWord("RECALLREC")) *pinstr = RdMixRecAcc(_recallrec);
-	else if (IsKeyWord("READREC")) *pinstr = RdMixRecAcc(_readrec);
-	else if (IsKeyWord("WRITEREC")) *pinstr = RdMixRecAcc(_writerec);
+	else if (IsKeyWord("APPENDREC")) *pinstr = RdMixRecAcc(PInstrCode::_appendRec);
+	else if (IsKeyWord("DELETEREC")) *pinstr = RdMixRecAcc(PInstrCode::_deleterec);
+	else if (IsKeyWord("RECALLREC")) *pinstr = RdMixRecAcc(PInstrCode::_recallrec);
+	else if (IsKeyWord("READREC")) *pinstr = RdMixRecAcc(PInstrCode::_readrec);
+	else if (IsKeyWord("WRITEREC")) *pinstr = RdMixRecAcc(PInstrCode::_writerec);
 	else if (IsKeyWord("LINKREC")) *pinstr = RdLinkRec();
 	else if (IsKeyWord("DELAY")) {
-		*pinstr = new Instr_assign(_delay); // GetPD(_delay, 4);
+		*pinstr = new Instr_assign(PInstrCode::_delay); // GetPD(_delay, 4);
 		RdLex();
 		goto label2;
 	}
 	else if (IsKeyWord("SOUND")) {
-		*pinstr = new Instr_assign(_sound); // GetPD(_sound, 4);
+		*pinstr = new Instr_assign(PInstrCode::_sound); // GetPD(_sound, 4);
 		RdLex();
 	label2:
 		((Instr_assign*)*pinstr)->Frml = RdRealFrml(nullptr);
@@ -1326,27 +1326,27 @@ void RdProcCall(Instr** pinstr)
 #ifdef FandGraph
 	else if (IsKeyWord("GRAPH")) *pinstr = RdGraphP();
 	else if (IsKeyWord("PUTPIXEL")) {
-		*pinstr = new Instr_putpixel(_putpixel); // GetPD(_putpixel, 3 * 4);
+		*pinstr = new Instr_putpixel(PInstrCode::_putpixel); // GetPD(_putpixel, 3 * 4);
 		goto label3;
 	}
 	else if (IsKeyWord("LINE")) {
-		*pinstr = new Instr_putpixel(_line); // GetPD(_line, 5 * 4);
+		*pinstr = new Instr_putpixel(PInstrCode::_line); // GetPD(_line, 5 * 4);
 		goto label3;
 	}
 	else if (IsKeyWord("RECTANGLE")) {
-		*pinstr = new Instr_putpixel(_rectangle); // GetPD(_rectangle, 5 * 4);
+		*pinstr = new Instr_putpixel(PInstrCode::_rectangle); // GetPD(_rectangle, 5 * 4);
 		goto label3;
 	}
 	else if (IsKeyWord("ELLIPSE")) {
-		*pinstr = new Instr_putpixel(_ellipse);  // GetPD(_ellipse, 7 * 4);
+		*pinstr = new Instr_putpixel(PInstrCode::_ellipse);  // GetPD(_ellipse, 7 * 4);
 		goto label3;
 	}
 	else if (IsKeyWord("FLOODFILL")) {
-		*pinstr = new Instr_putpixel(_floodfill); // GetPD(_floodfill, 5 * 4);
+		*pinstr = new Instr_putpixel(PInstrCode::_floodfill); // GetPD(_floodfill, 5 * 4);
 		goto label3;
 	}
 	else if (IsKeyWord("OUTTEXTXY")) {
-		*pinstr = new Instr_putpixel(_outtextxy); // GetPD(_outtextxy, 11 * 4);
+		*pinstr = new Instr_putpixel(PInstrCode::_outtextxy); // GetPD(_outtextxy, 11 * 4);
 	label3:
 		RdLex(); // read '('
 		auto iPutPixel = (Instr_putpixel*)(*pinstr);
@@ -1354,7 +1354,7 @@ void RdProcCall(Instr** pinstr)
 		Accept(',');
 		iPutPixel->Par2 = RdRealFrml(nullptr);
 		Accept(',');
-		if (iPutPixel->Kind == _outtextxy) {
+		if (iPutPixel->Kind == PInstrCode::_outtextxy) {
 			iPutPixel->Par3 = RdStrFrml(nullptr);
 			Accept(',');
 			iPutPixel->Par4 = RdRealFrml(nullptr);
@@ -1376,15 +1376,15 @@ void RdProcCall(Instr** pinstr)
 				}
 			}
 		}
-		else if (iPutPixel->Kind == _putpixel) iPutPixel->Par3 = RdAttr();
+		else if (iPutPixel->Kind == PInstrCode::_putpixel) iPutPixel->Par3 = RdAttr();
 		else {
 			iPutPixel->Par3 = RdRealFrml(nullptr);
 			Accept(',');
-			if (iPutPixel->Kind == _floodfill) iPutPixel->Par4 = RdAttr();
+			if (iPutPixel->Kind == PInstrCode::_floodfill) iPutPixel->Par4 = RdAttr();
 			else iPutPixel->Par4 = RdRealFrml(nullptr);
 			Accept(',');
 			iPutPixel->Par5 = RdAttr();
-			if ((iPutPixel->Kind == _ellipse) && (Lexem == ',')) {
+			if ((iPutPixel->Kind == PInstrCode::_ellipse) && (Lexem == ',')) {
 				RdLex();
 				iPutPixel->Par6 = RdRealFrml(nullptr);
 				Accept(',');
@@ -1970,7 +1970,7 @@ bool RdList(pstring* S)
 
 Instr* RdPrintTxt()
 {
-	auto PD = new Instr_edittxt(_printtxt); // GetPD(_printtxt, 10);
+	auto PD = new Instr_edittxt(PInstrCode::_printtxt); // GetPD(_printtxt, 10);
 	RdLex();
 	/* !!! with PD^ do!!! */
 	if (FindLocVar(&LVBD, &PD->TxtLV)) { RdLex(); TestString(PD->TxtLV->FTyp); }
@@ -1982,7 +1982,7 @@ Instr* RdEditTxt()
 {
 	//Instr* PD;
 	EdExitD* pX;
-	auto PD = new Instr_edittxt(_edittxt); // GetPD(_edittxt, 73);
+	auto PD = new Instr_edittxt(PInstrCode::_edittxt); // GetPD(_edittxt, 73);
 	RdLex();
 	/* !!! with PD^ do!!! */
 	if (FindLocVar(&LVBD, &PD->TxtLV)) { RdLex(); TestString(PD->TxtLV->FTyp); }
@@ -2242,7 +2242,7 @@ Instr* RdMount()
 
 Instr* RdDisplay()
 {
-	auto PD = new Instr_merge_display(_display); // GetPD(_display, sizeof(RdbPos));
+	auto PD = new Instr_merge_display(PInstrCode::_display); // GetPD(_display, sizeof(RdbPos));
 	RdLex();
 	pstring* s = nullptr;
 	if ((Lexem == _identifier) && FindChpt('H', LexWord, false, &PD->Pos)) RdLex();
@@ -2369,7 +2369,7 @@ Instr_recs* RdMixRecAcc(PInstrCode Op)
 	FrmlElem* Z = nullptr;
 	char FTyp = '\0';
 	FileD* cf = CFile;
-	if ((Op == _appendrec) || (Op == _recallrec)) {
+	if ((Op == PInstrCode::_appendRec) || (Op == PInstrCode::_recallrec)) {
 		// PD = GetPD(Op, 9);
 		PD = new Instr_recs(Op);
 		RdLex();
@@ -2378,7 +2378,7 @@ Instr_recs* RdMixRecAcc(PInstrCode Op)
 #ifdef FandSQL
 		if (CFile->typSQLFile) OldError(155);
 #endif
-		if (Op == _recallrec) {
+		if (Op == PInstrCode::_recallrec) {
 			Accept(',');
 			PD->RecNr = RdRealFrml(nullptr);
 		}
@@ -2387,7 +2387,7 @@ Instr_recs* RdMixRecAcc(PInstrCode Op)
 		// PD = GetPD(Op, 15);
 		PD = new Instr_recs(Op);
 		RdLex();
-		if (Op == _deleterec) {
+		if (Op == PInstrCode::_deleterec) {
 			CFile = RdFileName();
 			PD->RecFD = CFile;
 		}
@@ -2427,7 +2427,7 @@ Instr_recs* RdMixRecAcc(PInstrCode Op)
 #endif
 		}
 	}
-	if ((Lexem == ',') && (Op == _writerec || Op == _deleterec || Op == _recallrec)) {
+	if ((Lexem == ',') && (Op == PInstrCode::_writerec || Op == PInstrCode::_deleterec || Op == PInstrCode::_recallrec)) {
 		RdLex();
 		Accept('+');
 		PD->AdUpd = true;
@@ -2440,7 +2440,7 @@ Instr* RdLinkRec()
 {
 	LocVar* LV = nullptr;
 	LinkD* LD = nullptr;
-	auto PD = new Instr_assign(_linkrec); // GetPD(_linkrec, 12);
+	auto PD = new Instr_assign(PInstrCode::_linkrec); // GetPD(_linkrec, 12);
 	RdLex();
 	if (!IsRecVar(&PD->RecLV1)) Error(141);
 	Accept(',');
@@ -2545,11 +2545,11 @@ Instr_assign* RdAssign()
 				Accept(_assign);
 				if ((Lexem != _number) || (LexWord != "0")) Error(183);
 				RdLex();
-				PD = new Instr_assign(_asgnxnrecs); // GetPInstr(_asgnxnrecs, 4);
+				PD = new Instr_assign(PInstrCode::_asgnxnrecs); // GetPInstr(_asgnxnrecs, 4);
 				PD->xnrIdx = (XWKey*)LV->RecPtr;
 			}
 			else {
-				PD = new Instr_assign(_asgnrecfld); // GetPInstr(_asgnrecfld, 13);
+				PD = new Instr_assign(PInstrCode::_asgnrecfld); // GetPInstr(_asgnrecfld, 13);
 				PD->AssLV = LV;
 				F = RdFldName(LV->FD);
 				PD->RecFldD = F;
@@ -2575,7 +2575,7 @@ Instr_assign* RdAssign()
 			if (IsKeyWord("VOLUME")) {
 				F = CatFD->CatalogVolumeField();
 			label1:
-				PD = new Instr_assign(_asgncatfield);
+				PD = new Instr_assign(PInstrCode::_asgnCatField);
 				PD->FD3 = FD;
 				PD->CatIRec = CatFD->GetCatalogIRec(FName, true);
 				PD->CatFld = F;
@@ -2586,14 +2586,14 @@ Instr_assign* RdAssign()
 			else if (FD == nullptr) OldError(9);
 			else if (IsKeyWord("NRECS")) {
 				if (FD->FF->file_type == FileType::RDB) { OldError(127); }
-				PD = new Instr_assign(_asgnnrecs);
+				PD = new Instr_assign(PInstrCode::_asgnnrecs);
 				PD->FD = FD;
 				FTyp = 'R';
 				goto label0;
 			}
 			else {
 				if (!FD->IsParFile) OldError(64);
-				PD = new Instr_assign(_asgnpar); // GetPInstr(_asgnpar, 13);
+				PD = new Instr_assign(PInstrCode::_asgnpar); // GetPInstr(_asgnpar, 13);
 				PD->FD = FD;
 				F = RdFldName(FD);
 				PD->FldD = F;
@@ -2603,7 +2603,7 @@ Instr_assign* RdAssign()
 			}
 		}
 	else if (ForwChar == '[') {
-		PD = new Instr_assign(_asgnfield); // GetPInstr(_asgnfield, 18);
+		PD = new Instr_assign(PInstrCode::_asgnField); // GetPInstr(_asgnField, 18);
 		FD = RdFileName();
 		PD->FD = FD; RdLex();
 #ifdef FandSQL
@@ -2627,14 +2627,14 @@ Instr_assign* RdAssign()
 		case 'r': {
 			Accept(_assign);
 			if (!IsRecVar(&LV2)) Error(141);
-			PD = new Instr_assign(_asgnrecvar); // GetPInstr(_asgnrecvar, 12);
+			PD = new Instr_assign(PInstrCode::_asgnrecvar); // GetPInstr(_asgnrecvar, 12);
 			PD->RecLV1 = LV;
 			PD->RecLV2 = LV2;
 			PD->Ass = MakeImplAssign(LV->FD, LV2->FD);
 			break;
 		}
 		default: {
-			PD = new Instr_assign(_asgnloc); // GetPInstr(_asgnloc, 9);
+			PD = new Instr_assign(PInstrCode::_asgnloc); // GetPInstr(_asgnloc, 9);
 			PD->AssLV = LV; goto label0;
 			break;
 		}
@@ -2642,37 +2642,37 @@ Instr_assign* RdAssign()
 	}
 	else if (IsKeyWord("USERNAME"))
 	{
-		PD = new Instr_assign(_asgnusername); // GetPInstr(_asgnusername, 4);
+		PD = new Instr_assign(PInstrCode::_asgnusername); // GetPInstr(_asgnusername, 4);
 		goto label2;
 	}
 	else if (IsKeyWord("CLIPBD"))
 	{
-		PD = new Instr_assign(_asgnclipbd); // GetPInstr(_asgnclipbd, 4);
+		PD = new Instr_assign(PInstrCode::_asgnClipbd); // GetPInstr(_asgnClipbd, 4);
 		goto label2;
 	}
 	else if (IsKeyWord("ACCRIGHT")) {
-		PD = new Instr_assign(_asgnaccright); // GetPInstr(_asgnaccright, 4);
+		PD = new Instr_assign(PInstrCode::_asgnAccRight); // GetPInstr(_asgnAccRight, 4);
 	label2:
 		Accept(_assign);
 		PD->Frml = RdStrFrml(nullptr);
 	}
 	else if (IsKeyWord("EDOK")) {
-		PD = new Instr_assign(_asgnedok); // GetPInstr(_asgnedok, 4);
+		PD = new Instr_assign(PInstrCode::_asgnEdOk); // GetPInstr(_asgnEdOk, 4);
 		Accept(_assign);
 		PD->Frml = RdBool(nullptr);
 	}
 	else if (IsKeyWord("RANDSEED"))
 	{
-		PD = new Instr_assign(_asgnrand); // GetPInstr(_asgnrand, 4);
+		PD = new Instr_assign(PInstrCode::_asgnrand); // GetPInstr(_asgnrand, 4);
 		goto label3;
 	}
 	else if (IsKeyWord("TODAY"))
 	{
-		PD = new Instr_assign(_asgnusertoday); // GetPInstr(_asgnusertoday, 4);
+		PD = new Instr_assign(PInstrCode::_asgnusertoday); // GetPInstr(_asgnusertoday, 4);
 		goto label3;
 	}
 	else if (IsKeyWord("USERCODE")) {
-		PD = new Instr_assign(_asgnusercode); // GetPInstr(_asgnusercode, 4);
+		PD = new Instr_assign(PInstrCode::_asgnusercode); // GetPInstr(_asgnusercode, 4);
 	label3:
 		Accept(_assign);
 		PD->Frml = RdRealFrml(nullptr);
@@ -2707,16 +2707,16 @@ Instr* RdWith()
 		AcceptKeyWord("DO");
 		iP->WwInstr = RdPInstr();
 	}
-	else if (IsKeyWord("SHARED")) { Op = _withshared; goto label1; }
+	else if (IsKeyWord("SHARED")) { Op = PInstrCode::_withshared; goto label1; }
 	else if (IsKeyWord("LOCKED")) {
-		Op = _withlocked;
+		Op = PInstrCode::_withlocked;
 	label1:
 		P = new Instr_withshared(Op); // GetPInstr(Op, 9 + sizeof(LockD));
 		auto iP = (Instr_withshared*)P;
 		LockD* ld = &iP->WLD;
 	label2:
 		ld->FD = RdFileName();
-		if (Op == _withlocked) {
+		if (Op == PInstrCode::_withlocked) {
 			Accept('[');
 			ld->Frml = RdRealFrml(nullptr);
 			Accept(']');
@@ -2747,7 +2747,7 @@ Instr* RdWith()
 		}
 	}
 	else if (IsKeyWord("GRAPHICS")) {
-		P = new Instr_withshared(_withgraphics);
+		P = new Instr_withshared(PInstrCode::_withgraphics);
 		AcceptKeyWord("DO");
 		((Instr_withshared*)P)->WDoInstr = RdPInstr();
 	}
@@ -2764,7 +2764,7 @@ Instr_assign* RdUserFuncAssign()
 		Error(34);
 	}
 	RdLex();
-	Instr_assign* pd = new Instr_assign(_asgnloc);
+	Instr_assign* pd = new Instr_assign(PInstrCode::_asgnloc);
 	pd->AssLV = lv;
 	RdAssignFrml(lv->FTyp, pd->Add, &pd->Frml, nullptr);
 	return pd;
@@ -2779,31 +2779,31 @@ Instr* RdPInstr()
 	else if (IsKeyWord("CASE")) result = RdCase();
 	else if (IsKeyWord("FOR")) result = RdFor();
 	else if (IsKeyWord("BEGIN")) result = RdBeginEnd();
-	else if (IsKeyWord("BREAK")) result = new Instr(_break);
-	else if (IsKeyWord("EXIT")) result = new Instr(_exitP);
-	else if (IsKeyWord("CANCEL")) result = new Instr(_cancel);
+	else if (IsKeyWord("BREAK")) result = new Instr(PInstrCode::_break);
+	else if (IsKeyWord("EXIT")) result = new Instr(PInstrCode::_exitP);
+	else if (IsKeyWord("CANCEL")) result = new Instr(PInstrCode::_cancel);
 	else if (Lexem == ';') result = nullptr;
 	else if (IsRdUserFunc) result = RdUserFuncAssign();
 	else if (IsKeyWord("MENULOOP")) result = RdMenuBox(true);
 	else if (IsKeyWord("MENU")) result = RdMenuBox(false);
 	else if (IsKeyWord("MENUBAR")) result = RdMenuBar();
 	else if (IsKeyWord("WITH")) result = RdWith();
-	else if (IsKeyWord("SAVE")) result = new Instr(_save);
-	else if (IsKeyWord("CLREOL")) result = new Instr(_clreol);
+	else if (IsKeyWord("SAVE")) result = new Instr(PInstrCode::_save);
+	else if (IsKeyWord("CLREOL")) result = new Instr(PInstrCode::_clreol);
 	else if (IsKeyWord("FORALL")) result = RdForAll();
-	else if (IsKeyWord("CLEARKEYBUF")) result = new Instr(_clearkeybuf);
-	else if (IsKeyWord("WAIT")) result = new Instr(_wait);
-	else if (IsKeyWord("BEEP")) result = new Instr(_beepP);
-	else if (IsKeyWord("NOSOUND")) result = new Instr(_nosound);
+	else if (IsKeyWord("CLEARKEYBUF")) result = new Instr(PInstrCode::_clearkeybuf);
+	else if (IsKeyWord("WAIT")) result = new Instr(PInstrCode::_wait);
+	else if (IsKeyWord("BEEP")) result = new Instr(PInstrCode::_beepP);
+	else if (IsKeyWord("NOSOUND")) result = new Instr(PInstrCode::_nosound);
 #ifndef FandRunV
-	else if (IsKeyWord("MEMDIAG")) result = new Instr(_memdiag);
+	else if (IsKeyWord("MEMDIAG")) result = new Instr(PInstrCode::_memdiag);
 #endif 
-	else if (IsKeyWord("RESETCATALOG")) result = new Instr(_resetcat);
-	else if (IsKeyWord("RANDOMIZE")) result = new Instr(_randomize);
+	else if (IsKeyWord("RESETCATALOG")) result = new Instr(PInstrCode::_resetcat);
+	else if (IsKeyWord("RANDOMIZE")) result = new Instr(PInstrCode::_randomize);
 	else if (Lexem == _identifier) {
 		SkipBlank(false);
 		if (ForwChar == '(') RdProcCall(&result); // funkce muze ovlivnit RESULT
-		else if (IsKeyWord("CLRSCR")) result = new Instr(_clrscr);
+		else if (IsKeyWord("CLRSCR")) result = new Instr(PInstrCode::_clrscr);
 		else if (IsKeyWord("GRAPH")) result = new Instr_graph();
 		else if (IsKeyWord("CLOSE")) result = new Instr_closefds();
 		else result = RdAssign();
@@ -2979,10 +2979,10 @@ Instr* RdBackup(char MTyp, bool IsBackup)
 {
 	Instr_backup* PD;
 	if (MTyp == 'M') {
-		PD = new Instr_backup(_backupm);
+		PD = new Instr_backup(PInstrCode::_backupm);
 	}
 	else {
-		PD = new Instr_backup(_backup);
+		PD = new Instr_backup(PInstrCode::_backup);
 	}
 
 	RdLex();

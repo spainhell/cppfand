@@ -3,8 +3,8 @@
 #include <vector>
 #include "../Common/pstring.h"
 
-class FileD;
 class KeyFldD;
+class FileD;
 struct FrmlListEl;
 
 class XString

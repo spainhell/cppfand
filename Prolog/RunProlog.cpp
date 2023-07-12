@@ -238,8 +238,8 @@ short RunIExpr(TTerm* t)
 	switch (t->Op) {
 	case _const: return t->II;
 	case '^': return !RunIExpr(t->E1);
-	case _and: return RunIExpr(t->E1) && RunIExpr(t->E2);
-	case _or: return RunIExpr(t->E1) || RunIExpr(t->E2);
+	case _and: return RunIExpr(t->E1) & RunIExpr(t->E2);
+	case _or: return RunIExpr(t->E1) | RunIExpr(t->E2);
 	case '+': return RunIExpr(t->E1) + RunIExpr(t->E2);
 	case '-': return RunIExpr(t->E1) - RunIExpr(t->E2);
 	case '*': return RunIExpr(t->E1) * RunIExpr(t->E2);

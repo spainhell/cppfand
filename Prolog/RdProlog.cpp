@@ -966,7 +966,7 @@ label2:
 		else {
 			//ipofs = GetZStor(5 + sizeof(RdbPos) + 2 + n * sizeof(TypAndFrml));
 			ip = new Instr_proc(0);
-			ip->Kind = _proc;
+			ip->Kind = PInstrCode::_proc;
 			ip->PPos = pos;
 			ip->N = n;
 			bpOfs = 4;
@@ -1501,7 +1501,7 @@ void RdDbClause(TPredicate* P)
 {
 	WORD i = 0, n = 0;
 	char* t = PackedTermPtr; WORD* wp = nullptr; TDbBranch* b = nullptr;
-	char A[4000 + 1];
+	char A[4000 + 1] {0};
 	AcceptP('(');
 	t = (char*)A;
 	//PTPMaxOfs = ofs(A) + MaxPackedPredLen - 2;
