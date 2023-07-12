@@ -4,8 +4,6 @@
 #include "FileD.h"
 #include "GlobalVariables.h"
 #include "KeyFldD.h"
-#include "legacy.h"
-#include "oaccess.h"
 #include "rdfildcl.h"
 #include "rdrun.h"
 #include "runfrml.h"
@@ -2514,11 +2512,11 @@ AssignD* MakeImplAssign(FileD* FD1, FileD* FD2)
 				if ((F2->frml_type != F1->frml_type)
 					|| (F1->frml_type == 'R')
 					&& (F1->field_type != F2->field_type)) {
-					A->Kind = _zero;
+					A->Kind = MInstrCode::_zero;
 					A->outputFldD = F1;
 				}
 				else {
-					A->Kind = _output;
+					A->Kind = MInstrCode::_output;
 					A->OFldD = F1;
 					FrmlElem* Z = MakeFldFrml(F2, FTyp);
 					Z = AdjustComma(Z, F2, _divide);

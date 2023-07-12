@@ -190,7 +190,7 @@ void AssignRecVar(LocVar* LV1, LocVar* LV2, AssignD* A)
 
 	while (A != nullptr) {
 		switch (A->Kind) {
-		case _zero: {
+		case MInstrCode::_zero: {
 			FieldDescr* F = A->outputFldD;
 			CFile = FD1;
 			CRecPtr = RP1;
@@ -201,7 +201,7 @@ void AssignRecVar(LocVar* LV1, LocVar* LV2, AssignD* A)
 			}
 			break;
 		}
-		case _output: {
+		case MInstrCode::_output: {
 			CFile = FD1;
 			CRecPtr = RP1;
 			((FrmlElem8*)A->Frml)->NewRP = RP2;

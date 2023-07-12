@@ -1045,7 +1045,7 @@ std::vector<AssignD*> Report::RdAssign2()
 	AssignD* A = new AssignD();
 
 	if (IsKeyWord("IF")) {
-		A->Kind = _ifthenelseM;
+		A->Kind = MInstrCode::_ifThenElse;
 		A->Bool = RdBool(this);
 		AcceptKeyWord("THEN");
 		RdAssignBlk(&A->Instr);
@@ -1054,7 +1054,7 @@ std::vector<AssignD*> Report::RdAssign2()
 		}
 	}
 	else if (ForwChar == '.') {
-		A->Kind = _parfile;
+		A->Kind = MInstrCode::_parfile;
 		FD = RdFileName();
 		if (!FD->IsParFile) OldError(9);
 		Accept('.');
@@ -1066,7 +1066,7 @@ std::vector<AssignD*> Report::RdAssign2()
 	}
 	else if (FindLocVar(&LVBD, &LV)) {
 		RdLex();
-		A->Kind = _locvar;
+		A->Kind = MInstrCode::_locvar;
 		A->LV = LV;
 		RdAssignFrml(LV->FTyp, A->Add, &A->Frml, this);
 	}
@@ -1325,9 +1325,9 @@ void Report::RunAProc(std::vector<AssignD*> vAssign)
 {
 	for (AssignD* A : vAssign) {
 		switch (A->Kind) {
-		case _locvar: { LVAssignFrml(CFile, A->LV, A->Add, A->Frml, CRecPtr); break; }
-		case _parfile: { AsgnParFldFrml(A->FD, A->PFldD, A->Frml, A->Add); break; }
-		case _ifthenelseM: {
+		case MInstrCode::_locvar: { LVAssignFrml(CFile, A->LV, A->Add, A->Frml, CRecPtr); break; }
+		case MInstrCode::_parfile: { AsgnParFldFrml(A->FD, A->PFldD, A->Frml, A->Add); break; }
+		case MInstrCode::_ifThenElse: {
 			if (RunBool(CFile, A->Bool, CRecPtr)) {
 				RunAProc(A->Instr);
 			}

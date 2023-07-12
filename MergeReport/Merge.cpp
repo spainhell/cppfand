@@ -444,7 +444,7 @@ void Merge::ImplAssign(OutpRD* outputRD, FieldDescr* outputField)
 		if ((inputFile->FF->file_type == outputFile->FF->file_type) && FldTypIdentity(inputField, outputField) && (inputField->field_type != FieldType::TEXT)
 			&& ((inputField->Flg & f_Stored) != 0) && (outputField->Flg == inputField->Flg))
 		{
-			newAssign->Kind = _move;
+			newAssign->Kind = MInstrCode::_move;
 			newAssign->L = outputField->NBytes;
 			newAssign->ToPtr = (BYTE*)outputRecPointer + outputField->Displ;
 			newAssign->FromPtr = (BYTE*)inputRecPointer + inputField->Displ;
@@ -459,7 +459,7 @@ void Merge::ImplAssign(OutpRD* outputRD, FieldDescr* outputField)
 			//}
 		}
 		else {
-			newAssign->Kind = _output;
+			newAssign->Kind = MInstrCode::_output;
 			newAssign->OFldD = outputField;
 			FrmlElem* Z = MakeFldFrml(inputField, FTyp);
 			Z = AdjustComma_M(Z, inputField, _divide);
@@ -514,7 +514,7 @@ FieldDescr* Merge::FindIiandFldD(std::string fieldName)
 bool Merge::FindAssignToF(std::vector<AssignD*> A, FieldDescr* F)
 {
 	for (auto* assign : A) {
-		if ((assign->Kind == _output) && (assign->OFldD == F) && !assign->Add) {
+		if ((assign->Kind == MInstrCode::_output) && (assign->OFldD == F) && !assign->Add) {
 			return true;
 		}
 		//A = (AssignD*)A->pChain;
@@ -561,14 +561,14 @@ std::vector<AssignD*> Merge::RdAssign_M()
 	AD = new AssignD();
 	TestIdentif();
 	if (IsKeyWord("IF")) {
-		AD->Kind = _ifthenelseM;
+		AD->Kind = MInstrCode::_ifThenElse;
 		AD->Bool = RdBool(this);
 		AcceptKeyWord("THEN");
 		AD->Instr = RdAssign_M();
 		if (IsKeyWord("ELSE")) AD->ElseInstr = RdAssign_M();
 	}
 	else if (ForwChar == '.') {
-		AD->Kind = _parfile;
+		AD->Kind = MInstrCode::_parfile;
 		FD = RdFileName();
 		if (!FD->IsParFile) OldError(9);
 		TestIsOutpFile(FD);
@@ -581,14 +581,14 @@ std::vector<AssignD*> Merge::RdAssign_M()
 	}
 	else if (FindLocVar(&LVBD, &LV)) {
 		RdLex();
-		AD->Kind = _locvar;
+		AD->Kind = MInstrCode::_locvar;
 		AD->LV = LV;
 		RdAssignFrml(LV->FTyp, AD->Add, &AD->Frml, this);
 	}
 	else {
 		if (RD->OD == nullptr) Error(72);  /*dummy*/
 		else {
-			AD->Kind = _output;
+			AD->Kind = MInstrCode::_output;
 			F = RdFldName(RD->OD->FD);
 			AD->OFldD = F;
 			if ((F->Flg & f_Stored) == 0) OldError(14);
@@ -749,13 +749,13 @@ void Merge::RunAssign(std::vector<AssignD*> Assigns)
 	for (auto* A : Assigns) {
 		/* !!! with A^ do!!! */
 		switch (A->Kind) {
-		case _move: {
+		case MInstrCode::_move: {
 			if (A != nullptr && A->FromPtr != nullptr && A->ToPtr != nullptr) {
 				memcpy(A->ToPtr, A->FromPtr, A->L);
 			}
 			break;
 		}
-		case _zero: {
+		case MInstrCode::_zero: {
 			switch (A->outputFldD->frml_type) {
 			case 'S': { CFile->saveS(A->outputFldD, "", CRecPtr); break; }
 			case 'R': { CFile->saveR(A->outputFldD, 0, CRecPtr); break; }
@@ -763,19 +763,19 @@ void Merge::RunAssign(std::vector<AssignD*> Assigns)
 			}
 			break;
 		}
-		case _output: {
+		case MInstrCode::_output: {
 			AssgnFrml(CFile, CRecPtr, A->OFldD, A->Frml, false, A->Add);
 			break;
 		}
-		case _locvar: {
+		case MInstrCode::_locvar: {
 			LVAssignFrml(CFile, A->LV, A->Add, A->Frml, CRecPtr);
 			break;
 		}
-		case _parfile: {
+		case MInstrCode::_parfile: {
 			AsgnParFldFrml(A->FD, A->PFldD, A->Frml, A->Add);
 			break;
 		}
-		case _ifthenelseM: {
+		case MInstrCode::_ifThenElse: {
 			if (RunBool(CFile, A->Bool, CRecPtr)) {
 				RunAssign(A->Instr);
 			}

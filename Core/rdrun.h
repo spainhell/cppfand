@@ -12,11 +12,11 @@ class Instr_proc;
 struct EdExitD;
 class FieldDescr;
 
-enum MInstrCode { _zero, _move, _output, _locvar, _parfile, _ifthenelseM };
+enum class MInstrCode { _zero, _move, _output, _locvar, _parfile, _ifThenElse };
 
 struct AssignD : public Chained<AssignD>
 {
-	MInstrCode Kind = _zero;
+	MInstrCode Kind = MInstrCode::_zero;
 	FieldDescr* inputFldD = nullptr;
 	FieldDescr* outputFldD = nullptr;
 	BYTE* ToPtr = nullptr;
