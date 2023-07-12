@@ -1664,13 +1664,13 @@ void UpdateCat()
 void UpdateUTxt()
 {
 	bool Upd;
-	int Pos;
+	int Pos = 0;
 	void* p = nullptr;
 	void* p1 = nullptr;
-	size_t LL;
+	size_t LL = 0;
 	CFile = Chpt;
 	CRecPtr = Chpt->FF->RecPtr;
-	WORD LicNr = ChptTF->LicenseNr;
+	WORD LicNr = (WORD)ChptTF->LicenseNr;
 	MarkStore(p1);
 	if (CFile->FF->NRecs == 0) {
 		WrLLF10Msg(9);

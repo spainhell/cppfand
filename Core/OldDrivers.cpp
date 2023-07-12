@@ -160,7 +160,7 @@ uint64_t getMillisecondsNow()
 bool KbdTimer(int cpu_delta, BYTE kind)
 {
 	// CPU = cca 55 ms, 1 sec = 18.2 CPU)
-	const uint64_t end_time = getMillisecondsNow() + cpu_delta * 55;
+	const uint64_t end_time = getMillisecondsNow() + (uint64_t)(cpu_delta * 55);
 
 	while (true) {
 		switch (kind) {
@@ -439,11 +439,12 @@ void ScrBeep()
 WORD WaitEvent(uint64_t Delta)
 {
 	ULONGLONG t = 0;
-	int t1 = 0, pos = 0, l = 555;
+	uint64_t t1 = 0;
+	int pos = 0, l = 555;
 	BYTE Flgs = 0;
 	WORD x = 0, y = 0;
 	bool vis = false, ce = false;
-	const BYTE MoveDelay = 10;
+	const uint64_t MoveDelay = 10;
 	WORD result = 0;
 
 	Flgs = KbdFlgs;
@@ -457,7 +458,7 @@ label1:
 	if (Flgs != KbdFlgs) { result = 1; goto label2; }
 	if ((Delta != 0) && (GetTickCount64() > t + Delta)) { result = 2; goto label2; }
 	if (pos != 0) {
-		if (GetTickCount64() > t1 + MoveDelay) {
+		if (GetTickCount64() > t1 + MoveDelay * 1000) {
 			screen.ScrWrStr(x, y, "       ", 7);
 			x = Random(TxtCols - 8);
 			y = Random(TxtRows - 1);
@@ -568,7 +569,7 @@ short OpenCrt(TextFile* F)
 
 unsigned long long getAvailPhysMemory()
 {
-	MEMORYSTATUSEX status;
+	MEMORYSTATUSEX status = {};
 	status.dwLength = sizeof(status);
 	GlobalMemoryStatusEx(&status);
 	return status.ullAvailPhys;

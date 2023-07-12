@@ -1272,14 +1272,14 @@ void GoExit()
 	log->log(loglevel::WARN, "GoExit(): Setting 'BreakP = true'", MsgLine.c_str());
 }
 
-bool OSshell(std::string Path, std::string CmdLine, bool NoCancel, bool FreeMm, bool LdFont, bool TextMd)
+bool OSshell(std::string path, std::string cmd_line, bool no_cancel, bool free_memory, bool load_font, bool text_mode)
 {
 	Logging* log = Logging::getInstance();
 
 	char psBuffer[128];
 	FILE* pPipe;
 
-	std::string cmd = Path.empty() ? CmdLine : Path + " " + CmdLine;
+	std::string cmd = path.empty() ? cmd_line : path + " " + cmd_line;
 	log->log(loglevel::INFO, "OSshell() calling command '%s'", cmd.c_str());
 
 	if ((pPipe = _popen(cmd.c_str(), "rt")) == nullptr)

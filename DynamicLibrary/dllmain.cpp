@@ -2,9 +2,10 @@
 #include <windows.h>
 #include <cstdio>
 
-BOOL APIENTRY DllMain( HMODULE hModule,
-                       DWORD  ul_reason_for_call,
-                       LPVOID lpReserved
+
+BOOL APIENTRY DllMain(HMODULE hModule,
+                      DWORD  ul_reason_for_call,
+                      LPVOID lpReserved
 )
 {
     switch (ul_reason_for_call)
@@ -23,5 +24,6 @@ extern "C"
 	__declspec(dllexport) void Hello()
 	{
         printf("Hello from CppFand DLL !\n");
+        //CreateOpenChpt("PROJECT", true);
 	}
 }

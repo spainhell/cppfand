@@ -68,7 +68,7 @@ std::string* StoreStr(std::string S);
 void MarkBoth(void* p, void* p2);
 
 void GoExit();
-bool OSshell(std::string Path, std::string CmdLine, bool NoCancel, bool FreeMm, bool LdFont, bool TextMd);
+bool OSshell(std::string path, std::string cmd_line, bool no_cancel, bool free_memory, bool load_font, bool text_mode);
 
 
 // ***  VIRTUAL HANDLES  ***

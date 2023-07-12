@@ -244,13 +244,13 @@ void InitRunFand()
 	WORD n = 0, l = 0, err = 0, hourmin = 0;
 	FILE* h = nullptr;
 	std::string s;
-	BYTE nb, sec = 0;
+	BYTE nb = 0, sec = 0;
 	short j, MsgNr;
 	TMenuBoxS* mb = nullptr;
 	int w = 0;
 	void* p = nullptr;
 	std::string txt;
-	double r;
+	double r = 0.0;
 
 
 	ClrEvent(); // instead of InitDrivers();
