@@ -191,9 +191,18 @@ label1:
 			// non-printable
 			switch (KbdChar) {
 			case __INSERT:
-			case 'V': InsMode = !InsMode; break;
-			case 'U': if (TxtEdCtrlUBrk) goto label6; break;
-			case __CTRL_F4: if (TxtEdCtrlF4Brk) goto label6; break;
+			case 'V': {
+				InsMode = !InsMode;
+				break;
+			}
+			case 'U': {
+				if (TxtEdCtrlUBrk) goto label6;
+				break;
+			}
+			case __CTRL_F4: {
+				if (TxtEdCtrlF4Brk) goto label6;
+				break;
+			}
 			case __ESC:
 			case __ENTER: {
 			label6:
@@ -228,7 +237,7 @@ label1:
 			}
 			case __END: {
 			label4:
-				pos = text.length() + 1;
+				pos = (WORD)(TrailChar(text, ' ').length() + 1);
 				break;
 			}
 			case __BACK: {
@@ -1491,7 +1500,7 @@ bool OpenEditWw()
 	if (EdRecVar) {
 		if (OnlyAppend) {
 			goto label2;
-		}
+}
 		else {
 			goto label3;
 		}
@@ -1563,7 +1572,7 @@ bool OpenEditWw()
 		}
 		WasWK = true;
 		Subset = true;
-	}
+		}
 #ifdef FandSQL
 	if (CFile->IsSQLFile) Strm1->DefKeyAcc(WK);
 #endif
@@ -1604,7 +1613,7 @@ label3:
 	if (!EdRecVar) CFile->OldLockMode(md2);
 	if (IsNewRec) NewRecExit();
 	return result;
-}
+	}
 
 void RefreshSubset()
 {
@@ -1737,21 +1746,21 @@ void UpdMemberRef(void* POld, void* PNew)
 						DuplFld(cf, CFile, PNew, p2, nullptr, kf->FldD, arg->FldD);
 						//Arg = Arg->pChain;
 						kf = kf->pChain;
-					}
+				}
 					RunAddUpdate(CFile, 'd', p, false, nullptr, LD, CRecPtr);
 					UpdMemberRef(p, p2);
 #ifdef FandSQL
 					if (sql) Strm1->UpdateXRec(k, @x, false) else
 #endif
 						CFile->FF->OverWrXRec(Scan->RecNr, p, p2, CRecPtr);
-				}
+		}
 				goto label1;
-			}
+	}
 			Scan->Close();
 			CFile->ClearRecSpace(p);
 			ReleaseStore(&p);
+}
 		}
-	}
 	CFile = cf; CRecPtr = cr;
 }
 
@@ -2067,7 +2076,7 @@ bool DeleteRecProc()
 	UnLockWithDep(OldMd);
 	result = true;
 	return result;
-}
+	}
 
 ChkD* CompChk(EFldD* D, char Typ)
 {
@@ -2379,7 +2388,7 @@ bool OldRecDiffers()
 				(CompArea(Pchar(CRecPtr) + Displ, Pchar(E->OldRecPtr) + Displ, NBytes) != ord(_equ)) then
 				goto label1;
 			f = f->pChain;
-		}
+}
 		goto label2;
 	}
 	else
@@ -4764,9 +4773,9 @@ label81:
 						if (CFile->IsSQLFile) Strm1->EndKeyAcc(WK);
 #endif
 						CFile->OldLockMode(E->OldMd);
-				}
+					}
 					return;
-			}
+				}
 				break;
 			}
 			case __ALT_EQUAL: {
@@ -5038,9 +5047,9 @@ label81:
 				}
 				//}
 			}
-		}
+			}
 			break;
-	}
+		}
 		break;
 	}
 	default: {
@@ -5048,7 +5057,7 @@ label81:
 		ClrEvent();
 		break;
 	}
-}
+	}
 	Event.What = evNothing;
 	goto label1;
 }

@@ -1552,6 +1552,8 @@ void RunInstr(Instr* PD)
 				(WORD)(RunInt(CFile, iPD->PortWhat, CRecPtr)));
 			break;
 		}
+		default: 
+			break;
 		}
 		PD = PD->Chain;
 		}

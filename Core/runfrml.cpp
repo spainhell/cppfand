@@ -227,7 +227,7 @@ double RunRealStr(FileD* file_d, FrmlElem* X, void* record)
 	}
 	}
 	return result;
-	}
+}
 
 double RMod(FileD* file_d, FrmlElem0* X, void* record)
 {
@@ -424,8 +424,8 @@ WORD IntTSR(FileD* file_d, FrmlElem* X, void* record)
 {
 	void* p;
 	pstring s;
-	bool b = false; double r = 0.0;
-	LongStr* ss = nullptr;
+	bool b = false;
+	double r = 0.0;
 
 	auto iX0 = (FrmlElem0*)X;
 	BYTE IntNr = RunInt(file_d, iX0->P1, record);
@@ -465,7 +465,7 @@ WORD IntTSR(FileD* file_d, FrmlElem* X, void* record)
 		switch (iX0->N31) {
 		case 'R': { p = &r; break; }
 		case 'S': {
-			ss = CopyToLongStr(s);
+			LongStr* ss = CopyToLongStr(s);
 			TWork.Delete((int)p);
 			auto tmp = TWork.Store(ss->A, ss->LL);
 			p = &tmp;
@@ -1058,13 +1058,31 @@ label1:
 		result = TypeDay(rr);
 		break;
 	}
-	case _addwdays: result = AddWDays(RunReal(file_d, iX0->P1, record), RunInt(file_d, iX0->P2, record), iX0->N21); break;
-	case _difwdays: result = DifWDays(RunReal(file_d, iX0->P1, record), RunReal(file_d, iX0->P2, record), iX0->N21); break;
-	case _addmonth: result = AddMonth(RunReal(file_d, iX0->P1, record), RunReal(file_d, iX0->P2, record)); break;
-	case _difmonth: result = DifMonth(RunReal(file_d, iX0->P1, record), RunReal(file_d, iX0->P2, record)); break;
-	case _recno: result = RecNoFun(file_d, (FrmlElem13*)X, record); break;
+	case _addwdays: {
+		result = AddWDays(RunReal(file_d, iX0->P1, record), RunInt(file_d, iX0->P2, record), iX0->N21);
+		break;
+	}
+	case _difwdays: {
+		result = DifWDays(RunReal(file_d, iX0->P1, record), RunReal(file_d, iX0->P2, record), iX0->N21);
+		break;
+	}
+	case _addmonth: {
+		result = AddMonth(RunReal(file_d, iX0->P1, record), RunReal(file_d, iX0->P2, record));
+		break;
+	}
+	case _difmonth: {
+		result = DifMonth(RunReal(file_d, iX0->P1, record), RunReal(file_d, iX0->P2, record));
+		break;
+	}
+	case _recno: {
+		result = RecNoFun(file_d, (FrmlElem13*)X, record);
+		break;
+	}
 	case _recnoabs:
-	case _recnolog: result = AbsLogRecNoFun(file_d, (FrmlElem13*)X, record); break;
+	case _recnolog: {
+		result = AbsLogRecNoFun(file_d, (FrmlElem13*)X, record);
+		break;
+	}
 	case _accrecno: {
 		FrmlElem14* iX = (FrmlElem14*)X;
 		BYTE* rec = nullptr;
@@ -1073,10 +1091,22 @@ label1:
 		delete[] rec; rec = nullptr;
 		break;
 	}
-	case _link: result = LinkProc((FrmlElem15*)X, record); break;
-	case _memavail: result = StoreAvail(); break;
-	case _maxcol: result = TxtCols; break;
-	case _maxrow: result = TxtRows; break;
+	case _link: {
+		result = LinkProc((FrmlElem15*)X, record);
+		break;
+	}
+	case _memavail: {
+		result = StoreAvail();
+		break;
+	}
+	case _maxcol: {
+		result = TxtCols;
+		break;
+	}
+	case _maxrow: {
+		result = TxtRows;
+		break;
+	}
 #ifdef FandGraph
 	case _getmaxx: {
 		if (IsGraphMode) {
@@ -1105,7 +1135,7 @@ label1:
 			result = Event.WhereG.X;
 		}
 		else {
-			result = (double)Event.Where.X + 1.0; break;
+			result = Event.Where.X + 1.0; break;
 		}
 		break;
 	}
@@ -1114,7 +1144,7 @@ label1:
 			result = Event.WhereG.Y;
 		}
 		else {
-			result = (double)Event.Where.Y + 1.0; break;
+			result = Event.Where.Y + 1.0; break;
 		}
 		break;
 	}
@@ -1124,7 +1154,10 @@ label1:
 		result = GetFileSize();
 		break;
 	}
-	case _inttsr: result = IntTSR(file_d, X, record); break;
+	case _inttsr: {
+		result = IntTSR(file_d, X, record);
+		break;
+	}
 	case _userfunc: {
 		result = RunUserFunc(file_d, (FrmlElem19*)X, record)->R;
 		break;
@@ -1310,7 +1343,7 @@ void AssgnFrml(FileD* file_d, void* record, FieldDescr* field_d, FrmlElem* X, bo
 		file_d->saveB(field_d, RunBool(file_d, X, record), record);
 		break;
 	}
-	default: ;
+	default:;
 	}
 }
 
@@ -1796,12 +1829,15 @@ label1:
 	case _copy: {
 		FrmlElem0* const iX0 = static_cast<FrmlElem0*>(X);
 		std::string str = RunStdStr(file_d, iX0->P1, record);
-		const int L1 = RunInt(file_d, iX0->P2, record) - 1;
+		int L1 = RunInt(file_d, iX0->P2, record);
+		if (L1 > 0) { L1--; } // RUNFRML.PAS 427 (dec bx)
 		const int L2 = RunInt(file_d, iX0->P3, record);
 
-		if ((L1 < 0) || (L2 < 0)) str = "";
+		if ((L1 < 0) || (L2 < 0)) {
+			str = "";
+		}
 		else {
-			if (L1 >= str.length()) str = ""; // index L1 je vetsi nez delka retezce
+			if (L1 >= (int)str.length()) str = ""; // index L1 je vetsi nez delka retezce
 			else str = str.substr(L1, L2); // L2 udava delku
 		}
 		return str;
