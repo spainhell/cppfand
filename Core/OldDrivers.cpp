@@ -46,7 +46,7 @@ WORD EventCount, EventQHead, EventQTail;
 stEventQueue EventQueue[EventQSize - 1];
 TCrs Crs;
 int trialInterval;
-void* OldIntr08 = nullptr;
+//void* OldIntr08 = nullptr;
 WORD AutoTicks, DownTicks, AutoDelay;
 void* OldBreakIntr;
 void* OldKbdIntr;
@@ -282,7 +282,7 @@ void TestGlobalKey()
 
 WORD AddCtrlAltShift(BYTE Flgs)
 {
-	auto key = Event.Pressed.KeyCombination();
+	WORD key = Event.Pressed.KeyCombination();
 	WORD result = 0;
 	if (Event.What != evKeyDown) return Event.What;
 	if ((Flgs & 0x04) == 0) goto label3;
@@ -473,7 +473,11 @@ label1:
 			ce = Crs.Enabled;
 			screen.CrsHide();
 			pos = PushW(1, 1, TxtCols, TxtRows, true, true);
-			TextAttr = 0; ClrScr(TextAttr); vis = MausVisible; HideMouse(); l = 555;
+			TextAttr = 0;
+			ClrScr(TextAttr);
+			vis = MausVisible;
+			HideMouse();
+			l = 555;
 			t1 = GetTickCount() - MoveDelay;
 		}
 	}
@@ -529,24 +533,6 @@ void CrsDraw()
 }
 
 void HideMausIn()
-{
-}
-
-void Scroll(WORD X, WORD Y, WORD SizeX, WORD SizeY, bool Up)
-{
-	printf("Scroll neumime! Zatim ...");
-}
-
-void WrDirect()
-{
-}
-
-void ScrollUp()
-{
-	Scroll(WindMin.X, WindMin.Y, WindMax.X - WindMin.X + 1, WindMax.Y - WindMin.Y + 1, true);
-}
-
-void LineFeed()
 {
 }
 

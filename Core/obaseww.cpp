@@ -138,7 +138,7 @@ int PushWFramed(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, std::string top, 
 
 int PushWrLLMsg(WORD N, bool WithESC)
 {
-	auto result = PushW(1, TxtRows, TxtCols, TxtRows);
+	int result = PushW(1, TxtRows, TxtCols, TxtRows);
 	TextAttr = screen.colors.zNorm;
 	ClrEol(TextAttr);
 	TextAttr = screen.colors.zNorm | 0x80;

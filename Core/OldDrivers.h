@@ -75,8 +75,8 @@ const bool MausVisible = true;
 const bool MausRefresh = false;
 
 extern int trialInterval;
-	// příznaky klávesnice - původně 0:$417 (is used to make control to keys(Num, Caps, Scroll, Alt, ShR, ShL, CtrlL, CtrlR)
-extern void* OldIntr08;
+// priznaky klavesnice - původně 0:$417 (is used to make control to keys(Num, Caps, Scroll, Alt, ShR, ShL, CtrlL, CtrlR)
+//extern void* OldIntr08;
 
 /*EventQueue:array[0..EventQSize-1] of record
 	Time,Buttons,
@@ -108,10 +108,6 @@ extern void* OldKbdIntr;
 void GetMonoColor();
 void CrsDraw();
 void HideMausIn();
-void Scroll(WORD X, WORD Y, WORD SizeX, WORD SizeY, bool Up);
-void WrDirect();
-void ScrollUp();
-void LineFeed();
 
 short WrOutput(TextFile* F);
 short DummyCrt(TextFile* F);
