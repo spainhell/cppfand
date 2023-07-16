@@ -788,7 +788,7 @@ void wwmix::PromptLL(WORD N, std::string& Txt, WORD I, bool Del)
 	int w = PushW(1, TxtRows, TxtCols, TxtRows);
 	screen.GotoXY(1, TxtRows, ScrPosition::absolute);
 	TextAttr = screen.colors.pTxt;
-	ClrEol();
+	ClrEol(TextAttr);
 	ReadMessage(N);
 	screen.ScrWrStr(1, TxtRows, MsgLine, screen.colors.pTxt);
 	screen.GotoXY(MsgLine.length() + 1, TxtRows, ScrPosition::absolute);
@@ -806,7 +806,7 @@ std::string wwmix::PassWord(bool TwoTimes)
 
 	while (true) {
 		TextAttr = screen.colors.pNorm | 0x80;
-		ClrEol();
+		ClrEol(TextAttr);
 		ReadMessage(MsgNr);
 		screen.ScrFormatWrText(1, 1, "%*s", (MsgLine.length() + 22) / 2, MsgLine.c_str());
 		WORD pressed_key = ReadKbd(); // wait for 1st char

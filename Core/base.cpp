@@ -1383,7 +1383,7 @@ label1:
 			@1:  pop bp end; */
 			screen.Window(1, 1, TxtCols, TxtRows);
 			TextAttr = StartAttr;
-			ClrScr();
+			ClrScr(TextAttr);
 			screen.CrsNorm();
 			ChDir(OldDir);
 			SetCurrPrinter(-1);

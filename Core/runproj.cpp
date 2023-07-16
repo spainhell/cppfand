@@ -874,7 +874,7 @@ bool CompRunChptRec(WORD CC)
 			throw std::exception("CompRunChptRec() Graph <-> Text Mode not implemented.");
 		}
 		else {
-			ClrScr();
+			ClrScr(TextAttr);
 		}
 	}
 	if (uw) {
@@ -1255,7 +1255,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 				OldTxt = CFile->loadT(ChptOldTxt, CRecPtr);
 				InpRdbPos = RP;
 				if (IsTestRun) {
-					ClrScr();
+					ClrScr(TextAttr);
 					screen.GotoXY(3 + lmsg, 2);
 					printf("%*i", 4, I);
 					screen.GotoXY(3 + lmsg, 3);

@@ -1167,7 +1167,7 @@ void DisplSysLine()
 	if (s == "") return;
 	screen.GotoXY(1, 1);
 	TextAttr = screen.colors.fNorm;
-	ClrEol();
+	ClrEol(TextAttr);
 	i = 1; x = "";
 	while (i <= s.length())
 		if (s[i] == '_') {
@@ -1201,7 +1201,7 @@ void DisplBool()
 	if (!WithBoolDispl) return;
 	screen.GotoXY(1, 2);
 	TextAttr = E->dSubSet;
-	ClrEol();
+	ClrEol(TextAttr);
 	if (Select) {
 		std::string s = E->BoolTxt;
 		if (s.length() > TxtCols) s[0] = (char)TxtCols;
@@ -1306,7 +1306,7 @@ void DisplEditWw()
 		}
 	screen.Window(EV.C1, EV.R1, EV.C2, EV.R2);
 	TextAttr = E->Attr;
-	ClrScr();
+	ClrScr(TextAttr);
 
 	WriteWFrame(E->WFlags, E->Top, "");
 	screen.Window(1, 1, TxtCols, TxtRows);
@@ -1328,7 +1328,7 @@ void DisplWwRecsOrPage(WORD* c_page, ERecTxtD** rt)
 		Wind oldMin = WindMin;
 		Wind oldMax = WindMax;
 		screen.Window(E->FrstCol, E->FrstRow + E->NHdTxt, E->LastCol, E->FrstRow + E->Rows - 1);
-		ClrScr();
+		ClrScr(TextAttr);
 		WindMin = oldMin;
 		WindMax = oldMax;
 		DisplRecTxt();
@@ -2872,7 +2872,7 @@ bool PromptSearch(bool create)
 		TextAttr = screen.colors.pTxt;
 		screen.ScrWrStr(1, TxtRows, F->Name + ":", TextAttr);
 		screen.GotoXY((WORD)F->Name.length() + 2, TxtRows);
-		ClrEol();
+		ClrEol(TextAttr);
 		s = "";
 		pos = 1;
 		Col = screen.WhereX();

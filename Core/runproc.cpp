@@ -42,7 +42,7 @@ void UserHeadLine(std::string UserHeader)
 {
 	WParam* p = PushWParam(1, 1, TxtCols, 1, true);
 	TextAttr = screen.colors.fNorm;
-	ClrEol();
+	ClrEol(TextAttr);
 	WORD maxlen = TxtCols - 10;
 	WORD l = GetLengthOfStyledString(UserHeader);
 	if (l >= maxlen) {
@@ -925,7 +925,7 @@ void WithWindowProc(Instr_window* PD)
 	auto top = RunShortStr(CFile, PD->Top, CRecPtr); // nacte nadpis
 	w1 = PushWFramed(v.C1, v.R1, v.C2, v.R2, ProcAttr, top, "", PD->WithWFlags); // vykresli oramovane okno s nadpisem
 	if ((PD->WithWFlags & WNoClrScr) == 0) {
-		ClrScr();
+		ClrScr(TextAttr);
 	}
 	SetWwViewPort();
 	RunInstr(PD->WwInstr);
@@ -1257,7 +1257,7 @@ void RunInstr(Instr* PD)
 		}
 		case PInstrCode::_clrscr: {
 			TextAttr = ProcAttr;
-			ClrScr();
+			ClrScr(TextAttr);
 			break;
 		}
 		case PInstrCode::_clrww: {
@@ -1266,7 +1266,7 @@ void RunInstr(Instr* PD)
 		}
 		case PInstrCode::_clreol: {
 			TextAttr = ProcAttr;
-			ClrEol();
+			ClrEol(TextAttr);
 			break;
 		}
 		case PInstrCode::_exec: {
@@ -1768,7 +1768,7 @@ void RunMainProc(RdbPos RP, bool NewWw)
 		ProcAttr = screen.colors.uNorm;
 		screen.Window(1, 2, TxtCols, TxtRows);
 		TextAttr = ProcAttr;
-		ClrScr();
+		ClrScr(TextAttr);
 		UserHeadLine("");
 		MenuX = 1; MenuY = 2;
 	}

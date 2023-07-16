@@ -410,17 +410,17 @@ void NoSound()
 {
 }
 
-void ClrScr()
+void ClrScr(BYTE Color)
 {
-	screen.ScrClr(WindMin.X, WindMin.Y, WindMax.X - WindMin.X + 1, WindMax.Y - WindMin.Y + 1, ' ', TextAttr);
+	screen.ScrClr(WindMin.X, WindMin.Y, WindMax.X - WindMin.X + 1, WindMax.Y - WindMin.Y + 1, ' ', Color);
 	screen.GotoXY(WindMin.X, WindMin.Y, absolute);
 }
 
-void ClrEol()
+void ClrEol(BYTE Color)
 {
 	short X = screen.WhereXabs();
 	short Y = screen.WhereYabs();
-	screen.ScrClr(X, Y, WindMax.X - X + 1, 1, ' ', TextAttr);
+	screen.ScrClr(X, Y, WindMax.X - X + 1, 1, ' ', Color);
 }
 
 void Beep()
@@ -473,7 +473,7 @@ label1:
 			ce = Crs.Enabled;
 			screen.CrsHide();
 			pos = PushW(1, 1, TxtCols, TxtRows, true, true);
-			TextAttr = 0; ClrScr(); vis = MausVisible; HideMouse(); l = 555;
+			TextAttr = 0; ClrScr(TextAttr); vis = MausVisible; HideMouse(); l = 555;
 			t1 = GetTickCount() - MoveDelay;
 		}
 	}

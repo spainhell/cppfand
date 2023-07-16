@@ -522,7 +522,7 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 					if ((NextLineStartIndex > LenT) || Insert) {
 						NewLine('m');
 						positionOnActualLine = 1;
-						ClrEol();
+						ClrEol(TextAttr);
 						if (TextLineNr - ScreenFirstLineNr == PageS) {
 							screen.GotoXY(1, 1);
 							//MyDelLine();
@@ -804,7 +804,7 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 			}
 			case 'N': {
 				NewLine('n');
-				ClrEol();
+				ClrEol(TextAttr);
 				screen.GotoXY(1, TextLineNr - ScreenFirstLineNr + 2);
 				//MyInsLine();
 				break;
@@ -894,7 +894,7 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 			}
 			case _QI_: { Indent = !Indent; break; }
 			case _QL_: { if (UpdatedL) DekodLine(textIndex); break; }
-			case _QY_: { if (TestLastPos(GetArrLineLength() + 1, positionOnActualLine)) ClrEol(); break; }
+			case _QY_: { if (TestLastPos(GetArrLineLength() + 1, positionOnActualLine)) ClrEol(TextAttr); break; }
 			case _QF_:
 			case _QA_: {
 				Replace = false;

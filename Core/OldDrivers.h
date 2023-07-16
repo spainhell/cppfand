@@ -92,8 +92,8 @@ WORD ReadKbd(); // { buffer + Bios / + mouse / }
 void Delay(WORD N);
 void Sound(WORD N);
 void NoSound();
-void ClrScr();
-void ClrEol();
+void ClrScr(BYTE Color);
+void ClrEol(BYTE Color);
 void Beep();
 void LockBeep();
 void ScrBeep();

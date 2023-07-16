@@ -140,7 +140,7 @@ int PushWrLLMsg(WORD N, bool WithESC)
 {
 	auto result = PushW(1, TxtRows, TxtCols, TxtRows);
 	TextAttr = screen.colors.zNorm;
-	ClrEol();
+	ClrEol(TextAttr);
 	TextAttr = screen.colors.zNorm | 0x80;
 	//printf("  ");
 	screen.ScrWrText(1, 1, "  ");
@@ -204,6 +204,9 @@ void WrLLF10MsgLine()
 	if (F10SpecKey == 0xffff) {
 		screen.ScrWrStr(1, row + 1, "...!", screen.colors.zNorm | 0x80);
 	}
+	else if (spec.F10Enter)	{
+		screen.ScrWrStr(1, row + 1, "\x11\xD9 !", screen.colors.zNorm | 0x80);
+	}
 	else {
 		screen.ScrWrStr(1, row + 1, "F10!", screen.colors.zNorm | 0x80);
 	}
@@ -239,11 +242,11 @@ void WrLLF10MsgLine()
 			}
 			break;
 		case evKeyDown:
+			if (spec.F10Enter && key == __ENTER) {
+				key = __F10;
+			}
 			if (key == __F10 || key == F10SpecKey || F10SpecKey == 0xffff
-				|| F10SpecKey == 0xfffe && (key == __SHIFT_F7 || key == __F1))
-			{
-				// TODO: je to potreba?
-				// KbdChar = Event.KeyCode;
+				|| F10SpecKey == 0xfffe && (key == __SHIFT_F7 || key == __F1)) {
 				ClrEvent();
 				end = true;
 			}
@@ -285,7 +288,7 @@ bool PromptYN(WORD NMsg)
 {
 	int w = PushW(1, TxtRows, TxtCols, TxtRows);
 	TextAttr = screen.colors.pTxt;
-	ClrEol();
+	ClrEol(TextAttr);
 	std::string message = ReadMessage(NMsg);
 	if (message.length() > TxtCols - 3) {
 		message = message.substr(0, TxtCols - 3);
@@ -294,7 +297,7 @@ bool PromptYN(WORD NMsg)
 	WORD col = screen.WhereX();
 	WORD row = screen.WhereY();
 	TextAttr = screen.colors.pNorm;
-	screen.ScrFormatWrText(col, row, " ");
+	screen.ScrFormatWrStyledText(col, row, screen.colors.pNorm, " ");
 	screen.GotoXY(col, row);
 	screen.CrsShow();
 

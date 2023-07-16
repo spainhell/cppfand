@@ -2733,7 +2733,7 @@ char MyVerifyLL(WORD n, pstring s)
 	int w = PushW(1, 1, TxtCols, TxtRows);
 	screen.GotoXY(1, TxtRows);
 	TextAttr = screen.colors.pTxt;
-	ClrEol();
+	ClrEol(TextAttr);
 	SetMsgPar(s);
 	WriteMsg(n);
 	WORD c1 = screen.WhereX();
@@ -3030,7 +3030,7 @@ void Edit(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys)
 	//ColScr = Part.ColorP;
 	WrStatusLine();
 	TextAttr = TxtColor;
-	ClrScr();
+	ClrScr(TextAttr);
 	Background();
 	FirstEvent = false;
 
