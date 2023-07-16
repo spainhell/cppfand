@@ -2110,7 +2110,7 @@ void FindExistTest(FrmlElem* Z, LinkD** LD)
 		break;
 	}
 	default: {
-		auto iZ = (FrmlElem0*)Z;
+		auto iZ = (FrmlElemFunction*)Z;
 		if (Z->Op >= 0x60 && Z->Op <= 0xAF) /*1-ary*/ { FindExistTest(iZ->P1, LD); break; }
 		if (Z->Op >= 0xB0 && Z->Op <= 0xEF) /*2-ary*/ {
 			FindExistTest(iZ->P1, LD);
@@ -4155,9 +4155,9 @@ void Calculate2()
 			if (CFld->Ed(IsNewRec) && (F->frml_type == FTyp)) {
 				if (LockRec(true)) {
 					if ((F->field_type == FieldType::FIXED) && ((F->Flg & f_Comma) != 0)) {
-						auto iZ0 = (FrmlElem0*)Z;
-						auto iZ02 = (FrmlElem2*)iZ0->P1;
-						if ((Z->Op = _const)) R = ((FrmlElem2*)Z)->R;
+						auto iZ0 = (FrmlElemFunction*)Z;
+						auto iZ02 = (FrmlElemNumber*)iZ0->P1;
+						if ((Z->Op = _const)) R = ((FrmlElemNumber*)Z)->R;
 						else if ((Z->Op == _unminus) && (iZ02->Op == _const)) R = -iZ02->R;
 						else goto label5;
 						SetWasUpdated(CFile->FF, CRecPtr);

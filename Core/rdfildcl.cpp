@@ -202,10 +202,10 @@ ChkD* RdChkD(WORD Low)
 	else {
 		WORD N = Upper - Low;
 		//if (N > sizeof(pstring)) N = pred(sizeof(pstring));
-		FrmlElem* Z = new FrmlElem4(_const, 0); // GetOp(_const, N + 1);
+		FrmlElem* Z = new FrmlElemString(_const, 0); // GetOp(_const, N + 1);
 		C->TxtZ = Z;
-		auto iZ = (FrmlElem4*)Z;
-		((FrmlElem4*)Z)->S = std::string((char*)&InpArrPtr[Low], N);
+		auto iZ = (FrmlElemString*)Z;
+		((FrmlElemString*)Z)->S = std::string((char*)&InpArrPtr[Low], N);
 		//char(N);
 		//Move(&InpArrPtr[Low], &iZ->S[1], N);
 	}

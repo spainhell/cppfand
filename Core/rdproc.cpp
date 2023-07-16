@@ -279,12 +279,12 @@ FrmlElem* RdFldNameFrmlP(char& FTyp, MergeReportBase* caller)
 	if (IsKeyWord("EDUPDATED")) {
 		Op = _edupdated;
 	label3:
-		result = new FrmlElem0(Op, 0); // GetOp(Op, 0);
+		result = new FrmlElemFunction(Op, 0); // GetOp(Op, 0);
 		FTyp = 'B';
 		return result;
 	}
 	if (IsKeyWord("GETPATH")) {
-		result = new FrmlElem0(_getpath, 0); // GetOp(_getpath, 0);
+		result = new FrmlElemFunction(_getpath, 0); // GetOp(_getpath, 0);
 		FTyp = 'S';
 		return result;
 	}
@@ -500,8 +500,8 @@ FrmlElem* RdFunctionP(char& FFTyp)
 	}
 	else if (IsKeyWord("GETPATH")) {
 		RdLex();
-		Z = new FrmlElem0(_getpath, 0); // GetOp(_getpath, 0);
-		((FrmlElem0*)Z)->P1 = RdStrFrml(nullptr);
+		Z = new FrmlElemFunction(_getpath, 0); // GetOp(_getpath, 0);
+		((FrmlElemFunction*)Z)->P1 = RdStrFrml(nullptr);
 		FTyp = 'S';
 	}
 	else if (IsKeyWord("GETTXT")) {
@@ -528,8 +528,8 @@ FrmlElem* RdFunctionP(char& FFTyp)
 	}
 	else if (IsKeyWord("INTTSR")) {
 		RdLex();
-		Z = new FrmlElem0(_inttsr, 5); // GetOp(_inttsr, 5);
-		auto iZ = (FrmlElem0*)Z;
+		Z = new FrmlElemFunction(_inttsr, 5); // GetOp(_inttsr, 5);
+		auto iZ = (FrmlElemFunction*)Z;
 		iZ->P1 = RdRealFrml(nullptr); Accept(',');
 		iZ->P2 = RdRealFrml(nullptr); Accept(',');
 		Typ = 'r';
@@ -545,14 +545,14 @@ FrmlElem* RdFunctionP(char& FFTyp)
 #endif
 	else if (IsKeyWord("SELECTSTR")) {
 		RdLex();
-		Z = new FrmlElem0(_selectstr, 13); // GetOp(_selectstr, 13);
+		Z = new FrmlElemFunction(_selectstr, 13); // GetOp(_selectstr, 13);
 		FTyp = 'S';
-		RdSelectStr((FrmlElem0*)Z);
+		RdSelectStr((FrmlElemFunction*)Z);
 	}
 	else if (IsKeyWord("PROMPTYN")) {
 		RdLex();
-		Z = new FrmlElem0(_promptyn, 0); // GetOp(_promptyn, 0);
-		((FrmlElem0*)Z)->P1 = RdStrFrml(nullptr);
+		Z = new FrmlElemFunction(_promptyn, 0); // GetOp(_promptyn, 0);
+		((FrmlElemFunction*)Z)->P1 = RdStrFrml(nullptr);
 		FTyp = 'B';
 	}
 	else if (IsKeyWord("MOUSEEVENT")) {
@@ -569,8 +569,8 @@ FrmlElem* RdFunctionP(char& FFTyp)
 	}
 	else if (IsKeyWord("MOUSEIN")) {
 		RdLex();
-		Z = new FrmlElem0(_mousein, 4); // GetOp(_mousein, 4);
-		auto iZ = (FrmlElem0*)Z;
+		Z = new FrmlElemFunction(_mousein, 4); // GetOp(_mousein, 4);
+		auto iZ = (FrmlElemFunction*)Z;
 		iZ->P1 = RdRealFrml(nullptr); Accept(',');
 		iZ->P2 = RdRealFrml(nullptr); Accept(',');
 		iZ->P3 = RdRealFrml(nullptr); Accept(',');
@@ -578,8 +578,8 @@ FrmlElem* RdFunctionP(char& FFTyp)
 	}
 	else if (IsKeyWord("PORTIN")) {
 		RdLex();
-		Z = new FrmlElem0(_portin, 0); // GetOp(_portin, 0);
-		auto iZ = (FrmlElem0*)Z;
+		Z = new FrmlElemFunction(_portin, 0); // GetOp(_portin, 0);
+		auto iZ = (FrmlElemFunction*)Z;
 		iZ->P1 = RdBool(nullptr); Accept(',');
 		iZ->P2 = RdRealFrml(nullptr); FTyp = 'R';
 	}
@@ -606,7 +606,7 @@ XKey* RdViewKeyImpl(FileD* FD)
 	return K;
 }
 
-void RdSelectStr(FrmlElem0* Z)
+void RdSelectStr(FrmlElemFunction* Z)
 {
 	Z->Delim = 0x0D; // CTRL+M
 	Z->P1 = RdRealFrml(nullptr); Accept(',');
@@ -780,7 +780,7 @@ Instr* RdFor()
 	auto iLoop = new Instr_loops(PInstrCode::_whiledo); // GetPInstr(_whiledo, 8);
 	PD->Chain = iLoop;
 	//PD = (Instr_assign*)PD->pChain;
-	auto Z1 = new FrmlElem0(_compreal, 2); // GetOp(_compreal, 2);
+	auto Z1 = new FrmlElemFunction(_compreal, 2); // GetOp(_compreal, 2);
 	Z1->P1 = nullptr;
 	Z1->LV1 = LV;
 	Z1->N21 = _le;
@@ -796,7 +796,7 @@ Instr* RdFor()
 	iLoop->AddInstr(iAsg);
 	iAsg->Add = true;
 	iAsg->AssLV = LV;
-	auto Z2 = new FrmlElem2(_const, 0, 1); // GetOp(_const, sizeof(double));
+	auto Z2 = new FrmlElemNumber(_const, 0, 1); // GetOp(_const, sizeof(double));
 	//Z->R = 1;
 	iAsg->Frml = Z2;
 	return result;
@@ -985,7 +985,7 @@ Instr_proc* RdProcArg(char Caller)
 				TArg[N].Name = LexWord;
 				Accept(_identifier);
 				Accept(',');
-				auto z = new FrmlElem0(_setmybp, 0); // GetOp(_setmybp, 0);
+				auto z = new FrmlElemFunction(_setmybp, 0); // GetOp(_setmybp, 0);
 				z->P1 = RdStrFrml(nullptr);
 				TArg[N].TxtFrml = z;
 				Accept(']');
@@ -1119,8 +1119,8 @@ bool RdViewOpt(EditOpt* EO)
 		SkipBlank(false);
 		if ((Lexem == _quotedstr) && (ForwChar == ',' || ForwChar == ')')) {
 			EditModeToFlags(LexWord, Flgs, true);
-			EO->Mode = new FrmlElem4(_const, 0); // GetOp(_const, LexWord.length() + 1);
-			((FrmlElem4*)EO->Mode)->S = LexWord;
+			EO->Mode = new FrmlElemString(_const, 0); // GetOp(_const, LexWord.length() + 1);
+			((FrmlElemString*)EO->Mode)->S = LexWord;
 			RdLex();
 		}
 		else {
@@ -2413,7 +2413,7 @@ Instr_recs* RdMixRecAcc(PInstrCode Op)
 			if (K == nullptr) K = CFile->Keys.empty() ? nullptr : CFile->Keys[0];
 			PD->Key = K;
 			if ((K == nullptr) && (!CFile->IsParFile || (Z->Op != _const)
-				|| (((FrmlElem4*)Z)->S.length() > 0))) OldError(24);
+				|| (((FrmlElemString*)Z)->S.length() > 0))) OldError(24);
 			break;
 		}
 #ifdef FandSQL
@@ -2483,14 +2483,14 @@ label1:
 
 FrmlElem* AdjustComma(FrmlElem* Z1, FieldDescr* F, instr_type Op)
 {
-	FrmlElem0* Z = nullptr;
-	FrmlElem2* Z2 = nullptr;
+	FrmlElemFunction* Z = nullptr;
+	FrmlElemNumber* Z2 = nullptr;
 	auto result = Z1;
 	if (F->field_type != FieldType::FIXED) return result;
 	if ((F->Flg & f_Comma) == 0) return result;
-	Z2 = new FrmlElem2(_const, 0, Power10[F->M]); // GetOp(_const, sizeof(double));
+	Z2 = new FrmlElemNumber(_const, 0, Power10[F->M]); // GetOp(_const, sizeof(double));
 	//Z2->R = Power10[F->M];
-	Z = new FrmlElem0(Op, 0); // GetOp(Op, 0);
+	Z = new FrmlElemFunction(Op, 0); // GetOp(Op, 0);
 	Z->P1 = Z1;
 	Z->P2 = Z2;
 	result = Z;
@@ -2961,7 +2961,7 @@ label1:
 	if (LastExitCode != 0) {
 		LastTxtPos = cpos;
 		if (X->EvalTyp == 'B') {
-			z = new FrmlElem5(_const, 0, false); // GetOp(_const, 1);
+			z = new FrmlElemBool(_const, 0, false); // GetOp(_const, 1);
 			// z->B = false;
 		}
 	}

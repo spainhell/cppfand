@@ -335,11 +335,9 @@ void EncodeMask(pstring& Mask, WORD& Min, WORD& Max)
 	char Code[] = "YMDhmst";
 	WORD i = 0, j = 0;
 	Min = 9; Max = 0;
-	for (i = 1; i <= Mask.length(); i++)
-	{
+	for (i = 1; i <= Mask.length(); i++) {
 		for (j = 0; j < 7; j++) {
-			if ((char)Mask[i] == Code[j])
-			{
+			if ((char)Mask[i] == Code[j]) {
 				Mask[i] = (char)j;
 				if (Min > j) Min = j;
 				if (Max < j) Max = j;

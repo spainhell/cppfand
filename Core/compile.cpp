@@ -857,7 +857,7 @@ label1:
 		if ((Lexem == _equ) && !IsParList) {
 			RdLex();
 			if (IsKeyWord("TRUE")) {
-				// Z = new FrmlElem5(_const, 0, true); // GetOp(_const, sizeof(bool));
+				// Z = new FrmlElemBool(_const, 0, true); // GetOp(_const, sizeof(bool));
 				newVars[0]->B = true;
 			}
 			else {
@@ -1108,7 +1108,7 @@ FrmlElem* RdAttr()
 		RdLex();
 		const char c = (char)(toupper(Rd1Char()) - 64);
 		if (!screen.SetStyleAttr(c, n)) OldError(120);
-		FrmlElem* z = new FrmlElem2(_const, 0, n);
+		FrmlElem* z = new FrmlElemNumber(_const, 0, n);
 		return z;
 	}
 	return RdRealFrml(nullptr);
@@ -1380,7 +1380,7 @@ void SrchZ(FrmlElem* Z)
 	FrmlListEl* fl = nullptr;
 	if (Z == nullptr) return;
 
-	auto iZ0 = (FrmlElem0*)Z;
+	auto iZ0 = (FrmlElemFunction*)Z;
 	auto iZ7 = (FrmlElem7*)Z;
 	auto iZ19 = (FrmlElem19*)Z;
 
@@ -1529,7 +1529,7 @@ void TestReal(char FTyp)
 FrmlElem* BOperation(char Typ, instr_type Fun, FrmlElem* Frml)
 {
 	TestBool(Typ);
-	FrmlElem0* Z = new FrmlElem0(Fun, 0); // GetOp(Fun, 0);
+	FrmlElemFunction* Z = new FrmlElemFunction(Fun, 0); // GetOp(Fun, 0);
 	RdLex();
 	Z->P1 = Frml;
 	return Z;
@@ -1540,17 +1540,17 @@ FrmlElem* RdPrim(char& FTyp, MergeReportBase* caller);
 FrmlElem* RdMult(char& FTyp, MergeReportBase* caller)
 {
 	WORD N = 0;
-	FrmlElem0* Z = (FrmlElem0*)RdPrim(FTyp, caller);
+	FrmlElemFunction* Z = (FrmlElemFunction*)RdPrim(FTyp, caller);
 label1:
-	FrmlElem0* Z1 = Z;
+	FrmlElemFunction* Z1 = Z;
 	switch (Lexem) {
 	case '*': {
-		Z = new FrmlElem0(_times, 0); // GetOp(_times, 0);
+		Z = new FrmlElemFunction(_times, 0); // GetOp(_times, 0);
 		goto label2;
 		break;
 	}
 	case  '/': {
-		Z = new FrmlElem0(_divide, 0); // GetOp(_divide, 0);
+		Z = new FrmlElemFunction(_divide, 0); // GetOp(_divide, 0);
 	label2:
 		TestReal(FTyp);
 		RdLex();
@@ -1562,16 +1562,16 @@ label1:
 	}
 	case _identifier: {
 		if (EquUpCase(QQdiv, LexWord)) {
-			Z = new FrmlElem0(_div, 0); /*GetOp(_div, 0);*/
+			Z = new FrmlElemFunction(_div, 0); /*GetOp(_div, 0);*/
 			goto label2;
 		}
 		else if (EquUpCase(QQmod, LexWord)) {
-			Z = new FrmlElem0(_mod, 0); /*GetOp(_mod, 0);*/
+			Z = new FrmlElemFunction(_mod, 0); /*GetOp(_mod, 0);*/
 			goto label2;
 		}
 		else if (EquUpCase(QQround, LexWord)) {
 			TestReal(FTyp);
-			Z = new FrmlElem0(_round, 0); /*GetOp(_round, 0);*/
+			Z = new FrmlElemFunction(_round, 0); /*GetOp(_round, 0);*/
 			RdLex();
 			Z->P1 = Z1;
 			Z->P2 = RdPrim(FTyp, caller);
@@ -1585,18 +1585,18 @@ label1:
 
 FrmlElem* RdAdd(char& FTyp, MergeReportBase* caller)
 {
-	FrmlElem0* Z = (FrmlElem0*)RdMult(FTyp, caller);
-	FrmlElem0* Z1 = nullptr;
+	FrmlElemFunction* Z = (FrmlElemFunction*)RdMult(FTyp, caller);
+	FrmlElemFunction* Z1 = nullptr;
 label1:
 	switch (Lexem) {
 	case '+': {
 		Z1 = Z;
 		if (FTyp == 'R') {
-			Z = new FrmlElem0(_plus, 0); /*GetOp(_plus, 0);*/
+			Z = new FrmlElemFunction(_plus, 0); /*GetOp(_plus, 0);*/
 			goto label2;
 		}
 		else {
-			Z = new FrmlElem0(_concat, 0); // GetOp(_concat, 0);
+			Z = new FrmlElemFunction(_concat, 0); // GetOp(_concat, 0);
 			TestString(FTyp);
 			RdLex();
 			Z->P1 = Z1;
@@ -1608,7 +1608,7 @@ label1:
 	}
 	case '-': {
 		Z1 = Z;
-		Z = new FrmlElem0(_minus, 0); // GetOp(_minus, 0);
+		Z = new FrmlElemFunction(_minus, 0); // GetOp(_minus, 0);
 		TestReal(FTyp);
 	label2:
 		RdLex();
@@ -1652,8 +1652,8 @@ FrmlElem* RdComp(char& FTyp, MergeReportBase* caller)
 	Z1 = Z;
 	if (Lexem >= _equ && Lexem <= _ne)
 		if (FTyp == 'R') {
-			Z = new FrmlElem0(_compreal, 2); // GetOp(_compreal, 2);
-			auto iZ0 = (FrmlElem0*)Z;
+			Z = new FrmlElemFunction(_compreal, 2); // GetOp(_compreal, 2);
+			auto iZ0 = (FrmlElemFunction*)Z;
 			iZ0->P1 = Z1;
 			iZ0->N21 = Lexem;
 			RdLex();
@@ -1664,8 +1664,8 @@ FrmlElem* RdComp(char& FTyp, MergeReportBase* caller)
 		}
 		else {
 			TestString(FTyp);
-			Z = new FrmlElem0(_compstr, 2); // GetOp(_compstr, 2);
-			auto iZ0 = (FrmlElem0*)Z;
+			Z = new FrmlElemFunction(_compstr, 2); // GetOp(_compstr, 2);
+			auto iZ0 = (FrmlElemFunction*)Z;
 			iZ0->P1 = Z1;
 			iZ0->N21 = Lexem;
 			RdLex();
@@ -1726,7 +1726,7 @@ FrmlElem* RdBAnd(char& FTyp, MergeReportBase* caller)
 	FrmlElem* Z = RdComp(FTyp, caller);
 	while (Lexem == '&') {
 		Z = BOperation(FTyp, _and, Z);
-		((FrmlElem0*)Z)->P2 = RdComp(FTyp, caller);
+		((FrmlElemFunction*)Z)->P2 = RdComp(FTyp, caller);
 		TestBool(FTyp);
 	}
 	return Z;
@@ -1738,7 +1738,7 @@ FrmlElem* RdBOr(char& FTyp, MergeReportBase* caller)
 	while (Lexem == '|')
 	{
 		Z = BOperation(FTyp, _or, Z);
-		((FrmlElem0*)Z)->P2 = RdBAnd(FTyp, caller);
+		((FrmlElemFunction*)Z)->P2 = RdBAnd(FTyp, caller);
 		TestBool(FTyp);
 	}
 	return Z;
@@ -1749,7 +1749,7 @@ FrmlElem* RdFormula(char& FTyp, MergeReportBase* caller)
 	FrmlElem* Z = RdBOr(FTyp, caller);
 	while ((BYTE)Lexem == _limpl || (BYTE)Lexem == _lequ) {
 		Z = BOperation(FTyp, (instr_type)Lexem, Z);
-		((FrmlElem0*)Z)->P2 = RdBOr(FTyp, caller);
+		((FrmlElemFunction*)Z)->P2 = RdBOr(FTyp, caller);
 		TestBool(FTyp);
 	}
 	return Z;
@@ -1884,61 +1884,50 @@ FrmlElem* RdPrim(char& FTyp, MergeReportBase* caller)
 
 	switch (Lexem) {
 	case _identifier: {
-		if (InpArrLen == 705 && CurrPos >= 210)
-		{
-			//printf("compile.cpp 1728; ");
-		}
 		SkipBlank(false);
-		if (IsFun(R0Fun, LexWord, FunCode))
-		{
-			Z = new FrmlElem0(FunCode, 0); // GetOp(FunCode, 0);
+		if (IsFun(R0Fun, LexWord, FunCode)) {
+			Z = new FrmlElemFunction(FunCode, 0); // GetOp(FunCode, 0);
 			FTyp = 'R';
 		}
-		else if (IsFun(RCFun, LexWord, FunCode))
-		{
+		else if (IsFun(RCFun, LexWord, FunCode)) {
 			Z = new FrmlElem1(_getWORDvar, 1); // GetOp(_getWORDvar, 1);
 			((FrmlElem1*)Z)->N01 = FunCode;
 			FTyp = 'R';
 		}
-		else if (IsFun(S0Fun, LexWord, FunCode))
-		{
-			Z = new FrmlElem0(FunCode, 0); // GetOp(FunCode, 0);
+		else if (IsFun(S0Fun, LexWord, FunCode)) {
+			Z = new FrmlElemFunction(FunCode, 0); // GetOp(FunCode, 0);
 			FTyp = 'S';
 		}
-		else if (IsFun(B0Fun, LexWord, FunCode))
-		{
-			Z = new FrmlElem0(FunCode, 0); // GetOp(FunCode, 0);
+		else if (IsFun(B0Fun, LexWord, FunCode)) {
+			Z = new FrmlElemFunction(FunCode, 0); // GetOp(FunCode, 0);
 			FTyp = 'B';
 		}
-		else if (IsKeyWord("TRUE"))
-		{
-			Z = new FrmlElem5(_const, 1, true); // GetOp(_const, 1);
+		else if (IsKeyWord("TRUE")) {
+			Z = new FrmlElemBool(_const, 1, true); // GetOp(_const, 1);
 			//Z->B = true;
 			FTyp = 'B';
 		}
-		else if (IsKeyWord("FALSE"))
-		{
-			Z = new FrmlElem5(_const, 1, false); // GetOp(_const, 1);
+		else if (IsKeyWord("FALSE")) {
+			Z = new FrmlElemBool(_const, 1, false); // GetOp(_const, 1);
 			FTyp = 'B';
 		}
 		else if (!EquUpCase("OWNED", LexWord) && (ForwChar == '(')) {
 			if (FindFuncD(&Z, caller)) FTyp = ((FrmlElem19*)Z)->FC->FTyp;
-			else if (IsFun(S3Fun, LexWord, FunCode))
-			{
+			else if (IsFun(S3Fun, LexWord, FunCode)) {
 				RdLex();
-				Z = new FrmlElem0(FunCode, 0); // GetOp(FunCode, 0);
-				((FrmlElem0*)Z)->P1 = RdAdd(FTyp, caller);
+				Z = new FrmlElemFunction(FunCode, 0); // GetOp(FunCode, 0);
+				((FrmlElemFunction*)Z)->P1 = RdAdd(FTyp, caller);
 				if ((BYTE)FunCode == _copy) TestString(FTyp);
 				else {
 					TestReal(FTyp);
 					FTyp = 'S';
 				}
 				Accept(',');
-				((FrmlElem0*)Z)->P2 = RdAdd(Typ, caller);
+				((FrmlElemFunction*)Z)->P2 = RdAdd(Typ, caller);
 				if (((BYTE)FunCode == _str) && (Typ == 'S')) goto label0;
 				TestReal(Typ);
 				Accept(',');
-				((FrmlElem0*)Z)->P3 = RdAdd(Typ, caller);
+				((FrmlElemFunction*)Z)->P3 = RdAdd(Typ, caller);
 				TestReal(Typ);
 			label0:
 				Accept(')');
@@ -1948,14 +1937,14 @@ FrmlElem* RdPrim(char& FTyp, MergeReportBase* caller)
 				RdLex();
 				Z2 = nullptr;
 			label1:
-				Z = new FrmlElem0(_cond, 0); // GetOp(_cond, 0);
+				Z = new FrmlElemFunction(_cond, 0); // GetOp(_cond, 0);
 				if (!IsKeyWord("ELSE"))
 				{
-					((FrmlElem0*)Z)->P1 = RdFormula(Typ, caller);
+					((FrmlElemFunction*)Z)->P1 = RdFormula(Typ, caller);
 					TestBool(Typ);
 				}
 				Accept(':');
-				((FrmlElem0*)Z)->P2 = RdAdd(Typ, caller);
+				((FrmlElemFunction*)Z)->P2 = RdAdd(Typ, caller);
 				if (Z2 == nullptr)
 				{
 					Z1 = Z;
@@ -1963,11 +1952,11 @@ FrmlElem* RdPrim(char& FTyp, MergeReportBase* caller)
 					if (Typ == 'B') OldError(70);
 				}
 				else {
-					((FrmlElem0*)Z2)->P3 = Z;
+					((FrmlElemFunction*)Z2)->P3 = Z;
 					if (FTyp == 'S') TestString(Typ);
 					else TestReal(Typ);
 				}
-				if ((((FrmlElem0*)Z)->P1 != nullptr) && (Lexem == ','))
+				if ((((FrmlElemFunction*)Z)->P1 != nullptr) && (Lexem == ','))
 				{
 					RdLex();
 					Z2 = Z;
@@ -1981,8 +1970,8 @@ FrmlElem* RdPrim(char& FTyp, MergeReportBase* caller)
 				RdLex();
 				Z1 = RdAdd(Typ, caller);
 				TestString(Typ);
-				Z = new FrmlElem0(_modulo, 2); // GetOp(_modulo, 2);
-				((FrmlElem0*)Z)->P1 = Z1;
+				Z = new FrmlElemFunction(_modulo, 2); // GetOp(_modulo, 2);
+				((FrmlElemFunction*)Z)->P1 = Z1;
 				N = 0;
 				do {
 					Accept(',');
@@ -1992,7 +1981,7 @@ FrmlElem* RdPrim(char& FTyp, MergeReportBase* caller)
 					N++;
 				} while (Lexem == ',');
 				Accept(')');
-				((FrmlElem0*)Z)->W11 = N;
+				((FrmlElemFunction*)Z)->W11 = N;
 				FTyp = 'B';
 			}
 			else if (IsKeyWord("SUM")) {
@@ -2108,17 +2097,17 @@ FrmlElem* RdPrim(char& FTyp, MergeReportBase* caller)
 			else if (IsFun(RS1Fun, LexWord, FunCode))
 			{
 				RdLex();
-				Z = new FrmlElem0(FunCode, 0); // GetOp(FunCode, 0);
+				Z = new FrmlElemFunction(FunCode, 0); // GetOp(FunCode, 0);
 			label3:
-				((FrmlElem0*)Z)->P1 = RdAdd(Typ, caller);
+				((FrmlElemFunction*)Z)->P1 = RdAdd(Typ, caller);
 				TestString(Typ);
 				goto label4;
 			}
 			else if (IsFun(R1Fun, LexWord, FunCode))
 			{
 				RdLex();
-				Z = new FrmlElem0(FunCode, 0); // GetOp(FunCode, 0);
-				((FrmlElem0*)Z)->P1 = RdAdd(Typ, caller);
+				Z = new FrmlElemFunction(FunCode, 0); // GetOp(FunCode, 0);
+				((FrmlElemFunction*)Z)->P1 = RdAdd(Typ, caller);
 				TestReal(Typ);
 			label4:
 				FTyp = 'R';
@@ -2127,67 +2116,67 @@ FrmlElem* RdPrim(char& FTyp, MergeReportBase* caller)
 			else if (IsFun(R2Fun, LexWord, FunCode))
 			{
 				RdLex();
-				Z = new FrmlElem0(FunCode, 1); // GetOp(FunCode, 1);
-				((FrmlElem0*)Z)->P1 = RdAdd(Typ, caller);
+				Z = new FrmlElemFunction(FunCode, 1); // GetOp(FunCode, 1);
+				((FrmlElemFunction*)Z)->P1 = RdAdd(Typ, caller);
 				TestReal(Typ);
 				Accept(',');
-				((FrmlElem0*)Z)->P2 = RdAdd(Typ, caller);
+				((FrmlElemFunction*)Z)->P2 = RdAdd(Typ, caller);
 				TestReal(Typ);
 				if ((Z->Op == _addwdays || Z->Op == _difwdays) && (Lexem == ','))
 				{
 					RdLex();
-					((FrmlElem0*)Z)->N21 = RdInteger();
-					if (((FrmlElem0*)Z)->N21 > 3) OldError(136);
+					((FrmlElemFunction*)Z)->N21 = RdInteger();
+					if (((FrmlElemFunction*)Z)->N21 > 3) OldError(136);
 				}
 				goto label4;
 			}
 			else if (IsKeyWord("LEADCHAR"))
 			{
-				Z = new FrmlElem0(_leadchar, 2); // GetOp(_leadchar, 2);
+				Z = new FrmlElemFunction(_leadchar, 2); // GetOp(_leadchar, 2);
 				goto label5;
 			}
 			else if (IsKeyWord("TRAILCHAR"))
 			{
-				Z = new FrmlElem0(_trailchar, 2); // GetOp(_trailchar, 2);
+				Z = new FrmlElemFunction(_trailchar, 2); // GetOp(_trailchar, 2);
 			label5:
 				RdLex();
-				((FrmlElem0*)Z)->N11 = RdQuotedChar();
+				((FrmlElemFunction*)Z)->N11 = RdQuotedChar();
 				Accept(',');
-				((FrmlElem0*)Z)->P1 = RdAdd(Typ, caller);
+				((FrmlElemFunction*)Z)->P1 = RdAdd(Typ, caller);
 				TestString(Typ);
 				if (Lexem == ',') {
 					RdLex();
-					((FrmlElem0*)Z)->N12 = RdQuotedChar();
+					((FrmlElemFunction*)Z)->N12 = RdQuotedChar();
 				}
 				goto label6;
 			}
 			else if (IsKeyWord("COPYLINE"))
 			{
-				Z = new FrmlElem0(_copyline, 0); // GetOp(_copyline, 0);
+				Z = new FrmlElemFunction(_copyline, 0); // GetOp(_copyline, 0);
 				goto label7;
 			}
 			else if (IsKeyWord("REPEATSTR"))
 			{
-				Z = new FrmlElem0(_repeatstr, 0); // GetOp(_repeatstr, 0);
+				Z = new FrmlElemFunction(_repeatstr, 0); // GetOp(_repeatstr, 0);
 			label7:
 				RdLex();
-				((FrmlElem0*)Z)->P1 = RdAdd(Typ, caller);
+				((FrmlElemFunction*)Z)->P1 = RdAdd(Typ, caller);
 				TestString(Typ);
 				Accept(',');
-				((FrmlElem0*)Z)->P2 = RdAdd(Typ, caller);
+				((FrmlElemFunction*)Z)->P2 = RdAdd(Typ, caller);
 				TestReal(Typ);
 				if ((Lexem == ',') && (Z->Op == _copyline)) {
 					RdLex();
-					((FrmlElem0*)Z)->P3 = RdAdd(Typ, caller);
+					((FrmlElemFunction*)Z)->P3 = RdAdd(Typ, caller);
 					TestReal(Typ);
 				}
 				goto label6;
 			}
 			else if (IsFun(S1Fun, LexWord, FunCode))
 			{
-				Z = new FrmlElem0(FunCode, 0); // GetOp(FunCode, 0);
+				Z = new FrmlElemFunction(FunCode, 0); // GetOp(FunCode, 0);
 				RdLex();
-				((FrmlElem0*)Z)->P1 = RdAdd(FTyp, caller);
+				((FrmlElemFunction*)Z)->P1 = RdAdd(FTyp, caller);
 				if (FunCode == _char) TestReal(FTyp);
 				else TestString(FTyp);
 			label6:
@@ -2195,18 +2184,18 @@ FrmlElem* RdPrim(char& FTyp, MergeReportBase* caller)
 				Accept(')');
 			}
 			else if (IsKeyWord("TRUST")) {
-				Z = new FrmlElem0(_trust, 0); // GetOp(_trust, 0);
+				Z = new FrmlElemFunction(_trust, 0); // GetOp(_trust, 0);
 				RdByteListInStore();
 				FTyp = 'B';
 			}
 			else if (IsKeyWord("EQUMASK")) {
-				Z = new FrmlElem0(_equmask, 0); // GetOp(_equmask, 0);
+				Z = new FrmlElemFunction(_equmask, 0); // GetOp(_equmask, 0);
 				FTyp = 'B';
 				RdLex();
-				((FrmlElem0*)Z)->P1 = RdAdd(Typ, caller);
+				((FrmlElemFunction*)Z)->P1 = RdAdd(Typ, caller);
 				TestString(Typ);
 				Accept(',');
-				((FrmlElem0*)Z)->P2 = RdAdd(Typ, caller);
+				((FrmlElemFunction*)Z)->P2 = RdAdd(Typ, caller);
 				TestString(Typ);
 				Accept(')');
 			}
@@ -2230,8 +2219,8 @@ FrmlElem* RdPrim(char& FTyp, MergeReportBase* caller)
 	}
 	case '^': {
 		RdLex();
-		Z = new FrmlElem0(_lneg, 0); // GetOp(_lneg, 0);
-		((FrmlElem0*)Z)->P1 = RdPrim(FTyp, caller);
+		Z = new FrmlElemFunction(_lneg, 0); // GetOp(_lneg, 0);
+		((FrmlElemFunction*)Z)->P1 = RdPrim(FTyp, caller);
 		TestBool(FTyp);
 		break;
 	}
@@ -2244,8 +2233,8 @@ FrmlElem* RdPrim(char& FTyp, MergeReportBase* caller)
 	case '-': {
 		RdLex();
 		if (Lexem == '-') Error(7);
-		Z = new FrmlElem0(_unminus, 0); // GetOp(_unminus, 0);
-		((FrmlElem0*)Z)->P1 = RdPrim(FTyp, caller);
+		Z = new FrmlElemFunction(_unminus, 0); // GetOp(_unminus, 0);
+		((FrmlElemFunction*)Z)->P1 = RdPrim(FTyp, caller);
 		TestReal(FTyp);
 		break;
 	}
@@ -2257,16 +2246,16 @@ FrmlElem* RdPrim(char& FTyp, MergeReportBase* caller)
 		break;
 	}
 	case _quotedstr: {
-		Z = new FrmlElem4(_const, 0); // GetOp(_const, LexWord.length() + 1);
+		Z = new FrmlElemString(_const, 0); // GetOp(_const, LexWord.length() + 1);
 		FTyp = 'S';
-		((FrmlElem4*)Z)->S = LexWord;
+		((FrmlElemString*)Z)->S = LexWord;
 		RdLex();
 		break;
 	}
 	default: {
 		FTyp = 'R';
-		Z = new FrmlElem2(_const, 0); // GetOp(_const, sizeof(double));
-		((FrmlElem2*)Z)->R = RdRealConst();
+		Z = new FrmlElemNumber(_const, 0); // GetOp(_const, sizeof(double));
+		((FrmlElemNumber*)Z)->R = RdRealConst();
 		break;
 	}
 	}
@@ -2288,8 +2277,8 @@ WORD RdPrecision()
 //{
 //	FrmlElem* Z1;
 //	if (NewMyBP) {
-//		Z1 = new FrmlElem0(_setmybp, 0); // GetOp(_setmybp, 0);
-//		((FrmlElem0*)Z1)->P1 = Z;
+//		Z1 = new FrmlElemFunction(_setmybp, 0); // GetOp(_setmybp, 0);
+//		((FrmlElemFunction*)Z1)->P1 = Z;
 //		Z = Z1;
 //	}
 //	return Z;

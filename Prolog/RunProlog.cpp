@@ -1772,20 +1772,20 @@ void CallFandProc(TCommand* cmd)
 			switch (ta->FTyp) {
 			case 'R': {
 				if (t->Fun == prolog_func::_IntT) {
-					((FrmlElem2*)ta->Frml)->R = t->II;
+					((FrmlElemNumber*)ta->Frml)->R = t->II;
 				}
 				else {
-					((FrmlElem2*)ta->Frml)->R = t->RR;
+					((FrmlElemNumber*)ta->Frml)->R = t->RR;
 				}
 				break;
 			}
 			case 'B': {
-				((FrmlElem5*)ta->Frml)->B = t->BB;
+				((FrmlElemBool*)ta->Frml)->B = t->BB;
 				break;
 			}
 			default: {
 				if (ta->Frml->Op == _const) {
-					((FrmlElem4*)ta->Frml)->S = t->SS;
+					((FrmlElemString*)ta->Frml)->S = t->SS;
 				}
 				else {
 					if (d->Typ == _LongStrD) {

@@ -639,7 +639,7 @@ void TestedFlagOff()
 
 void SetFrmlFlags(FrmlElem* Z)
 {
-	auto iZ0 = (FrmlElem0*)Z;
+	auto iZ0 = (FrmlElemFunction*)Z;
 	auto iZ7 = (FrmlElem7*)Z;
 	if (Z == nullptr) return;
 

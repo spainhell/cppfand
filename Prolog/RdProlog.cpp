@@ -868,8 +868,8 @@ void RdPredicateDcl(bool FromClauses, TDatabase* Db)
 				RdLexP();
 				RdLexP();
 				TestLex(_quotedstr);
-				z = new FrmlElem4(_const, 0); // GetOp(_const, LexWord.length() + 1);
-				((FrmlElem4*)z)->S = LexWord;
+				z = new FrmlElemString(_const, 0); // GetOp(_const, LexWord.length() + 1);
+				((FrmlElemString*)z)->S = LexWord;
 				pos.R = (RdbD*)z;
 				pos.IRec = 0;
 				AcceptP(_quotedstr);
@@ -989,12 +989,12 @@ label2:
 				}
 				else {
 					switch (typ) {
-					case 'R': z = new FrmlElem2(_const, 0); /* GetOp(_const, sizeof(double));*/ break;
-					case 'B': z = new FrmlElem5(_const, 0); /* GetOp(_const, sizeof(bool));*/ break;
+					case 'R': z = new FrmlElemNumber(_const, 0); /* GetOp(_const, sizeof(double));*/ break;
+					case 'B': z = new FrmlElemBool(_const, 0); /* GetOp(_const, sizeof(bool));*/ break;
 					default: {
 						// StrDom or LongStrDom
-						z = new FrmlElem4(_const, 0);
-						//if (d == StrDom) z = new FrmlElem4(_const, 0); // GetOp(_const, sizeof(pstring));
+						z = new FrmlElemString(_const, 0);
+						//if (d == StrDom) z = new FrmlElemString(_const, 0); // GetOp(_const, sizeof(pstring));
 						//else {
 						//	z = new FrmlElem18(_getlocvar, 2); // GetOp(_getlocvar, 2);
 						//	//((FrmlElem18*)z)->BPOfs = bpOfs;

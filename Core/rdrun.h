@@ -77,7 +77,7 @@ struct InpD
 	bool Error = false;
 	char OpWarn = '\0';
 	bool Warning = false;
-	FrmlElem4* ErrTxtFrml = nullptr;
+	FrmlElemString* ErrTxtFrml = nullptr;
 	KeyFldD* SFld = nullptr;                /* only Report */
 	std::vector<ConstListEl> OldSFlds;
 	LvDescr* FrstLvS = nullptr;

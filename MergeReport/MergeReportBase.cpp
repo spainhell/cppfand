@@ -37,7 +37,7 @@ void MergeReportBase::Err(char source, bool wasIiPrefix)
 	}
 	if (IDA[Ii]->ErrTxtFrml == nullptr)
 	{
-		IDA[Ii]->ErrTxtFrml = new FrmlElem4(_const, 0); // GetOp(_const, 256);
+		IDA[Ii]->ErrTxtFrml = new FrmlElemString(_const, 0); // GetOp(_const, 256);
 	}
 }
 

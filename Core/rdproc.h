@@ -20,7 +20,7 @@ FrmlElem* RdFldNameFrmlP(char& FTyp, MergeReportBase*);
 FileD* RdPath(bool NoFD, std::string& Path, WORD& CatIRec);
 FrmlElem* RdFunctionP(char& FFTyp);
 XKey* RdViewKeyImpl(FileD* FD);
-void RdSelectStr(FrmlElem0* Z);
+void RdSelectStr(FrmlElemFunction* Z);
 
 Instr* RdPInstr();
 

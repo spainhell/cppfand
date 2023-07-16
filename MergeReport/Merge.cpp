@@ -474,14 +474,14 @@ void Merge::ImplAssign(OutpRD* outputRD, FieldDescr* outputField)
 
 FrmlElem* Merge::AdjustComma_M(FrmlElem* Z1, FieldDescr* F, instr_type Op)
 {
-	FrmlElem0* Z = nullptr;
-	FrmlElem2* Z2 = nullptr;
+	FrmlElemFunction* Z = nullptr;
+	FrmlElemNumber* Z2 = nullptr;
 	FrmlElem* result = Z1;
 	if (F->field_type != FieldType::FIXED) return result;
 	if ((F->Flg & f_Comma) == 0) return result;
-	Z2 = new FrmlElem2(_const, 0, Power10[F->M]); // GetOp(_const, sizeof(double));
+	Z2 = new FrmlElemNumber(_const, 0, Power10[F->M]); // GetOp(_const, sizeof(double));
 	//Z2->R = Power10[F->M];
-	Z = new FrmlElem0(Op, 0); // GetOp(Op, 0);
+	Z = new FrmlElemFunction(Op, 0); // GetOp(Op, 0);
 	Z->P1 = Z1;
 	Z->P2 = Z2;
 	result = Z;

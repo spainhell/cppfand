@@ -209,7 +209,7 @@ double RunRealStr(FileD* file_d, FrmlElem* X, void* record)
 		break;
 	}
 	case _diskfree: {
-		auto iX = (FrmlElem0*)X;
+		auto iX = (FrmlElemFunction*)X;
 		std::string s = RunStdStr(file_d, iX->P1, record);
 		result = DiskFree(toupper(s[0]) - '@');
 		break;
@@ -229,7 +229,7 @@ double RunRealStr(FileD* file_d, FrmlElem* X, void* record)
 	return result;
 }
 
-double RMod(FileD* file_d, FrmlElem0* X, void* record)
+double RMod(FileD* file_d, FrmlElemFunction* X, void* record)
 {
 	double R1, R2;
 	R1 = RunReal(file_d, X->P1, record);
@@ -427,7 +427,7 @@ WORD IntTSR(FileD* file_d, FrmlElem* X, void* record)
 	bool b = false;
 	double r = 0.0;
 
-	auto iX0 = (FrmlElem0*)X;
+	auto iX0 = (FrmlElemFunction*)X;
 	BYTE IntNr = RunInt(file_d, iX0->P1, record);
 	WORD FunNr = RunInt(file_d, iX0->P2, record);
 	FrmlElem* z = iX0->P3;
@@ -570,7 +570,7 @@ bool RunBool(FileD* file_d, FrmlElem* X, void* record)
 	if (X == nullptr) { return true; }
 	switch (X->Op) {
 	case _and: {
-		auto iX0 = (FrmlElem0*)X;
+		auto iX0 = (FrmlElemFunction*)X;
 		if (RunBool(file_d, iX0->P1, record)) {
 			result = RunBool(file_d, iX0->P2, record);
 		}
@@ -578,24 +578,24 @@ bool RunBool(FileD* file_d, FrmlElem* X, void* record)
 		break;
 	}
 	case _or: {
-		auto iX0 = (FrmlElem0*)X;
+		auto iX0 = (FrmlElemFunction*)X;
 		if (RunBool(file_d, iX0->P1, record)) result = true;
 		else result = RunBool(file_d, iX0->P2, record);
 		break;
 	}
 	case _lneg: {
-		auto iX0 = (FrmlElem0*)X;
+		auto iX0 = (FrmlElemFunction*)X;
 		result = !RunBool(file_d, iX0->P1, record);
 		break;
 	}
 	case _limpl: {
-		auto iX0 = (FrmlElem0*)X;
+		auto iX0 = (FrmlElemFunction*)X;
 		if (RunBool(file_d, iX0->P1, record)) result = RunBool(file_d, iX0->P2, record);
 		else result = true;
 		break;
 	}
 	case _lequ: {
-		auto iX0 = (FrmlElem0*)X;
+		auto iX0 = (FrmlElemFunction*)X;
 		if (RunBool(file_d, iX0->P1, record) == RunBool(file_d, iX0->P2, record)) result = true;
 		else result = false;
 		break;
@@ -620,7 +620,7 @@ bool RunBool(FileD* file_d, FrmlElem* X, void* record)
 		break;
 	}
 	case _compreal: {
-		FrmlElem0* iX0 = (FrmlElem0*)X;
+		FrmlElemFunction* iX0 = (FrmlElemFunction*)X;
 		double rrP1 = 0;
 		// pokud jde o smycku FOR, je hodnota ulozena v LV1
 		if (iX0->P1 == nullptr) rrP1 = iX0->LV1->R;
@@ -632,7 +632,7 @@ bool RunBool(FileD* file_d, FrmlElem* X, void* record)
 		break;
 	}
 	case _compstr: {
-		FrmlElem0* iX0 = (FrmlElem0*)X;
+		FrmlElemFunction* iX0 = (FrmlElemFunction*)X;
 		std::string s1 = RunStdStr(file_d, iX0->P1, record);
 		std::string s2 = RunStdStr(file_d, iX0->P2, record);
 		WORD cmpRes = 0;
@@ -646,7 +646,7 @@ bool RunBool(FileD* file_d, FrmlElem* X, void* record)
 		result = (cmpRes & iX0->N21) != 0;
 		break;
 	}
-	case _const: result = ((FrmlElem5*)X)->B; break;
+	case _const: result = ((FrmlElemBool*)X)->B; break;
 	case _mouseevent: {
 	label2:
 		auto iX1 = (FrmlElem1*)X;
@@ -671,7 +671,7 @@ bool RunBool(FileD* file_d, FrmlElem* X, void* record)
 		break;
 	}
 	case _mousein: {
-		auto iX0 = (FrmlElem0*)X;
+		auto iX0 = (FrmlElemFunction*)X;
 		*w1 = RunInt(file_d, iX0->P1, record);
 		*w2 = RunInt(file_d, iX0->P2, record);
 		result = MouseInRectProc(*w1, *w2, RunInt(file_d, iX0->P3, record) - *w1 + 1, RunInt(file_d, iX0->P4, record) - *w2 + 1);
@@ -738,7 +738,7 @@ bool RunBool(FileD* file_d, FrmlElem* X, void* record)
 		break;
 	}
 	case _promptyn: {
-		FrmlElem0* iX0 = (FrmlElem0*)X;
+		FrmlElemFunction* iX0 = (FrmlElemFunction*)X;
 		SetMsgPar(RunShortStr(file_d, iX0->P1, record));
 		result = PromptYN(110);
 		break;
@@ -775,7 +775,7 @@ bool RunBool(FileD* file_d, FrmlElem* X, void* record)
 	case _isnewrec: result = TestIsNewRec(); break;
 	case _testmode: result = IsTestRun; break;
 	case _equmask: {
-		result = RunEquMask(file_d, (FrmlElem0*)X, record);
+		result = RunEquMask(file_d, (FrmlElemFunction*)X, record);
 		break;
 	}
 	case _userfunc: {
@@ -783,7 +783,7 @@ bool RunBool(FileD* file_d, FrmlElem* X, void* record)
 		break;
 	}
 	case _setmybp: {
-		FrmlElem0* iX0 = (FrmlElem0*)X;
+		FrmlElemFunction* iX0 = (FrmlElemFunction*)X;
 		result = RunBool(file_d, iX0->P1, record);
 		break;
 	}
@@ -857,7 +857,7 @@ bool RunModulo(FileD* file_d, FrmlElem1* X, void* record)
 	WORD* B1 = nullptr;
 	WORD* B1Offs = B1;
 	N = X->W11;
-	S = RunShortStr(file_d, ((FrmlElem0*)X)->P1, record);
+	S = RunShortStr(file_d, ((FrmlElemFunction*)X)->P1, record);
 	if (S.length() != N) {
 		return false;
 	}
@@ -872,7 +872,7 @@ bool RunModulo(FileD* file_d, FrmlElem1* X, void* record)
 	return false;
 }
 
-bool RunEquMask(FileD* file_d, FrmlElem0* X, void* record)
+bool RunEquMask(FileD* file_d, FrmlElemFunction* X, void* record)
 {
 	auto value = RunStdStr(file_d, X->P1, record);
 	auto mask = RunShortStr(file_d, X->P2, record);
@@ -895,7 +895,7 @@ double RunReal(FileD* file_d, FrmlElem* X, void* record)
 #endif
 	double result = 0;
 label1:
-	auto iX0 = (FrmlElem0*)X;
+	auto iX0 = (FrmlElemFunction*)X;
 	switch (X->Op) {
 	case _field: {
 		auto iX = (FrmlElem7*)X;
@@ -908,7 +908,7 @@ label1:
 		break;
 	}
 	case _const: {
-		result = ((FrmlElem2*)X)->R; break;
+		result = ((FrmlElemNumber*)X)->R; break;
 	}
 	case _plus: {
 		result = RunReal(file_d, iX0->P1, record) + RunReal(file_d, iX0->P2, record); break;
@@ -956,7 +956,7 @@ label1:
 	}
 	case _cond: {
 	label2:
-		auto iX = (FrmlElem0*)X;
+		auto iX = (FrmlElemFunction*)X;
 		if (iX->P1 != nullptr)
 			if (!RunBool(file_d, iX->P1, record))
 			{
@@ -988,7 +988,7 @@ label1:
 		break;
 	}
 	case _div: result = (int)(RunReal(file_d, iX0->P1, record) / RunReal(file_d, iX0->P2, record)); break;
-	case _mod: result = RMod(file_d, (FrmlElem0*)X, record); break;
+	case _mod: result = RMod(file_d, (FrmlElemFunction*)X, record); break;
 	case _unminus: result = -RunReal(file_d, iX0->P1, record); break;
 	case _today: result = Today(); break;
 	case _pi: result = atan(1.0) * 4; break;
@@ -1599,24 +1599,24 @@ LongStr* RunLongStr(FileD* file_d, FrmlElem* X, void* record)
 		}
 		case _cond: {
 			while (true) {
-				if (((FrmlElem0*)X)->P1 != nullptr)
-					if (!RunBool(file_d, ((FrmlElem0*)X)->P1, record))
+				if (((FrmlElemFunction*)X)->P1 != nullptr)
+					if (!RunBool(file_d, ((FrmlElemFunction*)X)->P1, record))
 					{
-						if (((FrmlElem0*)X)->P3 == nullptr)
+						if (((FrmlElemFunction*)X)->P3 == nullptr)
 						{
 							return new LongStr(2);
 						}
-						X = ((FrmlElem0*)X)->P3;
+						X = ((FrmlElemFunction*)X)->P3;
 						continue;
 					}
-				X = ((FrmlElem0*)X)->P2;
+				X = ((FrmlElemFunction*)X)->P2;
 				break;
 			}
 			continue; // repeat main while loop
 			break;
 		}
 		case _copy: {
-			const auto iX0 = static_cast<FrmlElem0*>(X);
+			const auto iX0 = static_cast<FrmlElemFunction*>(X);
 			S = RunLongStr(file_d, iX0->P1, record);
 			std::string str = std::string(S->A, S->LL);
 
@@ -1637,7 +1637,7 @@ LongStr* RunLongStr(FileD* file_d, FrmlElem* X, void* record)
 			break;
 		}
 		case _concat: {
-			auto iX0 = (FrmlElem0*)X;
+			auto iX0 = (FrmlElemFunction*)X;
 			auto S1 = RunStdStr(file_d, iX0->P1, record);
 			auto S2 = RunStdStr(file_d, iX0->P2, record);
 			auto S12 = S1 + S2;
@@ -1647,17 +1647,17 @@ LongStr* RunLongStr(FileD* file_d, FrmlElem* X, void* record)
 			break;
 		}
 		case _const: {
-			result = CopyToLongStr(((FrmlElem4*)X)->S);
+			result = CopyToLongStr(((FrmlElemString*)X)->S);
 			break;
 		}
 		case _leadchar: {
-			auto iX0 = (FrmlElem0*)X;
+			auto iX0 = (FrmlElemFunction*)X;
 			auto s = RunLongStr(file_d, iX0->P1, record);
 			result = LongLeadChar((char)iX0->N11, (char)iX0->N12, s);
 			break;
 		}
 		case _trailchar: {
-			auto iX0 = (FrmlElem0*)X;
+			auto iX0 = (FrmlElemFunction*)X;
 			char c = iX0->N11;
 			char cnew = iX0->N12;
 			auto sp1 = RunLongStr(file_d, iX0->P1, record);
@@ -1665,7 +1665,7 @@ LongStr* RunLongStr(FileD* file_d, FrmlElem* X, void* record)
 			break;
 		}
 		case _upcase: {
-			auto iX0 = (FrmlElem0*)X;
+			auto iX0 = (FrmlElemFunction*)X;
 			S = RunLongStr(file_d, iX0->P1, record);
 			for (WORD i = 0; i < S->LL; i++) {
 				S->A[i] = UpcCharTab[(BYTE)S->A[i]];
@@ -1674,14 +1674,14 @@ LongStr* RunLongStr(FileD* file_d, FrmlElem* X, void* record)
 			break;
 		}
 		case _lowcase: {
-			auto iX0 = (FrmlElem0*)X;
+			auto iX0 = (FrmlElemFunction*)X;
 			S = RunLongStr(file_d, iX0->P1, record);
 			LowCase(S);
 			result = S;
 			break;
 		}
 		case _copyline: {
-			auto iX0 = (FrmlElem0*)X;
+			auto iX0 = (FrmlElemFunction*)X;
 			int i = 1;
 			if (iX0->P3 != nullptr) {
 				i = RunInt(file_d, iX0->P3, record);
@@ -1696,7 +1696,7 @@ LongStr* RunLongStr(FileD* file_d, FrmlElem* X, void* record)
 			break;
 		}
 		case _repeatstr: {
-			auto iX0 = (FrmlElem0*)X;
+			auto iX0 = (FrmlElemFunction*)X;
 			size_t i = RunInt(file_d, iX0->P2, record);
 			std::string input = RunStdStr(file_d, iX0->P1, record);
 			std::string output = RepeatString(input, i);
@@ -1720,7 +1720,7 @@ LongStr* RunLongStr(FileD* file_d, FrmlElem* X, void* record)
 			break;
 		}
 		case _nodiakr: {
-			auto iX0 = (FrmlElem0*)X;
+			auto iX0 = (FrmlElemFunction*)X;
 			S = RunLongStr(file_d, iX0->P1, record);
 			ConvToNoDiakr((WORD*)S->A[0], S->LL, fonts.VFont);
 			result = S;
@@ -1735,12 +1735,12 @@ LongStr* RunLongStr(FileD* file_d, FrmlElem* X, void* record)
 			break;
 		}
 		case _setmybp: {
-			auto iX0 = (FrmlElem0*)X;
+			auto iX0 = (FrmlElemFunction*)X;
 			result = RunLongStr(file_d, iX0->P1, record);
 			break;
 		}
 		case _selectstr: {
-			result = RunSelectStr(file_d, (FrmlElem0*)X, record);
+			result = RunSelectStr(file_d, (FrmlElemFunction*)X, record);
 			break;
 		}
 		case _clipbd: {
@@ -1813,21 +1813,21 @@ label1:
 	}
 	case _cond: {
 	label2:
-		if (((FrmlElem0*)X)->P1 != nullptr)
-			if (!RunBool(file_d, ((FrmlElem0*)X)->P1, record))
+		if (((FrmlElemFunction*)X)->P1 != nullptr)
+			if (!RunBool(file_d, ((FrmlElemFunction*)X)->P1, record))
 			{
-				if (((FrmlElem0*)X)->P3 == nullptr) {
+				if (((FrmlElemFunction*)X)->P3 == nullptr) {
 					return "";
 				}
-				X = ((FrmlElem0*)X)->P3;
+				X = ((FrmlElemFunction*)X)->P3;
 				goto label2;
 			}
-		X = ((FrmlElem0*)X)->P2;
+		X = ((FrmlElemFunction*)X)->P2;
 		goto label1;
 		break;
 	}
 	case _copy: {
-		FrmlElem0* const iX0 = static_cast<FrmlElem0*>(X);
+		FrmlElemFunction* const iX0 = static_cast<FrmlElemFunction*>(X);
 		std::string str = RunStdStr(file_d, iX0->P1, record);
 		int L1 = RunInt(file_d, iX0->P2, record);
 		if (L1 > 0) { L1--; } // RUNFRML.PAS 427 (dec bx)
@@ -1844,18 +1844,18 @@ label1:
 		break;
 	}
 	case _concat: {
-		FrmlElem0* iX0 = (FrmlElem0*)X;
+		FrmlElemFunction* iX0 = (FrmlElemFunction*)X;
 		std::string S1 = RunStdStr(file_d, iX0->P1, record);
 		std::string S2 = RunStdStr(file_d, iX0->P2, record);
 		result = S1 + S2;
 		break;
 	}
 	case _const: {
-		result = ((FrmlElem4*)X)->S;
+		result = ((FrmlElemString*)X)->S;
 		break;
 	}
 	case _leadchar: {
-		auto iX0 = (FrmlElem0*)X;
+		auto iX0 = (FrmlElemFunction*)X;
 		char c = iX0->N11;
 		char cnew = iX0->N12;
 		auto sp1 = RunStdStr(file_d, iX0->P1, record);
@@ -1863,7 +1863,7 @@ label1:
 		break;
 	}
 	case _trailchar: {
-		auto iX0 = (FrmlElem0*)X;
+		auto iX0 = (FrmlElemFunction*)X;
 		char c = iX0->N11;
 		char cnew = iX0->N12;
 		auto sp1 = RunStdStr(file_d, iX0->P1, record);
@@ -1871,7 +1871,7 @@ label1:
 		break;
 	}
 	case _upcase: {
-		auto iX0 = (FrmlElem0*)X;
+		auto iX0 = (FrmlElemFunction*)X;
 		result = RunStdStr(file_d, iX0->P1, record);
 		for (WORD i = 0; i < result.length(); i++) {
 			result[i] = UpcCharTab[(BYTE)result[i]];
@@ -1879,13 +1879,13 @@ label1:
 		break;
 	}
 	case _lowcase: {
-		auto iX0 = (FrmlElem0*)X;
+		auto iX0 = (FrmlElemFunction*)X;
 		result = RunStdStr(file_d, iX0->P1, record);
 		LowCase(result);
 		break;
 	}
 	case _copyline: {
-		auto iX0 = (FrmlElem0*)X;
+		auto iX0 = (FrmlElemFunction*)X;
 		size_t i = 1;
 		if (iX0->P3 != nullptr) i = RunInt(file_d, iX0->P3, record);
 		std::string s = RunStdStr(file_d, iX0->P1, record);
@@ -1894,7 +1894,7 @@ label1:
 		break;
 	}
 	case _repeatstr: {
-		FrmlElem0* iX0 = (FrmlElem0*)X;
+		FrmlElemFunction* iX0 = (FrmlElemFunction*)X;
 		size_t i = RunInt(file_d, iX0->P2, record);
 		std::string input = RunStdStr(file_d, iX0->P1, record);
 		result = RepeatString(input, i);
@@ -1915,7 +1915,7 @@ label1:
 		break;
 	}
 	case _nodiakr: {
-		auto iX0 = (FrmlElem0*)X;
+		auto iX0 = (FrmlElemFunction*)X;
 		auto s = RunLongStr(file_d, iX0->P1, record);
 		ConvToNoDiakr((WORD*)&s->A[0], s->LL, fonts.VFont);
 		result = std::string(s->A, s->LL);
@@ -1928,12 +1928,12 @@ label1:
 		break;
 	}
 	case _setmybp: {
-		auto iX0 = (FrmlElem0*)X;
+		auto iX0 = (FrmlElemFunction*)X;
 		result = RunStdStr(file_d, iX0->P1, record);
 		break;
 	}
 	case _selectstr: {
-		auto s = RunSelectStr(file_d, (FrmlElem0*)X, record);
+		auto s = RunSelectStr(file_d, (FrmlElemFunction*)X, record);
 		result = std::string(s->A, s->LL);
 		delete s;
 		break;
@@ -2095,7 +2095,7 @@ LongStr* RunS(FileD* file_d, FrmlElem* Z, void* record)
 	WORD l = 0;
 	double r = 0; BYTE m = 0;
 
-	auto iZ0 = (FrmlElem0*)Z;
+	auto iZ0 = (FrmlElemFunction*)Z;
 
 	switch (Z->Op) {
 	case _char: {
@@ -2217,7 +2217,7 @@ LongStr* RunS(FileD* file_d, FrmlElem* Z, void* record)
 	return CopyToLongStr(s);
 }
 
-LongStr* RunSelectStr(FileD* file_d, FrmlElem0* Z, void* record)
+LongStr* RunSelectStr(FileD* file_d, FrmlElemFunction* Z, void* record)
 {
 	wwmix ww;
 

@@ -230,7 +230,7 @@ void ImportTxt(CopyD* CD)
 {
 	ThFile* F1 = nullptr;
 	LockMode md;
-	auto FE = std::make_unique<FrmlElem4>(_const, 0);
+	auto FE = std::make_unique<FrmlElemString>(_const, 0);
 
 #ifdef FandSQL
 	SQLStreamPtr q;

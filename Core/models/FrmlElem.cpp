@@ -1,6 +1,6 @@
 #include "FrmlElem.h"
 
-FrmlElem0::FrmlElem0(instr_type Op, size_t buff_size): FrmlElem(Op, buff_size)
+FrmlElemFunction::FrmlElemFunction(instr_type Op, size_t buff_size): FrmlElem(Op, buff_size)
 {
 }
 
@@ -8,29 +8,29 @@ FrmlElem1::FrmlElem1(instr_type Op, size_t buff_size) : FrmlElem(Op, buff_size)
 {
 }
 
-FrmlElem2::FrmlElem2(instr_type Op, size_t buff_size) : FrmlElem(Op, buff_size)
+FrmlElemNumber::FrmlElemNumber(instr_type Op, size_t buff_size) : FrmlElem(Op, buff_size)
 {
 }
 
-FrmlElem2::FrmlElem2(instr_type Op, size_t buff_size, double value) : FrmlElem(Op, buff_size)
+FrmlElemNumber::FrmlElemNumber(instr_type Op, size_t buff_size, double value) : FrmlElem(Op, buff_size)
 {
 	this->R = value;
 }
 
-FrmlElem4::FrmlElem4(instr_type Op, size_t buff_size) : FrmlElem(Op, buff_size)
+FrmlElemString::FrmlElemString(instr_type Op, size_t buff_size) : FrmlElem(Op, buff_size)
 {
 }
 
-FrmlElem4::FrmlElem4(instr_type Op, size_t buff_size, std::string& value) : FrmlElem(Op, buff_size)
+FrmlElemString::FrmlElemString(instr_type Op, size_t buff_size, std::string& value) : FrmlElem(Op, buff_size)
 {
 	this->S = value;
 }
 
-FrmlElem5::FrmlElem5(instr_type Op, size_t buff_size) : FrmlElem(Op, buff_size)
+FrmlElemBool::FrmlElemBool(instr_type Op, size_t buff_size) : FrmlElem(Op, buff_size)
 {
 }
 
-FrmlElem5::FrmlElem5(instr_type Op, size_t buff_size, bool value) : FrmlElem(Op, buff_size)
+FrmlElemBool::FrmlElemBool(instr_type Op, size_t buff_size, bool value) : FrmlElem(Op, buff_size)
 {
 	this->B = value;
 }

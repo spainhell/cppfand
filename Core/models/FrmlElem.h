@@ -12,19 +12,17 @@ class FileD;
 class FieldDescr;
 class LocVar;
 
-class FrmlElem // ø. 51
+class FrmlElem
 {
 public:
-	FrmlElem(instr_type Op, size_t buff_size) { this->Op = Op; /*buffer = new BYTE[buff_size]{ 0 };*/ }
-	//~FrmlElem() { delete[] buffer; }
+	FrmlElem(instr_type Op, size_t buff_size) { this->Op = Op; }
 	instr_type Op = _notdefined;
-	//BYTE* buffer = nullptr;
 };
 
-class FrmlElem0 : public FrmlElem
+class FrmlElemFunction : public FrmlElem
 {
 public:
-	FrmlElem0(instr_type Op, size_t buff_size);
+	FrmlElemFunction(instr_type Op, size_t buff_size);
 	FrmlElem* P1 = nullptr; FrmlElem* P2 = nullptr; FrmlElem* P3 = nullptr;
 	FrmlElem* P4 = nullptr; FrmlElem* P5 = nullptr; FrmlElem* P6 = nullptr; // 0
 	char Delim = '\0'; // 0
@@ -47,27 +45,27 @@ public:
 	WORD W01 = 0, W02 = 0, W11 = 0, W12 = 0, W21 = 0, W22 = 0; // 1
 };
 
-class FrmlElem2 : public FrmlElem
+class FrmlElemNumber : public FrmlElem
 {
 public:
-	FrmlElem2(instr_type Op, size_t buff_size);
-	FrmlElem2(instr_type Op, size_t buff_size, double value);
+	FrmlElemNumber(instr_type Op, size_t buff_size);
+	FrmlElemNumber(instr_type Op, size_t buff_size, double value);
 	double R = 0.0; // 2
 };
 
-class FrmlElem4 : public FrmlElem
+class FrmlElemString : public FrmlElem
 {
 public:
-	FrmlElem4(instr_type Op, size_t buff_size);
-	FrmlElem4(instr_type Op, size_t buff_size, std::string& value);
+	FrmlElemString(instr_type Op, size_t buff_size);
+	FrmlElemString(instr_type Op, size_t buff_size, std::string& value);
 	std::string S; // 4
 };
 
-class FrmlElem5 : public FrmlElem
+class FrmlElemBool : public FrmlElem
 {
 public:
-	FrmlElem5(instr_type Op, size_t buff_size);
-	FrmlElem5(instr_type Op, size_t buff_size, bool value);
+	FrmlElemBool(instr_type Op, size_t buff_size);
+	FrmlElemBool(instr_type Op, size_t buff_size, bool value);
 	bool B = false; // 5
 };
 
