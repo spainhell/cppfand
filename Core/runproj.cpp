@@ -827,7 +827,7 @@ bool CompRunChptRec(WORD CC)
 						PopW(UserW);
 						uw = true;
 					}
-					RunMainProc(RP, CRdb->ChainBack = nullptr);
+					RunMainProc(RP, CRdb->ChainBack == nullptr);
 				}
 				else {
 					lstFD = (FileD*)LastInChain(FileDRoot);

@@ -1,6 +1,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <cstdio>
+#include "../Core/runproj.h"
 
 
 BOOL APIENTRY DllMain(HMODULE hModule,

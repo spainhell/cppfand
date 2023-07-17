@@ -140,10 +140,7 @@ pstring LeadChar(char C, pstring S)
 
 double RunRealStr(FileD* file_d, FrmlElem* X, void* record)
 {
-	double R = 0.0;
-	LongStr* S = nullptr;
 	pstring Mask;
-	BYTE b = 0;
 	double result;
 	switch (X->Op) {
 	case _valdate: {
@@ -559,14 +556,9 @@ LocVar* RunUserFunc(FileD* file_d, FrmlElem19* X, void* record)
 
 bool RunBool(FileD* file_d, FrmlElem* X, void* record)
 {
-	int RecNo;
-	LongStr* S = nullptr;
-	WORD* w1 = (WORD*)&RecNo;
-	WORD* w2 = (WORD*)S;
-	FileD* cf = nullptr;
-	void* cr = nullptr;
+	
 
-	auto result = false;
+	bool result = false;
 	if (X == nullptr) { return true; }
 	switch (X->Op) {
 	case _and: {
@@ -672,6 +664,12 @@ bool RunBool(FileD* file_d, FrmlElem* X, void* record)
 	}
 	case _mousein: {
 		auto iX0 = (FrmlElemFunction*)X;
+
+		int RecNo;
+		LongStr* S = nullptr;
+		WORD* w1 = (WORD*)&RecNo;
+		WORD* w2 = (WORD*)S;
+
 		*w1 = RunInt(file_d, iX0->P1, record);
 		*w2 = RunInt(file_d, iX0->P2, record);
 		result = MouseInRectProc(*w1, *w2, RunInt(file_d, iX0->P3, record) - *w1 + 1, RunInt(file_d, iX0->P4, record) - *w2 + 1);
@@ -694,6 +692,7 @@ bool RunBool(FileD* file_d, FrmlElem* X, void* record)
 		// nacita hodnotu ze souboru
 		auto iX = (FrmlElem7*)X;
 		bool b7 = false;
+		int RecNo;
 		BYTE* newRecord = nullptr;
 		if (iX->LD != nullptr) {
 			b7 = LinkUpw(file_d, iX->LD, RecNo, false, record, &newRecord);
@@ -885,11 +884,9 @@ double RunReal(FileD* file_d, FrmlElem* X, void* record)
 	if (X == nullptr) return 0;
 
 	double R = 0.0;
-	FileD* cf = nullptr;
 	LockMode md;
 	int RecNo = 0;
-	void* p = &RecNo;
-	void* cr = nullptr;
+
 #ifdef FandGraph
 	ViewPortType* vp = (ViewPortType*)&R;
 #endif
@@ -1205,7 +1202,7 @@ label1:
 
 int RunInt(FileD* file_d, FrmlElem* X, void* record)
 {
-	auto rr = RunReal(file_d, X, record);
+	double rr = RunReal(file_d, X, record);
 	return trunc(rr);
 }
 
@@ -1536,12 +1533,7 @@ LongStr* ConcatLongStr(LongStr* S1, LongStr* S2)
 LongStr* RunLongStr(FileD* file_d, FrmlElem* X, void* record)
 {
 	LongStr* S = nullptr;
-	bool b = false;
-	//WORD I = 0;
 	int RecNo = 0;
-	FileD* cf = nullptr;
-	void* cr = nullptr;
-	void* p = &RecNo;
 	LongStr* result = nullptr;
 
 	if (X == nullptr) return new LongStr(2);
@@ -1600,10 +1592,8 @@ LongStr* RunLongStr(FileD* file_d, FrmlElem* X, void* record)
 		case _cond: {
 			while (true) {
 				if (((FrmlElemFunction*)X)->P1 != nullptr)
-					if (!RunBool(file_d, ((FrmlElemFunction*)X)->P1, record))
-					{
-						if (((FrmlElemFunction*)X)->P3 == nullptr)
-						{
+					if (!RunBool(file_d, ((FrmlElemFunction*)X)->P1, record)) {
+						if (((FrmlElemFunction*)X)->P3 == nullptr) {
 							return new LongStr(2);
 						}
 						X = ((FrmlElemFunction*)X)->P3;
@@ -1761,11 +1751,7 @@ LongStr* RunLongStr(FileD* file_d, FrmlElem* X, void* record)
 
 std::string RunStdStr(FileD* file_d, FrmlElem* X, void* record)
 {
-	bool b = false;
-	WORD I = 0;
 	int RecNo = 0;
-	FileD* cf = nullptr;
-	void* cr = nullptr;
 	std::string result;
 
 	if (X == nullptr) return "";
@@ -2090,7 +2076,6 @@ LongStr* RunS(FileD* file_d, FrmlElem* Z, void* record)
 	wwmix ww;
 
 	pstring s;
-	FileD* cf = nullptr; void* cr = nullptr;
 	XString* x = (XString*)&s;
 	WORD l = 0;
 	double r = 0; BYTE m = 0;
