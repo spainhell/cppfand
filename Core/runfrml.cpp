@@ -875,9 +875,9 @@ bool RunModulo(FileD* file_d, FrmlElemFunction* X, void* record)
 
 bool RunEquMask(FileD* file_d, FrmlElemFunction* X, void* record)
 {
-	auto value = RunStdStr(file_d, X->P1, record);
-	auto mask = RunShortStr(file_d, X->P2, record);
-	auto result = EqualsMask(value, mask);
+	const std::string value = RunStdStr(file_d, X->P1, record);
+	std::string mask = RunShortStr(file_d, X->P2, record);
+	const bool result = EqualsMask(value, mask);
 	return result;
 }
 
@@ -889,9 +889,6 @@ double RunReal(FileD* file_d, FrmlElem* X, void* record)
 	LockMode md;
 	int RecNo = 0;
 
-#ifdef FandGraph
-	ViewPortType* vp = (ViewPortType*)&R;
-#endif
 	double result = 0;
 label1:
 	auto iX0 = (FrmlElemFunction*)X;
@@ -1109,6 +1106,7 @@ label1:
 #ifdef FandGraph
 	case _getmaxx: {
 		if (IsGraphMode) {
+			ViewPortType* vp = (ViewPortType*)&R;
 			GetViewSettings(*vp);
 			result = vp->x2 - vp->x1;
 		}
@@ -1117,6 +1115,7 @@ label1:
 	}
 	case _getmaxy: {
 		if (IsGraphMode) {
+			ViewPortType* vp = (ViewPortType*)&R;
 			GetViewSettings(*vp);
 			result = vp->y2 - vp->y1;
 		}

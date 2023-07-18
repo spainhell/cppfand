@@ -1,91 +1,91 @@
 #include "exprcmp.h"
 #include <regex>
 
-bool CmpStringWithMask(std::string Value, std::string Mask)
+bool CmpStringWithMask(const std::string& value, std::string mask)
 {
-	Mask = RegexFromString(Mask);
-	std::regex self_regex(Mask, std::regex_constants::icase);
-	if (std::regex_search(Value, self_regex)) {
+	mask = RegexFromString(mask);
+	std::regex self_regex(mask, std::regex_constants::icase);
+	if (std::regex_search(value, self_regex)) {
 		return true;
 	}
 	return false;
 }
 
-std::string RegexFromString(std::string Mask)
+std::string RegexFromString(std::string mask)
 {
-	if (Mask.length() == 0) return "";
+	if (mask.length() == 0) return "";
 
 	// puvodni "\" je v reg. vyrazu r"\\"
-	size_t index = Mask.find('\\'); /* \ -> \\ */
+	size_t index = mask.find('\\'); /* \ -> \\ */
 	while (index != std::string::npos) {
-		Mask = Mask.replace(index, 1, "\\\\");
-		index = Mask.find('\\', index + 2);
+		mask = mask.replace(index, 1, "\\\\");
+		index = mask.find('\\', index + 2);
 	}
 
 	// puvodni "[" je v reg. vyrazu r"\["
-	index = Mask.find('['); // { -> \[
+	index = mask.find('['); // { -> \[
 	while (index != std::string::npos) {
-		Mask = Mask.replace(index, 1, "\\[");
-		index = Mask.find('[', index + 2);
+		mask = mask.replace(index, 1, "\\[");
+		index = mask.find('[', index + 2);
 	}
 
 	// puvodni "]" je v reg. vyrazu r"\]"
-	index = Mask.find(']'); // ] -> \]
+	index = mask.find(']'); // ] -> \]
 	while (index != std::string::npos) {
-		Mask = Mask.replace(index, 1, "\\]");
-		index = Mask.find(']', index + 2);
+		mask = mask.replace(index, 1, "\\]");
+		index = mask.find(']', index + 2);
 	}
 
 	// puvodni "{" je v reg. vyrazu r"\{"
-	index = Mask.find('{'); // { -> \{
+	index = mask.find('{'); // { -> \{
 	while (index != std::string::npos) {
-		Mask = Mask.replace(index, 1, "\\{");
-		index = Mask.find('{', index + 2);
+		mask = mask.replace(index, 1, "\\{");
+		index = mask.find('{', index + 2);
 	}
 
 	// puvodni "}" je v reg. vyrazu r"\}"
-	index = Mask.find('}'); // } -> \}
+	index = mask.find('}'); // } -> \}
 	while (index != std::string::npos) {
-		Mask = Mask.replace(index, 1, "\\}");
-		index = Mask.find('}', index + 2);
+		mask = mask.replace(index, 1, "\\}");
+		index = mask.find('}', index + 2);
 	}
 
 	// puvodni "(" je v reg. vyrazu r"\("
-	index = Mask.find('('); // ( -> \(
+	index = mask.find('('); // ( -> \(
 	while (index != std::string::npos) {
-		Mask = Mask.replace(index, 1, "\\(");
-		index = Mask.find('(', index + 2);
+		mask = mask.replace(index, 1, "\\(");
+		index = mask.find('(', index + 2);
 	}
 
 	// puvodni ")" je v reg. vyrazu r"\)"
-	index = Mask.find(')'); // ) -> \)
+	index = mask.find(')'); // ) -> \)
 	while (index != std::string::npos) {
-		Mask = Mask.replace(index, 1, "\\)");
-		index = Mask.find(')', index + 2);
+		mask = mask.replace(index, 1, "\\)");
+		index = mask.find(')', index + 2);
 	}
 
 	// puvodni "." je v reg. vyrazu r"\."
-	index = Mask.find('.'); // . -> \.
+	index = mask.find('.'); // . -> \.
 	while (index != std::string::npos) {
-		Mask = Mask.replace(index, 1, "\\.");
-		index = Mask.find('.', index + 2);
+		mask = mask.replace(index, 1, "\\.");
+		index = mask.find('.', index + 2);
 	}
 
 	// puvodni otaznik je nahrazen r"." - jakykoliv 1 znak
-	index = Mask.find('?'); // ? -> .
+	index = mask.find('?'); // ? -> .
 	while (index != std::string::npos) {
-		Mask[index] = '.';
-		index = Mask.find('?', index);
+		mask[index] = '.';
+		index = mask.find('?', index);
 	}
 
 	// puvodni hvezdicka je nahrazena r".*" - jakekoliv znaky
-	index = Mask.find('*'); // * -> .*
+	index = mask.find('*'); // * -> .*
 	while (index != std::string::npos) {
-		Mask = Mask.replace(index, 1, ".*");
-		index = Mask.find('*', index + 2);
+		mask = mask.replace(index, 1, ".*");
+		index = mask.find('*', index + 2);
 	}
 	
-	return "^" + Mask + "$";
+	return "^" + mask + "$";
 }
 
 bool FindShiftCtrlAltFxx(std::string input, std::string& key, unsigned char& fnKeyNr)

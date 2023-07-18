@@ -21,7 +21,7 @@ void StrLPCopy(char* Dest, pstring s, WORD MaxL);
 WORD SLeadEqu(pstring S1, pstring S2);
 WORD SLeadEqu(const std::string& S1, const std::string& S2);
 bool EqualsMask(void* p, WORD l, pstring Mask); // r86 ASM
-bool EqualsMask(std::string& value, std::string& mask);
+bool EqualsMask(const std::string& value, std::string& mask);
 bool EquLongStr(LongStr* S1, LongStr* S2);
 bool EquArea(void* P1, void* P2, WORD L);
 short MinI(short X, short Y);

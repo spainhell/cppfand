@@ -1223,7 +1223,7 @@ bool EqualsMask(void* p, WORD l, pstring Mask)
 	//return true;
 }
 
-bool EqualsMask(std::string& value, std::string& mask)
+bool EqualsMask(const std::string& value, std::string& mask)
 {
 	if (mask.length() < 1) return false;
 	return CmpStringWithMask(value, mask);
