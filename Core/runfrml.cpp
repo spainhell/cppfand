@@ -680,7 +680,7 @@ bool RunBool(FileD* file_d, FrmlElem* X, void* record)
 		break;
 	}
 	case _modulo: {
-		result = RunModulo(file_d, (FrmlElem1*)X, record);
+		result = RunModulo(file_d, (FrmlElemFunction*)X, record);
 		break;
 	}
 	case _field: {
@@ -849,26 +849,28 @@ bool InStr(std::string& S, FrmlElemIn* X)
 	return false;
 }
 
-bool RunModulo(FileD* file_d, FrmlElem1* X, void* record)
+bool RunModulo(FileD* file_d, FrmlElemFunction* X, void* record)
 {
-	pstring S;
-	short I, M, N;
-	WORD* B1 = nullptr;
-	WORD* B1Offs = B1;
-	N = X->W11;
-	S = RunShortStr(file_d, ((FrmlElemFunction*)X)->P1, record);
-	if (S.length() != N) {
+	std::string input = RunStdStr(file_d, X->P1, record);
+	if (input.empty() || input.length() != X->vValues.size()) {
 		return false;
 	}
-	M = 0;
-	*B1 = X->W21;
-	for (I = 1; I <= N - 1; I++) {
-		M = M + *B1 * (S[I] & 0x0F);
-		*B1Offs += 2;
+
+	int sum = 0;
+	const int n = X->vValues[0];
+	const BYTE lastChar = input[input.length() - 1];
+
+	for (size_t i = 0; i < input.length() - 1; i++) {
+		char c = input[i];
+		if (isdigit(c))	{
+			sum += (c - 0x30) * X->vValues[i + 1];
+		}
+		else {
+			return false;
+		}
 	}
-	I = (X->W12 - (M % X->W12)) % 10;
-	if (I == (S[N] & 0x0F)) return true;
-	return false;
+
+	return (n - sum % n) % 10 == lastChar - 0x30;
 }
 
 bool RunEquMask(FileD* file_d, FrmlElemFunction* X, void* record)

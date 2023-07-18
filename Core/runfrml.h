@@ -19,7 +19,7 @@ bool InReal(FileD* file_d, FrmlElemIn* frml, void* record);
 bool LexInStr(std::string& S, FrmlElemIn* X);
 bool InStr(LongStr* S, FrmlElemIn* X);
 bool InStr(std::string& S, FrmlElemIn* X);
-bool RunModulo(FileD* file_d, FrmlElem1* X, void* record);
+bool RunModulo(FileD* file_d, FrmlElemFunction* X, void* record);
 bool RunEquMask(FileD* file_d, FrmlElemFunction* X, void* record);
 double RunReal(FileD* file_d, FrmlElem* X, void* record);
 int RunInt(FileD* file_d, FrmlElem* X, void* record);

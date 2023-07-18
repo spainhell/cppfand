@@ -23,15 +23,20 @@ class FrmlElemFunction : public FrmlElem
 {
 public:
 	FrmlElemFunction(instr_type Op, size_t buff_size);
-	FrmlElem* P1 = nullptr; FrmlElem* P2 = nullptr; FrmlElem* P3 = nullptr;
-	FrmlElem* P4 = nullptr; FrmlElem* P5 = nullptr; FrmlElem* P6 = nullptr; // 0
-	char Delim = '\0'; // 0
+	FrmlElem* P1 = nullptr;
+	FrmlElem* P2 = nullptr;
+	FrmlElem* P3 = nullptr;
+	FrmlElem* P4 = nullptr;
+	FrmlElem* P5 = nullptr;
+	FrmlElem* P6 = nullptr;
+	char Delim = '\0';
 	BYTE N11 = 0, N12 = 0;
 	BYTE N21 = 0, N22 = 0;
 	BYTE N31 = 0;
 	WORD W11 = 0;
 	BYTE buff[64]{ 0 };
 	LocVar* LV1 = nullptr; // pro potreby smycky FOR
+	std::vector<int> vValues; // napr. pro vahy MODULO
 };
 
 class FrmlElem1 : public FrmlElem

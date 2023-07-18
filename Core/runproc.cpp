@@ -251,24 +251,22 @@ void MergeProc(Instr_merge_display* PD)
 
 void WritelnProc(Instr_writeln* PD)
 {
-	WORD i = 0; char c = '\0';
-	WriteType LF = WriteType::write;
-	WrLnD* W = nullptr;
-	pstring t, x; double r = 0.0;
-	W = &PD->WD;
-	LF = PD->LF;
-	t[0] = 0;
+	std::string t;
+	std::string x;
+
+	WrLnD* W = &PD->WD;
+	WriteType LF = PD->LF;
 	TextAttr = ProcAttr;
 	std::string printS;
+
 	while (W != nullptr) {
 		switch (W->Typ) {
 		case 'S': {
 			if (LF == WriteType::message || LF == WriteType::msgAndHelp) {
-				t = t + RunShortStr(CFile, W->Frml, CRecPtr);
+				t += RunShortStr(CFile, W->Frml, CRecPtr);
 			}
 			else {
-				std::string str = RunStdStr(CFile, W->Frml, CRecPtr);
-				printS += str;
+				printS += RunStdStr(CFile, W->Frml, CRecPtr);
 			}
 			W = W->pChain;
 			continue;
@@ -280,15 +278,18 @@ void WritelnProc(Instr_writeln* PD)
 			break;
 		}
 		case 'F': {
-			r = RunReal(CFile, W->Frml, CRecPtr);
+			const double r = RunReal(CFile, W->Frml, CRecPtr);
 			if (W->M == 255) str(r, W->N, x);
 			else str(r, W->N, W->M, x);
 			break;
 		}
-		case 'D': x = StrDate(RunReal(CFile, W->Frml, CRecPtr), *W->Mask); break;
+		case 'D': 
+			x = StrDate(RunReal(CFile, W->Frml, CRecPtr), *W->Mask);
+			break;
 		}
+
 		if (LF == WriteType::message || LF == WriteType::msgAndHelp) {
-			t = t + x;
+			t += x;
 		}
 		else {
 			printS += x;

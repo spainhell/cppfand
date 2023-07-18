@@ -1965,23 +1965,19 @@ FrmlElem* RdPrim(char& FTyp, MergeReportBase* caller)
 				Accept(')');
 				Z = Z1;
 			}
-			else if (IsKeyWord("MODULO"))
-			{
+			else if (IsKeyWord("MODULO"))	{
 				RdLex();
-				Z1 = RdAdd(Typ, caller);
-				TestString(Typ);
 				Z = new FrmlElemFunction(_modulo, 2); // GetOp(_modulo, 2);
-				((FrmlElemFunction*)Z)->P1 = Z1;
+				((FrmlElemFunction*)Z)->P1 = RdAdd(Typ, caller);
+				TestString(Typ);
 				N = 0;
 				do {
 					Accept(',');
-					//B = (BYTE*)GetStore(2);
-					B = new BYTE();
-					*B = (BYTE)RdInteger();
+					((FrmlElemFunction*)Z)->vValues.push_back(RdInteger());
 					N++;
 				} while (Lexem == ',');
 				Accept(')');
-				((FrmlElemFunction*)Z)->W11 = N;
+				//((FrmlElemFunction*)Z)->W11 = N;
 				FTyp = 'B';
 			}
 			else if (IsKeyWord("SUM")) {
