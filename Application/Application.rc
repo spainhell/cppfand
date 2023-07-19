@@ -51,8 +51,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,58,23277,0
- PRODUCTVERSION 0,58,23277,0
+ FILEVERSION 0,59,23293,0
+ PRODUCTVERSION 0,59,23293,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -68,13 +68,13 @@ BEGIN
         BLOCK "040504b0"
         BEGIN
             VALUE "CompanyName", "Jan Spanhel"
-            VALUE "FileDescription", "cppfand"
-            VALUE "FileVersion", "0.58.23277.0"
+            VALUE "FileDescription", "C++ FAND"
+            VALUE "FileVersion", "0.59.23293.0"
             VALUE "InternalName", "cppfand.exe"
             VALUE "LegalCopyright", "Copyright (C) 2023"
             VALUE "OriginalFilename", "cppfand.exe"
             VALUE "ProductName", "CPPFAND (CP852)"
-            VALUE "ProductVersion", "0.58.23277.0"
+            VALUE "ProductVersion", "0.59.23293.0"
         END
     END
     BLOCK "VarFileInfo"

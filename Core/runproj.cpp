@@ -729,7 +729,8 @@ void Diagnostics(void* MaxHp, int Free, FileD* FD)
 
 bool CompRunChptRec(WORD CC)
 {
-	pstring STyp(1); void* p = nullptr; void* p2 = nullptr; void* MaxHp = nullptr;
+	pstring STyp(1);
+	void* p = nullptr; void* p2 = nullptr; void* MaxHp = nullptr;
 	EditD* OldE = nullptr;
 	RdbPos RP; int Free; bool uw = false, mv = false;
 	FileD* FD = nullptr;
