@@ -184,11 +184,23 @@ double RunRealStr(FileD* file_d, FrmlElem* X, void* record)
 		break;
 	}
 	case _pos: {
-		FrmlElem12* iX = (FrmlElem12*)X;
-		const std::string strS = RunStdStr(file_d, iX->PPP2, record);
-		const std::string strMask = RunShortStr(file_d, iX->PPPP1, record);
+		FrmlElemPosReplace* iX = (FrmlElemPosReplace*)X;
+		std::string strS = RunStdStr(file_d, iX->PPP2, record);
+		std::string strMask = RunShortStr(file_d, iX->PPPP1, record);
 		size_t n = 1; // kolikaty vyskyt najit
+
+		if (iX->Options.find('~') != std::string::npos) {
+			// convert to lexical strings
+			for (char& i : strS) {
+				i = CharOrdTab[(BYTE)i];
+			}
+			for (char& i : strMask)	{
+				i = CharOrdTab[(BYTE)i];
+			}
+		}
+
 		if (iX->PP3 != nullptr) {
+			// which occurrence - count (kolikaty vyskyt)
 			n = RunInt(file_d, iX->PP3, record);
 			if (n < 1) return 0; // 0 - nenalezeno
 		}
@@ -1037,7 +1049,7 @@ label1:
 		break;
 	}
 	case _catfield: {
-		FrmlElem10* iX = (FrmlElem10*)X;
+		FrmlElemCatalogField* iX = (FrmlElemCatalogField*)X;
 		CVol = CatFD->GetVolume(iX->CatIRec);
 		CPath = FExpand(CatFD->GetPathName(iX->CatIRec));
 		FSplit(CPath, CDir, CName, CExt);
@@ -2109,7 +2121,7 @@ LongStr* RunS(FileD* file_d, FrmlElem* Z, void* record)
 		break;
 	}
 	case _replace: {
-		auto iZ = (FrmlElem12*)Z;
+		auto iZ = (FrmlElemPosReplace*)Z;
 		std::string text = RunStdStr(file_d, iZ->PPP2, record);
 		std::string oldText = RunStdStr(file_d, iZ->PPPP1, record); //j = 1;
 		std::string newText = RunStdStr(file_d, iZ->PP3, record);
@@ -2133,7 +2145,7 @@ LongStr* RunS(FileD* file_d, FrmlElem* Z, void* record)
 		break;
 	}
 	case _catfield: {
-		auto iZ = (FrmlElem10*)Z;
+		auto iZ = (FrmlElemCatalogField*)Z;
 		std::string stdS = CatFD->GetField(iZ->CatIRec, iZ->CatFld);
 		bool empty = stdS.empty(); // bude se jednat jen o cestu, bez nazvu souboru
 		if (iZ->CatFld == CatFD->CatalogPathNameField()) {

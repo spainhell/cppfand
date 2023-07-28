@@ -108,10 +108,10 @@ public:
 	FileD* FD = nullptr; // 9 {_lastupdate, _generation}
 };
 
-class FrmlElem10 : public FrmlElem
+class FrmlElemCatalogField : public FrmlElem
 {
 public:
-	FrmlElem10(instr_type Op, size_t buff_size);
+	FrmlElemCatalogField(instr_type Op, size_t buff_size);
 	WORD CatIRec = 0;
 	FieldDescr* CatFld = nullptr; // 10 {_catfield}
 };
@@ -125,13 +125,16 @@ public:
 	FieldDescr* FldD = nullptr; // 11 {_prompt}
 };
 
-class FrmlElem12 : public FrmlElem
+/**
+ * \brief FrmlElem for POSITION or REPLACE
+ */
+class FrmlElemPosReplace : public FrmlElem
 {
 public:
-	FrmlElem12(instr_type Op, size_t buff_size);
+	FrmlElemPosReplace(instr_type Op, size_t buff_size);
 	FrmlElem* PPPP1 = nullptr; FrmlElem* PPP2 = nullptr;
 	FrmlElem* PP3 = nullptr;
-	pstring Options; // 12 {_pos,_replace}
+	std::string Options; // 12 {_pos,_replace}
 };
 
 class FrmlElem13 : public FrmlElem

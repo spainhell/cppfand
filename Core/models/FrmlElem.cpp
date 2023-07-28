@@ -51,7 +51,7 @@ FrmlElem9::FrmlElem9(instr_type Op, size_t buff_size) : FrmlElem(Op, buff_size)
 {
 }
 
-FrmlElem10::FrmlElem10(instr_type Op, size_t buff_size) : FrmlElem(Op, buff_size)
+FrmlElemCatalogField::FrmlElemCatalogField(instr_type Op, size_t buff_size) : FrmlElem(Op, buff_size)
 {
 }
 
@@ -59,7 +59,7 @@ FrmlElem11::FrmlElem11(instr_type Op, size_t buff_size) : FrmlElem(Op, buff_size
 {
 }
 
-FrmlElem12::FrmlElem12(instr_type Op, size_t buff_size) : FrmlElem(Op, buff_size)
+FrmlElemPosReplace::FrmlElemPosReplace(instr_type Op, size_t buff_size) : FrmlElem(Op, buff_size)
 {
 }
 

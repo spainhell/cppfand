@@ -3486,7 +3486,7 @@ bool EditFreeTxt(FieldDescr* F, std::string ErrMsg, bool Ed, WORD& Brk)
 	w = 0;
 	if (E->Head.empty()) w = PushW(1, 1, TxtCols, 1);
 	if (E->TTExit) {
-		TxtMsgS.Head = nullptr;
+		TxtMsgS.Head = "";
 		TxtMsgS.Last = E->Last;
 		TxtMsgS.CtrlLast = E->CtrlLast;
 		TxtMsgS.AltLast = E->AltLast;

@@ -603,13 +603,13 @@ label1:
 //	return (Lexem == _identifier) && EquUpCase(S, LexWord);
 //}
 
-bool TestKeyWord(std::string S)
+bool TestKeyWord(const std::string& S)
 {
 	std::string lw = LexWord;
 	return (Lexem == _identifier) && EquUpCase(S, lw);
 }
 
-bool IsKeyWord(std::string S)
+bool IsKeyWord(const std::string& S)
 {
 	if (Lexem != _identifier) return false;
 	if (LexWord.length() != S.length()) return false;
@@ -1880,7 +1880,7 @@ FrmlElem* RdPrim(char& FTyp, MergeReportBase* caller)
 	FrmlElem* Z = nullptr; FrmlElem* Z1 = nullptr; FrmlElem* Z2 = nullptr; FrmlElem* Z3 = nullptr;
 	char Typ = '\0';
 	short I = 0, N = 0; BYTE* B = nullptr;
-	pstring Options;
+	//pstring Options;
 
 	switch (Lexem) {
 	case _identifier: {
@@ -2068,30 +2068,27 @@ FrmlElem* RdPrim(char& FTyp, MergeReportBase* caller)
 				FunCode = _pos;
 				FTyp = 'R';
 			label8:
-				Options = "";
+				//Options = "";
+				Z = new FrmlElemPosReplace(FunCode, 0);
+				FrmlElemPosReplace* iZ = (FrmlElemPosReplace*)Z;
 				if (Lexem == ',') {
 					RdLex();
-					if (Lexem != ',')
-					{
+					if (Lexem != ',') {
 						TestLex(_quotedstr);
-						Options = LexWord;
+						iZ->Options = LexWord;
 						RdLex();
 					}
-					if (((BYTE)FunCode == _pos) && (Lexem == ','))
-					{
+					if (((BYTE)FunCode == _pos) && (Lexem == ',')) {
+						// which occurrence - count (kolikaty vyskyt)
 						RdLex();
 						Z3 = RdAdd(Typ, caller);
 						TestReal(Typ);
 					}
 				}
-				Z = new FrmlElem12(FunCode, Options.length() + 1); // GetOp(FunCode, Options.length() + 1);
-				auto iZ = (FrmlElem12*)Z;
 				iZ->PPPP1 = Z1; iZ->PPP2 = Z2; iZ->PP3 = Z3;
-				iZ->Options = Options;
 				Accept(')');
 			}
-			else if (IsFun(RS1Fun, LexWord, FunCode))
-			{
+			else if (IsFun(RS1Fun, LexWord, FunCode)) {
 				RdLex();
 				Z = new FrmlElemFunction(FunCode, 0); // GetOp(FunCode, 0);
 			label3:

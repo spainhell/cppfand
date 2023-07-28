@@ -237,7 +237,7 @@ FrmlElem* RdFldNameFrmlP(char& FTyp, MergeReportBase* caller)
 			label0:
 				FTyp = 'S';
 			label1:
-				auto S = new FrmlElem10(_catfield, 6); // Z = GetOp(_catfield, 6);
+				auto S = new FrmlElemCatalogField(_catfield, 6); // Z = GetOp(_catfield, 6);
 				S->CatFld = F;
 				S->CatIRec = CatFD->GetCatalogIRec(FName, true);
 				TestCatError(S->CatIRec, FName, true);

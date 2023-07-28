@@ -48,9 +48,9 @@ void TestLex(char X); // r237
 void Accept(char X); // r239 ASM
 short RdInteger(); // r245
 double RdRealConst(); // r250
-bool IsKeyWord(std::string S); // r284 ASM
+bool IsKeyWord(const std::string& S); // r284 ASM
 //bool TestKeyWord(pstring S); // r282
-bool TestKeyWord(std::string S); // r282
+bool TestKeyWord(const std::string& S); // r282
 bool IsOpt(pstring S); // r296 ASM
 bool IsDigitOpt(pstring S, WORD& N); // r305
 bool IsIdentifStr(std::string& S); //r323

@@ -213,8 +213,8 @@ bool MyGetEvent(char& mode, BYTE SysLColor, std::string& LastS, WORD LastNr, boo
 		case 'X': Event.Pressed.Key()->wVirtualKeyCode = VK_DOWN; break;
 		case 'R': Event.Pressed.Key()->wVirtualKeyCode = VK_PRIOR; break;
 		case 'C': Event.Pressed.Key()->wVirtualKeyCode = VK_NEXT; break;
-		//case 'A': Event.Pressed.Key()->wVirtualKeyCode = _CtrlLeft_; break;
-		//case 'F': Event.Pressed.Key()->wVirtualKeyCode = _CtrlRight_; break;
+			//case 'A': Event.Pressed.Key()->wVirtualKeyCode = _CtrlLeft_; break;
+			//case 'F': Event.Pressed.Key()->wVirtualKeyCode = _CtrlRight_; break;
 		case 'V': Event.Pressed.Key()->wVirtualKeyCode = VK_INSERT; break;
 		case __CTRL_P:
 		{
@@ -802,7 +802,7 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 				DekFindLine(L1);
 				break;
 			}
-			case 'N': {
+			case __CTRL_N: {
 				NewLine('n');
 				ClrEol(TextAttr);
 				screen.GotoXY(1, TextLineNr - ScreenFirstLineNr + 2);
@@ -845,7 +845,7 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 				}
 				break;
 			}
-			case 'Y': {
+			case __CTRL_Y: {
 				// if ((NextLineStartIndex >= LenT) && !AllRd) NextPartDek();
 				NextLineStartIndex = MinW(NextLineStartIndex, LenT);
 				//TestLenText(&T, LenT, NextLineStartIndex, textIndex);
@@ -871,7 +871,7 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 				positionOnActualLine = 1;
 				break;
 			}
-			case 'T': {
+			case __CTRL_T: {
 				if (positionOnActualLine > GetArrLineLength()) {
 					DeleteLine();
 				}
@@ -893,8 +893,16 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 				break;
 			}
 			case _QI_: { Indent = !Indent; break; }
-			case _QL_: { if (UpdatedL) DekodLine(textIndex); break; }
-			case _QY_: { if (TestLastPos(GetArrLineLength() + 1, positionOnActualLine)) ClrEol(TextAttr); break; }
+			case _QL_: {
+				// CTRL Q+L - obnoveni obsahu radku (pouze editovany radek)
+				if (UpdatedL) DekodLine(textIndex);
+				break;
+			}
+			case _QY_: {
+				// CTRL Q+Y - vymaz od pozice kurzoru do konce radku
+				if (TestLastPos(GetArrLineLength() + 1, positionOnActualLine)) ClrEol(TextAttr);
+				break;
+			}
 			case _QF_:
 			case _QA_: {
 				Replace = false;
@@ -945,7 +953,8 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 				positionOnActualLine += I2;
 				break;
 			}
-			case 'J': {
+			case __CTRL_J: {
+				// tabelace zprava
 				I1 = SetPredI() + positionOnActualLine - 2;
 				if ((I1 >= textIndex - 1) || (I1 == 0)) goto Nic;
 				I = I1;
@@ -1208,6 +1217,12 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 			case __CTRL_F5:
 				Calculate();
 				break;
+			case __CTRL_F6: {
+				if ((TypeT == FileT) || (TypeT == LocalT)) {
+					BlockHandle(fs, F1, 'p');
+				}
+				break;
+			}
 			case __ALT_F8: {
 				ep = SaveParams();
 				W1 = Menu(45, spec.KbdTyp + 1);
@@ -1215,12 +1230,6 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 					spec.KbdTyp = TKbdConv(W1 - 1);
 				}
 				RestoreParams(ep);
-				break;
-			}
-			case __CTRL_F6: {
-				if ((TypeT == FileT) || (TypeT == LocalT)) {
-					BlockHandle(fs, F1, 'p');
-				}
 				break;
 			}
 			case 0x1000: {

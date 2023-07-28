@@ -71,11 +71,13 @@ const WORD __F12 = VIRTUAL + VK_F12;
 
 const WORD __CTRL_C = VIRTUAL + CTRL + 'C';
 const WORD __CTRL_D = VIRTUAL + CTRL + 'D';
+const WORD __CTRL_J = VIRTUAL + CTRL + 'J';
 const WORD __CTRL_K = VIRTUAL + CTRL + 'K';
 const WORD __CTRL_N = VIRTUAL + CTRL + 'N';
 const WORD __CTRL_O = VIRTUAL + CTRL + 'O';
 const WORD __CTRL_P = VIRTUAL + CTRL + 'P';
 const WORD __CTRL_Q = VIRTUAL + CTRL + 'Q';
+const WORD __CTRL_T = VIRTUAL + CTRL + 'T';
 const WORD __CTRL_X = VIRTUAL + CTRL + 'X';
 const WORD __CTRL_Y = VIRTUAL + CTRL + 'Y';
 const WORD __CTRL_Z = VIRTUAL + CTRL + 'Z';
