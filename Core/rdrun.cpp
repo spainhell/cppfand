@@ -9,6 +9,7 @@
 #include "obaseww.h"
 #include "runfrml.h"
 #include "../fandio/files.h"
+#include "../Core/DateTime.h"
 
 std::vector<ConstListEl> OldMFlds;
 std::vector<ConstListEl> NewMFlds;   /* Merge + Report*/

@@ -59,6 +59,7 @@
     <ClCompile Include="ChkD.cpp" />
     <ClCompile Include="Coding.cpp" />
     <ClCompile Include="compile.cpp" />
+    <ClCompile Include="DateTime.cpp" />
     <ClCompile Include="EditOpt.cpp" />
     <ClCompile Include="FileD.cpp" />
     <ClCompile Include="OldDrivers.cpp" />
@@ -99,6 +100,7 @@
     <ClInclude Include="Coding.h" />
     <ClInclude Include="compile.h" />
     <ClInclude Include="constants.h" />
+    <ClInclude Include="DateTime.h" />
     <ClInclude Include="EditOpt.h" />
     <ClInclude Include="FileD.h" />
     <ClInclude Include="OldDrivers.h" />

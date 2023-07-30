@@ -40,16 +40,6 @@ void DelBackSlash(std::string& s);
 bool MouseInRect(WORD X, WORD Y, WORD XSize, WORD Size); // r175 ASM
 bool MouseInRectProc(WORD X, WORD Y, WORD XSize, WORD Size); // r182 ASM - rozdeleno na txt a graph rezim
 
-// *** TIME, DATE ***
-void SplitDate(double R, WORD& d, WORD& m, WORD& y);
-double AddMonth(double R, double RM);
-double DifMonth(double R1, double R2);
-double ValDate(pstring Txt, pstring Mask);
-pstring StrDate(double R, pstring Mask);
-std::string CppToday();
-double Today(); // r362
-double CurrTime();
-
 // *** DEBUGGING ***
 void wait();
 #ifndef FandRunV
@@ -90,7 +80,7 @@ void RdWrCache(FileOperation operation, HANDLE handle, bool not_cached, size_t p
 void MyDeleteFile(pstring path);
 void RenameFile56(pstring OldPath, pstring NewPath, bool Msg);
 std::string MyFExpand(std::string Nm, std::string EnvName);
-double RDate(WORD Y, WORD M, WORD D, WORD hh, WORD mm, WORD ss, WORD tt);
+
 
 // *** DISPLAY ***
 WORD LogToAbsLenStyleStr(pstring s, WORD l);

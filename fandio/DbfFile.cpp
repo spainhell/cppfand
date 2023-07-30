@@ -6,6 +6,7 @@
 #include "../Core/obaseww.h"
 #include "../pascal/real48.h"
 #include "../Common/textfunc.h"
+#include "../Core/DateTime.h"
 
 void DbfFile::WrDBaseHd()
 {

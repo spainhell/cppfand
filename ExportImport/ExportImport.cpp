@@ -10,6 +10,7 @@
 #include "../Core/oaccess.h"
 #include "../Core/obaseww.h"
 #include "../Core/RunMessage.h"
+#include "../Core/DateTime.h"
 #include "../Editor/rdedit.h"
 #include "../Core/wwmix.h"
 #include "../fandio/directory.h"

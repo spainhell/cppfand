@@ -14,6 +14,7 @@
 #include "../Core/RunMessage.h"
 #include "../Core/wwmix.h"
 #include "../Core/rdfildcl.h"
+#include "../Core/DateTime.h"
 
 
 Report::Report()

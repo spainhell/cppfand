@@ -15,6 +15,7 @@
 #include "../Common/compare.h"
 #include "../Common/textfunc.h"
 #include "../Drivers/constants.h"
+#include "../Core/DateTime.h"
 
 const BYTE MaxLen = 9;
 RdbPos ChptIPos; // used in LexAnal & ProjMgr

@@ -1,7 +1,7 @@
 #include "printtxt.h"
 
 #include <fstream>
-#include "compile.h"
+#include "../Core/DateTime.h"
 #include "../Common/textfunc.h"
 #include "../Common/compare.h"
 #include "GlobalVariables.h"

@@ -5,6 +5,7 @@
 #include "Coding.h"
 #include "../pascal/random.h"
 #include "compile.h"
+#include "DateTime.h"
 #include "OldDrivers.h"
 #include "FieldDescr.h"
 #include "FileD.h"
