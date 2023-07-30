@@ -288,12 +288,12 @@ int MaxL(int X, int Y)
 	return Y;
 }
 
-bool OlympYear(WORD year)
+bool IsLeapYear(WORD year)
 {
 	return year % 4 == 0 && (year % 100 != 0 || year % 400 == 0);
 }
 
-WORD OlympYears(WORD year)
+WORD LeapYears(WORD year)
 {
 	if (year < 3) return 0;
 	year--;
@@ -308,16 +308,16 @@ void SplitDate(double R, WORD& d, WORD& m, WORD& y)
 	if (l == 0) { y = 1; m = 1; d = 1; }
 	else {
 		y = l / 365; y++; l = l % 365;
-		while (l <= OlympYears(y)) { y--; l += 365; }
-		l = l - OlympYears(y);
+		while (l <= LeapYears(y)) { y--; l += 365; }
+		l = l - LeapYears(y);
 		for (j = 1; j <= 12; j++) {
 			i = NoDayInMonth[j];
-			if ((j == 2) && OlympYear(y)) i++;
+			if ((j == 2) && IsLeapYear(y)) i++;
 			if (i >= l) goto label1;
 			l -= i;
 		}
 	label1:
-		m = j; d = l;
+		m = j; d = (WORD)l;
 	}
 }
 
@@ -358,12 +358,12 @@ void AnalDateMask(pstring& Mask, WORD& I, WORD& IDate, WORD& N)
 double RDate(WORD Y, WORD M, WORD D, WORD hh, WORD mm, WORD ss, WORD tt)
 {
 	WORD i = 0; int l = 0, n = 0; double r = 0;
-	if ((D > NoDayInMonth[M]) && ((M != 2) || (D != 29) || !(OlympYear(Y)))) { return 0; }
+	if ((D > NoDayInMonth[M]) && ((M != 2) || (D != 29) || !(IsLeapYear(Y)))) { return 0; }
 	if (Y + M + D == 0) l = 0;
 	else {
-		l = int(Y - 1) * 365 + OlympYears(Y) + D;
+		l = int(Y - 1) * 365 + LeapYears(Y) + D;
 		for (i = 1; i <= M - 1; i++) l = l + NoDayInMonth[i];
-		if ((M > 2) && OlympYear(Y)) l++;
+		if ((M > 2) && IsLeapYear(Y)) l++;
 	}
 	n = tt + 100 * ss + 6000 * int(mm); r = (n + 360000.0 * hh) / (8640000.0);
 	return l + r;
@@ -577,7 +577,7 @@ double AddMonth(double R, double RM)
 	m = (l % 12) + 1;
 	if (d > NoDayInMonth[m]) {
 		d = NoDayInMonth[m];
-		if (m == 2 && OlympYear(y)) d = 29;
+		if (m == 2 && IsLeapYear(y)) d = 29;
 	}
 	return RDate(y, m, d, 0, 0, 0, 0) + RTime;
 }
