@@ -7,7 +7,7 @@
 #include "../Common/compare.h"
 #include "../Common/pstring.h"
 #include "../Common/textfunc.h"
-#include "../Editor/runedi.h"
+#include "../DataEditor/runedi.h"
 #include "../fandio/directory.h"
 #include "../fandio/FandTFile.h"
 #include "../fandio/XWKey.h"

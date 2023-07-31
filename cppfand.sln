@@ -52,7 +52,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Common", "Common\Common.vcx
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Core", "Core\Core.vcxproj", "{1A9EB346-F313-4783-A8C6-86AE13718B18}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DynamicLibrary", "DynamicLibrary\DynamicLibrary.vcxproj", "{B2AA9AF8-03E5-4384-A5EB-14CA1B3D9A46}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "2_DynamicLibrary", "DynamicLibrary\DynamicLibrary.vcxproj", "{B2AA9AF8-03E5-4384-A5EB-14CA1B3D9A46}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DataEditor", "DataEditor\DataEditor.vcxproj", "{2DD289F4-863E-4A49-9802-3932E6E698AA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -166,6 +168,14 @@ Global
 		{B2AA9AF8-03E5-4384-A5EB-14CA1B3D9A46}.Release|x64.Build.0 = Release|x64
 		{B2AA9AF8-03E5-4384-A5EB-14CA1B3D9A46}.Release|x86.ActiveCfg = Release|Win32
 		{B2AA9AF8-03E5-4384-A5EB-14CA1B3D9A46}.Release|x86.Build.0 = Release|Win32
+		{2DD289F4-863E-4A49-9802-3932E6E698AA}.Debug|x64.ActiveCfg = Debug|x64
+		{2DD289F4-863E-4A49-9802-3932E6E698AA}.Debug|x64.Build.0 = Debug|x64
+		{2DD289F4-863E-4A49-9802-3932E6E698AA}.Debug|x86.ActiveCfg = Debug|Win32
+		{2DD289F4-863E-4A49-9802-3932E6E698AA}.Debug|x86.Build.0 = Debug|Win32
+		{2DD289F4-863E-4A49-9802-3932E6E698AA}.Release|x64.ActiveCfg = Release|x64
+		{2DD289F4-863E-4A49-9802-3932E6E698AA}.Release|x64.Build.0 = Release|x64
+		{2DD289F4-863E-4A49-9802-3932E6E698AA}.Release|x86.ActiveCfg = Release|Win32
+		{2DD289F4-863E-4A49-9802-3932E6E698AA}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

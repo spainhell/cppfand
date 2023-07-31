@@ -20,7 +20,7 @@
 #include "wwmenu.h"
 #include "wwmix.h"
 #include "../Editor/OldEditor.h"
-#include "../Editor/runedi.h"
+#include "../DataEditor/runedi.h"
 #include "../fandio/directory.h"
 #include "../fandio/files.h"
 #include "../Common/textfunc.h"

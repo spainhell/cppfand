@@ -9,7 +9,7 @@
 #include <set>
 
 #include "OldEditor.h"
-#include "runedi.h"
+#include "../DataEditor/runedi.h"
 #include "../Core/obaseww.h"
 #include "../Core/wwmenu.h"
 
@@ -20,16 +20,27 @@ void CtrlShiftAlt(char mode, std::string& LastS, WORD LastNr, bool IsWrScreen)
 	//(*MyTestEvent 1; *)
 label1:
 	WaitEvent(Delta);
-	if (mode != HelpM) ScrollPress();
-	if (LLKeyFlags != 0)      /* mouse */
-	{
-		flgs = LLKeyFlags; DisplLL(LLKeyFlags); Ctrl = true;
+	if (mode != HelpM) {
+		ScrollPress();
 	}
-	else if ((KbdFlgs & 0x0F) != 0) /* Ctrl Shift Alt pressed */
-	{
-		if (!Ctrl)
-			if (Delta > 0) { flgs = KbdFlgs; DisplLL(KbdFlgs); Ctrl = true; }
-			else Delta = spec.CtrlDelay;
+	if (LLKeyFlags != 0) {
+		// mouse
+		flgs = LLKeyFlags;
+		DisplLL(LLKeyFlags);
+		Ctrl = true;
+	}
+	else if ((KbdFlgs & 0x0F) != 0) {
+		// Ctrl Shift Alt pressed
+		if (!Ctrl) {
+			if (Delta > 0) {
+				flgs = KbdFlgs;
+				DisplLL(KbdFlgs);
+				Ctrl = true;
+			}
+			else {
+				Delta = spec.CtrlDelay;
+			}
+		}
 	}
 	else if (Ctrl) {
 		flgs = 0;
@@ -417,8 +428,7 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 						TWork.Delete(*LocalPPtr);
 						*LocalPPtr = TWork.Store(sp->A, sp->LL);
 					}
-					else if (UpdatT)
-					{
+					else if (UpdatT) {
 						UpdateEdTFld(sp);
 						UpdatT = false;
 					}
@@ -866,7 +876,7 @@ void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& Last
 						blocks->EndBLn--;
 					}
 				}
-				// MyDelLine();
+				DeleteLine();
 				DekodLine(textIndex);
 				positionOnActualLine = 1;
 				break;

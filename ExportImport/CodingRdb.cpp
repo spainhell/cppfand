@@ -9,8 +9,8 @@
 #include "../Core/oaccess.h"
 #include "../Core/obaseww.h"
 #include "../Core/RunMessage.h"
-#include "../Editor/rdedit.h"
-#include "../Editor/runedi.h"
+#include "../DataEditor/rdedit.h"
+#include "../DataEditor/runedi.h"
 #include "../MergeReport/Merge.h"
 
 

@@ -22,6 +22,9 @@
     <ProjectReference Include="..\Common\Common.vcxproj">
       <Project>{193522ab-6765-4a9f-a665-6917ac7bbbeb}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\DataEditor\DataEditor.vcxproj">
+      <Project>{2dd289f4-863e-4a49-9802-3932e6e698aa}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\datafiles\datafiles.vcxproj">
       <Project>{4175a73a-df08-4f11-b715-cbe5408af874}</Project>
     </ProjectReference>

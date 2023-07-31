@@ -18,11 +18,24 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="rdedit.h" />
+    <ClInclude Include="runedi.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="rdedit.cpp" />
+    <ClCompile Include="runedi.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Editor\Editor.vcxproj">
+      <Project>{a08457d5-2848-4fb1-ae40-ec55ef69b5da}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{a08457d5-2848-4fb1-ae40-ec55ef69b5da}</ProjectGuid>
-    <RootNamespace>Editor</RootNamespace>
+    <ProjectGuid>{2dd289f4-863e-4a49-9802-3932e6e698aa}</ProjectGuid>
+    <RootNamespace>DataEditor</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -70,18 +83,6 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LinkIncremental>true</LinkIncremental>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LinkIncremental>false</LinkIncremental>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LinkIncremental>true</LinkIncremental>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LinkIncremental>false</LinkIncremental>
-  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -158,25 +159,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="Blocks.cpp" />
-    <ClCompile Include="EditorEvents.cpp" />
-    <ClCompile Include="EditorHelp.cpp" />
-    <ClCompile Include="EditorScreen.cpp" />
-    <ClCompile Include="OldEditor.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Blocks.h" />
-    <ClInclude Include="EditorEvents.h" />
-    <ClInclude Include="EditorHelp.h" />
-    <ClInclude Include="EditorScreen.h" />
-    <ClInclude Include="OldEditor.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Drivers\Drivers.vcxproj">
-      <Project>{eff16929-f4e0-4b93-a05a-e6bcfea36a68}</Project>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
