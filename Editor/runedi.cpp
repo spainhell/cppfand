@@ -50,7 +50,7 @@ bool HasIndex, HasTF, NewDisplLL;
 
 void PopEdit()
 {
-	E = (EditD*)E->pChain;
+	E = E->pChain;
 	EditDRoot = E;
 }
 
@@ -1514,12 +1514,14 @@ bool OpenEditWw()
 	int n = 0;
 	auto result = false;
 	CFile = E->Journal;
-	if (CFile != nullptr) OpenCreateF(CFile, CPath, Shared);
+	if (CFile != nullptr) {
+		OpenCreateF(CFile, CPath, Shared);
+	}
 	RdEStatus();
 	if (EdRecVar) {
 		if (OnlyAppend) {
 			goto label2;
-}
+		}
 		else {
 			goto label3;
 		}
@@ -1591,7 +1593,7 @@ bool OpenEditWw()
 		}
 		WasWK = true;
 		Subset = true;
-		}
+	}
 #ifdef FandSQL
 	if (CFile->IsSQLFile) Strm1->DefKeyAcc(WK);
 #endif
@@ -1634,7 +1636,7 @@ label3:
 	if (!EdRecVar) CFile->OldLockMode(md2);
 	if (IsNewRec) NewRecExit();
 	return result;
-	}
+}
 
 void RefreshSubset()
 {
@@ -1767,21 +1769,21 @@ void UpdMemberRef(void* POld, void* PNew)
 						DuplFld(cf, CFile, PNew, p2, nullptr, kf->FldD, arg->FldD);
 						//Arg = Arg->pChain;
 						kf = kf->pChain;
-				}
+					}
 					RunAddUpdate(CFile, 'd', p, false, nullptr, LD, CRecPtr);
 					UpdMemberRef(p, p2);
 #ifdef FandSQL
 					if (sql) Strm1->UpdateXRec(k, @x, false) else
 #endif
 						CFile->FF->OverWrXRec(Scan->RecNr, p, p2, CRecPtr);
-		}
+				}
 				goto label1;
-	}
+			}
 			Scan->Close();
 			CFile->ClearRecSpace(p);
 			ReleaseStore(&p);
-}
 		}
+	}
 	CFile = cf; CRecPtr = cr;
 }
 
@@ -2097,7 +2099,7 @@ bool DeleteRecProc()
 	UnLockWithDep(OldMd);
 	result = true;
 	return result;
-	}
+}
 
 ChkD* CompChk(EFldD* D, char Typ)
 {
@@ -2409,7 +2411,7 @@ bool OldRecDiffers()
 				(CompArea(Pchar(CRecPtr) + Displ, Pchar(E->OldRecPtr) + Displ, NBytes) != ord(_equ)) then
 				goto label1;
 			f = f->pChain;
-}
+		}
 		goto label2;
 	}
 	else
@@ -4759,13 +4761,21 @@ label81:
 				// ukonceni editace bez ulozeni zmen
 				if (OnlySearch) {
 					if (IsNewRec) {
-						if (CNRecs() > 1) DelNewRec();
-						else goto label9;
+						if (CNRecs() > 1) {
+							DelNewRec();
+						}
+						else {
+							goto label9;
+						}
 					}
 					else
-						if (!WriteCRec(true, Displ)) goto label1;
+						if (!WriteCRec(true, Displ)) {
+							goto label1;
+						}
 				label2:
-					if (PromptAndSearch(!NoCreate)) goto label0;
+					if (PromptAndSearch(!NoCreate)) {
+						goto label0;
+					}
 				}
 			label9:
 				EdBreak = 0;
@@ -4832,25 +4842,35 @@ label81:
 				break;
 			}
 			case __UP: {
-				if (LUpRDown) goto label11;
-				else goto label13;
+				if (LUpRDown) {
+					if (CFld->ChainBack != nullptr) {
+						GotoRecFld(CRec(), CFld->ChainBack);
+					}
+				}
+				else {
+					goto defaultCaseLabel;
+				}
 				break;
 			}
 			case __DOWN: {
-				if (LUpRDown) goto label12;
-				else goto label13;
+				if (LUpRDown) {
+					if ((CFld->pChain != nullptr) && !IsFirstEmptyFld())
+						GotoRecFld(CRec(), CFld->pChain);
+				}
+				else {
+					goto defaultCaseLabel;
+				}
 				break;
 			}
 			case __LEFT:
-			case 'S':
-			{
-			label11:
-				if (CFld->ChainBack != nullptr) GotoRecFld(CRec(), CFld->ChainBack);
+			case 'S': {
+				if (CFld->ChainBack != nullptr) {
+					GotoRecFld(CRec(), CFld->ChainBack);
+				}
 				break;
 			}
 			case __RIGHT:
 			case 'D': {
-			label12:
 				if ((CFld->pChain != nullptr) && !IsFirstEmptyFld())
 					GotoRecFld(CRec(), CFld->pChain);
 				break;
@@ -4911,19 +4931,23 @@ label81:
 			default: {
 				//if (KbdChar >= 0x20 && KbdChar <= 0xFE)
 				//{
-			label13:
+			defaultCaseLabel:
 				if (!IsNewRec) {
 					if (KbdChar == __CTRL_Y) {
-						if (!NoDelete) if (DeleteRecProc()) {
-							ClearKeyBuf();
-							b = true;
-						label14:
-							if (((CNRecs() == 0) || (CNRecs() == 1) && IsNewRec) && NoCreate) {
-								WrLLF10Msg(112);
-								EdBreak = 13;
-								goto fin;
+						if (!NoDelete) {
+							if (DeleteRecProc()) {
+								ClearKeyBuf();
+								b = true;
+							label14:
+								if (((CNRecs() == 0) || (CNRecs() == 1) && IsNewRec) && NoCreate) {
+									WrLLF10Msg(112);
+									EdBreak = 13;
+									goto fin;
+								}
+								if (b && !CtrlMProc(0)) {
+									goto label7;
+								}
 							}
-							if (b && !CtrlMProc(0)) goto label7;
 						}
 					}
 					else if (WriteCRec(true, Displ)) {
@@ -4937,7 +4961,7 @@ label81:
 							break;
 						}
 						case __CTRL_N: {
-							// vloz novou vetu pred aktualni
+							// vloz novy radek pred aktualni
 							if (!NoCreate && !Only1Record) {
 								InsertRecProc(nullptr);
 								goto label0;
@@ -4947,7 +4971,9 @@ label81:
 						case __UP:
 						case 'E': {
 							// predchozi radek
-							if (E->NRecs > 1) GoPrevNextRec(-1, true);
+							if (E->NRecs > 1) {
+								GoPrevNextRec(-1, true);
+							}
 							break;
 						}
 						case __CTRL_HOME: {
@@ -4958,7 +4984,10 @@ label81:
 						case __DOWN:
 						case 'X': {
 							// nasledujici radek
-							if (E->NRecs > 1) GoPrevNextRec(+1, true); break;
+							if (E->NRecs > 1) {
+								GoPrevNextRec(+1, true);
+							}
+							break;
 						}
 						case __CTRL_END: {
 							// nasledujici veta
@@ -4968,10 +4997,17 @@ label81:
 						case __PAGEUP:
 						case 'R': {
 							// o obrazovku vzad
-							if (E->NPages == 1)
-								if (E->NRecs == 1) GoPrevNextRec(-1, true);
-								else GotoRecFld(CRec() - E->NRecs, CFld);
-							else if (CPage > 1) GotoRecFld(CRec(), FrstFldOnPage(CPage - 1));
+							if (E->NPages == 1) {
+								if (E->NRecs == 1) {
+									GoPrevNextRec(-1, true);
+								}
+								else {
+									GotoRecFld(CRec() - E->NRecs, CFld);
+								}
+							}
+							else if (CPage > 1) {
+								GotoRecFld(CRec(), FrstFldOnPage(CPage - 1));
+							}
 							break;
 						}
 						case __PAGEDOWN:
@@ -5058,7 +5094,10 @@ label81:
 						case __CTRL_F9:
 						case __CTRL_F10:
 						case __ALT_F9:
-							if (IsCurrChpt()) { Brk = 2; goto fin; }
+							if (IsCurrChpt()) {
+								Brk = 2;
+								goto fin;
+							}
 							break;
 						case __ALT_F7:
 							ImbeddEdit();

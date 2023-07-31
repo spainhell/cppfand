@@ -429,11 +429,17 @@ void EditHelpOrCat(WORD cc, WORD kind, std::string txt)
 
 	if (cc == __ALT_F2) {
 		FD = CRdb->HelpFD;
-		if (kind == 1) FD = CFile->ChptPos.R->HelpFD;
+		if (kind == 1) {
+			FD = CFile->ChptPos.R->HelpFD;
+		}
 		if (FD == nullptr) return;
-		if (kind == 0) { i = iHelp; n = nHelp; }
+		if (kind == 0) {
+			i = iHelp;
+			n = nHelp;
+		}
 		else {
-			i = 3; n = FindHelpRecNr(FD, txt);
+			i = 3;
+			n = FindHelpRecNr(FD, txt);
 			if (n == 0) {
 				keyboard.SetKeyBuf("\0\60" + txt); // TODO: tady ma byt KbdBuffer:=#0#60+txt
 			}
@@ -444,7 +450,9 @@ void EditHelpOrCat(WORD cc, WORD kind, std::string txt)
 		i = iCat;
 		n = nCat;
 	}
-	if (kind != 2) WrEStatus();
+	if (kind != 2) {
+		WrEStatus();
+	}
 	EditOpt* EO = new EditOpt();
 	EO->UserSelFlds = true; // GetEditOpt();
 	EO->Flds = AllFldsList(FD, false);
@@ -457,6 +465,7 @@ void EditHelpOrCat(WORD cc, WORD kind, std::string txt)
 	}
 	EditDataFile(FD, EO);
 	delete EO; EO = nullptr;
+
 	if (cc == __ALT_F2) {
 		nHelp = EdRecNo;
 		iHelp = EdIRec;
@@ -466,7 +475,9 @@ void EditHelpOrCat(WORD cc, WORD kind, std::string txt)
 		nCat = EdRecNo;
 		iCat = EdIRec;
 	}
-	if (kind != 2) RdEStatus();
+	if (kind != 2) {
+		RdEStatus();
+	}
 }
 
 void StoreChptTxt(FieldDescr* F, LongStr* S, bool Del)
