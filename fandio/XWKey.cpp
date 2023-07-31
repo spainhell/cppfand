@@ -9,6 +9,10 @@
 #include "XPage.h"
 
 
+XWKey::XWKey(FileD* parent): XKey(parent)
+{
+}
+
 void XWKey::Open(FileD* file_d, KeyFldD* KF, bool Dupl, bool Intvl)
 {
 	KFlds = KF;

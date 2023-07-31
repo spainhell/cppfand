@@ -1369,18 +1369,15 @@ void DuplKeyMsg(XKey* K)
 
 void BuildWork()
 {
-	XScan* Scan = nullptr; XScan* Scan2 = nullptr;
 	void* p = nullptr;
 	XKey* K = nullptr;
 	KeyFldD* KF = nullptr;
 	XString xx;
-	bool dupl = true, intvl = false, ok = false;
-	XWKey* wk2 = nullptr; KeyInD* ki = nullptr;
-	FrmlElem* boolP = nullptr;
-	WORD l = 0;
-	FieldDescr* f = nullptr;
+	bool dupl = true, intvl = false;
 
-	if (!CFile->Keys.empty()) KF = CFile->Keys[0]->KFlds;
+	if (!CFile->Keys.empty()) {
+		KF = CFile->Keys[0]->KFlds;
+	}
 	if (HasIndex) {
 		K = VK;
 		KF = K->KFlds;
@@ -1389,18 +1386,22 @@ void BuildWork()
 	}
 	WK->Open(CFile, KF, dupl, intvl);
 	if (OnlyAppend) return;
-	boolP = E->Cond;
-	ki = E->KIRoot;
-	wk2 = nullptr;
+	FrmlElem* boolP = E->Cond;
+	KeyInD* ki = E->KIRoot;
+	XWKey* wk2 = nullptr;
 	MarkStore(p);
-	ok = false;
-	f = nullptr;
+	bool ok = false;
+	FieldDescr* f = nullptr;
+	WORD l = 0;
 	//NewExit(Ovr(), er);
 	//goto label1;
 	try {
+		XScan* Scan;
 		if (E->DownSet) {
 			Scan = new XScan(CFile, E->DownKey, nullptr, false);
-			if (E->OwnerTyp == 'i') Scan->ResetOwnerIndex(E->DownLD, E->DownLV, boolP);
+			if (E->OwnerTyp == 'i') {
+				Scan->ResetOwnerIndex(E->DownLD, E->DownLV, boolP);
+			}
 			else {
 				CFile = E->DownLD->ToFD;
 				CRecPtr = E->DownRecPtr;
@@ -1413,7 +1414,7 @@ void BuildWork()
 				wk2 = new XWKey(CFile);
 				wk2->Open(CFile, KF, true, false);
 				CFile->FF->CreateWIndex(Scan, wk2, 'W');
-				Scan2 = new XScan(CFile, wk2, ki, false);
+				XScan* Scan2 = new XScan(CFile, wk2, ki, false);
 				Scan2->Reset(nullptr, false, CRecPtr);
 				Scan = Scan2;
 			}
@@ -1421,7 +1422,7 @@ void BuildWork()
 		else {
 #ifdef FandSQL
 			if (CFile->IsSQLFile && (boolP == nullptr)) {
-				l = CFile->RecLen; f = CFile->FldD; OnlyKeyArgFlds(WK);
+				l = CFile->FF->RecLen; f = CFile->FldD[0]; OnlyKeyArgFlds(WK);
 			}
 #endif
 			if (

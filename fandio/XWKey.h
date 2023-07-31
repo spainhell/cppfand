@@ -4,6 +4,7 @@
 class XWKey : public XKey // r334
 {
 public:
+	XWKey(FileD* parent);
 	void Open(FileD* file_d, KeyFldD* KF, bool Dupl, bool Intvl);
 	void Close(FileD* file_d);
 	void Release(FileD* file_d);
