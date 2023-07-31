@@ -1460,14 +1460,25 @@ void SetStartRec()
 	int n = 0;
 	KeyFldD* kf = nullptr;
 	XKey* k = VK;
-	if (Subset) k = WK;
-	if (k != nullptr) kf = k->KFlds;
+	if (Subset) {
+		k = WK;
+	}
+	if (k != nullptr) {
+		kf = k->KFlds;
+	}
 	if ((!E->StartRecKey.empty()) && (k != nullptr)) {
-		if (k->FindNr(CFile, E->StartRecKey, n)) goto label1;
+		if (k->FindNr(CFile, E->StartRecKey, n)) {
+			n = MaxL(1, MinL(n, CNRecs()));
+			IRec = MaxW(1, MinW(E->StartIRec, E->NRecs));
+			BaseRec = n - IRec + 1;
+			if (BaseRec <= 0) {
+				IRec += BaseRec - 1;
+				BaseRec = 1;
+			}
+		}
 	}
 	else if (E->StartRecNo > 0) {
 		n = LogRecNo(E->StartRecNo);
-	label1:
 		n = MaxL(1, MinL(n, CNRecs()));
 		IRec = MaxW(1, MinW(E->StartIRec, E->NRecs));
 		BaseRec = n - IRec + 1;
@@ -1482,10 +1493,16 @@ void SetStartRec()
 			n = AbsRecNr(CRec());
 		}
 		else n = 0;
-		if (Subset) WK->Close(CFile);
+		if (Subset) {
+			WK->Close(CFile);
+		}
 		Subset = true;
-		if (n == 0) WK->Open(CFile, nullptr, true, false);
-		else WK->OneRecIdx(CFile, kf, n, CRecPtr);
+		if (n == 0) {
+			WK->Open(CFile, nullptr, true, false);
+		}
+		else {
+			WK->OneRecIdx(CFile, kf, n, CRecPtr);
+		}
 		BaseRec = 1;
 		IRec = 1;
 	}
@@ -1578,7 +1595,9 @@ bool OpenEditWw()
 #ifdef FandSQL
 	if (CFile->IsSQLFile) Strm1->DefKeyAcc(WK);
 #endif
-	if (!OnlyAppend) SetStartRec();
+	if (!OnlyAppend) {
+		SetStartRec();
+	}
 	if (CNRecs() == 0)
 		if (NoCreate) {
 			if (Subset) {
