@@ -382,6 +382,20 @@ void RdFormOrDesign(FileD* F, std::vector<FieldDescr*>& FL, RdbPos FormPos)
 	}
 }
 
+std::string GetStr_E(FrmlElem* Z)
+{
+	if (Z == nullptr) return "";
+	else {
+		std::string s = RunShortStr(CFile, Z, CRecPtr);
+		//while (GetLengthOfStyledString(s) > TxtCols) {
+		//	// smaz posledni znak z retezce
+		//	s.erase(s.length() - 1);
+		//}
+		s = GetStyledStringOfLength(s, 0, TxtCols);
+		return s;
+	}
+}
+
 void NewEditD(FileD* ParFD, EditOpt* EO)
 {
 	EFldD* D = nullptr;
@@ -852,20 +866,6 @@ std::string StandardHead()
 	//auto str = copy(c, 17, 20 - s.length()) + s + c;
 	s = c.substr(16, 20 - s.length()) + s + c;
 	return s;
-}
-
-pstring GetStr_E(FrmlElem* Z)
-{
-	if (Z == nullptr) return "";
-	else {
-		std::string s = RunShortStr(CFile, Z, CRecPtr);
-		//while (GetLengthOfStyledString(s) > TxtCols) {
-		//	// smaz posledni znak z retezce
-		//	s.erase(s.length() - 1);
-		//}
-		s = GetStyledStringOfLength(s, 0, TxtCols);
-		return s;
-	}
 }
 
 void NewChkKey()

@@ -19,7 +19,7 @@ EFldD* FindScanNr(WORD N);
 void AutoDesign(std::vector<FieldDescr*>& FL);
 void RdFormOrDesign(FileD* F, std::vector<FieldDescr*>& FL, RdbPos FormPos);
 void NewEditD(FileD* ParFD, EditOpt* EO); // r158
-EFldD* FindEFld_E(FieldDescr* F); // existuje -> *_E
+//EFldD* FindEFld_E(FieldDescr* F); // existuje -> *_E
 void ZeroUsed();
 EFldD* LstUsedFld();
 void RdDepChkImpl();
@@ -32,5 +32,5 @@ void RdImpl();
 void RdUDLI();
 void RdAllUDLIs(FileD* FD);
 std::string StandardHead();
-pstring GetStr_E(FrmlElem* Z); // existuje -> *_E
+//pstring GetStr_E(FrmlElem* Z); // existuje -> *_E
 void NewChkKey();

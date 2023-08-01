@@ -1853,14 +1853,12 @@ void DeleteLine()
 {
 	FillBlank();
 	if (LenT == 0) return;
-	if (blocks->LineAbs(TextLineNr) + 1 <= blocks->BegBLn)
-	{
+	if (blocks->LineAbs(TextLineNr) + 1 <= blocks->BegBLn) {
 		blocks->BegBLn--;
 		if ((blocks->LineAbs(TextLineNr) == blocks->BegBLn) && (TypeB == TextBlock))
 			blocks->BegBPos += GetArrLineLength();
 	}
-	if (blocks->LineAbs(TextLineNr) + 1 <= blocks->EndBLn)
-	{
+	if (blocks->LineAbs(TextLineNr) + 1 <= blocks->EndBLn) {
 		blocks->EndBLn--;
 		if ((blocks->LineAbs(TextLineNr) == blocks->EndBLn) && (TypeB == TextBlock))
 			blocks->EndBPos += GetArrLineLength();
