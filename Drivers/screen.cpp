@@ -28,6 +28,8 @@ Screen::Screen(short TxtCols, short TxtRows, Wind* WindMin, Wind* WindMax, TCrs*
 	SetConsoleScreenBufferSize(_handle, { TxtCols, TxtRows });
 	SetConsoleWindowInfo(_handle, true, &rect);
 
+	SetConsoleCP(852);
+	SetConsoleOutputCP(852);
 	SetConsoleTitle("C++ FAND");
 
 	// avoid console window size changes
