@@ -23,7 +23,8 @@ public:
 	int FreePart = 0;
 	bool Reserved = false, CompileProc = false, CompileAll = false;
 	unsigned short IRec = 0;
-	__int32 FreeRoot = 0, MaxPage = 0;
+	__int32 FreeRoot = 0;
+	__int32 MaxPage = 0;
 	double TimeStmp = 0.0;
 	int LicenseNr = 0;
 	int MLen = 0;
@@ -37,7 +38,7 @@ public:
 	int UsedFileSize();
 	bool NotCached();
 	bool Cached();
-	void RdPrefix(bool Chk);
+	void RdPrefix(bool check);
 	void WrPrefix();
 	void SetEmpty();
 	void Create(const std::string& path);

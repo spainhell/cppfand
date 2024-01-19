@@ -47,7 +47,7 @@ void CloseGoExit(FandFile* fand_file)
 	GoExit();
 }
 
-BYTE ByteMask[_MAX_INT_DIG];
+//BYTE ByteMask[_MAX_INT_DIG];
 
 //const BYTE FixS = 8;
 //BYTE Fix[FixS];
@@ -72,7 +72,8 @@ bool LinkLastRec(FileD* file_d, int& N, bool WithT, BYTE** newRecord)
 #ifdef FandSQL
 	if (file_d->IsSQLFile)
 	{
-		if (Strm1->SelectXRec(nullptr, nullptr, _equ, WithT)) N = 1; else goto label1;
+		if (Strm1->SelectXRec(nullptr, nullptr, _equ, WithT)) N = 1;
+		else goto label1;
 	}
 	else
 #endif
