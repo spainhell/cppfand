@@ -38,7 +38,6 @@ FrmlElem* RunEvalFrml(FileD* file_d, FrmlElem* Z, void* record);
 LongStr* RunLongStr(FileD* file_d, FrmlElem* X, void* record);
 std::string RunStdStr(FileD* file_d, FrmlElem* X, void* record);
 std::string RunShortStr(FileD* file_d, FrmlElem* X, void* record);
-void CopyLongStr(LongStr* S, WORD From, WORD Number);
 void AddToLongStr(LongStr* S, void* P, WORD L);
 void StrMask(double R, pstring& Mask);
 LongStr* RunS(FileD* file_d, FrmlElem* Z, void* record);

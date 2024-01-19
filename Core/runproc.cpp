@@ -284,7 +284,7 @@ void WritelnProc(Instr_writeln* PD)
 			else str(r, W->N, W->M, x);
 			break;
 		}
-		case 'D': 
+		case 'D':
 			x = StrDate(RunReal(CFile, W->Frml, CRecPtr), *W->Mask);
 			break;
 		}
@@ -1014,7 +1014,7 @@ void WithLockedProc(Instr_withshared* PD)
 			ld = &PD->WLD;
 			continue;
 		}
-	//label3:
+		//label3:
 		ld = ld->Chain;
 	}
 
@@ -1075,11 +1075,10 @@ void PutTxt(Instr_puttxt* PD)
 }
 
 // ulozi do katalogu hodnotu promenne
-void AssgnCatFld(Instr_assign* PD)
+void AssgnCatFld(Instr_assign* PD, void* record)
 {
-	CFile = PD->FD3;
-	if (CFile != nullptr) CFile->CloseFile();
-	std::string data = RunShortStr(CFile, PD->Frml3, CRecPtr);
+	if (PD->FD3 != nullptr) PD->FD3->CloseFile();
+	std::string data = RunShortStr(PD->FD3, PD->Frml3, record);
 	CatFD->SetField(PD->CatIRec, PD->CatFld, data);
 }
 
@@ -1352,7 +1351,7 @@ void RunInstr(Instr* PD)
 			AssignField((Instr_assign*)PD);
 			break;
 		}
-		case PInstrCode::_asgnnrecs: /* !!! with PD^ do!!! */ {
+		case PInstrCode::_asgnnrecs: {
 			auto iPD = (Instr_assign*)PD;
 			CFile = iPD->FD;
 			CFile->AssignNRecs(iPD->Add, RunInt(CFile, iPD->Frml, CRecPtr));
@@ -1369,11 +1368,26 @@ void RunInstr(Instr* PD)
 		case PInstrCode::_writerec: { ReadWriteRecProc(false, (Instr_recs*)PD); break; }
 		case PInstrCode::_linkrec: { LinkRecProc((Instr_assign*)PD); break; }
 		case PInstrCode::_withshared:
-		case PInstrCode::_withlocked: { WithLockedProc((Instr_withshared*)PD); break; }
-		case PInstrCode::_edittxt: { EditTxtProc((Instr_edittxt*)PD); break; }
-		case PInstrCode::_printtxt: { PrintTxtProc((Instr_edittxt*)PD); break; }
-		case PInstrCode::_puttxt: { PutTxt((Instr_puttxt*)PD); break; }
-		case PInstrCode::_asgnCatField: { AssgnCatFld((Instr_assign*)PD); break; }
+		case PInstrCode::_withlocked: {
+			WithLockedProc(static_cast<Instr_withshared*>(PD));
+			break;
+		}
+		case PInstrCode::_edittxt: {
+			EditTxtProc(static_cast<Instr_edittxt*>(PD));
+			break;
+		}
+		case PInstrCode::_printtxt: {
+			PrintTxtProc(static_cast<Instr_edittxt*>(PD));
+			break;
+		}
+		case PInstrCode::_puttxt: {
+			PutTxt(static_cast<Instr_puttxt*>(PD));
+			break;
+		}
+		case PInstrCode::_asgnCatField: {
+			AssgnCatFld(static_cast<Instr_assign*>(PD), CRecPtr);
+			break;
+		}
 		case PInstrCode::_asgnusercode: {
 			UserCode = RunInt(CFile, ((Instr_assign*)PD)->Frml, CRecPtr);
 			AccRight[0] = 0x01;
@@ -1554,12 +1568,12 @@ void RunInstr(Instr* PD)
 				(WORD)(RunInt(CFile, iPD->PortWhat, CRecPtr)));
 			break;
 		}
-		default: 
+		default:
 			break;
 		}
 		PD = PD->Chain;
-		}
 	}
+}
 
 void RunProcedure(Instr* PDRoot)
 {
@@ -1591,7 +1605,7 @@ void CallProcedure(Instr_proc* PD)
 
 #ifdef _DEBUG
 	std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
-	if (srcCode.find("PARAM1.nrecs>1: PARAM1.nrecs:=1; end; close(PARAM1);") != std::string::npos) {
+	if (srcCode.find("gettxt(FANDCFG)") != std::string::npos) {
 		printf("");
 	}
 #endif

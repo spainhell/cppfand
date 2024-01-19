@@ -318,24 +318,24 @@ bool Assign(FileD* file_d, AddD* add_d, void* record)
 
 	switch (f->frml_type) {
 	case 'R': {
-		file_d->saveR(f, r, linkedRecord);
+		add_d->File2->saveR(f, r, linkedRecord);
 		break;
 	}
 	case 'S': {
 		if (f->field_type == FieldType::TEXT) {
-			file_d->saveS(f, s, linkedRecord);
+			add_d->File2->saveS(f, s, linkedRecord);
 		}
 		else {
-			file_d->saveS(f, s, linkedRecord);
+			add_d->File2->saveS(f, s, linkedRecord);
 		}
 		break;
 	}
 	default: {
-		file_d->saveB(f, b, linkedRecord);
+		add_d->File2->saveB(f, b, linkedRecord);
 		break;
 	}
 	}
-	file_d->WriteRec(n2, linkedRecord);
+	add_d->File2->WriteRec(n2, linkedRecord);
 
 	delete[] linkedRecord; linkedRecord = nullptr;
 	return true;
@@ -346,39 +346,39 @@ bool LockForAdd(FileD* file_d, WORD kind, bool Ta, LockMode& md)
 	LockMode md1; /*0-ExLMode,1-lock,2-unlock*/
 	bool result = false;
 
-	for (AddD* AD : file_d->Add) {
-		if (file_d != AD->File2) {
+	for (AddD* add_d : file_d->Add) {
+		if (file_d != add_d->File2) {
 			switch (kind) {
 			case 0: {
 				if (Ta) {
-					AD->File2->FF->TaLMode = AD->File2->FF->LMode;
+					add_d->File2->FF->TaLMode = add_d->File2->FF->LMode;
 				}
 				else {
-					AD->File2->FF->ExLMode = AD->File2->FF->LMode;
+					add_d->File2->FF->ExLMode = add_d->File2->FF->LMode;
 				}
 				break;
 			}
 			case 1: {
 				md = WrMode;
-				if (AD->Create > 0) {
+				if (add_d->Create > 0) {
 					md = CrMode;
 				}
-				if (!AD->File2->TryLockMode(md, md1, 2)) {
+				if (!add_d->File2->TryLockMode(md, md1, 2)) {
 					return result;
 				}
 				break;
 			}
 			case 2: {
 				if (Ta) {
-					AD->File2->OldLockMode(AD->File2->FF->TaLMode);
+					add_d->File2->OldLockMode(add_d->File2->FF->TaLMode);
 				}
 				else {
-					AD->File2->OldLockMode(AD->File2->FF->ExLMode);
+					add_d->File2->OldLockMode(add_d->File2->FF->ExLMode);
 				}
 				break;
 			}
 			}
-			if (!LockForAdd(AD->File2, kind, Ta, md)) {
+			if (!LockForAdd(add_d->File2, kind, Ta, md)) {
 				return result;
 			}
 		}

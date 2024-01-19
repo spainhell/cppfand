@@ -1955,13 +1955,9 @@ label1:
 
 std::string RunShortStr(FileD* file_d, FrmlElem* X, void* record)
 {
-	auto s = RunStdStr(file_d, X, record);
+	std::string s = RunStdStr(file_d, X, record);
 	if (s.length() > 255) s = s.substr(0, 255);
 	return s;
-}
-
-void CopyLongStr(LongStr* S, WORD From, WORD Number)
-{
 }
 
 void AddToLongStr(LongStr* S, void* P, WORD L)

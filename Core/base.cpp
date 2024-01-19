@@ -551,13 +551,10 @@ HANDLE OpenH(const std::string& path, FileOpenMode Mode, FileUseMode UM)
 #ifdef _DEBUG
 	if (filesMap.find(path) != filesMap.end()) {
 		// soubor uz v mape je, budeme aktualizovat
-		filesMap[path] = DataFile(path, CFile, (FILE*)handle);
-		if (CFile != nullptr) {
-			CFile->FullPath = CPath;
-		}
+		filesMap[path] = DataFile(path, nullptr, (FILE*)handle);
 	}
 	else {
-		filesMap.insert(std::pair(path, DataFile(path, CFile, (FILE*)handle)));
+		filesMap.insert(std::pair(path, DataFile(path, nullptr, (FILE*)handle)));
 	}
 #endif
 
@@ -693,20 +690,24 @@ void RdWrCache(FileOperation operation, HANDLE handle, bool not_cached, size_t p
 		//log->log(loglevel::DEBUG, "RdWrCache() 0x%p cached file operation.", handle);
 		FileCache* c1 = cache.GetCache(handle);
 		if (operation == READ) {
-			auto src = c1->Load(position);
+			const BYTE* src = c1->Load(position);
 			if (src == nullptr) return;
 			memcpy(buf, src, count);
 		}
 		else {
-			c1->Save(position, count, (unsigned char*)buf);
+			c1->Save(position, count, static_cast<BYTE*>(buf));
 		}
 	}
 	else {
 		// soubor nema cache, cteme (zapisujeme) primo z disku (na disk)
 		//log->log(loglevel::DEBUG, "RdWrCache() non cached file 0x%p operation.", handle);
 		SeekH(handle, position);
-		if (operation == READ) ReadH(handle, count, buf);
-		else WriteH(handle, count, buf);
+		if (operation == READ) {
+			ReadH(handle, count, buf);
+		}
+		else {
+			WriteH(handle, count, buf);
+		}
 		if (HandleError == 0) return;
 		err = HandleError;
 		SetPathForH(handle);
