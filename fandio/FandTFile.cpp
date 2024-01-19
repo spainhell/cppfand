@@ -17,7 +17,7 @@ void RandIntByBytes(int& nr)
 	unsigned char* byte = (unsigned char*)&nr;
 	for (size_t i = 0; i < 4; i++)
 	{
-		byte[i] = byte[i] ^ Random(255);
+		byte[i] = byte[i] ^ static_cast<BYTE>(Random(255));
 	}
 }
 
@@ -25,7 +25,7 @@ void RandByteByBytes(unsigned short& nr)
 {
 	unsigned char* byte = (unsigned char*)&nr;
 	for (size_t i = 0; i < 2; i++) {
-		byte[i] = byte[i] ^ Random(255);
+		byte[i] = byte[i] ^ static_cast<BYTE>(Random(255));
 	}
 }
 
@@ -33,7 +33,7 @@ void RandReal48ByBytes(double& nr)
 {
 	unsigned char* byte = (unsigned char*)&nr;
 	for (size_t i = 0; i < 6; i++) {
-		byte[i] = byte[i] ^ Random(255);
+		byte[i] = byte[i] ^ static_cast<BYTE>(Random(255));
 	}
 }
 
@@ -41,7 +41,7 @@ void RandBooleanByBytes(bool& nr)
 {
 	unsigned char* byte = (unsigned char*)&nr;
 	for (size_t i = 0; i < sizeof(nr); i++) {
-		byte[i] = byte[i] ^ Random(255);
+		byte[i] = byte[i] ^ static_cast<BYTE>(Random(255));
 	}
 }
 
@@ -49,7 +49,7 @@ void RandArrayByBytes(void* arr, size_t len)
 {
 	unsigned char* byte = (unsigned char*)arr;
 	for (size_t i = 0; i < len; i++) {
-		byte[i] = byte[i] ^ Random(255);
+		byte[i] = byte[i] ^ static_cast<BYTE>(Random(255));
 	}
 }
 
@@ -71,7 +71,7 @@ FandTFile::~FandTFile()
 	}
 }
 
-void FandTFile::Err(unsigned short n, bool ex)
+void FandTFile::Err(unsigned short n, bool ex) const
 {
 	if (IsWork) {
 		SetMsgPar(FandWorkTName);
@@ -84,23 +84,27 @@ void FandTFile::Err(unsigned short n, bool ex)
 	}
 }
 
-void FandTFile::TestErr()
+void FandTFile::TestErr() const
 {
 	if (HandleError != 0) Err(700 + HandleError, true);
 }
 
-int FandTFile::UsedFileSize()
+int FandTFile::UsedFileSize() const
 {
-	if (Format == FptFormat) return FreePart * FptFormatBlockSize;
-	else return int(MaxPage + 1) << MPageShft;
+	if (Format == FptFormat) {
+		return FreePart * FptFormatBlockSize;
+	}
+	else {
+		return int(MaxPage + 1) << MPageShft;
+	}
 }
 
-bool FandTFile::NotCached()
+bool FandTFile::NotCached() const
 {
 	return !IsWork && _parent->NotCached();
 }
 
-bool FandTFile::Cached()
+bool FandTFile::Cached() const
 {
 	return !NotCached();
 }
@@ -143,8 +147,8 @@ void FandTFile::RdPrefix(bool check)
 	// nactena data jsou porad v poli, je nutne je nahrat do T
 	T.Load(header512);
 
-	FreePart = T.FreePart; // 4B
-	Reserved = T.Rsrvd1; // 1B
+	FreePart = T.free_part; // 4B
+	Reserved = T.rsrvd1; // 1B
 	CompileProc = T.CompileProc; // 1B
 	CompileAll = T.CompileAll; // 1B
 	IRec = T.IRec; // 2B
@@ -157,8 +161,10 @@ void FandTFile::RdPrefix(bool check)
 		&& ((T.HasCoproc != HasCoproc) || (CompArea(Version, T.Version, 4) != _equ))) {
 		CompileAll = true;
 	}
-	if (T.OldMaxPage == 0xffff) {
-		goto label1;
+	if (T.old_max_page == 0xffff) {
+		GetMLen();
+		ML = MLen;
+		if (!check) FS = ML;
 	}
 	else {
 		FreeRoot = 0;
@@ -169,8 +175,8 @@ void FandTFile::RdPrefix(bool check)
 			GetMLen();
 		}
 		else {
-			FreePart = -FreePart; MaxPage = T.OldMaxPage;
-		label1:
+			FreePart = -FreePart;
+			MaxPage = T.old_max_page;
 			GetMLen();
 			ML = MLen;
 			if (!check) FS = ML;
@@ -223,7 +229,7 @@ void FandTFile::RdPrefix(bool check)
 	srand(RS);
 }
 
-void FandTFile::WrPrefix()
+void FandTFile::WrPrefix() const
 {
 	FandTFilePrefix T;
 
@@ -284,8 +290,8 @@ void FandTFile::WrPrefix()
 			for (i = 0; i < 105; i++) sum += T.LicText[i];
 			T.Sum = sum;
 		}
-		T.FreePart = FreePart; // 8B
-		T.Rsrvd1 = Reserved; // 1B
+		T.free_part = FreePart; // 8B
+		T.rsrvd1 = Reserved; // 1B
 		T.CompileProc = CompileProc; // 1B
 		T.CompileAll = CompileAll; // 1B
 		T.IRec = IRec; // 2B
@@ -293,8 +299,8 @@ void FandTFile::WrPrefix()
 		T.MaxPage = MaxPage; // 4B
 		T.TimeStmp = TimeStmp; // 6B Pascal
 
-		T.OldMaxPage = 0xffff;
-		T.Signum = 1;
+		T.old_max_page = 0xffff;
+		T.signum = 1;
 		T.IRec += n;
 		memcpy(T.Version, Version, 4);
 		T.HasCoproc = HasCoproc;

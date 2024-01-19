@@ -2,12 +2,17 @@
 class FandTFilePrefix
 {
 public:
-	unsigned short Signum = 0;
-	unsigned short OldMaxPage = 0;
-	int FreePart = 0;
-	bool Rsrvd1 = false, CompileProc = false, CompileAll = false;
+	FandTFilePrefix();
+
+	unsigned short signum = 0;
+	unsigned short old_max_page = 0;
+	int free_part = 0;
+	bool rsrvd1 = false;
+	bool CompileProc = false;
+	bool CompileAll = false;
 	unsigned short IRec = 0;
 	// potud se to nekoduje (13B)
+
 	// odtud jsou polozky prohnany XORem
 	int FreeRoot = 0, MaxPage = 0;   /*eldest version=>array Pw[1..40] of char;*/
 	double TimeStmp = 0.0;
