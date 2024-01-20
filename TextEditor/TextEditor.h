@@ -26,30 +26,26 @@ struct stEditorParams
 };
 
 
-void TestUpdFile();
-void DelEndT();
-void KodLine();
 size_t CountChar(char* text, size_t text_len, char C, size_t first, size_t last);
 size_t FindCharPosition(char* text, size_t length, char c, size_t from, size_t n = 1);
 size_t GetLineNumber(size_t Ind);
 size_t GetLineStartIndex(size_t lineNr);
 WORD SetPredI();
-void NextLine(bool WrScr);
+
 void BlockLRShift(WORD I1);
-void FrameStep(BYTE& odir, PressedKey EvKeyC);
+
 void WrCharE(char Ch);
-void Format(WORD& i, int First, int Last, WORD Posit, bool Rep);
-void SetPart(int Idx);
+
+
 bool WordExist();
 void NextPartDek();
-void NewLine(char Mode);
+
 bool TestLastPos(WORD F, WORD T);
 
 WORD Position(WORD n);
 WORD Column(WORD p);
-void PreviousLine();
 void BlockUDShift(int L1);
-void TestKod();
+
 void ClrWord();
 bool ModPage(int RLine);
 int NewL(int RLine);
@@ -58,14 +54,12 @@ int NewRL(int Line);
 bool WordFind(WORD i, WORD& WB, short& WE, WORD& LI);
 void SetWord(WORD WB, WORD WE);
 WORD GetArrLineLength();
-void RollNext();
-void RollPred();
 void DekodLine(size_t lineStartIndex);
 void SetScreen(WORD Ind, WORD ScrXY, WORD Pos);
 bool MyPromptLL(WORD n, std::string& s);
 void DelChar();
-void PredPart();
-void DeleteLine();
+
+
 void CopyCurrentLineToArr(size_t Ind);
 //void TestLenText(char** text, size_t& textLength, size_t i, size_t j);
 bool TestOptStr(char c);
@@ -74,7 +68,7 @@ bool BlockExist();
 void PosDekFindLine(int Num, WORD Pos, bool ChScr);
 
 
-void FillBlank();
+
 void SetPartLine(int Ln);
 void MyWrLLMsg(pstring s);
 void HMsgExit(pstring s);
@@ -165,6 +159,7 @@ public:
 	void ViewPrinterTxt();
 	void SetEditTxt(Instr_setedittxt* PD);
 
+	// methods used by EditorEvents class
 	void Background();
 	void FindReplaceString(int First, int Last);
 	void ScrollPress();
@@ -185,7 +180,26 @@ public:
 	void HelpLU(char dir);
 	void HelpRD(char dir);
 
+	void TestUpdFile();
+	void KodLine();
+	void FrameStep(BYTE& odir, PressedKey EvKeyC);
+	void Format(WORD& i, int First, int Last, WORD Posit, bool Rep);
+	void SetPart(int Idx);
+	void NextLine(bool WrScr);
+	void NewLine(char Mode);
+	void RollNext();
+	void RollPred();
+	void TestKod();
+	void PreviousLine();
+
+	void FillBlank();
+	void DeleteLine();
+
+
 private:
 	void Edit(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys);
-	
+	void PredPart();
+	void MovePart(WORD Ind);
+	void InsertLine(WORD& i, WORD& I1, WORD& I3, WORD& ww, LongStr* sp);
+
 };

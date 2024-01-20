@@ -741,13 +741,7 @@ bool MyTestEvent()
 	//return TestEvent();
 }
 
-void DelEndT()
-{
-	T[LenT - 1] = '\0';
-	LenT--;
-}
-
-void TestUpdFile()
+void TextEditor::TestUpdFile()
 {
 	if (TxtFH != nullptr && UpdatT) {
 		UpdateFile();
@@ -785,7 +779,7 @@ void MoveIdx(int dir)
 	ScreenFirstLineNr += ml; // {****Edit***}
 }
 
-void PredPart()
+void TextEditor::PredPart()
 {
 	TestUpdFile();
 	//ChangePart = RdPredPart();
@@ -843,88 +837,6 @@ WORD CurrentLineFirstCharIndex(WORD index)
 	}
 	return result;
 }
-
-void SmallerPart(WORD Ind, WORD FreeSize)
-{
-	WORD i, il, l;
-	int lon;
-	//NullChangePart();
-	if ((StoreAvail() > FreeSize) && (MaxLenT - LenT > FreeSize)) {
-		return;
-	}
-	TestUpdFile();
-	WrEndT();
-	lon = MinL(LenT + StoreAvail(), MaxLenT);
-	lon -= FreeSize;
-	if (lon <= 0) { return; }
-	lon -= lon >> 3;
-	i = 1; il = 0; l = 0;
-
-	while (i < Ind) {
-		if (T[i] == __ENTER)
-		{
-			l++; il = i;
-			if (T[il + 1] == __LF) { il++; }
-		}
-		if (LenT - il < lon) { i = Ind; i++; }
-	}
-
-	if (il > 0) {
-		// with Part do:
-		//Part.PosP += il; Part.LineP += l;
-		//Part.MovI = il; Part.MovL = l;
-		//SetColorOrd(Part.ColorP, 1, Part.MovI + 1);
-		// end
-
-		LenT -= il;
-		Move(&T[il + 1], T, LenT);
-		T[LenT] = __CR;
-		//ReleaseStore(&T[LenT + 1]);
-		ChangePart = true;
-		MoveIdx(1);
-	}
-
-	Ind -= il;
-	if (LenT < lon) {
-		return;
-	}
-	i = LenT;
-	il = LenT;
-	while (i > Ind) {
-		if (T[i] == __CR) {
-			il = i;
-			if (T[il + 1] == __LF) { il++; }
-		}
-		i--;
-		if (il < lon) { i = Ind; }
-	}
-	if (il < LenT)
-	{
-		//if (il < LenT - 1) { AllRd = false; }
-		//Part.LenP = il;
-		LenT = il + 1;
-		T[LenT] = __CR;
-		//ReleaseStore(&T[LenT + 1]);
-	}
-}
-
-//void SetUpdat()
-//{
-//	UpdatT = true;
-//	//if (TypeT == FileT) {
-//	//	if (Part.PosP < 0x400) {
-//	//		UpdPHead = true;
-//	//		Part.UpdP = true;
-//	//	}
-//	//}
-//}
-
-//void TestLenText(char** text, size_t& textLength, size_t F, size_t LL)
-//{
-//	SetUpdat();
-//	//printf("!!!");
-//	//throw std::exception("TestLenText() implementation is bad. Don't call it.");
-//}
 
 void DekodLine(size_t lineStartIndex)
 {
@@ -1087,7 +999,7 @@ size_t GetLineStartIndex(size_t lineNr)
 	return result;
 }
 
-void SetPart(int Idx)
+void TextEditor::SetPart(int Idx)
 {
 	//if ((Idx > Part.PosP) && (Idx < Part.PosP + LenT) || (TypeT != FileT)) {
 	//	return;
@@ -1337,7 +1249,7 @@ void TextEditor::Background()
 	IsWrScreen = true;
 }
 
-void KodLine()
+void TextEditor::KodLine()
 {
 	size_t ArrLineLen = GetArrLineLength(); // Arr bez koncovych mezer
 	std::string ArrLine = std::string(Arr, ArrLineLen);
@@ -1373,7 +1285,7 @@ void KodLine()
 	UpdatedL = false;
 }
 
-void TestKod()
+void TextEditor::TestKod()
 {
 	if (UpdatedL) KodLine();
 }
@@ -1453,7 +1365,7 @@ void TextEditor::DisplLL(WORD Flags)
 //	DelLine();
 //}
 
-void RollNext()
+void TextEditor::RollNext()
 {
 	//if ((NextLineStartIndex >= LenT) && !AllRd) NextPartDek();
 	if (NextLineStartIndex <= LenT) {
@@ -1470,7 +1382,7 @@ void RollNext()
 	}
 }
 
-void RollPred()
+void TextEditor::RollPred()
 {
 	//if ((ScreenFirstLineNr == 1) && (Part.PosP > 0)) PredPart();
 	if (ScreenFirstLineNr > 1) {
@@ -1506,7 +1418,7 @@ void MyWriteln()
 	printf("\n");
 }
 
-void PreviousLine()
+void TextEditor::PreviousLine()
 {
 	//WORD mi, ml;
 	TestKod();
@@ -1542,7 +1454,7 @@ void PreviousLine()
 	}
 }
 
-void NextLine(bool WrScr)
+void TextEditor::NextLine(bool WrScr)
 {
 	TestKod();
 	//if ((NextLineStartIndex >= LenT) && !AllRd) NextPartDek();
@@ -1663,7 +1575,7 @@ void TextEditor::CleanFrame(std::vector<EdExitD*>& ExitD, std::vector<WORD>& bre
 	//	}
 }
 
-void FrameStep(BYTE& odir, PressedKey EvKeyC)
+void TextEditor::FrameStep(BYTE& odir, PressedKey EvKeyC)
 {
 	std::string FrameString = "\x3F\x50\x48\xB3\x4D\xDA\xC0\xC3\x4B\xBF\xD9\xB4\xC4\xC2\xC1\xC5";
 	//                                       │       ┌   └   ├       ┐   ┘   ┤   ─   ┬   ┴   ┼
@@ -1807,7 +1719,7 @@ void DelChar()
 	TestLastPos(positionOnActualLine + 1, positionOnActualLine);
 }
 
-void FillBlank()
+void TextEditor::FillBlank()
 {
 	KodLine();
 	WORD I = GetArrLineLength();
@@ -1819,7 +1731,7 @@ void FillBlank()
 	}
 }
 
-void DeleteLine()
+void TextEditor::DeleteLine()
 {
 	FillBlank();
 	if (LenT == 0) return;
@@ -1863,7 +1775,7 @@ void DeleteLine()
 	DekodLine(textIndex);
 }
 
-void NewLine(char Mode)
+void TextEditor::NewLine(char Mode)
 {
 	KodLine();
 	WORD LP = textIndex + MinI(GetArrLineLength(), positionOnActualLine - 1);
@@ -1940,7 +1852,7 @@ void WrCharE(char Ch)
 	}
 }
 
-void Format(WORD& i, int First, int Last, WORD Posit, bool Rep)
+void TextEditor::Format(WORD& i, int First, int Last, WORD Posit, bool Rep)
 {
 	WORD lst, ii1;
 	short ii;
@@ -2373,7 +2285,7 @@ void MarkRdClpBd(void* P1, LongStr* sp)
 	sp = TWork.Read(ClpBdPos);
 }
 
-void MovePart(WORD Ind)
+void TextEditor::MovePart(WORD Ind)
 {
 	if (TypeT != FileT) return;
 	TestUpdFile();
@@ -2479,7 +2391,7 @@ bool TextEditor::BlockCGrasp(char Oper, void* P1, LongStr* sp)
 	return result;
 }
 
-void InsertLine(WORD& i, WORD& I1, WORD& I3, WORD& ww, LongStr* sp)
+void TextEditor::InsertLine(WORD& i, WORD& I1, WORD& I3, WORD& ww, LongStr* sp)
 {
 	i = MinW(I1 - I3, LineMaxSize - GetArrLineLength());
 	if (i > 0) {
