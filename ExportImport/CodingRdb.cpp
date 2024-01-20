@@ -241,9 +241,13 @@ void CodingRdb::CodeF(bool rotate, WORD IRec, FieldDescr* F, char Typ)
 			label1: {}
 			}
 		}
-		LongStr* s2 = new LongStr(0xfffe); // GetStore(0xfffe);
-		// TODO: XEncode(s, s2);
-		s = s2;
+
+		std::string plain = std::string(s->A, s->LL);
+		std::string coded = Coding::XEncode(plain);
+
+		delete s; s = nullptr;
+		s = new LongStr(coded.length());
+		memcpy(s->A, coded.c_str(), coded.length());
 	}
 	else {
 		Coding::Code(s->A, l);

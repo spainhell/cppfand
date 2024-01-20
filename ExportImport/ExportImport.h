@@ -16,5 +16,3 @@ void CheckFile(FileD* FD);
 void CodingCRdb(bool Rotate);
 
 bool PromptCodeRdb();
-
-void XEncode(LongStr* S1, LongStr* S2);

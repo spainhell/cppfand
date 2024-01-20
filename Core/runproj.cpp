@@ -480,36 +480,42 @@ void EditHelpOrCat(WORD cc, WORD kind, std::string txt)
 	}
 }
 
-void StoreChptTxt(FieldDescr* F, LongStr* S, bool Del)
+void StoreChptTxt(FieldDescr* F, std::string text, bool Del)
 {
-	LongStr* s2 = nullptr; void* p = nullptr;
-	WORD LicNr; int oldpos, pos;
-	LicNr = ChptTF->LicenseNr;
-	oldpos = CFile->loadT(F, CRecPtr);
+	void* p = nullptr;
+	WORD LicNr = ChptTF->LicenseNr;
+	int oldpos = CFile->loadT(F, CRecPtr);
 	MarkStore(p);
+
 	if (CRdb->Encrypted) {
 		if (LicNr != 0) {
-			s2 = new LongStr(0x8100); /*possibly longer*/
-			XEncode(S, s2);
-			S = s2;
+			//Coding::XEncode(S, s2);
+			text = Coding::XEncode(text);
 		}
-		else Coding::CodingLongStr(CFile, S);
+		else {
+			text = Coding::CodingString(CFile, text);
+		}
 	}
 	if (Del) if (LicNr == 0) ChptTF->Delete(oldpos);
 	else if (oldpos != 0) ChptTF->Delete(oldpos - LicNr);
-	pos = ChptTF->Store(S->A, S->LL);
+
+	const int pos = ChptTF->Store((char*)text.c_str(), text.length());
+
 	if (LicNr == 0) {
 		CFile->saveT(F, pos, CRecPtr);
 	}
 	else {
 		CFile->saveT(F, pos + LicNr, CRecPtr);
 	}
+
 	ReleaseStore(&p);
 }
 
 void SetChptFldDPtr()
 {
-	if (Chpt == nullptr) /*ChptTF = nullptr;*/ throw std::exception("SetChptFldDPtr: Chpt is NULL.");
+	if (Chpt == nullptr) /*ChptTF = nullptr;*/ {
+		throw std::exception("SetChptFldDPtr: Chpt is NULL.");
+	}
 	else {
 		ChptTF = Chpt->FF->TF;
 		ChptTxtPos = Chpt->FldD.front();
@@ -1719,9 +1725,11 @@ void UpdateUTxt()
 			ReleaseStore(&p);
 			b = false;
 			if (Upd) {
-				StoreChptTxt(ChptTxt, S, true);
+				std::string store = std::string(S->A, S->LL);
+				StoreChptTxt(ChptTxt, store, true);
 				CFile->WriteRec(1, CRecPtr);
 			}
+			delete S; S = nullptr;
 			break;
 		}
 		catch (std::exception& ex) {
