@@ -31,9 +31,6 @@
     <ProjectReference Include="..\Drivers\Drivers.vcxproj">
       <Project>{eff16929-f4e0-4b93-a05a-e6bcfea36a68}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\Editor\Editor.vcxproj">
-      <Project>{a08457d5-2848-4fb1-ae40-ec55ef69b5da}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\ExportImport\ExportImport.vcxproj">
       <Project>{b84d55f3-9189-4319-b73d-d3ee0dd4b0f1}</Project>
     </ProjectReference>
@@ -51,6 +48,9 @@
     </ProjectReference>
     <ProjectReference Include="..\Prolog\Prolog.vcxproj">
       <Project>{3e78a386-79ee-4c49-8798-22553c6c40bf}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\TextEditor\TextEditor.vcxproj">
+      <Project>{a08457d5-2848-4fb1-ae40-ec55ef69b5da}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

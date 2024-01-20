@@ -8,7 +8,7 @@
 #include <cstdio>
 #include <set>
 
-#include "OldEditor.h"
+#include "TextEditor.h"
 #include "../DataEditor/runedi.h"
 #include "../Core/obaseww.h"
 #include "../Core/wwmenu.h"

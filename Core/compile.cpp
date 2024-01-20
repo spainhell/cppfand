@@ -11,7 +11,7 @@
 #include "../fandio/FandTFile.h"
 #include "../fandio/XWKey.h"
 #include "wwmix.h"
-#include "../Editor/OldEditor.h"
+#include "../TextEditor/TextEditor.h"
 #include "../Common/compare.h"
 #include "../Common/textfunc.h"
 #include "../Drivers/constants.h"

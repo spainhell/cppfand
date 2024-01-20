@@ -1,7 +1,7 @@
 #include "runedi.h"
 #include <memory>
-#include "../Editor/OldEditor.h"
-#include "../Editor/EditorHelp.h"
+#include "../TextEditor/TextEditor.h"
+#include "../TextEditor/EditorHelp.h"
 #include "rdedit.h"
 #include "../Core/ChkD.h"
 #include "../Core/compile.h"

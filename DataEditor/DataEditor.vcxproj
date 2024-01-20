@@ -27,7 +27,7 @@
     <ClCompile Include="runedi.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Editor\Editor.vcxproj">
+    <ProjectReference Include="..\TextEditor\TextEditor.vcxproj">
       <Project>{a08457d5-2848-4fb1-ae40-ec55ef69b5da}</Project>
     </ProjectReference>
   </ItemGroup>

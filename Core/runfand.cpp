@@ -19,7 +19,7 @@
 #include "Cfg.h"
 #include "wwmenu.h"
 #include "wwmix.h"
-#include "../Editor/OldEditor.h"
+#include "../TextEditor/TextEditor.h"
 #include "../DataEditor/runedi.h"
 #include "../fandio/directory.h"
 #include "../fandio/files.h"

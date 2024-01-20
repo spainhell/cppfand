@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-#include "OldEditor.h"
+#include "TextEditor.h"
 
 typedef std::string ColorOrd;
 

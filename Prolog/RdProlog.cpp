@@ -14,7 +14,7 @@
 #include "../Core/obaseww.h"
 #include "../Core/runproj.h"
 #include "../Core/models/Instr.h"
-#include "../Editor/OldEditor.h"
+#include "..\TextEditor\TextEditor.h"
 #include "../fandio/XKey.h"
 
 /*  L E X A N A L  =========================================================*/

@@ -4,8 +4,8 @@
 
 #include "../Common/compare.h"
 #include "../Common/textfunc.h"
-#include "../Editor/EditorHelp.h"
-#include "../Editor/OldEditor.h"
+#include "../TextEditor/EditorHelp.h"
+#include "../TextEditor/TextEditor.h"
 #include "../DataEditor/rdedit.h"
 #include "../DataEditor/runedi.h"
 #include "../ExportImport/ExportImport.h"

@@ -1,4 +1,4 @@
-﻿#include "OldEditor.h"
+﻿#include "TextEditor.h"
 #include <set>
 #include <stdexcept>
 #include <memory>

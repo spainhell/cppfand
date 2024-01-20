@@ -23,7 +23,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "fandio", "fandio\fandio.vcx
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Logging", "Logging\Logging.vcxproj", "{431CCFDA-764C-498C-AE07-276FB41EBBF9}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Editor", "Editor\Editor.vcxproj", "{A08457D5-2848-4FB1-AE40-EC55EF69B5DA}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TextEditor", "TextEditor\TextEditor.vcxproj", "{A08457D5-2848-4FB1-AE40-EC55EF69B5DA}"
 	ProjectSection(ProjectDependencies) = postProject
 		{193522AB-6765-4A9F-A665-6917AC7BBBEB} = {193522AB-6765-4A9F-A665-6917AC7BBBEB}
 	EndProjectSection
