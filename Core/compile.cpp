@@ -1,5 +1,7 @@
 #include "compile.h"
 #include <map>
+#include <memory>
+
 #include "Coding.h"
 #include "FieldDescr.h"
 #include "FileD.h"
@@ -76,7 +78,8 @@ std::string Error(short N)
 		LongStr LS;
 		LS.A = p;
 		LS.LL = l;
-		SimpleEditText('T', ErrMsg, HdTxt, &LS, 0xfff, i, upd);
+		std::unique_ptr<TextEditor> editor = std::make_unique<TextEditor>();
+		editor->SimpleEditText('T', ErrMsg, HdTxt, &LS, 0xfff, i, upd);
 		p = LS.A;
 		l = LS.LL;
 		PopW(w);

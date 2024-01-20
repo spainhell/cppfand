@@ -3566,8 +3566,9 @@ label2:
 	}
 
 	Upd = false;
+	std::unique_ptr<TextEditor> editor = std::make_unique<TextEditor>();
 	result =
-		EditText(Kind, MemoT, HdTxt, ErrMsg, S, MaxLStrLen, TxtPos, TxtXY, Breaks, X,
+		editor->EditText(Kind, MemoT, HdTxt, ErrMsg, S, MaxLStrLen, TxtPos, TxtXY, Breaks, X,
 			Srch, Upd, 141, CtrlMsgNr, PTxtMsgS);
 	ErrMsg = "";
 	heslo = LexWord;
@@ -5191,5 +5192,6 @@ void ViewPrinterTxt()
 	V.R2 = TxtRows - 1;
 	std::string ErrMsg;
 	std::vector<EdExitD*> emptyExitD;
-	EditTxtFile(nullptr, 'T', ErrMsg, emptyExitD, 1, 0, &V, 0, "", WPushPixel, nullptr);
+	std::unique_ptr<TextEditor> editor = std::make_unique<TextEditor>();
+	editor->EditTxtFile(nullptr, 'T', ErrMsg, emptyExitD, 1, 0, &V, 0, "", WPushPixel, nullptr);
 }

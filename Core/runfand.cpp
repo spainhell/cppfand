@@ -1,5 +1,6 @@
 #include "runfand.h"
 
+#include <memory>
 #include <Windows.h>
 #include "base.h"
 #include "legacy.h"
@@ -228,7 +229,8 @@ void CallEditTxt()
 	CVol = "";
 	std::string errMessage;
 	std::vector<EdExitD*> emptyEdExit;
-	EditTxtFile(nullptr, 'T', errMessage, emptyEdExit, 0, 0, nullptr, 0, "", 0, nullptr);
+	std::unique_ptr<TextEditor> editor = std::make_unique<TextEditor>();
+	editor->EditTxtFile(nullptr, 'T', errMessage, emptyEdExit, 0, 0, nullptr, 0, "", 0, nullptr);
 }
 
 void SelectEditTxt(const std::string& ext, bool OnFace)
@@ -393,7 +395,8 @@ void InitRunFand()
 	TxtEdCtrlF4Brk = false;
 	InitMouseEvents();
 	// Editor
-	InitTxtEditor();
+	std::unique_ptr<TextEditor> editor = std::make_unique<TextEditor>();
+	editor->InitTxtEditor();
 
 	WasInitPgm = true;
 	CompileHelpCatDcl();

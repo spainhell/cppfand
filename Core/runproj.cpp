@@ -1718,7 +1718,8 @@ void UpdateUTxt()
 
 	while (true) {
 		try {
-			SimpleEditText('T', "", "", S, 0x7FFF, TxtPos, Upd);
+			std::unique_ptr<TextEditor> editor = std::make_unique<TextEditor>();
+			editor->SimpleEditText('T', "", "", S, 0x7FFF, TxtPos, Upd);
 			SetInpLongStr(S, false);
 			MarkStore(p);
 			RdUserId(false);

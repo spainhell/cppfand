@@ -118,7 +118,8 @@ void ReportProc(RprtOpt* RO, bool save)
 		SetPrintTxtPath();
 		std::string errMessage;
 		std::vector<EdExitD*> emptyEdExit;
-		EditTxtFile(nullptr, md, errMessage, emptyEdExit, 0, 0, nullptr, 0, "", 0, nullptr);
+		std::unique_ptr<TextEditor> editor = std::make_unique<TextEditor>();
+		editor->EditTxtFile(nullptr, md, errMessage, emptyEdExit, 0, 0, nullptr, 0, "", 0, nullptr);
 		PopW(w);
 	}
 	//label2:
@@ -482,7 +483,8 @@ void EditTxtProc(Instr_edittxt* PD)
 	}
 	std::string msg;
 	if (PD->ErrMsg != nullptr) msg = RunStdStr(CFile, PD->ErrMsg, CRecPtr);
-	EditTxtFile(lp, PD->EdTxtMode, msg, PD->ExD, i,
+	std::unique_ptr<TextEditor> editor = std::make_unique<TextEditor>();
+	editor->EditTxtFile(lp, PD->EdTxtMode, msg, PD->ExD, i,
 		RunInt(CFile, PD->TxtXY, CRecPtr), pv, a,
 		RunShortStr(CFile, PD->Hd, CRecPtr), PD->WFlags, &MsgS);
 	ReleaseStore(&p);
@@ -1524,7 +1526,8 @@ void RunInstr(Instr* PD)
 			break;
 		}
 		case PInstrCode::_setedittxt: {
-			SetEditTxt((Instr_setedittxt*)PD);
+			std::unique_ptr<TextEditor> editor = std::make_unique<TextEditor>();
+			editor->SetEditTxt((Instr_setedittxt*)PD);
 			break;
 		}
 		case PInstrCode::_getindex: {

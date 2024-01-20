@@ -25,19 +25,6 @@ struct stEditorParams
 	std::string NameT;
 };
 
-bool EditText(char pMode, char pTxtType, std::string pName, std::string pErrMsg,
-	LongStr* pLS, WORD pMaxLen, WORD& pInd, int& pScr,
-	std::vector<WORD>& break_keys, std::vector<EdExitD*>& pExD, bool& pSrch, bool& pUpdat,
-	WORD pLastNr, WORD pCtrlLastNr, MsgStr* pMsgS); // r169
-void SimpleEditText(char pMode, std::string pErrMsg, std::string pName, LongStr* TxtPtr,
-	WORD MaxLen, WORD& Ind, bool& Updat); // r202
-WORD FindTextE(const pstring& PstrScreenStr, pstring Popt, char* PTxtPtr, WORD PLen); // r209
-void InitTxtEditor();
-void EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg, std::vector<EdExitD*>& ExD, int TxtPos,
-	int Txtxy, WRect* V, WORD Atr, std::string Hd, BYTE WFlags, MsgStr* MsgS);
-void ViewPrinterTxt(); // r353
-void SetEditTxt(Instr_setedittxt* PD);
-
 void Background();
 void DisplLL(WORD Flags);
 void WrLLMargMsg(std::string& s, WORD n);
@@ -172,3 +159,28 @@ const WORD _KP_ = 0x0B10; const WORD _KN_ = 0x0B0E; const WORD _KU_ = 0x0B15;
 const WORD _KL_ = 0x0B0C; const WORD _OW_ = 0x0F17; const WORD _OL_ = 0x0F0C;
 const WORD _OR_ = 0x0F12; const WORD _OJ_ = 0x0F0A; const WORD _OC_ = 0x0F03;
 const WORD _KF_ = 0x0B06;
+
+
+class TextEditor
+{
+public:
+	bool EditText(char pMode, char pTxtType, std::string pName, std::string pErrMsg,
+		LongStr* pLS, WORD pMaxLen, WORD& pInd, int& pScr,
+		std::vector<WORD>& break_keys, std::vector<EdExitD*>& pExD, bool& pSrch, bool& pUpdat,
+		WORD pLastNr, WORD pCtrlLastNr, MsgStr* pMsgS);
+
+	void SimpleEditText(char pMode, std::string pErrMsg, std::string pName, LongStr* TxtPtr,
+		WORD MaxLen, WORD& Ind, bool& Updat);
+
+	WORD FindTextE(const pstring& PstrScreenStr, pstring Popt, char* PTxtPtr, WORD PLen);
+
+	void InitTxtEditor();
+
+	void EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg, std::vector<EdExitD*>& ExD, int TxtPos,
+		int Txtxy, WRect* V, WORD Atr, std::string Hd, BYTE WFlags, MsgStr* MsgS);
+
+	void ViewPrinterTxt();
+
+	void SetEditTxt(Instr_setedittxt* PD);
+
+};

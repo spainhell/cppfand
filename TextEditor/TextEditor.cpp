@@ -21,13 +21,13 @@
 #include "../Common/textfunc.h"
 #include "../Common/compare.h"
 
+
 const int TXTCOLS = 80;
 int Timer = 0;
 bool Insert, Indent, Wrap, Just;
 
 // PROMENNE
 bool InsPage;
-//PartDescr Part;
 
 struct Character {
 	char ch = 0;
@@ -390,12 +390,6 @@ void LastLine(char* input, WORD from, WORD num, WORD& Ind, WORD& Count)
 bool ReadTextFile()
 {
 	// kompletne prepsano -> vycte cely soubor do promenne T
-
-	//auto fileSize = FileSizeH(TxtFH);
-	//T = new char[fileSize];
-	//SeekH(TxtFH, 0);
-	//ReadH(TxtFH, fileSize, T);
-	//LenT = fileSize;
 
 	auto fileSize = GetFileSize(TxtFH, NULL);
 	T = new char[fileSize];
@@ -3074,7 +3068,7 @@ void Edit(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys)
 	blocks = nullptr;
 }
 
-void SetEditTxt(Instr_setedittxt* PD)
+void TextEditor::SetEditTxt(Instr_setedittxt* PD)
 {
 	if (PD->Insert != nullptr) Insert = !RunBool(CFile, PD->Insert, CRecPtr);
 	if (PD->Indent != nullptr) Indent = RunBool(CFile, PD->Indent, CRecPtr);
@@ -3091,7 +3085,7 @@ void GetEditTxt(bool& pInsert, bool& pIndent, bool& pWrap, bool& pJust, bool& pC
 	pLeftMarg = LeftMarg; pRightMarg = RightMarg;
 }
 
-bool EditText(char pMode, char pTxtType, std::string pName, std::string pErrMsg, LongStr* pLS, WORD pMaxLen,
+bool TextEditor::EditText(char pMode, char pTxtType, std::string pName, std::string pErrMsg, LongStr* pLS, WORD pMaxLen,
 	WORD& pInd, int& pScr, std::vector<WORD>& break_keys, std::vector<EdExitD*>& pExD, bool& pSrch, bool& pUpdat, WORD pLastNr,
 	WORD pCtrlLastNr, MsgStr* pMsgS)
 {
@@ -3145,7 +3139,7 @@ bool EditText(char pMode, char pTxtType, std::string pName, std::string pErrMsg,
 	return EditT;
 }
 
-void SimpleEditText(char pMode, std::string pErrMsg, std::string pName, LongStr* pLS, WORD MaxLen, WORD& Ind, bool& Updat)
+void TextEditor::SimpleEditText(char pMode, std::string pErrMsg, std::string pName, LongStr* pLS, WORD MaxLen, WORD& Ind, bool& Updat)
 {
 	bool Srch = false;
 	int Scr = 0;
@@ -3155,7 +3149,7 @@ void SimpleEditText(char pMode, std::string pErrMsg, std::string pName, LongStr*
 		emptyBreakKeys, emptyExitD, Srch, Updat, 0, 0, nullptr);
 }
 
-WORD FindTextE(const pstring& Pstr, pstring Popt, char* PTxtPtr, WORD PLen)
+WORD TextEditor::FindTextE(const pstring& Pstr, pstring Popt, char* PTxtPtr, WORD PLen)
 {
 	auto* origT = T;
 	T = (char*)PTxtPtr;
@@ -3176,7 +3170,7 @@ WORD FindTextE(const pstring& Pstr, pstring Popt, char* PTxtPtr, WORD PLen)
 	return result;
 }
 
-void EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg, std::vector<EdExitD*>& ExD,
+void TextEditor::EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg, std::vector<EdExitD*>& ExD,
 	int TxtPos, int Txtxy, WRect* V, WORD Atr,
 	const std::string Hd, BYTE WFlags, MsgStr* MsgS)
 {
@@ -3381,7 +3375,8 @@ void ViewHelpText(std::string& s, WORD& TxtPos)
 			brkKeys.push_back(__CTRL_HOME);
 			brkKeys.push_back(__CTRL_END);
 			std::vector<EdExitD*> emptyExitD;
-			EditText(HelpM, MemoT, "", "", S.get(), 0xFFF0, TxtPos, Scr,
+			std::unique_ptr<TextEditor> editor = std::make_unique<TextEditor>();
+			editor->EditText(HelpM, MemoT, "", "", S.get(), 0xFFF0, TxtPos, Scr,
 				brkKeys, emptyExitD, Srch, Upd, 142, 145, nullptr);
 			if (Event.Pressed.KeyCombination() == __F6) {
 				PrintArray(&S->A, S->LL, true);
@@ -3397,7 +3392,7 @@ void ViewHelpText(std::string& s, WORD& TxtPos)
 	}
 }
 
-void InitTxtEditor()
+void TextEditor::InitTxtEditor()
 {
 	FindStr = ""; ReplaceStr = "";
 	OptionStr[0] = 0; Replace = false;
