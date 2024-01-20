@@ -358,7 +358,7 @@ bool MyGetEvent(char& mode, BYTE SysLColor, std::string& LastS, WORD LastNr, boo
 	return result;
 }
 
-void HandleEvent(char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS, WORD LastNr, std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys) {
+void HandleEvent(TextEditor* editor, char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS, WORD LastNr, std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys) {
 	wwmix wwmix1;
 	WORD I = 0, I1 = 0;
 	short I2 = 0, I3 = 0;

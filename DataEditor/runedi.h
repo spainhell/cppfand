@@ -33,4 +33,4 @@ void EditDataFile(FileD* FD, EditOpt* EO);
 bool SelFldsForEO(EditOpt* EO, LinkD* LD);
 void UpdateEdTFld(LongStr* S);
 bool StartExit(EdExitD* X, bool Displ);
-void ViewPrinterTxt();
+

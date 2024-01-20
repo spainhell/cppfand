@@ -835,7 +835,8 @@ bool CompRunChptRec(WORD CC)
 				if (CC == __CTRL_F9) {
 					report->Run(nullptr);
 					SaveAndCloseAllFiles();
-					ViewPrinterTxt();
+					std::unique_ptr<TextEditor> editor = std::make_unique<TextEditor>();
+					editor->ViewPrinterTxt();
 				}
 				break;
 			}

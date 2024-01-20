@@ -3098,7 +3098,8 @@ void AutoReport()
 		SpecFDNameAllowed = false;
 	}
 	ReleaseStore(&p);
-	ViewPrinterTxt();
+	std::unique_ptr<TextEditor> editor = std::make_unique<TextEditor>();
+	editor->ViewPrinterTxt();
 	CRecPtr = E->NewRecPtr;
 }
 
@@ -5181,17 +5182,4 @@ void EditDataFile(FileD* FD, EditOpt* EO)
 	PopW(w1);
 	PopEdit();
 	ReleaseStore(&p);
-}
-
-void ViewPrinterTxt()
-{
-	WRect V = { 1, 2, 80, 24 };
-	if (!PrintView) return;
-	SetPrintTxtPath();
-	V.C2 = TxtCols;
-	V.R2 = TxtRows - 1;
-	std::string ErrMsg;
-	std::vector<EdExitD*> emptyExitD;
-	std::unique_ptr<TextEditor> editor = std::make_unique<TextEditor>();
-	editor->EditTxtFile(nullptr, 'T', ErrMsg, emptyExitD, 1, 0, &V, 0, "", WPushPixel, nullptr);
 }

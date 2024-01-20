@@ -183,4 +183,7 @@ public:
 
 	void SetEditTxt(Instr_setedittxt* PD);
 
+
+private:
+	void Edit(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys);
 };

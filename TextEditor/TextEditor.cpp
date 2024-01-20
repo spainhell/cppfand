@@ -2958,7 +2958,7 @@ void CursorWord()
 	}
 }
 
-void Edit(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys)
+void TextEditor::Edit(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys)
 {
 	blocks = new Blocks();
 	InitScr();
@@ -3041,7 +3041,7 @@ void Edit(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys)
 		//if (TypeT == FileT) {
 		//	NullChangePart();
 		//}
-		HandleEvent(Mode, IsWrScreen, SysLColor, LastS, LastNr, ExitD, breakKeys);
+		HandleEvent(this, Mode, IsWrScreen, SysLColor, LastS, LastNr, ExitD, breakKeys);
 		if (!(Konec || IsWrScreen)) {
 			Background();
 		}
@@ -3346,6 +3346,18 @@ void TextEditor::EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg
 	catch (std::exception& e) {
 		// TODO: log error
 	}
+}
+
+void TextEditor::ViewPrinterTxt()
+{
+	WRect V = { 1, 2, 80, 24 };
+	if (!PrintView) return;
+	SetPrintTxtPath();
+	V.C2 = TxtCols;
+	V.R2 = TxtRows - 1;
+	std::string ErrMsg;
+	std::vector<EdExitD*> emptyExitD;
+	EditTxtFile(nullptr, 'T', ErrMsg, emptyExitD, 1, 0, &V, 0, "", WPushPixel, nullptr);
 }
 
 void ViewHelpText(std::string& s, WORD& TxtPos)
