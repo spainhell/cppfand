@@ -241,7 +241,7 @@ void HMsgExit(pstring s)
 /// <param name="idx_from">start position 0..n</param>
 /// <param name="n">n-th occur 1..n</param>
 /// <returns>index of found character, input text length if not found</returns>
-size_t FindCharPosition(char* text, size_t length, char c, size_t idx_from, size_t n)
+size_t TextEditor::FindCharPosition(char* text, size_t length, char c, size_t idx_from, size_t n)
 {
 	size_t result = std::string::npos; // as not found
 	for (size_t j = 0; j < n; j++) {
@@ -286,7 +286,7 @@ bool SEquOrder(pstring S1, pstring S2)
 	return true;
 }
 
-bool FindString(WORD& I, WORD Len)
+bool TextEditor::FindString(WORD& I, WORD Len)
 {
 	WORD i1 = 0;
 	pstring s1, s2;
@@ -789,7 +789,7 @@ void TextEditor::PredPart()
 
 /// Counts the number of occurrences of a character;
 /// 'first' & 'last' are 0 .. N
-size_t CountChar(char* text, size_t text_len, char C, size_t first, size_t last)
+size_t TextEditor::CountChar(char* text, size_t text_len, char C, size_t first, size_t last)
 {
 	size_t count = 0;
 	if (first < text_len) {
@@ -809,7 +809,7 @@ size_t CountChar(char* text, size_t text_len, char C, size_t first, size_t last)
  * \param idx - index 0 .. n
  * \return vraci cislo radku (1 .. N), ve kterem se nachazi index
  */
-WORD GetLine(WORD idx)
+WORD TextEditor::GetLine(WORD idx)
 {
 	return CountChar(T, LenT, __CR, 0, idx) + 1;
 }
@@ -838,7 +838,7 @@ WORD CurrentLineFirstCharIndex(WORD index)
 	return result;
 }
 
-void DekodLine(size_t lineStartIndex)
+void TextEditor::DekodLine(size_t lineStartIndex)
 {
 	WORD lineLen = FindCharPosition(T, LenT, __CR, lineStartIndex) - lineStartIndex;
 	HardL = true;
@@ -879,14 +879,14 @@ void DekodLine(size_t lineStartIndex)
 }
 
 /// ziska index 1. znaku akt. radku, vola DekodLine()
-void CopyCurrentLineToArr(size_t Ind)
+void TextEditor::CopyCurrentLineToArr(size_t Ind)
 {
 	textIndex = CurrentLineFirstCharIndex(Ind);
 	DekodLine(textIndex);
 }
 
 /// vraci cislo radku, na kterem je index
-size_t GetLineNumber(size_t idx)
+size_t TextEditor::GetLineNumber(size_t idx)
 {
 	CopyCurrentLineToArr(idx);
 	size_t line = 1;
@@ -978,7 +978,7 @@ WORD GetArrLineLength()
  * \param lineNr line number (1 .. N)
  * \return index of first char on the line (0 .. n), or text length if not found
  */
-size_t GetLineStartIndex(size_t lineNr)
+size_t TextEditor::GetLineStartIndex(size_t lineNr)
 {
 	// znacne zjednoduseno oproti originalu
 
@@ -1024,7 +1024,7 @@ void SetPartLine(int Ln)
 	//}
 }
 
-void DekFindLine(int Num)
+void TextEditor::DekFindLine(int Num)
 {
 	SetPartLine(Num);
 	TextLineNr = Num; // -Part.LineP;
@@ -1032,7 +1032,7 @@ void DekFindLine(int Num)
 	DekodLine(textIndex);
 }
 
-void PosDekFindLine(int Num, WORD Pos, bool ChScr)
+void TextEditor::PosDekFindLine(int Num, WORD Pos, bool ChScr)
 {
 	positionOnActualLine = Pos;
 	DekFindLine(Num);
@@ -1053,7 +1053,7 @@ void WrEndL(bool Hard, int Row)
 	}
 }
 
-void NextPartDek()
+void TextEditor::NextPartDek()
 {
 	ReadTextFile();
 	DekodLine(textIndex);
@@ -1088,7 +1088,7 @@ ColorOrd SetColorOrd(size_t first, size_t last)
 	return co;
 }
 
-void UpdScreen()
+void TextEditor::UpdScreen()
 {
 	short r; // row number, starts from 1
 	ColorOrd co1;
@@ -2557,7 +2557,7 @@ void ChangeP(WORD& fst)
 	}
 }
 
-void SetScreen(WORD Ind, WORD ScrXY, WORD Pos)
+void TextEditor::SetScreen(WORD Ind, WORD ScrXY, WORD Pos)
 {
 	TextLineNr = GetLineNumber(Ind);
 	positionOnActualLine = MinI(LineMaxSize, MaxI(MaxW(1, Pos), Ind - textIndex + 1));
@@ -2590,7 +2590,7 @@ void SetScreen(WORD Ind, WORD ScrXY, WORD Pos)
 	}
 }
 
-void ReplaceString(WORD& J, WORD& fst, WORD& lst, int& Last)
+void TextEditor::ReplaceString(WORD& J, WORD& fst, WORD& lst, int& Last)
 {
 	size_t r = ReplaceStr.length();
 	size_t f = FindStr.length();
@@ -2689,7 +2689,7 @@ label1:
 	/* BackGround; */
 }
 
-WORD WordNo(WORD I)
+WORD TextEditor::WordNo(WORD I)
 {
 	return (CountChar(T, LenT, 0x13 /* ^S */, 1, MinW(LenT, I)) + 1) / 2;
 }
@@ -2724,7 +2724,7 @@ void ClrWord()
 	//}
 }
 
-bool WordFind(WORD i, WORD& WB, short& WE, WORD& LI)
+bool TextEditor::WordFind(WORD i, WORD& WB, short& WE, WORD& LI)
 {
 	bool result = false;
 	if (i == 0) return result;
@@ -2743,7 +2743,7 @@ bool WordFind(WORD i, WORD& WB, short& WE, WORD& LI)
 	return result;
 }
 
-void SetWord(WORD WB, WORD WE)
+void TextEditor::SetWord(WORD WB, WORD WE)
 {
 	T[WB] = 0x11;
 	T[WE] = 0x11;

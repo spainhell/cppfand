@@ -26,48 +26,32 @@ struct stEditorParams
 };
 
 
-size_t CountChar(char* text, size_t text_len, char C, size_t first, size_t last);
-size_t FindCharPosition(char* text, size_t length, char c, size_t from, size_t n = 1);
-size_t GetLineNumber(size_t Ind);
-size_t GetLineStartIndex(size_t lineNr);
+
+
 WORD SetPredI();
 
 void BlockLRShift(WORD I1);
-
 void WrCharE(char Ch);
-
-
 bool WordExist();
-void NextPartDek();
 
 bool TestLastPos(WORD F, WORD T);
-
 WORD Position(WORD n);
 WORD Column(WORD p);
 void BlockUDShift(int L1);
-
 void ClrWord();
 bool ModPage(int RLine);
 int NewL(int RLine);
-void DekFindLine(int Num);
+
 int NewRL(int Line);
-bool WordFind(WORD i, WORD& WB, short& WE, WORD& LI);
-void SetWord(WORD WB, WORD WE);
+
 WORD GetArrLineLength();
-void DekodLine(size_t lineStartIndex);
-void SetScreen(WORD Ind, WORD ScrXY, WORD Pos);
+
+
 bool MyPromptLL(WORD n, std::string& s);
 void DelChar();
 
-
-void CopyCurrentLineToArr(size_t Ind);
-//void TestLenText(char** text, size_t& textLength, size_t i, size_t j);
 bool TestOptStr(char c);
 bool BlockExist();
-
-void PosDekFindLine(int Num, WORD Pos, bool ChScr);
-
-
 
 void SetPartLine(int Ln);
 void MyWrLLMsg(pstring s);
@@ -79,7 +63,7 @@ void OpenTxtFh(char Mode);
 bool ReadTextFile();
 void SimplePrintHead();
 void WrEndT();
-WORD WordNo(WORD I);
+
 
 const int SuccLineSize = 256;
 
@@ -182,6 +166,7 @@ public:
 
 	void TestUpdFile();
 	void KodLine();
+	void DekodLine(size_t lineStartIndex);
 	void FrameStep(BYTE& odir, PressedKey EvKeyC);
 	void Format(WORD& i, int First, int Last, WORD Posit, bool Rep);
 	void SetPart(int Idx);
@@ -195,11 +180,33 @@ public:
 	void FillBlank();
 	void DeleteLine();
 
+	size_t CountChar(char* text, size_t text_len, char C, size_t first, size_t last);
+	size_t FindCharPosition(char* text, size_t length, char c, size_t from, size_t n = 1);
+	size_t GetLineNumber(size_t Ind);
+	size_t GetLineStartIndex(size_t lineNr);
+	void CopyCurrentLineToArr(size_t Ind);
+	void DekFindLine(int Num);
+
+	bool WordFind(WORD i, WORD& WB, short& WE, WORD& LI);
+	void SetWord(WORD WB, WORD WE);
+	void PosDekFindLine(int Num, WORD Pos, bool ChScr);
+	void SetScreen(WORD Ind, WORD ScrXY, WORD Pos);
+	WORD WordNo(WORD I);
+
 
 private:
 	void Edit(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys);
+	void UpdScreen();
 	void PredPart();
 	void MovePart(WORD Ind);
 	void InsertLine(WORD& i, WORD& I1, WORD& I3, WORD& ww, LongStr* sp);
+	WORD GetLine(WORD idx);
+
+	void NextPartDek();
+	void ReplaceString(WORD& J, WORD& fst, WORD& lst, int& Last);
+	
+
+	bool FindString(WORD& I, WORD Len);
+
 
 };
