@@ -25,10 +25,7 @@ struct stEditorParams
 	std::string NameT;
 };
 
-void Background();
-void DisplLL(WORD Flags);
-void WrLLMargMsg(std::string& s, WORD n);
-void ScrollPress();
+
 void CleanFrame(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys);
 WORD SetInd(char* text, size_t len_text, WORD Ind, WORD Pos);
 void TestUpdFile();
@@ -78,7 +75,6 @@ void CopyCurrentLineToArr(size_t Ind);
 bool TestOptStr(char c);
 bool BlockExist();
 void SetBlockBound(int& BBPos, int& EBPos);
-void FindReplaceString(int First, int Last);
 void PosDekFindLine(int Num, WORD Pos, bool ChScr);
 bool BlockHandle(int& fs, HANDLE W1, char Oper);
 void BlockCopyMove(char Oper, void* P1, LongStr* sp);
@@ -168,21 +164,20 @@ public:
 		LongStr* pLS, WORD pMaxLen, WORD& pInd, int& pScr,
 		std::vector<WORD>& break_keys, std::vector<EdExitD*>& pExD, bool& pSrch, bool& pUpdat,
 		WORD pLastNr, WORD pCtrlLastNr, MsgStr* pMsgS);
-
 	void SimpleEditText(char pMode, std::string pErrMsg, std::string pName, LongStr* TxtPtr,
 		WORD MaxLen, WORD& Ind, bool& Updat);
-
 	WORD FindTextE(const pstring& PstrScreenStr, pstring Popt, char* PTxtPtr, WORD PLen);
-
 	void InitTxtEditor();
-
 	void EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg, std::vector<EdExitD*>& ExD, int TxtPos,
 		int Txtxy, WRect* V, WORD Atr, std::string Hd, BYTE WFlags, MsgStr* MsgS);
-
 	void ViewPrinterTxt();
-
 	void SetEditTxt(Instr_setedittxt* PD);
 
+	void Background();
+	void FindReplaceString(int First, int Last);
+	void ScrollPress();
+	void DisplLL(WORD Flags);
+	void WrLLMargMsg(std::string& s, WORD n);
 
 private:
 	void Edit(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys);

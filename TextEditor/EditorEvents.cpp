@@ -14,19 +14,19 @@
 #include "../Core/wwmenu.h"
 
 
-void CtrlShiftAlt(char mode, std::string& LastS, WORD LastNr, bool IsWrScreen)
+void CtrlShiftAlt(TextEditor* editor, char mode, std::string& LastS, WORD LastNr, bool IsWrScreen)
 {
 	bool Ctrl = false;  WORD Delta = 0; WORD flgs = 0;
 	//(*MyTestEvent 1; *)
 label1:
 	WaitEvent(Delta);
 	if (mode != HelpM) {
-		ScrollPress();
+		editor->ScrollPress();
 	}
 	if (LLKeyFlags != 0) {
 		// mouse
 		flgs = LLKeyFlags;
-		DisplLL(LLKeyFlags);
+		editor->DisplLL(LLKeyFlags);
 		Ctrl = true;
 	}
 	else if ((KbdFlgs & 0x0F) != 0) {
@@ -34,7 +34,7 @@ label1:
 		if (!Ctrl) {
 			if (Delta > 0) {
 				flgs = KbdFlgs;
-				DisplLL(KbdFlgs);
+				editor->DisplLL(KbdFlgs);
 				Ctrl = true;
 			}
 			else {
@@ -44,18 +44,19 @@ label1:
 	}
 	else if (Ctrl) {
 		flgs = 0;
-		WrLLMargMsg(LastS, LastNr);
+		editor->WrLLMargMsg(LastS, LastNr);
 		Ctrl = false; Delta = 0;
 	}
 	/*      WaitEvent(Delta);*/
 	if (!(Event.What == evKeyDown || Event.What == evMouseDown))
 	{
 		ClrEvent();
-		if (!IsWrScreen) Background(); goto label1;
+		if (!IsWrScreen) editor->Background();
+		goto label1;
 	}
 	if (flgs != 0) {
 		LLKeyFlags = 0;
-		WrLLMargMsg(LastS, LastNr);
+		editor->WrLLMargMsg(LastS, LastNr);
 		AddCtrlAltShift(flgs);
 	}
 }
@@ -207,13 +208,13 @@ bool ViewEvent(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys)
 	return result;
 }
 
-bool MyGetEvent(char& mode, BYTE SysLColor, std::string& LastS, WORD LastNr, bool IsWrScreen, bool bScroll, std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys) {
+bool MyGetEvent(TextEditor* editor, char& mode, BYTE SysLColor, std::string& LastS, WORD LastNr, bool IsWrScreen, bool bScroll, std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys) {
 	std::string OrigS = "    ";
 	WORD ww;
 
 	auto result = false;
 
-	CtrlShiftAlt(mode, LastS, LastNr, IsWrScreen);
+	CtrlShiftAlt(editor, mode, LastS, LastNr, IsWrScreen);
 	// *** Prekodovani klaves ***
 	GetEvent();
 	if (Event.What == evKeyDown)
@@ -377,7 +378,7 @@ void HandleEvent(TextEditor* editor, char& mode, bool& IsWrScreen, BYTE SysLColo
 
 	IsWrScreen = false;
 
-	if (!MyGetEvent(mode, SysLColor, LastS, LastNr, IsWrScreen, bScroll, ExitD, breakKeys)) {
+	if (!MyGetEvent(editor, mode, SysLColor, LastS, LastNr, IsWrScreen, bScroll, ExitD, breakKeys)) {
 		ClrEvent();
 		IsWrScreen = false;
 		return;
@@ -933,9 +934,9 @@ void HandleEvent(TextEditor* editor, char& mode, bool& IsWrScreen, BYTE SysLColo
 					if (TestOptStr('g') || TestOptStr('e'))  L1 = 1;
 					else L1 = /* Part.PosP + */ SetInd(T, LenT, textIndex, positionOnActualLine);
 				}
-				FindReplaceString(L1, L2);
+				editor->FindReplaceString(L1, L2);
 				if (key == _QA_) DekodLine(textIndex);
-				if (!Konec) { FirstEvent = false; Background(); }
+				if (!Konec) { FirstEvent = false; editor->Background(); }
 				break;
 			}
 			case 'L': {
@@ -947,8 +948,8 @@ void HandleEvent(TextEditor* editor, char& mode, bool& IsWrScreen, BYTE SysLColo
 					if (TestOptStr('l'))  SetBlockBound(fs, L2);
 					else L2 = AbsLenT /* - Part.LenP */ + LenT;
 					if (L1 < fs)  L1 = fs;  // { if L1>=L2  goto Nic;}
-					FindReplaceString(L1, L2);
-					if (!Konec) { FirstEvent = false; Background(); };
+					editor->FindReplaceString(L1, L2);
+					if (!Konec) { FirstEvent = false; editor->Background(); }
 				}
 				break;
 			}

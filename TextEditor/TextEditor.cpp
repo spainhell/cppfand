@@ -530,30 +530,6 @@ void UpdateFile()
 	}
 }
 
-//void RdPart()
-//{
-//	LenT = Part.LenP;
-//	//T = (CharArr*)GetStore(LenT);
-//	if (LenT == 0) return;
-//	SeekH(TxtFH, Part.PosP);
-//	ReadH(TxtFH, LenT, T);
-//}
-
-//void NullChangePart()
-//{
-//	ChangePart = false;
-//	/*Part.MovI = 0;
-//	Part.MovL = 0*/;
-//}
-//
-//void RdFirstPart()
-//{
-//	NullChangePart();
-//	// Part.PosP = 0; Part.LineP = 0; Part.LenP = 0; Part.ColorP = "";
-//	//AllRd = false;
-//	ChangePart = ReadTextFile();
-//}
-
 void OpenTxtFh(char Mode)
 {
 	FileUseMode UM;
@@ -658,7 +634,7 @@ void WriteMargins()
 	}
 }
 
-void WrLLMargMsg(std::string& s, WORD n)
+void TextEditor::WrLLMargMsg(std::string& s, WORD n)
 {
 	if (!s.empty()) {
 		MsgLine = s;
@@ -1314,7 +1290,7 @@ void UpdScreen()
 	} while (r <= PageS);
 }
 
-void Background()
+void TextEditor::Background()
 {
 	UpdStatLine(TextLineNr, positionOnActualLine, Mode);
 	// TODO: musi to tady byt?
@@ -1412,7 +1388,7 @@ int NewL(int RLine)
 	return RLine; // -Part.LineP;
 }
 
-void ScrollPress()
+void TextEditor::ScrollPress()
 {
 	bool old = bScroll;
 	const bool fyz = keyboard.GetState(VK_SCROLL) & 0x0001;
@@ -1455,7 +1431,7 @@ void ScrollPress()
 	}
 }
 
-void DisplLL(WORD Flags)
+void TextEditor::DisplLL(WORD Flags)
 {
 	if ((Flags & 0x04) != 0) // { Ctrl }
 		WrLLMargMsg(CtrlLastS, CtrlLastNr);
@@ -2748,7 +2724,7 @@ char MyVerifyLL(WORD n, pstring s)
 	return cc;
 }
 
-void FindReplaceString(int First, int Last)
+void TextEditor::FindReplaceString(int First, int Last)
 {
 	WORD lst;
 	if (First >= Last) {
