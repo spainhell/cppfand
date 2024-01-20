@@ -989,7 +989,7 @@ size_t GetLineNumber(size_t idx)
 	return line;
 }
 
-WORD SetInd(char* text, size_t len_text, WORD Ind, WORD Pos) // { line, pozice --> index}
+WORD TextEditor::SetInd(char* text, size_t len_text, WORD Ind, WORD Pos) // { line, pozice --> index}
 {
 	WORD P = Ind == 0 ? 0 : Ind - 1;
 	if (Ind < len_text) {
@@ -1649,7 +1649,7 @@ void NextLine(bool WrScr)
 //	}
 //}
 
-void CleanFrame(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys)
+void TextEditor::CleanFrame(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys)
 {
 	//if (Mode == SinFM || Mode == DouFM || Mode == DelFM || Mode == NotFM) /* !!! with Event do!!! */
 	//	if (!MyGetEvent(Mode, SysLColor, LastS, LastNr, IsWrScreen, bScroll, ExitD, breakKeys) ||
@@ -2159,7 +2159,7 @@ bool BlockExist()
 	return (blocks->BegBLn <= blocks->EndBLn) && (blocks->BegBPos < blocks->EndBPos);
 }
 
-void SetBlockBound(int& BBPos, int& EBPos)
+void TextEditor::SetBlockBound(int& BBPos, int& EBPos)
 {
 	SetPartLine(blocks->EndBLn);
 	short i = blocks->EndBLn; // -Part.LineP;
@@ -2207,7 +2207,7 @@ void LowCase(char& c)
 		if ((UpcCharTab[i] == c) && (i != c)) { c = i; return; }
 }
 
-bool BlockHandle(int& fs, HANDLE W1, char Oper)
+bool TextEditor::BlockHandle(int& fs, HANDLE W1, char Oper)
 {
 	WORD i, I1;
 	int LL1, LL2;
@@ -2390,7 +2390,7 @@ void MovePart(WORD Ind)
 	}
 }
 
-bool BlockGrasp(char Oper, void* P1, LongStr* sp)
+bool TextEditor::BlockGrasp(char Oper, void* P1, LongStr* sp)
 {
 	int L, L1, L2, ln;
 	WORD I1;
@@ -2424,7 +2424,7 @@ bool BlockGrasp(char Oper, void* P1, LongStr* sp)
 	return result;
 }
 
-void BlockDrop(char Oper, void* P1, LongStr* sp)
+void TextEditor::BlockDrop(char Oper, void* P1, LongStr* sp)
 {
 	WORD I, I2;
 	if (Oper == 'D') MarkRdClpBd(P1, sp); if (sp->LL == 0) return;
@@ -2445,7 +2445,7 @@ void BlockDrop(char Oper, void* P1, LongStr* sp)
 	PosDekFindLine(blocks->BegBLn, blocks->BegBPos, true); /*ChangeScr = true;*/
 }
 
-bool BlockCGrasp(char Oper, void* P1, LongStr* sp)
+bool TextEditor::BlockCGrasp(char Oper, void* P1, LongStr* sp)
 {
 	WORD i, I2;
 	int L;
@@ -2489,7 +2489,7 @@ void InsertLine(WORD& i, WORD& I1, WORD& I3, WORD& ww, LongStr* sp)
 	TestKod();
 }
 
-void BlockCDrop(char Oper, void* P1, LongStr* sp)
+void TextEditor::BlockCDrop(char Oper, void* P1, LongStr* sp)
 {
 	WORD i, I1, I3, ww;
 	if (Oper == 'D') MarkRdClpBd(P1, sp);
@@ -2526,7 +2526,7 @@ void BlockCDrop(char Oper, void* P1, LongStr* sp)
 	}
 }
 
-void BlockCopyMove(char Oper, void* P1, LongStr* sp)
+void TextEditor::BlockCopyMove(char Oper, void* P1, LongStr* sp)
 {
 	bool b = false;
 	if (!BlockExist()) return;
@@ -2787,7 +2787,7 @@ bool WordExist()
 	return (WordL >= ScreenFirstLineNr) && (WordL < ScreenFirstLineNr + PageS);
 }
 
-WORD WordNo2()
+WORD TextEditor::WordNo2()
 {
 	WORD wNo;
 	bool wExists = WordExist();
@@ -2841,7 +2841,7 @@ void SetWord(WORD WB, WORD WE)
 	Colu = Column(positionOnActualLine);
 }
 
-void HelpLU(char dir)
+void TextEditor::HelpLU(char dir)
 {
 	WORD I = 0, I1 = 0, h1 = 0, h2 = 0;
 	short I2 = 0;
@@ -2872,7 +2872,7 @@ void HelpLU(char dir)
 	}
 }
 
-void HelpRD(char dir)
+void TextEditor::HelpRD(char dir)
 {
 	WORD I = 0, I1 = 0, h1 = 0, h2 = 0;
 	short I2 = 0;

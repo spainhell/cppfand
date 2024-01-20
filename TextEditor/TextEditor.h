@@ -26,8 +26,6 @@ struct stEditorParams
 };
 
 
-void CleanFrame(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys);
-WORD SetInd(char* text, size_t len_text, WORD Ind, WORD Pos);
 void TestUpdFile();
 void DelEndT();
 void KodLine();
@@ -37,7 +35,6 @@ size_t GetLineNumber(size_t Ind);
 size_t GetLineStartIndex(size_t lineNr);
 WORD SetPredI();
 void NextLine(bool WrScr);
-void HelpLU(char dir);
 void BlockLRShift(WORD I1);
 void FrameStep(BYTE& odir, PressedKey EvKeyC);
 void WrCharE(char Ch);
@@ -47,7 +44,7 @@ bool WordExist();
 void NextPartDek();
 void NewLine(char Mode);
 bool TestLastPos(WORD F, WORD T);
-void HelpRD(char dir);
+
 WORD Position(WORD n);
 WORD Column(WORD p);
 void PreviousLine();
@@ -60,7 +57,6 @@ void DekFindLine(int Num);
 int NewRL(int Line);
 bool WordFind(WORD i, WORD& WB, short& WE, WORD& LI);
 void SetWord(WORD WB, WORD WE);
-WORD WordNo2();
 WORD GetArrLineLength();
 void RollNext();
 void RollPred();
@@ -74,14 +70,10 @@ void CopyCurrentLineToArr(size_t Ind);
 //void TestLenText(char** text, size_t& textLength, size_t i, size_t j);
 bool TestOptStr(char c);
 bool BlockExist();
-void SetBlockBound(int& BBPos, int& EBPos);
+
 void PosDekFindLine(int Num, WORD Pos, bool ChScr);
-bool BlockHandle(int& fs, HANDLE W1, char Oper);
-void BlockCopyMove(char Oper, void* P1, LongStr* sp);
-bool BlockGrasp(char Oper, void* P1, LongStr* sp);
-bool BlockCGrasp(char Oper, void* P1, LongStr* sp);
-void BlockDrop(char Oper, void* P1, LongStr* sp);
-void BlockCDrop(char Oper, void* P1, LongStr* sp);
+
+
 void FillBlank();
 void SetPartLine(int Ln);
 void MyWrLLMsg(pstring s);
@@ -178,7 +170,22 @@ public:
 	void ScrollPress();
 	void DisplLL(WORD Flags);
 	void WrLLMargMsg(std::string& s, WORD n);
+	void CleanFrame(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys);
+	WORD SetInd(char* text, size_t len_text, WORD Ind, WORD Pos);
+
+	void SetBlockBound(int& BBPos, int& EBPos);
+	bool BlockHandle(int& fs, HANDLE W1, char Oper);
+	void BlockCopyMove(char Oper, void* P1, LongStr* sp);
+	bool BlockGrasp(char Oper, void* P1, LongStr* sp);
+	bool BlockCGrasp(char Oper, void* P1, LongStr* sp);
+	void BlockDrop(char Oper, void* P1, LongStr* sp);
+	void BlockCDrop(char Oper, void* P1, LongStr* sp);
+
+	WORD WordNo2();
+	void HelpLU(char dir);
+	void HelpRD(char dir);
 
 private:
 	void Edit(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys);
+	
 };

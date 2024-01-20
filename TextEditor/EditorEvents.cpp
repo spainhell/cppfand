@@ -383,7 +383,7 @@ void HandleEvent(TextEditor* editor, char& mode, bool& IsWrScreen, BYTE SysLColo
 		IsWrScreen = false;
 		return;
 	}
-	if (!bScroll) { CleanFrame(ExitD, breakKeys); }
+	if (!bScroll) { editor->CleanFrame(ExitD, breakKeys); }
 	//NewExit(Ovr(), er);
 	//goto Opet;
 	if (Event.What == evKeyDown) {
@@ -396,7 +396,7 @@ void HandleEvent(TextEditor* editor, char& mode, bool& IsWrScreen, BYTE SysLColo
 		for (auto& X : ExitD) {
 			if (TestExitKey(key, X)) {  // nastavuje i EdBreak
 				TestKod();
-				IndexT = SetInd(T, LenT, textIndex, positionOnActualLine);
+				IndexT = editor->SetInd(T, LenT, textIndex, positionOnActualLine);
 				ScrT = ((TextLineNr - ScreenFirstLineNr + 1) << 8) + positionOnActualLine - BPos;
 				LastTxtPos = IndexT; // +Part.PosP;
 				TxtXY = ScrT + ((int)positionOnActualLine << 16);
@@ -565,7 +565,7 @@ void HandleEvent(TextEditor* editor, char& mode, bool& IsWrScreen, BYTE SysLColo
 				break;
 			}
 			case __LEFT: {
-				if (mode == HelpM) { HelpLU('L'); }
+				if (mode == HelpM) { editor->HelpLU('L'); }
 				else
 					if (bScroll) {
 						if (columnOffset > 0) {
@@ -581,7 +581,7 @@ void HandleEvent(TextEditor* editor, char& mode, bool& IsWrScreen, BYTE SysLColo
 				break;
 			}
 			case __RIGHT: {
-				if (mode == HelpM) HelpRD('R');
+				if (mode == HelpM) editor->HelpRD('R');
 				else {
 					if (bScroll) {
 						positionOnActualLine = MinI(LineMaxSize, Position(columnOffset + LineS + 1));
@@ -597,7 +597,7 @@ void HandleEvent(TextEditor* editor, char& mode, bool& IsWrScreen, BYTE SysLColo
 			}
 			case __UP: {
 				if (mode == HelpM) {
-					HelpLU('U');
+					editor->HelpLU('U');
 				}
 				else {
 					if (bScroll) {
@@ -611,7 +611,7 @@ void HandleEvent(TextEditor* editor, char& mode, bool& IsWrScreen, BYTE SysLColo
 				break;
 			}
 			case __DOWN: {
-				if (mode == HelpM) HelpRD('D');
+				if (mode == HelpM) editor->HelpRD('D');
 				else {
 					L1 = blocks->LineAbs(TextLineNr); // na kterem jsme prave radku textu (celkove, ne na obrazovce)
 					NextLine(true);
@@ -654,7 +654,7 @@ void HandleEvent(TextEditor* editor, char& mode, bool& IsWrScreen, BYTE SysLColo
 				if (mode == HelpM) {
 					ScreenIndex = GetLineStartIndex(ScreenFirstLineNr);
 					positionOnActualLine = Position(Colu);
-					if (WordFind(WordNo2() + 1, I1, I2, WordL) && WordExist()) {
+					if (WordFind(editor->WordNo2() + 1, I1, I2, WordL) && WordExist()) {
 						SetWord(I1, I2);
 					}
 					else { WordL = 0; }
@@ -693,7 +693,7 @@ void HandleEvent(TextEditor* editor, char& mode, bool& IsWrScreen, BYTE SysLColo
 				if (mode == HelpM) {
 					ScreenIndex = GetLineStartIndex(ScreenFirstLineNr);
 					positionOnActualLine = Position(Colu);
-					W1 = WordNo2();
+					W1 = editor->WordNo2();
 					I3 = WordL;
 					if (WordFind(W1 + 1, I1, I2, WordL) && WordExist()) {
 						SetWord(I1, I2);
@@ -928,11 +928,11 @@ void HandleEvent(TextEditor* editor, char& mode, bool& IsWrScreen, BYTE SysLColo
 				OptionStr = ss;
 				TestKod();
 				if (TestOptStr('l') && (!BlockExist() || (TypeB == ColBlock))) goto Nic;
-				if (TestOptStr('l')) SetBlockBound(L1, L2);
+				if (TestOptStr('l')) editor->SetBlockBound(L1, L2);
 				else {
 					L2 = AbsLenT /* - Part.LenP */ + LenT;
 					if (TestOptStr('g') || TestOptStr('e'))  L1 = 1;
-					else L1 = /* Part.PosP + */ SetInd(T, LenT, textIndex, positionOnActualLine);
+					else L1 = /* Part.PosP + */ editor->SetInd(T, LenT, textIndex, positionOnActualLine);
 				}
 				editor->FindReplaceString(L1, L2);
 				if (key == _QA_) DekodLine(textIndex);
@@ -944,8 +944,8 @@ void HandleEvent(TextEditor* editor, char& mode, bool& IsWrScreen, BYTE SysLColo
 					TestKod();
 					if (TestOptStr('l') && (!BlockExist() || (TypeB == ColBlock))) goto Nic;
 					fs = 1;
-					L1 = /* Part.PosP + */ SetInd(T, LenT, textIndex, positionOnActualLine);
-					if (TestOptStr('l'))  SetBlockBound(fs, L2);
+					L1 = /* Part.PosP + */ editor->SetInd(T, LenT, textIndex, positionOnActualLine);
+					if (TestOptStr('l')) editor->SetBlockBound(fs, L2);
 					else L2 = AbsLenT /* - Part.LenP */ + LenT;
 					if (L1 < fs)  L1 = fs;  // { if L1>=L2  goto Nic;}
 					editor->FindReplaceString(L1, L2);
@@ -1010,16 +1010,16 @@ void HandleEvent(TextEditor* editor, char& mode, bool& IsWrScreen, BYTE SysLColo
 				break;
 			}
 			case _KY_: {
-				if (BlockHandle(fs, F1, 'Y')) { blocks->EndBLn = blocks->BegBLn; blocks->EndBPos = blocks->BegBPos; }
+				if (editor->BlockHandle(fs, F1, 'Y')) { blocks->EndBLn = blocks->BegBLn; blocks->EndBPos = blocks->BegBPos; }
 				break;
 			}
-			case _KC_: BlockCopyMove('C', P1, sp); break;
-			case _KV_: BlockCopyMove('M', P1, sp); break;
-			case _KU_: BlockHandle(fs, F1, 'U'); break;
-			case _KL_: BlockHandle(fs, F1, 'L'); break;
+			case _KC_: editor->BlockCopyMove('C', P1, sp); break;
+			case _KV_: editor->BlockCopyMove('M', P1, sp); break;
+			case _KU_: editor->BlockHandle(fs, F1, 'U'); break;
+			case _KL_: editor->BlockHandle(fs, F1, 'L'); break;
 			case __CTRL_F7: {
-				if (TypeB == TextBlock) BlockGrasp('G', P1, sp);
-				else BlockCGrasp('G', P1, sp);
+				if (TypeB == TextBlock) editor->BlockGrasp('G', P1, sp);
+				else editor->BlockCGrasp('G', P1, sp);
 				break;
 			}
 			case _KW_: {
@@ -1039,7 +1039,7 @@ void HandleEvent(TextEditor* editor, char& mode, bool& IsWrScreen, BYTE SysLColo
 				}
 				if (HandleError != 0) { MyWrLLMsg(CPath); goto Nic; }
 				fs = 0; // {L1 =blocks->LineAbs(TextLineNr);I =positionOnActualLine;}
-				if (BlockHandle(fs, F1, 'W')) {
+				if (editor->BlockHandle(fs, F1, 'W')) {
 					WriteH(F1, 0, T);
 					/*truncH*/
 					CloseH(&F1);
@@ -1050,8 +1050,8 @@ void HandleEvent(TextEditor* editor, char& mode, bool& IsWrScreen, BYTE SysLColo
 				break;
 			}
 			case __SHIFT_F7: {
-				if (TypeB == TextBlock) { BlockDrop('D', P1, sp); }
-				else { BlockCDrop('D', P1, sp); }
+				if (TypeB == TextBlock) { editor->BlockDrop('D', P1, sp); }
+				else { editor->BlockCDrop('D', P1, sp); }
 				break;
 			}
 			case _KR_: {
@@ -1102,7 +1102,7 @@ void HandleEvent(TextEditor* editor, char& mode, bool& IsWrScreen, BYTE SysLColo
 					do {
 						if (fs - L2 < (int)I2) I2 = fs - L2;
 						SeekH(F1, L2); ReadH(F1, I2, sp->A); HMsgExit("");
-						L2 += I2; sp->LL = I2; BlockCDrop('R', P1, sp);
+						L2 += I2; sp->LL = I2; editor->BlockCDrop('R', P1, sp);
 					} while (L2 != fs);
 					blocks->EndBLn = /*Part.LineP +*/ TextLineNr - 1;
 					ReleaseStore(&P1);
@@ -1117,7 +1117,7 @@ void HandleEvent(TextEditor* editor, char& mode, bool& IsWrScreen, BYTE SysLColo
 				break;
 			} // end case _KR_
 			case _KP_: {
-				if (!BlockHandle(fs, F1, 'P')) {
+				if (!editor->BlockHandle(fs, F1, 'P')) {
 					I1 = blocks->BegBLn; I2 = blocks->BegBPos; I3 = blocks->EndBLn; I = blocks->EndBPos; bb = TypeB;
 					blocks->BegBLn = 1; blocks->EndBLn = 0x7FFF; blocks->BegBPos = 1; blocks->EndBPos = 0xFF;
 					TypeB = TextBlock;
@@ -1130,7 +1130,7 @@ void HandleEvent(TextEditor* editor, char& mode, bool& IsWrScreen, BYTE SysLColo
 					SetPartLine(blocks->EndBLn);
 					I2 = blocks->EndBLn; // -Part.LineP;
 					size_t nextLineIdx = GetLineStartIndex(I2);
-					L1 = SetInd(T, LenT, nextLineIdx, blocks->EndBPos); // +Part.PosP;
+					L1 = editor->SetInd(T, LenT, nextLineIdx, blocks->EndBPos); // +Part.PosP;
 					L2 = blocks->BegBLn; positionOnActualLine = blocks->BegBPos;
 					SetPartLine(L2);
 					I2 = blocks->BegBLn; // -Part.LineP;
@@ -1230,7 +1230,7 @@ void HandleEvent(TextEditor* editor, char& mode, bool& IsWrScreen, BYTE SysLColo
 				break;
 			case __CTRL_F6: {
 				if ((TypeT == FileT) || (TypeT == LocalT)) {
-					BlockHandle(fs, F1, 'p');
+					editor->BlockHandle(fs, F1, 'p');
 				}
 				break;
 			}
@@ -1320,12 +1320,14 @@ void HandleEvent(TextEditor* editor, char& mode, bool& IsWrScreen, BYTE SysLColo
 		I3 = textIndex;
 		j = positionOnActualLine;
 		W1 = Event.Where.Y - WindMin.Y + ScreenFirstLineNr;
-		if (mode == HelpM) W2 = WordNo2() + 1;
+		if (mode == HelpM) {
+			W2 = editor->WordNo2() + 1;
+		}
 		DekFindLine(blocks->LineAbs(W1));
 		positionOnActualLine = Event.Where.X - WindMin.X + 1;
 		if (mode != TextM) positionOnActualLine = Position(positionOnActualLine);
 		positionOnActualLine += BPos;
-		I = SetInd(T, LenT, textIndex, positionOnActualLine);
+		I = editor->SetInd(T, LenT, textIndex, positionOnActualLine);
 		if (I < LenT) {
 			if (mode == HelpM) {
 				ClrWord();
