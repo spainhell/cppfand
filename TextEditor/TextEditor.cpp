@@ -3,7 +3,7 @@
 #include <stdexcept>
 #include <memory>
 
-#include "EditorEvents.h"
+#include "TextEditorEvents.h"
 #include "../DataEditor/runedi.h"
 #include "../Core/compile.h"
 #include "EditorHelp.h"
@@ -2929,7 +2929,7 @@ void TextEditor::Edit(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys
 		//if (TypeT == FileT) {
 		//	NullChangePart();
 		//}
-		HandleEvent(this, Mode, IsWrScreen, SysLColor, LastS, LastNr, ExitD, breakKeys);
+		_events->HandleEvent(this, Mode, IsWrScreen, SysLColor, LastS, LastNr, ExitD, breakKeys);
 		if (!(Konec || IsWrScreen)) {
 			Background();
 		}
@@ -2973,11 +2973,23 @@ void GetEditTxt(bool& pInsert, bool& pIndent, bool& pWrap, bool& pJust, bool& pC
 	pLeftMarg = LeftMarg; pRightMarg = RightMarg;
 }
 
-bool TextEditor::EditText(char pMode, char pTxtType, std::string pName, std::string pErrMsg, LongStr* pLS, WORD pMaxLen,
-	WORD& pInd, int& pScr, std::vector<WORD>& break_keys, std::vector<EdExitD*>& pExD, bool& pSrch, bool& pUpdat, WORD pLastNr,
-	WORD pCtrlLastNr, MsgStr* pMsgS)
+TextEditor::TextEditor()
 {
-	bool oldEdOK = EdOk; EditT = true;
+	this->_events = new TextEditorEvents();
+}
+
+TextEditor::~TextEditor()
+{
+	delete this->_events;
+	this->_events = nullptr;
+}
+
+bool TextEditor::EditText(char pMode, char pTxtType, std::string pName, std::string pErrMsg, LongStr* pLS, WORD pMaxLen,
+                          WORD& pInd, int& pScr, std::vector<WORD>& break_keys, std::vector<EdExitD*>& pExD, bool& pSrch, bool& pUpdat, WORD pLastNr,
+                          WORD pCtrlLastNr, MsgStr* pMsgS)
+{
+	bool oldEdOK = EdOk;
+	EditT = true;
 	Mode = pMode;
 	TypeT = pTxtType;
 	NameT = pName;

@@ -21,7 +21,7 @@
     <ClCompile Include="EditorHelp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="EditorEvents.cpp">
+    <ClCompile Include="TextEditorEvents.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="EditorScreen.cpp">
@@ -38,7 +38,7 @@
     <ClInclude Include="EditorHelp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EditorEvents.h">
+    <ClInclude Include="TextEditorEvents.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="EditorScreen.h">

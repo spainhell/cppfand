@@ -26,8 +26,6 @@ struct stEditorParams
 };
 
 
-
-
 WORD SetPredI();
 
 void BlockLRShift(WORD I1);
@@ -126,10 +124,14 @@ const WORD _KL_ = 0x0B0C; const WORD _OW_ = 0x0F17; const WORD _OL_ = 0x0F0C;
 const WORD _OR_ = 0x0F12; const WORD _OJ_ = 0x0F0A; const WORD _OC_ = 0x0F03;
 const WORD _KF_ = 0x0B06;
 
+class TextEditorEvents;
 
 class TextEditor
 {
 public:
+	TextEditor();
+	~TextEditor();
+
 	bool EditText(char pMode, char pTxtType, std::string pName, std::string pErrMsg,
 		LongStr* pLS, WORD pMaxLen, WORD& pInd, int& pScr,
 		std::vector<WORD>& break_keys, std::vector<EdExitD*>& pExD, bool& pSrch, bool& pUpdat,
@@ -195,6 +197,8 @@ public:
 
 
 private:
+	TextEditorEvents* _events = nullptr;
+
 	void Edit(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys);
 	void UpdScreen();
 	void PredPart();

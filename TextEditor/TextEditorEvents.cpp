@@ -1,4 +1,4 @@
-#include "EditorEvents.h"
+#include "TextEditorEvents.h"
 
 #include "../Drivers/constants.h"
 #include "../Core/wwmix.h"
@@ -14,7 +14,7 @@
 #include "../Core/wwmenu.h"
 
 
-void CtrlShiftAlt(TextEditor* editor, char mode, std::string& LastS, WORD LastNr, bool IsWrScreen)
+void TextEditorEvents::CtrlShiftAlt(TextEditor* editor, char mode, std::string& LastS, WORD LastNr, bool IsWrScreen)
 {
 	bool Ctrl = false;  WORD Delta = 0; WORD flgs = 0;
 	//(*MyTestEvent 1; *)
@@ -61,7 +61,7 @@ label1:
 	}
 }
 
-bool My2GetEvent()
+bool TextEditorEvents::My2GetEvent()
 {
 	ClrEvent();
 	GetEvent();
@@ -83,7 +83,7 @@ bool My2GetEvent()
 	return true;
 }
 
-bool HelpEvent(std::vector<WORD>& breakKeys)
+bool TextEditorEvents::HelpEvent(std::vector<WORD>& breakKeys)
 {
 	WORD key = Event.Pressed.KeyCombination();
 	bool result = false;
@@ -113,7 +113,7 @@ bool HelpEvent(std::vector<WORD>& breakKeys)
 	return result;
 }
 
-void Wr(std::string s, std::string& OrigS, char Mode, BYTE SysLColor)
+void TextEditorEvents::Wr(std::string s, std::string& OrigS, char Mode, BYTE SysLColor)
 {
 	CHAR_INFO ci2[2];
 	if (Mode != HelpM) {
@@ -127,7 +127,7 @@ void Wr(std::string s, std::string& OrigS, char Mode, BYTE SysLColor)
 	}
 }
 
-bool ScrollEvent(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys)
+bool TextEditorEvents::ScrollEvent(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys)
 {
 	WORD key = Event.Pressed.KeyCombination();
 	bool result = false;
@@ -172,7 +172,7 @@ bool ScrollEvent(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys)
 	return result;
 }
 
-bool ViewEvent(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys)
+bool TextEditorEvents::ViewEvent(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys)
 {
 	bool result = ScrollEvent(ExitD, breakKeys);
 	if (Event.What != evKeyDown) return result;
@@ -208,7 +208,7 @@ bool ViewEvent(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys)
 	return result;
 }
 
-bool MyGetEvent(TextEditor* editor, char& mode, BYTE SysLColor, std::string& LastS, WORD LastNr, bool IsWrScreen, bool bScroll, std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys) {
+bool TextEditorEvents::MyGetEvent(TextEditor* editor, char& mode, BYTE SysLColor, std::string& LastS, WORD LastNr, bool IsWrScreen, bool bScroll, std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys) {
 	std::string OrigS = "    ";
 	WORD ww;
 
@@ -359,7 +359,7 @@ bool MyGetEvent(TextEditor* editor, char& mode, BYTE SysLColor, std::string& Las
 	return result;
 }
 
-void HandleEvent(TextEditor* editor, char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS, WORD LastNr, std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys) {
+void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS, WORD LastNr, std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys) {
 	wwmix wwmix1;
 	WORD I = 0, I1 = 0;
 	short I2 = 0, I3 = 0;
