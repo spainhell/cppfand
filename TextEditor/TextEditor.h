@@ -26,7 +26,6 @@ struct stEditorParams
 };
 
 
-WORD SetPredI();
 
 void BlockLRShift(WORD I1);
 void WrCharE(char Ch);
@@ -58,16 +57,12 @@ void Calculate();
 stEditorParams SaveParams();
 void RestoreParams(stEditorParams& editorParams);
 void OpenTxtFh(char Mode);
-bool ReadTextFile();
 void SimplePrintHead();
-void WrEndT();
-
 
 const int SuccLineSize = 256;
 
 extern size_t LenT;
 extern char Arr[SuccLineSize];
-extern char* T;
 extern bool bScroll;
 
 extern WORD MaxLenT, IndexT, ScrT;
@@ -148,8 +143,11 @@ public:
 	void SetEditTxt(Instr_setedittxt* PD);
 	void ViewHelpText(std::string& S, WORD& TxtPos);
 
+	char* _textT = nullptr;               // ukazatel na vstupni retezec (cely editovany text)
+
 
 private:
+
 	TextEditorEvents* _events = nullptr;
 
 	void Background();
@@ -159,7 +157,6 @@ private:
 	void WrLLMargMsg(std::string& s, WORD n);
 	void CleanFrame(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys);
 	WORD SetInd(char* text, size_t len_text, WORD Ind, WORD Pos);
-
 	void SetBlockBound(int& BBPos, int& EBPos);
 	bool BlockHandle(int& fs, HANDLE W1, char Oper);
 	void BlockCopyMove(char Oper, void* P1, LongStr* sp);
@@ -167,12 +164,11 @@ private:
 	bool BlockCGrasp(char Oper, void* P1, LongStr* sp);
 	void BlockDrop(char Oper, void* P1, LongStr* sp);
 	void BlockCDrop(char Oper, void* P1, LongStr* sp);
-
 	WORD WordNo2();
 	void HelpLU(char dir);
 	void HelpRD(char dir);
-
 	void TestUpdFile();
+	void WrEndT();
 	void KodLine();
 	void DekodLine(size_t lineStartIndex);
 	void FrameStep(BYTE& odir, PressedKey EvKeyC);
@@ -180,39 +176,36 @@ private:
 	void SetPart(int Idx);
 	void NextLine(bool WrScr);
 	void NewLine(char Mode);
+	WORD SetPredI();
 	void RollNext();
 	void RollPred();
 	void TestKod();
 	void PreviousLine();
-
 	void FillBlank();
 	void DeleteLine();
-
 	size_t CountChar(char* text, size_t text_len, char C, size_t first, size_t last);
 	size_t FindCharPosition(char* text, size_t length, char c, size_t from, size_t n = 1);
 	size_t GetLineNumber(size_t Ind);
 	size_t GetLineStartIndex(size_t lineNr);
 	void CopyCurrentLineToArr(size_t Ind);
 	void DekFindLine(int Num);
-
 	bool WordFind(WORD i, WORD& WB, short& WE, WORD& LI);
 	void SetWord(WORD WB, WORD WE);
 	void PosDekFindLine(int Num, WORD Pos, bool ChScr);
 	void SetScreen(WORD Ind, WORD ScrXY, WORD Pos);
 	WORD WordNo(WORD I);
-
 	void Edit(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys);
 	void UpdScreen();
 	void PredPart();
 	void MovePart(WORD Ind);
 	void InsertLine(WORD& i, WORD& I1, WORD& I3, WORD& ww, LongStr* sp);
 	WORD GetLine(WORD idx);
-
+	WORD CurrentLineFirstCharIndex(WORD index);
 	void NextPartDek();
 	void ReplaceString(WORD& J, WORD& fst, WORD& lst, int& Last);
-	
-
 	bool FindString(WORD& I, WORD Len);
-
-
+	bool ReadTextFile();
+	void FirstLine(WORD from, WORD num, WORD& Ind, WORD& Count);
+	void UpdateFile();
+	std::vector<std::string> GetLinesFromT();
 };
