@@ -163,14 +163,14 @@
     <ClCompile Include="Blocks.cpp" />
     <ClCompile Include="TextEditorEvents.cpp" />
     <ClCompile Include="EditorHelp.cpp" />
-    <ClCompile Include="EditorScreen.cpp" />
+    <ClCompile Include="TextEditorScreen.cpp" />
     <ClCompile Include="TextEditor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Blocks.h" />
     <ClInclude Include="TextEditorEvents.h" />
     <ClInclude Include="EditorHelp.h" />
-    <ClInclude Include="EditorScreen.h" />
+    <ClInclude Include="TextEditorScreen.h" />
     <ClInclude Include="TextEditor.h" />
   </ItemGroup>
   <ItemGroup>

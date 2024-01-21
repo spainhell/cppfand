@@ -7,7 +7,7 @@
 #include "../DataEditor/runedi.h"
 #include "../Core/compile.h"
 #include "EditorHelp.h"
-#include "EditorScreen.h"
+#include "TextEditorScreen.h"
 #include "../Drivers/constants.h"
 #include "../Core/GlobalVariables.h"
 #include "../Drivers/keyboard.h"
@@ -1096,7 +1096,7 @@ void TextEditor::UpdScreen()
 	pstring PgStr;
 
 	// create screen object
-	std::unique_ptr<EditorScreen> eScr = std::make_unique<EditorScreen>(TXTCOLS, blocks, CtrlKey);
+	std::unique_ptr<TextEditorScreen> eScr = std::make_unique<TextEditorScreen>(TXTCOLS, blocks, CtrlKey);
 
 	InsPage = false;
 	if (ChangeScr) {
@@ -3260,7 +3260,7 @@ void TextEditor::ViewPrinterTxt()
 	EditTxtFile(nullptr, 'T', ErrMsg, emptyExitD, 1, 0, &V, 0, "", WPushPixel, nullptr);
 }
 
-void ViewHelpText(std::string& s, WORD& TxtPos)
+void TextEditor::ViewHelpText(std::string& s, WORD& TxtPos)
 {
 	// make copy of text from std::string because it changes in EditText()
 	char* helpText = new char[s.length()];

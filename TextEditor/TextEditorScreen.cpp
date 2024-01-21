@@ -1,26 +1,26 @@
 #include "../Drivers/constants.h"
-#include "EditorScreen.h"
+#include "TextEditorScreen.h"
 
-EditorScreen::EditorScreen(size_t TextColumns, Blocks* blocks, std::string ctrlKey)
+TextEditorScreen::TextEditorScreen(size_t TextColumns, Blocks* blocks, std::string ctrlKey)
 {
 	_textColumns = TextColumns;
 	_blocks = blocks;
 	_ctrlKey = ctrlKey;
 }
 
-EditorScreen::~EditorScreen()
+TextEditorScreen::~TextEditorScreen()
 {
 }
 
-void EditorScreen::WriteEditLine(std::string& text_line, size_t row)
+void TextEditorScreen::WriteEditLine(std::string& text_line, size_t row)
 {
 }
 
-void EditorScreen::WriteScrollLine(std::string& text_line, size_t offset, size_t row)
+void TextEditorScreen::WriteScrollLine(std::string& text_line, size_t offset, size_t row)
 {
 }
 
-void EditorScreen::EditWrline(char* input_text, size_t text_len, int Row, BYTE ColKey[], BYTE TxtColor, BYTE BlockColor)
+void TextEditorScreen::EditWrline(char* input_text, size_t text_len, int Row, BYTE ColKey[], BYTE TxtColor, BYTE BlockColor)
 {
 	WORD BuffLine[256]{ 0 };
 	BYTE nv1;
@@ -83,7 +83,7 @@ void EditorScreen::EditWrline(char* input_text, size_t text_len, int Row, BYTE C
 	screen.ScrWrBuf(WindMin.X - 1, WindMin.Y + Row - 2, &BuffLine[BPos], LineS);
 }
 
-void EditorScreen::ScrollWrline(char* P, size_t offsetX, int Row, ColorOrd& CO, BYTE ColKey[], BYTE TxtColor, bool& InsPage)
+void TextEditorScreen::ScrollWrline(char* P, size_t offsetX, int Row, ColorOrd& CO, BYTE ColKey[], BYTE TxtColor, bool& InsPage)
 {
 	std::set<char> GrafCtrl = { 3,6,9,11,15,16,18,21,22,24,25,26,29,30,31 };
 	BYTE len = 15; // GrafCtrl has 15 members
@@ -156,13 +156,13 @@ void EditorScreen::ScrollWrline(char* P, size_t offsetX, int Row, ColorOrd& CO, 
 	screen.ScrWrBuf(WindMin.X - 1, WindMin.Y + Row - 2, &BuffLine[offsetX], LineS);
 }
 
-BYTE EditorScreen::Color(char c, BYTE ColKey[])
+BYTE TextEditorScreen::Color(char c, BYTE ColKey[])
 {
 	const size_t indexOfKey = _ctrlKey.find(c);
 	return ColKey[indexOfKey + 1];
 }
 
-BYTE EditorScreen::Color(ColorOrd CO, BYTE ColKey[], BYTE TxtColor)
+BYTE TextEditorScreen::Color(ColorOrd CO, BYTE ColKey[], BYTE TxtColor)
 {
 	if (CO.length() == 0) {
 		return TxtColor;

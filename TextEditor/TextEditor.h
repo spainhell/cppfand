@@ -129,6 +129,8 @@ class TextEditorEvents;
 class TextEditor
 {
 public:
+	friend class TextEditorEvents;
+
 	TextEditor();
 	~TextEditor();
 
@@ -144,8 +146,12 @@ public:
 		int Txtxy, WRect* V, WORD Atr, std::string Hd, BYTE WFlags, MsgStr* MsgS);
 	void ViewPrinterTxt();
 	void SetEditTxt(Instr_setedittxt* PD);
+	void ViewHelpText(std::string& S, WORD& TxtPos);
 
-	// methods used by EditorEvents class
+
+private:
+	TextEditorEvents* _events = nullptr;
+
 	void Background();
 	void FindReplaceString(int First, int Last);
 	void ScrollPress();
@@ -194,10 +200,6 @@ public:
 	void PosDekFindLine(int Num, WORD Pos, bool ChScr);
 	void SetScreen(WORD Ind, WORD ScrXY, WORD Pos);
 	WORD WordNo(WORD I);
-
-
-private:
-	TextEditorEvents* _events = nullptr;
 
 	void Edit(std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys);
 	void UpdScreen();

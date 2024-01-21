@@ -24,7 +24,7 @@
     <ClCompile Include="TextEditorEvents.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="EditorScreen.cpp">
+    <ClCompile Include="TextEditorScreen.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Blocks.cpp">
@@ -41,7 +41,7 @@
     <ClInclude Include="TextEditorEvents.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EditorScreen.h">
+    <ClInclude Include="TextEditorScreen.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Blocks.h">
