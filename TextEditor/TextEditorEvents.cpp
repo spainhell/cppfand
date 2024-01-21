@@ -396,7 +396,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 		for (auto& X : ExitD) {
 			if (TestExitKey(key, X)) {  // nastavuje i EdBreak
 				editor->TestKod();
-				IndexT = editor->SetInd(editor->_textT, LenT, textIndex, positionOnActualLine);
+				IndexT = editor->SetInd(editor->_textT, editor->_lenT, textIndex, positionOnActualLine);
 				ScrT = ((TextLineNr - ScreenFirstLineNr + 1) << 8) + positionOnActualLine - BPos;
 				LastTxtPos = IndexT; // +Part.PosP;
 				TxtXY = ScrT + ((int)positionOnActualLine << 16);
@@ -418,13 +418,13 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 				case MemoT: {
 					//DelEndT();
 
-					char* T2 = new char[LenT + 2];
-					memcpy(&T2[2], editor->_textT, LenT);
+					char* T2 = new char[editor->_lenT + 2];
+					memcpy(&T2[2], editor->_textT, editor->_lenT);
 					delete[] editor->_textT;
 					editor->_textT = T2;
 
 					sp->A = editor->_textT;
-					sp->LL = (WORD)LenT;
+					sp->LL = (WORD)editor->_lenT;
 					if (TypeT == LocalT) {
 						TWork.Delete(*LocalPPtr);
 						*LocalPPtr = TWork.Store(sp->A, sp->LL);
@@ -469,17 +469,17 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 						CRecPtr = EditDRoot->NewRecPtr;
 						sp = CFile->loadLongS(CFld->FldD, CRecPtr);
 					}
-					LenT = sp->LL;
+					editor->_lenT = sp->LL;
 					// _textT = (CharArr*)(sp)
-					Move(&editor->_textT[3], &editor->_textT[1], LenT);
+					Move(&editor->_textT[3], &editor->_textT[1], editor->_lenT);
 					break;
 				}
 				}
 
 				editor->WrEndT();
-				IndexT = MinW(IndexT, LenT);
+				IndexT = MinW(IndexT, editor->_lenT);
 				if (TypeT != FileT) {
-					AbsLenT = LenT - 1;
+					AbsLenT = editor->_lenT - 1;
 					//Part.LenP = AbsLenT;
 					SimplePrintHead();
 				}
@@ -509,11 +509,11 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 					while (Arr[I1] == ' ') { I1++; }
 					if (I1 > RightMarg) { I1 = RightMarg; }
 					L1 = textIndex; // Part.PosP + textIndex;
-					editor->Format(I, L1, AbsLenT + LenT /*- Part.LenP*/, I1, false);
+					editor->Format(I, L1, AbsLenT + editor->_lenT /*- Part.LenP*/, I1, false);
 					editor->SetPart(L1);
 					I = 1;
 					// TODO: tady se pouzivalo 'I' ve FindCharPosition, ale k cemu je???
-					I = editor->FindCharPosition(editor->_textT, LenT, 0xFF, 0);
+					I = editor->FindCharPosition(editor->_textT, editor->_lenT, 0xFF, 0);
 					editor->_textT[I] = W1;
 					TextLineNr = editor->GetLineNumber(I);
 					positionOnActualLine = I - textIndex + 1;
@@ -529,8 +529,8 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 					Event.Pressed.UpdateKey(key);
 				}
 				else {
-					//if ((NextLineStartIndex >= LenT) && !AllRd) NextPartDek();
-					if ((NextLineStartIndex > LenT) || Insert) {
+					//if ((NextLineStartIndex >= _lenT) && !AllRd) NextPartDek();
+					if ((NextLineStartIndex > editor->_lenT) || Insert) {
 						editor->NewLine('m');
 						positionOnActualLine = 1;
 						ClrEol(TextAttr);
@@ -557,7 +557,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 							FillChar(&Arr[1], positionOnActualLine - 1, 32);
 						}
 					}
-					else if (NextLineStartIndex <= LenT) {
+					else if (NextLineStartIndex <= editor->_lenT) {
 						editor->NextLine(true);
 						positionOnActualLine = 1;
 					}
@@ -634,7 +634,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 					TextLineNr = ScreenFirstLineNr;
 					editor->DekFindLine(blocks->LineAbs(TextLineNr));
 					positionOnActualLine = Position(Colu);
-					j = editor->CountChar(editor->_textT, LenT, 0x0C, textIndex, ScreenIndex);
+					j = editor->CountChar(editor->_textT, editor->_lenT, 0x0C, textIndex, ScreenIndex);
 					if ((j > 0) && InsPg) {
 						editor->DekFindLine(blocks->LineAbs(TextLineNr + j));
 						ScreenFirstLineNr = TextLineNr;
@@ -676,7 +676,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 					}
 					editor->DekFindLine(blocks->LineAbs(NewL(RScrL)));
 					positionOnActualLine = Position(Colu);
-					j = editor->CountChar(editor->_textT, LenT, 0x0C, ScreenIndex, textIndex);
+					j = editor->CountChar(editor->_textT, editor->_lenT, 0x0C, ScreenIndex, textIndex);
 					if ((j > 0) && InsPg) {
 						editor->DekFindLine(blocks->LineAbs(TextLineNr - j));
 					}
@@ -741,7 +741,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 					positionOnActualLine++;
 					I = GetArrLineLength();
 					if (positionOnActualLine > I) {
-						if ((NextLineStartIndex <= LenT) && ((I == 0) || (positionOnActualLine > I + 1))) {
+						if ((NextLineStartIndex <= editor->_lenT) && ((I == 0) || (positionOnActualLine > I + 1))) {
 							editor->NextLine(true);
 							positionOnActualLine = 1;
 						}
@@ -799,8 +799,8 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 			}
 			case __CTRL_PAGEDOWN: {
 				editor->TestKod();
-				editor->SetPart(AbsLenT /* - Part.LenP*/ + LenT);
-				editor->SetScreen(LenT, 0, 0);
+				editor->SetPart(AbsLenT /* - Part.LenP*/ + editor->_lenT);
+				editor->SetScreen(editor->_lenT, 0, 0);
 				break;
 			}
 			case __CTRL_F3: {
@@ -857,9 +857,9 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 				break;
 			}
 			case __CTRL_Y: {
-				// if ((NextLineStartIndex >= LenT) && !AllRd) NextPartDek();
-				NextLineStartIndex = MinW(NextLineStartIndex, LenT);
-				//TestLenText(&_textT, LenT, NextLineStartIndex, textIndex);
+				// if ((NextLineStartIndex >= _lenT) && !AllRd) NextPartDek();
+				NextLineStartIndex = MinW(NextLineStartIndex, editor->_lenT);
+				//TestLenText(&_textT, _lenT, NextLineStartIndex, textIndex);
 				UpdatT = true;
 				if (blocks->BegBLn > blocks->LineAbs(TextLineNr)) {
 					blocks->BegBLn--;
@@ -930,9 +930,9 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 				if (TestOptStr('l') && (!BlockExist() || (TypeB == ColBlock))) goto Nic;
 				if (TestOptStr('l')) editor->SetBlockBound(L1, L2);
 				else {
-					L2 = AbsLenT /* - Part.LenP */ + LenT;
+					L2 = AbsLenT /* - Part.LenP */ + editor->_lenT;
 					if (TestOptStr('g') || TestOptStr('e'))  L1 = 1;
-					else L1 = /* Part.PosP + */ editor->SetInd(editor->_textT, LenT, textIndex, positionOnActualLine);
+					else L1 = /* Part.PosP + */ editor->SetInd(editor->_textT, editor->_lenT, textIndex, positionOnActualLine);
 				}
 				editor->FindReplaceString(L1, L2);
 				if (key == _QA_) editor->DekodLine(textIndex);
@@ -944,9 +944,9 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 					editor->TestKod();
 					if (TestOptStr('l') && (!BlockExist() || (TypeB == ColBlock))) goto Nic;
 					fs = 1;
-					L1 = /* Part.PosP + */ editor->SetInd(editor->_textT, LenT, textIndex, positionOnActualLine);
+					L1 = /* Part.PosP + */ editor->SetInd(editor->_textT, editor->_lenT, textIndex, positionOnActualLine);
 					if (TestOptStr('l')) editor->SetBlockBound(fs, L2);
-					else L2 = AbsLenT /* - Part.LenP */ + LenT;
+					else L2 = AbsLenT /* - Part.LenP */ + editor->_lenT;
 					if (L1 < fs)  L1 = fs;  // { if L1>=L2  goto Nic;}
 					editor->FindReplaceString(L1, L2);
 					if (!Konec) { FirstEvent = false; editor->Background(); }
@@ -1070,15 +1070,15 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 				case TextBlock: {
 					do {
 						I2 = 0x1000; if (fs - L2 < int(I2))  I2 = fs - L2;
-						if ((TypeT != FileT) && ((I2 >= MaxLenT - LenT) || (I2 >= StoreAvail()))) {
+						if ((TypeT != FileT) && ((I2 >= MaxLenT - editor->_lenT) || (I2 >= StoreAvail()))) {
 							if (I2 >= StoreAvail()) {
 								I2 = StoreAvail();
 							}
-							I2 = MinW(I2, MaxLenT - LenT) - 2; fs = L2 + I2;
+							I2 = MinW(I2, MaxLenT - editor->_lenT) - 2; fs = L2 + I2;
 							WrLLF10Msg(404);
 						}
 						I1 = L1 + L2; // - Part.PosP;
-						//TestLenText(&_textT, LenT, I1, int(I1) + I2);
+						//TestLenText(&_textT, _lenT, I1, int(I1) + I2);
 						UpdatT = true;
 						//if (ChangePart) I1 -= Part.MovI;
 						SeekH(F1, L2); ReadH(F1, I2, &editor->_textT[I1]); HMsgExit("");
@@ -1086,7 +1086,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 					} while (L2 != fs);
 					I = L1 + L2; // - Part.PosP;
 					if (editor->_textT[I - 1] == 0x1A) {
-						//TestLenText(&_textT, LenT, I, I - 1);
+						//TestLenText(&_textT, _lenT, I, I - 1);
 						UpdatT = true;
 						I--;
 					}
@@ -1130,7 +1130,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 					SetPartLine(blocks->EndBLn);
 					I2 = blocks->EndBLn; // -Part.LineP;
 					size_t nextLineIdx = editor->GetLineStartIndex(I2);
-					L1 = editor->SetInd(editor->_textT, LenT, nextLineIdx, blocks->EndBPos); // +Part.PosP;
+					L1 = editor->SetInd(editor->_textT, editor->_lenT, nextLineIdx, blocks->EndBPos); // +Part.PosP;
 					L2 = blocks->BegBLn; positionOnActualLine = blocks->BegBPos;
 					SetPartLine(L2);
 					I2 = blocks->BegBLn; // -Part.LineP;
@@ -1194,7 +1194,7 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 			case 'B': {
 				editor->TestKod();
 				L1 = /*Part.PosP +*/ textIndex;
-				editor->Format(I, L1, AbsLenT + LenT /* - Part.LenP*/, MinI(LeftMarg, positionOnActualLine), false);
+				editor->Format(I, L1, AbsLenT + editor->_lenT /* - Part.LenP*/, MinI(LeftMarg, positionOnActualLine), false);
 				editor->SetPart(L1);
 				I2 = L1; // -Part.PosP;
 				TextLineNr = editor->GetLineNumber(I2);
@@ -1327,8 +1327,8 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 		positionOnActualLine = Event.Where.X - WindMin.X + 1;
 		if (mode != TextM) positionOnActualLine = Position(positionOnActualLine);
 		positionOnActualLine += BPos;
-		I = editor->SetInd(editor->_textT, LenT, textIndex, positionOnActualLine);
-		if (I < LenT) {
+		I = editor->SetInd(editor->_textT, editor->_lenT, textIndex, positionOnActualLine);
+		if (I < editor->_lenT) {
 			if (mode == HelpM) {
 				ClrWord();
 				editor->WordFind(editor->WordNo(I + 1), I1, I2, W1);

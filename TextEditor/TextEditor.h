@@ -61,7 +61,6 @@ void SimplePrintHead();
 
 const int SuccLineSize = 256;
 
-extern size_t LenT;
 extern char Arr[SuccLineSize];
 extern bool bScroll;
 
@@ -144,7 +143,7 @@ public:
 	void ViewHelpText(std::string& S, WORD& TxtPos);
 
 	char* _textT = nullptr;               // ukazatel na vstupni retezec (cely editovany text)
-
+	size_t _lenT = 0;                     // delka editovaneho textu
 
 private:
 
