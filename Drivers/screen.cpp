@@ -234,7 +234,7 @@ void Screen::ScrWrCharInfoBuf(short X, short Y, CHAR_INFO* Buf, short L)
 
 bool Screen::ScrRdBuf(WORD X, WORD Y, CHAR_INFO* Buf, WORD L)
 {
-	SMALL_RECT rect{ (short)X, (short)Y, (short)(X + L - 1), (short)Y };
+	SMALL_RECT rect{ (short)(X - 1), (short)(Y - 1), (short)(X - 1 + L - 1), (short)(Y - 1) };
 	COORD bufSize{ (short)(L), 1 };
 	bool result = ReadConsoleOutput(_handle, Buf, bufSize, { 0, 0 }, &rect);
 	return result;

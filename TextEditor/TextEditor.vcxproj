@@ -163,6 +163,7 @@
     <ClCompile Include="Blocks.cpp" />
     <ClCompile Include="TextEditorEvents.cpp" />
     <ClCompile Include="EditorHelp.cpp" />
+    <ClCompile Include="TextEditorModes.cpp" />
     <ClCompile Include="TextEditorScreen.cpp" />
     <ClCompile Include="TextEditor.cpp" />
   </ItemGroup>
@@ -170,6 +171,7 @@
     <ClInclude Include="Blocks.h" />
     <ClInclude Include="TextEditorEvents.h" />
     <ClInclude Include="EditorHelp.h" />
+    <ClInclude Include="TextEditorModes.h" />
     <ClInclude Include="TextEditorScreen.h" />
     <ClInclude Include="TextEditor.h" />
   </ItemGroup>

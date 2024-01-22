@@ -14,6 +14,17 @@
 #include "../Core/wwmenu.h"
 
 
+TextEditorEvents::TextEditorEvents()
+{
+	_modes_handler = new TextEditorModes(this);
+}
+
+TextEditorEvents::~TextEditorEvents()
+{
+	delete _modes_handler;
+	_modes_handler = nullptr;
+}
+
 void TextEditorEvents::CtrlShiftAlt(TextEditor* editor, char mode, std::string& LastS, WORD LastNr, bool IsWrScreen)
 {
 	bool Ctrl = false;  WORD Delta = 0; WORD flgs = 0;
@@ -63,24 +74,36 @@ label1:
 
 bool TextEditorEvents::My2GetEvent()
 {
-	ClrEvent();
-	GetEvent();
-	if (Event.What != evKeyDown) {
-		ClrEvent();
-		return false;
-	}
+	bool result = true;
 
-	if (toupper(Event.Pressed.Char) >= 'A' && toupper(Event.Pressed.Char) <= 'Z') {
-		Event.Pressed.UpdateKey(toupper(toupper(Event.Pressed.Char)) - '@');
-		if ((Event.Pressed.Char == 'Y' || Event.Pressed.Char == 'Z') && (spec.KbdTyp == CsKbd || spec.KbdTyp == SlKbd)) {
-			switch (Event.Pressed.Char) {
-			case 'Z': Event.Pressed.Char = 'Y'; break;
-			case 'Y': Event.Pressed.Char = 'Z'; break;
-			default: break;
+	while (true) {
+		ClrEvent();
+		GetEvent();
+		if (Event.What != evKeyDown) {
+			ClrEvent();
+			result = false;
+			break;
+		}
+
+		if (toupper(Event.Pressed.Char) >= 'A' && toupper(Event.Pressed.Char) <= 'Z') {
+			Event.Pressed.UpdateKey(toupper(toupper(Event.Pressed.Char)) - '@');
+			if ((Event.Pressed.Char == 'Y' || Event.Pressed.Char == 'Z') && (spec.KbdTyp == CsKbd || spec.KbdTyp == SlKbd)) {
+				switch (Event.Pressed.Char) {
+				case 'Z': Event.Pressed.Char = 'Y'; break;
+				case 'Y': Event.Pressed.Char = 'Z'; break;
+				default: break;
+				}
 			}
+			break;
+		}
+		else {
+			// no printable character, only CTRL, ALT, SHIFT, ...
+			// what about 'ESC, ...' ?
+			continue;
 		}
 	}
-	return true;
+
+	return result;
 }
 
 bool TextEditorEvents::HelpEvent(std::vector<WORD>& breakKeys)
@@ -316,9 +339,12 @@ bool TextEditorEvents::MyGetEvent(TextEditor* editor, char& mode, BYTE SysLColor
 			if (My2GetEvent())
 			{
 				Wr("", OrigS, mode, SysLColor);
-				switch (Event.Pressed.KeyCombination()) {
-				case 'W': case  'R': case  'L': case  'J': case  'C':
-				{
+				switch (Event.Pressed.Char) {
+				case 'W': // wrap
+				case 'R':
+				case 'L':
+				case 'J':
+				case 'C': {
 					//Event.KeyCode = (ww << 8) | Event.KeyCode;
 					break;
 				}
@@ -359,6 +385,110 @@ bool TextEditorEvents::MyGetEvent(TextEditor* editor, char& mode, BYTE SysLColor
 	return result;
 }
 
+bool TextEditorEvents::TestExitKeys(TextEditor* editor, char& mode, std::vector<EdExitD*>& ExitD, int& fs, stEditorParams& ep, LongStr*& sp, WORD key)
+{
+	for (auto& X : ExitD) {
+		if (TestExitKey(key, X)) {  // nastavuje i EdBreak
+			editor->TestKod();
+			IndexT = editor->SetInd(editor->_textT, editor->_lenT, textIndex, positionOnActualLine);
+			ScrT = ((TextLineNr - ScreenFirstLineNr + 1) << 8) + positionOnActualLine - BPos;
+			LastTxtPos = IndexT; // +Part.PosP;
+			TxtXY = ScrT + ((int)positionOnActualLine << 16);
+			if (X->Typ == 'Q') {
+				Event.Pressed.UpdateKey(key);
+				Konec = true; EditT = false;
+				return true;
+			}
+			switch (TypeT) {
+			case FileT: {
+				editor->TestUpdFile();
+				delete[] editor->_textT; editor->_textT = nullptr;
+				//CloseH(&TxtFH);
+				CloseHandle(TxtFH);
+				TxtFH = NULL;
+				break;
+			}
+			case LocalT:
+			case MemoT: {
+				//DelEndT();
+
+				char* T2 = new char[editor->_lenT + 2];
+				memcpy(&T2[2], editor->_textT, editor->_lenT);
+				delete[] editor->_textT;
+				editor->_textT = T2;
+
+				sp->A = editor->_textT;
+				sp->LL = (WORD)editor->_lenT;
+				if (TypeT == LocalT) {
+					TWork.Delete(*LocalPPtr);
+					*LocalPPtr = TWork.Store(sp->A, sp->LL);
+				}
+				else if (UpdatT) {
+					UpdateEdTFld(sp);
+					UpdatT = false;
+				}
+				delete sp; sp = nullptr;
+				break;
+			}
+			}
+			ep = SaveParams();
+			screen.CrsHide();
+			if (TypeT == MemoT) {
+				StartExit(X, false);
+			}
+			else {
+				CallProcedure(X->Proc);
+			}
+			//NewExit(Ovr(), er);
+			//goto Opet;
+			if (!bScroll) {
+				screen.CrsShow();
+			}
+			RestoreParams(ep);
+			switch (TypeT) {
+			case FileT: {
+				fs = IndexT; // Part.PosP + IndexT;
+				OpenTxtFh(mode);
+				editor->ReadTextFile();
+				SimplePrintHead();
+				//while ((fs > Part.PosP + Part.LenP) && !AllRd) { RdNextPart(); }
+				IndexT = fs; // fs - Part.PosP;
+				break;
+			}
+			case LocalT:
+			case MemoT:
+			{
+				if (TypeT == LocalT) sp = TWork.Read(*LocalPPtr);
+				else {
+					CRecPtr = EditDRoot->NewRecPtr;
+					sp = CFile->loadLongS(CFld->FldD, CRecPtr);
+				}
+				editor->_lenT = sp->LL;
+				// _textT = (CharArr*)(sp)
+				Move(&editor->_textT[3], &editor->_textT[1], editor->_lenT);
+				break;
+			}
+			}
+
+			editor->WrEndT();
+			IndexT = MinW(IndexT, editor->_lenT);
+			if (TypeT != FileT) {
+				AbsLenT = editor->_lenT - 1;
+				//Part.LenP = AbsLenT;
+				SimplePrintHead();
+			}
+			editor->SetScreen(IndexT, ScrT, positionOnActualLine);
+			if (!bScroll) {
+				screen.CrsShow();
+			}
+			if (!EdOk) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScreen, BYTE SysLColor, std::string& LastS, WORD LastNr, std::vector<EdExitD*>& ExitD, std::vector<WORD>& breakKeys) {
 	wwmix wwmix1;
 	WORD I = 0, I1 = 0;
@@ -373,17 +503,63 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 	LongStr* sp = nullptr;
 	void* P1 = nullptr;
 	bool bb = false;
-
 	//EdExitD* X = nullptr;
 
 	IsWrScreen = false;
 
-	if (!MyGetEvent(editor, mode, SysLColor, LastS, LastNr, IsWrScreen, bScroll, ExitD, breakKeys)) {
-		ClrEvent();
-		IsWrScreen = false;
-		return;
+	//if (!MyGetEvent(editor, mode, SysLColor, LastS, LastNr, IsWrScreen, bScroll, ExitD, breakKeys)) {
+	//	ClrEvent();
+	//	IsWrScreen = false;
+	//	return;
+	//}
+
+	std::string OrigS = "    ";
+	CtrlShiftAlt(editor, mode, LastS, LastNr, IsWrScreen);
+	GetEvent();
+	TextEditorMode tm = _modes_handler->GetMode();
+
+	while (true) {
+		if ((tm != TextEditorMode::normal) || (Event.What == evKeyDown && Event.Pressed.Ctrl())) {
+			// mode is not normal || Ctrl key pressed 
+			switch (tm = _modes_handler->HandleKeyPress(Event.Pressed)) {
+			case TextEditorMode::CtrlK: {
+				Wr("^K", OrigS, mode, SysLColor);
+				break;
+			}
+			case TextEditorMode::CtrlO: {
+				Wr("^O", OrigS, mode, SysLColor);
+				break;
+			}
+			case TextEditorMode::CtrlP: {
+				Wr("^P", OrigS, mode, SysLColor);
+				break;
+			}
+			case TextEditorMode::CtrlQ: {
+				Wr("^Q", OrigS, mode, SysLColor);
+				break;
+			}
+			default: {
+				Wr("", OrigS, mode, SysLColor);
+				break;
+			}
+			}
+
+			if (   tm == TextEditorMode::CtrlK 
+				|| tm == TextEditorMode::CtrlO 
+				|| tm == TextEditorMode::CtrlP 
+				|| tm == TextEditorMode::CtrlQ) {
+				ClrEvent();
+				GetEvent();
+				continue;
+			}
+			else {
+				break;
+			}
+		}
 	}
-	if (!bScroll) { editor->CleanFrame(ExitD, breakKeys); }
+	if (!bScroll) {
+		editor->CleanFrame(ExitD, breakKeys);
+	}
 	//NewExit(Ovr(), er);
 	//goto Opet;
 	if (Event.What == evKeyDown) {
@@ -392,105 +568,8 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 		ClrEvent();
 		//X = ExitD; // Exit-procedure
 
-		// test all exit keys
-		for (auto& X : ExitD) {
-			if (TestExitKey(key, X)) {  // nastavuje i EdBreak
-				editor->TestKod();
-				IndexT = editor->SetInd(editor->_textT, editor->_lenT, textIndex, positionOnActualLine);
-				ScrT = ((TextLineNr - ScreenFirstLineNr + 1) << 8) + positionOnActualLine - BPos;
-				LastTxtPos = IndexT; // +Part.PosP;
-				TxtXY = ScrT + ((int)positionOnActualLine << 16);
-				if (X->Typ == 'Q') {
-					Event.Pressed.UpdateKey(key);
-					Konec = true; EditT = false;
-					goto Nic;
-				}
-				switch (TypeT) {
-				case FileT: {
-					editor->TestUpdFile();
-					delete[] editor->_textT; editor->_textT = nullptr;
-					//CloseH(&TxtFH);
-					CloseHandle(TxtFH);
-					TxtFH = NULL;
-					break;
-				}
-				case LocalT:
-				case MemoT: {
-					//DelEndT();
-
-					char* T2 = new char[editor->_lenT + 2];
-					memcpy(&T2[2], editor->_textT, editor->_lenT);
-					delete[] editor->_textT;
-					editor->_textT = T2;
-
-					sp->A = editor->_textT;
-					sp->LL = (WORD)editor->_lenT;
-					if (TypeT == LocalT) {
-						TWork.Delete(*LocalPPtr);
-						*LocalPPtr = TWork.Store(sp->A, sp->LL);
-					}
-					else if (UpdatT) {
-						UpdateEdTFld(sp);
-						UpdatT = false;
-					}
-					delete sp; sp = nullptr;
-					break;
-				}
-				}
-				ep = SaveParams();
-				screen.CrsHide();
-				if (TypeT == MemoT) {
-					StartExit(X, false);
-				}
-				else {
-					CallProcedure(X->Proc);
-				}
-				//NewExit(Ovr(), er);
-				//goto Opet;
-				if (!bScroll) {
-					screen.CrsShow();
-				}
-				RestoreParams(ep);
-				switch (TypeT) {
-				case FileT: {
-					fs = IndexT; // Part.PosP + IndexT;
-					OpenTxtFh(mode);
-					editor->ReadTextFile();
-					SimplePrintHead();
-					//while ((fs > Part.PosP + Part.LenP) && !AllRd) { RdNextPart(); }
-					IndexT = fs; // fs - Part.PosP;
-					break;
-				}
-				case LocalT:
-				case MemoT:
-				{
-					if (TypeT == LocalT) sp = TWork.Read(*LocalPPtr);
-					else {
-						CRecPtr = EditDRoot->NewRecPtr;
-						sp = CFile->loadLongS(CFld->FldD, CRecPtr);
-					}
-					editor->_lenT = sp->LL;
-					// _textT = (CharArr*)(sp)
-					Move(&editor->_textT[3], &editor->_textT[1], editor->_lenT);
-					break;
-				}
-				}
-
-				editor->WrEndT();
-				IndexT = MinW(IndexT, editor->_lenT);
-				if (TypeT != FileT) {
-					AbsLenT = editor->_lenT - 1;
-					//Part.LenP = AbsLenT;
-					SimplePrintHead();
-				}
-				editor->SetScreen(IndexT, ScrT, positionOnActualLine);
-				if (!bScroll) {
-					screen.CrsShow();
-				}
-				if (!EdOk) {
-					goto Nic;
-				}
-			}
+		if (TestExitKeys(editor, mode, ExitD, fs, ep, sp, key)) {
+			goto Nic;
 		}
 
 		// test frame drawing mode
@@ -1147,12 +1226,12 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 				if (Wrap) { LineS--; LastC--; }
 				else {
 					LastC++; LineS++;
-					screen.ScrRdBuf(FirstC - 1, TxtRows - 1, LastL, LineS);
+					screen.ScrRdBuf(FirstC, TxtRows, LastL, LineS);
 					LastL[MargLL[0]].Attributes = MargLL[1] >> 8;
 					LastL[MargLL[0]].Char.AsciiChar = MargLL[1] & 0x00FF;
 					LastL[MargLL[2]].Attributes = MargLL[3] >> 8;
 					LastL[MargLL[2]].Char.AsciiChar = MargLL[3] & 0x00FF;
-					screen.ScrWrBuf(FirstC - 1, TxtRows - 1, LastL, LineS);
+					screen.ScrWrBuf(FirstC, TxtRows, LastL, LineS);
 				}
 				break;
 			}

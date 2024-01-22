@@ -610,7 +610,7 @@ void WriteMargins()
 	CHAR_INFO LastL[201];
 
 	if ((Mode != HelpM) && (Mode != ViewM) && Wrap) {
-		screen.ScrRdBuf(FirstC - 1, TxtRows - 1, LastL, LineS);
+		screen.ScrRdBuf(FirstC, TxtRows, LastL, LineS);
 		LastL[MargLL[0]].Attributes = MargLL[1] >> 8;
 		LastL[MargLL[0]].Char.AsciiChar = MargLL[1] & 0x00FF;
 		LastL[MargLL[2]].Attributes = MargLL[3] >> 8;
@@ -1592,6 +1592,7 @@ void TextEditor::FrameStep(BYTE& odir, PressedKey EvKeyC)
 	case __ESC: {
 		screen.CrsNorm();
 		Mode = TextM;
+		break;
 	}
 	case __LEFT:
 	case __RIGHT:
@@ -3160,8 +3161,10 @@ void TextEditor::EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg
 				}
 			}
 			if (!Loc) {
-				delete[] _textT;
-				_textT = nullptr;
+				// v originale: ReleaseStore(T) - tady ale smazani pri opetovnem spusteni editoru zpusobuje chybu
+				// napr. po navratu z Helpu ...
+				// delete[] _textT;
+				// _textT = nullptr;
 			}
 			if (EdBreak == 0xFFFF) {
 				switch (KbdChar) {

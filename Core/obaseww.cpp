@@ -198,7 +198,7 @@ void WrLLF10MsgLine()
 {
 	WORD row = TxtRows - 1;
 	CHAR_INFO* Buf = new CHAR_INFO[TxtCols];
-	screen.ScrRdBuf(0, row, Buf, TxtCols);
+	screen.ScrRdBuf(1, row + 1, Buf, TxtCols);
 	Beep();
 	screen.ScrClr(1, row + 1, TxtCols, 1, ' ', screen.colors.zNorm);
 	if (F10SpecKey == 0xffff) {
