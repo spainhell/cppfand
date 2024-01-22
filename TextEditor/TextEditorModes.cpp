@@ -121,6 +121,7 @@ void TextEditorModes::process_Ctrl_P(PressedKey& key)
 		}
 		else {
 			// to be compatible with PC FAND 4.2
+			// TODO: color of a character isn't right
 			key.UpdateKey(key.Char + '@');
 		}
 		_actual_mode = TextEditorMode::normal;
@@ -174,4 +175,7 @@ void TextEditorModes::process_Ctrl_Q(const PressedKey& key)
 
 void TextEditorModes::process_Frame(const PressedKey& key)
 {
+	if (key.Char == __ESC) {
+		_actual_mode = TextEditorMode::normal;
+	}
 }

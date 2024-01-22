@@ -551,6 +551,12 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 				ClrEvent();
 				GetEvent();
 				continue;
+			} else if ((tm == TextEditorMode::SingleFrame || tm == TextEditorMode::DoubleFrame 
+				|| tm == TextEditorMode::DeleteFrame || tm == TextEditorMode::NoFrame) && !bScroll) {
+				editor->FrameStep(FrameDir, Event.Pressed);
+				ClrEvent();
+				GetEvent();
+				continue;
 			}
 			else {
 				break;
