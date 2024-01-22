@@ -105,7 +105,7 @@ void TextEditorModes::process_Ctrl_O(const PressedKey& key)
 void TextEditorModes::process_Ctrl_P(PressedKey& key)
 {
 	if (key.Char <= 0x31) {
-		key.UpdateKey(CTRL + Event.Pressed.Char);
+		key.UpdateKey(CTRL + key.Char);
 		//Event.KeyCode = (ww << 8) || Event.KeyCode;
 	}
 	_actual_mode = TextEditorMode::normal;
