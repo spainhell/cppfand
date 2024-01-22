@@ -14,7 +14,7 @@ class TextEditorModes
 public:
 	TextEditorModes(TextEditorEvents* events);
 	TextEditorMode GetMode();
-	TextEditorMode HandleKeyPress(PressedKey key);
+	TextEditorMode HandleKeyPress(PressedKey& key);
 	TextEditorMode HandleMouse();
 
 private:

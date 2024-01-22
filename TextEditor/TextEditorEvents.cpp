@@ -519,8 +519,8 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 	TextEditorMode tm = _modes_handler->GetMode();
 
 	while (true) {
-		if ((tm != TextEditorMode::normal) || (Event.What == evKeyDown && Event.Pressed.Ctrl())) {
-			// mode is not normal || Ctrl key pressed 
+		if ((tm != TextEditorMode::normal) || (Event.What == evKeyDown && Event.Pressed.Ctrl() && Event.Pressed.Char > 0)) {
+			// mode is not normal || Ctrl key pressed with any other key
 			switch (tm = _modes_handler->HandleKeyPress(Event.Pressed)) {
 			case TextEditorMode::CtrlK: {
 				Wr("^K", OrigS, mode, SysLColor);
@@ -555,6 +555,9 @@ void TextEditorEvents::HandleEvent(TextEditor* editor, char& mode, bool& IsWrScr
 			else {
 				break;
 			}
+		}
+		else {
+			break;
 		}
 	}
 	if (!bScroll) {

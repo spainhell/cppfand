@@ -12,7 +12,7 @@ TextEditorMode TextEditorModes::GetMode()
 	return _actual_mode;
 }
 
-TextEditorMode TextEditorModes::HandleKeyPress(PressedKey key)
+TextEditorMode TextEditorModes::HandleKeyPress(PressedKey& key)
 {
 	switch (_actual_mode)
 	{
@@ -104,11 +104,27 @@ void TextEditorModes::process_Ctrl_O(const PressedKey& key)
 
 void TextEditorModes::process_Ctrl_P(PressedKey& key)
 {
-	if (key.Char <= 0x31) {
-		key.UpdateKey(CTRL + key.Char);
-		//Event.KeyCode = (ww << 8) || Event.KeyCode;
+	if (key.Char == 0) {
+		// no key pressed (only Shift, Alt, Ctrl, ...)
 	}
-	_actual_mode = TextEditorMode::normal;
+	else {
+		char upper = toupper(key.Char);
+		if (upper >= 'A' && upper <= 'Z') {
+			if ((upper == 'Y' || upper == 'Z') && (spec.KbdTyp == CsKbd || spec.KbdTyp == SlKbd)) {
+				switch (upper) {
+				case 'Z': upper = 'Y'; break;
+				case 'Y': upper = 'Z'; break;
+				default: break;
+				}
+			}
+			key.UpdateKey(CTRL + upper - '@');
+		}
+		else {
+			// to be compatible with PC FAND 4.2
+			key.UpdateKey(key.Char + '@');
+		}
+		_actual_mode = TextEditorMode::normal;
+	}
 }
 
 void TextEditorModes::process_Ctrl_Q(const PressedKey& key)
