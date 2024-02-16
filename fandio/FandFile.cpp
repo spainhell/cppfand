@@ -1171,7 +1171,7 @@ void FandFile::SortAndSubst(KeyFldD* SK)
 	RunMsgOn('S', Scan->NRecs);
 	Scan->GetRec(record);
 
-	// zapiseme data do souboru .100
+	// write data to a file .100
 	FD2->FF->GenerateNew000File(Scan, record);
 
 	SubstDuplF(FD2, false);
@@ -1266,6 +1266,10 @@ void FandFile::CopyDuplF(FileD* TempFD, bool DelTF)
 	SaveCache(0, Handle);
 	SetTempCExt(_parent, '0', true);
 	CopyH(TempFD->FF->Handle, Handle);
+
+	// TempFD has been deleted in CopyH -> set Handle to nullptr
+	TempFD->FF->Handle = nullptr;
+
 	if ((TF != nullptr) && DelTF) {
 		HANDLE h1 = TempFD->FF->TF->Handle;
 		HANDLE h2 = TF->Handle;
