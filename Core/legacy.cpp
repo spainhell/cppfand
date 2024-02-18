@@ -258,49 +258,16 @@ void FSplit(const std::string& fullname, std::string& dir, std::string& name, st
 	
 	if (pathDelim == '/') ReplaceChar(dir, '\\', '/');
 	if (pathDelim == '\\') ReplaceChar(dir, '/', '\\');
+}
 
-	return;
-
-	//size_t foundBackslash = fullname.find_last_of("/\\");
-	//dir = fullname.substr(0, foundBackslash + 1);
-
-	//if (foundBackslash < fullname.length() - 1) // jeste nejsme na konci -> existuje nazev nebo nazev s priponou
-	//{
-	//	std::string filename = fullname.substr(foundBackslash + 1);
-
-	//	size_t foundDot = filename.find_last_of('.');
-	//	if (foundDot < filename.length()) // pripona existuje
-	//	{
-	//		name = filename.substr(0, foundDot);
-	//		ext = filename.substr(foundDot);
-	//	}
-	//	else
-	//	{
-	//		name = filename;
-	//		ext = "";
-	//	}
-	//}
-	//else
-	//{
-	//	if (foundBackslash != std::string::npos) {
-	//		// lomitko je na konci, existuje jen adresar
-	//		name = ""; ext = "";
-	//		return;
-	//	}
-
-	//	// lomitko nebylo nalezeno, bude exitovat jen nazev a mozna pripona
-	//	size_t foundDot = fullname.find_last_of('.');
-	//	if (foundDot < fullname.length()) // pripona existuje
-	//	{
-	//		name = fullname.substr(0, foundDot);
-	//		ext = fullname.substr(foundDot);
-	//	}
-	//	else
-	//	{ // pripona neexistuje, cele je to nazev souboru
-	//		name = fullname;
-	//		ext = "";
-	//	}
-	//}
+void FSplitFile(const std::string& fullname, std::string& dir, std::string& name, std::string& ext, char pathDelim)
+{
+	std::filesystem::path pth = fullname;
+	name = pth.stem().string();
+	ext = pth.extension().string();
+	dir = pth.generic_string().substr(0, pth.generic_string().length() - name.length() - ext.length());
+	if (pathDelim == '/') ReplaceChar(dir, '\\', '/');
+	if (pathDelim == '\\') ReplaceChar(dir, '/', '\\');
 }
 
 pstring FSearch(pstring& path, pstring& dirlist)

@@ -1295,7 +1295,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 					FDCompiled = true;
 					std::deque<LinkD*> ld = LinkDRoot;
 					MarkStore(p1);
-					FSplit(Name, dir, nm, ext);
+					FSplitFile(Name, dir, nm, ext);
 					if ((Txt == 0) && IsTestRun) {
 						SetMsgPar(Name);
 						if (EquUpCase(ext, ".DBF") && PromptYN(39)) {
