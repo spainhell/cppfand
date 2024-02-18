@@ -2020,7 +2020,7 @@ FrmlElem* RdPrim(char& FTyp, MergeReportBase* caller)
 			label2:
 				Z = new FrmlElem6(_strdate1, 0); // GetOp(_strdate1, LexWord.length() + 1);
 				auto iZ = (FrmlElem6*)Z;
-				iZ->PP1 = Z1;
+				iZ->P1 = Z1;
 				iZ->Mask = LexWord;
 				RdLex();
 				Accept(')');
@@ -2043,7 +2043,7 @@ FrmlElem* RdPrim(char& FTyp, MergeReportBase* caller)
 				TestLex(_quotedstr);
 				Z = new FrmlElem6(_valdate, 0); // GetOp(_valdate, LexWord.length() + 1);
 				auto iZ = (FrmlElem6*)Z;
-				iZ->PP1 = Z1;
+				iZ->P1 = Z1;
 				iZ->Mask = LexWord;
 				RdLex();
 				goto label4;
@@ -2089,7 +2089,7 @@ FrmlElem* RdPrim(char& FTyp, MergeReportBase* caller)
 						TestReal(Typ);
 					}
 				}
-				iZ->PPPP1 = Z1; iZ->PPP2 = Z2; iZ->PP3 = Z3;
+				iZ->P1 = Z1; iZ->P2 = Z2; iZ->P3 = Z3;
 				Accept(')');
 			}
 			else if (IsFun(RS1Fun, LexWord, FunCode)) {

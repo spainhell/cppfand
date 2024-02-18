@@ -78,7 +78,7 @@ class FrmlElem6 : public FrmlElem
 {
 public:
 	FrmlElem6(instr_type Op, size_t buff_size);
-	FrmlElem* PP1 = nullptr;
+	FrmlElem* P1 = nullptr;
 	pstring Mask; // 6
 };
 
@@ -120,8 +120,8 @@ class FrmlElem11 : public FrmlElem
 {
 public:
 	FrmlElem11(instr_type Op, size_t buff_size);
-	FrmlElem* PPP1 = nullptr;
-	FrmlElem* PP2 = nullptr;
+	FrmlElem* P1 = nullptr;
+	FrmlElem* P2 = nullptr;
 	FieldDescr* FldD = nullptr; // 11 {_prompt}
 };
 
@@ -132,8 +132,9 @@ class FrmlElemPosReplace : public FrmlElem
 {
 public:
 	FrmlElemPosReplace(instr_type Op, size_t buff_size);
-	FrmlElem* PPPP1 = nullptr; FrmlElem* PPP2 = nullptr;
-	FrmlElem* PP3 = nullptr;
+	FrmlElem* P1 = nullptr;
+	FrmlElem* P2 = nullptr;
+	FrmlElem* P3 = nullptr;
 	std::string Options; // 12 {_pos,_replace}
 };
 
@@ -152,7 +153,7 @@ class FrmlElem14 : public FrmlElem
 {
 public:
 	FrmlElem14(instr_type Op, size_t buff_size);
-	FrmlElem* PPPPP1 = nullptr;
+	FrmlElem* P1 = nullptr;
 	FileD* RecFD = nullptr;
 	FieldDescr* RecFldD = nullptr; // 14 {_accrecno,_isdeleted}
 };
@@ -169,8 +170,10 @@ class FrmlElem16 : public FrmlElem
 {
 public:
 	FrmlElem16(instr_type Op, size_t buff_size);
-	FrmlElem* PPPPPP1 = nullptr; FrmlElem* PPPP2 = nullptr;
-	std::string TxtPath; WORD TxtCatIRec = 0; // 16 {_gettxt,_filesize}
+	FrmlElem* P1 = nullptr;
+	FrmlElem* P2 = nullptr;
+	std::string TxtPath;
+	WORD TxtCatIRec = 0; // 16 {_gettxt,_filesize}
 };
 
 class FrmlElem18 : public FrmlElem

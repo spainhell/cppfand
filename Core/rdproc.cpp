@@ -266,7 +266,7 @@ FrmlElem* RdFldNameFrmlP(char& FTyp, MergeReportBase* caller)
 #ifdef FandSQL
 		if (FD->typSQLFile) OldError(155);
 #endif
-		A->PPPPP1 = RdRealFrml(nullptr);
+		A->P1 = RdRealFrml(nullptr);
 		Accept(']');
 		Accept('.');
 		F = RdFldName(FD);
@@ -390,13 +390,13 @@ FrmlElem* RdFunctionP(char& FFTyp)
 	else if (IsKeyWord("PROMPT")) {
 		RdLex();
 		Z = new FrmlElem11(_prompt, 4); // GetOp(_prompt, 4);
-		((FrmlElem11*)Z)->PPP1 = RdStrFrml(nullptr);
+		((FrmlElem11*)Z)->P1 = RdStrFrml(nullptr);
 		FieldDescr* F = RdFieldDescr("", true);
 		((FrmlElem11*)Z)->FldD = F; FTyp = F->frml_type;
 		if (F->field_type == FieldType::TEXT) OldError(65);
 		if (Lexem == _assign) {
 			RdLex();
-			((FrmlElem11*)Z)->PP2 = RdFrml(Typ, nullptr);
+			((FrmlElem11*)Z)->P2 = RdFrml(Typ, nullptr);
 			if (Typ != FTyp) OldError(12);
 		}
 	}
@@ -491,7 +491,7 @@ FrmlElem* RdFunctionP(char& FFTyp)
 			FD = RdFileName();
 			((FrmlElem14*)Z)->RecFD = FD;
 			Accept(',');
-			((FrmlElem14*)Z)->PPPPP1 = RdRealFrml(nullptr);
+			((FrmlElem14*)Z)->P1 = RdRealFrml(nullptr);
 		label2: {}
 #ifdef FandSQL
 			if (FD->typSQLFile) Error(155);
@@ -519,10 +519,10 @@ FrmlElem* RdFunctionP(char& FFTyp)
 		RdPath(true, iZ->TxtPath, iZ->TxtCatIRec);
 		if ((Z->Op == _gettxt) && (Lexem == ',')) {
 			RdLex();
-			iZ->PPPPPP1 = RdRealFrml(nullptr);
+			iZ->P1 = RdRealFrml(nullptr);
 			if (Lexem == ',') {
 				RdLex();
-				iZ->PPPP2 = RdRealFrml(nullptr);
+				iZ->P2 = RdRealFrml(nullptr);
 			}
 		}
 	}

@@ -146,12 +146,12 @@ double RunRealStr(FileD* file_d, FrmlElem* X, void* record)
 	switch (X->Op) {
 	case _valdate: {
 		FrmlElem6* iX = (FrmlElem6*)X;
-		result = ValDate(RunShortStr(file_d, iX->PP1, record), iX->Mask);
+		result = ValDate(RunShortStr(file_d, iX->P1, record), iX->Mask);
 		break;
 	}
 	case _val: {
 		FrmlElem6* iX = (FrmlElem6*)X;
-		std::string valS = RunShortStr(file_d, iX->PP1, record);
+		std::string valS = RunShortStr(file_d, iX->P1, record);
 		valS = TrailChar(valS, ' ');
 		valS = LeadChar(valS, ' ');
 		short i;
@@ -160,34 +160,34 @@ double RunRealStr(FileD* file_d, FrmlElem* X, void* record)
 	}
 	case _length: {
 		FrmlElem6* iX = (FrmlElem6*)X;
-		std::string s = RunStdStr(file_d, iX->PP1, record);
+		std::string s = RunStdStr(file_d, iX->P1, record);
 		result = s.length();
 		break;
 	}
 	case _linecnt: {
 		// get line counts of input text
 		FrmlElem6* iX = (FrmlElem6*)X;
-		std::string s = RunStdStr(file_d, iX->PP1, record);
+		std::string s = RunStdStr(file_d, iX->P1, record);
 		result = CountLines(s, '\r'); // 0x0D, #13
 		break;
 	}
 	case _ord: {
 		FrmlElem6* iX = (FrmlElem6*)X;
-		std::string s = RunStdStr(file_d, iX->PP1, record);
+		std::string s = RunStdStr(file_d, iX->P1, record);
 		if (s.empty()) result = 0;
 		else result = s[0];
 		break;
 	}
 	case _prompt: {
 		FrmlElem11* iX = (FrmlElem11*)X;
-		std::string s = RunShortStr(file_d, iX->PPP1, record);
-		result = PromptR(s, iX->PP2, iX->FldD);
+		std::string s = RunShortStr(file_d, iX->P1, record);
+		result = PromptR(s, iX->P2, iX->FldD);
 		break;
 	}
 	case _pos: {
 		FrmlElemPosReplace* iX = (FrmlElemPosReplace*)X;
-		std::string strS = RunStdStr(file_d, iX->PPP2, record);
-		std::string strMask = RunShortStr(file_d, iX->PPPP1, record);
+		std::string strS = RunStdStr(file_d, iX->P2, record);
+		std::string strMask = RunShortStr(file_d, iX->P1, record);
 		size_t n = 1; // kolikaty vyskyt najit
 
 		if (iX->Options.find('~') != std::string::npos) {
@@ -200,9 +200,9 @@ double RunRealStr(FileD* file_d, FrmlElem* X, void* record)
 			}
 		}
 
-		if (iX->PP3 != nullptr) {
+		if (iX->P3 != nullptr) {
 			// which occurrence - count (kolikaty vyskyt)
-			n = RunInt(file_d, iX->PP3, record);
+			n = RunInt(file_d, iX->P3, record);
 			if (n < 1) return 0; // 0 - nenalezeno
 		}
 		size_t offset = 0;
@@ -745,8 +745,8 @@ bool RunBool(FileD* file_d, FrmlElem* X, void* record)
 	}
 	case _prompt: {
 		FrmlElem11* iX = (FrmlElem11*)X;
-		auto s = RunShortStr(file_d, iX->PPP1, record);
-		result = PromptB(s, iX->PP2, iX->FldD);
+		auto s = RunShortStr(file_d, iX->P1, record);
+		result = PromptB(s, iX->P2, iX->FldD);
 		break;
 	}
 	case _promptyn: {
@@ -2100,7 +2100,7 @@ LongStr* RunS(FileD* file_d, FrmlElem* Z, void* record)
 	}
 	case _strdate1: {
 		auto iZ = (FrmlElem6*)Z;
-		s = StrDate(RunReal(file_d, iZ->PP1, record), iZ->Mask);
+		s = StrDate(RunReal(file_d, iZ->P1, record), iZ->Mask);
 		break;
 	}
 	case _str: {
@@ -2119,9 +2119,9 @@ LongStr* RunS(FileD* file_d, FrmlElem* Z, void* record)
 	}
 	case _replace: {
 		auto iZ = (FrmlElemPosReplace*)Z;
-		std::string text = RunStdStr(file_d, iZ->PPP2, record);
-		std::string oldText = RunStdStr(file_d, iZ->PPPP1, record); //j = 1;
-		std::string newText = RunStdStr(file_d, iZ->PP3, record);
+		std::string text = RunStdStr(file_d, iZ->P2, record);
+		std::string oldText = RunStdStr(file_d, iZ->P1, record); //j = 1;
+		std::string newText = RunStdStr(file_d, iZ->P3, record);
 
 		auto res = Replace(text, oldText, newText, iZ->Options);
 		auto result = new LongStr(res.length());
@@ -2131,8 +2131,8 @@ LongStr* RunS(FileD* file_d, FrmlElem* Z, void* record)
 	}
 	case _prompt: {
 		auto iZ = (FrmlElem11*)Z;
-		auto s0 = RunShortStr(file_d, iZ->PPP1, record);
-		s = PromptS(s0, iZ->PP2, iZ->FldD);
+		auto s0 = RunShortStr(file_d, iZ->P1, record);
+		s = PromptS(s0, iZ->P2, iZ->FldD);
 		break;
 	}
 	case _getpath: {
@@ -2339,7 +2339,7 @@ void AccRecNoProc(FrmlElem14* X, WORD Msg, BYTE** record)
 	}
 
 	*record = fd->GetRecSpace();
-	int N = RunInt(fd, X->PPPPP1, *record);
+	int N = RunInt(fd, X->P1, *record);
 	if ((N <= 0) || (N > fd->FF->NRecs)) {
 		SetMsgPar(fd->Name, X->RecFldD->Name);
 		fd->RunErrorM(md);

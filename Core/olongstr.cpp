@@ -8,8 +8,8 @@ void GetTxtPrepare(FileD* file_d, FrmlElem16* Z, HANDLE* h, int& off, int& len, 
 {
 	int l = 0;
 	off = 0;
-	if (Z->PPPPPP1 != nullptr) {
-		off = RunInt(file_d, Z->PPPPPP1, record) - 1;
+	if (Z->P1 != nullptr) {
+		off = RunInt(file_d, Z->P1, record) - 1;
 		if (off < 0) off = 0;
 	}
 	SetTxtPathVol(Z->TxtPath, Z->TxtCatIRec);
@@ -27,8 +27,8 @@ void GetTxtPrepare(FileD* file_d, FrmlElem16* Z, HANDLE* h, int& off, int& len, 
 	LastExitCode = 0;
 	if (off >= len) off = len;
 	len -= off;
-	if (Z->PPPP2 != nullptr) {
-		l = RunInt(file_d, Z->PPPP2, record);
+	if (Z->P2 != nullptr) {
+		l = RunInt(file_d, Z->P2, record);
 		if (l < 0) l = 0;
 		if (l < len) len = l;
 	}
@@ -133,167 +133,3 @@ label4:
 	CloseH(&h);
 	return result;
 }
-
-
-//int CopyTFString(FileD* file_d, FandTFile* destT00File, FileD* srcFileDescr, FandTFile* scrT00File, int srcT00Pos)
-//{
-//	// TODO: CFile variable has been removed without testing,
-//	// TODO: also label2, label3 have been removed without testing
-//	WORD l = 0;
-//	short rest = 0;
-//	bool isLongTxt = false, frst = false;
-//	int pos = 0, nxtpos = 0;
-//	LockMode md, md2;
-//	BYTE X[MPageSize + 1]{ 0 };
-//	WORD* ll = (WORD*)X;
-//	int result = 0;
-//
-//	if (srcT00Pos == 0) {
-//	label0:
-//		return 0; /*Mark****/
-//	}
-//
-//	if (!destT00File->IsWork) md = file_d->NewLockMode(WrMode);
-//	if (!scrT00File->IsWork) md2 = srcFileDescr->NewLockMode(RdMode);
-//	RdWrCache(READ, scrT00File->Handle, scrT00File->NotCached(), srcT00Pos, 2, &l);
-//	if (l <= MPageSize - 2) { /* short text */
-//		if (l == 0) {
-//			goto label0; /*Mark****/
-//		}
-//		RdWrCache(READ, scrT00File->Handle, scrT00File->NotCached(), srcT00Pos + 2, l, X);
-//		rest = MPageSize - destT00File->FreePart % MPageSize;
-//		if (l + 2 <= rest) {
-//			pos = destT00File->FreePart;
-//		}
-//		else {
-//			pos = destT00File->NewPage(false);
-//			destT00File->FreePart = pos;
-//			rest = MPageSize;
-//		}
-//		if (l + 4 >= rest) {
-//			destT00File->FreePart = destT00File->NewPage(false);
-//		}
-//		else {
-//			destT00File->FreePart += l + 2;
-//			rest = l + 4 - rest;
-//			RdWrCache(WRITE, destT00File->Handle, destT00File->NotCached(), destT00File->FreePart, 2, &rest);
-//		}
-//		RdWrCache(WRITE, destT00File->Handle, destT00File->NotCached(), pos, 2, &l);
-//		RdWrCache(WRITE, destT00File->Handle, destT00File->NotCached(), pos + 2, l, X);
-//		result = pos;
-//		goto label4;
-//	}
-//	if ((srcT00Pos % MPageSize) != 0) {
-//		scrT00File->Err(889, false);
-//		result = 0;
-//		goto label4;
-//	}
-//
-//	RdWrCache(READ, scrT00File->Handle, scrT00File->NotCached(), srcT00Pos, MPageSize, X);
-//	frst = true;
-//
-//label1:
-//	if (l > MaxLStrLen + 1) {
-//		scrT00File->Err(889, false);
-//		result = 0;
-//		goto label4;
-//	}
-//	isLongTxt = (l == MaxLStrLen + 1);
-//	if (isLongTxt) l--;
-//	l += 2;
-//
-//	while (true) {
-//		if (frst) {
-//			pos = destT00File->NewPage(false);
-//			result = pos;
-//			frst = false;
-//		}
-//		if ((l > MPageSize) || isLongTxt) {
-//			srcT00Pos = *(int*)&X[MPageSize - 4];
-//			nxtpos = destT00File->NewPage(false);
-//			*(int*)&X[MPageSize - 4] = nxtpos;
-//			RdWrCache(WRITE, destT00File->Handle, destT00File->NotCached(), pos, MPageSize, X);
-//			pos = nxtpos;
-//			if ((srcT00Pos < MPageSize) || (srcT00Pos + MPageSize > scrT00File->MLen) || (srcT00Pos % MPageSize != 0)) {
-//				scrT00File->Err(888, false);
-//				result = 0;
-//				goto label4;
-//			}
-//			RdWrCache(READ, scrT00File->Handle, scrT00File->NotCached(), srcT00Pos, MPageSize, X);
-//			if ((l <= MPageSize)) {
-//				l = *ll;
-//				goto label1;
-//			}
-//			l -= MPageSize - 4;
-//			continue;
-//		}
-//		break;
-//	}
-//
-//	RdWrCache(WRITE, destT00File->Handle, destT00File->NotCached(), pos, MPageSize, X);
-//
-//label4:
-//	if (!scrT00File->IsWork) srcFileDescr->OldLockMode(md2);
-//	if (!destT00File->IsWork) file_d->OldLockMode(md);
-//
-//	return result;
-//}
-
-//void CopyTFStringToH(FileD* file_d, HANDLE h, FandTFile* TF02, FileD* TFD02, int& TF02Pos)
-//{
-//	CFile = file_d;
-//
-//	WORD i = 0;
-//	bool isLongTxt = false;
-//	int pos = 0;
-//	size_t n = 0;
-//	BYTE X[MPageSize + 1]{ 0 };
-//	WORD* ll = (WORD*)X;
-//	LockMode md2;
-//
-//	pos = TF02Pos;
-//	if (pos == 0) return;
-//	FandTFile* tf = TF02;
-//	if (!tf->IsWork) md2 = TFD02->NewLockMode(RdMode);
-//	size_t l = 0;
-//	RdWrCache(READ, tf->Handle, tf->NotCached(), pos, 2, &l);
-//	if (l <= MPageSize - 2) { /* short text */
-//		RdWrCache(READ, tf->Handle, tf->NotCached(), pos + 2, l, X);
-//		WriteH(h, l, X);
-//		goto label4;
-//	}
-//	if ((pos % MPageSize) != 0) goto label2;
-//	RdWrCache(READ, tf->Handle, tf->NotCached(), pos, MPageSize, X);
-//label1:
-//	if (l > MaxLStrLen + 1) {
-//	label2:
-//		tf->Err(889, false);
-//		goto label4;
-//	}
-//	isLongTxt = (l == MaxLStrLen + 1);
-//	if (isLongTxt) l--;
-//	i = 2;
-//label3:
-//	if ((l > MPageSize - i) || isLongTxt) {
-//		n = MPageSize - 4 - i;
-//		if (n > l) n = l;
-//		WriteH(h, n, &X[i]);
-//		pos = *(int*)&X[MPageSize - 4];
-//		if ((pos < MPageSize) || (pos + MPageSize > tf->MLen) || (pos % MPageSize != 0)) {
-//			tf->Err(888, false);
-//			goto label4;
-//		}
-//		RdWrCache(READ, tf->Handle, tf->NotCached(), pos, MPageSize, X);
-//		if ((l <= MPageSize - i)) {
-//			l = *ll;
-//			goto label1;
-//		}
-//		l -= n;
-//		i = 0;
-//		goto label3;
-//	}
-//	WriteH(h, l, &X[i]);
-//label4:
-//	if (!tf->IsWork) TFD02->OldLockMode(md2);
-//	CFile = file_d;
-//}
