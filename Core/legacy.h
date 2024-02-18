@@ -62,15 +62,7 @@ BYTE Hi(WORD cislo);
 BYTE Lo(WORD cislo);
 WORD Swap(WORD cislo);
 
-inline void OvrInit(pstring FileName) {}
-inline void OvrInitEMS() {}
-inline int OvrGetBuf() { return 1024 * 1024; }
-inline void OvrSetBuf(int Size) {}
-inline void OvrSetRetry(int Size) {};
-
 inline void GetMem(void* pointer, int Size) { pointer = new unsigned char[Size]; }
-
-extern BYTE OvrResult; // vzdy 0 OvrOK
 
 std::string GetEnv(const char* name);
 
