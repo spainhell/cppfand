@@ -501,7 +501,7 @@ void FileD::CopyRecWithT(void* record1, void* record2, bool delTFields)
 				if (HasTWorkFlag(record2)) {
 					tf2 = &TWork;
 				}
-				pos = CopyTFString(this, tf2, this, tf1, pos);
+				pos = FandFile::CopyTFString(this, tf2, this, tf1, pos);
 				saveT(F, pos, record2);
 			}
 		}

@@ -1304,7 +1304,7 @@ bool TryCopyT(FileD* file_d, FieldDescr* F, FandTFile* TF, int& pos, FrmlElem16*
 	}
 	else if (CanCopyT(file_d, F, Z, &TF02, &TFD02, TF02Pos, record) && (TF02->Format == TF->Format)) {
 		result = true;
-		pos = CopyTFString(file_d, TF, TFD02, TF02, TF02Pos);
+		pos = FandFile::CopyTFString(file_d, TF, TFD02, TF02, TF02Pos);
 	}
 	return result;
 }

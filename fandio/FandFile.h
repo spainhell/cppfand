@@ -126,6 +126,9 @@ public:
 	void CopyDuplF(FileD* TempFD, bool DelTF);
 	void IndexFileProc(bool Compress);
 
+	static int CopyTFString(FileD* file_d, FandTFile* destT00File, FileD* srcFileDescr, FandTFile* scrT00File, int srcT00Pos);
+	static void CopyTFStringToH(FileD* file_d, HANDLE h, FandTFile* TF02, FileD* TFD02, int& TF02Pos);
+
 private:
 	FileD* _parent;
 	double _RforD(FieldDescr* field_d, void* record);
