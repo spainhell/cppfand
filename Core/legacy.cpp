@@ -244,28 +244,19 @@ void FSplit(const std::string& fullname, std::string& dir, std::string& name, st
 	std::filesystem::path pth = fullname;
 	bool isDir = is_directory(pth);
 
-	if (isDir) {
-		dir = pth.generic_string();
-		name = "";
-		ext = "";
-	}
-	else
-	{
+	// !!! This causes a crash if there is a directory with the same name as a file !!!
+	//if (isDir) {
+	//	dir = pth.generic_string();
+	//	name = "";
+	//	ext = "";
+	//}
+	//else
+	//{
 		name = pth.stem().string();
 		ext = pth.extension().string();
 		dir = pth.generic_string().substr(0, pth.generic_string().length() - name.length() - ext.length());
-	}
+	//}
 	
-	if (pathDelim == '/') ReplaceChar(dir, '\\', '/');
-	if (pathDelim == '\\') ReplaceChar(dir, '/', '\\');
-}
-
-void FSplitFile(const std::string& fullname, std::string& dir, std::string& name, std::string& ext, char pathDelim)
-{
-	std::filesystem::path pth = fullname;
-	name = pth.stem().string();
-	ext = pth.extension().string();
-	dir = pth.generic_string().substr(0, pth.generic_string().length() - name.length() - ext.length());
 	if (pathDelim == '/') ReplaceChar(dir, '\\', '/');
 	if (pathDelim == '\\') ReplaceChar(dir, '/', '\\');
 }

@@ -30,7 +30,6 @@ WORD succ(WORD input);
 
 void FSplit(pstring fullname, pstring& dir, pstring& name, pstring& ext);
 void FSplit(const std::string& fullname, std::string& dir, std::string& name, std::string& ext, char pathDelim = '\\');
-void FSplitFile(const std::string& fullname, std::string& dir, std::string& name, std::string& ext, char pathDelim = '\\');
 
 pstring FSearch(pstring& path, pstring& dirlist);
 std::string FSearch(const std::string path, const std::string dirlist);

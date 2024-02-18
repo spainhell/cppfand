@@ -609,9 +609,13 @@ long FileSizeH(HANDLE handle)
 
 void CloseH(HANDLE* handle)
 {
+#ifdef _DEBUG
+	HANDLE h = *handle;
+#endif
+
 	Logging* log = Logging::getInstance();
 	DataFile* fileForClose = nullptr;
-	if (handle == nullptr) return;
+	if (*handle == nullptr) return;
 	// uzavre soubor
 	bool res = CloseF(*handle, HandleError);
 	log->log(loglevel::DEBUG, "closing file 0x%p '%s', error %i",
@@ -625,7 +629,7 @@ void CloseH(HANDLE* handle)
 	// oznaci za uzavreny ve filesMap
 	for (auto& f : filesMap)
 	{
-		if (f.second.Handler == *handle) {
+		if (f.second.Handler == h) {
 			fileForClose = &f.second;
 			f.second.SetClose();
 			break;
@@ -633,11 +637,9 @@ void CloseH(HANDLE* handle)
 	}
 	if (fileForClose == nullptr) {
 		// soubor ve filesMap nebyl
-		log->log(loglevel::WARN, "closing file 0x%p, but file wasn't in filesMap!", *handle);
+		log->log(loglevel::WARN, "closing file 0x%p, but file wasn't in filesMap!", h);
 	}
 #endif
-
-	*handle = nullptr;
 }
 
 void ClearCacheH(HANDLE h)
