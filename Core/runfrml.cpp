@@ -1288,7 +1288,7 @@ bool CanCopyT(FileD* file_d, FieldDescr* F, FrmlElem* Z, FandTFile** TF02, FileD
 	return result;
 }
 
-bool TryCopyT(FileD* file_d, FieldDescr* F, FandTFile* TF, int& pos, FrmlElem* Z, void* record)
+bool TryCopyT(FileD* file_d, FieldDescr* F, FandTFile* TF, int& pos, FrmlElem16* Z, void* record)
 {
 	LockMode md, md2;
 
@@ -1322,7 +1322,7 @@ void AssgnFrml(FileD* file_d, void* record, FieldDescr* field_d, FrmlElem* X, bo
 			else {
 				tf = file_d->FF->TF;
 			}
-			if (TryCopyT(file_d, field_d, tf, pos, X, record)) {
+			if (TryCopyT(file_d, field_d, tf, pos, static_cast<FrmlElem16*>(X), record)) {
 				if (Delete) {
 					file_d->FF->DelTFld(field_d, record);
 				}
@@ -1720,7 +1720,7 @@ LongStr* RunLongStr(FileD* file_d, FrmlElem* X, void* record)
 			break;
 		}
 		case _gettxt: {
-			result = GetTxt(file_d, X, record);
+			result = GetTxt(file_d, static_cast<FrmlElem16*>(X), record);
 			break;
 		}
 		case _nodiakr: {
@@ -1909,7 +1909,7 @@ label1:
 		break;
 	}
 	case _gettxt: {
-		LongStr* s = GetTxt(file_d, X, record);
+		LongStr* s = GetTxt(file_d, static_cast<FrmlElem16*>(X), record);
 		result = std::string(s->A, s->LL);
 		delete s;
 		break;

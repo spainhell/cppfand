@@ -269,15 +269,16 @@ class Instr_getindex : public Instr
 {
 public:
 	Instr_getindex();
-	LocVar* giLV = nullptr; char giMode = '\0'; /*+,-,blank*/
-	FrmlElem* giCond = nullptr; /* || RecNr-Frml */
-	XKey* giKD = nullptr;
-	KeyFldD* giKFlds = nullptr;
-	KeyInD* giKIRoot = nullptr;
-	bool giSQLFilter = false;
-	char giOwnerTyp = '\0';
-	LinkD* giLD = nullptr;
-	LocVar* giLV2 = nullptr;
+	LocVar* loc_var1 = nullptr;
+	char mode = '\0'; /*+,-,blank*/
+	FrmlElem* condition = nullptr; /* || RecNr-Frml */
+	XKey* keys = nullptr;
+	KeyFldD* key_fields = nullptr;
+	KeyInD* key_in_root = nullptr;
+	bool sql_filter = false;
+	char owner_type = '\0';
+	LinkD* link = nullptr;
+	LocVar* loc_var2 = nullptr;
 };
 
 class Instr_window : public Instr

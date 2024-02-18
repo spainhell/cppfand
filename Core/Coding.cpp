@@ -73,6 +73,7 @@ bool Coding::HasPassword(FileD* file_d, WORD nr, std::string passwd)
 std::string Coding::XDecode(const std::string& coded_input)
 {
 	std::string output;
+	output.reserve(coded_input.length());
 
 	// get last two characters (first byte in the string is lower!):
 	WORD offset = static_cast<WORD>(static_cast<BYTE>(coded_input[coded_input.length() - 1]) << 8);
@@ -96,7 +97,7 @@ std::string Coding::XDecode(const std::string& coded_input)
 			salt = static_cast<WORD>(0xFF00) + static_cast<BYTE>(coded_input[index++]);
 		}
 		else if ((salt & 0b0000000000000001) != 0) {
-			// this is probably compression
+			// a compression - repeat already decoded characters
 			const BYTE repeats = coded_input[index++];
 			offset = static_cast<BYTE>(coded_input[index++]);
 			offset += static_cast<WORD>(static_cast<BYTE>(coded_input[index++]) << 8);

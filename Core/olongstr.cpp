@@ -4,23 +4,23 @@
 #include "oaccess.h"
 #include "../fandio/FandTFile.h"
 
-void GetTxtPrepare(FileD* file_d, FrmlElem* Z, HANDLE* h, int& off, int& len, void* record)
+void GetTxtPrepare(FileD* file_d, FrmlElem16* Z, HANDLE* h, int& off, int& len, void* record)
 {
 	auto iZ = (FrmlElem16*)Z;
 	int l = 0;
 	off = 0;
-	if (iZ->PPPPPP1 != nullptr) { 
+	if (iZ->PPPPPP1 != nullptr) {
 		off = RunInt(file_d, iZ->PPPPPP1, record) - 1;
-		if (off < 0) off = 0; 
+		if (off < 0) off = 0;
 	}
 	SetTxtPathVol(iZ->TxtPath, iZ->TxtCatIRec);
 	TestMountVol(CPath[1]);
 	*h = OpenH(CPath, _isOldFile, RdOnly);
 	if (HandleError != 0) {
 		if (HandleError == 2) {
-			*h = nullptr; 
-			len = 0; 
-			return; 
+			*h = nullptr;
+			len = 0;
+			return;
 		}
 		TestCPathError();
 	}
@@ -36,7 +36,7 @@ void GetTxtPrepare(FileD* file_d, FrmlElem* Z, HANDLE* h, int& off, int& len, vo
 	SeekH(*h, off);
 }
 
-LongStr* GetTxt(FileD* file_d, FrmlElem* Z, void* record)
+LongStr* GetTxt(FileD* file_d, FrmlElem16* Z, void* record)
 {
 	HANDLE h = nullptr;
 	int len = 0, off = 0;
@@ -45,7 +45,7 @@ LongStr* GetTxt(FileD* file_d, FrmlElem* Z, void* record)
 	GetTxtPrepare(file_d, Z, &h, off, len, record);
 
 	if (len > MaxLStrLen) {
-		len = MaxLStrLen; 
+		len = MaxLStrLen;
 		LastExitCode = 1;
 	}
 	s = new LongStr(len);
@@ -56,15 +56,15 @@ LongStr* GetTxt(FileD* file_d, FrmlElem* Z, void* record)
 	return s;
 }
 
-int CopyTFFromGetTxt(FileD* file_d, FandTFile* TF, FrmlElem* Z, void* record)
+int CopyTFFromGetTxt(FileD* file_d, FandTFile* TF, FrmlElem16* Z, void* record)
 {
-	LockMode md; 
-	int len = 0, off = 0, pos = 0, nxtpos = 0; 
+	LockMode md;
+	int len = 0, off = 0, pos = 0, nxtpos = 0;
 	HANDLE h = nullptr;
-	WORD n = 0, l = 0, i = 0; 
+	WORD n = 0, l = 0, i = 0;
 	short rest = 0;
 	BYTE X[MPageSize + 1]{ 0 };
-	WORD* ll = (WORD*)X; 
+	WORD* ll = (WORD*)X;
 	bool continued = false;
 	int result = 0;
 
@@ -88,7 +88,7 @@ int CopyTFFromGetTxt(FileD* file_d, FandTFile* TF, FrmlElem* Z, void* record)
 		}
 		if (l + 4 >= rest) TF->FreePart = TF->NewPage(false);
 		else {
-			TF->FreePart += l + 2; 
+			TF->FreePart += l + 2;
 			rest = l + 4 - rest;
 			RdWrCache(WRITE, TF->Handle, TF->NotCached(), TF->FreePart, 2, &rest);
 		}
@@ -137,11 +137,8 @@ label4:
 
 int CopyTFString(FileD* file_d, FandTFile* destT00File, FileD* srcFileDescr, FandTFile* scrT00File, int srcT00Pos)
 {
-	//if (destT00File == scrT00File) {
-	//	throw std::exception("CopyTFString() exception: Source and destination file is same.");
-	//}
-	CFile = file_d;
-	FileD* origCFile = nullptr;
+	// TODO: CFile variable has been removed without testing,
+	// TODO: also label2, label3 have been removed without testing
 	WORD l = 0;
 	short rest = 0;
 	bool isLongTxt = false, frst = false;
@@ -155,23 +152,27 @@ int CopyTFString(FileD* file_d, FandTFile* destT00File, FileD* srcFileDescr, Fan
 	label0:
 		return 0; /*Mark****/
 	}
-	origCFile = CFile;
+
 	if (!destT00File->IsWork) md = file_d->NewLockMode(WrMode);
-	CFile = srcFileDescr;
 	if (!scrT00File->IsWork) md2 = srcFileDescr->NewLockMode(RdMode);
 	RdWrCache(READ, scrT00File->Handle, scrT00File->NotCached(), srcT00Pos, 2, &l);
 	if (l <= MPageSize - 2) { /* short text */
-		if (l == 0) goto label0; /*Mark****/
+		if (l == 0) {
+			goto label0; /*Mark****/
+		}
 		RdWrCache(READ, scrT00File->Handle, scrT00File->NotCached(), srcT00Pos + 2, l, X);
-		CFile = origCFile;
 		rest = MPageSize - destT00File->FreePart % MPageSize;
-		if (l + 2 <= rest) pos = destT00File->FreePart;
+		if (l + 2 <= rest) {
+			pos = destT00File->FreePart;
+		}
 		else {
 			pos = destT00File->NewPage(false);
 			destT00File->FreePart = pos;
 			rest = MPageSize;
 		}
-		if (l + 4 >= rest) destT00File->FreePart = destT00File->NewPage(false);
+		if (l + 4 >= rest) {
+			destT00File->FreePart = destT00File->NewPage(false);
+		}
 		else {
 			destT00File->FreePart += l + 2;
 			rest = l + 4 - rest;
@@ -183,13 +184,16 @@ int CopyTFString(FileD* file_d, FandTFile* destT00File, FileD* srcFileDescr, Fan
 		goto label4;
 	}
 	if ((srcT00Pos % MPageSize) != 0) {
-		goto label2;
+		scrT00File->Err(889, false);
+		result = 0;
+		goto label4;
 	}
+
 	RdWrCache(READ, scrT00File->Handle, scrT00File->NotCached(), srcT00Pos, MPageSize, X);
 	frst = true;
+
 label1:
 	if (l > MaxLStrLen + 1) {
-	label2:
 		scrT00File->Err(889, false);
 		result = 0;
 		goto label4;
@@ -197,34 +201,37 @@ label1:
 	isLongTxt = (l == MaxLStrLen + 1);
 	if (isLongTxt) l--;
 	l += 2;
-label3:
-	CFile = origCFile;
-	if (frst) {
-		pos = destT00File->NewPage(false);
-		result = pos;
-		frst = false;
-	}
-	if ((l > MPageSize) || isLongTxt) {
-		srcT00Pos = *(int*)&X[MPageSize - 4];
-		nxtpos = destT00File->NewPage(false);
-		*(int*)&X[MPageSize - 4] = nxtpos;
-		RdWrCache(WRITE, destT00File->Handle, destT00File->NotCached(), pos, MPageSize, X);
-		pos = nxtpos;
-		CFile = srcFileDescr;
-		if ((srcT00Pos < MPageSize) || (srcT00Pos + MPageSize > scrT00File->MLen) || (srcT00Pos % MPageSize != 0)) {
-			scrT00File->Err(888, false);
-			result = 0;
-			goto label4;
+
+	while (true) {
+		if (frst) {
+			pos = destT00File->NewPage(false);
+			result = pos;
+			frst = false;
 		}
-		RdWrCache(READ, scrT00File->Handle, scrT00File->NotCached(), srcT00Pos, MPageSize, X);
-		if ((l <= MPageSize)) {
-			l = *ll;
-			goto label1;
+		if ((l > MPageSize) || isLongTxt) {
+			srcT00Pos = *(int*)&X[MPageSize - 4];
+			nxtpos = destT00File->NewPage(false);
+			*(int*)&X[MPageSize - 4] = nxtpos;
+			RdWrCache(WRITE, destT00File->Handle, destT00File->NotCached(), pos, MPageSize, X);
+			pos = nxtpos;
+			if ((srcT00Pos < MPageSize) || (srcT00Pos + MPageSize > scrT00File->MLen) || (srcT00Pos % MPageSize != 0)) {
+				scrT00File->Err(888, false);
+				result = 0;
+				goto label4;
+			}
+			RdWrCache(READ, scrT00File->Handle, scrT00File->NotCached(), srcT00Pos, MPageSize, X);
+			if ((l <= MPageSize)) {
+				l = *ll;
+				goto label1;
+			}
+			l -= MPageSize - 4;
+			continue;
 		}
-		l -= MPageSize - 4;
-		goto label3;
+		break;
 	}
+
 	RdWrCache(WRITE, destT00File->Handle, destT00File->NotCached(), pos, MPageSize, X);
+
 label4:
 	if (!scrT00File->IsWork) srcFileDescr->OldLockMode(md2);
 	if (!destT00File->IsWork) file_d->OldLockMode(md);

@@ -2153,40 +2153,40 @@ Instr* RdGetIndex()
 	auto PD = new Instr_getindex(); // GetPD(_getindex, 31);
 	RdLex();
 	LocVar* lv = RdIdxVar();
-	PD->giLV = lv; Accept(',');
-	PD->giMode = ' ';
+	PD->loc_var1 = lv; Accept(',');
+	PD->mode = ' ';
 	if (Lexem == '+' || Lexem == '-') {
-		PD->giMode = Lexem;
+		PD->mode = Lexem;
 		RdLex();
 		Accept(',');
-		PD->giCond = RdRealFrml(nullptr); /*RecNr*/
+		PD->condition = RdRealFrml(nullptr); /*RecNr*/
 		return PD;
 	}
 	CFile = RdFileName();
 	if (lv->FD != CFile) OldError(164);
 	CViewKey = RdViewKey();
-	PD->giKD = CViewKey;
+	PD->keys = CViewKey;
 	while (Lexem == ',') {
 		RdLex();
 		if (IsOpt("SORT")) {
 			if (((XWKey*)lv->RecPtr)->KFlds != nullptr) OldError(175);
 			Accept('(');
-			RdKFList(&PD->giKFlds, CFile);
+			RdKFList(&PD->key_fields, CFile);
 			Accept(')');
 		}
 		else if (IsOpt("COND")) {
 			Accept('(');
-			PD->giCond = RdKeyInBool(&PD->giKIRoot, false, true, PD->giSQLFilter, nullptr);
+			PD->condition = RdKeyInBool(&PD->key_in_root, false, true, PD->sql_filter, nullptr);
 			Accept(')');
 		}
 		else if (IsOpt("OWNER")) {
-			PD->giOwnerTyp = RdOwner(&PD->giLD, &PD->giLV2);
-			XKey* k = GetFromKey(PD->giLD);
-			if (CViewKey == nullptr) PD->giKD = k;
+			PD->owner_type = RdOwner(&PD->link, &PD->loc_var2);
+			XKey* k = GetFromKey(PD->link);
+			if (CViewKey == nullptr) PD->keys = k;
 			else if (CViewKey != k) OldError(178);
 		}
 		else Error(167);
-		if ((PD->giOwnerTyp != 0) && (PD->giSQLFilter || (PD->giKIRoot != nullptr)))
+		if ((PD->owner_type != 0) && (PD->sql_filter || (PD->key_in_root != nullptr)))
 			Error(179);
 	}
 	return PD;
