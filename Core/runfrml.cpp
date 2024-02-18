@@ -221,7 +221,8 @@ double RunRealStr(FileD* file_d, FrmlElem* X, void* record)
 	case _diskfree: {
 		auto iX = (FrmlElemFunction*)X;
 		std::string s = RunStdStr(file_d, iX->P1, record);
-		result = DiskFree(toupper(s[0]) - '@');
+		DWORD error;
+		result = GetDiskFree(toupper(s[0]) - '@', error);
 		break;
 	}
 #ifdef FandSQL

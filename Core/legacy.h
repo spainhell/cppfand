@@ -68,9 +68,6 @@ std::string GetEnv(const char* name);
 
 WORD IOResult();
 WORD DosError();
-double DiskFree(char disk);
-
-//typedef void* HANDLE;
 
 class TextFile
 {

@@ -75,3 +75,8 @@ long GetFileAttr(const std::string& path, DWORD& error);
  *
  */
 bool SetFileAttr(const std::string& path, DWORD& error, long attributes);
+
+/**
+ *
+ */
+long GetDiskFree(char drive, DWORD& error);

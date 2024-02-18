@@ -174,3 +174,23 @@ bool SetFileAttr(const std::string& path, DWORD& error, long attributes)
 		return true;
 	}
 }
+
+long GetDiskFree(char drive, DWORD& error)
+{
+	long free_mb = -1;
+	ULARGE_INTEGER freeBytes;
+	bool result = GetDiskFreeSpaceEx(
+		(std::string(1, drive) + ":\\").c_str(),
+		&freeBytes,
+		NULL,
+		NULL
+	);
+	if (result) {
+		error = 0;
+		free_mb = static_cast<long>(freeBytes.QuadPart / (1024 * 1024));
+	}
+	else {
+		error = GetLastError();
+	}
+	return free_mb;
+}

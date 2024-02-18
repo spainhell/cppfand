@@ -401,8 +401,7 @@ std::string GetEnv(const char* name)
 	std::string result;
 	size_t requiredSize = 0;
 	getenv_s(&requiredSize, NULL, 0, name);
-	if (requiredSize == 0)
-	{
+	if (requiredSize == 0) {
 		result = "";
 	}
 	else {
@@ -421,11 +420,6 @@ WORD IOResult()
 WORD DosError()
 {
 	return 0;
-}
-
-double DiskFree(char disk)
-{
-	return 1000000000.0;
 }
 
 TextFile::~TextFile()

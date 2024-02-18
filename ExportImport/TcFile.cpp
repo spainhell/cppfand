@@ -1,6 +1,7 @@
 #include "TcFile.h"
 #include "../Core/legacy.h"
 #include "../Core/base.h"
+#include "../Drivers/files.h"
 
 
 TcFile::TcFile(BYTE aCompress)
@@ -29,8 +30,13 @@ TcFile::~TcFile()
 
 int TcFile::MyDiskFree(bool Floppy, BYTE Drive)
 {
-	if (spec.WithDiskFree || Floppy) return DiskFree(Drive);
-	return 0x7fffffff;
+	if (spec.WithDiskFree || Floppy) {
+		DWORD error;
+		return GetDiskFree(Drive, error);
+	}
+	else {
+		return 0x7fffffff;
+	}
 }
 
 void TcFile::InsertNode(short r)
