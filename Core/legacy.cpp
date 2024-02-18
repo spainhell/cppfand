@@ -194,51 +194,6 @@ WORD succ(WORD input)
 	return input + 1;
 }
 
-void FSplit(pstring fullname, pstring& dir, pstring& name, pstring& ext)
-{
-	std::string s = fullname;
-	size_t foundBackslash = s.find_last_of("/\\");
-	dir = s.substr(0, foundBackslash + 1);
-
-	if (foundBackslash < s.length() - 1) // ještě nejsme na konci -> existuje název nebo název s příponou
-	{
-		std::string filename = s.substr(foundBackslash + 1);
-		
-		size_t foundDot = filename.find_last_of('.');
-		if (foundDot < filename.length()) // přípona existuje
-		{
-			name = filename.substr(0, foundDot);
-			ext = filename.substr(foundDot);
-		}
-		else
-		{
-			name = filename;
-			ext = "";
-		}
-	}
-	else
-	{	
-		if (foundBackslash != std::string::npos) {
-			// lomitko je na konci, existuje jen adresar
-			name = ""; ext = "";
-			return;
-		}
-
-		// lomitko nebylo nalezeno, bude exitovat jen nazev a mozna pripona
-		size_t foundDot = s.find_last_of('.');
-		if (foundDot < s.length()) // pripona existuje
-		{
-			name = s.substr(0, foundDot);
-			ext = s.substr(foundDot);
-		}
-		else
-		{ // přípona neexistuje, celé je to název souboru
-			name = s;
-			ext = "";
-		}
-	}
-}
-
 void FSplit(const std::string& fullname, std::string& dir, std::string& name, std::string& ext, char pathDelim)
 {
 	std::filesystem::path pth = fullname;
