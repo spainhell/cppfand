@@ -296,17 +296,6 @@ std::string FandFile::loadS(FieldDescr* field_d, void* record)
 	return S;
 }
 
-LongStr* FandFile::loadLongS(FieldDescr* field_d, void* record)
-{
-	std::string s = loadS(field_d, record);
-
-	LongStr* result = new LongStr(s.length());
-	result->LL = s.length();
-	memcpy(result->A, s.c_str(), s.length());
-
-	return result;
-}
-
 int FandFile::loadT(FieldDescr* F, void* record)
 {
 	int n = 0;

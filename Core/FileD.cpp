@@ -265,7 +265,13 @@ std::string FileD::loadS(FieldDescr* field_d, void* record)
 
 LongStr* FileD::loadLongS(FieldDescr* field_d, void* record)
 {
-	return FF->loadLongS(field_d, record);
+	std::string s = loadS(field_d, record);
+
+	LongStr* result = new LongStr(s.length());
+	result->LL = s.length();
+	memcpy(result->A, s.c_str(), s.length());
+
+	return result;
 }
 
 int FileD::loadT(FieldDescr* field_d, void* record)
@@ -477,9 +483,8 @@ void FileD::CopyRecWithT(void* record1, void* record2, bool delTFields)
 			FandTFile* tf1 = FF->TF;
 			FandTFile* tf2 = tf1;
 			if ((tf1->Format != FandTFile::T00Format)) {
-				LongStr* s = loadLongS(F, record1);
-				saveLongS(F, s, record2);
-				delete s; s = nullptr;
+				std::string s = loadS(F, record1);
+				saveS(F, s, record2);
 			}
 			else {
 				if (HasTWorkFlag(record1)) {
