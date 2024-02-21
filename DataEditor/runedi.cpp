@@ -1086,7 +1086,7 @@ void DuplFld(FileD* file_d1, FileD* file_d2, void* record1, void* record2, void*
 			delete ss; ss = nullptr;
 		}
 		else {
-			s = file_d1->loadOldS(field_d1, record1);
+			s = file_d1->loadS(field_d1, record1);
 			file_d2->saveS(field_d2, s, record2);
 		}
 		break;
@@ -2849,7 +2849,7 @@ bool PromptSearch(bool create)
 			FieldDescr* F2 = KF2->FldD;
 			switch (F->frml_type) {
 			case 'S': {
-				s = CFile->loadOldS(F2, CRecPtr);
+				s = CFile->loadS(F2, CRecPtr);
 				x.StoreStr(s, KF);
 				CFile = FD;
 				CRecPtr = RP;
@@ -2939,7 +2939,7 @@ bool PromptSearch(bool create)
 				found = GotoXRec(&x, n);
 				if ((pos == 0) && (F->frml_type == 'S')) {
 					x = x_old;
-					x.StoreStr(CFile->loadOldS(F, CRecPtr), KF);
+					x.StoreStr(CFile->loadS(F, CRecPtr), KF);
 				}
 				CRecPtr = RP;
 				if (pos != 0) {
@@ -3419,7 +3419,7 @@ bool GetChpt(pstring Heslo, int& NN)
 	for (int j = 1; j <= CFile->FF->NRecs; j++) {
 		CFile->ReadRec(j, CRecPtr);
 		if (IsCurrChpt()) {
-			s = OldTrailChar(' ', CFile->loadOldS(ChptName, CRecPtr));
+			s = OldTrailChar(' ', CFile->loadS(ChptName, CRecPtr));
 			short i = s.first('.');
 			if (i > 0) s.Delete(i, 255);
 			if (EquUpCase(Heslo, s)) {
@@ -3428,7 +3428,7 @@ bool GetChpt(pstring Heslo, int& NN)
 			}
 		}
 		else {
-			s = OldTrailChar(' ', CFile->loadOldS(CFile->FldD.front(), CRecPtr));
+			s = OldTrailChar(' ', CFile->loadS(CFile->FldD.front(), CRecPtr));
 			ConvToNoDiakr((WORD*)s[1], s.length(), fonts.VFont);
 			if (EqualsMask(&Heslo[1], Heslo.length(), s)) {
 				NN = j;
@@ -3663,7 +3663,7 @@ label2:
 		goto label4;
 		break; }
 	case __ALT_F1: {
-		heslo = CFile->loadOldS(ChptTyp, CRecPtr);
+		heslo = CFile->loadS(ChptTyp, CRecPtr);
 	label3:
 		Help((RdbD*)&HelpFD, heslo, false);
 		goto label4;

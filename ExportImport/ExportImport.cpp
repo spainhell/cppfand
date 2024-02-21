@@ -311,7 +311,7 @@ void ExportTxt(CopyD* CD)
 			int n = 0;
 			BYTE* rec = nullptr;
 			LinkLastRec(CD->HdFD, n, true, &rec);
-			pstring s = CFile->loadOldS(CD->HdF, rec);
+			pstring s = CFile->loadS(CD->HdF, rec);
 			int i = s.first('\r');
 			if (i > 0) s[0] = i - 1;
 			F2->WrString(s);

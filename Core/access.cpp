@@ -166,7 +166,7 @@ bool LinkUpw(FileD* file_d, LinkD* LD, int& N, bool WithT, void* record, BYTE** 
 			if ((F2->Flg & f_Stored) != 0)
 				switch (F->frml_type) {
 				case 'S': {
-					x.S = file_d->loadOldS(F, record);
+					x.S = file_d->loadS(F, record);
 					ToFD->saveS(F2, x.S, *newRecord);
 					break;
 				}
@@ -296,7 +296,9 @@ std::string CExtToX(const std::string dir, const std::string name, std::string e
 
 std::string CExtToT(const std::string& dir, const std::string& name, std::string ext)
 {
-	if (EquUpCase(ext, ".RDB")) ext = ".TTT";
+	if (EquUpCase(ext, ".RDB")) {
+		ext = ".TTT";
+	}
 	else if (EquUpCase(ext, ".DBF")) {
 		if (CFile->FF->TF->Format == FandTFile::FptFormat) {
 			ext = ".FPT";
@@ -305,6 +307,8 @@ std::string CExtToT(const std::string& dir, const std::string& name, std::string
 			ext = ".DBT";
 		}
 	}
-	else ext[1] = 'T';
+	else {
+		ext[1] = 'T';
+	}
 	return dir + name + ext;
 }

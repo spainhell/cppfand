@@ -69,7 +69,6 @@ public:
 	bool loadB(FieldDescr* field_d, void* record);
 	double loadR(FieldDescr* field_d, void* record);
 	std::string loadS(FieldDescr* field_d, void* record);
-	pstring loadOldS(FieldDescr* field_d, void* record);
 	LongStr* loadLongS(FieldDescr* field_d, void* record);
 	int loadT(FieldDescr* F, void* record);
 

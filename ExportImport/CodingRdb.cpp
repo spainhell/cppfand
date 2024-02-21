@@ -29,8 +29,8 @@ void CodingRdb::CodeRdb(bool Rotate)
 	for (int i = 1; i <= CFile->FF->NRecs; i++) {
 		CFile->ReadRec(i, CRecPtr);
 		RunMsgN(i);
-		s = CFile->loadOldS(ChptTyp, CRecPtr);
-		SetMsgPar(CFile->loadOldS(ChptName, CRecPtr));
+		s = CFile->loadS(ChptTyp, CRecPtr);
+		SetMsgPar(CFile->loadS(ChptName, CRecPtr));
 		if (Rotate && (s[0] == ' ' || s[0] == 'I')) {}
 		else {
 			CodeF(Rotate, i, ChptTxt, s[0]);
@@ -42,9 +42,13 @@ void CodingRdb::CodeRdb(bool Rotate)
 		int i = 1;
 		while (i <= CFile->FF->NRecs) {
 			CFile->ReadRec(i, CRecPtr);
-			s = CFile->loadOldS(ChptTyp, CRecPtr);
-			if (s[0] == ' ' || s[0] == 'I') CFile->DeleteRec(i, CRecPtr);
-			else i++;
+			s = CFile->loadS(ChptTyp, CRecPtr);
+			if (s[0] == ' ' || s[0] == 'I') {
+				CFile->DeleteRec(i, CRecPtr);
+			}
+			else {
+				i++;
+			}
 		}
 	}
 	RunMsgOff();

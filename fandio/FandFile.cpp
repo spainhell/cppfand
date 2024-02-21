@@ -296,52 +296,6 @@ std::string FandFile::loadS(FieldDescr* field_d, void* record)
 	return S;
 }
 
-pstring FandFile::loadOldS(FieldDescr* field_d, void* record)
-{
-	char* source = (char*)record + field_d->Displ;
-	pstring S;
-	WORD l = field_d->L;
-	S[0] = l;
-	switch (field_d->field_type) {
-	case FieldType::ALFANUM:   	  // znakovy retezec max. 255 znaku
-	case FieldType::NUMERIC: {	  // ciselny retezec max. 79 znaku
-		if (field_d->field_type == FieldType::ALFANUM) {
-			Move(source, &S[1], l);
-			if ((field_d->Flg & f_Encryp) != 0) Coding::Code(&S[1], l);
-			if (S[1] == '\0') memset(&S[1], ' ', l);
-		}
-		else if (is_null_value(source, field_d->NBytes)) {
-			FillChar(&S[0], l, ' ');
-		}
-		else {
-			for (size_t i = 0; i < l; i++) {
-				// kolikaty byte?
-				size_t iB = i / 2;
-				// leva nebo prava cislice?
-				if (i % 2 == 0) {
-					S[i + 1] = ((unsigned char)source[iB] >> 4) + 0x30;
-				}
-				else {
-					S[i + 1] = (source[iB] & 0x0F) + 0x30;
-				}
-			}
-		}
-		break;
-	}
-	case FieldType::TEXT: {		// volny text max. 65k
-		LongStr* ss = loadLongS(field_d, record);
-		if (ss->LL > 255) S = S.substr(0, 255);
-		else S = S.substr(0, ss->LL);
-		Move(&ss[0], &S[0], S.length());
-		delete ss; ss = nullptr;
-		break;
-	}
-	default:
-		break;
-	}
-	return S;
-}
-
 LongStr* FandFile::loadLongS(FieldDescr* field_d, void* record)
 {
 	std::string s = loadS(field_d, record);

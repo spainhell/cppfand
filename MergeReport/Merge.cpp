@@ -709,11 +709,11 @@ void Merge::SetOldMFlds(KeyFldD* M)
 	FieldDescr* F = nullptr;
 	OldMXStr.Clear();
 	//C = OldMFlds;
-	for (auto& C : OldMFlds) { //while (C != nullptr) {
+	for (ConstListEl& C : OldMFlds) {
 		F = M->FldD;
 		switch (F->frml_type) {
 		case 'S': {
-			C.S = CFile->loadOldS(F, CRecPtr);
+			C.S = CFile->loadS(F, CRecPtr);
 			OldMXStr.StoreStr(C.S, M);
 			break;
 		}

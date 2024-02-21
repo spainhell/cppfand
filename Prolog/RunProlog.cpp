@@ -1589,7 +1589,7 @@ void RetractDbEntry(TInstance* Q, TPredicate* P, TDbBranch* B)
 	TDbBranch* b1 = P->dbBranch;
 label1:
 	if (b1->pChain != nullptr)
-		if (b1->pChain = B) {
+		if (b1->pChain == B) {
 			b1->pChain = B->pChain;
 			while ((Q != nullptr)) {
 				if (Q->NextBranch == (void*)B) Q->NextBranch = (TBranch*)B->pChain;
@@ -2024,10 +2024,14 @@ label1:
 std::string _MyS(FieldDescr* F)
 {
 	if (F->field_type == FieldType::ALFANUM) {
-		if (F->M == LeftJust) return OldTrailChar(' ', CFile->loadOldS(F, CRecPtr));
-		else return LeadChar(' ', CFile->loadOldS(F, CRecPtr));
+		if (F->M == LeftJust) {
+			return OldTrailChar(' ', CFile->loadS(F, CRecPtr));
+		}
+		else {
+			return LeadChar(' ', CFile->loadS(F, CRecPtr));
+		}
 	}
-	return CFile->loadOldS(F, CRecPtr);
+	return CFile->loadS(F, CRecPtr);
 }
 
 bool ScanFile(TInstance* Q)

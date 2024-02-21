@@ -250,7 +250,7 @@ bool IsDuplFileName(std::string name)
 		for (int i = 1; i <= Chpt->FF->NRecs; i++) {
 			if (i != CRec()) {
 				CFile->ReadRec(i, record);
-				if (CFile->loadOldS(ChptTyp, record) == 'F') {
+				if (CFile->loadS(ChptTyp, record) == "F") {
 					GetSplitChapterName(CFile, record, n, e);
 					if (EquUpCase(name, n)) {
 						result = true;
@@ -716,9 +716,11 @@ void GoCompileErr(WORD IRec, WORD N)
 
 FileD* FindFD()
 {
-	FileD* FD = nullptr; std::string FName; std::string d;
-	std::string name; std::string ext;
-	FName = OldTrailChar(' ', CFile->loadOldS(ChptName, CRecPtr));
+	FileD* FD = nullptr;
+	std::string d;
+	std::string name;
+	std::string ext;
+	std::string FName = OldTrailChar(' ', CFile->loadS(ChptName, CRecPtr));
 	FSplit(FName, d, name, ext);
 	FD = FileDRoot;
 	while (FD != nullptr) {
@@ -771,7 +773,7 @@ bool CompRunChptRec(WORD CC)
 		mv = MausVisible;
 
 		FD = nullptr;
-		STyp = CFile->loadOldS(ChptTyp, CRecPtr);
+		STyp = CFile->loadS(ChptTyp, CRecPtr);
 		RP.R = CRdb;
 		RP.IRec = CRec();
 #ifdef FandSQL
@@ -1229,7 +1231,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 	CHAR_INFO Buf[40];
 	int w = 0;
 	int I = 0, J = 0, OldTxt = 0, Txt = 0, OldCRec = 0;
-	pstring STyp(1);
+	std::string STyp;
 	char Typ = '\0';
 	std::string Name, dir, nm, ext;
 	bool Verif = false, FDCompiled = false, Encryp = false;
@@ -1263,9 +1265,9 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 			CFile->ReadRec(I, CRecPtr);
 			RP.IRec = I;
 			Verif = CFile->loadB(ChptVerif, CRecPtr);
-			STyp = CFile->loadOldS(ChptTyp, CRecPtr);
-			Typ = STyp[1];
-			Name = OldTrailChar(' ', CFile->loadOldS(ChptName, CRecPtr));
+			STyp = CFile->loadS(ChptTyp, CRecPtr);
+			Typ = STyp[0];
+			Name = OldTrailChar(' ', CFile->loadS(ChptName, CRecPtr));
 			Txt = CFile->loadT(ChptTxt, CRecPtr);
 			if (Verif && ((ChptTF->LicenseNr != 0) || Encryp || (Chpt->FF->UMode == RdOnly))) GoCompileErr(I, 647);
 			if (Verif || ChptTF->CompileAll || FromCtrlF10 || (Typ == 'U') ||
@@ -1278,12 +1280,12 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 					screen.GotoXY(3 + lmsg, 2);
 					printf("%*i", 4, I);
 					screen.GotoXY(3 + lmsg, 3);
-					printf("%*s%*s", 4, STyp.c_str(), 14, CFile->loadOldS(ChptName, CRecPtr).c_str());
+					printf("%*s%*s", 4, STyp.c_str(), 14, CFile->loadS(ChptName, CRecPtr).c_str());
 					if (!(Typ == ' ' || Typ == 'D' || Typ == 'U')) { /* dupclicate name checking */
 						for (J = 1; J <= I - 1; J++) {
 							CFile->ReadRec(J, CRecPtr);
-							if ((STyp == CFile->loadOldS(ChptTyp, CRecPtr))
-								&& EquUpCase(Name, OldTrailChar(' ', CFile->loadOldS(ChptName, CRecPtr)))) {
+							if ((STyp == CFile->loadS(ChptTyp, CRecPtr))
+								&& EquUpCase(Name, OldTrailChar(' ', CFile->loadS(ChptName, CRecPtr)))) {
 								GoCompileErr(I, 649);
 							}
 						}
@@ -1697,7 +1699,7 @@ void UpdateUTxt()
 		return;
 	}
 	CFile->ReadRec(1, CRecPtr);
-	if (CFile->loadOldS(ChptTyp, CRecPtr) != 'U') {
+	if (CFile->loadS(ChptTyp, CRecPtr) != "U") {
 		WrLLF10Msg(9);
 		return;
 	}

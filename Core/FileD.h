@@ -69,13 +69,12 @@ public:
 	bool loadB(FieldDescr* field_d, void* record);
 	double loadR(FieldDescr* field_d, void* record);
 	std::string loadS(FieldDescr* field_d, void* record);
-	pstring loadOldS(FieldDescr* field_d, void* record);
 	LongStr* loadLongS(FieldDescr* field_d, void* record);
 	int loadT(FieldDescr* field_d, void* record); // pozice textu v .T00 souboru (ukazatel na zacatek textu)
 
 	void saveB(FieldDescr* field_d, bool b, void* record);
 	void saveR(FieldDescr* field_d, double r, void* record);
-	void saveS(FieldDescr* field_d, std::string s, void* record);
+	void saveS(FieldDescr* field_d, const std::string& s, void* record);
 	void saveLongS(FieldDescr* field_d, LongStr* ls, void* record);
 	int saveT(FieldDescr* field_d, int pos, void* record);
 

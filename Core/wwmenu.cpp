@@ -984,7 +984,7 @@ label1:
 	}
 	for (i = 1; i <= CFile->FF->NRecs; i++) {
 		CFile->ReadRec(i, CRecPtr);
-		Nm = OldTrailChar(' ', CFile->loadOldS(NmF, CRecPtr));
+		Nm = OldTrailChar(' ', CFile->loadS(NmF, CRecPtr));
 		if (CFile == HelpFD) fo = TVideoFont::foKamen;
 		else fo = fonts.VFont;
 		ConvToNoDiakr(&Nm[0], Nm.length(), fo);

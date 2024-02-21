@@ -1784,7 +1784,7 @@ void Report::PutMFlds(KeyFldD* M)
 		CRecPtr = cr1;
 		switch (f->frml_type) {
 		case 'S': {
-				pstring s = CFile->loadOldS(f1, CRecPtr);
+				std::string s = CFile->loadS(f1, CRecPtr);
 				CFile = cf; CRecPtr = cr;
 				CFile->saveS(f, s, CRecPtr);
 				break;

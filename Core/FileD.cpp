@@ -263,18 +263,6 @@ std::string FileD::loadS(FieldDescr* field_d, void* record)
 	return result;
 }
 
-pstring FileD::loadOldS(FieldDescr* field_d, void* record)
-{
-	pstring s;
-	if ((field_d->Flg & f_Stored) != 0) {
-		s = FF->loadOldS(field_d, record);
-	}
-	else {
-		s = RunShortStr(this, field_d->Frml, record);
-	}
-	return s;
-}
-
 LongStr* FileD::loadLongS(FieldDescr* field_d, void* record)
 {
 	return FF->loadLongS(field_d, record);
@@ -295,7 +283,7 @@ void FileD::saveR(FieldDescr* field_d, double r, void* record)
 	FF->saveR(field_d, r, record);
 }
 
-void FileD::saveS(FieldDescr* field_d, std::string s, void* record)
+void FileD::saveS(FieldDescr* field_d, const std::string& s, void* record)
 {
 	FF->saveS(this, field_d, s, record);
 }
