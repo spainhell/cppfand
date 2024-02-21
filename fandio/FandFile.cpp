@@ -236,20 +236,22 @@ double FandFile::loadR(FieldDescr* field_d, void* record)
 	return result;
 }
 
-std::string FandFile::loadS(FileD* parent, FieldDescr* field_d, void* record)
+std::string FandFile::loadS(FieldDescr* field_d, void* record)
 {
 	char* source = (char*)record + field_d->Displ;
 	std::string S;
-	int Pos = 0; short err = 0;
-	LockMode md; WORD l = 0;
-	l = field_d->L;
+	int pos = 0;
+	LockMode md;
+	WORD l = field_d->L;
 	switch (field_d->field_type)
 	{
 	case FieldType::ALFANUM:		// znakovy retezec max. 255 znaku
 	case FieldType::NUMERIC: {		// ciselny retezec max. 79 znaku
 		if (field_d->field_type == FieldType::ALFANUM) {
 			S = std::string(source, l);
-			if ((field_d->Flg & f_Encryp) != 0) Coding::Code(S);
+			if ((field_d->Flg & f_Encryp) != 0) {
+				Coding::Code(S);
+			}
 			if (!S.empty() && S[0] == '\0') {
 				S = RepeatString(' ', l);
 			}
@@ -262,8 +264,12 @@ std::string FandFile::loadS(FileD* parent, FieldDescr* field_d, void* record)
 			for (BYTE i = 0; i < field_d->L; i++) {
 				bool upper = (i % 2) == 0; // jde o "levou" cislici
 				BYTE j = i / 2;
-				if (upper) { S += ((BYTE)source[j] >> 4) + 0x30; }
-				else { S += ((BYTE)source[j] & 0x0F) + 0x30; }
+				if (upper) {
+					S += ((BYTE)source[j] >> 4) + 0x30;
+				}
+				else {
+					S += ((BYTE)source[j] & 0x0F) + 0x30;
+				}
 			}
 		}
 		break;
@@ -275,11 +281,11 @@ std::string FandFile::loadS(FileD* parent, FieldDescr* field_d, void* record)
 			delete ls;
 		}
 		else {
-			md = parent->NewLockMode(RdMode);
+			md = _parent->NewLockMode(RdMode);
 			LongStr* ls = TF->Read(loadT(field_d, record));
 			S = std::string(ls->A, ls->LL);
 			delete ls;
-			parent->OldLockMode(md);
+			_parent->OldLockMode(md);
 		}
 		if ((field_d->Flg & f_Encryp) != 0) {
 			Coding::Code(S);
@@ -338,7 +344,7 @@ pstring FandFile::loadOldS(FieldDescr* field_d, void* record)
 
 LongStr* FandFile::loadLongS(FieldDescr* field_d, void* record)
 {
-	std::string s = loadS(_parent, field_d, record);
+	std::string s = loadS(field_d, record);
 
 	LongStr* result = new LongStr(s.length());
 	result->LL = s.length();
