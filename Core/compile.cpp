@@ -161,9 +161,13 @@ void SetInpTT(RdbPos* RP, bool FromTxt)
 	LongStr* s = nullptr;
 
 	if (RP->IRec == 0) {
+		std::string run_str = RunStdStr(CFile, (FrmlElem*)RP->R, CRecPtr);
 		// std::string cannot be used here!
 		// it's deleted on the end of this method!
-		SetInpLongStr(RunLongStr(CFile, (FrmlElem*)RP->R, CRecPtr), true);
+		LongStr* run_long_str = new LongStr(run_str.length());
+		run_long_str->LL = run_str.length();
+		memcpy(run_long_str->A, run_str.c_str(), run_long_str->LL);
+		SetInpLongStr(run_long_str, true);
 		return;
 	}
 	InpRdbPos = *RP;

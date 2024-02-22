@@ -608,17 +608,27 @@ void BackUp(bool IsBackup, bool NoCompress, WORD Ir, bool NoCancel)
 
 void BackupM(Instr_backup* PD)
 {
-	LongStr* s = nullptr;
+	std::string s;
 	void* p = nullptr;
 
 	MarkStore(p);
-	if (PD->IsBackup) s = RunLongStr(CFile, PD->bmMasks, CRecPtr);
+	if (PD->IsBackup) {
+		s = RunStdStr(CFile, PD->bmMasks, CRecPtr);
+	}
 	TzFile* F = new TzFile(PD->IsBackup, PD->NoCompress, PD->bmSubDir, PD->bmOverwr,
 		PD->BrCatIRec, RunShortStr(CFile, PD->bmDir, CRecPtr));
 	try {
 		LastExitCode = 1;
-		if (PD->IsBackup) F->Backup(s);
-		else F->Restore();
+		if (PD->IsBackup) {
+			LongStr* x = new LongStr(s.length());
+			x->LL = s.length();
+			memcpy(x->A, s.c_str(), x->LL);
+			F->Backup(x);
+			delete x; x = nullptr;
+		}
+		else {
+			F->Restore();
+		}
 		LastExitCode = 0;
 	}
 	catch (std::exception& e) {

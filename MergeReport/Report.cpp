@@ -1255,14 +1255,13 @@ label1:
 			}
 			else {
 				if (RF->Typ == 'P') {
-					S = RunLongStr(CFile, RF->Frml, CRecPtr);
+					std::string s = RunStdStr(CFile, RF->Frml, CRecPtr);
 					//printf("%s%c", Rprt.c_str(), 0x10);
 					text += 0x10;
-					for (WORD i = 0; i <= S->LL + 1; i++) {
+					for (size_t i = 0; i < s.length(); i++) {
 						//printf("%s%c", Rprt.c_str(), *(char*)(S->A[i]));
-						text += S->A[i];
+						text += s[i];
 					}
-					delete S; S = nullptr;
 					goto label3;
 				}
 				Y.I += 2;
@@ -1736,7 +1735,7 @@ WORD Report::CompMFlds(std::vector<ConstListEl>& C, KeyFldD* M, short& NLv)
 {
 	XString x;
 	NLv = 0;
-	for (ConstListEl& c : C) { 
+	for (ConstListEl& c : C) {
 		NLv++;
 		x.Clear();
 		x.StoreKF(CFile, M, CRecPtr);
@@ -1784,23 +1783,23 @@ void Report::PutMFlds(KeyFldD* M)
 		CRecPtr = cr1;
 		switch (f->frml_type) {
 		case 'S': {
-				std::string s = CFile->loadS(f1, CRecPtr);
-				CFile = cf; CRecPtr = cr;
-				CFile->saveS(f, s, CRecPtr);
-				break;
-			}
+			std::string s = CFile->loadS(f1, CRecPtr);
+			CFile = cf; CRecPtr = cr;
+			CFile->saveS(f, s, CRecPtr);
+			break;
+		}
 		case 'R': {
-				double r = CFile->loadR(f1, CRecPtr);
-				CFile = cf; CRecPtr = cr;
-				CFile->saveR(f, r, CRecPtr);
-				break;
-			}
+			double r = CFile->loadR(f1, CRecPtr);
+			CFile = cf; CRecPtr = cr;
+			CFile->saveR(f, r, CRecPtr);
+			break;
+		}
 		default: {
-				bool b = CFile->loadB(f1, CRecPtr);
-				CFile = cf; CRecPtr = cr;
-				CFile->saveB(f, b, CRecPtr);
-				break;
-			}
+			bool b = CFile->loadB(f1, CRecPtr);
+			CFile = cf; CRecPtr = cr;
+			CFile->saveB(f, b, CRecPtr);
+			break;
+		}
 		}
 		M = M->pChain;
 		m1 = m1->pChain;
@@ -1922,44 +1921,45 @@ void Report::MergeProc(std::string& text)
 	for (short i = 1; i <= MaxIi; i++) {
 		InpD* ID = IDA[i];
 		/* !!! with ID^ do!!! */
-		{ if (ID->Exist) {
-			CFile = ID->Scan->FD;
-			CRecPtr = CFile->FF->RecPtr;
-			LvDescr* L = ID->LstLvS;
-		label1:
-			ZeroSumFlds(L);
-			GetMFlds(ID->OldSFlds, ID->SFld);
-			if (WasFF2) PrintPageHd(text);
-			Headings(L, ID->FrstLvS, text);
-			if (PrintDH == 0) PrintDH = 1;
-		label2:
-			PrintBlock(ID->FrstLvS->Ft, text, ID->FrstLvS->Hd); /*DE*/
-			SumUp(CFile, ID->Sum, CRecPtr);
-			ReadInpFile(ID);
-			if (ID->Scan->eof) goto label4;
-			res = CompMFlds(NewMFlds, ID->MFld, nlv);
-			if ((res == _lt) && (MaxIi > 1)) {
-				SetMsgPar(ID->Scan->FD->Name);
-				RunError(607);
-			}
-			if (res != _equ) goto label4;
-			res = CompMFlds(ID->OldSFlds, ID->SFld, nlv);
-			if (res == _equ) {
+		{
+			if (ID->Exist) {
+				CFile = ID->Scan->FD;
+				CRecPtr = CFile->FF->RecPtr;
+				LvDescr* L = ID->LstLvS;
+			label1:
+				ZeroSumFlds(L);
+				GetMFlds(ID->OldSFlds, ID->SFld);
+				if (WasFF2) PrintPageHd(text);
+				Headings(L, ID->FrstLvS, text);
+				if (PrintDH == 0) PrintDH = 1;
+			label2:
+				PrintBlock(ID->FrstLvS->Ft, text, ID->FrstLvS->Hd); /*DE*/
+				SumUp(CFile, ID->Sum, CRecPtr);
+				ReadInpFile(ID);
+				if (ID->Scan->eof) goto label4;
+				res = CompMFlds(NewMFlds, ID->MFld, nlv);
+				if ((res == _lt) && (MaxIi > 1)) {
+					SetMsgPar(ID->Scan->FD->Name);
+					RunError(607);
+				}
+				if (res != _equ) goto label4;
+				res = CompMFlds(ID->OldSFlds, ID->SFld, nlv);
+				if (res == _equ) {
+					MoveForwToRec(ID);
+					goto label2;
+				}
+				L = ID->LstLvS;
+				while (nlv > 1) {
+					L = L->ChainBack;
+					nlv--;
+				}
+				Footings(ID->FrstLvS->Chain, L, text);
+				if (WasFF2) PrintPageFt(text);
 				MoveForwToRec(ID);
-				goto label2;
+				goto label1;
+			label4:
+				Footings(ID->FrstLvS->Chain, ID->LstLvS, text);
 			}
-			L = ID->LstLvS;
-			while (nlv > 1) {
-				L = L->ChainBack;
-				nlv--;
-			}
-			Footings(ID->FrstLvS->Chain, L, text);
-			if (WasFF2) PrintPageFt(text);
-			MoveForwToRec(ID);
-			goto label1;
-		label4:
-			Footings(ID->FrstLvS->Chain, ID->LstLvS, text);
-		}
 		}
 	}
 }

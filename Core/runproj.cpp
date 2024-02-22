@@ -989,7 +989,7 @@ WORD CompileMsgOn(CHAR_INFO* Buf, int& w)
 		printf("%s", GetNthLine(s1, 2, 1, '/').c_str());
 	}
 	else {
-		screen.ScrRdBuf(0, TxtRows - 1, Buf, 40);
+		screen.ScrRdBuf(1, TxtRows, Buf, 40);
 		w = 0;
 		result = 0;
 		screen.ScrClr(1, TxtRows, MsgLine.length() + 2, 1, ' ', screen.colors.zNorm);

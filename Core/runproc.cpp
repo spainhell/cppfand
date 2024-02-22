@@ -1409,10 +1409,9 @@ void RunInstr(Instr* PD)
 			break;
 		}
 		case PInstrCode::_asgnClipbd: {
-			LongStr* s = RunLongStr(CFile, ((Instr_assign*)PD)->Frml, CRecPtr);
+			std::string s = RunStdStr(CFile, ((Instr_assign*)PD)->Frml, CRecPtr);
 			TWork.Delete(ClpBdPos);
-			ClpBdPos = TWork.Store(s->A, s->LL);
-			delete s; s = nullptr;
+			ClpBdPos = TWork.Store(s);
 			break;
 		}
 		case PInstrCode::_asgnEdOk: {

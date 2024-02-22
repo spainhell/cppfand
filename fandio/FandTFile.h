@@ -47,6 +47,7 @@ public:
 	void Delete(int Pos);
 	LongStr* Read(int Pos);
 	int Store(char* s, size_t l);
+	int Store(const std::string& s);
 	void CloseFile();
 
 private:

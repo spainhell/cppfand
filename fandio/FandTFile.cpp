@@ -555,6 +555,11 @@ int FandTFile::Store(char* s, size_t l)
 	return pos;
 }
 
+int FandTFile::Store(const std::string& s)
+{
+	return Store(const_cast<char*>(s.c_str()), s.length());
+}
+
 void FandTFile::CloseFile()
 {
 	if (Handle != nullptr) {

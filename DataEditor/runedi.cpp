@@ -3556,7 +3556,10 @@ label1:
 		if (Ed) Kind = 'T';
 	}
 	else {
-		S = RunLongStr(CFile, F->Frml, CRecPtr);
+		std::string std_s = RunStdStr(CFile, F->Frml, CRecPtr);
+		S = new LongStr(std_s.length());
+		S->LL = std_s.length();
+		memcpy(S->A, std_s.c_str(), S->LL);
 	}
 label2:
 	if (TTExit) {
@@ -3598,7 +3601,8 @@ label2:
 		delete S; S = nullptr;
 		TxtXY = 0;
 		goto label1;
-		break; }
+		break;
+	}
 	}
 	screen.Window(1, 1, TxtCols, TxtRows);
 

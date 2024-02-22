@@ -51,6 +51,24 @@ void ConvToNoDiakr(void* Buf, WORD L, TVideoFont FromFont)
 	}
 }
 
+void ConvToNoDiakr(std::string& text, TVideoFont FromFont)
+{
+	if (FromFont == TVideoFont::foAscii) return;
+
+	if (FromFont == TVideoFont::foLatin2) {
+		for (size_t i = 0; i < text.length(); i++) {
+			if (static_cast<BYTE>(text[i]) < 0x80) continue;
+			text[i] = static_cast<char>(TabLtN[static_cast<BYTE>(text[i])]);
+		}
+	}
+	else {
+		for (size_t i = 0; i < text.length(); i++) {
+			if (static_cast<BYTE>(text[i]) < 0x80) continue;
+			text[i] = static_cast<char>(TabKtN[static_cast<BYTE>(text[i])]);
+		}
+	}
+}
+
 void ConvKamenToCurr(std::string& text, bool diacritic)
 {
 	BYTE* tab = diacritic ? TabKtL : TabKtN;
