@@ -496,8 +496,15 @@ void StoreChptTxt(FieldDescr* F, std::string text, bool Del)
 			text = Coding::CodingString(CFile, text);
 		}
 	}
-	if (Del) if (LicNr == 0) ChptTF->Delete(oldpos);
-	else if (oldpos != 0) ChptTF->Delete(oldpos - LicNr);
+	// this Del has been changed - is it right?
+	if (Del) {
+		if (LicNr == 0) {
+			ChptTF->Delete(oldpos);
+		}
+		else if (oldpos != 0) {
+			ChptTF->Delete(oldpos - LicNr);
+		}
+	}
 
 	const int pos = ChptTF->Store((char*)text.c_str(), text.length());
 

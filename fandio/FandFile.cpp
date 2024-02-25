@@ -250,7 +250,7 @@ std::string FandFile::loadS(FieldDescr* field_d, void* record)
 		if (field_d->field_type == FieldType::ALFANUM) {
 			S = std::string(source, l);
 			if ((field_d->Flg & f_Encryp) != 0) {
-				Coding::Code(S);
+				S = Coding::Code(S);
 			}
 			if (!S.empty() && S[0] == '\0') {
 				S = RepeatString(' ', l);
@@ -284,7 +284,7 @@ std::string FandFile::loadS(FieldDescr* field_d, void* record)
 			_parent->OldLockMode(md);
 		}
 		if ((field_d->Flg & f_Encryp) != 0) {
-			Coding::Code(S);
+			S = Coding::Code(S);
 		}
 		break;
 	}

@@ -3,11 +3,13 @@
 #include "access.h"
 #include "../Common/textfunc.h"
 
-void Coding::Code(std::string& data)
+std::string Coding::Code(const std::string& data)
 {
-	for (char& i : data) {
-		i = static_cast<char>(i ^ 0xAA);
+	std::string result;
+	for (const char i : data) {
+		result += static_cast<char>(i ^ 0xAA);
 	}
+	return result;
 }
 
 void Coding::Code(void* data, size_t length)
@@ -31,11 +33,10 @@ void Coding::CodingLongStr(FileD* file_d, LongStr* S)
 	}
 }
 
-std::string Coding::CodingString(FileD* file_d, std::string& S)
+std::string Coding::CodingString(FileD* file_d, const std::string& S)
 {
 	if (file_d->FF->TF->LicenseNr == 0) {
-		Code(S);
-		return "";
+		return Code(S);
 	}
 	else {
 		return Coding::XDecode(S);
@@ -47,25 +48,25 @@ void Coding::SetPassword(FileD* file_d, WORD nr, std::string passwd)
 	if (nr == 1) {
 		file_d->FF->TF->PwCode = passwd;
 		file_d->FF->TF->PwCode = AddTrailChars(file_d->FF->TF->PwCode, '@', 20);
-		Code(file_d->FF->TF->PwCode);
+		file_d->FF->TF->PwCode = Code(file_d->FF->TF->PwCode);
 	}
 	else {
 		file_d->FF->TF->Pw2Code = passwd;
 		file_d->FF->TF->PwCode = AddTrailChars(file_d->FF->TF->Pw2Code, '@', 20);
-		Code(file_d->FF->TF->Pw2Code);
+		file_d->FF->TF->PwCode = Code(file_d->FF->TF->Pw2Code);
 	}
 }
 
-bool Coding::HasPassword(FileD* file_d, WORD nr, std::string passwd)
+bool Coding::HasPassword(FileD* file_d, WORD nr, const std::string& passwd)
 {
 	std::string filePwd;
 	if (nr == 1) {
 		filePwd = file_d->FF->TF->PwCode;
-		Code(filePwd);
+		filePwd = Code(filePwd);
 	}
 	else {
 		filePwd = file_d->FF->TF->Pw2Code;
-		Code(filePwd);
+		filePwd = Code(filePwd);
 	}
 	return passwd == TrailChar(filePwd, '@');
 }

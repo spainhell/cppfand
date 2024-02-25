@@ -4,12 +4,12 @@
 class Coding
 {
 public:
-	void static Code(std::string& data);
+	[[nodiscard]] std::string static Code(const std::string& data);
 
 	void static Code(void* data, size_t length);
 
 	void static CodingLongStr(FileD* file_d, LongStr* S);
-	std::string static CodingString(FileD* file_d, std::string& S);
+	[[nodiscard]] std::string static CodingString(FileD* file_d, const std::string& S);
 
 	/// <summary>
 	/// Set password in FandTFile (set field PwCode or Pw2Code)
@@ -19,7 +19,7 @@ public:
 	/// <param name="passwd">Password</param>
 	void static SetPassword(FileD* file_d, WORD nr, std::string passwd);
 
-	bool static HasPassword(FileD* file_d, WORD nr, std::string passwd);
+	bool static HasPassword(FileD* file_d, WORD nr, const std::string& passwd);
 
 	std::string static XDecode(const std::string& coded_input);
 	std::string static XEncode(const std::string& input);
