@@ -2281,7 +2281,7 @@ void DelStorClpBd(void* P1, LongStr* sp)
 void MarkRdClpBd(void* P1, LongStr* sp)
 {
 	MarkStore(P1);
-	sp = TWork.Read(ClpBdPos);
+	sp = TWork.ReadLongStr(ClpBdPos);
 }
 
 void TextEditor::MovePart(WORD Ind)
@@ -2338,7 +2338,8 @@ bool TextEditor::BlockGrasp(char Oper, void* P1, LongStr* sp)
 void TextEditor::BlockDrop(char Oper, void* P1, LongStr* sp)
 {
 	WORD I, I2;
-	if (Oper == 'D') MarkRdClpBd(P1, sp); if (sp->LL == 0) return;
+	if (Oper == 'D') MarkRdClpBd(P1, sp);
+	if (sp->LL == 0) return;
 	/* hlidani sp->LL a StoreAvail, MaxLenT, dela TestLenText, prip.SmallerPart */
 	if (Oper == 'D') FillBlank();
 	I = textIndex + positionOnActualLine - 1; I2 = sp->LL;
@@ -3114,7 +3115,7 @@ void TextEditor::EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg
 			Ind = TxtPos; // -Part.PosP;
 		}
 		else {
-			LS = new LongStr(locVar->length()); // TWork.Read(1, *LP);
+			LS = new LongStr(locVar->length()); // TWork.ReadLongStr(1, *LP);
 			LS->LL = locVar->length();
 			Ind = TxtPos;
 			memcpy(LS->A, locVar->c_str(), LS->LL);
@@ -3145,9 +3146,9 @@ void TextEditor::EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg
 			if ((KbdChar == __ALT_EQUAL) || (KbdChar == 'U')) {
 				// UNDO CHANGES
 				//ReleaseStore(LS);
-				//LS = TWork.Read(1, L);
+				//LS = TWork.ReadLongStr(1, L);
 				delete LS;
-				LS = new LongStr(locVar->length()); // TWork.Read(1, *LP);
+				LS = new LongStr(locVar->length()); // TWork.ReadLongStr(1, *LP);
 				memcpy(LS->A, locVar->c_str(), LS->LL);
 
 				if (KbdChar == __ALT_EQUAL) {

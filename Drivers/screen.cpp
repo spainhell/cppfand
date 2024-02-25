@@ -293,7 +293,7 @@ void Screen::WriteChar(short X, short Y, char C, BYTE attr, ScrPosition pos)
 }
 
 // vypise stylizovany text do aktualniho okna a vrati pocet vypsanych znaku
-size_t Screen::WriteStyledStringToWindow(std::string text, BYTE Attr)
+size_t Screen::WriteStyledStringToWindow(const std::string& text, BYTE Attr)
 {
 	if (text.length() == 0) return 0;
 

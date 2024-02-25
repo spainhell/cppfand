@@ -334,9 +334,9 @@ void WritelnProc(Instr_writeln* PD)
 void DisplayProc(RdbD* R, WORD IRec)
 {
 	std::string str;
-	LongStr* S = nullptr;
-	void* p = nullptr; WORD i = 0;
+	
 	if (IRec == 0) {
+		WORD i = 0;
 		str = GetHlpText(CRdb, RunShortStr(CFile, (FrmlElem*)R, CRecPtr), true, i);
 		if (str.empty()) return;
 	}
@@ -344,10 +344,11 @@ void DisplayProc(RdbD* R, WORD IRec)
 		CFile = R->FD;
 		CRecPtr = Chpt->FF->RecPtr;
 		CFile->ReadRec(IRec, CRecPtr);
-		LongStr* S = CFile->FF->TF->Read(CFile->loadT(ChptTxt, CRecPtr));
-		if (R->Encrypted) Coding::CodingLongStr(CFile, S);
-		str = std::string(S->A, S->LL);
-		delete S; S = nullptr;
+		int pos = CFile->loadT(ChptTxt, CRecPtr);
+		str = CFile->FF->TF->Read(pos);
+		if (R->Encrypted) {
+			Coding::CodingString(CFile, str);
+		}
 	}
 	screen.WriteStyledStringToWindow(str, ProcAttr);
 }
@@ -495,7 +496,7 @@ void PrintTxtProc(Instr_edittxt* PD)
 	LongStr* s = nullptr;
 	/* !!! with PD^ do!!! */
 	if (PD->TxtLV != nullptr) {
-		//s = TWork.Read(1, *(int*)(uintptr_t(MyBP) + PD->TxtLV->BPOfs));
+		//s = TWork.ReadLongStr(1, *(int*)(uintptr_t(MyBP) + PD->TxtLV->BPOfs));
 		PrintArray(s->A, s->LL, false);
 		delete s; s = nullptr;
 	}

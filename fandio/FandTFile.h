@@ -45,7 +45,8 @@ public:
 	int NewPage(bool NegL);
 	void ReleasePage(int PosPg);
 	void Delete(int Pos);
-	LongStr* Read(int Pos);
+	LongStr* ReadLongStr(int Pos);
+	std::string Read(int pos);
 	int Store(char* s, size_t l);
 	int Store(const std::string& s);
 	void CloseFile();

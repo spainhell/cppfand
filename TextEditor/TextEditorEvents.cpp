@@ -458,7 +458,9 @@ bool TextEditorEvents::TestExitKeys(TextEditor* editor, char& mode, std::vector<
 			case LocalT:
 			case MemoT:
 			{
-				if (TypeT == LocalT) sp = TWork.Read(*LocalPPtr);
+				if (TypeT == LocalT) {
+					sp = TWork.ReadLongStr(*LocalPPtr);
+				}
 				else {
 					CRecPtr = EditDRoot->NewRecPtr;
 					sp = CFile->loadLongS(CFld->FldD, CRecPtr);

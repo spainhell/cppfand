@@ -25,7 +25,7 @@ void CheckMaxLineLengthAndAddToOutputVector(std::vector<std::string>& vStr, std:
 	}
 }
 
-std::vector<std::string> GetAllLines(std::string& input, size_t maxLineLen, bool skipLastEmptyLine)
+std::vector<std::string> GetAllLines(const std::string& input, size_t maxLineLen, bool skipLastEmptyLine)
 {
 	std::vector<std::string> vStr;
 	size_t nextStart = 0;

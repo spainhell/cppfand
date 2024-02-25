@@ -133,7 +133,7 @@ void SetInpLongStr(LongStr* S, bool ShowErr)
 // nastavi InpArrPtr a InptArrLen - retezec pro zpracovani
 void SetInpTTPos(int Pos, bool Decode)
 {
-	LongStr* s = CFile->FF->TF->Read(Pos);
+	LongStr* s = CFile->FF->TF->ReadLongStr(Pos);
 	if (Decode) Coding::CodingLongStr(CFile, s);
 	InpArrLen = s->LL;
 	InpArrPtr = (BYTE*)&s->A[0];
@@ -144,7 +144,7 @@ void SetInpTTPos(int Pos, bool Decode)
 
 void SetInpTTPos(FileD* file, int Pos, bool Decode)
 {
-	LongStr* s = file->FF->TF->Read(Pos);
+	LongStr* s = file->FF->TF->ReadLongStr(Pos);
 	if (Decode) Coding::CodingLongStr(CFile, s);
 	InpArrLen = s->LL;
 	InpArrPtr = (BYTE*)&s->A[0];

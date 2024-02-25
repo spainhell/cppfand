@@ -276,15 +276,11 @@ std::string FandFile::loadS(FieldDescr* field_d, void* record)
 	}
 	case FieldType::TEXT: { // volny text max. 65k
 		if (HasTWorkFlag(record)) {
-			LongStr* ls = TWork.Read(loadT(field_d, record));
-			S = std::string(ls->A, ls->LL);
-			delete ls;
+			S = TWork.Read(loadT(field_d, record));
 		}
 		else {
 			md = _parent->NewLockMode(RdMode);
-			LongStr* ls = TF->Read(loadT(field_d, record));
-			S = std::string(ls->A, ls->LL);
-			delete ls;
+			S = TF->Read(loadT(field_d, record));
 			_parent->OldLockMode(md);
 		}
 		if ((field_d->Flg & f_Encryp) != 0) {

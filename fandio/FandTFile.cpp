@@ -1,5 +1,7 @@
 #include "FandTFile.h"
 
+#include <memory>
+
 #include "FandTFilePrefix.h"
 #include "files.h"
 #include "../Core/Coding.h"
@@ -156,8 +158,8 @@ void FandTFile::RdPrefix(bool check)
 	MaxPage = T.MaxPage; // 4B
 	TimeStmp = T.TimeStmp; // 6B v Pascalu, 8B v C++ 
 
-	if (!IsWork 
-		&& (_parent->GetFileD() == Chpt) 
+	if (!IsWork
+		&& (_parent->GetFileD() == Chpt)
 		&& ((T.HasCoproc != HasCoproc) || (CompArea(Version, T.Version, 4) != _equ))) {
 		CompileAll = true;
 	}
@@ -398,7 +400,7 @@ void FandTFile::ReleasePage(int PosPg)
 	FreeRoot = PosPg >> MPageShft;
 }
 
-LongStr* FandTFile::Read(int Pos)
+LongStr* FandTFile::ReadLongStr(int Pos)
 {
 	LongStr* s = nullptr;
 	unsigned short i = 0, l = 0;
@@ -468,6 +470,53 @@ LongStr* FandTFile::Read(int Pos)
 			//	s->LL = l;
 			//	RdWrCache(READ, Handle, NotCached(), Pos + sizeof(FptD), l, s->A);
 			//}
+			break;
+		}
+		default: break;
+		}
+	}
+	return s;
+}
+
+std::string FandTFile::Read(int pos)
+{
+	std::string s;
+	pos -= LicenseNr;
+	if (pos <= 0) {
+		// OldTxt=-1 in RDB!
+		// return empty string
+	}
+	else {
+		switch (Format) {
+		case T00Format: {
+			if ((pos < MPageSize) || (pos >= MLen)) {
+				Err(891, false);
+			}
+			else {
+				unsigned short len; // length of data
+				RdWrCache(READ, Handle, NotCached(), pos, 2, &len);
+				if (len > MaxLStrLen + 1) {
+					// max length has been exceeded
+					Err(891, false);
+				}
+				else {
+					if (len == MaxLStrLen + 1) {
+						// 65001
+						len--;
+					}
+					const std::unique_ptr<char[]> data = std::make_unique_for_overwrite<char[]>(len);
+					RdWr(READ, pos + 2, len, data.get());
+					s = std::string(data.get(), len);
+				}
+			}
+			break;
+		}
+		case DbtFormat: {
+			throw std::exception("FandTFile::Read(int pos): DBT FORMAT NOT SUPPORTED.");
+			break;
+		}
+		case FptFormat: {
+			throw std::exception("FandTFile::Read(int pos): FTP FORMAT NOT SUPPORTED.");
 			break;
 		}
 		default: break;
@@ -701,6 +750,6 @@ void FandTFile::GetMLen()
 
 void WrDBaseHd()
 {
-	
+
 }
 

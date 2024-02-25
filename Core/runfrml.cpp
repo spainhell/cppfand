@@ -1550,7 +1550,7 @@ FrmlElem* RunEvalFrml(FileD* file_d, FrmlElem* Z, void* record)
 //			break;
 //		}
 //		case _getlocvar: {
-//			//result = TWork.Read(1, *(int*)(MyBP + ((FrmlElem18*)X)->BPOfs));
+//			//result = TWork.ReadLongStr(1, *(int*)(MyBP + ((FrmlElem18*)X)->BPOfs));
 //			std::string str = ((FrmlElem18*)X)->locvar->S;
 //			result = new LongStr(max(256, str.length()));
 //			result->LL = str.length();
@@ -1738,7 +1738,7 @@ FrmlElem* RunEvalFrml(FileD* file_d, FrmlElem* Z, void* record)
 //			break;
 //		}
 //		case _clipbd: {
-//			result = TWork.Read(ClpBdPos);
+//			result = TWork.ReadLongStr(ClpBdPos);
 //			break;
 //		}
 //		default: {
@@ -1927,9 +1927,7 @@ label1:
 		break;
 	}
 	case _clipbd: {
-		auto s = TWork.Read(ClpBdPos);
-		result = std::string(s->A, s->LL);
-		delete s;
+		result = TWork.Read(ClpBdPos);
 		break;
 	}
 	default: {

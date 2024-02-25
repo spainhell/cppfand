@@ -3,7 +3,7 @@
 #include <string>
 
 /// rozdeli vstup na jednotlive radky podle CR, LF nebo max. delky radku (0 = neomezeno); zohlednuje tisknutelne znaky
-std::vector<std::string> GetAllLines(std::string& input, size_t maxLineLen = 0, bool skipLastEmptyLine = false);
+std::vector<std::string> GetAllLines(const std::string& input, size_t maxLineLen = 0, bool skipLastEmptyLine = false);
 
 /// rozdeli vstup na jednolive radky a zachova v nich CR a LF; nezohlednuje tisknutelne znaky
 std::vector<std::string> GetAllLinesWithEnds(std::string& input);
