@@ -1230,7 +1230,7 @@ void TestTFrml(FileD* file_d, FieldDescr* F, FrmlElem* Z, FandTFile** TF02, File
 		break;
 	}
 	case _field: {
-		auto iZ = (FrmlElem7*)Z;
+		FrmlElem7* iZ = (FrmlElem7*)Z;
 		FieldDescr* f1 = iZ->Field;
 		if ((f1->field_type != FieldType::TEXT) || ((f1->Flg & f_Stored) == 0)) return;
 		if (F == nullptr) {
@@ -1289,7 +1289,7 @@ bool CanCopyT(FileD* file_d, FieldDescr* F, FrmlElem* Z, FandTFile** TF02, FileD
 	return result;
 }
 
-bool TryCopyT(FileD* file_d, FieldDescr* F, FandTFile* TF, int& pos, FrmlElem16* Z, void* record)
+bool TryCopyT(FileD* file_d, FieldDescr* F, FandTFile* TF, int& pos, FrmlElem* Z, void* record)
 {
 	LockMode md, md2;
 
@@ -1300,7 +1300,7 @@ bool TryCopyT(FileD* file_d, FieldDescr* F, FandTFile* TF, int& pos, FrmlElem16*
 	bool result = false;
 	if (TF->Format == FandTFile::DbtFormat || TF->Format == FandTFile::FptFormat) return result;
 	if (Z->Op == _gettxt) {
-		pos = CopyTFFromGetTxt(file_d, TF, Z, record);
+		pos = CopyTFFromGetTxt(file_d, TF, (FrmlElem16*)Z, record);
 		result = true;
 	}
 	else if (CanCopyT(file_d, F, Z, &TF02, &TFD02, TF02Pos, record) && (TF02->Format == TF->Format)) {

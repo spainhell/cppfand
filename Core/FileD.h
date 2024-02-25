@@ -10,6 +10,7 @@ class AddD;
 enum class FType
 {
 	FandFile,
+	DBF,
 	SQLite,
 	PostgreSQL,
 	MSSQL,
@@ -78,7 +79,6 @@ public:
 	void saveLongS(FieldDescr* field_d, LongStr* ls, void* record);
 	int saveT(FieldDescr* field_d, int pos, void* record);
 
-	void Close();
 	void CloseFile();
 	void Save();
 

@@ -304,13 +304,6 @@ int FileD::saveT(FieldDescr* field_d, int pos, void* record)
 	return FF->saveT(field_d, pos, record);
 }
 
-void FileD::Close()
-{
-	if (FF != nullptr) {
-		FF->SaveFile();
-	}
-}
-
 void FileD::CloseFile()
 {
 	if (FF->Handle == nullptr) return;

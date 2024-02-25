@@ -334,7 +334,7 @@ void WritelnProc(Instr_writeln* PD)
 void DisplayProc(RdbD* R, WORD IRec)
 {
 	std::string str;
-	
+
 	if (IRec == 0) {
 		WORD i = 0;
 		str = GetHlpText(CRdb, RunShortStr(CFile, (FrmlElem*)R, CRecPtr), true, i);
@@ -573,43 +573,41 @@ void AppendRecProc(FileD* file_d)
 	file_d->OldLockMode(md);
 }
 
-void UpdRec(void* CR, int N, bool AdUpd)
+void UpdRec(int N, bool AdUpd, void* record)
 {
-	void* cr2 = CFile->GetRecSpace();
-	CRecPtr = cr2;
+	void* record2 = CFile->GetRecSpace();
+	CRecPtr = record2;
 	CFile->ReadRec(N, CRecPtr);
 	bool del = CFile->DeletedFlag(CRecPtr);
-	CRecPtr = CR;
+	CRecPtr = record;
 	if (AdUpd) {
 		if (del) {
 			LastExitCode = !RunAddUpdate(CFile, '+', nullptr, nullptr, CRecPtr);
 		}
 		else {
-			LastExitCode = !RunAddUpdate(CFile, 'd', cr2, nullptr, CRecPtr);
+			LastExitCode = !RunAddUpdate(CFile, 'd', record2, nullptr, CRecPtr);
 		}
 	}
 	if (CFile->FF->file_type == FileType::INDEX) {
-		CFile->FF->OverWrXRec(N, cr2, CR, CRecPtr);
+		CFile->FF->OverWrXRec(N, record2, record, CRecPtr);
 	}
 	else {
 		CFile->WriteRec(N, CRecPtr);
 	}
 	if (!del) {
-		CFile->DelAllDifTFlds(cr2, nullptr);
+		CFile->DelAllDifTFlds(record2, nullptr);
 	}
-	ReleaseStore(&cr2);
+	ReleaseStore(&record2);
 }
 
 void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 {
-	int N = 0;
 	bool app = false;
 	XString x;
 	WORD msg = 0;
-	/* !!! with PD->LV^ do!!! */
 	CFile = PD->LV->FD;
 	CRecPtr = PD->LV->RecPtr;
-	N = 1;
+	int N = 1;
 	XKey* k = PD->Key;
 	bool ad = PD->AdUpd;
 	LockMode md = CFile->FF->LMode;
@@ -624,22 +622,31 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 		}
 #endif
 	}
-	else N = RunInt(CFile, PD->RecNr, CRecPtr);
+	else {
+		N = RunInt(CFile, PD->RecNr, CRecPtr);
+	}
+
 	if (IsRead) {
-		if (N == 0) goto label0;
-		else CFile->NewLockMode(RdMode);
+		if (N == 0) {
+			goto label0;
+		}
+		else {
+			CFile->NewLockMode(RdMode);
+		}
 	}
 	else if (N == 0) {
-
 #ifdef FandSQL
 		if (CFile->IsSQLFile) { Strm1->InsertRec(ad, true); ReleaseStore(cr); CFile->OldLockMode(md); return; }
 #endif
 		goto label1;
 	}
-	else CFile->NewLockMode(WrMode);
+	else {
+		CFile->NewLockMode(WrMode);
+	}
+
 	if (PD->ByKey) {
 		if (k == nullptr/*IsParFile*/) {
-			if (CFile->FF->NRecs == 0)
+			if (CFile->FF->NRecs == 0) {
 				if (IsRead) {
 				label0:
 					//CFile->DelTFlds(CRecPtr);
@@ -655,6 +662,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 					CFile->IncNRecs(1);
 					app = true;
 				}
+			}
 			N = CFile->FF->NRecs;
 		}
 		else if (!SrchXKey(k, x, N)) {
@@ -702,7 +710,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 			}
 		}
 		else {
-			UpdRec(cr, N, ad);
+			UpdRec(N, ad, cr);
 		}
 	}
 
@@ -868,7 +876,7 @@ label1:
 			if ((LVr != nullptr) && (LVi == nullptr) && CFile->HasUpdFlag(CRecPtr)) {
 				md1 = CFile->NewLockMode(WrMode);
 				CFile->CopyRecWithT(lr, cr, false);
-				UpdRec(cr, xScan->RecNr, true);
+				UpdRec(xScan->RecNr, true, cr);
 				CFile->OldLockMode(md1);
 			}
 		}
@@ -1365,11 +1373,26 @@ void RunInstr(Instr* PD)
 			AppendRecProc(rec_file);
 			break;
 		}
-		case PInstrCode::_deleterec: { DeleteRecProc((Instr_recs*)PD); break; }
-		case PInstrCode::_recallrec: { RecallRecProc((Instr_recs*)PD); break; }
-		case PInstrCode::_readrec: { ReadWriteRecProc(true, (Instr_recs*)PD); break; }
-		case PInstrCode::_writerec: { ReadWriteRecProc(false, (Instr_recs*)PD); break; }
-		case PInstrCode::_linkrec: { LinkRecProc((Instr_assign*)PD); break; }
+		case PInstrCode::_deleterec: {
+			DeleteRecProc((Instr_recs*)PD);
+			break;
+		}
+		case PInstrCode::_recallrec: {
+			RecallRecProc((Instr_recs*)PD);
+			break;
+		}
+		case PInstrCode::_readrec: {
+			ReadWriteRecProc(true, (Instr_recs*)PD);
+			break;
+		}
+		case PInstrCode::_writerec: {
+			ReadWriteRecProc(false, (Instr_recs*)PD);
+			break;
+		}
+		case PInstrCode::_linkrec: {
+			LinkRecProc((Instr_assign*)PD);
+			break;
+		}
 		case PInstrCode::_withshared:
 		case PInstrCode::_withlocked: {
 			WithLockedProc(static_cast<Instr_withshared*>(PD));
@@ -1573,9 +1596,9 @@ void RunInstr(Instr* PD)
 		}
 		default:
 			break;
-		}
-		PD = PD->Chain;
 	}
+		PD = PD->Chain;
+}
 }
 
 void RunProcedure(Instr* PDRoot)

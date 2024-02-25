@@ -29,7 +29,7 @@ bool SrchXKey(XKey* K, XString& X, int& N);
 void DeleteRecProc(Instr_recs* PD);
 void RecallRecProc(Instr_recs* PD);
 void AppendRecProc(FileD* file_d);
-void UpdRec(void* CR, int N, bool AdUpd);
+void UpdRec(int N, bool AdUpd, void* record);
 void ReadWriteRecProc(bool IsRead, Instr_recs* PD);
 void LinkRecProc(Instr_assign* PD);
 void ForAllProc(Instr_forall* PD);

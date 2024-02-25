@@ -221,7 +221,7 @@ void ForAllFDs(ForAllFilesOperation op, FileD** file_d, WORD i)
 		while (CFile != nullptr) {
 			switch (op) {
 			case ForAllFilesOperation::close: {
-				CFile->Close();
+				CFile->Save();
 				break;
 			}
 			case ForAllFilesOperation::save: {
