@@ -602,19 +602,19 @@ void UpdRec(int N, bool AdUpd, void* record)
 
 void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 {
-	bool app = false;
+	// PD->LV is a local variable (record of)
+	LocVar* lv = PD->LV;
+
 	XString x;
-	WORD msg = 0;
-	CFile = PD->LV->FD;
-	CRecPtr = PD->LV->RecPtr;
+
 	int N = 1;
 	XKey* k = PD->Key;
 	bool ad = PD->AdUpd;
-	LockMode md = CFile->FF->LMode;
-	app = false;
-	void* cr = CFile->GetRecSpace();
+	LockMode md = lv->FD->FF->LMode;
+	bool app = false;
+	BYTE* record1 = lv->FD->GetRecSpace();
 	if (PD->ByKey) {
-		x.S = RunShortStr(CFile, PD->RecNr, CRecPtr);
+		x.S = RunShortStr(lv->FD, PD->RecNr, lv->RecPtr);
 #ifdef FandSQL
 		if (CFile->IsSQLFile) {
 			if (IsRead) if (Strm1->SelectXRec(k, @x, PD->CompOp, true)) goto label4; else goto label2;
@@ -623,7 +623,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 #endif
 	}
 	else {
-		N = RunInt(CFile, PD->RecNr, CRecPtr);
+		N = RunInt(lv->FD, PD->RecNr, lv->RecPtr);
 	}
 
 	if (IsRead) {
@@ -631,7 +631,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 			goto label0;
 		}
 		else {
-			CFile->NewLockMode(RdMode);
+			lv->FD->NewLockMode(RdMode);
 		}
 	}
 	else if (N == 0) {
@@ -641,81 +641,77 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 		goto label1;
 	}
 	else {
-		CFile->NewLockMode(WrMode);
+		lv->FD->NewLockMode(WrMode);
 	}
 
 	if (PD->ByKey) {
 		if (k == nullptr/*IsParFile*/) {
-			if (CFile->FF->NRecs == 0) {
+			if (lv->FD->FF->NRecs == 0) {
 				if (IsRead) {
 				label0:
 					//CFile->DelTFlds(CRecPtr);
-					CFile->ZeroAllFlds(CRecPtr, true);
-					ReleaseStore(&cr);
-					CFile->OldLockMode(md);
+					lv->FD->ZeroAllFlds(lv->RecPtr, true);
+					delete[] record1; record1 = nullptr;
+					lv->FD->OldLockMode(md);
 					return;
 				}
 				else {
 				label1:
-					CFile->NewLockMode(CrMode);
-					CFile->FF->TestXFExist();
-					CFile->IncNRecs(1);
+					lv->FD->NewLockMode(CrMode);
+					lv->FD->FF->TestXFExist();
+					lv->FD->IncNRecs(1);
 					app = true;
 				}
 			}
-			N = CFile->FF->NRecs;
+			N = lv->FD->FF->NRecs;
 		}
 		else if (!SrchXKey(k, x, N)) {
 			if (IsRead) {
 				//CFile->DelTFlds(CRecPtr);
-				CFile->ZeroAllFlds(CRecPtr, true);
-				CFile->SetDeletedFlag(CRecPtr);
-				ReleaseStore(&cr);
-				CFile->OldLockMode(md);
+				lv->FD->ZeroAllFlds(lv->RecPtr, true);
+				lv->FD->SetDeletedFlag(lv->RecPtr);
+				delete[] record1; record1 = nullptr;
+				lv->FD->OldLockMode(md);
 				return;
 			}
-			msg = 613;
-			SetMsgPar(PD->LV->Name);
-			CFile->RunErrorM(md);
+			WORD msg = 613;
+			SetMsgPar(lv->Name);
+			lv->FD->RunErrorM(md);
 			RunError(msg);
 		}
 	}
 	else {
-		if ((N <= 0) || (N > CFile->FF->NRecs)) {
-			msg = 641;
-			SetMsgPar(PD->LV->Name);
-			CFile->RunErrorM(md);
+		if ((N <= 0) || (N > lv->FD->FF->NRecs)) {
+			WORD msg = 641;
+			SetMsgPar(lv->Name);
+			lv->FD->RunErrorM(md);
 			RunError(msg);
 		}
 	}
 	if (IsRead) {
-		CRecPtr = cr;
-		CFile->ReadRec(N, cr);
-		CRecPtr = PD->LV->RecPtr;
-		//CFile->DelTFlds(PD->LV->RecPtr);
-		CFile->CopyRecWithT(cr, PD->LV->RecPtr, true);
+		lv->FD->ReadRec(N, record1);
+		lv->FD->CopyRecWithT(record1, lv->RecPtr, true);
 	}
 	else {
-		CFile->CopyRecWithT(PD->LV->RecPtr, cr, false);
+		lv->FD->CopyRecWithT(lv->RecPtr, record1, false);
 		if (app) {
-			CRecPtr = cr;
-			if (CFile->FF->file_type == FileType::INDEX) {
-				CFile->RecallRec(N, CRecPtr);
+			if (lv->FD->FF->file_type == FileType::INDEX) {
+				lv->FD->RecallRec(N, record1);
 			}
 			else {
-				CFile->WriteRec(N, CRecPtr);
+				lv->FD->WriteRec(N, record1);
 			}
 			if (ad) {
-				LastExitCode = !RunAddUpdate(CFile, '+', nullptr, nullptr, CRecPtr);
+				LastExitCode = !RunAddUpdate(lv->FD, '+', nullptr, nullptr, record1);
 			}
 		}
 		else {
-			UpdRec(N, ad, cr);
+			UpdRec(N, ad, record1);
 		}
 	}
 
-	ReleaseStore(&cr);
-	CFile->OldLockMode(md);
+	delete[] record1; record1 = nullptr;
+	lv->FD->OldLockMode(md);
 }
 
 void LinkRecProc(Instr_assign* PD)
