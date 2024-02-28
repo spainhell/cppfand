@@ -188,8 +188,8 @@ void AssignRecVar(LocVar* LV1, LocVar* LV2, AssignD* A)
 	pstring ss;
 	FileD* FD1 = LV1->FD;  // destination record
 	FileD* FD2 = LV2->FD;  // source record
-	void* RP1 = LV1->RecPtr;
-	void* RP2 = LV2->RecPtr;
+	void* RP1 = LV1->record;
+	void* RP2 = LV2->record;
 
 	while (A != nullptr) {
 		switch (A->Kind) {
@@ -222,7 +222,7 @@ void AssignRecFld(Instr_assign* PD)
 {
 	FieldDescr* field_d = PD->RecFldD;
 	FileD* file_d = PD->AssLV->FD;
-	void* record = PD->AssLV->RecPtr;
+	void* record = PD->AssLV->record;
 
 	file_d->SetUpdFlag(record);
 	AssgnFrml(file_d, record, field_d, PD->Frml, file_d->HasTWorkFlag(record), PD->Add);
@@ -614,7 +614,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 	bool app = false;
 	BYTE* record1 = lv->FD->GetRecSpace();
 	if (PD->ByKey) {
-		x.S = RunShortStr(lv->FD, PD->RecNr, lv->RecPtr);
+		x.S = RunShortStr(lv->FD, PD->RecNr, lv->record);
 #ifdef FandSQL
 		if (CFile->IsSQLFile) {
 			if (IsRead) if (Strm1->SelectXRec(k, @x, PD->CompOp, true)) goto label4; else goto label2;
@@ -623,7 +623,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 #endif
 	}
 	else {
-		N = RunInt(lv->FD, PD->RecNr, lv->RecPtr);
+		N = RunInt(lv->FD, PD->RecNr, lv->record);
 	}
 
 	if (IsRead) {
@@ -650,7 +650,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 				if (IsRead) {
 				label0:
 					//CFile->DelTFlds(CRecPtr);
-					lv->FD->ZeroAllFlds(lv->RecPtr, true);
+					lv->FD->ZeroAllFlds(lv->record, true);
 					delete[] record1; record1 = nullptr;
 					lv->FD->OldLockMode(md);
 					return;
@@ -668,8 +668,8 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 		else if (!SrchXKey(k, x, N)) {
 			if (IsRead) {
 				//CFile->DelTFlds(CRecPtr);
-				lv->FD->ZeroAllFlds(lv->RecPtr, true);
-				lv->FD->SetDeletedFlag(lv->RecPtr);
+				lv->FD->ZeroAllFlds(lv->record, true);
+				lv->FD->SetDeletedFlag(lv->record);
 				delete[] record1; record1 = nullptr;
 				lv->FD->OldLockMode(md);
 				return;
@@ -690,10 +690,10 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 	}
 	if (IsRead) {
 		lv->FD->ReadRec(N, record1);
-		lv->FD->CopyRecWithT(record1, lv->RecPtr, true);
+		lv->FD->CopyRecWithT(record1, lv->record, true);
 	}
 	else {
-		lv->FD->CopyRecWithT(lv->RecPtr, record1, false);
+		lv->FD->CopyRecWithT(lv->record, record1, false);
 		if (app) {
 			if (lv->FD->FF->file_type == FileType::INDEX) {
 				lv->FD->RecallRec(N, record1);
@@ -728,8 +728,8 @@ void LinkRecProc(Instr_assign* PD)
 	cr = CRecPtr;
 	MarkStore(p);
 	ld = PD->LinkLD;
-	CRecPtr = PD->RecLV1->RecPtr;
-	lr2 = PD->RecLV2->RecPtr;
+	CRecPtr = PD->RecLV1->record;
+	lr2 = PD->RecLV2->record;
 	CFile = ld->ToFD;
 	CFile->ClearRecSpace(lr2);
 	CFile = ld->FromFD;
@@ -773,7 +773,7 @@ void ForAllProc(Instr_forall* PD)
 		CFile = LD->ToFD; KF = LD->ToKey->KFlds;
 		switch (PD->COwnerTyp) {
 		case 'r': {
-			CRecPtr = PD->CLV->RecPtr;
+			CRecPtr = PD->CLV->record;
 			xx.PackKF(CFile, KF, CRecPtr);
 			break;
 		}
@@ -823,7 +823,7 @@ void ForAllProc(Instr_forall* PD)
 			}
 		}
 	if (LVr != nullptr) {
-		lr = LVr->RecPtr;
+		lr = LVr->record;
 	}
 	k = CFile->Keys.empty() ? nullptr : CFile->Keys[0];
 	b = PD->CProcent;
@@ -1660,7 +1660,7 @@ void CallProcedure(Instr_proc* PD)
 				CurrPos = 0;
 				Error(119);
 			}
-			(*it0)->RecPtr = PD->TArg[i].RecPtr;
+			(*it0)->record = static_cast<uint8_t*>(PD->TArg[i].RecPtr);
 			break;
 		}
 		case 'f': {
@@ -1707,7 +1707,7 @@ void CallProcedure(Instr_proc* PD)
 			CFile->SetTWorkFlag(CRecPtr);
 			CFile->ZeroAllFlds(CRecPtr, false);
 			CFile->ClearDeletedFlag(CRecPtr);
-			(*it0)->RecPtr = CRecPtr;
+			(*it0)->record = static_cast<uint8_t*>(CRecPtr);
 		}
 		else if ((*it0)->FTyp == 'f') {
 			// dynamic file definition
@@ -1732,9 +1732,9 @@ void CallProcedure(Instr_proc* PD)
 	it0 = it1;
 	while (it0 != PD->variables.vLocVar.end()) {
 		if ((*it0)->FTyp == 'i') {
-			auto hX = (XWKey*)(*it0)->RecPtr;
+			auto hX = (XWKey*)(*it0)->record;
 			if (hX->KFlds == nullptr) hX->KFlds = (*it0)->FD->Keys[0]->KFlds;
-			auto tmp = (XWKey*)(*it0)->RecPtr;
+			auto tmp = (XWKey*)(*it0)->record;
 			tmp->Open(CFile, hX->KFlds, true, false);
 		}
 		++it0;
@@ -1771,12 +1771,12 @@ void CallProcedure(Instr_proc* PD)
 			switch ((*it0)->FTyp) {
 			case 'r': {
 				CFile = (*it0)->FD;
-				CFile->ClearRecSpace((*it0)->RecPtr);
+				CFile->ClearRecSpace((*it0)->record);
 				break;
 			}
 			case 'i': {
 				CFile = (*it0)->FD;
-				((XWKey*)(*it0)->RecPtr)->Close(CFile);
+				((XWKey*)(*it0)->record)->Close(CFile);
 				break;
 			}
 			}

@@ -964,7 +964,7 @@ label1:
 			for (LocVar* locvar : newVars) {
 				locvar->FTyp = typ;
 				locvar->FD = CFile;
-				if (typ == 'r') locvar->RecPtr = nullptr; // ptr(0,1) ??? /* for RdProc nullptr-tests + no Run*/
+				if (typ == 'r') locvar->record = nullptr; // ptr(0,1) ??? /* for RdProc nullptr-tests + no Run*/
 				/* frueher bei IsParList K = nullptr; warum? */
 				else {
 					k = new XWKey(CFile);
@@ -976,7 +976,7 @@ label1:
 						k->IndexLen += kf->FldD->NBytes;
 						kf = kf->pChain;
 					}
-					locvar->RecPtr = k;
+					locvar->record = reinterpret_cast<uint8_t*>(k);
 				}
 			}
 			CFile = cf;
@@ -1354,7 +1354,7 @@ XKey* RdViewKey()
 	if (IdxLocVarAllowed && FindLocVar(&LVBD, &lv) && (lv->FTyp == 'i'))
 	{
 		if (lv->FD != CFile) Error(164);
-		lastK = (XKey*)(lv->RecPtr);
+		lastK = (XKey*)(lv->record);
 		goto label1;
 	}
 	Error(109);

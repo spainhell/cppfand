@@ -45,13 +45,13 @@ char AbbrYes = 'Y';
 char AbbrNo = 'N';
 
 unsigned long HandleError;
-pstring OldDir;
-pstring FandDir;
+std::string OldDir;
+std::string FandDir;
 std::string WrkDir;
 std::string FandResName;
-pstring FandWorkName;
-pstring FandWorkXName;
-pstring FandWorkTName;
+std::string FandWorkName;
+std::string FandWorkXName;
+std::string FandWorkTName;
 std::string CPath;
 std::string CDir;
 std::string CName;

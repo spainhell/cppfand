@@ -16,7 +16,7 @@ public:
 	bool IsRetValue = false; // pridano navic - urcuje navratovou hodnotu funkce
 	char FTyp = '\0';
 	FileD* FD = nullptr;
-	void* RecPtr = nullptr;
+	uint8_t* record = nullptr;
 	std::string Name;
 	instr_type Op = _notdefined;
 	FrmlElem* Init = nullptr;

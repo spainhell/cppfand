@@ -500,7 +500,7 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 			}
 			switch (E->OwnerTyp) {
 			case 'r': {
-				E->DownRecPtr = E->DownLV->RecPtr;
+				E->DownRecPtr = E->DownLV->record;
 				break;
 			}
 			case 'F': {

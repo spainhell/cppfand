@@ -99,14 +99,13 @@ extern WORD BPBound; // r212
 extern bool ExitP, BreakP;
 extern int LastExitCode; // r215
 extern unsigned long HandleError; // r229
-extern pstring OldDir;
-extern pstring FandDir;
+extern std::string OldDir;
+extern std::string FandDir;
 extern std::string WrkDir;
-extern pstring FandOvrName;
 extern std::string FandResName;
-extern pstring FandWorkName;
-extern pstring FandWorkXName;
-extern pstring FandWorkTName;
+extern std::string FandWorkName;
+extern std::string FandWorkXName;
+extern std::string FandWorkTName;
 extern std::string CPath;
 extern std::string CDir;
 extern std::string CName;

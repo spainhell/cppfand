@@ -83,7 +83,7 @@ FrmlElem* RdRecVarFldFrml(LocVar* LV, char& FTyp)
 		FileD* cf = CFile;
 		CFile = LV->FD;
 		Z->File2 = CFile;
-		Z->LD = (LinkD*)LV->RecPtr;
+		Z->LD = (LinkD*)LV->record;
 		bool fa = FileVarsAllowed;
 		FileVarsAllowed = true;
 		Z->P011 = RdFldNameFrmlF(FTyp, nullptr);
@@ -94,7 +94,7 @@ FrmlElem* RdRecVarFldFrml(LocVar* LV, char& FTyp)
 	}
 	case 'i': {
 		auto Z = new FrmlElem22(_indexnrecs, 4);
-		Z->WKey = (XWKey*)LV->RecPtr;
+		Z->WKey = (XWKey*)LV->record;
 		pstring nrecs = "nrecs";
 		AcceptKeyWord(nrecs);
 		FTyp = 'R';
@@ -137,7 +137,7 @@ char RdOwner(LinkD** LLD, LocVar** LLV)
 		}
 		else {
 			if (lv->FTyp == 'i') {
-				KeyFldD* kf = ((XWKey*)lv->RecPtr)->KFlds;
+				KeyFldD* kf = ((XWKey*)lv->record)->KFlds;
 				if (ld->FromFD->IsSQLFile || ld->ToFD->IsSQLFile) OldError(155);
 				if ((kf != nullptr) && !KeyFldD::EquKFlds(kf, ld->ToKey->KFlds)) OldError(181);
 			}
@@ -161,7 +161,7 @@ char RdOwner(LinkD** LLD, LocVar** LLV)
 				Accept(')');
 				if (lv->FD != fd) OldError(149);
 				if (lv->FTyp == 'i') {
-					KeyFldD* kf = ((XWKey*)lv->RecPtr)->KFlds;
+					KeyFldD* kf = ((XWKey*)lv->record)->KFlds;
 					if (ld->FromFD->IsSQLFile || ld->ToFD->IsSQLFile) OldError(155);
 					if ((kf != nullptr) && !KeyFldD::EquKFlds(kf, ld->ToKey->KFlds)) OldError(181);
 				}
@@ -533,7 +533,7 @@ FrmlElem* RdFunctionP(char& FFTyp)
 		iZ->P1 = RdRealFrml(nullptr); Accept(',');
 		iZ->P2 = RdRealFrml(nullptr); Accept(',');
 		Typ = 'r';
-		if (IsRecVar(&LV)) iZ->P3 = (FrmlElem*)LV->RecPtr;
+		if (IsRecVar(&LV)) iZ->P3 = (FrmlElem*)LV->record;
 		else iZ->P3 = RdFrml(Typ, nullptr);
 		iZ->N31 = Typ;
 		FTyp = 'R';
@@ -976,7 +976,7 @@ Instr_proc* RdProcArg(char Caller)
 			RdLex();
 			TArg[N].FTyp = LV->FTyp;
 			TArg[N].FD = LV->FD;
-			TArg[N].RecPtr = LV->RecPtr;
+			TArg[N].RecPtr = LV->record;
 		}
 		else if (Lexem == '@') {
 			RdLex();
@@ -1534,7 +1534,7 @@ Instr_edit* RdEditCall()
 	EO->UserSelFlds = true;
 
 	if (IsRecVar(&lv)) {
-		EO->LVRecPtr = lv->RecPtr;
+		EO->LVRecPtr = lv->record;
 		CFile = lv->FD;
 	}
 	else {
@@ -1583,7 +1583,7 @@ void RdEditOpt(EditOpt* EO)
 	else if (IsKeyWord("CHECK")) EO->SyntxChk = true;
 	else if (IsOpt("SEL")) {
 		LocVar* lv = RdIdxVar();
-		EO->SelKey = (XWKey*)lv->RecPtr;
+		EO->SelKey = (XWKey*)lv->record;
 		if ((EO->ViewKey == nullptr)) OldError(108);
 		if (EO->ViewKey == EO->SelKey) OldError(184);
 		if ((EO->ViewKey->KFlds != nullptr)
@@ -1614,7 +1614,7 @@ Instr* RdReportCall()
 
 		while (true) {
 			if (IsRecVar(&lv)) {
-				FDL->LVRecPtr = lv->RecPtr;
+				FDL->LVRecPtr = lv->record;
 				FDL->FD = lv->FD;
 			}
 			else {
@@ -2169,7 +2169,7 @@ Instr* RdGetIndex()
 	while (Lexem == ',') {
 		RdLex();
 		if (IsOpt("SORT")) {
-			if (((XWKey*)lv->RecPtr)->KFlds != nullptr) OldError(175);
+			if (((XWKey*)lv->record)->KFlds != nullptr) OldError(175);
 			Accept('(');
 			RdKFList(&PD->key_fields, CFile);
 			Accept(')');
@@ -2545,7 +2545,7 @@ Instr_assign* RdAssign()
 				if ((Lexem != _number) || (LexWord != "0")) Error(183);
 				RdLex();
 				PD = new Instr_assign(PInstrCode::_asgnxnrecs); // GetPInstr(_asgnxnrecs, 4);
-				PD->xnrIdx = (XWKey*)LV->RecPtr;
+				PD->xnrIdx = (XWKey*)LV->record;
 			}
 			else {
 				PD = new Instr_assign(PInstrCode::_asgnrecfld); // GetPInstr(_asgnrecfld, 13);

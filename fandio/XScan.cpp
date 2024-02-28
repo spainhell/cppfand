@@ -194,7 +194,7 @@ void XScan::ResetOwnerIndex(LinkD* LD, LocVar* LV, FrmlElem* aBool)
 	Bool = aBool;
 	OwnerLV = LV;
 	Kind = 2;
-	if (!KeyFldD::EquKFlds(((XWKey*)LV->RecPtr)->KFlds, LD->ToKey->KFlds)) {
+	if (!KeyFldD::EquKFlds(((XWKey*)LV->record)->KFlds, LD->ToKey->KFlds)) {
 		RunError(1181);
 	}
 	SeekRec(0);
@@ -299,7 +299,7 @@ void XScan::NextIntvl()
 	int n = 0, nBeg = 0;
 
 	if (OwnerLV != nullptr) {
-		XWKey* k = (XWKey*)OwnerLV->RecPtr; // TODO: bude toto fungovat?
+		XWKey* k = (XWKey*)OwnerLV->record; // TODO: bude toto fungovat?
 		while (iOKey < k->NRecs()) {
 			iOKey++;
 			xx.S = k->NrToStr(OwnerLV->FD, iOKey);

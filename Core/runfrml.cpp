@@ -195,7 +195,7 @@ double RunRealStr(FileD* file_d, FrmlElem* X, void* record)
 			for (char& i : strS) {
 				i = CharOrdTab[(BYTE)i];
 			}
-			for (char& i : strMask)	{
+			for (char& i : strMask) {
 				i = CharOrdTab[(BYTE)i];
 			}
 		}
@@ -410,7 +410,7 @@ double LinkProc(FrmlElem15* X, void* record)
 	LinkD* LD = X->LinkLD;
 	FileD* fromFD = LD->FromFD;
 	if (X->LinkFromRec) {
-		if (!LinkUpw(fromFD, LD, N, false, X->LinkLV->RecPtr, &rec)) N = -N;
+		if (!LinkUpw(fromFD, LD, N, false, X->LinkLV->record, &rec)) N = -N;
 	}
 	else {
 		N = RunInt(fromFD, X->LinkRecFrml, record);
@@ -570,7 +570,7 @@ LocVar* RunUserFunc(FileD* file_d, FrmlElem19* X, void* record)
 
 bool RunBool(FileD* file_d, FrmlElem* X, void* record)
 {
-	
+
 
 	bool result = false;
 	if (X == nullptr) { return true; }
@@ -777,7 +777,7 @@ bool RunBool(FileD* file_d, FrmlElem* X, void* record)
 	}
 	case _lvdeleted: {
 		FrmlElem20* iX = (FrmlElem20*)X;
-		result = iX->LV->FD->DeletedFlag(iX->LV->RecPtr);
+		result = iX->LV->FD->DeletedFlag(iX->LV->record);
 		break;
 	}
 	case _trust: {
@@ -876,7 +876,7 @@ bool RunModulo(FileD* file_d, FrmlElemFunction* X, void* record)
 
 	for (size_t i = 0; i < input.length() - 1; i++) {
 		char c = input[i];
-		if (isdigit(c))	{
+		if (isdigit(c)) {
 			sum += (c - 0x30) * X->vValues[i + 1];
 		}
 		else {
@@ -1247,6 +1247,7 @@ void TestTFrml(FileD* file_d, FieldDescr* F, FrmlElem* Z, FandTFile** TF02, File
 	}
 	case _getlocvar: {
 		// local var is now always in memory, not in the work file
+		// TODO: what if this is record of?
 		break;
 		//if ((F != nullptr) && ((F->Flg & f_Encryp) != 0)) return;
 		//*TFD02 = CFile;
@@ -2174,7 +2175,7 @@ LongStr* RunS(FileD* file_d, FrmlElem* Z, void* record)
 	}
 	case _keyof: {
 		auto iZ = (FrmlElem20*)Z;
-		x->PackKF(iZ->LV->FD, iZ->PackKey->KFlds, iZ->LV->RecPtr);
+		x->PackKF(iZ->LV->FD, iZ->PackKey->KFlds, iZ->LV->record);
 		break;
 	}
 	case _keybuf: {
@@ -2207,7 +2208,7 @@ LongStr* RunSelectStr(FileD* file_d, FrmlElemFunction* Z, void* record)
 	void* p2 = nullptr; void* pl = nullptr;
 	WORD i;
 
-	std::string std_s = RunStdStr(file_d, Z->P3, record);	
+	std::string std_s = RunStdStr(file_d, Z->P3, record);
 	LongStr* s = new LongStr(std_s.length());
 	s->LL = std_s.length();
 	memcpy(s->A, std_s.c_str(), s->LL);

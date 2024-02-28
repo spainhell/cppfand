@@ -11,7 +11,7 @@ void GetIndex(Instr_getindex* PD)
 {
 	XString x;
 	FileD* lvFD = PD->loc_var1->FD;
-	XWKey* k = (XWKey*)PD->loc_var1->RecPtr;
+	XWKey* k = (XWKey*)PD->loc_var1->record;
 
 	BYTE* record = lvFD->GetRecSpace();
 
@@ -34,7 +34,7 @@ void GetIndex(Instr_getindex* PD)
 			break;
 		}
 		case 'r': {
-			x.PackKF(ld->ToFD, kf, lv2->RecPtr);
+			x.PackKF(ld->ToFD, kf, lv2->record);
 			Scan->ResetOwner(&x, cond);
 			break;
 		}
