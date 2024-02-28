@@ -573,31 +573,33 @@ void AppendRecProc(FileD* file_d)
 	file_d->OldLockMode(md);
 }
 
-void UpdRec(int N, bool AdUpd, void* record)
+void UpdRec(FileD* file_d, int rec_nr, bool ad_upd, void* record)
 {
-	void* record2 = CFile->GetRecSpace();
-	CRecPtr = record2;
-	CFile->ReadRec(N, CRecPtr);
-	bool del = CFile->DeletedFlag(CRecPtr);
-	CRecPtr = record;
-	if (AdUpd) {
+	uint8_t* record2 = file_d->GetRecSpace();
+	file_d->ReadRec(rec_nr, record2);
+	const bool del = file_d->DeletedFlag(record2);
+
+	if (ad_upd) {
 		if (del) {
-			LastExitCode = !RunAddUpdate(CFile, '+', nullptr, nullptr, CRecPtr);
+			LastExitCode = !RunAddUpdate(file_d, '+', nullptr, nullptr, record);
 		}
 		else {
-			LastExitCode = !RunAddUpdate(CFile, 'd', record2, nullptr, CRecPtr);
+			LastExitCode = !RunAddUpdate(file_d, 'd', record2, nullptr, record);
 		}
 	}
-	if (CFile->FF->file_type == FileType::INDEX) {
-		CFile->FF->OverWrXRec(N, record2, record, CRecPtr);
+
+	if (file_d->FF->file_type == FileType::INDEX) {
+		file_d->FF->OverWrXRec(rec_nr, record2, record, record);
 	}
 	else {
-		CFile->WriteRec(N, CRecPtr);
+		file_d->WriteRec(rec_nr, record);
 	}
+
 	if (!del) {
-		CFile->DelAllDifTFlds(record2, nullptr);
+		file_d->DelAllDifTFlds(record2, nullptr);
 	}
-	ReleaseStore(&record2);
+
+	delete[] record2; record2 = nullptr;
 }
 
 void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
@@ -706,7 +708,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 			}
 		}
 		else {
-			UpdRec(N, ad, record1);
+			UpdRec(lv->FD, N, ad, record1);
 		}
 	}
 
@@ -872,7 +874,7 @@ label1:
 			if ((LVr != nullptr) && (LVi == nullptr) && CFile->HasUpdFlag(CRecPtr)) {
 				md1 = CFile->NewLockMode(WrMode);
 				CFile->CopyRecWithT(lr, cr, false);
-				UpdRec(xScan->RecNr, true, cr);
+				UpdRec(CFile, xScan->RecNr, true, cr);
 				CFile->OldLockMode(md1);
 			}
 		}
