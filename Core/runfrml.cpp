@@ -1468,14 +1468,14 @@ std::string DecodeField(FileD* file_d, FieldDescr* F, WORD LWw, void* record)
 	}
 	case 'S': {
 		if (F->field_type == FieldType::TEXT) {
-			std::string Txt;
-			if (((F->Flg & f_Stored) != 0) && (file_d->loadR(F, record) == 0.0)) {
-				Txt = ".";
+			std::string txt;
+			if (F->isStored() && (file_d->loadR(F, record) == 0.0)) {
+				txt = ".";
 			}
 			else {
-				Txt = "*";
+				txt = "*";
 			}
-			return Txt;
+			return txt;
 		}
 		else {
 			s = file_d->loadS(F, record);

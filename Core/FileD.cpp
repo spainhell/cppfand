@@ -465,11 +465,12 @@ void FileD::ZeroAllFlds(void* record, bool delTFields)
 	}
 }
 
-/// \brief Copy complete record - for T: one of this files is always TWork
+/// \brief Copy complete record
+/// - for T: one of this files is always TWork
 /// \param record1 source record
 /// \param record2 destination record
 /// \param delTFields deletes the existing destination T first
-void FileD::CopyRecWithT(void* record1, void* record2, bool delTFields)
+void FileD::CopyRec(void* record1, void* record2, bool delTFields)
 {
 	if (delTFields)	{
 		this->FF->DelTFlds(record2);

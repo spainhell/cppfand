@@ -198,41 +198,58 @@ bool FandFile::loadB(FieldDescr* field_d, void* record)
 
 double FandFile::loadR(FieldDescr* field_d, void* record)
 {
-	char* source = (char*)record + field_d->Displ;
+	uint8_t* source = static_cast<uint8_t*>(record) + field_d->Displ;
 	double result = 0.0;
-	double r;
 
-	if (file_type == FileType::DBF) result = _RforD(field_d, source);
-	else switch (field_d->field_type) {
-	case FieldType::FIXED: { // FIX CISLO (M,N)
-		r = RealFromFix(source, field_d->NBytes);
-		if ((field_d->Flg & f_Comma) == 0) result = r / Power10[field_d->M];
-		else result = r;
-		break;
+	if (file_type == FileType::DBF) {
+		result = _RforD(field_d, source);
 	}
-	case FieldType::DATE: { // DATUM DD.MM.YY
-		if (file_type == FileType::FAND8) {
-			if (*(short*)source == 0) result = 0.0;
-			else result = *(short*)source + FirstDate;
+	else {
+		switch (field_d->field_type) {
+		case FieldType::FIXED: { // FIX CISLO (M,N)
+			const double r = RealFromFix(source, field_d->NBytes);
+			if ((field_d->Flg & f_Comma) == 0) {
+				result = r / Power10[field_d->M];
+			}
+			else {
+				result = r;
+			}
+			break;
 		}
-		else goto label1;
-		break;
-	}
-	case FieldType::REAL: {
-	label1:
-		if (record == nullptr) result = 0;
-		else {
-			result = Real48ToDouble(source);
+		case FieldType::DATE: { // DATUM DD.MM.YY
+			if (file_type == FileType::FAND8) {
+				if (*reinterpret_cast<int16_t*>(source) == 0) result = 0.0;
+				else result = *reinterpret_cast<int16_t*>(source) + FirstDate;
+			}
+			else {
+				if (is_null_value(source, field_d->NBytes)) {
+					result = 0;
+				}
+				else {
+					result = Real48ToDouble(source);
+				}
+			}
+			break;
 		}
-		break;
+		case FieldType::REAL: {
+			if (is_null_value(source, field_d->NBytes)) {
+				result = 0;
+			}
+			else {
+				result = Real48ToDouble(source);
+			}
+			break;
+		}
+		case FieldType::TEXT: {
+			// pointer to text file 4B
+			const int32_t i = *reinterpret_cast<int32_t*>(source);
+			result = i;
+			break;
+		}
+		default:
+			break;
+		}
 	}
-	case FieldType::TEXT: {
-		short i = *(short*)source;
-		result = i;
-		break;
-	}
-	}
-
 	return result;
 }
 

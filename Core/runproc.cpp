@@ -692,10 +692,10 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 	}
 	if (IsRead) {
 		lv->FD->ReadRec(N, record1);
-		lv->FD->CopyRecWithT(record1, lv->record, true);
+		lv->FD->CopyRec(record1, lv->record, true);
 	}
 	else {
-		lv->FD->CopyRecWithT(lv->record, record1, false);
+		lv->FD->CopyRec(lv->record, record1, false);
 		if (app) {
 			if (lv->FD->FF->file_type == FileType::INDEX) {
 				lv->FD->RecallRec(N, record1);
@@ -743,7 +743,7 @@ void LinkRecProc(Instr_assign* PD)
 		LastExitCode = 1;
 	}
 	//CFile->DelTFlds(lr2);
-	CFile->CopyRecWithT(rec, lr2, true);
+	CFile->CopyRec(rec, lr2, true);
 	delete[] rec; rec = nullptr;
 
 	ReleaseStore(&p);
@@ -852,7 +852,7 @@ label1:
 				CRecPtr = lr;
 				CFile->ClearUpdFlag(lr);
 				//CFile->DelTFlds(lr);
-				CFile->CopyRecWithT(cr, lr, true);
+				CFile->CopyRec(cr, lr, true);
 			}
 		//if (LVi != nullptr) *(double*)(LocVarAd(LVi)) = Scan->RecNr; // metoda LocVarAd byla odstranena z access.cpp
 		if (LVi != nullptr) {
@@ -873,7 +873,7 @@ label1:
 			OpenCreateF(CFile, CPath, Shared);
 			if ((LVr != nullptr) && (LVi == nullptr) && CFile->HasUpdFlag(CRecPtr)) {
 				md1 = CFile->NewLockMode(WrMode);
-				CFile->CopyRecWithT(lr, cr, false);
+				CFile->CopyRec(lr, cr, false);
 				UpdRec(CFile, xScan->RecNr, true, cr);
 				CFile->OldLockMode(md1);
 			}
