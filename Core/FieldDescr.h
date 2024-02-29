@@ -39,6 +39,9 @@ public:
 	short Displ = 0;
 	FrmlElem* Frml = nullptr;
 
+	bool isStored() const;
+	bool isEncrypted() const;
+
 	/* std::string S; // A, N, T
 	double R;      // F, D, R
 	bool B;        // B */

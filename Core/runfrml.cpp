@@ -1292,21 +1292,29 @@ bool CanCopyT(FileD* file_d, FieldDescr* F, FrmlElem* Z, FandTFile** TF02, FileD
 
 bool TryCopyT(FileD* file_d, FieldDescr* F, FandTFile* TF, int& pos, FrmlElem* Z, void* record)
 {
-	LockMode md, md2;
-
 	FileD* TFD02;
 	FandTFile* TF02;
 	int TF02Pos;
 
-	bool result = false;
-	if (TF->Format == FandTFile::DbtFormat || TF->Format == FandTFile::FptFormat) return result;
-	if (Z->Op == _gettxt) {
+	bool result;
+	if (TF->Format == FandTFile::DbtFormat || TF->Format == FandTFile::FptFormat) {
+		result = false;
+	}
+	else if (Z->Op == _gettxt) {
 		pos = CopyTFFromGetTxt(file_d, TF, (FrmlElem16*)Z, record);
 		result = true;
 	}
 	else if (CanCopyT(file_d, F, Z, &TF02, &TFD02, TF02Pos, record) && (TF02->Format == TF->Format)) {
+		LockMode md1 = NullMode, md2 = NullMode;
+		if (!TF02->IsWork) md2 = TFD02->NewLockMode(RdMode);
+		if (!TF->IsWork) md1 = file_d->NewLockMode(WrMode);
+		pos = FandFile::CopyT(TF, TF02, TF02Pos);
+		if (!TF02->IsWork) TFD02->OldLockMode(md2);
+		if (!TF->IsWork) file_d->OldLockMode(md1);
 		result = true;
-		pos = FandFile::CopyTFString(file_d, TF, TFD02, TF02, TF02Pos);
+	}
+	else {
+		result = false;
 	}
 	return result;
 }

@@ -69,13 +69,11 @@ public:
 	bool loadB(FieldDescr* field_d, void* record);
 	double loadR(FieldDescr* field_d, void* record);
 	std::string loadS(FieldDescr* field_d, void* record);
-
 	int loadT(FieldDescr* F, void* record);
 
 	void saveB(FieldDescr* field_d, bool b, void* record);
 	void saveR(FieldDescr* field_d, double r, void* record);
 	void saveS(FileD* parent, FieldDescr* field_d, std::string s, void* record);
-	void saveLongS(FileD* parent, FieldDescr* field_d, LongStr* ls, void* record);
 	int saveT(FieldDescr* field_d, int pos, void* record);
 
 	void DelTFld(FieldDescr* field_d, void* record);
@@ -125,7 +123,7 @@ public:
 	void CopyDuplF(FileD* TempFD, bool DelTF);
 	void IndexFileProc(bool Compress);
 
-	static int CopyTFString(FileD* file_d, FandTFile* destT00File, FileD* srcFileDescr, FandTFile* scrT00File, int srcT00Pos);
+	static int CopyT(FandTFile* destT00File, FandTFile* srcT00File, int srcT00Pos);
 	static void CopyTFStringToH(FileD* file_d, HANDLE h, FandTFile* TF02, FileD* TFD02, int& TF02Pos);
 
 private:

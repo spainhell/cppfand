@@ -32,7 +32,7 @@ FandFile::FandFile(const FandFile& orig, FileD* parent)
 	file_type = orig.file_type;
 	FirstRecPos = orig.FirstRecPos;
 	Drive = orig.Drive;
-	
+
 	_parent = parent;
 
 	if (orig.TF != nullptr) TF = new FandTFile(*orig.TF, this);
@@ -294,8 +294,8 @@ std::string FandFile::loadS(FieldDescr* field_d, void* record)
 
 int FandFile::loadT(FieldDescr* F, void* record)
 {
-	int n = 0;
-	short err = 0;
+	//int n = 0;
+	//short err = 0;
 	char* source = (char*)record + F->Displ;
 
 	if (file_type == FileType::DBF) {
@@ -307,7 +307,7 @@ int FandFile::loadT(FieldDescr* F, void* record)
 	}
 	else {
 		if (record == nullptr) return 0;
-		return *(int*)source;
+		return *reinterpret_cast<int*>(source);
 	}
 }
 
@@ -381,7 +381,7 @@ void FandFile::saveS(FileD* parent, FieldDescr* field_d, std::string s, void* re
 	const BYTE LeftJust = 1;
 	BYTE* pRec = (BYTE*)record + field_d->Displ;
 
-	if ((field_d->Flg & f_Stored) != 0) {
+	if (field_d->isStored()) {
 		short L = field_d->L;
 		short M = field_d->M;
 		switch (field_d->field_type) {
@@ -429,45 +429,28 @@ void FandFile::saveS(FileD* parent, FieldDescr* field_d, std::string s, void* re
 			break;
 		}
 		case FieldType::TEXT: {
-			size_t l = s.length();
-			LongStr* ls = new LongStr(l);
-			ls->LL = l;
-			memcpy(ls->A, s.c_str(), l);
-			saveLongS(parent, field_d, ls, record);
-			delete ls;
+			if (s.length() == 0) {
+				saveT(field_d, 0, record);
+			}
+			else {
+				if (field_d->isEncrypted() != 0) {
+					s = Coding::Code(s);
+				}
+				if (HasTWorkFlag(record)) {
+					saveT(field_d, TWork.Store(s), record);
+				}
+				else {
+					LockMode md = parent->NewLockMode(WrMode);
+					saveT(field_d, TF->Store(s), record);
+					parent->OldLockMode(md);
+				}
+			}
 			break;
 		}
 		}
 	}
-}
-
-void FandFile::saveLongS(FileD* parent, FieldDescr* field_d, LongStr* ls, void* record)
-{
-	// asi se vzdy uklada do souboru (nebo pracovniho souboru)
-	// nakonec vola saveT
-	int Pos; LockMode md;
-
-	if ((field_d->Flg & f_Stored) != 0) {
-		if (ls->LL == 0) saveT(field_d, 0, record);
-		else {
-			if ((field_d->Flg & f_Encryp) != 0) Coding::Code(ls->A, ls->LL);
-#ifdef FandSQL
-			if (file_d->IsSQLFile) { SetTWorkFlag; goto label1; }
-			else
-#endif
-				if (HasTWorkFlag(record))
-					label1:
-			Pos = TWork.Store(ls->A, ls->LL);
-				else {
-					md = parent->NewLockMode(WrMode);
-					Pos = TF->Store(ls->A, ls->LL);
-					parent->OldLockMode(md);
-				}
-			if ((field_d->Flg & f_Encryp) != 0) {
-				Coding::Code(ls->A, ls->LL);
-			}
-			saveT(field_d, Pos, record);
-		}
+	else {
+		// field is not stored
 	}
 }
 
@@ -1168,7 +1151,7 @@ void FandFile::SubstDuplF(FileD* TempFD, bool DelTF)
 	file_type = TempFD->FF->file_type;
 	FirstRecPos = TempFD->FF->FirstRecPos;
 	Drive = TempFD->FF->Drive;
-	
+
 	// rename temp file to regular
 	std::string temp_path = SetTempCExt(_parent, '0', false);
 	SaveCache(0, TempFD->FF->Handle);
@@ -1260,107 +1243,137 @@ void FandFile::IndexFileProc(bool Compress)
 	delete[] record; record = nullptr;
 }
 
-int FandFile::CopyTFString(FileD* file_d, FandTFile* destT00File, FileD* srcFileDescr, FandTFile* scrT00File,
-	int srcT00Pos)
+/// \brief Copies T from one .T00 file to another. Files should be locked before calling this function!
+/// \param destT00File destination T file - should be locked in WrMode
+/// \param srcT00File source T file - should be locked in RdMode
+/// \param srcT00Pos position of T in source T file
+/// \return position of T in destination T file
+int FandFile::CopyT(FandTFile* destT00File, FandTFile* srcT00File, int srcT00Pos)
 {
-	// TODO: CFile variable has been removed without testing,
-	// TODO: also label2, label3 have been removed without testing
 	WORD l = 0;
-	short rest = 0;
-	bool isLongTxt = false, frst = false;
-	int pos = 0, nxtpos = 0;
-	LockMode md, md2;
-	BYTE X[MPageSize + 1]{ 0 };
-	WORD* ll = (WORD*)X;
+	int pos = 0;
+
+	BYTE page_buffer[MPageSize + 1]{ 0 };
+	const uint16_t* ll = reinterpret_cast<uint16_t*>(page_buffer);
+
 	int result = 0;
 
 	if (srcT00Pos == 0) {
-	label0:
-		return 0; /*Mark****/
+		return 0; // mark
 	}
 
-	if (!destT00File->IsWork) md = file_d->NewLockMode(WrMode);
-	if (!scrT00File->IsWork) md2 = srcFileDescr->NewLockMode(RdMode);
-	RdWrCache(READ, scrT00File->Handle, scrT00File->NotCached(), srcT00Pos, 2, &l);
-	if (l <= MPageSize - 2) { /* short text */
+	// read length of text
+	ReadCache(srcT00File->Handle, srcT00File->NotCached(), srcT00Pos, 2, &l);
+	if (l <= MPageSize - 2) { // short text
 		if (l == 0) {
-			goto label0; /*Mark****/
+			return 0; // mark
 		}
-		RdWrCache(READ, scrT00File->Handle, scrT00File->NotCached(), srcT00Pos + 2, l, X);
-		rest = MPageSize - destT00File->FreePart % MPageSize;
-		if (l + 2 <= rest) {
+
+		// read text from source T file
+		ReadCache(srcT00File->Handle, srcT00File->NotCached(), srcT00Pos + 2, l, page_buffer);
+		int16_t rest = static_cast<int16_t>(MPageSize - destT00File->FreePart % MPageSize);
+
+		// find place for new short text
+		if (rest >= l + 2) {
+			// 2B length + text fits into current page
 			pos = destT00File->FreePart;
 		}
 		else {
+			// start on new page
 			pos = destT00File->NewPage(false);
 			destT00File->FreePart = pos;
 			rest = MPageSize;
 		}
-		if (l + 4 >= rest) {
+
+		if (rest <= l + 4) {
 			destT00File->FreePart = destT00File->NewPage(false);
 		}
 		else {
 			destT00File->FreePart += l + 2;
 			rest = l + 4 - rest;
-			RdWrCache(WRITE, destT00File->Handle, destT00File->NotCached(), destT00File->FreePart, 2, &rest);
+			WriteCache(destT00File->Handle, destT00File->NotCached(), destT00File->FreePart, 2, &rest);
 		}
-		RdWrCache(WRITE, destT00File->Handle, destT00File->NotCached(), pos, 2, &l);
-		RdWrCache(WRITE, destT00File->Handle, destT00File->NotCached(), pos + 2, l, X);
+
+		// write length and text to destination T file
+		WriteCache(destT00File->Handle, destT00File->NotCached(), pos, 2, &l);
+		WriteCache(destT00File->Handle, destT00File->NotCached(), pos + 2, l, page_buffer);
+		// return position of new text in destination T file
 		result = pos;
-		goto label4;
+		return result;
 	}
+
 	if ((srcT00Pos % MPageSize) != 0) {
-		scrT00File->Err(889, false);
+		// it's not short text, and it is not on the beginning of the page
+		srcT00File->Err(889, false);
 		result = 0;
-		goto label4;
+		return result;
 	}
 
-	RdWrCache(READ, scrT00File->Handle, scrT00File->NotCached(), srcT00Pos, MPageSize, X);
-	frst = true;
+	// process long text
+	ReadCache(srcT00File->Handle, srcT00File->NotCached(), srcT00Pos, MPageSize, page_buffer);
+	bool first = true;
+	bool end = false;
 
-label1:
-	if (l > MaxLStrLen + 1) {
-		scrT00File->Err(889, false);
-		result = 0;
-		goto label4;
-	}
-	isLongTxt = (l == MaxLStrLen + 1);
-	if (isLongTxt) l--;
-	l += 2;
-
-	while (true) {
-		if (frst) {
-			pos = destT00File->NewPage(false);
-			result = pos;
-			frst = false;
+	while (!end) {
+		end = true;
+		if (l > MaxLStrLen + 1) {
+			// l > 65001
+			srcT00File->Err(889, false);
+			result = 0;
+			return result;
 		}
-		if ((l > MPageSize) || isLongTxt) {
-			srcT00Pos = *(int*)&X[MPageSize - 4];
-			nxtpos = destT00File->NewPage(false);
-			*(int*)&X[MPageSize - 4] = nxtpos;
-			RdWrCache(WRITE, destT00File->Handle, destT00File->NotCached(), pos, MPageSize, X);
-			pos = nxtpos;
-			if ((srcT00Pos < MPageSize) || (srcT00Pos + MPageSize > scrT00File->MLen) || (srcT00Pos % MPageSize != 0)) {
-				scrT00File->Err(888, false);
-				result = 0;
-				goto label4;
+		const bool isLongTxt = (l == MaxLStrLen + 1); // length is 65001
+		if (isLongTxt) l--;
+		l += 2;
+
+		while (true) {
+			if (first) {
+				// always create new page for first part of long text
+				pos = destT00File->NewPage(false);
+				result = pos;
+				first = false;
 			}
-			RdWrCache(READ, scrT00File->Handle, scrT00File->NotCached(), srcT00Pos, MPageSize, X);
-			if ((l <= MPageSize)) {
-				l = *ll;
-				goto label1;
+
+			if ((l > MPageSize) || isLongTxt) {
+				// the page buffer contains both source and destination data
+				// - only position of next page is written to the end of the page
+
+				// get position of next page in source T file
+				srcT00Pos = *reinterpret_cast<int*>(&page_buffer[MPageSize - 4]);
+				// get new page for next part of long text in destination T file
+				const int next_pos = destT00File->NewPage(false);
+				// write position of next page to the end of current page in destination T file
+				*reinterpret_cast<int*>(&page_buffer[MPageSize - 4]) = next_pos;
+				// write current page to destination T file
+				WriteCache(destT00File->Handle, destT00File->NotCached(), pos, MPageSize, page_buffer);
+				pos = next_pos;
+
+				if ((srcT00Pos < MPageSize) || (srcT00Pos + MPageSize > srcT00File->MLen) || (srcT00Pos % MPageSize != 0)) {
+					srcT00File->Err(888, false);
+					result = 0;
+					return result;
+				}
+
+				// read next part of long text from source T file
+				ReadCache(srcT00File->Handle, srcT00File->NotCached(), srcT00Pos, MPageSize, page_buffer);
+				if ((l <= MPageSize)) {
+					// last part of long text, page is not full
+					l = *ll;
+					end = false;
+					break;
+				}
+				else {
+					// MPageSize - 4 has been written to the destination T file
+					l -= MPageSize - 4;
+					continue;
+				}
 			}
-			l -= MPageSize - 4;
-			continue;
+			break;
 		}
-		break;
 	}
 
-	RdWrCache(WRITE, destT00File->Handle, destT00File->NotCached(), pos, MPageSize, X);
-
-label4:
-	if (!scrT00File->IsWork) srcFileDescr->OldLockMode(md2);
-	if (!destT00File->IsWork) file_d->OldLockMode(md);
+	// write last part of long text
+	WriteCache(destT00File->Handle, destT00File->NotCached(), pos, MPageSize, page_buffer);
 
 	return result;
 }

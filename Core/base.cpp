@@ -663,7 +663,7 @@ void RdWrCache(FileOperation operation, HANDLE handle, bool not_cached, size_t p
 {
 	Logging* log = Logging::getInstance();
 
-	bool Cached = !not_cached;
+	const bool cached = !not_cached;
 	short PgeIdx = 0, PgeRest = 0;
 	WORD err = 0; int PgeNo = 0;
 	//CachePage* Z = nullptr;
@@ -688,7 +688,7 @@ void RdWrCache(FileOperation operation, HANDLE handle, bool not_cached, size_t p
 		SetUpdHandle(handle);
 	}
 
-	if (Cached) {
+	if (cached) {
 		//log->log(loglevel::DEBUG, "RdWrCache() 0x%p cached file operation.", handle);
 		FileCache* c1 = cache.GetCache(handle);
 		if (operation == READ) {
@@ -716,6 +716,16 @@ void RdWrCache(FileOperation operation, HANDLE handle, bool not_cached, size_t p
 		SetMsgPar(CPath);
 		RunError(700 + err);
 	}
+}
+
+void ReadCache(HANDLE handle, bool not_cached, size_t position, size_t count, void* buf)
+{
+	RdWrCache(READ, handle, not_cached, position, count, buf);
+}
+
+void WriteCache(HANDLE handle, bool not_cached, size_t position, size_t count, void* buf)
+{
+	RdWrCache(WRITE, handle, not_cached, position, count, buf);
 }
 
 //void FlushH(FILE* handle)

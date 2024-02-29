@@ -42,6 +42,16 @@ FieldDescr::FieldDescr(const FieldDescr& orig)
 	Name = orig.Name;
 }
 
+bool FieldDescr::isStored() const
+{
+	return (Flg & f_Stored) != 0;
+}
+
+bool FieldDescr::isEncrypted() const
+{
+	return (Flg & f_Encryp) != 0;
+}
+
 FieldType FieldDescr::GetFieldType(char type)
 {
 	switch (type) {

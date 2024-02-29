@@ -296,7 +296,8 @@ void FileD::saveS(FieldDescr* field_d, const std::string& s, void* record)
 
 void FileD::saveLongS(FieldDescr* field_d, LongStr* ls, void* record)
 {
-	FF->saveLongS(this, field_d, ls, record);
+	const std::string s(ls->A, ls->LL);
+	FF->saveS(this, field_d, s, record);
 }
 
 int FileD::saveT(FieldDescr* field_d, int pos, void* record)
@@ -464,6 +465,10 @@ void FileD::ZeroAllFlds(void* record, bool delTFields)
 	}
 }
 
+/// \brief Copy complete record - for T: one of this files is always TWork
+/// \param record1 source record
+/// \param record2 destination record
+/// \param delTFields deletes the existing destination T first
 void FileD::CopyRecWithT(void* record1, void* record2, bool delTFields)
 {
 	if (delTFields)	{
@@ -471,24 +476,36 @@ void FileD::CopyRecWithT(void* record1, void* record2, bool delTFields)
 	}
 
 	memcpy(record2, record1, FF->RecLen);
-	for (auto& F : FldD) {
-		if ((F->field_type == FieldType::TEXT) && ((F->Flg & f_Stored) != 0)) {
+	for (FieldDescr* const& f : FldD) {
+		if ((f->field_type == FieldType::TEXT) && f->isStored()) {
 			FandTFile* tf1 = FF->TF;
-			FandTFile* tf2 = tf1;
-			if ((tf1->Format != FandTFile::T00Format)) {
-				std::string s = loadS(F, record1);
-				saveS(F, s, record2);
+			FandTFile* tf2 = FF->TF;
+
+			if (tf1->Format != FandTFile::T00Format) {
+				std::string s = loadS(f, record1);
+				saveS(f, s, record2);
 			}
 			else {
 				if (HasTWorkFlag(record1)) {
 					tf1 = &TWork;
 				}
-				int pos = loadT(F, record1);
+
+				int pos = loadT(f, record1);
+
 				if (HasTWorkFlag(record2)) {
 					tf2 = &TWork;
 				}
-				pos = FandFile::CopyTFString(this, tf2, this, tf1, pos);
-				saveT(F, pos, record2);
+
+				LockMode md1 = NullMode, md2 = NullMode;
+				if (!tf1->IsWork) md1 = NewLockMode(RdMode);
+				if (!tf2->IsWork) md2 = NewLockMode(WrMode);
+
+				pos = FandFile::CopyT(tf2, tf1, pos);
+
+				if (!tf2->IsWork) OldLockMode(md2);
+				if (!tf1->IsWork) OldLockMode(md1);
+
+				saveT(f, pos, record2);
 			}
 		}
 	}

@@ -77,6 +77,8 @@ void FlushHandles();
 void CloseH(HANDLE* handle);
 void CloseClearH(HANDLE* h);
 void RdWrCache(FileOperation operation, HANDLE handle, bool not_cached, size_t position, size_t count, void* buf);
+void ReadCache(HANDLE handle, bool not_cached, size_t position, size_t count, void* buf);
+void WriteCache(HANDLE handle, bool not_cached, size_t position, size_t count, void* buf);
 void MyDeleteFile(pstring path);
 void RenameFile56(pstring OldPath, pstring NewPath, bool Msg);
 std::string MyFExpand(std::string Nm, std::string EnvName);
