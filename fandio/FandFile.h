@@ -129,7 +129,7 @@ public:
 private:
 	FileD* _parent;
 	double _RforD(FieldDescr* field_d, void* record);
-	bool is_null_value(void* record, WORD l);
+	bool is_null_value(FieldDescr* field_d, uint8_t* record);
 
 	std::string _extToT(const std::string& input_path);
 	std::string _extToX(const std::string& dir, const std::string& name, std::string ext);

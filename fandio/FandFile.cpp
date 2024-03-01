@@ -188,7 +188,7 @@ bool FandFile::loadB(FieldDescr* field_d, void* record)
 	if (file_type == FileType::DBF) {
 		result = *CP == 'Y' || *CP == 'y' || *CP == 'T' || *CP == 't';
 	}
-	else if ((*CP == '\0') || (*CP == 0xFF)) {
+	else if ((*CP == '\0') || (*CP == 0xFF)) { //x0FF is NULL value
 		result = false;
 	}
 	else result = true;
@@ -222,7 +222,7 @@ double FandFile::loadR(FieldDescr* field_d, void* record)
 				else result = *reinterpret_cast<int16_t*>(source) + FirstDate;
 			}
 			else {
-				if (is_null_value(source, field_d->NBytes)) {
+				if (is_null_value(field_d, source)) {
 					result = 0;
 				}
 				else {
@@ -232,7 +232,7 @@ double FandFile::loadR(FieldDescr* field_d, void* record)
 			break;
 		}
 		case FieldType::REAL: {
-			if (is_null_value(source, field_d->NBytes)) {
+			if (is_null_value(field_d, source)) {
 				result = 0;
 			}
 			else {
@@ -273,7 +273,7 @@ std::string FandFile::loadS(FieldDescr* field_d, void* record)
 				S = RepeatString(' ', l);
 			}
 		}
-		else if (is_null_value(source, field_d->NBytes)) {
+		else if (is_null_value(field_d, reinterpret_cast<uint8_t*>(source))) {
 			S = RepeatString(' ', l);
 		}
 		else {
@@ -1482,11 +1482,29 @@ double FandFile::_RforD(FieldDescr* field_d, void* record)
 	return r;
 }
 
-bool FandFile::is_null_value(void* record, WORD l)
+bool FandFile::is_null_value(FieldDescr* field_d, uint8_t* record)
 {
-	BYTE* pb = (BYTE*)record;
-	for (size_t i = 0; i < l; i++) {
-		if (pb[i] != 0xFF) return false;
+	if (field_d->field_type == FieldType::FIXED) {
+		if (field_d->NBytes == 1 && record[0] == 0x80) {
+			return true;
+		}
+		else {
+			if (record[0] == 0x80) {
+				for (size_t i = 1; i < field_d->NBytes; i++) {
+					if (record[i] != 0x00) return false;
+				}
+				return true;
+			}
+			else {
+				return false;
+			}
+		}
+	}
+	else {
+		// check if all bytes are 0xFF (null value in PCFAND)
+		for (size_t i = 0; i < field_d->NBytes; i++) {
+			if (record[i] != 0xFF) return false;
+		}
 	}
 	return true;
 }
