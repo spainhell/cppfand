@@ -481,7 +481,7 @@ void InitRunFand()
 	txt += "~DML,";
 #endif*/
 //#ifdef Coproc
-	txt = txt + "COPROC,";
+//	txt = txt + "COPROC,";
 //#endif
 #ifdef FandTest
 	txt = "test," + txt;
@@ -489,13 +489,18 @@ void InitRunFand()
 #ifdef FandAng
 	txt = txt + "En ";
 #endif
+#ifdef _WIN64
+	txt = txt + "64bit,";
+#else
+	txt = txt + "32bit,";
+#endif
 
 	if (!txt.empty()) {
 		if (txt[txt.length() - 1] == ',') txt = txt.substr(0, txt.length() - 1);
 		txt += ")";
-		MsgLine = MsgLine + "x (" + txt;
+		MsgLine = MsgLine + "w (" + txt;
 	}
-	else MsgLine += 'x';
+	else MsgLine += 'w';
 
 	screen.ScrWrText(5, TxtRows - 3, MsgLine.c_str());
 
