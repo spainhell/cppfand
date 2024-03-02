@@ -13,7 +13,4 @@ void EditHelpOrCat(WORD cc, WORD kind, std::string txt);
 void StoreChptTxt(FieldDescr* F, std::string text, bool Del);
 bool EditExecRdb(std::string Nm, std::string proc_name, Instr_proc* proc_call, wwmix* ww);
 void InstallRdb(std::string n);
-
-
-// for DLL
 void CreateOpenChpt(std::string Nm, bool create);

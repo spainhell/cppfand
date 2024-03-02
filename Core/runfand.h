@@ -1,11 +1,15 @@
 #pragma once
 
+#include <string>
 #include "switches.h"
 #include "../Common/typeDef.h"
 
 void ScrGraphMode(bool Redraw, WORD OldScrSeg);
 WORD ScrTextMode(bool Redraw, bool Switch);
 
-void InitRunFand(); // !!! spuštìní - vstupní procedura
+void InitRunFand(); // !!! spusteni - vstupní procedura
 void DeleteFandFiles(); // remove Fand work files
 void OpenFileDialog();
+
+bool SetTopDir(std::string& p, std::string& n);
+void CompileHelpCatDcl();

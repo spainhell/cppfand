@@ -2733,7 +2733,7 @@ bool TextEditor::WordFind(WORD i, WORD& WB, short& WE, WORD& LI)
 	if (k >= _lenT) return result;
 	WB = k - 1;
 	k++;
-	while (_textT[k] != 0x13) {
+	while (k < _lenT && _textT[k] != 0x13) {
 		k++;
 	}
 	if (k >= _lenT) return result;

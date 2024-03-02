@@ -577,10 +577,10 @@ void UpdRec(FileD* file_d, int rec_nr, bool ad_upd, void* record)
 {
 	uint8_t* record2 = file_d->GetRecSpace();
 	file_d->ReadRec(rec_nr, record2);
-	const bool del = file_d->DeletedFlag(record2);
+	const bool deleted = file_d->DeletedFlag(record2);
 
 	if (ad_upd) {
-		if (del) {
+		if (deleted) {
 			LastExitCode = !RunAddUpdate(file_d, '+', nullptr, nullptr, record);
 		}
 		else {
@@ -595,7 +595,7 @@ void UpdRec(FileD* file_d, int rec_nr, bool ad_upd, void* record)
 		file_d->WriteRec(rec_nr, record);
 	}
 
-	if (!del) {
+	if (!deleted) {
 		file_d->DelAllDifTFlds(record2, nullptr);
 	}
 

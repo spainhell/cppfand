@@ -594,6 +594,30 @@ void ResetRdOnly()
 	}
 }
 
+RdbD* PrepareRdb(const std::string& name, std::string& name1)
+{
+	short i = 0, n = 0;
+	RdbD* rdb_d = new RdbD();
+
+	rdb_d->ChainBack = CRdb;
+	rdb_d->OldLDRoot = LinkDRoot;
+	rdb_d->OldFCRoot = FuncDRoot;
+	//MarkStore2(R->Mark2);
+	ReadMessage(51);
+	std::string s = MsgLine;
+	ReadMessage(48);
+	val(MsgLine, n, i);
+	std::string nr = std::to_string((TxtCols - n));
+	s = s + nr;
+	SetInpStr(s);
+	if ((name[0] == '\\')) name1 = name.substr(1, 8);
+	else name1 = name;
+	RdFileD(name1, FileType::RDB, ""); /*old CRdb for GetCatalogIRec*/
+	rdb_d->FD = CFile;
+
+	return rdb_d;
+}
+
 void CreateOpenChpt(std::string Nm, bool create)
 {
 	std::string p; std::string s;
@@ -605,23 +629,8 @@ void CreateOpenChpt(std::string Nm, bool create)
 	FileDRoot = nullptr;
 	Chpt = nullptr;
 	//R = (RdbD*)GetZStore(sizeof(*R));
-	RdbD* R = new RdbD();
 	FandTFile* oldChptTF = ChptTF;
-	R->ChainBack = CRdb;
-	R->OldLDRoot = LinkDRoot;
-	R->OldFCRoot = FuncDRoot;
-	//MarkStore2(R->Mark2);
-	ReadMessage(51);
-	s = MsgLine;
-	ReadMessage(48);
-	val(MsgLine, n, i);
-	nr = std::to_string((TxtCols - n));
-	s = s + nr;
-	SetInpStr(s);
-	if ((Nm[0] == '\\')) Nm1 = Nm.substr(1, 8);
-	else Nm1 = Nm;
-	RdFileD(Nm1, FileType::RDB, ""); /*old CRdb for GetCatalogIRec*/
-	R->FD = CFile;
+	RdbD* R = PrepareRdb(Nm, Nm1);
 	CRdb = R;
 	CFile->FF->RecPtr = CFile->GetRecSpace();
 	SetRdbDir(Nm[0], &Nm1);
