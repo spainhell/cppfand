@@ -116,7 +116,7 @@ void FileD::ClearRecSpace(void* record)
 	if (FF->TF != nullptr) {
 		if (HasTWorkFlag(record)) {
 			for (FieldDescr* f : FldD) {
-				if (((f->Flg & f_Stored) != 0) && (f->field_type == FieldType::TEXT)) {
+				if ((f->isStored()) && (f->field_type == FieldType::TEXT)) {
 					TWork.Delete(loadT(f, record));
 					saveT(f, 0, record);
 				}
@@ -229,7 +229,7 @@ void FileD::AssignNRecs(bool Add, int N)
 bool FileD::loadB(FieldDescr* field_d, void* record)
 {
 	bool result;
-	if ((field_d->Flg & f_Stored) != 0) {
+	if (field_d->isStored()) {
 		result = FF->loadB(field_d, record);
 	}
 	else
@@ -242,7 +242,7 @@ bool FileD::loadB(FieldDescr* field_d, void* record)
 double FileD::loadR(FieldDescr* field_d, void* record)
 {
 	double result;
-	if ((field_d->Flg & f_Stored) != 0) {
+	if (field_d->isStored()) {
 		result = FF->loadR(field_d, record);
 	}
 	else {
@@ -254,7 +254,7 @@ double FileD::loadR(FieldDescr* field_d, void* record)
 std::string FileD::loadS(FieldDescr* field_d, void* record)
 {
 	std::string result;
-	if ((field_d->Flg & f_Stored) != 0) {
+	if (field_d->isStored()) {
 		result = FF->loadS(field_d, record);
 	}
 	else {
@@ -459,7 +459,7 @@ void FileD::ZeroAllFlds(void* record, bool delTFields)
 
 	memset(record, 0, FF->RecLen);
 	for (FieldDescr* F : FldD) {
-		if (((F->Flg & f_Stored) != 0) && (F->field_type == FieldType::ALFANUM)) {
+		if (F->isStored() && (F->field_type == FieldType::ALFANUM)) {
 			saveS(F, "", record);
 		}
 	}

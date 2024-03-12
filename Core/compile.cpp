@@ -1074,8 +1074,8 @@ void RdChptName(char C, RdbPos* Pos, bool TxtExpr)
 std::vector<FieldDescr*> AllFldsList(FileD* FD, bool OnlyStored)
 {
 	std::vector<FieldDescr*> FLRoot;
-	for (auto& F : FD->FldD) {
-		if (((F->Flg & f_Stored) != 0) || !OnlyStored) {
+	for (FieldDescr* F : FD->FldD) {
+		if (F->isStored() || !OnlyStored) {
 			FLRoot.push_back(F);
 		}
 	}
@@ -1377,7 +1377,7 @@ void SrchF(FieldDescr* F)
 		KeyArgFound = true;
 		return;
 	}
-	if ((F->Flg & f_Stored) == 0) {
+	if (!F->isStored()) {
 		SrchZ(F->Frml);
 	}
 }
@@ -1496,7 +1496,7 @@ void CompileRecLen()
 			break;
 		}
 		}
-		if ((F->Flg & f_Stored) != 0) {
+		if (F->isStored()) {
 			F->Displ = l;
 			l += F->NBytes;
 			n++;

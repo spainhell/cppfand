@@ -895,7 +895,7 @@ bool CompRunChptRec(WORD CC)
 	catch (std::exception& e) {
 		// TODO: log error
 	}
-
+	
 	MaxHp = nullptr;
 	ReleaseStore(&p2);
 	Free = StoreAvail();
@@ -1102,10 +1102,10 @@ void* RdF(std::string FileName)
 bool EquStoredF(FieldDescr* F1, FieldDescr* F2)
 {
 	while (true) {
-		while (F1 != nullptr && (F1->Flg & f_Stored) == 0) {
+		while (F1 != nullptr && !F1->isStored()) {
 			F1 = F1->pChain;
 		}
-		while (F2 != nullptr && (F2->Flg & f_Stored) == 0) {
+		while (F2 != nullptr && !F2->isStored()) {
 			F2 = F2->pChain;
 		}
 		if (F1 == nullptr) {

@@ -163,7 +163,7 @@ bool LinkUpw(FileD* file_d, LinkD* LD, int& N, bool WithT, void* record, BYTE** 
 		for (auto& arg : LD->Args) {
 			FieldDescr* F = arg->FldD;
 			FieldDescr* F2 = KF->FldD;
-			if ((F2->Flg & f_Stored) != 0)
+			if (F2->isStored()) {
 				switch (F->frml_type) {
 				case 'S': {
 					x.S = file_d->loadS(F, record);
@@ -181,6 +181,7 @@ bool LinkUpw(FileD* file_d, LinkD* LD, int& N, bool WithT, void* record, BYTE** 
 					break;
 				}
 				}
+			}
 			KF = KF->pChain;
 		}
 	}

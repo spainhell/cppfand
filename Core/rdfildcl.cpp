@@ -276,7 +276,7 @@ label1:
 	if (!neg) { EO->Flds = fl1; return; }
 	EO->Flds.clear();
 	for (auto& f : CFile->FldD) {
-		if ((((f->Flg & f_Stored) != 0) || all) && !FieldInList(f, fl1)) {
+		if (((f->isStored()) || all) && !FieldInList(f, fl1)) {
 			EO->Flds.push_back(f);
 		}
 	}
@@ -582,7 +582,7 @@ void* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 		RdFieldDList(true);
 		F2 = (FieldDescr*)LastInChain(CFile->FldD.front());
 		while (F != nullptr) {
-			if ((F->Flg & f_Stored) != 0) {
+			if (F->isStored()) {
 				CFile->FldD.push_back(F);
 				F2->pChain = F;
 				F2 = F;
@@ -590,7 +590,7 @@ void* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 					F->frml_type = 'R';
 					F->field_type = FieldType::FIXED;
 					F->L = 10;
-					F->Flg = F->Flg & !f_Encryp;
+					F->Flg = F->Flg & ~f_Encryp;
 				}
 			}
 			F = F->pChain;
