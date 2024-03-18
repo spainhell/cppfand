@@ -51,6 +51,15 @@ std::string ConvertCP852toUTF8(std::string cp852)
 	return std::string((char*)utf8, len * 2);
 }
 
+std::string ConvertUTF8toCP852(char* utf8)
+{
+	int containsUnsupported;
+	int len = WideCharToMultiByte(852, 0, (LPCWCH)utf8, -1, NULL, 0, NULL, &containsUnsupported);
+	uint8_t* cp852 = new byte[len]{ 0 };
+	int result = WideCharToMultiByte(852, 0, (LPCWCH)utf8, -1, (LPSTR)cp852, len, NULL, &containsUnsupported);
+	return std::string((char*)cp852, len);
+}
+
 
 extern "C" int FAND_API OpenRDB(char* rdbName)
 {
@@ -121,4 +130,37 @@ extern "C" void FAND_API GetChapterCode(char* chapterCode)
 extern "C" int FAND_API CloseRecord(int32_t recNr)
 {
 	return 0;
+}
+
+extern "C" int FAND_API ClearRdb()
+{
+	rdbFile->FF->NRecs = 0;
+	return 0;
+}
+
+extern "C" int FAND_API SaveChapter(char* chapterType, char* chapterName, char* chapterCode)
+{
+	rdbFile->ClearRecSpace(data);
+
+	std::string chapter_type = ConvertUTF8toCP852(chapterType);
+	rdbFile->saveS(rdbFile->FldD[3], chapter_type, data);
+
+	std::string chapter_name = ConvertUTF8toCP852(chapterName);
+	rdbFile->saveS(rdbFile->FldD[4], chapter_type, data);
+
+	std::string chapter_code = ConvertUTF8toCP852(chapterCode);
+	rdbFile->saveS(rdbFile->FldD[5], chapter_type, data);
+	
+	rdbFile->FF->NRecs++;
+	rdbFile->WriteRec(0, data); // 0 is new record
+
+	return rdbFile->FF->NRecs;
+}
+
+extern "C" int FAND_API CloseRdb()
+{
+	int result = rdbFile->FF->NRecs;
+	rdbFile->FF->SaveFile();
+	rdbFile->FF->CloseFile();
+	return result;
 }
