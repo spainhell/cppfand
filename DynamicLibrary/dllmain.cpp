@@ -43,23 +43,26 @@ uint8_t* data = nullptr;
 std::string code;
 
 
-std::string ConvertCP852toUTF8(std::string cp852)
+std::string ConvertCP852toUnicode(std::string cp852)
 {
 	int len = MultiByteToWideChar(852, 0, cp852.c_str(), (int)cp852.length(), NULL, 0);
-	uint8_t* utf8 = new byte[len * 2]{ 0 };
-	int result = MultiByteToWideChar(852, 0, cp852.c_str(), (int)cp852.length(), (LPWSTR)utf8, len);
-	return std::string((char*)utf8, len * 2);
+	uint8_t* uni = new byte[len * 2]{ 0 };
+	int result = MultiByteToWideChar(852, 0, cp852.c_str(), (int)cp852.length(), (LPWSTR)uni, len);
+	std::string uni_str = std::string((char*)uni, len * 2);
+	delete[] uni; uni = nullptr;
+	return uni_str;
 }
 
-std::string ConvertUTF8toCP852(char* utf8)
+std::string ConvertUnicodetoCP852(char* utf8)
 {
 	int containsUnsupported;
 	int len = WideCharToMultiByte(852, 0, (LPCWCH)utf8, -1, NULL, 0, NULL, &containsUnsupported);
 	uint8_t* cp852 = new byte[len]{ 0 };
 	int result = WideCharToMultiByte(852, 0, (LPCWCH)utf8, -1, (LPSTR)cp852, len, NULL, &containsUnsupported);
-	return std::string((char*)cp852, len);
+	std::string cp852str = std::string((char*)cp852, len - 1);
+	delete[] cp852; cp852 = nullptr;
+	return cp852str;
 }
-
 
 extern "C" int FAND_API OpenRDB(char* rdbName)
 {
@@ -111,14 +114,14 @@ extern "C" void FAND_API GetChapterType(char* chapterType)
 extern "C" void FAND_API GetChapterName(char* chapterName)
 {
 	std::string chapter_name = rdbFile->loadS(rdbFile->FldD[4], data);
-	chapter_name = ConvertCP852toUTF8(chapter_name);
+	chapter_name = ConvertCP852toUnicode(chapter_name);
 	memcpy(chapterName, chapter_name.c_str(), chapter_name.length());
 }
 
 extern "C" int FAND_API GetChapterCodeLength()
 {
 	code = rdbFile->loadS(rdbFile->FldD[5], data);
-	code = ConvertCP852toUTF8(code);
+	code = ConvertCP852toUnicode(code);
 	return static_cast<int>(code.length());
 }
 
@@ -142,17 +145,16 @@ extern "C" int FAND_API SaveChapter(char* chapterType, char* chapterName, char* 
 {
 	rdbFile->ClearRecSpace(data);
 
-	std::string chapter_type = ConvertUTF8toCP852(chapterType);
+	std::string chapter_type = ConvertUnicodetoCP852(chapterType);
 	rdbFile->saveS(rdbFile->FldD[3], chapter_type, data);
 
-	std::string chapter_name = ConvertUTF8toCP852(chapterName);
-	rdbFile->saveS(rdbFile->FldD[4], chapter_type, data);
+	std::string chapter_name = ConvertUnicodetoCP852(chapterName);
+	rdbFile->saveS(rdbFile->FldD[4], chapter_name, data);
 
-	std::string chapter_code = ConvertUTF8toCP852(chapterCode);
-	rdbFile->saveS(rdbFile->FldD[5], chapter_type, data);
+	std::string chapter_code = ConvertUnicodetoCP852(chapterCode);
+	rdbFile->saveS(rdbFile->FldD[5], chapter_code, data);
 	
-	rdbFile->FF->NRecs++;
-	rdbFile->WriteRec(0, data); // 0 is new record
+	rdbFile->CreateRec(rdbFile->FF->NRecs + 1, data); // 0 is new record
 
 	return rdbFile->FF->NRecs;
 }
