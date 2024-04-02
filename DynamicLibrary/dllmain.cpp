@@ -77,6 +77,7 @@ extern "C" int FAND_API OpenRDB(char* rdbName)
 	resFile.Open("FAND.RES");
 	resFile.ReadInfo(); // read messages
 
+	IsTestRun = true; // debug mode - open files in R/W mode
 	CompileHelpCatDcl();
 	SetTopDir(p, n);
 	CreateOpenChpt(n, true);
@@ -154,7 +155,7 @@ extern "C" int FAND_API SaveChapter(char* chapterType, char* chapterName, char* 
 	std::string chapter_code = ConvertUnicodetoCP852(chapterCode);
 	rdbFile->saveS(rdbFile->FldD[5], chapter_code, data);
 	
-	rdbFile->CreateRec(rdbFile->FF->NRecs + 1, data); // 0 is new record
+	rdbFile->CreateRec(rdbFile->FF->NRecs + 1, data);
 
 	return rdbFile->FF->NRecs;
 }
