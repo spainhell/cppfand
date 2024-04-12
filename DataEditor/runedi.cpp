@@ -615,7 +615,7 @@ int DataEditor::CNRecs() const
 	if (params_->EdRecVar) { return 1; }
 	if (params_->Subset) n = WK->NRecs();
 	else {
-		if (params_->HasIndex) n = VK->NRecs();
+		if (HasIndex) n = VK->NRecs();
 		else n = CFile->FF->NRecs;
 	}
 	if (IsNewRec) n++;
@@ -650,7 +650,7 @@ int DataEditor::AbsRecNr(int N)
 		if (N > CRec()) N--;
 	}
 	if (params_->Subset) N = WK->NrToRecNr(CFile, N);
-	else if (params_->HasIndex) {
+	else if (HasIndex) {
 		md = CFile->NewLockMode(RdMode);
 		CFile->FF->TestXFExist();
 		N = VK->NrToRecNr(CFile, N);
@@ -669,7 +669,7 @@ int DataEditor::LogRecNo(int N)
 	CFile->ReadRec(N, CRecPtr);
 	if (!CFile->DeletedFlag(CRecPtr)) {
 		if (params_->Subset) result = WK->RecNrToNr(CFile, N, CRecPtr);
-		else if (params_->HasIndex) {
+		else if (HasIndex) {
 			CFile->FF->TestXFExist();
 			result = VK->RecNrToNr(CFile, N, CRecPtr);
 		}
@@ -770,7 +770,7 @@ bool DataEditor::ELockRec(EditD* E, int N, bool IsNewRec, bool Subset)
 	if (E->IsLocked) return result;
 	E->LockedRec = N;
 	if (IsNewRec) return result;
-	if (!E->EdRecVar
+	if (!E->params_->EdRecVar
 #ifdef FandSQL
 		&& !CFile->IsSQLFile
 #endif
@@ -938,7 +938,7 @@ bool DataEditor::LockRec(bool Displ)
 
 void DataEditor::UnLockRec(EditD* E)
 {
-	if (E->FD->FF->IsShared() && E->IsLocked && !E->EdRecVar) {
+	if (E->FD->FF->IsShared() && E->IsLocked && !E->params_->EdRecVar) {
 		CFile->Unlock(E->LockedRec);
 	}
 	E->IsLocked = false;
@@ -994,36 +994,41 @@ void DataEditor::AdjustCRec()
 		else {
 			SetWasUpdated(CFile->FF, CRecPtr);
 		}
-		params_->NewDisplLL = true;
+		NewDisplLL = true;
 	}
 	UnLockRec(E);
 	LockRec(false);
 	DisplRecNr(CRec());
 }
 
-void DataEditor::WrEStatus()
+void DataEditor::WriteParamsToE()
 {
 	E->CFld = CFld;
 	E->FirstEmptyFld = FirstEmptyFld;
-	E->VK = VK;	E->WK = WK; E->BaseRec = BaseRec; E->IRec = IRec;
-	E->IsNewRec = IsNewRec; E->Append = params_->Append; E->Select = params_->Select;
+	E->VK = VK;
+	E->WK = WK;
+	E->BaseRec = BaseRec;
+	E->IRec = IRec;
+	E->IsNewRec = IsNewRec;
 
-	E->WasUpdated = params_->WasUpdated; E->EdRecVar = params_->EdRecVar; E->AddSwitch = params_->AddSwitch;
-	E->ChkSwitch = params_->ChkSwitch; E->WarnSwitch = params_->WarnSwitch; E->SubSet = params_->Subset;
-	E->NoDelTFlds = params_->NoDelTFlds; E->WasWK = params_->WasWK; E->NoDelete = params_->NoDelete;
-	E->VerifyDelete = params_->VerifyDelete; E->NoCreate = params_->NoCreate; E->F1Mode = params_->F1Mode;
-	E->OnlyAppend = params_->OnlyAppend; E->OnlySearch = params_->OnlySearch; E->Only1Record = params_->Only1Record;
-	E->OnlyTabs = params_->OnlyTabs; E->NoESCPrompt = params_->NoESCPrompt; E->MustESCPrompt = params_->MustESCPrompt;
-	E->Prompt158 = params_->Prompt158; E->NoSrchMsg = params_->NoSrchMsg; E->WithBoolDispl = params_->WithBoolDispl;
-	E->Mode24 = params_->Mode24; E->NoCondCheck = params_->NoCondCheck; E->F3LeadIn = params_->F3LeadIn;
-	E->LUpRDown = params_->LUpRDown; E->MouseEnter = params_->MouseEnter; E->TTExit = params_->TTExit;
-	E->MakeWorkX = params_->MakeWorkX; E->NoShiftF7Msg = params_->NoShiftF7Msg; E->MustAdd = params_->MustAdd;
-	E->MustCheck = params_->MustCheck; E->SelMode = params_->SelMode;
+	E->params_->Append = params_->Append;
+	E->params_->Select = params_->Select;
+
+	E->params_->WasUpdated = params_->WasUpdated; E->params_->EdRecVar = params_->EdRecVar; E->params_->AddSwitch = params_->AddSwitch;
+	E->params_->ChkSwitch = params_->ChkSwitch; E->params_->WarnSwitch = params_->WarnSwitch; E->params_->Subset = params_->Subset;
+	E->params_->NoDelTFlds = params_->NoDelTFlds; E->params_->WasWK = params_->WasWK; E->params_->NoDelete = params_->NoDelete;
+	E->params_->VerifyDelete = params_->VerifyDelete; E->params_->NoCreate = params_->NoCreate; E->params_->F1Mode = params_->F1Mode;
+	E->params_->OnlyAppend = params_->OnlyAppend; E->params_->OnlySearch = params_->OnlySearch; E->params_->Only1Record = params_->Only1Record;
+	E->params_->OnlyTabs = params_->OnlyTabs; E->params_->NoESCPrompt = params_->NoESCPrompt; E->params_->MustESCPrompt = params_->MustESCPrompt;
+	E->params_->Prompt158 = params_->Prompt158; E->params_->NoSrchMsg = params_->NoSrchMsg; E->params_->WithBoolDispl = params_->WithBoolDispl;
+	E->params_->Mode24 = params_->Mode24; E->params_->NoCondCheck = params_->NoCondCheck; E->params_->F3LeadIn = params_->F3LeadIn;
+	E->params_->LUpRDown = params_->LUpRDown; E->params_->MouseEnter = params_->MouseEnter; E->params_->TTExit = params_->TTExit;
+	E->params_->MakeWorkX = params_->MakeWorkX; E->params_->NoShiftF7Msg = params_->NoShiftF7Msg; E->params_->MustAdd = params_->MustAdd;
+	E->params_->MustCheck = params_->MustCheck; E->params_->SelMode = params_->SelMode;
 }
 
-void DataEditor::RdEStatus()
+void DataEditor::ReadParamsFromE()
 {
-	LockMode md;
 	FirstEmptyFld = E->FirstEmptyFld;
 	VK = E->VK;
 	WK = E->WK;
@@ -1031,28 +1036,31 @@ void DataEditor::RdEStatus()
 	IRec = E->IRec;
 	IsNewRec = E->IsNewRec;
 
-	params_->Append = E->Append; params_->Select = E->Select;
-	params_->WasUpdated = E->WasUpdated; params_->EdRecVar = E->EdRecVar; params_->AddSwitch = E->AddSwitch;
-	params_->ChkSwitch = E->ChkSwitch; params_->WarnSwitch = E->WarnSwitch; params_->Subset = E->SubSet;
-	params_->NoDelTFlds = E->NoDelTFlds; params_->WasWK = E->WasWK;
-	params_->NoDelete = E->NoDelete; params_->VerifyDelete = E->VerifyDelete; params_->NoCreate = E->NoCreate;
-	params_->F1Mode = E->F1Mode; params_->OnlyAppend = E->OnlyAppend; params_->OnlySearch = E->OnlySearch;
-	params_->Only1Record = E->Only1Record; params_->OnlyTabs = E->OnlyTabs; params_->NoESCPrompt = E->NoESCPrompt;
-	params_->MustESCPrompt = E->MustESCPrompt; params_->Prompt158 = E->Prompt158; params_->NoSrchMsg = E->NoSrchMsg;
-	params_->WithBoolDispl = E->WithBoolDispl; params_->Mode24 = E->Mode24; params_->NoCondCheck = E->NoCondCheck;
-	params_->F3LeadIn = E->F3LeadIn; params_->LUpRDown = E->LUpRDown; params_->MouseEnter = E->MouseEnter;
-	params_->TTExit = E->TTExit; params_->MakeWorkX = E->MakeWorkX; params_->NoShiftF7Msg = E->NoShiftF7Msg;
-	params_->MustAdd = E->MustAdd; params_->MustCheck = E->MustCheck; params_->SelMode = E->SelMode;
+	params_->Append = E->params_->Append; params_->Select = E->params_->Select;
+	params_->WasUpdated = E->params_->WasUpdated; params_->EdRecVar = E->params_->EdRecVar; params_->AddSwitch = E->params_->AddSwitch;
+	params_->ChkSwitch = E->params_->ChkSwitch; params_->WarnSwitch = E->params_->WarnSwitch; params_->Subset = E->params_->Subset;
+	params_->NoDelTFlds = E->params_->NoDelTFlds; params_->WasWK = E->params_->WasWK;
+	params_->NoDelete = E->params_->NoDelete; params_->VerifyDelete = E->params_->VerifyDelete; params_->NoCreate = E->params_->NoCreate;
+	params_->F1Mode = E->params_->F1Mode; params_->OnlyAppend = E->params_->OnlyAppend; params_->OnlySearch = E->params_->OnlySearch;
+	params_->Only1Record = E->params_->Only1Record; params_->OnlyTabs = E->params_->OnlyTabs; params_->NoESCPrompt = E->params_->NoESCPrompt;
+	params_->MustESCPrompt = E->params_->MustESCPrompt; params_->Prompt158 = E->params_->Prompt158; params_->NoSrchMsg = E->params_->NoSrchMsg;
+	params_->WithBoolDispl = E->params_->WithBoolDispl; params_->Mode24 = E->params_->Mode24; params_->NoCondCheck = E->params_->NoCondCheck;
+	params_->F3LeadIn = E->params_->F3LeadIn; params_->LUpRDown = E->params_->LUpRDown; params_->MouseEnter = E->params_->MouseEnter;
+	params_->TTExit = E->params_->TTExit; params_->MakeWorkX = E->params_->MakeWorkX; params_->NoShiftF7Msg = E->params_->NoShiftF7Msg;
+	params_->MustAdd = E->params_->MustAdd; params_->MustCheck = E->params_->MustCheck; params_->SelMode = E->params_->SelMode;
 
 	if (VK == nullptr) params_->OnlySearch = false;
+
 	CFile = E->FD;
 	CRecPtr = E->NewRecPtr;
-	CFld = E->CFld;
-	if (CFile->FF->XF != nullptr) params_->HasIndex = true;
-	else params_->HasIndex = false;
 
-	if (CFile->FF->TF != nullptr) params_->HasTF = true;
-	else params_->HasTF = false;
+	CFld = E->CFld;
+
+	if (CFile->FF->XF != nullptr) HasIndex = true;
+	else HasIndex = false;
+
+	if (CFile->FF->TF != nullptr) HasTF = true;
+	else HasTF = false;
 
 	SetCPage(&CPage, &RT);
 }
@@ -1309,7 +1317,7 @@ void DataEditor::DisplEditWw()
 	WriteSL(E->HdTxt);
 	DisplRecTxt(); // zobrazi prazdne formulare
 	DisplTabDupl();
-	params_->NewDisplLL = true;
+	NewDisplLL = true;
 	DisplAllWwRecs(); // doplni do formularu data nebo tecky
 }
 
@@ -1367,7 +1375,7 @@ void DataEditor::BuildWork()
 	if (!CFile->Keys.empty()) {
 		KF = CFile->Keys[0]->KFlds;
 	}
-	if (params_->HasIndex) {
+	if (HasIndex) {
 		K = VK;
 		KF = K->KFlds;
 		dupl = K->Duplic;
@@ -1506,7 +1514,7 @@ bool DataEditor::OpenEditWw()
 	if (CFile != nullptr) {
 		OpenCreateF(CFile, CPath, Shared);
 	}
-	RdEStatus();
+	ReadParamsFromE();
 	if (params_->EdRecVar) {
 		if (params_->OnlyAppend) {
 			goto label2;
@@ -1528,15 +1536,15 @@ bool DataEditor::OpenEditWw()
 	else
 #endif
 	{
-		if (params_->HasIndex) {
+		if (HasIndex) {
 			CFile->FF->TestXFExist();
 		}
 		md = NoDelMode;
 		if (params_->OnlyAppend || (E->Cond != nullptr) || (E->KIRoot != nullptr) || E->DownSet ||
-			params_->MakeWorkX && params_->HasIndex && CFile->FF->NotCached() && !params_->Only1Record)
+			params_->MakeWorkX && HasIndex && CFile->FF->NotCached() && !params_->Only1Record)
 		{
 			params_->Subset = true;
-			if (params_->HasIndex) {
+			if (HasIndex) {
 				md = NoExclMode;
 			}
 			else {
@@ -1572,7 +1580,7 @@ bool DataEditor::OpenEditWw()
 	if (params_->Subset) {
 		BuildWork();
 	}
-	if (!params_->Only1Record && params_->HasIndex && VK->InWork) {
+	if (!params_->Only1Record && HasIndex && VK->InWork) {
 		if (!params_->Subset) WK = (XWKey*)VK;
 		if (!CFile->Keys.empty()) {
 			VK = CFile->Keys[0];
@@ -1912,7 +1920,7 @@ void DataEditor::UndoRecord()
 {
 	LockMode md;
 	if (!IsNewRec && params_->WasUpdated) {
-		if (params_->HasTF) {
+		if (HasTF) {
 			if (params_->NoDelTFlds) {
 				FieldDescr* f = CFile->FldD.front();
 				while (f != nullptr) {
@@ -1936,7 +1944,7 @@ void DataEditor::UndoRecord()
 
 bool DataEditor::CleanUp()
 {
-	if (params_->HasIndex && CFile->DeletedFlag(CRecPtr)) return false;
+	if (HasIndex && CFile->DeletedFlag(CRecPtr)) return false;
 	for (auto& X : E->ExD) {
 		if (X->AtWrRec) {
 			EdBreak = 17;
@@ -2005,7 +2013,7 @@ bool DataEditor::DeleteRecProc()
 	RdRec(CRec());
 	oIRec = IRec;
 	oBaseRec = BaseRec;    /* exit proc uses CRec for locking etc.*/
-	if (params_->HasIndex
+	if (HasIndex
 #ifdef FandSQL
 		|| CFile->IsSQLFile
 #endif
@@ -2261,7 +2269,7 @@ void DataEditor::UpwEdit(LinkD* LkD)
 	MarkStore(p);
 	int w = PushW(1, 1, TxtCols, TxtRows, true, true);
 	CFile->IRec = AbsRecNr(CRec());
-	WrEStatus();
+	WriteParamsToE();
 
 	if (LkD == nullptr) {
 		for (auto& ld : LinkDRoot) {
@@ -2339,7 +2347,7 @@ void DataEditor::UpwEdit(LinkD* LkD)
 label1:
 	PopW(w);
 	ReleaseStore(&p);
-	RdEStatus();
+	ReadParamsFromE();
 	DisplEditWw();
 }
 
@@ -2578,7 +2586,7 @@ bool DataEditor::WriteCRec(bool MayDispl, bool& Displ)
 		if (UpdSQLFile) goto label2; else goto label1;
 	}
 #endif
-	if (params_->HasIndex) {   /* test duplicate keys */
+	if (HasIndex) {   /* test duplicate keys */
 		//K = CFile->Keys;
 		//while (K != nullptr) {
 		for (auto& K : CFile->Keys) {
@@ -2591,7 +2599,7 @@ bool DataEditor::WriteCRec(bool MayDispl, bool& Displ)
 		}
 	}
 	CFile->ClearDeletedFlag(CRecPtr);
-	if (params_->HasIndex) {
+	if (HasIndex) {
 		CFile->FF->TestXFExist();
 		if (IsNewRec) {
 			if (params_->AddSwitch && !RunAddUpdate(CFile, '+', nullptr, false, nullptr, nullptr, CRecPtr)) goto label1;
@@ -2709,7 +2717,7 @@ void DataEditor::InsertRecProc(void* RP)
 	FirstEmptyFld = CFld;
 	DisplRec(IRec);
 	IVon();
-	params_->NewDisplLL = true;
+	NewDisplLL = true;
 	NewRecExit();
 }
 
@@ -2755,7 +2763,7 @@ bool DataEditor::GotoXRec(XString* PX, int& N)
 	LockMode md = CFile->NewLockMode(RdMode);
 	XKey* k = VK;
 	if (params_->Subset) k = WK;
-	if (params_->Subset || params_->HasIndex) {
+	if (params_->Subset || HasIndex) {
 		result = k->SearchInterval(CFile, *PX, false, N);
 		N = k->PathToNr(CFile);
 	}
@@ -2825,7 +2833,7 @@ bool DataEditor::PromptSearch(bool create)
 		ReleaseStore(&RP);
 		return result;
 	}
-	if (params_->HasIndex && E->DownSet && (VK == E->DownKey)) {
+	if (HasIndex && E->DownSet && (VK == E->DownKey)) {
 		FileD* FD2 = E->DownLD->ToFD;
 		void* RP2 = E->DownRecPtr;
 		KeyFldD* KF2 = E->DownLD->ToKey->KFlds;
@@ -3076,7 +3084,7 @@ void DataEditor::AutoReport()
 	if (params_->Subset) {
 		RO->FDL.ViewKey = WK;
 	}
-	else if (params_->HasIndex) {
+	else if (HasIndex) {
 		RO->FDL.ViewKey = VK;
 	}
 	PrintView = false;
@@ -3099,7 +3107,7 @@ void DataEditor::AutoGraph()
 	if (params_->Select) Bool = E->Bool;
 	XKey* K = nullptr;
 	if (params_->Subset) K = WK;
-	else if (params_->HasIndex) K = VK;
+	else if (HasIndex) K = VK;
 	RunAutoGraph(E->Flds, K, Bool);
 #endif
 	CFile = E->FD;
@@ -3141,7 +3149,7 @@ void DataEditor::SwitchToAppend()
 	GotoRecFld(CNRecs(), CFld);
 	params_->Append = true;
 	AppendRecord(nullptr);
-	params_->NewDisplLL = true;
+	NewDisplLL = true;
 }
 
 bool DataEditor::CheckForExit(bool& Quit)
@@ -3233,7 +3241,7 @@ label1:
 			if (!C->Warning) return result;
 		}
 	}
-	if (params_->WasUpdated && !params_->EdRecVar && params_->HasIndex) {
+	if (params_->WasUpdated && !params_->EdRecVar && HasIndex) {
 		KL = CFld->KL;
 		while (KL != nullptr) {
 			md = CFile->NewLockMode(RdMode);
@@ -3276,7 +3284,7 @@ label1:
 		}
 		if (params_->Append) AppendRecord(nullptr);
 		else {
-			if (WasNewRec) params_->NewDisplLL = true;
+			if (WasNewRec) NewDisplLL = true;
 			if (CRec() < CNRecs())
 				if (params_->Select) {
 					for (i = CRec() + 1; i <= CNRecs(); i++) {
@@ -3489,7 +3497,7 @@ bool DataEditor::EditFreeTxt(FieldDescr* F, std::string ErrMsg, bool Ed, WORD& B
 	auto result = true;
 	w = 0;
 	if (E->Head.empty()) w = PushW(1, 1, TxtCols, 1);
-	if (E->TTExit) {
+	if (E->params_->TTExit) {
 		TxtMsgS.Head = "";
 		TxtMsgS.Last = E->Last;
 		TxtMsgS.CtrlLast = E->CtrlLast;
@@ -3677,7 +3685,7 @@ label2:
 				goto label5;
 			}
 		}
-		WrEStatus();
+		WriteParamsToE();
 		Brk = 1;
 		Event.Pressed.UpdateKey(C);
 		goto label6;
@@ -3750,7 +3758,7 @@ label1:
 		if (params_->Select) params_->Select = false;
 		else if (E->Bool != nullptr) params_->Select = true;
 		DisplBool();
-		params_->NewDisplLL = true;
+		NewDisplLL = true;
 		SetNewWwRecAttr();
 		break;
 	}
@@ -3774,19 +3782,19 @@ label1:
 	}
 	case 4: {
 		params_->AddSwitch = !params_->AddSwitch;
-		params_->NewDisplLL = true;
+		NewDisplLL = true;
 		break;
 	}
 	case 5: {
 		if (!params_->MustCheck) {
 			params_->ChkSwitch = !params_->ChkSwitch;
-			params_->NewDisplLL = true;
+			NewDisplLL = true;
 		}
 		break;
 	}
 	case 6: {
 		params_->WarnSwitch = !params_->WarnSwitch;
-		params_->NewDisplLL = true;
+		NewDisplLL = true;
 		break;
 	}
 	}
@@ -3805,7 +3813,7 @@ void DataEditor::PromptSelect()
 	else params_->Select = true;
 	DisplBool();
 	SetNewWwRecAttr();
-	params_->NewDisplLL = true;
+	NewDisplLL = true;
 }
 
 void DataEditor::SwitchRecs(short Delta)
@@ -3820,14 +3828,14 @@ void DataEditor::SwitchRecs(short Delta)
 	p2 = CFile->GetRecSpace();
 	CRecPtr = p1; n1 = AbsRecNr(CRec());
 	CFile->ReadRec(n1, CRecPtr);
-	if (params_->HasIndex) x1.PackKF(CFile, VK->KFlds, CRecPtr);
+	if (HasIndex) x1.PackKF(CFile, VK->KFlds, CRecPtr);
 	CRecPtr = p2; n2 = AbsRecNr(CRec() + Delta);
 	CFile->ReadRec(n2, CRecPtr);
-	if (params_->HasIndex) { x2.PackKF(CFile, VK->KFlds, CRecPtr); if (x1.S != x2.S) goto label1; }
+	if (HasIndex) { x2.PackKF(CFile, VK->KFlds, CRecPtr); if (x1.S != x2.S) goto label1; }
 	CFile->WriteRec(n1, CRecPtr);
 	CRecPtr = p1;
 	CFile->WriteRec(n2, CRecPtr);
-	if (params_->HasIndex) {
+	if (HasIndex) {
 		for (auto& k : CFile->Keys) {
 			if (k != VK) {
 				CRecPtr = p1; k->Delete(CFile, n1, CRecPtr);
@@ -3922,7 +3930,7 @@ void DataEditor::ImbeddEdit()
 	MarkStore(p);
 	w = PushW(1, 1, TxtCols, TxtRows, true, true);
 	CFile->IRec = AbsRecNr(CRec());
-	WrEStatus();
+	WriteParamsToE();
 	R = CRdb;
 	while (R != nullptr) {
 		FD = R->FD->pChain;
@@ -3970,7 +3978,7 @@ void DataEditor::ImbeddEdit()
 
 	PopW(w);
 	ReleaseStore(&p);
-	RdEStatus();
+	ReadParamsFromE();
 	DisplEditWw();
 }
 
@@ -3989,7 +3997,7 @@ void DataEditor::DownEdit()
 	int w = PushW(1, 1, TxtCols, TxtRows, true, true);
 	CFile->IRec = AbsRecNr(CRec());
 
-	WrEStatus();
+	WriteParamsToE();
 
 	for (auto& ld : LinkDRoot) { //while (LD != nullptr) {
 		FileD* FD = ld->FromFD;
@@ -4045,7 +4053,7 @@ void DataEditor::DownEdit()
 
 	PopW(w);
 	ReleaseStore(&p);
-	RdEStatus();
+	ReadParamsFromE();
 	DisplEditWw();
 }
 
@@ -4072,7 +4080,7 @@ bool DataEditor::ShiftF7Duplicate()
 
 	CFile = ee->FD;
 	CRecPtr = ee->NewRecPtr;
-	if (!ELockRec(ee, CFile->IRec, ee->IsNewRec, ee->SubSet)) return result;
+	if (!ELockRec(ee, CFile->IRec, ee->IsNewRec, ee->params_->Subset)) return result;
 	if (!params_->WasUpdated) {
 		Move(CRecPtr, ee->OldRecPtr, CFile->FF->RecLen);
 		params_->WasUpdated = true;
@@ -4115,7 +4123,9 @@ bool DataEditor::DuplToPrevEdit()
 	}
 	CFile = ee->FD;
 	CRecPtr = ee->NewRecPtr;
-	if (!ELockRec(ee, CFile->IRec, ee->IsNewRec, ee->SubSet)) return result;
+	if (!ELockRec(ee, CFile->IRec, ee->IsNewRec, ee->params_->Subset)) {
+		return result;
+	}
 	if (!params_->WasUpdated) {
 		Move(CRecPtr, ee->OldRecPtr, CFile->FF->RecLen);
 		params_->WasUpdated = true;
@@ -4235,7 +4245,7 @@ void DataEditor::DelNewRec()
 		else BaseRec--;
 	}
 	RdRec(CRec());
-	params_->NewDisplLL = true;
+	NewDisplLL = true;
 	DisplWwRecsOrPage(&CPage, &RT);
 }
 
@@ -4250,7 +4260,7 @@ void DataEditor::F6Proc()
 {
 	WORD iMsg;
 	iMsg = 105;
-	if (params_->Subset || params_->HasIndex || params_->NoCreate || params_->NoDelete
+	if (params_->Subset || HasIndex || params_->NoCreate || params_->NoDelete
 #ifdef FandSQL
 		|| CFile->IsSQLFile
 #endif
@@ -4306,7 +4316,7 @@ bool DataEditor::StartProc(Instr_proc* ExitProc, bool Displ)
 
 	auto result = false;
 	CFile->FF->WasWrRec = false;
-	if (params_->HasTF) {
+	if (HasTF) {
 		p = (char*)CFile->GetRecSpace();
 		Move(CRecPtr, p, CFile->FF->RecLen);
 	}
@@ -4324,9 +4334,9 @@ bool DataEditor::StartProc(Instr_proc* ExitProc, bool Displ)
 	ExitProc->TArg[ExitProc->N - 1].RecPtr = CRecPtr;
 
 	md = CFile->FF->LMode;
-	WrEStatus();                            /*t = currtime;*/
+	WriteParamsToE();                            /*t = currtime;*/
 	CallProcedure(ExitProc);
-	RdEStatus();
+	ReadParamsFromE();
 	CFile->NewLockMode(md);
 	upd = CFile->FF->WasWrRec;      /*writeln(strdate(currtime-t,"ss mm.ttt"));wait;*/
 	if (CFile->HasUpdFlag(CRecPtr)) { b = true; upd = true; }
@@ -4334,9 +4344,9 @@ bool DataEditor::StartProc(Instr_proc* ExitProc, bool Displ)
 	if (b2) CFile->SetUpdFlag(CRecPtr);
 	if (!params_->WasUpdated && !lkd) UnLockRec(E);
 	if (Displ && upd) DisplAllWwRecs();
-	if (Displ) params_->NewDisplLL = true;
+	if (Displ) NewDisplLL = true;
 	result = true;
-	if (params_->HasTF) {
+	if (HasTF) {
 		for (auto& f : CFile->FldD) {
 			if ((f->field_type == FieldType::TEXT) && ((f->Flg & f_Stored) != 0) &&
 				(*(int*)(p + f->Displ) == *(int*)(E->OldRecPtr) + f->Displ))
@@ -4500,13 +4510,13 @@ void DataEditor::CtrlReadKbd()
 	}
 	ClrEvent();
 
-	if (params_->NewDisplLL) {
+	if (NewDisplLL) {
 		DisplLL();
-		params_->NewDisplLL = false;
+		NewDisplLL = false;
 	}
 
 	if (CFile->FF->NotCached()) {
-		if (!E->EdRecVar && (spec.ScreenDelay == 0 || E->RefreshDelay < spec.ScreenDelay)) {
+		if (!E->params_->EdRecVar && (spec.ScreenDelay == 0 || E->RefreshDelay < spec.ScreenDelay)) {
 			D = E->RefreshDelay;
 		}
 		if (E->WatchDelay != 0) {
@@ -5150,8 +5160,8 @@ void DataEditor::EditDataFile(FileD* FD, EditOpt* EO)
 	pix = (E->WFlags & WPushPixel) != 0;
 	if (E->WwPart) {
 		r1 = TxtRows;
-		r2 = E->WithBoolDispl ? 2 : 1;
-		if (E->Mode24) {
+		r2 = E->params_->WithBoolDispl ? 2 : 1;
+		if (E->params_->Mode24) {
 			r1--;
 		}
 		w1 = PushW(1, 1, TxtCols, r2, pix, true);

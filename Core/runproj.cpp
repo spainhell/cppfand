@@ -452,7 +452,7 @@ void EditHelpOrCat(WORD cc, WORD kind, std::string txt)
 		n = nCat;
 	}
 	if (kind != 2) {
-		data_editor->WrEStatus();
+		data_editor->WriteParamsToE();
 	}
 	EditOpt* EO = new EditOpt();
 	EO->UserSelFlds = true; // GetEditOpt();
@@ -477,7 +477,7 @@ void EditHelpOrCat(WORD cc, WORD kind, std::string txt)
 		iCat = EdIRec;
 	}
 	if (kind != 2) {
-		data_editor->RdEStatus();
+		data_editor->ReadParamsFromE();
 	}
 }
 
@@ -778,7 +778,7 @@ bool CompRunChptRec(WORD CC)
 
 	OldE = E;
 	MarkBoth(p, p2);
-	data_editor->WrEStatus();
+	data_editor->WriteParamsToE();
 
 	bool WasError = true;
 	bool WasGraph = IsGraphMode;
@@ -938,7 +938,7 @@ bool CompRunChptRec(WORD CC)
 	ReleaseStore(&p2);
 	E = OldE;
 	EditDRoot = E;
-	data_editor->RdEStatus();
+	data_editor->ReadParamsFromE();
 	CRdb = RP.R;
 	PrevCompInp.clear();
 	CFile->ReadRec(DataEditor::CRec(), CRecPtr);
@@ -1588,7 +1588,7 @@ bool EditExecRdb(std::string Nm, std::string proc_name, Instr_proc* proc_call, w
 		EO->Flds.erase(EO->Flds.begin(), EO->Flds.begin() + 3);
 
 		NewEditD(Chpt, EO);
-		E->MustCheck = true; /*ChptTyp*/
+		E->params_->MustCheck = true; /*ChptTyp*/
 		if (CRdb->Encrypted) {
 			if (Coding::HasPassword(Chpt, 1, passw)) {
 				CRdb->Encrypted = false;

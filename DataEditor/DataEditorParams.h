@@ -40,7 +40,4 @@ public:
 	bool MustAdd = false;
 	bool MustCheck = false;
 	bool SelMode = false;
-	bool HasIndex = false;
-	bool HasTF = false;
-	bool NewDisplLL = false;
 };

@@ -429,15 +429,15 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 	E->dTab = RunWordImpl(CFile, EO->ZdTab, E->Attr | 0x08, CRecPtr);
 	E->dSelect = RunWordImpl(CFile, EO->ZdSelect, screen.colors.dSelect, CRecPtr);
 	E->Top = RunStdStr(CFile, EO->Top, CRecPtr);
-	if (EO->Mode != nullptr) EditModeToFlags(RunShortStr(CFile, EO->Mode, CRecPtr), &E->NoDelete, false);
-	if (spec.Prompt158) E->Prompt158 = true;
+	if (EO->Mode != nullptr) EditModeToFlags(RunShortStr(CFile, EO->Mode, CRecPtr), &E->params_->NoDelete, false);
+	if (spec.Prompt158) E->params_->Prompt158 = true;
 	if (EO->SetOnlyView /*UpwEdit*/) {
 		EO->Tab.clear();
-		E->OnlyTabs = true;
-		E->OnlySearch = false;
+		E->params_->OnlyTabs = true;
+		E->params_->OnlySearch = false;
 	}
-	if (E->LVRecPtr != nullptr) { E->EdRecVar = true; E->Only1Record = true; }
-	if (E->Only1Record) E->OnlySearch = false;
+	if (E->LVRecPtr != nullptr) { E->params_->EdRecVar = true; E->params_->Only1Record = true; }
+	if (E->params_->Only1Record) E->params_->OnlySearch = false;
 	if (EO->W.C1 != nullptr) {
 		RunWFrml(CFile, EO->W, E->WFlags, E->V, CRecPtr);
 		E->WwPart = true;
@@ -447,8 +447,8 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 		}
 	}
 	else {
-		if (E->WithBoolDispl) E->V.R1 = 3;
-		if (E->Mode24) E->V.R2--;
+		if (E->params_->WithBoolDispl) E->V.R1 = 3;
+		if (E->params_->Mode24) E->V.R2--;
 	}
 	RdFormOrDesign(ParFD, EO->Flds, EO->FormPos);
 	if (E->NPages > 1) {
@@ -461,18 +461,18 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 	E->IRec = 1;
 	E->CFld = E->FirstFld;
 	E->FirstEmptyFld = E->FirstFld;
-	E->ChkSwitch = true;
-	E->WarnSwitch = true;
+	E->params_->ChkSwitch = true;
+	E->params_->WarnSwitch = true;
 	CFile = E->FD;
 	CRecPtr = E->FD->GetRecSpace();
 	E->OldRecPtr = CRecPtr;
 #ifdef FandSQL
 	if (CFile->IsSQLFile) SetTWorkFlag;
 #endif
-	if (E->EdRecVar) {
+	if (E->params_->EdRecVar) {
 		E->NewRecPtr = E->LVRecPtr;
-		E->NoDelete = true;
-		E->NoCreate = true;
+		E->params_->NoDelete = true;
+		E->params_->NoCreate = true;
 		E->Journal = nullptr;
 		E->KIRoot = nullptr;
 	}
@@ -482,7 +482,7 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 #ifdef FandSQL
 		if (CFile->IsSQLFile) SetTWorkFlag;
 #endif
-		E->AddSwitch = true;
+		E->params_->AddSwitch = true;
 		E->Cond = RunEvalFrml(CFile, EO->Cond, CRecPtr);
 		E->RefreshDelay = RunWordImpl(CFile, EO->RefreshDelayZ, spec.RefreshDelay, CRecPtr) * 1000;
 		E->SaveAfter = RunWordImpl(CFile, EO->SaveAfterZ, spec.UpdCount, CRecPtr) * 1000;
@@ -550,7 +550,7 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 	E->AltLast = GetStr_E(EO->AltLast);
 	E->CtrlLast = GetStr_E(EO->CtrlLast);
 	E->ShiftLast = GetStr_E(EO->ShiftLast);
-	F2NoUpd = E->OnlyTabs && EO->Tab.empty() && !EO->NegTab && E->OnlyAppend;
+	F2NoUpd = E->params_->OnlyTabs && EO->Tab.empty() && !EO->NegTab && E->params_->OnlyAppend;
 	/* END WITH */
 
 	D = E->FirstFld;
@@ -561,7 +561,7 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 		if (b) { D->Tab = true; E->NTabsSet++; }
 		b2 = FieldInList(F, EO->NoEd);
 		if (EO->NegNoEd) b2 = !b2;
-		D->EdU = !(b2 || E->OnlyTabs && !b);
+		D->EdU = !(b2 || E->params_->OnlyTabs && !b);
 		D->EdN = F2NoUpd;
 		if (((F->Flg & f_Stored) != 0) && D->EdU) E->NEdSet++;
 		b = FieldInList(F, EO->Dupl);
@@ -570,10 +570,10 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 		if (b || ((F->Flg & f_Stored) != 0)) E->NDuplSet++;
 		D = (EFldD*)D->pChain;
 	}
-	if (E->OnlyTabs && (E->NTabsSet == 0)) {
-		E->NoDelete = true;
-		if (!E->OnlyAppend) {
-			E->NoCreate = true;
+	if (E->params_->OnlyTabs && (E->NTabsSet == 0)) {
+		E->params_->NoDelete = true;
+		if (!E->params_->OnlyAppend) {
+			E->params_->NoCreate = true;
 		}
 	}
 	RdDepChkImpl();
@@ -849,7 +849,7 @@ std::string StandardHead()
 	std::string s;
 	std::string c = "          ______                                 __.__.____";
 	if (!E->ViewName.empty()) s = E->ViewName;
-	else if (E->EdRecVar) s = "";
+	else if (E->params_->EdRecVar) s = "";
 	else {
 		s = E->FD->Name;
 		switch (E->FD->FF->file_type) {

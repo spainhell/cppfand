@@ -24,8 +24,8 @@ public:
     std::string PromptS(std::string& S, FrmlElem* Impl, FieldDescr* F);
     double PromptR(std::string& S, FrmlElem* Impl, FieldDescr* F);
     static bool TestIsNewRec();
-    void WrEStatus();
-    void RdEStatus();
+    void WriteParamsToE();
+    void ReadParamsFromE();
     bool SelFldsForEO(EditOpt* EO, LinkD* LD);
     void DisplEditWw();
     void GotoRecFld(int NewRec, EFldD* NewFld);
@@ -191,4 +191,8 @@ private:
     static int BaseRec;
     static BYTE IRec;
     static bool IsNewRec;
+
+    bool HasIndex = false;
+    bool HasTF = false;
+    bool NewDisplLL = false;
 };

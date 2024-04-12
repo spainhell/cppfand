@@ -1,7 +1,10 @@
 #pragma once
+#include <memory>
+
 #include "access.h"
 #include "FieldDescr.h"
 #include "legacy.h"
+#include "../DataEditor/DataEditorParams.h"
 #include "models/FrmlElem.h"
 #include "../fandio/XScan.h"
 
@@ -234,24 +237,10 @@ struct EditD : Chained<EditD>
 	EFldD* CFld = nullptr; EFldD* FirstEmptyFld = nullptr;    /*copied*/
 	XKey* VK = nullptr; XWKey* WK = nullptr;                  /*  "   */
 	int BaseRec = 0; BYTE IRec = 0;                           /*  "   */
-	bool IsNewRec = false, Append = false, Select = false,    /*  "   */
-		 WasUpdated = false, EdRecVar = false,                /*  "   */
-		 AddSwitch = false, ChkSwitch = false,                /*  "   */
-		 WarnSwitch = false, SubSet = false;                  /*  "   */
-	bool NoDelTFlds = false, WasWK = false;                   /*  "   */
-	bool NoDelete = false, VerifyDelete = false,              /*  "   */
-	     NoCreate = false, F1Mode = false,                    /*  "   */
-		 OnlyAppend = false, OnlySearch = false,              /*  "   */
-	     Only1Record = false, OnlyTabs = false,               /*  "   */
-		 NoESCPrompt = false, MustESCPrompt = false,          /*  "   */
-	     Prompt158 = false, NoSrchMsg = false,                /*  "   */
-		 WithBoolDispl = false, Mode24 = false,               /*  "   */
-	     NoCondCheck = false, F3LeadIn = false,               /*  "   */
-		 LUpRDown = false, MouseEnter = false,                /*  "   */
-	     TTExit = false,                                      /*  "   */
-		 MakeWorkX = false, NoShiftF7Msg = false,             /*  "   */
-	     MustAdd = false;                                     /*  "   */
-	bool MustCheck = false, SelMode = false;                  /*  "   */
+	bool IsNewRec = false;
+
+	std::unique_ptr<DataEditorParams> params_ = std::make_unique<DataEditorParams>();
+
 	bool DownSet = false, IsLocked = false, WwPart = false;    
 	XKey* DownKey = nullptr;
 	int LockedRec = 0;

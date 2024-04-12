@@ -2207,7 +2207,7 @@ LongStr* RunS(FileD* file_d, FrmlElem* Z, void* record)
 	}
 	case _edbool: {
 		s[0] = 0;
-		if ((EditDRoot != nullptr) && EditDRoot->Select
+		if ((EditDRoot != nullptr) && EditDRoot->params_->Select
 			&& (!EditDRoot->BoolTxt.empty())) s = EditDRoot->BoolTxt;
 		break;
 	}
