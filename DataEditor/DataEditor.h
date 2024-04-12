@@ -14,6 +14,9 @@ struct EFldD;
 class DataEditor {
 public:
 	DataEditor();
+    DataEditor(FileD* file_d);
+    ~DataEditor();
+    void SetFileD(FileD* file_d);
     void EditDataFile(FileD* FD, EditOpt* EO);
     WORD EditTxt(std::string& s, WORD pos, WORD maxlen, WORD maxcol, FieldType typ, bool del,
 	             bool star, bool upd, bool ret, unsigned int Delta); // r86
@@ -41,6 +44,8 @@ public:
     EFldD* CFld = nullptr;
 
 private:
+    FileD* file_d_ = nullptr;
+    uint8_t* record_ = nullptr;
     std::unique_ptr<DataEditorParams> params_;
 
     int CNRecs() const;
@@ -62,7 +67,7 @@ private:
     bool LockRec(bool Displ);
     void UnLockRec(EditD* E);
     void NewRecExit();
-    void SetCPage(WORD* c_page, ERecTxtD** rt);
+    void SetCPage(WORD& c_page, ERecTxtD** rt);
     void DisplRecNr(int N);
     void AdjustCRec();
     
@@ -135,7 +140,7 @@ private:
     void PromptSelect();
     void SwitchRecs(short Delta);
     bool FinArgs(LinkD* LD, FieldDescr* F);
-    void DisplWwRecsOrPage(WORD* c_page, ERecTxtD** rt);
+    void DisplWwRecsOrPage(WORD& c_page, ERecTxtD** rt);
     void DuplOwnerKey();
     bool TestDuplKey(FileD* file_d, XKey* K);
     void DuplKeyMsg(XKey* K);
@@ -143,7 +148,6 @@ private:
     void SetStartRec();
     void RefreshSubset();
 
-    /*called from Proc && Projmgr */
     void ImbeddEdit();
     void DownEdit();
     void ShiftF7Proc();
@@ -179,7 +183,6 @@ private:
     bool TestMask(std::string& S, std::string Mask);
     void WrPromptTxt(std::string& S, FrmlElem* Impl, FieldDescr* F, std::string& Txt, double& R);
 
-    //EditD* E = EditDRoot;
     EFldD* FirstEmptyFld = nullptr;
     XKey* VK = nullptr;
     XWKey* WK = nullptr;

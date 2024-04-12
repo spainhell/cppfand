@@ -35,7 +35,31 @@ bool DataEditor::IsNewRec = false;
 DataEditor::DataEditor()
 {
 	params_ = std::make_unique<DataEditorParams>();
+}
 
+DataEditor::DataEditor(FileD* file_d)
+{
+	file_d_ = file_d;
+	record_ = file_d->GetRecSpace();
+	params_ = std::make_unique<DataEditorParams>();
+}
+
+DataEditor::~DataEditor()
+{
+	if (record_ != nullptr) {
+		delete[] record_;
+		record_ = nullptr;
+	}
+}
+
+void DataEditor::SetFileD(FileD* file_d)
+{
+	if (record_ != nullptr) {
+		delete[] record_;
+		record_ = nullptr;
+	}
+	file_d_ = file_d;
+	record_ = file_d->GetRecSpace();
 }
 
 void DataEditor::PopEdit()
@@ -354,7 +378,6 @@ void DataEditor::SetWasUpdated(FandFile* fand_file, void* record)
 		if (params_->EdRecVar) {
 			fand_file->SetUpdFlag(record);
 		}
-		//Move(E->NewRecPtr, E->OldRecPtr, CFileRecSize(CFile->FF));
 		memcpy(E->OldRecPtr, E->NewRecPtr, fand_file->RecordSize());
 		params_->WasUpdated = true;
 	}
@@ -362,8 +385,8 @@ void DataEditor::SetWasUpdated(FandFile* fand_file, void* record)
 
 void DataEditor::AssignFld(FieldDescr* F, FrmlElem* Z)
 {
-	SetWasUpdated(CFile->FF, CRecPtr);
-	AssgnFrml(CFile, CRecPtr, F, Z, false, false);
+	SetWasUpdated(file_d_->FF, record_);
+	AssgnFrml(file_d_, record_, F, Z, false, false);
 }
 
 WORD DataEditor::FieldEdit(FieldDescr* F, FrmlElem* Impl, WORD LWw, WORD iPos, std::string& Txt,
@@ -446,7 +469,7 @@ label2:
 	r = 0;
 	if ((Txt.length() == 0) && (Impl != nullptr)) {
 		AssignFld(F, Impl);
-		Txt = DecodeField(CFile, F, L, CRecPtr);
+		Txt = DecodeField(file_d_, F, L, record_);
 	}
 	switch (F->field_type) {
 	case FieldType::FIXED:
@@ -538,9 +561,9 @@ void DataEditor::WrPromptTxt(std::string& S, FrmlElem* Impl, FieldDescr* F, std:
 	TextAttr = screen.colors.dHili;
 	if (Impl != nullptr) {
 		switch (F->frml_type) {
-		case 'R': RR = RunReal(CFile, Impl, CRecPtr); break;
-		case 'S': SS = RunShortStr(CFile, Impl, CRecPtr); break;
-		default: BB = RunBool(CFile, Impl, CRecPtr); break;
+		case 'R': RR = RunReal(file_d_, Impl, record_); break;
+		case 'S': SS = RunShortStr(file_d_, Impl, record_); break;
+		default: BB = RunBool(file_d_, Impl, record_); break;
 		}
 		T = DecodeFieldRSB(F, F->L, RR, SS, BB);
 	}
@@ -567,7 +590,7 @@ bool DataEditor::PromptB(std::string& S, FrmlElem* Impl, FieldDescr* F)
 	WrPromptTxt(S, Impl, F, Txt, R);
 	bool result = (Txt[0] == AbbrYes);
 	if (Event.Pressed.KeyCombination() == __ESC) {
-		if (Impl != nullptr) result = RunBool(CFile, Impl, CRecPtr);
+		if (Impl != nullptr) result = RunBool(file_d_, Impl, CRecPtr);
 		else result = false;
 	}
 	return result;
@@ -580,7 +603,7 @@ std::string DataEditor::PromptS(std::string& S, FrmlElem* Impl, FieldDescr* F)
 	WrPromptTxt(S, Impl, F, Txt, R);
 	auto result = Txt;
 	if (Event.Pressed.KeyCombination() == __ESC) {
-		if (Impl != nullptr) result = RunShortStr(CFile, Impl, CRecPtr);
+		if (Impl != nullptr) result = RunShortStr(file_d_, Impl, CRecPtr);
 		else result = "";
 	}
 	return result;
@@ -594,7 +617,7 @@ double DataEditor::PromptR(std::string& S, FrmlElem* Impl, FieldDescr* F)
 	auto result = R;
 	if (Event.Pressed.KeyCombination() == __ESC) {
 		if (Impl != nullptr) {
-			result = RunReal(CFile, Impl, CRecPtr);
+			result = RunReal(file_d_, Impl, CRecPtr);
 		}
 		else {
 			result = 0;
@@ -616,7 +639,7 @@ int DataEditor::CNRecs() const
 	if (params_->Subset) n = WK->NRecs();
 	else {
 		if (HasIndex) n = VK->NRecs();
-		else n = CFile->FF->NRecs;
+		else n = file_d_->FF->NRecs;
 	}
 	if (IsNewRec) n++;
 	return n;
@@ -630,12 +653,12 @@ int DataEditor::CNRecs() const
 int DataEditor::AbsRecNr(int N)
 {
 	Logging* log = Logging::getInstance();
-	//log->log(loglevel::DEBUG, "AbsRecNr(%i), CFile 0x%p", N, CFile->Handle);
+	//log->log(loglevel::DEBUG, "AbsRecNr(%i), file_d_ 0x%p", N, file_d_->Handle);
 	LockMode md;
 	int result = 0;
 	if (params_->EdRecVar
 #ifdef FandSQL
-		|| CFile->IsSQLFile
+		|| file_d_->IsSQLFile
 #endif
 		) {
 		if (IsNewRec) result = 0;
@@ -649,12 +672,12 @@ int DataEditor::AbsRecNr(int N)
 		}
 		if (N > CRec()) N--;
 	}
-	if (params_->Subset) N = WK->NrToRecNr(CFile, N);
+	if (params_->Subset) N = WK->NrToRecNr(file_d_, N);
 	else if (HasIndex) {
-		md = CFile->NewLockMode(RdMode);
-		CFile->FF->TestXFExist();
-		N = VK->NrToRecNr(CFile, N);
-		CFile->OldLockMode(md);
+		md = file_d_->NewLockMode(RdMode);
+		file_d_->FF->TestXFExist();
+		N = VK->NrToRecNr(file_d_, N);
+		file_d_->OldLockMode(md);
 	}
 	result = N;
 	return result;
@@ -664,18 +687,18 @@ int DataEditor::LogRecNo(int N)
 {
 	LockMode md;
 	int result = 0;
-	if ((N <= 0) || (N > CFile->FF->NRecs)) return result;
-	md = CFile->NewLockMode(RdMode);
-	CFile->ReadRec(N, CRecPtr);
-	if (!CFile->DeletedFlag(CRecPtr)) {
-		if (params_->Subset) result = WK->RecNrToNr(CFile, N, CRecPtr);
+	if ((N <= 0) || (N > file_d_->FF->NRecs)) return result;
+	md = file_d_->NewLockMode(RdMode);
+	file_d_->ReadRec(N, CRecPtr);
+	if (!file_d_->DeletedFlag(CRecPtr)) {
+		if (params_->Subset) result = WK->RecNrToNr(file_d_, N, CRecPtr);
 		else if (HasIndex) {
-			CFile->FF->TestXFExist();
-			result = VK->RecNrToNr(CFile, N, CRecPtr);
+			file_d_->FF->TestXFExist();
+			result = VK->RecNrToNr(file_d_, N, CRecPtr);
 		}
 		else result = N;
 	}
-	CFile->OldLockMode(md);
+	file_d_->OldLockMode(md);
 	return result;
 }
 
@@ -687,18 +710,18 @@ bool DataEditor::IsSelectedRec(WORD I)
 	int n = AbsRecNr(BaseRec + I - 1);
 	void* cr = CRecPtr;
 	if ((I == IRec) && params_->WasUpdated) CRecPtr = E->OldRecPtr;
-	result = E->SelKey->RecNrToPath(CFile, x, n, CRecPtr);
+	result = E->SelKey->RecNrToPath(file_d_, x, n, CRecPtr);
 	CRecPtr = cr;
 	return result;
 }
 
 bool DataEditor::EquOldNewRec()
 {
-	return (CompArea(CRecPtr, E->OldRecPtr, CFile->FF->RecLen) == _equ);
+	return (CompArea(CRecPtr, E->OldRecPtr, file_d_->FF->RecLen) == _equ);
 }
 
 /// <summary>
-/// Vycte X-ty zaznam (z DB nebo ze souboru v CFile)
+/// Vycte X-ty zaznam (z DB nebo ze souboru v file_d_)
 /// Ulozi jej do CRecPtr
 /// Nejedna se o fyzicke cislo zaznamu v souboru
 /// </summary>
@@ -708,16 +731,16 @@ void DataEditor::RdRec(int N)
 	LockMode md; XString x;
 	if (params_->EdRecVar) return;
 #ifdef FandSQL
-	if (CFile->IsSQLFile) {
+	if (file_d_->IsSQLFile) {
 		if (IsNewRec && (N > CRec)) dec(N); x.S = WK->NrToStr(N);
 		Strm1->KeyAcc(WK, @x);
 	}
 	else
 #endif
 	{
-		md = CFile->NewLockMode(RdMode);
-		CFile->ReadRec(AbsRecNr(N), CRecPtr);
-		CFile->OldLockMode(md);
+		md = file_d_->NewLockMode(RdMode);
+		file_d_->ReadRec(AbsRecNr(N), CRecPtr);
+		file_d_->OldLockMode(md);
 	}
 }
 
@@ -726,13 +749,13 @@ bool DataEditor::CheckOwner(EditD* E)
 	XString X, X1;
 	auto result = true;
 	if (E->DownSet && (E->OwnerTyp != 'i')) {
-		X.PackKF(CFile, E->DownKey->KFlds, CRecPtr);
-		CFile = E->DownLD->ToFD;
+		X.PackKF(file_d_, E->DownKey->KFlds, CRecPtr);
+		file_d_ = E->DownLD->ToFD;
 		CRecPtr = E->DownRecPtr;
-		X1.PackKF(CFile, E->DownLD->ToKey->KFlds, CRecPtr);
+		X1.PackKF(file_d_, E->DownLD->ToKey->KFlds, CRecPtr);
 		X.S[0] = (char)(MinW(X.S.length(), X1.S.length()));
 		if (X.S != X1.S) result = false;
-		CFile = E->FD;
+		file_d_ = E->FD;
 		CRecPtr = E->NewRecPtr;
 	}
 	return result;
@@ -746,7 +769,7 @@ bool DataEditor::CheckKeyIn(EditD* E)
 	//pstring* p2;
 	auto result = true;
 	if (k == nullptr) return result;
-	X.PackKF(CFile, E->VK->KFlds, CRecPtr);
+	X.PackKF(file_d_, E->VK->KFlds, CRecPtr);
 	while (k != nullptr) {
 		//p1 = k->X1; p2 = k->X2;
 		//if (p2 == nullptr) p2 = p1;
@@ -772,26 +795,26 @@ bool DataEditor::ELockRec(EditD* E, int N, bool IsNewRec, bool Subset)
 	if (IsNewRec) return result;
 	if (!E->params_->EdRecVar
 #ifdef FandSQL
-		&& !CFile->IsSQLFile
+		&& !file_d_->IsSQLFile
 #endif
 		) {
-		if (CFile->FF->NotCached()) {
-			if (!CFile->Lock(N, 1/*withESC*/)) {
+		if (file_d_->FF->NotCached()) {
+			if (!file_d_->Lock(N, 1/*withESC*/)) {
 				result = false;
 				return result;
 			}
-			md = CFile->NewLockMode(RdMode);
-			CFile->ReadRec(N, CRecPtr);
-			CFile->OldLockMode(md);
+			md = file_d_->NewLockMode(RdMode);
+			file_d_->ReadRec(N, CRecPtr);
+			file_d_->OldLockMode(md);
 			if (Subset && !
-				((params_->NoCondCheck || RunBool(CFile, E->Cond, CRecPtr) && CheckKeyIn(E)) && CheckOwner(E))) {
+				((params_->NoCondCheck || RunBool(file_d_, E->Cond, CRecPtr) && CheckKeyIn(E)) && CheckOwner(E))) {
 				WrLLF10Msg(150); goto label1;
 			}
 		}
-		else if (CFile->DeletedFlag(CRecPtr)) {
+		else if (file_d_->DeletedFlag(CRecPtr)) {
 			WrLLF10Msg(148);
 		label1:
-			CFile->Unlock(N);
+			file_d_->Unlock(N);
 			result = false;
 			return result;
 		}
@@ -803,8 +826,8 @@ bool DataEditor::ELockRec(EditD* E, int N, bool IsNewRec, bool Subset)
 WORD DataEditor::RecAttr(WORD I)
 {
 	bool b = (I != IRec) || !IsNewRec;
-	if (!IsNewRec && CFile->DeletedFlag(CRecPtr)) return E->dDel;
-	else if (b && params_->Select && RunBool(CFile, E->Bool, CRecPtr)) return E->dSubSet;
+	if (!IsNewRec && file_d_->DeletedFlag(CRecPtr)) return E->dDel;
+	else if (b && params_->Select && RunBool(file_d_, E->Bool, CRecPtr)) return E->dSubSet;
 	else if (b && IsSelectedRec(I)) return E->dSelect;
 	else return E->dNorm;
 }
@@ -834,32 +857,13 @@ void DataEditor::Wr1Line(FieldDescr* F)
 {
 	auto X = screen.WhereX();
 	auto Y = screen.WhereY();
-	std::string ls = CFile->loadS(F, CRecPtr);
+	std::string ls = file_d_->loadS(F, CRecPtr);
 	ls = GetNthLine(ls, 1, 1);
 	WORD max = F->L - 2;
 	ls = GetStyledStringOfLength(ls, 0, max);
 	size_t chars = screen.WriteStyledStringToWindow(ls, E->dNorm);
 	TextAttr = E->dNorm;
 	if (chars < max) screen.ScrFormatWrStyledText(X + chars, Y, E->dNorm, "%*c", max - chars, ' ');
-
-	/*pstring Txt;
-	LongStr* s = CopyLine(loadLongS(F), 1, 1);
-	WORD max = F->L - 2;
-	WORD l = s->LL;
-	if (l > 255) l = 255;
-	Move(s->A, &Txt[1], l);
-	Txt[0] = (char)l;
-	l = LenStyleStr(Txt);
-	if (l > max)
-	{
-		l = max;
-		Txt[0] = (char)LogToAbsLenStyleStr(Txt, l);
-	}
-	//WrStyleStr(Txt, E->dNorm);
-	screen.WriteStyledStringToWindow(Txt, E->dNorm);
-	ReleaseStore(s);
-	TextAttr = E->dNorm;
-	if (l < max) printf("%*c", max - l, ' ');*/
 }
 
 void DataEditor::DisplFld(EFldD* D, WORD I, BYTE Color)
@@ -867,7 +871,7 @@ void DataEditor::DisplFld(EFldD* D, WORD I, BYTE Color)
 	WORD r = FldRow(D, I);
 	auto F = D->FldD;
 	screen.GotoXY(D->Col, r);
-	std::string Txt = DecodeField(CFile, F, D->L, CRecPtr);
+	std::string Txt = DecodeField(file_d_, F, D->L, CRecPtr);
 	for (size_t j = 0; j < Txt.length(); j++)
 		if ((unsigned char)Txt[j] < ' ') Txt[j] = Txt[j] + 0x40;
 	screen.WriteStyledStringToWindow(Txt, Color);
@@ -885,7 +889,7 @@ void DataEditor::DisplRec(WORD I)
 	WORD a = E->dNorm;
 	int N = BaseRec + I - 1;
 	bool IsCurrNewRec = IsNewRec && (I == IRec);
-	void* p = CFile->GetRecSpace();
+	void* p = file_d_->GetRecSpace();
 	if ((N > CNRecs()) && !IsCurrNewRec) {
 		NewFlds = true;
 		goto label1;
@@ -916,7 +920,7 @@ label1:
 		if (IsCurrNewRec && (D == FirstEmptyFld)) NewFlds = true;
 		D = D->pChain;
 	}
-	CFile->ClearRecSpace(p);
+	file_d_->ClearRecSpace(p);
 	ReleaseStore(&p);
 	CRecPtr = E->NewRecPtr;
 }
@@ -930,7 +934,7 @@ bool DataEditor::LockRec(bool Displ)
 	}
 	bool b = ELockRec(E, AbsRecNr(CRec()), IsNewRec, params_->Subset);
 	result = b;
-	if (b && !IsNewRec && !params_->EdRecVar && CFile->FF->NotCached() && Displ) {
+	if (b && !IsNewRec && !params_->EdRecVar && file_d_->FF->NotCached() && Displ) {
 		DisplRec(IRec);
 	}
 	return result;
@@ -939,7 +943,7 @@ bool DataEditor::LockRec(bool Displ)
 void DataEditor::UnLockRec(EditD* E)
 {
 	if (E->FD->FF->IsShared() && E->IsLocked && !E->params_->EdRecVar) {
-		CFile->Unlock(E->LockedRec);
+		file_d_->Unlock(E->LockedRec);
 	}
 	E->IsLocked = false;
 }
@@ -955,11 +959,11 @@ void DataEditor::NewRecExit()
 	}
 }
 
-void DataEditor::SetCPage(WORD* c_page, ERecTxtD** rt)
+void DataEditor::SetCPage(WORD& c_page, ERecTxtD** rt)
 {
-	*c_page = CFld->Page;
+	c_page = CFld->Page;
 	*rt = E->RecTxt;
-	for (WORD i = 1; i < *c_page; i++) {
+	for (WORD i = 1; i < c_page; i++) {
 		*rt = (*rt)->pChain;
 	}
 }
@@ -987,12 +991,12 @@ void DataEditor::AdjustCRec()
 			IsNewRec = true;
 			params_->Append = true;
 			FirstEmptyFld = CFld;
-			CFile->ZeroAllFlds(CRecPtr, false);
-			SetWasUpdated(CFile->FF, CRecPtr);
+			file_d_->ZeroAllFlds(CRecPtr, false);
+			SetWasUpdated(file_d_->FF, CRecPtr);
 			NewRecExit();
 		}
 		else {
-			SetWasUpdated(CFile->FF, CRecPtr);
+			SetWasUpdated(file_d_->FF, CRecPtr);
 		}
 		NewDisplLL = true;
 	}
@@ -1027,18 +1031,18 @@ void DataEditor::ReadParamsFromE()
 
 	if (VK == nullptr) params_->OnlySearch = false;
 
-	CFile = E->FD;
+	file_d_ = E->FD;
 	CRecPtr = E->NewRecPtr;
 
 	CFld = E->CFld;
 
-	if (CFile->FF->XF != nullptr) HasIndex = true;
+	if (file_d_->FF->XF != nullptr) HasIndex = true;
 	else HasIndex = false;
 
-	if (CFile->FF->TF != nullptr) HasTF = true;
+	if (file_d_->FF->TF != nullptr) HasTF = true;
 	else HasTF = false;
 
-	SetCPage(&CPage, &RT);
+	SetCPage(CPage, &RT);
 }
 
 void DataEditor::DuplFld(FileD* file_d1, FileD* file_d2, void* record1, void* record2, void* RPt, FieldDescr* field_d1, FieldDescr* field_d2)
@@ -1192,19 +1196,19 @@ void DataEditor::DisplAllWwRecs()
 {
 	LockMode md = NullMode;
 	WORD n = E->NRecs; // pocet zaznamu k zobrazeni (na strance)
-	if ((n > 1) && !params_->EdRecVar) md = CFile->NewLockMode(RdMode);
+	if ((n > 1) && !params_->EdRecVar) md = file_d_->NewLockMode(RdMode);
 	AdjustCRec();
 	if (!IsNewRec && !params_->WasUpdated) RdRec(CRec());
 	for (WORD i = 1; i <= n; i++) {
 		DisplRec(i);
 	}
 	IVon();
-	if ((n > 1) && !params_->EdRecVar) CFile->OldLockMode(md);
+	if ((n > 1) && !params_->EdRecVar) file_d_->OldLockMode(md);
 }
 
 void DataEditor::SetNewWwRecAttr()
 {
-	CRecPtr = CFile->GetRecSpace();
+	CRecPtr = file_d_->GetRecSpace();
 	for (WORD I = 1; I <= E->NRecs; I++) {
 		if (BaseRec + I - 1 > CNRecs()) break;
 		if (!IsNewRec || (I != IRec)) {
@@ -1213,7 +1217,7 @@ void DataEditor::SetNewWwRecAttr()
 		}
 	}
 	IVon();
-	CFile->ClearRecSpace(CRecPtr);
+	file_d_->ClearRecSpace(CRecPtr);
 	ReleaseStore(&CRecPtr);
 	CRecPtr = E->NewRecPtr;
 }
@@ -1272,7 +1276,6 @@ void DataEditor::DisplRecTxt()
 void DataEditor::DisplEditWw()
 {
 	WORD i = 0, x = 0, y = 0;
-	/* !!! with E->V do!!! */
 	auto EV = E->V;
 	if (E->ShdwY == 1) {
 		screen.ScrColor(EV.C1 + 1, EV.R2, EV.C2 - EV.C1 + E->ShdwX - 1, screen.colors.ShadowAttr);
@@ -1297,9 +1300,9 @@ void DataEditor::DisplEditWw()
 	DisplAllWwRecs(); // doplni do formularu data nebo tecky
 }
 
-void DataEditor::DisplWwRecsOrPage(WORD* c_page, ERecTxtD** rt)
+void DataEditor::DisplWwRecsOrPage(WORD& c_page, ERecTxtD** rt)
 {
-	if (*c_page != CFld->Page) {
+	if (c_page != CFld->Page) {
 		SetCPage(c_page, rt);
 		TextAttr = E->Attr;
 		Wind oldMin = WindMin;
@@ -1320,7 +1323,7 @@ void DataEditor::DuplOwnerKey()
 	if (!E->DownSet || (E->OwnerTyp == 'i')) return;
 	KeyFldD* KF = E->DownLD->ToKey->KFlds;
 	for (auto& arg : E->DownLD->Args) {
-		DuplFld(E->DownLD->ToFD, CFile, E->DownRecPtr, E->NewRecPtr, E->OldRecPtr,
+		DuplFld(E->DownLD->ToFD, file_d_, E->DownRecPtr, E->NewRecPtr, E->OldRecPtr,
 			KF->FldD, arg->FldD);
 		KF = KF->pChain;
 	}
@@ -1348,8 +1351,8 @@ void DataEditor::BuildWork()
 	XString xx;
 	bool dupl = true, intvl = false;
 
-	if (!CFile->Keys.empty()) {
-		KF = CFile->Keys[0]->KFlds;
+	if (!file_d_->Keys.empty()) {
+		KF = file_d_->Keys[0]->KFlds;
 	}
 	if (HasIndex) {
 		K = VK;
@@ -1357,7 +1360,7 @@ void DataEditor::BuildWork()
 		dupl = K->Duplic;
 		intvl = K->IntervalTest;
 	}
-	WK->Open(CFile, KF, dupl, intvl);
+	WK->Open(file_d_, KF, dupl, intvl);
 	if (params_->OnlyAppend) return;
 	FrmlElem* boolP = E->Cond;
 	KeyInD* ki = E->KIRoot;
@@ -1371,45 +1374,45 @@ void DataEditor::BuildWork()
 	try {
 		XScan* Scan;
 		if (E->DownSet) {
-			Scan = new XScan(CFile, E->DownKey, nullptr, false);
+			Scan = new XScan(file_d_, E->DownKey, nullptr, false);
 			if (E->OwnerTyp == 'i') {
 				Scan->ResetOwnerIndex(E->DownLD, E->DownLV, boolP);
 			}
 			else {
-				CFile = E->DownLD->ToFD;
+				file_d_ = E->DownLD->ToFD;
 				CRecPtr = E->DownRecPtr;
-				xx.PackKF(CFile, E->DownLD->ToKey->KFlds, CRecPtr);
-				CFile = E->FD;
+				xx.PackKF(file_d_, E->DownLD->ToKey->KFlds, CRecPtr);
+				file_d_ = E->FD;
 				CRecPtr = E->NewRecPtr;
 				Scan->ResetOwner(&xx, boolP);
 			}
 			if (ki != nullptr) {
-				wk2 = new XWKey(CFile);
-				wk2->Open(CFile, KF, true, false);
-				CFile->FF->CreateWIndex(Scan, wk2, 'W');
-				XScan* Scan2 = new XScan(CFile, wk2, ki, false);
+				wk2 = new XWKey(file_d_);
+				wk2->Open(file_d_, KF, true, false);
+				file_d_->FF->CreateWIndex(Scan, wk2, 'W');
+				XScan* Scan2 = new XScan(file_d_, wk2, ki, false);
 				Scan2->Reset(nullptr, false, CRecPtr);
 				Scan = Scan2;
 			}
 		}
 		else {
 #ifdef FandSQL
-			if (CFile->IsSQLFile && (boolP == nullptr)) {
-				l = CFile->FF->RecLen; f = CFile->FldD[0]; OnlyKeyArgFlds(WK);
+			if (file_d_->IsSQLFile && (boolP == nullptr)) {
+				l = file_d_->FF->RecLen; f = file_d_->FldD[0]; OnlyKeyArgFlds(WK);
 			}
 #endif
 			if (
 #ifdef FandSQL
-				CFile->IsSQLFile ||
+				file_d_->IsSQLFile ||
 #endif
 				(boolP != nullptr))
 				if ((K != nullptr) && !K->InWork && (ki == nullptr)) K = nullptr;
-			Scan = new XScan(CFile, K, ki, false);
+			Scan = new XScan(file_d_, K, ki, false);
 			Scan->Reset(boolP, E->SQLFilter, CRecPtr);
 		}
-		CFile->FF->CreateWIndex(Scan, WK, 'W');
+		file_d_->FF->CreateWIndex(Scan, WK, 'W');
 		Scan->Close();
-		if (wk2 != nullptr) wk2->Close(CFile);
+		if (wk2 != nullptr) wk2->Close(file_d_);
 		ok = true;
 	}
 	catch (std::exception& e) {
@@ -1417,10 +1420,10 @@ void DataEditor::BuildWork()
 	}
 
 	if (f != nullptr) {
-		CFile->FldD.clear();
-		CFile->FldD.push_back(f);
+		file_d_->FldD.clear();
+		file_d_->FldD.push_back(f);
 		WK->KFlds = KF;
-		CFile->FF->RecLen = l;
+		file_d_->FF->RecLen = l;
 	}
 	if (!ok) {
 		GoExit();
@@ -1440,7 +1443,7 @@ void DataEditor::SetStartRec()
 		kf = k->KFlds;
 	}
 	if ((!E->StartRecKey.empty()) && (k != nullptr)) {
-		if (k->FindNr(CFile, E->StartRecKey, n)) {
+		if (k->FindNr(file_d_, E->StartRecKey, n)) {
 			n = MaxL(1, MinL(n, CNRecs()));
 			IRec = MaxW(1, MinW(E->StartIRec, E->NRecs));
 			BaseRec = n - IRec + 1;
@@ -1467,14 +1470,14 @@ void DataEditor::SetStartRec()
 		}
 		else n = 0;
 		if (params_->Subset) {
-			WK->Close(CFile);
+			WK->Close(file_d_);
 		}
 		params_->Subset = true;
 		if (n == 0) {
-			WK->Open(CFile, nullptr, true, false);
+			WK->Open(file_d_, nullptr, true, false);
 		}
 		else {
-			WK->OneRecIdx(CFile, kf, n, CRecPtr);
+			WK->OneRecIdx(file_d_, kf, n, CRecPtr);
 		}
 		BaseRec = 1;
 		IRec = 1;
@@ -1486,9 +1489,9 @@ bool DataEditor::OpenEditWw()
 	LockMode md, md1, md2;
 	int n = 0;
 	auto result = false;
-	CFile = E->Journal;
-	if (CFile != nullptr) {
-		OpenCreateF(CFile, CPath, Shared);
+	file_d_ = E->Journal;
+	if (file_d_ != nullptr) {
+		OpenCreateF(file_d_, CPath, Shared);
 	}
 	ReadParamsFromE();
 	if (params_->EdRecVar) {
@@ -1500,24 +1503,24 @@ bool DataEditor::OpenEditWw()
 		}
 	}
 #ifdef FandSQL
-	if (!CFile->IsSQLFile)
+	if (!file_d_->IsSQLFile)
 #endif
-		OpenCreateF(CFile, CPath, Shared);
+		OpenCreateF(file_d_, CPath, Shared);
 	E->OldMd = E->FD->FF->LMode;
 	UpdCount = 0;
 #ifdef FandSQL
-	if (CFile->IsSQLFile) {
+	if (file_d_->IsSQLFile) {
 		if ((VK = nullptr) || !VK->InWork) Subset = true
 	}
 	else
 #endif
 	{
 		if (HasIndex) {
-			CFile->FF->TestXFExist();
+			file_d_->FF->TestXFExist();
 		}
 		md = NoDelMode;
 		if (params_->OnlyAppend || (E->Cond != nullptr) || (E->KIRoot != nullptr) || E->DownSet ||
-			params_->MakeWorkX && HasIndex && CFile->FF->NotCached() && !params_->Only1Record)
+			params_->MakeWorkX && HasIndex && file_d_->FF->NotCached() && !params_->Only1Record)
 		{
 			params_->Subset = true;
 			if (HasIndex) {
@@ -1532,25 +1535,25 @@ bool DataEditor::OpenEditWw()
 		}
 	}
 	if (params_->Subset || params_->Only1Record) {
-		WK = new XWKey(CFile);
+		WK = new XWKey(file_d_);
 	}
-	if (!CFile->TryLockMode(md, md1, 1)) {
+	if (!file_d_->TryLockMode(md, md1, 1)) {
 		EdBreak = 15;
 		goto label1;
 	}
-	md2 = CFile->NewLockMode(RdMode);
+	md2 = file_d_->NewLockMode(RdMode);
 	if (E->DownSet && (E->OwnerTyp == 'F')) {
-		CFile = E->DownLD->ToFD;
+		file_d_ = E->DownLD->ToFD;
 		CRecPtr = E->DownRecPtr;
-		md1 = CFile->NewLockMode(RdMode);
+		md1 = file_d_->NewLockMode(RdMode);
 		n = E->OwnerRecNo;
-		if ((n == 0) || (n > CFile->FF->NRecs)) {
-			CFile->RunErrorM(E->OldMd);
+		if ((n == 0) || (n > file_d_->FF->NRecs)) {
+			file_d_->RunErrorM(E->OldMd);
 			RunError(611);
 		}
-		CFile->ReadRec(n, CRecPtr);
-		CFile->OldLockMode(md1);
-		CFile = E->FD;
+		file_d_->ReadRec(n, CRecPtr);
+		file_d_->OldLockMode(md1);
+		file_d_ = E->FD;
 		CRecPtr = E->NewRecPtr;
 	}
 	if (params_->Subset) {
@@ -1558,8 +1561,8 @@ bool DataEditor::OpenEditWw()
 	}
 	if (!params_->Only1Record && HasIndex && VK->InWork) {
 		if (!params_->Subset) WK = (XWKey*)VK;
-		if (!CFile->Keys.empty()) {
-			VK = CFile->Keys[0];
+		if (!file_d_->Keys.empty()) {
+			VK = file_d_->Keys[0];
 		}
 		else {
 			VK = nullptr;
@@ -1568,7 +1571,7 @@ bool DataEditor::OpenEditWw()
 		params_->Subset = true;
 	}
 #ifdef FandSQL
-	if (CFile->IsSQLFile) Strm1->DefKeyAcc(WK);
+	if (file_d_->IsSQLFile) Strm1->DefKeyAcc(WK);
 #endif
 	if (!params_->OnlyAppend) {
 		SetStartRec();
@@ -1576,17 +1579,17 @@ bool DataEditor::OpenEditWw()
 	if (CNRecs() == 0)
 		if (params_->NoCreate) {
 			if (params_->Subset) {
-				FileMsg(CFile, 107, '0');
+				FileMsg(file_d_, 107, '0');
 			}
 			else {
-				FileMsg(CFile, 115, '0');
+				FileMsg(file_d_, 115, '0');
 			}
 			EdBreak = 13;
 		label1:
 			if (params_->Subset && !params_->WasWK) {
-				WK->Close(CFile);
+				WK->Close(file_d_);
 			}
-			CFile->OldLockMode(E->OldMd);
+			file_d_->OldLockMode(E->OldMd);
 			result = false;
 			return result;
 		}
@@ -1595,9 +1598,9 @@ bool DataEditor::OpenEditWw()
 			IsNewRec = true;
 			params_->Append = true;
 			LockRec(false);
-			CFile->ZeroAllFlds(CRecPtr, false);
+			file_d_->ZeroAllFlds(CRecPtr, false);
 			DuplOwnerKey();
-			SetWasUpdated(CFile->FF, CRecPtr);
+			SetWasUpdated(file_d_->FF, CRecPtr);
 		}
 	else {
 		RdRec(CRec());
@@ -1606,20 +1609,20 @@ label3:
 	MarkStore(E->AfterE);
 	DisplEditWw();
 	result = true;
-	if (!params_->EdRecVar) CFile->OldLockMode(md2);
+	if (!params_->EdRecVar) file_d_->OldLockMode(md2);
 	if (IsNewRec) NewRecExit();
 	return result;
 }
 
 void DataEditor::RefreshSubset()
 {
-	LockMode md = CFile->NewLockMode(RdMode);
+	LockMode md = file_d_->NewLockMode(RdMode);
 	if (params_->Subset && !(params_->OnlyAppend || params_->Only1Record || params_->WasWK)) {
-		WK->Close(CFile);
+		WK->Close(file_d_);
 		BuildWork();
 	}
 	DisplAllWwRecs();
-	CFile->OldLockMode(md);
+	file_d_->OldLockMode(md);
 }
 
 void DataEditor::GotoRecFld(int NewRec, EFldD* NewFld)
@@ -1630,17 +1633,25 @@ void DataEditor::GotoRecFld(int NewRec, EFldD* NewFld)
 	CFld = NewFld;
 	if (NewRec == CRec()) {
 		if (CPage != CFld->Page) {
-			DisplWwRecsOrPage(&CPage, &RT);
+			DisplWwRecsOrPage(CPage, &RT);
 		}
 		else {
 			IVon();
 		}
 		return;
 	}
-	if (!params_->EdRecVar) md = CFile->NewLockMode(RdMode);
-	if (NewRec > CNRecs()) NewRec = CNRecs();
-	if (NewRec <= 0) NewRec = 1;
-	if (params_->Select) SetRecAttr(IRec);
+	if (!params_->EdRecVar) {
+		md = file_d_->NewLockMode(RdMode);
+	}
+	if (NewRec > CNRecs()) {
+		NewRec = CNRecs();
+	}
+	if (NewRec <= 0) {
+		NewRec = 1;
+	}
+	if (params_->Select) {
+		SetRecAttr(IRec);
+	}
 	CFld = NewFld;
 	Max = E->NRecs;
 	Delta = NewRec - CRec();
@@ -1658,7 +1669,7 @@ void DataEditor::GotoRecFld(int NewRec, EFldD* NewFld)
 	BaseRec = NewBase;
 	RdRec(CRec());
 	if (abs(D) >= Max) {
-		DisplWwRecsOrPage(&CPage, &RT);
+		DisplWwRecsOrPage(CPage, &RT);
 		goto label2;
 	}
 	if (D > 0) {
@@ -1675,7 +1686,7 @@ label1:
 	IVon();
 label2:
 	if (!params_->EdRecVar) {
-		CFile->OldLockMode(md);
+		file_d_->OldLockMode(md);
 	}
 }
 
@@ -1683,39 +1694,41 @@ void DataEditor::UpdMemberRef(void* POld, void* PNew)
 {
 	XString x, xnew, xold;
 	XScan* Scan = nullptr;
-	FileD* cf = CFile;
-	void* cr = CRecPtr; void* p = nullptr; void* p2 = nullptr;
+	FileD* cf = file_d_;
+	void* cr = CRecPtr;
+	void* p = nullptr;
+	void* p2 = nullptr;
 	XKey* k = nullptr;
 	KeyFldD* kf = nullptr, * kf1 = nullptr, * kf2 = nullptr; // , * Arg = nullptr;
 
 	for (auto& LD : LinkDRoot) {
 		if ((LD->MemberRef != 0) && (LD->ToFD == cf) && ((PNew != nullptr) || (LD->MemberRef != 2))) {
-			CFile = cf;
+			file_d_ = cf;
 			kf2 = LD->ToKey->KFlds;
 			CRecPtr = POld;
-			xold.PackKF(CFile, kf2, CRecPtr);
+			xold.PackKF(file_d_, kf2, CRecPtr);
 			if (PNew != nullptr) {
 				CRecPtr = PNew;
-				xnew.PackKF(CFile, kf2, CRecPtr);
+				xnew.PackKF(file_d_, kf2, CRecPtr);
 				if (xnew.S == xold.S) continue;
 			}
-			CFile = LD->FromFD;
+			file_d_ = LD->FromFD;
 #ifdef FandSQL
-			sql = CFile->IsSQLFile;
+			sql = file_d_->IsSQLFile;
 #endif
 			k = GetFromKey(LD);
 			kf1 = k->KFlds;
-			p = CFile->GetRecSpace();
+			p = file_d_->GetRecSpace();
 			CRecPtr = p;
 			if (PNew != nullptr) {
-				p2 = CFile->GetRecSpace();
+				p2 = file_d_->GetRecSpace();
 			}
-			Scan = new XScan(CFile, k, nullptr, true);
+			Scan = new XScan(file_d_, k, nullptr, true);
 			Scan->ResetOwner(&xold, nullptr);
 #ifdef FandSQL
 			if (!sql)
 #endif
-				CFile->FF->ScanSubstWIndex(Scan, kf1, 'W');
+				file_d_->FF->ScanSubstWIndex(Scan, kf1, 'W');
 		label1:
 			CRecPtr = p;
 			Scan->GetRec(CRecPtr);
@@ -1724,40 +1737,40 @@ void DataEditor::UpdMemberRef(void* POld, void* PNew)
 				if (sql) x.PackKF(kf1);
 #endif
 				if (PNew == nullptr) {
-					RunAddUpdate(CFile, '-', nullptr, false, nullptr, LD, CRecPtr);
+					RunAddUpdate(file_d_, '-', nullptr, false, nullptr, LD, CRecPtr);
 					UpdMemberRef(p, nullptr);
 #ifdef FandSQL
 					if (sql) Strm1->DeleteXRec(k, @x, false);
 					else
 #endif
-						CFile->FF->DeleteXRec(Scan->RecNr, true, CRecPtr);
+						file_d_->FF->DeleteXRec(Scan->RecNr, true, CRecPtr);
 				}
 				else {
-					Move(CRecPtr, p2, CFile->FF->RecLen);
+					Move(CRecPtr, p2, file_d_->FF->RecLen);
 					CRecPtr = p2;
 					kf = kf2;
 					//Arg = LD->Args;
 					//while (kf != nullptr) {
 					for (auto& arg : LD->Args) {
-						DuplFld(cf, CFile, PNew, p2, nullptr, kf->FldD, arg->FldD);
+						DuplFld(cf, file_d_, PNew, p2, nullptr, kf->FldD, arg->FldD);
 						//Arg = Arg->pChain;
 						kf = kf->pChain;
 					}
-					RunAddUpdate(CFile, 'd', p, false, nullptr, LD, CRecPtr);
+					RunAddUpdate(file_d_, 'd', p, false, nullptr, LD, CRecPtr);
 					UpdMemberRef(p, p2);
 #ifdef FandSQL
 					if (sql) Strm1->UpdateXRec(k, @x, false) else
 #endif
-						CFile->FF->OverWrXRec(Scan->RecNr, p, p2, CRecPtr);
+						file_d_->FF->OverWrXRec(Scan->RecNr, p, p2, CRecPtr);
 				}
 				goto label1;
 			}
 			Scan->Close();
-			CFile->ClearRecSpace(p);
+			file_d_->ClearRecSpace(p);
 			ReleaseStore(&p);
 		}
 	}
-	CFile = cf; CRecPtr = cr;
+	file_d_ = cf; CRecPtr = cr;
 }
 
 void DataEditor::WrJournal(char Upd, void* RP, double Time)
@@ -1767,32 +1780,32 @@ void DataEditor::WrJournal(char Upd, void* RP, double Time)
 
 	size_t srcOffset = 0;
 	if (E->Journal != nullptr) {
-		WORD l = CFile->FF->RecLen;
+		WORD l = file_d_->FF->RecLen;
 		int n = AbsRecNr(CRec());
-		if (CFile->FF->XF != nullptr) {
+		if (file_d_->FF->XF != nullptr) {
 			srcOffset += 2;
 			l--;
 		}
-		CFile = E->Journal;
+		file_d_ = E->Journal;
 		//CRecPtr = GetRecSpace();
 
-		const auto newData = std::make_unique<BYTE[]>(CFile->FF->RecLen + 2);
+		const auto newData = std::make_unique<BYTE[]>(file_d_->FF->RecLen + 2);
 
-		auto it = CFile->FldD.begin();
+		auto it = file_d_->FldD.begin();
 
-		CFile->saveS(*it++, std::string(1, Upd), newData.get());	// change type
-		CFile->saveR(*it++, int(n), newData.get());						// record number
-		CFile->saveR(*it++, int(UserCode), newData.get());				// user code
-		CFile->saveR(*it++, Time, newData.get());							// timestamp
+		file_d_->saveS(*it++, std::string(1, Upd), newData.get());	// change type
+		file_d_->saveR(*it++, int(n), newData.get());						// record number
+		file_d_->saveR(*it++, int(UserCode), newData.get());				// user code
+		file_d_->saveR(*it++, Time, newData.get());							// timestamp
 
 		char* src = (char*)RP;
 		memcpy(&newData.get()[(*it)->Displ], &src[srcOffset], l);		// record data
 
-		LockMode md = CFile->NewLockMode(CrMode);
-		CFile->IncNRecs(1);
-		CFile->WriteRec(CFile->FF->NRecs, newData.get());
-		CFile->OldLockMode(md);
-		CFile = E->FD;
+		LockMode md = file_d_->NewLockMode(CrMode);
+		file_d_->IncNRecs(1);
+		file_d_->WriteRec(file_d_->FF->NRecs, newData.get());
+		file_d_->OldLockMode(md);
+		file_d_ = E->FD;
 		CRecPtr = E->NewRecPtr;
 	}
 	UpdCount++;
@@ -1810,23 +1823,23 @@ bool DataEditor::LockForMemb(FileD* FD, WORD Kind, LockMode NewMd, LockMode& md)
 		if ((ld->ToFD == FD)
 			&& ((NewMd != DelMode) && (ld->MemberRef != 0) || (ld->MemberRef == 1))
 			&& (ld->FromFD != FD)) {
-			CFile = ld->FromFD;
+			file_d_ = ld->FromFD;
 			switch (Kind) {
 			case 0: {
-				CFile->FF->TaLMode = CFile->FF->LMode;
+				file_d_->FF->TaLMode = file_d_->FF->LMode;
 				break;
 			}
 			case 1: {
 				md = NewMd;
-				if (!CFile->TryLockMode(NewMd, md1, 2)) return result;
+				if (!file_d_->TryLockMode(NewMd, md1, 2)) return result;
 				break;
 			}
 			case 2: {
-				CFile->OldLockMode(CFile->FF->TaLMode);
+				file_d_->OldLockMode(file_d_->FF->TaLMode);
 				break;
 			}
 			}
-			if (!LockForAdd(CFile, Kind, true, md)) return result;
+			if (!LockForAdd(file_d_, Kind, true, md)) return result;
 			if (!LockForMemb(ld->FromFD, Kind, NewMd, md)) return result;
 		}
 	}
@@ -1842,31 +1855,31 @@ bool DataEditor::LockWithDep(LockMode CfMd, LockMode MembMd, LockMode& OldMd)
 	LockMode md;
 	auto result = true;
 	if (params_->EdRecVar) return result;
-	FileD* cf = CFile;
+	FileD* cf = file_d_;
 	int w = 0;
 	LockForAdd(cf, 0, true, md);
 	LockForMemb(cf, 0, MembMd, md);
 label1:
-	CFile = cf;
-	if (!CFile->TryLockMode(CfMd, OldMd, 1)) {
+	file_d_ = cf;
+	if (!file_d_->TryLockMode(CfMd, OldMd, 1)) {
 		md = CfMd;
 		goto label3;
 	}
 	if (!LockForAdd(cf, 1, true, md)) {
-		cf2 = CFile;
+		cf2 = file_d_;
 		goto label2;
 	}
 	if (MembMd == NullMode) goto label4;
 	if (!LockForMemb(cf, 1, MembMd, md)) {
-		cf2 = CFile;
+		cf2 = file_d_;
 		LockForMemb(cf, 2, MembMd, md);
 	label2:
 		LockForAdd(cf, 2, true, md);
-		CFile = cf;
-		CFile->OldLockMode(OldMd);
-		CFile = cf2;
+		file_d_ = cf;
+		file_d_->OldLockMode(OldMd);
+		file_d_ = cf2;
 	label3:
-		SetPathAndVolume(CFile);
+		SetPathAndVolume(file_d_);
 		SetMsgPar(CPath, LockModeTxt[md]);
 		w1 = PushWrLLMsg(825, true);
 		if (w == 0) w = w1;
@@ -1876,7 +1889,7 @@ label1:
 		result = false;
 	}
 label4:
-	CFile = cf;
+	file_d_ = cf;
 	if (w != 0) PopW(w);
 	return result;
 }
@@ -1885,11 +1898,11 @@ void DataEditor::UnLockWithDep(LockMode OldMd)
 {
 	LockMode md;
 	if (params_->EdRecVar) return;
-	FileD* cf = CFile;
-	CFile->OldLockMode(OldMd);
+	FileD* cf = file_d_;
+	file_d_->OldLockMode(OldMd);
 	LockForAdd(cf, 2, true, md);
 	LockForMemb(cf, 2, md, md);
-	CFile = cf;
+	file_d_ = cf;
 }
 
 void DataEditor::UndoRecord()
@@ -1898,7 +1911,7 @@ void DataEditor::UndoRecord()
 	if (!IsNewRec && params_->WasUpdated) {
 		if (HasTF) {
 			if (params_->NoDelTFlds) {
-				FieldDescr* f = CFile->FldD.front();
+				FieldDescr* f = file_d_->FldD.front();
 				while (f != nullptr) {
 					if (((f->Flg & f_Stored) != 0) && (f->field_type == FieldType::TEXT))
 						*(int*)((char*)(E->OldRecPtr) + f->Displ) = *(int*)(((char*)(CRecPtr)+f->Displ));
@@ -1907,10 +1920,10 @@ void DataEditor::UndoRecord()
 			}
 		}
 		else { // je toto spravne zanorene???
-			CFile->DelAllDifTFlds(E->NewRecPtr, E->OldRecPtr);
+			file_d_->DelAllDifTFlds(E->NewRecPtr, E->OldRecPtr);
 		}
 
-		Move(E->OldRecPtr, E->NewRecPtr, CFile->FF->RecLen);
+		Move(E->OldRecPtr, E->NewRecPtr, file_d_->FF->RecLen);
 		params_->WasUpdated = false; params_->NoDelTFlds = false;
 		UnLockRec(E);
 		DisplRec(IRec);
@@ -1920,7 +1933,7 @@ void DataEditor::UndoRecord()
 
 bool DataEditor::CleanUp()
 {
-	if (HasIndex && CFile->DeletedFlag(CRecPtr)) return false;
+	if (HasIndex && file_d_->DeletedFlag(CRecPtr)) return false;
 	for (auto& X : E->ExD) {
 		if (X->AtWrRec) {
 			EdBreak = 17;
@@ -1937,12 +1950,12 @@ bool DataEditor::CleanUp()
 	}
 	if (params_->AddSwitch) {
 		for (auto& ld : LinkDRoot) {
-			if ((ld->MemberRef == 2) && (ld->ToFD == CFile) && Owned(CFile, nullptr, nullptr, ld, CRecPtr) > 0) {
+			if ((ld->MemberRef == 2) && (ld->ToFD == file_d_) && Owned(file_d_, nullptr, nullptr, ld, CRecPtr) > 0) {
 				WrLLF10Msg(662);
 				return false;
 			}
 		}
-		if (!RunAddUpdate(CFile, '-', nullptr, false, nullptr, nullptr, CRecPtr)) return false;
+		if (!RunAddUpdate(file_d_, '-', nullptr, false, nullptr, nullptr, CRecPtr)) return false;
 		UpdMemberRef(CRecPtr, nullptr);
 	}
 	if (!ChptDel()) return false;
@@ -1954,11 +1967,11 @@ bool DataEditor::DelIndRec(int I, int N)
 {
 	bool result = false;
 	if (CleanUp()) {
-		CFile->FF->DeleteXRec(N, true, CRecPtr);
-		SetUpdHandle(CFile->FF->Handle); // navic
-		SetUpdHandle(CFile->FF->XF->Handle); // navic
-		if ((E->SelKey != nullptr) && E->SelKey->Delete(CFile, N, CRecPtr)) E->SelKey->NR--;
-		if (params_->Subset) WK->DeleteAtNr(CFile, I);
+		file_d_->FF->DeleteXRec(N, true, CRecPtr);
+		SetUpdHandle(file_d_->FF->Handle); // navic
+		SetUpdHandle(file_d_->FF->XF->Handle); // navic
+		if ((E->SelKey != nullptr) && E->SelKey->Delete(file_d_, N, CRecPtr)) E->SelKey->NR--;
+		if (params_->Subset) WK->DeleteAtNr(file_d_, I);
 		result = true;
 		E->EdUpdated = true;
 	}
@@ -1968,7 +1981,7 @@ bool DataEditor::DelIndRec(int I, int N)
 bool DataEditor::DeleteRecProc()
 {
 	Logging* log = Logging::getInstance();
-	//log->log(loglevel::DEBUG, "DeleteRecProc() deleting item (CFile '%c')", CFile->Name.c_str());
+	//log->log(loglevel::DEBUG, "DeleteRecProc() deleting item (file_d_ '%c')", file_d_->Name.c_str());
 
 	int I = 0, J = 0, N = 0, oBaseRec = 0;
 	WORD oIRec = 0;
@@ -1991,19 +2004,21 @@ bool DataEditor::DeleteRecProc()
 	oBaseRec = BaseRec;    /* exit proc uses CRec for locking etc.*/
 	if (HasIndex
 #ifdef FandSQL
-		|| CFile->IsSQLFile
+		|| file_d_->IsSQLFile
 #endif
 		) {
 		//log->log(loglevel::DEBUG, "... from file with index ...");
-		CFile->FF->TestXFExist();
+		file_d_->FF->TestXFExist();
 		if (Group) {
 			IRec = 1; BaseRec = 1;
 			while (BaseRec <= CNRecs()) {
 				N = AbsRecNr(BaseRec);
-				CFile->ClearDeletedFlag(CRecPtr); /*prevent err msg 148*/
+				file_d_->ClearDeletedFlag(CRecPtr); /*prevent err msg 148*/
 				if (!ELockRec(E, N, false, params_->Subset)) goto label1;
 				RdRec(BaseRec);
-				if (RunBool(CFile, E->Bool, CRecPtr)) b = DelIndRec(BaseRec, N);
+				if (RunBool(file_d_, E->Bool, CRecPtr)) {
+					b = DelIndRec(BaseRec, N);
+				}
 				else {
 					b = true;
 					BaseRec++;
@@ -2026,49 +2041,49 @@ bool DataEditor::DeleteRecProc()
 		BaseRec = 1;
 		IRec = 1;
 		E->EdUpdated = true;
-		for (I = 1; I <= CFile->FF->NRecs; I++) {
-			CFile->ReadRec(I, CRecPtr);
+		for (I = 1; I <= file_d_->FF->NRecs; I++) {
+			file_d_->ReadRec(I, CRecPtr);
 			if (fail) goto label2;
 			if (params_->Subset) {
-				if ((BaseRec > WK->NRecs()) || (WK->NrToRecNr(CFile, BaseRec) != J + 1)) goto label2;
+				if ((BaseRec > WK->NRecs()) || (WK->NrToRecNr(file_d_, BaseRec) != J + 1)) goto label2;
 			}
 			else BaseRec = I;
-			if (RunBool(CFile, E->Bool, CRecPtr)) {
+			if (RunBool(file_d_, E->Bool, CRecPtr)) {
 				if (!CleanUp()) {
 					fail = true;
 					goto label2;
 				}
 				if (params_->Subset) {
-					WK->DeleteAtNr(CFile, BaseRec);
-					WK->AddToRecNr(CFile, J + 1, -1);
+					WK->DeleteAtNr(file_d_, BaseRec);
+					WK->AddToRecNr(file_d_, J + 1, -1);
 				}
-				CFile->DelAllDifTFlds(CRecPtr, nullptr);
+				file_d_->DelAllDifTFlds(CRecPtr, nullptr);
 			}
 			else {
 				if (params_->Subset) BaseRec++;
 			label2:
 				J++;
-				CFile->WriteRec(J, CRecPtr);
+				file_d_->WriteRec(J, CRecPtr);
 			}
 		}
-		CFile->DecNRecs(CFile->FF->NRecs - J);
+		file_d_->DecNRecs(file_d_->FF->NRecs - J);
 	}
 	else if (CleanUp()) {
 		E->EdUpdated = true;
 		if (params_->Subset) {
-			WK->DeleteAtNr(CFile, CRec());
-			WK->AddToRecNr(CFile, N, -1);
+			WK->DeleteAtNr(file_d_, CRec());
+			WK->AddToRecNr(file_d_, N, -1);
 		}
-		CFile->DeleteRec(N, CRecPtr);
+		file_d_->DeleteRec(N, CRecPtr);
 	}
 	CFld = E->FirstFld;
 	IRec = (BYTE)oIRec;
 	BaseRec = oBaseRec;
-	CFile->ClearDeletedFlag(CRecPtr);
+	file_d_->ClearDeletedFlag(CRecPtr);
 	AdjustCRec();
 	if (IsNewRec) { DuplOwnerKey(); }
 	else { RdRec(CRec()); }
-	DisplWwRecsOrPage(&CPage, &RT);
+	DisplWwRecsOrPage(CPage, &RT);
 	UnLockWithDep(OldMd);
 	result = true;
 	return result;
@@ -2081,7 +2096,7 @@ ChkD* DataEditor::CompChk(EFldD* D, char Typ)
 	ChkD* C = D->Chk;
 	ChkD* result = nullptr;
 	while (C != nullptr) {
-		if ((w && C->Warning || f && !C->Warning) && !RunBool(CFile, C->Bool, CRecPtr)) {
+		if ((w && C->Warning || f && !C->Warning) && !RunBool(file_d_, C->Bool, CRecPtr)) {
 			result = C;
 			return result;
 		}
@@ -2201,31 +2216,31 @@ bool DataEditor::EquRoleName(pstring S, LinkD* LD)
 bool DataEditor::EquFileViewName(FileD* FD, std::string S, EditOpt** EO)
 {
 	auto result = true;
-	FileD* cf = CFile;
-	CFile = FD;
+	FileD* cf = file_d_;
+	file_d_ = FD;
 	if (S[0] == 0x01) { // ^A
 		S = S.substr(1, 255);
-		StringListEl* SL = CFile->ViewNames;
+		StringListEl* SL = file_d_->ViewNames;
 		while (SL != nullptr) {
 			if (SL->S == S) {
 				*EO = new EditOpt();
 				(*EO)->UserSelFlds = true;
 				RdUserView(S, *EO);
 
-				CFile = cf;
+				file_d_ = cf;
 				return result;
 			}
 			SL = SL->pChain;
 		}
 	}
-	else if (S == std::string(CFile->Name)) {
+	else if (S == std::string(file_d_->Name)) {
 		*EO = new EditOpt();
 		(*EO)->UserSelFlds = true;
-		(*EO)->Flds = AllFldsList(CFile, false);
+		(*EO)->Flds = AllFldsList(file_d_, false);
 		return result;
 	}
 
-	CFile = cf;
+	file_d_ = cf;
 
 	result = false;
 	return result;
@@ -2244,13 +2259,13 @@ void DataEditor::UpwEdit(LinkD* LkD)
 	LinkD* LD;
 	MarkStore(p);
 	int w = PushW(1, 1, TxtCols, TxtRows, true, true);
-	CFile->IRec = AbsRecNr(CRec());
+	file_d_->IRec = AbsRecNr(CRec());
 	WriteParamsToE();
 
 	if (LkD == nullptr) {
 		for (auto& ld : LinkDRoot) {
 			FileD* ToFD = ld->ToFD;
-			if ((ld->FromFD == CFile) && ForNavigate(ToFD)) {
+			if ((ld->FromFD == file_d_) && ForNavigate(ToFD)) {
 				std::string s;
 				std::string rn = ld->RoleName;
 				if (ToFD->Name != rn) { s = "." + ld->RoleName; }
@@ -2267,11 +2282,11 @@ void DataEditor::UpwEdit(LinkD* LkD)
 		if (Event.Pressed.KeyCombination() == __ESC) goto label1;
 		GetSel2S(s1, s2, '.', 2);
 		//LD = LinkDRoot;
-		/*while (LD != nullptr && !(LD->FromFD == CFile && EquRoleName(s2, LD) && EquFileViewName(LD->ToFD, s1, EO)))
+		/*while (LD != nullptr && !(LD->FromFD == file_d_ && EquRoleName(s2, LD) && EquFileViewName(LD->ToFD, s1, EO)))
 			LD = LD->pChain;*/
 		LD = nullptr;
 		for (auto& ld : LinkDRoot) {
-			if (ld->FromFD == CFile && EquRoleName(s2, ld) && EquFileViewName(ld->ToFD, s1, &EO)) {
+			if (ld->FromFD == file_d_ && EquRoleName(s2, ld) && EquFileViewName(ld->ToFD, s1, &EO)) {
 				LD = ld;
 				break;
 			}
@@ -2281,8 +2296,8 @@ void DataEditor::UpwEdit(LinkD* LkD)
 		LD = LkD;
 		EO = new EditOpt(); // GetEditOpt();
 		EO->UserSelFlds = false;
-		CFile = LD->ToFD;
-		SL = CFile->ViewNames;
+		file_d_ = LD->ToFD;
+		SL = file_d_->ViewNames;
 		SL1 = nullptr;
 		while (SL != nullptr) {
 			if (TestAccRight(SL)) {
@@ -2291,18 +2306,18 @@ void DataEditor::UpwEdit(LinkD* LkD)
 			SL = SL->pChain;
 		}
 		if (SL1 == nullptr) {
-			EO->Flds = AllFldsList(CFile, false);
+			EO->Flds = AllFldsList(file_d_, false);
 		}
 		else {
 			RdUserView(SL1->S, EO);
 		}
 		EO->SetOnlyView = true;
 	}
-	CFile = E->FD;
-	x.PackKF(CFile, LD->Args, CRecPtr);
+	file_d_ = E->FD;
+	x.PackKF(file_d_, LD->Args, CRecPtr);
 	px = &x;
 	K = LD->ToKey;
-	CFile = LD->ToFD;
+	file_d_ = LD->ToFD;
 
 	if (EO->ViewKey == nullptr) {
 		EO->ViewKey = K;
@@ -2312,7 +2327,7 @@ void DataEditor::UpwEdit(LinkD* LkD)
 	}
 
 	if (SelFldsForEO(EO, nullptr)) {
-		NewEditD(CFile, EO);
+		NewEditD(file_d_, EO);
 		E->ShiftF7LD = LkD;
 		if (OpenEditWw()) {
 			RunEdit(px, Brk);
@@ -2333,14 +2348,14 @@ void DataEditor::DisplChkErr(ChkD* C)
 
 	FindExistTest(C->Bool, &LD);
 	if (!C->Warning && (LD != nullptr) && ForNavigate(LD->ToFD) && CFld->Ed(IsNewRec)) {
-		FileD* cf = CFile;
+		FileD* cf = file_d_;
 		void* cr = CRecPtr;
 		int n = 0;
 
 		BYTE* rec = nullptr;
-		bool b = LinkUpw(CFile, LD, n, false, CRecPtr, &rec);
+		bool b = LinkUpw(file_d_, LD, n, false, CRecPtr, &rec);
 		delete[] rec; rec = nullptr;
-		CFile = cf; CRecPtr = cr;
+		file_d_ = cf; CRecPtr = cr;
 
 		if (!b) {
 			if (params_->NoShiftF7Msg) {
@@ -2356,10 +2371,10 @@ void DataEditor::DisplChkErr(ChkD* C)
 		if (F10SpecKey == __SHIFT_F7) F10SpecKey = 0xfffe;
 		else F10SpecKey = __F1;
 	}
-	SetMsgPar(RunShortStr(CFile, C->TxtZ, CRecPtr));
+	SetMsgPar(RunShortStr(file_d_, C->TxtZ, CRecPtr));
 	WrLLF10Msg(110);
 	if (Event.Pressed.KeyCombination() == __F1) {
-		Help(CFile->ChptPos.R, C->HelpName, false);
+		Help(file_d_->ChptPos.R, C->HelpName, false);
 	}
 	else if (Event.Pressed.KeyCombination() == __SHIFT_F7) {
 		UpwEdit(LD);
@@ -2372,13 +2387,13 @@ bool DataEditor::OldRecDiffers()
 	auto result = false;
 	if (IsCurrChpt() || (
 #ifdef FandSQL
-		!CFile->IsSQLFile &&
+		!file_d_->IsSQLFile &&
 #endif 
-		(!CFile->FF->NotCached()))) return result;
-	CRecPtr = CFile->GetRecSpace();
+		(!file_d_->FF->NotCached()))) return result;
+	CRecPtr = file_d_->GetRecSpace();
 #ifdef FandSQL
-	if (CFile->IsSQLFile) {
-		x.S = WK->NrToStr(CRec); Strm1->KeyAcc(WK, @x); f = CFile->FldD;
+	if (file_d_->IsSQLFile) {
+		x.S = WK->NrToStr(CRec); Strm1->KeyAcc(WK, @x); f = file_d_->FldD;
 		while (f != nullptr) {
 			/* !!! with f^ do!!! */ if (Flg && f_Stored != 0) && (field_type != 'T') and
 				(CompArea(Pchar(CRecPtr) + Displ, Pchar(E->OldRecPtr) + Displ, NBytes) != ord(_equ)) then
@@ -2390,16 +2405,16 @@ bool DataEditor::OldRecDiffers()
 	else
 #endif
 
-		CFile->ReadRec(E->LockedRec, CRecPtr);
-	if (CompArea(CRecPtr, E->OldRecPtr, CFile->FF->RecLen) != _equ) {
+		file_d_->ReadRec(E->LockedRec, CRecPtr);
+	if (CompArea(CRecPtr, E->OldRecPtr, file_d_->FF->RecLen) != _equ) {
 	label1:
-		CFile->DelAllDifTFlds(E->NewRecPtr, E->OldRecPtr);
-		Move(CRecPtr, E->NewRecPtr, CFile->FF->RecLen);
+		file_d_->DelAllDifTFlds(E->NewRecPtr, E->OldRecPtr);
+		Move(CRecPtr, E->NewRecPtr, file_d_->FF->RecLen);
 		params_->WasUpdated = false;
 		result = true;
 	}
 label2:
-	CFile->ClearRecSpace(CRecPtr);
+	file_d_->ClearRecSpace(CRecPtr);
 	ReleaseStore(&CRecPtr);
 	CRecPtr = E->NewRecPtr;
 	return result;
@@ -2434,24 +2449,24 @@ int DataEditor::UpdateIndexes()
 	XWKey* KSel = E->SelKey;
 
 	if (IsNewRec) {
-		NNew = CFile->FF->NRecs + 1;
-		CFile->FF->XF->NRecs++;
+		NNew = file_d_->FF->NRecs + 1;
+		file_d_->FF->XF->NRecs++;
 	}
 	else if (KSel != nullptr) {
 		CRecPtr = E->OldRecPtr;
-		if (KSel->RecNrToPath(CFile, x, NNew, CRecPtr)) {
-			KSel->DeleteOnPath(CFile);
+		if (KSel->RecNrToPath(file_d_, x, NNew, CRecPtr)) {
+			KSel->DeleteOnPath(file_d_);
 			CRecPtr = E->NewRecPtr;
-			KSel->Insert(CFile, NNew, false, CRecPtr);
+			KSel->Insert(file_d_, NNew, false, CRecPtr);
 		}
 		CRecPtr = E->NewRecPtr;
 	}
 
-	if (VK->RecNrToPath(CFile, x, E->LockedRec, CRecPtr) && !params_->WasWK) {
+	if (VK->RecNrToPath(file_d_, x, E->LockedRec, CRecPtr) && !params_->WasWK) {
 		if (IsNewRec) {
-			VK->InsertOnPath(CFile, x, NNew);
+			VK->InsertOnPath(file_d_, x, NNew);
 			if (params_->Subset) {
-				WK->InsertAtNr(CFile, CRec(), NNew, CRecPtr);
+				WK->InsertAtNr(file_d_, CRec(), NNew, CRecPtr);
 			}
 		}
 		N = CRec();
@@ -2459,34 +2474,34 @@ int DataEditor::UpdateIndexes()
 	else {
 		if (!IsNewRec) {
 			CRecPtr = E->OldRecPtr;
-			VK->Delete(CFile, E->LockedRec, CRecPtr);
+			VK->Delete(file_d_, E->LockedRec, CRecPtr);
 			if (params_->Subset) {
-				WK->DeleteAtNr(CFile, CRec());
+				WK->DeleteAtNr(file_d_, CRec());
 			}
 			CRecPtr = E->NewRecPtr;
-			x.PackKF(CFile, VK->KFlds, CRecPtr);
-			VK->Search(CFile, x, true, N);
+			x.PackKF(file_d_, VK->KFlds, CRecPtr);
+			VK->Search(file_d_, x, true, N);
 		}
-		N = VK->PathToNr(CFile);
-		VK->InsertOnPath(CFile, x, NNew);
+		N = VK->PathToNr(file_d_);
+		VK->InsertOnPath(file_d_, x, NNew);
 		if (VK->InWork) {
 			VK->NR++;
 		}
 		if (params_->Subset) {
-			N = WK->InsertGetNr(CFile, NNew, CRecPtr);
+			N = WK->InsertGetNr(file_d_, NNew, CRecPtr);
 		}
 	}
 
 	WORD result = N;
-	for (size_t i = 0; i < CFile->Keys.size(); i++) {
-		auto K = CFile->Keys[i];
+	for (size_t i = 0; i < file_d_->Keys.size(); i++) {
+		auto K = file_d_->Keys[i];
 		if (K != VK) {
 			if (!IsNewRec) {
 				CRecPtr = E->OldRecPtr;
-				K->Delete(CFile, E->LockedRec, CRecPtr);
+				K->Delete(file_d_, E->LockedRec, CRecPtr);
 			}
 			CRecPtr = E->NewRecPtr;
-			K->Insert(CFile, NNew, true, CRecPtr);
+			K->Insert(file_d_, NNew, true, CRecPtr);
 		}
 	}
 	CRecPtr = E->NewRecPtr;
@@ -2515,7 +2530,7 @@ bool DataEditor::WriteCRec(bool MayDispl, bool& Displ)
 	if (IsNewRec) {
 		ID = E->Impl;
 		while (ID != nullptr) {
-			AssgnFrml(CFile, CRecPtr, ID->FldD, ID->Frml, true, false);
+			AssgnFrml(file_d_, CRecPtr, ID->FldD, ID->Frml, true, false);
 			ID = ID->pChain;
 		}
 	}
@@ -2546,7 +2561,7 @@ bool DataEditor::WriteCRec(bool MayDispl, bool& Displ)
 			return result;
 		}
 	}
-	if (params_->Subset && !(params_->NoCondCheck || RunBool(CFile, E->Cond, CRecPtr) && CheckKeyIn(E))) {
+	if (params_->Subset && !(params_->NoCondCheck || RunBool(file_d_, E->Cond, CRecPtr) && CheckKeyIn(E))) {
 		UnLockWithDep(OldMd);
 		WrLLF10Msg(823);
 		return result;
@@ -2558,37 +2573,37 @@ bool DataEditor::WriteCRec(bool MayDispl, bool& Displ)
 	if (!ExitCheck(MayDispl)) goto label1;
 	if (params_->EdRecVar) goto label2;
 #ifdef FandSQL
-	if (CFile->IsSQLFile) {
+	if (file_d_->IsSQLFile) {
 		if (UpdSQLFile) goto label2; else goto label1;
 	}
 #endif
 	if (HasIndex) {   /* test duplicate keys */
-		//K = CFile->Keys;
-		//while (K != nullptr) {
-		for (auto& K : CFile->Keys) {
-			if (!K->Duplic && TestDuplKey(CFile, K)) {
+		for (auto& K : file_d_->Keys) {
+			if (!K->Duplic && TestDuplKey(file_d_, K)) {
 				UnLockWithDep(OldMd);
 				DuplKeyMsg(K);
 				return result;
 			}
-			//K = K->Chain;
 		}
 	}
-	CFile->ClearDeletedFlag(CRecPtr);
+	file_d_->ClearDeletedFlag(CRecPtr);
 	if (HasIndex) {
-		CFile->FF->TestXFExist();
+		file_d_->FF->TestXFExist();
 		if (IsNewRec) {
-			if (params_->AddSwitch && !RunAddUpdate(CFile, '+', nullptr, false, nullptr, nullptr, CRecPtr)) goto label1;
+			if (params_->AddSwitch 
+				&& !RunAddUpdate(file_d_, '+', nullptr, false, nullptr, nullptr, CRecPtr)) {
+				goto label1;
+			}
 			CNew = UpdateIndexes();
-			CFile->CreateRec(CFile->FF->NRecs + 1, CRecPtr);
+			file_d_->CreateRec(file_d_->FF->NRecs + 1, CRecPtr);
 		}
 		else {
 			if (params_->AddSwitch) {
-				if (!RunAddUpdate(CFile, 'd', E->OldRecPtr, false, nullptr, nullptr, CRecPtr)) goto label1;
+				if (!RunAddUpdate(file_d_, 'd', E->OldRecPtr, false, nullptr, nullptr, CRecPtr)) goto label1;
 				UpdMemberRef(E->OldRecPtr, CRecPtr);
 			}
 			CNew = UpdateIndexes();
-			CFile->WriteRec(E->LockedRec, CRecPtr);
+			file_d_->WriteRec(E->LockedRec, CRecPtr);
 		}
 		if (CNew != CRec()) {
 			SetNewCRec(CNew, true);
@@ -2599,20 +2614,20 @@ bool DataEditor::WriteCRec(bool MayDispl, bool& Displ)
 		N = E->LockedRec;
 		if (N == 0) {
 			N = CRec();
-			if (N == CNRecs()) N = CFile->FF->NRecs + 1;
-			else if (params_->Subset) N = WK->NrToRecNr(CFile, N);
+			if (N == CNRecs()) N = file_d_->FF->NRecs + 1;
+			else if (params_->Subset) N = WK->NrToRecNr(file_d_, N);
 		}
-		if (params_->AddSwitch && !RunAddUpdate(CFile, '+', nullptr, false, nullptr, nullptr, CRecPtr)) goto label1;
+		if (params_->AddSwitch && !RunAddUpdate(file_d_, '+', nullptr, false, nullptr, nullptr, CRecPtr)) goto label1;
 		if (ChptWriteCRec() != 0) goto label1;
-		CFile->CreateRec(N, CRecPtr);
+		file_d_->CreateRec(N, CRecPtr);
 		if (params_->Subset) {
-			WK->AddToRecNr(CFile, N, 1);
-			WK->InsertAtNr(CFile, CRec(), N, CRecPtr);
+			WK->AddToRecNr(file_d_, N, 1);
+			WK->InsertAtNr(file_d_, CRec(), N, CRecPtr);
 		}
 	}
 	else {
 		if (params_->AddSwitch) {
-			if (!RunAddUpdate(CFile, 'd', E->OldRecPtr, false, nullptr, nullptr, CRecPtr)) goto label1;
+			if (!RunAddUpdate(file_d_, 'd', E->OldRecPtr, false, nullptr, nullptr, CRecPtr)) goto label1;
 			UpdMemberRef(E->OldRecPtr, CRecPtr);
 		}
 		WORD chptWrite = ChptWriteCRec();
@@ -2624,7 +2639,7 @@ bool DataEditor::WriteCRec(bool MayDispl, bool& Displ)
 		case 2: {
 			// are old and new text positions same?
 			if ((*(int*)((char*)E->OldRecPtr + ChptTxt->Displ) == *(int*)((char*)CRecPtr + ChptTxt->Displ)) && PromptYN(157)) {
-				s = CFile->loadLongS(ChptTxt, CRecPtr);
+				s = file_d_->loadLongS(ChptTxt, CRecPtr);
 				TWork.Delete(ClpBdPos);
 				ClpBdPos = TWork.Store(s->A, s->LL);
 				delete s; s = nullptr;
@@ -2633,7 +2648,7 @@ bool DataEditor::WriteCRec(bool MayDispl, bool& Displ)
 			goto label1;
 		}
 		}
-		CFile->WriteRec(E->LockedRec, CRecPtr);
+		file_d_->WriteRec(E->LockedRec, CRecPtr);
 	}
 	time = Today() + CurrTime();
 	if (IsNewRec) WrJournal('+', CRecPtr, time);
@@ -2643,7 +2658,7 @@ bool DataEditor::WriteCRec(bool MayDispl, bool& Displ)
 	}
 label2:
 	if (!IsNewRec && !params_->NoDelTFlds) {
-		CFile->DelAllDifTFlds(E->OldRecPtr, E->NewRecPtr);
+		file_d_->DelAllDifTFlds(E->OldRecPtr, E->NewRecPtr);
 	}
 	E->EdUpdated = true;
 	params_->NoDelTFlds = false;
@@ -2662,16 +2677,16 @@ void DataEditor::DuplFromPrevRec()
 		FieldDescr* F = CFld->FldD;
 		LockMode md = RdMode;
 		if (F->field_type == FieldType::TEXT) md = WrMode;
-		md = CFile->NewLockMode(md);
-		SetWasUpdated(CFile->FF, CRecPtr);
+		md = file_d_->NewLockMode(md);
+		SetWasUpdated(file_d_->FF, CRecPtr);
 		void* cr = CRecPtr;
-		CRecPtr = CFile->GetRecSpace();
+		CRecPtr = file_d_->GetRecSpace();
 		RdRec(CRec() - 1);
-		DuplFld(CFile, CFile, CRecPtr, E->NewRecPtr, E->OldRecPtr, F, F);
-		CFile->ClearRecSpace(CRecPtr);
+		DuplFld(file_d_, file_d_, CRecPtr, E->NewRecPtr, E->OldRecPtr, F, F);
+		file_d_->ClearRecSpace(CRecPtr);
 		ReleaseStore(&CRecPtr);
 		CRecPtr = cr;
-		CFile->OldLockMode(md);
+		file_d_->OldLockMode(md);
 	}
 }
 
@@ -2681,13 +2696,13 @@ void DataEditor::InsertRecProc(void* RP)
 	IsNewRec = true;
 	LockRec(false);
 	if (RP != nullptr) {
-		Move(RP, CRecPtr, CFile->FF->RecLen);
+		Move(RP, CRecPtr, file_d_->FF->RecLen);
 	}
 	else {
-		CFile->ZeroAllFlds(CRecPtr, false);
+		file_d_->ZeroAllFlds(CRecPtr, false);
 	}
 	DuplOwnerKey();
-	SetWasUpdated(CFile->FF, CRecPtr);
+	SetWasUpdated(file_d_->FF, CRecPtr);
 	IVoff();
 	MoveDispl(E->NRecs - 1, E->NRecs, E->NRecs - IRec);
 	FirstEmptyFld = CFld;
@@ -2713,7 +2728,7 @@ void DataEditor::AppendRecord(void* RP)
 	}
 	else if (Max == 1) {
 		BaseRec++;
-		DisplWwRecsOrPage(&CPage, &RT);
+		DisplWwRecsOrPage(CPage, &RT);
 	}
 	else {
 		BaseRec += Max - 1;
@@ -2721,14 +2736,14 @@ void DataEditor::AppendRecord(void* RP)
 		DisplAllWwRecs();
 	}
 	if (RP != nullptr) {
-		Move(RP, CRecPtr, CFile->FF->RecLen);
+		Move(RP, CRecPtr, file_d_->FF->RecLen);
 	}
 	else {
-		CFile->ZeroAllFlds(CRecPtr, false);
+		file_d_->ZeroAllFlds(CRecPtr, false);
 	}
 	DuplOwnerKey();
 	DisplRecNr(CRec());
-	SetWasUpdated(CFile->FF, CRecPtr);
+	SetWasUpdated(file_d_->FF, CRecPtr);
 	LockRec(false);
 	NewRecExit();
 }
@@ -2736,19 +2751,19 @@ void DataEditor::AppendRecord(void* RP)
 bool DataEditor::GotoXRec(XString* PX, int& N)
 {
 	bool result = false;
-	LockMode md = CFile->NewLockMode(RdMode);
+	LockMode md = file_d_->NewLockMode(RdMode);
 	XKey* k = VK;
 	if (params_->Subset) k = WK;
 	if (params_->Subset || HasIndex) {
-		result = k->SearchInterval(CFile, *PX, false, N);
-		N = k->PathToNr(CFile);
+		result = k->SearchInterval(file_d_, *PX, false, N);
+		N = k->PathToNr(file_d_);
 	}
 	else {
-		result = CFile->SearchKey(*PX, k, N, CRecPtr);
+		result = file_d_->SearchKey(*PX, k, N, CRecPtr);
 	}
 	RdRec(CRec());
 	GotoRecFld(N, CFld);
-	CFile->OldLockMode(md);
+	file_d_->OldLockMode(md);
 	return result;
 }
 
@@ -2792,13 +2807,13 @@ bool DataEditor::PromptSearch(bool create)
 	LockMode md;
 	XString x;
 	WORD Col = 0, LWw = 0, pos = 0;
-	FileD* FD = CFile;
+	FileD* FD = file_d_;
 	XKey* K = VK;
 	if (params_->Subset) K = WK;
 	KeyFldD* KF = K->KFlds;
-	void* RP = CFile->GetRecSpace();
+	void* RP = file_d_->GetRecSpace();
 	CRecPtr = RP;
-	CFile->ZeroAllFlds(CRecPtr, false);
+	file_d_->ZeroAllFlds(CRecPtr, false);
 	x.Clear();
 	bool li = params_->F3LeadIn && !IsNewRec;
 	int w = PushW(1, TxtRows, TxtCols, TxtRows, true, false);
@@ -2813,36 +2828,36 @@ bool DataEditor::PromptSearch(bool create)
 		FileD* FD2 = E->DownLD->ToFD;
 		void* RP2 = E->DownRecPtr;
 		KeyFldD* KF2 = E->DownLD->ToKey->KFlds;
-		CFile = FD2;
+		file_d_ = FD2;
 		CRecPtr = RP2;
 		while (KF2 != nullptr) {
-			CFile = FD2;
+			file_d_ = FD2;
 			CRecPtr = RP2;
 			F = KF->FldD;
 			FieldDescr* F2 = KF2->FldD;
 			switch (F->frml_type) {
 			case 'S': {
-				s = CFile->loadS(F2, CRecPtr);
+				s = file_d_->loadS(F2, CRecPtr);
 				x.StoreStr(s, KF);
-				CFile = FD;
+				file_d_ = FD;
 				CRecPtr = RP;
-				CFile->saveS(F, s, CRecPtr);
+				file_d_->saveS(F, s, CRecPtr);
 				break;
 			}
 			case 'R': {
-				r = CFile->loadR(F2, CRecPtr);
+				r = file_d_->loadR(F2, CRecPtr);
 				x.StoreReal(r, KF);
-				CFile = FD;
+				file_d_ = FD;
 				CRecPtr = RP;
-				CFile->saveR(F, r, CRecPtr);
+				file_d_->saveR(F, r, CRecPtr);
 				break;
 			}
 			case 'B': {
-				b = CFile->loadB(F2, CRecPtr);
+				b = file_d_->loadB(F2, CRecPtr);
 				x.StoreBool(b, KF);
-				CFile = FD;
+				file_d_ = FD;
 				CRecPtr = RP;
-				CFile->saveB(F, b, CRecPtr);
+				file_d_->saveB(F, b, CRecPtr);
 				break;
 			}
 			}
@@ -2892,18 +2907,18 @@ bool DataEditor::PromptSearch(bool create)
 			switch (F->frml_type) {
 			case 'S': {
 				x.StoreStr(s, KF);
-				CFile->saveS(F, s, CRecPtr);
+				file_d_->saveS(F, s, CRecPtr);
 				break;
 			}
 			case 'R': {
 				x.StoreReal(r, KF);
-				CFile->saveR(F, r, CRecPtr);
+				file_d_->saveR(F, r, CRecPtr);
 				break;
 			}
 			case 'B': {
 				b = s[0] = AbbrYes;
 				x.StoreBool(b, KF);
-				CFile->saveB(F, b, CRecPtr);
+				file_d_->saveB(F, b, CRecPtr);
 				break;
 			}
 			}
@@ -2912,7 +2927,7 @@ bool DataEditor::PromptSearch(bool create)
 				found = GotoXRec(&x, n);
 				if ((pos == 0) && (F->frml_type == 'S')) {
 					x = x_old;
-					x.StoreStr(CFile->loadS(F, CRecPtr), KF);
+					x.StoreStr(file_d_->loadS(F, CRecPtr), KF);
 				}
 				CRecPtr = RP;
 				if (pos != 0) {
@@ -2929,7 +2944,7 @@ bool DataEditor::PromptSearch(bool create)
 		if (!found) CreateOrErr(create, RP, n);
 	}
 	else if (IsNewRec) {
-		Move(RP, CRecPtr, CFile->FF->RecLen);
+		Move(RP, CRecPtr, file_d_->FF->RecLen);
 	}
 	else if (!GotoXRec(&x, n)) {
 		CreateOrErr(create, RP, n);
@@ -2975,10 +2990,10 @@ void DataEditor::CheckFromHere()
 {
 	EFldD* D = CFld;
 	int N = CRec();
-	LockMode md = CFile->NewLockMode(RdMode);
+	LockMode md = file_d_->NewLockMode(RdMode);
 
 	while (true) {
-		if (!CFile->DeletedFlag(CRecPtr))
+		if (!file_d_->DeletedFlag(CRecPtr))
 			while (D != nullptr) {
 				ChkD* C = CompChk(D, '?');
 				if (C != nullptr) {
@@ -2987,8 +3002,8 @@ void DataEditor::CheckFromHere()
 					}
 					IRec = N - BaseRec + 1;
 					CFld = D;
-					DisplWwRecsOrPage(&CPage, &RT);
-					CFile->OldLockMode(md);
+					DisplWwRecsOrPage(CPage, &RT);
+					file_d_->OldLockMode(md);
 					DisplChkErr(C);
 					return;
 				}
@@ -3006,7 +3021,7 @@ void DataEditor::CheckFromHere()
 
 	RdRec(CRec());
 	DisplRecNr(CRec());
-	CFile->OldLockMode(md);
+	file_d_->OldLockMode(md);
 	WrLLF10Msg(120);
 }
 
@@ -3025,7 +3040,7 @@ void DataEditor::Sorting()
 		return;
 	}
 
-	if (!CFile->TryLockMode(ExclMode, md, 1)) {
+	if (!file_d_->TryLockMode(ExclMode, md, 1)) {
 		ReleaseStore(&p);
 		CRecPtr = E->NewRecPtr;
 		DisplAllWwRecs();
@@ -3033,12 +3048,12 @@ void DataEditor::Sorting()
 	}
 
 	try {
-		CFile->FF->SortAndSubst(SKRoot);
+		file_d_->FF->SortAndSubst(SKRoot);
 		E->EdUpdated = true;
 	}
 	catch (std::exception&) {
-		CFile = E->FD;
-		CFile->OldLockMode(md);
+		file_d_ = E->FD;
+		file_d_->OldLockMode(md);
 	}
 
 	ReleaseStore(&p);
@@ -3051,7 +3066,7 @@ void DataEditor::AutoReport()
 	void* p = nullptr; RprtOpt* RO = nullptr;
 	FileUseMode UM = Closed;
 	MarkStore(p); RO = GetRprtOpt();
-	RO->FDL.FD = CFile;
+	RO->FDL.FD = file_d_;
 	RO->Flds = E->Flds;
 	if (params_->Select) {
 		RO->FDL.Cond = E->Bool;
@@ -3086,7 +3101,7 @@ void DataEditor::AutoGraph()
 	else if (HasIndex) K = VK;
 	RunAutoGraph(E->Flds, K, Bool);
 #endif
-	CFile = E->FD;
+	file_d_ = E->FD;
 	CRecPtr = E->NewRecPtr;
 }
 
@@ -3102,7 +3117,7 @@ bool DataEditor::IsDependItem()
 	//}
 
 	for (const DepD* dep : CFld->Dep) {
-		if (RunBool(CFile, dep->Bool, CRecPtr)) {
+		if (RunBool(file_d_, dep->Bool, CRecPtr)) {
 			return true;
 		}
 	}
@@ -3113,7 +3128,7 @@ bool DataEditor::IsDependItem()
 void DataEditor::SetDependItem()
 {
 	for (const DepD* dep : CFld->Dep) {
-		if (RunBool(CFile, dep->Bool, CRecPtr)) {
+		if (RunBool(file_d_, dep->Bool, CRecPtr)) {
 			AssignFld(CFld->FldD, dep->Frml);
 			return;
 		}
@@ -3220,9 +3235,9 @@ label1:
 	if (params_->WasUpdated && !params_->EdRecVar && HasIndex) {
 		KL = CFld->KL;
 		while (KL != nullptr) {
-			md = CFile->NewLockMode(RdMode);
-			b = TestDuplKey(CFile, KL->Key);
-			CFile->OldLockMode(md);
+			md = file_d_->NewLockMode(RdMode);
+			b = TestDuplKey(file_d_, KL->Key);
+			file_d_->OldLockMode(md);
 			if (b) {
 				DuplKeyMsg(KL->Key);
 				return result;
@@ -3267,7 +3282,7 @@ label1:
 						if (KeyPressed() && (ReadKey() != 'M') && PromptYN(23)) goto label4;
 						RdRec(i);
 						DisplRecNr(i);
-						if (!CFile->DeletedFlag(CRecPtr) && RunBool(CFile, E->Bool, CRecPtr)) {
+						if (!file_d_->DeletedFlag(CRecPtr) && RunBool(file_d_, E->Bool, CRecPtr)) {
 							RdRec(CRec());
 							GotoRecFld(i, E->FirstFld);
 							goto label2;
@@ -3323,7 +3338,7 @@ bool DataEditor::GoPrevNextRec(short Delta, bool Displ)
 	int OldBaseRec = 0;
 	auto result = false;
 	if (params_->EdRecVar) return result;
-	md = CFile->NewLockMode(RdMode);
+	md = file_d_->NewLockMode(RdMode);
 	i = CRec();
 	if (Displ) IVoff();
 label0:
@@ -3331,7 +3346,7 @@ label0:
 	if ((i > 0) && (i <= CNRecs())) {
 		RdRec(i);
 		if (Displ) DisplRecNr(i); // zobrazi cislo zaznamu v hlavicce
-		if (!params_->Select || !CFile->DeletedFlag(CRecPtr) && RunBool(CFile, E->Bool, CRecPtr)) goto label2;
+		if (!params_->Select || !file_d_->DeletedFlag(CRecPtr) && RunBool(file_d_, E->Bool, CRecPtr)) goto label2;
 		if (KeyPressed()) {
 			w = ReadKey();
 			if (((Delta > 0) && (w != __DOWN) && (w != __CTRL_END) && (w != __PAGEDOWN)
@@ -3356,7 +3371,7 @@ label2:
 		Max = E->NRecs;
 		int D = BaseRec - OldBaseRec;
 		if (abs(D) > 0) {
-			DisplWwRecsOrPage(&CPage, &RT);
+			DisplWwRecsOrPage(CPage, &RT);
 			goto label3;
 		}
 		if (D > 0) {
@@ -3372,7 +3387,7 @@ label2:
 label3:
 	if (Displ)IVon();
 label4:
-	CFile->OldLockMode(md);
+	file_d_->OldLockMode(md);
 	return result;
 }
 
@@ -3380,10 +3395,10 @@ bool DataEditor::GetChpt(pstring Heslo, int& NN)
 {
 	pstring s(12);
 
-	for (int j = 1; j <= CFile->FF->NRecs; j++) {
-		CFile->ReadRec(j, CRecPtr);
+	for (int j = 1; j <= file_d_->FF->NRecs; j++) {
+		file_d_->ReadRec(j, CRecPtr);
 		if (IsCurrChpt()) {
-			s = OldTrailChar(' ', CFile->loadS(ChptName, CRecPtr));
+			s = OldTrailChar(' ', file_d_->loadS(ChptName, CRecPtr));
 			short i = s.first('.');
 			if (i > 0) s.Delete(i, 255);
 			if (EquUpCase(Heslo, s)) {
@@ -3392,7 +3407,7 @@ bool DataEditor::GetChpt(pstring Heslo, int& NN)
 			}
 		}
 		else {
-			s = OldTrailChar(' ', CFile->loadS(CFile->FldD.front(), CRecPtr));
+			s = OldTrailChar(' ', file_d_->loadS(file_d_->FldD.front(), CRecPtr));
 			ConvToNoDiakr((WORD*)s[1], s.length(), fonts.VFont);
 			if (EqualsMask(&Heslo[1], Heslo.length(), s)) {
 				NN = j;
@@ -3416,12 +3431,12 @@ void DataEditor::SetCRec(int I)
 void DataEditor::UpdateEdTFld(LongStr* S)
 {
 	LockMode md;
-	if (!params_->EdRecVar) md = CFile->NewLockMode(WrMode);
-	SetWasUpdated(CFile->FF, E->NewRecPtr);
-	CFile->FF->DelDifTFld(CFld->FldD, E->NewRecPtr, E->OldRecPtr);
-	CFile->saveLongS(CFld->FldD, S, E->NewRecPtr);
+	if (!params_->EdRecVar) md = file_d_->NewLockMode(WrMode);
+	SetWasUpdated(file_d_->FF, E->NewRecPtr);
+	file_d_->FF->DelDifTFld(CFld->FldD, E->NewRecPtr, E->OldRecPtr);
+	file_d_->saveLongS(CFld->FldD, S, E->NewRecPtr);
 	if (!params_->EdRecVar) {
-		CFile->OldLockMode(md);
+		file_d_->OldLockMode(md);
 	}
 }
 
@@ -3429,10 +3444,10 @@ void DataEditor::UpdateTxtPos(WORD TxtPos)
 {
 	LockMode md;
 	if (IsCurrChpt()) {
-		md = CFile->NewLockMode(WrMode);
-		SetWasUpdated(CFile->FF, CRecPtr);
-		CFile->saveR(ChptTxtPos, (short)TxtPos, CRecPtr);
-		CFile->OldLockMode(md);
+		md = file_d_->NewLockMode(WrMode);
+		SetWasUpdated(file_d_->FF, CRecPtr);
+		file_d_->saveR(ChptTxtPos, (short)TxtPos, CRecPtr);
+		file_d_->OldLockMode(md);
 	}
 }
 
@@ -3494,14 +3509,14 @@ label1:
 		HdTxt[3] = 0x19; // ^Y
 	}
 	if (IsCurrChpt()) {
-		HdTxt = CFile->loadS(ChptTyp, CRecPtr) + ':' + CFile->loadS(ChptName, CRecPtr) + HdTxt;
-		TxtPos = trunc(CFile->loadR(ChptTxtPos, CRecPtr));
+		HdTxt = file_d_->loadS(ChptTyp, CRecPtr) + ':' + file_d_->loadS(ChptName, CRecPtr) + HdTxt;
+		TxtPos = trunc(file_d_->loadR(ChptTxtPos, CRecPtr));
 		Breaks = BreakKeys2;
 		CtrlMsgNr = 131;
 	}
 	else {
 		CtrlMsgNr = 151;
-		if (CFile == CRdb->HelpFD) {
+		if (file_d_ == CRdb->HelpFD) {
 			Breaks = BreakKeys1;
 		}
 		else {
@@ -3516,11 +3531,11 @@ label1:
 	OldTxtPos = TxtPos;
 	if (Ed) LockRec(false);
 	if ((F->Flg & f_Stored) != 0) {
-		S = CFile->loadLongS(F, CRecPtr);
+		S = file_d_->loadLongS(F, CRecPtr);
 		if (Ed) Kind = 'T';
 	}
 	else {
-		std::string std_s = RunStdStr(CFile, F->Frml, CRecPtr);
+		std::string std_s = RunStdStr(file_d_, F->Frml, CRecPtr);
 		S = new LongStr(std_s.length());
 		S->LL = std_s.length();
 		memcpy(S->A, std_s.c_str(), S->LL);
@@ -3603,7 +3618,7 @@ label2:
 		break;
 	}
 	case __SHIFT_F1:
-		if (IsCurrChpt() || (CFile == CRdb->HelpFD)) {
+		if (IsCurrChpt() || (file_d_ == CRdb->HelpFD)) {
 			if ((iStk < maxStk) && WriteCRec(false, Displ) && GetChpt(heslo, i)) {
 				params_->Append = false;
 				iStk++;
@@ -3631,7 +3646,7 @@ label2:
 		goto label4;
 		break; }
 	case __ALT_F1: {
-		heslo = CFile->loadS(ChptTyp, CRecPtr);
+		heslo = file_d_->loadS(ChptTyp, CRecPtr);
 	label3:
 		Help((RdbD*)&HelpFD, heslo, false);
 		goto label4;
@@ -3688,10 +3703,10 @@ bool DataEditor::EditItemProc(bool del, bool ed, WORD& Brk)
 	}
 	else {
 		TextAttr = E->dHiLi;
-		Txt = DecodeField(CFile, F, CFld->FldD->L, CRecPtr);
+		Txt = DecodeField(file_d_, F, CFld->FldD->L, CRecPtr);
 		screen.GotoXY(CFld->Col, FldRow(CFld, IRec));
 		unsigned int wd = 0;
-		if (CFile->FF->NotCached()) {
+		if (file_d_->FF->NotCached()) {
 			wd = E->WatchDelay;
 		}
 		FieldEdit(F, CFld->Impl, CFld->L, 1, Txt, R, del, ed, false, wd);
@@ -3700,11 +3715,11 @@ bool DataEditor::EditItemProc(bool del, bool ed, WORD& Brk)
 			if (ed && !params_->WasUpdated) UnLockRec(E);
 			return result;
 		}
-		SetWasUpdated(CFile->FF, CRecPtr);
+		SetWasUpdated(file_d_->FF, CRecPtr);
 		switch (F->frml_type) {
-		case 'B': CFile->saveB(F, toupper(Txt[0]) == AbbrYes, CRecPtr); break;
-		case 'S': CFile->saveS(F, Txt, CRecPtr); break;
-		case 'R': CFile->saveR(F, R, CRecPtr); break;
+		case 'B': file_d_->saveB(F, toupper(Txt[0]) == AbbrYes, CRecPtr); break;
+		case 'S': file_d_->saveS(F, Txt, CRecPtr); break;
+		case 'R': file_d_->saveR(F, R, CRecPtr); break;
 		}
 	}
 	if (Brk == 0) result = CtrlMProc(1);
@@ -3796,28 +3811,28 @@ void DataEditor::SwitchRecs(short Delta)
 {
 	LockMode md; int n1, n2; void* p1; void* p2; XString x1, x2;
 #ifdef FandSQL
-	if (CFile->IsSQLFile) return;
+	if (file_d_->IsSQLFile) return;
 #endif
 	if (params_->NoCreate && params_->NoDelete || params_->WasWK) return;
-	if (!CFile->TryLockMode(WrMode, md, 1)) return;
-	p1 = CFile->GetRecSpace();
-	p2 = CFile->GetRecSpace();
+	if (!file_d_->TryLockMode(WrMode, md, 1)) return;
+	p1 = file_d_->GetRecSpace();
+	p2 = file_d_->GetRecSpace();
 	CRecPtr = p1; n1 = AbsRecNr(CRec());
-	CFile->ReadRec(n1, CRecPtr);
-	if (HasIndex) x1.PackKF(CFile, VK->KFlds, CRecPtr);
+	file_d_->ReadRec(n1, CRecPtr);
+	if (HasIndex) x1.PackKF(file_d_, VK->KFlds, CRecPtr);
 	CRecPtr = p2; n2 = AbsRecNr(CRec() + Delta);
-	CFile->ReadRec(n2, CRecPtr);
-	if (HasIndex) { x2.PackKF(CFile, VK->KFlds, CRecPtr); if (x1.S != x2.S) goto label1; }
-	CFile->WriteRec(n1, CRecPtr);
+	file_d_->ReadRec(n2, CRecPtr);
+	if (HasIndex) { x2.PackKF(file_d_, VK->KFlds, CRecPtr); if (x1.S != x2.S) goto label1; }
+	file_d_->WriteRec(n1, CRecPtr);
 	CRecPtr = p1;
-	CFile->WriteRec(n2, CRecPtr);
+	file_d_->WriteRec(n2, CRecPtr);
 	if (HasIndex) {
-		for (auto& k : CFile->Keys) {
+		for (auto& k : file_d_->Keys) {
 			if (k != VK) {
-				CRecPtr = p1; k->Delete(CFile, n1, CRecPtr);
-				CRecPtr = p2; k->Delete(CFile, n2, CRecPtr);
-				CRecPtr = p1; k->Insert(CFile, n2, true, CRecPtr);
-				CRecPtr = p2; k->Insert(CFile, n1, true, CRecPtr);
+				CRecPtr = p1; k->Delete(file_d_, n1, CRecPtr);
+				CRecPtr = p2; k->Delete(file_d_, n2, CRecPtr);
+				CRecPtr = p1; k->Insert(file_d_, n2, true, CRecPtr);
+				CRecPtr = p2; k->Insert(file_d_, n1, true, CRecPtr);
 			}
 		}
 	}
@@ -3827,7 +3842,7 @@ void DataEditor::SwitchRecs(short Delta)
 	E->EdUpdated = true;
 	if (IsCurrChpt()) SetCompileAll();
 label1:
-	CFile->OldLockMode(md);
+	file_d_->OldLockMode(md);
 	ReleaseStore(&p1);
 	CRecPtr = E->NewRecPtr;
 }
@@ -3905,7 +3920,7 @@ void DataEditor::ImbeddEdit()
 
 	MarkStore(p);
 	w = PushW(1, 1, TxtCols, TxtRows, true, true);
-	CFile->IRec = AbsRecNr(CRec());
+	file_d_->IRec = AbsRecNr(CRec());
 	WriteParamsToE();
 	R = CRdb;
 	while (R != nullptr) {
@@ -3938,12 +3953,12 @@ void DataEditor::ImbeddEdit()
 				R = R->ChainBack;
 			} while (R->FD->Name != ss2);
 		}
-		CFile = R->FD;
-		while (!EquFileViewName(CFile, s1, &EO)) {
-			CFile = CFile->pChain;
+		file_d_ = R->FD;
+		while (!EquFileViewName(file_d_, s1, &EO)) {
+			file_d_ = file_d_->pChain;
 		}
 		if (SelFldsForEO(EO, nullptr)) {
-			NewEditD(CFile, EO);
+			NewEditD(file_d_, EO);
 			if (OpenEditWw()) {
 				RunEdit(nullptr, Brk);
 			}
@@ -3971,14 +3986,14 @@ void DataEditor::DownEdit()
 	MarkStore(p);
 
 	int w = PushW(1, 1, TxtCols, TxtRows, true, true);
-	CFile->IRec = AbsRecNr(CRec());
+	file_d_->IRec = AbsRecNr(CRec());
 
 	WriteParamsToE();
 
 	for (auto& ld : LinkDRoot) { //while (LD != nullptr) {
 		FileD* FD = ld->FromFD;
 		StringListEl* SL;
-		if ((ld->ToFD == CFile) && ForNavigate(FD) && (ld->IndexRoot != 0)) {
+		if ((ld->ToFD == file_d_) && ForNavigate(FD) && (ld->IndexRoot != 0)) {
 			/*own key with equal beginning*/
 			SL = FD->ViewNames;
 			XKey* K = GetFromKey(ld);
@@ -4014,11 +4029,11 @@ void DataEditor::DownEdit()
 			}
 		}
 
-		CFile = LD->FromFD;
+		file_d_ = LD->FromFD;
 		if (SelFldsForEO(EO, LD)) {
 			EO->DownLD = LD;
 			EO->DownRecPtr = CRecPtr;
-			NewEditD(CFile, EO);
+			NewEditD(file_d_, EO);
 			if (OpenEditWw()) {
 				RunEdit(nullptr, Brk);
 			}
@@ -4054,24 +4069,22 @@ bool DataEditor::ShiftF7Duplicate()
 	auto result = false;
 	EditD* ee = E->pChain;
 
-	CFile = ee->FD;
+	file_d_ = ee->FD;
 	CRecPtr = ee->NewRecPtr;
-	if (!ELockRec(ee, CFile->IRec, ee->IsNewRec, ee->params_->Subset)) return result;
+	if (!ELockRec(ee, file_d_->IRec, ee->IsNewRec, ee->params_->Subset)) return result;
 	if (!params_->WasUpdated) {
-		Move(CRecPtr, ee->OldRecPtr, CFile->FF->RecLen);
+		Move(CRecPtr, ee->OldRecPtr, file_d_->FF->RecLen);
 		params_->WasUpdated = true;
 	}
-	//KeyFldD* kf = E->ShiftF7LD->Args;
+
 	KeyFldD* kf2 = E->ShiftF7LD->ToKey->KFlds;
-	//while (kf != nullptr) {
 	for (auto& arg : E->ShiftF7LD->Args) {
-		DuplFld(E->FD, CFile, E->NewRecPtr, CRecPtr, ee->OldRecPtr, kf2->FldD, arg->FldD);
-		//kf = kf->pChain;
+		DuplFld(E->FD, file_d_, E->NewRecPtr, CRecPtr, ee->OldRecPtr, kf2->FldD, arg->FldD);
 		kf2 = kf2->pChain;
 	}
 
-	CFile->SetUpdFlag(CRecPtr);
-	CFile = E->FD;
+	file_d_->SetUpdFlag(CRecPtr);
+	file_d_ = E->FD;
 	CRecPtr = E->NewRecPtr;
 	result = true;
 
@@ -4097,19 +4110,19 @@ bool DataEditor::DuplToPrevEdit()
 		WrLLF10Msg(140);
 		return result;
 	}
-	CFile = ee->FD;
+	file_d_ = ee->FD;
 	CRecPtr = ee->NewRecPtr;
-	if (!ELockRec(ee, CFile->IRec, ee->IsNewRec, ee->params_->Subset)) {
+	if (!ELockRec(ee, file_d_->IRec, ee->IsNewRec, ee->params_->Subset)) {
 		return result;
 	}
 	if (!params_->WasUpdated) {
-		Move(CRecPtr, ee->OldRecPtr, CFile->FF->RecLen);
+		Move(CRecPtr, ee->OldRecPtr, file_d_->FF->RecLen);
 		params_->WasUpdated = true;
 	}
-	DuplFld(E->FD, CFile, E->NewRecPtr, CRecPtr, ee->OldRecPtr, f1, f2);
-	CFile->SetUpdFlag(CRecPtr);
+	DuplFld(E->FD, file_d_, E->NewRecPtr, CRecPtr, ee->OldRecPtr, f1, f2);
+	file_d_->SetUpdFlag(CRecPtr);
 
-	CFile = E->FD; CRecPtr = E->NewRecPtr;
+	file_d_ = E->FD; CRecPtr = E->NewRecPtr;
 	result = true;
 
 	keyboard.AddToFrontKeyBuf(0x0D); // ^M .. \r .. #13
@@ -4156,8 +4169,8 @@ void DataEditor::Calculate2()
 						if ((Z->Op = _const)) R = ((FrmlElemNumber*)Z)->R;
 						else if ((Z->Op == _unminus) && (iZ02->Op == _const)) R = -iZ02->R;
 						else goto label5;
-						SetWasUpdated(CFile->FF, CRecPtr);
-						CFile->saveR(F, R * Power10[F->M], CRecPtr);
+						SetWasUpdated(file_d_->FF, CRecPtr);
+						file_d_->saveR(F, R * Power10[F->M], CRecPtr);
 					}
 					else
 						label5:
@@ -4171,7 +4184,7 @@ void DataEditor::Calculate2()
 		}
 		switch (FTyp) {
 		case 'R': {
-			R = RunReal(CFile, Z, CRecPtr);
+			R = RunReal(file_d_, Z, CRecPtr);
 			str(R, 30, 10, txt);
 			txt = LeadChar(' ', TrailChar(txt, '0'));
 			if (txt[txt.length() - 1] == '.') {
@@ -4181,11 +4194,11 @@ void DataEditor::Calculate2()
 		}
 		case 'S': {
 			/* wie RdMode fuer T ??*/
-			txt = RunShortStr(CFile, Z, CRecPtr);
+			txt = RunShortStr(file_d_, Z, CRecPtr);
 			break;
 		}
 		case 'B': {
-			if (RunBool(CFile, Z, CRecPtr)) txt = AbbrYes;
+			if (RunBool(file_d_, Z, CRecPtr)) txt = AbbrYes;
 			else txt = AbbrNo;
 			break;
 		}
@@ -4200,7 +4213,7 @@ void DataEditor::Calculate2()
 		WrLLF10Msg(110);
 		IsCompileErr = false;
 		Del = false;
-		CFile = E->FD;
+		file_d_ = E->FD;
 		ReleaseStore(&p);
 		// TODO: goto label1;
 	}
@@ -4212,7 +4225,7 @@ label3:
 void DataEditor::DelNewRec()
 {
 	LockMode md;
-	CFile->DelAllDifTFlds(CRecPtr, nullptr);
+	file_d_->DelAllDifTFlds(CRecPtr, nullptr);
 	if (CNRecs() == 1) return;
 	IsNewRec = false; params_->Append = false;
 	params_->WasUpdated = false; CFld = E->FirstFld;
@@ -4222,23 +4235,24 @@ void DataEditor::DelNewRec()
 	}
 	RdRec(CRec());
 	NewDisplLL = true;
-	DisplWwRecsOrPage(&CPage, &RT);
+	DisplWwRecsOrPage(CPage, &RT);
 }
 
 EFldD* DataEditor::FrstFldOnPage(WORD Page)
 {
 	EFldD* D = E->FirstFld;
-	while (D->Page < Page) D = (EFldD*)D->pChain;
+	while (D->Page < Page) {
+		D = D->pChain;
+	}
 	return D;
 }
 
 void DataEditor::F6Proc()
 {
-	WORD iMsg;
-	iMsg = 105;
+	WORD iMsg = 105;
 	if (params_->Subset || HasIndex || params_->NoCreate || params_->NoDelete
 #ifdef FandSQL
-		|| CFile->IsSQLFile
+		|| file_d_->IsSQLFile
 #endif
 		) iMsg = 106;
 	switch (Menu(iMsg, 1)) {
@@ -4247,6 +4261,7 @@ void DataEditor::F6Proc()
 	case 3: PromptSelect(); break;
 	case 4: AutoGraph(); break;
 	case 5: Sorting(); break;
+	default: ;
 	}
 }
 
@@ -4277,7 +4292,7 @@ void DataEditor::SetEdRecNoEtc(int RNr)
 		if (params_->WasUpdated) CRecPtr = E->OldRecPtr;
 		XKey* k = VK;
 		if (params_->Subset) k = WK;
-		x.PackKF(CFile, k->KFlds, CRecPtr);
+		x.PackKF(file_d_, k->KFlds, CRecPtr);
 		CRecPtr = cr;
 	}
 	EdRecKey = x.S;
@@ -4291,39 +4306,39 @@ bool DataEditor::StartProc(Instr_proc* ExitProc, bool Displ)
 	WORD d = 0; LockMode md; /*float t;*/
 
 	auto result = false;
-	CFile->FF->WasWrRec = false;
+	file_d_->FF->WasWrRec = false;
 	if (HasTF) {
-		p = (char*)CFile->GetRecSpace();
-		Move(CRecPtr, p, CFile->FF->RecLen);
+		p = (char*)file_d_->GetRecSpace();
+		Move(CRecPtr, p, file_d_->FF->RecLen);
 	}
 	SetEdRecNoEtc(0);
 	lkd = E->IsLocked;
 	if (!lkd && !LockRec(false)) return result;
 	b = params_->WasUpdated;
 	EdUpdated = b;
-	b2 = CFile->HasUpdFlag(CRecPtr);
-	SetWasUpdated(CFile->FF, CRecPtr);
-	CFile->ClearUpdFlag(CRecPtr);
+	b2 = file_d_->HasUpdFlag(CRecPtr);
+	SetWasUpdated(file_d_->FF, CRecPtr);
+	file_d_->ClearUpdFlag(CRecPtr);
 
 	// upravime argumenty exit procedury
-	ExitProc->TArg[ExitProc->N - 1].FD = CFile;
+	ExitProc->TArg[ExitProc->N - 1].FD = file_d_;
 	ExitProc->TArg[ExitProc->N - 1].RecPtr = CRecPtr;
 
-	md = CFile->FF->LMode;
+	md = file_d_->FF->LMode;
 	WriteParamsToE();                            /*t = currtime;*/
 	CallProcedure(ExitProc);
 	ReadParamsFromE();
-	CFile->NewLockMode(md);
-	upd = CFile->FF->WasWrRec;      /*writeln(strdate(currtime-t,"ss mm.ttt"));wait;*/
-	if (CFile->HasUpdFlag(CRecPtr)) { b = true; upd = true; }
+	file_d_->NewLockMode(md);
+	upd = file_d_->FF->WasWrRec;      /*writeln(strdate(currtime-t,"ss mm.ttt"));wait;*/
+	if (file_d_->HasUpdFlag(CRecPtr)) { b = true; upd = true; }
 	params_->WasUpdated = b;
-	if (b2) CFile->SetUpdFlag(CRecPtr);
+	if (b2) file_d_->SetUpdFlag(CRecPtr);
 	if (!params_->WasUpdated && !lkd) UnLockRec(E);
 	if (Displ && upd) DisplAllWwRecs();
 	if (Displ) NewDisplLL = true;
 	result = true;
 	if (HasTF) {
-		for (auto& f : CFile->FldD) {
+		for (auto& f : file_d_->FldD) {
 			if ((f->field_type == FieldType::TEXT) && ((f->Flg & f_Stored) != 0) &&
 				(*(int*)(p + f->Displ) == *(int*)(E->OldRecPtr) + f->Displ))
 				params_->NoDelTFlds = true;
@@ -4341,12 +4356,12 @@ void DataEditor::StartRprt(RprtOpt* RO)
 	if (displ) DisplAllWwRecs();
 	kf = nullptr;
 	if (VK != nullptr) kf = VK->KFlds;
-	k = new XWKey(CFile);
-	k->OneRecIdx(CFile, kf, AbsRecNr(CRec()), CRecPtr);
-	RO->FDL.FD = CFile;
+	k = new XWKey(file_d_);
+	k->OneRecIdx(file_d_, kf, AbsRecNr(CRec()), CRecPtr);
+	RO->FDL.FD = file_d_;
 	RO->FDL.ViewKey = k;
 	ReportProc(RO, false);
-	CFile = E->FD;
+	file_d_ = E->FD;
 	CRecPtr = E->NewRecPtr;
 }
 
@@ -4392,7 +4407,7 @@ WORD DataEditor::ExitKeyProc()
 
 void DataEditor::FieldHelp()
 {
-	Help(CFile->ChptPos.R, CFile->Name + '.' + CFld->FldD->Name, false);
+	Help(file_d_->ChptPos.R, file_d_->Name + '.' + CFld->FldD->Name, false);
 }
 
 void DataEditor::DisplLASwitches()
@@ -4471,7 +4486,7 @@ void DataEditor::CtrlReadKbd()
 	unsigned int D = 0;
 
 	if (params_->F1Mode && params_->Mode24 && CRdb->HelpFD != nullptr) {
-		DisplayLastLineHelp(CFile->ChptPos.R, CFile->Name + "." + CFld->FldD->Name, params_->Mode24);
+		DisplayLastLineHelp(file_d_->ChptPos.R, file_d_->Name + "." + CFld->FldD->Name, params_->Mode24);
 	}
 
 	TestEvent();
@@ -4491,7 +4506,7 @@ void DataEditor::CtrlReadKbd()
 		NewDisplLL = false;
 	}
 
-	if (CFile->FF->NotCached()) {
+	if (file_d_->FF->NotCached()) {
 		if (!E->params_->EdRecVar && (spec.ScreenDelay == 0 || E->RefreshDelay < spec.ScreenDelay)) {
 			D = E->RefreshDelay;
 		}
@@ -4520,7 +4535,7 @@ void DataEditor::CtrlReadKbd()
 			DisplLL();
 			flgs = 0;
 			if (params_->F1Mode && !params_->Mode24 && CRdb->HelpFD != nullptr) {
-				DisplayLastLineHelp(CFile->ChptPos.R, CFile->Name + "." + CFld->FldD->Name, params_->Mode24);
+				DisplayLastLineHelp(file_d_->ChptPos.R, file_d_->Name + "." + CFld->FldD->Name, params_->Mode24);
 			}
 		}
 
@@ -4587,13 +4602,13 @@ void DataEditor::ToggleSelectRec()
 	XString x; LockMode md;
 	XWKey* k = E->SelKey;
 	int n = AbsRecNr(CRec());
-	if (k->RecNrToPath(CFile, x, n, CRecPtr)) {
+	if (k->RecNrToPath(file_d_, x, n, CRecPtr)) {
 		k->NR--;
-		k->DeleteOnPath(CFile);
+		k->DeleteOnPath(file_d_);
 	}
 	else {
 		k->NR++;
-		k->Insert(CFile, n, false, CRecPtr);
+		k->Insert(file_d_, n, false, CRecPtr);
 	}
 	SetRecAttr(IRec);
 	IVon();
@@ -4604,13 +4619,13 @@ void DataEditor::ToggleSelectAll()
 	XWKey* k = E->SelKey;
 	if (k == nullptr) return;
 	if (k->NR > 0) {
-		k->Release(CFile);
+		k->Release(file_d_);
 	}
 	else if (params_->Subset) {
-		CFile->FF->CopyIndex(k, WK);
+		file_d_->FF->CopyIndex(k, WK);
 	}
 	else {
-		CFile->FF->CopyIndex(k, VK);
+		file_d_->FF->CopyIndex(k, VK);
 	}
 	DisplAllWwRecs();
 }
@@ -4644,7 +4659,7 @@ void DataEditor::RunEdit(XString* PX, WORD& Brk)
 	if (!IsNewRec && (PX != nullptr)) {
 		GotoXRec(PX, n);
 	}
-	if (params_->Select && !RunBool(CFile, E->Bool, CRecPtr)) {
+	if (params_->Select && !RunBool(file_d_, E->Bool, CRecPtr)) {
 		GoPrevNextRec(+1, true);
 	}
 	//if (/*E->StartFld != nullptr*/ true) { GoStartFld(&E->StartFld); goto label1; }
@@ -4662,7 +4677,7 @@ label1:
 label81:
 	OldTimeR = getMillisecondsNow();
 	CtrlReadKbd();
-	if (CFile->FF->NotCached()) {
+	if (file_d_->FF->NotCached()) {
 		if (!params_->EdRecVar && (E->RefreshDelay > 0) && (OldTimeR + E->RefreshDelay < getMillisecondsNow())) {
 			DisplAllWwRecs();
 		}
@@ -4705,7 +4720,7 @@ label81:
 		}
 		if (Event.Pressed.isChar()) {
 			// jedna se o tisknutelny znak
-			if (CFld->Ed(IsNewRec) && ((CFld->FldD->field_type != FieldType::TEXT) || (CFile->loadT(CFld->FldD, CRecPtr) == 0))
+			if (CFld->Ed(IsNewRec) && ((CFld->FldD->field_type != FieldType::TEXT) || (file_d_->loadT(CFld->FldD, CRecPtr) == 0))
 				&& LockRec(true)) {
 				//keyboard.AddToFrontKeyBuf(KbdChar); // vrati znak znovu do bufferu
 				const bool res = !EditItemProc(true, true, Brk);
@@ -4777,13 +4792,13 @@ label81:
 					if (IsNewRec && !params_->EdRecVar) DelNewRec();
 					IVoff();
 					EdUpdated = E->EdUpdated;
-					if (!params_->EdRecVar) CFile->ClearRecSpace(E->NewRecPtr);
-					if (params_->Subset && !params_->WasWK) WK->Close(CFile);
+					if (!params_->EdRecVar) file_d_->ClearRecSpace(E->NewRecPtr);
+					if (params_->Subset && !params_->WasWK) WK->Close(file_d_);
 					if (!params_->EdRecVar) {
 #ifdef FandSQL
-						if (CFile->IsSQLFile) Strm1->EndKeyAcc(WK);
+						if (file_d_->IsSQLFile) Strm1->EndKeyAcc(WK);
 #endif
-						CFile->OldLockMode(E->OldMd);
+						file_d_->OldLockMode(E->OldMd);
 					}
 					return;
 				}
@@ -5036,8 +5051,8 @@ label81:
 									goto fin;
 								}
 							}
-							else if (IsTestRun && (CFile != CatFD->GetCatalogFile()) && (KbdChar == __ALT_F2)) {
-								EditHelpOrCat(KbdChar, 1, CFile->Name + "." + CFld->FldD->Name);
+							else if (IsTestRun && (file_d_ != CatFD->GetCatalogFile()) && (KbdChar == __ALT_F2)) {
+								EditHelpOrCat(KbdChar, 1, file_d_->Name + "." + CFld->FldD->Name);
 							}
 							break;
 						case __F6: if (!params_->EdRecVar) F6Proc(); break;
@@ -5052,7 +5067,7 @@ label81:
 						case __F3: {
 							// najdi vetu podle klic. udaje
 							if (!params_->EdRecVar)
-								if (CFile == CRdb->HelpFD) {
+								if (file_d_ == CRdb->HelpFD) {
 									if (PromptHelpName(i)) {
 										GotoRecFld(i, CFld);
 										goto label1;
