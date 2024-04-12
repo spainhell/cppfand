@@ -1,5 +1,8 @@
 #pragma once
 
+#include <memory>
+
+#include "DataEditorParams.h"
 #include "../Core/EditOpt.h"
 #include "../Core/rdrun.h"
 
@@ -38,6 +41,8 @@ public:
     EFldD* CFld = nullptr;
 
 private:
+    std::unique_ptr<DataEditorParams> params_;
+
     int CNRecs() const;
     int AbsRecNr(int N);
     int LogRecNo(int N);
@@ -178,19 +183,12 @@ private:
     EFldD* FirstEmptyFld = nullptr;
     XKey* VK = nullptr;
     XWKey* WK = nullptr;
+    ERecTxtD* RT = nullptr;
+
+    uint16_t UpdCount = false;
+    uint16_t CPage = false;
 
     static int BaseRec;
     static BYTE IRec;
     static bool IsNewRec;
-
-	bool Append = false, Select = false, WasUpdated = false, EdRecVar = false;
-    bool AddSwitch = false, ChkSwitch = false, WarnSwitch = false, Subset = false, NoDelTFlds = false, WasWK = false;
-    bool NoDelete = false, VerifyDelete = false, NoCreate = false, F1Mode = false, OnlyAppend = false, OnlySearch = false;
-    bool Only1Record = false, OnlyTabs = false, NoESCPrompt = false, MustESCPrompt = false, Prompt158 = false;
-    bool NoSrchMsg = false, WithBoolDispl = false, Mode24 = false, NoCondCheck = false, F3LeadIn = false;
-    bool LUpRDown = false, MouseEnter = false, TTExit = false;
-    bool MakeWorkX = false, NoShiftF7Msg = false, MustAdd = false, MustCheck = false, SelMode = false;
-    WORD UpdCount = false, CPage = false;
-    ERecTxtD* RT;
-    bool HasIndex = false, HasTF = false, NewDisplLL = false;
 };

@@ -19,10 +19,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="DataEditorParams.h" />
     <ClInclude Include="rdedit.h" />
     <ClInclude Include="runedi.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="DataEditorParams.cpp" />
     <ClCompile Include="rdedit.cpp" />
     <ClCompile Include="runedi.cpp" />
   </ItemGroup>

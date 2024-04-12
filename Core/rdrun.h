@@ -203,7 +203,6 @@ struct EditD : Chained<EditD>
 	FileD* FD = nullptr;
 	LockMode OldMd = NullMode;
 	bool IsUserForm = false;
-	//FieldListEl* Flds = nullptr;
 	std::vector<FieldDescr*> Flds;
 	void* OldRecPtr = nullptr; void* NewRecPtr = nullptr;
 	BYTE FrstCol = 0, FrstRow = 0, LastCol = 0, LastRow = 0, Rows = 0;
@@ -234,7 +233,7 @@ struct EditD : Chained<EditD>
 	EFldD* StartFld = nullptr;
 	EFldD* CFld = nullptr; EFldD* FirstEmptyFld = nullptr;    /*copied*/
 	XKey* VK = nullptr; XWKey* WK = nullptr;                  /*  "   */
-	int BaseRec = 0; BYTE IRec = 0;                       /*  "   */
+	int BaseRec = 0; BYTE IRec = 0;                           /*  "   */
 	bool IsNewRec = false, Append = false, Select = false,    /*  "   */
 		 WasUpdated = false, EdRecVar = false,                /*  "   */
 		 AddSwitch = false, ChkSwitch = false,                /*  "   */

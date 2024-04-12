@@ -21,12 +21,18 @@
     <ClInclude Include="runedi.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DataEditorParams.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="rdedit.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="runedi.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DataEditorParams.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
