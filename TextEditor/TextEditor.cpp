@@ -4,7 +4,7 @@
 #include <memory>
 
 #include "TextEditorEvents.h"
-#include "../DataEditor/runedi.h"
+#include "..\DataEditor\DataEditor.h"
 #include "../Core/compile.h"
 #include "EditorHelp.h"
 #include "TextEditorScreen.h"

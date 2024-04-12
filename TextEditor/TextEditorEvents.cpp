@@ -10,7 +10,7 @@
 #include <set>
 
 #include "TextEditor.h"
-#include "../DataEditor/runedi.h"
+#include "..\DataEditor\DataEditor.h"
 #include "../Core/obaseww.h"
 #include "../Core/wwmenu.h"
 

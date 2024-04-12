@@ -21,7 +21,7 @@
 #include "wwmenu.h"
 #include "wwmix.h"
 #include "../TextEditor/TextEditor.h"
-#include "../DataEditor/runedi.h"
+#include "..\DataEditor\DataEditor.h"
 #include "../fandio/directory.h"
 #include "../fandio/files.h"
 #include "../Common/textfunc.h"

@@ -18,7 +18,7 @@
     <ClInclude Include="rdedit.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="runedi.h">
+    <ClInclude Include="DataEditor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DataEditorParams.h">
@@ -29,7 +29,7 @@
     <ClCompile Include="rdedit.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="runedi.cpp">
+    <ClCompile Include="DataEditor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DataEditorParams.cpp">

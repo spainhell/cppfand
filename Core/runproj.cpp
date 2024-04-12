@@ -7,7 +7,7 @@
 #include "../TextEditor/EditorHelp.h"
 #include "../TextEditor/TextEditor.h"
 #include "../DataEditor/rdedit.h"
-#include "../DataEditor/runedi.h"
+#include "..\DataEditor\DataEditor.h"
 #include "../ExportImport/ExportImport.h"
 #include "../fandio/FandTFile.h"
 #include "../fandio/FandXFile.h"

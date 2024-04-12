@@ -30,7 +30,7 @@
 #include "../fandio/XWKey.h"
 #include "../TextEditor/TextEditor.h"
 #include "../TextEditor/EditorHelp.h"
-#include "../DataEditor/runedi.h"
+#include "..\DataEditor\DataEditor.h"
 #include "../ExportImport/ExportImport.h"
 #include "../MergeReport/ReportGenerator.h"
 #include "../MergeReport/Merge.h"

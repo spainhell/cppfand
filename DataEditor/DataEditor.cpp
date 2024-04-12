@@ -1,4 +1,4 @@
-#include "runedi.h"
+#include "DataEditor.h"
 #include <memory>
 #include "../TextEditor/TextEditor.h"
 #include "../TextEditor/EditorHelp.h"
@@ -1011,20 +1011,7 @@ void DataEditor::WriteParamsToE()
 	E->IRec = IRec;
 	E->IsNewRec = IsNewRec;
 
-	E->params_->Append = params_->Append;
-	E->params_->Select = params_->Select;
-
-	E->params_->WasUpdated = params_->WasUpdated; E->params_->EdRecVar = params_->EdRecVar; E->params_->AddSwitch = params_->AddSwitch;
-	E->params_->ChkSwitch = params_->ChkSwitch; E->params_->WarnSwitch = params_->WarnSwitch; E->params_->Subset = params_->Subset;
-	E->params_->NoDelTFlds = params_->NoDelTFlds; E->params_->WasWK = params_->WasWK; E->params_->NoDelete = params_->NoDelete;
-	E->params_->VerifyDelete = params_->VerifyDelete; E->params_->NoCreate = params_->NoCreate; E->params_->F1Mode = params_->F1Mode;
-	E->params_->OnlyAppend = params_->OnlyAppend; E->params_->OnlySearch = params_->OnlySearch; E->params_->Only1Record = params_->Only1Record;
-	E->params_->OnlyTabs = params_->OnlyTabs; E->params_->NoESCPrompt = params_->NoESCPrompt; E->params_->MustESCPrompt = params_->MustESCPrompt;
-	E->params_->Prompt158 = params_->Prompt158; E->params_->NoSrchMsg = params_->NoSrchMsg; E->params_->WithBoolDispl = params_->WithBoolDispl;
-	E->params_->Mode24 = params_->Mode24; E->params_->NoCondCheck = params_->NoCondCheck; E->params_->F3LeadIn = params_->F3LeadIn;
-	E->params_->LUpRDown = params_->LUpRDown; E->params_->MouseEnter = params_->MouseEnter; E->params_->TTExit = params_->TTExit;
-	E->params_->MakeWorkX = params_->MakeWorkX; E->params_->NoShiftF7Msg = params_->NoShiftF7Msg; E->params_->MustAdd = params_->MustAdd;
-	E->params_->MustCheck = params_->MustCheck; E->params_->SelMode = params_->SelMode;
+	DataEditorParams::CopyParams(params_.get(), E->params_.get());
 }
 
 void DataEditor::ReadParamsFromE()
@@ -1036,18 +1023,7 @@ void DataEditor::ReadParamsFromE()
 	IRec = E->IRec;
 	IsNewRec = E->IsNewRec;
 
-	params_->Append = E->params_->Append; params_->Select = E->params_->Select;
-	params_->WasUpdated = E->params_->WasUpdated; params_->EdRecVar = E->params_->EdRecVar; params_->AddSwitch = E->params_->AddSwitch;
-	params_->ChkSwitch = E->params_->ChkSwitch; params_->WarnSwitch = E->params_->WarnSwitch; params_->Subset = E->params_->Subset;
-	params_->NoDelTFlds = E->params_->NoDelTFlds; params_->WasWK = E->params_->WasWK;
-	params_->NoDelete = E->params_->NoDelete; params_->VerifyDelete = E->params_->VerifyDelete; params_->NoCreate = E->params_->NoCreate;
-	params_->F1Mode = E->params_->F1Mode; params_->OnlyAppend = E->params_->OnlyAppend; params_->OnlySearch = E->params_->OnlySearch;
-	params_->Only1Record = E->params_->Only1Record; params_->OnlyTabs = E->params_->OnlyTabs; params_->NoESCPrompt = E->params_->NoESCPrompt;
-	params_->MustESCPrompt = E->params_->MustESCPrompt; params_->Prompt158 = E->params_->Prompt158; params_->NoSrchMsg = E->params_->NoSrchMsg;
-	params_->WithBoolDispl = E->params_->WithBoolDispl; params_->Mode24 = E->params_->Mode24; params_->NoCondCheck = E->params_->NoCondCheck;
-	params_->F3LeadIn = E->params_->F3LeadIn; params_->LUpRDown = E->params_->LUpRDown; params_->MouseEnter = E->params_->MouseEnter;
-	params_->TTExit = E->params_->TTExit; params_->MakeWorkX = E->params_->MakeWorkX; params_->NoShiftF7Msg = E->params_->NoShiftF7Msg;
-	params_->MustAdd = E->params_->MustAdd; params_->MustCheck = E->params_->MustCheck; params_->SelMode = E->params_->SelMode;
+	DataEditorParams::CopyParams(E->params_.get(), params_.get());
 
 	if (VK == nullptr) params_->OnlySearch = false;
 

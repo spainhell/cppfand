@@ -8,7 +8,7 @@
 #include "GlobalVariables.h"
 #include "legacy.h"
 #include "obaseww.h"
-#include "../DataEditor/runedi.h"
+#include "..\DataEditor\DataEditor.h"
 #include "../fandio/directory.h"
 #include "../Common/compare.h"
 #include "../Drivers/constants.h"
