@@ -6,18 +6,38 @@
 enum class FieldType;
 class FieldDescr;
 struct EFldD;
-extern bool TxtEdCtrlUBrk, TxtEdCtrlF4Brk;
-extern EFldD* CFld;
 
 
 class DataEditor {
 public:
-	DataEditor() = default;
+	DataEditor();
+    void EditDataFile(FileD* FD, EditOpt* EO);
     WORD EditTxt(std::string& s, WORD pos, WORD maxlen, WORD maxcol, FieldType typ, bool del,
 	             bool star, bool upd, bool ret, unsigned int Delta); // r86
+    static int CRec();
+	void UpdateEdTFld(LongStr* S);
+    bool StartExit(EdExitD* X, bool Displ);
+    bool PromptB(std::string& S, FrmlElem* Impl, FieldDescr* F);
+    std::string PromptS(std::string& S, FrmlElem* Impl, FieldDescr* F);
+    double PromptR(std::string& S, FrmlElem* Impl, FieldDescr* F);
+    static bool TestIsNewRec();
+    void WrEStatus();
+    void RdEStatus();
+    bool SelFldsForEO(EditOpt* EO, LinkD* LD);
+    void DisplEditWw();
+    void GotoRecFld(int NewRec, EFldD* NewFld);
+    void SetNewCRec(int N, bool withRead);
+    bool EditFreeTxt(FieldDescr* F, std::string ErrMsg, bool Ed, WORD& Brk);
+    bool OpenEditWw();
+    void RunEdit(XString* PX, WORD& Brk);
+    void SetSelectFalse();
+    void PopEdit();
+
+    bool TxtEdCtrlUBrk = false;
+    bool TxtEdCtrlF4Brk = false;
+    EFldD* CFld = nullptr;
 
 private:
-	static int CRec();
     int CNRecs() const;
     int AbsRecNr(int N);
     int LogRecNo(int N);
@@ -40,11 +60,7 @@ private:
     void SetCPage(WORD* c_page, ERecTxtD** rt);
     void DisplRecNr(int N);
     void AdjustCRec();
-    bool TestIsNewRec();
-    void SetSelectFalse();
-    void PopEdit();
-    void WrEStatus();
-    void RdEStatus();
+    
     void DuplFld(FileD* file_d1, FileD* file_d2, void* record1, void* record2, void* RPt, FieldDescr* field_d1,
                  FieldDescr* field_d2);
     bool IsFirstEmptyFld();
@@ -58,10 +74,9 @@ private:
     void DisplAllWwRecs();
     void SetNewWwRecAttr();
     void MoveDispl(WORD From, WORD Where, WORD Number);
-    void SetNewCRec(int N, bool withRead);
     void WriteSL(StringListEl* SL);
     void DisplRecTxt();
-    void GotoRecFld(int NewRec, EFldD* NewFld);
+    
     void UpdMemberRef(void* POld, void* PNew);
     void WrJournal(char Upd, void* RP, double Time);
     bool LockForMemb(FileD* FD, WORD Kind, LockMode NewMd, LockMode& md);
@@ -110,29 +125,20 @@ private:
     bool GoPrevNextRec(short Delta, bool Displ);
     bool GetChpt(pstring Heslo, int& NN);
     void SetCRec(int I);
-    bool EditFreeTxt(FieldDescr* F, std::string ErrMsg, bool Ed, WORD& Brk);
     bool EditItemProc(bool del, bool ed, WORD& Brk);
     void SetSwitchProc();
     void PromptSelect();
     void SwitchRecs(short Delta);
     bool FinArgs(LinkD* LD, FieldDescr* F);
-    void DisplEditWw();
     void DisplWwRecsOrPage(WORD* c_page, ERecTxtD** rt);
     void DuplOwnerKey();
     bool TestDuplKey(FileD* file_d, XKey* K);
     void DuplKeyMsg(XKey* K);
     void BuildWork();
     void SetStartRec();
-    bool OpenEditWw();
     void RefreshSubset();
-    void RunEdit(XString* PX, WORD& Brk);
 
-    bool PromptB(std::string& S, FrmlElem* Impl, FieldDescr* F);
-    std::string PromptS(std::string& S, FrmlElem* Impl, FieldDescr* F);
-    double PromptR(std::string& S, FrmlElem* Impl, FieldDescr* F);
     /*called from Proc && Projmgr */
-    void EditDataFile(FileD* FD, EditOpt* EO);
-    bool SelFldsForEO(EditOpt* EO, LinkD* LD);
     void ImbeddEdit();
     void DownEdit();
     void ShiftF7Proc();
@@ -146,9 +152,9 @@ private:
     void SetEdRecNoEtc(int RNr);
     bool StartProc(Instr_proc* ExitProc, bool Displ);
     void StartRprt(RprtOpt* RO);
-    void UpdateEdTFld(LongStr* S);
+    
     void UpdateTxtPos(WORD TxtPos);
-    bool StartExit(EdExitD* X, bool Displ);
+    
     WORD ExitKeyProc();
     void FieldHelp();
     void DisplLASwitches();
@@ -168,24 +174,23 @@ private:
     bool TestMask(std::string& S, std::string Mask);
     void WrPromptTxt(std::string& S, FrmlElem* Impl, FieldDescr* F, std::string& Txt, double& R);
 
-
-    bool TxtEdCtrlUBrk, TxtEdCtrlF4Brk;
-    EFldD* CFld;
-
     //EditD* E = EditDRoot;
-    EFldD* FirstEmptyFld;
-    XKey* VK;
-    XWKey* WK;
+    EFldD* FirstEmptyFld = nullptr;
+    XKey* VK = nullptr;
+    XWKey* WK = nullptr;
+
     static int BaseRec;
     static BYTE IRec;
-    bool IsNewRec, Append, Select, WasUpdated, EdRecVar;
-    bool AddSwitch, ChkSwitch, WarnSwitch, Subset, NoDelTFlds, WasWK;
-    bool NoDelete, VerifyDelete, NoCreate, F1Mode, OnlyAppend, OnlySearch;
-    bool Only1Record, OnlyTabs, NoESCPrompt, MustESCPrompt, Prompt158;
-    bool NoSrchMsg, WithBoolDispl, Mode24, NoCondCheck, F3LeadIn;
-    bool LUpRDown, MouseEnter, TTExit;
-    bool MakeWorkX, NoShiftF7Msg, MustAdd, MustCheck, SelMode;
-    WORD UpdCount, CPage;
+    static bool IsNewRec;
+
+	bool Append = false, Select = false, WasUpdated = false, EdRecVar = false;
+    bool AddSwitch = false, ChkSwitch = false, WarnSwitch = false, Subset = false, NoDelTFlds = false, WasWK = false;
+    bool NoDelete = false, VerifyDelete = false, NoCreate = false, F1Mode = false, OnlyAppend = false, OnlySearch = false;
+    bool Only1Record = false, OnlyTabs = false, NoESCPrompt = false, MustESCPrompt = false, Prompt158 = false;
+    bool NoSrchMsg = false, WithBoolDispl = false, Mode24 = false, NoCondCheck = false, F3LeadIn = false;
+    bool LUpRDown = false, MouseEnter = false, TTExit = false;
+    bool MakeWorkX = false, NoShiftF7Msg = false, MustAdd = false, MustCheck = false, SelMode = false;
+    WORD UpdCount = false, CPage = false;
     ERecTxtD* RT;
-    bool HasIndex, HasTF, NewDisplLL;
+    bool HasIndex = false, HasTF = false, NewDisplLL = false;
 };

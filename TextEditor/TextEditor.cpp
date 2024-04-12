@@ -2003,8 +2003,7 @@ void Calculate()
 		txt = CalcTxt;
 		Del = true; I = 1;
 	label1:
-		TxtEdCtrlUBrk = true; TxtEdCtrlF4Brk = true;
-		ww.PromptLL(114, txt, I, Del);
+		ww.PromptLL(114, txt, I, Del, true, true);
 		if (Event.Pressed.KeyCombination() == 'U') goto label0;
 		if (Event.Pressed.KeyCombination() == __ESC || txt.length() == 0) goto label3;
 		CalcTxt = txt;
@@ -2543,7 +2542,7 @@ void BlockUDShift(int L1)
 bool MyPromptLL(WORD n, std::string& s)
 {
 	wwmix ww;
-	ww.PromptLL(n, s, 1, true);
+	ww.PromptLL(n, s, 1, true, false, false);
 	return Event.Pressed.KeyCombination() == __ESC;
 }
 

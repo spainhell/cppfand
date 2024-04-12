@@ -28,7 +28,7 @@ public :
 	bool SelFieldList(WORD Nmsg, bool ImplAll, std::vector<FieldDescr*>& FLRoot);
 	std::string SelectDiskFile(std::string Path, WORD HdMsg, bool OnFace);
 	bool PromptFilter(std::string Txt, FrmlElem** Bool, std::string* BoolTxt);
-	void PromptLL(WORD N, std::string& Txt, WORD I, bool Del);
+	void PromptLL(WORD N, std::string& Txt, WORD I, bool Del, bool ctrlU_brk, bool ctrlF4_brk);
 	std::string PassWord(bool TwoTimes);
 
 private:

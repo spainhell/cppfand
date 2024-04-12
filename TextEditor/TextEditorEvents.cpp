@@ -6,6 +6,7 @@
 #include "../Core/runproc.h"
 
 #include <cstdio>
+#include <memory>
 #include <set>
 
 #include "TextEditor.h"
@@ -387,6 +388,7 @@ bool TextEditorEvents::MyGetEvent(TextEditor* editor, char& mode, BYTE SysLColor
 
 bool TextEditorEvents::TestExitKeys(TextEditor* editor, char& mode, std::vector<EdExitD*>& ExitD, int& fs, stEditorParams& ep, LongStr*& sp, WORD key)
 {
+	std::unique_ptr<DataEditor> data_editor = std::make_unique<DataEditor>();
 	for (auto& X : ExitD) {
 		if (TestExitKey(key, X)) {  // nastavuje i EdBreak
 			editor->TestKod();
@@ -424,7 +426,7 @@ bool TextEditorEvents::TestExitKeys(TextEditor* editor, char& mode, std::vector<
 					*LocalPPtr = TWork.Store(sp->A, sp->LL);
 				}
 				else if (UpdatT) {
-					UpdateEdTFld(sp);
+					data_editor->UpdateEdTFld(sp);
 					UpdatT = false;
 				}
 				delete sp; sp = nullptr;
@@ -434,7 +436,7 @@ bool TextEditorEvents::TestExitKeys(TextEditor* editor, char& mode, std::vector<
 			ep = SaveParams();
 			screen.CrsHide();
 			if (TypeT == MemoT) {
-				StartExit(X, false);
+				data_editor->StartExit(X, false);
 			}
 			else {
 				CallProcedure(X->Proc);
@@ -463,7 +465,7 @@ bool TextEditorEvents::TestExitKeys(TextEditor* editor, char& mode, std::vector<
 				}
 				else {
 					CRecPtr = EditDRoot->NewRecPtr;
-					sp = CFile->loadLongS(CFld->FldD, CRecPtr);
+					sp = CFile->loadLongS(data_editor->CFld->FldD, CRecPtr);
 				}
 				editor->_lenT = sp->LL;
 				// _textT = (CharArr*)(sp)

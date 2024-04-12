@@ -28,6 +28,13 @@
 #include "../Drivers/constants.h"
 #include "../Core/DateTime.h"
 
+int DataEditor::BaseRec = 0;
+BYTE DataEditor::IRec = 0;
+bool DataEditor::IsNewRec = false;
+
+DataEditor::DataEditor()
+{
+}
 
 void DataEditor::PopEdit()
 {
@@ -2967,7 +2974,7 @@ void DataEditor::PromptGotoRecNr()
 	std::string text;
 	bool del = true;
 	do {
-		ww.PromptLL(122, text, i, del);
+		ww.PromptLL(122, text, i, del, false, false);
 		if (Event.Pressed.KeyCombination() == __ESC) return;
 		val(text, n, i);
 		del = false;
@@ -4137,7 +4144,7 @@ void DataEditor::Calculate2()
 	label1:
 		TxtEdCtrlUBrk = true;
 		TxtEdCtrlF4Brk = true;
-		ww.PromptLL(114, txt, I, Del);
+		ww.PromptLL(114, txt, I, Del, false, false);
 		if (Event.Pressed.KeyCombination() == 'U') goto label0;
 		if (Event.Pressed.KeyCombination() == __ESC || (txt.length() == 0)) goto label3;
 		CalcTxt = txt;

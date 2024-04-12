@@ -1,4 +1,7 @@
 #include "wwmix.h"
+
+#include <memory>
+
 #include "compile.h"
 #include "FieldDescr.h"
 #include "FileD.h"
@@ -645,7 +648,7 @@ std::string wwmix::SelectDiskFile(std::string Path, WORD HdMsg, bool OnFace)
 	int w = 0; //SearchRec SR;
 	BYTE sizeOfMask = 255;
 	std::string p, d, n, ext, e, ne;
-
+	std::unique_ptr<DataEditor> data_editor = std::make_unique<DataEditor>();
 	std::string result;
 	WORD c1 = 0; WORD r1 = 0; WORD c2 = 22; WORD r2 = 1; WORD c11 = 0; WORD r11 = 0;
 	if (OnFace) {
@@ -670,7 +673,7 @@ label1:
 label2:
 	screen.GotoXY(1, 1);
 	//EditTxt(&mask, 1, sizeof(mask) - 1, 22, 'A', true, false, true, false, 0);
-	EditTxt(mask, 1, sizeOfMask, 22, FieldType::ALFANUM, true, false, true, false, 0);
+	data_editor->EditTxt(mask, 1, sizeOfMask, 22, FieldType::ALFANUM, true, false, true, false, 0);
 	if (Event.Pressed.KeyCombination() == __ESC) { PopW(w); return result; }
 	if (mask.find(' ') != std::string::npos) {
 		WrLLF10Msg(60);
@@ -753,7 +756,7 @@ bool wwmix::PromptFilter(std::string Txt, FrmlElem** Bool, std::string* BoolTxt)
 
 	while (true) {
 		try {
-			PromptLL(113, Txt, I, Del);
+			PromptLL(113, Txt, I, Del, false, false);
 			*Bool = nullptr;
 			BoolTxt = nullptr;
 			if (Event.Pressed.KeyCombination() == __ESC) {
@@ -783,7 +786,7 @@ bool wwmix::PromptFilter(std::string Txt, FrmlElem** Bool, std::string* BoolTxt)
 	}
 }
 
-void wwmix::PromptLL(WORD N, std::string& Txt, WORD I, bool Del)
+void wwmix::PromptLL(WORD N, std::string& Txt, WORD I, bool Del, bool ctrlU_brk, bool ctrlF4_brk)
 {
 	int w = PushW(1, TxtRows, TxtCols, TxtRows);
 	screen.GotoXY(1, TxtRows, ScrPosition::absolute);
@@ -793,7 +796,10 @@ void wwmix::PromptLL(WORD N, std::string& Txt, WORD I, bool Del)
 	screen.ScrWrStr(1, TxtRows, MsgLine, screen.colors.pTxt);
 	screen.GotoXY(MsgLine.length() + 1, TxtRows, ScrPosition::absolute);
 	TextAttr = screen.colors.pNorm;
-	EditTxt(Txt, I, 255, TxtCols - screen.WhereX(), FieldType::ALFANUM, Del, false, true, false, 0);
+	std::unique_ptr<DataEditor> data_editor = std::make_unique<DataEditor>();
+	data_editor->TxtEdCtrlUBrk = ctrlU_brk;
+	data_editor->TxtEdCtrlF4Brk = ctrlF4_brk;
+	data_editor->EditTxt(Txt, I, 255, TxtCols - screen.WhereX(), FieldType::ALFANUM, Del, false, true, false, 0);
 	PopW(w);
 }
 
@@ -803,6 +809,7 @@ std::string wwmix::PassWord(bool TwoTimes)
 	WORD col = (TxtCols - 21) >> 1;
 	int w = PushW(col, TxtRows - 2, col + 21, TxtRows - 2);
 	WORD MsgNr = 628;
+	std::unique_ptr<DataEditor> data_editor = std::make_unique<DataEditor>();
 
 	while (true) {
 		TextAttr = screen.colors.pNorm | 0x80;
@@ -814,7 +821,7 @@ std::string wwmix::PassWord(bool TwoTimes)
 		TextAttr = screen.colors.pNorm;
 		screen.GotoXY(2, 1);
 		Txt = "";
-		EditTxt(Txt, 1, 20, 20, FieldType::ALFANUM, true, true, true, false, 0);
+		data_editor->EditTxt(Txt, 1, 20, 20, FieldType::ALFANUM, true, true, true, false, 0);
 		if (Event.Pressed.KeyCombination() == __ESC) {
 			Txt = "";
 			break;

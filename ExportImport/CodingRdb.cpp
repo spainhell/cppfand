@@ -281,7 +281,7 @@ void CodingRdb::CompressCRdb()
 	Chpt->FF->RecPtr = cr;
 	CFile = Chpt;
 	CRecPtr = E->NewRecPtr;
-	CFile->ReadRec(CRec(), CRecPtr);
+	CFile->ReadRec(DataEditor::CRec(), CRecPtr);
 
 	ChptTF->CompileAll = false;
 	ChptTF->CompileProc = false;

@@ -181,7 +181,8 @@ double RunRealStr(FileD* file_d, FrmlElem* X, void* record)
 	case _prompt: {
 		FrmlElem11* iX = (FrmlElem11*)X;
 		std::string s = RunShortStr(file_d, iX->P1, record);
-		result = PromptR(s, iX->P2, iX->FldD);
+		std::unique_ptr<DataEditor> data_editor = std::make_unique<DataEditor>();
+		result = data_editor->PromptR(s, iX->P2, iX->FldD);
 		break;
 	}
 	case _pos: {
@@ -747,7 +748,8 @@ bool RunBool(FileD* file_d, FrmlElem* X, void* record)
 	case _prompt: {
 		FrmlElem11* iX = (FrmlElem11*)X;
 		auto s = RunShortStr(file_d, iX->P1, record);
-		result = PromptB(s, iX->P2, iX->FldD);
+		std::unique_ptr<DataEditor> data_editor = std::make_unique<DataEditor>();
+		result = data_editor->PromptB(s, iX->P2, iX->FldD);
 		break;
 	}
 	case _promptyn: {
@@ -785,8 +787,13 @@ bool RunBool(FileD* file_d, FrmlElem* X, void* record)
 		result = (UserCode == 0) || OverlapByteStr(&iX1->N01, &AccRight);
 		break;
 	}
-	case _isnewrec: result = TestIsNewRec(); break;
-	case _testmode: result = IsTestRun; break;
+	case _isnewrec: {
+		std::unique_ptr<DataEditor> data_editor = std::make_unique<DataEditor>();
+		result = data_editor->TestIsNewRec(); break;
+	}
+	case _testmode: {
+		result = IsTestRun; break;
+	}
 	case _equmask: {
 		result = RunEquMask(file_d, (FrmlElemFunction*)X, record);
 		break;
@@ -2127,7 +2134,8 @@ LongStr* RunS(FileD* file_d, FrmlElem* Z, void* record)
 	case _prompt: {
 		auto iZ = (FrmlElem11*)Z;
 		auto s0 = RunShortStr(file_d, iZ->P1, record);
-		s = PromptS(s0, iZ->P2, iZ->FldD);
+		std::unique_ptr<DataEditor> data_editor = std::make_unique<DataEditor>();
+		s = data_editor->PromptS(s0, iZ->P2, iZ->FldD);
 		break;
 	}
 	case _getpath: {

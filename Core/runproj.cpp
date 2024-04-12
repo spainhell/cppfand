@@ -248,7 +248,7 @@ bool IsDuplFileName(std::string name)
 		std::string n; std::string e;
 		BYTE* record = CFile->GetRecSpace();
 		for (int i = 1; i <= Chpt->FF->NRecs; i++) {
-			if (i != CRec()) {
+			if (i != DataEditor::CRec()) {
 				CFile->ReadRec(i, record);
 				if (CFile->loadS(ChptTyp, record) == "F") {
 					GetSplitChapterName(CFile, record, n, e);
@@ -282,12 +282,12 @@ WORD ChptWriteCRec()
 	short eq;
 	WORD result = 0;
 	if (!IsCurrChpt()) return result;
-	if (!TestIsNewRec()) {
+	if (!DataEditor::TestIsNewRec()) {
 		eq = CompArea(&((BYTE*)CRecPtr)[2], &((BYTE*)E->OldRecPtr)[2], CFile->FF->RecLen - 2);
 		if (eq == _equ) return result;
 	}
 	GetRdbRecVars(E->NewRecPtr, &New);
-	if (!TestIsNewRec()) GetRdbRecVars(E->OldRecPtr, &Old);
+	if (!DataEditor::TestIsNewRec()) GetRdbRecVars(E->OldRecPtr, &Old);
 	result = 1;
 #ifndef FandGraph
 	if (New.Typ == 'L') { WrLLF10Msg(659); return result; }
@@ -310,18 +310,18 @@ WORD ChptWriteCRec()
 			return result;
 		}
 		if ((New.FTyp == FileType::RDB) && (New.Txt != 0)) { WrLLF10Msg(1083); return result; }
-		if (NetFileTest(&New) && !TestIsNewRec() &&
+		if (NetFileTest(&New) && !DataEditor::TestIsNewRec() &&
 			(Old.Typ == 'F') && (eq != _equ) && !PromptYN(824)) {
 			result = 2; return result;
 		}
 	}
 	if ((New.Typ == 'D' || New.Typ == 'I' || New.Typ == 'U')
-		|| !TestIsNewRec()
+		|| !DataEditor::TestIsNewRec()
 		&& (Old.Typ == 'D' || Old.Typ == 'I' || Old.Typ == 'U')) {
 		ReleaseFilesAndLinksAfterChapter();
 		SetCompileAll();
 	}
-	if (TestIsNewRec()) {
+	if (DataEditor::TestIsNewRec()) {
 		ReleaseFilesAndLinksAfterChapter();
 		goto label2;
 	}
@@ -410,7 +410,7 @@ bool PromptHelpName(WORD& N)
 	wwmix ww;
 	std::string txt;
 	auto result = false;
-	ww.PromptLL(153, txt, 1, true);
+	ww.PromptLL(153, txt, 1, true, false, false);
 	if ((txt.length() == 0) || (Event.Pressed.KeyCombination() == __ESC)) return result;
 	N = FindHelpRecNr(CFile, txt);
 	if (N != 0) result = true;
@@ -426,6 +426,7 @@ void EditHelpOrCat(WORD cc, WORD kind, std::string txt)
 	WORD nHelp = 1;
 	WORD iHelp = 1;
 	struct niFrml { char Op; double R; } nFrml{ 0, 0 }, iFrml{ 0,0 };
+	std::unique_ptr<DataEditor> data_editor = std::make_unique<DataEditor>();
 
 	if (cc == __ALT_F2) {
 		FD = CRdb->HelpFD;
@@ -451,7 +452,7 @@ void EditHelpOrCat(WORD cc, WORD kind, std::string txt)
 		n = nCat;
 	}
 	if (kind != 2) {
-		WrEStatus();
+		data_editor->WrEStatus();
 	}
 	EditOpt* EO = new EditOpt();
 	EO->UserSelFlds = true; // GetEditOpt();
@@ -463,7 +464,7 @@ void EditHelpOrCat(WORD cc, WORD kind, std::string txt)
 		EO->StartRecNoZ = (FrmlElem*)(&nFrml);
 		EO->StartIRecZ = (FrmlElem*)(&iFrml);
 	}
-	EditDataFile(FD, EO);
+	data_editor->EditDataFile(FD, EO);
 	delete EO; EO = nullptr;
 
 	if (cc == __ALT_F2) {
@@ -476,7 +477,7 @@ void EditHelpOrCat(WORD cc, WORD kind, std::string txt)
 		iCat = EdIRec;
 	}
 	if (kind != 2) {
-		RdEStatus();
+		data_editor->RdEStatus();
 	}
 }
 
@@ -773,10 +774,11 @@ bool CompRunChptRec(WORD CC)
 	EditOpt* EO = nullptr;
 	WORD nStrm = 0;
 	auto result = false;
+	std::unique_ptr<DataEditor> data_editor = std::make_unique<DataEditor>();
 
 	OldE = E;
 	MarkBoth(p, p2);
-	WrEStatus();
+	data_editor->WrEStatus();
 
 	bool WasError = true;
 	bool WasGraph = IsGraphMode;
@@ -791,7 +793,7 @@ bool CompRunChptRec(WORD CC)
 		FD = nullptr;
 		STyp = CFile->loadS(ChptTyp, CRecPtr);
 		RP.R = CRdb;
-		RP.IRec = CRec();
+		RP.IRec = DataEditor::CRec();
 #ifdef FandSQL
 		nStrm = nStreams;
 #endif
@@ -817,8 +819,8 @@ bool CompRunChptRec(WORD CC)
 					EO->UserSelFlds = true; // GetEditOpt();
 					CFile = FD;
 					EO->Flds = AllFldsList(CFile, false);
-					if (SelFldsForEO(EO, nullptr)) {
-						EditDataFile(FD, EO);
+					if (data_editor->SelFldsForEO(EO, nullptr)) {
+						data_editor->EditDataFile(FD, EO);
 					}
 				}
 				break;
@@ -828,7 +830,7 @@ bool CompRunChptRec(WORD CC)
 					EO = new EditOpt();
 					EO->UserSelFlds = true; // GetEditOpt();
 					EO->FormPos = RP;
-					EditDataFile(nullptr, EO);
+					data_editor->EditDataFile(nullptr, EO);
 				}
 				else {
 					PushEdit();
@@ -936,10 +938,10 @@ bool CompRunChptRec(WORD CC)
 	ReleaseStore(&p2);
 	E = OldE;
 	EditDRoot = E;
-	RdEStatus();
+	data_editor->RdEStatus();
 	CRdb = RP.R;
 	PrevCompInp.clear();
-	CFile->ReadRec(CRec(), CRecPtr);
+	CFile->ReadRec(DataEditor::CRec(), CRecPtr);
 	if (IsCompileErr) {
 		result = false;
 	}
@@ -949,7 +951,7 @@ bool CompRunChptRec(WORD CC)
 			return result;
 		}
 		CFile->saveB(ChptVerif, false, CRecPtr);
-		CFile->WriteRec(CRec(), CRecPtr);
+		CFile->WriteRec(DataEditor::CRec(), CRecPtr);
 		if (CC == __CTRL_F8) {
 			Diagnostics(MaxHp, Free, FD);
 		}
@@ -1268,7 +1270,8 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 
 	try {
 		IsCompileErr = false; FDCompiled = false;
-		OldCRec = CRec(); RP.R = CRdb;
+		OldCRec = DataEditor::CRec();
+		RP.R = CRdb;
 		top = (CRdb->ChainBack == nullptr);
 		if (top) {
 			UserName[0] = 0; UserCode = 0; UserPassWORD[0] = 0; AccRight[0] = 0;
@@ -1442,7 +1445,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 		result = true;
 		if (!Run) {
 			CRecPtr = E->NewRecPtr;
-			CFile->ReadRec(CRec(), CRecPtr);
+			CFile->ReadRec(DataEditor::CRec(), CRecPtr);
 		}
 		CompileMsgOff(Buf, w);
 #ifdef FandSQL
@@ -1468,11 +1471,12 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 
 void GotoErrPos(WORD& Brk)
 {
+	std::unique_ptr<DataEditor> data_editor = std::make_unique<DataEditor>();
 
 	IsCompileErr = false;
 	std::string s = MsgLine;
 	if (InpRdbPos.R != CRdb) {
-		DisplEditWw();
+		data_editor->DisplEditWw();
 		SetMsgPar(s);
 		WrLLF10Msg(110);
 		if (InpRdbPos.IRec == 0) SetMsgPar("");
@@ -1482,18 +1486,18 @@ void GotoErrPos(WORD& Brk)
 		return;
 	}
 	if (CurrPos == 0) {
-		DisplEditWw();
-		GotoRecFld(InpRdbPos.IRec, E->FirstFld->pChain);
+		data_editor->DisplEditWw();
+		data_editor->GotoRecFld(InpRdbPos.IRec, E->FirstFld->pChain);
 		SetMsgPar(s);
 		WrLLF10Msg(110);
 		Brk = 0;
 		return;
 	}
-	CFld = E->LastFld;
-	SetNewCRec(InpRdbPos.IRec, true);
+	data_editor->CFld = E->LastFld;
+	data_editor->SetNewCRec(InpRdbPos.IRec, true);
 	CFile->saveR(ChptTxtPos, short(CurrPos), CRecPtr);
-	CFile->WriteRec(CRec(), CRecPtr);
-	EditFreeTxt(ChptTxt, s, true, Brk);
+	CFile->WriteRec(DataEditor::CRec(), CRecPtr);
+	data_editor->EditFreeTxt(ChptTxt, s, true, Brk);
 }
 
 void WrErrMsg630(std::string Nm)
@@ -1519,6 +1523,8 @@ bool EditExecRdb(std::string Nm, std::string proc_name, Instr_proc* proc_call, w
 	bool EscCode = false;
 	int w = UserW; UserW = 0;
 	bool wasGraph = IsGraphMode;
+	std::unique_ptr<DataEditor> data_editor = std::make_unique<DataEditor>();
+
 #ifdef FandSQL
 	if (top) SQLConnect();
 #endif
@@ -1594,30 +1600,30 @@ bool EditExecRdb(std::string Nm, std::string proc_name, Instr_proc* proc_call, w
 				goto label9;
 			}
 		}
-		if (!OpenEditWw()) goto label8;
+		if (!data_editor->OpenEditWw()) goto label8;
 		result = true;
 		Chpt->FF->WasRdOnly = false;
 		if (!top && (Chpt->FF->NRecs > 0))
 			if (CompileRdb(true, false, false)) {
 				if (FindChpt('P', proc_name, true, &RP)) {
-					GotoRecFld(RP.IRec, CFld);
+					data_editor->GotoRecFld(RP.IRec, data_editor->CFld);
 				}
 			}
 			else {
 				goto label4;
 			}
 		else if (ChptTF->IRec <= Chpt->FF->NRecs) {
-			GotoRecFld(ChptTF->IRec, CFld);
+			data_editor->GotoRecFld(ChptTF->IRec, data_editor->CFld);
 		}
 	label1:
-		RunEdit(nullptr, Brk);
+		data_editor->RunEdit(nullptr, Brk);
 	label2:
 		// TODO: je to potreba?
 		cc = Event.Pressed.KeyCombination();
 		SaveAndCloseAllFiles();
 		if ((cc == __CTRL_F10) || ChptTF->CompileAll || CompileFD) {
 			ReleaseFilesAndLinksAfterChapter();
-			SetSelectFalse();
+			data_editor->SetSelectFalse();
 			E->Bool = nullptr;
 			ReleaseStore(&E->AfterE);
 		}
@@ -1632,8 +1638,8 @@ bool EditExecRdb(std::string Nm, std::string proc_name, Instr_proc* proc_call, w
 			if (!CompileRdb(Brk == 2, false, false)) {
 			label3:
 				if (IsCompileErr) goto label4;
-				if (Brk == 1) DisplEditWw();
-				GotoRecFld(InpRdbPos.IRec, E->FirstFld->pChain);
+				if (Brk == 1) data_editor->DisplEditWw();
+				data_editor->GotoRecFld(InpRdbPos.IRec, E->FirstFld->pChain);
 				goto label1;
 			}
 			if (cc == __ALT_F2) {
@@ -1647,21 +1653,21 @@ bool EditExecRdb(std::string Nm, std::string proc_name, Instr_proc* proc_call, w
 			}
 		label41:
 			if (Brk == 1) {
-				EditFreeTxt(ChptTxt, "", true, Brk);
+				data_editor->EditFreeTxt(ChptTxt, "", true, Brk);
 			label5:
 				if (Brk != 0) goto label2;
 				else goto label1;
 			}
 			else {
 			label6:
-				DisplEditWw();
+				data_editor->DisplEditWw();
 				goto label1;
 			}
 		}
-		ChptTF->IRec = CRec();
+		ChptTF->IRec = DataEditor::CRec();
 		SetUpdHandle(ChptTF->Handle);
 	label8:
-		PopEdit();
+		data_editor->PopEdit();
 #endif
 	}
 	catch (std::exception& e)
@@ -1687,6 +1693,7 @@ label9:
 
 void UpdateCat()
 {
+	std::unique_ptr<DataEditor> data_editor = std::make_unique<DataEditor>();
 	CFile = CatFD->GetCatalogFile();
 	if (CatFD->GetCatalogFile()->FF->Handle == nullptr) {
 		OpenCreateF(CFile, CPath, Exclusive);
@@ -1694,7 +1701,7 @@ void UpdateCat()
 	EditOpt* EO = new EditOpt();
 	EO->UserSelFlds = true;
 	EO->Flds = AllFldsList(CatFD->GetCatalogFile(), true);
-	EditDataFile(CatFD->GetCatalogFile(), EO);
+	data_editor->EditDataFile(CatFD->GetCatalogFile(), EO);
 	ChDir(OldDir);
 	delete EO; EO = nullptr;
 }

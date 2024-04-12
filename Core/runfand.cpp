@@ -391,8 +391,8 @@ void InitRunFand()
 	// Ww
 	ss.Empty = true;
 	ss.Pointto = nullptr;
-	TxtEdCtrlUBrk = false;
-	TxtEdCtrlF4Brk = false;
+	// DataEditor::TxtEdCtrlUBrk = false;  // now initialized in DataEditor constructor
+	// DataEditor::TxtEdCtrlF4Brk = false; // now initialized in DataEditor constructor
 	InitMouseEvents();
 	// Editor
 	std::unique_ptr<TextEditor> editor = std::make_unique<TextEditor>();
