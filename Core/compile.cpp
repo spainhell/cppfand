@@ -153,15 +153,12 @@ void SetInpTTPos(FileD* file, int Pos, bool Decode)
 	CurrPos = 0;
 }
 
-void SetInpTT(RdbPos* RP, bool FromTxt)
+void SetInpTT(RdbPos* rdb_pos, bool FromTxt)
 {
 	int Pos = 0;
-	FileD* CF = nullptr;
-	void* CR = nullptr;
-	LongStr* s = nullptr;
 
-	if (RP->IRec == 0) {
-		std::string run_str = RunStdStr(CFile, (FrmlElem*)RP->R, CRecPtr);
+	if (rdb_pos->IRec == 0) {
+		std::string run_str = RunStdStr(CFile, (FrmlElem*)rdb_pos->R, CRecPtr);
 		// std::string cannot be used here!
 		// it's deleted on the end of this method!
 		LongStr* run_long_str = new LongStr(run_str.length());
@@ -170,21 +167,20 @@ void SetInpTT(RdbPos* RP, bool FromTxt)
 		SetInpLongStr(run_long_str, true);
 		return;
 	}
-	InpRdbPos = *RP;
-	CF = CFile;
-	CR = CRecPtr;
-	CFile = RP->R->FD;
-	CRecPtr = new BYTE[RP->R->FD->FF->RecLen];
-	CFile->ReadRec(RP->IRec, CRecPtr);
+	InpRdbPos = *rdb_pos;
+
+	uint8_t* rec = rdb_pos->R->FD->GetRecSpace();
+
+	rdb_pos->R->FD->ReadRec(rdb_pos->IRec, rec);
 	if (FromTxt) {
-		Pos = CFile->loadT(ChptTxt, CRecPtr);
+		Pos = rdb_pos->R->FD->loadT(ChptTxt, rec);
 	}
 	else {
-		Pos = CFile->loadT(ChptOldTxt, CRecPtr);
+		Pos = rdb_pos->R->FD->loadT(ChptOldTxt, rec);
 	}
-	SetInpTTPos(CFile, Pos, RP->R->Encrypted);
-	ReleaseStore(&CRecPtr);
-	CFile = CF; CRecPtr = CR;
+	SetInpTTPos(rdb_pos->R->FD, Pos, rdb_pos->R->Encrypted);
+
+	delete[] rec; rec = nullptr;
 }
 
 void SetInpTTxtPos(FileD* FD)
