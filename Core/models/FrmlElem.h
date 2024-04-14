@@ -146,7 +146,7 @@ public:
 	XKey* Key = nullptr;
 	void SaveArgs(FrmlElem* arguments[], size_t count);
 	std::vector<FrmlElem*> Arg;
-	//FrmlElem* Arg[2]{ nullptr }; // 13 {_recno/typ='R' or 'S'/,_recnoabs,_recnolog}
+	//FrmlElem* Arg[2]{ nullptr }; // 13 {_recno/typ='rdb' or 'S'/,_recnoabs,_recnolog}
 };
 
 class FrmlElem14 : public FrmlElem

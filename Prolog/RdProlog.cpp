@@ -166,7 +166,7 @@ TDatabase* FindDataBase(std::string db)
 	else return it->second;
 }
 
-/*  T P R O G R A M  =======================================================*/
+/*  T P rdb O G rdb A M  =======================================================*/
 TTerm* FindConst(std::string name /*LexWord*/, TDomain* domain)
 {
 	for (auto& c : Roots->Consts) {
@@ -870,17 +870,17 @@ void RdPredicateDcl(bool FromClauses, TDatabase* Db)
 				TestLex(_quotedstr);
 				z = new FrmlElemString(_const, 0); // GetOp(_const, LexWord.length() + 1);
 				((FrmlElemString*)z)->S = LexWord;
-				pos.R = (RdbD*)z;
-				pos.IRec = 0;
+				pos.rdb = (RdbD*)z;
+				pos.i_rec = 0;
 				AcceptP(_quotedstr);
 				TestLex(']');
 			}
 			else {
 				if (!FindChpt('P', LexWord, false, &pos)) Error(37);
-				//pos.R = ptr(0, StorStr(LexWord));
+				//pos.rdb = ptr(0, StorStr(LexWord));
 				std::string* sLexWord = new std::string(LexWord);
-				pos.R = (RdbD*)sLexWord;
-				pos.IRec = 0xffff;
+				pos.rdb = (RdbD*)sLexWord;
+				pos.i_rec = 0xffff;
 			}
 		}
 	}
@@ -1534,8 +1534,8 @@ void CheckPredicates(std::vector<TPredicate*>& P)
 		if ((p->Opt & _DbaseOpt) != 0) {
 			if ((p->Opt & _FandCallOpt) != 0) {
 				si = p->scanInf;
-				// not needed -> FD is actual (not loaded from RDB file, but actually compiled)
-				//si->FD = nullptr;
+				// not needed -> rdb_file is actual (not loaded from RDB file, but actually compiled)
+				//si->rdb_file = nullptr;
 			}
 			else {
 				// not needed -> branches and instructions are actual (not loaded from RDB file, but actually compiled)

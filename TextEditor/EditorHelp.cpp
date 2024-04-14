@@ -42,7 +42,7 @@ void Help(RdbD* R, pstring Name, bool InCWw)
 		}
 	}
 	else {
-		fd = R->HelpFD;
+		fd = R->help_file;
 		if (fd == nullptr) return;
 	}
 

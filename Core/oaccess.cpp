@@ -60,7 +60,7 @@ void CloseFANDFiles(bool FromDML)
 {
 	RdbD* RD = CRdb;
 	while (RD != nullptr) {
-		CFile = RD->FD;
+		CFile = RD->rdb_file;
 		while (CFile != nullptr) {
 			if (!FromDML) {
 				CFile->FF->ExLMode = CFile->FF->LMode;
@@ -94,7 +94,7 @@ void OpenFANDFiles(bool FromDML)
 	OpenF(CFile, CPath, Exclusive);
 	RD = CRdb;
 	while (RD != nullptr) {
-		CFile = RD->FD;
+		CFile = RD->rdb_file;
 		if (IsTestRun) {
 			OpenF(CFile, CPath, Exclusive);
 		}
@@ -130,7 +130,7 @@ bool ActiveRdbOnDrive(WORD D)
 	RdbD* R = CRdb;
 	while (R != nullptr)
 	{
-		if (R->FD->FF->Drive == D) return result;
+		if (R->rdb_file->FF->Drive == D) return result;
 		R = R->ChainBack;
 	}
 	result = false;
@@ -142,7 +142,7 @@ void CloseFilesOnDrive(WORD D)
 	RdbD* R = CRdb;
 	FileD* CF = CFile;
 	while (R != nullptr) {
-		CFile = R->FD;
+		CFile = R->rdb_file;
 		while (CFile != nullptr) {
 			if (CFile->FF->Drive == D) {
 				CFile->CloseFile();
@@ -233,7 +233,7 @@ bool SetContextDir(FileD* file_d, std::string& dir, bool& isRdb)
 	RdbD* R = CRdb;
 	isRdb = false;
 	while (R != nullptr) {
-		FileD* F = R->FD;
+		FileD* F = R->rdb_file;
 		if ((file_d == F) && (file_d->CatIRec != 0)) {
 			dir = R->RdbDir;
 			isRdb = true;
@@ -241,7 +241,7 @@ bool SetContextDir(FileD* file_d, std::string& dir, bool& isRdb)
 		}
 		while (F != nullptr) {
 			if (file_d == F) {
-				if ((file_d == R->HelpFD) || (file_d->FF->file_type == FileType::RDB)) {
+				if ((file_d == R->help_file) || (file_d->FF->file_type == FileType::RDB)) {
 					//.RDB
 					dir = R->RdbDir;
 				}

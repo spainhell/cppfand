@@ -75,10 +75,10 @@ std::string ReportGenerator::SelGenRprt(pstring RprtName)
 	std::string result;
 	r = CRdb;
 	while (r != nullptr) {
-		fd = r->FD->pChain;
+		fd = r->rdb_file->pChain;
 		while (fd != nullptr) {
 			s = fd->Name;
-			if (r != CRdb) s = r->FD->Name + '.' + s;
+			if (r != CRdb) s = r->rdb_file->Name + '.' + s;
 			ww.PutSelect(s);
 			fd = fd->pChain;
 		}
@@ -91,10 +91,10 @@ std::string ReportGenerator::SelGenRprt(pstring RprtName)
 	s = ww.GetSelect();
 	i = s.find('.'); r = CRdb;
 	if (i != std::string::npos) {
-		do { r = r->ChainBack; } while (r->FD->Name != s.substr(1, i - 1));
+		do { r = r->ChainBack; } while (r->rdb_file->Name != s.substr(1, i - 1));
 		s = s.substr(i + 1, 255);
 	}
-	fd = r->FD;
+	fd = r->rdb_file;
 	do { fd = fd->pChain; } while (fd->Name != s);
 	ro = GetRprtOpt();
 	ro->FDL.FD = fd;

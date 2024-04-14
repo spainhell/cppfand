@@ -10,8 +10,8 @@ class RdbD
 {
 public:
 	RdbD* ChainBack = nullptr;
-	FileD* FD = nullptr;
-	FileD* HelpFD = nullptr; // { FD=FileDRoot and = Chpt for this RDB }
+	FileD* rdb_file = nullptr;
+	FileD* help_file = nullptr; // { rdb_file=FileDRoot and = Chpt for this RDB }
 	std::deque<LinkD*> OldLDRoot;
 	FuncD* OldFCRoot = nullptr;
 	bool Encrypted = false;
@@ -21,6 +21,6 @@ public:
 
 struct RdbPos
 {
-	RdbD* R = nullptr;
-	int IRec = 0;
+	RdbD* rdb = nullptr;
+	int i_rec = 0;
 };

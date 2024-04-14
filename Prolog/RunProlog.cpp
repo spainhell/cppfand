@@ -86,7 +86,7 @@ TFunDcl* GetFunDcl(TDomain* D, BYTE I)
 	return fd;
 }
 
-/*  T T E R M  =============================================================*/
+/*  T T E rdb M  =============================================================*/
 TTerm* GetIntTerm(short I)
 {
 	TTerm* t = new TTerm();
@@ -1104,15 +1104,15 @@ label9:
 FileD* NextFD(FileD* FD)
 {
 	RdbD* r;
-	if (FD == nullptr) { r = CRdb; FD = r->FD; }
-	else r = FD->ChptPos.R; /*not .RDB*/
+	if (FD == nullptr) { r = CRdb; FD = r->rdb_file; }
+	else r = FD->ChptPos.rdb; /*not .RDB*/
 label1:
 	FD = FD->pChain;
 	if (FD == nullptr) {
 		r = r->ChainBack;
-		if (r != nullptr) { FD = r->FD; goto label1; }
+		if (r != nullptr) { FD = r->rdb_file; goto label1; }
 	}
-	else if ((FD->FF->file_type == FileType::RDB) || (FD->ChptPos.R == nullptr)) goto label1;
+	else if ((FD->FF->file_type == FileType::RDB) || (FD->ChptPos.rdb == nullptr)) goto label1;
 	return FD;
 }
 
@@ -1245,7 +1245,7 @@ bool RunBuildIn()
 		case FileType::FAND8: s = "DTA"; break;
 		}
 		CurrInst->Vars[1] = GetStringTerm(s);
-		CurrInst->Vars[2] = GetStringTerm(fd->ChptPos.R->FD->Name);
+		CurrInst->Vars[2] = GetStringTerm(fd->ChptPos.rdb->rdb_file->Name);
 		CFile = fd;
 		SetPathAndVolume(CFile);
 		CurrInst->Vars[3] = GetStringTerm(CPath);
@@ -1569,7 +1569,7 @@ void SetCFile(const pstring Name)
 {
 	RdbD* r = CRdb;
 	while (r != nullptr) {
-		CFile = r->FD;
+		CFile = r->rdb_file;
 		while (CFile != nullptr) {
 			if (EquUpCase(Name, CFile->Name)) return;
 			CFile = (FileD*)CFile->pChain;
@@ -1758,9 +1758,9 @@ void CallFandProc(TCommand* cmd)
 	Instr_proc* pd = p->instr;
 	//ps = GetZStore(p->LocVarSz);
 	w = p->InpMask;
-	//if (PtrRec(pd->Pos.R).Seg == 0) {
-	//	PtrRec(pd->Pos.R).Seg = _Sg;
-	if (pd->PPos.IRec == 0xffff) {
+	//if (PtrRec(pd->Pos.rdb).Seg == 0) {
+	//	PtrRec(pd->Pos.rdb).Seg = _Sg;
+	if (pd->PPos.i_rec == 0xffff) {
 		if (!FindChpt('P', pd->ProcName, false, &pd->PPos)) RunError(1037);
 	}
 	for (i = 0; i < p->Arity; i++) {
@@ -2434,8 +2434,8 @@ void RunProlog(RdbPos* Pos, std::string PredName)
 		tl = TrcLevel;
 		cl = CallLevel;
 	}
-	if (Pos->IRec == 0) {
-		std::string std_s = RunStdStr(CFile, (FrmlElem*)Pos->R, CRecPtr);
+	if (Pos->i_rec == 0) {
+		std::string std_s = RunStdStr(CFile, (FrmlElem*)Pos->rdb, CRecPtr);
 
 		LongStr* longStr = new LongStr(std_s.length());
 		longStr->LL = std_s.length();
@@ -2446,12 +2446,12 @@ void RunProlog(RdbPos* Pos, std::string PredName)
 		ChptLRdb = CRdb;
 	}
 	else {
-		ChptLRdb = Pos->R;
-		CFile = ChptLRdb->FD;
-		CRecPtr = ChptLRdb->FD->GetRecSpace();
-		CFile->ReadRec(Pos->IRec, CRecPtr);
+		ChptLRdb = Pos->rdb;
+		CFile = ChptLRdb->rdb_file;
+		CRecPtr = ChptLRdb->rdb_file->GetRecSpace();
+		CFile->ReadRec(Pos->i_rec, CRecPtr);
 		SetInpTTPos(CFile->loadT(ChptTxt, CRecPtr), ChptLRdb->Encrypted);
-		Roots = ReadProlog(Pos->IRec);
+		Roots = ReadProlog(Pos->i_rec);
 	}
 
 	//db = Roots->Databases;
@@ -2473,7 +2473,7 @@ void RunProlog(RdbPos* Pos, std::string PredName)
 	else {
 		p = GetPredicateByName(PredName);
 		if ((p == nullptr) || (p->Arity != 0)) {
-			SetMsgPar(Pos->R->FD->Name, PredName);
+			SetMsgPar(Pos->rdb->rdb_file->Name, PredName);
 			RunError(1545);
 		}
 	}

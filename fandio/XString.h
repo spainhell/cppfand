@@ -21,7 +21,7 @@ public:
 	bool PackFrml(FileD* file_d, FrmlListEl* FL, KeyFldD* KF, void* record);
 #ifdef FandSQL
 	void GetF(unsigned short Off, unsigned short Len, bool Descend, void* Buf);
-	void GetD(unsigned short Off, bool Descend, void* R);
+	void GetD(unsigned short Off, bool Descend, void* rdb);
 	void GetN(unsigned short Off, unsigned short Len, bool Descend, void* Buf);
 	unsigned short GetA(unsigned short Off, unsigned short Len, bool CompLex, bool Descend, void* Buf);
 #endif

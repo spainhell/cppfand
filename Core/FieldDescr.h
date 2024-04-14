@@ -43,7 +43,7 @@ public:
 	bool isEncrypted() const;
 
 	/* std::string S; // A, N, T
-	double R;      // F, D, R
+	double rdb;      // F, D, rdb
 	bool B;        // B */
 
 	static FieldType GetFieldType(char type);

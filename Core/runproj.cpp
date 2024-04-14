@@ -53,7 +53,7 @@ int sz = 0; WORD nTb = 0; void* Tb = nullptr;
 
 bool IsCurrChpt()
 {
-	return CRdb->FD == CFile;
+	return CRdb->rdb_file == CFile;
 }
 
 FileType ExtToTyp(const std::string& ext)
@@ -89,10 +89,10 @@ void ReleaseFilesAndLinksAfterChapter()
 	}
 	R = CRdb->ChainBack;
 	if (R != nullptr) {
-		CRdb->HelpFD = R->HelpFD;
+		CRdb->help_file = R->help_file;
 	}
 	else {
-		CRdb->HelpFD = nullptr;
+		CRdb->help_file = nullptr;
 	}
 	CompileFD = true;
 }
@@ -429,9 +429,9 @@ void EditHelpOrCat(WORD cc, WORD kind, std::string txt)
 	std::unique_ptr<DataEditor> data_editor = std::make_unique<DataEditor>();
 
 	if (cc == __ALT_F2) {
-		FD = CRdb->HelpFD;
+		FD = CRdb->help_file;
 		if (kind == 1) {
-			FD = CFile->ChptPos.R->HelpFD;
+			FD = CFile->ChptPos.rdb->help_file;
 		}
 		if (FD == nullptr) return;
 		if (kind == 0) {
@@ -603,7 +603,7 @@ RdbD* PrepareRdb(const std::string& name, std::string& name1)
 	rdb_d->ChainBack = CRdb;
 	rdb_d->OldLDRoot = LinkDRoot;
 	rdb_d->OldFCRoot = FuncDRoot;
-	//MarkStore2(R->Mark2);
+	//MarkStore2(rdb->Mark2);
 	ReadMessage(51);
 	std::string s = MsgLine;
 	ReadMessage(48);
@@ -614,7 +614,7 @@ RdbD* PrepareRdb(const std::string& name, std::string& name1)
 	if ((name[0] == '\\')) name1 = name.substr(1, 8);
 	else name1 = name;
 	RdFileD(name1, FileType::RDB, ""); /*old CRdb for GetCatalogIRec*/
-	rdb_d->FD = CFile;
+	rdb_d->rdb_file = CFile;
 
 	return rdb_d;
 }
@@ -629,7 +629,7 @@ void CreateOpenChpt(std::string Nm, bool create)
 	bool top = (CRdb == nullptr);
 	FileDRoot = nullptr;
 	Chpt = nullptr;
-	//R = (RdbD*)GetZStore(sizeof(*R));
+	//rdb = (RdbD*)GetZStore(sizeof(*rdb));
 	FandTFile* oldChptTF = ChptTF;
 	RdbD* R = PrepareRdb(Nm, Nm1);
 	CRdb = R;
@@ -646,7 +646,7 @@ void CreateOpenChpt(std::string Nm, bool create)
 		AccRight[0] = 0;
 	}
 	else {
-		if (CRdb->ChainBack != nullptr)	CRdb->HelpFD = CRdb->ChainBack->HelpFD;
+		if (CRdb->ChainBack != nullptr)	CRdb->help_file = CRdb->ChainBack->help_file;
 
 		while (true) {
 			ChDir(R->RdbDir);
@@ -701,7 +701,7 @@ void CloseChpt()
 	CRdb = CRdb->ChainBack;
 	//ReleaseBoth(p, p2);
 	if (CRdb != nullptr) {
-		FileDRoot = CRdb->FD;
+		FileDRoot = CRdb->rdb_file;
 		Chpt = FileDRoot;
 		SetChptFldDPtr();
 		ChDir(CRdb->RdbDir);
@@ -724,8 +724,8 @@ void CloseChpt()
 void GoCompileErr(WORD IRec, WORD N)
 {
 	IsCompileErr = true;
-	InpRdbPos.R = CRdb;
-	InpRdbPos.IRec = IRec;
+	InpRdbPos.rdb = CRdb;
+	InpRdbPos.i_rec = IRec;
 	CurrPos = 0;
 	ReadMessage(N);
 	GoExit();
@@ -792,8 +792,8 @@ bool CompRunChptRec(WORD CC)
 
 		FD = nullptr;
 		STyp = CFile->loadS(ChptTyp, CRecPtr);
-		RP.R = CRdb;
-		RP.IRec = DataEditor::CRec();
+		RP.rdb = CRdb;
+		RP.i_rec = DataEditor::CRec();
 #ifdef FandSQL
 		nStrm = nStreams;
 #endif
@@ -939,7 +939,7 @@ bool CompRunChptRec(WORD CC)
 	E = OldE;
 	EditDRoot = E;
 	data_editor->ReadParamsFromE();
-	CRdb = RP.R;
+	CRdb = RP.rdb;
 	PrevCompInp.clear();
 	CFile->ReadRec(DataEditor::CRec(), CRecPtr);
 	if (IsCompileErr) {
@@ -1271,7 +1271,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 	try {
 		IsCompileErr = false; FDCompiled = false;
 		OldCRec = DataEditor::CRec();
-		RP.R = CRdb;
+		RP.rdb = CRdb;
 		top = (CRdb->ChainBack == nullptr);
 		if (top) {
 			UserName[0] = 0; UserCode = 0; UserPassWORD[0] = 0; AccRight[0] = 0;
@@ -1282,7 +1282,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 		Encryp = CRdb->Encrypted;
 		for (I = 1; I <= Chpt->FF->NRecs; I++) {
 			CFile->ReadRec(I, CRecPtr);
-			RP.IRec = I;
+			RP.i_rec = I;
 			Verif = CFile->loadB(ChptVerif, CRecPtr);
 			STyp = CFile->loadS(ChptTyp, CRecPtr);
 			Typ = STyp[0];
@@ -1335,7 +1335,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 						p1 = RdF(Name);
 						// TODO: toto se asi zase musi povolit !!! 
 						//WrFDSegment(I);
-						if (CFile->IsHlpFile) CRdb->HelpFD = CFile;
+						if (CFile->IsHlpFile) CRdb->help_file = CFile;
 						if (OldTxt > 0) MergeOldNew(Verif, OldTxt);
 						ReleaseStore(&p1);
 						CFile = Chpt;
@@ -1351,7 +1351,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 					}
 					else {
 						ChainLast(FileDRoot, CFile); MarkStore(p1);
-						if (CFile->IsHlpFile) CRdb->HelpFD = CFile;
+						if (CFile->IsHlpFile) CRdb->help_file = CFile;
 					}
 					break;
 				}
@@ -1462,7 +1462,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 		E = OldE; EditDRoot = E;
 		CFile = Chpt;
 		if (!Run) CRecPtr = E->NewRecPtr;
-		if (!IsCompileErr) { InpRdbPos.IRec = I; }
+		if (!IsCompileErr) { InpRdbPos.i_rec = I; }
 	}
 
 	CompileMsgOff(Buf, w);
@@ -1475,26 +1475,26 @@ void GotoErrPos(WORD& Brk)
 
 	IsCompileErr = false;
 	std::string s = MsgLine;
-	if (InpRdbPos.R != CRdb) {
+	if (InpRdbPos.rdb != CRdb) {
 		data_editor->DisplEditWw();
 		SetMsgPar(s);
 		WrLLF10Msg(110);
-		if (InpRdbPos.IRec == 0) SetMsgPar("");
-		else SetMsgPar(InpRdbPos.R->FD->Name);
+		if (InpRdbPos.i_rec == 0) SetMsgPar("");
+		else SetMsgPar(InpRdbPos.rdb->rdb_file->Name);
 		WrLLF10Msg(622);
 		Brk = 0;
 		return;
 	}
 	if (CurrPos == 0) {
 		data_editor->DisplEditWw();
-		data_editor->GotoRecFld(InpRdbPos.IRec, E->FirstFld->pChain);
+		data_editor->GotoRecFld(InpRdbPos.i_rec, E->FirstFld->pChain);
 		SetMsgPar(s);
 		WrLLF10Msg(110);
 		Brk = 0;
 		return;
 	}
 	data_editor->CFld = E->LastFld;
-	data_editor->SetNewCRec(InpRdbPos.IRec, true);
+	data_editor->SetNewCRec(InpRdbPos.i_rec, true);
 	CFile->saveR(ChptTxtPos, short(CurrPos), CRecPtr);
 	CFile->WriteRec(DataEditor::CRec(), CRecPtr);
 	data_editor->EditFreeTxt(ChptTxt, s, true, Brk);
@@ -1606,7 +1606,7 @@ bool EditExecRdb(std::string Nm, std::string proc_name, Instr_proc* proc_call, w
 		if (!top && (Chpt->FF->NRecs > 0))
 			if (CompileRdb(true, false, false)) {
 				if (FindChpt('P', proc_name, true, &RP)) {
-					data_editor->GotoRecFld(RP.IRec, data_editor->CFld);
+					data_editor->GotoRecFld(RP.i_rec, data_editor->CFld);
 				}
 			}
 			else {
@@ -1639,7 +1639,7 @@ bool EditExecRdb(std::string Nm, std::string proc_name, Instr_proc* proc_call, w
 			label3:
 				if (IsCompileErr) goto label4;
 				if (Brk == 1) data_editor->DisplEditWw();
-				data_editor->GotoRecFld(InpRdbPos.IRec, E->FirstFld->pChain);
+				data_editor->GotoRecFld(InpRdbPos.i_rec, E->FirstFld->pChain);
 				goto label1;
 			}
 			if (cc == __ALT_F2) {

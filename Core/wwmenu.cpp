@@ -550,7 +550,7 @@ TMenuBoxS::TMenuBoxS(WORD C1, WORD R1, pstring Msg) : TMenuBox()
 {
 	MsgTxt = Msg;
 
-	HlpRdb = new RdbD(); HlpRdb->HelpFD = HelpFD;
+	HlpRdb = new RdbD(); HlpRdb->help_file = HelpFD;
 	IsBoxS = true;
 	nTxt = CountDLines(&MsgTxt[1], MsgTxt.length(), '/') - 2;
 	Move(&screen.colors.mNorm, Palette, 3);
@@ -960,13 +960,13 @@ std::string GetHlpText(RdbD* R, std::string S, bool ByName, WORD& IRec)
 
 	if (ByName) {
 		if (R == nullptr) goto label5;
-		//CFile = (FileD*)R;  // TODO: toto je nesmysl
-		CFile = R->HelpFD;
+		//CFile = (FileD*)rdb;  // TODO: toto je nesmysl
+		CFile = R->help_file;
 		if (CFile == HelpFD) {
 			if (CFile->FF->Handle == nullptr) goto label5;
 		}
 		else {
-			// CFile = R->HelpFD;
+			// CFile = rdb->help_file;
 			if (CFile == nullptr) goto label5;
 		}
 		ConvToNoDiakr(&S[0], S.length(), fonts.VFont);
@@ -1009,8 +1009,8 @@ label3:
 	label4:
 		R = R->ChainBack;
 		if (R != nullptr)
-			if ((R->HelpFD != nullptr) && (R->HelpFD != CFile)) {
-				CFile = R->HelpFD;
+			if ((R->help_file != nullptr) && (R->help_file != CFile)) {
+				CFile = R->help_file;
 				goto label1;
 			}
 			else {
@@ -1026,7 +1026,7 @@ void DisplayLastLineHelp(RdbD* R, std::string Name, bool R24)
 {
 	size_t i = 0, y = 0; WORD iRec = 0;
 
-	if ((R == nullptr) || (R->HelpFD != HelpFD) && (R->HelpFD == nullptr)) return;
+	if ((R == nullptr) || (R->help_file != HelpFD) && (R->help_file == nullptr)) return;
 
 	FileD* cf = CFile;
 	if (!Name.empty()) {

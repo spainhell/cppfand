@@ -99,7 +99,7 @@ void XScan::Reset(FrmlElem* ABool, bool SQLFilter, void* record)
 		break;
 		}
 #ifdef FandSQL
-	case 4: { CompKIFrml(Key, KIRoot, false); New(SQLStreamPtr(Strm), Init); IRec = 1; break; }
+	case 4: { CompKIFrml(Key, KIRoot, false); New(SQLStreamPtr(Strm), Init); i_rec = 1; break; }
 #endif
 	}
 	SeekRec(0);
@@ -172,7 +172,7 @@ void XScan::ResetOwner(XString* XX, FrmlElem* aBool)
 	if (Kind = 4) {           /* !on .SQL with Workindex */
 		KIRoot = GetZStore(sizeof(KIRoot^));
 		KIRoot->X1 = StoreStr(XX->S); KIRoot->X2 = StoreStr(XX->S);
-		New(SQLStreamPtr(Strm), Init); IRec = 1
+		New(SQLStreamPtr(Strm), Init); i_rec = 1
 }
 	else
 #endif
@@ -232,12 +232,12 @@ void XScan::SeekRec(int I)
 
 #ifdef FandSQL
 	if (Kind == 4) {
-		if (I != IRec) /* !!! with SQLStreamPtr(Strm)^ do!!! */
+		if (I != i_rec) /* !!! with SQLStreamPtr(Strm)^ do!!! */
 		{
 			if (NotFrst) InpClose; NotFrst = true;
 			if (hasSQLFilter) z = Bool else z = nullptr;
 			InpReset(Key, SK, KIRoot, z, withT);
-			EOF = AtEnd; IRec = 0; NRecs = 0x20000000;
+			EOF = AtEnd; i_rec = 0; NRecs = 0x20000000;
 }
 		return;
 	}
@@ -335,7 +335,7 @@ void XScan::GetRec(void* record)
 	if (Kind == 4) {
 		repeat EOF = !SQLStreamPtr(Strm)->GetRec
 			until EOF || hasSQLFilter || RunBool(Bool);
-		inc(IRec); return;
+		inc(i_rec); return;
 	}
 #endif
 
@@ -375,7 +375,7 @@ void XScan::GetRec(void* record)
 				xx.S = P->StrI(P->NItems - NOnPg);
 				if ((NOnPg == 0) && (P->GreaterPage > 0)) SeekOnPage(P->GreaterPage, 1);
 				if (!Strm1->SelectXRec(Key, @xx, _equ, withT)) goto label1;
-				if (!RunBool(FD, Bool, record)) goto label1;
+				if (!RunBool(rdb_file, Bool, record)) goto label1;
 				break;
 			}
 #endif

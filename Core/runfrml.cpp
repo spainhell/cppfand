@@ -1259,7 +1259,7 @@ void TestTFrml(FileD* file_d, FieldDescr* F, FrmlElem* Z, FandTFile** TF02, File
 		//if ((F != nullptr) && ((F->Flg & f_Encryp) != 0)) return;
 		//*TFD02 = CFile;
 		//*TF02 = &TWork;
-		//TF02Pos = (int)((FrmlElem18*)Z)->locvar->R;
+		//TF02Pos = (int)((FrmlElem18*)Z)->locvar->rdb;
 		//break;
 	}
 	case _access: {
@@ -2003,7 +2003,7 @@ void StrMask(double R, pstring& Mask)
 	if (R == 0) Num[0] = 0;
 	else {
 		if (R < 0) { minus = true; R = -R; }
-		str(R, Num); // str(R:1:0,Num)
+		str(R, Num); // str(rdb:1:0,Num)
 		pos = MinW(pos, pos1);
 	}
 	i = Num.length();

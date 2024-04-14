@@ -123,7 +123,7 @@ label1:
 			ID->SQLFilter = FDL->SQLFilter;
 			if (Ii == 1) SelQuest = RO->UserCondQuest;
 		}
-		//New(ID->Scan, Init(FD, CViewKey, KI, true));
+		//New(ID->Scan, Init(rdb_file, CViewKey, KI, true));
 		ID->Scan = new XScan(FD, CViewKey, KI, true);
 		if ((FDL != nullptr) && (FDL->LVRecPtr != nullptr)) ID->Scan->ResetLV(FDL->LVRecPtr);
 		if (!(Lexem == ';' || Lexem == '#' || Lexem == 0x1A)) {
@@ -1223,7 +1223,7 @@ label1:
 						else {
 							snprintf(buffer, sizeof(buffer), "%*.*f", L, M, R);
 							text += buffer;
-							//printf("%s%*.*f", Rprt.c_str(), L, M, R);
+							//printf("%s%*.*f", Rprt.c_str(), L, M, rdb);
 						}
 					}
 					Y.I += 2;
@@ -1246,7 +1246,7 @@ label1:
 					}
 					else {
 						snprintf(buffer, sizeof(buffer), "%s", StrDate(R, Mask).c_str());
-						//printf("%s%s", Rprt.c_str(), StrDate(R, Mask).c_str());
+						//printf("%s%s", Rprt.c_str(), StrDate(rdb, Mask).c_str());
 						text += buffer;
 					}
 					break;

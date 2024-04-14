@@ -94,12 +94,12 @@ enum instr_type
 	_exitcode = 0x1d, _edrecno = 0x1e, _getWORDvar = 0x1f, // {n:0..}
 	_memavail = 0x22, _maxcol = 0x23, _maxrow = 0x24,
 	_getmaxx = 0x25, _getmaxy = 0x26,
-	_lastupdate = 0x27, _nrecs = 0x28, _nrecsabs = 0x29, // {FD}
-	_generation = 0x2a, // {FD}
-	_recno = 0x2b, _recnoabs = 0x2c, _recnolog = 0x2d,  // {FD,K,Z1,Z2,...}
+	_lastupdate = 0x27, _nrecs = 0x28, _nrecsabs = 0x29, // {rdb_file}
+	_generation = 0x2a, // {rdb_file}
+	_recno = 0x2b, _recnoabs = 0x2c, _recnolog = 0x2d,  // {rdb_file,K,Z1,Z2,...}
 	_filesize = 0x2e,  // {txtpath,txtcatirec}
 	_txtpos = 0x2f, _cprinter = 0x30, _mousex = 0x31, _mousey = 0x32,
-	_txtxy = 0x33, _indexnrecs = 0x34, _owned = 0x35,  // {bool,sum,ld}           // {R}
+	_txtxy = 0x33, _indexnrecs = 0x34, _owned = 0x35,  // {bool,sum,ld}           // {rdb}
 	_catfield = 0x36, // {CatIRec,CatFld}
 	_password = 0x37, _version = 0x38, _username = 0x39, _edfield = 0x3a,
 	_accright = 0x3b, _readkey = 0x3c, _edreckey = 0x3d, _edbool = 0x3e,
@@ -125,10 +125,10 @@ enum instr_type
 	_unminus = 0x73, _abs = 0x74, _int = 0x75, _frac = 0x76, _sqr = 0x77,
 	_sqrt = 0x78, _sin = 0x79, _cos = 0x7A, _arctan = 0x7b, _ln = 0x7c,
 	_exp = 0x7d, _typeday = 0x7e, _color = 0x7f,
-	_link = 0x90, // {LD}, // {R}
+	_link = 0x90, // {LD}, // {rdb}
 	_val = 0x91, _valdate = 0x92, _length = 0x93, _linecnt = 0x94, // {maskstring}
 	_diskfree = 0x95, _ord = 0x96, _eval = 0x97,  // {Typ},  // {RS}
-	_accrecno = 0x98,  // {FD,FldD},    // {R,S,B}
+	_accrecno = 0x98,  // {rdb_file,FldD},    // {rdb,S,B}
 	_promptyn = 0x99,  // {BS}
 	_conv = 0xa0,   // { used in Prolog}
 	_and = 0xb1, _or = 0xb2, _limpl = 0xb3, _lequ = 0xb4,  // {2-ary instructions}
@@ -140,9 +140,9 @@ enum instr_type
 	_div = 0xc8, _mod = 0xc9, _round = 0xca,
 	_addwdays = 0xcb, _difwdays = 0xcc, // {typday}
 	_addmonth = 0xcd, _difmonth = 0xce, _inttsr = 0xcf, // {ptr},
-	_min = 0xd0, _max = 0xd1, // {used in Prolog}     // {R}
+	_min = 0xd0, _max = 0xd1, // {used in Prolog}     // {rdb}
 	_equmask = 0xd2,   // {BSS}
-	_prompt = 0xd3, // {fieldD},   // {R,S,B}
+	_prompt = 0xd3, // {fieldD},   // {rdb,S,B}
 	_portin = 0xd4, // {RBR}
 	_cond = 0xf0, // {bool or nil,frml,continue or nil},    // {3-ary instructions}
 	_copy = 0xf1, _str = 0xf2, // {S}

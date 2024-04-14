@@ -58,8 +58,8 @@ std::string Error(short N)
 	ClearKbdBuf();
 	size_t l = InpArrLen;
 	WORD i = CurrPos;
-	if (IsTestRun && (!PrevCompInp.empty() && InpRdbPos.R != CRdb /* 0xinclude higher Rdb*/
-		|| InpRdbPos.R == nullptr) /* TODO: ptr(0, 1)*/ /*LongStr + ShowErr*/
+	if (IsTestRun && (!PrevCompInp.empty() && InpRdbPos.rdb != CRdb /* 0xinclude higher Rdb*/
+		|| InpRdbPos.rdb == nullptr) /* TODO: ptr(0, 1)*/ /*LongStr + ShowErr*/
 		&& StoreAvail() > l + TxtCols * TxtRows * 2 + 50)
 	{
 		bool upd;
@@ -112,9 +112,9 @@ void SetInpStdStr(std::string& s, bool ShowErr)
 	if (InpArrLen == 0) ForwChar = 0x1A;
 	else ForwChar = InpArrPtr[0];
 	CurrPos = 0;
-	InpRdbPos.R = nullptr;
-	if (ShowErr) InpRdbPos.R = nullptr; // TODO: tady bylo InpRdbPos.R:=ptr(0,1);
-	InpRdbPos.IRec = 0;
+	InpRdbPos.rdb = nullptr;
+	if (ShowErr) InpRdbPos.rdb = nullptr; // TODO: tady bylo InpRdbPos.rdb:=ptr(0,1);
+	InpRdbPos.i_rec = 0;
 }
 
 void SetInpLongStr(LongStr* S, bool ShowErr)
@@ -124,9 +124,9 @@ void SetInpLongStr(LongStr* S, bool ShowErr)
 	if (InpArrLen == 0) ForwChar = 0x1A;
 	else ForwChar = InpArrPtr[0];
 	CurrPos = 0;
-	InpRdbPos.R = nullptr;
-	if (ShowErr) InpRdbPos.R = nullptr; // TODO: tady bylo InpRdbPos.R:=ptr(0,1);
-	InpRdbPos.IRec = 0;
+	InpRdbPos.rdb = nullptr;
+	if (ShowErr) InpRdbPos.rdb = nullptr; // TODO: tady bylo InpRdbPos.rdb:=ptr(0,1);
+	InpRdbPos.i_rec = 0;
 }
 
 // vycte z CFile->TF blok dat
@@ -155,10 +155,8 @@ void SetInpTTPos(FileD* file, int Pos, bool Decode)
 
 void SetInpTT(RdbPos* rdb_pos, bool FromTxt)
 {
-	int Pos = 0;
-
-	if (rdb_pos->IRec == 0) {
-		std::string run_str = RunStdStr(CFile, (FrmlElem*)rdb_pos->R, CRecPtr);
+	if (rdb_pos->i_rec == 0) {
+		std::string run_str = RunStdStr(CFile, (FrmlElem*)rdb_pos->rdb, CRecPtr);
 		// std::string cannot be used here!
 		// it's deleted on the end of this method!
 		LongStr* run_long_str = new LongStr(run_str.length());
@@ -169,16 +167,18 @@ void SetInpTT(RdbPos* rdb_pos, bool FromTxt)
 	}
 	InpRdbPos = *rdb_pos;
 
-	uint8_t* rec = rdb_pos->R->FD->GetRecSpace();
+	RdbD* rdb = rdb_pos->rdb;
+	uint8_t* rec = rdb->rdb_file->GetRecSpace();
 
-	rdb_pos->R->FD->ReadRec(rdb_pos->IRec, rec);
+	rdb->rdb_file->ReadRec(rdb_pos->i_rec, rec);
+	int pos;
 	if (FromTxt) {
-		Pos = rdb_pos->R->FD->loadT(ChptTxt, rec);
+		pos = rdb->rdb_file->loadT(ChptTxt, rec);
 	}
 	else {
-		Pos = rdb_pos->R->FD->loadT(ChptOldTxt, rec);
+		pos = rdb->rdb_file->loadT(ChptOldTxt, rec);
 	}
-	SetInpTTPos(rdb_pos->R->FD, Pos, rdb_pos->R->Encrypted);
+	SetInpTTPos(rdb->rdb_file, pos, rdb->Encrypted);
 
 	delete[] rec; rec = nullptr;
 }
@@ -187,7 +187,7 @@ void SetInpTTxtPos(FileD* FD)
 {
 	SetInpTT(&FD->ChptPos, true);
 	WORD pos = FD->TxtPosUDLI;
-	RdbD* r = FD->ChptPos.R;
+	RdbD* r = FD->ChptPos.rdb;
 	if (pos > InpArrLen) ForwChar = 0x1A;
 	else ForwChar = InpArrPtr[pos];
 	CurrPos = pos;
@@ -256,7 +256,7 @@ label1:
 		RdForwName(s);
 		r = CRdb;
 		// TODO: co to je??? PtrRec ...
-		if (/*(PtrRec(InpRdbPos.R).Seg*/ InpRdbPos.R != nullptr) CRdb = InpRdbPos.R;
+		if (/*(PtrRec(InpRdbPos.rdb).Seg*/ InpRdbPos.rdb != nullptr) CRdb = InpRdbPos.rdb;
 		res = FindChpt('I', s, false, &ChptIPos);
 		CRdb = r;
 		if (!res) Error(37);
@@ -1022,7 +1022,7 @@ bool FindChpt(char Typ, const pstring& name, bool local, RdbPos* RP)
 	RdbD* R = CRdb;
 	auto result = false;
 	while (R != nullptr) {
-		CFile = R->FD;
+		CFile = R->rdb_file;
 		for (WORD i = 1; i <= CFile->FF->NRecs; i++) {
 			CFile->ReadRec(i, CRecPtr);
 			std::string chapterType = CFile->loadS(ChptTyp, CRecPtr);
@@ -1033,8 +1033,8 @@ bool FindChpt(char Typ, const pstring& name, bool local, RdbPos* RP)
 				&& chapterType[0] == Typ
 				&& EquUpCase(chapterName, name)) {
 
-				RP->R = R;
-				RP->IRec = i;
+				RP->rdb = R;
+				RP->i_rec = i;
 				result = true;
 				goto label1;
 			}
@@ -1056,8 +1056,8 @@ void RdChptName(char C, RdbPos* Pos, bool TxtExpr)
 
 	if (TxtExpr && (Lexem == '[')) {
 		RdLex();
-		Pos->R = (RdbD*)RdStrFrml(nullptr);
-		Pos->IRec = 0;
+		Pos->rdb = (RdbD*)RdStrFrml(nullptr);
+		Pos->i_rec = 0;
 		Accept(']');
 	}
 	else {
@@ -1098,7 +1098,7 @@ void CFileLikeFD(FileD* FD, WORD MsgNr)
 std::string RdHelpName()
 {
 	std::string s;
-	if (CRdb->HelpFD == nullptr) Error(132);
+	if (CRdb->help_file == nullptr) Error(132);
 	if (Lexem != _identifier) TestLex(_quotedstr);
 	s = LexWord;
 	RdLex();
@@ -2447,7 +2447,7 @@ FileD* FindFileD()
 	}
 	R = CRdb;
 	while (R != nullptr) {
-		FD = R->FD;
+		FD = R->rdb_file;
 		while (FD != nullptr) {
 			std::string lw = LexWord;
 			if (EquUpCase(FD->Name, lw)) {
@@ -2472,7 +2472,7 @@ FileD* RdFileName()
 	}
 	TestIdentif();
 	FD = FindFileD();
-	if ((FD == nullptr) || (FD == CRdb->FD) && !SpecFDNameAllowed) Error(9);
+	if ((FD == nullptr) || (FD == CRdb->rdb_file) && !SpecFDNameAllowed) Error(9);
 	RdLex();
 	return FD;
 }

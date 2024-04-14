@@ -218,7 +218,7 @@ void ForAllFDs(ForAllFilesOperation op, FileD** file_d, WORD i)
 	FileD* cf = CFile;
 	RdbD* R = CRdb;
 	while (R != nullptr) {
-		CFile = R->FD;
+		CFile = R->rdb_file;
 		while (CFile != nullptr) {
 			switch (op) {
 			case ForAllFilesOperation::close: {

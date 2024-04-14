@@ -133,7 +133,7 @@ void TextEditorModes::process_Ctrl_Q(const PressedKey& key)
 	switch (Event.Pressed.KeyCombination()) {
 	//case 'S': Event.Pressed.Key()->wVirtualKeyCode = __HOME; break;
 	//case 'D': Event.Pressed.Key()->wVirtualKeyCode = __END; break;
-	//case 'R': Event.Pressed.Key()->wVirtualKeyCode = __CTRL_PAGEUP; break;
+	//case 'rdb': Event.Pressed.Key()->wVirtualKeyCode = __CTRL_PAGEUP; break;
 	//case 'C': Event.Pressed.Key()->wVirtualKeyCode = __CTRL_PAGEDOWN; break;
 
 	//case 'E': case 'X': case 'Y':

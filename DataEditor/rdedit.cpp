@@ -58,24 +58,38 @@ void RdEForm(FileD* ParFD, RdbPos FormPos)
 	WORD NPages = 0, Col = 0, Ln = 0, Max = 0, M = 0, N = 0, NFlds = 0, i = 0;
 	bool comment = false; char c = '\0'; BYTE a = 0;
 	SetInpTT(&FormPos, true);
-label1:
-	s = "";
-	while (!(ForwChar == '#' || ForwChar == 0x1A || ForwChar == 0x0D || ForwChar == '{')) {
-		/* read headlines */
-		s.Append(ForwChar);
+
+	while (true) {
+		s = "";
+		while (!(ForwChar == '#' || ForwChar == 0x1A || ForwChar == 0x0D || ForwChar == '{')) {
+			/* read headlines */
+			s.Append(ForwChar);
+			ReadChar();
+		}
+		switch (ForwChar) {
+		case 0x1A: {
+			Error(76);
+			break;
+		}
+		case '#': {
+			goto label2;
+			break;
+		}
+		case '{': {
+			SkipBlank(true);
+			continue;
+			break;
+		}
+		}
 		ReadChar();
+		if (ForwChar == 0x0A) ReadChar();
+		SToSL(&E->HdTxt, s);
+		E->NHdTxt++;
+		if (E->NHdTxt + 1 > E->Rows) {
+			Error(102);
+		}
 	}
-	switch (ForwChar) {
-	case 0x1A: Error(76); break;
-	case '#': goto label2; break;
-	case '{': { SkipBlank(true); goto label1; break; }
-	}
-	ReadChar();
-	if (ForwChar == 0x0A) ReadChar();
-	SToSL(&E->HdTxt, s);
-	E->NHdTxt++;
-	if (E->NHdTxt + 1 > E->Rows) Error(102);
-	goto label1;
+
 	/* read field list */
 label2:
 	ReadChar(); ReadChar();
@@ -513,7 +527,7 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 		}
 		else if (E->VK == nullptr) {
 			E->VK = E->FD->Keys.empty() ? nullptr : E->FD->Keys[0];
-		}
+}
 #ifdef FandSQL
 		if (CFile->IsSQLFile && (E->VK = nullptr)) { SetMsgPar(CFile->Name); RunError(652); }
 #endif
@@ -525,7 +539,7 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 				RunError(663);
 			}
 		}
-	}
+		}
 	if (EO->StartFieldZ != nullptr) {
 		std::string rss = RunShortStr(CFile, EO->StartFieldZ, CRecPtr);
 		std::string s = TrailChar(rss, ' ');
@@ -577,7 +591,7 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 	RdDepChkImpl();
 	NewChkKey();
 	MarkStore(E->AfterE);
-}
+	}
 
 EFldD* FindEFld_E(FieldDescr* F)
 {
@@ -829,14 +843,14 @@ void RdAllUDLIs(FileD* FD)
 {
 	RdbD* r = nullptr;
 	if (FD->OrigFD != nullptr) {
-		// this FD was created as 'LIKE'
+		// this rdb_file was created as 'LIKE'
 		RdAllUDLIs(FD->OrigFD);
 	}
 	if (FD->TxtPosUDLI != 0) {
 		ResetCompilePars();
 		SetInpTTxtPos(FD);
 		r = CRdb;
-		CRdb = FD->ChptPos.R;
+		CRdb = FD->ChptPos.rdb;
 		RdUDLI();
 		CRdb = r;
 	}

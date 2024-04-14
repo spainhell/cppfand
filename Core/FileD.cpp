@@ -72,8 +72,8 @@ void FileD::Reset()
 	Name = "";
 	FullPath = "";
 	IRec = 0;
-	ChptPos.IRec = 0;
-	ChptPos.R = 0;
+	ChptPos.i_rec = 0;
+	ChptPos.rdb = 0;
 	TxtPosUDLI = 0;    // =0 if not present; urcuje zacatek odstavcu #U #D #L #I
 	OrigFD = nullptr;    // like orig. or nil
 	CatIRec = 0;
@@ -526,7 +526,7 @@ bool FileD::IsActiveRdb()
 {
 	RdbD* R = CRdb;
 	while (R != nullptr) {
-		if (this == R->FD) return true;
+		if (this == R->rdb_file) return true;
 		R = R->ChainBack;
 	}
 	return false;

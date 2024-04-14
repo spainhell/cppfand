@@ -264,7 +264,7 @@ FrmlElem* RdFldNameFrmlP(char& FTyp, MergeReportBase* caller)
 		RdLex();
 		A->RecFD = FD;
 #ifdef FandSQL
-		if (FD->typSQLFile) OldError(155);
+		if (rdb_file->typSQLFile) OldError(155);
 #endif
 		A->P1 = RdRealFrml(nullptr);
 		Accept(']');
@@ -469,7 +469,7 @@ FrmlElem* RdFunctionP(char& FFTyp)
 		}
 		Accept(',');
 #ifdef FandSQL
-		if (FD->typSQLFile) OldError(155);
+		if (rdb_file->typSQLFile) OldError(155);
 #endif
 		cf = CFile;
 		CFile = FD;
@@ -494,7 +494,7 @@ FrmlElem* RdFunctionP(char& FFTyp)
 			((FrmlElem14*)Z)->P1 = RdRealFrml(nullptr);
 		label2: {}
 #ifdef FandSQL
-			if (FD->typSQLFile) Error(155);
+			if (rdb_file->typSQLFile) Error(155);
 #endif
 		}
 	}
@@ -540,7 +540,7 @@ FrmlElem* RdFunctionP(char& FFTyp)
 	}
 #ifdef FandSQL
 	else if (IsKeyWord("SQL")) {
-		RdLex(); Z = GetOp(_sqlfun, 0); Z->P1 = RdStrFrml(); FTyp = 'R';
+		RdLex(); Z = GetOp(_sqlfun, 0); Z->P1 = RdStrFrml(); FTyp = 'rdb';
 	}
 #endif
 	else if (IsKeyWord("SELECTSTR")) {
@@ -797,7 +797,7 @@ Instr* RdFor()
 	iAsg->Add = true;
 	iAsg->AssLV = LV;
 	auto Z2 = new FrmlElemNumber(_const, 0, 1); // GetOp(_const, sizeof(double));
-	//Z->R = 1;
+	//Z->rdb = 1;
 	iAsg->Frml = Z2;
 	return result;
 }
@@ -1271,7 +1271,7 @@ void RdProcCall(Instr** pinstr)
 	else if (IsKeyWord("HELP")) {
 		*pinstr = new Instr_help(); // GetPD(_help, 8);
 		RdLex();
-		if (CRdb->HelpFD == nullptr) OldError(132);
+		if (CRdb->help_file == nullptr) OldError(132);
 		((Instr_help*)*pinstr)->HelpRdb0 = CRdb;
 	label1:
 		((Instr_help*)*pinstr)->Frml0 = RdStrFrml(nullptr);
@@ -1516,7 +1516,7 @@ Instr_sort* RdSortCall()
 	FileD* FD = RdFileName();
 	PD->SortFD = FD;
 #ifdef FandSQL
-	if (FD->typSQLFile) OldError(155);
+	if (rdb_file->typSQLFile) OldError(155);
 #endif
 	Accept(',');
 	Accept('(');
@@ -1647,8 +1647,8 @@ Instr* RdReportCall()
 	Accept(',');
 	if (Lexem == '[') {
 		RdLex();
-		RO->RprtPos.R = (RdbD*)RdStrFrml(nullptr);
-		RO->RprtPos.IRec = 0;
+		RO->RprtPos.rdb = (RdbD*)RdStrFrml(nullptr);
+		RO->RprtPos.i_rec = 0;
 		RO->FromStr = true;
 		Accept(']');
 	}
@@ -2247,8 +2247,8 @@ Instr* RdDisplay()
 	if ((Lexem == _identifier) && FindChpt('H', LexWord, false, &PD->Pos)) RdLex();
 	else {
 		/* !!! with PD->Pos do!!! */
-		PD->Pos.R = (RdbD*)RdStrFrml(nullptr);
-		PD->Pos.IRec = 0;
+		PD->Pos.rdb = (RdbD*)RdStrFrml(nullptr);
+		PD->Pos.i_rec = 0;
 	}
 	return PD;
 }
@@ -2420,7 +2420,7 @@ Instr_recs* RdMixRecAcc(PInstrCode Op)
 		default: {
 			if (PD->CompOp != 0) OldError(19);
 			if (CFile->typSQLFile && ((Op == _deleterec) || (Z->Op != _const)
-				|| (Z->R != 0))) Error(155);
+				|| (Z->rdb != 0))) Error(155);
 			break;
 		}
 #endif
@@ -2489,7 +2489,7 @@ FrmlElem* AdjustComma(FrmlElem* Z1, FieldDescr* F, instr_type Op)
 	if (F->field_type != FieldType::FIXED) return result;
 	if ((F->Flg & f_Comma) == 0) return result;
 	Z2 = new FrmlElemNumber(_const, 0, Power10[F->M]); // GetOp(_const, sizeof(double));
-	//Z2->R = Power10[F->M];
+	//Z2->rdb = Power10[F->M];
 	Z = new FrmlElemFunction(Op, 0); // GetOp(Op, 0);
 	Z->P1 = Z1;
 	Z->P2 = Z2;
@@ -2606,7 +2606,7 @@ Instr_assign* RdAssign()
 		FD = RdFileName();
 		PD->FD = FD; RdLex();
 #ifdef FandSQL
-		if (FD->typSQLFile) OldError(155);
+		if (rdb_file->typSQLFile) OldError(155);
 #endif
 		PD->RecFrml = RdRealFrml(nullptr);
 		Accept(']');

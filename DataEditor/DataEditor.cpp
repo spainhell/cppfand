@@ -493,7 +493,7 @@ label2:
 					goto label4;
 				}
 			}
-			else /*'R'*/ if (I != 0) { WrLLF10Msg(639); goto label4; }
+			else /*'rdb'*/ if (I != 0) { WrLLF10Msg(639); goto label4; }
 		}
 		if (F->field_type == FieldType::FIXED) {
 			str(r, L, M, Txt);
@@ -504,7 +504,7 @@ label2:
 				r = (int)r;
 			}
 		}
-		else /*'R'*/ str(r, L, 0, Txt);
+		else /*'rdb'*/ str(r, L, 0, Txt);
 		RR = r;
 		break;
 	}
@@ -713,7 +713,7 @@ bool DataEditor::IsSelectedRec(WORD I)
 	int n = AbsRecNr(BaseRec + I - 1);
 
 	/*void* cr = record_;
-	if ((I == IRec) && params_->WasUpdated) {
+	if ((I == i_rec) && params_->WasUpdated) {
 		record_ = E->OldRecPtr;
 	}
 	result = E->SelKey->RecNrToPath(file_d_, x, n, record_);
@@ -2377,7 +2377,7 @@ void DataEditor::DisplChkErr(ChkD* C)
 	SetMsgPar(RunShortStr(file_d_, C->TxtZ, record_));
 	WrLLF10Msg(110);
 	if (Event.Pressed.KeyCombination() == __F1) {
-		Help(file_d_->ChptPos.R, C->HelpName, false);
+		Help(file_d_->ChptPos.rdb, C->HelpName, false);
 	}
 	else if (Event.Pressed.KeyCombination() == __SHIFT_F7) {
 		UpwEdit(LD);
@@ -3508,7 +3508,7 @@ label1:
 	}
 	else {
 		CtrlMsgNr = 151;
-		if (file_d_ == CRdb->HelpFD) {
+		if (file_d_ == CRdb->help_file) {
 			Breaks = BreakKeys1;
 		}
 		else {
@@ -3610,7 +3610,7 @@ label2:
 		break;
 	}
 	case __SHIFT_F1:
-		if (IsCurrChpt() || (file_d_ == CRdb->HelpFD)) {
+		if (IsCurrChpt() || (file_d_ == CRdb->help_file)) {
 			if ((iStk < maxStk) && WriteCRec(false, Displ) && GetChpt(heslo, i)) {
 				params_->Append = false;
 				iStk++;
@@ -3923,14 +3923,14 @@ void DataEditor::ImbeddEdit()
 	WriteParamsToE();
 	R = CRdb;
 	while (R != nullptr) {
-		FD = R->FD->pChain;
+		FD = R->rdb_file->pChain;
 		while (FD != nullptr) {
 			if (ForNavigate(FD)) {
 				SL = FD->ViewNames;
 				do {
 					std::string s = GetFileViewName(FD, &SL);
 					if (R != CRdb) {
-						s = R->FD->Name + "." + s;
+						s = R->rdb_file->Name + "." + s;
 					}
 					ww.PutSelect(s);
 				} while (SL != nullptr);
@@ -3950,9 +3950,9 @@ void DataEditor::ImbeddEdit()
 			std::string ss2 = s2;
 			do {
 				R = R->ChainBack;
-			} while (R->FD->Name != ss2);
+			} while (R->rdb_file->Name != ss2);
 		}
-		file_d_ = R->FD;
+		file_d_ = R->rdb_file;
 		while (!EquFileViewName(file_d_, s1, &EO)) {
 			file_d_ = file_d_->pChain;
 		}
@@ -4017,7 +4017,7 @@ void DataEditor::DownEdit()
 		LinkD* LD = *LinkDRoot.begin();
 		GetSel2S(s1, s2, '/', 2);
 		ali = GetFromKey(LD)->Alias;
-		//while ((LD->ToFD != E->FD) || (LD->IndexRoot == 0) || (s2 != ali)
+		//while ((LD->ToFD != E->rdb_file) || (LD->IndexRoot == 0) || (s2 != ali)
 		//	|| !EquFileViewName(LD->FromFD, s1, EO)) LD = LD->pChain;
 		for (auto& ld : LinkDRoot) {
 			if ((ld->ToFD != E->FD) || (ld->IndexRoot == 0) || (s2 != ali) || !EquFileViewName(ld->FromFD, s1, &EO)) {
@@ -4411,7 +4411,7 @@ WORD DataEditor::ExitKeyProc()
 
 void DataEditor::FieldHelp()
 {
-	Help(file_d_->ChptPos.R, file_d_->Name + '.' + CFld->FldD->Name, false);
+	Help(file_d_->ChptPos.rdb, file_d_->Name + '.' + CFld->FldD->Name, false);
 }
 
 void DataEditor::DisplLASwitches()
@@ -4489,8 +4489,8 @@ void DataEditor::CtrlReadKbd()
 	uint64_t TimeBeg = getMillisecondsNow();
 	unsigned int D = 0;
 
-	if (params_->F1Mode && params_->Mode24 && CRdb->HelpFD != nullptr) {
-		DisplayLastLineHelp(file_d_->ChptPos.R, file_d_->Name + "." + CFld->FldD->Name, params_->Mode24);
+	if (params_->F1Mode && params_->Mode24 && CRdb->help_file != nullptr) {
+		DisplayLastLineHelp(file_d_->ChptPos.rdb, file_d_->Name + "." + CFld->FldD->Name, params_->Mode24);
 	}
 
 	TestEvent();
@@ -4538,8 +4538,8 @@ void DataEditor::CtrlReadKbd()
 		else {
 			DisplLL();
 			flgs = 0;
-			if (params_->F1Mode && !params_->Mode24 && CRdb->HelpFD != nullptr) {
-				DisplayLastLineHelp(file_d_->ChptPos.R, file_d_->Name + "." + CFld->FldD->Name, params_->Mode24);
+			if (params_->F1Mode && !params_->Mode24 && CRdb->help_file != nullptr) {
+				DisplayLastLineHelp(file_d_->ChptPos.rdb, file_d_->Name + "." + CFld->FldD->Name, params_->Mode24);
 			}
 		}
 
@@ -4706,7 +4706,7 @@ label81:
 	}
 	switch (Event.What) {
 	case evMouseDown: {
-		if (params_->F1Mode && (CRdb->HelpFD != nullptr)
+		if (params_->F1Mode && (CRdb->help_file != nullptr)
 			&& (params_->Mode24 && (Event.Where.Y == TxtRows - 2) || !params_->Mode24 && (Event.Where.Y == TxtRows - 1))) {
 			ClrEvent();
 			FieldHelp();
@@ -5070,7 +5070,7 @@ label81:
 						case __F3: {
 							// najdi vetu podle klic. udaje
 							if (!params_->EdRecVar)
-								if (file_d_ == CRdb->HelpFD) {
+								if (file_d_ == CRdb->help_file) {
 									if (PromptHelpName(i)) {
 										GotoRecFld(i, CFld);
 										goto label1;

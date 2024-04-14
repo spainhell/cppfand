@@ -77,13 +77,13 @@ extern "C" int FAND_API OpenRDB(char* rdbName)
 	resFile.Open("FAND.RES");
 	resFile.ReadInfo(); // read messages
 
-	IsTestRun = true; // debug mode - open files in R/W mode
+	IsTestRun = true; // debug mode - open files in rdb/W mode
 	CompileHelpCatDcl();
 	SetTopDir(p, n);
 	CreateOpenChpt(n, true);
 
 	rdb = CRdb;
-	rdbFile = rdb->FD;
+	rdbFile = rdb->rdb_file;
 	data = rdbFile->GetRecSpace();
 
 	return rdbFile->FF->NRecs;

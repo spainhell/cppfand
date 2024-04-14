@@ -380,7 +380,7 @@ std::string SetPathForH(HANDLE handle)
 {
 	RdbD* RD = CRdb;
 	while (RD != nullptr) {
-		FileD* fd = RD->FD;
+		FileD* fd = RD->rdb_file;
 		while (fd != nullptr) {
 			if (fd->FF->Handle == handle) {
 				SetPathAndVolume(fd);

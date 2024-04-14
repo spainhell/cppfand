@@ -81,7 +81,7 @@ void Merge::Read()
 			ID->Bool = RdKeyInBool(&KI, false, false, ID->SQLFilter, this);
 			Accept(')');
 		}
-		//New(ID->Scan, Init(FD, CViewKey, KI, true));
+		//New(ID->Scan, Init(rdb_file, CViewKey, KI, true));
 		ID->Scan = new XScan(FD, CViewKey, KI, true);
 		if (!(Lexem == ';' || Lexem == '#' || Lexem == 0x1A)) {
 			RdKFList(&ID->MFld, FD);
@@ -480,7 +480,7 @@ FrmlElem* Merge::AdjustComma_M(FrmlElem* Z1, FieldDescr* F, instr_type Op)
 	if (F->field_type != FieldType::FIXED) return result;
 	if ((F->Flg & f_Comma) == 0) return result;
 	Z2 = new FrmlElemNumber(_const, 0, Power10[F->M]); // GetOp(_const, sizeof(double));
-	//Z2->R = Power10[F->M];
+	//Z2->rdb = Power10[F->M];
 	Z = new FrmlElemFunction(Op, 0); // GetOp(Op, 0);
 	Z->P1 = Z1;
 	Z->P2 = Z2;
