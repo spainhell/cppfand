@@ -404,8 +404,6 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 	FieldDescr* F = nullptr;
 	bool b = false, b2 = false, F2NoUpd = false;
 	PushEdit();
-	/* !!! with E^ do!!! */
-	//Move(&EO->WFlags, &E->WFlags, (uintptr_t)(E->SelKey) - (uintptr_t)(E->WFlags) + 4);
 	// move je nahrazen kopirovanim jednotlivych polozek:
 	E->WFlags = EO->WFlags;
 	E->ExD = EO->ExD;
@@ -465,12 +463,12 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 	E->params_->WarnSwitch = true;
 	CFile = E->FD;
 	CRecPtr = E->FD->GetRecSpace();
-	E->OldRecPtr = CRecPtr;
+	E->OldRecPtr = (uint8_t*)CRecPtr;
 #ifdef FandSQL
 	if (CFile->IsSQLFile) SetTWorkFlag;
 #endif
 	if (E->params_->EdRecVar) {
-		E->NewRecPtr = E->LVRecPtr;
+		E->NewRecPtr = (uint8_t*)E->LVRecPtr;
 		E->params_->NoDelete = true;
 		E->params_->NoCreate = true;
 		E->Journal = nullptr;
@@ -478,7 +476,7 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 	}
 	else {
 		CRecPtr = CFile->GetRecSpace();
-		E->NewRecPtr = CRecPtr;
+		E->NewRecPtr = (uint8_t*)CRecPtr;
 #ifdef FandSQL
 		if (CFile->IsSQLFile) SetTWorkFlag;
 #endif

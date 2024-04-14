@@ -818,7 +818,7 @@ bool CompRunChptRec(WORD CC)
 					EO = new EditOpt();
 					EO->UserSelFlds = true; // GetEditOpt();
 					CFile = FD;
-					EO->Flds = AllFldsList(CFile, false);
+					EO->Flds = AllFldsList(FD, false);
 					if (data_editor->SelFldsForEO(EO, nullptr)) {
 						data_editor->EditDataFile(FD, EO);
 					}

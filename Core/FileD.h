@@ -56,6 +56,8 @@ public:
 	void WriteRec(size_t rec_nr, void* record) const;
 
 	BYTE* GetRecSpace();
+
+	// delete 'T' from working file if exists
 	void ClearRecSpace(void* record);
 
 	void IncNRecs(int n);

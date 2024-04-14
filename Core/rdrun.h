@@ -207,7 +207,8 @@ struct EditD : Chained<EditD>
 	LockMode OldMd = NullMode;
 	bool IsUserForm = false;
 	std::vector<FieldDescr*> Flds;
-	void* OldRecPtr = nullptr; void* NewRecPtr = nullptr;
+	uint8_t* OldRecPtr = nullptr;
+	uint8_t* NewRecPtr = nullptr;
 	BYTE FrstCol = 0, FrstRow = 0, LastCol = 0, LastRow = 0, Rows = 0;
 	WRect V; BYTE ShdwX = 0, ShdwY = 0;
 	BYTE Attr = 0, dNorm = 0, dHiLi = 0, dSubSet = 0;
