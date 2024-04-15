@@ -320,32 +320,29 @@ void RdByteListInStore()
 	StoreStr(s);
 }
 
-bool RdUserView(std::string ViewName, EditOpt* EO)
+bool RdUserView(FileD* file_d, std::string ViewName, EditOpt* EO)
 {
 	// TODO: proc je tady 'EOD' a proc se kopiruje tam a zpet z/do EO ???
 	bool found = false, Fin = false, FVA = false;
 	XKey* K = nullptr;
-	//EditOpt EOD;
-	FileD* fd = CFile;
-	//Move(EO, &EOD, sizeof(EOD));
+
 	while (true) {
-		if (fd->TxtPosUDLI == 0) {
-			fd = fd->OrigFD;
-			if ((fd != nullptr) && !found) continue;
+		if (file_d->TxtPosUDLI == 0) {
+			file_d = file_d->OrigFD;
+			if ((file_d != nullptr) && !found) continue;
 			break;
 		}
 		ResetCompilePars();
-		SetInpTTxtPos(fd);
+		SetInpTTxtPos(file_d);
 		RdLex();
 		if ((Lexem != '#') || (ForwChar != 'U')) {
-			fd = fd->OrigFD;
-			if ((fd != nullptr) && !found) continue;
+			file_d = file_d->OrigFD;
+			if ((file_d != nullptr) && !found) continue;
 			break;
 		}
 		RdLex(); // #
 		RdLex(); // U
 		while (true) {
-			//Move(&EOD, EO, sizeof(*EO));
 			std::string sLexWord = LexWord;
 			if (EquUpCase(ViewName, sLexWord)) found = true;
 			EO->ViewName = LexWord;
@@ -374,8 +371,8 @@ bool RdUserView(std::string ViewName, EditOpt* EO)
 			break;
 		}
 
-		fd = fd->OrigFD;
-		if ((fd != nullptr) && !found) continue;
+		file_d = file_d->OrigFD;
+		if ((file_d != nullptr) && !found) continue;
 		break;
 	}
 	return found;

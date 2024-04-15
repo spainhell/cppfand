@@ -30,8 +30,7 @@ std::string Error(short N); // r1
 void SetInpStr(std::string& s); //r31
 void SetInpStdStr(std::string& s, bool ShowErr);
 void SetInpLongStr(LongStr* S, bool ShowErr); // r37
-void SetInpTTPos(int Pos, bool Decode); // r46
-void SetInpTTPos(FileD* file, int Pos, bool Decode);
+void SetInpTTPos(FileD* file_d, int Pos, bool Decode);
 void SetInpTT(RdbPos* rdb_pos, bool FromTxt); // r53
 void SetInpTTxtPos(FileD* FD);
 void ReadChar(); // r73
@@ -107,4 +106,3 @@ void RdFldList(std::vector<FieldDescr*>* vFields);
 //void RdNegFldList(bool& Neg, FieldListEl** FLRoot);
 void RdNegFldList(bool& Neg, std::vector<FieldDescr*>& vFields);
 void RdNegFldList(bool& Neg, std::vector<FieldDescr*>* vFields);
-void EditModeToFlags(pstring Mode, void* Flgs, bool Err); // r220

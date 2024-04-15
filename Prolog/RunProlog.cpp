@@ -2449,8 +2449,8 @@ void RunProlog(RdbPos* Pos, std::string PredName)
 		ChptLRdb = Pos->rdb;
 		CFile = ChptLRdb->rdb_file;
 		CRecPtr = ChptLRdb->rdb_file->GetRecSpace();
-		CFile->ReadRec(Pos->i_rec, CRecPtr);
-		SetInpTTPos(CFile->loadT(ChptTxt, CRecPtr), ChptLRdb->Encrypted);
+		ChptLRdb->rdb_file->ReadRec(Pos->i_rec, CRecPtr);
+		SetInpTTPos(ChptLRdb->rdb_file, ChptLRdb->rdb_file->loadT(ChptTxt, CRecPtr), ChptLRdb->Encrypted);
 		Roots = ReadProlog(Pos->i_rec);
 	}
 

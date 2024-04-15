@@ -13,7 +13,7 @@ void RdChkDsFromPos(FileD* FD, ChkD* C); // r98
 void RdBegViewDcl(EditOpt* EO); // r110
 void RdByteList(pstring* s);
 void RdByteListInStore();
-bool RdUserView(std::string ViewName, EditOpt* EO);
+bool RdUserView(FileD* file_d, std::string ViewName, EditOpt* EO);
 
 extern bool issql;
 

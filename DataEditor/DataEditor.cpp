@@ -2217,31 +2217,25 @@ bool DataEditor::EquRoleName(pstring S, LinkD* LD)
 bool DataEditor::EquFileViewName(FileD* FD, std::string S, EditOpt** EO)
 {
 	auto result = true;
-	FileD* cf = file_d_;
-	file_d_ = FD;
 	if (S[0] == 0x01) { // ^A
 		S = S.substr(1, 255);
-		StringListEl* SL = file_d_->ViewNames;
+		StringListEl* SL = FD->ViewNames;
 		while (SL != nullptr) {
 			if (SL->S == S) {
 				*EO = new EditOpt();
 				(*EO)->UserSelFlds = true;
-				RdUserView(S, *EO);
-
-				file_d_ = cf;
+				RdUserView(FD, S, *EO);
 				return result;
 			}
 			SL = SL->pChain;
 		}
 	}
-	else if (S == std::string(file_d_->Name)) {
+	else if (S == std::string(FD->Name)) {
 		*EO = new EditOpt();
 		(*EO)->UserSelFlds = true;
-		(*EO)->Flds = AllFldsList(file_d_, false);
+		(*EO)->Flds = AllFldsList(FD, false);
 		return result;
 	}
-
-	file_d_ = cf;
 
 	result = false;
 	return result;
@@ -2282,9 +2276,7 @@ void DataEditor::UpwEdit(LinkD* LkD)
 		ww.SelectStr(0, 0, 35, "");
 		if (Event.Pressed.KeyCombination() == __ESC) goto label1;
 		GetSel2S(s1, s2, '.', 2);
-		//LD = LinkDRoot;
-		/*while (LD != nullptr && !(LD->FromFD == file_d_ && EquRoleName(s2, LD) && EquFileViewName(LD->ToFD, s1, EO)))
-			LD = LD->pChain;*/
+
 		LD = nullptr;
 		for (auto& ld : LinkDRoot) {
 			if (ld->FromFD == file_d_ && EquRoleName(s2, ld) && EquFileViewName(ld->ToFD, s1, &EO)) {
@@ -2297,8 +2289,7 @@ void DataEditor::UpwEdit(LinkD* LkD)
 		LD = LkD;
 		EO = new EditOpt(); // GetEditOpt();
 		EO->UserSelFlds = false;
-		file_d_ = LD->ToFD;
-		SL = file_d_->ViewNames;
+		SL = LD->ToFD->ViewNames;
 		SL1 = nullptr;
 		while (SL != nullptr) {
 			if (TestAccRight(SL)) {
@@ -2307,18 +2298,16 @@ void DataEditor::UpwEdit(LinkD* LkD)
 			SL = SL->pChain;
 		}
 		if (SL1 == nullptr) {
-			EO->Flds = AllFldsList(file_d_, false);
+			EO->Flds = AllFldsList(LD->ToFD, false);
 		}
 		else {
-			RdUserView(SL1->S, EO);
+			RdUserView(LD->ToFD, SL1->S, EO);
 		}
 		EO->SetOnlyView = true;
 	}
-	file_d_ = E->FD;
-	x.PackKF(file_d_, LD->Args, record_);
+	x.PackKF(E->FD, LD->Args, record_);
 	px = &x;
 	K = LD->ToKey;
-	file_d_ = LD->ToFD;
 
 	if (EO->ViewKey == nullptr) {
 		EO->ViewKey = K;
@@ -2328,7 +2317,7 @@ void DataEditor::UpwEdit(LinkD* LkD)
 	}
 
 	if (SelFldsForEO(EO, nullptr)) {
-		NewEditD(file_d_, EO);
+		NewEditD(LD->ToFD, EO);
 		E->ShiftF7LD = LkD;
 		if (OpenEditWw()) {
 			RunEdit(px, Brk);

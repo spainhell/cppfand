@@ -381,7 +381,8 @@ void RdFormOrDesign(FileD* F, std::vector<FieldDescr*>& FL, RdbPos FormPos)
 {
 	E->FrstCol = E->V.C1; E->FrstRow = E->V.R1; E->LastCol = E->V.C2; E->LastRow = E->V.R2;
 	if ((E->WFlags & WHasFrame) != 0) {
-		E->FrstCol++; E->LastCol--; E->FrstRow++; E->LastRow--;
+		E->FrstCol++; E->LastCol--;
+		E->FrstRow++; E->LastRow--;
 	}
 	E->Rows = E->LastRow - E->FrstRow + 1;
 	if (FL.empty()) {
@@ -441,7 +442,13 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 	E->dTab = RunWordImpl(CFile, EO->ZdTab, E->Attr | 0x08, CRecPtr);
 	E->dSelect = RunWordImpl(CFile, EO->ZdSelect, screen.colors.dSelect, CRecPtr);
 	E->Top = RunStdStr(CFile, EO->Top, CRecPtr);
-	if (EO->Mode != nullptr) EditModeToFlags(RunShortStr(CFile, EO->Mode, CRecPtr), &E->params_->NoDelete, false);
+	if (EO->Mode != nullptr) {
+		std::string mode = RunShortStr(CFile, EO->Mode, CRecPtr);
+		int result = E->params_.get()->SetFromString(mode, false);
+		if (result != 0) {
+			Error(92);
+		}
+	}
 	if (spec.Prompt158) E->params_->Prompt158 = true;
 	if (EO->SetOnlyView /*UpwEdit*/) {
 		EO->Tab.clear();
@@ -589,7 +596,7 @@ void NewEditD(FileD* ParFD, EditOpt* EO)
 		}
 	}
 	RdDepChkImpl();
-	NewChkKey();
+	NewChkKey(CFile);
 	MarkStore(E->AfterE);
 	}
 
@@ -880,14 +887,13 @@ std::string StandardHead()
 	return s;
 }
 
-void NewChkKey()
+void NewChkKey(FileD* file_d)
 {
 	//XKey* K = CFile->Keys;
 	KeyFldD* KF = nullptr;
 	EFldD* D = nullptr;
 	KeyListEl* KL = nullptr;
-	for (auto& K : CFile->Keys) {
-		//while (K != nullptr) {
+	for (auto& K : file_d->Keys) {
 		if (!K->Duplic) {
 			ZeroUsed();
 			KF = K->KFlds;
@@ -904,6 +910,5 @@ void NewChkKey()
 				KL->Key = K;
 			}
 		}
-		//K = K->Chain;
 	}
 }

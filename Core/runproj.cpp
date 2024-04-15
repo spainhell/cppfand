@@ -1096,7 +1096,7 @@ void* RdF(std::string FileName)
 	}
 	else {
 		int pos = CFile->loadT(ChptTxt, CRecPtr);
-		SetInpTTPos(pos, CRdb->Encrypted);
+		SetInpTTPos(CFile, pos, CRdb->Encrypted);
 	}
 	return RdFileD(name, FDTyp, ext);
 }
@@ -1356,7 +1356,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 					break;
 				}
 				case 'M': {
-					SetInpTTPos(Txt, Encryp);
+					SetInpTTPos(CFile, Txt, Encryp);
 					const std::unique_ptr merge = std::make_unique<Merge>();
 					merge->Read();
 					break;
@@ -1371,7 +1371,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 						CFile->WriteRec(I, CRecPtr);
 					}
 					else {
-						SetInpTTPos(Txt, Encryp);
+						SetInpTTPos(CFile, Txt, Encryp);
 						const std::unique_ptr report = std::make_unique<Report>();
 						report->Read(nullptr);
 					}
@@ -1385,7 +1385,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 						lstFD = (FileD*)LastInChain(FileDRoot);
 					}
 					std::deque<LinkD*> ld = LinkDRoot;
-					SetInpTTPos(Txt, Encryp);
+					SetInpTTPos(CFile, Txt, Encryp);
 					ReadProcHead(Name);
 					ReadProcBody();
 					lstFD->pChain = nullptr;
@@ -1404,7 +1404,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 					if (!top || (I > 1)) GoCompileErr(I, 623);
 					if (Txt != 0) {
 						ResetCompilePars();
-						SetInpTTPos(Txt, Encryp);
+						SetInpTTPos(CFile, Txt, Encryp);
 						RdUserId(!IsTestRun || (ChptTF->LicenseNr != 0));
 						MarkStore(p1);
 					}
@@ -1412,7 +1412,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 				}
 				case 'D': {
 					ResetCompilePars();
-					SetInpTTPos(Txt, Encryp);
+					SetInpTTPos(CFile, Txt, Encryp);
 					ReadDeclChpt();
 					MarkStore(p1);
 					break;

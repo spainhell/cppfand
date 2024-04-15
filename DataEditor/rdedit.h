@@ -33,4 +33,4 @@ void RdUDLI();
 void RdAllUDLIs(FileD* FD);
 std::string StandardHead();
 //pstring GetStr_E(FrmlElem* Z); // existuje -> *_E
-void NewChkKey();
+void NewChkKey(FileD* file_d);

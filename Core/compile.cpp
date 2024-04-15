@@ -131,21 +131,12 @@ void SetInpLongStr(LongStr* S, bool ShowErr)
 
 // vycte z CFile->TF blok dat
 // nastavi InpArrPtr a InptArrLen - retezec pro zpracovani
-void SetInpTTPos(int Pos, bool Decode)
+void SetInpTTPos(FileD* file_d, int Pos, bool Decode)
 {
-	LongStr* s = CFile->FF->TF->ReadLongStr(Pos);
-	if (Decode) Coding::CodingLongStr(CFile, s);
-	InpArrLen = s->LL;
-	InpArrPtr = (BYTE*)&s->A[0];
-	if (InpArrLen == 0) ForwChar = 0x1A;
-	else ForwChar = InpArrPtr[0];
-	CurrPos = 0;
-}
-
-void SetInpTTPos(FileD* file, int Pos, bool Decode)
-{
-	LongStr* s = file->FF->TF->ReadLongStr(Pos);
-	if (Decode) Coding::CodingLongStr(CFile, s);
+	LongStr* s = file_d->FF->TF->ReadLongStr(Pos);
+	if (Decode) {
+		Coding::CodingLongStr(file_d, s);
+	}
 	InpArrLen = s->LL;
 	InpArrPtr = (BYTE*)&s->A[0];
 	if (InpArrLen == 0) ForwChar = 0x1A;
@@ -1284,29 +1275,6 @@ void RdNegFldList(bool& Neg, std::vector<FieldDescr*>* vFields)
 	if (Lexem == ')') Neg = true;
 	else RdFldList(vFields);
 	Accept(')');
-}
-
-void EditModeToFlags(pstring Mode, void* Flgs, bool Err)
-{
-	pstring FlgTxt[24] = { "^Y","?Y","^N","F1","F2","F3","01",
-	"!!","??","?E","?N","<=","R2","24","CO","LI",
-	"->","^M","EX","WX","S7","#A","#L","SL" };
-	pstring s = "xx";
-	bool* Flags = (bool*)Flgs;
-	WORD i = 1;
-	while (i < Mode.length()) {
-		s[1] = toupper(Mode[i]);
-		s[2] = toupper(Mode[i + 1]);
-		i += 2;
-		for (WORD j = 0; j < 24; j++)
-			if (s == FlgTxt[j]) { Flags[j] = true; goto label1; }
-		goto label2;
-	label1:
-		{}
-	}
-	if (i == Mode.length())
-		label2:
-	if (Err) Error(92);
 }
 
 XKey* RdViewKey()

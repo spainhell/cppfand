@@ -1118,7 +1118,11 @@ bool RdViewOpt(EditOpt* EO)
 	else if (IsOpt("MODE")) {
 		SkipBlank(false);
 		if ((Lexem == _quotedstr) && (ForwChar == ',' || ForwChar == ')')) {
-			EditModeToFlags(LexWord, Flgs, true);
+			DataEditorParams params;
+			int validate = params.SetFromString(LexWord, true);
+			if (validate != 0) {
+				Error(validate);
+			}
 			EO->Mode = new FrmlElemString(_const, 0); // GetOp(_const, LexWord.length() + 1);
 			((FrmlElemString*)EO->Mode)->S = LexWord;
 			RdLex();
@@ -1549,7 +1553,7 @@ Instr_edit* RdEditCall()
 		TestIdentif();
 		if (CFile->ViewNames == nullptr) Error(114);
 		stSaveState* p = SaveCompState();
-		bool b = RdUserView(LexWord, EO);
+		bool b = RdUserView(CFile, LexWord, EO);
 		RestoreCompState(p);
 		if (!b) Error(114);
 		RdLex();

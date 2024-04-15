@@ -1,5 +1,7 @@
 #pragma once
 #include <cstdint>
+#include <map>
+#include <string>
 
 struct ERecTxtD;
 
@@ -7,6 +9,7 @@ class DataEditorParams
 {
 public:
 	DataEditorParams();
+	int SetFromString(std::string mode, bool error_stop);
 	static void CopyParams(const DataEditorParams* src, DataEditorParams* dst);
 
 	bool AddSwitch = false;
@@ -43,4 +46,7 @@ public:
 	bool WasUpdated = false;
 	bool WasWK = false;
 	bool WithBoolDispl = false;
+
+private:
+	std::map<std::string, bool*> m_params;
 };
