@@ -1,4 +1,4 @@
-#include "rdedit.h"
+#include "EditReader.h"
 
 #include "../Core/ChkD.h"
 #include "../Core/compile.h"
@@ -12,43 +12,44 @@
 #include "../Common/compare.h"
 #include "../fandio/XWKey.h"
 
-EditD* E = EditDRoot;
+std::vector<EditD*> v_edits;
+
+EditReader::EditReader()
+{
+	edit_ = new EditD();
+}
 
 void PushEdit()
 {
-	auto* const e1 = new EditD();
-	{
-		e1->V.C1 = 1;
-		e1->V.R1 = 2;
-		e1->V.C2 = TxtCols;
-		e1->V.R2 = TxtRows - 1;
-	}
-	e1->pChain = E;
-	E = e1;
-	EditDRoot = E;
+	EditD* const e1 = new EditD();
+	e1->V.C1 = 1;
+	e1->V.R1 = 2;
+	e1->V.C2 = TxtCols;
+	e1->V.R2 = TxtRows - 1;
+
+	v_edits.push_back(e1);
 }
 
 void SToSL(StringListEl** SLRoot, pstring s)
 {
-	//StringList SL = (StringListEl*)GetStore(s.length() + 5);
 	StringListEl* SL = new StringListEl();
 	SL->S = s;
 	if (*SLRoot == nullptr) *SLRoot = SL;
 	else ChainLast(*SLRoot, SL);
 }
 
-void StoreRT(WORD Ln, StringList SL, WORD NFlds)
+void EditReader::StoreRT(WORD Ln, StringList SL, WORD NFlds)
 {
 	//ERecTxtD* RT = (ERecTxtD*)GetStore(sizeof(*RT));
 	ERecTxtD* RT = new ERecTxtD();
 	if (NFlds == 0) Error(81);
 	RT->N = Ln;
 	RT->SL = SL;
-	if (E->RecTxt == nullptr) E->RecTxt = RT;
-	else ChainLast(E->RecTxt, RT);
+	if (edit_->RecTxt == nullptr) edit_->RecTxt = RT;
+	else ChainLast(edit_->RecTxt, RT);
 }
 
-void RdEForm(FileD* ParFD, RdbPos FormPos)
+void EditReader::RdEForm(EditD* edit, RdbPos FormPos)
 {
 	EFldD* D = nullptr; EFldD* D1 = nullptr; EFldD* PrevD = nullptr;
 	FieldDescr* F = nullptr; FieldListEl* FL = nullptr;
@@ -83,9 +84,9 @@ void RdEForm(FileD* ParFD, RdbPos FormPos)
 		}
 		ReadChar();
 		if (ForwChar == 0x0A) ReadChar();
-		SToSL(&E->HdTxt, s);
-		E->NHdTxt++;
-		if (E->NHdTxt + 1 > E->Rows) {
+		SToSL(&edit->HdTxt, s);
+		edit->NHdTxt++;
+		if (edit->NHdTxt + 1 > edit->Rows) {
 			Error(102);
 		}
 	}
@@ -96,9 +97,7 @@ label2:
 	Lexem = CurrChar;
 	Accept('_');
 	FD1 = RdFileName();
-	if (ParFD == nullptr) CFile = FD1;
-	else CFile = ParFD;
-	E->FD = CFile;
+	if (edit->FD == nullptr) edit->FD = FD1;
 label3:
 	N++;
 	//D = (EFldD*)GetZStore(sizeof(*D));
@@ -112,24 +111,24 @@ label3:
 	else D->ScanNr = N;
 	D1 = FindScanNr(D->ScanNr);
 
-	if (E->FirstFld == nullptr) E->FirstFld = D;
-	else ChainLast(E->FirstFld, D);
+	if (edit->FirstFld == nullptr) edit->FirstFld = D;
+	else ChainLast(edit->FirstFld, D);
 
 	if ((D1 != nullptr) && (D->ScanNr == D1->ScanNr)) Error(77);
-	F = RdFldName(CFile);
+	F = RdFldName(edit->FD);
 	D->FldD = F;
-	E->Flds.push_back(F);
+	edit->Flds.push_back(F);
 	if (Lexem == ',') { RdLex(); goto label3; }
 	TestLex(';');
 	SkipBlank(true);
 	/* read record lines */
-	D = E->FirstFld;
+	D = edit->FirstFld;
 	NPages = 0;
 label4:
 	NPages++; Ln = 0; NFlds = 0; SLRoot = nullptr;
 label5:
 	s = ""; Ln++;
-	Col = E->FrstCol;
+	Col = edit->FrstCol;
 	while (!(ForwChar == 0x0D || ForwChar == 0x1A || ForwChar == '\\' || ForwChar == '{'))
 		if (ForwChar == '_') {
 			if (D == nullptr) Error(30);
@@ -156,12 +155,12 @@ label5:
 				SetMsgPar(s, F->Name);
 				Error(79);
 			}
-			if (Col > E->LastCol) Error(102);
-			D = (EFldD*)D->pChain;
+			if (Col > edit->LastCol) Error(102);
+			D = D->pChain;
 		}
 		else {
 			if (!screen.SetStyleAttr(ForwChar, a)) {
-				if (Col > E->LastCol) Error(102);
+				if (Col > edit->LastCol) Error(102);
 				Col++;
 			}
 			s.Append(ForwChar);
@@ -172,14 +171,14 @@ label5:
 	if (c == '\\') ReadChar();
 	SkipBlank(true);
 	if (ForwChar != 0x1A) {
-		if ((c == '\\') || (E->NHdTxt + Ln == E->Rows)) {
+		if ((c == '\\') || (edit->NHdTxt + Ln == edit->Rows)) {
 			StoreRT(Ln, SLRoot, NFlds);
 			goto label4;
 		}
 		else goto label5;
 	}
 	StoreRT(Ln, SLRoot, NFlds);
-	E->NPages = NPages;
+	edit->NPages = NPages;
 
 	if (D != nullptr) Error(30);
 	D = FindScanNr(1);
@@ -189,66 +188,67 @@ label5:
 		D = FindScanNr(D->ScanNr + 1);
 		D->ChainBack = PrevD;
 	}
-	E->LastFld = D;
+	edit->LastFld = D;
 	PrevD = nullptr;
 	while (D != nullptr) {
 		D->pChain = PrevD;
 		PrevD = D;
 		D = D->ChainBack;
 	}
-	E->FirstFld = PrevD;
+	edit->FirstFld = PrevD;
 }
 
-EFldD* FindScanNr(WORD N)
+EFldD* EditReader::FindScanNr(WORD N)
 {
-	EFldD* D = E->FirstFld;
+	EFldD* D = edit_->FirstFld;
 	EFldD* D1 = nullptr;
 	WORD M = 0xffff;
 	while (D != nullptr) {
 		if ((D->ScanNr >= N) && (D->ScanNr < M)) { M = D->ScanNr; D1 = D; }
-		D = (EFldD*)D->pChain;
+		D = D->pChain;
 	}
 	return D1;
 }
 
-void AutoDesign(FieldListEl* FL)
+void EditReader::AutoDesign(FieldListEl* FL)
 {
 	WORD L = 0, i = 0, m = 0, FldLen = 0;
 	pstring s = "";
 	StringListEl* SLRoot = nullptr;
-	EFldD* D = (EFldD*)(&E->FirstFld);
+	EFldD* D = (EFldD*)(&edit_->FirstFld);
 	EFldD* PrevD = nullptr;
 	WORD NPages = 1; WORD Ln = 0;
-	WORD Col = E->FrstCol;
-	WORD maxcol = E->LastCol - E->FrstCol;
+	WORD Col = edit_->FrstCol;
+	WORD maxcol = edit_->LastCol - edit_->FrstCol;
 	while (FL != nullptr) {
 		FieldDescr* F = FL->FldD;
-		FL = (FieldListEl*)FL->pChain;
+		FL = FL->pChain;
 		if (F == nullptr) continue; // tady to padalo na 1. polozce, protoze ta ma FldD = nullptr
-		//D->pChain = (EFldD*)GetZStore(sizeof(*D)); 
+		
 		D->pChain = new EFldD();
-		D = (EFldD*)D->pChain;
+		D = D->pChain;
 		D->ChainBack = PrevD;
 		PrevD = D;
 		D->FldD = F;
 		D->L = F->L;
 		if (D->L > maxcol) D->L = maxcol;
-		if ((E->FD->FF->file_type == FileType::CAT) && (D->L > 44)) D->L = 44; /*catalog pathname*/
+		if ((edit_->FD->FF->file_type == FileType::CAT) && (D->L > 44)) D->L = 44; /*catalog pathname*/
 		FldLen = D->L;
 		if (F->field_type == FieldType::TEXT) D->L = 1;
 		L = F->Name.length();
 		if (FldLen > L) L = FldLen;
-		if (Col + L > E->LastCol) {
+		if (Col + L > edit_->LastCol) {
 			SToSL(&SLRoot, s);
 			SToSL(&SLRoot, "");
 			Ln += 2;
-			if (Ln + 2 > E->Rows) {
+			if (Ln + 2 > edit_->Rows) {
 				StoreRT(Ln, SLRoot, 1);
 				NPages++;
 				Ln = 0;
 				SLRoot = nullptr;
 			}
-			Col = E->FrstCol; s = "";
+			Col = edit_->FrstCol;
+			s = "";
 		}
 		m = (L - F->Name.length() + 1) / 2;
 		for (i = 1; i <= m; i++) s.Append(' ');
@@ -265,45 +265,45 @@ void AutoDesign(FieldListEl* FL)
 	Ln += 2;
 	StoreRT(Ln, SLRoot, 1);
 	D->pChain = nullptr;
-	E->LastFld = D;
-	E->NPages = NPages;
+	edit_->LastFld = D;
+	edit_->NPages = NPages;
 	if (NPages == 1) { /* !!! with E->RecTxt^ do!!! */
-		auto& er = *E->RecTxt;
+		auto& er = *edit_->RecTxt;
 		if (er.N == 2) {
-			E->HdTxt = er.SL;
-			er.SL = (StringListEl*)er.SL->pChain;
-			E->HdTxt->pChain = nullptr;
-			E->NHdTxt = 1;
+			edit_->HdTxt = er.SL;
+			er.SL = er.SL->pChain;
+			edit_->HdTxt->pChain = nullptr;
+			edit_->NHdTxt = 1;
 			er.N = 1;
-			D = E->FirstFld;
+			D = edit_->FirstFld;
 			while (D != nullptr) {
 				D->Ln--;
-				D = (EFldD*)D->pChain;
+				D = D->pChain;
 			}
-			if (E->Rows == 1) {
-				E->NHdTxt = 0;
-				E->HdTxt = nullptr;
+			if (edit_->Rows == 1) {
+				edit_->NHdTxt = 0;
+				edit_->HdTxt = nullptr;
 			}
 		}
-		else if (er.N < E->Rows) {
+		else if (er.N < edit_->Rows) {
 			s = "";
-			for (i = E->FrstCol; i <= E->LastCol; i++) s.Append('-');
+			for (i = edit_->FrstCol; i <= edit_->LastCol; i++) s.Append('-');
 			SToSL(&er.SL, s);
 			er.N++;
 		}
 	}
 }
 
-void AutoDesign(std::vector<FieldDescr*>& FL)
+void EditReader::AutoDesign(std::vector<FieldDescr*>& FL)
 {
 	WORD L = 0, i = 0, m = 0, FldLen = 0;
 	pstring s = "";
 	StringListEl* SLRoot = nullptr;
-	EFldD* D = (EFldD*)(&E->FirstFld);
+	EFldD* D = edit_->FirstFld;
 	EFldD* PrevD = nullptr;
 	WORD NPages = 1; WORD Ln = 0;
-	WORD Col = E->FrstCol;
-	WORD maxcol = E->LastCol - E->FrstCol;
+	WORD Col = edit_->FrstCol;
+	WORD maxcol = edit_->LastCol - edit_->FrstCol;
 	//while (FL != nullptr) {
 	for (auto& F : FL) {
 		//FieldDescr* F = FL->FldD;
@@ -316,22 +316,23 @@ void AutoDesign(std::vector<FieldDescr*>& FL)
 		D->FldD = F;
 		D->L = F->L;
 		if (D->L > maxcol) D->L = maxcol;
-		if ((E->FD->FF->file_type == FileType::CAT) && (D->L > 44)) D->L = 44; /*catalog pathname*/
+		if ((edit_->FD->FF->file_type == FileType::CAT) && (D->L > 44)) D->L = 44; /*catalog pathname*/
 		FldLen = D->L;
 		if (F->field_type == FieldType::TEXT) D->L = 1;
 		L = F->Name.length();
 		if (FldLen > L) L = FldLen;
-		if (Col + L > E->LastCol) {
+		if (Col + L > edit_->LastCol) {
 			SToSL(&SLRoot, s);
 			SToSL(&SLRoot, "");
 			Ln += 2;
-			if (Ln + 2 > E->Rows) {
+			if (Ln + 2 > edit_->Rows) {
 				StoreRT(Ln, SLRoot, 1);
 				NPages++;
 				Ln = 0;
 				SLRoot = nullptr;
 			}
-			Col = E->FrstCol; s = "";
+			Col = edit_->FrstCol;
+			s = "";
 		}
 		m = (L - F->Name.length() + 1) / 2;
 		for (i = 1; i <= m; i++) s.Append(' ');
@@ -348,51 +349,54 @@ void AutoDesign(std::vector<FieldDescr*>& FL)
 	Ln += 2;
 	StoreRT(Ln, SLRoot, 1);
 	D->pChain = nullptr;
-	E->LastFld = D;
-	E->NPages = NPages;
-	if (NPages == 1) { /* !!! with E->RecTxt^ do!!! */
-		auto& er = *E->RecTxt;
+	edit_->LastFld = D;
+	edit_->NPages = NPages;
+	if (NPages == 1) {
+		auto& er = *edit_->RecTxt;
 		if (er.N == 2) {
-			E->HdTxt = er.SL;
+			edit_->HdTxt = er.SL;
 			er.SL = er.SL->pChain;
-			E->HdTxt->pChain = nullptr;
-			E->NHdTxt = 1;
+			edit_->HdTxt->pChain = nullptr;
+			edit_->NHdTxt = 1;
 			er.N = 1;
-			D = E->FirstFld;
+			D = edit_->FirstFld;
 			while (D != nullptr) {
 				D->Ln--;
 				D = D->pChain;
 			}
-			if (E->Rows == 1) {
-				E->NHdTxt = 0;
-				E->HdTxt = nullptr;
+			if (edit_->Rows == 1) {
+				edit_->NHdTxt = 0;
+				edit_->HdTxt = nullptr;
 			}
 		}
-		else if (er.N < E->Rows) {
+		else if (er.N < edit_->Rows) {
 			s = "";
-			for (i = E->FrstCol; i <= E->LastCol; i++) s.Append('-');
+			for (i = edit_->FrstCol; i <= edit_->LastCol; i++) s.Append('-');
 			SToSL(&er.SL, s);
 			er.N++;
 		}
 	}
 }
 
-void RdFormOrDesign(FileD* F, std::vector<FieldDescr*>& FL, RdbPos FormPos)
+void EditReader::RdFormOrDesign(std::vector<FieldDescr*>& FL, RdbPos FormPos)
 {
-	E->FrstCol = E->V.C1; E->FrstRow = E->V.R1; E->LastCol = E->V.C2; E->LastRow = E->V.R2;
-	if ((E->WFlags & WHasFrame) != 0) {
-		E->FrstCol++; E->LastCol--;
-		E->FrstRow++; E->LastRow--;
+	edit_->FrstCol = edit_->V.C1;
+	edit_->FrstRow = edit_->V.R1;
+	edit_->LastCol = edit_->V.C2;
+	edit_->LastRow = edit_->V.R2;
+	if ((edit_->WFlags & WHasFrame) != 0) {
+		edit_->FrstCol++; edit_->LastCol--;
+		edit_->FrstRow++; edit_->LastRow--;
 	}
-	E->Rows = E->LastRow - E->FrstRow + 1;
+	edit_->Rows = edit_->LastRow - edit_->FrstRow + 1;
 	if (FL.empty()) {
 		ResetCompilePars();
-		RdEForm(F, FormPos);
-		E->IsUserForm = true;
+		RdEForm(edit_, FormPos);
+		edit_->IsUserForm = true;
 	}
 	else {
-		E->FD = F;
-		E->Flds = FL;
+		//E->FD = F;
+		edit_->Flds = FL;
 		AutoDesign(FL);
 	}
 }
@@ -411,236 +415,242 @@ std::string GetStr_E(FrmlElem* Z)
 	}
 }
 
-void NewEditD(FileD* ParFD, EditOpt* EO)
+void EditReader::NewEditD(FileD* file_d, EditOpt* EO)
 {
-	EFldD* D = nullptr;
-	FieldList FL = nullptr;
-	WORD i = 0; //pstring s;
+	edit_->FD = file_d;
+
+	WORD i = 0;
 	FieldDescr* F = nullptr;
 	bool b = false, b2 = false, F2NoUpd = false;
 	PushEdit();
 	// move je nahrazen kopirovanim jednotlivych polozek:
-	E->WFlags = EO->WFlags;
-	E->ExD = EO->ExD;
-	E->Journal = EO->Journal;
-	E->ViewName = EO->ViewName;
-	E->OwnerTyp = EO->OwnerTyp;
-	E->DownLD = EO->DownLD;
-	E->DownLV = EO->DownLV;
-	E->DownRecPtr = EO->DownRecPtr;
-	E->LVRecPtr = EO->LVRecPtr;
-	E->KIRoot = EO->KIRoot;
-	E->SQLFilter = EO->SQLFilter;
-	E->SelKey = (XWKey*)EO->SelKey;
+	edit_->WFlags = EO->WFlags;
+	edit_->ExD = EO->ExD;
+	edit_->Journal = EO->Journal;
+	edit_->ViewName = EO->ViewName;
+	edit_->OwnerTyp = EO->OwnerTyp;
+	edit_->DownLD = EO->DownLD;
+	edit_->DownLV = EO->DownLV;
+	edit_->DownRecPtr = EO->DownRecPtr;
+	edit_->LVRecPtr = EO->LVRecPtr;
+	edit_->KIRoot = EO->KIRoot;
+	edit_->SQLFilter = EO->SQLFilter;
+	edit_->SelKey = (XWKey*)EO->SelKey;
 	//rectxt
 
-	E->Attr = RunWordImpl(CFile, EO->ZAttr, screen.colors.dTxt, CRecPtr);
-	E->dNorm = RunWordImpl(CFile, EO->ZdNorm, screen.colors.dNorm, CRecPtr);
-	E->dHiLi = RunWordImpl(CFile, EO->ZdHiLi, screen.colors.dHili, CRecPtr);
-	E->dSubSet = RunWordImpl(CFile, EO->ZdSubset, screen.colors.dSubset, CRecPtr);
-	E->dDel = RunWordImpl(CFile, EO->ZdDel, screen.colors.dDeleted, CRecPtr);
-	E->dTab = RunWordImpl(CFile, EO->ZdTab, E->Attr | 0x08, CRecPtr);
-	E->dSelect = RunWordImpl(CFile, EO->ZdSelect, screen.colors.dSelect, CRecPtr);
-	E->Top = RunStdStr(CFile, EO->Top, CRecPtr);
+	edit_->Attr = RunWordImpl(file_d, EO->ZAttr, screen.colors.dTxt, CRecPtr);
+	edit_->dNorm = RunWordImpl(file_d, EO->ZdNorm, screen.colors.dNorm, CRecPtr);
+	edit_->dHiLi = RunWordImpl(file_d, EO->ZdHiLi, screen.colors.dHili, CRecPtr);
+	edit_->dSubSet = RunWordImpl(file_d, EO->ZdSubset, screen.colors.dSubset, CRecPtr);
+	edit_->dDel = RunWordImpl(file_d, EO->ZdDel, screen.colors.dDeleted, CRecPtr);
+	edit_->dTab = RunWordImpl(file_d, EO->ZdTab, edit_->Attr | 0x08, CRecPtr);
+	edit_->dSelect = RunWordImpl(file_d, EO->ZdSelect, screen.colors.dSelect, CRecPtr);
+	edit_->Top = RunStdStr(file_d, EO->Top, CRecPtr);
 	if (EO->Mode != nullptr) {
-		std::string mode = RunShortStr(CFile, EO->Mode, CRecPtr);
-		int result = E->params_.get()->SetFromString(mode, false);
+		std::string mode = RunShortStr(file_d, EO->Mode, CRecPtr);
+		int result = edit_->params_->SetFromString(mode, false);
 		if (result != 0) {
 			Error(92);
 		}
 	}
-	if (spec.Prompt158) E->params_->Prompt158 = true;
+	if (spec.Prompt158) edit_->params_->Prompt158 = true;
 	if (EO->SetOnlyView /*UpwEdit*/) {
 		EO->Tab.clear();
-		E->params_->OnlyTabs = true;
-		E->params_->OnlySearch = false;
+		edit_->params_->OnlyTabs = true;
+		edit_->params_->OnlySearch = false;
 	}
-	if (E->LVRecPtr != nullptr) { E->params_->EdRecVar = true; E->params_->Only1Record = true; }
-	if (E->params_->Only1Record) E->params_->OnlySearch = false;
+	if (edit_->LVRecPtr != nullptr) {
+		edit_->params_->EdRecVar = true;
+		edit_->params_->Only1Record = true;
+	}
+	if (edit_->params_->Only1Record) {
+		edit_->params_->OnlySearch = false;
+	}
 	if (EO->W.C1 != nullptr) {
-		RunWFrml(CFile, EO->W, E->WFlags, E->V, CRecPtr);
-		E->WwPart = true;
-		if ((E->WFlags & WShadow) != 0) {
-			E->ShdwX = MinW(2, TxtCols - E->V.C2);
-			E->ShdwY = MinW(1, TxtRows - E->V.R2);
+		RunWFrml(file_d, EO->W, edit_->WFlags, edit_->V, CRecPtr);
+		edit_->WwPart = true;
+		if ((edit_->WFlags & WShadow) != 0) {
+			edit_->ShdwX = MinW(2, TxtCols - edit_->V.C2);
+			edit_->ShdwY = MinW(1, TxtRows - edit_->V.R2);
 		}
 	}
 	else {
-		if (E->params_->WithBoolDispl) E->V.R1 = 3;
-		if (E->params_->Mode24) E->V.R2--;
+		if (edit_->params_->WithBoolDispl) {
+			edit_->V.R1 = 3;
+		}
+		if (edit_->params_->Mode24) {
+			edit_->V.R2--;
+		}
 	}
-	RdFormOrDesign(ParFD, EO->Flds, EO->FormPos);
-	if (E->NPages > 1) {
-		E->NRecs = 1;
-	}
-	else {
-		E->NRecs = (E->Rows - E->NHdTxt) / E->RecTxt->N;
-	}
-	E->BaseRec = 1;
-	E->IRec = 1;
-	E->CFld = E->FirstFld;
-	E->FirstEmptyFld = E->FirstFld;
-	E->params_->ChkSwitch = true;
-	E->params_->WarnSwitch = true;
-	CFile = E->FD;
-	CRecPtr = E->FD->GetRecSpace();
-	E->OldRecPtr = (uint8_t*)CRecPtr;
-#ifdef FandSQL
-	if (CFile->IsSQLFile) SetTWorkFlag;
-#endif
-	if (E->params_->EdRecVar) {
-		E->NewRecPtr = (uint8_t*)E->LVRecPtr;
-		E->params_->NoDelete = true;
-		E->params_->NoCreate = true;
-		E->Journal = nullptr;
-		E->KIRoot = nullptr;
+	RdFormOrDesign(EO->Flds, EO->FormPos);
+	if (edit_->NPages > 1) {
+		edit_->NRecs = 1;
 	}
 	else {
-		CRecPtr = CFile->GetRecSpace();
-		E->NewRecPtr = (uint8_t*)CRecPtr;
+		edit_->NRecs = (edit_->Rows - edit_->NHdTxt) / edit_->RecTxt->N;
+	}
+	edit_->BaseRec = 1;
+	edit_->IRec = 1;
+	edit_->CFld = edit_->FirstFld;
+	edit_->FirstEmptyFld = edit_->FirstFld;
+	edit_->params_->ChkSwitch = true;
+	edit_->params_->WarnSwitch = true;
+
+	edit_->OldRecPtr = edit_->FD->GetRecSpace();
+	uint8_t* record = edit_->OldRecPtr;
+
 #ifdef FandSQL
-		if (CFile->IsSQLFile) SetTWorkFlag;
+	if (file_d->IsSQLFile) SetTWorkFlag;
 #endif
-		E->params_->AddSwitch = true;
-		E->Cond = RunEvalFrml(CFile, EO->Cond, CRecPtr);
-		E->RefreshDelay = RunWordImpl(CFile, EO->RefreshDelayZ, spec.RefreshDelay, CRecPtr) * 1000;
-		E->SaveAfter = RunWordImpl(CFile, EO->SaveAfterZ, spec.UpdCount, CRecPtr) * 1000;
+	if (edit_->params_->EdRecVar) {
+		edit_->NewRecPtr = (uint8_t*)edit_->LVRecPtr;
+		edit_->params_->NoDelete = true;
+		edit_->params_->NoCreate = true;
+		edit_->Journal = nullptr;
+		edit_->KIRoot = nullptr;
+	}
+	else {
+		edit_->NewRecPtr = file_d->GetRecSpace();
+		record = edit_->NewRecPtr;
+#ifdef FandSQL
+		if (file_d->IsSQLFile) SetTWorkFlag;
+#endif
+		edit_->params_->AddSwitch = true;
+		edit_->Cond = RunEvalFrml(file_d, EO->Cond, record);
+		edit_->RefreshDelay = RunWordImpl(file_d, EO->RefreshDelayZ, spec.RefreshDelay, record) * 1000;
+		edit_->SaveAfter = RunWordImpl(file_d, EO->SaveAfterZ, spec.UpdCount, record) * 1000;
 		if (EO->StartRecKeyZ != nullptr) {
-			E->StartRecKey = RunShortStr(CFile, EO->StartRecKeyZ, CRecPtr);
+			edit_->StartRecKey = RunShortStr(file_d, EO->StartRecKeyZ, record);
 		}
-		E->StartRecNo = RunInt(CFile, EO->StartRecNoZ, CRecPtr);
-		E->StartIRec = RunInt(CFile, EO->StartIRecZ, CRecPtr);
-		E->VK = EO->ViewKey;
-		if (E->DownLD != nullptr) {
-			E->DownSet = true;
-			E->DownKey = GetFromKey(E->DownLD);
-			if (E->VK == nullptr) {
-				E->VK = E->DownKey;
+		edit_->StartRecNo = RunInt(file_d, EO->StartRecNoZ, record);
+		edit_->StartIRec = RunInt(file_d, EO->StartIRecZ, record);
+		edit_->VK = EO->ViewKey;
+		if (edit_->DownLD != nullptr) {
+			edit_->DownSet = true;
+			edit_->DownKey = GetFromKey(edit_->DownLD);
+			if (edit_->VK == nullptr) {
+				edit_->VK = edit_->DownKey;
 			}
-			switch (E->OwnerTyp) {
+			switch (edit_->OwnerTyp) {
 			case 'r': {
-				E->DownRecPtr = E->DownLV->record;
+				edit_->DownRecPtr = edit_->DownLV->record;
 				break;
 			}
 			case 'F': {
-				E->OwnerRecNo = RunInt(CFile, (FrmlElem*)EO->DownLV, CRecPtr);
-				CFile = E->DownLD->ToFD;
-				E->DownRecPtr = E->DownLD->ToFD->GetRecSpace();
-				CFile = E->FD;
+				edit_->OwnerRecNo = RunInt(file_d, (FrmlElem*)EO->DownLV, record);
+				edit_->DownRecPtr = edit_->DownLD->ToFD->GetRecSpace();
 				break;
 			}
 			default:;
 			}
 		}
-		else if (E->VK == nullptr) {
-			E->VK = E->FD->Keys.empty() ? nullptr : E->FD->Keys[0];
-}
+		else if (edit_->VK == nullptr) {
+			edit_->VK = edit_->FD->Keys.empty() ? nullptr : edit_->FD->Keys[0];
+		}
 #ifdef FandSQL
-		if (CFile->IsSQLFile && (E->VK = nullptr)) { SetMsgPar(CFile->Name); RunError(652); }
+		if (file_d->IsSQLFile && (E->VK = nullptr)) { SetMsgPar(file_d->Name); RunError(652); }
 #endif
-		if (E->SelKey != nullptr) {
-			if (E->SelKey->KFlds == nullptr) {
-				E->SelKey->KFlds = E->VK->KFlds;
+		if (edit_->SelKey != nullptr) {
+			if (edit_->SelKey->KFlds == nullptr) {
+				edit_->SelKey->KFlds = edit_->VK->KFlds;
 			}
-			else if (!KeyFldD::EquKFlds(E->SelKey->KFlds, E->VK->KFlds)) {
+			else if (!KeyFldD::EquKFlds(edit_->SelKey->KFlds, edit_->VK->KFlds)) {
 				RunError(663);
 			}
 		}
-		}
+	}
 	if (EO->StartFieldZ != nullptr) {
-		std::string rss = RunShortStr(CFile, EO->StartFieldZ, CRecPtr);
+		std::string rss = RunShortStr(file_d, EO->StartFieldZ, record);
 		std::string s = TrailChar(rss, ' ');
-		D = E->FirstFld;
+		EFldD* D = edit_->FirstFld;
 		while (D != nullptr) {
 			if (EquUpCase(D->FldD->Name, s)) {
-				E->StartFld = D;
+				edit_->StartFld = D;
 			}
 			D = D->pChain;
 		}
 	}
-	E->WatchDelay = RunInt(CFile, EO->WatchDelayZ, CRecPtr) * 1000;
+	edit_->WatchDelay = RunInt(file_d, EO->WatchDelayZ, record) * 1000;
 	if (EO->Head == nullptr) {
-		E->Head = StandardHead();
+		edit_->Head = StandardHead(edit_);
 	}
 	else {
-		E->Head = GetStr_E(EO->Head);
+		edit_->Head = GetStr_E(EO->Head);
 	}
-	E->Last = GetStr_E(EO->Last);
-	E->AltLast = GetStr_E(EO->AltLast);
-	E->CtrlLast = GetStr_E(EO->CtrlLast);
-	E->ShiftLast = GetStr_E(EO->ShiftLast);
-	F2NoUpd = E->params_->OnlyTabs && EO->Tab.empty() && !EO->NegTab && E->params_->OnlyAppend;
-	/* END WITH */
+	edit_->Last = GetStr_E(EO->Last);
+	edit_->AltLast = GetStr_E(EO->AltLast);
+	edit_->CtrlLast = GetStr_E(EO->CtrlLast);
+	edit_->ShiftLast = GetStr_E(EO->ShiftLast);
+	F2NoUpd = edit_->params_->OnlyTabs && EO->Tab.empty() && !EO->NegTab && edit_->params_->OnlyAppend;
 
-	D = E->FirstFld;
+	EFldD* D = edit_->FirstFld;
 	while (D != nullptr) {
-		E->NFlds++; F = D->FldD;
+		edit_->NFlds++;
+		F = D->FldD;
 		b = FieldInList(F, EO->Tab);
 		if (EO->NegTab) b = !b;
-		if (b) { D->Tab = true; E->NTabsSet++; }
+		if (b) { D->Tab = true; edit_->NTabsSet++; }
 		b2 = FieldInList(F, EO->NoEd);
 		if (EO->NegNoEd) b2 = !b2;
-		D->EdU = !(b2 || E->params_->OnlyTabs && !b);
+		D->EdU = !(b2 || edit_->params_->OnlyTabs && !b);
 		D->EdN = F2NoUpd;
-		if (((F->Flg & f_Stored) != 0) && D->EdU) E->NEdSet++;
+		if (((F->Flg & f_Stored) != 0) && D->EdU) edit_->NEdSet++;
 		b = FieldInList(F, EO->Dupl);
 		if (EO->NegDupl) b = !b;
 		if (b && ((F->Flg & f_Stored) != 0)) D->Dupl = true;
-		if (b || ((F->Flg & f_Stored) != 0)) E->NDuplSet++;
-		D = (EFldD*)D->pChain;
+		if (b || ((F->Flg & f_Stored) != 0)) edit_->NDuplSet++;
+		D = D->pChain;
 	}
-	if (E->params_->OnlyTabs && (E->NTabsSet == 0)) {
-		E->params_->NoDelete = true;
-		if (!E->params_->OnlyAppend) {
-			E->params_->NoCreate = true;
+	if (edit_->params_->OnlyTabs && (edit_->NTabsSet == 0)) {
+		edit_->params_->NoDelete = true;
+		if (!edit_->params_->OnlyAppend) {
+			edit_->params_->NoCreate = true;
 		}
 	}
-	RdDepChkImpl();
-	NewChkKey(CFile);
-	MarkStore(E->AfterE);
-	}
+	RdDepChkImpl(edit_);
+	NewChkKey(file_d);
+	MarkStore(edit_->AfterE);
+}
 
-EFldD* FindEFld_E(FieldDescr* F)
+EFldD* EditReader::FindEFld_E(FieldDescr* F)
 {
-	EFldD* D = E->FirstFld;
+	EFldD* D = edit_->FirstFld;
 	while (D != nullptr) {
 		if (D->FldD == F) break;
-		D = (EFldD*)D->pChain;
+		D = D->pChain;
 	}
 	return D;
 }
 
-void ZeroUsed()
+void EditReader::ZeroUsed()
 {
-	EFldD* D = E->FirstFld;
+	EFldD* D = edit_->FirstFld;
 	while (D != nullptr) {
 		D->Used = false;
-		D = (EFldD*)D->pChain;
+		D = D->pChain;
 	}
 }
 
-EFldD* LstUsedFld()
+EFldD* EditReader::LstUsedFld()
 {
-	EFldD* D = E->LastFld;
-	while (D != nullptr)
-	{
+	EFldD* D = edit_->LastFld;
+	while (D != nullptr) {
 		if (D->Used) break;
 		D = D->ChainBack;
 	}
 	return D;
 }
 
-void RdDepChkImpl()
+void EditReader::RdDepChkImpl(EditD* edit)
 {
 	std::string s;
-	CFile = E->FD;
-	switch (CFile->FF->file_type) {
+	switch (edit->FD->FF->file_type) {
 	case FileType::RDB: {
 		ReadMessage(53);
 		s = MsgLine;
 		ResetCompilePars();
 		SetInpStr(s);
-		RdUDLI();
+		RdUDLI(edit->FD);
 		break;
 	}
 	case FileType::CAT: {
@@ -653,11 +663,11 @@ void RdDepChkImpl()
 		s = s + "'";
 		ResetCompilePars();
 		SetInpStr(s);
-		RdUDLI();
+		RdUDLI(edit->FD);
 		break;
 	}
 	default: {
-		RdAllUDLIs(CFile);
+		RdAllUDLIs(edit->FD);
 		break;
 	}
 	}
@@ -670,7 +680,7 @@ void TestedFlagOff()
 	}
 }
 
-void SetFrmlFlags(FrmlElem* Z)
+void EditReader::SetFrmlFlags(FrmlElem* Z)
 {
 	auto iZ0 = (FrmlElemFunction*)Z;
 	auto iZ7 = (FrmlElem7*)Z;
@@ -721,7 +731,7 @@ void SetFrmlFlags(FrmlElem* Z)
 	}
 }
 
-void SetFlag(FieldDescr* F)
+void EditReader::SetFlag(FieldDescr* F)
 {
 	if (F->field_flag) {
 		return;
@@ -740,7 +750,7 @@ void SetFlag(FieldDescr* F)
 	}
 }
 
-void RdDep()
+void EditReader::RdDep(FileD* file_d)
 {
 	FrmlElem* Bool = nullptr;
 	FrmlElem* Z = nullptr;
@@ -754,7 +764,7 @@ label1:
 	Bool = RdBool(nullptr);
 	Accept(')');
 label2:
-	D = FindEFld_E(RdFldName(CFile));
+	D = FindEFld_E(RdFldName(file_d));
 	Accept(_assign);
 	Z = RdFrml(FTyp, nullptr);
 	if (D != nullptr) {
@@ -763,8 +773,7 @@ label2:
 		Dp->Frml = Z;
 		D->Dep.push_back(Dp);
 	}
-	if (Lexem == ';')
-	{
+	if (Lexem == ';') {
 		RdLex();
 		if (!(Lexem == '#' || Lexem == 0x1A))
 		{
@@ -774,7 +783,7 @@ label2:
 	}
 }
 
-void RdCheck()
+void EditReader::RdCheck()
 {
 	SkipBlank(false);
 	size_t Low = CurrPos;
@@ -803,13 +812,13 @@ void RdCheck()
 	}
 }
 
-void RdImpl()
+void EditReader::RdImpl(FileD* file_d)
 {
 	// TODO: nema byt FTyp vstupnim parametrem?
 	char FTyp = '\0';
 	RdLex();
 	while (true) {
-		FieldDescr* F = RdFldName(CFile);
+		FieldDescr* F = RdFldName(file_d);
 		Accept(_assign);
 		FrmlElem* Z = RdFrml(FTyp, nullptr);
 		EFldD* D = FindEFld_E(F);
@@ -818,8 +827,8 @@ void RdImpl()
 			ImplD* ID = new ImplD(); // (ImplD*)GetStore(sizeof(*ID));
 			ID->FldD = F;
 			ID->Frml = Z;
-			if (E->Impl == nullptr) E->Impl = ID;
-			else ChainLast(E->Impl, ID);
+			if (edit_->Impl == nullptr) edit_->Impl = ID;
+			else ChainLast(edit_->Impl, ID);
 		}
 		if (Lexem == ';') {
 			RdLex();
@@ -829,24 +838,31 @@ void RdImpl()
 	}
 }
 
-void RdUDLI()
+void EditReader::RdUDLI(FileD* file_d)
 {
+	CFile = file_d; // to be sure
+
 	RdLex();
 	if ((Lexem == '#') && (ForwChar == 'U')) {
-		do { RdLex(); } while (!(Lexem == '#' || Lexem == 0x1A));
+		do {
+			RdLex();
+		} while (!(Lexem == '#' || Lexem == 0x1A));
 	}
 	if ((Lexem == '#') && (ForwChar == 'D')) {
-		RdLex(); RdDep();
+		RdLex();
+		RdDep(file_d);
 	}
 	if ((Lexem == '#') && (ForwChar == 'L')) {
-		RdLex(); RdCheck();
+		RdLex();
+		RdCheck();
 	}
 	if ((Lexem == '#') && (ForwChar == 'I')) {
-		RdLex(); RdImpl();
+		RdLex();
+		RdImpl(file_d);
 	}
 }
 
-void RdAllUDLIs(FileD* FD)
+void EditReader::RdAllUDLIs(FileD* FD)
 {
 	RdbD* r = nullptr;
 	if (FD->OrigFD != nullptr) {
@@ -858,36 +874,34 @@ void RdAllUDLIs(FileD* FD)
 		SetInpTTxtPos(FD);
 		r = CRdb;
 		CRdb = FD->ChptPos.rdb;
-		RdUDLI();
+		RdUDLI(FD);
 		CRdb = r;
 	}
 }
 
-std::string StandardHead()
+std::string StandardHead(EditD* edit)
 {
 	std::string s;
 	std::string c = "          ______                                 __.__.____";
-	if (!E->ViewName.empty()) s = E->ViewName;
-	else if (E->params_->EdRecVar) s = "";
+	if (!edit->ViewName.empty()) s = edit->ViewName;
+	else if (edit->params_->EdRecVar) s = "";
 	else {
-		s = E->FD->Name;
-		switch (E->FD->FF->file_type) {
+		s = edit->FD->Name;
+		switch (edit->FD->FF->file_type) {
 		case FileType::INDEX: {
-			if (!E->VK->Alias.empty()) s = s + "/" + E->VK->Alias;
+			if (!edit->VK->Alias.empty()) s = s + "/" + edit->VK->Alias;
 			break;
 		}
 		case FileType::RDB: s += ".RDB"; break;
 		case FileType::FAND8: s += ".DTA"; break;
 		}
 	}
-	//if (s.length() > 16) s[0] = 16;
 	s = s.substr(0, 16); // max. length is 16 chars
-	//auto str = copy(c, 17, 20 - s.length()) + s + c;
 	s = c.substr(16, 20 - s.length()) + s + c;
 	return s;
 }
 
-void NewChkKey(FileD* file_d)
+void EditReader::NewChkKey(FileD* file_d)
 {
 	//XKey* K = CFile->Keys;
 	KeyFldD* KF = nullptr;

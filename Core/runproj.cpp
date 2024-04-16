@@ -6,7 +6,7 @@
 #include "../Common/textfunc.h"
 #include "../TextEditor/EditorHelp.h"
 #include "../TextEditor/TextEditor.h"
-#include "../DataEditor/rdedit.h"
+#include "../DataEditor/EditReader.h"
 #include "..\DataEditor\DataEditor.h"
 #include "../ExportImport/ExportImport.h"
 #include "../fandio/FandTFile.h"
@@ -427,6 +427,7 @@ void EditHelpOrCat(WORD cc, WORD kind, std::string txt)
 	WORD iHelp = 1;
 	struct niFrml { char Op; double R; } nFrml{ 0, 0 }, iFrml{ 0,0 };
 	std::unique_ptr<DataEditor> data_editor = std::make_unique<DataEditor>();
+	EditD* EE = nullptr;
 
 	if (cc == __ALT_F2) {
 		FD = CRdb->help_file;
@@ -452,7 +453,7 @@ void EditHelpOrCat(WORD cc, WORD kind, std::string txt)
 		n = nCat;
 	}
 	if (kind != 2) {
-		data_editor->WriteParamsToE();
+		EE = data_editor->WriteParamsToE();
 	}
 	EditOpt* EO = new EditOpt();
 	EO->UserSelFlds = true; // GetEditOpt();
@@ -477,7 +478,7 @@ void EditHelpOrCat(WORD cc, WORD kind, std::string txt)
 		iCat = EdIRec;
 	}
 	if (kind != 2) {
-		data_editor->ReadParamsFromE();
+		data_editor->ReadParamsFromE(EE);
 	}
 }
 
@@ -778,7 +779,7 @@ bool CompRunChptRec(WORD CC)
 
 	OldE = E;
 	MarkBoth(p, p2);
-	data_editor->WriteParamsToE();
+	EditD* EE = data_editor->WriteParamsToE();
 
 	bool WasError = true;
 	bool WasGraph = IsGraphMode;
@@ -938,7 +939,7 @@ bool CompRunChptRec(WORD CC)
 	ReleaseStore(&p2);
 	E = OldE;
 	EditDRoot = E;
-	data_editor->ReadParamsFromE();
+	data_editor->ReadParamsFromE(EE);
 	CRdb = RP.rdb;
 	PrevCompInp.clear();
 	CFile->ReadRec(DataEditor::CRec(), CRecPtr);
@@ -1523,7 +1524,6 @@ bool EditExecRdb(std::string Nm, std::string proc_name, Instr_proc* proc_call, w
 	bool EscCode = false;
 	int w = UserW; UserW = 0;
 	bool wasGraph = IsGraphMode;
-	std::unique_ptr<DataEditor> data_editor = std::make_unique<DataEditor>();
 
 #ifdef FandSQL
 	if (top) SQLConnect();
@@ -1584,11 +1584,10 @@ bool EditExecRdb(std::string Nm, std::string proc_name, Instr_proc* proc_call, w
 		EO = new EditOpt();
 		EO->UserSelFlds = true; //EO = GetEditOpt();
 		EO->Flds = AllFldsList(Chpt, true);
-		//EO->Flds = EO->Flds->pChain->pChain->pChain;
 		EO->Flds.erase(EO->Flds.begin(), EO->Flds.begin() + 3);
 
-		NewEditD(Chpt, EO);
-		E->params_->MustCheck = true; /*ChptTyp*/
+		EditD* EE = NewEditD(Chpt, EO);
+		EE->params_->MustCheck = true; /*ChptTyp*/
 		if (CRdb->Encrypted) {
 			if (Coding::HasPassword(Chpt, 1, passw)) {
 				CRdb->Encrypted = false;
@@ -1600,7 +1599,8 @@ bool EditExecRdb(std::string Nm, std::string proc_name, Instr_proc* proc_call, w
 				goto label9;
 			}
 		}
-		if (!data_editor->OpenEditWw()) goto label8;
+		std::unique_ptr<DataEditor> data_editor = std::make_unique<DataEditor>();
+		if (!data_editor->OpenEditWw(EE)) goto label8;
 		result = true;
 		Chpt->FF->WasRdOnly = false;
 		if (!top && (Chpt->FF->NRecs > 0))
@@ -1610,12 +1610,13 @@ bool EditExecRdb(std::string Nm, std::string proc_name, Instr_proc* proc_call, w
 				}
 			}
 			else {
-				goto label4;
+				GotoErrPos(Brk);
+				goto label5;
 			}
 		else if (ChptTF->IRec <= Chpt->FF->NRecs) {
 			data_editor->GotoRecFld(ChptTF->IRec, data_editor->CFld);
 		}
-	label1:
+
 		data_editor->RunEdit(nullptr, Brk);
 	label2:
 		// TODO: je to potreba?
@@ -1629,25 +1630,38 @@ bool EditExecRdb(std::string Nm, std::string proc_name, Instr_proc* proc_call, w
 		}
 		if (cc == __CTRL_F10) {
 			SetUpdHandle(ChptTF->Handle);
-			if (!CompileRdb(true, false, true)) goto label3;
+			if (!CompileRdb(true, false, true)) {
+				if (IsCompileErr) {
+					GotoErrPos(Brk);
+					goto label5;
+				}
+				if (Brk == 1) {
+					data_editor->DisplEditWw();
+				}
+				data_editor->GotoRecFld(InpRdbPos.i_rec, E->FirstFld->pChain);
+				data_editor->RunEdit(nullptr, Brk);
+				goto label2;
+			}
 			if (!PromptCodeRdb()) goto label6;
 			Chpt->FF->WasRdOnly = true;
 			goto label8;
 		}
 		if (Brk != 0) {
 			if (!CompileRdb(Brk == 2, false, false)) {
-			label3:
-				if (IsCompileErr) goto label4;
+				if (IsCompileErr) {
+					GotoErrPos(Brk);
+					goto label5;
+				}
 				if (Brk == 1) data_editor->DisplEditWw();
 				data_editor->GotoRecFld(InpRdbPos.i_rec, E->FirstFld->pChain);
-				goto label1;
+				data_editor->RunEdit(nullptr, Brk);
+				goto label2;
 			}
 			if (cc == __ALT_F2) {
 				EditHelpOrCat(cc, 0, "");
 				goto label41;
 			}
 			if (!CompRunChptRec(cc)) {
-			label4:
 				GotoErrPos(Brk);
 				goto label5;
 			}
@@ -1655,13 +1669,19 @@ bool EditExecRdb(std::string Nm, std::string proc_name, Instr_proc* proc_call, w
 			if (Brk == 1) {
 				data_editor->EditFreeTxt(ChptTxt, "", true, Brk);
 			label5:
-				if (Brk != 0) goto label2;
-				else goto label1;
+				if (Brk != 0) {
+					goto label2;
+				}
+				else {
+					data_editor->RunEdit(nullptr, Brk);
+					goto label2;
+				}
 			}
 			else {
 			label6:
 				data_editor->DisplEditWw();
-				goto label1;
+				data_editor->RunEdit(nullptr, Brk);
+				goto label2;
 			}
 		}
 		ChptTF->IRec = DataEditor::CRec();
@@ -1693,7 +1713,6 @@ label9:
 
 void UpdateCat()
 {
-	std::unique_ptr<DataEditor> data_editor = std::make_unique<DataEditor>();
 	CFile = CatFD->GetCatalogFile();
 	if (CatFD->GetCatalogFile()->FF->Handle == nullptr) {
 		OpenCreateF(CFile, CPath, Exclusive);
@@ -1701,7 +1720,10 @@ void UpdateCat()
 	EditOpt* EO = new EditOpt();
 	EO->UserSelFlds = true;
 	EO->Flds = AllFldsList(CatFD->GetCatalogFile(), true);
+
+	std::unique_ptr<DataEditor> data_editor = std::make_unique<DataEditor>();
 	data_editor->EditDataFile(CatFD->GetCatalogFile(), EO);
+
 	ChDir(OldDir);
 	delete EO; EO = nullptr;
 }

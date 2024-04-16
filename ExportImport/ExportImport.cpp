@@ -11,7 +11,7 @@
 #include "../Core/obaseww.h"
 #include "../Core/RunMessage.h"
 #include "../Core/DateTime.h"
-#include "../DataEditor/rdedit.h"
+#include "../DataEditor/EditReader.h"
 #include "../Core/wwmix.h"
 #include "../fandio/directory.h"
 #include "../Core/compile.h"

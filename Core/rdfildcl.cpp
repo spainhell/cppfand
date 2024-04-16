@@ -205,7 +205,7 @@ ChkD* RdChkD(WORD Low)
 		FrmlElem* Z = new FrmlElemString(_const, 0); // GetOp(_const, N + 1);
 		C->TxtZ = Z;
 		auto iZ = (FrmlElemString*)Z;
-		((FrmlElemString*)Z)->S = std::string((char*)&InpArrPtr[Low], N);
+		iZ->S = std::string((char*)&InpArrPtr[Low], N);
 		//char(N);
 		//Move(&InpArrPtr[Low], &iZ->S[1], N);
 	}

@@ -9,7 +9,7 @@
 #include "../Core/oaccess.h"
 #include "../Core/obaseww.h"
 #include "../Core/RunMessage.h"
-#include "../DataEditor/rdedit.h"
+#include "../DataEditor/EditReader.h"
 #include "..\DataEditor\DataEditor.h"
 #include "../MergeReport/Merge.h"
 

@@ -20,12 +20,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DataEditorParams.h" />
-    <ClInclude Include="rdedit.h" />
+    <ClInclude Include="EditReader.h" />
     <ClInclude Include="DataEditor.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DataEditorParams.cpp" />
-    <ClCompile Include="rdedit.cpp" />
+    <ClCompile Include="EditReader.cpp" />
     <ClCompile Include="DataEditor.cpp" />
   </ItemGroup>
   <ItemGroup>

@@ -27,14 +27,14 @@ public:
     std::string PromptS(std::string& S, FrmlElem* Impl, FieldDescr* F);
     double PromptR(std::string& S, FrmlElem* Impl, FieldDescr* F);
     static bool TestIsNewRec();
-    void WriteParamsToE();
-    void ReadParamsFromE();
+    EditD* WriteParamsToE();
+    void ReadParamsFromE(EditD* edit);
     bool SelFldsForEO(EditOpt* EO, LinkD* LD);
     void DisplEditWw();
     void GotoRecFld(int NewRec, EFldD* NewFld);
     void SetNewCRec(int N, bool withRead);
     bool EditFreeTxt(FieldDescr* F, std::string ErrMsg, bool Ed, WORD& Brk);
-    bool OpenEditWw();
+    bool OpenEditWw(EditD* edit);
     void RunEdit(XString* PX, WORD& Brk);
     void SetSelectFalse();
     void PopEdit();
@@ -47,6 +47,7 @@ private:
     FileD* file_d_ = nullptr;
     uint8_t* record_ = nullptr;
     std::unique_ptr<DataEditorParams> params_;
+    EditD* edit_ = nullptr;
 
     int CNRecs() const;
     int AbsRecNr(int N);
