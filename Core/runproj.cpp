@@ -71,7 +71,7 @@ FileType ExtToTyp(const std::string& ext)
 	else return FileType::UNKNOWN;
 }
 
-void ReleaseFilesAndLinksAfterChapter()
+void ReleaseFilesAndLinksAfterChapter(EditD* edit)
 {
 	FileD* FD = nullptr;
 	RdbD* R = nullptr;
@@ -84,8 +84,8 @@ void ReleaseFilesAndLinksAfterChapter()
 	FuncDRoot = CRdb->OldFCRoot;
 	CFile = Chpt;
 
-	if (E != nullptr) {
-		CRecPtr = E->NewRecPtr;
+	if (edit != nullptr) {
+		CRecPtr = edit->NewRecPtr;
 	}
 	R = CRdb->ChainBack;
 	if (R != nullptr) {
@@ -165,11 +165,11 @@ void GetRdbRecVars(void* RecPtr, RdbRecVars* X)
 	CRecPtr = cr;
 }
 
-bool ChptDelFor(RdbRecVars* X)
+bool ChptDelFor(EditD* edit, RdbRecVars* X)
 {
 	bool result = true;
 	SetUpdHandle(ChptTF->Handle);
-	ReleaseFilesAndLinksAfterChapter();
+	ReleaseFilesAndLinksAfterChapter(edit);
 	switch (X->Typ) {
 	case ' ': {
 		result = true;
@@ -228,12 +228,12 @@ bool ChptDelFor(RdbRecVars* X)
 	return result;
 }
 
-bool ChptDel()
+bool ChptDel(EditD* edit)
 {
 	RdbRecVars New;
 	if (!IsCurrChpt()) { return true; }
-	GetRdbRecVars(E->NewRecPtr, &New);
-	return ChptDelFor(&New);
+	GetRdbRecVars(edit->NewRecPtr, &New);
+	return ChptDelFor(edit, &New);
 }
 
 bool IsDuplFileName(std::string name)
@@ -276,18 +276,18 @@ void RenameWithOldExt(RdbRecVars New, RdbRecVars Old)
 	if (Old.FTyp == FileType::INDEX) RenameFile56(Old.Name + CExt, New.Name + CExt, false);
 }
 
-WORD ChptWriteCRec()
+WORD ChptWriteCRec(EditD* edit)
 {
 	RdbRecVars New, Old;
 	short eq;
 	WORD result = 0;
 	if (!IsCurrChpt()) return result;
 	if (!DataEditor::TestIsNewRec()) {
-		eq = CompArea(&((BYTE*)CRecPtr)[2], &((BYTE*)E->OldRecPtr)[2], CFile->FF->RecLen - 2);
+		eq = CompArea(&((BYTE*)CRecPtr)[2], &((BYTE*)edit->OldRecPtr)[2], CFile->FF->RecLen - 2);
 		if (eq == _equ) return result;
 	}
-	GetRdbRecVars(E->NewRecPtr, &New);
-	if (!DataEditor::TestIsNewRec()) GetRdbRecVars(E->OldRecPtr, &Old);
+	GetRdbRecVars(edit->NewRecPtr, &New);
+	if (!DataEditor::TestIsNewRec()) GetRdbRecVars(edit->OldRecPtr, &Old);
 	result = 1;
 #ifndef FandGraph
 	if (New.Typ == 'L') { WrLLF10Msg(659); return result; }
@@ -318,31 +318,31 @@ WORD ChptWriteCRec()
 	if ((New.Typ == 'D' || New.Typ == 'I' || New.Typ == 'U')
 		|| !DataEditor::TestIsNewRec()
 		&& (Old.Typ == 'D' || Old.Typ == 'I' || Old.Typ == 'U')) {
-		ReleaseFilesAndLinksAfterChapter();
+		ReleaseFilesAndLinksAfterChapter(edit);
 		SetCompileAll();
 	}
 	if (DataEditor::TestIsNewRec()) {
-		ReleaseFilesAndLinksAfterChapter();
+		ReleaseFilesAndLinksAfterChapter(edit);
 		goto label2;
 	}
 	if (New.Typ != Old.Typ) {
 	label1:
-		if (!ChptDelFor(&Old)) return result;
+		if (!ChptDelFor(edit, &Old)) return result;
 		CFile->saveT(ChptOldTxt, 0, CRecPtr);
 		if (New.Typ == 'F') {
-			ReleaseFilesAndLinksAfterChapter();
+			ReleaseFilesAndLinksAfterChapter(edit);
 		}
 		goto label2;
 	}
 	if (New.Typ == ' ' || New.Typ == 'I') goto label2;
 	if (New.Typ != 'F') {
 		if (New.Name != Old.Name)
-			if (New.Typ == 'E' || New.Typ == 'P') { ReleaseFilesAndLinksAfterChapter(); SetCompileAll(); }
+			if (New.Typ == 'E' || New.Typ == 'P') { ReleaseFilesAndLinksAfterChapter(edit); SetCompileAll(); }
 			else ChptTF->CompileProc = true;
-		if ((New.Typ == 'R') && (New.Txt == 0)) ReleaseFilesAndLinksAfterChapter();
+		if ((New.Typ == 'R') && (New.Txt == 0)) ReleaseFilesAndLinksAfterChapter(edit);
 		goto label2;
 	}
-	ReleaseFilesAndLinksAfterChapter();
+	ReleaseFilesAndLinksAfterChapter(edit);
 	SetCompileAll();
 	if ((New.OldTxt != 0) && (New.Name != Old.Name)) {
 		if (Old.CatIRec != 0) {
@@ -764,7 +764,7 @@ void Diagnostics(void* MaxHp, int Free, FileD* FD)
 	WrLLF10Msg(136);
 }
 
-bool CompRunChptRec(WORD CC)
+bool CompRunChptRec(EditD* edit, WORD CC)
 {
 	pstring STyp(1);
 	void* p = nullptr; void* p2 = nullptr; void* MaxHp = nullptr;
@@ -777,7 +777,7 @@ bool CompRunChptRec(WORD CC)
 	auto result = false;
 	std::unique_ptr<DataEditor> data_editor = std::make_unique<DataEditor>();
 
-	OldE = E;
+	OldE = edit;
 	MarkBoth(p, p2);
 	EditD* EE = data_editor->WriteParamsToE();
 
@@ -836,7 +836,9 @@ bool CompRunChptRec(WORD CC)
 				else {
 					PushEdit();
 					std::vector<FieldDescr*> unusedFD;
-					RdFormOrDesign(nullptr, unusedFD, RP);
+					EditReader* reader = new EditReader();
+					reader->RdFormOrDesign(unusedFD, RP);
+					edit = reader->GetEditD();
 				}
 				break;
 			}
@@ -937,8 +939,8 @@ bool CompRunChptRec(WORD CC)
 	LinkDRoot = oldLd;
 	ReleaseStore(&p);
 	ReleaseStore(&p2);
-	E = OldE;
-	EditDRoot = E;
+	edit = OldE;
+	//EditDRoot = E;
 	data_editor->ReadParamsFromE(EE);
 	CRdb = RP.rdb;
 	PrevCompInp.clear();
@@ -1265,7 +1267,9 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 	FileD* lstFD = nullptr;
 	auto result = false;
 
-	EditD* OldE = E;
+	//EditD* OldE = E;
+	EditReader* reader = new EditReader();
+	EditD* edit = nullptr;
 	MarkBoth(p, p2);
 	p1 = p;
 
@@ -1396,9 +1400,10 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 				case 'E': {
 					PushEdit();
 					std::vector<FieldDescr*> unusedFD;
-					RdFormOrDesign(nullptr, unusedFD, RP);
-					E = OldE;
-					EditDRoot = E;
+					reader->RdFormOrDesign(unusedFD, RP);
+					edit = reader->GetEditD();
+					//E = OldE;
+					//EditDRoot = E;
 					break;
 				}
 				case 'U': {
@@ -1445,7 +1450,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 		CompileFD = false;
 		result = true;
 		if (!Run) {
-			CRecPtr = E->NewRecPtr;
+			CRecPtr = edit->NewRecPtr;
 			CFile->ReadRec(DataEditor::CRec(), CRecPtr);
 		}
 		CompileMsgOff(Buf, w);
@@ -1457,14 +1462,17 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 	catch (std::exception& e) {
 		log->log(loglevel::EXCEPTION, "CompileRdb() exception: ", e.what());
 		result = false;
-		ReleaseFilesAndLinksAfterChapter();
+		ReleaseFilesAndLinksAfterChapter(edit);
 		PrevCompInp.clear();
 		//ReleaseBoth(p, p2);
-		E = OldE; EditDRoot = E;
+		//E = OldE; EditDRoot = E;
 		CFile = Chpt;
-		if (!Run) CRecPtr = E->NewRecPtr;
+		if (!Run) CRecPtr = edit->NewRecPtr;
 		if (!IsCompileErr) { InpRdbPos.i_rec = I; }
 	}
+
+	delete edit; edit = nullptr;
+	delete reader; reader = nullptr;
 
 	CompileMsgOff(Buf, w);
 	return result;
@@ -1488,13 +1496,13 @@ void GotoErrPos(WORD& Brk)
 	}
 	if (CurrPos == 0) {
 		data_editor->DisplEditWw();
-		data_editor->GotoRecFld(InpRdbPos.i_rec, E->FirstFld->pChain);
+		data_editor->GotoRecFld(InpRdbPos.i_rec, data_editor->GetEditD()->FirstFld->pChain);
 		SetMsgPar(s);
 		WrLLF10Msg(110);
 		Brk = 0;
 		return;
 	}
-	data_editor->CFld = E->LastFld;
+	data_editor->CFld = data_editor->GetEditD()->LastFld;
 	data_editor->SetNewCRec(InpRdbPos.i_rec, true);
 	CFile->saveR(ChptTxtPos, short(CurrPos), CRecPtr);
 	CFile->WriteRec(DataEditor::CRec(), CRecPtr);
@@ -1569,7 +1577,7 @@ bool EditExecRdb(std::string Nm, std::string proc_name, Instr_proc* proc_call, w
 #ifndef FandRunV
 			if ((ChptTF->LicenseNr != 0) || CRdb->Encrypted
 				|| (Chpt->FF->UMode == RdOnly)) goto label9;
-			ReleaseFilesAndLinksAfterChapter();
+			ReleaseFilesAndLinksAfterChapter(nullptr);
 			ReleaseStore(&p);
 		}
 		else if (!top) {
@@ -1586,13 +1594,15 @@ bool EditExecRdb(std::string Nm, std::string proc_name, Instr_proc* proc_call, w
 		EO->Flds = AllFldsList(Chpt, true);
 		EO->Flds.erase(EO->Flds.begin(), EO->Flds.begin() + 3);
 
-		EditD* EE = NewEditD(Chpt, EO);
-		EE->params_->MustCheck = true; /*ChptTyp*/
+		EditReader* reader = new EditReader();
+		reader->NewEditD(Chpt, EO);
+		EditD* edit = reader->GetEditD();
+		edit->params_->MustCheck = true; /*ChptTyp*/
 		if (CRdb->Encrypted) {
 			if (Coding::HasPassword(Chpt, 1, passw)) {
 				CRdb->Encrypted = false;
 				Coding::SetPassword(Chpt, 1, "");
-				CodingCRdb(false);
+				CodingCRdb(edit, false);
 			}
 			else {
 				WrLLF10Msg(629);
@@ -1600,7 +1610,7 @@ bool EditExecRdb(std::string Nm, std::string proc_name, Instr_proc* proc_call, w
 			}
 		}
 		std::unique_ptr<DataEditor> data_editor = std::make_unique<DataEditor>();
-		if (!data_editor->OpenEditWw(EE)) goto label8;
+		if (!data_editor->OpenEditWw(edit)) goto label8;
 		result = true;
 		Chpt->FF->WasRdOnly = false;
 		if (!top && (Chpt->FF->NRecs > 0))
@@ -1623,10 +1633,10 @@ bool EditExecRdb(std::string Nm, std::string proc_name, Instr_proc* proc_call, w
 		cc = Event.Pressed.KeyCombination();
 		SaveAndCloseAllFiles();
 		if ((cc == __CTRL_F10) || ChptTF->CompileAll || CompileFD) {
-			ReleaseFilesAndLinksAfterChapter();
+			ReleaseFilesAndLinksAfterChapter(edit);
 			data_editor->SetSelectFalse();
-			E->Bool = nullptr;
-			ReleaseStore(&E->AfterE);
+			edit->Bool = nullptr;
+			ReleaseStore(&edit->AfterE);
 		}
 		if (cc == __CTRL_F10) {
 			SetUpdHandle(ChptTF->Handle);
@@ -1638,11 +1648,13 @@ bool EditExecRdb(std::string Nm, std::string proc_name, Instr_proc* proc_call, w
 				if (Brk == 1) {
 					data_editor->DisplEditWw();
 				}
-				data_editor->GotoRecFld(InpRdbPos.i_rec, E->FirstFld->pChain);
+				data_editor->GotoRecFld(InpRdbPos.i_rec, edit->FirstFld->pChain);
 				data_editor->RunEdit(nullptr, Brk);
 				goto label2;
 			}
-			if (!PromptCodeRdb()) goto label6;
+			if (!PromptCodeRdb(edit)) {
+				goto label6;
+			}
 			Chpt->FF->WasRdOnly = true;
 			goto label8;
 		}
@@ -1653,7 +1665,7 @@ bool EditExecRdb(std::string Nm, std::string proc_name, Instr_proc* proc_call, w
 					goto label5;
 				}
 				if (Brk == 1) data_editor->DisplEditWw();
-				data_editor->GotoRecFld(InpRdbPos.i_rec, E->FirstFld->pChain);
+				data_editor->GotoRecFld(InpRdbPos.i_rec, edit->FirstFld->pChain);
 				data_editor->RunEdit(nullptr, Brk);
 				goto label2;
 			}
@@ -1661,7 +1673,7 @@ bool EditExecRdb(std::string Nm, std::string proc_name, Instr_proc* proc_call, w
 				EditHelpOrCat(cc, 0, "");
 				goto label41;
 			}
-			if (!CompRunChptRec(cc)) {
+			if (!CompRunChptRec(edit, cc)) {
 				GotoErrPos(Brk);
 				goto label5;
 			}

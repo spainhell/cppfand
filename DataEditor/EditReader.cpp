@@ -40,7 +40,6 @@ void SToSL(StringListEl** SLRoot, pstring s)
 
 void EditReader::StoreRT(WORD Ln, StringList SL, WORD NFlds)
 {
-	//ERecTxtD* RT = (ERecTxtD*)GetStore(sizeof(*RT));
 	ERecTxtD* RT = new ERecTxtD();
 	if (NFlds == 0) Error(81);
 	RT->N = Ln;
@@ -196,6 +195,11 @@ label5:
 		D = D->ChainBack;
 	}
 	edit->FirstFld = PrevD;
+}
+
+EditD* EditReader::GetEditD()
+{
+	return edit_;
 }
 
 EFldD* EditReader::FindScanNr(WORD N)

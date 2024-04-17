@@ -69,6 +69,11 @@ void DataEditor::PopEdit()
 	v_edits.pop_back();
 }
 
+EditD* DataEditor::GetEditD()
+{
+	return edit_;
+}
+
 bool DataEditor::TestIsNewRec()
 {
 	return IsNewRec;
@@ -1962,7 +1967,7 @@ bool DataEditor::CleanUp()
 		if (!RunAddUpdate(file_d_, '-', nullptr, false, nullptr, nullptr, record_)) return false;
 		UpdMemberRef(record_, nullptr);
 	}
-	if (!ChptDel()) return false;
+	if (!ChptDel(edit_)) return false;
 	WrJournal('-', record_, Today() + CurrTime());
 	return true;
 }
@@ -2321,13 +2326,16 @@ void DataEditor::UpwEdit(LinkD* LkD)
 	}
 
 	if (SelFldsForEO(EO, nullptr)) {
-		NewEditD(LD->ToFD, EO);
-		edit_->ShiftF7LD = LkD;
-		if (OpenEditWw(EE)) {
+		EditReader* reader = new EditReader();
+		reader->NewEditD(LD->ToFD, EO);
+		EditD* edit = reader->GetEditD();
+		edit->ShiftF7LD = LkD;
+		if (OpenEditWw(edit)) {
 			RunEdit(px, Brk);
 		}
 		SaveAndCloseAllFiles();
 		PopEdit();
+		delete reader; reader = nullptr;
 	}
 label1:
 	PopW(w);
@@ -2616,7 +2624,7 @@ bool DataEditor::WriteCRec(bool MayDispl, bool& Displ)
 			else if (params_->Subset) N = WK->NrToRecNr(file_d_, N);
 		}
 		if (params_->AddSwitch && !RunAddUpdate(file_d_, '+', nullptr, false, nullptr, nullptr, record_)) goto label1;
-		if (ChptWriteCRec() != 0) goto label1;
+		if (ChptWriteCRec(edit_) != 0) goto label1;
 		file_d_->CreateRec(N, record_);
 		if (params_->Subset) {
 			WK->AddToRecNr(file_d_, N, 1);
@@ -2628,7 +2636,7 @@ bool DataEditor::WriteCRec(bool MayDispl, bool& Displ)
 			if (!RunAddUpdate(file_d_, 'd', edit_->OldRecPtr, false, nullptr, nullptr, record_)) goto label1;
 			UpdMemberRef(edit_->OldRecPtr, record_);
 		}
-		WORD chptWrite = ChptWriteCRec();
+		WORD chptWrite = ChptWriteCRec(edit_);
 		switch (chptWrite) {
 		case 1: {
 			goto label1;
@@ -3785,7 +3793,7 @@ void DataEditor::PromptSelect()
 	std::string Txt;
 	if (params_->Select) Txt = edit_->BoolTxt;
 	else Txt = "";
-	if (IsCurrChpt()) ReleaseFilesAndLinksAfterChapter();
+	if (IsCurrChpt()) ReleaseFilesAndLinksAfterChapter(edit_);
 	ReleaseStore(&edit_->AfterE);
 	ww.PromptFilter(Txt, &edit_->Bool, &edit_->BoolTxt);
 	if (edit_->Bool == nullptr) params_->Select = false;
@@ -3952,12 +3960,15 @@ void DataEditor::ImbeddEdit()
 			file_d_ = file_d_->pChain;
 		}
 		if (SelFldsForEO(EO, nullptr)) {
-			NewEditD(file_d_, EO);
-			if (OpenEditWw(EE)) {
+			EditReader* reader = new EditReader();
+			reader->NewEditD(file_d_, EO);
+			EditD* edit = reader->GetEditD();
+			if (OpenEditWw(edit)) {
 				RunEdit(nullptr, Brk);
 			}
 			SaveAndCloseAllFiles();
 			PopEdit();
+			delete reader; reader = nullptr;
 		}
 	}
 
@@ -4027,12 +4038,15 @@ void DataEditor::DownEdit()
 		if (SelFldsForEO(EO, LD)) {
 			EO->DownLD = LD;
 			EO->DownRecPtr = record_;
-			NewEditD(file_d_, EO);
-			if (OpenEditWw(EE)) {
+			EditReader* reader = new EditReader();
+			reader->NewEditD(file_d_, EO);
+			EditD* edit = reader->GetEditD();
+			if (OpenEditWw(edit)) {
 				RunEdit(nullptr, Brk);
 			}
 			SaveAndCloseAllFiles();
 			PopEdit();
+			delete reader; reader = nullptr;
 		}
 	}
 
@@ -4237,7 +4251,7 @@ EFldD* DataEditor::FrstFldOnPage(WORD Page)
 	EFldD* D = edit_->FirstFld;
 	while (D->Page < Page) {
 		D = D->pChain;
-	}
+}
 	return D;
 }
 
@@ -5121,12 +5135,14 @@ void DataEditor::EditDataFile(FileD* FD, EditOpt* EO)
 	int w1 = 0, w2 = 0, w3 = 0;
 	WORD Brk = 0, r1 = 0, r2 = 0;
 	bool pix = false;
+	EditReader* reader = new EditReader();
+
 	MarkStore(p);
 	if (EO->SyntxChk) {
 		IsCompileErr = false;
 
 		try {
-			NewEditD(FD, EO);
+			reader->NewEditD(FD, EO);
 		}
 		catch (std::exception& e) {
 			// TODO: log error
@@ -5143,7 +5159,10 @@ void DataEditor::EditDataFile(FileD* FD, EditOpt* EO)
 		PopEdit();
 		return;
 	}
-	EditD* edit = NewEditD(FD, EO);
+	reader->NewEditD(FD, EO);
+
+	delete edit_;
+	edit_ = reader->GetEditD();
 	w2 = 0;
 	w3 = 0;
 	pix = (edit_->WFlags & WPushPixel) != 0;
@@ -5162,12 +5181,13 @@ void DataEditor::EditDataFile(FileD* FD, EditOpt* EO)
 	else {
 		w1 = PushW(1, 1, TxtCols, TxtRows, pix, true);
 	}
-	if (OpenEditWw(edit)) {
+	if (OpenEditWw(edit_)) {
 		if (params_->OnlyAppend && !params_->Append) {
 			SwitchToAppend();
 		}
 		RunEdit(nullptr, Brk);
 	}
+
 	if (w3 != 0) PopW(w3);
 	if (w2 != 0) PopW(w2);
 	PopW(w1);

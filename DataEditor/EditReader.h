@@ -24,6 +24,8 @@ public:
 	void StoreRT(WORD Ln, StringList SL, WORD NFlds);
 	void NewEditD(FileD* file_d, EditOpt* EO); // r158
 	void RdEForm(EditD* edit, RdbPos FormPos);
+	void RdFormOrDesign(std::vector<FieldDescr*>& FL, RdbPos FormPos);
+	EditD* GetEditD();
 
 private:
 	EditD* edit_ = nullptr;
@@ -31,7 +33,6 @@ private:
 	EFldD* FindScanNr(WORD N);
 	void AutoDesign(FieldListEl* FL);
 	void AutoDesign(std::vector<FieldDescr*>& FL);
-	void RdFormOrDesign(std::vector<FieldDescr*>& FL, RdbPos FormPos);
 	EFldD* FindEFld_E(FieldDescr* F);
 	void ZeroUsed();
 	EFldD* LstUsedFld();

@@ -9,12 +9,11 @@
 #include "../Core/oaccess.h"
 #include "../Core/obaseww.h"
 #include "../Core/RunMessage.h"
-#include "../DataEditor/EditReader.h"
-#include "..\DataEditor\DataEditor.h"
+#include "../DataEditor/DataEditor.h"
 #include "../MergeReport/Merge.h"
 
 
-void CodingRdb::CodeRdb(bool Rotate)
+void CodingRdb::CodeRdb(EditD* edit, bool Rotate)
 {
 	//WORD pos;
 	std::string s;
@@ -55,7 +54,7 @@ void CodingRdb::CodeRdb(bool Rotate)
 	ReleaseStore(&CRecPtr);
 	CFile = cf;
 	CRecPtr = cr;
-	CompressCRdb();
+	CompressCRdb(edit);
 	ChptTF->IRec = irec;
 	ChptTF->CompileAll = compileAll;
 }
@@ -262,7 +261,7 @@ label2:
 	ReleaseStore(&p2);
 }
 
-void CodingRdb::CompressCRdb()
+void CodingRdb::CompressCRdb(EditD* edit)
 {
 	void* p = nullptr;
 	MarkStore(p);
@@ -280,7 +279,7 @@ void CodingRdb::CompressCRdb()
 	ReleaseStore(&p);
 	Chpt->FF->RecPtr = cr;
 	CFile = Chpt;
-	CRecPtr = E->NewRecPtr;
+	CRecPtr = edit->NewRecPtr;
 	CFile->ReadRec(DataEditor::CRec(), CRecPtr);
 
 	ChptTF->CompileAll = false;

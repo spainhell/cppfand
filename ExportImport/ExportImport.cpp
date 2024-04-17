@@ -1,5 +1,7 @@
 #include "ExportImport.h"
 #include <memory>
+
+#include "CodingRdb.h"
 #include "TbFile.h"
 #include "ThFile.h"
 #include "TzFile.h"
@@ -688,10 +690,10 @@ void CheckFile(FileD* FD)
 	else LastExitCode = 4;
 }
 
-void CodingCRdb(bool Rotate)
+void CodingCRdb(EditD* edit, bool rotate)
 {
 	auto crdb = std::make_unique<CodingRdb>();
-	crdb->CodeRdb(Rotate);
+	crdb->CodeRdb(edit, rotate);
 }
 
 void AddLicNr(FileD* file_d, FieldDescr* field_d, void* record)
@@ -722,7 +724,7 @@ void CopyH(HANDLE H, pstring Nm)
 	buf = nullptr;
 }
 
-bool PromptCodeRdb()
+bool PromptCodeRdb(EditD* edit)
 {
 	FileD* cf;
 	void* cr;
@@ -751,7 +753,7 @@ bool PromptCodeRdb()
 			CopyH(Chpt->FF->Handle, s + ".RD0x");
 			CopyH(ChptTF->Handle, s + ".TT0x");
 		}
-		CodingCRdb(true);
+		CodingCRdb(edit, true);
 		ChptTF->LicenseNr = (WORD)UserLicNrShow & 0x7FFF;
 		cf = CFile;
 		cr = CRecPtr;
@@ -773,12 +775,12 @@ bool PromptCodeRdb()
 		if (Coding::HasPassword(Chpt, 1, "")) {
 			goto label1;
 		}
-		CodingCRdb(false);
+		CodingCRdb(edit, false);
 	}
 	else {
 	label1:
 		auto coding = std::make_unique<CodingRdb>();
-		coding->CompressCRdb();
+		coding->CompressCRdb(edit);
 		result = false;
 	}
 	return result;
