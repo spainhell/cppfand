@@ -834,7 +834,7 @@ bool CompRunChptRec(EditD* edit, WORD CC)
 					data_editor->EditDataFile(nullptr, EO);
 				}
 				else {
-					PushEdit();
+					//PushEdit();
 					std::vector<FieldDescr*> unusedFD;
 					EditReader* reader = new EditReader();
 					reader->RdFormOrDesign(unusedFD, RP);
@@ -1398,7 +1398,7 @@ bool CompileRdb(bool Displ, bool Run, bool FromCtrlF10)
 					break;
 				}
 				case 'E': {
-					PushEdit();
+					//PushEdit();
 					std::vector<FieldDescr*> unusedFD;
 					reader->RdFormOrDesign(unusedFD, RP);
 					edit = reader->GetEditD();
@@ -1701,7 +1701,8 @@ bool EditExecRdb(std::string Nm, std::string proc_name, Instr_proc* proc_call, w
 		ChptTF->IRec = DataEditor::CRec();
 		SetUpdHandle(ChptTF->Handle);
 	label8:
-		data_editor->PopEdit();
+		printf("");
+		//data_editor->PopEdit();
 #endif
 	}
 	catch (std::exception& e)

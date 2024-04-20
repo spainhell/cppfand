@@ -12,23 +12,23 @@
 #include "../Common/compare.h"
 #include "../fandio/XWKey.h"
 
-std::vector<EditD*> v_edits;
+//std::vector<EditD*> v_edits;
 
 EditReader::EditReader()
 {
 	edit_ = new EditD();
 }
 
-void PushEdit()
-{
-	EditD* const e1 = new EditD();
-	e1->V.C1 = 1;
-	e1->V.R1 = 2;
-	e1->V.C2 = TxtCols;
-	e1->V.R2 = TxtRows - 1;
-
-	v_edits.push_back(e1);
-}
+//void PushEdit()
+//{
+//	EditD* const e1 = new EditD();
+//	e1->V.C1 = 1;
+//	e1->V.R1 = 2;
+//	e1->V.C2 = TxtCols;
+//	e1->V.R2 = TxtRows - 1;
+//
+//	v_edits.push_back(e1);
+//}
 
 void EditReader::SToSL(StringListEl** SLRoot, pstring s)
 {
@@ -428,7 +428,7 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO)
 	bool b = false, b2 = false, F2NoUpd = false;
 
 	// TODO: remove PushEdit();
-	PushEdit();
+	//PushEdit();
 
 	// replace for PushEdit:
 	edit_->V.C1 = 1;

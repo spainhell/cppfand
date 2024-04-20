@@ -70,12 +70,12 @@ void DataEditor::SetFileD(FileD* file_d)
 	record_ = file_d->GetRecSpace();
 }
 
-void DataEditor::PopEdit()
-{
-	//E = edit_->pChain;
-	//EditDRoot = E;
-	v_edits.pop_back();
-}
+//void DataEditor::PopEdit()
+//{
+//	//E = edit_->pChain;
+//	//EditDRoot = E;
+//	v_edits.pop_back();
+//}
 
 EditD* DataEditor::GetEditD()
 {
@@ -2334,6 +2334,7 @@ void DataEditor::UpwEdit(LinkD* LkD)
 	}
 
 	if (SelFldsForEO(EO, nullptr)) {
+		// tady by se zrejme mela vytvorit nova instance DataEditoru a volat vsechno v ni
 		EditReader* reader = new EditReader();
 		reader->NewEditD(LD->ToFD, EO);
 		edit_ = reader->GetEditD();
@@ -2342,7 +2343,7 @@ void DataEditor::UpwEdit(LinkD* LkD)
 			RunEdit(px, Brk);
 		}
 		SaveAndCloseAllFiles();
-		PopEdit();
+		//PopEdit();
 		delete reader; reader = nullptr;
 	}
 label1:
@@ -3975,7 +3976,7 @@ void DataEditor::ImbeddEdit()
 				RunEdit(nullptr, Brk);
 			}
 			SaveAndCloseAllFiles();
-			PopEdit();
+			//PopEdit();
 			delete reader; reader = nullptr;
 		}
 	}
@@ -4044,6 +4045,7 @@ void DataEditor::DownEdit()
 
 		file_d_ = LD->FromFD;
 		if (SelFldsForEO(EO, LD)) {
+			// tady by se zrejme mela vytvorit nova instance DataEditoru a volat vsechno v ni
 			EO->DownLD = LD;
 			EO->DownRecPtr = record_;
 			EditReader* reader = new EditReader();
@@ -4053,7 +4055,7 @@ void DataEditor::DownEdit()
 				RunEdit(nullptr, Brk);
 			}
 			SaveAndCloseAllFiles();
-			PopEdit();
+			//PopEdit();
 			delete reader; reader = nullptr;
 		}
 	}
@@ -5164,7 +5166,7 @@ void DataEditor::EditDataFile(FileD* FD, EditOpt* EO)
 		else {
 			LastExitCode = 0;
 		}
-		PopEdit();
+		//PopEdit();
 		return;
 	}
 	reader->NewEditD(FD, EO);
@@ -5199,6 +5201,6 @@ void DataEditor::EditDataFile(FileD* FD, EditOpt* EO)
 	if (w3 != 0) PopW(w3);
 	if (w2 != 0) PopW(w2);
 	PopW(w1);
-	PopEdit();
+	//PopEdit();
 	ReleaseStore(&p);
 }

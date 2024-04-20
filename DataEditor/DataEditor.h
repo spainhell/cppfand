@@ -38,7 +38,7 @@ public:
     bool OpenEditWw();
     void RunEdit(XString* PX, WORD& Brk);
     void SetSelectFalse();
-    void PopEdit();
+    //void PopEdit();
     EditD* GetEditD();
 
     bool TxtEdCtrlUBrk = false;

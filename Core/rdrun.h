@@ -200,9 +200,12 @@ struct ERecTxtD : public Chained<ERecTxtD>
 	StringList SL;
 };
 
-struct EditD : Chained<EditD>
+class EditD : public Chained<EditD>
 {
+public:
 	// EditD* PrevE; - toto bude pChain ...
+	EditD() {}
+	~EditD() {}
 	FileD* FD = nullptr;
 	LockMode OldMd = NullMode;
 	bool IsUserForm = false;

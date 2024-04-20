@@ -7,11 +7,11 @@
 
 struct EFldD;
 struct StringListEl;
-struct EditD;
+class EditD;
 
-extern std::vector<EditD*> v_edits;
+//extern std::vector<EditD*> v_edits;
 
-void PushEdit();
+//void PushEdit();
 
 
 class EditReader
