@@ -303,7 +303,7 @@ void EditReader::AutoDesign(std::vector<FieldDescr*>& FL)
 	WORD L = 0, i = 0, m = 0, FldLen = 0;
 	pstring s = "";
 	StringListEl* SLRoot = nullptr;
-	EFldD* D = edit_->FirstFld;
+	EFldD* D = (EFldD*)(&edit_->FirstFld);  // TODO: this is not correct, but it works -> refactor!
 	EFldD* PrevD = nullptr;
 	WORD NPages = 1; WORD Ln = 0;
 	WORD Col = edit_->FrstCol;

@@ -14,6 +14,7 @@ struct EFldD;
 class DataEditor {
 public:
 	DataEditor();
+    DataEditor(EditD* edit);
     DataEditor(FileD* file_d);
     ~DataEditor();
     void SetFileD(FileD* file_d);
@@ -34,7 +35,7 @@ public:
     void GotoRecFld(int NewRec, EFldD* NewFld);
     void SetNewCRec(int N, bool withRead);
     bool EditFreeTxt(FieldDescr* F, std::string ErrMsg, bool Ed, WORD& Brk);
-    bool OpenEditWw(EditD* edit);
+    bool OpenEditWw();
     void RunEdit(XString* PX, WORD& Brk);
     void SetSelectFalse();
     void PopEdit();

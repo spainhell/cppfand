@@ -1609,8 +1609,10 @@ bool EditExecRdb(std::string Nm, std::string proc_name, Instr_proc* proc_call, w
 				goto label9;
 			}
 		}
-		std::unique_ptr<DataEditor> data_editor = std::make_unique<DataEditor>();
-		if (!data_editor->OpenEditWw(edit)) goto label8;
+		std::unique_ptr<DataEditor> data_editor = std::make_unique<DataEditor>(edit);
+		if (!data_editor->OpenEditWw()) {
+			goto label8;
+		}
 		result = true;
 		Chpt->FF->WasRdOnly = false;
 		if (!top && (Chpt->FF->NRecs > 0))

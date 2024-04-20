@@ -37,6 +37,14 @@ DataEditor::DataEditor()
 	params_ = std::make_unique<DataEditorParams>();
 }
 
+DataEditor::DataEditor(EditD* edit)
+{
+	edit_ = edit;
+	file_d_ = edit_->FD;
+	record_ = edit_->FD->GetRecSpace();
+	params_ = std::make_unique<DataEditorParams>();
+}
+
 DataEditor::DataEditor(FileD* file_d)
 {
 	file_d_ = file_d;
@@ -1508,7 +1516,7 @@ void DataEditor::SetStartRec()
 	}
 }
 
-bool DataEditor::OpenEditWw(EditD* edit)
+bool DataEditor::OpenEditWw()
 {
 	LockMode md, md1, md2;
 	int n = 0;
@@ -1517,7 +1525,7 @@ bool DataEditor::OpenEditWw(EditD* edit)
 	if (file_d_ != nullptr) {
 		OpenCreateF(file_d_, CPath, Shared);
 	}
-	ReadParamsFromE(edit);
+	ReadParamsFromE(edit_);
 	if (params_->EdRecVar) {
 		if (params_->OnlyAppend) {
 			goto label2;
@@ -1530,7 +1538,7 @@ bool DataEditor::OpenEditWw(EditD* edit)
 	if (!file_d_->IsSQLFile)
 #endif
 		OpenCreateF(file_d_, CPath, Shared);
-	edit->OldMd = edit->FD->FF->LMode;
+	edit_->OldMd = edit_->FD->FF->LMode;
 	UpdCount = 0;
 #ifdef FandSQL
 	if (file_d_->IsSQLFile) {
@@ -1543,7 +1551,7 @@ bool DataEditor::OpenEditWw(EditD* edit)
 			file_d_->FF->TestXFExist();
 		}
 		md = NoDelMode;
-		if (params_->OnlyAppend || (edit->Cond != nullptr) || (edit->KIRoot != nullptr) || edit->DownSet ||
+		if (params_->OnlyAppend || (edit_->Cond != nullptr) || (edit_->KIRoot != nullptr) || edit_->DownSet ||
 			params_->MakeWorkX && HasIndex && file_d_->FF->NotCached() && !params_->Only1Record)
 		{
 			params_->Subset = true;
@@ -1566,15 +1574,15 @@ bool DataEditor::OpenEditWw(EditD* edit)
 		goto label1;
 	}
 	md2 = file_d_->NewLockMode(RdMode);
-	if (edit->DownSet && (edit->OwnerTyp == 'F')) {
-		md1 = edit->DownLD->ToFD->NewLockMode(RdMode);
-		n = edit->OwnerRecNo;
-		if ((n == 0) || (n > edit->DownLD->ToFD->FF->NRecs)) {
-			edit->DownLD->ToFD->RunErrorM(edit->OldMd);
+	if (edit_->DownSet && (edit_->OwnerTyp == 'F')) {
+		md1 = edit_->DownLD->ToFD->NewLockMode(RdMode);
+		n = edit_->OwnerRecNo;
+		if ((n == 0) || (n > edit_->DownLD->ToFD->FF->NRecs)) {
+			edit_->DownLD->ToFD->RunErrorM(edit_->OldMd);
 			RunError(611);
 		}
-		edit->DownLD->ToFD->ReadRec(n, edit->DownRecPtr);
-		edit->DownLD->ToFD->OldLockMode(md1);
+		edit_->DownLD->ToFD->ReadRec(n, edit_->DownRecPtr);
+		edit_->DownLD->ToFD->OldLockMode(md1);
 	}
 	if (params_->Subset) {
 		BuildWork();
@@ -1609,7 +1617,7 @@ bool DataEditor::OpenEditWw(EditD* edit)
 			if (params_->Subset && !params_->WasWK) {
 				WK->Close(file_d_);
 			}
-			file_d_->OldLockMode(edit->OldMd);
+			file_d_->OldLockMode(edit_->OldMd);
 			result = false;
 			return result;
 		}
@@ -1626,7 +1634,7 @@ bool DataEditor::OpenEditWw(EditD* edit)
 		RdRec(CRec());
 	}
 label3:
-	MarkStore(edit->AfterE);
+	MarkStore(edit_->AfterE);
 	DisplEditWw();
 	result = true;
 	if (!params_->EdRecVar) file_d_->OldLockMode(md2);
@@ -2328,9 +2336,9 @@ void DataEditor::UpwEdit(LinkD* LkD)
 	if (SelFldsForEO(EO, nullptr)) {
 		EditReader* reader = new EditReader();
 		reader->NewEditD(LD->ToFD, EO);
-		EditD* edit = reader->GetEditD();
-		edit->ShiftF7LD = LkD;
-		if (OpenEditWw(edit)) {
+		edit_ = reader->GetEditD();
+		edit_->ShiftF7LD = LkD;
+		if (OpenEditWw()) {
 			RunEdit(px, Brk);
 		}
 		SaveAndCloseAllFiles();
@@ -3962,8 +3970,8 @@ void DataEditor::ImbeddEdit()
 		if (SelFldsForEO(EO, nullptr)) {
 			EditReader* reader = new EditReader();
 			reader->NewEditD(file_d_, EO);
-			EditD* edit = reader->GetEditD();
-			if (OpenEditWw(edit)) {
+			edit_ = reader->GetEditD();
+			if (OpenEditWw()) {
 				RunEdit(nullptr, Brk);
 			}
 			SaveAndCloseAllFiles();
@@ -4040,8 +4048,8 @@ void DataEditor::DownEdit()
 			EO->DownRecPtr = record_;
 			EditReader* reader = new EditReader();
 			reader->NewEditD(file_d_, EO);
-			EditD* edit = reader->GetEditD();
-			if (OpenEditWw(edit)) {
+			edit_ = reader->GetEditD();
+			if (OpenEditWw()) {
 				RunEdit(nullptr, Brk);
 			}
 			SaveAndCloseAllFiles();
@@ -5181,7 +5189,7 @@ void DataEditor::EditDataFile(FileD* FD, EditOpt* EO)
 	else {
 		w1 = PushW(1, 1, TxtCols, TxtRows, pix, true);
 	}
-	if (OpenEditWw(edit_)) {
+	if (OpenEditWw()) {
 		if (params_->OnlyAppend && !params_->Append) {
 			SwitchToAppend();
 		}
