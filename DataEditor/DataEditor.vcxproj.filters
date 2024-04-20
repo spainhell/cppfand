@@ -24,6 +24,9 @@
     <ClInclude Include="DataEditorParams.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="EditD.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="EditReader.cpp">
@@ -33,6 +36,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DataEditorParams.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EditD.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
