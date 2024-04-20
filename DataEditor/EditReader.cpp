@@ -426,7 +426,16 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO)
 	WORD i = 0;
 	FieldDescr* F = nullptr;
 	bool b = false, b2 = false, F2NoUpd = false;
+
+	// TODO: remove PushEdit();
 	PushEdit();
+
+	// replace for PushEdit:
+	edit_->V.C1 = 1;
+	edit_->V.R1 = 2;
+	edit_->V.C2 = TxtCols;
+	edit_->V.R2 = TxtRows - 1;
+
 	// move je nahrazen kopirovanim jednotlivych polozek:
 	edit_->WFlags = EO->WFlags;
 	edit_->ExD = EO->ExD;
@@ -439,16 +448,16 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO)
 	edit_->LVRecPtr = EO->LVRecPtr;
 	edit_->KIRoot = EO->KIRoot;
 	edit_->SQLFilter = EO->SQLFilter;
-	edit_->SelKey = (XWKey*)EO->SelKey;
+	edit_->SelKey = static_cast<XWKey*>(EO->SelKey);
 	//rectxt
 
-	edit_->Attr = RunWordImpl(file_d, EO->ZAttr, screen.colors.dTxt, CRecPtr);
-	edit_->dNorm = RunWordImpl(file_d, EO->ZdNorm, screen.colors.dNorm, CRecPtr);
-	edit_->dHiLi = RunWordImpl(file_d, EO->ZdHiLi, screen.colors.dHili, CRecPtr);
-	edit_->dSubSet = RunWordImpl(file_d, EO->ZdSubset, screen.colors.dSubset, CRecPtr);
-	edit_->dDel = RunWordImpl(file_d, EO->ZdDel, screen.colors.dDeleted, CRecPtr);
-	edit_->dTab = RunWordImpl(file_d, EO->ZdTab, edit_->Attr | 0x08, CRecPtr);
-	edit_->dSelect = RunWordImpl(file_d, EO->ZdSelect, screen.colors.dSelect, CRecPtr);
+	edit_->Attr = static_cast<uint8_t>(RunWordImpl(file_d, EO->ZAttr, screen.colors.dTxt, CRecPtr));
+	edit_->dNorm = static_cast<uint8_t>(RunWordImpl(file_d, EO->ZdNorm, screen.colors.dNorm, CRecPtr));
+	edit_->dHiLi = static_cast<uint8_t>(RunWordImpl(file_d, EO->ZdHiLi, screen.colors.dHili, CRecPtr));
+	edit_->dSubSet = static_cast<uint8_t>(RunWordImpl(file_d, EO->ZdSubset, screen.colors.dSubset, CRecPtr));
+	edit_->dDel = static_cast<uint8_t>(RunWordImpl(file_d, EO->ZdDel, screen.colors.dDeleted, CRecPtr));
+	edit_->dTab = static_cast<uint8_t>(RunWordImpl(file_d, EO->ZdTab, edit_->Attr | 0x08, CRecPtr));
+	edit_->dSelect = static_cast<uint8_t>(RunWordImpl(file_d, EO->ZdSelect, screen.colors.dSelect, CRecPtr));
 	edit_->Top = RunStdStr(file_d, EO->Top, CRecPtr);
 	if (EO->Mode != nullptr) {
 		std::string mode = RunShortStr(file_d, EO->Mode, CRecPtr);
