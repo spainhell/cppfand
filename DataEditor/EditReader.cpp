@@ -30,7 +30,7 @@ void PushEdit()
 	v_edits.push_back(e1);
 }
 
-void SToSL(StringListEl** SLRoot, pstring s)
+void EditReader::SToSL(StringListEl** SLRoot, pstring s)
 {
 	StringListEl* SL = new StringListEl();
 	SL->S = s;
@@ -677,7 +677,7 @@ void EditReader::RdDepChkImpl(EditD* edit)
 	}
 }
 
-void TestedFlagOff()
+void EditReader::TestedFlagOff()
 {
 	for (auto& F : CFile->FldD) {
 		F->field_flag = false;
@@ -883,7 +883,7 @@ void EditReader::RdAllUDLIs(FileD* FD)
 	}
 }
 
-std::string StandardHead(EditD* edit)
+std::string EditReader::StandardHead(EditD* edit)
 {
 	std::string s;
 	std::string c = "          ______                                 __.__.____";
