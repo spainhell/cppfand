@@ -21,13 +21,13 @@ public:
     void EditDataFile(FileD* FD, EditOpt* EO);
     WORD EditTxt(std::string& s, WORD pos, WORD maxlen, WORD maxcol, FieldType typ, bool del,
 	             bool star, bool upd, bool ret, unsigned int Delta); // r86
-    static int CRec();
+    int CRec();
 	void UpdateEdTFld(LongStr* S);
     bool StartExit(EdExitD* X, bool Displ);
     bool PromptB(std::string& S, FrmlElem* Impl, FieldDescr* F);
     std::string PromptS(std::string& S, FrmlElem* Impl, FieldDescr* F);
     double PromptR(std::string& S, FrmlElem* Impl, FieldDescr* F);
-    static bool TestIsNewRec();
+    bool TestIsNewRec();
     EditD* WriteParamsToE();
     void ReadParamsFromE(EditD* edit);
     bool SelFldsForEO(EditOpt* EO, LinkD* LD);
@@ -194,9 +194,9 @@ private:
     uint16_t UpdCount = false;
     uint16_t CPage = false;
 
-    static int BaseRec;
-    static BYTE IRec;
-    static bool IsNewRec;
+    int BaseRec = 0;
+    BYTE IRec = 0;
+    bool IsNewRec = false;
 
     bool HasIndex = false;
     bool HasTF = false;

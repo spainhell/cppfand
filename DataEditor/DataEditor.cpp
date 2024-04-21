@@ -28,9 +28,6 @@
 #include "../Drivers/constants.h"
 #include "../Core/DateTime.h"
 
-int DataEditor::BaseRec = 0;
-BYTE DataEditor::IRec = 0;
-bool DataEditor::IsNewRec = false;
 
 DataEditor::DataEditor()
 {
@@ -2262,9 +2259,13 @@ void DataEditor::UpwEdit(LinkD* LkD)
 	wwmix ww;
 
 	void* p = nullptr;
-	std::string s1, s2; XString x; XString* px = nullptr;
-	FieldDescr* F = nullptr; KeyFldD* KF = nullptr;
-	XKey* K = nullptr; EditOpt* EO = nullptr;
+	std::string s1, s2;
+	XString x;
+	XString* px = nullptr;
+	FieldDescr* F = nullptr;
+	KeyFldD* KF = nullptr;
+	XKey* K = nullptr;
+	EditOpt* EO = nullptr;
 	WORD Brk;
 	StringListEl* SL, * SL1;
 	LinkD* LD;
@@ -2291,7 +2292,13 @@ void DataEditor::UpwEdit(LinkD* LkD)
 		}
 		ss.Abcd = true;
 		ww.SelectStr(0, 0, 35, "");
-		if (Event.Pressed.KeyCombination() == __ESC) goto label1;
+		if (Event.Pressed.KeyCombination() == __ESC) {
+
+			PopW(w);
+			ReleaseStore(&p);
+			ReadParamsFromE(EE);
+			DisplEditWw();
+		}
 		GetSel2S(s1, s2, '.', 2);
 
 		LD = nullptr;
@@ -2336,7 +2343,7 @@ void DataEditor::UpwEdit(LinkD* LkD)
 	if (SelFldsForEO(EO, nullptr)) {
 		// tady by se zrejme mela vytvorit nova instance DataEditoru a volat vsechno v ni
 		EditReader* reader = new EditReader();
-		reader->NewEditD(LD->ToFD, EO);
+		reader->NewEditD(LD->ToFD, EO, record_);
 		edit_ = reader->GetEditD();
 		edit_->ShiftF7LD = LkD;
 		if (OpenEditWw()) {
@@ -2346,7 +2353,7 @@ void DataEditor::UpwEdit(LinkD* LkD)
 		//PopEdit();
 		delete reader; reader = nullptr;
 	}
-label1:
+
 	PopW(w);
 	ReleaseStore(&p);
 	ReadParamsFromE(EE);
@@ -2633,7 +2640,7 @@ bool DataEditor::WriteCRec(bool MayDispl, bool& Displ)
 			else if (params_->Subset) N = WK->NrToRecNr(file_d_, N);
 		}
 		if (params_->AddSwitch && !RunAddUpdate(file_d_, '+', nullptr, false, nullptr, nullptr, record_)) goto label1;
-		if (ChptWriteCRec(edit_) != 0) goto label1;
+		if (ChptWriteCRec(this, edit_) != 0) goto label1;
 		file_d_->CreateRec(N, record_);
 		if (params_->Subset) {
 			WK->AddToRecNr(file_d_, N, 1);
@@ -2645,7 +2652,7 @@ bool DataEditor::WriteCRec(bool MayDispl, bool& Displ)
 			if (!RunAddUpdate(file_d_, 'd', edit_->OldRecPtr, false, nullptr, nullptr, record_)) goto label1;
 			UpdMemberRef(edit_->OldRecPtr, record_);
 		}
-		WORD chptWrite = ChptWriteCRec(edit_);
+		WORD chptWrite = ChptWriteCRec(this, edit_);
 		switch (chptWrite) {
 		case 1: {
 			goto label1;
@@ -3970,7 +3977,7 @@ void DataEditor::ImbeddEdit()
 		}
 		if (SelFldsForEO(EO, nullptr)) {
 			EditReader* reader = new EditReader();
-			reader->NewEditD(file_d_, EO);
+			reader->NewEditD(file_d_, EO, record_);
 			edit_ = reader->GetEditD();
 			if (OpenEditWw()) {
 				RunEdit(nullptr, Brk);
@@ -4049,7 +4056,7 @@ void DataEditor::DownEdit()
 			EO->DownLD = LD;
 			EO->DownRecPtr = record_;
 			EditReader* reader = new EditReader();
-			reader->NewEditD(file_d_, EO);
+			reader->NewEditD(file_d_, EO, record_);
 			edit_ = reader->GetEditD();
 			if (OpenEditWw()) {
 				RunEdit(nullptr, Brk);
@@ -5152,7 +5159,7 @@ void DataEditor::EditDataFile(FileD* FD, EditOpt* EO)
 		IsCompileErr = false;
 
 		try {
-			reader->NewEditD(FD, EO);
+			reader->NewEditD(FD, EO, record_);
 		}
 		catch (std::exception& e) {
 			// TODO: log error
@@ -5169,7 +5176,7 @@ void DataEditor::EditDataFile(FileD* FD, EditOpt* EO)
 		//PopEdit();
 		return;
 	}
-	reader->NewEditD(FD, EO);
+	reader->NewEditD(FD, EO, record_);
 
 	delete edit_;
 	edit_ = reader->GetEditD();

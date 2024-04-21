@@ -54,7 +54,7 @@ void CodingRdb::CodeRdb(EditD* edit, bool Rotate)
 	ReleaseStore(&CRecPtr);
 	CFile = cf;
 	CRecPtr = cr;
-	CompressCRdb(edit);
+	CompressCRdb(nullptr, edit);
 	ChptTF->IRec = irec;
 	ChptTF->CompileAll = compileAll;
 }
@@ -261,7 +261,7 @@ label2:
 	ReleaseStore(&p2);
 }
 
-void CodingRdb::CompressCRdb(EditD* edit)
+void CodingRdb::CompressCRdb(DataEditor* data_editor, EditD* edit)
 {
 	void* p = nullptr;
 	MarkStore(p);
@@ -280,7 +280,7 @@ void CodingRdb::CompressCRdb(EditD* edit)
 	Chpt->FF->RecPtr = cr;
 	CFile = Chpt;
 	CRecPtr = edit->NewRecPtr;
-	CFile->ReadRec(DataEditor::CRec(), CRecPtr);
+	CFile->ReadRec(data_editor->CRec(), CRecPtr);
 
 	ChptTF->CompileAll = false;
 	ChptTF->CompileProc = false;

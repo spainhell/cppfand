@@ -780,7 +780,7 @@ bool PromptCodeRdb(EditD* edit)
 	else {
 	label1:
 		auto coding = std::make_unique<CodingRdb>();
-		coding->CompressCRdb(edit);
+		coding->CompressCRdb(nullptr, edit);
 		result = false;
 	}
 	return result;

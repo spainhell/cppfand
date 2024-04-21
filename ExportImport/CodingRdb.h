@@ -4,6 +4,8 @@
 #include "../DataEditor/EditReader.h"
 
 
+class DataEditor;
+
 class CodingRdb
 {
 public:
@@ -11,7 +13,7 @@ public:
 	void CompressTxt(WORD IRec, LongStr* s, char Typ);
 	void Wr(BYTE c);
 	void CodeF(bool rotate, WORD IRec, FieldDescr* F, char Typ);
-	void CompressCRdb(EditD* edit);
+	void CompressCRdb(DataEditor* data_editor, EditD* edit);
 
 private:
 	WORD l = 0;
