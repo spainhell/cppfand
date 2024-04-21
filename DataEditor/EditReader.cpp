@@ -41,7 +41,9 @@ void EditReader::SToSL(StringListEl** SLRoot, pstring s)
 void EditReader::StoreRT(WORD Ln, StringList SL, WORD NFlds)
 {
 	ERecTxtD* RT = new ERecTxtD();
-	if (NFlds == 0) Error(81);
+	if (NFlds == 0) {
+		Error(81);
+	}
 	RT->N = Ln;
 	RT->SL = SL;
 	if (edit_->RecTxt == nullptr) edit_->RecTxt = RT;
@@ -291,7 +293,9 @@ void EditReader::AutoDesign(FieldListEl* FL)
 		}
 		else if (er.N < edit_->Rows) {
 			s = "";
-			for (i = edit_->FrstCol; i <= edit_->LastCol; i++) s.Append('-');
+			for (i = edit_->FrstCol; i <= edit_->LastCol; i++) {
+				s.Append('-');
+			}
 			SToSL(&er.SL, s);
 			er.N++;
 		}
@@ -405,11 +409,11 @@ void EditReader::RdFormOrDesign(std::vector<FieldDescr*>& FL, RdbPos FormPos)
 	}
 }
 
-std::string GetStr_E(FrmlElem* Z)
+std::string EditReader::GetStr_E(FrmlElem* Z, uint8_t* record)
 {
 	if (Z == nullptr) return "";
 	else {
-		std::string s = RunShortStr(CFile, Z, CRecPtr);
+		std::string s = RunShortStr(file_d_, Z, record);
 		//while (GetLengthOfStyledString(s) > TxtCols) {
 		//	// smaz posledni znak z retezce
 		//	s.erase(s.length() - 1);
@@ -419,8 +423,9 @@ std::string GetStr_E(FrmlElem* Z)
 	}
 }
 
-void EditReader::NewEditD(FileD* file_d, EditOpt* EO)
+void EditReader::NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec)
 {
+	file_d_ = file_d;
 	edit_->FD = file_d;
 
 	WORD i = 0;
@@ -451,16 +456,16 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO)
 	edit_->SelKey = static_cast<XWKey*>(EO->SelKey);
 	//rectxt
 
-	edit_->Attr = static_cast<uint8_t>(RunWordImpl(file_d, EO->ZAttr, screen.colors.dTxt, CRecPtr));
-	edit_->dNorm = static_cast<uint8_t>(RunWordImpl(file_d, EO->ZdNorm, screen.colors.dNorm, CRecPtr));
-	edit_->dHiLi = static_cast<uint8_t>(RunWordImpl(file_d, EO->ZdHiLi, screen.colors.dHili, CRecPtr));
-	edit_->dSubSet = static_cast<uint8_t>(RunWordImpl(file_d, EO->ZdSubset, screen.colors.dSubset, CRecPtr));
-	edit_->dDel = static_cast<uint8_t>(RunWordImpl(file_d, EO->ZdDel, screen.colors.dDeleted, CRecPtr));
-	edit_->dTab = static_cast<uint8_t>(RunWordImpl(file_d, EO->ZdTab, edit_->Attr | 0x08, CRecPtr));
-	edit_->dSelect = static_cast<uint8_t>(RunWordImpl(file_d, EO->ZdSelect, screen.colors.dSelect, CRecPtr));
-	edit_->Top = RunStdStr(file_d, EO->Top, CRecPtr);
+	edit_->Attr = static_cast<uint8_t>(RunWordImpl(file_d, EO->ZAttr, screen.colors.dTxt, rec));
+	edit_->dNorm = static_cast<uint8_t>(RunWordImpl(file_d, EO->ZdNorm, screen.colors.dNorm, rec));
+	edit_->dHiLi = static_cast<uint8_t>(RunWordImpl(file_d, EO->ZdHiLi, screen.colors.dHili, rec));
+	edit_->dSubSet = static_cast<uint8_t>(RunWordImpl(file_d, EO->ZdSubset, screen.colors.dSubset, rec));
+	edit_->dDel = static_cast<uint8_t>(RunWordImpl(file_d, EO->ZdDel, screen.colors.dDeleted, rec));
+	edit_->dTab = static_cast<uint8_t>(RunWordImpl(file_d, EO->ZdTab, edit_->Attr | 0x08, rec));
+	edit_->dSelect = static_cast<uint8_t>(RunWordImpl(file_d, EO->ZdSelect, screen.colors.dSelect, rec));
+	edit_->Top = RunStdStr(file_d, EO->Top, rec);
 	if (EO->Mode != nullptr) {
-		std::string mode = RunShortStr(file_d, EO->Mode, CRecPtr);
+		std::string mode = RunShortStr(file_d, EO->Mode, rec);
 		int result = edit_->params_->SetFromString(mode, false);
 		if (result != 0) {
 			Error(92);
@@ -480,7 +485,7 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO)
 		edit_->params_->OnlySearch = false;
 	}
 	if (EO->W.C1 != nullptr) {
-		RunWFrml(file_d, EO->W, edit_->WFlags, edit_->V, CRecPtr);
+		RunWFrml(file_d, EO->W, edit_->WFlags, edit_->V, rec);
 		edit_->WwPart = true;
 		if ((edit_->WFlags & WShadow) != 0) {
 			edit_->ShdwX = MinW(2, TxtCols - edit_->V.C2);
@@ -588,12 +593,12 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO)
 		edit_->Head = StandardHead(edit_);
 	}
 	else {
-		edit_->Head = GetStr_E(EO->Head);
+		edit_->Head = GetStr_E(EO->Head, record);
 	}
-	edit_->Last = GetStr_E(EO->Last);
-	edit_->AltLast = GetStr_E(EO->AltLast);
-	edit_->CtrlLast = GetStr_E(EO->CtrlLast);
-	edit_->ShiftLast = GetStr_E(EO->ShiftLast);
+	edit_->Last = GetStr_E(EO->Last, record);
+	edit_->AltLast = GetStr_E(EO->AltLast, record);
+	edit_->CtrlLast = GetStr_E(EO->CtrlLast, record);
+	edit_->ShiftLast = GetStr_E(EO->ShiftLast, record);
 	F2NoUpd = edit_->params_->OnlyTabs && EO->Tab.empty() && !EO->NegTab && edit_->params_->OnlyAppend;
 
 	EFldD* D = edit_->FirstFld;
@@ -688,7 +693,7 @@ void EditReader::RdDepChkImpl(EditD* edit)
 
 void EditReader::TestedFlagOff()
 {
-	for (auto& F : CFile->FldD) {
+	for (auto& F : file_d_->FldD) {
 		F->field_flag = false;
 	}
 }
@@ -916,7 +921,7 @@ std::string EditReader::StandardHead(EditD* edit)
 
 void EditReader::NewChkKey(FileD* file_d)
 {
-	//XKey* K = CFile->Keys;
+	//XKey* K = file_d_->Keys;
 	KeyFldD* KF = nullptr;
 	EFldD* D = nullptr;
 	KeyListEl* KL = nullptr;

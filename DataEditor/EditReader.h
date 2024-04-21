@@ -18,12 +18,13 @@ class EditReader
 {
 public:
 	EditReader();
-	void NewEditD(FileD* file_d, EditOpt* EO); // r158
+	void NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec); // r158
 	void RdFormOrDesign(std::vector<FieldDescr*>& FL, RdbPos FormPos);
 	EditD* GetEditD();
 
 private:
 	EditD* edit_ = nullptr;
+	FileD* file_d_ = nullptr;
 
 	void StoreRT(WORD Ln, StringList SL, WORD NFlds);
 	void RdEForm(EditD* edit, RdbPos FormPos);
@@ -45,4 +46,5 @@ private:
 	std::string StandardHead(EditD* edit);
 	void SToSL(StringListEl** SLRoot, pstring s);
 	void TestedFlagOff();
+	std::string GetStr_E(FrmlElem* Z, uint8_t* record);
 };
