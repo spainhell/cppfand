@@ -141,20 +141,18 @@ void CompileHelpCatDcl()
 	std::string help_definition = ReadMessage(56);
 	SetInpStr(help_definition);
 #if defined (FandRunV)
-	RdFileD("UFANDHLP", FileType::FAND16, "");
+	HelpFD = RdFileD("UFANDHLP", FileType::FAND16, "");
 #else
-	RdFileD("FANDHLP", FileType::FAND16, "");
+	HelpFD = RdFileD(nullptr, "FANDHLP", FileType::FAND16, "");
 #endif
-	HelpFD = CFile;
 
 	// process catalog
 	std::string catalog_definition = ReadMessage(52);
 	SetInpStr(catalog_definition);
-	RdFileD("Catalog", FileType::CAT, "");
+	CatFD = new Catalog(RdFileD(nullptr, "Catalog", FileType::CAT, ""));
 	
 	FileDRoot = nullptr;
 	Chpt = FileDRoot;
-	CatFD = new Catalog(CFile);
 }
 
 bool SetTopDir(std::string& p, std::string& n)

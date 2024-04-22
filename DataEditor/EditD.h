@@ -21,7 +21,7 @@ class EditD : public Chained<EditD>
 {
 public:
 	// EditD* PrevE; - toto bude pChain ...
-	EditD();
+	EditD(uint8_t cols, uint8_t rows);
 	~EditD();
 	FileD* FD = nullptr;
 	LockMode OldMd = NullMode;

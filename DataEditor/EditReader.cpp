@@ -16,7 +16,7 @@
 
 EditReader::EditReader()
 {
-	edit_ = new EditD();
+	edit_ = new EditD(TxtCols, TxtRows);
 }
 
 //void PushEdit()
@@ -54,13 +54,13 @@ void EditReader::RdEForm(EditD* edit, RdbPos FormPos)
 {
 	EFldD* D = nullptr; EFldD* D1 = nullptr; EFldD* PrevD = nullptr;
 	FieldDescr* F = nullptr; FieldListEl* FL = nullptr;
-	FileD* FD1 = nullptr;
 	StringListEl* SLRoot = nullptr;
 	pstring s = "";
 	WORD NPages = 0, Col = 0, Ln = 0, Max = 0, M = 0, N = 0, NFlds = 0, i = 0;
 	bool comment = false; char c = '\0'; BYTE a = 0;
 	SetInpTT(&FormPos, true);
 
+	bool skipAfterHash = false;
 	while (true) {
 		s = "";
 		while (!(ForwChar == '#' || ForwChar == 0x1A || ForwChar == 0x0D || ForwChar == '{')) {
@@ -74,7 +74,7 @@ void EditReader::RdEForm(EditD* edit, RdbPos FormPos)
 			break;
 		}
 		case '#': {
-			goto label2;
+			skipAfterHash = true;
 			break;
 		}
 		case '{': {
@@ -83,56 +83,76 @@ void EditReader::RdEForm(EditD* edit, RdbPos FormPos)
 			break;
 		}
 		}
-		ReadChar();
-		if (ForwChar == 0x0A) ReadChar();
-		SToSL(&edit->HdTxt, s);
-		edit->NHdTxt++;
-		if (edit->NHdTxt + 1 > edit->Rows) {
-			Error(102);
+
+		if (skipAfterHash) {
+			break;
+		}
+		else {
+			ReadChar();
+			if (ForwChar == 0x0A) ReadChar();
+			SToSL(&edit->HdTxt, s);
+			edit->NHdTxt++;
+			if (edit->NHdTxt + 1 > edit->Rows) {
+				Error(102);
+			}
 		}
 	}
 
 	/* read field list */
-label2:
-	ReadChar(); ReadChar();
+	ReadChar();
+	ReadChar();
 	Lexem = CurrChar;
 	Accept('_');
-	FD1 = RdFileName();
-	if (edit->FD == nullptr) edit->FD = FD1;
-label3:
-	N++;
-	//D = (EFldD*)GetZStore(sizeof(*D));
-	D = new EFldD();
-	if (Lexem == _number) {
-		M = RdInteger();
-		if (M == 0) OldError(115);
-		Accept(':');
-		D->ScanNr = M;
+	if (edit->FD == nullptr) {
+		edit->FD = RdFileName();
 	}
-	else D->ScanNr = N;
-	D1 = FindScanNr(D->ScanNr);
 
-	if (edit->FirstFld == nullptr) edit->FirstFld = D;
-	else ChainLast(edit->FirstFld, D);
+	while (true) {
+		N++;
+		D = new EFldD();
+		if (Lexem == _number) {
+			M = RdInteger();
+			if (M == 0) OldError(115);
+			Accept(':');
+			D->ScanNr = M;
+		}
+		else D->ScanNr = N;
+		D1 = FindScanNr(D->ScanNr);
 
-	if ((D1 != nullptr) && (D->ScanNr == D1->ScanNr)) Error(77);
-	F = RdFldName(edit->FD);
-	D->FldD = F;
-	edit->Flds.push_back(F);
-	if (Lexem == ',') { RdLex(); goto label3; }
+		if (edit->FirstFld == nullptr) edit->FirstFld = D;
+		else ChainLast(edit->FirstFld, D);
+
+		if ((D1 != nullptr) && (D->ScanNr == D1->ScanNr)) {
+			Error(77);
+		}
+		F = RdFldName(edit->FD);
+		D->FldD = F;
+		edit->Flds.push_back(F);
+		if (Lexem == ',') {
+			RdLex();
+			continue;
+		}
+		break;
+	}
+
 	TestLex(';');
 	SkipBlank(true);
 	/* read record lines */
 	D = edit->FirstFld;
 	NPages = 0;
-label4:
-	NPages++; Ln = 0; NFlds = 0; SLRoot = nullptr;
+	NPages++;
+	Ln = 0;
+	NFlds = 0;
+	SLRoot = nullptr;
+
 label5:
 	s = ""; Ln++;
 	Col = edit->FrstCol;
-	while (!(ForwChar == 0x0D || ForwChar == 0x1A || ForwChar == '\\' || ForwChar == '{'))
+	while (!(ForwChar == 0x0D || ForwChar == 0x1A || ForwChar == '\\' || ForwChar == '{')) {
 		if (ForwChar == '_') {
-			if (D == nullptr) Error(30);
+			if (D == nullptr) {
+				Error(30);
+			}
 			NFlds++;
 			D->Col = Col;
 			D->Ln = Ln;
@@ -161,12 +181,16 @@ label5:
 		}
 		else {
 			if (!screen.SetStyleAttr(ForwChar, a)) {
-				if (Col > edit->LastCol) Error(102);
+				if (Col > edit->LastCol) {
+					Error(102);
+				}
 				Col++;
 			}
 			s.Append(ForwChar);
 			ReadChar();
 		}
+	}
+
 	SToSL(&SLRoot, s);
 	c = ForwChar;
 	if (c == '\\') ReadChar();
@@ -174,14 +198,22 @@ label5:
 	if (ForwChar != 0x1A) {
 		if ((c == '\\') || (edit->NHdTxt + Ln == edit->Rows)) {
 			StoreRT(Ln, SLRoot, NFlds);
-			goto label4;
+			NPages++;
+			Ln = 0;
+			NFlds = 0;
+			SLRoot = nullptr;
+			goto label5;
 		}
-		else goto label5;
+		else {
+			goto label5;
+		}
 	}
 	StoreRT(Ln, SLRoot, NFlds);
 	edit->NPages = NPages;
 
-	if (D != nullptr) Error(30);
+	if (D != nullptr) {
+		Error(30);
+	}
 	D = FindScanNr(1);
 	D->ChainBack = nullptr;
 	for (i = 2; i <= N; i++) {
@@ -230,7 +262,7 @@ void EditReader::AutoDesign(FieldListEl* FL)
 		FieldDescr* F = FL->FldD;
 		FL = FL->pChain;
 		if (F == nullptr) continue; // tady to padalo na 1. polozce, protoze ta ma FldD = nullptr
-		
+
 		D->pChain = new EFldD();
 		D = D->pChain;
 		D->ChainBack = PrevD;
@@ -388,10 +420,10 @@ void EditReader::AutoDesign(std::vector<FieldDescr*>& FL)
 
 void EditReader::RdFormOrDesign(std::vector<FieldDescr*>& FL, RdbPos FormPos)
 {
-	edit_->FrstCol = edit_->V.C1;
-	edit_->FrstRow = edit_->V.R1;
-	edit_->LastCol = edit_->V.C2;
-	edit_->LastRow = edit_->V.R2;
+	//edit_->FrstCol = edit_->V.C1;
+	//edit_->FrstRow = edit_->V.R1;
+	//edit_->LastCol = edit_->V.C2;
+	//edit_->LastRow = edit_->V.R2;
 	if ((edit_->WFlags & WHasFrame) != 0) {
 		edit_->FrstCol++; edit_->LastCol--;
 		edit_->FrstRow++; edit_->LastRow--;
@@ -561,7 +593,7 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec)
 			}
 			default:;
 			}
-		}
+			}
 		else if (edit_->VK == nullptr) {
 			edit_->VK = edit_->FD->Keys.empty() ? nullptr : edit_->FD->Keys[0];
 		}
@@ -576,7 +608,7 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec)
 				RunError(663);
 			}
 		}
-	}
+		}
 	if (EO->StartFieldZ != nullptr) {
 		std::string rss = RunShortStr(file_d, EO->StartFieldZ, record);
 		std::string s = TrailChar(rss, ' ');
@@ -628,7 +660,7 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec)
 	RdDepChkImpl(edit_);
 	NewChkKey(file_d);
 	MarkStore(edit_->AfterE);
-}
+	}
 
 EFldD* EditReader::FindEFld_E(FieldDescr* F)
 {

@@ -918,7 +918,7 @@ label1:
 				}
 				TestLex('[');
 				p = SaveCompState();
-				RdFileD(lv->Name, FDTyp, "$");
+				RdFileD(CFile, lv->Name, FDTyp, "$");
 				TestLex(']');
 				lv->FD = CFile;
 				n = CurrPos;
@@ -1429,15 +1429,15 @@ bool IsKeyArg(FieldDescr* F, FileD* FD)
 	return false;
 }
 
-void CompileRecLen()
+void CompileRecLen(FileD* file_d)
 {
 	WORD l = 0;
 	WORD n = 0;
-	if ((CFile->FF->file_type == FileType::INDEX || CFile->FF->file_type == FileType::DBF)) {
+	if ((file_d->FF->file_type == FileType::INDEX || file_d->FF->file_type == FileType::DBF)) {
 		l = 1;
 	}
-	for (auto& F : CFile->FldD) {
-		switch (CFile->FF->file_type) {
+	for (auto& F : file_d->FldD) {
+		switch (file_d->FF->file_type) {
 		case FileType::FAND8: {
 			if (F->field_type == FieldType::DATE) F->NBytes = 2;
 			break;
@@ -1466,18 +1466,18 @@ void CompileRecLen()
 			n++;
 		}
 	}
-	CFile->FF->RecLen = l;
-	switch (CFile->FF->file_type) {
+	file_d->FF->RecLen = l;
+	switch (file_d->FF->file_type) {
 	case FileType::FAND8: {
-		CFile->FF->FirstRecPos = 4;
+		file_d->FF->FirstRecPos = 4;
 		break;
 	}
 	case FileType::DBF: {
-		CFile->FF->FirstRecPos = (n + 1) * 32 + 1;
+		file_d->FF->FirstRecPos = (n + 1) * 32 + 1;
 		break;
 	}
 	default: {
-		CFile->FF->FirstRecPos = 6;
+		file_d->FF->FirstRecPos = 6;
 		break;
 	}
 	}

@@ -1038,7 +1038,7 @@ void DataEditor::AdjustCRec()
 
 EditD* DataEditor::WriteParamsToE()
 {
-	EditD* edit = new EditD();
+	EditD* edit = new EditD(TxtCols, TxtRows);
 	edit->CFld = CFld;
 	edit->FirstEmptyFld = FirstEmptyFld;
 	edit->VK = VK;

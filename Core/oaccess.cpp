@@ -87,27 +87,26 @@ void OpenFANDFiles(bool FromDML)
 
 	OpenXWorkH();
 	OpenTWorkH();
-	CFile = HelpFD;
-	OpenF(CFile, CPath, RdOnly);
+	OpenF(HelpFD, CPath, RdOnly);
 	if (CRdb == nullptr) return;
-	CFile = CatFD->GetCatalogFile();
-	OpenF(CFile, CPath, Exclusive);
+	OpenF(CatFD->GetCatalogFile(), CPath, Exclusive);
 	RD = CRdb;
+
 	while (RD != nullptr) {
-		CFile = RD->rdb_file;
+		RD->rdb_file = RD->rdb_file;
 		if (IsTestRun) {
-			OpenF(CFile, CPath, Exclusive);
+			OpenF(RD->rdb_file, CPath, Exclusive);
 		}
 		else {
-			OpenF(CFile, CPath, RdOnly);
+			OpenF(RD->rdb_file, CPath, RdOnly);
 		}
-		CFile = CFile->pChain;
-		while (!FromDML && (CFile != nullptr)) {
-			if (CFile->FF->ExLMode != NullMode) {
-				OpenF(CFile, CPath, Shared);
-				md = CFile->NewLockMode(CFile->FF->ExLMode);
+		FileD* f = RD->rdb_file->pChain;
+		while (!FromDML && (f != nullptr)) {
+			if (f->FF->ExLMode != NullMode) {
+				OpenF(f, CPath, Shared);
+				md = f->NewLockMode(f->FF->ExLMode);
 			}
-			CFile = CFile->pChain;
+			f = f->pChain;
 		}
 		RD = RD->ChainBack;
 	}
@@ -116,11 +115,9 @@ void OpenFANDFiles(bool FromDML)
 
 void CloseFilesAfter(FileD* FD)
 {
-	CFile = FD;
-
-	while (CFile != nullptr) {
-		CFile->CloseFile();
-		CFile = CFile->pChain;
+	while (FD != nullptr) {
+		FD->CloseFile();
+		FD = FD->pChain;
 	}
 }
 

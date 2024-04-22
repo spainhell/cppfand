@@ -88,7 +88,7 @@ XKey* RdViewKey(); // r238
 KeyFldD* RdKF(FileD* FD);
 WORD RdKFList(KeyFldD** KFRoot, FileD* FD); // r298
 bool IsKeyArg(FieldDescr* F, FileD* FD); // r278
-void CompileRecLen();
+void CompileRecLen(FileD* file_d);
 stSaveState* SaveCompState(); // r104
 void RestoreCompState(stSaveState* p); // 109
 void CFileLikeFD(FileD* FD, WORD MsgNr);

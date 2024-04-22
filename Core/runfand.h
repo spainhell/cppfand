@@ -1,6 +1,8 @@
 #pragma once
 
 #include <string>
+
+#include "FileD.h"
 #include "switches.h"
 #include "../Common/typeDef.h"
 

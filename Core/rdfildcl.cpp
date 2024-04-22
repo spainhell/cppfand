@@ -431,7 +431,7 @@ void TestDupl(FileD* FD)
 	}
 }
 
-void RdFieldDList(bool Stored)
+void RdFieldDList(FileD* file_d, bool stored)
 {
 	FieldDescr* F = nullptr;
 	char FTyp = 0;
@@ -440,23 +440,23 @@ void RdFieldDList(bool Stored)
 	while (true) {
 		TestIdentif();
 		std::string name = LexWord;
-		F = FindFldName(CFile);
+		F = FindFldName(file_d);
 		if (F != nullptr) Error(26);
 		RdLex();
-		if (!Stored) {
+		if (!stored) {
 			Accept(_assign);
 			Z = RdFrml(FTyp, nullptr);
 		}
-		F = RdFieldDescr(name, Stored);
-		if ((CFile->FF->file_type == FileType::DBF) && Stored && (F->field_type == FieldType::REAL || F->field_type == FieldType::NUMERIC)) {
+		F = RdFieldDescr(name, stored);
+		if ((file_d->FF->file_type == FileType::DBF) && stored && (F->field_type == FieldType::REAL || F->field_type == FieldType::NUMERIC)) {
 			OldError(86);
 		}
 
-		CFile->FldD.push_back(F);
-		ChainLast(CFile->FldD.front(), F);
+		file_d->FldD.push_back(F);
+		ChainLast(file_d->FldD.front(), F);
 
-		if (Stored) {
-			if (CFile->FF->file_type == FileType::FAND8) {
+		if (stored) {
+			if (file_d->FF->file_type == FileType::FAND8) {
 				if ((F->field_type == FieldType::REAL || F->field_type == FieldType::BOOL || F->field_type == FieldType::TEXT)) OldError(35);
 				else if ((F->field_type == FieldType::FIXED) && (F->NBytes > 5)) OldError(36);
 			}
@@ -473,18 +473,20 @@ void RdFieldDList(bool Stored)
 	}
 }
 
-void FakeRdFDSegment(FileD* FD)
+FileD* FakeRdFDSegment(FileD* FD)
 {
 	if (Lexem != 0x1A) {
 		Accept(';');
 	}
 	WORD i = FD->ChptPos.i_rec;
-	CFile = new FileD(*FD);
-	CFile->OrigFD = FD;
-	CFile->TxtPosUDLI = 0;
+	FileD* newFile = new FileD(*FD);
+	newFile->OrigFD = FD;
+	newFile->TxtPosUDLI = 0;
+
+	return newFile;
 }
 
-void SetLDIndexRoot(/*LinkD* L,*/ std::deque<LinkD*>& L2)
+void SetLDIndexRoot(FileD* file_d, /*LinkD* L,*/ std::deque<LinkD*>& L2)
 {
 	LinkD* l2 = nullptr;
 	if (!L2.empty()) l2 = *L2.begin();
@@ -495,14 +497,14 @@ void SetLDIndexRoot(/*LinkD* L,*/ std::deque<LinkD*>& L2)
 		if (L == l2) {
 			break;
 		}
-		if (CFile->FF->file_type == FileType::INDEX) {
-			for (auto& K : CFile->Keys) {
+		if (file_d->FF->file_type == FileType::INDEX) {
+			for (auto& K : file_d->Keys) {
 				KeyFldD* KF = K->KFlds;
 				computed = false;
 				bool continueWithNextK = false;
 
 				for (auto& arg : L->Args) {
-					// cmp CFile key fields with Arg fields
+					// cmp file_d key fields with Arg fields
 					if (KF == nullptr || arg->FldD != KF->FldD || arg->CompLex != KF->CompLex || arg->Descend != KF->Descend) {
 						continueWithNextK = true;
 						break;
@@ -528,7 +530,8 @@ void SetLDIndexRoot(/*LinkD* L,*/ std::deque<LinkD*>& L2)
 }
 
 // z ulohy vycte kapilotu 'F', prip. dynamickou definici 'F'
-void* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
+// vraci ukazatel na FileD, protoze se muze v metode vytvorit novy objekt!!!
+FileD* RdFileD(FileD* file_d, std::string FileName, FileType FDTyp, std::string Ext)
 {
 	std::string JournalFlds = "Upd:A,1;RecNr:F,8.0;User:F,4.0;TimeStamp:D,'DD.MM.YYYY hh:mm:ss'";
 	FileD* FD = nullptr;
@@ -564,23 +567,23 @@ void* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 		//		CFile->ReadRec(InpRdbPos.i_rec, CRecPtr); CFile = cf; }
 		//	CRecPtr = cr; if (!b) Error(25); CFile->OrigFD = rdb_file; CFile->TxtPosUDLI = 0;
 
-		FakeRdFDSegment(FD);
+		file_d = FakeRdFDSegment(FD); // TODO: zkontrolovat
 		//LinkDRoot = LDOld;
-		F = CFile->FldD.front();
-		CFile->Reset();
-		CFile->Name = FileName;
-		CFile->IsJournal = true;
-		SetHCatTyp(FDTyp);
+		F = file_d->FldD.front();
+		file_d->Reset();
+		file_d->Name = FileName;
+		file_d->IsJournal = true;
+		SetHCatTyp(file_d, FDTyp);
 		if (!PrevCompInp.empty()) {
-			CFile->ChptPos = OrigInp()->InpRdbPos;
+			file_d->ChptPos = OrigInp()->InpRdbPos;
 		}
 		SetInpStr(JournalFlds);
 		RdLex();
-		RdFieldDList(true);
-		F2 = (FieldDescr*)LastInChain(CFile->FldD.front());
+		RdFieldDList(file_d, true);
+		F2 = (FieldDescr*)LastInChain(file_d->FldD.front());
 		while (F != nullptr) {
 			if (F->isStored()) {
-				CFile->FldD.push_back(F);
+				file_d->FldD.push_back(F);
 				F2->pChain = F;
 				F2 = F;
 				if (F->field_type == FieldType::TEXT) {
@@ -593,8 +596,8 @@ void* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 			F = F->pChain;
 		}
 		F2->pChain = nullptr;
-		CompileRecLen();
-		ChainLast(FileDRoot, CFile);
+		CompileRecLen(file_d);
+		ChainLast(FileDRoot, file_d);
 		MarkStore(p);
 		goto label1;
 	}
@@ -617,20 +620,20 @@ void* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 			// LinkD for OrigFD exists?
 			if (l->FromFD == FD) {
 				auto copiedLinkD = new LinkD(*l);
-				copiedLinkD->FromFD = CFile;
+				copiedLinkD->FromFD = file_d;
 				LinkDRoot.push_front(copiedLinkD);
 			}
 		}
 
-		CFile->IsHlpFile = false;
+		file_d->IsHlpFile = false;
 		if (!(FDTyp == FileType::FAND16
 			|| FDTyp == FileType::INDEX)
-			|| !(CFile->FF->file_type == FileType::FAND16 || CFile->FF->file_type == FileType::INDEX)
+			|| !(file_d->FF->file_type == FileType::FAND16 || file_d->FF->file_type == FileType::INDEX)
 			) {
 			OldError(106);
 		}
 
-		for (auto& K : CFile->Keys) {
+		for (auto& K : file_d->Keys) {
 			if (!K->Alias.empty()) {
 				s = K->Alias;
 				i = s.find('_');
@@ -641,34 +644,34 @@ void* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 		}
 	}
 	else {
-		CFile = new FileD(FType::FandFile);
+		file_d = new FileD(FType::FandFile);
 	}
 
-	CFile->Name = FileName;
-	SetHCatTyp(FDTyp);
+	file_d->Name = FileName;
+	SetHCatTyp(file_d, FDTyp);
 	HasTT = false;
-	if ((CFile->OrigFD == nullptr) || !(Lexem == 0x1A || Lexem == '#' || Lexem == ']')) {
-		RdFieldDList(true);
+	if ((file_d->OrigFD == nullptr) || !(Lexem == 0x1A || Lexem == '#' || Lexem == ']')) {
+		RdFieldDList(file_d, true);
 	}
-	GetTFileD(FDTyp);
+	GetTFileD(file_d, FDTyp);
 	LDOld = LinkDRoot;
 
 	// TODO: v originale je to jinak, saha si to na nasl. promenne za PrevCompInp
 	// a bere posledni ChainBack
-	CFile->ChptPos = InpRdbPos;
+	file_d->ChptPos = InpRdbPos;
 
 	if (isHlp) {
-		F = CFile->FldD.front();
+		F = file_d->FldD.front();
 		F2 = F->pChain;
 		if ((F->field_type != FieldType::ALFANUM) || (F2 == nullptr) || (F2->field_type != FieldType::TEXT) || (F2->pChain != nullptr)) OldError(128);
-		CFile->IsHlpFile = true;
+		file_d->IsHlpFile = true;
 	}
 
 	while (true) {
 		if ((Lexem == '#') && (ForwChar == 'C')) {
 			RdLex();
 			RdLex();
-			RdFieldDList(false);
+			RdFieldDList(file_d, false);
 			continue;
 		}
 		if ((Lexem == '#') && (ForwChar == 'K')) {
@@ -679,35 +682,35 @@ void* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 		break;
 	}
 
-	if (issql && !CFile->Keys.empty()) {
-		CFile->FF->file_type = FileType::INDEX;
+	if (issql && !file_d->Keys.empty()) {
+		file_d->FF->file_type = FileType::INDEX;
 	}
-	GetXFileD();
-	CompileRecLen();
-	SetLDIndexRoot(LDOld);
-	if ((CFile->FF->file_type == FileType::INDEX) && CFile->Keys.empty()) Error(107);
+	GetXFileD(file_d);
+	CompileRecLen(file_d);
+	SetLDIndexRoot(file_d, LDOld);
+	if ((file_d->FF->file_type == FileType::INDEX) && file_d->Keys.empty()) Error(107);
 	if ((Lexem == '#') && (ForwChar == 'A')) {
 		RdLex();
 		RdKumul();
 	}
 
 	if (FileDRoot == nullptr) {
-		FileDRoot = CFile;
+		FileDRoot = file_d;
 		Chpt = FileDRoot;
 	}
 	else {
-		ChainLast(FileDRoot, CFile);
+		ChainLast(FileDRoot, file_d);
 	}
 
 	if (Ext == "$") {
 		// compile from text at run time
-		CFile->IsDynFile = true;
-		CFile->ChptPos.rdb = CRdb;
+		file_d->IsDynFile = true;
+		file_d->ChptPos.rdb = CRdb;
 		MarkStore(p);
 		goto label1;
 	}
 	if (Lexem != 0x1A) {
-		CFile->TxtPosUDLI = /*OrigInp()->*/CurrPos - 1;
+		file_d->TxtPosUDLI = /*OrigInp()->*/CurrPos - 1;
 	}
 	if ((Lexem == '#') && (ForwChar == 'U')) {
 		// nacteni uzivatelskych pohledu
@@ -727,7 +730,7 @@ void* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 	//}
 	if (Lexem != 0x1A) Error(66);
 label1:
-	return p; // ma asi vracet HeapPtr
+	return file_d;
 }
 
 void RdKeyD()
@@ -1078,41 +1081,41 @@ void RdAssign(AddD* AD)
 }
 
 /// smaze CFile->Handle, nastavi typ na FDTyp a ziska CatIRec z GetCatalogIRec() - musi existovat CatFD
-void SetHCatTyp(FileType FDTyp)
+void SetHCatTyp(FileD* file_d, FileType FDTyp)
 {
-	CFile->FF->Handle = nullptr;
-	CFile->FF->file_type = FDTyp;
-	CFile->CatIRec = CatFD->GetCatalogIRec(CFile->Name, CFile->FF->file_type == FileType::RDB/*multilevel*/);
+	file_d->FF->Handle = nullptr;
+	file_d->FF->file_type = FDTyp;
+	file_d->CatIRec = CatFD->GetCatalogIRec(file_d->Name, file_d->FF->file_type == FileType::RDB/*multilevel*/);
 #ifdef FandSQL
 	typSQLFile = issql;
 	SetIsSQLFile();
 #endif
 }
 
-void GetTFileD(FileType file_type)
+void GetTFileD(FileD* file_d, FileType file_type)
 {
-	if (!HasTT && (CFile->FF->TF == nullptr)) return;
-	if (CFile->FF->TF == nullptr) {
-		CFile->FF->TF = new FandTFile(CFile->FF);
+	if (!HasTT && (file_d->FF->TF == nullptr)) return;
+	if (file_d->FF->TF == nullptr) {
+		file_d->FF->TF = new FandTFile(file_d->FF);
 	}
-	CFile->FF->TF->Handle = nullptr;
+	file_d->FF->TF->Handle = nullptr;
 	if (file_type == FileType::DBF) {
-		CFile->FF->TF->Format = FandTFile::DbtFormat;
+		file_d->FF->TF->Format = FandTFile::DbtFormat;
 	}
 }
 
-void GetXFileD()
+void GetXFileD(FileD* file_d)
 {
-	if (CFile->FF->file_type != FileType::INDEX) {
-		if (CFile->FF->XF != nullptr) {
+	if (file_d->FF->file_type != FileType::INDEX) {
+		if (file_d->FF->XF != nullptr) {
 			OldError(104);
 		}
 	}
 	else {
-		if (CFile->FF->XF == nullptr) {
-			CFile->FF->XF = new FandXFile(CFile->FF);
+		if (file_d->FF->XF == nullptr) {
+			file_d->FF->XF = new FandXFile(file_d->FF);
 		}
-		CFile->FF->XF->Handle = nullptr;
+		file_d->FF->XF->Handle = nullptr;
 	}
 }
 

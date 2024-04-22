@@ -520,7 +520,7 @@ void StoreChptTxt(FieldDescr* F, std::string text, bool Del)
 	ReleaseStore(&p);
 }
 
-void SetChptFldDPtr()
+void SetChptFldD()
 {
 	if (Chpt == nullptr) /*ChptTF = nullptr;*/ {
 		throw std::exception("SetChptFldDPtr: Chpt is NULL.");
@@ -536,7 +536,7 @@ void SetChptFldDPtr()
 	}
 }
 
-void SetRdbDir(char Typ, std::string* Nm)
+void SetRdbDir(FileD* file_d, char Typ, std::string* Nm)
 {
 	RdbD* r = nullptr; RdbD* rb = nullptr;
 	std::string d;
@@ -549,11 +549,11 @@ void SetRdbDir(char Typ, std::string* Nm)
 	if (Typ == '\\') {
 		rb = TopRdb;
 		CRdb = rb;
-		CFile->CatIRec = CatFD->GetCatalogIRec(*Nm, false);
+		file_d->CatIRec = CatFD->GetCatalogIRec(*Nm, false);
 		CRdb = r;
 	}
-	if (CFile->CatIRec != 0) {
-		CPath = CatFD->GetPathName(CFile->CatIRec);
+	if (file_d->CatIRec != 0) {
+		CPath = CatFD->GetPathName(file_d->CatIRec);
 		if (CPath[1] != ':') {
 			d = rb->RdbDir;
 			if (CPath[1] == '\\') {
@@ -571,7 +571,7 @@ void SetRdbDir(char Typ, std::string* Nm)
 	else {
 		CDir = rb->RdbDir;
 		AddBackSlash(CDir);
-		CDir = CDir + CFile->Name;
+		CDir = CDir + file_d->Name;
 	}
 	/* !!! with r^ do!!! */ {
 		r->RdbDir = CDir;
@@ -580,7 +580,7 @@ void SetRdbDir(char Typ, std::string* Nm)
 		else {
 			d = rb->DataDir;
 			AddBackSlash(d);
-			r->DataDir = d + CFile->Name;
+			r->DataDir = d + file_d->Name;
 		}
 	}
 	CDir = CDir + '\\';
@@ -612,10 +612,11 @@ RdbD* PrepareRdb(const std::string& name, std::string& name1)
 	std::string nr = std::to_string((TxtCols - n));
 	s = s + nr;
 	SetInpStr(s);
+
 	if ((name[0] == '\\')) name1 = name.substr(1, 8);
 	else name1 = name;
-	RdFileD(name1, FileType::RDB, ""); /*old CRdb for GetCatalogIRec*/
-	rdb_d->rdb_file = CFile;
+
+	rdb_d->rdb_file = RdFileD(rdb_d->rdb_file, name1, FileType::RDB, ""); /*old CRdb for GetCatalogIRec*/
 
 	return rdb_d;
 }
@@ -630,15 +631,15 @@ void CreateOpenChpt(std::string Nm, bool create)
 	bool top = (CRdb == nullptr);
 	FileDRoot = nullptr;
 	Chpt = nullptr;
-	//rdb = (RdbD*)GetZStore(sizeof(*rdb));
 	FandTFile* oldChptTF = ChptTF;
 	RdbD* R = PrepareRdb(Nm, Nm1);
 	CRdb = R;
-	CFile->FF->RecPtr = CFile->GetRecSpace();
-	SetRdbDir(Nm[0], &Nm1);
+	Chpt->FF->RecPtr = Chpt->GetRecSpace();
+
+	SetRdbDir(Chpt, Nm[0], &Nm1);
 	p = CDir + Nm1 + ".RDB";
-	CFile->FF->Drive = TestMountVol(CPath[0]);
-	SetChptFldDPtr();
+	Chpt->FF->Drive = TestMountVol(CPath[0]);
+	SetChptFldD();
 	if (!spec.RDBcomment) ChptTxt->L = 1;
 	SetMsgPar(p);
 	if (top) {
@@ -667,7 +668,7 @@ void CreateOpenChpt(std::string Nm, bool create)
 
 	if (IsTestRun || !create) um = Exclusive;
 	else um = RdOnly;
-	if (OpenF(CFile, CPath, um)) {
+	if (OpenF(Chpt, CPath, um)) {
 		if (ChptTF->CompileAll) ResetRdOnly();
 		else if (!top && oldChptTF != nullptr && (ChptTF->TimeStmp < oldChptTF->TimeStmp)) {
 			// TODO: oldChptTF != nullptr je v podmince navic, protoze dalsi podminka vzdy vyhorela 
@@ -679,7 +680,7 @@ void CreateOpenChpt(std::string Nm, bool create)
 		if (!create || (top && !IsTestRun)) {
 			RunError(631);
 		}
-		OpenCreateF(CFile, CPath, Exclusive);
+		OpenCreateF(Chpt, CPath, Exclusive);
 		SetCompileAll();
 	}
 
@@ -704,7 +705,7 @@ void CloseChpt()
 	if (CRdb != nullptr) {
 		FileDRoot = CRdb->rdb_file;
 		Chpt = FileDRoot;
-		SetChptFldDPtr();
+		SetChptFldD();
 		ChDir(CRdb->RdbDir);
 		if (del) {
 			RmDir(d);
@@ -900,7 +901,7 @@ bool CompRunChptRec(EditD* edit, WORD CC)
 	catch (std::exception& e) {
 		// TODO: log error
 	}
-	
+
 	MaxHp = nullptr;
 	ReleaseStore(&p2);
 	Free = StoreAvail();
@@ -1077,7 +1078,7 @@ int MakeDbfDcl(pstring Nm)
 	return 0;
 }
 
-void* RdF(std::string FileName)
+void* RdF(FileD* file_d, std::string FileName)
 {
 	std::string d, name, ext;
 	FileType FDTyp = FileType::UNKNOWN;
@@ -1098,10 +1099,10 @@ void* RdF(std::string FileName)
 		SetInpStr(s);
 	}
 	else {
-		int pos = CFile->loadT(ChptTxt, CRecPtr);
-		SetInpTTPos(CFile, pos, CRdb->Encrypted);
+		int pos = file_d->loadT(ChptTxt, file_d->FF->RecPtr);
+		SetInpTTPos(file_d, pos, CRdb->Encrypted);
 	}
-	return RdFileD(name, FDTyp, ext);
+	return RdFileD(file_d, name, FDTyp, ext);
 }
 
 bool EquStoredF(FieldDescr* F1, FieldDescr* F2)
@@ -1245,13 +1246,14 @@ label1:
 	return result;
 }
 
-bool CompileRdb(DataEditor* data_editor, bool Displ, bool Run, bool FromCtrlF10)
+bool CompileRdb(FileD* rdb_file, bool Displ, bool Run, bool FromCtrlF10)
 {
 	Logging* log = Logging::getInstance();
 	log->log(loglevel::DEBUG, "starting CompileRdb()");
 	CHAR_INFO Buf[40];
 	int w = 0;
-	int I = 0, J = 0, OldTxt = 0, Txt = 0, OldCRec = 0;
+	int I = 0, J = 0, OldTxt = 0, Txt = 0;
+	//int OldCRec = 0;
 	std::string STyp;
 	char Typ = '\0';
 	std::string Name, dir, nm, ext;
@@ -1275,7 +1277,7 @@ bool CompileRdb(DataEditor* data_editor, bool Displ, bool Run, bool FromCtrlF10)
 
 	try {
 		IsCompileErr = false; FDCompiled = false;
-		OldCRec = data_editor->CRec();
+		//OldCRec = data_editor->CRec();
 		RP.rdb = CRdb;
 		top = (CRdb->ChainBack == nullptr);
 		if (top) {
@@ -1283,37 +1285,37 @@ bool CompileRdb(DataEditor* data_editor, bool Displ, bool Run, bool FromCtrlF10)
 			if (ChptTF->CompileAll || CompileFD) Switches[0] = 0;
 		}
 		lmsg = CompileMsgOn(Buf, w);
-		CRecPtr = Chpt->FF->RecPtr;
+		//CRecPtr = rdb_file->FF->RecPtr;
 		Encryp = CRdb->Encrypted;
-		for (I = 1; I <= Chpt->FF->NRecs; I++) {
-			CFile->ReadRec(I, CRecPtr);
+		for (I = 1; I <= rdb_file->FF->NRecs; I++) {
+			rdb_file->ReadRec(I, rdb_file->FF->RecPtr);
 			RP.i_rec = I;
-			Verif = CFile->loadB(ChptVerif, CRecPtr);
-			STyp = CFile->loadS(ChptTyp, CRecPtr);
+			Verif = rdb_file->loadB(ChptVerif, rdb_file->FF->RecPtr);
+			STyp = rdb_file->loadS(ChptTyp, rdb_file->FF->RecPtr);
 			Typ = STyp[0];
-			Name = OldTrailChar(' ', CFile->loadS(ChptName, CRecPtr));
-			Txt = CFile->loadT(ChptTxt, CRecPtr);
-			if (Verif && ((ChptTF->LicenseNr != 0) || Encryp || (Chpt->FF->UMode == RdOnly))) GoCompileErr(I, 647);
+			Name = OldTrailChar(' ', rdb_file->loadS(ChptName, rdb_file->FF->RecPtr));
+			Txt = rdb_file->loadT(ChptTxt, rdb_file->FF->RecPtr);
+			if (Verif && ((ChptTF->LicenseNr != 0) || Encryp || (rdb_file->FF->UMode == RdOnly))) GoCompileErr(I, 647);
 			if (Verif || ChptTF->CompileAll || FromCtrlF10 || (Typ == 'U') ||
 				(Typ == 'F' || Typ == 'D') && CompileFD ||
 				(Typ == 'P') && ChptTF->CompileProc) {
-				OldTxt = CFile->loadT(ChptOldTxt, CRecPtr);
+				OldTxt = rdb_file->loadT(ChptOldTxt, rdb_file->FF->RecPtr);
 				InpRdbPos = RP;
 				if (IsTestRun) {
 					ClrScr(TextAttr);
 					screen.GotoXY(3 + lmsg, 2);
 					printf("%*i", 4, I);
 					screen.GotoXY(3 + lmsg, 3);
-					printf("%*s%*s", 4, STyp.c_str(), 14, CFile->loadS(ChptName, CRecPtr).c_str());
+					printf("%*s%*s", 4, STyp.c_str(), 14, rdb_file->loadS(ChptName, rdb_file->FF->RecPtr).c_str());
 					if (!(Typ == ' ' || Typ == 'D' || Typ == 'U')) { /* dupclicate name checking */
 						for (J = 1; J <= I - 1; J++) {
-							CFile->ReadRec(J, CRecPtr);
-							if ((STyp == CFile->loadS(ChptTyp, CRecPtr))
-								&& EquUpCase(Name, OldTrailChar(' ', CFile->loadS(ChptName, CRecPtr)))) {
+							rdb_file->ReadRec(J, rdb_file->FF->RecPtr);
+							if ((STyp == rdb_file->loadS(ChptTyp, rdb_file->FF->RecPtr))
+								&& EquUpCase(Name, OldTrailChar(' ', rdb_file->loadS(ChptName, rdb_file->FF->RecPtr)))) {
 								GoCompileErr(I, 649);
 							}
 						}
-						CFile->ReadRec(I, CRecPtr);
+						rdb_file->ReadRec(I, rdb_file->FF->RecPtr);
 					}
 				}
 				switch (Typ) {
@@ -1325,11 +1327,11 @@ bool CompileRdb(DataEditor* data_editor, bool Displ, bool Run, bool FromCtrlF10)
 					if ((Txt == 0) && IsTestRun) {
 						SetMsgPar(Name);
 						if (EquUpCase(ext, ".DBF") && PromptYN(39)) {
-							CFile->saveT(ChptOldTxt, 0, CRecPtr);
+							rdb_file->saveT(ChptOldTxt, 0, rdb_file->FF->RecPtr);
 							OldTxt = 0;
 							MakeDbfDcl(nm);
-							Txt = CFile->loadT(ChptTxt, CRecPtr);
-							CFile->WriteRec(I, CRecPtr);
+							Txt = rdb_file->loadT(ChptTxt, rdb_file->FF->RecPtr);
+							rdb_file->WriteRec(I, rdb_file->FF->RecPtr);
 						}
 					}
 #ifndef FandSQL
@@ -1337,31 +1339,31 @@ bool CompileRdb(DataEditor* data_editor, bool Displ, bool Run, bool FromCtrlF10)
 #endif
 					if (Verif || ChptTF->CompileAll || OldTxt == 0) {
 					label2:
-						p1 = RdF(Name);
+						p1 = RdF(rdb_file, Name);
 						// TODO: toto se asi zase musi povolit !!! 
 						//WrFDSegment(I);
-						if (CFile->IsHlpFile) CRdb->help_file = CFile;
+						if (rdb_file->IsHlpFile) CRdb->help_file = rdb_file;
 						if (OldTxt > 0) MergeOldNew(Verif, OldTxt);
-						ReleaseStore(&p1);
-						CFile = Chpt;
+						//ReleaseStore(&p1);
+						//CFile = Chpt;
 						// Odmazani dat z TTT souboru nebudeme provadet!
 						/*if (ChptTF->LicenseNr == 0) ChptTF->Delete(OldTxt);
 						else if (OldTxt != 0) ChptTF->Delete(OldTxt - ChptTF->LicenseNr);*/
 					}
 					else if (!RdFDSegment(I, OldTxt)) {
 						LinkDRoot = ld;
-						ReleaseStore(&p1);
-						CFile = Chpt;
+						//ReleaseStore(&p1);
+						//CFile = Chpt;
 						goto label2;
 					}
 					else {
-						ChainLast(FileDRoot, CFile); MarkStore(p1);
-						if (CFile->IsHlpFile) CRdb->help_file = CFile;
+						ChainLast(FileDRoot, rdb_file); MarkStore(p1);
+						if (rdb_file->IsHlpFile) CRdb->help_file = rdb_file;
 					}
 					break;
 				}
 				case 'M': {
-					SetInpTTPos(CFile, Txt, Encryp);
+					SetInpTTPos(rdb_file, Txt, Encryp);
 					const std::unique_ptr merge = std::make_unique<Merge>();
 					merge->Read();
 					break;
@@ -1370,13 +1372,13 @@ bool CompileRdb(DataEditor* data_editor, bool Displ, bool Run, bool FromCtrlF10)
 					if (Txt == 0 && IsTestRun) {
 						const std::unique_ptr auto_report = std::make_unique<ReportGenerator>();
 						RprtTxt = auto_report->SelGenRprt(Name);
-						CFile = Chpt;
+						//CFile = Chpt;
 						if (RprtTxt.empty()) GoCompileErr(I, 1145);
-						CFile->saveS(ChptTxt, RprtTxt, CRecPtr);
-						CFile->WriteRec(I, CRecPtr);
+						rdb_file->saveS(ChptTxt, RprtTxt, rdb_file->FF->RecPtr);
+						rdb_file->WriteRec(I, rdb_file->FF->RecPtr);
 					}
 					else {
-						SetInpTTPos(CFile, Txt, Encryp);
+						SetInpTTPos(rdb_file, Txt, Encryp);
 						const std::unique_ptr report = std::make_unique<Report>();
 						report->Read(nullptr);
 					}
@@ -1390,7 +1392,7 @@ bool CompileRdb(DataEditor* data_editor, bool Displ, bool Run, bool FromCtrlF10)
 						lstFD = (FileD*)LastInChain(FileDRoot);
 					}
 					std::deque<LinkD*> ld = LinkDRoot;
-					SetInpTTPos(CFile, Txt, Encryp);
+					SetInpTTPos(rdb_file, Txt, Encryp);
 					ReadProcHead(Name);
 					ReadProcBody();
 					lstFD->pChain = nullptr;
@@ -1400,8 +1402,11 @@ bool CompileRdb(DataEditor* data_editor, bool Displ, bool Run, bool FromCtrlF10)
 				case 'E': {
 					//PushEdit();
 					std::vector<FieldDescr*> unusedFD;
-					reader->RdFormOrDesign(unusedFD, RP);
-					edit = reader->GetEditD();
+					std::unique_ptr<EditReader> e_reader = std::make_unique<EditReader>();
+					e_reader->RdFormOrDesign(unusedFD, RP);
+					// replace last 'edit' (exception handling)
+					delete edit;
+					edit = e_reader->GetEditD();
 					//E = OldE;
 					//EditDRoot = E;
 					break;
@@ -1410,7 +1415,7 @@ bool CompileRdb(DataEditor* data_editor, bool Displ, bool Run, bool FromCtrlF10)
 					if (!top || (I > 1)) GoCompileErr(I, 623);
 					if (Txt != 0) {
 						ResetCompilePars();
-						SetInpTTPos(CFile, Txt, Encryp);
+						SetInpTTPos(rdb_file, Txt, Encryp);
 						RdUserId(!IsTestRun || (ChptTF->LicenseNr != 0));
 						MarkStore(p1);
 					}
@@ -1418,7 +1423,7 @@ bool CompileRdb(DataEditor* data_editor, bool Displ, bool Run, bool FromCtrlF10)
 				}
 				case 'D': {
 					ResetCompilePars();
-					SetInpTTPos(CFile, Txt, Encryp);
+					SetInpTTPos(rdb_file, Txt, Encryp);
 					ReadDeclChpt();
 					MarkStore(p1);
 					break;
@@ -1435,11 +1440,12 @@ bool CompileRdb(DataEditor* data_editor, bool Displ, bool Run, bool FromCtrlF10)
 			}
 			ReleaseStore(&p1);
 			ReleaseStore(&p2);
-			CFile = Chpt; CRecPtr = Chpt->FF->RecPtr;
+			//CFile = Chpt;
+			//CRecPtr = rdb_file->FF->RecPtr;
 			if (Verif) {
-				CFile->ReadRec(I, CRecPtr);
-				CFile->saveB(ChptVerif, false, CRecPtr);
-				CFile->WriteRec(I, CRecPtr);
+				rdb_file->ReadRec(I, rdb_file->FF->RecPtr);
+				rdb_file->saveB(ChptVerif, false, rdb_file->FF->RecPtr);
+				rdb_file->WriteRec(I, rdb_file->FF->RecPtr);
 			}
 		}
 		if (ChptTF->CompileAll || ChptTF->CompileProc) {
@@ -1449,10 +1455,10 @@ bool CompileRdb(DataEditor* data_editor, bool Displ, bool Run, bool FromCtrlF10)
 		}
 		CompileFD = false;
 		result = true;
-		if (!Run) {
-			CRecPtr = edit->NewRecPtr;
-			CFile->ReadRec(data_editor->CRec(), CRecPtr);
-		}
+		//if (!Run) {
+		//	CRecPtr = edit->NewRecPtr;
+		//	//CFile->ReadRec(data_editor->CRec(), CRecPtr);
+		//}
 		CompileMsgOff(Buf, w);
 #ifdef FandSQL
 		if (top && (Strm1 != nullptr)) Strm1->Login(UserName, UserPassWORD);
@@ -1466,9 +1472,11 @@ bool CompileRdb(DataEditor* data_editor, bool Displ, bool Run, bool FromCtrlF10)
 		PrevCompInp.clear();
 		//ReleaseBoth(p, p2);
 		//E = OldE; EditDRoot = E;
-		CFile = Chpt;
-		if (!Run) CRecPtr = edit->NewRecPtr;
-		if (!IsCompileErr) { InpRdbPos.i_rec = I; }
+		//CFile = Chpt;
+		//if (!Run) CRecPtr = edit->NewRecPtr;
+		if (!IsCompileErr) {
+			InpRdbPos.i_rec = I;
+		}
 	}
 
 	delete edit; edit = nullptr;
@@ -1546,7 +1554,7 @@ bool EditExecRdb(std::string Nm, std::string proc_name, Instr_proc* proc_call, w
 #endif
 			MarkStore(p);
 			EditRdbMode = false;
-			bool hasToCompileRdb = CompileRdb(nullptr, false, true, false);
+			bool hasToCompileRdb = CompileRdb(Chpt, false, true, false);
 			if (hasToCompileRdb) {
 				bool procedureFound = FindChpt('P', proc_name, true, &RP);
 				if (procedureFound) {
@@ -1617,7 +1625,7 @@ bool EditExecRdb(std::string Nm, std::string proc_name, Instr_proc* proc_call, w
 		result = true;
 		Chpt->FF->WasRdOnly = false;
 		if (!top && (Chpt->FF->NRecs > 0))
-			if (CompileRdb(data_editor.get(), true, false, false)) {
+			if (CompileRdb(Chpt, true, false, false)) {
 				if (FindChpt('P', proc_name, true, &RP)) {
 					data_editor->GotoRecFld(RP.i_rec, data_editor->CFld);
 				}
@@ -1643,7 +1651,7 @@ bool EditExecRdb(std::string Nm, std::string proc_name, Instr_proc* proc_call, w
 		}
 		if (cc == __CTRL_F10) {
 			SetUpdHandle(ChptTF->Handle);
-			if (!CompileRdb(data_editor.get(), true, false, true)) {
+			if (!CompileRdb(Chpt, true, false, true)) {
 				if (IsCompileErr) {
 					GotoErrPos(Brk);
 					goto label5;
@@ -1662,7 +1670,7 @@ bool EditExecRdb(std::string Nm, std::string proc_name, Instr_proc* proc_call, w
 			goto label8;
 		}
 		if (Brk != 0) {
-			if (!CompileRdb(data_editor.get(), Brk == 2, false, false)) {
+			if (!CompileRdb(Chpt, Brk == 2, false, false)) {
 				if (IsCompileErr) {
 					GotoErrPos(Brk);
 					goto label5;
