@@ -21,7 +21,7 @@ void TestUserView();
 void TestDupl(FileD* FD);
 void RdFieldDList(FileD* file_d, bool Stored);
 FileD* RdFileD(FileD* file_d, std::string FileName, FileType FDTyp, std::string Ext);
-void RdKeyD();
+void RdKeyD(FileD* file_d);
 void CheckDuplAlias(pstring Name);
 void LookForK(pstring* Name, FileD* F);
 XKey* RdFileOrAlias1(FileD* F);

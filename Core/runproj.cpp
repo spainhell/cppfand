@@ -1209,20 +1209,20 @@ bool EquKeys(XKey* K1, XKey* K2)
 	return result;
 }
 
-bool MergeOldNew(bool Veriflongint, int Pos)
+bool MergeOldNew(FileD* file_d, bool Veriflongint, int Pos)
 {
 	std::string Name;
 	std::deque<LinkD*> ld = LinkDRoot;
 	auto result = false;
 	FileD* FDOld = nullptr;
-	FileD* FDNew = CFile;
-	SetPathAndVolume(CFile);
+	FileD* FDNew = file_d;
+	SetPathAndVolume(file_d);
 	Name = FDNew->Name;
 	FDNew->Name = "@";
-	CFile = Chpt;
 	if (!RdFDSegment(0, Pos)) goto label1;
-	ChainLast(FileDRoot, CFile);
-	FDOld = CFile; FDOld->Name = Name;
+	ChainLast(FileDRoot, Chpt);
+	FDOld = Chpt;
+	FDOld->Name = Name;
 	if ((FDNew->FF->file_type != FDOld->FF->file_type) || !EquStoredF(FDNew->FldD.front(), FDOld->FldD.front())
 #ifdef FandSQL
 		&& !FDNew->IsSQLFile && !FDOld->IsSQLFile
@@ -1232,7 +1232,7 @@ bool MergeOldNew(bool Veriflongint, int Pos)
 		result = true;
 	}
 	else if ((FDOld->FF->file_type == FileType::INDEX) && !EquKeys(FDOld->Keys[0], FDNew->Keys[0])) {
-		SetPathAndVolume(CFile);
+		SetPathAndVolume(Chpt);
 		CPath = CExtToX(CDir, CName, CExt);
 		MyDeleteFile(CPath);
 	}
@@ -1241,7 +1241,6 @@ label1:
 	LinkDRoot = ld;
 	FDNew->Name = Name;
 	FDNew->FullPath = CPath;
-	CFile = FDNew;
 	CRecPtr = Chpt->FF->RecPtr;
 	return result;
 }
@@ -1343,7 +1342,9 @@ bool CompileRdb(FileD* rdb_file, bool Displ, bool Run, bool FromCtrlF10)
 						// TODO: toto se asi zase musi povolit !!! 
 						//WrFDSegment(I);
 						if (rdb_file->IsHlpFile) CRdb->help_file = rdb_file;
-						if (OldTxt > 0) MergeOldNew(Verif, OldTxt);
+						if (OldTxt > 0) {
+							MergeOldNew(rdb_file, Verif, OldTxt);
+						}
 						//ReleaseStore(&p1);
 						//CFile = Chpt;
 						// Odmazani dat z TTT souboru nebudeme provadet!

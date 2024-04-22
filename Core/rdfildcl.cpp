@@ -676,7 +676,7 @@ FileD* RdFileD(FileD* file_d, std::string FileName, FileType FDTyp, std::string 
 		}
 		if ((Lexem == '#') && (ForwChar == 'K')) {
 			RdLex();
-			RdKeyD();
+			RdKeyD(file_d);
 			continue;
 		}
 		break;
@@ -733,7 +733,7 @@ label1:
 	return file_d;
 }
 
-void RdKeyD()
+void RdKeyD(FileD* file_d)
 {
 	FieldDescr* F = nullptr;
 	FieldDescr* F2 = nullptr;
@@ -748,30 +748,30 @@ void RdKeyD()
 
 	RdLex();
 	if (Lexem == '@') {
-		if (!CFile->Keys.empty() || CFile->IsParFile) Error(26);
+		if (!file_d->Keys.empty() || file_d->IsParFile) Error(26);
 		RdLex();
 		if (Lexem == '@') {
 			RdLex();
-			CFile->IsParFile = true;
+			file_d->IsParFile = true;
 		}
 		else {
 			Name = "";
 		label1:
-			if (CFile->Keys.empty()) {
+			if (file_d->Keys.empty()) {
 				N = 1;
-				K = new XKey(CFile);
-				CFile->Keys.push_back(K);
+				K = new XKey(file_d);
+				file_d->Keys.push_back(K);
 		}
 			else {
-				K1 = CFile->Keys[0];
+				K1 = file_d->Keys[0];
 				N = 2;
 				while (K1->Chain != nullptr) {
 					K1 = K1->Chain;
 					N++;
 				}
-				K = new XKey(CFile);
+				K = new XKey(file_d);
 				K1->Chain = K;
-				CFile->Keys.push_back(K);
+				file_d->Keys.push_back(K);
 			}
 
 			K->Alias = Name;
@@ -783,13 +783,13 @@ void RdKeyD()
 			}
 			else if (Lexem == '*') {
 #ifdef FandSQL
-				if (CFile->typSQLFile) Error(155);
+				if (file_d->typSQLFile) Error(155);
 #endif
 				K->Duplic = true;
 				RdLex();
 			}
 			K->IndexRoot = N;
-			K->IndexLen = RdKFList(&K->KFlds, CFile);
+			K->IndexLen = RdKFList(&K->KFlds, file_d);
 			if (K->IndexLen > MaxIndexLen) {
 				OldError(105);
 			}
@@ -822,15 +822,15 @@ label2:
 
 	L = new LinkD();
 	L->RoleName = Name;
-	L->FromFD = CFile;
+	L->FromFD = file_d;
 	L->ToFD = FD;
 	L->ToKey = K;
 	LinkDRoot.push_front(L);
 
 	if (Lexem == '!') {
-		if (CFile->FF->file_type != FileType::INDEX
+		if (file_d->FF->file_type != FileType::INDEX
 #ifdef FandSQL
-			&& !CFile->typSQLFile
+			&& !file_d->typSQLFile
 #endif
 			) Error(108);
 		if (K->Duplic) {
@@ -846,7 +846,7 @@ label2:
 	//Arg = &L->Args;
 	KF = K->KFlds;
 label3:
-	F = RdFldName(CFile);
+	F = RdFldName(file_d);
 	if (F->field_type == FieldType::TEXT) OldError(84);
 	arg = new KeyFldD();
 	arg->FldD = F;

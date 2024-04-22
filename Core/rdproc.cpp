@@ -448,8 +448,6 @@ FrmlElem* RdFunctionP(char& FFTyp)
 		iZ->FFD = FD;
 		iZ->Key = K;
 		iZ->SaveArgs(Arg, N);
-		//Move(Arg, iZ->Arg, 4 * N);
-		//Z->Arg = Arg;
 		if (FTyp == 'R') goto label2;
 	}
 	else if (IsKeyWord("LINK")) {
