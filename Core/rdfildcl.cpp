@@ -721,7 +721,7 @@ FileD* RdFileD(FileD* file_d, std::string FileName, FileType FDTyp, std::string 
 	}
 	MarkStore(p);
 	li = new LiRoots();
-	if ((Lexem == '#') && (ForwChar == 'D')) { compiler->RdLex(); TestDepend(); }
+	if ((Lexem == '#') && (ForwChar == 'D')) { compiler->RdLex(); TestDepend(file_d); }
 	if ((Lexem == '#') && (ForwChar == 'L')) { compiler->RdLex(); RdChkDChain(&li->Chks); }
 	if ((Lexem == '#') && (ForwChar == 'I')) { compiler->RdLex(); RdImpl(&li->Impls); }
 	// TODO: jak toto nahradit?
@@ -804,7 +804,7 @@ label2:
 		compiler->RdLex();
 		compiler->RdLex();
 		if (Lexem == '@') {
-			CheckDuplAlias(Name);
+			CheckDuplAlias(file_d, Name);
 			compiler->RdLex();
 			compiler->Accept(')');
 			goto label1;
@@ -871,27 +871,27 @@ label6:
 	}
 }
 
-void CheckDuplAlias(pstring Name)
+void CheckDuplAlias(FileD* file_d, pstring Name)
 {
-	if (CFile->FF->file_type != FileType::INDEX
+	if (file_d->FF->file_type != FileType::INDEX
 #ifdef FandSQL
-		&& !CFile->typSQLFile
+		&& !file_d->typSQLFile
 #endif
 		) compiler->Error(108);
-	LookForK(&Name, CFile);
+	LookForK(file_d, &Name, file_d);
 	FileD* F = FileDRoot;
 	while (F != nullptr) {
-		LookForK(&Name, F);
-		F = (FileD*)F->pChain;
+		LookForK(file_d, &Name, F);
+		F = F->pChain;
 	}
 }
 
-void LookForK(pstring* Name, FileD* F)
+void LookForK(FileD* file_d, pstring* Name, FileD* F)
 {
 	std::string name = *Name;
 	if (EquUpCase(F->Name, name)) compiler->Error(26);
 
-	for (auto& K : CFile->Keys) {
+	for (auto& K : file_d->Keys) {
 		if (EquUpCase(K->Alias, *Name)) compiler->Error(26);
 	}
 }
@@ -937,7 +937,7 @@ label1:
 	*KD = k;
 }
 
-void TestDepend()
+void TestDepend(FileD* file_d)
 {
 	FrmlElem* ZBool = nullptr;
 	FrmlElem* Z = nullptr;
@@ -951,7 +951,7 @@ label1:
 	ZBool = compiler->RdBool(nullptr);
 	compiler->Accept(')');
 label2:
-	F = compiler->RdFldName(CFile);
+	F = compiler->RdFldName(file_d);
 	if ((F->Flg & f_Stored) == 0) compiler->OldError(14);
 	compiler->Accept(_assign);
 	Z = compiler->RdFrml(FTyp, nullptr);

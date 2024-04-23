@@ -35,7 +35,7 @@ public:
 	void SetInpStdStr(std::string& s, bool ShowErr);
 	void SetInpLongStr(LongStr* S, bool ShowErr);
 	void SetInpTTPos(FileD* file_d, int Pos, bool Decode);
-	void SetInpTT(RdbPos* rdb_pos, bool FromTxt);
+	void SetInpTT(FileD* file_d, RdbPos* rdb_pos, bool FromTxt);
 	void SetInpTTxtPos(FileD* FD);
 	void ReadChar();
 	WORD RdDirective(bool& b);
@@ -61,7 +61,7 @@ public:
 	char Rd1Char();
 	char RdQuotedChar();
 	void AcceptKeyWord(const std::string& S);
-	void RdLocDcl(LocVarBlkD* LVB, bool IsParList, bool WithRecVar, char CTyp);
+	void RdLocDcl(FileD* file_d, LocVarBlkD* LVB, bool IsParList, bool WithRecVar, char CTyp);
 	bool FindLocVar(LocVarBlkD* LVB, LocVar** LV);
 	bool FindLocVar(LocVar* LVRoot, LocVar** LV);
 	bool FindChpt(char Typ, const pstring& name, bool local, RdbPos* RP);
@@ -72,47 +72,46 @@ public:
 	FieldDescr* RdFldName(FileD* FD);
 	FileD* FindFileD();
 	FileD* RdFileName();
-	LinkD* FindLD(std::string RoleName);
+	LinkD* FindLD(FileD* file_d, std::string RoleName);
 	bool IsRoleName(bool Both, FileD** FD, LinkD** LD);
 	FrmlElem* RdFAccess(FileD* FD, LinkD* LD, char& FTyp);
 	FrmlElem* TryRdFldFrml(FileD* FD, char& FTyp, MergeReportBase* caller);
-	FrmlElem* RdFldNameFrmlF(char& FTyp, MergeReportBase* caller);
+	FrmlElem* RdFldNameFrmlF(FileD* file_d, char& FTyp, MergeReportBase* caller);
 	FrmlElem* FrmlContxt(FrmlElem* Z, FileD* FD, void* RP);
 	FrmlElem* MakeFldFrml(FieldDescr* F, char& FTyp);
 	void TestString(char FTyp);
 	void TestReal(char FTyp);
 	FrmlElem* RdFrml(char& FTyp, MergeReportBase* caller);
-	FrmlElem* RdKeyInBool(KeyInD** KIRoot, bool NewMyBP, bool FromRdProc, bool& SQLFilter, MergeReportBase* caller);
+	FrmlElem* RdKeyInBool(FileD* file_d, KeyInD** KIRoot, bool NewMyBP, bool FromRdProc, bool& SQLFilter, MergeReportBase* caller);
 	FrmlElem* RdBool(MergeReportBase* caller);
 	FrmlElem* RdRealFrml(MergeReportBase* caller);
 	FrmlElem* RdStrFrml(MergeReportBase* caller);
-	XKey* RdViewKey();
+	XKey* RdViewKey(FileD* file_d);
 	KeyFldD* RdKF(FileD* FD);
 	WORD RdKFList(KeyFldD** KFRoot, FileD* FD);
 	bool IsKeyArg(FieldDescr* F, FileD* FD);
 	void CompileRecLen(FileD* file_d);
 	stSaveState* SaveCompState();
 	void RestoreCompState(stSaveState* p);
-	void CFileLikeFD(FileD* FD, WORD MsgNr);
+	void CFileLikeFD(FileD* file_d, FileD* FD, WORD MsgNr);
 	std::string RdHelpName();
 	FrmlElem* RdAttr();
 	void RdW(WRectFrml& W);
 	void RdFrame(FrmlElem** Z, BYTE& WFlags);
-	bool PromptSortKeys(FieldListEl* FL, KeyFldD* SKRoot);
-	bool PromptSortKeys(std::vector<FieldDescr*>& FL, KeyFldD* SKRoot);
+	bool PromptSortKeys(FileD* file_d, FieldListEl* FL, KeyFldD* SKRoot);
+	bool PromptSortKeys(FileD* file_d, std::vector<FieldDescr*>& FL, KeyFldD* SKRoot);
 	void RdAssignFrml(char FTyp, bool& Add, FrmlElem** Z, MergeReportBase* caller);
 	bool FldTypIdentity(FieldDescr* F1, FieldDescr* F2);
-	void RdFldList(FieldListEl** FLRoot);
-	void RdFldList(std::vector<FieldDescr*>& vFields);
-	void RdFldList(std::vector<FieldDescr*>* vFields);
-	void RdNegFldList(bool& Neg, std::vector<FieldDescr*>& vFields);
-	void RdNegFldList(bool& Neg, std::vector<FieldDescr*>* vFields);
+	void RdFldList(FileD* file_d, FieldListEl** FLRoot);
+	void RdFldList(FileD* file_d, std::vector<FieldDescr*>& vFields);
+	void RdFldList(FileD* file_d, std::vector<FieldDescr*>* vFields);
+	void RdNegFldList(FileD* file_d, bool& Neg, std::vector<FieldDescr*>& vFields);
+	void RdNegFldList(FileD* file_d, bool& Neg, std::vector<FieldDescr*>* vFields);
 
 	FieldNameType rdFldNameType = FieldNameType::none;
 	FrmlElem* RdFldNameFrml(char& FTyp, MergeReportBase* caller);
 
 private:
-
 	double ValofS(pstring& S);
 	void SrchF(FieldDescr* F);
 	void SrchZ(FrmlElem* Z);

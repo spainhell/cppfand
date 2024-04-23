@@ -263,7 +263,8 @@ void ForAllFDs(ForAllFilesOperation op, FileD** file_d, WORD i)
 
 void ResetCompilePars()
 {
-	// TODO: compiler !!! ptrRdFldNameFrml = compiler->RdFldNameFrmlF;
+	// ptrRdFldNameFrml = compiler->RdFldNameFrmlF;
+	compiler->rdFldNameType = FieldNameType::F;
 	RdFunction = nullptr;
 	FileVarsAllowed = true;
 	FDLocVarAllowed = false;
