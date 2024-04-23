@@ -74,9 +74,8 @@ void ReportProc(RprtOpt* RO, bool save)
 	//ExitRecord er;
 	//MarkBoth(p, p2);
 	PrintView = false;
-	/* !!! with RO^ do!!! */
 	if (RO->Flds.empty()) {
-		SetInpTT(&RO->RprtPos, true);
+		compiler->SetInpTT(&RO->RprtPos, true);
 		const std::unique_ptr report = std::make_unique<Report>();
 		if (RO->SyntxChk) {
 			IsCompileErr = false;
@@ -240,7 +239,7 @@ void MergeProc(Instr_merge_display* PD)
 {
 	void* p = nullptr; void* p2 = nullptr;
 	MarkBoth(p, p2);
-	SetInpTT(&PD->Pos, true);
+	compiler->SetInpTT(&PD->Pos, true);
 
 	const std::unique_ptr merge = std::make_unique<Merge>();
 	merge->Read();
@@ -1625,7 +1624,7 @@ void CallProcedure(Instr_proc* PD)
 	//oldprocbp = ProcMyBP;
 	std::deque<LinkD*> ld = LinkDRoot;
 	lstFD = (FileD*)LastInChain(FileDRoot);
-	SetInpTT(&PD->PPos, true);
+	compiler->SetInpTT(&PD->PPos, true);
 
 #ifdef _DEBUG
 	std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
@@ -1645,7 +1644,7 @@ void CallProcedure(Instr_proc* PD)
 	//PushProcStk();
 	if ((n != PD->N) && !((n == PD->N - 1) && PD->ExPar)) {
 		CurrPos = 0;
-		Error(119);
+		compiler->Error(119);
 	}
 
 	it0 = PD->variables.vLocVar.begin();
@@ -1653,25 +1652,25 @@ void CallProcedure(Instr_proc* PD)
 	for (i = 0; i < n; i++) {
 		if (PD->TArg[i].FTyp != (*it0)->FTyp) {
 			CurrPos = 0;
-			Error(119);
+			compiler->Error(119);
 		}
 		switch (PD->TArg[i].FTyp) {
 		case 'r':
 		case 'i': {
 			if ((*it0)->FD != PD->TArg[i].FD) {
 				CurrPos = 0;
-				Error(119);
+				compiler->Error(119);
 			}
 			(*it0)->record = static_cast<uint8_t*>(PD->TArg[i].RecPtr);
 			break;
 		}
 		case 'f': {
 			if (PD->TArg[i].RecPtr != nullptr) {
-				const auto state = SaveCompState();
+				const auto state = compiler->SaveCompState();
 				std::string code = RunStdStr(CFile, PD->TArg[i].TxtFrml, CRecPtr);
-				SetInpStdStr(code, true);
+				compiler->SetInpStdStr(code, true);
 				CFile = RdFileD(CFile, PD->TArg[i].Name, FileType::FAND16, "$");
-				RestoreCompState(state);
+				compiler->RestoreCompState(state);
 			}
 			else {
 				CFile = PD->TArg[i].FD;
@@ -1693,7 +1692,7 @@ void CallProcedure(Instr_proc* PD)
 				|| PD->TArg[i].FromProlog
 				&& (PD->TArg[i].IsRetPar != lv->IsRetPar)) {
 				CurrPos = 0;
-				Error(119);
+				compiler->Error(119);
 			}
 			LVAssignFrml(CFile, lv, false, PD->TArg[i].Frml, CRecPtr);
 			break;

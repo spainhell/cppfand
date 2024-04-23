@@ -611,7 +611,8 @@ RdbD* PrepareRdb(const std::string& name, std::string& name1)
 	val(MsgLine, n, i);
 	std::string nr = std::to_string((TxtCols - n));
 	s = s + nr;
-	SetInpStr(s);
+	compiler->SetInpStr(s);
+	compiler->SetInpStr(s);
 
 	if ((name[0] == '\\')) name1 = name.substr(1, 8);
 	else name1 = name;

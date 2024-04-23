@@ -732,7 +732,7 @@ stSaveState* Compiler::SaveCompState()
 	return state;
 }
 
-void RestoreCompState(stSaveState* p)
+void Compiler::RestoreCompState(stSaveState* p)
 {
 	CurrChar = p->CurrChar;
 	ForwChar = p->ForwChar;
@@ -2151,11 +2151,17 @@ FrmlElem* Compiler::RdPrim(char& FTyp, MergeReportBase* caller)
 				TestString(Typ);
 				Accept(')');
 			}
-			else if (RdFunction != nullptr) Z = RdFunction(FTyp);
-			else Error(75);
+			else if (RdFunction != nullptr) {
+				Z = RdFunction(FTyp);
+			}
+			else {
+				Error(75);
+			}
 		}
 		else {
-			if (ptrRdFldNameFrml == nullptr && caller == nullptr) Error(110);
+			if (ptrRdFldNameFrml == nullptr && caller == nullptr) {
+				Error(110);
+			}
 			else {
 				if (ptrRdFldNameFrml != nullptr) {
 					Z = ptrRdFldNameFrml(FTyp, caller); // volani ukazatele na funkci
@@ -2163,8 +2169,12 @@ FrmlElem* Compiler::RdPrim(char& FTyp, MergeReportBase* caller)
 				else {
 					Z = caller->RdFldNameFrml(FTyp); // volani ukazatele na funkci
 				}
-				if (Z == nullptr) return nullptr;
-				if ((Z->Op != _access) || (((FrmlElem7*)Z)->LD != nullptr)) FrstSumVar = false;
+				if (Z == nullptr) {
+					return nullptr;
+				}
+				if ((Z->Op != _access) || (((FrmlElem7*)Z)->LD != nullptr)) {
+					FrstSumVar = false;
+				}
 			}
 		}
 		break;
@@ -2184,7 +2194,9 @@ FrmlElem* Compiler::RdPrim(char& FTyp, MergeReportBase* caller)
 	}
 	case '-': {
 		RdLex();
-		if (Lexem == '-') Error(7);
+		if (Lexem == '-') {
+			Error(7);
+		}
 		Z = new FrmlElemFunction(_unminus, 0); // GetOp(_unminus, 0);
 		((FrmlElemFunction*)Z)->P1 = RdPrim(FTyp, caller);
 		TestReal(FTyp);
@@ -2198,7 +2210,7 @@ FrmlElem* Compiler::RdPrim(char& FTyp, MergeReportBase* caller)
 		break;
 	}
 	case _quotedstr: {
-		Z = new FrmlElemString(_const, 0); // GetOp(_const, LexWord.length() + 1);
+		Z = new FrmlElemString(_const, 0);
 		FTyp = 'S';
 		((FrmlElemString*)Z)->S = LexWord;
 		RdLex();
@@ -2206,7 +2218,7 @@ FrmlElem* Compiler::RdPrim(char& FTyp, MergeReportBase* caller)
 	}
 	default: {
 		FTyp = 'R';
-		Z = new FrmlElemNumber(_const, 0); // GetOp(_const, sizeof(double));
+		Z = new FrmlElemNumber(_const, 0);
 		((FrmlElemNumber*)Z)->R = RdRealConst();
 		break;
 	}
@@ -2504,7 +2516,7 @@ FrmlElem* Compiler::TryRdFldFrml(FileD* FD, char& FTyp, MergeReportBase* caller)
 
 	if (IsKeyWord("OWNED")) {
 		rff = ptrRdFldNameFrml;
-		ptrRdFldNameFrml = RdFldNameFrmlF;
+		// TODO: compiler !!! ptrRdFldNameFrml = RdFldNameFrmlF;
 		Accept('(');
 		z = new FrmlElem23(_owned, 12); // GetOp(_owned, 12);
 		TestIdentif();

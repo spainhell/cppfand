@@ -27,8 +27,8 @@ struct stSaveState
 
 class Compiler {
 public:
-	std::string Error(short N); // r1
-	void SetInpStr(std::string& s); //r31
+	std::string Error(short N);
+	void SetInpStr(std::string& s);
 	void SetInpStdStr(std::string& s, bool ShowErr);
 	void SetInpLongStr(LongStr* S, bool ShowErr);
 	void SetInpTTPos(FileD* file_d, int Pos, bool Decode);

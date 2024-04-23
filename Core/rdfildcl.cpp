@@ -1065,7 +1065,8 @@ void RdImper(AddD* AD)
 				KF = (KeyFldD*)KF->pChain;
 			}
 		}
-		if (Lexem == '!') { RdLex(); AD->Create = 2; }
+		if (Lexem == '!') { compiler->RdLex(); AD->Create = 2; }
+		if (Lexem == '!') { compiler->RdLex(); AD->Create = 2; }
 			}
 		}
 
