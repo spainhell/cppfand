@@ -350,17 +350,18 @@ FrmlElem* RdFunctionP(char& FFTyp)
 		FTyp = 'R';
 	label4:
 		compiler->RdLex();
-		Z = new FrmlElem21(_eval, 5); // GetOp(_eval, 5);
+		Z = new FrmlElem21(_eval, 5);
 		((FrmlElem21*)Z)->EvalTyp = FTyp;
 		((FrmlElem21*)Z)->EvalP1 = compiler->RdStrFrml(nullptr);
 	}
 	else if (FileVarsAllowed) compiler->Error(75);
 	else if (compiler->IsKeyWord("PROMPT")) {
 		compiler->RdLex();
-		Z = new FrmlElem11(_prompt, 4); // GetOp(_prompt, 4);
+		Z = new FrmlElem11(_prompt, 4);
 		((FrmlElem11*)Z)->P1 = compiler->RdStrFrml(nullptr);
 		FieldDescr* F = RdFieldDescr("", true);
-		((FrmlElem11*)Z)->FldD = F; FTyp = F->frml_type;
+		((FrmlElem11*)Z)->FldD = F;
+		FTyp = F->frml_type;
 		if (F->field_type == FieldType::TEXT) compiler->OldError(65);
 		if (Lexem == _assign) {
 			compiler->RdLex();
@@ -372,7 +373,7 @@ FrmlElem* RdFunctionP(char& FFTyp)
 		compiler->RdLex();
 		FTyp = 'S';
 		if (!IsRecVar(&LV)) { Op = _recno; goto label11; }
-		Z = new FrmlElem20(_keyof, 8); // GetOp(_keyof, 8);
+		Z = new FrmlElem20(_keyof, 8);
 		((FrmlElem20*)Z)->LV = LV;
 		((FrmlElem20*)Z)->PackKey = RdViewKeyImpl(((FrmlElem20*)Z)->LV->FD);
 		FTyp = 'S';
@@ -403,7 +404,7 @@ FrmlElem* RdFunctionP(char& FFTyp)
 				Arg[N] = compiler->RdFrml(Typ, nullptr);
 				N++;
 				if (Typ != KF->FldD->frml_type) compiler->OldError(12);
-				KF = (KeyFldD*)KF->pChain;
+				KF = KF->pChain;
 			}
 		}
 		else {

@@ -723,7 +723,7 @@ FileD* RdFileD(FileD* file_d, std::string FileName, FileType FDTyp, std::string 
 	li = new LiRoots();
 	if ((Lexem == '#') && (ForwChar == 'D')) { compiler->RdLex(); TestDepend(); }
 	if ((Lexem == '#') && (ForwChar == 'L')) { compiler->RdLex(); RdChkDChain(&li->Chks); }
-	if ((Lexem == '#') && (ForwChar == 'I')) { compiler->RdLex(); RdImpl(&li->Impls); }
+	if ((Lexem == '#') && (ForwChar == 'I')) { compiler->RdLex(); RdImpl(file_d, &li->Impls); }
 	// TODO: jak toto nahradit?
 	//if (PtrRec(InpRdbPos.rdb).Seg == 0/*compiled from pstring*/) {
 	//	CFile->LiOfs = 0; ReleaseStore(p);
@@ -804,16 +804,16 @@ label2:
 		compiler->RdLex();
 		compiler->RdLex();
 		if (Lexem == '@') {
-			CheckDuplAlias(Name);
+			CheckDuplAlias(file_d, Name);
 			compiler->RdLex();
 			compiler->Accept(')');
 			goto label1;
 		}
-		RdFileOrAlias(&FD, &K);
+		RdFileOrAlias(file_d , &FD, &K);
 		compiler->Accept(')');
 	}
 	else {
-		RdFileOrAlias(&FD, &K);
+		RdFileOrAlias(file_d, &FD, &K);
 	}
 
 	L = compiler->FindLD(Name);
@@ -871,27 +871,27 @@ label6:
 	}
 }
 
-void CheckDuplAlias(pstring Name)
+void CheckDuplAlias(FileD* file_d, pstring name)
 {
-	if (CFile->FF->file_type != FileType::INDEX
+	if (file_d->FF->file_type != FileType::INDEX
 #ifdef FandSQL
-		&& !CFile->typSQLFile
+		&& !file_d->typSQLFile
 #endif
 		) compiler->Error(108);
-	LookForK(&Name, CFile);
+	LookForK(file_d , &name, file_d);
 	FileD* F = FileDRoot;
 	while (F != nullptr) {
-		LookForK(&Name, F);
-		F = (FileD*)F->pChain;
+		LookForK(file_d , &name, F);
+		F = F->pChain;
 	}
 }
 
-void LookForK(pstring* Name, FileD* F)
+void LookForK(FileD* file_d, pstring* Name, FileD* F)
 {
 	std::string name = *Name;
 	if (EquUpCase(F->Name, name)) compiler->Error(26);
 
-	for (auto& K : CFile->Keys) {
+	for (auto& K : file_d->Keys) {
 		if (EquUpCase(K->Alias, *Name)) compiler->Error(26);
 	}
 }
@@ -912,20 +912,20 @@ label1:
 	return k;
 }
 
-void RdFileOrAlias(FileD** FD, XKey** KD)
+void RdFileOrAlias(FileD* file_d, FileD** FD, XKey** KD)
 {
-	FileD* f = nullptr; RdbD* r = nullptr; XKey* k = nullptr;
+	RdbD* r = nullptr;
+	XKey* k = nullptr;
 	compiler->TestIdentif();
-	f = CFile;
-	k = RdFileOrAlias1(f);
+	k = RdFileOrAlias1(file_d);
 	if (k != nullptr) goto label1;
 	r = CRdb;
 	while (r != nullptr) {
-		f = r->rdb_file;
-		while (f != nullptr) {
-			k = RdFileOrAlias1(f);
+		file_d = r->rdb_file;
+		while (file_d != nullptr) {
+			k = RdFileOrAlias1(file_d);
 			if (k != nullptr) goto label1;
-			f = f->pChain;
+			file_d = file_d->pChain;
 		}
 		r = r->ChainBack;
 	}
@@ -933,7 +933,7 @@ void RdFileOrAlias(FileD** FD, XKey** KD)
 label1:
 	if (k == nullptr) compiler->Error(24);
 	compiler->RdLex();
-	*FD = f;
+	*FD = file_d;
 	*KD = k;
 }
 
@@ -972,7 +972,7 @@ label2:
 	ReleaseStore(&p);
 }
 
-void RdImpl(ImplD** IDRoot)
+void RdImpl(FileD* file_d, ImplD** IDRoot)
 {
 	FrmlElem* Z = nullptr;
 	FieldDescr* F = nullptr;
@@ -980,12 +980,11 @@ void RdImpl(ImplD** IDRoot)
 	ImplD* ID = nullptr;
 	compiler->RdLex();
 label1:
-	F = compiler->RdFldName(CFile);
+	F = compiler->RdFldName(file_d);
 	if ((F->Flg & f_Stored) == 0) compiler->OldError(14);
 	compiler->Accept(_assign);
 	Z = compiler->RdFrml(FTyp, nullptr);
 	if (FTyp != F->frml_type) compiler->OldError(12);
-	//ID = (ImplD*)GetStore(sizeof(*ID)); 
 	ID = new ImplD();
 	ID->FldD = F;
 	ID->Frml = Z;
