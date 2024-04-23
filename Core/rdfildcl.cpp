@@ -27,32 +27,32 @@ FieldDescr* RdFieldDescr(std::string name, bool Stored)
 	F->Name = name;
 	if (Stored) Flg = f_Stored;
 	else Flg = 0;
-	Accept(':');
-	if ((Lexem != _identifier) || (LexWord.length() > 1)) Error(10);
+	compiler->Accept(':');
+	if ((Lexem != _identifier) || (LexWord.length() > 1)) compiler->Error(10);
 
 	FieldType Typ = FieldDescr::GetFieldType((char)LexWord[1]);
 
-	RdLex();
+	compiler->RdLex();
 	FrmlTyp = 'S';
 	M = 0;
 	if (Typ == FieldType::NUMERIC || Typ == FieldType::FIXED) {
-		Accept(',');
-		L = RdInteger();
+		compiler->Accept(',');
+		L = compiler->RdInteger();
 	}
 	switch (Typ) {
 	case FieldType::NUMERIC: {
 		NBytes = (L + 1) / 2;
 		if (CurrChar == 'L') {
-			RdLex();
+			compiler->RdLex();
 			M = LeftJust;
 		}
 		break;
 	}
 	case FieldType::FIXED: {
-		if (Lexem == ',') { Flg += f_Comma; RdLex(); }
-		else Accept('.');
-		M = RdInteger();
-		if ((M > 15) || (L + M > 18)) OldError(3);
+		if (Lexem == ',') { Flg += f_Comma; compiler->RdLex(); }
+		else compiler->Accept('.');
+		M = compiler->RdInteger();
+		if ((M > 15) || (L + M > 18)) compiler->OldError(3);
 		NBytes = TabF[L + M];
 		if (M == 0) L++;
 		else L += (M + 2);
@@ -67,18 +67,18 @@ FieldDescr* RdFieldDescr(std::string name, bool Stored)
 		break;
 	}
 	case FieldType::ALFANUM: {
-		Accept(',');
+		compiler->Accept(',');
 		if (!Stored || (Lexem != _quotedstr)) {
-			L = RdInteger();
-			if (L > 255) Error(3);
-			if (CurrChar == 'R') RdLex();
+			L = compiler->RdInteger();
+			if (L > 255) compiler->Error(3);
+			if (CurrChar == 'R') compiler->RdLex();
 			else M = LeftJust;
 		}
 		else {
 			WORD n1 = 0;
 			WORD n = 0;
 			sstr = LexWord;
-			Accept(_quotedstr);
+			compiler->Accept(_quotedstr);
 			L = 0; c = '?'; n = 0;
 			for (size_t i = 0; i < sstr.length(); i++) {
 				switch (sstr[i]) {
@@ -128,11 +128,11 @@ FieldDescr* RdFieldDescr(std::string name, bool Stored)
 			M = LeftJust;
 			if (c != '?')
 				label1:
-			Error(171);
+			compiler->Error(171);
 		}
 		NBytes = L;
 		if (Stored && (Lexem == '!')) {
-			RdLex();
+			compiler->RdLex();
 			Flg += f_Encryp;
 		}
 		break;
@@ -140,9 +140,9 @@ FieldDescr* RdFieldDescr(std::string name, bool Stored)
 	case FieldType::DATE: {
 		sstr = "";
 		if (Lexem == ',') {
-			RdLex();
+			compiler->RdLex();
 			sstr = LexWord;
-			Accept(_quotedstr);
+			compiler->Accept(_quotedstr);
 		}
 		if (sstr.empty()) sstr = "DD.MM.YY";
 		// UPDATE: stejne to nefunguje, pri spusteni ulohy se to odnekud nacita znovu, tezko rict odkud
@@ -160,8 +160,8 @@ FieldDescr* RdFieldDescr(std::string name, bool Stored)
 	}
 	case FieldType::TEXT: {
 		if (Lexem == ',') {
-			RdLex();
-			L = RdInteger() + 2;
+			compiler->RdLex();
+			L = compiler->RdInteger() + 2;
 		}
 		else {
 			L = 1;
@@ -169,18 +169,18 @@ FieldDescr* RdFieldDescr(std::string name, bool Stored)
 		NBytes = sizeof(int);
 		HasTT = true;
 		if (Stored && (Lexem == '!')) {
-			RdLex();
+			compiler->RdLex();
 			Flg += f_Encryp;
 		}
 		break;
 	}
 	default: {
-		OldError(10);
+		compiler->OldError(10);
 		break;
 	}
 	}
-	if (NBytes == 0) OldError(113);
-	if ((L > TxtCols - 1) && (Typ != FieldType::ALFANUM)) OldError(3);
+	if (NBytes == 0) compiler->OldError(113);
+	if ((L > TxtCols - 1) && (Typ != FieldType::ALFANUM)) compiler->OldError(3);
 	F->field_type = Typ;
 	F->frml_type = FrmlTyp;
 	F->L = L;
@@ -195,10 +195,10 @@ ChkD* RdChkD(WORD Low)
 {
 	ChkD* C = new ChkD();
 	ChkD* result = C;
-	C->Bool = RdBool(nullptr);
+	C->Bool = compiler->RdBool(nullptr);
 	WORD Upper = OldErrPos;
-	if (Lexem == '?') { RdLex(); C->Warning = true; }
-	if (Lexem == ':') { RdLex(); C->TxtZ = RdStrFrml(nullptr); }
+	if (Lexem == '?') { compiler->RdLex(); C->Warning = true; }
+	if (Lexem == ':') { compiler->RdLex(); C->TxtZ = compiler->RdStrFrml(nullptr); }
 	else {
 		WORD N = Upper - Low;
 		//if (N > sizeof(pstring)) N = pred(sizeof(pstring));
@@ -210,8 +210,8 @@ ChkD* RdChkD(WORD Low)
 		//Move(&InpArrPtr[Low], &iZ->S[1], N);
 	}
 	if (Lexem == ',') {
-		RdLex();
-		C->HelpName = RdHelpName();
+		compiler->RdLex();
+		C->HelpName = compiler->RdHelpName();
 	}
 	return result;
 }
@@ -219,14 +219,14 @@ ChkD* RdChkD(WORD Low)
 void RdChkDChain(ChkD** CRoot)
 {
 	WORD Low = 0;
-	SkipBlank(false);
+	compiler->SkipBlank(false);
 	Low = CurrPos;
-	RdLex();
+	compiler->RdLex();
 label1:
 	if (*CRoot == nullptr) *CRoot = RdChkD(Low);
 	else ChainLast(*CRoot, RdChkD(Low));
 	if (Lexem == ';') {
-		SkipBlank(false); Low = CurrPos; RdLex();
+		compiler->SkipBlank(false); Low = CurrPos; compiler->RdLex();
 		if (!(Lexem == '#' || Lexem == 0x1A)) goto label1;
 	}
 }
@@ -240,13 +240,13 @@ void RdChkDsFromPos(FileD* FD, ChkD* C)
 	if (FD->ChptPos.rdb == nullptr) return;
 	if (FD->TxtPosUDLI == 0) return;
 	ResetCompilePars();
-	SetInpTTxtPos(FD);
-	RdLex();
+	compiler->SetInpTTxtPos(FD);
+	compiler->RdLex();
 	while (!(ForwChar == 'L' || ForwChar == 0x1A)) {
-		do { RdLex(); } while (!(Lexem == 0x1A || Lexem == '#'));
+		do { compiler->RdLex(); } while (!(Lexem == 0x1A || Lexem == '#'));
 	}
 	if (Lexem == 0x1A) return;
-	RdLex();
+	compiler->RdLex();
 	FileD* cf = CFile;
 	CFile = FD;
 	RdChkDChain(&C);
@@ -258,21 +258,21 @@ void RdBegViewDcl(EditOpt* EO)
 	bool neg = false, all = false;
 	FieldListEl* fl = nullptr;
 	if ((Lexem == _identifier || Lexem == '[')) {
-		RdChptName('E', &EO->FormPos, true);
+		compiler->RdChptName('E', &EO->FormPos, true);
 		return;
 	}
 	neg = false; all = false;
 	std::vector<FieldDescr*> fl1;
 	EO->UserSelFlds = false;
-	if (Lexem == '^') { RdLex(); neg = true; } Accept('(');
-	if (Lexem == _identifier) RdFldList(fl1);
+	if (Lexem == '^') { compiler->RdLex(); neg = true; } compiler->Accept('(');
+	if (Lexem == _identifier) compiler->RdFldList(fl1);
 	else neg = true;
 label1:
 	switch (Lexem) {
-	case '!': if (neg) { RdLex(); all = true; goto label1; } break;
-	case '?': { RdLex(); EO->UserSelFlds = true; goto label1; break; }
+	case '!': if (neg) { compiler->RdLex(); all = true; goto label1; } break;
+	case '?': { compiler->RdLex(); EO->UserSelFlds = true; goto label1; break; }
 	}
-	Accept(')');
+	compiler->Accept(')');
 	if (!neg) { EO->Flds = fl1; return; }
 	EO->Flds.clear();
 	for (auto& f : CFile->FldD) {
@@ -280,37 +280,37 @@ label1:
 			EO->Flds.push_back(f);
 		}
 	}
-	if (EO->Flds.empty()) OldError(117);
+	if (EO->Flds.empty()) compiler->OldError(117);
 }
 
 void RdByteList(pstring* s)
 {
-	Accept('(');
+	compiler->Accept('(');
 	short l = 0;
 
 	while (true) {
-		short i1 = RdInteger();
+		short i1 = compiler->RdInteger();
 		short i2 = i1;
-		if (i1 < 0) OldError(133);
+		if (i1 < 0) compiler->OldError(133);
 		if (Lexem == _subrange) {
-			RdLex();
-			i2 = RdInteger();
-			if (i2 < i1) OldError(133);
+			compiler->RdLex();
+			i2 = compiler->RdInteger();
+			if (i2 < i1) compiler->OldError(133);
 		}
-		if ((i2 > 255) || (l + i2 - i1 >= 255)) OldError(133);
+		if ((i2 > 255) || (l + i2 - i1 >= 255)) compiler->OldError(133);
 		for (short i = i1; i <= i2; i++) {
 			l++;
 			(*s)[l] = (char)i;
 		}
 		if (Lexem == ',') {
-			RdLex();
+			compiler->RdLex();
 			continue;
 		}
 		break;
 	}
 
 	(*s)[0] = (char)l;
-	Accept(')');
+	compiler->Accept(')');
 }
 
 void RdByteListInStore()
@@ -333,39 +333,39 @@ bool RdUserView(FileD* file_d, std::string ViewName, EditOpt* EO)
 			break;
 		}
 		ResetCompilePars();
-		SetInpTTxtPos(file_d);
-		RdLex();
+		compiler->SetInpTTxtPos(file_d);
+		compiler->RdLex();
 		if ((Lexem != '#') || (ForwChar != 'U')) {
 			file_d = file_d->OrigFD;
 			if ((file_d != nullptr) && !found) continue;
 			break;
 		}
-		RdLex(); // #
-		RdLex(); // U
+		compiler->RdLex(); // #
+		compiler->RdLex(); // U
 		while (true) {
 			std::string sLexWord = LexWord;
 			if (EquUpCase(ViewName, sLexWord)) found = true;
 			EO->ViewName = LexWord;
-			RdLex(); /*'('*/
+			compiler->RdLex(); /*'('*/
 			do {
-				RdLex();
+				compiler->RdLex();
 			} while (!(Lexem == ')' || Lexem == 0x1A));
-			RdLex();
-			RdLex();/*"):"*/
-			K = RdViewKey();
+			compiler->RdLex();
+			compiler->RdLex();/*"):"*/
+			K = compiler->RdViewKey();
 			if (K != nullptr) {
-				RdLex();/*','*/
+				compiler->RdLex();/*','*/
 				EO->ViewKey = K;
 			}
 			RdBegViewDcl(EO);
 			while (Lexem == ',') {
 				FVA = FileVarsAllowed;
 				FileVarsAllowed = false;
-				if (!RdViewOpt(EO)) Error(44);
+				if (!RdViewOpt(EO)) compiler->Error(44);
 				FileVarsAllowed = FVA;
 			}
 			if (!found && (Lexem == ';')) {
-				RdLex();
+				compiler->RdLex();
 				if (!(Lexem == '#' || Lexem == 0x1A)) continue;
 			}
 			break;
@@ -382,9 +382,9 @@ void TestUserView()
 {
 	EditOpt EO = EditOpt();
 	EO.UserSelFlds = true;
-	RdLex();
+	compiler->RdLex();
 	while (true) {
-		TestIdentif();
+		compiler->TestIdentif();
 		TestDupl(CFile);
 		FileD* FD = FileDRoot;
 		while (FD != nullptr) {
@@ -399,21 +399,21 @@ void TestUserView()
 		else {
 			ChainLast(CFile->ViewNames, S);
 		}
-		RdLex();
+		compiler->RdLex();
 		RdByteListInStore();
-		Accept(':');
+		compiler->Accept(':');
 		// GetEditOpt(); // vytvori objekt EditOpt
-		XKey* K = RdViewKey(); // nacteni klice, podle ktereho budou polozky setrideny
+		XKey* K = compiler->RdViewKey(); // nacteni klice, podle ktereho budou polozky setrideny
 		if (K != nullptr) {
-			Accept(',');
+			compiler->Accept(',');
 			EO.ViewKey = K;
 		}
 		RdBegViewDcl(&EO);
 		while (Lexem == ',') {
-			if (!RdViewOpt(&EO)) Error(44);
+			if (!RdViewOpt(&EO)) compiler->Error(44);
 		}
 		if (Lexem == ';') {
-			RdLex();
+			compiler->RdLex();
 			if (!(Lexem == '#' || Lexem == 0x1A)) continue;
 		}
 		break;
@@ -426,7 +426,7 @@ void TestDupl(FileD* FD)
 	S = FD->ViewNames;
 	while (S != nullptr) {
 		std::string tmp = LexWord;
-		if (EquUpCase(S->S, tmp)) Error(26);
+		if (EquUpCase(S->S, tmp)) compiler->Error(26);
 		S = (StringList)S->pChain;
 	}
 }
@@ -438,18 +438,18 @@ void RdFieldDList(FileD* file_d, bool stored)
 	FrmlElem* Z = nullptr;
 
 	while (true) {
-		TestIdentif();
+		compiler->TestIdentif();
 		std::string name = LexWord;
-		F = FindFldName(file_d);
-		if (F != nullptr) Error(26);
-		RdLex();
+		F = compiler->FindFldName(file_d);
+		if (F != nullptr) compiler->Error(26);
+		compiler->RdLex();
 		if (!stored) {
-			Accept(_assign);
-			Z = RdFrml(FTyp, nullptr);
+			compiler->Accept(_assign);
+			Z = compiler->RdFrml(FTyp, nullptr);
 		}
 		F = RdFieldDescr(name, stored);
 		if ((file_d->FF->file_type == FileType::DBF) && stored && (F->field_type == FieldType::REAL || F->field_type == FieldType::NUMERIC)) {
-			OldError(86);
+			compiler->OldError(86);
 		}
 
 		file_d->FldD.push_back(F);
@@ -457,16 +457,16 @@ void RdFieldDList(FileD* file_d, bool stored)
 
 		if (stored) {
 			if (file_d->FF->file_type == FileType::FAND8) {
-				if ((F->field_type == FieldType::REAL || F->field_type == FieldType::BOOL || F->field_type == FieldType::TEXT)) OldError(35);
-				else if ((F->field_type == FieldType::FIXED) && (F->NBytes > 5)) OldError(36);
+				if ((F->field_type == FieldType::REAL || F->field_type == FieldType::BOOL || F->field_type == FieldType::TEXT)) compiler->OldError(35);
+				else if ((F->field_type == FieldType::FIXED) && (F->NBytes > 5)) compiler->OldError(36);
 			}
 		}
 		else {
 			F->Frml = Z;
-			if (FTyp != F->frml_type) OldError(12);
+			if (FTyp != F->frml_type) compiler->OldError(12);
 		}
 		if (Lexem == ';') {
-			RdLex();
+			compiler->RdLex();
 			if (!(Lexem == '#' || Lexem == 0x1A)) continue;
 		}
 		break;
@@ -476,7 +476,7 @@ void RdFieldDList(FileD* file_d, bool stored)
 FileD* FakeRdFDSegment(FileD* FD)
 {
 	if (Lexem != 0x1A) {
-		Accept(';');
+		compiler->Accept(';');
 	}
 	WORD i = FD->ChptPos.i_rec;
 	FileD* newFile = new FileD(*FD);
@@ -524,7 +524,7 @@ void SetLDIndexRoot(FileD* file_d, /*LinkD* L,*/ std::deque<LinkD*>& L2)
 
 		if ((L->MemberRef != 0) && ((L->IndexRoot == 0) || computed)) {
 			SetMsgPar(L->RoleName);
-			OldError(152);
+			compiler->OldError(152);
 		}
 	}
 }
@@ -545,15 +545,15 @@ FileD* RdFileD(FileD* file_d, std::string FileName, FileType FDTyp, std::string 
 	CompInpD* ChPos = nullptr;
 
 	ResetCompilePars();
-	RdLex();
+	compiler->RdLex();
 	issql = EquUpCase(Ext, ".SQL");
 	isHlp = EquUpCase(Ext, ".HLP");
-	if (IsKeyWord("JOURNALOF")) {
-		FD = RdFileName();
-		if (Lexem == ';') RdLex();
+	if (compiler->IsKeyWord("JOURNALOF")) {
+		FD = compiler->RdFileName();
+		if (Lexem == ';') compiler->RdLex();
 		SetMsgPar(FileName);
-		if (FDTyp != FileType::FAND16) OldError(103);
-		if (Lexem != 0x1A) Error(40);
+		if (FDTyp != FileType::FAND16) compiler->OldError(103);
+		if (Lexem != 0x1A) compiler->Error(40);
 #ifdef FandSQL
 		if (issql || rdb_file->typSQLFile) OldError(155);
 #endif
@@ -577,8 +577,8 @@ FileD* RdFileD(FileD* file_d, std::string FileName, FileType FDTyp, std::string 
 		if (!PrevCompInp.empty()) {
 			file_d->ChptPos = OrigInp()->InpRdbPos;
 		}
-		SetInpStr(JournalFlds);
-		RdLex();
+		compiler->SetInpStr(JournalFlds);
+		compiler->RdLex();
 		RdFieldDList(file_d, true);
 		F2 = (FieldDescr*)LastInChain(file_d->FldD.front());
 		while (F != nullptr) {
@@ -596,20 +596,20 @@ FileD* RdFileD(FileD* file_d, std::string FileName, FileType FDTyp, std::string 
 			F = F->pChain;
 		}
 		F2->pChain = nullptr;
-		CompileRecLen(file_d);
+		compiler->CompileRecLen(file_d);
 		ChainLast(FileDRoot, file_d);
 		MarkStore(p);
 		goto label1;
 	}
-	if (IsKeyWord("LIKE")) {
+	if (compiler->IsKeyWord("LIKE")) {
 		Prefix = FileName;
-		FD = RdFileName();
+		FD = compiler->RdFileName();
 		if (Lexem == '(') {
-			RdLex();
-			TestIdentif();
+			compiler->RdLex();
+			compiler->TestIdentif();
 			Prefix = LexWord;
-			RdLex();
-			Accept(')');
+			compiler->RdLex();
+			compiler->Accept(')');
 		}
 		//CallRdFDSegment(rdb_file);
 		// misto nacitani objektu ze souboru budeme objekt kopirovat
@@ -630,7 +630,7 @@ FileD* RdFileD(FileD* file_d, std::string FileName, FileType FDTyp, std::string 
 			|| FDTyp == FileType::INDEX)
 			|| !(file_d->FF->file_type == FileType::FAND16 || file_d->FF->file_type == FileType::INDEX)
 			) {
-			OldError(106);
+			compiler->OldError(106);
 		}
 
 		for (auto& K : file_d->Keys) {
@@ -663,19 +663,19 @@ FileD* RdFileD(FileD* file_d, std::string FileName, FileType FDTyp, std::string 
 	if (isHlp) {
 		F = file_d->FldD.front();
 		F2 = F->pChain;
-		if ((F->field_type != FieldType::ALFANUM) || (F2 == nullptr) || (F2->field_type != FieldType::TEXT) || (F2->pChain != nullptr)) OldError(128);
+		if ((F->field_type != FieldType::ALFANUM) || (F2 == nullptr) || (F2->field_type != FieldType::TEXT) || (F2->pChain != nullptr)) compiler->OldError(128);
 		file_d->IsHlpFile = true;
 	}
 
 	while (true) {
 		if ((Lexem == '#') && (ForwChar == 'C')) {
-			RdLex();
-			RdLex();
+			compiler->RdLex();
+			compiler->RdLex();
 			RdFieldDList(file_d, false);
 			continue;
 		}
 		if ((Lexem == '#') && (ForwChar == 'K')) {
-			RdLex();
+			compiler->RdLex();
 			RdKeyD(file_d);
 			continue;
 		}
@@ -686,11 +686,11 @@ FileD* RdFileD(FileD* file_d, std::string FileName, FileType FDTyp, std::string 
 		file_d->FF->file_type = FileType::INDEX;
 	}
 	GetXFileD(file_d);
-	CompileRecLen(file_d);
+	compiler->CompileRecLen(file_d);
 	SetLDIndexRoot(file_d, LDOld);
-	if ((file_d->FF->file_type == FileType::INDEX) && file_d->Keys.empty()) Error(107);
+	if ((file_d->FF->file_type == FileType::INDEX) && file_d->Keys.empty()) compiler->Error(107);
 	if ((Lexem == '#') && (ForwChar == 'A')) {
-		RdLex();
+		compiler->RdLex();
 		RdKumul();
 	}
 
@@ -716,19 +716,19 @@ FileD* RdFileD(FileD* file_d, std::string FileName, FileType FDTyp, std::string 
 		// nacteni uzivatelskych pohledu
 		// nazev musi byt jedinecny v ramci cele ulohy
 		// format: #U NazevPohledu (SeznamPristupovychPrav): DruhEditace;
-		RdLex();
+		compiler->RdLex();
 		TestUserView();
 	}
 	MarkStore(p);
 	li = new LiRoots();
-	if ((Lexem == '#') && (ForwChar == 'D')) { RdLex(); TestDepend(); }
-	if ((Lexem == '#') && (ForwChar == 'L')) { RdLex(); RdChkDChain(&li->Chks); }
-	if ((Lexem == '#') && (ForwChar == 'I')) { RdLex(); RdImpl(&li->Impls); }
+	if ((Lexem == '#') && (ForwChar == 'D')) { compiler->RdLex(); TestDepend(); }
+	if ((Lexem == '#') && (ForwChar == 'L')) { compiler->RdLex(); RdChkDChain(&li->Chks); }
+	if ((Lexem == '#') && (ForwChar == 'I')) { compiler->RdLex(); RdImpl(&li->Impls); }
 	// TODO: jak toto nahradit?
 	//if (PtrRec(InpRdbPos.rdb).Seg == 0/*compiled from pstring*/) {
 	//	CFile->LiOfs = 0; ReleaseStore(p);
 	//}
-	if (Lexem != 0x1A) Error(66);
+	if (Lexem != 0x1A) compiler->Error(66);
 label1:
 	return file_d;
 }
@@ -746,12 +746,12 @@ void RdKeyD(FileD* file_d)
 	pstring Name;
 	WORD N = 0;
 
-	RdLex();
+	compiler->RdLex();
 	if (Lexem == '@') {
-		if (!file_d->Keys.empty() || file_d->IsParFile) Error(26);
-		RdLex();
+		if (!file_d->Keys.empty() || file_d->IsParFile) compiler->Error(26);
+		compiler->RdLex();
 		if (Lexem == '@') {
-			RdLex();
+			compiler->RdLex();
 			file_d->IsParFile = true;
 		}
 		else {
@@ -779,45 +779,46 @@ void RdKeyD(FileD* file_d)
 			K->Duplic = false;
 			if (Lexem == _le) {
 				K->IntervalTest = true;
-				RdLex();
+				compiler->RdLex();
 			}
 			else if (Lexem == '*') {
 #ifdef FandSQL
 				if (file_d->typSQLFile) Error(155);
 #endif
 				K->Duplic = true;
-				RdLex();
+				compiler->RdLex();
 			}
 			K->IndexRoot = N;
-			K->IndexLen = RdKFList(&K->KFlds, file_d);
+			K->IndexLen = compiler->RdKFList(&K->KFlds, file_d);
 			if (K->IndexLen > MaxIndexLen) {
-				OldError(105);
+				compiler->OldError(105);
 			}
 	}
 		goto label6;
 }
 label2:
-	TestIdentif();
+	compiler->TestIdentif();
 	Name = LexWord;
-	SkipBlank(false);
+	compiler->SkipBlank(false);
 	if (ForwChar == '(') {
-		RdLex(); RdLex();
+		compiler->RdLex();
+		compiler->RdLex();
 		if (Lexem == '@') {
 			CheckDuplAlias(Name);
-			RdLex();
-			Accept(')');
+			compiler->RdLex();
+			compiler->Accept(')');
 			goto label1;
 		}
 		RdFileOrAlias(&FD, &K);
-		Accept(')');
+		compiler->Accept(')');
 	}
 	else {
 		RdFileOrAlias(&FD, &K);
 	}
 
-	L = FindLD(Name);
+	L = compiler->FindLD(Name);
 	if (L != nullptr) {
-		OldError(26);
+		compiler->OldError(26);
 	}
 
 	L = new LinkD();
@@ -832,22 +833,22 @@ label2:
 #ifdef FandSQL
 			&& !file_d->typSQLFile
 #endif
-			) Error(108);
+			) compiler->Error(108);
 		if (K->Duplic) {
-			Error(153);
+			compiler->Error(153);
 		}
-		RdLex();
+		compiler->RdLex();
 		L->MemberRef = 1;
 		if (Lexem == '!') {
-			RdLex();
+			compiler->RdLex();
 			L->MemberRef = 2;
 		}
 	}
 	//Arg = &L->Args;
 	KF = K->KFlds;
 label3:
-	F = RdFldName(file_d);
-	if (F->field_type == FieldType::TEXT) OldError(84);
+	F = compiler->RdFldName(file_d);
+	if (F->field_type == FieldType::TEXT) compiler->OldError(84);
 	arg = new KeyFldD();
 	arg->FldD = F;
 	arg->CompLex = KF->CompLex;
@@ -856,16 +857,16 @@ label3:
 
 	F2 = KF->FldD;
 	if ((F->field_type != F2->field_type) || (F->field_type != FieldType::DATE) && (F->L != F2->L) ||
-		(F->field_type == FieldType::FIXED) && (F->M != F2->M)) OldError(12);
+		(F->field_type == FieldType::FIXED) && (F->M != F2->M)) compiler->OldError(12);
 
 	KF = KF->pChain;
 	if (KF != nullptr) {
-		Accept(',');
+		compiler->Accept(',');
 		goto label3;
 	}
 label6:
 	if (Lexem == ';') {
-		RdLex();
+		compiler->RdLex();
 		if (!(Lexem == '#' || Lexem == 0x1A)) goto label2;
 	}
 }
@@ -876,7 +877,7 @@ void CheckDuplAlias(pstring Name)
 #ifdef FandSQL
 		&& !CFile->typSQLFile
 #endif
-		) Error(108);
+		) compiler->Error(108);
 	LookForK(&Name, CFile);
 	FileD* F = FileDRoot;
 	while (F != nullptr) {
@@ -888,10 +889,10 @@ void CheckDuplAlias(pstring Name)
 void LookForK(pstring* Name, FileD* F)
 {
 	std::string name = *Name;
-	if (EquUpCase(F->Name, name)) Error(26);
+	if (EquUpCase(F->Name, name)) compiler->Error(26);
 
 	for (auto& K : CFile->Keys) {
-		if (EquUpCase(K->Alias, *Name)) Error(26);
+		if (EquUpCase(K->Alias, *Name)) compiler->Error(26);
 	}
 }
 
@@ -914,7 +915,7 @@ label1:
 void RdFileOrAlias(FileD** FD, XKey** KD)
 {
 	FileD* f = nullptr; RdbD* r = nullptr; XKey* k = nullptr;
-	TestIdentif();
+	compiler->TestIdentif();
 	f = CFile;
 	k = RdFileOrAlias1(f);
 	if (k != nullptr) goto label1;
@@ -928,10 +929,10 @@ void RdFileOrAlias(FileD** FD, XKey** KD)
 		}
 		r = r->ChainBack;
 	}
-	Error(9);
+	compiler->Error(9);
 label1:
-	if (k == nullptr) Error(24);
-	RdLex();
+	if (k == nullptr) compiler->Error(24);
+	compiler->RdLex();
 	*FD = f;
 	*KD = k;
 }
@@ -943,22 +944,22 @@ void TestDepend()
 	FieldDescr* F = nullptr;
 	char FTyp;
 	void* p = nullptr;
-	RdLex();
+	compiler->RdLex();
 	MarkStore(p);
 label1:
-	Accept('(');
-	ZBool = RdBool(nullptr);
-	Accept(')');
+	compiler->Accept('(');
+	ZBool = compiler->RdBool(nullptr);
+	compiler->Accept(')');
 label2:
-	F = RdFldName(CFile);
-	if ((F->Flg & f_Stored) == 0) OldError(14);
-	Accept(_assign);
-	Z = RdFrml(FTyp, nullptr);
+	F = compiler->RdFldName(CFile);
+	if ((F->Flg & f_Stored) == 0) compiler->OldError(14);
+	compiler->Accept(_assign);
+	Z = compiler->RdFrml(FTyp, nullptr);
 	if (F->frml_type != FTyp) {
-		Error(12);
+		compiler->Error(12);
 	}
 	if (Lexem == ';') {
-		RdLex();
+		compiler->RdLex();
 		if (!(Lexem == '#' || Lexem == 0x1A)) {
 			if (Lexem == '(') {
 				goto label1;
@@ -977,13 +978,13 @@ void RdImpl(ImplD** IDRoot)
 	FieldDescr* F = nullptr;
 	char FTyp = '\0';
 	ImplD* ID = nullptr;
-	RdLex();
+	compiler->RdLex();
 label1:
-	F = RdFldName(CFile);
-	if ((F->Flg & f_Stored) == 0) OldError(14);
-	Accept(_assign);
-	Z = RdFrml(FTyp, nullptr);
-	if (FTyp != F->frml_type) OldError(12);
+	F = compiler->RdFldName(CFile);
+	if ((F->Flg & f_Stored) == 0) compiler->OldError(14);
+	compiler->Accept(_assign);
+	Z = compiler->RdFrml(FTyp, nullptr);
+	if (FTyp != F->frml_type) compiler->OldError(12);
 	//ID = (ImplD*)GetStore(sizeof(*ID)); 
 	ID = new ImplD();
 	ID->FldD = F;
@@ -991,7 +992,7 @@ label1:
 	if (*IDRoot == nullptr) *IDRoot = ID;
 	else ChainLast(*IDRoot, ID);
 	if (Lexem == ';') {
-		RdLex();
+		compiler->RdLex();
 		if (!(Lexem == '#' || Lexem == 0x1A)) goto label1;
 	}
 }
@@ -999,15 +1000,15 @@ label1:
 void RdKumul()
 {
 	WORD Low = 0; FileD* CF = nullptr;
-	RdLex();
+	compiler->RdLex();
 
 	while (true) {
 		AddD* AD = new AddD();
 		CFile->Add.push_back(AD);
 
-		if (IsKeyWord("IF")) {
-			AD->Bool = RdBool(nullptr);
-			AcceptKeyWord("THEN");
+		if (compiler->IsKeyWord("IF")) {
+			AD->Bool = compiler->RdBool(nullptr);
+			compiler->AcceptKeyWord("THEN");
 			RdRoleField(AD);
 			RdImper(AD);
 			RdAssign(AD);
@@ -1017,24 +1018,24 @@ void RdKumul()
 			if (Lexem == '(')
 			{
 				Low = CurrPos;
-				RdLex();
+				compiler->RdLex();
 				CF = CFile;
 				CFile = AD->File2;
 				AD->Chk = RdChkD(Low);
 				CFile = CF;
-				Accept(')');
+				compiler->Accept(')');
 			}
 			RdImper(AD);
 			if ((AD->Chk == nullptr) && (Lexem == _assign)) RdAssign(AD);
 			else {
-				Accept(_addass);
+				compiler->Accept(_addass);
 				AD->Assign = false;
-				TestReal(AD->Field->frml_type);
-				AD->Frml = RdRealFrml(nullptr);
+				compiler->TestReal(AD->Field->frml_type);
+				AD->Frml = compiler->RdRealFrml(nullptr);
 			}
 		}
 		if (Lexem == ';') {
-			RdLex();
+			compiler->RdLex();
 			if (!(Lexem == '#' || Lexem == 0x1A)) continue;
 		}
 		break;
@@ -1043,24 +1044,24 @@ void RdKumul()
 
 void RdRoleField(AddD* AD)
 {
-	if (!IsRoleName(true, &AD->File2, &AD->LD)) {
-		Error(9);
+	if (!compiler->IsRoleName(true, &AD->File2, &AD->LD)) {
+		compiler->Error(9);
 	}
-	Accept('.');
-	FieldDescr* F = RdFldName(AD->File2);
+	compiler->Accept('.');
+	FieldDescr* F = compiler->RdFldName(AD->File2);
 	AD->Field = F;
-	if ((F->Flg & f_Stored) == 0) OldError(14);
-	if (IsKeyArg(F, AD->File2)) OldError(135);
+	if ((F->Flg & f_Stored) == 0) compiler->OldError(14);
+	if (compiler->IsKeyArg(F, AD->File2)) compiler->OldError(135);
 }
 
 void RdImper(AddD* AD)
 {
 	if (Lexem == '!') {
-		RdLex(); AD->Create = 1;
+		compiler->RdLex(); AD->Create = 1;
 		if (AD->LD != nullptr) {
 			KeyFldD* KF = AD->LD->ToKey->KFlds;
 			while (KF != nullptr) {
-				if ((KF->FldD->Flg & f_Stored) == 0) OldError(148);
+				if ((KF->FldD->Flg & f_Stored) == 0) compiler->OldError(148);
 				KF = (KeyFldD*)KF->pChain;
 			}
 		}
@@ -1074,10 +1075,10 @@ void RdAssign(AddD* AD)
 #ifdef FandSQL
 	if (AD->File2->typSQLFile) Error(155);
 #endif
-	Accept(_assign);
+	compiler->Accept(_assign);
 	AD->Assign = true;
-	AD->Frml = RdFrml(FTyp, nullptr);
-	if (FTyp != AD->Field->frml_type) OldError(12);
+	AD->Frml = compiler->RdFrml(FTyp, nullptr);
+	if (FTyp != AD->Field->frml_type) compiler->OldError(12);
 }
 
 /// smaze CFile->Handle, nastavi typ na FDTyp a ziska CatIRec z GetCatalogIRec() - musi existovat CatFD
@@ -1108,7 +1109,7 @@ void GetXFileD(FileD* file_d)
 {
 	if (file_d->FF->file_type != FileType::INDEX) {
 		if (file_d->FF->XF != nullptr) {
-			OldError(104);
+			compiler->OldError(104);
 		}
 	}
 	else {

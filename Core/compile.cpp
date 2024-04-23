@@ -2504,7 +2504,7 @@ FrmlElem* Compiler::TryRdFldFrml(FileD* FD, char& FTyp, MergeReportBase* caller)
 
 	if (IsKeyWord("OWNED")) {
 		rff = ptrRdFldNameFrml;
-		//TODO: !!! ptrRdFldNameFrml = RdFldNameFrmlF;
+		ptrRdFldNameFrml = RdFldNameFrmlF;
 		Accept('(');
 		z = new FrmlElem23(_owned, 12); // GetOp(_owned, 12);
 		TestIdentif();

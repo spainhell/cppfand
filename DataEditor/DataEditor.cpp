@@ -2246,7 +2246,7 @@ bool DataEditor::EquFileViewName(FileD* FD, std::string S, EditOpt** EO)
 	else if (S == std::string(FD->Name)) {
 		*EO = new EditOpt();
 		(*EO)->UserSelFlds = true;
-		(*EO)->Flds = AllFldsList(FD, false);
+		(*EO)->Flds = compiler->AllFldsList(FD, false);
 		return result;
 	}
 
@@ -2322,7 +2322,7 @@ void DataEditor::UpwEdit(LinkD* LkD)
 			SL = SL->pChain;
 		}
 		if (SL1 == nullptr) {
-			EO->Flds = AllFldsList(LD->ToFD, false);
+			EO->Flds = compiler->AllFldsList(LD->ToFD, false);
 		}
 		else {
 			RdUserView(LD->ToFD, SL1->S, EO);
@@ -3044,7 +3044,7 @@ void DataEditor::Sorting()
 	SaveAndCloseAllFiles();
 	MarkStore(p);
 
-	if (!PromptSortKeys(edit_->Flds, SKRoot) || (SKRoot == nullptr)) {
+	if (!compiler->PromptSortKeys(edit_->Flds, SKRoot) || (SKRoot == nullptr)) {
 		ReleaseStore(&p);
 		record_ = edit_->NewRecPtr;
 		DisplAllWwRecs();
@@ -3076,7 +3076,7 @@ void DataEditor::AutoReport()
 {
 	void* p = nullptr; RprtOpt* RO = nullptr;
 	FileUseMode UM = Closed;
-	MarkStore(p); RO = GetRprtOpt();
+	MarkStore(p); RO = compiler->GetRprtOpt();
 	RO->FDL.FD = file_d_;
 	RO->Flds = edit_->Flds;
 	if (params_->Select) {
@@ -4180,10 +4180,10 @@ void DataEditor::Calculate2()
 		if (Event.Pressed.KeyCombination() == 'U') goto label0;
 		if (Event.Pressed.KeyCombination() == __ESC || (txt.length() == 0)) goto label3;
 		CalcTxt = txt;
-		SetInpStr(txt);
-		RdLex();
-		Z = RdFrml(FTyp, nullptr);
-		if (Lexem != 0x1A) Error(21);
+		compiler->SetInpStr(txt);
+		compiler->RdLex();
+		Z = compiler->RdFrml(FTyp, nullptr);
+		if (Lexem != 0x1A) compiler->Error(21);
 		if (Event.Pressed.KeyCombination() == __CTRL_F4) {
 			F = CFld->FldD;
 			if (CFld->Ed(IsNewRec) && (F->frml_type == FTyp)) {

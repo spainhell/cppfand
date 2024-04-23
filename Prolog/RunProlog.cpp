@@ -1484,7 +1484,7 @@ bool RunBuildIn()
 	}
 	case proc_type::_AbbrevP: { CurrInst->Vars[1] = GetStringTerm(Abbrev(CurrInst->Vars[0]->SS)); break; }
 	case proc_type::_CallP: {
-		if (!FindChpt('L', CurrInst->Vars[0]->SS, false, &pos)) {
+		if (!compiler->FindChpt('L', CurrInst->Vars[0]->SS, false, &pos)) {
 			SetMsgPar(CurrInst->Vars[0]->SS);
 			RunError(1554);
 		}
@@ -1761,7 +1761,7 @@ void CallFandProc(TCommand* cmd)
 	//if (PtrRec(pd->Pos.rdb).Seg == 0) {
 	//	PtrRec(pd->Pos.rdb).Seg = _Sg;
 	if (pd->PPos.i_rec == 0xffff) {
-		if (!FindChpt('P', pd->ProcName, false, &pd->PPos)) RunError(1037);
+		if (!compiler->FindChpt('P', pd->ProcName, false, &pd->PPos)) RunError(1037);
 	}
 	for (i = 0; i < p->Arity; i++) {
 		auto ta = &pd->TArg[i];
@@ -2441,7 +2441,7 @@ void RunProlog(RdbPos* Pos, std::string PredName)
 		longStr->LL = std_s.length();
 		memcpy(longStr->A, std_s.c_str(), longStr->LL);
 
-		SetInpLongStr(longStr, true);
+		compiler->SetInpLongStr(longStr, true);
 		Roots = ReadProlog(0);
 		ChptLRdb = CRdb;
 	}
@@ -2450,7 +2450,7 @@ void RunProlog(RdbPos* Pos, std::string PredName)
 		CFile = ChptLRdb->rdb_file;
 		CRecPtr = ChptLRdb->rdb_file->GetRecSpace();
 		ChptLRdb->rdb_file->ReadRec(Pos->i_rec, CRecPtr);
-		SetInpTTPos(ChptLRdb->rdb_file, ChptLRdb->rdb_file->loadT(ChptTxt, CRecPtr), ChptLRdb->Encrypted);
+		compiler->SetInpTTPos(ChptLRdb->rdb_file, ChptLRdb->rdb_file->loadT(ChptTxt, CRecPtr), ChptLRdb->Encrypted);
 		Roots = ReadProlog(Pos->i_rec);
 	}
 

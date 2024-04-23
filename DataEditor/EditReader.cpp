@@ -42,7 +42,7 @@ void EditReader::StoreRT(WORD Ln, StringList SL, WORD NFlds)
 {
 	ERecTxtD* RT = new ERecTxtD();
 	if (NFlds == 0) {
-		Error(81);
+		compiler->Error(81);
 	}
 	RT->N = Ln;
 	RT->SL = SL;
@@ -58,7 +58,7 @@ void EditReader::RdEForm(EditD* edit, RdbPos FormPos)
 	pstring s = "";
 	WORD NPages = 0, Col = 0, Ln = 0, Max = 0, M = 0, N = 0, NFlds = 0, i = 0;
 	bool comment = false; char c = '\0'; BYTE a = 0;
-	SetInpTT(&FormPos, true);
+	compiler->SetInpTT(&FormPos, true);
 
 	bool skipAfterHash = false;
 	while (true) {
@@ -66,11 +66,11 @@ void EditReader::RdEForm(EditD* edit, RdbPos FormPos)
 		while (!(ForwChar == '#' || ForwChar == 0x1A || ForwChar == 0x0D || ForwChar == '{')) {
 			/* read headlines */
 			s.Append(ForwChar);
-			ReadChar();
+			compiler->ReadChar();
 		}
 		switch (ForwChar) {
 		case 0x1A: {
-			Error(76);
+			compiler->Error(76);
 			break;
 		}
 		case '#': {
@@ -78,7 +78,7 @@ void EditReader::RdEForm(EditD* edit, RdbPos FormPos)
 			break;
 		}
 		case '{': {
-			SkipBlank(true);
+			compiler->SkipBlank(true);
 			continue;
 			break;
 		}
@@ -88,32 +88,32 @@ void EditReader::RdEForm(EditD* edit, RdbPos FormPos)
 			break;
 		}
 		else {
-			ReadChar();
-			if (ForwChar == 0x0A) ReadChar();
+			compiler->ReadChar();
+			if (ForwChar == 0x0A) compiler->ReadChar();
 			SToSL(&edit->HdTxt, s);
 			edit->NHdTxt++;
 			if (edit->NHdTxt + 1 > edit->Rows) {
-				Error(102);
+				compiler->Error(102);
 			}
 		}
 	}
 
 	/* read field list */
-	ReadChar();
-	ReadChar();
+	compiler->ReadChar();
+	compiler->ReadChar();
 	Lexem = CurrChar;
-	Accept('_');
+	compiler->Accept('_');
 	if (edit->FD == nullptr) {
-		edit->FD = RdFileName();
+		edit->FD = compiler->RdFileName();
 	}
 
 	while (true) {
 		N++;
 		D = new EFldD();
 		if (Lexem == _number) {
-			M = RdInteger();
-			if (M == 0) OldError(115);
-			Accept(':');
+			M = compiler->RdInteger();
+			if (M == 0) compiler->OldError(115);
+			compiler->Accept(':');
 			D->ScanNr = M;
 		}
 		else D->ScanNr = N;
@@ -123,20 +123,20 @@ void EditReader::RdEForm(EditD* edit, RdbPos FormPos)
 		else ChainLast(edit->FirstFld, D);
 
 		if ((D1 != nullptr) && (D->ScanNr == D1->ScanNr)) {
-			Error(77);
+			compiler->Error(77);
 		}
-		F = RdFldName(edit->FD);
+		F = compiler->RdFldName(edit->FD);
 		D->FldD = F;
 		edit->Flds.push_back(F);
 		if (Lexem == ',') {
-			RdLex();
+			compiler->RdLex();
 			continue;
 		}
 		break;
 	}
 
-	TestLex(';');
-	SkipBlank(true);
+	compiler->TestLex(';');
+	compiler->SkipBlank(true);
 	/* read record lines */
 	D = edit->FirstFld;
 	NPages = 0;
@@ -151,7 +151,7 @@ label5:
 	while (!(ForwChar == 0x0D || ForwChar == 0x1A || ForwChar == '\\' || ForwChar == '{')) {
 		if (ForwChar == '_') {
 			if (D == nullptr) {
-				Error(30);
+				compiler->Error(30);
 			}
 			NFlds++;
 			D->Col = Col;
@@ -161,7 +161,7 @@ label5:
 			while (ForwChar == '_') {
 				s.Append(' ');
 				M++; Col++;
-				ReadChar();
+				compiler->ReadChar();
 			}
 			F = D->FldD;
 			D->L = F->L;
@@ -174,27 +174,27 @@ label5:
 			else if (M != D->L) {
 				str(D->L, 2, s);
 				SetMsgPar(s, F->Name);
-				Error(79);
+				compiler->Error(79);
 			}
-			if (Col > edit->LastCol) Error(102);
+			if (Col > edit->LastCol) compiler->Error(102);
 			D = D->pChain;
 		}
 		else {
 			if (!screen.SetStyleAttr(ForwChar, a)) {
 				if (Col > edit->LastCol) {
-					Error(102);
+					compiler->Error(102);
 				}
 				Col++;
 			}
 			s.Append(ForwChar);
-			ReadChar();
+			compiler->ReadChar();
 		}
 	}
 
 	SToSL(&SLRoot, s);
 	c = ForwChar;
-	if (c == '\\') ReadChar();
-	SkipBlank(true);
+	if (c == '\\') compiler->ReadChar();
+	compiler->SkipBlank(true);
 	if (ForwChar != 0x1A) {
 		if ((c == '\\') || (edit->NHdTxt + Ln == edit->Rows)) {
 			StoreRT(Ln, SLRoot, NFlds);
@@ -212,7 +212,7 @@ label5:
 	edit->NPages = NPages;
 
 	if (D != nullptr) {
-		Error(30);
+		compiler->Error(30);
 	}
 	D = FindScanNr(1);
 	D->ChainBack = nullptr;
@@ -500,7 +500,7 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec)
 		std::string mode = RunShortStr(file_d, EO->Mode, rec);
 		int result = edit_->params_->SetFromString(mode, false);
 		if (result != 0) {
-			Error(92);
+			compiler->Error(92);
 		}
 	}
 	if (spec.Prompt158) edit_->params_->Prompt158 = true;
@@ -699,7 +699,7 @@ void EditReader::RdDepChkImpl(EditD* edit)
 		ReadMessage(53);
 		s = MsgLine;
 		ResetCompilePars();
-		SetInpStr(s);
+		compiler->SetInpStr(s);
 		RdUDLI(edit->FD);
 		break;
 	}
@@ -712,7 +712,7 @@ void EditReader::RdDepChkImpl(EditD* edit)
 		if (spec.CPMdrive != ' ') s = s + ',' + spec.CPMdrive + ':';
 		s = s + "'";
 		ResetCompilePars();
-		SetInpStr(s);
+		compiler->SetInpStr(s);
 		RdUDLI(edit->FD);
 		break;
 	}
@@ -808,15 +808,15 @@ void EditReader::RdDep(FileD* file_d)
 	char FTyp = '\0';
 	DepD* Dp = nullptr;
 
-	RdLex();
+	compiler->RdLex();
 label1:
-	Accept('(');
-	Bool = RdBool(nullptr);
-	Accept(')');
+	compiler->Accept('(');
+	Bool = compiler->RdBool(nullptr);
+	compiler->Accept(')');
 label2:
-	D = FindEFld_E(RdFldName(file_d));
-	Accept(_assign);
-	Z = RdFrml(FTyp, nullptr);
+	D = FindEFld_E(compiler->RdFldName(file_d));
+	compiler->Accept(_assign);
+	Z = compiler->RdFrml(FTyp, nullptr);
 	if (D != nullptr) {
 		Dp = new DepD();
 		Dp->Bool = Bool;
@@ -824,7 +824,7 @@ label2:
 		D->Dep.push_back(Dp);
 	}
 	if (Lexem == ';') {
-		RdLex();
+		compiler->RdLex();
 		if (!(Lexem == '#' || Lexem == 0x1A))
 		{
 			if (Lexem == '(') goto label1;
@@ -835,9 +835,9 @@ label2:
 
 void EditReader::RdCheck()
 {
-	SkipBlank(false);
+	compiler->SkipBlank(false);
 	size_t Low = CurrPos;
-	RdLex();
+	compiler->RdLex();
 	while (true) {
 		ChkD* C = RdChkD(Low);
 		ZeroUsed();
@@ -853,9 +853,9 @@ void EditReader::RdCheck()
 		}
 		if (Lexem == ';')
 		{
-			SkipBlank(false);
+			compiler->SkipBlank(false);
 			Low = CurrPos;
-			RdLex();
+			compiler->RdLex();
 			if (!(Lexem == '#' || Lexem == 0x1A)) continue;
 		}
 		break;
@@ -866,11 +866,11 @@ void EditReader::RdImpl(FileD* file_d)
 {
 	// TODO: nema byt FTyp vstupnim parametrem?
 	char FTyp = '\0';
-	RdLex();
+	compiler->RdLex();
 	while (true) {
-		FieldDescr* F = RdFldName(file_d);
-		Accept(_assign);
-		FrmlElem* Z = RdFrml(FTyp, nullptr);
+		FieldDescr* F = compiler->RdFldName(file_d);
+		compiler->Accept(_assign);
+		FrmlElem* Z = compiler->RdFrml(FTyp, nullptr);
 		EFldD* D = FindEFld_E(F);
 		if (D != nullptr) D->Impl = Z;
 		else {
@@ -881,7 +881,7 @@ void EditReader::RdImpl(FileD* file_d)
 			else ChainLast(edit_->Impl, ID);
 		}
 		if (Lexem == ';') {
-			RdLex();
+			compiler->RdLex();
 			if (!(Lexem == '#' || Lexem == 0x1A)) continue;
 		}
 		break;
@@ -892,22 +892,22 @@ void EditReader::RdUDLI(FileD* file_d)
 {
 	CFile = file_d; // to be sure
 
-	RdLex();
+	compiler->RdLex();
 	if ((Lexem == '#') && (ForwChar == 'U')) {
 		do {
-			RdLex();
+			compiler->RdLex();
 		} while (!(Lexem == '#' || Lexem == 0x1A));
 	}
 	if ((Lexem == '#') && (ForwChar == 'D')) {
-		RdLex();
+		compiler->RdLex();
 		RdDep(file_d);
 	}
 	if ((Lexem == '#') && (ForwChar == 'L')) {
-		RdLex();
+		compiler->RdLex();
 		RdCheck();
 	}
 	if ((Lexem == '#') && (ForwChar == 'I')) {
-		RdLex();
+		compiler->RdLex();
 		RdImpl(file_d);
 	}
 }
@@ -921,7 +921,7 @@ void EditReader::RdAllUDLIs(FileD* FD)
 	}
 	if (FD->TxtPosUDLI != 0) {
 		ResetCompilePars();
-		SetInpTTxtPos(FD);
+		compiler->SetInpTTxtPos(FD);
 		r = CRdb;
 		CRdb = FD->ChptPos.rdb;
 		RdUDLI(FD);
