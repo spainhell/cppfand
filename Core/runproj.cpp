@@ -1081,7 +1081,7 @@ int MakeDbfDcl(pstring Nm)
 	return 0;
 }
 
-FileD* RdF(FileD* file_d, std::string FileName)
+void* RdF(FileD* file_d, std::string FileName)
 {
 	std::string d, name, ext;
 	FileType FDTyp = FileType::UNKNOWN;
@@ -1263,7 +1263,7 @@ bool CompileRdb(FileD* rdb_file, bool Displ, bool Run, bool FromCtrlF10)
 	char Mode = '\0';
 	RdbPos RP;
 	void* p = nullptr;
-	FileD* p1 = nullptr;
+	void* p1 = nullptr;
 	void* p2 = nullptr;
 	WORD lmsg = 0;
 	std::string RprtTxt;
@@ -1275,7 +1275,7 @@ bool CompileRdb(FileD* rdb_file, bool Displ, bool Run, bool FromCtrlF10)
 	EditReader* reader = new EditReader();
 	EditD* edit = nullptr;
 	MarkBoth(p, p2);
-	//p1 = p;
+	p1 = p;
 
 	try {
 		IsCompileErr = false; FDCompiled = false;
@@ -1346,7 +1346,7 @@ bool CompileRdb(FileD* rdb_file, bool Displ, bool Run, bool FromCtrlF10)
 						//WrFDSegment(I);
 						if (rdb_file->IsHlpFile) CRdb->help_file = rdb_file;
 						if (OldTxt > 0) {
-							MergeOldNew(p1, Verif, OldTxt);
+							MergeOldNew(rdb_file, Verif, OldTxt);
 						}
 						//ReleaseStore(&p1);
 						//CFile = Chpt;
@@ -1442,7 +1442,7 @@ bool CompileRdb(FileD* rdb_file, bool Displ, bool Run, bool FromCtrlF10)
 #endif
 				}
 			}
-			//ReleaseStore(&p1);
+			ReleaseStore(&p1);
 			ReleaseStore(&p2);
 			//CFile = Chpt;
 			//CRecPtr = rdb_file->FF->RecPtr;
