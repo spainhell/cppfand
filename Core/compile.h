@@ -8,6 +8,8 @@ class Compiler;
 extern RdbPos ChptIPos; // usen in LexAnal & ProjMgr
 extern Compiler* compiler;
 
+enum class FieldNameType { none, F, P, T };
+
 struct stSaveState
 {
 	BYTE CurrChar = 0;
@@ -21,7 +23,8 @@ struct stSaveState
 	size_t OldErrPos = 0;
 	std::vector<FrmlElemSum*> *FrmlSumEl = nullptr;
 	bool FrstSumVar = false, FileVarsAllowed = false;
-	FrmlElem* (*ptrRdFldNameFrml)(char&, MergeReportBase*) = nullptr; // ukazatel na funkci
+	//FrmlElem* (*ptrRdFldNameFrml)(char&, MergeReportBase*) = nullptr; // ukazatel na funkci
+	FieldNameType RdFldNameType = FieldNameType::none;
 	FrmlElem* (*RdFunction)(char&) = nullptr; // ukazatel na funkci
 };
 
@@ -104,6 +107,9 @@ public:
 	void RdFldList(std::vector<FieldDescr*>* vFields);
 	void RdNegFldList(bool& Neg, std::vector<FieldDescr*>& vFields);
 	void RdNegFldList(bool& Neg, std::vector<FieldDescr*>* vFields);
+
+	FieldNameType rdFldNameType = FieldNameType::none;
+	FrmlElem* RdFldNameFrml(char& FTyp, MergeReportBase* caller);
 
 private:
 

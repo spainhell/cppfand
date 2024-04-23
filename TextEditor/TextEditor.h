@@ -8,6 +8,8 @@
 
 #include "../Common/pstring.h"
 
+class FrmlElem;
+class MergeReportBase;
 class Instr;
 struct EdExitD;
 class Instr_setedittxt;
@@ -26,7 +28,7 @@ struct stEditorParams
 };
 
 
-
+FrmlElem* RdFldNameFrmlT(char& FTyp, MergeReportBase* caller);
 void BlockLRShift(WORD I1);
 void WrCharE(char Ch);
 bool WordExist();

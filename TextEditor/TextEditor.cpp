@@ -1998,7 +1998,8 @@ void Calculate()
 	//goto label2;
 	try {
 		ResetCompilePars();
-		ptrRdFldNameFrml = RdFldNameFrmlT;
+		//ptrRdFldNameFrml = RdFldNameFrmlT;
+		compiler->rdFldNameType = FieldNameType::T;
 	label0:
 		txt = CalcTxt;
 		Del = true; I = 1;

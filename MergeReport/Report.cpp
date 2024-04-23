@@ -155,7 +155,8 @@ label1:
 		compiler->ReadChar();
 		s += toupper(CurrChar);
 		ChainSum = false;
-		ptrRdFldNameFrml = nullptr; // RdFldNameFrml;
+		//ptrRdFldNameFrml = nullptr; // RdFldNameFrml;
+		compiler->rdFldNameType = FieldNameType::none;
 		WhatToRd = 'O';
 		if (s == "DE") { // detailni vystup
 			Rd_Oi();

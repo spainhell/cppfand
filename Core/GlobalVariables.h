@@ -82,7 +82,7 @@ extern size_t CurrPos;
 extern size_t OldErrPos;			// { "  "  }
 extern std::vector<FrmlElemSum*> *FrmlSumEl;				//{ set while reading sum / count argument }
 extern bool FrstSumVar, FileVarsAllowed;
-extern FrmlElem* (*ptrRdFldNameFrml)(char&, MergeReportBase*); // ukazatel na funkci
+//extern FrmlElem* (*ptrRdFldNameFrml)(char&, MergeReportBase*); // ukazatel na funkci
 extern FrmlElem* (*RdFunction)(char&); // ukazatel na funkci
 //extern void (*ptrChainSumEl)(); // {set by user}
 extern BYTE LstCompileVar; // { boundary }

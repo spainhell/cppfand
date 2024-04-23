@@ -9,6 +9,7 @@
 #include "KeyFldD.h"
 #include "obaseww.h"
 #include "rdfildcl.h"
+#include "rdproc.h"
 #include "runfrml.h"
 #include "../fandio/FandTFile.h"
 #include "../fandio/XWKey.h"
@@ -488,7 +489,8 @@ void Compiler::RdLex()
 	case '<': {
 		switch (ForwChar) {
 		case '>': { ReadChar(); Lexem = _ne; break; }
-		case '=': { ReadChar();
+		case '=': {
+			ReadChar();
 			if (ForwChar == '>')
 			{
 				ReadChar(); Lexem = _lequ;
@@ -545,6 +547,27 @@ short Compiler::RdInteger()
 	if (J != 0) Lexem = 0 /* != _number*/;
 	Accept(_number);
 	return I;
+}
+
+FrmlElem* Compiler::RdFldNameFrml(char& FTyp, MergeReportBase* caller)
+{
+	FrmlElem* result = nullptr;
+
+	switch (rdFldNameType) {
+	case FieldNameType::none:
+		break;
+	case FieldNameType::F:
+		result =RdFldNameFrmlF(FTyp, caller);
+		break;
+	case FieldNameType::P:
+		result = RdFldNameFrmlP(FTyp, caller);
+		break;
+	case FieldNameType::T:
+		result = RdFldNameFrmlT(FTyp, caller);
+		break;
+	}
+
+	return result;
 }
 
 double Compiler::ValofS(pstring& S)
@@ -727,7 +750,7 @@ stSaveState* Compiler::SaveCompState()
 	state->FrmlSumEl = FrmlSumEl;
 	state->FrstSumVar = FrstSumVar;
 	state->FileVarsAllowed = FileVarsAllowed;
-	state->ptrRdFldNameFrml = ptrRdFldNameFrml;
+	state->RdFldNameType = rdFldNameType;
 	state->RdFunction = RdFunction;
 	return state;
 }
@@ -752,7 +775,7 @@ void Compiler::RestoreCompState(stSaveState* p)
 	FrmlSumEl = p->FrmlSumEl;
 	FrstSumVar = p->FrstSumVar;
 	FileVarsAllowed = p->FileVarsAllowed;
-	ptrRdFldNameFrml = p->ptrRdFldNameFrml;
+	rdFldNameType = p->RdFldNameType;
 	RdFunction = p->RdFunction;
 	delete p;
 }
@@ -762,8 +785,7 @@ LocVar* Compiler::RdVarName(LocVarBlkD* LVB, bool IsParList)
 	TestIdentif();
 	LocVar* lvar = LVB->FindByName(LexWord);
 	if (lvar != nullptr) Error(26); // promenna uz existuje
-	else
-	{
+	else {
 		lvar = new LocVar(LexWord);
 		if (IsParList) { lvar->IsPar = true; LVB->NParam++; }
 		LVB->vLocVar.push_back(lvar);
@@ -1207,7 +1229,7 @@ bool Compiler::FldTypIdentity(FieldDescr* F1, FieldDescr* F2)
 	bool result = false;
 	if (F1->field_type != F2->field_type) return result;
 	if ((F1->field_type == FieldType::FIXED) && (F1->M != F2->M)) return result;
-	if ((F1->field_type == FieldType::NUMERIC || F1->field_type == FieldType::ALFANUM || F1->field_type == FieldType::FIXED) 
+	if ((F1->field_type == FieldType::NUMERIC || F1->field_type == FieldType::ALFANUM || F1->field_type == FieldType::FIXED)
 		&& (F1->L != F2->L)) return result;
 	return true;
 }
@@ -1924,7 +1946,7 @@ FrmlElem* Compiler::RdPrim(char& FTyp, MergeReportBase* caller)
 				Accept(')');
 				Z = Z1;
 			}
-			else if (IsKeyWord("MODULO"))	{
+			else if (IsKeyWord("MODULO")) {
 				RdLex();
 				Z = new FrmlElemFunction(_modulo, 2); // GetOp(_modulo, 2);
 				((FrmlElemFunction*)Z)->P1 = RdAdd(Typ, caller);
@@ -2159,12 +2181,12 @@ FrmlElem* Compiler::RdPrim(char& FTyp, MergeReportBase* caller)
 			}
 		}
 		else {
-			if (ptrRdFldNameFrml == nullptr && caller == nullptr) {
+			if (compiler->rdFldNameType == FieldNameType::none && caller == nullptr) {
 				Error(110);
 			}
 			else {
-				if (ptrRdFldNameFrml != nullptr) {
-					Z = ptrRdFldNameFrml(FTyp, caller); // volani ukazatele na funkci
+				if (rdFldNameType != FieldNameType::none) {
+					Z = compiler->RdFldNameFrml(FTyp, caller); // volani ukazatele na funkci
 				}
 				else {
 					Z = caller->RdFldNameFrml(FTyp); // volani ukazatele na funkci
@@ -2229,10 +2251,12 @@ FrmlElem* Compiler::RdPrim(char& FTyp, MergeReportBase* caller)
 WORD Compiler::RdPrecision()
 {
 	WORD n = 5;
-	if ((Lexem == '.') && (ForwChar >= '0' && ForwChar <= '9'))
-	{
-		RdLex(); n = RdInteger();
-		if (n > 10) OldError(21);
+	if ((Lexem == '.') && (ForwChar >= '0' && ForwChar <= '9')) {
+		RdLex();
+		n = RdInteger();
+		if (n > 10) {
+			OldError(21);
+		}
 	}
 	return n;
 }
@@ -2248,18 +2272,28 @@ FrmlListEl* Compiler::RdFL(bool NewMyBP, FrmlList FL1)
 	bool b = FL1 != nullptr;
 	if (KF2 != nullptr) Accept('(');
 label1:
-	FrmlList FL = new FrmlListEl(); // (FrmlListEl*)GetStore(sizeof(*FL));
+	FrmlList FL = new FrmlListEl();
 	if (FLRoot == nullptr) FLRoot = FL;
 	else ChainLast(FLRoot, FL);
-	FL->Frml = RdFrml(FTyp, nullptr); // MyBPContext(RdFrml(FTyp), NewMyBP);
-	if (FTyp != KF->FldD->frml_type) OldError(12);
+	FL->Frml = RdFrml(FTyp, nullptr);
+	if (FTyp != KF->FldD->frml_type) {
+		OldError(12);
+	}
 	KF = KF->pChain;
 	if (b) {
 		FL1 = FL1->pChain;
-		if (FL1 != nullptr) { Accept(','); goto label1; }
+		if (FL1 != nullptr) {
+			Accept(',');
+			goto label1;
+		}
 	}
-	else if ((KF != nullptr) && (Lexem == ',')) { RdLex(); goto label1; }
-	if (KF2 != nullptr) Accept(')');
+	else if ((KF != nullptr) && (Lexem == ',')) {
+		RdLex();
+		goto label1;
+	}
+	if (KF2 != nullptr) {
+		Accept(')');
+	}
 	auto result = FLRoot;
 	FileVarsAllowed = FVA;
 	return result;
@@ -2282,8 +2316,12 @@ FrmlElem* Compiler::RdKeyInBool(KeyInD** KIRoot, bool NewMyBP, bool FromRdProc, 
 	}
 	if (IsKeyWord("KEY")) {
 		AcceptKeyWord("IN");
-		if ((CFile->FF->file_type != FileType::INDEX) || (CViewKey == nullptr)) OldError(118);
-		if (CViewKey->KFlds == nullptr) OldError(176);
+		if ((CFile->FF->file_type != FileType::INDEX) || (CViewKey == nullptr)) {
+			OldError(118);
+		}
+		if (CViewKey->KFlds == nullptr) {
+			OldError(176);
+		}
 		Accept('[');
 		l = CViewKey->IndexLen + 1;
 	label1:
@@ -2295,9 +2333,15 @@ FrmlElem* Compiler::RdKeyInBool(KeyInD** KIRoot, bool NewMyBP, bool FromRdProc, 
 			RdLex();
 			KI->FL2 = RdFL(NewMyBP, KI->FL1);
 		}
-		if (Lexem == ',') { RdLex(); goto label1; }
+		if (Lexem == ',') {
+			RdLex();
+			goto label1;
+		}
 		Accept(']');
-		if (Lexem == '&') { RdLex(); goto label2; }
+		if (Lexem == '&') {
+			RdLex();
+			goto label2;
+		}
 	}
 	else {
 	label2:
@@ -2511,11 +2555,12 @@ FrmlElem* Compiler::TryRdFldFrml(FileD* FD, char& FTyp, MergeReportBase* caller)
 	FileD* cf = nullptr; FieldDescr* f = nullptr;
 	LinkD* ld = nullptr; FrmlElem* z = nullptr;
 	pstring roleNm;
-	FrmlElem* (*rff)(char&, MergeReportBase*);
+	FieldNameType rff;
 	char typ = '\0';
 
 	if (IsKeyWord("OWNED")) {
-		rff = ptrRdFldNameFrml;
+		rff = rdFldNameType;
+		rdFldNameType = FieldNameType::F;
 		// TODO: compiler !!! ptrRdFldNameFrml = RdFldNameFrmlF;
 		Accept('(');
 		z = new FrmlElem23(_owned, 12); // GetOp(_owned, 12);
@@ -2548,7 +2593,7 @@ FrmlElem* Compiler::TryRdFldFrml(FileD* FD, char& FTyp, MergeReportBase* caller)
 		Accept(')');
 		CFile = cf;
 		FTyp = 'R';
-		ptrRdFldNameFrml = rff;
+		rdFldNameType = rff;
 	}
 	else {
 		f = FindFldName(FD);

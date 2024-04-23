@@ -971,7 +971,8 @@ void RdUserId(bool Chk)
 	pstring pw(20); pstring pw2(20); pstring name(20);
 	WORD code; pstring acc;
 
-	ptrRdFldNameFrml = nullptr;
+	//ptrRdFldNameFrml = nullptr;
+	compiler->rdFldNameType = FieldNameType::none;
 	compiler->RdLex();
 	if (Lexem == 0x1A) return;
 	if (Chk) pw = ww.PassWord(false);

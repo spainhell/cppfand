@@ -101,7 +101,8 @@ void Merge::Read()
 	MakeOldMFlds();
 	OldMXStr.Clear();
 	OutpFDRoot = nullptr; OutpRDs = nullptr; Join = false; WasOi = false;
-	ptrRdFldNameFrml = nullptr; // RdFldNameFrml;
+	//ptrRdFldNameFrml = nullptr; // RdFldNameFrml;
+	compiler->rdFldNameType = FieldNameType::none;
 
 label3:
 	compiler->ReadChar();

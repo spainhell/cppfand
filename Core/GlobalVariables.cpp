@@ -64,7 +64,7 @@ BYTE* InpArrPtr; RdbPos InpRdbPos;		// { "  "  }
 std::vector<FrmlElemSum*> *FrmlSumEl;				//{ set while reading sum / count argument }
 bool FrstSumVar, FileVarsAllowed;
 
-FrmlElem* (*ptrRdFldNameFrml)(char&, MergeReportBase*) = nullptr; // ukazatel na funkci
+//FrmlElem* (*ptrRdFldNameFrml)(char&, MergeReportBase*) = nullptr; // ukazatel na funkci
 FrmlElem* (*RdFunction)(char&) = nullptr; // ukazatel na funkci
 //void (*ptrChainSumEl)(); // {set by user}
 BYTE LstCompileVar; // { boundary }

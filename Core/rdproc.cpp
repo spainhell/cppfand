@@ -2784,7 +2784,8 @@ Instr* RdPInstr()
 void ReadProcHead(const std::string& name)
 {
 	ResetCompilePars();
-	ptrRdFldNameFrml = RdFldNameFrmlP;
+	compiler->rdFldNameType = FieldNameType::P;
+	//ptrRdFldNameFrml = RdFldNameFrmlP;
 	RdFunction = RdFunctionP;
 	FileVarsAllowed = false;
 	IdxLocVarAllowed = true;
@@ -2832,13 +2833,12 @@ void ReadDeclChpt()
 				if (EquUpCase(fc->Name, LexWord)) compiler->Error(26);
 				fc = fc->Chain;
 			}
-			//fc = (FuncD*)GetStore(sizeof(FuncD) - 1 + LexWord.length());
 			fc = new FuncD();
 			fc->Chain = FuncDRoot;
 			FuncDRoot = fc;
-			//Move(&LexWord, &fc->Name, LexWord.length() + 1);
 			fc->Name = LexWord;
-			ptrRdFldNameFrml = RdFldNameFrmlP;
+			compiler->rdFldNameType = FieldNameType::P;
+			//ptrRdFldNameFrml = RdFldNameFrmlP;
 			RdFunction = RdFunctionP;
 			//ptrChainSumEl = nullptr;
 			FileVarsAllowed = false; IsRdUserFunc = true;
@@ -2910,7 +2910,8 @@ FrmlElem* GetEvalFrml(FileD* file_d, FrmlElem21* X, void* record)
 	LastExitCode = 1;
 	p = compiler->SaveCompState();
 	ResetCompilePars();
-	ptrRdFldNameFrml = RdFldNameFrmlP;
+	compiler->rdFldNameType = FieldNameType::P;
+	//ptrRdFldNameFrml = RdFldNameFrmlP;
 	RdFunction = RdFunctionP;
 	if (X->EvalFD == nullptr) FileVarsAllowed = false;
 	else {
