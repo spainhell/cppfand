@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "DataEditorParams.h"
+#include "../Core/RunFrml.h"
 #include "../Core/EditOpt.h"
 #include "../Core/rdrun.h"
 

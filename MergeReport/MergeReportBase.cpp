@@ -3,6 +3,7 @@
 #include "../Core/FieldDescr.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/KeyFldD.h"
+#include "../Core/RunFrml.h""
 
 MergeReportBase::MergeReportBase()
 {

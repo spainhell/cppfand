@@ -21,6 +21,7 @@
 
 const BYTE MaxLen = 9;
 RdbPos ChptIPos; // used in LexAnal & ProjMgr
+Compiler* compiler = new Compiler();
 
 bool KeyArgFound;
 FieldDescr* KeyArgFld;
@@ -33,7 +34,7 @@ BYTE CurrChar; // { Compile }
 BYTE ForwChar, ExpChar, Lexem;
 pstring LexWord;
 
-std::string Error(short N)
+std::string Compiler::Error(short N)
 {
 	ReadMessage(1000 + N);
 	std::string ErrMsg = MsgLine;
@@ -95,7 +96,7 @@ std::string Error(short N)
 	return ErrMsg;
 }
 
-void SetInpStr(std::string& s)
+void Compiler::SetInpStr(std::string& s)
 {
 	InpArrLen = s.length();
 	InpArrPtr = (BYTE*)s.data();
@@ -105,7 +106,7 @@ void SetInpStr(std::string& s)
 	FillChar(&InpRdbPos, sizeof(InpRdbPos), 0);
 }
 
-void SetInpStdStr(std::string& s, bool ShowErr)
+void Compiler::SetInpStdStr(std::string& s, bool ShowErr)
 {
 	InpArrLen = s.length();
 	InpArrPtr = (BYTE*)s.c_str();
@@ -117,7 +118,7 @@ void SetInpStdStr(std::string& s, bool ShowErr)
 	InpRdbPos.i_rec = 0;
 }
 
-void SetInpLongStr(LongStr* S, bool ShowErr)
+void Compiler::SetInpLongStr(LongStr* S, bool ShowErr)
 {
 	InpArrLen = S->LL;
 	InpArrPtr = (BYTE*)&S->A[0];
@@ -131,7 +132,7 @@ void SetInpLongStr(LongStr* S, bool ShowErr)
 
 // vycte z CFile->TF blok dat
 // nastavi InpArrPtr a InptArrLen - retezec pro zpracovani
-void SetInpTTPos(FileD* file_d, int Pos, bool Decode)
+void Compiler::SetInpTTPos(FileD* file_d, int Pos, bool Decode)
 {
 	LongStr* s = file_d->FF->TF->ReadLongStr(Pos);
 	if (Decode) {
@@ -144,7 +145,7 @@ void SetInpTTPos(FileD* file_d, int Pos, bool Decode)
 	CurrPos = 0;
 }
 
-void SetInpTT(RdbPos* rdb_pos, bool FromTxt)
+void Compiler::SetInpTT(RdbPos* rdb_pos, bool FromTxt)
 {
 	if (rdb_pos->i_rec == 0) {
 		std::string run_str = RunStdStr(CFile, (FrmlElem*)rdb_pos->rdb, CRecPtr);
@@ -174,7 +175,7 @@ void SetInpTT(RdbPos* rdb_pos, bool FromTxt)
 	delete[] rec; rec = nullptr;
 }
 
-void SetInpTTxtPos(FileD* FD)
+void Compiler::SetInpTTxtPos(FileD* FD)
 {
 	SetInpTT(&FD->ChptPos, true);
 	WORD pos = FD->TxtPosUDLI;
@@ -184,7 +185,7 @@ void SetInpTTxtPos(FileD* FD)
 	CurrPos = pos;
 }
 
-void ReadChar()
+void Compiler::ReadChar()
 {
 	CurrChar = ForwChar;
 	if (CurrPos < InpArrLen)
@@ -198,7 +199,7 @@ void ReadChar()
 	}
 }
 
-WORD RdDirective(bool& b)
+WORD Compiler::RdDirective(bool& b)
 {
 	const pstring Dirs[6] = {
 		pstring(7) = "define",
@@ -257,7 +258,7 @@ label1:
 	return i;
 }
 
-void RdForwName(pstring& s)
+void Compiler::RdForwName(pstring& s)
 {
 	s[0] = 0;
 	while ((s.length() < 12) && (IsLetter(ForwChar) || isdigit(ForwChar)))
@@ -267,7 +268,7 @@ void RdForwName(pstring& s)
 	}
 }
 
-void SkipLevel(bool withElse)
+void Compiler::SkipLevel(bool withElse)
 {
 	WORD n = 0;
 	bool b = false;
@@ -311,7 +312,7 @@ label3:
 	goto label1;
 }
 
-void SkipBlank(bool toNextLine)
+void Compiler::SkipBlank(bool toNextLine)
 {
 	WORD n = 0;
 	bool b = false;
@@ -400,13 +401,13 @@ label1:
 	CurrChar = CC;
 }
 
-void OldError(short N)
+void Compiler::OldError(short N)
 {
 	CurrPos = OldErrPos;
 	Error(N);
 }
 
-void RdBackSlashCode()
+void Compiler::RdBackSlashCode()
 {
 	WORD i, n;
 	pstring Num;
@@ -423,7 +424,7 @@ void RdBackSlashCode()
 	CurrChar = (char)n;
 }
 
-void RdLex()
+void Compiler::RdLex()
 {
 	OldErrPos = CurrPos;
 	SkipBlank(false);
@@ -511,22 +512,22 @@ void RdLex()
 	//}
 }
 
-bool IsForwPoint()
+bool Compiler::IsForwPoint()
 {
 	return (ForwChar == '.') && (InpArrPtr[CurrPos + 1] != '.');
 }
 
-void TestIdentif()
+void Compiler::TestIdentif()
 {
 	if (Lexem != _identifier) Error(29);
 }
 
-void TestLex(char X)
+void Compiler::TestLex(char X)
 {
 	if ((char)Lexem != X) { ExpChar = X; Error(1); }
 }
 
-void Accept(char X)
+void Compiler::Accept(char X)
 {
 	if (X == (char)Lexem) {
 		RdLex();
@@ -537,7 +538,7 @@ void Accept(char X)
 	}
 }
 
-short RdInteger()
+short Compiler::RdInteger()
 {
 	short I, J;
 	val(LexWord, I, J);
@@ -546,7 +547,7 @@ short RdInteger()
 	return I;
 }
 
-double ValofS(pstring& S)
+double Compiler::ValofS(pstring& S)
 {
 	short I = 0; double R = 0.0;
 
@@ -566,7 +567,7 @@ double ValofS(pstring& S)
 	return R;
 }
 
-double RdRealConst()
+double Compiler::RdRealConst()
 {
 	pstring S;
 	if (Lexem == '-') { S = '-'; RdLex(); }
@@ -598,13 +599,13 @@ label1:
 //	return (Lexem == _identifier) && EquUpCase(S, LexWord);
 //}
 
-bool TestKeyWord(const std::string& S)
+bool Compiler::TestKeyWord(const std::string& S)
 {
 	std::string lw = LexWord;
 	return (Lexem == _identifier) && EquUpCase(S, lw);
 }
 
-bool IsKeyWord(const std::string& S)
+bool Compiler::IsKeyWord(const std::string& S)
 {
 	if (Lexem != _identifier) return false;
 	if (LexWord.length() != S.length()) return false;
@@ -620,7 +621,7 @@ bool IsKeyWord(const std::string& S)
 	return true;
 }
 
-void AcceptKeyWord(const std::string& S)
+void Compiler::AcceptKeyWord(const std::string& S)
 {
 	if (TestKeyWord(S)) {
 		RdLex();
@@ -631,7 +632,7 @@ void AcceptKeyWord(const std::string& S)
 	}
 }
 
-bool IsOpt(pstring S)
+bool Compiler::IsOpt(pstring S)
 {
 	if (Lexem != _identifier) return false;
 	if (S.length() != LexWord.length()) return false;
@@ -651,7 +652,7 @@ bool IsOpt(pstring S)
 	return true;
 }
 
-bool IsDigitOpt(pstring S, WORD& N)
+bool Compiler::IsDigitOpt(pstring S, WORD& N)
 {
 	char LastLexWord = LexWord[LexWord.length()];
 	if ((Lexem == _identifier) && (LexWord.length() == S.length() + 1)
@@ -666,21 +667,21 @@ bool IsDigitOpt(pstring S, WORD& N)
 	return false;
 }
 
-pstring* RdStrConst()
+pstring* Compiler::RdStrConst()
 {
 	pstring* S = new pstring(LexWord);
 	Accept(_quotedstr);
 	return S;
 }
 
-std::string RdStringConst()
+std::string Compiler::RdStringConst()
 {
 	std::string result = LexWord;
 	Accept(_quotedstr);
 	return result;
 }
 
-char Rd1Char()
+char Compiler::Rd1Char()
 {
 	if ((Lexem != _identifier) || (LexWord.length() != 1)) Error(124);
 	char result = LexWord[1];
@@ -688,7 +689,7 @@ char Rd1Char()
 	return result;
 }
 
-char RdQuotedChar()
+char Compiler::RdQuotedChar()
 {
 	if ((Lexem != _quotedstr) || (LexWord.length() != 1)) Error(15);
 	char result = LexWord[1];
@@ -696,7 +697,7 @@ char RdQuotedChar()
 	return result;
 }
 
-bool IsIdentifStr(std::string& S)
+bool Compiler::IsIdentifStr(std::string& S)
 {
 	if ((S.length() == 0) || !IsLetter(S[0])) return false;
 	for (size_t i = 1; i < S.length(); i++) {
@@ -705,7 +706,7 @@ bool IsIdentifStr(std::string& S)
 	return true;
 }
 
-stSaveState* SaveCompState()
+stSaveState* Compiler::SaveCompState()
 {
 	stSaveState* state = new stSaveState();
 	state->CurrChar = CurrChar;
@@ -756,7 +757,7 @@ void RestoreCompState(stSaveState* p)
 	delete p;
 }
 
-LocVar* RdVarName(LocVarBlkD* LVB, bool IsParList)
+LocVar* Compiler::RdVarName(LocVarBlkD* LVB, bool IsParList)
 {
 	TestIdentif();
 	LocVar* lvar = LVB->FindByName(LexWord);
@@ -772,7 +773,7 @@ LocVar* RdVarName(LocVarBlkD* LVB, bool IsParList)
 	return lvar;
 }
 
-KeyFldD* RdKF(FileD* FD)
+KeyFldD* Compiler::RdKF(FileD* FD)
 {
 	//KF = (KeyFldD*)GetZStore(sizeof(KeyFldD));
 	KeyFldD* KF = new KeyFldD();
@@ -798,7 +799,7 @@ KeyFldD* RdKF(FileD* FD)
 	return KF;
 }
 
-WORD RdKFList(KeyFldD** KFRoot, FileD* FD)
+WORD Compiler::RdKFList(KeyFldD** KFRoot, FileD* FD)
 {
 	WORD n = 0; KeyFldD* KF = nullptr;
 label1:
@@ -819,7 +820,7 @@ label1:
 	return n;
 }
 
-void RdLocDcl(LocVarBlkD* LVB, bool IsParList, bool WithRecVar, char CTyp)
+void Compiler::RdLocDcl(LocVarBlkD* LVB, bool IsParList, bool WithRecVar, char CTyp)
 {
 	FrmlElem* Z = nullptr;
 	bool b = false;
@@ -983,7 +984,7 @@ label1:
 		goto label1;
 }
 
-bool FindLocVar(LocVar* LVRoot, LocVar** LV)
+bool Compiler::FindLocVar(LocVar* LVRoot, LocVar** LV)
 {
 	auto result = false;
 	if (Lexem != _identifier) return result;
@@ -996,7 +997,7 @@ bool FindLocVar(LocVar* LVRoot, LocVar** LV)
 	return result;
 }
 
-bool FindLocVar(LocVarBlkD* LVB, LocVar** LV)
+bool Compiler::FindLocVar(LocVarBlkD* LVB, LocVar** LV)
 {
 	if (Lexem != _identifier) return false;
 	*LV = LVB->FindByName(LexWord);
@@ -1004,7 +1005,7 @@ bool FindLocVar(LocVarBlkD* LVB, LocVar** LV)
 	return true;
 }
 
-bool FindChpt(char Typ, const pstring& name, bool local, RdbPos* RP)
+bool Compiler::FindChpt(char Typ, const pstring& name, bool local, RdbPos* RP)
 {
 	FileD* CF = CFile;
 	void* CR = CRecPtr;
@@ -1039,7 +1040,7 @@ label1:
 	return result;
 }
 
-void RdChptName(char C, RdbPos* Pos, bool TxtExpr)
+void Compiler::RdChptName(char C, RdbPos* Pos, bool TxtExpr)
 {
 	//if (InpArrLen == 17623 && CurrPos > 4700) {
 	//	printf("");
@@ -1058,7 +1059,7 @@ void RdChptName(char C, RdbPos* Pos, bool TxtExpr)
 	}
 }
 
-std::vector<FieldDescr*> AllFldsList(FileD* FD, bool OnlyStored)
+std::vector<FieldDescr*> Compiler::AllFldsList(FileD* FD, bool OnlyStored)
 {
 	std::vector<FieldDescr*> FLRoot;
 	for (FieldDescr* F : FD->FldD) {
@@ -1069,7 +1070,7 @@ std::vector<FieldDescr*> AllFldsList(FileD* FD, bool OnlyStored)
 	return FLRoot;
 }
 
-RprtOpt* GetRprtOpt()
+RprtOpt* Compiler::GetRprtOpt()
 {
 	auto RO = new RprtOpt();
 	RO->Mode = _ALstg;
@@ -1078,7 +1079,7 @@ RprtOpt* GetRprtOpt()
 	return RO;
 }
 
-void CFileLikeFD(FileD* FD, WORD MsgNr)
+void Compiler::CFileLikeFD(FileD* FD, WORD MsgNr)
 {
 	FileD* FD1;
 	if (!CFile->IsJournal && ((CFile == FD) || (CFile->OrigFD == FD))) return;
@@ -1086,7 +1087,7 @@ void CFileLikeFD(FileD* FD, WORD MsgNr)
 	RunError(MsgNr);
 }
 
-std::string RdHelpName()
+std::string Compiler::RdHelpName()
 {
 	std::string s;
 	if (CRdb->help_file == nullptr) Error(132);
@@ -1096,7 +1097,7 @@ std::string RdHelpName()
 	return s;
 }
 
-FrmlElem* RdAttr()
+FrmlElem* Compiler::RdAttr()
 {
 	if (Lexem == '^') {
 		BYTE n;
@@ -1109,7 +1110,7 @@ FrmlElem* RdAttr()
 	return RdRealFrml(nullptr);
 }
 
-void RdW(WRectFrml& W)
+void Compiler::RdW(WRectFrml& W)
 {
 	W.C1 = RdRealFrml(nullptr); Accept(',');
 	W.R1 = RdRealFrml(nullptr); Accept(',');
@@ -1117,7 +1118,7 @@ void RdW(WRectFrml& W)
 	W.R2 = RdRealFrml(nullptr);
 }
 
-void RdFrame(FrmlElem** Z, BYTE& WFlags)
+void Compiler::RdFrame(FrmlElem** Z, BYTE& WFlags)
 {
 	if (Lexem != ',') return;
 	RdLex();
@@ -1133,7 +1134,7 @@ void RdFrame(FrmlElem** Z, BYTE& WFlags)
 	if (Lexem == '!') { WFlags = WFlags | WShadow; RdLex(); }
 }
 
-bool PromptSortKeys(FieldListEl* FL, KeyFldD* SKRoot)
+bool Compiler::PromptSortKeys(FieldListEl* FL, KeyFldD* SKRoot)
 {
 	wwmix ww;
 
@@ -1163,7 +1164,7 @@ label1:
 	return result;
 }
 
-bool PromptSortKeys(std::vector<FieldDescr*>& FL, KeyFldD* SKRoot)
+bool Compiler::PromptSortKeys(std::vector<FieldDescr*>& FL, KeyFldD* SKRoot)
 {
 	wwmix ww;
 
@@ -1192,7 +1193,7 @@ label1:
 	return result;
 }
 
-void RdAssignFrml(char FTyp, bool& Add, FrmlElem** Z, MergeReportBase* caller)
+void Compiler::RdAssignFrml(char FTyp, bool& Add, FrmlElem** Z, MergeReportBase* caller)
 {
 	char Typ = '\0';
 	if (Lexem == _addass) { RdLex(); Add = true; }
@@ -1201,7 +1202,7 @@ void RdAssignFrml(char FTyp, bool& Add, FrmlElem** Z, MergeReportBase* caller)
 	if ((FTyp != Typ) || Add && (Typ != 'R')) OldError(12);
 }
 
-bool FldTypIdentity(FieldDescr* F1, FieldDescr* F2)
+bool Compiler::FldTypIdentity(FieldDescr* F1, FieldDescr* F2)
 {
 	bool result = false;
 	if (F1->field_type != F2->field_type) return result;
@@ -1211,7 +1212,7 @@ bool FldTypIdentity(FieldDescr* F1, FieldDescr* F2)
 	return true;
 }
 
-void RdFldList(FieldListEl** FLRoot)
+void Compiler::RdFldList(FieldListEl** FLRoot)
 {
 	FieldDescr* F = nullptr;
 	FieldListEl* FL = nullptr;
@@ -1224,7 +1225,7 @@ label1:
 	if (Lexem == ',') { RdLex(); goto label1; }
 }
 
-void RdFldList(std::vector<FieldDescr*>& vFields)
+void Compiler::RdFldList(std::vector<FieldDescr*>& vFields)
 {
 	while (true) {
 		FieldDescr* F = RdFldName(CFile);
@@ -1237,7 +1238,7 @@ void RdFldList(std::vector<FieldDescr*>& vFields)
 	}
 }
 
-void RdFldList(std::vector<FieldDescr*>* vFields)
+void Compiler::RdFldList(std::vector<FieldDescr*>* vFields)
 {
 	while (true) {
 		FieldDescr* F = RdFldName(CFile);
@@ -1250,16 +1251,7 @@ void RdFldList(std::vector<FieldDescr*>* vFields)
 	}
 }
 
-//void RdNegFldList(bool& Neg, FieldListEl** FLRoot)
-//{
-//	if (Lexem == '^') { RdLex(); Neg = true; }
-//	Accept('(');
-//	if (Lexem == ')') Neg = true;
-//	else RdFldList(FLRoot);
-//	Accept(')');
-//}
-
-void RdNegFldList(bool& Neg, std::vector<FieldDescr*>& vFields)
+void Compiler::RdNegFldList(bool& Neg, std::vector<FieldDescr*>& vFields)
 {
 	if (Lexem == '^') { RdLex(); Neg = true; }
 	Accept('(');
@@ -1268,7 +1260,7 @@ void RdNegFldList(bool& Neg, std::vector<FieldDescr*>& vFields)
 	Accept(')');
 }
 
-void RdNegFldList(bool& Neg, std::vector<FieldDescr*>* vFields)
+void Compiler::RdNegFldList(bool& Neg, std::vector<FieldDescr*>* vFields)
 {
 	if (Lexem == '^') { RdLex(); Neg = true; }
 	Accept('(');
@@ -1277,7 +1269,7 @@ void RdNegFldList(bool& Neg, std::vector<FieldDescr*>* vFields)
 	Accept(')');
 }
 
-XKey* RdViewKey()
+XKey* Compiler::RdViewKey()
 {
 	XKey* lastK = nullptr;
 	LocVar* lv = nullptr;
@@ -1286,35 +1278,33 @@ XKey* RdViewKey()
 	if (Lexem != '/') return result;
 	RdLex();
 	size_t i = 0;
-	//k = CFile->Keys;
+
 	if (Lexem == '@') {
 		lastK = CFile->Keys.empty() ? nullptr : CFile->Keys[0];
 		goto label1;
 	}
 	TestIdentif();
-	//while (k != nullptr) {
+
 	for (auto& k : CFile->Keys) {
 		std::string lw = LexWord;
 		if (EquUpCase(k->Alias, lw)) {
 			lastK = k;
 			goto label1;
 		}
-		//k = k->Chain;
 	}
 	s = LexWord;
 	i = s.find('_');
 	if (i != std::string::npos) s = copy(s, i + 2, 255);
 	s = CFile->Name + "_" + s;
-	//k = CFile->Keys;
-	//while (k != nullptr) {
+
 	for (auto& k : CFile->Keys) {
 		std::string kAl = k->Alias;
 		if (EquUpCase(s, kAl)) {
 			lastK = k;
 			goto label1;
 		}
-		//k = k->Chain;
 	}
+
 	if (IdxLocVarAllowed && FindLocVar(&LVBD, &lv) && (lv->FTyp == 'i'))
 	{
 		if (lv->FD != CFile) Error(164);
@@ -1333,9 +1323,7 @@ label1:
 	return result;
 }
 
-void SrchZ(FrmlElem* Z);
-
-void SrchF(FieldDescr* F)
+void Compiler::SrchF(FieldDescr* F)
 {
 	if (F == KeyArgFld) {
 		KeyArgFound = true;
@@ -1346,7 +1334,7 @@ void SrchF(FieldDescr* F)
 	}
 }
 
-void SrchZ(FrmlElem* Z)
+void Compiler::SrchZ(FrmlElem* Z)
 {
 	KeyFldD* KF = nullptr;
 	FrmlListEl* fl = nullptr;
@@ -1398,7 +1386,7 @@ void SrchZ(FrmlElem* Z)
 	}
 }
 
-bool IsFun(std::map<std::string, int>& strs, std::string input, instr_type& FunCode)
+bool Compiler::IsFun(std::map<std::string, int>& strs, std::string input, instr_type& FunCode)
 {
 	// prevedeme vse ze vstupu na mala pismena
 	for (auto&& c : input)
@@ -1414,7 +1402,7 @@ bool IsFun(std::map<std::string, int>& strs, std::string input, instr_type& FunC
 	return false;
 }
 
-bool IsKeyArg(FieldDescr* F, FileD* FD)
+bool Compiler::IsKeyArg(FieldDescr* F, FileD* FD)
 {
 	KeyArgFound = false;
 	for (auto& k : FD->Keys) {
@@ -1429,7 +1417,7 @@ bool IsKeyArg(FieldDescr* F, FileD* FD)
 	return false;
 }
 
-void CompileRecLen(FileD* file_d)
+void Compiler::CompileRecLen(FileD* file_d)
 {
 	WORD l = 0;
 	WORD n = 0;
@@ -1483,22 +1471,22 @@ void CompileRecLen(FileD* file_d)
 	}
 }
 
-void TestBool(char FTyp)
+void Compiler::TestBool(char FTyp)
 {
 	if (FTyp != 'B') OldError(18);
 }
 
-void TestString(char FTyp)
+void Compiler::TestString(char FTyp)
 {
 	if (FTyp != 'S') OldError(19);
 }
 
-void TestReal(char FTyp)
+void Compiler::TestReal(char FTyp)
 {
 	if (FTyp != 'R') OldError(20);
 }
 
-FrmlElem* BOperation(char Typ, instr_type Fun, FrmlElem* Frml)
+FrmlElem* Compiler::BOperation(char Typ, instr_type Fun, FrmlElem* Frml)
 {
 	TestBool(Typ);
 	FrmlElemFunction* Z = new FrmlElemFunction(Fun, 0); // GetOp(Fun, 0);
@@ -1507,9 +1495,7 @@ FrmlElem* BOperation(char Typ, instr_type Fun, FrmlElem* Frml)
 	return Z;
 }
 
-FrmlElem* RdPrim(char& FTyp, MergeReportBase* caller);
-
-FrmlElem* RdMult(char& FTyp, MergeReportBase* caller)
+FrmlElem* Compiler::RdMult(char& FTyp, MergeReportBase* caller)
 {
 	WORD N = 0;
 	FrmlElemFunction* Z = (FrmlElemFunction*)RdPrim(FTyp, caller);
@@ -1555,7 +1541,7 @@ label1:
 	return Z;
 }
 
-FrmlElem* RdAdd(char& FTyp, MergeReportBase* caller)
+FrmlElem* Compiler::RdAdd(char& FTyp, MergeReportBase* caller)
 {
 	FrmlElemFunction* Z = (FrmlElemFunction*)RdMult(FTyp, caller);
 	FrmlElemFunction* Z1 = nullptr;
@@ -1594,15 +1580,16 @@ label1:
 	return Z;
 }
 
-WORD RdPrecision();
-
-WORD RdTilde()
+WORD Compiler::RdTilde()
 {
-	if (Lexem == '~') { RdLex(); return 1; }
+	if (Lexem == '~') {
+		RdLex();
+		return 1;
+	}
 	return 0;
 }
 
-void RdInConst(FrmlElemIn* Z, char& FTyp, std::string& str, double& R)
+void Compiler::RdInConst(FrmlElemIn* Z, char& FTyp, std::string& str, double& R)
 {
 	if (FTyp == 'S') {
 		if (Z->param1 == 1/*tilde*/) str = OldTrailChar(' ', LexWord);
@@ -1614,7 +1601,7 @@ void RdInConst(FrmlElemIn* Z, char& FTyp, std::string& str, double& R)
 	}
 }
 
-FrmlElem* RdComp(char& FTyp, MergeReportBase* caller)
+FrmlElem* Compiler::RdComp(char& FTyp, MergeReportBase* caller)
 {
 	pstring S;
 	BYTE* B = nullptr;
@@ -1693,7 +1680,7 @@ FrmlElem* RdComp(char& FTyp, MergeReportBase* caller)
 }
 
 
-FrmlElem* RdBAnd(char& FTyp, MergeReportBase* caller)
+FrmlElem* Compiler::RdBAnd(char& FTyp, MergeReportBase* caller)
 {
 	FrmlElem* Z = RdComp(FTyp, caller);
 	while (Lexem == '&') {
@@ -1704,7 +1691,7 @@ FrmlElem* RdBAnd(char& FTyp, MergeReportBase* caller)
 	return Z;
 }
 
-FrmlElem* RdBOr(char& FTyp, MergeReportBase* caller)
+FrmlElem* Compiler::RdBOr(char& FTyp, MergeReportBase* caller)
 {
 	FrmlElem* Z = RdBAnd(FTyp, caller);
 	while (Lexem == '|')
@@ -1716,7 +1703,7 @@ FrmlElem* RdBOr(char& FTyp, MergeReportBase* caller)
 	return Z;
 }
 
-FrmlElem* RdFormula(char& FTyp, MergeReportBase* caller)
+FrmlElem* Compiler::RdFormula(char& FTyp, MergeReportBase* caller)
 {
 	FrmlElem* Z = RdBOr(FTyp, caller);
 	while ((BYTE)Lexem == _limpl || (BYTE)Lexem == _lequ) {
@@ -1727,7 +1714,7 @@ FrmlElem* RdFormula(char& FTyp, MergeReportBase* caller)
 	return Z;
 }
 
-bool FindFuncD(FrmlElem** ZZ, MergeReportBase* caller)
+bool Compiler::FindFuncD(FrmlElem** ZZ, MergeReportBase* caller)
 {
 	char typ = '\0';
 	FuncD* fc = FuncDRoot;
@@ -1846,7 +1833,7 @@ std::map<std::string, int> S3Fun = {
 	std::pair<std::string, int> {"text", _str},
 };
 
-FrmlElem* RdPrim(char& FTyp, MergeReportBase* caller)
+FrmlElem* Compiler::RdPrim(char& FTyp, MergeReportBase* caller)
 {
 	instr_type FunCode = _notdefined;
 	FrmlElem* Z = nullptr; FrmlElem* Z1 = nullptr; FrmlElem* Z2 = nullptr; FrmlElem* Z3 = nullptr;
@@ -2227,7 +2214,7 @@ FrmlElem* RdPrim(char& FTyp, MergeReportBase* caller)
 	return Z;
 }
 
-WORD RdPrecision()
+WORD Compiler::RdPrecision()
 {
 	WORD n = 5;
 	if ((Lexem == '.') && (ForwChar >= '0' && ForwChar <= '9'))
@@ -2238,23 +2225,12 @@ WORD RdPrecision()
 	return n;
 }
 
-//FrmlElem* MyBPContext(FrmlElem* Z, bool NewMyBP)
-//{
-//	FrmlElem* Z1;
-//	if (NewMyBP) {
-//		Z1 = new FrmlElemFunction(_setmybp, 0); // GetOp(_setmybp, 0);
-//		((FrmlElemFunction*)Z1)->P1 = Z;
-//		Z = Z1;
-//	}
-//	return Z;
-//}
-
-FrmlListEl* RdFL(bool NewMyBP, FrmlList FL1)
+FrmlListEl* Compiler::RdFL(bool NewMyBP, FrmlList FL1)
 {
 	char FTyp = '\0';
 	KeyFldD* KF = CViewKey->KFlds;
 	FrmlListEl* FLRoot = nullptr;
-	KeyFldD* KF2 = (KeyFldD*)KF->pChain;
+	KeyFldD* KF2 = KF->pChain;
 	bool FVA = FileVarsAllowed;
 	FileVarsAllowed = false;
 	bool b = FL1 != nullptr;
@@ -2265,9 +2241,9 @@ label1:
 	else ChainLast(FLRoot, FL);
 	FL->Frml = RdFrml(FTyp, nullptr); // MyBPContext(RdFrml(FTyp), NewMyBP);
 	if (FTyp != KF->FldD->frml_type) OldError(12);
-	KF = (KeyFldD*)KF->pChain;
+	KF = KF->pChain;
 	if (b) {
-		FL1 = (FrmlListEl*)FL1->pChain;
+		FL1 = FL1->pChain;
 		if (FL1 != nullptr) { Accept(','); goto label1; }
 	}
 	else if ((KF != nullptr) && (Lexem == ',')) { RdLex(); goto label1; }
@@ -2277,7 +2253,7 @@ label1:
 	return result;
 }
 
-FrmlElem* RdKeyInBool(KeyInD** KIRoot, bool NewMyBP, bool FromRdProc, bool& SQLFilter, MergeReportBase* caller)
+FrmlElem* Compiler::RdKeyInBool(KeyInD** KIRoot, bool NewMyBP, bool FromRdProc, bool& SQLFilter, MergeReportBase* caller)
 {
 	KeyInD* KI = nullptr; WORD l = 0; char FTyp = '\0';
 	FrmlElem* Z = nullptr; bool FVA = false;
@@ -2326,13 +2302,13 @@ FrmlElem* RdKeyInBool(KeyInD** KIRoot, bool NewMyBP, bool FromRdProc, bool& SQLF
 	return result;
 }
 
-FrmlElem* RdFrml(char& FTyp, MergeReportBase* caller)
+FrmlElem* Compiler::RdFrml(char& FTyp, MergeReportBase* caller)
 {
 	FrmlSumEl = nullptr;
 	return RdFormula(FTyp, caller);
 }
 
-FrmlElem* RdBool(MergeReportBase* caller)
+FrmlElem* Compiler::RdBool(MergeReportBase* caller)
 {
 	char FTyp = 0;
 	FrmlSumEl = nullptr;
@@ -2341,7 +2317,7 @@ FrmlElem* RdBool(MergeReportBase* caller)
 	return result;
 }
 
-FrmlElem* RdRealFrml(MergeReportBase* caller)
+FrmlElem* Compiler::RdRealFrml(MergeReportBase* caller)
 {
 	char FTyp = 0;
 	FrmlSumEl = nullptr;
@@ -2350,7 +2326,7 @@ FrmlElem* RdRealFrml(MergeReportBase* caller)
 	return result;
 }
 
-FrmlElem* RdStrFrml(MergeReportBase* caller)
+FrmlElem* Compiler::RdStrFrml(MergeReportBase* caller)
 {
 	char FTyp = 0;
 	FrmlSumEl = nullptr;
@@ -2359,30 +2335,7 @@ FrmlElem* RdStrFrml(MergeReportBase* caller)
 	return result;
 }
 
-//int ElemCount = 0;
-//int ElemTotalSize = 0;
-
-//FrmlPtr GetOp(BYTE Op, short BytesAfter)
-//{
-//	WORD l = 0;
-//	if (Op < 0x60) l = 1;	// bude uložen jen "Op"
-//	else if (Op < 0xb0) l = 5;   // bude uložen "Op" a 1 ukazatel
-//	else if (Op < 0xf0) l = 9;   // bude uložen "Op" a 2 ukazatele
-//	else l = 13; // bude uložen "Op" a 3 ukazatele
-//	//Z = (FrmlPtr)GetZStore(l + BytesAfter);
-//	FrmlElem* Z = new FrmlElem(BytesAfter);
-//	//ElemCount++;
-//	//ElemTotalSize += l + BytesAfter;
-//	//printf("FrmlElem: count %i, total size %i;", ElemCount, ElemTotalSize);
-//	//printf("SizeOf FrmlElem* = %i; ", sizeof(FrmlElem));
-//	Z->Op = Op;
-//	//if (BytesAfter == 0) {
-//	//	printf("GetOp() BytesAfter: %i", BytesAfter);
-//	//}
-//	return Z;
-//}
-
-FieldDescr* FindFldName(FileD* FD, std::string fieldName)
+FieldDescr* Compiler::FindFldName(FileD* FD, std::string fieldName)
 {
 	if (fieldName.empty()) fieldName = LexWord;
 	if (FD != nullptr) {
@@ -2393,7 +2346,7 @@ FieldDescr* FindFldName(FileD* FD, std::string fieldName)
 	return nullptr;
 }
 
-FieldDescr* RdFldName(FileD* FD)
+FieldDescr* Compiler::RdFldName(FileD* FD)
 {
 	FieldDescr* F = FindFldName(FD);
 	TestIdentif();
@@ -2405,7 +2358,7 @@ FieldDescr* RdFldName(FileD* FD)
 	return F;
 }
 
-FileD* FindFileD()
+FileD* Compiler::FindFileD()
 {
 	FileD* FD = nullptr;
 	RdbD* R = nullptr;
@@ -2431,7 +2384,7 @@ FileD* FindFileD()
 	return nullptr;
 }
 
-FileD* RdFileName()
+FileD* Compiler::RdFileName()
 {
 	FileD* FD = nullptr;
 	if (SpecFDNameAllowed && (Lexem == '@')) {
@@ -2445,7 +2398,7 @@ FileD* RdFileName()
 	return FD;
 }
 
-LinkD* FindLD(std::string RoleName)
+LinkD* Compiler::FindLD(std::string RoleName)
 {
 	FileD* F = CFile;
 
@@ -2462,7 +2415,7 @@ LinkD* FindLD(std::string RoleName)
 	return nullptr;
 }
 
-bool IsRoleName(bool Both, FileD** FD, LinkD** LD)
+bool Compiler::IsRoleName(bool Both, FileD** FD, LinkD** LD)
 {
 	TestIdentif();
 	*FD = FindFileD();
@@ -2484,7 +2437,7 @@ bool IsRoleName(bool Both, FileD** FD, LinkD** LD)
 	return result;
 }
 
-FrmlElem* RdFAccess(FileD* FD, LinkD* LD, char& FTyp)
+FrmlElem* Compiler::RdFAccess(FileD* FD, LinkD* LD, char& FTyp)
 {
 	TestIdentif();
 	auto Z = new FrmlElem7(_access, 12);
@@ -2506,7 +2459,7 @@ FrmlElem* RdFAccess(FileD* FD, LinkD* LD, char& FTyp)
 	return Z;
 }
 
-FrmlElem* FrmlContxt(FrmlElem* Z, FileD* FD, void* RP)
+FrmlElem* Compiler::FrmlContxt(FrmlElem* Z, FileD* FD, void* RP)
 {
 	auto Z1 = new FrmlElem8(_newfile, 8);
 	Z1->Frml = Z;
@@ -2515,7 +2468,7 @@ FrmlElem* FrmlContxt(FrmlElem* Z, FileD* FD, void* RP)
 	return Z1;
 }
 
-FrmlElem* MakeFldFrml(FieldDescr* F, char& FTyp)
+FrmlElem* Compiler::MakeFldFrml(FieldDescr* F, char& FTyp)
 {
 	auto Z = new FrmlElem7(_field, 4);
 	Z->Field = F;
@@ -2523,7 +2476,7 @@ FrmlElem* MakeFldFrml(FieldDescr* F, char& FTyp)
 	return Z;
 }
 
-LinkD* FindOwnLD(FileD* FD, std::string RoleName)
+LinkD* Compiler::FindOwnLD(FileD* FD, std::string RoleName)
 {
 	std::string lw = LexWord;
 	LinkD* result = nullptr;
@@ -2541,7 +2494,7 @@ LinkD* FindOwnLD(FileD* FD, std::string RoleName)
 	return result;
 }
 
-FrmlElem* TryRdFldFrml(FileD* FD, char& FTyp, MergeReportBase* caller)
+FrmlElem* Compiler::TryRdFldFrml(FileD* FD, char& FTyp, MergeReportBase* caller)
 {
 	FileD* cf = nullptr; FieldDescr* f = nullptr;
 	LinkD* ld = nullptr; FrmlElem* z = nullptr;
@@ -2551,7 +2504,7 @@ FrmlElem* TryRdFldFrml(FileD* FD, char& FTyp, MergeReportBase* caller)
 
 	if (IsKeyWord("OWNED")) {
 		rff = ptrRdFldNameFrml;
-		ptrRdFldNameFrml = RdFldNameFrmlF;
+		//TODO: !!! ptrRdFldNameFrml = RdFldNameFrmlF;
 		Accept('(');
 		z = new FrmlElem23(_owned, 12); // GetOp(_owned, 12);
 		TestIdentif();
@@ -2596,11 +2549,8 @@ FrmlElem* TryRdFldFrml(FileD* FD, char& FTyp, MergeReportBase* caller)
 	return z;
 }
 
-FrmlElem* RdFldNameFrmlF(char& FTyp, MergeReportBase* caller)
+FrmlElem* Compiler::RdFldNameFrmlF(char& FTyp, MergeReportBase* caller)
 {
-	//if (InpArrLen == 3360) {
-	//	printf("RdFldNameFrmlF() %i\n", CurrPos);
-	//}
 	LinkD* ld = nullptr;
 	FileD* fd = nullptr;
 	FrmlElem* z = nullptr;

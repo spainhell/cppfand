@@ -88,7 +88,7 @@ void CodingRdb::CompressTxt(WORD IRec, LongStr* s, char Typ)
 		while (!(ForwChar == '#' || ForwChar == 0x1A || ForwChar == '\r' || ForwChar == '{')) {
 			// { read headlines }
 			Wr(ForwChar);
-			ReadChar();
+			compiler->ReadChar();
 		}
 		switch (ForwChar) {
 		case 0x1A:
@@ -97,14 +97,14 @@ void CodingRdb::CompressTxt(WORD IRec, LongStr* s, char Typ)
 			break;
 		}
 		case '{': {
-			SkipBlank(true);
+			compiler->SkipBlank(true);
 			Wr('{');
 			Wr('}');
 			break;
 		}
 		default: {
-			ReadChar();
-			if (ForwChar == '\n') ReadChar();
+			compiler->ReadChar();
+			if (ForwChar == '\n') compiler->ReadChar();
 			break;
 		}
 		}
@@ -130,22 +130,22 @@ label1:
 		break;
 	}
 	case '{': {
-		ReadChar();
+		compiler->ReadChar();
 		if (ForwChar == '$') {
-			n = RdDirective(b);
+			n = compiler->RdDirective(b);
 			switch (n) {
 			case 0:;
 			case 1: {
 				SwitchLevel++;
-				if (!b) SkipLevel(true);
+				if (!b) compiler->SkipLevel(true);
 			}
 			case 5: {
 				PrevCompInp.emplace_back(CompInpD());
-				SetInpTT(&ChptIPos, true);
+				compiler->SetInpTT(&ChptIPos, true);
 			}
 
 			default: {
-				if (n == 3) SkipLevel(false);
+				if (n == 3) compiler->SkipLevel(false);
 				else SwitchLevel--;
 			}
 			}
@@ -160,12 +160,12 @@ label1:
 				n--;
 				if (n == 0) {
 					Wr(' ');
-					ReadChar();
+					compiler->ReadChar();
 					goto label1;
 				}
 			}
 			}
-			ReadChar();
+			compiler->ReadChar();
 			goto label2;
 		}
 		break;
@@ -173,7 +173,7 @@ label1:
 	case '\'': {
 		do {
 			Wr(ForwChar);
-			ReadChar();
+			compiler->ReadChar();
 		} while (ForwChar == '\'' || ForwChar == 0x1A);
 		if (ForwChar == 0x1A) goto label1;
 		break;
@@ -181,7 +181,7 @@ label1:
 	default: {
 		if (ForwChar <= ' ') { // ^@..' '
 			if (!(Typ == 'R' || Typ == 'U' || Typ == 'E' || Typ == 'H')) {
-				while ((ForwChar <= ' ') && (ForwChar != 0x1A)) ReadChar();
+				while ((ForwChar <= ' ') && (ForwChar != 0x1A)) compiler->ReadChar();
 				Wr(' ');
 				goto label1;
 			}
@@ -190,7 +190,7 @@ label1:
 	}
 	}
 	Wr(ForwChar);
-	ReadChar();
+	compiler->ReadChar();
 	goto label1;
 }
 
@@ -267,7 +267,7 @@ void CodingRdb::CompressCRdb(DataEditor* data_editor, EditD* edit)
 	MarkStore(p);
 	void* cr = Chpt->FF->RecPtr;
 	std::string s = "#I1_" + Chpt->Name + "#O1_" + Chpt->Name;
-	SetInpStr(s);
+	compiler->SetInpStr(s);
 	SpecFDNameAllowed = true;
 
 	const std::unique_ptr merge = std::make_unique<Merge>();

@@ -32,38 +32,38 @@ void RdLexP()
 {
 	WORD i = 0;
 	OldErrPos = CurrPos;
-	SkipBlank(false);
-	ReadChar();
+	compiler->SkipBlank(false);
+	compiler->ReadChar();
 	Lexem = CurrChar;
 	switch (CurrChar) {
 	case '\'': {
 		Lexem = _quotedstr;
-		ReadChar();
+		compiler->ReadChar();
 		LexWord = "";
 		while ((CurrChar != '\'') || (ForwChar == '\'')) {
-			if (CurrChar == 0x1A) Error(17);
+			if (CurrChar == 0x1A) compiler->Error(17);
 			// asi puvodni kontrola delky retezce:
 			// if (LexWord.length() == pred(sizeof(LexWord))) Error(6);
-			if (CurrChar == '\'') ReadChar();
-			else if (CurrChar == '\\') RdBackSlashCode();
+			if (CurrChar == '\'') compiler->ReadChar();
+			else if (CurrChar == '\\') compiler->RdBackSlashCode();
 			LexWord.Append(CurrChar);
-			ReadChar();
+			compiler->ReadChar();
 		}
 		break;
 	}
 	case ':': {
 		if (ForwChar == '-') {
-			ReadChar();
+			compiler->ReadChar();
 			Lexem = _assign;
 		}
 		break;
 	}
 	case '|': {
-		if (ForwChar == '|') { ReadChar(); Lexem = _or; }
+		if (ForwChar == '|') { compiler->ReadChar(); Lexem = _or; }
 		break;
 	}
 	case '&': {
-		if (ForwChar == '&') { ReadChar(); Lexem = _and; }
+		if (ForwChar == '&') { compiler->ReadChar(); Lexem = _and; }
 		break;
 	}
 	default:
@@ -71,8 +71,8 @@ void RdLexP()
 			Lexem = _identifier; LexWord[1] = CurrChar; i = 1;
 			while (IsLetter(ForwChar) || isdigit(ForwChar)) {
 				i++;
-				if (i > 32) Error(2);
-				ReadChar();
+				if (i > 32) compiler->Error(2);
+				compiler->ReadChar();
 				LexWord[i] = CurrChar;
 			}
 			LexWord[0] = (char)i;
@@ -84,8 +84,8 @@ void RdLexP()
 			i = 1;
 			while (isdigit(ForwChar)) {
 				i++;
-				if (i > 9) Error(3);
-				ReadChar();
+				if (i > 9) compiler->Error(3);
+				compiler->ReadChar();
 				LexWord[i] = CurrChar;
 			}
 			LexWord[0] = char(i);
@@ -95,16 +95,16 @@ void RdLexP()
 
 void TestIdentifP()
 {
-	if (Lexem != _identifier) Error(29);
+	if (Lexem != _identifier) compiler->Error(29);
 }
 
 void AcceptP(char X)
 {
 	if (Lexem != X)
-		if (X == _assign) Error(506);
+		if (X == _assign) compiler->Error(506);
 		else {
 			ExpChar = X;
-			Error(1);
+			compiler->Error(1);
 		}
 	RdLexP();
 }
@@ -123,13 +123,13 @@ bool IsKeyWordP(pstring s)
 
 void AcceptPKeyWord(pstring s)
 {
-	if (!IsKeyWordP(s)) { SetMsgPar(s); Error(33); }
+	if (!IsKeyWordP(s)) { SetMsgPar(s); compiler->Error(33); }
 }
 
 short RdIntegerP()
 {
 	short i = 0, j = 0;
-	if (Lexem != _number) Error(525);
+	if (Lexem != _number) compiler->Error(525);
 	val(LexWord, i, j);
 	RdLexP();
 	return i;
@@ -221,7 +221,7 @@ TTerm* GetOp1(TDomain* D, instr_type Op, TTerm* E1);
 bool RdVar(TDomain* D, short Kind, short Idx, TTerm** RT, WORD* kind5idx, std::vector<TVarDcl*>& Vars) /*PTerm || idx*/
 {
 	if (IsKeyWordP("_")) {
-		if (!(Kind >= 1 && Kind <= 4)) OldError(508);
+		if (!(Kind >= 1 && Kind <= 4)) compiler->OldError(508);
 		UnbdVarsInTerm = true;
 		WasUnbd = true;
 		*RT = UnderscoreTerm;
@@ -229,7 +229,7 @@ bool RdVar(TDomain* D, short Kind, short Idx, TTerm** RT, WORD* kind5idx, std::v
 	}
 	if (!IsUpperIdentif() || (Kind == 6/*const dcl*/)) {
 		*RT = nullptr;
-		if (Kind == 5) Error(523);
+		if (Kind == 5) compiler->Error(523);
 		return false;
 	}
 
@@ -246,7 +246,7 @@ bool RdVar(TDomain* D, short Kind, short Idx, TTerm** RT, WORD* kind5idx, std::v
 		RdLexP();
 	label1:
 		SetMsgPar(var_dcl->Dom->Name, D->Name);
-		OldError(507);
+		compiler->OldError(507);
 	}
 
 	RdLexP();
@@ -261,7 +261,7 @@ bool RdVar(TDomain* D, short Kind, short Idx, TTerm** RT, WORD* kind5idx, std::v
 		break;
 	}
 	case 2: {
-		if (!bnd) Error(509);
+		if (!bnd) compiler->Error(509);
 		var_dcl->Used = true;
 		break;
 	}
@@ -282,7 +282,7 @@ bool RdVar(TDomain* D, short Kind, short Idx, TTerm** RT, WORD* kind5idx, std::v
 	}
 	case 5: {
 		var_dcl->Bound = true;
-		if (bnd) OldError(523);
+		if (bnd) compiler->OldError(523);
 		*kind5idx = var_dcl->Idx;
 		return true;
 	}
@@ -342,7 +342,7 @@ TTerm* GetFunOp(TDomain* D, TDomain* ResD, instr_type Op, std::string ArgTyp, sh
 {
 	TTerm* t = nullptr;
 	TTerm* t1 = nullptr;
-	if (D != ResD) OldError(510);
+	if (D != ResD) compiler->OldError(510);
 	size_t l = ArgTyp.length();
 	if (l > 0) AcceptP('(');
 	t = new TTerm(); // ptr(_Sg, GetZStor(1 + 1 + 2 * l));
@@ -356,7 +356,7 @@ TTerm* GetFunOp(TDomain* D, TDomain* ResD, instr_type Op, std::string ArgTyp, sh
 		case 's': t1 = RdAddExpr(StrDom, Kind, Vars); break;
 		case 'i': t1 = RdAddExpr(IntDom, Kind, Vars); break;
 		case 'c': {
-			if ((Lexem != _quotedstr) || (LexWord.length() != 1)) Error(560);
+			if ((Lexem != _quotedstr) || (LexWord.length() != 1)) compiler->Error(560);
 			//t1ofs = LexWord[1];
 			RdLexP();
 			break;
@@ -378,7 +378,7 @@ TTerm* RdPrimExpr(TDomain* D, short Kind, std::vector<TVarDcl*>& Vars)
 	// PtrRec(t).Seg = _Sg;
 	switch (Lexem) {
 	case '^': {
-		if (D != IntDom) Error(510);
+		if (D != IntDom) compiler->Error(510);
 		op = (instr_type)Lexem;
 		RdLexP();
 		t = GetOp1(D, op, RdPrimExpr(D, Kind, Vars));
@@ -391,7 +391,7 @@ TTerm* RdPrimExpr(TDomain* D, short Kind, std::vector<TVarDcl*>& Vars)
 		break;
 	}
 	case _quotedstr: {
-		if ((D != StrDom) && (D != LongStrDom)) Error(510);
+		if ((D != StrDom) && (D != LongStrDom)) compiler->Error(510);
 		//tofs = GetZStor(1 + 1 + 1 + LexWord.length());
 		t = new TTerm();
 		t->Fun = DomFun(D);
@@ -401,7 +401,7 @@ TTerm* RdPrimExpr(TDomain* D, short Kind, std::vector<TVarDcl*>& Vars)
 		break;
 	}
 	case '$': {
-		if (D != IntDom) Error(510);
+		if (D != IntDom) compiler->Error(510);
 		else {
 			i = 0;
 			//while (ForwChar in['0'..'9', 'a'..'f', 'A'..'F']) {
@@ -409,11 +409,11 @@ TTerm* RdPrimExpr(TDomain* D, short Kind, std::vector<TVarDcl*>& Vars)
 				|| ForwChar >= 'a' && ForwChar <= 'f'
 				|| ForwChar >= 'A' && ForwChar <= 'F') {
 				i++;
-				if (i > 4) Error(3);
-				ReadChar();
+				if (i > 4) compiler->Error(3);
+				compiler->ReadChar();
 				s[i] = CurrChar;
 			}
-			if (i == 0) Error(504);
+			if (i == 0) compiler->Error(504);
 			s[0] = (char)i;
 			char* p;
 			n = (int)strtoul(s.c_str(), &p, 16);
@@ -424,7 +424,7 @@ TTerm* RdPrimExpr(TDomain* D, short Kind, std::vector<TVarDcl*>& Vars)
 	}
 	case '-': {
 		RdLexP();
-		if (Lexem != _number) Error(525);
+		if (Lexem != _number) compiler->Error(525);
 		minus = true;
 		goto label1;
 		break;
@@ -457,7 +457,7 @@ TTerm* RdPrimExpr(TDomain* D, short Kind, std::vector<TVarDcl*>& Vars)
 			t->Fun = prolog_func::_RealT;
 			t->RR = r;
 		}
-		else OldError(510);
+		else compiler->OldError(510);
 		t->Op = _const;
 		break;
 	}
@@ -475,7 +475,7 @@ TTerm* RdPrimExpr(TDomain* D, short Kind, std::vector<TVarDcl*>& Vars)
 			else if (IsKeyWordP("trailchar")) t = GetFunOp(D, StrDom, _trailchar, "cs", Kind, Vars);
 			else if (IsKeyWordP("maxrow")) t = GetFunOp(D, IntDom, _maxrow, "", Kind, Vars);
 			else if (IsKeyWordP("maxcol")) t = GetFunOp(D, IntDom, _maxcol, "", Kind, Vars);
-			else Error(511);
+			else compiler->Error(511);
 		}
 	}
 	}
@@ -514,7 +514,7 @@ TTerm* RdListTerm(TDomain* D, short Kind, std::vector<TVarDcl*>& Vars)
 	TTerm* tPrev = nullptr;
 	//PtrRec(t).Seg = _Sg;
 	if (!RdVar(D, Kind, -1, &t, nullptr, Vars) && !RdConst(D, &t)) {
-		if (Lexem != '[') Error(510);
+		if (Lexem != '[') compiler->Error(510);
 		RdLexP();
 		t = nullptr;
 		if (Lexem == ']') RdLexP();
@@ -532,7 +532,7 @@ TTerm* RdListTerm(TDomain* D, short Kind, std::vector<TVarDcl*>& Vars)
 			if (Lexem == ',') { RdLexP(); goto label1; }
 			if (Lexem == '|') {
 				RdLexP();
-				if (!RdVar(D, Kind, -1, &tPrev->Next, nullptr, Vars)) Error(511);
+				if (!RdVar(D, Kind, -1, &tPrev->Next, nullptr, Vars)) compiler->Error(511);
 			}
 			AcceptP(']');
 		}
@@ -573,7 +573,7 @@ TTerm* RdTerm(TDomain* D, short Kind, std::vector<TVarDcl*>& Vars)
 		if (!RdVar(D, Kind, -1, &t, nullptr, Vars) && !RdConst(D, &t)) {
 			TestIdentifP();
 			f = GetFunDclByName(D, idx);
-			if (f == nullptr) Error(512);
+			if (f == nullptr) compiler->Error(512);
 			RdLexP();
 			n = f->Arity;
 			t = new TTerm(); // ptr(_Sg, GetZStor(1 + 1 + 2 * n));
@@ -595,8 +595,8 @@ TTerm* RdTerm(TDomain* D, short Kind, std::vector<TVarDcl*>& Vars)
 	}
 	}
 	if (WasOp) {
-		if (WasUnbd) OldError(540);
-		if (Kind == 6) OldError(549);
+		if (WasUnbd) compiler->OldError(540);
+		if (Kind == 6) compiler->OldError(549);
 	}
 label1:
 	WasOp = wo;
@@ -626,7 +626,7 @@ TDomain* GetDomain(bool Create, std::string Nm)
 		if (Nm.substr(0, 2) == "L_") {
 			TDomain* d1 = GetOrigDomain(GetDomain(Create, Nm.substr(2)));
 			if (d1 == nullptr) {
-				Error(517);
+				compiler->Error(517);
 				std::string msg = "Exception in Prolog GetDomain " + Nm;
 				throw std::exception(msg.c_str());
 			}
@@ -644,7 +644,7 @@ TDomain* GetDomain(bool Create, std::string Nm)
 			}
 		}
 		else if (Create) {
-			if ((Nm.length() == 0) || !IsCharUpper2(Nm[0])) Error(514);
+			if ((Nm.length() == 0) || !IsCharUpper2(Nm[0])) compiler->Error(514);
 			d = MakeDomain(_UndefD, Nm);
 		}
 	}
@@ -655,7 +655,7 @@ TDomain* RdDomain() /*PDomain*/
 {
 	TDomain* D = GetDomain(false, LexWord);
 	TestIdentifP();
-	if (D == nullptr) Error(517);
+	if (D == nullptr) compiler->Error(517);
 	RdLexP();
 	return GetOrigDomain(D);
 }
@@ -674,7 +674,7 @@ void RdDomains()
 label1:
 	TestIdentifP();
 	d = GetDomain(true, LexWord);
-	if (d->Typ != _UndefD) Error(505);
+	if (d->Typ != _UndefD) compiler->Error(505);
 	RdLexP();
 	while (Lexem == ',') {
 		RdLexP();
@@ -682,15 +682,15 @@ label1:
 		TestIdentifP();
 		d->OrigDom = GetDomain(true, LexWord);
 		d = d->OrigDom;
-		if (d->Typ != _UndefD) OldError(505);
+		if (d->Typ != _UndefD) compiler->OldError(505);
 		RdLexP();
 	}
 	AcceptP('=');
-	SkipBlank(false);
+	compiler->SkipBlank(false);
 	TestIdentifP();
 	if (IsCharUpper2(LexWord[1])) {
 		d1 = GetDomain(true, LexWord);
-		if (d1 == d) Error(505);
+		if (d1 == d) compiler->Error(505);
 		RdLexP();
 		d->Typ = _RedefD;
 		d->OrigDom = d1;
@@ -698,8 +698,8 @@ label1:
 	}
 	d->Typ = _FunD;
 label2:
-	if (GetFunDclByName(d, n) != nullptr) Error(505);
-	if (IsCharUpper2(LexWord[1])) Error(515);
+	if (GetFunDclByName(d, n) != nullptr) compiler->Error(505);
+	if (IsCharUpper2(LexWord[1])) compiler->Error(515);
 	nm = LexWord;
 	RdLexP();
 	n = 0;
@@ -733,7 +733,7 @@ label4:
 		switch (d.second->Typ) {
 		case _UndefD: {
 			SetMsgPar(d.second->Name);
-			OldError(516);
+			compiler->OldError(516);
 			break;
 		}
 		case _FunD: {
@@ -765,8 +765,8 @@ void RdConstants(std::vector<TVarDcl*>& Vars)
 		// read all values (enums, ...)
 		while (true) {
 			TestIdentifP();
-			if (IsCharUpper2(LexWord[1])) Error(515);
-			if (FindConst(LexWord, d) != nullptr) Error(505);
+			if (IsCharUpper2(LexWord[1])) compiler->Error(515);
+			if (FindConst(LexWord, d) != nullptr) compiler->Error(505);
 			TConst* p = new TConst();
 			p->Name = LexWord;
 			RdLexP();
@@ -814,7 +814,7 @@ TPredicate* GetPredicate(const std::string predicate_name)
 TPredicate* RdPredicate(const std::string name) /*PPredicate*/
 {
 	TPredicate* p = GetPredicate(name);
-	if (p == nullptr) Error(513);
+	if (p == nullptr) compiler->Error(513);
 	return p;
 }
 
@@ -850,33 +850,33 @@ void RdPredicateDcl(bool FromClauses, TDatabase* Db)
 	}
 	else if (Db != nullptr) o = o | _PackInpOpt;
 	TestIdentifP();
-	if (IsCharUpper2(LexWord[1])) Error(518);
-	if (GetPredicate(LexWord) != nullptr) OldError(505);
+	if (IsCharUpper2(LexWord[1])) compiler->Error(518);
+	if (GetPredicate(LexWord) != nullptr) compiler->OldError(505);
 	nm = LexWord;
 	if ((o & _FandCallOpt) != 0) {
 		if (Db != nullptr) {
 			si = new TScanInf();
 			si->Name = LexWord;
-			CFile = RdFileName();
-			if (CFile->typSQLFile) OldError(155);
+			CFile = compiler->RdFileName();
+			if (CFile->typSQLFile) compiler->OldError(155);
 			si->FD = CFile;
 			goto label2;
 		}
 		else {
-			SkipBlank(false);
+			compiler->SkipBlank(false);
 			if (ForwChar == '[') {
 				RdLexP();
 				RdLexP();
-				TestLex(_quotedstr);
+				compiler->TestLex(_quotedstr);
 				z = new FrmlElemString(_const, 0); // GetOp(_const, LexWord.length() + 1);
 				((FrmlElemString*)z)->S = LexWord;
 				pos.rdb = (RdbD*)z;
 				pos.i_rec = 0;
 				AcceptP(_quotedstr);
-				TestLex(']');
+				compiler->TestLex(']');
 			}
 			else {
-				if (!FindChpt('P', LexWord, false, &pos)) Error(37);
+				if (!compiler->FindChpt('P', LexWord, false, &pos)) compiler->Error(37);
 				//pos.rdb = ptr(0, StorStr(LexWord));
 				std::string* sLexWord = new std::string(LexWord);
 				pos.rdb = (RdbD*)sLexWord;
@@ -892,7 +892,7 @@ label2:
 	label3:
 		if (Db != nullptr) {
 			if ((o & _FandCallOpt) != 0) {
-				f = RdFldName(CFile);
+				f = compiler->RdFldName(CFile);
 				fl = new TFldList(); // GetZStor(sizeof(TFldList));
 				fl->FldD = f; // OPtr(PtrRec(CFile).Seg, f);
 
@@ -904,18 +904,18 @@ label2:
 				d = RdDomain();
 				switch (f->frml_type) {
 				case 'B': {
-					if (d != BoolDom) OldError(510);
+					if (d != BoolDom) compiler->OldError(510);
 					break;
 				}
 				case 'R': {
-					if ((d != RealDom) && ((f->field_type != FieldType::FIXED) || (d != IntDom))) OldError(510);
+					if ((d != RealDom) && ((f->field_type != FieldType::FIXED) || (d != IntDom))) compiler->OldError(510);
 					break;
 				}
 				default: {
 					if (f->field_type == FieldType::TEXT) {
-						if ((d != LongStrDom) && ((d->Typ != _FunD) || (d == BoolDom))) OldError(510);
+						if ((d != LongStrDom) && ((d->Typ != _FunD) || (d == BoolDom))) compiler->OldError(510);
 					}
-					else if (d != StrDom) OldError(510);
+					else if (d != StrDom) compiler->OldError(510);
 					break;
 				}
 				}
@@ -927,14 +927,14 @@ label2:
 			else w = w | m;
 		}
 		d = RdDomain();
-		if ((d == LongStrDom) && (Db != nullptr)) OldError(541);
-		if (((o & _FandCallOpt) != 0) && (d->Typ == _FunD) && (d != BoolDom)) OldError(528);
+		if ((d == LongStrDom) && (Db != nullptr)) compiler->OldError(541);
+		if (((o & _FandCallOpt) != 0) && (d->Typ == _FunD) && (d != BoolDom)) compiler->OldError(528);
 	label4:
 		a.push_back(d); // a[n] = d;
 		n++;
 		m = m << 1;
 		if (Lexem == ',') {
-			if (n == 15) Error(519);
+			if (n == 15) compiler->Error(519);
 			RdLexP();
 			goto label3;
 		}
@@ -1066,20 +1066,20 @@ TCommand* RdCommand(std::vector<TVarDcl*>& Vars) /*PCommand*/
 			case '=': op = _equ; break;
 			case '<': {
 				switch (ForwChar) {
-				case '>': { ReadChar(); op = _ne; break; }
-				case '=': { ReadChar(); op = _le; break; }
+				case '>': { compiler->ReadChar(); op = _ne; break; }
+				case '=': { compiler->ReadChar(); op = _le; break; }
 				default: op = _lt; break;
 				}
 				break;
 			}
 			case '>': {
-				if (ForwChar == '=') { ReadChar(); op = _ge; break; }
+				if (ForwChar == '=') { compiler->ReadChar(); op = _ge; break; }
 				else op = _gt;
 				break;
 			}
-			default: { Error(524); break; }
+			default: { compiler->Error(524); break; }
 			}
-			if ((d != IntDom) && (d != RealDom) && !(op == _equ || op == _ne)) Error(538);
+			if ((d != IntDom) && (d != RealDom) && !(op == _equ || op == _ne)) compiler->Error(538);
 			RdLexP();
 		}
 		else {
@@ -1137,13 +1137,13 @@ TCommand* RdCommand(std::vector<TVarDcl*>& Vars) /*PCommand*/
 			w = new TWriteD(); //wofs = GetZStor(3 + 2 + 2);
 			TestIdentifP();
 			v = FindVarDcl(LexWord, Vars);
-			if (v == nullptr) Error(511);
-			else if (!v->Bound) Error(509);
+			if (v == nullptr) compiler->Error(511);
+			else if (!v->Bound) compiler->Error(509);
 			v->Used = true;
 			w->Dom = v->Dom;
 			w->Idx = v->Idx;
 			if ((c->Code == _ErrorC) && (v->Dom != StrDom) &&
-				((c->WrD != 0) || (v->Dom != IntDom))) Error(558);
+				((c->WrD != 0) || (v->Dom != IntDom))) compiler->Error(558);
 		}
 		RdLexP();
 
@@ -1162,7 +1162,7 @@ TCommand* RdCommand(std::vector<TVarDcl*>& Vars) /*PCommand*/
 		pstring str = "L_";
 		str += copy(LexWord, 7, 255);
 		d = GetDomain(false, str);
-		if (d->Typ != _ListD) Error(548);
+		if (d->Typ != _ListD) compiler->Error(548);
 		RdLexP();
 		AcceptP('(');
 		c = GetCommand(_PredC, 5 * 2);
@@ -1185,7 +1185,7 @@ TCommand* RdCommand(std::vector<TVarDcl*>& Vars) /*PCommand*/
 		pstring str = "L_";
 		str += copy(LexWord, 5, 255);
 		d = GetDomain(false, str);
-		if (d->Typ != _ListD) Error(548);
+		if (d->Typ != _ListD) compiler->Error(548);
 		RdLexP();
 		AcceptP('(');
 		c = GetCommand(_PredC, 5 * 2);
@@ -1234,7 +1234,7 @@ TCommand* RdCommand(std::vector<TVarDcl*>& Vars) /*PCommand*/
 		AcceptP('(');
 		TestIdentifP();
 		p = (TPredicate*)FindDataBase(LexWord);
-		if (p == 0) Error(531);
+		if (p == 0) compiler->Error(531);
 		RdLexP();
 		AcceptP(',');
 	label4:
@@ -1242,11 +1242,11 @@ TCommand* RdCommand(std::vector<TVarDcl*>& Vars) /*PCommand*/
 		c->DbPred = (TDatabase*)p;
 		//Move(LexWord, c->Name, LexWord.length() + 1);
 		c->Name = LexWord;
-		if (!IsRoleName(false, &fd, &ld)) Error(9);
-		if (fd->typSQLFile) OldError(155);
+		if (!compiler->IsRoleName(false, &fd, &ld)) compiler->Error(9);
+		if (fd->typSQLFile) compiler->OldError(155);
 		AcceptP('.');
-		c->FldD = RdFldName(fd);
-		if (c->FldD->field_type != FieldType::TEXT) OldError(537);
+		c->FldD = compiler->RdFldName(fd);
+		if (c->FldD->field_type != FieldType::TEXT) compiler->OldError(537);
 	label8:
 		AcceptP(')');
 	}
@@ -1271,7 +1271,7 @@ TCommand* RdPredCommand(TCommandTyp Code, TPredicate* predicate)
 
 	TPredicate* p = RdPredicate(LexWord);
 	IsFandDb = (p->Opt & (_DbaseOpt + _FandCallOpt)) == _DbaseOpt + _FandCallOpt;
-	if (((p->Opt & _DbaseOpt) != _DbaseOpt) && (Code == _AssertC || Code == _RetractC)) OldError(526);
+	if (((p->Opt & _DbaseOpt) != _DbaseOpt) && (Code == _AssertC || Code == _RetractC)) compiler->OldError(526);
 	kind = 1;
 	m = 1;
 	w = p->InpMask;
@@ -1311,17 +1311,17 @@ TCommand* RdPredCommand(TCommandTyp Code, TPredicate* predicate)
 	if ((p->Opt & _BuildInOpt) != 0) {
 		switch (p->LocVarSz) {
 		case proc_type::_ConcatP: {
-			if (!(InpMask >= 3 && InpMask <= 7)) OldError(534);
+			if (!(InpMask >= 3 && InpMask <= 7)) compiler->OldError(534);
 			break;
 		}
 		case proc_type::_FandFieldP: {
-			if ((InpMask & 1) == 0/*o...*/) OldError(555);
+			if ((InpMask & 1) == 0/*o...*/) compiler->OldError(555);
 			InpMask = InpMask & 0x3;
 			OutpMask = ~InpMask;
 			break;
 		}
 		case proc_type::_FandLinkP: {
-			if ((InpMask & 1) == 0/*o...*/) OldError(555);
+			if ((InpMask & 1) == 0/*o...*/) compiler->OldError(555);
 			InpMask = InpMask & 0x7;
 			if (InpMask == 0x7) InpMask = 0x5;
 			OutpMask = ~InpMask;
@@ -1399,7 +1399,7 @@ void RdDbTerm(TDomain* D)
 	//if (PtrRec(p).Ofs >= PTPMaxOfs) Error(527);
 	switch (Lexem) {
 	case _quotedstr: {
-		if (d->Typ != _StrD) Error(510);
+		if (d->Typ != _StrD) compiler->Error(510);
 		n = LexWord.length() + 1;
 		//if (PtrRec(p).Ofs + n >= PTPMaxOfs) Error(527);
 		Move(&LexWord[0], &p, n);
@@ -1408,16 +1408,16 @@ void RdDbTerm(TDomain* D)
 		break;
 	}
 	case '$': {
-		if (d->Typ != _IntD) Error(510);
+		if (d->Typ != _IntD) compiler->Error(510);
 		else {
 			i = 0;
 			while ((ForwChar >= '0' && ForwChar <= '9') || (ForwChar >= 'a' && ForwChar <= 'f') || (ForwChar >= 'A' && ForwChar <= 'F')) {
 				i++;
-				if (i > 4) Error(3);
-				ReadChar();
+				if (i > 4) compiler->Error(3);
+				compiler->ReadChar();
 				s[i] = CurrChar;
 			}
-			if (i == 0) Error(504);
+			if (i == 0) compiler->Error(504);
 			s[0] = char(i);
 			//n = HexStrToLong(s);
 			unsigned int n = std::stoul(s.c_str(), nullptr, 16);
@@ -1428,7 +1428,7 @@ void RdDbTerm(TDomain* D)
 	}
 	case '-': {
 		RdLexP();
-		if (Lexem != _number) Error(525);
+		if (Lexem != _number) compiler->Error(525);
 		minus = true;
 		goto label1;
 		break;
@@ -1446,7 +1446,7 @@ void RdDbTerm(TDomain* D)
 			p += 2;
 		}
 		else {
-			if (d->Typ != _RealD) Error(510);
+			if (d->Typ != _RealD) compiler->Error(510);
 			if ((Lexem == '.') && isdigit(ForwChar)) {
 				RdLexP();
 				s.Append('.');
@@ -1460,7 +1460,7 @@ void RdDbTerm(TDomain* D)
 		break;
 	}
 	case '[': {
-		if (d->Typ != _ListD) Error(510);
+		if (d->Typ != _ListD) compiler->Error(510);
 		RdLexP();
 		wp = (WORD*)p;
 		p += 2;
@@ -1477,9 +1477,9 @@ void RdDbTerm(TDomain* D)
 	}
 	default: {
 		TestIdentifP();
-		if (d->Typ != _FunD) Error(510);
+		if (d->Typ != _FunD) compiler->Error(510);
 		f = GetFunDclByName(D, idx);
-		if (f == nullptr) Error(512);
+		if (f == nullptr) compiler->Error(512);
 		*p = (char)idx;
 		p++;
 		RdLexP();
@@ -1529,7 +1529,7 @@ void CheckPredicates(std::vector<TPredicate*>& P)
 		if (((p->Opt & (_DbaseOpt + _FandCallOpt + _BuildInOpt)) == 0)
 			&& (p->branch.empty() && p->dbBranch == nullptr && p->scanInf == nullptr && p->instr == nullptr)) {
 			SetMsgPar(p->Name);
-			OldError(522);
+			compiler->OldError(522);
 		}
 		if ((p->Opt & _DbaseOpt) != 0) {
 			if ((p->Opt & _FandCallOpt) != 0) {
@@ -1555,7 +1555,7 @@ void RdAutoRecursionHead(TPredicate* p, TBranch* b)
 	TVarDcl* v = nullptr;
 	bool isInput = false;
 	short i = 0, j = 0, k = 0;
-	if (p->Opt != 0) Error(550);
+	if (p->Opt != 0) compiler->Error(550);
 	//PtrRec(c).Seg = _Sg; PtrRec(l).Seg = _Sg; PtrRec(l1).Seg = _Sg;
 	//PtrRec(t).Seg = _Sg; PtrRec(d).Seg = _Sg;
 	TCommand* c = GetCommand(_AutoC, 2 + 3 + 6 * 2);
@@ -1578,29 +1578,29 @@ void RdAutoRecursionHead(TPredicate* p, TBranch* b)
 		b->Heads.push_back(empty_term);
 		d = p->ArgDomains[i];
 		if (i > 0) AcceptP(',');
-		else if (!(d->Typ == _FunD || d->Typ == _ListD)) Error(556);
+		else if (!(d->Typ == _FunD || d->Typ == _ListD)) compiler->Error(556);
 		if (Lexem == '!') {
 			if (i > 0) {
-				if (isInput || (d != p->ArgDomains[0]) || (c->iOutp > 0)) Error(551);
+				if (isInput || (d != p->ArgDomains[0]) || (c->iOutp > 0)) compiler->Error(551);
 				c->iOutp = i;
 			}
-			else if (!isInput) Error(552);
+			else if (!isInput) compiler->Error(552);
 		}
 		else if (TestKeyWordP('_')) {
 			if (!isInput) {
-				if (d->Typ == _FunD) Error(575); j = 0;
+				if (d->Typ == _FunD) compiler->Error(575); j = 0;
 				goto label1;
 			}
 		}
 		else {
-			if (!IsUpperIdentif()) Error(511);
+			if (!IsUpperIdentif()) compiler->Error(511);
 			v = FindVarDcl(LexWord, p->VarsCheck);
 			if (v == nullptr) v = MakeVarDcl(d, i, p->VarsCheck);
 			if (isInput) {
-				if (v->Bound) Error(553);
+				if (v->Bound) compiler->Error(553);
 				v->Bound = true;
 			}
-			else { if (v->Used) Error(553); v->Used = true; }
+			else { if (v->Used) compiler->Error(553); v->Used = true; }
 			if (v->Bound && v->Used) {
 				j = v->Idx;
 			label1:
@@ -1632,8 +1632,8 @@ void RdSemicolonClause(TPredicate* p, TBranch* b)
 	if (IsUpperIdentif()) {
 		x = 'a';
 		v = FindVarDcl(LexWord, p->VarsCheck);
-		if (p->InpMask != (1 << (p->Arity - 1)) - 1) { Error(562); }
-		if ((v == nullptr) || v->Bound || (v->Dom->Typ != _ListD)) { Error(561); }
+		if (p->InpMask != (1 << (p->Arity - 1)) - 1) { compiler->Error(562); }
+		if ((v == nullptr) || v->Bound || (v->Dom->Typ != _ListD)) { compiler->Error(561); }
 		RdLexP();
 		AcceptP('+');
 		AcceptP('=');
@@ -1674,7 +1674,7 @@ label3:
 		break;
 	}
 	case 'f': {
-		if (GetOutpMask(p) != 0) Error(559);
+		if (GetOutpMask(p) != 0) compiler->Error(559);
 		break;
 	}
 	case 's': {
@@ -1717,7 +1717,7 @@ void RdClauses()
 		TestIdentifP();
 		TPredicate* p = RdPredicate(LexWord);
 		if ((p->Opt & (_FandCallOpt | _BuildInOpt)) != 0) {
-			OldError(529);
+			compiler->OldError(529);
 		}
 		if ((p->Opt & _DbaseOpt) != 0) {
 			RdDbClause(p);
@@ -1742,8 +1742,8 @@ void RdClauses()
 				for (TVarDcl* v : p->VarsCheck) {
 					if (!v->Used || !v->Bound) {
 						SetMsgPar(v->Name);
-						if (!v->Used) OldError(521);
-						else OldError(520);
+						if (!v->Used) compiler->OldError(521);
+						else compiler->OldError(520);
 					}
 					//v = v->pChain;
 				}
@@ -1763,7 +1763,7 @@ void RdClauses()
 				kind = 1;
 				if ((w & 1) == 0) kind = 3;
 
-				SkipBlank(false);
+				compiler->SkipBlank(false);
 				if (IsUpperIdentif() && (ForwChar == ',' || ForwChar == ')') /*solo variable*/) {
 					RdVar(d, kind, i, &t, nullptr, p->VarsCheck);
 					if (t != nullptr) {
@@ -1804,7 +1804,7 @@ void RdClauses()
 						pstring s1 = "L_";
 						s1 += copy(LexWord, 5, 255);
 						d = GetDomain(false, s1);
-						if (d->Typ != _ListD) Error(548);
+						if (d->Typ != _ListD) compiler->Error(548);
 						RdLexP();
 						AcceptP('(');
 						c = RdPredCommand(_AllC, p);
@@ -1835,7 +1835,7 @@ void RdClauses()
 				b->Commands.push_back(c);
 
 				if (WasNotC) {
-					if (c->Code != _PredC) OldError(546);
+					if (c->Code != _PredC) compiler->OldError(546);
 					TPredicate* p1 = c->Pred;
 
 					if ((p1->Opt & _CioMaskOpt) != 0) w = c->InpMask;
@@ -1843,7 +1843,7 @@ void RdClauses()
 
 					for (TTerm* term : c->Arg) {
 						if ((w & 1) == 0) {
-							if (t->Fun != prolog_func::_UnderscT) OldError(547);
+							if (t->Fun != prolog_func::_UnderscT) compiler->OldError(547);
 						}
 						w = w >> 1;
 					}
@@ -1866,8 +1866,8 @@ void RdClauses()
 		for (TVarDcl* v : p->VarsCheck) {
 			if (!v->Used || !v->Bound) {
 				SetMsgPar(v->Name);
-				if (!v->Used) OldError(521);
-				else OldError(520);
+				if (!v->Used) compiler->OldError(521);
+				else compiler->OldError(520);
 			}
 		}
 

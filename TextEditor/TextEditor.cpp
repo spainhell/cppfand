@@ -190,7 +190,7 @@ void RestoreParams(stEditorParams& editorParams)
 
 FrmlElem* RdFldNameFrmlT(char& FTyp, MergeReportBase* caller)
 {
-	Error(8);
+	compiler->Error(8);
 	return nullptr;
 }
 
@@ -2018,10 +2018,10 @@ void Calculate()
 			UpdatedL = true;
 			goto label3;
 		}
-		SetInpStr(txt);
-		RdLex();
-		Z = RdFrml(FTyp, nullptr);
-		if (Lexem != 0x1A) Error(21);
+		compiler->SetInpStr(txt);
+		compiler->RdLex();
+		Z = compiler->RdFrml(FTyp, nullptr);
+		if (Lexem != 0x1A) compiler->Error(21);
 
 		switch (FTyp) {
 		case 'R': {
