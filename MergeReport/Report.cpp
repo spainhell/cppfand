@@ -91,7 +91,7 @@ label1:
 			CFile = FDL->FD;
 			FD = CFile;
 		}
-		CViewKey = compiler->RdViewKey();
+		CViewKey = compiler->RdViewKey(FD);
 		if ((FDL != nullptr)) {
 			if (FDL->ViewKey != nullptr) CViewKey = FDL->ViewKey;
 		}

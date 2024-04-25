@@ -1669,7 +1669,7 @@ void CallProcedure(Instr_proc* PD)
 				const auto state = compiler->SaveCompState();
 				std::string code = RunStdStr(CFile, PD->TArg[i].TxtFrml, CRecPtr);
 				compiler->SetInpStdStr(code, true);
-				CFile = RdFileD(CFile, PD->TArg[i].Name, FileType::FAND16, "$");
+				CFile = RdFileD(PD->TArg[i].Name, FileType::FAND16, "$");
 				compiler->RestoreCompState(state);
 			}
 			else {

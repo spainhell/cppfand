@@ -568,10 +568,7 @@ XKey* RdViewKeyImpl(FileD* FD)
 	if (FD != nullptr) K = FD->Keys.empty() ? nullptr : FD->Keys[0];
 	if (K == nullptr) compiler->Error(24);
 	if (Lexem == '/') {
-		FileD* cf = CFile;
-		CFile = FD;
-		K = compiler->RdViewKey();
-		CFile = cf;
+		K = compiler->RdViewKey(FD);
 	}
 	return K;
 }
@@ -837,42 +834,44 @@ Instr_forall* RdForAll()
 	LocVar* LVr = nullptr;
 	LinkD* LD = nullptr;
 	FrmlElem* Z = nullptr;
+	FileD* processed_file = nullptr;
+
 	if (!compiler->FindLocVar(&LVBD, &LVi)) compiler->Error(122);
 	compiler->RdLex();
 	if (LVi->FTyp == 'r') {
 		LVr = LVi;
 		LVi = nullptr;
-		CFile = LVr->FD;
+		processed_file = LVr->FD;
 	}
 	else {
 		compiler->TestReal(LVi->FTyp);
 		compiler->AcceptKeyWord("IN");
 		if (compiler->FindLocVar(&LVBD, &LVr)) {
 			if (LVr->FTyp == 'f') {
-				CFile = LVr->FD;
+				processed_file = LVr->FD;
 				compiler->RdLex();
 				goto label1;
 			}
 			if (LVr->FTyp != 'r') compiler->Error(141);
-			CFile = LVr->FD;
+			processed_file = LVr->FD;
 			compiler->RdLex();
 		}
 		else {
-			CFile = compiler->RdFileName();
+			processed_file = compiler->RdFileName();
 		label1:
 			LVr = nullptr;
 		}
 #ifdef FandSQL
-		if (CFile->typSQLFile) OldError(155);
+		if (processed_file->typSQLFile) OldError(155);
 #endif
 	}
 	auto PD = new Instr_forall(); // GetPInstr(_forall, 41);
-	PD->CFD = CFile;
+	PD->CFD = processed_file;
 	PD->CVar = LVi;
 	// TODO: tady je podminka, by to nespadlo
 	if (LVr != nullptr)	PD->CRecVar = LVr;
 #ifdef FandSQL
-	if (CFile->typSQLFile && IsKeyWord("IN")) {
+	if (processed_file->typSQLFile && IsKeyWord("IN")) {
 		AcceptKeyWord("SQL"); Accept('('); PD->CBool = RdStrFrml();
 		Accept(')'); PD->inSQL = true; goto label2;
 	}
@@ -882,7 +881,7 @@ Instr_forall* RdForAll()
 		CViewKey = GetFromKey(PD->CLD);
 	}
 	else {
-		CViewKey = compiler->RdViewKey();
+		CViewKey = compiler->RdViewKey(processed_file);
 	}
 	if (Lexem == '(') {
 		compiler->RdLex();
@@ -1503,7 +1502,7 @@ Instr_edit* RdEditCall()
 	}
 	else {
 		CFile = compiler->RdFileName();
-		XKey* K = compiler->RdViewKey();
+		XKey* K = compiler->RdViewKey(CFile);
 		if (K == nullptr) K = CFile->Keys.empty() ? nullptr : CFile->Keys[0];
 		EO->ViewKey = K;
 	}
@@ -1583,7 +1582,7 @@ Instr* RdReportCall()
 			else {
 				CFile = compiler->RdFileName();
 				FDL->FD = CFile;
-				CViewKey = compiler->RdViewKey();
+				CViewKey = compiler->RdViewKey(FDL->FD);
 				FDL->ViewKey = CViewKey;
 				if (Lexem == '(') {
 					compiler->RdLex();
@@ -1829,7 +1828,7 @@ Instr* RdCopyFile()
 	CD->FD1 = RdPath(false, CD->Path1, CD->CatIRec1);
 	CD->WithX1 = RdX(CD->FD1);
 	if (Lexem == '/') {
-		if (CD->FD1 != nullptr) { CFile = CD->FD1; CD->ViewKey = compiler->RdViewKey(); }
+		if (CD->FD1 != nullptr) { CFile = CD->FD1; CD->ViewKey = compiler->RdViewKey(CD->FD1); }
 		else CD->Opt1 = RdCOpt();
 	}
 	compiler->Accept(',');
@@ -2130,7 +2129,7 @@ Instr* RdGetIndex()
 	}
 	CFile = compiler->RdFileName();
 	if (lv->FD != CFile) compiler->OldError(164);
-	CViewKey = compiler->RdViewKey();
+	CViewKey = compiler->RdViewKey(lv->FD);
 	PD->keys = CViewKey;
 	while (Lexem == ',') {
 		compiler->RdLex();
@@ -2238,7 +2237,7 @@ Instr_graph* RdGraphP()
 	else {
 		PDGD->FD = compiler->RdFileName();
 		CFile = PDGD->FD;
-		CViewKey = compiler->RdViewKey();
+		CViewKey = compiler->RdViewKey(PDGD->FD);
 		PDGD->ViewKey = CViewKey;
 		compiler->Accept(',');
 		compiler->Accept('(');
@@ -2366,7 +2365,7 @@ Instr_recs* RdMixRecAcc(PInstrCode Op)
 			if (!IsRecVar(&PD->LV)) compiler->Error(141);
 			CFile = PD->LV->FD;
 		}
-		XKey* K = compiler->RdViewKey();
+		XKey* K = compiler->RdViewKey(CFile);
 		compiler->Accept(',');
 #ifdef FandSQL
 		if (CFile->typSQLFile
@@ -2415,14 +2414,14 @@ Instr* RdLinkRec()
 	compiler->RdLex();
 	if (!IsRecVar(&PD->RecLV1)) compiler->Error(141);
 	compiler->Accept(',');
-	CFile = PD->RecLV1->FD;
+	//CFile = PD->RecLV1->FD;
 	if (IsRecVar(&LV)) {
-		LD = compiler->FindLD(LV->FD->Name);
+		LD = compiler->FindLD(PD->RecLV1->FD, LV->FD->Name);
 		if (LD == nullptr) compiler->OldError(154);
 	}
 	else {
 		compiler->TestIdentif();
-		LD = compiler->FindLD(LexWord);
+		LD = compiler->FindLD(PD->RecLV1->FD, LexWord);
 		if (LD == nullptr) compiler->Error(9);
 		compiler->RdLex();
 		compiler->Accept('(');

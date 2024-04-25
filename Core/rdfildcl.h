@@ -17,10 +17,9 @@ bool RdUserView(FileD* file_d, std::string ViewName, EditOpt* EO);
 
 extern bool issql;
 
-void TestUserView();
 void TestDupl(FileD* FD);
 void RdFieldDList(FileD* file_d, bool Stored);
-FileD* RdFileD(FileD* file_d, std::string FileName, FileType FDTyp, std::string Ext);
+FileD* RdFileD(std::string FileName, FileType FDTyp, std::string Ext);
 void RdKeyD(FileD* file_d);
 void CheckDuplAlias(FileD* file_d, pstring name);
 void LookForK(FileD* file_d, pstring* Name, FileD* F);

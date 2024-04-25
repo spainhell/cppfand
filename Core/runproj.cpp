@@ -617,7 +617,7 @@ RdbD* PrepareRdb(const std::string& name, std::string& name1)
 	if ((name[0] == '\\')) name1 = name.substr(1, 8);
 	else name1 = name;
 
-	rdb_d->rdb_file = RdFileD(rdb_d->rdb_file, name1, FileType::RDB, ""); /*old CRdb for GetCatalogIRec*/
+	rdb_d->rdb_file = RdFileD(name1, FileType::RDB, ""); /*old CRdb for GetCatalogIRec*/
 
 	return rdb_d;
 }
@@ -1105,7 +1105,7 @@ FileD* RdF(FileD* file_d, std::string FileName)
 		int pos = file_d->loadT(ChptTxt, file_d->FF->RecPtr);
 		compiler->SetInpTTPos(file_d, pos, CRdb->Encrypted);
 	}
-	return RdFileD(file_d, name, FDTyp, ext);
+	return RdFileD(name, FDTyp, ext);
 }
 
 bool EquStoredF(FieldDescr* F1, FieldDescr* F2)

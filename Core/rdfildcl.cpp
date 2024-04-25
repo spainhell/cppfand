@@ -352,7 +352,7 @@ bool RdUserView(FileD* file_d, std::string ViewName, EditOpt* EO)
 			} while (!(Lexem == ')' || Lexem == 0x1A));
 			compiler->RdLex();
 			compiler->RdLex();/*"):"*/
-			K = compiler->RdViewKey();
+			K = compiler->RdViewKey(file_d);
 			if (K != nullptr) {
 				compiler->RdLex();/*','*/
 				EO->ViewKey = K;
@@ -378,32 +378,32 @@ bool RdUserView(FileD* file_d, std::string ViewName, EditOpt* EO)
 	return found;
 }
 
-void TestUserView()
+void TestUserView(FileD* file_d)
 {
 	EditOpt EO = EditOpt();
 	EO.UserSelFlds = true;
 	compiler->RdLex();
 	while (true) {
 		compiler->TestIdentif();
-		TestDupl(CFile);
+		TestDupl(file_d);
 		FileD* FD = FileDRoot;
 		while (FD != nullptr) {
 			TestDupl(FD);
-			FD = (FileD*)FD->pChain;
+			FD = FD->pChain;
 		}
 		StringListEl* S = new StringListEl();
 		S->S = LexWord;
-		if (CFile->ViewNames == nullptr) {
-			CFile->ViewNames = S;
+		if (file_d->ViewNames == nullptr) {
+			file_d->ViewNames = S;
 		}
 		else {
-			ChainLast(CFile->ViewNames, S);
+			ChainLast(file_d->ViewNames, S);
 		}
 		compiler->RdLex();
 		RdByteListInStore();
 		compiler->Accept(':');
 		// GetEditOpt(); // vytvori objekt EditOpt
-		XKey* K = compiler->RdViewKey(); // nacteni klice, podle ktereho budou polozky setrideny
+		XKey* K = compiler->RdViewKey(file_d); // nacteni klice, podle ktereho budou polozky setrideny
 		if (K != nullptr) {
 			compiler->Accept(',');
 			EO.ViewKey = K;
@@ -531,10 +531,9 @@ void SetLDIndexRoot(FileD* file_d, /*LinkD* L,*/ std::deque<LinkD*>& L2)
 
 // z ulohy vycte kapilotu 'F', prip. dynamickou definici 'F'
 // vraci ukazatel na FileD, protoze se muze v metode vytvorit novy objekt!!!
-FileD* RdFileD(FileD* file_d, std::string FileName, FileType FDTyp, std::string Ext)
+FileD* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 {
 	std::string JournalFlds = "Upd:A,1;RecNr:F,8.0;User:F,4.0;TimeStamp:D,'DD.MM.YYYY hh:mm:ss'";
-	FileD* FD = nullptr;
 	FieldDescr* F = nullptr; FieldDescr* F2 = nullptr;
 	void* p = nullptr;
 	ChkD* C = nullptr;
@@ -543,11 +542,14 @@ FileD* RdFileD(FileD* file_d, std::string FileName, FileType FDTyp, std::string 
 	std::string Prefix, s;
 	LiRoots* li = nullptr;
 	CompInpD* ChPos = nullptr;
+	FileD* FD = nullptr;
+	FileD* file_d = nullptr;
 
 	ResetCompilePars();
 	compiler->RdLex();
 	issql = EquUpCase(Ext, ".SQL");
 	isHlp = EquUpCase(Ext, ".HLP");
+
 	if (compiler->IsKeyWord("JOURNALOF")) {
 		FD = compiler->RdFileName();
 		if (Lexem == ';') compiler->RdLex();
@@ -557,18 +559,7 @@ FileD* RdFileD(FileD* file_d, std::string FileName, FileType FDTyp, std::string 
 #ifdef FandSQL
 		if (issql || rdb_file->typSQLFile) OldError(155);
 #endif
-		//LDOld = LinkDRoot;
-
-		//	RdbD* rdb = nullptr; void* cr = nullptr; FileD* cf = nullptr; bool b = false; WORD i = 0; int pos = 0;
-		//	if (Lexem != 0x1A) Accept(';');	rdb = CRdb; cr = CRecPtr; RdbD* r = rdb_file->ChptPos.rdb;
-		//	if ((r == nullptr) || rdb_file->IsDynFile) OldError(106); CRdb = r; i = rdb_file->ChptPos.i_rec;	CFile = CRdb->rdb_file;
-		//	CRecPtr = CFile->RecPtr; CFile->ReadRec(i, CRecPtr); pos = loadT(ChptOldTxt); if (pos <= 0) Error(25);
-		//	b = RdFDSegment(i, pos); cf = CFile; CRdb = rdb; if (InpRdbPos.i_rec != 0) {	CFile = rdb->rdb_file;
-		//		CFile->ReadRec(InpRdbPos.i_rec, CRecPtr); CFile = cf; }
-		//	CRecPtr = cr; if (!b) Error(25); CFile->OrigFD = rdb_file; CFile->TxtPosUDLI = 0;
-
-		file_d = FakeRdFDSegment(FD); // TODO: zkontrolovat
-		//LinkDRoot = LDOld;
+		file_d = FakeRdFDSegment(FD);
 		F = file_d->FldD.front();
 		file_d->Reset();
 		file_d->Name = FileName;
@@ -613,7 +604,7 @@ FileD* RdFileD(FileD* file_d, std::string FileName, FileType FDTyp, std::string 
 		}
 		//CallRdFDSegment(rdb_file);
 		// misto nacitani objektu ze souboru budeme objekt kopirovat
-		FakeRdFDSegment(FD);
+		file_d = FakeRdFDSegment(FD);
 
 		// copy LinkD records too
 		for (auto& l : LinkDRoot) {
@@ -648,6 +639,7 @@ FileD* RdFileD(FileD* file_d, std::string FileName, FileType FDTyp, std::string 
 	}
 
 	file_d->Name = FileName;
+	compiler->processing_F = file_d;
 	SetHCatTyp(file_d, FDTyp);
 	HasTT = false;
 	if ((file_d->OrigFD == nullptr) || !(Lexem == 0x1A || Lexem == '#' || Lexem == ']')) {
@@ -717,7 +709,7 @@ FileD* RdFileD(FileD* file_d, std::string FileName, FileType FDTyp, std::string 
 		// nazev musi byt jedinecny v ramci cele ulohy
 		// format: #U NazevPohledu (SeznamPristupovychPrav): DruhEditace;
 		compiler->RdLex();
-		TestUserView();
+		TestUserView(file_d);
 	}
 	MarkStore(p);
 	li = new LiRoots();
@@ -730,6 +722,7 @@ FileD* RdFileD(FileD* file_d, std::string FileName, FileType FDTyp, std::string 
 	//}
 	if (Lexem != 0x1A) compiler->Error(66);
 label1:
+	compiler->processing_F = nullptr;
 	return file_d;
 }
 
@@ -816,7 +809,7 @@ label2:
 		RdFileOrAlias(file_d, &FD, &K);
 	}
 
-	L = compiler->FindLD(Name);
+	L = compiler->FindLD(file_d, Name);
 	if (L != nullptr) {
 		compiler->OldError(26);
 	}

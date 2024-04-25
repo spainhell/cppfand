@@ -65,7 +65,7 @@ void Merge::Read()
 		for (I = 1; I <= Ii - 1; I++) {
 			if (InpFD_M(I) == FD) compiler->OldError(26);
 		}
-		CViewKey = compiler->RdViewKey();
+		CViewKey = compiler->RdViewKey(FD);
 		if (Lexem == '!') {
 			compiler->RdLex();
 			ID->AutoSort = true;

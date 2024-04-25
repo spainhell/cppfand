@@ -72,7 +72,7 @@ public:
 	FieldDescr* RdFldName(FileD* FD);
 	FileD* FindFileD();
 	FileD* RdFileName();
-	LinkD* FindLD(std::string RoleName);
+	LinkD* FindLD(FileD* file_d, std::string RoleName);
 	bool IsRoleName(bool Both, FileD** FD, LinkD** LD);
 	FrmlElem* RdFAccess(FileD* FD, LinkD* LD, char& FTyp);
 	FrmlElem* TryRdFldFrml(FileD* FD, char& FTyp, MergeReportBase* caller);
@@ -86,7 +86,7 @@ public:
 	FrmlElem* RdBool(MergeReportBase* caller);
 	FrmlElem* RdRealFrml(MergeReportBase* caller);
 	FrmlElem* RdStrFrml(MergeReportBase* caller);
-	XKey* RdViewKey();
+	XKey* RdViewKey(FileD* file_d);
 	KeyFldD* RdKF(FileD* FD);
 	WORD RdKFList(KeyFldD** KFRoot, FileD* FD);
 	bool IsKeyArg(FieldDescr* F, FileD* FD);
@@ -111,8 +111,11 @@ public:
 	FieldNameType rdFldNameType = FieldNameType::none;
 	FrmlElem* RdFldNameFrml(char& FTyp, MergeReportBase* caller);
 
-private:
+	FileD* processing_F = nullptr; // actually compiled file
 
+
+private:
+	
 	double ValofS(pstring& S);
 	void SrchF(FieldDescr* F);
 	void SrchZ(FrmlElem* Z);

@@ -143,13 +143,14 @@ void CompileHelpCatDcl()
 #if defined (FandRunV)
 	HelpFD = RdFileD("UFANDHLP", FileType::FAND16, "");
 #else
-	HelpFD = RdFileD(nullptr, "FANDHLP", FileType::FAND16, "");
+	HelpFD = RdFileD("FANDHLP", FileType::FAND16, "");
 #endif
 
 	// process catalog
 	std::string catalog_definition = ReadMessage(52);
 	compiler->SetInpStr(catalog_definition);
-	CatFD = new Catalog(RdFileD(nullptr, "Catalog", FileType::CAT, ""));
+	FileD* cat_file = RdFileD("Catalog", FileType::CAT, "");
+	CatFD = new Catalog(cat_file);
 	
 	FileDRoot = nullptr;
 	Chpt = FileDRoot;
