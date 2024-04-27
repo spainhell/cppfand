@@ -197,17 +197,20 @@ ChkD* RdChkD(WORD Low)
 	ChkD* result = C;
 	C->Bool = compiler->RdBool(nullptr);
 	WORD Upper = OldErrPos;
-	if (Lexem == '?') { compiler->RdLex(); C->Warning = true; }
-	if (Lexem == ':') { compiler->RdLex(); C->TxtZ = compiler->RdStrFrml(nullptr); }
+	if (Lexem == '?') {
+		compiler->RdLex();
+		C->Warning = true;
+	}
+	if (Lexem == ':') {
+		compiler->RdLex();
+		C->TxtZ = compiler->RdStrFrml(nullptr);
+	}
 	else {
 		WORD N = Upper - Low;
-		//if (N > sizeof(pstring)) N = pred(sizeof(pstring));
-		FrmlElem* Z = new FrmlElemString(_const, 0); // GetOp(_const, N + 1);
+		FrmlElem* Z = new FrmlElemString(_const, 0);
 		C->TxtZ = Z;
 		auto iZ = (FrmlElemString*)Z;
 		iZ->S = std::string((char*)&InpArrPtr[Low], N);
-		//char(N);
-		//Move(&InpArrPtr[Low], &iZ->S[1], N);
 	}
 	if (Lexem == ',') {
 		compiler->RdLex();
@@ -944,7 +947,7 @@ label1:
 	ZBool = compiler->RdBool(nullptr);
 	compiler->Accept(')');
 label2:
-	F = compiler->RdFldName(CFile);
+	F = compiler->RdFldName(compiler->processing_F);
 	if ((F->Flg & f_Stored) == 0) compiler->OldError(14);
 	compiler->Accept(_assign);
 	Z = compiler->RdFrml(FTyp, nullptr);
@@ -991,12 +994,12 @@ label1:
 
 void RdKumul()
 {
-	WORD Low = 0; FileD* CF = nullptr;
+	WORD Low = 0;
 	compiler->RdLex();
 
 	while (true) {
 		AddD* AD = new AddD();
-		CFile->Add.push_back(AD);
+		compiler->processing_F->Add.push_back(AD);
 
 		if (compiler->IsKeyWord("IF")) {
 			AD->Bool = compiler->RdBool(nullptr);
@@ -1011,10 +1014,10 @@ void RdKumul()
 			{
 				Low = CurrPos;
 				compiler->RdLex();
-				CF = CFile;
-				CFile = AD->File2;
+				FileD* previous = compiler->processing_F;
+				compiler->processing_F = AD->File2;
 				AD->Chk = RdChkD(Low);
-				CFile = CF;
+				compiler->processing_F = previous;
 				compiler->Accept(')');
 			}
 			RdImper(AD);
@@ -1112,37 +1115,6 @@ void GetXFileD(FileD* file_d)
 		file_d->FF->XF->Handle = nullptr;
 	}
 }
-
-//void CallRdFDSegment(FileD* rdb_file)
-//{
-//	RdbD* rdb = nullptr;
-//	void* cr = nullptr;
-//	FileD* cf = nullptr;
-//	bool b = false;
-//	WORD i = 0; int pos = 0;
-//	if (Lexem != 0x1A) Accept(';');
-//	rdb = CRdb; cr = CRecPtr;
-//	RdbD* r = rdb_file->ChptPos.rdb;
-//	if ((r == nullptr) || rdb_file->IsDynFile) OldError(106);
-//	CRdb = r;
-//	i = rdb_file->ChptPos.i_rec;
-//	CFile = CRdb->rdb_file;
-//	CRecPtr = CFile->RecPtr;
-//	CFile->ReadRec(i, CRecPtr);
-//	pos = loadT(ChptOldTxt);
-//	if (pos <= 0) Error(25);
-//	b = RdFDSegment(i, pos);
-//	cf = CFile; CRdb = rdb;
-//	if (InpRdbPos.i_rec != 0) {
-//		CFile = rdb->rdb_file;
-//		CFile->ReadRec(InpRdbPos.i_rec, CRecPtr);
-//		CFile = cf;
-//	}
-//	CRecPtr = cr;
-//	if (!b) Error(25);
-//	CFile->OrigFD = rdb_file;
-//	CFile->TxtPosUDLI = 0;
-//}
 
 CompInpD* OrigInp()
 {
