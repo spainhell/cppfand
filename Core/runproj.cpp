@@ -1337,12 +1337,16 @@ bool CompileRdb(FileD* rdb_file, bool Displ, bool Run, bool FromCtrlF10)
 						}
 					}
 #ifndef FandSQL
-					if (EquUpCase(ext, ".SQL")) GoCompileErr(I, 654);
+					if (EquUpCase(ext, ".SQL")) {
+						GoCompileErr(I, 654);
+					}
 #endif
 					if (Verif || ChptTF->CompileAll || OldTxt == 0) {
 					label2:
 						p1 = RdF(rdb_file, Name);
-						if (rdb_file->IsHlpFile) CRdb->help_file = rdb_file;
+						if (p1->IsHlpFile) {
+							CRdb->help_file = p1;
+						}
 						if (OldTxt > 0) {
 							MergeOldNew(p1, Verif, OldTxt);
 						}
@@ -1355,8 +1359,11 @@ bool CompileRdb(FileD* rdb_file, bool Displ, bool Run, bool FromCtrlF10)
 						goto label2;
 					}
 					else {
-						ChainLast(FileDRoot, rdb_file); MarkStore(p1);
-						if (rdb_file->IsHlpFile) CRdb->help_file = rdb_file;
+						ChainLast(FileDRoot, rdb_file);
+						MarkStore(p1);
+						if (rdb_file->IsHlpFile) {
+							CRdb->help_file = rdb_file;
+						}
 					}
 					break;
 				}

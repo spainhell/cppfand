@@ -80,22 +80,22 @@ FrmlElem* RdRecVarFldFrml(LocVar* LV, char& FTyp)
 	switch (LV->FTyp) {
 	case 'r': {
 		auto Z = new FrmlElem7(_recvarfld, 12);
-		FileD* cf = CFile;
-		CFile = LV->FD;
-		Z->File2 = CFile;
+		FileD* previous = compiler->processing_F;
+		compiler->processing_F = LV->FD;
+		Z->File2 = LV->FD;
 		Z->LD = (LinkD*)LV->record;
 		bool fa = FileVarsAllowed;
 		FileVarsAllowed = true;
 		Z->P011 = compiler->RdFldNameFrmlF(FTyp, nullptr);
 		FileVarsAllowed = fa;
-		CFile = cf;
+		compiler->processing_F = previous;
 		return Z;
 		break;
 	}
 	case 'i': {
 		auto Z = new FrmlElem22(_indexnrecs, 4);
 		Z->WKey = (XWKey*)LV->record;
-		pstring nrecs = "nrecs";
+		std::string nrecs = "nrecs";
 		compiler->AcceptKeyWord(nrecs);
 		FTyp = 'R';
 		return Z;
@@ -293,7 +293,7 @@ FrmlElem* RdFldNameFrmlP(char& FTyp, MergeReportBase* caller)
 		return result;
 	}
 	if (FileVarsAllowed) {
-		Z = compiler->TryRdFldFrml(CFile, FTyp, nullptr);
+		Z = compiler->TryRdFldFrml(compiler->processing_F, FTyp, nullptr);
 		if (Z == nullptr) compiler->Error(8);
 		result = Z;
 		return result;
@@ -883,6 +883,7 @@ Instr_forall* RdForAll()
 	else {
 		CViewKey = compiler->RdViewKey(processed_file);
 	}
+	compiler->processing_F = processed_file;
 	if (Lexem == '(') {
 		compiler->RdLex();
 		PD->CBool = compiler->RdKeyInBool(&PD->CKIRoot, false, true, PD->CSQLFilter, nullptr);
@@ -1498,21 +1499,21 @@ Instr_edit* RdEditCall()
 
 	if (IsRecVar(&lv)) {
 		EO->LVRecPtr = lv->record;
-		CFile = lv->FD;
+		PD->EditFD = lv->FD;
 	}
 	else {
-		CFile = compiler->RdFileName();
-		XKey* K = compiler->RdViewKey(CFile);
-		if (K == nullptr) K = CFile->Keys.empty() ? nullptr : CFile->Keys[0];
+		PD->EditFD = compiler->RdFileName();
+		XKey* K = compiler->RdViewKey(PD->EditFD);
+		if (K == nullptr) K = PD->EditFD->Keys.empty() ? nullptr : PD->EditFD->Keys[0];
 		EO->ViewKey = K;
 	}
-	PD->EditFD = CFile;
+	//PD->EditFD = CFile;
 	compiler->Accept(',');
 	if (compiler->IsOpt("U")) {
 		compiler->TestIdentif();
-		if (CFile->ViewNames == nullptr) compiler->Error(114);
+		if (PD->EditFD->ViewNames == nullptr) compiler->Error(114);
 		stSaveState* p = compiler->SaveCompState();
-		bool b = RdUserView(CFile, LexWord, EO);
+		bool b = RdUserView(PD->EditFD, LexWord, EO);
 		compiler->RestoreCompState(p);
 		if (!b) compiler->Error(114);
 		compiler->RdLex();

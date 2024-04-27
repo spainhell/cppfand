@@ -1077,7 +1077,7 @@ void RdAssign(AddD* AD)
 	if (FTyp != AD->Field->frml_type) compiler->OldError(12);
 }
 
-/// smaze CFile->Handle, nastavi typ na FDTyp a ziska CatIRec z GetCatalogIRec() - musi existovat CatFD
+/// smaze Handle, nastavi typ na FDTyp a ziska CatIRec z GetCatalogIRec() - musi existovat CatFD
 void SetHCatTyp(FileD* file_d, FileType FDTyp)
 {
 	file_d->FF->Handle = nullptr;
