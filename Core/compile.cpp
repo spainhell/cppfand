@@ -2316,7 +2316,7 @@ FrmlElem* Compiler::RdKeyInBool(KeyInD** KIRoot, bool NewMyBP, bool FromRdProc, 
 	}
 	if (IsKeyWord("KEY")) {
 		AcceptKeyWord("IN");
-		if ((CFile->FF->file_type != FileType::INDEX) || (CViewKey == nullptr)) {
+		if ((processing_F->FF->file_type != FileType::INDEX) || (CViewKey == nullptr)) {
 			OldError(118);
 		}
 		if (CViewKey->KFlds == nullptr) {
@@ -2347,14 +2347,20 @@ FrmlElem* Compiler::RdKeyInBool(KeyInD** KIRoot, bool NewMyBP, bool FromRdProc, 
 	label2:
 		FrmlSumEl = nullptr;
 		Z = RdFormula(FTyp, caller);
-		if (CFile->typSQLFile && (FTyp == 'S')) SQLFilter = true;
+		if (processing_F->typSQLFile && (FTyp == 'S')) {
+			SQLFilter = true;
+		}
 		else {
 			TestBool(FTyp);
-			if (Z->Op == _eval) ((FrmlElem21*)Z)->EvalFD = CFile;
+			if (Z->Op == _eval) {
+				((FrmlElem21*)Z)->EvalFD = processing_F;
+			}
 		}
-		result = Z; // MyBPContext(Z, NewMyBP && (Z->Op != _eval));
+		result = Z;
 	}
-	if (FromRdProc) FileVarsAllowed = FVA;
+	if (FromRdProc) {
+		FileVarsAllowed = FVA;
+	}
 	return result;
 }
 
