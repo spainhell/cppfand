@@ -393,7 +393,7 @@ bool RdUserView(FileD* file_d, std::string ViewName, EditOpt* EO)
 			while (Lexem == ',') {
 				FVA = FileVarsAllowed;
 				FileVarsAllowed = false;
-				if (!RdViewOpt(EO)) compiler->Error(44);
+				if (!RdViewOpt(EO, file_d)) compiler->Error(44);
 				FileVarsAllowed = FVA;
 			}
 			if (!found && (Lexem == ';')) {
@@ -442,7 +442,7 @@ void TestUserView(FileD* file_d)
 		}
 		RdBegViewDcl(&EO);
 		while (Lexem == ',') {
-			if (!RdViewOpt(&EO)) compiler->Error(44);
+			if (!RdViewOpt(&EO, file_d)) compiler->Error(44);
 		}
 		if (Lexem == ';') {
 			compiler->RdLex();

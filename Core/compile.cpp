@@ -1263,7 +1263,7 @@ void Compiler::RdFldList(std::vector<FieldDescr*>& vFields)
 void Compiler::RdFldList(std::vector<FieldDescr*>* vFields)
 {
 	while (true) {
-		FieldDescr* F = RdFldName(CFile);
+		FieldDescr* F = RdFldName(processing_F);
 		vFields->push_back(F);
 		if (Lexem == ',') {
 			RdLex();

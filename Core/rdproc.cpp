@@ -1068,7 +1068,7 @@ bool RdHeadLast(Instr_edittxt* IE)
 	return result;
 }
 
-bool RdViewOpt(EditOpt* EO)
+bool RdViewOpt(EditOpt* EO, FileD* file_d)
 {
 	FileD* FD = nullptr;
 	RprtOpt* RO = nullptr;
@@ -1102,7 +1102,9 @@ bool RdViewOpt(EditOpt* EO)
 			EO->Mode = compiler->RdStrFrml(nullptr);
 		}
 	}
-	else if (RdHeadLast(EO)) return result;
+	else if (RdHeadLast(EO)) {
+		return result;
+	}
 	else if (compiler->IsOpt("WATCH")) {
 		EO->WatchDelayZ = compiler->RdRealFrml(nullptr);
 	}
@@ -1135,55 +1137,76 @@ bool RdViewOpt(EditOpt* EO)
 			}
 		}
 		compiler->Accept(')');
-		if ((EO->WFlags & WNoPop) != 0) compiler->Accept(')');
+		if ((EO->WFlags & WNoPop) != 0) {
+			compiler->Accept(')');
+		}
 	}
 	else if (compiler->IsOpt("EXIT")) {
 		compiler->Accept('(');
-	label1:
-		EdExitD* X = new EdExitD();
-		EO->ExD.push_back(X);
+		while (true) {
+			EdExitD* X = new EdExitD();
+			EO->ExD.push_back(X);
 
-		RdKeyList(X);
-		if (compiler->IsKeyWord("QUIT")) X->Typ = 'Q';
-		else if (compiler->IsKeyWord("REPORT")) {
-			if (X->AtWrRec || (EO->LVRecPtr != nullptr)) compiler->OldError(144);
-			compiler->Accept('(');
-			X->Typ = 'R';
-			RO = compiler->GetRprtOpt();
-			compiler->RdChptName('R', &RO->RprtPos, true);
-			while (Lexem == ',') {
-				compiler->RdLex();
-				if (compiler->IsOpt("ASSIGN")) RdPath(true, RO->Path, RO->CatIRec);
-				else if (compiler->IsKeyWord("EDIT")) RO->Edit = true;
-				else compiler->Error(130);
+			RdKeyList(X);
+			if (compiler->IsKeyWord("QUIT")) X->Typ = 'Q';
+			else if (compiler->IsKeyWord("REPORT")) {
+				if (X->AtWrRec || (EO->LVRecPtr != nullptr)) compiler->OldError(144);
+				compiler->Accept('(');
+				X->Typ = 'R';
+				RO = compiler->GetRprtOpt();
+				compiler->RdChptName('R', &RO->RprtPos, true);
+				while (Lexem == ',') {
+					compiler->RdLex();
+					if (compiler->IsOpt("ASSIGN")) RdPath(true, RO->Path, RO->CatIRec);
+					else if (compiler->IsKeyWord("EDIT")) RO->Edit = true;
+					else compiler->Error(130);
+				}
+				X->RO = RO; compiler->Accept(')');
 			}
-			X->RO = RO; compiler->Accept(')');
+			else if (!(Lexem == ',' || Lexem == ')')) {
+				X->Typ = 'P';
+				X->Proc = RdProcArg('E');
+			}
+			if (Lexem == ',') {
+				compiler->RdLex();
+				continue;
+			}
+			break;
 		}
-		else if (!(Lexem == ',' || Lexem == ')')) {
-			X->Typ = 'P';
-			X->Proc = RdProcArg('E');
-		}
-		if (Lexem == ',') { compiler->RdLex(); goto label1; }
 		compiler->Accept(')');
 	}
-	else if (EO->LVRecPtr != nullptr) result = false;
+	else if (EO->LVRecPtr != nullptr) {
+		result = false;
+	}
 	else if (compiler->IsOpt("COND")) {
 		if (Lexem == '(') {
 			compiler->RdLex();
 			EO->Cond = compiler->RdKeyInBool(&EO->KIRoot, false, true, EO->SQLFilter, nullptr);
 			compiler->Accept(')');
 		}
-		else EO->Cond = compiler->RdKeyInBool(&EO->KIRoot, false, true, EO->SQLFilter, nullptr);
+		else {
+			EO->Cond = compiler->RdKeyInBool(&EO->KIRoot, false, true, EO->SQLFilter, nullptr);
+		}
 	}
 	else if (compiler->IsOpt("JOURNAL")) {
 		EO->Journal = compiler->RdFileName();
 		WORD l = EO->Journal->FF->RecLen - 13;
-		if (CFile->FF->file_type == FileType::INDEX) l++;
-		if (CFile->FF->RecLen != l) compiler->OldError(111);
+		if (file_d->FF->file_type == FileType::INDEX) {
+			l++;
+		}
+		if (file_d->FF->RecLen != l) {
+			compiler->OldError(111);
+		}
 	}
-	else if (compiler->IsOpt("SAVEAFTER")) EO->SaveAfterZ = compiler->RdRealFrml(nullptr);
-	else if (compiler->IsOpt("REFRESH")) EO->RefreshDelayZ = compiler->RdRealFrml(nullptr);
-	else result = false;
+	else if (compiler->IsOpt("SAVEAFTER")) {
+		EO->SaveAfterZ = compiler->RdRealFrml(nullptr);
+	}
+	else if (compiler->IsOpt("REFRESH")) {
+		EO->RefreshDelayZ = compiler->RdRealFrml(nullptr);
+	}
+	else {
+		result = false;
+	}
 	return result;
 }
 
@@ -1522,38 +1545,60 @@ Instr_edit* RdEditCall()
 		RdBegViewDcl(EO);
 	}
 	while (Lexem == ',') {
-		bool b = RdViewOpt(EO);
-		if (!b) RdEditOpt(EO);
+		bool b = RdViewOpt(EO, PD->EditFD);
+		if (!b) RdEditOpt(EO, PD->EditFD);
 	}
 	return PD;
-}
+	}
 
-void RdEditOpt(EditOpt* EO)
+void RdEditOpt(EditOpt* EO, FileD* file_d)
 {
-	if (compiler->IsOpt("FIELD")) EO->StartFieldZ = compiler->RdStrFrml(nullptr);
-	else if (EO->LVRecPtr != nullptr) compiler->Error(125);
+	if (compiler->IsOpt("FIELD")) {
+		EO->StartFieldZ = compiler->RdStrFrml(nullptr);
+	}
+	else if (EO->LVRecPtr != nullptr) {
+		compiler->Error(125);
+	}
 	else if (compiler->IsOpt("OWNER")) {
-		if (EO->SQLFilter || (EO->KIRoot != nullptr)) compiler->OldError(179);
+		if (EO->SQLFilter || (EO->KIRoot != nullptr)) {
+			compiler->OldError(179);
+		}
 		EO->OwnerTyp = RdOwner(&EO->DownLD, &EO->DownLV);
 	}
-	else if (compiler->IsOpt("RECKEY")) EO->StartRecKeyZ = compiler->RdStrFrml(nullptr);
+	else if (compiler->IsOpt("RECKEY")) {
+		EO->StartRecKeyZ = compiler->RdStrFrml(nullptr);
+	}
 	else if (
 #ifdef FandSQL
-		!CFile->typSQLFile &&
+		!file_d->typSQLFile &&
 #endif
-		compiler->IsOpt("RECNO")) EO->StartRecNoZ = compiler->RdRealFrml(nullptr);
-	else if (compiler->IsOpt("IREC")) EO->StartIRecZ = compiler->RdRealFrml(nullptr);
-	else if (compiler->IsKeyWord("CHECK")) EO->SyntxChk = true;
+		compiler->IsOpt("RECNO")) {
+		EO->StartRecNoZ = compiler->RdRealFrml(nullptr);
+	}
+	else if (compiler->IsOpt("IREC")) {
+		EO->StartIRecZ = compiler->RdRealFrml(nullptr);
+	}
+	else if (compiler->IsKeyWord("CHECK")) {
+		EO->SyntxChk = true;
+	}
 	else if (compiler->IsOpt("SEL")) {
 		LocVar* lv = RdIdxVar();
 		EO->SelKey = (XWKey*)lv->record;
-		if ((EO->ViewKey == nullptr)) compiler->OldError(108);
-		if (EO->ViewKey == EO->SelKey) compiler->OldError(184);
+		if ((EO->ViewKey == nullptr)) {
+			compiler->OldError(108);
+		}
+		if (EO->ViewKey == EO->SelKey) {
+			compiler->OldError(184);
+		}
 		if ((EO->ViewKey->KFlds != nullptr)
 			&& (EO->SelKey->KFlds != nullptr)
-			&& !KeyFldD::EquKFlds(EO->SelKey->KFlds, EO->ViewKey->KFlds)) compiler->OldError(178);
+			&& !KeyFldD::EquKFlds(EO->SelKey->KFlds, EO->ViewKey->KFlds)) {
+			compiler->OldError(178);
+		}
 	}
-	else compiler->Error(125);
+	else {
+		compiler->Error(125);
+	}
 }
 
 Instr* RdReportCall()
@@ -1878,7 +1923,7 @@ Instr* RdCopyFile()
 		else compiler->Error(52);
 	}
 	return PD;
-}
+	}
 
 CpOption RdCOpt()
 {
@@ -2352,8 +2397,8 @@ Instr_recs* RdMixRecAcc(PInstrCode Op)
 		if (Op == PInstrCode::_recallrec) {
 			compiler->Accept(',');
 			PD->RecNr = compiler->RdRealFrml(nullptr);
+		}
 	}
-}
 	else {
 		// PD = GetPD(Op, 15);
 		PD = new Instr_recs(Op);
@@ -2361,7 +2406,7 @@ Instr_recs* RdMixRecAcc(PInstrCode Op)
 		if (Op == PInstrCode::_deleterec) {
 			CFile = compiler->RdFileName();
 			PD->RecFD = CFile;
-		}
+}
 		else { /*_readrec,_writerec*/
 			if (!IsRecVar(&PD->LV)) compiler->Error(141);
 			CFile = PD->LV->FD;
@@ -2377,27 +2422,27 @@ Instr_recs* RdMixRecAcc(PInstrCode Op)
 #endif
 		Z = compiler->RdFrml(FTyp, nullptr);
 		PD->RecNr = Z;
-			switch (FTyp) {
-			case 'B': compiler->OldError(12); break;
-			case 'S': {
-				PD->ByKey = true;
-				if (PD->CompOp == 0) PD->CompOp = _equ;
-				if (K == nullptr) K = CFile->Keys.empty() ? nullptr : CFile->Keys[0];
-				PD->Key = K;
-				if ((K == nullptr) && (!CFile->IsParFile || (Z->Op != _const)
-					|| (((FrmlElemString*)Z)->S.length() > 0))) compiler->OldError(24);
-				break;
-			}
+		switch (FTyp) {
+		case 'B': compiler->OldError(12); break;
+		case 'S': {
+			PD->ByKey = true;
+			if (PD->CompOp == 0) PD->CompOp = _equ;
+			if (K == nullptr) K = CFile->Keys.empty() ? nullptr : CFile->Keys[0];
+			PD->Key = K;
+			if ((K == nullptr) && (!CFile->IsParFile || (Z->Op != _const)
+				|| (((FrmlElemString*)Z)->S.length() > 0))) compiler->OldError(24);
+			break;
+}
 #ifdef FandSQL
-			default: {
-				if (PD->CompOp != 0) OldError(19);
-				if (CFile->typSQLFile && ((Op == _deleterec) || (Z->Op != _const)
-					|| (Z->rdb != 0))) Error(155);
-				break;
-			}
+		default: {
+			if (PD->CompOp != 0) OldError(19);
+			if (CFile->typSQLFile && ((Op == _deleterec) || (Z->Op != _const)
+				|| (Z->rdb != 0))) Error(155);
+			break;
+		}
 #endif
-			}
-			}
+}
+}
 	if ((Lexem == ',') && (Op == PInstrCode::_writerec || Op == PInstrCode::_deleterec || Op == PInstrCode::_recallrec)) {
 		compiler->RdLex();
 		compiler->Accept('+');
@@ -3004,8 +3049,8 @@ Instr* RdBackup(char MTyp, bool IsBackup)
 			}
 		}
 		return PD;
-	}
-}
+			}
+		}
 
 #ifdef FandSQL
 void RdSqlRdWrTxt(bool Rd)

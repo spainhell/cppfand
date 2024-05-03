@@ -44,7 +44,6 @@ struct kNames { pstring Nm; BYTE Brk; unsigned __int32 Code; };
 extern kNames KeyNames[NKeyNames];
 bool RdHeadLast(EditOpt* EO);
 bool RdHeadLast(Instr_edittxt* IE);
-bool RdViewOpt(EditOpt* EO);
 void RdKeyList(EdExitD* X);
 void RdProcCall(Instr** pinstr); // muze upravit pinstr z hlavni funkce
 
@@ -52,9 +51,12 @@ std::vector<FieldDescr*> RdFlds();
 std::vector<FieldDescr*> RdSubFldList(std::vector<FieldDescr*>& InFL, char Opt);
 Instr_sort* RdSortCall();
 Instr_edit* RdEditCall();
-void RdEditOpt(EditOpt* EO);
-Instr* RdReportCall();
+
+bool RdViewOpt(EditOpt* EO, FileD* file_d);
+void RdEditOpt(EditOpt* EO, FileD* file_d);
 void RdRprtOpt(RprtOpt* RO, bool has_first);
+
+Instr* RdReportCall();
 Instr* RdRDBCall();
 Instr* RdExec();
 Instr* RdCopyFile();

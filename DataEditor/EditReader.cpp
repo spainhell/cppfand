@@ -103,8 +103,9 @@ void EditReader::RdEForm(EditD* edit, RdbPos FormPos)
 	compiler->ReadChar();
 	Lexem = CurrChar;
 	compiler->Accept('_');
+	FileD* FD1 = compiler->RdFileName();
 	if (edit->FD == nullptr) {
-		edit->FD = compiler->RdFileName();
+		edit->FD = FD1;
 	}
 
 	while (true) {
@@ -808,6 +809,7 @@ void EditReader::RdDep(FileD* file_d)
 	char FTyp = '\0';
 	DepD* Dp = nullptr;
 
+	compiler->processing_F = file_d;
 	compiler->RdLex();
 label1:
 	compiler->Accept('(');
