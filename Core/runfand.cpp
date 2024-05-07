@@ -439,7 +439,7 @@ void InitRunFand()
 
 	TextAttr = screen.colors.DesktopColor;
 	screen.Window(1, 1, (BYTE)TxtCols, TxtRows - 1);
-	WriteWFrame(WHasFrame + WDoubleFrame, "", "");
+	WriteWFrame(WHasFrame + WDoubleFrame, "", "", TextAttr);
 	screen.ScrClr(2, 2, TxtCols - 2, TxtRows - 13, (char)0xB1, TextAttr);
 	screen.ScrClr(2, TxtRows - 11, TxtCols - 2, 10, (char)0xb2, TextAttr);
 

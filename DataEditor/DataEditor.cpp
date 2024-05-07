@@ -1040,6 +1040,7 @@ EditD* DataEditor::WriteParamsToE()
 {
 	EditD* edit = new EditD(TxtCols, TxtRows);
 	edit->FD = file_d_;
+	edit->NewRecPtr = record_;
 	edit->CFld = CFld;
 	edit->FirstEmptyFld = FirstEmptyFld;
 	edit->VK = VK;
@@ -1322,7 +1323,7 @@ void DataEditor::DisplEditWw()
 	TextAttr = edit_->Attr;
 	ClrScr(TextAttr);
 
-	WriteWFrame(edit_->WFlags, edit_->Top, "");
+	WriteWFrame(edit_->WFlags, edit_->Top, "", TextAttr);
 	screen.Window(1, 1, TxtCols, TxtRows);
 	DisplSysLine();
 	DisplBool();
@@ -4361,7 +4362,10 @@ bool DataEditor::StartProc(Instr_proc* ExitProc, bool Displ)
 	ReadParamsFromE(EE);
 	file_d_->NewLockMode(md);
 	upd = file_d_->FF->WasWrRec;      /*writeln(strdate(currtime-t,"ss mm.ttt"));wait;*/
-	if (file_d_->HasUpdFlag(record_)) { b = true; upd = true; }
+	if (file_d_->HasUpdFlag(record_)) {
+		b = true;
+		upd = true;
+	}
 	params_->WasUpdated = b;
 	if (b2) file_d_->SetUpdFlag(record_);
 	if (!params_->WasUpdated && !lkd) UnLockRec(edit_);

@@ -421,15 +421,20 @@ void EditReader::AutoDesign(std::vector<FieldDescr*>& FL)
 
 void EditReader::RdFormOrDesign(std::vector<FieldDescr*>& FL, RdbPos FormPos)
 {
-	//edit_->FrstCol = edit_->V.C1;
-	//edit_->FrstRow = edit_->V.R1;
-	//edit_->LastCol = edit_->V.C2;
-	//edit_->LastRow = edit_->V.R2;
+	edit_->FrstCol = edit_->V.C1;
+	edit_->FrstRow = edit_->V.R1;
+	edit_->LastCol = edit_->V.C2;
+	edit_->LastRow = edit_->V.R2;
+
 	if ((edit_->WFlags & WHasFrame) != 0) {
-		edit_->FrstCol++; edit_->LastCol--;
-		edit_->FrstRow++; edit_->LastRow--;
+		edit_->FrstCol++;
+		edit_->LastCol--;
+		edit_->FrstRow++;
+		edit_->LastRow--;
 	}
+
 	edit_->Rows = edit_->LastRow - edit_->FrstRow + 1;
+
 	if (FL.empty()) {
 		ResetCompilePars();
 		RdEForm(edit_, FormPos);

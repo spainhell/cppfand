@@ -2173,8 +2173,8 @@ Instr* RdGetIndex()
 		PD->condition = compiler->RdRealFrml(nullptr); /*RecNr*/
 		return PD;
 	}
-	CFile = compiler->RdFileName();
-	if (lv->FD != CFile) compiler->OldError(164);
+	compiler->processing_F = compiler->RdFileName();
+	if (lv->FD != compiler->processing_F) compiler->OldError(164);
 	CViewKey = compiler->RdViewKey(lv->FD);
 	PD->keys = CViewKey;
 	while (Lexem == ',') {
@@ -2182,7 +2182,7 @@ Instr* RdGetIndex()
 		if (compiler->IsOpt("SORT")) {
 			if (((XWKey*)lv->record)->KFlds != nullptr) compiler->OldError(175);
 			compiler->Accept('(');
-			compiler->RdKFList(&PD->key_fields, CFile);
+			compiler->RdKFList(&PD->key_fields, compiler->processing_F);
 			compiler->Accept(')');
 		}
 		else if (compiler->IsOpt("COND")) {

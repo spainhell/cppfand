@@ -1,5 +1,6 @@
 #include "obaseww.h"
 
+#include <algorithm>
 #include "../Common/textfunc.h"
 #include "../fandio/files.h"
 #include "base.h"
@@ -65,53 +66,75 @@ void PopW(int pos, bool draw)
 	PopScr(draw);
 }
 
-void WriteWFrame(BYTE WFlags, std::string top, std::string bottom)
+void WriteWFrame(uint8_t WFlags, const std::string& top, const std::string& bottom, const uint8_t color)
 {
-	WORD i, cols, rows, n;
 	if ((WFlags & WHasFrame) == 0) return;
-	n = 0;
+
+	uint8_t n = 0;
 	if ((WFlags & WDoubleFrame) != 0) n = 9;
-	cols = WindMax.X - WindMin.X + 1;
-	rows = WindMax.Y - WindMin.Y + 1;
-	screen.ScrWrFrameLn(WindMin.X, WindMin.Y, n, cols, TextAttr);
-	for (i = 1; i <= rows - 2; i++) {
+
+	uint8_t cols = WindMax.X - WindMin.X + 1;
+	uint8_t rows = WindMax.Y - WindMin.Y + 1;
+	screen.ScrWrFrameLn(WindMin.X, WindMin.Y, n, cols, color);
+
+	for (uint8_t i = 1; i <= rows - 2; i++) {
 		if ((WFlags & WNoClrScr) == 0)
-			screen.ScrWrFrameLn(WindMin.X, WindMin.Y + i, n + 6, cols, TextAttr);
+			screen.ScrWrFrameLn(WindMin.X, WindMin.Y + i, n + 6, cols, color);
 		else {
-			screen.ScrWrChar(WindMin.X, WindMin.Y + i, FrameChars[n + 6], TextAttr);
-			screen.ScrWrChar(WindMin.X + cols - 1, WindMin.Y + i, FrameChars[n + 8], TextAttr);
+			screen.ScrWrChar(WindMin.X, WindMin.Y + i, static_cast<char>(FrameChars[n + 6]), color);
+			screen.ScrWrChar(WindMin.X + cols - 1, WindMin.Y + i, static_cast<char>(FrameChars[n + 8]), color);
 		}
 	}
-	screen.ScrWrFrameLn(WindMin.X, WindMax.Y, n + 3, cols, TextAttr);
-	WrHd(top, 1, cols - 2);
-	WrHd(bottom, rows, cols - 2);
+
+	screen.ScrWrFrameLn(WindMin.X, WindMax.Y, n + 3, cols, color);
+	WriteHeader(top, 1, cols - 2);
+	WriteHeader(bottom, rows, cols - 2);
 }
 
-void WrHd(std::string header, WORD row, WORD maxCols)
+void WriteHeader(std::string header, WORD row, WORD maxCols)
 {
 	if (header.empty()) return;
-	header = " " + header + " ";
-	if (header.length() > maxCols) header = header.substr(0, maxCols);
-	screen.ScrWrText((maxCols - header.length()) / 2 + 2, row, header.c_str());
+
+	header = (" " + header + " ").substr(0, maxCols);
+	const uint16_t col = static_cast<uint16_t>((maxCols - header.length()) / 2 + 2);
+	screen.ScrWrText(col, row, header.c_str());
 }
 
 void CenterWw(BYTE& C1, BYTE& R1, BYTE& C2, BYTE& R2, BYTE WFlags)
 {
-	short Cols, Rows, M;
-	M = 0;
-	if ((WFlags & WHasFrame) != 0) M = 2;
-	Cols = C2 + M;
-	if (C1 != 0) Cols = C2 - C1 + 1;
-	Cols = MaxI(M + 1, MinI(Cols, TxtCols));
-	if (C1 == 0) C1 = (TxtCols - Cols) / 2 + 1;
-	else C1 = MinI(C1, TxtCols - Cols + 1);
-	C2 = C1 + Cols - 1;
-	Rows = R2 + M;
-	if (R1 != 0) Rows = R2 - R1 + 1;
-	Rows = MaxI(M + 1, MinI(Rows, TxtRows));
-	if (R1 == 0) R1 = (TxtRows - Rows) / 2 + 1;
-	else R1 = MinI(R1, TxtRows - Rows + 1);
-	R2 = R1 + Rows - 1;
+	int16_t m = 0;
+	if ((WFlags & WHasFrame) != 0) {
+		m = 2;
+	}
+
+	// calculate columns
+	int16_t cols = static_cast<int16_t>(C2 + m);
+	if (C1 != 0) {
+		cols = static_cast<int16_t>(C2 - C1 + 1);
+	}
+
+	cols = max(m + 1, min(cols, TxtCols));
+	if (C1 == 0) {
+		C1 = static_cast<int8_t>((TxtCols - cols) / 2 + 1);
+	}
+	else {
+		C1 = min(C1, static_cast<int8_t>(TxtCols - cols + 1));
+	}
+	C2 = static_cast<int8_t>(C1 + cols - 1);
+
+	// calculate rows
+	int16_t rows = static_cast<int16_t>(R2 + m);
+	if (R1 != 0) {
+		rows = static_cast<int16_t>(R2 - R1 + 1);
+	}
+	rows = max(m + 1, min(rows, TxtRows));
+	if (R1 == 0) {
+		R1 = static_cast<int8_t>((TxtRows - rows) / 2 + 1);
+	}
+	else {
+		R1 = static_cast<int8_t>(min(R1, TxtRows - rows + 1));
+	}
+	R2 = static_cast<int8_t>(R1 + rows - 1);
 }
 
 int PushWFramed(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, std::string top, std::string bottom, BYTE WFlags)
@@ -130,7 +153,7 @@ int PushWFramed(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, std::string top, 
 	screen.Window(C1, R1, C2, R2);
 	TextAttr = Attr;
 	if ((WFlags & WHasFrame) != 0) {
-		WriteWFrame(WFlags, top, bottom);
+		WriteWFrame(WFlags, top, bottom, TextAttr);
 		screen.Window(C1 + 1, R1 + 1, C2 - 1, R2 - 1);
 	}
 	return result;
@@ -142,14 +165,13 @@ int PushWrLLMsg(WORD N, bool WithESC)
 	TextAttr = screen.colors.zNorm;
 	ClrEol(TextAttr);
 	TextAttr = screen.colors.zNorm | 0x80;
-	//printf("  ");
 	screen.ScrWrText(1, 1, "  ");
 	TextAttr = screen.colors.zNorm;
-	if (WithESC) screen.ScrWrText(6, 1, "(ESC) ");  //printf("(ESC) ");
+	if (WithESC) screen.ScrWrText(6, 1, "(ESC) ");
 	ReadMessage(N);
-	WORD l = TxtCols - screen.WhereX();
-	if (MsgLine.length() > l) MsgLine[0] = (char)l;
-	//printf("%s", MsgLine.c_str());
+	WORD max_len = TxtCols - screen.WhereX();
+	//if (MsgLine.length() > max_len) MsgLine[0] = (char)max_len;
+	MsgLine = MsgLine.substr(0, max_len);
 	screen.ScrWrText(WithESC ? 12 : 6, 1, MsgLine.c_str());
 	return result;
 }
