@@ -30,6 +30,9 @@ struct stSaveState
 
 class Compiler {
 public:
+	Compiler();
+	Compiler(FileD* file_d);
+	~Compiler();
 	std::string Error(short N);
 	void SetInpStr(std::string& s);
 	void SetInpStdStr(std::string& s, bool ShowErr);
@@ -103,7 +106,7 @@ public:
 	void RdAssignFrml(char FTyp, bool& Add, FrmlElem** Z, MergeReportBase* caller);
 	bool FldTypIdentity(FieldDescr* F1, FieldDescr* F2);
 	void RdFldList(std::vector<FieldDescr*>& vFields);
-	void RdNegFldList(bool& Neg, std::vector<FieldDescr*>& vFields);
+	void RdNegFldList(bool& neg, std::vector<FieldDescr*>& vFields);
 
 	FieldNameType rdFldNameType = FieldNameType::none;
 	FrmlElem* RdFldNameFrml(char& FTyp, MergeReportBase* caller);

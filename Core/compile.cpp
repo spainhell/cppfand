@@ -35,6 +35,20 @@ BYTE CurrChar; // { Compile }
 BYTE ForwChar, ExpChar, Lexem;
 pstring LexWord;
 
+Compiler::Compiler()
+{
+}
+
+Compiler::Compiler(FileD* file_d)
+{
+	processing_F = file_d;
+}
+
+Compiler::~Compiler()
+{
+}
+
+
 std::string Compiler::Error(short N)
 {
 	ReadMessage(1000 + N);
@@ -1247,12 +1261,19 @@ void Compiler::RdFldList(std::vector<FieldDescr*>& vFields)
 	}
 }
 
-void Compiler::RdNegFldList(bool& Neg, std::vector<FieldDescr*>& vFields)
+void Compiler::RdNegFldList(bool& neg, std::vector<FieldDescr*>& vFields)
 {
-	if (Lexem == '^') { RdLex(); Neg = true; }
+	if (Lexem == '^') {
+		RdLex();
+		neg = true;
+	}
 	Accept('(');
-	if (Lexem == ')') Neg = true;
-	else RdFldList(vFields);
+	if (Lexem == ')') {
+		neg = true;
+	}
+	else {
+		RdFldList(vFields);
+	}
 	Accept(')');
 }
 
@@ -1292,8 +1313,7 @@ XKey* Compiler::RdViewKey(FileD* file_d)
 		}
 	}
 
-	if (IdxLocVarAllowed && FindLocVar(&LVBD, &lv) && (lv->FTyp == 'i'))
-	{
+	if (IdxLocVarAllowed && FindLocVar(&LVBD, &lv) && (lv->FTyp == 'i')) {
 		if (lv->FD != file_d) Error(164);
 		lastK = (XKey*)(lv->record);
 		goto label1;
