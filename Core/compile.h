@@ -102,11 +102,8 @@ public:
 	bool PromptSortKeys(std::vector<FieldDescr*>& FL, KeyFldD* SKRoot);
 	void RdAssignFrml(char FTyp, bool& Add, FrmlElem** Z, MergeReportBase* caller);
 	bool FldTypIdentity(FieldDescr* F1, FieldDescr* F2);
-	void RdFldList(FieldListEl** FLRoot);
 	void RdFldList(std::vector<FieldDescr*>& vFields);
-	void RdFldList(std::vector<FieldDescr*>* vFields);
 	void RdNegFldList(bool& Neg, std::vector<FieldDescr*>& vFields);
-	void RdNegFldList(bool& Neg, std::vector<FieldDescr*>* vFields);
 
 	FieldNameType rdFldNameType = FieldNameType::none;
 	FrmlElem* RdFldNameFrml(char& FTyp, MergeReportBase* caller);

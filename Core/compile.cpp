@@ -1234,19 +1234,6 @@ bool Compiler::FldTypIdentity(FieldDescr* F1, FieldDescr* F2)
 	return true;
 }
 
-void Compiler::RdFldList(FieldListEl** FLRoot)
-{
-	FieldDescr* F = nullptr;
-	FieldListEl* FL = nullptr;
-label1:
-	F = RdFldName(CFile);
-	FL = new FieldListEl();
-	FL->FldD = F;
-	if (*FLRoot == nullptr) *FLRoot = FL;
-	else ChainLast(*FLRoot, FL);
-	if (Lexem == ',') { RdLex(); goto label1; }
-}
-
 void Compiler::RdFldList(std::vector<FieldDescr*>& vFields)
 {
 	while (true) {
@@ -1260,29 +1247,7 @@ void Compiler::RdFldList(std::vector<FieldDescr*>& vFields)
 	}
 }
 
-void Compiler::RdFldList(std::vector<FieldDescr*>* vFields)
-{
-	while (true) {
-		FieldDescr* F = RdFldName(processing_F);
-		vFields->push_back(F);
-		if (Lexem == ',') {
-			RdLex();
-			continue;
-		}
-		break;
-	}
-}
-
 void Compiler::RdNegFldList(bool& Neg, std::vector<FieldDescr*>& vFields)
-{
-	if (Lexem == '^') { RdLex(); Neg = true; }
-	Accept('(');
-	if (Lexem == ')') Neg = true;
-	else RdFldList(vFields);
-	Accept(')');
-}
-
-void Compiler::RdNegFldList(bool& Neg, std::vector<FieldDescr*>* vFields)
 {
 	if (Lexem == '^') { RdLex(); Neg = true; }
 	Accept('(');

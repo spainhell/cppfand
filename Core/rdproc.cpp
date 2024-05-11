@@ -1214,7 +1214,7 @@ void RdKeyList(EdExitD* X)
 {
 	while (true) {
 		if ((Lexem == '(') || (Lexem == '^')) {
-			compiler->RdNegFldList(X->NegFlds, &X->Flds);
+			compiler->RdNegFldList(X->NegFlds, X->Flds);
 		}
 		else if (compiler->IsKeyWord("RECORD")) {
 			X->AtWrRec = true;
