@@ -1,5 +1,6 @@
 #pragma once
 #include "access.h"
+#include "compile.h"
 
 #include "models/FrmlElem.h"
 #include "models/Instr.h"
@@ -44,7 +45,7 @@ struct kNames { pstring Nm; BYTE Brk; unsigned __int32 Code; };
 extern kNames KeyNames[NKeyNames];
 bool RdHeadLast(EditOpt* EO);
 bool RdHeadLast(Instr_edittxt* IE);
-void RdKeyList(EdExitD* X);
+void RdKeyList(EdExitD* X, const std::unique_ptr<Compiler>& compiler);
 void RdProcCall(Instr** pinstr); // muze upravit pinstr z hlavni funkce
 
 std::vector<FieldDescr*> RdFlds();

@@ -139,7 +139,7 @@ void CompileHelpCatDcl()
 
 	// process help
 	std::string help_definition = ReadMessage(56);
-	compiler->SetInpStr(help_definition);
+	g_compiler->SetInpStr(help_definition);
 #if defined (FandRunV)
 	HelpFD = RdFileD("UFANDHLP", FileType::FAND16, "");
 #else
@@ -148,7 +148,7 @@ void CompileHelpCatDcl()
 
 	// process catalog
 	std::string catalog_definition = ReadMessage(52);
-	compiler->SetInpStr(catalog_definition);
+	g_compiler->SetInpStr(catalog_definition);
 	FileD* cat_file = RdFileD("Catalog", FileType::CAT, "");
 	CatFD = new Catalog(cat_file);
 	
@@ -162,7 +162,7 @@ bool SetTopDir(std::string& p, std::string& n)
 	bool result = false;
 	try {
 		FSplit(FExpand(p), TopRdbDir, n, e);
-		if (!compiler->IsIdentifStr(n)) {
+		if (!g_compiler->IsIdentifStr(n)) {
 			WrLLF10Msg(881);
 			return result;
 		}

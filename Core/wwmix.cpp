@@ -765,10 +765,10 @@ bool wwmix::PromptFilter(std::string Txt, FrmlElem** Bool, std::string* BoolTxt)
 			if (Txt.length() == 0) {
 				return true;
 			}
-			compiler->SetInpStr(Txt);
-			compiler->RdLex();
-			*Bool = compiler->RdBool(nullptr);
-			if (Lexem != 0x1A) compiler->Error(21);
+			g_compiler->SetInpStr(Txt);
+			g_compiler->RdLex();
+			*Bool = g_compiler->RdBool(nullptr);
+			if (Lexem != 0x1A) g_compiler->Error(21);
 			BoolTxt = new std::string();
 			*BoolTxt = Txt;
 			return true;

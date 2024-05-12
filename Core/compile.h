@@ -6,7 +6,7 @@
 
 class Compiler;
 extern RdbPos ChptIPos; // usen in LexAnal & ProjMgr
-extern Compiler* compiler;
+extern Compiler* g_compiler; // global g_compiler instance
 
 enum class FieldNameType { none, F, P, T };
 

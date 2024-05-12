@@ -31,7 +31,7 @@ void ReportGenerator::RunAutoReport(RprtOpt* RO)
 	void* p = nullptr; void* p1 = nullptr;
 	p1 = RO->FDL.FD->FF->RecPtr;
 	std::string txt = GenAutoRprt(RO, true);
-	compiler->SetInpStdStr(txt, false);
+	g_compiler->SetInpStdStr(txt, false);
 	std::unique_ptr report = std::make_unique<Report>();
 	report->Read(RO);
 	report->Run(RO);
@@ -43,7 +43,7 @@ bool ReportGenerator::SelForAutoRprt(RprtOpt* RO)
 	wwmix ww;
 
 	auto result = false;
-	if ((RO->SK == nullptr) && !compiler->PromptSortKeys(RO->Flds, RO->SK)) return result;
+	if ((RO->SK == nullptr) && !g_compiler->PromptSortKeys(RO->Flds, RO->SK)) return result;
 	WORD N = Menu(4, 1);
 	if (N == 0) return result;
 	RO->Mode = (AutoRprtMode)(N - 1);
@@ -96,7 +96,7 @@ std::string ReportGenerator::SelGenRprt(pstring RprtName)
 	}
 	fd = r->rdb_file;
 	do { fd = fd->pChain; } while (fd->Name != s);
-	ro = compiler->GetRprtOpt();
+	ro = g_compiler->GetRprtOpt();
 	ro->FDL.FD = fd;
 	f = fd->FldD.front();
 	while (f != nullptr) {

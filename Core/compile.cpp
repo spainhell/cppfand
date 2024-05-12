@@ -22,7 +22,7 @@
 
 const BYTE MaxLen = 9;
 RdbPos ChptIPos; // used in LexAnal & ProjMgr
-Compiler* compiler = new Compiler();
+Compiler* g_compiler = new Compiler();
 
 bool KeyArgFound;
 FieldDescr* KeyArgFld;
@@ -2166,12 +2166,12 @@ FrmlElem* Compiler::RdPrim(char& FTyp, MergeReportBase* caller)
 			}
 		}
 		else {
-			if (compiler->rdFldNameType == FieldNameType::none && caller == nullptr) {
+			if (g_compiler->rdFldNameType == FieldNameType::none && caller == nullptr) {
 				Error(110);
 			}
 			else {
 				if (rdFldNameType != FieldNameType::none) {
-					Z = compiler->RdFldNameFrml(FTyp, caller); // volani ukazatele na funkci
+					Z = g_compiler->RdFldNameFrml(FTyp, caller); // volani ukazatele na funkci
 				}
 				else {
 					Z = caller->RdFldNameFrml(FTyp); // volani ukazatele na funkci
@@ -2550,7 +2550,7 @@ FrmlElem* Compiler::TryRdFldFrml(FileD* FD, char& FTyp, MergeReportBase* caller)
 	if (IsKeyWord("OWNED")) {
 		rff = rdFldNameType;
 		rdFldNameType = FieldNameType::F;
-		// TODO: compiler !!! ptrRdFldNameFrml = RdFldNameFrmlF;
+		// TODO: g_compiler !!! ptrRdFldNameFrml = RdFldNameFrmlF;
 		Accept('(');
 		z = new FrmlElem23(_owned, 12); // GetOp(_owned, 12);
 		TestIdentif();
