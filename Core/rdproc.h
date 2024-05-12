@@ -16,7 +16,7 @@ bool IsRecVar(LocVar** LV);
 LocVar* RdRecVar();
 LocVar* RdIdxVar();
 FrmlElem* RdRecVarFldFrml(LocVar* LV, char& FTyp);
-char RdOwner(LinkD** LLD, LocVar** LLV); // 'r','i','F'
+char RdOwner(FileD* file_d, LinkD** LLD, LocVar** LLV); // 'r','i','F'
 FrmlElem* RdFldNameFrmlP(char& FTyp, MergeReportBase*);
 FileD* RdPath(bool NoFD, std::string& Path, WORD& CatIRec);
 FrmlElem* RdFunctionP(char& FFTyp);

@@ -5,6 +5,8 @@
 #include "../Core/runfrml.h"
 
 
+class Compiler;
+
 class Merge : public MergeReportBase
 {
 public:
@@ -24,7 +26,7 @@ private:
 	void RdDirFilVar_M(char& FTyp, FrmlElem** res, bool wasIiPrefix);
 	void RdOutpFldName(char& FTyp, FrmlElem** res);
 	void MakeOldMFlds();
-	void RdAutoSortSK_M(InpD* ID);
+	void RdAutoSortSK_M(InpD* ID, std::unique_ptr<Compiler>& compiler);
 	void ImplAssign(OutpRD* outputRD, FieldDescr* outputField);
 	FrmlElem* AdjustComma_M(FrmlElem* Z1, FieldDescr* F, instr_type Op);
 	FieldDescr* FindIiandFldD(std::string fieldName);

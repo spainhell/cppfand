@@ -573,25 +573,26 @@ void SetRdbDir(FileD* file_d, char Typ, std::string* Nm)
 		AddBackSlash(CDir);
 		CDir = CDir + file_d->Name;
 	}
-	/* !!! with r^ do!!! */ {
-		r->RdbDir = CDir;
-		if (TopDataDir.empty()) r->DataDir = CDir;
-		else if (rb == nullptr) r->DataDir = TopDataDir;
-		else {
-			d = rb->DataDir;
-			AddBackSlash(d);
-			r->DataDir = d + file_d->Name;
-		}
+
+	r->RdbDir = CDir;
+	if (TopDataDir.empty()) r->DataDir = CDir;
+	else if (rb == nullptr) r->DataDir = TopDataDir;
+	else {
+		d = rb->DataDir;
+		AddBackSlash(d);
+		r->DataDir = d + file_d->Name;
 	}
+
 	CDir = CDir + '\\';
 }
 
+// Reopen RDB file in Exclusive mode
 void ResetRdOnly()
 {
 	if (Chpt->FF->UMode == RdOnly) {
-		CFile->CloseFile();
+		Chpt->CloseFile();
 		IsInstallRun = true;
-		OpenF(CFile, CPath, Exclusive);
+		OpenF(Chpt, CPath, Exclusive);
 		IsInstallRun = false;
 	}
 }
@@ -1283,7 +1284,6 @@ bool CompileRdb(FileD* rdb_file, bool Displ, bool Run, bool FromCtrlF10)
 		RP.rdb = CRdb;
 		top = (CRdb->ChainBack == nullptr);
 		if (top) {
-			ChptTF->CompileAll = true;
 			UserName[0] = 0; UserCode = 0; UserPassWORD[0] = 0; AccRight[0] = 0;
 			if (ChptTF->CompileAll || CompileFD) Switches[0] = 0;
 		}

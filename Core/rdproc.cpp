@@ -106,7 +106,7 @@ FrmlElem* RdRecVarFldFrml(LocVar* LV, char& FTyp)
 	return nullptr;
 }
 
-char RdOwner(LinkD** LLD, LocVar** LLV)
+char RdOwner(FileD* file_d, LinkD** LLD, LocVar** LLV)
 {
 	FileD* fd = nullptr;
 	auto result = '\0';
@@ -116,7 +116,7 @@ char RdOwner(LinkD** LLD, LocVar** LLV)
 		if (!(lv->FTyp == 'i' || lv->FTyp == 'r' || lv->FTyp == 'f')) g_compiler->Error(177);
 		LinkD* ld = nullptr;
 		for (auto& ld1 : LinkDRoot) {
-			if ((ld1->FromFD == CFile) && (ld1->IndexRoot != 0) && (ld1->ToFD == lv->FD)) {
+			if ((ld1->FromFD == file_d) && (ld1->IndexRoot != 0) && (ld1->ToFD == lv->FD)) {
 				ld = ld1;
 			}
 		}
@@ -877,7 +877,7 @@ Instr_forall* RdForAll()
 	}
 #endif
 	if (g_compiler->IsKeyWord("OWNER")) {
-		PD->COwnerTyp = RdOwner(&PD->CLD, &PD->CLV);
+		PD->COwnerTyp = RdOwner(PD->CFD, &PD->CLD, &PD->CLV);
 		CViewKey = GetFromKey(PD->CLD);
 	}
 	else {
@@ -1071,6 +1071,7 @@ bool RdHeadLast(Instr_edittxt* IE)
 bool RdViewOpt(EditOpt* EO, FileD* file_d)
 {
 	std::unique_ptr<Compiler> local_compiler = std::make_unique<Compiler>(file_d);
+	local_compiler->rdFldNameType = FieldNameType::P;
 
 	FileD* FD = nullptr;
 	RprtOpt* RO = nullptr;
@@ -1444,7 +1445,7 @@ std::vector<FieldDescr*> RdFlds()
 	FieldListEl* FL = nullptr;
 
 	while (true) {
-		auto fd = g_compiler->RdFldName(CFile);
+		auto fd = g_compiler->RdFldName(g_compiler->processing_F);
 		FLRoot.push_back(fd);
 		if (Lexem == ',') {
 			g_compiler->RdLex();
@@ -1544,6 +1545,7 @@ Instr_edit* RdEditCall()
 		g_compiler->RdLex();
 	}
 	else {
+		g_compiler->processing_F = PD->EditFD;
 		RdBegViewDcl(EO);
 	}
 	while (Lexem == ',') {
@@ -1565,7 +1567,7 @@ void RdEditOpt(EditOpt* EO, FileD* file_d)
 		if (EO->SQLFilter || (EO->KIRoot != nullptr)) {
 			g_compiler->OldError(179);
 		}
-		EO->OwnerTyp = RdOwner(&EO->DownLD, &EO->DownLV);
+		EO->OwnerTyp = RdOwner(file_d, &EO->DownLD, &EO->DownLV);
 	}
 	else if (g_compiler->IsOpt("RECKEY")) {
 		EO->StartRecKeyZ = g_compiler->RdStrFrml(nullptr);
@@ -1612,6 +1614,7 @@ Instr* RdReportCall()
 	RprtOpt* RO = g_compiler->GetRprtOpt();
 	PD->RO = RO;
 	bool has_first = false;
+	FileD* processing_file = nullptr;
 
 	if (Lexem != ',') {
 		has_first = true;
@@ -1628,8 +1631,9 @@ Instr* RdReportCall()
 				FDL->FD = lv->FD;
 			}
 			else {
-				CFile = g_compiler->RdFileName();
-				FDL->FD = CFile;
+				processing_file = g_compiler->RdFileName();
+				FDL->FD = processing_file;
+				g_compiler->processing_F = processing_file;
 				CViewKey = g_compiler->RdViewKey(FDL->FD);
 				FDL->ViewKey = CViewKey;
 				if (Lexem == '(') {
@@ -1650,7 +1654,8 @@ Instr* RdReportCall()
 		if (b) {
 			g_compiler->Accept(')');
 		}
-		CFile = RO->FDL.FD;
+		processing_file = RO->FDL.FD;
+		g_compiler->processing_F = processing_file;
 		CViewKey = RO->FDL.ViewKey;
 	}
 
@@ -1673,13 +1678,13 @@ Instr* RdReportCall()
 		g_compiler->Accept('(');
 		switch (Lexem) {
 		case '?': {
-			RO->Flds = g_compiler->AllFldsList(CFile, false);
+			RO->Flds = g_compiler->AllFldsList(processing_file, false);
 			g_compiler->RdLex();
 			RO->UserSelFlds = true;
 			break;
 		}
 		case ')': {
-			RO->Flds = g_compiler->AllFldsList(CFile, true);
+			RO->Flds = g_compiler->AllFldsList(processing_file, true);
 			break;
 		}
 		default: {
@@ -1804,7 +1809,7 @@ void RdRprtOpt(RprtOpt* RO, bool has_first)
 			g_compiler->OldError(51);
 		}
 		g_compiler->Accept('(');
-		g_compiler->RdKFList(&RO->SK, CFile);
+		g_compiler->RdKFList(&RO->SK, g_compiler->processing_F);
 		g_compiler->Accept(')');
 	}
 	else if (g_compiler->IsOpt("HEAD")) {
@@ -2193,7 +2198,7 @@ Instr* RdGetIndex()
 			g_compiler->Accept(')');
 		}
 		else if (g_compiler->IsOpt("OWNER")) {
-			PD->owner_type = RdOwner(&PD->link, &PD->loc_var2);
+			PD->owner_type = RdOwner(g_compiler->processing_F, &PD->link, &PD->loc_var2);
 			XKey* k = GetFromKey(PD->link);
 			if (CViewKey == nullptr) PD->keys = k;
 			else if (CViewKey != k) g_compiler->OldError(178);

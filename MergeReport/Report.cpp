@@ -27,7 +27,7 @@ Report::~Report()
 
 void Report::Read(RprtOpt* RO)
 {
-	FileD* FD = nullptr; KeyInD* KI = nullptr; BlkD* B = nullptr;
+	KeyInD* KI = nullptr; BlkD* B = nullptr;
 	InpD* ID = nullptr; LvDescr* L = nullptr;
 	std::string s;
 
@@ -99,47 +99,54 @@ void Report::Read(RprtOpt* RO)
 			ID = new InpD();
 			IDA[Ii] = ID;
 			g_compiler->RdLex();
-			FD = g_compiler->RdFileName();
-			CFile = FD;
+			FileD* FD = g_compiler->RdFileName();
+
+			std::unique_ptr<Compiler> report_compiler = std::make_unique<Compiler>(FD);
+			report_compiler->rdFldNameType = FieldNameType::P;
+
+			//CFile = FD;
 			for (int16_t i = 1; i <= Ii - 1; i++) {
 				if (InpFD(i) == FD) {
-					g_compiler->OldError(26);
+					report_compiler->OldError(26);
 				}
 			}
 			if ((FDL != nullptr)) {
-				CFile = FDL->FD;
-				FD = CFile;
+				//CFile = FDL->FD;
+				//FD = CFile;
+				FD = FDL->FD;
+				report_compiler->processing_F = FDL->FD;
 			}
-			CViewKey = g_compiler->RdViewKey(FD);
+			CViewKey = report_compiler->RdViewKey(FD);
 			if ((FDL != nullptr)) {
 				if (FDL->ViewKey != nullptr) CViewKey = FDL->ViewKey;
 			}
 			if (Lexem == '!') {
-				g_compiler->RdLex();
+				report_compiler->RdLex();
 				ID->AutoSort = true;
 			}
 			ID->Op = _const;
 			ID->OpErr = _const;
 			ID->OpWarn = _const;
 			KI = nullptr;
-			ID->ForwRecPtr = CFile->GetRecSpace();
-			FD->FF->RecPtr = CFile->GetRecSpace();
+			ID->ForwRecPtr = report_compiler->processing_F->GetRecSpace();
+			FD->FF->RecPtr = report_compiler->processing_F->GetRecSpace();
 
 			if (Lexem == '(') {
-				g_compiler->RdLex();
+				report_compiler->RdLex();
 				if ((Ii == 1) && (Lexem == '?')) {
 					SelQuest = true;
-					g_compiler->RdLex();
+					report_compiler->RdLex();
 				}
 				else {
-					ID->Bool = g_compiler->RdKeyInBool(&KI, false, false, ID->SQLFilter, this);
+					g_compiler->processing_F = report_compiler->processing_F;
+					ID->Bool = report_compiler->RdKeyInBool(&KI, false, false, ID->SQLFilter, this);
 				}
-				g_compiler->Accept(')');
+				report_compiler->Accept(')');
 			}
 
 			if ((FDL != nullptr) && (FDL->LVRecPtr == nullptr) &&
 				((FDL->Cond != nullptr) || (FDL->KeyIn != nullptr) || (Ii == 1) && RO->UserCondQuest)) {
-				ID->Bool = RunEvalFrml(CFile, FDL->Cond, CRecPtr);
+				ID->Bool = RunEvalFrml(FD, FDL->Cond, FD->FF->RecPtr);
 				KI = FDL->KeyIn;
 				ID->SQLFilter = FDL->SQLFilter;
 				if (Ii == 1) {
@@ -152,11 +159,11 @@ void Report::Read(RprtOpt* RO)
 				ID->Scan->ResetLV(FDL->LVRecPtr);
 			}
 			if (!(Lexem == ';' || Lexem == '#' || Lexem == 0x1A)) {
-				g_compiler->RdKFList(&ID->MFld, FD);
+				report_compiler->RdKFList(&ID->MFld, FD);
 			}
 			if (Ii > 1) {
 				if (IDA[Ii - 1]->MFld == nullptr) {
-					if (ID->MFld != nullptr) g_compiler->OldError(22);
+					if (ID->MFld != nullptr) report_compiler->OldError(22);
 				}
 				else if (ID->MFld == nullptr) {
 					CopyPrevMFlds();
@@ -165,11 +172,12 @@ void Report::Read(RprtOpt* RO)
 					CheckMFlds(IDA[Ii - 1]->MFld, ID->MFld);
 				}
 			}
-			RdAutoSortSK(ID);
-			g_compiler->TestLex('#');
+			RdAutoSortSK(ID, report_compiler);
+			report_compiler->TestLex('#');
 			if (FDL != nullptr) {
 				FDL = FDL->Chain;
 			}
+			// report_compiler destroys itself here
 		}
 	} while (ForwChar == 'I');
 
@@ -561,35 +569,45 @@ void Report::RdDirFilVar(char& FTyp, FrmlElem** res, bool wasIiPrefix)
 {
 	LinkD* LD = nullptr;
 	FileD* FD = nullptr;
-	short I = 0;
 	FrmlElem* Z = nullptr;
+	FileD* processed_file = nullptr;
+
 	if (wasIiPrefix) {
-		CFile = InpFD(Ii);
-		if (!g_compiler->IsRoleName(true, &FD, &LD)) g_compiler->Error(9);
+		processed_file = InpFD(Ii);
+		g_compiler->processing_F = processed_file;
+		if (!g_compiler->IsRoleName(true, &FD, &LD)) {
+			g_compiler->Error(9);
+		}
 	}
 	else {
 		if (!Join && (WhatToRd == 'i')) {
 			Ii = Oi;
-			CFile = InpFD(Ii);
-			if (g_compiler->IsRoleName(true, &FD, &LD)) goto label2;
-		}
-		for (I = 1; I <= MaxIi; I++) {
-			CFile = InpFD(I);
+			processed_file = InpFD(Ii);
+			g_compiler->processing_F = processed_file;
 			if (g_compiler->IsRoleName(true, &FD, &LD)) {
-				Ii = I;
 				goto label2;
 			}
-			if ((WhatToRd == 'i') && (I == Oi)) goto label1;
+		}
+		for (int16_t i = 1; i <= MaxIi; i++) {
+			processed_file = InpFD(i);
+			g_compiler->processing_F = processed_file;
+			if (g_compiler->IsRoleName(true, &FD, &LD)) {
+				Ii = i;
+				goto label2;
+			}
+			if ((WhatToRd == 'i') && (i == Oi)) goto label1;
 		}
 	label1:
 		g_compiler->Error(9);
 	}
 label2:
-	g_compiler->RdLex();/*'.'*/
+	g_compiler->RdLex(); // '.'
 	Z = g_compiler->RdFAccess(FD, LD, FTyp);
-	if (LD == nullptr) Ii = 0;
+	if (LD == nullptr) {
+		Ii = 0;
+	}
 	else {
-		Z = g_compiler->FrmlContxt(Z, CFile, CFile->FF->RecPtr);
+		Z = g_compiler->FrmlContxt(Z, processed_file, processed_file->FF->RecPtr);
 		TestSetSumIi();
 		if ((FrmlSumEl != nullptr) && !FrstSumVar && (CBlk != nullptr)) {
 			g_compiler->OldError(59);
@@ -666,13 +684,13 @@ LvDescr* Report::MakeOldMLvD()
 	return L;
 }
 
-void Report::RdAutoSortSK(InpD* ID)
+void Report::RdAutoSortSK(InpD* ID, std::unique_ptr<Compiler>& compiler)
 {
 	KeyFldD* M = nullptr; KeyFldD* SK = nullptr; LvDescr* L = nullptr;
 	WORD n = 0; bool as = false;
 	if (Lexem == ';') {
-		g_compiler->RdLex();
-		g_compiler->RdKFList(&ID->SFld, CFile);
+		compiler->RdLex();
+		compiler->RdKFList(&ID->SFld, compiler->processing_F);
 	}
 	L = nullptr;
 	as = ID->AutoSort;
@@ -680,12 +698,10 @@ void Report::RdAutoSortSK(InpD* ID)
 		SK = (KeyFldD*)(&ID->SK);
 		M = ID->MFld;
 		while (M != nullptr) {
-			//SK->pChain = (KeyFldD*)GetStore(sizeof(*SK)); 
 			SK->pChain = new KeyFldD();
-			SK = (KeyFldD*)SK->pChain;
-			//Move(M, SK, sizeof(*SK)); 
+			SK = SK->pChain;
 			*SK = *M;
-			M = (KeyFldD*)M->pChain;
+			M = M->pChain;
 		}
 	}
 	M = ID->SFld;
@@ -696,12 +712,14 @@ void Report::RdAutoSortSK(InpD* ID)
 		ID->OldSFlds.push_back(ConstListEl());
 		if (as) {
 			SK->pChain = new KeyFldD();
-			SK = (KeyFldD*)SK->pChain;
+			SK = SK->pChain;
 			*SK = *M;
 		}
-		M = (KeyFldD*)M->pChain;
+		M = M->pChain;
 	}
-	if (as && (ID->SK == nullptr)) g_compiler->OldError(60);
+	if (as && (ID->SK == nullptr)) {
+		compiler->OldError(60);
+	}
 	ID->FrstLvS = NewLvS(L, ID);
 }
 
@@ -1055,12 +1073,16 @@ void Report::EndString(BlkD* block, BYTE* buffer, size_t LineLen, size_t NBytesS
 void Report::TestSetRFTyp(char Typ, bool RepeatedGrp, RFldD* RF)
 {
 	if (RepeatedGrp) {
-		if (RF->Typ != Typ) g_compiler->Error(73);
+		if (RF->Typ != Typ) {
+			g_compiler->Error(73);
+		}
 	}
 	else {
 		RF->Typ = Typ;
 	}
-	if (ForwChar == '.' || ForwChar == ',' || ForwChar == ':') g_compiler->Error(95);
+	if (ForwChar == '.' || ForwChar == ',' || ForwChar == ':') {
+		g_compiler->Error(95);
+	}
 }
 
 void Report::TestSetBlankOrWrap(bool RepeatedGrp, char UC, RFldD* RF)
@@ -1070,10 +1092,14 @@ void Report::TestSetBlankOrWrap(bool RepeatedGrp, char UC, RFldD* RF)
 			RF->BlankOrWrap = (UC == '@');
 		}
 		else {
-			if (RF->BlankOrWrap && (UC == '_')) g_compiler->Error(73);
+			if (RF->BlankOrWrap && (UC == '_')) {
+				g_compiler->Error(73);
+			}
 		}
 	}
-	else if (UC == '@') g_compiler->Error(80);
+	else if (UC == '@') {
+		g_compiler->Error(80);
+	}
 }
 
 std::vector<AssignD*> Report::RdAssign2()
@@ -1132,11 +1158,17 @@ LvDescr* Report::RdKeyName()
 	g_compiler->ReadChar();
 	Lexem = CurrChar;
 	g_compiler->Accept('_');
-	if (WhatToRd == 'O') L = FrstLvM;
-	else L = IDA[Oi]->FrstLvS;
+	if (WhatToRd == 'O') {
+		L = FrstLvM;
+	}
+	else {
+		L = IDA[Oi]->FrstLvS;
+	}
 	F = g_compiler->RdFldName(InpFD(Oi));
 	while (L != nullptr) {
-		if (L->Fld == F) { return L; }
+		if (L->Fld == F) {
+			return L;
+		}
 		L = L->Chain;
 	}
 	g_compiler->OldError(46);

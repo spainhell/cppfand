@@ -24,7 +24,6 @@ void Merge::Read()
 	FieldDescr* F = nullptr;
 	FileD* FD = nullptr;
 	KeyInD* KI = nullptr;
-	WORD I = 0;
 	bool WasOi = false, WasSqlFile = false, CompLex = false;
 	ResetCompilePars();
 	g_compiler->RdLex();
@@ -33,11 +32,15 @@ void Merge::Read()
 		g_compiler->RdLocDcl(&LVBD, false, false, 'M');
 	}
 	WhatToRd = 'I';
-	ReadingOutpBool = false; WasSqlFile = false;
+	ReadingOutpBool = false;
+	WasSqlFile = false;
 	Ii = 0;
 	g_compiler->TestLex('#');
+
 	do {
 		g_compiler->ReadChar();
+		bool err = true;
+		WORD I = 0;
 		if (CurrChar == 'I') {
 			g_compiler->ReadChar();
 			if (isdigit(CurrChar)) {
@@ -45,103 +48,111 @@ void Merge::Read()
 				g_compiler->ReadChar();
 				if (CurrChar == '_') {
 					g_compiler->RdLex();
-					goto label1;
+					err = false;
 				}
 			}
 		}
-		g_compiler->Error(89);
-	label1:
-		Ii++;
-		if (I != Ii) {
-			g_compiler->OldError(61);
+		if (err) {
+			g_compiler->Error(89);
 		}
-		ID = new InpD();
-		IDA[Ii] = ID;
-		FD = g_compiler->RdFileName();
-		CFile = FD;
-#ifdef FandSQL
-		if (CFile->typSQLFile) WasSqlFile = true;
-#endif 
-		for (I = 1; I <= Ii - 1; I++) {
-			if (InpFD_M(I) == FD) g_compiler->OldError(26);
-		}
-		CViewKey = g_compiler->RdViewKey(FD);
-		if (Lexem == '!') {
-			g_compiler->RdLex();
-			ID->AutoSort = true;
-		}
-		ID->Op = _const;
-		ID->OpErr = _const;
-		ID->OpWarn = _const;
-		KI = nullptr;
-		ID->ForwRecPtr = CFile->GetRecSpace();
-		FD->FF->RecPtr = CFile->GetRecSpace();
-		if (Lexem == '(') {
-			g_compiler->RdLex();
-			ID->Bool = g_compiler->RdKeyInBool(&KI, false, false, ID->SQLFilter, this);
-			g_compiler->Accept(')');
-		}
-		//New(ID->Scan, Init(rdb_file, CViewKey, KI, true));
-		ID->Scan = new XScan(FD, CViewKey, KI, true);
-		if (!(Lexem == ';' || Lexem == '#' || Lexem == 0x1A)) {
-			g_compiler->RdKFList(&ID->MFld, FD);
-		}
-		if (Ii > 1) {
-			if (IDA[Ii - 1]->MFld == nullptr) {
-				if (ID->MFld != nullptr) g_compiler->OldError(22);
+		else {
+			Ii++;
+			if (I != Ii) {
+				g_compiler->OldError(61);
 			}
-			else if (ID->MFld == nullptr) CopyPrevMFlds();
-			else CheckMFlds(IDA[Ii - 1]->MFld, ID->MFld);
+			ID = new InpD();
+			IDA[Ii] = ID;
+			FD = g_compiler->RdFileName();
+
+			std::unique_ptr<Compiler> report_compiler = std::make_unique<Compiler>(FD);
+			report_compiler->rdFldNameType = FieldNameType::P;
+
+#ifdef FandSQL
+			if (report_compiler->processing_F->typSQLFile) WasSqlFile = true;
+#endif 
+			for (int16_t i = 1; i <= Ii - 1; i++) {
+				if (InpFD_M(i) == FD) report_compiler->OldError(26);
+			}
+			CViewKey = report_compiler->RdViewKey(FD);
+			if (Lexem == '!') {
+				report_compiler->RdLex();
+				ID->AutoSort = true;
+			}
+			ID->Op = _const;
+			ID->OpErr = _const;
+			ID->OpWarn = _const;
+			KI = nullptr;
+			ID->ForwRecPtr = report_compiler->processing_F->GetRecSpace();
+			FD->FF->RecPtr = report_compiler->processing_F->GetRecSpace();
+			if (Lexem == '(') {
+				report_compiler->RdLex();
+				g_compiler->processing_F = report_compiler->processing_F;
+				ID->Bool = report_compiler->RdKeyInBool(&KI, false, false, ID->SQLFilter, this);
+				report_compiler->Accept(')');
+			}
+			ID->Scan = new XScan(FD, CViewKey, KI, true);
+			if (!(Lexem == ';' || Lexem == '#' || Lexem == 0x1A)) {
+				report_compiler->RdKFList(&ID->MFld, FD);
+			}
+			if (Ii > 1) {
+				if (IDA[Ii - 1]->MFld == nullptr) {
+					if (ID->MFld != nullptr) report_compiler->OldError(22);
+				}
+				else if (ID->MFld == nullptr) CopyPrevMFlds();
+				else CheckMFlds(IDA[Ii - 1]->MFld, ID->MFld);
+			}
+			RdAutoSortSK_M(ID, report_compiler);
+			report_compiler->TestLex('#');
 		}
-		RdAutoSortSK_M(ID);
-		g_compiler->TestLex('#');
 	} while (ForwChar == 'I');
 
 	MaxIi = Ii;
 	MakeOldMFlds();
 	OldMXStr.Clear();
 	OutpFDRoot = nullptr; OutpRDs = nullptr; Join = false; WasOi = false;
-	//ptrRdFldNameFrml = nullptr; // RdFldNameFrml;
 	g_compiler->rdFldNameType = FieldNameType::none;
 
-label3:
-	g_compiler->ReadChar();
-	if (CurrChar == 'O') {
+	while (true) {
 		g_compiler->ReadChar();
-		if (isdigit(CurrChar)) {
-			if (Join) g_compiler->Error(91);
-			WasOi = true;
-			Oi = CurrChar - '0';
-			if ((Oi == 0) || (Oi > MaxIi)) g_compiler->Error(62);
-			goto label4;
-		}
-		else if (CurrChar == '*') {
-			if (WasOi) g_compiler->Error(91);
-			if (WasSqlFile) g_compiler->Error(155);
-			Join = true;
-			Oi = MaxIi;
-		label4:
+		if (CurrChar == 'O') {
 			g_compiler->ReadChar();
-			if (CurrChar != '_') g_compiler->Error(90);
-			g_compiler->RdLex();
-			WhatToRd = 'i';
-			ChainSum = false;
-			RdOutpRD(&(IDA[Oi]->RD));
-		}
-		else if (CurrChar == '_') {
-			g_compiler->RdLex();
-			WhatToRd = 'O';
-			ChainSum = true;
-			RdOutpRD(&OutpRDs);
+			if (isdigit(CurrChar)) {
+				if (Join) g_compiler->Error(91);
+				WasOi = true;
+				Oi = CurrChar - '0';
+				if ((Oi == 0) || (Oi > MaxIi)) g_compiler->Error(62);
+				goto label4;
+			}
+			else if (CurrChar == '*') {
+				if (WasOi) g_compiler->Error(91);
+				if (WasSqlFile) g_compiler->Error(155);
+				Join = true;
+				Oi = MaxIi;
+			label4:
+				g_compiler->ReadChar();
+				if (CurrChar != '_') g_compiler->Error(90);
+				g_compiler->RdLex();
+				WhatToRd = 'i';
+				ChainSum = false;
+				RdOutpRD(&(IDA[Oi]->RD));
+			}
+			else if (CurrChar == '_') {
+				g_compiler->RdLex();
+				WhatToRd = 'O';
+				ChainSum = true;
+				RdOutpRD(&OutpRDs);
+			}
+			else g_compiler->Error(90);
 		}
 		else g_compiler->Error(90);
+		if (Lexem != 0x1A) {
+			g_compiler->TestLex('#');
+			continue;
+		}
+		break;
 	}
-	else g_compiler->Error(90);
-	if (Lexem != 0x1A) {
-		g_compiler->TestLex('#');
-		goto label3;
-	}
-	for (I = 1; I <= MaxIi; I++) {
+
+	for (int16_t I = 1; I <= MaxIi; I++) {
 		ID = IDA[I];
 		if (ID->ErrTxtFrml != nullptr) {
 			RdChkDsFromPos(ID->Scan->FD, ID->Chk);
@@ -198,9 +209,10 @@ label1:
 	if (NEof == MaxIi) {
 		b = SaveCache(0, CFile->FF->Handle);
 		RunMsgOff();
-		if (!b) GoExit();
+		if (!b) {
+			GoExit();
+		}
 		CloseInpOutp();
-		//PopProcStk();
 		return;
 	}
 	EmptyGroup = false;
@@ -229,7 +241,9 @@ FrmlElem* Merge::RdFldNameFrml(char& FTyp)
 	g_compiler->TestIdentif();
 	if ((LexWord == "O") && g_compiler->IsForwPoint() && !WasIiPrefix) {
 		g_compiler->RdLex(); g_compiler->RdLex();
-		if ((FrmlSumEl != nullptr) || ReadingOutpBool) g_compiler->Error(99);
+		if ((FrmlSumEl != nullptr) || ReadingOutpBool) {
+			g_compiler->Error(99);
+		}
 		RdOutpFldName(FTyp, &result);
 		return result;
 	}
@@ -238,27 +252,25 @@ FrmlElem* Merge::RdFldNameFrml(char& FTyp)
 		TestSetSumIi();
 		return result;
 	}
-	if (!WasIiPrefix) if (g_compiler->FindLocVar(&LVBD, &LV)) {
-		g_compiler->RdLex();
-		TestNotSum();
-		result = new FrmlElem18(_getlocvar, LV);
-		FTyp = LV->FTyp;
-		return result;
+	if (!WasIiPrefix) {
+		if (g_compiler->FindLocVar(&LVBD, &LV)) {
+			g_compiler->RdLex();
+			TestNotSum();
+			result = new FrmlElem18(_getlocvar, LV);
+			FTyp = LV->FTyp;
+			return result;
+		}
 	}
 	if (g_compiler->IsKeyWord("COUNT")) {
-	label1:
 		TestNotSum();
 		SetIi_Merge(WasIiPrefix);
-		//result = (FrmlElem*)(&IDA[Ii]->Op);
 		result = new FrmlElemInp(_count, IDA[Ii]);
 		FTyp = 'R';
 		return result;
 	}
 	if (g_compiler->IsKeyWord("GROUP")) {
-	label2:
 		TestNotSum();
 		if (WasIiPrefix) g_compiler->OldError(41);
-		//result = (FrmlPtr)(&MergOpGroup);
 		result = new FrmlElemMerge(_mergegroup, &MergOpGroup);
 		FTyp = 'R';
 		return result;
@@ -287,8 +299,22 @@ FrmlElem* Merge::RdFldNameFrml(char& FTyp)
 	}
 	else Z = FindIiandFldFrml_M(&FD, FTyp);
 	if (Z == nullptr) {
-		if (g_compiler->IsKeyWord("N")) goto label1;
-		if (g_compiler->IsKeyWord("M")) goto label2;
+		if (g_compiler->IsKeyWord("N")) {
+			// same as "COUNT"
+			TestNotSum();
+			SetIi_Merge(WasIiPrefix);
+			result = new FrmlElemInp(_count, IDA[Ii]);
+			FTyp = 'R';
+			return result;
+		}
+		if (g_compiler->IsKeyWord("M")) {
+			// same as "GROUP"
+			TestNotSum();
+			if (WasIiPrefix) g_compiler->OldError(41);
+			result = new FrmlElemMerge(_mergegroup, &MergOpGroup);
+			FTyp = 'R';
+			return result;
+		}
 		g_compiler->Error(8);
 	}
 	TestSetSumIi();
@@ -348,35 +374,50 @@ label1:
 
 void Merge::RdDirFilVar_M(char& FTyp, FrmlElem** res, bool wasIiPrefix)
 {
-	LinkD* LD = nullptr; FileD* FD = nullptr;
-	short I = 0;
+	LinkD* LD = nullptr;
+	FileD* FD = nullptr;
 	FrmlElem* Z = nullptr;
-	if (wasIiPrefix)
-	{
-		CFile = InpFD_M(Ii);
-		if (!g_compiler->IsRoleName(true, &FD, &LD)) g_compiler->Error(9);
+	FileD* processed_file = nullptr;
+
+	if (wasIiPrefix) {
+		processed_file = InpFD_M(Ii);
+		g_compiler->processing_F = processed_file;
+		if (!g_compiler->IsRoleName(true, &FD, &LD)) {
+			g_compiler->Error(9);
+		}
 	}
 	else {
-		if (!Join && (WhatToRd == 'i'))
-		{
+		if (!Join && (WhatToRd == 'i')) {
 			Ii = Oi;
-			CFile = InpFD_M(Ii);
-			if (g_compiler->IsRoleName(true, &FD, &LD)) goto label2;
+			processed_file = InpFD_M(Ii);
+			g_compiler->processing_F = processed_file;
+			if (g_compiler->IsRoleName(true, &FD, &LD)) {
+				goto label2;
+			}
 		}
-		for (I = 1; I <= MaxIi; I++)
-		{
-			CFile = InpFD_M(I);
-			if (g_compiler->IsRoleName(true, &FD, &LD)) { Ii = I; goto label2; }
-			if ((WhatToRd == 'i') && (I == Oi)) goto label1;
+		for (int16_t I = 1; I <= MaxIi; I++) {
+			processed_file = InpFD_M(I);
+			g_compiler->processing_F = processed_file;
+			if (g_compiler->IsRoleName(true, &FD, &LD)) {
+				Ii = I;
+				goto label2;
+			}
+			if ((WhatToRd == 'i') && (I == Oi)) {
+				goto label1;
+			}
 		}
 	label1:
 		g_compiler->Error(9);
 	}
-label2:
-	g_compiler->Accept('.');
+label2: 
+	g_compiler->Accept('.'); // '.'
 	Z = g_compiler->RdFAccess(FD, LD, FTyp);
-	if (LD == nullptr) Ii = 0;
-	else Z = g_compiler->FrmlContxt(Z, CFile, CFile->FF->RecPtr);
+	if (LD == nullptr) {
+		Ii = 0;
+	}
+	else {
+		Z = g_compiler->FrmlContxt(Z, processed_file, processed_file->FF->RecPtr);
+	}
 	*res = Z;
 }
 
@@ -403,24 +444,31 @@ void Merge::MakeOldMFlds()
 	}
 }
 
-void Merge::RdAutoSortSK_M(InpD* ID)
+void Merge::RdAutoSortSK_M(InpD* ID, std::unique_ptr<Compiler>& compiler)
 {
-	KeyFldD* M = nullptr; KeyFldD* SK = nullptr;
+	KeyFldD* M = nullptr;
+	KeyFldD* SK = nullptr;
 	if (!ID->AutoSort) return;
 	M = ID->MFld;
 	while (M != nullptr) {
-		SK = new KeyFldD(); // (KeyFldD*)GetStore(sizeof(*SK));
-		//Move(M, SK, sizeof(SK));
+		SK = new KeyFldD();
 		*SK = *M;
-		if (ID->SK == nullptr) { ID->SK = SK; SK->pChain = nullptr; }
-		else ChainLast(ID->SK, SK);
-		M = (KeyFldD*)M->pChain;
+		if (ID->SK == nullptr) {
+			ID->SK = SK;
+			SK->pChain = nullptr;
+		}
+		else {
+			ChainLast(ID->SK, SK);
+		}
+		M = M->pChain;
 	}
 	if (Lexem == ';') {
-		g_compiler->RdLex();
-		g_compiler->RdKFList(&ID->SK, CFile);
+		compiler->RdLex();
+		compiler->RdKFList(&ID->SK, compiler->processing_F);
 	}
-	if (ID->SK == nullptr) g_compiler->OldError(60);
+	if (ID->SK == nullptr) {
+		compiler->OldError(60);
+	}
 }
 
 void Merge::ImplAssign(OutpRD* outputRD, FieldDescr* outputField)
