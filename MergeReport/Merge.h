@@ -23,8 +23,8 @@ private:
 
 	FileD* InpFD_M(WORD I);
 	FrmlElem* FindIiandFldFrml_M(FileD** FD, char& FTyp);
-	void RdDirFilVar_M(char& FTyp, FrmlElem** res, bool wasIiPrefix);
-	void RdOutpFldName(char& FTyp, FrmlElem** res);
+	FrmlElem* RdDirFilVar_M(char& FTyp, bool wasIiPrefix);
+	FrmlElem* RdOutpFldName(char& FTyp);
 	void MakeOldMFlds();
 	void RdAutoSortSK_M(InpD* ID, std::unique_ptr<Compiler>& compiler);
 	void ImplAssign(OutpRD* outputRD, FieldDescr* outputField);

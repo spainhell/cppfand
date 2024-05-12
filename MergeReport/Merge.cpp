@@ -244,11 +244,11 @@ FrmlElem* Merge::RdFldNameFrml(char& FTyp)
 		if ((FrmlSumEl != nullptr) || ReadingOutpBool) {
 			g_compiler->Error(99);
 		}
-		RdOutpFldName(FTyp, &result);
+		result = RdOutpFldName(FTyp);
 		return result;
 	}
 	if (g_compiler->IsForwPoint()) {
-		RdDirFilVar_M(FTyp, &result, WasIiPrefix);
+		result = RdDirFilVar_M(FTyp, WasIiPrefix);
 		TestSetSumIi();
 		return result;
 	}
@@ -372,11 +372,11 @@ label1:
 	return z;
 }
 
-void Merge::RdDirFilVar_M(char& FTyp, FrmlElem** res, bool wasIiPrefix)
+FrmlElem* Merge::RdDirFilVar_M(char& FTyp, bool wasIiPrefix)
 {
 	LinkD* LD = nullptr;
 	FileD* FD = nullptr;
-	FrmlElem* Z = nullptr;
+	FrmlElem* result = nullptr;
 	FileD* processed_file = nullptr;
 
 	if (wasIiPrefix) {
@@ -395,14 +395,14 @@ void Merge::RdDirFilVar_M(char& FTyp, FrmlElem** res, bool wasIiPrefix)
 				goto label2;
 			}
 		}
-		for (int16_t I = 1; I <= MaxIi; I++) {
-			processed_file = InpFD_M(I);
+		for (int16_t i = 1; i <= MaxIi; i++) {
+			processed_file = InpFD_M(i);
 			g_compiler->processing_F = processed_file;
 			if (g_compiler->IsRoleName(true, &FD, &LD)) {
-				Ii = I;
+				Ii = i;
 				goto label2;
 			}
-			if ((WhatToRd == 'i') && (I == Oi)) {
+			if ((WhatToRd == 'i') && (i == Oi)) {
 				goto label1;
 			}
 		}
@@ -411,26 +411,29 @@ void Merge::RdDirFilVar_M(char& FTyp, FrmlElem** res, bool wasIiPrefix)
 	}
 label2: 
 	g_compiler->Accept('.'); // '.'
-	Z = g_compiler->RdFAccess(FD, LD, FTyp);
+	result = g_compiler->RdFAccess(FD, LD, FTyp);
 	if (LD == nullptr) {
 		Ii = 0;
 	}
 	else {
-		Z = g_compiler->FrmlContxt(Z, processed_file, processed_file->FF->RecPtr);
+		result = g_compiler->FrmlContxt(result, processed_file, processed_file->FF->RecPtr);
 	}
-	*res = Z;
+
+	return result;
 }
 
-void Merge::RdOutpFldName(char& FTyp, FrmlElem** res)
+FrmlElem* Merge::RdOutpFldName(char& FTyp)
 {
+	FrmlElem* result = nullptr;
 	if (RD->OD == nullptr /*dummy*/) {
 		g_compiler->Error(85);
 	}
 	else {
-		auto rdFldName = g_compiler->RdFldName(RD->OD->FD);
-		auto makeFldFrml = g_compiler->MakeFldFrml(rdFldName, FTyp);
-		*res = g_compiler->FrmlContxt(makeFldFrml, RD->OD->FD, RD->OD->RecPtr);
+		FieldDescr* rdFldName = g_compiler->RdFldName(RD->OD->FD);
+		FrmlElem* makeFldFrml = g_compiler->MakeFldFrml(rdFldName, FTyp);
+		result = g_compiler->FrmlContxt(makeFldFrml, RD->OD->FD, RD->OD->RecPtr);
 	}
+	return result;
 }
 
 void Merge::MakeOldMFlds()
@@ -440,7 +443,7 @@ void Merge::MakeOldMFlds()
 	OldMFlds.clear();
 	while (M != nullptr) {
 		OldMFlds.push_back(ConstListEl());
-		M = (KeyFldD*)M->pChain;
+		M = M->pChain;
 	}
 }
 

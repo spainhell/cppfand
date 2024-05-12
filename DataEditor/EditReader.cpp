@@ -898,6 +898,7 @@ void EditReader::RdImpl(FileD* file_d)
 void EditReader::RdUDLI(FileD* file_d)
 {
 	CFile = file_d; // to be sure
+	g_compiler->processing_F = file_d;
 
 	g_compiler->RdLex();
 	if ((Lexem == '#') && (ForwChar == 'U')) {
