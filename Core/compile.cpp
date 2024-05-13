@@ -1726,7 +1726,7 @@ bool Compiler::FindFuncD(FrmlElem** ZZ, MergeReportBase* caller)
 	char typ = '\0';
 	FuncD* fc = FuncDRoot;
 	while (fc != nullptr) {
-		if (EquUpCase(fc->Name, LexWord)) {
+		if (EquUpCase(fc->name, LexWord)) {
 			RdLex(); RdLex();
 			FrmlElem19* z = new FrmlElem19(_userfunc, 8); // GetOp(_userfunc, 8);
 			z->FC = fc;

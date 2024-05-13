@@ -14,7 +14,7 @@ enum class PInstrCode
 	_portout, _printtxt, _proc, _putpixel, _puttxt, _randomize, _readrec, _recallrec, _rectangle, _releasedrive,
 	_repeatuntil, _report, _resetcat, _save, _setedittxt, _setkeybuf, _setmouse, _setprinter, _sort, _sound,
 	_sql, _sqlrdwrtxt, _turncat, _wait, _whiledo, _window, _withgraphics, _withlocked, _withshared,
-	_writeln, _writerec,
+	_writeln, _writerec /*, _not_defined*/
 };
 
 class Instr
@@ -22,7 +22,7 @@ class Instr
 public:
 	Instr(PInstrCode kind);
 	PInstrCode Kind;
-	Instr* Chain = nullptr;
+	//std::vector<Instr*> sub_instr;
 };
 
 class Instr_menu : public Instr
@@ -33,7 +33,7 @@ public:
 	FrmlElem* HdLine = nullptr;
 	RdbD* HelpRdb = nullptr;
 	bool WasESCBranch = false;
-	Instr* ESCInstr = nullptr;
+	std::vector<Instr*> ESCInstr;
 	std::vector<ChoiceD*> Choices;
 	bool Loop = false, PullDown = false, Shdw = false;
 	FrmlElem* X = nullptr;
@@ -47,8 +47,8 @@ class Instr_loops : public Instr
 public:
 	Instr_loops(PInstrCode Kind);
 	FrmlElem* Bool = nullptr;
-	Instr* Instr1 = nullptr;
-	Instr* ElseInstr1 = nullptr;  // puvodne Instr a ElseInstr -> konflikt nazvu
+	std::vector<Instr*> v_instr;
+	std::vector<Instr*> v_else_instr;
 	void AddInstr(Instr* i);
 	void AddElseInstr(Instr* i);
 };
@@ -287,7 +287,7 @@ public:
 	Instr_window();
 	WRectFrml W;
 	FrmlElem* Attr = nullptr;
-	Instr* WwInstr = nullptr;
+	std::vector<Instr*> v_ww_instr;
 	FrmlElem* Top = nullptr;
 	BYTE WithWFlags = 0;
 };
@@ -311,7 +311,7 @@ public:
 	LocVar* CRecVar = nullptr;
 	KeyInD* CKIRoot = nullptr;
 	FrmlElem* CBool = nullptr; /*or SQLTxt*/
-	Instr* CInstr = nullptr;
+	std::vector<Instr*> CInstr;
 	LinkD* CLD = nullptr;
 	bool CWIdx = false, inSQL = false, CSQLFilter = false, CProcent = false;
 	char COwnerTyp = '\0';
@@ -322,8 +322,8 @@ class Instr_withshared : public Instr
 {
 public:
 	Instr_withshared(PInstrCode Kind);
-	Instr* WDoInstr = nullptr;
-	Instr* WElseInstr = nullptr;
+	std::vector<Instr*> WDoInstr;
+	std::vector<Instr*> WElseInstr;
 	bool WasElse = false;
 	LockD WLD;
 };

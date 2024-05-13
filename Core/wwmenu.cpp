@@ -872,22 +872,32 @@ bool TMenuBarP::ExecItem(WORD& I)
 		if (!PD->WasESCBranch) return result;
 		RunInstr(PD->ESCInstr);
 	}
-	else RunInstr(getChoice(I)->Instr);
+	else {
+		RunInstr(getChoice(I)->Instr);
+	}
 	I = 0;
-	if (BreakP || ExitP) { result = false; return result; }
+	if (BreakP || ExitP) {
+		result = false;
+		return result;
+	}
 	result = true;
 	return result;
 }
 
 bool TMenuBarP::GetDownMenu(TMenuBox** W)
 {
-	auto result = false;
-	auto PD1 = (Instr_menu*)getChoice(iTxt)->Instr;
-	if ((PD1 == nullptr) || (PD1->Chain != nullptr)
-		|| (PD1->Kind != PInstrCode::_menubox) || !PD1->PullDown) return result;
-	auto p = new TMenuBoxP(MenuX, MenuY, this, PD1);
-	*W = p;
-	result = true;
+	bool result = false;
+	// TODO: implement
+	//Instr_menu* PD1 = getChoice(iTxt)->Instr;
+
+	//if ((PD1 == nullptr) || (!PD1->sub_instr.empty())
+	//	|| (PD1->Kind != PInstrCode::_menubox) || !PD1->PullDown) {
+	//	return result;
+	//}
+
+	//TMenuBoxP* p = new TMenuBoxP(MenuX, MenuY, this, PD1);
+	//*W = p;
+	//result = true;
 	return result;
 }
 

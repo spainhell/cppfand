@@ -563,8 +563,7 @@ LocVar* RunUserFunc(FileD* file_d, FrmlElem19* X, void* record)
 		if (fl != nullptr) fl = fl->pChain;
 	}
 
-	Instr* instr = X->FC->pInstr;
-	RunProcedure(instr);
+	RunProcedure(X->FC->v_instr);
 
 	return return_lv;
 }

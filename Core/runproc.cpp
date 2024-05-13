@@ -939,7 +939,7 @@ void WithWindowProc(Instr_window* PD)
 		ClrScr(TextAttr);
 	}
 	SetWwViewPort();
-	RunInstr(PD->WwInstr);
+	RunInstr(PD->v_ww_instr);
 	PopW(w1, (PD->WithWFlags & WNoPop) == 0);
 	SetWwViewPort();
 	ProcAttr = PAttr;
@@ -1111,7 +1111,7 @@ void ReleaseDriveProc(FrmlElem* Z)
 		if ((c == 'A') || (c == 'B')) ReleaseDrive(c - '@');
 }
 
-void WithGraphicsProc(Instr* PD)
+void WithGraphicsProc(std::vector<Instr*>& PD)
 {
 	throw std::exception("WithGraphicsProc() not implemented!");
 	//if (IsGraphMode) RunInstr(PD);
@@ -1201,24 +1201,26 @@ void MemDiagProc()
 {
 }
 
-void RunInstr(Instr* PD)
+void RunInstr(const std::vector<Instr*>& instructions)
 {
-	while (!ExitP && !BreakP && (PD != nullptr)) {
+	for (Instr* PD : instructions) {
+		if (ExitP || BreakP) break;
+
 		switch (PD->Kind) {
 		case PInstrCode::_ifthenelseP: {
 			Instr_loops* iPD = (Instr_loops*)PD;
 			if (RunBool(CFile, iPD->Bool, CRecPtr)) {
-				RunInstr(iPD->Instr1);
+				RunInstr(iPD->v_instr);
 			}
 			else {
-				RunInstr(iPD->ElseInstr1);
+				RunInstr(iPD->v_else_instr);
 			}
 			break;
 		}
 		case PInstrCode::_whiledo: {
 			Instr_loops* iPD = (Instr_loops*)PD;
 			while (!ExitP && !BreakP && RunBool(CFile, iPD->Bool, CRecPtr)) {
-				RunInstr(iPD->Instr1);
+				RunInstr(iPD->v_instr);
 			}
 			BreakP = false;
 			break;
@@ -1226,11 +1228,16 @@ void RunInstr(Instr* PD)
 		case PInstrCode::_repeatuntil: {
 			Instr_loops* iPD = (Instr_loops*)PD;
 			do {
-				RunInstr(iPD->Instr1);
+				RunInstr(iPD->v_instr);
 			} while (!(ExitP || BreakP || RunBool(CFile, iPD->Bool, CRecPtr)));
 			BreakP = false;
 			break;
 		}
+		//case PInstrCode::_not_defined: {
+		//	// contains only sub-instructions
+		//	RunInstr(PD->sub_instr);
+		//	break;
+		//}
 		case PInstrCode::_menubox: {
 			auto menu = std::make_unique<TMenuBoxP>(0, 0, nullptr, (Instr_menu*)PD);
 			menu->call();
@@ -1336,7 +1343,7 @@ void RunInstr(Instr* PD)
 			EditProc((Instr_edit*)PD);
 			break;
 		}
-		case PInstrCode::_asgnloc:/* !!! with PD^ do!!! */ {
+		case PInstrCode::_asgnloc: {
 			auto iPD = (Instr_assign*)PD;
 			LVAssignFrml(CFile, iPD->AssLV, iPD->Add, iPD->Frml, CRecPtr);
 			break;
@@ -1594,17 +1601,19 @@ void RunInstr(Instr* PD)
 		}
 		default:
 			break;
+		}
+		}
 	}
-		PD = PD->Chain;
-}
-}
 
-void RunProcedure(Instr* PDRoot)
+void RunProcedure(std::vector<Instr*>& PDRoot)
 {
-	bool ExP = ExitP; bool BrkP = BreakP;
-	ExitP = false; BreakP = false;
+	bool ExP = ExitP;
+	bool BrkP = BreakP;
+	ExitP = false;
+	BreakP = false;
 	RunInstr(PDRoot);
-	ExitP = ExP; BreakP = BrkP;
+	ExitP = ExP;
+	BreakP = BrkP;
 }
 
 void CallProcedure(Instr_proc* PD)
@@ -1616,7 +1625,7 @@ void CallProcedure(Instr_proc* PD)
 	std::_Vector_iterator<std::_Vector_val<std::_Simple_types<LocVar*>>> it1;
 
 	WORD i = 0, j = 0, n = 0;
-	int l = 0; Instr* pd1 = nullptr;
+	int l = 0;
 	FileD* lstFD = nullptr;
 	KeyFldD* kf1 = nullptr; KeyFldD* kf2 = nullptr;
 
@@ -1629,7 +1638,7 @@ void CallProcedure(Instr_proc* PD)
 
 #ifdef _DEBUG
 	std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
-	if (srcCode.find("gettxt(FANDCFG)") != std::string::npos) {
+	if (srcCode.find("with window(0,0,sloup+1") != std::string::npos) {
 		printf("");
 	}
 #endif
@@ -1718,17 +1727,17 @@ void CallProcedure(Instr_proc* PD)
 		++it0;
 	}
 	//ProcMyBP = MyBP;
-	pd1 = ReadProcBody();
+	std::vector<Instr*> instructions = ReadProcBody();
 
-#ifdef _DEBUG
-	// vytvorime vektor instrukci pro snadny prehled
-	std::vector<Instr*> vI;
-	Instr* next = pd1;
-	while (next != nullptr) {
-		vI.push_back(next);
-		next = next->Chain;
-	}
-#endif
+	//#ifdef _DEBUG
+	//	// vytvorime vektor instrukci pro snadny prehled
+	//	std::vector<Instr*> vI;
+	//	Instr* next = pd1;
+	//	while (next != nullptr) {
+	//		vI.push_back(next);
+	//		next = next->Chain;
+	//	}
+	//#endif
 
 	FDLocVarAllowed = false;
 	it0 = it1;
@@ -1744,7 +1753,7 @@ void CallProcedure(Instr_proc* PD)
 	ReleaseStore(&p2);
 
 	// **** RUN PROCEDURE **** //
-	RunProcedure(pd1);
+	RunProcedure(instructions);
 	// *********************** //
 
 	it0 = PD->variables.vLocVar.begin();

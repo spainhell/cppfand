@@ -23,20 +23,19 @@ FrmlElem* RdFunctionP(char& FFTyp);
 XKey* RdViewKeyImpl(FileD* FD);
 void RdSelectStr(FrmlElemFunction* Z);
 
-Instr* RdPInstr();
+std::vector<Instr*> RdPInstr();
 
-void RdPInstrAndChain(Instr** PD);
 void RdChoices(Instr* PD);
 void RdMenuAttr(Instr* PD);
 Instr* RdMenuBox(bool Loop);
 Instr* RdMenuBar();
 Instr_loops* RdIfThenElse();
 Instr_loops* RdWhileDo();
-Instr* RdFor();
+std::vector<Instr*> RdFor();
 Instr* RdCase();
 Instr_loops* RdRepeatUntil();
 Instr_forall* RdForAll();
-Instr* RdBeginEnd();
+std::vector<Instr*> RdBeginEnd();
 Instr_proc* RdProcArg(char Caller);
 void RdKeyCode(EdExitD* X);
 
@@ -88,7 +87,7 @@ Instr_assign* RdAssign();
 Instr* RdWith();
 Instr_assign* RdUserFuncAssign();
 void ReadProcHead(const std::string& name);
-Instr* ReadProcBody();
+std::vector<Instr*> ReadProcBody();
 void ReadDeclChpt();
 FrmlElem* GetEvalFrml(FileD* file_d, FrmlElem21* X, void* record);
 Instr* RdCallLProc();

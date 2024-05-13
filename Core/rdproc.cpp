@@ -589,21 +589,6 @@ void RdSelectStr(FrmlElemFunction* Z)
 	}
 }
 
-void RdPInstrAndChain(Instr** PD)
-{
-	Instr* PD1 = RdPInstr(); /*may be a chain itself*/
-	if (*PD != nullptr) {
-		Instr* last = *PD;
-		while (last->Chain != nullptr) {
-			last = last->Chain;
-		}
-		last->Chain = PD1;
-	}
-	else {
-		*PD = PD1;
-	}
-}
-
 void RdChoices(Instr_menu* PD)
 {
 	ChoiceD* CD = nullptr;
@@ -714,41 +699,51 @@ Instr* RdMenuBar()
 
 Instr_loops* RdIfThenElse()
 {
-	auto PD = new Instr_loops(PInstrCode::_ifthenelseP); // GetPInstr(_ifthenelseP, 12);
+	auto PD = new Instr_loops(PInstrCode::_ifthenelseP);
 	auto result = PD;
 	PD->Bool = g_compiler->RdBool(nullptr);
+
 	g_compiler->AcceptKeyWord("THEN");
-	PD->Instr1 = RdPInstr();
-	if (g_compiler->IsKeyWord("ELSE")) PD->ElseInstr1 = RdPInstr();
+	PD->v_instr = RdPInstr();
+
+	if (g_compiler->IsKeyWord("ELSE")) {
+		PD->v_else_instr = RdPInstr();
+	}
+
 	return result;
 }
 
 Instr_loops* RdWhileDo()
 {
-	auto PD = new Instr_loops(PInstrCode::_whiledo); // GetPInstr(_whiledo, 8);
+	auto PD = new Instr_loops(PInstrCode::_whiledo);
 	auto result = PD;
 	PD->Bool = g_compiler->RdBool(nullptr);
 	g_compiler->AcceptKeyWord("DO");
-	PD->Instr1 = RdPInstr();
+	PD->v_instr = RdPInstr();
 	return result;
 }
 
-Instr* RdFor()
+std::vector<Instr*> RdFor()
 {
 	LocVar* LV = nullptr;
-	if (!g_compiler->FindLocVar(&LVBD, &LV) || (LV->f_typ != 'R')) g_compiler->Error(146);
+	if (!g_compiler->FindLocVar(&LVBD, &LV) || (LV->f_typ != 'R')) {
+		g_compiler->Error(146);
+	}
 	g_compiler->RdLex();
-	auto* PD = new Instr_assign(PInstrCode::_asgnloc); // GetPInstr(_asgnloc, 9);
-	auto result = PD;
+
+	std::vector<Instr*> result;
+
+	// read loop condition and add it as first instruction
+	Instr_assign* PD = new Instr_assign(PInstrCode::_asgnloc);
 	PD->AssLV = LV;
 	g_compiler->Accept(_assign);
 	PD->Frml = g_compiler->RdRealFrml(nullptr);
+	result.push_back(PD);
 
 	g_compiler->AcceptKeyWord("TO");
-	auto iLoop = new Instr_loops(PInstrCode::_whiledo); // GetPInstr(_whiledo, 8);
-	PD->Chain = iLoop;
-	//PD = (Instr_assign*)PD->pChain;
-	auto Z1 = new FrmlElemFunction(_compreal, 2); // GetOp(_compreal, 2);
+	Instr_loops* iLoop = new Instr_loops(PInstrCode::_whiledo);
+	
+	FrmlElemFunction* Z1 = new FrmlElemFunction(_compreal, 2);
 	Z1->P1 = nullptr;
 	Z1->LV1 = LV;
 	Z1->N21 = _le;
@@ -757,16 +752,17 @@ Instr* RdFor()
 	iLoop->Bool = Z1;
 
 	g_compiler->AcceptKeyWord("DO");
-	iLoop->Instr1 = RdPInstr();
+	iLoop->v_instr = RdPInstr();
+	result.push_back(iLoop);
 
-	auto iAsg = new Instr_assign(PInstrCode::_asgnloc); // GetPInstr(_asgnloc, 9);
-	//ChainLast(iLoop->Instr1, iAsg);
-	iLoop->AddInstr(iAsg);
+	Instr_assign* iAsg = new Instr_assign(PInstrCode::_asgnloc);
 	iAsg->Add = true;
 	iAsg->AssLV = LV;
-	auto Z2 = new FrmlElemNumber(_const, 0, 1); // GetOp(_const, sizeof(double));
+	FrmlElemNumber* Z2 = new FrmlElemNumber(_const, 0, 1);
 	//Z->rdb = 1;
 	iAsg->Frml = Z2;
+	iLoop->AddInstr(iAsg);
+
 	return result;
 }
 
@@ -778,19 +774,23 @@ Instr* RdCase()
 	Instr_loops* result = nullptr;
 	while (true) {
 		PD1 = new Instr_loops(PInstrCode::_ifthenelseP); // GetPInstr(_ifthenelseP, 12);
-		if (first) result = PD1;
-		else PD->ElseInstr1 = PD1;
+		if (first) {
+			result = PD1;
+		}
+		else {
+			PD->v_else_instr.push_back(PD1);
+		}
 		PD = PD1;
 		first = false;
 		PD->Bool = g_compiler->RdBool(nullptr);
 		g_compiler->Accept(':');
-		PD->Instr1 = RdPInstr();
+		PD->v_instr = RdPInstr();
 		bool b = Lexem == ';';
 		if (b) g_compiler->RdLex();
 		if (!g_compiler->IsKeyWord("END")) {
 			if (g_compiler->IsKeyWord("ELSE")) {
 				while (!g_compiler->IsKeyWord("END")) {
-					RdPInstrAndChain(&PD->ElseInstr1);
+					PD->v_else_instr = RdPInstr();
 					if (Lexem == ';') {
 						g_compiler->RdLex();
 					}
@@ -817,8 +817,10 @@ Instr_loops* RdRepeatUntil()
 	auto PD = new Instr_loops(PInstrCode::_repeatuntil); // GetPInstr(_repeatuntil, 8);
 	Instr_loops* result = PD;
 	while (!g_compiler->IsKeyWord("UNTIL")) {
-		RdPInstrAndChain(&PD->Instr1);
-		if (Lexem == ';') g_compiler->RdLex();
+		PD->v_instr = RdPInstr();
+		if (Lexem == ';') {
+			g_compiler->RdLex();
+		}
 		else {
 			g_compiler->AcceptKeyWord("UNTIL");
 			break;
@@ -873,38 +875,54 @@ Instr_forall* RdForAll()
 #ifdef FandSQL
 	if (processed_file->typSQLFile && IsKeyWord("IN")) {
 		AcceptKeyWord("SQL"); Accept('('); PD->CBool = RdStrFrml();
-		Accept(')'); PD->inSQL = true; goto label2;
-	}
-#endif
-	if (g_compiler->IsKeyWord("OWNER")) {
-		PD->COwnerTyp = RdOwner(PD->CFD, &PD->CLD, &PD->CLV);
-		CViewKey = GetFromKey(PD->CLD);
+		Accept(')'); PD->inSQL = true;
 	}
 	else {
-		CViewKey = g_compiler->RdViewKey(processed_file);
+#endif
+		if (g_compiler->IsKeyWord("OWNER")) {
+			PD->COwnerTyp = RdOwner(PD->CFD, &PD->CLD, &PD->CLV);
+			CViewKey = GetFromKey(PD->CLD);
+		}
+		else {
+			CViewKey = g_compiler->RdViewKey(processed_file);
+		}
+		g_compiler->processing_F = processed_file;
+		if (Lexem == '(') {
+			g_compiler->RdLex();
+			PD->CBool = g_compiler->RdKeyInBool(&PD->CKIRoot, false, true, PD->CSQLFilter, nullptr);
+			if ((PD->CKIRoot != nullptr) && (PD->CLV != nullptr)) g_compiler->OldError(118);
+			g_compiler->Accept(')');
+		}
+		if (Lexem == '!') {
+			g_compiler->RdLex();
+			PD->CWIdx = true;
+		}
+		if (Lexem == '%') {
+			g_compiler->RdLex();
+			PD->CProcent = true;
+		}
+		PD->CKey = CViewKey;
+
+#ifdef FandSQL
 	}
-	g_compiler->processing_F = processed_file;
-	if (Lexem == '(') {
-		g_compiler->RdLex();
-		PD->CBool = g_compiler->RdKeyInBool(&PD->CKIRoot, false, true, PD->CSQLFilter, nullptr);
-		if ((PD->CKIRoot != nullptr) && (PD->CLV != nullptr)) g_compiler->OldError(118);
-		g_compiler->Accept(')');
-	}
-	if (Lexem == '!') { g_compiler->RdLex(); PD->CWIdx = true; }
-	if (Lexem == '%') { g_compiler->RdLex(); PD->CProcent = true; }
-	PD->CKey = CViewKey;
-label2:
+#endif
+
 	g_compiler->AcceptKeyWord("DO");
 	PD->CInstr = RdPInstr();
 	return PD;
 }
 
-Instr* RdBeginEnd()
+std::vector<Instr*> RdBeginEnd()
 {
-	Instr* PD = nullptr;
+	std::vector<Instr*> instructions;
 	if (!g_compiler->IsKeyWord("END")) {
 		while (true) {
-			RdPInstrAndChain(&PD);
+			// read instructions and add them to the list
+			std::vector<Instr*> new_instructions = RdPInstr();
+			for (auto instr : new_instructions) {
+				instructions.push_back(instr);
+			}
+
 			if (Lexem == ';') {
 				g_compiler->RdLex();
 				if (!g_compiler->IsKeyWord("END")) {
@@ -917,7 +935,7 @@ Instr* RdBeginEnd()
 			break;
 		}
 	}
-	return PD;
+	return instructions;
 }
 
 Instr_proc* RdProcArg(char Caller)
@@ -1553,7 +1571,7 @@ Instr_edit* RdEditCall()
 		if (!b) RdEditOpt(EO, PD->EditFD);
 	}
 	return PD;
-	}
+}
 
 void RdEditOpt(EditOpt* EO, FileD* file_d)
 {
@@ -1930,7 +1948,7 @@ Instr* RdCopyFile()
 		else g_compiler->Error(52);
 	}
 	return PD;
-	}
+}
 
 CpOption RdCOpt()
 {
@@ -2413,7 +2431,7 @@ Instr_recs* RdMixRecAcc(PInstrCode Op)
 		if (Op == PInstrCode::_deleterec) {
 			CFile = g_compiler->RdFileName();
 			PD->RecFD = CFile;
-}
+		}
 		else { /*_readrec,_writerec*/
 			if (!IsRecVar(&PD->LV)) g_compiler->Error(141);
 			CFile = PD->LV->FD;
@@ -2439,7 +2457,7 @@ Instr_recs* RdMixRecAcc(PInstrCode Op)
 			if ((K == nullptr) && (!CFile->IsParFile || (Z->Op != _const)
 				|| (((FrmlElemString*)Z)->S.length() > 0))) g_compiler->OldError(24);
 			break;
-}
+		}
 #ifdef FandSQL
 		default: {
 			if (PD->CompOp != 0) OldError(19);
@@ -2448,8 +2466,8 @@ Instr_recs* RdMixRecAcc(PInstrCode Op)
 			break;
 		}
 #endif
-}
-}
+		}
+	}
 	if ((Lexem == ',') && (Op == PInstrCode::_writerec || Op == PInstrCode::_deleterec || Op == PInstrCode::_recallrec)) {
 		g_compiler->RdLex();
 		g_compiler->Accept('+');
@@ -2457,7 +2475,7 @@ Instr_recs* RdMixRecAcc(PInstrCode Op)
 	}
 	CFile = cf;
 	return PD;
-			}
+}
 
 Instr* RdLinkRec()
 {
@@ -2727,7 +2745,7 @@ Instr* RdWith()
 		g_compiler->Accept(')');
 		if ((iP->WithWFlags & WNoPop) != 0) g_compiler->Accept(')');
 		g_compiler->AcceptKeyWord("DO");
-		iP->WwInstr = RdPInstr();
+		iP->v_ww_instr = RdPInstr();
 	}
 	else if (g_compiler->IsKeyWord("SHARED")) { Op = PInstrCode::_withshared; goto label1; }
 	else if (g_compiler->IsKeyWord("LOCKED")) {
@@ -2792,45 +2810,54 @@ Instr_assign* RdUserFuncAssign()
 	return pd;
 }
 
-Instr* RdPInstr()
+std::vector<Instr*> RdPInstr()
 {
-	Instr* result = nullptr;
-	if (g_compiler->IsKeyWord("IF")) result = RdIfThenElse();
-	else if (g_compiler->IsKeyWord("WHILE")) result = RdWhileDo();
-	else if (g_compiler->IsKeyWord("REPEAT")) result = RdRepeatUntil();
-	else if (g_compiler->IsKeyWord("CASE")) result = RdCase();
-	else if (g_compiler->IsKeyWord("FOR")) result = RdFor();
-	else if (g_compiler->IsKeyWord("BEGIN")) result = RdBeginEnd();
-	else if (g_compiler->IsKeyWord("BREAK")) result = new Instr(PInstrCode::_break);
-	else if (g_compiler->IsKeyWord("EXIT")) result = new Instr(PInstrCode::_exitP);
-	else if (g_compiler->IsKeyWord("CANCEL")) result = new Instr(PInstrCode::_cancel);
-	else if (Lexem == ';') result = nullptr;
-	else if (IsRdUserFunc) result = RdUserFuncAssign();
-	else if (g_compiler->IsKeyWord("MENULOOP")) result = RdMenuBox(true);
-	else if (g_compiler->IsKeyWord("MENU")) result = RdMenuBox(false);
-	else if (g_compiler->IsKeyWord("MENUBAR")) result = RdMenuBar();
-	else if (g_compiler->IsKeyWord("WITH")) result = RdWith();
-	else if (g_compiler->IsKeyWord("SAVE")) result = new Instr(PInstrCode::_save);
-	else if (g_compiler->IsKeyWord("CLREOL")) result = new Instr(PInstrCode::_clreol);
-	else if (g_compiler->IsKeyWord("FORALL")) result = RdForAll();
-	else if (g_compiler->IsKeyWord("CLEARKEYBUF")) result = new Instr(PInstrCode::_clearkeybuf);
-	else if (g_compiler->IsKeyWord("WAIT")) result = new Instr(PInstrCode::_wait);
-	else if (g_compiler->IsKeyWord("BEEP")) result = new Instr(PInstrCode::_beepP);
-	else if (g_compiler->IsKeyWord("NOSOUND")) result = new Instr(PInstrCode::_nosound);
+	Instr* single_instr = nullptr;
+	std::vector<Instr*> result;
+
+	if (g_compiler->IsKeyWord("IF")) single_instr = RdIfThenElse();
+	else if (g_compiler->IsKeyWord("WHILE")) single_instr = RdWhileDo();
+	else if (g_compiler->IsKeyWord("REPEAT")) single_instr = RdRepeatUntil();
+	else if (g_compiler->IsKeyWord("CASE")) single_instr = RdCase();
+	else if (g_compiler->IsKeyWord("FOR")) { result = RdFor(); }			// creates vector of instructions
+	else if (g_compiler->IsKeyWord("BEGIN")) {	result = RdBeginEnd(); }	// creates vector of instructions
+	else if (g_compiler->IsKeyWord("BREAK")) single_instr = new Instr(PInstrCode::_break);
+	else if (g_compiler->IsKeyWord("EXIT")) single_instr = new Instr(PInstrCode::_exitP);
+	else if (g_compiler->IsKeyWord("CANCEL")) single_instr = new Instr(PInstrCode::_cancel);
+	else if (Lexem == ';') single_instr = nullptr;
+	else if (IsRdUserFunc) single_instr = RdUserFuncAssign();
+	else if (g_compiler->IsKeyWord("MENULOOP")) single_instr = RdMenuBox(true);
+	else if (g_compiler->IsKeyWord("MENU")) single_instr = RdMenuBox(false);
+	else if (g_compiler->IsKeyWord("MENUBAR")) single_instr = RdMenuBar();
+	else if (g_compiler->IsKeyWord("WITH")) single_instr = RdWith();
+	else if (g_compiler->IsKeyWord("SAVE")) single_instr = new Instr(PInstrCode::_save);
+	else if (g_compiler->IsKeyWord("CLREOL")) single_instr = new Instr(PInstrCode::_clreol);
+	else if (g_compiler->IsKeyWord("FORALL")) single_instr = RdForAll();
+	else if (g_compiler->IsKeyWord("CLEARKEYBUF")) single_instr = new Instr(PInstrCode::_clearkeybuf);
+	else if (g_compiler->IsKeyWord("WAIT")) single_instr = new Instr(PInstrCode::_wait);
+	else if (g_compiler->IsKeyWord("BEEP")) single_instr = new Instr(PInstrCode::_beepP);
+	else if (g_compiler->IsKeyWord("NOSOUND")) single_instr = new Instr(PInstrCode::_nosound);
 #ifndef FandRunV
-	else if (g_compiler->IsKeyWord("MEMDIAG")) result = new Instr(PInstrCode::_memdiag);
+	else if (g_compiler->IsKeyWord("MEMDIAG")) single_instr = new Instr(PInstrCode::_memdiag);
 #endif 
-	else if (g_compiler->IsKeyWord("RESETCATALOG")) result = new Instr(PInstrCode::_resetcat);
-	else if (g_compiler->IsKeyWord("RANDOMIZE")) result = new Instr(PInstrCode::_randomize);
+	else if (g_compiler->IsKeyWord("RESETCATALOG")) single_instr = new Instr(PInstrCode::_resetcat);
+	else if (g_compiler->IsKeyWord("RANDOMIZE")) single_instr = new Instr(PInstrCode::_randomize);
 	else if (Lexem == _identifier) {
 		g_compiler->SkipBlank(false);
-		if (ForwChar == '(') RdProcCall(&result); // funkce muze ovlivnit RESULT
-		else if (g_compiler->IsKeyWord("CLRSCR")) result = new Instr(PInstrCode::_clrscr);
-		else if (g_compiler->IsKeyWord("GRAPH")) result = new Instr_graph();
-		else if (g_compiler->IsKeyWord("CLOSE")) result = new Instr_closefds();
-		else result = RdAssign();
+		if (ForwChar == '(') {
+			RdProcCall(&single_instr); // funkce muze ovlivnit single_instruction
+		}
+		else if (g_compiler->IsKeyWord("CLRSCR")) single_instr = new Instr(PInstrCode::_clrscr);
+		else if (g_compiler->IsKeyWord("GRAPH")) single_instr = new Instr_graph();
+		else if (g_compiler->IsKeyWord("CLOSE")) single_instr = new Instr_closefds();
+		else single_instr = RdAssign();
 	}
 	else g_compiler->Error(34);
+
+	if (result.empty() && single_instr != nullptr) {
+		result.push_back(single_instr);
+	}
+
 	return result;
 }
 
@@ -2856,10 +2883,10 @@ void ReadProcHead(const std::string& name)
 	}
 }
 
-Instr* ReadProcBody()
+std::vector<Instr*> ReadProcBody()
 {
 	g_compiler->AcceptKeyWord("BEGIN");
-	Instr* result = RdBeginEnd();
+	std::vector<Instr*> result = RdBeginEnd();
 	g_compiler->Accept(';');
 	if (Lexem != 0x1A) {
 		std::string error40 = g_compiler->Error(40);
@@ -2883,13 +2910,13 @@ void ReadDeclChpt()
 			g_compiler->TestIdentif();
 			fc = FuncDRoot;
 			while (fc != CRdb->OldFCRoot) {
-				if (EquUpCase(fc->Name, LexWord)) g_compiler->Error(26);
+				if (EquUpCase(fc->name, LexWord)) g_compiler->Error(26);
 				fc = fc->Chain;
 			}
 			fc = new FuncD();
 			fc->Chain = FuncDRoot;
 			FuncDRoot = fc;
-			fc->Name = LexWord;
+			fc->name = LexWord;
 			g_compiler->rdFldNameType = FieldNameType::P;
 			//ptrRdFldNameFrml = RdFldNameFrmlP;
 			RdFunction = RdFunctionP;
@@ -2897,7 +2924,7 @@ void ReadDeclChpt()
 			FileVarsAllowed = false; IsRdUserFunc = true;
 			g_compiler->RdLex();
 			ResetLVBD();
-			LVBD.FceName = fc->Name;
+			LVBD.FceName = fc->name;
 			g_compiler->Accept('(');
 			if (Lexem != ')') g_compiler->RdLocDcl(&LVBD, true, false, 'D'); // nacte parametry funkce
 			g_compiler->Accept(')');
@@ -2918,7 +2945,7 @@ void ReadDeclChpt()
 			else g_compiler->Error(39);
 			lv = new LocVar();
 			LVBD.vLocVar.push_back(lv);
-			lv->name = fc->Name;
+			lv->name = fc->name;
 			lv->is_return_value = true;
 			lv->f_typ = typ;
 			lv->oper = _getlocvar;
@@ -2929,7 +2956,7 @@ void ReadDeclChpt()
 			fc->LVB = LVBD;
 			// nacte kod funkce (procedury)
 			g_compiler->AcceptKeyWord("BEGIN");
-			fc->pInstr = RdBeginEnd();
+			fc->v_instr = RdBeginEnd();
 			g_compiler->Accept(';');
 		}
 		else if (Lexem == 0x1A) return;
@@ -3056,8 +3083,8 @@ Instr* RdBackup(char MTyp, bool IsBackup)
 			}
 		}
 		return PD;
-			}
-		}
+	}
+}
 
 #ifdef FandSQL
 void RdSqlRdWrTxt(bool Rd)

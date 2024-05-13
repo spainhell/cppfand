@@ -229,7 +229,7 @@ struct ChoiceD
 	std::string HelpName;
 	bool Displ = false, DisplEver = false, Enabled = false, TxtConst = false;
 	FrmlElem* Condition = nullptr;
-	Instr* Instr = nullptr;
+	std::vector<Instr*> Instr;
 	FrmlElem* TxtFrml = nullptr;
 	std::string Txt;
 };
