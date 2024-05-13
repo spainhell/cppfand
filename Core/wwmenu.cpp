@@ -813,7 +813,7 @@ bool TMenuBarS::GetDownMenu(TMenuBox** W)
 	val(TNr, n, err);
 	if ((TNr.length() == 0) || (err != 0)) return result;
 	ReadMessage(n);
-	//New(p, Init(MenuX, MenuY, (pstring*)&MsgLine));
+	//New(p, init(MenuX, MenuY, (pstring*)&MsgLine));
 	p = new TMenuBoxS(MenuX, MenuY, MsgLine);
 	p->parent = this;
 	*W = p;

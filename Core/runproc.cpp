@@ -677,7 +677,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 				return;
 			}
 			WORD msg = 613;
-			SetMsgPar(lv->Name);
+			SetMsgPar(lv->name);
 			lv->FD->RunErrorM(md);
 			RunError(msg);
 		}
@@ -685,7 +685,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 	else {
 		if ((N <= 0) || (N > lv->FD->FF->NRecs)) {
 			WORD msg = 641;
-			SetMsgPar(lv->Name);
+			SetMsgPar(lv->name);
 			lv->FD->RunErrorM(md);
 			RunError(msg);
 		}
@@ -1651,7 +1651,7 @@ void CallProcedure(Instr_proc* PD)
 	it0 = PD->variables.vLocVar.begin();
 	// projdeme vstupni parametry funkce
 	for (i = 0; i < n; i++) {
-		if (PD->TArg[i].FTyp != (*it0)->FTyp) {
+		if (PD->TArg[i].FTyp != (*it0)->f_typ) {
 			CurrPos = 0;
 			g_compiler->Error(119);
 		}
@@ -1678,7 +1678,7 @@ void CallProcedure(Instr_proc* PD)
 			}
 			it1 = it0;
 			while (it1 != PD->variables.vLocVar.end()) {
-				if (((*it1)->FTyp == 'i' || (*it1)->FTyp == 'r')
+				if (((*it1)->f_typ == 'i' || (*it1)->f_typ == 'r')
 					&& ((*it1)->FD == (*it0)->FD)) (*it1)->FD = CFile;
 				++it1;
 			}
@@ -1689,9 +1689,9 @@ void CallProcedure(Instr_proc* PD)
 		default: {
 			FrmlElem* z = PD->TArg[i].Frml;
 			auto lv = *it0;
-			if (lv->IsRetPar && (z->Op != _getlocvar)
+			if (lv->is_return_param && (z->Op != _getlocvar)
 				|| PD->TArg[i].FromProlog
-				&& (PD->TArg[i].IsRetPar != lv->IsRetPar)) {
+				&& (PD->TArg[i].IsRetPar != lv->is_return_param)) {
 				CurrPos = 0;
 				g_compiler->Error(119);
 			}
@@ -1703,7 +1703,7 @@ void CallProcedure(Instr_proc* PD)
 	}
 	it1 = it0;
 	while (it0 != PD->variables.vLocVar.end()) {
-		if ((*it0)->FTyp == 'r') {
+		if ((*it0)->f_typ == 'r') {
 			CFile = (*it0)->FD;
 			CRecPtr = CFile->GetRecSpace();
 			CFile->SetTWorkFlag(CRecPtr);
@@ -1711,7 +1711,7 @@ void CallProcedure(Instr_proc* PD)
 			CFile->ClearDeletedFlag(CRecPtr);
 			(*it0)->record = static_cast<uint8_t*>(CRecPtr);
 		}
-		else if ((*it0)->FTyp == 'f') {
+		else if ((*it0)->f_typ == 'f') {
 			// dynamic file definition
 			//printf("");
 		}
@@ -1733,7 +1733,7 @@ void CallProcedure(Instr_proc* PD)
 	FDLocVarAllowed = false;
 	it0 = it1;
 	while (it0 != PD->variables.vLocVar.end()) {
-		if ((*it0)->FTyp == 'i') {
+		if ((*it0)->f_typ == 'i') {
 			auto hX = (XWKey*)(*it0)->record;
 			if (hX->KFlds == nullptr) hX->KFlds = (*it0)->FD->Keys[0]->KFlds;
 			auto tmp = (XWKey*)(*it0)->record;
@@ -1752,9 +1752,9 @@ void CallProcedure(Instr_proc* PD)
 	while (it0 != PD->variables.vLocVar.end()) {
 		// projdeme navratove hodnoty (navratova hodnota funkce + VAR parametry)
 		// a tyto navratove hodnoty ulozime zpet do patricneho FrmlElem
-		if ((*it0)->IsRetPar) {
+		if ((*it0)->is_return_param) {
 			auto z18 = (FrmlElem18*)PD->TArg[i].Frml;
-			switch ((*it0)->FTyp) {
+			switch ((*it0)->f_typ) {
 			case 'R': {
 				z18->locvar->R = (*it0)->R;
 				break;
@@ -1770,7 +1770,7 @@ void CallProcedure(Instr_proc* PD)
 			}
 		}
 		if (i > n) {
-			switch ((*it0)->FTyp) {
+			switch ((*it0)->f_typ) {
 			case 'r': {
 				CFile = (*it0)->FD;
 				CFile->ClearRecSpace((*it0)->record);

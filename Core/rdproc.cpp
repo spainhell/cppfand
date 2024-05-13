@@ -52,7 +52,7 @@ void TestCatError(int i, const std::string& name, bool old)
 
 bool IsRecVar(LocVar** LV)
 {
-	if (!g_compiler->FindLocVar(&LVBD, LV) || ((*LV)->FTyp != 'r')) return false;
+	if (!g_compiler->FindLocVar(&LVBD, LV) || ((*LV)->f_typ != 'r')) return false;
 	g_compiler->RdLex();
 	return true;
 }
@@ -67,7 +67,7 @@ LocVar* RdRecVar()
 LocVar* RdIdxVar()
 {
 	LocVar* lv = nullptr;
-	if (!g_compiler->FindLocVar(&LVBD, &lv) || (lv->FTyp != 'i')) g_compiler->Error(165);
+	if (!g_compiler->FindLocVar(&LVBD, &lv) || (lv->f_typ != 'i')) g_compiler->Error(165);
 	auto result = lv;
 	g_compiler->RdLex();
 	return result;
@@ -77,7 +77,7 @@ FrmlElem* RdRecVarFldFrml(LocVar* LV, char& FTyp)
 {
 	FrmlElem* Z = nullptr;
 	g_compiler->Accept('.');
-	switch (LV->FTyp) {
+	switch (LV->f_typ) {
 	case 'r': {
 		auto Z = new FrmlElem7(_recvarfld, 12);
 		FileD* previous = g_compiler->processing_F;
@@ -113,7 +113,7 @@ char RdOwner(FileD* file_d, LinkD** LLD, LocVar** LLV)
 	LocVar* lv = nullptr;
 	std::string sLexWord;
 	if (g_compiler->FindLocVar(&LVBD, &lv)) {
-		if (!(lv->FTyp == 'i' || lv->FTyp == 'r' || lv->FTyp == 'f')) g_compiler->Error(177);
+		if (!(lv->f_typ == 'i' || lv->f_typ == 'r' || lv->f_typ == 'f')) g_compiler->Error(177);
 		LinkD* ld = nullptr;
 		for (auto& ld1 : LinkDRoot) {
 			if ((ld1->FromFD == file_d) && (ld1->IndexRoot != 0) && (ld1->ToFD == lv->FD)) {
@@ -124,7 +124,7 @@ char RdOwner(FileD* file_d, LinkD** LLD, LocVar** LLV)
 			g_compiler->Error(116);
 		}
 		g_compiler->RdLex();
-		if (lv->FTyp == 'f') {
+		if (lv->f_typ == 'f') {
 #ifdef FandSQL
 			if (ld->ToFD->typSQLFile) Error(155);
 #endif
@@ -136,14 +136,14 @@ char RdOwner(FileD* file_d, LinkD** LLD, LocVar** LLV)
 			return result;
 		}
 		else {
-			if (lv->FTyp == 'i') {
+			if (lv->f_typ == 'i') {
 				KeyFldD* kf = ((XWKey*)lv->record)->KFlds;
 				if (ld->FromFD->IsSQLFile || ld->ToFD->IsSQLFile) g_compiler->OldError(155);
 				if ((kf != nullptr) && !KeyFldD::EquKFlds(kf, ld->ToKey->KFlds)) g_compiler->OldError(181);
 			}
 			*LLV = lv;
 			*LLD = ld;
-			result = lv->FTyp;
+			result = lv->f_typ;
 			return result;
 		}
 	}
@@ -156,18 +156,18 @@ char RdOwner(FileD* file_d, LinkD** LLD, LocVar** LLV)
 			fd = ld->ToFD;
 			if (Lexem == '(') {
 				g_compiler->RdLex();
-				if (!g_compiler->FindLocVar(&LVBD, &lv) || !(lv->FTyp == 'i' || lv->FTyp == 'r')) g_compiler->Error(177);
+				if (!g_compiler->FindLocVar(&LVBD, &lv) || !(lv->f_typ == 'i' || lv->f_typ == 'r')) g_compiler->Error(177);
 				g_compiler->RdLex();
 				g_compiler->Accept(')');
 				if (lv->FD != fd) g_compiler->OldError(149);
-				if (lv->FTyp == 'i') {
+				if (lv->f_typ == 'i') {
 					KeyFldD* kf = ((XWKey*)lv->record)->KFlds;
 					if (ld->FromFD->IsSQLFile || ld->ToFD->IsSQLFile) g_compiler->OldError(155);
 					if ((kf != nullptr) && !KeyFldD::EquKFlds(kf, ld->ToKey->KFlds)) g_compiler->OldError(181);
 				}
 				*LLV = lv;
 				*LLD = ld;
-				result = lv->FTyp;
+				result = lv->f_typ;
 				return result;
 			}
 			else {
@@ -198,7 +198,7 @@ FrmlElem* RdFldNameFrmlP(char& FTyp, MergeReportBase* caller)
 	FrmlElem* result = nullptr;
 
 	if (g_compiler->IsForwPoint())
-		if (g_compiler->FindLocVar(&LVBD, &LV) && (LV->FTyp == 'i' || LV->FTyp == 'r')) {
+		if (g_compiler->FindLocVar(&LVBD, &LV) && (LV->f_typ == 'i' || LV->f_typ == 'r')) {
 			g_compiler->RdLex();
 			result = RdRecVarFldFrml(LV, FTyp);
 			return result;
@@ -245,7 +245,7 @@ FrmlElem* RdFldNameFrmlP(char& FTyp, MergeReportBase* caller)
 				if (g_compiler->IsKeyWord("NRECS")) {
 					Op = _nrecs;
 				label2:
-					auto N = new FrmlElem9(Op, 0); // Z = GetOp(Op, sizeof(FileDPtr));
+					auto N = new FrmlElem9(Op, 0); // Z = GetOp(oper, sizeof(FileDPtr));
 					N->FD = FD;
 					return N;
 				}
@@ -275,7 +275,7 @@ FrmlElem* RdFldNameFrmlP(char& FTyp, MergeReportBase* caller)
 	if (g_compiler->IsKeyWord("EDUPDATED")) {
 		Op = _edupdated;
 	label3:
-		result = new FrmlElemFunction(Op, 0); // GetOp(Op, 0);
+		result = new FrmlElemFunction(Op, 0); // GetOp(oper, 0);
 		FTyp = 'B';
 		return result;
 	}
@@ -285,11 +285,11 @@ FrmlElem* RdFldNameFrmlP(char& FTyp, MergeReportBase* caller)
 		return result;
 	}
 	if (g_compiler->FindLocVar(&LVBD, &LV)) {
-		if (LV->FTyp == 'r' || LV->FTyp == 'f' || LV->FTyp == 'i') g_compiler->Error(143);
+		if (LV->f_typ == 'r' || LV->f_typ == 'f' || LV->f_typ == 'i') g_compiler->Error(143);
 		g_compiler->RdLex();
-		result = new FrmlElem18(LV->Op, LV);
+		result = new FrmlElem18(LV->oper, LV);
 		//((FrmlElem18*)result)->BPOfs = LV->BPOfs;
-		FTyp = LV->FTyp;
+		FTyp = LV->f_typ;
 		return result;
 	}
 	if (FileVarsAllowed) {
@@ -412,7 +412,7 @@ FrmlElem* RdFunctionP(char& FFTyp)
 			N = 1;
 			Arg[0] = g_compiler->RdRealFrml(nullptr);
 		}
-		Z = new FrmlElem13(Op, (N + 2) * 4); // GetOp(Op, (N + 2) * 4);
+		Z = new FrmlElem13(Op, (N + 2) * 4); // GetOp(oper, (N + 2) * 4);
 		auto iZ = (FrmlElem13*)Z;
 		iZ->FFD = FD;
 		iZ->Key = K;
@@ -507,7 +507,7 @@ FrmlElem* RdFunctionP(char& FFTyp)
 	}
 #ifdef FandSQL
 	else if (IsKeyWord("SQL")) {
-		RdLex(); Z = GetOp(_sqlfun, 0); Z->P1 = RdStrFrml(); FTyp = 'rdb';
+		RdLex(); Z = GetOp(_sqlfun, 0); Z->P1 = RdStrFrml(); f_typ = 'rdb';
 	}
 #endif
 	else if (g_compiler->IsKeyWord("SELECTSTR")) {
@@ -736,7 +736,7 @@ Instr_loops* RdWhileDo()
 Instr* RdFor()
 {
 	LocVar* LV = nullptr;
-	if (!g_compiler->FindLocVar(&LVBD, &LV) || (LV->FTyp != 'R')) g_compiler->Error(146);
+	if (!g_compiler->FindLocVar(&LVBD, &LV) || (LV->f_typ != 'R')) g_compiler->Error(146);
 	g_compiler->RdLex();
 	auto* PD = new Instr_assign(PInstrCode::_asgnloc); // GetPInstr(_asgnloc, 9);
 	auto result = PD;
@@ -838,21 +838,21 @@ Instr_forall* RdForAll()
 
 	if (!g_compiler->FindLocVar(&LVBD, &LVi)) g_compiler->Error(122);
 	g_compiler->RdLex();
-	if (LVi->FTyp == 'r') {
+	if (LVi->f_typ == 'r') {
 		LVr = LVi;
 		LVi = nullptr;
 		processed_file = LVr->FD;
 	}
 	else {
-		g_compiler->TestReal(LVi->FTyp);
+		g_compiler->TestReal(LVi->f_typ);
 		g_compiler->AcceptKeyWord("IN");
 		if (g_compiler->FindLocVar(&LVBD, &LVr)) {
-			if (LVr->FTyp == 'f') {
+			if (LVr->f_typ == 'f') {
 				processed_file = LVr->FD;
 				g_compiler->RdLex();
 				goto label1;
 			}
-			if (LVr->FTyp != 'r') g_compiler->Error(141);
+			if (LVr->f_typ != 'r') g_compiler->Error(141);
 			processed_file = LVr->FD;
 			g_compiler->RdLex();
 		}
@@ -943,9 +943,9 @@ Instr_proc* RdProcArg(char Caller)
 		N++;
 		if (N > 30) g_compiler->Error(123);
 		TArg[N].Name = LexWord;
-		if ((ForwChar != '.') && g_compiler->FindLocVar(&LVBD, &LV) && (LV->FTyp == 'i' || LV->FTyp == 'r')) {
+		if ((ForwChar != '.') && g_compiler->FindLocVar(&LVBD, &LV) && (LV->f_typ == 'i' || LV->f_typ == 'r')) {
 			g_compiler->RdLex();
-			TArg[N].FTyp = LV->FTyp;
+			TArg[N].FTyp = LV->f_typ;
 			TArg[N].FD = LV->FD;
 			TArg[N].RecPtr = LV->record;
 		}
@@ -1988,7 +1988,7 @@ Instr* RdPrintTxt()
 	g_compiler->RdLex();
 	if (g_compiler->FindLocVar(&LVBD, &PD->TxtLV)) {
 		g_compiler->RdLex();
-		g_compiler->TestString(PD->TxtLV->FTyp);
+		g_compiler->TestString(PD->TxtLV->f_typ);
 	}
 	else RdPath(true, PD->TxtPath, PD->TxtCatIRec);
 	return PD;
@@ -2001,7 +2001,7 @@ Instr* RdEditTxt()
 	g_compiler->RdLex();
 	if (g_compiler->FindLocVar(&LVBD, &PD->TxtLV)) {
 		g_compiler->RdLex();
-		g_compiler->TestString(PD->TxtLV->FTyp);
+		g_compiler->TestString(PD->TxtLV->f_typ);
 	}
 	else RdPath(true, PD->TxtPath, PD->TxtCatIRec);
 	PD->EdTxtMode = 'T';
@@ -2393,7 +2393,7 @@ Instr_recs* RdMixRecAcc(PInstrCode Op)
 	char FTyp = '\0';
 	FileD* cf = CFile;
 	if ((Op == PInstrCode::_appendRec) || (Op == PInstrCode::_recallrec)) {
-		// PD = GetPD(Op, 9);
+		// PD = GetPD(oper, 9);
 		PD = new Instr_recs(Op);
 		g_compiler->RdLex();
 		CFile = g_compiler->RdFileName();
@@ -2407,7 +2407,7 @@ Instr_recs* RdMixRecAcc(PInstrCode Op)
 		}
 	}
 	else {
-		// PD = GetPD(Op, 15);
+		// PD = GetPD(oper, 15);
 		PD = new Instr_recs(Op);
 		g_compiler->RdLex();
 		if (Op == PInstrCode::_deleterec) {
@@ -2443,7 +2443,7 @@ Instr_recs* RdMixRecAcc(PInstrCode Op)
 #ifdef FandSQL
 		default: {
 			if (PD->CompOp != 0) OldError(19);
-			if (CFile->typSQLFile && ((Op == _deleterec) || (Z->Op != _const)
+			if (CFile->typSQLFile && ((oper == _deleterec) || (Z->oper != _const)
 				|| (Z->rdb != 0))) Error(155);
 			break;
 		}
@@ -2513,7 +2513,7 @@ FrmlElem* AdjustComma(FrmlElem* Z1, FieldDescr* F, instr_type Op)
 	if ((F->Flg & f_Comma) == 0) return result;
 	Z2 = new FrmlElemNumber(_const, 0, Power10[F->M]); // GetOp(_const, sizeof(double));
 	//Z2->rdb = Power10[F->M];
-	Z = new FrmlElemFunction(Op, 0); // GetOp(Op, 0);
+	Z = new FrmlElemFunction(Op, 0); // GetOp(oper, 0);
 	Z->P1 = Z1;
 	Z->P2 = Z2;
 	result = Z;
@@ -2559,8 +2559,8 @@ Instr_assign* RdAssign()
 	LocVar* LV = nullptr; LocVar* LV2 = nullptr; char PV;
 	Instr_assign* PD = nullptr; pstring FName; char FTyp = 0;
 	if (ForwChar == '.')
-		if (g_compiler->FindLocVar(&LVBD, &LV) && (LV->FTyp == 'r' || LV->FTyp == 'i')) {
-			FTyp = LV->FTyp;
+		if (g_compiler->FindLocVar(&LVBD, &LV) && (LV->f_typ == 'r' || LV->f_typ == 'i')) {
+			FTyp = LV->f_typ;
 			g_compiler->RdLex(); g_compiler->RdLex();
 			if (FTyp == 'i') {
 				g_compiler->AcceptKeyWord("NRECS");
@@ -2642,7 +2642,7 @@ Instr_assign* RdAssign()
 	}
 	else if (g_compiler->FindLocVar(&LVBD, &LV)) {
 		g_compiler->RdLex();
-		FTyp = LV->FTyp;
+		FTyp = LV->f_typ;
 		switch (FTyp) {
 		case 'f':
 		case 'i': g_compiler->OldError(140); break;
@@ -2733,7 +2733,7 @@ Instr* RdWith()
 	else if (g_compiler->IsKeyWord("LOCKED")) {
 		Op = PInstrCode::_withlocked;
 	label1:
-		P = new Instr_withshared(Op); // GetPInstr(Op, 9 + sizeof(LockD));
+		P = new Instr_withshared(Op); // GetPInstr(oper, 9 + sizeof(LockD));
 		auto iP = (Instr_withshared*)P;
 		LockD* ld = &iP->WLD;
 	label2:
@@ -2788,7 +2788,7 @@ Instr_assign* RdUserFuncAssign()
 	g_compiler->RdLex();
 	Instr_assign* pd = new Instr_assign(PInstrCode::_asgnloc);
 	pd->AssLV = lv;
-	g_compiler->RdAssignFrml(lv->FTyp, pd->Add, &pd->Frml, nullptr);
+	g_compiler->RdAssignFrml(lv->f_typ, pd->Add, &pd->Frml, nullptr);
 	return pd;
 }
 
@@ -2918,10 +2918,10 @@ void ReadDeclChpt()
 			else g_compiler->Error(39);
 			lv = new LocVar();
 			LVBD.vLocVar.push_back(lv);
-			lv->Name = fc->Name;
-			lv->IsRetValue = true;
-			lv->FTyp = typ;
-			lv->Op = _getlocvar;
+			lv->name = fc->Name;
+			lv->is_return_value = true;
+			lv->f_typ = typ;
+			lv->oper = _getlocvar;
 			fc->FTyp = typ;
 			g_compiler->Accept(';');
 			// nacte promenne

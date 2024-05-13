@@ -801,7 +801,7 @@ LocVar* Compiler::RdVarName(LocVarBlkD* LVB, bool IsParList)
 	if (lvar != nullptr) Error(26); // promenna uz existuje
 	else {
 		lvar = new LocVar(LexWord);
-		if (IsParList) { lvar->IsPar = true; LVB->NParam++; }
+		if (IsParList) { lvar->is_param = true; LVB->NParam++; }
 		LVB->vLocVar.push_back(lvar);
 
 	}
@@ -921,10 +921,10 @@ label1:
 		sz = sizeof(int);
 	label2:
 		for (LocVar* locvar : newVars) {
-			locvar->FTyp = typ;
-			locvar->Op = _getlocvar;
-			locvar->IsRetPar = rp;
-			locvar->Init = Z;
+			locvar->f_typ = typ;
+			locvar->oper = _getlocvar;
+			locvar->is_return_param = rp;
+			locvar->init = Z;
 		}
 	}
 	else if (rp) Error(168);
@@ -932,8 +932,8 @@ label1:
 		if (TestKeyWord("FILE")) {
 			// budeme pracovat jen s 1. promennou ve vektoru
 			auto lv = newVars[0];
-			lv->FTyp = 'f';
-			LexWord = lv->Name;
+			lv->f_typ = 'f';
+			LexWord = lv->name;
 			if (LexWord.length() > 8) OldError(2);
 			fd = FindFileD();
 			RdLex();
@@ -955,7 +955,7 @@ label1:
 				}
 				TestLex('[');
 				p = SaveCompState();
-				RdFileD(lv->Name, FDTyp, "$");
+				RdFileD(lv->name, FDTyp, "$");
 				TestLex(']');
 				lv->FD = CFile;
 				n = CurrPos;
@@ -986,7 +986,7 @@ label1:
 				}
 			}
 			for (LocVar* locvar : newVars) {
-				locvar->FTyp = typ;
+				locvar->f_typ = typ;
 				locvar->FD = CFile;
 				if (typ == 'r') locvar->record = nullptr; // ptr(0,1) ??? /* for RdProc nullptr-tests + no Run*/
 				/* frueher bei IsParList K = nullptr; warum? */
@@ -1026,9 +1026,9 @@ bool Compiler::FindLocVar(LocVar* LVRoot, LocVar** LV)
 	if (Lexem != _identifier) return result;
 	*LV = LVRoot;
 	while (*LV != nullptr) {
-		pstring lvName = (*LV)->Name.c_str();
+		pstring lvName = (*LV)->name.c_str();
 		if (EquUpCase(lvName, LexWord)) { return true; }
-		*LV = (LocVar*)(*LV)->pChain;
+		*LV = (*LV)->pChain;
 	}
 	return result;
 }
@@ -1313,7 +1313,7 @@ XKey* Compiler::RdViewKey(FileD* file_d)
 		}
 	}
 
-	if (IdxLocVarAllowed && FindLocVar(&LVBD, &lv) && (lv->FTyp == 'i')) {
+	if (IdxLocVarAllowed && FindLocVar(&LVBD, &lv) && (lv->f_typ == 'i')) {
 		if (lv->FD != file_d) Error(164);
 		lastK = (XKey*)(lv->record);
 		goto label1;
@@ -1737,7 +1737,7 @@ bool Compiler::FindFuncD(FrmlElem** ZZ, MergeReportBase* caller)
 				if (z->FrmlL == nullptr) z->FrmlL = fl;
 				else ChainLast(z->FrmlL, fl);
 				fl->Frml = RdFormula(typ, caller);
-				if (typ != (*itr++)->FTyp) OldError(12);
+				if (typ != (*itr++)->f_typ) OldError(12);
 				if (i < n) Accept(',');
 			}
 			Accept(')');
@@ -2410,7 +2410,7 @@ FileD* Compiler::FindFileD()
 	FileD* FD = nullptr;
 	RdbD* R = nullptr;
 	LocVar* LV = nullptr;
-	if (FDLocVarAllowed && FindLocVar(&LVBD, &LV) && (LV->FTyp == 'f')) {
+	if (FDLocVarAllowed && FindLocVar(&LVBD, &LV) && (LV->f_typ == 'f')) {
 		return LV->FD;
 	}
 	R = CRdb;

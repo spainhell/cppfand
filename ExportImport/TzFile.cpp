@@ -8,7 +8,7 @@ TzFile::TzFile(bool BkUp, bool NoCompr, bool SubDirO, bool OverwrO, int Ir, pstr
 {
 	SaveAndCloseAllFiles();
 	ForAllFDs(ForAllFilesOperation::close_passive_fd);
-	//if NoCompr then inherited Init(0) else inherited Init(1);
+	//if NoCompr then inherited init(0) else inherited init(1);
 	IsBackup = BkUp;
 	SubDirOpt = SubDirO;
 	OverwrOpt = OverwrO;

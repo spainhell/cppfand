@@ -404,7 +404,7 @@ FrmlElem* Report::RdFldNameFrml(char& FTyp)
 		g_compiler->RdLex();
 		TestNotSum();
 		result = new FrmlElem18(_getlocvar, LV);
-		FTyp = LV->FTyp;
+		FTyp = LV->f_typ;
 		return result;
 	}
 	if (g_compiler->IsKeyWord("COUNT")) {
@@ -1134,7 +1134,7 @@ std::vector<AssignD*> Report::RdAssign2()
 		g_compiler->RdLex();
 		A->Kind = MInstrCode::_locvar;
 		A->LV = LV;
-		g_compiler->RdAssignFrml(LV->FTyp, A->Add, &A->Frml, this);
+		g_compiler->RdAssignFrml(LV->f_typ, A->Add, &A->Frml, this);
 	}
 	else g_compiler->Error(147);
 

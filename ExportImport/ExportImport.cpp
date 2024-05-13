@@ -252,7 +252,7 @@ void ImportTxt(CopyD* CD)
 		CRecPtr = CD->FD2->GetRecSpace();
 #ifdef FandSQL
 		if (CFile->IsSQLFile) {
-			New(q, Init);
+			New(q, init);
 			q->OutpRewrite(Append);
 		}
 		else

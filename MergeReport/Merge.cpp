@@ -257,7 +257,7 @@ FrmlElem* Merge::RdFldNameFrml(char& FTyp)
 			g_compiler->RdLex();
 			TestNotSum();
 			result = new FrmlElem18(_getlocvar, LV);
-			FTyp = LV->FTyp;
+			FTyp = LV->f_typ;
 			return result;
 		}
 	}
@@ -533,7 +533,7 @@ FrmlElem* Merge::AdjustComma_M(FrmlElem* Z1, FieldDescr* F, instr_type Op)
 	if ((F->Flg & f_Comma) == 0) return result;
 	Z2 = new FrmlElemNumber(_const, 0, Power10[F->M]); // GetOp(_const, sizeof(double));
 	//Z2->rdb = Power10[F->M];
-	Z = new FrmlElemFunction(Op, 0); // GetOp(Op, 0);
+	Z = new FrmlElemFunction(Op, 0); // GetOp(oper, 0);
 	Z->P1 = Z1;
 	Z->P2 = Z2;
 	result = Z;
@@ -635,7 +635,7 @@ std::vector<AssignD*> Merge::RdAssign_M()
 		g_compiler->RdLex();
 		AD->Kind = MInstrCode::_locvar;
 		AD->LV = LV;
-		g_compiler->RdAssignFrml(LV->FTyp, AD->Add, &AD->Frml, this);
+		g_compiler->RdAssignFrml(LV->f_typ, AD->Add, &AD->Frml, this);
 	}
 	else {
 		if (RD->OD == nullptr) g_compiler->Error(72);  /*dummy*/
@@ -888,7 +888,7 @@ void Merge::OpenOutp()
 		CFile = OD->FD;
 #ifdef FandSQL
 		if (CFile->IsSQLFile) {
-			New(Strm, Init);
+			New(Strm, init);
 			Strm->OutpRewrite(OD->Append);
 			CRecPtr = OD->RecPtr;
 			SetTWorkFlag();

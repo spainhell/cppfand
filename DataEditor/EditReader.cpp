@@ -776,7 +776,7 @@ void EditReader::SetFrmlFlags(FrmlElem* Z)
 			SetFrmlFlags(iZ0->P1);
 			SetFrmlFlags(iZ0->P2);
 		}
-		else if (Z->Op >= 0xF0 /*&& Z->Op <= 0xFF*/) {
+		else if (Z->Op >= 0xF0 /*&& Z->oper <= 0xFF*/) {
 			/*3-ary*/
 			SetFrmlFlags(iZ0->P1);
 			SetFrmlFlags(iZ0->P2);
@@ -871,7 +871,7 @@ void EditReader::RdCheck()
 
 void EditReader::RdImpl(FileD* file_d)
 {
-	// TODO: nema byt FTyp vstupnim parametrem?
+	// TODO: nema byt f_typ vstupnim parametrem?
 	char FTyp = '\0';
 	g_compiler->RdLex();
 	while (true) {

@@ -543,11 +543,11 @@ LocVar* RunUserFunc(FileD* file_d, FrmlElem19* X, void* record)
 	FrmlListEl* fl = X->FrmlL;
 
 	for (LocVar* lv : X->FC->LVB.vLocVar) {
-		if (lv->IsPar || lv->IsRetPar) {
+		if (lv->is_param || lv->is_return_param) {
 			// parameter or return parameter variable -> assign value
 			LVAssignFrml(file_d, lv, false, fl->Frml, record);
 		}
-		else if (lv->IsRetValue) {
+		else if (lv->is_return_value) {
 			// it's return value -> initialize it and mark it
 			lv->B = false;
 			lv->R = 0.0;
@@ -1377,7 +1377,7 @@ void AssgnFrml(FileD* file_d, void* record, FieldDescr* field_d, FrmlElem* X, bo
 
 void LVAssignFrml(FileD* file_d, LocVar* LV, bool Add, FrmlElem* X, void* record)
 {
-	switch (LV->FTyp) {
+	switch (LV->f_typ) {
 	case 'S': {
 		LV->S = RunStdStr(file_d, X, record);
 		break;
@@ -1559,7 +1559,7 @@ FrmlElem* RunEvalFrml(FileD* file_d, FrmlElem* Z, void* record)
 //	if (X == nullptr) return new LongStr(2);
 //
 //	while (true) {
-//		switch (X->Op) {
+//		switch (X->oper) {
 //		case _field: {
 //			auto iX7 = (FrmlElem7*)X;
 //			result = file_d->loadLongS(iX7->Field, record);
