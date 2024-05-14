@@ -59,10 +59,10 @@ DataEditor::~DataEditor()
 
 void DataEditor::SetFileD(FileD* file_d)
 {
-	if (record_ != nullptr) {
-		delete[] record_;
-		record_ = nullptr;
-	}
+	//if (record_ != nullptr) {
+	//	delete[] record_;
+	//	record_ = nullptr;
+	//}
 	file_d_ = file_d;
 	record_ = file_d->GetRecSpace();
 }

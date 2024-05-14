@@ -769,7 +769,7 @@ std::vector<Instr*> RdFor()
 	FrmlElemNumber* Z2 = new FrmlElemNumber(_const, 0, 1);
 	//Z->rdb = 1;
 	iAsg->Frml = Z2;
-	iLoop->AddInstr(iAsg);
+	iLoop->v_instr.push_back(iAsg); //iLoop->AddInstr(iAsg);
 
 	return result;
 }

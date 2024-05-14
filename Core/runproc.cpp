@@ -1233,11 +1233,11 @@ void RunInstr(const std::vector<Instr*>& instructions)
 			BreakP = false;
 			break;
 		}
-		//case PInstrCode::_not_defined: {
-		//	// contains only sub-instructions
-		//	RunInstr(PD->sub_instr);
-		//	break;
-		//}
+									 //case PInstrCode::_not_defined: {
+									 //	// contains only sub-instructions
+									 //	RunInstr(PD->sub_instr);
+									 //	break;
+									 //}
 		case PInstrCode::_menubox: {
 			auto menu = std::make_unique<TMenuBoxP>(0, 0, nullptr, (Instr_menu*)PD);
 			menu->call();
@@ -1602,8 +1602,8 @@ void RunInstr(const std::vector<Instr*>& instructions)
 		default:
 			break;
 		}
-		}
 	}
+}
 
 void RunProcedure(std::vector<Instr*>& PDRoot)
 {
@@ -1624,10 +1624,11 @@ void CallProcedure(Instr_proc* PD)
 	std::_Vector_iterator<std::_Vector_val<std::_Simple_types<LocVar*>>> it0;
 	std::_Vector_iterator<std::_Vector_val<std::_Simple_types<LocVar*>>> it1;
 
-	WORD i = 0, j = 0, n = 0;
+	WORD i = 0, j = 0;
 	int l = 0;
 	FileD* lstFD = nullptr;
-	KeyFldD* kf1 = nullptr; KeyFldD* kf2 = nullptr;
+	KeyFldD* kf1 = nullptr;
+	KeyFldD* kf2 = nullptr;
 
 	if (PD == nullptr) return;
 	MarkBoth(p1, p2);
@@ -1648,18 +1649,19 @@ void CallProcedure(Instr_proc* PD)
 
 	ReadProcHead("");
 	PD->variables = LVBD;
-	n = PD->variables.NParam;
+	WORD params_count = PD->variables.NParam;
 	LocVar* lvroot = PD->variables.GetRoot();
 	//oldbp = MyBP;
 	//PushProcStk();
-	if ((n != PD->N) && !((n == PD->N - 1) && PD->ExPar)) {
+	if ((params_count != PD->N) && !((params_count == PD->N - 1) && PD->ExPar)) {
 		CurrPos = 0;
 		g_compiler->Error(119);
 	}
 
 	it0 = PD->variables.vLocVar.begin();
+
 	// projdeme vstupni parametry funkce
-	for (i = 0; i < n; i++) {
+	for (i = 0; i < params_count; i++) {
 		if (PD->TArg[i].FTyp != (*it0)->f_typ) {
 			CurrPos = 0;
 			g_compiler->Error(119);
@@ -1687,8 +1689,9 @@ void CallProcedure(Instr_proc* PD)
 			}
 			it1 = it0;
 			while (it1 != PD->variables.vLocVar.end()) {
-				if (((*it1)->f_typ == 'i' || (*it1)->f_typ == 'r')
-					&& ((*it1)->FD == (*it0)->FD)) (*it1)->FD = CFile;
+				if (((*it1)->f_typ == 'i' || (*it1)->f_typ == 'r') && ((*it1)->FD == (*it0)->FD)) {
+					(*it1)->FD = CFile;
+				}
 				++it1;
 			}
 			(*it0)->FD = CFile;
@@ -1726,26 +1729,19 @@ void CallProcedure(Instr_proc* PD)
 		}
 		++it0;
 	}
-	//ProcMyBP = MyBP;
-	std::vector<Instr*> instructions = ReadProcBody();
 
-	//#ifdef _DEBUG
-	//	// vytvorime vektor instrukci pro snadny prehled
-	//	std::vector<Instr*> vI;
-	//	Instr* next = pd1;
-	//	while (next != nullptr) {
-	//		vI.push_back(next);
-	//		next = next->Chain;
-	//	}
-	//#endif
+	// read procedure instructions
+	std::vector<Instr*> instructions = ReadProcBody();
 
 	FDLocVarAllowed = false;
 	it0 = it1;
 	while (it0 != PD->variables.vLocVar.end()) {
 		if ((*it0)->f_typ == 'i') {
-			auto hX = (XWKey*)(*it0)->record;
-			if (hX->KFlds == nullptr) hX->KFlds = (*it0)->FD->Keys[0]->KFlds;
-			auto tmp = (XWKey*)(*it0)->record;
+			XWKey* hX = (XWKey*)(*it0)->record;
+			if (hX->KFlds == nullptr) {
+				hX->KFlds = (*it0)->FD->Keys[0]->KFlds;
+			}
+			XWKey* tmp = (XWKey*)(*it0)->record;
 			tmp->Open(CFile, hX->KFlds, true, false);
 		}
 		++it0;
@@ -1755,6 +1751,12 @@ void CallProcedure(Instr_proc* PD)
 	// **** RUN PROCEDURE **** //
 	RunProcedure(instructions);
 	// *********************** //
+
+	// delete instructions
+	for (Instr* instr : instructions) {
+		delete instr;
+	}
+	instructions.clear();
 
 	it0 = PD->variables.vLocVar.begin();
 	i = 0;
@@ -1778,7 +1780,7 @@ void CallProcedure(Instr_proc* PD)
 			}
 			}
 		}
-		if (i > n) {
+		if (i > params_count) {
 			switch ((*it0)->f_typ) {
 			case 'r': {
 				CFile = (*it0)->FD;
