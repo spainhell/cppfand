@@ -283,7 +283,7 @@ WORD ChptWriteCRec(DataEditor* data_editor, EditD* edit)
 	WORD result = 0;
 	if (!IsCurrChpt()) return result;
 	if (!data_editor->TestIsNewRec()) {
-		eq = CompArea(&((BYTE*)CRecPtr)[2], &((BYTE*)edit->OldRecPtr)[2], CFile->FF->RecLen - 2);
+		eq = CompArea(&((BYTE*)edit->NewRecPtr)[2], &((BYTE*)edit->OldRecPtr)[2], edit->FD->FF->RecLen - 2);
 		if (eq == _equ) return result;
 	}
 	GetRdbRecVars(edit->NewRecPtr, &New);
@@ -300,19 +300,30 @@ WORD ChptWriteCRec(DataEditor* data_editor, EditD* edit)
 	}
 	else if (New.Typ != ' ')
 		if (!g_compiler->IsIdentifStr(New.Name) || (New.Typ != 'F') && (New.Ext != "")) {
-			WrLLF10Msg(138); return result;
+			WrLLF10Msg(138);
+			return result;
 		}
 	if (New.Typ == 'F') {
-		if (New.Name.length() > 8) { WrLLF10Msg(1002); return result; }
-		if (New.FTyp == FileType::UNKNOWN) { WrLLF10Msg(1067); return result; }
+		if (New.Name.length() > 8) {
+			WrLLF10Msg(1002);
+			return result;
+		}
+		if (New.FTyp == FileType::UNKNOWN) {
+			WrLLF10Msg(1067);
+			return result;
+		}
 		if (IsDuplFileName(data_editor, New.Name)) {
 			WrLLF10Msg(1068);
 			return result;
 		}
-		if ((New.FTyp == FileType::RDB) && (New.Txt != 0)) { WrLLF10Msg(1083); return result; }
+		if ((New.FTyp == FileType::RDB) && (New.Txt != 0)) {
+			WrLLF10Msg(1083);
+			return result;
+		}
 		if (NetFileTest(&New) && !data_editor->TestIsNewRec() &&
 			(Old.Typ == 'F') && (eq != _equ) && !PromptYN(824)) {
-			result = 2; return result;
+			result = 2;
+			return result;
 		}
 	}
 	if ((New.Typ == 'D' || New.Typ == 'I' || New.Typ == 'U')
@@ -328,7 +339,7 @@ WORD ChptWriteCRec(DataEditor* data_editor, EditD* edit)
 	if (New.Typ != Old.Typ) {
 	label1:
 		if (!ChptDelFor(edit, &Old)) return result;
-		CFile->saveT(ChptOldTxt, 0, CRecPtr);
+		edit->FD->saveT(ChptOldTxt, 0, edit->NewRecPtr);
 		if (New.Typ == 'F') {
 			ReleaseFilesAndLinksAfterChapter(edit);
 		}
@@ -336,10 +347,18 @@ WORD ChptWriteCRec(DataEditor* data_editor, EditD* edit)
 	}
 	if (New.Typ == ' ' || New.Typ == 'I') goto label2;
 	if (New.Typ != 'F') {
-		if (New.Name != Old.Name)
-			if (New.Typ == 'E' || New.Typ == 'P') { ReleaseFilesAndLinksAfterChapter(edit); SetCompileAll(); }
-			else ChptTF->CompileProc = true;
-		if ((New.Typ == 'R') && (New.Txt == 0)) ReleaseFilesAndLinksAfterChapter(edit);
+		if (New.Name != Old.Name) {
+			if (New.Typ == 'E' || New.Typ == 'P') {
+				ReleaseFilesAndLinksAfterChapter(edit);
+				SetCompileAll();
+			}
+			else {
+				ChptTF->CompileProc = true;
+			}
+		}
+		if ((New.Typ == 'R') && (New.Txt == 0)) {
+			ReleaseFilesAndLinksAfterChapter(edit);
+		}
 		goto label2;
 	}
 	ReleaseFilesAndLinksAfterChapter(edit);
@@ -355,7 +374,7 @@ WORD ChptWriteCRec(DataEditor* data_editor, EditD* edit)
 		}
 	}
 label2:
-	CFile->saveB(ChptVerif, true, CRecPtr);
+	edit->FD->saveB(ChptVerif, true, edit->NewRecPtr);
 	result = 0;
 	SetUpdHandle(ChptTF->Handle);
 	return result;
