@@ -634,7 +634,7 @@ void RdChoices(Instr_menu* PD)
 				}
 			}
 			g_compiler->Accept(':');
-			AddInstr(CD->Instr, RdPInstr());
+			AddInstr(CD->v_instr, RdPInstr());
 		}
 		if (Lexem == ';') {
 			g_compiler->RdLex();
