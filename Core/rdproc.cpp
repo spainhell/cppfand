@@ -37,6 +37,14 @@ kNames KeyNames[NKeyNames] = {
 	{"ESC", 81, VK_ESCAPE},
 	{"CTRLP", 82, CTRL + 'P'} };
 
+
+void AddInstr(std::vector<Instr*>& dst, std::vector<Instr*> src)
+{
+	for (auto& instr : src) {
+		dst.push_back(instr);
+	}
+}
+
 void TestCatError(int i, const std::string& name, bool old)
 {
 	if (i == 0) {
@@ -599,7 +607,7 @@ void RdChoices(Instr_menu* PD)
 		if (g_compiler->IsKeyWord("ESCAPE")) {
 			g_compiler->Accept(':');
 			PD->WasESCBranch = true;
-			PD->ESCInstr = RdPInstr();
+			AddInstr(PD->ESCInstr, RdPInstr());
 		}
 		else {
 			CD = new ChoiceD();
@@ -626,7 +634,7 @@ void RdChoices(Instr_menu* PD)
 				}
 			}
 			g_compiler->Accept(':');
-			CD->Instr = RdPInstr();
+			AddInstr(CD->Instr, RdPInstr());
 		}
 		if (Lexem == ';') {
 			g_compiler->RdLex();
@@ -655,7 +663,7 @@ void RdMenuAttr(Instr_menu* PD)
 Instr* RdMenuBox(bool Loop)
 {
 	Instr_menu* PD = nullptr; pstring* S = nullptr;
-	PD = new Instr_menu(PInstrCode::_menubox); // GetPInstr(_menubox, 48);
+	PD = new Instr_menu(PInstrCode::_menubox);
 	auto result = PD;
 	PD->Loop = Loop;
 	if (Lexem == '(') {
@@ -742,7 +750,7 @@ std::vector<Instr*> RdFor()
 
 	g_compiler->AcceptKeyWord("TO");
 	Instr_loops* iLoop = new Instr_loops(PInstrCode::_whiledo);
-	
+
 	FrmlElemFunction* Z1 = new FrmlElemFunction(_compreal, 2);
 	Z1->P1 = nullptr;
 	Z1->LV1 = LV;
@@ -773,7 +781,7 @@ Instr* RdCase()
 	bool first = true;
 	Instr_loops* result = nullptr;
 	while (true) {
-		PD1 = new Instr_loops(PInstrCode::_ifthenelseP); // GetPInstr(_ifthenelseP, 12);
+		PD1 = new Instr_loops(PInstrCode::_ifthenelseP);
 		if (first) {
 			result = PD1;
 		}
@@ -784,13 +792,13 @@ Instr* RdCase()
 		first = false;
 		PD->Bool = g_compiler->RdBool(nullptr);
 		g_compiler->Accept(':');
-		PD->v_instr = RdPInstr();
+		AddInstr(PD->v_instr, RdPInstr());
 		bool b = Lexem == ';';
 		if (b) g_compiler->RdLex();
 		if (!g_compiler->IsKeyWord("END")) {
 			if (g_compiler->IsKeyWord("ELSE")) {
 				while (!g_compiler->IsKeyWord("END")) {
-					PD->v_else_instr = RdPInstr();
+					AddInstr(PD->v_else_instr, RdPInstr());
 					if (Lexem == ';') {
 						g_compiler->RdLex();
 					}
@@ -817,7 +825,7 @@ Instr_loops* RdRepeatUntil()
 	auto PD = new Instr_loops(PInstrCode::_repeatuntil); // GetPInstr(_repeatuntil, 8);
 	Instr_loops* result = PD;
 	while (!g_compiler->IsKeyWord("UNTIL")) {
-		PD->v_instr = RdPInstr();
+		AddInstr(PD->v_instr, RdPInstr());
 		if (Lexem == ';') {
 			g_compiler->RdLex();
 		}
@@ -918,10 +926,7 @@ std::vector<Instr*> RdBeginEnd()
 	if (!g_compiler->IsKeyWord("END")) {
 		while (true) {
 			// read instructions and add them to the list
-			std::vector<Instr*> new_instructions = RdPInstr();
-			for (auto instr : new_instructions) {
-				instructions.push_back(instr);
-			}
+			AddInstr(instructions, RdPInstr());
 
 			if (Lexem == ';') {
 				g_compiler->RdLex();
@@ -1596,7 +1601,7 @@ void RdEditOpt(EditOpt* EO, FileD* file_d)
 #endif
 		g_compiler->IsOpt("RECNO")) {
 		EO->StartRecNoZ = g_compiler->RdRealFrml(nullptr);
-	}
+}
 	else if (g_compiler->IsOpt("IREC")) {
 		EO->StartIRecZ = g_compiler->RdRealFrml(nullptr);
 	}
@@ -2422,8 +2427,8 @@ Instr_recs* RdMixRecAcc(PInstrCode Op)
 		if (Op == PInstrCode::_recallrec) {
 			g_compiler->Accept(',');
 			PD->RecNr = g_compiler->RdRealFrml(nullptr);
-		}
 	}
+}
 	else {
 		// PD = GetPD(oper, 15);
 		PD = new Instr_recs(Op);
@@ -2475,7 +2480,7 @@ Instr_recs* RdMixRecAcc(PInstrCode Op)
 	}
 	CFile = cf;
 	return PD;
-}
+		}
 
 Instr* RdLinkRec()
 {
@@ -2747,37 +2752,43 @@ Instr* RdWith()
 		g_compiler->AcceptKeyWord("DO");
 		iP->v_ww_instr = RdPInstr();
 	}
-	else if (g_compiler->IsKeyWord("SHARED")) { Op = PInstrCode::_withshared; goto label1; }
+	else if (g_compiler->IsKeyWord("SHARED")) {
+		Op = PInstrCode::_withshared;
+		goto label1;
+	}
 	else if (g_compiler->IsKeyWord("LOCKED")) {
 		Op = PInstrCode::_withlocked;
 	label1:
-		P = new Instr_withshared(Op); // GetPInstr(oper, 9 + sizeof(LockD));
+		P = new Instr_withshared(Op);
 		auto iP = (Instr_withshared*)P;
 		LockD* ld = &iP->WLD;
-	label2:
-		ld->FD = g_compiler->RdFileName();
-		if (Op == PInstrCode::_withlocked) {
-			g_compiler->Accept('[');
-			ld->Frml = g_compiler->RdRealFrml(nullptr);
-			g_compiler->Accept(']');
-		}
-		else {
-			g_compiler->Accept('(');
-			for (LockMode i = NoExclMode; i <= ExclMode; i = (LockMode)(i + 1)) {
-				if (g_compiler->IsKeyWord(LockModeTxt[i])) {
-					ld->Md = i;
-					goto label3;
-				}
+
+		while (true) {
+			ld->FD = g_compiler->RdFileName();
+			if (Op == PInstrCode::_withlocked) {
+				g_compiler->Accept('[');
+				ld->Frml = g_compiler->RdRealFrml(nullptr);
+				g_compiler->Accept(']');
 			}
-			g_compiler->Error(100);
-		label3:
-			g_compiler->Accept(')');
-		}
-		if (Lexem == ',') {
-			g_compiler->RdLex();
-			ld->Chain = new LockD();
-			ld = ld->Chain;
-			goto label2;
+			else {
+				g_compiler->Accept('(');
+				for (LockMode i = NoExclMode; i <= ExclMode; i = (LockMode)(i + 1)) {
+					if (g_compiler->IsKeyWord(LockModeTxt[i])) {
+						ld->Md = i;
+						goto label3;
+					}
+				}
+				g_compiler->Error(100);
+			label3:
+				g_compiler->Accept(')');
+			}
+			if (Lexem == ',') {
+				g_compiler->RdLex();
+				ld->Chain = new LockD();
+				ld = ld->Chain;
+				continue;
+			}
+			break;
 		}
 		g_compiler->AcceptKeyWord("DO");
 		iP->WDoInstr = RdPInstr();
@@ -2820,7 +2831,7 @@ std::vector<Instr*> RdPInstr()
 	else if (g_compiler->IsKeyWord("REPEAT")) single_instr = RdRepeatUntil();
 	else if (g_compiler->IsKeyWord("CASE")) single_instr = RdCase();
 	else if (g_compiler->IsKeyWord("FOR")) { result = RdFor(); }			// creates vector of instructions
-	else if (g_compiler->IsKeyWord("BEGIN")) {	result = RdBeginEnd(); }	// creates vector of instructions
+	else if (g_compiler->IsKeyWord("BEGIN")) { result = RdBeginEnd(); }	// creates vector of instructions
 	else if (g_compiler->IsKeyWord("BREAK")) single_instr = new Instr(PInstrCode::_break);
 	else if (g_compiler->IsKeyWord("EXIT")) single_instr = new Instr(PInstrCode::_exitP);
 	else if (g_compiler->IsKeyWord("CANCEL")) single_instr = new Instr(PInstrCode::_cancel);
@@ -3096,7 +3107,7 @@ void RdSqlRdWrTxt(bool Rd)
 	XKey* k = RdViewKey(); if (k == nullptr) k = CFile->Keys; pd->sqlKey = k; Accept(',');
 	pd->sqlFldD = RdFldName(CFile); Accept(','); pd->sqlXStr = RdStrFrml();
 	if (!pd->sqlFD->typSQLFile || (pd->sqlFldD->field_type != 'T')) OldError(170);
-}
+	}
 #endif
 
 Instr* RdCallLProc()

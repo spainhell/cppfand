@@ -1638,7 +1638,7 @@ void CallProcedure(Instr_proc* PD)
 
 #ifdef _DEBUG
 	std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
-	if (srcCode.find("with window(0,0,sloup+1") != std::string::npos) {
+	if (srcCode.find("(Kl:string) begin proc(Tip00,(kl)); end;") != std::string::npos) {
 		printf("");
 	}
 #endif
