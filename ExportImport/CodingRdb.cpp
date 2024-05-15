@@ -15,7 +15,6 @@
 
 void CodingRdb::CodeRdb(EditD* edit, bool Rotate)
 {
-	//WORD pos;
 	std::string s;
 	FileD* cf = CFile;
 	void* cr = CRecPtr;
@@ -29,7 +28,8 @@ void CodingRdb::CodeRdb(EditD* edit, bool Rotate)
 		CFile->ReadRec(i, CRecPtr);
 		RunMsgN(i);
 		s = CFile->loadS(ChptTyp, CRecPtr);
-		SetMsgPar(CFile->loadS(ChptName, CRecPtr));
+		std::string chapter_name = CFile->loadS(ChptName, CRecPtr);
+		SetMsgPar(chapter_name);
 		if (Rotate && (s[0] == ' ' || s[0] == 'I')) {}
 		else {
 			CodeF(Rotate, i, ChptTxt, s[0]);
@@ -275,7 +275,7 @@ void CodingRdb::CompressCRdb(DataEditor* data_editor, EditD* edit)
 	SpecFDNameAllowed = false;
 	merge->Run();
 
-	SaveAndCloseAllFiles();
+	SaveFiles();
 	ReleaseStore(&p);
 	Chpt->FF->RecPtr = cr;
 	CFile = Chpt;

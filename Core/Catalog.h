@@ -8,6 +8,8 @@ public:
 	Catalog();
 	Catalog(FileD* file_d);
 	~Catalog();
+
+	void Close();
 	
 	FileD* GetCatalogFile();
 

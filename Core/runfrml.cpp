@@ -1045,7 +1045,7 @@ label1:
 	}
 	case _generation: {
 		FrmlElem9* iX = (FrmlElem9*)X;
-		result = CatFD->Generation(iX->FD, CPath, CVol);
+		result = catalog->Generation(iX->FD, CPath, CVol);
 		FSplit(CPath, CDir, CName, CExt);
 		break;
 	}
@@ -1058,8 +1058,8 @@ label1:
 	}
 	case _catfield: {
 		FrmlElemCatalogField* iX = (FrmlElemCatalogField*)X;
-		CVol = CatFD->GetVolume(iX->CatIRec);
-		CPath = FExpand(CatFD->GetPathName(iX->CatIRec));
+		CVol = catalog->GetVolume(iX->CatIRec);
+		CPath = FExpand(catalog->GetPathName(iX->CatIRec));
 		FSplit(CPath, CDir, CName, CExt);
 		TestMountVol(CPath[0]);
 		result = LastUpdate(CPath);
@@ -2145,9 +2145,9 @@ LongStr* RunS(FileD* file_d, FrmlElem* Z, void* record)
 	}
 	case _catfield: {
 		auto iZ = (FrmlElemCatalogField*)Z;
-		std::string stdS = CatFD->GetField(iZ->CatIRec, iZ->CatFld);
+		std::string stdS = catalog->GetField(iZ->CatIRec, iZ->CatFld);
 		bool empty = stdS.empty(); // bude se jednat jen o cestu, bez nazvu souboru
-		if (iZ->CatFld == CatFD->CatalogPathNameField()) {
+		if (iZ->CatFld == catalog->CatalogPathNameField()) {
 			stdS = FExpand(stdS);
 			if (empty) AddBackSlash(stdS); // za cestu pridame '\'
 		}

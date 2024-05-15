@@ -1826,7 +1826,7 @@ void DataEditor::WrJournal(char Upd, void* RP, double Time)
 	}
 	UpdCount++;
 	if (UpdCount == edit_->SaveAfter) {
-		SaveAndCloseAllFiles();
+		SaveFiles();
 		UpdCount = 0;
 	}
 }
@@ -2351,7 +2351,7 @@ void DataEditor::UpwEdit(LinkD* LkD)
 		if (OpenEditWw()) {
 			RunEdit(px, Brk);
 		}
-		SaveAndCloseAllFiles();
+		SaveFiles();
 		//PopEdit();
 		delete reader; reader = nullptr;
 	}
@@ -3043,7 +3043,7 @@ void DataEditor::Sorting()
 	KeyFldD* SKRoot = nullptr;
 	void* p = nullptr;
 	LockMode md;
-	SaveAndCloseAllFiles();
+	SaveFiles();
 	MarkStore(p);
 
 	if (!g_compiler->PromptSortKeys(edit_->Flds, SKRoot) || (SKRoot == nullptr)) {
@@ -3614,7 +3614,7 @@ label2:
 	switch (C) {
 	case __F9: {
 		if (WriteCRec(false, Displ)) {
-			SaveAndCloseAllFiles();
+			SaveFiles();
 			UpdCount = 0;
 		}
 		goto label4;
@@ -3984,7 +3984,7 @@ void DataEditor::ImbeddEdit()
 			if (OpenEditWw()) {
 				RunEdit(nullptr, Brk);
 			}
-			SaveAndCloseAllFiles();
+			SaveFiles();
 			//PopEdit();
 			delete reader; reader = nullptr;
 		}
@@ -4063,7 +4063,7 @@ void DataEditor::DownEdit()
 			if (OpenEditWw()) {
 				RunEdit(nullptr, Brk);
 			}
-			SaveAndCloseAllFiles();
+			SaveFiles();
 			//PopEdit();
 			delete reader; reader = nullptr;
 		}
@@ -4985,7 +4985,7 @@ label81:
 						switch (KbdChar) {
 						case __F9: {
 							// uloz
-							SaveAndCloseAllFiles();
+							SaveFiles();
 							UpdCount = 0;
 							break;
 						}
@@ -5085,7 +5085,7 @@ label81:
 									goto fin;
 								}
 							}
-							else if (IsTestRun && (file_d_ != CatFD->GetCatalogFile()) && (KbdChar == __ALT_F2)) {
+							else if (IsTestRun && (file_d_ != catalog->GetCatalogFile()) && (KbdChar == __ALT_F2)) {
 								EditHelpOrCat(KbdChar, 1, file_d_->Name + "." + CFld->FldD->Name);
 							}
 							break;

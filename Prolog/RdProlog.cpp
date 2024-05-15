@@ -121,7 +121,7 @@ bool IsKeyWordP(pstring s)
 	return false;
 }
 
-void AcceptPKeyWord(pstring s)
+void AcceptPKeyWord(std::string s)
 {
 	if (!IsKeyWordP(s)) { SetMsgPar(s); g_compiler->Error(33); }
 }

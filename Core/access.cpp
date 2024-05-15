@@ -30,7 +30,7 @@ void ClearCacheCFile()
 	if (CFile->TF != nullptr) ClearCacheH(CFile->TF->Handle);*/
 }
 
-void CloseClearHCFile(FandFile* fand_file)
+void CloseClearH(FandFile* fand_file)
 {
 	CloseClearH(&fand_file->Handle);
 	if (fand_file->file_type == FileType::INDEX) {
@@ -43,7 +43,7 @@ void CloseClearHCFile(FandFile* fand_file)
 
 void CloseGoExit(FandFile* fand_file)
 {
-	CloseClearHCFile(fand_file);
+	CloseClearH(fand_file);
 	GoExit();
 }
 
@@ -215,50 +215,51 @@ void DirMinusBackslash(pstring& D)
 
 void ForAllFDs(ForAllFilesOperation op, FileD** file_d, WORD i)
 {
-	FileD* cf = CFile;
+	//FileD* cf = CFile;
 	RdbD* R = CRdb;
 	while (R != nullptr) {
-		CFile = R->rdb_file;
-		while (CFile != nullptr) {
+		FileD* f = R->rdb_file;
+		while (f != nullptr) {
 			switch (op) {
 			case ForAllFilesOperation::close: {
-				CFile->Save();
+				f->CloseFile();
 				break;
 			}
 			case ForAllFilesOperation::save: {
+				f->Save();
 				break;
 			}
 			case ForAllFilesOperation::clear_xf_update_lock: {
-				CFile->FF->ClearXFUpdLock();
+				f->FF->ClearXFUpdLock();
 				break;
 			}
 			case ForAllFilesOperation::save_l_mode: {
-				CFile->FF->ExLMode = CFile->FF->LMode;
+				f->FF->ExLMode = f->FF->LMode;
 				break;
 			}
 			case ForAllFilesOperation::set_old_lock_mode: {
-				CFile->OldLockMode(CFile->FF->ExLMode);
+				f->OldLockMode(f->FF->ExLMode);
 				break;
 			}
 			case ForAllFilesOperation::close_passive_fd: {
-				if ((CFile->FF->file_type != FileType::RDB) && (CFile->FF->LMode == NullMode)) {
-					CFile->CloseFile();
+				if ((f->FF->file_type != FileType::RDB) && (f->FF->LMode == NullMode)) {
+					f->CloseFile();
 				}
 				break;
 			}
 			case ForAllFilesOperation::find_fd_for_i: {
-				if ((*file_d == nullptr) && (CFile->CatIRec == i)) {
-					*file_d = CFile;
+				if ((*file_d == nullptr) && (f->CatIRec == i)) {
+					*file_d = f;
 				}
 				break;
 			}
 			default:;
 			}
-			CFile = CFile->pChain;
+			f = f->pChain;
 		}
 		R = R->ChainBack;
 	}
-	CFile = cf;
+	//CFile = cf;
 }
 
 void ResetCompilePars()

@@ -55,7 +55,7 @@ void EditReader::RdEForm(EditD* edit, RdbPos FormPos)
 	EFldD* D = nullptr; EFldD* D1 = nullptr; EFldD* PrevD = nullptr;
 	FieldDescr* F = nullptr; FieldListEl* FL = nullptr;
 	StringListEl* SLRoot = nullptr;
-	pstring s = "";
+	std::string s = "";
 	WORD NPages = 0, Col = 0, Ln = 0, Max = 0, M = 0, N = 0, NFlds = 0, i = 0;
 	bool comment = false; char c = '\0'; BYTE a = 0;
 	g_compiler->SetInpTT(&FormPos, true);
@@ -65,7 +65,7 @@ void EditReader::RdEForm(EditD* edit, RdbPos FormPos)
 		s = "";
 		while (!(ForwChar == '#' || ForwChar == 0x1A || ForwChar == 0x0D || ForwChar == '{')) {
 			/* read headlines */
-			s.Append(ForwChar);
+			s += static_cast<char>(ForwChar);
 			g_compiler->ReadChar();
 		}
 		switch (ForwChar) {
@@ -160,7 +160,7 @@ label5:
 			D->Page = NPages;
 			M = 0;
 			while (ForwChar == '_') {
-				s.Append(' ');
+				s += ' ';
 				M++; Col++;
 				g_compiler->ReadChar();
 			}
@@ -187,7 +187,7 @@ label5:
 				}
 				Col++;
 			}
-			s.Append(ForwChar);
+			s += static_cast<char>(ForwChar);
 			g_compiler->ReadChar();
 		}
 	}

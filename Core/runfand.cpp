@@ -150,7 +150,7 @@ void CompileHelpCatDcl()
 	std::string catalog_definition = ReadMessage(52);
 	g_compiler->SetInpStr(catalog_definition);
 	FileD* cat_file = RdFileD("Catalog", FileType::CAT, "");
-	CatFD = new Catalog(cat_file);
+	catalog = new Catalog(cat_file);
 	
 	FileDRoot = nullptr;
 	Chpt = FileDRoot;
@@ -182,8 +182,7 @@ bool SetTopDir(std::string& p, std::string& n)
 			return result;
 		}
 		CatFDName = n;
-		FileD* catalog = CatFD->GetCatalogFile();
-		OpenF(catalog, CPath, Exclusive);
+		OpenF(catalog->GetCatalogFile(), CPath, Exclusive);
 		result = true;
 	}
 	catch (std::exception& e) {
@@ -192,14 +191,14 @@ bool SetTopDir(std::string& p, std::string& n)
 	return result;
 }
 
-void RunRdb(std::string p)
+void RunRdb(std::string& p)
 {
-	std::string n;
-	if (!p.empty() && SetTopDir(p, n)) {
+	if (std::string n; !p.empty() && SetTopDir(p, n)) {
 		wwmix ww;
 		EditExecRdb(n, "main", nullptr, &ww);
-		CFile = CatFD->GetCatalogFile();
-		CFile->CloseFile();
+		// CFile = catalog->GetCatalogFile();
+		// CFile->CloseFile();
+		catalog->Close();
 	}
 }
 
@@ -217,7 +216,7 @@ void CallInstallRdb()
 	std::string n;
 	if ((!p.empty()) && SetTopDir(p, n)) {
 		InstallRdb(n);
-		CFile = CatFD->GetCatalogFile();
+		CFile = catalog->GetCatalogFile();
 		CFile->CloseFile();
 	}
 }

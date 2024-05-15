@@ -384,7 +384,7 @@ void ExportFD(CopyD* CD)
 
 	try {
 		CFile = CD->FD1;
-		SaveAndCloseAllFiles();
+		SaveFiles();
 		md = CFile->NewLockMode(RdMode);
 		F2 = new ThFile(CD->Path2, CD->CatIRec2, InOutMode::_outp, 0, nullptr);
 		int n = CFile->FF->XNRecs(CD->FD1->Keys);
@@ -558,7 +558,7 @@ void FileCopy(CopyD* CD)
 	else {
 		MakeCopy(CD);
 	}
-	SaveAndCloseAllFiles();
+	SaveFiles();
 	RunMsgOff();
 	if (LastExitCode != 0 && !CD->NoCancel) GoExit();
 }

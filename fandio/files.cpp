@@ -34,7 +34,7 @@ bool OpenF1(FileD* file_d, const std::string& path, FileUseMode UM)
 	bool result = true;
 	file_d->FF->LMode = NullMode;
 	SetPathMountVolumeSetNet(file_d, UM);
-	const bool b = (file_d == Chpt) || (file_d == CatFD->GetCatalogFile());
+	const bool b = (file_d == Chpt) || (file_d == catalog->GetCatalogFile());
 	if (b && (IsTestRun || IsInstallRun) && ((GetFileAttr(CPath, HandleError) & 0b00000001/*RdOnly*/) != 0)) {
 		SetFileAttr(CPath, HandleError, GetFileAttr(CPath, HandleError) & 0b00100110);
 		if (HandleError == 5) HandleError = 79;
@@ -88,7 +88,7 @@ bool OpenF1(FileD* file_d, const std::string& path, FileUseMode UM)
 		}
 		if (HandleError != 0) {
 			n = HandleError;
-			CloseClearHCFile(file_d->FF);
+			CloseClearH(file_d->FF);
 			HandleError = n;
 			TestCPathError();
 			return result;
@@ -104,7 +104,7 @@ bool OpenF1(FileD* file_d, const std::string& path, FileUseMode UM)
 				file_d->FF->XF->Handle = OpenH(CPath, _isOverwriteFile, Exclusive);
 				if (HandleError != 0) {
 					n = HandleError;
-					CloseClearHCFile(file_d->FF);
+					CloseClearH(file_d->FF);
 					HandleError = n;
 					TestCPathError();
 					return result;
@@ -115,7 +115,7 @@ bool OpenF1(FileD* file_d, const std::string& path, FileUseMode UM)
 			}
 			if (HandleError != 0) {
 				n = HandleError;
-				CloseClearHCFile(file_d->FF);
+				CloseClearH(file_d->FF);
 				HandleError = n;
 				TestCPathError();
 			}
@@ -143,11 +143,11 @@ bool OpenF2(FileD* file_d, const std::string& path)
 	n = (FS - file_d->FF->FirstRecPos) / file_d->FF->RecLen;
 	if (rLen != 0xffff) {
 		if (file_d->IsDynFile) {
-			CloseClearHCFile(file_d->FF);
+			CloseClearH(file_d->FF);
 			return result;
 		}
 		else {
-			if (CatFD->OldToNewCat(FS)) {
+			if (catalog->OldToNewCat(FS)) {
 				goto label3;
 			}
 			FileMsg(file_d, 883, ' ');
@@ -337,7 +337,7 @@ std::string SetPathAndVolume(FileD* file_d, char pathDelim)
 	}
 	i = file_d->CatIRec;
 	if (i != 0) {
-		CatFD->GetPathAndVolume(file_d, i, CPath, CVol);
+		catalog->GetPathAndVolume(file_d, i, CPath, CVol);
 		FSplit(CPath, CDir, CName, CExt);
 		if (file_d->Name == "@") goto label3;
 		goto label4;

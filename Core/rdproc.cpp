@@ -229,21 +229,21 @@ FrmlElem* RdFldNameFrmlP(char& FTyp, MergeReportBase* caller)
 				goto label1;
 			}
 			if (g_compiler->IsKeyWord("ARCHIVES")) {
-				F = CatFD->CatalogArchiveField();
+				F = catalog->CatalogArchiveField();
 				goto label0;
 			}
 			if (g_compiler->IsKeyWord("PATH")) {
-				F = CatFD->CatalogPathNameField();
+				F = catalog->CatalogPathNameField();
 				goto label0;
 			}
 			if (g_compiler->IsKeyWord("VOLUME")) {
-				F = CatFD->CatalogVolumeField();
+				F = catalog->CatalogVolumeField();
 			label0:
 				FTyp = 'S';
 			label1:
 				auto S = new FrmlElemCatalogField(_catfield, 6); // Z = GetOp(_catfield, 6);
 				S->CatFld = F;
-				S->CatIRec = CatFD->GetCatalogIRec(FName, true);
+				S->CatIRec = catalog->GetCatalogIRec(FName, true);
 				TestCatError(S->CatIRec, FName, true);
 				return S;
 			}
@@ -322,7 +322,7 @@ FileD* RdPath(bool NoFD, std::string& Path, WORD& CatIRec)
 		g_compiler->TestIdentif();
 		fd = g_compiler->FindFileD();
 		if (fd == nullptr) {
-			CatIRec = CatFD->GetCatalogIRec(LexWord, true);
+			CatIRec = catalog->GetCatalogIRec(LexWord, true);
 			TestCatError(CatIRec, LexWord, false);
 		}
 		else if (NoFD) g_compiler->Error(97);
@@ -2089,16 +2089,16 @@ Instr* RdTurnCat()
 	g_compiler->RdLex();
 	g_compiler->TestIdentif();
 	PD->NextGenFD = g_compiler->FindFileD();
-	const int first = CatFD->GetCatalogIRec(LexWord, true);
+	const int first = catalog->GetCatalogIRec(LexWord, true);
 	TestCatError(first, LexWord, true);
 	g_compiler->RdLex();
 	PD->FrstCatIRec = first;
-	const std::string rdb_name = CatFD->GetRdbName(first);
-	const std::string file_name = CatFD->GetFileName(first);
+	const std::string rdb_name = catalog->GetRdbName(first);
+	const std::string file_name = catalog->GetFileName(first);
 	int i = first + 1;
-	while (CatFD->GetCatalogFile()->FF->NRecs >= i
-		&& EquUpCase(rdb_name, CatFD->GetRdbName(i))
-		&& EquUpCase(file_name, CatFD->GetFileName(i))) {
+	while (catalog->GetCatalogFile()->FF->NRecs >= i
+		&& EquUpCase(rdb_name, catalog->GetRdbName(i))
+		&& EquUpCase(file_name, catalog->GetFileName(i))) {
 		i++;
 	}
 	if (i == first + 1) {
@@ -2264,7 +2264,7 @@ Instr* RdMount()
 	g_compiler->TestIdentif();
 	FileD* FD = g_compiler->FindFileD();
 	if (FD == nullptr) {
-		i = CatFD->GetCatalogIRec(LexWord, true);
+		i = catalog->GetCatalogIRec(LexWord, true);
 	}
 	else {
 		i = FD->CatIRec;
@@ -2610,19 +2610,19 @@ Instr_assign* RdAssign()
 			if (FD->IsActiveRdb()) g_compiler->Error(121);
 			g_compiler->RdLex(); g_compiler->RdLex();
 			if (g_compiler->IsKeyWord("ARCHIVES")) {
-				F = CatFD->CatalogArchiveField();
+				F = catalog->CatalogArchiveField();
 				goto label1;
 			}
 			if (g_compiler->IsKeyWord("PATH")) {
-				F = CatFD->CatalogPathNameField();
+				F = catalog->CatalogPathNameField();
 				goto label1;
 			}
 			if (g_compiler->IsKeyWord("VOLUME")) {
-				F = CatFD->CatalogVolumeField();
+				F = catalog->CatalogVolumeField();
 			label1:
 				PD = new Instr_assign(PInstrCode::_asgnCatField);
 				PD->FD3 = FD;
-				PD->CatIRec = CatFD->GetCatalogIRec(FName, true);
+				PD->CatIRec = catalog->GetCatalogIRec(FName, true);
 				PD->CatFld = F;
 				TestCatError(PD->CatIRec, FName, true);
 				g_compiler->Accept(_assign);
@@ -2911,17 +2911,16 @@ std::vector<Instr*> ReadProcBody()
 // nacte nazev, parametry, navr. hodnotu, promenne, konstanty i kod
 void ReadDeclChpt()
 {
-	FuncD* fc = nullptr;
 	char typ = '\0';
-	WORD n = 0;
-	LocVar* lv = nullptr;
 	g_compiler->RdLex();
 	while (true) {
 		if (g_compiler->IsKeyWord("FUNCTION")) {
 			g_compiler->TestIdentif();
-			fc = FuncDRoot;
+			FuncD* fc = FuncDRoot;
 			while (fc != CRdb->OldFCRoot) {
-				if (EquUpCase(fc->name, LexWord)) g_compiler->Error(26);
+				if (EquUpCase(fc->name, LexWord)) {
+					g_compiler->Error(26);
+				}
 				fc = fc->Chain;
 			}
 			fc = new FuncD();
@@ -2932,7 +2931,8 @@ void ReadDeclChpt()
 			//ptrRdFldNameFrml = RdFldNameFrmlP;
 			RdFunction = RdFunctionP;
 			//ptrChainSumEl = nullptr;
-			FileVarsAllowed = false; IsRdUserFunc = true;
+			FileVarsAllowed = false;
+			IsRdUserFunc = true;
 			g_compiler->RdLex();
 			ResetLVBD();
 			LVBD.FceName = fc->name;
@@ -2943,18 +2943,17 @@ void ReadDeclChpt()
 			// nacte typ navratove hodnoty
 			if (g_compiler->IsKeyWord("REAL")) {
 				typ = 'R';
-				n = sizeof(double);
 			}
 			else if (g_compiler->IsKeyWord("STRING")) {
 				typ = 'S';
-				n = sizeof(int);
 			}
 			else if (g_compiler->IsKeyWord("BOOLEAN")) {
 				typ = 'B';
-				n = sizeof(bool);
 			}
-			else g_compiler->Error(39);
-			lv = new LocVar();
+			else {
+				g_compiler->Error(39);
+			}
+			LocVar* lv = new LocVar();
 			LVBD.vLocVar.push_back(lv);
 			lv->name = fc->name;
 			lv->is_return_value = true;
@@ -2963,14 +2962,18 @@ void ReadDeclChpt()
 			fc->FTyp = typ;
 			g_compiler->Accept(';');
 			// nacte promenne
-			if (g_compiler->IsKeyWord("VAR")) g_compiler->RdLocDcl(&LVBD, false, false, 'D');
+			if (g_compiler->IsKeyWord("VAR")) {
+				g_compiler->RdLocDcl(&LVBD, false, false, 'D');
+			}
 			fc->LVB = LVBD;
 			// nacte kod funkce (procedury)
 			g_compiler->AcceptKeyWord("BEGIN");
 			fc->v_instr = RdBeginEnd();
 			g_compiler->Accept(';');
 		}
-		else if (Lexem == 0x1A) return;
+		else if (Lexem == 0x1A) {
+			return;
+		}
 		else {
 			g_compiler->Error(40);
 			return;
@@ -2993,42 +2996,50 @@ FrmlElem* GetEvalFrml(FileD* file_d, FrmlElem21* X, void* record)
 	FrmlElem* z = nullptr;
 	FileD* cf = CFile;
 	cr = CRecPtr;
-	auto s = RunStdStr(CFile, X->EvalP1, CRecPtr);
+	std::string s = RunStdStr(CFile, X->EvalP1, CRecPtr);
 	if (s.empty()) {
 		LastExitCode = 0;
-		goto label2;
 	}
-	LastExitCode = 1;
-	p = g_compiler->SaveCompState();
-	ResetCompilePars();
-	g_compiler->rdFldNameType = FieldNameType::P;
-	//ptrRdFldNameFrml = RdFldNameFrmlP;
-	RdFunction = RdFunctionP;
-	if (X->EvalFD == nullptr) FileVarsAllowed = false;
 	else {
-		CFile = X->EvalFD;
-		FileVarsAllowed = true;
-	}
-	//NewExit(Ovr, er);
-	//goto label1;
-	g_compiler->SetInpStdStr(s, false);
-	g_compiler->RdLex();
-	z = g_compiler->RdFrml(fTyp, nullptr);
-	if ((fTyp != X->EvalTyp) || (Lexem != 0x1A)) z = nullptr;
-	else LastExitCode = 0;
-label1:
-	cpos = CurrPos;
-	//RestoreExit(er);
-	g_compiler->RestoreCompState(p);
-	if (LastExitCode != 0) {
-		LastTxtPos = cpos;
-		if (X->EvalTyp == 'B') {
-			z = new FrmlElemBool(_const, 0, false); // GetOp(_const, 1);
-			// z->B = false;
+		LastExitCode = 1;
+		p = g_compiler->SaveCompState();
+		ResetCompilePars();
+		g_compiler->rdFldNameType = FieldNameType::P;
+		//ptrRdFldNameFrml = RdFldNameFrmlP;
+		RdFunction = RdFunctionP;
+
+		if (X->EvalFD == nullptr) {
+			FileVarsAllowed = false;
+		}
+		else {
+			CFile = X->EvalFD;
+			FileVarsAllowed = true;
+		}
+
+		try {
+			g_compiler->SetInpStdStr(s, false);
+			g_compiler->RdLex();
+			z = g_compiler->RdFrml(fTyp, nullptr);
+			if ((fTyp != X->EvalTyp) || (Lexem != 0x1A)) z = nullptr;
+			else LastExitCode = 0;
+		}
+		catch (const std::exception& e) {
+			// std::string err_msg = "GetEvalFrml exception: " + std::string(e.what());
+			// throw std::exception(err_msg.c_str());
+		}
+
+		cpos = CurrPos;
+
+		g_compiler->RestoreCompState(p);
+		if (LastExitCode != 0) {
+			LastTxtPos = cpos;
+			if (X->EvalTyp == 'B') {
+				z = new FrmlElemBool(_const, 0, false);
+				// z->B = false;
+			}
 		}
 	}
 
-label2:
 	auto result = z;
 	CFile = cf; CRecPtr = cr;
 	//SetMyBP(oldbp);
@@ -3051,8 +3062,8 @@ Instr* RdBackup(char MTyp, bool IsBackup)
 	g_compiler->TestIdentif();
 
 	bool found = false;
-	for (int i = 1; i <= CatFD->GetCatalogFile()->FF->NRecs; i++) {
-		if (EquUpCase(CatFD->GetRdbName(i), "ARCHIVES") && EquUpCase(CatFD->GetFileName(i), LexWord)) {
+	for (int i = 1; i <= catalog->GetCatalogFile()->FF->NRecs; i++) {
+		if (EquUpCase(catalog->GetRdbName(i), "ARCHIVES") && EquUpCase(catalog->GetFileName(i), LexWord)) {
 			g_compiler->RdLex();
 			PD->BrCatIRec = i;
 			found = true;

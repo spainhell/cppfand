@@ -1577,7 +1577,7 @@ void SetCFile(const pstring Name)
 		r = r->ChainBack;
 	}
 	if (EquUpCase(Name, "CATALOG")) {
-		CFile = CatFD->GetCatalogFile();
+		CFile = catalog->GetCatalogFile();
 	}
 	else {
 		RunError(1539);

@@ -39,6 +39,11 @@ Catalog::~Catalog()
 	delete[] record_;
 }
 
+void Catalog::Close()
+{
+	cat_file_->CloseFile();
+}
+
 FileD* Catalog::GetCatalogFile()
 {
 	return cat_file_;
@@ -151,7 +156,7 @@ int Catalog::GetCatalogIRec(const std::string& name, bool multilevel)
 {
 	int result = 0;
 
-	if (CatFD == nullptr || CatFD->GetCatalogFile()->FF->Handle == nullptr) {
+	if (catalog == nullptr || catalog->GetCatalogFile()->FF->Handle == nullptr) {
 		return result;
 	}
 	if (CRdb == nullptr) {
@@ -161,8 +166,8 @@ int Catalog::GetCatalogIRec(const std::string& name, bool multilevel)
 	RdbD* R = CRdb;
 
 	while (true) {
-		for (int i = 1; i <= CatFD->GetCatalogFile()->FF->NRecs; i++) {
-			if (EquUpCase(CatFD->GetRdbName(i), R->rdb_file->Name) && EquUpCase(CatFD->GetFileName(i), name)) {
+		for (int i = 1; i <= catalog->GetCatalogFile()->FF->NRecs; i++) {
+			if (EquUpCase(catalog->GetRdbName(i), R->rdb_file->Name) && EquUpCase(catalog->GetFileName(i), name)) {
 				result = i;
 				return result;
 			}
@@ -186,8 +191,8 @@ void Catalog::GetPathAndVolume(FileD* file_d, int rec_nr, std::string& path, std
 	std::string ext;
 	std::string content_dir;
 
-	volume = CatFD->GetVolume(rec_nr);
-	path = CatFD->GetPathName(rec_nr);
+	volume = catalog->GetVolume(rec_nr);
+	path = catalog->GetPathName(rec_nr);
 	const bool setContentDir = SetContextDir(file_d, content_dir, isRdb);
 	if (setContentDir && path.length() > 1 && path[1] != ':') {
 		if (isRdb) {
@@ -218,8 +223,8 @@ WORD Catalog::Generation(FileD* file_d, std::string& path, std::string& volume)
 	std::string name;
 	std::string ext;
 
-	volume = CatFD->GetVolume(file_d->CatIRec);
-	path = FExpand(CatFD->GetPathName(file_d->CatIRec));
+	volume = catalog->GetVolume(file_d->CatIRec);
+	path = FExpand(catalog->GetPathName(file_d->CatIRec));
 	FSplit(path, dir, name, ext);
 
 	WORD i, j;
@@ -240,7 +245,7 @@ void Catalog::TurnCat(FileD* file_d, WORD Frst, WORD N, short I)
 	if (file_d != nullptr) {
 		file_d->CloseFile();
 	}
-	file_d = CatFD->GetCatalogFile();
+	file_d = catalog->GetCatalogFile();
 	BYTE* p = file_d->GetRecSpace();
 	BYTE* q = file_d->GetRecSpace();
 	WORD last = Frst + N - 1;

@@ -110,7 +110,7 @@ void ReportProc(RprtOpt* RO, bool save)
 	if (RO->Edit) md = 'T';
 	else md = 'V';
 	if (save) {
-		SaveAndCloseAllFiles();
+		SaveFiles();
 	}
 	if (PrintView) {
 		w = PushW(1, 1, TxtCols, TxtRows);
@@ -232,7 +232,7 @@ void SortProc(FileD* FD, KeyFldD* SK)
 	LockMode md = FD->NewLockMode(ExclMode);
 	FD->FF->SortAndSubst(SK);
 	FD->OldLockMode(md);
-	SaveAndCloseAllFiles();
+	SaveFiles();
 }
 
 void MergeProc(Instr_merge_display* PD)
@@ -245,7 +245,7 @@ void MergeProc(Instr_merge_display* PD)
 	merge->Read();
 	merge->Run();
 
-	SaveAndCloseAllFiles();
+	SaveFiles();
 	ReleaseStore(&p);
 	ReleaseStore(&p2);
 }
@@ -381,7 +381,7 @@ void ExecPgm(Instr_exec* PD)
 	CVol = "";
 	std::string prog;
 	if (i != 0) {
-		prog = CatFD->GetPathName(i);
+		prog = catalog->GetPathName(i);
 	}
 	else {
 		prog = PD->ProgPath;
@@ -414,9 +414,9 @@ void CallRdbProc(Instr_call* PD)
 void MountProc(WORD CatIRec, bool NoCancel)
 {
 	try {
-		SaveAndCloseAllFiles();
-		CVol = CatFD->GetVolume(CatIRec);
-		CPath = FExpand(CatFD->GetPathName(CatIRec));
+		SaveFiles();
+		CVol = catalog->GetVolume(CatIRec);
+		CPath = FExpand(catalog->GetPathName(CatIRec));
 		FSplit(CPath, CDir, CName, CExt);
 		TestMountVol(CPath[1]);
 		LastExitCode = 0;
@@ -430,7 +430,7 @@ void MountProc(WORD CatIRec, bool NoCancel)
 void EditProc(Instr_edit* PD)
 {
 	EdUpdated = false;
-	SaveAndCloseAllFiles();
+	SaveFiles();
 
 	CFile = PD->EditFD; // TODO: to be certain
 
@@ -440,7 +440,7 @@ void EditProc(Instr_edit* PD)
 	if (!PD->EO.UserSelFlds || selFlds) {
 		data_editor->EditDataFile(PD->EditFD, &PD->EO);
 	}
-	SaveAndCloseAllFiles();
+	SaveFiles();
 
 	// TODO: and here delete copy?
 }
@@ -973,7 +973,7 @@ void WithLockedProc(Instr_withshared* PD)
 					CFile->OldLockMode(NullMode);
 				}
 				else {
-					CloseClearHCFile(CFile->FF);
+					CloseClearH(CFile->FF);
 					goto label2;
 				}
 			}
@@ -1088,7 +1088,7 @@ void AssgnCatFld(Instr_assign* PD, void* record)
 {
 	if (PD->FD3 != nullptr) PD->FD3->CloseFile();
 	std::string data = RunShortStr(PD->FD3, PD->Frml3, record);
-	CatFD->SetField(PD->CatIRec, PD->CatFld, data);
+	catalog->SetField(PD->CatIRec, PD->CatFld, data);
 }
 
 void AssgnAccRight(Instr_assign* PD)
@@ -1103,7 +1103,7 @@ void AssgnUserName(Instr_assign* PD)
 
 void ReleaseDriveProc(FrmlElem* Z)
 {
-	SaveAndCloseAllFiles();
+	SaveFiles();
 	pstring s = RunShortStr(CFile, Z, CRecPtr);
 	char c = (char)toupper((char)s[1]);
 	if (c == spec.CPMdrive) ReleaseDrive(FloppyDrives);
@@ -1138,7 +1138,7 @@ void ResetCatalog()
 		CFile = CRdb->rdb_file->pChain;
 		while (CFile != nullptr) {
 			CFile->CloseFile();
-			CFile->CatIRec = CatFD->GetCatalogIRec(CFile->Name, CFile->FF->file_type == FileType::RDB);
+			CFile->CatIRec = catalog->GetCatalogIRec(CFile->Name, CFile->FF->file_type == FileType::RDB);
 #ifdef FandSQL
 			SetIsSQLFile();
 #endif
@@ -1269,7 +1269,7 @@ void RunInstr(const std::vector<Instr*>& instructions)
 			break;
 		}
 		case PInstrCode::_save: {
-			SaveAndCloseAllFiles();
+			SaveFiles();
 			break;
 		}
 		case PInstrCode::_clrscr: {
@@ -1449,7 +1449,7 @@ void RunInstr(const std::vector<Instr*>& instructions)
 		}
 		case PInstrCode::_turncat: {
 			auto iPD = (Instr_turncat*)PD;
-			CatFD->TurnCat(iPD->NextGenFD, iPD->FrstCatIRec, iPD->NCatIRecs, RunInt(CFile, iPD->TCFrml, CRecPtr));
+			catalog->TurnCat(iPD->NextGenFD, iPD->FrstCatIRec, iPD->NCatIRecs, RunInt(CFile, iPD->TCFrml, CRecPtr));
 			break;
 		}
 		case PInstrCode::_releasedrive: {

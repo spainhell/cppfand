@@ -102,8 +102,8 @@ bool NetFileTest(RdbRecVars* X)
 	if ((X->Typ != 'F') || (X->CatIRec == 0) || X->isSQL) {
 		return false;
 	}
-	CVol = CatFD->GetVolume(X->CatIRec);
-	CPath = FExpand(CatFD->GetPathName(X->CatIRec));
+	CVol = catalog->GetVolume(X->CatIRec);
+	CPath = FExpand(catalog->GetPathName(X->CatIRec));
 	FSplit(CPath, CDir, CName, CExt);
 
 	if (IsNetCVol()) return true;
@@ -138,7 +138,7 @@ void GetRdbRecVars(void* RecPtr, RdbRecVars* X)
 	X->OldTxt = CFile->loadT(ChptOldTxt, CRecPtr);
 	if (X->Typ == 'F') {
 		X->FTyp = ExtToTyp(X->Ext);
-		X->CatIRec = CatFD->GetCatalogIRec(X->Name, false);
+		X->CatIRec = catalog->GetCatalogIRec(X->Name, false);
 		X->isSQL = false;
 		if (X->OldTxt != 0) {
 			MarkBoth(p, p2);
@@ -196,13 +196,13 @@ bool ChptDelFor(EditD* edit, RdbRecVars* X)
 			break;
 		}
 		if (X->CatIRec != 0) {
-			CatFD->SetFileName(X->CatIRec, "");
+			catalog->SetFileName(X->CatIRec, "");
 			if (!PromptYN(815)) {
 				result = true;
 				break;
 			}
-			CVol = CatFD->GetVolume(X->CatIRec);
-			CPath = FExpand(CatFD->GetPathName(X->CatIRec));
+			CVol = catalog->GetVolume(X->CatIRec);
+			CPath = FExpand(catalog->GetPathName(X->CatIRec));
 			FSplit(CPath, CDir, CName, CExt);
 			TestMountVol(CPath[0]);
 		}
@@ -365,7 +365,7 @@ WORD ChptWriteCRec(DataEditor* data_editor, EditD* edit)
 	SetCompileAll();
 	if ((New.OldTxt != 0) && (New.Name != Old.Name)) {
 		if (Old.CatIRec != 0) {
-			CatFD->SetFileName(Old.CatIRec, New.Name);
+			catalog->SetFileName(Old.CatIRec, New.Name);
 		}
 		else {
 			if (!Old.isSQL) {
@@ -467,7 +467,7 @@ void EditHelpOrCat(WORD cc, WORD kind, std::string txt)
 		}
 	}
 	else {
-		FD = CatFD->GetCatalogFile();
+		FD = catalog->GetCatalogFile();
 		i = iCat;
 		n = nCat;
 	}
@@ -568,11 +568,11 @@ void SetRdbDir(FileD* file_d, char Typ, std::string* Nm)
 	if (Typ == '\\') {
 		rb = TopRdb;
 		CRdb = rb;
-		file_d->CatIRec = CatFD->GetCatalogIRec(*Nm, false);
+		file_d->CatIRec = catalog->GetCatalogIRec(*Nm, false);
 		CRdb = r;
 	}
 	if (file_d->CatIRec != 0) {
-		CPath = CatFD->GetPathName(file_d->CatIRec);
+		CPath = catalog->GetPathName(file_d->CatIRec);
 		if (CPath[1] != ':') {
 			d = rb->RdbDir;
 			if (CPath[1] == '\\') {
@@ -713,7 +713,7 @@ void CloseChpt()
 {
 	if (CRdb == nullptr) return;
 	ClearHelpStkForCRdb();
-	SaveAndCloseAllFiles();
+	SaveFiles();
 	bool del = Chpt->FF->NRecs == 0;
 	std::string d = CRdb->RdbDir;
 	CloseFilesAfter(FileDRoot);
@@ -879,7 +879,7 @@ bool CompRunChptRec(EditD* edit, WORD CC)
 				report->Read(nullptr);
 				if (CC == __CTRL_F9) {
 					report->Run(nullptr);
-					SaveAndCloseAllFiles();
+					SaveFiles();
 					std::unique_ptr<TextEditor> editor = std::make_unique<TextEditor>();
 					editor->ViewPrinterTxt();
 				}
@@ -945,7 +945,7 @@ bool CompRunChptRec(EditD* edit, WORD CC)
 		UserW = 0;/*mem overflow*/
 		UserW = PushW(1, 1, TxtCols, TxtRows);
 	}
-	SaveAndCloseAllFiles();
+	SaveFiles();
 	if (mv) {
 		ShowMouse();
 	}
@@ -1060,10 +1060,10 @@ int MakeDbfDcl(pstring Nm)
 	pstring s(80); pstring s1(10); void* p;
 
 	CPath = FExpand(Nm + ".DBF"); CVol = "";
-	WORD i = CatFD->GetCatalogIRec(Nm, true);
+	WORD i = catalog->GetCatalogIRec(Nm, true);
 	if (i != 0) {
-		CVol = CatFD->GetVolume(i);
-		CPath = FExpand(CatFD->GetPathName(i));
+		CVol = catalog->GetVolume(i);
+		CPath = FExpand(catalog->GetPathName(i));
 		FSplit(CPath, CDir, CName, CExt);
 	}
 	HANDLE h = OpenH(CPath, _isOldFile, RdOnly);
@@ -1177,7 +1177,7 @@ bool MergeAndReplace(FileD* fd_old, FileD* fd_new)
 		SpecFDNameAllowed = false;
 		merge->Run();
 
-		SaveAndCloseAllFiles();
+		SaveFiles();
 		CFile = fd_old;
 		DeleteF();
 		CFile = fd_new;
@@ -1317,7 +1317,9 @@ bool CompileRdb(FileD* rdb_file, bool Displ, bool Run, bool FromCtrlF10)
 			Typ = STyp[0];
 			Name = OldTrailChar(' ', rdb_file->loadS(ChptName, rdb_file->FF->RecPtr));
 			Txt = rdb_file->loadT(ChptTxt, rdb_file->FF->RecPtr);
-			if (Verif && ((ChptTF->LicenseNr != 0) || Encryp || (rdb_file->FF->UMode == RdOnly))) GoCompileErr(I, 647);
+			if (Verif && ((ChptTF->LicenseNr != 0) || Encryp || (rdb_file->FF->UMode == RdOnly))) {
+				GoCompileErr(I, 647);
+			}
 			if (Verif || ChptTF->CompileAll || FromCtrlF10 || (Typ == 'U') ||
 				(Typ == 'F' || Typ == 'D') && CompileFD ||
 				(Typ == 'P') && ChptTF->CompileProc) {
@@ -1521,8 +1523,12 @@ void GotoErrPos(WORD& Brk)
 		data_editor->DisplEditWw();
 		SetMsgPar(s);
 		WrLLF10Msg(110);
-		if (InpRdbPos.i_rec == 0) SetMsgPar("");
-		else SetMsgPar(InpRdbPos.rdb->rdb_file->Name);
+		if (InpRdbPos.i_rec == 0) {
+			SetMsgPar("");
+		}
+		else {
+			SetMsgPar(InpRdbPos.rdb->rdb_file->Name);
+		}
 		WrLLF10Msg(622);
 		Brk = 0;
 		return;
@@ -1551,7 +1557,7 @@ void WrErrMsg630(std::string Nm)
 	WrLLF10Msg(630);
 }
 
-bool EditExecRdb(std::string Nm, std::string proc_name, Instr_proc* proc_call, wwmix* ww)
+bool EditExecRdb(const std::string& name, const std::string& proc_name, Instr_proc* proc_call, wwmix* ww)
 {
 	WORD Brk = 0, cc = 0;
 	void* p = nullptr;
@@ -1570,7 +1576,7 @@ bool EditExecRdb(std::string Nm, std::string proc_name, Instr_proc* proc_call, w
 	if (top) SQLConnect();
 #endif
 	try {
-		CreateOpenChpt(Nm, true);
+		CreateOpenChpt(name, true);
 		CompileFD = true;
 #ifndef FandRunV
 
@@ -1597,20 +1603,24 @@ bool EditExecRdb(std::string Nm, std::string proc_name, Instr_proc* proc_call, w
 					}
 					catch (std::exception& e) {
 						if (IsCompileErr) {
-							WrErrMsg630(Nm);
+							WrErrMsg630(name);
 						}
 						goto label9;
 					}
 				}
 				else {
-					SetMsgPar(Nm, proc_name);
+					SetMsgPar(name, proc_name);
 					WrLLF10Msg(632);
 				}
 			}
-			else if (IsCompileErr) WrErrMsg630(Nm);
+			else if (IsCompileErr) {
+				WrErrMsg630(name);
+			}
 #ifndef FandRunV
 			if ((ChptTF->LicenseNr != 0) || CRdb->Encrypted
-				|| (Chpt->FF->UMode == RdOnly)) goto label9;
+				|| (Chpt->FF->UMode == RdOnly)) {
+				goto label9;
+			}
 			ReleaseFilesAndLinksAfterChapter(nullptr);
 			ReleaseStore(&p);
 		}
@@ -1667,7 +1677,7 @@ bool EditExecRdb(std::string Nm, std::string proc_name, Instr_proc* proc_call, w
 	label2:
 		// TODO: je to potreba?
 		cc = Event.Pressed.KeyCombination();
-		SaveAndCloseAllFiles();
+		SaveFiles();
 		if ((cc == __CTRL_F10) || ChptTF->CompileAll || CompileFD) {
 			ReleaseFilesAndLinksAfterChapter(edit);
 			data_editor->SetSelectFalse();
@@ -1745,7 +1755,6 @@ bool EditExecRdb(std::string Nm, std::string proc_name, Instr_proc* proc_call, w
 	}
 
 label9:
-	//RestoreExit(er);
 	if (!wasGraph && IsGraphMode) {
 		// ScrTextMode(false, false);
 		throw std::exception("CompRunChptRec() Graph <-> Text Mode switching not implemented.");
@@ -1762,16 +1771,16 @@ label9:
 
 void UpdateCat()
 {
-	CFile = CatFD->GetCatalogFile();
-	if (CatFD->GetCatalogFile()->FF->Handle == nullptr) {
-		OpenCreateF(CFile, CPath, Exclusive);
+	FileD* cat = catalog->GetCatalogFile();
+	if (cat->FF->Handle == nullptr) {
+		OpenCreateF(cat, CPath, Exclusive);
 	}
 	EditOpt* EO = new EditOpt();
 	EO->UserSelFlds = true;
-	EO->Flds = g_compiler->AllFldsList(CatFD->GetCatalogFile(), true);
+	EO->Flds = g_compiler->AllFldsList(cat, true);
 
 	std::unique_ptr<DataEditor> data_editor = std::make_unique<DataEditor>();
-	data_editor->EditDataFile(CatFD->GetCatalogFile(), EO);
+	data_editor->EditDataFile(cat, EO);
 
 	ChDir(OldDir);
 	delete EO; EO = nullptr;

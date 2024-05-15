@@ -1,8 +1,7 @@
 #pragma once
-#include "../Common/pstring.h"
 #include "../Core/Rdb.h"
 
 //class 
 
-void Help(RdbD* R, pstring Name, bool InCWw);
+void Help(RdbD* R, std::string name, bool InCWw);
 void ClearHelpStkForCRdb();

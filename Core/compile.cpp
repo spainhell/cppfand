@@ -2426,7 +2426,7 @@ FileD* Compiler::FindFileD()
 		R = R->ChainBack;
 	}
 	if (EquUpCase("CATALOG", LexWord)) {
-		return CatFD->GetCatalogFile();
+		return catalog->GetCatalogFile();
 	}
 	return nullptr;
 }

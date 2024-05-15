@@ -42,7 +42,7 @@ bool LinkLastRec(FileD* file_d, int& N, bool WithT, BYTE** newRecord);
 
 void AsgnParFldFrml(FileD* file_d, FieldDescr* field_d, FrmlElem* frml, bool add);
 
-void CloseClearHCFile(FandFile* fand_file);
+void CloseClearH(FandFile* fand_file);
 void TestCPathError();
 
 void CloseGoExit(FandFile* fand_file);

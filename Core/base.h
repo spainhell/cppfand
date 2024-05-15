@@ -79,18 +79,18 @@ void CloseClearH(HANDLE* h);
 void RdWrCache(FileOperation operation, HANDLE handle, bool not_cached, size_t position, size_t count, void* buf);
 void ReadCache(HANDLE handle, bool not_cached, size_t position, size_t count, void* buf);
 void WriteCache(HANDLE handle, bool not_cached, size_t position, size_t count, void* buf);
-void MyDeleteFile(pstring path);
-void RenameFile56(pstring OldPath, pstring NewPath, bool Msg);
+void MyDeleteFile(const std::string& path);
+void RenameFile56(const std::string& OldPath, const std::string& NewPath, bool Msg);
 std::string MyFExpand(std::string Nm, std::string EnvName);
 
 
 // *** DISPLAY ***
 WORD LogToAbsLenStyleStr(pstring s, WORD l);
 
-void SetMsgPar(std::string s);
-void SetMsgPar(std::string s1, std::string s2);
-void SetMsgPar(std::string s1, std::string s2, std::string s3);
-void SetMsgPar(std::string s1, std::string s2, std::string s3, std::string s4);
+void SetMsgPar(const std::string& s);
+void SetMsgPar(const std::string& s1, const std::string& s2);
+void SetMsgPar(const std::string& s1, const std::string& s2, const std::string& s3);
+void SetMsgPar(const std::string& s1, const std::string& s2, const std::string& s3, const std::string& s4);
 std::string ReadMessage(int N);
 void WriteMsg(WORD N);
 void ClearLL(BYTE attr);
