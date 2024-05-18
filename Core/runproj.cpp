@@ -965,7 +965,8 @@ bool CompRunChptRec(std::unique_ptr<DataEditor>& data_editor, WORD CC)
 	data_editor->ReadParamsFromE(EE);
 	CRdb = RP.rdb;
 	PrevCompInp.clear();
-	CFile->ReadRec(data_editor->CRec(), CRecPtr);
+
+	data_editor->GetFileD()->ReadRec(data_editor->CRec(), data_editor->GetRecord());
 	if (IsCompileErr) {
 		result = false;
 	}
@@ -974,8 +975,8 @@ bool CompRunChptRec(std::unique_ptr<DataEditor>& data_editor, WORD CC)
 		if (WasError) {
 			return result;
 		}
-		CFile->saveB(ChptVerif, false, CRecPtr);
-		CFile->WriteRec(data_editor->CRec(), CRecPtr);
+		data_editor->GetFileD()->saveB(ChptVerif, false, data_editor->GetRecord());
+		data_editor->GetFileD()->WriteRec(data_editor->CRec(), data_editor->GetRecord());
 		if (CC == __CTRL_F8) {
 			Diagnostics(MaxHp, Free, FD);
 		}

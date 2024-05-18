@@ -72,6 +72,11 @@ void DataEditor::SetFileD(FileD* file_d)
 	record_ = file_d->GetRecSpace();
 }
 
+uint8_t* DataEditor::GetRecord()
+{
+	return record_;
+}
+
 //void DataEditor::PopEdit()
 //{
 //	//E = edit_->pChain;

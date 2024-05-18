@@ -18,9 +18,13 @@ public:
     DataEditor(EditD* edit);
     DataEditor(FileD* file_d);
     ~DataEditor();
-    FileD* GetFileD();
+
+	FileD* GetFileD();
     void SetFileD(FileD* file_d);
-    void EditDataFile(FileD* FD, EditOpt* EO);
+
+    uint8_t* GetRecord();
+
+	void EditDataFile(FileD* FD, EditOpt* EO);
     WORD EditTxt(std::string& s, WORD pos, WORD maxlen, WORD maxcol, FieldType typ, bool del,
 	             bool star, bool upd, bool ret, unsigned int Delta); // r86
     int CRec();
