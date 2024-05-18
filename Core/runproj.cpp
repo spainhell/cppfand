@@ -786,20 +786,19 @@ void Diagnostics(void* MaxHp, int Free, FileD* FD)
 	WrLLF10Msg(136);
 }
 
-bool CompRunChptRec(EditD* edit, WORD CC)
+bool CompRunChptRec(std::unique_ptr<DataEditor>& data_editor, WORD CC)
 {
 	pstring STyp(1);
 	void* p = nullptr; void* p2 = nullptr; void* MaxHp = nullptr;
-	EditD* OldE = nullptr;
+	//EditD* OldE = nullptr;
 	RdbPos RP; int Free; bool uw = false, mv = false;
 	FileD* FD = nullptr;
 
 	EditOpt* EO = nullptr;
 	WORD nStrm = 0;
 	auto result = false;
-	std::unique_ptr<DataEditor> data_editor = std::make_unique<DataEditor>();
 
-	OldE = edit;
+	//OldE = edit;
 	MarkBoth(p, p2);
 	EditD* EE = data_editor->WriteParamsToE();
 
@@ -814,7 +813,7 @@ bool CompRunChptRec(EditD* edit, WORD CC)
 		mv = MausVisible;
 
 		FD = nullptr;
-		STyp = CFile->loadS(ChptTyp, CRecPtr);
+		STyp = data_editor->GetFileD()->loadS(ChptTyp, CRecPtr);
 		RP.rdb = CRdb;
 		RP.i_rec = data_editor->CRec();
 #ifdef FandSQL
@@ -860,7 +859,7 @@ bool CompRunChptRec(EditD* edit, WORD CC)
 					std::vector<FieldDescr*> unusedFD;
 					EditReader* reader = new EditReader();
 					reader->RdFormOrDesign(unusedFD, RP);
-					edit = reader->GetEditD();
+					//edit = reader->GetEditD();
 				}
 				break;
 			}
@@ -961,7 +960,7 @@ bool CompRunChptRec(EditD* edit, WORD CC)
 	LinkDRoot = oldLd;
 	ReleaseStore(&p);
 	ReleaseStore(&p2);
-	edit = OldE;
+	//edit = OldE;
 	//EditDRoot = E;
 	data_editor->ReadParamsFromE(EE);
 	CRdb = RP.rdb;
@@ -1319,7 +1318,7 @@ bool CompileRdb(FileD* rdb_file, bool Displ, bool Run, bool FromCtrlF10)
 			Txt = rdb_file->loadT(ChptTxt, rdb_file->FF->RecPtr);
 			if (Verif && ((ChptTF->LicenseNr != 0) || Encryp || (rdb_file->FF->UMode == RdOnly))) {
 				GoCompileErr(I, 647);
-				throw std::exception("Not all chapters all compiled.");
+				throw std::exception("Not all chapters all compiled (encrypted or RdOnly).");
 			}
 			if (Verif || ChptTF->CompileAll || FromCtrlF10 || (Typ == 'U') ||
 				(Typ == 'F' || Typ == 'D') && CompileFD ||
@@ -1721,7 +1720,7 @@ bool EditExecRdb(const std::string& name, const std::string& proc_name, Instr_pr
 				EditHelpOrCat(cc, 0, "");
 				goto label41;
 			}
-			if (!CompRunChptRec(edit, cc)) {
+			if (!CompRunChptRec(data_editor, cc)) {
 				GotoErrPos(Brk);
 				goto label5;
 			}

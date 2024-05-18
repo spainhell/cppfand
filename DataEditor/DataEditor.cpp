@@ -57,6 +57,11 @@ DataEditor::~DataEditor()
 	}
 }
 
+FileD* DataEditor::GetFileD()
+{
+	return file_d_;
+}
+
 void DataEditor::SetFileD(FileD* file_d)
 {
 	//if (record_ != nullptr) {

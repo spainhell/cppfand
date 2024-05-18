@@ -18,6 +18,7 @@ public:
     DataEditor(EditD* edit);
     DataEditor(FileD* file_d);
     ~DataEditor();
+    FileD* GetFileD();
     void SetFileD(FileD* file_d);
     void EditDataFile(FileD* FD, EditOpt* EO);
     WORD EditTxt(std::string& s, WORD pos, WORD maxlen, WORD maxcol, FieldType typ, bool del,
