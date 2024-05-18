@@ -1297,7 +1297,10 @@ bool CompileRdb(FileD* rdb_file, bool Displ, bool Run, bool FromCtrlF10)
 			Typ = STyp[0];
 			Name = OldTrailChar(' ', rdb_file->loadS(ChptName, rdb_file->FF->RecPtr));
 			Txt = rdb_file->loadT(ChptTxt, rdb_file->FF->RecPtr);
-			if (Verif && ((ChptTF->LicenseNr != 0) || Encryp || (rdb_file->FF->UMode == RdOnly))) GoCompileErr(I, 647);
+			if (Verif && ((ChptTF->LicenseNr != 0) || Encryp || (rdb_file->FF->UMode == RdOnly))) {
+				GoCompileErr(I, 647);
+				throw std::exception("Not all chapters all compiled.");
+			}
 			if (Verif || ChptTF->CompileAll || FromCtrlF10 || (Typ == 'U') ||
 				(Typ == 'F' || Typ == 'D') && CompileFD ||
 				(Typ == 'P') && ChptTF->CompileProc) {
@@ -1461,18 +1464,21 @@ bool CompileRdb(FileD* rdb_file, bool Displ, bool Run, bool FromCtrlF10)
 		CompileFD = false;
 		result = true;
 		//if (!Run) {
-		//	CRecPtr = edit->NewRecPtr;
-		//	//CFile->ReadRec(data_editor->CRec(), CRecPtr);
+		//	Chpt->ReadRec(CRec(), edit->NewRecPtr);
 		//}
 		CompileMsgOff(Buf, w);
 #ifdef FandSQL
 		if (top && (Strm1 != nullptr)) Strm1->Login(UserName, UserPassWORD);
 #endif
 		log->log(loglevel::DEBUG, "finish CompileRdb()");
+
+		delete edit; edit = nullptr;
+		delete reader; reader = nullptr;
 	}
 	catch (std::exception& e) {
 		log->log(loglevel::EXCEPTION, "CompileRdb() exception: ", e.what());
 		result = false;
+		CompileMsgOff(Buf, w);
 		ReleaseFilesAndLinksAfterChapter(edit);
 		PrevCompInp.clear();
 		//ReleaseBoth(p, p2);
@@ -1482,12 +1488,10 @@ bool CompileRdb(FileD* rdb_file, bool Displ, bool Run, bool FromCtrlF10)
 		if (!IsCompileErr) {
 			InpRdbPos.i_rec = I;
 		}
+		delete edit; edit = nullptr;
+		delete reader; reader = nullptr;
 	}
 
-	delete edit; edit = nullptr;
-	delete reader; reader = nullptr;
-
-	CompileMsgOff(Buf, w);
 	return result;
 }
 
