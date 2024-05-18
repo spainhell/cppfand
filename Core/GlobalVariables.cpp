@@ -13,7 +13,7 @@ XKey* CViewKey;
 std::string TopRdbDir, TopDataDir;
 std::string CatFDName;
 RdbD* CRdb, *TopRdb;
-Catalog* CatFD = nullptr;
+Catalog* catalog = nullptr;
 FileD* HelpFD;
 size_t InpArrLen, CurrPos, OldErrPos;
 

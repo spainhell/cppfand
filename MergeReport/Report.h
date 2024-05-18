@@ -1,6 +1,7 @@
 #pragma once
 #include "MergeReportBase.h"
 #include "../Core/access-structs.h"
+#include "../Core/compile.h"
 #include "../Core/rdrun.h"
 
 struct InpD;
@@ -55,7 +56,7 @@ private:
 	void FindInRec(char& FTyp, FrmlElem** res, bool wasIiPrefix);
 	void Rd_Oi();
 	LvDescr* MakeOldMLvD();
-	void RdAutoSortSK(InpD* ID);
+	void RdAutoSortSK(InpD* ID, std::unique_ptr<Compiler>& compiler);
 	LvDescr* NewLvS(LvDescr* L, InpD* ID);
 	void RdAssignBlk(std::vector<AssignD*>* ARoot);
 	void RdBeginEnd(std::vector<AssignD*>* ARoot);

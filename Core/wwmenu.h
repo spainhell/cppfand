@@ -122,7 +122,7 @@ public:
 	WORD nBlks = 0;
 	BYTE DownI[30]{ '\0' };
 	WORD Exec();
-	virtual bool GetDownMenu(TMenuBox** W);
+	virtual TMenuBox* GetDownMenu();
 	void GetItemRect(WORD I, TRect* R) override;
 };
 
@@ -132,7 +132,7 @@ public:
 	TMenuBarS();
 	TMenuBarS(WORD MsgNr);
 	std::string* MsgTxt;
-	bool GetDownMenu(TMenuBox** W) override;
+	TMenuBox* GetDownMenu() override;
 	std::string GetHlpName() override;
 	std::string GetText(short I) override;
 };
@@ -145,7 +145,7 @@ public:
 	Instr_menu* PD;
 	bool Enabled(WORD I) override;
 	bool ExecItem(WORD& I) override;
-	bool GetDownMenu(TMenuBox** W) override;
+	TMenuBox* GetDownMenu() override;
 	std::string GetHlpName() override;
 	std::string GetText(short I) override;
 };

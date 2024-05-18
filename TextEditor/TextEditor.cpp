@@ -114,8 +114,8 @@ bool FirstEvent = false;
 WORD PHNum = 0, PPageS = 0; // {strankovani ve Scroll}
 
 HANDLE TxtFH = nullptr;
-pstring TxtPath;
-pstring TxtVol;
+std::string TxtPath;
+std::string TxtVol;
 //bool AllRd = false;
 int AbsLenT = 0;
 bool ChangePart, UpdPHead;
@@ -190,24 +190,24 @@ void RestoreParams(stEditorParams& editorParams)
 
 FrmlElem* RdFldNameFrmlT(char& FTyp, MergeReportBase* caller)
 {
-	compiler->Error(8);
+	g_compiler->Error(8);
 	return nullptr;
 }
 
-void MyWrLLMsg(pstring s)
+void MyWrLLMsg(std::string s)
 {
 	if (HandleError == 4) s = "";
 	SetMsgPar(s);
 	WrLLF10Msg(700 + HandleError);
 }
 
-void MyRunError(pstring s, WORD n)
+void MyRunError(std::string s, WORD n)
 {
 	SetMsgPar(s);
 	RunError(n);
 }
 
-void HMsgExit(pstring s)
+void HMsgExit(std::string s)
 {
 	switch (HandleError) {
 	case 0: return;
@@ -1988,7 +1988,8 @@ void Calculate()
 	wwmix ww;
 	FrmlElem* Z = nullptr;
 	std::string txt;
-	WORD I; pstring Msg;
+	WORD I;
+	std::string Msg;
 	void* p = nullptr;
 	char FTyp;
 	double R;
@@ -1999,7 +2000,7 @@ void Calculate()
 	try {
 		ResetCompilePars();
 		//ptrRdFldNameFrml = RdFldNameFrmlT;
-		compiler->rdFldNameType = FieldNameType::T;
+		g_compiler->rdFldNameType = FieldNameType::T;
 	label0:
 		txt = CalcTxt;
 		Del = true; I = 1;
@@ -2019,10 +2020,10 @@ void Calculate()
 			UpdatedL = true;
 			goto label3;
 		}
-		compiler->SetInpStr(txt);
-		compiler->RdLex();
-		Z = compiler->RdFrml(FTyp, nullptr);
-		if (Lexem != 0x1A) compiler->Error(21);
+		g_compiler->SetInpStr(txt);
+		g_compiler->RdLex();
+		Z = g_compiler->RdFrml(FTyp, nullptr);
+		if (Lexem != 0x1A) g_compiler->Error(21);
 
 		switch (FTyp) {
 		case 'R': {
@@ -2605,7 +2606,7 @@ void TextEditor::ReplaceString(WORD& J, WORD& fst, WORD& lst, int& Last)
 	Last += r - f;
 }
 
-char MyVerifyLL(WORD n, pstring s)
+char MyVerifyLL(WORD n, std::string s)
 {
 	char cc;
 	WORD c2 = screen.WhereX() + FirstC - 1;
@@ -3081,7 +3082,7 @@ void TextEditor::EditTxtFile(std::string* locVar, char Mode, std::string& ErrMsg
 	WORD Ind = 0, oldInd = 0;
 	int oldTxtxy = 0;
 	LongStr* LS = nullptr;
-	pstring compErrTxt;
+	std::string compErrTxt;
 
 	if (Atr == 0) {
 		Atr = screen.colors.tNorm;

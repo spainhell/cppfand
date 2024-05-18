@@ -49,10 +49,10 @@ void TbFile::Backup(bool isBackup, WORD Ir)
 	std::string e;
 
 	IsBackup = isBackup;
-	SaveAndCloseAllFiles();
-	std::string ArNr = CatFD->GetArchive(Ir);
-	Vol = CatFD->GetVolume(Ir);
-	Path = CatFD->GetPathName(Ir);
+	SaveFiles();
+	std::string ArNr = catalog->GetArchive(Ir);
+	Vol = catalog->GetVolume(Ir);
+	Path = catalog->GetPathName(Ir);
 	size_t j = Path.find(' ');
 	std::string numbers;
 	if (j != std::string::npos) {
@@ -63,13 +63,13 @@ void TbFile::Backup(bool isBackup, WORD Ir)
 	Ext = ".000";
 	DrvNm = Dir[0];
 	MountVol(true);
-	compiler->SetInpStr(numbers);
-	compiler->RdLex();
+	g_compiler->SetInpStr(numbers);
+	g_compiler->RdLex();
 label1:
-	for (WORD i = 1; i <= CatFD->GetCatalogFile()->FF->NRecs; i++) {
-		if (!EquUpCase(CatFD->GetRdbName(i), "ARCHIVES")) {
-			if (CatFD->GetArchive(i) == ArNr) {
-				FSplit(CatFD->GetPathName(i), d, FName, e);
+	for (WORD i = 1; i <= catalog->GetCatalogFile()->FF->NRecs; i++) {
+		if (!EquUpCase(catalog->GetRdbName(i), "ARCHIVES")) {
+			if (catalog->GetArchive(i) == ArNr) {
+				FSplit(catalog->GetPathName(i), d, FName, e);
 				Ext[1] = '0';
 				switch (Ext[3]) {
 				case '9': {
@@ -98,15 +98,15 @@ label1:
 					/*if (h == 0xff)*/ CFile->CloseFile();
 				}
 				else {
-					CPath = FExpand(CatFD->GetPathName(i));
-					CVol = CatFD->GetVolume(i);
+					CPath = FExpand(catalog->GetPathName(i));
+					CVol = catalog->GetVolume(i);
 					TestMountVol(CPath[1]);
 					if (IsBackup) BackupH();
 					else RestoreH();
 				}
 			}
 		}
-		while (!(Lexem == 0x1A || Lexem == _number)) compiler->RdLex();
+		while (!(Lexem == 0x1A || Lexem == _number)) g_compiler->RdLex();
 		if (Lexem == _number) {
 			if (LexWord.length() == 1) {
 				std::string lexword = LexWord;
@@ -115,7 +115,7 @@ label1:
 			else {
 				ArNr = LexWord;
 			}
-			compiler->RdLex();
+			g_compiler->RdLex();
 			goto label1;
 		}
 	}

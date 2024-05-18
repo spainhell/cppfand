@@ -75,7 +75,7 @@ void ReportProc(RprtOpt* RO, bool save)
 	//MarkBoth(p, p2);
 	PrintView = false;
 	if (RO->Flds.empty()) {
-		compiler->SetInpTT(&RO->RprtPos, true);
+		g_compiler->SetInpTT(&RO->RprtPos, true);
 		const std::unique_ptr report = std::make_unique<Report>();
 		if (RO->SyntxChk) {
 			IsCompileErr = false;
@@ -110,7 +110,7 @@ void ReportProc(RprtOpt* RO, bool save)
 	if (RO->Edit) md = 'T';
 	else md = 'V';
 	if (save) {
-		SaveAndCloseAllFiles();
+		SaveFiles();
 	}
 	if (PrintView) {
 		w = PushW(1, 1, TxtCols, TxtRows);
@@ -232,20 +232,20 @@ void SortProc(FileD* FD, KeyFldD* SK)
 	LockMode md = FD->NewLockMode(ExclMode);
 	FD->FF->SortAndSubst(SK);
 	FD->OldLockMode(md);
-	SaveAndCloseAllFiles();
+	SaveFiles();
 }
 
 void MergeProc(Instr_merge_display* PD)
 {
 	void* p = nullptr; void* p2 = nullptr;
 	MarkBoth(p, p2);
-	compiler->SetInpTT(&PD->Pos, true);
+	g_compiler->SetInpTT(&PD->Pos, true);
 
 	const std::unique_ptr merge = std::make_unique<Merge>();
 	merge->Read();
 	merge->Run();
 
-	SaveAndCloseAllFiles();
+	SaveFiles();
 	ReleaseStore(&p);
 	ReleaseStore(&p2);
 }
@@ -381,7 +381,7 @@ void ExecPgm(Instr_exec* PD)
 	CVol = "";
 	std::string prog;
 	if (i != 0) {
-		prog = CatFD->GetPathName(i);
+		prog = catalog->GetPathName(i);
 	}
 	else {
 		prog = PD->ProgPath;
@@ -414,9 +414,9 @@ void CallRdbProc(Instr_call* PD)
 void MountProc(WORD CatIRec, bool NoCancel)
 {
 	try {
-		SaveAndCloseAllFiles();
-		CVol = CatFD->GetVolume(CatIRec);
-		CPath = FExpand(CatFD->GetPathName(CatIRec));
+		SaveFiles();
+		CVol = catalog->GetVolume(CatIRec);
+		CPath = FExpand(catalog->GetPathName(CatIRec));
 		FSplit(CPath, CDir, CName, CExt);
 		TestMountVol(CPath[1]);
 		LastExitCode = 0;
@@ -430,16 +430,17 @@ void MountProc(WORD CatIRec, bool NoCancel)
 void EditProc(Instr_edit* PD)
 {
 	EdUpdated = false;
-	SaveAndCloseAllFiles();
-	CFile = PD->EditFD;
+	SaveFiles();
+
+	CFile = PD->EditFD; // TODO: to be certain
 
 	// TODO: is needed to make copy of EditOptions before call edit?
-	std::unique_ptr<DataEditor> data_editor = std::make_unique<DataEditor>();
+	std::unique_ptr<DataEditor> data_editor = std::make_unique<DataEditor>(PD->EditFD);
 	const bool selFlds = data_editor->SelFldsForEO(&PD->EO, nullptr);
 	if (!PD->EO.UserSelFlds || selFlds) {
-		data_editor->EditDataFile(CFile, &PD->EO);
+		data_editor->EditDataFile(PD->EditFD, &PD->EO);
 	}
-	SaveAndCloseAllFiles();
+	SaveFiles();
 
 	// TODO: and here delete copy?
 }
@@ -676,7 +677,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 				return;
 			}
 			WORD msg = 613;
-			SetMsgPar(lv->Name);
+			SetMsgPar(lv->name);
 			lv->FD->RunErrorM(md);
 			RunError(msg);
 		}
@@ -684,7 +685,7 @@ void ReadWriteRecProc(bool IsRead, Instr_recs* PD)
 	else {
 		if ((N <= 0) || (N > lv->FD->FF->NRecs)) {
 			WORD msg = 641;
-			SetMsgPar(lv->Name);
+			SetMsgPar(lv->name);
 			lv->FD->RunErrorM(md);
 			RunError(msg);
 		}
@@ -938,7 +939,7 @@ void WithWindowProc(Instr_window* PD)
 		ClrScr(TextAttr);
 	}
 	SetWwViewPort();
-	RunInstr(PD->WwInstr);
+	RunInstr(PD->v_ww_instr);
 	PopW(w1, (PD->WithWFlags & WNoPop) == 0);
 	SetWwViewPort();
 	ProcAttr = PAttr;
@@ -972,7 +973,7 @@ void WithLockedProc(Instr_withshared* PD)
 					CFile->OldLockMode(NullMode);
 				}
 				else {
-					CloseClearHCFile(CFile->FF);
+					CloseClearH(CFile->FF);
 					goto label2;
 				}
 			}
@@ -1087,7 +1088,7 @@ void AssgnCatFld(Instr_assign* PD, void* record)
 {
 	if (PD->FD3 != nullptr) PD->FD3->CloseFile();
 	std::string data = RunShortStr(PD->FD3, PD->Frml3, record);
-	CatFD->SetField(PD->CatIRec, PD->CatFld, data);
+	catalog->SetField(PD->CatIRec, PD->CatFld, data);
 }
 
 void AssgnAccRight(Instr_assign* PD)
@@ -1102,7 +1103,7 @@ void AssgnUserName(Instr_assign* PD)
 
 void ReleaseDriveProc(FrmlElem* Z)
 {
-	SaveAndCloseAllFiles();
+	SaveFiles();
 	pstring s = RunShortStr(CFile, Z, CRecPtr);
 	char c = (char)toupper((char)s[1]);
 	if (c == spec.CPMdrive) ReleaseDrive(FloppyDrives);
@@ -1110,7 +1111,7 @@ void ReleaseDriveProc(FrmlElem* Z)
 		if ((c == 'A') || (c == 'B')) ReleaseDrive(c - '@');
 }
 
-void WithGraphicsProc(Instr* PD)
+void WithGraphicsProc(std::vector<Instr*>& PD)
 {
 	throw std::exception("WithGraphicsProc() not implemented!");
 	//if (IsGraphMode) RunInstr(PD);
@@ -1137,7 +1138,7 @@ void ResetCatalog()
 		CFile = CRdb->rdb_file->pChain;
 		while (CFile != nullptr) {
 			CFile->CloseFile();
-			CFile->CatIRec = CatFD->GetCatalogIRec(CFile->Name, CFile->FF->file_type == FileType::RDB);
+			CFile->CatIRec = catalog->GetCatalogIRec(CFile->Name, CFile->FF->file_type == FileType::RDB);
 #ifdef FandSQL
 			SetIsSQLFile();
 #endif
@@ -1200,24 +1201,26 @@ void MemDiagProc()
 {
 }
 
-void RunInstr(Instr* PD)
+void RunInstr(const std::vector<Instr*>& instructions)
 {
-	while (!ExitP && !BreakP && (PD != nullptr)) {
+	for (Instr* PD : instructions) {
+		if (ExitP || BreakP) break;
+
 		switch (PD->Kind) {
 		case PInstrCode::_ifthenelseP: {
 			Instr_loops* iPD = (Instr_loops*)PD;
 			if (RunBool(CFile, iPD->Bool, CRecPtr)) {
-				RunInstr(iPD->Instr1);
+				RunInstr(iPD->v_instr);
 			}
 			else {
-				RunInstr(iPD->ElseInstr1);
+				RunInstr(iPD->v_else_instr);
 			}
 			break;
 		}
 		case PInstrCode::_whiledo: {
 			Instr_loops* iPD = (Instr_loops*)PD;
 			while (!ExitP && !BreakP && RunBool(CFile, iPD->Bool, CRecPtr)) {
-				RunInstr(iPD->Instr1);
+				RunInstr(iPD->v_instr);
 			}
 			BreakP = false;
 			break;
@@ -1225,11 +1228,16 @@ void RunInstr(Instr* PD)
 		case PInstrCode::_repeatuntil: {
 			Instr_loops* iPD = (Instr_loops*)PD;
 			do {
-				RunInstr(iPD->Instr1);
+				RunInstr(iPD->v_instr);
 			} while (!(ExitP || BreakP || RunBool(CFile, iPD->Bool, CRecPtr)));
 			BreakP = false;
 			break;
 		}
+									 //case PInstrCode::_not_defined: {
+									 //	// contains only sub-instructions
+									 //	RunInstr(PD->sub_instr);
+									 //	break;
+									 //}
 		case PInstrCode::_menubox: {
 			auto menu = std::make_unique<TMenuBoxP>(0, 0, nullptr, (Instr_menu*)PD);
 			menu->call();
@@ -1261,7 +1269,7 @@ void RunInstr(Instr* PD)
 			break;
 		}
 		case PInstrCode::_save: {
-			SaveAndCloseAllFiles();
+			SaveFiles();
 			break;
 		}
 		case PInstrCode::_clrscr: {
@@ -1335,7 +1343,7 @@ void RunInstr(Instr* PD)
 			EditProc((Instr_edit*)PD);
 			break;
 		}
-		case PInstrCode::_asgnloc:/* !!! with PD^ do!!! */ {
+		case PInstrCode::_asgnloc: {
 			auto iPD = (Instr_assign*)PD;
 			LVAssignFrml(CFile, iPD->AssLV, iPD->Add, iPD->Frml, CRecPtr);
 			break;
@@ -1441,7 +1449,7 @@ void RunInstr(Instr* PD)
 		}
 		case PInstrCode::_turncat: {
 			auto iPD = (Instr_turncat*)PD;
-			CatFD->TurnCat(iPD->NextGenFD, iPD->FrstCatIRec, iPD->NCatIRecs, RunInt(CFile, iPD->TCFrml, CRecPtr));
+			catalog->TurnCat(iPD->NextGenFD, iPD->FrstCatIRec, iPD->NCatIRecs, RunInt(CFile, iPD->TCFrml, CRecPtr));
 			break;
 		}
 		case PInstrCode::_releasedrive: {
@@ -1593,17 +1601,19 @@ void RunInstr(Instr* PD)
 		}
 		default:
 			break;
+		}
 	}
-		PD = PD->Chain;
-}
 }
 
-void RunProcedure(Instr* PDRoot)
+void RunProcedure(std::vector<Instr*>& PDRoot)
 {
-	bool ExP = ExitP; bool BrkP = BreakP;
-	ExitP = false; BreakP = false;
+	bool ExP = ExitP;
+	bool BrkP = BreakP;
+	ExitP = false;
+	BreakP = false;
 	RunInstr(PDRoot);
-	ExitP = ExP; BreakP = BrkP;
+	ExitP = ExP;
+	BreakP = BrkP;
 }
 
 void CallProcedure(Instr_proc* PD)
@@ -1614,21 +1624,22 @@ void CallProcedure(Instr_proc* PD)
 	std::_Vector_iterator<std::_Vector_val<std::_Simple_types<LocVar*>>> it0;
 	std::_Vector_iterator<std::_Vector_val<std::_Simple_types<LocVar*>>> it1;
 
-	WORD i = 0, j = 0, n = 0;
-	int l = 0; Instr* pd1 = nullptr;
+	WORD i = 0, j = 0;
+	int l = 0;
 	FileD* lstFD = nullptr;
-	KeyFldD* kf1 = nullptr; KeyFldD* kf2 = nullptr;
+	KeyFldD* kf1 = nullptr;
+	KeyFldD* kf2 = nullptr;
 
 	if (PD == nullptr) return;
 	MarkBoth(p1, p2);
 	//oldprocbp = ProcMyBP;
 	std::deque<LinkD*> ld = LinkDRoot;
 	lstFD = (FileD*)LastInChain(FileDRoot);
-	compiler->SetInpTT(&PD->PPos, true);
+	g_compiler->SetInpTT(&PD->PPos, true);
 
 #ifdef _DEBUG
 	std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
-	if (srcCode.find("gettxt(FANDCFG)") != std::string::npos) {
+	if (srcCode.find("(Kl:string) begin proc(Tip00,(kl)); end;") != std::string::npos) {
 		printf("");
 	}
 #endif
@@ -1638,47 +1649,49 @@ void CallProcedure(Instr_proc* PD)
 
 	ReadProcHead("");
 	PD->variables = LVBD;
-	n = PD->variables.NParam;
+	WORD params_count = PD->variables.NParam;
 	LocVar* lvroot = PD->variables.GetRoot();
 	//oldbp = MyBP;
 	//PushProcStk();
-	if ((n != PD->N) && !((n == PD->N - 1) && PD->ExPar)) {
+	if ((params_count != PD->N) && !((params_count == PD->N - 1) && PD->ExPar)) {
 		CurrPos = 0;
-		compiler->Error(119);
+		g_compiler->Error(119);
 	}
 
 	it0 = PD->variables.vLocVar.begin();
+
 	// projdeme vstupni parametry funkce
-	for (i = 0; i < n; i++) {
-		if (PD->TArg[i].FTyp != (*it0)->FTyp) {
+	for (i = 0; i < params_count; i++) {
+		if (PD->TArg[i].FTyp != (*it0)->f_typ) {
 			CurrPos = 0;
-			compiler->Error(119);
+			g_compiler->Error(119);
 		}
 		switch (PD->TArg[i].FTyp) {
 		case 'r':
 		case 'i': {
 			if ((*it0)->FD != PD->TArg[i].FD) {
 				CurrPos = 0;
-				compiler->Error(119);
+				g_compiler->Error(119);
 			}
 			(*it0)->record = static_cast<uint8_t*>(PD->TArg[i].RecPtr);
 			break;
 		}
 		case 'f': {
 			if (PD->TArg[i].RecPtr != nullptr) {
-				const auto state = compiler->SaveCompState();
+				const auto state = g_compiler->SaveCompState();
 				std::string code = RunStdStr(CFile, PD->TArg[i].TxtFrml, CRecPtr);
-				compiler->SetInpStdStr(code, true);
+				g_compiler->SetInpStdStr(code, true);
 				CFile = RdFileD(PD->TArg[i].Name, FileType::FAND16, "$");
-				compiler->RestoreCompState(state);
+				g_compiler->RestoreCompState(state);
 			}
 			else {
 				CFile = PD->TArg[i].FD;
 			}
 			it1 = it0;
 			while (it1 != PD->variables.vLocVar.end()) {
-				if (((*it1)->FTyp == 'i' || (*it1)->FTyp == 'r')
-					&& ((*it1)->FD == (*it0)->FD)) (*it1)->FD = CFile;
+				if (((*it1)->f_typ == 'i' || (*it1)->f_typ == 'r') && ((*it1)->FD == (*it0)->FD)) {
+					(*it1)->FD = CFile;
+				}
 				++it1;
 			}
 			(*it0)->FD = CFile;
@@ -1688,11 +1701,11 @@ void CallProcedure(Instr_proc* PD)
 		default: {
 			FrmlElem* z = PD->TArg[i].Frml;
 			auto lv = *it0;
-			if (lv->IsRetPar && (z->Op != _getlocvar)
+			if (lv->is_return_param && (z->Op != _getlocvar)
 				|| PD->TArg[i].FromProlog
-				&& (PD->TArg[i].IsRetPar != lv->IsRetPar)) {
+				&& (PD->TArg[i].IsRetPar != lv->is_return_param)) {
 				CurrPos = 0;
-				compiler->Error(119);
+				g_compiler->Error(119);
 			}
 			LVAssignFrml(CFile, lv, false, PD->TArg[i].Frml, CRecPtr);
 			break;
@@ -1702,7 +1715,7 @@ void CallProcedure(Instr_proc* PD)
 	}
 	it1 = it0;
 	while (it0 != PD->variables.vLocVar.end()) {
-		if ((*it0)->FTyp == 'r') {
+		if ((*it0)->f_typ == 'r') {
 			CFile = (*it0)->FD;
 			CRecPtr = CFile->GetRecSpace();
 			CFile->SetTWorkFlag(CRecPtr);
@@ -1710,32 +1723,25 @@ void CallProcedure(Instr_proc* PD)
 			CFile->ClearDeletedFlag(CRecPtr);
 			(*it0)->record = static_cast<uint8_t*>(CRecPtr);
 		}
-		else if ((*it0)->FTyp == 'f') {
+		else if ((*it0)->f_typ == 'f') {
 			// dynamic file definition
 			//printf("");
 		}
 		++it0;
 	}
-	//ProcMyBP = MyBP;
-	pd1 = ReadProcBody();
 
-#ifdef _DEBUG
-	// vytvorime vektor instrukci pro snadny prehled
-	std::vector<Instr*> vI;
-	Instr* next = pd1;
-	while (next != nullptr) {
-		vI.push_back(next);
-		next = next->Chain;
-	}
-#endif
+	// read procedure instructions
+	std::vector<Instr*> instructions = ReadProcBody();
 
 	FDLocVarAllowed = false;
 	it0 = it1;
 	while (it0 != PD->variables.vLocVar.end()) {
-		if ((*it0)->FTyp == 'i') {
-			auto hX = (XWKey*)(*it0)->record;
-			if (hX->KFlds == nullptr) hX->KFlds = (*it0)->FD->Keys[0]->KFlds;
-			auto tmp = (XWKey*)(*it0)->record;
+		if ((*it0)->f_typ == 'i') {
+			XWKey* hX = (XWKey*)(*it0)->record;
+			if (hX->KFlds == nullptr) {
+				hX->KFlds = (*it0)->FD->Keys[0]->KFlds;
+			}
+			XWKey* tmp = (XWKey*)(*it0)->record;
 			tmp->Open(CFile, hX->KFlds, true, false);
 		}
 		++it0;
@@ -1743,17 +1749,23 @@ void CallProcedure(Instr_proc* PD)
 	ReleaseStore(&p2);
 
 	// **** RUN PROCEDURE **** //
-	RunProcedure(pd1);
+	RunProcedure(instructions);
 	// *********************** //
+
+	// delete instructions
+	for (Instr* instr : instructions) {
+		delete instr;
+	}
+	instructions.clear();
 
 	it0 = PD->variables.vLocVar.begin();
 	i = 0;
 	while (it0 != PD->variables.vLocVar.end()) {
 		// projdeme navratove hodnoty (navratova hodnota funkce + VAR parametry)
 		// a tyto navratove hodnoty ulozime zpet do patricneho FrmlElem
-		if ((*it0)->IsRetPar) {
+		if ((*it0)->is_return_param) {
 			auto z18 = (FrmlElem18*)PD->TArg[i].Frml;
-			switch ((*it0)->FTyp) {
+			switch ((*it0)->f_typ) {
 			case 'R': {
 				z18->locvar->R = (*it0)->R;
 				break;
@@ -1768,8 +1780,8 @@ void CallProcedure(Instr_proc* PD)
 			}
 			}
 		}
-		if (i > n) {
-			switch ((*it0)->FTyp) {
+		if (i > params_count) {
+			switch ((*it0)->f_typ) {
 			case 'r': {
 				CFile = (*it0)->FD;
 				CFile->ClearRecSpace((*it0)->record);

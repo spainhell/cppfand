@@ -53,8 +53,8 @@ bool TestOptStr(char c);
 bool BlockExist();
 
 void SetPartLine(int Ln);
-void MyWrLLMsg(pstring s);
-void HMsgExit(pstring s);
+void MyWrLLMsg(std::string s);
+void HMsgExit(std::string s);
 void Calculate();
 stEditorParams SaveParams();
 void RestoreParams(stEditorParams& editorParams);

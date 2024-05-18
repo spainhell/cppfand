@@ -246,7 +246,10 @@ bool ThFile::TestErr152()
 	bool result = false;
 	if (HandleError == 152) {
 		F10SpecKey = __ESC;
-		SetMsgPar(CPath, "");
+
+		SetMsgPar(CPath);
+		MsgPar[1] = "";
+
 		WrLLF10Msg(808);
 		const WORD KbdChar = Event.Pressed.KeyCombination();
 		if ((KbdChar == __ESC) && PromptYN(21)) GoExit();

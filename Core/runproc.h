@@ -47,7 +47,7 @@ void AssgnCatFld(Instr_assign* PD, void* record);
 void AssgnAccRight(Instr_assign* PD);
 void AssgnUserName(Instr_assign* PD);
 void ReleaseDriveProc(FrmlElem* Z);
-void WithGraphicsProc(Instr* PD);
+void WithGraphicsProc(std::vector<Instr*>& PD);
 
 #ifdef FandGraph
 void DrawProc(Instr_graph* PD);
@@ -68,7 +68,7 @@ void WaitProc();
 void MemDiagProc();
 #endif
 
-void RunInstr(Instr* PD);
-void RunProcedure(Instr* PDRoot);
+void RunInstr(const std::vector<Instr*>& instructions);
+void RunProcedure(std::vector<Instr*>& PDRoot);
 void CallProcedure(Instr_proc* PD);
 void RunMainProc(RdbPos RP, bool NewWw);

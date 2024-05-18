@@ -139,7 +139,7 @@ void CompileHelpCatDcl()
 
 	// process help
 	std::string help_definition = ReadMessage(56);
-	compiler->SetInpStr(help_definition);
+	g_compiler->SetInpStr(help_definition);
 #if defined (FandRunV)
 	HelpFD = RdFileD("UFANDHLP", FileType::FAND16, "");
 #else
@@ -148,9 +148,9 @@ void CompileHelpCatDcl()
 
 	// process catalog
 	std::string catalog_definition = ReadMessage(52);
-	compiler->SetInpStr(catalog_definition);
+	g_compiler->SetInpStr(catalog_definition);
 	FileD* cat_file = RdFileD("Catalog", FileType::CAT, "");
-	CatFD = new Catalog(cat_file);
+	catalog = new Catalog(cat_file);
 	
 	FileDRoot = nullptr;
 	Chpt = FileDRoot;
@@ -162,7 +162,7 @@ bool SetTopDir(std::string& p, std::string& n)
 	bool result = false;
 	try {
 		FSplit(FExpand(p), TopRdbDir, n, e);
-		if (!compiler->IsIdentifStr(n)) {
+		if (!g_compiler->IsIdentifStr(n)) {
 			WrLLF10Msg(881);
 			return result;
 		}
@@ -182,8 +182,7 @@ bool SetTopDir(std::string& p, std::string& n)
 			return result;
 		}
 		CatFDName = n;
-		FileD* catalog = CatFD->GetCatalogFile();
-		OpenF(catalog, CPath, Exclusive);
+		OpenF(catalog->GetCatalogFile(), CPath, Exclusive);
 		result = true;
 	}
 	catch (std::exception& e) {
@@ -192,14 +191,14 @@ bool SetTopDir(std::string& p, std::string& n)
 	return result;
 }
 
-void RunRdb(std::string p)
+void RunRdb(std::string& p)
 {
-	std::string n;
-	if (!p.empty() && SetTopDir(p, n)) {
+	if (std::string n; !p.empty() && SetTopDir(p, n)) {
 		wwmix ww;
 		EditExecRdb(n, "main", nullptr, &ww);
-		CFile = CatFD->GetCatalogFile();
-		CFile->CloseFile();
+		// CFile = catalog->GetCatalogFile();
+		// CFile->CloseFile();
+		catalog->Close();
 	}
 }
 
@@ -217,7 +216,7 @@ void CallInstallRdb()
 	std::string n;
 	if ((!p.empty()) && SetTopDir(p, n)) {
 		InstallRdb(n);
-		CFile = CatFD->GetCatalogFile();
+		CFile = catalog->GetCatalogFile();
 		CFile->CloseFile();
 	}
 }
@@ -439,7 +438,7 @@ void InitRunFand()
 
 	TextAttr = screen.colors.DesktopColor;
 	screen.Window(1, 1, (BYTE)TxtCols, TxtRows - 1);
-	WriteWFrame(WHasFrame + WDoubleFrame, "", "");
+	WriteWFrame(WHasFrame + WDoubleFrame, "", "", TextAttr);
 	screen.ScrClr(2, 2, TxtCols - 2, TxtRows - 13, (char)0xB1, TextAttr);
 	screen.ScrClr(2, TxtRows - 11, TxtCols - 2, 10, (char)0xb2, TextAttr);
 

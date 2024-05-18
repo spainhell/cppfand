@@ -15,7 +15,6 @@
 
 void CodingRdb::CodeRdb(EditD* edit, bool Rotate)
 {
-	//WORD pos;
 	std::string s;
 	FileD* cf = CFile;
 	void* cr = CRecPtr;
@@ -29,7 +28,8 @@ void CodingRdb::CodeRdb(EditD* edit, bool Rotate)
 		CFile->ReadRec(i, CRecPtr);
 		RunMsgN(i);
 		s = CFile->loadS(ChptTyp, CRecPtr);
-		SetMsgPar(CFile->loadS(ChptName, CRecPtr));
+		std::string chapter_name = CFile->loadS(ChptName, CRecPtr);
+		SetMsgPar(chapter_name);
 		if (Rotate && (s[0] == ' ' || s[0] == 'I')) {}
 		else {
 			CodeF(Rotate, i, ChptTxt, s[0]);
@@ -88,7 +88,7 @@ void CodingRdb::CompressTxt(WORD IRec, LongStr* s, char Typ)
 		while (!(ForwChar == '#' || ForwChar == 0x1A || ForwChar == '\r' || ForwChar == '{')) {
 			// { read headlines }
 			Wr(ForwChar);
-			compiler->ReadChar();
+			g_compiler->ReadChar();
 		}
 		switch (ForwChar) {
 		case 0x1A:
@@ -97,14 +97,14 @@ void CodingRdb::CompressTxt(WORD IRec, LongStr* s, char Typ)
 			break;
 		}
 		case '{': {
-			compiler->SkipBlank(true);
+			g_compiler->SkipBlank(true);
 			Wr('{');
 			Wr('}');
 			break;
 		}
 		default: {
-			compiler->ReadChar();
-			if (ForwChar == '\n') compiler->ReadChar();
+			g_compiler->ReadChar();
+			if (ForwChar == '\n') g_compiler->ReadChar();
 			break;
 		}
 		}
@@ -130,22 +130,22 @@ label1:
 		break;
 	}
 	case '{': {
-		compiler->ReadChar();
+		g_compiler->ReadChar();
 		if (ForwChar == '$') {
-			n = compiler->RdDirective(b);
+			n = g_compiler->RdDirective(b);
 			switch (n) {
 			case 0:;
 			case 1: {
 				SwitchLevel++;
-				if (!b) compiler->SkipLevel(true);
+				if (!b) g_compiler->SkipLevel(true);
 			}
 			case 5: {
 				PrevCompInp.emplace_back(CompInpD());
-				compiler->SetInpTT(&ChptIPos, true);
+				g_compiler->SetInpTT(&ChptIPos, true);
 			}
 
 			default: {
-				if (n == 3) compiler->SkipLevel(false);
+				if (n == 3) g_compiler->SkipLevel(false);
 				else SwitchLevel--;
 			}
 			}
@@ -160,12 +160,12 @@ label1:
 				n--;
 				if (n == 0) {
 					Wr(' ');
-					compiler->ReadChar();
+					g_compiler->ReadChar();
 					goto label1;
 				}
 			}
 			}
-			compiler->ReadChar();
+			g_compiler->ReadChar();
 			goto label2;
 		}
 		break;
@@ -173,7 +173,7 @@ label1:
 	case '\'': {
 		do {
 			Wr(ForwChar);
-			compiler->ReadChar();
+			g_compiler->ReadChar();
 		} while (ForwChar == '\'' || ForwChar == 0x1A);
 		if (ForwChar == 0x1A) goto label1;
 		break;
@@ -181,7 +181,7 @@ label1:
 	default: {
 		if (ForwChar <= ' ') { // ^@..' '
 			if (!(Typ == 'R' || Typ == 'U' || Typ == 'E' || Typ == 'H')) {
-				while ((ForwChar <= ' ') && (ForwChar != 0x1A)) compiler->ReadChar();
+				while ((ForwChar <= ' ') && (ForwChar != 0x1A)) g_compiler->ReadChar();
 				Wr(' ');
 				goto label1;
 			}
@@ -190,7 +190,7 @@ label1:
 	}
 	}
 	Wr(ForwChar);
-	compiler->ReadChar();
+	g_compiler->ReadChar();
 	goto label1;
 }
 
@@ -267,7 +267,7 @@ void CodingRdb::CompressCRdb(DataEditor* data_editor, EditD* edit)
 	MarkStore(p);
 	void* cr = Chpt->FF->RecPtr;
 	std::string s = "#I1_" + Chpt->Name + "#O1_" + Chpt->Name;
-	compiler->SetInpStr(s);
+	g_compiler->SetInpStr(s);
 	SpecFDNameAllowed = true;
 
 	const std::unique_ptr merge = std::make_unique<Merge>();
@@ -275,7 +275,7 @@ void CodingRdb::CompressCRdb(DataEditor* data_editor, EditD* edit)
 	SpecFDNameAllowed = false;
 	merge->Run();
 
-	SaveAndCloseAllFiles();
+	SaveFiles();
 	ReleaseStore(&p);
 	Chpt->FF->RecPtr = cr;
 	CFile = Chpt;

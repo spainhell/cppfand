@@ -609,15 +609,15 @@ bool TMenuBoxP::Enabled(WORD I)
 
 bool TMenuBoxP::ExecItem(WORD& I)
 {
-	auto result = false;
+	bool result = false;
 	if (!PD->PullDown) return result;
 	if (I == 0) {
 		if ((Event.What == evMouseDown) || !PD->WasESCBranch) return result;
 		RunInstr(PD->ESCInstr);
 	}
 	else {
-		auto choice = getChoice(I);
-		RunInstr(choice->Instr);
+		ChoiceD* choice = getChoice(I);
+		RunInstr(choice->v_instr);
 	}
 	if (ExitP) { I = 255; return result; }
 	I = 0;
@@ -664,7 +664,7 @@ label1:
 			RunInstr(PD->ESCInstr);
 		}
 		else {
-			RunInstr(getChoice(i)->Instr);
+			RunInstr(getChoice(i)->v_instr);
 		}
 		if (BreakP || ExitP) {
 			if (PD->Loop) BreakP = false;
@@ -737,8 +737,10 @@ WORD TMenuBar::Exec()
 			WrText(iTxt);
 		label3:
 			GetItemRect(iTxt, &r);
-			MenuX = r.A.X; MenuY = r.A.Y + 1;
-			if (GetDownMenu(&w)) {
+			MenuX = r.A.X;
+				MenuY = r.A.Y + 1;
+				w = GetDownMenu();
+			if (w != nullptr) {
 				i = w->Exec(DownI[iTxt]);
 				delete w;
 				DownI[iTxt] = Lo(i);
@@ -772,9 +774,9 @@ WORD TMenuBar::Exec()
 	}
 }
 
-bool TMenuBar::GetDownMenu(TMenuBox** W)
+TMenuBox* TMenuBar::GetDownMenu()
 {
-	return false;
+	return nullptr;
 }
 
 void TMenuBar::GetItemRect(WORD I, TRect* R)
@@ -805,19 +807,23 @@ TMenuBarS::TMenuBarS(WORD MsgNr)
 	InitTMenuBar(1, 1, TxtCols);
 }
 
-bool TMenuBarS::GetDownMenu(TMenuBox** W)
+TMenuBox* TMenuBarS::GetDownMenu()
 {
-	pstring TNr(10); WORD n, err; TMenuBoxS* p;
-	auto result = false;
+	pstring TNr(10);
+	WORD n, err;
+	TMenuBoxS* result = nullptr;
+
 	TNr = GetText(nTxt + iTxt);
 	val(TNr, n, err);
-	if ((TNr.length() == 0) || (err != 0)) return result;
-	ReadMessage(n);
-	//New(p, Init(MenuX, MenuY, (pstring*)&MsgLine));
-	p = new TMenuBoxS(MenuX, MenuY, MsgLine);
-	p->parent = this;
-	*W = p;
-	result = true;
+	if ((TNr.length() == 0) || (err != 0)) {
+		// do nothing
+	}
+	else {
+		ReadMessage(n);
+		result = new TMenuBoxS(MenuX, MenuY, MsgLine);
+		result->parent = this;
+	}
+
 	return result;
 }
 
@@ -872,22 +878,33 @@ bool TMenuBarP::ExecItem(WORD& I)
 		if (!PD->WasESCBranch) return result;
 		RunInstr(PD->ESCInstr);
 	}
-	else RunInstr(getChoice(I)->Instr);
+	else {
+		RunInstr(getChoice(I)->v_instr);
+	}
 	I = 0;
-	if (BreakP || ExitP) { result = false; return result; }
+	if (BreakP || ExitP) {
+		result = false;
+		return result;
+	}
 	result = true;
 	return result;
 }
 
-bool TMenuBarP::GetDownMenu(TMenuBox** W)
+TMenuBox* TMenuBarP::GetDownMenu()
 {
-	auto result = false;
-	auto PD1 = (Instr_menu*)getChoice(iTxt)->Instr;
-	if ((PD1 == nullptr) || (PD1->Chain != nullptr)
-		|| (PD1->Kind != PInstrCode::_menubox) || !PD1->PullDown) return result;
-	auto p = new TMenuBoxP(MenuX, MenuY, this, PD1);
-	*W = p;
-	result = true;
+	TMenuBox* result = nullptr;
+
+	std::vector<Instr*>& instructions = getChoice(iTxt)->v_instr;
+
+	if (instructions.size() != 1 
+		|| instructions[0]->Kind != PInstrCode::_menubox 
+		|| !((Instr_menu*)instructions[0])->PullDown) {
+		// do nothing
+	}
+	else {
+		result = new TMenuBoxP(MenuX, MenuY, this, static_cast<Instr_menu*>(instructions[0]));
+	}
+
 	return result;
 }
 

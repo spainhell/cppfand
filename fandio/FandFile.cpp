@@ -694,6 +694,18 @@ void FandFile::SaveFile()
 	if (file_type == FileType::INDEX) {
 		XF->NoCreate = false;
 	}
+	//if (IsUpdHandle(Handle)) {
+	//	SaveCache(0, Handle);
+	//	ResetUpdHandle(Handle);
+	//}
+	//if (XF != nullptr && XF->Handle != nullptr && IsUpdHandle(XF->Handle)) {
+	//	SaveCache(0, XF->Handle);
+	//	ResetUpdHandle(XF->Handle);
+	//}
+	//if (TF != nullptr && TF->Handle != nullptr && IsUpdHandle(TF->Handle)) {
+	//	SaveCache(0, TF->Handle);
+	//	ResetUpdHandle(TF->Handle);
+	//}
 }
 
 void FandFile::CloseFile()
@@ -1256,7 +1268,7 @@ void FandFile::IndexFileProc(bool Compress)
 	XF->NoCreate = false;
 	TestXFExist();
 	_parent->OldLockMode(md);
-	SaveAndCloseAllFiles();
+	SaveFiles();
 	delete[] record; record = nullptr;
 }
 

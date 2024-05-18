@@ -40,15 +40,15 @@ void OpenTWorkH()
 	}
 }
 
-void SaveAndCloseAllFiles()
+void SaveFiles()
 {
 	if (!CacheExist()) return;
 
 	// save catalog
-	FileD* catalog_file = CatFD->GetCatalogFile();
+	FileD* catalog_file = catalog->GetCatalogFile();
 	catalog_file->FF->WrPrefixes();
 
-	ForAllFDs(ForAllFilesOperation::close);
+	ForAllFDs(ForAllFilesOperation::save);
 
 	bool b = SaveCache(0, catalog_file->FF->Handle);
 	FlushHandles();
@@ -71,7 +71,7 @@ void CloseFANDFiles(bool FromDML)
 		RD = RD->ChainBack;
 	}
 	if (CRdb != nullptr) {
-		CFile = CatFD->GetCatalogFile();
+		CFile = catalog->GetCatalogFile();
 		CFile->CloseFile();
 	}
 	CFile = HelpFD;
@@ -89,7 +89,7 @@ void OpenFANDFiles(bool FromDML)
 	OpenTWorkH();
 	OpenF(HelpFD, CPath, RdOnly);
 	if (CRdb == nullptr) return;
-	OpenF(CatFD->GetCatalogFile(), CPath, Exclusive);
+	OpenF(catalog->GetCatalogFile(), CPath, Exclusive);
 	RD = CRdb;
 
 	while (RD != nullptr) {
@@ -257,8 +257,8 @@ bool SetContextDir(FileD* file_d, std::string& dir, bool& isRdb)
 void SetTxtPathVol(std::string& Path, int CatIRec)
 {
 	if (CatIRec != 0) {
-		CVol = CatFD->GetVolume(CatIRec);
-		CPath = FExpand(CatFD->GetPathName(CatIRec));
+		CVol = catalog->GetVolume(CatIRec);
+		CPath = FExpand(catalog->GetPathName(CatIRec));
 		FSplit(CPath, CDir, CName, CExt);
 	}
 	else {

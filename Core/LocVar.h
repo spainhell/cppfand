@@ -10,16 +10,16 @@ class LocVar : public Chained<LocVar>
 {
 public:
 	LocVar() = default;
-	LocVar(std::string Name) { this->Name = Name; }
-	bool IsPar = false;      // urcuje, zda se jedna o vstupni parametr
-	bool IsRetPar = false;   // urcuje, zda jde o parametr predavany odkazem
-	bool IsRetValue = false; // pridano navic - urcuje navratovou hodnotu funkce
-	char FTyp = '\0';
+	LocVar(const std::string& name) { this->name = name; }
+	std::string name;
+	bool is_param = false;          // urcuje, zda se jedna o vstupni parametr
+	bool is_return_param = false;   // urcuje, zda jde o parametr predavany odkazem
+	bool is_return_value = false;   // pridano navic - urcuje navratovou hodnotu funkce
+	char f_typ = '\0';
 	FileD* FD = nullptr;
 	uint8_t* record = nullptr;
-	std::string Name;
-	instr_type Op = _notdefined;
-	FrmlElem* Init = nullptr;
+	instr_type oper = _notdefined;
+	FrmlElem* init = nullptr;
 
 	bool B = false;
 	double R = 0.0;

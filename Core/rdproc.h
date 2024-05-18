@@ -1,5 +1,6 @@
 #pragma once
 #include "access.h"
+#include "compile.h"
 
 #include "models/FrmlElem.h"
 #include "models/Instr.h"
@@ -15,27 +16,26 @@ bool IsRecVar(LocVar** LV);
 LocVar* RdRecVar();
 LocVar* RdIdxVar();
 FrmlElem* RdRecVarFldFrml(LocVar* LV, char& FTyp);
-char RdOwner(LinkD** LLD, LocVar** LLV); // 'r','i','F'
+char RdOwner(FileD* file_d, LinkD** LLD, LocVar** LLV); // 'r','i','F'
 FrmlElem* RdFldNameFrmlP(char& FTyp, MergeReportBase*);
 FileD* RdPath(bool NoFD, std::string& Path, WORD& CatIRec);
 FrmlElem* RdFunctionP(char& FFTyp);
 XKey* RdViewKeyImpl(FileD* FD);
 void RdSelectStr(FrmlElemFunction* Z);
 
-Instr* RdPInstr();
+std::vector<Instr*> RdPInstr();
 
-void RdPInstrAndChain(Instr** PD);
 void RdChoices(Instr* PD);
 void RdMenuAttr(Instr* PD);
 Instr* RdMenuBox(bool Loop);
 Instr* RdMenuBar();
 Instr_loops* RdIfThenElse();
 Instr_loops* RdWhileDo();
-Instr* RdFor();
+std::vector<Instr*> RdFor();
 Instr* RdCase();
 Instr_loops* RdRepeatUntil();
 Instr_forall* RdForAll();
-Instr* RdBeginEnd();
+std::vector<Instr*> RdBeginEnd();
 Instr_proc* RdProcArg(char Caller);
 void RdKeyCode(EdExitD* X);
 
@@ -44,17 +44,19 @@ struct kNames { pstring Nm; BYTE Brk; unsigned __int32 Code; };
 extern kNames KeyNames[NKeyNames];
 bool RdHeadLast(EditOpt* EO);
 bool RdHeadLast(Instr_edittxt* IE);
-bool RdViewOpt(EditOpt* EO);
-void RdKeyList(EdExitD* X);
+void RdKeyList(EdExitD* X, const std::unique_ptr<Compiler>& compiler);
 void RdProcCall(Instr** pinstr); // muze upravit pinstr z hlavni funkce
 
 std::vector<FieldDescr*> RdFlds();
 std::vector<FieldDescr*> RdSubFldList(std::vector<FieldDescr*>& InFL, char Opt);
 Instr_sort* RdSortCall();
 Instr_edit* RdEditCall();
-void RdEditOpt(EditOpt* EO);
-Instr* RdReportCall();
+
+bool RdViewOpt(EditOpt* EO, FileD* file_d);
+void RdEditOpt(EditOpt* EO, FileD* file_d);
 void RdRprtOpt(RprtOpt* RO, bool has_first);
+
+Instr* RdReportCall();
 Instr* RdRDBCall();
 Instr* RdExec();
 Instr* RdCopyFile();
@@ -85,7 +87,7 @@ Instr_assign* RdAssign();
 Instr* RdWith();
 Instr_assign* RdUserFuncAssign();
 void ReadProcHead(const std::string& name);
-Instr* ReadProcBody();
+std::vector<Instr*> ReadProcBody();
 void ReadDeclChpt();
 FrmlElem* GetEvalFrml(FileD* file_d, FrmlElem21* X, void* record);
 Instr* RdCallLProc();

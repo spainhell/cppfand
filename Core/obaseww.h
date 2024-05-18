@@ -21,8 +21,8 @@ void* PushScr(WORD C1, WORD R1, WORD C2, WORD R2);
 int PushW(WORD C1, WORD R1, WORD C2, WORD R2, bool push_pixel = false, bool ww = true);
 void PopScr(bool draw);
 void PopW(int pos, bool draw = true);
-void WriteWFrame(BYTE WFlags, std::string top, std::string bottom); // r142
-void WrHd(std::string header, WORD row, WORD maxCols);
+void WriteWFrame(uint8_t WFlags, const std::string& top, const std::string& bottom, uint8_t color);
+void WriteHeader(std::string header, WORD row, WORD maxCols);
 void CenterWw(BYTE& C1, BYTE& R1, BYTE& C2, BYTE& R2, BYTE WFlags);
 int PushWFramed(BYTE C1, BYTE R1, BYTE C2, BYTE R2, WORD Attr, 
 	std::string top, std::string bottom, BYTE WFlags); // r176

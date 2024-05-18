@@ -16,7 +16,7 @@ const BYTE maxStk = 15;
 WORD iStk = 0;
 struct structStk { RdbD* Rdb; FileD* FD; WORD iR, iT; } Stk[maxStk];
 
-void Help(RdbD* R, pstring Name, bool InCWw)
+void Help(RdbD* R, std::string name, bool InCWw)
 {
 	void* p = nullptr;
 	FileD* fd = nullptr;
@@ -30,7 +30,7 @@ void Help(RdbD* R, pstring Name, bool InCWw)
 		backw = true;
 	}
 	else {
-		if (Name == "") return;
+		if (name.empty()) return;
 		backw = false;
 	}
 
@@ -93,17 +93,17 @@ void Help(RdbD* R, pstring Name, bool InCWw)
 		}
 
 		while (true) {
-			s = GetHlpText(R, Name, byName, iRec);
+			s = GetHlpText(R, name, byName, iRec);
 			cf2 = CFile;
 			if (s.empty()) {
 				if (frst && (R == (RdbD*)(&HelpFD)) && (KbdChar == __CTRL_F1)) {
 					KbdChar = 0;
-					Name = "Ctrl-F1 error";
+					name = "Ctrl-F1 error";
 					byName = true;
 					continue;
 				}
 				else {
-					SetMsgPar(Name, fd->Name);
+					SetMsgPar(name, fd->Name);
 					WrLLF10Msg(146);
 				}
 			}
@@ -143,7 +143,7 @@ void Help(RdbD* R, pstring Name, bool InCWw)
 				else {
 					Move(&Stk[2], Stk, sizeof(Stk) - 4);
 				}
-				/* !!! with Stk[iStk] do!!! */
+
 				Stk[iStk].Rdb = R; Stk[iStk].FD = cf2;
 				Stk[iStk].iR = iRec; Stk[iStk].iT = i;
 				oldIRec = iRec; i = 1; delta = 0;
@@ -179,10 +179,10 @@ void Help(RdbD* R, pstring Name, bool InCWw)
 				}
 				default: {
 					if (KbdChar == __F1) {
-						Name = "root";
+						name = "root";
 					}
 					else {
-						Name = LexWord;
+						name = LexWord;
 					}
 					byName = true;
 					continue;

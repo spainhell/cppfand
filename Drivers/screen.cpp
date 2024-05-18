@@ -117,8 +117,7 @@ void Screen::ScrWrStr(WORD X, WORD Y, std::string S, BYTE Color)
 
 	CHAR_INFO ci;
 	ci.Attributes = Color;
-	for (int i = 0; i < len; i++)
-	{
+	for (int i = 0; i < len; i++) {
 		ci.Char.AsciiChar = S[i];
 		_buf[i] = ci;
 	}
@@ -130,9 +129,11 @@ void Screen::ScrWrFrameLn(WORD X, WORD Y, BYTE Typ, BYTE Width, BYTE Color)
 {
 	std::string txt;
 	txt.reserve(Width);
-	txt += FrameChars[Typ];
-	for (int i = 0; i < Width - 2; i++) { txt += FrameChars[Typ + 1]; }
-	txt += FrameChars[Typ + 2];
+	txt += (char)FrameChars[Typ];
+	for (int i = 0; i < Width - 2; i++)	{
+		txt += (char)FrameChars[Typ + 1];
+	}
+	txt += (char)FrameChars[Typ + 2];
 	ScrWrStr(X, Y, txt, Color);
 }
 

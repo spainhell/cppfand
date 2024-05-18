@@ -99,7 +99,7 @@ void XScan::Reset(FrmlElem* ABool, bool SQLFilter, void* record)
 		break;
 		}
 #ifdef FandSQL
-	case 4: { CompKIFrml(Key, KIRoot, false); New(SQLStreamPtr(Strm), Init); i_rec = 1; break; }
+	case 4: { CompKIFrml(Key, KIRoot, false); New(SQLStreamPtr(Strm), init); i_rec = 1; break; }
 #endif
 	}
 	SeekRec(0);
@@ -172,7 +172,7 @@ void XScan::ResetOwner(XString* XX, FrmlElem* aBool)
 	if (Kind = 4) {           /* !on .SQL with Workindex */
 		KIRoot = GetZStore(sizeof(KIRoot^));
 		KIRoot->X1 = StoreStr(XX->S); KIRoot->X2 = StoreStr(XX->S);
-		New(SQLStreamPtr(Strm), Init); i_rec = 1
+		New(SQLStreamPtr(Strm), init); i_rec = 1
 }
 	else
 #endif
@@ -204,7 +204,7 @@ void XScan::ResetOwnerIndex(LinkD* LD, LocVar* LV, FrmlElem* aBool)
 void XScan::ResetSQLTxt(FrmlPtr Z)
 {
 	LongStrPtr s;
-	New(SQLStreamPtr(Strm), Init); s = RunStdStr(Z);
+	New(SQLStreamPtr(Strm), init); s = RunStdStr(Z);
 	SQLStreamPtr(Strm)->InpResetTxt(s); ReleaseStore(s);
 	eof = false;
 }

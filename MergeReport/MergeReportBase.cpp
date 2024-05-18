@@ -26,7 +26,7 @@ FileD* MergeReportBase::InpFD(WORD I)
 
 void MergeReportBase::TestNotSum()
 {
-	if (FrmlSumEl != nullptr) compiler->OldError(41);
+	if (FrmlSumEl != nullptr) g_compiler->OldError(41);
 }
 
 void MergeReportBase::Err(char source, bool wasIiPrefix)
@@ -65,9 +65,9 @@ bool MergeReportBase::RdIiPrefix()
 		(isdigit(LexWord[2]) && LexWord[2] != '0')) {
 		Ii = LexWord[2] - '0';
 		if ((Ii > MaxIi) || (WhatToRd == 'i') && (Ii > Oi)) {
-			compiler->Error(9);
+			g_compiler->Error(9);
 		}
-		compiler->RdLex(); compiler->RdLex();
+		g_compiler->RdLex(); g_compiler->RdLex();
 		result = true;
 	}
 	else {
@@ -95,12 +95,12 @@ void MergeReportBase::CopyPrevMFlds()
 		if (it != vFieldNames.end()) break;
 		vFieldNames.push_back(LexWordString);*/
 
-		FieldDescr* F = compiler->FindFldName(InpFD(Ii), fld_name);
+		FieldDescr* F = g_compiler->FindFldName(InpFD(Ii), fld_name);
 		if (F == nullptr) {
-			compiler->OldError(8);
+			g_compiler->OldError(8);
 		}
-		if (!compiler->FldTypIdentity(M->FldD, F)) {
-			compiler->OldError(12);
+		if (!g_compiler->FldTypIdentity(M->FldD, F)) {
+			g_compiler->OldError(12);
 		}
 		KeyFldD* MNew = new KeyFldD(); // (KeyFldD*)GetStore(sizeof(*MNew));
 		MNew->pChain = nullptr; // M->pChain;
@@ -118,22 +118,22 @@ void MergeReportBase::CopyPrevMFlds()
 void MergeReportBase::CheckMFlds(KeyFldD* M1, KeyFldD* M2)
 {
 	while (M1 != nullptr) {
-		if (M2 == nullptr) compiler->OldError(30);
-		if (!compiler->FldTypIdentity(M1->FldD, M2->FldD)
+		if (M2 == nullptr) g_compiler->OldError(30);
+		if (!g_compiler->FldTypIdentity(M1->FldD, M2->FldD)
 			|| (M1->Descend != M2->Descend)
 			|| (M1->CompLex != M2->CompLex))
-			compiler->OldError(12);
+			g_compiler->OldError(12);
 		M1 = M1->pChain;
 		M2 = M2->pChain;
 	}
-	if (M2 != nullptr) compiler->OldError(30);
+	if (M2 != nullptr) g_compiler->OldError(30);
 }
 
 void MergeReportBase::TestSetSumIi()
 {
 	if ((FrmlSumEl != nullptr) && (Ii != 0))
 		if (FrstSumVar || (SumIi == 0)) SumIi = Ii;
-		else if (SumIi != Ii) compiler->OldError(27);
+		else if (SumIi != Ii) g_compiler->OldError(27);
 }
 
 void MergeReportBase::ZeroSumFlds(LvDescr* L)

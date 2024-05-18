@@ -543,11 +543,11 @@ LocVar* RunUserFunc(FileD* file_d, FrmlElem19* X, void* record)
 	FrmlListEl* fl = X->FrmlL;
 
 	for (LocVar* lv : X->FC->LVB.vLocVar) {
-		if (lv->IsPar || lv->IsRetPar) {
+		if (lv->is_param || lv->is_return_param) {
 			// parameter or return parameter variable -> assign value
 			LVAssignFrml(file_d, lv, false, fl->Frml, record);
 		}
-		else if (lv->IsRetValue) {
+		else if (lv->is_return_value) {
 			// it's return value -> initialize it and mark it
 			lv->B = false;
 			lv->R = 0.0;
@@ -563,8 +563,7 @@ LocVar* RunUserFunc(FileD* file_d, FrmlElem19* X, void* record)
 		if (fl != nullptr) fl = fl->pChain;
 	}
 
-	Instr* instr = X->FC->pInstr;
-	RunProcedure(instr);
+	RunProcedure(X->FC->v_instr);
 
 	return return_lv;
 }
@@ -1046,7 +1045,7 @@ label1:
 	}
 	case _generation: {
 		FrmlElem9* iX = (FrmlElem9*)X;
-		result = CatFD->Generation(iX->FD, CPath, CVol);
+		result = catalog->Generation(iX->FD, CPath, CVol);
 		FSplit(CPath, CDir, CName, CExt);
 		break;
 	}
@@ -1059,8 +1058,8 @@ label1:
 	}
 	case _catfield: {
 		FrmlElemCatalogField* iX = (FrmlElemCatalogField*)X;
-		CVol = CatFD->GetVolume(iX->CatIRec);
-		CPath = FExpand(CatFD->GetPathName(iX->CatIRec));
+		CVol = catalog->GetVolume(iX->CatIRec);
+		CPath = FExpand(catalog->GetPathName(iX->CatIRec));
 		FSplit(CPath, CDir, CName, CExt);
 		TestMountVol(CPath[0]);
 		result = LastUpdate(CPath);
@@ -1377,7 +1376,7 @@ void AssgnFrml(FileD* file_d, void* record, FieldDescr* field_d, FrmlElem* X, bo
 
 void LVAssignFrml(FileD* file_d, LocVar* LV, bool Add, FrmlElem* X, void* record)
 {
-	switch (LV->FTyp) {
+	switch (LV->f_typ) {
 	case 'S': {
 		LV->S = RunStdStr(file_d, X, record);
 		break;
@@ -1559,7 +1558,7 @@ FrmlElem* RunEvalFrml(FileD* file_d, FrmlElem* Z, void* record)
 //	if (X == nullptr) return new LongStr(2);
 //
 //	while (true) {
-//		switch (X->Op) {
+//		switch (X->oper) {
 //		case _field: {
 //			auto iX7 = (FrmlElem7*)X;
 //			result = file_d->loadLongS(iX7->Field, record);
@@ -2146,9 +2145,9 @@ LongStr* RunS(FileD* file_d, FrmlElem* Z, void* record)
 	}
 	case _catfield: {
 		auto iZ = (FrmlElemCatalogField*)Z;
-		std::string stdS = CatFD->GetField(iZ->CatIRec, iZ->CatFld);
+		std::string stdS = catalog->GetField(iZ->CatIRec, iZ->CatFld);
 		bool empty = stdS.empty(); // bude se jednat jen o cestu, bez nazvu souboru
-		if (iZ->CatFld == CatFD->CatalogPathNameField()) {
+		if (iZ->CatFld == catalog->CatalogPathNameField()) {
 			stdS = FExpand(stdS);
 			if (empty) AddBackSlash(stdS); // za cestu pridame '\'
 		}

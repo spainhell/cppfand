@@ -59,10 +59,10 @@ DataEditor::~DataEditor()
 
 void DataEditor::SetFileD(FileD* file_d)
 {
-	if (record_ != nullptr) {
-		delete[] record_;
-		record_ = nullptr;
-	}
+	//if (record_ != nullptr) {
+	//	delete[] record_;
+	//	record_ = nullptr;
+	//}
 	file_d_ = file_d;
 	record_ = file_d->GetRecSpace();
 }
@@ -1039,6 +1039,8 @@ void DataEditor::AdjustCRec()
 EditD* DataEditor::WriteParamsToE()
 {
 	EditD* edit = new EditD(TxtCols, TxtRows);
+	edit->FD = file_d_;
+	edit->NewRecPtr = record_;
 	edit->CFld = CFld;
 	edit->FirstEmptyFld = FirstEmptyFld;
 	edit->VK = VK;
@@ -1321,7 +1323,7 @@ void DataEditor::DisplEditWw()
 	TextAttr = edit_->Attr;
 	ClrScr(TextAttr);
 
-	WriteWFrame(edit_->WFlags, edit_->Top, "");
+	WriteWFrame(edit_->WFlags, edit_->Top, "", TextAttr);
 	screen.Window(1, 1, TxtCols, TxtRows);
 	DisplSysLine();
 	DisplBool();
@@ -1824,7 +1826,7 @@ void DataEditor::WrJournal(char Upd, void* RP, double Time)
 	}
 	UpdCount++;
 	if (UpdCount == edit_->SaveAfter) {
-		SaveAndCloseAllFiles();
+		SaveFiles();
 		UpdCount = 0;
 	}
 }
@@ -2246,7 +2248,7 @@ bool DataEditor::EquFileViewName(FileD* FD, std::string S, EditOpt** EO)
 	else if (S == std::string(FD->Name)) {
 		*EO = new EditOpt();
 		(*EO)->UserSelFlds = true;
-		(*EO)->Flds = compiler->AllFldsList(FD, false);
+		(*EO)->Flds = g_compiler->AllFldsList(FD, false);
 		return result;
 	}
 
@@ -2322,7 +2324,7 @@ void DataEditor::UpwEdit(LinkD* LkD)
 			SL = SL->pChain;
 		}
 		if (SL1 == nullptr) {
-			EO->Flds = compiler->AllFldsList(LD->ToFD, false);
+			EO->Flds = g_compiler->AllFldsList(LD->ToFD, false);
 		}
 		else {
 			RdUserView(LD->ToFD, SL1->S, EO);
@@ -2349,7 +2351,7 @@ void DataEditor::UpwEdit(LinkD* LkD)
 		if (OpenEditWw()) {
 			RunEdit(px, Brk);
 		}
-		SaveAndCloseAllFiles();
+		SaveFiles();
 		//PopEdit();
 		delete reader; reader = nullptr;
 	}
@@ -3041,10 +3043,10 @@ void DataEditor::Sorting()
 	KeyFldD* SKRoot = nullptr;
 	void* p = nullptr;
 	LockMode md;
-	SaveAndCloseAllFiles();
+	SaveFiles();
 	MarkStore(p);
 
-	if (!compiler->PromptSortKeys(edit_->Flds, SKRoot) || (SKRoot == nullptr)) {
+	if (!g_compiler->PromptSortKeys(edit_->Flds, SKRoot) || (SKRoot == nullptr)) {
 		ReleaseStore(&p);
 		record_ = edit_->NewRecPtr;
 		DisplAllWwRecs();
@@ -3076,7 +3078,7 @@ void DataEditor::AutoReport()
 {
 	void* p = nullptr; RprtOpt* RO = nullptr;
 	FileUseMode UM = Closed;
-	MarkStore(p); RO = compiler->GetRprtOpt();
+	MarkStore(p); RO = g_compiler->GetRprtOpt();
 	RO->FDL.FD = file_d_;
 	RO->Flds = edit_->Flds;
 	if (params_->Select) {
@@ -3612,7 +3614,7 @@ label2:
 	switch (C) {
 	case __F9: {
 		if (WriteCRec(false, Displ)) {
-			SaveAndCloseAllFiles();
+			SaveFiles();
 			UpdCount = 0;
 		}
 		goto label4;
@@ -3982,7 +3984,7 @@ void DataEditor::ImbeddEdit()
 			if (OpenEditWw()) {
 				RunEdit(nullptr, Brk);
 			}
-			SaveAndCloseAllFiles();
+			SaveFiles();
 			//PopEdit();
 			delete reader; reader = nullptr;
 		}
@@ -4061,7 +4063,7 @@ void DataEditor::DownEdit()
 			if (OpenEditWw()) {
 				RunEdit(nullptr, Brk);
 			}
-			SaveAndCloseAllFiles();
+			SaveFiles();
 			//PopEdit();
 			delete reader; reader = nullptr;
 		}
@@ -4180,10 +4182,10 @@ void DataEditor::Calculate2()
 		if (Event.Pressed.KeyCombination() == 'U') goto label0;
 		if (Event.Pressed.KeyCombination() == __ESC || (txt.length() == 0)) goto label3;
 		CalcTxt = txt;
-		compiler->SetInpStr(txt);
-		compiler->RdLex();
-		Z = compiler->RdFrml(FTyp, nullptr);
-		if (Lexem != 0x1A) compiler->Error(21);
+		g_compiler->SetInpStr(txt);
+		g_compiler->RdLex();
+		Z = g_compiler->RdFrml(FTyp, nullptr);
+		if (Lexem != 0x1A) g_compiler->Error(21);
 		if (Event.Pressed.KeyCombination() == __CTRL_F4) {
 			F = CFld->FldD;
 			if (CFld->Ed(IsNewRec) && (F->frml_type == FTyp)) {
@@ -4360,7 +4362,10 @@ bool DataEditor::StartProc(Instr_proc* ExitProc, bool Displ)
 	ReadParamsFromE(EE);
 	file_d_->NewLockMode(md);
 	upd = file_d_->FF->WasWrRec;      /*writeln(strdate(currtime-t,"ss mm.ttt"));wait;*/
-	if (file_d_->HasUpdFlag(record_)) { b = true; upd = true; }
+	if (file_d_->HasUpdFlag(record_)) {
+		b = true;
+		upd = true;
+	}
 	params_->WasUpdated = b;
 	if (b2) file_d_->SetUpdFlag(record_);
 	if (!params_->WasUpdated && !lkd) UnLockRec(edit_);
@@ -4980,7 +4985,7 @@ label81:
 						switch (KbdChar) {
 						case __F9: {
 							// uloz
-							SaveAndCloseAllFiles();
+							SaveFiles();
 							UpdCount = 0;
 							break;
 						}
@@ -5080,7 +5085,7 @@ label81:
 									goto fin;
 								}
 							}
-							else if (IsTestRun && (file_d_ != CatFD->GetCatalogFile()) && (KbdChar == __ALT_F2)) {
+							else if (IsTestRun && (file_d_ != catalog->GetCatalogFile()) && (KbdChar == __ALT_F2)) {
 								EditHelpOrCat(KbdChar, 1, file_d_->Name + "." + CFld->FldD->Name);
 							}
 							break;

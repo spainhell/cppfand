@@ -252,7 +252,7 @@ void ImportTxt(CopyD* CD)
 		CRecPtr = CD->FD2->GetRecSpace();
 #ifdef FandSQL
 		if (CFile->IsSQLFile) {
-			New(q, Init);
+			New(q, init);
 			q->OutpRewrite(Append);
 		}
 		else
@@ -384,7 +384,7 @@ void ExportFD(CopyD* CD)
 
 	try {
 		CFile = CD->FD1;
-		SaveAndCloseAllFiles();
+		SaveFiles();
 		md = CFile->NewLockMode(RdMode);
 		F2 = new ThFile(CD->Path2, CD->CatIRec2, InOutMode::_outp, 0, nullptr);
 		int n = CFile->FF->XNRecs(CD->FD1->Keys);
@@ -558,7 +558,7 @@ void FileCopy(CopyD* CD)
 	else {
 		MakeCopy(CD);
 	}
-	SaveAndCloseAllFiles();
+	SaveFiles();
 	RunMsgOff();
 	if (LastExitCode != 0 && !CD->NoCancel) GoExit();
 }
@@ -575,7 +575,7 @@ void MakeMerge(CopyD* CD)
 		s = s + " #O1_" + CD->FD2->Name;
 		if (CD->Append) s = s + '+';
 
-		compiler->SetInpStr(s);
+		g_compiler->SetInpStr(s);
 
 		const std::unique_ptr merge = std::make_unique<Merge>();
 		merge->Read();

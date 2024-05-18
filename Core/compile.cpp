@@ -22,7 +22,7 @@
 
 const BYTE MaxLen = 9;
 RdbPos ChptIPos; // used in LexAnal & ProjMgr
-Compiler* compiler = new Compiler();
+Compiler* g_compiler = new Compiler();
 
 bool KeyArgFound;
 FieldDescr* KeyArgFld;
@@ -34,6 +34,20 @@ pstring QQround = "round";
 BYTE CurrChar; // { Compile }
 BYTE ForwChar, ExpChar, Lexem;
 pstring LexWord;
+
+Compiler::Compiler()
+{
+}
+
+Compiler::Compiler(FileD* file_d)
+{
+	processing_F = file_d;
+}
+
+Compiler::~Compiler()
+{
+}
+
 
 std::string Compiler::Error(short N)
 {
@@ -787,7 +801,7 @@ LocVar* Compiler::RdVarName(LocVarBlkD* LVB, bool IsParList)
 	if (lvar != nullptr) Error(26); // promenna uz existuje
 	else {
 		lvar = new LocVar(LexWord);
-		if (IsParList) { lvar->IsPar = true; LVB->NParam++; }
+		if (IsParList) { lvar->is_param = true; LVB->NParam++; }
 		LVB->vLocVar.push_back(lvar);
 
 	}
@@ -907,10 +921,10 @@ label1:
 		sz = sizeof(int);
 	label2:
 		for (LocVar* locvar : newVars) {
-			locvar->FTyp = typ;
-			locvar->Op = _getlocvar;
-			locvar->IsRetPar = rp;
-			locvar->Init = Z;
+			locvar->f_typ = typ;
+			locvar->oper = _getlocvar;
+			locvar->is_return_param = rp;
+			locvar->init = Z;
 		}
 	}
 	else if (rp) Error(168);
@@ -918,8 +932,8 @@ label1:
 		if (TestKeyWord("FILE")) {
 			// budeme pracovat jen s 1. promennou ve vektoru
 			auto lv = newVars[0];
-			lv->FTyp = 'f';
-			LexWord = lv->Name;
+			lv->f_typ = 'f';
+			LexWord = lv->name;
 			if (LexWord.length() > 8) OldError(2);
 			fd = FindFileD();
 			RdLex();
@@ -941,7 +955,7 @@ label1:
 				}
 				TestLex('[');
 				p = SaveCompState();
-				RdFileD(lv->Name, FDTyp, "$");
+				RdFileD(lv->name, FDTyp, "$");
 				TestLex(']');
 				lv->FD = CFile;
 				n = CurrPos;
@@ -972,7 +986,7 @@ label1:
 				}
 			}
 			for (LocVar* locvar : newVars) {
-				locvar->FTyp = typ;
+				locvar->f_typ = typ;
 				locvar->FD = CFile;
 				if (typ == 'r') locvar->record = nullptr; // ptr(0,1) ??? /* for RdProc nullptr-tests + no Run*/
 				/* frueher bei IsParList K = nullptr; warum? */
@@ -1012,9 +1026,9 @@ bool Compiler::FindLocVar(LocVar* LVRoot, LocVar** LV)
 	if (Lexem != _identifier) return result;
 	*LV = LVRoot;
 	while (*LV != nullptr) {
-		pstring lvName = (*LV)->Name.c_str();
+		pstring lvName = (*LV)->name.c_str();
 		if (EquUpCase(lvName, LexWord)) { return true; }
-		*LV = (LocVar*)(*LV)->pChain;
+		*LV = (*LV)->pChain;
 	}
 	return result;
 }
@@ -1234,19 +1248,6 @@ bool Compiler::FldTypIdentity(FieldDescr* F1, FieldDescr* F2)
 	return true;
 }
 
-void Compiler::RdFldList(FieldListEl** FLRoot)
-{
-	FieldDescr* F = nullptr;
-	FieldListEl* FL = nullptr;
-label1:
-	F = RdFldName(CFile);
-	FL = new FieldListEl();
-	FL->FldD = F;
-	if (*FLRoot == nullptr) *FLRoot = FL;
-	else ChainLast(*FLRoot, FL);
-	if (Lexem == ',') { RdLex(); goto label1; }
-}
-
 void Compiler::RdFldList(std::vector<FieldDescr*>& vFields)
 {
 	while (true) {
@@ -1260,34 +1261,19 @@ void Compiler::RdFldList(std::vector<FieldDescr*>& vFields)
 	}
 }
 
-void Compiler::RdFldList(std::vector<FieldDescr*>* vFields)
+void Compiler::RdNegFldList(bool& neg, std::vector<FieldDescr*>& vFields)
 {
-	while (true) {
-		FieldDescr* F = RdFldName(CFile);
-		vFields->push_back(F);
-		if (Lexem == ',') {
-			RdLex();
-			continue;
-		}
-		break;
+	if (Lexem == '^') {
+		RdLex();
+		neg = true;
 	}
-}
-
-void Compiler::RdNegFldList(bool& Neg, std::vector<FieldDescr*>& vFields)
-{
-	if (Lexem == '^') { RdLex(); Neg = true; }
 	Accept('(');
-	if (Lexem == ')') Neg = true;
-	else RdFldList(vFields);
-	Accept(')');
-}
-
-void Compiler::RdNegFldList(bool& Neg, std::vector<FieldDescr*>* vFields)
-{
-	if (Lexem == '^') { RdLex(); Neg = true; }
-	Accept('(');
-	if (Lexem == ')') Neg = true;
-	else RdFldList(vFields);
+	if (Lexem == ')') {
+		neg = true;
+	}
+	else {
+		RdFldList(vFields);
+	}
 	Accept(')');
 }
 
@@ -1327,8 +1313,7 @@ XKey* Compiler::RdViewKey(FileD* file_d)
 		}
 	}
 
-	if (IdxLocVarAllowed && FindLocVar(&LVBD, &lv) && (lv->FTyp == 'i'))
-	{
+	if (IdxLocVarAllowed && FindLocVar(&LVBD, &lv) && (lv->f_typ == 'i')) {
 		if (lv->FD != file_d) Error(164);
 		lastK = (XKey*)(lv->record);
 		goto label1;
@@ -1741,7 +1726,7 @@ bool Compiler::FindFuncD(FrmlElem** ZZ, MergeReportBase* caller)
 	char typ = '\0';
 	FuncD* fc = FuncDRoot;
 	while (fc != nullptr) {
-		if (EquUpCase(fc->Name, LexWord)) {
+		if (EquUpCase(fc->name, LexWord)) {
 			RdLex(); RdLex();
 			FrmlElem19* z = new FrmlElem19(_userfunc, 8); // GetOp(_userfunc, 8);
 			z->FC = fc;
@@ -1752,7 +1737,7 @@ bool Compiler::FindFuncD(FrmlElem** ZZ, MergeReportBase* caller)
 				if (z->FrmlL == nullptr) z->FrmlL = fl;
 				else ChainLast(z->FrmlL, fl);
 				fl->Frml = RdFormula(typ, caller);
-				if (typ != (*itr++)->FTyp) OldError(12);
+				if (typ != (*itr++)->f_typ) OldError(12);
 				if (i < n) Accept(',');
 			}
 			Accept(')');
@@ -2181,12 +2166,12 @@ FrmlElem* Compiler::RdPrim(char& FTyp, MergeReportBase* caller)
 			}
 		}
 		else {
-			if (compiler->rdFldNameType == FieldNameType::none && caller == nullptr) {
+			if (g_compiler->rdFldNameType == FieldNameType::none && caller == nullptr) {
 				Error(110);
 			}
 			else {
 				if (rdFldNameType != FieldNameType::none) {
-					Z = compiler->RdFldNameFrml(FTyp, caller); // volani ukazatele na funkci
+					Z = g_compiler->RdFldNameFrml(FTyp, caller); // volani ukazatele na funkci
 				}
 				else {
 					Z = caller->RdFldNameFrml(FTyp); // volani ukazatele na funkci
@@ -2316,7 +2301,7 @@ FrmlElem* Compiler::RdKeyInBool(KeyInD** KIRoot, bool NewMyBP, bool FromRdProc, 
 	}
 	if (IsKeyWord("KEY")) {
 		AcceptKeyWord("IN");
-		if ((CFile->FF->file_type != FileType::INDEX) || (CViewKey == nullptr)) {
+		if ((processing_F->FF->file_type != FileType::INDEX) || (CViewKey == nullptr)) {
 			OldError(118);
 		}
 		if (CViewKey->KFlds == nullptr) {
@@ -2347,14 +2332,20 @@ FrmlElem* Compiler::RdKeyInBool(KeyInD** KIRoot, bool NewMyBP, bool FromRdProc, 
 	label2:
 		FrmlSumEl = nullptr;
 		Z = RdFormula(FTyp, caller);
-		if (CFile->typSQLFile && (FTyp == 'S')) SQLFilter = true;
+		if (processing_F->typSQLFile && (FTyp == 'S')) {
+			SQLFilter = true;
+		}
 		else {
 			TestBool(FTyp);
-			if (Z->Op == _eval) ((FrmlElem21*)Z)->EvalFD = CFile;
+			if (Z->Op == _eval) {
+				((FrmlElem21*)Z)->EvalFD = processing_F;
+			}
 		}
-		result = Z; // MyBPContext(Z, NewMyBP && (Z->Op != _eval));
+		result = Z;
 	}
-	if (FromRdProc) FileVarsAllowed = FVA;
+	if (FromRdProc) {
+		FileVarsAllowed = FVA;
+	}
 	return result;
 }
 
@@ -2419,7 +2410,7 @@ FileD* Compiler::FindFileD()
 	FileD* FD = nullptr;
 	RdbD* R = nullptr;
 	LocVar* LV = nullptr;
-	if (FDLocVarAllowed && FindLocVar(&LVBD, &LV) && (LV->FTyp == 'f')) {
+	if (FDLocVarAllowed && FindLocVar(&LVBD, &LV) && (LV->f_typ == 'f')) {
 		return LV->FD;
 	}
 	R = CRdb;
@@ -2435,7 +2426,7 @@ FileD* Compiler::FindFileD()
 		R = R->ChainBack;
 	}
 	if (EquUpCase("CATALOG", LexWord)) {
-		return CatFD->GetCatalogFile();
+		return catalog->GetCatalogFile();
 	}
 	return nullptr;
 }
@@ -2559,7 +2550,7 @@ FrmlElem* Compiler::TryRdFldFrml(FileD* FD, char& FTyp, MergeReportBase* caller)
 	if (IsKeyWord("OWNED")) {
 		rff = rdFldNameType;
 		rdFldNameType = FieldNameType::F;
-		// TODO: compiler !!! ptrRdFldNameFrml = RdFldNameFrmlF;
+		// TODO: g_compiler !!! ptrRdFldNameFrml = RdFldNameFrmlF;
 		Accept('(');
 		z = new FrmlElem23(_owned, 12); // GetOp(_owned, 12);
 		TestIdentif();

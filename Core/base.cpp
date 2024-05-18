@@ -101,26 +101,29 @@ std::set<HANDLE> FlshHandles;
 // nahrada za 'WORD OvrHandle = h - 1' - zjisteni predchoziho otevreneho souboru;
 std::vector<HANDLE> vOverHandle;
 
-void SetMsgPar(std::string s)
+void SetMsgPar(const std::string& s)
 {
 	MsgPar[0] = s;
 }
 
-void SetMsgPar(std::string s1, std::string s2)
+void SetMsgPar(const std::string& s1, const std::string& s2)
 {
 	MsgPar[0] = s1;
 	MsgPar[1] = s2;
 }
 
-void SetMsgPar(std::string s1, std::string s2, std::string s3)
+void SetMsgPar(const std::string& s1, const std::string& s2, const std::string& s3)
 {
-	SetMsgPar(s1, s2);
+	MsgPar[0] = s1;
+	MsgPar[1] = s2;
 	MsgPar[2] = s3;
 }
 
-void SetMsgPar(std::string s1, std::string s2, std::string s3, std::string s4)
+void SetMsgPar(const std::string& s1, const std::string& s2, const std::string& s3, const std::string& s4)
 {
-	SetMsgPar(s1, s2, s3);
+	MsgPar[0] = s1;
+	MsgPar[1] = s2;
+	MsgPar[2] = s3;
 	MsgPar[3] = s4;
 }
 
@@ -809,14 +812,14 @@ int GetDateTimeH(FILE* handle)
 	return (ft.dwHighDateTime << 16) + ft.dwLowDateTime;
 }
 
-void MyDeleteFile(pstring path)
+void MyDeleteFile(const std::string& path)
 {
 	// smaze soubor - INT $41
 	auto result = remove(path.c_str());
 	if (result != 0) HandleError = result;
 }
 
-void RenameFile56(pstring OldPath, pstring NewPath, bool Msg)
+void RenameFile56(const std::string& OldPath, const std::string& NewPath, const bool Msg)
 {
 	// presouva nebo prejmenovava soubor
 	// potom:

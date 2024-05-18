@@ -20,7 +20,7 @@ extern XKey* CViewKey;
 extern std::string TopRdbDir, TopDataDir;
 extern std::string CatFDName;
 extern RdbD* CRdb, *TopRdb;
-extern Catalog* CatFD;
+extern Catalog* catalog;
 extern FileD* HelpFD;
 
 // r483

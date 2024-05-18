@@ -20,11 +20,11 @@ struct DepD
 
 struct FuncD
 {
+	std::string name;
 	FuncD* Chain = nullptr;
 	char FTyp = '\0';
 	LocVarBlkD LVB; // {1.LV is result}
-	Instr* pInstr = nullptr; // {InstrPtr}
-	pstring Name;
+	std::vector<Instr*> v_instr; // {InstrPtr}
 };
 
 enum class ForAllFilesOperation {
@@ -42,7 +42,7 @@ bool LinkLastRec(FileD* file_d, int& N, bool WithT, BYTE** newRecord);
 
 void AsgnParFldFrml(FileD* file_d, FieldDescr* field_d, FrmlElem* frml, bool add);
 
-void CloseClearHCFile(FandFile* fand_file);
+void CloseClearH(FandFile* fand_file);
 void TestCPathError();
 
 void CloseGoExit(FandFile* fand_file);

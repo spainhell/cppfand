@@ -6,15 +6,15 @@
 
 TzFile::TzFile(bool BkUp, bool NoCompr, bool SubDirO, bool OverwrO, int Ir, pstring aDir)
 {
-	SaveAndCloseAllFiles();
+	SaveFiles();
 	ForAllFDs(ForAllFilesOperation::close_passive_fd);
-	//if NoCompr then inherited Init(0) else inherited Init(1);
+	//if NoCompr then inherited init(0) else inherited init(1);
 	IsBackup = BkUp;
 	SubDirOpt = SubDirO;
 	OverwrOpt = OverwrO;
 	OldDir = GetDir(0);
-	Vol = CatFD->GetVolume(Ir);
-	CPath = CatFD->GetPathName(Ir);
+	Vol = catalog->GetVolume(Ir);
+	CPath = catalog->GetPathName(Ir);
 	Path = FExpand(CPath);
 	DrvNm = Path[0];
 	Dir = aDir;
