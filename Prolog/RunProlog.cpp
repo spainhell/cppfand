@@ -4,7 +4,7 @@
 #include "Prolog.h"
 #include "RdProlog.h"
 #include "TMemory.h"
-#include "../Core/compile.h"
+#include "../Core/Compiler.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/KeyFldD.h"
 #include "../Core/oaccess.h"

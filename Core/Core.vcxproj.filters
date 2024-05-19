@@ -36,7 +36,7 @@
     <ClCompile Include="Coding.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="compile.cpp">
+    <ClCompile Include="Compiler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="EditOpt.cpp">
@@ -152,7 +152,7 @@
     <ClInclude Include="Coding.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="compile.h">
+    <ClInclude Include="Compiler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="constants.h">

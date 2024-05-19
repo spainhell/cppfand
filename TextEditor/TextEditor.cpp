@@ -4,8 +4,8 @@
 #include <memory>
 
 #include "TextEditorEvents.h"
-#include "..\DataEditor\DataEditor.h"
-#include "../Core/compile.h"
+#include "../DataEditor/DataEditor.h"
+#include "../Core/Compiler.h"
 #include "EditorHelp.h"
 #include "TextEditorScreen.h"
 #include "../Drivers/constants.h"

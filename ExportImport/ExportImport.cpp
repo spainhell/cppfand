@@ -16,7 +16,7 @@
 #include "../DataEditor/EditReader.h"
 #include "../Core/wwmix.h"
 #include "../fandio/directory.h"
-#include "../Core/compile.h"
+#include "../Core/Compiler.h"
 #include "../MergeReport/Merge.h"
 #include "../Common/textfunc.h"
 #include "../Common/compare.h"

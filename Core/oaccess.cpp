@@ -1,7 +1,7 @@
 #include "oaccess.h"
 
 #include "base.h"
-#include "compile.h"
+#include "Compiler.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
 #include "legacy.h"

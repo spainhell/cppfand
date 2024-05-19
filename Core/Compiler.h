@@ -107,6 +107,7 @@ public:
 	bool FldTypIdentity(FieldDescr* F1, FieldDescr* F2);
 	void RdFldList(std::vector<FieldDescr*>& vFields);
 	void RdNegFldList(bool& neg, std::vector<FieldDescr*>& vFields);
+	void GoCompileErr(WORD i_rec, WORD n);
 
 	FieldNameType rdFldNameType = FieldNameType::none;
 	FrmlElem* RdFldNameFrml(char& FTyp, MergeReportBase* caller);

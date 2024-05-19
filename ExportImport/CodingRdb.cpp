@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include "../Core/compile.h"
+#include "../Core/Compiler.h"
 #include "../Core/Coding.h"
 #include "../Core/FileD.h"
 #include "../Core/GlobalVariables.h"

@@ -30,9 +30,10 @@ LvDescr* LstLvM; /* LstLvM->Ft=RF */
 bool SelQuest;
 EditD* EditDRoot;
 FrmlElem* PgeSizeZ = nullptr, * PgeLimitZ = nullptr;
-bool CompileFD, EditRdbMode;
+bool CompileFD = false;
+bool EditRdbMode = false;
 LocVarBlkD LVBD;
-std::string CalcTxt = "";
+std::string CalcTxt;
 MergOpSt MergOpGroup = { _const, 0.0 };
 
 bool EFldD::Ed(bool IsNewRec)

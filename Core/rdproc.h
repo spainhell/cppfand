@@ -1,6 +1,6 @@
 #pragma once
 #include "access.h"
-#include "compile.h"
+#include "Compiler.h"
 
 #include "models/FrmlElem.h"
 #include "models/Instr.h"

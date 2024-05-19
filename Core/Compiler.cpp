@@ -1,4 +1,4 @@
-#include "compile.h"
+#include "Compiler.h"
 #include <map>
 #include <memory>
 
@@ -571,7 +571,7 @@ FrmlElem* Compiler::RdFldNameFrml(char& FTyp, MergeReportBase* caller)
 	case FieldNameType::none:
 		break;
 	case FieldNameType::F:
-		result =RdFldNameFrmlF(FTyp, caller);
+		result = RdFldNameFrmlF(FTyp, caller);
 		break;
 	case FieldNameType::P:
 		result = RdFldNameFrmlP(FTyp, caller);
@@ -1275,6 +1275,16 @@ void Compiler::RdNegFldList(bool& neg, std::vector<FieldDescr*>& vFields)
 		RdFldList(vFields);
 	}
 	Accept(')');
+}
+
+void Compiler::GoCompileErr(WORD i_rec, WORD n)
+{
+	IsCompileErr = true;
+	InpRdbPos.rdb = CRdb;
+	InpRdbPos.i_rec = i_rec;
+	CurrPos = 0;
+	ReadMessage(n);
+	GoExit();
 }
 
 XKey* Compiler::RdViewKey(FileD* file_d)

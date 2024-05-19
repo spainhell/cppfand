@@ -2,13 +2,13 @@
 
 #include <memory>
 
-#include "compile.h"
+#include "Compiler.h"
 #include "FieldDescr.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
 #include "legacy.h"
 #include "obaseww.h"
-#include "..\DataEditor\DataEditor.h"
+#include "../DataEditor/DataEditor.h"
 #include "../fandio/directory.h"
 #include "../Common/compare.h"
 #include "../Drivers/constants.h"

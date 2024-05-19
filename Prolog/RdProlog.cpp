@@ -8,7 +8,7 @@
 #include "../Core/FieldDescr.h"
 #include "../Core/FileD.h"
 #include "../Common/pstring.h"
-#include "../Core/compile.h"
+#include "../Core/Compiler.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/KeyFldD.h"
 #include "../Core/obaseww.h"

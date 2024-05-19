@@ -61,7 +61,7 @@
     <ClCompile Include="CfgFile.cpp" />
     <ClCompile Include="ChkD.cpp" />
     <ClCompile Include="Coding.cpp" />
-    <ClCompile Include="compile.cpp" />
+    <ClCompile Include="Compiler.cpp" />
     <ClCompile Include="DateTime.cpp" />
     <ClCompile Include="EditOpt.cpp" />
     <ClCompile Include="FileD.cpp" />
@@ -101,7 +101,7 @@
     <ClInclude Include="Chained.h" />
     <ClInclude Include="ChkD.h" />
     <ClInclude Include="Coding.h" />
-    <ClInclude Include="compile.h" />
+    <ClInclude Include="Compiler.h" />
     <ClInclude Include="constants.h" />
     <ClInclude Include="DateTime.h" />
     <ClInclude Include="EditOpt.h" />

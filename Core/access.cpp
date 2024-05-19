@@ -1,7 +1,7 @@
 #include "access.h"
 
 #include "../pascal/asm.h"
-#include "compile.h"
+#include "Compiler.h"
 #include "FieldDescr.h"
 #include "FileD.h"
 #include "GlobalVariables.h"

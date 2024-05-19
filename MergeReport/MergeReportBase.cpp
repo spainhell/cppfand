@@ -1,5 +1,5 @@
 #include "MergeReportBase.h"
-#include "../Core/compile.h"
+#include "../Core/Compiler.h"
 #include "../Core/FieldDescr.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/KeyFldD.h"

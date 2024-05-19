@@ -4,7 +4,7 @@
 #include "../TextEditor/EditorHelp.h"
 #include "EditReader.h"
 #include "../Core/ChkD.h"
-#include "../Core/compile.h"
+#include "../Core/Compiler.h"
 #include "../Core/EditOpt.h"
 #include "../Core/FieldDescr.h"
 #include "../Core/FileD.h"

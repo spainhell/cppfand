@@ -10,7 +10,7 @@
 #include "OldDrivers.h"
 #include "access.h"
 #include "CfgFile.h"
-#include "compile.h"
+#include "Compiler.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
 #include "oaccess.h"

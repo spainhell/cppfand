@@ -13,7 +13,7 @@
 #include <iostream>
 
 #include "Cfg.h"
-#include "compile.h"
+#include "Compiler.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
 #include "../datafiles/datafiles.h"

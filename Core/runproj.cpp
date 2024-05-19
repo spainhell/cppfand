@@ -20,7 +20,7 @@
 #include "../Drivers/constants.h"
 #include "access.h"
 #include "Coding.h"
-#include "compile.h"
+#include "Compiler.h"
 #include "FieldDescr.h"
 #include "FileD.h"
 #include "GlobalVariables.h"
@@ -744,16 +744,6 @@ void CloseChpt()
 	}
 }
 
-void GoCompileErr(WORD IRec, WORD N)
-{
-	IsCompileErr = true;
-	InpRdbPos.rdb = CRdb;
-	InpRdbPos.i_rec = IRec;
-	CurrPos = 0;
-	ReadMessage(N);
-	GoExit();
-}
-
 FileD* FindFD()
 {
 	FileD* FD = nullptr;
@@ -1268,7 +1258,7 @@ label1:
 	return result;
 }
 
-bool CompileRdb(FileD* rdb_file, bool Displ, bool Run, bool FromCtrlF10)
+bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 {
 	Logging* log = Logging::getInstance();
 	log->log(loglevel::DEBUG, "starting CompileRdb()");
@@ -1287,7 +1277,6 @@ bool CompileRdb(FileD* rdb_file, bool Displ, bool Run, bool FromCtrlF10)
 	void* p2 = nullptr;
 	WORD lmsg = 0;
 	std::string RprtTxt;
-	bool top = false;
 	FileD* lstFD = nullptr;
 	auto result = false;
 
@@ -1301,10 +1290,13 @@ bool CompileRdb(FileD* rdb_file, bool Displ, bool Run, bool FromCtrlF10)
 		IsCompileErr = false; FDCompiled = false;
 		//OldCRec = data_editor->CRec();
 		RP.rdb = CRdb;
-		top = (CRdb->ChainBack == nullptr);
-		if (top) {
-			UserName[0] = 0; UserCode = 0; UserPassWORD[0] = 0; AccRight[0] = 0;
-			if (ChptTF->CompileAll || CompileFD) Switches[0] = 0;
+		bool rdb_top = (CRdb->ChainBack == nullptr);
+		if (rdb_top) {
+			UserName[0] = 0; UserCode = 0;
+			UserPassWORD[0] = 0; AccRight[0] = 0;
+			if (ChptTF->CompileAll || CompileFD) {
+				Switches[0] = 0;
+			}
 		}
 		lmsg = CompileMsgOn(Buf, w);
 		//CRecPtr = rdb_file->FF->RecPtr;
@@ -1318,10 +1310,10 @@ bool CompileRdb(FileD* rdb_file, bool Displ, bool Run, bool FromCtrlF10)
 			Name = OldTrailChar(' ', rdb_file->loadS(ChptName, rdb_file->FF->RecPtr));
 			Txt = rdb_file->loadT(ChptTxt, rdb_file->FF->RecPtr);
 			if (Verif && ((ChptTF->LicenseNr != 0) || Encryp || (rdb_file->FF->UMode == RdOnly))) {
-				GoCompileErr(I, 647);
+				g_compiler->GoCompileErr(I, 647);
 				throw std::exception("Not all chapters all compiled (encrypted or RdOnly).");
 			}
-			if (Verif || ChptTF->CompileAll || FromCtrlF10 || (Typ == 'U') ||
+			if (Verif || ChptTF->CompileAll || from_CtrlF10 || (Typ == 'U') ||
 				(Typ == 'F' || Typ == 'D') && CompileFD ||
 				(Typ == 'P') && ChptTF->CompileProc) {
 				OldTxt = rdb_file->loadT(ChptOldTxt, rdb_file->FF->RecPtr);
@@ -1337,7 +1329,7 @@ bool CompileRdb(FileD* rdb_file, bool Displ, bool Run, bool FromCtrlF10)
 							rdb_file->ReadRec(J, rdb_file->FF->RecPtr);
 							if ((STyp == rdb_file->loadS(ChptTyp, rdb_file->FF->RecPtr))
 								&& EquUpCase(Name, OldTrailChar(' ', rdb_file->loadS(ChptName, rdb_file->FF->RecPtr)))) {
-								GoCompileErr(I, 649);
+								g_compiler->GoCompileErr(I, 649);
 							}
 						}
 						rdb_file->ReadRec(I, rdb_file->FF->RecPtr);
@@ -1361,7 +1353,7 @@ bool CompileRdb(FileD* rdb_file, bool Displ, bool Run, bool FromCtrlF10)
 					}
 #ifndef FandSQL
 					if (EquUpCase(ext, ".SQL")) {
-						GoCompileErr(I, 654);
+						g_compiler->GoCompileErr(I, 654);
 					}
 #endif
 					if (Verif || ChptTF->CompileAll || OldTxt == 0) {
@@ -1401,7 +1393,9 @@ bool CompileRdb(FileD* rdb_file, bool Displ, bool Run, bool FromCtrlF10)
 						const std::unique_ptr auto_report = std::make_unique<ReportGenerator>();
 						RprtTxt = auto_report->SelGenRprt(Name);
 						//CFile = Chpt;
-						if (RprtTxt.empty()) GoCompileErr(I, 1145);
+						if (RprtTxt.empty()) {
+							g_compiler->GoCompileErr(I, 1145);
+						}
 						rdb_file->saveS(ChptTxt, RprtTxt, rdb_file->FF->RecPtr);
 						rdb_file->WriteRec(I, rdb_file->FF->RecPtr);
 					}
@@ -1440,7 +1434,9 @@ bool CompileRdb(FileD* rdb_file, bool Displ, bool Run, bool FromCtrlF10)
 					break;
 				}
 				case 'U': {
-					if (!top || (I > 1)) GoCompileErr(I, 623);
+					if (!rdb_top || (I > 1)) {
+						g_compiler->GoCompileErr(I, 623);
+					}
 					if (Txt != 0) {
 						ResetCompilePars();
 						g_compiler->SetInpTTPos(rdb_file, Txt, Encryp);
@@ -1483,7 +1479,7 @@ bool CompileRdb(FileD* rdb_file, bool Displ, bool Run, bool FromCtrlF10)
 		}
 		CompileFD = false;
 		result = true;
-		//if (!Run) {
+		//if (!run) {
 		//	Chpt->ReadRec(CRec(), edit->NewRecPtr);
 		//}
 		CompileMsgOff(Buf, w);
@@ -1504,7 +1500,7 @@ bool CompileRdb(FileD* rdb_file, bool Displ, bool Run, bool FromCtrlF10)
 		//ReleaseBoth(p, p2);
 		//E = OldE; EditDRoot = E;
 		//CFile = Chpt;
-		//if (!Run) CRecPtr = edit->NewRecPtr;
+		//if (!run) CRecPtr = edit->NewRecPtr;
 		if (!IsCompileErr) {
 			InpRdbPos.i_rec = I;
 		}
@@ -1559,8 +1555,27 @@ void WrErrMsg630(std::string Nm)
 	WrLLF10Msg(630);
 }
 
+void Finish_EditExecRdb(bool wasGraph, int w)
+{
+	if (!wasGraph && IsGraphMode) {
+		// ScrTextMode(false, false);
+		throw std::exception("CompRunChptRec() Graph <-> Text Mode switching not implemented.");
+	}
+	if (UserW != 0) {
+		PopW(UserW);
+	}
+	UserW = w;
+	RunMsgClear();
+	CloseChpt();
+#ifdef FandSQL
+	if (top) SQLDisconnect;
+#endif
+}
+
 bool EditExecRdb(const std::string& name, const std::string& proc_name, Instr_proc* proc_call, wwmix* ww)
 {
+	Logging* log = Logging::getInstance();
+	log->log(loglevel::DEBUG, "starting EditExecRdb()");
 	WORD Brk = 0, cc = 0;
 	void* p = nullptr;
 	pstring passw(20);
@@ -1581,9 +1596,7 @@ bool EditExecRdb(const std::string& name, const std::string& proc_name, Instr_pr
 		CreateOpenChpt(name, true);
 		CompileFD = true;
 #ifndef FandRunV
-
-		if (!IsTestRun || (ChptTF->LicenseNr != 0) ||
-			!top && CRdb->Encrypted) {
+		if (!IsTestRun || (ChptTF->LicenseNr != 0) || !top && CRdb->Encrypted) {
 #endif
 			MarkStore(p);
 			EditRdbMode = false;
@@ -1601,13 +1614,15 @@ bool EditExecRdb(const std::string& name, const std::string& proc_name, Instr_pr
 							RunMainProc(RP, top);
 						}
 						result = true;
-						goto label9;
+						Finish_EditExecRdb(wasGraph, w);
+						return result;
 					}
 					catch (std::exception& e) {
 						if (IsCompileErr) {
 							WrErrMsg630(name);
 						}
-						goto label9;
+						Finish_EditExecRdb(wasGraph, w);
+						return result;
 					}
 				}
 				else {
@@ -1619,9 +1634,9 @@ bool EditExecRdb(const std::string& name, const std::string& proc_name, Instr_pr
 				WrErrMsg630(name);
 			}
 #ifndef FandRunV
-			if ((ChptTF->LicenseNr != 0) || CRdb->Encrypted
-				|| (Chpt->FF->UMode == RdOnly)) {
-				goto label9;
+			if ((ChptTF->LicenseNr != 0) || CRdb->Encrypted || (Chpt->FF->UMode == RdOnly)) {
+				Finish_EditExecRdb(wasGraph, w);
+				return result;
 			}
 			ReleaseFilesAndLinksAfterChapter(nullptr);
 			ReleaseStore(&p);
@@ -1652,15 +1667,21 @@ bool EditExecRdb(const std::string& name, const std::string& proc_name, Instr_pr
 			}
 			else {
 				WrLLF10Msg(629);
-				goto label9;
+				Finish_EditExecRdb(wasGraph, w);
+				return result;
 			}
 		}
 		std::unique_ptr<DataEditor> data_editor = std::make_unique<DataEditor>(edit);
 		if (!data_editor->OpenEditWw()) {
-			goto label8;
+			//data_editor->PopEdit();
+			Finish_EditExecRdb(wasGraph, w);
+			return result;
 		}
 		result = true;
 		Chpt->FF->WasRdOnly = false;
+
+		bool skip_editor = false; // skip editor and wait for next key event in the 'while' loop
+
 		if (!top && (Chpt->FF->NRecs > 0))
 			if (CompileRdb(Chpt, true, false, false)) {
 				if (g_compiler->FindChpt('P', proc_name, true, &RP)) {
@@ -1669,105 +1690,116 @@ bool EditExecRdb(const std::string& name, const std::string& proc_name, Instr_pr
 			}
 			else {
 				GotoErrPos(Brk);
-				goto label5;
+				if (Brk == 0) {
+					data_editor->RunEdit(nullptr, Brk);
+				}
+				skip_editor = true;
 			}
 		else if (ChptTF->IRec <= Chpt->FF->NRecs) {
 			data_editor->GotoRecFld(ChptTF->IRec, data_editor->CFld);
 		}
 
-		data_editor->RunEdit(nullptr, Brk);
-	label2:
-		// TODO: je to potreba?
-		cc = Event.Pressed.KeyCombination();
-		SaveFiles();
-		if ((cc == __CTRL_F10) || ChptTF->CompileAll || CompileFD) {
-			ReleaseFilesAndLinksAfterChapter(edit);
-			data_editor->SetSelectFalse();
-			edit->Bool = nullptr;
-			ReleaseStore(&edit->AfterE);
+		if (!skip_editor) {
+			data_editor->RunEdit(nullptr, Brk);
 		}
-		if (cc == __CTRL_F10) {
-			SetUpdHandle(ChptTF->Handle);
-			if (!CompileRdb(Chpt, true, false, true)) {
-				if (IsCompileErr) {
-					GotoErrPos(Brk);
-					goto label5;
+
+		while (true) {
+			// TODO: je to potreba?
+			cc = Event.Pressed.KeyCombination();
+			SaveFiles();
+			if ((cc == __CTRL_F10) || ChptTF->CompileAll || CompileFD) {
+				ReleaseFilesAndLinksAfterChapter(edit);
+				data_editor->SetSelectFalse();
+				edit->Bool = nullptr;
+				ReleaseStore(&edit->AfterE);
+			}
+			if (cc == __CTRL_F10) {
+				SetUpdHandle(ChptTF->Handle);
+				if (!CompileRdb(Chpt, true, false, true)) {
+					if (IsCompileErr) {
+						GotoErrPos(Brk);
+						if (Brk == 0) {
+							data_editor->RunEdit(nullptr, Brk);
+						}
+						continue;
+					}
+					if (Brk == 1) {
+						data_editor->DisplEditWw();
+					}
+					data_editor->GotoRecFld(InpRdbPos.i_rec, edit->FirstFld->pChain);
+					data_editor->RunEdit(nullptr, Brk);
+					continue;
 				}
-				if (Brk == 1) {
+				if (!PromptCodeRdb(edit)) {
 					data_editor->DisplEditWw();
+					data_editor->RunEdit(nullptr, Brk);
+					continue;
 				}
-				data_editor->GotoRecFld(InpRdbPos.i_rec, edit->FirstFld->pChain);
-				data_editor->RunEdit(nullptr, Brk);
-				goto label2;
+				Chpt->FF->WasRdOnly = true;
+				//data_editor->PopEdit();
+				Finish_EditExecRdb(wasGraph, w);
+				return result;
 			}
-			if (!PromptCodeRdb(edit)) {
-				goto label6;
-			}
-			Chpt->FF->WasRdOnly = true;
-			goto label8;
-		}
-		if (Brk != 0) {
-			if (!CompileRdb(Chpt, Brk == 2, false, false)) {
-				if (IsCompileErr) {
-					GotoErrPos(Brk);
-					goto label5;
+			if (Brk != 0) {
+				if (!CompileRdb(Chpt, Brk == 2, false, false)) {
+					if (IsCompileErr) {
+						GotoErrPos(Brk);
+						if (Brk == 0) {
+							data_editor->RunEdit(nullptr, Brk);
+						}
+						continue;
+					}
+					if (Brk == 1) data_editor->DisplEditWw();
+					data_editor->GotoRecFld(InpRdbPos.i_rec, edit->FirstFld->pChain);
+					data_editor->RunEdit(nullptr, Brk);
+					continue;
 				}
-				if (Brk == 1) data_editor->DisplEditWw();
-				data_editor->GotoRecFld(InpRdbPos.i_rec, edit->FirstFld->pChain);
-				data_editor->RunEdit(nullptr, Brk);
-				goto label2;
-			}
-			if (cc == __ALT_F2) {
-				EditHelpOrCat(cc, 0, "");
-				goto label41;
-			}
-			if (!CompRunChptRec(data_editor, cc)) {
-				GotoErrPos(Brk);
-				goto label5;
-			}
-		label41:
-			if (Brk == 1) {
-				data_editor->EditFreeTxt(ChptTxt, "", true, Brk);
-			label5:
-				if (Brk != 0) {
-					goto label2;
+				bool comp_run_chapter = true;
+				if (cc == __ALT_F2) {
+					EditHelpOrCat(cc, 0, "");
+					comp_run_chapter = false;
+					//goto label41;
+				}
+				if (comp_run_chapter) {
+					if (!CompRunChptRec(data_editor, cc)) {
+						GotoErrPos(Brk);
+						if (Brk == 0) {
+							data_editor->RunEdit(nullptr, Brk);
+						}
+						continue;
+					}
+				}
+				//label41:
+				if (Brk == 1) {
+					data_editor->EditFreeTxt(ChptTxt, "", true, Brk);
+					if (Brk == 0) {
+						data_editor->RunEdit(nullptr, Brk);
+					}
+					continue;
 				}
 				else {
+					data_editor->DisplEditWw();
 					data_editor->RunEdit(nullptr, Brk);
-					goto label2;
+					continue;
 				}
+
 			}
-			else {
-			label6:
-				data_editor->DisplEditWw();
-				data_editor->RunEdit(nullptr, Brk);
-				goto label2;
-			}
-		}
+			break;
+		} // while
+
 		ChptTF->IRec = data_editor->CRec();
 		SetUpdHandle(ChptTF->Handle);
-	label8:
+
 		printf("");
 		//data_editor->PopEdit();
 #endif
 	}
 	catch (std::exception& e)
 	{
-
+		log->log(loglevel::EXCEPTION, "EditExecRdb() exception: ", e.what());
 	}
 
-label9:
-	if (!wasGraph && IsGraphMode) {
-		// ScrTextMode(false, false);
-		throw std::exception("CompRunChptRec() Graph <-> Text Mode switching not implemented.");
-	}
-	if (UserW != 0) PopW(UserW);
-	UserW = w;
-	RunMsgClear();
-	CloseChpt();
-#ifdef FandSQL
-	if (top) SQLDisconnect;
-#endif
+	Finish_EditExecRdb(wasGraph, w);
 	return result;
 }
 

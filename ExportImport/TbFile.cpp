@@ -1,5 +1,5 @@
 #include "TbFile.h"
-#include "../Core/compile.h"
+#include "../Core/Compiler.h"
 #include "../Core/FileD.h"
 #include "../Core/GlobalVariables.h"
 #include "../Core/oaccess.h"
