@@ -1310,12 +1310,16 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 			Name = OldTrailChar(' ', rdb_file->loadS(ChptName, rdb_file->FF->RecPtr));
 			Txt = rdb_file->loadT(ChptTxt, rdb_file->FF->RecPtr);
 			if (Verif && ((ChptTF->LicenseNr != 0) || Encryp || (rdb_file->FF->UMode == RdOnly))) {
+				// verify mode and encrypted or read only RDB
 				g_compiler->GoCompileErr(I, 647);
 				throw std::exception("Not all chapters all compiled (encrypted or RdOnly).");
 			}
-			if (Verif || ChptTF->CompileAll || from_CtrlF10 || (Typ == 'U') ||
-				(Typ == 'F' || Typ == 'D') && CompileFD ||
-				(Typ == 'P') && ChptTF->CompileProc) {
+			if (   Verif														// verify mode
+				|| ChptTF->CompileAll											// compile all flag
+				|| from_CtrlF10													// Ctrl F10 - 'finish rdb'
+				|| (Typ == 'U')													// User rights chapter
+				|| (Typ == 'F' || Typ == 'D') && CompileFD						// chapter F or D and compile FD flag
+				|| (Typ == 'P') && ChptTF->CompileProc) {						// chapter P and compile proc flag	
 				OldTxt = rdb_file->loadT(ChptOldTxt, rdb_file->FF->RecPtr);
 				InpRdbPos = RP;
 				if (IsTestRun) {

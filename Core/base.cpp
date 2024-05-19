@@ -989,6 +989,7 @@ void GoExit()
 #endif
 	BreakP = true;
 	log->log(loglevel::WARN, "GoExit(): Setting 'BreakP = true'", MsgLine.c_str());
+	throw std::exception(MsgLine.c_str());
 }
 
 bool OSshell(std::string path, std::string cmd_line, bool no_cancel, bool free_memory, bool load_font, bool text_mode)
