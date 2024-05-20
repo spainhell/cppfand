@@ -3498,7 +3498,9 @@ bool DataEditor::EditFreeTxt(FieldDescr* F, std::string ErrMsg, bool Ed, WORD& B
 	MsgStr TxtMsgS;
 	MsgStr* PTxtMsgS;
 	int TxtXY = 0;
-	WORD R1 = 0, OldTxtPos = 0, TxtPos = 0, CtrlMsgNr = 0, C = 0, LastLen = 0;
+	WORD R1 = 0, OldTxtPos = 0;
+	WORD TxtPos = 0, CtrlMsgNr = 0;
+	WORD C = 0, LastLen = 0;
 	LongStr* S = nullptr;
 	char Kind = '\0'; LockMode md; void* p = nullptr; int i = 0, w = 0;
 	std::vector<EdExitD*> X;

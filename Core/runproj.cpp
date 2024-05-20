@@ -1515,10 +1515,8 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 	return result;
 }
 
-void GotoErrPos(WORD& Brk)
+void GotoErrPos(WORD& Brk, std::unique_ptr<DataEditor>& data_editor)
 {
-	std::unique_ptr<DataEditor> data_editor = std::make_unique<DataEditor>();
-
 	IsCompileErr = false;
 	std::string s = MsgLine;
 	if (InpRdbPos.rdb != CRdb) {
@@ -1545,8 +1543,8 @@ void GotoErrPos(WORD& Brk)
 	}
 	data_editor->CFld = data_editor->GetEditD()->LastFld;
 	data_editor->SetNewCRec(InpRdbPos.i_rec, true);
-	CFile->saveR(ChptTxtPos, short(CurrPos), CRecPtr);
-	CFile->WriteRec(data_editor->CRec(), CRecPtr);
+	data_editor->GetFileD()->saveR(ChptTxtPos, CurrPos, data_editor->GetRecord());
+	data_editor->GetFileD()->WriteRec(data_editor->CRec(), data_editor->GetRecord());
 	data_editor->EditFreeTxt(ChptTxt, s, true, Brk);
 }
 
@@ -1693,7 +1691,7 @@ bool EditExecRdb(const std::string& name, const std::string& proc_name, Instr_pr
 				}
 			}
 			else {
-				GotoErrPos(Brk);
+				GotoErrPos(Brk, data_editor);
 				if (Brk == 0) {
 					data_editor->RunEdit(nullptr, Brk);
 				}
@@ -1721,7 +1719,7 @@ bool EditExecRdb(const std::string& name, const std::string& proc_name, Instr_pr
 				SetUpdHandle(ChptTF->Handle);
 				if (!CompileRdb(Chpt, true, false, true)) {
 					if (IsCompileErr) {
-						GotoErrPos(Brk);
+						GotoErrPos(Brk, data_editor);
 						if (Brk == 0) {
 							data_editor->RunEdit(nullptr, Brk);
 						}
@@ -1747,7 +1745,7 @@ bool EditExecRdb(const std::string& name, const std::string& proc_name, Instr_pr
 			if (Brk != 0) {
 				if (!CompileRdb(Chpt, Brk == 2, false, false)) {
 					if (IsCompileErr) {
-						GotoErrPos(Brk);
+						GotoErrPos(Brk, data_editor);
 						if (Brk == 0) {
 							data_editor->RunEdit(nullptr, Brk);
 						}
@@ -1766,7 +1764,7 @@ bool EditExecRdb(const std::string& name, const std::string& proc_name, Instr_pr
 				}
 				if (comp_run_chapter) {
 					if (!CompRunChptRec(data_editor, cc)) {
-						GotoErrPos(Brk);
+						GotoErrPos(Brk, data_editor);
 						if (Brk == 0) {
 							data_editor->RunEdit(nullptr, Brk);
 						}
