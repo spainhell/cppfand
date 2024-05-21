@@ -743,7 +743,7 @@ void FandFile::CloseFile()
 		std::string path = SetPathAndVolume(_parent);
 		SetFileAttr(path, HandleError, (GetFileAttr(CPath, HandleError) & 0x27) | 0x01); // {RdOnly; }
 		if (TF != nullptr) {
-			path = CExtToT(CDir, CName, CExt);
+			path = CExtToT(TF, CDir, CName, CExt);
 			SetFileAttr(path, HandleError, (GetFileAttr(CPath, HandleError) & 0x27) | 0x01); //  {RdOnly; }
 		}
 	}

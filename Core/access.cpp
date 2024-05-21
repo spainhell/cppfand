@@ -13,22 +13,7 @@
 #include "../Common/textfunc.h"
 #include "../Common/compare.h"
 
-void ResetCFileUpdH()
-{
-	ResetUpdHandle(CFile->FF->Handle);
-	if (CFile->FF->file_type == FileType::INDEX) ResetUpdHandle(CFile->FF->XF->Handle);
-	if (CFile->FF->TF != nullptr) ResetUpdHandle(CFile->FF->TF->Handle);
-}
 
-void ClearCacheCFile()
-{
-	// cache nepouzivame
-	return;
-	/* !!! with CFile^ do!!! */
-	/*ClearCacheH(CFile->Handle);
-	if (CFile->file_type == INDEX) ClearCacheH(CFile->GetXFile->Handle);
-	if (CFile->TF != nullptr) ClearCacheH(CFile->TF->Handle);*/
-}
 
 void CloseClearH(FandFile* fand_file)
 {
@@ -297,13 +282,13 @@ std::string CExtToX(const std::string dir, const std::string name, std::string e
 	return dir + name + ext;
 }
 
-std::string CExtToT(const std::string& dir, const std::string& name, std::string ext)
+std::string CExtToT(FandTFile* t_file, const std::string& dir, const std::string& name, std::string ext)
 {
 	if (EquUpCase(ext, ".RDB")) {
 		ext = ".TTT";
 	}
 	else if (EquUpCase(ext, ".DBF")) {
-		if (CFile->FF->TF->Format == FandTFile::FptFormat) {
+		if (t_file->Format == FandTFile::FptFormat) {
 			ext = ".FPT";
 		}
 		else {

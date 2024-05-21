@@ -65,7 +65,7 @@ bool OpenF1(FileD* file_d, const std::string& path, FileUseMode UM)
 
 	// open text file (.T__)
 	if (file_d->FF->TF != nullptr) {
-		CPath = CExtToT(CDir, CName, CExt);
+		CPath = CExtToT(file_d->FF->TF, CDir, CName, CExt);
 		if (file_d->FF->WasRdOnly) {
 			SetFileAttr(CPath, HandleError, GetFileAttr(CPath, HandleError) & 0b00100110); // 0x26 = archive + hidden + system
 		}
@@ -233,7 +233,7 @@ void CreateF(FileD* file_d)
 	TestCFileError(file_d);
 	file_d->FF->NRecs = 0;
 	if (file_d->FF->TF != nullptr) {
-		path = CExtToT(CDir, CName, CExt);
+		path = CExtToT(file_d->FF->TF, CDir, CName, CExt);
 		file_d->FF->TF->Create(path);
 	}
 	if (file_d->FF->file_type == FileType::INDEX) {
@@ -393,7 +393,7 @@ std::string SetPathForH(HANDLE handle)
 			}
 			if (fd->FF->TF != nullptr && fd->FF->TF->Handle == handle) {
 				SetPathAndVolume(fd);
-				CPath = CExtToT(CDir, CName, CExt);
+				CPath = CExtToT(fd->FF->TF, CDir, CName, CExt);
 				return CPath;
 			}
 			fd = fd->pChain;

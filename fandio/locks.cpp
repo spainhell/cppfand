@@ -77,6 +77,17 @@ void ModeLockBnds(LockMode Mode, int& Pos, WORD& Len)
 	Len = n >> 16;
 }
 
+void ResetFileUpdH(FileD* file_d)
+{
+	ResetUpdHandle(file_d->FF->Handle);
+	if (file_d->FF->file_type == FileType::INDEX) {
+		ResetUpdHandle(file_d->FF->XF->Handle);
+	}
+	if (file_d->FF->TF != nullptr) {
+		ResetUpdHandle(file_d->FF->TF->Handle);
+	}
+}
+
 bool ChangeLMode(FileD* fileD, LockMode Mode, WORD Kind, bool RdPref)
 {
 	int oldpos; WORD oldlen, d;
@@ -95,9 +106,11 @@ bool ChangeLMode(FileD* fileD, LockMode Mode, WORD Kind, bool RdPref)
 		}
 		if (oldmode == ExclMode) {
 			SaveCache(0, fileD->FF->Handle);
-			ClearCacheCFile();
+			// ClearCacheCFile(); - this method does not exist anymore (we don't use a cache)
 		}
-		if (Mode < WrMode) ResetCFileUpdH();
+		if (Mode < WrMode) {
+			ResetFileUpdH(fileD);
+		}
 	}
 	int w = 0;
 	WORD count = 0;

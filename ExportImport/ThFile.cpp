@@ -213,7 +213,7 @@ void ThFile::ExtToT()
 {
 	CPath = Path;
 	FSplit(CPath, CDir, CName, CExt);
-	CPath = CExtToT(CDir, CName, CExt);
+	CPath = CExtToT(nullptr, CDir, CName, CExt);
 	Path = CPath;
 }
 
@@ -221,7 +221,8 @@ void ThFile::Rewrite()
 {
 	Delete();
 	CPath = Path;
-	CVol = Vol; Handle = OpenH(CPath, _isOverwriteFile, Exclusive);
+	CVol = Vol;
+	Handle = OpenH(CPath, _isOverwriteFile, Exclusive);
 	TestCPathError();
 	SpaceOnDisk = MyDiskFree(Floppy, Path[0] - '@');
 	Size = 0;

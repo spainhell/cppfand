@@ -212,7 +212,7 @@ bool ChptDelFor(EditD* edit, RdbRecVars* X)
 			CExt = X->Ext;
 		}
 		MyDeleteFile(CDir + CName + CExt);
-		CPath = CExtToT(CDir, CName, CExt);
+		CPath = CExtToT(nullptr, CDir, CName, CExt);
 		MyDeleteFile(CPath);
 		if (X->FTyp == FileType::INDEX) {
 			CPath = CExtToX(CDir, CName, CExt);
@@ -272,7 +272,7 @@ void RenameWithOldExt(RdbRecVars New, RdbRecVars Old)
 {
 	CExt = Old.Ext;
 	RenameFile56(Old.Name + CExt, New.Name + CExt, false);
-	CPath = CExtToT(CDir, CName, CExt);
+	CPath = CExtToT(nullptr, CDir, CName, CExt);
 	RenameFile56(Old.Name + CExt, New.Name + CExt, false);
 	CPath = CExtToX(CDir, CName, CExt);
 	if (Old.FTyp == FileType::INDEX) RenameFile56(Old.Name + CExt, New.Name + CExt, false);
@@ -1143,17 +1143,17 @@ bool EquStoredF(FieldDescr* F1, FieldDescr* F2)
 	}
 }
 
-void DeleteF()
+void DeleteF(FileD* file_d)
 {
-	CFile->CloseFile();
-	SetPathAndVolume(CFile);
+	file_d->CloseFile();
+	SetPathAndVolume(file_d);
 	MyDeleteFile(CPath);
 	CPath = CExtToX(CDir, CName, CExt);
-	if (CFile->FF->XF != nullptr) {
+	if (file_d->FF->XF != nullptr) {
 		MyDeleteFile(CPath);
 	}
-	CPath = CExtToT(CDir, CName, CExt);
-	if (CFile->FF->TF != nullptr) {
+	if (file_d->FF->TF != nullptr) {
+		CPath = CExtToT(file_d->FF->TF, CDir, CName, CExt);
 		MyDeleteFile(CPath);
 	}
 }
@@ -1174,31 +1174,32 @@ bool MergeAndReplace(FileD* fd_old, FileD* fd_new)
 		merge->Run();
 
 		SaveFiles();
-		CFile = fd_old;
-		DeleteF();
-		CFile = fd_new;
-		CFile->CloseFile();
+		//CFile = fd_old;
+		DeleteF(fd_old);
+		//CFile = fd_new;
+		fd_new->CloseFile();
 		fd_old->FF->file_type = fd_new->FF->file_type;
-		SetPathAndVolume(CFile);
+		SetPathAndVolume(fd_new);
 		std::string p = CPath;
-		CFile = fd_old;
-		SetPathAndVolume(CFile);
+		//CFile = fd_old;
+		SetPathAndVolume(fd_old);
 		RenameFile56(p, CPath, false);
-		CFile = fd_new;
+		//CFile = fd_new;
+
 		/*TF->Format used*/
-		CPath = CExtToT(CDir, CName, CExt);
+		CPath = CExtToT(fd_new->FF->TF, CDir, CName, CExt);
 		p = CPath;
-		SetPathAndVolume(CFile);
-		CPath = CExtToT(CDir, CName, CExt);
+		SetPathAndVolume(fd_new);
+		CPath = CExtToT(fd_new->FF->TF, CDir, CName, CExt);
 		RenameFile56(CPath, p, false);
 		result = true;
 	}
 	catch (std::exception& e) {
 		// TODO: log error
-		CFile = fd_old;
-		CFile->CloseFile();
-		CFile = fd_new;
-		DeleteF();
+		//CFile = fd_old;
+		fd_old->CloseFile();
+		fd_old = fd_new;
+		DeleteF(fd_old);
 		SpecFDNameAllowed = false;
 		result = false;
 	}

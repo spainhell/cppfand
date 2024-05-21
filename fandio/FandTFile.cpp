@@ -616,7 +616,7 @@ void FandTFile::CloseFile()
 		if (HandleError == 0) Handle = nullptr;
 		if ((!_parent->IsShared()) && (_parent->NRecs == 0) && (_parent->file_type != FileType::DBF)) {
 			SetPathAndVolume(_parent->GetFileD());
-			CPath = CExtToT(CDir, CName, CExt);
+			CPath = CExtToT(this, CDir, CName, CExt);
 			MyDeleteFile(CPath);
 		}
 	}
