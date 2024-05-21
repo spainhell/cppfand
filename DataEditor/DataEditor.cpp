@@ -1984,7 +1984,9 @@ bool DataEditor::CleanUp()
 		if (!RunAddUpdate(file_d_, '-', nullptr, false, nullptr, nullptr, record_)) return false;
 		UpdMemberRef(record_, nullptr);
 	}
-	if (!ChptDel(edit_)) return false;
+	if (!ChptDel(file_d_, edit_)) {
+		return false;
+	}
 	WrJournal('-', record_, Today() + CurrTime());
 	return true;
 }
@@ -2417,7 +2419,7 @@ bool DataEditor::OldRecDiffers()
 {
 	XString x; FieldDescr* f = nullptr;
 	auto result = false;
-	if (IsCurrChpt() || (
+	if (IsCurrChpt(file_d_) || (
 #ifdef FandSQL
 		!file_d_->IsSQLFile &&
 #endif 
@@ -3104,7 +3106,7 @@ void DataEditor::AutoReport()
 	PrintView = false;
 	const std::unique_ptr auto_report = std::make_unique<ReportGenerator>();
 	if (auto_report->SelForAutoRprt(RO)) {
-		SpecFDNameAllowed = IsCurrChpt();
+		SpecFDNameAllowed = IsCurrChpt(file_d_);
 		auto_report->RunAutoReport(RO);
 		SpecFDNameAllowed = false;
 	}
@@ -3420,7 +3422,7 @@ bool DataEditor::GetChpt(pstring Heslo, int& NN)
 
 	for (int j = 1; j <= file_d_->FF->NRecs; j++) {
 		file_d_->ReadRec(j, record_);
-		if (IsCurrChpt()) {
+		if (IsCurrChpt(file_d_)) {
 			s = OldTrailChar(' ', file_d_->loadS(ChptName, record_));
 			short i = s.first('.');
 			if (i > 0) s.Delete(i, 255);
@@ -3466,7 +3468,7 @@ void DataEditor::UpdateEdTFld(LongStr* S)
 void DataEditor::UpdateTxtPos(WORD TxtPos)
 {
 	LockMode md;
-	if (IsCurrChpt()) {
+	if (IsCurrChpt(file_d_)) {
 		md = file_d_->NewLockMode(WrMode);
 		SetWasUpdated(file_d_->FF, record_);
 		file_d_->saveR(ChptTxtPos, (short)TxtPos, record_);
@@ -3533,7 +3535,7 @@ label1:
 	if (CRec() < CNRecs()) {
 		HdTxt[3] = 0x19; // ^Y
 	}
-	if (IsCurrChpt()) {
+	if (IsCurrChpt(file_d_)) {
 		HdTxt = file_d_->loadS(ChptTyp, record_) + ':' + file_d_->loadS(ChptName, record_) + HdTxt;
 		TxtPos = trunc(file_d_->loadR(ChptTxtPos, record_));
 		Breaks = BreakKeys2;
@@ -3643,7 +3645,7 @@ label2:
 		break;
 	}
 	case __SHIFT_F1:
-		if (IsCurrChpt() || (file_d_ == CRdb->help_file)) {
+		if (IsCurrChpt(file_d_) || (file_d_ == CRdb->help_file)) {
 			if ((iStk < maxStk) && WriteCRec(false, Displ) && GetChpt(heslo, i)) {
 				params_->Append = false;
 				iStk++;
@@ -3821,13 +3823,23 @@ void DataEditor::PromptSelect()
 {
 	wwmix ww;
 	std::string Txt;
-	if (params_->Select) Txt = edit_->BoolTxt;
-	else Txt = "";
-	if (IsCurrChpt()) ReleaseFilesAndLinksAfterChapter(edit_);
+	if (params_->Select) {
+		Txt = edit_->BoolTxt;
+	}
+	else {
+		Txt = "";
+	}
+	if (IsCurrChpt(file_d_)) {
+		ReleaseFilesAndLinksAfterChapter(edit_);
+	}
 	ReleaseStore(&edit_->AfterE);
 	ww.PromptFilter(Txt, &edit_->Bool, &edit_->BoolTxt);
-	if (edit_->Bool == nullptr) params_->Select = false;
-	else params_->Select = true;
+	if (edit_->Bool == nullptr) {
+		params_->Select = false;
+	}
+	else {
+		params_->Select = true;
+	}
 	DisplBool();
 	SetNewWwRecAttr();
 	NewDisplLL = true;
@@ -3873,7 +3885,7 @@ void DataEditor::SwitchRecs(short Delta)
 	DisplAllWwRecs();
 	DisplRecNr(CRec());
 	edit_->EdUpdated = true;
-	if (IsCurrChpt()) SetCompileAll();
+	if (IsCurrChpt(file_d_)) SetCompileAll();
 label1:
 	file_d_->OldLockMode(md);
 	delete[] p1; p1 = nullptr;
@@ -4282,7 +4294,7 @@ EFldD* DataEditor::FrstFldOnPage(WORD Page)
 	EFldD* D = edit_->FirstFld;
 	while (D->Page < Page) {
 		D = D->pChain;
-}
+	}
 	return D;
 }
 
@@ -4505,7 +4517,7 @@ void DataEditor::DisplCtrlAltLL(WORD Flags)
 			MsgLine = edit_->CtrlLast;
 			WrLLMsgTxt();
 		}
-		else if (IsCurrChpt()) WrLLMsg(125);
+		else if (IsCurrChpt(file_d_)) WrLLMsg(125);
 		else if (params_->EdRecVar) WrLLMsg(154);
 		else WrLLMsg(127);
 	}
@@ -5087,7 +5099,7 @@ label81:
 						}
 						case __ALT_F2:
 						case __ALT_F3:
-							if (IsCurrChpt()) {
+							if (IsCurrChpt(file_d_)) {
 								if (KbdChar == __ALT_F3) {
 									ForAllFDs(ForAllFilesOperation::close_passive_fd);
 									EditHelpOrCat(KbdChar, 0, "");
@@ -5135,7 +5147,7 @@ label81:
 						case __CTRL_F9:
 						case __CTRL_F10:
 						case __ALT_F9:
-							if (IsCurrChpt()) {
+							if (IsCurrChpt(file_d_)) {
 								Brk = 2;
 								goto fin;
 							}

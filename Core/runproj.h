@@ -4,10 +4,10 @@
 #include "wwmix.h"
 
 class DataEditor;
-bool IsCurrChpt();
+bool IsCurrChpt(FileD* file_d);
 void ReleaseFilesAndLinksAfterChapter(EditD* edit);
 bool RdFDSegment(WORD FromI, int Pos);
-bool ChptDel(EditD* edit);
+bool ChptDel(FileD* file_d, EditD* edit);
 WORD ChptWriteCRec(DataEditor* data_editor, EditD* edit); /* 0-O.K., 1-fail, 2-fail && undo*/
 bool PromptHelpName(WORD& N);
 void EditHelpOrCat(WORD cc, WORD kind, std::string txt);

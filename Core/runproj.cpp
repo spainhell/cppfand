@@ -51,9 +51,9 @@ struct RdbRecVars
 
 int sz = 0; WORD nTb = 0; void* Tb = nullptr;
 
-bool IsCurrChpt()
+bool IsCurrChpt(FileD* file_d)
 {
-	return CRdb->rdb_file == CFile;
+	return CRdb->rdb_file == file_d;
 }
 
 FileType ExtToTyp(const std::string& ext)
@@ -228,10 +228,12 @@ bool ChptDelFor(EditD* edit, RdbRecVars* X)
 	return result;
 }
 
-bool ChptDel(EditD* edit)
+bool ChptDel(FileD* file_d, EditD* edit)
 {
 	RdbRecVars New;
-	if (!IsCurrChpt()) { return true; }
+	if (!IsCurrChpt(file_d)) {
+		return true;
+	}
 	GetRdbRecVars(edit->NewRecPtr, &New);
 	return ChptDelFor(edit, &New);
 }
@@ -281,10 +283,14 @@ WORD ChptWriteCRec(DataEditor* data_editor, EditD* edit)
 	RdbRecVars New, Old;
 	short eq;
 	WORD result = 0;
-	if (!IsCurrChpt()) return result;
+	if (!IsCurrChpt(data_editor->GetFileD())) {
+		return result;
+	}
 	if (!data_editor->TestIsNewRec()) {
 		eq = CompArea(&((BYTE*)edit->NewRecPtr)[2], &((BYTE*)edit->OldRecPtr)[2], edit->FD->FF->RecLen - 2);
-		if (eq == _equ) return result;
+		if (eq == _equ) {
+			return result;
+		}
 	}
 	GetRdbRecVars(edit->NewRecPtr, &New);
 	if (!data_editor->TestIsNewRec()) GetRdbRecVars(edit->OldRecPtr, &Old);
