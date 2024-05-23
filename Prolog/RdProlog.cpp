@@ -979,8 +979,8 @@ label2:
 
 				isOutp = (w & 1) == 0;
 				if (isOutp) {
-					z = new FrmlElem18(_getlocvar, 2); // GetOp(_getlocvar, 2);
-					//((FrmlElem18*)z)->BPOfs = bpOfs;
+					z = new FrmlElemLocVar(_getlocvar, 2); // GetOp(_getlocvar, 2);
+					//((FrmlElemLocVar*)z)->BPOfs = bpOfs;
 					switch (typ) {
 					case 'S': bpOfs += sizeof(int); break;
 					case 'R': bpOfs += sizeof(double); break;
@@ -996,8 +996,8 @@ label2:
 						z = new FrmlElemString(_const, 0);
 						//if (d == StrDom) z = new FrmlElemString(_const, 0); // GetOp(_const, sizeof(pstring));
 						//else {
-						//	z = new FrmlElem18(_getlocvar, 2); // GetOp(_getlocvar, 2);
-						//	//((FrmlElem18*)z)->BPOfs = bpOfs;
+						//	z = new FrmlElemLocVar(_getlocvar, 2); // GetOp(_getlocvar, 2);
+						//	//((FrmlElemLocVar*)z)->BPOfs = bpOfs;
 						//	bpOfs += sizeof(int);
 						//}
 						break;

@@ -49,7 +49,7 @@ LongStr* LongLeadChar(char C, char CNew, LongStr* S);
 LongStr* LongTrailChar(char C, char CNew, LongStr* S);
 LongStr* RepeatStr(LongStr* S, short N);
 void AccRecNoProc(FrmlElem14* X, WORD Msg, BYTE** record);
-void GetRecNoXString(FileD* file_d, FrmlElem13* Z, XString& X, void* record);
+void GetRecNoXString(FileD* file_d, FrmlElemRecNo* Z, XString& X, void* record);
 double RunRealStr(FileD* file_d, FrmlElem* X, void* record);
 
 WORD TypeDay(double R);

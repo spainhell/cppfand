@@ -74,10 +74,10 @@ public:
 	bool B = false; // 5
 };
 
-class FrmlElem6 : public FrmlElem
+class FrmlElemDateMask : public FrmlElem
 {
 public:
-	FrmlElem6(instr_type Op, size_t buff_size);
+	FrmlElemDateMask(instr_type Op, size_t buff_size);
 	FrmlElem* P1 = nullptr;
 	pstring Mask; // 6
 };
@@ -92,10 +92,10 @@ public:
 	LinkD* LD = nullptr; // 7  {LD=nil for param} {_access} {LD=RecPtr} {_recvarfld}
 };
 
-class FrmlElem8 : public FrmlElem
+class FrmlElemNewFile : public FrmlElem
 {
 public:
-	FrmlElem8(instr_type Op, size_t buff_size);
+	FrmlElemNewFile(instr_type Op, size_t buff_size);
 	FrmlElem* Frml = nullptr;
 	FileD* NewFile = nullptr;
 	void* NewRP = nullptr; // 8 {_newfile}
@@ -138,10 +138,10 @@ public:
 	std::string Options; // 12 {_pos,_replace}
 };
 
-class FrmlElem13 : public FrmlElem
+class FrmlElemRecNo : public FrmlElem
 {
 public:
-	FrmlElem13(instr_type Op, size_t buff_size);
+	FrmlElemRecNo(instr_type Op, size_t buff_size);
 	FileD* FFD = nullptr;
 	XKey* Key = nullptr;
 	void SaveArgs(FrmlElem* arguments[], size_t count);
@@ -158,12 +158,14 @@ public:
 	FieldDescr* RecFldD = nullptr; // 14 {_accrecno,_isdeleted}
 };
 
-class FrmlElem15 : public FrmlElem
+class FrmlElemLink : public FrmlElem
 {
 public:
-	FrmlElem15(instr_type Op, size_t buff_size);
-	LinkD* LinkLD = nullptr; bool LinkFromRec = false;
-	LocVar* LinkLV = nullptr; FrmlElem* LinkRecFrml = nullptr; // 15 {_link}
+	FrmlElemLink(instr_type Op, size_t buff_size);
+	LinkD* LinkLD = nullptr;
+	bool LinkFromRec = false;
+	LocVar* LinkLV = nullptr;
+	FrmlElem* LinkRecFrml = nullptr; // 15 {_link}
 };
 
 class FrmlElem16 : public FrmlElem
@@ -176,20 +178,19 @@ public:
 	WORD TxtCatIRec = 0; // 16 {_gettxt,_filesize}
 };
 
-class FrmlElem18 : public FrmlElem
+class FrmlElemLocVar : public FrmlElem
 {
 public:
-	FrmlElem18(instr_type Op, size_t buff_size);
-	FrmlElem18(instr_type Op, LocVar* lv);
+	FrmlElemLocVar(instr_type Op, size_t buff_size);
+	FrmlElemLocVar(instr_type Op, LocVar* lv);
 	LocVar* locvar = nullptr;
-	//WORD BPOfs = 0; // 18 { _getlocvar }
 	BYTE buff[64]{ 0 };
 };
 
-class FrmlElem19 : public FrmlElem
+class FrmlElemUserFunc : public FrmlElem
 {
 public:
-	FrmlElem19(instr_type Op, size_t buff_size);
+	FrmlElemUserFunc(instr_type Op, size_t buff_size);
 	FuncD* FC = nullptr;
 	FrmlListEl* FrmlL = nullptr; // 19 { _userfunc }
 };
@@ -215,10 +216,10 @@ public:
 	FrmlElem22(instr_type Op, size_t buff_size);
 	XWKey* WKey = nullptr; // 22 {_indexnrecs}
 };
-class FrmlElem23 : public FrmlElem
+class FrmlElemOwned : public FrmlElem
 {
 public:
-	FrmlElem23(instr_type Op, size_t buff_size);
+	FrmlElemOwned(instr_type Op, size_t buff_size);
 	FrmlElem* ownBool = nullptr;
 	FrmlElem* ownSum = nullptr;
 	LinkD* ownLD = nullptr; // 23 { _owned }
@@ -229,8 +230,8 @@ class FrmlElemIn : public FrmlElem
 {
 public:
 	FrmlElemIn(instr_type Op);
-	FrmlElem* P1 = nullptr;
-	BYTE param1 = 0;
+	FrmlElem* frml_elem = nullptr;
+	BYTE param = 0;
 	//BYTE param2 = 0;
 	std::vector<std::string> strings;
 	std::vector<double> reals;

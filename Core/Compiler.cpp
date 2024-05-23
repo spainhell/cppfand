@@ -1359,7 +1359,7 @@ void Compiler::SrchZ(FrmlElem* Z)
 
 	auto iZ0 = (FrmlElemFunction*)Z;
 	auto iZ7 = (FrmlElem7*)Z;
-	auto iZ19 = (FrmlElem19*)Z;
+	auto iZ19 = (FrmlElemUserFunc*)Z;
 
 	switch (Z->Op) {
 	case _field: {
@@ -1609,7 +1609,7 @@ WORD Compiler::RdTilde()
 void Compiler::RdInConst(FrmlElemIn* Z, char& FTyp, std::string& str, double& R)
 {
 	if (FTyp == 'S') {
-		if (Z->param1 == 1/*tilde*/) str = OldTrailChar(' ', LexWord);
+		if (Z->param == 1/*tilde*/) str = OldTrailChar(' ', LexWord);
 		else str = LexWord;
 		Accept(_quotedstr);
 	}
@@ -1655,14 +1655,14 @@ FrmlElem* Compiler::RdComp(char& FTyp, MergeReportBase* caller)
 		FrmlElemIn* zIn = nullptr;
 		if (FTyp == 'R') {
 			zIn = new FrmlElemIn(_inreal); // GetOp(_inreal, 1);
-			zIn->param1 = RdPrecision();
+			zIn->param = RdPrecision();
 		}
 		else {
 			TestString(FTyp);
 			zIn = new FrmlElemIn(_instr); // GetOp(_instr, 1);
-			zIn->param1 = RdTilde();
+			zIn->param = RdTilde();
 		}
-		zIn->P1 = Z1;
+		zIn->frml_elem = Z1;
 		Accept('[');
 	label1:
 		std::string str;
@@ -1738,7 +1738,7 @@ bool Compiler::FindFuncD(FrmlElem** ZZ, MergeReportBase* caller)
 	while (fc != nullptr) {
 		if (EquUpCase(fc->name, LexWord)) {
 			RdLex(); RdLex();
-			FrmlElem19* z = new FrmlElem19(_userfunc, 8); // GetOp(_userfunc, 8);
+			FrmlElemUserFunc* z = new FrmlElemUserFunc(_userfunc, 8); // GetOp(_userfunc, 8);
 			z->FC = fc;
 			WORD n = fc->LVB.NParam;
 			auto itr = fc->LVB.vLocVar.begin();
@@ -1888,7 +1888,7 @@ FrmlElem* Compiler::RdPrim(char& FTyp, MergeReportBase* caller)
 			FTyp = 'B';
 		}
 		else if (!EquUpCase("OWNED", LexWord) && (ForwChar == '(')) {
-			if (FindFuncD(&Z, caller)) FTyp = ((FrmlElem19*)Z)->FC->FTyp;
+			if (FindFuncD(&Z, caller)) FTyp = ((FrmlElemUserFunc*)Z)->FC->FTyp;
 			else if (IsFun(S3Fun, LexWord, FunCode)) {
 				RdLex();
 				Z = new FrmlElemFunction(FunCode, 0); // GetOp(FunCode, 0);
@@ -1990,8 +1990,8 @@ FrmlElem* Compiler::RdPrim(char& FTyp, MergeReportBase* caller)
 				Accept(',');
 				TestLex(_quotedstr);
 			label2:
-				Z = new FrmlElem6(_strdate1, 0); // GetOp(_strdate1, LexWord.length() + 1);
-				auto iZ = (FrmlElem6*)Z;
+				Z = new FrmlElemDateMask(_strdate1, 0); // GetOp(_strdate1, LexWord.length() + 1);
+				auto iZ = (FrmlElemDateMask*)Z;
 				iZ->P1 = Z1;
 				iZ->Mask = LexWord;
 				RdLex();
@@ -2001,8 +2001,8 @@ FrmlElem* Compiler::RdPrim(char& FTyp, MergeReportBase* caller)
 			else if (IsKeyWord("DATE"))
 			{
 				RdLex();
-				Z = new FrmlElem6(_valdate, 9); // GetOp(_valdate, 9);
-				auto iZ = (FrmlElem6*)Z;
+				Z = new FrmlElemDateMask(_valdate, 9); // GetOp(_valdate, 9);
+				auto iZ = (FrmlElemDateMask*)Z;
 				iZ->Mask = "DD.MM.YY";
 				goto label3;
 			}
@@ -2013,8 +2013,8 @@ FrmlElem* Compiler::RdPrim(char& FTyp, MergeReportBase* caller)
 				TestString(Typ);
 				Accept(',');
 				TestLex(_quotedstr);
-				Z = new FrmlElem6(_valdate, 0); // GetOp(_valdate, LexWord.length() + 1);
-				auto iZ = (FrmlElem6*)Z;
+				Z = new FrmlElemDateMask(_valdate, 0); // GetOp(_valdate, LexWord.length() + 1);
+				auto iZ = (FrmlElemDateMask*)Z;
 				iZ->P1 = Z1;
 				iZ->Mask = LexWord;
 				RdLex();
@@ -2516,7 +2516,7 @@ FrmlElem* Compiler::RdFAccess(FileD* FD, LinkD* LD, char& FTyp)
 
 FrmlElem* Compiler::FrmlContxt(FrmlElem* Z, FileD* FD, void* RP)
 {
-	auto Z1 = new FrmlElem8(_newfile, 8);
+	auto Z1 = new FrmlElemNewFile(_newfile, 8);
 	Z1->Frml = Z;
 	Z1->NewFile = FD;
 	Z1->NewRP = RP;
@@ -2551,42 +2551,40 @@ LinkD* Compiler::FindOwnLD(FileD* FD, std::string RoleName)
 
 FrmlElem* Compiler::TryRdFldFrml(FileD* FD, char& FTyp, MergeReportBase* caller)
 {
-	FileD* cf = nullptr; FieldDescr* f = nullptr;
-	LinkD* ld = nullptr; FrmlElem* z = nullptr;
-	pstring roleNm;
-	FieldNameType rff;
-	char typ = '\0';
+	FrmlElem* z = nullptr;
 
 	if (IsKeyWord("OWNED")) {
-		rff = rdFldNameType;
+		LinkD* ld = nullptr;
+		FieldNameType rff = rdFldNameType;
 		rdFldNameType = FieldNameType::F;
 		// TODO: g_compiler !!! ptrRdFldNameFrml = RdFldNameFrmlF;
 		Accept('(');
-		z = new FrmlElem23(_owned, 12); // GetOp(_owned, 12);
+		z = new FrmlElemOwned(_owned, 12); // GetOp(_owned, 12);
 		TestIdentif();
 		SkipBlank(false);
 		if (ForwChar == '(') {
-			roleNm = LexWord;
+			std::string role_name = LexWord;
 			RdLex();
 			RdLex();
-			ld = FindOwnLD(FD, roleNm);
+			ld = FindOwnLD(FD, role_name);
 			Accept(')');
 		}
 		else {
 			ld = FindOwnLD(FD, FD->Name);
 		}
 		if (ld == nullptr) OldError(182);
-		((FrmlElem23*)z)->ownLD = ld;
-		cf = CFile;
+		((FrmlElemOwned*)z)->ownLD = ld;
+		FileD* cf = CFile;
 		CFile = ld->FromFD;
 		if (Lexem == '.') {
 			RdLex();
-			((FrmlElem23*)z)->ownSum = RdFldNameFrmlF(FTyp, caller);
+			((FrmlElemOwned*)z)->ownSum = RdFldNameFrmlF(FTyp, caller);
 			if (FTyp != 'R') OldError(20);
 		}
 		if (Lexem == ':') {
+			char typ = '\0';
 			RdLex();
-			((FrmlElem23*)z)->ownBool = RdFormula(typ, caller);
+			((FrmlElemOwned*)z)->ownBool = RdFormula(typ, caller);
 			TestBool(typ);
 		}
 		Accept(')');
@@ -2595,8 +2593,10 @@ FrmlElem* Compiler::TryRdFldFrml(FileD* FD, char& FTyp, MergeReportBase* caller)
 		rdFldNameType = rff;
 	}
 	else {
-		f = FindFldName(FD);
-		if (f == nullptr) z = nullptr;
+		FieldDescr* f = FindFldName(FD);
+		if (f == nullptr) {
+			z = nullptr;
+		}
 		else {
 			RdLex();
 			z = MakeFldFrml(f, FTyp);

@@ -144,66 +144,98 @@ double ValDate(pstring Txt, pstring Mask)
 	EncodeMask(Mask, min, max);
 	i = 1; j = 1;
 label1:
-	if (j > Txt.length()) goto label2;
-	else if (i > Mask.length()) return result;
-	AnalDateMask(Mask, i, iDate, n);
-	if (n == 0) {
-		if (Mask[i] != Txt[j]) return result;
-		i++; j++;
-	} /* delimiter */
-	else { /* YMDhmst */
-		s = "";
-		if (iDate < 3) WasYMD = true;
-		while ((Txt[j] == ' ') && (n > 1)) { j++; n--; }
-		if ((Txt[j] == '-') && (n > 1) && (iDate == min) && (iDate > 2)) {
-			WasMinus = true;
-			j++;
-			n--;
-		}
-		if (!(Txt[j] >= '0' && Txt[j] <= '9')) return result;
-		while ((j <= Txt.length()) && (isdigit(Txt[j])) && (n > 0)) {
-			s.Append(Txt[j]);
-			j++;
-			n--;
-		}
-		val(s, Date[iDate], k);
-		if (iDate == 0) Ylength = s.length();
+	if (j > Txt.length()) {
+		// goto label2;
 	}
-	goto label1;
-label2:
+	else {
+		if (i > Mask.length()) {
+			return result;
+		}
+		AnalDateMask(Mask, i, iDate, n);
+		if (n == 0) {
+			if (Mask[i] != Txt[j]) {
+				return result;
+			}
+			i++;
+			j++;
+		} /* delimiter */
+		else { /* YMDhmst */
+			s = "";
+			if (iDate < 3) WasYMD = true;
+
+			while ((Txt[j] == ' ') && (n > 1)) {
+				j++;
+				n--;
+			}
+
+			if ((Txt[j] == '-') && (n > 1) && (iDate == min) && (iDate > 2)) {
+				WasMinus = true;
+				j++;
+				n--;
+			}
+
+			if (!(Txt[j] >= '0' && Txt[j] <= '9')) {
+				return result;
+			}
+
+			while ((j <= Txt.length()) && (isdigit(Txt[j])) && (n > 0)) {
+				s.Append(Txt[j]);
+				j++;
+				n--;
+			}
+			val(s, Date[iDate], k);
+			if (iDate == 0) {
+				Ylength = s.length();
+			}
+		}
+		goto label1;
+	}
+//label2:
 	if ((min == 2) && (max >= 3)) {
 		if (z.D < 0) z.D = 0;
-		R = z.D + (z.tt + 100 * z.ss + 6000 * int(z.mm) + 360000.0 * z.hh) / 8640000.0;
-		goto label3;
+		R = z.D + (z.tt + 100 * z.ss + 6000 * z.mm + 360000.0 * z.hh) / 8640000.0;
+		//goto label3;
 	}
-	if (WasYMD) {
-		SplitDate(Today(), Day, Month, Year);
-		/*if ((max<3) && (z.D=-1) && (z.M=-1) && (z.Y=-1)) return;*/
-		if (z.D == -1) z.D = 1;
-		else {
-			if ((z.D == 0) || (z.D > 31)) return result;
-			else if (z.M == -1) z.M = Month;
-		}
-		if (z.M == -1) z.M = 1;
-		else if ((z.M == 0) || (z.M > 12)) return result;
-		if (Ylength == 0) z.Y = Year;
-		else if (z.Y > 9999) return result;
-		else
-			if (Ylength <= 2) {
-				if (spec.OffDefaultYear == 0) z.Y = (Year / 100) * 100 + z.Y;
-				else {
-					y = (Year + spec.OffDefaultYear) % 100;
-					if (z.Y < y) z.Y = z.Y + 2000;
-					else z.Y = z.Y + 1900;
-				}
+	else {
+		if (WasYMD) {
+			SplitDate(Today(), Day, Month, Year);
+			/*if ((max<3) && (z.D=-1) && (z.M=-1) && (z.Y=-1)) return;*/
+			if (z.D == -1) z.D = 1;
+			else {
+				if ((z.D == 0) || (z.D > 31)) return result;
+				else if (z.M == -1) z.M = Month;
 			}
+
+			if (z.M == -1) z.M = 1;
+			else if ((z.M == 0) || (z.M > 12)) return result;
+
+			if (Ylength == 0) z.Y = Year;
+			else if (z.Y > 9999) return result;
+			else
+				if (Ylength <= 2) {
+					if (spec.OffDefaultYear == 0) {
+						z.Y = (Year / 100) * 100 + z.Y;
+					}
+					else {
+						y = (Year + spec.OffDefaultYear) % 100;
+						if (z.Y < y) {
+							z.Y = z.Y + 2000;
+						}
+						else {
+							z.Y = z.Y + 1900;
+						}
+					}
+				}
+		}
+		else { z.Y = 0; z.M = 0; z.D = 0; }
+
+		if ((min < 3) && (z.hh > 23)) return result;
+		if ((min < 4) && (z.mm > 59)) return result;
+		if ((min < 5) && (z.ss > 59)) return result;
+
+		R = RDate(z.Y, z.M, z.D, z.hh, z.mm, z.ss, z.tt);
 	}
-	else { z.Y = 0; z.M = 0; z.D = 0; }
-	if ((min < 3) && (z.hh > 23)) return result;
-	if ((min < 4) && (z.mm > 59)) return result;
-	if ((min < 5) && (z.ss > 59)) return result;
-	R = RDate(z.Y, z.M, z.D, z.hh, z.mm, z.ss, z.tt);
-label3:
+//label3:
 	if (!WasYMD && (R == 0.0)) R = 1E-11;
 	if (WasMinus) result = -R;
 	else result = R;

@@ -759,7 +759,7 @@ void EditReader::SetFrmlFlags(FrmlElem* Z)
 		break;
 	}
 	case _userfunc: {
-		FrmlList fl = ((FrmlElem19*)Z)->FrmlL;
+		FrmlList fl = ((FrmlElemUserFunc*)Z)->FrmlL;
 		while (fl != nullptr) {
 			SetFrmlFlags(fl->Frml);
 			fl = fl->pChain;

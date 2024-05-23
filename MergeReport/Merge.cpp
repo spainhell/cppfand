@@ -256,7 +256,7 @@ FrmlElem* Merge::RdFldNameFrml(char& FTyp)
 		if (g_compiler->FindLocVar(&LVBD, &LV)) {
 			g_compiler->RdLex();
 			TestNotSum();
-			result = new FrmlElem18(_getlocvar, LV);
+			result = new FrmlElemLocVar(_getlocvar, LV);
 			FTyp = LV->f_typ;
 			return result;
 		}

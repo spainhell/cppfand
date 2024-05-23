@@ -35,7 +35,7 @@ FrmlElemBool::FrmlElemBool(instr_type Op, size_t buff_size, bool value) : FrmlEl
 	this->B = value;
 }
 
-FrmlElem6::FrmlElem6(instr_type Op, size_t buff_size) : FrmlElem(Op, buff_size)
+FrmlElemDateMask::FrmlElemDateMask(instr_type Op, size_t buff_size) : FrmlElem(Op, buff_size)
 {
 }
 
@@ -43,7 +43,7 @@ FrmlElem7::FrmlElem7(instr_type Op, size_t buff_size) : FrmlElem(Op, buff_size)
 {
 }
 
-FrmlElem8::FrmlElem8(instr_type Op, size_t buff_size) : FrmlElem(Op, buff_size)
+FrmlElemNewFile::FrmlElemNewFile(instr_type Op, size_t buff_size) : FrmlElem(Op, buff_size)
 {
 }
 
@@ -63,11 +63,11 @@ FrmlElemPosReplace::FrmlElemPosReplace(instr_type Op, size_t buff_size) : FrmlEl
 {
 }
 
-FrmlElem13::FrmlElem13(instr_type Op, size_t buff_size) : FrmlElem(Op, buff_size)
+FrmlElemRecNo::FrmlElemRecNo(instr_type Op, size_t buff_size) : FrmlElem(Op, buff_size)
 {
 }
 
-void FrmlElem13::SaveArgs(FrmlElem* arguments[], size_t count)
+void FrmlElemRecNo::SaveArgs(FrmlElem* arguments[], size_t count)
 {
 	for (size_t i = 0; i < count; i++)
 	{
@@ -80,7 +80,7 @@ FrmlElem14::FrmlElem14(instr_type Op, size_t buff_size) : FrmlElem(Op, buff_size
 {
 }
 
-FrmlElem15::FrmlElem15(instr_type Op, size_t buff_size) : FrmlElem(Op, buff_size)
+FrmlElemLink::FrmlElemLink(instr_type Op, size_t buff_size) : FrmlElem(Op, buff_size)
 {
 }
 
@@ -88,16 +88,16 @@ FrmlElem16::FrmlElem16(instr_type Op, size_t buff_size) : FrmlElem(Op, buff_size
 {
 }
 
-FrmlElem18::FrmlElem18(instr_type Op, size_t buff_size) : FrmlElem(Op, buff_size)
+FrmlElemLocVar::FrmlElemLocVar(instr_type Op, size_t buff_size) : FrmlElem(Op, buff_size)
 {
 }
 
-FrmlElem18::FrmlElem18(instr_type Op, LocVar* lv) : FrmlElem(Op, 0)
+FrmlElemLocVar::FrmlElemLocVar(instr_type Op, LocVar* lv) : FrmlElem(Op, 0)
 {
 	locvar = lv;
 }
 
-FrmlElem19::FrmlElem19(instr_type Op, size_t buff_size) : FrmlElem(Op, buff_size)
+FrmlElemUserFunc::FrmlElemUserFunc(instr_type Op, size_t buff_size) : FrmlElem(Op, buff_size)
 {
 }
 
@@ -113,7 +113,7 @@ FrmlElem22::FrmlElem22(instr_type Op, size_t buff_size) : FrmlElem(Op, buff_size
 {
 }
 
-FrmlElem23::FrmlElem23(instr_type Op, size_t buff_size) : FrmlElem(Op, buff_size)
+FrmlElemOwned::FrmlElemOwned(instr_type Op, size_t buff_size) : FrmlElem(Op, buff_size)
 {
 }
 

@@ -1794,7 +1794,7 @@ void CallFandProc(TCommand* cmd)
 					else {
 						s = GetPackedTerm(t);
 					}
-					//*(int*)(pp + ((FrmlElem18*)ta->Frml)->BPOfs) = TWork.Store(s);
+					//*(int*)(pp + ((FrmlElemLocVar*)ta->Frml)->BPOfs) = TWork.Store(s);
 					delete s; s = nullptr;
 				}
 				break;

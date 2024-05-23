@@ -206,7 +206,7 @@ void AssignRecVar(LocVar* LV1, LocVar* LV2, AssignD* A)
 		case MInstrCode::_output: {
 			CFile = FD1;
 			CRecPtr = RP1;
-			((FrmlElem8*)A->Frml)->NewRP = RP2;
+			((FrmlElemNewFile*)A->Frml)->NewRP = RP2;
 			AssgnFrml(CFile, CRecPtr, A->OFldD, A->Frml, false, false);
 			break;
 		}
@@ -1764,7 +1764,7 @@ void CallProcedure(Instr_proc* PD)
 		// projdeme navratove hodnoty (navratova hodnota funkce + VAR parametry)
 		// a tyto navratove hodnoty ulozime zpet do patricneho FrmlElem
 		if ((*it0)->is_return_param) {
-			auto z18 = (FrmlElem18*)PD->TArg[i].Frml;
+			auto z18 = (FrmlElemLocVar*)PD->TArg[i].Frml;
 			switch ((*it0)->f_typ) {
 			case 'R': {
 				z18->locvar->R = (*it0)->R;

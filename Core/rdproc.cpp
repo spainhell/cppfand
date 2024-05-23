@@ -295,8 +295,8 @@ FrmlElem* RdFldNameFrmlP(char& FTyp, MergeReportBase* caller)
 	if (g_compiler->FindLocVar(&LVBD, &LV)) {
 		if (LV->f_typ == 'r' || LV->f_typ == 'f' || LV->f_typ == 'i') g_compiler->Error(143);
 		g_compiler->RdLex();
-		result = new FrmlElem18(LV->oper, LV);
-		//((FrmlElem18*)result)->BPOfs = LV->BPOfs;
+		result = new FrmlElemLocVar(LV->oper, LV);
+		//((FrmlElemLocVar*)result)->BPOfs = LV->BPOfs;
 		FTyp = LV->f_typ;
 		return result;
 	}
@@ -420,8 +420,8 @@ FrmlElem* RdFunctionP(char& FFTyp)
 			N = 1;
 			Arg[0] = g_compiler->RdRealFrml(nullptr);
 		}
-		Z = new FrmlElem13(Op, (N + 2) * 4); // GetOp(oper, (N + 2) * 4);
-		auto iZ = (FrmlElem13*)Z;
+		Z = new FrmlElemRecNo(Op, (N + 2) * 4); // GetOp(oper, (N + 2) * 4);
+		auto iZ = (FrmlElemRecNo*)Z;
 		iZ->FFD = FD;
 		iZ->Key = K;
 		iZ->SaveArgs(Arg, N);
@@ -429,8 +429,8 @@ FrmlElem* RdFunctionP(char& FFTyp)
 	}
 	else if (g_compiler->IsKeyWord("LINK")) {
 		g_compiler->RdLex();
-		Z = new FrmlElem15(_link, 5); // GetOp(_link, 5);
-		auto iZ = (FrmlElem15*)Z;
+		Z = new FrmlElemLink(_link, 5); // GetOp(_link, 5);
+		auto iZ = (FrmlElemLink*)Z;
 		if (IsRecVar(&LV)) {
 			iZ->LinkFromRec = true;
 			iZ->LinkLV = LV;
@@ -515,7 +515,7 @@ FrmlElem* RdFunctionP(char& FFTyp)
 	}
 #ifdef FandSQL
 	else if (IsKeyWord("SQL")) {
-		RdLex(); Z = GetOp(_sqlfun, 0); Z->P1 = RdStrFrml(); f_typ = 'rdb';
+		RdLex(); Z = GetOp(_sqlfun, 0); Z->frml_elem = RdStrFrml(); f_typ = 'rdb';
 	}
 #endif
 	else if (g_compiler->IsKeyWord("SELECTSTR")) {
