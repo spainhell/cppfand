@@ -941,12 +941,13 @@ void Merge::MoveForwToRecM(InpD* ID)
 	CRecPtr = CFile->FF->RecPtr;
 	memcpy(CRecPtr, ID->ForwRecPtr, CFile->FF->RecLen + 1);
 	ID->Count = ID->Count + 1;
-	ChkD* C = ID->Chk;
-	if (C != nullptr) {
+	//ChkD* C = ID->Chk;
+	//if (C != nullptr) {
+	if (!ID->Chk.empty()) {
 		ID->Error = false;
 		ID->Warning = false;
 		ID->ErrTxtFrml->S = "";  // ID->ErrTxtFrml->S[0] = 0;
-		while (C != nullptr) {
+		for (ChkD* C : ID->Chk) { // while (C != nullptr}
 			if (!RunBool(CFile, C->Bool, CRecPtr)) {
 				ID->Warning = true;
 				ID->ErrTxtFrml->S = RunShortStr(CFile, C->TxtZ, CRecPtr);
@@ -955,7 +956,7 @@ void Merge::MoveForwToRecM(InpD* ID)
 					return;
 				}
 			}
-			C = C->pChain;
+			//C = C->pChain;
 		}
 	}
 }

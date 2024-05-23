@@ -34,7 +34,7 @@ public:
 	BYTE Attr = 0, dNorm = 0, dHiLi = 0, dSubSet = 0;
 	BYTE dDel = 0, dTab = 0, dSelect = 0;
 	std::string Top;
-	BYTE WFlags = 0;                             /* copied from EO */
+	BYTE WFlags = 0;                             /* copied from options */
 	std::vector<EdExitD*> ExD;                   /*      "         */
 	FileD* Journal = nullptr;                    /*      "         */
 	std::string ViewName;                        /*      "         */

@@ -1660,7 +1660,7 @@ bool EditExecRdb(const std::string& name, const std::string& proc_name, Instr_pr
 		}
 		IsTestRun = true;
 		EO = new EditOpt();
-		EO->UserSelFlds = true; //EO = GetEditOpt();
+		EO->UserSelFlds = true; //options = GetEditOpt();
 		EO->Flds = g_compiler->AllFldsList(Chpt, true);
 		EO->Flds.erase(EO->Flds.begin(), EO->Flds.begin() + 3);
 

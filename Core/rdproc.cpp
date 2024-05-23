@@ -1541,41 +1541,42 @@ Instr_sort* RdSortCall()
 Instr_edit* RdEditCall()
 {
 	LocVar* lv = nullptr;
-	Instr_edit* PD = new Instr_edit(); // GetPD(_edit, 8);
+	Instr_edit* instr_edit = new Instr_edit();
 	g_compiler->RdLex();
-	EditOpt* EO = &PD->EO;
-	EO->UserSelFlds = true;
+	instr_edit->options.UserSelFlds = true;
 
 	if (IsRecVar(&lv)) {
-		EO->LVRecPtr = lv->record;
-		PD->EditFD = lv->FD;
+		instr_edit->options.LVRecPtr = lv->record;
+		instr_edit->EditFD = lv->FD;
 	}
 	else {
-		PD->EditFD = g_compiler->RdFileName();
-		XKey* K = g_compiler->RdViewKey(PD->EditFD);
-		if (K == nullptr) K = PD->EditFD->Keys.empty() ? nullptr : PD->EditFD->Keys[0];
-		EO->ViewKey = K;
+		instr_edit->EditFD = g_compiler->RdFileName();
+		XKey* K = g_compiler->RdViewKey(instr_edit->EditFD);
+		if (K == nullptr) K = instr_edit->EditFD->Keys.empty() ? nullptr : instr_edit->EditFD->Keys[0];
+		instr_edit->options.ViewKey = K;
 	}
 	//PD->EditFD = CFile;
 	g_compiler->Accept(',');
 	if (g_compiler->IsOpt("U")) {
 		g_compiler->TestIdentif();
-		if (PD->EditFD->ViewNames == nullptr) g_compiler->Error(114);
+		if (instr_edit->EditFD->ViewNames == nullptr) {
+			g_compiler->Error(114);
+		}
 		stSaveState* p = g_compiler->SaveCompState();
-		bool b = RdUserView(PD->EditFD, LexWord, EO);
+		bool b = RdUserView(instr_edit->EditFD, LexWord, &instr_edit->options);
 		g_compiler->RestoreCompState(p);
 		if (!b) g_compiler->Error(114);
 		g_compiler->RdLex();
 	}
 	else {
-		g_compiler->processing_F = PD->EditFD;
-		RdBegViewDcl(EO);
+		g_compiler->processing_F = instr_edit->EditFD;
+		RdBegViewDcl(&instr_edit->options);
 	}
 	while (Lexem == ',') {
-		bool b = RdViewOpt(EO, PD->EditFD);
-		if (!b) RdEditOpt(EO, PD->EditFD);
+		bool b = RdViewOpt(&instr_edit->options, instr_edit->EditFD);
+		if (!b) RdEditOpt(&instr_edit->options, instr_edit->EditFD);
 	}
-	return PD;
+	return instr_edit;
 }
 
 void RdEditOpt(EditOpt* EO, FileD* file_d)

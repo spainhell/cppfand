@@ -76,7 +76,7 @@ struct InpD
 	bool Exist = false;
 	char Op = '\0';
 	double Count = 0.0;
-	ChkD* Chk = nullptr;
+	std::vector<ChkD*> Chk;
 	char OpErr = '\0';
 	bool Error = false;
 	char OpWarn = '\0';
@@ -184,7 +184,7 @@ struct EFldD : public Chained<EFldD>
 {
 	EFldD* ChainBack = nullptr;
 	FieldDescr* FldD = nullptr;
-	ChkD* Chk = nullptr;
+	std::vector<ChkD*> Chk;
 	FrmlElem* Impl = nullptr;
 	std::vector<DepD*> Dep;
 	KeyListEl* KL = nullptr;

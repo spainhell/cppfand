@@ -436,9 +436,9 @@ void EditProc(Instr_edit* PD)
 
 	// TODO: is needed to make copy of EditOptions before call edit?
 	std::unique_ptr<DataEditor> data_editor = std::make_unique<DataEditor>(PD->EditFD);
-	const bool selFlds = data_editor->SelFldsForEO(&PD->EO, nullptr);
-	if (!PD->EO.UserSelFlds || selFlds) {
-		data_editor->EditDataFile(PD->EditFD, &PD->EO);
+	const bool selFlds = data_editor->SelFldsForEO(&PD->options, nullptr);
+	if (!PD->options.UserSelFlds || selFlds) {
+		data_editor->EditDataFile(PD->EditFD, &PD->options);
 	}
 	SaveFiles();
 

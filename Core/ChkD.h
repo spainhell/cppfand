@@ -5,14 +5,13 @@
 
 class FrmlElem;
 
-class ChkD : public Chained<ChkD>
+class ChkD
 {
 public:
-	ChkD() {}
+	ChkD();
 	ChkD(const ChkD& orig);
 	FrmlElem* Bool = nullptr;
 	std::string HelpName;
 	FrmlElem* TxtZ = nullptr;
 	bool Warning = false;
 };
-typedef ChkD* ChkDPtr;

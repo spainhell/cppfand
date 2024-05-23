@@ -851,9 +851,11 @@ void EditReader::RdCheck()
 		SetFrmlFlags(C->Bool);
 		TestedFlagOff();
 		EFldD* D = LstUsedFld();
+		
 		if (D != nullptr) {
-			if (D->Chk == nullptr) D->Chk = C;
-			else ChainLast(D->Chk, C);
+			D->Chk.push_back(C);
+			//if (D->Chk == nullptr) D->Chk = C;
+			//else ChainLast(D->Chk, C);
 		}
 		else {
 			delete C; C = nullptr;

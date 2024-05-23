@@ -218,7 +218,7 @@ public:
 	Instr_edit();
 	~Instr_edit() override;
 	FileD* EditFD = nullptr;
-	EditOpt EO;
+	EditOpt options;
 };
 
 class Instr_report : public Instr

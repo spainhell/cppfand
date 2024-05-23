@@ -60,7 +60,7 @@ typedef ImplD* ImplDPtr;
 
 struct LiRoots
 {
-	ChkD* Chks = nullptr;
+	std::vector<ChkD*> Chks;
 	ImplD* Impls = nullptr;
 };
 typedef LiRoots* LiRootsPtr;

@@ -219,22 +219,36 @@ ChkD* RdChkD(WORD Low)
 	return result;
 }
 
-void RdChkDChain(ChkD** CRoot)
+void RdChkDChain(std::vector<ChkD*>& C)
 {
-	WORD Low = 0;
 	g_compiler->SkipBlank(false);
-	Low = CurrPos;
+	uint16_t low = CurrPos;
 	g_compiler->RdLex();
-label1:
-	if (*CRoot == nullptr) *CRoot = RdChkD(Low);
-	else ChainLast(*CRoot, RdChkD(Low));
-	if (Lexem == ';') {
-		g_compiler->SkipBlank(false); Low = CurrPos; g_compiler->RdLex();
-		if (!(Lexem == '#' || Lexem == 0x1A)) goto label1;
+
+	while (true) {
+		ChkD* check = RdChkD(low);
+		C.push_back(check);
+
+		//if (*CRoot == nullptr) {
+		//	*CRoot = RdChkD(low);
+		//}
+		//else {
+		//	ChainLast(*CRoot, RdChkD(low));
+		//}
+
+		if (Lexem == ';') {
+			g_compiler->SkipBlank(false);
+			low = CurrPos;
+			g_compiler->RdLex();
+			if (!(Lexem == '#' || Lexem == 0x1A)) {
+				continue;
+			}
+		}
+		break;
 	}
 }
 
-void RdChkDsFromPos(FileD* FD, ChkD* C)
+void RdChkDsFromPos(FileD* FD, std::vector<ChkD*>& C)
 {
 	if (FD->OrigFD != nullptr) {
 		// this rdb_file was created as 'LIKE'
@@ -246,13 +260,16 @@ void RdChkDsFromPos(FileD* FD, ChkD* C)
 	g_compiler->SetInpTTxtPos(FD);
 	g_compiler->RdLex();
 	while (!(ForwChar == 'L' || ForwChar == 0x1A)) {
-		do { g_compiler->RdLex(); } while (!(Lexem == 0x1A || Lexem == '#'));
+		do {
+			g_compiler->RdLex();
+		}
+		while (!(Lexem == 0x1A || Lexem == '#'));
 	}
 	if (Lexem == 0x1A) return;
 	g_compiler->RdLex();
 	FileD* cf = CFile;
 	CFile = FD;
-	RdChkDChain(&C);
+	RdChkDChain(C);
 	CFile = cf;
 }
 
@@ -354,7 +371,7 @@ void RdByteListInStore()
 
 bool RdUserView(FileD* file_d, std::string ViewName, EditOpt* EO)
 {
-	// TODO: proc je tady 'EOD' a proc se kopiruje tam a zpet z/do EO ???
+	// TODO: proc je tady 'EOD' a proc se kopiruje tam a zpet z/do options ???
 	bool found = false, Fin = false, FVA = false;
 	XKey* K = nullptr;
 
@@ -412,7 +429,7 @@ bool RdUserView(FileD* file_d, std::string ViewName, EditOpt* EO)
 
 void TestUserView(FileD* file_d)
 {
-	EditOpt EO = EditOpt();
+	EditOpt EO;
 	EO.UserSelFlds = true;
 	g_compiler->RdLex();
 	while (true) {
@@ -434,7 +451,6 @@ void TestUserView(FileD* file_d)
 		g_compiler->RdLex();
 		RdByteListInStore();
 		g_compiler->Accept(':');
-		// GetEditOpt(); // vytvori objekt EditOpt
 		XKey* K = g_compiler->RdViewKey(file_d); // nacteni klice, podle ktereho budou polozky setrideny
 		if (K != nullptr) {
 			g_compiler->Accept(',');
@@ -442,7 +458,9 @@ void TestUserView(FileD* file_d)
 		}
 		RdBegViewDcl(&EO);
 		while (Lexem == ',') {
-			if (!RdViewOpt(&EO, file_d)) g_compiler->Error(44);
+			if (!RdViewOpt(&EO, file_d)) {
+				g_compiler->Error(44);
+			}
 		}
 		if (Lexem == ';') {
 			g_compiler->RdLex();
@@ -745,14 +763,27 @@ FileD* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 	}
 	MarkStore(p);
 	li = new LiRoots();
-	if ((Lexem == '#') && (ForwChar == 'D')) { g_compiler->RdLex(); TestDepend(); }
-	if ((Lexem == '#') && (ForwChar == 'L')) { g_compiler->RdLex(); RdChkDChain(&li->Chks); }
-	if ((Lexem == '#') && (ForwChar == 'I')) { g_compiler->RdLex(); RdImpl(file_d, &li->Impls); }
+	if ((Lexem == '#') && (ForwChar == 'D')) {
+		g_compiler->RdLex();
+		TestDepend();
+	}
+	if ((Lexem == '#') && (ForwChar == 'L')) {
+		g_compiler->RdLex();
+		RdChkDChain(li->Chks);
+	}
+	if ((Lexem == '#') && (ForwChar == 'I')) {
+		g_compiler->RdLex();
+		RdImpl(file_d, &li->Impls);
+	}
+
 	// TODO: jak toto nahradit?
 	//if (PtrRec(InpRdbPos.rdb).Seg == 0/*compiled from pstring*/) {
 	//	CFile->LiOfs = 0; ReleaseStore(p);
 	//}
-	if (Lexem != 0x1A) g_compiler->Error(66);
+
+	if (Lexem != 0x1A) {
+		g_compiler->Error(66);
+	}
 label1:
 	g_compiler->processing_F = nullptr;
 	return file_d;

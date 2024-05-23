@@ -2121,14 +2121,14 @@ ChkD* DataEditor::CompChk(EFldD* D, char Typ)
 {
 	bool w = params_->WarnSwitch && (Typ == 'W' || Typ == '?');
 	bool f = (Typ == 'F' || Typ == '?');
-	ChkD* C = D->Chk;
+	//ChkD* C = D->Chk;
 	ChkD* result = nullptr;
-	while (C != nullptr) {
+	for (ChkD* C : D->Chk) { //while (C != nullptr) {
 		if ((w && C->Warning || f && !C->Warning) && !RunBool(file_d_, C->Bool, record_)) {
 			result = C;
-			return result;
+			break;
 		}
-		C = C->pChain;
+		//C = C->pChain;
 	}
 	return result;
 }
@@ -3910,10 +3910,10 @@ bool DataEditor::SelFldsForEO(EditOpt* EO, LinkD* LD)
 	void* p = nullptr;
 	auto result = true;
 	if (EO->Flds.empty()) return result;
-	//FieldListEl* FL = EO->Flds;
+	//FieldListEl* FL = options->Flds;
 	if (!EO->UserSelFlds) {
 		if (LD != nullptr) {
-			//FieldListEl* FL1 = FieldList(EO->Flds);
+			//FieldListEl* FL1 = FieldList(options->Flds);
 			//while (FL != nullptr) {
 			for (auto& FL : EO->Flds) {
 				if (FinArgs(LD, FL)) {
@@ -4066,7 +4066,7 @@ void DataEditor::DownEdit()
 		GetSel2S(s1, s2, '/', 2);
 		ali = GetFromKey(LD)->Alias;
 		//while ((LD->ToFD != edit_->rdb_file) || (LD->IndexRoot == 0) || (s2 != ali)
-		//	|| !EquFileViewName(LD->FromFD, s1, EO)) LD = LD->pChain;
+		//	|| !EquFileViewName(LD->FromFD, s1, options)) LD = LD->pChain;
 		for (auto& ld : LinkDRoot) {
 			if ((ld->ToFD != edit_->FD) || (ld->IndexRoot == 0) || (s2 != ali) || !EquFileViewName(ld->FromFD, s1, &EO)) {
 				continue;

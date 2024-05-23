@@ -8,8 +8,8 @@
 extern bool HasTT;
 FieldDescr* RdFieldDescr(std::string name, bool Stored); // r25
 ChkD* RdChkD(WORD Low);
-void RdChkDChain(ChkD** CRoot);
-void RdChkDsFromPos(FileD* FD, ChkD* C); // r98
+void RdChkDChain(std::vector<ChkD*>& C);
+void RdChkDsFromPos(FileD* FD, std::vector<ChkD*>& C); // r98
 void RdBegViewDcl(EditOpt* EO); // r110
 void RdByteList(pstring* s);
 void RdByteListInStore();
