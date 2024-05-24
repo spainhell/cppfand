@@ -23,9 +23,13 @@ void EncodeMask(pstring& Mask, WORD& Min, WORD& Max)
 void AnalDateMask(pstring& Mask, WORD& I, WORD& IDate, WORD& N)
 {
 	N = 0;
+
 	if (Mask[I] <= 6) {
 		IDate = Mask[I];
-		do { I++; N++; } while (!((I > Mask.length()) || (Mask[I] != IDate)));
+		do {
+			I++; N++;
+		}
+		while (!((I > Mask.length()) || (Mask[I] != IDate)));
 	}
 }
 
@@ -62,7 +66,7 @@ double RDate(WORD Y, WORD M, WORD D, WORD hh, WORD mm, WORD ss, WORD tt)
 		}
 	}
 	n = tt + 100 * ss + 6000 * mm;
-	r = (n + 360000.0 * hh) / (8640000.0);
+	r = (n + 360000.0 * hh) / 8640000.0;
 	return l + r;
 }
 
@@ -133,16 +137,24 @@ double ValDate(pstring Txt, pstring Mask)
 {
 	struct Z { int Y = 0, M = 0, D = 0, hh = 0, mm = 0, ss = 0, tt = 0; } z;
 	int* Date = &z.Y;
-	WORD i = 0, j = 0, k = 0, min = 0, max = 0, iDate = 0,
+	WORD k = 0, min = 0, max = 0, iDate = 0,
 		n = 0, Ylength = 0, Year = 0, y = 0, Month = 0, Day = 0;
-	pstring s; bool WasYMD = false, WasMinus = false; double R = 0; int nl = 0;
+	pstring s;
+
+	double R = 0;
+	int nl = 0;
 
 	double result = 0.0;
-	Ylength = 0; z.Y = -1; z.M = -1; z.D = -1;
-	for (i = 3; i <= 6; i++) Date[i] = 0;
-	WasYMD = false; WasMinus = false;
+	Ylength = 0;
+	z.Y = -1; z.M = -1; z.D = -1;
+	for (size_t i = 3; i <= 6; i++) {
+		Date[i] = 0;
+	}
+	bool WasYMD = false;
+	bool WasMinus = false;
 	EncodeMask(Mask, min, max);
-	i = 1; j = 1;
+	WORD i = 1;
+	WORD j = 1;
 label1:
 	if (j > Txt.length()) {
 		// goto label2;
@@ -237,8 +249,10 @@ label1:
 	}
 //label3:
 	if (!WasYMD && (R == 0.0)) R = 1E-11;
+
 	if (WasMinus) result = -R;
 	else result = R;
+
 	return result;
 }
 
@@ -264,6 +278,7 @@ pstring StrDate(double R, pstring Mask)
 	pstring s = "";
 	EncodeMask(Mask, min, max);
 	WasMinus = false;
+
 	if ((R == 0.0) || (R < 0) && (min < 3)) {
 		for (i = 1; i <= Mask.length(); i++) {
 			if (Mask[i] <= 6) s.Append(' ');
@@ -272,12 +287,14 @@ pstring StrDate(double R, pstring Mask)
 		goto label1;
 	}
 	else if (R < 0) { WasMinus = true; R = -R; }
+
 	if (min < 3) {
 		if ((min == 2) && (max >= 3)) d.D = trunc(R);
 		else SplitDate(R, d.D, d.M, d.Y);
 		double intpart;
 		R = modf(R, &intpart);
 	}
+
 	if (max >= 3)
 	{
 		l = round(R * MultX[max]);
@@ -297,8 +314,8 @@ pstring StrDate(double R, pstring Mask)
 	}
 	i = 1;
 	First = true;
-	while (i <= Mask.length())
-	{
+
+	while (i <= Mask.length()) {
 		AnalDateMask(Mask, i, iDate, n);
 		if (n == 0) { s.Append(Mask[i]); i++; }
 		else {
@@ -312,8 +329,7 @@ pstring StrDate(double R, pstring Mask)
 				if (iDate == 4) str(t.mm, x);
 				if (iDate == 5) str(t.ss, x);
 				if (iDate == 6) str(t.tt, x);
-				if ((iDate == min) && WasMinus)
-				{
+				if ((iDate == min) && WasMinus) {
 					pstring oldX = x;
 					x = "-";
 					x += oldX;
