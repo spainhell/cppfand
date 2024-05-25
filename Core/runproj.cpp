@@ -983,34 +983,62 @@ bool CompRunChptRec(std::unique_ptr<DataEditor>& data_editor, WORD CC)
 void RdUserId(bool Chk)
 {
 	wwmix ww;
-	FrmlElem* Z;
 	pstring pw(20); pstring pw2(20); pstring name(20);
-	WORD code; pstring acc;
+	pstring acc;
 
 	//ptrRdFldNameFrml = nullptr;
 	g_compiler->rdFldNameType = FieldNameType::none;
 	g_compiler->RdLex();
 	if (Lexem == 0x1A) return;
 	if (Chk) pw = ww.PassWord(false);
-label1:
-	g_compiler->TestLex(_quotedstr); name = LexWord;
-	g_compiler->RdLex(); g_compiler->Accept(',');
-	code = g_compiler->RdInteger(); g_compiler->Accept(',');
-	Z = g_compiler->RdStrFrml(nullptr);
-	pw2 = RunShortStr(CFile, Z, CRecPtr);
-	delete Z; Z = nullptr;
-	if (Lexem == ',') { g_compiler->RdLex(); RdByteList(&acc); }
-	else { acc[0] = 1; acc[1] = (char)code; }
-	if (Chk) {
-		if (EquUpCase(pw, pw2)) {
-			UserName = name; UserCode = code; UserPassWORD = pw2; AccRight = acc; return;
+	//label1:
+	while (true) {
+		g_compiler->TestLex(_quotedstr);
+		name = LexWord;
+		g_compiler->RdLex();
+		g_compiler->Accept(',');
+		WORD code = g_compiler->RdInteger();
+		g_compiler->Accept(',');
+
+		FrmlElem* Z = g_compiler->RdStrFrml(nullptr);
+		pw2 = RunShortStr(g_compiler->processing_F, Z, nullptr);
+		delete Z; Z = nullptr;
+
+		if (Lexem == ',') {
+			g_compiler->RdLex();
+			RdByteList(&acc);
 		}
+		else {
+			acc[0] = 1;
+			acc[1] = (char)code;
+		}
+
+		if (Chk) {
+			if (EquUpCase(pw, pw2)) {
+				UserName = name;
+				UserCode = code;
+				UserPassWORD = pw2;
+				AccRight = acc;
+				return;
+			}
+		}
+		else if (code == 0) {
+			UserName = name;
+			UserCode = code;
+			UserPassWORD = pw2;
+		}
+		if (Lexem != 0x1A) {
+			g_compiler->Accept(';');
+			if (Lexem != 0x1A) {
+				continue;
+				// goto label1;
+			}
+		}
+		break;
 	}
-	else if (code == 0) {
-		UserName = name; UserCode = code; UserPassWORD = pw2;
+	if (Chk) {
+		RunError(629);
 	}
-	if (Lexem != 0x1A) { g_compiler->Accept(';'); if (Lexem != 0x1A) goto label1; }
-	if (Chk) RunError(629);
 }
 
 WORD CompileMsgOn(CHAR_INFO* Buf, int& w)
@@ -1321,7 +1349,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 				g_compiler->GoCompileErr(I, 647);
 				throw std::exception("Not all chapters all compiled (encrypted or RdOnly).");
 			}
-			if (   Verif														// verify mode
+			if (Verif														// verify mode
 				|| ChptTF->CompileAll											// compile all flag
 				|| from_CtrlF10													// Ctrl F10 - 'finish rdb'
 				|| (Typ == 'U')													// User rights chapter
@@ -1472,7 +1500,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 						//}
 #endif
 				}
-			}
+				}
 			//ReleaseStore(&p1);
 			ReleaseStore(&p2);
 			//CFile = Chpt;
@@ -1482,7 +1510,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 				rdb_file->saveB(ChptVerif, false, rdb_file->FF->RecPtr);
 				rdb_file->WriteRec(I, rdb_file->FF->RecPtr);
 			}
-		}
+			}
 		if (ChptTF->CompileAll || ChptTF->CompileProc) {
 			ChptTF->CompileAll = false;
 			ChptTF->CompileProc = false;
@@ -1501,7 +1529,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 
 		delete edit; edit = nullptr;
 		delete reader; reader = nullptr;
-	}
+		}
 	catch (std::exception& e) {
 		log->log(loglevel::EXCEPTION, "CompileRdb() exception: ", e.what());
 		result = false;
@@ -1520,7 +1548,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 	}
 
 	return result;
-}
+	}
 
 void GotoErrPos(WORD& Brk, std::unique_ptr<DataEditor>& data_editor)
 {
