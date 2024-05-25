@@ -860,8 +860,7 @@ void EditReader::RdCheck()
 		else {
 			delete C; C = nullptr;
 		}
-		if (Lexem == ';')
-		{
+		if (Lexem == ';') {
 			g_compiler->SkipBlank(false);
 			Low = CurrPos;
 			g_compiler->RdLex();
@@ -876,23 +875,29 @@ void EditReader::RdImpl(FileD* file_d)
 	// TODO: nema byt f_typ vstupnim parametrem?
 	char FTyp = '\0';
 	g_compiler->RdLex();
+
 	while (true) {
 		FieldDescr* F = g_compiler->RdFldName(file_d);
 		g_compiler->Accept(_assign);
 		FrmlElem* Z = g_compiler->RdFrml(FTyp, nullptr);
 		EFldD* D = FindEFld_E(F);
-		if (D != nullptr) D->Impl = Z;
+
+		if (D != nullptr) {
+			D->Impl = Z;
+		}
 		else {
-			ImplD* ID = new ImplD(); // (ImplD*)GetStore(sizeof(*ID));
+			ImplD* ID = new ImplD();
 			ID->FldD = F;
 			ID->Frml = Z;
 			if (edit_->Impl == nullptr) edit_->Impl = ID;
 			else ChainLast(edit_->Impl, ID);
 		}
+
 		if (Lexem == ';') {
 			g_compiler->RdLex();
 			if (!(Lexem == '#' || Lexem == 0x1A)) continue;
 		}
+
 		break;
 	}
 }
@@ -979,8 +984,12 @@ void EditReader::NewChkKey(FileD* file_d)
 			D = LstUsedFld();
 			if (D != nullptr) {
 				KL = new KeyListEl();
-				if (D->KL == nullptr) D->KL = KL;
-				else ChainLast(D->KL, KL);
+				if (D->KL == nullptr) {
+					D->KL = KL;
+				}
+				else {
+					ChainLast(D->KL, KL);
+				}
 				KL->Key = K;
 			}
 		}

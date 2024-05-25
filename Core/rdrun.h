@@ -5,7 +5,6 @@
 #include "FieldDescr.h"
 #include "legacy.h"
 #include "../DataEditor/EditD.h"
-#include "../DataEditor/DataEditorParams.h"
 #include "models/FrmlElem.h"
 #include "../fandio/XScan.h"
 
