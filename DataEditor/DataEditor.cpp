@@ -38,22 +38,24 @@ DataEditor::DataEditor(EditD* edit)
 {
 	edit_ = edit;
 	file_d_ = edit_->FD;
-	record_ = edit_->FD->GetRecSpace();
+	original_record_ = edit_->FD->GetRecSpace();
+	record_ = original_record_;
 	params_ = std::make_unique<DataEditorParams>();
 }
 
 DataEditor::DataEditor(FileD* file_d)
 {
 	file_d_ = file_d;
-	record_ = file_d->GetRecSpace();
+	original_record_ = file_d->GetRecSpace();
+	record_ = original_record_;
 	params_ = std::make_unique<DataEditorParams>();
 }
 
 DataEditor::~DataEditor()
 {
-	if (record_ != nullptr) {
-		delete[] record_;
-		record_ = nullptr;
+	if (original_record_ != nullptr) {
+		delete[] original_record_;
+		original_record_ = nullptr;
 	}
 }
 

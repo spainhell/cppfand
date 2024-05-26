@@ -54,6 +54,7 @@ public:
 private:
     FileD* file_d_ = nullptr;
     uint8_t* record_ = nullptr;
+    uint8_t* original_record_ = nullptr;
     std::unique_ptr<DataEditorParams> params_;
     EditD* edit_ = nullptr;
 

@@ -39,7 +39,7 @@ public:
 	void SetInpLongStr(LongStr* S, bool ShowErr);
 	void SetInpTTPos(FileD* file_d, int Pos, bool Decode);
 	void SetInpTT(RdbPos* rdb_pos, bool FromTxt);
-	void SetInpTTxtPos(FileD* FD);
+	void SetInpTTxtPos(FileD* file_d);
 	void ReadChar();
 	WORD RdDirective(bool& b);
 	void RdForwName(pstring& s);

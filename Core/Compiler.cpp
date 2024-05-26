@@ -190,13 +190,20 @@ void Compiler::SetInpTT(RdbPos* rdb_pos, bool FromTxt)
 	delete[] rec; rec = nullptr;
 }
 
-void Compiler::SetInpTTxtPos(FileD* FD)
+void Compiler::SetInpTTxtPos(FileD* file_d)
 {
-	SetInpTT(&FD->ChptPos, true);
-	WORD pos = FD->TxtPosUDLI;
-	RdbD* r = FD->ChptPos.rdb;
-	if (pos > InpArrLen) ForwChar = 0x1A;
-	else ForwChar = InpArrPtr[pos];
+	SetInpTT(&file_d->ChptPos, true);
+	const size_t pos = file_d->TxtPosUDLI;
+	//RdbD* r = file_d->ChptPos.rdb;
+	processing_F = file_d;
+
+	if (pos > InpArrLen) {
+		ForwChar = 0x1A;
+	}
+	else {
+		ForwChar = InpArrPtr[pos];
+	}
+
 	CurrPos = pos;
 }
 
