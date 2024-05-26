@@ -8,8 +8,8 @@ double RDate(WORD Y, WORD M, WORD D, WORD hh, WORD mm, WORD ss, WORD tt);
 void SplitDate(double R, WORD& d, WORD& m, WORD& y);
 double AddMonth(double R, double RM);
 double DifMonth(double R1, double R2);
-double ValDate(pstring Txt, pstring Mask);
-pstring StrDate(double R, pstring Mask);
+double ValDate(const std::string& text, std::string mask);
+std::string StrDate(double R, std::string mask);
 std::string CppToday();
 double Today(); // r362
 double CurrTime();

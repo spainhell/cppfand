@@ -448,25 +448,36 @@ void EditProc(Instr_edit* PD)
 std::string GetStr(FrmlElem* Z)
 {
 	std::string result;
-	if (Z == nullptr) return result;
-	result = RunShortStr(CFile, Z, CRecPtr);
+	if (Z == nullptr) {
+		
+	}
+	else {
+		//result = RunShortStr(CFile, Z, CRecPtr);
+		result = RunShortStr(nullptr, Z, nullptr);
+	}
 	return result;
 }
 
 void EditTxtProc(Instr_edittxt* PD)
 {
-	int i = 0; WRect v;
-	WRect* pv = nullptr; BYTE a = 0;
+	int i = 0;
+	WRect v;
+	WRect* pv = nullptr;
+	BYTE a = 0;
 	std::string* lp = nullptr;
-	MsgStr MsgS; void* p = nullptr;
+	MsgStr MsgS;
+	void* p = nullptr;
 	MarkStore(p);
 	i = 1;
-	if (PD->TxtPos != nullptr) i = RunInt(CFile, PD->TxtPos, CRecPtr);
+	if (PD->TxtPos != nullptr) {
+		i = RunInt(nullptr, PD->TxtPos, nullptr); // RunInt(CFile, PD->TxtPos, CRecPtr)
+	}
 	EdUpdated = false;
-	a = RunWordImpl(CFile, PD->Atr, 0, CRecPtr);
+	a = RunWordImpl(nullptr, PD->Atr, 0, nullptr);  //RunWordImpl(CFile, PD->Atr, 0, CRecPtr)
 	pv = nullptr;
 	if (PD->Ww.C1 != nullptr) {
-		RunWFrml(CFile, PD->Ww, PD->WFlags, v, CRecPtr);
+		//RunWFrml(CFile, PD->Ww, PD->WFlags, v, CRecPtr);
+		RunWFrml(nullptr, PD->Ww, PD->WFlags, v, nullptr);
 		pv = &v;
 	}
 	MsgS.Head = GetStr(PD->Head);
@@ -482,12 +493,20 @@ void EditTxtProc(Instr_edittxt* PD)
 		SetTxtPathVol(PD->TxtPath, PD->TxtCatIRec);
 		lp = nullptr;
 	}
+
 	std::string msg;
-	if (PD->ErrMsg != nullptr) msg = RunStdStr(CFile, PD->ErrMsg, CRecPtr);
+	if (PD->ErrMsg != nullptr) {
+		msg = RunStdStr(nullptr, PD->ErrMsg, nullptr);  //RunStdStr(CFile, PD->ErrMsg, CRecPtr)
+	}
+
 	std::unique_ptr<TextEditor> editor = std::make_unique<TextEditor>();
-	editor->EditTxtFile(lp, PD->EdTxtMode, msg, PD->ExD, i,
-		RunInt(CFile, PD->TxtXY, CRecPtr), pv, a,
-		RunShortStr(CFile, PD->Hd, CRecPtr), PD->WFlags, &MsgS);
+	editor->EditTxtFile(
+		lp, PD->EdTxtMode, msg, PD->ExD, i,
+		RunInt(nullptr, PD->TxtXY, nullptr), /*RunInt(CFile, PD->TxtXY, CRecPtr),*/
+		pv, a,
+		RunShortStr(nullptr, PD->Hd, nullptr), /*RunShortStr(CFile, PD->Hd, CRecPtr),*/
+		PD->WFlags, &MsgS);
+
 	ReleaseStore(&p);
 }
 

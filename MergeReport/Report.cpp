@@ -1243,7 +1243,7 @@ void Report::Print1NTupel(std::string& text, bool Skip)
 {
 	WORD L;
 	double R = 0.0;
-	pstring Mask;
+	std::string mask;
 	LongStr* S = nullptr;
 	if (Y.Ln == 0) return;
 	RFldD* RF = nullptr;
@@ -1301,22 +1301,22 @@ label1:
 					break;
 				}
 				case 'D': {
-					if (RF->BlankOrWrap) Mask = "DD.MM.YYYY";
-					else Mask = "DD.MM.YY";
+					if (RF->BlankOrWrap) mask = "DD.MM.YYYY";
+					else mask = "DD.MM.YY";
 					goto label2;
 					break;
 				}
 				case 'T': {
-					Mask = copy("hhhhhh", 1, L) + copy(":ss mm.tt", 1, M);
+					mask = copy("hhhhhh", 1, L) + copy(":ss mm.tt", 1, M);
 					Y.I += 2;
 				label2:
 					if (Skip) {
-						snprintf(buffer, sizeof(buffer), "%*c", Mask.length(), ' ');
+						snprintf(buffer, sizeof(buffer), "%*c", mask.length(), ' ');
 						//printf("%s%*c", Rprt.c_str(), Mask.length(), ' ');
 						text += buffer;
 					}
 					else {
-						snprintf(buffer, sizeof(buffer), "%s", StrDate(R, Mask).c_str());
+						snprintf(buffer, sizeof(buffer), "%s", StrDate(R, mask).c_str());
 						//printf("%s%s", Rprt.c_str(), StrDate(rdb, Mask).c_str());
 						text += buffer;
 					}

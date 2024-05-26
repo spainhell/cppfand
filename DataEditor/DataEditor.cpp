@@ -418,7 +418,7 @@ WORD DataEditor::FieldEdit(FieldDescr* F, FrmlElem* Impl, WORD LWw, WORD iPos, s
 {
 	short Col = 0, Row = 0;
 	char cc = '\0';
-	pstring* Mask = nullptr;
+	std::string Mask;
 	std::string Msk;
 	pstring s;
 	double r = 0;
@@ -475,9 +475,9 @@ WORD DataEditor::FieldEdit(FieldDescr* F, FrmlElem* Impl, WORD LWw, WORD iPos, s
 	WORD L = F->L;
 	WORD M = F->M;
 	//Mask = new pstring(FieldDMask(F));
-	Mask = new pstring(F->Mask.c_str());
+	Mask = F->Mask;
 	if (((F->Flg & f_Mask) != 0) && (F->field_type == FieldType::ALFANUM)) {
-		Msk = *Mask;
+		Msk = Mask;
 	}
 	else {
 		Msk = "";      /*!!!!*/
@@ -550,17 +550,17 @@ label2:
 		T = LeadChar(' ', TrailChar(Txt, ' '));
 		if (T == "") r = 0;
 		else {
-			r = ValDate(T, *Mask);
-			if ((r == 0.0) && (T != LeadChar(' ', OldTrailChar(' ', StrDate(r, *Mask)))))
+			r = ValDate(T, Mask);
+			if ((r == 0.0) && (T != LeadChar(' ', OldTrailChar(' ', StrDate(r, Mask)))))
 			{
-				SetMsgPar(*Mask);
+				SetMsgPar(Mask);
 				WrLLF10Msg(618);
 			label4:
 				screen.GotoXY(Col, Row);
 				goto label2;
 			}
 		}
-		Txt = StrDate(r, *Mask);
+		Txt = StrDate(r, Mask);
 		RR = r;
 		break;
 	}
