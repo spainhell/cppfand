@@ -76,7 +76,7 @@ public:
 	FileD* FindFileD();
 	FileD* RdFileName();
 	LinkD* FindLD(FileD* file_d, std::string RoleName);
-	bool IsRoleName(bool Both, FileD** FD, LinkD** LD);
+	bool IsRoleName(bool both, FileD* file_d, FileD** up_file_d, LinkD** link);
 	FrmlElem* RdFAccess(FileD* FD, LinkD* LD, char& FTyp);
 	FrmlElem* TryRdFldFrml(FileD* FD, char& FTyp, MergeReportBase* caller);
 	FrmlElem* RdFldNameFrmlF(char& FTyp, MergeReportBase* caller);
@@ -107,7 +107,7 @@ public:
 	bool FldTypIdentity(FieldDescr* F1, FieldDescr* F2);
 	void RdFldList(std::vector<FieldDescr*>& vFields);
 	void RdNegFldList(bool& neg, std::vector<FieldDescr*>& vFields);
-	void GoCompileErr(WORD i_rec, WORD n);
+	void GoCompileErr(int i_rec, WORD n);
 
 	FieldNameType rdFldNameType = FieldNameType::none;
 	FrmlElem* RdFldNameFrml(char& FTyp, MergeReportBase* caller);

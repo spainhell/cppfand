@@ -1099,7 +1099,7 @@ void RdKumul()
 
 void RdRoleField(AddD* AD)
 {
-	if (!g_compiler->IsRoleName(true, &AD->File2, &AD->LD)) {
+	if (!g_compiler->IsRoleName(true, g_compiler->processing_F, &AD->File2, &AD->LD)) {
 		g_compiler->Error(9);
 	}
 	g_compiler->Accept('.');

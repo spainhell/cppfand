@@ -382,7 +382,7 @@ FrmlElem* Merge::RdDirFilVar_M(char& FTyp, bool wasIiPrefix)
 	if (wasIiPrefix) {
 		processed_file = InpFD_M(Ii);
 		g_compiler->processing_F = processed_file;
-		if (!g_compiler->IsRoleName(true, &FD, &LD)) {
+		if (!g_compiler->IsRoleName(true, processed_file, &FD, &LD)) {
 			g_compiler->Error(9);
 		}
 	}
@@ -391,14 +391,14 @@ FrmlElem* Merge::RdDirFilVar_M(char& FTyp, bool wasIiPrefix)
 			Ii = Oi;
 			processed_file = InpFD_M(Ii);
 			g_compiler->processing_F = processed_file;
-			if (g_compiler->IsRoleName(true, &FD, &LD)) {
+			if (g_compiler->IsRoleName(true, processed_file, &FD, &LD)) {
 				goto label2;
 			}
 		}
 		for (int16_t i = 1; i <= MaxIi; i++) {
 			processed_file = InpFD_M(i);
 			g_compiler->processing_F = processed_file;
-			if (g_compiler->IsRoleName(true, &FD, &LD)) {
+			if (g_compiler->IsRoleName(true, processed_file, &FD, &LD)) {
 				Ii = i;
 				goto label2;
 			}

@@ -1284,7 +1284,7 @@ void Compiler::RdNegFldList(bool& neg, std::vector<FieldDescr*>& vFields)
 	Accept(')');
 }
 
-void Compiler::GoCompileErr(WORD i_rec, WORD n)
+void Compiler::GoCompileErr(int i_rec, WORD n)
 {
 	IsCompileErr = true;
 	InpRdbPos.rdb = CRdb;
@@ -2477,21 +2477,21 @@ LinkD* Compiler::FindLD(FileD* file_d, std::string RoleName)
 	return nullptr;
 }
 
-bool Compiler::IsRoleName(bool Both, FileD** FD, LinkD** LD)
+bool Compiler::IsRoleName(bool both, FileD* file_d, FileD** up_file_d, LinkD** link)
 {
 	TestIdentif();
-	*FD = FindFileD();
+	*up_file_d = FindFileD();
 	auto result = true;
-	if ((*FD != nullptr) && (*FD)->IsParFile) {
+	if ((*up_file_d != nullptr) && (*up_file_d)->IsParFile) {
 		RdLex();
-		*LD = nullptr;
+		*link = nullptr;
 		return result;
 	}
-	if (Both) {
-		*LD = FindLD(processing_F, LexWord);
-		if (*LD != nullptr) {
+	if (both) {
+		*link = FindLD(file_d, LexWord);
+		if (*link != nullptr) {
 			RdLex();
-			*FD = (*LD)->ToFD;
+			*up_file_d = (*link)->ToFD;
 			return result;
 		}
 	}
@@ -2619,7 +2619,7 @@ FrmlElem* Compiler::RdFldNameFrmlF(char& FTyp, MergeReportBase* caller)
 	FrmlElem* z = nullptr;
 
 	if (IsForwPoint()) {
-		const bool isRoleName = IsRoleName(FileVarsAllowed, &fd, &ld);
+		const bool isRoleName = IsRoleName(FileVarsAllowed, processing_F, &fd, &ld);
 		if (!isRoleName) {
 			Error(9);
 		}

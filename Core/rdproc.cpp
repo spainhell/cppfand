@@ -213,7 +213,7 @@ FrmlElem* RdFldNameFrmlP(char& FTyp, MergeReportBase* caller)
 		}
 		else {
 			pstring FName = LexWord;
-			bool linked = g_compiler->IsRoleName(FileVarsAllowed, &FD, &LD);
+			bool linked = g_compiler->IsRoleName(FileVarsAllowed, g_compiler->processing_F, &FD, &LD);
 			if (FD != nullptr) {
 				FName = FD->Name;
 			}
@@ -448,7 +448,9 @@ FrmlElem* RdFunctionP(char& FFTyp)
 #endif
 		cf = CFile;
 		CFile = FD;
-		if (!g_compiler->IsRoleName(true, &FD, &LD) || (LD == nullptr)) g_compiler->Error(9);
+		if (!g_compiler->IsRoleName(true, FD, &FD, &LD) || (LD == nullptr)) {
+			g_compiler->Error(9);
+		}
 		CFile = cf;
 		iZ->LinkLD = LD;
 		FTyp = 'R';

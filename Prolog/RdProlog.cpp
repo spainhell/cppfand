@@ -1242,7 +1242,7 @@ TCommand* RdCommand(std::vector<TVarDcl*>& Vars) /*PCommand*/
 		c->DbPred = (TDatabase*)p;
 		//Move(LexWord, c->Name, LexWord.length() + 1);
 		c->Name = LexWord;
-		if (!g_compiler->IsRoleName(false, &fd, &ld)) g_compiler->Error(9);
+		if (!g_compiler->IsRoleName(false, nullptr, &fd, &ld)) g_compiler->Error(9);
 		if (fd->typSQLFile) g_compiler->OldError(155);
 		AcceptP('.');
 		c->FldD = g_compiler->RdFldName(fd);
