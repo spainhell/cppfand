@@ -4885,11 +4885,14 @@ label81:
 				// F2 - novy zaznam, porizeni nove vety
 				if (!params_->EdRecVar) {
 					if (IsNewRec) {
-						if ((CNRecs() > 1) && (!params_->Prompt158 || EquOldNewRec() || PromptYN(158))) DelNewRec();
+						if ((CNRecs() > 1) && (!params_->Prompt158 || EquOldNewRec() || PromptYN(158))) {
+							DelNewRec();
+						}
 					}
-					else if (!params_->NoCreate && !params_->Only1Record && WriteCRec(true, Displ))
-					{
-						if (Displ) DisplAllWwRecs();
+					else if (!params_->NoCreate && !params_->Only1Record && WriteCRec(true, Displ)) {
+						if (Displ) {
+							DisplAllWwRecs();
+						}
 						SwitchToAppend();
 					}
 				}
