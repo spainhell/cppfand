@@ -210,14 +210,18 @@ void Compiler::SetInpTTxtPos(FileD* file_d)
 void Compiler::ReadChar()
 {
 	CurrChar = ForwChar;
-	if (CurrPos < InpArrLen)
-	{
+	if (CurrPos < InpArrLen) {
 		CurrPos++;
-		if (CurrPos == InpArrLen) ForwChar = 0x1A;
-		else ForwChar = InpArrPtr[CurrPos];
+		if (CurrPos == InpArrLen) {
+			ForwChar = 0x1A;
+		}
+		else {
+			ForwChar = InpArrPtr[CurrPos];
+		}
 	}
 	else if (CurrPos == InpArrLen) {
-		CurrPos++; ForwChar = 0x1A; // CTRL+Z = 0x1A
+		CurrPos++;
+		ForwChar = 0x1A; // CTRL+Z = 0x1A
 	}
 }
 
@@ -1345,7 +1349,7 @@ label1:
 	RdLex();
 	result = lastK;
 	return result;
-}
+	}
 
 void Compiler::SrchF(FieldDescr* F)
 {

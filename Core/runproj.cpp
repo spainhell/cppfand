@@ -125,17 +125,20 @@ void GetSplitChapterName(FileD* file_d, void* record, std::string& name, std::st
 	}
 }
 
-void GetRdbRecVars(void* RecPtr, RdbRecVars* X)
+void GetRdbRecVars(const EditD* edit, void* record, RdbRecVars* X)
 {
-	void* p = nullptr; void* p2 = nullptr; void* cr = nullptr;
+	void* p = nullptr;
+	void* p2 = nullptr;
+	//void* cr = nullptr;
 
-	cr = CRecPtr;
-	CRecPtr = RecPtr;
-	std::string s1 = CFile->loadS(ChptTyp, CRecPtr);
+	//cr = CRecPtr;
+	//CRecPtr = record;
+	FileD* file_d = edit->FD;
+	std::string s1 = file_d->loadS(ChptTyp, record);
 	X->Typ = s1[0];
-	GetSplitChapterName(CFile, CRecPtr, X->Name, X->Ext);
-	X->Txt = CFile->loadT(ChptTxt, CRecPtr);
-	X->OldTxt = CFile->loadT(ChptOldTxt, CRecPtr);
+	GetSplitChapterName(file_d, record, X->Name, X->Ext);
+	X->Txt = file_d->loadT(ChptTxt, record);
+	X->OldTxt = file_d->loadT(ChptOldTxt, record);
 	if (X->Typ == 'F') {
 		X->FTyp = ExtToTyp(X->Ext);
 		X->CatIRec = catalog->GetCatalogIRec(X->Name, false);
@@ -143,8 +146,8 @@ void GetRdbRecVars(void* RecPtr, RdbRecVars* X)
 		if (X->OldTxt != 0) {
 			MarkBoth(p, p2);
 			if (RdFDSegment(0, X->OldTxt)) {
-				X->FTyp = CFile->FF->file_type;
-				if (CFile->IsSQLFile) X->Ext = ".SQL";
+				X->FTyp = file_d->FF->file_type;
+				if (file_d->IsSQLFile) X->Ext = ".SQL";
 				else {
 					switch (X->FTyp) {
 					case FileType::RDB: X->Ext = ".RDB"; break;
@@ -154,7 +157,7 @@ void GetRdbRecVars(void* RecPtr, RdbRecVars* X)
 					}
 				}
 			}
-			CFile = Chpt;
+			//CFile = Chpt;
 			ReleaseStore(&p);
 			ReleaseStore(&p2);
 		}
@@ -162,7 +165,7 @@ void GetRdbRecVars(void* RecPtr, RdbRecVars* X)
 		if (X->Ext == ".SQL") X->isSQL = true;
 #endif
 	}
-	CRecPtr = cr;
+	//CRecPtr = cr;
 }
 
 bool ChptDelFor(EditD* edit, RdbRecVars* X)
@@ -234,7 +237,7 @@ bool ChptDel(FileD* file_d, EditD* edit)
 	if (!IsCurrChpt(file_d)) {
 		return true;
 	}
-	GetRdbRecVars(edit->NewRecPtr, &New);
+	GetRdbRecVars(edit, edit->NewRecPtr, &New);
 	return ChptDelFor(edit, &New);
 }
 
@@ -292,8 +295,10 @@ WORD ChptWriteCRec(DataEditor* data_editor, EditD* edit)
 			return result;
 		}
 	}
-	GetRdbRecVars(edit->NewRecPtr, &New);
-	if (!data_editor->TestIsNewRec()) GetRdbRecVars(edit->OldRecPtr, &Old);
+	GetRdbRecVars(edit, edit->NewRecPtr, &New);
+	if (!data_editor->TestIsNewRec()) {
+		GetRdbRecVars(edit, edit->OldRecPtr, &Old);
+	}
 	result = 1;
 #ifndef FandGraph
 	if (New.Typ == 'L') { WrLLF10Msg(659); return result; }
@@ -1129,19 +1134,18 @@ FileD* RdF(FileD* file_d, std::string FileName)
 {
 	std::string d, name, ext;
 	FileType FDTyp = FileType::UNKNOWN;
-	std::string s;
-	FieldDescr* IdF = nullptr; FieldDescr* TxtF = nullptr;
+	FieldDescr* IdF = nullptr;
+	FieldDescr* TxtF = nullptr;
 	short i = 0, n = 0;
-	std::string nr;
 	FSplit(FileName, d, name, ext);
 
 	FDTyp = ExtToTyp(ext);
 	if (FDTyp == FileType::RDB) {
 		ReadMessage(51);
-		s = MsgLine;
+		std::string s = MsgLine;
 		ReadMessage(49);
 		val(MsgLine, n, i);
-		nr = std::to_string(TxtCols - n);
+		std::string nr = std::to_string(TxtCols - n);
 		s = s + nr;
 		g_compiler->SetInpStr(s);
 	}
@@ -1355,7 +1359,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 				|| (Typ == 'U')													// User rights chapter
 				|| (Typ == 'F' || Typ == 'D') && CompileFD						// chapter F or D and compile FD flag
 				|| (Typ == 'P') && ChptTF->CompileProc) {						// chapter P and compile proc flag	
-				OldTxt = rdb_file->loadT(ChptOldTxt, rdb_file->FF->RecPtr);
+				//OldTxt = rdb_file->loadT(ChptOldTxt, rdb_file->FF->RecPtr);
 				InpRdbPos = RP;
 				if (IsTestRun) {
 					ClrScr(TextAttr);
@@ -1395,30 +1399,51 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 						g_compiler->GoCompileErr(I, 654);
 					}
 #endif
-					if (Verif || ChptTF->CompileAll || OldTxt == 0) {
-					label2:
+					std::string old_chapter_code = rdb_file->loadS(ChptOldTxt, rdb_file->FF->RecPtr);
+					std::string chapter_code = rdb_file->loadS(ChptTxt, rdb_file->FF->RecPtr);
+					bool chapter_code_changed = old_chapter_code != chapter_code;
+
+					if (Verif || ChptTF->CompileAll || chapter_code_changed) {
+						//label2:
+						p1 = RdF(rdb_file, Name);
+
+						if (chapter_code_changed) {
+							// get position of old chapter code
+							int old_txt_pos = rdb_file->loadT(ChptOldTxt, rdb_file->FF->RecPtr);
+							// transform the file
+							const bool merged = MergeOldNew(p1, Verif, old_txt_pos);
+							if (merged) {
+								// copy old chapter code (ChptTxt) to new chapter code (ChptOldTxt)
+								rdb_file->saveS(ChptOldTxt, chapter_code, rdb_file->FF->RecPtr);
+								rdb_file->WriteRec(I, rdb_file->FF->RecPtr);
+							}
+						}
+
+						if (p1->IsHlpFile) {
+							CRdb->help_file = p1;
+						}
+					}
+					else {
 						p1 = RdF(rdb_file, Name);
 						if (p1->IsHlpFile) {
 							CRdb->help_file = p1;
 						}
-						if (OldTxt > 0) {
-							MergeOldNew(p1, Verif, OldTxt);
-						}
+					}
 
-					}
-					else if (!RdFDSegment(I, OldTxt)) {
-						LinkDRoot = ld;
-						//ReleaseStore(&p1);
-						//CFile = Chpt;
-						goto label2;
-					}
-					else {
-						ChainLast(FileDRoot, rdb_file);
-						MarkStore(p1);
-						if (rdb_file->IsHlpFile) {
-							CRdb->help_file = rdb_file;
-						}
-					}
+					//else if (!RdFDSegment(I, OldTxt)) {
+					//	LinkDRoot = ld;
+					//	//ReleaseStore(&p1);
+					//	//CFile = Chpt;
+					//	goto label2;
+					//}
+
+					//else {
+					//	ChainLast(FileDRoot, rdb_file);
+					//	MarkStore(p1);
+					//	if (rdb_file->IsHlpFile) {
+					//		CRdb->help_file = rdb_file;
+					//	}
+					//}
 					break;
 				}
 				case 'M': {
@@ -1607,7 +1632,7 @@ void Finish_EditExecRdb(bool wasGraph, int w)
 #ifdef FandSQL
 	if (top) SQLDisconnect;
 #endif
-}
+	}
 
 bool EditExecRdb(const std::string& name, const std::string& proc_name, Instr_proc* proc_call, wwmix* ww)
 {
