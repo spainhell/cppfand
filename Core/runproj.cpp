@@ -1133,17 +1133,14 @@ int MakeDbfDcl(pstring Nm)
 FileD* RdF(FileD* file_d, std::string FileName)
 {
 	std::string d, name, ext;
-	FileType FDTyp = FileType::UNKNOWN;
-	FieldDescr* IdF = nullptr;
-	FieldDescr* TxtF = nullptr;
-	short i = 0, n = 0;
 	FSplit(FileName, d, name, ext);
 
-	FDTyp = ExtToTyp(ext);
+	FileType FDTyp = ExtToTyp(ext);
 	if (FDTyp == FileType::RDB) {
 		ReadMessage(51);
 		std::string s = MsgLine;
 		ReadMessage(49);
+		short i = 0, n = 0;
 		val(MsgLine, n, i);
 		std::string nr = std::to_string(TxtCols - n);
 		s = s + nr;
@@ -1153,6 +1150,18 @@ FileD* RdF(FileD* file_d, std::string FileName)
 		int pos = file_d->loadT(ChptTxt, file_d->FF->RecPtr);
 		g_compiler->SetInpTTPos(file_d, pos, CRdb->Encrypted);
 	}
+	return RdFileD(name, FDTyp, ext);
+}
+
+FileD* RdOldF(FileD* file_d, const std::string& file_name)
+{
+	std::string d, name, ext;
+	FSplit(file_name, d, name, ext);
+	FileType FDTyp = ExtToTyp(ext);
+
+	int pos = file_d->loadT(ChptOldTxt, file_d->FF->RecPtr);
+	g_compiler->SetInpTTPos(file_d, pos, CRdb->Encrypted);
+
 	return RdFileD(name, FDTyp, ext);
 }
 
@@ -1408,6 +1417,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 						p1 = RdF(rdb_file, Name);
 
 						if (chapter_code_changed) {
+							FileD* p2 = RdOldF(rdb_file, Name);
 							// get position of old chapter code
 							int old_txt_pos = rdb_file->loadT(ChptOldTxt, rdb_file->FF->RecPtr);
 							// transform the file
