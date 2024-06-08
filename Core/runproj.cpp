@@ -1270,19 +1270,19 @@ bool EquKeys(XKey* K1, XKey* K2)
 	return result;
 }
 
-bool MergeOldNew(FileD* file_d, bool Veriflongint, int Pos)
+bool MergeOldNew(FileD* new_file, FileD* old_file, bool Veriflongint, int Pos)
 {
 	std::string Name;
 	std::deque<LinkD*> ld = LinkDRoot;
 	auto result = false;
-	FileD* FDOld = nullptr;
-	FileD* FDNew = file_d;
-	SetPathAndVolume(file_d);
+	FileD* FDOld = old_file;
+	FileD* FDNew = new_file;
+	SetPathAndVolume(new_file);
 	Name = FDNew->Name;
 	FDNew->Name = "@";
-	if (!RdFDSegment(0, Pos)) goto label1;
-	ChainLast(FileDRoot, Chpt);
-	FDOld = Chpt;
+	//if (!RdFDSegment(0, Pos)) goto label1;
+	//ChainLast(FileDRoot, Chpt);
+	//FDOld = Chpt;
 	FDOld->Name = Name;
 	if ((FDNew->FF->file_type != FDOld->FF->file_type) || !EquStoredF(FDNew->FldD.front(), FDOld->FldD.front())
 #ifdef FandSQL
@@ -1408,8 +1408,11 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 						g_compiler->GoCompileErr(I, 654);
 					}
 #endif
+					// get last successfully compiled code
 					std::string old_chapter_code = rdb_file->loadS(ChptOldTxt, rdb_file->FF->RecPtr);
+					// get current chapter code
 					std::string chapter_code = rdb_file->loadS(ChptTxt, rdb_file->FF->RecPtr);
+					// compare old and new chapter code
 					bool chapter_code_changed = old_chapter_code != chapter_code;
 
 					if (Verif || ChptTF->CompileAll || chapter_code_changed) {
@@ -1421,7 +1424,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 							// get position of old chapter code
 							int old_txt_pos = rdb_file->loadT(ChptOldTxt, rdb_file->FF->RecPtr);
 							// transform the file
-							const bool merged = MergeOldNew(p1, Verif, old_txt_pos);
+							const bool merged = MergeOldNew(p1, p2, Verif, old_txt_pos);
 							if (merged) {
 								// copy old chapter code (ChptTxt) to new chapter code (ChptOldTxt)
 								rdb_file->saveS(ChptOldTxt, chapter_code, rdb_file->FF->RecPtr);
@@ -1642,7 +1645,7 @@ void Finish_EditExecRdb(bool wasGraph, int w)
 #ifdef FandSQL
 	if (top) SQLDisconnect;
 #endif
-	}
+}
 
 bool EditExecRdb(const std::string& name, const std::string& proc_name, Instr_proc* proc_call, wwmix* ww)
 {
