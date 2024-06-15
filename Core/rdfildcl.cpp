@@ -25,10 +25,16 @@ FieldDescr* RdFieldDescr(std::string name, bool Stored)
 
 	FieldDescr* F = new FieldDescr();
 	F->Name = name;
-	if (Stored) Flg = f_Stored;
-	else Flg = 0;
+	if (Stored) {
+		Flg = f_Stored;
+	}
+	else {
+		Flg = 0;
+	}
 	g_compiler->Accept(':');
-	if ((Lexem != _identifier) || (LexWord.length() > 1)) g_compiler->Error(10);
+	if ((Lexem != _identifier) || (LexWord.length() > 1)) {
+		g_compiler->Error(10);
+	}
 
 	FieldType Typ = FieldDescr::GetFieldType((char)LexWord[1]);
 
