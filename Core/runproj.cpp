@@ -1270,7 +1270,7 @@ bool EquKeys(XKey* K1, XKey* K2)
 	return result;
 }
 
-bool MergeOldNew(FileD* new_file, FileD* old_file, bool Veriflongint, int Pos)
+bool MergeOldNew(FileD* new_file, FileD* old_file)
 {
 	//std::deque<LinkD*> ld = LinkDRoot;
 	bool result = false;
@@ -1408,32 +1408,32 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 						g_compiler->GoCompileErr(I, 654);
 					}
 #endif
-					// get last successfully compiled code
-					std::string old_chapter_code = rdb_file->loadS(ChptOldTxt, rdb_file->FF->RecPtr);
-					// get current chapter code
-					std::string chapter_code = rdb_file->loadS(ChptTxt, rdb_file->FF->RecPtr);
-					// compare old and new chapter code
-					bool chapter_code_changed = old_chapter_code != chapter_code;
+					// get position of old chapter code
+					int old_txt_pos = rdb_file->loadT(ChptOldTxt, rdb_file->FF->RecPtr);
 
-					if (Verif || ChptTF->CompileAll || chapter_code_changed) {
+					if (Verif || ChptTF->CompileAll || old_txt_pos == 0) {
 						//label2:
 						p1 = RdF(rdb_file, Name);
+						if (!Encryp) {
+							// get last successfully compiled code
+							std::string old_chapter_code = rdb_file->loadS(ChptOldTxt, rdb_file->FF->RecPtr);
+							// get current chapter code
+							std::string chapter_code = rdb_file->loadS(ChptTxt, rdb_file->FF->RecPtr);
 
-						if (chapter_code_changed) {
-							FileD* p2 = RdOldF(rdb_file, Name);
+							// compare old and new chapter code
+							if (old_chapter_code != chapter_code) {
+								FileD* p2 = RdOldF(rdb_file, Name);
 
-							// get position of old chapter code
-							int old_txt_pos = rdb_file->loadT(ChptOldTxt, rdb_file->FF->RecPtr);
+								// transform the file
+								std::deque<LinkD*> ld_old = LinkDRoot;
+								const bool merged = MergeOldNew(p1, p2);
+								LinkDRoot = ld_old;
 
-							// transform the file
-							std::deque<LinkD*> ld_old = LinkDRoot;
-							const bool merged = MergeOldNew(p1, p2, Verif, old_txt_pos);
-							LinkDRoot = ld_old;
-
-							if (merged) {
-								// copy old chapter code (ChptTxt) to new chapter code (ChptOldTxt)
-								rdb_file->saveS(ChptOldTxt, chapter_code, rdb_file->FF->RecPtr);
-								rdb_file->WriteRec(I, rdb_file->FF->RecPtr);
+								if (merged) {
+									// copy new chapter code (ChptTxt) to old chapter code (ChptOldTxt)
+									rdb_file->saveS(ChptOldTxt, chapter_code, rdb_file->FF->RecPtr);
+									rdb_file->WriteRec(I, rdb_file->FF->RecPtr);
+								}
 							}
 						}
 

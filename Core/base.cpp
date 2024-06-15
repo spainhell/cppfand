@@ -960,14 +960,16 @@ bool EquLongStr(LongStr* S1, LongStr* S2)
 	return true;
 }
 
-bool EquArea(void* P1, void* P2, WORD L)
+bool EquArea(void* p1, void* p2, size_t len)
 {
-	auto* c1 = static_cast<unsigned char*>(P1);
-	auto* c2 = static_cast<unsigned char*>(P2);
-	for (size_t i = 0; i < L; i++) {
-		if (c1[i] != c2[i]) return false;
-	}
-	return true;
+	//auto* c1 = static_cast<unsigned char*>(P1);
+	//auto* c2 = static_cast<unsigned char*>(P2);
+	//for (size_t i = 0; i < len; i++) {
+	//	if (c1[i] != c2[i]) return false;
+	//}
+	//return true;
+
+	return memcmp(p1, p2, len) == 0;
 }
 
 WORD ListLength(void* P)

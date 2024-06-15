@@ -23,7 +23,7 @@ WORD SLeadEqu(const std::string& S1, const std::string& S2);
 bool EqualsMask(void* p, WORD l, pstring Mask); // r86 ASM
 bool EqualsMask(const std::string& value, std::string& mask);
 bool EquLongStr(LongStr* S1, LongStr* S2);
-bool EquArea(void* P1, void* P2, WORD L);
+bool EquArea(void* p1, void* p2, size_t len);
 short MinI(short X, short Y);
 short MaxI(short X, short Y);
 WORD MinW(WORD X, WORD Y);
