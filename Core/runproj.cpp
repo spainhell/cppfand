@@ -1272,13 +1272,13 @@ bool EquKeys(XKey* K1, XKey* K2)
 
 bool MergeOldNew(FileD* new_file, FileD* old_file, bool Veriflongint, int Pos)
 {
-	std::string Name;
-	std::deque<LinkD*> ld = LinkDRoot;
-	auto result = false;
+	//std::deque<LinkD*> ld = LinkDRoot;
+	bool result = false;
 	FileD* FDOld = old_file;
 	FileD* FDNew = new_file;
 	SetPathAndVolume(new_file);
-	Name = FDNew->Name;
+
+	std::string Name = FDNew->Name;
 	FDNew->Name = "@";
 	//if (!RdFDSegment(0, Pos)) goto label1;
 	//ChainLast(FileDRoot, Chpt);
@@ -1299,7 +1299,7 @@ bool MergeOldNew(FileD* new_file, FileD* old_file, bool Veriflongint, int Pos)
 	}
 label1:
 	FDNew->pChain = nullptr;
-	LinkDRoot = ld;
+	//LinkDRoot = ld;
 	FDNew->Name = Name;
 	FDNew->FullPath = CPath;
 	CRecPtr = Chpt->FF->RecPtr;
@@ -1421,10 +1421,15 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 
 						if (chapter_code_changed) {
 							FileD* p2 = RdOldF(rdb_file, Name);
+
 							// get position of old chapter code
 							int old_txt_pos = rdb_file->loadT(ChptOldTxt, rdb_file->FF->RecPtr);
+
 							// transform the file
+							std::deque<LinkD*> ld_old = LinkDRoot;
 							const bool merged = MergeOldNew(p1, p2, Verif, old_txt_pos);
+							LinkDRoot = ld_old;
+
 							if (merged) {
 								// copy old chapter code (ChptTxt) to new chapter code (ChptOldTxt)
 								rdb_file->saveS(ChptOldTxt, chapter_code, rdb_file->FF->RecPtr);
