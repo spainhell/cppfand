@@ -9,7 +9,7 @@ FieldDescr::FieldDescr()
 FieldDescr::FieldDescr(BYTE* inputStr)
 {
 	size_t index = 0;
-	pChain = reinterpret_cast<FieldDescr*>(*(unsigned int*)&inputStr[index]); index += 4;
+	//pChain = reinterpret_cast<FieldDescr*>(*(unsigned int*)&inputStr[index]); index += 4;
 	field_type = GetFieldType(*(char*)&inputStr[index]); index++;
 	frml_type = *(char*)&inputStr[index]; index++;
 	L = *(char*)&inputStr[index]; index++;
@@ -32,7 +32,7 @@ FieldDescr::FieldDescr(BYTE* inputStr)
 
 FieldDescr::FieldDescr(const FieldDescr& orig)
 {
-	if (orig.pChain != nullptr) pChain = new FieldDescr(*(FieldDescr*)orig.pChain);
+	//if (orig.pChain != nullptr) pChain = new FieldDescr(*(FieldDescr*)orig.pChain);
 	field_type = orig.field_type;
 	field_flag = orig.field_flag;
 	frml_type = orig.frml_type;

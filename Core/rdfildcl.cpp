@@ -509,7 +509,7 @@ void RdFieldDList(FileD* file_d, bool stored)
 		}
 
 		file_d->FldD.push_back(F);
-		ChainLast(file_d->FldD.front(), F);
+		//ChainLast(file_d->FldD.front(), F);
 
 		if (stored) {
 			if (file_d->FF->file_type == FileType::FAND8) {
@@ -590,7 +590,8 @@ void SetLDIndexRoot(FileD* file_d, /*LinkD* L,*/ std::deque<LinkD*>& L2)
 FileD* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 {
 	std::string JournalFlds = "Upd:A,1;RecNr:F,8.0;User:F,4.0;TimeStamp:D,'DD.MM.YYYY hh:mm:ss'";
-	FieldDescr* F = nullptr; FieldDescr* F2 = nullptr;
+	FieldDescr* F = nullptr;
+	FieldDescr* F2 = nullptr;
 	void* p = nullptr;
 	ChkD* C = nullptr;
 	std::deque<LinkD*> LDOld;
@@ -627,7 +628,8 @@ FileD* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 		g_compiler->SetInpStr(JournalFlds);
 		g_compiler->RdLex();
 		RdFieldDList(file_d, true);
-		F2 = (FieldDescr*)LastInChain(file_d->FldD.front());
+		//F2 = (FieldDescr*)LastInChain(file_d->FldD.front());
+		F2 = *file_d->FldD.end();
 		while (F != nullptr) {
 			if (F->isStored()) {
 				file_d->FldD.push_back(F);
@@ -711,7 +713,12 @@ FileD* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 	if (isHlp) {
 		F = file_d->FldD.front();
 		F2 = F->pChain;
-		if ((F->field_type != FieldType::ALFANUM) || (F2 == nullptr) || (F2->field_type != FieldType::TEXT) || (F2->pChain != nullptr)) g_compiler->OldError(128);
+		if ((F->field_type != FieldType::ALFANUM) 
+			|| (F2 == nullptr) 
+			|| (F2->field_type != FieldType::TEXT) 
+			|| (F2->pChain != nullptr)) {
+			g_compiler->OldError(128);
+		}
 		file_d->IsHlpFile = true;
 	}
 

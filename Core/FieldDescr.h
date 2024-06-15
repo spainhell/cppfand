@@ -21,7 +21,7 @@ enum class FieldType
 	UNKNOWN, FIXED, ALFANUM, NUMERIC, DATE,	TEXT, BOOL,	REAL
 };
 
-class FieldDescr : public Chained<FieldDescr>
+class FieldDescr
 {
 public:
 	FieldDescr();

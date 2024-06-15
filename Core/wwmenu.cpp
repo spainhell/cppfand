@@ -992,8 +992,8 @@ label1:
 	md = CFile->NewLockMode(RdMode);
 	if (CFile->FF->Handle == nullptr) goto label5;
 	CRecPtr = new BYTE[CFile->FF->RecLen + 2]{ '\0' };
-	NmF = CFile->FldD.front();
-	TxtF = NmF->pChain;
+	NmF = CFile->FldD[0];
+	TxtF = CFile->FldD[1];
 	if (!ByName) {
 		i = MaxW(1, MinW(IRec, CFile->FF->NRecs));
 		CFile->ReadRec(i, CRecPtr);

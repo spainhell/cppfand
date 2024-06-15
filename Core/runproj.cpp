@@ -409,8 +409,8 @@ WORD FindHelpRecNr(FileD* FD, std::string& txt)
 	CRecPtr = FD->GetRecSpace();
 	md = CFile->NewLockMode(RdMode);
 	if (CFile->FF->Handle == nullptr) goto label1;
-	NmF = CFile->FldD.front();
-	TxtF = NmF->pChain;
+	NmF = CFile->FldD[0];
+	TxtF = CFile->FldD[1];
 	for (i = 1; i <= CFile->FF->NRecs; i++) {
 		CFile->ReadRec(i, CRecPtr);
 		std::string NmFtext = CFile->loadS(NmF, CRecPtr);
@@ -557,12 +557,12 @@ void SetChptFldD()
 	}
 	else {
 		ChptTF = Chpt->FF->TF;
-		ChptTxtPos = Chpt->FldD.front();
-		ChptVerif = ChptTxtPos->pChain;
-		ChptOldTxt = ChptVerif->pChain;
-		ChptTyp = ChptOldTxt->pChain;
-		ChptName = ChptTyp->pChain;
-		ChptTxt = ChptName->pChain;
+		ChptTxtPos = Chpt->FldD[0];
+		ChptVerif = Chpt->FldD[1];
+		ChptOldTxt = Chpt->FldD[2];
+		ChptTyp = Chpt->FldD[3];
+		ChptName = Chpt->FldD[4];
+		ChptTxt = Chpt->FldD[5];
 	}
 }
 

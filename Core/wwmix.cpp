@@ -165,7 +165,8 @@ label1:
 		break;
 	}
 	case evMouseUp: {
-		iOld = 0; break; }
+		iOld = 0; break;
+	}
 	case evKeyDown: {
 		key = Event.Pressed.KeyCombination();
 		switch (key) {
@@ -584,7 +585,8 @@ std::string wwmix::GetSelect()
 
 bool wwmix::SelFieldList(WORD Nmsg, bool ImplAll, FieldListEl** FLRoot)
 {
-	FieldDescr* F; FieldList FL;
+	//FieldDescr* F;
+	FieldList FL;
 	*FLRoot = nullptr;
 	auto result = true;
 	if (ss.Empty) return result;
@@ -595,18 +597,21 @@ bool wwmix::SelFieldList(WORD Nmsg, bool ImplAll, FieldListEl** FLRoot)
 label1:
 	std::string s = GetSelect();
 	if (!s.empty()) {
-		F = CFile->FldD.front();
-		if (s[0] == (char)SelMark) s = s.substr(1, 255); //copy(s, 2, 255);
-		while (F != nullptr) {
+		if (s[0] == (char)SelMark) {
+			s = s.substr(1, 255); //copy(s, 2, 255);
+		}
+		//F = CFile->FldD.front();
+		//while (F != nullptr) {
+		for (FieldDescr* F : CFile->FldD) {
 			if (s == F->Name) {
-				FL = new FieldListEl(); // (FieldListEl*)GetStore(sizeof(*FL));
+				FL = new FieldListEl();
 				if (*FLRoot == nullptr) *FLRoot = FL;
 				else ChainLast(*FLRoot, FL);
 				FL->FldD = F;
 				goto label1;
 			}
 			else {
-				F = (FieldDescr*)F->pChain;
+				//F = F->pChain;
 			}
 		}
 		goto label1;
@@ -626,15 +631,18 @@ bool wwmix::SelFieldList(WORD Nmsg, bool ImplAll, std::vector<FieldDescr*>& FLRo
 label1:
 	std::string s = GetSelect();
 	if (!s.empty()) {
-		FieldDescr* F = CFile->FldD.front();
-		if (s[0] == (char)SelMark) s = s.substr(1, 255);
-		while (F != nullptr) {
+		if (s[0] == (char)SelMark) {
+			s = s.substr(1, 255);
+		}
+		//FieldDescr* F = CFile->FldD.front();
+		//while (F != nullptr) {
+		for (auto F : CFile->FldD) {
 			if (s == F->Name) {
 				FLRoot.push_back(F);
 				goto label1;
 			}
 			else {
-				F = (FieldDescr*)F->pChain;
+				//F = F->pChain;
 			}
 		}
 		goto label1;
@@ -702,8 +710,10 @@ label3:
 		goto label1;
 	}
 
-	auto dirItems = directoryItems(d, ne);
-	for (auto& item : dirItems) PutSelect(item);
+	vector<string> dirItems = directoryItems(d, ne);
+	for (string& item : dirItems) {
+		PutSelect(item);
+	}
 
 	//FindFirst(p + 00, 0, SR);
 	/*if (!(DosError() == 0 || DosError() == 18)) {
@@ -736,7 +746,9 @@ label3:
 			// pokud jsme v korenovem adresari, vrati se s '\'
 			if (d[d.length() - 1] != '\\') d += '\\';
 		}
-		else d = d + s + '\\';
+		else {
+			d = d + s + '\\';
+		}
 		goto label3;
 	}
 	return d + s;
@@ -745,12 +757,11 @@ label3:
 bool wwmix::PromptFilter(std::string Txt, FrmlElem** Bool, std::string* BoolTxt)
 {
 	void* p = nullptr;
-	bool Del;
 	FileD* cf = nullptr;
 	MarkStore(p);
 	size_t I = 1;
 
-	Del = true;
+	bool Del = true;
 	ResetCompilePars();
 	cf = CFile;
 
