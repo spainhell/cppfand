@@ -69,11 +69,11 @@ bool ReportGenerator::SelForAutoRprt(RprtOpt* RO)
 std::string ReportGenerator::SelGenRprt(pstring RprtName)
 {
 	wwmix ww;
-	RdbD* r; FileD* fd; FieldDescr* f; RprtOpt* ro;
-	std::string s; size_t i;
+	FileD* fd;
+	std::string s;
 
 	std::string result;
-	r = CRdb;
+	RdbD* r = CRdb;
 	while (r != nullptr) {
 		fd = r->rdb_file->pChain;
 		while (fd != nullptr) {
@@ -89,17 +89,19 @@ std::string ReportGenerator::SelGenRprt(pstring RprtName)
 	ww.SelectStr(0, 0, 19, tmpP + RprtName + '\"');
 	if (Event.Pressed.KeyCombination() == __ESC) return result;
 	s = ww.GetSelect();
-	i = s.find('.'); r = CRdb;
+	size_t i = s.find('.'); r = CRdb;
 	if (i != std::string::npos) {
 		do { r = r->ChainBack; } while (r->rdb_file->Name != s.substr(1, i - 1));
 		s = s.substr(i + 1, 255);
 	}
 	fd = r->rdb_file;
 	do { fd = fd->pChain; } while (fd->Name != s);
-	ro = g_compiler->GetRprtOpt();
+	RprtOpt* ro = g_compiler->GetRprtOpt();
 	ro->FDL.FD = fd;
-	f = fd->FldD.front();
-	while (f != nullptr) {
+	//FieldDescr* f = fd->FldD.front();
+
+	//while (f != nullptr) {
+	for (FieldDescr* f : fd->FldD) {
 		s = f->Name;
 		if ((f->Flg & f_Stored) == 0) {
 			pstring oldS = s;
@@ -107,8 +109,9 @@ std::string ReportGenerator::SelGenRprt(pstring RprtName)
 			s += oldS;
 		}
 		ww.PutSelect(s);
-		f = f->pChain;
+		//f = f->pChain;
 	}
+
 	CFile = fd;
 	ww.SelFieldList(36, true, ro->Flds);
 	if (ro->Flds.empty()) return result;

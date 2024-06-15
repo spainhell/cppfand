@@ -1261,7 +1261,7 @@ bool RunBuildIn()
 		}
 		if (w == 3/*ii*/) {
 			std::string tmpSS = CurrInst->Vars[1]->SS;
-			while ((f != nullptr) && !EquUpCase(f->Name, tmpSS)) f = (FieldDescr*)f->pChain;
+			//while ((f != nullptr) && !EquUpCase(f->Name, tmpSS)) f = (FieldDescr*)f->pChain;
 			if (f == nullptr) goto label1;
 		}
 		else {
@@ -1288,8 +1288,12 @@ bool RunBuildIn()
 		if ((f->Flg & f_Mask) != 0) mask = f->Mask;
 		else mask = "";
 		CurrInst->Vars[6] = GetStringTerm(mask);
-		if (w == 3) CurrInst->NextBranch = nullptr;
-		else CurrInst->NextBranch = (TBranch*)f->pChain;
+		if (w == 3) {
+			CurrInst->NextBranch = nullptr;
+		}
+		else {
+			//CurrInst->NextBranch = (TBranch*)f->pChain;
+		}
 		break;
 	}
 	case proc_type::_FandKeyP: {

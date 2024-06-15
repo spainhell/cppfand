@@ -1939,11 +1939,12 @@ void DataEditor::UndoRecord()
 	if (!IsNewRec && params_->WasUpdated) {
 		if (HasTF) {
 			if (params_->NoDelTFlds) {
-				FieldDescr* f = file_d_->FldD.front();
-				while (f != nullptr) {
+				//FieldDescr* f = file_d_->FldD.front();
+				//while (f != nullptr) {
+				for (FieldDescr* f : file_d_->FldD) {
 					if (((f->Flg & f_Stored) != 0) && (f->field_type == FieldType::TEXT))
 						*(int*)((char*)(edit_->OldRecPtr) + f->Displ) = *(int*)(((char*)(record_)+f->Displ));
-					f = f->pChain;
+					//f = f->pChain;
 				}
 			}
 		}

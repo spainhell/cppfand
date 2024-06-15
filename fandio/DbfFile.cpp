@@ -15,9 +15,10 @@ void DbfFile::WrDBaseHd()
 
 	DBaseHd* P = new DBaseHd();
 	char* PA = (char*)&P; // PA:CharArrPtr absolute P;
-	FieldDescr* F = CFile->FldD.front();
 	unsigned short n = 0;
-	while (F != nullptr) {
+	//FieldDescr* F = CFile->FldD.front();
+	//while (F != nullptr) {
+	for (FieldDescr* F : CFile->FldD) {
 		if ((F->Flg & f_Stored) != 0) {
 			n++;
 			{ // with P^.Flds[n]
@@ -40,7 +41,7 @@ void DbfFile::WrDBaseHd()
 				StrLPCopy((char*)&actual.Name[1], s, 11);
 			}
 		}
-		F = F->pChain;
+		//F = F->pChain;
 	}
 
 	unsigned short y;
@@ -48,7 +49,9 @@ void DbfFile::WrDBaseHd()
 		if (CFile->FF->TF->Format == FandTFile::FptFormat) P->Ver = 0xf5;
 		else P->Ver = 0x83;
 	}
-	else P->Ver = 0x03;
+	else {
+		P->Ver = 0x03;
+	}
 
 	P->RecLen = CFile->FF->RecLen;
 	SplitDate(Today(), d, m, y);
@@ -62,7 +65,7 @@ void DbfFile::WrDBaseHd()
 	bool cached = CFile->FF->NotCached();
 	RdWrCache(WRITE, CFile->FF->Handle, cached, 0, CFile->FF->FirstRecPos, (void*)&P);
 	RdWrCache(WRITE, CFile->FF->Handle, cached,
-		int(CFile->FF->NRecs) * CFile->FF->RecLen + CFile->FF->FirstRecPos, 1, (void*)&CtrlZ);
+		CFile->FF->NRecs * CFile->FF->RecLen + CFile->FF->FirstRecPos, 1, (void*)&CtrlZ);
 
 	delete P; P = nullptr;
 }
