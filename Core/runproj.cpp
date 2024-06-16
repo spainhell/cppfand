@@ -1437,14 +1437,24 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 
 							// compare old and new chapter code
 							if (old_chapter_code != chapter_code) {
-								FileD* p2 = RdOldF(rdb_file, Name);
+								if (old_txt_pos != 0) {
+									FileD* previous_decl = RdOldF(rdb_file, Name);
 
-								// transform the file
-								std::deque<LinkD*> ld_old = LinkDRoot;
-								const bool merged = MergeOldNew(p1, p2);
-								LinkDRoot = ld_old;
+									// transform the file
+									std::deque<LinkD*> ld_old = LinkDRoot;
+									const bool merged = MergeOldNew(p1, previous_decl);
+									LinkDRoot = ld_old;
 
-								if (merged) {
+									if (merged) {
+										// copy new chapter code (ChptTxt) to old chapter code (ChptOldTxt)
+										rdb_file->saveS(ChptOldTxt, chapter_code, rdb_file->FF->RecPtr);
+										rdb_file->WriteRec(I, rdb_file->FF->RecPtr);
+									}
+									else {
+										throw std::exception("Merge of an old and a new file declaration unsuccessful.");
+									}
+								}
+								else {
 									// copy new chapter code (ChptTxt) to old chapter code (ChptOldTxt)
 									rdb_file->saveS(ChptOldTxt, chapter_code, rdb_file->FF->RecPtr);
 									rdb_file->WriteRec(I, rdb_file->FF->RecPtr);

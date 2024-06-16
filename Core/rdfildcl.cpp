@@ -626,10 +626,10 @@ FileD* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 		g_compiler->RdLex();
 		RdFieldDList(file_d, true);
 		//F2 = (FieldDescr*)LastInChain(file_d->FldD.front());
-		F2 = *file_d->FldD.end();
-		F = file_d->FldD.front();
+		//F2 = *file_d->FldD.end();
+		//F = file_d->FldD.front();
 
-		throw std::exception("Not implemented yet");
+		//throw std::exception("Not implemented yet");
 		// TODO: have to be implemented (fields definitions)
 		/*while (F != nullptr) {
 			if (F->isStored()) {
