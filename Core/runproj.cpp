@@ -1165,22 +1165,37 @@ FileD* RdOldF(FileD* file_d, const std::string& file_name)
 	return RdFileD(name, FDTyp, ext);
 }
 
-bool EquStoredF(FieldDescr* F1, FieldDescr* F2)
+bool EquStoredF(std::vector<FieldDescr*>& fields1, std::vector<FieldDescr*>& fields2)
 {
+	std::vector<FieldDescr*>::iterator it1 = fields1.begin();
+	std::vector<FieldDescr*>::iterator it2 = fields2.begin();
+
 	while (true) {
-		while (F1 != nullptr && !F1->isStored()) {
-			F1 = F1->pChain;
+		while (it1 != fields1.end() && !(*it1)->isStored()) {
+			++it1;
 		}
-		while (F2 != nullptr && !F2->isStored()) {
-			F2 = F2->pChain;
+		// in it1 is first stored field now
+		while (it2 != fields2.end() && !(*it2)->isStored()) {
+			++it2;
 		}
-		if (F1 == nullptr) {
-			if (F2 != nullptr) return false;
-			else return true;
+		// in F2 is first stored field now
+
+		if (it1 == fields1.end()) {
+			if (it2 != fields2.end()) {
+				return false;
+			}
+			else {
+				// both are nullptr
+				return true;
+			}
 		}
-		if (F2 == nullptr || !g_compiler->FldTypIdentity(F1, F2) || (F1->Flg & ~f_Mask) != (F2->Flg & ~f_Mask)) return false;
-		F1 = F1->pChain;
-		F2 = F2->pChain;
+		if (it2 == fields2.end()
+			|| !g_compiler->FldTypIdentity(*it1, *it2)
+			|| ((*it1)->Flg & ~f_Mask) != ((*it2)->Flg & ~f_Mask)) {
+			return false;
+		}
+		++it1;
+		++it2;
 	}
 }
 
@@ -1284,7 +1299,7 @@ bool MergeOldNew(FileD* new_file, FileD* old_file)
 	//ChainLast(FileDRoot, Chpt);
 	//FDOld = Chpt;
 	FDOld->Name = Name;
-	if ((FDNew->FF->file_type != FDOld->FF->file_type) || !EquStoredF(FDNew->FldD.front(), FDOld->FldD.front())
+	if ((FDNew->FF->file_type != FDOld->FF->file_type) || !EquStoredF(FDNew->FldD, FDOld->FldD)
 #ifdef FandSQL
 		&& !FDNew->IsSQLFile && !FDOld->IsSQLFile
 #endif

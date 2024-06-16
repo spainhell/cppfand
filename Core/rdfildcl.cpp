@@ -529,19 +529,6 @@ void RdFieldDList(FileD* file_d, bool stored)
 	}
 }
 
-FileD* FakeRdFDSegment(FileD* FD)
-{
-	if (Lexem != 0x1A) {
-		g_compiler->Accept(';');
-	}
-	WORD i = FD->ChptPos.i_rec;
-	FileD* newFile = new FileD(*FD);
-	newFile->OrigFD = FD;
-	newFile->TxtPosUDLI = 0;
-
-	return newFile;
-}
-
 void SetLDIndexRoot(FileD* file_d, /*LinkD* L,*/ std::deque<LinkD*>& L2)
 {
 	LinkD* l2 = nullptr;
@@ -589,7 +576,6 @@ void SetLDIndexRoot(FileD* file_d, /*LinkD* L,*/ std::deque<LinkD*>& L2)
 // vraci ukazatel na FileD, protoze se muze v metode vytvorit novy objekt!!!
 FileD* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 {
-	std::string JournalFlds = "Upd:A,1;RecNr:F,8.0;User:F,4.0;TimeStamp:D,'DD.MM.YYYY hh:mm:ss'";
 	FieldDescr* F = nullptr;
 	FieldDescr* F2 = nullptr;
 	void* p = nullptr;
@@ -600,7 +586,7 @@ FileD* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 	LiRoots* li = nullptr;
 	CompInpD* ChPos = nullptr;
 	FileD* FD = nullptr;
-	FileD* file_d = nullptr;
+	FileD* file_d = nullptr; // new created FileD; will be returned from this method
 
 	ResetCompilePars();
 	g_compiler->RdLex();
@@ -616,8 +602,18 @@ FileD* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 #ifdef FandSQL
 		if (issql || rdb_file->typSQLFile) OldError(155);
 #endif
-		file_d = FakeRdFDSegment(FD);
-		F = file_d->FldD.front();
+
+		//file_d = FakeRdFDSegment(FD);
+		// *** replace of RdFDSegment
+		if (Lexem != 0x1A) {
+			g_compiler->Accept(';');
+		}
+		//WORD i = FD->ChptPos.i_rec;
+		file_d = new FileD(*FD);
+		file_d->OrigFD = FD;
+		file_d->TxtPosUDLI = 0;
+		//** end of replace of RdFDSegment
+
 		file_d->Reset();
 		file_d->Name = FileName;
 		file_d->IsJournal = true;
@@ -625,12 +621,17 @@ FileD* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 		if (!PrevCompInp.empty()) {
 			file_d->ChptPos = OrigInp()->InpRdbPos;
 		}
+		std::string JournalFlds = "Upd:A,1;RecNr:F,8.0;User:F,4.0;TimeStamp:D,'DD.MM.YYYY hh:mm:ss'";
 		g_compiler->SetInpStr(JournalFlds);
 		g_compiler->RdLex();
 		RdFieldDList(file_d, true);
 		//F2 = (FieldDescr*)LastInChain(file_d->FldD.front());
 		F2 = *file_d->FldD.end();
-		while (F != nullptr) {
+		F = file_d->FldD.front();
+
+		throw std::exception("Not implemented yet");
+		// TODO: have to be implemented (fields definitions)
+		/*while (F != nullptr) {
 			if (F->isStored()) {
 				file_d->FldD.push_back(F);
 				F2->pChain = F;
@@ -644,12 +645,14 @@ FileD* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 			}
 			F = F->pChain;
 		}
-		F2->pChain = nullptr;
+		F2->pChain = nullptr;*/
+
 		g_compiler->CompileRecLen(file_d);
 		ChainLast(FileDRoot, file_d);
 		MarkStore(p);
 		goto label1;
-	}
+	} // end JOURNAL
+
 	if (g_compiler->IsKeyWord("LIKE")) {
 		Prefix = FileName;
 		FD = g_compiler->RdFileName();
@@ -662,13 +665,22 @@ FileD* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 		}
 		//CallRdFDSegment(rdb_file);
 		// misto nacitani objektu ze souboru budeme objekt kopirovat
-		file_d = FakeRdFDSegment(FD);
+		//file_d = FakeRdFDSegment(FD);
+		// *** replace of RdFDSegment
+		if (Lexem != 0x1A) {
+			g_compiler->Accept(';');
+		}
+		//WORD i = FD->ChptPos.i_rec;
+		file_d = new FileD(*FD);
+		file_d->OrigFD = FD;
+		file_d->TxtPosUDLI = 0;
+		//** end of replace of RdFDSegment
 
 		// copy LinkD records too
-		for (auto& l : LinkDRoot) {
+		for (LinkD* l : LinkDRoot) {
 			// LinkD for OrigFD exists?
 			if (l->FromFD == FD) {
-				auto copiedLinkD = new LinkD(*l);
+				LinkD* copiedLinkD = new LinkD(*l);
 				copiedLinkD->FromFD = file_d;
 				LinkDRoot.push_front(copiedLinkD);
 			}
@@ -682,7 +694,7 @@ FileD* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 			g_compiler->OldError(106);
 		}
 
-		for (auto& K : file_d->Keys) {
+		for (XKey* K : file_d->Keys) {
 			if (!K->Alias.empty()) {
 				s = K->Alias;
 				i = s.find('_');
@@ -691,7 +703,8 @@ FileD* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 				K->Alias = s;
 			}
 		}
-	}
+	} // end LIKE
+
 	else {
 		file_d = new FileD(FType::FandFile);
 	}
@@ -711,12 +724,15 @@ FileD* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 	file_d->ChptPos = InpRdbPos;
 
 	if (isHlp) {
-		F = file_d->FldD.front();
-		F2 = F->pChain;
-		if ((F->field_type != FieldType::ALFANUM) 
-			|| (F2 == nullptr) 
-			|| (F2->field_type != FieldType::TEXT) 
-			|| (F2->pChain != nullptr)) {
+		//throw std::exception("Not implemented yet");
+		// TODO: have to be implemented (fields definitions)
+		F = file_d->FldD[0];
+		F2 = file_d->FldD[1];
+		if (F->field_type != FieldType::ALFANUM 
+			|| F2 == nullptr 
+			|| F2->field_type != FieldType::TEXT 
+			//|| (F2->pChain != nullptr)) {
+			|| file_d->FldD.size() != 2) {
 			g_compiler->OldError(128);
 		}
 		file_d->IsHlpFile = true;
