@@ -614,6 +614,7 @@ FileD* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 		file_d->TxtPosUDLI = 0;
 		//** end of replace of RdFDSegment
 
+		std::vector<FieldDescr*> orig_fields = file_d->FldD;
 		file_d->Reset();
 		file_d->Name = FileName;
 		file_d->IsJournal = true;
@@ -625,6 +626,20 @@ FileD* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 		g_compiler->SetInpStr(JournalFlds);
 		g_compiler->RdLex();
 		RdFieldDList(file_d, true);
+
+		// add all stored fields from original file
+		for (FieldDescr* f : orig_fields) {
+			if (f->isStored()) {
+				file_d->FldD.push_back(f);
+				if (f->field_type == FieldType::TEXT) {
+					f->frml_type = 'R';
+					f->field_type = FieldType::FIXED;
+					f->L = 10;
+					f->Flg = f->Flg & ~f_Encryp;
+				}
+			}
+		}
+
 		//F2 = (FieldDescr*)LastInChain(file_d->FldD.front());
 		//F2 = *file_d->FldD.end();
 		//F = file_d->FldD.front();
