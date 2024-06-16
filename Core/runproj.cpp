@@ -761,7 +761,7 @@ FileD* FindFD()
 	std::string d;
 	std::string name;
 	std::string ext;
-	std::string FName = OldTrailChar(' ', CFile->loadS(ChptName, CRecPtr));
+	std::string FName = OldTrailChar(' ', Chpt->loadS(ChptName, CRecPtr));
 	FSplit(FName, d, name, ext);
 	FD = FileDRoot;
 	while (FD != nullptr) {

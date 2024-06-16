@@ -687,7 +687,6 @@ FileD* RdFileD_Like(const std::string& FileName, FileType FDTyp)
 FileD* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 {
 	void* p = nullptr;
-	size_t n = 0;
 	FileD* file_d = nullptr; // new created FileD; will be returned from this method
 
 	ResetCompilePars();
