@@ -15,7 +15,7 @@ void RdByteList(pstring* s);
 void RdByteListInStore();
 bool RdUserView(FileD* file_d, std::string ViewName, EditOpt* EO);
 
-extern bool issql;
+extern bool isSql;
 
 void TestDupl(FileD* FD);
 void RdFieldDList(FileD* file_d, bool Stored);

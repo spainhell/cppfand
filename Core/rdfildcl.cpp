@@ -12,7 +12,7 @@
 #include "runfrml.h"
 
 bool HasTT;
-bool issql;
+bool isSql;
 
 FieldDescr* RdFieldDescr(std::string name, bool Stored)
 {
@@ -572,263 +572,253 @@ void SetLDIndexRoot(FileD* file_d, /*LinkD* L,*/ std::deque<LinkD*>& L2)
 	}
 }
 
+
+FileD* RdFileD_Journal(const std::string& FileName, FileType FDTyp)
+{
+	FileD* FD = g_compiler->RdFileName();
+	if (Lexem == ';') g_compiler->RdLex();
+	SetMsgPar(FileName);
+	if (FDTyp != FileType::FAND16) g_compiler->OldError(103);
+	if (Lexem != 0x1A) g_compiler->Error(40);
+#ifdef FandSQL
+		if (isSql || rdb_file->typSQLFile) OldError(155);
+#endif
+
+	//file_d = FakeRdFDSegment(FD);
+	// *** replace of RdFDSegment
+	if (Lexem != 0x1A) {
+		g_compiler->Accept(';');
+	}
+	//WORD i = FD->ChptPos.i_rec;
+	FileD* journal = new FileD(*FD);
+	journal->OrigFD = FD;
+	journal->TxtPosUDLI = 0;
+	//** end of replace of RdFDSegment
+
+	std::vector<FieldDescr*> orig_fields = journal->FldD;
+	journal->Reset();
+	journal->Name = FileName;
+	journal->IsJournal = true;
+	SetHCatTyp(journal, FDTyp);
+	if (!PrevCompInp.empty()) {
+		journal->ChptPos = OrigInp()->InpRdbPos;
+	}
+	std::string JournalFlds = "Upd:A,1;RecNr:F,8.0;User:F,4.0;TimeStamp:D,'DD.MM.YYYY hh:mm:ss'";
+	g_compiler->SetInpStr(JournalFlds);
+	g_compiler->RdLex();
+	RdFieldDList(journal, true);
+
+	// add all stored fields from original file
+	for (FieldDescr* f : orig_fields) {
+		if (f->isStored()) {
+			journal->FldD.push_back(f);
+			if (f->field_type == FieldType::TEXT) {
+				f->frml_type = 'R';
+				f->field_type = FieldType::FIXED;
+				f->L = 10;
+				f->Flg = f->Flg & ~f_Encryp;
+			}
+		}
+	}
+
+	g_compiler->CompileRecLen(journal);
+
+	return journal;
+}
+
+FileD* RdFileD_Like(const std::string& FileName, FileType FDTyp)
+{
+	std::string Prefix = FileName;
+	FileD* FD = g_compiler->RdFileName();
+	if (Lexem == '(') {
+		g_compiler->RdLex();
+		g_compiler->TestIdentif();
+		Prefix = LexWord;
+		g_compiler->RdLex();
+		g_compiler->Accept(')');
+	}
+	//CallRdFDSegment(rdb_file);
+	// misto nacitani objektu ze souboru budeme objekt kopirovat
+	//file_d = FakeRdFDSegment(FD);
+	// *** replace of RdFDSegment
+	if (Lexem != 0x1A) {
+		g_compiler->Accept(';');
+	}
+	//WORD i = FD->ChptPos.i_rec;
+	FileD* like = new FileD(*FD);
+	like->OrigFD = FD;
+	like->TxtPosUDLI = 0;
+	//** end of replace of RdFDSegment
+
+	// copy LinkD records too
+	for (LinkD* l : LinkDRoot) {
+		// LinkD for OrigFD exists?
+		if (l->FromFD == FD) {
+			LinkD* copiedLinkD = new LinkD(*l);
+			copiedLinkD->FromFD = like;
+			LinkDRoot.push_front(copiedLinkD);
+		}
+	}
+
+	like->IsHlpFile = false;
+	if (!(FDTyp == FileType::FAND16
+			|| FDTyp == FileType::INDEX)
+		|| !(like->FF->file_type == FileType::FAND16 || like->FF->file_type == FileType::INDEX)
+	) {
+		g_compiler->OldError(106);
+	}
+
+	for (XKey* K : like->Keys) {
+		if (!K->Alias.empty()) {
+			std::string s = K->Alias;
+			size_t i = s.find('_');
+			if (i != std::string::npos) {
+				s = s.substr(i + 1, 255);
+			}
+			K->Alias = Prefix + "_" + s;
+		}
+	}
+
+	return like;
+}
+
 // z ulohy vycte kapilotu 'F', prip. dynamickou definici 'F'
 // vraci ukazatel na FileD, protoze se muze v metode vytvorit novy objekt!!!
 FileD* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 {
-	FieldDescr* F = nullptr;
-	FieldDescr* F2 = nullptr;
 	void* p = nullptr;
-	ChkD* C = nullptr;
-	std::deque<LinkD*> LDOld;
-	size_t n = 0, i = 0; bool isHlp = false;
-	std::string Prefix, s;
-	LiRoots* li = nullptr;
-	CompInpD* ChPos = nullptr;
-	FileD* FD = nullptr;
+	size_t n = 0;
 	FileD* file_d = nullptr; // new created FileD; will be returned from this method
 
 	ResetCompilePars();
 	g_compiler->RdLex();
-	issql = EquUpCase(Ext, ".SQL");
-	isHlp = EquUpCase(Ext, ".HLP");
+	isSql = EquUpCase(Ext, ".SQL");
+	bool isHlp = EquUpCase(Ext, ".HLP");
+	bool isJournal = false;
 
 	if (g_compiler->IsKeyWord("JOURNALOF")) {
-		FD = g_compiler->RdFileName();
-		if (Lexem == ';') g_compiler->RdLex();
-		SetMsgPar(FileName);
-		if (FDTyp != FileType::FAND16) g_compiler->OldError(103);
-		if (Lexem != 0x1A) g_compiler->Error(40);
-#ifdef FandSQL
-		if (issql || rdb_file->typSQLFile) OldError(155);
-#endif
-
-		//file_d = FakeRdFDSegment(FD);
-		// *** replace of RdFDSegment
-		if (Lexem != 0x1A) {
-			g_compiler->Accept(';');
-		}
-		//WORD i = FD->ChptPos.i_rec;
-		file_d = new FileD(*FD);
-		file_d->OrigFD = FD;
-		file_d->TxtPosUDLI = 0;
-		//** end of replace of RdFDSegment
-
-		std::vector<FieldDescr*> orig_fields = file_d->FldD;
-		file_d->Reset();
-		file_d->Name = FileName;
-		file_d->IsJournal = true;
-		SetHCatTyp(file_d, FDTyp);
-		if (!PrevCompInp.empty()) {
-			file_d->ChptPos = OrigInp()->InpRdbPos;
-		}
-		std::string JournalFlds = "Upd:A,1;RecNr:F,8.0;User:F,4.0;TimeStamp:D,'DD.MM.YYYY hh:mm:ss'";
-		g_compiler->SetInpStr(JournalFlds);
-		g_compiler->RdLex();
-		RdFieldDList(file_d, true);
-
-		// add all stored fields from original file
-		for (FieldDescr* f : orig_fields) {
-			if (f->isStored()) {
-				file_d->FldD.push_back(f);
-				if (f->field_type == FieldType::TEXT) {
-					f->frml_type = 'R';
-					f->field_type = FieldType::FIXED;
-					f->L = 10;
-					f->Flg = f->Flg & ~f_Encryp;
-				}
-			}
-		}
-
-		//F2 = (FieldDescr*)LastInChain(file_d->FldD.front());
-		//F2 = *file_d->FldD.end();
-		//F = file_d->FldD.front();
-
-		//throw std::exception("Not implemented yet");
-		// TODO: have to be implemented (fields definitions)
-		/*while (F != nullptr) {
-			if (F->isStored()) {
-				file_d->FldD.push_back(F);
-				F2->pChain = F;
-				F2 = F;
-				if (F->field_type == FieldType::TEXT) {
-					F->frml_type = 'R';
-					F->field_type = FieldType::FIXED;
-					F->L = 10;
-					F->Flg = F->Flg & ~f_Encryp;
-				}
-			}
-			F = F->pChain;
-		}
-		F2->pChain = nullptr;*/
-
-		g_compiler->CompileRecLen(file_d);
+		isJournal = true;
+		file_d = RdFileD_Journal(FileName, FDTyp);
 		ChainLast(FileDRoot, file_d);
 		MarkStore(p);
-		goto label1;
-	} // end JOURNAL
-
-	if (g_compiler->IsKeyWord("LIKE")) {
-		Prefix = FileName;
-		FD = g_compiler->RdFileName();
-		if (Lexem == '(') {
-			g_compiler->RdLex();
-			g_compiler->TestIdentif();
-			Prefix = LexWord;
-			g_compiler->RdLex();
-			g_compiler->Accept(')');
-		}
-		//CallRdFDSegment(rdb_file);
-		// misto nacitani objektu ze souboru budeme objekt kopirovat
-		//file_d = FakeRdFDSegment(FD);
-		// *** replace of RdFDSegment
-		if (Lexem != 0x1A) {
-			g_compiler->Accept(';');
-		}
-		//WORD i = FD->ChptPos.i_rec;
-		file_d = new FileD(*FD);
-		file_d->OrigFD = FD;
-		file_d->TxtPosUDLI = 0;
-		//** end of replace of RdFDSegment
-
-		// copy LinkD records too
-		for (LinkD* l : LinkDRoot) {
-			// LinkD for OrigFD exists?
-			if (l->FromFD == FD) {
-				LinkD* copiedLinkD = new LinkD(*l);
-				copiedLinkD->FromFD = file_d;
-				LinkDRoot.push_front(copiedLinkD);
-			}
-		}
-
-		file_d->IsHlpFile = false;
-		if (!(FDTyp == FileType::FAND16
-			|| FDTyp == FileType::INDEX)
-			|| !(file_d->FF->file_type == FileType::FAND16 || file_d->FF->file_type == FileType::INDEX)
-			) {
-			g_compiler->OldError(106);
-		}
-
-		for (XKey* K : file_d->Keys) {
-			if (!K->Alias.empty()) {
-				s = K->Alias;
-				i = s.find('_');
-				if (i != std::string::npos) s = s.substr(i + 1, 255);
-				s = Prefix + "_" + s;
-				K->Alias = s;
-			}
-		}
-	} // end LIKE
-
+		//goto label1;
+	}
+	else if (g_compiler->IsKeyWord("LIKE"))	{
+		file_d = RdFileD_Like(FileName, FDTyp);
+	}
 	else {
 		file_d = new FileD(FType::FandFile);
 	}
 
-	file_d->Name = FileName;
-	g_compiler->processing_F = file_d;
-	SetHCatTyp(file_d, FDTyp);
-	HasTT = false;
-	if ((file_d->OrigFD == nullptr) || !(Lexem == 0x1A || Lexem == '#' || Lexem == ']')) {
-		RdFieldDList(file_d, true);
-	}
-	GetTFileD(file_d, FDTyp);
-	LDOld = LinkDRoot;
-
-	// TODO: v originale je to jinak, saha si to na nasl. promenne za PrevCompInp
-	// a bere posledni ChainBack
-	file_d->ChptPos = InpRdbPos;
-
-	if (isHlp) {
-		//throw std::exception("Not implemented yet");
-		// TODO: have to be implemented (fields definitions)
-		F = file_d->FldD[0];
-		F2 = file_d->FldD[1];
-		if (F->field_type != FieldType::ALFANUM 
-			|| F2 == nullptr 
-			|| F2->field_type != FieldType::TEXT 
-			//|| (F2->pChain != nullptr)) {
-			|| file_d->FldD.size() != 2) {
-			g_compiler->OldError(128);
+	if (!isJournal) {
+		file_d->Name = FileName;
+		g_compiler->processing_F = file_d;
+		SetHCatTyp(file_d, FDTyp);
+		HasTT = false;
+		if ((file_d->OrigFD == nullptr) || !(Lexem == 0x1A || Lexem == '#' || Lexem == ']')) {
+			RdFieldDList(file_d, true);
 		}
-		file_d->IsHlpFile = true;
-	}
+		GetTFileD(file_d, FDTyp);
+		std::deque<LinkD*> LDOld = LinkDRoot;
 
-	while (true) {
-		if ((Lexem == '#') && (ForwChar == 'C')) {
-			g_compiler->RdLex();
-			g_compiler->RdLex();
-			RdFieldDList(file_d, false);
-			continue;
+		// TODO: v originale je to jinak, saha si to na nasl. promenne za PrevCompInp
+		// a bere posledni ChainBack
+		file_d->ChptPos = InpRdbPos;
+
+		if (isHlp) {
+			FieldDescr* F0 = file_d->FldD[0];
+			FieldDescr* F1 = file_d->FldD[1];
+			if (F0->field_type != FieldType::ALFANUM
+				|| F1 == nullptr
+				|| F1->field_type != FieldType::TEXT
+				|| file_d->FldD.size() != 2) {
+				g_compiler->OldError(128);
+			}
+			file_d->IsHlpFile = true;
 		}
-		if ((Lexem == '#') && (ForwChar == 'K')) {
-			g_compiler->RdLex();
-			RdKeyD(file_d);
-			continue;
+
+		while (true) {
+			if ((Lexem == '#') && (ForwChar == 'C')) {
+				g_compiler->RdLex();
+				g_compiler->RdLex();
+				RdFieldDList(file_d, false);
+				continue;
+			}
+			if ((Lexem == '#') && (ForwChar == 'K')) {
+				g_compiler->RdLex();
+				RdKeyD(file_d);
+				continue;
+			}
+			break;
 		}
-		break;
-	}
 
-	if (issql && !file_d->Keys.empty()) {
-		file_d->FF->file_type = FileType::INDEX;
-	}
-	GetXFileD(file_d);
-	g_compiler->CompileRecLen(file_d);
-	SetLDIndexRoot(file_d, LDOld);
-	if ((file_d->FF->file_type == FileType::INDEX) && file_d->Keys.empty()) g_compiler->Error(107);
-	if ((Lexem == '#') && (ForwChar == 'A')) {
-		g_compiler->RdLex();
-		RdKumul();
-	}
+		if (isSql && !file_d->Keys.empty()) {
+			file_d->FF->file_type = FileType::INDEX;
+		}
+		GetXFileD(file_d);
+		g_compiler->CompileRecLen(file_d);
+		SetLDIndexRoot(file_d, LDOld);
+		if ((file_d->FF->file_type == FileType::INDEX) && file_d->Keys.empty()) {
+			g_compiler->Error(107);
+		}
+		if ((Lexem == '#') && (ForwChar == 'A')) {
+			g_compiler->RdLex();
+			RdKumul();
+		}
 
-	if (FileDRoot == nullptr) {
-		FileDRoot = file_d;
-		Chpt = FileDRoot;
-	}
-	else {
-		ChainLast(FileDRoot, file_d);
-	}
+		if (FileDRoot == nullptr) {
+			FileDRoot = file_d;
+			Chpt = FileDRoot;
+		}
+		else {
+			ChainLast(FileDRoot, file_d);
+		}
 
-	if (Ext == "$") {
-		// compile from text at run time
-		file_d->IsDynFile = true;
-		file_d->ChptPos.rdb = CRdb;
-		MarkStore(p);
-		goto label1;
-	}
-	if (Lexem != 0x1A) {
-		file_d->TxtPosUDLI = /*OrigInp()->*/CurrPos - 1;
-	}
-	if ((Lexem == '#') && (ForwChar == 'U')) {
-		// nacteni uzivatelskych pohledu
-		// nazev musi byt jedinecny v ramci cele ulohy
-		// format: #U NazevPohledu (SeznamPristupovychPrav): DruhEditace;
-		g_compiler->RdLex();
-		TestUserView(file_d);
-	}
-	MarkStore(p);
-	li = new LiRoots();
-	if ((Lexem == '#') && (ForwChar == 'D')) {
-		g_compiler->RdLex();
-		TestDepend();
-	}
-	if ((Lexem == '#') && (ForwChar == 'L')) {
-		g_compiler->RdLex();
-		RdChkDChain(li->Chks);
-	}
-	if ((Lexem == '#') && (ForwChar == 'I')) {
-		g_compiler->RdLex();
-		RdImpl(file_d, &li->Impls);
-	}
+		if (Ext == "$") {
+			// compile from text at run time
+			file_d->IsDynFile = true;
+			file_d->ChptPos.rdb = CRdb;
+			MarkStore(p);
+			//goto label1;
+		}
+		else {
+			if (Lexem != 0x1A) {
+				file_d->TxtPosUDLI = /*OrigInp()->*/CurrPos - 1;
+			}
+			if ((Lexem == '#') && (ForwChar == 'U')) {
+				// nacteni uzivatelskych pohledu
+				// nazev musi byt jedinecny v ramci cele ulohy
+				// format: #U NazevPohledu (SeznamPristupovychPrav): DruhEditace;
+				g_compiler->RdLex();
+				TestUserView(file_d);
+			}
+			MarkStore(p);
 
-	// TODO: jak toto nahradit?
-	//if (PtrRec(InpRdbPos.rdb).Seg == 0/*compiled from pstring*/) {
-	//	CFile->LiOfs = 0; ReleaseStore(p);
-	//}
+			LiRoots* li = new LiRoots();
+			if ((Lexem == '#') && (ForwChar == 'D')) {
+				g_compiler->RdLex();
+				TestDepend();
+			}
+			if ((Lexem == '#') && (ForwChar == 'L')) {
+				g_compiler->RdLex();
+				RdChkDChain(li->Chks);
+			}
+			if ((Lexem == '#') && (ForwChar == 'I')) {
+				g_compiler->RdLex();
+				RdImpl(file_d, &li->Impls);
+			}
 
-	if (Lexem != 0x1A) {
-		g_compiler->Error(66);
+			// TODO: jak toto nahradit?
+			//if (PtrRec(InpRdbPos.rdb).Seg == 0/*compiled from pstring*/) {
+			//	CFile->LiOfs = 0; ReleaseStore(p);
+			//}
+
+			if (Lexem != 0x1A) {
+				g_compiler->Error(66);
+			}
+		}
 	}
-label1:
+//label1:
 	g_compiler->processing_F = nullptr;
 	return file_d;
 }
@@ -946,24 +936,31 @@ label2:
 	}
 	//Arg = &L->Args;
 	KF = K->KFlds;
-label3:
-	F = g_compiler->RdFldName(file_d);
-	if (F->field_type == FieldType::TEXT) g_compiler->OldError(84);
-	arg = new KeyFldD();
-	arg->FldD = F;
-	arg->CompLex = KF->CompLex;
-	arg->Descend = KF->Descend;
-	L->Args.push_back(arg);
 
-	F2 = KF->FldD;
-	if ((F->field_type != F2->field_type) || (F->field_type != FieldType::DATE) && (F->L != F2->L) ||
-		(F->field_type == FieldType::FIXED) && (F->M != F2->M)) g_compiler->OldError(12);
+	while (true) {
+		F = g_compiler->RdFldName(file_d);
+		if (F->field_type == FieldType::TEXT) g_compiler->OldError(84);
+		arg = new KeyFldD();
+		arg->FldD = F;
+		arg->CompLex = KF->CompLex;
+		arg->Descend = KF->Descend;
+		L->Args.push_back(arg);
 
-	KF = KF->pChain;
-	if (KF != nullptr) {
-		g_compiler->Accept(',');
-		goto label3;
+		F2 = KF->FldD;
+		if (F->field_type != F2->field_type || F->field_type != FieldType::DATE 
+			&& F->L != F2->L || F->field_type == FieldType::FIXED 
+			&& F->M != F2->M) {
+			g_compiler->OldError(12);
+		}
+
+		KF = KF->pChain;
+		if (KF != nullptr) {
+			g_compiler->Accept(',');
+			continue;
+		}
+		break;
 	}
+
 label6:
 	if (Lexem == ';') {
 		g_compiler->RdLex();
@@ -989,10 +986,14 @@ void CheckDuplAlias(FileD* file_d, pstring name)
 void LookForK(FileD* file_d, pstring* Name, FileD* F)
 {
 	std::string name = *Name;
-	if (EquUpCase(F->Name, name)) g_compiler->Error(26);
+	if (EquUpCase(F->Name, name)) {
+		g_compiler->Error(26);
+	}
 
-	for (auto& K : file_d->Keys) {
-		if (EquUpCase(K->Alias, *Name)) g_compiler->Error(26);
+	for (XKey* K : file_d->Keys) {
+		if (EquUpCase(K->Alias, *Name)) {
+			g_compiler->Error(26);
+		}
 	}
 }
 
@@ -1002,13 +1003,14 @@ XKey* RdFileOrAlias1(FileD* F)
 
 	XKey* k = F->Keys[0];
 	std::string lw = LexWord;
-	if (!EquUpCase(F->Name, lw))
+	if (!EquUpCase(F->Name, lw)) {
 		while (k != nullptr) {
 			std::string lw = LexWord;
-			if (EquUpCase(k->Alias, lw)) goto label1;
+			if (EquUpCase(k->Alias, lw)) break;
 			k = k->Chain;
 		}
-label1:
+	}
+//label1:
 	return k;
 }
 
@@ -1088,8 +1090,10 @@ label1:
 	ID = new ImplD();
 	ID->FldD = F;
 	ID->Frml = Z;
+
 	if (*IDRoot == nullptr) *IDRoot = ID;
 	else ChainLast(*IDRoot, ID);
+
 	if (Lexem == ';') {
 		g_compiler->RdLex();
 		if (!(Lexem == '#' || Lexem == 0x1A)) goto label1;
@@ -1188,7 +1192,7 @@ void SetHCatTyp(FileD* file_d, FileType FDTyp)
 	file_d->FF->file_type = FDTyp;
 	file_d->CatIRec = catalog->GetCatalogIRec(file_d->Name, file_d->FF->file_type == FileType::RDB/*multilevel*/);
 #ifdef FandSQL
-	typSQLFile = issql;
+	typSQLFile = isSql;
 	SetIsSQLFile();
 #endif
 }
