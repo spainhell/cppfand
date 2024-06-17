@@ -1048,49 +1048,49 @@ void DataEditor::AdjustCRec()
 	DisplRecNr(CRec());
 }
 
-EditD* DataEditor::WriteParamsToE()
-{
-	EditD* edit = new EditD(TxtCols, TxtRows);
-	edit->FD = file_d_;
-	edit->NewRecPtr = record_;
-	edit->CFld = CFld;
-	edit->FirstEmptyFld = FirstEmptyFld;
-	edit->VK = VK;
-	edit->WK = WK;
-	edit->BaseRec = BaseRec;
-	edit->IRec = IRec;
-	edit->IsNewRec = IsNewRec;
-
-	DataEditorParams::CopyParams(params_.get(), edit->params_.get());
-	return edit;
-}
-
-void DataEditor::ReadParamsFromE(EditD* edit)
-{
-	FirstEmptyFld = edit->FirstEmptyFld;
-	VK = edit->VK;
-	WK = edit->WK;
-	BaseRec = edit->BaseRec;
-	IRec = edit->IRec;
-	IsNewRec = edit->IsNewRec;
-
-	DataEditorParams::CopyParams(edit->params_.get(), params_.get());
-
-	if (VK == nullptr) params_->OnlySearch = false;
-
-	file_d_ = edit->FD;
-	record_ = edit->NewRecPtr;
-
-	CFld = edit->CFld;
-
-	if (file_d_->FF->XF != nullptr) HasIndex = true;
-	else HasIndex = false;
-
-	if (file_d_->FF->TF != nullptr) HasTF = true;
-	else HasTF = false;
-
-	SetCPage(CPage, &RT);
-}
+//EditD* DataEditor::WriteParamsToE()
+//{
+//	EditD* edit = new EditD(TxtCols, TxtRows);
+//	edit->FD = file_d_;
+//	edit->NewRecPtr = record_;
+//	edit->CFld = CFld;
+//	edit->FirstEmptyFld = FirstEmptyFld;
+//	edit->VK = VK;
+//	edit->WK = WK;
+//	edit->BaseRec = BaseRec;
+//	edit->IRec = IRec;
+//	edit->IsNewRec = IsNewRec;
+//
+//	DataEditorParams::CopyParams(params_.get(), edit->params_.get());
+//	return edit;
+//}
+//
+//void DataEditor::ReadParamsFromE(EditD* edit)
+//{
+//	FirstEmptyFld = edit->FirstEmptyFld;
+//	VK = edit->VK;
+//	WK = edit->WK;
+//	BaseRec = edit->BaseRec;
+//	IRec = edit->IRec;
+//	IsNewRec = edit->IsNewRec;
+//
+//	DataEditorParams::CopyParams(edit->params_.get(), params_.get());
+//
+//	if (VK == nullptr) params_->OnlySearch = false;
+//
+//	file_d_ = edit->FD;
+//	record_ = edit->NewRecPtr;
+//
+//	CFld = edit->CFld;
+//
+//	if (file_d_->FF->XF != nullptr) HasIndex = true;
+//	else HasIndex = false;
+//
+//	if (file_d_->FF->TF != nullptr) HasTF = true;
+//	else HasTF = false;
+//
+//	SetCPage(CPage, &RT);
+//}
 
 void DataEditor::DuplFld(FileD* file_d1, FileD* file_d2, void* record1, void* record2, void* RPt, FieldDescr* field_d1, FieldDescr* field_d2)
 {
@@ -1536,7 +1536,7 @@ bool DataEditor::OpenEditWw()
 	if (file_d_ != nullptr) {
 		OpenCreateF(file_d_, CPath, Shared);
 	}
-	ReadParamsFromE(edit_);
+	//ReadParamsFromE(edit_);
 	if (params_->EdRecVar) {
 		if (params_->OnlyAppend) {
 			goto label2;
@@ -2290,50 +2290,55 @@ void DataEditor::UpwEdit(LinkD* LkD)
 	int w = PushW(1, 1, TxtCols, TxtRows, true, true);
 	file_d_->IRec = AbsRecNr(CRec());
 
-	EditD* EE = WriteParamsToE();
+	//EditD* EE = WriteParamsToE();
+	std::unique_ptr<DataEditor> data_editor2 = std::make_unique<DataEditor>();
 
 	if (LkD == nullptr) {
 		for (auto& ld : LinkDRoot) {
 			FileD* ToFD = ld->ToFD;
-			if ((ld->FromFD == file_d_) && ForNavigate(ToFD)) {
+			if ((ld->FromFD == file_d_) && data_editor2->ForNavigate(ToFD)) {
 				std::string s;
 				std::string rn = ld->RoleName;
 				if (ToFD->Name != rn) { s = "." + ld->RoleName; }
 				SL = ToFD->ViewNames;
 				do {
-					s1 = GetFileViewName(ToFD, &SL) + s;
+					s1 = data_editor2->GetFileViewName(ToFD, &SL) + s;
 					ww.PutSelect(s1);
-					SetPointTo(ld, &s1, &s2);
+					data_editor2->SetPointTo(ld, &s1, &s2);
 				} while (SL != nullptr);
 			}
 		}
 		ss.Abcd = true;
 		ww.SelectStr(0, 0, 35, "");
 		if (Event.Pressed.KeyCombination() == __ESC) {
-
 			PopW(w);
 			ReleaseStore(&p);
-			ReadParamsFromE(EE);
+			//ReadParamsFromE(EE);
 			DisplEditWw();
+			return;
 		}
-		GetSel2S(s1, s2, '.', 2);
+
+		data_editor2->GetSel2S(s1, s2, '.', 2);
 
 		LD = nullptr;
 		for (auto& ld : LinkDRoot) {
-			if (ld->FromFD == file_d_ && EquRoleName(s2, ld) && EquFileViewName(ld->ToFD, s1, &EO)) {
+			if (ld->FromFD == data_editor2->file_d_
+				&& data_editor2->EquRoleName(s2, ld)
+				&& data_editor2->EquFileViewName(ld->ToFD, s1, &EO)) {
 				LD = ld;
 				break;
 			}
 		}
+
 	}
 	else {
 		LD = LkD;
-		EO = new EditOpt(); // GetEditOpt();
+		EO = new EditOpt();
 		EO->UserSelFlds = false;
 		SL = LD->ToFD->ViewNames;
 		SL1 = nullptr;
 		while (SL != nullptr) {
-			if (TestAccRight(SL)) {
+			if (data_editor2->TestAccRight(SL)) {
 				SL1 = SL;
 			}
 			SL = SL->pChain;
@@ -2346,7 +2351,7 @@ void DataEditor::UpwEdit(LinkD* LkD)
 		}
 		EO->SetOnlyView = true;
 	}
-	x.PackKF(edit_->FD, LD->Args, record_);
+	x.PackKF(data_editor2->edit_->FD, LD->Args, data_editor2->record_);
 	px = &x;
 	K = LD->ToKey;
 
@@ -2357,14 +2362,14 @@ void DataEditor::UpwEdit(LinkD* LkD)
 		px = nullptr;
 	}
 
-	if (SelFldsForEO(EO, nullptr)) {
+	if (data_editor2->SelFldsForEO(EO, nullptr)) {
 		// tady by se zrejme mela vytvorit nova instance DataEditoru a volat vsechno v ni
 		EditReader* reader = new EditReader();
-		reader->NewEditD(LD->ToFD, EO, record_);
-		edit_ = reader->GetEditD();
-		edit_->ShiftF7LD = LkD;
-		if (OpenEditWw()) {
-			RunEdit(px, Brk);
+		reader->NewEditD(LD->ToFD, EO, data_editor2->record_);
+		data_editor2->edit_ = reader->GetEditD();
+		data_editor2->edit_->ShiftF7LD = LkD;
+		if (data_editor2->OpenEditWw()) {
+			data_editor2->RunEdit(px, Brk);
 		}
 		SaveFiles();
 		//PopEdit();
@@ -2373,7 +2378,7 @@ void DataEditor::UpwEdit(LinkD* LkD)
 
 	PopW(w);
 	ReleaseStore(&p);
-	ReadParamsFromE(EE);
+	//ReadParamsFromE(EE);
 	DisplEditWw();
 }
 
@@ -2438,7 +2443,7 @@ bool DataEditor::OldRecDiffers()
 			f = f->pChain;
 		}
 		goto label2;
-	}
+}
 	else
 #endif
 
@@ -2614,7 +2619,7 @@ bool DataEditor::WriteCRec(bool MayDispl, bool& Displ)
 #ifdef FandSQL
 	if (file_d_->IsSQLFile) {
 		if (UpdSQLFile) goto label2; else goto label1;
-	}
+}
 #endif
 	if (HasIndex) {   /* test duplicate keys */
 		for (auto& K : file_d_->Keys) {
@@ -2708,7 +2713,7 @@ label2:
 label1:
 	UnLockWithDep(OldMd);
 	return result;
-}
+	}
 
 void DataEditor::DuplFromPrevRec()
 {
@@ -3707,7 +3712,7 @@ label2:
 				goto label5;
 			}
 		}
-		WriteParamsToE();
+		//WriteParamsToE();
 		Brk = 1;
 		Event.Pressed.UpdateKey(C);
 		goto label6;
@@ -3968,15 +3973,18 @@ void DataEditor::ImbeddEdit()
 	MarkStore(p);
 	w = PushW(1, 1, TxtCols, TxtRows, true, true);
 	file_d_->IRec = AbsRecNr(CRec());
-	EditD* EE = WriteParamsToE();
+
+	//EditD* EE = WriteParamsToE();
+	std::unique_ptr<DataEditor> data_editor2 = std::make_unique<DataEditor>();
+
 	R = CRdb;
 	while (R != nullptr) {
 		FD = R->rdb_file->pChain;
 		while (FD != nullptr) {
-			if (ForNavigate(FD)) {
+			if (data_editor2->ForNavigate(FD)) {
 				SL = FD->ViewNames;
 				do {
-					std::string s = GetFileViewName(FD, &SL);
+					std::string s = data_editor2->GetFileViewName(FD, &SL);
 					if (R != CRdb) {
 						s = R->rdb_file->Name + "." + s;
 					}
@@ -3987,12 +3995,13 @@ void DataEditor::ImbeddEdit()
 		}
 		R = R->ChainBack;
 	}
-	ss.Abcd = true; ww.SelectStr(0, 0, 35, "");
+	ss.Abcd = true;
+	ww.SelectStr(0, 0, 35, "");
 	if (Event.Pressed.KeyCombination() == __ESC) {
 		// do nothing
 	}
 	else {
-		GetSel2S(s1, s2, '.', 1);
+		data_editor2->GetSel2S(s1, s2, '.', 1);
 		R = CRdb;
 		if (!s2.empty()) {
 			std::string ss2 = s2;
@@ -4000,16 +4009,16 @@ void DataEditor::ImbeddEdit()
 				R = R->ChainBack;
 			} while (R->rdb_file->Name != ss2);
 		}
-		file_d_ = R->rdb_file;
-		while (!EquFileViewName(file_d_, s1, &EO)) {
-			file_d_ = file_d_->pChain;
+		data_editor2->file_d_ = R->rdb_file;
+		while (!data_editor2->EquFileViewName(file_d_, s1, &EO)) {
+			data_editor2->file_d_ = data_editor2->file_d_->pChain;
 		}
-		if (SelFldsForEO(EO, nullptr)) {
+		if (data_editor2->SelFldsForEO(EO, nullptr)) {
 			EditReader* reader = new EditReader();
-			reader->NewEditD(file_d_, EO, record_);
-			edit_ = reader->GetEditD();
-			if (OpenEditWw()) {
-				RunEdit(nullptr, Brk);
+			reader->NewEditD(data_editor2->file_d_, EO, data_editor2->record_);
+			data_editor2->edit_ = reader->GetEditD();
+			if (data_editor2->OpenEditWw()) {
+				data_editor2->RunEdit(nullptr, Brk);
 			}
 			SaveFiles();
 			//PopEdit();
@@ -4019,7 +4028,7 @@ void DataEditor::ImbeddEdit()
 
 	PopW(w);
 	ReleaseStore(&p);
-	ReadParamsFromE(EE);
+	//ReadParamsFromE(EE);
 	DisplEditWw();
 }
 
@@ -4038,17 +4047,18 @@ void DataEditor::DownEdit()
 	int w = PushW(1, 1, TxtCols, TxtRows, true, true);
 	file_d_->IRec = AbsRecNr(CRec());
 
-	EditD* EE = WriteParamsToE();
+	//EditD* EE = WriteParamsToE();
+	std::unique_ptr<DataEditor> data_editor2 = std::make_unique<DataEditor>();
 
-	for (auto& ld : LinkDRoot) { //while (LD != nullptr) {
+	for (LinkD* ld : LinkDRoot) {
 		FileD* FD = ld->FromFD;
 		StringListEl* SL;
-		if ((ld->ToFD == file_d_) && ForNavigate(FD) && (ld->IndexRoot != 0)) {
+		if ((ld->ToFD == data_editor2->file_d_) && data_editor2->ForNavigate(FD) && (ld->IndexRoot != 0)) {
 			/*own key with equal beginning*/
 			SL = FD->ViewNames;
 			XKey* K = GetFromKey(ld);
 			do {
-				std::string s = GetFileViewName(FD, &SL);
+				std::string s = data_editor2->GetFileViewName(FD, &SL);
 				std::string kali = K->Alias;
 				if (!K->Alias.empty()) {
 					s += "/" + kali;
@@ -4066,12 +4076,15 @@ void DataEditor::DownEdit()
 	}
 	else {
 		LinkD* LD = *LinkDRoot.begin();
-		GetSel2S(s1, s2, '/', 2);
+		data_editor2->GetSel2S(s1, s2, '/', 2);
 		ali = GetFromKey(LD)->Alias;
 		//while ((LD->ToFD != edit_->rdb_file) || (LD->IndexRoot == 0) || (s2 != ali)
 		//	|| !EquFileViewName(LD->FromFD, s1, options)) LD = LD->pChain;
 		for (auto& ld : LinkDRoot) {
-			if ((ld->ToFD != edit_->FD) || (ld->IndexRoot == 0) || (s2 != ali) || !EquFileViewName(ld->FromFD, s1, &EO)) {
+			if ((ld->ToFD != data_editor2->edit_->FD) 
+				|| (ld->IndexRoot == 0) 
+				|| (s2 != ali) 
+				|| !data_editor2->EquFileViewName(ld->FromFD, s1, &EO)) {
 				continue;
 			}
 			else {
@@ -4079,16 +4092,16 @@ void DataEditor::DownEdit()
 			}
 		}
 
-		file_d_ = LD->FromFD;
-		if (SelFldsForEO(EO, LD)) {
+		data_editor2->file_d_ = LD->FromFD;
+		if (data_editor2->SelFldsForEO(EO, LD)) {
 			// tady by se zrejme mela vytvorit nova instance DataEditoru a volat vsechno v ni
 			EO->DownLD = LD;
-			EO->DownRecPtr = record_;
+			EO->DownRecPtr = data_editor2->record_;
 			EditReader* reader = new EditReader();
-			reader->NewEditD(file_d_, EO, record_);
+			reader->NewEditD(data_editor2->file_d_, EO, data_editor2->record_);
 			edit_ = reader->GetEditD();
-			if (OpenEditWw()) {
-				RunEdit(nullptr, Brk);
+			if (data_editor2->OpenEditWw()) {
+				data_editor2->RunEdit(nullptr, Brk);
 			}
 			SaveFiles();
 			//PopEdit();
@@ -4098,7 +4111,7 @@ void DataEditor::DownEdit()
 
 	PopW(w);
 	ReleaseStore(&p);
-	ReadParamsFromE(EE);
+	//ReadParamsFromE(EE);
 	DisplEditWw();
 }
 
@@ -4384,9 +4397,13 @@ bool DataEditor::StartProc(Instr_proc* ExitProc, bool Displ)
 	ExitProc->TArg[ExitProc->N - 1].RecPtr = record_;
 
 	md = file_d_->FF->LMode;
-	EditD* EE = WriteParamsToE();                            /*t = currtime;*/
+
+	//EditD* EE = WriteParamsToE();                            /*t = currtime;*/
+
 	CallProcedure(ExitProc);
-	ReadParamsFromE(EE);
+
+	//ReadParamsFromE(EE);
+
 	file_d_->NewLockMode(md);
 	upd = file_d_->FF->WasWrRec;      /*writeln(strdate(currtime-t,"ss mm.ttt"));wait;*/
 	if (file_d_->HasUpdFlag(record_)) {
@@ -4860,9 +4877,9 @@ label81:
 						if (file_d_->IsSQLFile) Strm1->EndKeyAcc(WK);
 #endif
 						file_d_->OldLockMode(edit_->OldMd);
-					}
-					return;
 				}
+					return;
+			}
 				break;
 			}
 			case __ALT_EQUAL: {
@@ -5166,9 +5183,9 @@ label81:
 				}
 				//}
 			}
-			}
-			break;
 		}
+			break;
+	}
 		break;
 	}
 	default: {
@@ -5176,7 +5193,7 @@ label81:
 		ClrEvent();
 		break;
 	}
-	}
+}
 	Event.What = evNothing;
 	goto label1;
 }

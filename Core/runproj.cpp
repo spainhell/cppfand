@@ -483,20 +483,21 @@ void EditHelpOrCat(WORD cc, WORD kind, std::string txt)
 		n = nCat;
 	}
 	if (kind != 2) {
-		EE = data_editor->WriteParamsToE();
+		//EE = data_editor->WriteParamsToE();
 	}
-	EditOpt* EO = new EditOpt();
-	EO->UserSelFlds = true; // GetEditOpt();
-	EO->Flds = g_compiler->AllFldsList(FD, false);
-	EO->WFlags = EO->WFlags | WPushPixel;
+
+	std::unique_ptr<DataEditor> data_editor2 = std::make_unique<DataEditor>();
+	std::unique_ptr<EditOpt> edit_opt2 = std::make_unique<EditOpt>();
+	edit_opt2->UserSelFlds = true; // GetEditOpt();
+	edit_opt2->Flds = g_compiler->AllFldsList(FD, false);
+	edit_opt2->WFlags = edit_opt2->WFlags | WPushPixel;
 	if ((kind == 0) || (n != 0)) {
 		iFrml.R = i;
 		nFrml.R = n;
-		EO->StartRecNoZ = (FrmlElem*)(&nFrml);
-		EO->StartIRecZ = (FrmlElem*)(&iFrml);
+		edit_opt2->StartRecNoZ = (FrmlElem*)(&nFrml);
+		edit_opt2->StartIRecZ = (FrmlElem*)(&iFrml);
 	}
-	data_editor->EditDataFile(FD, EO);
-	delete EO; EO = nullptr;
+	data_editor2->EditDataFile(FD, edit_opt2.get());
 
 	if (cc == __ALT_F2) {
 		nHelp = EdRecNo;
@@ -508,7 +509,7 @@ void EditHelpOrCat(WORD cc, WORD kind, std::string txt)
 		iCat = EdIRec;
 	}
 	if (kind != 2) {
-		data_editor->ReadParamsFromE(EE);
+		//data_editor->ReadParamsFromE(EE);
 	}
 }
 

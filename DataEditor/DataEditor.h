@@ -34,8 +34,8 @@ public:
     std::string PromptS(std::string& S, FrmlElem* Impl, FieldDescr* F);
     double PromptR(std::string& S, FrmlElem* Impl, FieldDescr* F);
     bool TestIsNewRec();
-    EditD* WriteParamsToE();
-    void ReadParamsFromE(EditD* edit);
+    //EditD* WriteParamsToE();
+    //void ReadParamsFromE(EditD* edit);
     bool SelFldsForEO(EditOpt* EO, LinkD* LD);
     void DisplEditWw();
     void GotoRecFld(int NewRec, EFldD* NewFld);
