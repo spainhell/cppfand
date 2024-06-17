@@ -441,7 +441,6 @@ void EditReader::RdFormOrDesign(std::vector<FieldDescr*>& FL, RdbPos FormPos)
 		edit_->IsUserForm = true;
 	}
 	else {
-		//E->FD = F;
 		edit_->Flds = FL;
 		AutoDesign(FL);
 	}
@@ -566,11 +565,19 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec)
 		edit_->KIRoot = nullptr;
 	}
 	else {
+		if (file_d == nullptr) {
+			// if edit is run from a debug mode, no particular file is selected
+			// then we have to use file from the 'E' chapter itself
+			file_d = edit_->FD;
+		}
+
 		edit_->NewRecPtr = file_d->GetRecSpace();
 		record = edit_->NewRecPtr;
+
 #ifdef FandSQL
 		if (file_d->IsSQLFile) SetTWorkFlag;
 #endif
+
 		edit_->params_->AddSwitch = true;
 		edit_->Cond = RunEvalFrml(file_d, EO->Cond, record);
 		edit_->RefreshDelay = RunWordImpl(file_d, EO->RefreshDelayZ, spec.RefreshDelay, record) * 1000;
@@ -599,7 +606,7 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec)
 			}
 			default:;
 			}
-			}
+		}
 		else if (edit_->VK == nullptr) {
 			edit_->VK = edit_->FD->Keys.empty() ? nullptr : edit_->FD->Keys[0];
 		}
@@ -851,7 +858,7 @@ void EditReader::RdCheck()
 		SetFrmlFlags(C->Bool);
 		TestedFlagOff();
 		EFldD* D = LstUsedFld();
-		
+
 		if (D != nullptr) {
 			D->Chk.push_back(C);
 			//if (D->Chk == nullptr) D->Chk = C;

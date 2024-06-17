@@ -787,36 +787,32 @@ void Diagnostics(void* MaxHp, int Free, FileD* FD)
 	WrLLF10Msg(136);
 }
 
-bool CompRunChptRec(std::unique_ptr<DataEditor>& data_editor, WORD CC)
+bool CompRunChptRec(const std::unique_ptr<DataEditor>& rdb_editor, WORD CC)
 {
-	pstring STyp(1);
 	void* p = nullptr; void* p2 = nullptr; void* MaxHp = nullptr;
 	//EditD* OldE = nullptr;
-	RdbPos RP; int Free; bool uw = false, mv = false;
-	FileD* FD = nullptr;
-
-	EditOpt* EO = nullptr;
-	WORD nStrm = 0;
-	auto result = false;
+	RdbPos RP;
+	bool uw = false, mv = false;
+	bool result = false;
 
 	//OldE = edit;
 	MarkBoth(p, p2);
-	EditD* EE = data_editor->WriteParamsToE();
+	//EditD* EE = data_editor->WriteParamsToE();
 
 	bool WasError = true;
 	bool WasGraph = IsGraphMode;
 	FileD* lstFD = (FileD*)LastInChain(FileDRoot);
 	std::deque<LinkD*> oldLd = LinkDRoot;
 
+	FileD* FD = nullptr;
+
 	try {
 		IsCompileErr = false;
 		uw = false;
 		mv = MausVisible;
-
-		FD = nullptr;
-		STyp = data_editor->GetFileD()->loadS(ChptTyp, CRecPtr);
+		const char STyp = rdb_editor->GetFileD()->loadS(ChptTyp, CRecPtr)[0];
 		RP.rdb = CRdb;
-		RP.i_rec = data_editor->CRec();
+		RP.i_rec = rdb_editor->CRec();
 #ifdef FandSQL
 		nStrm = nStreams;
 #endif
@@ -834,26 +830,28 @@ bool CompRunChptRec(std::unique_ptr<DataEditor>& data_editor, WORD CC)
 			}
 		}
 		else {
-			switch (STyp[1]) {
+			switch (STyp) {
 			case 'F': {
 				FD = FindFD();
 				if (FD != nullptr && CC == __CTRL_F9) {
-					EO = new EditOpt();
-					EO->UserSelFlds = true; // GetEditOpt();
+					std::unique_ptr<DataEditor> data_editor = std::make_unique<DataEditor>();
+					std::unique_ptr<EditOpt> edit_opt = std::make_unique<EditOpt>();
+					edit_opt->UserSelFlds = true;
 					CFile = FD;
-					EO->Flds = g_compiler->AllFldsList(FD, false);
-					if (data_editor->SelFldsForEO(EO, nullptr)) {
-						data_editor->EditDataFile(FD, EO);
+					edit_opt->Flds = g_compiler->AllFldsList(FD, false);
+					if (data_editor->SelFldsForEO(edit_opt.get(), nullptr)) {
+						data_editor->EditDataFile(FD, edit_opt.get());
 					}
 				}
 				break;
 			}
 			case 'E': {
 				if (CC == __CTRL_F9) {
-					EO = new EditOpt();
-					EO->UserSelFlds = true; // GetEditOpt();
-					EO->FormPos = RP;
-					data_editor->EditDataFile(nullptr, EO);
+					std::unique_ptr<DataEditor> data_editor = std::make_unique<DataEditor>();
+					std::unique_ptr<EditOpt> edit_opt = std::make_unique<EditOpt>();
+					edit_opt->UserSelFlds = true;
+					edit_opt->FormPos = RP;
+					data_editor->EditDataFile(nullptr, edit_opt.get());
 				}
 				else {
 					//PushEdit();
@@ -925,7 +923,7 @@ bool CompRunChptRec(std::unique_ptr<DataEditor>& data_editor, WORD CC)
 
 	MaxHp = nullptr;
 	ReleaseStore(&p2);
-	Free = StoreAvail();
+	int Free = StoreAvail();
 	RunMsgClear();
 	if (WasError) {
 #ifdef FandSQL
@@ -963,11 +961,11 @@ bool CompRunChptRec(std::unique_ptr<DataEditor>& data_editor, WORD CC)
 	ReleaseStore(&p2);
 	//edit = OldE;
 	//EditDRoot = E;
-	data_editor->ReadParamsFromE(EE);
+	//data_editor->ReadParamsFromE(EE);
 	CRdb = RP.rdb;
 	PrevCompInp.clear();
 
-	data_editor->GetFileD()->ReadRec(data_editor->CRec(), data_editor->GetRecord());
+	rdb_editor->GetFileD()->ReadRec(rdb_editor->CRec(), rdb_editor->GetRecord());
 	if (IsCompileErr) {
 		result = false;
 	}
@@ -976,8 +974,8 @@ bool CompRunChptRec(std::unique_ptr<DataEditor>& data_editor, WORD CC)
 		if (WasError) {
 			return result;
 		}
-		data_editor->GetFileD()->saveB(ChptVerif, false, data_editor->GetRecord());
-		data_editor->GetFileD()->WriteRec(data_editor->CRec(), data_editor->GetRecord());
+		rdb_editor->GetFileD()->saveB(ChptVerif, false, rdb_editor->GetRecord());
+		rdb_editor->GetFileD()->WriteRec(rdb_editor->CRec(), rdb_editor->GetRecord());
 		if (CC == __CTRL_F8) {
 			Diagnostics(MaxHp, Free, FD);
 		}
