@@ -1064,33 +1064,33 @@ void DataEditor::AdjustCRec()
 //	DataEditorParams::CopyParams(params_.get(), edit->params_.get());
 //	return edit;
 //}
-//
-//void DataEditor::ReadParamsFromE(EditD* edit)
-//{
-//	FirstEmptyFld = edit->FirstEmptyFld;
-//	VK = edit->VK;
-//	WK = edit->WK;
-//	BaseRec = edit->BaseRec;
-//	IRec = edit->IRec;
-//	IsNewRec = edit->IsNewRec;
-//
-//	DataEditorParams::CopyParams(edit->params_.get(), params_.get());
-//
-//	if (VK == nullptr) params_->OnlySearch = false;
-//
-//	file_d_ = edit->FD;
-//	record_ = edit->NewRecPtr;
-//
-//	CFld = edit->CFld;
-//
-//	if (file_d_->FF->XF != nullptr) HasIndex = true;
-//	else HasIndex = false;
-//
-//	if (file_d_->FF->TF != nullptr) HasTF = true;
-//	else HasTF = false;
-//
-//	SetCPage(CPage, &RT);
-//}
+
+void DataEditor::ReadParamsFromE(const EditD* edit)
+{
+	FirstEmptyFld = edit->FirstEmptyFld;
+	VK = edit->VK;
+	WK = edit->WK;
+	BaseRec = edit->BaseRec;
+	IRec = edit->IRec;
+	IsNewRec = edit->IsNewRec;
+
+	DataEditorParams::CopyParams(edit->params_.get(), params_.get());
+
+	if (VK == nullptr) params_->OnlySearch = false;
+
+	file_d_ = edit->FD;
+	record_ = edit->NewRecPtr;
+
+	CFld = edit->CFld;
+
+	if (file_d_->FF->XF != nullptr) HasIndex = true;
+	else HasIndex = false;
+
+	if (file_d_->FF->TF != nullptr) HasTF = true;
+	else HasTF = false;
+
+	SetCPage(CPage, &RT);
+}
 
 void DataEditor::DuplFld(FileD* file_d1, FileD* file_d2, void* record1, void* record2, void* RPt, FieldDescr* field_d1, FieldDescr* field_d2)
 {
@@ -1531,12 +1531,14 @@ bool DataEditor::OpenEditWw()
 {
 	LockMode md, md1, md2;
 	int n = 0;
-	auto result = false;
-	file_d_ = edit_->Journal;
-	if (file_d_ != nullptr) {
-		OpenCreateF(file_d_, CPath, Shared);
+	bool result = false;
+
+	// open journal file, if exists
+	if (edit_->Journal != nullptr) {
+		OpenCreateF(edit_->Journal, CPath, Shared);
 	}
-	//ReadParamsFromE(edit_);
+
+	ReadParamsFromE(edit_);
 	if (params_->EdRecVar) {
 		if (params_->OnlyAppend) {
 			goto label2;

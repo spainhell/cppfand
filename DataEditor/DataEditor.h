@@ -25,7 +25,7 @@ public:
     uint8_t* GetRecord();
 
 	void EditDataFile(FileD* FD, EditOpt* EO);
-    WORD EditTxt(std::string& s, WORD pos, WORD maxlen, WORD maxcol, FieldType typ, bool del,
+    WORD EditTxt(std::string& text, WORD pos, WORD maxlen, WORD maxcol, FieldType typ, bool del,
 	             bool star, bool upd, bool ret, unsigned int Delta); // r86
     int CRec();
 	void UpdateEdTFld(LongStr* S);
@@ -35,7 +35,7 @@ public:
     double PromptR(std::string& S, FrmlElem* Impl, FieldDescr* F);
     bool TestIsNewRec();
     //EditD* WriteParamsToE();
-    //void ReadParamsFromE(EditD* edit);
+    void ReadParamsFromE(const EditD* edit);
     bool SelFldsForEO(EditOpt* EO, LinkD* LD);
     void DisplEditWw();
     void GotoRecFld(int NewRec, EFldD* NewFld);
