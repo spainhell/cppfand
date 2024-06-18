@@ -299,7 +299,7 @@ void Report::Run(RprtOpt* RO)
 	if (PgeSize < 2) PgeSize = 2;
 	if ((PgeLimit > PgeSize) || (PgeLimit == 0)) PgeLimit = PgeSize - 1;
 	if (!RewriteRprt(RO, PgeSize, Times, isLPT1)) return;  // pouze zajisti otevreni souboru
-	MarkStore(Store2Ptr);
+	//MarkStore(Store2Ptr);
 	ex = true;
 	//PushProcStk();
 	//NewExit(Ovr(), er);
@@ -1222,7 +1222,7 @@ void Report::ResetY()
 	Y.Ln = 0;
 	Y.P = nullptr;
 	Y.Sz = 0;
-	Y.TD = nullptr;
+	Y.TD.clear();
 	Y.TLn = 0;
 }
 
@@ -1626,7 +1626,7 @@ label1:
 std::string Report::NewTxtCol(std::string S, WORD Col, WORD Width, bool Wrap)
 {
 	WORD Ln = 0;
-	TTD* TD = nullptr;
+	TTD TD;
 	std::string ss;
 	std::vector<std::string> SL;
 
@@ -1643,21 +1643,23 @@ std::string Report::NewTxtCol(std::string S, WORD Col, WORD Width, bool Wrap)
 		std::string strLine = GetLine(S, Width, Wrap, Absatz);
 		Ln++;
 		if (Ln == 1) {
-			TD = new TTD();
-			TD->SL.clear();
-			TD->Col = Col;
-			TD->Width = Width;
+			//TD = new TTD();
+			//TD->SL.clear();
+			TD.Col = Col;
+			TD.Width = Width;
 		}
 		//SL = new StringListEl();
 		//SL->S = strLine;
 		//if (TD->SL == nullptr) TD->SL = SL;
 		//else ChainLast(TD->SL, SL);
-		TD->SL.push_back(strLine);
+		TD.SL.push_back(strLine);
 	}
 	if (Ln > 0) {
-		TD->Ln = Ln;
-		if (Y.TD == nullptr) Y.TD = TD;
-		else ChainLast(Y.TD, TD);
+		TD.Ln = Ln;
+		//if (Y.TD == nullptr) Y.TD = TD;
+		//else ChainLast(Y.TD, TD);
+		Y.TD.push_back(TD);
+
 		if (Ln > Y.TLn) Y.TLn = Ln;
 	}
 	return ss;
@@ -1665,16 +1667,14 @@ std::string Report::NewTxtCol(std::string S, WORD Col, WORD Width, bool Wrap)
 
 void Report::CheckPgeLimit(std::string& text)
 {
-	void* p2;
-	YRec YY;
 	if (Y.ChkPg && (RprtLine > PgeLimit) && (PgeLimit < PgeSize)) {
-		p2 = Store2Ptr;
-		MarkStore(Store2Ptr);
-		YY = Y;
+		//void* p2 = Store2Ptr;
+		//MarkStore(Store2Ptr);
+		YRec YY = Y;
 		ResetY();
 		NewPage(text);
 		Y = YY;
-		Store2Ptr = p2;
+		//Store2Ptr = p2;
 	}
 }
 
@@ -1684,23 +1684,26 @@ void Report::PendingTT(std::string& text)
 	WORD Col = LineLenLst + 1;
 
 	if (Y.TLn > 0) {
-		std::vector<std::string>::iterator it0 = Y.TD->SL.begin();
+		std::vector<std::string>::iterator it0 = Y.TD[0].SL.begin();
 
 		while (Y.TLn > 0) {
 			NewLine(text);
 			CheckPgeLimit(text);
-			TTD* TD = Y.TD;
 			Col = 1;
-			while (TD != nullptr) {
-				if (TD->Ln > 0) {
-					WriteNBlks(text, TD->Col - Col);
+
+			//TTD* TD = Y.TD;
+			//while (TD != nullptr) {
+			for (TTD& TD : Y.TD) {
+				if (TD.Ln > 0) {
+					WriteNBlks(text, TD.Col - Col);
 					text += *it0;
-					Col = TD->Col + GetLengthOfStyledString(*it0);
-					TD->Ln--;
+					Col = TD.Col + GetLengthOfStyledString(*it0);
+					TD.Ln--;
 					++it0;
 				}
-				TD = TD->pChain;
+				//TD = TD->pChain;
 			}
+
 			Y.TLn--;
 			LineLenLst = lll;
 		}
@@ -1708,11 +1711,11 @@ void Report::PendingTT(std::string& text)
 
 	WriteNBlks(text, LineLenLst + 1 - Col);
 
-	if (Y.TD != nullptr) {
-		ReleaseStore(&Store2Ptr);
-		Y.TD = nullptr;
-		Y.TLn = 0;
-	}
+	//if (Y.TD != nullptr) {
+	//	ReleaseStore(&Store2Ptr);
+	Y.TD.clear();
+	Y.TLn = 0;
+	//}
 }
 
 void Report::PrintBlock(BlkD* B, std::string& text, BlkD* DH)

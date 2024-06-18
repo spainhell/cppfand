@@ -8,7 +8,7 @@ struct InpD;
 struct BlkD;
 class KeyFldD;
 
-struct TTD : public Chained<TTD>
+struct TTD
 {
 	std::vector<std::string> SL;
 	WORD Col = 0, Width = 0, Ln = 0;
@@ -20,7 +20,7 @@ struct YRec
 	WORD I = 0, Ln = 0, TLn = 0, Sz = 0;
 	BlkD* Blk = nullptr;
 	bool ChkPg = false;
-	TTD* TD = nullptr;
+	std::vector<TTD> TD;
 };
 
 class Report : public MergeReportBase
@@ -38,7 +38,7 @@ private:
 	YRec Y;
 	bool FrstBlk, NoFF, WasFF2, SetPage, WasOutput;
 	short LineLenLst, PageNo, PgeSize;
-	void* Store2Ptr;
+	//void* Store2Ptr;
 	int RecCount;
 	WORD NEof;
 	InpD* MinID;
