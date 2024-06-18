@@ -1644,14 +1644,15 @@ std::string Report::NewTxtCol(std::string S, WORD Col, WORD Width, bool Wrap)
 		Ln++;
 		if (Ln == 1) {
 			TD = new TTD();
-			TD->SL = nullptr;
+			TD->SL.clear();
 			TD->Col = Col;
 			TD->Width = Width;
 		}
-		SL = new StringListEl();
-		SL->S = strLine;
-		if (TD->SL == nullptr) TD->SL = SL;
-		else ChainLast(TD->SL, SL);
+		//SL = new StringListEl();
+		//SL->S = strLine;
+		//if (TD->SL == nullptr) TD->SL = SL;
+		//else ChainLast(TD->SL, SL);
+		TD->SL.push_back(strLine);
 	}
 	if (Ln > 0) {
 		TD->Ln = Ln;
@@ -1679,9 +1680,10 @@ void Report::CheckPgeLimit(std::string& text)
 
 void Report::PendingTT(std::string& text)
 {
-	StringListEl* SL = nullptr;
 	WORD lll = LineLenLst;
 	WORD Col = LineLenLst + 1;
+	std::vector<std::string>::iterator it0 = Y.TD->SL.begin();
+
 	while (Y.TLn > 0) {
 		NewLine(text);
 		CheckPgeLimit(text);
@@ -1690,11 +1692,10 @@ void Report::PendingTT(std::string& text)
 		while (TD != nullptr) {
 			if (TD->Ln > 0) {
 				WriteNBlks(text, TD->Col - Col);
-				SL = TD->SL;
-				text += SL->S;
-				Col = TD->Col + GetLengthOfStyledString(SL->S);
+				text += *it0;
+				Col = TD->Col + GetLengthOfStyledString(*it0);
 				TD->Ln--;
-				TD->SL = SL->pChain;
+				++it0;
 			}
 			TD = TD->pChain;
 		}

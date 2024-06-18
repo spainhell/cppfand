@@ -25,11 +25,11 @@ struct FrmlListEl : public Chained<FrmlListEl>
 };
 typedef FrmlListEl* FrmlList;
 
-struct StringListEl : public Chained<StringListEl>
-{
-	std::string S;
-};
-typedef StringListEl* StringList;
+//struct StringListEl : public Chained<StringListEl>
+//{
+//	std::string S;
+//};
+//typedef StringListEl* StringList;
 
 struct KeyListEl : public Chained<KeyListEl>
 {

@@ -2173,10 +2173,11 @@ void DataEditor::FindExistTest(FrmlElem* Z, LinkD** LD)
 	}
 }
 
-bool DataEditor::TestAccRight(StringList S)
+bool DataEditor::TestAccRight(std::vector<std::string>& S)
 {
 	if (UserCode == 0) { return true; }
-	return OverlapByteStr((void*)(uintptr_t(S) + 5 + S->S.length()), &AccRight);
+	//TODO: return OverlapByteStr((void*)(uintptr_t(S) + 5 + S->S.length()), &AccRight);
+	return false;
 }
 
 bool DataEditor::ForNavigate(FileD* FD)

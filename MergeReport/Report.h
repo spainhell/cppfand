@@ -10,7 +10,7 @@ class KeyFldD;
 
 struct TTD : public Chained<TTD>
 {
-	StringList SL = nullptr;
+	std::vector<std::string> SL;
 	WORD Col = 0, Width = 0, Ln = 0;
 };
 

@@ -197,7 +197,7 @@ struct EFldD : public Chained<EFldD>
 struct ERecTxtD : public Chained<ERecTxtD>
 {
 	WORD N;
-	StringList SL;
+	std::vector<std::string> SL;
 };
 
 enum class CpOption {cpNo, cpFix, cpVar, cpTxt};
