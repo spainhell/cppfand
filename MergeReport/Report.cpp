@@ -1682,27 +1682,32 @@ void Report::PendingTT(std::string& text)
 {
 	WORD lll = LineLenLst;
 	WORD Col = LineLenLst + 1;
-	std::vector<std::string>::iterator it0 = Y.TD->SL.begin();
 
-	while (Y.TLn > 0) {
-		NewLine(text);
-		CheckPgeLimit(text);
-		TTD* TD = Y.TD;
-		Col = 1;
-		while (TD != nullptr) {
-			if (TD->Ln > 0) {
-				WriteNBlks(text, TD->Col - Col);
-				text += *it0;
-				Col = TD->Col + GetLengthOfStyledString(*it0);
-				TD->Ln--;
-				++it0;
+	if (Y.TLn > 0) {
+		std::vector<std::string>::iterator it0 = Y.TD->SL.begin();
+
+		while (Y.TLn > 0) {
+			NewLine(text);
+			CheckPgeLimit(text);
+			TTD* TD = Y.TD;
+			Col = 1;
+			while (TD != nullptr) {
+				if (TD->Ln > 0) {
+					WriteNBlks(text, TD->Col - Col);
+					text += *it0;
+					Col = TD->Col + GetLengthOfStyledString(*it0);
+					TD->Ln--;
+					++it0;
+				}
+				TD = TD->pChain;
 			}
-			TD = TD->pChain;
+			Y.TLn--;
+			LineLenLst = lll;
 		}
-		Y.TLn--;
-		LineLenLst = lll;
 	}
+
 	WriteNBlks(text, LineLenLst + 1 - Col);
+
 	if (Y.TD != nullptr) {
 		ReleaseStore(&Store2Ptr);
 		Y.TD = nullptr;
