@@ -1561,7 +1561,7 @@ Instr_edit* RdEditCall()
 	g_compiler->Accept(',');
 	if (g_compiler->IsOpt("U")) {
 		g_compiler->TestIdentif();
-		if (instr_edit->EditFD->ViewNames == nullptr) {
+		if (instr_edit->EditFD->ViewNames.empty()) {
 			g_compiler->Error(114);
 		}
 		stSaveState* p = g_compiler->SaveCompState();

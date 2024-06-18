@@ -7,7 +7,6 @@
 #include "../Core/rdrun.h"
 
 struct EFldD;
-struct StringListEl;
 class EditD;
 
 //extern std::vector<EditD*> v_edits;

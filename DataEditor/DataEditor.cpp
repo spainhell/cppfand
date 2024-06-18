@@ -1304,11 +1304,16 @@ void DataEditor::SetNewCRec(int N, bool withRead)
 
 void DataEditor::WriteSL(std::vector<std::string>& SL)
 {
-	while (SL != nullptr) {
+	//while (SL != nullptr) {
+	//	WORD row = screen.WhereY();
+	//	screen.WriteStyledStringToWindow(SL->S, edit_->Attr);
+	//	screen.GotoXY(edit_->FrstCol, row + 1);
+	//	SL = SL->pChain;
+	//}
+	for (std::string& s : SL) {
 		WORD row = screen.WhereY();
-		screen.WriteStyledStringToWindow(SL->S, edit_->Attr);
+		screen.WriteStyledStringToWindow(s, edit_->Attr);
 		screen.GotoXY(edit_->FrstCol, row + 1);
-		SL = SL->pChain;
 	}
 }
 
@@ -2173,7 +2178,7 @@ void DataEditor::FindExistTest(FrmlElem* Z, LinkD** LD)
 	}
 }
 
-bool DataEditor::TestAccRight(std::vector<std::string>& S)
+bool DataEditor::TestAccRight(std::string& S)
 {
 	if (UserCode == 0) { return true; }
 	//TODO: return OverlapByteStr((void*)(uintptr_t(S) + 5 + S->S.length()), &AccRight);
@@ -2184,22 +2189,39 @@ bool DataEditor::ForNavigate(FileD* FD)
 {
 	auto result = true;
 	if (UserCode == 0) return result;
-	StringListEl* S = FD->ViewNames;
-	while (S != nullptr) {
+
+	//StringListEl* S = FD->ViewNames;
+	//while (S != nullptr) {
+	//	if (TestAccRight(S)) return result;
+	//	S = S->pChain;
+	//}
+	for (std::string& S : FD->ViewNames) {
 		if (TestAccRight(S)) return result;
-		S = S->pChain;
 	}
+
+
 	result = false;
 	return result;
 }
 
-std::string DataEditor::GetFileViewName(FileD* FD, std::vector<std::string>& SL)
+std::string DataEditor::GetFileViewName(FileD* FD, std::vector<std::string>& SL, size_t index_from)
 {
-	if (*SL == nullptr) { return FD->Name; }
+	//if (*SL == nullptr) { return FD->Name; }
+	//std::string result = "\x1"; // ^A
+	//while (!TestAccRight(*SL)) *SL = (*SL)->pChain;
+	//result += (*SL)->S;
+	//do { *SL = (*SL)->pChain; } while (!(SL == nullptr || TestAccRight(*SL)));
+
+	if (index_from >= SL.size()) { return FD->Name; }
+
 	std::string result = "\x1"; // ^A
-	while (!TestAccRight(*SL)) *SL = (*SL)->pChain;
-	result += (*SL)->S;
-	do { *SL = (*SL)->pChain; } while (!(SL == nullptr || TestAccRight(*SL)));
+	for (size_t i = index_from; i <= SL.size(); i++) {
+		if (TestAccRight(SL[i])) {
+			result += SL[i];
+			break;
+		}
+	}
+
 	return result;
 }
 
@@ -2252,15 +2274,23 @@ bool DataEditor::EquFileViewName(FileD* FD, std::string S, EditOpt** EO)
 	auto result = true;
 	if (S[0] == 0x01) { // ^A
 		S = S.substr(1, 255);
-		StringListEl* SL = FD->ViewNames;
-		while (SL != nullptr) {
-			if (SL->S == S) {
+		//StringListEl* SL = FD->ViewNames;
+		//while (SL != nullptr) {
+		//	if (SL->S == S) {
+		//		*EO = new EditOpt();
+		//		(*EO)->UserSelFlds = true;
+		//		RdUserView(FD, S, *EO);
+		//		return result;
+		//	}
+		//	SL = SL->pChain;
+		//}
+		for (std::string& s : FD->ViewNames) {
+			if (s == S) {
 				*EO = new EditOpt();
 				(*EO)->UserSelFlds = true;
 				RdUserView(FD, S, *EO);
 				return result;
 			}
-			SL = SL->pChain;
 		}
 	}
 	else if (S == std::string(FD->Name)) {
@@ -2287,7 +2317,6 @@ void DataEditor::UpwEdit(LinkD* LkD)
 	XKey* K = nullptr;
 	EditOpt* EO = nullptr;
 	WORD Brk;
-	StringListEl* SL, * SL1;
 	LinkD* LD;
 	MarkStore(p);
 	int w = PushW(1, 1, TxtCols, TxtRows, true, true);
@@ -2303,13 +2332,21 @@ void DataEditor::UpwEdit(LinkD* LkD)
 				std::string s;
 				std::string rn = ld->RoleName;
 				if (ToFD->Name != rn) { s = "." + ld->RoleName; }
-				SL = ToFD->ViewNames;
+				/*SL = ToFD->ViewNames;
 				do {
 					s1 = data_editor2->GetFileViewName(ToFD, &SL) + s;
 					ww.PutSelect(s1);
 					data_editor2->CFld = this->CFld;
 					data_editor2->SetPointTo(ld, &s1, &s2);
-				} while (SL != nullptr);
+				} while (SL != nullptr);*/
+
+				for (size_t i = 0; i < ToFD->ViewNames.size(); i++) {
+					s1 = data_editor2->GetFileViewName(ToFD, ToFD->ViewNames, i) + s;
+					ww.PutSelect(s1);
+					data_editor2->CFld = this->CFld;
+					data_editor2->SetPointTo(ld, &s1, &s2);
+				}
+
 			}
 		}
 		ss.Abcd = true;
@@ -2341,19 +2378,26 @@ void DataEditor::UpwEdit(LinkD* LkD)
 		LD = LkD;
 		EO = new EditOpt();
 		EO->UserSelFlds = false;
-		SL = LD->ToFD->ViewNames;
-		SL1 = nullptr;
-		while (SL != nullptr) {
-			if (data_editor2->TestAccRight(SL)) {
-				SL1 = SL;
+		std::string sl1;
+
+		//std::vector<std::string> SL = LD->ToFD->ViewNames;
+		//while (SL != nullptr) {
+		//	if (data_editor2->TestAccRight(SL)) {
+		//		SL1 = SL;
+		//	}
+		//	SL = SL->pChain;
+		//}
+		for (std::string& s : LD->ToFD->ViewNames) {
+			if (data_editor2->TestAccRight(s)) {
+				sl1 = s;
 			}
-			SL = SL->pChain;
 		}
-		if (SL1 == nullptr) {
+
+		if (sl1.empty()) {
 			EO->Flds = g_compiler->AllFldsList(LD->ToFD, false);
 		}
 		else {
-			RdUserView(LD->ToFD, SL1->S, EO);
+			RdUserView(LD->ToFD, sl1, EO);
 		}
 		EO->SetOnlyView = true;
 	}
@@ -3970,7 +4014,8 @@ void DataEditor::ImbeddEdit()
 
 	void* p = nullptr;
 	std::string s1, s2;
-	WORD Brk; StringListEl* SL = nullptr;
+	WORD Brk;
+	//std::vector<std::string> SL;
 	EditOpt* EO = nullptr;
 	FileD* FD = nullptr;
 	RdbD* R = nullptr; int w = 0;
@@ -3987,14 +4032,21 @@ void DataEditor::ImbeddEdit()
 		FD = R->rdb_file->pChain;
 		while (FD != nullptr) {
 			if (data_editor2->ForNavigate(FD)) {
-				SL = FD->ViewNames;
-				do {
-					std::string s = data_editor2->GetFileViewName(FD, &SL);
+				//SL = FD->ViewNames;
+				//do {
+				//	std::string s = data_editor2->GetFileViewName(FD, &SL);
+				//	if (R != CRdb) {
+				//		s = R->rdb_file->Name + "." + s;
+				//	}
+				//	ww.PutSelect(s);
+				//} while (SL != nullptr);
+				for (size_t i = 0; i < FD->ViewNames.size(); i++) {
+					std::string s = data_editor2->GetFileViewName(FD, FD->ViewNames, i);
 					if (R != CRdb) {
 						s = R->rdb_file->Name + "." + s;
 					}
 					ww.PutSelect(s);
-				} while (SL != nullptr);
+				}
 			}
 			FD = FD->pChain;
 		}
@@ -4057,19 +4109,27 @@ void DataEditor::DownEdit()
 
 	for (LinkD* ld : LinkDRoot) {
 		FileD* FD = ld->FromFD;
-		StringListEl* SL;
+		//std::vector<std::string> SL;
 		if ((ld->ToFD == data_editor2->file_d_) && data_editor2->ForNavigate(FD) && (ld->IndexRoot != 0)) {
 			/*own key with equal beginning*/
-			SL = FD->ViewNames;
+			//SL = FD->ViewNames;
 			XKey* K = GetFromKey(ld);
-			do {
+			/*do {
 				std::string s = data_editor2->GetFileViewName(FD, &SL);
 				std::string kali = K->Alias;
 				if (!K->Alias.empty()) {
 					s += "/" + kali;
 				}
 				ww.PutSelect(s);
-			} while (SL != nullptr);
+			} while (SL != nullptr);*/
+			for (size_t i = 0; i < FD->ViewNames.size(); i++) {
+				std::string s = data_editor2->GetFileViewName(FD, FD->ViewNames, i);
+				std::string kali = K->Alias;
+				if (!K->Alias.empty()) {
+					s += "/" + kali;
+				}
+				ww.PutSelect(s);
+			}
 		}
 		//ld = ld->pChain;
 	}

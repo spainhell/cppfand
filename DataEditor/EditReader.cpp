@@ -312,14 +312,16 @@ void EditReader::AutoDesign(FieldListEl* FL)
 	D->pChain = nullptr;
 	edit_->LastFld = D;
 	edit_->NPages = NPages;
-	if (NPages == 1) { /* !!! with E->RecTxt^ do!!! */
-		auto& er = *edit_->RecTxt;
-		if (er.N == 2) {
-			edit_->HdTxt = er.SL;
-			er.SL = er.SL->pChain;
-			edit_->HdTxt->pChain = nullptr;
+	if (NPages == 1) { 
+		ERecTxtD* er = edit_->RecTxt;
+		if (er->N == 2) {
+			edit_->HdTxt.clear();
+			edit_->HdTxt.push_back(er->SL[0]);
 			edit_->NHdTxt = 1;
-			er.N = 1;
+
+			er->SL.erase(er->SL.begin());
+			er->N = 1;
+
 			D = edit_->FirstFld;
 			while (D != nullptr) {
 				D->Ln--;
@@ -330,14 +332,14 @@ void EditReader::AutoDesign(FieldListEl* FL)
 				edit_->HdTxt.clear();
 			}
 		}
-		else if (er.N < edit_->Rows) {
+		else if (er->N < edit_->Rows) {
 			s = "";
 			for (i = edit_->FrstCol; i <= edit_->LastCol; i++) {
 				s.Append('-');
 			}
 			//SToSL(&er.SL, s);
-			er.SL.push_back(s);
-			er.N++;
+			er->SL.push_back(s);
+			er->N++;
 		}
 	}
 }
@@ -404,13 +406,15 @@ void EditReader::AutoDesign(std::vector<FieldDescr*>& FL)
 	edit_->LastFld = D;
 	edit_->NPages = NPages;
 	if (NPages == 1) {
-		auto& er = *edit_->RecTxt;
-		if (er.N == 2) {
-			edit_->HdTxt = er.SL;
-			er.SL = er.SL->pChain;
-			edit_->HdTxt->pChain = nullptr;
+		ERecTxtD* er = edit_->RecTxt;
+		if (er->N == 2) {
+			edit_->HdTxt.clear();
+			edit_->HdTxt.push_back(er->SL[0]);
 			edit_->NHdTxt = 1;
-			er.N = 1;
+
+			er->SL.erase(er->SL.begin());
+			er->N = 1;
+
 			D = edit_->FirstFld;
 			while (D != nullptr) {
 				D->Ln--;
@@ -421,14 +425,14 @@ void EditReader::AutoDesign(std::vector<FieldDescr*>& FL)
 				edit_->HdTxt.clear();
 			}
 		}
-		else if (er.N < edit_->Rows) {
+		else if (er->N < edit_->Rows) {
 			s = "";
 			for (i = edit_->FrstCol; i <= edit_->LastCol; i++) {
 				s.Append('-');
 			}
 			//SToSL(&er.SL, s);
-			er.SL.push_back(s);
-			er.N++;
+			er->SL.push_back(s);
+			er->N++;
 		}
 	}
 }
