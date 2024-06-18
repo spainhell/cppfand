@@ -94,7 +94,7 @@ private:
     void DisplAllWwRecs();
     void SetNewWwRecAttr();
     void MoveDispl(WORD From, WORD Where, WORD Number);
-    void WriteSL(StringListEl* SL);
+    void WriteSL(std::vector<std::string>& SL);
     void DisplRecTxt();
     
     void UpdMemberRef(void* POld, void* PNew);
@@ -110,7 +110,7 @@ private:
     void FindExistTest(FrmlElem* Z, LinkD** LD);
     bool TestAccRight(std::vector<std::string>& S);
     bool ForNavigate(FileD* FD);
-    std::string GetFileViewName(FileD* FD, StringListEl** SL);
+    std::string GetFileViewName(FileD* FD, std::vector<std::string>& SL);
     void SetPointTo(LinkD* LD, std::string* s1, std::string* s2);
     void GetSel2S(std::string& s, std::string& s2, char C, WORD wh);
     bool EquRoleName(pstring S, LinkD* LD);

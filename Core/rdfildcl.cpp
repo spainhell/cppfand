@@ -446,14 +446,17 @@ void TestUserView(FileD* file_d)
 			TestDupl(FD);
 			FD = FD->pChain;
 		}
-		StringListEl* S = new StringListEl();
+
+		/*StringListEl* S = new StringListEl();
 		S->S = LexWord;
 		if (file_d->ViewNames == nullptr) {
 			file_d->ViewNames = S;
 		}
 		else {
 			ChainLast(file_d->ViewNames, S);
-		}
+		}*/
+		file_d->ViewNames.push_back(LexWord);
+
 		g_compiler->RdLex();
 		RdByteListInStore();
 		g_compiler->Accept(':');
@@ -478,12 +481,18 @@ void TestUserView(FileD* file_d)
 
 void TestDupl(FileD* FD)
 {
-	StringList S;
+	/*StringList S;
 	S = FD->ViewNames;
 	while (S != nullptr) {
 		std::string tmp = LexWord;
 		if (EquUpCase(S->S, tmp)) g_compiler->Error(26);
 		S = (StringList)S->pChain;
+	}*/
+
+	for (std::string& s : FD->ViewNames) {
+		if (EquUpCase(s, LexWord)) {
+			g_compiler->Error(26);
+		}
 	}
 }
 

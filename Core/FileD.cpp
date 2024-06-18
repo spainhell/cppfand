@@ -80,7 +80,7 @@ void FileD::Reset()
 	FldD.clear();
 	IsParFile = false; IsJournal = false; IsHlpFile = false;
 	typSQLFile = false; IsSQLFile = false; IsDynFile = false;
-	ViewNames = nullptr;  //after each string BYTE string with user codes 
+	ViewNames.clear();  //after each string BYTE string with user codes 
 	Keys.clear();
 	Add.clear();
 }

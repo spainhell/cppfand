@@ -102,7 +102,7 @@ label1:
 	}
 }
 
-void TzFile::Get1Dir(StringList Msk, int D, int& DLast)
+void TzFile::Get1Dir(std::vector<std::string>& Msk, int D, int& DLast)
 {
 	/*SearchRec SR;
 	PathStr p;
@@ -151,31 +151,38 @@ void TzFile::Get1Dir(StringList Msk, int D, int& DLast)
 
 void TzFile::GetDirs(LongStr* Mask)
 {
-	StringList slRoot, sl;
+	std::vector<std::string> slRoot;
+	std::vector<std::string> sl;
 	pstring s;
-	int d, dLast;
-	WORD l, i, j, n;
+	WORD n;
 
-	slRoot = nullptr;
-	l = Mask->LL;
-	j = 1;
+	//slRoot = nullptr;
+	WORD l = Mask->LL;
+	WORD j = 1;
 	do {
-		while ((j <= l) && (Mask->A[j] == ' ' || Mask->A[j] == ',')) { j++; }
+		while ((j <= l) && (Mask->A[j] == ' ' || Mask->A[j] == ',')) {
+			j++;
+		}
 		n = l - j + 1;
-		for (i = j; i <= l; i++) {
-			if (Mask->A[i] == ' ' || Mask->A[i] == ',') { n = i - j; break; }
+		for (WORD i = j; i <= l; i++) {
+			if (Mask->A[i] == ' ' || Mask->A[i] == ',') {
+				n = i - j;
+				break;
+			}
 			if (n > 0) {
 				n = MinW(n, 255);
-				sl = new StringListEl(); // GetZStore(5 + n);
-				ChainLast(slRoot, sl);
-				Move(&Mask->A[j], &sl->S[1], n);
-				sl->S[0] = char(n);
+				//sl = new StringListEl(); // GetZStore(5 + n);
+				//ChainLast(slRoot, sl);
+				//Move(&Mask->A[j], &sl->S[1], n);
+				//sl->S[0] = char(n);
+				std::string item = std::string(&Mask->A[j], n);
+				slRoot.push_back(item);
 				j += n;
 			}
 		}
 	} while (n != 0);
-	d = StoreDirD("");
-	dLast = d;
+	int d = StoreDirD("");
+	int dLast = d;
 	do {
 		Get1Dir(slRoot, d, dLast);
 		d = ReadWPtr(d);

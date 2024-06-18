@@ -11,7 +11,6 @@ struct EFldD;
 struct ERecTxtD;
 struct EdExitD;
 class LinkD;
-struct StringListEl;
 class XWKey;
 struct KeyInD;
 class LocVar;
@@ -45,7 +44,8 @@ public:
 	KeyInD* KIRoot = nullptr;                    /*      "         */
 	bool SQLFilter = false;                      /*      "         */
 	XWKey* SelKey = nullptr;                     /*      "         */
-	StringListEl* HdTxt = nullptr; BYTE NHdTxt = 0;
+	std::vector<std::string> HdTxt;
+	BYTE NHdTxt = 0;
 	unsigned int SaveAfter = 0, WatchDelay = 0, RefreshDelay = 0;
 	BYTE RecNrPos = 0, RecNrLen = 0;
 	BYTE NPages = 0;

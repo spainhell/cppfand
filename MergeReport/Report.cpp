@@ -1625,14 +1625,14 @@ label1:
 /// <returns></returns>
 std::string Report::NewTxtCol(std::string S, WORD Col, WORD Width, bool Wrap)
 {
-	WORD i = 0, Ln = 0;
+	WORD Ln = 0;
 	TTD* TD = nullptr;
 	std::string ss;
-	StringListEl* SL = nullptr;
+	std::vector<std::string> SL;
 
 	Ln = 0;
 	bool Absatz = true;
-	if (Wrap) for (i = 0; i < S.length(); i++) {
+	if (Wrap) for (size_t i = 0; i < S.length(); i++) {
 		if ((S[i] == 0x0D) && ((i == S.length()) || (S[i + 1] != 0x0A))) S[i] = ' ';
 	}
 

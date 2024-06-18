@@ -30,15 +30,15 @@ EditReader::EditReader()
 //	v_edits.push_back(e1);
 //}
 
-void EditReader::SToSL(StringListEl** SLRoot, pstring s)
-{
-	StringListEl* SL = new StringListEl();
-	SL->S = s;
-	if (*SLRoot == nullptr) *SLRoot = SL;
-	else ChainLast(*SLRoot, SL);
-}
+//void EditReader::SToSL(StringListEl** SLRoot, pstring s)
+//{
+//	StringListEl* SL = new StringListEl();
+//	SL->S = s;
+//	if (*SLRoot == nullptr) *SLRoot = SL;
+//	else ChainLast(*SLRoot, SL);
+//}
 
-void EditReader::StoreRT(WORD Ln, StringList SL, WORD NFlds)
+void EditReader::StoreRT(WORD Ln, std::vector<std::string>& SL, WORD NFlds)
 {
 	ERecTxtD* RT = new ERecTxtD();
 	if (NFlds == 0) {
@@ -54,8 +54,8 @@ void EditReader::RdEForm(EditD* edit, RdbPos FormPos)
 {
 	EFldD* D = nullptr; EFldD* D1 = nullptr; EFldD* PrevD = nullptr;
 	FieldDescr* F = nullptr; FieldListEl* FL = nullptr;
-	StringListEl* SLRoot = nullptr;
-	std::string s = "";
+	std::vector<std::string> SLRoot;
+	std::string s;
 	WORD NPages = 0, Col = 0, Ln = 0, Max = 0, M = 0, N = 0, NFlds = 0, i = 0;
 	bool comment = false; char c = '\0'; BYTE a = 0;
 	g_compiler->SetInpTT(&FormPos, true);
@@ -90,7 +90,8 @@ void EditReader::RdEForm(EditD* edit, RdbPos FormPos)
 		else {
 			g_compiler->ReadChar();
 			if (ForwChar == 0x0A) g_compiler->ReadChar();
-			SToSL(&edit->HdTxt, s);
+			//SToSL(&edit->HdTxt, s);
+			edit->HdTxt.push_back(s);
 			edit->NHdTxt++;
 			if (edit->NHdTxt + 1 > edit->Rows) {
 				g_compiler->Error(102);
@@ -144,7 +145,7 @@ void EditReader::RdEForm(EditD* edit, RdbPos FormPos)
 	NPages++;
 	Ln = 0;
 	NFlds = 0;
-	SLRoot = nullptr;
+	SLRoot.clear();
 
 label5:
 	s = ""; Ln++;
@@ -192,7 +193,8 @@ label5:
 		}
 	}
 
-	SToSL(&SLRoot, s);
+	//SToSL(&SLRoot, s);
+	SLRoot.push_back(s);
 	c = ForwChar;
 	if (c == '\\') g_compiler->ReadChar();
 	g_compiler->SkipBlank(true);
@@ -202,7 +204,7 @@ label5:
 			NPages++;
 			Ln = 0;
 			NFlds = 0;
-			SLRoot = nullptr;
+			SLRoot.clear();
 			goto label5;
 		}
 		else {
@@ -253,7 +255,7 @@ void EditReader::AutoDesign(FieldListEl* FL)
 {
 	WORD L = 0, i = 0, m = 0, FldLen = 0;
 	pstring s = "";
-	StringListEl* SLRoot = nullptr;
+	std::vector<std::string> SLRoot;
 	EFldD* D = (EFldD*)(&edit_->FirstFld);
 	EFldD* PrevD = nullptr;
 	WORD NPages = 1; WORD Ln = 0;
@@ -277,14 +279,16 @@ void EditReader::AutoDesign(FieldListEl* FL)
 		L = F->Name.length();
 		if (FldLen > L) L = FldLen;
 		if (Col + L > edit_->LastCol) {
-			SToSL(&SLRoot, s);
-			SToSL(&SLRoot, "");
+			//SToSL(&SLRoot, s);
+			SLRoot.push_back(s);
+			//SToSL(&SLRoot, "");
+			SLRoot.push_back("");
 			Ln += 2;
 			if (Ln + 2 > edit_->Rows) {
 				StoreRT(Ln, SLRoot, 1);
 				NPages++;
 				Ln = 0;
-				SLRoot = nullptr;
+				SLRoot.clear();
 			}
 			Col = edit_->FrstCol;
 			s = "";
@@ -299,8 +303,10 @@ void EditReader::AutoDesign(FieldListEl* FL)
 		D->Page = NPages;
 		Col += (L + 1);
 	}
-	SToSL(&SLRoot, s);
-	SToSL(&SLRoot, "");
+	//SToSL(&SLRoot, s);
+	SLRoot.push_back(s);
+	//SToSL(&SLRoot, "");
+	SLRoot.push_back("");
 	Ln += 2;
 	StoreRT(Ln, SLRoot, 1);
 	D->pChain = nullptr;
@@ -321,7 +327,7 @@ void EditReader::AutoDesign(FieldListEl* FL)
 			}
 			if (edit_->Rows == 1) {
 				edit_->NHdTxt = 0;
-				edit_->HdTxt = nullptr;
+				edit_->HdTxt.clear();
 			}
 		}
 		else if (er.N < edit_->Rows) {
@@ -329,7 +335,8 @@ void EditReader::AutoDesign(FieldListEl* FL)
 			for (i = edit_->FrstCol; i <= edit_->LastCol; i++) {
 				s.Append('-');
 			}
-			SToSL(&er.SL, s);
+			//SToSL(&er.SL, s);
+			er.SL.push_back(s);
 			er.N++;
 		}
 	}
@@ -339,7 +346,7 @@ void EditReader::AutoDesign(std::vector<FieldDescr*>& FL)
 {
 	WORD L = 0, i = 0, m = 0, FldLen = 0;
 	pstring s = "";
-	StringListEl* SLRoot = nullptr;
+	std::vector<std::string> SLRoot;
 	EFldD* D = (EFldD*)(&edit_->FirstFld);  // TODO: this is not correct, but it works -> refactor!
 	EFldD* PrevD = nullptr;
 	WORD NPages = 1; WORD Ln = 0;
@@ -363,14 +370,16 @@ void EditReader::AutoDesign(std::vector<FieldDescr*>& FL)
 		L = F->Name.length();
 		if (FldLen > L) L = FldLen;
 		if (Col + L > edit_->LastCol) {
-			SToSL(&SLRoot, s);
-			SToSL(&SLRoot, "");
+			//SToSL(&SLRoot, s);
+			SLRoot.push_back(s);
+			//SToSL(&SLRoot, "");
+			SLRoot.push_back("");
 			Ln += 2;
 			if (Ln + 2 > edit_->Rows) {
 				StoreRT(Ln, SLRoot, 1);
 				NPages++;
 				Ln = 0;
-				SLRoot = nullptr;
+				SLRoot.clear();
 			}
 			Col = edit_->FrstCol;
 			s = "";
@@ -385,8 +394,10 @@ void EditReader::AutoDesign(std::vector<FieldDescr*>& FL)
 		D->Page = NPages;
 		Col += (L + 1);
 	}
-	SToSL(&SLRoot, s);
-	SToSL(&SLRoot, "");
+	//SToSL(&SLRoot, s);
+	SLRoot.push_back(s);
+	//SToSL(&SLRoot, "");
+	SLRoot.push_back("");
 	Ln += 2;
 	StoreRT(Ln, SLRoot, 1);
 	D->pChain = nullptr;
@@ -407,13 +418,16 @@ void EditReader::AutoDesign(std::vector<FieldDescr*>& FL)
 			}
 			if (edit_->Rows == 1) {
 				edit_->NHdTxt = 0;
-				edit_->HdTxt = nullptr;
+				edit_->HdTxt.clear();
 			}
 		}
 		else if (er.N < edit_->Rows) {
 			s = "";
-			for (i = edit_->FrstCol; i <= edit_->LastCol; i++) s.Append('-');
-			SToSL(&er.SL, s);
+			for (i = edit_->FrstCol; i <= edit_->LastCol; i++) {
+				s.Append('-');
+			}
+			//SToSL(&er.SL, s);
+			er.SL.push_back(s);
 			er.N++;
 		}
 	}

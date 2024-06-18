@@ -1302,7 +1302,7 @@ void DataEditor::SetNewCRec(int N, bool withRead)
 	if (withRead) RdRec(CRec());
 }
 
-void DataEditor::WriteSL(StringListEl* SL)
+void DataEditor::WriteSL(std::vector<std::string>& SL)
 {
 	while (SL != nullptr) {
 		WORD row = screen.WhereY();
@@ -2193,7 +2193,7 @@ bool DataEditor::ForNavigate(FileD* FD)
 	return result;
 }
 
-std::string DataEditor::GetFileViewName(FileD* FD, StringListEl** SL)
+std::string DataEditor::GetFileViewName(FileD* FD, std::vector<std::string>& SL)
 {
 	if (*SL == nullptr) { return FD->Name; }
 	std::string result = "\x1"; // ^A

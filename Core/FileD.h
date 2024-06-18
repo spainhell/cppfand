@@ -4,7 +4,6 @@
 #include "../fandio/FandFile.h"
 
 class FieldDescr;
-struct StringListEl;
 class AddD;
 
 enum class FType
@@ -47,7 +46,7 @@ public:
 	std::vector<FieldDescr*> FldD;
 	std::vector<XKey*> Keys;
 	std::vector<AddD*> Add;
-	StringListEl* ViewNames = nullptr;  //after each string BYTE string with user codes 
+	std::vector<std::string> ViewNames;  //after each string BYTE string with user codes 
 
 	WORD GetNrKeys();
 	void Reset();

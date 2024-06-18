@@ -20,7 +20,7 @@ public:
     pstring ReadWStr(int& Pos);
     int StoreDirD(std::string RDir);
     void SetDir(std::string RDir);
-    void Get1Dir(StringList Msk, int D, int& DLast);
+    void Get1Dir(std::vector<std::string>& Msk, int D, int& DLast);
     void GetDirs(LongStr* Mask);
     void Reset();
     void Rewrite();
