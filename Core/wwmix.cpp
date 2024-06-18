@@ -109,29 +109,35 @@ void wwmix::SelectStr(short C1, short R1, WORD NMsg, std::string LowTxt)
 		WHasFrame + WDoubleFrame + WShadow + WPushPixel);
 	if (ss.Empty) {
 		do {
-			ReadKbd();
-		} while (Event.Pressed.KeyCombination() != __ESC);
-		goto label3;
-	}
-	sv.TabSize = sv.MaxItemLen + 2;
-	if (ss.Subset) sv.TabSize++;
-	sv.Tabs = cols / sv.TabSize;
-	sv.WwSize = sv.Tabs * rows;
-	MaxBase = 1;
-	while (MaxBase + sv.WwSize <= sv.NItems) MaxBase += sv.Tabs;
-	if (ss.Abcd) AbcdSort();
-	if (ss.AscDesc) {
-		schar = '<';
+			key = ReadKbd();
+		} while (key != __ESC);
+
+		Event.What = evKeyDown;
+		Event.Pressed.UpdateKey(__ESC);
+
+		//goto label3;
 	}
 	else {
-		schar = 0x10;
+		sv.TabSize = sv.MaxItemLen + 2;
+		if (ss.Subset) sv.TabSize++;
+		sv.Tabs = cols / sv.TabSize;
+		sv.WwSize = sv.Tabs * rows;
+		MaxBase = 1;
+		while (MaxBase + sv.WwSize <= sv.NItems) MaxBase += sv.Tabs;
+		if (ss.Abcd) AbcdSort();
+		if (ss.AscDesc) {
+			schar = '<';
+		}
+		else {
+			schar = 0x10;
+		}
+		SetFirstiItem();
+		sv.Base = sv.iItem - (sv.iItem - 1) % sv.WwSize;
+		DisplWw();
+		iOld = 0;
+	label1:
+		GetEvent();
 	}
-	SetFirstiItem();
-	sv.Base = sv.iItem - (sv.iItem - 1) % sv.WwSize;
-	DisplWw();
-	iOld = 0;
-label1:
-	GetEvent();
 	switch (Event.What) {
 	case evMouseMove: {
 		if ((iOld != 0) && MouseInItem(i) && (i != iOld)) {
@@ -152,12 +158,16 @@ label1:
 				iOld = i;
 				DisplWw();
 			}
-			else goto label2;
+			else {
+				Event.Pressed.UpdateKey(__ENTER);
+				sv.iItem = i;
+				goto label3;
+			}
 		}
 		else {
 			if (ss.Subset && ((Event.Buttons & mbDoubleClick) != 0)) {
-			label2:
-				Event.Pressed.Char = VK_RETURN;
+				//Event.Pressed.Char = VK_RETURN;
+				Event.Pressed.UpdateKey(__ENTER);
 				sv.iItem = i;
 				goto label3;
 			}
@@ -165,7 +175,8 @@ label1:
 		break;
 	}
 	case evMouseUp: {
-		iOld = 0; break;
+		iOld = 0;
+		break;
 	}
 	case evKeyDown: {
 		key = Event.Pressed.KeyCombination();

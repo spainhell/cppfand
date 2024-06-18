@@ -2306,6 +2306,7 @@ void DataEditor::UpwEdit(LinkD* LkD)
 				do {
 					s1 = data_editor2->GetFileViewName(ToFD, &SL) + s;
 					ww.PutSelect(s1);
+					data_editor2->CFld = this->CFld;
 					data_editor2->SetPointTo(ld, &s1, &s2);
 				} while (SL != nullptr);
 			}
@@ -2324,16 +2325,18 @@ void DataEditor::UpwEdit(LinkD* LkD)
 
 		LD = nullptr;
 		for (auto& ld : LinkDRoot) {
-			if (ld->FromFD == data_editor2->file_d_
+			if (ld->FromFD == this->file_d_
 				&& data_editor2->EquRoleName(s2, ld)
 				&& data_editor2->EquFileViewName(ld->ToFD, s1, &EO)) {
 				LD = ld;
+				data_editor2->SetFileD(ld->ToFD);
 				break;
 			}
 		}
 
 	}
 	else {
+		data_editor2->SetFileD(LkD->ToFD);
 		LD = LkD;
 		EO = new EditOpt();
 		EO->UserSelFlds = false;
@@ -2353,7 +2356,7 @@ void DataEditor::UpwEdit(LinkD* LkD)
 		}
 		EO->SetOnlyView = true;
 	}
-	x.PackKF(data_editor2->edit_->FD, LD->Args, data_editor2->record_);
+	x.PackKF(data_editor2->file_d_, LD->Args, data_editor2->record_);
 	px = &x;
 	K = LD->ToKey;
 
@@ -2365,7 +2368,6 @@ void DataEditor::UpwEdit(LinkD* LkD)
 	}
 
 	if (data_editor2->SelFldsForEO(EO, nullptr)) {
-		// tady by se zrejme mela vytvorit nova instance DataEditoru a volat vsechno v ni
 		EditReader* reader = new EditReader();
 		reader->NewEditD(LD->ToFD, EO, data_editor2->record_);
 		data_editor2->edit_ = reader->GetEditD();
@@ -4096,7 +4098,6 @@ void DataEditor::DownEdit()
 
 		data_editor2->file_d_ = LD->FromFD;
 		if (data_editor2->SelFldsForEO(EO, LD)) {
-			// tady by se zrejme mela vytvorit nova instance DataEditoru a volat vsechno v ni
 			EO->DownLD = LD;
 			EO->DownRecPtr = data_editor2->record_;
 			EditReader* reader = new EditReader();

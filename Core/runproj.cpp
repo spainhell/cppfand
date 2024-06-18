@@ -1436,7 +1436,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 
 							// compare old and new chapter code
 							if (old_chapter_code != chapter_code) {
-								if (old_txt_pos != 0) {
+								if (!ChptTF->CompileAll && old_txt_pos != 0) {
 									FileD* previous_decl = RdOldF(rdb_file, Name);
 
 									// transform the file
