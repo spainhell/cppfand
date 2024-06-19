@@ -23,7 +23,7 @@ void Merge::Read()
 	InpD* ID = nullptr;
 	FieldDescr* F = nullptr;
 	FileD* FD = nullptr;
-	KeyInD* KI = nullptr;
+	std::vector<KeyInD*> KI;
 	bool WasOi = false, WasSqlFile = false, CompLex = false;
 	ResetCompilePars();
 	g_compiler->RdLex();
@@ -81,13 +81,13 @@ void Merge::Read()
 			ID->Op = _const;
 			ID->OpErr = _const;
 			ID->OpWarn = _const;
-			KI = nullptr;
+			KI.clear();
 			ID->ForwRecPtr = report_compiler->processing_F->GetRecSpace();
 			FD->FF->RecPtr = report_compiler->processing_F->GetRecSpace();
 			if (Lexem == '(') {
 				report_compiler->RdLex();
 				g_compiler->processing_F = report_compiler->processing_F;
-				ID->Bool = report_compiler->RdKeyInBool(&KI, false, false, ID->SQLFilter, this);
+				ID->Bool = report_compiler->RdKeyInBool(KI, false, false, ID->SQLFilter, this);
 				report_compiler->Accept(')');
 			}
 			ID->Scan = new XScan(FD, CViewKey, KI, true);

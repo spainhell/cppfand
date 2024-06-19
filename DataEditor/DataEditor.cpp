@@ -798,14 +798,15 @@ bool DataEditor::CheckOwner(EditD* E)
 
 bool DataEditor::CheckKeyIn(EditD* E)
 {
-	KeyInD* k = edit_->KIRoot;
+	//KeyInD* k = edit_->KIRoot;
 	XString X;
 	//pstring* p1;
 	//pstring* p2;
 	auto result = true;
-	if (k == nullptr) return result;
+	if (edit_->KIRoot.empty()) return result;
 	X.PackKF(file_d_, edit_->VK->KFlds, record_);
-	while (k != nullptr) {
+	//while (k != nullptr) {
+	for (KeyInD* k : edit_->KIRoot) {
 		//p1 = k->X1; p2 = k->X2;
 		//if (p2 == nullptr) p2 = p1;
 		//if ((p1->length() <= X.S.length()) && (X.S.length() <= p2->length() + 0xFF)) return result;
@@ -815,7 +816,7 @@ bool DataEditor::CheckKeyIn(EditD* E)
 		else {
 			if ((k->X1.length() <= X.S.length()) && (X.S.length() <= k->X2.length() + 0xFF)) return result;
 		}
-		k = (KeyInD*)k->pChain;
+		//k = (KeyInD*)k->pChain;
 	}
 	result = false;
 	return result;
@@ -1415,7 +1416,7 @@ void DataEditor::BuildWork()
 	WK->Open(file_d_, KF, dupl, intvl);
 	if (params_->OnlyAppend) return;
 	FrmlElem* boolP = edit_->Cond;
-	KeyInD* ki = edit_->KIRoot;
+	//KeyInD* ki = edit_->KIRoot;
 	XWKey* wk2 = nullptr;
 	MarkStore(p);
 	bool ok = false;
@@ -1426,7 +1427,8 @@ void DataEditor::BuildWork()
 	try {
 		XScan* Scan;
 		if (edit_->DownSet) {
-			Scan = new XScan(file_d_, edit_->DownKey, nullptr, false);
+			std::vector<KeyInD*> empty;
+			Scan = new XScan(file_d_, edit_->DownKey, empty, false);
 			if (edit_->OwnerTyp == 'i') {
 				Scan->ResetOwnerIndex(edit_->DownLD, edit_->DownLV, boolP);
 			}
@@ -1434,11 +1436,11 @@ void DataEditor::BuildWork()
 				xx.PackKF(edit_->DownLD->ToFD, edit_->DownLD->ToKey->KFlds, edit_->DownRecPtr);
 				Scan->ResetOwner(&xx, boolP);
 			}
-			if (ki != nullptr) {
+			if (!edit_->KIRoot.empty()) {
 				wk2 = new XWKey(file_d_);
 				wk2->Open(file_d_, KF, true, false);
 				file_d_->FF->CreateWIndex(Scan, wk2, 'W');
-				XScan* Scan2 = new XScan(file_d_, wk2, ki, false);
+				XScan* Scan2 = new XScan(file_d_, wk2, edit_->KIRoot, false);
 				Scan2->Reset(nullptr, false, record_);
 				Scan = Scan2;
 			}
@@ -1454,8 +1456,8 @@ void DataEditor::BuildWork()
 				file_d_->IsSQLFile ||
 #endif
 				(boolP != nullptr))
-				if ((K != nullptr) && !K->InWork && (ki == nullptr)) K = nullptr;
-			Scan = new XScan(file_d_, K, ki, false);
+				if ((K != nullptr) && !K->InWork && (edit_->KIRoot.empty())) K = nullptr;
+			Scan = new XScan(file_d_, K, edit_->KIRoot, false);
 			Scan->Reset(boolP, edit_->SQLFilter, record_);
 		}
 		file_d_->FF->CreateWIndex(Scan, WK, 'W');
@@ -1569,7 +1571,7 @@ bool DataEditor::OpenEditWw()
 			file_d_->FF->TestXFExist();
 		}
 		md = NoDelMode;
-		if (params_->OnlyAppend || (edit_->Cond != nullptr) || (edit_->KIRoot != nullptr) || edit_->DownSet ||
+		if (params_->OnlyAppend || (edit_->Cond != nullptr) || (!edit_->KIRoot.empty()) || edit_->DownSet ||
 			params_->MakeWorkX && HasIndex && file_d_->FF->NotCached() && !params_->Only1Record)
 		{
 			params_->Subset = true;
@@ -1764,7 +1766,8 @@ void DataEditor::UpdMemberRef(void* POld, void* PNew)
 			if (PNew != nullptr) {
 				p2 = LD->FromFD->GetRecSpace();
 			}
-			Scan = new XScan(LD->FromFD, k, nullptr, true);
+			std::vector<KeyInD*> empty;
+			Scan = new XScan(LD->FromFD, k, empty, true);
 			Scan->ResetOwner(&xold, nullptr);
 #ifdef FandSQL
 			if (!sql)

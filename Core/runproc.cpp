@@ -773,7 +773,8 @@ void LinkRecProc(Instr_assign* PD)
 void ForAllProc(Instr_forall* PD)
 {
 	FileD* FD = nullptr; XKey* Key = nullptr; XKey* k = nullptr; FrmlElem* Bool = nullptr;
-	LinkD* LD = nullptr; KeyInD* KI = nullptr;
+	LinkD* LD = nullptr;
+	//KeyInD* KI = nullptr;
 	void* cr = nullptr; void* p = nullptr; void* lr = nullptr;
 	XScan* xScan = nullptr; LockMode md, md1; XString xx;
 	KeyFldD* KF = nullptr; LocVar* LVi = nullptr; LocVar* LVr = nullptr;
@@ -784,7 +785,8 @@ void ForAllProc(Instr_forall* PD)
 	MarkStore(p);
 	FD = PD->CFD; Key = PD->CKey;
 	LVi = PD->CVar; LVr = PD->CRecVar;
-	LD = PD->CLD; KI = PD->CKIRoot;
+	LD = PD->CLD;
+	//KI = PD->CKIRoot;
 	Bool = RunEvalFrml(CFile, PD->CBool, CRecPtr);
 	lk = false;
 #ifdef FandSQL
@@ -816,7 +818,7 @@ void ForAllProc(Instr_forall* PD)
 	md = CFile->NewLockMode(RdMode);
 	cr = CFile->GetRecSpace();
 	CRecPtr = cr; lr = cr;
-	xScan = new XScan(CFile, Key, KI, true);
+	xScan = new XScan(CFile, Key, PD->CKIRoot, true);
 #ifdef FandSQL
 	if (PD->inSQL) Scan->ResetSQLTxt(Bool); else
 #endif

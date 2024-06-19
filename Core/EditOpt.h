@@ -49,7 +49,7 @@ public:
 	LocVar* DownLV = nullptr;
 	void* DownRecPtr = nullptr;
 	void* LVRecPtr = nullptr;
-	KeyInD* KIRoot = nullptr;
+	std::vector<KeyInD*> KIRoot;
 	bool SQLFilter = false;
 	XKey* SelKey = nullptr;
 	XKey* ViewKey = nullptr;

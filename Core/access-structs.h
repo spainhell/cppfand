@@ -38,7 +38,7 @@ typedef FieldListEl* FieldList;
 //};
 // std::vector<XKey*>
 
-struct KeyInD : public Chained<KeyInD>
+struct KeyInD
 {
 	std::vector<FrmlElem*> FL1;
 	std::vector<FrmlElem*> FL2;

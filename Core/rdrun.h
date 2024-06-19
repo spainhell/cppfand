@@ -98,7 +98,7 @@ struct RprtFDListEl
 	FileD* FD = nullptr;
 	XKey* ViewKey = nullptr;
 	FrmlElem* Cond = nullptr;
-	KeyInD* KeyIn = nullptr;
+	std::vector<KeyInD*> KeyIn;
 	bool SQLFilter = false;
 	void* LVRecPtr = nullptr;
 };

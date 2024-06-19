@@ -851,7 +851,8 @@ int FandFile::CreateIndexFile()
 		XF->RdPrefix();
 		if (XF->NotValid) {
 			XF->SetEmpty(NRecs, _parent->GetNrKeys());
-			XScan* scan = new XScan(_parent, nullptr, nullptr, false);
+			std::vector<KeyInD*> empty;
+			XScan* scan = new XScan(_parent, nullptr, empty, false);
 			BYTE* record = _parent->GetRecSpace();
 			scan->Reset(nullptr, false, record);
 			XWorkFile* XW = new XWorkFile(_parent, scan, _parent->Keys[0]);
@@ -1121,7 +1122,8 @@ void FandFile::SortAndSubst(KeyFldD* SK)
 {
 	BYTE* record = _parent->GetRecSpace();
 
-	XScan* Scan = new XScan(_parent, nullptr, nullptr, false);
+	std::vector<KeyInD*> empty;
+	XScan* Scan = new XScan(_parent, nullptr, empty, false);
 	Scan->Reset(nullptr, false, record);
 	ScanSubstWIndex(Scan, SK, 'S');
 	FileD* FD2 = _parent->OpenDuplicateF(false);
@@ -1145,7 +1147,8 @@ void FandFile::CopyIndex(XWKey* K, XKey* FromK)
 
 	K->Release(_parent);
 	LockMode md = _parent->NewLockMode(RdMode);
-	XScan* Scan = new XScan(_parent, FromK, nullptr, false);
+	std::vector<KeyInD*> empty;
+	XScan* Scan = new XScan(_parent, FromK, empty, false);
 	Scan->Reset(nullptr, false, record);
 	CreateWIndex(Scan, K, 'W');
 	_parent->OldLockMode(md);

@@ -324,7 +324,8 @@ void ExportTxt(CopyD* CD)
 		CFile = CD->FD1;
 		CRecPtr = CD->FD1->GetRecSpace();
 		md = CFile->NewLockMode(RdMode);
-		Scan = new XScan(CFile, CD->ViewKey, nullptr, true);
+		std::vector<KeyInD*> empty;
+		Scan = new XScan(CFile, CD->ViewKey, empty, true);
 		Scan->Reset(nullptr, false, CRecPtr);
 		RunMsgOn('C', Scan->NRecs);
 		while (true) {

@@ -27,7 +27,8 @@ Report::~Report()
 
 void Report::Read(RprtOpt* RO)
 {
-	KeyInD* KI = nullptr; BlkD* B = nullptr;
+	std::vector<KeyInD*> KI;
+	BlkD* B = nullptr;
 	InpD* ID = nullptr; LvDescr* L = nullptr;
 	std::string s;
 
@@ -127,7 +128,7 @@ void Report::Read(RprtOpt* RO)
 			ID->Op = _const;
 			ID->OpErr = _const;
 			ID->OpWarn = _const;
-			KI = nullptr;
+			KI.clear();
 			ID->ForwRecPtr = report_compiler->processing_F->GetRecSpace();
 			FD->FF->RecPtr = report_compiler->processing_F->GetRecSpace();
 
@@ -139,13 +140,13 @@ void Report::Read(RprtOpt* RO)
 				}
 				else {
 					g_compiler->processing_F = report_compiler->processing_F;
-					ID->Bool = report_compiler->RdKeyInBool(&KI, false, false, ID->SQLFilter, this);
+					ID->Bool = report_compiler->RdKeyInBool(KI, false, false, ID->SQLFilter, this);
 				}
 				report_compiler->Accept(')');
 			}
 
 			if ((FDL != nullptr) && (FDL->LVRecPtr == nullptr) &&
-				((FDL->Cond != nullptr) || (FDL->KeyIn != nullptr) || (Ii == 1) && RO->UserCondQuest)) {
+				((FDL->Cond != nullptr) || (!FDL->KeyIn.empty()) || (Ii == 1) && RO->UserCondQuest)) {
 				ID->Bool = RunEvalFrml(FD, FDL->Cond, FD->FF->RecPtr);
 				KI = FDL->KeyIn;
 				ID->SQLFilter = FDL->SQLFilter;

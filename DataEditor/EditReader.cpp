@@ -580,7 +580,7 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec)
 		edit_->params_->NoDelete = true;
 		edit_->params_->NoCreate = true;
 		edit_->Journal = nullptr;
-		edit_->KIRoot = nullptr;
+		edit_->KIRoot.clear();
 	}
 	else {
 		if (file_d == nullptr) {

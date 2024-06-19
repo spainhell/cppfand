@@ -2330,12 +2330,13 @@ std::vector<FrmlElem*> Compiler::RdFL(bool NewMyBP, std::vector<FrmlElem*>& FL1)
 	return result;
 }
 
-FrmlElem* Compiler::RdKeyInBool(KeyInD** KIRoot, bool NewMyBP, bool FromRdProc, bool& SQLFilter, MergeReportBase* caller)
+FrmlElem* Compiler::RdKeyInBool(std::vector<KeyInD*>& KIRoot, bool NewMyBP, bool FromRdProc, bool& SQLFilter, MergeReportBase* caller)
 {
 	KeyInD* KI = nullptr; WORD l = 0; char FTyp = '\0';
 	FrmlElem* Z = nullptr; bool FVA = false;
 	FrmlElem* result = nullptr;
-	*KIRoot = nullptr; SQLFilter = false;
+	KIRoot.clear();
+	SQLFilter = false;
 
 	if (FromRdProc) {
 		FVA = FileVarsAllowed;
@@ -2357,9 +2358,10 @@ FrmlElem* Compiler::RdKeyInBool(KeyInD** KIRoot, bool NewMyBP, bool FromRdProc, 
 		l = CViewKey->IndexLen + 1;
 	label1:
 		KI = new KeyInD();
-		if (*KIRoot == nullptr) *KIRoot = KI;
-		else ChainLast(*KIRoot, KI);
+		//if (*KIRoot == nullptr) *KIRoot = KI;
+		//else ChainLast(*KIRoot, KI);
 		KI->FL1 = RdFL(NewMyBP);
+		KIRoot.push_back(KI);
 		if (Lexem == _subrange) {
 			RdLex();
 			KI->FL2 = RdFL(NewMyBP, KI->FL1);

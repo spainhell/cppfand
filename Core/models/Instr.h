@@ -300,7 +300,7 @@ public:
 	FrmlElem* condition = nullptr; /* || RecNr-Frml */
 	XKey* keys = nullptr;
 	KeyFldD* key_fields = nullptr;
-	KeyInD* key_in_root = nullptr;
+	std::vector<KeyInD*> key_in_root;
 	bool sql_filter = false;
 	char owner_type = '\0';
 	LinkD* link = nullptr;
@@ -338,7 +338,7 @@ public:
 	XKey* CKey = nullptr;
 	LocVar* CVar = nullptr;
 	LocVar* CRecVar = nullptr;
-	KeyInD* CKIRoot = nullptr;
+	std::vector<KeyInD*> CKIRoot;
 	FrmlElem* CBool = nullptr; /*or SQLTxt*/
 	std::vector<Instr*> CInstr;
 	LinkD* CLD = nullptr;

@@ -14,7 +14,7 @@ public:
 	unsigned char Kind = 0;
 	int NRecs = 0, IRec = 0, RecNr = 0;
 	bool hasSQLFilter = false, eof = false;
-	XScan(FileD* aFD, XKey* aKey, KeyInD* aKIRoot, bool aWithT);
+	XScan(FileD* aFD, XKey* aKey, std::vector<KeyInD*>& aKIRoot, bool aWithT);
 	void Reset(FrmlElem* ABool, bool SQLFilter, void* record);
 	void ResetSort(KeyFldD* aSK, FrmlElem* BoolZ, LockMode OldMd, bool SQLFilter, void* record);
 	void SubstWIndex(XWKey* WK);
@@ -28,7 +28,7 @@ public:
 	void SeekRec(int I);
 	void GetRec(void* record);
 private:
-	KeyInD* KIRoot = nullptr;
+	std::vector<KeyInD*> KIRoot;
 	LocVar* OwnerLV = nullptr;
 	KeyFldD* SK = nullptr;
 	size_t _item = 1;

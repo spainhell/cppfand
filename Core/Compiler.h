@@ -85,7 +85,7 @@ public:
 	void TestString(char FTyp);
 	void TestReal(char FTyp);
 	FrmlElem* RdFrml(char& FTyp, MergeReportBase* caller);
-	FrmlElem* RdKeyInBool(KeyInD** KIRoot, bool NewMyBP, bool FromRdProc, bool& SQLFilter, MergeReportBase* caller);
+	FrmlElem* RdKeyInBool(std::vector<KeyInD*>& KIRoot, bool NewMyBP, bool FromRdProc, bool& SQLFilter, MergeReportBase* caller);
 	FrmlElem* RdBool(MergeReportBase* caller);
 	FrmlElem* RdRealFrml(MergeReportBase* caller);
 	FrmlElem* RdStrFrml(MergeReportBase* caller);
