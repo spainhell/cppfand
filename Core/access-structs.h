@@ -31,12 +31,13 @@ typedef FrmlListEl* FrmlList;
 //};
 //typedef StringListEl* StringList;
 
-struct KeyListEl : public Chained<KeyListEl>
-{
-	XKey* Key = nullptr;
-};
+//struct KeyListEl : public Chained<KeyListEl>
+//{
+//	XKey* Key = nullptr;
+//};
+// std::vector<XKey*>
 
-struct KeyInD : public Chained<KeyListEl>
+struct KeyInD : public Chained<KeyInD>
 {
 	FrmlListEl* FL1 = nullptr;
 	FrmlListEl* FL2 = nullptr;
@@ -56,14 +57,12 @@ struct ImplD : public Chained<ImplD>
 	FieldDescr* FldD = nullptr;
 	FrmlElem* Frml = nullptr;
 };
-typedef ImplD* ImplDPtr;
 
 struct LiRoots
 {
 	std::vector<ChkD*> Chks;
 	ImplD* Impls = nullptr;
 };
-typedef LiRoots* LiRootsPtr;
 
 struct DBaseFld
 {

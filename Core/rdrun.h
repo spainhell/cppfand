@@ -186,7 +186,7 @@ struct EFldD : public Chained<EFldD>
 	std::vector<ChkD*> Chk;
 	FrmlElem* Impl = nullptr;
 	std::vector<DepD*> Dep;
-	KeyListEl* KL = nullptr;
+	std::vector<XKey*> KL;
 	BYTE Page = 0, Col = 0, Ln = 0, L = 0;
 	WORD ScanNr = 0;
 	bool Tab = false, Dupl = false, Used = false;

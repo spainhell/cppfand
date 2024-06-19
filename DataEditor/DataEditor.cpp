@@ -2492,7 +2492,7 @@ bool DataEditor::OldRecDiffers()
 			f = f->pChain;
 		}
 		goto label2;
-}
+	}
 	else
 #endif
 
@@ -2668,7 +2668,7 @@ bool DataEditor::WriteCRec(bool MayDispl, bool& Displ)
 #ifdef FandSQL
 	if (file_d_->IsSQLFile) {
 		if (UpdSQLFile) goto label2; else goto label1;
-}
+	}
 #endif
 	if (HasIndex) {   /* test duplicate keys */
 		for (auto& K : file_d_->Keys) {
@@ -2762,7 +2762,7 @@ label2:
 label1:
 	UnLockWithDep(OldMd);
 	return result;
-	}
+}
 
 void DataEditor::DuplFromPrevRec()
 {
@@ -3289,7 +3289,6 @@ bool DataEditor::CtrlMProc(WORD Mode)
 	ChkD* C = nullptr;
 	EdExitD* X = nullptr;
 	WORD Brk = 0, NR = 0;
-	KeyListEl* KL = nullptr;
 	bool displ = false, skip = false, Quit = false, WasNewRec = false;
 	LockMode md;
 	char Typ = '\0';
@@ -3300,7 +3299,9 @@ bool DataEditor::CtrlMProc(WORD Mode)
 	auto result = true;
 	if (Mode == 0 /*only bypass unrelevant fields*/) goto label2;
 label1:
-	if (IsFirstEmptyFld()) FirstEmptyFld = (EFldD*)FirstEmptyFld->pChain;
+	if (IsFirstEmptyFld()) {
+		FirstEmptyFld =	FirstEmptyFld->pChain;
+	}
 	Quit = false;
 	if (!CheckForExit(Quit)) return result;
 	TextAttr = edit_->dHiLi;
@@ -3315,16 +3316,17 @@ label1:
 		}
 	}
 	if (params_->WasUpdated && !params_->EdRecVar && HasIndex) {
-		KL = CFld->KL;
-		while (KL != nullptr) {
+		//KL = CFld->KL;
+		//while (KL != nullptr) {
+		for (XKey* key : CFld->KL) {
 			md = file_d_->NewLockMode(RdMode);
-			b = TestDuplKey(file_d_, KL->Key);
+			b = TestDuplKey(file_d_, key);
 			file_d_->OldLockMode(md);
 			if (b) {
-				DuplKeyMsg(KL->Key);
+				DuplKeyMsg(key);
 				return result;
 			}
-			KL = KL->pChain;
+			//KL = KL->pChain;
 		}
 	}
 	if (Quit && !IsNewRec && (Mode == 1 || Mode == 3)) {
@@ -4146,9 +4148,9 @@ void DataEditor::DownEdit()
 		//while ((LD->ToFD != edit_->rdb_file) || (LD->IndexRoot == 0) || (s2 != ali)
 		//	|| !EquFileViewName(LD->FromFD, s1, options)) LD = LD->pChain;
 		for (auto& ld : LinkDRoot) {
-			if ((ld->ToFD != data_editor2->edit_->FD) 
-				|| (ld->IndexRoot == 0) 
-				|| (s2 != ali) 
+			if ((ld->ToFD != data_editor2->edit_->FD)
+				|| (ld->IndexRoot == 0)
+				|| (s2 != ali)
 				|| !data_editor2->EquFileViewName(ld->FromFD, s1, &EO)) {
 				continue;
 			}
@@ -4941,9 +4943,9 @@ label81:
 						if (file_d_->IsSQLFile) Strm1->EndKeyAcc(WK);
 #endif
 						file_d_->OldLockMode(edit_->OldMd);
-				}
+					}
 					return;
-			}
+				}
 				break;
 			}
 			case __ALT_EQUAL: {
@@ -5247,9 +5249,9 @@ label81:
 				}
 				//}
 			}
-		}
+			}
 			break;
-	}
+		}
 		break;
 	}
 	default: {
@@ -5257,7 +5259,7 @@ label81:
 		ClrEvent();
 		break;
 	}
-}
+	}
 	Event.What = evNothing;
 	goto label1;
 }

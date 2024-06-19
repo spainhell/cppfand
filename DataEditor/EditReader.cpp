@@ -994,28 +994,30 @@ std::string EditReader::StandardHead(EditD* edit)
 void EditReader::NewChkKey(FileD* file_d)
 {
 	//XKey* K = file_d_->Keys;
-	KeyFldD* KF = nullptr;
-	EFldD* D = nullptr;
-	KeyListEl* KL = nullptr;
-	for (auto& K : file_d->Keys) {
+	//EFldD* D;
+	//KeyListEl* KL = nullptr;
+	for (XKey* K : file_d->Keys) {
 		if (!K->Duplic) {
 			ZeroUsed();
-			KF = K->KFlds;
+			KeyFldD* KF = K->KFlds;
+
 			while (KF != nullptr) {
-				D = FindEFld_E(KF->FldD);
+				EFldD* D = FindEFld_E(KF->FldD);
 				if (D != nullptr) D->Used = true;
 				KF = KF->pChain;
 			}
-			D = LstUsedFld();
+
+			EFldD* D = LstUsedFld();
 			if (D != nullptr) {
-				KL = new KeyListEl();
-				if (D->KL == nullptr) {
-					D->KL = KL;
-				}
-				else {
-					ChainLast(D->KL, KL);
-				}
-				KL->Key = K;
+				//KL = new KeyListEl();
+				//if (D->KL == nullptr) {
+				//	D->KL = KL;
+				//}
+				//else {
+				//	ChainLast(D->KL, KL);
+				//}
+				//KL->Key = K;
+				D->KL.push_back(K);
 			}
 		}
 	}
