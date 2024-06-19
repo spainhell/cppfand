@@ -539,13 +539,14 @@ WORD PortIn(bool IsWord, WORD Port)
 
 LocVar* RunUserFunc(FileD* file_d, FrmlElemUserFunc* X, void* record)
 {
-	LocVar* return_lv = nullptr; // tady je pak ulozena posledni promenna, ktera je pak navratovou hodnotou
-	FrmlListEl* fl = X->FrmlL;
+	LocVar* return_lv = nullptr; // tady bude ulozena posledni promenna, ktera je pak navratovou hodnotou
 
-	for (LocVar* lv : X->FC->LVB.vLocVar) {
+	//for (LocVar* lv : X->FC->LVB.vLocVar) {
+	for (size_t i = 0; i < X->FC->LVB.vLocVar.size(); i++) {
+		LocVar* lv = X->FC->LVB.vLocVar[i];
 		if (lv->is_param || lv->is_return_param) {
 			// parameter or return parameter variable -> assign value
-			LVAssignFrml(file_d, lv, false, fl->Frml, record);
+			LVAssignFrml(file_d, lv, false, X->FrmlL[i], record);
 		}
 		else if (lv->is_return_value) {
 			// it's return value -> initialize it and mark it
@@ -560,7 +561,9 @@ LocVar* RunUserFunc(FileD* file_d, FrmlElemUserFunc* X, void* record)
 			lv->R = 0.0;
 			lv->S = "";
 		}
-		if (fl != nullptr) fl = fl->pChain;
+		//if (fl != nullptr) {
+		//	fl = fl->pChain;
+		//}
 	}
 
 	RunProcedure(X->FC->v_instr);
