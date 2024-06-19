@@ -48,7 +48,7 @@ struct GraphD
 	GraphVD* V;
 	GraphWD* W;
 	GraphRGBD* RGB;
-	KeyInD* KeyIn;
+	std::vector<KeyInD*> KeyIn;
 	bool SQLFilter;
 	XKey* ViewKey;
 	WinG* WW;

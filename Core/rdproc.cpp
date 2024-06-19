@@ -899,8 +899,8 @@ Instr_forall* RdForAll()
 		g_compiler->processing_F = processed_file;
 		if (Lexem == '(') {
 			g_compiler->RdLex();
-			PD->CBool = g_compiler->RdKeyInBool(&PD->CKIRoot, false, true, PD->CSQLFilter, nullptr);
-			if ((PD->CKIRoot != nullptr) && (PD->CLV != nullptr)) g_compiler->OldError(118);
+			PD->CBool = g_compiler->RdKeyInBool(PD->CKIRoot, false, true, PD->CSQLFilter, nullptr);
+			if ((!PD->CKIRoot.empty()) && (PD->CLV != nullptr)) g_compiler->OldError(118);
 			g_compiler->Accept(')');
 		}
 		if (Lexem == '!') {
@@ -1209,11 +1209,11 @@ bool RdViewOpt(EditOpt* EO, FileD* file_d)
 	else if (local_compiler->IsOpt("COND")) {
 		if (Lexem == '(') {
 			local_compiler->RdLex();
-			EO->Cond = local_compiler->RdKeyInBool(&EO->KIRoot, false, true, EO->SQLFilter, nullptr);
+			EO->Cond = local_compiler->RdKeyInBool(EO->KIRoot, false, true, EO->SQLFilter, nullptr);
 			local_compiler->Accept(')');
 		}
 		else {
-			EO->Cond = local_compiler->RdKeyInBool(&EO->KIRoot, false, true, EO->SQLFilter, nullptr);
+			EO->Cond = local_compiler->RdKeyInBool(EO->KIRoot, false, true, EO->SQLFilter, nullptr);
 		}
 	}
 	else if (local_compiler->IsOpt("JOURNAL")) {
@@ -1590,7 +1590,7 @@ void RdEditOpt(EditOpt* EO, FileD* file_d)
 		g_compiler->Error(125);
 	}
 	else if (g_compiler->IsOpt("OWNER")) {
-		if (EO->SQLFilter || (EO->KIRoot != nullptr)) {
+		if (EO->SQLFilter || (!EO->KIRoot.empty())) {
 			g_compiler->OldError(179);
 		}
 		EO->OwnerTyp = RdOwner(file_d, &EO->DownLD, &EO->DownLV);
@@ -1604,7 +1604,7 @@ void RdEditOpt(EditOpt* EO, FileD* file_d)
 #endif
 		g_compiler->IsOpt("RECNO")) {
 		EO->StartRecNoZ = g_compiler->RdRealFrml(nullptr);
-}
+	}
 	else if (g_compiler->IsOpt("IREC")) {
 		EO->StartIRecZ = g_compiler->RdRealFrml(nullptr);
 	}
@@ -1664,7 +1664,7 @@ Instr* RdReportCall()
 				FDL->ViewKey = CViewKey;
 				if (Lexem == '(') {
 					g_compiler->RdLex();
-					FDL->Cond = g_compiler->RdKeyInBool(&FDL->KeyIn, true, true, FDL->SQLFilter, nullptr);
+					FDL->Cond = g_compiler->RdKeyInBool(FDL->KeyIn, true, true, FDL->SQLFilter, nullptr);
 					g_compiler->Accept(')');
 				}
 			}
@@ -1779,7 +1779,7 @@ void RdRprtOpt(RprtOpt* RO, bool has_first)
 				return;
 			}
 		}
-		RO->FDL.Cond = g_compiler->RdKeyInBool(&RO->FDL.KeyIn, true, true, RO->FDL.SQLFilter, nullptr);
+		RO->FDL.Cond = g_compiler->RdKeyInBool(RO->FDL.KeyIn, true, true, RO->FDL.SQLFilter, nullptr);
 		N = OldErrPos - Low;
 		RO->CondTxt = std::string((const char*)&InpArrPtr[Low], N);
 
@@ -2220,7 +2220,7 @@ Instr* RdGetIndex()
 		}
 		else if (g_compiler->IsOpt("COND")) {
 			g_compiler->Accept('(');
-			PD->condition = g_compiler->RdKeyInBool(&PD->key_in_root, false, true, PD->sql_filter, nullptr);
+			PD->condition = g_compiler->RdKeyInBool(PD->key_in_root, false, true, PD->sql_filter, nullptr);
 			g_compiler->Accept(')');
 		}
 		else if (g_compiler->IsOpt("OWNER")) {
@@ -2230,8 +2230,9 @@ Instr* RdGetIndex()
 			else if (CViewKey != k) g_compiler->OldError(178);
 		}
 		else g_compiler->Error(167);
-		if ((PD->owner_type != 0) && (PD->sql_filter || (PD->key_in_root != nullptr)))
+		if ((PD->owner_type != 0) && (PD->sql_filter || !PD->key_in_root.empty())) {
 			g_compiler->Error(179);
+		}
 	}
 	return PD;
 }
@@ -2350,10 +2351,10 @@ Instr_graph* RdGraphP()
 		else if (g_compiler->IsOpt("COND")) {
 			if (Lexem == '(') {
 				g_compiler->RdLex();
-				PDGD->Cond = g_compiler->RdKeyInBool(&PDGD->KeyIn, false, true, PDGD->SQLFilter, nullptr);
+				PDGD->Cond = g_compiler->RdKeyInBool(PDGD->KeyIn, false, true, PDGD->SQLFilter, nullptr);
 				g_compiler->Accept(')');
 			}
-			else PDGD->Cond = g_compiler->RdKeyInBool(&PDGD->KeyIn, false, true, PDGD->SQLFilter, nullptr);
+			else PDGD->Cond = g_compiler->RdKeyInBool(PDGD->KeyIn, false, true, PDGD->SQLFilter, nullptr);
 		}
 		else if (g_compiler->IsOpt("TXT")) {
 			VD = new GraphVD();
@@ -2430,8 +2431,8 @@ Instr_recs* RdMixRecAcc(PInstrCode Op)
 		if (Op == PInstrCode::_recallrec) {
 			g_compiler->Accept(',');
 			PD->RecNr = g_compiler->RdRealFrml(nullptr);
+		}
 	}
-}
 	else {
 		// PD = GetPD(oper, 15);
 		PD = new Instr_recs(Op);
@@ -2483,7 +2484,7 @@ Instr_recs* RdMixRecAcc(PInstrCode Op)
 	}
 	CFile = cf;
 	return PD;
-		}
+}
 
 Instr* RdLinkRec()
 {
@@ -3121,7 +3122,7 @@ void RdSqlRdWrTxt(bool Rd)
 	XKey* k = RdViewKey(); if (k == nullptr) k = CFile->Keys; pd->sqlKey = k; Accept(',');
 	pd->sqlFldD = RdFldName(CFile); Accept(','); pd->sqlXStr = RdStrFrml();
 	if (!pd->sqlFD->typSQLFile || (pd->sqlFldD->field_type != 'T')) OldError(170);
-	}
+}
 #endif
 
 Instr* RdCallLProc()
