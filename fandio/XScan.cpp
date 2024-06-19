@@ -186,12 +186,14 @@ void XScan::ResetOwner(XString* XX, FrmlElem* aBool)
 #endif
 	{
 		FD->FF->TestXFExist();
-		KIRoot = new KeyInD(); // (KeyInD*)GetZStore(sizeof(*KIRoot));
-		Key->FindNr(FD, XX->S, KIRoot->XNrBeg);
+		KeyInD* new_key_in = new KeyInD();
+		//KIRoot = new KeyInD(); // (KeyInD*)GetZStore(sizeof(*KIRoot));
+		KIRoot.push_back(new_key_in);
+		Key->FindNr(FD, XX->S, new_key_in->XNrBeg);
 		AddFFs(Key, XX->S);
 		b = Key->FindNr(FD, XX->S, n);
-		NRecs = n - KIRoot->XNrBeg + b;
-		KIRoot->N = NRecs;
+		NRecs = n - new_key_in->XNrBeg + b;
+		new_key_in->N = NRecs;
 		Kind = 2;
 	}
 	SeekRec(0);
@@ -236,7 +238,6 @@ void XScan::Close()
 
 void XScan::SeekRec(int I)
 {
-	KeyInD* k = nullptr;
 	FrmlElem* z = nullptr;
 
 #ifdef FandSQL
@@ -265,17 +266,19 @@ void XScan::SeekRec(int I)
 		switch (Kind) {
 		case 1:
 		case 3: {
-			Key->NrToPath(FD, I + 1); /* !!! with XPath[XPathN] do!!! */
+			Key->NrToPath(FD, I + 1);
 			SeekOnPage(XPath[XPathN].Page, XPath[XPathN].I);
 			break;
 		}
 		case 2: {
-			k = KIRoot;
-			while (I >= k->N) {
-				I -= k->N;
-				k = (KeyInD*)k->pChain;
+			//k = KIRoot;
+			std::vector<KeyInD*>::iterator key_in = KIRoot.begin();
+			while (I >= (*key_in)->N) {
+				I -= (*key_in)->N;
+				//k = (KeyInD*)k->pChain;
+				++key_in;
 			}
-			KI = k;
+			KI = key_in;
 			SeekOnKI(I);
 			break;
 		}
@@ -285,8 +288,8 @@ void XScan::SeekRec(int I)
 
 void XScan::SeekOnKI(int I)
 {
-	NOfKI = KI->N - I;
-	Key->NrToPath(FD, KI->XNrBeg + I);
+	NOfKI = (*KI)->N - I;
+	Key->NrToPath(FD, (*KI)->XNrBeg + I);
 	SeekOnPage(XPath[XPathN].Page, XPath[XPathN].I);
 }
 
@@ -330,10 +333,10 @@ void XScan::NextIntvl()
 	}
 	else {
 		do {
-			KI = (KeyInD*)KI->pChain;
-		} while (!((KI == nullptr) || (KI->N > 0)));
+			++KI;
+		} while (!(KI == KIRoot.end() || (*KI)->N > 0));
 
-		if (KI != nullptr) {
+		if (KI != KIRoot.end()) {
 			SeekOnKI(0);
 		}
 	}
@@ -348,7 +351,7 @@ void XScan::GetRec(void* record)
 		repeat EOF = !SQLStreamPtr(Strm)->GetRec
 			until EOF || hasSQLFilter || RunBool(Bool);
 		inc(i_rec); return;
-	}
+}
 #endif
 
 	while (true) {

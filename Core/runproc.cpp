@@ -1660,7 +1660,7 @@ void CallProcedure(Instr_proc* PD)
 
 #ifdef _DEBUG
 	std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
-	if (srcCode.find("(Kl:string) begin proc(Tip00,(kl)); end;") != std::string::npos) {
+	if (srcCode.find("pgm:='begin report('+soubor+cond(Index<>'':'/'+Index)+',(?),'+cond(Filtr<>'':'cond=('+Filtr+'),')+'head='''+hd+''',assign=SEST) end;';") != std::string::npos) {
 		printf("");
 	}
 #endif

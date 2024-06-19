@@ -51,7 +51,8 @@ double Owned(FileD* file_d, FrmlElem* Bool, FrmlElem* Sum, LinkD* LD, void* reco
 	else {
 		r = 0;
 		BYTE* newRecord = fromFD->GetRecSpace();
-		XScan* Scan = new XScan(fromFD, K, nullptr, true);
+		std::vector<KeyInD*> empty;
+		XScan* Scan = new XScan(fromFD, K, empty, true);
 		Scan->ResetOwner(&x, nullptr);
 		while (true) {
 			Scan->GetRec(newRecord);

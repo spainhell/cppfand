@@ -34,7 +34,7 @@ private:
 	size_t _item = 1;
 	XPage* page_ = nullptr;
 	unsigned short items_on_page_ = 0;
-	KeyInD* KI = nullptr;
+	std::vector<KeyInD*>::iterator KI;
 	int NOfKI = 0, iOKey = 0;
 	bool TempWX = false;
 	bool NotFrst = false;
