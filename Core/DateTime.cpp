@@ -19,11 +19,11 @@ void EncodeMask(std::string& mask, WORD& min, WORD& max)
 	}
 }
 
-void AnalDateMask(std::string& mask, WORD& i, WORD& i_date, WORD& n)
+void AnalDateMask(const std::string& mask, WORD& i, WORD& i_date, WORD& n)
 {
 	n = 0;
 
-	if (mask[i - 1] <= 6) {
+	if (static_cast<uint8_t>(mask[i - 1]) <= 6) {
 		i_date = static_cast<uint8_t>(mask[i - 1]);
 		do {
 			i++; n++;

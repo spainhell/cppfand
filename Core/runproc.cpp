@@ -1660,7 +1660,7 @@ void CallProcedure(Instr_proc* PD)
 
 #ifdef _DEBUG
 	std::string srcCode = std::string((char*)InpArrPtr, InpArrLen);
-	if (srcCode.find("pgm:='begin report('+soubor+cond(Index<>'':'/'+Index)+',(?),'+cond(Filtr<>'':'cond=('+Filtr+'),')+'head='''+hd+''',assign=SEST) end;';") != std::string::npos) {
+	if (srcCode.find("(Odkud:string; Filtr:string; Index:string; VetaR:record of REPORT) var Pgm,Impl,Posl,u,t,r,s:string;") != std::string::npos) {
 		printf("");
 	}
 #endif
@@ -1769,9 +1769,9 @@ void CallProcedure(Instr_proc* PD)
 	}
 	ReleaseStore(&p2);
 
-	// **** RUN PROCEDURE **** //
+	// ****** RUN PROCEDURE ****** //
 	RunProcedure(instructions);
-	// *********************** //
+	// *************************** //
 
 	// delete instructions
 	for (Instr* instr : instructions) {

@@ -2614,6 +2614,7 @@ FrmlElem* Compiler::TryRdFldFrml(FileD* FD, char& FTyp, MergeReportBase* caller)
 		((FrmlElemOwned*)z)->ownLD = ld;
 		FileD* cf = CFile;
 		CFile = ld->FromFD;
+		processing_F = ld->FromFD;
 		if (Lexem == '.') {
 			RdLex();
 			((FrmlElemOwned*)z)->ownSum = RdFldNameFrmlF(FTyp, caller);
@@ -2627,6 +2628,7 @@ FrmlElem* Compiler::TryRdFldFrml(FileD* FD, char& FTyp, MergeReportBase* caller)
 		}
 		Accept(')');
 		CFile = cf;
+		processing_F = cf;
 		FTyp = 'R';
 		rdFldNameType = rff;
 	}
