@@ -52,7 +52,7 @@ struct structXPath
 	WORD I = 0;
 };
 
-struct ImplD : public Chained<ImplD>
+struct ImplD
 {
 	FieldDescr* FldD = nullptr;
 	FrmlElem* Frml = nullptr;
@@ -61,7 +61,7 @@ struct ImplD : public Chained<ImplD>
 struct LiRoots
 {
 	std::vector<ChkD*> Chks;
-	ImplD* Impls = nullptr;
+	std::vector<ImplD*> Impls;
 };
 
 struct DBaseFld

@@ -71,7 +71,7 @@ public:
 	std::string CtrlLast; std::string AltLast; std::string ShiftLast;
 	WORD NFlds = 0, NTabsSet = 0, NDuplSet = 0, NEdSet = 0;
 	bool EdUpdated = false;
-	ImplD* Impl = nullptr;
+	std::vector<ImplD*> Impl;
 	int StartRecNo = 0;
 	std::string StartRecKey;
 	short StartIRec = 0;

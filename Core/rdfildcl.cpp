@@ -813,8 +813,10 @@ FileD* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 			}
 			if ((Lexem == '#') && (ForwChar == 'I')) {
 				g_compiler->RdLex();
-				RdImpl(file_d, &li->Impls);
+				RdImpl(file_d, li->Impls);
 			}
+
+			// TODO: delete 'li'?
 
 			// TODO: jak toto nahradit?
 			//if (PtrRec(InpRdbPos.rdb).Seg == 0/*compiled from pstring*/) {
@@ -1082,29 +1084,33 @@ label2:
 	ReleaseStore(&p);
 }
 
-void RdImpl(FileD* file_d, ImplD** IDRoot)
+void RdImpl(FileD* file_d, std::vector<ImplD*>& IDRoot)
 {
 	FrmlElem* Z = nullptr;
 	FieldDescr* F = nullptr;
 	char FTyp = '\0';
 	ImplD* ID = nullptr;
 	g_compiler->RdLex();
-label1:
-	F = g_compiler->RdFldName(file_d);
-	if ((F->Flg & f_Stored) == 0) g_compiler->OldError(14);
-	g_compiler->Accept(_assign);
-	Z = g_compiler->RdFrml(FTyp, nullptr);
-	if (FTyp != F->frml_type) g_compiler->OldError(12);
-	ID = new ImplD();
-	ID->FldD = F;
-	ID->Frml = Z;
 
-	if (*IDRoot == nullptr) *IDRoot = ID;
-	else ChainLast(*IDRoot, ID);
+	while (true) {
+		F = g_compiler->RdFldName(file_d);
+		if ((F->Flg & f_Stored) == 0) g_compiler->OldError(14);
+		g_compiler->Accept(_assign);
+		Z = g_compiler->RdFrml(FTyp, nullptr);
+		if (FTyp != F->frml_type) g_compiler->OldError(12);
+		ID = new ImplD();
+		ID->FldD = F;
+		ID->Frml = Z;
+		IDRoot.push_back(ID);
 
-	if (Lexem == ';') {
-		g_compiler->RdLex();
-		if (!(Lexem == '#' || Lexem == 0x1A)) goto label1;
+		if (Lexem == ';') {
+			g_compiler->RdLex();
+			if (!(Lexem == '#' || Lexem == 0x1A)) {
+				continue;
+			}
+		}
+
+		break;
 	}
 }
 
@@ -1126,8 +1132,7 @@ void RdKumul()
 		}
 		else {
 			RdRoleField(AD);
-			if (Lexem == '(')
-			{
+			if (Lexem == '(') {
 				Low = CurrPos;
 				g_compiler->RdLex();
 				FileD* previous = g_compiler->processing_F;

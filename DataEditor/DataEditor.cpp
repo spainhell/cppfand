@@ -2619,10 +2619,13 @@ bool DataEditor::WriteCRec(bool MayDispl, bool& Displ)
 	}
 	result = false;
 	if (IsNewRec) {
-		ID = edit_->Impl;
-		while (ID != nullptr) {
-			AssgnFrml(file_d_, record_, ID->FldD, ID->Frml, true, false);
-			ID = ID->pChain;
+		//ID = edit_->Impl;
+		//while (ID != nullptr) {
+		//	AssgnFrml(file_d_, record_, ID->FldD, ID->Frml, true, false);
+		//	ID = ID->pChain;
+		//}
+		for (ImplD* id : edit_->Impl) {
+			AssgnFrml(file_d_, record_, id->FldD, id->Frml, true, false);
 		}
 	}
 	if (params_->MustCheck) {   /* repeat field checking */

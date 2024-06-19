@@ -914,8 +914,9 @@ void EditReader::RdImpl(FileD* file_d)
 			ImplD* ID = new ImplD();
 			ID->FldD = F;
 			ID->Frml = Z;
-			if (edit_->Impl == nullptr) edit_->Impl = ID;
-			else ChainLast(edit_->Impl, ID);
+			//if (edit_->Impl == nullptr) edit_->Impl = ID;
+			//else ChainLast(edit_->Impl, ID);
+			edit_->Impl.push_back(ID);
 		}
 
 		if (Lexem == ';') {
