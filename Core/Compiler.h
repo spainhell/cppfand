@@ -116,7 +116,6 @@ public:
 
 
 private:
-	
 	double ValofS(pstring& S);
 	void SrchF(FieldDescr* F);
 	void SrchZ(FrmlElem* Z);
@@ -135,6 +134,7 @@ private:
 	bool FindFuncD(FrmlElem** ZZ, MergeReportBase* caller);
 	FrmlElem* RdPrim(char& FTyp, MergeReportBase* caller);
 	WORD RdPrecision();
-	FrmlListEl* RdFL(bool NewMyBP, FrmlList FL1);
+	std::vector<FrmlElem*> RdFL(bool NewMyBP);
+	std::vector<FrmlElem*> RdFL(bool NewMyBP, std::vector<FrmlElem*>& FL1);
 	LinkD* FindOwnLD(FileD* FD, std::string RoleName);
 };

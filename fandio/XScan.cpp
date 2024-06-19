@@ -23,10 +23,14 @@ void CompKIFrml(FileD* file_d, XKey* K, KeyInD* KI, bool AddFF, void* record)
 	while (KI != nullptr) {
 		bool b = x.PackFrml(file_d, KI->FL1, K->KFlds, record);
 		KI->X1 = x.S;
-		if (KI->FL2 != nullptr) x.PackFrml(file_d, KI->FL2, K->KFlds, record);
-		if (AddFF) AddFFs(K, x.S);
+		if (!KI->FL2.empty()) {
+			x.PackFrml(file_d, KI->FL2, K->KFlds, record);
+		}
+		if (AddFF) {
+			AddFFs(K, x.S);
+		}
 		KI->X2 = x.S;
-		KI = (KeyInD*)KI->pChain;
+		KI = KI->pChain;
 	}
 }
 

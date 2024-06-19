@@ -1349,7 +1349,7 @@ label1:
 	RdLex();
 	result = lastK;
 	return result;
-	}
+}
 
 void Compiler::SrchF(FieldDescr* F)
 {
@@ -1365,7 +1365,7 @@ void Compiler::SrchF(FieldDescr* F)
 void Compiler::SrchZ(FrmlElem* Z)
 {
 	KeyFldD* KF = nullptr;
-	FrmlListEl* fl = nullptr;
+	//FrmlListEl* fl = nullptr;
 	if (Z == nullptr) return;
 
 	auto iZ0 = (FrmlElemFunction*)Z;
@@ -1389,10 +1389,13 @@ void Compiler::SrchZ(FrmlElem* Z)
 		break;
 	}
 	case _userfunc: {
-		fl = iZ19->FrmlL;
-		while (fl != nullptr) {
+		//std::vector<FrmlElem*> fl = iZ19->FrmlL;
+		/*while (fl != nullptr) {
 			SrchZ(fl->Frml);
 			fl = fl->pChain;
+		}*/
+		for (FrmlElem* f : iZ19->FrmlL) {
+			SrchZ(f);
 		}
 		break;
 	}
@@ -1754,12 +1757,18 @@ bool Compiler::FindFuncD(FrmlElem** ZZ, MergeReportBase* caller)
 			WORD n = fc->LVB.NParam;
 			auto itr = fc->LVB.vLocVar.begin();
 			for (WORD i = 1; i <= n; i++) {
-				FrmlListEl* fl = new FrmlListEl();
-				if (z->FrmlL == nullptr) z->FrmlL = fl;
-				else ChainLast(z->FrmlL, fl);
-				fl->Frml = RdFormula(typ, caller);
-				if (typ != (*itr++)->f_typ) OldError(12);
-				if (i < n) Accept(',');
+				//FrmlListEl* fl = new FrmlListEl();
+				//if (z->FrmlL == nullptr) z->FrmlL = fl;
+				//else ChainLast(z->FrmlL, fl);
+				FrmlElem* frml = RdFormula(typ, caller);
+				z->FrmlL.push_back(frml);
+
+				if (typ != (*itr++)->f_typ) {
+					OldError(12);
+				}
+				if (i < n) {
+					Accept(',');
+				}
 			}
 			Accept(')');
 			*ZZ = z;
@@ -2267,40 +2276,56 @@ WORD Compiler::RdPrecision()
 	return n;
 }
 
-FrmlListEl* Compiler::RdFL(bool NewMyBP, FrmlList FL1)
+std::vector<FrmlElem*> Compiler::RdFL(bool NewMyBP)
+{
+	std::vector<FrmlElem*> FL1;
+	return RdFL(NewMyBP, FL1);
+}
+
+std::vector<FrmlElem*> Compiler::RdFL(bool NewMyBP, std::vector<FrmlElem*>& FL1)
 {
 	char FTyp = '\0';
+
 	KeyFldD* KF = CViewKey->KFlds;
-	FrmlListEl* FLRoot = nullptr;
 	KeyFldD* KF2 = KF->pChain;
+
+	std::vector<FrmlElem*> result;
 	bool FVA = FileVarsAllowed;
 	FileVarsAllowed = false;
-	bool b = FL1 != nullptr;
+	bool b = !FL1.empty();
 	if (KF2 != nullptr) Accept('(');
-label1:
-	FrmlList FL = new FrmlListEl();
-	if (FLRoot == nullptr) FLRoot = FL;
-	else ChainLast(FLRoot, FL);
-	FL->Frml = RdFrml(FTyp, nullptr);
-	if (FTyp != KF->FldD->frml_type) {
-		OldError(12);
-	}
-	KF = KF->pChain;
-	if (b) {
-		FL1 = FL1->pChain;
-		if (FL1 != nullptr) {
-			Accept(',');
-			goto label1;
+
+//label1:
+	while (true) {
+		/*FrmlList FL = new FrmlListEl();
+		if (FLRoot == nullptr) FLRoot = FL;
+		else ChainLast(FLRoot, FL);*/
+		FrmlElem* frml = RdFrml(FTyp, nullptr);
+		result.push_back(frml);
+
+		if (FTyp != KF->FldD->frml_type) {
+			OldError(12);
 		}
-	}
-	else if ((KF != nullptr) && (Lexem == ',')) {
-		RdLex();
-		goto label1;
+		KF = KF->pChain;
+
+		if (b) {
+			//FL1 = FL1->pChain;
+			//if (FL1 != nullptr) {
+			if (FL1.size() > 1) {
+				Accept(',');
+				continue;
+			}
+		}
+		else if ((KF != nullptr) && (Lexem == ',')) {
+			RdLex();
+			continue;
+		}
+		break;
 	}
 	if (KF2 != nullptr) {
 		Accept(')');
 	}
-	auto result = FLRoot;
+
 	FileVarsAllowed = FVA;
 	return result;
 }
@@ -2334,7 +2359,7 @@ FrmlElem* Compiler::RdKeyInBool(KeyInD** KIRoot, bool NewMyBP, bool FromRdProc, 
 		KI = new KeyInD();
 		if (*KIRoot == nullptr) *KIRoot = KI;
 		else ChainLast(*KIRoot, KI);
-		KI->FL1 = RdFL(NewMyBP, nullptr);
+		KI->FL1 = RdFL(NewMyBP);
 		if (Lexem == _subrange) {
 			RdLex();
 			KI->FL2 = RdFL(NewMyBP, KI->FL1);

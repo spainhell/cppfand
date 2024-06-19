@@ -312,7 +312,7 @@ void EditReader::AutoDesign(FieldListEl* FL)
 	D->pChain = nullptr;
 	edit_->LastFld = D;
 	edit_->NPages = NPages;
-	if (NPages == 1) { 
+	if (NPages == 1) {
 		ERecTxtD* er = edit_->RecTxt;
 		if (er->N == 2) {
 			edit_->HdTxt.clear();
@@ -639,7 +639,7 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec)
 				RunError(663);
 			}
 		}
-		}
+	}
 	if (EO->StartFieldZ != nullptr) {
 		std::string rss = RunShortStr(file_d, EO->StartFieldZ, record);
 		std::string s = TrailChar(rss, ' ');
@@ -691,7 +691,7 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec)
 	RdDepChkImpl(edit_);
 	NewChkKey(file_d);
 	MarkStore(edit_->AfterE);
-	}
+}
 
 EFldD* EditReader::FindEFld_E(FieldDescr* F)
 {
@@ -784,10 +784,13 @@ void EditReader::SetFrmlFlags(FrmlElem* Z)
 		break;
 	}
 	case _userfunc: {
-		FrmlList fl = ((FrmlElemUserFunc*)Z)->FrmlL;
-		while (fl != nullptr) {
+		auto frml_elems = ((FrmlElemUserFunc*)Z)->FrmlL;
+		/*while (fl != nullptr) {
 			SetFrmlFlags(fl->Frml);
 			fl = fl->pChain;
+		}*/
+		for (FrmlElem* frml : frml_elems) {
+			SetFrmlFlags(frml);
 		}
 		break;
 	}

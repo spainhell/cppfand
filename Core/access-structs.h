@@ -19,11 +19,12 @@ struct FieldListEl : public Chained<FieldListEl>
 };
 typedef FieldListEl* FieldList;
 
-struct FrmlListEl : public Chained<FrmlListEl>
-{
-	FrmlElem* Frml = nullptr;
-};
-typedef FrmlListEl* FrmlList;
+//struct FrmlListEl : public Chained<FrmlListEl>
+//{
+//	FrmlElem* Frml = nullptr;
+//};
+//typedef FrmlListEl* FrmlList;
+// std::vector<FrmlElem*>&
 
 //struct StringListEl : public Chained<StringListEl>
 //{
@@ -39,8 +40,8 @@ typedef FrmlListEl* FrmlList;
 
 struct KeyInD : public Chained<KeyInD>
 {
-	FrmlListEl* FL1 = nullptr;
-	FrmlListEl* FL2 = nullptr;
+	std::vector<FrmlElem*> FL1;
+	std::vector<FrmlElem*> FL2;
 	int XNrBeg = 0, N = 0;
 	std::string X1;
 	std::string X2;

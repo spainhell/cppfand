@@ -192,7 +192,7 @@ class FrmlElemUserFunc : public FrmlElem
 public:
 	FrmlElemUserFunc(instr_type Op, size_t buff_size);
 	FuncD* FC = nullptr;
-	FrmlListEl* FrmlL = nullptr; // 19 { _userfunc }
+	std::vector<FrmlElem*> FrmlL; // 19 { _userfunc }
 };
 
 class FrmlElem20 : public FrmlElem
