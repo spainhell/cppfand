@@ -52,8 +52,10 @@ void EditReader::StoreRT(WORD Ln, std::vector<std::string>& SL, WORD NFlds)
 
 void EditReader::RdEForm(EditD* edit, RdbPos FormPos)
 {
-	EFldD* D = nullptr; EFldD* D1 = nullptr; EFldD* PrevD = nullptr;
-	FieldDescr* F = nullptr; FieldListEl* FL = nullptr;
+	EFldD* D = nullptr;
+	EFldD* D1 = nullptr;
+	EFldD* PrevD = nullptr;
+	FieldDescr* F = nullptr;
 	std::vector<std::string> SLRoot;
 	std::string s;
 	WORD NPages = 0, Col = 0, Ln = 0, Max = 0, M = 0, N = 0, NFlds = 0, i = 0;
@@ -249,99 +251,6 @@ EFldD* EditReader::FindScanNr(WORD N)
 		D = D->pChain;
 	}
 	return D1;
-}
-
-void EditReader::AutoDesign(FieldListEl* FL)
-{
-	WORD L = 0, i = 0, m = 0, FldLen = 0;
-	pstring s = "";
-	std::vector<std::string> SLRoot;
-	EFldD* D = (EFldD*)(&edit_->FirstFld);
-	EFldD* PrevD = nullptr;
-	WORD NPages = 1; WORD Ln = 0;
-	WORD Col = edit_->FrstCol;
-	WORD maxcol = edit_->LastCol - edit_->FrstCol;
-	while (FL != nullptr) {
-		FieldDescr* F = FL->FldD;
-		FL = FL->pChain;
-		if (F == nullptr) continue; // tady to padalo na 1. polozce, protoze ta ma FldD = nullptr
-
-		D->pChain = new EFldD();
-		D = D->pChain;
-		D->ChainBack = PrevD;
-		PrevD = D;
-		D->FldD = F;
-		D->L = F->L;
-		if (D->L > maxcol) D->L = maxcol;
-		if ((edit_->FD->FF->file_type == FileType::CAT) && (D->L > 44)) D->L = 44; /*catalog pathname*/
-		FldLen = D->L;
-		if (F->field_type == FieldType::TEXT) D->L = 1;
-		L = F->Name.length();
-		if (FldLen > L) L = FldLen;
-		if (Col + L > edit_->LastCol) {
-			//SToSL(&SLRoot, s);
-			SLRoot.push_back(s);
-			//SToSL(&SLRoot, "");
-			SLRoot.push_back("");
-			Ln += 2;
-			if (Ln + 2 > edit_->Rows) {
-				StoreRT(Ln, SLRoot, 1);
-				NPages++;
-				Ln = 0;
-				SLRoot.clear();
-			}
-			Col = edit_->FrstCol;
-			s = "";
-		}
-		m = (L - F->Name.length() + 1) / 2;
-		for (i = 1; i <= m; i++) s.Append(' ');
-		s = s + F->Name;
-		m = L - F->Name.length() - m;
-		for (i = 1; i <= m + 1; i++) s.Append(' ');
-		D->Col = Col + (L - FldLen + 1) / 2;
-		D->Ln = Ln + 2;
-		D->Page = NPages;
-		Col += (L + 1);
-	}
-	//SToSL(&SLRoot, s);
-	SLRoot.push_back(s);
-	//SToSL(&SLRoot, "");
-	SLRoot.push_back("");
-	Ln += 2;
-	StoreRT(Ln, SLRoot, 1);
-	D->pChain = nullptr;
-	edit_->LastFld = D;
-	edit_->NPages = NPages;
-	if (NPages == 1) {
-		ERecTxtD* er = edit_->RecTxt;
-		if (er->N == 2) {
-			edit_->HdTxt.clear();
-			edit_->HdTxt.push_back(er->SL[0]);
-			edit_->NHdTxt = 1;
-
-			er->SL.erase(er->SL.begin());
-			er->N = 1;
-
-			D = edit_->FirstFld;
-			while (D != nullptr) {
-				D->Ln--;
-				D = D->pChain;
-			}
-			if (edit_->Rows == 1) {
-				edit_->NHdTxt = 0;
-				edit_->HdTxt.clear();
-			}
-		}
-		else if (er->N < edit_->Rows) {
-			s = "";
-			for (i = edit_->FrstCol; i <= edit_->LastCol; i++) {
-				s.Append('-');
-			}
-			//SToSL(&er.SL, s);
-			er->SL.push_back(s);
-			er->N++;
-		}
-	}
 }
 
 void EditReader::AutoDesign(std::vector<FieldDescr*>& FL)

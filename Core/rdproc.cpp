@@ -1467,7 +1467,7 @@ void RdProcCall(Instr** pinstr)
 std::vector<FieldDescr*> RdFlds()
 {
 	std::vector<FieldDescr*> FLRoot;
-	FieldListEl* FL = nullptr;
+	//FieldListEl* FL = nullptr;
 
 	while (true) {
 		auto fd = g_compiler->RdFldName(g_compiler->processing_F);
@@ -1482,45 +1482,50 @@ std::vector<FieldDescr*> RdFlds()
 	return FLRoot;
 }
 
-std::vector<FieldDescr*> RdSubFldList(std::vector<FieldDescr*>& InFL, char Opt)
+std::vector<FieldDescr*> RdSubFldList(const std::vector<FieldDescr*>& v_fields, char Opt)
 {
-	// TODO: this method is probably badly transformed -> check it!
-
-	std::vector<FieldListEl*> FLRoot;
 	std::vector<FieldDescr*> result;
-	FieldListEl* FL = nullptr;
-	FieldDescr* FL1 = nullptr;
-	FieldDescr* F = nullptr;
 	g_compiler->Accept('(');
-label1:
-	FL = new FieldListEl();
-	FLRoot.push_back(FL);
 
-	if (InFL.empty()) F = g_compiler->RdFldName(CFile);
-	else {
-		g_compiler->TestIdentif();
-		//FL1 = InFL;
-		//while (FL1 != nullptr) {
-		for (auto& f : InFL) {
-			std::string tmp = LexWord;
-			FL1 = f;
-			if (EquUpCase(f->Name, tmp)) goto label2;
-			//FL1 = FL1->pChain;
+	while (true) {
+		FieldDescr* field = nullptr;
+		if (v_fields.empty()) {
+			field = g_compiler->RdFldName(g_compiler->processing_F);
+			if (field == nullptr) {
+				g_compiler->Error(43);
+			}
 		}
-		g_compiler->Error(43);
-	label2:
-		F = FL1;
-		g_compiler->RdLex();
+		else {
+			bool found = false;
+			g_compiler->TestIdentif();
+			for (FieldDescr* f : v_fields) {
+				if (EquUpCase(f->Name, LexWord)) {
+					found = true;
+					field = f;
+					result.push_back(f);
+					break;
+				}
+			}
+			if (!found) {
+				g_compiler->Error(43);
+			}			
+			g_compiler->RdLex();
+		}
+
+		if ((Opt == 'S') && (field->frml_type != 'R')) {
+			g_compiler->OldError(20);
+		}
+
+		if (Lexem == ',') {
+			g_compiler->RdLex();
+			continue;
+		}
+
+		break;
 	}
-	FL->FldD = F;
-	if ((Opt == 'S') && (F->frml_type != 'R')) g_compiler->OldError(20);
-	if (Lexem == ',') { g_compiler->RdLex(); goto label1; }
+
 	g_compiler->Accept(')');
 
-	// transform to vector of FieldDescr*
-	for (auto& fld : FLRoot) {
-		result.push_back(fld->FldD);
-	}
 	return result;
 }
 

@@ -29,7 +29,6 @@ private:
 	void StoreRT(WORD Ln, std::vector<std::string>& SL, WORD NFlds);
 	void RdEForm(EditD* edit, RdbPos FormPos);
 	EFldD* FindScanNr(WORD N);
-	void AutoDesign(FieldListEl* FL);
 	void AutoDesign(std::vector<FieldDescr*>& FL);
 	EFldD* FindEFld_E(FieldDescr* F);
 	void ZeroUsed();

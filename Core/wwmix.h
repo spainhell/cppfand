@@ -24,7 +24,6 @@ public :
 	void PutSelect(std::string s); // r57
 	void SelectStr(short C1, short R1, WORD NMsg, std::string LowTxt);
 	std::string GetSelect();
-	bool SelFieldList(WORD Nmsg, bool ImplAll, FieldListEl** FLRoot);
 	bool SelFieldList(WORD Nmsg, bool ImplAll, std::vector<FieldDescr*>& FLRoot);
 	std::string SelectDiskFile(std::string Path, WORD HdMsg, bool OnFace);
 	bool PromptFilter(std::string Txt, FrmlElem** Bool, std::string* BoolTxt);

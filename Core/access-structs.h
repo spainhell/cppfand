@@ -13,11 +13,12 @@ class FrmlElemSum;
 class FieldDescr;
 class LocVarBlkD;
 
-struct FieldListEl : public Chained<FieldListEl>
-{
-	FieldDescr* FldD = nullptr;
-};
-typedef FieldListEl* FieldList;
+//struct FieldListEl : public Chained<FieldListEl>
+//{
+//	FieldDescr* FldD = nullptr;
+//};
+//typedef FieldListEl* FieldList;
+// std::vector<FieldDescr*>&
 
 //struct FrmlListEl : public Chained<FrmlListEl>
 //{

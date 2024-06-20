@@ -281,7 +281,7 @@ void RdChkDsFromPos(FileD* FD, std::vector<ChkD*>& C)
 
 void RdBegViewDcl(EditOpt* EO)
 {
-	FieldListEl* fl = nullptr;
+	//FieldListEl* fl = nullptr;
 	if (Lexem == _identifier || Lexem == '[') {
 		g_compiler->RdChptName('E', &EO->FormPos, true);
 		return;

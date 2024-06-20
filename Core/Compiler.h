@@ -101,7 +101,6 @@ public:
 	FrmlElem* RdAttr();
 	void RdW(WRectFrml& W);
 	void RdFrame(FrmlElem** Z, BYTE& WFlags);
-	bool PromptSortKeys(FieldListEl* FL, KeyFldD* SKRoot);
 	bool PromptSortKeys(std::vector<FieldDescr*>& FL, KeyFldD* SKRoot);
 	void RdAssignFrml(char FTyp, bool& Add, FrmlElem** Z, MergeReportBase* caller);
 	bool FldTypIdentity(FieldDescr* F1, FieldDescr* F2);

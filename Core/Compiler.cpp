@@ -1181,36 +1181,6 @@ void Compiler::RdFrame(FrmlElem** Z, BYTE& WFlags)
 	if (Lexem == '!') { WFlags = WFlags | WShadow; RdLex(); }
 }
 
-bool Compiler::PromptSortKeys(FieldListEl* FL, KeyFldD* SKRoot)
-{
-	wwmix ww;
-
-	KeyFldD* SK;
-	auto result = true;
-	SKRoot = nullptr;
-	while (FL != nullptr) {
-		/* !!! with FL->FldD^ do!!! */
-		if (FL->FldD->field_type != FieldType::TEXT) ww.PutSelect(FL->FldD->Name);
-		FL = FL->pChain;
-	}
-	if (ss.Empty) return result;
-	ss.AscDesc = true;
-	ss.Subset = true;
-	ww.SelectStr(0, 0, 25, "");
-	if (Event.Pressed.KeyCombination() == __ESC) { return false; }
-label1:
-	LexWord = ww.GetSelect();
-	if (LexWord != "") {
-		SK = new KeyFldD();
-		ChainLast(SKRoot, SK);
-		SK->FldD = FindFldName(CFile);
-		if (ss.Tag == '>') SK->Descend = true;
-		if (SK->FldD->field_type == FieldType::ALFANUM) SK->CompLex = true;
-		goto label1;
-	}
-	return result;
-}
-
 bool Compiler::PromptSortKeys(std::vector<FieldDescr*>& FL, KeyFldD* SKRoot)
 {
 	wwmix ww;
@@ -1218,7 +1188,6 @@ bool Compiler::PromptSortKeys(std::vector<FieldDescr*>& FL, KeyFldD* SKRoot)
 	KeyFldD* SK;
 	auto result = true;
 	SKRoot = nullptr;
-	//while (FL != nullptr) {
 	for (auto& fld : FL) {
 		if (fld->field_type != FieldType::TEXT) ww.PutSelect(fld->Name);
 	}

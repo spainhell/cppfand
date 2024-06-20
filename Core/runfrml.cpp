@@ -1516,16 +1516,6 @@ WORD RunWordImpl(FileD* file_d, FrmlElem* Z, WORD Impl, void* record)
 	return n;
 }
 
-bool FieldInList(FieldDescr* F, FieldListEl* FL)
-{
-	auto result = false;
-	while (FL != nullptr) {
-		if (FL->FldD == F) result = true;
-		FL = FL->pChain;
-	}
-	return result;
-}
-
 bool FieldInList(FieldDescr* F, std::vector<FieldDescr*>& FL)
 {
 	bool result = false;

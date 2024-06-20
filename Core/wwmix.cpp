@@ -594,42 +594,6 @@ std::string wwmix::GetSelect()
 	return result;
 }
 
-bool wwmix::SelFieldList(WORD Nmsg, bool ImplAll, FieldListEl** FLRoot)
-{
-	//FieldDescr* F;
-	FieldList FL;
-	*FLRoot = nullptr;
-	auto result = true;
-	if (ss.Empty) return result;
-	ss.Subset = true;
-	ss.ImplAll = ImplAll;
-	SelectStr(0, 0, Nmsg, CFile->Name);
-	if (Event.Pressed.KeyCombination() == __ESC) { return false; }
-label1:
-	std::string s = GetSelect();
-	if (!s.empty()) {
-		if (s[0] == (char)SelMark) {
-			s = s.substr(1, 255); //copy(s, 2, 255);
-		}
-		//F = CFile->FldD.front();
-		//while (F != nullptr) {
-		for (FieldDescr* F : CFile->FldD) {
-			if (s == F->Name) {
-				FL = new FieldListEl();
-				if (*FLRoot == nullptr) *FLRoot = FL;
-				else ChainLast(*FLRoot, FL);
-				FL->FldD = F;
-				goto label1;
-			}
-			else {
-				//F = F->pChain;
-			}
-		}
-		goto label1;
-	}
-	return result;
-}
-
 bool wwmix::SelFieldList(WORD Nmsg, bool ImplAll, std::vector<FieldDescr*>& FLRoot)
 {
 	FLRoot.clear();

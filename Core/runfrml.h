@@ -31,7 +31,6 @@ std::string DecodeFieldRSB(FieldDescr* F, WORD LWw, double R, std::string& T, bo
 std::string DecodeField(FileD* file_d, FieldDescr* F, WORD LWw, void* record);
 void RunWFrml(FileD* file_d, WRectFrml& X, BYTE WFlags, WRect& W, void* record);
 WORD RunWordImpl(FileD* file_d, FrmlElem* Z, WORD Impl, void* record);
-bool FieldInList(FieldDescr* F, FieldListEl* FL);
 bool FieldInList(FieldDescr* F, std::vector<FieldDescr*>& FL);
 XKey* GetFromKey(LinkD* LD);
 FrmlElem* RunEvalFrml(FileD* file_d, FrmlElem* Z, void* record);
