@@ -662,7 +662,7 @@ void CreateOpenChpt(std::string Nm, bool create)
 	FileUseMode um = Closed;
 
 	bool top = (CRdb == nullptr);
-	FileDRoot = nullptr;
+	FileDRoot.clear();
 	Chpt = nullptr;
 	FandTFile* oldChptTF = ChptTF;
 	RdbD* R = PrepareRdb(Nm, Nm1);
@@ -737,7 +737,7 @@ void CloseChpt()
 	//ReleaseBoth(p, p2);
 	if (CRdb != nullptr) {
 		FileDRoot = CRdb->v_files;
-		Chpt = FileDRoot;
+		Chpt = CRdb->v_files[0];
 		SetChptFldD();
 		ChDir(CRdb->RdbDir);
 		if (del) {
@@ -758,18 +758,27 @@ void CloseChpt()
 
 FileD* FindFD()
 {
-	FileD* FD = nullptr;
+	FileD* result = nullptr;
 	std::string d;
 	std::string name;
 	std::string ext;
 	std::string FName = OldTrailChar(' ', Chpt->loadS(ChptName, CRecPtr));
 	FSplit(FName, d, name, ext);
-	FD = FileDRoot;
-	while (FD != nullptr) {
-		if (EquUpCase(FD->Name, name)) break;
-		FD = (FileD*)FD->pChain;
+
+	//FileD* FD = FileDRoot;
+	//while (FD != nullptr) {
+	//	if (EquUpCase(FD->Name, name)) break;
+	//	FD = (FileD*)FD->pChain;
+	//}
+
+	for (FileD* file : CRdb->v_files) {
+		if (EquUpCase(file->Name, name)) {
+			result = file;
+			break;
+		}
 	}
-	return FD;
+
+	return result;
 }
 
 void Diagnostics(void* MaxHp, int Free, FileD* FD)
@@ -802,7 +811,8 @@ bool CompRunChptRec(const std::unique_ptr<DataEditor>& rdb_editor, WORD CC)
 
 	bool WasError = true;
 	bool WasGraph = IsGraphMode;
-	FileD* lstFD = (FileD*)LastInChain(FileDRoot);
+	//FileD* lstFD = (FileD*)LastInChain(FileDRoot);
+	FileD* lstFD = FileDRoot.back();
 	std::deque<LinkD*> oldLd = LinkDRoot;
 
 	FileD* FD = nullptr;
@@ -902,7 +912,7 @@ bool CompRunChptRec(const std::unique_ptr<DataEditor>& rdb_editor, WORD CC)
 					LinkDRoot = ld;
 				}
 				break;
-			}
+				}
 #ifdef FandProlog
 			case 'L': {
 				if (CC == __CTRL_F9) {
@@ -916,11 +926,11 @@ bool CompRunChptRec(const std::unique_ptr<DataEditor>& rdb_editor, WORD CC)
 			default:;
 			}
 			WasError = false;
-		}
+			}
 	}
 	catch (std::exception& e) {
 		// TODO: log error
-	}
+		}
 
 	MaxHp = nullptr;
 	ReleaseStore(&p2);
@@ -982,7 +992,7 @@ bool CompRunChptRec(const std::unique_ptr<DataEditor>& rdb_editor, WORD CC)
 		}
 	}
 	return result;
-}
+	}
 
 void RdUserId(bool Chk)
 {
@@ -1513,11 +1523,17 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 					break;
 				}
 				case 'P': {
-					if (FileDRoot->pChain == nullptr) {
-						lstFD = FileDRoot;
+					//if (FileDRoot->pChain == nullptr) {
+					//	lstFD = FileDRoot;
+					//}
+					//else {
+					//	lstFD = (FileD*)LastInChain(FileDRoot);
+					//}
+					if (FileDRoot.size() == 1) {
+						lstFD = FileDRoot[0];
 					}
 					else {
-						lstFD = (FileD*)LastInChain(FileDRoot);
+						lstFD = FileDRoot.back();
 					}
 					std::deque<LinkD*> ld = LinkDRoot;
 					g_compiler->SetInpTTPos(rdb_file, Txt, Encryp);
@@ -1550,7 +1566,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 						MarkStore(p1);
 					}
 					break;
-				}
+					}
 				case 'D': {
 					ResetCompilePars();
 					g_compiler->SetInpTTPos(rdb_file, Txt, Encryp);
@@ -1629,7 +1645,7 @@ void GotoErrPos(WORD& Brk, std::unique_ptr<DataEditor>& data_editor)
 			SetMsgPar("");
 		}
 		else {
-			SetMsgPar(InpRdbPos.rdb->v_files->Name);
+			SetMsgPar(InpRdbPos.rdb->v_files[0]->Name);
 		}
 		WrLLF10Msg(622);
 		Brk = 0;

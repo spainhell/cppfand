@@ -69,18 +69,18 @@ bool ReportGenerator::SelForAutoRprt(RprtOpt* RO)
 std::string ReportGenerator::SelGenRprt(pstring RprtName)
 {
 	wwmix ww;
-	FileD* fd;
 	std::string s;
 
 	std::string result;
 	RdbD* r = CRdb;
 	while (r != nullptr) {
-		fd = r->v_files->pChain;
-		while (fd != nullptr) {
-			s = fd->Name;
-			if (r != CRdb) s = r->v_files->Name + '.' + s;
+		//fd = r->v_files->pChain;
+		//while (fd != nullptr) {
+		for (size_t i = 1; i < r->v_files.size(); i++) {
+			s = r->v_files[i]->Name;
+			if (r != CRdb) s = r->v_files[0]->Name + '.' + s;
 			ww.PutSelect(s);
-			fd = fd->pChain;
+			//fd = fd->pChain;
 		}
 		r = r->ChainBack;
 	}
@@ -89,18 +89,27 @@ std::string ReportGenerator::SelGenRprt(pstring RprtName)
 	ww.SelectStr(0, 0, 19, tmpP + RprtName + '\"');
 	if (Event.Pressed.KeyCombination() == __ESC) return result;
 	s = ww.GetSelect();
-	size_t i = s.find('.');
+	size_t index = s.find('.');
 	r = CRdb;
-	if (i != std::string::npos) {
+	if (index != std::string::npos) {
 		do {
 			r = r->ChainBack;
-		} while (r->v_files[0]->Name != s.substr(1, i - 1));
-		s = s.substr(i + 1, 255);
+		} while (r->v_files[0]->Name != s.substr(1, index - 1));
+		s = s.substr(index + 1, 255);
 	}
-	fd = r->v_files;
+
+	/*fd = r->v_files;
 	do {
 		fd = fd->pChain;
-	} while (fd->Name != s);
+	} while (fd->Name != s);*/
+	FileD* fd = nullptr;
+	for (size_t i = 1; i < r->v_files.size(); i++) {
+		if (r->v_files[i]->Name == s) {
+			fd = r->v_files[i];
+			break;
+		}
+	}
+
 	RprtOpt* ro = g_compiler->GetRprtOpt();
 	ro->FDL.FD = fd;
 	//FieldDescr* f = fd->FldD.front();

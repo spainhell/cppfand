@@ -167,7 +167,7 @@ int Catalog::GetCatalogIRec(const std::string& name, bool multilevel)
 
 	while (true) {
 		for (int i = 1; i <= catalog->GetCatalogFile()->FF->NRecs; i++) {
-			if (EquUpCase(catalog->GetRdbName(i), R->v_files->Name) && EquUpCase(catalog->GetFileName(i), name)) {
+			if (EquUpCase(catalog->GetRdbName(i), R->v_files[0]->Name) && EquUpCase(catalog->GetFileName(i), name)) {
 				result = i;
 				return result;
 			}

@@ -340,7 +340,7 @@ void DisplayProc(RdbD* R, WORD IRec)
 		if (str.empty()) return;
 	}
 	else {
-		CFile = R->v_files;
+		CFile = R->v_files[0];
 		CRecPtr = Chpt->FF->RecPtr;
 		CFile->ReadRec(IRec, CRecPtr);
 		int pos = CFile->loadT(ChptTxt, CRecPtr);
@@ -1655,7 +1655,7 @@ void CallProcedure(Instr_proc* PD)
 	MarkBoth(p1, p2);
 	//oldprocbp = ProcMyBP;
 	std::deque<LinkD*> ld = LinkDRoot;
-	lstFD = (FileD*)LastInChain(FileDRoot);
+	lstFD = FileDRoot.back(); // (FileD*)LastInChain(FileDRoot);
 	g_compiler->SetInpTT(&PD->PPos, true);
 
 #ifdef _DEBUG
@@ -1830,6 +1830,7 @@ void CallProcedure(Instr_proc* PD)
 		CFile = CFile->pChain;
 	}
 	lstFD->pChain = nullptr;
+
 	ReleaseStore(&p1);
 	ReleaseStore(&p2);
 }

@@ -133,8 +133,8 @@ void RdCFG()
 
 void CompileHelpCatDcl()
 {
-	FileDRoot = nullptr;
-	Chpt = FileDRoot;
+	FileDRoot.clear(); // FileDRoot = nullptr;
+	Chpt = nullptr; // Chpt = FileDRoot;
 	CRdb = nullptr;
 
 	// process help
@@ -152,8 +152,8 @@ void CompileHelpCatDcl()
 	FileD* cat_file = RdFileD("Catalog", FileType::CAT, "");
 	catalog = new Catalog(cat_file);
 	
-	FileDRoot = nullptr;
-	Chpt = FileDRoot;
+	FileDRoot.clear(); // FileDRoot = nullptr;
+	Chpt = nullptr; //Chpt = FileDRoot;
 }
 
 bool SetTopDir(std::string& p, std::string& n)

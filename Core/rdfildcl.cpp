@@ -441,10 +441,15 @@ void TestUserView(FileD* file_d)
 	while (true) {
 		g_compiler->TestIdentif();
 		TestDupl(file_d);
-		FileD* FD = FileDRoot;
-		while (FD != nullptr) {
-			TestDupl(FD);
-			FD = FD->pChain;
+
+		//FileD* FD = FileDRoot;
+		//while (FD != nullptr) {
+		//	TestDupl(FD);
+		//	FD = FD->pChain;
+		//}
+
+		for (FileD* f : FileDRoot) {
+			TestDupl(f);
 		}
 
 		/*StringListEl* S = new StringListEl();
@@ -707,7 +712,8 @@ FileD* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 	if (g_compiler->IsKeyWord("JOURNALOF")) {
 		isJournal = true;
 		file_d = RdFileD_Journal(FileName, FDTyp);
-		ChainLast(FileDRoot, file_d);
+		FileDRoot.push_back(file_d);
+		//ChainLast(FileDRoot, file_d);
 		MarkStore(p);
 		//goto label1;
 	}
@@ -774,13 +780,10 @@ FileD* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 			RdKumul();
 		}
 
-		if (FileDRoot == nullptr) {
-			FileDRoot = file_d;
-			Chpt = FileDRoot;
+		if (FileDRoot.empty()) {
+			Chpt = file_d;
 		}
-		else {
-			ChainLast(FileDRoot, file_d);
-		}
+		FileDRoot.push_back(file_d);
 
 		if (Ext == "$") {
 			// compile from text at run time
@@ -986,10 +989,14 @@ void CheckDuplAlias(FileD* file_d, pstring name)
 #endif
 		) g_compiler->Error(108);
 	LookForK(file_d, &name, file_d);
-	FileD* F = FileDRoot;
+
+	/*FileD* F = FileDRoot;
 	while (F != nullptr) {
 		LookForK(file_d, &name, F);
 		F = F->pChain;
+	}*/
+	for (FileD* f : FileDRoot) {
+		LookForK(file_d, &name, f);
 	}
 }
 
@@ -1027,17 +1034,24 @@ XKey* RdFileOrAlias1(FileD* F)
 void RdFileOrAlias(FileD* file_d, FileD** FD, XKey** KD)
 {
 	RdbD* r = nullptr;
-	XKey* k = nullptr;
 	g_compiler->TestIdentif();
-	k = RdFileOrAlias1(file_d);
+	XKey* k = RdFileOrAlias1(file_d);
+	FileD* found_f = nullptr;
+
 	if (k != nullptr) goto label1;
 	r = CRdb;
+
 	while (r != nullptr) {
-		file_d = r->v_files;
+		/*file_d = r->v_files;
 		while (file_d != nullptr) {
 			k = RdFileOrAlias1(file_d);
 			if (k != nullptr) goto label1;
 			file_d = file_d->pChain;
+		}*/
+		for (FileD* f : r->v_files) {
+			k = RdFileOrAlias1(f);
+			found_f = f;
+			if (k != nullptr) goto label1;
 		}
 		r = r->ChainBack;
 	}
@@ -1045,7 +1059,7 @@ void RdFileOrAlias(FileD* file_d, FileD** FD, XKey** KD)
 label1:
 	if (k == nullptr) g_compiler->Error(24);
 	g_compiler->RdLex();
-	*FD = file_d;
+	*FD = found_f;
 	*KD = k;
 }
 
