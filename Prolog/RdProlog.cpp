@@ -1534,8 +1534,8 @@ void CheckPredicates(std::vector<TPredicate*>& P)
 		if ((p->Opt & _DbaseOpt) != 0) {
 			if ((p->Opt & _FandCallOpt) != 0) {
 				si = p->scanInf;
-				// not needed -> rdb_file is actual (not loaded from RDB file, but actually compiled)
-				//si->rdb_file = nullptr;
+				// not needed -> v_files is actual (not loaded from RDB file, but actually compiled)
+				//si->v_files = nullptr;
 			}
 			else {
 				// not needed -> branches and instructions are actual (not loaded from RDB file, but actually compiled)

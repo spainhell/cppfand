@@ -340,7 +340,7 @@ void DisplayProc(RdbD* R, WORD IRec)
 		if (str.empty()) return;
 	}
 	else {
-		CFile = R->rdb_file;
+		CFile = R->v_files[0];
 		CRecPtr = Chpt->FF->RecPtr;
 		CFile->ReadRec(IRec, CRecPtr);
 		int pos = CFile->loadT(ChptTxt, CRecPtr);
@@ -790,7 +790,7 @@ void ForAllProc(Instr_forall* PD)
 	Bool = RunEvalFrml(CFile, PD->CBool, CRecPtr);
 	lk = false;
 #ifdef FandSQL
-	if (PD->inSQL && !rdb_file->IsSQLFile) return;
+	if (PD->inSQL && !v_files->IsSQLFile) return;
 #endif
 	if (LD != nullptr) {
 		CFile = LD->ToFD; KF = LD->ToKey->KFlds;
@@ -1156,14 +1156,16 @@ void ResetCatalog()
 	FileD* cf = CFile;
 	RdbD* r = CRdb;
 	while (CRdb != nullptr) {
-		CFile = CRdb->rdb_file->pChain;
-		while (CFile != nullptr) {
-			CFile->CloseFile();
-			CFile->CatIRec = catalog->GetCatalogIRec(CFile->Name, CFile->FF->file_type == FileType::RDB);
+		//CFile = CRdb->v_files->pChain;
+		//while (CFile != nullptr) {
+		for (size_t i = 1; i < CRdb->v_files.size(); i++) {
+			FileD* f = CRdb->v_files[i];
+			f->CloseFile();
+			f->CatIRec = catalog->GetCatalogIRec(f->Name, f->FF->file_type == FileType::RDB);
 #ifdef FandSQL
 			SetIsSQLFile();
 #endif
-			CFile = CFile->pChain;
+			//CFile = CFile->pChain;
 		}
 		CRdb = CRdb->ChainBack;
 	}
@@ -1647,7 +1649,6 @@ void CallProcedure(Instr_proc* PD)
 
 	WORD i = 0, j = 0;
 	int l = 0;
-	FileD* lstFD = nullptr;
 	KeyFldD* kf1 = nullptr;
 	KeyFldD* kf2 = nullptr;
 
@@ -1655,7 +1656,7 @@ void CallProcedure(Instr_proc* PD)
 	MarkBoth(p1, p2);
 	//oldprocbp = ProcMyBP;
 	std::deque<LinkD*> ld = LinkDRoot;
-	lstFD = (FileD*)LastInChain(FileDRoot);
+	size_t lstFDindex = CRdb->v_files.size() - 1; // index of last item in FileDRoot;
 	g_compiler->SetInpTT(&PD->PPos, true);
 
 #ifdef _DEBUG
@@ -1703,6 +1704,7 @@ void CallProcedure(Instr_proc* PD)
 				std::string code = RunStdStr(CFile, PD->TArg[i].TxtFrml, CRecPtr);
 				g_compiler->SetInpStdStr(code, true);
 				CFile = RdFileD(PD->TArg[i].Name, FileType::FAND16, "$");
+				CRdb->v_files.push_back(CFile);
 				g_compiler->RestoreCompState(state);
 			}
 			else {
@@ -1824,12 +1826,15 @@ void CallProcedure(Instr_proc* PD)
 	LVBD = oldLVDB;
 	LinkDRoot = ld;
 
-	CFile = lstFD->pChain;
-	while (CFile != nullptr) {
-		CFile->CloseFile();
-		CFile = CFile->pChain;
-	}
-	lstFD->pChain = nullptr;
+	//CFile = lstFD->pChain;
+	//while (CFile != nullptr) {
+	//	CFile->CloseFile();
+	//	CFile = CFile->pChain;
+	//}
+	//lstFD->pChain = nullptr;
+
+	FileD::CloseAndRemoveAllAfter(lstFDindex + 1, CRdb->v_files);
+
 	ReleaseStore(&p1);
 	ReleaseStore(&p2);
 }

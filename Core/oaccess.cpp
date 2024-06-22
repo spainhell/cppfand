@@ -60,22 +60,21 @@ void CloseFANDFiles(bool FromDML)
 {
 	RdbD* RD = CRdb;
 	while (RD != nullptr) {
-		CFile = RD->rdb_file;
-		while (CFile != nullptr) {
+		FileD* f = RD->v_files[0];
+		//while (f != nullptr) {
+		for (FileD* f : RD->v_files) {
 			if (!FromDML) {
-				CFile->FF->ExLMode = CFile->FF->LMode;
+				f->FF->ExLMode = f->FF->LMode;
 			}
-			CFile->CloseFile();
-			CFile = CFile->pChain;
+			f->CloseFile();
+			//f = f->pChain;
 		}
 		RD = RD->ChainBack;
 	}
 	if (CRdb != nullptr) {
-		CFile = catalog->GetCatalogFile();
-		CFile->CloseFile();
+		catalog->GetCatalogFile()->CloseFile();
 	}
-	CFile = HelpFD;
-	CFile->CloseFile();
+	HelpFD->CloseFile();
 	CloseH(&TWork.Handle);
 	CloseH(&XWork.Handle);
 }
@@ -89,66 +88,80 @@ void OpenFANDFiles(bool FromDML)
 	OpenTWorkH();
 	OpenF(HelpFD, CPath, RdOnly);
 	if (CRdb == nullptr) return;
+
 	OpenF(catalog->GetCatalogFile(), CPath, Exclusive);
 	RD = CRdb;
 
 	while (RD != nullptr) {
-		RD->rdb_file = RD->rdb_file;
 		if (IsTestRun) {
-			OpenF(RD->rdb_file, CPath, Exclusive);
+			OpenF(RD->v_files[0], CPath, Exclusive);
 		}
 		else {
-			OpenF(RD->rdb_file, CPath, RdOnly);
+			OpenF(RD->v_files[0], CPath, RdOnly);
 		}
-		FileD* f = RD->rdb_file->pChain;
-		while (!FromDML && (f != nullptr)) {
-			if (f->FF->ExLMode != NullMode) {
-				OpenF(f, CPath, Shared);
-				md = f->NewLockMode(f->FF->ExLMode);
+
+		auto it0 = RD->v_files.begin();
+		++it0;
+
+		while (!FromDML && (it0 != RD->v_files.end())) {
+			if ((*it0)->FF->ExLMode != NullMode) {
+				OpenF(*it0, CPath, Shared);
+				md = (*it0)->NewLockMode((*it0)->FF->ExLMode);
 			}
-			f = f->pChain;
+			++it0;
 		}
+
 		RD = RD->ChainBack;
 	}
 
 }
 
-void CloseFilesAfter(FileD* FD)
-{
-	while (FD != nullptr) {
-		FD->CloseFile();
-		FD = FD->pChain;
-	}
-}
+//void CloseFilesAfter(FileD* first_for_close, std::vector<FileD*>& v_files)
+//{
+//	// find first_for_close in v_files
+//	std::ranges::borrowed_iterator_t<std::vector<FileD*>&> it0
+//		= std::ranges::find(v_files, first_for_close);
+//
+//	while (it0 != v_files.end()) {
+//		(*it0)->CloseFile();
+//		++it0;
+//	}
+//}
 
 bool ActiveRdbOnDrive(WORD D)
 {
 	auto result = true;
 	RdbD* R = CRdb;
-	while (R != nullptr)
-	{
-		if (R->rdb_file->FF->Drive == D) return result;
+	while (R != nullptr) {
+		if (R->v_files[0]->FF->Drive == D) return result;
 		R = R->ChainBack;
 	}
 	result = false;
 	return result;
 }
 
-void CloseFilesOnDrive(WORD D)
+void CloseFilesOnDrive(WORD drive)
 {
 	RdbD* R = CRdb;
-	FileD* CF = CFile;
+	//FileD* CF = CFile;
+
 	while (R != nullptr) {
-		CFile = R->rdb_file;
-		while (CFile != nullptr) {
-			if (CFile->FF->Drive == D) {
-				CFile->CloseFile();
+		/*FileD* f = R->v_files;
+		while (f != nullptr) {
+			if (f->FF->Drive == drive) {
+				f->CloseFile();
 			}
-			CFile = CFile->pChain;
+			f = f->pChain;
+		}*/
+		for (FileD* f : R->v_files) {
+			if (f->FF->Drive == drive) {
+				f->CloseFile();
+			}
 		}
+
 		R = R->ChainBack;
 	}
-	CFile = CF;
+	//CFile = CF;
 }
 
 WORD TestMountVol(char DriveC)
@@ -226,18 +239,22 @@ void ReleaseDrive(WORD D)
 
 bool SetContextDir(FileD* file_d, std::string& dir, bool& isRdb)
 {
-	bool result = true;
 	RdbD* R = CRdb;
 	isRdb = false;
+
 	while (R != nullptr) {
-		FileD* F = R->rdb_file;
-		if ((file_d == F) && (file_d->CatIRec != 0)) {
-			dir = R->RdbDir;
-			isRdb = true;
-			return result;
+		if (!R->v_files.empty()) {
+			FileD* F = R->v_files[0];
+			if ((file_d == F) && (file_d->CatIRec != 0)) {
+				dir = R->RdbDir;
+				isRdb = true;
+				return true;
+			}
 		}
-		while (F != nullptr) {
-			if (file_d == F) {
+
+		//while (F != nullptr) {
+		for (FileD* f : R->v_files) {
+			if (file_d == f) {
 				if ((file_d == R->help_file) || (file_d->FF->file_type == FileType::RDB)) {
 					//.RDB
 					dir = R->RdbDir;
@@ -245,12 +262,14 @@ bool SetContextDir(FileD* file_d, std::string& dir, bool& isRdb)
 				else {
 					dir = R->DataDir;
 				}
-				return result;
+				return true;
 			}
-			F = F->pChain;
+			//F = F->pChain;
 		}
+
 		R = R->ChainBack;
 	}
+
 	return false;
 }
 

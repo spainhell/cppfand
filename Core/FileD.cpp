@@ -526,8 +526,42 @@ bool FileD::IsActiveRdb()
 {
 	RdbD* R = CRdb;
 	while (R != nullptr) {
-		if (this == R->rdb_file) return true;
+		if (this == R->v_files[0]) return true;
 		R = R->ChainBack;
 	}
 	return false;
+}
+
+void FileD::CloseAllAfter(FileD* first_for_close, std::vector<FileD*>& v_files)
+{
+	// find first_for_close in v_files
+	auto it0 = std::ranges::find(v_files, first_for_close);
+
+	while (it0 != v_files.end()) {
+		(*it0)->CloseFile();
+		++it0;
+	}
+}
+
+void FileD::CloseAndRemoveAllAfter(FileD* first_for_remove, std::vector<FileD*>& v_files)
+{
+		// find first_for_close in v_files
+	auto it0 = std::ranges::find(v_files, first_for_remove);
+
+	while (it0 != v_files.end()) {
+		(*it0)->CloseFile();
+		it0 = v_files.erase(it0);
+	}
+}
+
+void FileD::CloseAndRemoveAllAfter(size_t first_index_for_remove, std::vector<FileD*>& v_files)
+{
+	if (first_index_for_remove >= v_files.size()) return;
+
+	for (size_t i = first_index_for_remove; i < v_files.size(); i++) {
+		v_files[i]->CloseFile();
+		delete v_files[i];
+		v_files[i] = nullptr;
+	}
+	v_files.erase(v_files.begin() + static_cast<int>(first_index_for_remove), v_files.end());
 }

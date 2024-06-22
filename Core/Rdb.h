@@ -1,6 +1,7 @@
 #pragma once
 #include <deque>
 #include <string>
+#include <vector>
 
 class FileD;
 class LinkD;
@@ -10,8 +11,8 @@ class RdbD
 {
 public:
 	RdbD* ChainBack = nullptr;
-	FileD* rdb_file = nullptr;
-	FileD* help_file = nullptr; // { rdb_file=FileDRoot and = Chpt for this RDB }
+	std::vector<FileD*> v_files;
+	FileD* help_file = nullptr; // { v_files=FileDRoot and = Chpt for this RDB }
 	std::deque<LinkD*> OldLDRoot;
 	FuncD* OldFCRoot = nullptr;
 	bool Encrypted = false;

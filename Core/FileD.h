@@ -16,7 +16,7 @@ enum class FType
 	MariaDB
 };
 
-class FileD : public Chained<FileD>
+class FileD //: public Chained<FileD>
 {
 public:
 	FileD(FType f_type);
@@ -31,7 +31,7 @@ public:
 	FandFile* FF = nullptr;   // FandFile reference
 
 	int IRec = 0;
-	RdbPos ChptPos;           // zero for Rdb and rdb_file translated from string 
+	RdbPos ChptPos;           // zero for Rdb and v_files translated from string 
 	size_t TxtPosUDLI = 0;    // =0 if not present; urcuje zacatek odstavcu #U #D #L #I
 	FileD* OrigFD = nullptr;  // like orig. or nil
 
@@ -110,4 +110,8 @@ public:
 	void DelAllDifTFlds(void* record, void* comp_record);
 
 	bool IsActiveRdb();
+
+	static void CloseAllAfter(FileD* first_for_close, std::vector<FileD*>& v_files);
+	static void CloseAndRemoveAllAfter(FileD* first_for_remove, std::vector<FileD*>& v_files);
+	static void CloseAndRemoveAllAfter(size_t first_index_for_remove, std::vector<FileD*>& v_files);
 };

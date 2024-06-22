@@ -10,9 +10,9 @@ void CloseFANDFiles(bool FromDML);
 void OpenFANDFiles(bool FromDML);
 
 
-void CloseFilesAfter(FileD* FD);
+//void CloseFilesAfter(FileD* first_for_close, std::vector<FileD*>& v_files);
 bool ActiveRdbOnDrive(WORD D);
-void CloseFilesOnDrive(WORD D);
+void CloseFilesOnDrive(WORD drive);
 WORD TestMountVol(char DriveC);
 void ReleaseDrive(WORD D);
 

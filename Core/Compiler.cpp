@@ -175,17 +175,17 @@ void Compiler::SetInpTT(RdbPos* rdb_pos, bool FromTxt)
 	InpRdbPos = *rdb_pos;
 
 	RdbD* rdb = rdb_pos->rdb;
-	uint8_t* rec = rdb->rdb_file->GetRecSpace();
+	uint8_t* rec = rdb->v_files[0]->GetRecSpace();
 
-	rdb->rdb_file->ReadRec(rdb_pos->i_rec, rec);
+	rdb->v_files[0]->ReadRec(rdb_pos->i_rec, rec);
 	int pos;
 	if (FromTxt) {
-		pos = rdb->rdb_file->loadT(ChptTxt, rec);
+		pos = rdb->v_files[0]->loadT(ChptTxt, rec);
 	}
 	else {
-		pos = rdb->rdb_file->loadT(ChptOldTxt, rec);
+		pos = rdb->v_files[0]->loadT(ChptOldTxt, rec);
 	}
-	SetInpTTPos(rdb->rdb_file, pos, rdb->Encrypted);
+	SetInpTTPos(rdb->v_files[0], pos, rdb->Encrypted);
 
 	delete[] rec; rec = nullptr;
 }
@@ -966,9 +966,10 @@ label1:
 				}
 				TestLex('[');
 				p = SaveCompState();
-				RdFileD(lv->name, FDTyp, "$");
+				FileD* f = RdFileD(lv->name, FDTyp, "$");
+				CRdb->v_files.push_back(f);
 				TestLex(']');
-				lv->FD = CFile;
+				lv->FD = f; // here was lv->FD = CFile
 				n = CurrPos;
 				lx = Lexem;
 				fc = ForwChar;
@@ -1061,7 +1062,7 @@ bool Compiler::FindChpt(char Typ, const pstring& name, bool local, RdbPos* RP)
 	RdbD* R = CRdb;
 	auto result = false;
 	while (R != nullptr) {
-		CFile = R->rdb_file;
+		CFile = R->v_files[0];
 		for (WORD i = 1; i <= CFile->FF->NRecs; i++) {
 			CFile->ReadRec(i, CRecPtr);
 			std::string chapterType = CFile->loadS(ChptTyp, CRecPtr);
@@ -2424,27 +2425,33 @@ FieldDescr* Compiler::RdFldName(FileD* FD)
 
 FileD* Compiler::FindFileD()
 {
-	FileD* FD = nullptr;
-	RdbD* R = nullptr;
 	LocVar* LV = nullptr;
 	if (FDLocVarAllowed && FindLocVar(&LVBD, &LV) && (LV->f_typ == 'f')) {
 		return LV->FD;
 	}
-	R = CRdb;
+
+	RdbD* R = CRdb;
 	while (R != nullptr) {
-		FD = R->rdb_file;
-		while (FD != nullptr) {
-			std::string lw = LexWord;
-			if (EquUpCase(FD->Name, lw)) {
-				return FD;
+		//FD = R->v_files;
+		//while (FD != nullptr) {
+		//	std::string lw = LexWord;
+		//	if (EquUpCase(FD->Name, lw)) {
+		//		return FD;
+		//	}
+		//	FD = FD->pChain;
+		//}
+		for (FileD* f : R->v_files) {
+			if (EquUpCase(f->Name, LexWord)) {
+				return f;
 			}
-			FD = FD->pChain;
 		}
 		R = R->ChainBack;
 	}
+
 	if (EquUpCase("CATALOG", LexWord)) {
 		return catalog->GetCatalogFile();
 	}
+
 	return nullptr;
 }
 
@@ -2457,7 +2464,9 @@ FileD* Compiler::RdFileName()
 	}
 	TestIdentif();
 	FD = FindFileD();
-	if ((FD == nullptr) || (FD == CRdb->rdb_file) && !SpecFDNameAllowed) Error(9);
+	if ((FD == nullptr) || (FD == CRdb->v_files[0]) && !SpecFDNameAllowed) {
+		Error(9);
+	}
 	RdLex();
 	return FD;
 }

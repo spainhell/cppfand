@@ -245,7 +245,7 @@ bool TransAdd(FileD* file_d, AddD* AD, FileD* FD, void* RP, void* new_record, in
 	if (CFile->IsSQLFile) {
 		ld = AD->LD; if (ld == nullptr) Strm1->SelectXRec(nullptr, nullptr, _equ, false)
 		else {
-			CFile = rdb_file; CRecPtr = RP; x.PackKF(ld->Args);
+			CFile = v_files; CRecPtr = RP; x.PackKF(ld->Args);
 			CFile = ld->ToFD; CRecPtr = CRold; Strm1->SelectXRec(ld->ToKey, @x, _equ, false)
 		}
 	}

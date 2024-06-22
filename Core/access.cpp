@@ -203,8 +203,9 @@ void ForAllFDs(ForAllFilesOperation op, FileD** file_d, WORD i)
 	//FileD* cf = CFile;
 	RdbD* R = CRdb;
 	while (R != nullptr) {
-		FileD* f = R->rdb_file;
-		while (f != nullptr) {
+		//FileD* f = R->v_files;
+		//while (f != nullptr) {
+		for (FileD* f : R->v_files) {
 			switch (op) {
 			case ForAllFilesOperation::close: {
 				f->CloseFile();
@@ -240,7 +241,7 @@ void ForAllFDs(ForAllFilesOperation op, FileD** file_d, WORD i)
 			}
 			default:;
 			}
-			f = f->pChain;
+			//f = f->pChain;
 		}
 		R = R->ChainBack;
 	}

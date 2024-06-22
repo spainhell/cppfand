@@ -268,7 +268,7 @@ FrmlElem* RdFldNameFrmlP(char& FTyp, MergeReportBase* caller)
 		g_compiler->RdLex();
 		A->RecFD = FD;
 #ifdef FandSQL
-		if (rdb_file->typSQLFile) OldError(155);
+		if (v_files->typSQLFile) OldError(155);
 #endif
 		A->P1 = g_compiler->RdRealFrml(nullptr);
 		g_compiler->Accept(']');
@@ -444,7 +444,7 @@ FrmlElem* RdFunctionP(char& FFTyp)
 		}
 		g_compiler->Accept(',');
 #ifdef FandSQL
-		if (rdb_file->typSQLFile) OldError(155);
+		if (v_files->typSQLFile) OldError(155);
 #endif
 		cf = CFile;
 		CFile = FD;
@@ -471,7 +471,7 @@ FrmlElem* RdFunctionP(char& FFTyp)
 			((FrmlElem14*)Z)->P1 = g_compiler->RdRealFrml(nullptr);
 		label2: {}
 #ifdef FandSQL
-			if (rdb_file->typSQLFile) Error(155);
+			if (v_files->typSQLFile) Error(155);
 #endif
 		}
 	}
@@ -1536,7 +1536,7 @@ Instr_sort* RdSortCall()
 	FileD* FD = g_compiler->RdFileName();
 	PD->SortFD = FD;
 #ifdef FandSQL
-	if (rdb_file->typSQLFile) OldError(155);
+	if (v_files->typSQLFile) OldError(155);
 #endif
 	g_compiler->Accept(',');
 	g_compiler->Accept('(');
@@ -2661,7 +2661,7 @@ Instr_assign* RdAssign()
 		FD = g_compiler->RdFileName();
 		PD->FD = FD; g_compiler->RdLex();
 #ifdef FandSQL
-		if (rdb_file->typSQLFile) OldError(155);
+		if (v_files->typSQLFile) OldError(155);
 #endif
 		PD->RecFrml = g_compiler->RdRealFrml(nullptr);
 		g_compiler->Accept(']');

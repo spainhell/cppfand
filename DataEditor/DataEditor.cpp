@@ -4025,7 +4025,6 @@ void DataEditor::ImbeddEdit()
 	WORD Brk;
 	//std::vector<std::string> SL;
 	EditOpt* EO = nullptr;
-	FileD* FD = nullptr;
 	RdbD* R = nullptr; int w = 0;
 
 	MarkStore(p);
@@ -4037,26 +4036,28 @@ void DataEditor::ImbeddEdit()
 
 	R = CRdb;
 	while (R != nullptr) {
-		FD = R->rdb_file->pChain;
-		while (FD != nullptr) {
-			if (data_editor2->ForNavigate(FD)) {
+		//FD = R->v_files;
+		//while (FD != nullptr) {
+		for (size_t i = 1; i < R->v_files.size(); i++) {
+			FileD* f = R->v_files[i];
+			if (data_editor2->ForNavigate(f)) {
 				//SL = FD->ViewNames;
 				//do {
 				//	std::string s = data_editor2->GetFileViewName(FD, &SL);
 				//	if (R != CRdb) {
-				//		s = R->rdb_file->Name + "." + s;
+				//		s = R->v_files->Name + "." + s;
 				//	}
 				//	ww.PutSelect(s);
 				//} while (SL != nullptr);
-				for (size_t i = 0; i < FD->ViewNames.size(); i++) {
-					std::string s = data_editor2->GetFileViewName(FD, FD->ViewNames, i);
+				for (size_t i = 0; i < f->ViewNames.size(); i++) {
+					std::string s = data_editor2->GetFileViewName(f, f->ViewNames, i);
 					if (R != CRdb) {
-						s = R->rdb_file->Name + "." + s;
+						s = R->v_files[0]->Name + "." + s;
 					}
 					ww.PutSelect(s);
 				}
 			}
-			FD = FD->pChain;
+			//FD = FD->pChain;
 		}
 		R = R->ChainBack;
 	}
@@ -4072,12 +4073,19 @@ void DataEditor::ImbeddEdit()
 			std::string ss2 = s2;
 			do {
 				R = R->ChainBack;
-			} while (R->rdb_file->Name != ss2);
+			} while (R->v_files[0]->Name != ss2);
 		}
-		data_editor2->file_d_ = R->rdb_file;
-		while (!data_editor2->EquFileViewName(file_d_, s1, &EO)) {
-			data_editor2->file_d_ = data_editor2->file_d_->pChain;
+
+		//data_editor2->file_d_ = R->v_files[0];
+		//while (!data_editor2->EquFileViewName(file_d_, s1, &EO)) {
+		//	data_editor2->file_d_ = data_editor2->file_d_->pChain;
+		//}
+		for (auto& v_file : R->v_files) {
+			if (data_editor2->EquFileViewName(v_file, s1, &EO)) {
+				data_editor2->file_d_ = v_file;
+			}
 		}
+
 		if (data_editor2->SelFldsForEO(EO, nullptr)) {
 			EditReader* reader = new EditReader();
 			reader->NewEditD(data_editor2->file_d_, EO, data_editor2->record_);
@@ -4151,7 +4159,7 @@ void DataEditor::DownEdit()
 		LinkD* LD = *LinkDRoot.begin();
 		data_editor2->GetSel2S(s1, s2, '/', 2);
 		ali = GetFromKey(LD)->Alias;
-		//while ((LD->ToFD != edit_->rdb_file) || (LD->IndexRoot == 0) || (s2 != ali)
+		//while ((LD->ToFD != edit_->v_files) || (LD->IndexRoot == 0) || (s2 != ali)
 		//	|| !EquFileViewName(LD->FromFD, s1, options)) LD = LD->pChain;
 		for (auto& ld : LinkDRoot) {
 			if ((ld->ToFD != data_editor2->edit_->FD)
