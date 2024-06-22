@@ -73,10 +73,14 @@ FileType ExtToTyp(const std::string& ext)
 
 void ReleaseFilesAndLinksAfterChapter(EditD* edit)
 {
-	if (Chpt->pChain != nullptr) {
-		CloseFilesAfter(Chpt->pChain);
+	//if (Chpt->pChain != nullptr) {
+	//	CloseFilesAfter(Chpt->pChain);
+	//}
+	//Chpt->pChain = nullptr;
+
+	if (FileDRoot.size() > 1) {
+		FileD::CloseAndRemoveAllAfter(1, FileDRoot);
 	}
-	Chpt->pChain = nullptr;
 
 	LinkDRoot = CRdb->OldLDRoot;
 	FuncDRoot = CRdb->OldFCRoot;
@@ -728,7 +732,7 @@ void CloseChpt()
 	SaveFiles();
 	bool del = Chpt->FF->NRecs == 0;
 	std::string d = CRdb->RdbDir;
-	CloseFilesAfter(FileDRoot);
+	FileD::CloseAllAfter(FileDRoot[0], FileDRoot);
 	LinkDRoot = CRdb->OldLDRoot;
 	FuncDRoot = CRdb->OldFCRoot;
 	void* p = CRdb;
@@ -812,7 +816,7 @@ bool CompRunChptRec(const std::unique_ptr<DataEditor>& rdb_editor, WORD CC)
 	bool WasError = true;
 	bool WasGraph = IsGraphMode;
 	//FileD* lstFD = (FileD*)LastInChain(FileDRoot);
-	FileD* lstFD = FileDRoot.back();
+	int lstFDindex = FileDRoot.size() - 1;
 	std::deque<LinkD*> oldLd = LinkDRoot;
 
 	FileD* FD = nullptr;
@@ -903,12 +907,13 @@ bool CompRunChptRec(const std::unique_ptr<DataEditor>& rdb_editor, WORD CC)
 					RunMainProc(RP, CRdb->ChainBack == nullptr);
 				}
 				else {
-					lstFD = (FileD*)LastInChain(FileDRoot);
+					lstFDindex = FileDRoot.size() - 1;
 					std::deque<LinkD*> ld = LinkDRoot;
 					g_compiler->SetInpTT(&RP, true);
 					ReadProcHead("");
 					ReadProcBody();
-					lstFD->pChain = nullptr;
+					FileD::CloseAndRemoveAllAfter(lstFDindex + 1, FileDRoot);
+					//lstFD->pChain = nullptr;
 					LinkDRoot = ld;
 				}
 				break;
@@ -961,12 +966,16 @@ bool CompRunChptRec(const std::unique_ptr<DataEditor>& rdb_editor, WORD CC)
 	if (WasError) {
 		ForAllFDs(ForAllFilesOperation::clear_xf_update_lock);
 	}
-	CFile = lstFD->pChain;
-	while (CFile != nullptr) {
-		CFile->CloseFile();
-		CFile = CFile->pChain;
-	}
-	lstFD->pChain = nullptr;
+
+	//CFile = lstFD->pChain;
+	//while (CFile != nullptr) {
+	//	CFile->CloseFile();
+	//	CFile = CFile->pChain;
+	//}
+	//lstFD->pChain = nullptr;
+
+	FileD::CloseAndRemoveAllAfter(lstFDindex + 1, FileDRoot);
+
 	LinkDRoot = oldLd;
 	ReleaseStore(&p);
 	ReleaseStore(&p2);
@@ -1322,7 +1331,7 @@ bool MergeOldNew(FileD* new_file, FileD* old_file)
 		MyDeleteFile(CPath);
 	}
 label1:
-	FDNew->pChain = nullptr;
+	//FDNew->pChain = nullptr;
 	//LinkDRoot = ld;
 	FDNew->Name = Name;
 	FDNew->FullPath = CPath;
@@ -1349,7 +1358,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 	void* p2 = nullptr;
 	WORD lmsg = 0;
 	std::string RprtTxt;
-	FileD* lstFD = nullptr;
+	size_t lstFDindex = 0;
 	auto result = false;
 
 	//EditD* OldE = E;
@@ -1529,17 +1538,18 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 					//else {
 					//	lstFD = (FileD*)LastInChain(FileDRoot);
 					//}
-					if (FileDRoot.size() == 1) {
-						lstFD = FileDRoot[0];
+					if (FileDRoot.empty()) {
+						throw std::exception("FileDRoot is empty");
 					}
 					else {
-						lstFD = FileDRoot.back();
+						lstFDindex = FileDRoot.size() - 1;
 					}
 					std::deque<LinkD*> ld = LinkDRoot;
 					g_compiler->SetInpTTPos(rdb_file, Txt, Encryp);
 					ReadProcHead(Name);
 					ReadProcBody();
-					lstFD->pChain = nullptr;
+					//lstFD->pChain = nullptr;
+					FileD::CloseAndRemoveAllAfter(lstFDindex + 1, FileDRoot);
 					LinkDRoot = ld;
 					break;
 				}

@@ -110,4 +110,8 @@ public:
 	void DelAllDifTFlds(void* record, void* comp_record);
 
 	bool IsActiveRdb();
+
+	static void CloseAllAfter(FileD* first_for_close, std::vector<FileD*>& v_files);
+	static void CloseAndRemoveAllAfter(FileD* first_for_remove, std::vector<FileD*>& v_files);
+	static void CloseAndRemoveAllAfter(size_t first_index_for_remove, std::vector<FileD*>& v_files);
 };

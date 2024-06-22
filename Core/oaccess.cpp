@@ -116,16 +116,17 @@ void OpenFANDFiles(bool FromDML)
 
 }
 
-void CloseFilesAfter(FileD* FD)
-{
-	// find FD in FileDRoot
-	std::ranges::borrowed_iterator_t<std::vector<FileD*>&> it0 = std::ranges::find(FileDRoot, FD);
-
-	while (it0 != FileDRoot.end()) {
-		(*it0)->CloseFile();
-		++it0;
-	}
-}
+//void CloseFilesAfter(FileD* first_for_close, std::vector<FileD*>& v_files)
+//{
+//	// find first_for_close in v_files
+//	std::ranges::borrowed_iterator_t<std::vector<FileD*>&> it0
+//		= std::ranges::find(v_files, first_for_close);
+//
+//	while (it0 != v_files.end()) {
+//		(*it0)->CloseFile();
+//		++it0;
+//	}
+//}
 
 bool ActiveRdbOnDrive(WORD D)
 {
