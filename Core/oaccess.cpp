@@ -243,11 +243,13 @@ bool SetContextDir(FileD* file_d, std::string& dir, bool& isRdb)
 	isRdb = false;
 
 	while (R != nullptr) {
-		FileD* F = R->v_files[0];
-		if ((file_d == F) && (file_d->CatIRec != 0)) {
-			dir = R->RdbDir;
-			isRdb = true;
-			return true;
+		if (!R->v_files.empty()) {
+			FileD* F = R->v_files[0];
+			if ((file_d == F) && (file_d->CatIRec != 0)) {
+				dir = R->RdbDir;
+				isRdb = true;
+				return true;
+			}
 		}
 
 		//while (F != nullptr) {

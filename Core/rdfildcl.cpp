@@ -448,7 +448,7 @@ void TestUserView(FileD* file_d)
 		//	FD = FD->pChain;
 		//}
 
-		for (FileD* f : FileDRoot) {
+		for (FileD* f : CRdb->v_files) {
 			TestDupl(f);
 		}
 
@@ -712,7 +712,7 @@ FileD* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 	if (g_compiler->IsKeyWord("JOURNALOF")) {
 		isJournal = true;
 		file_d = RdFileD_Journal(FileName, FDTyp);
-		FileDRoot.push_back(file_d);
+		CRdb->v_files.push_back(file_d);
 		//ChainLast(FileDRoot, file_d);
 		MarkStore(p);
 		//goto label1;
@@ -780,10 +780,10 @@ FileD* RdFileD(std::string FileName, FileType FDTyp, std::string Ext)
 			RdKumul();
 		}
 
-		if (FileDRoot.empty()) {
-			Chpt = file_d;
-		}
-		FileDRoot.push_back(file_d);
+		//if (CRdb->v_files.empty()) {
+		//	Chpt = file_d;
+		//}
+		//CRdb->v_files.push_back(file_d);
 
 		if (Ext == "$") {
 			// compile from text at run time
@@ -995,7 +995,7 @@ void CheckDuplAlias(FileD* file_d, pstring name)
 		LookForK(file_d, &name, F);
 		F = F->pChain;
 	}*/
-	for (FileD* f : FileDRoot) {
+	for (FileD* f : CRdb->v_files) {
 		LookForK(file_d, &name, f);
 	}
 }

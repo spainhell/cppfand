@@ -11,7 +11,7 @@ const double FirstDate = 6.97248E+5;
 extern std::string LockModeTxt[9];
 
 // r474
-extern std::vector<FileD*> FileDRoot; // { only current RDB }
+//extern std::vector<FileD*> FileDRoot; // { only current RDB }
 extern std::deque<LinkD*> LinkDRoot;  // { for all RDBs     }
 extern FuncD* FuncDRoot;
 extern FileD* CFile;

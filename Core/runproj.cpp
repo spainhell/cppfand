@@ -78,8 +78,8 @@ void ReleaseFilesAndLinksAfterChapter(EditD* edit)
 	//}
 	//Chpt->pChain = nullptr;
 
-	if (FileDRoot.size() > 1) {
-		FileD::CloseAndRemoveAllAfter(1, FileDRoot);
+	if (CRdb->v_files.size() > 1) {
+		FileD::CloseAndRemoveAllAfter(1, CRdb->v_files);
 	}
 
 	LinkDRoot = CRdb->OldLDRoot;
@@ -660,17 +660,21 @@ RdbD* PrepareRdb(const std::string& name, std::string& name1)
 
 void CreateOpenChpt(std::string Nm, bool create)
 {
-	std::string p; std::string s;
+	std::string p;
+	std::string s;
 	short i = 0, n = 0;
-	std::string nr; std::string Nm1;
+	std::string nr;
+	std::string Nm1;
 	FileUseMode um = Closed;
 
 	bool top = (CRdb == nullptr);
-	FileDRoot.clear();
+	//CRdb = new RdbD();
+	//CRdb->v_files.clear();
 	Chpt = nullptr;
 	FandTFile* oldChptTF = ChptTF;
 	RdbD* R = PrepareRdb(Nm, Nm1);
 	CRdb = R;
+	Chpt = CRdb->v_files[0];
 	Chpt->FF->RecPtr = Chpt->GetRecSpace();
 
 	SetRdbDir(Chpt, Nm[0], &Nm1);
@@ -732,7 +736,7 @@ void CloseChpt()
 	SaveFiles();
 	bool del = Chpt->FF->NRecs == 0;
 	std::string d = CRdb->RdbDir;
-	FileD::CloseAllAfter(FileDRoot[0], FileDRoot);
+	FileD::CloseAllAfter(CRdb->v_files[0], CRdb->v_files);
 	LinkDRoot = CRdb->OldLDRoot;
 	FuncDRoot = CRdb->OldFCRoot;
 	void* p = CRdb;
@@ -740,7 +744,6 @@ void CloseChpt()
 	CRdb = CRdb->ChainBack;
 	//ReleaseBoth(p, p2);
 	if (CRdb != nullptr) {
-		FileDRoot = CRdb->v_files;
 		Chpt = CRdb->v_files[0];
 		SetChptFldD();
 		ChDir(CRdb->RdbDir);
@@ -816,7 +819,7 @@ bool CompRunChptRec(const std::unique_ptr<DataEditor>& rdb_editor, WORD CC)
 	bool WasError = true;
 	bool WasGraph = IsGraphMode;
 	//FileD* lstFD = (FileD*)LastInChain(FileDRoot);
-	int lstFDindex = FileDRoot.size() - 1;
+	int lstFDindex = CRdb->v_files.size() - 1;
 	std::deque<LinkD*> oldLd = LinkDRoot;
 
 	FileD* FD = nullptr;
@@ -907,17 +910,17 @@ bool CompRunChptRec(const std::unique_ptr<DataEditor>& rdb_editor, WORD CC)
 					RunMainProc(RP, CRdb->ChainBack == nullptr);
 				}
 				else {
-					lstFDindex = FileDRoot.size() - 1;
+					lstFDindex = CRdb->v_files.size() - 1;
 					std::deque<LinkD*> ld = LinkDRoot;
 					g_compiler->SetInpTT(&RP, true);
 					ReadProcHead("");
 					ReadProcBody();
-					FileD::CloseAndRemoveAllAfter(lstFDindex + 1, FileDRoot);
+					FileD::CloseAndRemoveAllAfter(lstFDindex + 1, CRdb->v_files);
 					//lstFD->pChain = nullptr;
 					LinkDRoot = ld;
 				}
 				break;
-				}
+			}
 #ifdef FandProlog
 			case 'L': {
 				if (CC == __CTRL_F9) {
@@ -931,11 +934,11 @@ bool CompRunChptRec(const std::unique_ptr<DataEditor>& rdb_editor, WORD CC)
 			default:;
 			}
 			WasError = false;
-			}
+		}
 	}
 	catch (std::exception& e) {
 		// TODO: log error
-		}
+	}
 
 	MaxHp = nullptr;
 	ReleaseStore(&p2);
@@ -974,7 +977,7 @@ bool CompRunChptRec(const std::unique_ptr<DataEditor>& rdb_editor, WORD CC)
 	//}
 	//lstFD->pChain = nullptr;
 
-	FileD::CloseAndRemoveAllAfter(lstFDindex + 1, FileDRoot);
+	FileD::CloseAndRemoveAllAfter(lstFDindex + 1, CRdb->v_files);
 
 	LinkDRoot = oldLd;
 	ReleaseStore(&p);
@@ -1001,7 +1004,7 @@ bool CompRunChptRec(const std::unique_ptr<DataEditor>& rdb_editor, WORD CC)
 		}
 	}
 	return result;
-	}
+}
 
 void RdUserId(bool Chk)
 {
@@ -1444,9 +1447,13 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 					// get position of old chapter code
 					int old_txt_pos = rdb_file->loadT(ChptOldTxt, rdb_file->FF->RecPtr);
 
+					p1 = RdF(rdb_file, Name);
+					CRdb->v_files.push_back(p1);
+					if (p1->IsHlpFile) {
+						CRdb->help_file = p1;
+					}
+
 					if (Verif || ChptTF->CompileAll || old_txt_pos == 0) {
-						//label2:
-						p1 = RdF(rdb_file, Name);
 						if (!Encryp) {
 							// get last successfully compiled code
 							std::string old_chapter_code = rdb_file->loadS(ChptOldTxt, rdb_file->FF->RecPtr);
@@ -1457,6 +1464,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 							if (old_chapter_code != chapter_code) {
 								if (!ChptTF->CompileAll && old_txt_pos != 0) {
 									FileD* previous_decl = RdOldF(rdb_file, Name);
+									// TODO: should this file be added into CRdb->v_files?
 
 									// transform the file
 									std::deque<LinkD*> ld_old = LinkDRoot;
@@ -1479,16 +1487,9 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 								}
 							}
 						}
-
-						if (p1->IsHlpFile) {
-							CRdb->help_file = p1;
-						}
 					}
 					else {
-						p1 = RdF(rdb_file, Name);
-						if (p1->IsHlpFile) {
-							CRdb->help_file = p1;
-						}
+						// do nothing more
 					}
 
 					//else if (!RdFDSegment(I, OldTxt)) {
@@ -1538,18 +1539,18 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 					//else {
 					//	lstFD = (FileD*)LastInChain(FileDRoot);
 					//}
-					if (FileDRoot.empty()) {
+					if (CRdb->v_files.empty()) {
 						throw std::exception("FileDRoot is empty");
 					}
 					else {
-						lstFDindex = FileDRoot.size() - 1;
+						lstFDindex = CRdb->v_files.size() - 1;
 					}
 					std::deque<LinkD*> ld = LinkDRoot;
 					g_compiler->SetInpTTPos(rdb_file, Txt, Encryp);
 					ReadProcHead(Name);
 					ReadProcBody();
 					//lstFD->pChain = nullptr;
-					FileD::CloseAndRemoveAllAfter(lstFDindex + 1, FileDRoot);
+					FileD::CloseAndRemoveAllAfter(lstFDindex + 1, CRdb->v_files);
 					LinkDRoot = ld;
 					break;
 				}
@@ -1576,7 +1577,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 						MarkStore(p1);
 					}
 					break;
-					}
+				}
 				case 'D': {
 					ResetCompilePars();
 					g_compiler->SetInpTTPos(rdb_file, Txt, Encryp);
@@ -1593,7 +1594,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 						//}
 #endif
 				}
-				}
+			}
 			//ReleaseStore(&p1);
 			ReleaseStore(&p2);
 			//CFile = Chpt;
@@ -1603,7 +1604,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 				rdb_file->saveB(ChptVerif, false, rdb_file->FF->RecPtr);
 				rdb_file->WriteRec(I, rdb_file->FF->RecPtr);
 			}
-			}
+				}
 		if (ChptTF->CompileAll || ChptTF->CompileProc) {
 			ChptTF->CompileAll = false;
 			ChptTF->CompileProc = false;
@@ -1622,7 +1623,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 
 		delete edit; edit = nullptr;
 		delete reader; reader = nullptr;
-		}
+			}
 	catch (std::exception& e) {
 		log->log(loglevel::EXCEPTION, "CompileRdb() exception: ", e.what());
 		result = false;
@@ -1641,7 +1642,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 	}
 
 	return result;
-	}
+		}
 
 void GotoErrPos(WORD& Brk, std::unique_ptr<DataEditor>& data_editor)
 {
@@ -1931,7 +1932,7 @@ bool EditExecRdb(const std::string& name, const std::string& proc_name, Instr_pr
 
 	Finish_EditExecRdb(wasGraph, w);
 	return result;
-}
+	}
 
 void UpdateCat()
 {

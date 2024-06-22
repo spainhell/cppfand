@@ -1158,7 +1158,7 @@ void ResetCatalog()
 	while (CRdb != nullptr) {
 		//CFile = CRdb->v_files->pChain;
 		//while (CFile != nullptr) {
-		for (size_t i = 1; i <= CRdb->v_files.size(); i++) {
+		for (size_t i = 1; i < CRdb->v_files.size(); i++) {
 			FileD* f = CRdb->v_files[i];
 			f->CloseFile();
 			f->CatIRec = catalog->GetCatalogIRec(f->Name, f->FF->file_type == FileType::RDB);
@@ -1656,7 +1656,7 @@ void CallProcedure(Instr_proc* PD)
 	MarkBoth(p1, p2);
 	//oldprocbp = ProcMyBP;
 	std::deque<LinkD*> ld = LinkDRoot;
-	size_t lstFDindex = FileDRoot.size() - 1; // index of last item in FileDRoot;
+	size_t lstFDindex = CRdb->v_files.size() - 1; // index of last item in FileDRoot;
 	g_compiler->SetInpTT(&PD->PPos, true);
 
 #ifdef _DEBUG
@@ -1704,6 +1704,7 @@ void CallProcedure(Instr_proc* PD)
 				std::string code = RunStdStr(CFile, PD->TArg[i].TxtFrml, CRecPtr);
 				g_compiler->SetInpStdStr(code, true);
 				CFile = RdFileD(PD->TArg[i].Name, FileType::FAND16, "$");
+				CRdb->v_files.push_back(CFile);
 				g_compiler->RestoreCompState(state);
 			}
 			else {
@@ -1832,7 +1833,7 @@ void CallProcedure(Instr_proc* PD)
 	//}
 	//lstFD->pChain = nullptr;
 
-	FileD::CloseAndRemoveAllAfter(lstFDindex + 1, FileDRoot);
+	FileD::CloseAndRemoveAllAfter(lstFDindex + 1, CRdb->v_files);
 
 	ReleaseStore(&p1);
 	ReleaseStore(&p2);

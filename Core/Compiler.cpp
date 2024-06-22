@@ -966,9 +966,10 @@ label1:
 				}
 				TestLex('[');
 				p = SaveCompState();
-				RdFileD(lv->name, FDTyp, "$");
+				FileD* f = RdFileD(lv->name, FDTyp, "$");
+				CRdb->v_files.push_back(f);
 				TestLex(']');
-				lv->FD = CFile;
+				lv->FD = f; // here was lv->FD = CFile
 				n = CurrPos;
 				lx = Lexem;
 				fc = ForwChar;

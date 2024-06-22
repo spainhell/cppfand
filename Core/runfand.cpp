@@ -133,9 +133,9 @@ void RdCFG()
 
 void CompileHelpCatDcl()
 {
-	FileDRoot.clear(); // FileDRoot = nullptr;
+	// FileDRoot = nullptr;
 	Chpt = nullptr; // Chpt = FileDRoot;
-	CRdb = nullptr;
+	//CRdb = nullptr;
 
 	// process help
 	std::string help_definition = ReadMessage(56);
@@ -152,7 +152,7 @@ void CompileHelpCatDcl()
 	FileD* cat_file = RdFileD("Catalog", FileType::CAT, "");
 	catalog = new Catalog(cat_file);
 	
-	FileDRoot.clear(); // FileDRoot = nullptr;
+	//CRdb->v_files.clear(); // FileDRoot = nullptr;
 	Chpt = nullptr; //Chpt = FileDRoot;
 }
 
@@ -385,6 +385,7 @@ void InitRunFand()
 	}
 
 	CRdb = nullptr;
+
 	for (int i = 0; i < FloppyDrives; i++) { MountedVol[i] = ""; }
 	// Ww
 	ss.Empty = true;
@@ -397,6 +398,7 @@ void InitRunFand()
 	editor->InitTxtEditor();
 
 	WasInitPgm = true;
+
 	CompileHelpCatDcl();
 
 	OpenWorkH();
