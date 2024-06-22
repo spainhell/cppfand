@@ -526,7 +526,7 @@ bool FileD::IsActiveRdb()
 {
 	RdbD* R = CRdb;
 	while (R != nullptr) {
-		if (this == R->rdb_file) return true;
+		if (this == R->v_rdb_files) return true;
 		R = R->ChainBack;
 	}
 	return false;

@@ -75,10 +75,10 @@ std::string ReportGenerator::SelGenRprt(pstring RprtName)
 	std::string result;
 	RdbD* r = CRdb;
 	while (r != nullptr) {
-		fd = r->rdb_file->pChain;
+		fd = r->v_rdb_files->pChain;
 		while (fd != nullptr) {
 			s = fd->Name;
-			if (r != CRdb) s = r->rdb_file->Name + '.' + s;
+			if (r != CRdb) s = r->v_rdb_files->Name + '.' + s;
 			ww.PutSelect(s);
 			fd = fd->pChain;
 		}
@@ -89,13 +89,18 @@ std::string ReportGenerator::SelGenRprt(pstring RprtName)
 	ww.SelectStr(0, 0, 19, tmpP + RprtName + '\"');
 	if (Event.Pressed.KeyCombination() == __ESC) return result;
 	s = ww.GetSelect();
-	size_t i = s.find('.'); r = CRdb;
+	size_t i = s.find('.');
+	r = CRdb;
 	if (i != std::string::npos) {
-		do { r = r->ChainBack; } while (r->rdb_file->Name != s.substr(1, i - 1));
+		do {
+			r = r->ChainBack;
+		} while (r->v_rdb_files[0]->Name != s.substr(1, i - 1));
 		s = s.substr(i + 1, 255);
 	}
-	fd = r->rdb_file;
-	do { fd = fd->pChain; } while (fd->Name != s);
+	fd = r->v_rdb_files;
+	do {
+		fd = fd->pChain;
+	} while (fd->Name != s);
 	RprtOpt* ro = g_compiler->GetRprtOpt();
 	ro->FDL.FD = fd;
 	//FieldDescr* f = fd->FldD.front();

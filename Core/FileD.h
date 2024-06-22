@@ -16,7 +16,7 @@ enum class FType
 	MariaDB
 };
 
-class FileD : public Chained<FileD>
+class FileD //: public Chained<FileD>
 {
 public:
 	FileD(FType f_type);
@@ -31,7 +31,7 @@ public:
 	FandFile* FF = nullptr;   // FandFile reference
 
 	int IRec = 0;
-	RdbPos ChptPos;           // zero for Rdb and rdb_file translated from string 
+	RdbPos ChptPos;           // zero for Rdb and v_rdb_files translated from string 
 	size_t TxtPosUDLI = 0;    // =0 if not present; urcuje zacatek odstavcu #U #D #L #I
 	FileD* OrigFD = nullptr;  // like orig. or nil
 

@@ -340,7 +340,7 @@ void DisplayProc(RdbD* R, WORD IRec)
 		if (str.empty()) return;
 	}
 	else {
-		CFile = R->rdb_file;
+		CFile = R->v_rdb_files;
 		CRecPtr = Chpt->FF->RecPtr;
 		CFile->ReadRec(IRec, CRecPtr);
 		int pos = CFile->loadT(ChptTxt, CRecPtr);
@@ -790,7 +790,7 @@ void ForAllProc(Instr_forall* PD)
 	Bool = RunEvalFrml(CFile, PD->CBool, CRecPtr);
 	lk = false;
 #ifdef FandSQL
-	if (PD->inSQL && !rdb_file->IsSQLFile) return;
+	if (PD->inSQL && !v_rdb_files->IsSQLFile) return;
 #endif
 	if (LD != nullptr) {
 		CFile = LD->ToFD; KF = LD->ToKey->KFlds;
@@ -1156,7 +1156,7 @@ void ResetCatalog()
 	FileD* cf = CFile;
 	RdbD* r = CRdb;
 	while (CRdb != nullptr) {
-		CFile = CRdb->rdb_file->pChain;
+		CFile = CRdb->v_rdb_files->pChain;
 		while (CFile != nullptr) {
 			CFile->CloseFile();
 			CFile->CatIRec = catalog->GetCatalogIRec(CFile->Name, CFile->FF->file_type == FileType::RDB);

@@ -94,9 +94,9 @@ enum instr_type
 	_exitcode = 0x1d, _edrecno = 0x1e, _getWORDvar = 0x1f, // {n:0..}
 	_memavail = 0x22, _maxcol = 0x23, _maxrow = 0x24,
 	_getmaxx = 0x25, _getmaxy = 0x26,
-	_lastupdate = 0x27, _nrecs = 0x28, _nrecsabs = 0x29, // {rdb_file}
-	_generation = 0x2a, // {rdb_file}
-	_recno = 0x2b, _recnoabs = 0x2c, _recnolog = 0x2d,  // {rdb_file,K,Z1,Z2,...}
+	_lastupdate = 0x27, _nrecs = 0x28, _nrecsabs = 0x29, // {v_rdb_files}
+	_generation = 0x2a, // {v_rdb_files}
+	_recno = 0x2b, _recnoabs = 0x2c, _recnolog = 0x2d,  // {v_rdb_files,K,Z1,Z2,...}
 	_filesize = 0x2e,  // {txtpath,txtcatirec}
 	_txtpos = 0x2f, _cprinter = 0x30, _mousex = 0x31, _mousey = 0x32,
 	_txtxy = 0x33, _indexnrecs = 0x34, _owned = 0x35,  // {bool,sum,ld}           // {rdb}
@@ -128,7 +128,7 @@ enum instr_type
 	_link = 0x90, // {LD}, // {rdb}
 	_val = 0x91, _valdate = 0x92, _length = 0x93, _linecnt = 0x94, // {maskstring}
 	_diskfree = 0x95, _ord = 0x96, _eval = 0x97,  // {Typ},  // {RS}
-	_accrecno = 0x98,  // {rdb_file,FldD},    // {rdb,S,B}
+	_accrecno = 0x98,  // {v_rdb_files,FldD},    // {rdb,S,B}
 	_promptyn = 0x99,  // {BS}
 	_conv = 0xa0,   // { used in Prolog}
 	_and = 0xb1, _or = 0xb2, _limpl = 0xb3, _lequ = 0xb4,  // {2-ary instructions}

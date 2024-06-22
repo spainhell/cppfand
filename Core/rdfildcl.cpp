@@ -257,7 +257,7 @@ void RdChkDChain(std::vector<ChkD*>& C)
 void RdChkDsFromPos(FileD* FD, std::vector<ChkD*>& C)
 {
 	if (FD->OrigFD != nullptr) {
-		// this rdb_file was created as 'LIKE'
+		// this v_rdb_files was created as 'LIKE'
 		RdChkDsFromPos(FD->OrigFD, C);
 	}
 	if (FD->ChptPos.rdb == nullptr) return;
@@ -590,7 +590,7 @@ FileD* RdFileD_Journal(const std::string& FileName, FileType FDTyp)
 	if (FDTyp != FileType::FAND16) g_compiler->OldError(103);
 	if (Lexem != 0x1A) g_compiler->Error(40);
 #ifdef FandSQL
-		if (isSql || rdb_file->typSQLFile) OldError(155);
+		if (isSql || v_rdb_files->typSQLFile) OldError(155);
 #endif
 
 	//file_d = FakeRdFDSegment(FD);
@@ -646,7 +646,7 @@ FileD* RdFileD_Like(const std::string& FileName, FileType FDTyp)
 		g_compiler->RdLex();
 		g_compiler->Accept(')');
 	}
-	//CallRdFDSegment(rdb_file);
+	//CallRdFDSegment(v_rdb_files);
 	// misto nacitani objektu ze souboru budeme objekt kopirovat
 	//file_d = FakeRdFDSegment(FD);
 	// *** replace of RdFDSegment
@@ -1033,7 +1033,7 @@ void RdFileOrAlias(FileD* file_d, FileD** FD, XKey** KD)
 	if (k != nullptr) goto label1;
 	r = CRdb;
 	while (r != nullptr) {
-		file_d = r->rdb_file;
+		file_d = r->v_rdb_files;
 		while (file_d != nullptr) {
 			k = RdFileOrAlias1(file_d);
 			if (k != nullptr) goto label1;

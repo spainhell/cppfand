@@ -380,8 +380,9 @@ std::string SetPathForH(HANDLE handle)
 {
 	RdbD* RD = CRdb;
 	while (RD != nullptr) {
-		FileD* fd = RD->rdb_file;
-		while (fd != nullptr) {
+		//FileD* fd = RD->v_rdb_files;
+		//while (fd != nullptr) {
+		for(FileD* fd : RD->v_rdb_files) {
 			if (fd->FF->Handle == handle) {
 				SetPathAndVolume(fd);
 				return CPath;
@@ -396,7 +397,7 @@ std::string SetPathForH(HANDLE handle)
 				CPath = CExtToT(fd->FF->TF, CDir, CName, CExt);
 				return CPath;
 			}
-			fd = fd->pChain;
+			//fd = fd->pChain;
 		}
 		RD = RD->ChainBack;
 	}

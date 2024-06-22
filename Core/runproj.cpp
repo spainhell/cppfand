@@ -53,7 +53,7 @@ int sz = 0; WORD nTb = 0; void* Tb = nullptr;
 
 bool IsCurrChpt(FileD* file_d)
 {
-	return CRdb->rdb_file == file_d;
+	return CRdb->v_rdb_files == file_d;
 }
 
 FileType ExtToTyp(const std::string& ext)
@@ -649,7 +649,7 @@ RdbD* PrepareRdb(const std::string& name, std::string& name1)
 	if ((name[0] == '\\')) name1 = name.substr(1, 8);
 	else name1 = name;
 
-	rdb_d->rdb_file = RdFileD(name1, FileType::RDB, ""); /*old CRdb for GetCatalogIRec*/
+	rdb_d->v_rdb_files = RdFileD(name1, FileType::RDB, ""); /*old CRdb for GetCatalogIRec*/
 
 	return rdb_d;
 }
@@ -736,7 +736,7 @@ void CloseChpt()
 	CRdb = CRdb->ChainBack;
 	//ReleaseBoth(p, p2);
 	if (CRdb != nullptr) {
-		FileDRoot = CRdb->rdb_file;
+		FileDRoot = CRdb->v_rdb_files;
 		Chpt = FileDRoot;
 		SetChptFldD();
 		ChDir(CRdb->RdbDir);
@@ -1361,7 +1361,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 			}
 		}
 		lmsg = CompileMsgOn(Buf, w);
-		//CRecPtr = rdb_file->FF->RecPtr;
+		//CRecPtr = v_rdb_files->FF->RecPtr;
 		Encryp = CRdb->Encrypted;
 		for (I = 1; I <= rdb_file->FF->NRecs; I++) {
 			rdb_file->ReadRec(I, rdb_file->FF->RecPtr);
@@ -1382,7 +1382,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 				|| (Typ == 'U')													// User rights chapter
 				|| (Typ == 'F' || Typ == 'D') && CompileFD						// chapter F or D and compile FD flag
 				|| (Typ == 'P') && ChptTF->CompileProc) {						// chapter P and compile proc flag	
-				//OldTxt = rdb_file->loadT(ChptOldTxt, rdb_file->FF->RecPtr);
+				//OldTxt = v_rdb_files->loadT(ChptOldTxt, v_rdb_files->FF->RecPtr);
 				InpRdbPos = RP;
 				if (IsTestRun) {
 					ClrScr(TextAttr);
@@ -1480,10 +1480,10 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 					//}
 
 					//else {
-					//	ChainLast(FileDRoot, rdb_file);
+					//	ChainLast(FileDRoot, v_rdb_files);
 					//	MarkStore(p1);
-					//	if (rdb_file->IsHlpFile) {
-					//		CRdb->help_file = rdb_file;
+					//	if (v_rdb_files->IsHlpFile) {
+					//		CRdb->help_file = v_rdb_files;
 					//	}
 					//}
 					break;
@@ -1571,7 +1571,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 			//ReleaseStore(&p1);
 			ReleaseStore(&p2);
 			//CFile = Chpt;
-			//CRecPtr = rdb_file->FF->RecPtr;
+			//CRecPtr = v_rdb_files->FF->RecPtr;
 			if (Verif) {
 				rdb_file->ReadRec(I, rdb_file->FF->RecPtr);
 				rdb_file->saveB(ChptVerif, false, rdb_file->FF->RecPtr);
@@ -1629,7 +1629,7 @@ void GotoErrPos(WORD& Brk, std::unique_ptr<DataEditor>& data_editor)
 			SetMsgPar("");
 		}
 		else {
-			SetMsgPar(InpRdbPos.rdb->rdb_file->Name);
+			SetMsgPar(InpRdbPos.rdb->v_rdb_files->Name);
 		}
 		WrLLF10Msg(622);
 		Brk = 0;

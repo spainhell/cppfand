@@ -60,7 +60,7 @@ void CloseFANDFiles(bool FromDML)
 {
 	RdbD* RD = CRdb;
 	while (RD != nullptr) {
-		CFile = RD->rdb_file;
+		CFile = RD->v_rdb_files;
 		while (CFile != nullptr) {
 			if (!FromDML) {
 				CFile->FF->ExLMode = CFile->FF->LMode;
@@ -93,14 +93,14 @@ void OpenFANDFiles(bool FromDML)
 	RD = CRdb;
 
 	while (RD != nullptr) {
-		RD->rdb_file = RD->rdb_file;
+		RD->v_rdb_files = RD->v_rdb_files;
 		if (IsTestRun) {
-			OpenF(RD->rdb_file, CPath, Exclusive);
+			OpenF(RD->v_rdb_files, CPath, Exclusive);
 		}
 		else {
-			OpenF(RD->rdb_file, CPath, RdOnly);
+			OpenF(RD->v_rdb_files, CPath, RdOnly);
 		}
-		FileD* f = RD->rdb_file->pChain;
+		FileD* f = RD->v_rdb_files->pChain;
 		while (!FromDML && (f != nullptr)) {
 			if (f->FF->ExLMode != NullMode) {
 				OpenF(f, CPath, Shared);
@@ -127,7 +127,7 @@ bool ActiveRdbOnDrive(WORD D)
 	RdbD* R = CRdb;
 	while (R != nullptr)
 	{
-		if (R->rdb_file->FF->Drive == D) return result;
+		if (R->v_rdb_files->FF->Drive == D) return result;
 		R = R->ChainBack;
 	}
 	result = false;
@@ -139,7 +139,7 @@ void CloseFilesOnDrive(WORD D)
 	RdbD* R = CRdb;
 	FileD* CF = CFile;
 	while (R != nullptr) {
-		CFile = R->rdb_file;
+		CFile = R->v_rdb_files;
 		while (CFile != nullptr) {
 			if (CFile->FF->Drive == D) {
 				CFile->CloseFile();
@@ -230,7 +230,7 @@ bool SetContextDir(FileD* file_d, std::string& dir, bool& isRdb)
 	RdbD* R = CRdb;
 	isRdb = false;
 	while (R != nullptr) {
-		FileD* F = R->rdb_file;
+		FileD* F = R->v_rdb_files;
 		if ((file_d == F) && (file_d->CatIRec != 0)) {
 			dir = R->RdbDir;
 			isRdb = true;

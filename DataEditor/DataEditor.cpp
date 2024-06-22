@@ -4037,21 +4037,21 @@ void DataEditor::ImbeddEdit()
 
 	R = CRdb;
 	while (R != nullptr) {
-		FD = R->rdb_file->pChain;
+		FD = R->v_rdb_files->pChain;
 		while (FD != nullptr) {
 			if (data_editor2->ForNavigate(FD)) {
 				//SL = FD->ViewNames;
 				//do {
 				//	std::string s = data_editor2->GetFileViewName(FD, &SL);
 				//	if (R != CRdb) {
-				//		s = R->rdb_file->Name + "." + s;
+				//		s = R->v_rdb_files->Name + "." + s;
 				//	}
 				//	ww.PutSelect(s);
 				//} while (SL != nullptr);
 				for (size_t i = 0; i < FD->ViewNames.size(); i++) {
 					std::string s = data_editor2->GetFileViewName(FD, FD->ViewNames, i);
 					if (R != CRdb) {
-						s = R->rdb_file->Name + "." + s;
+						s = R->v_rdb_files->Name + "." + s;
 					}
 					ww.PutSelect(s);
 				}
@@ -4072,9 +4072,9 @@ void DataEditor::ImbeddEdit()
 			std::string ss2 = s2;
 			do {
 				R = R->ChainBack;
-			} while (R->rdb_file->Name != ss2);
+			} while (R->v_rdb_files->Name != ss2);
 		}
-		data_editor2->file_d_ = R->rdb_file;
+		data_editor2->file_d_ = R->v_rdb_files;
 		while (!data_editor2->EquFileViewName(file_d_, s1, &EO)) {
 			data_editor2->file_d_ = data_editor2->file_d_->pChain;
 		}
@@ -4151,7 +4151,7 @@ void DataEditor::DownEdit()
 		LinkD* LD = *LinkDRoot.begin();
 		data_editor2->GetSel2S(s1, s2, '/', 2);
 		ali = GetFromKey(LD)->Alias;
-		//while ((LD->ToFD != edit_->rdb_file) || (LD->IndexRoot == 0) || (s2 != ali)
+		//while ((LD->ToFD != edit_->v_rdb_files) || (LD->IndexRoot == 0) || (s2 != ali)
 		//	|| !EquFileViewName(LD->FromFD, s1, options)) LD = LD->pChain;
 		for (auto& ld : LinkDRoot) {
 			if ((ld->ToFD != data_editor2->edit_->FD)
