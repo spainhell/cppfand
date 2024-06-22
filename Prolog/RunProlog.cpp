@@ -1106,21 +1106,21 @@ FileD* NextFD(FileD* FD)
 	RdbD* r;
 	if (FD == nullptr) {
 		r = CRdb;
-		FD = r->v_rdb_files[0];
+		FD = r->v_files[0];
 	}
 	else {
 		r = FD->ChptPos.rdb; /*not .RDB*/
 	}
 
 	while (true) {
-		// find FD in r->v_rdb_files
-		std::vector<FileD*>::iterator it0 = std::ranges::find(r->v_rdb_files, FD);
+		// find FD in r->v_files
+		std::vector<FileD*>::iterator it0 = std::ranges::find(r->v_files, FD);
 		++it0;
 
-		if (it0 == r->v_rdb_files.end()) {
+		if (it0 == r->v_files.end()) {
 			r = r->ChainBack;
 			if (r != nullptr) {
-				it0 = r->v_rdb_files.begin();
+				it0 = r->v_files.begin();
 				continue;
 			}
 		}
@@ -1265,7 +1265,7 @@ bool RunBuildIn()
 		case FileType::FAND8: s = "DTA"; break;
 		}
 		CurrInst->Vars[1] = GetStringTerm(s);
-		CurrInst->Vars[2] = GetStringTerm(fd->ChptPos.rdb->v_rdb_files[0]->Name);
+		CurrInst->Vars[2] = GetStringTerm(fd->ChptPos.rdb->v_files[0]->Name);
 		CFile = fd;
 		SetPathAndVolume(CFile);
 		CurrInst->Vars[3] = GetStringTerm(CPath);
@@ -1593,12 +1593,12 @@ void SetCFile(const pstring Name)
 {
 	RdbD* r = CRdb;
 	while (r != nullptr) {
-		/*CFile = r->v_rdb_files;
+		/*CFile = r->v_files;
 		while (CFile != nullptr) {
 			if (EquUpCase(Name, CFile->Name)) return;
 			CFile = (FileD*)CFile->pChain;
 		}*/
-		for (FileD* fd : r->v_rdb_files) {
+		for (FileD* fd : r->v_files) {
 			if (EquUpCase(Name, fd->Name)) {
 				CFile = fd;
 				return;
@@ -2477,10 +2477,10 @@ void RunProlog(RdbPos* Pos, std::string PredName)
 	}
 	else {
 		ChptLRdb = Pos->rdb;
-		CFile = ChptLRdb->v_rdb_files[0];
-		CRecPtr = ChptLRdb->v_rdb_files[0]->GetRecSpace();
-		ChptLRdb->v_rdb_files[0]->ReadRec(Pos->i_rec, CRecPtr);
-		g_compiler->SetInpTTPos(ChptLRdb->v_rdb_files[0], ChptLRdb->v_rdb_files[0]->loadT(ChptTxt, CRecPtr), ChptLRdb->Encrypted);
+		CFile = ChptLRdb->v_files[0];
+		CRecPtr = ChptLRdb->v_files[0]->GetRecSpace();
+		ChptLRdb->v_files[0]->ReadRec(Pos->i_rec, CRecPtr);
+		g_compiler->SetInpTTPos(ChptLRdb->v_files[0], ChptLRdb->v_files[0]->loadT(ChptTxt, CRecPtr), ChptLRdb->Encrypted);
 		Roots = ReadProlog(Pos->i_rec);
 	}
 
@@ -2503,7 +2503,7 @@ void RunProlog(RdbPos* Pos, std::string PredName)
 	else {
 		p = GetPredicateByName(PredName);
 		if ((p == nullptr) || (p->Arity != 0)) {
-			SetMsgPar(Pos->rdb->v_rdb_files[0]->Name, PredName);
+			SetMsgPar(Pos->rdb->v_files[0]->Name, PredName);
 			RunError(1545);
 		}
 	}

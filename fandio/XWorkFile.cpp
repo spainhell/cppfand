@@ -29,7 +29,7 @@ void XWorkFile::Main(char Typ, void* record)
 		KeyFldD* kf = xKey->KFlds;
 		if (xScan->Kind == 1 &&
 #ifdef FandSQL
-			!xScan->v_rdb_files->IsSQLFile &&
+			!xScan->v_files->IsSQLFile &&
 #endif
 			(xScan->Bool == nullptr && (kf == nullptr || KeyFldD::EquKFlds(k->KFlds, kf)))) {
 			CopyIndex(k, kf, Typ, record);

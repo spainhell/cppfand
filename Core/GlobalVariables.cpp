@@ -5,8 +5,8 @@ class FileD;
 WORD randIndex = 0;
 
 FileD* CFile;
-FileD* FileDRoot;             // only current RDB
-std::deque<LinkD*> LinkDRoot; // for all RDBs
+std::vector<FileD*> FileDRoot;	// only current RDB
+std::deque<LinkD*> LinkDRoot;	// for all RDBs
 FuncD* FuncDRoot;
 void* CRecPtr;
 XKey* CViewKey;
@@ -27,7 +27,7 @@ FandTFile TWork(nullptr);
 int ClpBdPos = 0;
 bool IsTestRun = false;
 bool IsInstallRun = false;
-FileD* Chpt = FileDRoot; // absolute FileDRoot;
+FileD* Chpt = FileDRoot[0]; // absolute FileDRoot;
 FandTFile* ChptTF;
 FieldDescr* ChptTxtPos;
 FieldDescr* ChptVerif; // { updated record }

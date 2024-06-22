@@ -83,7 +83,7 @@ extern "C" int FAND_API OpenRDB(char* rdbName)
 	CreateOpenChpt(n, true);
 
 	rdb = CRdb;
-	rdbFile = rdb->v_rdb_files;
+	rdbFile = rdb->v_files;
 	data = rdbFile->GetRecSpace();
 
 	return rdbFile->FF->NRecs;

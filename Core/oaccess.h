@@ -12,7 +12,7 @@ void OpenFANDFiles(bool FromDML);
 
 void CloseFilesAfter(FileD* FD);
 bool ActiveRdbOnDrive(WORD D);
-void CloseFilesOnDrive(WORD D);
+void CloseFilesOnDrive(WORD drive);
 WORD TestMountVol(char DriveC);
 void ReleaseDrive(WORD D);
 

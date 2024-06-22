@@ -53,7 +53,7 @@ int sz = 0; WORD nTb = 0; void* Tb = nullptr;
 
 bool IsCurrChpt(FileD* file_d)
 {
-	return CRdb->v_rdb_files == file_d;
+	return CRdb->v_files[0] == file_d;
 }
 
 FileType ExtToTyp(const std::string& ext)
@@ -73,13 +73,11 @@ FileType ExtToTyp(const std::string& ext)
 
 void ReleaseFilesAndLinksAfterChapter(EditD* edit)
 {
-	FileD* FD = nullptr;
-	RdbD* R = nullptr;
-
 	if (Chpt->pChain != nullptr) {
 		CloseFilesAfter(Chpt->pChain);
 	}
 	Chpt->pChain = nullptr;
+
 	LinkDRoot = CRdb->OldLDRoot;
 	FuncDRoot = CRdb->OldFCRoot;
 	CFile = Chpt;
@@ -87,7 +85,7 @@ void ReleaseFilesAndLinksAfterChapter(EditD* edit)
 	if (edit != nullptr) {
 		CRecPtr = edit->NewRecPtr;
 	}
-	R = CRdb->ChainBack;
+	RdbD* R = CRdb->ChainBack;
 	if (R != nullptr) {
 		CRdb->help_file = R->help_file;
 	}
@@ -649,7 +647,9 @@ RdbD* PrepareRdb(const std::string& name, std::string& name1)
 	if ((name[0] == '\\')) name1 = name.substr(1, 8);
 	else name1 = name;
 
-	rdb_d->v_rdb_files = RdFileD(name1, FileType::RDB, ""); /*old CRdb for GetCatalogIRec*/
+	rdb_d->v_files.clear();
+	FileD* rdb_file = RdFileD(name1, FileType::RDB, ""); /*old CRdb for GetCatalogIRec*/
+	rdb_d->v_files.push_back(rdb_file);
 
 	return rdb_d;
 }
@@ -701,6 +701,7 @@ void CreateOpenChpt(std::string Nm, bool create)
 
 	if (IsTestRun || !create) um = Exclusive;
 	else um = RdOnly;
+
 	if (OpenF(Chpt, CPath, um)) {
 		if (ChptTF->CompileAll) ResetRdOnly();
 		else if (!top && oldChptTF != nullptr && (ChptTF->TimeStmp < oldChptTF->TimeStmp)) {
@@ -717,8 +718,7 @@ void CreateOpenChpt(std::string Nm, bool create)
 		SetCompileAll();
 	}
 
-	const bool hasPasswd = Coding::HasPassword(Chpt, 1, "");
-	CRdb->Encrypted = hasPasswd ? false : true;
+	CRdb->Encrypted = !Coding::HasPassword(Chpt, 1, "");
 }
 
 void CloseChpt()
@@ -736,7 +736,7 @@ void CloseChpt()
 	CRdb = CRdb->ChainBack;
 	//ReleaseBoth(p, p2);
 	if (CRdb != nullptr) {
-		FileDRoot = CRdb->v_rdb_files;
+		FileDRoot = CRdb->v_files;
 		Chpt = FileDRoot;
 		SetChptFldD();
 		ChDir(CRdb->RdbDir);
@@ -1361,7 +1361,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 			}
 		}
 		lmsg = CompileMsgOn(Buf, w);
-		//CRecPtr = v_rdb_files->FF->RecPtr;
+		//CRecPtr = v_files->FF->RecPtr;
 		Encryp = CRdb->Encrypted;
 		for (I = 1; I <= rdb_file->FF->NRecs; I++) {
 			rdb_file->ReadRec(I, rdb_file->FF->RecPtr);
@@ -1382,7 +1382,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 				|| (Typ == 'U')													// User rights chapter
 				|| (Typ == 'F' || Typ == 'D') && CompileFD						// chapter F or D and compile FD flag
 				|| (Typ == 'P') && ChptTF->CompileProc) {						// chapter P and compile proc flag	
-				//OldTxt = v_rdb_files->loadT(ChptOldTxt, v_rdb_files->FF->RecPtr);
+				//OldTxt = v_files->loadT(ChptOldTxt, v_files->FF->RecPtr);
 				InpRdbPos = RP;
 				if (IsTestRun) {
 					ClrScr(TextAttr);
@@ -1480,10 +1480,10 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 					//}
 
 					//else {
-					//	ChainLast(FileDRoot, v_rdb_files);
+					//	ChainLast(FileDRoot, v_files);
 					//	MarkStore(p1);
-					//	if (v_rdb_files->IsHlpFile) {
-					//		CRdb->help_file = v_rdb_files;
+					//	if (v_files->IsHlpFile) {
+					//		CRdb->help_file = v_files;
 					//	}
 					//}
 					break;
@@ -1571,7 +1571,7 @@ bool CompileRdb(FileD* rdb_file, bool displ, bool run, bool from_CtrlF10)
 			//ReleaseStore(&p1);
 			ReleaseStore(&p2);
 			//CFile = Chpt;
-			//CRecPtr = v_rdb_files->FF->RecPtr;
+			//CRecPtr = v_files->FF->RecPtr;
 			if (Verif) {
 				rdb_file->ReadRec(I, rdb_file->FF->RecPtr);
 				rdb_file->saveB(ChptVerif, false, rdb_file->FF->RecPtr);
@@ -1629,7 +1629,7 @@ void GotoErrPos(WORD& Brk, std::unique_ptr<DataEditor>& data_editor)
 			SetMsgPar("");
 		}
 		else {
-			SetMsgPar(InpRdbPos.rdb->v_rdb_files->Name);
+			SetMsgPar(InpRdbPos.rdb->v_files->Name);
 		}
 		WrLLF10Msg(622);
 		Brk = 0;

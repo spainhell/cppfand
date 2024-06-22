@@ -390,7 +390,7 @@ void XScan::GetRec(void* record)
 				xx.S = P->StrI(P->NItems - NOnPg);
 				if ((NOnPg == 0) && (P->GreaterPage > 0)) SeekOnPage(P->GreaterPage, 1);
 				if (!Strm1->SelectXRec(Key, @xx, _equ, withT)) goto label1;
-				if (!RunBool(v_rdb_files, Bool, record)) goto label1;
+				if (!RunBool(v_files, Bool, record)) goto label1;
 				break;
 			}
 #endif

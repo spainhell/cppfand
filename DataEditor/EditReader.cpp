@@ -869,7 +869,7 @@ void EditReader::RdAllUDLIs(FileD* FD)
 {
 	RdbD* r = nullptr;
 	if (FD->OrigFD != nullptr) {
-		// this v_rdb_files was created as 'LIKE'
+		// this v_files was created as 'LIKE'
 		RdAllUDLIs(FD->OrigFD);
 	}
 	if (FD->TxtPosUDLI != 0) {
