@@ -115,8 +115,8 @@ public:
 
 	void GenerateNew000File(XScan* x, void* record);
 	void CreateWIndex(XScan* Scan, XWKey* K, char Typ);
-	void ScanSubstWIndex(XScan* Scan, KeyFldD* SK, char Typ);
-	void SortAndSubst(KeyFldD* SK);
+	void ScanSubstWIndex(XScan* Scan, std::vector<KeyFldD*>& SK, char Typ);
+	void SortAndSubst(std::vector<KeyFldD*>& SK);
 	void CopyIndex(XWKey* K, XKey* FromK);
 
 	void SubstDuplF(FileD* TempFD, bool DelTF);

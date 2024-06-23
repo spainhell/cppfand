@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "DataEditorParams.h"
+#include "../Core/Chained.h"
 #include "../Core/FileD.h"
 
 struct ImplD;

@@ -13,20 +13,20 @@ XWKey::XWKey(FileD* parent): XKey(parent)
 {
 }
 
-XWKey::XWKey(FileD* parent, bool duplic, bool in_work, std::vector<KeyFldD*>& keys) : XKey(parent)
+XWKey::XWKey(FileD* parent, bool duplic, bool in_work, const std::vector<KeyFldD*>& key_fields) : XKey(parent)
 {
 	Duplic = duplic;
 	InWork = in_work;
-	KFlds = keys;
+	KFlds = key_fields;
 	CalcIndexLen();
 }
 
-void XWKey::Open(FileD* file_d, KeyFldD* KF, bool Dupl, bool Intvl)
+void XWKey::Open(FileD* file_d, const std::vector<KeyFldD*>& key_fields, bool duplic, bool interval)
 {
-	KFlds = KF;
-	Duplic = Dupl;
+	KFlds = key_fields;
+	Duplic = duplic;
 	InWork = true;
-	IntervalTest = Intvl;
+	IntervalTest = interval;
 	NR = 0;
 	//XPage* p = (XPage*)GetStore(sizeof(p)); 
 	auto p = std::make_unique<XPage>();
@@ -35,10 +35,11 @@ void XWKey::Open(FileD* file_d, KeyFldD* KF, bool Dupl, bool Intvl)
 	GetXFile(file_d)->WrPage(p.get(), IndexRoot);
 	//ReleaseStore(p);
 	IndexLen = 0;
-	while (KF != nullptr) {
-		if (KF->FldD != nullptr) IndexLen += KF->FldD->NBytes;
-		KF = KF->pChain;
-	}
+	//while (key_fields != nullptr) {
+	//	if (key_fields->FldD != nullptr) IndexLen += key_fields->FldD->NBytes;
+	//	key_fields = key_fields->pChain;
+	//}
+	CalcIndexLen();
 }
 
 void XWKey::Close(FileD* file_d)
@@ -61,7 +62,7 @@ void XWKey::ReleaseTree(FileD* file_d, int Page, bool IsClose)
 	if (!p->IsLeaf) {
 		unsigned short n = p->NItems;
 		for (unsigned short i = 1; i <= n; i++) {
-			XItemNonLeaf* item = (XItemNonLeaf*)p->GetItem(i);
+			XItemNonLeaf* item = static_cast<XItemNonLeaf*>(p->GetItem(i));
 			ReleaseTree(file_d, item->DownPage, IsClose);
 			GetXFile(file_d)->RdPage(p.get(), Page);
 		}
@@ -77,9 +78,9 @@ void XWKey::ReleaseTree(FileD* file_d, int Page, bool IsClose)
 	//ReleaseStore(p);
 }
 
-void XWKey::OneRecIdx(FileD* file_d, KeyFldD* KF, int N, void* record)
+void XWKey::OneRecIdx(FileD* file_d, const std::vector<KeyFldD*>& key_fields, int N, void* record)
 {
-	Open(file_d, KF, true, false);
+	Open(file_d, key_fields, true, false);
 	Insert(file_d, N, true, record);
 	NR++;
 }

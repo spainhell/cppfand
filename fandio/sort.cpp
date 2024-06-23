@@ -17,15 +17,18 @@ void GetIndex(Instr_getindex* PD)
 
 	LockMode md = lvFD->NewLockMode(RdMode);
 	if (PD->mode == ' ') {
-		KeyFldD* kf = nullptr;
+		//KeyFldD* kf = nullptr;
 		LocVar* lv2 = nullptr;
 		LinkD* ld = PD->link;
-		if (ld != nullptr) {
-			kf = ld->ToKey->KFlds;
-		}
+		bool link_exists = PD->link != nullptr;
+
+		//if (ld != nullptr) {
+		//	kf = ld->ToKey->KFlds;
+		//}
 		if (PD != nullptr) {
 			lv2 = PD->loc_var2;
 		}
+
 		XScan* Scan = new XScan(lvFD, PD->keys, PD->key_in_root, false);
 		FrmlElem* cond = RunEvalFrml(lvFD, PD->condition, record);
 		switch (PD->owner_type) {
@@ -34,7 +37,13 @@ void GetIndex(Instr_getindex* PD)
 			break;
 		}
 		case 'r': {
-			x.PackKF(ld->ToFD, kf, lv2->record);
+			if (link_exists) {
+				x.PackKF(ld->ToFD, ld->ToKey->KFlds, lv2->record);
+			}
+			else {
+				x.PackKF(ld->ToFD, nullptr, lv2->record);
+			}
+
 			Scan->ResetOwner(&x, cond);
 			break;
 		}
@@ -42,7 +51,14 @@ void GetIndex(Instr_getindex* PD)
 			lvFD = ld->ToFD;
 			md = ld->ToFD->NewLockMode(RdMode);
 			ld->ToFD->ReadRec(RunInt(ld->ToFD, (FrmlElem*)PD->loc_var2, record), record);
-			x.PackKF(ld->ToFD, kf, record);
+
+				if (link_exists) {
+				x.PackKF(ld->ToFD, ld->ToKey->KFlds, lv2->record);
+			}
+			else {
+				x.PackKF(ld->ToFD, nullptr, lv2->record);
+			}
+
 			ld->ToFD->OldLockMode(md);
 			Scan->ResetOwner(&x, cond);
 			break;
@@ -52,12 +68,17 @@ void GetIndex(Instr_getindex* PD)
 			break;
 		}
 		}
-		kf = PD->key_fields;
-		if (kf == nullptr) {
-			kf = k->KFlds;
-		}
+		//kf = PD->key_fields;
+		//if (kf == nullptr) {
+		//	kf = k->KFlds;
+		//}
 		XWKey* kNew = new XWKey(lvFD);
-		kNew->Open(lvFD, kf, true, false);
+		if (!PD->key_fields.empty()) {
+			kNew->Open(lvFD, PD->key_fields, true, false);
+		}
+		else {
+			kNew->Open(lvFD, k->KFlds, true, false);
+		}
 		lvFD->FF->CreateWIndex(Scan, kNew, 'X');
 		k->Close(lvFD);
 		*k = *kNew;
