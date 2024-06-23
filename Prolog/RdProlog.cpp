@@ -1356,6 +1356,7 @@ TCommand* RdPredCommand(TCommandTyp Code, TPredicate* predicate)
 					} goto label2;
 				label1:
 					//kf = kf->pChain;
+					printf("");
 				}
 				if ((InpMask & w) == w) {
 					sz += i;

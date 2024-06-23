@@ -98,14 +98,14 @@ void XString::StoreKF(FileD* file_d, KeyFldD* KF, void* record)
 	}
 }
 
-void XString::PackKF(FileD* file_d, KeyFldD* KF, void* record)
-{
-	Clear();
-	while (KF != nullptr) {
-		StoreKF(file_d, KF, record);
-		KF = KF->pChain;
-	}
-}
+//void XString::PackKF(FileD* file_d, KeyFldD* KF, void* record)
+//{
+//	Clear();
+//	while (KF != nullptr) {
+//		StoreKF(file_d, KF, record);
+//		KF = KF->pChain;
+//	}
+//}
 
 void XString::PackKF(FileD* file_d, std::vector<KeyFldD*>& KF, void* record)
 {
@@ -115,29 +115,33 @@ void XString::PackKF(FileD* file_d, std::vector<KeyFldD*>& KF, void* record)
 	}
 }
 
-bool XString::PackFrml(FileD* file_d, std::vector<FrmlElem*>& FL, KeyFldD* KF, void* record)
+bool XString::PackFrml(FileD* file_d, std::vector<FrmlElem*>& FL, std::vector<KeyFldD*>& KF, void* record)
 {
 	Clear();
-	//while (FL != nullptr) {
-	for (FrmlElem* Z : FL) {
-		switch (KF->FldD->frml_type) {
+
+	for (size_t i = 0; i < FL.size(); i++) {
+		FrmlElem* Z = FL[i];
+		KeyFldD* key_field = KF[i];
+		switch (key_field->FldD->frml_type) {
 		case 'S': {
-			StoreStr(RunShortStr(file_d, Z, record), KF);
+			StoreStr(RunShortStr(file_d, Z, record), key_field);
 			break;
 		}
 		case 'R': {
-			StoreReal(RunReal(file_d, Z, record), KF);
+			StoreReal(RunReal(file_d, Z, record), key_field);
 			break;
 		}
 		case 'B': {
-			StoreBool(RunBool(file_d, Z, record), KF);
+			StoreBool(RunBool(file_d, Z, record), key_field);
 			break;
 		}
 		}
-		KF = KF->pChain;
+		//KF = KF->pChain;
 		//FL = FL->pChain;
 	}
-	return KF != nullptr;
+
+	//return KF != nullptr;
+	return KF.size() > FL.size();
 }
 
 void XString::StoreD(void* R, bool descend)

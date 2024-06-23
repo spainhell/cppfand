@@ -38,8 +38,8 @@ private:
 	void RdOutpRD(OutpRD** RDRoot);
 
 
-	WORD CompMFlds(KeyFldD* M);
-	void SetOldMFlds(KeyFldD* M);
+	WORD CompMFlds(std::vector<KeyFldD*>& M);
+	void SetOldMFlds(std::vector<KeyFldD*>& M);
 	void ReadInpFileM(InpD* ID);
 	void RunAssign(std::vector<AssignD*> Assigns);
 	void WriteOutp(OutpRD* RD);
@@ -47,7 +47,7 @@ private:
 	void OpenOutp();
 	void CloseInpOutp();
 	void MoveForwToRecM(InpD* ID);
-	void SetMFlds(KeyFldD* M);
+	void SetMFlds(std::vector<KeyFldD*>& M);
 	void MergeProcM();
 	void JoinProc(WORD Ii, bool& EmptyGroup);
 

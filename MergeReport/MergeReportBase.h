@@ -17,7 +17,7 @@ protected:
 	void SetIi_Report(bool wasIiPrefix);
 	bool RdIiPrefix();
 	void CopyPrevMFlds();
-	void CheckMFlds(KeyFldD* M1, KeyFldD* M2);
+	void CheckMFlds(std::vector<KeyFldD*>& M1, std::vector<KeyFldD*>& M2);
 	void TestSetSumIi();
 	void ZeroSumFlds(LvDescr* L);
 	void ZeroSumFlds(std::vector<FrmlElemSum*>* sum);

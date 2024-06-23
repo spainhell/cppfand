@@ -113,7 +113,7 @@ void XScan::Reset(FrmlElem* ABool, bool SQLFilter, void* record)
 	SeekRec(0);
 }
 
-void XScan::ResetSort(KeyFldD* aSK, FrmlElem* BoolZ, LockMode OldMd, bool SQLFilter, void* record)
+void XScan::ResetSort(std::vector<KeyFldD*>& aSK, FrmlElem* BoolZ, LockMode OldMd, bool SQLFilter, void* record)
 {
 	LockMode m;
 	if (Kind == 4) {
@@ -127,7 +127,7 @@ void XScan::ResetSort(KeyFldD* aSK, FrmlElem* BoolZ, LockMode OldMd, bool SQLFil
 		}
 		return;
 	}
-	if (aSK != nullptr) {
+	if (!aSK.empty()) {
 		Reset(BoolZ, false, record);
 		FD->FF->ScanSubstWIndex(this, aSK, 'S');
 		BoolZ = nullptr;

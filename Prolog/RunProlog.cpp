@@ -1382,12 +1382,13 @@ bool RunBuildIn()
 			if (fd == nullptr) goto label1;
 			//k = fd->Keys;
 			while ((k != nullptr) && !EquUpCase(Pound(k->Alias), CurrInst->Vars[1]->SS)) k = k->Chain;
-			if (k == nullptr) goto label1; kf = k->KFlds;
+			if (k == nullptr) goto label1;
+			//kf = k->KFlds;
 		}
 		CurrInst->Vars[2] = GetStringTerm(kf->FldD->Name);
 		CurrInst->Vars[3] = GetBoolTerm(kf->CompLex);
 		CurrInst->Vars[4] = GetBoolTerm(kf->Descend);
-		CurrInst->NextBranch = (TBranch*)kf->pChain;
+		//CurrInst->NextBranch = (TBranch*)kf->pChain;
 		break;
 	}
 	case proc_type::_FandLinkFieldP: {
@@ -2010,7 +2011,7 @@ TFileScan* GetScan(TScanInf* SIOfs, TCommand* C, TInstance* Q)
 	CFile->FF->TestXFExist();
 	xx.Clear();
 	i = 0;
-	kf = k->KFlds;
+	//kf = k->KFlds;
 	while (kf != nullptr) {
 		f = kf->FldD;
 		t = Q->Vars[C->ArgI[i]];
@@ -2038,7 +2039,7 @@ TFileScan* GetScan(TScanInf* SIOfs, TCommand* C, TInstance* Q)
 			break;
 		}
 		}
-		kf = kf->pChain;
+		//kf = kf->pChain;
 		i++;
 	}
 	k->FindNr(CFile, xx.S, fs->IRec);

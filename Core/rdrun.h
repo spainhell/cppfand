@@ -64,13 +64,13 @@ struct InpD
 {
 	XScan* Scan = nullptr;
 	bool AutoSort = false;
-	KeyFldD* SK = nullptr;
+	std::vector<KeyFldD*> SK;
 	LockMode Md = NullMode;
 	int IRec = 0;
 	void* ForwRecPtr = nullptr;
 	FrmlElem* Bool = nullptr;
 	bool SQLFilter = false;
-	KeyFldD* MFld = nullptr;
+	std::vector<KeyFldD*> MFld;
 	std::vector<FrmlElemSum*> *Sum = nullptr;
 	bool Exist = false;
 	char Op = '\0';
@@ -81,7 +81,7 @@ struct InpD
 	char OpWarn = '\0';
 	bool Warning = false;
 	FrmlElemString* ErrTxtFrml = nullptr;
-	KeyFldD* SFld = nullptr;                /* only Report */
+	std::vector<KeyFldD*> SFld;                /* only Report */
 	std::vector<ConstListEl> OldSFlds;
 	LvDescr* FrstLvS = nullptr;
 	LvDescr* LstLvS = nullptr;		/* FrstLvS->Ft=DE */

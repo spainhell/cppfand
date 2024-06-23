@@ -79,10 +79,11 @@ bool MergeReportBase::RdIiPrefix()
 
 void MergeReportBase::CopyPrevMFlds()
 {
-	KeyFldD* M = IDA[Ii - 1]->MFld;
+	//KeyFldD* M = IDA[Ii - 1]->MFld;
 	//std::vector<std::string> vFieldNames;
 	//std::vector<std::string>::iterator it;
-	while (M != nullptr) {
+	//while (M != nullptr) {
+	for (KeyFldD* M : IDA[Ii - 1]->MFld) {
 		std::string fld_name = M->FldD->Name;
 		// std::string LexWordString = LexWord;
 		// toto je pridano navic, protoze se metoda cyklila
@@ -102,31 +103,47 @@ void MergeReportBase::CopyPrevMFlds()
 		if (!g_compiler->FldTypIdentity(M->FldD, F)) {
 			g_compiler->OldError(12);
 		}
-		KeyFldD* MNew = new KeyFldD(); // (KeyFldD*)GetStore(sizeof(*MNew));
-		MNew->pChain = nullptr; // M->pChain;
+		KeyFldD* MNew = new KeyFldD();
+		//MNew->pChain = nullptr; // M->pChain;
 		MNew->CompLex = M->CompLex;
 		MNew->Descend = M->Descend;
 		MNew->FldD = F;
 
-		if (IDA[Ii]->MFld == nullptr) IDA[Ii]->MFld = MNew;
-		else ChainLast(IDA[Ii]->MFld, MNew);
+		IDA[Ii]->MFld.push_back(MNew);
+		
 
-		M = M->pChain;
+		//M = M->pChain;
 	}
 }
 
-void MergeReportBase::CheckMFlds(KeyFldD* M1, KeyFldD* M2)
+void MergeReportBase::CheckMFlds(std::vector<KeyFldD*>& M1, std::vector<KeyFldD*>& M2)
 {
-	while (M1 != nullptr) {
-		if (M2 == nullptr) g_compiler->OldError(30);
-		if (!g_compiler->FldTypIdentity(M1->FldD, M2->FldD)
-			|| (M1->Descend != M2->Descend)
-			|| (M1->CompLex != M2->CompLex))
-			g_compiler->OldError(12);
-		M1 = M1->pChain;
-		M2 = M2->pChain;
+	if (M1.size() != M2.size()) {
+		g_compiler->OldError(30);
 	}
-	if (M2 != nullptr) g_compiler->OldError(30);
+
+	for (size_t i = 0; i < M1.size(); i++) {
+		KeyFldD* m1 = M1[i];
+		KeyFldD* m2 = M2[i];
+		if (!g_compiler->FldTypIdentity(m1->FldD, m2->FldD)
+			|| (m1->Descend != m2->Descend)
+			|| (m1->CompLex != m2->CompLex))
+			g_compiler->OldError(12);
+	}
+
+	//while (M1 != nullptr) {
+	//	//if (M2 == nullptr) g_compiler->OldError(30);
+	//	if (!g_compiler->FldTypIdentity(M1->FldD, M2->FldD)
+	//		|| (M1->Descend != M2->Descend)
+	//		|| (M1->CompLex != M2->CompLex))
+	//		g_compiler->OldError(12);
+	//	M1 = M1->pChain;
+	//	M2 = M2->pChain;
+	//}
+
+	//if (M2 != nullptr) {
+	//	g_compiler->OldError(30);
+	//}
 }
 
 void MergeReportBase::TestSetSumIi()

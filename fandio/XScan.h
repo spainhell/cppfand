@@ -16,7 +16,7 @@ public:
 	bool hasSQLFilter = false, eof = false;
 	XScan(FileD* aFD, XKey* aKey, std::vector<KeyInD*>& aKIRoot, bool aWithT);
 	void Reset(FrmlElem* ABool, bool SQLFilter, void* record);
-	void ResetSort(KeyFldD* aSK, FrmlElem* BoolZ, LockMode OldMd, bool SQLFilter, void* record);
+	void ResetSort(std::vector<KeyFldD*>& aSK, FrmlElem* BoolZ, LockMode OldMd, bool SQLFilter, void* record);
 	void SubstWIndex(XWKey* WK);
 	void ResetOwner(XString* XX, FrmlElem* aBool);
 	void ResetOwnerIndex(LinkD* LD, LocVar* LV, FrmlElem* aBool);
@@ -30,7 +30,7 @@ public:
 private:
 	std::vector<KeyInD*> KIRoot;
 	LocVar* OwnerLV = nullptr;
-	KeyFldD* SK = nullptr;
+	std::vector<KeyFldD*> SK;
 	size_t _item = 1;
 	XPage* page_ = nullptr;
 	unsigned short items_on_page_ = 0;
