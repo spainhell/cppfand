@@ -13,6 +13,14 @@ XWKey::XWKey(FileD* parent): XKey(parent)
 {
 }
 
+XWKey::XWKey(FileD* parent, bool duplic, bool in_work, std::vector<KeyFldD*>& keys) : XKey(parent)
+{
+	Duplic = duplic;
+	InWork = in_work;
+	KFlds = keys;
+	CalcIndexLen();
+}
+
 void XWKey::Open(FileD* file_d, KeyFldD* KF, bool Dupl, bool Intvl)
 {
 	KFlds = KF;

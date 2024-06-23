@@ -613,3 +613,13 @@ bool XKey::Delete(FileD* file_d, int RecNr, void* record)
 	if (b) DeleteOnPath(file_d);
 	return b;
 }
+
+void XKey::CalcIndexLen()
+{
+	IndexLen = 0;
+	for (const KeyFldD* key_field : KFlds) {
+		if (key_field->FldD != nullptr) {
+			IndexLen += key_field->FldD->NBytes;
+		}
+	}
+}

@@ -115,7 +115,7 @@ struct RprtOpt
 	std::vector<FieldDescr*> Flds;  // !empty => autoreport
 	std::vector<FieldDescr*> Ctrl;
 	std::vector<FieldDescr*> Sum;
-	KeyFldD* SK = nullptr;
+	std::vector<KeyFldD*> SK;
 	FrmlElem* WidthFrml = nullptr, *Head = nullptr;
 	WORD Width = 0;
 	std::string CondTxt;

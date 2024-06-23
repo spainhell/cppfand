@@ -41,27 +41,44 @@ void ReportGenerator::RunAutoReport(RprtOpt* RO)
 bool ReportGenerator::SelForAutoRprt(RprtOpt* RO)
 {
 	wwmix ww;
+	bool result = false;
 
-	auto result = false;
-	if ((RO->SK == nullptr) && !g_compiler->PromptSortKeys(RO->Flds, RO->SK)) return result;
+	if ((RO->SK.empty()) && !g_compiler->PromptSortKeys(CFile, RO->Flds, RO->SK)) {
+		return result;
+	}
+
 	WORD N = Menu(4, 1);
-	if (N == 0) return result;
+
+	if (N == 0) {
+		return result;
+	}
+
 	RO->Mode = (AutoRprtMode)(N - 1);
+
 	CFile = RO->FDL.FD;
+
 	if (RO->Mode == _ARprt || RO->Mode == _ATotal) {
 		for (auto& f : RO->Flds) {
 			if (f->field_type != FieldType::TEXT) ww.PutSelect(f->Name);
 		}
-		if (!ww.SelFieldList(37, false, RO->Ctrl)) return result; // TODO: RO->Ctrl[0] is probably bad idea
+
+		if (!ww.SelFieldList(37, false, RO->Ctrl)) {
+			return result; // TODO: RO->Ctrl[0] is probably bad idea
+		}
 
 		for (auto& f : RO->Flds) {
 			if (f->frml_type == 'R') ww.PutSelect(f->Name);
 		}
-		if (!ww.SelFieldList(38, true, RO->Sum)) return result;  // TODO: RO->Sum[0] is probably bad idea
+
+		if (!ww.SelFieldList(38, true, RO->Sum)) {
+			return result;  // TODO: RO->Sum[0] is probably bad idea
+		}
 	}
+
 	if (spec.AutoRprtPrint) {
 		RO->Path = "LPT1";
 	}
+
 	result = true;
 	return result;
 }
@@ -231,9 +248,6 @@ label1:
 
 std::string ReportGenerator::GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 {
-	KeyFldD* kf = nullptr;
-	//char* p;
-	bool first, point;
 	std::string s;
 
 	CFile = RO->FDL.FD;
@@ -274,39 +288,52 @@ std::string ReportGenerator::GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 	if ((ARMode == _AErrRecs)) WrStr(report, "var noErrRecs:real;\r\n");
 	WrStr(report, "#I1_");
 	WrStr(report, CFile->Name);
-	if (RO->SK != nullptr) WrChar(report, '!');
+	if (!RO->SK.empty()) {
+		WrChar(report, '!');
+	}
 	WrBlks(report, 2);
-	first = true;
-	kf = RO->SK;
+	bool first = true;
 
-	for (auto& f : RO->Ctrl) {
+	std::vector<KeyFldD*>::iterator it0 = RO->SK.begin();
+
+	for (FieldDescr* f : RO->Ctrl) {
 		if (!first) WrChar(report, ',');
 		//FieldDescr* f = fl2->FldD;
-		if ((kf != nullptr) && (f == kf->FldD)) {
-			if (kf->Descend) WrChar(report, '>');
-			if (kf->CompLex) WrChar(report, '~');
-			kf = (KeyFldD*)kf->pChain;
+		if ((it0 != RO->SK.end()) && (f == (*it0)->FldD)) {
+			if ((*it0)->Descend) WrChar(report, '>');
+			if ((*it0)->CompLex) WrChar(report, '~');
+			++it0; // = (KeyFldD*)it0->pChain;
 		}
-		else if (f->field_type == FieldType::ALFANUM) WrChar(report, '~');
+		else if (f->field_type == FieldType::ALFANUM) {
+			WrChar(report, '~');
+		}
+		else {
+			// do nothing
+		}
 		WrStr(report, f->Name);
 		//fl2 = (FieldListEl*)fl2->pChain;
 		first = false;
 	}
 
-	if (kf != nullptr) {
-		if (!first) WrChar(report, ';'); first = true;
-		while (kf != nullptr) {
+	if (it0 != RO->SK.end()) {
+		if (!first) WrChar(report, ';');
+		first = true;
+		while (it0 != RO->SK.end()) {
 			if (!first) WrChar(report, ',');
-			if (kf->Descend) WrChar(report, '>');
-			if (kf->CompLex) WrChar(report, '~');
-			WrStr(report, kf->FldD->Name);
-			kf = (KeyFldD*)kf->pChain;
+			if ((*it0)->Descend) WrChar(report, '>');
+			if ((*it0)->CompLex) WrChar(report, '~');
+			WrStr(report, (*it0)->FldD->Name);
+			++it0; // = (KeyFldD*)it0->pChain;
 			first = false;
 		}
 	}
 
-	if ((ARMode == _ATotal) && (NLevels == 0)) WrStr(report, "\r\n#RH");
-	else WrStr(report, "\r\n#PH ");
+	if ((ARMode == _ATotal) && (NLevels == 0)) {
+		WrStr(report, "\r\n#RH");
+	}
+	else {
+		WrStr(report, "\r\n#PH ");
+	}
 
 	if (RO->HeadTxt.empty()) {
 		WrStr(report, "today,page;\r\n");
@@ -331,7 +358,7 @@ std::string ReportGenerator::GenAutoRprt(RprtOpt* RO, bool WithNRecs)
 		first = true;
 		while (i < l) {
 			if (p[i] == '_') {
-				point = false;
+				bool point = false;
 				while ((i <= l) && (p[i] == '_' || p[i] == '.')) {
 					if (p[i] == '.') point = true;
 					i++;

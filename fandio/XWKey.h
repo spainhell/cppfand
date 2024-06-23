@@ -5,6 +5,7 @@ class XWKey : public XKey // r334
 {
 public:
 	XWKey(FileD* parent);
+	XWKey(FileD* parent, bool duplic, bool in_work, std::vector<KeyFldD*>& keys);
 	void Open(FileD* file_d, KeyFldD* KF, bool Dupl, bool Intvl);
 	void Close(FileD* file_d);
 	void Release(FileD* file_d);

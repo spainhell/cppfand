@@ -24,8 +24,8 @@ const BYTE MaxLen = 9;
 RdbPos ChptIPos; // used in LexAnal & ProjMgr
 Compiler* g_compiler = new Compiler();
 
-bool KeyArgFound;
-FieldDescr* KeyArgFld;
+//bool KeyArgFound;
+//FieldDescr* KeyArgFld;
 
 pstring QQdiv = "div";
 pstring QQmod = "mod";
@@ -846,25 +846,40 @@ KeyFldD* Compiler::RdKF(FileD* FD)
 	return KF;
 }
 
-WORD Compiler::RdKFList(KeyFldD** KFRoot, FileD* FD)
+WORD Compiler::RdKFList(std::vector<KeyFldD*>& KFRoot, FileD* FD)
 {
-	WORD n = 0; KeyFldD* KF = nullptr;
-label1:
-	if (*KFRoot == nullptr) *KFRoot = RdKF(FD);
-	else ChainLast(*KFRoot, RdKF(FD));
+	while (true) {
+		//if (*KFRoot == nullptr) *KFRoot = RdKF(FD);
+		//else ChainLast(*KFRoot, RdKF(FD));
+		KFRoot.push_back(RdKF(FD));
 
-	if (Lexem == ',') {
-		RdLex();
-		goto label1;
+		if (Lexem == ',') {
+			RdLex();
+			continue;
+		}
+		break;
 	}
-	n = 0;
-	KF = *KFRoot;   /*looping over all fields, !only the last read*/
-	while (KF != nullptr) {
-		if (KF->FldD != nullptr) n += KF->FldD->NBytes;
-		KF = (KeyFldD*)KF->pChain;
+	WORD n = 0;
+	//KF = *KFRoot;   /*looping over all fields, !only the last read*/
+	//while (KF != nullptr) {
+	for (KeyFldD* kf : KFRoot) {
+		if (kf->FldD != nullptr) {
+			n += kf->FldD->NBytes;
+		}
+		//kf = (KeyFldD*)kf->pChain;
 	}
 	if (n > 255) OldError(126);
 	return n;
+}
+
+void Compiler::SetLocVars(FrmlElem* Z, char typ, bool return_param, std::vector<LocVar*>& newVars)
+{
+	for (LocVar* locvar : newVars) {
+		locvar->f_typ = typ;
+		locvar->oper = _getlocvar;
+		locvar->is_return_param = return_param;
+		locvar->init = Z;
+	}
 }
 
 void Compiler::RdLocDcl(LocVarBlkD* LVB, bool IsParList, bool WithRecVar, char CTyp)
@@ -876,160 +891,180 @@ void Compiler::RdLocDcl(LocVarBlkD* LVB, bool IsParList, bool WithRecVar, char C
 	char typ = '\0';
 	BYTE lx = '\0', fc = '\0';
 	size_t sz = 0, n = 0;
-	FileD* cf = nullptr; FileD* fd = nullptr;
-	void* cr = nullptr; stSaveState* p = nullptr;
-	XWKey* k = nullptr; bool rp = false;
-	KeyFldD* kf = nullptr; KeyFldD* kf1 = nullptr;
+	FileD* cf = nullptr;
+	FileD* fd = nullptr;
+	void* cr = nullptr;
+	stSaveState* p = nullptr;
+	KeyFldD* kf = nullptr;
+	std::vector<KeyFldD*> kf1;
 	FileType FDTyp = FileType::UNKNOWN;
 	std::vector<LocVar*> newVars;
-label1:
-	rp = false;
-	if (IsParList && IsKeyWord("VAR")) {
-		if (CTyp == 'D') OldError(174);
-		rp = true;
-	}
-	newVars.clear(); // zde se budou ukladat vsechny promenne stejneho typu oddelene carkami
-	newVars.push_back(RdVarName(LVB, IsParList)); // ulozime novou promennou do vektoru pro jeji dalsi nastaveni
-	if (!IsParList) while (Lexem == ',') {
-		RdLex();
-		newVars.push_back(RdVarName(LVB, IsParList)); // vsechny stejne promenne ulozime do vektoru
-	}
-	Accept(':');
-	Z = nullptr;
-	if (IsKeyWord("BOOLEAN")) {
-		if ((Lexem == _equ) && !IsParList) {
-			RdLex();
-			if (IsKeyWord("TRUE")) {
-				// Z = new FrmlElemBool(_const, 0, true); // GetOp(_const, sizeof(bool));
-				newVars[0]->B = true;
-			}
-			else {
-				if (!IsKeyWord("FALSE")) Error(42);
-			}
+
+	while (true) {
+		bool rp = false;
+		if (IsParList && IsKeyWord("VAR")) {
+			if (CTyp == 'D') OldError(174);
+			rp = true;
 		}
-		typ = 'B';
-		sz = sizeof(bool);
-		goto label2;
-	}
-	else if (IsKeyWord("REAL")) {
-		if ((Lexem == _equ) && !IsParList) {
-			RdLex();
-			r = RdRealConst();
-			newVars[0]->R = r;
-		}
-		typ = 'R';
-		sz = sizeof(double);
-		goto label2;
-	}
-	else if (IsKeyWord("STRING")) {
-		if ((Lexem == _equ) && !IsParList) {
-			RdLex();
-			s = LexWord;
-			Accept(_quotedstr);
-			newVars[0]->S = s;
-		}
-		typ = 'S';
-		sz = sizeof(int);
-	label2:
-		for (LocVar* locvar : newVars) {
-			locvar->f_typ = typ;
-			locvar->oper = _getlocvar;
-			locvar->is_return_param = rp;
-			locvar->init = Z;
-		}
-	}
-	else if (rp) Error(168);
-	else if (WithRecVar)
-		if (TestKeyWord("FILE")) {
-			// budeme pracovat jen s 1. promennou ve vektoru
-			auto lv = newVars[0];
-			lv->f_typ = 'f';
-			LexWord = lv->name;
-			if (LexWord.length() > 8) OldError(2);
-			fd = FindFileD();
-			RdLex();
-			if (IsParList) {
-				if (!WithRecVar) OldError(162);
-				if (fd == nullptr) OldError(163);
-				lv->FD = fd;
-			}
-			else {
-				if (fd != nullptr) OldError(26);
-				FDTyp = FileType::FAND16;
-				if (Lexem == '.') {
-					RdLex();
-					TestIdentif();
-					if (EquUpCase("X", LexWord)) FDTyp = FileType::INDEX;
-					else if (EquUpCase("DBF", LexWord)) FDTyp = FileType::DBF;
-					else Error(185);
-					RdLex();
-				}
-				TestLex('[');
-				p = SaveCompState();
-				FileD* f = RdFileD(lv->name, FDTyp, "$");
-				CRdb->v_files.push_back(f);
-				TestLex(']');
-				lv->FD = f; // here was lv->FD = CFile
-				n = CurrPos;
-				lx = Lexem;
-				fc = ForwChar;
-				RestoreCompState(p);
-				CurrPos = n; Lexem = lx; ForwChar = fc;
+		newVars.clear(); // zde se budou ukladat vsechny promenne stejneho typu oddelene carkami
+		newVars.push_back(RdVarName(LVB, IsParList)); // ulozime novou promennou do vektoru pro jeji dalsi nastaveni
+		if (!IsParList) {
+			while (Lexem == ',') {
 				RdLex();
+				newVars.push_back(RdVarName(LVB, IsParList)); // vsechny stejne promenne ulozime do vektoru
 			}
 		}
-		else if (IsKeyWord("INDEX")) {
-			typ = 'i';
-			goto label3;
-		}
-		else if (IsKeyWord("RECORD")) {
-			typ = 'r';
-		label3:
-			AcceptKeyWord("OF");
-			cf = CFile; cr = CRecPtr;
-			CFile = RdFileName();
-			if (typ == 'i') {
-				if (CFile->FF->file_type != FileType::INDEX) OldError(108);
-				kf1 = nullptr;
-				if (Lexem == '(') {
-					RdLex();
-					RdKFList(&kf1, CFile);
-					Accept(')');
+		Accept(':');
+		Z = nullptr;
+		if (IsKeyWord("BOOLEAN")) {
+			if ((Lexem == _equ) && !IsParList) {
+				RdLex();
+				if (IsKeyWord("TRUE")) {
+					// Z = new FrmlElemBool(_const, 0, true); // GetOp(_const, sizeof(bool));
+					newVars[0]->B = true;
 				}
-			}
-			for (LocVar* locvar : newVars) {
-				locvar->f_typ = typ;
-				locvar->FD = CFile;
-				if (typ == 'r') locvar->record = nullptr; // ptr(0,1) ??? /* for RdProc nullptr-tests + no Run*/
-				/* frueher bei IsParList K = nullptr; warum? */
 				else {
-					k = new XWKey(CFile);
-					k->Duplic = true;
-					k->InWork = true;
-					k->KFlds = kf1;
-					kf = kf1;
-					while (kf != nullptr) {
-						k->IndexLen += kf->FldD->NBytes;
-						kf = kf->pChain;
-					}
-					locvar->record = reinterpret_cast<uint8_t*>(k);
+					if (!IsKeyWord("FALSE")) Error(42);
 				}
 			}
-			CFile = cf;
-			CRecPtr = cr;
+			typ = 'B';
+			sz = sizeof(bool);
+			SetLocVars(Z, typ, rp, newVars);
 		}
-		else Error(137);
-	else Error(39);
-	if (IsParList) {
-		if (Lexem == ')') return;
+		else if (IsKeyWord("REAL")) {
+			if ((Lexem == _equ) && !IsParList) {
+				RdLex();
+				r = RdRealConst();
+				newVars[0]->R = r;
+			}
+			typ = 'R';
+			sz = sizeof(double);
+			SetLocVars(Z, typ, rp, newVars);
+		}
+		else if (IsKeyWord("STRING")) {
+			if ((Lexem == _equ) && !IsParList) {
+				RdLex();
+				s = LexWord;
+				Accept(_quotedstr);
+				newVars[0]->S = s;
+			}
+			typ = 'S';
+			sz = sizeof(int);
+			//label2:
+			SetLocVars(Z, typ, rp, newVars);
+		}
+		else if (rp) {
+			Error(168);
+		}
+		else if (WithRecVar)
+			if (TestKeyWord("FILE")) {
+				// budeme pracovat jen s 1. promennou ve vektoru
+				auto lv = newVars[0];
+				lv->f_typ = 'f';
+				LexWord = lv->name;
+				if (LexWord.length() > 8) OldError(2);
+				fd = FindFileD();
+				RdLex();
+				if (IsParList) {
+					if (!WithRecVar) OldError(162);
+					if (fd == nullptr) OldError(163);
+					lv->FD = fd;
+				}
+				else {
+					if (fd != nullptr) OldError(26);
+					FDTyp = FileType::FAND16;
+					if (Lexem == '.') {
+						RdLex();
+						TestIdentif();
+						if (EquUpCase("X", LexWord)) FDTyp = FileType::INDEX;
+						else if (EquUpCase("DBF", LexWord)) FDTyp = FileType::DBF;
+						else Error(185);
+						RdLex();
+					}
+					TestLex('[');
+					p = SaveCompState();
+					FileD* f = RdFileD(lv->name, FDTyp, "$");
+					CRdb->v_files.push_back(f);
+					TestLex(']');
+					lv->FD = f; // here was lv->FD = CFile
+					n = CurrPos;
+					lx = Lexem;
+					fc = ForwChar;
+					RestoreCompState(p);
+					CurrPos = n; Lexem = lx; ForwChar = fc;
+					RdLex();
+				}
+			}
+			else if (IsKeyWord("INDEX") || IsKeyWord("RECORD")) {
+				if (IsKeyWord("INDEX")) {
+					typ = 'i';
+				}
+				else {
+					typ = 'r';
+				}
+
+				AcceptKeyWord("OF");
+				cf = CFile; cr = CRecPtr;
+				CFile = RdFileName();
+				if (typ == 'i') {
+					if (CFile->FF->file_type != FileType::INDEX) {
+						OldError(108);
+					}
+					kf1.clear();
+					if (Lexem == '(') {
+						RdLex();
+						RdKFList(kf1, CFile);
+						Accept(')');
+					}
+				}
+				for (LocVar* locvar : newVars) {
+					locvar->f_typ = typ;
+					locvar->FD = CFile;
+					if (typ == 'r') {
+						locvar->record = nullptr; // ptr(0,1) ??? /* for RdProc nullptr-tests + no Run*/
+					}
+					/* frueher bei IsParList K = nullptr; warum? */
+					else {
+						//k = new XWKey(CFile);
+						//k->Duplic = true;
+						//k->InWork = true;
+						//k->KFlds = kf1;
+						//kf = kf1;
+						//while (kf != nullptr) {
+						//	k->IndexLen += kf->FldD->NBytes;
+						//	kf = kf->pChain;
+						//}
+						XWKey* k = new XWKey(CFile, true, true, kf1);
+						locvar->record = reinterpret_cast<uint8_t*>(k);
+					}
+				}
+				CFile = cf;
+				CRecPtr = cr;
+			}
+			else {
+				Error(137);
+			}
 		else {
-			Accept(';');
-			goto label1;
+			Error(39);
 		}
+
+		if (IsParList) {
+			if (Lexem == ')') {
+				break;
+			}
+			else {
+				Accept(';');
+				continue;
+			}
+		}
+
+		Accept(';');
+
+		if ((Lexem != '#') && (Lexem != '.') && !TestKeyWord("BEGIN"))
+			continue;
+
+		break;
 	}
-	Accept(';');
-	if ((Lexem != '#') && (Lexem != '.') && !TestKeyWord("BEGIN"))
-		goto label1;
 }
 
 bool Compiler::FindLocVar(LocVar* LVRoot, LocVar** LV)
@@ -1182,31 +1217,41 @@ void Compiler::RdFrame(FrmlElem** Z, BYTE& WFlags)
 	if (Lexem == '!') { WFlags = WFlags | WShadow; RdLex(); }
 }
 
-bool Compiler::PromptSortKeys(std::vector<FieldDescr*>& FL, KeyFldD* SKRoot)
+bool Compiler::PromptSortKeys(FileD* file_d, std::vector<FieldDescr*>& FL, std::vector<KeyFldD*>& SKRoot)
 {
 	wwmix ww;
+	bool result = true;
+	SKRoot.clear();
 
-	KeyFldD* SK;
-	auto result = true;
-	SKRoot = nullptr;
-	for (auto& fld : FL) {
-		if (fld->field_type != FieldType::TEXT) ww.PutSelect(fld->Name);
+	for (FieldDescr* fld : FL) {
+		if (fld->field_type != FieldType::TEXT) {
+			ww.PutSelect(fld->Name);
+		}
 	}
+
 	if (ss.Empty) return result;
+
 	ss.AscDesc = true;
 	ss.Subset = true;
 	ww.SelectStr(0, 0, 25, "");
-	if (Event.Pressed.KeyCombination() == __ESC) { return false; }
-label1:
-	LexWord = ww.GetSelect();
-	if (LexWord != "") {
-		SK = new KeyFldD();
-		ChainLast(SKRoot, SK);
-		SK->FldD = FindFldName(CFile);
-		if (ss.Tag == '>') SK->Descend = true;
-		if (SK->FldD->field_type == FieldType::ALFANUM) SK->CompLex = true;
-		goto label1;
+
+	if (Event.Pressed.KeyCombination() == __ESC) {
+		return false;
 	}
+
+	while (true) {
+		LexWord = ww.GetSelect();
+		if (LexWord != "") {
+			KeyFldD* SK = new KeyFldD();
+			SKRoot.push_back(SK); // ChainLast(SKRoot, SK);
+			SK->FldD = FindFldName(file_d);
+			if (ss.Tag == '>') SK->Descend = true;
+			if (SK->FldD->field_type == FieldType::ALFANUM) SK->CompLex = true;
+			continue;
+		}
+		break;
+	}
+
 	return result;
 }
 
@@ -1321,77 +1366,77 @@ label1:
 	return result;
 }
 
-void Compiler::SrchF(FieldDescr* F)
+[[nodiscard]]bool Compiler::SrchF(FieldDescr* F1, FieldDescr* F)
 {
-	if (F == KeyArgFld) {
-		KeyArgFound = true;
-		return;
+	bool result = false;
+
+	if (F == F1) {
+		result = true;
 	}
+
 	if (!F->isStored()) {
-		SrchZ(F->Frml);
+		result = SrchZ(F1, F->Frml);
 	}
+
+	return result;
 }
 
-void Compiler::SrchZ(FrmlElem* Z)
+[[nodiscard]] bool Compiler::SrchZ(FieldDescr* F1, FrmlElem* Z)
 {
-	KeyFldD* KF = nullptr;
-	//FrmlListEl* fl = nullptr;
-	if (Z == nullptr) return;
+	bool result = false;
 
-	auto iZ0 = (FrmlElemFunction*)Z;
-	auto iZ7 = (FrmlElem7*)Z;
-	auto iZ19 = (FrmlElemUserFunc*)Z;
+	if (Z == nullptr) return result;
 
 	switch (Z->Op) {
 	case _field: {
-		SrchF(iZ7->Field);
+		FrmlElem7* iZ7 = static_cast<FrmlElem7*>(Z);
+		result = SrchF(F1, iZ7->Field);
 		break;
 	}
 	case _access: {
+		FrmlElem7* iZ7 = static_cast<FrmlElem7*>(Z);
 		if (iZ7->LD != nullptr) {
-			//KF = iZ7->LD->Args;
-			//while (KF != nullptr) {
-			for (auto& KF : iZ7->LD->Args) {
-				SrchF(KF->FldD);
-				//KF = KF->pChain;
+			for (KeyFldD* KF : iZ7->LD->Args) {
+				result = SrchF(F1, KF->FldD);
 			}
 		}
 		break;
 	}
 	case _userfunc: {
-		//std::vector<FrmlElem*> fl = iZ19->FrmlL;
-		/*while (fl != nullptr) {
-			SrchZ(fl->Frml);
-			fl = fl->pChain;
-		}*/
+		FrmlElemUserFunc* iZ19 = static_cast<FrmlElemUserFunc*>(Z);
 		for (FrmlElem* f : iZ19->FrmlL) {
-			SrchZ(f);
+			result = SrchZ(F1, f);
 		}
 		break;
 	}
 	default: {
-		if (Z->Op >= 0x60 && Z->Op <= 0xAF) SrchZ(iZ0->P1); /*1-ary*/
-		else if (Z->Op >= 0xB0 && Z->Op <= 0xEF) /*2-ary*/
-		{
-			SrchZ(iZ0->P1);
-			SrchZ(iZ0->P2);
+		FrmlElemFunction* iZ0 = static_cast<FrmlElemFunction*>(Z);
+		if (Z->Op >= 0x60 && Z->Op <= 0xAF) {
+			/*1-ary*/
+			result = SrchZ(F1, iZ0->P1);
 		}
-		else if (Z->Op >= 0xB0 && Z->Op <= 0xEF) /*3-ary*/
-		{
-			SrchZ(iZ0->P1);
-			SrchZ(iZ0->P2);
-			SrchZ(iZ0->P3);
+		else if (Z->Op >= 0xB0 && Z->Op <= 0xEF) {
+			/*2-ary*/
+			result = SrchZ(F1, iZ0->P1);
+			result = SrchZ(F1, iZ0->P2);
+		}
+		else if (Z->Op >= 0xB0 && Z->Op <= 0xEF) {
+			/*3-ary*/
+			result = SrchZ(F1, iZ0->P1);
+			result = SrchZ(F1, iZ0->P2);
+			result = SrchZ(F1, iZ0->P3);
 		}
 		break;
 	}
 	}
+
+	return result;
 }
 
 bool Compiler::IsFun(std::map<std::string, int>& strs, std::string input, instr_type& FunCode)
 {
 	// prevedeme vse ze vstupu na mala pismena
-	for (auto&& c : input)
-	{
+	for (auto&& c : input)	{
 		c = tolower(c);
 	}
 	auto it = strs.find(input);
@@ -1405,14 +1450,15 @@ bool Compiler::IsFun(std::map<std::string, int>& strs, std::string input, instr_
 
 bool Compiler::IsKeyArg(FieldDescr* F, FileD* FD)
 {
-	KeyArgFound = false;
-	for (auto& k : FD->Keys) {
-		KeyArgFld = F;
-		KeyFldD* kf = k->KFlds;
-		while (kf != nullptr) {
-			SrchF(kf->FldD);
-			if (KeyArgFound) { return true; }
-			kf = kf->pChain;
+	for (XKey* k : FD->Keys) {
+		//KeyFldD* kf = k->KFlds;
+		//while (kf != nullptr) {
+		for (KeyFldD* kf : k->KFlds) {
+			bool KeyArgFound = SrchF(F, kf->FldD);
+			if (KeyArgFound) {
+				return true;
+			}
+			//kf = kf->pChain;
 		}
 	}
 	return false;
@@ -2256,16 +2302,18 @@ std::vector<FrmlElem*> Compiler::RdFL(bool NewMyBP, std::vector<FrmlElem*>& FL1)
 {
 	char FTyp = '\0';
 
-	KeyFldD* KF = CViewKey->KFlds;
-	KeyFldD* KF2 = KF->pChain;
+	std::vector<KeyFldD*>::iterator it0 = CViewKey->KFlds.begin();
+	//KeyFldD* KF2 = it0->pChain;
 
 	std::vector<FrmlElem*> result;
 	bool FVA = FileVarsAllowed;
 	FileVarsAllowed = false;
 	bool b = !FL1.empty();
-	if (KF2 != nullptr) Accept('(');
+	if (CViewKey->KFlds.size() > 1) {
+		Accept('(');
+	}
 
-//label1:
+	//label1:
 	while (true) {
 		/*FrmlList FL = new FrmlListEl();
 		if (FLRoot == nullptr) FLRoot = FL;
@@ -2273,10 +2321,11 @@ std::vector<FrmlElem*> Compiler::RdFL(bool NewMyBP, std::vector<FrmlElem*>& FL1)
 		FrmlElem* frml = RdFrml(FTyp, nullptr);
 		result.push_back(frml);
 
-		if (FTyp != KF->FldD->frml_type) {
+		if (FTyp != (*it0)->FldD->frml_type) {
 			OldError(12);
 		}
-		KF = KF->pChain;
+
+		++it0; // = it0->pChain;
 
 		if (b) {
 			//FL1 = FL1->pChain;
@@ -2286,13 +2335,15 @@ std::vector<FrmlElem*> Compiler::RdFL(bool NewMyBP, std::vector<FrmlElem*>& FL1)
 				continue;
 			}
 		}
-		else if ((KF != nullptr) && (Lexem == ',')) {
+		else if ((it0 != CViewKey->KFlds.end()) && (Lexem == ',')) {
 			RdLex();
 			continue;
 		}
+
 		break;
 	}
-	if (KF2 != nullptr) {
+
+	if (CViewKey->KFlds.size() > 1) {
 		Accept(')');
 	}
 
@@ -2321,7 +2372,7 @@ FrmlElem* Compiler::RdKeyInBool(std::vector<KeyInD*>& KIRoot, bool NewMyBP, bool
 		if ((processing_F->FF->file_type != FileType::INDEX) || (CViewKey == nullptr)) {
 			OldError(118);
 		}
-		if (CViewKey->KFlds == nullptr) {
+		if (CViewKey->KFlds.empty()) {
 			OldError(176);
 		}
 		Accept('[');

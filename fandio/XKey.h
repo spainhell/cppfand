@@ -13,7 +13,7 @@ public:
 	XKey(const XKey& orig);
 	XKey(FileD* parent, unsigned char* inputStr);
 	XKey* Chain = nullptr;
-	KeyFldD* KFlds = nullptr;
+	std::vector<KeyFldD*> KFlds;
 	bool IntervalTest = false, Duplic = false, InWork = false;
 	unsigned short IndexRoot = 0; unsigned char IndexLen = 0;
 	int NR = 0; // {used only by XWKey}
@@ -42,6 +42,9 @@ public:
 	void BalancePages(XPage* P1, XPage** P2, bool& Released);
 	void XIDown(FileD* file_d, XPage* p, XPage* p1, unsigned short i, int& page1);
 	bool Delete(FileD* file_d, int RecNr, void* record);
+
+protected:
+	void CalcIndexLen();
 
 private:
 	FileD* parent_;
