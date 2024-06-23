@@ -337,6 +337,47 @@ FileD* RdPath(bool NoFD, std::string& Path, WORD& CatIRec)
 	return fd;
 }
 
+FrmlElemRecNo* RdKeyOfOrRecNo(instr_type Op, WORD& N, FrmlElem* Arg[30], char& Typ, char FTyp)
+{
+	FileD* FD = g_compiler->RdFileName();
+	XKey* K = RdViewKeyImpl(FD);
+	if (Op == _recno) {
+		//KeyFldD* KF = K->KFlds;
+		N = 0;
+		if (K->KFlds.empty()) {
+			g_compiler->OldError(176);
+		}
+		//while (KF != nullptr) {
+		for (KeyFldD* KF : K->KFlds) {
+			g_compiler->Accept(',');
+			if (N > 29) {
+				g_compiler->Error(123);
+			}
+			Arg[N] = g_compiler->RdFrml(Typ, nullptr);
+			N++;
+			if (Typ != KF->FldD->frml_type) {
+				g_compiler->OldError(12);
+			}
+			//KF = KF->pChain;
+		}
+	}
+	else {
+		g_compiler->Accept(',');
+		N = 1;
+		Arg[0] = g_compiler->RdRealFrml(nullptr);
+	}
+	FrmlElemRecNo* Z = new FrmlElemRecNo(Op, (N + 2) * 4);
+	Z->FFD = FD;
+	Z->Key = K;
+	Z->SaveArgs(Arg, N);
+	if (FTyp == 'R') {
+#ifdef FandSQL
+		if (v_files->typSQLFile) Error(155);
+#endif
+	}
+	return Z;
+}
+
 FrmlElem* RdFunctionP(char& FFTyp)
 {
 	FrmlElem* Z = nullptr;
@@ -388,66 +429,34 @@ FrmlElem* RdFunctionP(char& FFTyp)
 	else if (g_compiler->IsKeyWord("KEYOF")) {
 		g_compiler->RdLex();
 		FTyp = 'S';
-		if (!IsRecVar(&LV))	{
+		if (!IsRecVar(&LV)) {
 			Op = _recno;
-			goto label11;
+			Z = RdKeyOfOrRecNo(Op, N, Arg, Typ, FTyp);
 		}
-		Z = new FrmlElem20(_keyof, 8);
-		((FrmlElem20*)Z)->LV = LV;
-		((FrmlElem20*)Z)->PackKey = RdViewKeyImpl(((FrmlElem20*)Z)->LV->FD);
-		FTyp = 'S';
+		else {
+			Z = new FrmlElem20(_keyof, 8);
+			((FrmlElem20*)Z)->LV = LV;
+			((FrmlElem20*)Z)->PackKey = RdViewKeyImpl(((FrmlElem20*)Z)->LV->FD);
+			FTyp = 'S';
+		}
 	}
 	else if (g_compiler->IsKeyWord("RECNO")) {
 		Op = _recno;
-		goto label1;
+		g_compiler->RdLex();
+		FTyp = 'R';
+		Z = RdKeyOfOrRecNo(Op, N, Arg, Typ, FTyp);
 	}
 	else if (g_compiler->IsKeyWord("RECNOABS")) {
 		Op = _recnoabs;
-		goto label1;
+		g_compiler->RdLex();
+		FTyp = 'R';
+		Z = RdKeyOfOrRecNo(Op, N, Arg, Typ, FTyp);
 	}
 	else if (g_compiler->IsKeyWord("RECNOLOG")) {
 		Op = _recnolog;
-	label1:
 		g_compiler->RdLex();
 		FTyp = 'R';
-	label11:
-		FD = g_compiler->RdFileName();
-		XKey* K = RdViewKeyImpl(FD);
-		if (Op == _recno) {
-			//KeyFldD* KF = K->KFlds;
-			N = 0;
-			if (K->KFlds.empty()) {
-				g_compiler->OldError(176);
-			}
-			//while (KF != nullptr) {
-			for (KeyFldD* KF : K->KFlds) {
-				g_compiler->Accept(',');
-				if (N > 29) {
-					g_compiler->Error(123);
-				}
-				Arg[N] = g_compiler->RdFrml(Typ, nullptr);
-				N++;
-				if (Typ != KF->FldD->frml_type) {
-					g_compiler->OldError(12);
-				}
-				//KF = KF->pChain;
-			}
-		}
-		else {
-			g_compiler->Accept(',');
-			N = 1;
-			Arg[0] = g_compiler->RdRealFrml(nullptr);
-		}
-		Z = new FrmlElemRecNo(Op, (N + 2) * 4);
-		auto iZ = (FrmlElemRecNo*)Z;
-		iZ->FFD = FD;
-		iZ->Key = K;
-		iZ->SaveArgs(Arg, N);
-		if (FTyp == 'R') {
-#ifdef FandSQL
-			if (v_files->typSQLFile) Error(155);
-#endif
-		}
+		Z = RdKeyOfOrRecNo(Op, N, Arg, Typ, FTyp);
 	}
 	else if (g_compiler->IsKeyWord("LINK")) {
 		g_compiler->RdLex();
@@ -901,11 +910,13 @@ Instr_forall* RdForAll()
 		if (processed_file->typSQLFile) OldError(155);
 #endif
 	}
-	auto PD = new Instr_forall(); // GetPInstr(_forall, 41);
+	Instr_forall* PD = new Instr_forall(); // GetPInstr(_forall, 41);
 	PD->CFD = processed_file;
 	PD->CVar = LVi;
 	// TODO: tady je podminka, by to nespadlo
-	if (LVr != nullptr)	PD->CRecVar = LVr;
+	if (LVr != nullptr) {
+		PD->CRecVar = LVr;
+	}
 #ifdef FandSQL
 	if (processed_file->typSQLFile && IsKeyWord("IN")) {
 		AcceptKeyWord("SQL"); Accept('('); PD->CBool = RdStrFrml();
@@ -924,7 +935,9 @@ Instr_forall* RdForAll()
 		if (Lexem == '(') {
 			g_compiler->RdLex();
 			PD->CBool = g_compiler->RdKeyInBool(PD->CKIRoot, false, true, PD->CSQLFilter, nullptr);
-			if ((!PD->CKIRoot.empty()) && (PD->CLV != nullptr)) g_compiler->OldError(118);
+			if ((!PD->CKIRoot.empty()) && (PD->CLV != nullptr)) {
+				g_compiler->OldError(118);
+			}
 			g_compiler->Accept(')');
 		}
 		if (Lexem == '!') {
