@@ -368,7 +368,9 @@ FrmlElem* RdFunctionP(char& FFTyp)
 		((FrmlElem21*)Z)->EvalTyp = FTyp;
 		((FrmlElem21*)Z)->EvalP1 = g_compiler->RdStrFrml(nullptr);
 	}
-	else if (FileVarsAllowed) g_compiler->Error(75);
+	else if (FileVarsAllowed) {
+		g_compiler->Error(75);
+	}
 	else if (g_compiler->IsKeyWord("PROMPT")) {
 		g_compiler->RdLex();
 		Z = new FrmlElem11(_prompt, 4);
@@ -386,7 +388,10 @@ FrmlElem* RdFunctionP(char& FFTyp)
 	else if (g_compiler->IsKeyWord("KEYOF")) {
 		g_compiler->RdLex();
 		FTyp = 'S';
-		if (!IsRecVar(&LV)) { Op = _recno; goto label11; }
+		if (!IsRecVar(&LV))	{
+			Op = _recno;
+			goto label11;
+		}
 		Z = new FrmlElem20(_keyof, 8);
 		((FrmlElem20*)Z)->LV = LV;
 		((FrmlElem20*)Z)->PackKey = RdViewKeyImpl(((FrmlElem20*)Z)->LV->FD);
@@ -433,12 +438,16 @@ FrmlElem* RdFunctionP(char& FFTyp)
 			N = 1;
 			Arg[0] = g_compiler->RdRealFrml(nullptr);
 		}
-		Z = new FrmlElemRecNo(Op, (N + 2) * 4); // GetOp(oper, (N + 2) * 4);
+		Z = new FrmlElemRecNo(Op, (N + 2) * 4);
 		auto iZ = (FrmlElemRecNo*)Z;
 		iZ->FFD = FD;
 		iZ->Key = K;
 		iZ->SaveArgs(Arg, N);
-		if (FTyp == 'R') goto label2;
+		if (FTyp == 'R') {
+#ifdef FandSQL
+			if (v_files->typSQLFile) Error(155);
+#endif
+		}
 	}
 	else if (g_compiler->IsKeyWord("LINK")) {
 		g_compiler->RdLex();
@@ -467,7 +476,9 @@ FrmlElem* RdFunctionP(char& FFTyp)
 		CFile = cf;
 		iZ->LinkLD = LD;
 		FTyp = 'R';
-		goto label2;
+#ifdef FandSQL
+		if (v_files->typSQLFile) Error(155);
+#endif
 	}
 	else if (g_compiler->IsKeyWord("ISDELETED")) {
 		g_compiler->RdLex();
@@ -482,7 +493,7 @@ FrmlElem* RdFunctionP(char& FFTyp)
 			((FrmlElem14*)Z)->RecFD = FD;
 			g_compiler->Accept(',');
 			((FrmlElem14*)Z)->P1 = g_compiler->RdRealFrml(nullptr);
-		label2: {}
+			//label2: {}
 #ifdef FandSQL
 			if (v_files->typSQLFile) Error(155);
 #endif
@@ -583,7 +594,7 @@ FrmlElem* RdFunctionP(char& FFTyp)
 	FrmlElem* result = Z;
 	FFTyp = FTyp;
 	return result;
-	}
+}
 
 XKey* RdViewKeyImpl(FileD* FD)
 {
@@ -899,7 +910,7 @@ Instr_forall* RdForAll()
 	if (processed_file->typSQLFile && IsKeyWord("IN")) {
 		AcceptKeyWord("SQL"); Accept('('); PD->CBool = RdStrFrml();
 		Accept(')'); PD->inSQL = true;
-}
+	}
 	else {
 #endif
 		if (g_compiler->IsKeyWord("OWNER")) {
@@ -927,13 +938,13 @@ Instr_forall* RdForAll()
 		PD->CKey = CViewKey;
 
 #ifdef FandSQL
-		}
+	}
 #endif
 
 	g_compiler->AcceptKeyWord("DO");
 	PD->CInstr = RdPInstr();
 	return PD;
-	}
+}
 
 std::vector<Instr*> RdBeginEnd()
 {
@@ -1460,8 +1471,8 @@ void RdProcCall(Instr** pinstr)
 		PD = GetPD(_login, 8);
 		/* !!! with PD^ do!!! */ {
 			PD->liName = RdStrFrml(); Accept(','); PD->liPassWord = RdStrFrml();
+		}
 	}
-}
 	else if (IsKeyWord("SQLRDTXT")) RdSqlRdWrTxt(true);
 	else if (IsKeyWord("SQLWRTXT")) RdSqlRdWrTxt(false);
 #endif 
@@ -1615,7 +1626,7 @@ void RdEditOpt(EditOpt* EO, FileD* file_d)
 	}
 	else if (g_compiler->IsOpt("RECKEY")) {
 		EO->StartRecKeyZ = g_compiler->RdStrFrml(nullptr);
-}
+	}
 	else if (
 #ifdef FandSQL
 		!file_d->typSQLFile &&
@@ -1944,7 +1955,7 @@ Instr* RdCopyFile()
 			if ((FD1 != nullptr) && (FD1->typSQLFile) || (FD2 != nullptr)
 				&& (FD2->typSQLFile)) OldError(155);
 #endif
-}
+	}
 	while (Lexem == ',') {
 		g_compiler->RdLex();
 		if (g_compiler->IsOpt("HEAD")) {
@@ -2496,7 +2507,7 @@ Instr_recs* RdMixRecAcc(PInstrCode Op)
 		}
 #endif
 		}
-		}
+	}
 	if ((Lexem == ',') && (Op == PInstrCode::_writerec || Op == PInstrCode::_deleterec || Op == PInstrCode::_recallrec)) {
 		g_compiler->RdLex();
 		g_compiler->Accept('+');
@@ -2504,7 +2515,7 @@ Instr_recs* RdMixRecAcc(PInstrCode Op)
 	}
 	CFile = cf;
 	return PD;
-	}
+}
 
 Instr* RdLinkRec()
 {
@@ -2686,7 +2697,7 @@ Instr_assign* RdAssign()
 		if ((F->Flg & f_Stored) == 0) g_compiler->OldError(14);
 		PD->Indexarg = (FD->FF->file_type == FileType::INDEX) && g_compiler->IsKeyArg(F, FD);
 		g_compiler->RdAssignFrml(F->frml_type, PD->Add, &PD->Frml, nullptr);
-}
+	}
 	else if (g_compiler->FindLocVar(&LVBD, &LV)) {
 		g_compiler->RdLex();
 		FTyp = LV->f_typ;
@@ -3142,7 +3153,7 @@ void RdSqlRdWrTxt(bool Rd)
 	XKey* k = RdViewKey(); if (k == nullptr) k = CFile->Keys; pd->sqlKey = k; Accept(',');
 	pd->sqlFldD = RdFldName(CFile); Accept(','); pd->sqlXStr = RdStrFrml();
 	if (!pd->sqlFD->typSQLFile || (pd->sqlFldD->field_type != 'T')) OldError(170);
-	}
+}
 #endif
 
 Instr* RdCallLProc()

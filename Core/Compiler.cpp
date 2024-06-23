@@ -882,6 +882,44 @@ void Compiler::SetLocVars(FrmlElem* Z, char typ, bool return_param, std::vector<
 	}
 }
 
+void Compiler::RdIndexOrRecordDecl(char typ, std::vector<KeyFldD*> kf1, std::vector<LocVar*> newVars)
+{
+	AcceptKeyWord("OF");
+	FileD* f = RdFileName();
+	if (typ == 'i') {
+		if (f->FF->file_type != FileType::INDEX) {
+			OldError(108);
+		}
+		kf1.clear();
+		if (Lexem == '(') {
+			RdLex();
+			RdKFList(kf1, f);
+			Accept(')');
+		}
+	}
+	for (LocVar* locvar : newVars) {
+		locvar->f_typ = typ;
+		locvar->FD = f;
+		if (typ == 'r') {
+			locvar->record = nullptr; // ptr(0,1) ??? /* for RdProc nullptr-tests + no Run*/
+		}
+		/* frueher bei IsParList K = nullptr; warum? */
+		else {
+			//k = new XWKey(f);
+			//k->Duplic = true;
+			//k->InWork = true;
+			//k->KFlds = kf1;
+			//kf = kf1;
+			//while (kf != nullptr) {
+			//	k->IndexLen += kf->FldD->NBytes;
+			//	kf = kf->pChain;
+			//}
+			XWKey* k = new XWKey(f, true, true, kf1);
+			locvar->record = reinterpret_cast<uint8_t*>(k);
+		}
+	}
+}
+
 void Compiler::RdLocDcl(LocVarBlkD* LVB, bool IsParList, bool WithRecVar, char CTyp)
 {
 	FrmlElem* Z = nullptr;
@@ -995,51 +1033,13 @@ void Compiler::RdLocDcl(LocVarBlkD* LVB, bool IsParList, bool WithRecVar, char C
 					RdLex();
 				}
 			}
-			else if (IsKeyWord("INDEX") || IsKeyWord("RECORD")) {
-				if (IsKeyWord("INDEX")) {
-					typ = 'i';
-				}
-				else {
-					typ = 'r';
-				}
-
-				AcceptKeyWord("OF");
-				cf = CFile; cr = CRecPtr;
-				CFile = RdFileName();
-				if (typ == 'i') {
-					if (CFile->FF->file_type != FileType::INDEX) {
-						OldError(108);
-					}
-					kf1.clear();
-					if (Lexem == '(') {
-						RdLex();
-						RdKFList(kf1, CFile);
-						Accept(')');
-					}
-				}
-				for (LocVar* locvar : newVars) {
-					locvar->f_typ = typ;
-					locvar->FD = CFile;
-					if (typ == 'r') {
-						locvar->record = nullptr; // ptr(0,1) ??? /* for RdProc nullptr-tests + no Run*/
-					}
-					/* frueher bei IsParList K = nullptr; warum? */
-					else {
-						//k = new XWKey(CFile);
-						//k->Duplic = true;
-						//k->InWork = true;
-						//k->KFlds = kf1;
-						//kf = kf1;
-						//while (kf != nullptr) {
-						//	k->IndexLen += kf->FldD->NBytes;
-						//	kf = kf->pChain;
-						//}
-						XWKey* k = new XWKey(CFile, true, true, kf1);
-						locvar->record = reinterpret_cast<uint8_t*>(k);
-					}
-				}
-				CFile = cf;
-				CRecPtr = cr;
+			else if (IsKeyWord("INDEX")) {
+				typ = 'i';
+				RdIndexOrRecordDecl(typ, kf1, newVars);
+			}
+			else if (IsKeyWord("RECORD")) {
+				typ = 'r';
+				RdIndexOrRecordDecl(typ, kf1, newVars);
 			}
 			else {
 				Error(137);

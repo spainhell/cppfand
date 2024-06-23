@@ -137,4 +137,5 @@ private:
 	std::vector<FrmlElem*> RdFL(bool NewMyBP, std::vector<FrmlElem*>& FL1);
 	LinkD* FindOwnLD(FileD* FD, std::string RoleName);
 	void SetLocVars(FrmlElem* Z, char typ, bool return_param, std::vector<LocVar*>& newVars);
+	void RdIndexOrRecordDecl(char typ, std::vector<KeyFldD*> kf1, std::vector<LocVar*> newVars);
 };
