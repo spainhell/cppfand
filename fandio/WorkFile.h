@@ -20,8 +20,8 @@ public:
 	int FreeNr[5]{ 0, 0, 0, 0, 0 };
 	unsigned short NFreeNr = 0;
 	int IRec = 0, RecNr = 0;
-	KeyFldD* KFRoot = nullptr;
-	void Reset(KeyFldD* KF, int RestBytes, char Typ, int NRecs);
+	std::vector<KeyFldD*> KFRoot;
+	void Reset(std::vector<KeyFldD*>& KF, int RestBytes, char Typ, int NRecs);
 	void SortMerge(void* record);
 	virtual bool GetCRec(void* record) = 0;
 	virtual void Output(WRec* R, void* record) = 0;

@@ -41,7 +41,8 @@ void GetIndex(Instr_getindex* PD)
 				x.PackKF(ld->ToFD, ld->ToKey->KFlds, lv2->record);
 			}
 			else {
-				x.PackKF(ld->ToFD, nullptr, lv2->record);
+				//x.PackKF(ld->ToFD, nullptr, lv2->record);
+				x.Clear();
 			}
 
 			Scan->ResetOwner(&x, cond);
@@ -51,12 +52,12 @@ void GetIndex(Instr_getindex* PD)
 			lvFD = ld->ToFD;
 			md = ld->ToFD->NewLockMode(RdMode);
 			ld->ToFD->ReadRec(RunInt(ld->ToFD, (FrmlElem*)PD->loc_var2, record), record);
-
-				if (link_exists) {
+			if (link_exists) {
 				x.PackKF(ld->ToFD, ld->ToKey->KFlds, lv2->record);
 			}
 			else {
-				x.PackKF(ld->ToFD, nullptr, lv2->record);
+				//x.PackKF(ld->ToFD, nullptr, lv2->record);
+				x.Clear();
 			}
 
 			ld->ToFD->OldLockMode(md);

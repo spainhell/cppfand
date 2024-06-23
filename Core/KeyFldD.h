@@ -12,5 +12,5 @@ public:
 	FieldDescr* FldD = nullptr;
 	bool CompLex = false;
 	bool Descend = false;
-	bool static EquKFlds(KeyFldD* KF1, KeyFldD* KF2);
+	bool static EquKFlds(std::vector<KeyFldD*>& KF1, std::vector<KeyFldD*>& KF2);
 };

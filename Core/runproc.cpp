@@ -793,7 +793,8 @@ void ForAllProc(Instr_forall* PD)
 	if (PD->inSQL && !v_files->IsSQLFile) return;
 #endif
 	if (LD != nullptr) {
-		CFile = LD->ToFD; KF = LD->ToKey->KFlds;
+		CFile = LD->ToFD;
+		KF = LD->ToKey->KFlds;
 		switch (PD->COwnerTyp) {
 		case 'r': {
 			CRecPtr = PD->CLV->record;

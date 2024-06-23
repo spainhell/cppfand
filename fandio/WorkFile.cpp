@@ -19,32 +19,47 @@ WorkFile::~WorkFile()
 	FlushF(Handle, HandleError);
 }
 
-void WorkFile::Reset(KeyFldD* KF, int RestBytes, char Typ, int NRecs)
+void WorkFile::Reset(std::vector<KeyFldD*>& KF, int RestBytes, char Typ, int NRecs)
 {
 	int BYTEs = 0;
 	int pages = 0;
 	const unsigned short kB60 = 0x0F000;
 	KFRoot = KF;
 	RecLen = 7;
-	while (KF != nullptr) {
+
+	//while (KF != nullptr) {
+	for (KeyFldD* k : KF) {
 		if (Typ == 'D') {
 			RecLen += 6;
 		}
 		else {
-			if (KF->FldD != nullptr) {
-				RecLen += KF->FldD->NBytes;
+			if (k->FldD != nullptr) {
+				RecLen += k->FldD->NBytes;
 			}
 		}
-		KF = KF->pChain;
+		//KF = KF->pChain;
 	}
+
 	BYTEs = (StoreAvail() - RestBytes - sizeof(WRec)) / 3;
-	if (BYTEs < 4096) RunError(624);
-	if (BYTEs < kB60) WPageSize = (unsigned short)BYTEs & 0xF000;
-	else WPageSize = kB60;
+
+	if (BYTEs < 4096) {
+		RunError(624);
+	}
+
+	if (BYTEs < kB60) {
+		WPageSize = (unsigned short)BYTEs & 0xF000;
+	}
+	else {
+		WPageSize = kB60;
+	}
+
 	// MaxOnWPage = (WPageSize - (sizeof(WPage) - 65535 + 1)) / RecLen; // nebude se do toho pocitat delka pole 'A' (66535)
 	MaxOnWPage = (WPageSize - 10 + 1) / RecLen; // 10B is size of WPage without array
-	if (MaxOnWPage < 4) RunError(624);
-	MaxWPage = 0; NFreeNr = 0;
+	if (MaxOnWPage < 4) {
+		RunError(624);
+	}
+	MaxWPage = 0;
+	NFreeNr = 0;
 	PW = new WPage();
 	WRoot = GetFreeNr();
 	pages = (NRecs + MaxOnWPage - 1) / MaxOnWPage;

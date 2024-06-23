@@ -16,7 +16,7 @@ public:
 	XWFile* xwFile = nullptr;
 	XPage* xPage = nullptr;
 	void Main(char Typ, void* record);
-	void CopyIndex(XKey* K, KeyFldD* KF, char Typ, void* record);
+	void CopyIndex(XKey* K, std::vector<KeyFldD*>& KF, char Typ, void* record);
 	bool GetCRec(void* record) override;
 	void Output(WRec* R, void* record) override;
 private:

@@ -541,7 +541,7 @@ void EditReader::NewEditD(FileD* file_d, EditOpt* EO, uint8_t* rec)
 		if (file_d->IsSQLFile && (E->VK = nullptr)) { SetMsgPar(file_d->Name); RunError(652); }
 #endif
 		if (edit_->SelKey != nullptr) {
-			if (edit_->SelKey->KFlds == nullptr) {
+			if (edit_->SelKey->KFlds.empty()) {
 				edit_->SelKey->KFlds = edit_->VK->KFlds;
 			}
 			else if (!KeyFldD::EquKFlds(edit_->SelKey->KFlds, edit_->VK->KFlds)) {
@@ -912,12 +912,13 @@ void EditReader::NewChkKey(FileD* file_d)
 	for (XKey* K : file_d->Keys) {
 		if (!K->Duplic) {
 			ZeroUsed();
-			KeyFldD* KF = K->KFlds;
 
-			while (KF != nullptr) {
+			//KeyFldD* KF = K->KFlds;
+			//while (KF != nullptr) {
+			for (KeyFldD* KF : K->KFlds) {
 				EFldD* D = FindEFld_E(KF->FldD);
 				if (D != nullptr) D->Used = true;
-				KF = KF->pChain;
+				//KF = KF->pChain;
 			}
 
 			EFldD* D = LstUsedFld();

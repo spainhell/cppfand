@@ -2006,7 +2006,9 @@ void Report::MoveForwToRec(InpD* ID)
 void Report::MoveFrstRecs()
 {
 	for (short i = 1; i <= MaxIi; i++) {
-		if (IDA[i]->Exist) MoveForwToRec(IDA[i]);
+		if (IDA[i]->Exist) {
+			MoveForwToRec(IDA[i]);
+		}
 		else {
 			CFile = IDA[i]->Scan->FD;
 			CRecPtr = CFile->FF->RecPtr;
@@ -2022,46 +2024,43 @@ void Report::MergeProc(std::string& text)
 	short res = 0;
 	for (short i = 1; i <= MaxIi; i++) {
 		InpD* ID = IDA[i];
-		/* !!! with ID^ do!!! */
-		{
-			if (ID->Exist) {
-				CFile = ID->Scan->FD;
-				CRecPtr = CFile->FF->RecPtr;
-				LvDescr* L = ID->LstLvS;
-			label1:
-				ZeroSumFlds(L);
-				GetMFlds(ID->OldSFlds, ID->SFld);
-				if (WasFF2) PrintPageHd(text);
-				Headings(L, ID->FrstLvS, text);
-				if (PrintDH == 0) PrintDH = 1;
-			label2:
-				PrintBlock(ID->FrstLvS->Ft, text, ID->FrstLvS->Hd); /*DE*/
-				SumUp(CFile, ID->Sum, CRecPtr);
-				ReadInpFile(ID);
-				if (ID->Scan->eof) goto label4;
-				res = CompMFlds(NewMFlds, ID->MFld, nlv);
-				if ((res == _lt) && (MaxIi > 1)) {
-					SetMsgPar(ID->Scan->FD->Name);
-					RunError(607);
-				}
-				if (res != _equ) goto label4;
-				res = CompMFlds(ID->OldSFlds, ID->SFld, nlv);
-				if (res == _equ) {
-					MoveForwToRec(ID);
-					goto label2;
-				}
-				L = ID->LstLvS;
-				while (nlv > 1) {
-					L = L->ChainBack;
-					nlv--;
-				}
-				Footings(ID->FrstLvS->Chain, L, text);
-				if (WasFF2) PrintPageFt(text);
-				MoveForwToRec(ID);
-				goto label1;
-			label4:
-				Footings(ID->FrstLvS->Chain, ID->LstLvS, text);
+		if (ID->Exist) {
+			CFile = ID->Scan->FD;
+			CRecPtr = CFile->FF->RecPtr;
+			LvDescr* L = ID->LstLvS;
+		label1:
+			ZeroSumFlds(L);
+			GetMFlds(ID->OldSFlds, ID->SFld);
+			if (WasFF2) PrintPageHd(text);
+			Headings(L, ID->FrstLvS, text);
+			if (PrintDH == 0) PrintDH = 1;
+		label2:
+			PrintBlock(ID->FrstLvS->Ft, text, ID->FrstLvS->Hd); /*DE*/
+			SumUp(CFile, ID->Sum, CRecPtr);
+			ReadInpFile(ID);
+			if (ID->Scan->eof) goto label4;
+			res = CompMFlds(NewMFlds, ID->MFld, nlv);
+			if ((res == _lt) && (MaxIi > 1)) {
+				SetMsgPar(ID->Scan->FD->Name);
+				RunError(607);
 			}
+			if (res != _equ) goto label4;
+			res = CompMFlds(ID->OldSFlds, ID->SFld, nlv);
+			if (res == _equ) {
+				MoveForwToRec(ID);
+				goto label2;
+			}
+			L = ID->LstLvS;
+			while (nlv > 1) {
+				L = L->ChainBack;
+				nlv--;
+			}
+			Footings(ID->FrstLvS->Chain, L, text);
+			if (WasFF2) PrintPageFt(text);
+			MoveForwToRec(ID);
+			goto label1;
+		label4:
+			Footings(ID->FrstLvS->Chain, ID->LstLvS, text);
 		}
 	}
 }

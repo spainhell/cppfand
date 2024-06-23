@@ -37,7 +37,7 @@ XKey::XKey(FileD* parent, unsigned char* inputStr)
 	parent_ = parent;
 	size_t index = 0;
 	Chain = reinterpret_cast<XKey*>(*(unsigned int*)&inputStr[index]); index += 4;
-	KFlds = reinterpret_cast<KeyFldD*>(*(unsigned int*)&inputStr[index]); index += 4;
+	//TODO: KFlds = reinterpret_cast<KeyFldD*>(*(unsigned int*)&inputStr[index]); index += 4;
 	IntervalTest = *(bool*)&inputStr[index]; index++;
 	Duplic = *(bool*)&inputStr[index]; index++;
 	InWork = *(bool*)&inputStr[index]; index++;

@@ -26,13 +26,13 @@ void XWorkFile::Main(char Typ, void* record)
 		xxPage->Reset(this);
 		xxPage->IsLeaf = true;
 		XKey* k = xScan->Key;
-		KeyFldD* kf = xKey->KFlds;
+		//KeyFldD* kf = xKey->KFlds;
 		if (xScan->Kind == 1 &&
 #ifdef FandSQL
 			!xScan->v_files->IsSQLFile &&
 #endif
-			(xScan->Bool == nullptr && (kf == nullptr || KeyFldD::EquKFlds(k->KFlds, kf)))) {
-			CopyIndex(k, kf, Typ, record);
+			(xScan->Bool == nullptr && (xKey->KFlds.empty() || KeyFldD::EquKFlds(k->KFlds, xKey->KFlds)))) {
+			CopyIndex(k, xKey->KFlds, Typ, record);
 		}
 		else {
 			if (frst) {
@@ -52,7 +52,7 @@ void XWorkFile::Main(char Typ, void* record)
 	delete xPage; xPage = nullptr;
 }
 
-void XWorkFile::CopyIndex(XKey* K, KeyFldD* KF, char Typ, void* record)
+void XWorkFile::CopyIndex(XKey* K, std::vector<KeyFldD*>& KF, char Typ, void* record)
 {
 
 	WRec* r = new WRec();
@@ -69,7 +69,7 @@ void XWorkFile::CopyIndex(XKey* K, KeyFldD* KF, char Typ, void* record)
 		for (size_t i = 1; i <= p->NItems; i++) {
 			XItem* x = p->GetItem(i);
 			r->PutN(x->GetN());
-			if (KF == nullptr) {
+			if (KF.empty()) {
 				// x = x->Next();
 			}
 			else {

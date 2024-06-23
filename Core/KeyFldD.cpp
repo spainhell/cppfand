@@ -20,15 +20,21 @@ KeyFldD::KeyFldD(BYTE* inputStr)
 	Descend = *(bool*)&inputStr[index]; index++;
 }
 
-bool KeyFldD::EquKFlds(KeyFldD* KF1, KeyFldD* KF2)
+bool KeyFldD::EquKFlds(std::vector<KeyFldD*>& KF1, std::vector<KeyFldD*>& KF2)
 {
-	bool result = false;
-	while (KF1 != nullptr) {
-		if ((KF2 == nullptr) || (KF1->CompLex != KF2->CompLex) || (KF1->Descend != KF2->Descend)
-			|| (KF1->FldD->Name != KF2->FldD->Name)) return result;
-		KF1 = KF1->pChain;
-		KF2 = KF2->pChain;
+	bool result = true;
+	if (KF1.size() != KF2.size()) {
+		result = false;
 	}
-	if (KF2 != nullptr) return false;
-	return true;
+	else {
+		for (size_t i = 0; i < KF1.size(); i++) {
+			if ((KF1[i]->CompLex != KF2[i]->CompLex) 
+				|| (KF1[i]->Descend != KF2[i]->Descend)
+				|| (KF1[i]->FldD->Name != KF2[i]->FldD->Name)) {
+				result = false;
+				break;
+			}
+		}
+	}
+	return result;
 }
