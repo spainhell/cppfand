@@ -94,7 +94,7 @@ struct InpD
 enum AutoRprtMode { _ALstg, _ARprt, _ATotal, _AErrRecs };
 struct RprtFDListEl
 {
-	RprtFDListEl* Chain;
+	RprtFDListEl* Chain = nullptr;
 	FileD* FD = nullptr;
 	XKey* ViewKey = nullptr;
 	FrmlElem* Cond = nullptr;
@@ -110,7 +110,7 @@ struct RprtOpt
 	WORD CatIRec = 0;
 	bool UserSelFlds = false, UserCondQuest = false, FromStr = false, SyntxChk = false;
 	FrmlElem* Times = nullptr;
-	AutoRprtMode Mode;
+	AutoRprtMode Mode = _ALstg;
 	RdbPos RprtPos;
 	std::vector<FieldDescr*> Flds;  // !empty => autoreport
 	std::vector<FieldDescr*> Ctrl;

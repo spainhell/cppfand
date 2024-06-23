@@ -135,12 +135,10 @@ Instr_turncat::~Instr_turncat()
 
 Instr_sort::Instr_sort() : Instr(PInstrCode::_sort)
 {
-	//SK = new KeyFldD();
 }
 
 Instr_sort::~Instr_sort()
 {
-	delete SK;
 }
 
 Instr_edit::Instr_edit() : Instr(PInstrCode::_edit)

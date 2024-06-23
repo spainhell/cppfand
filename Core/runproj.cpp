@@ -1289,15 +1289,20 @@ bool EquKeys(XKey* K1, XKey* K2)
 	auto result = false;
 	while (K1 != nullptr) {
 		if ((K2 == nullptr) || (K1->Duplic != K2->Duplic)) return result;
-		KeyFldD* KF1 = K1->KFlds;
-		KeyFldD* KF2 = K2->KFlds;
-		while (KF1 != nullptr) {
-			if ((KF2 == nullptr) || (KF1->CompLex != KF2->CompLex) || (KF1->Descend != KF2->Descend)
-				|| (KF1->FldD->Name != KF2->FldD->Name)) return result;
-			KF1 = KF1->pChain;
-			KF2 = KF2->pChain;
+		std::vector<KeyFldD*>::iterator KF1 = K1->KFlds.begin();
+		std::vector<KeyFldD*>::iterator KF2 = K2->KFlds.begin();
+		while (KF1 != K1->KFlds.end()) {
+			if ((KF2 == K2->KFlds.end())
+				|| ((*KF1)->CompLex != (*KF2)->CompLex)
+				|| ((*KF1)->Descend != (*KF2)->Descend)
+				|| ((*KF1)->FldD->Name != (*KF2)->FldD->Name)) 
+			{
+				return result;
+			}
+			++KF1; //= KF1->pChain;
+			++KF2; //= KF2->pChain;
 		}
-		if (KF2 != nullptr) return result;
+		if (KF2 != K2->KFlds.end()) return result;
 		K1 = K1->Chain;
 		K2 = K2->Chain;
 	}

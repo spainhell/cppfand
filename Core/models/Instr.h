@@ -209,7 +209,7 @@ public:
 	Instr_sort();
 	~Instr_sort() override;
 	FileD* SortFD = nullptr;
-	KeyFldD* SK = nullptr;
+	std::vector<KeyFldD*> SK;
 };
 
 class Instr_edit : public Instr

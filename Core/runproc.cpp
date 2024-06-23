@@ -227,7 +227,7 @@ void AssignRecFld(Instr_assign* PD)
 	AssgnFrml(file_d, record, field_d, PD->Frml, file_d->HasTWorkFlag(record), PD->Add);
 }
 
-void SortProc(FileD* FD, KeyFldD* SK)
+void SortProc(FileD* FD, std::vector<KeyFldD*>& SK)
 {
 	LockMode md = FD->NewLockMode(ExclMode);
 	FD->FF->SortAndSubst(SK);
@@ -777,7 +777,8 @@ void ForAllProc(Instr_forall* PD)
 	//KeyInD* KI = nullptr;
 	void* cr = nullptr; void* p = nullptr; void* lr = nullptr;
 	XScan* xScan = nullptr; LockMode md, md1; XString xx;
-	KeyFldD* KF = nullptr; LocVar* LVi = nullptr; LocVar* LVr = nullptr;
+	//KeyFldD* KF = nullptr;
+	LocVar* LVi = nullptr; LocVar* LVr = nullptr;
 	bool lk = false, b = false;
 #ifdef FandSQL
 	bool sql;
@@ -794,18 +795,18 @@ void ForAllProc(Instr_forall* PD)
 #endif
 	if (LD != nullptr) {
 		CFile = LD->ToFD;
-		KF = LD->ToKey->KFlds;
+		//KF = LD->ToKey->KFlds;
 		switch (PD->COwnerTyp) {
 		case 'r': {
 			CRecPtr = PD->CLV->record;
-			xx.PackKF(CFile, KF, CRecPtr);
+			xx.PackKF(CFile, LD->ToKey->KFlds, CRecPtr);
 			break;
 		}
 		case 'F': {
 			md = CFile->NewLockMode(RdMode);
 			CRecPtr = CFile->GetRecSpace();
 			CFile->ReadRec(RunInt(CFile, (FrmlElem*)PD->CLV, CRecPtr), CRecPtr);
-			xx.PackKF(CFile, KF, CRecPtr);
+			xx.PackKF(CFile, LD->ToKey->KFlds, CRecPtr);
 			ReleaseStore(&p);
 			CFile->OldLockMode(md);
 			break;
@@ -1762,7 +1763,7 @@ void CallProcedure(Instr_proc* PD)
 	while (it0 != PD->variables.vLocVar.end()) {
 		if ((*it0)->f_typ == 'i') {
 			XWKey* hX = (XWKey*)(*it0)->record;
-			if (hX->KFlds == nullptr) {
+			if (hX->KFlds.empty()) {
 				hX->KFlds = (*it0)->FD->Keys[0]->KFlds;
 			}
 			XWKey* tmp = (XWKey*)(*it0)->record;

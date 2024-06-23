@@ -2251,12 +2251,12 @@ LongStr* RunSelectStr(FileD* file_d, FrmlElemFunction* Z, void* record)
 				n += x.length();
 			}
 		} while (!(!ss.Subset || (x == "")));
-		delete s; s = nullptr;
-		s = new LongStr(n + 1);
-		s->LL = n - 1;
-		Move(s2->A, s->A, n - 1);
-		ReleaseStore(&p2);
-		return s;
+	delete s; s = nullptr;
+	s = new LongStr(n + 1);
+	s->LL = n - 1;
+	Move(s2->A, s->A, n - 1);
+	ReleaseStore(&p2);
+	return s;
 }
 
 void LowCase(LongStr* S)
@@ -2351,10 +2351,12 @@ void AccRecNoProc(FrmlElem14* X, WORD Msg, BYTE** record)
 
 void GetRecNoXString(FileD* file_d, FrmlElemRecNo* Z, XString& X, void* record)
 {
-	WORD i = 0;
+	//WORD i = 0;
 	X.Clear();
-	KeyFldD* kf = Z->Key->KFlds;
-	while (kf != nullptr) {
+	//KeyFldD* kf = Z->Key->KFlds;
+	//while (kf != nullptr) {
+	for (size_t i = 0; i < Z->Key->KFlds.size(); i++) {
+		KeyFldD* kf = Z->Key->KFlds[i];
 		FrmlElem* zz = Z->Arg[i];
 		switch (kf->FldD->frml_type) {
 		case 'S': {
@@ -2369,8 +2371,12 @@ void GetRecNoXString(FileD* file_d, FrmlElemRecNo* Z, XString& X, void* record)
 			X.StoreBool(RunBool(file_d, zz, record), kf);
 			break;
 		}
+		default: {
+			// do nothing
+			break;
 		}
-		kf = kf->pChain;
-		i++;
+		}
+		//kf = kf->pChain;
+		//i++;
 	}
 }

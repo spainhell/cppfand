@@ -13,7 +13,7 @@ void PromptAutoRprt(RprtOpt* RO);
 void AssignField(Instr_assign* PD);
 void AssignRecVar(LocVar* LV1, LocVar* LV2, AssignD* A);
 void AssignRecFld(Instr_assign* PD);
-void SortProc(FileD* FD, KeyFldD* SK);
+void SortProc(FileD* FD, std::vector<KeyFldD*>& SK);
 void MergeProc(Instr_merge_display* PD);
 void WritelnProc(Instr_writeln* PD);
 void DisplayProc(RdbD* R, WORD IRec);

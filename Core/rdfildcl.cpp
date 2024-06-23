@@ -550,30 +550,36 @@ void SetLDIndexRoot(FileD* file_d, /*LinkD* L,*/ std::deque<LinkD*>& L2)
 
 	bool computed = false;
 
-	for (auto& L : LinkDRoot) { /* find key with equal beginning */
+	for (LinkD* L : LinkDRoot) { /* find key with equal beginning */
 		if (L == l2) {
 			break;
 		}
+
 		if (file_d->FF->file_type == FileType::INDEX) {
-			for (auto& K : file_d->Keys) {
-				KeyFldD* KF = K->KFlds;
+			for (XKey* K : file_d->Keys) {
 				computed = false;
 				bool continueWithNextK = false;
 
-				for (auto& arg : L->Args) {
+				for (size_t i = 0; i < L->Args.size(); i++) {
+					KeyFldD* arg = L->Args[i];
+					KeyFldD* KF = K->KFlds[i];
+
 					// cmp file_d key fields with Arg fields
 					if (KF == nullptr || arg->FldD != KF->FldD || arg->CompLex != KF->CompLex || arg->Descend != KF->Descend) {
 						continueWithNextK = true;
 						break;
 					}
+
 					if ((arg->FldD->Flg & f_Stored) == 0) {
 						computed = true;
 					}
-					KF = KF->pChain;
+					//KF = KF->pChain;
 				}
+
 				if (continueWithNextK) {
 					continue;
 				}
+
 				L->IndexRoot = K->IndexRoot;
 				break;
 			}
@@ -840,7 +846,7 @@ void RdKeyD(FileD* file_d)
 {
 	FieldDescr* F = nullptr;
 	FieldDescr* F2 = nullptr;
-	KeyFldD* KF = nullptr;
+	std::vector<KeyFldD*>::iterator KF;
 	KeyFldD* arg = nullptr;
 	FileD* FD = nullptr;
 	LinkD* L = nullptr;
@@ -892,7 +898,7 @@ void RdKeyD(FileD* file_d)
 				g_compiler->RdLex();
 			}
 			K->IndexRoot = N;
-			K->IndexLen = g_compiler->RdKFList(&K->KFlds, file_d);
+			K->IndexLen = g_compiler->RdKFList(K->KFlds, file_d);
 			if (K->IndexLen > MaxIndexLen) {
 				g_compiler->OldError(105);
 			}
@@ -948,26 +954,26 @@ label2:
 		}
 	}
 	//Arg = &L->Args;
-	KF = K->KFlds;
+	KF = K->KFlds.begin();
 
 	while (true) {
 		F = g_compiler->RdFldName(file_d);
 		if (F->field_type == FieldType::TEXT) g_compiler->OldError(84);
 		arg = new KeyFldD();
 		arg->FldD = F;
-		arg->CompLex = KF->CompLex;
-		arg->Descend = KF->Descend;
+		arg->CompLex = (*KF)->CompLex;
+		arg->Descend = (*KF)->Descend;
 		L->Args.push_back(arg);
 
-		F2 = KF->FldD;
+		F2 = (*KF)->FldD;
 		if (F->field_type != F2->field_type || F->field_type != FieldType::DATE 
 			&& F->L != F2->L || F->field_type == FieldType::FIXED 
 			&& F->M != F2->M) {
 			g_compiler->OldError(12);
 		}
 
-		KF = KF->pChain;
-		if (KF != nullptr) {
+		++KF; // = KF->pChain;
+		if (KF != K->KFlds.end()) {
 			g_compiler->Accept(',');
 			continue;
 		}
@@ -1189,14 +1195,23 @@ void RdImper(AddD* AD)
 	if (Lexem == '!') {
 		g_compiler->RdLex(); AD->Create = 1;
 		if (AD->LD != nullptr) {
-			KeyFldD* KF = AD->LD->ToKey->KFlds;
-			while (KF != nullptr) {
-				if ((KF->FldD->Flg & f_Stored) == 0) g_compiler->OldError(148);
-				KF = (KeyFldD*)KF->pChain;
+			//KeyFldD* KF = AD->LD->ToKey->KFlds;
+			//while (KF != nullptr) {
+			for (KeyFldD* KF : AD->LD->ToKey->KFlds) {
+				if ((KF->FldD->Flg & f_Stored) == 0) {
+					g_compiler->OldError(148);
+				}
+				//KF = (KeyFldD*)KF->pChain;
 			}
 		}
-		if (Lexem == '!') { g_compiler->RdLex(); AD->Create = 2; }
-		if (Lexem == '!') { g_compiler->RdLex(); AD->Create = 2; }
+		if (Lexem == '!') {
+			g_compiler->RdLex();
+			AD->Create = 2;
+		}
+		if (Lexem == '!') {
+			g_compiler->RdLex();
+			AD->Create = 2;
+		}
 	}
 }
 
