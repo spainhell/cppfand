@@ -160,7 +160,7 @@ public:
 
 	LocVar* RecLV1 = nullptr;
 	LocVar* RecLV2 = nullptr;
-	AssignD* Ass = nullptr;
+	std::vector<AssignD*> Ass;
 	LinkD* LinkLD = nullptr;
 	XWKey* xnrIdx = nullptr;
 

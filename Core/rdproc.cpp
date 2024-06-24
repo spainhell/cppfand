@@ -2591,9 +2591,9 @@ FrmlElem* AdjustComma(FrmlElem* Z1, FieldDescr* F, instr_type Op)
 	return result;
 }
 
-AssignD* MakeImplAssign(FileD* FD1, FileD* FD2)
+std::vector<AssignD*> MakeImplAssign(FileD* FD1, FileD* FD2)
 {
-	AssignD* ARoot = nullptr;
+	std::vector<AssignD*> ARoot;
 	char FTyp;
 	pstring S = LexWord;
 	for (FieldDescr* F1 : FD1->FldD) {
@@ -2602,8 +2602,9 @@ AssignD* MakeImplAssign(FileD* FD1, FileD* FD2)
 			FieldDescr* F2 = g_compiler->FindFldName(FD2);
 			if (F2 != nullptr) {
 				AssignD* A = new AssignD();
-				if (ARoot == nullptr) ARoot = A;
-				else ChainLast(ARoot, A);
+				//if (ARoot == nullptr) ARoot = A;
+				//else ChainLast(ARoot, A);
+				ARoot.push_back(A);
 				if ((F2->frml_type != F1->frml_type)
 					|| (F1->frml_type == 'R')
 					&& (F1->field_type != F2->field_type)) {

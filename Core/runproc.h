@@ -11,7 +11,7 @@ void UserHeadLine(std::string UserHeader);
 void ReportProc(RprtOpt* RO, bool save);
 void PromptAutoRprt(RprtOpt* RO);
 void AssignField(Instr_assign* PD);
-void AssignRecVar(LocVar* LV1, LocVar* LV2, AssignD* A);
+void AssignRecVar(LocVar* LV1, LocVar* LV2, std::vector<AssignD*>& A);
 void AssignRecFld(Instr_assign* PD);
 void SortProc(FileD* FD, std::vector<KeyFldD*>& SK);
 void MergeProc(Instr_merge_display* PD);
