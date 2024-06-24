@@ -1957,8 +1957,7 @@ FrmlElem* Compiler::RdPrim(char& FTyp, MergeReportBase* caller)
 				Z2 = nullptr;
 			label1:
 				Z = new FrmlElemFunction(_cond, 0); // GetOp(_cond, 0);
-				if (!IsKeyWord("ELSE"))
-				{
+				if (!IsKeyWord("ELSE")) 	{
 					((FrmlElemFunction*)Z)->P1 = RdFormula(Typ, caller);
 					TestBool(Typ);
 				}
@@ -1975,8 +1974,7 @@ FrmlElem* Compiler::RdPrim(char& FTyp, MergeReportBase* caller)
 					if (FTyp == 'S') TestString(Typ);
 					else TestReal(Typ);
 				}
-				if ((((FrmlElemFunction*)Z)->P1 != nullptr) && (Lexem == ','))
-				{
+				if ((((FrmlElemFunction*)Z)->P1 != nullptr) && (Lexem == ',')) {
 					RdLex();
 					Z2 = Z;
 					goto label1;

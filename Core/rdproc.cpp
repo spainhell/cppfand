@@ -88,23 +88,25 @@ FrmlElem* RdRecVarFldFrml(LocVar* LV, char& FTyp)
 
 	switch (LV->f_typ) {
 	case 'r': {
-		FrmlElem7* Z = new FrmlElem7(_recvarfld, 12);
+		FrmlElem7* fe7 = new FrmlElem7(_recvarfld, 12);
 		FileD* previous = g_compiler->processing_F;
 		g_compiler->processing_F = LV->FD;
-		Z->File2 = LV->FD;
-		Z->LD = (LinkD*)LV->record;
+		fe7->File2 = LV->FD;
+		fe7->LD = (LinkD*)LV->record;
 		bool fa = FileVarsAllowed;
 		FileVarsAllowed = true;
-		Z->P011 = g_compiler->RdFldNameFrmlF(FTyp, nullptr);
+		fe7->P011 = g_compiler->RdFldNameFrmlF(FTyp, nullptr);
 		FileVarsAllowed = fa;
+		Z = fe7;
 		g_compiler->processing_F = previous;
 		break;
 	}
 	case 'i': {
-		FrmlElem22* Z = new FrmlElem22(_indexnrecs, 4);
-		Z->WKey = (XWKey*)LV->record;
+		FrmlElem22* fe22 = new FrmlElem22(_indexnrecs, 4);
+		fe22->WKey = (XWKey*)LV->record;
 		g_compiler->AcceptKeyWord("nrecs");
 		FTyp = 'R';
+		Z = fe22;
 		break;
 	}
 	default: {
@@ -146,7 +148,7 @@ char RdOwner(FileD* file_d, LinkD** LLD, LocVar** LLV)
 			result = 'F';
 			*LLD = ld;
 			return result;
-		}
+	}
 		else {
 			if (lv->f_typ == 'i') {
 				std::vector<KeyFldD*>* kf = &((XWKey*)lv->record)->KFlds;
@@ -162,7 +164,7 @@ char RdOwner(FileD* file_d, LinkD** LLD, LocVar** LLV)
 			result = lv->f_typ;
 			return result;
 		}
-	}
+}
 	g_compiler->TestIdentif();
 	for (LinkD* ld : LinkDRoot) {
 		sLexWord = LexWord;
@@ -376,7 +378,7 @@ FrmlElemRecNo* RdKeyOfOrRecNo(instr_type Op, WORD& N, FrmlElem* Arg[30], char& T
 #ifdef FandSQL
 		if (v_files->typSQLFile) Error(155);
 #endif
-	}
+}
 	return Z;
 }
 
@@ -490,7 +492,7 @@ FrmlElem* RdFunctionP(char& FFTyp)
 #ifdef FandSQL
 		if (v_files->typSQLFile) Error(155);
 #endif
-	}
+		}
 	else if (g_compiler->IsKeyWord("ISDELETED")) {
 		g_compiler->RdLex();
 		FTyp = 'B';
@@ -605,7 +607,7 @@ FrmlElem* RdFunctionP(char& FFTyp)
 	FrmlElem* result = Z;
 	FFTyp = FTyp;
 	return result;
-}
+	}
 
 XKey* RdViewKeyImpl(FileD* FD)
 {
@@ -911,7 +913,7 @@ Instr_forall* RdForAll()
 #ifdef FandSQL
 		if (processed_file->typSQLFile) OldError(155);
 #endif
-	}
+		}
 	Instr_forall* PD = new Instr_forall(); // GetPInstr(_forall, 41);
 	PD->CFD = processed_file;
 	PD->CVar = LVi;
@@ -959,7 +961,7 @@ Instr_forall* RdForAll()
 	g_compiler->AcceptKeyWord("DO");
 	PD->CInstr = RdPInstr();
 	return PD;
-}
+	}
 
 std::vector<Instr*> RdBeginEnd()
 {
@@ -1501,7 +1503,7 @@ void RdProcCall(Instr** pinstr)
 	}
 	else g_compiler->Error(34);
 	g_compiler->Accept(')');
-}
+	}
 
 std::vector<FieldDescr*> RdFlds()
 {
@@ -1673,7 +1675,7 @@ void RdEditOpt(EditOpt* EO, FileD* file_d)
 	else {
 		g_compiler->Error(125);
 	}
-}
+	}
 
 Instr* RdReportCall()
 {
@@ -2501,7 +2503,7 @@ Instr_recs* RdMixRecAcc(PInstrCode Op)
 			&& (Lexem == _equ || Lexem == _le || Lexem == _gt || Lexem == _lt || Lexem == _ge))
 		{
 			PD->CompOp = Lexem; RdLex();
-		}
+	}
 #endif
 		Z = g_compiler->RdFrml(FTyp, nullptr);
 		PD->RecNr = Z;
@@ -2525,7 +2527,7 @@ Instr_recs* RdMixRecAcc(PInstrCode Op)
 		}
 #endif
 		}
-	}
+}
 	if ((Lexem == ',') && (Op == PInstrCode::_writerec || Op == PInstrCode::_deleterec || Op == PInstrCode::_recallrec)) {
 		g_compiler->RdLex();
 		g_compiler->Accept('+');
